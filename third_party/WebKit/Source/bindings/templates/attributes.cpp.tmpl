@@ -288,6 +288,9 @@ v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info
   v8::Isolate* isolate = info.GetIsolate();
   ALLOW_UNUSED_LOCAL(isolate);
 
+  v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
   {% set define_exception_state -%}
   ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "{{interface_name}}", "{{attribute.name}}");
   {%- endset %}
@@ -295,18 +298,11 @@ v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info
   {% if attribute.is_lenient_this %}
   // [LenientThis]
   // Make sure that info.Holder() really points to an instance if [LenientThis].
-  if (!{{v8_class}}::hasInstance(info.Holder(), isolate))
+  if (!{{v8_class}}::hasInstance(holder, isolate))
     return; // Return silently because of [LenientThis].
   {% endif %}
 
-  {% if not attribute.is_static and not attribute.is_replaceable %}
-  v8::Local<v8::Object> holder = info.Holder();
-  {% if attribute.is_put_forwards %}
-  {{cpp_class}}* proxyImpl = {{v8_class}}::toImpl(holder);
-  {{attribute.cpp_type}} impl = WTF::GetPtr(proxyImpl->{{attribute.name}}());
-  if (!impl)
-    return;
-  {% else %}
+  {% if not attribute.is_static and not attribute.is_replaceable and not attribute.is_put_forwards %}
   {% set local_dom_window_only = interface_name == 'Window' and not attribute.has_cross_origin_setter %}
   {% if local_dom_window_only %}
   {% if attribute.is_check_security_for_receiver %}
@@ -320,7 +316,6 @@ v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info
   {% else %}
   {{cpp_class}}* impl = {{v8_class}}::toImpl(holder);
   {% endif %}{# local_dom_window_only #}
-  {% endif %}
   {% endif %}
 
   {% if attribute.is_check_security_for_receiver and not attribute.is_data_type_property %}
@@ -343,6 +338,22 @@ v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info
 #error Attribute setter with the security check for the return value is not supported.  Since the return value is the given value to be set, it\'s meaningless to perform the security check for the return value.
   {% endif %}
 
+  {% if attribute.is_put_forwards %}
+  // [PutForwards] => {{attribute.name}}.{{attribute.target_attribute_name}}
+  {{define_exception_state}}
+  v8::Local<v8::Value> target;
+  if (!holder->Get(isolate->GetCurrentContext(), V8String(isolate, "{{attribute.name}}")).ToLocal(&target))
+    return;
+  if (!target->IsObject()) {
+    exceptionState.ThrowTypeError("The attribute value is not an object");
+    return;
+  }
+  bool result;
+  if (!target.As<v8::Object>()->Set(isolate->GetCurrentContext(), V8String(isolate, "{{attribute.target_attribute_name}}"), v8Value).To(&result))
+    return;
+  if (!result)
+    return;
+  {% else %}{# attribute.is_put_forwards #}
   {% if attribute.is_custom_element_callbacks or
         (attribute.is_reflect and not (attribute.idl_type == 'DOMString' and is_node)) %}
   // Skip on compact node DOMString getters.
@@ -408,6 +419,7 @@ v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info
       isolate, "{{cpp_class}}#{{attribute.name.capitalize()}}")
       .DeleteProperty(holder, v8::Undefined(isolate));
   {% endif %}
+  {% endif %}{# attribute.is_put_forwards #}
 }
 {% endfilter %}{# format_remove_duplicates #}
 {% endmacro %}

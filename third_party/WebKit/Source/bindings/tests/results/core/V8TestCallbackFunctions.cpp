@@ -70,6 +70,8 @@ static void voidCallbackFunctionAttributeAttributeSetter(v8::Local<v8::Value> v8
   ALLOW_UNUSED_LOCAL(isolate);
 
   v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
   TestCallbackFunctions* impl = V8TestCallbackFunctions::toImpl(holder);
 
   // Prepare the value to be set.
@@ -91,6 +93,8 @@ static void anyCallbackFunctionOptionalAnyArgAttributeAttributeSetter(v8::Local<
   ALLOW_UNUSED_LOCAL(isolate);
 
   v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
   TestCallbackFunctions* impl = V8TestCallbackFunctions::toImpl(holder);
 
   // Prepare the value to be set.

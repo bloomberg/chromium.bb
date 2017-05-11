@@ -71,6 +71,8 @@ static void attr1AttributeSetter(v8::Local<v8::Value> v8Value, const v8::Functio
   ALLOW_UNUSED_LOCAL(isolate);
 
   v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
   TestInterfaceGarbageCollected* impl = V8TestInterfaceGarbageCollected::toImpl(holder);
 
   ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestInterfaceGarbageCollected", "attr1");

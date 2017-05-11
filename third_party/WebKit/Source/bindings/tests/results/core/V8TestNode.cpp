@@ -67,6 +67,8 @@ static void hrefAttributeSetter(v8::Local<v8::Value> v8Value, const v8::Function
   ALLOW_UNUSED_LOCAL(isolate);
 
   v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
   TestNode* impl = V8TestNode::toImpl(holder);
 
   // Prepare the value to be set.
@@ -90,6 +92,8 @@ static void hrefThrowsAttributeSetter(v8::Local<v8::Value> v8Value, const v8::Fu
   ALLOW_UNUSED_LOCAL(isolate);
 
   v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
   TestNode* impl = V8TestNode::toImpl(holder);
 
   ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestNode", "hrefThrows");
@@ -115,6 +119,8 @@ static void hrefCallWithAttributeSetter(v8::Local<v8::Value> v8Value, const v8::
   ALLOW_UNUSED_LOCAL(isolate);
 
   v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
   TestNode* impl = V8TestNode::toImpl(holder);
 
   // Prepare the value to be set.
@@ -140,6 +146,8 @@ static void hrefByteStringAttributeSetter(v8::Local<v8::Value> v8Value, const v8
   ALLOW_UNUSED_LOCAL(isolate);
 
   v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
   TestNode* impl = V8TestNode::toImpl(holder);
 
   ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestNode", "hrefByteString");

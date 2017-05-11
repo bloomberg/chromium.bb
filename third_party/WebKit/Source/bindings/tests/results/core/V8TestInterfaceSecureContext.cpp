@@ -67,6 +67,8 @@ static void secureContextAttributeAttributeSetter(v8::Local<v8::Value> v8Value, 
   ALLOW_UNUSED_LOCAL(isolate);
 
   v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
   TestInterfaceSecureContext* impl = V8TestInterfaceSecureContext::toImpl(holder);
 
   ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestInterfaceSecureContext", "secureContextAttribute");
@@ -96,6 +98,8 @@ static void secureContextRuntimeEnabledAttributeAttributeSetter(v8::Local<v8::Va
   ALLOW_UNUSED_LOCAL(isolate);
 
   v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
   TestInterfaceSecureContext* impl = V8TestInterfaceSecureContext::toImpl(holder);
 
   ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestInterfaceSecureContext", "secureContextRuntimeEnabledAttribute");
@@ -125,6 +129,8 @@ static void secureContextWindowExposedAttributeAttributeSetter(v8::Local<v8::Val
   ALLOW_UNUSED_LOCAL(isolate);
 
   v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
   TestInterfaceSecureContext* impl = V8TestInterfaceSecureContext::toImpl(holder);
 
   ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestInterfaceSecureContext", "secureContextWindowExposedAttribute");
@@ -154,6 +160,8 @@ static void secureContextWorkerExposedAttributeAttributeSetter(v8::Local<v8::Val
   ALLOW_UNUSED_LOCAL(isolate);
 
   v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
   TestInterfaceSecureContext* impl = V8TestInterfaceSecureContext::toImpl(holder);
 
   ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestInterfaceSecureContext", "secureContextWorkerExposedAttribute");
@@ -183,6 +191,8 @@ static void secureContextWindowExposedRuntimeEnabledAttributeAttributeSetter(v8:
   ALLOW_UNUSED_LOCAL(isolate);
 
   v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
   TestInterfaceSecureContext* impl = V8TestInterfaceSecureContext::toImpl(holder);
 
   ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestInterfaceSecureContext", "secureContextWindowExposedRuntimeEnabledAttribute");
@@ -212,6 +222,8 @@ static void secureContextWorkerExposedRuntimeEnabledAttributeAttributeSetter(v8:
   ALLOW_UNUSED_LOCAL(isolate);
 
   v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
   TestInterfaceSecureContext* impl = V8TestInterfaceSecureContext::toImpl(holder);
 
   ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestInterfaceSecureContext", "secureContextWorkerExposedRuntimeEnabledAttribute");

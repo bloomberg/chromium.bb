@@ -92,6 +92,8 @@ static void testInterfaceAttributeAttributeSetter(v8::Local<v8::Value> v8Value, 
   ALLOW_UNUSED_LOCAL(isolate);
 
   v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
   TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
 
   ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestInterface", "testInterfaceAttribute");
@@ -121,6 +123,8 @@ static void doubleAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v
   ALLOW_UNUSED_LOCAL(isolate);
 
   v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
   TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
 
   ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestInterface", "doubleAttribute");
@@ -146,6 +150,8 @@ static void floatAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8
   ALLOW_UNUSED_LOCAL(isolate);
 
   v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
   TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
 
   ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestInterface", "floatAttribute");
@@ -171,6 +177,8 @@ static void unrestrictedDoubleAttributeAttributeSetter(v8::Local<v8::Value> v8Va
   ALLOW_UNUSED_LOCAL(isolate);
 
   v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
   TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
 
   ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestInterface", "unrestrictedDoubleAttribute");
@@ -196,6 +204,8 @@ static void unrestrictedFloatAttributeAttributeSetter(v8::Local<v8::Value> v8Val
   ALLOW_UNUSED_LOCAL(isolate);
 
   v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
   TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
 
   ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestInterface", "unrestrictedFloatAttribute");
@@ -221,6 +231,8 @@ static void testEnumAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const
   ALLOW_UNUSED_LOCAL(isolate);
 
   v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
   TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
 
   ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestInterface", "testEnumAttribute");
@@ -263,6 +275,8 @@ static void stringOrDoubleAttributeAttributeSetter(v8::Local<v8::Value> v8Value,
   ALLOW_UNUSED_LOCAL(isolate);
 
   v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
   TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
 
   ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestInterface", "stringOrDoubleAttribute");
@@ -289,6 +303,8 @@ static void conditionalLongAttributeAttributeSetter(v8::Local<v8::Value> v8Value
   ALLOW_UNUSED_LOCAL(isolate);
 
   v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
   TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
 
   ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestInterface", "conditionalLongAttribute");
@@ -317,6 +333,9 @@ static void staticStringAttributeAttributeSetter(v8::Local<v8::Value> v8Value, c
   v8::Isolate* isolate = info.GetIsolate();
   ALLOW_UNUSED_LOCAL(isolate);
 
+  v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
   // Prepare the value to be set.
   V8StringResource<> cppValue = v8Value;
   if (!cppValue.Prepare())
@@ -332,6 +351,9 @@ static void staticReturnDOMWrapperAttributeAttributeGetter(const v8::FunctionCal
 static void staticReturnDOMWrapperAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8::Isolate* isolate = info.GetIsolate();
   ALLOW_UNUSED_LOCAL(isolate);
+
+  v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
 
   ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestInterface", "staticReturnDOMWrapperAttribute");
 
@@ -383,6 +405,8 @@ static void legacyInterfaceTypeCheckingAttributeAttributeSetter(v8::Local<v8::Va
   ALLOW_UNUSED_LOCAL(isolate);
 
   v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
   TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
 
   // Prepare the value to be set.
@@ -404,6 +428,8 @@ static void alwaysExposedAttributeAttributeSetter(v8::Local<v8::Value> v8Value, 
   ALLOW_UNUSED_LOCAL(isolate);
 
   v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
   TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
 
   ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestInterface", "alwaysExposedAttribute");
@@ -429,6 +455,8 @@ static void workerExposedAttributeAttributeSetter(v8::Local<v8::Value> v8Value, 
   ALLOW_UNUSED_LOCAL(isolate);
 
   v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
   TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
 
   ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestInterface", "workerExposedAttribute");
@@ -454,6 +482,8 @@ static void windowExposedAttributeAttributeSetter(v8::Local<v8::Value> v8Value, 
   ALLOW_UNUSED_LOCAL(isolate);
 
   v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
   TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
 
   ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestInterface", "windowExposedAttribute");
@@ -483,12 +513,14 @@ static void lenientThisAttributeAttributeSetter(v8::Local<v8::Value> v8Value, co
   v8::Isolate* isolate = info.GetIsolate();
   ALLOW_UNUSED_LOCAL(isolate);
 
+  v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
   // [LenientThis]
   // Make sure that info.Holder() really points to an instance if [LenientThis].
-  if (!V8TestInterface::hasInstance(info.Holder(), isolate))
+  if (!V8TestInterface::hasInstance(holder, isolate))
     return; // Return silently because of [LenientThis].
 
-  v8::Local<v8::Object> holder = info.Holder();
   TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
 
   // Prepare the value to be set.
@@ -510,6 +542,8 @@ static void secureContextAttributeAttributeSetter(v8::Local<v8::Value> v8Value, 
   ALLOW_UNUSED_LOCAL(isolate);
 
   v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
   TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
 
   ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestInterface", "secureContextAttribute");
@@ -539,6 +573,8 @@ static void secureContextRuntimeEnabledAttributeAttributeSetter(v8::Local<v8::Va
   ALLOW_UNUSED_LOCAL(isolate);
 
   v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
   TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
 
   ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestInterface", "secureContextRuntimeEnabledAttribute");
@@ -568,6 +604,8 @@ static void secureContextWindowExposedAttributeAttributeSetter(v8::Local<v8::Val
   ALLOW_UNUSED_LOCAL(isolate);
 
   v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
   TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
 
   ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestInterface", "secureContextWindowExposedAttribute");
@@ -597,6 +635,8 @@ static void secureContextWorkerExposedAttributeAttributeSetter(v8::Local<v8::Val
   ALLOW_UNUSED_LOCAL(isolate);
 
   v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
   TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
 
   ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestInterface", "secureContextWorkerExposedAttribute");
@@ -626,6 +666,8 @@ static void secureContextWindowExposedRuntimeEnabledAttributeAttributeSetter(v8:
   ALLOW_UNUSED_LOCAL(isolate);
 
   v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
   TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
 
   ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestInterface", "secureContextWindowExposedRuntimeEnabledAttribute");
@@ -655,6 +697,8 @@ static void secureContextWorkerExposedRuntimeEnabledAttributeAttributeSetter(v8:
   ALLOW_UNUSED_LOCAL(isolate);
 
   v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
   TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
 
   ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestInterface", "secureContextWorkerExposedRuntimeEnabledAttribute");
@@ -682,6 +726,9 @@ static void implementsStaticStringAttributeAttributeGetter(const v8::FunctionCal
 static void implementsStaticStringAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8::Isolate* isolate = info.GetIsolate();
   ALLOW_UNUSED_LOCAL(isolate);
+
+  v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
 
   // Prepare the value to be set.
   V8StringResource<> cppValue = v8Value;
@@ -712,6 +759,8 @@ static void implementsStringAttributeAttributeSetter(v8::Local<v8::Value> v8Valu
   ALLOW_UNUSED_LOCAL(isolate);
 
   v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
   TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
 
   // Prepare the value to be set.
@@ -735,6 +784,8 @@ static void implementsNodeAttributeAttributeSetter(v8::Local<v8::Value> v8Value,
   ALLOW_UNUSED_LOCAL(isolate);
 
   v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
   TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
 
   ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestInterface", "implementsNodeAttribute");
@@ -766,6 +817,8 @@ static void implementsEventHandlerAttributeAttributeSetter(v8::Local<v8::Value> 
   ALLOW_UNUSED_LOCAL(isolate);
 
   v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
   TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
 
   // Prepare the value to be set.
@@ -787,6 +840,8 @@ static void implementsRuntimeEnabledNodeAttributeAttributeSetter(v8::Local<v8::V
   ALLOW_UNUSED_LOCAL(isolate);
 
   v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
   TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
 
   ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestInterface", "implementsRuntimeEnabledNodeAttribute");
@@ -811,6 +866,9 @@ static void implements2StaticStringAttributeAttributeSetter(v8::Local<v8::Value>
   v8::Isolate* isolate = info.GetIsolate();
   ALLOW_UNUSED_LOCAL(isolate);
 
+  v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
   // Prepare the value to be set.
   V8StringResource<> cppValue = v8Value;
   if (!cppValue.Prepare())
@@ -832,6 +890,8 @@ static void implements2StringAttributeAttributeSetter(v8::Local<v8::Value> v8Val
   ALLOW_UNUSED_LOCAL(isolate);
 
   v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
   TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
 
   // Prepare the value to be set.
@@ -855,6 +915,8 @@ static void implements3StringAttributeAttributeSetter(v8::Local<v8::Value> v8Val
   ALLOW_UNUSED_LOCAL(isolate);
 
   v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
   TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
 
   // Prepare the value to be set.
@@ -872,6 +934,9 @@ static void implements3StaticStringAttributeAttributeGetter(const v8::FunctionCa
 static void implements3StaticStringAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8::Isolate* isolate = info.GetIsolate();
   ALLOW_UNUSED_LOCAL(isolate);
+
+  v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
 
   // Prepare the value to be set.
   V8StringResource<> cppValue = v8Value;
@@ -894,6 +959,8 @@ static void partialLongAttributeAttributeSetter(v8::Local<v8::Value> v8Value, co
   ALLOW_UNUSED_LOCAL(isolate);
 
   v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
   TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
 
   ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestInterface", "partialLongAttribute");
@@ -913,6 +980,9 @@ static void partialStaticLongAttributeAttributeGetter(const v8::FunctionCallback
 static void partialStaticLongAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8::Isolate* isolate = info.GetIsolate();
   ALLOW_UNUSED_LOCAL(isolate);
+
+  v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
 
   ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestInterface", "partialStaticLongAttribute");
 
@@ -939,6 +1009,8 @@ static void partialCallWithExecutionContextLongAttributeAttributeSetter(v8::Loca
   ALLOW_UNUSED_LOCAL(isolate);
 
   v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
   TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
 
   ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestInterface", "partialCallWithExecutionContextLongAttribute");
@@ -966,6 +1038,8 @@ static void partialPartialEnumTypeAttributeAttributeSetter(v8::Local<v8::Value> 
   ALLOW_UNUSED_LOCAL(isolate);
 
   v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
   TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
 
   ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestInterface", "partialPartialEnumTypeAttribute");
@@ -1003,6 +1077,8 @@ static void partialSecureContextLongAttributeAttributeSetter(v8::Local<v8::Value
   ALLOW_UNUSED_LOCAL(isolate);
 
   v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
   TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
 
   ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestInterface", "partialSecureContextLongAttribute");
@@ -1028,6 +1104,8 @@ static void partial2LongAttributeAttributeSetter(v8::Local<v8::Value> v8Value, c
   ALLOW_UNUSED_LOCAL(isolate);
 
   v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
   TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
 
   ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestInterface", "partial2LongAttribute");
@@ -1047,6 +1125,9 @@ static void partial2StaticLongAttributeAttributeGetter(const v8::FunctionCallbac
 static void partial2StaticLongAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8::Isolate* isolate = info.GetIsolate();
   ALLOW_UNUSED_LOCAL(isolate);
+
+  v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
 
   ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestInterface", "partial2StaticLongAttribute");
 
@@ -1071,6 +1152,8 @@ static void partial2SecureContextAttributeAttributeSetter(v8::Local<v8::Value> v
   ALLOW_UNUSED_LOCAL(isolate);
 
   v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
   TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
 
   ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestInterface", "partial2SecureContextAttribute");
@@ -1100,6 +1183,8 @@ static void partialSecureContextAttributeAttributeSetter(v8::Local<v8::Value> v8
   ALLOW_UNUSED_LOCAL(isolate);
 
   v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
   TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
 
   ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestInterface", "partialSecureContextAttribute");
@@ -1129,6 +1214,8 @@ static void partialSecureContextRuntimeEnabledAttributeAttributeSetter(v8::Local
   ALLOW_UNUSED_LOCAL(isolate);
 
   v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
   TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
 
   ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestInterface", "partialSecureContextRuntimeEnabledAttribute");
@@ -1158,6 +1245,8 @@ static void partialSecureContextWindowExposedAttributeAttributeSetter(v8::Local<
   ALLOW_UNUSED_LOCAL(isolate);
 
   v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
   TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
 
   ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestInterface", "partialSecureContextWindowExposedAttribute");
@@ -1187,6 +1276,8 @@ static void partialSecureContextWorkerExposedAttributeAttributeSetter(v8::Local<
   ALLOW_UNUSED_LOCAL(isolate);
 
   v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
   TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
 
   ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestInterface", "partialSecureContextWorkerExposedAttribute");
@@ -1216,6 +1307,8 @@ static void partialSecureContextWindowExposedRuntimeEnabledAttributeAttributeSet
   ALLOW_UNUSED_LOCAL(isolate);
 
   v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
   TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
 
   ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestInterface", "partialSecureContextWindowExposedRuntimeEnabledAttribute");
@@ -1245,6 +1338,8 @@ static void partialSecureContextWorkerExposedRuntimeEnabledAttributeAttributeSet
   ALLOW_UNUSED_LOCAL(isolate);
 
   v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
   TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
 
   ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestInterface", "partialSecureContextWorkerExposedRuntimeEnabledAttribute");
