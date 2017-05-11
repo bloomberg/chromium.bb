@@ -12,14 +12,18 @@
 
 namespace blink {
 
-DECLARE_WEAK_IDENTIFIER_MAP(Node);
+using DOMNodeId = uint64_t;
+
+DECLARE_WEAK_IDENTIFIER_MAP(Node, DOMNodeId);
+
+static const DOMNodeId kInvalidDOMNodeId = 0;
 
 class CORE_EXPORT DOMNodeIds {
   STATIC_ONLY(DOMNodeIds);
 
  public:
-  static int IdForNode(Node*);
-  static Node* NodeForId(int id);
+  static DOMNodeId IdForNode(Node*);
+  static Node* NodeForId(DOMNodeId);
 };
 
 }  // namespace blink

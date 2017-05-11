@@ -524,7 +524,7 @@ TEST(V8ScriptValueSerializerTest, TransferOffscreenCanvas) {
   OffscreenCanvas* new_canvas =
       V8OffscreenCanvas::toImpl(result.As<v8::Object>());
   EXPECT_EQ(IntSize(10, 7), new_canvas->Size());
-  EXPECT_EQ(519, new_canvas->PlaceholderCanvasId());
+  EXPECT_EQ(519u, new_canvas->PlaceholderCanvasId());
   EXPECT_TRUE(canvas->IsNeutered());
   EXPECT_FALSE(new_canvas->IsNeutered());
 }

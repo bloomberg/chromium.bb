@@ -7,6 +7,7 @@
 
 #include <memory>
 #include "bindings/core/v8/ScriptPromise.h"
+#include "core/dom/DOMNodeIds.h"
 #include "core/events/EventTarget.h"
 #include "core/html/HTMLCanvasElement.h"
 #include "core/html/canvas/CanvasImageSource.h"
@@ -59,12 +60,12 @@ class CORE_EXPORT OffscreenCanvas final
   const IntSize& Size() const override { return size_; }
   void SetSize(const IntSize&);
 
-  void SetPlaceholderCanvasId(int canvas_id) {
+  void SetPlaceholderCanvasId(DOMNodeId canvas_id) {
     placeholder_canvas_id_ = canvas_id;
   }
-  int PlaceholderCanvasId() const { return placeholder_canvas_id_; }
+  DOMNodeId PlaceholderCanvasId() const { return placeholder_canvas_id_; }
   bool HasPlaceholderCanvas() {
-    return placeholder_canvas_id_ != kNoPlaceholderCanvas;
+    return placeholder_canvas_id_ != kInvalidDOMNodeId;
   }
   bool IsNeutered() const { return is_neutered_; }
   void SetNeutered();
@@ -166,11 +167,7 @@ class CORE_EXPORT OffscreenCanvas final
   Member<CanvasRenderingContext> context_;
   WeakMember<ExecutionContext> execution_context_;
 
-  enum {
-    kNoPlaceholderCanvas = -1,  // DOMNodeIds starts from 0, using -1 to
-                                // indicate no associated canvas element.
-  };
-  int placeholder_canvas_id_ = kNoPlaceholderCanvas;
+  DOMNodeId placeholder_canvas_id_ = kInvalidDOMNodeId;
 
   IntSize size_;
   bool is_neutered_ = false;

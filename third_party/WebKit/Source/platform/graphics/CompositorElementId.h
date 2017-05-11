@@ -17,36 +17,43 @@ enum class CompositorSubElementId {
   kPrimary,
   kScroll,
   kViewport,
-  kLinkHighlight
+  kLinkHighlight,
+  // A sentinel to indicate how many enum values there are.
+  kNumSubElementTypes
 };
 
 using CompositorElementId = cc::ElementId;
+using DOMNodeId = uint64_t;
 
 CompositorElementId PLATFORM_EXPORT
-CreateCompositorElementId(int dom_node_id, CompositorSubElementId);
+    CreateCompositorElementId(DOMNodeId, CompositorSubElementId);
 
 // Note cc::ElementId has a hash function already implemented via
 // ElementIdHash::operator(). However for consistency's sake we choose to use
 // Blink's hash functions with Blink specific data structures.
 struct CompositorElementIdHash {
-  static unsigned GetHash(const CompositorElementId& p) {
-    return WTF::HashInts(p.primaryId, p.secondaryId);
+  static unsigned GetHash(const CompositorElementId& key) {
+    return WTF::HashInt(static_cast<cc::ElementIdType>(key.id_));
   }
   static bool Equal(const CompositorElementId& a,
                     const CompositorElementId& b) {
-    return a.primaryId == b.primaryId && a.secondaryId == b.secondaryId;
+    return a.id_ == b.id_;
   }
   static const bool safe_to_compare_to_empty_or_deleted = true;
 };
 
+DOMNodeId PLATFORM_EXPORT DomNodeIdFromCompositorElementId(CompositorElementId);
+CompositorSubElementId PLATFORM_EXPORT
+    SubElementIdFromCompositorElementId(CompositorElementId);
+
 struct CompositorElementIdHashTraits
     : WTF::GenericHashTraits<CompositorElementId> {
-  static CompositorElementId EmptyValue() { return CompositorElementId(); }
+  static CompositorElementId EmptyValue() { return CompositorElementId(1); }
   static void ConstructDeletedValue(CompositorElementId& slot, bool) {
-    slot = CompositorElementId(-1, -1);
+    slot = CompositorElementId();
   }
   static bool IsDeletedValue(CompositorElementId value) {
-    return value == CompositorElementId(-1, -1);
+    return value == CompositorElementId();
   }
 };
 

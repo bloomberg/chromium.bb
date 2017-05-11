@@ -24,6 +24,10 @@ class TracedValue;
 
 namespace cc {
 
+using ElementIdType = uint64_t;
+
+static const ElementIdType kInvalidElementId = 0;
+
 // Element ids are chosen by cc's clients and can be used as a stable identifier
 // across updates.
 //
@@ -44,9 +48,8 @@ namespace cc {
 // the Layer's lifetime because non-default ElementIds are only set during an
 // animation's lifetime.
 struct CC_EXPORT ElementId {
-  ElementId(int primaryId, int secondaryId)
-      : primaryId(primaryId), secondaryId(secondaryId) {}
-  ElementId() : ElementId(0, 0) {}
+  explicit ElementId(int id) : id_(id) {}
+  ElementId() : ElementId(kInvalidElementId) {}
 
   bool operator==(const ElementId& o) const;
   bool operator!=(const ElementId& o) const;
@@ -61,11 +64,10 @@ struct CC_EXPORT ElementId {
   // The compositor treats this as an opaque handle and should not know how to
   // interpret these bits. Non-blink cc clients typically operate in terms of
   // layers and may set this value to match the client's layer id.
-  int primaryId;
-  int secondaryId;
+  ElementIdType id_;
 };
 
-CC_EXPORT ElementId LayerIdToElementIdForTesting(int layer_id);
+ElementId CC_EXPORT LayerIdToElementIdForTesting(int layer_id);
 
 struct CC_EXPORT ElementIdHash {
   size_t operator()(ElementId key) const;

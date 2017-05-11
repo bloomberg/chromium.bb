@@ -93,10 +93,11 @@ void ScrollState::ConsumeDeltaNative(double x, double y) {
 }
 
 Element* ScrollState::CurrentNativeScrollingElement() const {
-  uint64_t element_id = data_->current_native_scrolling_element().primaryId;
-  if (element_id == 0)
+  DOMNodeId dom_node_id = DomNodeIdFromCompositorElementId(
+      data_->current_native_scrolling_element());
+  if (dom_node_id == kInvalidDOMNodeId)
     return nullptr;
-  return ElementForId(element_id);
+  return ElementForId(dom_node_id);
 }
 
 void ScrollState::SetCurrentNativeScrollingElement(Element* element) {
