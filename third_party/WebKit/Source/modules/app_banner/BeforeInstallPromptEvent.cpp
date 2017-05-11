@@ -35,7 +35,7 @@ BeforeInstallPromptEvent::BeforeInstallPromptEvent(
 BeforeInstallPromptEvent::BeforeInstallPromptEvent(
     const AtomicString& name,
     const BeforeInstallPromptEventInit& init)
-    : Event(name, false, true), binding_(this), prompt_called_(false) {
+    : Event(name, init), binding_(this), prompt_called_(false) {
   if (init.hasPlatforms())
     platforms_ = init.platforms();
 }
