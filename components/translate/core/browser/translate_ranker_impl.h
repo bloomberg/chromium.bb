@@ -40,7 +40,6 @@ class TranslatePrefs;
 // enabling enforcement implies (forces) enabling queries.
 extern const base::Feature kTranslateRankerQuery;
 extern const base::Feature kTranslateRankerEnforcement;
-extern const base::Feature kTranslateRankerLogging;
 extern const base::Feature kTranslateRankerDecisionOverride;
 
 struct TranslateRankerFeatures {
@@ -96,7 +95,7 @@ class TranslateRankerImpl : public TranslateRanker {
   // from Finch.
   static GURL GetModelURL();
 
-  // Over-ride the default enabled/disabled state of translate event logging.
+  // Override the default enabled/disabled state of translate event logging.
   void EnableLogging(bool value);
 
   // TranslateRanker...

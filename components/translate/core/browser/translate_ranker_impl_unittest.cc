@@ -33,7 +33,6 @@
 namespace {
 
 using translate::kTranslateRankerEnforcement;
-using translate::kTranslateRankerLogging;
 using translate::kTranslateRankerQuery;
 using translate::kTranslateRankerDecisionOverride;
 using translate::TranslateDownloadManager;
@@ -333,7 +332,6 @@ TEST_F(TranslateRankerImplTest, ShouldOfferTranslation_NoModel) {
 }
 
 TEST_F(TranslateRankerImplTest, RecordAndFlushEvents) {
-  InitFeatures({kTranslateRankerLogging}, {});
   std::unique_ptr<translate::TranslateRanker> ranker = GetRankerForTest(0.0f);
   std::vector<metrics::TranslateEventProto> flushed_events;
 
@@ -371,26 +369,7 @@ TEST_F(TranslateRankerImplTest, RecordAndFlushEvents) {
       GetTestUkmService()->GetSourceForUrl(url1.spec().c_str())->url().spec());
 }
 
-TEST_F(TranslateRankerImplTest, LoggingDisabled) {
-  InitFeatures({}, {kTranslateRankerLogging});
-  std::unique_ptr<translate::TranslateRanker> ranker = GetRankerForTest(0.0f);
-  std::vector<metrics::TranslateEventProto> flushed_events;
-
-  ranker->FlushTranslateEvents(&flushed_events);
-  EXPECT_EQ(0U, flushed_events.size());
-
-  ranker->RecordTranslateEvent(0, GURL(), &tep1_);
-  ranker->RecordTranslateEvent(1, GURL(), &tep2_);
-  ranker->RecordTranslateEvent(2, GURL(), &tep3_);
-
-  // Logging is disabled, so no events should be cached.
-  ranker->FlushTranslateEvents(&flushed_events);
-  EXPECT_EQ(0U, flushed_events.size());
-  EXPECT_EQ(0ul, GetTestUkmService()->sources_count());
-}
-
 TEST_F(TranslateRankerImplTest, LoggingDisabledViaOverride) {
-  InitFeatures({kTranslateRankerLogging}, {});
   std::unique_ptr<translate::TranslateRankerImpl> ranker =
       GetRankerForTest(0.0f);
   std::vector<metrics::TranslateEventProto> flushed_events;
@@ -402,7 +381,7 @@ TEST_F(TranslateRankerImplTest, LoggingDisabledViaOverride) {
   ranker->RecordTranslateEvent(1, GURL(), &tep2_);
   ranker->RecordTranslateEvent(2, GURL(), &tep3_);
 
-  // Logging is disabled, so no events should be cached.
+  // Logging is enabled by default, so events should be cached.
   ranker->FlushTranslateEvents(&flushed_events);
   EXPECT_EQ(3U, flushed_events.size());
 
