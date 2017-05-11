@@ -8,15 +8,18 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "content/common/network_service.mojom.h"
 #include "content/common/url_loader_factory.mojom.h"
 #include "content/network/network_context.h"
+#include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/strong_binding_set.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/service.h"
 
 namespace content {
 
-class NetworkService : public service_manager::Service {
+class NetworkService : public service_manager::Service,
+                       public mojom::NetworkService {
  public:
   explicit NetworkService(
       std::unique_ptr<service_manager::BinderRegistry> registry);
@@ -28,8 +31,15 @@ class NetworkService : public service_manager::Service {
                        const std::string& interface_name,
                        mojo::ScopedMessagePipeHandle interface_pipe) override;
 
-  void Create(const service_manager::BindSourceInfo& source_info,
-              mojom::URLLoaderFactoryRequest request);
+  void CreateURLLoaderFactory(
+      const service_manager::BindSourceInfo& source_info,
+      mojom::URLLoaderFactoryRequest request);
+  void CreateNetworkService(const service_manager::BindSourceInfo& source_info,
+                            mojom::NetworkServiceRequest request);
+
+  // mojom::NetworkService implementation:
+  void HandleViewCacheRequest(const ResourceRequest& request,
+                              mojom::URLLoaderClientPtr client) override;
 
   std::unique_ptr<service_manager::BinderRegistry> registry_;
 
@@ -38,6 +48,8 @@ class NetworkService : public service_manager::Service {
   // Put it below |context_| so that |context_| outlives all the
   // NetworkServiceURLLoaderFactoryImpl instances.
   mojo::StrongBindingSet<mojom::URLLoaderFactory> loader_factory_bindings_;
+
+  mojo::BindingSet<mojom::NetworkService> network_service_bindings_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkService);
 };
