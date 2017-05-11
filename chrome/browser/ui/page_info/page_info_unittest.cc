@@ -14,6 +14,7 @@
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/histogram_tester.h"
+#include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/infobars/infobar_service.h"
@@ -26,7 +27,9 @@
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "components/infobars/core/infobar.h"
+#include "components/subresource_filter/core/browser/subresource_filter_features.h"
 #include "content/public/browser/ssl_status.h"
+#include "content/public/common/content_switches.h"
 #include "device/base/mock_device_client.h"
 #include "device/usb/mock_usb_device.h"
 #include "device/usb/mock_usb_service.h"
@@ -114,11 +117,7 @@ class PageInfoTest : public ChromeRenderViewHostTestHarness {
     InfoBarService::CreateForWebContents(web_contents());
 
     // Setup mock ui.
-    mock_ui_.reset(new MockPageInfoUI());
-    // Use this rather than gmock's ON_CALL.WillByDefault(Invoke(... because
-    // gmock doesn't handle move-only types well.
-    mock_ui_->set_permission_info_callback_ =
-        base::Bind(&PageInfoTest::SetPermissionInfo, base::Unretained(this));
+    ResetMockUI();
   }
 
   void TearDown() override {
@@ -141,9 +140,17 @@ class PageInfoTest : public ChromeRenderViewHostTestHarness {
     last_chosen_object_info_.clear();
     for (auto& chosen_object_info : chosen_object_info_list)
       last_chosen_object_info_.push_back(std::move(chosen_object_info));
+    last_permission_info_list_ = permission_info_list;
   }
 
-  void ResetMockUI() { mock_ui_.reset(new MockPageInfoUI()); }
+  void ResetMockUI() {
+    mock_ui_.reset(new MockPageInfoUI());
+    // Use this rather than gmock's ON_CALL.WillByDefault(Invoke(... because
+    // gmock doesn't handle move-only types well.
+    mock_ui_->set_permission_info_callback_ =
+        base::Bind(&PageInfoTest::SetPermissionInfo, base::Unretained(this));
+  }
+
 
   void ClearPageInfo() { page_info_.reset(nullptr); }
 
@@ -154,6 +161,9 @@ class PageInfoTest : public ChromeRenderViewHostTestHarness {
   const std::vector<std::unique_ptr<PageInfoUI::ChosenObjectInfo>>&
   last_chosen_object_info() {
     return last_chosen_object_info_;
+  }
+  const PermissionInfoList& last_permission_info_list() {
+    return last_permission_info_list_;
   }
   TabSpecificContentSettings* tab_specific_content_settings() {
     return TabSpecificContentSettings::FromWebContents(web_contents());
@@ -185,6 +195,7 @@ class PageInfoTest : public ChromeRenderViewHostTestHarness {
   GURL url_;
   std::vector<std::unique_ptr<PageInfoUI::ChosenObjectInfo>>
       last_chosen_object_info_;
+  PermissionInfoList last_permission_info_list_;
 };
 
 }  // namespace
@@ -756,4 +767,39 @@ TEST_F(PageInfoTest, SecurityLevelMetrics) {
     histograms.ExpectBucketCount(test.histogram_name,
                                  PageInfo::PageInfoAction::PAGE_INFO_OPENED, 2);
   }
+}
+
+// Tests that the SubresourceFilter setting is omitted correctly.
+TEST_F(PageInfoTest, SubresourceFilterSetting_MatchesActivation) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(
+      subresource_filter::kSafeBrowsingSubresourceFilterExperimentalUI);
+  auto showing_setting = [](const PermissionInfoList& permissions) {
+    for (const auto& permission : permissions) {
+      if (permission.type == CONTENT_SETTINGS_TYPE_SUBRESOURCE_FILTER)
+        return true;
+    }
+    return false;
+  };
+
+  // By default, the setting should not appear at all.
+  SetURL("https://example.test/");
+  SetDefaultUIExpectations(mock_ui());
+  page_info();
+  EXPECT_FALSE(showing_setting(last_permission_info_list()));
+
+  // Reset state.
+  ResetMockUI();
+  ClearPageInfo();
+  SetDefaultUIExpectations(mock_ui());
+
+  // Now, simulate activation on that origin, which is encoded by the existence
+  // of the website setting. The setting should then appear in page_info.
+  HostContentSettingsMap* content_settings =
+      HostContentSettingsMapFactory::GetForProfile(profile());
+  content_settings->SetWebsiteSettingDefaultScope(
+      url(), GURL(), CONTENT_SETTINGS_TYPE_SUBRESOURCE_FILTER_DATA,
+      std::string(), base::MakeUnique<base::DictionaryValue>());
+  page_info();
+  EXPECT_TRUE(showing_setting(last_permission_info_list()));
 }
