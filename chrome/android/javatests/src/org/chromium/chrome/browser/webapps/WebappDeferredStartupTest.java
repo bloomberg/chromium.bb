@@ -6,18 +6,30 @@ package org.chromium.chrome.browser.webapps;
 
 import android.support.test.filters.SmallTest;
 
+import org.junit.Assert;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
 import org.chromium.base.test.util.CallbackHelper;
+import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
+import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.DeferredStartupHandler;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorBase;
+import org.chromium.chrome.test.ChromeActivityTestRule;
+import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 
 /**
  * Tests that when WebappActivity#onDeferredStartup() is run, the activity tab has finished loading.
  */
-public class WebappDeferredStartupTest extends WebappActivityTestBase {
+@RunWith(ChromeJUnit4ClassRunner.class)
+@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
+        ChromeActivityTestRule.DISABLE_NETWORK_PREDICTION_FLAG})
+public class WebappDeferredStartupTest {
     static class PageLoadFinishedTabObserver extends EmptyTabObserver {
         private boolean mIsPageLoadFinished;
 
@@ -53,7 +65,7 @@ public class WebappDeferredStartupTest extends WebappActivityTestBase {
 
         @Override
         public void queueDeferredTasksOnIdleHandler() {
-            assertTrue("Page is yet to finish loading.", mObserver.isPageLoadFinished());
+            Assert.assertTrue("Page is yet to finish loading.", mObserver.isPageLoadFinished());
 
             mHelper.notifyCalled();
         }
@@ -62,6 +74,10 @@ public class WebappDeferredStartupTest extends WebappActivityTestBase {
         private PageLoadFinishedTabObserver mObserver;
     }
 
+    @Rule
+    public final WebappActivityTestRule mActivityTestRule = new WebappActivityTestRule();
+
+    @Test
     @SmallTest
     @Feature({"Webapps"})
     public void testPageIsLoadedOnDeferredStartup() throws Exception {
@@ -72,7 +88,7 @@ public class WebappDeferredStartupTest extends WebappActivityTestBase {
         PageIsLoadedDeferredStartupHandler handler = new PageIsLoadedDeferredStartupHandler(
                 tabObserver, helper);
         DeferredStartupHandler.setInstanceForTests(handler);
-        startWebappActivity();
+        mActivityTestRule.startWebappActivity();
         helper.waitForCallback(0);
     }
 }
