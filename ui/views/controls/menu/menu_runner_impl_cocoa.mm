@@ -103,6 +103,7 @@ MenuRunnerImplCocoa::MenuRunnerImplCocoa(
       on_menu_closed_callback_(on_menu_closed_callback) {
   menu_controller_.reset(
       [[MenuController alloc] initWithModel:menu useWithPopUpButtonCell:NO]);
+  [menu_controller_ setPostItemSelectedAsTask:YES];
 }
 
 bool MenuRunnerImplCocoa::IsRunning() const {

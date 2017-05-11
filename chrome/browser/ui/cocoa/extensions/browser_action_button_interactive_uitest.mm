@@ -37,6 +37,13 @@
 #include "ui/base/cocoa/cocoa_base_utils.h"
 #import "ui/events/test/cocoa_test_event_utils.h"
 
+// A helper class to wait for a menu to open and close.
+@interface MenuWatcher : NSObject
+- (id)initWithController:(MenuController*)controller;
+@property(nonatomic, assign) base::Closure openClosure;
+@property(nonatomic, assign) base::Closure closeClosure;
+@end
+
 namespace {
 
 const int kMenuPadding = 26;
@@ -93,33 +100,40 @@ void MoveMouseToCenter(NSView* view) {
   runLoop.Run();
 }
 
-// Simulates a click on the action button in the overflow menu, and runs
-// |closure| upon completion.
-void ClickOnOverflowedAction(ToolbarController* toolbarController,
-                             const base::Closure& closure) {
-  AppMenuController* appMenuController = [toolbarController appMenuController];
+// Simulates a right-click on the action button in the overflow menu.
+void DispatchClickOnOverflowedAction(BrowserActionButton* action_button) {
+  NSEvent* event = nil;  // The event doesn't matter when sending directly.
+  [action_button rightMouseDown:event];
+}
+
+// ui_controls:: methods don't play nice when there is an open menu (like the
+// app menu). Instead, ClickOnOverflowedAction() simulates a right click by
+// feeding the event directly to the button. In regular interaction, this is
+// dispatched after menuDidClose:. To simulate that, start the menu closing
+// (with no action), but invoke the action on the button directly when the close
+// is observed.
+void ClickOnOverflowedAction(
+    base::scoped_nsobject<MenuWatcher> app_menu_watcher,
+    AppMenuController* app_menu_controller) {
   // The app menu should start as open (since that's where the overflowed
   // actions are).
-  EXPECT_TRUE([appMenuController isMenuOpen]);
-  BrowserActionsController* overflowController =
-      [appMenuController browserActionsController];
+  EXPECT_TRUE([app_menu_controller isMenuOpen]);
 
-  ASSERT_TRUE(overflowController);
-  BrowserActionButton* actionButton = [overflowController buttonWithIndex:0];
+  BrowserActionsController* overflow_controller =
+      [app_menu_controller browserActionsController];
+
+  ASSERT_TRUE(overflow_controller);
+  BrowserActionButton* action_button = [overflow_controller buttonWithIndex:0];
+
   // The action should be attached to a superview.
-  EXPECT_TRUE([actionButton superview]);
+  EXPECT_TRUE([action_button superview]);
 
-  // ui_controls:: methods don't play nice when there is an open menu (like the
-  // app menu). Instead, simulate a right click by feeding the event directly to
-  // the button.
-  NSPoint centerPoint = GetCenterPoint(actionButton);
-  NSEvent* mouseEvent = cocoa_test_event_utils::RightMouseDownAtPointInWindow(
-      centerPoint, [actionButton window]);
-  [actionButton rightMouseDown:mouseEvent];
+  base::Closure invoke_action = base::Bind(&DispatchClickOnOverflowedAction,
+                                           base::Unretained(action_button));
+  [app_menu_watcher setCloseClosure:invoke_action];
 
-  // This should close the app menu.
-  EXPECT_FALSE([appMenuController isMenuOpen]);
-  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, closure);
+  // Close the app menu.
+  [app_menu_controller cancel];
 }
 
 }  // namespace
@@ -132,14 +146,15 @@ void ClickOnOverflowedAction(ToolbarController* toolbarController,
   // be used multiple times.
   BOOL menuOpened_;
 
+  // The closure to run when the menu opens, if any.
+  base::Closure openClosure_;
+
   // A function to be called to verify state while the menu is open.
   base::Closure verify_;
 }
 
-// Bare-bones init.
-- (id)init;
-
 @property(nonatomic, assign) BOOL menuOpened;
+@property(nonatomic, assign) base::Closure openClosure;
 @property(nonatomic, assign) base::Closure verify;
 
 @end
@@ -148,23 +163,20 @@ void ClickOnOverflowedAction(ToolbarController* toolbarController,
 
 - (void)menuWillOpen:(NSMenu*)menu {
   menuOpened_ = YES;
+  if (!openClosure_.is_null())
+    openClosure_.Run();
   if (!verify_.is_null())
     verify_.Run();
   [menu cancelTracking];
 }
 
-- (id)init {
-  self = [super init];
-  return self;
-}
-
 @synthesize menuOpened = menuOpened_;
+@synthesize openClosure = openClosure_;
 @synthesize verify = verify_;
 
 @end
 
-// A helper class to wait for a menu to open and close.
-@interface MenuWatcher : NSObject {
+@implementation MenuWatcher {
   // The MenuController for the menu this object is watching.
   MenuController* menuController_;
 
@@ -174,19 +186,6 @@ void ClickOnOverflowedAction(ToolbarController* toolbarController,
   // The closure to run when the menu closes, if any.
   base::Closure closeClosure_;
 }
-
-- (id)initWithController:(MenuController*)controller;
-
-// Notifications from the MenuController.
-- (void)menuDidClose:(NSNotification*)notification;
-- (void)menuDidOpen:(NSNotification*)notification;
-
-@property(nonatomic, assign) base::Closure openClosure;
-@property(nonatomic, assign) base::Closure closeClosure;
-
-@end
-
-@implementation MenuWatcher
 
 @synthesize openClosure = openClosure_;
 @synthesize closeClosure = closeClosure_;
@@ -215,8 +214,11 @@ void ClickOnOverflowedAction(ToolbarController* toolbarController,
 
 - (void)menuDidClose:(NSNotification*)notification {
   if (!closeClosure_.is_null()) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::ResetAndReturn(&closeClosure_));
+    // Run |closeClosure_| synchronously since it may depend on objects that are
+    // torn down once the menu is closed and execution has returned to the main
+    // run loop.
+    closeClosure_.Run();
+    closeClosure_.Reset();
   }
 }
 
@@ -257,32 +259,34 @@ class BrowserActionButtonUiTest : public ExtensionBrowserTest {
   }
 
   // Opens the app menu and the context menu of the overflowed action, and
-  // checks that the menus get opened/closed properly. |menuHelper| must be set
-  // as the delegate for the context menu.
-  void OpenAppMenuAndActionContextMenu(MenuHelper* menuHelper) {
+  // checks that the menus get opened/closed properly.
+  void OpenAppMenuAndActionContextMenu(MenuHelper* context_menu_helper) {
     // Move the mouse over the app menu button.
     MoveMouseToCenter(appMenuButton());
 
     // No menu yet (on the browser action).
-    EXPECT_FALSE([menuHelper menuOpened]);
-    base::RunLoop runLoop;
-    // Click on the app menu, and pass in a callback to continue the test in
-    // ClickOnOverflowedAction. Due to the blocking nature of Cocoa menus, we
-    // can't test the menu synchronously here by quitting the run loop when it
-    // opens, and instead need to test through a callback.
-    base::scoped_nsobject<MenuWatcher> menuWatcher(
+    EXPECT_FALSE([context_menu_helper menuOpened]);
+    base::RunLoop run_loop;
+    base::scoped_nsobject<MenuWatcher> app_menu_watcher(
         [[MenuWatcher alloc] initWithController:appMenuController()]);
-    [menuWatcher
-        setOpenClosure:base::Bind(&ClickOnOverflowedAction,
-                                  base::Unretained(toolbarController()),
-                                  runLoop.QuitClosure())];
+
+    base::Closure close_with_action =
+        base::Bind(&ClickOnOverflowedAction, app_menu_watcher,
+                   base::Unretained(appMenuController()));
+    [app_menu_watcher setOpenClosure:close_with_action];
+
+    // Quit the RunLoop below when the context menu opens. This dictates that
+    // the MenuHelper's verify action has also run.
+    [context_menu_helper setOpenClosure:run_loop.QuitClosure()];
+
+    // Show the app menu.
     ui_controls::SendMouseEvents(ui_controls::LEFT,
                                  ui_controls::DOWN | ui_controls::UP);
-    runLoop.Run();
+    run_loop.Run();
 
     // The menu opened on the main bar's action button rather than the
     // overflow's since Cocoa does not support running a menu within a menu.
-    EXPECT_TRUE([menuHelper menuOpened]);
+    EXPECT_TRUE([context_menu_helper menuOpened]);
   }
 
   ToolbarController* toolbarController() { return toolbarController_; }
