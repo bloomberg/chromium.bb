@@ -334,7 +334,7 @@ bool ShippingAddressEditorViewController::SaveFieldsToProfile(
       success = profile->SetInfo(autofill::AutofillType(field.second.type),
                                  field.first->text(), locale);
     }
-    DCHECK(success || ignore_errors)
+    LOG_IF(ERROR, success || ignore_errors)
         << "Can't setinfo(" << field.second.type << ", " << field.first->text();
     if (!success && !ignore_errors)
       return false;
@@ -356,9 +356,8 @@ bool ShippingAddressEditorViewController::SaveFieldsToProfile(
             combobox->GetTextForRow(combobox->selected_index()), locale);
       }
     }
-    DCHECK(success || ignore_errors)
+    LOG_IF(ERROR, success || ignore_errors)
         << "Can't setinfo(" << field.second.type << ", "
-
         << combobox->GetTextForRow(combobox->selected_index());
     if (!success && !ignore_errors)
       return false;
