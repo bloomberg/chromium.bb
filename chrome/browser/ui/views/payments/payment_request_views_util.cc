@@ -305,9 +305,10 @@ std::unique_ptr<views::View> GetShippingAddressLabelWithMissingInfo(
   std::unique_ptr<views::View> base_label =
       GetShippingAddressLabel(type, locale, profile, /*disabled_state=*/false);
 
-  base_label->AddChildView(GetLabelForMissingInformation(
-                               comp.GetStringForMissingShippingFields(profile))
-                               .release());
+  base::string16 missing = comp.GetStringForMissingShippingFields(profile);
+  if (!missing.empty()) {
+    base_label->AddChildView(GetLabelForMissingInformation(missing).release());
+  }
   return base_label;
 }
 
@@ -339,9 +340,10 @@ std::unique_ptr<views::View> GetContactInfoLabel(
   std::unique_ptr<views::View> base_label =
       GetBaseProfileLabel(type, name, phone, email);
 
-  base_label->AddChildView(GetLabelForMissingInformation(
-                               comp.GetStringForMissingContactFields(profile))
-                               .release());
+  base::string16 missing = comp.GetStringForMissingContactFields(profile);
+  if (!missing.empty()) {
+    base_label->AddChildView(GetLabelForMissingInformation(missing).release());
+  }
   return base_label;
 }
 
