@@ -15,7 +15,6 @@
 # directories that are imported but not run are listed in NeverFixTests.
 
 external/wpt/2dcontext [ Skip ]
-external/wpt/DOM-parsing [ Skip ]
 ## Owners: jsbell@chromium.org
 # external/wpt/FileAPI [ Pass ]
 ## Owners: jsbell@chromium.org
@@ -352,8 +351,8 @@ external/wpt/screen-orientation [ Skip ]
 # external/wpt/secure-contexts [ Pass ]
 ## Owners: dom-dev@chromium.org
 # external/wpt/selection [ Pass ]
-external/wpt/selectors [ Skip ]
-external/wpt/selectors-api [ Skip ]
+## Owners: style-dev@chromium.org
+# external/wpt/selectors [ Pass ]
 external/wpt/serve [ Skip ]
 external/wpt/serve.py [ Skip ]
 external/wpt/server-side.md [ Skip ]
