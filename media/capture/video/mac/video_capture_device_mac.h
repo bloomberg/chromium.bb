@@ -64,6 +64,7 @@ class VideoCaptureDeviceMac : public VideoCaptureDevice {
       std::unique_ptr<VideoCaptureDevice::Client> client) override;
   void StopAndDeAllocate() override;
   void TakePhoto(TakePhotoCallback callback) override;
+  void GetPhotoCapabilities(GetPhotoCapabilitiesCallback callback) override;
 
   bool Init(VideoCaptureApi capture_api_type);
 
