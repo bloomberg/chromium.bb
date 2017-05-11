@@ -1216,7 +1216,7 @@ int av1_filter_intra_taps_3[TX_SIZES][INTRA_MODES][3] = {
       { 358, 687, -21 },
       { 411, 1083, -470 },
       { 912, 814, -702 },
-      { 883, 902, 761 },
+      { 883, 902, -761 },
   },
 #endif
   {
@@ -1229,7 +1229,7 @@ int av1_filter_intra_taps_3[TX_SIZES][INTRA_MODES][3] = {
       { 358, 687, -21 },
       { 411, 1083, -470 },
       { 912, 814, -702 },
-      { 883, 902, 761 },
+      { 883, 902, -761 },
   },
   {
       { 659, 816, -451 },
@@ -1410,13 +1410,11 @@ static void filter_intra_predictors_3tap(uint8_t *dst, ptrdiff_t stride, int bs,
       ipred = c0 * buffer[r - 1][c] + c1 * buffer[r][c - 1] +
               c2 * buffer[r - 1][c - 1];
       buffer[r][c] = ROUND_POWER_OF_TWO_SIGNED(ipred, FILTER_INTRA_PREC_BITS);
+      buffer[r][c] = clip_pixel(buffer[r][c] + mean) - mean;
     }
 
   for (r = 0; r < bs; ++r) {
-    for (c = 0; c < bs; ++c) {
-      ipred = buffer[r + 1][c + 1] + mean;
-      dst[c] = clip_pixel(ipred);
-    }
+    for (c = 0; c < bs; ++c) dst[c] = clip_pixel(buffer[r + 1][c + 1] + mean);
     dst += stride;
   }
 }
@@ -1455,13 +1453,11 @@ static void filter_intra_predictors_4tap(uint8_t *dst, ptrdiff_t stride, int bs,
       ipred = c0 * buffer[r - 1][c] + c1 * buffer[r][c - 1] +
               c2 * buffer[r - 1][c - 1] + c3 * buffer[r - 1][c + 1];
       buffer[r][c] = ROUND_POWER_OF_TWO_SIGNED(ipred, FILTER_INTRA_PREC_BITS);
+      buffer[r][c] = clip_pixel(buffer[r][c] + mean) - mean;
     }
 
   for (r = 0; r < bs; ++r) {
-    for (c = 0; c < bs; ++c) {
-      ipred = buffer[r + 1][c + 1] + mean;
-      dst[c] = clip_pixel(ipred);
-    }
+    for (c = 0; c < bs; ++c) dst[c] = clip_pixel(buffer[r + 1][c + 1] + mean);
     dst += stride;
   }
 }
@@ -1630,13 +1626,12 @@ static void highbd_filter_intra_predictors_3tap(uint16_t *dst, ptrdiff_t stride,
       ipred = c0 * preds[r - 1][c] + c1 * preds[r][c - 1] +
               c2 * preds[r - 1][c - 1];
       preds[r][c] = ROUND_POWER_OF_TWO_SIGNED(ipred, FILTER_INTRA_PREC_BITS);
+      preds[r][c] = clip_pixel_highbd(preds[r][c] + mean, bd) - mean;
     }
 
   for (r = 0; r < bs; ++r) {
-    for (c = 0; c < bs; ++c) {
-      ipred = preds[r + 1][c + 1] + mean;
-      dst[c] = clip_pixel_highbd(ipred, bd);
-    }
+    for (c = 0; c < bs; ++c)
+      dst[c] = clip_pixel_highbd(preds[r + 1][c + 1] + mean, bd);
     dst += stride;
   }
 }
@@ -1676,13 +1671,12 @@ static void highbd_filter_intra_predictors_4tap(uint16_t *dst, ptrdiff_t stride,
       ipred = c0 * preds[r - 1][c] + c1 * preds[r][c - 1] +
               c2 * preds[r - 1][c - 1] + c3 * preds[r - 1][c + 1];
       preds[r][c] = ROUND_POWER_OF_TWO_SIGNED(ipred, FILTER_INTRA_PREC_BITS);
+      preds[r][c] = clip_pixel_highbd(preds[r][c] + mean, bd) - mean;
     }
 
   for (r = 0; r < bs; ++r) {
-    for (c = 0; c < bs; ++c) {
-      ipred = preds[r + 1][c + 1] + mean;
-      dst[c] = clip_pixel_highbd(ipred, bd);
-    }
+    for (c = 0; c < bs; ++c)
+      dst[c] = clip_pixel_highbd(preds[r + 1][c + 1] + mean, bd);
     dst += stride;
   }
 }
