@@ -3,15 +3,15 @@ PASS
 Tests the gutter decorations in target source code after ScriptFormatterEditorAction
 
 0: + function outer(index) {
-1: - 
+1:   
 2: -     function inner1(a) {
 3: -         return a + 1;
 4: -     }
-5: - 
+5:   
 6: +     function inner2(a) {
 7: +         return a + 2;
 8: +     }
-9: - 
+9:   
 10: -     function inner3(a) {
 11: -         return a + 3;
 12: -     }
@@ -21,15 +21,15 @@ Tests the gutter decorations in target source code after ScriptFormatterEditorAc
 16: -     function inner5(a) {
 17: -         return a + 5;
 18: -     }
-19: - 
+19:   
 20: +     return [inner1, inner2, inner3, inner4, inner5][index];
 21: + }
-22: - 
+22:   
 23: + function performActions() {
 24: +     return outer(1)(0) + outer(3)(0);
 25: + }
 26: - function outer2() {
 27: -     return outer(0)(0);
 28: - }
-29: - 
+29:   
 
