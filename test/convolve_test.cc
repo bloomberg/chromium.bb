@@ -368,10 +368,17 @@ class ConvolveTest : public ::testing::TestWithParam<ConvolveParam> {
 #endif
     /* Set up guard blocks for an inner block centered in the outer block */
     for (int i = 0; i < kOutputBufferSize; ++i) {
-      if (IsIndexInBorder(i))
+      if (IsIndexInBorder(i)) {
         output_[i] = 255;
-      else
+#if CONFIG_HIGHBITDEPTH
+        output16_[i] = mask_;
+#endif
+      } else {
         output_[i] = 0;
+#if CONFIG_HIGHBITDEPTH
+        output16_[i] = 0;
+#endif
+      }
     }
 
     ::libaom_test::ACMRandom prng;
