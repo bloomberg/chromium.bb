@@ -94,6 +94,10 @@ class SearchAnswerWebContentsDelegate : public content::WebContentsDelegate,
   // Time when the current server response loaded.
   base::TimeTicks answer_loaded_time_;
 
+  // When in the dark run mode, indicates whether we mimic that the server
+  // response contains an answer.
+  bool dark_run_received_answer_ = false;
+
   DISALLOW_COPY_AND_ASSIGN(SearchAnswerWebContentsDelegate);
 };
 

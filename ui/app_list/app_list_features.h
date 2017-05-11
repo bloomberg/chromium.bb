@@ -21,10 +21,15 @@ namespace features {
 // Enables the answer card in the app list.
 APP_LIST_EXPORT extern const base::Feature kEnableAnswerCard;
 
+// Enables the dark run answer card in the app list. In this mode, answer cards
+// may be loaded via mock URLs and are not shown to the user.
+APP_LIST_EXPORT extern const base::Feature kEnableAnswerCardDarkRun;
+
 // Enables the fullscreen app list.
 APP_LIST_EXPORT extern const base::Feature kEnableFullscreenAppList;
 
 bool APP_LIST_EXPORT IsAnswerCardEnabled();
+bool APP_LIST_EXPORT IsAnswerCardDarkRunEnabled();
 bool APP_LIST_EXPORT IsFullscreenAppListEnabled();
 std::string APP_LIST_EXPORT AnswerServerUrl();
 
