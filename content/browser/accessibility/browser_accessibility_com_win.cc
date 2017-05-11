@@ -4091,6 +4091,11 @@ void BrowserAccessibilityComWin::Destroy() {
   AXPlatformNodeWin::Destroy();
 }
 
+void BrowserAccessibilityComWin::Init(ui::AXPlatformNodeDelegate* delegate) {
+  owner_ = static_cast<BrowserAccessibilityWin*>(delegate);
+  AXPlatformNodeBase::Init(delegate);
+}
+
 std::vector<base::string16> BrowserAccessibilityComWin::ComputeTextAttributes()
     const {
   std::vector<base::string16> attributes;
