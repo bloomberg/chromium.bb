@@ -13,8 +13,21 @@ blink_core_sources("exported") {
     "WebAssociatedURLLoaderImpl.cpp",
     "WebAssociatedURLLoaderImpl.h",
     "WebBlob.cpp",
+    "WebCSSParser.cpp",
+    "WebColorSuggestion.cpp",
+    "WebCustomElement.cpp",
+    "WebDOMActivityLogger.cpp",
+    "WebDOMEvent.cpp",
     "WebDataSourceImpl.cpp",
     "WebDataSourceImpl.h",
+    "WebDateTimeSuggestion.cpp",
+    "WebFileChooserCompletionImpl.cpp",
+    "WebFileChooserCompletionImpl.h",
+    "WebHeap.cpp",
+    "WebImageCache.cpp",
+    "WebImageDecoder.cpp",
     "WebViewBase.h",
   ]
+
+  defines = [ "BLINK_IMPLEMENTATION=1" ]
 }
