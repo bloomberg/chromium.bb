@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/macros.h"
+#include "chrome/browser/extensions/chrome_app_icon_delegate.h"
 #include "chrome/browser/ui/app_list/search/app_result.h"
 #include "chrome/browser/ui/extensions/extension_enable_flow_delegate.h"
 #include "extensions/browser/extension_icon_image.h"
@@ -27,7 +28,7 @@ namespace app_list {
 class ExtensionAppContextMenu;
 
 class ExtensionAppResult : public AppResult,
-                           public extensions::IconImage::Observer,
+                           public extensions::ChromeAppIconDelegate,
                            public ExtensionEnableFlowDelegate,
                            public extensions::ExtensionRegistryObserver {
  public:
@@ -51,17 +52,6 @@ class ExtensionAppResult : public AppResult,
   // running.
   bool RunExtensionEnableFlow();
 
-  // Creates new icon in case icon does not exist or previous icon was
-  // invalidated.
-  void CreateOrUpdateIcon();
-
-  // Updates the app item's icon, if necessary making it gray.
-  void UpdateIcon();
-
-  // extensions::IconImage::Observer overrides:
-  void OnExtensionIconImageChanged(extensions::IconImage* image) override;
-  void OnExtensionIconImageDestroyed(extensions::IconImage* image) override;
-
   // AppContextMenuDelegate overrides:
   void ExecuteLaunchCommand(int event_flags) override;
 
@@ -74,8 +64,11 @@ class ExtensionAppResult : public AppResult,
                          const extensions::Extension* extension) override;
   void OnShutdown(extensions::ExtensionRegistry* registry) override;
 
+  // extensions::ChromeAppIconDelegate:
+  void OnIconUpdated(extensions::ChromeAppIcon* icon) override;
+
   bool is_platform_app_;
-  std::unique_ptr<extensions::IconImage> icon_;
+  std::unique_ptr<extensions::ChromeAppIcon> icon_;
   std::unique_ptr<ExtensionAppContextMenu> context_menu_;
   std::unique_ptr<ExtensionEnableFlow> extension_enable_flow_;
 

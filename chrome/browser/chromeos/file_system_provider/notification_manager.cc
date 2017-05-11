@@ -7,7 +7,7 @@
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/extensions/extension_app_icon_loader.h"
+#include "chrome/browser/extensions/chrome_app_icon_loader.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/signin/core/account_id/account_id.h"
@@ -56,7 +56,7 @@ NotificationManager::NotificationManager(
     : profile_(profile),
       file_system_info_(file_system_info),
       icon_loader_(
-          new extensions::ExtensionAppIconLoader(profile, kIconSize, this)) {}
+          new extensions::ChromeAppIconLoader(profile, kIconSize, this)) {}
 
 NotificationManager::~NotificationManager() {
   if (callbacks_.size()) {

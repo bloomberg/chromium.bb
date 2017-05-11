@@ -238,7 +238,11 @@ bool ArcPackageSyncableService::SyncStarted() {
 
 // ArcPackageSyncableService private
 void ArcPackageSyncableService::OnPackageRemoved(
-    const std::string& package_name) {
+    const std::string& package_name,
+    bool uninstalled) {
+  if (!uninstalled)
+    return;
+
   SyncItemMap::iterator delete_iter =
       pending_uninstall_items_.find(package_name);
 

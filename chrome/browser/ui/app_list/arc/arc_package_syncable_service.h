@@ -77,7 +77,8 @@ class ArcPackageSyncableService : public syncer::SyncableService,
   // ArcAppListPrefs::Observer:
   void OnPackageInstalled(const mojom::ArcPackageInfo& package_info) override;
   void OnPackageModified(const mojom::ArcPackageInfo& package_info) override;
-  void OnPackageRemoved(const std::string& package_name) override;
+  void OnPackageRemoved(const std::string& package_name,
+                        bool uninstalled) override;
 
   // Sends adds/updates sync change to sync server.
   void SendSyncChange(

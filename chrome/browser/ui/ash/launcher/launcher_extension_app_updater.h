@@ -10,10 +10,8 @@
 #include "chrome/browser/ui/ash/launcher/launcher_app_updater.h"
 #include "extensions/browser/extension_registry_observer.h"
 
-namespace extensions {
-class ExtensionSet;
-}  // namespace extensions
-
+// TODO(khmel): this is not Launcher class. Consider moving this to proper
+// place.
 class LauncherExtensionAppUpdater
     : public LauncherAppUpdater,
       public extensions::ExtensionRegistryObserver,
@@ -37,16 +35,16 @@ class LauncherExtensionAppUpdater
   // ArcAppListPrefs::Observer
   void OnPackageInstalled(
       const arc::mojom::ArcPackageInfo& package_info) override;
-  void OnPackageRemoved(const std::string& package_name) override;
+  void OnPackageRemoved(const std::string& package_name,
+                        bool uninstalled) override;
+  void OnPackageListInitialRefreshed() override;
 
  private:
   void StartObservingExtensionRegistry();
   void StopObservingExtensionRegistry();
 
-  void UpdateHostedApps();
-  void UpdateHostedApps(const extensions::ExtensionSet& extensions);
-  void UpdateHostedApp(const std::string& app_id);
-  void UpdateEquivalentHostedApp(const std::string& arc_package_name);
+  void UpdateApp(const std::string& app_id);
+  void UpdateEquivalentApp(const std::string& arc_package_name);
 
   extensions::ExtensionRegistry* extension_registry_ = nullptr;
 

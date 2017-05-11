@@ -5,18 +5,17 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_APPS_APP_INFO_DIALOG_APP_INFO_HEADER_PANEL_H_
 #define CHROME_BROWSER_UI_VIEWS_APPS_APP_INFO_DIALOG_APP_INFO_HEADER_PANEL_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "chrome/browser/extensions/chrome_app_icon_delegate.h"
 #include "chrome/browser/ui/views/apps/app_info_dialog/app_info_panel.h"
 #include "ui/views/controls/link_listener.h"
 
 class Profile;
 namespace extensions {
 class Extension;
-}
-
-namespace gfx {
-class Image;
 }
 
 namespace views {
@@ -31,7 +30,8 @@ class AppInfoDialogTestApi;
 // that is displayed at the top of the app info dialog.
 class AppInfoHeaderPanel : public AppInfoPanel,
                            public views::LinkListener,
-                           public base::SupportsWeakPtr<AppInfoHeaderPanel> {
+                           public base::SupportsWeakPtr<AppInfoHeaderPanel>,
+                           public extensions::ChromeAppIconDelegate {
  public:
   AppInfoHeaderPanel(Profile* profile, const extensions::Extension* app);
   ~AppInfoHeaderPanel() override;
@@ -44,19 +44,19 @@ class AppInfoHeaderPanel : public AppInfoPanel,
   // Overridden from views::LinkListener:
   void LinkClicked(views::Link* source, int event_flags) override;
 
-  // Load the app icon asynchronously. For the response, check OnAppImageLoaded.
-  void LoadAppImageAsync();
-  // Called when the app's icon is loaded.
-  void OnAppImageLoaded(const gfx::Image& image);
+  // extensions::ChromeAppIconDelegate:
+  void OnIconUpdated(extensions::ChromeAppIcon* icon) override;
 
   // Opens the app in the web store. Must only be called if
   // CanShowAppInWebStore() returns true.
   void ShowAppInWebStore();
   bool CanShowAppInWebStore() const;
 
-  // UI elements on the dialog. Elements are NULL if they are not displayed.
-  views::ImageView* app_icon_;
-  views::Link* view_in_store_link_;
+  // UI elements on the dialog. Elements are nullptr if they are not displayed.
+  views::ImageView* app_icon_view_ = nullptr;
+  views::Link* view_in_store_link_ = nullptr;
+
+  std::unique_ptr<extensions::ChromeAppIcon> app_icon_;
 
   base::WeakPtrFactory<AppInfoHeaderPanel> weak_ptr_factory_;
 

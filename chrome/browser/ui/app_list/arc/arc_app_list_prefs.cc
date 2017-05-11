@@ -635,7 +635,7 @@ void ArcAppListPrefs::NotifyRegisteredApps() {
   apps_restored_ = true;
 }
 
-void ArcAppListPrefs::RemoveAllApps() {
+void ArcAppListPrefs::RemoveAllAppsAndPackages() {
   std::vector<std::string> app_ids = GetAppIdsNoArcEnabledCheck();
   for (const auto& app_id : app_ids) {
     if (!default_apps_.HasApp(app_id)) {
@@ -648,6 +648,15 @@ void ArcAppListPrefs::RemoveAllApps() {
     }
   }
   DCHECK(ready_apps_.empty());
+
+  const std::vector<std::string> package_names_to_remove =
+      GetPackagesFromPrefs(false /* check_arc_alive */, true /* installed */);
+  for (const auto& package_name : package_names_to_remove) {
+    if (!default_apps_.HasPackage(package_name))
+      RemovePackageFromPrefs(prefs_, package_name);
+    for (auto& observer : observer_list_)
+      observer.OnPackageRemoved(package_name, false);
+  }
 }
 
 void ArcAppListPrefs::OnArcPlayStoreEnabledChanged(bool enabled) {
@@ -660,7 +669,7 @@ void ArcAppListPrefs::OnArcPlayStoreEnabledChanged(bool enabled) {
   if (enabled)
     NotifyRegisteredApps();
   else
-    RemoveAllApps();
+    RemoveAllAppsAndPackages();
 }
 
 void ArcAppListPrefs::SetDefaultAppsFilterLevel() {
@@ -685,7 +694,7 @@ void ArcAppListPrefs::OnDefaultAppsReady() {
   // Apply uninstalled packages now.
 
   const std::vector<std::string> uninstalled_package_names =
-      GetPackagesFromPrefs(false);
+      GetPackagesFromPrefs(false /* check_arc_alive */, false /* installed */);
   for (const auto& uninstalled_package_name : uninstalled_package_names)
     default_apps_.MaybeMarkPackageUninstalled(uninstalled_package_name, true);
 
@@ -919,6 +928,7 @@ void ArcAppListPrefs::AddOrUpdatePackagePrefs(
     PrefService* prefs, const arc::mojom::ArcPackageInfo& package) {
   DCHECK(IsArcAndroidEnabledForProfile(profile_));
   const std::string& package_name = package.package_name;
+
   default_apps_.MaybeMarkPackageUninstalled(package_name, false);
   if (package_name.empty()) {
     VLOG(2) << "Package name cannot be empty.";
@@ -940,7 +950,6 @@ void ArcAppListPrefs::AddOrUpdatePackagePrefs(
 
 void ArcAppListPrefs::RemovePackageFromPrefs(PrefService* prefs,
                                              const std::string& package_name) {
-  DCHECK(IsArcAndroidEnabledForProfile(profile_));
   default_apps_.MaybeMarkPackageUninstalled(package_name, true);
   if (!default_apps_.HasPackage(package_name)) {
     DictionaryPrefUpdate update(prefs, prefs::kArcPackages);
@@ -1163,6 +1172,7 @@ std::unordered_set<std::string> ArcAppListPrefs::GetAppsAndShortcutsForPackage(
 }
 
 void ArcAppListPrefs::HandlePackageRemoved(const std::string& package_name) {
+  DCHECK(IsArcAndroidEnabledForProfile(profile_));
   const std::unordered_set<std::string> apps_to_remove =
       GetAppsAndShortcutsForPackage(package_name, true /* include_shortcuts */);
   for (const auto& app_id : apps_to_remove)
@@ -1175,7 +1185,7 @@ void ArcAppListPrefs::OnPackageRemoved(const std::string& package_name) {
   HandlePackageRemoved(package_name);
 
   for (auto& observer : observer_list_)
-    observer.OnPackageRemoved(package_name);
+    observer.OnPackageRemoved(package_name, true);
 }
 
 void ArcAppListPrefs::OnAppIcon(const std::string& package_name,
@@ -1343,14 +1353,17 @@ void ArcAppListPrefs::OnPackageListRefreshed(
 }
 
 std::vector<std::string> ArcAppListPrefs::GetPackagesFromPrefs() const {
-  return GetPackagesFromPrefs(true);
+  return GetPackagesFromPrefs(true /* check_arc_alive */, true /* installed */);
 }
 
 std::vector<std::string> ArcAppListPrefs::GetPackagesFromPrefs(
+    bool check_arc_alive,
     bool installed) const {
   std::vector<std::string> packages;
-  if ((!IsArcAlive() || !IsArcAndroidEnabledForProfile(profile_)) && installed)
+  if (check_arc_alive &&
+      (!IsArcAlive() || !IsArcAndroidEnabledForProfile(profile_))) {
     return packages;
+  }
 
   const base::DictionaryValue* package_prefs =
       prefs_->GetDictionary(prefs::kArcPackages);
