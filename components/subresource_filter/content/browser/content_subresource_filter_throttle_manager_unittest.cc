@@ -235,17 +235,11 @@ class ContentSubresourceFilterThrottleManagerTest
     SimulateCommitAndExpectResult(content::NavigationThrottle::PROCEED);
   }
 
-  void SuppressActivationForUrl(const GURL& url) {
-    urls_to_suppress_activation_.insert(url);
-  }
-
   bool ManagerHasRulesetHandle() {
     return throttle_manager_->ruleset_handle_for_testing();
   }
 
   int disallowed_notification_count() { return disallowed_notification_count_; }
-
-  int attempted_frame_activations() { return attempted_frame_activations_; }
 
  protected:
   // content::WebContentsObserver
@@ -274,18 +268,9 @@ class ContentSubresourceFilterThrottleManagerTest
     ++disallowed_notification_count_;
   }
 
-  bool ShouldSuppressActivation(
-      content::NavigationHandle* navigation_handle) override {
-    ++attempted_frame_activations_;
-    return urls_to_suppress_activation_.find(navigation_handle->GetURL()) !=
-           urls_to_suppress_activation_.end();
-  }
-
  private:
   testing::TestRulesetCreator test_ruleset_creator_;
   testing::TestRulesetPair test_ruleset_pair_;
-
-  std::set<GURL> urls_to_suppress_activation_;
 
   std::unique_ptr<VerifiedRulesetDealer::Handle> dealer_handle_;
 
@@ -295,10 +280,6 @@ class ContentSubresourceFilterThrottleManagerTest
 
   // Incremented on every OnFirstSubresourceLoadDisallowed call.
   int disallowed_notification_count_ = 0;
-
-  // Incremented  every time the manager queries the harness for activation
-  // suppression.
-  int attempted_frame_activations_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(ContentSubresourceFilterThrottleManagerTest);
 };
@@ -320,7 +301,6 @@ TEST_P(ContentSubresourceFilterThrottleManagerTest,
   SimulateStartAndExpectResult(content::NavigationThrottle::CANCEL);
 
   EXPECT_EQ(1, disallowed_notification_count());
-  EXPECT_EQ(1, attempted_frame_activations());
 }
 
 TEST_P(ContentSubresourceFilterThrottleManagerTest,
@@ -339,7 +319,6 @@ TEST_P(ContentSubresourceFilterThrottleManagerTest,
   ExpectActivationSignalForFrame(child, true /* expect_activation */);
 
   EXPECT_EQ(0, disallowed_notification_count());
-  EXPECT_EQ(2, attempted_frame_activations());
 }
 
 TEST_P(ContentSubresourceFilterThrottleManagerTest,
@@ -358,7 +337,6 @@ TEST_P(ContentSubresourceFilterThrottleManagerTest,
       content::NavigationThrottle::CANCEL);
 
   EXPECT_EQ(1, disallowed_notification_count());
-  EXPECT_EQ(1, attempted_frame_activations());
 }
 
 TEST_P(ContentSubresourceFilterThrottleManagerTest,
@@ -378,7 +356,6 @@ TEST_P(ContentSubresourceFilterThrottleManagerTest,
   ExpectActivationSignalForFrame(child, true /* expect_activation */);
 
   EXPECT_EQ(0, disallowed_notification_count());
-  EXPECT_EQ(2, attempted_frame_activations());
 }
 
 // This should fail if the throttle manager notifies the delegate twice of a
@@ -401,7 +378,6 @@ TEST_P(ContentSubresourceFilterThrottleManagerTest,
   SimulateStartAndExpectResult(content::NavigationThrottle::CANCEL);
 
   EXPECT_EQ(1, disallowed_notification_count());
-  EXPECT_EQ(1, attempted_frame_activations());
 }
 
 TEST_P(ContentSubresourceFilterThrottleManagerTest,
@@ -426,7 +402,6 @@ TEST_P(ContentSubresourceFilterThrottleManagerTest,
   SimulateStartAndExpectResult(content::NavigationThrottle::CANCEL);
 
   EXPECT_EQ(2, disallowed_notification_count());
-  EXPECT_EQ(2, attempted_frame_activations());
 }
 
 // Test that the disallow load notification will not be repeated for the first
@@ -455,7 +430,6 @@ TEST_P(ContentSubresourceFilterThrottleManagerTest,
   SimulateStartAndExpectResult(content::NavigationThrottle::CANCEL);
 
   EXPECT_EQ(1, disallowed_notification_count());
-  EXPECT_EQ(1, attempted_frame_activations());
 }
 
 TEST_P(ContentSubresourceFilterThrottleManagerTest,
@@ -472,24 +446,6 @@ TEST_P(ContentSubresourceFilterThrottleManagerTest,
   ExpectActivationSignalForFrame(child, false /* expect_activation */);
 
   EXPECT_EQ(0, disallowed_notification_count());
-  EXPECT_EQ(0, attempted_frame_activations());
-}
-
-TEST_P(ContentSubresourceFilterThrottleManagerTest, SuppressActivation) {
-  SuppressActivationForUrl(GURL(kTestURLWithActivation));
-  NavigateAndCommitMainFrame(GURL(kTestURLWithActivation));
-  ExpectActivationSignalForFrame(main_rfh(), false /* expect_activation */);
-
-  // A subframe navigation should complete successfully.
-  CreateSubframeWithTestNavigation(GURL("https://www.example.com/allowed.html"),
-                                   main_rfh());
-  SimulateStartAndExpectResult(content::NavigationThrottle::PROCEED);
-  content::RenderFrameHost* child =
-      SimulateCommitAndExpectResult(content::NavigationThrottle::PROCEED);
-  ExpectActivationSignalForFrame(child, false /* expect_activation */);
-
-  EXPECT_EQ(0, disallowed_notification_count());
-  EXPECT_EQ(1, attempted_frame_activations());
 }
 
 // Once there are no activated frames, the manager drops its ruleset handle. If
@@ -518,14 +474,12 @@ TEST_P(ContentSubresourceFilterThrottleManagerTest, RulesetHandleRegeneration) {
   SimulateStartAndExpectResult(content::NavigationThrottle::CANCEL);
 
   EXPECT_EQ(2, disallowed_notification_count());
-  EXPECT_EQ(2, attempted_frame_activations());
 }
 
 TEST_P(ContentSubresourceFilterThrottleManagerTest,
        SameSiteNavigation_RulesetGoesAway) {
   GURL same_site_inactive_url =
-      GURL(base::StringPrintf("%ssuppressed.html", kTestURLWithActivation));
-  SuppressActivationForUrl(same_site_inactive_url);
+      GURL(base::StringPrintf("%sinactive.html", kTestURLWithActivation));
 
   NavigateAndCommitMainFrame(GURL(kTestURLWithActivation));
   ExpectActivationSignalForFrame(main_rfh(), true /* expect_activation */);
@@ -544,7 +498,6 @@ TEST_P(ContentSubresourceFilterThrottleManagerTest,
   ExpectActivationSignalForFrame(child, false /* expect_activation */);
 
   EXPECT_EQ(0, disallowed_notification_count());
-  EXPECT_EQ(1, attempted_frame_activations());
 }
 
 TEST_P(ContentSubresourceFilterThrottleManagerTest,
@@ -554,8 +507,7 @@ TEST_P(ContentSubresourceFilterThrottleManagerTest,
   EXPECT_TRUE(ManagerHasRulesetHandle());
 
   GURL same_site_inactive_url =
-      GURL(base::StringPrintf("%ssuppressed.html", kTestURLWithActivation));
-  SuppressActivationForUrl(same_site_inactive_url);
+      GURL(base::StringPrintf("%sinactive.html", kTestURLWithActivation));
 
   CreateTestNavigation(same_site_inactive_url, main_rfh());
   SimulateFailedNavigation(net::ERR_ABORTED);
@@ -568,7 +520,6 @@ TEST_P(ContentSubresourceFilterThrottleManagerTest,
   SimulateStartAndExpectResult(content::NavigationThrottle::CANCEL);
 
   EXPECT_EQ(1, disallowed_notification_count());
-  EXPECT_EQ(1, attempted_frame_activations());
 }
 
 TEST_P(ContentSubresourceFilterThrottleManagerTest,
@@ -578,8 +529,7 @@ TEST_P(ContentSubresourceFilterThrottleManagerTest,
   EXPECT_TRUE(ManagerHasRulesetHandle());
 
   GURL same_site_inactive_url =
-      GURL(base::StringPrintf("%ssuppressed.html", kTestURLWithActivation));
-  SuppressActivationForUrl(same_site_inactive_url);
+      GURL(base::StringPrintf("%sinactive.html", kTestURLWithActivation));
 
   CreateTestNavigation(same_site_inactive_url, main_rfh());
   SimulateFailedNavigation(net::ERR_FAILED);
@@ -594,7 +544,6 @@ TEST_P(ContentSubresourceFilterThrottleManagerTest,
   ExpectActivationSignalForFrame(child, false /* expect_activation */);
 
   EXPECT_EQ(0, disallowed_notification_count());
-  EXPECT_EQ(1, attempted_frame_activations());
 }
 
 // Ensure activation propagates into great-grandchild frames, including cross
@@ -627,7 +576,6 @@ TEST_P(ContentSubresourceFilterThrottleManagerTest, ActivationPropagation) {
   SimulateStartAndExpectResult(content::NavigationThrottle::CANCEL);
 
   EXPECT_EQ(1, disallowed_notification_count());
-  EXPECT_EQ(3, attempted_frame_activations());
 }
 
 // Ensure activation propagates through whitelisted documents.
@@ -650,7 +598,6 @@ TEST_P(ContentSubresourceFilterThrottleManagerTest, ActivationPropagation2) {
       SimulateCommitAndExpectResult(content::NavigationThrottle::PROCEED);
   ExpectActivationSignalForFrame(subframe2, true /* expect_activation */);
 
-  EXPECT_EQ(3, attempted_frame_activations());
   EXPECT_EQ(0, disallowed_notification_count());
 
   // An identical series of events that don't match whitelist rules cause
@@ -666,7 +613,6 @@ TEST_P(ContentSubresourceFilterThrottleManagerTest, ActivationPropagation2) {
       GURL("https://www.example.com/disallowed.html"), subframe3);
   SimulateStartAndExpectResult(content::NavigationThrottle::CANCEL);
 
-  EXPECT_EQ(4, attempted_frame_activations());
   EXPECT_EQ(1, disallowed_notification_count());
 }
 
@@ -675,13 +621,11 @@ TEST_P(ContentSubresourceFilterThrottleManagerTest,
        SameSiteNavigationStopsActivation) {
   NavigateAndCommitMainFrame(GURL(kTestURLWithActivation));
   ExpectActivationSignalForFrame(main_rfh(), true /* expect_activation */);
-  EXPECT_EQ(1, attempted_frame_activations());
 
   // Mock a same-site navigation, in the same RFH, this URL does not trigger
   // page level activation.
   NavigateAndCommitMainFrame(
       GURL(base::StringPrintf("%s/some_path/", kTestURLWithActivation)));
-  EXPECT_EQ(1, attempted_frame_activations());
   ExpectActivationSignalForFrame(main_rfh(), false /* expect_activation */);
 
   CreateSubframeWithTestNavigation(
@@ -692,7 +636,6 @@ TEST_P(ContentSubresourceFilterThrottleManagerTest,
   ExpectActivationSignalForFrame(child, false /* expect_activation */);
 
   EXPECT_EQ(0, disallowed_notification_count());
-  EXPECT_EQ(1, attempted_frame_activations());
 }
 
 // TODO(csharrison): Make sure the following conditions are exercised in tests:

@@ -53,11 +53,6 @@ class ContentSubresourceFilterThrottleManager
     // first load is disallowed for a given page load.
     virtual void OnFirstSubresourceLoadDisallowed() {}
 
-    // Let the delegate have the last word when it comes to activation. It might
-    // have a specific whitelist.
-    virtual bool ShouldSuppressActivation(
-        content::NavigationHandle* navigation_handle);
-
     // Temporary method to help the delegate compute the activation decision.
     virtual void WillProcessResponse(
         content::NavigationHandle* navigation_handle) {}

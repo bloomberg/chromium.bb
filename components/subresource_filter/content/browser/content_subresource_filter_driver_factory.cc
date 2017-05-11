@@ -126,9 +126,6 @@ void ContentSubresourceFilterDriverFactory::
     return;
   }
 
-  // TODO(csharrison): The throttle manager also performs this check. Remove
-  // this one when the activation decision is sent directly to the throttle
-  // manager.
   if (client_->ShouldSuppressActivation(navigation_handle)) {
     activation_decision_ = ActivationDecision::URL_WHITELISTED;
     activation_options_ = Configuration::ActivationOptions();
@@ -225,11 +222,6 @@ void ContentSubresourceFilterDriverFactory::OnFirstSubresourceLoadDisallowed() {
     return;
   client_->ToggleNotificationVisibility(activation_options_.activation_level ==
                                         ActivationLevel::ENABLED);
-}
-
-bool ContentSubresourceFilterDriverFactory::ShouldSuppressActivation(
-    content::NavigationHandle* navigation_handle) {
-  return client_->ShouldSuppressActivation(navigation_handle);
 }
 
 void ContentSubresourceFilterDriverFactory::DidStartNavigation(
