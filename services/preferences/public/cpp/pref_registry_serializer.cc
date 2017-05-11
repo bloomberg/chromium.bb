@@ -11,9 +11,7 @@ namespace prefs {
 mojom::PrefRegistryPtr SerializePrefRegistry(PrefRegistry& pref_registry) {
   auto registry = mojom::PrefRegistry::New();
   for (auto& pref : pref_registry) {
-    registry->registrations[pref.first] = mojom::PrefRegistration::New(
-        pref.second->CreateDeepCopy(),
-        pref_registry.GetRegistrationFlags(pref.first));
+    registry->registrations.push_back(pref.first);
   }
   return registry;
 }
