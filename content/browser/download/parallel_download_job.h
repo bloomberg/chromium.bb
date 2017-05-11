@@ -56,8 +56,6 @@ class CONTENT_EXPORT ParallelDownloadJob : public DownloadJobImpl,
   void OnByteStreamReady(
       DownloadWorker* worker,
       std::unique_ptr<ByteStreamReader> stream_reader) override;
-  void OnServerResponseError(DownloadWorker* worker,
-                             DownloadInterruptReason reason) override;
 
   // Build parallel requests after a delay, to effectively measure the single
   // stream bandwidth.

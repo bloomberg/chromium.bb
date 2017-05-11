@@ -128,21 +128,6 @@ void ParallelDownloadJob::OnByteStreamReady(
   }
 }
 
-void ParallelDownloadJob::OnServerResponseError(
-    DownloadWorker* worker,
-    DownloadInterruptReason reason) {
-  // TODO(xingliu): Consider to let the original request to cover the full
-  // content if the sub-requests get invalid response. Consider retry on certain
-  // error.
-  if (worker->length() == DownloadSaveInfo::kLengthFullContent &&
-      reason ==
-          DownloadInterruptReason::DOWNLOAD_INTERRUPT_REASON_SERVER_NO_RANGE) {
-    SetPotentialFileLength(worker->offset());
-    return;
-  }
-  DownloadJob::Interrupt(reason);
-}
-
 void ParallelDownloadJob::BuildParallelRequests() {
   DCHECK(!requests_sent_);
   DCHECK(!is_paused());

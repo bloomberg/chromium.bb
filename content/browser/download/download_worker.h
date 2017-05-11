@@ -32,9 +32,6 @@ class CONTENT_EXPORT DownloadWorker : public UrlDownloader::Delegate {
     virtual void OnByteStreamReady(
         DownloadWorker* worker,
         std::unique_ptr<ByteStreamReader> stream_reader) = 0;
-    // Called when there is an error caused by the server response.
-    virtual void OnServerResponseError(DownloadWorker* worker,
-                                       DownloadInterruptReason reason) = 0;
   };
 
   DownloadWorker(DownloadWorker::Delegate* delegate,
