@@ -1,12 +1,17 @@
 {% import 'fields/base.tmpl' as base %}
-{% from 'fields/field.tmpl' import setter_expression %}
+{% from 'fields/field.tmpl' import getter_expression, setter_expression %}
 
 {% macro decl_public_methods(field) %}
 {{base.decl_initial_method(field)}}
 {{base.decl_getter_method(field)}}
 {{base.decl_setter_method(field)}}
 void {{field.setter_method_name}}({{field.type_name}}&& v) {
-  {{setter_expression(field)}} = std::move(v);
+{% if field.group_member_name %}
+  if (!({{getter_expression(field)}} == v))
+    {{setter_expression(field)}} = std::move(v);
+{% else %}
+  {{field.name}} = std::move(v);
+{% endif %}
 }
 {{base.decl_resetter_method(field)}}
 {% endmacro %}
