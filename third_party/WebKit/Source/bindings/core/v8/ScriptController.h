@@ -111,6 +111,11 @@ class CORE_EXPORT ScriptController final
   // Returns true if argument is a JavaScript URL.
   bool ExecuteScriptIfJavaScriptURL(const KURL&, Element*);
 
+  // Creates a new isolated world for DevTools with the given human readable
+  // |world_name| and returns it's id or DOMWrapperWorld::kInvalidWorldId on
+  // failure.
+  int CreateNewDInspectorIsolatedWorld(const String& world_name);
+
   // Returns true if the current world is isolated, and has its own Content
   // Security Policy. In this case, the policy of the main world should be
   // ignored when evaluating resources injected into the DOM.

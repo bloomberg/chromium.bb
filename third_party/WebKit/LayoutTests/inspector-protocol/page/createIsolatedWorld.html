@@ -1,0 +1,53 @@
+<html>
+<head>
+<script type="text/javascript" src="../../http/tests/inspector-protocol/inspector-protocol-test.js"></script>
+<script>
+
+function test()
+{
+    var mainFrameId = "";
+    InspectorTest.eventHandler["Runtime.executionContextCreated"] =
+            function(message) {
+        if (message.params.context.auxData.frameId !== mainFrameId)
+            return;
+        if (message.params.context.auxData.isDefault === false &&
+            message.params.context.name === "Test world") {
+            InspectorTest.log("PASS - isolated world created."); 
+        } else {
+            InspectorTest.log("fail - main world created."); 
+            InspectorTest.log(JSON.stringify(message.params)); 
+        }
+        InspectorTest.completeTest();
+    };
+
+    InspectorTest.sendCommandOrDie("Runtime.enable", {}, runtimeAgentEnabled);
+
+    function runtimeAgentEnabled() {
+        InspectorTest.log("Runtime enabled");
+
+        InspectorTest.sendCommandOrDie("Page.enable", {}, pageAgentEnabled);
+    }
+
+    function pageAgentEnabled() {
+        InspectorTest.log("Page enabled");
+        InspectorTest.sendCommandOrDie(
+            "Page.getResourceTree", {}, resourceTreeLoaded);
+    }
+
+    function resourceTreeLoaded(payload) {
+        mainFrameId = payload.frameTree.frame.id;
+        onMainFrameId(mainFrameId);
+    }
+
+    function onMainFrameId(mainFrameId) {
+        InspectorTest.log("Main Frame obtained");
+        InspectorTest.sendCommandOrDie("Page.createIsolatedWorld", {
+            frameId: mainFrameId, worldName: "Test world"});
+    }
+}
+
+</script>
+</head>
+<body onload="runTest()">
+</body>
+</html>

@@ -909,6 +909,29 @@ Response InspectorPageAgent::getLayoutMetrics(
   return Response::OK();
 }
 
+protocol::Response InspectorPageAgent::createIsolatedWorld(
+    const String& frame_id,
+    Maybe<String> world_name,
+    Maybe<bool> grant_universal_access) {
+  LocalFrame* frame =
+      IdentifiersFactory::FrameById(inspected_frames_, frame_id);
+  if (!frame)
+    return Response::Error("No frame for given id found");
+
+  int world_id = frame->GetScriptController().CreateNewDInspectorIsolatedWorld(
+      world_name.fromMaybe(""));
+  if (world_id == DOMWrapperWorld::kInvalidWorldId)
+    return Response::Error("Could not create isolated world");
+
+  if (grant_universal_access.fromMaybe(false)) {
+    RefPtr<SecurityOrigin> security_origin =
+        frame->GetSecurityContext()->GetSecurityOrigin()->IsolatedCopy();
+    security_origin->GrantUniversalAccess();
+    DOMWrapperWorld::SetIsolatedWorldSecurityOrigin(world_id, security_origin);
+  }
+  return Response::OK();
+}
+
 DEFINE_TRACE(InspectorPageAgent) {
   visitor->Trace(inspected_frames_);
   visitor->Trace(inspector_resource_content_loader_);

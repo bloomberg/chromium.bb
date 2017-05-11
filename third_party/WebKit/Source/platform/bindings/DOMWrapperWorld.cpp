@@ -62,8 +62,10 @@ static bool IsIsolatedWorldId(int world_id) {
 PassRefPtr<DOMWrapperWorld> DOMWrapperWorld::Create(v8::Isolate* isolate,
                                                     WorldType world_type) {
   DCHECK_NE(WorldType::kIsolated, world_type);
-  return AdoptRef(new DOMWrapperWorld(isolate, world_type,
-                                      GenerateWorldIdForType(world_type)));
+  int world_id = GenerateWorldIdForType(world_type);
+  if (world_id == kInvalidWorldId)
+    return nullptr;
+  return AdoptRef(new DOMWrapperWorld(isolate, world_type, world_id));
 }
 
 DOMWrapperWorld::DOMWrapperWorld(v8::Isolate* isolate,
@@ -78,6 +80,7 @@ DOMWrapperWorld::DOMWrapperWorld(v8::Isolate* isolate,
       // The main world is managed separately from worldMap(). See worldMap().
       break;
     case WorldType::kIsolated:
+    case WorldType::kInspectorIsolated:
     case WorldType::kGarbageCollector:
     case WorldType::kRegExp:
     case WorldType::kTesting:
@@ -257,6 +260,7 @@ void DOMWrapperWorld::WeakCallbackForDOMObjectHolder(
   holder_base->World()->UnregisterDOMObjectHolder(holder_base);
 }
 
+// static
 int DOMWrapperWorld::GenerateWorldIdForType(WorldType world_type) {
   DEFINE_THREAD_SAFE_STATIC_LOCAL(ThreadSpecific<int>, next_world_id,
                                   new ThreadSpecific<int>);
@@ -270,6 +274,15 @@ int DOMWrapperWorld::GenerateWorldIdForType(WorldType world_type) {
       // identifier for the world is given from out of DOMWrapperWorld.
       NOTREACHED();
       return kInvalidWorldId;
+    case WorldType::kInspectorIsolated: {
+      DCHECK(IsMainThread());
+      static int next_devtools_isolated_world_id =
+          WorldId::kDevToolsFirstIsolatedWorldId;
+      if (next_devtools_isolated_world_id >
+          WorldId::kDevToolsLastIsolatedWorldId)
+        return WorldId::kInvalidWorldId;
+      return next_devtools_isolated_world_id++;
+    }
     case WorldType::kGarbageCollector:
     case WorldType::kRegExp:
     case WorldType::kTesting:
