@@ -351,6 +351,7 @@ test("webkit_unit_tests") {
     "tests/VisualViewportTest.cpp",
     "tests/WebDocumentSubresourceFilterTest.cpp",
     "tests/WebDocumentTest.cpp",
+    "tests/WebFrameSerializerSanitizationTest.cpp",
     "tests/WebFrameSerializerTest.cpp",
     "tests/WebFrameTest.cpp",
     "tests/WebHelperPluginTest.cpp",
