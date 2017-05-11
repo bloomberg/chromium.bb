@@ -864,7 +864,7 @@ bool RendererSchedulerImpl::ShouldYieldForHighPriorityWork() {
     case UseCase::MAIN_THREAD_GESTURE:
     case UseCase::MAIN_THREAD_CUSTOM_INPUT_HANDLING:
     case UseCase::SYNCHRONIZED_GESTURE:
-      return compositor_task_queue_->HasPendingImmediateWork() ||
+      return compositor_task_queue_->HasTaskToRunImmediately() ||
              GetMainThreadOnly().touchstart_expected_soon;
 
     case UseCase::TOUCHSTART:

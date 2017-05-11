@@ -25,7 +25,7 @@ namespace {
 
 base::Optional<base::TimeTicks> NextTaskRunTime(LazyNow* lazy_now,
                                                 TaskQueue* queue) {
-  if (queue->HasPendingImmediateWork())
+  if (queue->HasTaskToRunImmediately())
     return lazy_now->Now();
   return queue->GetNextScheduledWakeUp();
 }
