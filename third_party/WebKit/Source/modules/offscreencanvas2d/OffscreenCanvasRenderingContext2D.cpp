@@ -110,7 +110,7 @@ RefPtr<StaticBitmapImage>
 OffscreenCanvasRenderingContext2D::TransferToStaticBitmapImage() {
   if (!GetImageBuffer())
     return nullptr;
-  sk_sp<SkImage> sk_image = host()->GetImageBuffer()->NewSkImageSnapshot(
+  sk_sp<SkImage> sk_image = GetImageBuffer()->NewSkImageSnapshot(
       kPreferAcceleration, kSnapshotReasonTransferToImageBitmap);
   RefPtr<StaticBitmapImage> image =
       StaticBitmapImage::Create(std::move(sk_image));
@@ -135,8 +135,7 @@ PassRefPtr<Image> OffscreenCanvasRenderingContext2D::GetImage(
     SnapshotReason reason) const {
   if (!GetImageBuffer())
     return nullptr;
-  sk_sp<SkImage> sk_image =
-      host()->GetImageBuffer()->NewSkImageSnapshot(hint, reason);
+  sk_sp<SkImage> sk_image = GetImageBuffer()->NewSkImageSnapshot(hint, reason);
   RefPtr<StaticBitmapImage> image =
       StaticBitmapImage::Create(std::move(sk_image));
   return image;
@@ -146,8 +145,8 @@ ImageData* OffscreenCanvasRenderingContext2D::ToImageData(
     SnapshotReason reason) {
   if (!GetImageBuffer())
     return nullptr;
-  sk_sp<SkImage> snapshot = host()->GetImageBuffer()->NewSkImageSnapshot(
-      kPreferNoAcceleration, reason);
+  sk_sp<SkImage> snapshot =
+      GetImageBuffer()->NewSkImageSnapshot(kPreferNoAcceleration, reason);
   ImageData* image_data = nullptr;
   if (snapshot) {
     image_data = ImageData::Create(host()->Size());
@@ -179,18 +178,18 @@ PaintCanvas* OffscreenCanvasRenderingContext2D::DrawingCanvas() const {
 }
 
 PaintCanvas* OffscreenCanvasRenderingContext2D::ExistingDrawingCanvas() const {
-  if (!host()->GetImageBuffer())
+  if (!HasImageBuffer())
     return nullptr;
-  return host()->GetImageBuffer()->Canvas();
+  return GetImageBuffer()->Canvas();
 }
 
 void OffscreenCanvasRenderingContext2D::DisableDeferral(DisableDeferralReason) {
 }
 
 AffineTransform OffscreenCanvasRenderingContext2D::BaseTransform() const {
-  if (!host()->GetImageBuffer())
+  if (!HasImageBuffer())
     return AffineTransform();  // identity
-  return host()->GetImageBuffer()->BaseTransform();
+  return GetImageBuffer()->BaseTransform();
 }
 
 void OffscreenCanvasRenderingContext2D::DidDraw(const SkIRect& dirty_rect) {}
@@ -233,6 +232,6 @@ CanvasPixelFormat OffscreenCanvasRenderingContext2D::PixelFormat() const {
 }
 
 bool OffscreenCanvasRenderingContext2D::IsAccelerated() const {
-  return host()->GetImageBuffer() && host()->GetImageBuffer()->IsAccelerated();
+  return HasImageBuffer() && GetImageBuffer()->IsAccelerated();
 }
 }
