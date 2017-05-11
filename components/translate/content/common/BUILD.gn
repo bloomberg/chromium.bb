@@ -13,6 +13,4 @@ mojom("common") {
     "//mojo/common:common_custom_types",
     "//url/mojo:url_mojom_gurl",
   ]
-
-  use_once_callback = true
 }

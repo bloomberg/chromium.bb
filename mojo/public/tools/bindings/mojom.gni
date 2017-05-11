@@ -126,7 +126,7 @@ if (enable_mojom_typemapping) {
 #   use_once_callback (optional)
 #       If set to true, generated classes will use base::OnceCallback instead of
 #       base::RepeatingCallback.
-#       Default value is false.
+#       Default value is true.
 #       TODO(dcheng):
 #           - Convert everything to use OnceCallback.
 #           - Remove support for the old mode.
@@ -438,7 +438,7 @@ template("mojom") {
           }
         }
 
-        if (defined(invoker.use_once_callback) && invoker.use_once_callback) {
+        if (!defined(invoker.use_once_callback) || invoker.use_once_callback) {
           args += [ "--use_once_callback" ]
         }
 

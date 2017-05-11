@@ -463,16 +463,12 @@ mojom("content_test_mojo_bindings") {
     "../public/test/test_service.mojom",
     "test_browser_associated_interfaces.mojom",
   ]
-
-  use_once_callback = true
 }
 
 mojom("web_ui_test_mojo_bindings") {
   sources = [
     "data/web_ui_test_mojo_bindings.mojom",
   ]
-
-  use_once_callback = true
 }
 
 static_library("layouttest_support") {

@@ -152,6 +152,9 @@ mojom("interfaces") {
     "//mojo/common:common_custom_types",
     "//ui/gfx/geometry/mojo",
   ]
+
+  # TODO(crbug.com/714018): Convert the implementation to use OnceCallback.
+  use_once_callback = false
 }
 
 mojom("test_interfaces") {
@@ -163,6 +166,9 @@ mojom("test_interfaces") {
   public_deps = [
     ":interfaces",
   ]
+
+  # TODO(crbug.com/714018): Convert the implementation to use OnceCallback.
+  use_once_callback = false
 }
 
 source_set("struct_traits") {

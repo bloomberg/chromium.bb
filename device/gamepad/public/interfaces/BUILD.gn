@@ -8,6 +8,9 @@ mojom("interfaces") {
   sources = [
     "gamepad.mojom",
   ]
+
+  # TODO(crbug.com/714018): Convert the implementation to use OnceCallback.
+  use_once_callback = false
 }
 
 mojom("gamepad_struct_traits_test") {
@@ -18,4 +21,7 @@ mojom("gamepad_struct_traits_test") {
   public_deps = [
     ":interfaces",
   ]
+
+  # TODO(crbug.com/714018): Convert the implementation to use OnceCallback.
+  use_once_callback = false
 }

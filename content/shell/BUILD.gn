@@ -773,8 +773,6 @@ mojom("mojo_bindings") {
     "//ui/gfx/geometry/mojo",
     "//url/mojo:url_mojom_gurl",
   ]
-
-  use_once_callback = true
 }
 
 group("content_shell_crash_test") {

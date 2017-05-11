@@ -129,4 +129,7 @@ mojom("mojo_bindings") {
   export_class_attribute = "DEVICE_VR_EXPORT"
   export_define = "DEVICE_VR_IMPLEMENTATION=1"
   export_header = "device/vr/vr_export.h"
+
+  # TODO(crbug.com/714018): Convert the implementation to use OnceCallback.
+  use_once_callback = false
 }
