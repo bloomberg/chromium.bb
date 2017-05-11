@@ -1,4 +1,0 @@
-This is a testharness.js-based test.
-FAIL WebCryptoAPI: sign() and verify() Using RSASSA-PKCS1-v1_5 Uncaught TypeError: Cannot read property 'importKey' of undefined
-Harness: the test ran to completion.
-
