@@ -22,28 +22,11 @@ void StartHistogramInternalsURLLoader(const ResourceRequest& request,
 
   base::StatisticsRecorder::ImportProvidedHistograms();
   std::string data = HistogramInternalsRequestJob::GenerateHTML(request.url);
-
-  MojoCreateDataPipeOptions options;
-  options.struct_size = sizeof(MojoCreateDataPipeOptions);
-  options.flags = MOJO_CREATE_DATA_PIPE_OPTIONS_FLAG_NONE;
-  options.element_num_bytes = 1;
-  options.capacity_num_bytes = data.size();
-  mojo::DataPipe data_pipe(options);
-
-  DCHECK(data_pipe.producer_handle.is_valid());
-  DCHECK(data_pipe.consumer_handle.is_valid());
-
+  mojo::DataPipe data_pipe(data.size());
   CHECK(mojo::common::BlockingCopyFromString(data, data_pipe.producer_handle));
 
   client->OnStartLoadingResponseBody(std::move(data_pipe.consumer_handle));
-
-  ResourceRequestCompletionStatus request_complete_data;
-  request_complete_data.error_code = net::OK;
-  request_complete_data.exists_in_cache = false;
-  request_complete_data.completion_time = base::TimeTicks::Now();
-  request_complete_data.encoded_data_length = data.size();
-  request_complete_data.encoded_body_length = data.size();
-  client->OnComplete(request_complete_data);
+  client->OnComplete(ResourceRequestCompletionStatus(data.size()));
 }
 
 }  // namespace content

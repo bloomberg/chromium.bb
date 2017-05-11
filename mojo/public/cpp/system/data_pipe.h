@@ -134,6 +134,7 @@ inline MojoResult EndReadDataRaw(DataPipeConsumerHandle data_pipe_consumer,
 class DataPipe {
  public:
   DataPipe();
+  explicit DataPipe(uint32_t capacity_num_bytes);
   explicit DataPipe(const MojoCreateDataPipeOptions& options);
   ~DataPipe();
 
@@ -144,6 +145,19 @@ class DataPipe {
 inline DataPipe::DataPipe() {
   MojoResult result =
       CreateDataPipe(nullptr, &producer_handle, &consumer_handle);
+  ALLOW_UNUSED_LOCAL(result);
+  DCHECK_EQ(MOJO_RESULT_OK, result);
+}
+
+inline DataPipe::DataPipe(uint32_t capacity_num_bytes) {
+  MojoCreateDataPipeOptions options;
+  options.struct_size = sizeof(MojoCreateDataPipeOptions);
+  options.flags = MOJO_CREATE_DATA_PIPE_OPTIONS_FLAG_NONE;
+  options.element_num_bytes = 1;
+  options.capacity_num_bytes = capacity_num_bytes;
+  mojo::DataPipe data_pipe(options);
+  MojoResult result =
+      CreateDataPipe(&options, &producer_handle, &consumer_handle);
   ALLOW_UNUSED_LOCAL(result);
   DCHECK_EQ(MOJO_RESULT_OK, result);
 }
