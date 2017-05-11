@@ -41,6 +41,7 @@ interface RemotePlayback : EventTarget
 
 # web payments api not enabled in webiew, crbug.com/667069
 interface HTMLIFrameElement : HTMLElement
+    getter allowPaymentRequest
     setter allowPaymentRequest
 
 # Android does not support switching the audio output device, crbug.com/589500

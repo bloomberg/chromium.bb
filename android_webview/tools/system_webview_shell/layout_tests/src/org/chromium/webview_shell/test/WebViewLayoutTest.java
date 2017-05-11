@@ -193,7 +193,6 @@ public class WebViewLayoutTest {
 
     @Test
     @MediumTest
-    @DisabledTest(message = "crbug.com/719974")
     public void testWebViewIncludedStableInterfaces() throws Exception {
         ensureJsTestCopied();
         loadUrlWebViewAsync("file://" + PATH_BLINK_PREFIX
