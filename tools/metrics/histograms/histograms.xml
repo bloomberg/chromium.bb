@@ -71585,6 +71585,26 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="SubresourceFilter.DocumentLoad.ActivationComputingDelay"
+    units="microseconds">
+  <owner>csharrison@chromium.org</owner>
+  <summary>
+    Records the total time the activation state navigation throttle within a
+    document is delayed while calculating activation. Recorded at resume time.
+  </summary>
+</histogram>
+
+<histogram
+    name="SubresourceFilter.DocumentLoad.ActivationComputingDelay.MainFrame"
+    units="microseconds">
+  <owner>csharrison@chromium.org</owner>
+  <summary>
+    Records the total time the activation state navigation throttle within a
+    main frame document is delayed while calculating activation. Recorded at
+    resume time.
+  </summary>
+</histogram>
+
 <histogram name="SubresourceFilter.DocumentLoad.ActivationState"
     enum="SubresourceFilterActivationState">
   <owner>engedy@chromium.org</owner>
@@ -71645,6 +71665,27 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     Whenever a document load is committed in a main frame or subframe and
     subresource filtering should be activated, records whether the filtering
     rules are available.
+  </summary>
+</histogram>
+
+<histogram name="SubresourceFilter.DocumentLoad.SubframeFilteringDelay.Allowed"
+    units="microseconds">
+  <owner>csharrison@chromium.org</owner>
+  <summary>
+    Records the total time a subframe navigation was delayed while calculating
+    whether it should be disallowed or not. Logged for all navigations that were
+    allowed.
+  </summary>
+</histogram>
+
+<histogram
+    name="SubresourceFilter.DocumentLoad.SubframeFilteringDelay.Disallowed"
+    units="microseconds">
+  <owner>csharrison@chromium.org</owner>
+  <summary>
+    Records the total time a subframe navigation was delayed while calculating
+    whether it should be disallowed or not. Logged for all navigations that were
+    disallowed.
   </summary>
 </histogram>
 

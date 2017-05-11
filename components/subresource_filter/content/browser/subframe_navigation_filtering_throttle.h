@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/time/time.h"
 #include "components/subresource_filter/content/browser/async_document_subresource_filter.h"
 #include "content/public/browser/navigation_throttle.h"
 
@@ -45,6 +46,10 @@ class SubframeNavigationFilteringThrottle : public content::NavigationThrottle {
 
   // Must outlive this class.
   AsyncDocumentSubresourceFilter* parent_frame_filter_;
+
+  base::TimeTicks last_defer_timestamp_;
+  base::TimeDelta total_defer_time_;
+  bool disallowed_ = false;
 
   base::WeakPtrFactory<SubframeNavigationFilteringThrottle> weak_ptr_factory_;
 
