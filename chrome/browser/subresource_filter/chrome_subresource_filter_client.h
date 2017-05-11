@@ -92,8 +92,8 @@ class ChromeSubresourceFilterClient
 
   // SubresourceFilterClient:
   void ToggleNotificationVisibility(bool visibility) override;
-  bool ShouldSuppressActivation(
-      content::NavigationHandle* navigation_handle) override;
+  bool OnPageActivationComputed(content::NavigationHandle* navigation_handle,
+                                bool activated) override;
   void WhitelistByContentSettings(const GURL& url) override;
   void WhitelistInCurrentWebContents(const GURL& url) override;
   subresource_filter::VerifiedRulesetDealer::Handle* GetRulesetDealer()

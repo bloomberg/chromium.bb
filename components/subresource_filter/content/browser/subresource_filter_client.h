@@ -28,11 +28,15 @@ class SubresourceFilterClient {
   // off.
   virtual void ToggleNotificationVisibility(bool visibility) = 0;
 
-  // Returns true if the navigation is in a main frame and the URL is
-  // whitelisted from activation via content settings or by the per-tab
-  // whitelist.
-  virtual bool ShouldSuppressActivation(
-      content::NavigationHandle* navigation_handle) = 0;
+  // Called when the activation decision is otherwise completely computed by the
+  // subresource filter. At this point, the embedder still has a chance to
+  // return false to suppress the activation. Returns whether the activation
+  // should be whitelisted for this navigation.
+  //
+  // Precondition: The navigation must be a main frame navigation.
+  virtual bool OnPageActivationComputed(
+      content::NavigationHandle* navigation_handle,
+      bool activated) = 0;
 
   // Adds |top_level_url| to the BLOCKED state via content settings for the
   // current profile.

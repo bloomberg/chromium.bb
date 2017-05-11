@@ -126,12 +126,6 @@ void ContentSubresourceFilterDriverFactory::
     return;
   }
 
-  if (client_->ShouldSuppressActivation(navigation_handle)) {
-    activation_decision_ = ActivationDecision::URL_WHITELISTED;
-    activation_options_ = Configuration::ActivationOptions();
-    return;
-  }
-
   activation_options_ = highest_priority_activated_config->activation_options;
   activation_decision_ =
       activation_options_.activation_level == ActivationLevel::DISABLED
@@ -202,6 +196,19 @@ void ContentSubresourceFilterDriverFactory::WillProcessResponse(
 
   ComputeActivationForMainFrameNavigation(navigation_handle);
   DCHECK_NE(activation_decision_, ActivationDecision::UNKNOWN);
+
+  // Check for whitelisted status last, so that the client gets an accurate
+  // indication of whether there would be activation otherwise.
+  bool whitelisted = client_->OnPageActivationComputed(
+      navigation_handle,
+      activation_options_.activation_level == ActivationLevel::ENABLED);
+
+  // Only reset the activation decision reason if we would have activated.
+  if (whitelisted && activation_decision_ == ActivationDecision::ACTIVATED) {
+    activation_decision_ = ActivationDecision::URL_WHITELISTED;
+    activation_options_ = Configuration::ActivationOptions();
+  }
+
   if (activation_decision_ != ActivationDecision::ACTIVATED) {
     DCHECK_EQ(activation_options_.activation_level, ActivationLevel::DISABLED);
     return;

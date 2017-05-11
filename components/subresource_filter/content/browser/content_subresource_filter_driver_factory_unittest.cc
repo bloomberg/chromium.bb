@@ -189,10 +189,10 @@ class MockSubresourceFilterClient : public SubresourceFilterClient {
 
   ~MockSubresourceFilterClient() override = default;
 
-  bool ShouldSuppressActivation(content::NavigationHandle* handle) override {
-    return handle->IsInMainFrame() &&
-           whitelisted_hosts_.find(handle->GetURL().host()) !=
-               whitelisted_hosts_.end();
+  bool OnPageActivationComputed(content::NavigationHandle* handle,
+                                bool activated) override {
+    DCHECK(handle->IsInMainFrame());
+    return whitelisted_hosts_.count(handle->GetURL().host());
   }
 
   void WhitelistByContentSettings(const GURL& url) override {}
@@ -544,9 +544,10 @@ TEST_F(ContentSubresourceFilterDriverFactoryTest,
   NavigateAndExpectActivation({true}, {url}, NO_REDIRECTS_HIT,
                               ActivationDecision::ACTIVATION_DISABLED);
 
+  // Whitelisting occurs last, so the decision should still be DISABLED.
   factory()->client()->WhitelistInCurrentWebContents(url);
   NavigateAndExpectActivation({true}, {url}, NO_REDIRECTS_HIT,
-                              ActivationDecision::URL_WHITELISTED);
+                              ActivationDecision::ACTIVATION_DISABLED);
 }
 
 TEST_F(ContentSubresourceFilterDriverFactoryTest, NoActivationWhenNoMatch) {
@@ -797,9 +798,13 @@ TEST_P(ContentSubresourceFilterDriverFactoryActivationLevelTest,
   NavigateAndExpectActivation({true}, {url}, NO_REDIRECTS_HIT,
                               test_data.expected_activation_decision);
   factory()->client()->WhitelistInCurrentWebContents(url);
-  NavigateAndExpectActivation({true}, {GURL(kExampleUrlWithParams)},
-                              NO_REDIRECTS_HIT,
-                              ActivationDecision::URL_WHITELISTED);
+
+  // Whitelisting is only applied when the page will otherwise activate.
+  ActivationDecision decision =
+      test_data.activation_level == ActivationLevel::DISABLED
+          ? test_data.expected_activation_decision
+          : ActivationDecision::URL_WHITELISTED;
+  NavigateAndExpectActivation({true}, {url}, NO_REDIRECTS_HIT, decision);
 }
 
 TEST_P(ContentSubresourceFilterDriverFactoryThreatTypeTest,

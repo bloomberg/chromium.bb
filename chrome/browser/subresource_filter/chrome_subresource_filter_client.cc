@@ -116,12 +116,14 @@ void ChromeSubresourceFilterClient::ToggleNotificationVisibility(
   }
 }
 
-bool ChromeSubresourceFilterClient::ShouldSuppressActivation(
-    content::NavigationHandle* navigation_handle) {
+bool ChromeSubresourceFilterClient::OnPageActivationComputed(
+    content::NavigationHandle* navigation_handle,
+    bool activated) {
   const GURL& url(navigation_handle->GetURL());
-  return navigation_handle->IsInMainFrame() &&
-         (whitelisted_hosts_.find(url.host()) != whitelisted_hosts_.end() ||
-          settings_manager_->GetSitePermission(url) == CONTENT_SETTING_BLOCK);
+  DCHECK(navigation_handle->IsInMainFrame());
+  // Return whether the activation should be whitelisted.
+  return whitelisted_hosts_.count(url.host()) ||
+         settings_manager_->GetSitePermission(url) == CONTENT_SETTING_BLOCK;
 }
 
 void ChromeSubresourceFilterClient::WhitelistByContentSettings(
