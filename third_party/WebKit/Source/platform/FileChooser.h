@@ -40,6 +40,9 @@
 
 namespace blink {
 
+// https://w3c.github.io/html-media-capture/#dom-capturefacingmode
+enum CaptureFacingMode { CaptureFacingModeUser, CaptureFacingModeEnvironment };
+
 class FileChooser;
 
 struct FileChooserFileInfo {
@@ -67,6 +70,7 @@ struct FileChooserSettings {
   Vector<String> accept_file_extensions;
   Vector<String> selected_files;
   bool use_media_capture;
+  CaptureFacingMode capture;
 
   // Returns a combined vector of acceptMIMETypes and acceptFileExtensions.
   Vector<String> PLATFORM_EXPORT AcceptTypes() const;
