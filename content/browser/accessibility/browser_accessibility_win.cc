@@ -20,7 +20,6 @@ BrowserAccessibilityWin::BrowserAccessibilityWin() {
   DCHECK(SUCCEEDED(hr));
 
   browser_accessibility_com_->AddRef();
-  browser_accessibility_com_->SetOwner(this);
 
   // Set the delegate to us
   browser_accessibility_com_->Init(this);

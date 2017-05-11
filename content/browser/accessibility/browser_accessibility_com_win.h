@@ -24,6 +24,7 @@
 #include "third_party/isimpledom/ISimpleDOMDocument.h"
 #include "third_party/isimpledom/ISimpleDOMNode.h"
 #include "third_party/isimpledom/ISimpleDOMText.h"
+#include "ui/accessibility/platform/ax_platform_node_delegate.h"
 #include "ui/accessibility/platform/ax_platform_node_win.h"
 
 namespace ui {
@@ -751,6 +752,7 @@ class __declspec(uuid("562072fe-3390-43b1-9e2c-dd4118f5ac79"))
   // AXPlatformNode overrides
   //
   void Destroy() override;
+  void Init(ui::AXPlatformNodeDelegate* delegate) override;
 
   // Returns the IA2 text attributes for this object.
   std::vector<base::string16> ComputeTextAttributes() const;
