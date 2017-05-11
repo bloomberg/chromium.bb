@@ -3,9 +3,12 @@
 # found in the LICENSE file.
 
 import("//build/config/ios/rules.gni")
+import("//build/config/locales.gni")
 import("//build/config/mac/base_rules.gni")
 import("//build/mac/tweak_info_plist.gni")
 import("//ios/build/chrome_build.gni")
+import("//ios/chrome/extension_repack.gni")
+import("//ios/chrome/tools/strings/generate_localizable_strings.gni")
 
 tweak_info_plist("tweak_info_plist") {
   info_plist = "Info.plist"
@@ -46,6 +49,7 @@ source_set("search_widget") {
 
   deps = [
     ":resources",
+    ":system_strings",
     "//base",
     "//components/open_from_clipboard:open_from_clipboard_impl",
     "//ios/chrome/common/app_group",
@@ -90,5 +94,23 @@ bundle_data("resources") {
   ]
   outputs = [
     "{{bundle_resources_dir}}/{{source_file_part}}",
+  ]
+}
+
+extension_repack_all_locales("packed_resources") {
+  extension = "search_widget_extension"
+  input_locales = ios_packed_locales
+  output_locales = ios_packed_locales_as_mac_outputs
+}
+
+generate_localizable_strings("system_strings") {
+  visibility = [ ":*" ]
+  _packed_resources_target = ":packed_resources"
+  config_file = "search_widget_extension_localize_strings_config.plist"
+  datapack_dir = get_label_info(_packed_resources_target, "target_gen_dir")
+  packed_locales = ios_packed_locales_as_mac_outputs
+  output_filenames = [ "Localizable.strings" ]
+  deps = [
+    _packed_resources_target,
   ]
 }

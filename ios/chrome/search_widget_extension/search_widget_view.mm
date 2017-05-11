@@ -129,19 +129,23 @@ const CGFloat kIconSpacing = 5;
   NSMutableArray<NSLayoutConstraint*>* constraints = [NSMutableArray array];
 
   UIStackView* actionRow = [[UIStackView alloc] initWithArrangedSubviews:@[
-    [self newActionViewWithTitle:@"New Search"
+    [self newActionViewWithTitle:NSLocalizedString(@"IDS_IOS_NEW_SEARCH",
+                                                   @"New Search")
                        imageName:@"quick_action_search"
                   actionSelector:@selector(openSearch:)
                      constraints:constraints],
-    [self newActionViewWithTitle:@"Incognito Search"
+    [self newActionViewWithTitle:NSLocalizedString(@"IDS_IOS_INCOGNITO_SEARCH",
+                                                   @"Incognito Search")
                        imageName:@"quick_action_incognito_search"
                   actionSelector:@selector(openIncognito:)
                      constraints:constraints],
-    [self newActionViewWithTitle:@"Voice Search"
+    [self newActionViewWithTitle:NSLocalizedString(@"IDS_IOS_VOICE_SEARCH",
+                                                   @"Voice Search")
                        imageName:@"quick_action_voice_search"
                   actionSelector:@selector(openVoice:)
                      constraints:constraints],
-    [self newActionViewWithTitle:@"Scan QR/Bar Code"
+    [self newActionViewWithTitle:NSLocalizedString(@"IDS_IOS_SCAN_QR_CODE",
+                                                   @"Scan QR Code")
                        imageName:@"quick_action_camera_search"
                   actionSelector:@selector(openQRCode:)
                      constraints:constraints],
@@ -363,15 +367,18 @@ const CGFloat kIconSpacing = 5;
     self.hairlineView.hidden = YES;
     self.copiedURLLabel.text = self.copiedURLString;
     self.openCopiedURLTitleLabel.alpha = 1;
-    self.openCopiedURLTitleLabel.text = @"Open Copied Link";
+    self.openCopiedURLTitleLabel.text =
+        NSLocalizedString(@"IDS_IOS_OPEN_COPIED_LINK", nil);
     self.copiedURLLabel.alpha = 1;
     return;
   }
 
   self.copiedButtonView.hidden = YES;
   self.hairlineView.hidden = NO;
-  self.copiedURLLabel.text = @"Links you copy will appear here.";
-  self.openCopiedURLTitleLabel.text = @"No Copied Link";
+  self.copiedURLLabel.text =
+      NSLocalizedString(@"IDS_IOS_NO_COPIED_LINK_MESSAGE", nil);
+  self.openCopiedURLTitleLabel.text =
+      NSLocalizedString(@"IDS_IOS_NO_COPIED_LINK_TITLE", nil);
 
   if (base::ios::IsRunningOnIOS10OrLater()) {
     self.copiedURLLabel.alpha = 0.5;
