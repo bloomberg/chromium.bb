@@ -51,11 +51,6 @@ class ForwardingNavigationThrottle : public content::NavigationThrottle {
 
 }  // namespace
 
-bool ContentSubresourceFilterThrottleManager::Delegate::
-    ShouldSuppressActivation(content::NavigationHandle* navigation_handle) {
-  return false;
-}
-
 ContentSubresourceFilterThrottleManager::
     ContentSubresourceFilterThrottleManager(
         Delegate* delegate,
@@ -100,8 +95,7 @@ void ContentSubresourceFilterThrottleManager::ReadyToCommitNavigation(
   AsyncDocumentSubresourceFilter* filter = throttle->second->filter();
   if (!filter || navigation_handle->GetNetErrorCode() != net::OK ||
       filter->activation_state().activation_level ==
-          ActivationLevel::DISABLED ||
-      delegate_->ShouldSuppressActivation(navigation_handle)) {
+          ActivationLevel::DISABLED) {
     return;
   }
 

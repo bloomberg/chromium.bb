@@ -111,8 +111,6 @@ class ContentSubresourceFilterDriverFactory
 
   // ContentSubresourceFilterThrottleManager::Delegate:
   void OnFirstSubresourceLoadDisallowed() override;
-  bool ShouldSuppressActivation(
-      content::NavigationHandle* navigation_handle) override;
   void WillProcessResponse(
       content::NavigationHandle* navigation_handle) override;
 
