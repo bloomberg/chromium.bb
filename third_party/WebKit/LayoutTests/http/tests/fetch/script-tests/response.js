@@ -487,7 +487,7 @@ promise_test(() => {
       });
     assert_true(stream.locked);
     return p;
-  }, 'Response constructed with a stream');
+  }, 'Response constructed with a stream having bytes');
 
 promise_test(() => {
     var response = new Response('helloworld');
