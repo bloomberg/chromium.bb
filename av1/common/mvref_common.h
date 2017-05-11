@@ -267,8 +267,12 @@ static INLINE void av1_set_ref_frame(MV_REFERENCE_FRAME *rf,
   } else {
     rf[0] = ref_frame_type;
     rf[1] = NONE_FRAME;
-    assert(ref_frame_type > INTRA_FRAME &&
-           ref_frame_type < TOTAL_REFS_PER_FRAME);
+#if CONFIG_INTRABC
+    assert(ref_frame_type > NONE_FRAME);
+#else
+    assert(ref_frame_type > INTRA_FRAME);
+#endif
+    assert(ref_frame_type < TOTAL_REFS_PER_FRAME);
   }
 }
 

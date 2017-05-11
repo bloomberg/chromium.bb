@@ -2144,6 +2144,9 @@ static void write_mb_modes_kf(AV1_COMMON *cm,
 #else
                               const MACROBLOCKD *xd,
 #endif  // CONFIG_DELTA_Q
+#if CONFIG_INTRABC
+                              const MB_MODE_INFO_EXT *mbmi_ext,
+#endif  // CONFIG_INTRABC
                               const int mi_row, const int mi_col,
                               aom_writer *w) {
   const struct segmentation *const seg = &cm->seg;
@@ -2215,8 +2218,7 @@ static void write_mb_modes_kf(AV1_COMMON *cm,
     if (use_intrabc) {
       assert(mbmi->mode == DC_PRED);
       assert(mbmi->uv_mode == DC_PRED);
-      int_mv dv_ref;
-      av1_find_ref_dv(&dv_ref, mi_row, mi_col);
+      int_mv dv_ref = mbmi_ext->ref_mvs[INTRA_FRAME][0];
       av1_encode_dv(w, &mbmi->mv[0].as_mv, &dv_ref.as_mv, &ec_ctx->ndvc);
 #if CONFIG_EXT_TX && !CONFIG_TXK_SEL
       av1_write_tx_type(cm, xd,
@@ -2365,7 +2367,11 @@ static void write_mbmi_b(AV1_COMP *cpi, const TileInfo *const tile,
                  cm->mi_rows, cm->mi_cols);
 
   if (frame_is_intra_only(cm)) {
-    write_mb_modes_kf(cm, xd, mi_row, mi_col, w);
+    write_mb_modes_kf(cm, xd,
+#if CONFIG_INTRABC
+                      cpi->td.mb.mbmi_ext,
+#endif  // CONFIG_INTRABC
+                      mi_row, mi_col, w);
   } else {
 #if CONFIG_VAR_TX
     xd->above_txfm_context = cm->above_txfm_context + mi_col;

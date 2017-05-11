@@ -9065,11 +9065,25 @@ static int64_t rd_pick_intrabc_mode_sb(const AV1_COMP *cpi, MACROBLOCK *x,
   const int h = block_size_high[bsize];
   const int sb_row = mi_row / MAX_MIB_SIZE;
 
-  int_mv dv_ref;
-  av1_find_ref_dv(&dv_ref, mi_row, mi_col);
+  MB_MODE_INFO_EXT *const mbmi_ext = x->mbmi_ext;
+  MV_REFERENCE_FRAME ref_frame = INTRA_FRAME;
+  int_mv *const candidates = x->mbmi_ext->ref_mvs[ref_frame];
+  av1_find_mv_refs(cm, xd, mi, ref_frame, &mbmi_ext->ref_mv_count[ref_frame],
+                   mbmi_ext->ref_mv_stack[ref_frame],
+#if CONFIG_EXT_INTER
+                   mbmi_ext->compound_mode_context,
+#endif  // CONFIG_EXT_INTER
+                   candidates, mi_row, mi_col, NULL, NULL,
+                   mbmi_ext->mode_context);
+
+  int_mv nearestmv, nearmv;
+  av1_find_best_ref_mvs(0, candidates, &nearestmv, &nearmv);
+
+  int_mv dv_ref = nearestmv.as_int == 0 ? nearmv : nearestmv;
+  if (dv_ref.as_int == 0) av1_find_ref_dv(&dv_ref, mi_row, mi_col);
+  mbmi_ext->ref_mvs[INTRA_FRAME][0] = dv_ref;
 
   const MvLimits tmp_mv_limits = x->mv_limits;
-
   // TODO(aconverse@google.com): Handle same row DV.
   x->mv_limits.col_min = (tile->mi_col_start - mi_col) * MI_SIZE;
   x->mv_limits.col_max = (tile->mi_col_end - mi_col) * MI_SIZE - w;
@@ -9198,6 +9212,7 @@ void av1_rd_pick_intra_mode_sb(const AV1_COMP *cpi, MACROBLOCK *x,
   xd->mi[0]->mbmi.ref_frame[1] = NONE_FRAME;
 #if CONFIG_INTRABC
   xd->mi[0]->mbmi.use_intrabc = 0;
+  xd->mi[0]->mbmi.mv[0].as_int = 0;
 #endif  // CONFIG_INTRABC
 
   const int64_t intra_yrd =

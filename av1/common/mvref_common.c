@@ -586,6 +586,9 @@ static void find_mv_refs_idx(const AV1_COMMON *cm, const MACROBLOCKD *xd,
           ? cm->prev_frame->mvs + mi_row * cm->mi_cols + mi_col
           : NULL;
 #endif
+#if CONFIG_INTRABC
+  assert(IMPLIES(ref_frame == INTRA_FRAME, cm->use_prev_frame_mvs == 0));
+#endif
   const TileInfo *const tile = &xd->tile;
   const BLOCK_SIZE bsize = mi->mbmi.sb_type;
   const int bw = block_size_wide[AOMMAX(bsize, BLOCK_8X8)];

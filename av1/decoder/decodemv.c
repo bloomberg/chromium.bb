@@ -1045,7 +1045,6 @@ static INLINE int assign_dv(AV1_COMMON *cm, MACROBLOCKD *xd, int_mv *mv,
   read_mv(r, &mv->as_mv, &ref_mv->as_mv, &ec_ctx->ndvc, dv_counts, 0);
   int valid = is_mv_valid(&mv->as_mv) &&
               is_dv_valid(mv->as_mv, &xd->tile, mi_row, mi_col, bsize);
-  // TODO(aconverse@google.com): additional validation
   return valid;
 }
 #endif  // CONFIG_INTRABC
@@ -1103,14 +1102,29 @@ static void read_intra_frame_mode_info(AV1_COMMON *const cm,
   if (bsize >= BLOCK_8X8 && cm->allow_screen_content_tools) {
     mbmi->use_intrabc = aom_read(r, INTRABC_PROB, ACCT_STR);
     if (mbmi->use_intrabc) {
-      int_mv dv_ref;
       mbmi->mode = mbmi->uv_mode = DC_PRED;
 #if CONFIG_DUAL_FILTER
       for (int idx = 0; idx < 4; ++idx) mbmi->interp_filter[idx] = BILINEAR;
 #else
       mbmi->interp_filter = BILINEAR;
 #endif
-      av1_find_ref_dv(&dv_ref, mi_row, mi_col);
+
+      int16_t inter_mode_ctx[MODE_CTX_REF_FRAMES];
+      int_mv ref_mvs[MAX_MV_REF_CANDIDATES] = {};
+
+      av1_find_mv_refs(cm, xd, mi, INTRA_FRAME, &xd->ref_mv_count[INTRA_FRAME],
+                       xd->ref_mv_stack[INTRA_FRAME],
+#if CONFIG_EXT_INTER
+                       compound_inter_mode_ctx,
+#endif  // CONFIG_EXT_INTER
+                       ref_mvs, mi_row, mi_col, NULL, NULL, inter_mode_ctx);
+
+      int_mv nearestmv, nearmv;
+      av1_find_best_ref_mvs(0, ref_mvs, &nearestmv, &nearmv);
+
+      int_mv dv_ref = nearestmv.as_int == 0 ? nearmv : nearestmv;
+      if (dv_ref.as_int == 0) av1_find_ref_dv(&dv_ref, mi_row, mi_col);
+
       xd->corrupted |=
           !assign_dv(cm, xd, &mbmi->mv[0], &dv_ref, mi_row, mi_col, bsize, r);
 #if CONFIG_EXT_TX && !CONFIG_TXK_SEL
