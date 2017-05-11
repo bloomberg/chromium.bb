@@ -82,6 +82,29 @@ class BlinkPerfTest(page_test_test_case.PageTestTestCase):
     self.assertEquals(len(frame_view_painttrees[0].values), 9)
     self.assertGreater(frame_view_painttrees[0].GetRepresentativeNumber, 0.1)
 
+  def testBlinkPerfTracingMetricsForMeasurePageLoadTime(self):
+    results = self.RunMeasurement(measurement=self._measurement,
+        ps=self._CreateStorySetForTestFile(
+            'simple-html-measure-page-load-time.html'),
+        options=self._options)
+    self.assertFalse(results.failures)
+    self.assertEquals(len(results.FindAllTraceValues()), 1)
+
+    create_child_frame = results.FindAllPageSpecificValuesNamed(
+        'WebLocalFrameImpl::createChildframe')
+    self.assertEquals(len(create_child_frame), 1)
+    # color-changes-measure-frame-time.html specifies 7 iterationCount.
+    self.assertEquals(len(create_child_frame[0].values), 7)
+    self.assertGreater(create_child_frame[0].GetRepresentativeNumber, 0.1)
+
+    post_layout_task = results.FindAllPageSpecificValuesNamed(
+        'FrameView::performPostLayoutTasks')
+    self.assertEquals(len(post_layout_task), 1)
+    # color-changes-measure-frame-time.html specifies 7 iterationCount.
+    self.assertEquals(len(post_layout_task[0].values), 7)
+    self.assertGreater(post_layout_task[0].GetRepresentativeNumber, 0.1)
+
+
   def testBlinkPerfTracingMetricsForMeasureAsync(self):
     results = self.RunMeasurement(measurement=self._measurement,
         ps=self._CreateStorySetForTestFile(
