@@ -221,9 +221,7 @@ bool DataReductionProxyDelegate::SupportsQUIC(
     const net::ProxyServer& proxy_server) const {
   DCHECK(thread_checker_.CalledOnValidThread());
   // Enable QUIC for whitelisted proxies.
-  // TODO(tbansal):  Use client config service to control this whitelist.
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(
-             switches::kDataReductionProxyEnableQuicOnNonCoreProxies) ||
+  return params::IsQuicEnabledForNonCoreProxies() ||
          proxy_server ==
              net::ProxyServer(net::ProxyServer::SCHEME_HTTPS,
                               net::HostPortPair(kDataReductionCoreProxy, 443));

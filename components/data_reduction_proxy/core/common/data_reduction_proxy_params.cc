@@ -240,6 +240,14 @@ bool IsIncludedInQuicFieldTrial() {
   return true;
 }
 
+bool IsQuicEnabledForNonCoreProxies() {
+  DCHECK(IsIncludedInQuicFieldTrial());
+  std::map<std::string, std::string> params;
+  variations::GetVariationParams(GetQuicFieldTrialName(), &params);
+  return GetStringValueForVariationParamWithDefaultValue(
+             params, "enable_quic_non_core_proxies", "false") == "true";
+}
+
 const char* GetQuicFieldTrialName() {
   return kQuicFieldTrial;
 }

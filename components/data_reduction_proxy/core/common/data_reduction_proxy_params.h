@@ -122,6 +122,9 @@ bool WarnIfNoDataReductionProxy();
 // proxy server as quic://proxy.googlezip.net.
 bool IsIncludedInQuicFieldTrial();
 
+// Returns true if QUIC is enabled for non core data reduction proxies.
+bool IsQuicEnabledForNonCoreProxies();
+
 const char* GetQuicFieldTrialName();
 
 // Returns true if Brotli should be added to the accept-encoding header.
