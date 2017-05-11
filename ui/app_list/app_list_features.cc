@@ -12,11 +12,19 @@ namespace features {
 
 const base::Feature kEnableAnswerCard{"EnableAnswerCard",
                                       base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kEnableAnswerCardDarkRun{"EnableAnswerCardDarkRun",
+                                             base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kEnableFullscreenAppList{"EnableFullscreenAppList",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
 
 bool IsAnswerCardEnabled() {
   static const bool enabled = base::FeatureList::IsEnabled(kEnableAnswerCard);
+  return enabled;
+}
+
+bool IsAnswerCardDarkRunEnabled() {
+  static const bool enabled =
+      base::FeatureList::IsEnabled(kEnableAnswerCardDarkRun);
   return enabled;
 }
 
