@@ -17,15 +17,6 @@ def _CheckOwnershipForContribSubDir(sub_dir, input_api, output_api):
   if not input_api.os_path.isfile(owner_file):
     results.append(output_api.PresubmitError(
         '%s must have an OWNERS file' % sub_dir))
-  else:
-    owners = []
-    with open(owner_file) as f:
-      for line in f:
-        if line.strip() and not line.strip().startswith('#'):
-          owners.append(line)
-    if len(owners) < 2:
-      results.append(output_api.PresubmitError(
-          '%s must have at least 2 owners' % owner_file))
   return results
 
 
