@@ -145,10 +145,10 @@ TEST_F(EffectTreeLayerListIteratorTest, SimpleTree) {
 
   IterateFrontToBack();
   EXPECT_COUNT(root_ptr, 5, -1, 4);
-  EXPECT_COUNT(first_ptr, -1, -1, 3);
-  EXPECT_COUNT(second_ptr, -1, -1, 2);
-  EXPECT_COUNT(third_ptr, -1, -1, 1);
-  EXPECT_COUNT(fourth_ptr, -1, -1, 0);
+  EXPECT_COUNT(first_ptr, 5, -1, 3);
+  EXPECT_COUNT(second_ptr, 5, -1, 2);
+  EXPECT_COUNT(third_ptr, 5, -1, 1);
+  EXPECT_COUNT(fourth_ptr, 5, -1, 0);
 }
 
 TEST_F(EffectTreeLayerListIteratorTest, ComplexTree) {
@@ -190,14 +190,14 @@ TEST_F(EffectTreeLayerListIteratorTest, ComplexTree) {
 
   IterateFrontToBack();
   EXPECT_COUNT(root_ptr, 9, -1, 8);
-  EXPECT_COUNT(root1_ptr, -1, -1, 7);
-  EXPECT_COUNT(root2_ptr, -1, -1, 6);
-  EXPECT_COUNT(root21_ptr, -1, -1, 5);
-  EXPECT_COUNT(root22_ptr, -1, -1, 4);
-  EXPECT_COUNT(root221_ptr, -1, -1, 3);
-  EXPECT_COUNT(root23_ptr, -1, -1, 2);
-  EXPECT_COUNT(root231_ptr, -1, -1, 1);
-  EXPECT_COUNT(root3_ptr, -1, -1, 0);
+  EXPECT_COUNT(root1_ptr, 9, -1, 7);
+  EXPECT_COUNT(root2_ptr, 9, -1, 6);
+  EXPECT_COUNT(root21_ptr, 9, -1, 5);
+  EXPECT_COUNT(root22_ptr, 9, -1, 4);
+  EXPECT_COUNT(root221_ptr, 9, -1, 3);
+  EXPECT_COUNT(root23_ptr, 9, -1, 2);
+  EXPECT_COUNT(root231_ptr, 9, -1, 1);
+  EXPECT_COUNT(root3_ptr, 9, -1, 0);
 }
 
 TEST_F(EffectTreeLayerListIteratorTest, ComplexTreeMultiSurface) {
@@ -243,14 +243,14 @@ TEST_F(EffectTreeLayerListIteratorTest, ComplexTreeMultiSurface) {
 
   IterateFrontToBack();
   EXPECT_COUNT(root_ptr, 14, -1, 13);
-  EXPECT_COUNT(root1_ptr, -1, -1, 12);
+  EXPECT_COUNT(root1_ptr, 14, -1, 12);
   EXPECT_COUNT(root2_ptr, 10, 11, -1);
-  EXPECT_COUNT(root21_ptr, -1, -1, 9);
+  EXPECT_COUNT(root21_ptr, 10, 11, 9);
   EXPECT_COUNT(root22_ptr, 7, 8, 6);
-  EXPECT_COUNT(root221_ptr, -1, -1, 5);
+  EXPECT_COUNT(root221_ptr, 7, 8, 5);
   EXPECT_COUNT(root23_ptr, 3, 4, 2);
-  EXPECT_COUNT(root231_ptr, -1, -1, 1);
-  EXPECT_COUNT(root3_ptr, -1, -1, 0);
+  EXPECT_COUNT(root231_ptr, 3, 4, 1);
+  EXPECT_COUNT(root3_ptr, 14, -1, 0);
 }
 
 }  // namespace

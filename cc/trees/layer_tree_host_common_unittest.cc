@@ -878,16 +878,20 @@ TEST_F(LayerTreeHostCommonTest, TransformsForRenderSurfaceHierarchy) {
   // Only layers that are associated with render surfaces should have an actual
   // RenderSurface() value.
   ASSERT_TRUE(GetRenderSurface(root));
-  ASSERT_FALSE(GetRenderSurface(child_of_root));
-  ASSERT_FALSE(GetRenderSurface(grand_child_of_root));
+  ASSERT_EQ(GetRenderSurface(child_of_root), GetRenderSurface(root));
+  ASSERT_EQ(GetRenderSurface(grand_child_of_root), GetRenderSurface(root));
 
-  ASSERT_TRUE(GetRenderSurface(render_surface1));
-  ASSERT_FALSE(GetRenderSurface(child_of_rs1));
-  ASSERT_FALSE(GetRenderSurface(grand_child_of_rs1));
+  ASSERT_NE(GetRenderSurface(render_surface1), GetRenderSurface(root));
+  ASSERT_EQ(GetRenderSurface(child_of_rs1), GetRenderSurface(render_surface1));
+  ASSERT_EQ(GetRenderSurface(grand_child_of_rs1),
+            GetRenderSurface(render_surface1));
 
-  ASSERT_TRUE(GetRenderSurface(render_surface2));
-  ASSERT_FALSE(GetRenderSurface(child_of_rs2));
-  ASSERT_FALSE(GetRenderSurface(grand_child_of_rs2));
+  ASSERT_NE(GetRenderSurface(render_surface2), GetRenderSurface(root));
+  ASSERT_NE(GetRenderSurface(render_surface2),
+            GetRenderSurface(render_surface1));
+  ASSERT_EQ(GetRenderSurface(child_of_rs2), GetRenderSurface(render_surface2));
+  ASSERT_EQ(GetRenderSurface(grand_child_of_rs2),
+            GetRenderSurface(render_surface2));
 
   // Verify all render target accessors
   EXPECT_EQ(GetRenderSurface(root), parent->render_target());
@@ -1548,7 +1552,7 @@ TEST_F(LayerTreeHostCommonTest, RenderSurfaceDrawOpacity) {
   ExecuteCalculateDrawProperties(root);
 
   ASSERT_TRUE(GetRenderSurface(surface1));
-  ASSERT_FALSE(GetRenderSurface(not_surface));
+  ASSERT_EQ(GetRenderSurface(not_surface), GetRenderSurface(surface1));
   ASSERT_TRUE(GetRenderSurface(surface2));
   EXPECT_EQ(0.5f, GetRenderSurface(surface1)->draw_opacity());
   // surface2's draw opacity should include the opacity of not-surface and
@@ -1572,7 +1576,7 @@ TEST_F(LayerTreeHostCommonTest, ForceRenderSurface) {
 
     // The root layer always creates a render surface
     EXPECT_TRUE(GetRenderSurface(root));
-    EXPECT_TRUE(GetRenderSurface(render_surface1));
+    EXPECT_NE(GetRenderSurface(render_surface1), GetRenderSurface(root));
   }
 
   {
@@ -1580,7 +1584,7 @@ TEST_F(LayerTreeHostCommonTest, ForceRenderSurface) {
     render_surface1->layer_tree_impl()->property_trees()->needs_rebuild = true;
     ExecuteCalculateDrawPropertiesAndSaveUpdateLayerList(root);
     EXPECT_TRUE(GetRenderSurface(root));
-    EXPECT_FALSE(GetRenderSurface(render_surface1));
+    EXPECT_EQ(GetRenderSurface(render_surface1), GetRenderSurface(root));
   }
 }
 
@@ -1607,8 +1611,8 @@ TEST_F(LayerTreeHostCommonTest, RenderSurfacesFlattenScreenSpaceTransform) {
   ExecuteCalculateDrawProperties(root);
 
   EXPECT_TRUE(GetRenderSurface(parent));
-  EXPECT_FALSE(GetRenderSurface(child));
-  EXPECT_FALSE(GetRenderSurface(grand_child));
+  EXPECT_EQ(GetRenderSurface(child), GetRenderSurface(parent));
+  EXPECT_EQ(GetRenderSurface(grand_child), GetRenderSurface(parent));
 
   EXPECT_TRANSFORMATION_MATRIX_EQ(gfx::Transform(), child->DrawTransform());
   EXPECT_TRANSFORMATION_MATRIX_EQ(gfx::Transform(),
@@ -2046,16 +2050,20 @@ TEST_F(LayerTreeHostCommonTest, AnimationsForRenderSurfaceHierarchy) {
   // Only layers that are associated with render surfaces should have an actual
   // RenderSurface() value.
   ASSERT_TRUE(GetRenderSurface(root));
-  ASSERT_FALSE(GetRenderSurface(child_of_root));
-  ASSERT_FALSE(GetRenderSurface(grand_child_of_root));
+  ASSERT_EQ(GetRenderSurface(child_of_root), GetRenderSurface(root));
+  ASSERT_EQ(GetRenderSurface(grand_child_of_root), GetRenderSurface(root));
 
-  ASSERT_TRUE(GetRenderSurface(render_surface1));
-  ASSERT_FALSE(GetRenderSurface(child_of_rs1));
-  ASSERT_FALSE(GetRenderSurface(grand_child_of_rs1));
+  ASSERT_NE(GetRenderSurface(render_surface1), GetRenderSurface(root));
+  ASSERT_EQ(GetRenderSurface(child_of_rs1), GetRenderSurface(render_surface1));
+  ASSERT_EQ(GetRenderSurface(grand_child_of_rs1),
+            GetRenderSurface(render_surface1));
 
-  ASSERT_TRUE(GetRenderSurface(render_surface2));
-  ASSERT_FALSE(GetRenderSurface(child_of_rs2));
-  ASSERT_FALSE(GetRenderSurface(grand_child_of_rs2));
+  ASSERT_NE(GetRenderSurface(render_surface2), GetRenderSurface(root));
+  ASSERT_NE(GetRenderSurface(render_surface2),
+            GetRenderSurface(render_surface1));
+  ASSERT_EQ(GetRenderSurface(child_of_rs2), GetRenderSurface(render_surface2));
+  ASSERT_EQ(GetRenderSurface(grand_child_of_rs2),
+            GetRenderSurface(render_surface2));
 
   // Verify all render target accessors
   EXPECT_EQ(GetRenderSurface(root), root->render_target());
@@ -3686,14 +3694,20 @@ TEST_F(LayerTreeHostCommonTest, BackFaceCullingWithoutPreserves3d) {
   ExecuteCalculateDrawPropertiesAndSaveUpdateLayerList(root);
 
   // Verify which render surfaces were created.
-  EXPECT_FALSE(GetRenderSurface(front_facing_child));
-  EXPECT_FALSE(GetRenderSurface(back_facing_child));
-  EXPECT_TRUE(GetRenderSurface(front_facing_surface));
-  EXPECT_TRUE(GetRenderSurface(back_facing_surface));
-  EXPECT_FALSE(GetRenderSurface(front_facing_child_of_front_facing_surface));
-  EXPECT_FALSE(GetRenderSurface(back_facing_child_of_front_facing_surface));
-  EXPECT_FALSE(GetRenderSurface(front_facing_child_of_back_facing_surface));
-  EXPECT_FALSE(GetRenderSurface(back_facing_child_of_back_facing_surface));
+  EXPECT_EQ(GetRenderSurface(front_facing_child), GetRenderSurface(root));
+  EXPECT_EQ(GetRenderSurface(back_facing_child), GetRenderSurface(root));
+  EXPECT_NE(GetRenderSurface(front_facing_surface), GetRenderSurface(root));
+  EXPECT_NE(GetRenderSurface(back_facing_surface), GetRenderSurface(root));
+  EXPECT_NE(GetRenderSurface(back_facing_surface),
+            GetRenderSurface(front_facing_surface));
+  EXPECT_EQ(GetRenderSurface(front_facing_child_of_front_facing_surface),
+            GetRenderSurface(front_facing_surface));
+  EXPECT_EQ(GetRenderSurface(back_facing_child_of_front_facing_surface),
+            GetRenderSurface(front_facing_surface));
+  EXPECT_EQ(GetRenderSurface(front_facing_child_of_back_facing_surface),
+            GetRenderSurface(back_facing_surface));
+  EXPECT_EQ(GetRenderSurface(back_facing_child_of_back_facing_surface),
+            GetRenderSurface(back_facing_surface));
 
   EXPECT_EQ(3u, update_layer_list_impl()->size());
   EXPECT_TRUE(UpdateLayerListImplContains(front_facing_child->id()));
@@ -3794,15 +3808,21 @@ TEST_F(LayerTreeHostCommonTest, BackFaceCullingWithPreserves3d) {
   ExecuteCalculateDrawPropertiesAndSaveUpdateLayerList(root);
 
   // Verify which render surfaces were created and used.
-  EXPECT_FALSE(GetRenderSurface(front_facing_child));
-  EXPECT_FALSE(GetRenderSurface(back_facing_child));
-  EXPECT_TRUE(GetRenderSurface(front_facing_surface));
+  EXPECT_EQ(GetRenderSurface(front_facing_child), GetRenderSurface(root));
+  EXPECT_EQ(GetRenderSurface(back_facing_child), GetRenderSurface(root));
+  EXPECT_NE(GetRenderSurface(front_facing_surface), GetRenderSurface(root));
   // We expect that a has_render_surface was created but not used.
-  EXPECT_TRUE(GetRenderSurface(back_facing_surface));
-  EXPECT_FALSE(GetRenderSurface(front_facing_child_of_front_facing_surface));
-  EXPECT_FALSE(GetRenderSurface(back_facing_child_of_front_facing_surface));
-  EXPECT_FALSE(GetRenderSurface(front_facing_child_of_back_facing_surface));
-  EXPECT_FALSE(GetRenderSurface(back_facing_child_of_back_facing_surface));
+  EXPECT_NE(GetRenderSurface(back_facing_surface), GetRenderSurface(root));
+  EXPECT_NE(GetRenderSurface(back_facing_surface),
+            GetRenderSurface(front_facing_surface));
+  EXPECT_EQ(GetRenderSurface(front_facing_child_of_front_facing_surface),
+            GetRenderSurface(front_facing_surface));
+  EXPECT_EQ(GetRenderSurface(back_facing_child_of_front_facing_surface),
+            GetRenderSurface(front_facing_surface));
+  EXPECT_EQ(GetRenderSurface(front_facing_child_of_back_facing_surface),
+            GetRenderSurface(back_facing_surface));
+  EXPECT_EQ(GetRenderSurface(back_facing_child_of_back_facing_surface),
+            GetRenderSurface(back_facing_surface));
 
   EXPECT_EQ(3u, update_layer_list_impl()->size());
 
@@ -3868,11 +3888,12 @@ TEST_F(LayerTreeHostCommonTest, BackFaceCullingWithAnimatingTransforms) {
 
   ExecuteCalculateDrawPropertiesAndSaveUpdateLayerList(root);
 
-  EXPECT_FALSE(GetRenderSurface(child));
+  EXPECT_EQ(GetRenderSurface(child), GetRenderSurface(root));
   EXPECT_TRUE(GetRenderSurface(animating_surface));
-  EXPECT_FALSE(GetRenderSurface(child_of_animating_surface));
-  EXPECT_FALSE(GetRenderSurface(animating_child));
-  EXPECT_FALSE(GetRenderSurface(child2));
+  EXPECT_EQ(GetRenderSurface(child_of_animating_surface),
+            GetRenderSurface(animating_surface));
+  EXPECT_EQ(GetRenderSurface(animating_child), GetRenderSurface(root));
+  EXPECT_EQ(GetRenderSurface(child2), GetRenderSurface(root));
 
   EXPECT_EQ(1u, update_layer_list_impl()->size());
 
@@ -3931,9 +3952,9 @@ TEST_F(LayerTreeHostCommonTest,
   EXPECT_TRUE(GetRenderSurface(front_facing_surface));
 
   // We expect the render surface to have been created, but remain unused.
-  EXPECT_TRUE(GetRenderSurface(back_facing_surface));
-  EXPECT_FALSE(GetRenderSurface(child1));
-  EXPECT_FALSE(GetRenderSurface(child2));
+  EXPECT_NE(GetRenderSurface(back_facing_surface), GetRenderSurface(root));
+  EXPECT_EQ(GetRenderSurface(child1), GetRenderSurface(front_facing_surface));
+  EXPECT_EQ(GetRenderSurface(child2), GetRenderSurface(back_facing_surface));
 
   EXPECT_EQ(2u, update_layer_list_impl()->size());
   EXPECT_TRUE(UpdateLayerListImplContains(front_facing_surface->id()));
@@ -4333,7 +4354,7 @@ TEST_F(LayerTreeHostCommonTest, TransparentChildRenderSurfaceCreation) {
   grand_child->SetBounds(gfx::Size(10, 10));
   grand_child->SetDrawsContent(true);
   ExecuteCalculateDrawProperties(root);
-  EXPECT_FALSE(GetRenderSurface(child));
+  EXPECT_EQ(GetRenderSurface(child), GetRenderSurface(root));
 }
 
 TEST_F(LayerTreeHostCommonTest, OpacityAnimatingOnPendingTree) {
@@ -5426,9 +5447,9 @@ TEST_F(LayerTreeHostCommonTest,
 
   // Verify which render surfaces were created.
   EXPECT_TRUE(GetRenderSurface(root));
-  EXPECT_FALSE(GetRenderSurface(child1));
-  EXPECT_TRUE(GetRenderSurface(child2));
-  EXPECT_FALSE(GetRenderSurface(child3));
+  EXPECT_EQ(GetRenderSurface(child1), GetRenderSurface(root));
+  EXPECT_NE(GetRenderSurface(child2), GetRenderSurface(root));
+  EXPECT_EQ(GetRenderSurface(child3), GetRenderSurface(child2));
 }
 
 TEST_F(LayerTreeHostCommonTest, DoNotIncludeBackfaceInvisibleSurfaces) {
@@ -8304,8 +8325,8 @@ TEST_F(LayerTreeHostCommonTest, AnimatedOpacityCreatesRenderSurface) {
 
   EXPECT_EQ(1.f, child->Opacity());
   EXPECT_TRUE(GetRenderSurface(root));
-  EXPECT_TRUE(GetRenderSurface(child));
-  EXPECT_FALSE(GetRenderSurface(grandchild));
+  EXPECT_NE(GetRenderSurface(child), GetRenderSurface(root));
+  EXPECT_EQ(GetRenderSurface(grandchild), GetRenderSurface(child));
 }
 
 // Verify that having an animated filter (but no current filter, as these
@@ -8325,8 +8346,8 @@ TEST_F(LayerTreeHostCommonTest, AnimatedFilterCreatesRenderSurface) {
   ExecuteCalculateDrawProperties(root);
 
   EXPECT_TRUE(GetRenderSurface(root));
-  EXPECT_TRUE(GetRenderSurface(child));
-  EXPECT_FALSE(GetRenderSurface(grandchild));
+  EXPECT_NE(GetRenderSurface(child), GetRenderSurface(root));
+  EXPECT_EQ(GetRenderSurface(grandchild), GetRenderSurface(child));
 
   EXPECT_TRUE(GetRenderSurface(root)->Filters().IsEmpty());
   EXPECT_TRUE(GetRenderSurface(child)->Filters().IsEmpty());
@@ -8369,8 +8390,8 @@ TEST_F(LayerTreeHostCommonTest, DelayedFilterAnimationCreatesRenderSurface) {
   ExecuteCalculateDrawProperties(root);
 
   EXPECT_TRUE(GetRenderSurface(root));
-  EXPECT_TRUE(GetRenderSurface(child));
-  EXPECT_FALSE(GetRenderSurface(grandchild));
+  EXPECT_NE(GetRenderSurface(child), GetRenderSurface(root));
+  EXPECT_EQ(GetRenderSurface(grandchild), GetRenderSurface(child));
 
   EXPECT_TRUE(GetRenderSurface(root)->Filters().IsEmpty());
   EXPECT_TRUE(GetRenderSurface(child)->Filters().IsEmpty());
@@ -9081,10 +9102,10 @@ TEST_F(LayerTreeHostCommonTest, RenderSurfaceClipsSubtree) {
   EXPECT_EQ(transform_node->owning_layer_id, significant_transform->id());
 
   EXPECT_TRUE(GetRenderSurface(root));
-  EXPECT_FALSE(GetRenderSurface(significant_transform));
+  EXPECT_EQ(GetRenderSurface(significant_transform), GetRenderSurface(root));
   EXPECT_TRUE(GetRenderSurface(layer_clips_subtree));
-  EXPECT_TRUE(GetRenderSurface(render_surface));
-  EXPECT_FALSE(GetRenderSurface(test_layer));
+  EXPECT_NE(GetRenderSurface(render_surface), GetRenderSurface(root));
+  EXPECT_EQ(GetRenderSurface(test_layer), GetRenderSurface(render_surface));
 
   EXPECT_EQ(gfx::Rect(30, 20), test_layer->visible_layer_rect());
 }
