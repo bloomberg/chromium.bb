@@ -348,7 +348,8 @@ void WorkerThread::TerminateInternal(TerminationMode mode) {
                       BLINK_FROM_HERE,
                       WTF::Bind(&WorkerThread::MayForciblyTerminateExecution,
                                 WTF::Unretained(this)),
-                      forcible_termination_delay_in_ms_);
+                      TimeDelta::FromMilliseconds(
+                          forcible_termination_delay_in_ms_));
           break;
       }
     }

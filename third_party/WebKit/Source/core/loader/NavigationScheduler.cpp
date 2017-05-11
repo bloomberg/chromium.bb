@@ -540,7 +540,7 @@ void NavigationScheduler::StartTimer() {
           BLINK_FROM_HERE,
           WTF::Bind(&NavigationScheduler::NavigateTask,
                     WrapWeakPersistent(this)),
-          redirect_->Delay() * 1000.0);
+          TimeDelta::FromSecondsD(redirect_->Delay()));
 
   probe::frameScheduledNavigation(frame_, redirect_->Delay());
 }

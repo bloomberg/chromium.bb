@@ -613,7 +613,8 @@ void CanvasAsyncBlobCreator::PostDelayedTaskToCurrentThread(
     std::unique_ptr<WTF::Closure> task,
     double delay_ms) {
   TaskRunnerHelper::Get(TaskType::kCanvasBlobSerialization, document_)
-      ->PostDelayedTask(location, std::move(task), delay_ms);
+      ->PostDelayedTask(location, std::move(task),
+                        TimeDelta::FromMillisecondsD(delay_ms));
 }
 
 DEFINE_TRACE(CanvasAsyncBlobCreator) {

@@ -137,11 +137,10 @@ void TimerBase::SetNextFireTime(double now, double delay) {
     // Cancel any previously posted task.
     weak_ptr_factory_.RevokeAll();
 
-    double delay_ms = 1000.0 * delay;
-    TimerTaskRunner()->PostDelayedTask(
+    TimerTaskRunner()->ToSingleThreadTaskRunner()->PostDelayedTask(
         location_,
         base::Bind(&TimerBase::RunInternal, weak_ptr_factory_.CreateWeakPtr()),
-        delay_ms);
+        TimeDelta::FromSecondsD(delay));
   }
 }
 

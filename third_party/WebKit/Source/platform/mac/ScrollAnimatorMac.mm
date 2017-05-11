@@ -1040,7 +1040,7 @@ void ScrollAnimatorMac::StartScrollbarPaintTimer() {
           BLINK_FROM_HERE,
           WTF::Bind(&ScrollAnimatorMac::InitialScrollbarPaintTask,
                     WrapWeakPersistent(this)),
-          1);
+          TimeDelta::FromMilliseconds(1));
 }
 
 bool ScrollAnimatorMac::ScrollbarPaintTimerIsActive() const {

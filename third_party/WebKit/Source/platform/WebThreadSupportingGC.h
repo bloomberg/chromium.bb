@@ -40,9 +40,9 @@ class PLATFORM_EXPORT WebThreadSupportingGC final {
 
   void PostDelayedTask(const WebTraceLocation& location,
                        std::unique_ptr<WTF::Closure> task,
-                       long long delay_ms) {
+                       TimeDelta delay) {
     thread_->GetWebTaskRunner()->PostDelayedTask(location, std::move(task),
-                                                 delay_ms);
+                                                 delay);
   }
 
   void PostTask(const WebTraceLocation& location,
@@ -52,9 +52,9 @@ class PLATFORM_EXPORT WebThreadSupportingGC final {
 
   void PostDelayedTask(const WebTraceLocation& location,
                        std::unique_ptr<CrossThreadClosure> task,
-                       long long delay_ms) {
+                       TimeDelta delay) {
     thread_->GetWebTaskRunner()->PostDelayedTask(location, std::move(task),
-                                                 delay_ms);
+                                                 delay);
   }
 
   bool IsCurrentThread() const { return thread_->IsCurrentThread(); }

@@ -10,6 +10,7 @@
 #include "platform/wtf/Compiler.h"
 #include "platform/wtf/Functional.h"
 #include "platform/wtf/RefCounted.h"
+#include "platform/wtf/Time.h"
 #include "platform/wtf/WeakPtr.h"
 #include "public/platform/WebCommon.h"
 #include "public/platform/WebTraceLocation.h"
@@ -59,12 +60,6 @@ class BLINK_PLATFORM_EXPORT TaskHandle {
 class BLINK_PLATFORM_EXPORT WebTaskRunner
     : public ThreadSafeRefCounted<WebTaskRunner> {
  public:
-  // Schedule a task to be run after |delayMs| on the the associated WebThread.
-  // Can be called from any thread.
-  virtual void PostDelayedTask(const WebTraceLocation&,
-                               base::OnceClosure,
-                               double delay_ms) = 0;
-
   // Drepecated: favor RunsTasksInCurrentSequence().
   // TODO(http://crbug.com/665062): mass redirect callers and remove this.
   bool RunsTasksOnCurrentThread();
@@ -101,13 +96,13 @@ class BLINK_PLATFORM_EXPORT WebTaskRunner
   void PostTask(const WebTraceLocation&, std::unique_ptr<CrossThreadClosure>);
   void PostDelayedTask(const WebTraceLocation&,
                        std::unique_ptr<CrossThreadClosure>,
-                       long long delay_ms);
+                       TimeDelta delay);
 
   // For same-thread posting. Must be called from the associated WebThread.
   void PostTask(const WebTraceLocation&, std::unique_ptr<WTF::Closure>);
   void PostDelayedTask(const WebTraceLocation&,
                        std::unique_ptr<WTF::Closure>,
-                       long long delay_ms);
+                       TimeDelta delay);
 
   // For same-thread cancellable task posting. Returns a TaskHandle object for
   // cancellation.
@@ -116,7 +111,7 @@ class BLINK_PLATFORM_EXPORT WebTaskRunner
   WARN_UNUSED_RESULT TaskHandle
   PostDelayedCancellableTask(const WebTraceLocation&,
                              std::unique_ptr<WTF::Closure>,
-                             long long delay_ms);
+                             TimeDelta delay);
 
  protected:
   friend ThreadSafeRefCounted<WebTaskRunner>;

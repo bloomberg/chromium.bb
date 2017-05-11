@@ -23,9 +23,6 @@ class PLATFORM_EXPORT WebTaskRunnerImpl : public WebTaskRunner {
   static RefPtr<WebTaskRunnerImpl> Create(scoped_refptr<TaskQueue> task_queue);
 
   // WebTaskRunner implementation:
-  void PostDelayedTask(const WebTraceLocation&,
-                       base::OnceClosure,
-                       double delay_ms) override;
   bool RunsTasksInCurrentSequence() override;
   double VirtualTimeSeconds() const override;
   double MonotonicallyIncreasingVirtualTimeSeconds() const override;
