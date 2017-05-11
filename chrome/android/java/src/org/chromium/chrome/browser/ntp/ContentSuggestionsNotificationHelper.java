@@ -226,8 +226,12 @@ public class ContentSuggestionsNotificationHelper {
                 (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
         for (ActiveNotification activeNotification : getActiveNotifications()) {
             manager.cancel(NOTIFICATION_TAG, activeNotification.mId);
-            recordCachedActionMetric(why);
+            if (removeActiveNotification(
+                        activeNotification.mCategory, activeNotification.mIdWithinCategory)) {
+                recordCachedActionMetric(why);
+            }
         }
+        assert getActiveNotifications().isEmpty();
     }
 
     private static class ActiveNotification {
