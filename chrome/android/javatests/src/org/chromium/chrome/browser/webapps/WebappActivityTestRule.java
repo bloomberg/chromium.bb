@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,25 +10,29 @@ import android.content.Intent;
 import android.net.Uri;
 import android.view.ViewGroup;
 
+import org.junit.Assert;
+import org.junit.runner.Description;
+import org.junit.runners.model.Statement;
+
+import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.browser.ShortcutHelper;
-import org.chromium.chrome.test.ChromeActivityTestCaseBase;
+import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 
 /**
- * The base class of the WebappActivity tests. It provides the common methods to access the activity
- * UI.  This particular test base only instantiates WebappActivity0.
+ * Custom {@link ChromeActivityTestRule} for tests using {@link WebappActivity}.
  */
-public abstract class WebappActivityTestBase extends ChromeActivityTestCaseBase<WebappActivity0> {
-    static final String WEBAPP_ID = "webapp_id";
-    static final String WEBAPP_NAME = "webapp name";
-    static final String WEBAPP_SHORT_NAME = "webapp short name";
+public class WebappActivityTestRule extends ChromeActivityTestRule<WebappActivity0> {
+    public static final String WEBAPP_ID = "webapp_id";
+    public static final String WEBAPP_NAME = "webapp name";
+    public static final String WEBAPP_SHORT_NAME = "webapp short name";
 
     private static final long STARTUP_TIMEOUT = scaleTimeout(10000);
 
     // Empty 192x192 image generated with:
     // ShortcutHelper.encodeBitmapAsString(Bitmap.createBitmap(192, 192, Bitmap.Config.ARGB_4444));
-    protected static final String TEST_ICON =
+    public static final String TEST_ICON =
             "iVBORw0KGgoAAAANSUhEUgAAAMAAAADACAYAAABS3GwHAAAABHNCSVQICAgIfAhkiAAAAKZJREFU"
             + "eJztwTEBAAAAwqD1T20JT6AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
             + "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
@@ -37,7 +41,7 @@ public abstract class WebappActivityTestBase extends ChromeActivityTestCaseBase<
 
     // Empty 512x512 image generated with:
     // ShortcutHelper.encodeBitmapAsString(Bitmap.createBitmap(512, 512, Bitmap.Config.ARGB_4444));
-    protected static final String TEST_SPLASH_ICON =
+    public static final String TEST_SPLASH_ICON =
             "iVBORw0KGgoAAAANSUhEUgAAAgAAAAIACAYAAAD0eNT6AAAABHNCSVQICAgIfAhkiAAABA9JREFU"
             + "eJztwTEBAAAAwqD1T20Hb6AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
             + "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
@@ -59,7 +63,7 @@ public abstract class WebappActivityTestBase extends ChromeActivityTestCaseBase<
             + "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
             + "AAAAAAAAAOA3AvAAAdln8YgAAAAASUVORK5CYII=";
 
-    public WebappActivityTestBase() {
+    public WebappActivityTestRule() {
         super(WebappActivity0.class);
     }
 
@@ -69,7 +73,7 @@ public abstract class WebappActivityTestBase extends ChromeActivityTestCaseBase<
      * loads about:blank to avoid a network load.  This results in the URL bar showing because
      * {@link UrlUtils} cannot parse this type of URL.
      */
-    protected Intent createIntent() {
+    public Intent createIntent() {
         Intent intent = new Intent(getInstrumentation().getTargetContext(), WebappActivity0.class);
         intent.setData(Uri.parse(WebappActivity.WEBAPP_SCHEME + "://" + WEBAPP_ID));
         intent.putExtra(ShortcutHelper.EXTRA_ID, WEBAPP_ID);
@@ -80,57 +84,57 @@ public abstract class WebappActivityTestBase extends ChromeActivityTestCaseBase<
     }
 
     @Override
-    protected void setUp() throws Exception {
-        super.setUp();
+    public Statement apply(final Statement base, Description description) {
+        return new Statement() {
+            @Override
+            public void evaluate() throws Throwable {
+                // Register the webapp so when the data storage is opened, the test doesn't crash.
+                WebappRegistry.refreshSharedPrefsForTesting();
+                TestFetchStorageCallback callback = new TestFetchStorageCallback();
+                WebappRegistry.getInstance().register(WEBAPP_ID, callback);
+                callback.waitForCallback(0);
+                callback.getStorage().updateFromShortcutIntent(createIntent());
 
-        // Register the webapp so when the data storage is opened, the test doesn't crash.
-        WebappRegistry.refreshSharedPrefsForTesting();
-        TestFetchStorageCallback callback = new TestFetchStorageCallback();
-        WebappRegistry.getInstance().register(WEBAPP_ID, callback);
-        callback.waitForCallback(0);
-        callback.getStorage().updateFromShortcutIntent(createIntent());
+                base.evaluate();
+            }
+        };
     }
 
     /**
      * Starts up the WebappActivity and sets up the test observer.
      */
-    protected final void startWebappActivity() throws Exception {
+    public final void startWebappActivity() throws Exception {
         startWebappActivity(createIntent());
     }
 
     /**
      * Starts up the WebappActivity with a specific Intent and sets up the test observer.
      */
-    protected final void startWebappActivity(Intent intent) throws Exception {
-        setActivityIntent(intent);
+    public final void startWebappActivity(Intent intent) throws Exception {
+        launchActivity(intent);
         waitUntilIdle();
     }
 
     /**
      * Waits until any loads in progress have completed.
      */
-    protected void waitUntilIdle() {
+    public void waitUntilIdle() {
         getInstrumentation().waitForIdleSync();
         CriteriaHelper.pollInstrumentationThread(new Criteria() {
-                @Override
-                public boolean isSatisfied() {
-                    return getActivity().getActivityTab() != null
-                            && !getActivity().getActivityTab().isLoading();
-                }
-            }, STARTUP_TIMEOUT, CriteriaHelper.DEFAULT_POLLING_INTERVAL);
+            @Override
+            public boolean isSatisfied() {
+                return getActivity().getActivityTab() != null
+                        && !getActivity().getActivityTab().isLoading();
+            }
+        }, STARTUP_TIMEOUT, CriteriaHelper.DEFAULT_POLLING_INTERVAL);
 
         getInstrumentation().waitForIdleSync();
-    }
-
-    @Override
-    public final void startMainActivity() throws InterruptedException {
-        // Do nothing; the WebappActivity may not have been completely set up, yet.
     }
 
     /**
      * Waits for the splash screen to be hidden.
      */
-    protected void waitUntilSplashscreenHides() {
+    public void waitUntilSplashscreenHides() {
         CriteriaHelper.pollInstrumentationThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
@@ -139,7 +143,7 @@ public abstract class WebappActivityTestBase extends ChromeActivityTestCaseBase<
         });
     }
 
-    protected ViewGroup waitUntilSplashScreenAppears() {
+    public ViewGroup waitUntilSplashScreenAppears() {
         CriteriaHelper.pollInstrumentationThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
@@ -149,7 +153,7 @@ public abstract class WebappActivityTestBase extends ChromeActivityTestCaseBase<
 
         ViewGroup splashScreen = getActivity().getSplashScreenForTests();
         if (splashScreen == null) {
-            fail("No splash screen available.");
+            Assert.fail("No splash screen available.");
         }
         return splashScreen;
     }
