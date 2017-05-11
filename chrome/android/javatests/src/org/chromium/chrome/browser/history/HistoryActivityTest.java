@@ -28,8 +28,8 @@ import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.IntentHandler;
-import org.chromium.chrome.browser.childaccounts.ChildAccountService;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.signin.SigninManager;
 import org.chromium.chrome.browser.signin.SigninManager.SignInStateObserver;
 import org.chromium.chrome.browser.widget.TintedImageButton;
@@ -511,7 +511,7 @@ public class HistoryActivityTest extends BaseActivityInstrumentationTestCase<His
             @Override
             public Boolean call() throws Exception {
                 PrefServiceBridge.getInstance().setSupervisedUserId("ChildAccountSUID");
-                return ChildAccountService.isChildAccount()
+                return Profile.getLastUsedProfile().isChild()
                         && !PrefServiceBridge.getInstance().canDeleteBrowsingHistory()
                         && !PrefServiceBridge.getInstance().isIncognitoModeEnabled();
             }

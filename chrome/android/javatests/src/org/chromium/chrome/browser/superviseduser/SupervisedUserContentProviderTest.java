@@ -25,8 +25,8 @@ import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeSwitches;
-import org.chromium.chrome.browser.childaccounts.ChildAccountService;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.browser.signin.SigninTestUtil;
@@ -99,7 +99,7 @@ public class SupervisedUserContentProviderTest {
             @Override
             public Boolean call() throws Exception {
                 PrefServiceBridge.getInstance().setSupervisedUserId("");
-                return ChildAccountService.isChildAccount();
+                return Profile.getLastUsedProfile().isChild();
             }
 
         }));
@@ -124,7 +124,7 @@ public class SupervisedUserContentProviderTest {
             @Override
             public Boolean call() throws Exception {
                 PrefServiceBridge.getInstance().setSupervisedUserId("ChildAccountSUID");
-                return ChildAccountService.isChildAccount();
+                return Profile.getLastUsedProfile().isChild();
             }
 
         }));

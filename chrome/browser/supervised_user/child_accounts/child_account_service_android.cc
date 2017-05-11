@@ -23,11 +23,6 @@ using base::android::JavaRef;
 using base::android::RunCallbackAndroid;
 using base::android::ScopedJavaGlobalRef;
 
-jboolean IsChildAccount(JNIEnv* env, const JavaParamRef<jclass>& jcaller) {
-  ProfileManager* profile_manager = g_browser_process->profile_manager();
-  return profile_manager->GetLastUsedProfile()->IsChild();
-}
-
 bool RegisterChildAccountService(JNIEnv* env) {
   return RegisterNativesImpl(env);
 }
