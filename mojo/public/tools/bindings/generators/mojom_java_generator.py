@@ -486,9 +486,7 @@ class Generator(generator.Generator):
   def _DoGenerateFiles(self):
     fileutil.EnsureDirectoryExists(self.output_dir)
 
-    # Keep this above the others as .GetStructs() changes the state of the
-    # module, annotating structs with required information.
-    for struct in self.GetStructs():
+    for struct in self.module.structs:
       self.Write(self._GenerateStructSource(struct),
                  '%s.java' % GetNameForElement(struct))
 
@@ -500,7 +498,7 @@ class Generator(generator.Generator):
       self.Write(self._GenerateEnumSource(enum),
                  '%s.java' % GetNameForElement(enum))
 
-    for interface in self.GetInterfaces():
+    for interface in self.module.interfaces:
       self.Write(self._GenerateInterfaceSource(interface),
                  '%s.java' % GetNameForElement(interface))
       self.Write(self._GenerateInterfaceInternalSource(interface),

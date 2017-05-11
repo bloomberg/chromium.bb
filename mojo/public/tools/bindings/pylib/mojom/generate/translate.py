@@ -608,10 +608,4 @@ def OrderedModule(tree, name, imports):
     {mojom.Module} An AST for the mojom.
   """
   module = _Module(tree, name, imports)
-  for interface in module.interfaces:
-    next_ordinal = 0
-    for method in interface.methods:
-      if method.ordinal is None:
-        method.ordinal = next_ordinal
-      next_ordinal = method.ordinal + 1
   return module

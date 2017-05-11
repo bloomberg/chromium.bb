@@ -623,9 +623,8 @@ class Enum(Kind):
 
 
 class Module(object):
-  def __init__(self, name=None, namespace=None, attributes=None):
-    self.name = name
-    self.path = name
+  def __init__(self, path=None, namespace=None, attributes=None):
+    self.path = path
     self.namespace = namespace
     self.structs = []
     self.unions = []
@@ -639,10 +638,10 @@ class Module(object):
 
   def Repr(self, as_ref=True):
     if as_ref:
-      return '<%s name=%r namespace=%r>' % (
-          self.__class__.__name__, self.name, self.namespace)
+      return '<%s path=%r namespace=%r>' % (
+          self.__class__.__name__, self.path, self.namespace)
     else:
-      return GenericRepr(self, {'name': False, 'namespace': False,
+      return GenericRepr(self, {'path': False, 'namespace': False,
                                 'attributes': False, 'structs': False,
                                 'interfaces': False, 'unions': False})
 

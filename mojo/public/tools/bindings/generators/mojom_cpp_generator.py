@@ -278,12 +278,10 @@ class Generator(generator.Generator):
           yield param.kind
 
   def _GetJinjaExports(self):
-    structs = self.GetStructs()
-    interfaces = self.GetInterfaces()
     all_enums = list(self.module.enums)
-    for struct in structs:
+    for struct in self.module.structs:
       all_enums.extend(struct.enums)
-    for interface in interfaces:
+    for interface in self.module.interfaces:
       all_enums.extend(interface.enums)
 
     return {
@@ -294,9 +292,9 @@ class Generator(generator.Generator):
       "kinds": self.module.kinds,
       "enums": self.module.enums,
       "all_enums": all_enums,
-      "structs": structs,
-      "unions": self.GetUnions(),
-      "interfaces": interfaces,
+      "structs": self.module.structs,
+      "unions": self.module.unions,
+      "interfaces": self.module.interfaces,
       "variant": self.variant,
       "extra_traits_headers": self._GetExtraTraitsHeaders(),
       "extra_public_headers": self._GetExtraPublicHeaders(),
@@ -356,7 +354,7 @@ class Generator(generator.Generator):
       "is_union_kind": mojom.IsUnionKind,
       "passes_associated_kinds": mojom.PassesAssociatedKinds,
       "struct_constructors": self._GetStructConstructors,
-      "under_to_camel": generator.UnderToCamel,
+      "under_to_camel": generator.ToCamel,
       "unmapped_type_for_serializer": self._GetUnmappedTypeForSerializer,
       "wtf_hash_fn_name_for_enum": GetWtfHashFnNameForEnum,
     }

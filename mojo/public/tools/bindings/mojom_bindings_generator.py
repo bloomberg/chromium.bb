@@ -41,6 +41,7 @@ from mojom.error import Error
 import mojom.fileutil as fileutil
 from mojom.generate import translate
 from mojom.generate import template_expander
+from mojom.generate.generator import AddComputedData
 from mojom.parse.parser import Parse
 
 
@@ -198,6 +199,7 @@ class MojomProcessor(object):
     module.path = module.path.replace('\\', '/')
 
     if self._should_generate(rel_filename.path):
+      AddComputedData(module)
       for language, generator_module in generator_modules.iteritems():
         generator = generator_module.Generator(
             module, args.output_dir, typemap=self._typemap.get(language, {}),
