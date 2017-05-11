@@ -39,11 +39,18 @@ class OpenVRDevice : public VRDevice {
                          int16_t source_height) override;
   void GetVRVSyncProvider(mojom::VRVSyncProviderRequest request) override;
 
+  void OnPollingEvents();
+
  private:
   class OpenVRRenderLoop : public base::SimpleThread,
                            device::mojom::VRVSyncProvider {
    public:
     OpenVRRenderLoop(vr::IVRSystem* vr);
+
+    void RegisterPollingEventCallback(
+        const base::Callback<void()>& onPollingEvents);
+
+    void UnregisterPollingEventCallback();
 
     void Bind(mojom::VRVSyncProviderRequest request);
 
@@ -56,6 +63,7 @@ class OpenVRDevice : public VRDevice {
                       callback) override;
 
     scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
+    base::Callback<void()> on_polling_events_;
     vr::IVRSystem* vr_system_;
     mojo::Binding<device::mojom::VRVSyncProvider> binding_;
   };
@@ -69,6 +77,10 @@ class OpenVRDevice : public VRDevice {
   mojom::VRSubmitFrameClientPtr submit_client_;
 
   vr::IVRSystem* vr_system_;
+
+  bool is_polling_events_;
+
+  base::WeakPtrFactory<OpenVRDevice> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(OpenVRDevice);
 };

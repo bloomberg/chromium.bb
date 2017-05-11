@@ -76,7 +76,8 @@ std::vector<float> HmdMatrix34ToWebVRTransformMatrix(
 
 namespace device {
 
-OpenVRDevice::OpenVRDevice(vr::IVRSystem* vr) : vr_system_(vr) {}
+OpenVRDevice::OpenVRDevice(vr::IVRSystem* vr)
+    : vr_system_(vr), weak_ptr_factory_(this), is_polling_events_(false) {}
 OpenVRDevice::~OpenVRDevice() {}
 
 void OpenVRDevice::CreateVRDisplayInfo(
@@ -142,7 +143,14 @@ void OpenVRDevice::CreateVRDisplayInfo(
     device->stageParameters->sizeZ = 0.0f;
   }
 
-  render_loop_ = std::make_unique<OpenVRRenderLoop>(vr_system_);
+  // If it is the first initialization, OpenVRRenderLoop instance needs to be
+  // created and the polling event callback needs to be registered.
+  if (!render_loop_) {
+    render_loop_ = std::make_unique<OpenVRRenderLoop>(vr_system_);
+
+    render_loop_->RegisterPollingEventCallback(base::Bind(
+        &OpenVRDevice::OnPollingEvents, weak_ptr_factory_.GetWeakPtr()));
+  }
 
   on_created.Run(std::move(device));
 }
@@ -180,8 +188,11 @@ void OpenVRDevice::GetVRVSyncProvider(mojom::VRVSyncProviderRequest request) {
 
 OpenVRDevice::OpenVRRenderLoop::OpenVRRenderLoop(vr::IVRSystem* vr_system)
     : vr_system_(vr_system),
+      main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       binding_(this),
-      base::SimpleThread("OpenVRRenderLoop") {}
+      base::SimpleThread("OpenVRRenderLoop") {
+  DCHECK(main_thread_task_runner_);
+}
 
 void OpenVRDevice::OpenVRRenderLoop::Bind(
     mojom::VRVSyncProviderRequest request) {
@@ -233,10 +244,66 @@ device::mojom::VRPosePtr OpenVRDevice::OpenVRRenderLoop::getPose() {
   return std::move(pose);
 }
 
+// Only deal with events that will cause displayInfo changes for now.
+void OpenVRDevice::OnPollingEvents() {
+  if (!vr_system_ || is_polling_events_)
+    return;
+
+  // Polling events through vr_system_ has started.
+  is_polling_events_ = true;
+
+  vr::VREvent_t event;
+  bool is_changed = false;
+  while (vr_system_->PollNextEvent(&event, sizeof(event))) {
+    if (event.trackedDeviceIndex != vr::k_unTrackedDeviceIndex_Hmd &&
+        event.trackedDeviceIndex != vr::k_unTrackedDeviceIndexInvalid) {
+      continue;
+    }
+
+    switch (event.eventType) {
+      case vr::VREvent_TrackedDeviceUpdated:
+      case vr::VREvent_IpdChanged:
+      case vr::VREvent_ChaperoneDataHasChanged:
+      case vr::VREvent_ChaperoneSettingsHaveChanged:
+      case vr::VREvent_ChaperoneUniverseHasChanged:
+        is_changed = true;
+        break;
+
+      default:
+        break;
+    }
+  }
+
+  // Polling events through vr_system_ has finished.
+  is_polling_events_ = false;
+
+  if (is_changed) {
+    OnChanged();
+  }
+}
+
+// Register a callback function to deal with system events.
+void OpenVRDevice::OpenVRRenderLoop::RegisterPollingEventCallback(
+    const base::Callback<void()>& onPollingEvents) {
+  if (onPollingEvents.is_null())
+    return;
+
+  on_polling_events_ = onPollingEvents;
+}
+
+void OpenVRDevice::OpenVRRenderLoop::UnregisterPollingEventCallback() {
+  on_polling_events_.Reset();
+}
+
 void OpenVRDevice::OpenVRRenderLoop::GetVSync(
     const mojom::VRVSyncProvider::GetVSyncCallback& callback) {
   static int16_t next_frame = 0;
   int16_t frame = next_frame++;
+
+  // VSync could be used as a signal to poll events.
+  if (!on_polling_events_.is_null()) {
+    main_thread_task_runner_->PostTask(FROM_HERE, on_polling_events_);
+  }
 
   // TODO(BillOrr): Give real values when VSync loop is hooked up.  This is the
   // presentation time for the frame. Just returning a default value for now
