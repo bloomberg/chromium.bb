@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from telemetry.core import util
 from telemetry.page import page
 from telemetry.page import cache_temperature as cache_temperature_module
 from telemetry.page import shared_page_state
@@ -28,5 +29,5 @@ class PageCyclerStory(page.Page):
                            timeout_in_seconds=_NAVIGATION_TIMEOUT)
 
   def RunPageInteractions(self, action_runner):
-    action_runner.tab.WaitForDocumentReadyStateToBeComplete(
+    util.WaitFor(action_runner.tab.HasReachedQuiescence,
         _WEB_CONTENTS_TIMEOUT)
