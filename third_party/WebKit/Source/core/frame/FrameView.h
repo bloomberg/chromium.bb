@@ -42,6 +42,7 @@
 #include "core/paint/ScrollbarManager.h"
 #include "core/plugins/PluginView.h"
 #include "platform/FrameViewBase.h"
+#include "platform/PlatformFrameView.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/animation/CompositorAnimationHost.h"
 #include "platform/animation/CompositorAnimationTimeline.h"
@@ -103,6 +104,7 @@ typedef unsigned long long DOMTimeStamp;
 
 class CORE_EXPORT FrameView final
     : public GarbageCollectedFinalized<FrameView>,
+      public PlatformFrameView,
       public FrameViewBase,
       public FrameOrPlugin,
       public PaintInvalidationCapableScrollableArea {
@@ -1267,6 +1269,11 @@ inline void FrameView::IncrementVisuallyNonEmptyPixelCount(
     SetIsVisuallyNonEmpty();
 }
 
+DEFINE_TYPE_CASTS(FrameView,
+                  PlatformFrameView,
+                  platform_frame_view,
+                  platform_frame_view->IsFrameView(),
+                  platform_frame_view.IsFrameView());
 DEFINE_TYPE_CASTS(FrameView,
                   FrameViewBase,
                   frameViewBase,

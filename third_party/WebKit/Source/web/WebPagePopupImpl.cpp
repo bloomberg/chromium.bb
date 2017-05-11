@@ -89,9 +89,8 @@ class PagePopupChromeClient final : public EmptyChromeClient {
 
   IntRect RootWindowRect() override { return popup_->WindowRectInScreen(); }
 
-  IntRect ViewportToScreen(
-      const IntRect& rect,
-      const FrameViewBase* frame_view_base) const override {
+  IntRect ViewportToScreen(const IntRect& rect,
+                           const PlatformFrameView* frame_view) const override {
     WebRect rect_in_screen(rect);
     WebRect window_rect = popup_->WindowRectInScreen();
     popup_->WidgetClient()->ConvertViewportToWindow(&rect_in_screen);
@@ -124,7 +123,7 @@ class PagePopupChromeClient final : public EmptyChromeClient {
       popup_->WidgetClient()->DidInvalidateRect(paint_rect);
   }
 
-  void ScheduleAnimation(LocalFrame*) override {
+  void ScheduleAnimation(const PlatformFrameView*) override {
     // Calling scheduleAnimation on m_webView so WebViewTestProxy will call
     // beginFrame.
     if (LayoutTestSupport::IsRunningLayoutTest())

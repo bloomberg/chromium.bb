@@ -366,13 +366,13 @@ void AutoscrollController::Animate(double) {
   }
   if (autoscroll_type_ != kNoAutoscroll && autoscroll_layout_object_) {
     page_->GetChromeClient().ScheduleAnimation(
-        autoscroll_layout_object_->GetFrame());
+        autoscroll_layout_object_->GetFrame()->View());
   }
 }
 
 void AutoscrollController::StartAutoscroll() {
   page_->GetChromeClient().ScheduleAnimation(
-      autoscroll_layout_object_->GetFrame());
+      autoscroll_layout_object_->GetFrame()->View());
 }
 
 void AutoscrollController::UpdateMiddleClickAutoscrollState(

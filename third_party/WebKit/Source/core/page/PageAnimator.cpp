@@ -91,7 +91,7 @@ void PageAnimator::ScheduleVisualUpdate(LocalFrame* frame) {
       suppress_frame_requests_workaround_for704763_only_) {
     return;
   }
-  page_->GetChromeClient().ScheduleAnimation(frame);
+  page_->GetChromeClient().ScheduleAnimation(frame->View());
 }
 
 void PageAnimator::UpdateAllLifecyclePhases(LocalFrame& root_frame) {

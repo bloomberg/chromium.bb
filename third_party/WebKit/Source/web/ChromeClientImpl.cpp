@@ -556,24 +556,27 @@ void ChromeClientImpl::InvalidateRect(const IntRect& update_rect) {
     web_view_->InvalidateRect(update_rect);
 }
 
-void ChromeClientImpl::ScheduleAnimation(LocalFrame* frame) {
-  frame = &frame->LocalFrameRoot();
+void ChromeClientImpl::ScheduleAnimation(
+    const PlatformFrameView* platform_frame_view) {
+  DCHECK(platform_frame_view->IsFrameView());
+  LocalFrame& frame =
+      ToFrameView(platform_frame_view)->GetFrame().LocalFrameRoot();
   // If the frame is still being created, it might not yet have a WebWidget.
   // FIXME: Is this the right thing to do? Is there a way to avoid having
   // a local frame root that doesn't have a WebWidget? During initialization
   // there is no content to draw so this call serves no purpose.
-  if (WebLocalFrameImpl::FromFrame(frame) &&
-      WebLocalFrameImpl::FromFrame(frame)->FrameWidget())
-    WebLocalFrameImpl::FromFrame(frame)->FrameWidget()->ScheduleAnimation();
+  if (WebLocalFrameImpl::FromFrame(&frame) &&
+      WebLocalFrameImpl::FromFrame(&frame)->FrameWidget())
+    WebLocalFrameImpl::FromFrame(&frame)->FrameWidget()->ScheduleAnimation();
 }
 
 IntRect ChromeClientImpl::ViewportToScreen(
     const IntRect& rect_in_viewport,
-    const FrameViewBase* frame_view_base) const {
+    const PlatformFrameView* platform_frame_view) const {
   WebRect screen_rect(rect_in_viewport);
 
-  DCHECK(frame_view_base->IsFrameView());
-  const FrameView* view = ToFrameView(frame_view_base);
+  DCHECK(platform_frame_view->IsFrameView());
+  const FrameView* view = ToFrameView(platform_frame_view);
   LocalFrame& frame = view->GetFrame().LocalFrameRoot();
 
   WebWidgetClient* client =

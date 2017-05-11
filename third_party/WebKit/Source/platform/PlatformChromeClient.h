@@ -27,14 +27,13 @@
 #define PlatformChromeClient_h
 
 #include "platform/PlatformExport.h"
+#include "platform/PlatformFrameView.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/Noncopyable.h"
 
 namespace blink {
 class IntRect;
-class FrameViewBase;
-class LocalFrame;
 
 class PLATFORM_EXPORT PlatformChromeClient
     : public GarbageCollectedFinalized<PlatformChromeClient> {
@@ -50,13 +49,13 @@ class PLATFORM_EXPORT PlatformChromeClient
 
   // Converts the rect from the viewport coordinates to screen coordinates.
   virtual IntRect ViewportToScreen(const IntRect&,
-                                   const FrameViewBase*) const = 0;
+                                   const PlatformFrameView*) const = 0;
 
   // Converts the scalar value from the window coordinates to the viewport
   // scale.
   virtual float WindowToViewportScalar(const float) const = 0;
 
-  virtual void ScheduleAnimation(LocalFrame*) = 0;
+  virtual void ScheduleAnimation(const PlatformFrameView*) = 0;
 };
 
 }  // namespace blink
