@@ -565,7 +565,9 @@ class NotificationPlatformBridgeLinuxImpl
     writer.CloseContainer(&hints_writer);
 
     const int32_t kExpireTimeoutDefault = -1;
-    writer.AppendInt32(kExpireTimeoutDefault);
+    const int32_t kExpireTimeoutNever = 0;
+    writer.AppendInt32(notification->never_timeout() ? kExpireTimeoutNever
+                                                     : kExpireTimeoutDefault);
 
     std::unique_ptr<dbus::Response> response =
         notification_proxy_->CallMethodAndBlock(

@@ -53,6 +53,11 @@ class NotificationBuilder {
     return *this;
   }
 
+  NotificationBuilder& SetNeverTimeout(bool never_timeout) {
+    notification_.set_never_timeout(never_timeout);
+    return *this;
+  }
+
   NotificationBuilder& SetProgress(int progress) {
     notification_.set_progress(progress);
     return *this;
@@ -75,6 +80,7 @@ class NotificationBuilder {
 struct NotificationRequest {
   std::string summary;
   std::string body;
+  int32_t expire_timeout = 0;
 };
 
 NotificationRequest ParseRequest(dbus::MethodCall* method_call) {
@@ -85,7 +91,6 @@ NotificationRequest ParseRequest(dbus::MethodCall* method_call) {
   dbus::MessageReader reader(method_call);
   std::string str;
   uint32_t uint32;
-  int32_t int32;
   EXPECT_TRUE(reader.PopString(&str));              // app_name
   EXPECT_TRUE(reader.PopUint32(&uint32));           // replaces_id
   EXPECT_TRUE(reader.PopString(&str));              // app_icon
@@ -115,7 +120,7 @@ NotificationRequest ParseRequest(dbus::MethodCall* method_call) {
     }
   }
 
-  EXPECT_TRUE(reader.PopInt32(&int32));  // expire_timeout
+  EXPECT_TRUE(reader.PopInt32(&request.expire_timeout));
   EXPECT_FALSE(reader.HasMoreData());
 
   return request;
@@ -298,4 +303,29 @@ TEST_F(NotificationPlatformBridgeLinuxTest, NotificationListItemsInBody) {
               {base::UTF8ToUTF16("abc"), base::UTF8ToUTF16("123")},
               {base::UTF8ToUTF16("def"), base::UTF8ToUTF16("456")}})
           .GetResult());
+}
+
+TEST_F(NotificationPlatformBridgeLinuxTest, NotificationTimeouts) {
+  const int32_t kExpireTimeoutDefault = -1;
+  const int32_t kExpireTimeoutNever = 0;
+  EXPECT_CALL(*mock_notification_proxy_.get(),
+              MockCallMethodAndBlock(Calls("Notify"), _))
+      .WillOnce(OnNotify(
+          [=](const NotificationRequest& request) {
+            EXPECT_EQ(kExpireTimeoutDefault, request.expire_timeout);
+          },
+          1))
+      .WillOnce(OnNotify(
+          [=](const NotificationRequest& request) {
+            EXPECT_EQ(kExpireTimeoutNever, request.expire_timeout);
+          },
+          2));
+
+  CreateNotificationBridgeLinux();
+  notification_bridge_linux_->Display(
+      NotificationCommon::PERSISTENT, "", "", false,
+      NotificationBuilder("1").SetNeverTimeout(false).GetResult());
+  notification_bridge_linux_->Display(
+      NotificationCommon::PERSISTENT, "", "", false,
+      NotificationBuilder("2").SetNeverTimeout(true).GetResult());
 }
