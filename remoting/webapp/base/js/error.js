@@ -193,6 +193,7 @@ remoting.Error.Tag = {
   // TODO(garykac): Move app-specific errors into separate location.
   APP_NOT_AUTHORIZED: /*i18n-content*/ 'ERROR_APP_NOT_AUTHORIZED',
   NACL_DISABLED: /*i18n-content*/ 'ERROR_NACL_DISABLED',
+  POLICY_ERROR: /*i18n-content*/ 'ERROR_POLICY',
 };
 
 // A whole bunch of semi-redundant constants, mostly to reduce to size

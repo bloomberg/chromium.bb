@@ -125,7 +125,7 @@ remoting.tryShareWithToken_ = function(hostFacade, token) {
       function(/** string */ email) {
         hostSession_.connect(
             hostFacade, email, token, onHostStateChanged_,
-            onNatTraversalPolicyChanged_, logDebugInfo_, it2meConnectFailed_);
+            onNatTraversalPolicyChanged_, logDebugInfo_, showShareError_);
       });
 };
 
@@ -245,15 +245,6 @@ function showShareError_(error) {
   }
 
   cleanUp();
-}
-
-/**
- * Show a sharing error with error code UNEXPECTED .
- *
- * @return {void} Nothing.
- */
-function it2meConnectFailed_() {
-  showShareError_(remoting.Error.unexpected());
 }
 
 function cleanUp() {

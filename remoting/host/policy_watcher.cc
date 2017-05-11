@@ -159,11 +159,7 @@ void PolicyWatcher::StartWatching(
 }
 
 std::unique_ptr<base::DictionaryValue> PolicyWatcher::GetCurrentPolicies() {
-  // If |old_policies_| is empty, then the PolicyService has not yet provided
-  // policies, so just return the default values. Otherwise, |old_policies_|
-  // already contains all the supported policies, defaults and overrides.
-  return old_policies_->size() == 0 ? GetDefaultPolicies()
-                                    : old_policies_->CreateDeepCopy();
+  return old_policies_->CreateDeepCopy();
 }
 
 std::unique_ptr<base::DictionaryValue> PolicyWatcher::GetDefaultPolicies() {

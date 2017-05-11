@@ -784,4 +784,14 @@ TEST_F(PolicyWatcherTest, GetCurrentPolicies) {
   ASSERT_TRUE(*current_policies == nat_false_others_default_);
 }
 
+TEST_F(PolicyWatcherTest, GetCurrentPoliciesError) {
+  EXPECT_CALL(mock_policy_callback_, OnPolicyError());
+
+  SetPolicies(nat_one_);
+  StartWatching();
+  std::unique_ptr<base::DictionaryValue> current_policies =
+      policy_watcher_->GetCurrentPolicies();
+  ASSERT_EQ(0u, current_policies->size());
+}
+
 }  // namespace remoting

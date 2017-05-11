@@ -287,6 +287,12 @@ remoting.It2MeHostFacade.prototype.onIncomingMessage_ =
       }
       break;
 
+    case 'policyError':
+      if (this.onError_) {
+        this.onError_(new remoting.Error(remoting.Error.Tag.POLICY_ERROR));
+      }
+      break;
+
     case 'error':
       console.error(base.getStringAttr(message, 'description'));
       if (this.onError_) {

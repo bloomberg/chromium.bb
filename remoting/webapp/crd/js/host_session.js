@@ -70,7 +70,8 @@ remoting.HostSession.State.fromString = function(stateString) {
  *     for notification of changes to the NAT traversal policy.
  * @param {function(string):void} logDebugInfo Callback allowing the plugin
  *     to log messages to the debug log.
- * @param {function():void} onError Callback to invoke in case of an error.
+ * @param {function(remoting.Error):void} onError Callback to invoke in case
+ *     of an error.
  */
 remoting.HostSession.prototype.connect =
     function(hostFacade, email, accessToken, onStateChanged,
