@@ -7261,6 +7261,7 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="12" label="stat"/>
   <int value="13" label="sync"/>
   <int value="14" label="truncate"/>
+  <int value="15" label="non fatal open(src_file)"/>
 </enum>
 
 <enum name="DircryptoMigrationFailedPathType" type="int">
