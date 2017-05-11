@@ -25,7 +25,7 @@
 #ifndef BorderData_h
 #define BorderData_h
 
-#include "core/style/BorderColorAndStyle.h"
+#include "core/style/BorderStyle.h"
 #include "core/style/NinePieceImage.h"
 #include "platform/LengthSize.h"
 #include "platform/geometry/IntRect.h"
@@ -47,13 +47,6 @@ class BorderData {
 
   bool HasBorderFill() const { return image_.HasImage() && image_.Fill(); }
 
-  bool HasBorderColorReferencingCurrentColor() const {
-    return (left_.NonZero() && left_.GetColor().IsCurrentColor()) ||
-           (right_.NonZero() && right_.GetColor().IsCurrentColor()) ||
-           (top_.NonZero() && top_.GetColor().IsCurrentColor()) ||
-           (bottom_.NonZero() && bottom_.GetColor().IsCurrentColor());
-  }
-
   bool operator==(const BorderData& o) const {
     return left_ == o.left_ && right_ == o.right_ && top_ == o.top_ &&
            bottom_ == o.bottom_ && image_ == o.image_;
@@ -71,18 +64,18 @@ class BorderData {
 
   bool operator!=(const BorderData& o) const { return !(*this == o); }
 
-  const BorderColorAndStyle& Left() const { return left_; }
-  const BorderColorAndStyle& Right() const { return right_; }
-  const BorderColorAndStyle& Top() const { return top_; }
-  const BorderColorAndStyle& Bottom() const { return bottom_; }
+  const BorderStyle& Left() const { return left_; }
+  const BorderStyle& Right() const { return right_; }
+  const BorderStyle& Top() const { return top_; }
+  const BorderStyle& Bottom() const { return bottom_; }
 
   const NinePieceImage& GetImage() const { return image_; }
 
  private:
-  BorderColorAndStyle left_;
-  BorderColorAndStyle right_;
-  BorderColorAndStyle top_;
-  BorderColorAndStyle bottom_;
+  BorderStyle left_;
+  BorderStyle right_;
+  BorderStyle top_;
+  BorderStyle bottom_;
 
   NinePieceImage image_;
 };

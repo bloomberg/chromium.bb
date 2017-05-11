@@ -656,6 +656,10 @@
       name: "border-bottom-color",
       custom_all: true,
       interpolable: true,
+      field_template: "storage_only",
+      field_type_path: "platform/graphics/Color",
+      default_value: "0",
+      field_group: "surround",
     },
     {
       name: "border-bottom-left-radius",
@@ -744,6 +748,10 @@
       name: "border-left-color",
       custom_all: true,
       interpolable: true,
+      field_template: "storage_only",
+      field_type_path: "platform/graphics/Color",
+      default_value: "0",
+      field_group: "surround",
     },
     {
       name: "border-left-style",
@@ -770,6 +778,10 @@
       name: "border-right-color",
       custom_all: true,
       interpolable: true,
+      field_template: "storage_only",
+      field_type_path: "platform/graphics/Color",
+      default_value: "0",
+      field_group: "surround",
     },
     {
       name: "border-right-style",
@@ -796,6 +808,10 @@
       name: "border-top-color",
       custom_all: true,
       interpolable: true,
+      field_template: "storage_only",
+      field_type_path: "platform/graphics/Color",
+      default_value: "0",
+      field_group: "surround",
     },
     {
       name: "border-top-left-radius",

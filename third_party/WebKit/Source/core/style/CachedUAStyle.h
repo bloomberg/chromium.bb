@@ -25,6 +25,7 @@
 
 #include <memory>
 #include "core/style/ComputedStyle.h"
+#include "platform/graphics/Color.h"
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/Noncopyable.h"
 #include "platform/wtf/PtrUtil.h"
@@ -38,10 +39,26 @@ namespace blink {
 class CachedUAStyle {
   USING_FAST_MALLOC(CachedUAStyle);
   WTF_MAKE_NONCOPYABLE(CachedUAStyle);
+  friend class ComputedStyle;
 
  public:
   static std::unique_ptr<CachedUAStyle> Create(const ComputedStyle* style) {
     return WTF::WrapUnique(new CachedUAStyle(style));
+  }
+
+  bool BorderColorEquals(const ComputedStyle& other) const {
+    return (border_left_color == other.BorderLeftColorInternal() &&
+            border_right_color == other.BorderRightColorInternal() &&
+            border_top_color == other.BorderTopColorInternal() &&
+            border_bottom_color == other.BorderBottomColorInternal()) &&
+           (border_left_color_is_current_color ==
+                other.BorderLeftColorIsCurrentColor() &&
+            border_right_color_is_current_color ==
+                other.BorderRightColorIsCurrentColor() &&
+            border_top_color_is_current_color ==
+                other.BorderTopColorIsCurrentColor() &&
+            border_bottom_color_is_current_color ==
+                other.BorderBottomColorIsCurrentColor());
   }
 
   BorderData border;
@@ -49,6 +66,14 @@ class CachedUAStyle {
   LengthSize top_right_;
   LengthSize bottom_left_;
   LengthSize bottom_right_;
+  Color border_left_color;
+  Color border_right_color;
+  Color border_top_color;
+  Color border_bottom_color;
+  bool border_left_color_is_current_color;
+  bool border_right_color_is_current_color;
+  bool border_top_color_is_current_color;
+  bool border_bottom_color_is_current_color;
   float border_left_width;
   float border_right_width;
   float border_top_width;
@@ -63,6 +88,18 @@ class CachedUAStyle {
         top_right_(style->BorderTopRightRadius()),
         bottom_left_(style->BorderBottomLeftRadius()),
         bottom_right_(style->BorderBottomRightRadius()),
+        border_left_color(style->BorderLeftColorInternal()),
+        border_right_color(style->BorderRightColorInternal()),
+        border_top_color(style->BorderTopColorInternal()),
+        border_bottom_color(style->BorderBottomColorInternal()),
+        border_left_color_is_current_color(
+            style->BorderLeftColorIsCurrentColor()),
+        border_right_color_is_current_color(
+            style->BorderRightColorIsCurrentColor()),
+        border_top_color_is_current_color(
+            style->BorderTopColorIsCurrentColor()),
+        border_bottom_color_is_current_color(
+            style->BorderBottomColorIsCurrentColor()),
         border_left_width(style->BorderLeftWidth()),
         border_right_width(style->BorderRightWidth()),
         border_top_width(style->BorderTopWidth()),

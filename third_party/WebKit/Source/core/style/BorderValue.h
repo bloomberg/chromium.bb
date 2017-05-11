@@ -26,7 +26,7 @@
 #define BorderValue_h
 
 #include "core/css/StyleColor.h"
-#include "core/style/BorderColorAndStyle.h"
+#include "core/style/BorderStyle.h"
 #include "core/style/ComputedStyleConstants.h"
 #include "platform/graphics/Color.h"
 #include "platform/wtf/Allocator.h"
@@ -46,9 +46,8 @@ class BorderValue {
     SetWidth(3);
   }
 
-  BorderValue(const BorderColorAndStyle& data, float width) {
-    SetColor(data.GetColor());
-    SetColorIsCurrentColor(ColorIsCurrentColor());
+  BorderValue(const BorderStyle& data, const StyleColor& color, float width) {
+    SetColor(color.Resolve(Color()));
     SetStyle(data.Style());
     SetIsAuto(data.IsAuto());
     SetWidth(width);

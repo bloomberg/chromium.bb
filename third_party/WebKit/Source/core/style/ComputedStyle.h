@@ -560,23 +560,35 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
 
   // Border color properties.
   // border-left-color
-  void SetBorderLeftColor(const StyleColor& v) {
-    SET_BORDERVALUE_COLOR(surround_data_, border_.left_, v);
+  void SetBorderLeftColor(const StyleColor& color) {
+    if (!compareEqual(BorderLeftColor(), color)) {
+      SetBorderLeftColorInternal(color.Resolve(Color()));
+      SetBorderLeftColorIsCurrentColor(color.IsCurrentColor());
+    }
   }
 
   // border-right-color
-  void SetBorderRightColor(const StyleColor& v) {
-    SET_BORDERVALUE_COLOR(surround_data_, border_.right_, v);
+  void SetBorderRightColor(const StyleColor& color) {
+    if (!compareEqual(BorderRightColor(), color)) {
+      SetBorderRightColorInternal(color.Resolve(Color()));
+      SetBorderRightColorIsCurrentColor(color.IsCurrentColor());
+    }
   }
 
   // border-top-color
-  void SetBorderTopColor(const StyleColor& v) {
-    SET_BORDERVALUE_COLOR(surround_data_, border_.top_, v);
+  void SetBorderTopColor(const StyleColor& color) {
+    if (!compareEqual(BorderTopColor(), color)) {
+      SetBorderTopColorInternal(color.Resolve(Color()));
+      SetBorderTopColorIsCurrentColor(color.IsCurrentColor());
+    }
   }
 
   // border-bottom-color
-  void SetBorderBottomColor(const StyleColor& v) {
-    SET_BORDERVALUE_COLOR(surround_data_, border_.bottom_, v);
+  void SetBorderBottomColor(const StyleColor& color) {
+    if (!compareEqual(BorderBottomColor(), color)) {
+      SetBorderBottomColorInternal(color.Resolve(Color()));
+      SetBorderBottomColorIsCurrentColor(color.IsCurrentColor());
+    }
   }
 
   // box-shadow (aka -webkit-box-shadow)
@@ -2845,16 +2857,20 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   void SetBorderImageSlicesFill(bool);
   const BorderData& Border() const { return surround_data_->border_; }
   const BorderValue BorderLeft() const {
-    return BorderValue(surround_data_->border_.Left(), BorderLeftWidth());
+    return BorderValue(surround_data_->border_.Left(), BorderLeftColor(),
+                       BorderLeftWidth());
   }
   const BorderValue BorderRight() const {
-    return BorderValue(surround_data_->border_.Right(), BorderRightWidth());
+    return BorderValue(surround_data_->border_.Right(), BorderRightColor(),
+                       BorderRightWidth());
   }
   const BorderValue BorderTop() const {
-    return BorderValue(surround_data_->border_.Top(), BorderTopWidth());
+    return BorderValue(surround_data_->border_.Top(), BorderTopColor(),
+                       BorderTopWidth());
   }
   const BorderValue BorderBottom() const {
-    return BorderValue(surround_data_->border_.Bottom(), BorderBottomWidth());
+    return BorderValue(surround_data_->border_.Bottom(), BorderBottomColor(),
+                       BorderBottomWidth());
   }
   bool BorderSizeEquals(const ComputedStyle& o) const {
     return BorderWidthEquals(BorderLeftWidth(), o.BorderLeftWidth()) &&
@@ -2891,7 +2907,10 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
     return false;
   }
   bool HasBorderColorReferencingCurrentColor() const {
-    return Border().HasBorderColorReferencingCurrentColor();
+    return (BorderLeft().NonZero() && BorderLeftColor().IsCurrentColor()) ||
+           (BorderRight().NonZero() && BorderRightColor().IsCurrentColor()) ||
+           (BorderTop().NonZero() && BorderTopColor().IsCurrentColor()) ||
+           (BorderBottom().NonZero() && BorderBottomColor().IsCurrentColor());
   }
 
   bool RadiiEqual(const ComputedStyle& o) const {
@@ -2899,6 +2918,43 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
            BorderTopRightRadius() == o.BorderTopRightRadius() &&
            BorderBottomLeftRadius() == o.BorderBottomLeftRadius() &&
            BorderBottomRightRadius() == o.BorderBottomRightRadius();
+  }
+
+  bool BorderColorEquals(const ComputedStyle& o) const {
+    return (BorderLeftColorInternal() == o.BorderLeftColorInternal() &&
+            BorderRightColorInternal() == o.BorderRightColorInternal() &&
+            BorderTopColorInternal() == o.BorderTopColorInternal() &&
+            BorderBottomColorInternal() == o.BorderBottomColorInternal()) &&
+           (BorderLeftColorIsCurrentColor() ==
+                o.BorderLeftColorIsCurrentColor() &&
+            BorderRightColorIsCurrentColor() ==
+                o.BorderRightColorIsCurrentColor() &&
+            BorderTopColorIsCurrentColor() ==
+                o.BorderTopColorIsCurrentColor() &&
+            BorderBottomColorIsCurrentColor() ==
+                o.BorderBottomColorIsCurrentColor());
+  }
+
+  bool BorderColorVisuallyEquals(const ComputedStyle& o) const {
+    if ((BorderLeftStyle() == kBorderStyleNone &&
+         o.BorderLeftStyle() == kBorderStyleNone) &&
+        (BorderRightStyle() == kBorderStyleNone &&
+         o.BorderRightStyle() == kBorderStyleNone) &&
+        (BorderTopStyle() == kBorderStyleNone &&
+         o.BorderTopStyle() == kBorderStyleNone) &&
+        (BorderBottomStyle() == kBorderStyleNone &&
+         o.BorderBottomStyle() == kBorderStyleNone))
+      return true;
+    if ((BorderLeftStyle() == kBorderStyleHidden &&
+         o.BorderLeftStyle() == kBorderStyleHidden) &&
+        (BorderRightStyle() == kBorderStyleHidden &&
+         o.BorderRightStyle() == kBorderStyleHidden) &&
+        (BorderTopStyle() == kBorderStyleHidden &&
+         o.BorderTopStyle() == kBorderStyleHidden) &&
+        (BorderBottomStyle() == kBorderStyleHidden &&
+         o.BorderBottomStyle() == kBorderStyleHidden))
+      return true;
+    return BorderColorEquals(o);
   }
 
   void ResetBorder() {
@@ -2912,21 +2968,30 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
     ResetBorderBottomLeftRadius();
     ResetBorderBottomRightRadius();
   }
+
   void ResetBorderTop() {
-    SET_VAR(surround_data_, border_.top_, BorderColorAndStyle());
+    SET_VAR(surround_data_, border_.top_, BorderStyle());
     SetBorderTopWidth(3);
+    SetBorderTopColorInternal(0);
+    SetBorderTopColorInternal(true);
   }
   void ResetBorderRight() {
-    SET_VAR(surround_data_, border_.right_, BorderColorAndStyle());
+    SET_VAR(surround_data_, border_.right_, BorderStyle());
     SetBorderRightWidth(3);
+    SetBorderRightColorInternal(0);
+    SetBorderRightColorInternal(true);
   }
   void ResetBorderBottom() {
-    SET_VAR(surround_data_, border_.bottom_, BorderColorAndStyle());
+    SET_VAR(surround_data_, border_.bottom_, BorderStyle());
     SetBorderBottomWidth(3);
+    SetBorderBottomColorInternal(0);
+    SetBorderBottomColorInternal(true);
   }
   void ResetBorderLeft() {
-    SET_VAR(surround_data_, border_.left_, BorderColorAndStyle());
+    SET_VAR(surround_data_, border_.left_, BorderStyle());
     SetBorderLeftWidth(3);
+    SetBorderLeftColorInternal(0);
+    SetBorderLeftColorInternal(true);
   }
   void ResetBorderImage() {
     SET_VAR(surround_data_, border_.image_, NinePieceImage());
@@ -3488,17 +3553,26 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   // Color accessors are all private to make sure callers use
   // VisitedDependentColor instead to access them.
   StyleColor BorderLeftColor() const {
-    return surround_data_->border_.Left().GetColor();
+    return BorderLeftColorIsCurrentColor()
+               ? StyleColor::CurrentColor()
+               : StyleColor(BorderLeftColorInternal());
   }
   StyleColor BorderRightColor() const {
-    return surround_data_->border_.Right().GetColor();
+    return BorderRightColorIsCurrentColor()
+               ? StyleColor::CurrentColor()
+               : StyleColor(BorderRightColorInternal());
   }
   StyleColor BorderTopColor() const {
-    return surround_data_->border_.Top().GetColor();
+    return BorderTopColorIsCurrentColor()
+               ? StyleColor::CurrentColor()
+               : StyleColor(BorderTopColorInternal());
   }
   StyleColor BorderBottomColor() const {
-    return surround_data_->border_.Bottom().GetColor();
+    return BorderBottomColorIsCurrentColor()
+               ? StyleColor::CurrentColor()
+               : StyleColor(BorderBottomColorInternal());
   }
+
   StyleColor BackgroundColor() const {
     return background_data_->background_color_;
   }
