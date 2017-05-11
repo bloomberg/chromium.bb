@@ -31,7 +31,9 @@ import java.io.File;
 import java.io.FileReader;
 import java.net.URL;
 import java.util.Arrays;
+import java.util.concurrent.Callable;
 import java.util.concurrent.Executor;
+import java.util.concurrent.FutureTask;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
@@ -1152,7 +1154,15 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
                 mUrl, callback, callback.getExecutor());
         builder.build().start();
         callback.blockForDone();
-        byte delta2[] = testFramework.mCronetEngine.getGlobalMetricsDeltas();
+        // Fetch deltas on a different thread the second time to make sure this is permitted.
+        // See crbug.com/719448
+        FutureTask<byte[]> task = new FutureTask<byte[]>(new Callable<byte[]>() {
+            public byte[] call() {
+                return testFramework.mCronetEngine.getGlobalMetricsDeltas();
+            }
+        });
+        new Thread(task).start();
+        byte delta2[] = task.get();
         assertTrue(delta2.length != 0);
         assertFalse(Arrays.equals(delta1, delta2));
     }
