@@ -31,7 +31,7 @@ namespace gfx {
 struct VectorIcon;
 }  // namespace gfx
 
-const char kACMatchPropertyInputText[] = "input text";
+const char kACMatchPropertySuggestionText[] = "match suggestion text";
 const char kACMatchPropertyContentsPrefix[] = "match contents prefix";
 const char kACMatchPropertyContentsStartIndex[] = "match contents start index";
 

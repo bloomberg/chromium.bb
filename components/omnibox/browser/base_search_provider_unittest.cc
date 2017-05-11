@@ -8,6 +8,7 @@
 
 #include "base/macros.h"
 #include "base/strings/string16.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/omnibox/browser/autocomplete_match.h"
 #include "components/omnibox/browser/autocomplete_match_type.h"
@@ -15,6 +16,7 @@
 #include "components/omnibox/browser/mock_autocomplete_provider_client.h"
 #include "components/omnibox/browser/search_suggestion_parser.h"
 #include "components/omnibox/browser/suggestion_answer.h"
+#include "components/omnibox/browser/test_scheme_classifier.h"
 #include "components/search_engines/search_terms_data.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/search_engines/template_url_service_client.h"
@@ -87,7 +89,7 @@ class BaseSearchProviderTest : public testing::Test {
 TEST_F(BaseSearchProviderTest, PreserveAnswersWhenDeduplicating) {
   TemplateURLData data;
   data.SetURL("http://foo.com/url?bar={searchTerms}");
-  std::unique_ptr<TemplateURL> template_url(new TemplateURL(data));
+  auto template_url = base::MakeUnique<TemplateURL>(data);
 
   TestBaseSearchProvider::MatchMap map;
   base::string16 query = base::ASCIIToUTF16("weather los angeles");
@@ -168,4 +170,42 @@ TEST_F(BaseSearchProviderTest, PreserveAnswersWhenDeduplicating) {
   EXPECT_TRUE(answer->Equals(*duplicate.answer));
   EXPECT_EQ(AutocompleteMatchType::SEARCH_SUGGEST, duplicate.type);
   EXPECT_EQ(850, duplicate.relevance);
+}
+
+TEST_F(BaseSearchProviderTest, MatchTailSuggestionProperly) {
+  TemplateURLData data;
+  data.SetURL("http://foo.com/url?bar={searchTerms}");
+  auto template_url = base::MakeUnique<TemplateURL>(data);
+
+  AutocompleteInput autocomplete_input(
+      base::ASCIIToUTF16("weather"), 7, std::string(), GURL(), base::string16(),
+      metrics::OmniboxEventProto::BLANK, false, false, false, false, false,
+      TestSchemeClassifier());
+
+  EXPECT_CALL(*provider_, GetInput(_))
+      .WillRepeatedly(Return(autocomplete_input));
+  EXPECT_CALL(*provider_, GetTemplateURL(_))
+      .WillRepeatedly(Return(template_url.get()));
+
+  base::string16 query = base::ASCIIToUTF16("angeles now");
+  base::string16 suggestion = base::ASCIIToUTF16("weather los ") + query;
+  SearchSuggestionParser::SuggestResult suggest_result(
+      suggestion, AutocompleteMatchType::SEARCH_SUGGEST_TAIL, 0, query,
+      base::ASCIIToUTF16("..."), base::string16(), base::string16(),
+      base::string16(), nullptr, std::string(), std::string(), false, 1300,
+      true, false, query);
+
+  TestBaseSearchProvider::MatchMap map;
+  provider_->AddMatchToMap(suggest_result, std::string(),
+                           TemplateURLRef::NO_SUGGESTION_CHOSEN, false, false,
+                           &map);
+
+  ASSERT_EQ(1UL, map.size());
+  const auto& entry = *(map.begin());
+  std::string text =
+      entry.second.GetAdditionalInfo(kACMatchPropertyContentsStartIndex);
+  size_t length;
+  EXPECT_TRUE(base::StringToSizeT(text, &length));
+  text = entry.second.GetAdditionalInfo(kACMatchPropertySuggestionText);
+  EXPECT_GE(text.length(), length);
 }

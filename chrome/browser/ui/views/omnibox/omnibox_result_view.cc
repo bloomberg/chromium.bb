@@ -547,8 +547,8 @@ int OmniboxResultView::GetDisplayOffset(
   if (match.type != AutocompleteMatchType::SEARCH_SUGGEST_TAIL)
     return 0;
 
-  const base::string16& input_text =
-      base::UTF8ToUTF16(match.GetAdditionalInfo(kACMatchPropertyInputText));
+  const base::string16& input_text = base::UTF8ToUTF16(
+      match.GetAdditionalInfo(kACMatchPropertySuggestionText));
   int contents_start_index = 0;
   base::StringToInt(match.GetAdditionalInfo(kACMatchPropertyContentsStartIndex),
                     &contents_start_index);
