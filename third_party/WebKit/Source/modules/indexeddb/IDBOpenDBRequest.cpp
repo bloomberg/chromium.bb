@@ -77,7 +77,7 @@ const AtomicString& IDBOpenDBRequest::InterfaceName() const {
   return EventTargetNames::IDBOpenDBRequest;
 }
 
-void IDBOpenDBRequest::OnBlocked(int64_t old_version) {
+void IDBOpenDBRequest::EnqueueBlocked(int64_t old_version) {
   IDB_TRACE("IDBOpenDBRequest::onBlocked()");
   if (!ShouldEnqueueEvent())
     return;
@@ -89,11 +89,12 @@ void IDBOpenDBRequest::OnBlocked(int64_t old_version) {
       EventTypeNames::blocked, old_version, new_version_nullable));
 }
 
-void IDBOpenDBRequest::OnUpgradeNeeded(int64_t old_version,
-                                       std::unique_ptr<WebIDBDatabase> backend,
-                                       const IDBDatabaseMetadata& metadata,
-                                       WebIDBDataLoss data_loss,
-                                       String data_loss_message) {
+void IDBOpenDBRequest::EnqueueUpgradeNeeded(
+    int64_t old_version,
+    std::unique_ptr<WebIDBDatabase> backend,
+    const IDBDatabaseMetadata& metadata,
+    WebIDBDataLoss data_loss,
+    String data_loss_message) {
   IDB_TRACE("IDBOpenDBRequest::onUpgradeNeeded()");
   if (!ShouldEnqueueEvent())
     return;
@@ -124,8 +125,8 @@ void IDBOpenDBRequest::OnUpgradeNeeded(int64_t old_version,
                                              data_loss_message));
 }
 
-void IDBOpenDBRequest::OnSuccess(std::unique_ptr<WebIDBDatabase> backend,
-                                 const IDBDatabaseMetadata& metadata) {
+void IDBOpenDBRequest::EnqueueResponse(std::unique_ptr<WebIDBDatabase> backend,
+                                       const IDBDatabaseMetadata& metadata) {
   IDB_TRACE("IDBOpenDBRequest::onSuccess()");
   if (!ShouldEnqueueEvent())
     return;
@@ -149,7 +150,7 @@ void IDBOpenDBRequest::OnSuccess(std::unique_ptr<WebIDBDatabase> backend,
   EnqueueEvent(Event::Create(EventTypeNames::success));
 }
 
-void IDBOpenDBRequest::OnSuccess(int64_t old_version) {
+void IDBOpenDBRequest::EnqueueResponse(int64_t old_version) {
   IDB_TRACE("IDBOpenDBRequest::onSuccess()");
   if (!ShouldEnqueueEvent())
     return;
@@ -179,7 +180,8 @@ DispatchEventResult IDBOpenDBRequest::DispatchEventInternal(Event* event) {
       ResultAsAny()->IdbDatabase()->IsClosePending()) {
     DequeueEvent(event);
     SetResult(nullptr);
-    OnError(DOMException::Create(kAbortError, "The connection was closed."));
+    EnqueueResponse(
+        DOMException::Create(kAbortError, "The connection was closed."));
     return DispatchEventResult::kCanceledBeforeDispatch;
   }
 

@@ -59,16 +59,17 @@ TEST(IDBRequestTest, EventsAfterStopping) {
   scope.GetExecutionContext()->NotifyContextDestroyed();
 
   // Ensure none of the following raise assertions in stopped state:
-  request->OnError(DOMException::Create(kAbortError, "Description goes here."));
-  request->OnSuccess(Vector<String>());
-  request->OnSuccess(nullptr, IDBKey::CreateInvalid(), IDBKey::CreateInvalid(),
-                     IDBValue::Create());
-  request->OnSuccess(IDBKey::CreateInvalid());
-  request->OnSuccess(IDBValue::Create());
-  request->OnSuccess(static_cast<int64_t>(0));
-  request->OnSuccess();
-  request->OnSuccess(IDBKey::CreateInvalid(), IDBKey::CreateInvalid(),
-                     IDBValue::Create());
+  request->EnqueueResponse(
+      DOMException::Create(kAbortError, "Description goes here."));
+  request->EnqueueResponse(Vector<String>());
+  request->EnqueueResponse(nullptr, IDBKey::CreateInvalid(),
+                           IDBKey::CreateInvalid(), IDBValue::Create());
+  request->EnqueueResponse(IDBKey::CreateInvalid());
+  request->EnqueueResponse(IDBValue::Create());
+  request->EnqueueResponse(static_cast<int64_t>(0));
+  request->EnqueueResponse();
+  request->EnqueueResponse(IDBKey::CreateInvalid(), IDBKey::CreateInvalid(),
+                           IDBValue::Create());
 }
 
 TEST(IDBRequestTest, AbortErrorAfterAbort) {
@@ -84,7 +85,8 @@ TEST(IDBRequestTest, AbortErrorAfterAbort) {
 
   // Now simulate the back end having fired an abort error at the request to
   // clear up any intermediaries.  Ensure an assertion is not raised.
-  request->OnError(DOMException::Create(kAbortError, "Description goes here."));
+  request->EnqueueResponse(
+      DOMException::Create(kAbortError, "Description goes here."));
 
   // Stop the request lest it be GCed and its destructor
   // finds the object in a pending state (and asserts.)

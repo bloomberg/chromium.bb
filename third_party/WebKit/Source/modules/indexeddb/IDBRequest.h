@@ -98,30 +98,35 @@ class MODULES_EXPORT IDBRequest : public EventTargetWithInlineData,
   void SetPendingCursor(IDBCursor*);
   void Abort();
 
-  virtual void OnError(DOMException*);
-  virtual void OnSuccess(const Vector<String>&);
-  virtual void OnSuccess(std::unique_ptr<WebIDBCursor>,
-                         IDBKey*,
-                         IDBKey* primary_key,
-                         PassRefPtr<IDBValue>);
-  virtual void OnSuccess(IDBKey*);
-  virtual void OnSuccess(PassRefPtr<IDBValue>);
-  virtual void OnSuccess(const Vector<RefPtr<IDBValue>>&);
-  virtual void OnSuccess(int64_t);
-  virtual void OnSuccess();
-  virtual void OnSuccess(IDBKey*, IDBKey* primary_key, PassRefPtr<IDBValue>);
+  void EnqueueResponse(DOMException*);
+  void EnqueueResponse(std::unique_ptr<WebIDBCursor>,
+                       IDBKey*,
+                       IDBKey* primary_key,
+                       PassRefPtr<IDBValue>);
+  void EnqueueResponse(IDBKey*);
+  void EnqueueResponse(PassRefPtr<IDBValue>);
+  void EnqueueResponse(const Vector<RefPtr<IDBValue>>&);
+  void EnqueueResponse();
+  void EnqueueResponse(IDBKey*, IDBKey* primary_key, PassRefPtr<IDBValue>);
+
+  // Only used in webkitGetDatabaseNames(), which is deprecated and hopefully
+  // going away soon.
+  void EnqueueResponse(const Vector<String>&);
+
+  // Overridden by IDBOpenDBRequest.
+  virtual void EnqueueResponse(int64_t);
 
   // Only IDBOpenDBRequest instances should receive these:
-  virtual void OnBlocked(int64_t old_version) { NOTREACHED(); }
-  virtual void OnUpgradeNeeded(int64_t old_version,
-                               std::unique_ptr<WebIDBDatabase>,
-                               const IDBDatabaseMetadata&,
-                               WebIDBDataLoss,
-                               String data_loss_message) {
+  virtual void EnqueueBlocked(int64_t old_version) { NOTREACHED(); }
+  virtual void EnqueueUpgradeNeeded(int64_t old_version,
+                                    std::unique_ptr<WebIDBDatabase>,
+                                    const IDBDatabaseMetadata&,
+                                    WebIDBDataLoss,
+                                    String data_loss_message) {
     NOTREACHED();
   }
-  virtual void OnSuccess(std::unique_ptr<WebIDBDatabase>,
-                         const IDBDatabaseMetadata&) {
+  virtual void EnqueueResponse(std::unique_ptr<WebIDBDatabase>,
+                               const IDBDatabaseMetadata&) {
     NOTREACHED();
   }
 
@@ -153,7 +158,7 @@ class MODULES_EXPORT IDBRequest : public EventTargetWithInlineData,
   void EnqueueEvent(Event*);
   void DequeueEvent(Event*);
   virtual bool ShouldEnqueueEvent() const;
-  void OnSuccessInternal(IDBAny*);
+  void EnqueueResultInternal(IDBAny*);
   void SetResult(IDBAny*);
 
   // EventTarget
