@@ -411,9 +411,9 @@ def get_commit_message_footer_map(message):
   for line in lines:
     m = COMMIT_FOOTER_ENTRY_RE.match(line)
     if not m:
-      # If any single line isn't valid, continue anyway for compatibility with
-      # Gerrit (which itself uses JGit for this).
-      continue
+      # If any single line isn't valid, the entire footer is invalid.
+      footers.clear()
+      return footers
     footers[m.group(1)] = m.group(2).strip()
   return footers
 
