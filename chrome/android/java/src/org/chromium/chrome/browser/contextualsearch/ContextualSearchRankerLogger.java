@@ -19,12 +19,11 @@ public interface ContextualSearchRankerLogger {
         DURATION_BEFORE_SCROLL_MS,
         SCREEN_TOP_DPS,
         WAS_SCREEN_BOTTOM,
+        // User usage features:
         PREVIOUS_WEEK_IMPRESSIONS_COUNT,
         PREVIOUS_WEEK_CTR_PERCENT,
         PREVIOUS_28DAY_IMPRESSIONS_COUNT,
-        PREVIOUS_28DAY_CTR_PERCENT,
-        SELECTION_LENGTH,
-        SELECTION_FIRST_CHAR
+        PREVIOUS_28DAY_CTR_PERCENT
     }
 
     /**

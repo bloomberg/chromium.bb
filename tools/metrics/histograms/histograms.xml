@@ -64124,6 +64124,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Search.ContextualSearchBlacklistSeen"
     enum="ContextualSearchBlacklistSeen">
+  <obsolete>
+    Discontinued on 5/2017 due to experiment being completed.
+  </obsolete>
   <owner>donnd@chromium.org</owner>
   <owner>pedrosimonetti@chromium.org</owner>
   <owner>twellington@chromium.org</owner>
@@ -64822,6 +64825,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Search.ContextualSearchStartedWithCapitalResultsSeen"
     enum="ContextualSearchResultsSeen">
+  <obsolete>
+    Removed 05/2017 because the data is no longer needed.
+  </obsolete>
   <owner>donnd@chromium.org</owner>
   <owner>twellington@chromium.org</owner>
   <summary>

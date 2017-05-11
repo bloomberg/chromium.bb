@@ -9,7 +9,6 @@ import android.text.TextUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel;
-import org.chromium.chrome.browser.contextualsearch.ContextualSearchBlacklist.BlacklistReason;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.content.browser.ContentViewCore;
@@ -489,19 +488,6 @@ public class ContextualSearchSelectionController {
         boolean isValid = isValidSelection(selection);
 
         if (mSelectionType == SelectionType.TAP) {
-            BlacklistReason reason =
-                    ContextualSearchBlacklist.findReasonToSuppressSelection(selection);
-
-            mHandler.handleSelectionSuppression(reason);
-
-            // Only really suppress if enabled by field trial. Currently we can't prevent a
-            // selection from being issued, so we end up clearing the selection immediately
-            // afterwards, which does not look great.
-            // TODO(pedrosimonetti): actually suppress selection once the system supports it.
-            if (ContextualSearchFieldTrial.isBlacklistEnabled() && reason != BlacklistReason.NONE) {
-                isValid = false;
-            }
-
             int minSelectionLength = ContextualSearchFieldTrial.getMinimumSelectionLength();
             if (selection.length() < minSelectionLength) {
                 isValid = false;

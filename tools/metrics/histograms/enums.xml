@@ -5393,6 +5393,9 @@ uploading your change for review.  These are checked by presubmit scripts.
 </enum>
 
 <enum name="ContextualSearchBlacklistSeen" type="int">
+  <obsolete>
+    Deprecated as of 5/2017. Experiment is finished.
+  </obsolete>
   <int value="0" label="None, Seen"/>
   <int value="1" label="None, Not Seen"/>
   <int value="2" label="Number, Seen"/>
