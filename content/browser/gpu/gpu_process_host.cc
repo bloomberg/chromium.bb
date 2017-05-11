@@ -737,7 +737,9 @@ void GpuProcessHost::CreateGpuMemoryBuffer(
   TRACE_EVENT0("gpu", "GpuProcessHost::CreateGpuMemoryBuffer");
 
   DCHECK(CalledOnValidThread());
-  create_gpu_memory_buffer_requests_.push(callback);
+  DCHECK(create_gpu_memory_buffer_requests_.find(id) ==
+         create_gpu_memory_buffer_requests_.end());
+  create_gpu_memory_buffer_requests_[id] = callback;
   gpu_service_ptr_->CreateGpuMemoryBuffer(
       id, size, format, usage, client_id, surface_handle,
       base::Bind(&GpuProcessHost::OnGpuMemoryBufferCreated,
@@ -793,9 +795,14 @@ void GpuProcessHost::OnGpuMemoryBufferCreated(
     const gfx::GpuMemoryBufferHandle& handle) {
   TRACE_EVENT0("gpu", "GpuProcessHost::OnGpuMemoryBufferCreated");
 
-  DCHECK(!create_gpu_memory_buffer_requests_.empty());
-  auto callback = create_gpu_memory_buffer_requests_.front();
-  create_gpu_memory_buffer_requests_.pop();
+  if (create_gpu_memory_buffer_requests_.find(handle.id) ==
+      create_gpu_memory_buffer_requests_.end()) {
+    DVLOG(1) << "GpuMemoryBuffer creation fails due to missing callback.";
+    return;
+  }
+
+  auto callback = create_gpu_memory_buffer_requests_[handle.id];
+  create_gpu_memory_buffer_requests_.erase(handle.id);
   callback.Run(handle, BufferCreationStatus::SUCCESS);
 }
 
@@ -1078,12 +1085,12 @@ void GpuProcessHost::SendOutstandingReplies() {
                  EstablishChannelStatus::GPU_HOST_INVALID);
   }
 
-  while (!create_gpu_memory_buffer_requests_.empty()) {
-    auto callback = create_gpu_memory_buffer_requests_.front();
-    create_gpu_memory_buffer_requests_.pop();
+  for (auto& pair : create_gpu_memory_buffer_requests_) {
+    auto callback = pair.second;
     callback.Run(gfx::GpuMemoryBufferHandle(),
                  BufferCreationStatus::GPU_HOST_INVALID);
   }
+  create_gpu_memory_buffer_requests_.clear();
 
   if (!send_destroying_video_surface_done_cb_.is_null())
     base::ResetAndReturn(&send_destroying_video_surface_done_cb_).Run();
