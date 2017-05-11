@@ -88,6 +88,13 @@ def main():
       extra_flags = []
       if len(rest_args) > 1:
         extra_flags = rest_args[1:]
+
+      # These flags are to make sure that test output perf metrics in the log.
+      if not '--verbose' in extra_flags:
+        extra_flags.append('--verbose')
+      if not '--test-launcher-print-test-stdio=always' in extra_flags:
+        extra_flags.append('--test-launcher-print-test-stdio=always')
+
       if IsWindows():
         executable = '.\%s.exe' % executable
       else:
