@@ -4,74 +4,55 @@
 # found in the LICENSE file.
 #
 # Usage:
-#    gclient-new-workdir.py <repository> <new_workdir> [<branch>]
+#    gclient-new-workdir.py [options] <repository> <new_workdir>
 #
 
+import argparse
 import os
 import shutil
 import subprocess
 import sys
-import textwrap
 
 import git_common
 
 
-def print_err(msg):
-  print >> sys.stderr, msg
-
-
-def usage(msg=None):
-
-  if msg is not None:
-    print_err('\n' + textwrap.dedent(msg) + '\n')
-    usage_msg = 'Run without arguments to get usage help.'
-  else:
-    usage_msg = '''\
-    usage: %s <repository> <new_workdir>
-
-    Clone an existing gclient directory, taking care of all sub-repositories
-    Works similarly to 'git new-workdir'.
-
-    <repository> should contain a .gclient file
-    <new_workdir> must not exist
-    '''% os.path.basename(sys.argv[0])
-
-  print_err(textwrap.dedent(usage_msg))
-  sys.exit(1)
-
-
 def parse_options():
   if sys.platform == 'win32':
-    usage('This script cannot run on Windows because it uses symlinks.')
+    print('ERROR: This script cannot run on Windows because it uses symlinks.')
+    sys.exit(1)
 
-  if len(sys.argv) != 3:
-    usage()
+  parser = argparse.ArgumentParser(description='''\
+      Clone an existing gclient directory, taking care of all sub-repositories.
+      Works similarly to 'git new-workdir'.''')
+  parser.add_argument('repository', type=os.path.abspath,
+                      help='should contain a .gclient file')
+  parser.add_argument('new_workdir', help='must not exist')
+  args = parser.parse_args()
 
-  repository = os.path.abspath(sys.argv[1])
-  new_workdir = sys.argv[2]
+  if not os.path.exists(args.repository):
+    parser.error('Repository "%s" does not exist.' % args.repository)
 
-  if not os.path.exists(repository):
-    usage('Repository does not exist: ' + repository)
+  gclient = os.path.join(args.repository, '.gclient')
+  if not os.path.exists(gclient):
+    parser.error('No .gclient file at "%s".' % gclient)
 
-  if os.path.exists(new_workdir):
-    usage('New workdir already exists: ' + new_workdir)
+  if os.path.exists(args.new_workdir):
+    parser.error('New workdir "%s" already exists.' % args.new_workdir)
 
-  return repository, new_workdir
+  return args
 
 
 def main():
-  repository, new_workdir = parse_options()
+  args = parse_options()
 
-  gclient = os.path.join(repository, '.gclient')
-  if not os.path.exists(gclient):
-    print_err('No .gclient file: ' + gclient)
+  gclient = os.path.join(args.repository, '.gclient')
 
-  os.makedirs(new_workdir)
-  os.symlink(gclient, os.path.join(new_workdir, '.gclient'))
+  os.makedirs(args.new_workdir)
+  os.symlink(gclient, os.path.join(args.new_workdir, '.gclient'))
 
-  for root, dirs, _ in os.walk(repository):
+  for root, dirs, _ in os.walk(args.repository):
     if '.git' in dirs:
-      workdir = root.replace(repository, new_workdir, 1)
+      workdir = root.replace(args.repository, args.new_workdir, 1)
       print('Creating: %s' % workdir)
       git_common.make_workdir(os.path.join(root, '.git'),
                               os.path.join(workdir, '.git'))
