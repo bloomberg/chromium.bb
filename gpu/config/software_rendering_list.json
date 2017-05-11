@@ -1,6 +1,6 @@
 {
   "name": "software rendering list",
-  "version": "13.6",
+  "version": "13.7",
   "entries": [
     {
       "id": 1,
@@ -1013,7 +1013,6 @@
       },
       "vendor_id": "0x8086",
       "device_id": ["0x0116", "0x0126"],
-      "multi_gpu_category": "any",
       "features": [
         "all"
       ]
