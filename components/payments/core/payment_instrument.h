@@ -45,6 +45,8 @@ class PaymentInstrument {
   // Returns whether the instrument is valid for the purposes of responding to
   // canMakePayment.
   virtual bool IsValidForCanMakePayment() = 0;
+  // Records the use of this payment instrument.
+  virtual void RecordUse() = 0;
 
   const std::string& method_name() const { return method_name_; }
   const base::string16& label() const { return label_; }

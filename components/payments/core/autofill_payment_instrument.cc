@@ -103,6 +103,12 @@ bool AutofillPaymentInstrument::IsValidForCanMakePayment() {
            status & autofill::CREDIT_CARD_NO_NUMBER);
 }
 
+void AutofillPaymentInstrument::RecordUse() {
+  // Record the use of the credit card.
+  payment_request_delegate_->GetPersonalDataManager()->RecordUseOf(
+      credit_card_);
+}
+
 void AutofillPaymentInstrument::OnFullCardRequestSucceeded(
     const autofill::CreditCard& card,
     const base::string16& cvc) {
