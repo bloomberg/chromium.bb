@@ -23,6 +23,7 @@ class FakeSafeBrowsingDatabaseManager
 
   void AddBlacklistedUrl(const GURL& url,
                          safe_browsing::SBThreatType threat_type);
+  void RemoveBlacklistedUrl(const GURL& url);
 
   void SimulateTimeout();
 

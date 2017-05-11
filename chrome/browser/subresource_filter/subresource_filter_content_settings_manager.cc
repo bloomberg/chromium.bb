@@ -52,11 +52,9 @@ SubresourceFilterContentSettingsManager::
   DCHECK(settings_map_);
   settings_map_->AddObserver(this);
 
-  if (should_use_smart_ui()) {
-    if (auto* history_service = HistoryServiceFactory::GetForProfile(
-            profile, ServiceAccessType::EXPLICIT_ACCESS)) {
-      history_observer_.Add(history_service);
-    }
+  if (auto* history_service = HistoryServiceFactory::GetForProfile(
+          profile, ServiceAccessType::EXPLICIT_ACCESS)) {
+    history_observer_.Add(history_service);
   }
 }
 
@@ -85,8 +83,6 @@ void SubresourceFilterContentSettingsManager::WhitelistSite(const GURL& url) {
 }
 
 void SubresourceFilterContentSettingsManager::OnDidShowUI(const GURL& url) {
-  if (!should_use_smart_ui())
-    return;
   auto dict = base::MakeUnique<base::DictionaryValue>();
   double now = clock_->Now().ToDoubleT();
   dict->SetDouble(kInfobarLastShownTimeKey, now);
@@ -109,6 +105,11 @@ bool SubresourceFilterContentSettingsManager::ShouldShowUIForSite(
       return false;
   }
   return true;
+}
+
+void SubresourceFilterContentSettingsManager::ClearSiteMetadata(
+    const GURL& url) {
+  SetSiteMetadata(url, nullptr);
 }
 
 std::unique_ptr<base::DictionaryValue>
@@ -179,16 +180,13 @@ void SubresourceFilterContentSettingsManager::OnContentSettingChanged(
     NOTREACHED();
   }
 
-  if (!should_use_smart_ui())
-    return;
-
   if (!ShouldShowUIForSite(url)) {
     ChromeSubresourceFilterClient::LogAction(
         kActionContentSettingsBlockedWhileUISuppressed);
   }
-
-  // Reset the smart UI to ensure the user can easily change their decision.
-  SetSiteMetadata(url, nullptr);
+  // Note: could potentially reset the smart UI here to enable the user to
+  // easily change their decision. If that code is added we should make sure not
+  // to delete the metadata, but merely remove / reset the timestamp.
 }
 
 // When history URLs are deleted, clear the metadata for the smart UI.
@@ -198,7 +196,6 @@ void SubresourceFilterContentSettingsManager::OnURLsDeleted(
     bool expired,
     const history::URLRows& deleted_rows,
     const std::set<GURL>& favicon_urls) {
-  DCHECK(should_use_smart_ui());
   if (all_history) {
     settings_map_->ClearSettingsForOneType(
         CONTENT_SETTINGS_TYPE_SUBRESOURCE_FILTER_DATA);

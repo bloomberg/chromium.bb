@@ -15,14 +15,20 @@
 #include "chrome/browser/after_startup_task_utils.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/infobars/infobar_service.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/test_safe_browsing_service.h"
 #include "chrome/browser/subresource_filter/chrome_subresource_filter_client.h"
+#include "chrome/browser/subresource_filter/subresource_filter_content_settings_manager.h"
+#include "chrome/browser/subresource_filter/subresource_filter_profile_context.h"
+#include "chrome/browser/subresource_filter/subresource_filter_profile_context_factory.h"
 #include "chrome/browser/subresource_filter/test_ruleset_publisher.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_browser_process.h"
+#include "chrome/test/base/testing_profile.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/safe_browsing_db/v4_protocol_manager_util.h"
 #include "components/subresource_filter/content/browser/content_ruleset_service.h"
+#include "components/subresource_filter/content/browser/content_subresource_filter_driver_factory.h"
 #include "components/subresource_filter/content/browser/fake_safe_browsing_database_manager.h"
 #include "components/subresource_filter/core/browser/ruleset_service.h"
 #include "components/subresource_filter/core/browser/subresource_filter_features.h"
@@ -154,6 +160,20 @@ class SubresourceFilterTest : public ChromeRenderViewHostTestHarness {
     return ChromeSubresourceFilterClient::FromWebContents(web_contents());
   }
 
+  void RemoveURLFromBlacklist(const GURL& url) {
+    fake_safe_browsing_database_->RemoveBlacklistedUrl(url);
+  }
+
+  SubresourceFilterContentSettingsManager* settings_manager() {
+    return SubresourceFilterProfileContextFactory::GetForProfile(
+               static_cast<Profile*>(profile()))
+        ->settings_manager();
+  }
+
+  ScopedSubresourceFilterConfigurator& scoped_configuration() {
+    return scoped_configuration_;
+  }
+
  private:
   base::ScopedTempDir ruleset_service_dir_;
   TestingPrefServiceSimple pref_service_;
@@ -178,4 +198,61 @@ TEST_F(SubresourceFilterTest, SimpleDisallowedLoad) {
   SimulateNavigateAndCommit(url, main_rfh());
   EXPECT_FALSE(CreateAndNavigateDisallowedSubframe(main_rfh()));
   EXPECT_TRUE(client()->did_show_ui_for_navigation());
+}
+
+TEST_F(SubresourceFilterTest, DeactivateUrl_ClearsSiteMetadata) {
+  GURL url("https://a.test");
+  ConfigureAsSubresourceFilterOnlyURL(url);
+  SimulateNavigateAndCommit(url, main_rfh());
+  EXPECT_FALSE(CreateAndNavigateDisallowedSubframe(main_rfh()));
+
+  EXPECT_NE(nullptr, settings_manager()->GetSiteMetadata(url));
+
+  RemoveURLFromBlacklist(url);
+
+  // Navigate to |url| again and expect the site metadata to clear.
+  SimulateNavigateAndCommit(url, main_rfh());
+  EXPECT_TRUE(CreateAndNavigateDisallowedSubframe(main_rfh()));
+
+  EXPECT_EQ(nullptr, settings_manager()->GetSiteMetadata(url));
+}
+
+// If the underlying configuration changes and a site only activates to DRYRUN,
+// we should clear the metadata.
+TEST_F(SubresourceFilterTest, ActivationToDryRun_ClearsSiteMetadata) {
+  GURL url("https://a.test");
+  ConfigureAsSubresourceFilterOnlyURL(url);
+  SimulateNavigateAndCommit(url, main_rfh());
+  EXPECT_FALSE(CreateAndNavigateDisallowedSubframe(main_rfh()));
+
+  EXPECT_NE(nullptr, settings_manager()->GetSiteMetadata(url));
+
+  // If the site later activates as DRYRUN due to e.g. a configuration change,
+  // it should also be removed from the metadata.
+  scoped_configuration().ResetConfiguration(subresource_filter::Configuration(
+      subresource_filter::ActivationLevel::DRYRUN,
+      subresource_filter::ActivationScope::ACTIVATION_LIST,
+      subresource_filter::ActivationList::SUBRESOURCE_FILTER));
+
+  // Navigate to |url| again and expect the site metadata to clear.
+  SimulateNavigateAndCommit(url, main_rfh());
+  EXPECT_TRUE(CreateAndNavigateDisallowedSubframe(main_rfh()));
+
+  EXPECT_EQ(nullptr, settings_manager()->GetSiteMetadata(url));
+}
+
+TEST_F(SubresourceFilterTest, ExplicitWhitelisting_ShouldNotClearMetadata) {
+  GURL url("https://a.test");
+  ConfigureAsSubresourceFilterOnlyURL(url);
+  SimulateNavigateAndCommit(url, main_rfh());
+  EXPECT_FALSE(CreateAndNavigateDisallowedSubframe(main_rfh()));
+
+  // Simulate explicit whitelisting and reload.
+  settings_manager()->WhitelistSite(url);
+  SimulateNavigateAndCommit(url, main_rfh());
+  EXPECT_TRUE(CreateAndNavigateDisallowedSubframe(main_rfh()));
+
+  // Should not have cleared the metadata, since the site is still on the SB
+  // blacklist.
+  EXPECT_NE(nullptr, settings_manager()->GetSiteMetadata(url));
 }

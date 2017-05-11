@@ -165,11 +165,14 @@ void WebsiteSettingsRegistry::Init() {
       WebsiteSettingsInfo::UNSYNCABLE, WebsiteSettingsInfo::NOT_LOSSY,
       WebsiteSettingsInfo::REQUESTING_ORIGIN_ONLY_SCOPE,
       DESKTOP | PLATFORM_ANDROID, WebsiteSettingsInfo::INHERIT_IN_INCOGNITO);
-  Register(CONTENT_SETTINGS_TYPE_SUBRESOURCE_FILTER_DATA,
-           "subresource-filter-data", nullptr, WebsiteSettingsInfo::UNSYNCABLE,
-           WebsiteSettingsInfo::LOSSY,
-           WebsiteSettingsInfo::REQUESTING_ORIGIN_ONLY_SCOPE, PLATFORM_ANDROID,
-           WebsiteSettingsInfo::INHERIT_IN_INCOGNITO);
+  // Set when an origin is activated for subresource filtering and the
+  // associated UI is shown to the user. Cleared when a site is de-activated or
+  // the first URL matching the origin is removed from history.
+  Register(
+      CONTENT_SETTINGS_TYPE_SUBRESOURCE_FILTER_DATA, "subresource-filter-data",
+      nullptr, WebsiteSettingsInfo::UNSYNCABLE, WebsiteSettingsInfo::NOT_LOSSY,
+      WebsiteSettingsInfo::REQUESTING_ORIGIN_ONLY_SCOPE,
+      DESKTOP | PLATFORM_ANDROID, WebsiteSettingsInfo::INHERIT_IN_INCOGNITO);
 }
 
 }  // namespace content_settings
