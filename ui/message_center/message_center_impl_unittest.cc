@@ -236,21 +236,21 @@ class MockPopupTimersController : public PopupTimersController {
   MockPopupTimersController(MessageCenter* message_center,
                             base::Closure quit_closure)
       : PopupTimersController(message_center),
-        timer_finished_(false),
+        timer_finished_(0),
         quit_closure_(quit_closure) {}
   ~MockPopupTimersController() override {}
 
   void TimerFinished(const std::string& id) override {
     base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, quit_closure_);
-    timer_finished_ = true;
+    timer_finished_++;
     last_id_ = id;
   }
 
-  bool timer_finished() const { return timer_finished_; }
+  int timer_finished() const { return timer_finished_; }
   const std::string& last_id() const { return last_id_; }
 
  private:
-  bool timer_finished_;
+  int timer_finished_;
   std::string last_id_;
   base::Closure quit_closure_;
 };
@@ -273,7 +273,7 @@ TEST_F(MessageCenterImplTest, PopupTimersControllerStartTimer) {
   popup_timers_controller->StartTimer("test",
                                       base::TimeDelta::FromMilliseconds(1));
   run_loop()->Run();
-  EXPECT_TRUE(popup_timers_controller->timer_finished());
+  EXPECT_EQ(popup_timers_controller->timer_finished(), 1);
 }
 
 TEST_F(MessageCenterImplTest, PopupTimersControllerCancelTimer) {
@@ -284,7 +284,7 @@ TEST_F(MessageCenterImplTest, PopupTimersControllerCancelTimer) {
   popup_timers_controller->CancelTimer("test");
   run_loop()->RunUntilIdle();
 
-  EXPECT_FALSE(popup_timers_controller->timer_finished());
+  EXPECT_EQ(popup_timers_controller->timer_finished(), 0);
 }
 
 TEST_F(MessageCenterImplTest, PopupTimersControllerPauseAllTimers) {
@@ -295,7 +295,7 @@ TEST_F(MessageCenterImplTest, PopupTimersControllerPauseAllTimers) {
   popup_timers_controller->PauseAll();
   run_loop()->RunUntilIdle();
 
-  EXPECT_FALSE(popup_timers_controller->timer_finished());
+  EXPECT_EQ(popup_timers_controller->timer_finished(), 0);
 }
 
 TEST_F(MessageCenterImplTest, PopupTimersControllerStartAllTimers) {
@@ -307,24 +307,22 @@ TEST_F(MessageCenterImplTest, PopupTimersControllerStartAllTimers) {
   popup_timers_controller->StartAll();
   run_loop()->Run();
 
-  EXPECT_TRUE(popup_timers_controller->timer_finished());
+  EXPECT_EQ(popup_timers_controller->timer_finished(), 1);
 }
 
 TEST_F(MessageCenterImplTest, PopupTimersControllerStartMultipleTimers) {
   std::unique_ptr<MockPopupTimersController> popup_timers_controller =
       base::MakeUnique<MockPopupTimersController>(message_center(), closure());
-  popup_timers_controller->StartTimer("test",
-                                      base::TimeDelta::FromMilliseconds(5));
+  popup_timers_controller->StartTimer("test", base::TimeDelta::Max());
   popup_timers_controller->StartTimer("test2",
                                       base::TimeDelta::FromMilliseconds(1));
-  popup_timers_controller->StartTimer("test3",
-                                      base::TimeDelta::FromMilliseconds(3));
+  popup_timers_controller->StartTimer("test3", base::TimeDelta::Max());
   popup_timers_controller->PauseAll();
   popup_timers_controller->StartAll();
   run_loop()->Run();
 
   EXPECT_EQ(popup_timers_controller->last_id(), "test2");
-  EXPECT_TRUE(popup_timers_controller->timer_finished());
+  EXPECT_EQ(popup_timers_controller->timer_finished(), 1);
 }
 
 TEST_F(MessageCenterImplTest, PopupTimersControllerRestartOnUpdate) {
@@ -348,13 +346,13 @@ TEST_F(MessageCenterImplTest, PopupTimersControllerRestartOnUpdate) {
       base::MakeUnique<MockPopupTimersController>(message_center(), closure());
 
   popup_timers_controller->OnNotificationDisplayed("id1", DISPLAY_SOURCE_POPUP);
-  ASSERT_FALSE(popup_timers_controller->timer_finished());
+  ASSERT_EQ(popup_timers_controller->timer_finished(), 0);
 
   // Fast forward the |task_runner| by one second less than the auto-close timer
   // frequency for Web Notifications. (As set by the |notifier_id|.)
   task_runner->FastForwardBy(
       base::TimeDelta::FromSeconds(kAutocloseWebPageDelaySeconds - 1));
-  ASSERT_FALSE(popup_timers_controller->timer_finished());
+  ASSERT_EQ(popup_timers_controller->timer_finished(), 0);
 
   // Trigger a replacement of the notification in the timer controller.
   popup_timers_controller->OnNotificationUpdated("id1");
@@ -363,12 +361,12 @@ TEST_F(MessageCenterImplTest, PopupTimersControllerRestartOnUpdate) {
   // frequency for Web Notifications again. It should have been reset.
   task_runner->FastForwardBy(
       base::TimeDelta::FromSeconds(kAutocloseWebPageDelaySeconds - 1));
-  ASSERT_FALSE(popup_timers_controller->timer_finished());
+  ASSERT_EQ(popup_timers_controller->timer_finished(), 0);
 
   // Now fast forward the |task_runner| by two seconds (to avoid flakiness),
   // after which the timer should have fired.
   task_runner->FastForwardBy(base::TimeDelta::FromSeconds(2));
-  ASSERT_TRUE(popup_timers_controller->timer_finished());
+  ASSERT_EQ(popup_timers_controller->timer_finished(), 1);
 
   base::MessageLoop::current()->SetTaskRunner(old_task_runner);
 }
