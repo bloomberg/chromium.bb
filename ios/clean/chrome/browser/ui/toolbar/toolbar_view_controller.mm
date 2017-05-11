@@ -65,6 +65,8 @@ CGFloat kProgressBarHeight = 2.0f;
   return self;
 }
 
+#pragma mark - View lifecyle
+
 - (void)viewDidLoad {
   self.view.backgroundColor = [UIColor lightGrayColor];
   [self addChildViewController:self.locationBarViewController
@@ -113,6 +115,14 @@ CGFloat kProgressBarHeight = 2.0f;
     [self.progressBar.heightAnchor
         constraintEqualToConstant:kProgressBarHeight],
   ]];
+}
+
+- (void)viewWillTransitionToSize:(CGSize)size
+       withTransitionCoordinator:
+           (id<UIViewControllerTransitionCoordinator>)coordinator {
+  // We need to dismiss the ToolsMenu everytime the Toolbar frame changes
+  // (e.g. Size changes, rotation changes, etc.)
+  [self.dispatcher closeToolsMenu];
 }
 
 #pragma mark - Components Setup
