@@ -52,10 +52,7 @@ class CC_BASE_EXPORT RTree {
       if (bounds.IsEmpty())
         continue;
 
-      branches.push_back(Branch());
-      Branch& branch = branches.back();
-      branch.bounds = bounds;
-      branch.index = i;
+      branches.emplace_back(i, bounds);
     }
 
     num_data_elements_ = branches.size();
@@ -115,12 +112,18 @@ class CC_BASE_EXPORT RTree {
       size_t index;
     };
     gfx::Rect bounds;
+
+    Branch() {}
+    Branch(size_t index, const gfx::Rect& bounds)
+        : index(index), bounds(bounds) {}
   };
 
   struct Node {
     uint16_t num_children;
     uint16_t level;
     Branch children[kMaxChildren];
+
+    explicit Node(uint16_t level) : num_children(0), level(level) {}
   };
 
   void SearchRecursive(Node* root,

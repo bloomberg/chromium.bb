@@ -23,11 +23,8 @@ RTree::Node* RTree::AllocateNodeAtLevel(int level) {
   // We don't allow reallocations, since that would invalidate references to
   // existing nodes, so verify that capacity > size.
   DCHECK_GT(nodes_.capacity(), nodes_.size());
-  nodes_.emplace_back();
-  Node& node = nodes_.back();
-  node.num_children = 0;
-  node.level = level;
-  return &node;
+  nodes_.emplace_back(level);
+  return &nodes_.back();
 }
 
 RTree::Branch RTree::BuildRecursive(std::vector<Branch>* branches, int level) {
