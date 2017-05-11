@@ -23,11 +23,10 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/scoped_task_scheduler.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/test/test_file_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "net/base/auth.h"
@@ -95,6 +94,7 @@
 #include "net/ssl/ssl_private_key.h"
 #include "net/test/cert_test_util.h"
 #include "net/test/gtest_util.h"
+#include "net/test/net_test_suite.h"
 #include "net/test/test_data_directory.h"
 #include "net/websockets/websocket_handshake_stream_base.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -16763,10 +16763,6 @@ TEST_F(HttpNetworkTransactionTest, ThrottlingPrioritySetDestroy) {
 
 #if !defined(OS_IOS)
 TEST_F(HttpNetworkTransactionTest, TokenBindingSpdy) {
-  // Required by ChannelIDService.
-  base::test::ScopedTaskScheduler scoped_task_scheduler(
-      base::MessageLoop::current());
-
   const std::string https_url = "https://www.example.com";
   HttpRequestInfo request;
   request.url = GURL(https_url);
@@ -16792,7 +16788,8 @@ TEST_F(HttpNetworkTransactionTest, TokenBindingSpdy) {
   TestCompletionCallback callback;
   EXPECT_EQ(ERR_IO_PENDING,
             trans.Start(&request, callback.callback(), NetLogWithSource()));
-  base::RunLoop().RunUntilIdle();
+
+  NetTestSuite::GetScopedTaskEnvironment()->RunUntilIdle();
 
   EXPECT_TRUE(trans.GetResponseInfo()->was_fetched_via_spdy);
   HttpRequestHeaders headers;

@@ -31,8 +31,6 @@ using net::test::IsOk;
 DiskCacheTest::DiskCacheTest() {
   CHECK(temp_dir_.CreateUniqueTempDir());
   cache_path_ = temp_dir_.GetPath();
-  if (!base::MessageLoop::current())
-    message_loop_.reset(new base::MessageLoopForIO());
 }
 
 DiskCacheTest::~DiskCacheTest() {

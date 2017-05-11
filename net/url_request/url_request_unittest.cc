@@ -44,7 +44,6 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/histogram_tester.h"
-#include "base/test/scoped_task_scheduler.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "net/base/chunked_upload_data_stream.h"
@@ -780,9 +779,7 @@ class OCSPErrorTestDelegate : public TestDelegate {
 // Inherit PlatformTest since we require the autorelease pool on Mac OS X.
 class URLRequestTest : public PlatformTest {
  public:
-  URLRequestTest()
-      : scoped_task_scheduler_(base::MessageLoop::current()),
-        default_context_(true) {
+  URLRequestTest() : default_context_(true) {
     default_context_.set_network_delegate(&default_network_delegate_);
     default_context_.set_net_log(&net_log_);
     job_factory_impl_ = new URLRequestJobFactoryImpl();
@@ -828,9 +825,6 @@ class URLRequestTest : public PlatformTest {
                                           base::WrapUnique(protocol_handler_));
     return protocol_handler_;
   }
-
- private:
-  base::test::ScopedTaskScheduler scoped_task_scheduler_;
 
  protected:
   TestNetLog net_log_;
@@ -8810,17 +8804,13 @@ TEST_F(URLRequestTestReferrerPolicy, HTTPSToHTTP) {
 
 class HTTPSRequestTest : public testing::Test {
  public:
-  HTTPSRequestTest()
-      : scoped_task_scheduler_(base::MessageLoop::current()),
-        default_context_(true) {
+  HTTPSRequestTest() : default_context_(true) {
     default_context_.set_network_delegate(&default_network_delegate_);
     default_context_.Init();
   }
   ~HTTPSRequestTest() override {}
 
  protected:
-  // Required by ChannelIDService.
-  base::test::ScopedTaskScheduler scoped_task_scheduler_;
   TestNetworkDelegate default_network_delegate_;  // Must outlive URLRequest.
   TestURLRequestContext default_context_;
 };
@@ -9389,8 +9379,7 @@ TEST_F(HTTPSRequestTest, SSLSessionCacheShardTest) {
 
 class HTTPSFallbackTest : public testing::Test {
  public:
-  HTTPSFallbackTest()
-      : scoped_task_scheduler_(base::MessageLoop::current()), context_(true) {
+  HTTPSFallbackTest() : context_(true) {
     ssl_config_service_ = new TestSSLConfigService(
         true /* check for EV */, false /* online revocation checking */,
         false /* require rev. checking for local anchors */,
@@ -9435,8 +9424,6 @@ class HTTPSFallbackTest : public testing::Test {
   }
 
  private:
-  // Required by ChannelIDService.
-  base::test::ScopedTaskScheduler scoped_task_scheduler_;
   TestDelegate delegate_;
   TestURLRequestContext context_;
   std::unique_ptr<URLRequest> request_;
@@ -9491,9 +9478,7 @@ TEST_F(HTTPSFallbackTest, TLSv1_3InterferenceDisableVersion) {
 
 class HTTPSSessionTest : public testing::Test {
  public:
-  HTTPSSessionTest()
-      : scoped_task_scheduler_(base::MessageLoop::current()),
-        default_context_(true) {
+  HTTPSSessionTest() : default_context_(true) {
     cert_verifier_.set_default_result(OK);
 
     default_context_.set_network_delegate(&default_network_delegate_);
@@ -9503,8 +9488,6 @@ class HTTPSSessionTest : public testing::Test {
   ~HTTPSSessionTest() override {}
 
  protected:
-  // Required by ChannelIDService.
-  base::test::ScopedTaskScheduler scoped_task_scheduler_;
   MockCertVerifier cert_verifier_;
   TestNetworkDelegate default_network_delegate_;  // Must outlive URLRequest.
   TestURLRequestContext default_context_;
