@@ -23,9 +23,10 @@ class TestWebKitFinder(unittest.TestCase):
         finder = WebKitFinder(MockFileSystem())
         self.assertIsNone(finder.layout_test_name('some/other/path/file.html'))
 
+    # pylint: disable=protected-access
     def test_webkit_base(self):
         finder = WebKitFinder(MockFileSystem())
-        self.assertEqual(finder.webkit_base(), '/mock-checkout/third_party/WebKit')
+        self.assertEqual(finder._webkit_base(), '/mock-checkout/third_party/WebKit')
 
     def test_chromium_base(self):
         finder = WebKitFinder(MockFileSystem())

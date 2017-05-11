@@ -29,6 +29,8 @@
 import os
 import sys
 
+from webkitpy.common.memoized import memoized
+
 
 def add_typ_dir_to_sys_path():
     path_to_typ = get_typ_dir()
@@ -78,46 +80,40 @@ class WebKitFinder(object):
         self._dirsep = filesystem.sep
         self._sys_path = sys.path
         self._env_path = os.environ['PATH'].split(os.pathsep)
-        self._webkit_base = None
         self._chromium_base = None
         self._depot_tools = None
 
-    # TODO(tkent): Make this private. We should use functions for
-    # sub-directories in order to make the code robust against directory
-    # structure changes.
-    def webkit_base(self):
+    @memoized
+    def _webkit_base(self):
         """Returns the absolute path to the top of the WebKit tree.
 
         Raises an AssertionError if the top dir can't be determined.
         """
         # TODO(qyearsley): This code somewhat duplicates the code in
         # git.find_checkout_root().
-        if not self._webkit_base:
-            self._webkit_base = self._webkit_base
-            module_path = self._filesystem.abspath(self._filesystem.path_to_module(self.__module__))
-            tools_index = module_path.rfind('Tools')
-            assert tools_index != -1, 'could not find location of this checkout from %s' % module_path
-            self._webkit_base = self._filesystem.normpath(module_path[0:tools_index - 1])
-        return self._webkit_base
+        module_path = self._filesystem.abspath(self._filesystem.path_to_module(self.__module__))
+        tools_index = module_path.rfind('Tools')
+        assert tools_index != -1, 'could not find location of this checkout from %s' % module_path
+        return self._filesystem.normpath(module_path[0:tools_index - 1])
 
     def chromium_base(self):
         if not self._chromium_base:
-            self._chromium_base = self._filesystem.dirname(self._filesystem.dirname(self.webkit_base()))
+            self._chromium_base = self._filesystem.dirname(self._filesystem.dirname(self._webkit_base()))
         return self._chromium_base
 
     # Do not expose this function in order to make the code robust against
     # directory structure changes.
     def _path_from_webkit_base(self, *comps):
-        return self._filesystem.join(self.webkit_base(), *comps)
+        return self._filesystem.join(self._webkit_base(), *comps)
 
     def path_from_chromium_base(self, *comps):
         return self._filesystem.join(self.chromium_base(), *comps)
 
     def path_from_blink_source(self, *comps):
-        return self._filesystem.join(self._filesystem.join(self.webkit_base(), 'Source'), *comps)
+        return self._filesystem.join(self._filesystem.join(self._webkit_base(), 'Source'), *comps)
 
     def path_from_tools_scripts(self, *comps):
-        return self._filesystem.join(self._filesystem.join(self.webkit_base(), 'Tools', 'Scripts'), *comps)
+        return self._filesystem.join(self._filesystem.join(self._webkit_base(), 'Tools', 'Scripts'), *comps)
 
     def layout_tests_dir(self):
         return self._path_from_webkit_base('LayoutTests')
@@ -145,8 +141,7 @@ class WebKitFinder(object):
             the LayoutTests directory, using forward slash as the path separator.
             Returns None if the given file is not in the LayoutTests directory.
         """
-        layout_tests_abs_path = self._filesystem.join(self.webkit_base(), self.layout_tests_dir())
-        layout_tests_rel_path = self._filesystem.relpath(layout_tests_abs_path, self.chromium_base())
+        layout_tests_rel_path = self._filesystem.relpath(self.layout_tests_dir(), self.chromium_base())
         if not file_path.startswith(layout_tests_rel_path):
             return None
         return file_path[len(layout_tests_rel_path) + 1:]
@@ -169,7 +164,7 @@ class WebKitFinder(object):
     def _check_upward_for_depot_tools(self):
         fs = self._filesystem
         prev_dir = ''
-        current_dir = fs.dirname(self._webkit_base)
+        current_dir = fs.dirname(self._webkit_base())
         while current_dir != prev_dir:
             if fs.exists(fs.join(current_dir, 'depot_tools', 'pylint.py')):
                 return fs.join(current_dir, 'depot_tools')
