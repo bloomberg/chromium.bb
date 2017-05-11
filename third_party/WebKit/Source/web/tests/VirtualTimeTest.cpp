@@ -61,7 +61,8 @@ void QuitRunLoop() {
 // hard time limit.
 void RunTasksForPeriod(double delay_ms) {
   Platform::Current()->CurrentThread()->GetWebTaskRunner()->PostDelayedTask(
-      BLINK_FROM_HERE, WTF::Bind(&QuitRunLoop), delay_ms);
+      BLINK_FROM_HERE, WTF::Bind(&QuitRunLoop),
+      TimeDelta::FromMillisecondsD(delay_ms));
   testing::EnterRunLoop();
 }
 }
@@ -223,7 +224,7 @@ TEST_F(VirtualTimeTest, MAYBE_DOMTimersSuspended) {
                                     WebViewScheduler::VirtualTimePolicy::PAUSE);
                               },
                               WTF::Unretained(WebView().Scheduler())),
-                          1000);
+                          TimeDelta::FromMilliseconds(1000));
 
   // ALso schedule a second timer for the same point in time.
   ExecuteJavaScript("setTimeout(() => { run_order.push(2); }, 1000);");

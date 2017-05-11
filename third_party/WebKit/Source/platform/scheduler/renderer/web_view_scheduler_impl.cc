@@ -268,8 +268,7 @@ void WebViewSchedulerImpl::GrantVirtualTimeBudget(
     std::unique_ptr<WTF::Closure> budget_exhausted_callback) {
   virtual_time_budget_expired_task_handle_ =
       virtual_time_control_task_queue_->PostDelayedCancellableTask(
-          BLINK_FROM_HERE, std::move(budget_exhausted_callback),
-          budget.InMilliseconds());
+          BLINK_FROM_HERE, std::move(budget_exhausted_callback), budget);
 }
 
 void WebViewSchedulerImpl::AudioStateChanged(bool is_audio_playing) {

@@ -151,8 +151,8 @@ TEST_F(WebThreadImplForWorkerSchedulerTest, TestIdleTask) {
 
   thread_->PostIdleTask(BLINK_FROM_HERE, task.release());
   // We need to post a wake-up task or idle work will never happen.
-  thread_->GetWebTaskRunner()->PostDelayedTask(BLINK_FROM_HERE,
-                                               WTF::Bind([] {}), 50ll);
+  thread_->GetWebTaskRunner()->PostDelayedTask(
+      BLINK_FROM_HERE, WTF::Bind([] {}), TimeDelta::FromMilliseconds(50));
 
   completion.Wait();
 }
@@ -188,7 +188,8 @@ TEST_F(WebThreadImplForWorkerSchedulerTest, TestShutdown) {
       BLINK_FROM_HERE, WTF::Bind(&MockTask::Run, WTF::Unretained(&task)));
   thread_->GetWebTaskRunner()->PostDelayedTask(
       BLINK_FROM_HERE,
-      WTF::Bind(&MockTask::Run, WTF::Unretained(&delayed_task)), 50ll);
+      WTF::Bind(&MockTask::Run, WTF::Unretained(&delayed_task)),
+      TimeDelta::FromMilliseconds(50));
   thread_.reset();
 }
 

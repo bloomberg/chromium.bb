@@ -68,7 +68,8 @@ void RunPendingTasks() {
 
 void RunDelayedTasks(double delay_ms) {
   Platform::Current()->CurrentThread()->GetWebTaskRunner()->PostDelayedTask(
-      BLINK_FROM_HERE, WTF::Bind(&ExitRunLoop), delay_ms);
+      BLINK_FROM_HERE, WTF::Bind(&ExitRunLoop),
+      TimeDelta::FromMillisecondsD(delay_ms));
   EnterRunLoop();
 }
 

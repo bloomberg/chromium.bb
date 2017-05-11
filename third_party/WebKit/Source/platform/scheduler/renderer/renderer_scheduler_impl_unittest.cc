@@ -3757,8 +3757,10 @@ TEST_F(RendererSchedulerImplTest, Tracing) {
 
   scheduler_->TimerTaskQueue()->PostTask(FROM_HERE, base::Bind(NullTask));
 
-  web_frame_scheduler->LoadingTaskRunner()->PostDelayedTask(
-      FROM_HERE, base::Bind(NullTask), 10);
+  web_frame_scheduler->LoadingTaskRunner()
+      ->ToSingleThreadTaskRunner()
+      ->PostDelayedTask(FROM_HERE, base::Bind(NullTask),
+                        TimeDelta::FromMilliseconds(10));
 
   std::unique_ptr<base::trace_event::ConvertableToTraceFormat> value =
       scheduler_->AsValue(base::TimeTicks());

@@ -112,12 +112,13 @@ ScriptedIdleTaskController::RegisterCallback(
       BLINK_FROM_HERE,
       WTF::Bind(&internal::IdleRequestCallbackWrapper::IdleTaskFired,
                 callback_wrapper));
-  if (timeout_millis > 0)
+  if (timeout_millis > 0) {
     scheduler_->TimerTaskRunner()->PostDelayedTask(
         BLINK_FROM_HERE,
         WTF::Bind(&internal::IdleRequestCallbackWrapper::TimeoutFired,
                   callback_wrapper),
-        timeout_millis);
+        TimeDelta::FromMilliseconds(timeout_millis));
+  }
   TRACE_EVENT_INSTANT1("devtools.timeline", "RequestIdleCallback",
                        TRACE_EVENT_SCOPE_THREAD, "data",
                        InspectorIdleCallbackRequestEvent::Data(

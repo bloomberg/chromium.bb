@@ -53,7 +53,8 @@ TEST(WebTaskRunnerTest, PostCancellableTaskTest) {
 
   count = 0;
   handle = task_runner->PostDelayedCancellableTask(
-      BLINK_FROM_HERE, WTF::Bind(&Increment, WTF::Unretained(&count)), 1);
+      BLINK_FROM_HERE, WTF::Bind(&Increment, WTF::Unretained(&count)),
+      TimeDelta::FromMilliseconds(1));
   EXPECT_EQ(0, count);
   EXPECT_TRUE(handle.IsActive());
   task_runner->RunUntilIdle();

@@ -82,13 +82,6 @@ void FakeWebTaskRunner::SetTime(double new_time) {
   data_->time_ = new_time;
 }
 
-void FakeWebTaskRunner::PostDelayedTask(const WebTraceLocation&,
-                                        base::OnceClosure closure,
-                                        double delay_ms) {
-  data_->PostTask(std::move(closure),
-                  base::TimeDelta::FromMillisecondsD(delay_ms));
-}
-
 bool FakeWebTaskRunner::RunsTasksInCurrentSequence() {
   return true;
 }

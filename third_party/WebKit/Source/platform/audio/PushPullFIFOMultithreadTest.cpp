@@ -62,10 +62,10 @@ class FIFOClient {
     RunTask();
     if (elapsed_ms_ < duration_ms_) {
       client_thread_->GetWebTaskRunner()->PostDelayedTask(
-              BLINK_FROM_HERE,
-              CrossThreadBind(&FIFOClient::RunTaskOnOwnThread,
-                              CrossThreadUnretained(this)),
-              interval_with_jitter);
+          BLINK_FROM_HERE,
+          CrossThreadBind(&FIFOClient::RunTaskOnOwnThread,
+                          CrossThreadUnretained(this)),
+          TimeDelta::FromMillisecondsD(interval_with_jitter));
     } else {
       Stop(counter_);
       done_event_->Signal();
