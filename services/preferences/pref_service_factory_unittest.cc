@@ -6,7 +6,6 @@
 
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/ptr_util.h"
-#include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/sequenced_worker_pool_owner.h"
 #include "components/prefs/pref_change_registrar.h"
@@ -79,10 +78,11 @@ constexpr char kKey[] = "some_key";
 constexpr char kOtherKey[] = "some_other_key";
 constexpr char kDictionaryKey[] = "a.dictionary.pref";
 
-class PrefServiceFactoryTest : public base::MessageLoop::DestructionObserver,
-                               public service_manager::test::ServiceTest {
+class PrefServiceFactoryTest : public service_manager::test::ServiceTest {
  public:
-  PrefServiceFactoryTest() : ServiceTest("prefs_unittests", false) {}
+  PrefServiceFactoryTest()
+      : ServiceTest("prefs_unittests", false),
+        worker_pool_owner_(2, "PrefServiceFactoryTest") {}
 
  protected:
   void SetUp() override {
@@ -111,20 +111,8 @@ class PrefServiceFactoryTest : public base::MessageLoop::DestructionObserver,
 
   // service_manager::test::ServiceTest:
   std::unique_ptr<service_manager::Service> CreateService() override {
-    return base::MakeUnique<ServiceTestClient>(this,
-                                               worker_pool_owner_->pool());
+    return base::MakeUnique<ServiceTestClient>(this, worker_pool_owner_.pool());
   }
-
-  std::unique_ptr<base::MessageLoop> CreateMessageLoop() override {
-    auto loop = ServiceTest::CreateMessageLoop();
-    worker_pool_owner_ = base::MakeUnique<base::SequencedWorkerPoolOwner>(
-        2, "PrefServiceFactoryTest");
-    loop->AddDestructionObserver(this);
-    return loop;
-  }
-
-  // base::MessageLoop::DestructionObserver
-  void WillDestroyCurrentMessageLoop() override { worker_pool_owner_.reset(); }
 
   // Create a fully initialized PrefService synchronously.
   std::unique_ptr<PrefService> Create() {
@@ -187,7 +175,7 @@ class PrefServiceFactoryTest : public base::MessageLoop::DestructionObserver,
   }
 
   base::ScopedTempDir profile_dir_;
-  std::unique_ptr<base::SequencedWorkerPoolOwner> worker_pool_owner_;
+  base::SequencedWorkerPoolOwner worker_pool_owner_;
   scoped_refptr<WriteablePrefStore> above_user_prefs_pref_store_;
   std::unique_ptr<PrefStoreImpl> above_user_prefs_impl_;
   scoped_refptr<WriteablePrefStore> below_user_prefs_pref_store_;

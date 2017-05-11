@@ -677,10 +677,6 @@ class LocalStorageContextMojoTestWithService
     return base::MakeUnique<ServiceTestClient>(this);
   }
 
-  std::unique_ptr<base::MessageLoop> CreateMessageLoop() override {
-    return nullptr;
-  }
-
   const base::FilePath& temp_path() { return temp_path_.GetPath(); }
 
   base::FilePath FirstEntryInDir() {
