@@ -37,7 +37,10 @@ class Canvas {
   // offset of the upper-left corner in pixel.
   virtual void SetTransformationMatrix(const std::array<float, 9>& matrix) = 0;
 
-  // Sets the size of the view in pixels.
+  // Sets the size of the view in pixels such that it fills up the the whole
+  // viewport.
+  // Note that this only affects the transformation matrix. It doesn't affect
+  // how the viewport is rendered on the screen.
   virtual void SetViewSize(int width, int height) = 0;
 
   // Draws the texture on the canvas. Nothing will happen if

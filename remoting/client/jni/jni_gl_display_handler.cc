@@ -159,6 +159,10 @@ void JniGlDisplayHandler::Core::SurfaceCreated(
 
 void JniGlDisplayHandler::Core::SurfaceChanged(int width, int height) {
   DCHECK(runtime_->display_task_runner()->BelongsToCurrentThread());
+  // Note that this doesn't resize the OpenGL viewport. The OpenGL viewport is
+  // initialized once it is first bound to the surface. We don't need to call
+  // glViewport() since the activity/surface is recreated and hence the viewport
+  // is re-initialized every time the surface size is changed.
   renderer_->OnSurfaceChanged(width, height);
 }
 

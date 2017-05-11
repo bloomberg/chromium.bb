@@ -21,12 +21,20 @@ DesktopViewport::DesktopViewport() : desktop_to_surface_transform_() {}
 DesktopViewport::~DesktopViewport() {}
 
 void DesktopViewport::SetDesktopSize(int desktop_width, int desktop_height) {
+  if (desktop_width == desktop_size_.x && desktop_height == desktop_size_.y) {
+    return;
+  }
+
   desktop_size_.x = desktop_width;
   desktop_size_.y = desktop_height;
   ResizeToFit();
 }
 
 void DesktopViewport::SetSurfaceSize(int surface_width, int surface_height) {
+  if (surface_width == surface_size_.x && surface_height == surface_size_.y) {
+    return;
+  }
+
   surface_size_.x = surface_width;
   surface_size_.y = surface_height;
   ResizeToFit();
