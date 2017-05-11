@@ -11,13 +11,9 @@
 # you're making changes and there isn't a more obvious person, the owner is
 # probably you!
 
-ben@chromium.org
-brettw@chromium.org
-dglazkov@chromium.org
-jam@chromium.org
-jochen@chromium.org
-klobag@chromium.org
-sky@chromium.org
+# Eng reviewer
+file://ENG_REVIEW_OWNERS
+
 thakis@chromium.org
 
 per-file .gitignore=*
