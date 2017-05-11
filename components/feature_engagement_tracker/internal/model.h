@@ -53,10 +53,10 @@ class Model {
 
   // Increments the counter for today for how many times the event has happened.
   // If the event has never happened before, the Event object will be created.
-  virtual void IncrementEvent(const std::string& event_name) = 0;
-
-  // Returns the number of days since epoch (1970-01-01) in the local timezone.
-  virtual uint32_t GetCurrentDay() = 0;
+  // The |current_day| should be the number of days since UNIX epoch (see
+  // TimeProvider::GetCurrentDay()).
+  virtual void IncrementEvent(const std::string& event_name,
+                              uint32_t current_day) = 0;
 
  protected:
   Model() = default;

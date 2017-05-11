@@ -64,14 +64,14 @@ const Event* ModelImpl::GetEvent(const std::string& event_name) const {
   return &search->second;
 }
 
-void ModelImpl::IncrementEvent(const std::string& event_name) {
+void ModelImpl::IncrementEvent(const std::string& event_name,
+                               uint32_t current_day) {
   // TODO(nyquist): Add support for pending events, and also add UMA.
   DCHECK(ready_);
 
   // TODO(nyquist): Use StorageValidator to check if the event should be stored.
 
   Event& event = GetNonConstEvent(event_name);
-  uint32_t current_day = GetCurrentDay();
   for (int i = 0; i < event.events_size(); ++i) {
     Event_Count* event_count = event.mutable_events(i);
     DCHECK(event_count->has_day());
@@ -88,11 +88,6 @@ void ModelImpl::IncrementEvent(const std::string& event_name) {
   event_count->set_day(current_day);
   event_count->set_count(1u);
   store_->WriteEvent(event);
-}
-
-uint32_t ModelImpl::GetCurrentDay() {
-  // TODO(nyquist): Implement this according to specification.
-  return 1u;
 }
 
 void ModelImpl::OnStoreLoaded(const OnModelInitializationFinished& callback,

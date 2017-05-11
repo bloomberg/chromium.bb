@@ -40,6 +40,9 @@ static_library("internal") {
     "single_invalid_configuration.h",
     "storage_validator.h",
     "store.h",
+    "system_time_provider.cc",
+    "system_time_provider.h",
+    "time_provider.h",
   ]
 
   public_deps = [
@@ -82,6 +85,7 @@ source_set("unit_tests") {
     "never_storage_validator_unittest.cc",
     "once_condition_validator_unittest.cc",
     "single_invalid_configuration_unittest.cc",
+    "system_time_provider_unittest.cc",
   ]
 
   deps = [
