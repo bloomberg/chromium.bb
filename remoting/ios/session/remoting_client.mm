@@ -133,6 +133,7 @@ NSString* const kHostSessionPin = @"kHostSessionPin";
   if (_session) {
     _session->Disconnect();
   }
+  _displayHandler = nil;
   // TODO(nicholss): Do we need to cleanup more?
 }
 
@@ -222,6 +223,8 @@ NSString* const kHostSessionPin = @"kHostSessionPin";
 }
 
 - (void)surfaceChanged:(const CGRect&)frame {
+  // Note that GLKView automatically sets the OpenGL viewport size to the size
+  // of the surface.
   [_displayHandler onSurfaceChanged:frame];
   _gestureInterpreter->OnSurfaceSizeChanged(frame.size.width,
                                             frame.size.height);

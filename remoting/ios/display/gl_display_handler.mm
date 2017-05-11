@@ -66,7 +66,6 @@ class Core : public protocol::CursorShapeStub, public GlRendererDelegate {
   base::WeakPtr<DualBufferFrameConsumer> frame_consumer_;
 
   // TODO(yuweih): Release references once the surface is destroyed.
-  GLKView* gl_view_;
   EAGLContext* eagl_context_;
   std::unique_ptr<GlRenderer> renderer_;
   //  GlDemoScreen *demo_screen_;
@@ -133,7 +132,8 @@ void Core::SetCursorShape(const protocol::CursorShapeInfo& cursor_shape) {
 
 bool Core::CanRenderFrame() {
   DCHECK(runtime_->display_task_runner()->BelongsToCurrentThread());
-  return gl_view_ != NULL && eagl_context_ != NULL;
+
+  return eagl_context_ != nil;
 }
 
 std::unique_ptr<protocol::FrameConsumer> Core::GrabFrameConsumer() {
@@ -148,7 +148,7 @@ void Core::OnFrameReceived(std::unique_ptr<webrtc::DesktopFrame> frame,
 }
 
 void Core::OnFrameRendered() {
-  [gl_view_ display];
+  [eagl_context_ presentRenderbuffer:GL_RENDERBUFFER];
 }
 
 void Core::OnSizeChanged(int width, int height) {
@@ -168,7 +168,9 @@ void Core::Stop() {
 
 void Core::SurfaceCreated(GLKView* view) {
   DCHECK(runtime_->display_task_runner()->BelongsToCurrentThread());
-  gl_view_ = view;
+
+  // Bind the view's framebuffer object to OpenGL.
+  [view bindDrawable];
 
   renderer_->OnSurfaceCreated(
       base::MakeUnique<GlCanvas>(static_cast<int>([eagl_context_ API])));
@@ -202,7 +204,7 @@ base::WeakPtr<remoting::GlDisplayHandler::Core> Core::GetWeakPtr() {
 }  // namespace remoting
 
 @interface GlDisplayHandler () {
-  remoting::GlDisplayHandler::Core* _core;
+  std::unique_ptr<remoting::GlDisplayHandler::Core> _core;
   remoting::ChromotingClientRuntime* _runtime;
   std::unique_ptr<remoting::QueuedTaskPoster> _uiTaskPoster;
 }
@@ -214,11 +216,15 @@ base::WeakPtr<remoting::GlDisplayHandler::Core> Core::GetWeakPtr() {
   self = [super init];
   if (self) {
     _runtime = remoting::ChromotingClientRuntime::GetInstance();
-    _core = new remoting::GlDisplayHandler::Core();
+    _core.reset(new remoting::GlDisplayHandler::Core());
     _uiTaskPoster.reset(
         new remoting::QueuedTaskPoster(_runtime->display_task_runner()));
   }
   return self;
+}
+
+- (void)dealloc {
+  _runtime->display_task_runner()->DeleteSoon(FROM_HERE, _core.release());
 }
 
 #pragma mark - Public

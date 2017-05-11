@@ -119,7 +119,6 @@ void GlCanvas::SetTransformationMatrix(const std::array<float, 9>& matrix) {
 
 void GlCanvas::SetViewSize(int width, int height) {
   DCHECK(width > 0 && height > 0);
-  glViewport(0, 0, width, height);
   float view_size[2]{width, height};
   glUniform2fv(view_size_location_, 1, view_size);
   view_size_set_ = true;

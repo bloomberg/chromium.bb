@@ -75,9 +75,14 @@ static const CGFloat kFabInset = 15.f;
   [_client.displayHandler onSurfaceCreated:glView];
 
   // viewDidLayoutSubviews may be called before viewDidAppear, in which case
-  // the surface is not ready and onSurfaceChanged will be no-op.
+  // the surface is not ready to handle the transformation matrix.
   // Call onSurfaceChanged here to cover that case.
   [_client surfaceChanged:self.view.frame];
+}
+
+- (void)viewDidDisappear:(BOOL)animated {
+  [super viewDidDisappear:animated];
+  [(GLKView*)self.view deleteDrawable];
 }
 
 - (void)viewWillAppear:(BOOL)animated {
@@ -96,7 +101,11 @@ static const CGFloat kFabInset = 15.f;
 - (void)viewDidLayoutSubviews {
   [super viewDidLayoutSubviews];
 
-  [_client surfaceChanged:self.view.frame];
+  if (((GLKView*)self.view).context != nil) {
+    // If the context is not set yet, the view size will be set in
+    // viewDidAppear.
+    [_client surfaceChanged:self.view.bounds];
+  }
 
   CGSize btnSize = _floatingButton.frame.size;
   _floatingButton.frame =
