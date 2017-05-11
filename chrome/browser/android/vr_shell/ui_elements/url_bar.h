@@ -21,10 +21,11 @@ class UrlBar : public TexturedElement {
   explicit UrlBar(int preferred_width);
   ~UrlBar() override;
 
-  void OnHoverEnter() override;
+  void OnHoverEnter(gfx::PointF position) override;
   void OnHoverLeave() override;
-  void OnButtonUp() override;
+  void OnButtonUp(gfx::PointF position) override;
   void SetEnabled(bool enabled);
+
   void SetURL(const GURL& gurl);
   void SetSecurityLevel(int level);
   void SetBackButtonCallback(const base::Callback<void()>& callback);

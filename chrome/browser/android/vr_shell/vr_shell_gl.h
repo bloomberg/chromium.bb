@@ -15,6 +15,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
+#include "chrome/browser/android/vr_shell/vr_controller.h"
 #include "chrome/browser/android/vr_shell/vr_controller_model.h"
 #include "device/vr/vr_service.mojom.h"
 #include "device/vr/vr_types.h"
@@ -63,11 +64,6 @@ struct WebVrBounds {
 // It is not threadsafe and must only be used on the GL thread.
 class VrShellGl : public device::mojom::VRVSyncProvider {
  public:
-  enum class InputTarget {
-    NONE = 0,
-    CONTENT,
-  };
-
   VrShellGl(VrBrowserInterface* browser,
             gvr_context* gvr_api,
             bool initially_web_vr,
@@ -135,11 +131,36 @@ class VrShellGl : public device::mojom::VRVSyncProvider {
   bool WebVrPoseByteIsValid(int pose_index_byte);
 
   void UpdateController(const gfx::Vector3dF& head_direction);
+  void HandleWebVrCompatibilityClick();
+  void SendFlingCancel(GestureList& gesture_list);
+  void SendScrollEnd(GestureList& gesture_list);
+  bool SendScrollBegin(UiElement* target, GestureList& gesture_list);
+  void SendScrollUpdate(GestureList& gesture_list);
+  void SendHoverLeave(UiElement* target);
+  bool SendHoverEnter(UiElement* target,
+                      const gfx::PointF& target_point,
+                      const gfx::Point& local_point_pixels);
+  void SendHoverMove(const gfx::PointF& target_point,
+                     const gfx::Point& local_point_pixels);
+  void SendButtonDown(UiElement* target, const gfx::PointF& target_point);
+  bool SendButtonUp(UiElement* target, const gfx::PointF& target_point);
+  void SendTap(UiElement* target,
+               const gfx::PointF& target_point,
+               const gfx::Point& local_point_pixels);
+  void GetVisualTargetElement(const gfx::Vector3dF& controller_direction,
+                              gfx::Vector3dF& eye_to_target,
+                              gfx::Point3F& target_point,
+                              UiElement** target_element,
+                              gfx::PointF& target_local_point) const;
+  bool GetTargetLocalPoint(const gfx::Vector3dF& eye_to_target,
+                           const UiElement& element,
+                           float max_distance_to_plane,
+                           gfx::PointF& target_local_point,
+                           gfx::Point3F& target_point,
+                           float& distance_to_plane) const;
   void HandleControllerInput(const gfx::Vector3dF& head_direction);
   void HandleControllerAppButtonActivity(
       const gfx::Vector3dF& controller_direction);
-  void SendInputToContent(InputTarget input_target, int pixel_x, int pixel_y);
-  void SendInputToUiElements(UiElement* target_element);
   void SendGestureToContent(std::unique_ptr<blink::WebInputEvent> event);
   void CreateUiSurface();
   void OnContentFrameAvailable();
@@ -195,15 +216,17 @@ class VrShellGl : public device::mojom::VRVSyncProvider {
 
   gfx::Point3F target_point_;
 
-  // Input targeting for non-content elements.
-  UiElement* target_element_ = nullptr;
-  UiElement* previous_target_element_ = nullptr;
-  UiElement* click_target_element_ = nullptr;
-
-  // Input targeting for the content element.
-  InputTarget current_input_target_ = InputTarget::NONE;
-  InputTarget current_scroll_target_ = InputTarget::NONE;
-  InputTarget current_fling_target_ = InputTarget::NONE;
+  // TODO(mthiesse): We need to handle elements being removed, and update this
+  // state appropriately.
+  UiElement* cursor_render_target_ = nullptr;
+  UiElement* hover_target_ = nullptr;
+  // TODO(mthiesse): We shouldn't have a fling target. Elements should fling
+  // independently and we should only cancel flings on the relevant element
+  // when we do cancel flings.
+  UiElement* fling_target_ = nullptr;
+  UiElement* input_locked_element_ = nullptr;
+  bool in_scroll_ = false;
+  bool in_click_ = false;
 
   int content_tex_css_width_ = 0;
   int content_tex_css_height_ = 0;

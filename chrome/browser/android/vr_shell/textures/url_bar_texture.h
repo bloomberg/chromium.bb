@@ -13,12 +13,15 @@ namespace vr_shell {
 
 class UrlBarTexture : public UiTexture {
  public:
+  enum DrawFlags {
+    FLAG_HOVER = 1 << 0,
+  };
+
   UrlBarTexture();
   ~UrlBarTexture() override;
   gfx::Size GetPreferredTextureSize(int width) const override;
   gfx::SizeF GetDrawnSize() const override;
 
-  void SetHover(bool hover);
   void SetURL(const GURL& gurl);
   void SetSecurityLevel(int level);
 
@@ -27,7 +30,6 @@ class UrlBarTexture : public UiTexture {
   float ToPixels(float meters) const;
 
   gfx::SizeF size_;
-  bool hover_ = false;
   int security_level_;
   GURL gurl_;
 };

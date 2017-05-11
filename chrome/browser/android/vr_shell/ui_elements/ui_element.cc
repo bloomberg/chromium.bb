@@ -74,7 +74,7 @@ gfx::Point3F WorldRectangle::GetCenter() const {
 }
 
 gfx::PointF WorldRectangle::GetUnitRectangleCoordinates(
-    const gfx::Point3F& world_point) {
+    const gfx::Point3F& world_point) const {
   // TODO(acondor): Simplify the math in this function.
   const vr::Mat4f& transform = transform_.to_world;
   gfx::Vector3dF origin =
@@ -116,13 +116,15 @@ void UiElement::Render(VrShellRenderer* renderer,
 
 void UiElement::Initialize() {}
 
-void UiElement::OnHoverEnter() {}
+void UiElement::OnHoverEnter(gfx::PointF position) {}
 
 void UiElement::OnHoverLeave() {}
 
-void UiElement::OnButtonDown() {}
+void UiElement::OnMove(gfx::PointF position) {}
 
-void UiElement::OnButtonUp() {}
+void UiElement::OnButtonDown(gfx::PointF position) {}
+
+void UiElement::OnButtonUp(gfx::PointF position) {}
 
 void UiElement::Animate(const base::TimeTicks& time) {
   for (auto& it : animations_) {

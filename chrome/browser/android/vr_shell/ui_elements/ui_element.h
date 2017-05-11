@@ -82,7 +82,8 @@ class WorldRectangle {
   // rectangle. This allows beam intersection points to be mapped to sprite
   // pixel coordinates. Points that fall onto the rectangle will generate X and
   // Y values on the interval [-0.5, 0.5].
-  gfx::PointF GetUnitRectangleCoordinates(const gfx::Point3F& world_point);
+  gfx::PointF GetUnitRectangleCoordinates(
+      const gfx::Point3F& world_point) const;
 
  private:
   Transform transform_;
@@ -107,10 +108,11 @@ class UiElement : public WorldRectangle {
   virtual void Initialize();
 
   // Controller interaction methods.
-  virtual void OnHoverEnter();
+  virtual void OnHoverEnter(gfx::PointF position);
   virtual void OnHoverLeave();
-  virtual void OnButtonDown();
-  virtual void OnButtonUp();
+  virtual void OnMove(gfx::PointF position);
+  virtual void OnButtonDown(gfx::PointF position);
+  virtual void OnButtonUp(gfx::PointF position);
 
   int id() const { return id_; }
   void set_id(int id) { id_ = id; }
@@ -238,7 +240,7 @@ class UiElement : public WorldRectangle {
   bool lock_to_fov_ = false;
 
   // The computed lock to the FoV, incorporating lock of parent objects.
-  bool computed_lock_to_fov_;
+  bool computed_lock_to_fov_ = false;
 
   // The size of the object.  This does not affect children.
   gfx::Vector3dF size_ = {1.0f, 1.0f, 1.0f};
@@ -257,7 +259,7 @@ class UiElement : public WorldRectangle {
   float opacity_ = 1.0f;
 
   // The computed opacity, incorporating opacity of parent objects.
-  float computed_opacity_;
+  float computed_opacity_ = 1.0f;
 
   // If anchoring is specified, the translation will be relative to the
   // specified edge(s) of the parent, rather than the center.  A parent object
@@ -281,7 +283,7 @@ class UiElement : public WorldRectangle {
   Transform inheritable_transform_;
 
   // A flag usable during transformation calculates to avoid duplicate work.
-  bool dirty_;
+  bool dirty_ = false;
 
   Transform transform_;
 

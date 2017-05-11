@@ -48,10 +48,12 @@ class UiSceneManager {
   void CreateContentQuad();
   void CreateBackground();
   void CreateUrlBar();
+  void CreateCloseButton();
 
   void ConfigureSecurityWarnings();
   void OnSecurityWarningTimer();
   void OnBackButtonClicked();
+  void OnCloseButtonClicked();
   int AllocateId();
 
   VrBrowserInterface* browser_;
