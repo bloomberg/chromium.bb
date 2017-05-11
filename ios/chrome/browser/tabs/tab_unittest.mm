@@ -47,6 +47,7 @@
 #import "ios/web/public/navigation_manager.h"
 #include "ios/web/public/referrer.h"
 #include "ios/web/public/test/test_web_thread_bundle.h"
+#include "ios/web/web_state/navigation_context_impl.h"
 #import "ios/web/web_state/ui/crw_web_controller.h"
 #import "ios/web/web_state/web_state_impl.h"
 #import "net/base/mac/url_conversions.h"
@@ -244,7 +245,10 @@ class TabTest : public BlockCleanupTest {
     web_state_impl_->OnProvisionalNavigationStarted(redirectUrl);
     [[tab_ navigationManagerImpl]->GetSessionController() commitPendingItem];
     web_state_impl_->UpdateHttpResponseHeaders(redirectUrl);
-    web_state_impl_->OnNavigationCommitted(redirectUrl);
+    std::unique_ptr<web::NavigationContext> context =
+        web::NavigationContextImpl::CreateNavigationContext(
+            web_state_impl_.get(), redirectUrl);
+    web_state_impl_->OnNavigationFinished(context.get());
 
     base::string16 new_title = base::SysNSStringToUTF16(title);
     [tab_ navigationManager]->GetLastCommittedItem()->SetTitle(new_title);

@@ -144,26 +144,16 @@ TestUpdateFaviconUrlCandidatesInfo::~TestUpdateFaviconUrlCandidatesInfo() =
 
 - (void)webState:(web::WebState*)webState
     didFinishNavigation:(web::NavigationContext*)navigation {
+  ASSERT_TRUE(!navigation->IsErrorPage() || !navigation->IsSameDocument());
   _didFinishNavigationInfo =
       base::MakeUnique<web::TestDidFinishNavigationInfo>();
   _didFinishNavigationInfo->web_state = webState;
-  if (navigation->IsSameDocument()) {
-    ASSERT_FALSE(navigation->IsErrorPage());
-    _didFinishNavigationInfo->context =
-        web::NavigationContextImpl::CreateSameDocumentNavigationContext(
-            navigation->GetWebState(), navigation->GetUrl());
-  } else if (navigation->IsErrorPage()) {
-    ASSERT_FALSE(navigation->IsSameDocument());
-    _didFinishNavigationInfo->context =
-        web::NavigationContextImpl::CreateErrorPageNavigationContext(
-            navigation->GetWebState(), navigation->GetUrl(),
-            navigation->GetResponseHeaders());
-  } else {
-    _didFinishNavigationInfo->context =
-        web::NavigationContextImpl::CreateNavigationContext(
-            navigation->GetWebState(), navigation->GetUrl(),
-            navigation->GetResponseHeaders());
-  }
+  std::unique_ptr<web::NavigationContextImpl> context =
+      web::NavigationContextImpl::CreateNavigationContext(
+          navigation->GetWebState(), navigation->GetUrl());
+  context->SetIsSameDocument(navigation->IsSameDocument());
+  context->SetIsErrorPage(navigation->IsErrorPage());
+  _didFinishNavigationInfo->context = std::move(context);
 }
 
 - (void)webState:(web::WebState*)webState didLoadPageWithSuccess:(BOOL)success {

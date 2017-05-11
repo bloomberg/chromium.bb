@@ -79,15 +79,6 @@ class WebStateImpl : public WebState, public NavigationManagerDelegate {
   // Called when a navigation is finished.
   void OnNavigationFinished(web::NavigationContext* context);
 
-  // Called when a navigation is committed.
-  void OnNavigationCommitted(const GURL& url);
-
-  // Notifies the observers that same page navigation did finish.
-  void OnSameDocumentNavigation(const GURL& url);
-
-  // Notifies the observers that navigation to error page did finish.
-  void OnErrorPageNavigation(const GURL& url);
-
   // Called when page title was changed.
   void OnTitleChanged();
 

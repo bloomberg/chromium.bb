@@ -1343,9 +1343,10 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   [[self sessionController] pushNewItemWithURL:pageURL
                                    stateObject:stateObject
                                     transition:transition];
-  std::unique_ptr<web::NavigationContext> context =
-      web::NavigationContextImpl::CreateSameDocumentNavigationContext(
-          _webStateImpl, pageURL);
+  std::unique_ptr<web::NavigationContextImpl> context =
+      web::NavigationContextImpl::CreateNavigationContext(_webStateImpl,
+                                                          pageURL);
+  context->SetIsSameDocument(true);
   _webStateImpl->OnNavigationFinished(context.get());
   self.userInteractionRegistered = NO;
 }
@@ -1355,9 +1356,10 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   _webStateImpl->OnProvisionalNavigationStarted(pageURL);
   [[self sessionController] updateCurrentItemWithURL:pageURL
                                          stateObject:stateObject];
-  std::unique_ptr<web::NavigationContext> context =
-      web::NavigationContextImpl::CreateSameDocumentNavigationContext(
-          _webStateImpl, pageURL);
+  std::unique_ptr<web::NavigationContextImpl> context =
+      web::NavigationContextImpl::CreateNavigationContext(_webStateImpl,
+                                                          pageURL);
+  context->SetIsSameDocument(true);
   _webStateImpl->OnNavigationFinished(context.get());
 }
 
