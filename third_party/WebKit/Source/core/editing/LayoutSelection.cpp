@@ -147,6 +147,8 @@ void LayoutSelection::SetSelection(
       selection_end_ == end && selection_end_pos_ == end_pos)
     return;
 
+  DCHECK(frame_selection_->GetDocument().GetLayoutView()->GetFrameView());
+
   // Record the old selected objects. These will be used later when we compare
   // against the new selected objects.
   int old_start_pos = selection_start_pos_;
@@ -254,10 +256,6 @@ void LayoutSelection::SetSelection(
     o = GetNextOrPrevLayoutObjectBasedOnDirection(o, stop, continue_exploring,
                                                   exploring_backwards);
   }
-
-  // TODO(yoichio): DCHECK(frame_selection_->,,,->GetFrameView());
-  if (!frame_selection_->GetDocument().GetLayoutView()->GetFrameView())
-    return;
 
   // Have any of the old selected objects changed compared to the new selection?
   for (SelectedObjectMap::iterator i = old_selected_objects.begin();
