@@ -93,7 +93,7 @@ String EmailInputType::ConvertEmailAddressToASCII(const ScriptRegexp& regexp,
   StringBuilder builder;
   builder.Append(address, 0, at_position + 1);
 #if U_ICU_VERSION_MAJOR_NUM >= 59
-  builder.append(icu::toUCharPtr(domainName.getBuffer()), domainName.length());
+  builder.Append(icu::toUCharPtr(domain_name.getBuffer()), domain_name.length());
 #else
   builder.Append(domain_name.getBuffer(), domain_name.length());
 #endif

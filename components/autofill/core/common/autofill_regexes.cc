@@ -50,7 +50,8 @@ AutofillRegexes::~AutofillRegexes() {
 icu::RegexMatcher* AutofillRegexes::GetMatcher(const base::string16& pattern) {
   auto it = matchers_.find(pattern);
   if (it == matchers_.end()) {
-    const icu::UnicodeString icu_pattern(pattern.data(), pattern.length());
+    const icu::UnicodeString icu_pattern(FALSE, pattern.data(),
+                                         pattern.length());
 
     UErrorCode status = U_ZERO_ERROR;
     std::unique_ptr<icu::RegexMatcher> matcher(
@@ -72,7 +73,7 @@ bool MatchesPattern(const base::string16& input,
                     const base::string16& pattern) {
   icu::RegexMatcher* matcher =
       AutofillRegexes::GetInstance()->GetMatcher(pattern);
-  icu::UnicodeString icu_input(input.data(), input.length());
+  icu::UnicodeString icu_input(FALSE, input.data(), input.length());
   matcher->reset(icu_input);
 
   UErrorCode status = U_ZERO_ERROR;

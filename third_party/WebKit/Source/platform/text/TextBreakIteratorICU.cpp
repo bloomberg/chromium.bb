@@ -834,12 +834,9 @@ static TextBreakIterator* SetUpIteratorWithRules(const char* break_rules,
   if (!iterator) {
     UParseError parse_status;
     UErrorCode open_status = U_ZERO_ERROR;
-    Vector<UChar> rules;
-    String(break_rules).AppendTo(rules);
-
+    // break_rules is ASCII. Pick the most efficient UnicodeString ctor.
     iterator = new icu::RuleBasedBreakIterator(
-        icu::UnicodeString(rules.data(), rules.size()), parse_status,
-        open_status);
+        icu::UnicodeString(break_rules, -1, US_INV), parse_status, open_status);
     DCHECK(U_SUCCESS(open_status))
         << "ICU could not open a break iterator: " << u_errorName(open_status)
         << " (" << open_status << ")";

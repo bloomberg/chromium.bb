@@ -291,7 +291,7 @@ bool SigninManager::IsUsernameAllowedByPolicy(const std::string& username,
 
   // See if the username matches the policy-provided pattern.
   UErrorCode status = U_ZERO_ERROR;
-  const icu::UnicodeString icu_pattern(pattern.data(), pattern.length());
+  const icu::UnicodeString icu_pattern(FALSE, pattern.data(), pattern.length());
   icu::RegexMatcher matcher(icu_pattern, UREGEX_CASE_INSENSITIVE, status);
   if (!U_SUCCESS(status)) {
     LOG(ERROR) << "Invalid login regex: " << pattern << ", status: " << status;
@@ -299,8 +299,8 @@ bool SigninManager::IsUsernameAllowedByPolicy(const std::string& username,
     // break signin than to quietly allow users to sign in).
     return false;
   }
-  base::string16 username16 = base::UTF8ToUTF16(username);
-  icu::UnicodeString icu_input(username16.data(), username16.length());
+  // The default encoding is UTF-8 in Chromium's ICU.
+  icu::UnicodeString icu_input(username.data());
   matcher.reset(icu_input);
   status = U_ZERO_ERROR;
   UBool match = matcher.matches(status);
