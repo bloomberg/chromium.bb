@@ -202,7 +202,13 @@ TEST_F(WindowLocationTest, WindowLocationReplaceUnresolvable) {
 }
 
 // Tests that calling window.location.reload() causes an onload event to occur.
-TEST_F(WindowLocationTest, WindowLocationReload) {
+#if TARGET_IPHONE_SIMULATOR
+#define MAYBE_WindowLocationReload WindowLocationReload
+#else
+#define MAYBE_WindowLocationReload FLAKY_WindowLocationReload
+#endif
+// TODO(crbug.com/721465): Enable this test on device.
+TEST_F(WindowLocationTest, MAYBE_WindowLocationReload) {
   // Tap the window.location.reload() button.
   ExecuteBlockAndWaitForLoad(window_location_url(), ^{
     ASSERT_TRUE(web::test::TapWebViewElementWithId(web_state(),
