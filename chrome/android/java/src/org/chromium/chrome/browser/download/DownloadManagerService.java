@@ -13,6 +13,7 @@ import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Environment;
@@ -373,6 +374,39 @@ public class DownloadManagerService extends BroadcastReceiver implements
         }
         updateDownloadProgress(item, status);
         scheduleUpdateIfNeeded();
+
+        if (!isAutoResumable || sIsNetworkListenerDisabled) return;
+        ConnectivityManager cm =
+                (ConnectivityManager) mContext.getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo info = cm.getActiveNetworkInfo();
+        if (info == null || !info.isConnected()) return;
+        DownloadProgress progress = mDownloadProgressMap.get(item.getId());
+        if (progress.mCanDownloadWhileMetered && !isActiveNetworkMetered(mContext)) {
+            // Normally the download will automatically resume when network is reconnected.
+            // However, if there are multiple network connections and the interruption is caused
+            // by switching between active networks, onConnectionTypeChanged() will not get called.
+            // As a result, we should resume immediately.
+            // TODO(qinmin): Handle the case if the interruption is caused by switching between
+            // 2 metered networks or 2 non-metered networks on device with multiple antennas.
+            scheduleDownloadResumption(item);
+        }
+    }
+
+    /**
+     * Helper method to schedule a download for resumption.
+     * @param item DownloadItem to resume.
+     */
+    private void scheduleDownloadResumption(final DownloadItem item) {
+        removeAutoResumableDownload(item.getId());
+        // Post a delayed task to avoid an issue that when connectivity status just changed
+        // to CONNECTED, immediately establishing a connection will sometimes fail.
+        mHandler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                resumeDownload(LegacyHelpers.buildLegacyContentId(false, item.getId()),
+                        item, false);
+            }
+        }, mUpdateDelayInMillis);
     }
 
     /**
@@ -1524,24 +1558,16 @@ public class DownloadManagerService extends BroadcastReceiver implements
         if (mAutoResumableDownloadIds.isEmpty()) return;
         if (connectionType == ConnectionType.CONNECTION_NONE) return;
         boolean isMetered = isActiveNetworkMetered(mContext);
-        Iterator<String> iterator = mAutoResumableDownloadIds.iterator();
+        // Make a copy of |mAutoResumableDownloadIds| as scheduleDownloadResumption() may delete
+        // elements inside the array.
+        List<String> copies = new ArrayList<String>(mAutoResumableDownloadIds);
+        Iterator<String> iterator = copies.iterator();
         while (iterator.hasNext()) {
             final String id = iterator.next();
             final DownloadProgress progress = mDownloadProgressMap.get(id);
             // Introduce some delay in each resumption so we don't start all of them immediately.
             if (progress != null && (progress.mCanDownloadWhileMetered || !isMetered)) {
-                // Remove the pending resumable item so that the task won't be posted again on the
-                // next connectivity change.
-                iterator.remove();
-                // Post a delayed task to avoid an issue that when connectivity status just changed
-                // to CONNECTED, immediately establishing a connection will sometimes fail.
-                mHandler.postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-                        resumeDownload(LegacyHelpers.buildLegacyContentId(false, id),
-                                progress.mDownloadItem, false);
-                    }
-                }, mUpdateDelayInMillis);
+                scheduleDownloadResumption(progress.mDownloadItem);
             }
         }
         stopListenToConnectionChangeIfNotNeeded();
