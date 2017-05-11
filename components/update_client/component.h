@@ -19,7 +19,6 @@
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
 #include "base/version.h"
-#include "components/update_client/component_unpacker.h"
 #include "components/update_client/crx_downloader.h"
 #include "components/update_client/update_client.h"
 #include "components/update_client/update_response.h"
@@ -32,6 +31,7 @@ class SingleThreadTaskRunner;
 namespace update_client {
 
 struct CrxUpdateItem;
+class ComponentUnpacker;
 struct UpdateContext;
 
 // Describes a CRX component managed by the UpdateEngine. Each |Component| is

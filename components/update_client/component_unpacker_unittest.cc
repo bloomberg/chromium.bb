@@ -16,7 +16,6 @@
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/test/sequenced_worker_pool_owner.h"
-#include "components/update_client/component_patcher_operation.h"
 #include "components/update_client/component_unpacker.h"
 #include "components/update_client/test_configurator.h"
 #include "components/update_client/test_installer.h"

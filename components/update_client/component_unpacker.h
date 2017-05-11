@@ -17,13 +17,13 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/sequenced_task_runner.h"
+#include "components/update_client/out_of_process_patcher.h"
 #include "components/update_client/update_client_errors.h"
 
 namespace update_client {
 
 class CrxInstaller;
 class ComponentPatcher;
-class OutOfProcessPatcher;
 
 // Deserializes the CRX manifest. The top level must be a dictionary.
 std::unique_ptr<base::DictionaryValue> ReadManifest(

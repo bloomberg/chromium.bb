@@ -12,6 +12,7 @@
 #include "base/files/memory_mapped_file.h"
 #include "base/location.h"
 #include "base/strings/string_number_conversions.h"
+#include "components/update_client/out_of_process_patcher.h"
 #include "components/update_client/update_client.h"
 #include "components/update_client/update_client_errors.h"
 #include "components/update_client/utils.h"
@@ -169,7 +170,7 @@ void DeltaUpdateOpCreate::DoRun(const ComponentPatcher::Callback& callback) {
 
 DeltaUpdateOpPatch::DeltaUpdateOpPatch(
     const std::string& operation,
-    scoped_refptr<OutOfProcessPatcher> out_of_process_patcher)
+    const scoped_refptr<OutOfProcessPatcher>& out_of_process_patcher)
     : operation_(operation), out_of_process_patcher_(out_of_process_patcher) {
   DCHECK(operation == kBsdiff || operation == kCourgette);
 }
