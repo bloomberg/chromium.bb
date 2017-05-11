@@ -7,16 +7,13 @@
 
 #include "ash/ash_export.h"
 
-namespace views {
-class Widget;
-}
-
 namespace ash {
 
-// Fills the given widget with the lock screen view and displays it.
+// Creates and displays the lock screen. Returns true if the lock screen was
+// displayed.
 //
 // The lock screen communicates with the backend C++ via a mojo API.
-ASH_EXPORT void ShowLockScreenInWidget(views::Widget* widget);
+ASH_EXPORT bool ShowLockScreen();
 
 }  // namespace ash
 

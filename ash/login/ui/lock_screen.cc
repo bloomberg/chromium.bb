@@ -5,14 +5,22 @@
 #include "ash/login/ui/lock_screen.h"
 
 #include "ash/login/ui/lock_contents_view.h"
+#include "ash/login/ui/lock_window.h"
+#include "ui/display/display.h"
+#include "ui/display/screen.h"
 #include "ui/views/widget/widget.h"
 
 namespace ash {
 
-void ShowLockScreenInWidget(views::Widget* widget) {
+bool ShowLockScreen() {
+  LockWindow* window = new LockWindow();
+  window->SetBounds(display::Screen::GetScreen()->GetPrimaryDisplay().bounds());
+
   views::View* contents = new LockContentsView();
-  widget->SetContentsView(contents);
-  widget->Show();
+  window->SetContentsView(contents);
+  window->Show();
+
+  return true;
 }
 
 }  // namespace ash

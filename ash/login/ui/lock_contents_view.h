@@ -5,6 +5,7 @@
 #ifndef ASH_LOGIN_UI_CONTENTS_VIEW_H_
 #define ASH_LOGIN_UI_CONTENTS_VIEW_H_
 
+#include "ash/ash_export.h"
 #include "base/macros.h"
 #include "ui/views/controls/button/md_text_button.h"
 #include "ui/views/view.h"
@@ -15,7 +16,8 @@ namespace ash {
 // screen views are embedded within this one. LockContentsView is per-display,
 // but the lock screen should only ever be shown on a single display, so there
 // is effectively only a single instance.
-class LockContentsView : public views::View, public views::ButtonListener {
+class ASH_EXPORT LockContentsView : public views::View,
+                                    public views::ButtonListener {
  public:
   LockContentsView();
   ~LockContentsView() override;

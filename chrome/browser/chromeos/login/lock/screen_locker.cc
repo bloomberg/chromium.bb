@@ -242,16 +242,13 @@ void ScreenLocker::Init() {
     owns_delegate_ = true;
 
     // Create and display lock screen.
-    // TODO(jdufualt): LockWindow should live in ash.
     // TODO(jdufault): Calling ash::ShowLockScreenInWidget should be a mojo
     // call. We should only set the session state to locked after the mojo call
     // has completed.
-    LockWindow* lock_window = new LockWindow();
-    lock_window->SetBounds(
-        display::Screen::GetScreen()->GetPrimaryDisplay().bounds());
-    ash::ShowLockScreenInWidget(lock_window);
-    session_manager::SessionManager::Get()->SetSessionState(
-        session_manager::SessionState::LOCKED);
+    if (ash::ShowLockScreen()) {
+      session_manager::SessionManager::Get()->SetSessionState(
+          session_manager::SessionState::LOCKED);
+    }
   } else {
     web_ui_.reset(new WebUIScreenLocker(this));
     delegate_ = web_ui_.get();

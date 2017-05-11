@@ -203,6 +203,8 @@ component("ash") {
     "login/ui/lock_contents_view.h",
     "login/ui/lock_screen.cc",
     "login/ui/lock_screen.h",
+    "login/ui/lock_window.cc",
+    "login/ui/lock_window.h",
     "login_status.h",
     "magnifier/magnification_controller.cc",
     "magnifier/magnification_controller.h",
@@ -856,6 +858,7 @@ component("ash") {
     "//net",
     "//services/preferences/public/cpp",
     "//services/service_manager/public/cpp",
+    "//services/ui/public/cpp",
     "//services/ui/public/interfaces",
     "//skia",
 
