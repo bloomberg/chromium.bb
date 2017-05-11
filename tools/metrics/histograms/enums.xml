@@ -7246,6 +7246,32 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="10" label="Resumed migration failed (file error EIO on open)"/>
 </enum>
 
+<enum name="DircryptoMigrationFailedOperationType" type="int">
+  <int value="1" label="Other"/>
+  <int value="2" label="open(src_file)"/>
+  <int value="3" label="open(dest_file)"/>
+  <int value="4" label="symlink"/>
+  <int value="5" label="delete"/>
+  <int value="6" label="get-attribute"/>
+  <int value="7" label="mkdir"/>
+  <int value="8" label="readlink"/>
+  <int value="9" label="seek"/>
+  <int value="10" label="sendfile"/>
+  <int value="11" label="set-attribute"/>
+  <int value="12" label="stat"/>
+  <int value="13" label="sync"/>
+  <int value="14" label="truncate"/>
+</enum>
+
+<enum name="DircryptoMigrationFailedPathType" type="int">
+  <int value="1" label="Other"/>
+  <int value="2" label="Android Other"/>
+  <int value="3" label="Android Cache"/>
+  <int value="4" label="Downloads"/>
+  <int value="5" label="Cache"/>
+  <int value="6" label="GCache (Google Drive Cache)"/>
+</enum>
+
 <enum name="DircryptoMigrationStartStatus" type="int">
   <int value="1" label="Migration started"/>
   <int value="2" label="Migration resumed"/>

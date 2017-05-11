@@ -9543,6 +9543,36 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Cryptohome.DircryptoMigrationFailedErrorCode"
+    enum="PlatformFileError">
+  <owner>kinaba@chromium.org</owner>
+  <summary>
+    The error code of file operation by which the user home directory migration
+    from ecryptfs to ext4-crypto has failed. This is logged once the migration
+    encounters a file I/O error.
+  </summary>
+</histogram>
+
+<histogram name="Cryptohome.DircryptoMigrationFailedOperationType"
+    enum="DircryptoMigrationFailedOperationType">
+  <owner>kinaba@chromium.org</owner>
+  <summary>
+    The type of file operation at which the user home directory migration from
+    ecryptfs to ext4-crypto has failed. This is logged once the migration
+    encounters a file I/O error.
+  </summary>
+</histogram>
+
+<histogram name="Cryptohome.DircryptoMigrationFailedPathType"
+    enum="DircryptoMigrationFailedPathType">
+  <owner>kinaba@chromium.org</owner>
+  <summary>
+    The category of the path where the user home directory migration from
+    ecryptfs to ext4-crypto has failed. This is logged once the migration
+    encounters a file I/O error.
+  </summary>
+</histogram>
+
 <histogram name="Cryptohome.DircryptoMigrationStartStatus"
     enum="DircryptoMigrationStartStatus">
   <owner>dspaid@chromium.org</owner>
