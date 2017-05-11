@@ -148,13 +148,18 @@ Response* Response::Create(ScriptState* script_state,
         new BlobBytesConsumer(execution_context, blob->GetBlobDataHandle()));
     content_type = blob->type();
   } else if (body->IsArrayBuffer()) {
-    body_buffer = new BodyStreamBuffer(
-        script_state, new FormDataBytesConsumer(
-                          V8ArrayBuffer::toImpl(body.As<v8::Object>())));
+    // Avoid calling into V8 from the following constructor parameters, which
+    // is potentially unsafe.
+    DOMArrayBuffer* array_buffer = V8ArrayBuffer::toImpl(body.As<v8::Object>());
+    body_buffer = new BodyStreamBuffer(script_state,
+                                       new FormDataBytesConsumer(array_buffer));
   } else if (body->IsArrayBufferView()) {
+    // Avoid calling into V8 from the following constructor parameters, which
+    // is potentially unsafe.
+    DOMArrayBufferView* array_buffer_view =
+        V8ArrayBufferView::toImpl(body.As<v8::Object>());
     body_buffer = new BodyStreamBuffer(
-        script_state, new FormDataBytesConsumer(
-                          V8ArrayBufferView::toImpl(body.As<v8::Object>())));
+        script_state, new FormDataBytesConsumer(array_buffer_view));
   } else if (V8FormData::hasInstance(body, isolate)) {
     RefPtr<EncodedFormData> form_data =
         V8FormData::toImpl(body.As<v8::Object>())->EncodeMultiPartFormData();
