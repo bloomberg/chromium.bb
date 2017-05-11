@@ -468,6 +468,8 @@
     <dimen name="list_item_lateral_padding">1dp</dimen>
     <dimen name="list_item_default_margin">16dp</dimen>
     <dimen name="signin_and_sync_view_padding">16dp</dimen>
+    <dimen name="sad_tab_bullet_gap">12dp</dimen>
+    <dimen name="sad_tab_bullet_leading_offset">1dp</dimen>
 
     <!-- Context Menu Dimensions -->
     <dimen name="context_menu_header_image_min_size">56dp</dimen>

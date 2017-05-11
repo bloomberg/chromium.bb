@@ -584,6 +584,11 @@
     <style name="BottomSheetContentTitle" parent="TextAppearance.Widget.AppCompat.Toolbar.Title">
         <item name="android:textSize">20sp</item>
     </style>
+    <style name="SadTabBodyText">
+        <item name="android:textColor">@color/sad_tab_body_text_color</item>
+        <item name="android:textSize">14sp</item>
+        <item name="android:layout_gravity">start</item>
+    </style>
 
     <!-- New tab page RecyclerView overscroll color -->
     <style name="NewTabPageRecyclerView">
