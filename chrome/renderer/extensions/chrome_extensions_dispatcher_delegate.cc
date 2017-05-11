@@ -42,6 +42,7 @@
 #include "extensions/renderer/script_context.h"
 #include "media/media_features.h"
 #include "third_party/WebKit/public/platform/WebString.h"
+#include "third_party/WebKit/public/platform/WebURL.h"
 #include "third_party/WebKit/public/web/WebSecurityPolicy.h"
 
 #if BUILDFLAG(ENABLE_WEBRTC)

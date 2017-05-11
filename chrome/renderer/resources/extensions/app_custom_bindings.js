@@ -35,13 +35,21 @@ var app = {
 //
 // So, define it manually, and let the getIsInstalled function act as its
 // documentation.
-app.__defineGetter__('isInstalled', wrapForLogging(appNatives.GetIsInstalled));
+var isInstalled = wrapForLogging(appNatives.GetIsInstalled);
+$Object.defineProperty(
+    app, 'isInstalled',
+    {
+      __proto__: null,
+      configurable: true,
+      enumerable: true,
+      get: function() { return isInstalled(); },
+    });
 
 // Called by app_bindings.cc.
 function onInstallStateResponse(state, callbackId) {
   var callback = callbacks[callbackId];
   delete callbacks[callbackId];
-  if (typeof(callback) == 'function') {
+  if (typeof callback == 'function') {
     try {
       callback(state);
     } catch (e) {
@@ -52,16 +60,24 @@ function onInstallStateResponse(state, callbackId) {
 }
 
 // TODO(kalman): move this stuff to its own custom bindings.
-var callbacks = {};
+var callbacks = { __proto__: null };
 var nextCallbackId = 1;
 
-app.installState = function getInstallState(callback) {
+function getInstallState(callback) {
   var callbackId = nextCallbackId++;
   callbacks[callbackId] = callback;
   appNatives.GetInstallState(callbackId);
-};
-if (extensionId)
-  app.installState = wrapForLogging(app.installState);
+}
+
+$Object.defineProperty(
+    app, 'installState',
+    {
+      __proto__: null,
+      configurable: true,
+      enumerable: true,
+      value: wrapForLogging(getInstallState),
+      writable: true,
+    });
 
 exports.$set('binding', app);
 exports.$set('onInstallStateResponse', onInstallStateResponse);
