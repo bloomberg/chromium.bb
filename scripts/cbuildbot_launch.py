@@ -157,7 +157,8 @@ def InitialCheckout(branchname, buildroot, git_cache_dir):
   repo = repository.RepoRepository(manifest_url, buildroot,
                                    branch=branchname,
                                    git_cache_dir=git_cache_dir)
-  repo.Sync()
+  repo.BuildRootGitCleanup(prune_all=True)
+  repo.Sync(detach=True)
 
 
 @StageDecorator

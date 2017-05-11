@@ -61,7 +61,8 @@ class CbuildbotLaunchTest(cros_test_lib.MockTestCase):
     self.assertEqual(mock_repo.mock_calls, [
         mock.call(EXPECTED_MANIFEST_URL, '/buildroot',
                   branch=None, git_cache_dir=None),
-        mock.call().Sync()
+        mock.call().BuildRootGitCleanup(prune_all=True),
+        mock.call().Sync(detach=True),
     ])
 
   def testInitialCheckoutMax(self):
@@ -74,7 +75,8 @@ class CbuildbotLaunchTest(cros_test_lib.MockTestCase):
     self.assertEqual(mock_repo.mock_calls, [
         mock.call(EXPECTED_MANIFEST_URL, '/buildroot',
                   branch='release-R56-9000.B', git_cache_dir='/git-cache'),
-        mock.call().Sync()
+        mock.call().BuildRootGitCleanup(prune_all=True),
+        mock.call().Sync(detach=True),
     ])
 
   def testConfigureGlobalEnvironment(self):
