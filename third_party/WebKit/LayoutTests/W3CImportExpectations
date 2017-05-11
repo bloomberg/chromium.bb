@@ -403,7 +403,8 @@ external/wpt/webgl [ Skip ]
 # external/wpt/webstorage [ Pass ]
 ## Owners: foolip@chromium.org,maksim.sisov@intel.com
 # external/wpt/webvtt [ Pass ]
-external/wpt/web-nfc [ Skip ]
+## Owners: alexander.shalamov@intel.com,kenneth.r.christiansen@intel.com,rijubrata.bhaumik@intel.com
+# external/wpt/web-nfc [ Pass ]
 ## Owners: worker-dev@chromium.org
 # external/wpt/workers [ Pass ]
 
