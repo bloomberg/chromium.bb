@@ -438,26 +438,6 @@
       'Windows Dev': 'debug_bot',
     },
 
-    # TODO(mmoss): Move these to mb_configs_official.pyl in the release repo
-    # once the continuous builders are migrated to use recipes from that repo.
-    'official.desktop.continuous': {
-      'mac beta': 'official',
-      'mac stable': 'official',
-      'mac trunk': 'official',
-      'linux64 beta': 'official_six_concurrent_links',
-      'linux64 stable': 'official_six_concurrent_links',
-      'linux64 trunk': 'official_six_concurrent_links',
-      # TODO(mmoss): These precise64 entries can go away once the newly renamed
-      # builders are fully deployed.
-      'precise64 beta': 'official_six_concurrent_links',
-      'precise64 stable': 'official_six_concurrent_links',
-      'precise64 trunk': 'official_six_concurrent_links',
-      'win beta': 'official_six_concurrent_links',
-      'win stable': 'official_six_concurrent_links',
-      'win trunk': 'official_six_concurrent_links',
-      'win64 trunk': 'official_six_concurrent_links',
-    },
-
     'tryserver.blink': {
       # Most tryservers should have '_trybot' in their config names, but
       # 'release_trybot' includes 'dcheck_always_on', and the blink
@@ -1323,10 +1303,6 @@
       'msan', 'release_bot',
     ],
 
-    'official': [
-      'official',
-    ],
-
     'official_goma_minimal_symbols_clang': [
       'official', 'goma', 'minimal_symbols', 'clang',
     ],
@@ -1369,10 +1345,6 @@
 
     'official_optimize_chrome_pgo_phase_2_x86': [
       'official_optimize', 'chrome_pgo_phase_2', 'x86',
-    ],
-
-    'official_six_concurrent_links': [
-      'official', 'six_concurrent_links',
     ],
 
     'release_bot_ozone_linux': [
@@ -1852,12 +1824,6 @@
 
     'shared_release_bot': {
       'mixins': ['shared', 'release', 'goma']
-    },
-
-    'six_concurrent_links': {
-      # TODO(crbug.com/611491) Adjust the get_concurrent_links script
-      # to be more conservative so that we don't need this.
-      'gn_args': 'concurrent_links=6',
     },
 
     'static': {
