@@ -714,9 +714,9 @@ const FeatureEntry::Choice kAutoplayPolicyChoices[] = {
     {flag_descriptions::kAutoplayPolicyUserGestureRequired,
      switches::kAutoplayPolicy, switches::autoplay::kUserGestureRequiredPolicy},
 #else
-    {flag_descriptions::kAutoplayPolicyCrossOriginUserGestureRequired,
+    {flag_descriptions::kAutoplayPolicyUserGestureRequiredForCrossOrigin,
      switches::kAutoplayPolicy,
-     switches::autoplay::kCrossOriginUserGestureRequiredPolicy},
+     switches::autoplay::kUserGestureRequiredForCrossOriginPolicy},
 #endif
 };
 

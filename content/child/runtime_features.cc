@@ -371,12 +371,10 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
   if (base::FeatureList::IsEnabled(features::kIdleTimeSpellChecking))
     WebRuntimeFeatures::EnableFeatureFromString("IdleTimeSpellChecking", true);
 
-#if !defined(OS_ANDROID)
-  if (command_line.GetSwitchValueASCII(switches::kAutoplayPolicy) ==
-      switches::autoplay::kCrossOriginUserGestureRequiredPolicy) {
+  if (media::GetEffectiveAutoplayPolicy(command_line) !=
+      switches::autoplay::kNoUserGestureRequiredPolicy) {
     WebRuntimeFeatures::EnableAutoplayMutedVideos(true);
   }
-#endif
 
   WebRuntimeFeatures::EnableLocationHardReload(
       base::FeatureList::IsEnabled(features::kLocationHardReload));

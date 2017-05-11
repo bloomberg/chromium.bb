@@ -75,6 +75,9 @@ IPC_ENUM_TRAITS_MIN_MAX_VALUE(content::ImageAnimationPolicy,
 IPC_ENUM_TRAITS_MIN_MAX_VALUE(content::ViewportStyle,
                               content::ViewportStyle::DEFAULT,
                               content::ViewportStyle::LAST)
+IPC_ENUM_TRAITS_MIN_MAX_VALUE(content::AutoplayPolicy,
+                              content::AutoplayPolicy::kNoUserGestureRequired,
+                              content::AutoplayPolicy::kUserGestureRequired)
 
 IPC_STRUCT_TRAITS_BEGIN(blink::WebPoint)
   IPC_STRUCT_TRAITS_MEMBER(x)
@@ -220,7 +223,6 @@ IPC_STRUCT_TRAITS_BEGIN(content::WebPreferences)
   IPC_STRUCT_TRAITS_MEMBER(force_enable_zoom)
   IPC_STRUCT_TRAITS_MEMBER(fullscreen_supported)
   IPC_STRUCT_TRAITS_MEMBER(double_tap_to_zoom_enabled)
-  IPC_STRUCT_TRAITS_MEMBER(user_gesture_required_for_media_playback)
   IPC_STRUCT_TRAITS_MEMBER(media_playback_gesture_whitelist_scope)
   IPC_STRUCT_TRAITS_MEMBER(default_video_poster_url)
   IPC_STRUCT_TRAITS_MEMBER(support_deprecated_target_density_dpi)
@@ -242,8 +244,6 @@ IPC_STRUCT_TRAITS_BEGIN(content::WebPreferences)
   IPC_STRUCT_TRAITS_MEMBER(video_rotate_to_fullscreen_enabled)
   IPC_STRUCT_TRAITS_MEMBER(video_fullscreen_detection_enabled)
   IPC_STRUCT_TRAITS_MEMBER(embedded_media_experience_enabled)
-#else  // defined(OS_ANDROID)
-  IPC_STRUCT_TRAITS_MEMBER(cross_origin_media_playback_requires_user_gesture)
 #endif  // defined(OS_ANDROID)
   IPC_STRUCT_TRAITS_MEMBER(default_minimum_page_scale_factor)
   IPC_STRUCT_TRAITS_MEMBER(default_maximum_page_scale_factor)
@@ -253,6 +253,7 @@ IPC_STRUCT_TRAITS_BEGIN(content::WebPreferences)
   IPC_STRUCT_TRAITS_MEMBER(presentation_receiver)
   IPC_STRUCT_TRAITS_MEMBER(media_controls_enabled)
   IPC_STRUCT_TRAITS_MEMBER(do_not_update_selection_on_mutating_selection_range)
+  IPC_STRUCT_TRAITS_MEMBER(autoplay_policy)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(blink::mojom::WindowFeatures)

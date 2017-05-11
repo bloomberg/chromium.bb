@@ -384,8 +384,10 @@ void AwSettings::PopulateWebPreferencesLocked(JNIEnv* env,
   web_prefs->initialize_at_minimum_page_scale =
       Java_AwSettings_getLoadWithOverviewModeLocked(env, obj);
 
-  web_prefs->user_gesture_required_for_media_playback =
-      Java_AwSettings_getMediaPlaybackRequiresUserGestureLocked(env, obj);
+  web_prefs->autoplay_policy =
+      Java_AwSettings_getMediaPlaybackRequiresUserGestureLocked(env, obj)
+          ? content::AutoplayPolicy::kUserGestureRequired
+          : content::AutoplayPolicy::kNoUserGestureRequired;
 
   ScopedJavaLocalRef<jstring> url =
       Java_AwSettings_getDefaultVideoPosterURLLocked(env, obj);

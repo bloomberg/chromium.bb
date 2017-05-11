@@ -13,6 +13,10 @@
 #include "media/media_features.h"
 #include "ppapi/features/features.h"
 
+namespace base {
+class CommandLine;
+}
+
 namespace switches {
 
 MEDIA_EXPORT extern const char kAudioBufferSize[];
@@ -81,9 +85,9 @@ MEDIA_EXPORT extern const char kIgnoreAutoplayRestrictionsForTests[];
 
 namespace autoplay {
 
-MEDIA_EXPORT extern const char kCrossOriginUserGestureRequiredPolicy[];
 MEDIA_EXPORT extern const char kNoUserGestureRequiredPolicy[];
 MEDIA_EXPORT extern const char kUserGestureRequiredPolicy[];
+MEDIA_EXPORT extern const char kUserGestureRequiredForCrossOriginPolicy[];
 
 }  // namespace autoplay
 
@@ -120,6 +124,14 @@ MEDIA_EXPORT extern const base::Feature kMediaDrmPersistentLicense;
 MEDIA_EXPORT extern const base::Feature kD3D11VideoDecoding;
 MEDIA_EXPORT extern const base::Feature kMediaFoundationH264Encoding;
 #endif  // defined(OS_WIN)
+
+// Based on a |command_line| and the current platform, returns the effective
+// autoplay policy. In other words, it will take into account the default policy
+// if none is specified via the command line and options passed for testing.
+// Returns one of the possible autoplay policy switches from the
+// switches::autoplay namespace.
+MEDIA_EXPORT std::string GetEffectiveAutoplayPolicy(
+    const base::CommandLine& command_line);
 
 }  // namespace media
 

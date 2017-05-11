@@ -440,22 +440,21 @@ WebPreferences RenderViewHostImpl::ComputeWebkitPrefs() {
       command_line.HasSwitch(switches::kHistoryEntryRequiresUserGesture);
 
 #if defined(OS_ANDROID)
-  // On Android, user gestures are normally required, unless that requirement
-  // is disabled with a command-line switch or the equivalent field trial is
-  // is set to "Enabled".
-  prefs.user_gesture_required_for_media_playback =
-      !command_line.HasSwitch(switches::kIgnoreAutoplayRestrictionsForTests) &&
-      command_line.GetSwitchValueASCII(switches::kAutoplayPolicy) !=
-          switches::autoplay::kNoUserGestureRequiredPolicy;
-
   prefs.progress_bar_completion = GetProgressBarCompletionPolicy();
 
   prefs.use_solid_color_scrollbars = true;
-#else  // defined(OS_ANDROID)
-  prefs.cross_origin_media_playback_requires_user_gesture =
-      command_line.GetSwitchValueASCII(switches::kAutoplayPolicy) ==
-      switches::autoplay::kCrossOriginUserGestureRequiredPolicy;
 #endif  // defined(OS_ANDROID)
+
+  std::string autoplay_policy = media::GetEffectiveAutoplayPolicy(command_line);
+  if (autoplay_policy == switches::autoplay::kNoUserGestureRequiredPolicy) {
+    prefs.autoplay_policy = AutoplayPolicy::kNoUserGestureRequired;
+  } else if (autoplay_policy ==
+             switches::autoplay::kUserGestureRequiredPolicy) {
+    prefs.autoplay_policy = AutoplayPolicy::kUserGestureRequired;
+  } else if (autoplay_policy ==
+             switches::autoplay::kUserGestureRequiredForCrossOriginPolicy) {
+    prefs.autoplay_policy = AutoplayPolicy::kUserGestureRequiredForCrossOrigin;
+  }
 
   const std::string touch_enabled_switch =
       command_line.HasSwitch(switches::kTouchEventFeatureDetection)

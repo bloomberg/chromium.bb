@@ -3349,7 +3349,7 @@ extern const char kAutoplayPolicyDescription[];
 
 // Description of the autoplay policy that requires a user gesture on cross
 // origin iframes.
-extern const char kAutoplayPolicyCrossOriginUserGestureRequired[];
+extern const char kAutoplayPolicyUserGestureRequiredForCrossOrigin[];
 
 // Description of the autoplay policy that has no user gesture requirements.
 extern const char kAutoplayPolicyNoUserGestureRequired[];
