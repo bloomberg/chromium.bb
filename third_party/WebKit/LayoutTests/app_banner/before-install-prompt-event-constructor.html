@@ -5,8 +5,13 @@
 
 test(function() {
     assert_false(new BeforeInstallPromptEvent('eventType').bubbles, 'bubbles');
-    assert_true(new BeforeInstallPromptEvent('eventType').cancelable, 'cancelable');
+    assert_false(new BeforeInstallPromptEvent('eventType').cancelable, 'cancelable');
 }, 'No initializer passed');
+
+test(function() {
+    assert_true(new BeforeInstallPromptEvent('eventType', { bubbles: true } ).bubbles, 'bubbles');
+    assert_true(new BeforeInstallPromptEvent('eventType', { cancelable: true } ).cancelable, 'cancelable');
+}, 'Initializer values not respected');
 
 test(function() {
     var event = new BeforeInstallPromptEvent('eventType', { platforms: ['a'] });
