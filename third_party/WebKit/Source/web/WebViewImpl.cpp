@@ -2760,7 +2760,7 @@ bool WebViewImpl::ScrollFocusedEditableElementIntoRect(
     // not to zoom in if the user won't be able to zoom out. e.g if the textbox
     // is within a touch-action: none container the user can't zoom back out.
     TouchAction action = TouchActionUtil::ComputeEffectiveTouchAction(*element);
-    if (!(action & kTouchActionPinchZoom))
+    if (!(action & TouchAction::kTouchActionPinchZoom))
       zoom_in_to_legible_scale = false;
   }
 

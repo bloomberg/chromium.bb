@@ -17,12 +17,12 @@ namespace {
 
 // Actions on an axis are disallowed if the perpendicular axis has a filter set
 // and no filter is set for the queried axis.
-bool IsYAxisActionDisallowed(TouchAction action) {
-  return (action & TOUCH_ACTION_PAN_X) && !(action & TOUCH_ACTION_PAN_Y);
+bool IsYAxisActionDisallowed(cc::TouchAction action) {
+  return (action & cc::kTouchActionPanX) && !(action & cc::kTouchActionPanY);
 }
 
-bool IsXAxisActionDisallowed(TouchAction action) {
-  return (action & TOUCH_ACTION_PAN_Y) && !(action & TOUCH_ACTION_PAN_X);
+bool IsXAxisActionDisallowed(cc::TouchAction action) {
+  return (action & cc::kTouchActionPanY) && !(action & cc::kTouchActionPanX);
 }
 
 }  // namespace
@@ -31,7 +31,7 @@ TouchActionFilter::TouchActionFilter()
     : suppress_manipulation_events_(false),
       drop_current_tap_ending_event_(false),
       allow_current_double_tap_event_(true),
-      allowed_touch_action_(TOUCH_ACTION_AUTO) {}
+      allowed_touch_action_(cc::kTouchActionAuto) {}
 
 bool TouchActionFilter::FilterGestureEvent(WebGestureEvent* gesture_event) {
   if (gesture_event->source_device != blink::kWebGestureDeviceTouchscreen)
@@ -108,7 +108,7 @@ bool TouchActionFilter::FilterGestureEvent(WebGestureEvent* gesture_event) {
     case WebInputEvent::kGestureTapUnconfirmed:
       DCHECK_EQ(1, gesture_event->data.tap.tap_count);
       allow_current_double_tap_event_ =
-          (allowed_touch_action_ & TOUCH_ACTION_DOUBLE_TAP_ZOOM) != 0;
+          (allowed_touch_action_ & cc::kTouchActionDoubleTapZoom) != 0;
       if (!allow_current_double_tap_event_) {
         gesture_event->SetType(WebInputEvent::kGestureTap);
         drop_current_tap_ending_event_ = true;
@@ -117,7 +117,7 @@ bool TouchActionFilter::FilterGestureEvent(WebGestureEvent* gesture_event) {
 
     case WebInputEvent::kGestureTap:
       allow_current_double_tap_event_ =
-          (allowed_touch_action_ & TOUCH_ACTION_DOUBLE_TAP_ZOOM) != 0;
+          (allowed_touch_action_ & cc::kTouchActionDoubleTapZoom) != 0;
       // Fall through.
 
     case WebInputEvent::kGestureTapCancel:
@@ -148,7 +148,7 @@ bool TouchActionFilter::FilterManipulationEventAndResetState() {
   return false;
 }
 
-void TouchActionFilter::OnSetTouchAction(TouchAction touch_action) {
+void TouchActionFilter::OnSetTouchAction(cc::TouchAction touch_action) {
   // For multiple fingers, we take the intersection of the touch actions for
   // all fingers that have gone down during this action.  In the majority of
   // real-world scenarios the touch action for all fingers will be the same.
@@ -166,7 +166,7 @@ void TouchActionFilter::OnSetTouchAction(TouchAction touch_action) {
 void TouchActionFilter::ResetTouchAction() {
   // Note that resetting the action mid-sequence is tolerated. Gestures that had
   // their begin event(s) suppressed will be suppressed until the next sequence.
-  allowed_touch_action_ = TOUCH_ACTION_AUTO;
+  allowed_touch_action_ = cc::kTouchActionAuto;
 }
 
 bool TouchActionFilter::ShouldSuppressManipulation(
@@ -177,7 +177,7 @@ bool TouchActionFilter::ShouldSuppressManipulation(
     // Any GestureScrollBegin with more than one fingers is like a pinch-zoom
     // for touch-actions, see crbug.com/632525. Therefore, we switch to
     // blocked-manipulation mode iff pinch-zoom is disallowed.
-    return (allowed_touch_action_ & TOUCH_ACTION_PINCH_ZOOM) == 0;
+    return (allowed_touch_action_ & cc::kTouchActionPinchZoom) == 0;
   }
 
   const float& deltaXHint = gesture_event.data.scroll_begin.delta_x_hint;
@@ -189,20 +189,20 @@ bool TouchActionFilter::ShouldSuppressManipulation(
   const float absDeltaXHint = fabs(deltaXHint);
   const float absDeltaYHint = fabs(deltaYHint);
 
-  TouchAction minimal_conforming_touch_action = TOUCH_ACTION_NONE;
+  cc::TouchAction minimal_conforming_touch_action = cc::kTouchActionNone;
   if (absDeltaXHint >= absDeltaYHint) {
     if (deltaXHint > 0)
-      minimal_conforming_touch_action |= TOUCH_ACTION_PAN_LEFT;
+      minimal_conforming_touch_action |= cc::kTouchActionPanLeft;
     else if (deltaXHint < 0)
-      minimal_conforming_touch_action |= TOUCH_ACTION_PAN_RIGHT;
+      minimal_conforming_touch_action |= cc::kTouchActionPanRight;
   }
   if (absDeltaYHint >= absDeltaXHint) {
     if (deltaYHint > 0)
-      minimal_conforming_touch_action |= TOUCH_ACTION_PAN_UP;
+      minimal_conforming_touch_action |= cc::kTouchActionPanUp;
     else if (deltaYHint < 0)
-      minimal_conforming_touch_action |= TOUCH_ACTION_PAN_DOWN;
+      minimal_conforming_touch_action |= cc::kTouchActionPanDown;
   }
-  DCHECK(minimal_conforming_touch_action != TOUCH_ACTION_NONE);
+  DCHECK(minimal_conforming_touch_action != cc::kTouchActionNone);
 
   return (allowed_touch_action_ & minimal_conforming_touch_action) == 0;
 }

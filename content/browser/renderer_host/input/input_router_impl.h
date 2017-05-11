@@ -14,6 +14,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/time/time.h"
+#include "cc/input/touch_action.h"
 #include "content/browser/renderer_host/input/gesture_event_queue.h"
 #include "content/browser/renderer_host/input/input_router.h"
 #include "content/browser/renderer_host/input/mouse_wheel_event_queue.h"
@@ -148,7 +149,7 @@ class CONTENT_EXPORT InputRouterImpl
   void OnMsgMoveCaretAck();
   void OnSelectMessageAck();
   void OnHasTouchEventHandlers(bool has_handlers);
-  void OnSetTouchAction(TouchAction touch_action);
+  void OnSetTouchAction(cc::TouchAction touch_action);
   void OnDidStopFlinging();
 
   // Indicates the source of an ack provided to |ProcessInputEventAck()|.

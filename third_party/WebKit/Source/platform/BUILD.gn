@@ -955,6 +955,7 @@ component("platform") {
     "graphics/StrokeData.cpp",
     "graphics/StrokeData.h",
     "graphics/TextureHolder.h",
+    "graphics/TouchAction.h",
     "graphics/UnacceleratedImageBufferSurface.cpp",
     "graphics/UnacceleratedImageBufferSurface.h",
     "graphics/UnacceleratedStaticBitmapImage.cpp",

@@ -200,7 +200,7 @@ void LogTouchTargetHistogram(EventTarget* event_target,
 
 TouchEvent::TouchEvent()
     : default_prevented_before_current_target_(false),
-      current_touch_action_(kTouchActionAuto) {}
+      current_touch_action_(TouchAction::kTouchActionAuto) {}
 
 TouchEvent::TouchEvent(const WebTouchEvent& event,
                        TouchList* touches,
@@ -236,7 +236,7 @@ TouchEvent::TouchEvent(const AtomicString& type,
       touches_(TouchList::Create(initializer.touches())),
       target_touches_(TouchList::Create(initializer.targetTouches())),
       changed_touches_(TouchList::Create(initializer.changedTouches())),
-      current_touch_action_(kTouchActionAuto) {}
+      current_touch_action_(TouchAction::kTouchActionAuto) {}
 
 TouchEvent::~TouchEvent() {}
 
@@ -296,7 +296,7 @@ void TouchEvent::preventDefault() {
       // Only enable the warning when the current touch action is auto because
       // an author may use touch action but call preventDefault for interop with
       // browsers that don't support touch-action.
-      if (current_touch_action_ == kTouchActionAuto) {
+      if (current_touch_action_ == TouchAction::kTouchActionAuto) {
         message_source = kInterventionMessageSource;
         warning_message =
             "Unable to preventDefault inside passive event listener due to "
@@ -318,7 +318,7 @@ void TouchEvent::preventDefault() {
   if ((type() == EventTypeNames::touchstart ||
        type() == EventTypeNames::touchmove) &&
       view() && view()->GetFrame() &&
-      current_touch_action_ == kTouchActionAuto) {
+      current_touch_action_ == TouchAction::kTouchActionAuto) {
     switch (HandlingPassive()) {
       case PassiveMode::kNotPassiveDefault:
         UseCounter::Count(view()->GetFrame(),

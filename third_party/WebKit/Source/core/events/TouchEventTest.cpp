@@ -65,7 +65,8 @@ class TouchEventTest : public testing::Test {
     WebTouchEvent web_touch_event(WebInputEvent::kTouchStart, 0, 0);
     web_touch_event.dispatch_type = dispatch_type;
     return TouchEvent::Create(web_touch_event, nullptr, nullptr, nullptr,
-                              "touchstart", &Window(), kTouchActionAuto);
+                              "touchstart", &Window(),
+                              TouchAction::kTouchActionAuto);
   }
 
  private:

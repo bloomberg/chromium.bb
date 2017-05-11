@@ -23,7 +23,6 @@
 #include "content/common/content_constants_internal.h"
 #include "content/common/edit_command.h"
 #include "content/common/input/input_event_ack_state.h"
-#include "content/common/input/touch_action.h"
 #include "content/common/input/web_touch_event_traits.h"
 #include "content/common/input_messages.h"
 #include "content/common/view_messages.h"
@@ -501,7 +500,7 @@ void InputRouterImpl::OnHasTouchEventHandlers(bool has_handlers) {
   client_->OnHasTouchEventHandlers(has_handlers);
 }
 
-void InputRouterImpl::OnSetTouchAction(TouchAction touch_action) {
+void InputRouterImpl::OnSetTouchAction(cc::TouchAction touch_action) {
   // Synthetic touchstart events should get filtered out in RenderWidget.
   DCHECK(touch_event_queue_->IsPendingAckTouchStart());
   TRACE_EVENT1("input", "InputRouterImpl::OnSetTouchAction",
@@ -509,7 +508,7 @@ void InputRouterImpl::OnSetTouchAction(TouchAction touch_action) {
 
   touch_action_filter_.OnSetTouchAction(touch_action);
 
-  // TOUCH_ACTION_NONE should disable the touch ack timeout.
+  // kTouchActionNone should disable the touch ack timeout.
   UpdateTouchAckTimeoutEnabled();
 }
 
@@ -625,11 +624,11 @@ void InputRouterImpl::ProcessTouchAck(InputEventAckState ack_result,
 }
 
 void InputRouterImpl::UpdateTouchAckTimeoutEnabled() {
-  // TOUCH_ACTION_NONE will prevent scrolling, in which case the timeout serves
+  // kTouchActionNone will prevent scrolling, in which case the timeout serves
   // little purpose. It's also a strong signal that touch handling is critical
   // to page functionality, so the timeout could do more harm than good.
   const bool touch_ack_timeout_enabled =
-      touch_action_filter_.allowed_touch_action() != TOUCH_ACTION_NONE;
+      touch_action_filter_.allowed_touch_action() != cc::kTouchActionNone;
   touch_event_queue_->SetAckTimeoutEnabled(touch_ack_timeout_enabled);
 }
 

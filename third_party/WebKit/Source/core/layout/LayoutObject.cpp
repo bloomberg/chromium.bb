@@ -85,6 +85,7 @@
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/geometry/TransformState.h"
 #include "platform/graphics/GraphicsLayer.h"
+#include "platform/graphics/TouchAction.h"
 #include "platform/graphics/paint/PropertyTreeState.h"
 #include "platform/instrumentation/tracing/TracedValue.h"
 #include "platform/wtf/allocator/Partitions.h"
@@ -1817,13 +1818,13 @@ void LayoutObject::StyleWillChange(StyleDifference diff,
   // handler will have already been added for its parent so ignore it.
   // TODO: Remove this blocking event handler; crbug.com/318381
   TouchAction old_touch_action =
-      style_ ? style_->GetTouchAction() : kTouchActionAuto;
+      style_ ? style_->GetTouchAction() : TouchAction::kTouchActionAuto;
   if (GetNode() && !GetNode()->IsTextNode() &&
-      (old_touch_action == kTouchActionAuto) !=
-          (new_style.GetTouchAction() == kTouchActionAuto)) {
+      (old_touch_action == TouchAction::kTouchActionAuto) !=
+          (new_style.GetTouchAction() == TouchAction::kTouchActionAuto)) {
     EventHandlerRegistry& registry =
         GetDocument().GetPage()->GetEventHandlerRegistry();
-    if (new_style.GetTouchAction() != kTouchActionAuto)
+    if (new_style.GetTouchAction() != TouchAction::kTouchActionAuto)
       registry.DidAddEventHandler(
           *GetNode(), EventHandlerRegistry::kTouchStartOrMoveEventBlocking);
     else
@@ -2645,7 +2646,7 @@ void LayoutObject::WillBeDestroyed() {
   // m_style is null in cases of partial construction. Any handler we added
   // previously may have already been removed by the Document independently.
   if (GetNode() && !GetNode()->IsTextNode() && style_ &&
-      style_->GetTouchAction() != kTouchActionAuto) {
+      style_->GetTouchAction() != TouchAction::kTouchActionAuto) {
     EventHandlerRegistry& registry =
         GetDocument().GetPage()->GetEventHandlerRegistry();
     if (registry

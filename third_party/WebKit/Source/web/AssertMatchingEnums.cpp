@@ -134,7 +134,6 @@
 #include "public/web/WebSpeechRecognizerClient.h"
 #include "public/web/WebTextCheckingResult.h"
 #include "public/web/WebTextDecorationType.h"
-#include "public/web/WebTouchAction.h"
 #include "public/web/WebView.h"
 
 namespace blink {
@@ -796,19 +795,6 @@ STATIC_ASSERT_ENUM(kWebCustomHandlersRegistered,
                    NavigatorContentUtilsClient::kCustomHandlersRegistered);
 STATIC_ASSERT_ENUM(kWebCustomHandlersDeclined,
                    NavigatorContentUtilsClient::kCustomHandlersDeclined);
-
-STATIC_ASSERT_ENUM(kWebTouchActionNone, kTouchActionNone);
-STATIC_ASSERT_ENUM(kWebTouchActionPanLeft, kTouchActionPanLeft);
-STATIC_ASSERT_ENUM(kWebTouchActionPanRight, kTouchActionPanRight);
-STATIC_ASSERT_ENUM(kWebTouchActionPanX, kTouchActionPanX);
-STATIC_ASSERT_ENUM(kWebTouchActionPanUp, kTouchActionPanUp);
-STATIC_ASSERT_ENUM(kWebTouchActionPanDown, kTouchActionPanDown);
-STATIC_ASSERT_ENUM(kWebTouchActionPanY, kTouchActionPanY);
-STATIC_ASSERT_ENUM(kWebTouchActionPan, kTouchActionPan);
-STATIC_ASSERT_ENUM(kWebTouchActionPinchZoom, kTouchActionPinchZoom);
-STATIC_ASSERT_ENUM(kWebTouchActionManipulation, kTouchActionManipulation);
-STATIC_ASSERT_ENUM(kWebTouchActionDoubleTapZoom, kTouchActionDoubleTapZoom);
-STATIC_ASSERT_ENUM(kWebTouchActionAuto, kTouchActionAuto);
 
 STATIC_ASSERT_ENUM(WebSelection::kNoSelection, kNoSelection);
 STATIC_ASSERT_ENUM(WebSelection::kCaretSelection, kCaretSelection);

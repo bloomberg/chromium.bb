@@ -25,6 +25,7 @@
 #include "base/trace_event/trace_event_synthetic_delay.h"
 #include "build/build_config.h"
 #include "cc/animation/animation_host.h"
+#include "cc/input/touch_action.h"
 #include "cc/output/compositor_frame_sink.h"
 #include "cc/output/copy_output_request.h"
 #include "cc/scheduler/begin_frame_source.h"
@@ -2246,15 +2247,13 @@ void RenderWidget::HasTouchEventHandlers(bool has_handlers) {
   Send(new ViewHostMsg_HasTouchEventHandlers(routing_id_, has_handlers));
 }
 
-void RenderWidget::SetTouchAction(blink::WebTouchAction web_touch_action) {
+void RenderWidget::SetTouchAction(cc::TouchAction touch_action) {
   // Ignore setTouchAction calls that result from synthetic touch events (eg.
   // when blink is emulating touch with mouse).
   if (input_handler_->handling_event_type() != WebInputEvent::kTouchStart)
     return;
 
-   content::TouchAction content_touch_action =
-       static_cast<content::TouchAction>(web_touch_action);
-  Send(new InputHostMsg_SetTouchAction(routing_id_, content_touch_action));
+  Send(new InputHostMsg_SetTouchAction(routing_id_, touch_action));
 }
 
 void RenderWidget::RegisterRenderFrameProxy(RenderFrameProxy* proxy) {

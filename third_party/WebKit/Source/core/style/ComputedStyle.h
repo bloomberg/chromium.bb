@@ -64,6 +64,7 @@
 #include "platform/geometry/FloatRoundedRect.h"
 #include "platform/geometry/LayoutRectOutsets.h"
 #include "platform/graphics/Color.h"
+#include "platform/graphics/TouchAction.h"
 #include "platform/scroll/ScrollTypes.h"
 #include "platform/text/TextDirection.h"
 #include "platform/text/UnicodeBidi.h"
@@ -1595,7 +1596,9 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   }
 
   // touch-action
-  static TouchAction InitialTouchAction() { return kTouchActionAuto; }
+  static TouchAction InitialTouchAction() {
+    return TouchAction::kTouchActionAuto;
+  }
   TouchAction GetTouchAction() const {
     return static_cast<TouchAction>(rare_non_inherited_data_->touch_action_);
   }

@@ -75,6 +75,7 @@
 #include "platform/exported/WrappedResourceRequest.h"
 #include "platform/geometry/IntRect.h"
 #include "platform/graphics/GraphicsLayer.h"
+#include "platform/graphics/TouchAction.h"
 #include "platform/scheduler/renderer/web_view_scheduler.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "platform/wtf/Optional.h"
@@ -103,7 +104,6 @@
 #include "public/web/WebSelection.h"
 #include "public/web/WebSettings.h"
 #include "public/web/WebTextDirection.h"
-#include "public/web/WebTouchAction.h"
 #include "public/web/WebUserGestureIndicator.h"
 #include "public/web/WebUserGestureToken.h"
 #include "public/web/WebViewClient.h"
@@ -1060,7 +1060,7 @@ void ChromeClientImpl::SetTouchAction(LocalFrame* frame,
     return;
 
   if (WebWidgetClient* client = widget->Client())
-    client->SetTouchAction(static_cast<WebTouchAction>(touch_action));
+    client->SetTouchAction(static_cast<TouchAction>(touch_action));
 }
 
 bool ChromeClientImpl::RequestPointerLock(LocalFrame* frame) {

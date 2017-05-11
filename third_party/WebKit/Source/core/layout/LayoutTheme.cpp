@@ -50,6 +50,7 @@
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/Theme.h"
 #include "platform/fonts/FontSelector.h"
+#include "platform/graphics/TouchAction.h"
 #include "platform/text/PlatformLocale.h"
 #include "platform/text/StringTruncator.h"
 #include "platform/wtf/text/StringBuilder.h"
@@ -626,10 +627,10 @@ void LayoutTheme::AdjustSliderContainerStyle(ComputedStyle& style,
   if (e && (e->ShadowPseudoId() == "-webkit-media-slider-container" ||
             e->ShadowPseudoId() == "-webkit-slider-container")) {
     if (style.Appearance() == kSliderVerticalPart) {
-      style.SetTouchAction(kTouchActionPanX);
+      style.SetTouchAction(TouchAction::kTouchActionPanX);
       style.SetAppearance(kNoControlPart);
     } else {
-      style.SetTouchAction(kTouchActionPanY);
+      style.SetTouchAction(TouchAction::kTouchActionPanY);
       style.SetAppearance(kNoControlPart);
     }
   }

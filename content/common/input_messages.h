@@ -8,6 +8,7 @@
 
 #include "base/strings/string16.h"
 #include "build/build_config.h"
+#include "cc/input/touch_action.h"
 #include "content/common/content_export.h"
 #include "content/common/content_param_traits.h"
 #include "content/common/edit_command.h"
@@ -25,7 +26,6 @@
 #include "content/common/input/synthetic_smooth_drag_gesture_params.h"
 #include "content/common/input/synthetic_smooth_scroll_gesture_params.h"
 #include "content/common/input/synthetic_tap_gesture_params.h"
-#include "content/common/input/touch_action.h"
 #include "ipc/ipc_message_macros.h"
 #include "third_party/WebKit/public/platform/WebInputEvent.h"
 #include "ui/events/blink/did_overscroll_params.h"
@@ -63,7 +63,7 @@ IPC_ENUM_TRAITS_MAX_VALUE(
     content::SyntheticPointerActionParams::Button::BUTTON_MAX)
 IPC_ENUM_TRAITS_MAX_VALUE(content::InputEventDispatchType,
                           content::InputEventDispatchType::DISPATCH_TYPE_MAX)
-IPC_ENUM_TRAITS_MAX_VALUE(content::TouchAction, content::TOUCH_ACTION_MAX)
+IPC_ENUM_TRAITS_MAX_VALUE(cc::TouchAction, cc::kTouchActionMax)
 
 IPC_STRUCT_TRAITS_BEGIN(ui::DidOverscrollParams)
   IPC_STRUCT_TRAITS_MEMBER(accumulated_overscroll)
@@ -313,7 +313,7 @@ IPC_MESSAGE_ROUTED1(InputHostMsg_QueueSyntheticGesture,
 
 // Notifies the allowed touch actions for a new touch point.
 IPC_MESSAGE_ROUTED1(InputHostMsg_SetTouchAction,
-                    content::TouchAction /* touch_action */)
+                    cc::TouchAction /* touch_action */)
 
 // Sent by the compositor when input scroll events are dropped due to bounds
 // restrictions on the root scroll offset.

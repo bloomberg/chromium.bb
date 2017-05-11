@@ -381,34 +381,6 @@ enum DraggableRegionMode {
   kDraggableRegionNoDrag
 };
 
-static const size_t kTouchActionBits = 6;
-enum TouchAction {
-  kTouchActionNone = 0x0,
-  kTouchActionPanLeft = 0x1,
-  kTouchActionPanRight = 0x2,
-  kTouchActionPanX = kTouchActionPanLeft | kTouchActionPanRight,
-  kTouchActionPanUp = 0x4,
-  kTouchActionPanDown = 0x8,
-  kTouchActionPanY = kTouchActionPanUp | kTouchActionPanDown,
-  kTouchActionPan = kTouchActionPanX | kTouchActionPanY,
-  kTouchActionPinchZoom = 0x10,
-  kTouchActionManipulation = kTouchActionPan | kTouchActionPinchZoom,
-  kTouchActionDoubleTapZoom = 0x20,
-  kTouchActionAuto = kTouchActionManipulation | kTouchActionDoubleTapZoom
-};
-inline TouchAction operator|(TouchAction a, TouchAction b) {
-  return static_cast<TouchAction>(int(a) | int(b));
-}
-inline TouchAction& operator|=(TouchAction& a, TouchAction b) {
-  return a = a | b;
-}
-inline TouchAction operator&(TouchAction a, TouchAction b) {
-  return static_cast<TouchAction>(int(a) & int(b));
-}
-inline TouchAction& operator&=(TouchAction& a, TouchAction b) {
-  return a = a & b;
-}
-
 enum EIsolation { kIsolationAuto, kIsolationIsolate };
 
 static const size_t kContainmentBits = 4;
