@@ -620,8 +620,12 @@ void V4L2CaptureDelegate::GetPhotoCapabilities(
   }
 
   photo_capabilities->iso = mojom::Range::New();
-  photo_capabilities->height = mojom::Range::New();
-  photo_capabilities->width = mojom::Range::New();
+  photo_capabilities->height = mojom::Range::New(
+      capture_format_.frame_size.height(), capture_format_.frame_size.height(),
+      capture_format_.frame_size.height(), 0 /* step */);
+  photo_capabilities->width = mojom::Range::New(
+      capture_format_.frame_size.width(), capture_format_.frame_size.width(),
+      capture_format_.frame_size.width(), 0 /* step */);
   photo_capabilities->exposure_compensation = mojom::Range::New();
   photo_capabilities->red_eye_reduction = mojom::RedEyeReduction::NEVER;
   photo_capabilities->torch = false;
