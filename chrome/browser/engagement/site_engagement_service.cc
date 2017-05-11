@@ -473,6 +473,8 @@ base::Time SiteEngagementService::GetLastEngagementTime() const {
 
 void SiteEngagementService::SetLastEngagementTime(
     base::Time last_engagement_time) const {
+  if (profile_->IsOffTheRecord())
+    return;
   profile_->GetPrefs()->SetInt64(prefs::kSiteEngagementLastUpdateTime,
                                  last_engagement_time.ToInternalValue());
 }
