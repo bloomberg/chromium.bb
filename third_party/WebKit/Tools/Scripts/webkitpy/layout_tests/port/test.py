@@ -465,9 +465,6 @@ class TestPort(Port):
     def perf_tests_dir(self):
         return PERF_TEST_DIR
 
-    def webkit_base(self):
-        return '/test.checkout'
-
     def skipped_layout_tests(self, _):
         return set(['failures/expected/skip_text.html',
                     'failures/unexpected/skip_pass.html',
