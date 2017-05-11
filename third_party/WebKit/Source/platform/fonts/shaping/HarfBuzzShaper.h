@@ -80,7 +80,7 @@ class PLATFORM_EXPORT HarfBuzzShaper final {
                     RunSegmenter::RunSegmenterRange,
                     ShapeResult*) const;
 
-  bool ExtractShapeResults(RangeData*,
+  void ExtractShapeResults(RangeData*,
                            bool& font_cycle_queued,
                            const HolesQueueItem&,
                            const SimpleFontData*,

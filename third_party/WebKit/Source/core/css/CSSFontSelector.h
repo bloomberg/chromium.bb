@@ -50,6 +50,8 @@ class CORE_EXPORT CSSFontSelector : public FontSelector {
 
   unsigned Version() const override { return font_face_cache_.Version(); }
 
+  void ReportNotDefGlyph() const override;
+
   PassRefPtr<FontData> GetFontData(const FontDescription&,
                                    const AtomicString&) override;
   void WillUseFontData(const FontDescription&,
