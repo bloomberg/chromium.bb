@@ -20,6 +20,7 @@ aggregate_vector_icons("ui_vector_icons") {
     "forward_arrow.icon",
     "info_outline.icon",
     "location_on.icon",
+    "lock.icon",
     "media_router_active.icon",
     "media_router_error.icon",
     "media_router_idle.icon",

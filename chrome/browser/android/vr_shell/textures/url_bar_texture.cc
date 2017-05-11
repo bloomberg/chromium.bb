@@ -47,9 +47,7 @@ const struct gfx::VectorIcon& getSecurityIcon(int level) {
       return ui::kInfoOutlineIcon;
     case SecurityLevel::SECURE:
     case SecurityLevel::EV_SECURE:
-      // TODO(cjgrant): Use the lock icon when available.
-      // return ui::kLockIcon;
-      return ui::kInfoOutlineIcon;
+      return ui::kLockIcon;
     case SecurityLevel::SECURE_WITH_POLICY_INSTALLED_CERT:
     case SecurityLevel::DANGEROUS:
     default:
