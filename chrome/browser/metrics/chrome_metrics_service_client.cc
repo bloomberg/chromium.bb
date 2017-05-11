@@ -82,6 +82,7 @@
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/sync/device_info/device_count_metrics_provider.h"
+#include "components/ukm/debug_page/debug_page.h"
 #include "components/ukm/ukm_service.h"
 #include "components/version_info/version_info.h"
 #include "content/public/browser/browser_thread.h"
@@ -278,6 +279,10 @@ void GetExecutableVersionDetails(base::string16* product_name,
       channel_name);
 }
 #endif  // OS_WIN
+
+ukm::UkmService* BindableGetUkmService() {
+  return g_browser_process->ukm_service();
+}
 
 }  // namespace
 
@@ -926,6 +931,9 @@ void ChromeMetricsServiceClient::RegisterForNotifications() {
 }
 
 void ChromeMetricsServiceClient::RegisterForProfileEvents(Profile* profile) {
+  // Register chrome://ukm handler
+  content::URLDataSource::Add(
+      profile, new ukm::debug::DebugPage(base::Bind(&BindableGetUkmService)));
 #if defined(OS_CHROMEOS)
   // Ignore the signin profile for sync disables / history deletion.
   if (chromeos::ProfileHelper::IsSigninProfile(profile))
