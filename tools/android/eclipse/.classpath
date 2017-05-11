@@ -128,7 +128,6 @@ to the classpath for downstream development. See "additional_entries" below.
     <classpathentry kind="src" path="tools/android/memconsumer/java/src"/>
     <classpathentry kind="src" path="ui/android/java/src"/>
     <classpathentry kind="src" path="ui/android/javatests/src"/>
-    <classpathentry kind="src" path="out/Debug/android_webview_test_apk/gen"/>
     <classpathentry kind="src" path="out/Debug/chrome_public_apk/gen"/>
     <classpathentry kind="src" path="out/Debug/content_shell_apk/gen"/>
     <classpathentry kind="src" path="out/Debug/gen/enums/accessibility_java"/>
@@ -218,6 +217,7 @@ to the classpath for downstream development. See "additional_entries" below.
     <classpathentry kind="src" path="out/Debug/java_proto/partner_location_descriptor_proto_java/src"/>
     <classpathentry kind="src" path="out/Debug/java_proto/test_support_proto_java/src"/>
     <classpathentry kind="src" path="out/Debug/remoting_apk/gen"/>
+    <classpathentry kind="src" path="out/Debug/webview_instrumentation_test_apk/gen"/>
     <classpathentry kind="lib" path="third_party/android_tools/sdk/extras/google/gcm/gcm-client/dist/gcm.jar" sourcepath="third_party/android_tools/sdk/extras/google/gcm/gcm-client/src"/>
     <classpathentry kind="lib" path="third_party/android_tools/sdk/platforms/android-25/android.jar" sourcepath="third_party/android_tools/sdk/sources/">
         <attributes>

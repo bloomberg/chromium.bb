@@ -2,23 +2,6 @@
   "Android N5 Swarm": {
     "gtest_tests": [
       {
-        "override_compile_targets": [
-          "android_webview_test_apk"
-        ],
-        "override_isolate_target": "android_webview_test_apk",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "device_os": "KTU84P",
-              "device_type": "hammerhead"
-            }
-          ],
-          "shards": 7
-        },
-        "test": "android_webview_test_apk"
-      },
-      {
         "override_isolate_target": "base_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -103,28 +86,28 @@
           "shards": 5
         },
         "test": "unit_tests"
+      },
+      {
+        "override_compile_targets": [
+          "webview_instrumentation_test_apk"
+        ],
+        "override_isolate_target": "webview_instrumentation_test_apk",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "device_os": "KTU84P",
+              "device_type": "hammerhead"
+            }
+          ],
+          "shards": 7
+        },
+        "test": "webview_instrumentation_test_apk"
       }
     ]
   },
   "Android N5X Swarm": {
     "gtest_tests": [
-      {
-        "override_compile_targets": [
-          "android_webview_test_apk"
-        ],
-        "override_isolate_target": "android_webview_test_apk",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "device_os": "MMB29Q",
-              "device_type": "bullhead"
-            }
-          ],
-          "shards": 7
-        },
-        "test": "android_webview_test_apk"
-      },
       {
         "override_isolate_target": "base_unittests",
         "swarming": {
@@ -210,6 +193,23 @@
           "shards": 8
         },
         "test": "unit_tests"
+      },
+      {
+        "override_compile_targets": [
+          "webview_instrumentation_test_apk"
+        ],
+        "override_isolate_target": "webview_instrumentation_test_apk",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "device_os": "MMB29Q",
+              "device_type": "bullhead"
+            }
+          ],
+          "shards": 7
+        },
+        "test": "webview_instrumentation_test_apk"
       }
     ]
   },
