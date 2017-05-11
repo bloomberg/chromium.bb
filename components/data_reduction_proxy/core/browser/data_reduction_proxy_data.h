@@ -53,6 +53,14 @@ class DataReductionProxyData : public base::SupportsUserData::Data {
   bool lofi_received() const { return lofi_received_; }
   void set_lofi_received(bool lofi_received) { lofi_received_ = lofi_received; }
 
+  // Whether client Lo-Fi was requested for this request. This is only set on
+  // image requests that have added a range header to attempt to get a smaller
+  // file size image.
+  bool client_lofi_requested() const { return client_lofi_requested_; }
+  void set_client_lofi_requested(bool client_lofi_requested) {
+    client_lofi_requested_ = client_lofi_requested;
+  }
+
   // The session key used for this request. Only set for main frame requests.
   std::string session_key() const { return session_key_; }
   void set_session_key(const std::string& session_key) {
@@ -99,10 +107,15 @@ class DataReductionProxyData : public base::SupportsUserData::Data {
   // Whether the DataReductionProxy was used for this request or navigation.
   bool used_data_reduction_proxy_;
 
-  // Whether Lo-Fi was requested for this request or navigation. True if the
-  // session is in Lo-Fi control or enabled group, and the network quality is
-  // slow.
+  // Whether server Lo-Fi was requested for this request or navigation. True if
+  // the session is in Lo-Fi control or enabled group, and the network quality
+  // is slow.
   bool lofi_requested_;
+
+  // Whether client Lo-Fi was requested for this request. This is only set on
+  // image requests that have added a range header to attempt to get a smaller
+  // file size image.
+  bool client_lofi_requested_;
 
   // Whether a lite page response was seen for the request or navigation.
   bool lite_page_received_;

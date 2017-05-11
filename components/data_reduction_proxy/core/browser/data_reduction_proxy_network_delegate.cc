@@ -430,7 +430,8 @@ void DataReductionProxyNetworkDelegate::OnHeadersReceivedInternal(
     const net::HttpResponseHeaders* original_response_headers,
     scoped_refptr<net::HttpResponseHeaders>* override_response_headers,
     GURL* allowed_unsafe_redirect_url) {
-  if (!original_response_headers)
+  if (!original_response_headers ||
+      original_response_headers->IsRedirect(nullptr))
     return;
   if (IsEmptyImagePreview(*original_response_headers)) {
     DataReductionProxyData* data =
@@ -440,6 +441,14 @@ void DataReductionProxyNetworkDelegate::OnHeadersReceivedInternal(
     DataReductionProxyData* data =
         DataReductionProxyData::GetDataAndCreateIfNecessary(request);
     data->set_lite_page_received(true);
+  }
+  if (data_reduction_proxy_io_data_ &&
+      data_reduction_proxy_io_data_->lofi_decider() &&
+      data_reduction_proxy_io_data_->lofi_decider()->IsClientLoFiImageRequest(
+          *request)) {
+    DataReductionProxyData* data =
+        DataReductionProxyData::GetDataAndCreateIfNecessary(request);
+    data->set_client_lofi_requested(true);
   }
 }
 
