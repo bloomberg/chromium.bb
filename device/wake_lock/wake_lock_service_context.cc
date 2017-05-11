@@ -6,7 +6,6 @@
 
 #include <utility>
 
-#include "device/power_save_blocker/power_save_blocker.h"
 #include "device/wake_lock/wake_lock_service_impl.h"
 
 namespace device {
@@ -22,14 +21,13 @@ WakeLockServiceContext::WakeLockServiceContext(
 WakeLockServiceContext::~WakeLockServiceContext() {}
 
 void WakeLockServiceContext::GetWakeLock(
+    mojom::WakeLockType type,
+    mojom::WakeLockReason reason,
+    const std::string& description,
     mojom::WakeLockServiceRequest request) {
   // WakeLockServiceImpl owns itself.
-  new WakeLockServiceImpl(std::move(request),
-                          device::PowerSaveBlocker::PowerSaveBlockerType::
-                              kPowerSaveBlockPreventDisplaySleep,
-                          device::PowerSaveBlocker::Reason::kReasonOther,
-                          "Wake Lock API", context_id_, native_view_getter_,
-                          file_task_runner_);
+  new WakeLockServiceImpl(std::move(request), type, reason, description,
+                          context_id_, native_view_getter_, file_task_runner_);
 }
 
 }  // namespace device

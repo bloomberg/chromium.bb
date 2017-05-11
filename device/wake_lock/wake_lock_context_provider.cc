@@ -28,7 +28,7 @@ WakeLockContextProvider::WakeLockContextProvider(
 
 WakeLockContextProvider::~WakeLockContextProvider() {}
 
-void WakeLockContextProvider::GetContext(
+void WakeLockContextProvider::GetWakeLockContextForID(
     int context_id,
     mojo::InterfaceRequest<mojom::WakeLockContext> request) {
   mojo::MakeStrongBinding(

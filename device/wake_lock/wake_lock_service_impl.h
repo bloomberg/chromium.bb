@@ -11,6 +11,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/single_thread_task_runner.h"
 #include "device/power_save_blocker/power_save_blocker.h"
+#include "device/wake_lock/public/interfaces/wake_lock_context.mojom.h"
 #include "device/wake_lock/public/interfaces/wake_lock_service.mojom.h"
 #include "device/wake_lock/wake_lock_service_context.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
@@ -22,8 +23,8 @@ class WakeLockServiceImpl : public mojom::WakeLockService {
  public:
   WakeLockServiceImpl(
       mojom::WakeLockServiceRequest request,
-      device::PowerSaveBlocker::PowerSaveBlockerType type,
-      device::PowerSaveBlocker::Reason reason,
+      mojom::WakeLockType type,
+      mojom::WakeLockReason reason,
       const std::string& description,
       int context_id,
       WakeLockContextCallback native_view_getter,
@@ -43,8 +44,8 @@ class WakeLockServiceImpl : public mojom::WakeLockService {
   void RemoveWakeLock();
   void OnConnectionError();
 
-  device::PowerSaveBlocker::PowerSaveBlockerType type_;
-  device::PowerSaveBlocker::Reason reason_;
+  mojom::WakeLockType type_;
+  mojom::WakeLockReason reason_;
   std::unique_ptr<std::string> description_;
   int num_lock_requests_;
 

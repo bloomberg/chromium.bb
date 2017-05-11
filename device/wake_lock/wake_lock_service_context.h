@@ -31,7 +31,10 @@ class WakeLockServiceContext : public mojom::WakeLockContext {
   ~WakeLockServiceContext() override;
 
   // mojom::WakeLockContext:
-  void GetWakeLock(mojom::WakeLockServiceRequest request) override;
+  void GetWakeLock(mojom::WakeLockType type,
+                   mojom::WakeLockReason reason,
+                   const std::string& description,
+                   mojom::WakeLockServiceRequest request) override;
 
  private:
   scoped_refptr<base::SingleThreadTaskRunner> file_task_runner_;
