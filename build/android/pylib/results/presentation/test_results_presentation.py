@@ -97,7 +97,15 @@ def action_cell(action, data, html_class):
   }
 
 
-def logs_cell(result):
+def flakiness_dashbord_link(test_name, suite_name):
+  url_args = urllib.urlencode([
+      ('testType', suite_name),
+      ('tests', test_name)])
+  return ('https://test-results.appspot.com/'
+         'dashboards/flakiness_dashboard.html#%s' % url_args)
+
+
+def logs_cell(result, test_name, suite_name):
   """Formats result logs data for processing in jinja template."""
   link_list = []
   for name, href in result.get('links', {}).iteritems():
@@ -105,7 +113,10 @@ def logs_cell(result):
         data=name,
         href=href,
         target=LinkTarget.NEW_TAB))
-
+  link_list.append(link(
+      data='flakiness',
+      href=flakiness_dashbord_link(test_name, suite_name),
+      target=LinkTarget.NEW_TAB))
   if link_list:
     return links_cell(link_list)
   else:
@@ -128,7 +139,7 @@ def status_class(status):
   return status
 
 
-def create_test_table(results_dict, cs_base_url):
+def create_test_table(results_dict, cs_base_url, suite_name):
   """Format test data for injecting into HTML table."""
 
   header_row = [
@@ -151,18 +162,18 @@ def create_test_table(results_dict, cs_base_url):
                      data=test_name)],
             rowspan=len(test_results),
             html_class='left %s' % test_name
-        )]                                        # test_name
+        )]                                          # test_name
       else:
         test_run = []
 
       test_run.extend([
           cell(data=result['status'] or 'UNKNOWN',
-                                                  # status
+                                                    # status
                html_class=('center %s' %
                   status_class(result['status']))),
-          cell(data=result['elapsed_time_ms']),   # elapsed_time_ms
-          logs_cell(result),                      # logs
-          pre_cell(data=result['output_snippet'], # output_snippet
+          cell(data=result['elapsed_time_ms']),     # elapsed_time_ms
+          logs_cell(result, test_name, suite_name), # logs
+          pre_cell(data=result['output_snippet'],   # output_snippet
                    html_class='left'),
       ])
       test_runs.append(test_run)
@@ -266,7 +277,8 @@ def results_to_html(results_dict, cs_base_url, bucket, test_name,
                     builder_name, build_number):
   """Convert list of test results into html format."""
 
-  test_rows_header, test_rows = create_test_table(results_dict, cs_base_url)
+  test_rows_header, test_rows = create_test_table(results_dict, cs_base_url,
+                                                  test_name)
   suite_rows_header, suite_rows, suite_row_footer = create_suite_table(
       results_dict)
 
