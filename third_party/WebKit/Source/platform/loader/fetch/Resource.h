@@ -406,7 +406,7 @@ class PLATFORM_EXPORT Resource : public GarbageCollectedFinalized<Resource>,
   }
 
   void SetCachePolicyBypassingCache();
-  void SetPreviewsStateNoTransform();
+  void SetPreviewsState(WebURLRequest::PreviewsState);
   void ClearRangeRequestHeader();
 
   SharedBuffer* Data() const { return data_.Get(); }
