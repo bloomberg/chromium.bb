@@ -4094,6 +4094,15 @@ BrowserAccessibilityManager* BrowserAccessibilityComWin::Manager() const {
   return manager;
 }
 
+//
+// AXPlatformNode overrides
+//
+void BrowserAccessibilityComWin::Destroy() {
+  // Detach BrowserAccessibilityWin from us.
+  owner_ = nullptr;
+  AXPlatformNodeWin::Destroy();
+}
+
 std::vector<base::string16> BrowserAccessibilityComWin::ComputeTextAttributes()
     const {
   std::vector<base::string16> attributes;

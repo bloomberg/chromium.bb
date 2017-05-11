@@ -36,10 +36,7 @@ void BrowserAccessibilityWin::UpdatePlatformAttributes() {
 
 void BrowserAccessibilityWin::Destroy() {
   if (browser_accessibility_com_) {
-    browser_accessibility_com_->SetOwner(nullptr);
-    // TODO(dougt) AXPlatformNode::Reset
-    browser_accessibility_com_->Init(nullptr);
-    browser_accessibility_com_->Release();
+    browser_accessibility_com_->Destroy();
     browser_accessibility_com_ = nullptr;
   }
   BrowserAccessibility::Destroy();
