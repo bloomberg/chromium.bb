@@ -41,7 +41,7 @@ class MOJO_SYSTEM_IMPL_EXPORT NamedPlatformChannelPair {
   ~NamedPlatformChannelPair();
 
   // Note: It is NOT acceptable to use this handle as a generic pipe channel. It
-  // MUST be passed to PendingProcessConnection::Connect() only.
+  // MUST be passed to OutgoingBrokerClientInvitation::Send() only.
   ScopedPlatformHandle PassServerHandle();
 
   // To be called in the child process, after the parent process called

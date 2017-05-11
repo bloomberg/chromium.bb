@@ -18,7 +18,6 @@
 #include "base/task_runner.h"
 #include "mojo/edk/embedder/configuration.h"
 #include "mojo/edk/embedder/connection_params.h"
-#include "mojo/edk/embedder/pending_process_connection.h"
 #include "mojo/edk/embedder/scoped_platform_handle.h"
 #include "mojo/edk/system/system_impl_export.h"
 #include "mojo/public/cpp/system/message_pipe.h"
@@ -29,6 +28,8 @@ class PortProvider;
 
 namespace mojo {
 namespace edk {
+
+using ProcessErrorCallback = base::Callback<void(const std::string& error)>;
 
 // Basic configuration/initialization ------------------------------------------
 
@@ -132,8 +133,7 @@ MOJO_SYSTEM_IMPL_EXPORT void ShutdownIPCSupport(const base::Closure& callback);
 // Set the |base::PortProvider| for this process. Can be called on any thread,
 // but must be set in the root process before any Mach ports can be transferred.
 //
-// If called at all, this must be called after |InitIPCSupport()| and before the
-// creation of any PendingProcessConnection instances.
+// If called at all, this must be called after |InitIPCSupport()|.
 MOJO_SYSTEM_IMPL_EXPORT void SetMachPortProvider(
     base::PortProvider* port_provider);
 #endif
@@ -143,18 +143,18 @@ MOJO_SYSTEM_IMPL_EXPORT void SetMachPortProvider(
 // Functions in this section are used to help connect processes together via the
 // legacy transport protocol. All functions in this section should be considered
 // DEPRECATED.
-//
-// Use PendingProcessConnection to establish connections to other Mojo
-// embedder processes in the system. See the documentation in
-// pending_process_connection.h for details.
 
 // Should be called as early as possible in a child process with a handle to the
 // other end of a pipe provided in the parent to
-// PendingProcessConnection::Connect.
+// OutgoingBrokerClientInvitation::Send.
+//
+// DEPRECATED. Use IncomingBrokerClientInvitation instead.
 MOJO_SYSTEM_IMPL_EXPORT void SetParentPipeHandle(ScopedPlatformHandle pipe);
 
 // Same as above but extracts the pipe handle from the command line. See
 // PlatformChannelPair for details.
+//
+// DEPRECATED. Use IncomingBrokerClientInvitation instead.
 MOJO_SYSTEM_IMPL_EXPORT void SetParentPipeHandleFromCommandLine();
 
 // Called to connect to a peer process. This should be called only if there
@@ -178,7 +178,9 @@ MOJO_SYSTEM_IMPL_EXPORT void ClosePeerConnection(const std::string& peer_token);
 
 // Creates a message pipe from a token in a child process. This token must have
 // been acquired by a corresponding call to
-// PendingProcessConnection::CreateMessagePipe.
+// OutgoingBrokerClientInvitation::AttachMessagePipe.
+//
+// DEPRECATED. Use IncomingBrokerClientInvitation instead.
 MOJO_SYSTEM_IMPL_EXPORT ScopedMessagePipeHandle
 CreateChildMessagePipe(const std::string& token);
 

@@ -95,15 +95,15 @@ rest. It also provides a convenient mechanism for creating such pipes, known as
 a `PlatformChannelPair`.
 
 You provide one end of this pipe to the EDK in the local process via
-`PendingProcessConnection` - which can also be used to create cross-process
-message pipes (see the next section) - and you're responsible for getting the
-other end into the remote process.
+`OutgoingBrokerClientInvitation` - which can also be used to create cross-
+process message pipes (see the next section) - and you're responsible for
+getting the other end into the remote process.
 
 ```
 #include "base/process/process_handle.h"
 #include "base/threading/thread.h"
 #include "mojo/edk/embedder/embedder.h"
-#include "mojo/edk/embedder/pending_process_connection.h"
+#include "mojo/edk/embedder/outgoing_broker_client_invitation.h"
 #include "mojo/edk/embedder/platform_channel_pair.h"
 #include "mojo/edk/embedder/scoped_ipc_support.h"
 
@@ -134,7 +134,7 @@ int main(int argc, char** argv) {
   // process. It exists because process connection is inherently asynchronous,
   // things may go wrong, and the lifetime of any associated resources is bound
   // by the lifetime of this object regardless of success or failure.
-  mojo::edk::PendingProcessConnection child;
+  mojo::edk::OutgoingBrokerClientInvitation invitation;
 
   base::ProcessHandle child_handle =
       LaunchCoolChildProcess(channel.PassClientHandle());
@@ -184,16 +184,11 @@ of how this is done, you can dig into the various multiprocess tests in the
 
 Having internal Mojo IPC support initialized is pretty useless if you don't have
 any message pipes spanning the process boundary. Fortunately, this is made
-trivial by the EDK: `PendingProcessConnection` has a
-`CreateMessagePipe` method which synthesizes a new solitary message pipe
-endpoint for your immediate use, while also generating a magic token string that
-can be exchanged for the other end of the pipe via
-`mojo::edk::CreateChildMessagePipe`.
-
-The token exchange can be done by the same process (which is sometimes useful),
-or by the process that is eventually connected via `Connect()` on that
-`PendingProcessConnection`. This means that you can effectively pass message
-pipes on the commandline by passing a token string.
+trivial by the EDK: `OutgoingBrokerClientInvitation` has an
+`AttachMessagePipe` method which synthesizes a new solitary message pipe
+endpoint for your immediate use, and attaches the other end to the invitation
+such that it can later be extracted by name by the invitee with an
+`IncomingBrokerClientInvitation`.
 
 We can modify our existing sample code as follows:
 
@@ -202,7 +197,7 @@ We can modify our existing sample code as follows:
 #include "base/process/process_handle.h"
 #include "base/threading/thread.h"
 #include "mojo/edk/embedder/embedder.h"
-#include "mojo/edk/embedder/pending_process_connection.h"
+#include "mojo/edk/embedder/outgoing_broker_client_invitation.h"
 #include "mojo/edk/embedder/platform_channel_pair.h"
 #include "mojo/edk/embedder/scoped_ipc_support.h"
 #include "mojo/public/cpp/system/message_pipe.h"
@@ -225,22 +220,18 @@ int main(int argc, char** argv) {
 
   mojo::edk::PlatformChannelPair channel;
 
-  mojo::edk::PendingProcessConnection child;
-
-  base::CommandLine command_line;  // Assume this is appropriately initialized
+  mojo::edk::OutgoingBrokerClientInvitation invitation;
 
   // Create a new message pipe with one end being retrievable in the new
-  // process. Note that it doesn't matter whether we call CreateMessagePipe()
-  // before or after Connect(), and we can create as many different pipes as
-  // we like.
-  std::string pipe_token;
-  mojo::ScopedMessagePipeHandle my_pipe = child.CreateMessagePipe(&pipe_token);
-  command_line.AppendSwitchASCII("primordial-pipe", pipe_token);
+  // process. Note that the name chosen for the attachment is arbitrary and
+  // scoped to this invitation.
+  mojo::ScopedMessagePipeHandle my_pipe =
+      invitation.AttachMessagePipe("pretty_cool_pipe");
 
   base::ProcessHandle child_handle =
-      LaunchCoolChildProcess(command_line, channel.PassClientHandle());
-
-  child.Connect(child_handle, channel.PassServerHandle());
+      LaunchCoolChildProcess(channel.PassClientHandle());
+  invitation.Send(child_handle,
+                  mojo::edk::ConnectionParams(channel.PassServerHandle()));
 
   // We can start using our end of the pipe immediately. Here we assume the
   // other end will eventually be bound to a local::mojom::Foo implementation,
@@ -260,10 +251,10 @@ and for the launched process:
 
 
 ```
-#include "base/command_line.h"
 #include "base/run_loop/run_loop.h"
 #include "base/threading/thread.h"
 #include "mojo/edk/embedder/embedder.h"
+#include "mojo/edk/embedder/incoming_broker_client_invitation.h"
 #include "mojo/edk/embedder/scoped_ipc_support.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/system/message_pipe.h"
@@ -288,8 +279,6 @@ class FooImpl : local::mojom::Foo {
 };
 
 int main(int argc, char** argv) {
-  base::CommandLine::Init(argc, argv);
-
   mojo::edk::Init();
 
   base::Thread ipc_thread("ipc!");
@@ -300,11 +289,11 @@ int main(int argc, char** argv) {
       ipc_thread.task_runner(),
       mojo::edk::ScopedIPCSupport::ShutdownPolicy::CLEAN);
 
-  mojo::edk::SetParentPipeHandle(GetChannelHandle());
+  mojo::edk::IncomingBrokerClientInvitation invitation;
+  invitation.Accept(mojo::edk::ConnectionParams(GetChannelHandle()));
 
-  mojo::ScopedMessagePipeHandle my_pipe = mojo::edk::CreateChildMessagePipe(
-      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-          "primordial-pipe"));
+  mojo::ScopedMessagePipeHandle my_pipe =
+      invitation.ExtractMessagePipe("pretty_cool_pipe");
 
   local::mojom::FooRequest foo_request;
   foo_request.Bind(std::move(my_pipe));

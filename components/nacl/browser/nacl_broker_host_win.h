@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "base/process/process.h"
 #include "content/public/browser/browser_child_process_host_delegate.h"
+#include "services/service_manager/public/interfaces/service.mojom.h"
 
 namespace content {
 class BrowserChildProcessHost;
@@ -31,7 +32,8 @@ class NaClBrokerHost : public content::BrowserChildProcessHostDelegate {
 
   // Send a message to the broker process, causing it to launch
   // a Native Client loader process.
-  bool LaunchLoader(const std::string& loader_channel_token);
+  bool LaunchLoader(int launch_id,
+                    service_manager::mojom::ServiceRequest service_request);
 
   bool LaunchDebugExceptionHandler(int32_t pid,
                                    base::ProcessHandle process_handle,
@@ -47,8 +49,8 @@ class NaClBrokerHost : public content::BrowserChildProcessHostDelegate {
 
  private:
   // Handler for NaClProcessMsg_LoaderLaunched message
-  void OnLoaderLaunched(const std::string& loader_channel_token,
-                        base::ProcessHandle handle);
+  void OnLoaderLaunched(int launch_id, base::ProcessHandle handle);
+
   // Handler for NaClProcessMsg_DebugExceptionHandlerLaunched message
   void OnDebugExceptionHandlerLaunched(int32_t pid, bool success);
 

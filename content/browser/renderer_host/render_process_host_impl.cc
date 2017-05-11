@@ -929,7 +929,7 @@ bool RenderProcessHostImpl::Init() {
   // null, so we re-initialize it here.
   if (!channel_)
     InitializeChannelProxy();
-  DCHECK(pending_connection_);
+  DCHECK(broker_client_invitation_);
 
   // Unpause the Channel briefly. This will be paused again below if we launch a
   // real child process. Note that messages may be sent in the short window
@@ -972,6 +972,7 @@ bool RenderProcessHostImpl::Init() {
     in_process_renderer_.reset(
         g_renderer_main_thread_factory(InProcessChildThreadParams(
             BrowserThread::GetTaskRunnerForThread(BrowserThread::IO),
+            broker_client_invitation_.get(),
             child_connection_->service_token())));
 
     base::Thread::Options options;
@@ -1010,7 +1011,8 @@ bool RenderProcessHostImpl::Init() {
     // at this stage.
     child_process_launcher_.reset(new ChildProcessLauncher(
         base::MakeUnique<RendererSandboxedProcessLauncherDelegate>(),
-        std::move(cmd_line), GetID(), this, std::move(pending_connection_),
+        std::move(cmd_line), GetID(), this,
+        std::move(broker_client_invitation_),
         base::Bind(&RenderProcessHostImpl::OnMojoError, id_)));
     channel_->Pause();
 
@@ -1057,13 +1059,15 @@ void RenderProcessHostImpl::InitializeChannelProxy() {
   }
 
   // Establish a ServiceManager connection for the new render service instance.
-  pending_connection_.reset(new mojo::edk::PendingProcessConnection);
+  broker_client_invitation_ =
+      base::MakeUnique<mojo::edk::OutgoingBrokerClientInvitation>();
   service_manager::Identity child_identity(
       mojom::kRendererServiceName,
       BrowserContext::GetServiceUserIdFor(GetBrowserContext()),
       base::StringPrintf("%d_%d", id_, instance_id_++));
-  child_connection_.reset(new ChildConnection(
-      child_identity, pending_connection_.get(), connector, io_task_runner));
+  child_connection_.reset(new ChildConnection(child_identity,
+                                              broker_client_invitation_.get(),
+                                              connector, io_task_runner));
 
   // Send an interface request to bootstrap the IPC::Channel. Note that this
   // request will happily sit on the pipe until the process is launched and

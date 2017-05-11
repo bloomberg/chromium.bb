@@ -17,7 +17,10 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "mojo/edk/embedder/embedder_internal.h"
 #include "mojo/edk/embedder/entrypoints.h"
+#include "mojo/edk/embedder/incoming_broker_client_invitation.h"
+#include "mojo/edk/embedder/outgoing_broker_client_invitation.h"
 #include "mojo/edk/embedder/platform_channel_pair.h"
+#include "mojo/edk/embedder/transport_protocol.h"
 #include "mojo/edk/system/configuration.h"
 #include "mojo/edk/system/core.h"
 #include "mojo/edk/system/node_controller.h"
@@ -135,15 +138,14 @@ void SetMachPortProvider(base::PortProvider* port_provider) {
 
 void SetParentPipeHandle(ScopedPlatformHandle pipe) {
   CHECK(internal::g_core);
-  internal::g_core->InitChild(ConnectionParams(std::move(pipe)));
+  IncomingBrokerClientInvitation invitation;
+  invitation.Accept(
+      ConnectionParams(TransportProtocol::kLegacy, std::move(pipe)));
 }
 
 void SetParentPipeHandleFromCommandLine() {
-  ScopedPlatformHandle platform_channel =
-      PlatformChannelPair::PassClientHandleFromParentProcess(
-          *base::CommandLine::ForCurrentProcess());
-  CHECK(platform_channel.is_valid());
-  SetParentPipeHandle(std::move(platform_channel));
+  IncomingBrokerClientInvitation invitation;
+  invitation.AcceptFromCommandLine(TransportProtocol::kLegacy);
 }
 
 ScopedMessagePipeHandle ConnectToPeerProcess(ScopedPlatformHandle pipe) {
@@ -162,7 +164,10 @@ void ClosePeerConnection(const std::string& peer_token) {
 }
 
 ScopedMessagePipeHandle CreateChildMessagePipe(const std::string& token) {
-  return internal::g_core->CreateChildMessagePipe(token);
+  // TODO(rockot): This works but reveals the implementation detail that every
+  // IBCI instance currently shares a single global state. Kill this API soon.
+  IncomingBrokerClientInvitation invitation;
+  return invitation.ExtractMessagePipe(token);
 }
 
 }  // namespace edk

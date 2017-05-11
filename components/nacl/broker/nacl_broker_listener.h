@@ -39,7 +39,9 @@ class NaClBrokerListener : public content::SandboxedProcessLauncherDelegate,
   void OnChannelError() override;
 
  private:
-  void OnLaunchLoaderThroughBroker(const std::string& loader_channel_id);
+  void OnLaunchLoaderThroughBroker(
+      int launch_id,
+      mojo::MessagePipeHandle service_request_pipe);
   void OnLaunchDebugExceptionHandler(int32_t pid,
                                      base::ProcessHandle process_handle,
                                      const std::string& startup_info);

@@ -308,6 +308,7 @@ ChildThreadImpl::Options::Builder::InBrowserProcess(
     const InProcessChildThreadParams& params) {
   options_.browser_process_io_runner = params.io_runner();
   options_.in_process_service_request_token = params.service_request_token();
+  options_.broker_client_invitation = params.broker_client_invitation();
   return *this;
 }
 
@@ -428,26 +429,29 @@ void ChildThreadImpl::Init(const Options& options) {
     IPC::Logging::GetInstance()->SetIPCSender(this);
 #endif
 
+  mojo::ScopedMessagePipeHandle service_request_pipe;
   if (!IsInBrowserProcess()) {
-    // Don't double-initialize IPC support in single-process mode.
     mojo_ipc_support_.reset(new mojo::edk::ScopedIPCSupport(
         GetIOTaskRunner(), mojo::edk::ScopedIPCSupport::ShutdownPolicy::FAST));
     InitializeMojoIPCChannel();
-  }
-  std::string service_request_token;
-  if (!IsInBrowserProcess()) {
-    service_request_token =
-      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-        switches::kServiceRequestChannelToken);
+
+    std::string service_request_token =
+        base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+            switches::kServiceRequestChannelToken);
+    if (!service_request_token.empty()) {
+      service_request_pipe =
+          mojo::edk::CreateChildMessagePipe(service_request_token);
+    }
   } else {
-    service_request_token = options.in_process_service_request_token;
+    service_request_pipe =
+        options.broker_client_invitation->ExtractInProcessMessagePipe(
+            options.in_process_service_request_token);
   }
-  if (!service_request_token.empty()) {
-    mojo::ScopedMessagePipeHandle handle =
-        mojo::edk::CreateChildMessagePipe(service_request_token);
-    DCHECK(handle.is_valid());
+
+  if (service_request_pipe.is_valid()) {
     service_manager_connection_ = ServiceManagerConnection::Create(
-        mojo::MakeRequest<service_manager::mojom::Service>(std::move(handle)),
+        mojo::MakeRequest<service_manager::mojom::Service>(
+            std::move(service_request_pipe)),
         GetIOTaskRunner());
   }
 

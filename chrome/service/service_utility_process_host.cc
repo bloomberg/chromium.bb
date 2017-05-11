@@ -217,7 +217,7 @@ bool ServiceUtilityProcessHost::StartGetPrinterSemanticCapsAndDefaults(
 
 bool ServiceUtilityProcessHost::StartProcess(bool no_sandbox) {
   std::string mojo_channel_token =
-      child_process_host_->CreateChannelMojo(&process_connection_);
+      child_process_host_->CreateChannelMojo(&broker_client_invitation_);
   if (mojo_channel_token.empty())
     return false;
 
@@ -274,10 +274,11 @@ bool ServiceUtilityProcessHost::Launch(base::CommandLine* cmd_line,
     }
   }
 
-  if (success)
-    process_connection_.Connect(
+  if (success) {
+    broker_client_invitation_.Send(
         process_.Handle(),
         mojo::edk::ConnectionParams(std::move(parent_handle)));
+  }
 
   return success;
 }

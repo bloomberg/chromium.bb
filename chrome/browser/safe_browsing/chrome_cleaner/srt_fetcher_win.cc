@@ -52,7 +52,7 @@
 #include "components/version_info/version_info.h"
 #include "content/public/browser/browser_thread.h"
 #include "mojo/edk/embedder/connection_params.h"
-#include "mojo/edk/embedder/pending_process_connection.h"
+#include "mojo/edk/embedder/outgoing_broker_client_invitation.h"
 #include "mojo/edk/embedder/platform_channel_pair.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "net/base/load_flags.h"
@@ -658,10 +658,10 @@ void SwReporterProcess::OnReporterDone() {
 base::Process SwReporterProcess::LaunchConnectedReporterProcess() {
   DCHECK(base::FeatureList::IsEnabled(kInBrowserCleanerUIFeature));
 
-  mojo::edk::PendingProcessConnection pending_process_connection;
-  std::string mojo_pipe_token;
+  mojo::edk::OutgoingBrokerClientInvitation invitation;
+  std::string mojo_pipe_token = mojo::edk::GenerateRandomToken();
   mojo::ScopedMessagePipeHandle mojo_pipe =
-      pending_process_connection.CreateMessagePipe(&mojo_pipe_token);
+      invitation.AttachMessagePipe(mojo_pipe_token);
   invocation_.command_line.AppendSwitchASCII(
       chrome_cleaner::kChromeMojoPipeTokenSwitch, mojo_pipe_token);
   invocation_.command_line.AppendSwitchASCII(
@@ -699,10 +699,9 @@ base::Process SwReporterProcess::LaunchConnectedReporterProcess() {
           ? base::Bind(&SwReporterTestingDelegate::OnConnectionError,
                        base::Unretained(g_testing_delegate_))
           : base::Bind(&OnConnectionError);
-  pending_process_connection.Connect(
-      reporter_process.Handle(),
-      mojo::edk::ConnectionParams(channel.PassServerHandle()),
-      on_connection_error);
+  invitation.Send(reporter_process.Handle(),
+                  mojo::edk::ConnectionParams(channel.PassServerHandle()),
+                  on_connection_error);
 
   return reporter_process;
 }

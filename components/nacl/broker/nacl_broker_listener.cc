@@ -26,7 +26,7 @@
 #include "content/public/common/sandbox_init.h"
 #include "ipc/ipc_channel.h"
 #include "mojo/edk/embedder/embedder.h"
-#include "mojo/edk/embedder/pending_process_connection.h"
+#include "mojo/edk/embedder/outgoing_broker_client_invitation.h"
 #include "mojo/edk/embedder/platform_channel_pair.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "sandbox/win/src/sandbox_policy.h"
@@ -93,24 +93,9 @@ void NaClBrokerListener::OnChannelError() {
 }
 
 void NaClBrokerListener::OnLaunchLoaderThroughBroker(
-    const std::string& loader_channel_token) {
+    int launch_id,
+    mojo::MessagePipeHandle service_request_pipe) {
   base::ProcessHandle loader_handle_in_browser = 0;
-
-  // Mojo channel setup is a little bit convoluted. The normal way an initial
-  // Mojo message pipe is setup is that a secret string token is passed from the
-  // parent to the child on the command line. That token is then used by the
-  // child to create the message pipe. However, the token isn't meant for this
-  // process, but rather the NaCl loader which is the grandchild of the browser,
-  // and tokens can only be used by a direct child.
-  //
-  // To work around this limitation, use the normal process twice to create one
-  // message pipe between the browser and this process and another between this
-  // process and the NaCl loader process and then fuse them with
-  // mojo::FuseMessagePipes() to create a single message pipe connecting the
-  // browser and the NaCl loader process.
-  mojo::ScopedMessagePipeHandle loader_message_pipe(
-      mojo::edk::CreateChildMessagePipe(loader_channel_token));
-  DCHECK(loader_message_pipe.is_valid());
 
   // Create the path to the nacl broker/loader executable - it's the executable
   // this code is running in.
@@ -135,23 +120,21 @@ void NaClBrokerListener::OnLaunchLoaderThroughBroker(
         mojo::edk::PlatformChannelPair::kMojoPlatformChannelHandleSwitch,
         base::UintToString(base::win::HandleToUint32(handles[0])));
 
-    mojo::edk::PendingProcessConnection pending_process;
-    std::string token;
-    mojo::ScopedMessagePipeHandle host_message_pipe =
-        pending_process.CreateMessagePipe(&token);
+    std::string token = mojo::edk::GenerateRandomToken();
     cmd_line->AppendSwitchASCII(switches::kServiceRequestChannelToken, token);
-    CHECK_EQ(MOJO_RESULT_OK,
-             mojo::FuseMessagePipes(std::move(loader_message_pipe),
-                                    std::move(host_message_pipe)));
+    mojo::edk::OutgoingBrokerClientInvitation invitation;
+    MojoResult fuse_result = mojo::FuseMessagePipes(
+        mojo::ScopedMessagePipeHandle(service_request_pipe),
+        invitation.AttachMessagePipe(token));
+    DCHECK_EQ(MOJO_RESULT_OK, fuse_result);
 
     base::Process loader_process;
     sandbox::ResultCode result = content::StartSandboxedProcess(
         this, cmd_line, handles, &loader_process);
 
     if (result == sandbox::SBOX_ALL_OK) {
-      pending_process.Connect(
-          loader_process.Handle(),
-          mojo::edk::ConnectionParams(std::move(parent_handle)));
+      invitation.Send(loader_process.Handle(),
+                      mojo::edk::ConnectionParams(std::move(parent_handle)));
 
       // Note: PROCESS_DUP_HANDLE is necessary here, because:
       // 1) The current process is the broker, which is the loader's parent.
@@ -169,10 +152,8 @@ void NaClBrokerListener::OnLaunchLoaderThroughBroker(
     }
   }
 
-  // Although |loader_channel_token| is "consumed", it is passed back to the
-  // browser which uses it as an ID to identify loader processes.
-  channel_->Send(new NaClProcessMsg_LoaderLaunched(loader_channel_token,
-                                                   loader_handle_in_browser));
+  channel_->Send(
+      new NaClProcessMsg_LoaderLaunched(launch_id, loader_handle_in_browser));
 }
 
 void NaClBrokerListener::OnLaunchDebugExceptionHandler(

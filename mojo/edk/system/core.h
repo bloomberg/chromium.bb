@@ -55,14 +55,43 @@ class MOJO_SYSTEM_IMPL_EXPORT Core {
 
   void SetDefaultProcessErrorCallback(const ProcessErrorCallback& callback);
 
-  // Called in the parent process any time a new child is launched.
-  void AddChild(base::ProcessHandle process_handle,
-                ConnectionParams connection_params,
-                const std::string& child_token,
-                const ProcessErrorCallback& process_error_callback);
+  // Creates a message pipe endpoint with an unbound peer port returned in
+  // |*peer|. Useful for setting up cross-process bootstrap message pipes. The
+  // returned message pipe handle is usable immediately by the caller.
+  //
+  // The value returned in |*peer| may be passed along with a broker client
+  // invitation. See SendBrokerClientInvitation() below.
+  ScopedMessagePipeHandle CreatePartialMessagePipe(ports::PortRef* peer);
 
-  // Called in the parent process when a child process fails to launch.
-  void ChildLaunchFailed(const std::string& child_token);
+  // Like above but exchanges an existing ports::PortRef for a message pipe
+  // handle which wraps it.
+  ScopedMessagePipeHandle CreatePartialMessagePipe(const ports::PortRef& port);
+
+  // Sends a broker client invitation to |target_process| over the connection
+  // medium in |connection_params|. The other end of the connection medium in
+  // |connection_params| can be used within the target process to call
+  // AcceptBrokerClientInvitation() and complete the process's admission into
+  // this process graph.
+  //
+  // |attached_ports| is a list of named port references to be attached to the
+  // invitation. An attached port can be claimed (as a message pipe handle) by
+  // the invitee.
+  void SendBrokerClientInvitation(
+      base::ProcessHandle target_process,
+      ConnectionParams connection_params,
+      const std::vector<std::pair<std::string, ports::PortRef>>& attached_ports,
+      const ProcessErrorCallback& process_error_callback);
+
+  // Accepts a broker client invitation via |connection_params|. The other end
+  // of the connection medium in |connection_params| must have been used by some
+  // other process to send an OutgoingBrokerClientInvitation.
+  void AcceptBrokerClientInvitation(ConnectionParams connection_params);
+
+  // Extracts a named message pipe endpoint from the broker client invitation
+  // accepted by this process. Must only be called after
+  // AcceptBrokerClientInvitation.
+  ScopedMessagePipeHandle ExtractMessagePipeFromInvitation(
+      const std::string& name);
 
   // Called to connect to a peer process. This should be called only if there
   // is no common ancestor for the processes involved within this mojo system.
@@ -71,18 +100,6 @@ class MOJO_SYSTEM_IMPL_EXPORT Core {
   ScopedMessagePipeHandle ConnectToPeerProcess(ScopedPlatformHandle pipe_handle,
                                                const std::string& peer_token);
   void ClosePeerConnection(const std::string& peer_token);
-
-  // Called in a child process exactly once during early initialization.
-  void InitChild(ConnectionParams connection_params);
-
-  // Creates a message pipe endpoint associated with |token|, which a child
-  // holding the token can later locate and connect to.
-  ScopedMessagePipeHandle CreateParentMessagePipe(
-      const std::string& token, const std::string& child_token);
-
-  // Creates a message pipe endpoint and connects it to a pipe the parent has
-  // associated with |token|.
-  ScopedMessagePipeHandle CreateChildMessagePipe(const std::string& token);
 
   // Sets the mach port provider for this process.
   void SetMachPortProvider(base::PortProvider* port_provider);

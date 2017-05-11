@@ -10,14 +10,17 @@ source_set("headers") {
     "connection_params.h",
     "embedder.h",
     "embedder_internal.h",
+    "incoming_broker_client_invitation.h",
     "named_platform_channel_pair.h",
     "named_platform_handle.h",
     "named_platform_handle_utils.h",
-    "pending_process_connection.h",
+    "outgoing_broker_client_invitation.h",
     "platform_channel_pair.h",
     "platform_handle.h",
     "platform_handle_utils.h",
+    "scoped_ipc_support.h",
     "scoped_platform_handle.h",
+    "transport_protocol.h",
   ]
 
   public_deps = [
@@ -37,15 +40,12 @@ source_set("embedder") {
   sources = [
     "configuration.h",
     "connection_params.cc",
-    "connection_params.h",
     "embedder.cc",
-    "embedder.h",
-    "embedder_internal.h",
     "entrypoints.cc",
     "entrypoints.h",
-    "pending_process_connection.cc",
+    "incoming_broker_client_invitation.cc",
+    "outgoing_broker_client_invitation.cc",
     "scoped_ipc_support.cc",
-    "scoped_ipc_support.h",
 
     # Test-only code:
     # TODO(vtl): It's a little unfortunate that these end up in the same
@@ -57,6 +57,10 @@ source_set("embedder") {
 
   defines = [ "MOJO_SYSTEM_IMPL_IMPLEMENTATION" ]
 
+  deps = [
+    "//mojo/edk/system/ports",
+  ]
+
   public_deps = [
     ":headers",
     ":platform",
@@ -65,9 +69,7 @@ source_set("embedder") {
   ]
 
   if (!is_nacl) {
-    deps = [
-      "//crypto",
-    ]
+    deps += [ "//crypto" ]
   }
 }
 

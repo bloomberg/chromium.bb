@@ -23,14 +23,15 @@ ChildProcessLauncher::ChildProcessLauncher(
     std::unique_ptr<base::CommandLine> command_line,
     int child_process_id,
     Client* client,
-    std::unique_ptr<mojo::edk::PendingProcessConnection> pending_connection,
+    std::unique_ptr<mojo::edk::OutgoingBrokerClientInvitation>
+        broker_client_invitation,
     const mojo::edk::ProcessErrorCallback& process_error_callback,
     bool terminate_on_shutdown)
     : client_(client),
       termination_status_(base::TERMINATION_STATUS_NORMAL_TERMINATION),
       exit_code_(RESULT_CODE_NORMAL_EXIT),
       starting_(true),
-      pending_connection_(std::move(pending_connection)),
+      broker_client_invitation_(std::move(broker_client_invitation)),
       process_error_callback_(process_error_callback),
 #if defined(ADDRESS_SANITIZER) || defined(LEAK_SANITIZER) ||  \
     defined(MEMORY_SANITIZER) || defined(THREAD_SANITIZER) || \
@@ -79,17 +80,16 @@ void ChildProcessLauncher::Notify(
   starting_ = false;
   process_ = std::move(process);
 
-  // Take ownership of the pending connection here so it's destroyed when
+  // Take ownership of the broker client invitation here so it's destroyed when
   // we go out of scope regardless of the outcome below.
-  std::unique_ptr<mojo::edk::PendingProcessConnection> pending_connection =
-      std::move(pending_connection_);
+  std::unique_ptr<mojo::edk::OutgoingBrokerClientInvitation> invitation =
+      std::move(broker_client_invitation_);
   if (process_.process.IsValid()) {
     // Set up Mojo IPC to the new process.
-    DCHECK(pending_connection);
-    pending_connection->Connect(
-        process_.process.Handle(),
-        mojo::edk::ConnectionParams(std::move(server_handle)),
-        process_error_callback_);
+    DCHECK(invitation);
+    invitation->Send(process_.process.Handle(),
+                     mojo::edk::ConnectionParams(std::move(server_handle)),
+                     process_error_callback_);
     client_->OnProcessLaunched();
   } else {
     termination_status_ = base::TERMINATION_STATUS_LAUNCH_FAILED;

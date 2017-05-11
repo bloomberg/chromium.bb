@@ -20,7 +20,7 @@
 #include "base/process/process_handle.h"
 #include "base/run_loop.h"
 #include "mojo/edk/embedder/embedder.h"
-#include "mojo/edk/embedder/pending_process_connection.h"
+#include "mojo/edk/embedder/outgoing_broker_client_invitation.h"
 #include "mojo/edk/embedder/platform_channel_pair.h"
 #include "mojo/edk/embedder/scoped_platform_handle.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
@@ -178,9 +178,9 @@ class ServiceManagerTest : public test::ServiceTest,
     platform_channel_pair.PrepareToPassClientHandleToChildProcess(
         &child_command_line, &handle_passing_info);
 
-    mojo::edk::PendingProcessConnection process_connection;
+    mojo::edk::OutgoingBrokerClientInvitation invitation;
     service_manager::mojom::ServicePtr client =
-        service_manager::PassServiceRequestOnCommandLine(&process_connection,
+        service_manager::PassServiceRequestOnCommandLine(&invitation,
                                                          &child_command_line);
     service_manager::mojom::PIDReceiverPtr receiver;
 
@@ -201,7 +201,7 @@ class ServiceManagerTest : public test::ServiceTest,
     target_ = base::LaunchProcess(child_command_line, options);
     DCHECK(target_.IsValid());
     receiver->SetPID(target_.Pid());
-    process_connection.Connect(
+    invitation.Send(
         target_.Handle(),
         mojo::edk::ConnectionParams(platform_channel_pair.PassServerHandle()));
   }

@@ -161,18 +161,35 @@ void Core::SetDefaultProcessErrorCallback(
   default_process_error_callback_ = callback;
 }
 
-void Core::AddChild(base::ProcessHandle process_handle,
-                    ConnectionParams connection_params,
-                    const std::string& child_token,
-                    const ProcessErrorCallback& process_error_callback) {
-  GetNodeController()->ConnectToChild(process_handle,
-                                      std::move(connection_params), child_token,
-                                      process_error_callback);
+ScopedMessagePipeHandle Core::CreatePartialMessagePipe(ports::PortRef* peer) {
+  RequestContext request_context;
+  ports::PortRef local_port;
+  GetNodeController()->node()->CreatePortPair(&local_port, peer);
+  MojoHandle handle = AddDispatcher(new MessagePipeDispatcher(
+      GetNodeController(), local_port, kUnknownPipeIdForDebug, 0));
+  return ScopedMessagePipeHandle(MessagePipeHandle(handle));
 }
 
-void Core::ChildLaunchFailed(const std::string& child_token) {
-  RequestContext request_context;
-  GetNodeController()->CloseChildPorts(child_token);
+ScopedMessagePipeHandle Core::CreatePartialMessagePipe(
+    const ports::PortRef& port) {
+  return ScopedMessagePipeHandle(
+      MessagePipeHandle(AddDispatcher(new MessagePipeDispatcher(
+          GetNodeController(), port, kUnknownPipeIdForDebug, 1))));
+}
+
+void Core::SendBrokerClientInvitation(
+    base::ProcessHandle target_process,
+    ConnectionParams connection_params,
+    const std::vector<std::pair<std::string, ports::PortRef>>& attached_ports,
+    const ProcessErrorCallback& process_error_callback) {
+  GetNodeController()->SendBrokerClientInvitation(
+      target_process, std::move(connection_params), attached_ports,
+      process_error_callback);
+}
+
+void Core::AcceptBrokerClientInvitation(ConnectionParams connection_params) {
+  GetNodeController()->AcceptBrokerClientInvitation(
+      std::move(connection_params));
 }
 
 ScopedMessagePipeHandle Core::ConnectToPeerProcess(
@@ -191,10 +208,6 @@ ScopedMessagePipeHandle Core::ConnectToPeerProcess(
 
 void Core::ClosePeerConnection(const std::string& peer_token) {
   GetNodeController()->ClosePeerConnection(peer_token);
-}
-
-void Core::InitChild(ConnectionParams connection_params) {
-  GetNodeController()->ConnectToParent(std::move(connection_params));
 }
 
 void Core::SetMachPortProvider(base::PortProvider* port_provider) {
@@ -325,26 +338,15 @@ void Core::RequestShutdown(const base::Closure& callback) {
   GetNodeController()->RequestShutdown(callback);
 }
 
-ScopedMessagePipeHandle Core::CreateParentMessagePipe(
-    const std::string& token, const std::string& child_token) {
-  RequestContext request_context;
-  ports::PortRef port0, port1;
-  GetNodeController()->node()->CreatePortPair(&port0, &port1);
-  MojoHandle handle = AddDispatcher(
-      new MessagePipeDispatcher(GetNodeController(), port0,
-                                kUnknownPipeIdForDebug, 0));
-  GetNodeController()->ReservePort(token, port1, child_token);
-  return ScopedMessagePipeHandle(MessagePipeHandle(handle));
-}
-
-ScopedMessagePipeHandle Core::CreateChildMessagePipe(const std::string& token) {
+ScopedMessagePipeHandle Core::ExtractMessagePipeFromInvitation(
+    const std::string& name) {
   RequestContext request_context;
   ports::PortRef port0, port1;
   GetNodeController()->node()->CreatePortPair(&port0, &port1);
   MojoHandle handle = AddDispatcher(
       new MessagePipeDispatcher(GetNodeController(), port0,
                                 kUnknownPipeIdForDebug, 1));
-  GetNodeController()->MergePortIntoParent(token, port1);
+  GetNodeController()->MergePortIntoParent(name, port1);
   return ScopedMessagePipeHandle(MessagePipeHandle(handle));
 }
 

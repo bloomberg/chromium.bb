@@ -19,7 +19,7 @@
 #include "content/common/content_export.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/result_codes.h"
-#include "mojo/edk/embedder/pending_process_connection.h"
+#include "mojo/edk/embedder/outgoing_broker_client_invitation.h"
 #include "mojo/edk/embedder/scoped_platform_handle.h"
 
 namespace base {
@@ -80,7 +80,8 @@ class CONTENT_EXPORT ChildProcessLauncher : public base::NonThreadSafe {
       std::unique_ptr<base::CommandLine> cmd_line,
       int child_process_id,
       Client* client,
-      std::unique_ptr<mojo::edk::PendingProcessConnection> pending_connection,
+      std::unique_ptr<mojo::edk::OutgoingBrokerClientInvitation>
+          broker_client_invitation,
       const mojo::edk::ProcessErrorCallback& process_error_callback,
       bool terminate_on_shutdown = true);
   ~ChildProcessLauncher();
@@ -161,7 +162,8 @@ class CONTENT_EXPORT ChildProcessLauncher : public base::NonThreadSafe {
   base::TerminationStatus termination_status_;
   int exit_code_;
   bool starting_;
-  std::unique_ptr<mojo::edk::PendingProcessConnection> pending_connection_;
+  std::unique_ptr<mojo::edk::OutgoingBrokerClientInvitation>
+      broker_client_invitation_;
   const mojo::edk::ProcessErrorCallback process_error_callback_;
 
   // Controls whether the child process should be terminated on browser

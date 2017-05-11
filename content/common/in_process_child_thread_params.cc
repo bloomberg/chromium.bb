@@ -8,8 +8,10 @@ namespace content {
 
 InProcessChildThreadParams::InProcessChildThreadParams(
     scoped_refptr<base::SingleThreadTaskRunner> io_runner,
+    mojo::edk::OutgoingBrokerClientInvitation* broker_client_invitation,
     const std::string& service_request_token)
     : io_runner_(std::move(io_runner)),
+      broker_client_invitation_(broker_client_invitation),
       service_request_token_(service_request_token) {}
 
 InProcessChildThreadParams::InProcessChildThreadParams(

@@ -116,14 +116,17 @@ class ChildConnection::IOThreadContext
 
 ChildConnection::ChildConnection(
     const service_manager::Identity& child_identity,
-    mojo::edk::PendingProcessConnection* process_connection,
+    mojo::edk::OutgoingBrokerClientInvitation* invitation,
     service_manager::Connector* connector,
     scoped_refptr<base::SequencedTaskRunner> io_task_runner)
     : context_(new IOThreadContext),
       child_identity_(child_identity),
       weak_factory_(this) {
+  // TODO(rockot): Use a constant name for this pipe attachment rather than a
+  // randomly generated token.
+  service_token_ = mojo::edk::GenerateRandomToken();
   context_->Initialize(child_identity_, connector,
-                       process_connection->CreateMessagePipe(&service_token_),
+                       invitation->AttachMessagePipe(service_token_),
                        io_task_runner);
 }
 
