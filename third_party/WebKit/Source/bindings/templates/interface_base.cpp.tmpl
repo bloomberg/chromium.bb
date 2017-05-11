@@ -77,7 +77,9 @@ static void (*{{method.name}}MethodForPartialInterface)(const v8::FunctionCallba
 
 {##############################################################################}
 {# Attributes #}
-{% from 'attributes.cpp.tmpl' import attribute_getter, attribute_setter with context %}
+{% from 'attributes.cpp.tmpl' import attribute_getter,
+       attribute_setter,
+       with context %}
 {% for attribute in attributes %}
 {% for world_suffix in attribute.world_suffixes %}
 {% if not attribute.has_custom_getter and not attribute.constructor_type %}
@@ -369,11 +371,11 @@ static const V8DOMConfiguration::AttributeConfiguration {{v8_class}}LazyDataAttr
 {% endblock %}
 {##############################################################################}
 {% block install_accessors %}
-{% from 'attributes.cpp.tmpl' import attribute_configuration with context %}
+{% from 'attributes.cpp.tmpl' import accessor_configuration with context %}
 {% if accessors %}
 static const V8DOMConfiguration::AccessorConfiguration {{v8_class}}Accessors[] = {
     {% for accessor in accessors %}
-    {{attribute_configuration(accessor) | indent(4)}},
+    {{accessor_configuration(accessor) | indent(4)}},
     {% endfor %}
 };
 
@@ -399,7 +401,9 @@ static const V8DOMConfiguration::MethodConfiguration {{v8_class}}Methods[] = {
 {% block install_dom_template %}
 {% if not is_array_buffer_or_view %}
 {% from 'methods.cpp.tmpl' import install_custom_signature with context %}
-{% from 'attributes.cpp.tmpl' import attribute_configuration with context %}
+{% from 'attributes.cpp.tmpl' import accessor_configuration,
+        attribute_configuration,
+        with context %}
 {% from 'constants.cpp.tmpl' import install_constants with context %}
 {% from 'methods.cpp.tmpl' import method_configuration with context %}
 {% if has_partial_interface or is_partial %}
@@ -488,7 +492,7 @@ static void install{{v8_class}}Template(v8::Isolate* isolate, const DOMWrapperWo
     V8DOMConfiguration::InstallAttribute(isolate, world, instanceTemplate, prototypeTemplate, attributeConfig);
   {% else %}
   static const V8DOMConfiguration::AccessorConfiguration accessor{{attribute.name}}Configuration[] = {
-    {{attribute_configuration(attribute) | indent(2)}}
+    {{accessor_configuration(attribute) | indent(2)}}
   };
   for (const auto& accessorConfig : accessor{{attribute.name}}Configuration)
     V8DOMConfiguration::InstallAccessor(isolate, world, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, accessorConfig);
@@ -616,7 +620,9 @@ static void install{{v8_class}}Template(v8::Isolate* isolate, const DOMWrapperWo
 {##############################################################################}
 {% block install_runtime_enabled %}
 {% if needs_runtime_enabled_installer %}
-{% from 'attributes.cpp.tmpl' import attribute_configuration with context %}
+{% from 'attributes.cpp.tmpl' import accessor_configuration,
+        attribute_configuration,
+        with context %}
 {% from 'methods.cpp.tmpl' import install_custom_signature with context %}
 void {{v8_class_or_partial}}::installRuntimeEnabledFeatures(v8::Isolate* isolate, const DOMWrapperWorld& world, v8::Local<v8::Object> instance, v8::Local<v8::Object> prototype, v8::Local<v8::Function> interface) {
   {% if runtime_enabled_feature_name %}
@@ -644,7 +650,7 @@ void {{v8_class_or_partial}}::installRuntimeEnabledFeatures(v8::Isolate* isolate
     V8DOMConfiguration::InstallAttribute(isolate, world, instance, prototype, attributeConfig);
   {% else %}
   static const V8DOMConfiguration::AccessorConfiguration accessor{{attribute.name}}Configuration[] = {
-    {{attribute_configuration(attribute) | indent(2)}}
+    {{accessor_configuration(attribute) | indent(2)}}
   };
   for (const auto& accessorConfig : accessor{{attribute.name}}Configuration)
     V8DOMConfiguration::InstallAccessor(isolate, world, instance, prototype, interface, signature, accessorConfig);
@@ -686,7 +692,9 @@ void {{v8_class_or_partial}}::installRuntimeEnabledFeatures(v8::Isolate* isolate
 {% endblock %}
 {##############################################################################}
 {% block origin_trials %}
-{% from 'attributes.cpp.tmpl' import attribute_configuration with context %}
+{% from 'attributes.cpp.tmpl' import accessor_configuration,
+        attribute_configuration,
+        with context %}
 {% from 'constants.cpp.tmpl' import constant_configuration with context %}
 {% from 'methods.cpp.tmpl' import method_configuration with context %}
 {% for feature in origin_trial_features %}
@@ -706,7 +714,7 @@ void {{v8_class_or_partial}}::install{{feature.name}}(v8::Isolate* isolate, cons
     V8DOMConfiguration::InstallAttribute(isolate, world, instance, prototype, attributeConfig);
   {% else %}
   static const V8DOMConfiguration::AccessorConfiguration accessor{{attribute.name}}Configuration[] = {
-    {{attribute_configuration(attribute) | indent(2)}}
+    {{accessor_configuration(attribute) | indent(2)}}
   };
   for (const auto& accessorConfig : accessor{{attribute.name}}Configuration)
     V8DOMConfiguration::InstallAccessor(isolate, world, instance, prototype, interface, signature, accessorConfig);

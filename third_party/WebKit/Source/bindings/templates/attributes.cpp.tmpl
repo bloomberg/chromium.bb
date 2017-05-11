@@ -481,7 +481,7 @@ const v8::FunctionCallbackInfo<v8::Value>& info
 
 
 {##############################################################################}
-{% macro attribute_configuration(attribute) %}
+{% macro build_attribute_or_accessor_configuration(attribute, config_type) %}
 {% from 'utilities.cpp.tmpl' import property_location %}
 {% if attribute.constructor_type %}
   {% if attribute.needs_constructor_getter_callback %}
@@ -503,7 +503,7 @@ const v8::FunctionCallbackInfo<v8::Value>& info
        if attribute.constructor_type else 'nullptr' %}
 {% set property_attribute = 'static_cast<v8::PropertyAttribute>(%s)' %
                             ' | '.join(attribute.property_attributes) %}
-{% set cached_accessor_callback =
+{% set cached_property_key =
        '%s::%sCachedPropertyKey' % (v8_class_or_partial, attribute.name)
        if attribute.is_cached_accessor else
        'nullptr' %}
@@ -514,12 +514,61 @@ const v8::FunctionCallbackInfo<v8::Value>& info
 {% set setter_callback_for_main_world =
        '%sForMainWorld' % setter_callback
        if attribute.has_setter else 'nullptr' %}
-{"{{attribute.name}}", {{getter_callback_for_main_world}}, {{setter_callback_for_main_world}}, {{cached_accessor_callback}}, {{wrapper_type_info}}, {{property_attribute}}, {{property_location(attribute)}}, {{holder_check}}, V8DOMConfiguration::kMainWorld},
-{"{{attribute.name}}", {{getter_callback}}, {{setter_callback}}, {{cached_accessor_callback}}, {{wrapper_type_info}}, {{property_attribute}}, {{property_location(attribute)}}, {{holder_check}}, V8DOMConfiguration::kNonMainWorlds}
-{%- else %}
-{"{{attribute.name}}", {{getter_callback}}, {{setter_callback}}, {{cached_accessor_callback}}, {{wrapper_type_info}}, {{property_attribute}}, {{property_location(attribute)}}, {{holder_check}}, V8DOMConfiguration::kAllWorlds}
-{%- endif %}
-{%- endmacro %}
+{% endif %}
+
+
+{% set config_pre = {
+  "main" : [
+         '"%s"' % attribute.name,
+         getter_callback_for_main_world,
+         setter_callback_for_main_world,
+       ],
+  "non_main" : [
+         '"%s"' % attribute.name,
+         getter_callback,
+         setter_callback,
+       ],
+} %}
+
+{% set accessor_only_fields = [] if config_type == 'attribute' else [
+      cached_property_key,
+] %}
+
+{% set config_post = [
+       wrapper_type_info,
+       property_attribute,
+       property_location(attribute),
+       holder_check,
+] %}
+
+{% if attribute.is_per_world_bindings %}
+  {% set main_config_list = config_pre["main"] + accessor_only_fields +
+      config_post + ['V8DOMConfiguration::kMainWorld'] %}
+  {% set non_main_config_list = config_pre["non_main"] + accessor_only_fields +
+      config_post + ['V8DOMConfiguration::kNonMainWorlds'] %}
+  {# Emit for main world then non-main.#}
+  { {{main_config_list | join(', ')}} },
+  { {{non_main_config_list | join(', ')}} }
+{% else %}
+  {% set all_worlds_config_list = config_pre["non_main"] + accessor_only_fields +
+      config_post + ['V8DOMConfiguration::kAllWorlds'] %}
+  {# Emit only for all worlds #}
+  { {{all_worlds_config_list | join(', ')}} }
+{% endif %}
+{% endmacro %}
+
+
+{##############################################################################}
+{% macro attribute_configuration(attribute) %}
+{{build_attribute_or_accessor_configuration(attribute, 'attribute')}}
+{% endmacro %}
+
+
+{##############################################################################}
+{% macro accessor_configuration(attribute) %}
+{{build_attribute_or_accessor_configuration(attribute, 'accessor')}}
+{% endmacro %}
+
 
 {##############################################################################}
 {% macro install_conditionally_enabled_attributes_on_prototype() %}
@@ -528,7 +577,7 @@ const v8::FunctionCallbackInfo<v8::Value>& info
 {% filter secure_context(attribute.secure_context_test) %}
 {% filter runtime_enabled(attribute.runtime_enabled_feature_name) %}
 static const V8DOMConfiguration::AccessorConfiguration accessorConfiguration[] = {
-  {{attribute_configuration(attribute)}}
+  {{accessor_configuration(attribute)}}
 };
 for (const auto& accessorConfig : accessorConfiguration)
   V8DOMConfiguration::InstallAccessor(isolate, world, v8::Local<v8::Object>(), prototypeObject, interfaceObject, signature, accessorConfig);
