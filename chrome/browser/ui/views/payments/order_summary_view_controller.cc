@@ -134,6 +134,7 @@ void OrderSummaryViewController::FillContentView(views::View* content_view) {
       views::BoxLayout::CROSS_AXIS_ALIGNMENT_STRETCH);
   content_view->SetLayoutManager(layout);
 
+  bool is_mixed_currency = spec()->IsMixedCurrency();
   // Set the ID for the first few line items labels, for testing.
   const std::vector<DialogViewID> line_items{
       DialogViewID::ORDER_SUMMARY_LINE_ITEM_1,
@@ -142,20 +143,30 @@ void OrderSummaryViewController::FillContentView(views::View* content_view) {
   for (size_t i = 0; i < spec()->details().display_items.size(); i++) {
     DialogViewID view_id =
         i < line_items.size() ? line_items[i] : DialogViewID::VIEW_ID_NONE;
+    base::string16 value_string;
+    if (is_mixed_currency) {
+      value_string = l10n_util::GetStringFUTF16(
+          IDS_PAYMENT_REQUEST_ORDER_SUMMARY_SHEET_TOTAL_FORMAT,
+          base::UTF8ToUTF16(
+              spec()->details().display_items[i]->amount->currency),
+          spec()->GetFormattedCurrencyAmount(
+              spec()->details().display_items[i]->amount));
+    } else {
+      value_string = spec()->GetFormattedCurrencyAmount(
+          spec()->details().display_items[i]->amount);
+    }
+
     content_view->AddChildView(
         CreateLineItemView(
             base::UTF8ToUTF16(spec()->details().display_items[i]->label),
-            spec()->GetFormattedCurrencyAmount(
-                spec()->details().display_items[i]->amount->value),
-            false, view_id)
+            value_string, false, view_id)
             .release());
   }
 
   base::string16 total_label_value = l10n_util::GetStringFUTF16(
       IDS_PAYMENT_REQUEST_ORDER_SUMMARY_SHEET_TOTAL_FORMAT,
       base::UTF8ToUTF16(spec()->details().total->amount->currency),
-      spec()->GetFormattedCurrencyAmount(
-          spec()->details().total->amount->value));
+      spec()->GetFormattedCurrencyAmount(spec()->details().total->amount));
 
   content_view->AddChildView(
       CreateLineItemView(base::UTF8ToUTF16(spec()->details().total->label),

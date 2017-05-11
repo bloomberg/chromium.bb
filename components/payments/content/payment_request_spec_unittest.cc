@@ -341,4 +341,93 @@ TEST_F(PaymentRequestSpecTest, ShippingOptionsSelection_NoOptionsAtAll) {
             spec()->selected_shipping_option_error());
 }
 
+TEST_F(PaymentRequestSpecTest, SingleCurrencyWithoutDisplayItems) {
+  mojom::PaymentDetailsPtr details = mojom::PaymentDetails::New();
+  mojom::PaymentItemPtr total = mojom::PaymentItem::New();
+  mojom::PaymentCurrencyAmountPtr amount = mojom::PaymentCurrencyAmount::New();
+  amount->currency = "USD";
+  total->amount = std::move(amount);
+  details->total = std::move(total);
+
+  RecreateSpecWithOptionsAndDetails(mojom::PaymentOptions::New(),
+                                    std::move(details));
+  // If the request only has a total, it must not have mixed currencies.
+  EXPECT_FALSE(spec()->IsMixedCurrency());
+}
+
+TEST_F(PaymentRequestSpecTest, SingleCurrencyWithDisplayItems) {
+  mojom::PaymentDetailsPtr details = mojom::PaymentDetails::New();
+  mojom::PaymentItemPtr total = mojom::PaymentItem::New();
+  mojom::PaymentCurrencyAmountPtr amount = mojom::PaymentCurrencyAmount::New();
+  amount->currency = "USD";
+  total->amount = std::move(amount);
+  details->total = std::move(total);
+
+  mojom::PaymentItemPtr display_item = mojom::PaymentItem::New();
+  mojom::PaymentCurrencyAmountPtr display_amount =
+      mojom::PaymentCurrencyAmount::New();
+  display_amount->currency = "USD";
+  display_item->amount = std::move(display_amount);
+  details->display_items.push_back(std::move(display_item));
+
+  RecreateSpecWithOptionsAndDetails(mojom::PaymentOptions::New(),
+                                    std::move(details));
+  // Both the total and the display item have matching currency codes, this
+  // isn't a mixed currency case.
+  EXPECT_FALSE(spec()->IsMixedCurrency());
+}
+
+TEST_F(PaymentRequestSpecTest, MultipleCurrenciesWithOneDisplayItem) {
+  mojom::PaymentDetailsPtr details = mojom::PaymentDetails::New();
+  mojom::PaymentItemPtr total = mojom::PaymentItem::New();
+  mojom::PaymentCurrencyAmountPtr amount = mojom::PaymentCurrencyAmount::New();
+  amount->currency = "USD";
+  total->amount = std::move(amount);
+  details->total = std::move(total);
+
+  mojom::PaymentItemPtr display_item = mojom::PaymentItem::New();
+  mojom::PaymentCurrencyAmountPtr display_amount =
+      mojom::PaymentCurrencyAmount::New();
+  display_amount->currency = "CAD";
+  display_item->amount = std::move(display_amount);
+  details->display_items.push_back(std::move(display_item));
+
+  RecreateSpecWithOptionsAndDetails(mojom::PaymentOptions::New(),
+                                    std::move(details));
+
+  // The display item currency and the total's currency don't match, this is a
+  // mixed currencies case.
+  EXPECT_TRUE(spec()->IsMixedCurrency());
+}
+
+TEST_F(PaymentRequestSpecTest, MultipleCurrenciesWithTwoDisplayItem) {
+  mojom::PaymentDetailsPtr details = mojom::PaymentDetails::New();
+  mojom::PaymentItemPtr total = mojom::PaymentItem::New();
+  mojom::PaymentCurrencyAmountPtr amount = mojom::PaymentCurrencyAmount::New();
+  amount->currency = "USD";
+  total->amount = std::move(amount);
+  details->total = std::move(total);
+
+  mojom::PaymentItemPtr display_item1 = mojom::PaymentItem::New();
+  mojom::PaymentCurrencyAmountPtr display_amount1 =
+      mojom::PaymentCurrencyAmount::New();
+  display_amount1->currency = "CAD";
+  display_item1->amount = std::move(display_amount1);
+  details->display_items.push_back(std::move(display_item1));
+
+  mojom::PaymentItemPtr display_item2 = mojom::PaymentItem::New();
+  mojom::PaymentCurrencyAmountPtr display_amount2 =
+      mojom::PaymentCurrencyAmount::New();
+  display_amount2->currency = "USD";
+  display_item2->amount = std::move(display_amount2);
+  details->display_items.push_back(std::move(display_item2));
+
+  RecreateSpecWithOptionsAndDetails(mojom::PaymentOptions::New(),
+                                    std::move(details));
+
+  // At least one of the display items has a different currency, this is a mixed
+  // currency case.
+  EXPECT_TRUE(spec()->IsMixedCurrency());
+}
+
 }  // namespace payments
