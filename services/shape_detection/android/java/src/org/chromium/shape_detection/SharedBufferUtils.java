@@ -8,6 +8,7 @@ import android.graphics.Bitmap;
 
 import com.google.android.gms.vision.Frame;
 
+import org.chromium.mojo.system.MojoException;
 import org.chromium.mojo.system.SharedBufferHandle;
 import org.chromium.mojo.system.SharedBufferHandle.MapFlags;
 
@@ -35,6 +36,11 @@ public class SharedBufferUtils {
 
         Bitmap bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
         bitmap.copyPixelsFromBuffer(imageBuffer);
+        try {
+            frameData.unmap(imageBuffer);
+            frameData.close();
+        } catch (MojoException e) {
+        }
 
         try {
             // This constructor implies a pixel format conversion to YUV.
