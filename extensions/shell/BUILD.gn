@@ -32,6 +32,7 @@ source_set("app_shell_lib") {
   deps = [
     ":resources",
     ":version_header",
+    "//apps",
     "//base",
     "//components/guest_view/browser",
     "//components/guest_view/common",
