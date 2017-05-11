@@ -48,8 +48,6 @@ LineBoxList::~LineBoxList() {
 #endif
 
 void LineBoxList::AppendLineBox(InlineFlowBox* box) {
-  CheckConsistency();
-
   if (!first_line_box_) {
     first_line_box_ = last_line_box_ = box;
   } else {
@@ -57,8 +55,6 @@ void LineBoxList::AppendLineBox(InlineFlowBox* box) {
     box->SetPreviousLineBox(last_line_box_);
     last_line_box_ = box;
   }
-
-  CheckConsistency();
 }
 
 void LineBoxList::DeleteLineBoxTree() {
@@ -73,8 +69,6 @@ void LineBoxList::DeleteLineBoxTree() {
 }
 
 void LineBoxList::ExtractLineBox(InlineFlowBox* box) {
-  CheckConsistency();
-
   last_line_box_ = box->PrevLineBox();
   if (box == first_line_box_)
     first_line_box_ = nullptr;
@@ -83,13 +77,9 @@ void LineBoxList::ExtractLineBox(InlineFlowBox* box) {
   box->SetPreviousLineBox(nullptr);
   for (InlineFlowBox* curr = box; curr; curr = curr->NextLineBox())
     curr->SetExtracted();
-
-  CheckConsistency();
 }
 
 void LineBoxList::AttachLineBox(InlineFlowBox* box) {
-  CheckConsistency();
-
   if (last_line_box_) {
     last_line_box_->SetNextLineBox(box);
     box->SetPreviousLineBox(last_line_box_);
@@ -102,13 +92,9 @@ void LineBoxList::AttachLineBox(InlineFlowBox* box) {
     last = curr;
   }
   last_line_box_ = last;
-
-  CheckConsistency();
 }
 
 void LineBoxList::RemoveLineBox(InlineFlowBox* box) {
-  CheckConsistency();
-
   if (box == first_line_box_)
     first_line_box_ = box->NextLineBox();
   if (box == last_line_box_)
@@ -117,8 +103,6 @@ void LineBoxList::RemoveLineBox(InlineFlowBox* box) {
     box->NextLineBox()->SetPreviousLineBox(box->PrevLineBox());
   if (box->PrevLineBox())
     box->PrevLineBox()->SetNextLineBox(box->NextLineBox());
-
-  CheckConsistency();
 }
 
 void LineBoxList::DeleteLineBoxes() {
@@ -368,20 +352,5 @@ void LineBoxList::DirtyLinesFromChangedChild(LineLayoutItem container,
       next_root_box->MarkDirty();
   }
 }
-
-#if DCHECK_IS_ON()
-void LineBoxList::CheckConsistency() const {
-#ifdef CHECK_CONSISTENCY
-  const InlineFlowBox* prev = nullptr;
-  for (const InlineFlowBox* child = m_firstLineBox; child;
-       child = child->nextLineBox()) {
-    DCHECK_EQ(child->prevLineBox(), prev);
-    prev = child;
-  }
-  DCHECK_EQ(prev, m_lastLineBox);
-#endif
-}
-
-#endif
 
 }  // namespace blink
