@@ -27,6 +27,12 @@ def parse_options():
   parser.add_argument('repository', type=os.path.abspath,
                       help='should contain a .gclient file')
   parser.add_argument('new_workdir', help='must not exist')
+  parser.add_argument('--reflink', action='store_true', default=None,
+                      help='''force to use "cp --reflink" for speed and disk
+                              space. need supported FS like btrfs or ZFS.''')
+  parser.add_argument('--no-reflink', action='store_false', dest='reflink',
+                      help='''force not to use "cp --reflink" even on supported
+                              FS like btrfs or ZFS.''')
   args = parser.parse_args()
 
   if not os.path.exists(args.repository):
@@ -42,21 +48,52 @@ def parse_options():
   return args
 
 
+def support_cow(src, dest):
+  try:
+    subprocess.check_output(['cp', '-a', '--reflink', src, dest],
+                            stderr=subprocess.STDOUT)
+  except subprocess.CalledProcessError:
+    return False
+  finally:
+    os.remove(dest)
+  return True
+
+
 def main():
   args = parse_options()
 
   gclient = os.path.join(args.repository, '.gclient')
+  new_gclient = os.path.join(args.new_workdir, '.gclient')
 
   os.makedirs(args.new_workdir)
-  os.symlink(gclient, os.path.join(args.new_workdir, '.gclient'))
+  if args.reflink is None:
+    args.reflink = support_cow(gclient, new_gclient)
+    if args.reflink:
+      print('Copy-on-write is supported. Using reflink to copy the repo.')
+  os.symlink(gclient, new_gclient)
 
   for root, dirs, _ in os.walk(args.repository):
     if '.git' in dirs:
       workdir = root.replace(args.repository, args.new_workdir, 1)
       print('Creating: %s' % workdir)
+
+      if args.reflink:
+        if not os.path.exists(workdir):
+          print('Copying: %s' % workdir)
+          subprocess.check_call(['cp', '-a', '--reflink', root, workdir])
+        shutil.rmtree(os.path.join(workdir, '.git'))
+
       git_common.make_workdir(os.path.join(root, '.git'),
                               os.path.join(workdir, '.git'))
-      subprocess.check_call(['git', 'checkout', '-f'], cwd=workdir)
+      if args.reflink:
+        subprocess.check_call(['cp', '-a', '--reflink',
+                              os.path.join(root, '.git', 'index'),
+                              os.path.join(workdir, '.git', 'index')])
+      else:
+        subprocess.check_call(['git', 'checkout', '-f'], cwd=workdir)
+
+      if args.reflink:
+        subprocess.check_call(['git', 'clean', '-df'], cwd=workdir)
 
 
 if __name__ == '__main__':
