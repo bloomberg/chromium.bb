@@ -59,6 +59,8 @@ class PLATFORM_EXPORT DOMWrapperWorld : public RefCounted<DOMWrapperWorld> {
     // Embedder isolated worlds can use IDs in [1, 1<<29).
     kEmbedderWorldIdLimit = (1 << 29),
     kDocumentXMLTreeViewerWorldId,
+    kDevToolsFirstIsolatedWorldId,
+    kDevToolsLastIsolatedWorldId = kDevToolsFirstIsolatedWorldId + 100,
     kIsolatedWorldIdLimit,
 
     // Other worlds can use IDs after this. Don't manually pick up an ID from
@@ -69,13 +71,15 @@ class PLATFORM_EXPORT DOMWrapperWorld : public RefCounted<DOMWrapperWorld> {
   enum class WorldType {
     kMain,
     kIsolated,
+    kInspectorIsolated,
     kGarbageCollector,
     kRegExp,
     kTesting,
     kWorker,
   };
 
-  // Creates a world other than IsolatedWorld.
+  // Creates a world other than IsolatedWorld. Note this can return nullptr if
+  // GenerateWorldIdForType fails to allocate a valid id.
   static PassRefPtr<DOMWrapperWorld> Create(v8::Isolate*, WorldType);
 
   // Ensures an IsolatedWorld for |worldId|.
@@ -128,7 +132,10 @@ class PLATFORM_EXPORT DOMWrapperWorld : public RefCounted<DOMWrapperWorld> {
 
   bool IsMainWorld() const { return world_type_ == WorldType::kMain; }
   bool IsWorkerWorld() const { return world_type_ == WorldType::kWorker; }
-  bool IsIsolatedWorld() const { return world_type_ == WorldType::kIsolated; }
+  bool IsIsolatedWorld() const {
+    return world_type_ == WorldType::kIsolated ||
+           world_type_ == WorldType::kInspectorIsolated;
+  }
 
   int GetWorldId() const { return world_id_; }
   DOMDataStore& DomDataStore() const { return *dom_data_store_; }

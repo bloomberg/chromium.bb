@@ -142,6 +142,10 @@ class CORE_EXPORT InspectorPageAgent final
       std::unique_ptr<protocol::Page::LayoutViewport>*,
       std::unique_ptr<protocol::Page::VisualViewport>*,
       std::unique_ptr<protocol::DOM::Rect>*) override;
+  protocol::Response createIsolatedWorld(
+      const String& frame_id,
+      Maybe<String> world_name,
+      Maybe<bool> grant_universal_access) override;
 
   // InspectorInstrumentation API
   void DidClearDocumentOfWindowObject(LocalFrame*);
