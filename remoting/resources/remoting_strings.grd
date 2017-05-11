@@ -356,6 +356,9 @@
         <message name="IDS_MAC_UNINSTALLER_BUNDLE_NAME" desc="The bundle name specified in the property list of Chrome Remote Desktop Host Uninstaller bundle on MacOS. The Chrome Remote Desktop host allows a user to connect to their computer remotely (it 'hosts' a connection from a remote computer).">
           Chrome Remote Desktop Host Uninstaller
         </message>
+        <message desc="Error displayed when the local computer is configured badly." name="IDS_ERROR_POLICY">
+          There is an error with the policy settings for Chrome Remote Desktop. Contact your system administrator for assistance.
+        </message>
       </if>  <!-- _google_chrome -->
 
       <if expr="not _google_chrome">
@@ -457,6 +460,9 @@
         </message>
         <message name="IDS_MAC_UNINSTALLER_BUNDLE_NAME" desc="The bundle name specified in the property list of Chromoting Host Uninstaller bundle on MacOS.">
           Chromoting Host Uninstaller
+        </message>
+        <message desc="Error displayed when the local computer is configured badly." name="IDS_ERROR_POLICY">
+          There is an error with the policy settings for Chrome Remote Desktop. Contact your system administrator for assistance.
         </message>
       </if>  <!-- not _google_chrome -->
 

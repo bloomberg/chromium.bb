@@ -59,7 +59,8 @@ class PolicyWatcher : public policy::PolicyService::Observer,
       const PolicyUpdatedCallback& policy_updated_callback,
       const PolicyErrorCallback& policy_error_callback);
 
-  // Return the current policies.
+  // Return the current policies. If the policies have not yet been read, or if
+  // an error occurred, the returned dictionary will be empty.
   std::unique_ptr<base::DictionaryValue> GetCurrentPolicies();
 
   // Return the default policies.

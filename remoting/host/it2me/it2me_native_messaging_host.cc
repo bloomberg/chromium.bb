@@ -61,22 +61,22 @@ const base::FilePath::CharType kElevatedHostBinaryName[] =
     FILE_PATH_LITERAL("remote_assistance_host_uiaccess.exe");
 #endif  // defined(OS_WIN)
 
-// Helper function to run |callback| on the correct thread using |task_runner|.
+// Helper functions to run |callback| asynchronously on the correct thread
+// using |task_runner|.
 void PolicyUpdateCallback(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
     remoting::PolicyWatcher::PolicyUpdatedCallback callback,
     std::unique_ptr<base::DictionaryValue> policies) {
-  DCHECK(!callback.is_null());
-
-  // Always post the task so the execution is consistent (always asynchronous).
+  DCHECK(callback);
   task_runner->PostTask(FROM_HERE,
                         base::Bind(callback, base::Passed(&policies)));
 }
 
-// Called when malformed policies are detected.
-void OnPolicyError() {
-  // TODO(joedow): Report the policy error to the user.  crbug.com/433009
-  NOTIMPLEMENTED();
+void PolicyErrorCallback(
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+    remoting::PolicyWatcher::PolicyErrorCallback callback) {
+  DCHECK(callback);
+  task_runner->PostTask(FROM_HERE, callback);
 }
 
 }  // namespace
@@ -94,13 +94,14 @@ It2MeNativeMessagingHost::It2MeNativeMessagingHost(
   weak_ptr_ = weak_factory_.GetWeakPtr();
 
   // The policy watcher runs on the |file_task_runner| but we want to run the
-  // update code on |task_runner| so we use a shim to post the callback to the
-  // preferred task runner.
+  // callbacks on |task_runner| so we use a shim to post them to it.
   PolicyWatcher::PolicyUpdatedCallback update_callback =
       base::Bind(&It2MeNativeMessagingHost::OnPolicyUpdate, weak_ptr_);
+  PolicyWatcher::PolicyErrorCallback error_callback =
+      base::Bind(&It2MeNativeMessagingHost::OnPolicyError, weak_ptr_);
   policy_watcher_->StartWatching(
       base::Bind(&PolicyUpdateCallback, task_runner(), update_callback),
-      base::Bind(&OnPolicyError));
+      base::Bind(&PolicyErrorCallback, task_runner(), error_callback));
 }
 
 It2MeNativeMessagingHost::~It2MeNativeMessagingHost() {
@@ -314,11 +315,22 @@ void It2MeNativeMessagingHost::ProcessConnect(
   }
 #endif  // !defined(NDEBUG)
 
+  std::unique_ptr<base::DictionaryValue> policies =
+      policy_watcher_->GetCurrentPolicies();
+  if (policies->size() == 0) {
+    // At this point policies have been read, so if there are none set then
+    // it indicates an error. Since this can be fixed by end users it has a
+    // dedicated message type rather than the generic "error" so that the
+    // right error message can be displayed.
+    SendPolicyErrorAndExit();
+    return;
+  }
+
   // Create the It2Me host and start connecting.
   it2me_host_ = factory_->CreateIt2MeHost(host_context_->Copy(), weak_ptr_,
                                           std::move(signal_strategy), username,
                                           directory_bot_jid);
-  it2me_host_->OnPolicyUpdate(policy_watcher_->GetCurrentPolicies());
+  it2me_host_->OnPolicyUpdate(std::move(policies));
   it2me_host_->Connect();
 
   SendMessageToClient(std::move(response));
@@ -385,6 +397,15 @@ void It2MeNativeMessagingHost::SendErrorAndExit(
   client_->CloseChannel(std::string());
 }
 
+void It2MeNativeMessagingHost::SendPolicyErrorAndExit() const {
+  DCHECK(task_runner()->BelongsToCurrentThread());
+
+  auto message = base::MakeUnique<base::DictionaryValue>();
+  message->SetString("type", "policyError");
+  SendMessageToClient(std::move(message));
+  client_->CloseChannel(std::string());
+}
+
 void It2MeNativeMessagingHost::OnStateChanged(
     It2MeHostState state,
     const std::string& error_message) {
@@ -425,6 +446,11 @@ void It2MeNativeMessagingHost::OnStateChanged(
   }
 
   SendMessageToClient(std::move(message));
+}
+
+void It2MeNativeMessagingHost::SetPolicyErrorClosureForTesting(
+    const base::Closure& closure) {
+  policy_error_closure_for_testing_ = closure;
 }
 
 void It2MeNativeMessagingHost::OnNatPolicyChanged(bool nat_traversal_enabled) {
@@ -495,6 +521,28 @@ void It2MeNativeMessagingHost::OnPolicyUpdate(
 
   if (it2me_host_.get()) {
     it2me_host_->OnPolicyUpdate(std::move(policies));
+  }
+}
+
+void It2MeNativeMessagingHost::OnPolicyError() {
+  LOG(ERROR) << "Malformed policies detected.";
+  policy_received_ = true;
+
+  if (policy_error_closure_for_testing_) {
+    policy_error_closure_for_testing_.Run();
+  }
+
+  if (it2me_host_) {
+    // If there is already a connection, close it and notify the webapp.
+    it2me_host_->Disconnect();
+    it2me_host_ = nullptr;
+    SendPolicyErrorAndExit();
+  } else if (pending_connect_) {
+    // If there is no connection, run the pending connection callback if there
+    // is one, but otherwise do nothing. The policy error will be sent when a
+    // connection is made; doing so beforehand would break assumptions made by
+    // the Chrome app.
+    base::ResetAndReturn(&pending_connect_).Run();
   }
 }
 
