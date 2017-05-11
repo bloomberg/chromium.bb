@@ -12,7 +12,6 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/scoped_vector.h"
 #include "media/base/sinc_resampler.h"
 
 namespace media {
@@ -69,7 +68,7 @@ class MEDIA_EXPORT MultiChannelResampler {
   ReadCB read_cb_;
 
   // Each channel has its own high quality resampler.
-  ScopedVector<SincResampler> resamplers_;
+  std::vector<std::unique_ptr<SincResampler>> resamplers_;
 
   // Buffers for audio data going into SincResampler from ReadCB.
   std::unique_ptr<AudioBus> resampler_audio_bus_;
