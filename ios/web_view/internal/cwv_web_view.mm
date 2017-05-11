@@ -74,9 +74,15 @@ NSString* const kSessionStorageKey = @"sessionStorage";
 
 // Redefine the property as readwrite.
 @property(nonatomic, copy) CWVWebViewConfiguration* configuration;
-// Redefine the property as readwrite to define -setEstimatedProgress:, which
-// can be used to send KVO notification.
+// Redefine these properties as readwrite to define setters, which send KVO
+// notifications.
 @property(nonatomic, readwrite) double estimatedProgress;
+@property(nonatomic, readwrite) BOOL canGoBack;
+@property(nonatomic, readwrite) BOOL canGoForward;
+
+// Updates the availability of the back/forward navigation properties exposed
+// through |canGoBack| and |canGoForward|.
+- (void)updateNavigationAvailability;
 
 @end
 
@@ -84,6 +90,8 @@ static NSString* gUserAgentProduct = nil;
 
 @implementation CWVWebView
 
+@synthesize canGoBack = _canGoBack;
+@synthesize canGoForward = _canGoForward;
 @synthesize configuration = _configuration;
 @synthesize estimatedProgress = _estimatedProgress;
 @synthesize navigationDelegate = _navigationDelegate;
@@ -123,14 +131,6 @@ static NSString* gUserAgentProduct = nil;
     [self resetWebStateWithSessionStorage:nil];
   }
   return self;
-}
-
-- (BOOL)canGoBack {
-  return _webState && _webState->GetNavigationManager()->CanGoBack();
-}
-
-- (BOOL)canGoForward {
-  return _webState && _webState->GetNavigationManager()->CanGoForward();
 }
 
 - (BOOL)isLoading {
@@ -198,6 +198,7 @@ static NSString* gUserAgentProduct = nil;
 
 - (void)webState:(web::WebState*)webState
     didStartProvisionalNavigationForURL:(const GURL&)URL {
+  [self updateNavigationAvailability];
   SEL selector = @selector(webViewDidStartProvisionalNavigation:);
   if ([_navigationDelegate respondsToSelector:selector]) {
     [_navigationDelegate webViewDidStartProvisionalNavigation:self];
@@ -210,6 +211,11 @@ static NSString* gUserAgentProduct = nil;
           respondsToSelector:@selector(webViewDidCommitNavigation:)]) {
     [_navigationDelegate webViewDidCommitNavigation:self];
   }
+}
+
+- (void)webState:(web::WebState*)webState
+    didFinishNavigation:(web::NavigationContext*)navigation {
+  [self updateNavigationAvailability];
 }
 
 - (void)webState:(web::WebState*)webState didLoadPageWithSuccess:(BOOL)success {
@@ -368,6 +374,12 @@ static NSString* gUserAgentProduct = nil;
   subview.autoresizingMask =
       UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
   [self addSubview:subview];
+}
+
+- (void)updateNavigationAvailability {
+  self.canGoBack = _webState && _webState->GetNavigationManager()->CanGoBack();
+  self.canGoForward =
+      _webState && _webState->GetNavigationManager()->CanGoForward();
 }
 
 @end

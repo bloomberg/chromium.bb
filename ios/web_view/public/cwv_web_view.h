@@ -35,7 +35,7 @@ CWV_EXPORT
 // This web view's UI delegate
 @property(nonatomic, weak) id<CWVUIDelegate> UIDelegate;
 
-// Whether or not this web view can go backwards or forwards.
+// Whether or not this web view can go backwards or forwards. KVO Compliant.
 @property(nonatomic, readonly) BOOL canGoBack;
 @property(nonatomic, readonly) BOOL canGoForward;
 
