@@ -32,19 +32,24 @@ class MockWPTGitHub(object):
     def create_pr(self, remote_branch_name, desc_title, body):
         self.calls.append('create_pr')
 
-        assert remote_branch_name
-        assert desc_title
-        assert body
-
         if self.create_pr_fail_index != self.create_pr_index:
             self.pull_requests_created.append((remote_branch_name, desc_title, body))
 
         self.create_pr_index += 1
 
-        return {}
+        return {'number': 5678}
+
+    def update_pr(self, pr_number, desc_title, body):  # pylint: disable=unused-argument
+        self.calls.append('update_pr')
+
+        return {'number': 5678}
 
     def delete_remote_branch(self, _):
         self.calls.append('delete_remote_branch')
+
+    def add_label(self, _):
+        self.calls.append('add_label')
+        return {}, 200
 
     def get_pr_branch(self, number):
         self.calls.append('get_pr_branch')
@@ -61,3 +66,9 @@ class MockWPTGitHub(object):
         for pr in self.pull_requests:
             if change_id in pr.body:
                 return pr
+
+    def extract_metadata(self, tag, commit_body):
+        for line in commit_body.splitlines():
+            if line.startswith(tag):
+                return line[len(tag):]
+        return None

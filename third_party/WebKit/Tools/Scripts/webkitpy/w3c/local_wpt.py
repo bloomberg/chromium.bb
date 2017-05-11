@@ -8,7 +8,7 @@ import logging
 
 from webkitpy.common.system.executive import ScriptError
 from webkitpy.w3c.chromium_commit import ChromiumCommit
-from webkitpy.w3c.common import WPT_GH_REPO_URL_TEMPLATE, CHROMIUM_WPT_DIR
+from webkitpy.w3c.common import WPT_GH_SSH_URL_TEMPLATE, CHROMIUM_WPT_DIR
 
 
 _log = logging.getLogger(__name__)
@@ -36,7 +36,7 @@ class LocalWPT(object):
             self.run(['git', 'checkout', 'origin/master'])
         else:
             _log.info('Cloning GitHub w3c/web-platform-tests into %s', self.path)
-            remote_url = WPT_GH_REPO_URL_TEMPLATE.format(self.gh_token)
+            remote_url = WPT_GH_SSH_URL_TEMPLATE.format(self.gh_token)
             self.host.executive.run_command(['git', 'clone', remote_url, self.path])
 
     def run(self, command, **kwargs):
@@ -62,7 +62,7 @@ class LocalWPT(object):
         self.run(['git', 'clean', '-fdx'])
         self.run(['git', 'checkout', 'origin/master'])
 
-    def create_branch_with_patch(self, branch_name, message, patch, author):
+    def create_branch_with_patch(self, branch_name, message, patch, author, force_push=False):
         """Commits the given patch and pushes to the upstream repo.
 
         Args:
@@ -70,8 +70,19 @@ class LocalWPT(object):
             message: Commit message string.
             patch: A patch that can be applied by git apply.
             author: The git commit author.
+            force_push: Applies the -f flag in `git push`.
         """
         self.clean()
+
+        try:
+            # This won't be exercised in production because wpt-exporter
+            # always runs on a clean machine. But it's useful when running
+            # locally since branches stick around.
+            _log.info('Deleting old branch %s', branch_name)
+            self.run(['git', 'branch', '-D', branch_name])
+        except ScriptError:
+            # Ignore errors if branch not found.
+            pass
 
         _log.info('Creating local branch %s', branch_name)
         self.run(['git', 'checkout', '-b', branch_name])
@@ -84,7 +95,13 @@ class LocalWPT(object):
         self.run(['git', 'apply', '-'], input=patch)
         self.run(['git', 'add', '.'])
         self.run(['git', 'commit', '--author', author, '-am', message])
-        self.run(['git', 'push', 'origin', branch_name])
+
+        # Force push is necessary when updating a PR with a new patch
+        # from Gerrit.
+        if force_push:
+            self.run(['git', 'push', '-f', 'origin', branch_name])
+        else:
+            self.run(['git', 'push', 'origin', branch_name])
 
     def test_patch(self, patch, chromium_commit=None):
         """Returns the expected output of a patch against origin/master.

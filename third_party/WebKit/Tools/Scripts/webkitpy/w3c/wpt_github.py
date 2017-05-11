@@ -8,6 +8,7 @@ import logging
 import urllib2
 
 from collections import namedtuple
+from webkitpy.w3c.common import WPT_GH_ORG, WPT_GH_REPO_NAME
 from webkitpy.common.memoized import memoized
 
 
@@ -63,7 +64,7 @@ class WPTGitHub(object):
         assert desc_title
         assert body
 
-        path = '/repos/w3c/web-platform-tests/pulls'
+        path = '/repos/%s/%s/pulls' % (WPT_GH_ORG, WPT_GH_REPO_NAME)
         body = {
             'title': desc_title,
             'body': body,
@@ -77,13 +78,45 @@ class WPTGitHub(object):
 
         return data
 
+    def update_pr(self, pr_number, desc_title, body):
+        """Updates a PR on GitHub.
+
+        API doc: https://developer.github.com/v3/pulls/#update-a-pull-request
+
+        Returns:
+            A raw response object if successful, None if not.
+        """
+        path = '/repos/{}/{}/pulls/{}'.format(
+            WPT_GH_ORG,
+            WPT_GH_REPO_NAME,
+            pr_number
+        )
+        body = {
+            'title': desc_title,
+            'body': body,
+        }
+        data, status_code = self.request(path, method='PATCH', body=body)
+
+        if status_code != 201:
+            return None
+
+        return data
+
     def add_label(self, number):
-        path = '/repos/w3c/web-platform-tests/issues/%d/labels' % number
+        path = '/repos/%s/%s/issues/%d/labels' % (
+            WPT_GH_ORG,
+            WPT_GH_REPO_NAME,
+            number
+        )
         body = [EXPORT_LABEL]
         return self.request(path, method='POST', body=body)
 
     def in_flight_pull_requests(self):
-        path = '/search/issues?q=repo:w3c/web-platform-tests%20is:open%20type:pr%20label:{}'.format(EXPORT_LABEL)
+        path = '/search/issues?q=repo:{}/{}%20is:open%20type:pr%20label:{}'.format(
+            WPT_GH_ORG,
+            WPT_GH_REPO_NAME,
+            EXPORT_LABEL
+        )
         data, status_code = self.request(path, method='GET')
         if status_code == 200:
             return [self.make_pr_from_item(item) for item in data['items']]
@@ -101,10 +134,17 @@ class WPTGitHub(object):
     def all_pull_requests(self):
         # TODO(jeffcarp): Add pagination to fetch >99 PRs
         assert self._pr_history_window <= 100, 'Maximum GitHub page size exceeded.'
-        path = ('/search/issues'
-                '?q=repo:w3c/web-platform-tests%20type:pr%20label:{}'
-                '&page=1'
-                '&per_page={}').format(EXPORT_LABEL, self._pr_history_window)
+        path = (
+            '/search/issues'
+            '?q=repo:{}/{}%20type:pr%20label:{}'
+            '&page=1'
+            '&per_page={}'
+        ).format(
+            WPT_GH_ORG,
+            WPT_GH_REPO_NAME,
+            EXPORT_LABEL,
+            self._pr_history_window
+        )
         data, status_code = self.request(path, method='GET')
         if status_code == 200:
             return [self.make_pr_from_item(item) for item in data['items']]
@@ -112,7 +152,11 @@ class WPTGitHub(object):
             raise Exception('Non-200 status code (%s): %s' % (status_code, data))
 
     def get_pr_branch(self, pr_number):
-        path = '/repos/w3c/web-platform-tests/pulls/{}'.format(pr_number)
+        path = '/repos/{}/{}/pulls/{}'.format(
+            WPT_GH_ORG,
+            WPT_GH_REPO_NAME,
+            pr_number
+        )
         data, status_code = self.request(path, method='GET')
         if status_code == 200:
             return data['head']['ref']
@@ -120,7 +164,11 @@ class WPTGitHub(object):
             raise Exception('Non-200 status code (%s): %s' % (status_code, data))
 
     def merge_pull_request(self, pull_request_number):
-        path = '/repos/w3c/web-platform-tests/pulls/%d/merge' % pull_request_number
+        path = '/repos/%s/%s/pulls/%d/merge' % (
+            WPT_GH_ORG,
+            WPT_GH_REPO_NAME,
+            pull_request_number
+        )
         body = {
             # This currently will noop because the feature is in an opt-in beta.
             # Once it leaves beta this will start working.
@@ -142,7 +190,11 @@ class WPTGitHub(object):
 
     def delete_remote_branch(self, remote_branch_name):
         # TODO(jeffcarp): Unit test this method
-        path = '/repos/w3c/web-platform-tests/git/refs/heads/%s' % remote_branch_name
+        path = '/repos/%s/%s/git/refs/heads/%s' % (
+            WPT_GH_ORG,
+            WPT_GH_REPO_NAME,
+            remote_branch_name
+        )
         data, status_code = self.request(path, method='DELETE')
 
         if status_code != 204:
@@ -153,19 +205,19 @@ class WPTGitHub(object):
 
     def pr_with_change_id(self, target_change_id):
         for pull_request in self.all_pull_requests():
-            change_id = self._extract_metadata('Change-Id: ', pull_request.body)
+            change_id = self.extract_metadata('Change-Id: ', pull_request.body)
             if change_id == target_change_id:
                 return pull_request
         return None
 
     def pr_with_position(self, position):
         for pull_request in self.all_pull_requests():
-            pr_commit_position = self._extract_metadata('Cr-Commit-Position: ', pull_request.body)
+            pr_commit_position = self.extract_metadata('Cr-Commit-Position: ', pull_request.body)
             if position == pr_commit_position:
                 return pull_request
         return None
 
-    def _extract_metadata(self, tag, commit_body):
+    def extract_metadata(self, tag, commit_body):
         for line in commit_body.splitlines():
             if line.startswith(tag):
                 return line[len(tag):]
