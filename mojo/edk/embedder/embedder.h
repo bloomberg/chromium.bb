@@ -139,23 +139,6 @@ MOJO_SYSTEM_IMPL_EXPORT void SetMachPortProvider(
 #endif
 
 // Legacy IPC Helpers ----------------------------------------------------------
-//
-// Functions in this section are used to help connect processes together via the
-// legacy transport protocol. All functions in this section should be considered
-// DEPRECATED.
-
-// Should be called as early as possible in a child process with a handle to the
-// other end of a pipe provided in the parent to
-// OutgoingBrokerClientInvitation::Send.
-//
-// DEPRECATED. Use IncomingBrokerClientInvitation instead.
-MOJO_SYSTEM_IMPL_EXPORT void SetParentPipeHandle(ScopedPlatformHandle pipe);
-
-// Same as above but extracts the pipe handle from the command line. See
-// PlatformChannelPair for details.
-//
-// DEPRECATED. Use IncomingBrokerClientInvitation instead.
-MOJO_SYSTEM_IMPL_EXPORT void SetParentPipeHandleFromCommandLine();
 
 // Called to connect to a peer process. This should be called only if there
 // is no common ancestor for the processes involved within this mojo system.
@@ -175,14 +158,6 @@ ConnectToPeerProcess(ScopedPlatformHandle pipe, const std::string& peer_token);
 // Closes a connection to a peer process created by ConnectToPeerProcess()
 // where the same |peer_token| was used.
 MOJO_SYSTEM_IMPL_EXPORT void ClosePeerConnection(const std::string& peer_token);
-
-// Creates a message pipe from a token in a child process. This token must have
-// been acquired by a corresponding call to
-// OutgoingBrokerClientInvitation::AttachMessagePipe.
-//
-// DEPRECATED. Use IncomingBrokerClientInvitation instead.
-MOJO_SYSTEM_IMPL_EXPORT ScopedMessagePipeHandle
-CreateChildMessagePipe(const std::string& token);
 
 }  // namespace edk
 }  // namespace mojo

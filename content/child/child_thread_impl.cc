@@ -60,6 +60,7 @@
 #include "ipc/ipc_sync_channel.h"
 #include "ipc/ipc_sync_message_filter.h"
 #include "mojo/edk/embedder/embedder.h"
+#include "mojo/edk/embedder/incoming_broker_client_invitation.h"
 #include "mojo/edk/embedder/named_platform_channel_pair.h"
 #include "mojo/edk/embedder/platform_channel_pair.h"
 #include "mojo/edk/embedder/scoped_ipc_support.h"
@@ -233,7 +234,8 @@ base::LazyInstance<QuitClosure>::DestructorAtExit g_quit_closure =
     LAZY_INSTANCE_INITIALIZER;
 #endif
 
-void InitializeMojoIPCChannel() {
+std::unique_ptr<mojo::edk::IncomingBrokerClientInvitation>
+InitializeMojoIPCChannel() {
   mojo::edk::ScopedPlatformHandle platform_channel;
 #if defined(OS_WIN)
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
@@ -255,8 +257,11 @@ void InitializeMojoIPCChannel() {
   // Mojo isn't supported on all child process types.
   // TODO(crbug.com/604282): Support Mojo in the remaining processes.
   if (!platform_channel.is_valid())
-    return;
-  mojo::edk::SetParentPipeHandle(std::move(platform_channel));
+    return nullptr;
+
+  return mojo::edk::IncomingBrokerClientInvitation::Accept(
+      mojo::edk::ConnectionParams(mojo::edk::TransportProtocol::kLegacy,
+                                  std::move(platform_channel)));
 }
 
 class ChannelBootstrapFilter : public ConnectionFilter {
@@ -382,7 +387,8 @@ scoped_refptr<base::SingleThreadTaskRunner> ChildThreadImpl::GetIOTaskRunner() {
   return ChildProcess::current()->io_task_runner();
 }
 
-void ChildThreadImpl::ConnectChannel() {
+void ChildThreadImpl::ConnectChannel(
+    mojo::edk::IncomingBrokerClientInvitation* invitation) {
   std::string channel_token;
   mojo::ScopedMessagePipeHandle handle;
   if (!IsInBrowserProcess()) {
@@ -394,7 +400,7 @@ void ChildThreadImpl::ConnectChannel() {
     // TODO(rockot): Remove all paths which lead to this branch. The Channel
     // connection should always be established by a service manager connection
     // from the browser. http://crbug.com/623396.
-    handle = mojo::edk::CreateChildMessagePipe(channel_token);
+    handle = invitation->ExtractMessagePipe(channel_token);
   } else {
     DCHECK(service_manager_connection_);
     IPC::mojom::ChannelBootstrapPtr bootstrap;
@@ -429,18 +435,19 @@ void ChildThreadImpl::Init(const Options& options) {
     IPC::Logging::GetInstance()->SetIPCSender(this);
 #endif
 
+  std::unique_ptr<mojo::edk::IncomingBrokerClientInvitation> invitation;
   mojo::ScopedMessagePipeHandle service_request_pipe;
   if (!IsInBrowserProcess()) {
     mojo_ipc_support_.reset(new mojo::edk::ScopedIPCSupport(
         GetIOTaskRunner(), mojo::edk::ScopedIPCSupport::ShutdownPolicy::FAST));
-    InitializeMojoIPCChannel();
+    invitation = InitializeMojoIPCChannel();
 
     std::string service_request_token =
         base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
             switches::kServiceRequestChannelToken);
-    if (!service_request_token.empty()) {
+    if (!service_request_token.empty() && invitation) {
       service_request_pipe =
-          mojo::edk::CreateChildMessagePipe(service_request_token);
+          invitation->ExtractMessagePipe(service_request_token);
     }
   } else {
     service_request_pipe =
@@ -520,7 +527,7 @@ void ChildThreadImpl::Init(const Options& options) {
     channel_->AddFilter(startup_filter);
   }
 
-  ConnectChannel();
+  ConnectChannel(invitation.get());
 
   // This must always be done after ConnectChannel, because ConnectChannel() may
   // add a ConnectionFilter to the connection.

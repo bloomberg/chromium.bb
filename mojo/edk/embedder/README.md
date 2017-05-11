@@ -147,8 +147,8 @@ int main(int argc, char** argv) {
 }
 ```
 
-The launched process code uses `SetParentPipeHandle` to get connected, and might
-look something like:
+The launched process code uses `IncomingBrokerClientInvitation` to get
+connected, and might look something like:
 
 ```
 #include "base/threading/thread.h"
@@ -170,7 +170,7 @@ int main(int argc, char** argv) {
       ipc_thread.task_runner(),
       mojo::edk::ScopedIPCSupport::ShutdownPolicy::CLEAN);
 
-  mojo::edk::SetParentPipeHandle(GetChannelHandle());
+  mojo::edk::IncomingBrokerClientInvitation::Accept(GetChannelHandle());
 
   return 0;
 }
@@ -187,7 +187,7 @@ any message pipes spanning the process boundary. Fortunately, this is made
 trivial by the EDK: `OutgoingBrokerClientInvitation` has an
 `AttachMessagePipe` method which synthesizes a new solitary message pipe
 endpoint for your immediate use, and attaches the other end to the invitation
-such that it can later be extracted by name by the invitee with an
+such that it can later be extracted by name by the invitee from the
 `IncomingBrokerClientInvitation`.
 
 We can modify our existing sample code as follows:
@@ -289,11 +289,11 @@ int main(int argc, char** argv) {
       ipc_thread.task_runner(),
       mojo::edk::ScopedIPCSupport::ShutdownPolicy::CLEAN);
 
-  mojo::edk::IncomingBrokerClientInvitation invitation;
-  invitation.Accept(mojo::edk::ConnectionParams(GetChannelHandle()));
+  auto invitation = mojo::edk::IncomingBrokerClientInvitation::Accept(
+      mojo::edk::ConnectionParams(GetChannelHandle()));
 
   mojo::ScopedMessagePipeHandle my_pipe =
-      invitation.ExtractMessagePipe("pretty_cool_pipe");
+      invitation->ExtractMessagePipe("pretty_cool_pipe");
 
   local::mojom::FooRequest foo_request;
   foo_request.Bind(std::move(my_pipe));

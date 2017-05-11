@@ -15,6 +15,7 @@
 #include "base/run_loop.h"
 #include "build/build_config.h"
 #include "mojo/edk/embedder/embedder.h"
+#include "mojo/edk/embedder/incoming_broker_client_invitation.h"
 #include "mojo/edk/embedder/named_platform_channel_pair.h"
 #include "mojo/edk/embedder/platform_channel_pair.h"
 #include "mojo/edk/embedder/scoped_ipc_support.h"
@@ -66,10 +67,12 @@ int DesktopProcessMain() {
   if (!parent_pipe.is_valid()) {
     return kInvalidCommandLineExitCode;
   }
-  mojo::edk::SetParentPipeHandle(std::move(parent_pipe));
-  mojo::ScopedMessagePipeHandle message_pipe =
-      mojo::edk::CreateChildMessagePipe(
-          command_line->GetSwitchValueASCII(kMojoPipeToken));
+
+  auto invitation = mojo::edk::IncomingBrokerClientInvitation::Accept(
+      mojo::edk::ConnectionParams(mojo::edk::TransportProtocol::kLegacy,
+                                  std::move(parent_pipe)));
+  mojo::ScopedMessagePipeHandle message_pipe = invitation->ExtractMessagePipe(
+      command_line->GetSwitchValueASCII(kMojoPipeToken));
   DesktopProcess desktop_process(ui_task_runner, input_task_runner,
                                  io_task_runner, std::move(message_pipe));
 
