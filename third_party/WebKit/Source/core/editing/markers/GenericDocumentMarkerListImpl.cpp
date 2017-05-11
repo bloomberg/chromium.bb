@@ -17,8 +17,7 @@ void GenericDocumentMarkerListImpl::Add(DocumentMarker* marker) {
   switch (marker->GetType()) {
     case DocumentMarker::kSpelling:
     case DocumentMarker::kGrammar:
-      DocumentMarkerListEditor::AddMarkerAndMergeOverlapping(&markers_, marker);
-      return;
+      NOTREACHED();
     case DocumentMarker::kTextMatch:
       DocumentMarkerListEditor::AddMarkerWithoutMergingOverlapping(&markers_,
                                                                    marker);
