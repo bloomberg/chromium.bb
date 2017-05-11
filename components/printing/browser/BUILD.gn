@@ -10,10 +10,13 @@ static_library("browser") {
     "print_manager_utils.h",
   ]
 
+  public_deps = [
+    "//content/public/browser",
+  ]
+
   deps = [
     "//base",
     "//components/printing/common",
-    "//content/public/browser",
     "//printing",
   ]
 }
