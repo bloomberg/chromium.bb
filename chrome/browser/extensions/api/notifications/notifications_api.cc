@@ -91,11 +91,11 @@ std::string CreateScopedIdentifier(const std::string& extension_id,
 // Removes the unique internal identifier to send the ID as the
 // extension expects it.
 std::string StripScopeFromIdentifier(const std::string& extension_id,
-                                     const std::string& id) {
+                                     const std::string& scoped_id) {
   size_t index_of_separator = extension_id.length() + 1;
-  DCHECK_LT(index_of_separator, id.length());
+  DCHECK_LT(index_of_separator, scoped_id.length());
 
-  return id.substr(index_of_separator);
+  return scoped_id.substr(index_of_separator);
 }
 
 const gfx::ImageSkia CreateSolidColorImage(int width,
@@ -215,7 +215,6 @@ class NotificationsApiDelegate : public NotificationDelegate {
         display_helper_(
             ExtensionNotificationDisplayHelperFactory::GetForProfile(profile)),
         extension_id_(extension_id),
-        id_(id),
         scoped_id_(CreateScopedIdentifier(extension_id, id)) {
     DCHECK(api_function_);
     DCHECK(display_helper_);
@@ -316,7 +315,7 @@ class NotificationsApiDelegate : public NotificationDelegate {
 
   std::unique_ptr<base::ListValue> CreateBaseEventArgs() {
     std::unique_ptr<base::ListValue> args(new base::ListValue());
-    args->AppendString(id_);
+    args->AppendString(StripScopeFromIdentifier(extension_id_, scoped_id_));
     return args;
   }
 
@@ -329,7 +328,6 @@ class NotificationsApiDelegate : public NotificationDelegate {
   ExtensionNotificationDisplayHelper* display_helper_;
 
   const std::string extension_id_;
-  const std::string id_;
   const std::string scoped_id_;
 
   std::unique_ptr<KeyedServiceShutdownNotifier::Subscription>
