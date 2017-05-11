@@ -12,7 +12,7 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/macros.h"
-#include "base/memory/scoped_vector.h"
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "media/base/audio_decoder_config.h"
@@ -77,13 +77,13 @@ class TextRendererTest : public testing::Test {
                     const std::string& language,
                     bool expect_read) {
     const size_t idx = text_track_streams_.size();
-    text_track_streams_.push_back(new FakeTextTrackStream);
+    text_track_streams_.push_back(base::MakeUnique<FakeTextTrackStream>());
 
     if (expect_read)
       ExpectRead(idx);
 
     const TextTrackConfig config(kind, name, language, std::string());
-    text_renderer_->AddTextStream(text_track_streams_.back(), config);
+    text_renderer_->AddTextStream(text_track_streams_.back().get(), config);
     base::RunLoop().RunUntilIdle();
 
     EXPECT_EQ(text_tracks_.size(), text_track_streams_.size());
@@ -107,7 +107,7 @@ class TextRendererTest : public testing::Test {
   }
 
   void RemoveTextTrack(unsigned idx) {
-    FakeTextTrackStream* const stream = text_track_streams_[idx];
+    FakeTextTrackStream* const stream = text_track_streams_[idx].get();
     text_renderer_->RemoveTextStream(stream);
     EXPECT_FALSE(text_tracks_[idx]);
   }
@@ -124,7 +124,7 @@ class TextRendererTest : public testing::Test {
   }
 
   void AbortPendingRead(unsigned idx) {
-    FakeTextTrackStream* const stream = text_track_streams_[idx];
+    FakeTextTrackStream* const stream = text_track_streams_[idx].get();
     stream->AbortPendingRead();
     base::RunLoop().RunUntilIdle();
   }
@@ -136,7 +136,7 @@ class TextRendererTest : public testing::Test {
   }
 
   void SendEosNotification(unsigned idx) {
-    FakeTextTrackStream* const stream = text_track_streams_[idx];
+    FakeTextTrackStream* const stream = text_track_streams_[idx].get();
     stream->SendEosNotification();
     base::RunLoop().RunUntilIdle();
   }
@@ -148,7 +148,7 @@ class TextRendererTest : public testing::Test {
   }
 
   void SendCue(unsigned idx, bool expect_cue) {
-    FakeTextTrackStream* const text_stream = text_track_streams_[idx];
+    FakeTextTrackStream* const text_stream = text_track_streams_[idx].get();
 
     const base::TimeDelta start;
     const base::TimeDelta duration = base::TimeDelta::FromSeconds(42);
@@ -196,7 +196,7 @@ class TextRendererTest : public testing::Test {
   }
 
   void ExpectRead(size_t idx) {
-    FakeTextTrackStream* const stream = text_track_streams_[idx];
+    FakeTextTrackStream* const stream = text_track_streams_[idx].get();
     EXPECT_CALL(*stream, OnRead());
   }
 
@@ -206,7 +206,7 @@ class TextRendererTest : public testing::Test {
 
   base::MessageLoop message_loop_;
 
-  typedef ScopedVector<FakeTextTrackStream> TextTrackStreams;
+  typedef std::vector<std::unique_ptr<FakeTextTrackStream>> TextTrackStreams;
   TextTrackStreams text_track_streams_;
 
   typedef std::vector<FakeTextTrack*> TextTracks;

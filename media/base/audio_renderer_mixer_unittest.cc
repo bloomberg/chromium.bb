@@ -15,7 +15,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/macros.h"
-#include "base/memory/scoped_vector.h"
+#include "base/memory/ptr_util.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/platform_thread.h"
 #include "media/base/audio_renderer_mixer_input.h"
@@ -122,11 +122,11 @@ class AudioRendererMixerTest
            static_cast<double>(output_parameters_.frames_per_buffer()));
 
       for (int j = 0; j < inputs_per_sample_rate; ++j, ++input) {
-        fake_callbacks_.push_back(new FakeAudioRenderCallback(
+        fake_callbacks_.push_back(base::MakeUnique<FakeAudioRenderCallback>(
             step, output_parameters_.sample_rate()));
         mixer_inputs_.push_back(CreateMixerInput());
         mixer_inputs_[input]->Initialize(input_parameters_[i],
-                                         fake_callbacks_[input]);
+                                         fake_callbacks_[input].get());
         mixer_inputs_[input]->SetVolume(1.0f);
       }
     }
@@ -353,7 +353,7 @@ class AudioRendererMixerTest
   std::unique_ptr<AudioBus> audio_bus_;
   std::unique_ptr<AudioBus> expected_audio_bus_;
   std::vector< scoped_refptr<AudioRendererMixerInput> > mixer_inputs_;
-  ScopedVector<FakeAudioRenderCallback> fake_callbacks_;
+  std::vector<std::unique_ptr<FakeAudioRenderCallback>> fake_callbacks_;
   std::unique_ptr<FakeAudioRenderCallback> expected_callback_;
   double epsilon_;
   bool half_fill_;

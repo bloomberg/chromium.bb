@@ -6,7 +6,6 @@
 #define MEDIA_BASE_AUDIO_BLOCK_FIFO_H_
 
 #include "base/macros.h"
-#include "base/memory/scoped_vector.h"
 #include "media/base/audio_bus.h"
 #include "media/base/media_export.h"
 
@@ -59,7 +58,7 @@ class MEDIA_EXPORT AudioBlockFifo {
   void PushInternal(const void* source, int frames, int bytes_per_sample);
 
   // The actual FIFO is a vector of audio buses.
-  ScopedVector<AudioBus> audio_blocks_;
+  std::vector<std::unique_ptr<AudioBus>> audio_blocks_;
 
   // Number of channels in AudioBus.
   const int channels_;
