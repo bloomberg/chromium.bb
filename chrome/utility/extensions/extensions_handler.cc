@@ -61,31 +61,31 @@ class MediaParserImpl : public extensions::mojom::MediaParser {
       int64_t total_size,
       bool get_attached_images,
       extensions::mojom::MediaDataSourcePtr media_data_source,
-      const ParseMediaMetadataCallback& callback) override {
+      ParseMediaMetadataCallback callback) override {
     auto source = base::MakeUnique<metadata::IPCDataSource>(
         std::move(media_data_source), total_size);
     metadata::MediaMetadataParser* parser = new metadata::MediaMetadataParser(
         std::move(source), mime_type, get_attached_images);
-    parser->Start(base::Bind(&MediaParserImpl::ParseMediaMetadataDone, callback,
-                             base::Owned(parser)));
+    parser->Start(base::Bind(&MediaParserImpl::ParseMediaMetadataDone,
+                             base::Passed(&callback), base::Owned(parser)));
   }
 
   static void ParseMediaMetadataDone(
-      const ParseMediaMetadataCallback& callback,
+      ParseMediaMetadataCallback callback,
       metadata::MediaMetadataParser* /* parser */,
       const extensions::api::media_galleries::MediaMetadata& metadata,
       const std::vector<metadata::AttachedImage>& attached_images) {
-    callback.Run(true, metadata.ToValue(), attached_images);
+    std::move(callback).Run(true, metadata.ToValue(), attached_images);
   }
 
   void CheckMediaFile(base::TimeDelta decode_time,
                       base::File file,
-                      const CheckMediaFileCallback& callback) override {
+                      CheckMediaFileCallback callback) override {
 #if !defined(MEDIA_DISABLE_FFMPEG)
     media::MediaFileChecker checker(std::move(file));
-    callback.Run(checker.Start(decode_time));
+    std::move(callback).Run(checker.Start(decode_time));
 #else
-    callback.Run(false);
+    std::move(callback).Run(false);
 #endif
   }
 
@@ -140,9 +140,10 @@ class WiFiCredentialsGetterImpl
  private:
   // extensions::mojom::WiFiCredentialsGetter:
   void GetWiFiCredentials(const std::string& ssid,
-                          const GetWiFiCredentialsCallback& callback) override {
+                          GetWiFiCredentialsCallback callback) override {
     if (ssid == kWiFiTestNetwork) {
-      callback.Run(true, ssid);  // test-mode: return the ssid in key_data.
+      // test-mode: return the ssid in key_data.
+      std::move(callback).Run(true, ssid);
       return;
     }
 
@@ -158,7 +159,7 @@ class WiFiCredentialsGetterImpl
     if (!success)
       key_data.clear();
 
-    callback.Run(success, key_data);
+    std::move(callback).Run(success, key_data);
   }
 
   DISALLOW_COPY_AND_ASSIGN(WiFiCredentialsGetterImpl);
