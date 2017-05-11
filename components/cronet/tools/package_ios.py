@@ -90,8 +90,8 @@ def package_ios_framework_using_gn(out_dir='out/Framework', extra_options=''):
   # Package all builds in the output directory
   os.makedirs(out_dir)
   build_dir = ''
-  for (build_config, gn_extra_args) in [('Debug', 'is_debug=true'),
-        ('Release', 'is_debug=false enable_stripping=true')]:
+  for (build_config, gn_extra_args) in [('Debug', 'is_debug=true use_xcode_clang=true'),
+        ('Release', 'is_debug=false enable_stripping=true is_official_build=true')]:
     for (target_device, target_cpu, additional_cpu) in [('os', 'arm', 'arm64'),
         ('simulator', 'x86', 'x64')]:
       target_dir = '%s-iphone%s' % (build_config, target_device)
