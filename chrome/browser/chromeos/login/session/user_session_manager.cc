@@ -1516,7 +1516,12 @@ void UserSessionManager::OnRestoreActiveSessions(
 
 void UserSessionManager::RestorePendingUserSessions() {
   if (pending_user_sessions_.empty()) {
-    user_manager::UserManager::Get()->SwitchToLastActiveUser();
+    // '>1' ignores "restart on signin" because of browser flags difference.
+    // In this case, last_session_active_account_id_ can carry account_id
+    // from the previous browser session.
+    if (user_manager::UserManager::Get()->GetLoggedInUsers().size() > 1)
+      user_manager::UserManager::Get()->SwitchToLastActiveUser();
+
     NotifyPendingUserSessionsRestoreFinished();
     return;
   }
