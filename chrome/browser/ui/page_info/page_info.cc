@@ -92,8 +92,8 @@ enum SSLCertificateDecisionsDidRevoke {
 };
 
 // The list of content settings types to display on the Page Info UI. THE
-// ORDER OF THESE ITEMS IS IMPORTANT. To propose changing it, email
-// security-dev@chromium.org.
+// ORDER OF THESE ITEMS IS IMPORTANT and comes from https://crbug.com/610358. To
+// propose changing it, email security-dev@chromium.org.
 ContentSettingsType kPermissionType[] = {
     CONTENT_SETTINGS_TYPE_GEOLOCATION,
     CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA,
@@ -105,16 +105,18 @@ ContentSettingsType kPermissionType[] = {
     CONTENT_SETTINGS_TYPE_IMAGES,
 #endif
     CONTENT_SETTINGS_TYPE_POPUPS,
+    CONTENT_SETTINGS_TYPE_SUBRESOURCE_FILTER,
     CONTENT_SETTINGS_TYPE_BACKGROUND_SYNC,
     CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS,
     CONTENT_SETTINGS_TYPE_AUTOPLAY,
     CONTENT_SETTINGS_TYPE_MIDI_SYSEX,
-    CONTENT_SETTINGS_TYPE_SUBRESOURCE_FILTER,
 };
 
 // Determines whether to show permission |type| in the Page Info UI. Only
 // applies to permissions listed in |kPermissionType|.
-bool ShouldShowPermission(ContentSettingsType type) {
+bool ShouldShowPermission(ContentSettingsType type,
+                          const GURL& site_url,
+                          HostContentSettingsMap* content_settings) {
 #if !defined(OS_ANDROID)
   // Autoplay is Android-only at the moment.
   if (type == CONTENT_SETTINGS_TYPE_AUTOPLAY)
@@ -122,8 +124,16 @@ bool ShouldShowPermission(ContentSettingsType type) {
 #endif
 
   if (type == CONTENT_SETTINGS_TYPE_SUBRESOURCE_FILTER) {
-    return base::FeatureList::IsEnabled(
-        subresource_filter::kSafeBrowsingSubresourceFilterExperimentalUI);
+    if (!base::FeatureList::IsEnabled(
+            subresource_filter::kSafeBrowsingSubresourceFilterExperimentalUI)) {
+      return false;
+    }
+
+    // The setting for subresource filtering should not show up if the site is
+    // not activated, both on android and desktop platforms.
+    return content_settings->GetWebsiteSetting(
+               site_url, GURL(), CONTENT_SETTINGS_TYPE_SUBRESOURCE_FILTER_DATA,
+               std::string(), nullptr) != nullptr;
   }
 
   return true;
@@ -665,8 +675,10 @@ void PageInfo::PresentSitePermissions() {
   for (size_t i = 0; i < arraysize(kPermissionType); ++i) {
     permission_info.type = kPermissionType[i];
 
-    if (!ShouldShowPermission(permission_info.type))
+    if (!ShouldShowPermission(permission_info.type, site_url_,
+                              content_settings_)) {
       continue;
+    }
 
     content_settings::SettingInfo info;
     std::unique_ptr<base::Value> value = content_settings_->GetWebsiteSetting(
