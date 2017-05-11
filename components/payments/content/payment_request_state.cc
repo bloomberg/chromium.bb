@@ -88,6 +88,10 @@ bool PaymentRequestState::AreRequestedMethodsSupported() const {
   return !spec_->supported_card_networks().empty();
 }
 
+std::string PaymentRequestState::GetAuthenticatedEmail() const {
+  return payment_request_delegate_->GetAuthenticatedEmail();
+}
+
 void PaymentRequestState::AddObserver(Observer* observer) {
   CHECK(observer);
   observers_.AddObserver(observer);

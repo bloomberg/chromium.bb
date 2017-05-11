@@ -77,4 +77,12 @@ void TestPaymentRequestDelegate::CompleteFullCardRequest() {
       full_card_request_card_, base::ASCIIToUTF16("123"));
 }
 
+std::string TestPaymentRequestDelegate::GetAuthenticatedEmail() const {
+  return "";
+}
+
+PrefService* TestPaymentRequestDelegate::GetPrefService() {
+  return nullptr;
+}
+
 }  // namespace payments

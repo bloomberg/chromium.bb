@@ -12,10 +12,13 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/payments/ssl_validity_checker.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/region_combobox_model.h"
 #include "components/payments/content/payment_request_dialog.h"
+#include "components/payments/core/payment_prefs.h"
+#include "components/signin/core/browser/signin_manager.h"
 #include "content/public/browser/web_contents.h"
 #include "third_party/libaddressinput/chromium/chrome_metadata_source.h"
 #include "third_party/libaddressinput/chromium/chrome_storage_impl.h"
@@ -186,6 +189,25 @@ AddressNormalizer* ChromePaymentRequestDelegate::GetAddressNormalizer() {
 
 ukm::UkmService* ChromePaymentRequestDelegate::GetUkmService() {
   return g_browser_process->ukm_service();
+}
+
+std::string ChromePaymentRequestDelegate::GetAuthenticatedEmail() const {
+  // Check if the profile is authenticated.  Guest profiles or incognito
+  // windows may not have a sign in manager, and are considered not
+  // authenticated.
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents_->GetBrowserContext());
+  SigninManagerBase* signin_manager =
+      SigninManagerFactory::GetForProfile(profile);
+  if (signin_manager && signin_manager->IsAuthenticated())
+    return signin_manager->GetAuthenticatedAccountInfo().email;
+
+  return std::string();
+}
+
+PrefService* ChromePaymentRequestDelegate::GetPrefService() {
+  return Profile::FromBrowserContext(web_contents_->GetBrowserContext())
+      ->GetPrefs();
 }
 
 }  // namespace payments

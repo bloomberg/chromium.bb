@@ -13,6 +13,8 @@
 #include "components/payments/content/payment_details_validation.h"
 #include "components/payments/content/payment_request_web_contents_manager.h"
 #include "components/payments/core/can_make_payment_query.h"
+#include "components/payments/core/payment_prefs.h"
+#include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
@@ -165,6 +167,8 @@ void PaymentRequest::Complete(mojom::PaymentComplete result) {
   } else {
     journey_logger_.RecordJourneyStatsHistograms(
         JourneyLogger::COMPLETION_STATUS_COMPLETED);
+    delegate_->GetPrefService()->SetBoolean(kPaymentsFirstTransactionCompleted,
+                                            true);
     // When the renderer closes the connection,
     // PaymentRequest::OnConnectionTerminated will be called.
     client_->OnComplete();

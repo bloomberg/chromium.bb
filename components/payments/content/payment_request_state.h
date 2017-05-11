@@ -95,6 +95,9 @@ class PaymentRequestState : public PaymentResponseHelper::Delegate,
   // false for "https://bobpay.com".
   bool AreRequestedMethodsSupported() const;
 
+  // Returns authenticated user email, or empty string.
+  std::string GetAuthenticatedEmail() const;
+
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
 

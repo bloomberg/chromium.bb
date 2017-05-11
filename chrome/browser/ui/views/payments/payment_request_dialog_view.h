@@ -21,6 +21,8 @@ class AutofillProfile;
 class CreditCard;
 }  // namespace autofill
 
+class Profile;
+
 namespace payments {
 
 class PaymentRequest;
@@ -149,6 +151,8 @@ class PaymentRequestDialogView : public views::DialogDelegateView,
   // Shows a full dialog spinner with the "processing" label that doesn't offer
   // a way of closing the dialog.
   void ShowProcessingSpinner();
+
+  Profile* GetProfile();
 
   ViewStack* view_stack_for_testing() { return view_stack_.get(); }
 

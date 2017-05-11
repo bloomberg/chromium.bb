@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_PAYMENTS_CORE_TEST_PAYMENT_REQUEST_DELEGATE_H_
 #define COMPONENTS_PAYMENTS_CORE_TEST_PAYMENT_REQUEST_DELEGATE_H_
 
+#include <string>
+
 #include "components/payments/core/payment_request_delegate.h"
 #include "components/payments/core/test_address_normalizer.h"
 
@@ -32,6 +34,8 @@ class TestPaymentRequestDelegate : public PaymentRequestDelegate {
   AddressNormalizer* GetAddressNormalizer() override;
   autofill::RegionDataLoader* GetRegionDataLoader() override;
   ukm::UkmService* GetUkmService() override;
+  std::string GetAuthenticatedEmail() const override;
+  PrefService* GetPrefService() override;
 
   TestAddressNormalizer* test_address_normalizer();
   void DelayFullCardRequestCompletion();

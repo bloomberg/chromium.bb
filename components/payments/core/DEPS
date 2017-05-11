@@ -4,6 +4,7 @@ include_rules = [
   "+components/autofill/core",
   "+components/keyed_service/core",
   "+components/metrics",
+  "+components/pref_registry",
   "+components/strings",
   "+components/ukm",
   "+third_party/libaddressinput",
