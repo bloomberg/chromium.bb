@@ -499,8 +499,8 @@ void inspect(void *pbi, void *data) {
 #endif
 #if CONFIG_CFL
   if (layers & CFL_LAYER) {
-    buf += put_block_info(buf, NULL, "cfl_alpha_ind",
-                          offsetof(insp_mi_data, cfl_alpha_ind));
+    buf += put_block_info(buf, NULL, "cfl_alpha_idx",
+                          offsetof(insp_mi_data, cfl_alpha_idx));
     buf += put_block_info(buf, NULL, "cfl_alpha_sign_u",
                           offsetof(insp_mi_data, cfl_alpha_sign_u));
     buf += put_block_info(buf, NULL, "cfl_alpha_sign_v",

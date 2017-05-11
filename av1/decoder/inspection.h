@@ -50,7 +50,7 @@ struct insp_mi_data {
   int8_t cdef_strength;
 #endif
 #if CONFIG_CFL
-  int8_t cfl_alpha_ind;
+  int8_t cfl_alpha_idx;
   int8_t cfl_alpha_sign_u;
   int8_t cfl_alpha_sign_v;
 #endif

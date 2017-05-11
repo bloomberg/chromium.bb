@@ -1495,7 +1495,7 @@ void av1_encode_block_intra(int plane, int block, int blk_row, int blk_col,
 
         // if SKIP is chosen at the block level, and ind != 0, we must change
         // the prediction
-        if (mbmi->cfl_alpha_ind != 0) {
+        if (mbmi->cfl_alpha_idx != 0) {
           const struct macroblockd_plane *const pd_cb = &xd->plane[AOM_PLANE_U];
           uint8_t *const dst_cb = pd_cb->dst.buf;
           const int dst_stride_cb = pd_cb->dst.stride;
@@ -1509,7 +1509,7 @@ void av1_encode_block_intra(int plane, int block, int blk_row, int blk_col,
                   (uint8_t)(xd->cfl->dc_pred[CFL_PRED_V] + 0.5);
             }
           }
-          mbmi->cfl_alpha_ind = 0;
+          mbmi->cfl_alpha_idx = 0;
           mbmi->cfl_alpha_signs[CFL_PRED_U] = CFL_SIGN_POS;
           mbmi->cfl_alpha_signs[CFL_PRED_V] = CFL_SIGN_POS;
         }
@@ -1657,7 +1657,7 @@ void av1_predict_intra_block_encoder_facade(MACROBLOCK *x, int plane,
                        av1_cost_literal(sign_bit_cost);
       }
       cfl_dc_pred(xd, plane_bsize, tx_size);
-      mbmi->cfl_alpha_ind = cfl_compute_alpha_ind(
+      mbmi->cfl_alpha_idx = cfl_compute_alpha_ind(
           x, cfl, plane_bsize, cfl_costs, mbmi->cfl_alpha_signs);
     }
   }
