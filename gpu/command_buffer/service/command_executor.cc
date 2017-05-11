@@ -44,7 +44,6 @@ void CommandExecutor::PutChanged() {
   if (state.error != error::kNoError)
     return;
 
-  base::TimeTicks begin_time(base::TimeTicks::Now());
   error::Error error = error::kNoError;
   if (decoder_)
     decoder_->BeginDecoding();
@@ -85,7 +84,6 @@ void CommandExecutor::PutChanged() {
       command_buffer_->SetParseError(error::kLostContext);
     }
     decoder_->EndDecoding();
-    decoder_->AddProcessingCommandsTime(base::TimeTicks::Now() - begin_time);
   }
 }
 

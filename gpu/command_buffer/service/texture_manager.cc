@@ -401,7 +401,6 @@ class ScopedResetPixelUnpackBuffer{
 DecoderTextureState::DecoderTextureState(
     const GpuDriverBugWorkarounds& workarounds)
     : tex_image_failed(false),
-      texture_upload_count(0),
       texsubimage_faster_than_teximage(
           workarounds.texsubimage_faster_than_teximage),
       force_cube_map_positive_x_allocation(
@@ -2929,7 +2928,6 @@ void TextureManager::ValidateAndDoTexSubImage(
 
   if (full_image && !texture_state->texsubimage_faster_than_teximage &&
       !texture->IsImmutable() && !texture->HasImages()) {
-    ScopedTextureUploadTimer timer(texture_state);
     GLenum internal_format;
     GLenum tex_type;
     texture->GetLevelType(args.target, args.level, &tex_type, &internal_format);
@@ -2951,7 +2949,6 @@ void TextureManager::ValidateAndDoTexSubImage(
           args.pixels);
     }
   } else {
-    ScopedTextureUploadTimer timer(texture_state);
     if (args.command_type == DoTexSubImageArguments::kTexSubImage3D) {
       glTexSubImage3D(args.target, args.level, args.xoffset, args.yoffset,
                       args.zoffset, args.width, args.height, args.depth,
@@ -2973,7 +2970,6 @@ void TextureManager::DoTexSubImageWithAlignmentWorkaround(
   DCHECK(state->bound_pixel_unpack_buffer.get());
   DCHECK(args.width > 0 && args.height > 0 && args.depth > 0);
 
-  ScopedTextureUploadTimer timer(texture_state);
   uint32_t offset = ToGLuint(args.pixels);
   if (args.command_type == DoTexSubImageArguments::kTexSubImage2D) {
     PixelStoreParams params = state->GetUnpackParams(ContextState::k2D);
@@ -3249,7 +3245,6 @@ void TextureManager::DoTexImage(
   if (texture_state->texsubimage_faster_than_teximage &&
       level_is_same && args.pixels && !unpack_buffer_bound) {
     {
-      ScopedTextureUploadTimer timer(texture_state);
       if (args.command_type == DoTexImageArguments::kTexImage3D) {
         glTexSubImage3D(args.target, args.level, 0, 0, 0, args.width,
                         args.height, args.depth,
@@ -3270,7 +3265,6 @@ void TextureManager::DoTexImage(
 
   ERRORSTATE_COPY_REAL_GL_ERRORS_TO_WRAPPER(error_state, function_name);
   {
-    ScopedTextureUploadTimer timer(texture_state);
     if (args.command_type == DoTexImageArguments::kTexImage3D) {
       glTexImage3D(
           args.target, args.level,
@@ -3329,18 +3323,6 @@ bool TextureManager::CombineAdjacentRects(const gfx::Rect& rect1,
 
   // Return false if it's not possible to combine |rect1| and |rect2|.
   return false;
-}
-
-ScopedTextureUploadTimer::ScopedTextureUploadTimer(
-    DecoderTextureState* texture_state)
-    : texture_state_(texture_state),
-      begin_time_(base::TimeTicks::Now()) {
-}
-
-ScopedTextureUploadTimer::~ScopedTextureUploadTimer() {
-  texture_state_->texture_upload_count++;
-  texture_state_->total_texture_upload_time +=
-      base::TimeTicks::Now() - begin_time_;
 }
 
 bool TextureManager::OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,

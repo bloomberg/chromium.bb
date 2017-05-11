@@ -548,20 +548,6 @@ void GLES2DecoderPassthroughImpl::SetShaderCacheCallback(
 
 void GLES2DecoderPassthroughImpl::WaitForReadPixels(base::Closure callback) {}
 
-uint32_t GLES2DecoderPassthroughImpl::GetTextureUploadCount() {
-  return 0;
-}
-
-base::TimeDelta GLES2DecoderPassthroughImpl::GetTotalTextureUploadTime() {
-  return base::TimeDelta();
-}
-
-base::TimeDelta GLES2DecoderPassthroughImpl::GetTotalProcessingCommandsTime() {
-  return base::TimeDelta();
-}
-
-void GLES2DecoderPassthroughImpl::AddProcessingCommandsTime(base::TimeDelta) {}
-
 bool GLES2DecoderPassthroughImpl::WasContextLost() const {
   return false;
 }

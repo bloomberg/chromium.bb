@@ -230,14 +230,6 @@ class GLES2DecoderPassthroughImpl : public GLES2Decoder {
 
   void WaitForReadPixels(base::Closure callback) override;
 
-  uint32_t GetTextureUploadCount() override;
-
-  base::TimeDelta GetTotalTextureUploadTime() override;
-
-  base::TimeDelta GetTotalProcessingCommandsTime() override;
-
-  void AddProcessingCommandsTime(base::TimeDelta) override;
-
   // Returns true if the context was lost either by GL_ARB_robustness, forced
   // context loss or command buffer parse error.
   bool WasContextLost() const override;
