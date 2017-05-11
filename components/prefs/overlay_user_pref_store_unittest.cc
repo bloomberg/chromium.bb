@@ -24,10 +24,6 @@ const char kSharedKey[] = "sync_promo.show_on_first_run_allowed";
 const char* const overlay_key = kBrowserWindowPlacement;
 const char* const regular_key = kShowBookmarkBar;
 const char* const shared_key = kSharedKey;
-// With the removal of the kWebKitGlobalXXX prefs, we'll no longer have real
-// prefs using the overlay pref store, so make up keys here.
-const char mapped_overlay_key[] = "test.per_tab.javascript_enabled";
-const char mapped_underlay_key[] = "test.per_profile.javascript_enabled";
 
 }  // namespace
 
@@ -38,7 +34,6 @@ class OverlayUserPrefStoreTest : public testing::Test {
         overlay_(new OverlayUserPrefStore(underlay_.get())) {
     overlay_->RegisterOverlayPref(overlay_key);
     overlay_->RegisterOverlayPref(shared_key);
-    overlay_->RegisterOverlayPref(mapped_overlay_key, mapped_underlay_key);
   }
 
   ~OverlayUserPrefStoreTest() override {}
@@ -211,80 +206,6 @@ TEST_F(OverlayUserPrefStoreTest, GlobalPref) {
   EXPECT_TRUE(obs.changed_keys.empty());
 }
 
-// Check that names mapping works correctly.
-TEST_F(OverlayUserPrefStoreTest, NamesMapping) {
-  PrefStoreObserverMock obs;
-  overlay_->AddObserver(&obs);
-
-  const Value* value = NULL;
-
-  // Check that if there is no override in the overlay, changing underlay value
-  // is reported as changing an overlay value.
-  underlay_->SetValue(mapped_underlay_key, base::WrapUnique(new Value(42)),
-                      WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
-  obs.VerifyAndResetChangedKey(mapped_overlay_key);
-
-  // Check that underlay overwriting is reported.
-  underlay_->SetValue(mapped_underlay_key, base::WrapUnique(new Value(43)),
-                      WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
-  obs.VerifyAndResetChangedKey(mapped_overlay_key);
-
-  // Check that we get this value from the overlay with both keys
-  EXPECT_TRUE(overlay_->GetValue(mapped_overlay_key, &value));
-  EXPECT_TRUE(base::Value(43).Equals(value));
-  // In this case, overlay reads directly from the underlay.
-  EXPECT_TRUE(overlay_->GetValue(mapped_underlay_key, &value));
-  EXPECT_TRUE(base::Value(43).Equals(value));
-
-  // Check that overwriting change in overlay is reported.
-  overlay_->SetValue(mapped_overlay_key, base::WrapUnique(new Value(44)),
-                     WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
-  obs.VerifyAndResetChangedKey(mapped_overlay_key);
-
-  // Check that we get an overriden value from overlay, while reading the
-  // value from underlay still holds an old value.
-  EXPECT_TRUE(overlay_->GetValue(mapped_overlay_key, &value));
-  EXPECT_TRUE(base::Value(44).Equals(value));
-  EXPECT_TRUE(overlay_->GetValue(mapped_underlay_key, &value));
-  EXPECT_TRUE(base::Value(43).Equals(value));
-  EXPECT_TRUE(underlay_->GetValue(mapped_underlay_key, &value));
-  EXPECT_TRUE(base::Value(43).Equals(value));
-
-  // Check that hidden underlay change is not reported.
-  underlay_->SetValue(mapped_underlay_key, base::WrapUnique(new Value(45)),
-                      WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
-  EXPECT_TRUE(obs.changed_keys.empty());
-
-  // Check that overlay remove is reported.
-  overlay_->RemoveValue(mapped_overlay_key,
-                        WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
-  obs.VerifyAndResetChangedKey(mapped_overlay_key);
-
-  // Check that underlay remove is reported.
-  underlay_->RemoveValue(mapped_underlay_key,
-                         WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
-  obs.VerifyAndResetChangedKey(mapped_overlay_key);
-
-  // Check that value was removed.
-  EXPECT_FALSE(overlay_->GetValue(mapped_overlay_key, &value));
-  EXPECT_FALSE(overlay_->GetValue(mapped_underlay_key, &value));
-
-  // Check respecting of silence.
-  overlay_->SetValueSilently(mapped_overlay_key,
-                             base::WrapUnique(new Value(46)),
-                             WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
-  EXPECT_TRUE(obs.changed_keys.empty());
-
-  overlay_->RemoveObserver(&obs);
-
-  // Check successful unsubscription.
-  underlay_->SetValue(mapped_underlay_key, base::WrapUnique(new Value(47)),
-                      WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
-  overlay_->SetValue(mapped_overlay_key, base::WrapUnique(new Value(48)),
-                     WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
-  EXPECT_TRUE(obs.changed_keys.empty());
-}
-
 // Check that mutable values are removed correctly.
 TEST_F(OverlayUserPrefStoreTest, ClearMutableValues) {
   // Set in overlay and underlay the same preference.
@@ -315,10 +236,6 @@ TEST_F(OverlayUserPrefStoreTest, GetValues) {
                       WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
   overlay_->SetValue(shared_key, base::WrapUnique(new Value(43)),
                      WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
-  underlay_->SetValue(mapped_underlay_key, base::WrapUnique(new Value(42)),
-                      WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
-  overlay_->SetValue(mapped_overlay_key, base::WrapUnique(new Value(43)),
-                     WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
 
   auto values = overlay_->GetValues();
   const Value* value = nullptr;
@@ -333,11 +250,6 @@ TEST_F(OverlayUserPrefStoreTest, GetValues) {
   // Check that the overlay is preferred.
   ASSERT_TRUE(values->Get(shared_key, &value));
   EXPECT_TRUE(base::Value(43).Equals(value));
-
-  // Check that mapping works.
-  ASSERT_TRUE(values->Get(mapped_overlay_key, &value));
-  EXPECT_TRUE(base::Value(43).Equals(value));
-  EXPECT_FALSE(values->Get(mapped_underlay_key, &value));
 }
 
 }  // namespace base
