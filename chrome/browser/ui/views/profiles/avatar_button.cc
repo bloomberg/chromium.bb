@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/views/profiles/new_avatar_button.h"
+#include "chrome/browser/ui/views/profiles/avatar_button.h"
 
 #include <utility>
 
