@@ -130,7 +130,7 @@ class SpellcheckService : public KeyedService,
   // SpellcheckCustomDictionary::Observer implementation.
   void OnCustomDictionaryLoaded() override;
   void OnCustomDictionaryChanged(
-      const SpellcheckCustomDictionary::Change& dictionary_change) override;
+      const SpellcheckCustomDictionary::Change& change) override;
 
   // SpellcheckHunspellDictionary::Observer implementation.
   void OnHunspellDictionaryInitialized(const std::string& language) override;

@@ -1,0 +1,28 @@
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+module spellcheck.mojom;
+
+import "mojo/common/file.mojom";
+
+// Render process interface exposed to the browser for receiving process-
+// wide spellcheck control and updates from the browser process.
+//
+interface SpellChecker {
+  // Initialize the render process spellchecker. Called after startup and
+  // also in response to a render process RequestDictionary request.
+  Initialize(array<SpellCheckBDictLanguage> dictionaries,
+             array<string> custom_words,
+             bool enable);
+
+  // Custom dictionary words have been added or removed: update the local
+  // custom word list.
+  CustomDictionaryChanged(array<string> words_added,
+                          array<string> words_removed);
+};
+
+struct SpellCheckBDictLanguage {
+  mojo.common.mojom.File? file;
+  string language;
+};

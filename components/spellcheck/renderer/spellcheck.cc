@@ -20,16 +20,18 @@
 #include "build/build_config.h"
 #include "components/spellcheck/common/spellcheck_common.h"
 #include "components/spellcheck/common/spellcheck_features.h"
-#include "components/spellcheck/common/spellcheck_messages.h"
 #include "components/spellcheck/common/spellcheck_result.h"
 #include "components/spellcheck/common/spellcheck_switches.h"
 #include "components/spellcheck/renderer/spellcheck_language.h"
 #include "components/spellcheck/renderer/spellcheck_provider.h"
 #include "components/spellcheck/spellcheck_build_features.h"
+#include "content/public/common/service_manager_connection.h"
+#include "content/public/common/simple_connection_filter.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_frame_visitor.h"
 #include "content/public/renderer/render_thread.h"
-#include "ipc/ipc_platform_file.h"
+#include "services/service_manager/public/cpp/bind_source_info.h"
+#include "services/service_manager/public/cpp/binder_registry.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebVector.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
@@ -149,7 +151,22 @@ class SpellCheck::SpellcheckRequest {
 // and as such the SpellCheckProviders will never be notified of different
 // values.
 // TODO(groby): Simplify this.
-SpellCheck::SpellCheck() : spellcheck_enabled_(true) {}
+SpellCheck::SpellCheck() : spellcheck_enabled_(true) {
+  if (!content::ChildThread::Get())
+    return;  // Can be NULL in tests.
+
+  auto* service_manager_connection =
+      content::ChildThread::Get()->GetServiceManagerConnection();
+  DCHECK(service_manager_connection);
+
+  auto registry = base::MakeUnique<service_manager::BinderRegistry>();
+  registry->AddInterface(
+      base::Bind(&SpellCheck::SpellCheckerRequest, base::Unretained(this)),
+      base::ThreadTaskRunnerHandle::Get());
+
+  service_manager_connection->AddConnectionFilter(
+      base::MakeUnique<content::SimpleConnectionFilter>(std::move(registry)));
+}
 
 SpellCheck::~SpellCheck() {
 }
@@ -183,49 +200,44 @@ void SpellCheck::FillSuggestions(
   }
 }
 
-bool SpellCheck::OnControlMessageReceived(const IPC::Message& message) {
-  bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(SpellCheck, message)
-    IPC_MESSAGE_HANDLER(SpellCheckMsg_Init, OnInit)
-    IPC_MESSAGE_HANDLER(SpellCheckMsg_CustomDictionaryChanged,
-                        OnCustomDictionaryChanged)
-    IPC_MESSAGE_HANDLER(SpellCheckMsg_EnableSpellCheck, OnEnableSpellCheck)
-    IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP()
-
-  return handled;
+void SpellCheck::SpellCheckerRequest(
+    const service_manager::BindSourceInfo& source_info,
+    spellcheck::mojom::SpellCheckerRequest request) {
+  spellchecker_bindings_.AddBinding(this, std::move(request));
 }
 
-void SpellCheck::OnInit(
-    const std::vector<SpellCheckBDictLanguage>& bdict_languages,
-    const std::set<std::string>& custom_words) {
+void SpellCheck::Initialize(
+    std::vector<spellcheck::mojom::SpellCheckBDictLanguagePtr> dictionaries,
+    const std::vector<std::string>& custom_words,
+    bool enable) {
   languages_.clear();
-  for (const auto& bdict_language : bdict_languages) {
-    AddSpellcheckLanguage(
-        IPC::PlatformFileForTransitToFile(bdict_language.file),
-        bdict_language.language);
-  }
 
-  custom_dictionary_.Init(custom_words);
+  for (const auto& dictionary : dictionaries)
+    AddSpellcheckLanguage(std::move(dictionary->file), dictionary->language);
+
+  custom_dictionary_.Init(
+      std::set<std::string>(custom_words.begin(), custom_words.end()));
 #if !BUILDFLAG(USE_BROWSER_SPELLCHECKER)
   PostDelayedSpellCheckTask(pending_request_param_.release());
 #endif
-}
 
-void SpellCheck::OnCustomDictionaryChanged(
-    const std::set<std::string>& words_added,
-    const std::set<std::string>& words_removed) {
-  custom_dictionary_.OnCustomDictionaryChanged(words_added, words_removed);
-  if (words_added.empty())
-    return;
-  DocumentMarkersRemover markersRemover(words_added);
-  content::RenderFrame::ForEach(&markersRemover);
-}
-
-void SpellCheck::OnEnableSpellCheck(bool enable) {
   spellcheck_enabled_ = enable;
   UpdateSpellcheckEnabled updater(enable);
   content::RenderFrame::ForEach(&updater);
+}
+
+void SpellCheck::CustomDictionaryChanged(
+    const std::vector<std::string>& words_added,
+    const std::vector<std::string>& words_removed) {
+  const std::set<std::string> added(words_added.begin(), words_added.end());
+
+  custom_dictionary_.OnCustomDictionaryChanged(
+      added, std::set<std::string>(words_removed.begin(), words_removed.end()));
+  if (added.empty())
+    return;
+
+  DocumentMarkersRemover markersRemover(added);
+  content::RenderFrame::ForEach(&markersRemover);
 }
 
 // TODO(groby): Make sure we always have a spelling engine, even before
