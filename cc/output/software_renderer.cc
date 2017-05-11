@@ -99,19 +99,10 @@ bool SoftwareRenderer::FlippedFramebuffer() const {
 
 void SoftwareRenderer::EnsureScissorTestEnabled() {
   is_scissor_enabled_ = true;
-  SetClipRect(scissor_rect_);
 }
 
 void SoftwareRenderer::EnsureScissorTestDisabled() {
-  // There is no explicit notion of enabling/disabling scissoring in software
-  // rendering, but the underlying effect we want is to clear any existing
-  // clipRect on the current SkCanvas. This is done by setting clipRect to
-  // the viewport's dimensions.
-  if (!current_canvas_)
-    return;
   is_scissor_enabled_ = false;
-  SkISize size = current_canvas_->getBaseLayerSize();
-  SetClipRect(gfx::Rect(size.width(), size.height()));
 }
 
 void SoftwareRenderer::BindFramebufferToOutputSurface() {
@@ -140,7 +131,6 @@ bool SoftwareRenderer::BindFramebufferToTexture(
 void SoftwareRenderer::SetScissorTestRect(const gfx::Rect& scissor_rect) {
   is_scissor_enabled_ = true;
   scissor_rect_ = scissor_rect;
-  SetClipRect(scissor_rect);
 }
 
 void SoftwareRenderer::SetClipRect(const gfx::Rect& rect) {
@@ -149,9 +139,13 @@ void SoftwareRenderer::SetClipRect(const gfx::Rect& rect) {
   // Skia applies the current matrix to clip rects so we reset it temporary.
   SkMatrix current_matrix = current_canvas_->getTotalMatrix();
   current_canvas_->resetMatrix();
-  // TODO(fmalita) stop using kReplace (see crbug.com/673851)
-  current_canvas_->clipRect(gfx::RectToSkRect(rect),
-                            SkClipOp::kReplace_deprecated);
+  // SetClipRect is assumed to be applied temporarily, on an
+  // otherwise-unclipped canvas.
+  DCHECK_EQ(current_canvas_->getDeviceClipBounds().width(),
+            current_canvas_->imageInfo().width());
+  DCHECK_EQ(current_canvas_->getDeviceClipBounds().height(),
+            current_canvas_->imageInfo().height());
+  current_canvas_->clipRect(gfx::RectToSkRect(rect));
   current_canvas_->setMatrix(current_matrix);
 }
 
@@ -208,11 +202,14 @@ void SoftwareRenderer::DoDrawQuad(const DrawQuad* quad,
                                   const gfx::QuadF* draw_region) {
   if (!current_canvas_)
     return;
-  if (draw_region) {
-    current_canvas_->save();
-  }
 
   TRACE_EVENT0("cc", "SoftwareRenderer::DoDrawQuad");
+  bool do_save = draw_region || is_scissor_enabled_;
+  SkAutoCanvasRestore canvas_restore(current_canvas_, do_save);
+  if (is_scissor_enabled_) {
+    SetClipRect(scissor_rect_);
+  }
+
   gfx::Transform quad_rect_matrix;
   QuadRectTransform(&quad_rect_matrix,
                     quad->shared_quad_state->quad_to_target_transform,
@@ -298,9 +295,6 @@ void SoftwareRenderer::DoDrawQuad(const DrawQuad* quad,
   }
 
   current_canvas_->resetMatrix();
-  if (draw_region) {
-    current_canvas_->restore();
-  }
 }
 
 void SoftwareRenderer::DrawDebugBorderQuad(const DebugBorderDrawQuad* quad) {
