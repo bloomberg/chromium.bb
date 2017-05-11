@@ -117,6 +117,7 @@ target(modules_target_type, "modules") {
     "//third_party/WebKit/Source/modules/encoding",
     "//third_party/WebKit/Source/modules/encryptedmedia",
     "//third_party/WebKit/Source/modules/eventsource",
+    "//third_party/WebKit/Source/modules/exported",
     "//third_party/WebKit/Source/modules/fetch",
     "//third_party/WebKit/Source/modules/filesystem",
     "//third_party/WebKit/Source/modules/gamepad",

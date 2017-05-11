@@ -132,9 +132,10 @@ v8::Local<v8::Value> WebDOMFileSystem::CreateV8Entry(
   DCHECK(creation_context->CreationContext() == isolate->GetCurrentContext());
   if (!private_.Get())
     return v8::Local<v8::Value>();
-  if (entry_type == kEntryTypeDirectory)
+  if (entry_type == kEntryTypeDirectory) {
     return ToV8(DirectoryEntry::Create(private_.Get(), path),
                 isolate->GetCurrentContext()->Global(), isolate);
+  }
   DCHECK_EQ(entry_type, kEntryTypeFile);
   return ToV8(FileEntry::Create(private_.Get(), path),
               isolate->GetCurrentContext()->Global(), isolate);

@@ -28,28 +28,49 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebFileChooserCompletionImpl_h
-#define WebFileChooserCompletionImpl_h
+#include "core/exported/WebFileChooserCompletionImpl.h"
 
-#include "platform/FileChooser.h"
-#include "platform/wtf/PassRefPtr.h"
-#include "public/platform/WebString.h"
-#include "public/platform/WebVector.h"
-#include "public/web/WebFileChooserCompletion.h"
+#include "platform/FileMetadata.h"
+#include "platform/wtf/DateMath.h"
 
 namespace blink {
 
-class WebFileChooserCompletionImpl final : public WebFileChooserCompletion {
- public:
-  explicit WebFileChooserCompletionImpl(PassRefPtr<FileChooser>);
-  ~WebFileChooserCompletionImpl() override;
-  void DidChooseFile(const WebVector<WebString>& file_names) override;
-  void DidChooseFile(const WebVector<SelectedFileInfo>& files) override;
+WebFileChooserCompletionImpl::WebFileChooserCompletionImpl(
+    PassRefPtr<FileChooser> chooser)
+    : file_chooser_(std::move(chooser)) {}
 
- private:
-  RefPtr<FileChooser> file_chooser_;
-};
+WebFileChooserCompletionImpl::~WebFileChooserCompletionImpl() {}
+
+void WebFileChooserCompletionImpl::DidChooseFile(
+    const WebVector<WebString>& file_names) {
+  Vector<FileChooserFileInfo> file_info;
+  for (size_t i = 0; i < file_names.size(); ++i)
+    file_info.push_back(FileChooserFileInfo(file_names[i]));
+  file_chooser_->ChooseFiles(file_info);
+  // This object is no longer needed.
+  delete this;
+}
+
+void WebFileChooserCompletionImpl::DidChooseFile(
+    const WebVector<SelectedFileInfo>& files) {
+  Vector<FileChooserFileInfo> file_info;
+  for (size_t i = 0; i < files.size(); ++i) {
+    if (files[i].file_system_url.IsEmpty()) {
+      file_info.push_back(
+          FileChooserFileInfo(files[i].path, files[i].display_name));
+    } else {
+      FileMetadata metadata;
+      metadata.modification_time = files[i].modification_time * kMsPerSecond;
+      metadata.length = files[i].length;
+      metadata.type = files[i].is_directory ? FileMetadata::kTypeDirectory
+                                            : FileMetadata::kTypeFile;
+      file_info.push_back(
+          FileChooserFileInfo(files[i].file_system_url, metadata));
+    }
+  }
+  file_chooser_->ChooseFiles(file_info);
+  // This object is no longer needed.
+  delete this;
+}
 
 }  // namespace blink
-
-#endif
