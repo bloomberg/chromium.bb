@@ -25,7 +25,6 @@ ios_app_bundle("showcase") {
 
 group("features") {
   deps = [
-    "//ios/chrome/search_widget_extension:search_widget",
     "//ios/clean/chrome/browser/ui/tools:tools_ui",
     "//ios/showcase/content_suggestions",
     "//ios/showcase/ntp",
@@ -36,6 +35,7 @@ group("features") {
     "//ios/showcase/tab_grid",
     "//ios/showcase/toolbar",
     "//ios/showcase/uikit_table_view_cell",
+    "//ios/showcase/widget",
   ]
 }
 

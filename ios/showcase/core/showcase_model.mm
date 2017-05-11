@@ -83,7 +83,7 @@
     },
     @{
       showcase::kClassForDisplayKey : @"SearchWidgetViewController",
-      showcase::kClassForInstantiationKey : @"SearchWidgetViewController",
+      showcase::kClassForInstantiationKey : @"SCSearchWidgetCoordinator",
       showcase::kUseCaseKey : @"Search Widget",
     },
   ];
