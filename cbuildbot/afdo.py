@@ -50,7 +50,7 @@ CHROME_EBUILD_AFDO_REPL = r'\g<bef>%s\g<aft>'
 # away, it is considered valid.
 
 # How old can the AFDO data be? (in days).
-AFDO_ALLOWED_STALE_DAYS = 14
+AFDO_ALLOWED_STALE_DAYS = 21
 
 # How old can the AFDO data be? (in difference of builds).
 AFDO_ALLOWED_STALE_BUILDS = 7
