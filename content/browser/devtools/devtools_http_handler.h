@@ -98,6 +98,8 @@ class DevToolsHttpHandler {
   void AcceptWebSocket(int connection_id,
                        const net::HttpServerRequestInfo& request);
 
+  void DecompressAndSendJsonProtocol(int connection_id);
+
   // Returns the front end url without the host at the beginning.
   std::string GetFrontendURLInternal(const std::string& target_id,
                                      const std::string& host);

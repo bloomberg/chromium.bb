@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import("//tools/grit/grit_rule.gni")
+import("//third_party/brotli/brotli.gni")
 import("//third_party/inspector_protocol/inspector_protocol.gni")
 
 group("resources") {
@@ -11,6 +12,17 @@ group("resources") {
       ":devtools_resources",
     ]
   }
+}
+
+compressed_protocol_file =
+    "$root_gen_dir/blink/core/inspector/protocol.json.bro"
+
+compress_file_brotli("compressed_protocol_json") {
+  input_file = "$root_gen_dir/blink/core/inspector/protocol.json"
+  output_file = compressed_protocol_file
+  deps = [
+    "//third_party/WebKit/Source/core/inspector:protocol_version",
+  ]
 }
 
 grit("devtools_resources") {
@@ -24,10 +36,18 @@ grit("devtools_resources") {
     "grit/devtools_resources_map.h",
   ]
 
+  grit_flags = [
+    "-E",
+    "compressed_protocol_file=" +
+        rebase_path(compressed_protocol_file, root_build_dir),
+  ]
+
   defines =
       [ "SHARED_INTERMEDIATE_DIR=" + rebase_path(root_gen_dir, root_build_dir) ]
 
   deps = [
+    ":compressed_protocol_json",
+
     # This is the action that generates out .grd input file.
     "//third_party/WebKit/public:blink_generate_devtools_grd",
   ]
