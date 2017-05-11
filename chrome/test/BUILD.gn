@@ -1459,7 +1459,6 @@ test("browser_tests") {
       "../browser/net/spdyproxy/chrome_data_use_group_browsertest.cc",
       "../browser/net/websocket_browsertest.cc",
       "../browser/ntp_snippets/content_suggestions_service_factory_browsertest.cc",
-      "../browser/page_load_metrics/observers/ads_page_load_metrics_observer_browsertest.cc",
       "../browser/page_load_metrics/observers/https_engagement_metrics/https_engagement_page_load_metrics_observer_browsertest.cc",
       "../browser/page_load_metrics/observers/page_load_metrics_observer_test_harness.cc",
       "../browser/page_load_metrics/observers/page_load_metrics_observer_test_harness.h",
