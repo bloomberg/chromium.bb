@@ -51,8 +51,7 @@ struct insp_mi_data {
 #endif
 #if CONFIG_CFL
   int8_t cfl_alpha_idx;
-  int8_t cfl_alpha_sign_u;
-  int8_t cfl_alpha_sign_v;
+  int8_t cfl_alpha_sign;
 #endif
 };
 

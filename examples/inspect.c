@@ -501,10 +501,8 @@ void inspect(void *pbi, void *data) {
   if (layers & CFL_LAYER) {
     buf += put_block_info(buf, NULL, "cfl_alpha_idx",
                           offsetof(insp_mi_data, cfl_alpha_idx));
-    buf += put_block_info(buf, NULL, "cfl_alpha_sign_u",
-                          offsetof(insp_mi_data, cfl_alpha_sign_u));
-    buf += put_block_info(buf, NULL, "cfl_alpha_sign_v",
-                          offsetof(insp_mi_data, cfl_alpha_sign_v));
+    buf += put_block_info(buf, NULL, "cfl_alpha_sign",
+                          offsetof(insp_mi_data, cfl_alpha_sign));
   }
 #endif
   if (layers & MOTION_VECTORS_LAYER) {
