@@ -33,7 +33,6 @@
 #include "platform/loader/fetch/FetchContext.h"
 #include "platform/loader/fetch/FetchInitiatorInfo.h"
 #include "platform/loader/fetch/FetchParameters.h"
-#include "platform/loader/fetch/PreloadKey.h"
 #include "platform/loader/fetch/Resource.h"
 #include "platform/loader/fetch/ResourceError.h"
 #include "platform/loader/fetch/ResourceLoadPriority.h"
@@ -107,6 +106,7 @@ class PLATFORM_EXPORT ResourceFetcher
 
   int CountPreloads() const { return preloads_.size(); }
   void ClearPreloads(ClearPreloadsPolicy = kClearAllPreloads);
+  void PreloadStarted(Resource*);
   void LogPreloadStats(ClearPreloadsPolicy);
   void WarnUnusedPreloads();
 
@@ -145,10 +145,9 @@ class PLATFORM_EXPORT ResourceFetcher
   // Calling this method before main document resource is fetched is invalid.
   ResourceTimingInfo* GetNavigationTimingInfo();
 
-  // Returns whether the given resource is contained as a preloaded resource.
-  bool ContainsAsPreload(Resource*) const;
-
-  void RemovePreload(Resource*);
+  bool ContainsAsPreloadForTesting(Resource* resource) const {
+    return preloads_.Contains(resource);
+  }
 
   // Workaround for https://crbug.com/666214.
   // TODO(hiroshige): Remove this hack.
@@ -191,14 +190,6 @@ class PLATFORM_EXPORT ResourceFetcher
                                       const ResourceFactory&,
                                       ResourceRequestBlockedReason);
 
-  Resource* MatchPreload(const FetchParameters& params, Resource::Type);
-  void InsertAsPreloadIfNecessary(Resource*,
-                                  const FetchParameters& params,
-                                  Resource::Type);
-
-  bool IsReusableForPreloading(const FetchParameters&,
-                               Resource*,
-                               bool is_static_data) const;
   // RevalidationPolicy enum values are used in UMAs https://crbug.com/579496.
   enum RevalidationPolicy { kUse, kRevalidate, kReload, kLoad };
   RevalidationPolicy DetermineRevalidationPolicy(Resource::Type,
@@ -242,7 +233,7 @@ class PLATFORM_EXPORT ResourceFetcher
   HashSet<String> validated_urls_;
   mutable DocumentResourceMap document_resources_;
 
-  HeapHashMap<PreloadKey, Member<Resource>> preloads_;
+  HeapListHashSet<Member<Resource>> preloads_;
   Member<MHTMLArchive> archive_;
 
   TaskRunnerTimer<ResourceFetcher> resource_timing_report_timer_;

@@ -40,7 +40,6 @@ source_set("loader") {
     "fetch/IntegrityMetadata.h",
     "fetch/MemoryCache.cpp",
     "fetch/MemoryCache.h",
-    "fetch/PreloadKey.h",
     "fetch/RawResource.cpp",
     "fetch/RawResource.h",
     "fetch/Resource.cpp",

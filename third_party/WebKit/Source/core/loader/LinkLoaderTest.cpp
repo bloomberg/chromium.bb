@@ -127,7 +127,7 @@ TEST_P(LinkLoaderPreloadTest, Preload) {
     ASSERT_EQ(1, fetcher->CountPreloads());
     Resource* resource = loader->LinkPreloadedResourceForTesting();
     ASSERT_NE(resource, nullptr);
-    EXPECT_TRUE(fetcher->ContainsAsPreload(resource));
+    EXPECT_TRUE(fetcher->ContainsAsPreloadForTesting(resource));
     EXPECT_EQ(test_case.priority, resource->GetResourceRequest().Priority());
     EXPECT_EQ(test_case.context,
               resource->GetResourceRequest().GetRequestContext());
