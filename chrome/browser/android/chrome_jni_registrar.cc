@@ -184,6 +184,7 @@
 #include "components/gcm_driver/instance_id/android/component_jni_registrar.h"
 #include "components/invalidation/impl/android/component_jni_registrar.h"
 #include "components/offline_items_collection/core/android/offline_content_aggregator_bridge.h"
+#include "components/offline_pages/features/features.h"
 #include "components/payments/content/android/component_jni_registrar.h"
 #include "components/policy/core/browser/android/component_jni_registrar.h"
 #include "components/safe_browsing_db/android/jni_registrar.h"
@@ -210,7 +211,7 @@
 #include "third_party/gvr-android-sdk/native_callbacks_jni.h"
 #endif
 
-#if !defined(OFFICIAL_BUILD)
+#if BUILDFLAG(ENABLE_OFFLINE_PAGES_HARNESS)
 #include "chrome/browser/android/offline_pages/evaluation/offline_page_evaluation_bridge.h"
 #endif
 
@@ -356,7 +357,7 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
     {"OfflinePageBridge", offline_pages::android::RegisterOfflinePageBridge},
     {"OfflinePageDownloadBridge",
      offline_pages::android::OfflinePageDownloadBridge::Register},
-#if !defined(OFFICIAL_BUILD)
+#if BUILDFLAG(ENABLE_OFFLINE_PAGES_HARNESS)
     {"OfflinePageEvaluationBridge",
      offline_pages::android::OfflinePageEvaluationBridge::Register},
 #endif
