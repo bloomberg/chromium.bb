@@ -42,6 +42,10 @@ net::URLRequestJob* AppCacheJob::AsURLRequestJob() {
   return nullptr;
 }
 
+AppCacheURLLoaderJob* AppCacheJob::AsURLLoaderJob() {
+  return nullptr;
+}
+
 AppCacheJob::AppCacheJob() : weak_factory_(this) {}
 
 }  // namespace content

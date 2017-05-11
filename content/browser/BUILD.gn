@@ -323,6 +323,8 @@ source_set("browser") {
     "appcache/appcache_navigation_handle.h",
     "appcache/appcache_navigation_handle_core.cc",
     "appcache/appcache_navigation_handle_core.h",
+    "appcache/appcache_network_service_handler.cc",
+    "appcache/appcache_network_service_handler.h",
     "appcache/appcache_policy.h",
     "appcache/appcache_quota_client.cc",
     "appcache/appcache_quota_client.h",

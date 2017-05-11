@@ -9,6 +9,9 @@
 #include "base/lazy_instance.h"
 #include "base/memory/ptr_util.h"
 #include "base/trace_event/trace_event.h"
+#include "content/browser/appcache/appcache_navigation_handle.h"
+#include "content/browser/appcache/appcache_navigation_handle_core.h"
+#include "content/browser/appcache/appcache_request_handler.h"
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"
 #include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/frame_host/navigation_request_info.h"
@@ -38,21 +41,35 @@ namespace {
 static base::LazyInstance<mojom::URLLoaderFactoryPtr>::Leaky
     g_url_loader_factory = LAZY_INSTANCE_INITIALIZER;
 
-// This function is called on the IO thread for POST/PUT requests for
-// attaching blob information to the request body.
-void HandleRequestsWithBody(
-    std::unique_ptr<ResourceRequest> request,
-    ResourceContext* resource_context,
-    base::WeakPtr<NavigationURLLoaderNetworkService> url_loader) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  DCHECK(request->request_body.get());
+using CompleteNavigationStartCallback =
+    base::Callback<void(mojom::URLLoaderFactoryPtrInfo,
+                        std::unique_ptr<ResourceRequest>)>;
 
-  AttachRequestBodyBlobDataHandles(request->request_body.get(),
-                                    resource_context);
+void PrepareNavigationOnIOThread(
+    std::unique_ptr<ResourceRequest> resource_request,
+    ResourceContext* resource_context,
+    ResourceType resource_type,
+    AppCacheNavigationHandleCore* appcache_handle_core,
+    CompleteNavigationStartCallback complete_request) {
+  if (resource_request->request_body.get()) {
+    AttachRequestBodyBlobDataHandles(resource_request->request_body.get(),
+                                     resource_context);
+  }
+
+  mojom::URLLoaderFactoryPtrInfo url_loader_factory_ptr_info;
+
+  if (appcache_handle_core) {
+    AppCacheRequestHandler::InitializeForNavigationNetworkService(
+        std::move(resource_request), resource_context, appcache_handle_core,
+        resource_type, complete_request);
+    return;
+  }
+
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(&NavigationURLLoaderNetworkService::StartURLRequest,
-                  url_loader, base::Passed(&request)));
+      base::Bind(complete_request,
+                 base::Passed(std::move(url_loader_factory_ptr_info)),
+                 base::Passed(std::move(resource_request))));
 }
 
 }  // namespace
@@ -105,19 +122,24 @@ NavigationURLLoaderNetworkService::NavigationURLLoaderNetworkService(
   new_request->load_flags = load_flags;
 
   new_request->request_body = request_info_->common_params.post_data.get();
-  if (new_request->request_body.get()) {
-    // The request body may need blob handles to be added to it. This
-    // functionality has to be invoked on the IO thread.
+
+  // AppCache or post data needs some handling on the IO thread.
+  // The request body may need blob handles to be added to it. This
+  // functionality has to be invoked on the IO thread.
+  if (/*appcache_handle || */ new_request->request_body.get()) {
+    ResourceType resource_type = request_info_->is_main_frame
+                                     ? RESOURCE_TYPE_MAIN_FRAME
+                                     : RESOURCE_TYPE_SUB_FRAME;
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        base::Bind(&HandleRequestsWithBody,
-                   base::Passed(&new_request),
-                   resource_context,
-                   weak_factory_.GetWeakPtr()));
+        base::Bind(
+            &PrepareNavigationOnIOThread, base::Passed(std::move(new_request)),
+            resource_context, resource_type, appcache_handle->core(),
+            base::Bind(&NavigationURLLoaderNetworkService::StartURLRequest,
+                       weak_factory_.GetWeakPtr())));
     return;
   }
-
-  StartURLRequest(std::move(new_request));
+  StartURLRequest(mojom::URLLoaderFactoryPtrInfo(), std::move(new_request));
 }
 
 NavigationURLLoaderNetworkService::~NavigationURLLoaderNetworkService() {}
@@ -200,8 +222,13 @@ void NavigationURLLoaderNetworkService::OnComplete(
 }
 
 void NavigationURLLoaderNetworkService::StartURLRequest(
+    mojom::URLLoaderFactoryPtrInfo url_loader_factory_info,
     std::unique_ptr<ResourceRequest> request) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  // Bind the URLClient implementation to this object to pass to the URLLoader.
+  if (binding_.is_bound())
+    binding_.Unbind();
 
   mojom::URLLoaderClientPtr url_loader_client_ptr_to_pass;
   binding_.Bind(&url_loader_client_ptr_to_pass);
@@ -224,8 +251,16 @@ void NavigationURLLoaderNetworkService::StartURLRequest(
     factory = factory_ptr.get();
   }
 
-  if (!factory)
-    factory = GetURLLoaderFactory();
+  if (!factory) {
+    // If a URLLoaderFactory was provided, then we use that one, otherwise
+    // fall back to connecting directly to the network service.
+    if (url_loader_factory_info.is_valid()) {
+      url_loader_factory_.Bind(std::move(url_loader_factory_info));
+      factory = url_loader_factory_.get();
+    } else {
+      factory = GetURLLoaderFactory();
+    }
+  }
 
   factory->CreateLoaderAndStart(mojo::MakeRequest(&url_loader_associated_ptr_),
                                 0 /* routing_id? */, 0 /* request_id? */,
