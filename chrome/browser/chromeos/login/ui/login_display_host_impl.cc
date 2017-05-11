@@ -975,10 +975,15 @@ void LoginDisplayHostImpl::OnActiveOutputNodeChanged() {
 // LoginDisplayHostImpl, display::DisplayObserver:
 
 void LoginDisplayHostImpl::OnDisplayAdded(const display::Display& new_display) {
+  if (GetOobeUI())
+    GetOobeUI()->OnDisplayConfigurationChanged();
 }
 
 void LoginDisplayHostImpl::OnDisplayRemoved(
-    const display::Display& old_display) {}
+    const display::Display& old_display) {
+  if (GetOobeUI())
+    GetOobeUI()->OnDisplayConfigurationChanged();
+}
 
 void LoginDisplayHostImpl::OnDisplayMetricsChanged(
     const display::Display& display,

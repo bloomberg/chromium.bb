@@ -53,6 +53,7 @@ class NativeWindowDelegate;
 class NetworkDropdownHandler;
 class NetworkStateInformer;
 class NetworkView;
+class OobeDisplayChooser;
 class SigninScreenHandler;
 class SigninScreenHandlerDelegate;
 class SupervisedUserCreationScreenHandler;
@@ -170,6 +171,9 @@ class OobeUI : public content::WebUIController,
   // changed).
   void UpdateLocalizedStringsIfNeeded();
 
+  // Re-evaluate OOBE display placement.
+  void OnDisplayConfigurationChanged();
+
  private:
   // Lookup a view by its statically registered OobeScreen.
   template <typename TView>
@@ -240,6 +244,8 @@ class OobeUI : public content::WebUIController,
   std::unique_ptr<ShutdownPolicyHandler> shutdown_policy_handler_;
 
   std::unique_ptr<ash::ScreenDimmer> screen_dimmer_;
+
+  std::unique_ptr<OobeDisplayChooser> oobe_display_chooser_;
 
   // Store the deferred JS calls before the screen handler instance is
   // initialized.
