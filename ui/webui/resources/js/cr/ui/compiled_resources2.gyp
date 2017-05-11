@@ -190,6 +190,13 @@
       'includes': ['../../../../../../third_party/closure_compiler/compile_js2.gypi'],
     },
     {
+      'target_name': 'node_utils',
+      'dependencies': [
+        '../../compiled_resources2.gyp:cr',
+      ],
+      'includes': ['../../../../../../third_party/closure_compiler/compile_js2.gypi'],
+    },
+    {
       'target_name': 'overlay',
       'dependencies': [
         '../../compiled_resources2.gyp:cr',

@@ -14,6 +14,7 @@
         '<(DEPTH)/ui/webui/resources/js/cr/compiled_resources2.gyp:event_target',
         '<(DEPTH)/ui/webui/resources/js/cr/ui/compiled_resources2.gyp:focus_manager',
         '<(DEPTH)/ui/webui/resources/js/cr/ui/compiled_resources2.gyp:focus_outline_manager',
+        '<(DEPTH)/ui/webui/resources/js/cr/ui/compiled_resources2.gyp:node_utils',
         '<(DEPTH)/ui/webui/resources/js/cr/compiled_resources2.gyp:ui',
         '<(EXTERNS_GYP):chrome_send',
       ],
