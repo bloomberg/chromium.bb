@@ -616,7 +616,7 @@
       "name": "\u042f\u043d\u0434\u0435\u043a\u0441",
       "keyword": "yandex.ru",
       "favicon_url": "https://yastatic.net/lego/_/pDu9OWAQKB0s2J9IojKpiS_Eho.ico",
-      "search_url": "https://yandex.ru/{yandex:searchPath}?text={searchTerms}",
+      "search_url": "https://yandex.ru/{yandex:searchPath}?text={searchTerms}&{yandex:referralID}",
       "suggest_url": "https://suggest.yandex.ru/suggest-ff.cgi?part={searchTerms}",
       "image_url": "https://yandex.ru/images/search/?rpt=imageview",
       "image_url_post_params": "upfile={google:imageThumbnail},original_width={google:imageOriginalWidth},original_height={google:imageOriginalHeight},prg=1",

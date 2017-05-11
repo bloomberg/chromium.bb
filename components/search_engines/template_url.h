@@ -321,6 +321,7 @@ class TemplateURLRef {
     GOOGLE_UNESCAPED_SEARCH_TERMS,
     LANGUAGE,
     SEARCH_TERMS,
+    YANDEX_REFERRAL_ID,
   };
 
   // Used to identify an element of the raw url that can be replaced.

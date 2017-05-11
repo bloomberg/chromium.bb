@@ -4,6 +4,7 @@
 
 #include "chrome/browser/search_engines/ui_thread_search_terms_data_android.h"
 
+#include "chrome/browser/android/locale/locale_manager.h"
 #include "chrome/browser/search_engines/ui_thread_search_terms_data.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -27,4 +28,8 @@ std::string UIThreadSearchTermsData::GetSearchClient() const {
              content::BrowserThread::UI) ||
          content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   return SearchTermsDataAndroid::search_client_.Get();
+}
+
+std::string UIThreadSearchTermsData::GetYandexReferralID() const {
+  return LocaleManager::GetYandexReferralID();
 }

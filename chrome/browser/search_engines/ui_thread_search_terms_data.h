@@ -31,6 +31,10 @@ class UIThreadSearchTermsData : public SearchTermsData {
   std::string ForceInstantResultsParam(bool for_prerender) const override;
   std::string GoogleImageSearchSource() const override;
 
+#if defined(OS_ANDROID)
+  std::string GetYandexReferralID() const override;
+#endif
+
   // Used by tests to override the value for the Google base URL.  Passing the
   // empty string cancels this override.
   static void SetGoogleBaseURL(const std::string& base_url);
