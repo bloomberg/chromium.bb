@@ -1840,6 +1840,7 @@ test("blink_platform_unittests") {
     "geometry/LayoutRectTest.cpp",
     "geometry/RegionTest.cpp",
     "graphics/BitmapImageTest.cpp",
+    "graphics/CompositorElementIdTest.cpp",
     "graphics/CompositorMutableStateTest.cpp",
     "graphics/CompositorMutatorClientTest.cpp",
     "graphics/ContiguousContainerTest.cpp",

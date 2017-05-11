@@ -196,8 +196,7 @@ TEST_F(PropertyTreeStateTest, CompositorElementIdNoElementIdOnAnyNode) {
 }
 
 TEST_F(PropertyTreeStateTest, CompositorElementIdWithElementIdOnTransformNode) {
-  CompositorElementId expected_compositor_element_id =
-      CompositorElementId(2, 0);
+  CompositorElementId expected_compositor_element_id = CompositorElementId(2);
   RefPtr<TransformPaintPropertyNode> transform =
       TransformPaintPropertyNode::Create(TransformPaintPropertyNode::Root(),
                                          TransformationMatrix(), FloatPoint3D(),
@@ -210,8 +209,7 @@ TEST_F(PropertyTreeStateTest, CompositorElementIdWithElementIdOnTransformNode) {
 }
 
 TEST_F(PropertyTreeStateTest, CompositorElementIdWithElementIdOnEffectNode) {
-  CompositorElementId expected_compositor_element_id =
-      CompositorElementId(2, 0);
+  CompositorElementId expected_compositor_element_id = CompositorElementId(2);
   RefPtr<EffectPaintPropertyNode> effect = EffectPaintPropertyNode::Create(
       EffectPaintPropertyNode::Root(), TransformPaintPropertyNode::Root(),
       ClipPaintPropertyNode::Root(), kColorFilterNone,
@@ -224,8 +222,7 @@ TEST_F(PropertyTreeStateTest, CompositorElementIdWithElementIdOnEffectNode) {
 }
 
 TEST_F(PropertyTreeStateTest, CompositorElementIdWithElementIdOnMultipleNodes) {
-  CompositorElementId expected_compositor_element_id =
-      CompositorElementId(2, 0);
+  CompositorElementId expected_compositor_element_id = CompositorElementId(2);
   RefPtr<TransformPaintPropertyNode> transform =
       TransformPaintPropertyNode::Create(TransformPaintPropertyNode::Root(),
                                          TransformationMatrix(), FloatPoint3D(),
@@ -243,8 +240,8 @@ TEST_F(PropertyTreeStateTest, CompositorElementIdWithElementIdOnMultipleNodes) {
 }
 
 TEST_F(PropertyTreeStateTest, CompositorElementIdWithDifferingElementIds) {
-  CompositorElementId first_compositor_element_id = CompositorElementId(2, 0);
-  CompositorElementId second_compositor_element_id = CompositorElementId(3, 0);
+  CompositorElementId first_compositor_element_id = CompositorElementId(2);
+  CompositorElementId second_compositor_element_id = CompositorElementId(3);
   RefPtr<TransformPaintPropertyNode> transform =
       TransformPaintPropertyNode::Create(TransformPaintPropertyNode::Root(),
                                          TransformationMatrix(), FloatPoint3D(),

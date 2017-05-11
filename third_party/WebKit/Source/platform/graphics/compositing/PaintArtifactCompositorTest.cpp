@@ -714,8 +714,7 @@ class FakeScrollClient : public WebLayerScrollClient {
 TEST_F(PaintArtifactCompositorTestWithPropertyTrees, OneScrollNode) {
   FakeScrollClient scroll_client;
 
-  CompositorElementId expected_compositor_element_id =
-      CompositorElementId(2, 0);
+  CompositorElementId expected_compositor_element_id = CompositorElementId(2);
   RefPtr<TransformPaintPropertyNode> scroll_translation =
       TransformPaintPropertyNode::CreateScrollTranslation(
           TransformPaintPropertyNode::Root(),
@@ -823,8 +822,7 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees, NestedScrollNodes) {
   RefPtr<EffectPaintPropertyNode> effect =
       CreateOpacityOnlyEffect(EffectPaintPropertyNode::Root(), 0.5);
 
-  CompositorElementId expected_compositor_element_id_a =
-      CompositorElementId(2, 0);
+  CompositorElementId expected_compositor_element_id_a = CompositorElementId(2);
   RefPtr<TransformPaintPropertyNode> scroll_translation_a =
       TransformPaintPropertyNode::CreateScrollTranslation(
           TransformPaintPropertyNode::Root(),
@@ -835,8 +833,7 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees, NestedScrollNodes) {
           MainThreadScrollingReason::kHasBackgroundAttachmentFixedObjects,
           nullptr);
 
-  CompositorElementId expected_compositor_element_id_b =
-      CompositorElementId(3, 0);
+  CompositorElementId expected_compositor_element_id_b = CompositorElementId(3);
   RefPtr<TransformPaintPropertyNode> scroll_translation_b =
       TransformPaintPropertyNode::CreateScrollTranslation(
           scroll_translation_a, TransformationMatrix().Translate(37, 41),
@@ -1644,7 +1641,7 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees,
 }
 
 PassRefPtr<EffectPaintPropertyNode> CreateSampleEffectNodeWithElementId() {
-  CompositorElementId expected_compositor_element_id(2, 0);
+  CompositorElementId expected_compositor_element_id(2);
   float opacity = 2.0 / 255.0;
   return EffectPaintPropertyNode::Create(
       EffectPaintPropertyNode::Root(), TransformPaintPropertyNode::Root(),
@@ -1655,7 +1652,7 @@ PassRefPtr<EffectPaintPropertyNode> CreateSampleEffectNodeWithElementId() {
 
 PassRefPtr<TransformPaintPropertyNode>
 CreateSampleTransformNodeWithElementId() {
-  CompositorElementId expected_compositor_element_id(3, 0);
+  CompositorElementId expected_compositor_element_id(3);
   return TransformPaintPropertyNode::Create(
       TransformPaintPropertyNode::Root(), TransformationMatrix().Rotate(90),
       FloatPoint3D(100, 100, 0), false, 0, kCompositingReason3DTransform,

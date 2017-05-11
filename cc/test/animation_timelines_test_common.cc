@@ -355,7 +355,7 @@ AnimationTimelinesTest::AnimationTimelinesTest()
   host_ = client_.host();
   host_impl_ = client_impl_.host();
 
-  element_id_ = ElementId(NextTestLayerId(), 0);
+  element_id_ = ElementId(NextTestLayerId());
 }
 
 AnimationTimelinesTest::~AnimationTimelinesTest() {

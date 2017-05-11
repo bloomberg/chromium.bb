@@ -1378,7 +1378,7 @@ class LayerTreeHostTestTransformTreeDamageIsUpdated : public LayerTreeHostTest {
     root_->SetBounds(gfx::Size(50, 50));
 
     // Make sure child is registerd for animation.
-    child_->SetElementId(ElementId(2, 0));
+    child_->SetElementId(ElementId(2));
 
     // Make sure child and grand_child have transform nodes.
     gfx::Transform rotation;

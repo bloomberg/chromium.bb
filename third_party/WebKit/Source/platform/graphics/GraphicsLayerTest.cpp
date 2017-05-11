@@ -127,7 +127,7 @@ TEST_F(GraphicsLayerTest, updateLayerShouldFlattenTransformWithAnimations) {
   host.AddTimeline(*compositor_timeline);
   compositor_timeline->PlayerAttached(player);
 
-  platform_layer_->SetElementId(CompositorElementId(platform_layer_->Id(), 0));
+  platform_layer_->SetElementId(CompositorElementId(platform_layer_->Id()));
 
   player.CompositorPlayer()->AttachElement(platform_layer_->GetElementId());
   ASSERT_TRUE(player.CompositorPlayer()->IsElementAttached());

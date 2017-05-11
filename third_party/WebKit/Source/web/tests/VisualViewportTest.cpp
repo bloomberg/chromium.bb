@@ -781,8 +781,9 @@ TEST_P(VisualViewportTest, TestAttachingNewFrameSetsInnerScrollLayerSize) {
   // Ensure the scroll layer matches the frame view's size.
   EXPECT_SIZE_EQ(FloatSize(320, 240), visual_viewport.ScrollLayer()->Size());
 
-  EXPECT_EQ(static_cast<int>(CompositorSubElementId::kViewport),
-            visual_viewport.ScrollLayer()->GetElementId().secondaryId);
+  EXPECT_EQ(CompositorSubElementId::kViewport,
+            SubElementIdFromCompositorElementId(
+                visual_viewport.ScrollLayer()->GetElementId()));
 
   // Ensure the location and scale were reset.
   EXPECT_SIZE_EQ(FloatSize(), visual_viewport.GetScrollOffset());

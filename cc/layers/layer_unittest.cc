@@ -929,7 +929,7 @@ TEST_F(LayerTest, CheckPropertyChangeCausesCorrectBehavior) {
       gfx::Rect(10, 10)));
   EXPECT_SET_NEEDS_COMMIT(1, test_layer->SetForceRenderSurfaceForTesting(true));
   EXPECT_SET_NEEDS_COMMIT(1, test_layer->SetHideLayerAndSubtree(true));
-  EXPECT_SET_NEEDS_COMMIT(1, test_layer->SetElementId(ElementId(2, 0)));
+  EXPECT_SET_NEEDS_COMMIT(1, test_layer->SetElementId(ElementId(2)));
   EXPECT_SET_NEEDS_COMMIT(
       1, test_layer->SetMutableProperties(MutableProperty::kTransform));
 
@@ -1385,7 +1385,7 @@ TEST_F(LayerTest, AnimationSchedulesLayerUpdate) {
   // though currently there is no good place for this unittest to go. Move to
   // LayerTreeHost unittest when there is a good setup.
   scoped_refptr<Layer> layer = Layer::Create();
-  layer->SetElementId(ElementId(2, 0));
+  layer->SetElementId(ElementId(2));
   EXPECT_SET_NEEDS_FULL_TREE_SYNC(1, layer_tree_host_->SetRootLayer(layer));
   auto element_id = layer->element_id();
 
@@ -1419,7 +1419,7 @@ TEST_F(LayerTest, ElementIdAndMutablePropertiesArePushed) {
 
   EXPECT_CALL(*layer_tree_host_, SetNeedsCommit()).Times(2);
 
-  test_layer->SetElementId(ElementId(2, 0));
+  test_layer->SetElementId(ElementId(2));
   test_layer->SetMutableProperties(MutableProperty::kTransform);
 
   EXPECT_FALSE(impl_layer->element_id());
@@ -1427,7 +1427,7 @@ TEST_F(LayerTest, ElementIdAndMutablePropertiesArePushed) {
 
   test_layer->PushPropertiesTo(impl_layer.get());
 
-  EXPECT_EQ(ElementId(2, 0), impl_layer->element_id());
+  EXPECT_EQ(ElementId(2), impl_layer->element_id());
   EXPECT_EQ(MutableProperty::kTransform, impl_layer->mutable_properties());
 }
 

@@ -490,7 +490,7 @@ class LayerTreeHostAnimationTestLayerAddedWithAnimation
       AttachPlayersToTimeline();
 
       scoped_refptr<Layer> layer = Layer::Create();
-      layer->SetElementId(ElementId(42, 0));
+      layer->SetElementId(ElementId(42));
       player_->AttachElement(layer->element_id());
       player_->set_animation_delegate(this);
 

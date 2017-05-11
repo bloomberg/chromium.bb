@@ -394,7 +394,7 @@ TEST_F(AnimationPlayerTest, SwitchToLayer) {
   EXPECT_EQ(player_impl_->element_id(), element_id_);
   EXPECT_TRUE(CheckPlayerTimelineNeedsPushProperties(false));
 
-  const ElementId new_element_id(NextTestLayerId(), 0);
+  const ElementId new_element_id(NextTestLayerId());
   player_->DetachElement();
   player_->AttachElement(new_element_id);
 

@@ -166,7 +166,7 @@ void LayerAnimator::DetachLayerAndTimeline(Compositor* compositor) {
 
 void LayerAnimator::AttachLayerToAnimationPlayer(int layer_id) {
   // For ui, layer and element ids are equivalent.
-  cc::ElementId element_id(layer_id, 0);
+  cc::ElementId element_id(layer_id);
   if (!animation_player_->element_id())
     animation_player_->AttachElement(element_id);
   else
