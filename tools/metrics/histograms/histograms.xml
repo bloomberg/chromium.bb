@@ -42462,6 +42462,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="NewTabPage.ContentSuggestions.Notifications.AutoOptOuts"
+    enum="ContentSuggestionsNotificationsOptOut">
+  <owner>sfiera@chromium.org</owner>
+  <summary>
+    Android: The number of times a user opted out, keyed by method: IMPLICIT
+    (user ignored enough notifications consecutively that we think they're not
+    interested), or EXPLICIT (via explicit setting).
+  </summary>
+</histogram>
+
 <histogram name="NewTabPage.ContentSuggestions.Notifications.Impressions"
     enum="ContentSuggestionsNotificationsImpression">
   <owner>sfiera@chromium.org</owner>
@@ -42469,16 +42479,6 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     Android: The number of notifications that were shown, keyed by category. One
     bucket counts the server-provided ARTICLES category; the other counts
     everything else.
-  </summary>
-</histogram>
-
-<histogram name="NewTabPage.ContentSuggestions.Notifications.OptOuts"
-    enum="ContentSuggestionsNotificationsOptOut">
-  <owner>sfiera@chromium.org</owner>
-  <summary>
-    Android: The number of times a user opted out, keyed by method: IMPLICIT
-    (user ignored enough notifications consecutively that we think they're not
-    interested), or EXPLICIT (via explicit setting).
   </summary>
 </histogram>
 
