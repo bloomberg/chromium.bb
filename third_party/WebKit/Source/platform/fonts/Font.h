@@ -197,6 +197,8 @@ class PLATFORM_EXPORT Font {
     shape_word_by_word_computed_ = true;
   }
 
+  void ReportNotDefGlyph() const;
+
  private:
   enum ForTextEmphasisOrNot { kNotForTextEmphasis, kForTextEmphasis };
 

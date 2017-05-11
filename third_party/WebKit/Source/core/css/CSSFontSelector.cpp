@@ -34,6 +34,7 @@
 #include "core/dom/Document.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
+#include "core/frame/UseCounter.h"
 #include "core/loader/FrameLoader.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/fonts/FontCache.h"
@@ -171,6 +172,11 @@ void CSSFontSelector::UpdateGenericFontFamilySettings(Document& document) {
   generic_font_family_settings_ =
       document.GetSettings()->GetGenericFontFamilySettings();
   FontCacheInvalidated();
+}
+
+void CSSFontSelector::ReportNotDefGlyph() const {
+  DCHECK(document_);
+  UseCounter::Count(document_, UseCounter::kFontShapingNotDefGlyphObserved);
 }
 
 DEFINE_TRACE(CSSFontSelector) {

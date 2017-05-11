@@ -54,6 +54,8 @@ class PLATFORM_EXPORT FontSelector : public FontCacheClient {
                             const FontDataForRangeSet&) = 0;
 
   virtual unsigned Version() const = 0;
+
+  virtual void ReportNotDefGlyph() const = 0;
 };
 
 }  // namespace blink

@@ -46,6 +46,7 @@ class TestFontSelector : public FontSelector {
 
   unsigned Version() const override { return 0; }
   void FontCacheInvalidated() override {}
+  void ReportNotDefGlyph() const override{};
 
  private:
   TestFontSelector(PassRefPtr<FontCustomPlatformData> custom_platform_data)

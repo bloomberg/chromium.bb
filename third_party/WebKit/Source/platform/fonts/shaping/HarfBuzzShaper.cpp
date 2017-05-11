@@ -150,7 +150,7 @@ inline bool ShapeRange(hb_buffer_t* buffer,
 
 }  // namespace
 
-bool HarfBuzzShaper::ExtractShapeResults(
+void HarfBuzzShaper::ExtractShapeResults(
     RangeData* range_data,
     bool& font_cycle_queued,
     const HolesQueueItem& current_queue_item,
@@ -171,10 +171,8 @@ bool HarfBuzzShaper::ExtractShapeResults(
 
   unsigned last_change_position = 0;
 
-  if (!num_glyphs) {
-    DLOG(ERROR) << "HarfBuzz returned empty glyph buffer after shaping.";
-    return false;
-  }
+  if (!num_glyphs)
+    return;
 
   for (unsigned glyph_index = 0; glyph_index <= num_glyphs; ++glyph_index) {
     // Iterating by clusters, check for when the state switches from shaped
@@ -191,7 +189,7 @@ bool HarfBuzzShaper::ExtractShapeResults(
         } else {
           // We can only call the current cluster fully shapped, if
           // all characters that are part of it are shaped, so update
-          // currentClusterResult to Shaped only if the previous
+          // currentClusterResult to kShaped only if the previous
           // characters have been shaped, too.
           current_cluster_result =
               current_cluster_result == kShaped ? kShaped : kNotDef;
@@ -203,8 +201,8 @@ bool HarfBuzzShaper::ExtractShapeResults(
       current_cluster_result =
           glyph_info[glyph_index].codepoint == 0 ? kNotDef : kShaped;
     } else {
-      // The code below operates on the "flanks"/changes between NotDef
-      // and Shaped. In order to keep the code below from explictly
+      // The code below operates on the "flanks"/changes between kNotDef
+      // and kShaped. In order to keep the code below from explictly
       // dealing with character indices and run end, we explicitly
       // terminate the cluster/run here by setting the result value to the
       // opposite of what it was, leading to atChange turning true.
@@ -286,10 +284,10 @@ bool HarfBuzzShaper::ExtractShapeResults(
           start_index, num_glyphs_to_insert, num_characters);
       shape_result->InsertRun(WTF::WrapUnique(run), last_change_position,
                               num_glyphs_to_insert, range_data->buffer);
+      range_data->font->ReportNotDefGlyph();
     }
     last_change_position = glyph_index;
   }
-  return true;
 }
 
 static inline const SimpleFontData* FontDataAdjustedForOrientation(
@@ -676,11 +674,9 @@ void HarfBuzzShaper::ShapeSegment(RangeData* range_data,
                     direction, language))
       DLOG(ERROR) << "Shaping range failed.";
 
-    if (!ExtractShapeResults(range_data, font_cycle_queued, current_queue_item,
-                             direction_and_small_caps_adjusted_font,
-                             segment.script, !fallback_iterator->HasNext(),
-                             result))
-      DLOG(ERROR) << "Shape result extraction failed.";
+    ExtractShapeResults(range_data, font_cycle_queued, current_queue_item,
+                        direction_and_small_caps_adjusted_font, segment.script,
+                        !fallback_iterator->HasNext(), result);
 
     hb_buffer_reset(range_data->buffer);
   }

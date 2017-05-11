@@ -411,6 +411,16 @@ bool Font::ComputeCanShapeWordByWord() const {
   return !platform_data.HasSpaceInLigaturesOrKerning(features);
 };
 
+void Font::ReportNotDefGlyph() const {
+  FontSelector* fontSelector = font_fallback_list_->GetFontSelector();
+  // We have a few non-DOM usages of Font code, for example in DragImage::Create
+  // and in EmbeddedObjectPainter::paintReplaced. In those cases, we can't
+  // retrieve a font selector as our connection to a Document object to report
+  // UseCounter metrics, and thus we cannot report notdef glyphs.
+  if (fontSelector)
+    fontSelector->ReportNotDefGlyph();
+}
+
 void Font::WillUseFontData(const String& text) const {
   const FontFamily& family = GetFontDescription().Family();
   if (font_fallback_list_ && font_fallback_list_->GetFontSelector() &&
