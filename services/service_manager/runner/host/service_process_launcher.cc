@@ -204,7 +204,8 @@ void ServiceProcessLauncher::DoLaunch(
       mojo_ipc_channel_->ChildProcessLaunched();
       broker_client_invitation_.Send(
           child_process_.Handle(),
-          mojo::edk::ConnectionParams(mojo_ipc_channel_->PassServerHandle()));
+          mojo::edk::ConnectionParams(mojo::edk::TransportProtocol::kLegacy,
+                                      mojo_ipc_channel_->PassServerHandle()));
     }
   }
   start_child_process_event_.Signal();

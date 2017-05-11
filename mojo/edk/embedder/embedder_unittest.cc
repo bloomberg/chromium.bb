@@ -145,8 +145,9 @@ TEST_F(EmbedderTest, PipeSetup_LaunchDeath) {
 
   OutgoingBrokerClientInvitation invitation;
   ScopedMessagePipeHandle parent_mp = invitation.AttachMessagePipe("unused");
-  invitation.Send(base::GetCurrentProcessHandle(),
-                  ConnectionParams(pair.PassServerHandle()));
+  invitation.Send(
+      base::GetCurrentProcessHandle(),
+      ConnectionParams(TransportProtocol::kLegacy, pair.PassServerHandle()));
 
   // Close the remote end, simulating child death before the child extracts the
   // attached message pipe.

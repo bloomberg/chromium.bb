@@ -29,8 +29,10 @@ BrokerHost::BrokerHost(base::ProcessHandle client_process,
 
   base::MessageLoop::current()->AddDestructionObserver(this);
 
-  channel_ = Channel::Create(this, ConnectionParams(std::move(platform_handle)),
-                             base::ThreadTaskRunnerHandle::Get());
+  channel_ = Channel::Create(
+      this,
+      ConnectionParams(TransportProtocol::kLegacy, std::move(platform_handle)),
+      base::ThreadTaskRunnerHandle::Get());
   channel_->Start();
 }
 

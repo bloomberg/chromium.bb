@@ -277,7 +277,8 @@ bool ServiceUtilityProcessHost::Launch(base::CommandLine* cmd_line,
   if (success) {
     broker_client_invitation_.Send(
         process_.Handle(),
-        mojo::edk::ConnectionParams(std::move(parent_handle)));
+        mojo::edk::ConnectionParams(mojo::edk::TransportProtocol::kLegacy,
+                                    std::move(parent_handle)));
   }
 
   return success;

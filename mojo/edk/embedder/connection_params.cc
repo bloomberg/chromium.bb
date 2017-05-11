@@ -11,9 +11,6 @@
 namespace mojo {
 namespace edk {
 
-ConnectionParams::ConnectionParams(ScopedPlatformHandle channel)
-    : ConnectionParams(TransportProtocol::kLegacy, std::move(channel)) {}
-
 ConnectionParams::ConnectionParams(TransportProtocol protocol,
                                    ScopedPlatformHandle channel)
     : protocol_(protocol), channel_(std::move(channel)) {
@@ -25,11 +22,8 @@ ConnectionParams::ConnectionParams(ConnectionParams&& params) {
   *this = std::move(params);
 }
 
-ConnectionParams& ConnectionParams::operator=(ConnectionParams&& params) {
-  protocol_ = params.protocol_;
-  channel_ = std::move(params.channel_);
-  return *this;
-}
+ConnectionParams& ConnectionParams::operator=(ConnectionParams&& params) =
+    default;
 
 ScopedPlatformHandle ConnectionParams::TakeChannelHandle() {
   return std::move(channel_);

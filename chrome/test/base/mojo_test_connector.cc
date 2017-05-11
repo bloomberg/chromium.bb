@@ -86,7 +86,8 @@ class MojoTestState : public content::TestState {
     platform_channel_->ChildProcessLaunched();
     broker_client_invitation_.Send(
         handle,
-        mojo::edk::ConnectionParams(platform_channel_->PassServerHandle()));
+        mojo::edk::ConnectionParams(mojo::edk::TransportProtocol::kLegacy,
+                                    platform_channel_->PassServerHandle()));
 
     main_task_runner_->PostTask(FROM_HERE,
                                 base::Bind(&MojoTestState::SetupService,

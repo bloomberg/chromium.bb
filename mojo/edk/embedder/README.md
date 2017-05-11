@@ -230,8 +230,10 @@ int main(int argc, char** argv) {
 
   base::ProcessHandle child_handle =
       LaunchCoolChildProcess(channel.PassClientHandle());
-  invitation.Send(child_handle,
-                  mojo::edk::ConnectionParams(channel.PassServerHandle()));
+  invitation.Send(
+      child_handle,
+      mojo::edk::ConnectionParams(mojo::edk::TransportProtocol::kLegacy,
+                                  channel.PassServerHandle()));
 
   // We can start using our end of the pipe immediately. Here we assume the
   // other end will eventually be bound to a local::mojom::Foo implementation,
@@ -290,7 +292,8 @@ int main(int argc, char** argv) {
       mojo::edk::ScopedIPCSupport::ShutdownPolicy::CLEAN);
 
   auto invitation = mojo::edk::IncomingBrokerClientInvitation::Accept(
-      mojo::edk::ConnectionParams(GetChannelHandle()));
+      mojo::edk::ConnectionParams(mojo::edk::TransportProtocol::kLegacy,
+                                  GetChannelHandle()));
 
   mojo::ScopedMessagePipeHandle my_pipe =
       invitation->ExtractMessagePipe("pretty_cool_pipe");

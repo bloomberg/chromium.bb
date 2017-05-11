@@ -203,7 +203,8 @@ class ServiceManagerTest : public test::ServiceTest,
     receiver->SetPID(target_.Pid());
     invitation.Send(
         target_.Handle(),
-        mojo::edk::ConnectionParams(platform_channel_pair.PassServerHandle()));
+        mojo::edk::ConnectionParams(mojo::edk::TransportProtocol::kLegacy,
+                                    platform_channel_pair.PassServerHandle()));
   }
 
   void KillTarget() {

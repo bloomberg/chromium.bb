@@ -133,8 +133,10 @@ void NaClBrokerListener::OnLaunchLoaderThroughBroker(
         this, cmd_line, handles, &loader_process);
 
     if (result == sandbox::SBOX_ALL_OK) {
-      invitation.Send(loader_process.Handle(),
-                      mojo::edk::ConnectionParams(std::move(parent_handle)));
+      invitation.Send(
+          loader_process.Handle(),
+          mojo::edk::ConnectionParams(mojo::edk::TransportProtocol::kLegacy,
+                                      std::move(parent_handle)));
 
       // Note: PROCESS_DUP_HANDLE is necessary here, because:
       // 1) The current process is the broker, which is the loader's parent.

@@ -95,7 +95,8 @@ mojom::ConnectResult LaunchAndConnectToProcess(
   receiver->SetPID(process->Pid());
   invitation.Send(
       process->Handle(),
-      mojo::edk::ConnectionParams(platform_channel_pair.PassServerHandle()));
+      mojo::edk::ConnectionParams(mojo::edk::TransportProtocol::kLegacy,
+                                  platform_channel_pair.PassServerHandle()));
   return result;
 }
 

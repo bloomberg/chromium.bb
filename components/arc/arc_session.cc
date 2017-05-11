@@ -452,8 +452,10 @@ mojo::ScopedMessagePipeHandle ArcSessionImpl::ConnectMojo(
   std::string token = mojo::edk::GenerateRandomToken();
   mojo::ScopedMessagePipeHandle pipe = invitation.AttachMessagePipe(token);
 
-  invitation.Send(kUnusedChildProcessHandle,
-                  mojo::edk::ConnectionParams(channel_pair.PassServerHandle()));
+  invitation.Send(
+      kUnusedChildProcessHandle,
+      mojo::edk::ConnectionParams(mojo::edk::TransportProtocol::kLegacy,
+                                  channel_pair.PassServerHandle()));
 
   mojo::edk::ScopedPlatformHandleVectorPtr handles(
       new mojo::edk::PlatformHandleVector{
