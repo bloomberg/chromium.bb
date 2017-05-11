@@ -33,7 +33,7 @@ class ShippingOptionItem : public PaymentRequestItemList::Item {
   std::unique_ptr<views::View> CreateContentView() override {
     return CreateShippingOptionLabel(
         shipping_option_,
-        spec()->GetFormattedCurrencyAmount(shipping_option_->amount->value),
+        spec()->GetFormattedCurrencyAmount(shipping_option_->amount),
         /*emphasize_label=*/true);
   }
 

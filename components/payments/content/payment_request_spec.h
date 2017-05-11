@@ -87,15 +87,15 @@ class PaymentRequestSpec : public PaymentOptionsProvider {
   // not supported at all, or specified directly in supportedMethods.
   bool IsMethodSupportedThroughBasicCard(const std::string& method_name);
 
-  // Uses CurrencyFormatter to format |amount| with the currency symbol for this
-  // request's currency. Will use currency of the "total" display item, because
-  // all items are supposed to have the same currency in a given request.
-  base::string16 GetFormattedCurrencyAmount(const std::string& amount);
+  // Uses CurrencyFormatter to format the value of |currency_amount| with the
+  // currency symbol for its currency.
+  base::string16 GetFormattedCurrencyAmount(
+      const mojom::PaymentCurrencyAmountPtr& currency_amount);
 
-  // Uses CurrencyFormatter to get the formatted currency code for this
-  // request's currency. Will use currency of the "total" display item, because
-  // all items are supposed to have the same currency in a given request.
-  std::string GetFormattedCurrencyCode();
+  // Uses CurrencyFormatter to get the formatted currency code for
+  // |currency_amount|'s currency.
+  std::string GetFormattedCurrencyCode(
+      const mojom::PaymentCurrencyAmountPtr& currency_amount);
 
   mojom::PaymentShippingOption* selected_shipping_option() const {
     return selected_shipping_option_;
@@ -109,6 +109,8 @@ class PaymentRequestSpec : public PaymentOptionsProvider {
   const mojom::PaymentDetails& details() const { return *details_.get(); }
 
   void StartWaitingForUpdateWith(UpdateReason reason);
+
+  bool IsMixedCurrency() const;
 
  private:
   friend class PaymentRequestDialogView;
@@ -148,7 +150,8 @@ class PaymentRequestSpec : public PaymentOptionsProvider {
   mojom::PaymentShippingOption* selected_shipping_option_;
   base::string16 selected_shipping_option_error_;
 
-  std::unique_ptr<CurrencyFormatter> currency_formatter_;
+  // One currency formatter is instantiated and cached per currency code.
+  std::map<std::string, CurrencyFormatter> currency_formatters_;
 
   // A list/set of supported basic card networks. The list is used to keep the
   // order in which they were specified by the merchant. The set is used for

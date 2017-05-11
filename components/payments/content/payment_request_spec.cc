@@ -115,17 +115,16 @@ bool PaymentRequestSpec::IsMethodSupportedThroughBasicCard(
 }
 
 base::string16 PaymentRequestSpec::GetFormattedCurrencyAmount(
-    const std::string& amount) {
+    const mojom::PaymentCurrencyAmountPtr& currency_amount) {
   CurrencyFormatter* formatter = GetOrCreateCurrencyFormatter(
-      details_->total->amount->currency,
-      details_->total->amount->currency_system, app_locale_);
-  return formatter->Format(amount);
+      currency_amount->currency, currency_amount->currency_system, app_locale_);
+  return formatter->Format(currency_amount->value);
 }
 
-std::string PaymentRequestSpec::GetFormattedCurrencyCode() {
+std::string PaymentRequestSpec::GetFormattedCurrencyCode(
+    const mojom::PaymentCurrencyAmountPtr& currency_amount) {
   CurrencyFormatter* formatter = GetOrCreateCurrencyFormatter(
-      details_->total->amount->currency,
-      details_->total->amount->currency_system, app_locale_);
+      currency_amount->currency, currency_amount->currency_system, app_locale_);
 
   return formatter->formatted_currency_code();
 }
@@ -135,6 +134,15 @@ void PaymentRequestSpec::StartWaitingForUpdateWith(
   for (auto& observer : observers_) {
     observer.OnStartUpdating(reason);
   }
+}
+
+bool PaymentRequestSpec::IsMixedCurrency() const {
+  const std::string& total_currency = details_->total->amount->currency;
+  return std::any_of(details_->display_items.begin(),
+                     details_->display_items.end(),
+                     [&total_currency](const mojom::PaymentItemPtr& item) {
+                       return item->amount->currency != total_currency;
+                     });
 }
 
 void PaymentRequestSpec::PopulateValidatedMethodData(
@@ -216,11 +224,14 @@ CurrencyFormatter* PaymentRequestSpec::GetOrCreateCurrencyFormatter(
     const std::string& currency_code,
     const std::string& currency_system,
     const std::string& locale_name) {
-  if (!currency_formatter_) {
-    currency_formatter_.reset(
-        new CurrencyFormatter(currency_code, currency_system, locale_name));
-  }
-  return currency_formatter_.get();
+  // Create a currency formatter for |currency_code|, or if already created
+  // return the cached version.
+  std::pair<std::map<std::string, CurrencyFormatter>::iterator, bool>
+      emplace_result = currency_formatters_.emplace(
+          std::piecewise_construct, std::forward_as_tuple(currency_code),
+          std::forward_as_tuple(currency_code, currency_system, locale_name));
+
+  return &(emplace_result.first->second);
 }
 
 }  // namespace payments
