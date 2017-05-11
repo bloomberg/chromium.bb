@@ -148,7 +148,6 @@ class VrShell : public device::PresentingGvrDelegate,
   void ContentFrameWasResized(bool width_changed);
 
   void ForceExitVr();
-  void ExitPresent();
 
   void ProcessContentGesture(std::unique_ptr<blink::WebInputEvent> event);
   void SubmitControllerModel(std::unique_ptr<VrControllerModel> model);

@@ -425,6 +425,9 @@ void VrShell::DoUiAction(const UiAction action,
                          const base::DictionaryValue* arguments) {
   // Actions that can be handled natively.
   switch (action) {
+    case EXIT_PRESENT:
+      delegate_provider_->ExitWebVRPresent();
+      return;
     default:
       break;
   }
@@ -482,10 +485,6 @@ void VrShell::ContentWasShown() {
 void VrShell::ForceExitVr() {
   JNIEnv* env = base::android::AttachCurrentThread();
   Java_VrShellImpl_forceExitVr(env, j_vr_shell_.obj());
-}
-
-void VrShell::ExitPresent() {
-  delegate_provider_->ExitWebVRPresent();
 }
 
 void VrShell::OnVRVsyncProviderRequest(

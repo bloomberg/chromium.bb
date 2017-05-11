@@ -86,11 +86,6 @@ void VrGLThread::ForceExitVr() {
       FROM_HERE, base::Bind(&VrShell::ForceExitVr, weak_vr_shell_));
 }
 
-void VrGLThread::ExitPresent() {
-  main_thread_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&VrShell::ExitPresent, weak_vr_shell_));
-}
-
 void VrGLThread::RunVRDisplayInfoCallback(
     const base::Callback<void(device::mojom::VRDisplayInfoPtr)>& callback,
     device::mojom::VRDisplayInfoPtr* info) {
