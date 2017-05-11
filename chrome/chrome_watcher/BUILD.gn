@@ -22,7 +22,6 @@ source_set("hang_util") {
   ]
   deps = [
     "//base",
-    "//components/memory_pressure",
   ]
   libs = [ "pdh.lib" ]  # Used by system_load_estimator.h.
   ldflags = [ "/DELAYLOAD:pdh.dll" ]  # Only used on report capture.
