@@ -444,7 +444,10 @@ def get_waterfall_config():
        'pool': 'Chrome-perf',
        'device_ids': [
            'build4-b1', 'build5-b1', 'build6-b1', 'build7-b1', 'build8-b1'
-          ]
+          ],
+       'perf_tests': [
+         ('performance_browser_tests', 'build8-b1')
+       ]
       }
     ])
   waterfall = add_tester(
@@ -458,7 +461,10 @@ def get_waterfall_config():
        'device_ids': [
            'build128-b1', 'build129-b1',
            'build130-b1', 'build131-b1', 'build132-b1'
-          ]
+          ],
+       'perf_tests': [
+         ('performance_browser_tests', 'build132-b1')
+       ]
       }
     ])
   waterfall = add_tester(
@@ -472,7 +478,10 @@ def get_waterfall_config():
        'device_ids': [
            'build123-b1', 'build124-b1',
            'build125-b1', 'build126-b1', 'build127-b1'
-          ]
+          ],
+       'perf_tests': [
+         ('performance_browser_tests', 'build126-b1')
+       ]
       }
     ])
   waterfall = add_tester(
@@ -830,8 +839,7 @@ NON_TELEMETRY_BENCHMARKS = {
     'load_library_perf_tests': BenchmarkMetadata(None, None, False),
     'media_perftests': BenchmarkMetadata('crouleau@chromium.org', None, False),
     'performance_browser_tests': BenchmarkMetadata(
-        'hubbe@chromium.org, justinlin@chromium.org, miu@chromium.org', None,
-        False)
+        'miu@chromium.org', None, False)
 }
 
 
