@@ -14,6 +14,7 @@
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/simple_thread.h"
+#include "chrome/browser/conflicts/module_database_observer_win.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -106,6 +107,8 @@ class ModuleDatabaseTest : public testing::Test {
         load_addresses.begin(), load_addresses.end(),
         [module_id](const auto& x) { return module_id == x.first; });
   }
+
+  void RunSchedulerUntilIdle() { scoped_task_environment_.RunUntilIdle(); }
 
   const base::FilePath dll1_;
   const base::FilePath dll2_;
@@ -528,4 +531,50 @@ TEST_F(ModuleDatabaseTest, DatabaseIsConsistent) {
             m1->second.process_types);
   EXPECT_EQ(ProcessTypeToBit(content::PROCESS_TYPE_BROWSER),
             m2->second.process_types);
+}
+
+// A dummy observer that only counts how many notifications it receives.
+class DummyObserver : public ModuleDatabaseObserver {
+ public:
+  DummyObserver() = default;
+  ~DummyObserver() override = default;
+
+  void OnNewModuleFound(const ModuleInfoKey& module_key,
+                        const ModuleInfoData& module_data) override {
+    new_module_count_++;
+  }
+
+  int new_module_count() { return new_module_count_; }
+
+ private:
+  int new_module_count_ = 0;
+
+  DISALLOW_COPY_AND_ASSIGN(DummyObserver);
+};
+
+TEST_F(ModuleDatabaseTest, Observers) {
+  module_database()->OnProcessStarted(kPid1, kCreateTime1,
+                                      content::PROCESS_TYPE_BROWSER);
+
+  DummyObserver before_load_observer;
+  EXPECT_EQ(0, before_load_observer.new_module_count());
+
+  module_database()->AddObserver(&before_load_observer);
+  EXPECT_EQ(0, before_load_observer.new_module_count());
+
+  module_database()->OnModuleLoad(kPid1, kCreateTime1, dll1_, kSize1, kTime1,
+                                  kGoodAddress1);
+  RunSchedulerUntilIdle();
+
+  EXPECT_EQ(1, before_load_observer.new_module_count());
+  module_database()->RemoveObserver(&before_load_observer);
+
+  // New observers get notified for past loaded modules.
+  DummyObserver after_load_observer;
+  EXPECT_EQ(0, after_load_observer.new_module_count());
+
+  module_database()->AddObserver(&after_load_observer);
+  EXPECT_EQ(1, after_load_observer.new_module_count());
+
+  module_database()->RemoveObserver(&after_load_observer);
 }
