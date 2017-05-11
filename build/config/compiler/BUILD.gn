@@ -120,8 +120,7 @@ if (gold_path == false) {
 }
 
 if (use_debug_fission == "default") {
-  use_debug_fission = is_debug && !is_win && use_gold &&
-                      linux_use_bundled_binutils && cc_wrapper == ""
+  use_debug_fission = is_debug && !is_win && use_gold && cc_wrapper == ""
 }
 
 # default_include_dirs ---------------------------------------------------------
