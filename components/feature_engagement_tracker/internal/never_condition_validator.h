@@ -24,8 +24,9 @@ class NeverConditionValidator : public ConditionValidator {
   ~NeverConditionValidator() override;
 
   // ConditionValidator implementation.
-  bool MeetsConditions(const base::Feature& feature,
-                       const Model& model) override;
+  ConditionValidator::Result MeetsConditions(const base::Feature& feature,
+                                             const Model& model,
+                                             uint32_t current_day) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(NeverConditionValidator);

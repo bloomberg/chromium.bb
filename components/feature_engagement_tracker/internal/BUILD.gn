@@ -16,6 +16,7 @@ static_library("internal") {
   sources = [
     "chrome_variations_configuration.cc",
     "chrome_variations_configuration.h",
+    "condition_validator.cc",
     "condition_validator.h",
     "configuration.cc",
     "configuration.h",
@@ -75,6 +76,7 @@ source_set("unit_tests") {
   # tests in //components/feature_engagement_tracker/components_unittests.filter
   sources = [
     "chrome_variations_configuration_unittest.cc",
+    "condition_validator_unittest.cc",
     "configuration_unittest.cc",
     "editable_configuration_unittest.cc",
     "feature_config_storage_validator_unittest.cc",

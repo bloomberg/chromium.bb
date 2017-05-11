@@ -13,24 +13,27 @@ OnceConditionValidator::OnceConditionValidator() = default;
 
 OnceConditionValidator::~OnceConditionValidator() = default;
 
-bool OnceConditionValidator::MeetsConditions(const base::Feature& feature,
-                                             const Model& model) {
-  if (!model.IsReady())
-    return false;
+ConditionValidator::Result OnceConditionValidator::MeetsConditions(
+    const base::Feature& feature,
+    const Model& model,
+    uint32_t current_day) {
+  ConditionValidator::Result result(true);
+  result.model_ready_ok = model.IsReady();
 
-  if (model.IsCurrentlyShowing())
-    return false;
+  result.currently_showing_ok = !model.IsCurrentlyShowing();
 
   const FeatureConfig& config = model.GetFeatureConfig(feature);
-  if (!config.valid)
-    return false;
+  result.config_ok = config.valid;
 
-  if (shown_features_.find(&feature) == shown_features_.end()) {
+  result.session_rate_ok =
+      shown_features_.find(&feature) == shown_features_.end();
+
+  // Only show if there are no other errors.
+  if (result.NoErrors() && result.session_rate_ok) {
     shown_features_.insert(&feature);
-    return true;
   }
 
-  return false;
+  return result;
 }
 
 }  // namespace feature_engagement_tracker

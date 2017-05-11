@@ -10,9 +10,11 @@ NeverConditionValidator::NeverConditionValidator() = default;
 
 NeverConditionValidator::~NeverConditionValidator() = default;
 
-bool NeverConditionValidator::MeetsConditions(const base::Feature& feature,
-                                              const Model& model) {
-  return false;
+ConditionValidator::Result NeverConditionValidator::MeetsConditions(
+    const base::Feature& feature,
+    const Model& model,
+    uint32_t current_day) {
+  return ConditionValidator::Result(false);
 }
 
 }  // namespace feature_engagement_tracker

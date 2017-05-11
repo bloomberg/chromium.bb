@@ -73,8 +73,10 @@ class NeverConditionValidatorTest : public ::testing::Test {
 
 TEST_F(NeverConditionValidatorTest, ShouldNeverMeetConditions) {
   scoped_feature_list_.InitWithFeatures({kTestFeatureFoo, kTestFeatureBar}, {});
-  EXPECT_FALSE(validator_.MeetsConditions(kTestFeatureFoo, model_));
-  EXPECT_FALSE(validator_.MeetsConditions(kTestFeatureBar, model_));
+  EXPECT_FALSE(
+      validator_.MeetsConditions(kTestFeatureFoo, model_, 0u).NoErrors());
+  EXPECT_FALSE(
+      validator_.MeetsConditions(kTestFeatureBar, model_, 0u).NoErrors());
 }
 
 }  // namespace feature_engagement_tracker

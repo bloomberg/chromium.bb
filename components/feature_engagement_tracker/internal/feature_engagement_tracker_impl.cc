@@ -100,7 +100,10 @@ void FeatureEngagementTrackerImpl::NotifyEvent(const std::string& event) {
 bool FeatureEngagementTrackerImpl::ShouldTriggerHelpUI(
     const base::Feature& feature) {
   // TODO(nyquist): Track this event in UMA.
-  bool result = condition_validator_->MeetsConditions(feature, *model_);
+  bool result =
+      condition_validator_
+          ->MeetsConditions(feature, *model_, time_provider_->GetCurrentDay())
+          .NoErrors();
   if (result)
     model_->SetIsCurrentlyShowing(true);
   return result;
