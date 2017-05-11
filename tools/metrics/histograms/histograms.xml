@@ -32761,6 +32761,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="NCN.GetActiveNetworkInfoResult"
     enum="NCNGetActiveNetworkInfoResult">
+  <obsolete>
+    Deprecated 05/2017 in Issue 677365.
+  </obsolete>
   <owner>pauljensen@chromium.org</owner>
   <owner>tbansal@chromium.org</owner>
   <summary>
