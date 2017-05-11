@@ -33,33 +33,6 @@
 
 namespace blink {
 
-static EphemeralRange ExpandToParagraphBoundary(const EphemeralRange& range) {
-  const VisiblePosition& start = CreateVisiblePosition(range.StartPosition());
-  DCHECK(start.IsNotNull()) << range.StartPosition();
-  const Position& paragraph_start = StartOfParagraph(start).DeepEquivalent();
-  DCHECK(paragraph_start.IsNotNull()) << range.StartPosition();
-
-  const VisiblePosition& end = CreateVisiblePosition(range.EndPosition());
-  DCHECK(end.IsNotNull()) << range.EndPosition();
-  const Position& paragraph_end = EndOfParagraph(end).DeepEquivalent();
-  DCHECK(paragraph_end.IsNotNull()) << range.EndPosition();
-
-  // TODO(xiaochengh): There are some cases (crbug.com/640112) where we get
-  // |paragraphStart > paragraphEnd|, which is the reason we cannot directly
-  // return |EphemeralRange(paragraphStart, paragraphEnd)|. This is not
-  // desired, though. We should do more investigation to ensure that why
-  // |paragraphStart <= paragraphEnd| is violated.
-  const Position& result_start =
-      paragraph_start.IsNotNull() && paragraph_start <= range.StartPosition()
-          ? paragraph_start
-          : range.StartPosition();
-  const Position& result_end =
-      paragraph_end.IsNotNull() && paragraph_end >= range.EndPosition()
-          ? paragraph_end
-          : range.EndPosition();
-  return EphemeralRange(result_start, result_end);
-}
-
 TextCheckingParagraph::TextCheckingParagraph(
     const EphemeralRange& checking_range)
     : checking_range_(checking_range),
