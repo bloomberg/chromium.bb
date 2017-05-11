@@ -106,8 +106,8 @@ class MODULES_EXPORT AudioHandler : public ThreadSafeRefCounted<AudioHandler> {
   // Do not release resources used by an audio rendering thread in dispose().
   virtual void Dispose();
 
-  // node() returns a valid object until dispose() is called.  This returns
-  // nullptr after dispose().  We must not call node() in an audio rendering
+  // GetNode() returns a valid object until dispose() is called.  This returns
+  // nullptr after dispose().  We must not call GetNode() in an audio rendering
   // thread.
   AudioNode* GetNode() const;
   // context() returns a valid object until the BaseAudioContext dies, and
@@ -259,8 +259,8 @@ class MODULES_EXPORT AudioHandler : public ThreadSafeRefCounted<AudioHandler> {
   NodeType node_type_;
 
   // The owner AudioNode.  This untraced member is safe because dispose() is
-  // called before the AudioNode death, and it clears m_node.  Do not access
-  // m_node directly, use node() instead.
+  // called before the AudioNode death, and it clears |node_|.  Do not access
+  // |node_| directly, use GetNode() instead.
   // See http://crbug.com/404527 for the detail.
   UntracedMember<AudioNode> node_;
 
