@@ -10,7 +10,6 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel.PanelState;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel.StateChangeReason;
-import org.chromium.chrome.browser.contextualsearch.ContextualSearchBlacklist.BlacklistReason;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 
 import java.util.Collections;
@@ -804,18 +803,6 @@ public class ContextualSearchUma {
     }
 
     /**
-     * Logs whether results were seen when the selected text started with a capital letter but was
-     * not all capital letters.
-     * @param wasSearchContentViewSeen If the panel was opened.
-     */
-    public static void logStartedWithCapitalResultsSeen(boolean wasSearchContentViewSeen) {
-        RecordHistogram.recordEnumeratedHistogram(
-                "Search.ContextualSearchStartedWithCapitalResultsSeen",
-                wasSearchContentViewSeen ? RESULTS_SEEN : RESULTS_NOT_SEEN,
-                RESULTS_SEEN_BOUNDARY);
-    }
-
-    /**
      * Logs whether results were seen and whether any tap suppression heuristics were satisfied.
      * @param wasSearchContentViewSeen If the panel was opened.
      * @param wasAnySuppressionHeuristicSatisfied Whether any of the implemented suppression
@@ -1133,19 +1120,6 @@ public class ContextualSearchUma {
         int code = didForceTranslate ? DID_FORCE_TRANSLATE : WOULD_FORCE_TRANSLATE;
         RecordHistogram.recordEnumeratedHistogram(
                 "Search.ContextualSearchShouldTranslate", code, FORCE_TRANSLATE_BOUNDARY);
-    }
-
-    /**
-     * Logs whether a certain category of a blacklisted term resulted in the search results
-     * being seen.
-     * @param reason The given reason.
-     * @param wasSeen Whether the search results were seen.
-     */
-    public static void logBlacklistSeen(BlacklistReason reason, boolean wasSeen) {
-        if (reason == null) reason = BlacklistReason.NONE;
-        int code = ContextualSearchBlacklist.getBlacklistMetricsCode(reason, wasSeen);
-        RecordHistogram.recordEnumeratedHistogram("Search.ContextualSearchBlacklistSeen",
-                code, ContextualSearchBlacklist.BLACKLIST_BOUNDARY);
     }
 
     /**

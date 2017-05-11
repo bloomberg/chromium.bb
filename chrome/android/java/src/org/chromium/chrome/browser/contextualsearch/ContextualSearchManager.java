@@ -24,7 +24,6 @@ import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel.PanelState;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel.StateChangeReason;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanelContentViewDelegate;
 import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchPanel;
-import org.chromium.chrome.browser.contextualsearch.ContextualSearchBlacklist.BlacklistReason;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchInternalStateController.InternalState;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchSelectionController.SelectionType;
 import org.chromium.chrome.browser.externalnav.ExternalNavigationHandler;
@@ -1350,13 +1349,6 @@ public class ContextualSearchManager implements ContextualSearchManagementDelega
                 hideContextualSearch(StateChangeReason.BASE_PAGE_TAP);
             }
         }
-    }
-
-    @Override
-    public void handleSelectionSuppression(BlacklistReason reason) {
-        if (mIsAccessibilityModeEnabled) return;
-
-        if (mSearchPanel != null) mSearchPanel.getPanelMetrics().setBlacklistReason(reason);
     }
 
     @Override

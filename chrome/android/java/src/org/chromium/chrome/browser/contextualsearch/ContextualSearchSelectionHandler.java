@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.contextualsearch;
 
-import org.chromium.chrome.browser.contextualsearch.ContextualSearchBlacklist.BlacklistReason;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchSelectionController.SelectionType;
 
 /**
@@ -52,13 +51,6 @@ interface ContextualSearchSelectionHandler {
      * Handle a dismissal of the selection on the base page.
      */
     public void handleSelectionDismissal();
-
-    /**
-     * Handles the suppression of the current selection.
-     * @param reason The reason why the selection was blacklisted. If the returned reason
-     *               is BlacklistReason.NONE, it means the selection was not blacklisted.
-     */
-    public void handleSelectionSuppression(BlacklistReason reason);
 
     /**
      * Handle suppression of a Tap gesture.

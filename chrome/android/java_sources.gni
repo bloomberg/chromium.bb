@@ -228,7 +228,6 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/contextmenu/TabularContextMenuViewPager.java",
   "java/src/org/chromium/chrome/browser/contextmenu/PlatformContextMenuUi.java",
   "java/src/org/chromium/chrome/browser/contextualsearch/BarOverlapTapSuppression.java",
-  "java/src/org/chromium/chrome/browser/contextualsearch/ContextualSearchBlacklist.java",
   "java/src/org/chromium/chrome/browser/contextualsearch/ContextualSearchContext.java",
   "java/src/org/chromium/chrome/browser/contextualsearch/ContextualSearchFieldTrial.java",
   "java/src/org/chromium/chrome/browser/contextualsearch/ContextualSearchHeuristic.java",
