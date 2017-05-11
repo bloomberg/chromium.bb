@@ -134,7 +134,8 @@ class ImageResource::ImageResourceFactory : public ResourceFactory {
   Resource* Create(const ResourceRequest& request,
                    const ResourceLoaderOptions& options,
                    const String&) const override {
-    return new ImageResource(request, options, ImageResourceContent::Create(),
+    return new ImageResource(request, options,
+                             ImageResourceContent::CreateNotStarted(),
                              fetch_params_->GetPlaceholderImageRequestType() ==
                                  FetchParameters::kAllowPlaceholder);
   }
@@ -183,7 +184,7 @@ bool ImageResource::CanReuse(const FetchParameters& params) const {
 
 ImageResource* ImageResource::Create(const ResourceRequest& request) {
   return new ImageResource(request, ResourceLoaderOptions(),
-                           ImageResourceContent::Create(), false);
+                           ImageResourceContent::CreateNotStarted(), false);
 }
 
 ImageResource::ImageResource(const ResourceRequest& resource_request,

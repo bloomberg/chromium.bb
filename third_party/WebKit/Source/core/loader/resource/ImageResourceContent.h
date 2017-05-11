@@ -46,10 +46,15 @@ class CORE_EXPORT ImageResourceContent final
   USING_GARBAGE_COLLECTED_MIXIN(ImageResourceContent);
 
  public:
-  static ImageResourceContent* Create(
-      PassRefPtr<blink::Image> image = nullptr) {
-    return new ImageResourceContent(std::move(image));
+  // Used for loading.
+  // Returned content will be associated immediately later with ImageResource.
+  static ImageResourceContent* CreateNotStarted() {
+    return new ImageResourceContent(nullptr);
   }
+
+  // Creates ImageResourceContent from an already loaded image.
+  static ImageResourceContent* CreateLoaded(PassRefPtr<blink::Image>);
+
   static ImageResourceContent* Fetch(FetchParameters&, ResourceFetcher*);
 
   // Returns the nullImage() if the image is not available yet.
