@@ -6,6 +6,7 @@
 #define DOMMatrix_h
 
 #include "bindings/core/v8/ExceptionState.h"
+#include "bindings/core/v8/StringOrUnrestrictedDoubleSequence.h"
 #include "core/dom/ArrayBufferViewHelpers.h"
 #include "core/geometry/DOMMatrixInit.h"
 #include "core/geometry/DOMMatrixReadOnly.h"
@@ -17,11 +18,12 @@ class CORE_EXPORT DOMMatrix : public DOMMatrixReadOnly {
 
  public:
   static DOMMatrix* Create(ExceptionState&);
+  static DOMMatrix* Create(StringOrUnrestrictedDoubleSequence&,
+                           ExceptionState&);
+  // TODO(fserb): double check those two bellow are needed:
   static DOMMatrix* Create(DOMMatrixReadOnly*,
                            ExceptionState& = ASSERT_NO_EXCEPTION);
   static DOMMatrix* Create(const SkMatrix44&, ExceptionState&);
-  static DOMMatrix* Create(const String&, ExceptionState&);
-  static DOMMatrix* Create(Vector<double>, ExceptionState&);
   static DOMMatrix* fromFloat32Array(NotShared<DOMFloat32Array>,
                                      ExceptionState&);
   static DOMMatrix* fromFloat64Array(NotShared<DOMFloat64Array>,

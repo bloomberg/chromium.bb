@@ -96,22 +96,28 @@ DOMMatrixReadOnly* DOMMatrixReadOnly::Create(ExceptionState& exception_state) {
   return new DOMMatrixReadOnly(TransformationMatrix());
 }
 
-DOMMatrixReadOnly* DOMMatrixReadOnly::Create(const String& transform_list,
-                                             ExceptionState& exception_state) {
-  DOMMatrixReadOnly* matrix = new DOMMatrixReadOnly(TransformationMatrix());
-  matrix->SetMatrixValueFromString(transform_list, exception_state);
-  return matrix;
-}
-
-DOMMatrixReadOnly* DOMMatrixReadOnly::Create(Vector<double> sequence,
-                                             ExceptionState& exception_state) {
-  if (sequence.size() != 6 && sequence.size() != 16) {
-    exception_state.ThrowTypeError(
-        "The sequence must contain 6 elements for a 2D matrix or 16 elements "
-        "for a 3D matrix.");
-    return nullptr;
+DOMMatrixReadOnly* DOMMatrixReadOnly::Create(
+    StringOrUnrestrictedDoubleSequence& init,
+    ExceptionState& exception_state) {
+  if (init.isString()) {
+    DOMMatrixReadOnly* matrix = new DOMMatrixReadOnly(TransformationMatrix());
+    matrix->SetMatrixValueFromString(init.getAsString(), exception_state);
+    return matrix;
   }
-  return new DOMMatrixReadOnly(sequence, sequence.size());
+
+  if (init.isUnrestrictedDoubleSequence()) {
+    const Vector<double>& sequence = init.getAsUnrestrictedDoubleSequence();
+    if (sequence.size() != 6 && sequence.size() != 16) {
+      exception_state.ThrowTypeError(
+          "The sequence must contain 6 elements for a 2D matrix or 16 elements "
+          "for a 3D matrix.");
+      return nullptr;
+    }
+    return new DOMMatrixReadOnly(sequence, sequence.size());
+  }
+
+  NOTREACHED();
+  return nullptr;
 }
 
 DOMMatrixReadOnly* DOMMatrixReadOnly::fromFloat32Array(

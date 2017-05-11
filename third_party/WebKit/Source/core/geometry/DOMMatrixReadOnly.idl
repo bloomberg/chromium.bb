@@ -5,9 +5,7 @@
 // https://dev.w3.org/fxtf/geometry/#DOMMatrix
 
 [
-    Constructor,
-    Constructor(DOMString transformList),
-    Constructor(sequence<unrestricted double> numberSequence),
+    Constructor(optional (DOMString or sequence<unrestricted double>) init),
     RaisesException=Constructor,
     Exposed=(Window,Worker),
     RuntimeEnabled=GeometryInterfaces,

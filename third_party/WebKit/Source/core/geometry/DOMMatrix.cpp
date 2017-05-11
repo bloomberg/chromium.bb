@@ -10,6 +10,29 @@ DOMMatrix* DOMMatrix::Create(ExceptionState& exception_state) {
   return new DOMMatrix(TransformationMatrix());
 }
 
+DOMMatrix* DOMMatrix::Create(StringOrUnrestrictedDoubleSequence& init,
+                             ExceptionState& exception_state) {
+  if (init.isString()) {
+    DOMMatrix* matrix = new DOMMatrix(TransformationMatrix());
+    matrix->SetMatrixValueFromString(init.getAsString(), exception_state);
+    return matrix;
+  }
+
+  if (init.isUnrestrictedDoubleSequence()) {
+    const Vector<double>& sequence = init.getAsUnrestrictedDoubleSequence();
+    if (sequence.size() != 6 && sequence.size() != 16) {
+      exception_state.ThrowTypeError(
+          "The sequence must contain 6 elements for a 2D matrix or 16 elements "
+          "for a 3D matrix.");
+      return nullptr;
+    }
+    return new DOMMatrix(sequence, sequence.size());
+  }
+
+  NOTREACHED();
+  return nullptr;
+}
+
 DOMMatrix* DOMMatrix::Create(DOMMatrixReadOnly* other,
                              ExceptionState& exception_state) {
   return new DOMMatrix(other->Matrix(), other->is2D());
@@ -19,24 +42,6 @@ DOMMatrix* DOMMatrix::Create(const SkMatrix44& matrix,
                              ExceptionState& exception_state) {
   TransformationMatrix transformation_matrix(matrix);
   return new DOMMatrix(transformation_matrix, transformation_matrix.IsAffine());
-}
-
-DOMMatrix* DOMMatrix::Create(const String& transform_list,
-                             ExceptionState& exception_state) {
-  DOMMatrix* matrix = new DOMMatrix(TransformationMatrix());
-  matrix->SetMatrixValueFromString(transform_list, exception_state);
-  return matrix;
-}
-
-DOMMatrix* DOMMatrix::Create(Vector<double> sequence,
-                             ExceptionState& exception_state) {
-  if (sequence.size() != 6 && sequence.size() != 16) {
-    exception_state.ThrowTypeError(
-        "The sequence must contain 6 elements for a 2D matrix or 16 elements "
-        "for a 3D matrix.");
-    return nullptr;
-  }
-  return new DOMMatrix(sequence, sequence.size());
 }
 
 DOMMatrix* DOMMatrix::fromFloat32Array(NotShared<DOMFloat32Array> float32_array,
