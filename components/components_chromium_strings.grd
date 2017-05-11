@@ -220,11 +220,6 @@
       <message name="IDS_SESSION_CRASHED_VIEW_MESSAGE" desc="Message shown when the last session didn't exit cleanly.">
         Chromium didn't shut down correctly.
       </message>
-
-      <!-- Strings describing Chromium security policy for DevTools security panel -->
-      <message name="IDS_PRIVATE_USER_DATA_INPUT_DESCRIPTION" desc="Description of a security problem where the site collects private user data on an insecure page, which results in an omnibox warning." translateable="false">
-        This page includes a password or credit card input over HTTP. A warning has been added to the URL bar.
-      </message>
     </messages>
   </release>
 </grit>

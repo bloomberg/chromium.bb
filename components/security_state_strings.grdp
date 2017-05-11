@@ -4,6 +4,9 @@
   <message name="IDS_PRIVATE_USER_DATA_INPUT" desc="Summary phrase for a security problem where the site collects private user data on an insecure page." translateable="false">
     Private User Data Input
   </message>
+  <message name="IDS_PRIVATE_USER_DATA_INPUT_DESCRIPTION" desc="Description of a security problem where the site collects private user data on an insecure page, which results in an omnibox warning." translateable="false">
+    This page includes a password or credit card input over HTTP. A warning has been added to the URL bar.
+  </message>
   <message name="IDS_SAFEBROWSING_WARNING" desc="Summary phrase for a security problem where the site is deemed unsafe by the SafeBrowsing service." translateable="false">
     This page is dangerous (flagged by Google Safe Browsing).
   </message>
