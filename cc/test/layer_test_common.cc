@@ -35,20 +35,12 @@ RenderSurfaceImpl* GetRenderSurface(LayerImpl* layer_impl) {
   EffectTree& effect_tree =
       layer_impl->layer_tree_impl()->property_trees()->effect_tree;
 
-  EffectNode* effect_node = effect_tree.Node(layer_impl->effect_tree_index());
-  if (effect_node->owning_layer_id == layer_impl->id())
-    return effect_tree.GetRenderSurface(layer_impl->effect_tree_index());
-  return nullptr;
-}
+  if (RenderSurfaceImpl* surface =
+          effect_tree.GetRenderSurface(layer_impl->effect_tree_index()))
+    return surface;
 
-const RenderSurfaceImpl* GetRenderSurface(const LayerImpl* layer_impl) {
-  EffectTree& effect_tree =
-      layer_impl->layer_tree_impl()->property_trees()->effect_tree;
-
-  EffectNode* effect_node = effect_tree.Node(layer_impl->effect_tree_index());
-  if (effect_node->owning_layer_id == layer_impl->id())
-    return effect_tree.GetRenderSurface(layer_impl->effect_tree_index());
-  return nullptr;
+  return effect_tree.GetRenderSurface(
+      effect_tree.Node(layer_impl->effect_tree_index())->target_id);
 }
 
 static bool CanRectFBeSafelyRoundedToRect(const gfx::RectF& r) {

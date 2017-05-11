@@ -41,8 +41,8 @@ class QuadList;
 class RenderSurfaceImpl;
 class ResourceProvider;
 
+// Returns the RenderSurfaceImpl into which the given layer draws.
 RenderSurfaceImpl* GetRenderSurface(LayerImpl* layer_impl);
-const RenderSurfaceImpl* GetRenderSurface(const LayerImpl* layer_impl);
 
 class LayerTestCommon {
  public:

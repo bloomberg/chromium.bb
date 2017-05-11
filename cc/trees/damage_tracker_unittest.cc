@@ -207,8 +207,8 @@ TEST_F(DamageTrackerTest, SanityCheckTestTreeWithTwoSurfaces) {
   EXPECT_TRUE(GetRenderSurface(root)->damage_tracker()->GetDamageRectIfValid(
       &root_damage_rect));
 
-  ASSERT_TRUE(GetRenderSurface(child1));
-  EXPECT_FALSE(GetRenderSurface(child2));
+  EXPECT_NE(GetRenderSurface(child1), GetRenderSurface(root));
+  EXPECT_EQ(GetRenderSurface(child2), GetRenderSurface(root));
   EXPECT_EQ(3, GetRenderSurface(root)->num_contributors());
   EXPECT_EQ(2, GetRenderSurface(child1)->num_contributors());
 
@@ -1105,7 +1105,7 @@ TEST_F(DamageTrackerTest, VerifyDamageForAddingAndRemovingRenderSurfaces) {
   EmulateDrawingOneFrame(root);
 
   // Sanity check that there is only one surface now.
-  ASSERT_FALSE(GetRenderSurface(child1));
+  ASSERT_EQ(GetRenderSurface(child1), GetRenderSurface(root));
   ASSERT_EQ(4, GetRenderSurface(root)->num_contributors());
 
   EXPECT_TRUE(GetRenderSurface(root)->damage_tracker()->GetDamageRectIfValid(

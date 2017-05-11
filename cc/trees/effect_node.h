@@ -61,7 +61,9 @@ struct CC_EXPORT EffectNode {
   bool subtree_has_copy_request;
   int transform_id;
   int clip_id;
-  // Effect node id of which this effect contributes to.
+
+  // This is the id of the ancestor effect node that induces a
+  // RenderSurfaceImpl.
   int target_id;
   int mask_layer_id;
   int closest_ancestor_with_copy_request_id;
