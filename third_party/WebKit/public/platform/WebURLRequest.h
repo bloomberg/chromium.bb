@@ -150,19 +150,22 @@ class WebURLRequest {
   // The Previews types which determines whether to request a Preview version of
   // the resource.
   enum PreviewsTypes {
-    kPreviewsUnspecified = 0,       // Let the browser process decide whether or
-                                    // not to request Preview types.
-    kServerLoFiOn = 1 << 0,         // Request a Lo-Fi version of the resource
-                                    // from the server.
-    kClientLoFiOn = 1 << 1,         // Request a Lo-Fi version of the resource
-                                    // from the client.
-    kServerLitePageOn = 1 << 2,     // Request a Lite Page version of the
-                                    // resource from the server.
-    kPreviewsNoTransform = 1 << 3,  // Explicitly forbid Previews
-                                    // transformations.
-    kPreviewsOff = 1 << 4,          // Request a normal (non-Preview) version of
-                                    // the resource. Server transformations may
-                                    // still happen if the page is heavy.
+    kPreviewsUnspecified = 0,  // Let the browser process decide whether or
+                               // not to request Preview types.
+    kServerLoFiOn = 1 << 0,    // Request a Lo-Fi version of the resource
+                               // from the server.
+    kClientLoFiOn = 1 << 1,    // Request a Lo-Fi version of the resource
+                               // from the client.
+    kClientLoFiAutoReload = 1 << 2,  // Request the original version of the
+                                     // resource after a decoding error occurred
+                                     // when attempting to use Client Lo-Fi.
+    kServerLitePageOn = 1 << 3,      // Request a Lite Page version of the
+                                     // resource from the server.
+    kPreviewsNoTransform = 1 << 4,   // Explicitly forbid Previews
+                                     // transformations.
+    kPreviewsOff = 1 << 5,  // Request a normal (non-Preview) version of
+                            // the resource. Server transformations may
+                            // still happen if the page is heavy.
     kPreviewsStateLast = kPreviewsOff
   };
 

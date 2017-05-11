@@ -922,8 +922,8 @@ void Resource::SetCachePolicyBypassingCache() {
   resource_request_.SetCachePolicy(WebCachePolicy::kBypassingCache);
 }
 
-void Resource::SetPreviewsStateNoTransform() {
-  resource_request_.SetPreviewsState(WebURLRequest::kPreviewsNoTransform);
+void Resource::SetPreviewsState(WebURLRequest::PreviewsState previews_state) {
+  resource_request_.SetPreviewsState(previews_state);
 }
 
 void Resource::ClearRangeRequestHeader() {

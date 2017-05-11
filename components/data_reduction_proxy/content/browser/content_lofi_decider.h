@@ -42,6 +42,8 @@ class ContentLoFiDecider : public LoFiDecider {
       net::HttpRequestHeaders* headers) const override;
   bool ShouldRecordLoFiUMA(const net::URLRequest& request) const override;
   bool IsClientLoFiImageRequest(const net::URLRequest& request) const override;
+  bool IsClientLoFiAutoReloadRequest(
+      const net::URLRequest& request) const override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ContentLoFiDecider);

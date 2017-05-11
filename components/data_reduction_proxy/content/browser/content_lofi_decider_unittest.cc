@@ -818,4 +818,32 @@ TEST_F(ContentLoFiDeciderTest, RequestIsClientSideLoFiImageTest) {
   EXPECT_TRUE(lofi_decider->IsClientLoFiImageRequest(*request));
 }
 
+TEST_F(ContentLoFiDeciderTest, RequestIsClientLoFiAutoReload) {
+  // IsClientLoFiAutoReloadRequest() should return true for any request with the
+  // CLIENT_LOFI_AUTO_RELOAD bit set.
+
+  EXPECT_TRUE(ContentLoFiDecider().IsClientLoFiAutoReloadRequest(
+      *CreateRequestByType(content::RESOURCE_TYPE_IMAGE, false,
+                           content::CLIENT_LOFI_AUTO_RELOAD)));
+
+  EXPECT_TRUE(
+      ContentLoFiDecider().IsClientLoFiAutoReloadRequest(*CreateRequestByType(
+          content::RESOURCE_TYPE_IMAGE, true,
+          content::CLIENT_LOFI_AUTO_RELOAD | content::PREVIEWS_NO_TRANSFORM)));
+
+  EXPECT_TRUE(ContentLoFiDecider().IsClientLoFiAutoReloadRequest(
+      *CreateRequestByType(content::RESOURCE_TYPE_MAIN_FRAME, true,
+                           content::CLIENT_LOFI_AUTO_RELOAD)));
+
+  EXPECT_TRUE(ContentLoFiDecider().IsClientLoFiAutoReloadRequest(
+      *CreateRequestByType(content::RESOURCE_TYPE_SCRIPT, true,
+                           content::CLIENT_LOFI_AUTO_RELOAD)));
+
+  // IsClientLoFiAutoReloadRequest() should return false for any request without
+  // the CLIENT_LOFI_AUTO_RELOAD bit set.
+  EXPECT_FALSE(ContentLoFiDecider().IsClientLoFiAutoReloadRequest(
+      *CreateRequestByType(content::RESOURCE_TYPE_IMAGE, false,
+                           content::PREVIEWS_NO_TRANSFORM)));
+}
+
 }  // namespace data_reduction_proxy
