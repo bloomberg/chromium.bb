@@ -56,7 +56,8 @@ class MetricsWebContentsObserver
     void OnGoingAway();
 
     // Invoked when a new PageLoadTiming update has been received and processed.
-    virtual void OnTimingUpdated(const PageLoadTiming& timing,
+    virtual void OnTimingUpdated(bool is_main_frame,
+                                 const PageLoadTiming& timing,
                                  const PageLoadMetadata& metadata) {}
 
    private:
