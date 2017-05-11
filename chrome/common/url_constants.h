@@ -242,7 +242,6 @@ extern const char kChromeUIThemeHost[];
 extern const char kChromeUIThumbnailHost[];
 extern const char kChromeUIThumbnailHost2[];
 extern const char kChromeUIThumbnailListHost[];
-extern const char kChromeUITouchIconHost[];
 extern const char kChromeUITranslateInternalsHost[];
 extern const char kChromeUIUberFrameHost[];
 extern const char kChromeUIUberHost[];

@@ -46,16 +46,8 @@ class Profile;
 //    Example: chrome://favicon/iconurl/https://www.google.com/favicon.ico
 class FaviconSource : public content::URLDataSource {
  public:
-  // Defines the type of icon the FaviconSource will provide.
-  enum IconType {
-    FAVICON,
-    // Any available icon in the priority of TOUCH_ICON_PRECOMPOSED, TOUCH_ICON,
-    // FAVICON, and default favicon.
-    ANY
-  };
-
   // |type| is the type of icon this FaviconSource will provide.
-  FaviconSource(Profile* profile, IconType type);
+  explicit FaviconSource(Profile* profile);
 
   ~FaviconSource() override;
 
@@ -118,9 +110,6 @@ class FaviconSource : public content::URLDataSource {
   void SendDefaultResponse(const IconRequest& request);
 
   base::CancelableTaskTracker cancelable_task_tracker_;
-
-  // The favicon_base::IconTypes of icon that this FaviconSource handles.
-  int icon_types_;
 
   DISALLOW_COPY_AND_ASSIGN(FaviconSource);
 };

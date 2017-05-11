@@ -30,12 +30,10 @@ struct ParsedFaviconPath {
 };
 
 // Parses |path|, which should be in the format described at the top of the
-// file "chrome/browser/ui/webui/favicon_source.h". |icon_types| indicates
-// which icon types are supported. Returns true if |path| could be parsed.
-// The result of the parsing will be stored in a ParsedFaviconPath struct.
-bool ParseFaviconPath(const std::string& path,
-                      int icon_types,
-                      ParsedFaviconPath* parsed);
+// file "chrome/browser/ui/webui/favicon_source.h". Returns true if |path| could
+// be parsed. The result of the parsing will be stored in a ParsedFaviconPath
+// struct.
+bool ParseFaviconPath(const std::string& path, ParsedFaviconPath* parsed);
 
 }  // namespace chrome
 
