@@ -34,6 +34,7 @@
 #endif
 
 using chrome_test_util::NavigationBarDoneButton;
+using chrome_test_util::OKButton;
 using web::test::HttpServer;
 
 namespace {
@@ -258,12 +259,6 @@ void TypeInPrompt(NSString* input) {
       performAction:grey_typeText(input)];
 }
 
-void TapOK() {
-  id<GREYMatcher> ok_button =
-      chrome_test_util::ButtonWithAccessibilityLabelId(IDS_OK);
-  [[EarlGrey selectElementWithMatcher:ok_button] performAction:grey_tap()];
-}
-
 void TapCancel() {
   [[EarlGrey selectElementWithMatcher:chrome_test_util::CancelButton()]
       performAction:grey_tap()];
@@ -352,8 +347,7 @@ void TapSuppressDialogsButton() {
   [self loadBlankTestPage];
   ShowJavaScriptDialog(JavaScriptAlertType::ALERT);
 
-  // Tap the OK button.
-  TapOK();
+  [[EarlGrey selectElementWithMatcher:OKButton()] performAction:grey_tap()];
 
   // Wait for the html body to be reset to the correct value.
   WaitForWebDisplay(kAlertResultBody);
@@ -373,8 +367,7 @@ void TapSuppressDialogsButton() {
   [self loadBlankTestPage];
   ShowJavaScriptDialog(JavaScriptAlertType::CONFIRMATION);
 
-  // Tap the OK button.
-  TapOK();
+  [[EarlGrey selectElementWithMatcher:OKButton()] performAction:grey_tap()];
 
   // Wait for the html body to be reset to the correct value.
   WaitForWebDisplay(kConfirmationResultBodyOK);
@@ -418,8 +411,7 @@ void TapSuppressDialogsButton() {
   // Enter text into text field.
   TypeInPrompt(@(kPromptTestUserInput));
 
-  // Tap the OK button.
-  TapOK();
+  [[EarlGrey selectElementWithMatcher:OKButton()] performAction:grey_tap()];
 
   // Wait for the html body to be reset to the input text.
   WaitForWebDisplay(kPromptTestUserInput);
@@ -458,8 +450,7 @@ void TapSuppressDialogsButton() {
   webState->ExecuteJavaScript(base::SysNSStringToUTF16(script));
   WaitForJavaScripDialogToBeShown();
 
-  // Tap the OK button and wait for another dialog to be shown.
-  TapOK();
+  [[EarlGrey selectElementWithMatcher:OKButton()] performAction:grey_tap()];
   WaitForJavaScripDialogToBeShown();
 
   // Tap the suppress dialogs button.
@@ -511,8 +502,7 @@ void TapSuppressDialogsButton() {
   // Make sure the alert is present.
   WaitForJavaScripDialogToBeShown();
 
-  // Tap the OK button.
-  TapOK();
+  [[EarlGrey selectElementWithMatcher:OKButton()] performAction:grey_tap()];
 
   // Wait for the html body to be reset to the correct value.
   WaitForWebDisplay(kAlertResultBody);
@@ -541,8 +531,7 @@ void TapSuppressDialogsButton() {
   // Show an alert and assert it is present.
   ShowJavaScriptDialog(JavaScriptAlertType::ALERT);
 
-  // Tap the OK button.
-  TapOK();
+  [[EarlGrey selectElementWithMatcher:OKButton()] performAction:grey_tap()];
 
   // Wait for the html body to be reset to the correct value.
   WaitForWebDisplay(kAlertResultBody);
@@ -596,8 +585,7 @@ void TapSuppressDialogsButton() {
   [[EarlGrey selectElementWithMatcher:chrome_test_util::OmniboxText(title)]
       assertWithMatcher:grey_notNil()];
 
-  // Close the alert.
-  TapOK();
+  [[EarlGrey selectElementWithMatcher:OKButton()] performAction:grey_tap()];
 
   // Reenable synchronization on iPads now that the dialog has been dismissed.
   if (IsIPadIdiom()) {

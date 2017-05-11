@@ -186,4 +186,8 @@ id<GREYMatcher> SettingsMenuButton() {
   return grey_accessibilityID(kToolsMenuSettingsId);
 }
 
+id<GREYMatcher> OKButton() {
+  return ButtonWithAccessibilityLabelId(IDS_OK);
+}
+
 }  // namespace chrome_test_util
