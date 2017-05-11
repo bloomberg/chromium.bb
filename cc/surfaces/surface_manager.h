@@ -13,6 +13,7 @@
 #include <unordered_set>
 #include <vector>
 
+#include "base/containers/flat_set.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -254,11 +255,11 @@ class CC_SURFACES_EXPORT SurfaceManager {
   // Tracks references from the child surface to parent surface. If there are
   // zero entries in the set for a SurfaceId then nothing is referencing the
   // surface and it can be garbage collected.
-  std::unordered_map<SurfaceId, SurfaceIdSet, SurfaceIdHash>
+  std::unordered_map<SurfaceId, base::flat_set<SurfaceId>, SurfaceIdHash>
       child_to_parent_refs_;
   // Tracks references from the parent surface to child surface. Is the inverse
   // of |child_to_parent_refs_|.
-  std::unordered_map<SurfaceId, SurfaceIdSet, SurfaceIdHash>
+  std::unordered_map<SurfaceId, base::flat_set<SurfaceId>, SurfaceIdHash>
       parent_to_child_refs_;
 
   // Root SurfaceId that references display root surfaces. There is no Surface

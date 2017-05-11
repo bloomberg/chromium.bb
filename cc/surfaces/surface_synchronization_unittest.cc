@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/containers/flat_set.h"
 #include "cc/surfaces/compositor_frame_sink_support.h"
 #include "cc/surfaces/surface_id.h"
 #include "cc/surfaces/surface_manager.h"
@@ -82,7 +83,7 @@ class SurfaceSynchronizationTest : public testing::Test,
   SurfaceManager& surface_manager() { return surface_manager_; }
 
   // Returns all the references where |surface_id| is the parent.
-  const SurfaceManager::SurfaceIdSet& GetChildReferences(
+  const base::flat_set<SurfaceId>& GetChildReferences(
       const SurfaceId& surface_id) {
     return surface_manager().parent_to_child_refs_[surface_id];
   }
