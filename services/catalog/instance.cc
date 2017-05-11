@@ -78,7 +78,7 @@ void Instance::ResolveServiceName(const std::string& service_name,
 }
 
 void Instance::GetEntries(const base::Optional<std::vector<std::string>>& names,
-                          const GetEntriesCallback& callback) {
+                          GetEntriesCallback callback) {
   DCHECK(system_cache_);
 
   std::vector<mojom::EntryPtr> entries;
@@ -94,17 +94,17 @@ void Instance::GetEntries(const base::Optional<std::vector<std::string>>& names,
         AddEntry(*entry, &entries);
     }
   }
-  callback.Run(std::move(entries));
+  std::move(callback).Run(std::move(entries));
 }
 
 void Instance::GetEntriesProvidingCapability(
     const std::string& capability,
-    const GetEntriesProvidingCapabilityCallback& callback) {
+    GetEntriesProvidingCapabilityCallback callback) {
   std::vector<mojom::EntryPtr> entries;
   for (const auto& entry : system_cache_->entries())
     if (entry.second->ProvidesCapability(capability))
       entries.push_back(mojom::Entry::From(*entry.second));
-  callback.Run(std::move(entries));
+  std::move(callback).Run(std::move(entries));
 }
 
 }  // namespace catalog

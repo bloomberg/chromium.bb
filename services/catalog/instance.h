@@ -38,10 +38,10 @@ class Instance : public service_manager::mojom::Resolver,
 
   // mojom::Catalog:
   void GetEntries(const base::Optional<std::vector<std::string>>& names,
-                  const GetEntriesCallback& callback) override;
+                  GetEntriesCallback callback) override;
   void GetEntriesProvidingCapability(
       const std::string& capability,
-      const GetEntriesProvidingCapabilityCallback& callback) override;
+      GetEntriesProvidingCapabilityCallback callback) override;
 
   mojo::BindingSet<service_manager::mojom::Resolver> resolver_bindings_;
   mojo::BindingSet<mojom::Catalog> catalog_bindings_;
