@@ -678,40 +678,41 @@ bool ComputedStyle::DiffNeedsFullLayoutAndPaintInvalidation(
   }
 
   if (rare_inherited_data_.Get() != other.rare_inherited_data_.Get()) {
-    if (rare_inherited_data_->highlight !=
-            other.rare_inherited_data_->highlight ||
-        rare_inherited_data_->indent != other.rare_inherited_data_->indent ||
+    if (rare_inherited_data_->highlight_ !=
+            other.rare_inherited_data_->highlight_ ||
+        rare_inherited_data_->indent_ != other.rare_inherited_data_->indent_ ||
         rare_inherited_data_->text_align_last_ !=
             other.rare_inherited_data_->text_align_last_ ||
         rare_inherited_data_->text_indent_line_ !=
             other.rare_inherited_data_->text_indent_line_ ||
         rare_inherited_data_->effective_zoom_ !=
             other.rare_inherited_data_->effective_zoom_ ||
-        rare_inherited_data_->word_break !=
-            other.rare_inherited_data_->word_break ||
-        rare_inherited_data_->overflow_wrap !=
-            other.rare_inherited_data_->overflow_wrap ||
-        rare_inherited_data_->line_break !=
-            other.rare_inherited_data_->line_break ||
-        rare_inherited_data_->text_security !=
-            other.rare_inherited_data_->text_security ||
-        rare_inherited_data_->hyphens != other.rare_inherited_data_->hyphens ||
-        rare_inherited_data_->hyphenation_limit_before !=
-            other.rare_inherited_data_->hyphenation_limit_before ||
-        rare_inherited_data_->hyphenation_limit_after !=
-            other.rare_inherited_data_->hyphenation_limit_after ||
-        rare_inherited_data_->hyphenation_string !=
-            other.rare_inherited_data_->hyphenation_string ||
+        rare_inherited_data_->word_break_ !=
+            other.rare_inherited_data_->word_break_ ||
+        rare_inherited_data_->overflow_wrap_ !=
+            other.rare_inherited_data_->overflow_wrap_ ||
+        rare_inherited_data_->line_break_ !=
+            other.rare_inherited_data_->line_break_ ||
+        rare_inherited_data_->text_security_ !=
+            other.rare_inherited_data_->text_security_ ||
+        rare_inherited_data_->hyphens_ !=
+            other.rare_inherited_data_->hyphens_ ||
+        rare_inherited_data_->hyphenation_limit_before_ !=
+            other.rare_inherited_data_->hyphenation_limit_before_ ||
+        rare_inherited_data_->hyphenation_limit_after_ !=
+            other.rare_inherited_data_->hyphenation_limit_after_ ||
+        rare_inherited_data_->hyphenation_string_ !=
+            other.rare_inherited_data_->hyphenation_string_ ||
         rare_inherited_data_->respect_image_orientation_ !=
             other.rare_inherited_data_->respect_image_orientation_ ||
         rare_inherited_data_->ruby_position_ !=
             other.rare_inherited_data_->ruby_position_ ||
-        rare_inherited_data_->text_emphasis_mark !=
-            other.rare_inherited_data_->text_emphasis_mark ||
-        rare_inherited_data_->text_emphasis_position !=
-            other.rare_inherited_data_->text_emphasis_position ||
-        rare_inherited_data_->text_emphasis_custom_mark !=
-            other.rare_inherited_data_->text_emphasis_custom_mark ||
+        rare_inherited_data_->text_emphasis_mark_ !=
+            other.rare_inherited_data_->text_emphasis_mark_ ||
+        rare_inherited_data_->text_emphasis_position_ !=
+            other.rare_inherited_data_->text_emphasis_position_ ||
+        rare_inherited_data_->text_emphasis_custom_mark_ !=
+            other.rare_inherited_data_->text_emphasis_custom_mark_ ||
         rare_inherited_data_->text_justify_ !=
             other.rare_inherited_data_->text_justify_ ||
         rare_inherited_data_->text_orientation_ !=
@@ -722,12 +723,12 @@ bool ComputedStyle::DiffNeedsFullLayoutAndPaintInvalidation(
             other.rare_inherited_data_->tab_size_ ||
         rare_inherited_data_->text_size_adjust_ !=
             other.rare_inherited_data_->text_size_adjust_ ||
-        rare_inherited_data_->list_style_image !=
-            other.rare_inherited_data_->list_style_image ||
+        rare_inherited_data_->list_style_image_ !=
+            other.rare_inherited_data_->list_style_image_ ||
         rare_inherited_data_->line_height_step_ !=
             other.rare_inherited_data_->line_height_step_ ||
-        rare_inherited_data_->text_stroke_width !=
-            other.rare_inherited_data_->text_stroke_width)
+        rare_inherited_data_->text_stroke_width_ !=
+            other.rare_inherited_data_->text_stroke_width_)
       return true;
 
     if (!rare_inherited_data_->ShadowDataEquivalent(
@@ -890,10 +891,10 @@ bool ComputedStyle::DiffNeedsPaintInvalidationObject(
     return true;
 
   if (rare_inherited_data_.Get() != other.rare_inherited_data_.Get()) {
-    if (rare_inherited_data_->user_modify !=
-            other.rare_inherited_data_->user_modify ||
-        rare_inherited_data_->user_select !=
-            other.rare_inherited_data_->user_select ||
+    if (rare_inherited_data_->user_modify_ !=
+            other.rare_inherited_data_->user_modify_ ||
+        rare_inherited_data_->user_select_ !=
+            other.rare_inherited_data_->user_select_ ||
         rare_inherited_data_->image_rendering_ !=
             other.rare_inherited_data_->image_rendering_)
       return true;
@@ -1081,14 +1082,14 @@ void ComputedStyle::UpdatePropertySpecificDifferences(
                  other.rare_inherited_data_->VisitedLinkTextStrokeColor() ||
              rare_inherited_data_->VisitedLinkTextEmphasisColor() !=
                  other.rare_inherited_data_->VisitedLinkTextEmphasisColor() ||
-             rare_inherited_data_->text_emphasis_fill !=
-                 other.rare_inherited_data_->text_emphasis_fill ||
+             rare_inherited_data_->text_emphasis_fill_ !=
+                 other.rare_inherited_data_->text_emphasis_fill_ ||
              rare_inherited_data_->text_underline_position_ !=
                  other.rare_inherited_data_->text_underline_position_ ||
              rare_inherited_data_->text_decoration_skip_ !=
                  other.rare_inherited_data_->text_decoration_skip_ ||
-             rare_inherited_data_->applied_text_decorations !=
-                 other.rare_inherited_data_->applied_text_decorations ||
+             rare_inherited_data_->applied_text_decorations_ !=
+                 other.rare_inherited_data_->applied_text_decorations_ ||
              rare_inherited_data_->CaretColor() !=
                  other.rare_inherited_data_->CaretColor() ||
              rare_inherited_data_->VisitedLinkCaretColor() !=
@@ -1118,23 +1119,23 @@ void ComputedStyle::AddPaintImage(StyleImage* image) {
 void ComputedStyle::AddCursor(StyleImage* image,
                               bool hot_spot_specified,
                               const IntPoint& hot_spot) {
-  if (!rare_inherited_data_.Access()->cursor_data)
-    rare_inherited_data_.Access()->cursor_data = new CursorList;
-  rare_inherited_data_.Access()->cursor_data->push_back(
+  if (!rare_inherited_data_.Access()->cursor_data_)
+    rare_inherited_data_.Access()->cursor_data_ = new CursorList;
+  rare_inherited_data_.Access()->cursor_data_->push_back(
       CursorData(image, hot_spot_specified, hot_spot));
 }
 
 void ComputedStyle::SetCursorList(CursorList* other) {
-  rare_inherited_data_.Access()->cursor_data = other;
+  rare_inherited_data_.Access()->cursor_data_ = other;
 }
 
 void ComputedStyle::SetQuotes(PassRefPtr<QuotesData> q) {
-  rare_inherited_data_.Access()->quotes = std::move(q);
+  rare_inherited_data_.Access()->quotes_ = std::move(q);
 }
 
 void ComputedStyle::ClearCursorList() {
-  if (rare_inherited_data_->cursor_data)
-    rare_inherited_data_.Access()->cursor_data = nullptr;
+  if (rare_inherited_data_->cursor_data_)
+    rare_inherited_data_.Access()->cursor_data_ = nullptr;
 }
 
 static bool HasPropertyThatCreatesStackingContext(
@@ -1394,7 +1395,7 @@ void ComputedStyle::ApplyMotionPathTransform(
 }
 
 void ComputedStyle::SetTextShadow(PassRefPtr<ShadowList> s) {
-  rare_inherited_data_.Access()->text_shadow = std::move(s);
+  rare_inherited_data_.Access()->text_shadow_ = std::move(s);
 }
 
 void ComputedStyle::SetBoxShadow(PassRefPtr<ShadowList> s) {
@@ -1423,11 +1424,11 @@ static FloatRoundedRect::Radii CalcRadiiFor(const BorderData& border,
 }
 
 StyleImage* ComputedStyle::ListStyleImage() const {
-  return rare_inherited_data_->list_style_image.Get();
+  return rare_inherited_data_->list_style_image_.Get();
 }
 void ComputedStyle::SetListStyleImage(StyleImage* v) {
-  if (rare_inherited_data_->list_style_image != v)
-    rare_inherited_data_.Access()->list_style_image = v;
+  if (rare_inherited_data_->list_style_image_ != v)
+    rare_inherited_data_.Access()->list_style_image_ = v;
 }
 
 Color ComputedStyle::GetColor() const {
@@ -1612,7 +1613,7 @@ Hyphenation* ComputedStyle::GetHyphenation() const {
 
 const AtomicString& ComputedStyle::HyphenString() const {
   const AtomicString& hyphenation_string =
-      rare_inherited_data_.Get()->hyphenation_string;
+      rare_inherited_data_.Get()->hyphenation_string_;
   if (!hyphenation_string.IsNull())
     return hyphenation_string;
 
@@ -1734,7 +1735,7 @@ FontStretch ComputedStyle::GetFontStretch() const {
 TextDecoration ComputedStyle::TextDecorationsInEffect() const {
   if (HasSimpleUnderlineInternal())
     return kTextDecorationUnderline;
-  if (!rare_inherited_data_->applied_text_decorations)
+  if (!rare_inherited_data_->applied_text_decorations_)
     return kTextDecorationNone;
 
   int decorations = 0;
@@ -1761,16 +1762,16 @@ const Vector<AppliedTextDecoration>& ComputedStyle::AppliedTextDecorations()
         VisitedDependentColor(CSSPropertyTextDecorationColor));
     return underline;
   }
-  if (!rare_inherited_data_->applied_text_decorations) {
+  if (!rare_inherited_data_->applied_text_decorations_) {
     DEFINE_STATIC_LOCAL(Vector<AppliedTextDecoration>, empty, ());
     return empty;
   }
 
-  return rare_inherited_data_->applied_text_decorations->GetVector();
+  return rare_inherited_data_->applied_text_decorations_->GetVector();
 }
 
 StyleInheritedVariables* ComputedStyle::InheritedVariables() const {
-  return rare_inherited_data_->variables.Get();
+  return rare_inherited_data_->variables_.Get();
 }
 
 StyleNonInheritedVariables* ComputedStyle::NonInheritedVariables() const {
@@ -1779,7 +1780,7 @@ StyleNonInheritedVariables* ComputedStyle::NonInheritedVariables() const {
 
 StyleInheritedVariables& ComputedStyle::MutableInheritedVariables() {
   RefPtr<StyleInheritedVariables>& variables =
-      rare_inherited_data_.Access()->variables;
+      rare_inherited_data_.Access()->variables_;
   if (!variables)
     variables = StyleInheritedVariables::Create();
   else if (!variables->HasOneRef())
@@ -2012,7 +2013,7 @@ void ComputedStyle::SetTextAutosizingMultiplier(float multiplier) {
 void ComputedStyle::AddAppliedTextDecoration(
     const AppliedTextDecoration& decoration) {
   RefPtr<AppliedTextDecorationList>& list =
-      rare_inherited_data_.Access()->applied_text_decorations;
+      rare_inherited_data_.Access()->applied_text_decorations_;
 
   if (!list)
     list = AppliedTextDecorationList::Create();
@@ -2024,7 +2025,7 @@ void ComputedStyle::AddAppliedTextDecoration(
 
 void ComputedStyle::OverrideTextDecorationColors(Color override_color) {
   RefPtr<AppliedTextDecorationList>& list =
-      rare_inherited_data_.Access()->applied_text_decorations;
+      rare_inherited_data_.Access()->applied_text_decorations_;
   DCHECK(list);
   if (!list->HasOneRef())
     list = list->Copy();
@@ -2038,7 +2039,7 @@ void ComputedStyle::ApplyTextDecorations(
     bool override_existing_colors) {
   if (GetTextDecoration() == kTextDecorationNone &&
       !HasSimpleUnderlineInternal() &&
-      !rare_inherited_data_->applied_text_decorations)
+      !rare_inherited_data_->applied_text_decorations_)
     return;
 
   // If there are any color changes or decorations set by this element, stop
@@ -2054,7 +2055,7 @@ void ComputedStyle::ApplyTextDecorations(
         parent_text_decoration_color));
   }
   if (override_existing_colors &&
-      rare_inherited_data_->applied_text_decorations)
+      rare_inherited_data_->applied_text_decorations_)
     OverrideTextDecorationColors(current_text_decoration_color);
   if (GetTextDecoration() == kTextDecorationNone)
     return;
@@ -2066,7 +2067,7 @@ void ComputedStyle::ApplyTextDecorations(
   bool is_simple_underline = decoration_lines == kTextDecorationUnderline &&
                              decoration_style == kTextDecorationStyleSolid &&
                              TextDecorationColor().IsCurrentColor();
-  if (is_simple_underline && !rare_inherited_data_->applied_text_decorations) {
+  if (is_simple_underline && !rare_inherited_data_->applied_text_decorations_) {
     SetHasSimpleUnderlineInternal(true);
     return;
   }
@@ -2078,17 +2079,18 @@ void ComputedStyle::ApplyTextDecorations(
 void ComputedStyle::ClearAppliedTextDecorations() {
   SetHasSimpleUnderlineInternal(false);
 
-  if (rare_inherited_data_->applied_text_decorations)
-    rare_inherited_data_.Access()->applied_text_decorations = nullptr;
+  if (rare_inherited_data_->applied_text_decorations_)
+    rare_inherited_data_.Access()->applied_text_decorations_ = nullptr;
 }
 
 void ComputedStyle::RestoreParentTextDecorations(
     const ComputedStyle& parent_style) {
   SetHasSimpleUnderlineInternal(parent_style.HasSimpleUnderlineInternal());
-  if (rare_inherited_data_->applied_text_decorations !=
-      parent_style.rare_inherited_data_->applied_text_decorations)
-    rare_inherited_data_.Access()->applied_text_decorations =
-        parent_style.rare_inherited_data_->applied_text_decorations;
+  if (rare_inherited_data_->applied_text_decorations_ !=
+      parent_style.rare_inherited_data_->applied_text_decorations_) {
+    rare_inherited_data_.Access()->applied_text_decorations_ =
+        parent_style.rare_inherited_data_->applied_text_decorations_;
+  }
 }
 
 void ComputedStyle::ClearMultiCol() {
@@ -2374,7 +2376,7 @@ bool ComputedStyle::ColumnRuleEquivalent(
 
 TextEmphasisMark ComputedStyle::GetTextEmphasisMark() const {
   TextEmphasisMark mark =
-      static_cast<TextEmphasisMark>(rare_inherited_data_->text_emphasis_mark);
+      static_cast<TextEmphasisMark>(rare_inherited_data_->text_emphasis_mark_);
   if (mark != kTextEmphasisMarkAuto)
     return mark;
 

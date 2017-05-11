@@ -1681,17 +1681,17 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   // hyphens
   static Hyphens InitialHyphens() { return kHyphensManual; }
   Hyphens GetHyphens() const {
-    return static_cast<Hyphens>(rare_inherited_data_->hyphens);
+    return static_cast<Hyphens>(rare_inherited_data_->hyphens_);
   }
-  void SetHyphens(Hyphens h) { SET_VAR(rare_inherited_data_, hyphens, h); }
+  void SetHyphens(Hyphens h) { SET_VAR(rare_inherited_data_, hyphens_, h); }
 
   // -webkit-hyphenate-character
   static const AtomicString& InitialHyphenationString() { return g_null_atom; }
   const AtomicString& HyphenationString() const {
-    return rare_inherited_data_->hyphenation_string;
+    return rare_inherited_data_->hyphenation_string_;
   }
   void SetHyphenationString(const AtomicString& h) {
-    SET_VAR(rare_inherited_data_, hyphenation_string, h);
+    SET_VAR(rare_inherited_data_, hyphenation_string_, h);
   }
 
   // line-height
@@ -1707,26 +1707,26 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
 
   // orphans
   static short InitialOrphans() { return 2; }
-  short Orphans() const { return rare_inherited_data_->orphans; }
-  void SetOrphans(short o) { SET_VAR(rare_inherited_data_, orphans, o); }
+  short Orphans() const { return rare_inherited_data_->orphans_; }
+  void SetOrphans(short o) { SET_VAR(rare_inherited_data_, orphans_, o); }
 
   // widows
   static short InitialWidows() { return 2; }
-  short Widows() const { return rare_inherited_data_->widows; }
-  void SetWidows(short w) { SET_VAR(rare_inherited_data_, widows, w); }
+  short Widows() const { return rare_inherited_data_->widows_; }
+  void SetWidows(short w) { SET_VAR(rare_inherited_data_, widows_, w); }
 
   // overflow-wrap (aka word-wrap)
   static EOverflowWrap InitialOverflowWrap() { return kNormalOverflowWrap; }
   EOverflowWrap OverflowWrap() const {
-    return static_cast<EOverflowWrap>(rare_inherited_data_->overflow_wrap);
+    return static_cast<EOverflowWrap>(rare_inherited_data_->overflow_wrap_);
   }
   void SetOverflowWrap(EOverflowWrap b) {
-    SET_VAR(rare_inherited_data_, overflow_wrap, b);
+    SET_VAR(rare_inherited_data_, overflow_wrap_, b);
   }
 
   // quotes
   static QuotesData* InitialQuotes() { return 0; }
-  QuotesData* Quotes() const { return rare_inherited_data_->quotes.Get(); }
+  QuotesData* Quotes() const { return rare_inherited_data_->quotes_.Get(); }
   void SetQuotes(PassRefPtr<QuotesData>);
 
   // line-height-step
@@ -1741,9 +1741,9 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   // speak
   static ESpeak InitialSpeak() { return kSpeakNormal; }
   ESpeak Speak() const {
-    return static_cast<ESpeak>(rare_inherited_data_->speak);
+    return static_cast<ESpeak>(rare_inherited_data_->speak_);
   }
-  void SetSpeak(ESpeak s) { SET_VAR(rare_inherited_data_, speak, s); }
+  void SetSpeak(ESpeak s) { SET_VAR(rare_inherited_data_, speak_, s); }
 
   // tab-size
   static TabSize InitialTabSize() { return TabSize(8); }
@@ -1774,7 +1774,7 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   static Length InitialTextIndent() { return Length(kFixed); }
   static TextIndentLine InitialTextIndentLine() { return kTextIndentFirstLine; }
   static TextIndentType InitialTextIndentType() { return kTextIndentNormal; }
-  const Length& TextIndent() const { return rare_inherited_data_->indent; }
+  const Length& TextIndent() const { return rare_inherited_data_->indent_; }
   TextIndentLine GetTextIndentLine() const {
     return static_cast<TextIndentLine>(rare_inherited_data_->text_indent_line_);
   }
@@ -1782,7 +1782,7 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
     return static_cast<TextIndentType>(rare_inherited_data_->text_indent_type_);
   }
   void SetTextIndent(const Length& v) {
-    SET_VAR(rare_inherited_data_, indent, v);
+    SET_VAR(rare_inherited_data_, indent_, v);
   }
   void SetTextIndentLine(TextIndentLine v) {
     SET_VAR(rare_inherited_data_, text_indent_line_, v);
@@ -1813,7 +1813,7 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   // text-shadow
   static ShadowList* InitialTextShadow() { return 0; }
   ShadowList* TextShadow() const {
-    return rare_inherited_data_->text_shadow.Get();
+    return rare_inherited_data_->text_shadow_.Get();
   }
   void SetTextShadow(PassRefPtr<ShadowList>);
 
@@ -1831,19 +1831,19 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   // word-break inherited (aka -epub-word-break)
   static EWordBreak InitialWordBreak() { return kNormalWordBreak; }
   EWordBreak WordBreak() const {
-    return static_cast<EWordBreak>(rare_inherited_data_->word_break);
+    return static_cast<EWordBreak>(rare_inherited_data_->word_break_);
   }
   void SetWordBreak(EWordBreak b) {
-    SET_VAR(rare_inherited_data_, word_break, b);
+    SET_VAR(rare_inherited_data_, word_break_, b);
   }
 
   // -webkit-line-break
   static LineBreak InitialLineBreak() { return kLineBreakAuto; }
   LineBreak GetLineBreak() const {
-    return static_cast<LineBreak>(rare_inherited_data_->line_break);
+    return static_cast<LineBreak>(rare_inherited_data_->line_break_);
   }
   void SetLineBreak(LineBreak b) {
-    SET_VAR(rare_inherited_data_, line_break, b);
+    SET_VAR(rare_inherited_data_, line_break_, b);
   }
 
   // Text emphasis properties.
@@ -1858,21 +1858,21 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   }
   TextEmphasisFill GetTextEmphasisFill() const {
     return static_cast<TextEmphasisFill>(
-        rare_inherited_data_->text_emphasis_fill);
+        rare_inherited_data_->text_emphasis_fill_);
   }
   TextEmphasisMark GetTextEmphasisMark() const;
   const AtomicString& TextEmphasisCustomMark() const {
-    return rare_inherited_data_->text_emphasis_custom_mark;
+    return rare_inherited_data_->text_emphasis_custom_mark_;
   }
   const AtomicString& TextEmphasisMarkString() const;
   void SetTextEmphasisFill(TextEmphasisFill fill) {
-    SET_VAR(rare_inherited_data_, text_emphasis_fill, fill);
+    SET_VAR(rare_inherited_data_, text_emphasis_fill_, fill);
   }
   void SetTextEmphasisMark(TextEmphasisMark mark) {
-    SET_VAR(rare_inherited_data_, text_emphasis_mark, mark);
+    SET_VAR(rare_inherited_data_, text_emphasis_mark_, mark);
   }
   void SetTextEmphasisCustomMark(const AtomicString& mark) {
-    SET_VAR(rare_inherited_data_, text_emphasis_custom_mark, mark);
+    SET_VAR(rare_inherited_data_, text_emphasis_custom_mark_, mark);
   }
 
   // -webkit-text-emphasis-color (aka -epub-text-emphasis-color)
@@ -1887,19 +1887,19 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   }
   TextEmphasisPosition GetTextEmphasisPosition() const {
     return static_cast<TextEmphasisPosition>(
-        rare_inherited_data_->text_emphasis_position);
+        rare_inherited_data_->text_emphasis_position_);
   }
   void SetTextEmphasisPosition(TextEmphasisPosition position) {
-    SET_VAR(rare_inherited_data_, text_emphasis_position, position);
+    SET_VAR(rare_inherited_data_, text_emphasis_position_, position);
   }
 
   // -webkit-highlight
   static const AtomicString& InitialHighlight() { return g_null_atom; }
   const AtomicString& Highlight() const {
-    return rare_inherited_data_->highlight;
+    return rare_inherited_data_->highlight_;
   }
   void SetHighlight(const AtomicString& h) {
-    SET_VAR(rare_inherited_data_, highlight, h);
+    SET_VAR(rare_inherited_data_, highlight_, h);
   }
 
   // -webkit-line-clamp
@@ -1923,10 +1923,10 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   // -webkit-tap-highlight-color
   static Color InitialTapHighlightColor();
   Color TapHighlightColor() const {
-    return rare_inherited_data_->tap_highlight_color;
+    return rare_inherited_data_->tap_highlight_color_;
   }
   void SetTapHighlightColor(const Color& c) {
-    SET_VAR(rare_inherited_data_, tap_highlight_color, c);
+    SET_VAR(rare_inherited_data_, tap_highlight_color_, c);
   }
 
   // -webkit-text-fill-color
@@ -1938,10 +1938,10 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   // -webkit-text-security
   static ETextSecurity InitialTextSecurity() { return TSNONE; }
   ETextSecurity TextSecurity() const {
-    return static_cast<ETextSecurity>(rare_inherited_data_->text_security);
+    return static_cast<ETextSecurity>(rare_inherited_data_->text_security_);
   }
   void SetTextSecurity(ETextSecurity a_text_security) {
-    SET_VAR(rare_inherited_data_, text_security, a_text_security);
+    SET_VAR(rare_inherited_data_, text_security_, a_text_security);
   }
 
   // -webkit-text-stroke-color
@@ -1953,10 +1953,10 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   // -webkit-text-stroke-width
   static float InitialTextStrokeWidth() { return 0; }
   float TextStrokeWidth() const {
-    return rare_inherited_data_->text_stroke_width;
+    return rare_inherited_data_->text_stroke_width_;
   }
   void SetTextStrokeWidth(float w) {
-    SET_VAR(rare_inherited_data_, text_stroke_width, w);
+    SET_VAR(rare_inherited_data_, text_stroke_width_, w);
   }
 
   // -webkit-user-drag
@@ -1971,19 +1971,19 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   // -webkit-user-modify
   static EUserModify InitialUserModify() { return READ_ONLY; }
   EUserModify UserModify() const {
-    return static_cast<EUserModify>(rare_inherited_data_->user_modify);
+    return static_cast<EUserModify>(rare_inherited_data_->user_modify_);
   }
   void SetUserModify(EUserModify u) {
-    SET_VAR(rare_inherited_data_, user_modify, u);
+    SET_VAR(rare_inherited_data_, user_modify_, u);
   }
 
   // -webkit-user-select
   static EUserSelect InitialUserSelect() { return SELECT_TEXT; }
   EUserSelect UserSelect() const {
-    return static_cast<EUserSelect>(rare_inherited_data_->user_select);
+    return static_cast<EUserSelect>(rare_inherited_data_->user_select_);
   }
   void SetUserSelect(EUserSelect s) {
-    SET_VAR(rare_inherited_data_, user_select, s);
+    SET_VAR(rare_inherited_data_, user_select_, s);
   }
 
   // caret-color
@@ -3092,7 +3092,7 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
 
   // Cursor utility functions.
   CursorList* Cursors() const {
-    return rare_inherited_data_->cursor_data.Get();
+    return rare_inherited_data_->cursor_data_.Get();
   }
   void AddCursor(StyleImage*,
                  bool hot_spot_specified,

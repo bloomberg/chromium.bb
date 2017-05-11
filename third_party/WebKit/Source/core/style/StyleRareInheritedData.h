@@ -74,7 +74,7 @@ class CORE_EXPORT StyleRareInheritedData
   bool ShadowDataEquivalent(const StyleRareInheritedData&) const;
   bool QuotesDataEquivalent(const StyleRareInheritedData&) const;
 
-  Persistent<StyleImage> list_style_image;
+  Persistent<StyleImage> list_style_image_;
 
   StyleColor TextStrokeColor() const {
     return text_stroke_color_is_current_color_ ? StyleColor::CurrentColor()
@@ -155,7 +155,7 @@ class CORE_EXPORT StyleRareInheritedData
   }
 
   Color text_stroke_color_;
-  float text_stroke_width;
+  float text_stroke_width_;
   Color text_fill_color_;
   Color text_emphasis_color_;
   Color caret_color_;
@@ -166,18 +166,18 @@ class CORE_EXPORT StyleRareInheritedData
   Color visited_link_caret_color_;
 
   RefPtr<ShadowList>
-      text_shadow;  // Our text shadow information for shadowed text drawing.
+      text_shadow_;  // Our text shadow information for shadowed text drawing.
   AtomicString
-      highlight;  // Apple-specific extension for custom highlight rendering.
+      highlight_;  // Apple-specific extension for custom highlight rendering.
 
-  Persistent<CursorList> cursor_data;
+  Persistent<CursorList> cursor_data_;
 
-  Length indent;
+  Length indent_;
   float effective_zoom_;
 
   // Paged media properties.
-  short widows;
-  short orphans;
+  short widows_;
+  short orphans_;
 
   unsigned text_stroke_color_is_current_color_ : 1;
   unsigned text_fill_color_is_current_color_ : 1;
@@ -190,17 +190,17 @@ class CORE_EXPORT StyleRareInheritedData
   unsigned visited_link_caret_color_is_current_color_ : 1;
   unsigned visited_link_caret_color_is_auto_ : 1;
 
-  unsigned text_security : 2;         // ETextSecurity
-  unsigned user_modify : 2;           // EUserModify (editing)
-  unsigned word_break : 2;            // EWordBreak
-  unsigned overflow_wrap : 1;         // EOverflowWrap
-  unsigned line_break : 3;            // LineBreak
-  unsigned user_select : 2;           // EUserSelect
-  unsigned speak : 3;                 // ESpeak
-  unsigned hyphens : 2;               // Hyphens
-  unsigned text_emphasis_fill : 1;    // TextEmphasisFill
-  unsigned text_emphasis_mark : 3;    // TextEmphasisMark
-  unsigned text_emphasis_position : 1;  // TextEmphasisPosition
+  unsigned text_security_ : 2;           // ETextSecurity
+  unsigned user_modify_ : 2;             // EUserModify (editing)
+  unsigned word_break_ : 2;              // EWordBreak
+  unsigned overflow_wrap_ : 1;           // EOverflowWrap
+  unsigned line_break_ : 3;              // LineBreak
+  unsigned user_select_ : 2;             // EUserSelect
+  unsigned speak_ : 3;                   // ESpeak
+  unsigned hyphens_ : 2;                 // Hyphens
+  unsigned text_emphasis_fill_ : 1;      // TextEmphasisFill
+  unsigned text_emphasis_mark_ : 3;      // TextEmphasisMark
+  unsigned text_emphasis_position_ : 1;  // TextEmphasisPosition
   unsigned text_align_last_ : 3;        // TextAlignLast
   unsigned text_justify_ : 2;           // TextJustify
   unsigned text_orientation_ : 2;       // TextOrientation
@@ -221,22 +221,22 @@ class CORE_EXPORT StyleRareInheritedData
 
   unsigned respect_image_orientation_ : 1;
 
-  AtomicString hyphenation_string;
-  short hyphenation_limit_before;
-  short hyphenation_limit_after;
-  short hyphenation_limit_lines;
+  AtomicString hyphenation_string_;
+  short hyphenation_limit_before_;
+  short hyphenation_limit_after_;
+  short hyphenation_limit_lines_;
 
   uint8_t line_height_step_;
 
-  AtomicString text_emphasis_custom_mark;
-  RefPtr<QuotesData> quotes;
+  AtomicString text_emphasis_custom_mark_;
+  RefPtr<QuotesData> quotes_;
 
-  Color tap_highlight_color;
+  Color tap_highlight_color_;
 
-  RefPtr<AppliedTextDecorationList> applied_text_decorations;
+  RefPtr<AppliedTextDecorationList> applied_text_decorations_;
   TabSize tab_size_;
 
-  RefPtr<StyleInheritedVariables> variables;
+  RefPtr<StyleInheritedVariables> variables_;
   TextSizeAdjust text_size_adjust_;
 
  private:
