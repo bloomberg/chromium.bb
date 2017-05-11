@@ -32,10 +32,13 @@ void ServiceTestClient::OnBindInterface(
     const std::string& interface_name,
     mojo::ScopedMessagePipeHandle interface_pipe) {}
 
-ServiceTest::ServiceTest() {}
+ServiceTest::ServiceTest() : ServiceTest(std::string(), true) {}
 
 ServiceTest::ServiceTest(const std::string& test_name, bool init_edk)
-    : test_name_(test_name), init_edk_(init_edk) {}
+    : scoped_task_environment_(
+          base::test::ScopedTaskEnvironment::MainThreadType::UI),
+      test_name_(test_name),
+      init_edk_(init_edk) {}
 
 ServiceTest::~ServiceTest() {}
 
@@ -48,10 +51,6 @@ std::unique_ptr<Service> ServiceTest::CreateService() {
   return base::MakeUnique<ServiceTestClient>(this);
 }
 
-std::unique_ptr<base::MessageLoop> ServiceTest::CreateMessageLoop() {
-  return base::MakeUnique<base::MessageLoop>();
-}
-
 void ServiceTest::OnStartCalled(Connector* connector,
                                 const std::string& name,
                                 const std::string& user_id) {
@@ -62,8 +61,6 @@ void ServiceTest::OnStartCalled(Connector* connector,
 }
 
 void ServiceTest::SetUp() {
-  message_loop_ = CreateMessageLoop();
-
   DCHECK(!init_edk_);
 
   background_service_manager_ =
@@ -89,7 +86,6 @@ void ServiceTest::SetUp() {
 void ServiceTest::TearDown() {
   background_service_manager_.reset();
   context_.reset();
-  message_loop_.reset();
 }
 
 }  // namespace test

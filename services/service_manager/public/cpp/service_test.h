@@ -8,12 +8,12 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/test/scoped_task_environment.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace base {
-class MessageLoop;
 class Thread;
 }
 
@@ -80,8 +80,6 @@ class ServiceTest : public testing::Test {
   // work.
   virtual std::unique_ptr<Service> CreateService();
 
-  virtual std::unique_ptr<base::MessageLoop> CreateMessageLoop();
-
   // Call to set OnStart() metadata when GetService() is overridden.
   void OnStartCalled(Connector* connector,
                      const std::string& name,
@@ -94,13 +92,13 @@ class ServiceTest : public testing::Test {
  private:
   friend ServiceTestClient;
 
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   std::unique_ptr<ServiceContext> context_;
-  std::unique_ptr<base::MessageLoop> message_loop_;
   std::unique_ptr<BackgroundServiceManager> background_service_manager_;
 
   // See constructor.
   std::string test_name_;
-  bool init_edk_ = true;
+  bool init_edk_;
   std::unique_ptr<base::Thread> ipc_thread_;
   std::unique_ptr<mojo::edk::ScopedIPCSupport> ipc_support_;
 

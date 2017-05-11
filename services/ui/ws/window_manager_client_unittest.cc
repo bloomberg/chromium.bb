@@ -363,12 +363,6 @@ class WindowServerTest : public WindowServerTestBase {
       EXPECT_TRUE(WindowServerTestBase::QuitRunLoop());
   }
 
-  // mojo::test::ServiceTest::
-  std::unique_ptr<base::MessageLoop> CreateMessageLoop() override {
-    // The window server is expected to run with a TYPE_UI message loop.
-    return base::MakeUnique<base::MessageLoop>(base::MessageLoop::TYPE_UI);
-  }
-
   std::unique_ptr<EmbedDetails> embed_details_;
 
   std::unique_ptr<ClientAreaChange> client_area_change_;
