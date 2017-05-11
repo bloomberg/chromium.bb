@@ -27,13 +27,18 @@ UI_BASE_EXPORT extern NSString* const kMenuControllerMenuDidCloseNotification;
 UI_BASE_EXPORT
 @interface MenuController : NSObject<NSMenuDelegate> {
  @protected
-  ui::MenuModel* model_;  // weak
+  ui::MenuModel* model_;  // Weak.
   base::scoped_nsobject<NSMenu> menu_;
-  BOOL useWithPopUpButtonCell_;  // If YES, 0th item is blank
-  BOOL isMenuOpen_;
 }
 
 @property(nonatomic, assign) ui::MenuModel* model;
+
+// Whether to activate selected menu items via a posted task. This may allow the
+// selection to be handled earlier, whilst the menu is fading out. If the posted
+// task wasn't processed by the time the action is normally sent, it will be
+// sent synchronously at that stage.
+@property(nonatomic, assign) BOOL postItemSelectedAsTask;
+
 // Note that changing this will have no effect if you use
 // |-initWithModel:useWithPopUpButtonCell:| or after the first call to |-menu|.
 @property(nonatomic) BOOL useWithPopUpButtonCell;
@@ -71,19 +76,26 @@ UI_BASE_EXPORT
 
 @end
 
-// Exposed only for unit testing, do not call directly.
-@interface MenuController (PrivateExposedForTesting)
-- (BOOL)validateUserInterfaceItem:(id<NSValidatedUserInterfaceItem>)item;
-@end
-
-// Protected methods that subclassers can override.
+// Protected methods that subclassers can override and/or invoke.
 @interface MenuController (Protected)
+
+// Called before the menu is to be displayed to update the state (enabled,
+// radio, etc) of each item in the menu. Also will update the title if the item
+// is marked as "dynamic".
+- (BOOL)validateUserInterfaceItem:(id<NSValidatedUserInterfaceItem>)item;
+
+// Adds the item at |index| in |model| as an NSMenuItem at |index| of |menu|.
+// Associates a submenu if the MenuModel::ItemType is TYPE_SUBMENU.
 - (void)addItemToMenu:(NSMenu*)menu
               atIndex:(NSInteger)index
             fromModel:(ui::MenuModel*)model;
+
+// Creates a NSMenu from the given model. If the model has submenus, this can
+// be invoked recursively.
 - (NSMenu*)menuFromModel:(ui::MenuModel*)model;
-// Returns the maximum width for the menu item. Returns -1 to indicate
-// that there's no maximum width.
+
+// Returns the maximum width for the menu item. Returns -1 to indicate that
+// there's no maximum width.
 - (int)maxWidthForMenuModel:(ui::MenuModel*)model
                  modelIndex:(int)modelIndex;
 @end
