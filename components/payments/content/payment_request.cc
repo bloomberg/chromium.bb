@@ -172,6 +172,7 @@ void PaymentRequest::Complete(mojom::PaymentComplete result) {
     // When the renderer closes the connection,
     // PaymentRequest::OnConnectionTerminated will be called.
     client_->OnComplete();
+    state_->RecordUseStats();
   }
 }
 

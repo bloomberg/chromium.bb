@@ -42,6 +42,7 @@ class AutofillPaymentInstrument
   bool IsCompleteForPayment() override;
   base::string16 GetMissingInfoLabel() override;
   bool IsValidForCanMakePayment() override;
+  void RecordUse() override;
 
   // autofill::payments::FullCardRequest::ResultDelegate:
   void OnFullCardRequestSucceeded(const autofill::CreditCard& card,
