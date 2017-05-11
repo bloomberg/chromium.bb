@@ -9,7 +9,7 @@
 #include "components/sessions/core/session_id.h"
 #include "components/sync_sessions/synced_window_delegate.h"
 
-@class TabModel;
+class WebStateList;
 
 namespace browser_sync {
 class SyncedTabDelegate;
@@ -20,7 +20,8 @@ class SyncedTabDelegate;
 class TabModelSyncedWindowDelegate
     : public sync_sessions::SyncedWindowDelegate {
  public:
-  explicit TabModelSyncedWindowDelegate(TabModel* tab_model);
+  TabModelSyncedWindowDelegate(WebStateList* web_state_list,
+                               SessionID session_id);
   ~TabModelSyncedWindowDelegate() override;
 
   // SyncedWindowDelegate:
@@ -39,7 +40,8 @@ class TabModelSyncedWindowDelegate
   bool ShouldSync() const override;
 
  private:
-  TabModel* tab_model_;  // weak, owns us.
+  WebStateList* web_state_list_;
+  SessionID session_id_;
 
   DISALLOW_COPY_AND_ASSIGN(TabModelSyncedWindowDelegate);
 };

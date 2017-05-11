@@ -289,8 +289,8 @@ void CleanCertificatePolicyCache(
       // Set up the usage recorder before tabs are created.
       _tabUsageRecorder = base::MakeUnique<TabUsageRecorder>(self);
     }
-    _syncedWindowDelegate =
-        base::MakeUnique<TabModelSyncedWindowDelegate>(self);
+    _syncedWindowDelegate = base::MakeUnique<TabModelSyncedWindowDelegate>(
+        _webStateList.get(), _sessionID);
 
     // There must be a valid session service defined to consume session windows.
     DCHECK(service);
