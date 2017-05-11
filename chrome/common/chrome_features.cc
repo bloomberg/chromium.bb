@@ -69,7 +69,7 @@ const base::Feature kBackspaceGoesBackFeature {
 // Enables or disables whether permission prompts are automatically blocked
 // after the user has explicitly dismissed them too many times.
 const base::Feature kBlockPromptsIfDismissedOften{
-    "BlockPromptsIfDismissedOften", base::FEATURE_DISABLED_BY_DEFAULT};
+    "BlockPromptsIfDismissedOften", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables or disables whether permission prompts are automatically blocked
 // after the user has ignored them too many times.

@@ -418,58 +418,62 @@ class PermissionContextBaseTests : public ChromeRenderViewHostTestHarness {
     SetUpUrl(url);
     base::HistogramTester histograms;
 
-    // First, ensure that > 3 dismissals behaves correctly.
-    for (uint32_t i = 0; i < 4; ++i) {
-      TestPermissionContext permission_context(
-          profile(), CONTENT_SETTINGS_TYPE_GEOLOCATION);
+    {
+      // Ensure that > 3 dismissals behaves correctly when the
+      // BlockPromptsIfDismissedOften feature is off.
+      base::test::ScopedFeatureList feature_list;
+      feature_list.InitAndDisableFeature(
+          features::kBlockPromptsIfDismissedOften);
 
-      const PermissionRequestID id(
-          web_contents()->GetRenderProcessHost()->GetID(),
-          web_contents()->GetMainFrame()->GetRoutingID(), i);
+      for (uint32_t i = 0; i < 4; ++i) {
+        TestPermissionContext permission_context(
+            profile(), CONTENT_SETTINGS_TYPE_GEOLOCATION);
 
-      permission_context.SetRespondPermissionCallback(
-          base::Bind(&PermissionContextBaseTests::RespondToPermission,
-                     base::Unretained(this), &permission_context, id, url,
-                     false, CONTENT_SETTING_ASK));
-      permission_context.RequestPermission(
-          web_contents(), id, url, true /* user_gesture */,
-          base::Bind(&TestPermissionContext::TrackPermissionDecision,
-                     base::Unretained(&permission_context)));
-      histograms.ExpectTotalCount(
-          "Permissions.Prompt.Dismissed.PriorDismissCount.Geolocation", i + 1);
-      histograms.ExpectBucketCount(
-          "Permissions.Prompt.Dismissed.PriorDismissCount.Geolocation", i, 1);
-      histograms.ExpectUniqueSample(
-          "Permissions.AutoBlocker.EmbargoPromptSuppression",
-          static_cast<int>(PermissionEmbargoStatus::NOT_EMBARGOED), i + 1);
+        const PermissionRequestID id(
+            web_contents()->GetRenderProcessHost()->GetID(),
+            web_contents()->GetMainFrame()->GetRoutingID(), i);
+
+        permission_context.SetRespondPermissionCallback(
+            base::Bind(&PermissionContextBaseTests::RespondToPermission,
+                       base::Unretained(this), &permission_context, id, url,
+                       false, CONTENT_SETTING_ASK));
+        permission_context.RequestPermission(
+            web_contents(), id, url, true /* user_gesture */,
+            base::Bind(&TestPermissionContext::TrackPermissionDecision,
+                       base::Unretained(&permission_context)));
+        histograms.ExpectTotalCount(
+            "Permissions.Prompt.Dismissed.PriorDismissCount.Geolocation",
+            i + 1);
+        histograms.ExpectBucketCount(
+            "Permissions.Prompt.Dismissed.PriorDismissCount.Geolocation", i, 1);
+        histograms.ExpectUniqueSample(
+            "Permissions.AutoBlocker.EmbargoPromptSuppression",
+            static_cast<int>(PermissionEmbargoStatus::NOT_EMBARGOED), i + 1);
 
 // On Android, repeatedly requesting and deciding permissions has the side
-// effect of overcounting any metrics recorded in the PermissionInfoBarDelegate
-// destructor. This is because we directly call
+// effect of overcounting any metrics recorded in the
+// PermissionInfoBarDelegate destructor. This is because we directly call
 // PermissionQueueController::OnPermissionSet without setting the action_taken
 // bit in PermissionInfoBarDelegate. When PermissionQueueController is deleted
 // all OS_ANDROID ifdefs in this test can be removed.
 #if !defined(OS_ANDROID)
-      histograms.ExpectUniqueSample(
-          "Permissions.AutoBlocker.EmbargoStatus",
-          static_cast<int>(PermissionEmbargoStatus::NOT_EMBARGOED), i + 1);
+        histograms.ExpectUniqueSample(
+            "Permissions.AutoBlocker.EmbargoStatus",
+            static_cast<int>(PermissionEmbargoStatus::NOT_EMBARGOED), i + 1);
 #endif
 
-      ASSERT_EQ(1u, permission_context.decisions().size());
-      EXPECT_EQ(CONTENT_SETTING_ASK, permission_context.decisions()[0]);
-      EXPECT_TRUE(permission_context.tab_context_updated());
-      EXPECT_EQ(CONTENT_SETTING_ASK,
-                permission_context.GetContentSettingFromMap(url, url));
+        ASSERT_EQ(1u, permission_context.decisions().size());
+        EXPECT_EQ(CONTENT_SETTING_ASK, permission_context.decisions()[0]);
+        EXPECT_TRUE(permission_context.tab_context_updated());
+        EXPECT_EQ(CONTENT_SETTING_ASK,
+                  permission_context.GetContentSettingFromMap(url, url));
+      }
+
+      // Flush the dismissal counts.
+      auto* map = HostContentSettingsMapFactory::GetForProfile(profile());
+      map->ClearSettingsForOneType(
+          CONTENT_SETTINGS_TYPE_PERMISSION_AUTOBLOCKER_DATA);
     }
-
-    // Flush the dismissal counts. Enable the block on too many dismissals
-    // feature, which is disabled by default.
-    auto* map = HostContentSettingsMapFactory::GetForProfile(profile());
-    map->ClearSettingsForOneType(
-        CONTENT_SETTINGS_TYPE_PERMISSION_AUTOBLOCKER_DATA);
-
-    base::test::ScopedFeatureList feature_list;
-    feature_list.InitAndEnableFeature(features::kBlockPromptsIfDismissedOften);
 
     EXPECT_TRUE(
         base::FeatureList::IsEnabled(features::kBlockPromptsIfDismissedOften));
