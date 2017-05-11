@@ -106,7 +106,6 @@ static_library("leveldatabase") {
     "src/util/crc32c.cc",
     "src/util/crc32c.h",
     "src/util/env.cc",
-    "src/util/env.h",
     "src/util/filter_policy.cc",
     "src/util/hash.cc",
     "src/util/hash.h",
