@@ -112,8 +112,6 @@ public class InstalledAppProviderImpl implements InstalledAppProvider {
     /**
      * Filters a list of apps, returning those that are both installed and match the origin.
      *
-     * This method is expected to be called on a background thread (not the main UI thread).
-     *
      * @param relatedApps A list of applications to be filtered.
      * @param frameUrl The URL of the frame this operation was called from.
      * @return Pair of: A subsequence of applications that meet the criteria, and, the total amount
@@ -122,6 +120,8 @@ public class InstalledAppProviderImpl implements InstalledAppProvider {
      */
     private Pair<RelatedApplication[], Integer> filterInstalledAppsOnBackgroundThread(
             RelatedApplication[] relatedApps, URI frameUrl) {
+        ThreadUtils.assertOnBackgroundThread();
+
         ArrayList<RelatedApplication> installedApps = new ArrayList<RelatedApplication>();
         int delayMillis = 0;
         PackageManager pm = mContext.getPackageManager();
@@ -172,6 +172,8 @@ public class InstalledAppProviderImpl implements InstalledAppProvider {
      */
     private boolean isAppInstalledAndAssociatedWithOrigin(
             String packageName, URI frameUrl, PackageManager pm) {
+        ThreadUtils.assertOnBackgroundThread();
+
         if (frameUrl == null) return false;
 
         // Early-exit if the Android app is not installed.

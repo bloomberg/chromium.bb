@@ -12,15 +12,16 @@ import android.content.res.AssetManager;
 import android.content.res.Resources;
 import android.os.Bundle;
 
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 import org.robolectric.res.builder.DefaultPackageManager;
 
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Feature;
 import org.chromium.installedapp.mojom.InstalledAppProvider;
 import org.chromium.installedapp.mojom.RelatedApplication;
@@ -294,11 +295,19 @@ public class InstalledAppProviderTest {
 
     @Before
     public void setUp() {
+        // Avoid triggering asserts in InstalledAppProviderImpl that check they are being run off
+        // the UI thread (since this is a single-threaded test).
+        ThreadUtils.setThreadAssertsDisabledForTesting(true);
         mPackageManager = new FakePackageManager();
         RuntimeEnvironment.setRobolectricPackageManager(mPackageManager);
         mFrameUrlDelegate = new FakeFrameUrlDelegate(URL_ON_ORIGIN);
         mInstalledAppProvider =
                 new InstalledAppProviderTestImpl(mFrameUrlDelegate, RuntimeEnvironment.application);
+    }
+
+    @After
+    public void tearDown() {
+        ThreadUtils.setThreadAssertsDisabledForTesting(false);
     }
 
     /**
