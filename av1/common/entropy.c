@@ -4416,6 +4416,18 @@ static const av1_coeff_probs_model default_coef_probs_64x64[PLANE_TYPES] = {
 #if CONFIG_DAALA_EC || CONFIG_ANS
 static const aom_prob av1_default_blockzero_probs[TX_SIZES][PLANE_TYPES]
                                            [REF_TYPES][BLOCKZ_CONTEXTS] = {
+#if CONFIG_CB4X4
+  { // TX_2x2
+    { // Y plane
+      { 195, 84, 8, },  // Intra
+      { 191, 124, 25, },  // Inter
+    },
+    { // UV plane
+      { 214, 132, 42, },  // Intra
+      { 229, 143, 46, },  // Inter
+    },
+  },
+#endif
   { // TX_4x4
     { // Y plane
       { 195, 84, 8, },  // Intra
