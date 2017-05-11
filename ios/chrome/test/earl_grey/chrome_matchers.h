@@ -101,6 +101,9 @@ id<GREYMatcher> ClearBrowsingDataCollectionView();
 // Returns matcher for the settings button in the tools menu.
 id<GREYMatcher> SettingsMenuButton();
 
+// Returns matcher for the OK button.
+id<GREYMatcher> OKButton();
+
 }  // namespace chrome_test_util
 
 #endif  // IOS_CHROME_TEST_EARL_GREY_CHROME_MATCHERS_H_
