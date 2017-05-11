@@ -532,9 +532,10 @@ void NormalPageArena::SweepAndCompact() {
   while (available_pages) {
     size_t page_size = available_pages->size();
 #if DEBUG_HEAP_COMPACTION
-    if (!freedPageCount)
+    if (!freed_page_count)
       LOG_HEAP_COMPACTION("Releasing:");
-    LOG_HEAP_COMPACTION(" [%p, %p]", availablePages, availablePages + pageSize);
+    LOG_HEAP_COMPACTION(" [%p, %p]", available_pages,
+                        available_pages + page_size);
 #endif
     freed_size += page_size;
     freed_page_count++;
@@ -1188,16 +1189,16 @@ size_t FreeList::FreeListSize() const {
     }
   }
 #if DEBUG_HEAP_FREELIST
-  if (freeSize) {
-    LOG_HEAP_FREELIST_VERBOSE("FreeList(%p): %zu\n", this, freeSize);
-    for (unsigned i = 0; i < blinkPageSizeLog2; ++i) {
-      FreeListEntry* entry = m_freeLists[i];
+  if (free_size) {
+    LOG_HEAP_FREELIST_VERBOSE("FreeList(%p): %zu\n", this, free_size);
+    for (unsigned i = 0; i < kBlinkPageSizeLog2; ++i) {
+      FreeListEntry* entry = free_lists_[i];
       size_t bucket = 0;
       size_t count = 0;
       while (entry) {
         bucket += entry->size();
         count++;
-        entry = entry->next();
+        entry = entry->Next();
       }
       if (bucket) {
         LOG_HEAP_FREELIST_VERBOSE("[%d, %d]: %zu (%zu)\n", 0x1 << i,

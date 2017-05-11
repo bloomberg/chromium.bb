@@ -166,7 +166,7 @@ class HeapCompact::MovableObjectFixups final {
       if (!slot_location) {
         interior_fixups_.Set(slot, to);
       } else {
-        LOG_HEAP_COMPACTION("Redirected slot: %p => %p\n", slot, slotLocation);
+        LOG_HEAP_COMPACTION("Redirected slot: %p => %p\n", slot, slot_location);
         slot = slot_location;
       }
     }
@@ -220,9 +220,8 @@ class HeapCompact::MovableObjectFixups final {
     LOG_HEAP_COMPACTION(
         "Fixups: pages=%u objects=%u callbacks=%u interior-size=%zu"
         " interiors-f=%u\n",
-        m_relocatablePages.size(), m_fixups.size(), m_fixupCallbacks.size(),
-        m_interiors ? m_interiors->intervalCount() : 0,
-        m_interiorFixups.size());
+        relocatable_pages_.size(), fixups_.size(), fixup_callbacks_.size(),
+        interiors_ ? interiors_->IntervalCount() : 0, interior_fixups_.size());
   }
 #endif
 
@@ -295,8 +294,8 @@ bool HeapCompact::ShouldCompact(ThreadState* state,
     return false;
 
   LOG_HEAP_COMPACTION("shouldCompact(): gc=%s count=%zu free=%zu\n",
-                      ThreadState::gcReasonString(reason),
-                      m_gcCountSinceLastCompaction, m_freeListSize);
+                      ThreadState::GcReasonString(reason),
+                      gc_count_since_last_compaction_, free_list_size_);
   gc_count_since_last_compaction_++;
   // It is only safe to compact during non-conservative GCs.
   // TODO: for the main thread, limit this further to only idle GCs.
@@ -338,7 +337,7 @@ bool HeapCompact::ShouldCompact(ThreadState* state,
 
 void HeapCompact::Initialize(ThreadState* state) {
   DCHECK(RuntimeEnabledFeatures::heapCompactionEnabled());
-  LOG_HEAP_COMPACTION("Compacting: free=%zu\n", m_freeListSize);
+  LOG_HEAP_COMPACTION("Compacting: free=%zu\n", free_list_size_);
   do_compact_ = true;
   freed_pages_ = 0;
   freed_size_ = 0;
@@ -379,7 +378,7 @@ void HeapCompact::UpdateHeapResidency(ThreadState* thread_state) {
     size_t free_list_size = arena->FreeListSize();
     total_arena_size += arena_size;
     total_free_list_size += free_list_size;
-    LOG_HEAP_FREELIST("%d: [%zu, %zu], ", i, arenaSize, freeListSize);
+    LOG_HEAP_FREELIST("%d: [%zu, %zu], ", i, arena_size, free_list_size);
     // TODO: be more discriminating and consider arena
     // load factor, effectiveness of past compactions etc.
     if (!arena_size)
@@ -387,8 +386,8 @@ void HeapCompact::UpdateHeapResidency(ThreadState* thread_state) {
     // Mark the arena as compactable.
     compactable_arenas_ |= (0x1u << (BlinkGC::kVector1ArenaIndex + i));
   }
-  LOG_HEAP_FREELIST("}\nTotal = %zu, Free = %zu\n", totalArenaSize,
-                    totalFreeListSize);
+  LOG_HEAP_FREELIST("}\nTotal = %zu, Free = %zu\n", total_arena_size,
+                    total_free_list_size);
 
   // TODO(sof): consider smoothing the reported sizes.
   free_list_size_ = total_free_list_size;
@@ -422,8 +421,8 @@ void HeapCompact::FinishThreadCompaction() {
     return;
 
 #if DEBUG_HEAP_COMPACTION
-  if (m_fixups)
-    m_fixups->dumpDebugStats();
+  if (fixups_)
+    fixups_->dumpDebugStats();
 #endif
   fixups_.reset();
   do_compact_ = false;
@@ -446,10 +445,10 @@ void HeapCompact::FinishThreadCompaction() {
 #if DEBUG_LOG_HEAP_COMPACTION_RUNNING_TIME
   LOG_HEAP_COMPACTION_INTERNAL(
       "Compaction stats: time=%gms, pages freed=%zu, size=%zu\n",
-      timeForHeapCompaction, m_freedPages, m_freedSize);
+      time_for_heap_compaction, freed_pages_, freed_size_);
 #else
   LOG_HEAP_COMPACTION("Compaction stats: freed pages=%zu size=%zu\n",
-                      m_freedPages, m_freedSize);
+                      freed_pages_, freed_size_);
 #endif
 }
 
