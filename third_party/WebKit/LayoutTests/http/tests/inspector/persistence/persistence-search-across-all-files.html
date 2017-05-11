@@ -49,7 +49,7 @@ function test()
         function reply()
         {
             var paths = ["/var/www" + fsEntry.fullPath];
-            Workspace.isolatedFileSystemManager._onSearchCompleted({data: {requestId: requestId, fileSystemPath: path, files: paths}});
+            Persistence.isolatedFileSystemManager._onSearchCompleted({data: {requestId: requestId, fileSystemPath: path, files: paths}});
         }
     }
 };

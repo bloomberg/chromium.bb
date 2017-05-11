@@ -219,7 +219,7 @@ function test()
 
             function dumpGitFolders()
             {
-                var isolatedFileSystem = Workspace.isolatedFileSystemManager.fileSystem("file:///var/www3");
+                var isolatedFileSystem = Persistence.isolatedFileSystemManager.fileSystem("file:///var/www3");
                 var folders = isolatedFileSystem.initialGitFolders();
                 folders.sort();
                 for (var gitFolder of folders)

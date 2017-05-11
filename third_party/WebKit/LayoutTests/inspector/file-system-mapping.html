@@ -87,7 +87,7 @@ function test()
     }
 
     // At first create file system mapping and clear it.
-    var fileSystemMapping = new Persistence.FileSystemMapping(Workspace.isolatedFileSystemManager);
+    var fileSystemMapping = new Persistence.FileSystemMapping(Persistence.isolatedFileSystemManager);
     var fileSystemPaths = Object.keys(fileSystemMapping._fileSystemMappings);
     for (var i = 0; i < fileSystemPaths.length; ++i)
         fileSystemMapping.removeFileSystem(fileSystemPaths[i]);
@@ -131,7 +131,7 @@ function test()
     // Then create another file mapping to make sure it is correctly restored from the settings.
     InspectorTest.addResult("Creating another file system mapping.");
     fileSystemMapping.dispose();
-    var fileSystemMapping = new Persistence.FileSystemMapping(Workspace.isolatedFileSystemManager);
+    var fileSystemMapping = new Persistence.FileSystemMapping(Persistence.isolatedFileSystemManager);
     checkAndDumpFileSystemMapping(fileSystemMapping);
 
     // Now remove file mappings.

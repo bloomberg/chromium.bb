@@ -40,7 +40,7 @@ InspectorTest.AutomappingTest = function(workspace)
     this._workspace = workspace;
     this._networkProject = new Bindings.ContentProviderBasedProject(this._workspace, "AUTOMAPPING", Workspace.projectTypes.Network, "simple website");
     if (workspace !== Workspace.workspace)
-        new Persistence.FileSystemWorkspaceBinding(Workspace.isolatedFileSystemManager, this._workspace);
+        new Persistence.FileSystemWorkspaceBinding(Persistence.isolatedFileSystemManager, this._workspace);
     this._failedBindingsCount = 0;
     this._automapping = new Persistence.Automapping(this._workspace, this._onBindingAdded.bind(this), this._onBindingRemoved.bind(this));
     InspectorTest.addSniffer(this._automapping, "_onBindingFailedForTest", this._onBindingFailed.bind(this), true);
