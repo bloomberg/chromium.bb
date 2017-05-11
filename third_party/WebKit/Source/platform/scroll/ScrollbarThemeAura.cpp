@@ -321,7 +321,7 @@ ScrollbarPart ScrollbarThemeAura::InvalidateOnThumbPositionChange(
     float old_position,
     float new_position) const {
   ScrollbarPart invalid_parts = kNoPart;
-  ASSERT(ButtonsPlacement() == kWebScrollbarButtonsPlacementSingle);
+  DCHECK_EQ(ButtonsPlacement(), kWebScrollbarButtonsPlacementSingle);
   static const ScrollbarPart kButtonParts[] = {kBackButtonStartPart,
                                                kForwardButtonEndPart};
   for (ScrollbarPart part : kButtonParts) {

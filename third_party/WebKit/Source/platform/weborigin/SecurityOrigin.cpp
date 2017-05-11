@@ -100,7 +100,7 @@ static bool ShouldTreatAsUniqueOrigin(const KURL& url) {
   // URLs with schemes that require an authority, but which don't have one,
   // will have failed the isValid() test; e.g. valid HTTP URLs must have a
   // host.
-  ASSERT(!((relevant_url.ProtocolIsInHTTPFamily() ||
+  DCHECK(!((relevant_url.ProtocolIsInHTTPFamily() ||
             relevant_url.ProtocolIs("ftp")) &&
            relevant_url.Host().IsEmpty()));
 
@@ -265,7 +265,8 @@ bool SecurityOrigin::CanAccess(const SecurityOrigin* other) const {
 }
 
 bool SecurityOrigin::PassesFileCheck(const SecurityOrigin* other) const {
-  ASSERT(IsLocal() && other->IsLocal());
+  DCHECK(IsLocal());
+  DCHECK(other->IsLocal());
 
   return !block_local_access_from_local_origin_ &&
          !other->block_local_access_from_local_origin_;
@@ -337,7 +338,7 @@ bool SecurityOrigin::CanDisplay(const KURL& url) const {
 }
 
 bool SecurityOrigin::IsPotentiallyTrustworthy() const {
-  ASSERT(protocol_ != "data");
+  DCHECK_NE(protocol_, "data");
   if (IsUnique())
     return is_unique_origin_potentially_trustworthy_;
 
@@ -602,7 +603,7 @@ void SecurityOrigin::TransferPrivilegesFrom(
 
 void SecurityOrigin::SetUniqueOriginIsPotentiallyTrustworthy(
     bool is_unique_origin_potentially_trustworthy) {
-  ASSERT(!is_unique_origin_potentially_trustworthy || IsUnique());
+  DCHECK(!is_unique_origin_potentially_trustworthy || IsUnique());
   is_unique_origin_potentially_trustworthy_ =
       is_unique_origin_potentially_trustworthy;
 }

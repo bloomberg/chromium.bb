@@ -106,7 +106,8 @@ class PLATFORM_EXPORT Cursor {
 
   explicit Cursor(Type);
   Type GetType() const {
-    ASSERT(type_ >= 0 && type_ <= kCustom);
+    DCHECK_GE(type_, 0);
+    DCHECK_LE(type_, kCustom);
     return type_;
   }
   Image* GetImage() const { return image_.Get(); }

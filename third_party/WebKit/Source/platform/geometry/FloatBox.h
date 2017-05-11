@@ -63,9 +63,9 @@ class PLATFORM_EXPORT FloatBox {
   }
 
   void SetSize(const FloatPoint3D& origin) {
-    ASSERT(origin.X() >= 0);
-    ASSERT(origin.Y() >= 0);
-    ASSERT(origin.Z() >= 0);
+    DCHECK_GE(origin.X(), 0);
+    DCHECK_GE(origin.Y(), 0);
+    DCHECK_GE(origin.Z(), 0);
 
     width_ = origin.X();
     height_ = origin.Y();
@@ -84,9 +84,9 @@ class PLATFORM_EXPORT FloatBox {
   }
 
   void ExpandTo(const FloatPoint3D& low, const FloatPoint3D& high) {
-    ASSERT(low.X() <= high.X());
-    ASSERT(low.Y() <= high.Y());
-    ASSERT(low.Z() <= high.Z());
+    DCHECK_LE(low.X(), high.X());
+    DCHECK_LE(low.Y(), high.Y());
+    DCHECK_LE(low.Z(), high.Z());
 
     float min_x = std::min(x_, low.X());
     float min_y = std::min(y_, low.Y());

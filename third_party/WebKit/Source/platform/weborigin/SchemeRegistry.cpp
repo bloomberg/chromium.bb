@@ -344,7 +344,7 @@ void SchemeRegistry::RemoveURLSchemeRegisteredAsBypassingContentSecurityPolicy(
 bool SchemeRegistry::SchemeShouldBypassContentSecurityPolicy(
     const String& scheme,
     PolicyAreas policy_areas) {
-  ASSERT(policy_areas != kPolicyAreaNone);
+  DCHECK_NE(policy_areas, kPolicyAreaNone);
   if (scheme.IsEmpty() || policy_areas == kPolicyAreaNone)
     return false;
 

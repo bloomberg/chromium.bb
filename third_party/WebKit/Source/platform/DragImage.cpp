@@ -105,7 +105,8 @@ PaintImage DragImage::ResizeAndOrientImage(
     return PaintImage();
 
   SkPaint paint;
-  ASSERT(opacity >= 0 && opacity <= 1);
+  DCHECK_GE(opacity, 0);
+  DCHECK_LE(opacity, 1);
   paint.setAlpha(opacity * 255);
   paint.setFilterQuality(interpolation_quality == kInterpolationNone
                              ? kNone_SkFilterQuality

@@ -12,7 +12,8 @@ namespace blink {
 String LoadResourceAsASCIIString(const char* resource) {
   const WebData& resource_data = Platform::Current()->LoadResource(resource);
   String data_string(resource_data.Data(), resource_data.size());
-  ASSERT(!data_string.IsEmpty() && data_string.ContainsOnlyASCII());
+  DCHECK(!data_string.IsEmpty());
+  DCHECK(data_string.ContainsOnlyASCII());
   return data_string;
 }
 

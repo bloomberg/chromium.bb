@@ -40,7 +40,7 @@ class FloatPolygonTestValue {
   FloatPolygonTestValue(const float* coordinates,
                         unsigned coordinates_length,
                         WindRule fill_rule) {
-    ASSERT(!(coordinates_length % 2));
+    DCHECK(!(coordinates_length % 2));
     std::unique_ptr<Vector<FloatPoint>> vertices =
         WTF::WrapUnique(new Vector<FloatPoint>(coordinates_length / 2));
     for (unsigned i = 0; i < coordinates_length; i += 2)

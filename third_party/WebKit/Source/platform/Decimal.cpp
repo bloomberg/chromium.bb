@@ -203,7 +203,7 @@ static int CountDigits(uint64_t x) {
 }
 
 static uint64_t ScaleDown(uint64_t x, int n) {
-  ASSERT(n >= 0);
+  DCHECK_GE(n, 0);
   while (n > 0 && x) {
     x /= 10;
     --n;
@@ -212,8 +212,8 @@ static uint64_t ScaleDown(uint64_t x, int n) {
 }
 
 static uint64_t ScaleUp(uint64_t x, int n) {
-  ASSERT(n >= 0);
-  ASSERT(n <= kPrecision);
+  DCHECK_GE(n, 0);
+  DCHECK_LE(n, kPrecision);
 
   uint64_t y = 1;
   uint64_t z = 10;

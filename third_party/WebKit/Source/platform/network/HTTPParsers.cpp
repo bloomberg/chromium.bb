@@ -213,7 +213,7 @@ const UChar* ParseSuboriginPolicyOption(const UChar* begin,
     return nullptr;
   }
 
-  ASSERT(position > begin);
+  DCHECK_GT(position, begin);
   size_t length = (position + 1) - begin;
 
   option = String(begin, length);

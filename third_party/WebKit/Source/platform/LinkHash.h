@@ -50,7 +50,7 @@ struct LinkHashHash {
     unsigned hash = static_cast<unsigned>(hash64);
     unsigned new_hash = hash | (!(hash + 1) << 31);
     DCHECK(new_hash);
-    ASSERT(new_hash != 0xFFFFFFFF);
+    DCHECK_NE(new_hash, 0xFFFFFFFF);
     return new_hash;
   }
 };
