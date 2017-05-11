@@ -329,6 +329,30 @@ _BANNED_CPP_FUNCTIONS = (
       True,
       (),
     ),
+    (
+      'base::NonThreadSafe',
+      (
+        'base::NonThreadSafe is deprecated.',
+      ),
+      True,
+      (),
+    ),
+    (
+      'base::SequenceChecker',
+      (
+        'Consider using SEQUENCE_CHECKER macros instead of the class directly.',
+      ),
+      False,
+      (),
+    ),
+    (
+      'base::ThreadChecker',
+      (
+        'Consider using THREAD_CHECKER macros instead of the class directly.',
+      ),
+      False,
+      (),
+    ),
 )
 
 
