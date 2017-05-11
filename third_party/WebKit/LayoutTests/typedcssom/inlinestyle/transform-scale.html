@@ -9,11 +9,11 @@ function validateTransformWithSingleScale(transform, x, y, z, cssText) {
   assert_equals(transform.cssText, cssText);
 
   // Shouldn't be base StyleValue as for unsupported values.
-  assert_true(transform instanceof CSSTransformValue);
+  assert_equals(transform.constructor.name, CSSTransformValue.name);
 
   var components = [...transform.values()];
   assert_equals(components.length, 1);
-  assert_true(components[0] instanceof CSSScale);
+  assert_equals(components[0].constructor.name, CSSScale.name);
   assert_equals(components[0].cssText, cssText);
 
   assert_approx_equals(components[0].x, x, EPSILON);

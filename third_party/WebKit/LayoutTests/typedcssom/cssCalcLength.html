@@ -17,7 +17,7 @@ test(function() {
 
   assert_not_equals(calcLength1, result);
   assert_not_equals(calcLength2, result);
-  assert_true(result instanceof CSSCalcLength);
+  assert_equals(result.constructor.name, CSSCalcLength.name);
   assert_equals(result.px, 4);
   assert_equals(result.percent, 6.5);
 }, 'Adding two CSSCalcLengths produces a new CSSCalcLength with the correct value.');
@@ -30,7 +30,7 @@ test(function() {
 
   assert_not_equals(calcLength1, result);
   assert_not_equals(calcLength2, result);
-  assert_true(result instanceof CSSCalcLength);
+  assert_equals(result.constructor.name, CSSCalcLength.name);
   assert_equals(result.px, -2);
   assert_approx_equals(result.percent, -2.1, 0.000001);
 }, 'Subtracting two CSSCalcLengths produces a new CSSCalcLength with the correct values.');

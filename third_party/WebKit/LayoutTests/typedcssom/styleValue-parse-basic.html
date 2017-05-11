@@ -7,7 +7,7 @@ test(function() {
   var result = CSSStyleValue.parse('width', '10px');
 
   assert_not_equals(result, null);
-  assert_true(result instanceof CSSSimpleLength);
+  assert_equals(result.constructor.name, CSSSimpleLength.name);
   assert_equals(result.value, 10);
   assert_equals(result.type, 'px');
 }, 'Parsing 10px results in a CSSSimpleLength');

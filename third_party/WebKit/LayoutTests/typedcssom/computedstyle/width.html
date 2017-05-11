@@ -15,7 +15,7 @@ var t1 = async_test("Getting a 10px width results in a CSSSimpleLength");
 function t1Callback(computedStyleMap) {
   t1.step(function() {
     var result = computedStyleMap.get('width');
-    assert_true(result instanceof CSSSimpleLength);
+    assert_equals(result.constructor.name, CSSSimpleLength.name);
     assert_equals(result.cssText, '10px');
   });
   t1.done();

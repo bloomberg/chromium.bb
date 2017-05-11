@@ -17,7 +17,7 @@ var t1 = async_test("Getting a 10px lineHeight results in a CSSSimpleLength");
 function t1Callback(computedStyleMap) {
   t1.step(function() {
     var result = computedStyleMap.get('line-height');
-    assert_true(result instanceof CSSSimpleLength);
+    assert_equals(result.constructor.name, CSSSimpleLength.name);
     assert_equals(result.cssText, '10px');
   });
   t1.done();
@@ -39,7 +39,7 @@ function t3Callback(computedStyleMap) {
   t3.step(function() {
     testElement.style.lineHeight = '10%';
     var result = computedStyleMap.get('line-height');
-    assert_true(result instanceof CSSSimpleLength);
+    assert_equals(result.constructor.name, CSSSimpleLength.name);
     assert_equals(result.cssText, '10px');
   });
   t3.done();
@@ -50,7 +50,7 @@ function t4Callback(computedStyleMap) {
   t4.step(function() {
     testElement.style.lineHeight = '0.2';
     var result = computedStyleMap.get('line-height');
-    assert_true(result instanceof CSSNumberValue);
+    assert_equals(result.constructor.name, CSSNumberValue.name);
     assert_equals(result.cssText, '20');
   });
   t4.done();
@@ -61,7 +61,7 @@ function t5Callback(computedStyleMap) {
   t5.step(function() {
     testElement.style.lineHeight = 'calc(10px + 10%)';
     var result = computedStyleMap.get('line-height');
-    assert_true(result instanceof CSSSimpleLength);
+    assert_equals(result.constructor.name, CSSSimpleLength.name);
     assert_equals(result.cssText, '20px');
   });
   t5.done();
@@ -72,7 +72,7 @@ function t6Callback(computedStyleMap) {
   t6.step(function() {
     testElement.style.lineHeight = 'normal';
     var result = computedStyleMap.get('line-height');
-    assert_true(result instanceof CSSKeywordValue);
+    assert_equals(result.constructor.name, CSSKeywordValue.name);
     assert_equals(result.cssText, 'normal');
   });
   t6.done();
