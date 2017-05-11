@@ -3,6 +3,7 @@ include_rules = [
   "-content",
   "+content/common/content_export.h",
   "+content/common/resource_request.h",
+  "+content/common/network_service.mojom.h",
   "+content/common/url_loader.mojom.h",
   "+content/common/url_loader_factory.mojom.h",
   "+content/network",
@@ -10,6 +11,7 @@ include_rules = [
   "+content/public/common/content_switches.h",
   "+content/public/common/referrer.h",
   "+content/public/common/resource_response.h",
+  "+content/public/common/url_constants.h",
   "+services/service_manager/public",
 ]
 

@@ -604,6 +604,7 @@ mojom("mojo_bindings") {
     "media/renderer_audio_output_stream_factory.mojom",
     "memory_coordinator.mojom",
     "native_types.mojom",
+    "network_service.mojom",
     "push_messaging.mojom",
     "render_frame_message_filter.mojom",
     "render_message_filter.mojom",

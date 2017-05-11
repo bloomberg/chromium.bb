@@ -65,6 +65,7 @@
         "file": [ "file:filesystem", "file:leveldb" ],
         "media": [ "media:media" ],
         "network": [
+          "network_service",
           "test",
           "url_loader"
         ],

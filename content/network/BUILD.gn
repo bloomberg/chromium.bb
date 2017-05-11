@@ -28,6 +28,8 @@ source_set("network_sources") {
   ]
 
   sources = [
+    "cache_url_loader.cc",
+    "cache_url_loader.h",
     "net_adapters.cc",
     "net_adapters.h",
     "network_context.cc",

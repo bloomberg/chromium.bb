@@ -20,12 +20,16 @@
 #include "content/browser/webui/network_error_url_loader.h"
 #include "content/browser/webui/url_data_manager_backend.h"
 #include "content/browser/webui/url_data_source_impl.h"
+#include "content/common/network_service.mojom.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/service_manager_connection.h"
+#include "content/public/common/service_names.mojom.h"
 #include "content/public/common/url_constants.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
+#include "services/service_manager/public/cpp/connector.h"
 #include "third_party/zlib/google/compression_utils.h"
 #include "ui/base/template_expressions.h"
 
@@ -241,6 +245,14 @@ class WebUIURLLoaderFactory : public mojom::URLLoaderFactory,
                             const ResourceRequest& request,
                             mojom::URLLoaderClientPtr client) override {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
+    if (request.url.host_piece() == kChromeUINetworkViewCacheHost) {
+      mojom::NetworkServicePtr network_service;
+      ServiceManagerConnection::GetForProcess()->GetConnector()->BindInterface(
+          mojom::kNetworkServiceName, &network_service);
+      network_service->HandleViewCacheRequest(request, std::move(client));
+      return;
+    }
+
     if (request.url.host_piece() == kChromeUIBlobInternalsHost) {
       BrowserThread::PostTask(
           BrowserThread::IO, FROM_HERE,
@@ -249,11 +261,15 @@ class WebUIURLLoaderFactory : public mojom::URLLoaderFactory,
               base::Unretained(
                   ChromeBlobStorageContext::GetFor(browser_context_))));
       return;
-    } else if (request.url.host_piece() == kChromeUINetworkErrorHost ||
-               request.url.host_piece() == kChromeUIDinoHost) {
+    }
+
+    if (request.url.host_piece() == kChromeUINetworkErrorHost ||
+        request.url.host_piece() == kChromeUIDinoHost) {
       StartNetworkErrorsURLLoader(request, std::move(client));
       return;
-    } else if (request.url.host_piece() == kChromeUIHistogramHost) {
+    }
+
+    if (request.url.host_piece() == kChromeUIHistogramHost) {
       StartHistogramInternalsURLLoader(request, std::move(client));
       return;
     }
