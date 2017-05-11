@@ -119,7 +119,8 @@ class ArcCustomNotificationView::SlideHelper
       owner_->surface_->window()->layer()->SetOpacity(1.0f);
   }
   ~SlideHelper() override {
-    GetSlideOutLayer()->GetAnimator()->RemoveObserver(this);
+    if (GetSlideOutLayer())
+      GetSlideOutLayer()->GetAnimator()->RemoveObserver(this);
   }
 
   void Update() {
