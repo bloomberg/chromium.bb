@@ -73,6 +73,8 @@ import org.chromium.chrome.browser.tabmodel.TabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
 import org.chromium.chrome.browser.toolbar.ActionModeController.ActionBarDelegate;
+import org.chromium.chrome.browser.util.FeatureUtilities;
+import org.chromium.chrome.browser.util.MathUtils;
 import org.chromium.chrome.browser.widget.findinpage.FindToolbarManager;
 import org.chromium.chrome.browser.widget.findinpage.FindToolbarObserver;
 import org.chromium.chrome.browser.widget.textbubble.ViewAnchoredTextBubble;
@@ -544,6 +546,7 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
                 activity.getAppMenuHandler().setMenuHighlight(R.id.offline_page_id);
                 int yInsetPx = activity.getResources().getDimensionPixelOffset(
                         R.dimen.text_bubble_menu_anchor_y_inset);
+                yInsetPx = MathUtils.flipSignIf(yInsetPx, FeatureUtilities.isChromeHomeEnabled());
                 mTextBubble.setInsetPx(0, yInsetPx, 0, 0);
                 mTextBubble.show();
             }

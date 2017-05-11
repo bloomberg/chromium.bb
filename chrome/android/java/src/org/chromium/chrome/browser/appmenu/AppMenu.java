@@ -12,6 +12,7 @@ import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
+import android.graphics.drawable.LayerDrawable;
 import android.os.Build;
 import android.support.annotation.IdRes;
 import android.support.annotation.Nullable;
@@ -37,6 +38,7 @@ import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.SysUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.omaha.UpdateMenuItemHelper;
+import org.chromium.chrome.browser.widget.PulseDrawable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -169,6 +171,7 @@ public class AppMenu implements OnItemClickListener, OnKeyListener {
             int measureSpec = MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED);
             mPromptView.measure(measureSpec, measureSpec);
             footerHeight = mPromptView.getMeasuredHeight();
+            highlightViewInFooter(highlightedItemId, mPromptView);
         } else {
             mPromptView = null;
         }
@@ -269,6 +272,35 @@ public class AppMenu implements OnItemClickListener, OnKeyListener {
                 }
             });
         }
+    }
+
+    /**
+     * Highlights the given {@code footerView} or one of its child. If {@code highlightedItemId} is
+     * same as the id of the {@code footerView}, the entire {@code footerView} will be highlighted.
+     * Otherwise it will only use a circle pulse around the individual child view.
+     * @param highlightedItemId The resource id of the view that should be highlighted. Can be
+     *                          {@code null} if no item should be highlighted.
+     * @param footerView        The root view in which the {@code highlightedItemId} is to be found.
+     */
+    private void highlightViewInFooter(Integer highlightedItemId, View footerView) {
+        if (highlightedItemId == null) return;
+
+        View view = footerView.findViewById(highlightedItemId);
+        if (view == null) return;
+
+        PulseDrawable pulse =
+                view == footerView ? PulseDrawable.createHighlight() : PulseDrawable.createCircle();
+
+        Drawable newBackground = pulse;
+        Drawable currentBackground = view.getBackground();
+        if (currentBackground != null && currentBackground.getConstantState() != null) {
+            Drawable backgroundClone =
+                    currentBackground.getConstantState().newDrawable(footerView.getResources());
+            newBackground = new LayerDrawable(new Drawable[] {pulse, backgroundClone});
+        }
+
+        view.setBackground(newBackground);
+        pulse.start();
     }
 
     /**
