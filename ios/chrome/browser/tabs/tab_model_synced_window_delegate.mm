@@ -4,17 +4,20 @@
 
 #include "ios/chrome/browser/tabs/tab_model_synced_window_delegate.h"
 
-#include <set>
-
 #include "base/logging.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/sync/ios_chrome_synced_tab_delegate.h"
-#include "ios/chrome/browser/tabs/tab.h"
-#include "ios/chrome/browser/tabs/tab_model.h"
+#import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/web/public/web_state/web_state.h"
 
-TabModelSyncedWindowDelegate::TabModelSyncedWindowDelegate(TabModel* tab_model)
-    : tab_model_(tab_model) {}
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
+TabModelSyncedWindowDelegate::TabModelSyncedWindowDelegate(
+    WebStateList* web_state_list,
+    SessionID session_id)
+    : web_state_list_(web_state_list), session_id_(session_id) {}
 
 TabModelSyncedWindowDelegate::~TabModelSyncedWindowDelegate() {}
 
@@ -25,13 +28,8 @@ bool TabModelSyncedWindowDelegate::IsTabPinned(
 
 sync_sessions::SyncedTabDelegate* TabModelSyncedWindowDelegate::GetTabAt(
     int index) const {
-  sync_sessions::SyncedTabDelegate* delegate =
-      IOSChromeSyncedTabDelegate::FromWebState(
-          [tab_model_ tabAtIndex:index].webState);
-  if (!delegate) {
-    return nullptr;
-  }
-  return delegate;
+  return IOSChromeSyncedTabDelegate::FromWebState(
+      web_state_list_->GetWebStateAt(index));
 }
 
 SessionID::id_type TabModelSyncedWindowDelegate::GetTabIdAt(int index) const {
@@ -47,17 +45,16 @@ bool TabModelSyncedWindowDelegate::HasWindow() const {
 }
 
 SessionID::id_type TabModelSyncedWindowDelegate::GetSessionId() const {
-  return tab_model_.sessionID.id();
+  return session_id_.id();
 }
 
 int TabModelSyncedWindowDelegate::GetTabCount() const {
-  return [tab_model_ count];
+  return web_state_list_->count();
 }
 
 int TabModelSyncedWindowDelegate::GetActiveIndex() const {
-  Tab* current_tab = [tab_model_ currentTab];
-  DCHECK(current_tab);
-  return [tab_model_ indexOfTab:current_tab];
+  DCHECK_NE(web_state_list_->active_index(), WebStateList::kInvalidIndex);
+  return web_state_list_->active_index();
 }
 
 bool TabModelSyncedWindowDelegate::IsApp() const {
