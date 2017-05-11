@@ -173,11 +173,18 @@ MemoryDumpManager::MemoryDumpManager()
 }
 
 MemoryDumpManager::~MemoryDumpManager() {
-  AutoLock lock(lock_);
-  if (dump_thread_) {
-    dump_thread_->Stop();
-    dump_thread_.reset();
+  Thread* dump_thread = nullptr;
+  {
+    AutoLock lock(lock_);
+    if (dump_thread_) {
+      dump_thread = dump_thread_.get();
+    }
   }
+  if (dump_thread) {
+    dump_thread->Stop();
+  }
+  AutoLock lock(lock_);
+  dump_thread_.reset();
 }
 
 void MemoryDumpManager::EnableHeapProfilingIfNeeded() {
