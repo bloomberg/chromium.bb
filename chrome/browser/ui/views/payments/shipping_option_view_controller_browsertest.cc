@@ -45,6 +45,10 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingOptionViewControllerTest,
 
   // Go to the shipping address screen and select the first address (MI state).
   OpenShippingAddressSectionScreen();
+  // There is no error at the top of this screen, because no address has been
+  // selected yet.
+  EXPECT_EQ(nullptr, dialog_view()->GetViewByID(static_cast<int>(
+                         DialogViewID::SHIPPING_ADDRESS_OPTION_ERROR)));
   ResetEventObserverForSequence(std::list<DialogEvent>{
       DialogEvent::BACK_NAVIGATION, DialogEvent::SPEC_DONE_UPDATING});
   ClickOnChildInListViewAndWait(

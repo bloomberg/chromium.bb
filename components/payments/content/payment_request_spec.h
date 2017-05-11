@@ -121,10 +121,13 @@ class PaymentRequestSpec : public PaymentOptionsProvider {
   void PopulateValidatedMethodData(
       const std::vector<mojom::PaymentMethodDataPtr>& method_data);
 
-  // Updates the selected_shipping_option based on the data passed to this
+  // Updates the |selected_shipping_option| based on the data passed to this
   // payment request by the website. This will set selected_shipping_option_ to
-  // the last option marked selected in the options array.
-  void UpdateSelectedShippingOption();
+  // the last option marked selected in the options array. If no options are
+  // provided and this method is called |after_update|, it means the merchant
+  // doesn't ship to this location. In this case,
+  // |selected_shipping_option_error_| will be set.
+  void UpdateSelectedShippingOption(bool after_update);
 
   // Will notify all observers that the spec has changed.
   void NotifyOnSpecUpdated();

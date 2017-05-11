@@ -59,7 +59,7 @@ PaymentRequestSpec::PaymentRequestSpec(
       observer_for_testing_(nullptr) {
   if (observer)
     AddObserver(observer);
-  UpdateSelectedShippingOption();
+  UpdateSelectedShippingOption(/*after_update=*/false);
   PopulateValidatedMethodData(method_data);
 }
 PaymentRequestSpec::~PaymentRequestSpec() {}
@@ -67,7 +67,7 @@ PaymentRequestSpec::~PaymentRequestSpec() {}
 void PaymentRequestSpec::UpdateWith(mojom::PaymentDetailsPtr details) {
   details_ = std::move(details);
   // We reparse the |details_| and update the observers.
-  UpdateSelectedShippingOption();
+  UpdateSelectedShippingOption(/*after_update=*/true);
   NotifyOnSpecUpdated();
 }
 
@@ -170,13 +170,31 @@ void PaymentRequestSpec::PopulateValidatedMethodData(
                                       supported_card_networks_.end());
 }
 
-void PaymentRequestSpec::UpdateSelectedShippingOption() {
+void PaymentRequestSpec::UpdateSelectedShippingOption(bool after_update) {
   if (!request_shipping())
     return;
 
+  selected_shipping_option_ = nullptr;
   selected_shipping_option_error_.clear();
+  if (details().shipping_options.empty()) {
+    // No options are provided by the merchant.
+    if (after_update) {
+      // This is after an update, which means that the selected address is no
+      // supported. The merchant may have customized the error string, or a
+      // generic one is used.
+      if (!details().error.empty()) {
+        selected_shipping_option_error_ = base::UTF8ToUTF16(details().error);
+      } else {
+        selected_shipping_option_error_ = l10n_util::GetStringUTF16(
+            IDS_PAYMENTS_UNSUPPORTED_SHIPPING_ADDRESS);
+      }
+    }
+    return;
+  }
+
   // As per the spec, the selected shipping option should initially be the last
-  // one in the array that has its selected field set to true.
+  // one in the array that has its selected field set to true. If none are
+  // selected by the merchant, |selected_shipping_option_| stays nullptr.
   auto selected_shipping_option_it = std::find_if(
       details().shipping_options.rbegin(), details().shipping_options.rend(),
       [](const payments::mojom::PaymentShippingOptionPtr& element) {
@@ -184,15 +202,6 @@ void PaymentRequestSpec::UpdateSelectedShippingOption() {
       });
   if (selected_shipping_option_it != details().shipping_options.rend()) {
     selected_shipping_option_ = selected_shipping_option_it->get();
-  } else {
-    // It's possible that there is no selected shipping option.
-    if (!details().error.empty()) {
-      selected_shipping_option_error_ = base::UTF8ToUTF16(details().error);
-    } else {
-      selected_shipping_option_error_ =
-          l10n_util::GetStringUTF16(IDS_PAYMENTS_UNSUPPORTED_SHIPPING_ADDRESS);
-    }
-    selected_shipping_option_ = nullptr;
   }
 }
 
