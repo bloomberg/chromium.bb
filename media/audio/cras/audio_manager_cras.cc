@@ -50,8 +50,9 @@ const int kDefaultInputBufferSize = 1024;
 const char kBeamformingOnDeviceId[] = "default-beamforming-on";
 const char kBeamformingOffDeviceId[] = "default-beamforming-off";
 
-const char kInternalInputDevice[] = "Built-in mic";
-const char kInternalOutputDevice[] = "Built-in speaker";
+const char kInternalInputVirtualDevice[] = "Built-in mic";
+const char kInternalOutputVirtualDevice[] = "Built-in speaker";
+const char kHeadphoneLineOutVirtualDevice[] = "Headphone/Line Out";
 
 enum CrosBeamformingDeviceState {
   BEAMFORMING_DEFAULT_ENABLED = 0,
@@ -85,6 +86,27 @@ std::string MicPositions() {
     }
   }
   return "";
+}
+
+// Process |device_list| that two shares the same dev_index by creating a
+// virtual device name for them.
+void ProcessVirtualDeviceName(AudioDeviceNames* device_names,
+                              const chromeos::AudioDeviceList& device_list) {
+  DCHECK_EQ(2, device_list.size());
+  if (device_list[0].type == chromeos::AUDIO_TYPE_LINEOUT ||
+      device_list[1].type == chromeos::AUDIO_TYPE_LINEOUT) {
+    device_names->emplace_back(kHeadphoneLineOutVirtualDevice,
+                               base::Uint64ToString(device_list[0].id));
+  } else if (device_list[0].type == chromeos::AUDIO_TYPE_INTERNAL_SPEAKER ||
+             device_list[1].type == chromeos::AUDIO_TYPE_INTERNAL_SPEAKER) {
+    device_names->emplace_back(kInternalOutputVirtualDevice,
+                               base::Uint64ToString(device_list[0].id));
+  } else {
+    DCHECK(device_list[0].type == chromeos::AUDIO_TYPE_INTERNAL_MIC ||
+           device_list[1].type == chromeos::AUDIO_TYPE_INTERNAL_MIC);
+    device_names->emplace_back(kInternalInputVirtualDevice,
+                               base::Uint64ToString(device_list[0].id));
+  }
 }
 
 }  // namespace
@@ -169,36 +191,24 @@ void AudioManagerCras::GetAudioDeviceNamesImpl(bool is_input,
     chromeos::AudioDeviceList devices;
     chromeos::CrasAudioHandler::Get()->GetAudioDevices(&devices);
 
-    int internal_input_dev_index = 0;
-    int internal_output_dev_index = 0;
+    // |dev_idx_map| is a map of dev_index and their audio devices.
+    std::map<int, chromeos::AudioDeviceList> dev_idx_map;
     for (const auto& device : devices) {
-      if (device.type == chromeos::AUDIO_TYPE_INTERNAL_MIC)
-        internal_input_dev_index = dev_index_of(device.id);
-      else if (device.type == chromeos::AUDIO_TYPE_INTERNAL_SPEAKER)
-        internal_output_dev_index = dev_index_of(device.id);
+      if (device.is_input != is_input || !device.is_for_simple_usage())
+        continue;
+
+      dev_idx_map[dev_index_of(device.id)].push_back(device);
     }
 
-    bool has_internal_input = false;
-    bool has_internal_output = false;
-    for (const auto& device : devices) {
-      if (device.is_input == is_input && device.is_for_simple_usage()) {
-        int dev_index = dev_index_of(device.id);
-        if (dev_index == internal_input_dev_index) {
-          if (!has_internal_input) {
-            device_names->emplace_back(kInternalInputDevice,
-                                       base::Uint64ToString(device.id));
-            has_internal_input = true;
-          }
-        } else if (dev_index == internal_output_dev_index) {
-          if (!has_internal_output) {
-            device_names->emplace_back(kInternalOutputDevice,
-                                       base::Uint64ToString(device.id));
-            has_internal_output = true;
-          }
-        } else {
-          device_names->emplace_back(device.display_name,
-                                     base::Uint64ToString(device.id));
-        }
+    for (const auto& item : dev_idx_map) {
+      if (1 == item.second.size()) {
+        const chromeos::AudioDevice& device = item.second.front();
+        device_names->emplace_back(device.display_name,
+                                   base::Uint64ToString(device.id));
+      } else {
+        // Create virtual device name for audio nodes that share the same device
+        // index.
+        ProcessVirtualDeviceName(device_names, item.second);
       }
     }
   }
