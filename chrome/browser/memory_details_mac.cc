@@ -14,6 +14,7 @@
 #include "base/file_version_info.h"
 #include "base/files/file_path.h"
 #include "base/mac/foundation_util.h"
+#include "base/mac/mac_util.h"
 #include "base/process/process_iterator.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -62,7 +63,16 @@ void CollectProcessDataForChromeProcess(
       base::ProcessMetrics::CreateProcessMetrics(
           pid, content::BrowserChildProcessHost::GetPortProvider());
   metrics->GetCommittedAndWorkingSetKBytes(&info.committed, &info.working_set);
-  info.phys_footprint = metrics->GetTaskVMInfo().phys_footprint;
+  base::ProcessMetrics::TaskVMInfo vm_info = metrics->GetTaskVMInfo();
+  info.phys_footprint = vm_info.phys_footprint;
+
+  // TODO(erikchen): Remove this temporary estimate for private memory once the
+  // memory infra service emits the same metric. https://crbug.com/720541.
+  if (base::mac::IsAtLeastOS10_12()) {
+    info.private_memory_footprint = vm_info.phys_footprint;
+  } else {
+    info.private_memory_footprint = vm_info.internal + vm_info.compressed;
+  }
 
   processes->push_back(info);
 }

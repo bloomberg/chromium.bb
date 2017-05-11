@@ -108,6 +108,11 @@ void MetricsMemoryDetails::UpdateHistograms() {
           UMA_HISTOGRAM_COUNTS_10000("Memory.Browser.OpenFDsSoftLimit",
                                      open_fds_soft_limit);
         }
+#if defined(OS_MACOSX)
+        UMA_HISTOGRAM_MEMORY_LARGE_MB(
+            "Memory.Experimental.Browser.PrivateMemoryFootprint.MacOS",
+            browser.processes[index].private_memory_footprint / 1024 / 1024);
+#endif
         continue;
       case content::PROCESS_TYPE_RENDERER: {
         UMA_HISTOGRAM_MEMORY_LARGE_MB("Memory.RendererAll", sample / 1024);
@@ -129,6 +134,12 @@ void MetricsMemoryDetails::UpdateHistograms() {
                                          num_open_fds);
             }
             extension_count++;
+#if defined(OS_MACOSX)
+            UMA_HISTOGRAM_MEMORY_LARGE_MB(
+                "Memory.Experimental.Extension.PrivateMemoryFootprint.MacOS",
+                browser.processes[index].private_memory_footprint / 1024 /
+                    1024);
+#endif
             continue;
           case ProcessMemoryInformation::RENDERER_CHROME:
             UMA_HISTOGRAM_MEMORY_KB("Memory.Chrome", sample);
@@ -141,6 +152,12 @@ void MetricsMemoryDetails::UpdateHistograms() {
             continue;
           case ProcessMemoryInformation::RENDERER_NORMAL:
           default:
+#if defined(OS_MACOSX)
+            UMA_HISTOGRAM_MEMORY_LARGE_MB(
+                "Memory.Experimental.Renderer.PrivateMemoryFootprint.MacOS",
+                browser.processes[index].private_memory_footprint / 1024 /
+                    1024);
+#endif
             // TODO(erikkay): Should we bother splitting out the other subtypes?
             UMA_HISTOGRAM_MEMORY_LARGE_MB("Memory.Renderer.Large2",
                                           sample / 1024);
@@ -182,6 +199,9 @@ void MetricsMemoryDetails::UpdateHistograms() {
               "Memory.Experimental.Gpu.PhysicalFootprint.MacOS",
               browser.processes[index].phys_footprint / 1024 / 1024);
         }
+        UMA_HISTOGRAM_MEMORY_LARGE_MB(
+            "Memory.Experimental.Gpu.PrivateMemoryFootprint.MacOS",
+            browser.processes[index].private_memory_footprint / 1024 / 1024);
 #endif
         UMA_HISTOGRAM_MEMORY_KB("Memory.Gpu", sample);
         if (num_open_fds != -1 && open_fds_soft_limit != -1) {

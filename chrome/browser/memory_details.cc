@@ -97,7 +97,8 @@ ProcessMemoryInformation::ProcessMemoryInformation()
       num_open_fds(-1),
       open_fds_soft_limit(-1),
       renderer_type(RENDERER_UNKNOWN),
-      phys_footprint(0) {}
+      phys_footprint(0),
+      private_memory_footprint(0) {}
 
 ProcessMemoryInformation::ProcessMemoryInformation(
     const ProcessMemoryInformation& other) = default;
