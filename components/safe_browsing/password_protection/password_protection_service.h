@@ -71,6 +71,9 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
                     LoginReputationClientResponse* verdict,
                     const base::Time& receive_time);
 
+  // Removes all the expired verdicts from cache.
+  void CleanUpExpiredVerdicts();
+
   // Creates an instance of PasswordProtectionRequest and call Start() on that
   // instance. This function also insert this request object in |requests_| for
   // record keeping.
@@ -150,7 +153,9 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
   FRIEND_TEST_ALL_PREFIXES(PasswordProtectionServiceTest,
                            TestPathVariantsMatchCacheExpression);
   FRIEND_TEST_ALL_PREFIXES(PasswordProtectionServiceTest,
-                           TestCleanUpCachedVerdicts);
+                           TestRemoveCachedVerdictOnURLsDeleted);
+  FRIEND_TEST_ALL_PREFIXES(PasswordProtectionServiceTest,
+                           TestCleanUpExpiredVerdict);
 
   // Overridden from history::HistoryServiceObserver.
   void OnURLsDeleted(history::HistoryService* history_service,

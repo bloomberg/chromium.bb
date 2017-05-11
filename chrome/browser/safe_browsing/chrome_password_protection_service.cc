@@ -44,6 +44,7 @@ ChromePasswordProtectionService::ChromePasswordProtectionService(
 
 ChromePasswordProtectionService::~ChromePasswordProtectionService() {
   if (content_settings()) {
+    CleanUpExpiredVerdicts();
     UMA_HISTOGRAM_COUNTS_1000(
         "PasswordProtection.NumberOfCachedVerdictBeforeShutdown",
         GetStoredVerdictCount());
