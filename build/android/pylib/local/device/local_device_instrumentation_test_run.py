@@ -9,6 +9,7 @@ import re
 import time
 
 from devil.android import device_errors
+from devil.android import device_temp_file
 from devil.android import flag_changer
 from devil.android.sdk import shared_prefs
 from devil.utils import reraiser_thread
@@ -39,6 +40,8 @@ TIMEOUT_ANNOTATIONS = [
 
 LOGCAT_FILTERS = ['*:e', 'chromium:v', 'cr_*:v']
 
+EXTRA_SCREENSHOT_FILE = (
+    'org.chromium.base.test.ScreenshotOnFailureStatement.ScreenshotFile')
 
 # TODO(jbudorick): Make this private once the instrumentation test_runner is
 # deprecated.
@@ -132,7 +135,7 @@ class LocalDeviceInstrumentationTestRun(
             logging.error("Couldn't set debug app: no package defined")
           else:
             dev.RunShellCommand(['am', 'set-debug-app', '--persistent',
-                                  self._test_instance.package_info.package],
+                                 self._test_instance.package_info.package],
                                 check_return=True)
       @trace_event.traced
       def edit_shared_prefs():
@@ -257,6 +260,14 @@ class LocalDeviceInstrumentationTestRun(
       coverage_device_file = os.path.join(
           coverage_directory, coverage_basename)
       extras['coverageFile'] = coverage_device_file
+    # Save screenshot if screenshot dir is specified (save locally) or if
+    # a GS bucket is passed (save in cloud).
+    screenshot_device_file = None
+    if (self._test_instance.screenshot_dir or
+        self._test_instance.gs_results_bucket):
+      screenshot_device_file = device_temp_file.DeviceTempFile(
+          device.adb, suffix='.png', dir=device.GetExternalStoragePath())
+      extras[EXTRA_SCREENSHOT_FILE] = screenshot_device_file.name
 
     if isinstance(test, list):
       if not self._test_instance.driver_apk:
@@ -386,22 +397,9 @@ class LocalDeviceInstrumentationTestRun(
               self._test_instance.gs_results_bucket) as screenshot_host_dir:
         screenshot_host_dir = (
             self._test_instance.screenshot_dir or screenshot_host_dir)
-        if screenshot_host_dir:
-          file_name = '%s-%s.png' % (
-              test_display_name,
-              time.strftime('%Y%m%dT%H%M%S-UTC', time.gmtime()))
-          screenshot_file = device.TakeScreenshot(
-              os.path.join(screenshot_host_dir, file_name))
-          logging.info(
-              'Saved screenshot for %s to %s.',
-              test_display_name, screenshot_file)
-          if self._test_instance.gs_results_bucket:
-            link = google_storage_helper.upload(
-                google_storage_helper.unique_name('screenshot', device=device),
-                screenshot_file,
-                bucket=self._test_instance.gs_results_bucket + '/screenshots')
-            for result in results:
-              result.SetLink('post_test_screenshot', link)
+        self._SaveScreenshot(device, screenshot_host_dir,
+                             screenshot_device_file, test_display_name,
+                             results)
 
       logging.info('detected failure in %s. raw output:', test_display_name)
       for l in output:
@@ -441,6 +439,33 @@ class LocalDeviceInstrumentationTestRun(
                 stream_name, '\n'.join(resolved_tombstones))
           result.SetLink('tombstones', tombstones_url)
     return results, None
+
+  def _SaveScreenshot(self, device, screenshot_host_dir, screenshot_device_file,
+                      test_name, results):
+    if screenshot_host_dir:
+      screenshot_host_file = os.path.join(
+          screenshot_host_dir,
+          '%s-%s.png' % (
+              test_name,
+              time.strftime('%Y%m%dT%H%M%S-UTC', time.gmtime())))
+      if device.FileExists(screenshot_device_file.name):
+        try:
+          device.PullFile(screenshot_device_file.name, screenshot_host_file)
+        finally:
+          screenshot_device_file.close()
+
+        logging.info(
+            'Saved screenshot for %s to %s.',
+            test_name, screenshot_host_file)
+        if self._test_instance.gs_results_bucket:
+          link = google_storage_helper.upload(
+              google_storage_helper.unique_name(
+                  'screenshot', device=device),
+              screenshot_host_file,
+              bucket=('%s/screenshots' %
+                      self._test_instance.gs_results_bucket))
+          for result in results:
+            result.SetLink('post_test_screenshot', link)
 
   #override
   def _ShouldRetry(self, test):
