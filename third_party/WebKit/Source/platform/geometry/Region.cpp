@@ -291,8 +291,8 @@ Region::Shape::SpanIterator Region::Shape::SpansEnd() const {
 
 Region::Shape::SegmentIterator Region::Shape::SegmentsBegin(
     SpanIterator it) const {
-  ASSERT(it >= spans_.data());
-  ASSERT(it < spans_.data() + spans_.size());
+  DCHECK_GE(it, spans_.data());
+  DCHECK_LT(it, spans_.data() + spans_.size());
 
   // Check if this span has any segments.
   if (it->segment_index == segments_.size())
@@ -303,14 +303,14 @@ Region::Shape::SegmentIterator Region::Shape::SegmentsBegin(
 
 Region::Shape::SegmentIterator Region::Shape::SegmentsEnd(
     SpanIterator it) const {
-  ASSERT(it >= spans_.data());
-  ASSERT(it < spans_.data() + spans_.size());
+  DCHECK_GE(it, spans_.data());
+  DCHECK_LT(it, spans_.data() + spans_.size());
 
   // Check if this span has any segments.
   if (it->segment_index == segments_.size())
     return 0;
 
-  ASSERT(it + 1 < spans_.data() + spans_.size());
+  DCHECK_LT(it + 1, spans_.data() + spans_.size());
   size_t segment_index = (it + 1)->segment_index;
 
   SECURITY_DCHECK(segment_index <= segments_.size());
@@ -352,7 +352,7 @@ IntRect Region::Shape::Bounds() const {
     SegmentIterator last_segment = SegmentsEnd(span) - 1;
 
     if (first_segment && last_segment) {
-      ASSERT(first_segment != last_segment);
+      DCHECK_NE(first_segment, last_segment);
 
       if (*first_segment < min_x)
         min_x = *first_segment;
@@ -364,8 +364,8 @@ IntRect Region::Shape::Bounds() const {
     ++span;
   }
 
-  ASSERT(min_x <= max_x);
-  ASSERT(min_y <= max_y);
+  DCHECK_LE(min_x, max_x);
+  DCHECK_LE(min_y, max_y);
 
   return IntRect(min_x, min_y, max_x - min_x, max_y - min_y);
 }

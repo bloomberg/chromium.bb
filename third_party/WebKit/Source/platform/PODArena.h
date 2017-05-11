@@ -139,7 +139,7 @@ class PODArena final : public RefCounted<PODArena> {
 
   // Rounds up the given allocation size to the specified alignment.
   size_t RoundUp(size_t size, size_t alignment) {
-    ASSERT(!(alignment % 2));
+    DCHECK(!(alignment % 2));
     return (size + alignment - 1) & ~(alignment - 1);
   }
 

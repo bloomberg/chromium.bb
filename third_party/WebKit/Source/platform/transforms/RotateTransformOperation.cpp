@@ -67,7 +67,7 @@ PassRefPtr<TransformOperation> RotateTransformOperation::Blend(
         Rotation::Slerp(from_rotate.rotation_, rotation_, progress), kRotate3D);
   }
 
-  ASSERT(Axis() == from_rotate.Axis());
+  DCHECK(Axis() == from_rotate.Axis());
   return RotateTransformOperation::Create(
       Rotation(Axis(), blink::Blend(from_rotate.Angle(), Angle(), progress)),
       type_);

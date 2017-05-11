@@ -235,7 +235,7 @@ static NSSize abs(NSSize size) {
   if (!scrollbar)
     return NSZeroPoint;
 
-  ASSERT(scrollerImp == scrollbarPainterForScrollbar(*scrollbar));
+  DCHECK_EQ(scrollerImp, scrollbarPainterForScrollbar(*scrollbar));
 
   return scrollbar->ConvertFromContainingFrameViewBase(
       blink::IntPoint(pointInContentArea));
@@ -553,7 +553,7 @@ class BlinkScrollbarPartAnimationTimer {
   if (!_scrollbar)
     return;
 
-  ASSERT(scrollerImp == scrollbarPainterForScrollbar(*_scrollbar));
+  DCHECK_EQ(scrollerImp, scrollbarPainterForScrollbar(*_scrollbar));
 
   ScrollbarPainter scrollerPainter = (ScrollbarPainter)scrollerImp;
   [self setUpAlphaAnimation:_knobAlphaAnimation
@@ -569,7 +569,7 @@ class BlinkScrollbarPartAnimationTimer {
   if (!_scrollbar)
     return;
 
-  ASSERT(scrollerImp == scrollbarPainterForScrollbar(*_scrollbar));
+  DCHECK_EQ(scrollerImp, scrollbarPainterForScrollbar(*_scrollbar));
 
   ScrollbarPainter scrollerPainter = (ScrollbarPainter)scrollerImp;
   [self setUpAlphaAnimation:_trackAlphaAnimation
@@ -587,7 +587,7 @@ class BlinkScrollbarPartAnimationTimer {
   if (!supportsUIStateTransitionProgress())
     return;
 
-  ASSERT(scrollerImp == scrollbarPainterForScrollbar(*_scrollbar));
+  DCHECK_EQ(scrollerImp, scrollbarPainterForScrollbar(*_scrollbar));
 
   ScrollbarPainter scrollbarPainter = (ScrollbarPainter)scrollerImp;
 
@@ -622,7 +622,7 @@ class BlinkScrollbarPartAnimationTimer {
   if (!supportsExpansionTransitionProgress())
     return;
 
-  ASSERT(scrollerImp == scrollbarPainterForScrollbar(*_scrollbar));
+  DCHECK_EQ(scrollerImp, scrollbarPainterForScrollbar(*_scrollbar));
 
   ScrollbarPainter scrollbarPainter = (ScrollbarPainter)scrollerImp;
 

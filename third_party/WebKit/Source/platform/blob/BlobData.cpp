@@ -209,7 +209,7 @@ long long BlobData::length() const {
        it != items_.end(); ++it) {
     const BlobDataItem& item = *it;
     if (item.length != BlobDataItem::kToEndOfFile) {
-      ASSERT(item.length >= 0);
+      DCHECK_GE(item.length, 0);
       length += item.length;
       continue;
     }

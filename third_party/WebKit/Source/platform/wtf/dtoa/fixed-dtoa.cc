@@ -240,7 +240,7 @@ namespace double_conversion {
         // is a fixed-point number, with binary point at bit 'point'.
         if (-exponent <= 64) {
             // One 64 bit number is sufficient.
-            ASSERT(fractionals >> 56 == 0);
+            DCHECK(fractionals >> 56 == 0);
             int point = -exponent;
             for (int i = 0; i < fractional_count; ++i) {
                 if (fractionals == 0) break;

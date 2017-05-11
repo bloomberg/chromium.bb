@@ -45,7 +45,8 @@ int WebSocketHandshakeResponse::StatusCode() const {
 }
 
 void WebSocketHandshakeResponse::SetStatusCode(int status_code) {
-  ASSERT(status_code >= 100 && status_code < 600);
+  DCHECK_GE(status_code, 100);
+  DCHECK_LT(status_code, 600);
   status_code_ = status_code;
 }
 

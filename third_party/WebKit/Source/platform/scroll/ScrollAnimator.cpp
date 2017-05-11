@@ -159,7 +159,7 @@ bool ScrollAnimator::WillAnimateToOffset(const ScrollOffset& target_offset) {
       return true;
 
     target_offset_ = target_offset;
-    ASSERT(run_state_ == RunState::kRunningOnMainThread ||
+    DCHECK(run_state_ == RunState::kRunningOnMainThread ||
            run_state_ == RunState::kRunningOnCompositor ||
            run_state_ == RunState::kRunningOnCompositorButNeedsUpdate ||
            run_state_ == RunState::kRunningOnCompositorButNeedsTakeover);

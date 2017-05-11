@@ -280,7 +280,7 @@ void Scrollbar::MoveThumb(int pos, bool dragging_document) {
   int thumb_pos = GetTheme().ThumbPosition(*this);
   int thumb_len = GetTheme().ThumbLength(*this);
   int track_len = GetTheme().TrackLength(*this);
-  ASSERT(thumb_len <= track_len);
+  DCHECK_LE(thumb_len, track_len);
   if (thumb_len == track_len)
     return;
 

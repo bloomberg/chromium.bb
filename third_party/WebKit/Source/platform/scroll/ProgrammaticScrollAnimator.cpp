@@ -58,7 +58,7 @@ void ProgrammaticScrollAnimator::AnimateToOffset(const ScrollOffset& offset) {
 }
 
 void ProgrammaticScrollAnimator::CancelAnimation() {
-  ASSERT(run_state_ != RunState::kRunningOnCompositorButNeedsUpdate);
+  DCHECK_NE(run_state_, RunState::kRunningOnCompositorButNeedsUpdate);
   ScrollAnimatorCompositorCoordinator::CancelAnimation();
 }
 
@@ -96,7 +96,7 @@ void ProgrammaticScrollAnimator::UpdateCompositorAnimations() {
     // non-zero compositor animation id, there's a currently running
     // compositor animation that needs to be removed here before the new
     // animation is added below.
-    ASSERT(run_state_ == RunState::kWaitingToCancelOnCompositor ||
+    DCHECK(run_state_ == RunState::kWaitingToCancelOnCompositor ||
            run_state_ == RunState::kWaitingToSendToCompositor);
 
     RemoveAnimation();
@@ -167,7 +167,7 @@ void ProgrammaticScrollAnimator::LayerForCompositedScrollingDidChange(
 
 void ProgrammaticScrollAnimator::NotifyCompositorAnimationFinished(
     int group_id) {
-  ASSERT(run_state_ != RunState::kRunningOnCompositorButNeedsUpdate);
+  DCHECK_NE(run_state_, RunState::kRunningOnCompositorButNeedsUpdate);
   ScrollAnimatorCompositorCoordinator::CompositorAnimationFinished(group_id);
 }
 

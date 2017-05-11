@@ -94,7 +94,7 @@ void SharedBuffer::AppendInternal(const char* data, size_t length) {
   if (!length)
     return;
 
-  ASSERT(size_ >= buffer_.size());
+  DCHECK_GE(size_, buffer_.size());
   size_t position_in_segment = OffsetInSegment(size_ - buffer_.size());
   size_ += length;
 
@@ -152,7 +152,7 @@ PassRefPtr<SharedBuffer> SharedBuffer::Copy() const {
       clone->buffer_.Append(segment, segment_size);
       position += segment_size;
     }
-    ASSERT(position == clone->size());
+    DCHECK_EQ(position, clone->size());
   }
   return clone.Release();
 }

@@ -204,7 +204,8 @@ FloatQuad TransformState::MappedQuad(bool* was_clamped) const {
 }
 
 const TransformationMatrix& TransformState::AccumulatedTransform() const {
-  ASSERT(force_accumulating_transform_ && accumulating_transform_);
+  DCHECK(force_accumulating_transform_);
+  DCHECK(accumulating_transform_);
   return *accumulated_transform_;
 }
 

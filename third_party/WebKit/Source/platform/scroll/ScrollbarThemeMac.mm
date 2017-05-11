@@ -376,7 +376,7 @@ bool ScrollbarThemeMac::HasThumb(const ScrollbarThemeClient& scrollbar) {
 IntRect ScrollbarThemeMac::BackButtonRect(const ScrollbarThemeClient& scrollbar,
                                           ScrollbarPart part,
                                           bool painting) {
-  ASSERT(ButtonsPlacement() == kWebScrollbarButtonsPlacementNone);
+  DCHECK_EQ(ButtonsPlacement(), kWebScrollbarButtonsPlacementNone);
   return IntRect();
 }
 
@@ -384,7 +384,7 @@ IntRect ScrollbarThemeMac::ForwardButtonRect(
     const ScrollbarThemeClient& scrollbar,
     ScrollbarPart part,
     bool painting) {
-  ASSERT(ButtonsPlacement() == kWebScrollbarButtonsPlacementNone);
+  DCHECK_EQ(ButtonsPlacement(), kWebScrollbarButtonsPlacementNone);
   return IntRect();
 }
 

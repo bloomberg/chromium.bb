@@ -72,22 +72,22 @@ class PLATFORM_EXPORT Length {
 
   Length(LengthType t)
       : int_value_(0), quirk_(false), type_(t), is_float_(false) {
-    ASSERT(t != kCalculated);
+    DCHECK_NE(t, kCalculated);
   }
 
   Length(int v, LengthType t, bool q = false)
       : int_value_(v), quirk_(q), type_(t), is_float_(false) {
-    ASSERT(t != kCalculated);
+    DCHECK_NE(t, kCalculated);
   }
 
   Length(LayoutUnit v, LengthType t, bool q = false)
       : float_value_(v.ToFloat()), quirk_(q), type_(t), is_float_(true) {
-    ASSERT(t != kCalculated);
+    DCHECK_NE(t, kCalculated);
   }
 
   Length(float v, LengthType t, bool q = false)
       : float_value_(v), quirk_(q), type_(t), is_float_(true) {
-    ASSERT(t != kCalculated);
+    DCHECK_NE(t, kCalculated);
   }
 
   Length(double v, LengthType t, bool q = false)
@@ -154,12 +154,12 @@ class PLATFORM_EXPORT Length {
   }
 
   float Pixels() const {
-    ASSERT(GetType() == kFixed);
+    DCHECK_EQ(GetType(), kFixed);
     return GetFloatValue();
   }
 
   float Percent() const {
-    ASSERT(GetType() == kPercent);
+    DCHECK_EQ(GetType(), kPercent);
     return GetFloatValue();
   }
 
@@ -252,7 +252,8 @@ class PLATFORM_EXPORT Length {
   }
 
   Length Blend(const Length& from, double progress, ValueRange range) const {
-    ASSERT(IsSpecified() && from.IsSpecified());
+    DCHECK(IsSpecified());
+    DCHECK(from.IsSpecified());
 
     if (progress == 0.0)
       return from;

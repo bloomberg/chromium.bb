@@ -83,7 +83,7 @@ OriginAccessEntry::OriginAccessEntry(const String& protocol,
       host_(host),
       subdomain_settings_(subdomain_setting),
       host_is_public_suffix_(false) {
-  ASSERT(subdomain_setting >= kAllowSubdomains ||
+  DCHECK(subdomain_setting >= kAllowSubdomains ||
          subdomain_setting <= kDisallowSubdomains);
 
   host_is_ip_address_ = blink::HostIsIPAddress(host);

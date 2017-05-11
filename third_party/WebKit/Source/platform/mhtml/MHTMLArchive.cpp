@@ -169,7 +169,7 @@ void MHTMLArchive::GenerateMHTMLPart(const String& boundary,
                                      const SerializedResource& resource,
                                      Vector<char>& output_buffer) {
   DCHECK(!boundary.IsEmpty());
-  ASSERT(content_id.IsEmpty() || content_id[0] == '<');
+  DCHECK(content_id.IsEmpty() || content_id[0] == '<');
 
   StringBuilder string_builder;
   string_builder.Append("--");
@@ -229,7 +229,7 @@ void MHTMLArchive::GenerateMHTMLPart(const String& boundary,
       output_buffer.Append(encoded_data.data(), encoded_data.size());
       output_buffer.Append("\r\n", 2u);
     } else {
-      ASSERT(!strcmp(content_encoding, kBase64));
+      DCHECK(!strcmp(content_encoding, kBase64));
       // We are not specifying insertLFs = true below as it would cut the lines
       // with LFs and MHTML requires CRLFs.
       Base64Encode(data, data_length, encoded_data);

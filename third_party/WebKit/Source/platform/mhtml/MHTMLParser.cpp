@@ -273,7 +273,7 @@ ArchiveResource* MHTMLParser::ParseNextPart(
     const String& end_of_part_boundary,
     const String& end_of_document_boundary,
     bool& end_of_archive_reached) {
-  ASSERT(end_of_part_boundary.IsEmpty() == end_of_document_boundary.IsEmpty());
+  DCHECK_EQ(end_of_part_boundary.IsEmpty(), end_of_document_boundary.IsEmpty());
 
   // If no content transfer encoding is specified, default to binary encoding.
   MIMEHeader::Encoding content_transfer_encoding =
@@ -303,7 +303,7 @@ ArchiveResource* MHTMLParser::ParseNextPart(
       return nullptr;
     }
     end_of_part_reached = true;
-    ASSERT(next_chars.size() == 2);
+    DCHECK_EQ(next_chars.size(), 2UL);
     end_of_archive_reached = (next_chars[0] == '-' && next_chars[1] == '-');
     if (!end_of_archive_reached) {
       String line = line_reader_.NextChunkAsUTF8StringWithLatin1Fallback();

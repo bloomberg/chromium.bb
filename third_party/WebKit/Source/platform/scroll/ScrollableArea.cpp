@@ -248,7 +248,7 @@ void ScrollableArea::UserScrollHelper(const ScrollOffset& offset,
   // TODO(bokan): The userScroll method should probably be modified to call this
   //              method and ScrollAnimatorBase to have a simpler
   //              animateToOffset method like the ProgrammaticScrollAnimator.
-  ASSERT(scroll_behavior == kScrollBehaviorInstant);
+  DCHECK_EQ(scroll_behavior, kScrollBehaviorInstant);
   GetScrollAnimator().ScrollToOffsetWithoutAnimation(ScrollOffset(x, y));
 }
 
