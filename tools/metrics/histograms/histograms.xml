@@ -29594,6 +29594,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Memory.Experimental.Browser.PrivateMemoryFootprint.MacOS"
+    units="MB">
+  <owner>erikchen@chromium.org</owner>
+  <summary>
+    A rough estimate of the private memory footprint of the browser process.
+  </summary>
+</histogram>
+
 <histogram name="Memory.Experimental.Browser.PurgedMemory" units="MB">
   <owner>bashi@chromium.org</owner>
   <summary>
@@ -29620,6 +29628,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Memory.Experimental.Extension.PrivateMemoryFootprint.MacOS"
+    units="MB">
+  <owner>erikchen@chromium.org</owner>
+  <summary>
+    A rough estimate of the private memory footprint of an extension process.
+  </summary>
+</histogram>
+
 <histogram name="Memory.Experimental.Gpu.PhysicalFootprint.MacOS" units="MB">
   <owner>erikchen@chromium.org</owner>
   <summary>
@@ -29627,6 +29643,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     to correctly account for OpenGL memory usage.  This metric also has flaws
     and is not intended for permanent use.  It's an emergency measure added to
     help debug https://crbug.com/713854.  Recorded once per UMA ping.
+  </summary>
+</histogram>
+
+<histogram name="Memory.Experimental.Gpu.PrivateMemoryFootprint.MacOS"
+    units="MB">
+  <owner>erikchen@chromium.org</owner>
+  <summary>
+    A rough estimate of the private memory footprint of the GPU process.
   </summary>
 </histogram>
 
@@ -29643,6 +29667,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>
     The number of loads in a main frame during the lifetime of a render process
     (excludes extensions). Emitted when the processes quits.
+  </summary>
+</histogram>
+
+<histogram name="Memory.Experimental.Renderer.PrivateMemoryFootprint.MacOS"
+    units="MB">
+  <owner>erikchen@chromium.org</owner>
+  <summary>
+    A rough estimate of the private memory footprint of a renderer process.
   </summary>
 </histogram>
 

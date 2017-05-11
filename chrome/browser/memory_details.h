@@ -72,6 +72,9 @@ struct ProcessMemoryInformation {
   // The physical footprint is a macOS concept that tracks anonymous,
   // non-discardable memory.
   size_t phys_footprint;
+  // TODO(erikchen): Remove this temporary estimate for private memory once the
+  // memory infra service emits the same metric. https://crbug.com/720541.
+  size_t private_memory_footprint;
 };
 
 typedef std::vector<ProcessMemoryInformation> ProcessMemoryInformationList;
