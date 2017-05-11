@@ -482,4 +482,12 @@ TEST_F(DecryptingVideoDecoderTest, Destroy_AfterReset) {
   Destroy();
 }
 
+// Test the case where color space in the config is set in the decoded frame.
+TEST_F(DecryptingVideoDecoderTest, ColorSpace) {
+  Initialize();
+  EXPECT_FALSE(decoded_video_frame_->ColorSpace().IsValid());
+  EnterNormalDecodingState();
+  EXPECT_TRUE(decoded_video_frame_->ColorSpace().IsValid());
+}
+
 }  // namespace media
