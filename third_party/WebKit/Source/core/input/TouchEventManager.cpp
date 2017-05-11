@@ -107,7 +107,7 @@ void TouchEventManager::Clear() {
   region_for_touch_id_.clear();
   touch_pressed_ = false;
   suppressing_touchmoves_within_slop_ = false;
-  current_touch_action_ = kTouchActionAuto;
+  current_touch_action_ = TouchAction::kTouchActionAuto;
 }
 
 DEFINE_TRACE(TouchEventManager) {
@@ -197,7 +197,7 @@ WebInputEventResult TouchEventManager::DispatchTouchEvents(
 
   if (all_touches_released) {
     touch_sequence_document_.Clear();
-    current_touch_action_ = kTouchActionAuto;
+    current_touch_action_ = TouchAction::kTouchActionAuto;
   }
 
   WebInputEventResult event_result = WebInputEventResult::kNotHandled;
@@ -369,7 +369,7 @@ void TouchEventManager::UpdateTargetAndRegionMapsForTouchStarts(
 
       TouchAction effective_touch_action =
           TouchActionUtil::ComputeEffectiveTouchAction(*touch_info.touch_node);
-      if (effective_touch_action != kTouchActionAuto) {
+      if (effective_touch_action != TouchAction::kTouchActionAuto) {
         frame_->GetPage()->GetChromeClient().SetTouchAction(
             frame_, effective_touch_action);
 

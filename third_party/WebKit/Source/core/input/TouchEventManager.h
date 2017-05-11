@@ -7,6 +7,7 @@
 
 #include "core/CoreExport.h"
 #include "core/events/PointerEventFactory.h"
+#include "platform/graphics/TouchAction.h"
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/HashMap.h"
 #include "public/platform/WebInputEventResult.h"

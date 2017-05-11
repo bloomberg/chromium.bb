@@ -42,6 +42,7 @@
 #include "core/style/StyleScrollSnapData.h"
 #include "core/style/StyleSelfAlignmentData.h"
 #include "platform/LengthPoint.h"
+#include "platform/graphics/TouchAction.h"
 #include "platform/wtf/PassRefPtr.h"
 #include "platform/wtf/RefCounted.h"
 #include "platform/wtf/Vector.h"

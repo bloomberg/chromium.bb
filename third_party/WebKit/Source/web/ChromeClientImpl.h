@@ -32,11 +32,12 @@
 #ifndef ChromeClientImpl_h
 #define ChromeClientImpl_h
 
+#include <memory>
 #include "core/page/ChromeClient.h"
 #include "core/page/WindowFeatures.h"
+#include "platform/graphics/TouchAction.h"
 #include "public/web/WebNavigationPolicy.h"
 #include "web/WebExport.h"
-#include <memory>
 
 namespace blink {
 

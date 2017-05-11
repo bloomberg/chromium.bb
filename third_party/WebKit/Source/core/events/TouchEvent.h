@@ -32,6 +32,7 @@
 #include "core/events/EventDispatchMediator.h"
 #include "core/events/TouchEventInit.h"
 #include "core/events/UIEventWithKeyState.h"
+#include "platform/graphics/TouchAction.h"
 #include "public/platform/WebTouchEvent.h"
 
 namespace blink {

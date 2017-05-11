@@ -6,7 +6,7 @@
 #define TouchActionUtil_h
 
 #include "core/CoreExport.h"
-#include "core/style/ComputedStyleConstants.h"
+#include "platform/graphics/TouchAction.h"
 
 namespace blink {
 

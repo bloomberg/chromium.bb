@@ -6,8 +6,8 @@
 #define CONTENT_BROWSER_RENDERER_HOST_INPUT_TOUCH_ACTION_FILTER_H_
 
 #include "base/macros.h"
+#include "cc/input/touch_action.h"
 #include "content/common/content_export.h"
-#include "content/common/input/touch_action.h"
 
 namespace blink {
 class WebGestureEvent;
@@ -31,7 +31,7 @@ class CONTENT_EXPORT TouchActionFilter {
 
   // Called when a set-touch-action message is received from the renderer
   // for a touch start event that is currently in flight.
-  void OnSetTouchAction(content::TouchAction touch_action);
+  void OnSetTouchAction(cc::TouchAction touch_action);
 
   // Must be called at least once between when the last gesture events for the
   // previous touch sequence have passed through the touch action filter and the
@@ -39,7 +39,7 @@ class CONTENT_EXPORT TouchActionFilter {
   // renderer. It may be called multiple times during this interval.
   void ResetTouchAction();
 
-  TouchAction allowed_touch_action() const { return allowed_touch_action_; }
+  cc::TouchAction allowed_touch_action() const { return allowed_touch_action_; }
 
  private:
   bool ShouldSuppressManipulation(const blink::WebGestureEvent&);
@@ -59,7 +59,7 @@ class CONTENT_EXPORT TouchActionFilter {
   bool allow_current_double_tap_event_;
 
   // What touch actions are currently permitted.
-  TouchAction allowed_touch_action_;
+  cc::TouchAction allowed_touch_action_;
 
   DISALLOW_COPY_AND_ASSIGN(TouchActionFilter);
 };

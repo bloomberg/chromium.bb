@@ -40,6 +40,7 @@
 #include "platform/geometry/IntPoint.h"
 #include "platform/geometry/IntRect.h"
 #include "platform/graphics/GraphicsLayer.h"
+#include "platform/graphics/TouchAction.h"
 #include "platform/heap/Handle.h"
 #include "platform/scheduler/child/web_scheduler.h"
 #include "platform/wtf/Compiler.h"

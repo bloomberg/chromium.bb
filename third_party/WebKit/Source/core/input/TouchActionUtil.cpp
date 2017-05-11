@@ -50,8 +50,8 @@ TouchAction ComputeEffectiveTouchAction(const Node& node) {
   // prohibited actions at or below the element that supports them.
   // I.e. pan-related actions are considered up to the nearest scroller,
   // and zoom related actions are considered up to the root.
-  TouchAction effective_touch_action = kTouchActionAuto;
-  TouchAction handled_touch_actions = kTouchActionNone;
+  TouchAction effective_touch_action = TouchAction::kTouchActionAuto;
+  TouchAction handled_touch_actions = TouchAction::kTouchActionNone;
   for (const Node* cur_node = &node; cur_node;
        cur_node = ParentNodeAcrossFrames(cur_node)) {
     if (LayoutObject* layout_object = cur_node->GetLayoutObject()) {
@@ -59,7 +59,7 @@ TouchAction ComputeEffectiveTouchAction(const Node& node) {
         TouchAction action = layout_object->Style()->GetTouchAction();
         action |= handled_touch_actions;
         effective_touch_action &= action;
-        if (effective_touch_action == kTouchActionNone)
+        if (effective_touch_action == TouchAction::kTouchActionNone)
           break;
       }
 
@@ -68,7 +68,7 @@ TouchAction ComputeEffectiveTouchAction(const Node& node) {
       if ((layout_object->IsBox() &&
            ToLayoutBox(layout_object)->ScrollsOverflow()) ||
           layout_object->IsLayoutView())
-        handled_touch_actions |= kTouchActionPan;
+        handled_touch_actions |= TouchAction::kTouchActionPan;
     }
   }
   return effective_touch_action;

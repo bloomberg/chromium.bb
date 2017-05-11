@@ -1181,27 +1181,30 @@ static CSSValue* ValueForTextDecorationSkip(
 
 static CSSValue* TouchActionFlagsToCSSValue(TouchAction touch_action) {
   CSSValueList* list = CSSValueList::CreateSpaceSeparated();
-  if (touch_action == kTouchActionAuto) {
+  if (touch_action == TouchAction::kTouchActionAuto) {
     list->Append(*CSSIdentifierValue::Create(CSSValueAuto));
-  } else if (touch_action == kTouchActionNone) {
+  } else if (touch_action == TouchAction::kTouchActionNone) {
     list->Append(*CSSIdentifierValue::Create(CSSValueNone));
-  } else if (touch_action == kTouchActionManipulation) {
+  } else if (touch_action == TouchAction::kTouchActionManipulation) {
     list->Append(*CSSIdentifierValue::Create(CSSValueManipulation));
   } else {
-    if ((touch_action & kTouchActionPanX) == kTouchActionPanX)
+    if ((touch_action & TouchAction::kTouchActionPanX) ==
+        TouchAction::kTouchActionPanX)
       list->Append(*CSSIdentifierValue::Create(CSSValuePanX));
-    else if (touch_action & kTouchActionPanLeft)
+    else if (touch_action & TouchAction::kTouchActionPanLeft)
       list->Append(*CSSIdentifierValue::Create(CSSValuePanLeft));
-    else if (touch_action & kTouchActionPanRight)
+    else if (touch_action & TouchAction::kTouchActionPanRight)
       list->Append(*CSSIdentifierValue::Create(CSSValuePanRight));
-    if ((touch_action & kTouchActionPanY) == kTouchActionPanY)
+    if ((touch_action & TouchAction::kTouchActionPanY) ==
+        TouchAction::kTouchActionPanY)
       list->Append(*CSSIdentifierValue::Create(CSSValuePanY));
-    else if (touch_action & kTouchActionPanUp)
+    else if (touch_action & TouchAction::kTouchActionPanUp)
       list->Append(*CSSIdentifierValue::Create(CSSValuePanUp));
-    else if (touch_action & kTouchActionPanDown)
+    else if (touch_action & TouchAction::kTouchActionPanDown)
       list->Append(*CSSIdentifierValue::Create(CSSValuePanDown));
 
-    if ((touch_action & kTouchActionPinchZoom) == kTouchActionPinchZoom)
+    if ((touch_action & TouchAction::kTouchActionPinchZoom) ==
+        TouchAction::kTouchActionPinchZoom)
       list->Append(*CSSIdentifierValue::Create(CSSValuePinchZoom));
   }
 

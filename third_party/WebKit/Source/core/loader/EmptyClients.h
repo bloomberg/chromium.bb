@@ -45,6 +45,7 @@
 #include "platform/geometry/FloatPoint.h"
 #include "platform/geometry/FloatRect.h"
 #include "platform/geometry/IntRect.h"
+#include "platform/graphics/TouchAction.h"
 #include "platform/heap/Handle.h"
 #include "platform/loader/fetch/ResourceError.h"
 #include "platform/text/TextCheckerClient.h"

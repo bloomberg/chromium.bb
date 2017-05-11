@@ -48,6 +48,7 @@ cc_component("cc") {
     "input/selection.h",
     "input/single_scrollbar_animation_controller_thinning.cc",
     "input/single_scrollbar_animation_controller_thinning.h",
+    "input/touch_action.h",
     "layers/append_quads_data.cc",
     "layers/append_quads_data.h",
     "layers/content_layer_client.h",

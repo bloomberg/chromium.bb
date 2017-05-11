@@ -46,6 +46,7 @@
 #include "platform/fonts/FontSmoothingMode.h"
 #include "platform/fonts/TextRenderingMode.h"
 #include "platform/graphics/GraphicsTypes.h"
+#include "platform/graphics/TouchAction.h"
 #include "platform/scroll/ScrollableArea.h"
 #include "platform/text/TextRun.h"
 #include "platform/text/WritingMode.h"
@@ -2974,31 +2975,31 @@ template <>
 inline TouchAction CSSIdentifierValue::ConvertTo() const {
   switch (value_id_) {
     case CSSValueNone:
-      return kTouchActionNone;
+      return TouchAction::kTouchActionNone;
     case CSSValueAuto:
-      return kTouchActionAuto;
+      return TouchAction::kTouchActionAuto;
     case CSSValuePanLeft:
-      return kTouchActionPanLeft;
+      return TouchAction::kTouchActionPanLeft;
     case CSSValuePanRight:
-      return kTouchActionPanRight;
+      return TouchAction::kTouchActionPanRight;
     case CSSValuePanX:
-      return kTouchActionPanX;
+      return TouchAction::kTouchActionPanX;
     case CSSValuePanUp:
-      return kTouchActionPanUp;
+      return TouchAction::kTouchActionPanUp;
     case CSSValuePanDown:
-      return kTouchActionPanDown;
+      return TouchAction::kTouchActionPanDown;
     case CSSValuePanY:
-      return kTouchActionPanY;
+      return TouchAction::kTouchActionPanY;
     case CSSValueManipulation:
-      return kTouchActionManipulation;
+      return TouchAction::kTouchActionManipulation;
     case CSSValuePinchZoom:
-      return kTouchActionPinchZoom;
+      return TouchAction::kTouchActionPinchZoom;
     default:
       break;
   }
 
   NOTREACHED();
-  return kTouchActionNone;
+  return TouchAction::kTouchActionNone;
 }
 
 template <>
