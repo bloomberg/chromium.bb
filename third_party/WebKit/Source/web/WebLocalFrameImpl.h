@@ -433,6 +433,8 @@ class WEB_EXPORT WebLocalFrameImpl final
   void SetContextMenuNode(Node* node) override { context_menu_node_ = node; }
   void ClearContextMenuNode() override { context_menu_node_.Clear(); }
 
+  std::unique_ptr<WebURLLoader> CreateURLLoader() override;
+
   DECLARE_TRACE();
 
  private:
