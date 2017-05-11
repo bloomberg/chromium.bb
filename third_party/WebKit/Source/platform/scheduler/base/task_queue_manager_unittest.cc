@@ -359,9 +359,9 @@ TEST_F(TaskQueueManagerTest, HasPendingImmediateWork_ImmediateTask) {
   Initialize(1u);
 
   std::vector<EnqueueOrder> run_order;
-  EXPECT_FALSE(runners_[0]->HasPendingImmediateWork());
+  EXPECT_FALSE(runners_[0]->HasTaskToRunImmediately());
   runners_[0]->PostTask(FROM_HERE, base::Bind(&TestTask, 1, &run_order));
-  EXPECT_TRUE(runners_[0]->HasPendingImmediateWork());
+  EXPECT_TRUE(runners_[0]->HasTaskToRunImmediately());
 
   // Move the task into the |immediate_work_queue|.
   EXPECT_TRUE(runners_[0]->immediate_work_queue()->Empty());
@@ -370,12 +370,12 @@ TEST_F(TaskQueueManagerTest, HasPendingImmediateWork_ImmediateTask) {
   voter->SetQueueEnabled(false);
   test_task_runner_->RunUntilIdle();
   EXPECT_FALSE(runners_[0]->immediate_work_queue()->Empty());
-  EXPECT_TRUE(runners_[0]->HasPendingImmediateWork());
+  EXPECT_TRUE(runners_[0]->HasTaskToRunImmediately());
 
   // Run the task, making the queue empty.
   voter->SetQueueEnabled(true);
   test_task_runner_->RunUntilIdle();
-  EXPECT_FALSE(runners_[0]->HasPendingImmediateWork());
+  EXPECT_FALSE(runners_[0]->HasTaskToRunImmediately());
 }
 
 TEST_F(TaskQueueManagerTest, HasPendingImmediateWork_DelayedTask) {
@@ -385,18 +385,18 @@ TEST_F(TaskQueueManagerTest, HasPendingImmediateWork_DelayedTask) {
   base::TimeDelta delay(base::TimeDelta::FromMilliseconds(10));
   runners_[0]->PostDelayedTask(FROM_HERE, base::Bind(&TestTask, 1, &run_order),
                                delay);
-  EXPECT_FALSE(runners_[0]->HasPendingImmediateWork());
+  EXPECT_FALSE(runners_[0]->HasTaskToRunImmediately());
   now_src_->Advance(delay);
-  EXPECT_TRUE(runners_[0]->HasPendingImmediateWork());
+  EXPECT_TRUE(runners_[0]->HasTaskToRunImmediately());
 
   // Move the task into the |delayed_work_queue|.
   WakeUpReadyDelayedQueues(LazyNow(now_src_.get()));
   EXPECT_FALSE(runners_[0]->delayed_work_queue()->Empty());
-  EXPECT_TRUE(runners_[0]->HasPendingImmediateWork());
+  EXPECT_TRUE(runners_[0]->HasTaskToRunImmediately());
 
   // Run the task, making the queue empty.
   test_task_runner_->RunUntilIdle();
-  EXPECT_FALSE(runners_[0]->HasPendingImmediateWork());
+  EXPECT_FALSE(runners_[0]->HasTaskToRunImmediately());
 }
 
 TEST_F(TaskQueueManagerTest, DelayedTaskPosting) {
@@ -407,7 +407,7 @@ TEST_F(TaskQueueManagerTest, DelayedTaskPosting) {
   runners_[0]->PostDelayedTask(FROM_HERE, base::Bind(&TestTask, 1, &run_order),
                                delay);
   EXPECT_EQ(delay, test_task_runner_->DelayToNextTaskTime());
-  EXPECT_FALSE(runners_[0]->HasPendingImmediateWork());
+  EXPECT_FALSE(runners_[0]->HasTaskToRunImmediately());
   EXPECT_TRUE(run_order.empty());
 
   // The task doesn't run before the delay has completed.
@@ -417,7 +417,7 @@ TEST_F(TaskQueueManagerTest, DelayedTaskPosting) {
   // After the delay has completed, the task runs normally.
   test_task_runner_->RunForPeriod(base::TimeDelta::FromMilliseconds(1));
   EXPECT_THAT(run_order, ElementsAre(1));
-  EXPECT_FALSE(runners_[0]->HasPendingImmediateWork());
+  EXPECT_FALSE(runners_[0]->HasTaskToRunImmediately());
 }
 
 bool MessageLoopTaskCounter(size_t* count) {
@@ -551,7 +551,7 @@ TEST_F(TaskQueueManagerTest, InsertAndRemoveFence) {
   EXPECT_FALSE(test_task_runner_->HasPendingTasks());
 
   // However polling still works.
-  EXPECT_TRUE(runners_[0]->HasPendingImmediateWork());
+  EXPECT_TRUE(runners_[0]->HasTaskToRunImmediately());
 
   // After removing the fence the task runs normally.
   runners_[0]->RemoveFence();
@@ -1134,34 +1134,34 @@ TEST_F(TaskQueueManagerTest, GetAndClearSystemIsQuiescentBit) {
 TEST_F(TaskQueueManagerTest, HasPendingImmediateWork) {
   Initialize(1u);
 
-  EXPECT_FALSE(runners_[0]->HasPendingImmediateWork());
+  EXPECT_FALSE(runners_[0]->HasTaskToRunImmediately());
   runners_[0]->PostTask(FROM_HERE, base::Bind(NullTask));
-  EXPECT_TRUE(runners_[0]->HasPendingImmediateWork());
+  EXPECT_TRUE(runners_[0]->HasTaskToRunImmediately());
 
   test_task_runner_->RunUntilIdle();
-  EXPECT_FALSE(runners_[0]->HasPendingImmediateWork());
+  EXPECT_FALSE(runners_[0]->HasTaskToRunImmediately());
 }
 
 TEST_F(TaskQueueManagerTest, HasPendingImmediateWork_DelayedTasks) {
   Initialize(1u);
 
-  EXPECT_FALSE(runners_[0]->HasPendingImmediateWork());
+  EXPECT_FALSE(runners_[0]->HasTaskToRunImmediately());
   runners_[0]->PostDelayedTask(FROM_HERE, base::Bind(NullTask),
                                base::TimeDelta::FromMilliseconds(12));
-  EXPECT_FALSE(runners_[0]->HasPendingImmediateWork());
+  EXPECT_FALSE(runners_[0]->HasTaskToRunImmediately());
 
   // Move time forwards until just before the delayed task should run.
   now_src_->Advance(base::TimeDelta::FromMilliseconds(10));
   WakeUpReadyDelayedQueues(LazyNow(now_src_.get()));
-  EXPECT_FALSE(runners_[0]->HasPendingImmediateWork());
+  EXPECT_FALSE(runners_[0]->HasTaskToRunImmediately());
 
   // Force the delayed task onto the work queue.
   now_src_->Advance(base::TimeDelta::FromMilliseconds(2));
   WakeUpReadyDelayedQueues(LazyNow(now_src_.get()));
-  EXPECT_TRUE(runners_[0]->HasPendingImmediateWork());
+  EXPECT_TRUE(runners_[0]->HasTaskToRunImmediately());
 
   test_task_runner_->RunUntilIdle();
-  EXPECT_FALSE(runners_[0]->HasPendingImmediateWork());
+  EXPECT_FALSE(runners_[0]->HasTaskToRunImmediately());
 }
 
 void ExpensiveTestTask(int value,
@@ -1748,12 +1748,14 @@ TEST_F(TaskQueueManagerTest, TaskQueueObserver_DelayedTask) {
   std::unique_ptr<TaskQueue::QueueEnabledVoter> voter =
       runners_[0]->CreateQueueEnabledVoter();
   voter->SetQueueEnabled(false);
+  Mock::VerifyAndClearExpectations(&observer);
 
   // When a queue has been enabled, we may get a notification if the
   // TimeDomain's next scheduled wake-up has changed.
   EXPECT_CALL(observer, OnQueueNextWakeUpChanged(runners_[0].get(),
                                                  start_time + delay1s));
   voter->SetQueueEnabled(true);
+  Mock::VerifyAndClearExpectations(&observer);
 
   // Tidy up.
   runners_[0]->UnregisterTaskQueue();
@@ -1811,6 +1813,42 @@ TEST_F(TaskQueueManagerTest, TaskQueueObserver_DelayedTaskMultipleQueues) {
   EXPECT_CALL(observer, OnQueueNextWakeUpChanged(_, _)).Times(AnyNumber());
   runners_[0]->UnregisterTaskQueue();
   runners_[1]->UnregisterTaskQueue();
+}
+
+TEST_F(TaskQueueManagerTest, TaskQueueObserver_DelayedWorkWhichCanRunNow) {
+  // This test checks that when delayed work becomes available
+  // the notification still fires. This usually happens when time advances
+  // and task becomes available in the middle of the scheduling code.
+  // For this test we rely on the fact that notification dispatching code
+  // is the same in all conditions and just change a time domain to
+  // trigger notification.
+
+  Initialize(1u);
+
+  base::TimeDelta delay1s(base::TimeDelta::FromSeconds(1));
+  base::TimeDelta delay10s(base::TimeDelta::FromSeconds(10));
+
+  MockTaskQueueObserver observer;
+  runners_[0]->SetObserver(&observer);
+
+  // We should get a notification when a delayed task is posted on an empty
+  // queue.
+  EXPECT_CALL(observer, OnQueueNextWakeUpChanged(_, _));
+  runners_[0]->PostDelayedTask(FROM_HERE, base::Bind(&NopTask), delay1s);
+  Mock::VerifyAndClearExpectations(&observer);
+
+  std::unique_ptr<TimeDomain> mock_time_domain =
+      base::MakeUnique<RealTimeDomain>();
+  manager_->RegisterTimeDomain(mock_time_domain.get());
+
+  now_src_->Advance(delay10s);
+
+  EXPECT_CALL(observer, OnQueueNextWakeUpChanged(_, _));
+  runners_[0]->SetTimeDomain(mock_time_domain.get());
+  Mock::VerifyAndClearExpectations(&observer);
+
+  // Tidy up.
+  runners_[0]->UnregisterTaskQueue();
 }
 
 class CancelableTask {

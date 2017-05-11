@@ -142,7 +142,7 @@ class PLATFORM_EXPORT TaskQueueImpl final : public TaskQueue {
   bool IsQueueEnabled() const override;
   bool IsEmpty() const override;
   size_t GetNumberOfPendingTasks() const override;
-  bool HasPendingImmediateWork() const override;
+  bool HasTaskToRunImmediately() const override;
   base::Optional<base::TimeTicks> GetNextScheduledWakeUp() override;
   void SetQueuePriority(QueuePriority priority) override;
   QueuePriority GetQueuePriority() const override;
@@ -177,6 +177,18 @@ class PLATFORM_EXPORT TaskQueueImpl final : public TaskQueue {
   void NotifyWillProcessTask(const base::PendingTask& pending_task);
   void NotifyDidProcessTask(const base::PendingTask& pending_task);
 
+  // Called by TimeDomain when the wake-up for this queue has changed.
+  // There is only one wake-up, new wake-up cancels any previous wake-ups.
+  // If |scheduled_time_domain_wake_up| is base::nullopt then the wake-up
+  // has been cancelled.
+  // Must be called from the main thread.
+  void SetScheduledTimeDomainWakeUp(
+      base::Optional<base::TimeTicks> scheduled_time_domain_wake_up);
+
+  // Check for available tasks in immediate work queues.
+  // Used to check if we need to generate notifications about delayed work.
+  bool HasPendingImmediateWork();
+
   WorkQueue* delayed_work_queue() {
     return main_thread_only().delayed_work_queue.get();
   }
@@ -202,14 +214,8 @@ class PLATFORM_EXPORT TaskQueueImpl final : public TaskQueue {
   // any. Must be called from the main thread.
   base::Optional<DelayedWakeUp> WakeUpForDelayedWork(LazyNow* lazy_now);
 
-  base::TimeTicks scheduled_time_domain_wake_up() const {
+  base::Optional<base::TimeTicks> scheduled_time_domain_wake_up() const {
     return main_thread_only().scheduled_time_domain_wake_up;
-  }
-
-  void set_scheduled_time_domain_wake_up(
-      base::TimeTicks scheduled_time_domain_wake_up) {
-    main_thread_only().scheduled_time_domain_wake_up =
-        scheduled_time_domain_wake_up;
   }
 
   HeapHandle heap_handle() const { return main_thread_only().heap_handle; }
@@ -285,7 +291,7 @@ class PLATFORM_EXPORT TaskQueueImpl final : public TaskQueue {
     int voter_refcount;
     base::trace_event::BlameContext* blame_context;  // Not owned.
     EnqueueOrder current_fence;
-    base::TimeTicks scheduled_time_domain_wake_up;
+    base::Optional<base::TimeTicks> scheduled_time_domain_wake_up;
   };
 
   ~TaskQueueImpl() override;
@@ -346,8 +352,6 @@ class PLATFORM_EXPORT TaskQueueImpl final : public TaskQueue {
 
   // Schedules delayed work on time domain and calls the observer.
   void ScheduleDelayedWorkInTimeDomain(base::TimeTicks now);
-
-  void NotifyWakeUpChangedOnMainThread(base::TimeTicks wake_up);
 
   const base::PlatformThreadId thread_id_;
 

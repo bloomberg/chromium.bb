@@ -675,7 +675,7 @@ void TaskQueueManager::OnTaskQueueEnabled(internal::TaskQueueImpl* queue) {
   DCHECK(main_thread_checker_.CalledOnValidThread());
   DCHECK(queue->IsQueueEnabled());
   // Only schedule DoWork if there's something to do.
-  if (queue->HasPendingImmediateWork() && !queue->BlockedByFence())
+  if (queue->HasTaskToRunImmediately() && !queue->BlockedByFence())
     MaybeScheduleImmediateWork(FROM_HERE);
 }
 
