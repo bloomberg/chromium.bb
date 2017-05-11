@@ -24,10 +24,10 @@ class FileSystem : public mojom::FileSystem {
 
   // Overridden from mojom::FileSystem:
   void GetDirectory(filesystem::mojom::DirectoryRequest request,
-                    const GetDirectoryCallback& callback) override;
+                    GetDirectoryCallback callback) override;
   void GetSubDirectory(const std::string& sub_directory_path,
                        filesystem::mojom::DirectoryRequest request,
-                       const GetSubDirectoryCallback& callback) override;
+                       GetSubDirectoryCallback callback) override;
 
  private:
   scoped_refptr<filesystem::LockTable> lock_table_;
