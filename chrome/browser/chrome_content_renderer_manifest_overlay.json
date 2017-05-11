@@ -4,7 +4,8 @@
     "service_manager:connector": {
       "provides": {
         "browser": [
-          "chrome::mojom::ResourceUsageReporter"
+          "chrome::mojom::ResourceUsageReporter",
+          "spellcheck::mojom::SpellChecker"
         ]
       }
     },

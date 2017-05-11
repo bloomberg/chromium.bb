@@ -7,11 +7,9 @@
 
 #include <stdint.h>
 
-#include "components/spellcheck/common/spellcheck_bdict_language.h"
 #include "components/spellcheck/common/spellcheck_result.h"
 #include "components/spellcheck/spellcheck_build_features.h"
 #include "ipc/ipc_message_macros.h"
-#include "ipc/ipc_platform_file.h"
 
 #if !BUILDFLAG(ENABLE_SPELLCHECK)
 #error "Spellcheck should be enabled"
@@ -28,27 +26,7 @@ IPC_STRUCT_TRAITS_BEGIN(SpellCheckResult)
   IPC_STRUCT_TRAITS_MEMBER(replacement)
 IPC_STRUCT_TRAITS_END()
 
-IPC_STRUCT_TRAITS_BEGIN(SpellCheckBDictLanguage)
-  IPC_STRUCT_TRAITS_MEMBER(file)
-  IPC_STRUCT_TRAITS_MEMBER(language)
-IPC_STRUCT_TRAITS_END()
-
 // Messages sent from the browser to the renderer.
-
-IPC_MESSAGE_CONTROL1(SpellCheckMsg_EnableSpellCheck, bool)
-
-// Passes some initialization params from the browser to the renderer's
-// spellchecker. This can be called directly after startup or in (async)
-// response to a RequestDictionary ViewHost message.
-IPC_MESSAGE_CONTROL2(SpellCheckMsg_Init,
-                     std::vector<SpellCheckBDictLanguage> /* bdict_languages */,
-                     std::set<std::string> /* custom_dict_words */)
-
-// Words have been added and removed in the custom dictionary; update the local
-// custom word list.
-IPC_MESSAGE_CONTROL2(SpellCheckMsg_CustomDictionaryChanged,
-                     std::set<std::string> /* words_added */,
-                     std::set<std::string> /* words_removed */)
 
 #if !BUILDFLAG(USE_BROWSER_SPELLCHECKER)
 // Sends text-check results from the Spelling service when the service finishes

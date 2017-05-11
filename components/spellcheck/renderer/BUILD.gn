@@ -46,8 +46,10 @@ source_set("renderer") {
   deps = [
     "//base:i18n",
     "//components/spellcheck/common",
+    "//content/public/common",
     "//content/public/renderer",
     "//ipc",
+    "//services/service_manager/public/cpp",
     "//third_party/WebKit/public:blink",
     "//third_party/icu",
   ]

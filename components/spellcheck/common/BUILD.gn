@@ -2,9 +2,10 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//mojo/public/tools/bindings/mojom.gni")
+
 source_set("common") {
   sources = [
-    "spellcheck_bdict_language.h",
     "spellcheck_common.cc",
     "spellcheck_common.h",
     "spellcheck_features.cc",
@@ -18,11 +19,23 @@ source_set("common") {
   ]
 
   public_deps = [
+    ":interfaces",
     "//components/spellcheck:build_features",
   ]
+
   deps = [
     "//base:i18n",
     "//ipc",
     "//third_party/icu",
+  ]
+}
+
+mojom("interfaces") {
+  sources = [
+    "spellcheck.mojom",
+  ]
+
+  public_deps = [
+    "//mojo/common:common_custom_types",
   ]
 }

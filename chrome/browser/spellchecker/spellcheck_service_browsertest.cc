@@ -29,8 +29,8 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/prefs/pref_service.h"
 #include "components/spellcheck/browser/pref_names.h"
+#include "components/spellcheck/common/spellcheck.mojom.h"
 #include "components/spellcheck/common/spellcheck_common.h"
-#include "components/spellcheck/common/spellcheck_messages.h"
 #include "components/user_prefs/user_prefs.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_utils.h"
@@ -51,32 +51,20 @@ const uint8_t kCorruptedBDICT[] = {
     0x49, 0x00, 0x68, 0x02, 0x73, 0x06, 0x74, 0x0b, 0x77, 0x11, 0x79, 0x15,
 };
 
-// Clears IPC messages before a preference change. Runs the runloop after the
-// preference change.
-class ScopedPreferenceChange {
- public:
-  explicit ScopedPreferenceChange(IPC::TestSink* sink) {
-    sink->ClearMessages();
-  }
-
-  ~ScopedPreferenceChange() {
-    base::RunLoop().RunUntilIdle();
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ScopedPreferenceChange);
-};
-
 }  // namespace
 
-class SpellcheckServiceBrowserTest : public InProcessBrowserTest {
+class SpellcheckServiceBrowserTest : public InProcessBrowserTest,
+                                     public spellcheck::mojom::SpellChecker {
  public:
+  SpellcheckServiceBrowserTest() : binding_(this) {}
+
   void SetUpOnMainThread() override {
     renderer_.reset(new content::MockRenderProcessHost(GetContext()));
     prefs_ = user_prefs::UserPrefs::Get(GetContext());
   }
 
   void TearDownOnMainThread() override {
+    binding_.Close();
     prefs_ = nullptr;
     renderer_.reset();
   }
@@ -101,26 +89,43 @@ class SpellcheckServiceBrowserTest : public InProcessBrowserTest {
         base::SplitString(multiple_dictionaries, ",", base::TRIM_WHITESPACE,
                           base::SPLIT_WANT_NONEMPTY));
     prefs_->Set(spellcheck::prefs::kSpellCheckDictionaries, dictionaries_value);
+
     SpellcheckService* spellcheck =
         SpellcheckServiceFactory::GetForRenderProcessId(renderer_->GetID());
     ASSERT_NE(nullptr, spellcheck);
-    spellcheck->InitForRenderer(renderer_.get());
+
+    // Override |renderer_| requests for the spellcheck::mojom::SpellChecker
+    // interface so we can test the SpellChecker request flow.
+    renderer_->OverrideBinderForTesting(
+        spellcheck::mojom::SpellChecker::Name_,
+        base::Bind(&SpellcheckServiceBrowserTest::Bind,
+                   base::Unretained(this)));
   }
 
   void EnableSpellcheck(bool enable_spellcheck) {
-    ScopedPreferenceChange scope(&renderer_->sink());
     prefs_->SetBoolean(spellcheck::prefs::kEnableSpellcheck,
                        enable_spellcheck);
   }
 
+  void ChangeCustomDictionary() {
+    SpellcheckService* spellcheck =
+        SpellcheckServiceFactory::GetForRenderProcessId(renderer_->GetID());
+    ASSERT_NE(nullptr, spellcheck);
+
+    SpellcheckCustomDictionary::Change change;
+    change.RemoveWord("1");
+    change.AddWord("2");
+    change.AddWord("3");
+
+    spellcheck->OnCustomDictionaryChanged(change);
+  }
+
   void SetSingleLanguageDictionary(const std::string& single_dictionary) {
-    ScopedPreferenceChange scope(&renderer_->sink());
     prefs_->SetString(spellcheck::prefs::kSpellCheckDictionary,
                       single_dictionary);
   }
 
   void SetMultiLingualDictionaries(const std::string& multiple_dictionaries) {
-    ScopedPreferenceChange scope(&renderer_->sink());
     base::ListValue dictionaries_value;
     dictionaries_value.AppendStrings(
         base::SplitString(multiple_dictionaries, ",", base::TRIM_WHITESPACE,
@@ -141,35 +146,87 @@ class SpellcheckServiceBrowserTest : public InProcessBrowserTest {
   }
 
   void SetAcceptLanguages(const std::string& accept_languages) {
-    ScopedPreferenceChange scope(&renderer_->sink());
     prefs_->SetString(prefs::kAcceptLanguages, accept_languages);
   }
 
-  // Returns the boolean parameter sent in the first
-  // SpellCheckMsg_EnableSpellCheck message. For example, if spellcheck service
-  // sent the SpellCheckMsg_EnableSpellCheck(true) message, then this method
-  // returns true.
-  bool GetFirstEnableSpellcheckMessageParam() {
-    const IPC::Message* message = renderer_->sink().GetFirstMessageMatching(
-        SpellCheckMsg_EnableSpellCheck::ID);
-    EXPECT_NE(nullptr, message);
-    if (!message)
-      return false;
+  bool GetEnableSpellcheckState(bool initial_state = false) {
+    spellcheck_enabled_state_ = initial_state;
+    RunTestRunLoop();
+    EXPECT_TRUE(initialize_spellcheck_called_);
+    EXPECT_TRUE(bound_connection_closed_);
+    return spellcheck_enabled_state_;
+  }
 
-    SpellCheckMsg_EnableSpellCheck::Param param;
-    bool ok = SpellCheckMsg_EnableSpellCheck::Read(message, &param);
-    EXPECT_TRUE(ok);
-    if (!ok)
-      return false;
-
-    return std::get<0>(param);
+  bool GetCustomDictionaryChangedState() {
+    RunTestRunLoop();
+    EXPECT_TRUE(bound_connection_closed_);
+    return custom_dictionary_changed_called_;
   }
 
  private:
+  // Spins a RunLoop to deliver the Mojo SpellChecker request flow.
+  void RunTestRunLoop() {
+    bound_connection_closed_ = false;
+    initialize_spellcheck_called_ = false;
+    custom_dictionary_changed_called_ = false;
+
+    base::RunLoop run_loop;
+    quit_ = run_loop.QuitClosure();
+    run_loop.Run();
+  }
+
+  // Binds requests for the SpellChecker interface.
+  void Bind(mojo::ScopedMessagePipeHandle handle) {
+    binding_.Bind(std::move(handle));
+    binding_.set_connection_error_handler(
+        base::Bind(&SpellcheckServiceBrowserTest::BoundConnectionClosed,
+                   base::Unretained(this)));
+  }
+
+  // The requester closes (disconnects) when done.
+  void BoundConnectionClosed() {
+    bound_connection_closed_ = true;
+    binding_.Close();
+    if (quit_)
+      std::move(quit_).Run();
+  }
+
+  // spellcheck::mojom::SpellChecker:
+  void Initialize(
+      std::vector<spellcheck::mojom::SpellCheckBDictLanguagePtr> dictionaries,
+      const std::vector<std::string>& custom_words,
+      bool enable) override {
+    initialize_spellcheck_called_ = true;
+    spellcheck_enabled_state_ = enable;
+  }
+
+  void CustomDictionaryChanged(
+      const std::vector<std::string>& words_added,
+      const std::vector<std::string>& words_removed) override {
+    custom_dictionary_changed_called_ = true;
+    EXPECT_EQ(1u, words_removed.size());
+    EXPECT_EQ(2u, words_added.size());
+  }
+
+  // Mocked RenderProcessHost.
   std::unique_ptr<content::MockRenderProcessHost> renderer_;
 
   // Not owned preferences service.
   PrefService* prefs_;
+
+  // Binding to receive the SpellChecker request flow.
+  mojo::Binding<spellcheck::mojom::SpellChecker> binding_;
+
+  // Quits the RunLoop on SpellChecker request flow completion.
+  base::OnceClosure quit_;
+
+  // Used to verify the SpellChecker request flow.
+  bool bound_connection_closed_;
+  bool custom_dictionary_changed_called_;
+  bool initialize_spellcheck_called_;
+  bool spellcheck_enabled_state_;
+
+  DISALLOW_COPY_AND_ASSIGN(SpellcheckServiceBrowserTest);
 };
 
 // Removing a spellcheck language from accept languages should remove it from
@@ -195,10 +252,10 @@ IN_PROC_BROWSER_TEST_F(SpellcheckServiceBrowserTest,
 // spellcheck' message to the renderer.
 IN_PROC_BROWSER_TEST_F(SpellcheckServiceBrowserTest, StartWithSpellcheck) {
   InitSpellcheck(true, "", "en-US,fr");
-  EXPECT_TRUE(GetFirstEnableSpellcheckMessageParam());
+  EXPECT_TRUE(GetEnableSpellcheckState());
 
   EnableSpellcheck(false);
-  EXPECT_FALSE(GetFirstEnableSpellcheckMessageParam());
+  EXPECT_FALSE(GetEnableSpellcheckState(true));
 }
 
 // Starting with only a single-language spellcheck setting should send the
@@ -207,10 +264,10 @@ IN_PROC_BROWSER_TEST_F(SpellcheckServiceBrowserTest, StartWithSpellcheck) {
 IN_PROC_BROWSER_TEST_F(SpellcheckServiceBrowserTest,
                        StartWithSingularLanguagePreference) {
   InitSpellcheck(true, "en-US", "");
-  EXPECT_TRUE(GetFirstEnableSpellcheckMessageParam());
+  EXPECT_TRUE(GetEnableSpellcheckState());
 
   SetMultiLingualDictionaries("");
-  EXPECT_FALSE(GetFirstEnableSpellcheckMessageParam());
+  EXPECT_FALSE(GetEnableSpellcheckState(true));
 }
 
 // Starting with a multi-language spellcheck setting should send the 'enable
@@ -219,10 +276,10 @@ IN_PROC_BROWSER_TEST_F(SpellcheckServiceBrowserTest,
 IN_PROC_BROWSER_TEST_F(SpellcheckServiceBrowserTest,
                        StartWithMultiLanguagePreference) {
   InitSpellcheck(true, "", "en-US,fr");
-  EXPECT_TRUE(GetFirstEnableSpellcheckMessageParam());
+  EXPECT_TRUE(GetEnableSpellcheckState());
 
   SetMultiLingualDictionaries("");
-  EXPECT_FALSE(GetFirstEnableSpellcheckMessageParam());
+  EXPECT_FALSE(GetEnableSpellcheckState(true));
 }
 
 // Starting with both single-language and multi-language spellcheck settings
@@ -231,10 +288,10 @@ IN_PROC_BROWSER_TEST_F(SpellcheckServiceBrowserTest,
 IN_PROC_BROWSER_TEST_F(SpellcheckServiceBrowserTest,
                        StartWithBothLanguagePreferences) {
   InitSpellcheck(true, "en-US", "en-US,fr");
-  EXPECT_TRUE(GetFirstEnableSpellcheckMessageParam());
+  EXPECT_TRUE(GetEnableSpellcheckState());
 
   SetMultiLingualDictionaries("");
-  EXPECT_FALSE(GetFirstEnableSpellcheckMessageParam());
+  EXPECT_FALSE(GetEnableSpellcheckState(true));
 }
 
 // Starting without spellcheck languages should send the 'disable spellcheck'
@@ -244,10 +301,10 @@ IN_PROC_BROWSER_TEST_F(SpellcheckServiceBrowserTest,
 IN_PROC_BROWSER_TEST_F(SpellcheckServiceBrowserTest,
                        DISABLED_StartWithoutLanguages) {
   InitSpellcheck(true, "", "");
-  EXPECT_FALSE(GetFirstEnableSpellcheckMessageParam());
+  EXPECT_FALSE(GetEnableSpellcheckState(true));
 
   SetMultiLingualDictionaries("en-US");
-  EXPECT_TRUE(GetFirstEnableSpellcheckMessageParam());
+  EXPECT_TRUE(GetEnableSpellcheckState());
 }
 
 // Starting with spellcheck disabled should send the 'disable spellcheck'
@@ -255,10 +312,26 @@ IN_PROC_BROWSER_TEST_F(SpellcheckServiceBrowserTest,
 // 'enable spellcheck' message to the renderer.
 IN_PROC_BROWSER_TEST_F(SpellcheckServiceBrowserTest, StartWithoutSpellcheck) {
   InitSpellcheck(false, "", "en-US,fr");
-  EXPECT_FALSE(GetFirstEnableSpellcheckMessageParam());
+  EXPECT_FALSE(GetEnableSpellcheckState(true));
 
   EnableSpellcheck(true);
-  EXPECT_TRUE(GetFirstEnableSpellcheckMessageParam());
+  EXPECT_TRUE(GetEnableSpellcheckState());
+}
+
+// A custom dictionary state change should send a 'custom dictionary changed'
+// message to the renderer, regardless of the spellcheck enabled state.
+IN_PROC_BROWSER_TEST_F(SpellcheckServiceBrowserTest, CustomDictionaryChanged) {
+  InitSpellcheck(true, "en-US", "");
+  EXPECT_TRUE(GetEnableSpellcheckState());
+
+  ChangeCustomDictionary();
+  EXPECT_TRUE(GetCustomDictionaryChangedState());
+
+  EnableSpellcheck(false);
+  EXPECT_FALSE(GetEnableSpellcheckState(true));
+
+  ChangeCustomDictionary();
+  EXPECT_TRUE(GetCustomDictionaryChangedState());
 }
 
 // Tests that we can delete a corrupted BDICT file used by hunspell. We do not
