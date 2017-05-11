@@ -26,7 +26,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/task_scheduler/post_task.h"
-#include "base/test/scoped_task_scheduler.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread.h"
@@ -42,6 +42,7 @@
 #include "net/http/http_response_headers.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/gtest_util.h"
+#include "net/test/net_test_suite.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -111,13 +112,16 @@ class WaitingURLFetcherDelegate : public URLFetcherDelegate {
 
   // Wait until the request has completed or been canceled. Does not start the
   // request.
-  void WaitForComplete() { run_loop_.Run(); }
+  void WaitForComplete() {
+    EXPECT_TRUE(task_runner_->BelongsToCurrentThread());
+    run_loop_.Run();
+  }
 
   // Cancels the fetch by deleting the fetcher.
   void CancelFetch() {
     EXPECT_TRUE(fetcher_);
     fetcher_.reset();
-    run_loop_.Quit();
+    task_runner_->PostTask(FROM_HERE, run_loop_.QuitClosure());
   }
 
   // URLFetcherDelegate:
@@ -126,7 +130,7 @@ class WaitingURLFetcherDelegate : public URLFetcherDelegate {
     EXPECT_TRUE(fetcher_);
     EXPECT_EQ(fetcher_.get(), source);
     did_complete_ = true;
-    run_loop_.Quit();
+    task_runner_->PostTask(FROM_HERE, run_loop_.QuitClosure());
   }
 
   void OnURLFetchDownloadProgress(const URLFetcher* source,
@@ -166,6 +170,8 @@ class WaitingURLFetcherDelegate : public URLFetcherDelegate {
   bool did_complete_;
 
   std::unique_ptr<URLFetcherImpl> fetcher_;
+  const scoped_refptr<base::SingleThreadTaskRunner> task_runner_ =
+      base::ThreadTaskRunnerHandle::Get();
   base::RunLoop run_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(WaitingURLFetcherDelegate);
@@ -522,17 +528,14 @@ TEST_F(URLFetcherTest, DifferentThreadsTest) {
 // Create the fetcher from a sequenced (not single-threaded) task. Verify that
 // the expected response is received.
 TEST_F(URLFetcherTest, SequencedTaskTest) {
-  base::test::ScopedTaskScheduler scoped_task_scheduler(
-      base::MessageLoop::current());
   auto sequenced_task_runner = base::CreateSequencedTaskRunnerWithTraits({});
-
   auto delegate = base::MakeUnique<WaitingURLFetcherDelegate>();
   sequenced_task_runner->PostTask(
       FROM_HERE, base::Bind(&WaitingURLFetcherDelegate::CreateFetcher,
                             base::Unretained(delegate.get()),
                             test_server_->GetURL(kDefaultResponsePath),
                             URLFetcher::GET, CreateCrossThreadContextGetter()));
-  base::RunLoop().RunUntilIdle();
+  NetTestSuite::GetScopedTaskEnvironment()->RunUntilIdle();
   delegate->StartFetcherAndWait();
 
   EXPECT_TRUE(delegate->fetcher()->GetStatus().is_success());
@@ -542,7 +545,7 @@ TEST_F(URLFetcherTest, SequencedTaskTest) {
   EXPECT_EQ(kDefaultResponseBody, data);
 
   sequenced_task_runner->DeleteSoon(FROM_HERE, delegate.release());
-  base::RunLoop().RunUntilIdle();
+  NetTestSuite::GetScopedTaskEnvironment()->RunUntilIdle();
 }
 
 // Tests to make sure CancelAll() will successfully cancel existing URLFetchers.

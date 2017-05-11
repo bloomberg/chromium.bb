@@ -15,11 +15,9 @@
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/test/scoped_feature_list.h"
-#include "base/test/scoped_task_scheduler.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/values.h"
@@ -1219,8 +1217,7 @@ class SSLClientSocketFalseStartTest : public SSLClientSocketTest {
 
 class SSLClientSocketChannelIDTest : public SSLClientSocketTest {
  protected:
-  SSLClientSocketChannelIDTest()
-      : scoped_task_scheduler_(base::MessageLoop::current()) {}
+  SSLClientSocketChannelIDTest() = default;
 
   void EnableChannelID() {
     channel_id_service_.reset(
@@ -1241,7 +1238,6 @@ class SSLClientSocketChannelIDTest : public SSLClientSocketTest {
   }
 
  private:
-  base::test::ScopedTaskScheduler scoped_task_scheduler_;
   std::unique_ptr<ChannelIDService> channel_id_service_;
 };
 
