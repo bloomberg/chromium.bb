@@ -82,9 +82,6 @@ const base::Feature kTranslateRankerQuery{"TranslateRankerQuery",
 const base::Feature kTranslateRankerEnforcement{
     "TranslateRankerEnforcement", base::FEATURE_DISABLED_BY_DEFAULT};
 
-const base::Feature kTranslateRankerLogging{"TranslateRankerLogging",
-                                            base::FEATURE_ENABLED_BY_DEFAULT};
-
 const base::Feature kTranslateRankerDecisionOverride{
     "TranslateRankerDecisionOverride", base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -141,8 +138,7 @@ TranslateRankerImpl::TranslateRankerImpl(const base::FilePath& model_path,
                                          const GURL& model_url,
                                          ukm::UkmService* ukm_service)
     : ukm_service_(ukm_service),
-      is_logging_enabled_(
-          base::FeatureList::IsEnabled(kTranslateRankerLogging)),
+      is_logging_enabled_(true),
       is_query_enabled_(base::FeatureList::IsEnabled(kTranslateRankerQuery)),
       is_enforcement_enabled_(
           base::FeatureList::IsEnabled(kTranslateRankerEnforcement)),
