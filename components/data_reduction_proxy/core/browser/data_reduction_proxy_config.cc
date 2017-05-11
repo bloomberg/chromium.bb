@@ -29,11 +29,14 @@
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_event_creator.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 #include "components/data_use_measurement/core/data_use_user_data.h"
+#include "components/previews/core/previews_decider.h"
+#include "components/previews/core/previews_experiments.h"
 #include "components/variations/variations_associated_data.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/load_flags.h"
 #include "net/base/network_change_notifier.h"
 #include "net/log/net_log_source_type.h"
+#include "net/nqe/effective_connection_type.h"
 #include "net/proxy/proxy_server.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_fetcher_delegate.h"
@@ -955,17 +958,14 @@ bool DataReductionProxyConfig::IsEffectiveConnectionTypeSlowerThanThreshold(
 }
 
 bool DataReductionProxyConfig::ShouldEnableLoFi(
-    const net::URLRequest& request) {
+    const net::URLRequest& request,
+    previews::PreviewsDecider* previews_decider) {
+  DCHECK(previews_decider);
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK((request.load_flags() & net::LOAD_MAIN_FRAME_DEPRECATED) != 0);
   DCHECK(!request.url().SchemeIsCryptographic());
 
-  net::NetworkQualityEstimator* network_quality_estimator;
-  network_quality_estimator =
-      request.context() ? request.context()->network_quality_estimator()
-                        : nullptr;
-
-  bool enable_lofi = ShouldEnableLoFiInternal(network_quality_estimator);
+  bool enable_lofi = ShouldEnableLoFiInternal(request, previews_decider);
 
   if (params::IsLoFiSlowConnectionsOnlyViaFlags() ||
       params::IsIncludedInLoFiEnabledFieldTrial()) {
@@ -978,14 +978,14 @@ bool DataReductionProxyConfig::ShouldEnableLoFi(
 }
 
 bool DataReductionProxyConfig::ShouldEnableLitePages(
-    const net::URLRequest& request) {
+    const net::URLRequest& request,
+    previews::PreviewsDecider* previews_decider) {
+  DCHECK(previews_decider);
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK((request.load_flags() & net::LOAD_MAIN_FRAME_DEPRECATED) != 0);
   DCHECK(!request.url().SchemeIsCryptographic());
 
-  return ShouldEnableLitePagesInternal(
-      request.context() ? request.context()->network_quality_estimator()
-                        : nullptr);
+  return ShouldEnableLitePagesInternal(request, previews_decider);
 }
 
 bool DataReductionProxyConfig::enabled_by_user_and_reachable() const {
@@ -994,15 +994,28 @@ bool DataReductionProxyConfig::enabled_by_user_and_reachable() const {
 }
 
 bool DataReductionProxyConfig::ShouldEnableLoFiInternal(
-    const net::NetworkQualityEstimator* network_quality_estimator) {
+    const net::URLRequest& request,
+    previews::PreviewsDecider* previews_decider) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   last_query_ = GetTicksNow();
   network_quality_at_last_query_ = NETWORK_QUALITY_AT_LAST_QUERY_UNKNOWN;
 
-  // If Lo-Fi has been turned off, its status can't change.
-  if (lofi_off_)
+  if (params::IsBlackListEnabledForServerPreviews()) {
+    // Pass in net::EFFECTIVE_CONNECTION_TYPE_4G as the thresold as network
+    // speed is checked in IsNetworkQualityProhibitivelySlow().
+    // TODO(ryansturm): Use the correct ECT value. crbug.com/720102
+    if (!previews_decider->ShouldAllowPreviewAtECT(
+            request, previews::PreviewsType::LOFI,
+            net::EFFECTIVE_CONNECTION_TYPE_4G)) {
+      return false;
+    }
+  } else if (lofi_off_) {
+    // If Lo-Fi has been turned off, its status can't change. This Lo-Fi bit
+    // will be removed when Lo-Fi and Lite Pages are moved over to using the
+    // PreviewsBlackList.
     return false;
+  }
 
   if (params::IsLoFiAlwaysOnViaFlags())
     return true;
@@ -1010,6 +1023,11 @@ bool DataReductionProxyConfig::ShouldEnableLoFiInternal(
   if (params::IsLoFiCellularOnlyViaFlags()) {
     return net::NetworkChangeNotifier::IsConnectionCellular(connection_type_);
   }
+
+  net::NetworkQualityEstimator* network_quality_estimator;
+  network_quality_estimator =
+      request.context() ? request.context()->network_quality_estimator()
+                        : nullptr;
 
   if (params::IsLoFiSlowConnectionsOnlyViaFlags() ||
       params::IsIncludedInLoFiEnabledFieldTrial() ||
@@ -1021,14 +1039,25 @@ bool DataReductionProxyConfig::ShouldEnableLoFiInternal(
 }
 
 bool DataReductionProxyConfig::ShouldEnableLitePagesInternal(
-    const net::NetworkQualityEstimator* network_quality_estimator) {
+    const net::URLRequest& request,
+    previews::PreviewsDecider* previews_decider) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  // If Lo-Fi has been turned off, its status can't change. This Lo-Fi bit will
-  // be removed when Lo-Fi and Lite Pages are moved over to using the Previews
-  // blacklist.
-  if (lofi_off_)
+  if (params::IsBlackListEnabledForServerPreviews()) {
+    // Pass in net::EFFECTIVE_CONNECTION_TYPE_4G as the thresold as network
+    // speed is checked in IsNetworkQualityProhibitivelySlow().
+    // TODO(ryansturm): Use the correct ECT value. crbug.com/720102
+    if (!previews_decider->ShouldAllowPreviewAtECT(
+            request, previews::PreviewsType::LITE_PAGE,
+            net::EFFECTIVE_CONNECTION_TYPE_4G)) {
+      return false;
+    }
+  } else if (lofi_off_) {
+    // If Lo-Fi has been turned off, its status can't change. This Lo-Fi bit
+    // will be removed when Lo-Fi and Lite Pages are moved over to using the
+    // PreviewsBlackList.
     return false;
+  }
 
   if (params::IsLoFiAlwaysOnViaFlags() && params::AreLitePagesEnabledViaFlags())
     return true;
@@ -1038,6 +1067,10 @@ bool DataReductionProxyConfig::ShouldEnableLitePagesInternal(
     return net::NetworkChangeNotifier::IsConnectionCellular(
         net::NetworkChangeNotifier::GetConnectionType());
   }
+  net::NetworkQualityEstimator* network_quality_estimator;
+  network_quality_estimator =
+      request.context() ? request.context()->network_quality_estimator()
+                        : nullptr;
 
   if ((params::IsLoFiSlowConnectionsOnlyViaFlags() &&
        params::AreLitePagesEnabledViaFlags()) ||

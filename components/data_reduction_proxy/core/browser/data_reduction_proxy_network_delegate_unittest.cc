@@ -40,6 +40,8 @@
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
 #include "components/data_reduction_proxy/core/common/lofi_decider.h"
 #include "components/data_reduction_proxy/proto/client_config.pb.h"
+#include "components/previews/core/previews_decider.h"
+#include "components/previews/core/previews_experiments.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
@@ -223,6 +225,27 @@ class TestLoFiUIService : public LoFiUIService {
 
  private:
   bool on_lofi_response_;
+};
+
+class TestPreviewsDecider : public previews::PreviewsDecider {
+ public:
+  TestPreviewsDecider() {}
+  ~TestPreviewsDecider() override {}
+  // previews::PreviewsDecider:
+  bool ShouldAllowPreviewAtECT(
+      const net::URLRequest& request,
+      previews::PreviewsType type,
+      net::EffectiveConnectionType effective_connection_type_threshold)
+      const override {
+    return true;
+  }
+
+  // Same as ShouldAllowPreviewAtECT, but uses the previews default
+  // EffectiveConnectionType.
+  bool ShouldAllowPreview(const net::URLRequest& request,
+                          previews::PreviewsType type) const override {
+    return true;
+  }
 };
 
 enum ProxyTestConfig { USE_SECURE_PROXY, USE_INSECURE_PROXY, BYPASS_PROXY };
@@ -839,6 +862,9 @@ TEST_F(DataReductionProxyNetworkDelegateTest, LoFiTransitions) {
       base::TrimString(kOtherProxy, "/", &proxy);
     data_reduction_proxy_info.UseNamedProxy(proxy);
 
+    // Needed as a parameter, but functionality is not tested.
+    TestPreviewsDecider test_previews_decider;
+
     {
       // Main frame loaded. Lo-Fi should be used.
       net::HttpRequestHeaders headers;
@@ -848,15 +874,16 @@ TEST_F(DataReductionProxyNetworkDelegateTest, LoFiTransitions) {
       std::unique_ptr<net::URLRequest> fake_request = context()->CreateRequest(
           GURL(kTestURL), net::IDLE, &delegate, TRAFFIC_ANNOTATION_FOR_TESTS);
       fake_request->SetLoadFlags(net::LOAD_MAIN_FRAME_DEPRECATED);
-      lofi_decider()->SetIsUsingLoFi(
-          config()->ShouldEnableLoFi(*fake_request.get()));
+      lofi_decider()->SetIsUsingLoFi(config()->ShouldEnableLoFi(
+          *fake_request.get(), &test_previews_decider));
       NotifyNetworkDelegate(fake_request.get(), data_reduction_proxy_info,
                             proxy_retry_info, &headers);
 
       VerifyHeaders(tests[i].is_data_reduction_proxy, true, headers);
       VerifyDataReductionProxyData(
           *fake_request, tests[i].is_data_reduction_proxy,
-          config()->ShouldEnableLoFi(*fake_request.get()));
+          config()->ShouldEnableLoFi(*fake_request.get(),
+                                     &test_previews_decider));
     }
 
     {
@@ -930,13 +957,14 @@ TEST_F(DataReductionProxyNetworkDelegateTest, LoFiTransitions) {
       std::unique_ptr<net::URLRequest> fake_request = context()->CreateRequest(
           GURL(kTestURL), net::IDLE, &delegate, TRAFFIC_ANNOTATION_FOR_TESTS);
       fake_request->SetLoadFlags(net::LOAD_MAIN_FRAME_DEPRECATED);
-      lofi_decider()->SetIsUsingLoFi(
-          config()->ShouldEnableLoFi(*fake_request.get()));
+      lofi_decider()->SetIsUsingLoFi(config()->ShouldEnableLoFi(
+          *fake_request.get(), &test_previews_decider));
       NotifyNetworkDelegate(fake_request.get(), data_reduction_proxy_info,
                             proxy_retry_info, &headers);
       VerifyDataReductionProxyData(
           *fake_request, tests[i].is_data_reduction_proxy,
-          config()->ShouldEnableLoFi(*fake_request.get()));
+          config()->ShouldEnableLoFi(*fake_request.get(),
+                                     &test_previews_decider));
     }
   }
 }
@@ -1227,8 +1255,10 @@ TEST_F(DataReductionProxyNetworkDelegateTest, NetHistograms) {
           switches::kDataReductionProxyLoFiValueAlwaysOn);
     }
 
-    lofi_decider()->SetIsUsingLoFi(
-        config()->ShouldEnableLoFi(*fake_request.get()));
+    // Needed as a parameter, but functionality is not tested.
+    TestPreviewsDecider test_previews_decider;
+    lofi_decider()->SetIsUsingLoFi(config()->ShouldEnableLoFi(
+        *fake_request.get(), &test_previews_decider));
 
     fake_request = (FetchURLRequest(GURL(kTestURL), nullptr, response_headers,
                                     kResponseContentLength, 0));

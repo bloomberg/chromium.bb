@@ -145,6 +145,10 @@ GURL GetConfigServiceURL();
 // command line.
 bool ShouldForceEnableDataReductionProxy();
 
+// Whether the blacklist should be used for server Lo-Fi and server Lite Page
+// instead of the prefs-based rules.
+bool IsBlackListEnabledForServerPreviews();
+
 // The current LitePage experiment blacklist version.
 int LitePageVersion();
 
