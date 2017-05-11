@@ -297,7 +297,7 @@ base::string16 NavigationItemImpl::GetDisplayTitleForURL(const GURL& url) {
   // For file:// URLs use the filename as the title, not the full path.
   if (url.SchemeIsFile()) {
     base::string16::size_type slashpos = title.rfind('/');
-    if (slashpos != base::string16::npos)
+    if (slashpos != base::string16::npos && slashpos != (title.size() - 1))
       title = title.substr(slashpos + 1);
   }
 

@@ -148,5 +148,19 @@ TEST_F(NavigationItemTest, VirtualURLTest) {
   EXPECT_EQ(original_url, item_->GetURL());
 }
 
+// Tests NavigationItemImpl::GetDisplayTitleForURL method.
+TEST_F(NavigationItemTest, GetDisplayTitleForURL) {
+  base::string16 title;
+
+  title = NavigationItemImpl::GetDisplayTitleForURL(GURL("http://foo.org/"));
+  EXPECT_EQ("foo.org", base::UTF16ToUTF8(title));
+
+  title = NavigationItemImpl::GetDisplayTitleForURL(GURL("file://foo.org/"));
+  EXPECT_EQ("file://foo.org/", base::UTF16ToUTF8(title));
+
+  title = NavigationItemImpl::GetDisplayTitleForURL(GURL("file://foo/1.gz"));
+  EXPECT_EQ("1.gz", base::UTF16ToUTF8(title));
+}
+
 }  // namespace
 }  // namespace web
