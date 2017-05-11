@@ -149,9 +149,10 @@ public class ToolbarSceneLayer extends SceneOverlayLayer implements SceneOverlay
         // TODO(mdjones): Create a "theme provider" to handle cases like this.
         int color = mRenderHost.getBrowserControlsBackgroundColor();
         float alpha = mRenderHost.getBrowserControlsUrlBarAlpha();
-        if (mLayoutProvider.getFullscreenManager().areBrowserControlsAtBottom()) {
-            color = mLayoutProvider.getFullscreenManager().getTab().getDefaultThemeColor();
-            if (!mLayoutProvider.getFullscreenManager().getTab().isIncognito()) alpha = 1f;
+        ChromeFullscreenManager fullscreenManager = mLayoutProvider.getFullscreenManager();
+        if (fullscreenManager.areBrowserControlsAtBottom() && fullscreenManager.getTab() != null) {
+            color = fullscreenManager.getTab().getDefaultThemeColor();
+            if (!fullscreenManager.getTab().isIncognito()) alpha = 1f;
         }
 
         update(color, alpha, mLayoutProvider.getFullscreenManager(), resourceManager,
