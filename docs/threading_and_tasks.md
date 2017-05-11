@@ -75,16 +75,17 @@ base::PostTaskWithTraits(
     base::BindOnce(&Task));
 ```
 
-## Posting via a TaskRunner
+### Posting via a TaskRunner
 
 A parallel
 [`TaskRunner`](https://cs.chromium.org/chromium/src/base/task_runner.h) is an
 alternative to calling `base::PostTask*()` directly. This is mainly useful when
 it isn’t known in advance whether tasks will be posted in parallel, in sequence,
-or to a single-thread (ref. [Posting a Sequenced Task](#Posting-a-Sequenced-
-Task), [Posting Multiple Tasks to the Same Thread](#Posting-Multiple-Tasks-to-
-the-Same-Thread)). Since `TaskRunner` is the base class of `SequencedTaskRunner`
-and `SingleThreadTaskRunner`, a `scoped_refptr<TaskRunner>` member can hold a
+or to a single-thread (ref.
+[Posting a Sequenced Task](#Posting-a-Sequenced-Task),
+[Posting Multiple Tasks to the Same Thread](#Posting-Multiple-Tasks-to-the-Same-Thread)).
+Since `TaskRunner` is the base class of `SequencedTaskRunner` and
+`SingleThreadTaskRunner`, a `scoped_refptr<TaskRunner>` member can hold a
 `TaskRunner`, a `SequencedTaskRunner` or a `SingleThreadTaskRunner`.
 
 ```cpp
@@ -217,13 +218,14 @@ content::BrowserThread::GetTaskRunnerForThread(content::BrowserThread::IO)
 ```
 
 The main thread and the IO thread are already super busy. Therefore, prefer
-posting to a general purpose thread when possible (ref. [Posting a Parallel
-Task](#Posting-a-Parallel-Task), [Posting a Sequenced task](#Posting-a
--Sequenced-Task)).  Good reasons to post to the main thread are to update the UI
-or access objects that are bound to it (e.g. `Profile`). A good reason to post
-to the IO thread is to access the internals of components that are bound to it
-(e.g. IPCs, network). Note: It is not necessary to have an explicit post task to
-the IO thread to send/receive an IPC or send/receive data on the network.
+posting to a general purpose thread when possible (ref.
+[Posting a Parallel Task](#Posting-a-Parallel-Task),
+[Posting a Sequenced task](#Posting-a-Sequenced-Task)).
+Good reasons to post to the main thread are to update the UI or access objects
+that are bound to it (e.g. `Profile`). A good reason to post to the IO thread is
+to access the internals of components that are bound to it (e.g. IPCs, network).
+Note: It is not necessary to have an explicit post task to the IO thread to
+send/receive an IPC or send/receive data on the network.
 
 ### Posting to the Main Thread in a Renderer Process
 TODO
