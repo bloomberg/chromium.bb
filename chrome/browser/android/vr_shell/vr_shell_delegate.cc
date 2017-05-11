@@ -191,7 +191,9 @@ void VrShellDelegate::ExitWebVRPresent() {
   // being used elsewhere.
   JNIEnv* env = AttachCurrentThread();
   if (Java_VrShellDelegate_exitWebVRPresent(env, j_vr_shell_delegate_.obj())) {
-    device_provider_->Device()->OnExitPresent();
+    if (device_provider_) {
+      device_provider_->Device()->OnExitPresent();
+    }
   }
 }
 
