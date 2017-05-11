@@ -14,7 +14,6 @@ namespace blink {
 class Font;
 class ShapeResult;
 class HarfBuzzShaper;
-class LazyLineBreakIterator;
 enum class LineBreakType;
 
 // Shapes a line of text by finding the ideal break position as indicated by the
@@ -44,10 +43,6 @@ class PLATFORM_EXPORT ShapingLineBreaker final {
                                     unsigned* break_offset);
 
  private:
-  unsigned PreviousBreakOpportunity(LazyLineBreakIterator*,
-                                    unsigned start,
-                                    unsigned offset);
-  unsigned NextBreakOpportunity(LazyLineBreakIterator*, unsigned offset);
 
   const HarfBuzzShaper* shaper_;
   const Font* font_;

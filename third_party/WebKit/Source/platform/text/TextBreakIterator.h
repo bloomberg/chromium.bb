@@ -80,17 +80,20 @@ class PLATFORM_EXPORT LazyLineBreakIterator final {
   LazyLineBreakIterator()
       : iterator_(0),
         cached_prior_context_(0),
-        cached_prior_context_length_(0) {
+        cached_prior_context_length_(0),
+        break_type_(LineBreakType::kNormal) {
     ResetPriorContext();
   }
 
   LazyLineBreakIterator(String string,
-                        const AtomicString& locale = AtomicString())
+                        const AtomicString& locale = AtomicString(),
+                        LineBreakType break_type = LineBreakType::kNormal)
       : string_(string),
         locale_(locale),
         iterator_(0),
         cached_prior_context_(0),
-        cached_prior_context_length_(0) {
+        cached_prior_context_length_(0),
+        break_type_(break_type) {
     ResetPriorContext();
   }
 
@@ -150,7 +153,7 @@ class PLATFORM_EXPORT LazyLineBreakIterator final {
   // is (or has been) initialized to use the previously stored string as the
   // primary breaking context and using previously stored prior context if
   // non-empty.
-  TextBreakIterator* Get(unsigned prior_context_length) {
+  TextBreakIterator* Get(unsigned prior_context_length) const {
     DCHECK(prior_context_length <= kPriorContextCapacity);
     const UChar* prior_context =
         prior_context_length
@@ -169,28 +172,32 @@ class PLATFORM_EXPORT LazyLineBreakIterator final {
       cached_prior_context_length_ = prior_context_length;
     } else if (prior_context != cached_prior_context_ ||
                prior_context_length != cached_prior_context_length_) {
-      this->ResetStringAndReleaseIterator(string_, locale_);
-      return this->Get(prior_context_length);
+      ReleaseIterator();
+      return Get(prior_context_length);
     }
     return iterator_;
   }
 
   void ResetStringAndReleaseIterator(String string,
                                      const AtomicString& locale) {
-    if (iterator_)
-      ReleaseLineBreakIterator(iterator_);
-
     string_ = string;
     locale_ = locale;
-    iterator_ = 0;
-    cached_prior_context_ = 0;
-    cached_prior_context_length_ = 0;
+
+    ReleaseIterator();
   }
 
-  inline bool IsBreakable(
-      int pos,
-      int& next_breakable,
-      LineBreakType line_break_type = LineBreakType::kNormal) {
+  void SetLocale(const AtomicString& locale) {
+    if (locale == locale_)
+      return;
+    locale_ = locale;
+    ReleaseIterator();
+  }
+
+  void SetBreakType(LineBreakType break_type) { break_type_ = break_type; }
+
+  inline bool IsBreakable(int pos,
+                          int& next_breakable,
+                          LineBreakType line_break_type) const {
     if (pos > next_breakable) {
       switch (line_break_type) {
         case LineBreakType::kBreakAll:
@@ -206,18 +213,37 @@ class PLATFORM_EXPORT LazyLineBreakIterator final {
     return pos == next_breakable;
   }
 
+  inline bool IsBreakable(int pos, int& next_breakable) const {
+    return IsBreakable(pos, next_breakable, break_type_);
+  }
+
+  // Returns the break opportunity at or after |offset|.
+  unsigned NextBreakOpportunity(unsigned offset) const;
+
+  // Returns the break opportunity at or before |offset|.
+  unsigned PreviousBreakOpportunity(unsigned offset, unsigned min = 0) const;
+
  private:
-  int NextBreakablePositionIgnoringNBSP(int pos);
-  int NextBreakablePositionBreakAll(int pos);
-  int NextBreakablePositionKeepAll(int pos);
+  void ReleaseIterator() const {
+    if (iterator_)
+      ReleaseLineBreakIterator(iterator_);
+    iterator_ = 0;
+    cached_prior_context_ = 0;
+    cached_prior_context_length_ = 0;
+  }
+
+  int NextBreakablePositionIgnoringNBSP(int pos) const;
+  int NextBreakablePositionBreakAll(int pos) const;
+  int NextBreakablePositionKeepAll(int pos) const;
 
   static const unsigned kPriorContextCapacity = 2;
   String string_;
   AtomicString locale_;
-  TextBreakIterator* iterator_;
+  mutable TextBreakIterator* iterator_;
   UChar prior_context_[kPriorContextCapacity];
-  const UChar* cached_prior_context_;
-  unsigned cached_prior_context_length_;
+  mutable const UChar* cached_prior_context_;
+  mutable unsigned cached_prior_context_length_;
+  LineBreakType break_type_;
 };
 
 // Iterates over "extended grapheme clusters", as defined in UAX #29.

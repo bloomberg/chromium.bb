@@ -53,31 +53,6 @@ unsigned NextSafeToBreakBefore(const UChar* text,
 
 }  // namespace
 
-// TODO(eae); Should take a const LazyLineBreakIterator& but that requires the
-// LazyLineBreakIterator::isBreakable method to be updated to be const.
-unsigned ShapingLineBreaker::PreviousBreakOpportunity(
-    LazyLineBreakIterator* break_iterator,
-    unsigned start,
-    unsigned offset) {
-  DCHECK(break_iterator);
-  unsigned pos = std::min(start + offset, shaper_->TextLength());
-  for (; pos > start; pos--) {
-    int next_break = 0;
-    if (break_iterator->IsBreakable(pos, next_break, break_type_))
-      return pos;
-  }
-  return start;
-}
-
-unsigned ShapingLineBreaker::NextBreakOpportunity(
-    LazyLineBreakIterator* break_iterator,
-    unsigned offset) {
-  DCHECK(break_iterator);
-  int next_break = 0;
-  break_iterator->IsBreakable(offset, next_break, break_type_);
-  return next_break;
-}
-
 // Shapes a line of text by finding a valid and appropriate break opportunity
 // based on the shaping results for the entire paragraph. Re-shapes the start
 // and end of the line as needed.
@@ -131,13 +106,13 @@ PassRefPtr<ShapeResult> ShapingLineBreaker::ShapeLine(
   // Find a candidate break opportunity by identifying the last offset before
   // exceeding the available space and the determine the closest valid break
   // preceding the candidate.
-  LazyLineBreakIterator break_iterator(text_, locale_);
+  LazyLineBreakIterator break_iterator(text_, locale_, break_type_);
   LayoutUnit end_position = start_position + available_space;
   unsigned candidate_break = result_->OffsetForPosition(end_position, false);
   unsigned break_opportunity =
-      PreviousBreakOpportunity(&break_iterator, start, candidate_break);
+      break_iterator.PreviousBreakOpportunity(candidate_break, start);
   if (break_opportunity <= start) {
-    break_opportunity = NextBreakOpportunity(&break_iterator, candidate_break);
+    break_opportunity = break_iterator.NextBreakOpportunity(candidate_break);
   }
 
   RefPtr<ShapeResult> line_end_result;
@@ -159,8 +134,8 @@ PassRefPtr<ShapeResult> ShapingLineBreaker::ShapeLine(
         if (safe_position + line_end_result->SnappedWidth() <= end_position)
           break;
         line_end_result = nullptr;
-        break_opportunity = PreviousBreakOpportunity(&break_iterator, start,
-                                                     break_opportunity - 1);
+        break_opportunity = break_iterator.PreviousBreakOpportunity(
+            break_opportunity - 1, start);
       }
     }
 
@@ -171,7 +146,7 @@ PassRefPtr<ShapeResult> ShapingLineBreaker::ShapeLine(
 
     // No suitable break opportunity, not exceeding the available space,
     // found. Choose the next valid one even though it will overflow.
-    break_opportunity = NextBreakOpportunity(&break_iterator, candidate_break);
+    break_opportunity = break_iterator.NextBreakOpportunity(candidate_break);
   }
 
   // Create shape results for the line by copying from the re-shaped result (if
