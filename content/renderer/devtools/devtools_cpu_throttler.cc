@@ -46,14 +46,13 @@ class CPUThrottlingThread final : public base::PlatformThread::Delegate {
 
   static bool signal_handler_installed_;
   static struct sigaction old_signal_handler_;
-  static Atomic32 suspended_;
 #endif
   static Atomic32 thread_exists_;
+  static Atomic32 throttling_rate_percent_;
 
   base::PlatformThreadHandle throttled_thread_handle_;
   base::PlatformThreadHandle throttling_thread_handle_;
   base::CancellationFlag cancellation_flag_;
-  Atomic32 throttling_rate_percent_;
 
   DISALLOW_COPY_AND_ASSIGN(CPUThrottlingThread);
 };
@@ -61,18 +60,18 @@ class CPUThrottlingThread final : public base::PlatformThread::Delegate {
 #ifdef USE_SIGNALS
 bool CPUThrottlingThread::signal_handler_installed_;
 struct sigaction CPUThrottlingThread::old_signal_handler_;
-Atomic32 CPUThrottlingThread::suspended_;
 #endif
+Atomic32 CPUThrottlingThread::throttling_rate_percent_;
 Atomic32 CPUThrottlingThread::thread_exists_;
 
 CPUThrottlingThread::CPUThrottlingThread(double rate)
 #ifdef OS_WIN
     : throttled_thread_handle_(
-          ::OpenThread(THREAD_SUSPEND_RESUME, false, ::GetCurrentThreadId())),
+          ::OpenThread(THREAD_SUSPEND_RESUME, false, ::GetCurrentThreadId())) {
 #else
-    : throttled_thread_handle_(base::PlatformThread::CurrentHandle()),
+    : throttled_thread_handle_(base::PlatformThread::CurrentHandle()) {
 #endif
-      throttling_rate_percent_(static_cast<Atomic32>(rate * 100)) {
+  SetThrottlingRate(rate);
   CHECK(base::subtle::NoBarrier_AtomicExchange(&thread_exists_, 1) == 0);
   Start();
 }
@@ -119,30 +118,41 @@ void CPUThrottlingThread::RestoreSignalHandler() {
 void CPUThrottlingThread::HandleSignal(int signal) {
   if (signal != SIGUSR2)
     return;
-  while (Acquire_Load(&suspended_)) {
-  }
+  static base::TimeTicks lastResumeTime;
+  base::TimeTicks now = base::TimeTicks::Now();
+  base::TimeDelta run_duration = now - lastResumeTime;
+  uint32_t throttling_rate_percent = Acquire_Load(&throttling_rate_percent_);
+  // Limit the observed run duration to 1000μs to deal with the first entrance
+  // to the signal handler.
+  uint32_t run_duration_us = static_cast<uint32_t>(
+      std::min(run_duration.InMicroseconds(), static_cast<int64_t>(1000)));
+  uint32_t sleep_duration_us =
+      run_duration_us * throttling_rate_percent / 100 - run_duration_us;
+  base::TimeTicks wake_up_time =
+      now + base::TimeDelta::FromMicroseconds(sleep_duration_us);
+  do {
+    now = base::TimeTicks::Now();
+  } while (now < wake_up_time);
+  lastResumeTime = now;
 }
 
 #endif  // USE_SIGNALS
 
-// static
-void CPUThrottlingThread::SuspendThread(
-    base::PlatformThreadHandle thread_handle) {
-#if defined(USE_SIGNALS)
-  Release_Store(&suspended_, 1);
-  pthread_kill(thread_handle.platform_handle(), SIGUSR2);
-#elif defined(OS_WIN)
-  ::SuspendThread(thread_handle.platform_handle());
-#endif
-}
-
-// static
-void CPUThrottlingThread::ResumeThread(
-    base::PlatformThreadHandle thread_handle) {
-#if defined(USE_SIGNALS)
-  Release_Store(&suspended_, 0);
-#elif defined(OS_WIN)
-  ::ResumeThread(thread_handle.platform_handle());
+void CPUThrottlingThread::Throttle() {
+  const int quant_time_us = 200;
+#if defined(OS_WIN)
+  double rate = Acquire_Load(&throttling_rate_percent_) / 100.;
+  base::TimeDelta run_duration =
+      base::TimeDelta::FromMicroseconds(static_cast<int>(quant_time_us / rate));
+  base::TimeDelta sleep_duration =
+      base::TimeDelta::FromMicroseconds(quant_time_us) - run_duration;
+  Sleep(run_duration);
+  ::SuspendThread(throttled_thread_handle_.platform_handle());
+  Sleep(sleep_duration);
+  ::ResumeThread(throttled_thread_handle_.platform_handle());
+#else
+  pthread_kill(throttled_thread_handle_.platform_handle(), SIGUSR2);
+  Sleep(base::TimeDelta::FromMicroseconds(quant_time_us));
 #endif
 }
 
@@ -174,19 +184,6 @@ void CPUThrottlingThread::Stop() {
 #ifdef USE_SIGNALS
   RestoreSignalHandler();
 #endif
-}
-
-void CPUThrottlingThread::Throttle() {
-  const int quant_time_us = 200;
-  double rate = Acquire_Load(&throttling_rate_percent_) / 100.;
-  base::TimeDelta run_duration =
-      base::TimeDelta::FromMicroseconds(static_cast<int>(quant_time_us / rate));
-  base::TimeDelta sleep_duration =
-      base::TimeDelta::FromMicroseconds(quant_time_us) - run_duration;
-  Sleep(run_duration);
-  SuspendThread(throttled_thread_handle_);
-  Sleep(sleep_duration);
-  ResumeThread(throttled_thread_handle_);
 }
 
 DevToolsCPUThrottler::DevToolsCPUThrottler() {}
