@@ -66,6 +66,19 @@ typedef unsigned int (*aom_masked_subpixvariance_fn_t)(
     const uint8_t *src, int src_stride, int xoffset, int yoffset,
     const uint8_t *ref, int ref_stride, const uint8_t *msk, int msk_stride,
     unsigned int *sse);
+
+typedef unsigned int (*aom_masked_compound_sad_fn_t)(
+    const uint8_t *src, int src_stride, const uint8_t *ref, int ref_stride,
+    const uint8_t *second_pred, const uint8_t *msk, int msk_stride,
+    int invert_mask);
+typedef unsigned int (*aom_masked_compound_variance_fn_t)(
+    const uint8_t *src, int src_stride, const uint8_t *ref, int ref_stride,
+    const uint8_t *second_pred, const uint8_t *m, int m_stride, int invert_mask,
+    unsigned int *sse);
+typedef unsigned int (*aom_masked_compound_subpixvariance_fn_t)(
+    const uint8_t *src, int src_stride, int xoffset, int yoffset,
+    const uint8_t *ref, int ref_stride, const uint8_t *second_pred,
+    const uint8_t *msk, int msk_stride, int invert_mask, unsigned int *sse);
 #endif  // CONFIG_AV1 && CONFIG_EXT_INTER
 
 #if CONFIG_AV1 && CONFIG_MOTION_VAR
@@ -96,6 +109,10 @@ typedef struct aom_variance_vtable {
   aom_masked_sad_fn_t msdf;
   aom_masked_variance_fn_t mvf;
   aom_masked_subpixvariance_fn_t msvf;
+
+  aom_masked_compound_sad_fn_t mcsdf;
+  aom_masked_compound_variance_fn_t mcvf;
+  aom_masked_compound_subpixvariance_fn_t mcsvf;
 #endif  // CONFIG_EXT_INTER
 #if CONFIG_MOTION_VAR
   aom_obmc_sad_fn_t osdf;

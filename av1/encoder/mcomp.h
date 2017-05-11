@@ -58,6 +58,13 @@ int av1_get_mvpred_var(const MACROBLOCK *x, const MV *best_mv,
 int av1_get_mvpred_av_var(const MACROBLOCK *x, const MV *best_mv,
                           const MV *center_mv, const uint8_t *second_pred,
                           const aom_variance_fn_ptr_t *vfp, int use_mvcost);
+#if CONFIG_EXT_INTER
+int av1_get_mvpred_mask_var(const MACROBLOCK *x, const MV *best_mv,
+                            const MV *center_mv, const uint8_t *second_pred,
+                            const uint8_t *mask, int mask_stride,
+                            int invert_mask, const aom_variance_fn_ptr_t *vfp,
+                            int use_mvcost);
+#endif
 
 struct AV1_COMP;
 struct SPEED_FEATURES;
@@ -91,8 +98,11 @@ typedef int(fractional_mv_step_fp)(
     const aom_variance_fn_ptr_t *vfp,
     int forced_stop,  // 0 - full, 1 - qtr only, 2 - half only
     int iters_per_step, int *cost_list, int *mvjcost, int *mvcost[2],
-    int *distortion, unsigned int *sse1, const uint8_t *second_pred, int w,
-    int h, int use_upsampled_ref);
+    int *distortion, unsigned int *sse1, const uint8_t *second_pred,
+#if CONFIG_EXT_INTER
+    const uint8_t *mask, int mask_stride, int invert_mask,
+#endif
+    int w, int h, int use_upsampled_ref);
 
 extern fractional_mv_step_fp av1_find_best_sub_pixel_tree;
 extern fractional_mv_step_fp av1_find_best_sub_pixel_tree_pruned;
@@ -113,6 +123,10 @@ typedef int (*av1_diamond_search_fn_t)(
 
 int av1_refining_search_8p_c(MACROBLOCK *x, int error_per_bit, int search_range,
                              const aom_variance_fn_ptr_t *fn_ptr,
+#if CONFIG_EXT_INTER
+                             const uint8_t *mask, int mask_stride,
+                             int invert_mask,
+#endif
                              const MV *center_mv, const uint8_t *second_pred);
 
 struct AV1_COMP;
