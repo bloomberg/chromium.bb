@@ -11,6 +11,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
+#include "base/test/histogram_tester.h"
 #include "components/subresource_filter/content/browser/async_document_subresource_filter.h"
 #include "components/subresource_filter/content/browser/async_document_subresource_filter_test_utils.h"
 #include "components/subresource_filter/core/common/activation_level.h"
@@ -188,6 +189,31 @@ TEST_F(SubframeNavigationFilteringThrottleTest, FilterSubsubframe) {
   CreateTestSubframeAndInitNavigation(
       GURL("https://example.test/disallowed.html"), parent_subframe);
   SimulateStartAndExpectResult(content::NavigationThrottle::CANCEL);
+}
+
+TEST_F(SubframeNavigationFilteringThrottleTest, DelayMetrics) {
+  base::HistogramTester histogram_tester;
+  InitializeDocumentSubresourceFilter(GURL("https://example.test"));
+  CreateTestSubframeAndInitNavigation(GURL("https://example.test/allowed.html"),
+                                      main_rfh());
+
+  SimulateStartAndExpectResult(content::NavigationThrottle::PROCEED);
+  SimulateRedirectAndExpectResult(GURL("https://example.test/disallowed.html"),
+                                  content::NavigationThrottle::CANCEL);
+
+  const char kFilterDelayDisallowed[] =
+      "SubresourceFilter.DocumentLoad.SubframeFilteringDelay.Disallowed";
+  const char kFilterDelayAllowed[] =
+      "SubresourceFilter.DocumentLoad.SubframeFilteringDelay.Allowed";
+  histogram_tester.ExpectTotalCount(kFilterDelayDisallowed, 1);
+  histogram_tester.ExpectTotalCount(kFilterDelayAllowed, 0);
+
+  CreateTestSubframeAndInitNavigation(GURL("https://example.test/allowed.html"),
+                                      main_rfh());
+  SimulateStartAndExpectResult(content::NavigationThrottle::PROCEED);
+  SimulateCommitAndExpectResult(content::NavigationThrottle::PROCEED);
+  histogram_tester.ExpectTotalCount(kFilterDelayDisallowed, 1);
+  histogram_tester.ExpectTotalCount(kFilterDelayAllowed, 1);
 }
 
 }  // namespace subresource_filter

@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
+#include "base/time/time.h"
 #include "components/subresource_filter/content/browser/verified_ruleset_dealer.h"
 #include "components/subresource_filter/core/common/activation_state.h"
 #include "content/public/browser/navigation_throttle.h"
@@ -88,6 +89,8 @@ class ActivationStateComputingNavigationThrottle
   // Must outlive this class. For main frame navigations, this member will be
   // nullptr until NotifyPageActivationWithRuleset is called.
   VerifiedRuleset::Handle* ruleset_handle_;
+
+  base::TimeTicks defer_timestamp_;
 
   // Becomes true when the throttle manager reaches ReadyToCommitNavigation and
   // sends an activation IPC to the render process. Makes sure a caller cannot

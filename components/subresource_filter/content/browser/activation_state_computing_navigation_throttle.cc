@@ -9,7 +9,9 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/histogram_macros.h"
 #include "components/subresource_filter/content/browser/async_document_subresource_filter.h"
+#include "components/subresource_filter/core/common/time_measurements.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
@@ -92,6 +94,8 @@ ActivationStateComputingNavigationThrottle::WillProcessResponse() {
       base::Bind(&ActivationStateComputingNavigationThrottle::
                      OnActivationStateComputed,
                  weak_ptr_factory_.GetWeakPtr()));
+
+  defer_timestamp_ = base::TimeTicks::Now();
   return content::NavigationThrottle::ThrottleCheckResult::DEFER;
 }
 
@@ -101,6 +105,18 @@ const char* ActivationStateComputingNavigationThrottle::GetNameForLogging() {
 
 void ActivationStateComputingNavigationThrottle::OnActivationStateComputed(
     ActivationState state) {
+  DCHECK(!defer_timestamp_.is_null());
+  base::TimeDelta delay = base::TimeTicks::Now() - defer_timestamp_;
+  UMA_HISTOGRAM_CUSTOM_MICRO_TIMES(
+      "SubresourceFilter.DocumentLoad.ActivationComputingDelay", delay,
+      base::TimeDelta::FromMicroseconds(1), base::TimeDelta::FromSeconds(10),
+      50);
+  if (navigation_handle()->IsInMainFrame()) {
+    UMA_HISTOGRAM_CUSTOM_MICRO_TIMES(
+        "SubresourceFilter.DocumentLoad.ActivationComputingDelay.MainFrame",
+        delay, base::TimeDelta::FromMicroseconds(1),
+        base::TimeDelta::FromSeconds(10), 50);
+  }
   navigation_handle()->Resume();
 }
 

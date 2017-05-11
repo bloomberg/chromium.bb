@@ -13,6 +13,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/optional.h"
 #include "base/run_loop.h"
+#include "base/test/histogram_tester.h"
 #include "base/test/test_simple_task_runner.h"
 #include "components/subresource_filter/content/browser/async_document_subresource_filter.h"
 #include "components/subresource_filter/content/browser/async_document_subresource_filter_test_utils.h"
@@ -434,6 +435,41 @@ TEST_F(ActivationStateComputingThrottleSubFrameTest, DisabledStatePropagated2) {
   EXPECT_EQ(ActivationLevel::ENABLED, state.activation_level);
   EXPECT_TRUE(state.filtering_disabled_for_document);
   EXPECT_TRUE(state.generic_blocking_rules_disabled);
+}
+
+TEST_F(ActivationStateComputingThrottleSubFrameTest, DelayMetrics) {
+  base::HistogramTester histogram_tester;
+  NavigateAndCommitMainFrameWithPageActivationState(
+      GURL("http://example.test/"), ActivationState(ActivationLevel::ENABLED));
+  ActivationState state = last_activation_state();
+  EXPECT_EQ(ActivationLevel::ENABLED, state.activation_level);
+  EXPECT_FALSE(state.filtering_disabled_for_document);
+
+  const char kActivationDelay[] =
+      "SubresourceFilter.DocumentLoad.ActivationComputingDelay";
+  const char kActivationDelayMainFrame[] =
+      "SubresourceFilter.DocumentLoad.ActivationComputingDelay.MainFrame";
+  histogram_tester.ExpectTotalCount(kActivationDelay, 1);
+  histogram_tester.ExpectTotalCount(kActivationDelayMainFrame, 1);
+
+  // Subframe activation should not log main frame metrics.
+  CreateSubframeAndInitTestNavigation(GURL("http://example.test/"),
+                                      last_committed_frame_host(),
+                                      last_activation_state());
+  SimulateStartAndExpectToProceed();
+  SimulateCommitAndExpectToProceed();
+  histogram_tester.ExpectTotalCount(kActivationDelay, 2);
+  histogram_tester.ExpectTotalCount(kActivationDelayMainFrame, 1);
+
+  // No page activation should imply no delay.
+  CreateTestNavigationForMainFrame(GURL("http://example.test2/"));
+  SimulateStartAndExpectToProceed();
+  SimulateCommitAndExpectToProceed();
+
+  state = last_activation_state();
+  EXPECT_EQ(ActivationLevel::DISABLED, state.activation_level);
+  histogram_tester.ExpectTotalCount(kActivationDelay, 2);
+  histogram_tester.ExpectTotalCount(kActivationDelayMainFrame, 1);
 }
 
 }  // namespace subresource_filter
