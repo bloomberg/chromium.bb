@@ -25,6 +25,7 @@ import android.widget.TextView;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ObserverList;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.util.AccessibilityUtil;
 import org.chromium.chrome.browser.util.MathUtils;
 
 /**
@@ -106,16 +107,23 @@ public class TextBubble implements OnTouchListener {
     @StringRes
     private final int mStringId;
 
+    /** The resource id for the accessibility string associated with the bubble. */
+    @StringRes
+    private final int mAccessibilityStringId;
+
     /**
      * Constructs a {@link TextBubble} instance.
      * @param context  Context to draw resources from.
      * @param rootView The {@link View} to use for size calculations and for display.
      * @param stringId The id of the string resource for the text that should be shown.
+     * @param accessibilityStringId The id of the string resource of the accessibility text.
      */
-    public TextBubble(Context context, View rootView, @StringRes int stringId) {
+    public TextBubble(Context context, View rootView, @StringRes int stringId,
+            @StringRes int accessibilityStringId) {
         mContext = context;
         mRootView = rootView.getRootView();
         mStringId = stringId;
+        mAccessibilityStringId = accessibilityStringId;
         mPopupWindow = new PopupWindow(mContext);
         mDrawable = new ArrowBubbleDrawable(context);
         mHandler = new Handler();
@@ -310,7 +318,9 @@ public class TextBubble implements OnTouchListener {
         if (mPopupWindow.getContentView() != null) return;
 
         View view = LayoutInflater.from(mContext).inflate(R.layout.textbubble_text, null);
-        ((TextView) view).setText(mStringId);
+        ((TextView) view)
+                .setText(AccessibilityUtil.isAccessibilityEnabled() ? mAccessibilityStringId
+                                                                    : mStringId);
         mPopupWindow.setContentView(view);
 
         // On some versions of Android, the LayoutParams aren't set until after the popup window

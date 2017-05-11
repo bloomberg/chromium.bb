@@ -1168,8 +1168,9 @@ public class BottomSheet
         SharedPreferences preferences = ContextUtils.getAppSharedPreferences();
         if (preferences.getBoolean(BOTTOM_SHEET_HELP_BUBBLE_SHOWN, false)) return;
 
-        ViewAnchoredTextBubble helpBubble = new ViewAnchoredTextBubble(
-                getContext(), mControlContainer, R.string.bottom_sheet_help_bubble_message);
+        ViewAnchoredTextBubble helpBubble = new ViewAnchoredTextBubble(getContext(),
+                mControlContainer, R.string.bottom_sheet_help_bubble_message,
+                R.string.bottom_sheet_help_bubble_message);
         int inset = getContext().getResources().getDimensionPixelSize(
                 R.dimen.bottom_sheet_help_bubble_inset);
         helpBubble.setInsetPx(0, inset, 0, inset);
