@@ -80,6 +80,7 @@ autofill::ServerFieldType AutofillTypeFromAutofillUIType(AutofillUIType type) {
       return autofill::PHONE_HOME_WHOLE_NUMBER;
     case AutofillUITypeProfileEmailAddress:
       return autofill::EMAIL_ADDRESS;
+    case AutofillUITypeCreditCardBillingAddress:
     default:
       NOTREACHED();
       return autofill::UNKNOWN_TYPE;

@@ -13,6 +13,8 @@ source_set("cells") {
     "payment_method_item.h",
     "payment_method_item.mm",
     "payments_has_accessory_type.h",
+    "payments_selector_edit_item.h",
+    "payments_selector_edit_item.mm",
     "payments_text_item.h",
     "payments_text_item.mm",
     "price_item.h",
@@ -21,6 +23,7 @@ source_set("cells") {
 
   deps = [
     "//ios/chrome/browser/ui",
+    "//ios/chrome/browser/ui/autofill:autofill_ui",
     "//ios/chrome/browser/ui/collection_view/cells",
     "//ios/chrome/browser/ui/colors",
     "//ios/third_party/material_components_ios",
@@ -37,12 +40,14 @@ source_set("unit_tests") {
     "autofill_profile_item_unittest.mm",
     "page_info_item_unittest.mm",
     "payment_method_item_unittest.mm",
+    "payments_selector_edit_item_unittests.mm",
     "payments_text_item_unittest.mm",
     "price_item_unittest.mm",
   ]
 
   deps = [
     ":cells",
+    "//ios/chrome/browser/ui/collection_view/cells",
     "//ios/chrome/browser/ui/collection_view/cells:test_support",
     "//ios/third_party/material_components_ios",
     "//testing/gtest",

@@ -14,6 +14,7 @@ typedef NS_ENUM(NSInteger, AutofillUIType) {
   AutofillUITypeCreditCardHolderFullName,
   AutofillUITypeCreditCardExpMonth,
   AutofillUITypeCreditCardExpYear,
+  AutofillUITypeCreditCardBillingAddress,
   AutofillUITypeProfileFullName,
   AutofillUITypeProfileCompanyName,
   AutofillUITypeProfileHomeAddressLine1,
