@@ -171,10 +171,8 @@ WebrtcDummyVideoEncoderFactory::WebrtcDummyVideoEncoderFactory()
     : main_task_runner_(base::ThreadTaskRunnerHandle::Get()) {
   // TODO(isheriff): These do not really affect anything internally
   // in webrtc.
-  codecs_.push_back(cricket::WebRtcVideoEncoderFactory::VideoCodec(
-      webrtc::kVideoCodecVP9, "VP8", 1280, 720, 30));
-  codecs_.push_back(cricket::WebRtcVideoEncoderFactory::VideoCodec(
-      webrtc::kVideoCodecVP9, "VP9", 1280, 720, 30));
+  codecs_.push_back(cricket::VideoCodec("VP8"));
+  codecs_.push_back(cricket::VideoCodec("VP9"));
 }
 
 WebrtcDummyVideoEncoderFactory::~WebrtcDummyVideoEncoderFactory() {
@@ -182,7 +180,9 @@ WebrtcDummyVideoEncoderFactory::~WebrtcDummyVideoEncoderFactory() {
 }
 
 webrtc::VideoEncoder* WebrtcDummyVideoEncoderFactory::CreateVideoEncoder(
-    webrtc::VideoCodecType type) {
+    const cricket::VideoCodec& codec) {
+  webrtc::VideoCodecType type = webrtc::PayloadNameToCodecType(codec.name)
+                                    .value_or(webrtc::kVideoCodecUnknown);
   WebrtcDummyVideoEncoder* encoder = new WebrtcDummyVideoEncoder(
       main_task_runner_, video_channel_state_observer_, type);
   base::AutoLock lock(lock_);
@@ -194,8 +194,8 @@ webrtc::VideoEncoder* WebrtcDummyVideoEncoderFactory::CreateVideoEncoder(
   return encoder;
 }
 
-const std::vector<cricket::WebRtcVideoEncoderFactory::VideoCodec>&
-WebrtcDummyVideoEncoderFactory::codecs() const {
+const std::vector<cricket::VideoCodec>&
+WebrtcDummyVideoEncoderFactory::supported_codecs() const {
   return codecs_;
 }
 
