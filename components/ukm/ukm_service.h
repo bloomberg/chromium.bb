@@ -47,6 +47,10 @@ class UkmEntry;
 class UkmEntryBuilder;
 class UkmSource;
 
+namespace debug {
+class DebugPage;
+}
+
 // This feature controls whether UkmService should be created.
 extern const base::Feature kUkmFeature;
 
@@ -117,6 +121,7 @@ class UkmService {
   }
 
  private:
+  friend ::ukm::debug::DebugPage;
   friend autofill::AutofillMetrics;
   friend payments::JourneyLogger;
   friend PluginInfoMessageFilter;
