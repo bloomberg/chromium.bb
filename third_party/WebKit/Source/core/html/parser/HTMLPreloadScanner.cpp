@@ -541,6 +541,10 @@ class TokenPreloadScanner::StartTagScanner {
               ScriptLoader::kAllowLegacyTypeInTypeAttribute, script_type)) {
         return false;
       }
+      // TODO(kouhei): Enable preload for module scripts, with correct
+      // credentials mode.
+      if (type_attribute_value_ == "module")
+        return false;
       if (ScriptLoader::BlockForNoModule(script_type,
                                          nomodule_attribute_value_)) {
         return false;
