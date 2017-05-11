@@ -138,7 +138,7 @@ interface PersistentPrefStore {
 
 // A registry of all prefs registered by a single client.
 struct PrefRegistry {
-  map<string, PrefRegistration> registrations;
+  array<string> registrations;
 };
 
 struct PrefRegistration {

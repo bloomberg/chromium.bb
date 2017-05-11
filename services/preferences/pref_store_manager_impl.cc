@@ -254,19 +254,9 @@ void PrefStoreManagerImpl::ConnectImpl(
     mojom::PrefRegistryPtr pref_registry,
     const std::vector<PrefValueStore::PrefStoreType>& already_connected_types,
     const ConnectCallback& callback) {
-  std::vector<std::string> observed_prefs;
-  for (auto& registration : pref_registry->registrations) {
-    observed_prefs.push_back(registration.first);
-    const auto& key = registration.first;
-    auto& default_value = registration.second->default_value;
-    const base::Value* old_default = nullptr;
-    // TODO(sammc): Once non-owning registrations are supported, disallow
-    // multiple owners instead of just checking for consistent defaults.
-    if (defaults_->GetValue(key, &old_default))
-      DCHECK(old_default->Equals(default_value.get()));
-    else
-      defaults_->SetDefaultValue(key, std::move(default_value));
-  }
+  // TODO(crbug.com/719770): Once owning registrations are supported, check the
+  // default values in |pref_registry| for consistency with existing defaults
+  // and add them to the default pref store.
 
   // Only connect to pref stores the client isn't already connected to.
   PrefStorePtrs ptrs;
@@ -275,12 +265,12 @@ void PrefStoreManagerImpl::ConnectImpl(
       ptrs.insert(std::make_pair(entry.first, entry.second.get()));
     }
   }
-  ConnectionBarrier::Create(
-      ptrs,
-      persistent_pref_store_->CreateConnection(
-          PersistentPrefStoreImpl::ObservedPrefs(observed_prefs.begin(),
-                                                 observed_prefs.end())),
-      observed_prefs, callback);
+  ConnectionBarrier::Create(ptrs,
+                            persistent_pref_store_->CreateConnection(
+                                PersistentPrefStoreImpl::ObservedPrefs(
+                                    pref_registry->registrations.begin(),
+                                    pref_registry->registrations.end())),
+                            pref_registry->registrations, callback);
 }
 
 void PrefStoreManagerImpl::OnPersistentPrefStoreReady() {

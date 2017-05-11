@@ -39,7 +39,7 @@ using ConnectCallback = base::Callback<void(std::unique_ptr<::PrefService>)>;
 void ConnectToPrefService(
     service_manager::Connector* connector,
     scoped_refptr<PrefRegistry> pref_registry,
-    const std::vector<PrefValueStore::PrefStoreType>& already_connected_types,
+    std::vector<PrefValueStore::PrefStoreType> already_connected_types,
     ConnectCallback callback,
     base::StringPiece service_name = mojom::kServiceName);
 
