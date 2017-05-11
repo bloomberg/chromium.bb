@@ -3172,4 +3172,10 @@ const char kOneGoogleBarOnLocalNtpDescription[] =
 
 #endif  // !defined(OS_ANDROID) && !defined(OS_IOS)
 
+#if defined(OS_MACOSX)
+extern const char kMacRTLName[] = "Enable RTL";
+extern const char kMacRTLDescription[] =
+    "Mirrors the UI for RTL language users";
+#endif
+
 }  // namespace flag_descriptions

@@ -2904,6 +2904,12 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(features::kOneGoogleBarOnLocalNtp)},
 #endif  // !defined(OS_ANDROID) && !defined(OS_IOS)
 
+#if defined(OS_MACOSX)
+    {"mac-rtl", flag_descriptions::kMacRTLName,
+     flag_descriptions::kMacRTLDescription, kOsMac,
+     FEATURE_VALUE_TYPE(features::kMacRTL)},
+#endif  // defined(OS_MACOSX)
+
     // NOTE: Adding new command-line switches requires adding corresponding
     // entries to enum "LoginCustomFlags" in histograms/enums.xml. See note in
     // enums.xml and don't forget to run AboutFlagsHistogramTest unit test.
