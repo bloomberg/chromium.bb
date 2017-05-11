@@ -475,10 +475,26 @@ class NotificationPlatformBridgeLinuxImpl
     std::string body;
     if (base::ContainsKey(capabilities_, kCapabilityBody)) {
       body = base::UTF16ToUTF8(notification->message());
-      if (base::ContainsKey(capabilities_, kCapabilityBodyMarkup)) {
+      const bool body_markup =
+          base::ContainsKey(capabilities_, kCapabilityBodyMarkup);
+      if (body_markup) {
         base::ReplaceSubstringsAfterOffset(&body, 0, "&", "&amp;");
         base::ReplaceSubstringsAfterOffset(&body, 0, "<", "&lt;");
         base::ReplaceSubstringsAfterOffset(&body, 0, ">", "&gt;");
+      }
+      if (notification->type() == message_center::NOTIFICATION_TYPE_MULTIPLE) {
+        for (const auto& item : notification->items()) {
+          if (!body.empty())
+            body += "\n";
+          const std::string title = base::UTF16ToUTF8(item.title);
+          const std::string message = base::UTF16ToUTF8(item.message);
+          // TODO(peter): Figure out the right way to internationalize
+          // this for RTL languages.
+          if (body_markup)
+            body += "<b>" + title + "</b> " + message;
+          else
+            body += title + " - " + message;
+        }
       }
     }
     writer.AppendString(body);

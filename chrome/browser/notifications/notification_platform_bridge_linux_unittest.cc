@@ -47,6 +47,12 @@ class NotificationBuilder {
 
   Notification GetResult() { return notification_; }
 
+  NotificationBuilder& SetItems(
+      const std::vector<message_center::NotificationItem>& items) {
+    notification_.set_items(items);
+    return *this;
+  }
+
   NotificationBuilder& SetProgress(int progress) {
     notification_.set_progress(progress);
     return *this;
@@ -68,6 +74,7 @@ class NotificationBuilder {
 
 struct NotificationRequest {
   std::string summary;
+  std::string body;
 };
 
 NotificationRequest ParseRequest(dbus::MethodCall* method_call) {
@@ -83,7 +90,7 @@ NotificationRequest ParseRequest(dbus::MethodCall* method_call) {
   EXPECT_TRUE(reader.PopUint32(&uint32));           // replaces_id
   EXPECT_TRUE(reader.PopString(&str));              // app_icon
   EXPECT_TRUE(reader.PopString(&request.summary));  // summary
-  EXPECT_TRUE(reader.PopString(&str));              // body
+  EXPECT_TRUE(reader.PopString(&request.body));     // body
 
   {
     dbus::MessageReader actions_reader(nullptr);
@@ -145,8 +152,8 @@ ACTION_P(OnGetServerInformation, spec_version) {
   return response;
 }
 
-ACTION_P(OnNotify, id) {
-  ParseRequest(arg0);
+ACTION_P2(OnNotify, verifier, id) {
+  verifier(ParseRequest(arg0));
   return GetIdResponse(id);
 }
 
@@ -187,7 +194,7 @@ class NotificationPlatformBridgeLinuxTest : public testing::Test {
 
     EXPECT_CALL(*mock_notification_proxy_.get(),
                 MockCallMethodAndBlock(Calls("GetCapabilities"), _))
-        .WillOnce(OnGetCapabilities(std::vector<std::string>()));
+        .WillOnce(OnGetCapabilities(std::vector<std::string>{"body"}));
 
     EXPECT_CALL(*mock_notification_proxy_.get(),
                 MockCallMethodAndBlock(Calls("GetServerInformation"), _))
@@ -240,7 +247,7 @@ TEST_F(NotificationPlatformBridgeLinuxTest, SetUpAndTearDown) {
 TEST_F(NotificationPlatformBridgeLinuxTest, NotifyAndCloseFormat) {
   EXPECT_CALL(*mock_notification_proxy_.get(),
               MockCallMethodAndBlock(Calls("Notify"), _))
-      .WillOnce(OnNotify(1));
+      .WillOnce(OnNotify([](const NotificationRequest&) {}, 1));
   EXPECT_CALL(*mock_notification_proxy_.get(),
               MockCallMethodAndBlock(Calls("CloseNotification"), _))
       .WillOnce(OnCloseNotification());
@@ -252,17 +259,16 @@ TEST_F(NotificationPlatformBridgeLinuxTest, NotifyAndCloseFormat) {
   notification_bridge_linux_->Close("", "");
 }
 
-ACTION_P2(VerifySummary, summary, id) {
-  NotificationRequest request = ParseRequest(arg0);
-  EXPECT_EQ(summary, request.summary);
-  return GetIdResponse(id);
-}
-
 TEST_F(NotificationPlatformBridgeLinuxTest, ProgressPercentageAddedToSummary) {
   EXPECT_CALL(*mock_notification_proxy_.get(),
               MockCallMethodAndBlock(Calls("Notify"), _))
-      .WillOnce(VerifySummary(
-          base::UTF16ToUTF8(base::FormatPercent(42)) + " - The Title", 1));
+      .WillOnce(OnNotify(
+          [](const NotificationRequest& request) {
+            EXPECT_EQ(
+                base::UTF16ToUTF8(base::FormatPercent(42)) + " - The Title",
+                request.summary);
+          },
+          1));
 
   CreateNotificationBridgeLinux();
   notification_bridge_linux_->Display(
@@ -271,5 +277,25 @@ TEST_F(NotificationPlatformBridgeLinuxTest, ProgressPercentageAddedToSummary) {
           .SetType(message_center::NOTIFICATION_TYPE_PROGRESS)
           .SetProgress(42)
           .SetTitle(base::UTF8ToUTF16("The Title"))
+          .GetResult());
+}
+
+TEST_F(NotificationPlatformBridgeLinuxTest, NotificationListItemsInBody) {
+  EXPECT_CALL(*mock_notification_proxy_.get(),
+              MockCallMethodAndBlock(Calls("Notify"), _))
+      .WillOnce(OnNotify(
+          [](const NotificationRequest& request) {
+            EXPECT_EQ("abc - 123\ndef - 456", request.body);
+          },
+          1));
+
+  CreateNotificationBridgeLinux();
+  notification_bridge_linux_->Display(
+      NotificationCommon::PERSISTENT, "", "", false,
+      NotificationBuilder("")
+          .SetType(message_center::NOTIFICATION_TYPE_MULTIPLE)
+          .SetItems(std::vector<message_center::NotificationItem>{
+              {base::UTF8ToUTF16("abc"), base::UTF8ToUTF16("123")},
+              {base::UTF8ToUTF16("def"), base::UTF8ToUTF16("456")}})
           .GetResult());
 }
