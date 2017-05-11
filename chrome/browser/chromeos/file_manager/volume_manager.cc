@@ -804,23 +804,6 @@ void VolumeManager::OnRemovableStorageAttached(
   if (profile_->GetPrefs()->GetBoolean(prefs::kExternalStorageDisabled))
     return;
 
-  const base::FilePath path = base::FilePath::FromUTF8Unsafe(info.location());
-  const std::string fsid = GetMountPointNameForMediaStorage(info);
-  const std::string base_name = base::UTF16ToUTF8(info.model_name());
-
-  // Assign a fresh volume ID based on the volume name.
-  std::string label = base_name;
-  for (int i = 2; mounted_volumes_.count(kMtpVolumeIdPrefix + label); ++i)
-    label = base_name + base::StringPrintf(" (%d)", i);
-
-  bool result =
-      storage::ExternalMountPoints::GetSystemInstance()->RegisterFileSystem(
-          fsid,
-          storage::kFileSystemTypeDeviceMediaAsFileStorage,
-          storage::FileSystemMountOption(),
-          path);
-  DCHECK(result);
-
   // Resolve mtp storage name and get MtpStorageInfo.
   std::string storage_name;
   base::RemoveChars(info.location(), kRootPath, &storage_name);
@@ -834,7 +817,14 @@ void VolumeManager::OnRemovableStorageAttached(
   } else {
     mtp_storage_info = get_mtp_storage_info_callback_.Run(storage_name);
   }
-  DCHECK(mtp_storage_info);
+
+  if (!mtp_storage_info) {
+    // mtp_storage_info can be null. e.g. As OnRemovableStorageAttached is
+    // called asynchronously, there can be a race condition where the storage
+    // has been already removed in MediaTransferProtocolManager at the time when
+    // this method is called.
+    return;
+  }
 
   // Mtp write is enabled only when the device is writable, supports generic
   // hierarchical file system, and writing to external storage devices is not
@@ -847,6 +837,21 @@ void VolumeManager::OnRemovableStorageAttached(
           kFilesystemTypeGenericHierarchical ||
       GetExternalStorageAccessMode(profile_) ==
           chromeos::MOUNT_ACCESS_MODE_READ_ONLY;
+
+  const base::FilePath path = base::FilePath::FromUTF8Unsafe(info.location());
+  const std::string fsid = GetMountPointNameForMediaStorage(info);
+  const std::string base_name = base::UTF16ToUTF8(info.model_name());
+
+  // Assign a fresh volume ID based on the volume name.
+  std::string label = base_name;
+  for (int i = 2; mounted_volumes_.count(kMtpVolumeIdPrefix + label); ++i)
+    label = base_name + base::StringPrintf(" (%d)", i);
+
+  bool result =
+      storage::ExternalMountPoints::GetSystemInstance()->RegisterFileSystem(
+          fsid, storage::kFileSystemTypeDeviceMediaAsFileStorage,
+          storage::FileSystemMountOption(), path);
+  DCHECK(result);
 
   content::BrowserThread::PostTask(
       content::BrowserThread::IO, FROM_HERE,
