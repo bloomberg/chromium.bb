@@ -88,6 +88,7 @@ source_set("unit_tests") {
     "//components/payments/core",
     "//components/payments/core:test_support",
     "//components/payments/mojom",
+    "//components/strings:components_strings_grit",
     "//content/test:test_support",
     "//net:test_support",
     "//testing/gtest",
