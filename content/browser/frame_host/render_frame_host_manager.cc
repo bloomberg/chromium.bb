@@ -2189,9 +2189,6 @@ void RenderFrameHostManager::CommitPending() {
         SetRenderFrameHost(std::move(speculative_render_frame_host_));
   }
 
-  // The process will no longer try to exit, so we can decrement the count.
-  render_frame_host_->GetProcess()->RemovePendingView();
-
   // Save off the old background color before possibly deleting the
   // old RenderWidgetHostView.
   SkColor old_background_color = SK_ColorWHITE;
@@ -2207,6 +2204,9 @@ void RenderFrameHostManager::CommitPending() {
     // In most cases, we need to show the new view.
     render_frame_host_->GetView()->Show();
   }
+  // The process will no longer try to exit, so we can decrement the count.
+  render_frame_host_->GetProcess()->RemovePendingView();
+
   if (!new_rfh_has_view) {
     // If the view is gone, then this RenderViewHost died while it was hidden.
     // We ignored the RenderProcessGone call at the time, so we should send it

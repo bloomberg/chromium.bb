@@ -590,15 +590,12 @@ public class AwContentsTest extends AwTestBase {
         }
 
         @Override
-        public void setInForeground(int pid, boolean inForeground) {
+        public void setPriority(int pid, boolean foreground, boolean boostForPendingView) {
             synchronized (mForegroundStateLock) {
-                mForegroundState.add(inForeground);
+                mForegroundState.add(foreground);
                 mForegroundStateLock.notifyAll();
             }
         }
-
-        @Override
-        public void onDeterminedVisibility(int pid) {}
 
         @Override
         public void onSentToBackground() {}

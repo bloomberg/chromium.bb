@@ -87,7 +87,6 @@ import org.chromium.components.dom_distiller.core.DomDistillerUrlUtils;
 import org.chromium.components.navigation_interception.InterceptNavigationDelegate;
 import org.chromium.components.security_state.ConnectionSecurityLevel;
 import org.chromium.components.sync.SyncConstants;
-import org.chromium.content.browser.ChildProcessLauncher;
 import org.chromium.content.browser.ContentView;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.crypto.CipherFactory;
@@ -2296,14 +2295,6 @@ public class Tab
         }
         newContentViewCore.onShow();
         setContentViewCore(newContentViewCore);
-
-        // If the URL has already committed (e.g. prerendering), tell process management logic that
-        // it can rely on the process visibility signal for binding management.
-        // TODO: Call ChildProcessLauncher#determinedVisibility() at a more intuitive time.
-        // See crbug.com/537671
-        if (!mContentViewCore.getWebContents().getLastCommittedUrl().equals("")) {
-            ChildProcessLauncher.determinedVisibility(mContentViewCore.getCurrentRenderProcessId());
-        }
 
         destroyNativePageInternal(previousNativePage);
         for (TabObserver observer : mObservers) {

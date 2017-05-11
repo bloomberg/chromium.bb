@@ -188,20 +188,13 @@ class BindingManagerImpl implements BindingManager {
         // foreground.
         private boolean mInForeground;
 
+        // Indicates there's a pending view in this connection that's about to become foreground.
+        // This currently maps exactly to the initial binding.
+        private boolean mBoostPriorityForPendingViews = true;
+
         // True iff there is a strong binding kept on the service because it was bound for the
         // application background period.
         private boolean mBoundForBackgroundPeriod;
-
-        /**
-         * Removes the initial service binding.
-         * @return true if the binding was removed.
-         */
-        private boolean removeInitialBinding() {
-            if (!mConnection.isInitialBindingBound()) return false;
-
-            mConnection.removeInitialBinding();
-            return true;
-        }
 
         /** Adds a strong service binding. */
         private void addStrongBinding() {
@@ -274,24 +267,25 @@ class BindingManagerImpl implements BindingManager {
         /**
          * Sets the visibility of the service, adding or removing the strong binding as needed.
          */
-        void setInForeground(boolean nextInForeground) {
-            if (!mInForeground && nextInForeground) {
+        void setPriority(boolean foreground, boolean boostForPendingViews) {
+            // Always add bindings before removing them.
+            if (!mInForeground && foreground) {
                 addStrongBinding();
-            } else if (mInForeground && !nextInForeground) {
-                removeStrongBinding(true);
+            }
+            if (!mBoostPriorityForPendingViews && boostForPendingViews) {
+                mConnection.addInitialBinding();
             }
 
-            mInForeground = nextInForeground;
-        }
+            if (mInForeground && !foreground) {
+                removeStrongBinding(true);
+            }
+            if (mBoostPriorityForPendingViews && !boostForPendingViews) {
+                addConnectionToModerateBindingPool(mConnection);
+                mConnection.removeInitialBinding();
+            }
 
-        /**
-         * Called when it is safe to rely on setInForeground() for binding management.
-         */
-        void onDeterminedVisibility() {
-            if (!removeInitialBinding()) return;
-            // Decrease the likelihood of a recently created background tab getting evicted by
-            // immediately adding moderate binding.
-            addConnectionToModerateBindingPool(mConnection);
+            mInForeground = foreground;
+            mBoostPriorityForPendingViews = boostForPendingViews;
         }
 
         /**
@@ -359,34 +353,21 @@ class BindingManagerImpl implements BindingManager {
     }
 
     @Override
-    public void setInForeground(int pid, boolean inForeground) {
+    public void setPriority(int pid, boolean foreground, boolean boostForPendingViews) {
         assert LauncherThread.runningOnLauncherThread();
         ManagedConnection managedConnection = mManagedConnections.get(pid);
         if (managedConnection == null) {
-            Log.w(TAG, "Cannot setInForeground() - never saw a connection for the pid: %d", pid);
+            Log.d(TAG, "Cannot setPriority() - never saw a connection for the pid: %d", pid);
             return;
         }
 
-        if (inForeground && mIsLowMemoryDevice && mLastConnectionInForeground != null
+        if (foreground && mIsLowMemoryDevice && mLastConnectionInForeground != null
                 && mLastConnectionInForeground != managedConnection) {
             mLastConnectionInForeground.dropBindings();
         }
 
-        managedConnection.setInForeground(inForeground);
-        if (inForeground) mLastConnectionInForeground = managedConnection;
-    }
-
-    @Override
-    public void onDeterminedVisibility(int pid) {
-        assert LauncherThread.runningOnLauncherThread();
-        ManagedConnection managedConnection = mManagedConnections.get(pid);
-        if (managedConnection == null) {
-            Log.w(TAG, "Cannot call determinedVisibility() - never saw a connection for the pid: "
-                    + "%d", pid);
-            return;
-        }
-
-        managedConnection.onDeterminedVisibility();
+        managedConnection.setPriority(foreground, boostForPendingViews);
+        if (foreground) mLastConnectionInForeground = managedConnection;
     }
 
     @Override

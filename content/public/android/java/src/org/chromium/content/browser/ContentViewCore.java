@@ -135,8 +135,6 @@ public class ContentViewCore
                 boolean hasCommitted, boolean isSameDocument, boolean isFragmentNavigation,
                 Integer pageTransition, int errorCode, String errorDescription,
                 int httpStatusCode) {
-            determinedProcessVisibility();
-
             if (hasCommitted && isInMainFrame && !isSameDocument) {
                 resetPopupsAndInput();
             }
@@ -156,16 +154,6 @@ public class ContentViewCore
             contentViewCore.mIsMobileOptimizedHint = false;
             contentViewCore.hidePopupsAndClearSelection();
             contentViewCore.resetScrollInProgress();
-        }
-
-        private void determinedProcessVisibility() {
-            ContentViewCore contentViewCore = mWeakContentViewCore.get();
-            if (contentViewCore == null) return;
-            // Signal to the process management logic that we can now rely on the process
-            // visibility signal for binding management. Before the navigation commits, its
-            // renderer is considered background even if the pending navigation happens in the
-            // foreground renderer. See crbug.com/421041 for more details.
-            ChildProcessLauncher.determinedVisibility(contentViewCore.getCurrentRenderProcessId());
         }
     }
 

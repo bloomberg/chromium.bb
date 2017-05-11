@@ -107,7 +107,7 @@ class CONTENT_EXPORT ChildProcessLauncher : public base::NonThreadSafe {
 
   // Changes whether the process runs in the background or not.  Only call
   // this after the process has started.
-  void SetProcessBackgrounded(bool background);
+  void SetProcessPriority(bool background, bool boost_for_pending_views);
 
   // Terminates the process associated with this ChildProcessLauncher.
   // Returns true if the process was stopped, false if the process had not been

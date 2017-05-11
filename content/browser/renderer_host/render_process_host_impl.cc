@@ -261,6 +261,15 @@ namespace {
 const RenderProcessHostFactory* g_render_process_host_factory_ = nullptr;
 const char kSiteProcessMapKeyName[] = "content_site_process_map";
 
+#if defined(OS_ANDROID)
+// This matches Android's ChildProcessConnection state before OnProcessLaunched.
+constexpr bool kLaunchingProcessIsBackgrounded = true;
+constexpr bool kLaunchingProcessIsBoostedForPendingView = true;
+#else
+constexpr bool kLaunchingProcessIsBackgrounded = false;
+constexpr bool kLaunchingProcessIsBoostedForPendingView = false;
+#endif
+
 #if BUILDFLAG(ENABLE_WEBRTC)
 const base::FilePath::CharType kAecDumpFileNameAddition[] =
     FILE_PATH_LITERAL("aec_dump");
@@ -765,7 +774,9 @@ RenderProcessHostImpl::RenderProcessHostImpl(
       is_worker_ref_count_disabled_(false),
       route_provider_binding_(this),
       visible_widgets_(0),
-      is_process_backgrounded_(false),
+      is_process_backgrounded_(kLaunchingProcessIsBackgrounded),
+      boost_priority_for_pending_views_(
+          kLaunchingProcessIsBoostedForPendingView),
       id_(ChildProcessHostImpl::GenerateChildProcessUniqueId()),
       browser_context_(browser_context),
       storage_partition_impl_(storage_partition_impl),
@@ -1636,7 +1647,6 @@ void RenderProcessHostImpl::ShutdownForBadMessage(
 void RenderProcessHostImpl::WidgetRestored() {
   visible_widgets_++;
   UpdateProcessPriority();
-  DCHECK(!is_process_backgrounded_);
 }
 
 void RenderProcessHostImpl::WidgetHidden() {
@@ -1646,7 +1656,6 @@ void RenderProcessHostImpl::WidgetHidden() {
 
   --visible_widgets_;
   if (visible_widgets_ == 0) {
-    DCHECK(!is_process_backgrounded_);
     UpdateProcessPriority();
   }
 }
@@ -2362,11 +2371,13 @@ void RenderProcessHostImpl::Cleanup() {
 
 void RenderProcessHostImpl::AddPendingView() {
   pending_views_++;
+  UpdateProcessPriority();
 }
 
 void RenderProcessHostImpl::RemovePendingView() {
   DCHECK(pending_views_);
   pending_views_--;
+  UpdateProcessPriority();
 }
 
 void RenderProcessHostImpl::AddWidget(RenderWidgetHost* widget) {
@@ -2890,7 +2901,6 @@ void RenderProcessHostImpl::ProcessDied(bool already_dead,
   ResetChannelProxy();
 
   UpdateProcessPriority();
-  DCHECK(!is_process_backgrounded_);
 
   within_process_died_observer_ = true;
   NotificationService::current()->Notify(
@@ -2979,7 +2989,9 @@ void RenderProcessHostImpl::SuddenTerminationChanged(bool enabled) {
 
 void RenderProcessHostImpl::UpdateProcessPriority() {
   if (!child_process_launcher_.get() || child_process_launcher_->IsStarting()) {
-    is_process_backgrounded_ = false;
+    is_process_backgrounded_ = kLaunchingProcessIsBackgrounded;
+    boost_priority_for_pending_views_ =
+        kLaunchingProcessIsBoostedForPendingView;
     return;
   }
 
@@ -2995,16 +3007,20 @@ void RenderProcessHostImpl::UpdateProcessPriority() {
       visible_widgets_ == 0 && audio_stream_count_ == 0 &&
       !base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableRendererBackgrounding);
+  const bool should_background_changed =
+      is_process_backgrounded_ != should_background;
+  const bool has_pending_views = !!pending_views_;
 
-// TODO(sebsg): Remove this ifdef when https://crbug.com/537671 is fixed.
-#if !defined(OS_ANDROID)
-  if (is_process_backgrounded_ == should_background)
+  if (!should_background_changed &&
+      boost_priority_for_pending_views_ == has_pending_views) {
     return;
-#endif
+  }
 
-  TRACE_EVENT1("renderer_host", "RenderProcessHostImpl::UpdateProcessPriority",
-               "should_background", should_background);
+  TRACE_EVENT2("renderer_host", "RenderProcessHostImpl::UpdateProcessPriority",
+               "should_background", should_background, "has_pending_views",
+               has_pending_views);
   is_process_backgrounded_ = should_background;
+  boost_priority_for_pending_views_ = has_pending_views;
 
 #if defined(OS_WIN)
   // The cbstext.dll loads as a global GetMessage hook in the browser process
@@ -3022,10 +3038,14 @@ void RenderProcessHostImpl::UpdateProcessPriority() {
   // tasks executing at lowered priority ahead of it or simply by not being
   // swiftly scheduled by the OS per the low process priority
   // (http://crbug.com/398103).
-  child_process_launcher_->SetProcessBackgrounded(should_background);
+  child_process_launcher_->SetProcessPriority(should_background,
+                                              has_pending_views);
 
-  // Notify the child process of background state.
-  Send(new ChildProcessMsg_SetProcessBackgrounded(should_background));
+  // Notify the child process of background state. Note
+  // |boost_priority_for_pending_views_| state is not sent to renderer simply
+  // due to lack of need.
+  if (should_background_changed)
+    Send(new ChildProcessMsg_SetProcessBackgrounded(should_background));
 }
 
 void RenderProcessHostImpl::OnProcessLaunched() {
@@ -3038,7 +3058,7 @@ void RenderProcessHostImpl::OnProcessLaunched() {
 
   if (child_process_launcher_) {
     DCHECK(child_process_launcher_->GetProcess().IsValid());
-    DCHECK(!is_process_backgrounded_);
+    DCHECK_EQ(kLaunchingProcessIsBackgrounded, is_process_backgrounded_);
 
     // Unpause the channel now that the process is launched. We don't flush it
     // yet to ensure that any initialization messages sent here (e.g., things
@@ -3058,16 +3078,22 @@ void RenderProcessHostImpl::OnProcessLaunched() {
     is_process_backgrounded_ =
         child_process_launcher_->GetProcess().IsProcessBackgrounded(
             MachBroker::GetInstance());
+#elif defined(OS_ANDROID)
+    // Android child process priority works differently and cannot be queried
+    // directly from base::Process.
+    DCHECK_EQ(kLaunchingProcessIsBackgrounded, is_process_backgrounded_);
 #else
     is_process_backgrounded_ =
         child_process_launcher_->GetProcess().IsProcessBackgrounded();
 #endif  // defined(OS_MACOSX)
 
-    // Disable updating process priority on startup for now as it incorrectly
-    // results in backgrounding foreground navigations until their first commit
-    // is made. A better long term solution would be to be aware of the tab's
-    // visibility at this point. https://crbug.com/560446.
-    // Except on Android for now because of https://crbug.com/601184 :-(.
+    // Disable updating process priority on startup on desktop platforms for now
+    // as it incorrectly results in backgrounding foreground navigations until
+    // their first commit is made. A better long term solution would be to be
+    // aware of the tab's visibility at this point. https://crbug.com/560446.
+    // This is still needed on Android which uses
+    // |boost_priority_for_pending_views_| and requires RenderProcessHostImpl to
+    // propagate priority changes immediately to ChildProcessLauncher.
 #if defined(OS_ANDROID)
     UpdateProcessPriority();
 #endif

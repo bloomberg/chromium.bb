@@ -141,8 +141,10 @@ void ChildProcessLauncherHelper::ForceNormalProcessTerminationSync(
   base::EnsureProcessTerminated(std::move(process.process));
 }
 
-void ChildProcessLauncherHelper::SetProcessBackgroundedOnLauncherThread(
-      base::Process process, bool background) {
+void ChildProcessLauncherHelper::SetProcessPriorityOnLauncherThread(
+    base::Process process,
+    bool background,
+    bool boost_for_pending_views) {
   if (process.CanBackgroundProcesses())
     process.SetProcessBackgrounded(MachBroker::GetInstance(), background);
 }

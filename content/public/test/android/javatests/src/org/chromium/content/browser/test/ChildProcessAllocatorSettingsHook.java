@@ -22,7 +22,7 @@ public final class ChildProcessAllocatorSettingsHook implements PreTestHook {
         ChildProcessAllocatorSettings annotation =
                 testMethod.getAnnotation(ChildProcessAllocatorSettings.class);
         if (annotation != null) {
-            ChildProcessLauncher.setSandboxServicesSettingsForTesting(
+            ChildProcessLauncher.setSandboxServicesSettingsForTesting(null /* factory */,
                     annotation.sandboxedServiceCount(), annotation.sandboxedServiceName());
         }
     }
