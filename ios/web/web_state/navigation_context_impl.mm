@@ -21,40 +21,6 @@ NavigationContextImpl::CreateNavigationContext(WebState* web_state,
   return result;
 }
 
-// static
-std::unique_ptr<NavigationContextImpl>
-NavigationContextImpl::CreateNavigationContext(
-    WebState* web_state,
-    const GURL& url,
-    const scoped_refptr<net::HttpResponseHeaders>& response_headers) {
-  std::unique_ptr<NavigationContextImpl> resut(
-      new NavigationContextImpl(web_state, url, false /* is_same_document */,
-                                false /* is_error_page */, response_headers));
-  return resut;
-}
-
-// static
-std::unique_ptr<NavigationContextImpl>
-NavigationContextImpl::CreateSameDocumentNavigationContext(WebState* web_state,
-                                                           const GURL& url) {
-  std::unique_ptr<NavigationContextImpl> result(new NavigationContextImpl(
-      web_state, url, true /* is_same_document */, false /* is_error_page */,
-      nullptr /* response_headers */));
-  return result;
-}
-
-// static
-std::unique_ptr<NavigationContextImpl>
-NavigationContextImpl::CreateErrorPageNavigationContext(
-    WebState* web_state,
-    const GURL& url,
-    const scoped_refptr<net::HttpResponseHeaders>& response_headers) {
-  std::unique_ptr<NavigationContextImpl> result(
-      new NavigationContextImpl(web_state, url, false /* is_same_document */,
-                                true /* is_error_page */, response_headers));
-  return result;
-}
-
 #ifndef NDEBUG
 NSString* NavigationContextImpl::GetDescription() const {
   return [NSString stringWithFormat:@"web::WebState: %ld, url: %s, "

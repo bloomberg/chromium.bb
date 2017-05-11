@@ -65,27 +65,17 @@ void TestWebStateObserver::NavigationItemChanged() {
   navigation_item_changed_info_->web_state = web_state();
 }
 
-void TestWebStateObserver::DidFinishNavigation(NavigationContext* context) {
+void TestWebStateObserver::DidFinishNavigation(NavigationContext* navigation) {
+  ASSERT_TRUE(!navigation->IsErrorPage() || !navigation->IsSameDocument());
   did_finish_navigation_info_ =
       base::MakeUnique<web::TestDidFinishNavigationInfo>();
   did_finish_navigation_info_->web_state = web_state();
-  if (context->IsSameDocument()) {
-    ASSERT_FALSE(context->IsErrorPage());
-    did_finish_navigation_info_->context =
-        NavigationContextImpl::CreateSameDocumentNavigationContext(
-            context->GetWebState(), context->GetUrl());
-  } else if (context->IsErrorPage()) {
-    ASSERT_FALSE(context->IsSameDocument());
-    did_finish_navigation_info_->context =
-        NavigationContextImpl::CreateErrorPageNavigationContext(
-            context->GetWebState(), context->GetUrl(),
-            context->GetResponseHeaders());
-  } else {
-    did_finish_navigation_info_->context =
-        NavigationContextImpl::CreateNavigationContext(
-            context->GetWebState(), context->GetUrl(),
-            context->GetResponseHeaders());
-  }
+  std::unique_ptr<web::NavigationContextImpl> context =
+      web::NavigationContextImpl::CreateNavigationContext(
+          navigation->GetWebState(), navigation->GetUrl());
+  context->SetIsSameDocument(navigation->IsSameDocument());
+  context->SetIsErrorPage(navigation->IsErrorPage());
+  did_finish_navigation_info_->context = std::move(context);
 }
 
 void TestWebStateObserver::TitleWasSet() {

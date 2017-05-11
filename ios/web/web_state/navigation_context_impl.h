@@ -23,23 +23,6 @@ class NavigationContextImpl : public NavigationContext {
       WebState* web_state,
       const GURL& url);
 
-  // Creates navigation context for sucessful navigation to a different page.
-  static std::unique_ptr<NavigationContextImpl> CreateNavigationContext(
-      WebState* web_state,
-      const GURL& url,
-      const scoped_refptr<net::HttpResponseHeaders>& response_headers);
-
-  // Creates navigation context for sucessful same page navigation.
-  static std::unique_ptr<NavigationContextImpl>
-  CreateSameDocumentNavigationContext(WebState* web_state, const GURL& url);
-
-  // Creates navigation context for the error page navigation.
-  static std::unique_ptr<NavigationContextImpl>
-  CreateErrorPageNavigationContext(
-      WebState* web_state,
-      const GURL& url,
-      const scoped_refptr<net::HttpResponseHeaders>& response_headers);
-
 #ifndef NDEBUG
   // Returns human readable description of this object.
   NSString* GetDescription() const;

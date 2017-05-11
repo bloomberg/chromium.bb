@@ -351,8 +351,7 @@ TEST_F(WebStateImplTest, ObserverTest) {
   ASSERT_FALSE(observer->did_finish_navigation_info());
   const GURL url("http://test");
   std::unique_ptr<web::NavigationContext> context =
-      NavigationContextImpl::CreateNavigationContext(
-          web_state_.get(), url, nullptr /* response_headers */);
+      NavigationContextImpl::CreateNavigationContext(web_state_.get(), url);
   web_state_->OnNavigationFinished(context.get());
   ASSERT_TRUE(observer->did_finish_navigation_info());
   EXPECT_EQ(web_state_.get(),
@@ -410,37 +409,8 @@ TEST_F(WebStateImplTest, ObserverTest) {
   EXPECT_EQ(web_state_.get(), observer->load_page_info()->web_state);
   EXPECT_TRUE(observer->load_page_info()->success);
 
-  // Reset the observer and test that DidFinishNavigation() is called
-  // for same document navigations.
-  observer = base::MakeUnique<TestWebStateObserver>(web_state_.get());
-  ASSERT_FALSE(observer->did_finish_navigation_info());
-  web_state_->OnSameDocumentNavigation(url);
-  ASSERT_TRUE(observer->did_finish_navigation_info());
-  EXPECT_EQ(web_state_.get(),
-            observer->did_finish_navigation_info()->web_state);
-  actual_context = observer->did_finish_navigation_info()->context.get();
-  ASSERT_TRUE(actual_context);
-  EXPECT_EQ(url, actual_context->GetUrl());
-  EXPECT_TRUE(actual_context->IsSameDocument());
-  EXPECT_FALSE(actual_context->IsErrorPage());
-  EXPECT_FALSE(actual_context->GetResponseHeaders());
-
-  // Reset the observer and test that DidFinishNavigation() is called
-  // for error navigations.
-  observer = base::MakeUnique<TestWebStateObserver>(web_state_.get());
-  ASSERT_FALSE(observer->did_finish_navigation_info());
-  web_state_->OnErrorPageNavigation(url);
-  ASSERT_TRUE(observer->did_finish_navigation_info());
-  EXPECT_EQ(web_state_.get(),
-            observer->did_finish_navigation_info()->web_state);
-  actual_context = observer->did_finish_navigation_info()->context.get();
-  ASSERT_TRUE(actual_context);
-  EXPECT_EQ(url, actual_context->GetUrl());
-  EXPECT_FALSE(actual_context->IsSameDocument());
-  EXPECT_TRUE(actual_context->IsErrorPage());
-  EXPECT_FALSE(actual_context->GetResponseHeaders());
-
   // Test that OnTitleChanged() is called.
+  observer = base::MakeUnique<TestWebStateObserver>(web_state_.get());
   ASSERT_FALSE(observer->title_was_set_info());
   web_state_->OnTitleChanged();
   ASSERT_TRUE(observer->title_was_set_info());

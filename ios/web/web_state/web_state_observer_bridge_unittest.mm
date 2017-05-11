@@ -57,8 +57,8 @@ TEST_F(WebStateObserverBridgeTest, DidFinishNavigation) {
 
   GURL url("https://chromium.test/");
   std::unique_ptr<web::NavigationContext> context =
-      web::NavigationContextImpl::CreateNavigationContext(&test_web_state_, url,
-                                                          response_headers_);
+      web::NavigationContextImpl::CreateNavigationContext(&test_web_state_,
+                                                          url);
   bridge_->DidFinishNavigation(context.get());
 
   ASSERT_TRUE([observer_ didFinishNavigationInfo]);

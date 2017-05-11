@@ -69,14 +69,14 @@ TEST_F(CRWWKNavigationStatesTest, LastAddedNavigation) {
 
   // navigation_3 is added later and hence the latest.
   std::unique_ptr<web::NavigationContextImpl> context =
-      NavigationContextImpl::CreateSameDocumentNavigationContext(
-          nullptr /*web_state*/, GURL(kTestUrl1));
+      NavigationContextImpl::CreateNavigationContext(nullptr /*web_state*/,
+                                                     GURL(kTestUrl1));
   [states_ setContext:std::move(context) forNavigation:navigation3_];
   EXPECT_EQ(navigation3_, [states_ lastAddedNavigation]);
   EXPECT_EQ(WKNavigationState::NONE, [states_ lastAddedNavigationState]);
 }
 
-// Tests |setContext:forNavigation:| and |contextForNavigaiton:| methods.
+// Tests |setContext:forNavigation:| and |contextForNavigation:| methods.
 TEST_F(CRWWKNavigationStatesTest, Context) {
   EXPECT_FALSE([states_ contextForNavigation:navigation1_]);
   EXPECT_FALSE([states_ contextForNavigation:navigation2_]);
@@ -84,8 +84,9 @@ TEST_F(CRWWKNavigationStatesTest, Context) {
 
   // Add first context.
   std::unique_ptr<web::NavigationContextImpl> context1 =
-      NavigationContextImpl::CreateSameDocumentNavigationContext(
-          nullptr /*web_state*/, GURL(kTestUrl1));
+      NavigationContextImpl::CreateNavigationContext(nullptr /*web_state*/,
+                                                     GURL(kTestUrl1));
+  context1->SetIsSameDocument(true);
   [states_ setContext:std::move(context1) forNavigation:navigation1_];
   EXPECT_FALSE([states_ contextForNavigation:navigation2_]);
   EXPECT_FALSE([states_ contextForNavigation:navigation3_]);
@@ -97,9 +98,9 @@ TEST_F(CRWWKNavigationStatesTest, Context) {
 
   // Replace existing context.
   std::unique_ptr<web::NavigationContextImpl> context2 =
-      NavigationContextImpl::CreateErrorPageNavigationContext(
-          nullptr /*web_state*/, GURL(kTestUrl2),
-          nullptr /* response_headers */);
+      NavigationContextImpl::CreateNavigationContext(nullptr /*web_state*/,
+                                                     GURL(kTestUrl2));
+  context2->SetIsErrorPage(true);
   [states_ setContext:std::move(context2) forNavigation:navigation1_];
   EXPECT_FALSE([states_ contextForNavigation:navigation2_]);
   EXPECT_FALSE([states_ contextForNavigation:navigation3_]);

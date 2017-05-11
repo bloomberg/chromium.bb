@@ -30,20 +30,6 @@ class NavigationContextImplTest : public PlatformTest {
   scoped_refptr<net::HttpResponseHeaders> response_headers_;
 };
 
-// Tests legacy CreateNavigationContext factory method.
-TEST_F(NavigationContextImplTest, LegacyNavigationContext) {
-  std::unique_ptr<NavigationContext> context =
-      NavigationContextImpl::CreateNavigationContext(&web_state_, url_,
-                                                     response_headers_);
-  ASSERT_TRUE(context);
-
-  EXPECT_EQ(&web_state_, context->GetWebState());
-  EXPECT_EQ(url_, context->GetUrl());
-  EXPECT_FALSE(context->IsSameDocument());
-  EXPECT_FALSE(context->IsErrorPage());
-  EXPECT_EQ(response_headers_.get(), context->GetResponseHeaders());
-}
-
 // Tests CreateNavigationContext factory method.
 TEST_F(NavigationContextImplTest, NavigationContext) {
   std::unique_ptr<NavigationContext> context =
@@ -55,34 +41,6 @@ TEST_F(NavigationContextImplTest, NavigationContext) {
   EXPECT_FALSE(context->IsSameDocument());
   EXPECT_FALSE(context->IsErrorPage());
   EXPECT_FALSE(context->GetResponseHeaders());
-}
-
-// Tests CreateSameDocumentNavigationContext factory method.
-TEST_F(NavigationContextImplTest, SameDocumentNavigationContext) {
-  std::unique_ptr<NavigationContext> context =
-      NavigationContextImpl::CreateSameDocumentNavigationContext(&web_state_,
-                                                                 url_);
-  ASSERT_TRUE(context);
-
-  EXPECT_EQ(&web_state_, context->GetWebState());
-  EXPECT_EQ(url_, context->GetUrl());
-  EXPECT_TRUE(context->IsSameDocument());
-  EXPECT_FALSE(context->IsErrorPage());
-  EXPECT_FALSE(context->GetResponseHeaders());
-}
-
-// Tests CreateErrorPageNavigationContext factory method.
-TEST_F(NavigationContextImplTest, ErrorPageNavigationContext) {
-  std::unique_ptr<NavigationContext> context =
-      NavigationContextImpl::CreateErrorPageNavigationContext(
-          &web_state_, url_, response_headers_);
-  ASSERT_TRUE(context);
-
-  EXPECT_EQ(&web_state_, context->GetWebState());
-  EXPECT_EQ(url_, context->GetUrl());
-  EXPECT_FALSE(context->IsSameDocument());
-  EXPECT_TRUE(context->IsErrorPage());
-  EXPECT_EQ(response_headers_.get(), context->GetResponseHeaders());
 }
 
 // Tests NavigationContextImpl Setters.
