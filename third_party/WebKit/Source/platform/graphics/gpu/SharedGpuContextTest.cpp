@@ -20,7 +20,7 @@ class SharedGpuContextTest : public Test {
  public:
   void SetUp() override {
     SharedGpuContext::SetContextProviderFactoryForTesting([this] {
-      gl_.setIsContextLost(false);
+      gl_.SetIsContextLost(false);
       return std::unique_ptr<WebGraphicsContext3DProvider>(
           new FakeWebGraphicsContext3DProvider(&gl_));
     });
@@ -36,7 +36,7 @@ class SharedGpuContextTest : public Test {
 TEST_F(SharedGpuContextTest, contextLossAutoRecovery) {
   EXPECT_TRUE(SharedGpuContext::IsValid());
   unsigned context_id = SharedGpuContext::ContextId();
-  gl_.setIsContextLost(true);
+  gl_.SetIsContextLost(true);
   EXPECT_FALSE(SharedGpuContext::IsValidWithoutRestoring());
   EXPECT_TRUE(SharedGpuContext::IsValid());
   EXPECT_NE(context_id, SharedGpuContext::ContextId());

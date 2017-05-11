@@ -156,7 +156,7 @@ class Canvas2DLayerBridgeTest : public Test {
     std::unique_ptr<FakeWebGraphicsContext3DProvider> context_provider =
         WTF::WrapUnique(new FakeWebGraphicsContext3DProvider(&gl));
 
-    gl.setIsContextLost(true);
+    gl.SetIsContextLost(true);
     Canvas2DLayerBridgePtr bridge(AdoptRef(new Canvas2DLayerBridge(
         std::move(context_provider), IntSize(300, 150), 0, kNonOpaque,
         Canvas2DLayerBridge::kEnableAcceleration, CanvasColorParams())));
@@ -217,7 +217,7 @@ class Canvas2DLayerBridgeTest : public Test {
     uint32_t gen_id = bridge->GetOrCreateSurface()->generationID();
     bridge->Canvas()->drawRect(SkRect::MakeXYWH(0, 0, 1, 1), flags);
     EXPECT_EQ(gen_id, bridge->GetOrCreateSurface()->generationID());
-    gl.setIsContextLost(true);
+    gl.SetIsContextLost(true);
     EXPECT_EQ(gen_id, bridge->GetOrCreateSurface()->generationID());
     bridge->Canvas()->drawRect(SkRect::MakeXYWH(0, 0, 1, 1), flags);
     EXPECT_EQ(gen_id, bridge->GetOrCreateSurface()->generationID());
@@ -243,7 +243,7 @@ class Canvas2DLayerBridgeTest : public Test {
 
     // When the context is lost we are not sure if we should still be producing
     // GL frames for the compositor or not, so fail to generate frames.
-    gl.setIsContextLost(true);
+    gl.SetIsContextLost(true);
 
     cc::TextureMailbox texture_mailbox;
     std::unique_ptr<cc::SingleReleaseCallback> release_callback;
@@ -264,7 +264,7 @@ class Canvas2DLayerBridgeTest : public Test {
     EXPECT_TRUE(bridge->CheckSurfaceValid());
     // When the context is lost we are not sure if we should still be producing
     // GL frames for the compositor or not, so fail to generate frames.
-    gl.setIsContextLost(true);
+    gl.SetIsContextLost(true);
     EXPECT_FALSE(bridge->CheckSurfaceValid());
 
     // Restoration will fail because
@@ -1168,7 +1168,7 @@ TEST_F(Canvas2DLayerBridgeTest, DISABLED_HibernationAbortedDueToLostContext)
   MockLogger* mock_logger_ptr = mock_logger.get();
   bridge->SetLoggerForTesting(std::move(mock_logger));
 
-  gl.setIsContextLost(true);
+  gl.SetIsContextLost(true);
   // Test entering hibernation
   std::unique_ptr<WaitableEvent> hibernation_aborted_event =
       WTF::MakeUnique<WaitableEvent>();

@@ -11,14 +11,14 @@ class FakeGLES2Interface : public gpu::gles2::GLES2InterfaceStub {
  public:
   // GLES2Interface implementation.
   GLenum GetGraphicsResetStatusKHR() override {
-    return m_contextLost ? GL_INVALID_OPERATION : GL_NO_ERROR;
+    return context_lost_ ? GL_INVALID_OPERATION : GL_NO_ERROR;
   }
 
   // Methods for tests.
-  void setIsContextLost(bool lost) { m_contextLost = lost; }
+  void SetIsContextLost(bool lost) { context_lost_ = lost; }
 
  private:
-  bool m_contextLost = false;
+  bool context_lost_ = false;
 };
 
 #endif  // FakeGLES2Interface_h

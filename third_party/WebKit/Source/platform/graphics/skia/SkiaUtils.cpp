@@ -37,8 +37,8 @@
 namespace blink {
 
 static const struct CompositOpToXfermodeMode {
-  CompositeOperator m_composit_op;
-  SkBlendMode xfermode_mode_;
+  CompositeOperator composit_op;
+  SkBlendMode xfermode_mode;
 } kGMapCompositOpsToXfermodeModes[] = {
     {kCompositeClear, SkBlendMode::kClear},
     {kCompositeCopy, SkBlendMode::kSrc},
@@ -98,8 +98,8 @@ SkBlendMode WebCoreCompositeToSkiaComposite(CompositeOperator op,
          op));
     return SkBlendMode::kSrcOver;
   }
-  SkASSERT(table[static_cast<uint8_t>(op)].m_composit_op == op);
-  return table[static_cast<uint8_t>(op)].xfermode_mode_;
+  SkASSERT(table[static_cast<uint8_t>(op)].composit_op == op);
+  return table[static_cast<uint8_t>(op)].xfermode_mode;
 }
 
 CompositeOperator CompositeOperatorFromSkia(SkBlendMode xfer_mode) {
