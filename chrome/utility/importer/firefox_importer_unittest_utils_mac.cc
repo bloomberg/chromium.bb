@@ -28,7 +28,7 @@
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_message.h"
 #include "mojo/edk/embedder/embedder.h"
-#include "mojo/edk/embedder/pending_process_connection.h"
+#include "mojo/edk/embedder/outgoing_broker_client_invitation.h"
 #include "mojo/edk/embedder/platform_channel_pair.h"
 #include "mojo/edk/embedder/scoped_platform_handle.h"
 #include "testing/multiprocess_func_list.h"
@@ -147,9 +147,10 @@ bool FFUnitTestDecryptorProxy::Setup(const base::FilePath& nss_path) {
   listener_.reset(new FFDecryptorServerChannelListener());
 
   // Set up IPC channel using ChannelMojo.
-  mojo::edk::PendingProcessConnection process;
-  std::string token;
-  mojo::ScopedMessagePipeHandle parent_pipe = process.CreateMessagePipe(&token);
+  mojo::edk::OutgoingBrokerClientInvitation invitation;
+  std::string token = mojo::edk::GenerateRandomToken();
+  mojo::ScopedMessagePipeHandle parent_pipe =
+      invitation.AttachMessagePipe(token);
   channel_ = IPC::Channel::CreateServer(parent_pipe.release(), listener_.get());
   CHECK(channel_->Connect());
   listener_->SetSender(channel_.get());
@@ -159,7 +160,7 @@ bool FFUnitTestDecryptorProxy::Setup(const base::FilePath& nss_path) {
   child_process_ = LaunchNSSDecrypterChildProcess(
       nss_path, channel_pair.PassClientHandle(), token);
   if (child_process_.IsValid())
-    process.Connect(
+    invitation.Send(
         child_process_.Handle(),
         mojo::edk::ConnectionParams(channel_pair.PassServerHandle()));
   return child_process_.IsValid();

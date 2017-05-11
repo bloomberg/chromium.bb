@@ -148,7 +148,7 @@ BrowserChildProcessHostImpl::BrowserChildProcessHostImpl(
     const std::string& service_name)
     : data_(process_type),
       delegate_(delegate),
-      pending_connection_(new mojo::edk::PendingProcessConnection),
+      broker_client_invitation_(new mojo::edk::OutgoingBrokerClientInvitation),
       channel_(nullptr),
       is_channel_connected_(false),
       notify_child_disconnected_(false),
@@ -170,7 +170,7 @@ BrowserChildProcessHostImpl::BrowserChildProcessHostImpl(
         service_name, service_manager::mojom::kInheritUserID,
         base::StringPrintf("%d", data_.id));
     child_connection_.reset(
-        new ChildConnection(child_identity, pending_connection_.get(),
+        new ChildConnection(child_identity, broker_client_invitation_.get(),
                             ServiceManagerContext::GetConnectorForIOThread(),
                             base::ThreadTaskRunnerHandle::Get()));
   }
@@ -239,10 +239,11 @@ void BrowserChildProcessHostImpl::Launch(
                                 child_connection_->service_token());
   }
 
+  DCHECK(broker_client_invitation_);
   notify_child_disconnected_ = true;
   child_process_.reset(new ChildProcessLauncher(
       std::move(delegate), std::move(cmd_line), data_.id, this,
-      std::move(pending_connection_),
+      std::move(broker_client_invitation_),
       base::Bind(&BrowserChildProcessHostImpl::OnMojoError,
                  weak_factory_.GetWeakPtr(),
                  base::ThreadTaskRunnerHandle::Get()),
@@ -283,8 +284,13 @@ void BrowserChildProcessHostImpl::SetHandle(base::ProcessHandle handle) {
   data_.handle = handle;
 }
 
-std::string BrowserChildProcessHostImpl::GetServiceRequestChannelToken() {
-  return child_connection_->service_token();
+service_manager::mojom::ServiceRequest
+BrowserChildProcessHostImpl::TakeInProcessServiceRequest() {
+  DCHECK(broker_client_invitation_);
+  auto invitation = std::move(broker_client_invitation_);
+  return mojo::MakeRequest<service_manager::mojom::Service>(
+      invitation->ExtractInProcessMessagePipe(
+          child_connection_->service_token()));
 }
 
 void BrowserChildProcessHostImpl::ForceShutdown() {

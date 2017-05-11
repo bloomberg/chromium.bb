@@ -5,8 +5,10 @@
 #ifndef MOJO_EDK_SYSTEM_NODE_CONTROLLER_H_
 #define MOJO_EDK_SYSTEM_NODE_CONTROLLER_H_
 
+#include <map>
 #include <memory>
 #include <queue>
+#include <string>
 #include <unordered_map>
 #include <unordered_set>
 #include <utility>
@@ -71,22 +73,19 @@ class NodeController : public ports::NodeDelegate,
   // methods are called on this object.
   void SetIOTaskRunner(scoped_refptr<base::TaskRunner> io_task_runner);
 
-  // Connects this node to a child node. This node will initiate a handshake.
-  void ConnectToChild(base::ProcessHandle process_handle,
-                      ConnectionParams connection_params,
-                      const std::string& child_token,
-                      const ProcessErrorCallback& process_error_callback);
-
-  // Closes all reserved ports which associated with the child process
-  // |child_token|.
-  void CloseChildPorts(const std::string& child_token);
+  // Sends an invitation to a remote process (via |connection_params|) to join
+  // this process's graph of connected processes as a broker client.
+  void SendBrokerClientInvitation(
+      base::ProcessHandle target_process,
+      ConnectionParams connection_params,
+      const std::vector<std::pair<std::string, ports::PortRef>>& attached_ports,
+      const ProcessErrorCallback& process_error_callback);
 
   // Close a connection to a peer associated with |peer_token|.
   void ClosePeerConnection(const std::string& peer_token);
 
-  // Connects this node to a parent node. The parent node will initiate a
-  // handshake.
-  void ConnectToParent(ConnectionParams connection_params);
+  // Connects this node to the process which invited it to be a broker client.
+  void AcceptBrokerClientInvitation(ConnectionParams connection_params);
 
   // Connects this node to a peer node. On success, |port| will be merged with
   // the corresponding port in the peer node.
@@ -107,14 +106,8 @@ class NodeController : public ports::NodeDelegate,
   int SendMessage(const ports::PortRef& port_ref,
                   std::unique_ptr<PortsMessage> message);
 
-  // Reserves a local port |port| associated with |token|. A peer holding a copy
-  // of |token| can merge one of its own ports into this one.
-  void ReservePort(const std::string& token, const ports::PortRef& port,
-                   const std::string& child_token);
-
-  // Merges a local port |port| into a port reserved by |token| in the parent.
-  void MergePortIntoParent(const std::string& token,
-                           const ports::PortRef& port);
+  // Merges a local port |port| into a port reserved by |name| in the parent.
+  void MergePortIntoParent(const std::string& name, const ports::PortRef& port);
 
   // Merges two local ports together.
   int MergeLocalPorts(const ports::PortRef& port0, const ports::PortRef& port1);
@@ -142,11 +135,7 @@ class NodeController : public ports::NodeDelegate,
   using NodeMap = std::unordered_map<ports::NodeName,
                                      scoped_refptr<NodeChannel>>;
   using OutgoingMessageQueue = std::queue<Channel::MessagePtr>;
-
-  struct ReservedPort {
-    ports::PortRef port;
-    const std::string child_token;
-  };
+  using PortMap = std::map<std::string, ports::PortRef>;
 
   struct PeerConnection {
     PeerConnection();
@@ -166,12 +155,13 @@ class NodeController : public ports::NodeDelegate,
     std::string peer_token;
   };
 
-  void ConnectToChildOnIOThread(
-      base::ProcessHandle process_handle,
+  void SendBrokerClientInvitationOnIOThread(
+      base::ProcessHandle target_process,
       ConnectionParams connection_params,
       ports::NodeName token,
       const ProcessErrorCallback& process_error_callback);
-  void ConnectToParentOnIOThread(ConnectionParams connection_params);
+  void AcceptBrokerClientInvitationOnIOThread(
+      ConnectionParams connection_params);
 
   void ConnectToPeerOnIOThread(ConnectionParams connection_params,
                                ports::NodeName token,
@@ -280,14 +270,11 @@ class NodeController : public ports::NodeDelegate,
   std::unordered_map<ports::NodeName, OutgoingMessageQueue>
       pending_peer_messages_;
 
-  // Guards |reserved_ports_| and |pending_child_tokens_|.
+  // Guards |reserved_ports_|.
   base::Lock reserved_ports_lock_;
 
-  // Ports reserved by token. Key is the port token.
-  base::hash_map<std::string, ReservedPort> reserved_ports_;
-  // TODO(amistry): This _really_ needs to be a bimap. Unfortunately, we don't
-  // have one yet :(
-  std::unordered_map<ports::NodeName, std::string> pending_child_tokens_;
+  // Ports reserved by name, per peer.
+  std::map<ports::NodeName, PortMap> reserved_ports_;
 
   // Guards |pending_port_merges_| and |reject_pending_merges_|.
   base::Lock pending_port_merges_lock_;
@@ -315,7 +302,7 @@ class NodeController : public ports::NodeDelegate,
   // The name of our broker node, if any.
   ports::NodeName broker_name_;
 
-  // A queue of pending child names waiting to be connected to a broker.
+  // A queue of remote broker clients waiting to be connected to the broker.
   std::queue<ports::NodeName> pending_broker_clients_;
 
   // Messages waiting to be relayed by the broker once it's known.
@@ -344,8 +331,8 @@ class NodeController : public ports::NodeDelegate,
   // All other fields below must only be accessed on the I/O thread, i.e., the
   // thread on which core_->io_task_runner() runs tasks.
 
-  // Channels to children during handshake.
-  NodeMap pending_children_;
+  // Channels to invitees during handshake.
+  NodeMap pending_invitations_;
 
   using PeerNodeMap =
       std::unordered_map<ports::NodeName, PeerConnection>;
@@ -359,13 +346,13 @@ class NodeController : public ports::NodeDelegate,
   bool destroy_on_io_thread_shutdown_ = false;
 
 #if !defined(OS_MACOSX) && !defined(OS_NACL_SFI)
-  // Broker for sync shared buffer creation in children.
+  // Broker for sync shared buffer creation on behalf of broker clients.
   std::unique_ptr<Broker> broker_;
 #endif
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)
   base::Lock mach_port_relay_lock_;
-  // Relay for transferring mach ports to/from children.
+  // Relay for transferring mach ports to/from broker clients.
   std::unique_ptr<MachPortRelay> mach_port_relay_;
 #endif
 

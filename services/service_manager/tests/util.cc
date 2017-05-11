@@ -15,6 +15,7 @@
 #include "base/process/process.h"
 #include "base/run_loop.h"
 #include "mojo/edk/embedder/embedder.h"
+#include "mojo/edk/embedder/outgoing_broker_client_invitation.h"
 #include "mojo/edk/embedder/platform_channel_pair.h"
 #include "mojo/edk/embedder/scoped_platform_handle.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -61,10 +62,9 @@ mojom::ConnectResult LaunchAndConnectToProcess(
   platform_channel_pair.PrepareToPassClientHandleToChildProcess(
       &child_command_line, &handle_passing_info);
 
-  mojo::edk::PendingProcessConnection pending_process;
-  std::string token;
-  mojo::ScopedMessagePipeHandle pipe =
-      pending_process.CreateMessagePipe(&token);
+  mojo::edk::OutgoingBrokerClientInvitation invitation;
+  std::string token = mojo::edk::GenerateRandomToken();
+  mojo::ScopedMessagePipeHandle pipe = invitation.AttachMessagePipe(token);
   child_command_line.AppendSwitchASCII(switches::kServicePipeToken, token);
 
   service_manager::mojom::ServicePtr client;
@@ -93,7 +93,7 @@ mojom::ConnectResult LaunchAndConnectToProcess(
   *process = base::LaunchProcess(child_command_line, options);
   DCHECK(process->IsValid());
   receiver->SetPID(process->Pid());
-  pending_process.Connect(
+  invitation.Send(
       process->Handle(),
       mojo::edk::ConnectionParams(platform_channel_pair.PassServerHandle()));
   return result;

@@ -14,7 +14,7 @@
 #include "base/process/process_handle.h"
 #include "base/sequenced_task_runner.h"
 #include "content/common/content_export.h"
-#include "mojo/edk/embedder/pending_process_connection.h"
+#include "mojo/edk/embedder/outgoing_broker_client_invitation.h"
 #include "services/service_manager/public/cpp/identity.h"
 #include "services/service_manager/public/interfaces/connector.mojom.h"
 
@@ -35,7 +35,7 @@ class CONTENT_EXPORT ChildConnection {
   // service name. |connector| is the connector to use to establish the
   // connection.
   ChildConnection(const service_manager::Identity& child_identity,
-                  mojo::edk::PendingProcessConnection* process_connection,
+                  mojo::edk::OutgoingBrokerClientInvitation* invitation,
                   service_manager::Connector* connector,
                   scoped_refptr<base::SequencedTaskRunner> io_task_runner);
   ~ChildConnection();

@@ -15,7 +15,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/process/process.h"
 #include "base/synchronization/waitable_event.h"
-#include "mojo/edk/embedder/pending_process_connection.h"
+#include "mojo/edk/embedder/outgoing_broker_client_invitation.h"
 #include "mojo/edk/embedder/platform_channel_pair.h"
 #include "services/service_manager/public/interfaces/service_factory.mojom.h"
 
@@ -84,7 +84,7 @@ class ServiceProcessLauncher {
   // Used to initialize the Mojo IPC channel between parent and child.
   std::unique_ptr<mojo::edk::PlatformChannelPair> mojo_ipc_channel_;
   mojo::edk::HandlePassingInformation handle_passing_info_;
-  mojo::edk::PendingProcessConnection process_connection_;
+  mojo::edk::OutgoingBrokerClientInvitation broker_client_invitation_;
 
   // Since Start() calls a method on another thread, we use an event to block
   // the main thread if it tries to destruct |this| while launching the process.

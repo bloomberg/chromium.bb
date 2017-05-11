@@ -48,6 +48,7 @@ static_library("browser") {
 
   public_deps = [
     "//ipc",
+    "//services/service_manager/public/interfaces",
   ]
 
   data_deps = []

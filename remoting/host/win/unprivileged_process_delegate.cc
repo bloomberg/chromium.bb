@@ -26,7 +26,7 @@
 #include "ipc/ipc_channel_proxy.h"
 #include "ipc/ipc_message.h"
 #include "mojo/edk/embedder/embedder.h"
-#include "mojo/edk/embedder/pending_process_connection.h"
+#include "mojo/edk/embedder/outgoing_broker_client_invitation.h"
 #include "mojo/edk/embedder/platform_channel_pair.h"
 #include "remoting/base/typed_buffer.h"
 #include "remoting/host/switches.h"
@@ -284,10 +284,10 @@ void UnprivilegedProcessDelegate::LaunchProcess(
     return;
   }
 
-  mojo::edk::PendingProcessConnection process;
-  std::string mojo_message_pipe_token;
+  mojo::edk::OutgoingBrokerClientInvitation invitation;
+  std::string mojo_message_pipe_token = mojo::edk::GenerateRandomToken();
   std::unique_ptr<IPC::ChannelProxy> server = IPC::ChannelProxy::Create(
-      process.CreateMessagePipe(&mojo_message_pipe_token).release(),
+      invitation.AttachMessagePipe(mojo_message_pipe_token).release(),
       IPC::Channel::MODE_SERVER, this, io_task_runner_);
   base::CommandLine command_line(target_command_->argv());
   command_line.AppendSwitchASCII(kMojoPipeToken, mojo_message_pipe_token);
@@ -311,7 +311,7 @@ void UnprivilegedProcessDelegate::LaunchProcess(
     ReportFatalError();
     return;
   }
-  process.Connect(worker_process.Get(),
+  invitation.Send(worker_process.Get(),
                   mojo::edk::ConnectionParams(mojo_channel.PassServerHandle()));
 
   channel_ = std::move(server);

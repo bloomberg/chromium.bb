@@ -14,6 +14,7 @@
 #include "content/common/content_export.h"
 #include "content/public/common/process_type.h"
 #include "ipc/ipc_sender.h"
+#include "services/service_manager/public/interfaces/service.mojom.h"
 
 #if defined(OS_MACOSX)
 #include "base/process/port_provider_mac.h"
@@ -92,8 +93,12 @@ class CONTENT_EXPORT BrowserChildProcessHost : public IPC::Sender {
   // this object.
   virtual void SetHandle(base::ProcessHandle handle) = 0;
 
-  // Returns the child message pipe token for the service request.
-  virtual std::string GetServiceRequestChannelToken() = 0;
+  // Takes the ServiceRequest pipe away from this host. Use this only if you
+  // intend to forego process launch and use the ServiceRequest in-process
+  // instead. Calling Launch() after this is called will result in the child
+  // process having no Service Manager connection.
+  virtual service_manager::mojom::ServiceRequest
+  TakeInProcessServiceRequest() = 0;
 
 #if defined(OS_MACOSX)
   // Returns a PortProvider used to get the task port for child processes.

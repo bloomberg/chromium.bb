@@ -10,6 +10,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/single_thread_task_runner.h"
 #include "content/common/content_export.h"
+#include "mojo/edk/embedder/outgoing_broker_client_invitation.h"
 
 namespace content {
 
@@ -20,6 +21,7 @@ class CONTENT_EXPORT InProcessChildThreadParams {
  public:
   InProcessChildThreadParams(
       scoped_refptr<base::SingleThreadTaskRunner> io_runner,
+      mojo::edk::OutgoingBrokerClientInvitation* broker_client_invitation,
       const std::string& service_request_token);
   InProcessChildThreadParams(const InProcessChildThreadParams& other);
   ~InProcessChildThreadParams();
@@ -27,12 +29,18 @@ class CONTENT_EXPORT InProcessChildThreadParams {
   scoped_refptr<base::SingleThreadTaskRunner> io_runner() const {
     return io_runner_;
   }
+
+  mojo::edk::OutgoingBrokerClientInvitation* broker_client_invitation() const {
+    return broker_client_invitation_;
+  }
+
   const std::string& service_request_token() const {
     return service_request_token_;
   }
 
  private:
   scoped_refptr<base::SingleThreadTaskRunner> io_runner_;
+  mojo::edk::OutgoingBrokerClientInvitation* const broker_client_invitation_;
   std::string service_request_token_;
 };
 

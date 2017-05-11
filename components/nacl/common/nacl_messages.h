@@ -14,7 +14,9 @@
 #include "components/nacl/common/nacl_types_param_traits.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_message_macros.h"
+#include "ipc/ipc_mojo_param_traits.h"
 #include "ipc/ipc_platform_file.h"
+#include "mojo/public/cpp/system/message_pipe.h"
 
 #define IPC_MESSAGE_START NaClMsgStart
 
@@ -61,12 +63,13 @@ IPC_MESSAGE_CONTROL1(NaClProcessMsg_Start,
 
 #if defined(OS_WIN)
 // Tells the NaCl broker to launch a NaCl loader process.
-IPC_MESSAGE_CONTROL1(NaClProcessMsg_LaunchLoaderThroughBroker,
-                     std::string /* channel ID for the loader */)
+IPC_MESSAGE_CONTROL2(NaClProcessMsg_LaunchLoaderThroughBroker,
+                     int, /* launch_id */
+                     mojo::MessagePipeHandle /* service_request_pipe */)
 
 // Notify the browser process that the loader was launched successfully.
 IPC_MESSAGE_CONTROL2(NaClProcessMsg_LoaderLaunched,
-                     std::string,  /* channel ID for the loader */
+                     int, /* launch_id */
                      base::ProcessHandle /* loader process handle */)
 
 // Tells the NaCl broker to attach a debug exception handler to the

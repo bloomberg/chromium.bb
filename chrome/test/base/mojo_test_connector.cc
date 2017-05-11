@@ -19,7 +19,7 @@
 #include "content/public/common/service_names.mojom.h"
 #include "content/public/test/test_launcher.h"
 #include "mojo/edk/embedder/embedder.h"
-#include "mojo/edk/embedder/pending_process_connection.h"
+#include "mojo/edk/embedder/outgoing_broker_client_invitation.h"
 #include "mojo/edk/embedder/platform_channel_pair.h"
 #include "mojo/edk/embedder/scoped_ipc_support.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
@@ -74,7 +74,7 @@ class MojoTestState : public content::TestState {
     // Create the pipe token, as it must be passed to children processes via the
     // command line.
     service_ = service_manager::PassServiceRequestOnCommandLine(
-        &process_connection_, command_line);
+        &broker_client_invitation_, command_line);
   }
 
   ~MojoTestState() override {}
@@ -84,7 +84,7 @@ class MojoTestState : public content::TestState {
   void ChildProcessLaunched(base::ProcessHandle handle,
                             base::ProcessId pid) override {
     platform_channel_->ChildProcessLaunched();
-    process_connection_.Connect(
+    broker_client_invitation_.Send(
         handle,
         mojo::edk::ConnectionParams(platform_channel_->PassServerHandle()));
 
@@ -111,7 +111,7 @@ class MojoTestState : public content::TestState {
     std::move(on_process_launched_).Run();
   }
 
-  mojo::edk::PendingProcessConnection process_connection_;
+  mojo::edk::OutgoingBrokerClientInvitation broker_client_invitation_;
   service_manager::BackgroundServiceManager* const background_service_manager_;
 
   // The ServicePtr must be created before child process launch so that the pipe

@@ -120,10 +120,11 @@ void ChildProcessHostImpl::ForceShutdown() {
 }
 
 std::string ChildProcessHostImpl::CreateChannelMojo(
-    mojo::edk::PendingProcessConnection* connection) {
+    mojo::edk::OutgoingBrokerClientInvitation* invitation) {
   DCHECK(channel_id_.empty());
+  channel_id_ = mojo::edk::GenerateRandomToken();
   channel_ =
-      IPC::ChannelMojo::Create(connection->CreateMessagePipe(&channel_id_),
+      IPC::ChannelMojo::Create(invitation->AttachMessagePipe(channel_id_),
                                IPC::Channel::MODE_SERVER, this);
   if (!channel_ || !InitChannel())
     return std::string();

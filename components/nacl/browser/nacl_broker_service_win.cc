@@ -34,9 +34,10 @@ bool NaClBrokerService::StartBroker() {
 
 bool NaClBrokerService::LaunchLoader(
     base::WeakPtr<nacl::NaClProcessHost> nacl_process_host,
-    const std::string& loader_channel_id) {
+    service_manager::mojom::ServiceRequest service_request) {
   // Add task to the list
-  pending_launches_[loader_channel_id] = nacl_process_host;
+  int launch_id = ++next_launch_id_;
+  pending_launches_[launch_id] = nacl_process_host;
   NaClBrokerHost* broker_host = GetBrokerHost();
 
   if (!broker_host) {
@@ -44,16 +45,18 @@ bool NaClBrokerService::LaunchLoader(
       return false;
     broker_host = GetBrokerHost();
   }
-  broker_host->LaunchLoader(loader_channel_id);
+  broker_host->LaunchLoader(launch_id, std::move(service_request));
 
   return true;
 }
 
-void NaClBrokerService::OnLoaderLaunched(const std::string& channel_id,
+void NaClBrokerService::OnLoaderLaunched(int launch_id,
                                          base::ProcessHandle handle) {
-  PendingLaunchesMap::iterator it = pending_launches_.find(channel_id);
-  if (pending_launches_.end() == it)
+  PendingLaunchesMap::iterator it = pending_launches_.find(launch_id);
+  if (pending_launches_.end() == it) {
     NOTREACHED();
+    return;
+  }
 
   NaClProcessHost* client = it->second.get();
   if (client)

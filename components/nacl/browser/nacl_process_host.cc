@@ -551,7 +551,7 @@ bool NaClProcessHost::LaunchSelLdr() {
   if (RunningOnWOW64()) {
     if (!NaClBrokerService::GetInstance()->LaunchLoader(
             weak_factory_.GetWeakPtr(),
-            process_->GetServiceRequestChannelToken())) {
+            process_->TakeInProcessServiceRequest())) {
       SendErrorToRenderer("broker service did not launch process");
       return false;
     }
