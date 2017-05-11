@@ -38,7 +38,6 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.AppHooks;
-import org.chromium.chrome.browser.childaccounts.ChildAccountService;
 import org.chromium.chrome.browser.preferences.ChromeBasePreference;
 import org.chromium.chrome.browser.preferences.ManagedPreferenceDelegate;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
@@ -117,6 +116,8 @@ public class AccountManagementFragment extends PreferenceFragment
 
     private ArrayList<Preference> mAccountsListPreferences = new ArrayList<Preference>();
 
+    private Profile mProfile;
+
     @Override
     public void onCreate(Bundle savedState) {
         super.onCreate(savedState);
@@ -133,6 +134,8 @@ public class AccountManagementFragment extends PreferenceFragment
             mGaiaServiceType =
                     getArguments().getInt(SHOW_GAIA_SERVICE_TYPE_EXTRA, mGaiaServiceType);
         }
+
+        mProfile = Profile.getLastUsedProfile();
 
         AccountManagementScreenHelper.logEvent(
                 ProfileAccountManagementMetrics.VIEW,
@@ -233,10 +236,8 @@ public class AccountManagementFragment extends PreferenceFragment
     }
 
     private void configureSignOutSwitch() {
-        boolean isChildAccount = ChildAccountService.isChildAccount();
-
         Preference signOutSwitch = findPreference(PREF_SIGN_OUT);
-        if (isChildAccount) {
+        if (mProfile.isChild()) {
             getPreferenceScreen().removePreference(signOutSwitch);
         } else {
             signOutSwitch.setEnabled(getSignOutAllowedPreferenceValue(getActivity()));
@@ -301,7 +302,7 @@ public class AccountManagementFragment extends PreferenceFragment
 
     private void configureGoogleActivityControls() {
         Preference pref = findPreference(PREF_GOOGLE_ACTIVITY_CONTROLS);
-        if (ChildAccountService.isChildAccount()) {
+        if (mProfile.isChild()) {
             pref.setSummary(R.string.sign_in_google_activity_controls_message_child_account);
         }
         pref.setOnPreferenceClickListener(new OnPreferenceClickListener() {
@@ -319,7 +320,7 @@ public class AccountManagementFragment extends PreferenceFragment
     private void configureAddAccountPreference() {
         ChromeBasePreference addAccount = (ChromeBasePreference) findPreference(PREF_ADD_ACCOUNT);
 
-        if (ChildAccountService.isChildAccount()) {
+        if (mProfile.isChild()) {
             getPreferenceScreen().removePreference(addAccount);
         } else {
             addAccount.setTitle(getResources().getString(
@@ -356,7 +357,7 @@ public class AccountManagementFragment extends PreferenceFragment
     private void configureChildAccountPreferences() {
         Preference parentAccounts = findPreference(PREF_PARENT_ACCOUNTS);
         Preference childContent = findPreference(PREF_CHILD_CONTENT);
-        if (ChildAccountService.isChildAccount()) {
+        if (mProfile.isChild()) {
             Resources res = getActivity().getResources();
             PrefServiceBridge prefService = PrefServiceBridge.getInstance();
 
@@ -423,7 +424,7 @@ public class AccountManagementFragment extends PreferenceFragment
             pref.setSelectable(false);
             pref.setTitle(account.name);
 
-            boolean isChildAccount = ChildAccountService.isChildAccount();
+            boolean isChildAccount = mProfile.isChild();
             pref.setUseReducedPadding(isChildAccount);
             pref.setIcon(new BitmapDrawable(getResources(),
                     isChildAccount ? getBadgedUserPicture(account.name, getResources()) :

@@ -104,6 +104,12 @@ jboolean ProfileAndroid::IsOffTheRecord(JNIEnv* env,
   return profile_->IsOffTheRecord();
 }
 
+jboolean ProfileAndroid::IsChild(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& obj) {
+  return profile_->IsChild();
+}
+
 // static
 ScopedJavaLocalRef<jobject> GetLastUsedProfile(
     JNIEnv* env,

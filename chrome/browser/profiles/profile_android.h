@@ -52,6 +52,10 @@ class ProfileAndroid : public base::SupportsUserData::Data {
   jboolean IsOffTheRecord(JNIEnv* env,
                           const base::android::JavaParamRef<jobject>& obj);
 
+  // Whether this profile is signed in to a child account.
+  jboolean IsChild(JNIEnv* env,
+                   const base::android::JavaParamRef<jobject>& obj);
+
   explicit ProfileAndroid(Profile* profile);
   ~ProfileAndroid() override;
 
