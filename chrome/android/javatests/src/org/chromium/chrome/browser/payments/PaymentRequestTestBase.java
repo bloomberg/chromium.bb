@@ -959,7 +959,7 @@ abstract class PaymentRequestTestBase extends ChromeActivityTestCaseBase<ChromeT
 
         @Override
         public void getInstruments(Map<String, PaymentMethodData> methodData, String origin,
-                String iframeOrigin, byte[][] certificateChain,
+                String iframeOrigin, byte[][] certificateChain, PaymentItem total,
                 InstrumentsCallback instrumentsCallback) {
             mCallback = instrumentsCallback;
             respond();

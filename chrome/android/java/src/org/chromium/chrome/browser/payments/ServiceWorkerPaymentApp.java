@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.payments;
 import android.os.Handler;
 
 import org.chromium.content_public.browser.WebContents;
+import org.chromium.payments.mojom.PaymentItem;
 import org.chromium.payments.mojom.PaymentMethodData;
 
 import java.util.ArrayList;
@@ -51,7 +52,7 @@ public class ServiceWorkerPaymentApp implements PaymentApp {
     @Override
     public void getInstruments(Map<String, PaymentMethodData> unusedMethodDataMap,
             String unusedOrigin, String unusedIFrameOrigin, byte[][] unusedCertificateChain,
-            final InstrumentsCallback callback) {
+            PaymentItem unusedTotal, final InstrumentsCallback callback) {
         final List<PaymentInstrument> instruments =
                 new ArrayList<PaymentInstrument>();
 

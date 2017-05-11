@@ -137,7 +137,7 @@ public class AndroidPaymentApp
 
     @Override
     public void getInstruments(Map<String, PaymentMethodData> methodDataMap, String origin,
-            String iframeOrigin, @Nullable byte[][] certificateChain,
+            String iframeOrigin, @Nullable byte[][] certificateChain, PaymentItem total,
             InstrumentsCallback callback) {
         assert mMethodNames.containsAll(methodDataMap.keySet());
         assert mInstrumentsCallback
@@ -167,8 +167,8 @@ public class AndroidPaymentApp
         };
 
         mIsReadyToPayIntent.putExtras(buildExtras(null /* id */, null /* merchantName */, origin,
-                iframeOrigin, certificateChain, methodDataMap, null /* total */,
-                null /* displayItems */, null /* modifiers */));
+                iframeOrigin, certificateChain, methodDataMap, total, null /* displayItems */,
+                null /* modifiers */));
         try {
             if (!ContextUtils.getApplicationContext().bindService(
                         mIsReadyToPayIntent, mServiceConnection, Context.BIND_AUTO_CREATE)) {
@@ -339,7 +339,7 @@ public class AndroidPaymentApp
 
     private static Bundle buildExtras(@Nullable String id, @Nullable String merchantName,
             String origin, String iframeOrigin, @Nullable byte[][] certificateChain,
-            Map<String, PaymentMethodData> methodDataMap, @Nullable PaymentItem total,
+            Map<String, PaymentMethodData> methodDataMap, PaymentItem total,
             @Nullable List<PaymentItem> displayItems,
             @Nullable Map<String, PaymentDetailsModifier> modifiers) {
         Bundle extras = new Bundle();
@@ -369,11 +369,9 @@ public class AndroidPaymentApp
         }
         extras.putParcelable(EXTRA_METHOD_DATA, methodDataBundle);
 
-        if (total != null) {
-            String serializedTotalAmount = serializeTotalAmount(total.amount);
-            extras.putString(EXTRA_TOTAL,
-                    serializedTotalAmount == null ? EMPTY_JSON_DATA : serializedTotalAmount);
-        }
+        String serializedTotalAmount = serializeTotalAmount(total.amount);
+        extras.putString(EXTRA_TOTAL,
+                serializedTotalAmount == null ? EMPTY_JSON_DATA : serializedTotalAmount);
 
         return addDeprecatedExtras(id, origin, iframeOrigin, serializedCertificateChain,
                 methodDataMap, methodDataBundle, total, displayItems, extras);
@@ -382,7 +380,7 @@ public class AndroidPaymentApp
     private static Bundle addDeprecatedExtras(@Nullable String id, String origin,
             String iframeOrigin, @Nullable Parcelable[] serializedCertificateChain,
             Map<String, PaymentMethodData> methodDataMap, Bundle methodDataBundle,
-            @Nullable PaymentItem total, @Nullable List<PaymentItem> displayItems, Bundle extras) {
+            PaymentItem total, @Nullable List<PaymentItem> displayItems, Bundle extras) {
         if (id != null) extras.putString(EXTRA_DEPRECATED_ID, id);
 
         extras.putString(EXTRA_DEPRECATED_ORIGIN, origin);
@@ -403,10 +401,8 @@ public class AndroidPaymentApp
 
         extras.putParcelable(EXTRA_DEPRECATED_DATA_MAP, methodDataBundle);
 
-        if (total != null) {
-            String details = serializeDetails(total, displayItems);
-            extras.putString(EXTRA_DEPRECATED_DETAILS, details == null ? EMPTY_JSON_DATA : details);
-        }
+        String details = serializeDetails(total, displayItems);
+        extras.putString(EXTRA_DEPRECATED_DETAILS, details == null ? EMPTY_JSON_DATA : details);
 
         return extras;
     }
