@@ -14,6 +14,7 @@ import org.chromium.base.Callback;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
+import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.AppHooks;
 import org.chromium.chrome.browser.ChromeFeatureList;
@@ -87,6 +88,7 @@ public class LocaleManager {
     /**
      * @return An instance of the {@link LocaleManager}. This should only be called on UI thread.
      */
+    @CalledByNative
     public static LocaleManager getInstance() {
         assert ThreadUtils.runningOnUiThread();
         if (sInstance == null) {
@@ -271,6 +273,14 @@ public class LocaleManager {
             return SEARCH_ENGINE_PROMO_DONT_SHOW;
         }
         return SEARCH_ENGINE_PROMO_SHOW_SOGOU;
+    }
+
+    /**
+     * @return The referral ID to be passed when searching with Yandex as the DSE.
+     */
+    @CalledByNative
+    protected String getYandexReferralId() {
+        return "";
     }
 
     /**
