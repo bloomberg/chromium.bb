@@ -311,19 +311,19 @@ ContentDistributionType ComputedStyle::ResolvedAlignContentDistribution(
 
 void ComputedStyle::InheritFrom(const ComputedStyle& inherit_parent,
                                 IsAtShadowBoundary is_at_shadow_boundary) {
+  EUserModify current_user_modify = UserModify();
+
   ComputedStyleBase::InheritFrom(inherit_parent, is_at_shadow_boundary);
-  if (is_at_shadow_boundary == kAtShadowBoundary) {
-    // Even if surrounding content is user-editable, shadow DOM should act as a
-    // single unit, and not necessarily be editable
-    EUserModify current_user_modify = UserModify();
-    rare_inherited_data_ = inherit_parent.rare_inherited_data_;
-    SetUserModify(current_user_modify);
-  } else {
-    rare_inherited_data_ = inherit_parent.rare_inherited_data_;
-  }
+  rare_inherited_data_ = inherit_parent.rare_inherited_data_;
   inherited_data_ = inherit_parent.inherited_data_;
   if (svg_style_ != inherit_parent.svg_style_)
     svg_style_.Access()->InheritFrom(inherit_parent.svg_style_.Get());
+
+  if (is_at_shadow_boundary == kAtShadowBoundary) {
+    // Even if surrounding content is user-editable, shadow DOM should act as a
+    // single unit, and not necessarily be editable
+    SetUserModify(current_user_modify);
+  }
 }
 
 void ComputedStyle::CopyNonInheritedFromCached(const ComputedStyle& other) {
