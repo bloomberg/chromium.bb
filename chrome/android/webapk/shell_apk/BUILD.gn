@@ -105,6 +105,9 @@ manifest_processor_template("shell_apk_manifest_javatests") {
 android_resources("shell_apk_resources") {
   resource_dirs = [ "res" ]
   custom_package = "org.chromium.webapk.shell_apk"
+  deps = [
+    ":webapk_strings_grd",
+  ]
 }
 
 android_library("webapk_java") {
@@ -150,6 +153,57 @@ template("webapk_tmpl") {
       ]
     }
   }
+}
+
+java_strings_grd("webapk_strings_grd") {
+  grd_file = "//chrome/android/webapk/strings/android_webapk_strings.grd"
+
+  outputs = [
+    "values-am/android_webapk_strings.xml",
+    "values-ar/android_webapk_strings.xml",
+    "values-bg/android_webapk_strings.xml",
+    "values-ca/android_webapk_strings.xml",
+    "values-cs/android_webapk_strings.xml",
+    "values-da/android_webapk_strings.xml",
+    "values-de/android_webapk_strings.xml",
+    "values-el/android_webapk_strings.xml",
+    "values/android_webapk_strings.xml",
+    "values-en-rGB/android_webapk_strings.xml",
+    "values-es/android_webapk_strings.xml",
+    "values-es-rUS/android_webapk_strings.xml",
+    "values-fa/android_webapk_strings.xml",
+    "values-fi/android_webapk_strings.xml",
+    "values-tl/android_webapk_strings.xml",
+    "values-fr/android_webapk_strings.xml",
+    "values-hi/android_webapk_strings.xml",
+    "values-hr/android_webapk_strings.xml",
+    "values-hu/android_webapk_strings.xml",
+    "values-in/android_webapk_strings.xml",
+    "values-it/android_webapk_strings.xml",
+    "values-iw/android_webapk_strings.xml",
+    "values-ja/android_webapk_strings.xml",
+    "values-ko/android_webapk_strings.xml",
+    "values-lt/android_webapk_strings.xml",
+    "values-lv/android_webapk_strings.xml",
+    "values-nl/android_webapk_strings.xml",
+    "values-nb/android_webapk_strings.xml",
+    "values-pl/android_webapk_strings.xml",
+    "values-pt-rBR/android_webapk_strings.xml",
+    "values-pt-rPT/android_webapk_strings.xml",
+    "values-ro/android_webapk_strings.xml",
+    "values-ru/android_webapk_strings.xml",
+    "values-sk/android_webapk_strings.xml",
+    "values-sl/android_webapk_strings.xml",
+    "values-sr/android_webapk_strings.xml",
+    "values-sv/android_webapk_strings.xml",
+    "values-sw/android_webapk_strings.xml",
+    "values-th/android_webapk_strings.xml",
+    "values-tr/android_webapk_strings.xml",
+    "values-uk/android_webapk_strings.xml",
+    "values-vi/android_webapk_strings.xml",
+    "values-zh-rCN/android_webapk_strings.xml",
+    "values-zh-rTW/android_webapk_strings.xml",
+  ]
 }
 
 # Template for WebAPK. When a WebAPK is generated:

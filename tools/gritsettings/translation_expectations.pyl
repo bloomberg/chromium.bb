@@ -57,6 +57,7 @@
     "files": [
       "android_webview/java/strings/android_webview_strings.grd",
       "chrome/android/java/strings/android_chrome_strings.grd",
+      "chrome/android/webapk/strings/android_webapk_strings.grd",
       "content/public/android/java/strings/android_content_strings.grd",
       "ui/android/java/strings/android_ui_strings.grd",
     ],
