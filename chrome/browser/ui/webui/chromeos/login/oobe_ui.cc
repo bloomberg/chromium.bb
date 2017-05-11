@@ -51,6 +51,7 @@
 #include "chrome/browser/ui/webui/chromeos/login/network_dropdown_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/network_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/network_state_informer.h"
+#include "chrome/browser/ui/webui/chromeos/login/oobe_display_chooser.h"
 #include "chrome/browser/ui/webui/chromeos/login/reset_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/supervised_user_creation_screen_handler.h"
@@ -78,6 +79,9 @@
 #include "content/public/common/content_switches.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/webui/web_ui_util.h"
+#include "ui/display/display.h"
+#include "ui/events/devices/input_device.h"
+#include "ui/events/devices/input_device_manager.h"
 
 namespace chromeos {
 
@@ -205,6 +209,19 @@ std::string GetDisplayType(const GURL& url) {
     return OobeUI::kLoginDisplay;
   }
   return path;
+}
+
+bool IsKeyboardConnected() {
+  const std::vector<ui::InputDevice>& keyboards =
+      ui::InputDeviceManager::GetInstance()->GetKeyboardDevices();
+  for (const ui::InputDevice& keyboard : keyboards) {
+    if (keyboard.type == ui::INPUT_DEVICE_INTERNAL ||
+        keyboard.type == ui::INPUT_DEVICE_EXTERNAL) {
+      return true;
+    }
+  }
+
+  return false;
 }
 
 }  // namespace
@@ -337,6 +354,11 @@ OobeUI::OobeUI(content::WebUI* web_ui, const GURL& url)
   // TabHelper is required for OOBE webui to make webview working on it.
   content::WebContents* contents = web_ui->GetWebContents();
   extensions::TabHelper::CreateForWebContents(contents);
+
+  // TODO(felixe): Display iteration and primary display selection not supported
+  // in Mash. See http://crbug.com/720917.
+  if (!ash_util::IsRunningInMash() && !IsKeyboardConnected())
+    oobe_display_chooser_ = base::MakeUnique<OobeDisplayChooser>();
 }
 
 OobeUI::~OobeUI() {
@@ -560,6 +582,9 @@ bool OobeUI::IsJSReady(const base::Closure& display_is_ready_callback) {
 
 void OobeUI::ShowOobeUI(bool show) {
   core_handler_->ShowOobeUI(show);
+
+  if (show && oobe_display_chooser_)
+    oobe_display_chooser_->TryToPlaceUiOnTouchDisplay();
 }
 
 void OobeUI::ShowSigninScreen(const LoginScreenContext& context,
@@ -606,6 +631,11 @@ void OobeUI::UpdateLocalizedStringsIfNeeded() {
   base::DictionaryValue localized_strings;
   GetLocalizedStrings(&localized_strings);
   static_cast<CoreOobeView*>(core_handler_)->ReloadContent(localized_strings);
+}
+
+void OobeUI::OnDisplayConfigurationChanged() {
+  if (oobe_display_chooser_)
+    oobe_display_chooser_->TryToPlaceUiOnTouchDisplay();
 }
 
 }  // namespace chromeos
