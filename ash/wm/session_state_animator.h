@@ -143,7 +143,7 @@ class ASH_EXPORT SessionStateAnimator {
    protected:
     // AnimationSequence should not be instantiated directly, only through
     // subclasses.
-    explicit AnimationSequence(base::Closure callback);
+    explicit AnimationSequence(base::OnceClosure callback);
 
     // Subclasses should call this when the contained animations completed
     // successfully.
@@ -174,7 +174,7 @@ class ASH_EXPORT SessionStateAnimator {
     bool invoke_callback_;
 
     // Callback to be called.
-    base::Closure callback_;
+    base::OnceClosure callback_;
 
     DISALLOW_COPY_AND_ASSIGN(AnimationSequence);
   };
@@ -197,12 +197,13 @@ class ASH_EXPORT SessionStateAnimator {
   virtual void StartAnimationWithCallback(int container_mask,
                                           AnimationType type,
                                           AnimationSpeed speed,
-                                          base::Closure callback) = 0;
+                                          base::OnceClosure callback) = 0;
 
   // Begins an animation sequence.  Use this when you need to be notified when
   // a group of animations are completed.  See AnimationSequence documentation
   // for more details.
-  virtual AnimationSequence* BeginAnimationSequence(base::Closure callback) = 0;
+  virtual AnimationSequence* BeginAnimationSequence(
+      base::OnceClosure callback) = 0;
 
   // Retruns true if the wallpaper is hidden.
   virtual bool IsWallpaperHidden() const = 0;

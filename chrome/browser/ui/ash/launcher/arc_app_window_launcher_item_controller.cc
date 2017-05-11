@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/ash/launcher/arc_app_window_launcher_item_controller.h"
 
+#include <utility>
+
 #include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
@@ -37,20 +39,20 @@ void ArcAppWindowLauncherItemController::ItemSelected(
     std::unique_ptr<ui::Event> event,
     int64_t display_id,
     ash::ShelfLaunchSource source,
-    const ItemSelectedCallback& callback) {
+    ItemSelectedCallback callback) {
   if (window_count()) {
     AppWindowLauncherItemController::ItemSelected(std::move(event), display_id,
-                                                  source, callback);
+                                                  source, std::move(callback));
     return;
   }
 
   if (task_ids_.empty()) {
     NOTREACHED();
-    callback.Run(ash::SHELF_ACTION_NONE, base::nullopt);
+    std::move(callback).Run(ash::SHELF_ACTION_NONE, base::nullopt);
     return;
   }
   arc::SetTaskActive(*task_ids_.begin());
-  callback.Run(ash::SHELF_ACTION_NEW_WINDOW_CREATED, base::nullopt);
+  std::move(callback).Run(ash::SHELF_ACTION_NEW_WINDOW_CREATED, base::nullopt);
 }
 
 void ArcAppWindowLauncherItemController::ExecuteCommand(uint32_t command_id,

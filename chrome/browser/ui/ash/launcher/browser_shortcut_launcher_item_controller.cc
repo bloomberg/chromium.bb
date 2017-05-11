@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/ash/launcher/browser_shortcut_launcher_item_controller.h"
 
 #include <limits>
+#include <utility>
 #include <vector>
 
 #include "ash/public/cpp/window_properties.h"
@@ -183,10 +184,11 @@ void BrowserShortcutLauncherItemController::ItemSelected(
     std::unique_ptr<ui::Event> event,
     int64_t display_id,
     ash::ShelfLaunchSource source,
-    const ItemSelectedCallback& callback) {
+    ItemSelectedCallback callback) {
   if (event && (event->flags() & ui::EF_CONTROL_DOWN)) {
     chrome::NewEmptyWindow(ChromeLauncherController::instance()->profile());
-    callback.Run(ash::SHELF_ACTION_NEW_WINDOW_CREATED, base::nullopt);
+    std::move(callback).Run(ash::SHELF_ACTION_NEW_WINDOW_CREATED,
+                            base::nullopt);
     return;
   }
 
@@ -196,7 +198,7 @@ void BrowserShortcutLauncherItemController::ItemSelected(
   // In case of a keyboard event, we were called by a hotkey. In that case we
   // activate the next item in line if an item of our list is already active.
   if (event && event->type() == ui::ET_KEY_RELEASED) {
-    callback.Run(ActivateOrAdvanceToNextBrowser(), std::move(items));
+    std::move(callback).Run(ActivateOrAdvanceToNextBrowser(), std::move(items));
     return;
   }
 
@@ -205,14 +207,15 @@ void BrowserShortcutLauncherItemController::ItemSelected(
 
   if (!last_browser) {
     chrome::NewEmptyWindow(profile);
-    callback.Run(ash::SHELF_ACTION_NEW_WINDOW_CREATED, base::nullopt);
+    std::move(callback).Run(ash::SHELF_ACTION_NEW_WINDOW_CREATED,
+                            base::nullopt);
     return;
   }
 
   ash::ShelfAction action =
       ChromeLauncherController::instance()->ActivateWindowOrMinimizeIfActive(
           last_browser->window(), items.size() == 1);
-  callback.Run(action, std::move(items));
+  std::move(callback).Run(action, std::move(items));
 }
 
 ash::MenuItemList BrowserShortcutLauncherItemController::GetAppMenuItems(

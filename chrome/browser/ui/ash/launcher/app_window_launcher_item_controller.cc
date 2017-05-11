@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/ash/launcher/app_window_launcher_item_controller.h"
 
 #include <algorithm>
+#include <utility>
 
 #include "ash/wm/window_util.h"
 #include "base/memory/ptr_util.h"
@@ -75,9 +76,9 @@ void AppWindowLauncherItemController::ItemSelected(
     std::unique_ptr<ui::Event> event,
     int64_t display_id,
     ash::ShelfLaunchSource source,
-    const ItemSelectedCallback& callback) {
+    ItemSelectedCallback callback) {
   if (windows_.empty()) {
-    callback.Run(ash::SHELF_ACTION_NONE, base::nullopt);
+    std::move(callback).Run(ash::SHELF_ACTION_NONE, base::nullopt);
     return;
   }
 
@@ -93,7 +94,8 @@ void AppWindowLauncherItemController::ItemSelected(
     action = ShowAndActivateOrMinimize(window_to_show);
   }
 
-  callback.Run(action, GetAppMenuItems(event ? event->flags() : ui::EF_NONE));
+  std::move(callback).Run(
+      action, GetAppMenuItems(event ? event->flags() : ui::EF_NONE));
 }
 
 void AppWindowLauncherItemController::ExecuteCommand(uint32_t command_id,

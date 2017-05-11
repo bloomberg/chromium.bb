@@ -4,8 +4,10 @@
 
 #include "ash/test/test_session_state_animator.h"
 
+#include <utility>
 #include <vector>
 
+#include "base/barrier_closure.h"
 #include "base/bind.h"
 
 namespace ash {
@@ -33,8 +35,9 @@ const SessionStateAnimator::Container
 class TestSessionStateAnimator::AnimationSequence
     : public SessionStateAnimator::AnimationSequence {
  public:
-  AnimationSequence(base::Closure callback, TestSessionStateAnimator* animator)
-      : SessionStateAnimator::AnimationSequence(callback),
+  AnimationSequence(base::OnceClosure callback,
+                    TestSessionStateAnimator* animator)
+      : SessionStateAnimator::AnimationSequence(std::move(callback)),
         sequence_count_(0),
         sequence_aborted_(false),
         animator_(animator) {}
@@ -210,19 +213,30 @@ void TestSessionStateAnimator::StartAnimationWithCallback(
     int container_mask,
     AnimationType type,
     AnimationSpeed speed,
-    base::Closure callback) {
+    base::OnceClosure callback) {
   ++last_animation_epoch_;
-  for (size_t i = 0; i < arraysize(kAllContainers); ++i)
+
+  int container_count = 0;
+  for (size_t i = 0; i < arraysize(kAllContainers); ++i) {
+    if (container_mask & kAllContainers[i])
+      ++container_count;
+  }
+
+  base::RepeatingClosure completion_callback =
+      base::BarrierClosure(container_count, std::move(callback));
+  for (size_t i = 0; i < arraysize(kAllContainers); ++i) {
     if (container_mask & kAllContainers[i]) {
       // ash::SessionStateAnimatorImpl invokes the callback whether or not the
       // animation was completed successfully or not.
-      AddAnimation(kAllContainers[i], type, speed, callback, callback);
+      AddAnimation(kAllContainers[i], type, speed, completion_callback,
+                   completion_callback);
     }
+  }
 }
 
 ash::SessionStateAnimator::AnimationSequence*
-TestSessionStateAnimator::BeginAnimationSequence(base::Closure callback) {
-  return new AnimationSequence(callback, this);
+TestSessionStateAnimator::BeginAnimationSequence(base::OnceClosure callback) {
+  return new AnimationSequence(std::move(callback), this);
 }
 
 bool TestSessionStateAnimator::IsWallpaperHidden() const {

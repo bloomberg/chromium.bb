@@ -176,8 +176,8 @@ void LockStateController::RequestShutdown() {
   StartRealShutdownTimer(true);
 }
 
-void LockStateController::OnLockScreenHide(base::Closure callback) {
-  StartUnlockAnimationBeforeUIDestroyed(callback);
+void LockStateController::OnLockScreenHide(base::OnceClosure callback) {
+  StartUnlockAnimationBeforeUIDestroyed(std::move(callback));
 }
 
 void LockStateController::SetLockScreenDisplayedCallback(
@@ -419,12 +419,12 @@ void LockStateController::StartPostLockAnimation() {
 }
 
 void LockStateController::StartUnlockAnimationBeforeUIDestroyed(
-    base::Closure& callback) {
+    base::OnceClosure callback) {
   VLOG(1) << "StartUnlockAnimationBeforeUIDestroyed";
   animator_->StartAnimationWithCallback(
       SessionStateAnimator::LOCK_SCREEN_CONTAINERS,
       SessionStateAnimator::ANIMATION_LIFT,
-      SessionStateAnimator::ANIMATION_SPEED_MOVE_WINDOWS, callback);
+      SessionStateAnimator::ANIMATION_SPEED_MOVE_WINDOWS, std::move(callback));
 }
 
 void LockStateController::StartUnlockAnimationAfterUIDestroyed() {
