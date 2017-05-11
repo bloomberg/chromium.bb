@@ -290,7 +290,7 @@ void ServiceWorkerGlobalScopeProxy::DispatchFetchEvent(
   respond_with_observer->DidDispatchEvent(dispatch_result);
   // false is okay because waitUntil for fetch event doesn't care about the
   // promise rejection or an uncaught runtime script error.
-  wait_until_observer->DidDispatchEvent(false /* errorOccurred */);
+  wait_until_observer->DidDispatchEvent(false /* event_dispatch_failed */);
 }
 
 void ServiceWorkerGlobalScopeProxy::OnNavigationPreloadResponse(
@@ -383,7 +383,7 @@ void ServiceWorkerGlobalScopeProxy::DispatchForeignFetchEvent(
   respond_with_observer->DidDispatchEvent(dispatch_result);
   // false is okay because waitUntil for foreign fetch event doesn't care
   // about the promise rejection or an uncaught runtime script error.
-  wait_until_observer->DidDispatchEvent(false /* errorOccurred */);
+  wait_until_observer->DidDispatchEvent(false /* event_dispatch_failed */);
 }
 
 void ServiceWorkerGlobalScopeProxy::DispatchInstallEvent(int event_id) {
@@ -477,7 +477,7 @@ void ServiceWorkerGlobalScopeProxy::DispatchPaymentRequestEvent(
   respond_with_observer->DidDispatchEvent(dispatch_result);
   // false is okay because waitUntil for payment request event doesn't care
   // about the promise rejection or an uncaught runtime script error.
-  wait_until_observer->DidDispatchEvent(false /* errorOccurred */);
+  wait_until_observer->DidDispatchEvent(false /* event_dispatch_failed */);
 }
 
 bool ServiceWorkerGlobalScopeProxy::HasFetchEventHandler() {
