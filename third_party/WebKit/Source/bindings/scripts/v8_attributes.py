@@ -385,19 +385,20 @@ def is_keep_alive_for_gc(interface, attribute):
 
 def setter_context(interface, attribute, interfaces, context):
     if 'PutForwards' in attribute.extended_attributes:
-        # Use target interface and attribute in place of original interface and
-        # attribute from this point onwards.
+        # Make sure the target interface and attribute exist.
         target_interface_name = attribute.idl_type.base_type
         target_attribute_name = attribute.extended_attributes['PutForwards']
         interface = interfaces[target_interface_name]
         try:
-            attribute = next(candidate
-                             for candidate in interface.attributes
-                             if candidate.name == target_attribute_name)
+            next(candidate
+                 for candidate in interface.attributes
+                 if candidate.name == target_attribute_name)
         except StopIteration:
             raise Exception('[PutForward] target not found:\n'
                             'Attribute "%s" is not present in interface "%s"' %
                             (target_attribute_name, target_interface_name))
+        context['target_attribute_name'] = target_attribute_name
+        return
 
     if ('Replaceable' in attribute.extended_attributes):
         context['cpp_setter'] = (

@@ -71,6 +71,8 @@ static void nodeNameAttributeSetter(v8::Local<v8::Value> v8Value, const v8::Func
   ALLOW_UNUSED_LOCAL(isolate);
 
   v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
   TestInterfaceNode* impl = V8TestInterfaceNode::toImpl(holder);
 
   // Prepare the value to be set.
@@ -94,6 +96,8 @@ static void stringAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v
   ALLOW_UNUSED_LOCAL(isolate);
 
   v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
   TestInterfaceNode* impl = V8TestInterfaceNode::toImpl(holder);
 
   // Prepare the value to be set.
@@ -127,6 +131,8 @@ static void eventHandlerAttributeAttributeSetter(v8::Local<v8::Value> v8Value, c
   ALLOW_UNUSED_LOCAL(isolate);
 
   v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
   TestInterfaceNode* impl = V8TestInterfaceNode::toImpl(holder);
 
   // Prepare the value to be set.
@@ -163,6 +169,8 @@ static void reflectStringAttributeAttributeSetter(v8::Local<v8::Value> v8Value, 
   ALLOW_UNUSED_LOCAL(isolate);
 
   v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
   TestInterfaceNode* impl = V8TestInterfaceNode::toImpl(holder);
 
   // Prepare the value to be set.
@@ -186,6 +194,8 @@ static void reflectUrlStringAttributeAttributeSetter(v8::Local<v8::Value> v8Valu
   ALLOW_UNUSED_LOCAL(isolate);
 
   v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
   TestInterfaceNode* impl = V8TestInterfaceNode::toImpl(holder);
 
   // Prepare the value to be set.

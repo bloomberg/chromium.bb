@@ -68,6 +68,8 @@ static void typeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::Function
   ALLOW_UNUSED_LOCAL(isolate);
 
   v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
   SVGTestInterface* impl = V8SVGTestInterface::toImpl(holder);
 
   // Skip on compact node DOMString getters.

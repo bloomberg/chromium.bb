@@ -70,6 +70,8 @@ static void testInterfaceAttributeAttributeSetter(v8::Local<v8::Value> v8Value, 
   ALLOW_UNUSED_LOCAL(isolate);
 
   v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
   TestInterface5Implementation* impl = V8TestInterface5::toImpl(holder);
 
   ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestInterface5", "testInterfaceAttribute");
@@ -99,6 +101,8 @@ static void doubleAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v
   ALLOW_UNUSED_LOCAL(isolate);
 
   v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
   TestInterface5Implementation* impl = V8TestInterface5::toImpl(holder);
 
   ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestInterface5", "doubleAttribute");
@@ -124,6 +128,8 @@ static void floatAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8
   ALLOW_UNUSED_LOCAL(isolate);
 
   v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
   TestInterface5Implementation* impl = V8TestInterface5::toImpl(holder);
 
   ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestInterface5", "floatAttribute");
@@ -149,6 +155,8 @@ static void unrestrictedDoubleAttributeAttributeSetter(v8::Local<v8::Value> v8Va
   ALLOW_UNUSED_LOCAL(isolate);
 
   v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
   TestInterface5Implementation* impl = V8TestInterface5::toImpl(holder);
 
   ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestInterface5", "unrestrictedDoubleAttribute");
@@ -174,6 +182,8 @@ static void unrestrictedFloatAttributeAttributeSetter(v8::Local<v8::Value> v8Val
   ALLOW_UNUSED_LOCAL(isolate);
 
   v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
   TestInterface5Implementation* impl = V8TestInterface5::toImpl(holder);
 
   ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestInterface5", "unrestrictedFloatAttribute");
@@ -193,6 +203,9 @@ static void staticStringAttributeAttributeGetter(const v8::FunctionCallbackInfo<
 static void staticStringAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8::Isolate* isolate = info.GetIsolate();
   ALLOW_UNUSED_LOCAL(isolate);
+
+  v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
 
   // Prepare the value to be set.
   V8StringResource<> cppValue = v8Value;
@@ -223,6 +236,8 @@ static void alwaysExposedAttributeAttributeSetter(v8::Local<v8::Value> v8Value, 
   ALLOW_UNUSED_LOCAL(isolate);
 
   v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
   TestInterface5Implementation* impl = V8TestInterface5::toImpl(holder);
 
   ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestInterface5", "alwaysExposedAttribute");
@@ -248,6 +263,8 @@ static void workerExposedAttributeAttributeSetter(v8::Local<v8::Value> v8Value, 
   ALLOW_UNUSED_LOCAL(isolate);
 
   v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
   TestInterface5Implementation* impl = V8TestInterface5::toImpl(holder);
 
   ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestInterface5", "workerExposedAttribute");
@@ -273,6 +290,8 @@ static void windowExposedAttributeAttributeSetter(v8::Local<v8::Value> v8Value, 
   ALLOW_UNUSED_LOCAL(isolate);
 
   v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
   TestInterface5Implementation* impl = V8TestInterface5::toImpl(holder);
 
   ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestInterface5", "windowExposedAttribute");

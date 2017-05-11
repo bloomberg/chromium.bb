@@ -68,6 +68,8 @@ static void lengthAttributeSetter(v8::Local<v8::Value> v8Value, const v8::Functi
   ALLOW_UNUSED_LOCAL(isolate);
 
   v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
   TestIntegerIndexed* impl = V8TestIntegerIndexed::toImpl(holder);
 
   ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestIntegerIndexed", "length");

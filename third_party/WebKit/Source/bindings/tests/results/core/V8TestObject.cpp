@@ -124,6 +124,8 @@ static void stringifierAttributeAttributeSetter(v8::Local<v8::Value> v8Value, co
   ALLOW_UNUSED_LOCAL(isolate);
 
   v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
   TestObject* impl = V8TestObject::toImpl(holder);
 
   // Prepare the value to be set.
@@ -182,6 +184,8 @@ static void dateAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8:
   ALLOW_UNUSED_LOCAL(isolate);
 
   v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
   TestObject* impl = V8TestObject::toImpl(holder);
 
   ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestObject", "dateAttribute");
@@ -207,6 +211,8 @@ static void stringAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v
   ALLOW_UNUSED_LOCAL(isolate);
 
   v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
   TestObject* impl = V8TestObject::toImpl(holder);
 
   // Prepare the value to be set.
@@ -230,6 +236,8 @@ static void byteStringAttributeAttributeSetter(v8::Local<v8::Value> v8Value, con
   ALLOW_UNUSED_LOCAL(isolate);
 
   v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
   TestObject* impl = V8TestObject::toImpl(holder);
 
   ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestObject", "byteStringAttribute");
@@ -255,6 +263,8 @@ static void usvStringAttributeAttributeSetter(v8::Local<v8::Value> v8Value, cons
   ALLOW_UNUSED_LOCAL(isolate);
 
   v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
   TestObject* impl = V8TestObject::toImpl(holder);
 
   ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestObject", "usvStringAttribute");
@@ -280,6 +290,8 @@ static void domTimeStampAttributeAttributeSetter(v8::Local<v8::Value> v8Value, c
   ALLOW_UNUSED_LOCAL(isolate);
 
   v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
   TestObject* impl = V8TestObject::toImpl(holder);
 
   ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestObject", "domTimeStampAttribute");
@@ -305,6 +317,8 @@ static void booleanAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const 
   ALLOW_UNUSED_LOCAL(isolate);
 
   v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
   TestObject* impl = V8TestObject::toImpl(holder);
 
   ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestObject", "booleanAttribute");
@@ -330,6 +344,8 @@ static void byteAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8:
   ALLOW_UNUSED_LOCAL(isolate);
 
   v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
   TestObject* impl = V8TestObject::toImpl(holder);
 
   ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestObject", "byteAttribute");
@@ -355,6 +371,8 @@ static void doubleAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v
   ALLOW_UNUSED_LOCAL(isolate);
 
   v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
   TestObject* impl = V8TestObject::toImpl(holder);
 
   ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestObject", "doubleAttribute");
@@ -380,6 +398,8 @@ static void floatAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8
   ALLOW_UNUSED_LOCAL(isolate);
 
   v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
   TestObject* impl = V8TestObject::toImpl(holder);
 
   ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestObject", "floatAttribute");
@@ -405,6 +425,8 @@ static void longAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8:
   ALLOW_UNUSED_LOCAL(isolate);
 
   v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
   TestObject* impl = V8TestObject::toImpl(holder);
 
   ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestObject", "longAttribute");
@@ -430,6 +452,8 @@ static void longLongAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const
   ALLOW_UNUSED_LOCAL(isolate);
 
   v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
   TestObject* impl = V8TestObject::toImpl(holder);
 
   ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestObject", "longLongAttribute");
@@ -455,6 +479,8 @@ static void octetAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8
   ALLOW_UNUSED_LOCAL(isolate);
 
   v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
   TestObject* impl = V8TestObject::toImpl(holder);
 
   ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestObject", "octetAttribute");
@@ -480,6 +506,8 @@ static void shortAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8
   ALLOW_UNUSED_LOCAL(isolate);
 
   v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
   TestObject* impl = V8TestObject::toImpl(holder);
 
   ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestObject", "shortAttribute");
@@ -505,6 +533,8 @@ static void unrestrictedDoubleAttributeAttributeSetter(v8::Local<v8::Value> v8Va
   ALLOW_UNUSED_LOCAL(isolate);
 
   v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
   TestObject* impl = V8TestObject::toImpl(holder);
 
   ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestObject", "unrestrictedDoubleAttribute");
@@ -530,6 +560,8 @@ static void unrestrictedFloatAttributeAttributeSetter(v8::Local<v8::Value> v8Val
   ALLOW_UNUSED_LOCAL(isolate);
 
   v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
   TestObject* impl = V8TestObject::toImpl(holder);
 
   ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestObject", "unrestrictedFloatAttribute");
@@ -555,6 +587,8 @@ static void unsignedLongAttributeAttributeSetter(v8::Local<v8::Value> v8Value, c
   ALLOW_UNUSED_LOCAL(isolate);
 
   v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
   TestObject* impl = V8TestObject::toImpl(holder);
 
   ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestObject", "unsignedLongAttribute");
@@ -580,6 +614,8 @@ static void unsignedLongLongAttributeAttributeSetter(v8::Local<v8::Value> v8Valu
   ALLOW_UNUSED_LOCAL(isolate);
 
   v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
   TestObject* impl = V8TestObject::toImpl(holder);
 
   ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestObject", "unsignedLongLongAttribute");
@@ -605,6 +641,8 @@ static void unsignedShortAttributeAttributeSetter(v8::Local<v8::Value> v8Value, 
   ALLOW_UNUSED_LOCAL(isolate);
 
   v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
   TestObject* impl = V8TestObject::toImpl(holder);
 
   ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestObject", "unsignedShortAttribute");
@@ -630,6 +668,8 @@ static void testInterfaceEmptyAttributeAttributeSetter(v8::Local<v8::Value> v8Va
   ALLOW_UNUSED_LOCAL(isolate);
 
   v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
   TestObject* impl = V8TestObject::toImpl(holder);
 
   ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestObject", "testInterfaceEmptyAttribute");
@@ -659,6 +699,8 @@ static void testObjectAttributeAttributeSetter(v8::Local<v8::Value> v8Value, con
   ALLOW_UNUSED_LOCAL(isolate);
 
   v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
   TestObject* impl = V8TestObject::toImpl(holder);
 
   ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestObject", "testObjectAttribute");
@@ -688,6 +730,8 @@ static void cssAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::
   ALLOW_UNUSED_LOCAL(isolate);
 
   v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
   TestObject* impl = V8TestObject::toImpl(holder);
 
   ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestObject", "cssAttribute");
@@ -713,6 +757,8 @@ static void imeAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::
   ALLOW_UNUSED_LOCAL(isolate);
 
   v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
   TestObject* impl = V8TestObject::toImpl(holder);
 
   ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestObject", "imeAttribute");
@@ -738,6 +784,8 @@ static void svgAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::
   ALLOW_UNUSED_LOCAL(isolate);
 
   v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
   TestObject* impl = V8TestObject::toImpl(holder);
 
   ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestObject", "svgAttribute");
@@ -763,6 +811,8 @@ static void xmlAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::
   ALLOW_UNUSED_LOCAL(isolate);
 
   v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
   TestObject* impl = V8TestObject::toImpl(holder);
 
   ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestObject", "xmlAttribute");
@@ -788,6 +838,8 @@ static void nodeFilterAttributeAttributeSetter(v8::Local<v8::Value> v8Value, con
   ALLOW_UNUSED_LOCAL(isolate);
 
   v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
   TestObject* impl = V8TestObject::toImpl(holder);
 
   // Prepare the value to be set.
@@ -809,6 +861,8 @@ static void serializedScriptValueAttributeAttributeSetter(v8::Local<v8::Value> v
   ALLOW_UNUSED_LOCAL(isolate);
 
   v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
   TestObject* impl = V8TestObject::toImpl(holder);
 
   ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestObject", "serializedScriptValueAttribute");
@@ -834,6 +888,8 @@ static void anyAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::
   ALLOW_UNUSED_LOCAL(isolate);
 
   v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
   TestObject* impl = V8TestObject::toImpl(holder);
 
   // Prepare the value to be set.
@@ -855,6 +911,8 @@ static void promiseAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const 
   ALLOW_UNUSED_LOCAL(isolate);
 
   v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
   TestObject* impl = V8TestObject::toImpl(holder);
 
   // Prepare the value to be set.
@@ -876,6 +934,8 @@ static void windowAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v
   ALLOW_UNUSED_LOCAL(isolate);
 
   v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
   TestObject* impl = V8TestObject::toImpl(holder);
 
   ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestObject", "windowAttribute");
@@ -905,6 +965,8 @@ static void documentAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const
   ALLOW_UNUSED_LOCAL(isolate);
 
   v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
   TestObject* impl = V8TestObject::toImpl(holder);
 
   ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestObject", "documentAttribute");
@@ -934,6 +996,8 @@ static void documentFragmentAttributeAttributeSetter(v8::Local<v8::Value> v8Valu
   ALLOW_UNUSED_LOCAL(isolate);
 
   v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
   TestObject* impl = V8TestObject::toImpl(holder);
 
   ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestObject", "documentFragmentAttribute");
@@ -963,6 +1027,8 @@ static void documentTypeAttributeAttributeSetter(v8::Local<v8::Value> v8Value, c
   ALLOW_UNUSED_LOCAL(isolate);
 
   v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
   TestObject* impl = V8TestObject::toImpl(holder);
 
   ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestObject", "documentTypeAttribute");
@@ -992,6 +1058,8 @@ static void elementAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const 
   ALLOW_UNUSED_LOCAL(isolate);
 
   v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
   TestObject* impl = V8TestObject::toImpl(holder);
 
   ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestObject", "elementAttribute");
@@ -1021,6 +1089,8 @@ static void nodeAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8:
   ALLOW_UNUSED_LOCAL(isolate);
 
   v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
   TestObject* impl = V8TestObject::toImpl(holder);
 
   ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestObject", "nodeAttribute");
@@ -1050,6 +1120,8 @@ static void shadowRootAttributeAttributeSetter(v8::Local<v8::Value> v8Value, con
   ALLOW_UNUSED_LOCAL(isolate);
 
   v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
   TestObject* impl = V8TestObject::toImpl(holder);
 
   ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestObject", "shadowRootAttribute");
@@ -1079,6 +1151,8 @@ static void arrayBufferAttributeAttributeSetter(v8::Local<v8::Value> v8Value, co
   ALLOW_UNUSED_LOCAL(isolate);
 
   v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
   TestObject* impl = V8TestObject::toImpl(holder);
 
   ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestObject", "arrayBufferAttribute");
@@ -1108,6 +1182,8 @@ static void float32ArrayAttributeAttributeSetter(v8::Local<v8::Value> v8Value, c
   ALLOW_UNUSED_LOCAL(isolate);
 
   v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
   TestObject* impl = V8TestObject::toImpl(holder);
 
   ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestObject", "float32ArrayAttribute");
@@ -1139,6 +1215,8 @@ static void uint8ArrayAttributeAttributeSetter(v8::Local<v8::Value> v8Value, con
   ALLOW_UNUSED_LOCAL(isolate);
 
   v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
   TestObject* impl = V8TestObject::toImpl(holder);
 
   ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestObject", "uint8ArrayAttribute");
@@ -1218,6 +1296,8 @@ static void stringArrayAttributeAttributeSetter(v8::Local<v8::Value> v8Value, co
   ALLOW_UNUSED_LOCAL(isolate);
 
   v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
   TestObject* impl = V8TestObject::toImpl(holder);
 
   ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestObject", "stringArrayAttribute");
@@ -1243,6 +1323,8 @@ static void testInterfaceEmptyArrayAttributeAttributeSetter(v8::Local<v8::Value>
   ALLOW_UNUSED_LOCAL(isolate);
 
   v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
   TestObject* impl = V8TestObject::toImpl(holder);
 
   ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestObject", "testInterfaceEmptyArrayAttribute");
@@ -1268,6 +1350,8 @@ static void floatArrayAttributeAttributeSetter(v8::Local<v8::Value> v8Value, con
   ALLOW_UNUSED_LOCAL(isolate);
 
   v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
   TestObject* impl = V8TestObject::toImpl(holder);
 
   ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestObject", "floatArrayAttribute");
@@ -1293,6 +1377,8 @@ static void stringFrozenArrayAttributeAttributeSetter(v8::Local<v8::Value> v8Val
   ALLOW_UNUSED_LOCAL(isolate);
 
   v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
   TestObject* impl = V8TestObject::toImpl(holder);
 
   ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestObject", "stringFrozenArrayAttribute");
@@ -1318,6 +1404,8 @@ static void testInterfaceEmptyFrozenArrayAttributeAttributeSetter(v8::Local<v8::
   ALLOW_UNUSED_LOCAL(isolate);
 
   v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
   TestObject* impl = V8TestObject::toImpl(holder);
 
   ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestObject", "testInterfaceEmptyFrozenArrayAttribute");
@@ -1352,6 +1440,8 @@ static void booleanOrNullAttributeAttributeSetter(v8::Local<v8::Value> v8Value, 
   ALLOW_UNUSED_LOCAL(isolate);
 
   v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
   TestObject* impl = V8TestObject::toImpl(holder);
 
   ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestObject", "booleanOrNullAttribute");
@@ -1378,6 +1468,8 @@ static void stringOrNullAttributeAttributeSetter(v8::Local<v8::Value> v8Value, c
   ALLOW_UNUSED_LOCAL(isolate);
 
   v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
   TestObject* impl = V8TestObject::toImpl(holder);
 
   // Prepare the value to be set.
@@ -1410,6 +1502,8 @@ static void longOrNullAttributeAttributeSetter(v8::Local<v8::Value> v8Value, con
   ALLOW_UNUSED_LOCAL(isolate);
 
   v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
   TestObject* impl = V8TestObject::toImpl(holder);
 
   ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestObject", "longOrNullAttribute");
@@ -1436,6 +1530,8 @@ static void testInterfaceOrNullAttributeAttributeSetter(v8::Local<v8::Value> v8V
   ALLOW_UNUSED_LOCAL(isolate);
 
   v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
   TestObject* impl = V8TestObject::toImpl(holder);
 
   ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestObject", "testInterfaceOrNullAttribute");
@@ -1465,6 +1561,8 @@ static void testEnumAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const
   ALLOW_UNUSED_LOCAL(isolate);
 
   v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
   TestObject* impl = V8TestObject::toImpl(holder);
 
   ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestObject", "testEnumAttribute");
@@ -1504,6 +1602,8 @@ static void testEnumOrNullAttributeAttributeSetter(v8::Local<v8::Value> v8Value,
   ALLOW_UNUSED_LOCAL(isolate);
 
   v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
   TestObject* impl = V8TestObject::toImpl(holder);
 
   ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestObject", "testEnumOrNullAttribute");
@@ -1538,6 +1638,9 @@ static void staticStringAttributeAttributeSetter(v8::Local<v8::Value> v8Value, c
   v8::Isolate* isolate = info.GetIsolate();
   ALLOW_UNUSED_LOCAL(isolate);
 
+  v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
   // Prepare the value to be set.
   V8StringResource<> cppValue = v8Value;
   if (!cppValue.Prepare())
@@ -1553,6 +1656,9 @@ static void staticLongAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8
 static void staticLongAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8::Isolate* isolate = info.GetIsolate();
   ALLOW_UNUSED_LOCAL(isolate);
+
+  v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
 
   ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestObject", "staticLongAttribute");
 
@@ -1579,6 +1685,8 @@ static void eventHandlerAttributeAttributeSetter(v8::Local<v8::Value> v8Value, c
   ALLOW_UNUSED_LOCAL(isolate);
 
   v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
   TestObject* impl = V8TestObject::toImpl(holder);
 
   // Prepare the value to be set.
@@ -1603,6 +1711,8 @@ static void doubleOrStringAttributeAttributeSetter(v8::Local<v8::Value> v8Value,
   ALLOW_UNUSED_LOCAL(isolate);
 
   v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
   TestObject* impl = V8TestObject::toImpl(holder);
 
   ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestObject", "doubleOrStringAttribute");
@@ -1632,6 +1742,8 @@ static void doubleOrStringOrNullAttributeAttributeSetter(v8::Local<v8::Value> v8
   ALLOW_UNUSED_LOCAL(isolate);
 
   v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
   TestObject* impl = V8TestObject::toImpl(holder);
 
   ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestObject", "doubleOrStringOrNullAttribute");
@@ -1661,6 +1773,8 @@ static void doubleOrNullStringAttributeAttributeSetter(v8::Local<v8::Value> v8Va
   ALLOW_UNUSED_LOCAL(isolate);
 
   v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
   TestObject* impl = V8TestObject::toImpl(holder);
 
   ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestObject", "doubleOrNullStringAttribute");
@@ -1690,6 +1804,8 @@ static void stringOrStringSequenceAttributeAttributeSetter(v8::Local<v8::Value> 
   ALLOW_UNUSED_LOCAL(isolate);
 
   v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
   TestObject* impl = V8TestObject::toImpl(holder);
 
   ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestObject", "stringOrStringSequenceAttribute");
@@ -1719,6 +1835,8 @@ static void testEnumOrDoubleAttributeAttributeSetter(v8::Local<v8::Value> v8Valu
   ALLOW_UNUSED_LOCAL(isolate);
 
   v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
   TestObject* impl = V8TestObject::toImpl(holder);
 
   ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestObject", "testEnumOrDoubleAttribute");
@@ -1748,6 +1866,8 @@ static void unrestrictedDoubleOrStringAttributeAttributeSetter(v8::Local<v8::Val
   ALLOW_UNUSED_LOCAL(isolate);
 
   v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
   TestObject* impl = V8TestObject::toImpl(holder);
 
   ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestObject", "unrestrictedDoubleOrStringAttribute");
@@ -1777,6 +1897,8 @@ static void nestedUnionAtributeAttributeSetter(v8::Local<v8::Value> v8Value, con
   ALLOW_UNUSED_LOCAL(isolate);
 
   v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
   TestObject* impl = V8TestObject::toImpl(holder);
 
   ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestObject", "nestedUnionAtribute");
@@ -1803,6 +1925,8 @@ static void activityLoggingAccessForAllWorldsLongAttributeAttributeSetter(v8::Lo
   ALLOW_UNUSED_LOCAL(isolate);
 
   v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
   TestObject* impl = V8TestObject::toImpl(holder);
 
   ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestObject", "activityLoggingAccessForAllWorldsLongAttribute");
@@ -1828,6 +1952,8 @@ static void activityLoggingGetterForAllWorldsLongAttributeAttributeSetter(v8::Lo
   ALLOW_UNUSED_LOCAL(isolate);
 
   v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
   TestObject* impl = V8TestObject::toImpl(holder);
 
   ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestObject", "activityLoggingGetterForAllWorldsLongAttribute");
@@ -1853,6 +1979,8 @@ static void activityLoggingSetterForAllWorldsLongAttributeAttributeSetter(v8::Lo
   ALLOW_UNUSED_LOCAL(isolate);
 
   v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
   TestObject* impl = V8TestObject::toImpl(holder);
 
   ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestObject", "activityLoggingSetterForAllWorldsLongAttribute");
@@ -1896,6 +2024,8 @@ static void cachedAttributeAnyAttributeAttributeSetter(v8::Local<v8::Value> v8Va
   ALLOW_UNUSED_LOCAL(isolate);
 
   v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
   TestObject* impl = V8TestObject::toImpl(holder);
 
   // Prepare the value to be set.
@@ -1941,6 +2071,8 @@ static void cachedArrayAttributeAttributeSetter(v8::Local<v8::Value> v8Value, co
   ALLOW_UNUSED_LOCAL(isolate);
 
   v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
   TestObject* impl = V8TestObject::toImpl(holder);
 
   ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestObject", "cachedArrayAttribute");
@@ -1990,6 +2122,8 @@ static void cachedStringOrNoneAttributeAttributeSetter(v8::Local<v8::Value> v8Va
   ALLOW_UNUSED_LOCAL(isolate);
 
   v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
   TestObject* impl = V8TestObject::toImpl(holder);
 
   // Prepare the value to be set.
@@ -2021,6 +2155,8 @@ static void callWithExecutionContextAnyAttributeAttributeSetter(v8::Local<v8::Va
   ALLOW_UNUSED_LOCAL(isolate);
 
   v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
   TestObject* impl = V8TestObject::toImpl(holder);
 
   // Prepare the value to be set.
@@ -2046,6 +2182,8 @@ static void callWithScriptStateAnyAttributeAttributeSetter(v8::Local<v8::Value> 
   ALLOW_UNUSED_LOCAL(isolate);
 
   v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
   TestObject* impl = V8TestObject::toImpl(holder);
 
   // Prepare the value to be set.
@@ -2072,6 +2210,8 @@ static void callWithExecutionContextAndScriptStateAnyAttributeAttributeSetter(v8
   ALLOW_UNUSED_LOCAL(isolate);
 
   v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
   TestObject* impl = V8TestObject::toImpl(holder);
 
   // Prepare the value to be set.
@@ -2104,6 +2244,8 @@ static void customGetterLongAttributeAttributeSetter(v8::Local<v8::Value> v8Valu
   ALLOW_UNUSED_LOCAL(isolate);
 
   v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
   TestObject* impl = V8TestObject::toImpl(holder);
 
   ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestObject", "customGetterLongAttribute");
@@ -2137,6 +2279,8 @@ static void deprecatedLongAttributeAttributeSetter(v8::Local<v8::Value> v8Value,
   ALLOW_UNUSED_LOCAL(isolate);
 
   v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
   TestObject* impl = V8TestObject::toImpl(holder);
 
   ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestObject", "deprecatedLongAttribute");
@@ -2162,6 +2306,8 @@ static void enforceRangeLongAttributeAttributeSetter(v8::Local<v8::Value> v8Valu
   ALLOW_UNUSED_LOCAL(isolate);
 
   v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
   TestObject* impl = V8TestObject::toImpl(holder);
 
   ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestObject", "enforceRangeLongAttribute");
@@ -2187,6 +2333,8 @@ static void implementedAsLongAttributeAttributeSetter(v8::Local<v8::Value> v8Val
   ALLOW_UNUSED_LOCAL(isolate);
 
   v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
   TestObject* impl = V8TestObject::toImpl(holder);
 
   ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestObject", "implementedAsLongAttribute");
@@ -2204,6 +2352,8 @@ static void customGetterImplementedAsLongAttributeAttributeSetter(v8::Local<v8::
   ALLOW_UNUSED_LOCAL(isolate);
 
   v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
   TestObject* impl = V8TestObject::toImpl(holder);
 
   ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestObject", "customGetterImplementedAsLongAttribute");
@@ -2237,6 +2387,8 @@ static void measureAsLongAttributeAttributeSetter(v8::Local<v8::Value> v8Value, 
   ALLOW_UNUSED_LOCAL(isolate);
 
   v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
   TestObject* impl = V8TestObject::toImpl(holder);
 
   ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestObject", "measureAsLongAttribute");
@@ -2262,6 +2414,8 @@ static void notEnumerableLongAttributeAttributeSetter(v8::Local<v8::Value> v8Val
   ALLOW_UNUSED_LOCAL(isolate);
 
   v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
   TestObject* impl = V8TestObject::toImpl(holder);
 
   ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestObject", "notEnumerableLongAttribute");
@@ -2287,6 +2441,8 @@ static void originTrialEnabledLongAttributeAttributeSetter(v8::Local<v8::Value> 
   ALLOW_UNUSED_LOCAL(isolate);
 
   v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
   TestObject* impl = V8TestObject::toImpl(holder);
 
   ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestObject", "originTrialEnabledLongAttribute");
@@ -2350,6 +2506,8 @@ static void activityLoggingAccessPerWorldBindingsLongAttributeAttributeSetter(v8
   ALLOW_UNUSED_LOCAL(isolate);
 
   v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
   TestObject* impl = V8TestObject::toImpl(holder);
 
   ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestObject", "activityLoggingAccessPerWorldBindingsLongAttribute");
@@ -2375,6 +2533,8 @@ static void activityLoggingAccessPerWorldBindingsLongAttributeAttributeSetterFor
   ALLOW_UNUSED_LOCAL(isolate);
 
   v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
   TestObject* impl = V8TestObject::toImpl(holder);
 
   ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestObject", "activityLoggingAccessPerWorldBindingsLongAttribute");
@@ -2400,6 +2560,8 @@ static void activityLoggingAccessForIsolatedWorldsPerWorldBindingsLongAttributeA
   ALLOW_UNUSED_LOCAL(isolate);
 
   v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
   TestObject* impl = V8TestObject::toImpl(holder);
 
   ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestObject", "activityLoggingAccessForIsolatedWorldsPerWorldBindingsLongAttribute");
@@ -2425,6 +2587,8 @@ static void activityLoggingAccessForIsolatedWorldsPerWorldBindingsLongAttributeA
   ALLOW_UNUSED_LOCAL(isolate);
 
   v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
   TestObject* impl = V8TestObject::toImpl(holder);
 
   ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestObject", "activityLoggingAccessForIsolatedWorldsPerWorldBindingsLongAttribute");
@@ -2450,6 +2614,8 @@ static void activityLoggingGetterPerWorldBindingsLongAttributeAttributeSetter(v8
   ALLOW_UNUSED_LOCAL(isolate);
 
   v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
   TestObject* impl = V8TestObject::toImpl(holder);
 
   ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestObject", "activityLoggingGetterPerWorldBindingsLongAttribute");
@@ -2475,6 +2641,8 @@ static void activityLoggingGetterPerWorldBindingsLongAttributeAttributeSetterFor
   ALLOW_UNUSED_LOCAL(isolate);
 
   v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
   TestObject* impl = V8TestObject::toImpl(holder);
 
   ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestObject", "activityLoggingGetterPerWorldBindingsLongAttribute");
@@ -2500,6 +2668,8 @@ static void activityLoggingGetterForIsolatedWorldsPerWorldBindingsLongAttributeA
   ALLOW_UNUSED_LOCAL(isolate);
 
   v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
   TestObject* impl = V8TestObject::toImpl(holder);
 
   ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestObject", "activityLoggingGetterForIsolatedWorldsPerWorldBindingsLongAttribute");
@@ -2525,6 +2695,8 @@ static void activityLoggingGetterForIsolatedWorldsPerWorldBindingsLongAttributeA
   ALLOW_UNUSED_LOCAL(isolate);
 
   v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
   TestObject* impl = V8TestObject::toImpl(holder);
 
   ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestObject", "activityLoggingGetterForIsolatedWorldsPerWorldBindingsLongAttribute");
@@ -2550,17 +2722,22 @@ static void locationAttributeSetter(v8::Local<v8::Value> v8Value, const v8::Func
   ALLOW_UNUSED_LOCAL(isolate);
 
   v8::Local<v8::Object> holder = info.Holder();
-  TestObject* proxyImpl = V8TestObject::toImpl(holder);
-  TestNode* impl = WTF::GetPtr(proxyImpl->location());
-  if (!impl)
-    return;
+  ALLOW_UNUSED_LOCAL(holder);
 
-  // Prepare the value to be set.
-  V8StringResource<> cppValue = v8Value;
-  if (!cppValue.Prepare())
+  // [PutForwards] => location.href
+  ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestObject", "location");
+  v8::Local<v8::Value> target;
+  if (!holder->Get(isolate->GetCurrentContext(), V8String(isolate, "location")).ToLocal(&target))
     return;
-
-  impl->setHref(cppValue);
+  if (!target->IsObject()) {
+    exceptionState.ThrowTypeError("The attribute value is not an object");
+    return;
+  }
+  bool result;
+  if (!target.As<v8::Object>()->Set(isolate->GetCurrentContext(), V8String(isolate, "href"), v8Value).To(&result))
+    return;
+  if (!result)
+    return;
 }
 
 static void locationWithExceptionAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
@@ -2576,19 +2753,22 @@ static void locationWithExceptionAttributeSetter(v8::Local<v8::Value> v8Value, c
   ALLOW_UNUSED_LOCAL(isolate);
 
   v8::Local<v8::Object> holder = info.Holder();
-  TestObject* proxyImpl = V8TestObject::toImpl(holder);
-  TestNode* impl = WTF::GetPtr(proxyImpl->locationWithException());
-  if (!impl)
-    return;
+  ALLOW_UNUSED_LOCAL(holder);
 
+  // [PutForwards] => locationWithException.hrefThrows
   ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestObject", "locationWithException");
-
-  // Prepare the value to be set.
-  V8StringResource<> cppValue = v8Value;
-  if (!cppValue.Prepare())
+  v8::Local<v8::Value> target;
+  if (!holder->Get(isolate->GetCurrentContext(), V8String(isolate, "locationWithException")).ToLocal(&target))
     return;
-
-  impl->setHrefThrows(cppValue, exceptionState);
+  if (!target->IsObject()) {
+    exceptionState.ThrowTypeError("The attribute value is not an object");
+    return;
+  }
+  bool result;
+  if (!target.As<v8::Object>()->Set(isolate->GetCurrentContext(), V8String(isolate, "hrefThrows"), v8Value).To(&result))
+    return;
+  if (!result)
+    return;
 }
 
 static void locationWithCallWithAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
@@ -2604,19 +2784,22 @@ static void locationWithCallWithAttributeSetter(v8::Local<v8::Value> v8Value, co
   ALLOW_UNUSED_LOCAL(isolate);
 
   v8::Local<v8::Object> holder = info.Holder();
-  TestObject* proxyImpl = V8TestObject::toImpl(holder);
-  TestNode* impl = WTF::GetPtr(proxyImpl->locationWithCallWith());
-  if (!impl)
+  ALLOW_UNUSED_LOCAL(holder);
+
+  // [PutForwards] => locationWithCallWith.hrefCallWith
+  ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestObject", "locationWithCallWith");
+  v8::Local<v8::Value> target;
+  if (!holder->Get(isolate->GetCurrentContext(), V8String(isolate, "locationWithCallWith")).ToLocal(&target))
     return;
-
-  // Prepare the value to be set.
-  V8StringResource<> cppValue = v8Value;
-  if (!cppValue.Prepare())
+  if (!target->IsObject()) {
+    exceptionState.ThrowTypeError("The attribute value is not an object");
     return;
-
-  ExecutionContext* executionContext = CurrentExecutionContext(isolate);
-
-  impl->setHrefCallWith(executionContext, CurrentDOMWindow(info.GetIsolate()), EnteredDOMWindow(info.GetIsolate()), cppValue);
+  }
+  bool result;
+  if (!target.As<v8::Object>()->Set(isolate->GetCurrentContext(), V8String(isolate, "hrefCallWith"), v8Value).To(&result))
+    return;
+  if (!result)
+    return;
 }
 
 static void locationByteStringAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
@@ -2632,19 +2815,22 @@ static void locationByteStringAttributeSetter(v8::Local<v8::Value> v8Value, cons
   ALLOW_UNUSED_LOCAL(isolate);
 
   v8::Local<v8::Object> holder = info.Holder();
-  TestObject* proxyImpl = V8TestObject::toImpl(holder);
-  TestNode* impl = WTF::GetPtr(proxyImpl->locationByteString());
-  if (!impl)
-    return;
+  ALLOW_UNUSED_LOCAL(holder);
 
+  // [PutForwards] => locationByteString.hrefByteString
   ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestObject", "locationByteString");
-
-  // Prepare the value to be set.
-  V8StringResource<> cppValue = NativeValueTraits<IDLByteString>::NativeValue(info.GetIsolate(), v8Value, exceptionState);
-  if (exceptionState.HadException())
+  v8::Local<v8::Value> target;
+  if (!holder->Get(isolate->GetCurrentContext(), V8String(isolate, "locationByteString")).ToLocal(&target))
     return;
-
-  impl->setHrefByteString(cppValue);
+  if (!target->IsObject()) {
+    exceptionState.ThrowTypeError("The attribute value is not an object");
+    return;
+  }
+  bool result;
+  if (!target.As<v8::Object>()->Set(isolate->GetCurrentContext(), V8String(isolate, "hrefByteString"), v8Value).To(&result))
+    return;
+  if (!result)
+    return;
 }
 
 static void locationWithPerWorldBindingsAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
@@ -2660,17 +2846,22 @@ static void locationWithPerWorldBindingsAttributeSetter(v8::Local<v8::Value> v8V
   ALLOW_UNUSED_LOCAL(isolate);
 
   v8::Local<v8::Object> holder = info.Holder();
-  TestObject* proxyImpl = V8TestObject::toImpl(holder);
-  TestNode* impl = WTF::GetPtr(proxyImpl->locationWithPerWorldBindings());
-  if (!impl)
-    return;
+  ALLOW_UNUSED_LOCAL(holder);
 
-  // Prepare the value to be set.
-  V8StringResource<> cppValue = v8Value;
-  if (!cppValue.Prepare())
+  // [PutForwards] => locationWithPerWorldBindings.href
+  ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestObject", "locationWithPerWorldBindings");
+  v8::Local<v8::Value> target;
+  if (!holder->Get(isolate->GetCurrentContext(), V8String(isolate, "locationWithPerWorldBindings")).ToLocal(&target))
     return;
-
-  impl->setHref(cppValue);
+  if (!target->IsObject()) {
+    exceptionState.ThrowTypeError("The attribute value is not an object");
+    return;
+  }
+  bool result;
+  if (!target.As<v8::Object>()->Set(isolate->GetCurrentContext(), V8String(isolate, "href"), v8Value).To(&result))
+    return;
+  if (!result)
+    return;
 }
 
 static void locationWithPerWorldBindingsAttributeGetterForMainWorld(const v8::FunctionCallbackInfo<v8::Value>& info) {
@@ -2686,17 +2877,22 @@ static void locationWithPerWorldBindingsAttributeSetterForMainWorld(v8::Local<v8
   ALLOW_UNUSED_LOCAL(isolate);
 
   v8::Local<v8::Object> holder = info.Holder();
-  TestObject* proxyImpl = V8TestObject::toImpl(holder);
-  TestNode* impl = WTF::GetPtr(proxyImpl->locationWithPerWorldBindings());
-  if (!impl)
-    return;
+  ALLOW_UNUSED_LOCAL(holder);
 
-  // Prepare the value to be set.
-  V8StringResource<> cppValue = v8Value;
-  if (!cppValue.Prepare())
+  // [PutForwards] => locationWithPerWorldBindings.href
+  ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestObject", "locationWithPerWorldBindings");
+  v8::Local<v8::Value> target;
+  if (!holder->Get(isolate->GetCurrentContext(), V8String(isolate, "locationWithPerWorldBindings")).ToLocal(&target))
     return;
-
-  impl->setHref(cppValue);
+  if (!target->IsObject()) {
+    exceptionState.ThrowTypeError("The attribute value is not an object");
+    return;
+  }
+  bool result;
+  if (!target.As<v8::Object>()->Set(isolate->GetCurrentContext(), V8String(isolate, "href"), v8Value).To(&result))
+    return;
+  if (!result)
+    return;
 }
 
 static void locationLegacyInterfaceTypeCheckingAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
@@ -2712,17 +2908,22 @@ static void locationLegacyInterfaceTypeCheckingAttributeSetter(v8::Local<v8::Val
   ALLOW_UNUSED_LOCAL(isolate);
 
   v8::Local<v8::Object> holder = info.Holder();
-  TestObject* proxyImpl = V8TestObject::toImpl(holder);
-  TestNode* impl = WTF::GetPtr(proxyImpl->locationLegacyInterfaceTypeChecking());
-  if (!impl)
-    return;
+  ALLOW_UNUSED_LOCAL(holder);
 
-  // Prepare the value to be set.
-  V8StringResource<> cppValue = v8Value;
-  if (!cppValue.Prepare())
+  // [PutForwards] => locationLegacyInterfaceTypeChecking.href
+  ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestObject", "locationLegacyInterfaceTypeChecking");
+  v8::Local<v8::Value> target;
+  if (!holder->Get(isolate->GetCurrentContext(), V8String(isolate, "locationLegacyInterfaceTypeChecking")).ToLocal(&target))
     return;
-
-  impl->setHref(cppValue);
+  if (!target->IsObject()) {
+    exceptionState.ThrowTypeError("The attribute value is not an object");
+    return;
+  }
+  bool result;
+  if (!target.As<v8::Object>()->Set(isolate->GetCurrentContext(), V8String(isolate, "href"), v8Value).To(&result))
+    return;
+  if (!result)
+    return;
 }
 
 static void locationGarbageCollectedAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
@@ -2749,23 +2950,22 @@ static void locationGarbageCollectedAttributeSetter(v8::Local<v8::Value> v8Value
   ALLOW_UNUSED_LOCAL(isolate);
 
   v8::Local<v8::Object> holder = info.Holder();
-  TestObject* proxyImpl = V8TestObject::toImpl(holder);
-  TestInterfaceGarbageCollected* impl = WTF::GetPtr(proxyImpl->locationGarbageCollected());
-  if (!impl)
-    return;
+  ALLOW_UNUSED_LOCAL(holder);
 
+  // [PutForwards] => locationGarbageCollected.attr1
   ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestObject", "locationGarbageCollected");
-
-  // Prepare the value to be set.
-  TestInterfaceGarbageCollected* cppValue = V8TestInterfaceGarbageCollected::toImplWithTypeCheck(info.GetIsolate(), v8Value);
-
-  // Type check per: http://heycam.github.io/webidl/#es-interface
-  if (!cppValue) {
-    exceptionState.ThrowTypeError("The provided value is not of type 'TestInterfaceGarbageCollected'.");
+  v8::Local<v8::Value> target;
+  if (!holder->Get(isolate->GetCurrentContext(), V8String(isolate, "locationGarbageCollected")).ToLocal(&target))
+    return;
+  if (!target->IsObject()) {
+    exceptionState.ThrowTypeError("The attribute value is not an object");
     return;
   }
-
-  impl->setAttr1(cppValue);
+  bool result;
+  if (!target.As<v8::Object>()->Set(isolate->GetCurrentContext(), V8String(isolate, "attr1"), v8Value).To(&result))
+    return;
+  if (!result)
+    return;
 }
 
 static void raisesExceptionLongAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
@@ -2788,6 +2988,8 @@ static void raisesExceptionLongAttributeAttributeSetter(v8::Local<v8::Value> v8V
   ALLOW_UNUSED_LOCAL(isolate);
 
   v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
   TestObject* impl = V8TestObject::toImpl(holder);
 
   ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestObject", "raisesExceptionLongAttribute");
@@ -2820,6 +3022,8 @@ static void raisesExceptionGetterLongAttributeAttributeSetter(v8::Local<v8::Valu
   ALLOW_UNUSED_LOCAL(isolate);
 
   v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
   TestObject* impl = V8TestObject::toImpl(holder);
 
   ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestObject", "raisesExceptionGetterLongAttribute");
@@ -2845,6 +3049,8 @@ static void setterRaisesExceptionLongAttributeAttributeSetter(v8::Local<v8::Valu
   ALLOW_UNUSED_LOCAL(isolate);
 
   v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
   TestObject* impl = V8TestObject::toImpl(holder);
 
   ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestObject", "setterRaisesExceptionLongAttribute");
@@ -2877,6 +3083,8 @@ static void raisesExceptionTestInterfaceEmptyAttributeAttributeSetter(v8::Local<
   ALLOW_UNUSED_LOCAL(isolate);
 
   v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
   TestObject* impl = V8TestObject::toImpl(holder);
 
   ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestObject", "raisesExceptionTestInterfaceEmptyAttribute");
@@ -2929,6 +3137,8 @@ static void cachedAttributeRaisesExceptionGetterAnyAttributeAttributeSetter(v8::
   ALLOW_UNUSED_LOCAL(isolate);
 
   v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
   TestObject* impl = V8TestObject::toImpl(holder);
 
   ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestObject", "cachedAttributeRaisesExceptionGetterAnyAttribute");
@@ -2958,6 +3168,8 @@ static void reflectTestInterfaceAttributeAttributeSetter(v8::Local<v8::Value> v8
   ALLOW_UNUSED_LOCAL(isolate);
 
   v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
   TestObject* impl = V8TestObject::toImpl(holder);
 
   // Skip on compact node DOMString getters.
@@ -2990,6 +3202,8 @@ static void reflectReflectedNameAttributeTestAttributeAttributeSetter(v8::Local<
   ALLOW_UNUSED_LOCAL(isolate);
 
   v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
   TestObject* impl = V8TestObject::toImpl(holder);
 
   // Skip on compact node DOMString getters.
@@ -3022,6 +3236,8 @@ static void reflectBooleanAttributeAttributeSetter(v8::Local<v8::Value> v8Value,
   ALLOW_UNUSED_LOCAL(isolate);
 
   v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
   TestObject* impl = V8TestObject::toImpl(holder);
 
   // Skip on compact node DOMString getters.
@@ -3050,6 +3266,8 @@ static void reflectLongAttributeAttributeSetter(v8::Local<v8::Value> v8Value, co
   ALLOW_UNUSED_LOCAL(isolate);
 
   v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
   TestObject* impl = V8TestObject::toImpl(holder);
 
   // Skip on compact node DOMString getters.
@@ -3078,6 +3296,8 @@ static void reflectUnsignedShortAttributeAttributeSetter(v8::Local<v8::Value> v8
   ALLOW_UNUSED_LOCAL(isolate);
 
   v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
   TestObject* impl = V8TestObject::toImpl(holder);
 
   // Skip on compact node DOMString getters.
@@ -3106,6 +3326,8 @@ static void reflectUnsignedLongAttributeAttributeSetter(v8::Local<v8::Value> v8V
   ALLOW_UNUSED_LOCAL(isolate);
 
   v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
   TestObject* impl = V8TestObject::toImpl(holder);
 
   // Skip on compact node DOMString getters.
@@ -3134,6 +3356,8 @@ static void idAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCa
   ALLOW_UNUSED_LOCAL(isolate);
 
   v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
   TestObject* impl = V8TestObject::toImpl(holder);
 
   // Skip on compact node DOMString getters.
@@ -3160,6 +3384,8 @@ static void nameAttributeSetter(v8::Local<v8::Value> v8Value, const v8::Function
   ALLOW_UNUSED_LOCAL(isolate);
 
   v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
   TestObject* impl = V8TestObject::toImpl(holder);
 
   // Skip on compact node DOMString getters.
@@ -3186,6 +3412,8 @@ static void classAttributeSetter(v8::Local<v8::Value> v8Value, const v8::Functio
   ALLOW_UNUSED_LOCAL(isolate);
 
   v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
   TestObject* impl = V8TestObject::toImpl(holder);
 
   // Skip on compact node DOMString getters.
@@ -3212,6 +3440,8 @@ static void reflectedIdAttributeSetter(v8::Local<v8::Value> v8Value, const v8::F
   ALLOW_UNUSED_LOCAL(isolate);
 
   v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
   TestObject* impl = V8TestObject::toImpl(holder);
 
   // Skip on compact node DOMString getters.
@@ -3238,6 +3468,8 @@ static void reflectedNameAttributeSetter(v8::Local<v8::Value> v8Value, const v8:
   ALLOW_UNUSED_LOCAL(isolate);
 
   v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
   TestObject* impl = V8TestObject::toImpl(holder);
 
   // Skip on compact node DOMString getters.
@@ -3264,6 +3496,8 @@ static void reflectedClassAttributeSetter(v8::Local<v8::Value> v8Value, const v8
   ALLOW_UNUSED_LOCAL(isolate);
 
   v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
   TestObject* impl = V8TestObject::toImpl(holder);
 
   // Skip on compact node DOMString getters.
@@ -3300,6 +3534,8 @@ static void limitedToOnlyOneAttributeAttributeSetter(v8::Local<v8::Value> v8Valu
   ALLOW_UNUSED_LOCAL(isolate);
 
   v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
   TestObject* impl = V8TestObject::toImpl(holder);
 
   // Skip on compact node DOMString getters.
@@ -3340,6 +3576,8 @@ static void limitedToOnlyAttributeAttributeSetter(v8::Local<v8::Value> v8Value, 
   ALLOW_UNUSED_LOCAL(isolate);
 
   v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
   TestObject* impl = V8TestObject::toImpl(holder);
 
   // Skip on compact node DOMString getters.
@@ -3378,6 +3616,8 @@ static void limitedToOnlyOtherAttributeAttributeSetter(v8::Local<v8::Value> v8Va
   ALLOW_UNUSED_LOCAL(isolate);
 
   v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
   TestObject* impl = V8TestObject::toImpl(holder);
 
   // Skip on compact node DOMString getters.
@@ -3416,6 +3656,8 @@ static void limitedWithMissingDefaultAttributeAttributeSetter(v8::Local<v8::Valu
   ALLOW_UNUSED_LOCAL(isolate);
 
   v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
   TestObject* impl = V8TestObject::toImpl(holder);
 
   // Skip on compact node DOMString getters.
@@ -3456,6 +3698,8 @@ static void limitedWithInvalidMissingDefaultAttributeAttributeSetter(v8::Local<v
   ALLOW_UNUSED_LOCAL(isolate);
 
   v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
   TestObject* impl = V8TestObject::toImpl(holder);
 
   // Skip on compact node DOMString getters.
@@ -3529,6 +3773,9 @@ static void replaceableReadonlyLongAttributeAttributeSetter(v8::Local<v8::Value>
   v8::Isolate* isolate = info.GetIsolate();
   ALLOW_UNUSED_LOCAL(isolate);
 
+  v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
   // Prepare the value to be set.
 
   v8::Local<v8::String> propertyName = V8AtomicString(isolate, "replaceableReadonlyLongAttribute");
@@ -3548,17 +3795,22 @@ static void locationPutForwardsAttributeSetter(v8::Local<v8::Value> v8Value, con
   ALLOW_UNUSED_LOCAL(isolate);
 
   v8::Local<v8::Object> holder = info.Holder();
-  TestObject* proxyImpl = V8TestObject::toImpl(holder);
-  TestNode* impl = WTF::GetPtr(proxyImpl->locationPutForwards());
-  if (!impl)
-    return;
+  ALLOW_UNUSED_LOCAL(holder);
 
-  // Prepare the value to be set.
-  V8StringResource<> cppValue = v8Value;
-  if (!cppValue.Prepare())
+  // [PutForwards] => locationPutForwards.href
+  ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestObject", "locationPutForwards");
+  v8::Local<v8::Value> target;
+  if (!holder->Get(isolate->GetCurrentContext(), V8String(isolate, "locationPutForwards")).ToLocal(&target))
     return;
-
-  impl->setHref(cppValue);
+  if (!target->IsObject()) {
+    exceptionState.ThrowTypeError("The attribute value is not an object");
+    return;
+  }
+  bool result;
+  if (!target.As<v8::Object>()->Set(isolate->GetCurrentContext(), V8String(isolate, "href"), v8Value).To(&result))
+    return;
+  if (!result)
+    return;
 }
 
 static void runtimeEnabledLongAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
@@ -3574,6 +3826,8 @@ static void runtimeEnabledLongAttributeAttributeSetter(v8::Local<v8::Value> v8Va
   ALLOW_UNUSED_LOCAL(isolate);
 
   v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
   TestObject* impl = V8TestObject::toImpl(holder);
 
   ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestObject", "runtimeEnabledLongAttribute");
@@ -3599,6 +3853,8 @@ static void setterCallWithCurrentWindowAndEnteredWindowStringAttributeAttributeS
   ALLOW_UNUSED_LOCAL(isolate);
 
   v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
   TestObject* impl = V8TestObject::toImpl(holder);
 
   // Prepare the value to be set.
@@ -3622,6 +3878,8 @@ static void setterCallWithExecutionContextStringAttributeAttributeSetter(v8::Loc
   ALLOW_UNUSED_LOCAL(isolate);
 
   v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
   TestObject* impl = V8TestObject::toImpl(holder);
 
   // Prepare the value to be set.
@@ -3647,6 +3905,8 @@ static void treatNullAsEmptyStringStringAttributeAttributeSetter(v8::Local<v8::V
   ALLOW_UNUSED_LOCAL(isolate);
 
   v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
   TestObject* impl = V8TestObject::toImpl(holder);
 
   // Prepare the value to be set.
@@ -3670,6 +3930,8 @@ static void treatNullAsNullStringStringAttributeAttributeSetter(v8::Local<v8::Va
   ALLOW_UNUSED_LOCAL(isolate);
 
   v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
   TestObject* impl = V8TestObject::toImpl(holder);
 
   // Prepare the value to be set.
@@ -3693,6 +3955,8 @@ static void legacyInterfaceTypeCheckingFloatAttributeAttributeSetter(v8::Local<v
   ALLOW_UNUSED_LOCAL(isolate);
 
   v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
   TestObject* impl = V8TestObject::toImpl(holder);
 
   ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestObject", "legacyInterfaceTypeCheckingFloatAttribute");
@@ -3718,6 +3982,8 @@ static void legacyInterfaceTypeCheckingTestInterfaceAttributeAttributeSetter(v8:
   ALLOW_UNUSED_LOCAL(isolate);
 
   v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
   TestObject* impl = V8TestObject::toImpl(holder);
 
   // Prepare the value to be set.
@@ -3739,6 +4005,8 @@ static void legacyInterfaceTypeCheckingTestInterfaceOrNullAttributeAttributeSett
   ALLOW_UNUSED_LOCAL(isolate);
 
   v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
   TestObject* impl = V8TestObject::toImpl(holder);
 
   // Prepare the value to be set.
@@ -3760,6 +4028,8 @@ static void urlStringAttributeAttributeSetter(v8::Local<v8::Value> v8Value, cons
   ALLOW_UNUSED_LOCAL(isolate);
 
   v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
   TestObject* impl = V8TestObject::toImpl(holder);
 
   // Skip on compact node DOMString getters.
@@ -3786,6 +4056,8 @@ static void urlStringAttributeAttributeSetter(v8::Local<v8::Value> v8Value, cons
   ALLOW_UNUSED_LOCAL(isolate);
 
   v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
   TestObject* impl = V8TestObject::toImpl(holder);
 
   // Skip on compact node DOMString getters.
@@ -3812,6 +4084,8 @@ static void unforgeableLongAttributeAttributeSetter(v8::Local<v8::Value> v8Value
   ALLOW_UNUSED_LOCAL(isolate);
 
   v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
   TestObject* impl = V8TestObject::toImpl(holder);
 
   ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestObject", "unforgeableLongAttribute");
@@ -3837,6 +4111,8 @@ static void measuredLongAttributeAttributeSetter(v8::Local<v8::Value> v8Value, c
   ALLOW_UNUSED_LOCAL(isolate);
 
   v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
   TestObject* impl = V8TestObject::toImpl(holder);
 
   ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestObject", "measuredLongAttribute");
@@ -3918,6 +4194,8 @@ static void unscopableLongAttributeAttributeSetter(v8::Local<v8::Value> v8Value,
   ALLOW_UNUSED_LOCAL(isolate);
 
   v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
   TestObject* impl = V8TestObject::toImpl(holder);
 
   ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestObject", "unscopableLongAttribute");
@@ -3943,6 +4221,8 @@ static void unscopableOriginTrialEnabledLongAttributeAttributeSetter(v8::Local<v
   ALLOW_UNUSED_LOCAL(isolate);
 
   v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
   TestObject* impl = V8TestObject::toImpl(holder);
 
   ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestObject", "unscopableOriginTrialEnabledLongAttribute");
@@ -3968,6 +4248,8 @@ static void unscopableRuntimeEnabledLongAttributeAttributeSetter(v8::Local<v8::V
   ALLOW_UNUSED_LOCAL(isolate);
 
   v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
   TestObject* impl = V8TestObject::toImpl(holder);
 
   ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestObject", "unscopableRuntimeEnabledLongAttribute");
@@ -3993,6 +4275,8 @@ static void testInterfaceAttributeAttributeSetter(v8::Local<v8::Value> v8Value, 
   ALLOW_UNUSED_LOCAL(isolate);
 
   v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
   TestObject* impl = V8TestObject::toImpl(holder);
 
   ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestObject", "testInterfaceAttribute");
@@ -4022,6 +4306,8 @@ static void testInterfaceGarbageCollectedAttributeAttributeSetter(v8::Local<v8::
   ALLOW_UNUSED_LOCAL(isolate);
 
   v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
   TestObject* impl = V8TestObject::toImpl(holder);
 
   ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestObject", "testInterfaceGarbageCollectedAttribute");
@@ -4051,6 +4337,8 @@ static void testInterfaceGarbageCollectedOrNullAttributeAttributeSetter(v8::Loca
   ALLOW_UNUSED_LOCAL(isolate);
 
   v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
   TestObject* impl = V8TestObject::toImpl(holder);
 
   ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestObject", "testInterfaceGarbageCollectedOrNullAttribute");

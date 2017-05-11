@@ -47,6 +47,8 @@ static void partial4LongAttributeAttributeSetter(v8::Local<v8::Value> v8Value, c
   ALLOW_UNUSED_LOCAL(isolate);
 
   v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
   TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
 
   ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestInterface", "partial4LongAttribute");
@@ -66,6 +68,9 @@ static void partial4StaticLongAttributeAttributeGetter(const v8::FunctionCallbac
 static void partial4StaticLongAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8::Isolate* isolate = info.GetIsolate();
   ALLOW_UNUSED_LOCAL(isolate);
+
+  v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
 
   ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestInterface", "partial4StaticLongAttribute");
 
