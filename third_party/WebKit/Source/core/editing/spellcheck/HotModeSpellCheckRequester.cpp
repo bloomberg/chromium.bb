@@ -19,6 +19,7 @@ namespace blink {
 
 namespace {
 
+const int kHotModeCheckAllThreshold = 128;
 const int kHotModeChunkSize = 1024;
 
 EphemeralRange AdjacentWordIfExists(const Position& pos) {
@@ -65,12 +66,25 @@ bool IsUnderActiveEditing(const Element& editable, const Position& position) {
 
 EphemeralRange CalculateHotModeCheckingRange(const Element& editable,
                                              const Position& position) {
+  // Check everything in |editable| if its total length is short.
   const EphemeralRange& full_range = EphemeralRange::RangeOfContents(editable);
   const int full_length = TextIterator::RangeLength(full_range.StartPosition(),
                                                     full_range.EndPosition());
-  if (full_length <= kHotModeChunkSize)
+  // TODO(xiaochengh): There is no need to check if |full_length <= 2|, since
+  // we don't consider two characters as misspelled. However, a lot of layout
+  // tests depend on "zz" as misspelled, which should be changed.
+  if (full_length <= kHotModeCheckAllThreshold)
     return full_range;
 
+  // Otherwise, if |position| is in a short paragraph, check the paragraph.
+  const EphemeralRange& paragraph_range =
+      ExpandToParagraphBoundary(EphemeralRange(position));
+  const int paragraph_length = TextIterator::RangeLength(
+      paragraph_range.StartPosition(), paragraph_range.EndPosition());
+  if (paragraph_length <= kHotModeChunkSize)
+    return paragraph_range;
+
+  // Otherwise, check a chunk of text centered at |position|.
   TextIteratorBehavior behavior = TextIteratorBehavior::Builder()
                                       .SetEmitsObjectReplacementCharacter(true)
                                       .Build();
