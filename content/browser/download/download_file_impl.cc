@@ -441,9 +441,19 @@ void DownloadFileImpl::StreamActive(SourceStream* source_stream) {
         break;
       case ByteStreamReader::STREAM_COMPLETE:
         {
-          reason = static_cast<DownloadInterruptReason>(
+        reason = static_cast<DownloadInterruptReason>(
             source_stream->stream_reader()->GetStatus());
-          SendUpdate();
+        if (source_stream->length() == DownloadSaveInfo::kLengthFullContent &&
+            !received_slices_.empty() &&
+            (source_stream->offset() == received_slices_.back().offset +
+                received_slices_.back().received_bytes) &&
+            reason == DownloadInterruptReason::
+                          DOWNLOAD_INTERRUPT_REASON_SERVER_NO_RANGE) {
+          // We are probably reaching the end of the stream, don't treat this
+          // as an error.
+          reason = DOWNLOAD_INTERRUPT_REASON_NONE;
+        }
+        SendUpdate();
         }
         break;
       default:

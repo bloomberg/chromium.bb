@@ -817,21 +817,21 @@ void RecordParallelizableDownloadStats(
   if (!uses_parallel_requests)
     return;
 
+  base::TimeDelta time_saved;
   if (bytes_downloaded_with_parallel_streams > 0) {
     RecordBandwidthMetric(
         "Download.ParallelizableDownloadBandwidth."
         "WithParallelRequestsMultipleStreams",
         CalculateBandwidthBytesPerSecond(bytes_downloaded_with_parallel_streams,
                                          time_with_parallel_streams));
+    if (bandwidth_without_parallel_streams > 0) {
+      time_saved = base::TimeDelta::FromMilliseconds(
+                       1000.0 * bytes_downloaded_with_parallel_streams /
+                       bandwidth_without_parallel_streams) -
+                   time_with_parallel_streams;
+    }
   }
 
-  base::TimeDelta time_saved;
-  if (bandwidth_without_parallel_streams > 0) {
-    time_saved = base::TimeDelta::FromMilliseconds(
-                     1000.0 * bytes_downloaded_with_parallel_streams /
-                     bandwidth_without_parallel_streams) -
-                 time_with_parallel_streams;
-  }
   int kMillisecondsPerHour =
       base::checked_cast<int>(base::Time::kMillisecondsPerSecond * 60 * 60);
   if (time_saved >= base::TimeDelta()) {

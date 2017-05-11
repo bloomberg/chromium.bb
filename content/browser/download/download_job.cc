@@ -28,11 +28,6 @@ void DownloadJob::StartDownload() const {
   download_item_->StartDownload();
 }
 
-void DownloadJob::Interrupt(DownloadInterruptReason reason) {
-  download_item_->InterruptAndDiscardPartialState(reason);
-  download_item_->UpdateObservers();
-}
-
 bool DownloadJob::AddByteStream(std::unique_ptr<ByteStreamReader> stream_reader,
                                 int64_t offset,
                                 int64_t length) {
@@ -49,17 +44,6 @@ bool DownloadJob::AddByteStream(std::unique_ptr<ByteStreamReader> stream_reader,
       base::Bind(&DownloadFile::AddByteStream, base::Unretained(download_file),
                  base::Passed(&stream_reader), offset, length));
   return true;
-}
-
-void DownloadJob::SetPotentialFileLength(int64_t length) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  DownloadFile* download_file = download_item_->download_file_.get();
-  if (download_file) {
-    BrowserThread::PostTask(
-        BrowserThread::FILE, FROM_HERE,
-        base::Bind(&DownloadFile::SetPotentialFileLength,
-                   base::Unretained(download_file), length));
-  }
 }
 
 void DownloadJob::CancelRequestWithOffset(int64_t offset) {
