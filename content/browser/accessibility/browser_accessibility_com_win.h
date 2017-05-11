@@ -747,6 +747,11 @@ class __declspec(uuid("562072fe-3390-43b1-9e2c-dd4118f5ac79"))
 
   BrowserAccessibilityManager* Manager() const;
 
+  //
+  // AXPlatformNode overrides
+  //
+  void Destroy() override;
+
   // Returns the IA2 text attributes for this object.
   std::vector<base::string16> ComputeTextAttributes() const;
 
