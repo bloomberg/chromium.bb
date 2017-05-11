@@ -1,10 +1,7 @@
 # OWNERS_STATUS = build/OWNERS.status
 
-ben@chromium.org
-brettw@chromium.org
-cpu@chromium.org
-darin@chromium.org
-jam@chromium.org
+# Eng reviewer. Please reach out before adding new top-level directories.
+file://ENG_REVIEW_OWNERS
 
 per-file .gitattributes=*
 per-file .gitignore=*
