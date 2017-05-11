@@ -31,7 +31,6 @@ extern const char kEnableDataReductionProxyBypassWarning[];
 extern const char kEnableDataReductionProxyCarrierTest[];
 extern const char kEnableDataReductionProxyForcePingback[];
 extern const char kEnableDataReductionProxyLitePage[];
-extern const char kDataReductionProxyEnableQuicOnNonCoreProxies[];
 extern const char kEnableDataReductionProxySavingsPromo[];
 
 }  // namespace switches

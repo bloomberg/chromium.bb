@@ -449,6 +449,44 @@ TEST_F(DataReductionProxyParamsTest, QuicFieldTrial) {
   }
 }
 
+// Tests if the QUIC field trial |enable_quic_non_core_proxies| is set
+// correctly.
+TEST_F(DataReductionProxyParamsTest, QuicEnableNonCoreProxies) {
+  const struct {
+    std::string trial_group_name;
+    bool expected_enabled;
+    std::string enable_non_core_proxies;
+    bool expected_enable_non_core_proxies;
+  } tests[] = {
+      {"Enabled", true, "true", true},
+      {"Enabled", true, "false", false},
+      {"Enabled", true, std::string(), false},
+      {"Control", false, "true", false},
+      {"Disabled", false, "true", false},
+  };
+
+  for (const auto& test : tests) {
+    variations::testing::ClearAllVariationParams();
+    std::map<std::string, std::string> variation_params;
+    variation_params["enable_quic_non_core_proxies"] =
+        test.enable_non_core_proxies;
+
+    ASSERT_TRUE(variations::AssociateVariationParams(
+        params::GetQuicFieldTrialName(), test.trial_group_name,
+        variation_params));
+
+    base::FieldTrialList field_trial_list(nullptr);
+    base::FieldTrialList::CreateFieldTrial(params::GetQuicFieldTrialName(),
+                                           test.trial_group_name);
+
+    EXPECT_EQ(test.expected_enabled, params::IsIncludedInQuicFieldTrial());
+    if (params::IsIncludedInQuicFieldTrial()) {
+      EXPECT_EQ(test.expected_enable_non_core_proxies,
+                params::IsQuicEnabledForNonCoreProxies());
+    }
+  }
+}
+
 TEST_F(DataReductionProxyParamsTest, HoldbackEnabledFieldTrial) {
   const struct {
     std::string trial_group_name;
