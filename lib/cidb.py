@@ -91,12 +91,6 @@ def _IsRetryableException(e):
   return False
 
 
-def _RetrySuccessHandler(attempt):
-  """If a query succeeded after retry, log it."""
-  if attempt > 1:
-    logging.info('cidb query succeeded after %s retries', attempt - 1)
-
-
 class DBException(Exception):
   """General exception class for this module."""
 
@@ -552,13 +546,20 @@ class SchemaVersionedMySQLConnection(object):
 
   def _RunFunctorWithRetries(self, functor):
     """Run the given |functor| with correct retry parameters."""
+
+    # TODO(hidehiko): Move this back to retry implementation, because this
+    # should be useful for other retry run, too.
+    def _StatusCallback(attempt, success):
+      if success and attempt:
+        logging.info('cidb query succeeded after %d retries', attempt)
+
     return retry_stats.RetryWithStats(
         retry_stats.CIDB,
         handler=_IsRetryableException,
         max_retry=self.query_retry_args.max_retry,
         sleep=self.query_retry_args.sleep,
         backoff_factor=self.query_retry_args.backoff_factor,
-        success_functor=_RetrySuccessHandler,
+        status_callback=_StatusCallback,
         raise_first_exception_on_failure=False,
         functor=functor)
 

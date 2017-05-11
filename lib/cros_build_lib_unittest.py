@@ -739,23 +739,26 @@ class TestRetries(cros_test_lib.MockTempDirTestCase):
         raise ValueError()
       return val
 
-    s = []
-    def sf(attempt):
-      s.append(attempt)
-
     handler = lambda ex: isinstance(ex, ValueError)
 
+    callback_args = []
     self.assertRaises(ValueError, retry_util.GenericRetry, handler, 3, f,
-                      success_functor=sf)
-    self.assertEqual(s, [])
+                      status_callback=lambda *args: callback_args.append(args))
+    self.assertEqual(callback_args,
+                     [(0, False), (1, False), (2, False), (3, False)])
 
-    self.assertEqual(4, retry_util.GenericRetry(handler, 1, f,
-                                                success_functor=sf))
-    self.assertEqual(s, [1])
+    callback_args = []
+    self.assertEqual(
+        4,
+        retry_util.GenericRetry(
+            handler, 1, f,
+            status_callback=lambda *args: callback_args.append(args)))
+    self.assertEqual(callback_args, [(0, True)])
 
+    callback_args = []
     self.assertRaises(StopIteration, retry_util.GenericRetry, handler, 3, f,
-                      success_functor=sf)
-    self.assertEqual(s, [1])
+                      status_callback=lambda *args: callback_args.append(args))
+    self.assertEqual(callback_args, [(0, False)])
 
   def testGenericRetryBadArgs(self):
     """Test bad retry related arguments to GenericRetry raise ValueError."""
@@ -791,13 +794,30 @@ class TestRetries(cros_test_lib.MockTempDirTestCase):
       retry_util.GenericRetry(handler, 3, getTestFunction(),
                               raise_first_exception_on_failure=False)
 
-  def testSuccessFunctorException(self):
-    """Exceptions in |success_functor| should not be retried."""
-    def sf(_):
-      assert False
+  class CheckException(Exception):
+    """Exception thrown from the below function."""
 
-    with self.assertRaises(AssertionError):
-      retry_util.GenericRetry(lambda: True, 1, lambda: None, success_functor=sf)
+  def _RaiseCheckException(self, *_):
+    raise TestRetries.CheckException()
+
+  def testStatustCallbackExceptionForSuccess(self):
+    """Exception from |status_callback| should be raised even on success."""
+    with self.assertRaises(TestRetries.CheckException):
+      retry_util.GenericRetry(lambda: True, 1, lambda: None,
+                              status_callback=self._RaiseCheckException)
+
+  def testStatusCallbackExceptionForRetry(self):
+    """Exception from |status_callback| should stop retry."""
+    counter = [0]  # Counter to track how many times _functor is called.
+    def _functor():
+      counter[0] += 1
+      raise Exception()  # Let it fail.
+
+    with self.assertRaises(TestRetries.CheckException):
+      retry_util.GenericRetry(lambda: True, 10, _functor,
+                              status_callback=self._RaiseCheckException)
+    # Do not expect retry in case |status_callback| raises an exception.
+    self.assertEqual(counter[0], 1)
 
   def testRetryExceptionBadArgs(self):
     """Verify we reject non-classes or tuples of classes"""

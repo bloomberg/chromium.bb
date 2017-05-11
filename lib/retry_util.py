@@ -12,7 +12,6 @@ import time
 
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
-from chromite.lib import metrics
 
 
 def GenericRetry(handler, max_retry, functor, *args, **kwargs):
@@ -43,21 +42,17 @@ def GenericRetry(handler, max_retry, functor, *args, **kwargs):
     backoff_factor: Optional keyword. If supplied and > 1, subsequent sleeps
                     will be of length (backoff_factor ^ (attempt - 1)) * sleep,
                     rather than the default behavior of attempt * sleep.
-    success_functor: Optional functor that accepts 1 argument. Will be called
-                     after successful call to |functor|, with the argument
-                     being the number of attempts (1 = |functor| succeeded on
-                     first try).
     raise_first_exception_on_failure: Optional boolean which determines which
                                       exception is raised upon failure after
                                       retries. If True, the first exception
                                       that was encountered. If False, the
                                       final one. Default: True.
-    mon_name: Optional metrics name (string) to count. If provided, increment
-              count on this name for every call.
-    mon_retry_name: Optional retry_name (string) to count. If provided,
-                    increment count on this name for every retry call.
-    mon_fields: Optional fields dict associated with mon_name and
-                mon_retry_name.
+    status_callback: Optional callback invoked after each call of |functor|.
+      It takes two arguments: |attempt| which is the index of the last
+      attempt (0-based), and |success| representing whether the last attempt
+      was successfully done or not. If the callback raises an exception,
+      no further retry will be made, and the exception will be propagated to
+      the caller.
 
   Returns:
     Whatever functor(*args, **kwargs) returns.
@@ -86,19 +81,13 @@ def GenericRetry(handler, max_retry, functor, *args, **kwargs):
     raise ValueError('backoff_factor must be 1 or greater: %s'
                      % backoff_factor)
 
-  success_functor = kwargs.pop('success_functor', lambda x: None)
-  ret, success = (None, False)
+  status_callback = kwargs.pop(
+      'status_callback', lambda attempt, success: None)
 
   raise_first_exception_on_failure = kwargs.pop(
       'raise_first_exception_on_failure', True)
   delay_sec = kwargs.pop('delay_sec', 0)
   exception_to_raise = kwargs.pop('exception_to_raise', None)
-
-  mon_name = kwargs.pop('mon_name', None)
-  mon_retry_name = kwargs.pop('mon_retry_name', None)
-  mon_fields = kwargs.pop('mon_fields', None)
-
-  attempt = 0
 
   exc_info = None
   for attempt in xrange(max_retry + 1):
@@ -115,42 +104,45 @@ def GenericRetry(handler, max_retry, functor, *args, **kwargs):
       else:
         sleep_time = sleep * attempt
       time.sleep(sleep_time)
+
     try:
-      if mon_name is not None:
-        metrics.Counter(mon_name).increment(fields=mon_fields)
-
-      if attempt > 0 and mon_retry_name is not None:
-        metrics.Counter(mon_retry_name).increment(fields=mon_fields)
-
       ret = functor(*args, **kwargs)
-      success = True
-      break
     except Exception as e:
       # Note we're not snagging BaseException, so MemoryError/KeyboardInterrupt
       # and friends don't enter this except block.
-      if not handler(e):
-        logging.debug('ending retries with error: %s(%s)', e.__class__, e)
-        if exception_to_raise:
-          raise exception_to_raise(
-              '%s, %s: %s' % (str(e), exc_info[0], exc_info[1]))
-        else:
-          raise
 
-      logging.debug('%s(%s)', e.__class__, e)
       # If raise_first_exception_on_failure, we intentionally ignore
       # any failures in later attempts since we'll throw the original
       # failure if all retries fail.
       if exc_info is None or not raise_first_exception_on_failure:
         exc_info = sys.exc_info()
 
-  if success:
-    success_functor(attempt + 1)
-    return ret
+      try:
+        status_callback(attempt, False)
+      except Exception:
+        # In case callback raises an exception, quit the retry.
+        # For further investigation, log the original exception here.
+        logging.error('Ending retry due to Exception raised by a callback. '
+                      'Original exception raised during the attempt is '
+                      'as follows: ',
+                      exc_info=exc_info)
+        # Reraise the exception raised from the status_callback.
+        raise
 
+      if not handler(e):
+        logging.debug('ending retries with error: %s(%s)', e.__class__, e)
+        break
+      logging.debug('%s(%s)', e.__class__, e)
+    else:
+      # Run callback in outside of try's main block, in order to avoid
+      # accidental capture of an Exception which may be raised in callback.
+      status_callback(attempt, True)
+      return ret
+
+  # Did not return, meaning all attempts failed. Raise the exception.
   if exception_to_raise:
     raise exception_to_raise('%s: %s' % (exc_info[0], exc_info[1]))
-  else:
-    raise exc_info[0], exc_info[1], exc_info[2]
+  raise exc_info[0], exc_info[1], exc_info[2]
 
 
 def RetryException(exc_retry, max_retry, functor, *args, **kwargs):

@@ -487,15 +487,18 @@ class RepoRepository(object):
     if self.groups:
       init_cmd.extend(['--groups', self.groups])
 
-    fields = {'manifest_url': self.manifest_repo_url}
+    def _StatusCallback(attempt, _):
+      if attempt:
+        metrics.Counter(constants.MON_REPO_INIT_RETRY_COUNT).increment(
+            fields={'manifest_url': self.manifest_repo_url})
+
     retry_util.RetryCommand(self._RepoInit,
                             REPO_INIT_RETRY_LIMIT,
                             init_cmd,
                             sleep=DEFAULT_SLEEP_TIME,
                             backoff_factor=2,
                             log_retries=True,
-                            mon_retry_name=constants.MON_REPO_INIT_RETRY_COUNT,
-                            mon_fields=fields)
+                            status_callback=_StatusCallback)
 
     if local_manifest and local_manifest != self._manifest:
       self._SwitchToLocalManifest(local_manifest)
