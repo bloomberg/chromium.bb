@@ -136,18 +136,6 @@ void SetMachPortProvider(base::PortProvider* port_provider) {
 
 // Legacy IPC Helpers ----------------------------------------------------------
 
-void SetParentPipeHandle(ScopedPlatformHandle pipe) {
-  CHECK(internal::g_core);
-  IncomingBrokerClientInvitation invitation;
-  invitation.Accept(
-      ConnectionParams(TransportProtocol::kLegacy, std::move(pipe)));
-}
-
-void SetParentPipeHandleFromCommandLine() {
-  IncomingBrokerClientInvitation invitation;
-  invitation.AcceptFromCommandLine(TransportProtocol::kLegacy);
-}
-
 ScopedMessagePipeHandle ConnectToPeerProcess(ScopedPlatformHandle pipe) {
   return ConnectToPeerProcess(std::move(pipe), GenerateRandomToken());
 }
@@ -161,13 +149,6 @@ ScopedMessagePipeHandle ConnectToPeerProcess(ScopedPlatformHandle pipe,
 
 void ClosePeerConnection(const std::string& peer_token) {
   return internal::g_core->ClosePeerConnection(peer_token);
-}
-
-ScopedMessagePipeHandle CreateChildMessagePipe(const std::string& token) {
-  // TODO(rockot): This works but reveals the implementation detail that every
-  // IBCI instance currently shares a single global state. Kill this API soon.
-  IncomingBrokerClientInvitation invitation;
-  return invitation.ExtractMessagePipe(token);
 }
 
 }  // namespace edk

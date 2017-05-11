@@ -35,6 +35,7 @@
 #include "ipc/ipc_listener.h"
 #include "jingle/glue/thread_wrapper.h"
 #include "mojo/edk/embedder/embedder.h"
+#include "mojo/edk/embedder/incoming_broker_client_invitation.h"
 #include "mojo/edk/embedder/platform_channel_pair.h"
 #include "mojo/edk/embedder/scoped_ipc_support.h"
 #include "net/base/network_change_notifier.h"
@@ -480,14 +481,15 @@ bool HostProcess::InitWithCommandLine(const base::CommandLine* cmd_line) {
   ipc_support_ = base::MakeUnique<mojo::edk::ScopedIPCSupport>(
       context_->network_task_runner()->task_runner(),
       mojo::edk::ScopedIPCSupport::ShutdownPolicy::FAST);
-  mojo::edk::SetParentPipeHandle(
-      mojo::edk::PlatformChannelPair::PassClientHandleFromParentProcess(
-          *cmd_line));
+
+  auto invitation =
+      mojo::edk::IncomingBrokerClientInvitation::AcceptFromCommandLine(
+          mojo::edk::TransportProtocol::kLegacy);
 
   // Connect to the daemon process.
   daemon_channel_ = IPC::ChannelProxy::Create(
-      mojo::edk::CreateChildMessagePipe(
-          cmd_line->GetSwitchValueASCII(kMojoPipeToken))
+      invitation
+          ->ExtractMessagePipe(cmd_line->GetSwitchValueASCII(kMojoPipeToken))
           .release(),
       IPC::Channel::MODE_CLIENT, this, context_->network_task_runner());
 

@@ -8,6 +8,7 @@
 
 #include "base/command_line.h"
 #include "mojo/edk/embedder/embedder.h"
+#include "mojo/edk/embedder/incoming_broker_client_invitation.h"
 #include "mojo/edk/embedder/outgoing_broker_client_invitation.h"
 #include "services/service_manager/runner/common/switches.h"
 
@@ -23,13 +24,14 @@ mojom::ServicePtr PassServiceRequestOnCommandLine(
   return client;
 }
 
-mojom::ServiceRequest GetServiceRequestFromCommandLine() {
+mojom::ServiceRequest GetServiceRequestFromCommandLine(
+    mojo::edk::IncomingBrokerClientInvitation* invitation) {
   std::string token =
       base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
           switches::kServicePipeToken);
   mojom::ServiceRequest request;
   if (!token.empty())
-    request.Bind(mojo::edk::CreateChildMessagePipe(token));
+    request.Bind(invitation->ExtractMessagePipe(token));
   return request;
 }
 

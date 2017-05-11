@@ -34,6 +34,7 @@
 #include "content/public/common/service_manager_connection.h"
 #include "content/public/common/service_names.mojom.h"
 #include "mojo/edk/embedder/embedder.h"
+#include "mojo/edk/embedder/incoming_broker_client_invitation.h"
 #include "services/catalog/catalog.h"
 #include "services/catalog/manifest_provider.h"
 #include "services/catalog/public/cpp/manifest_parsing_util.h"
@@ -230,9 +231,11 @@ class ServiceManagerContext::InProcessServiceManagerContext
 ServiceManagerContext::ServiceManagerContext() {
   service_manager::mojom::ServiceRequest packaged_services_request;
   if (service_manager::ServiceManagerIsRemote()) {
-    mojo::edk::SetParentPipeHandleFromCommandLine();
+    auto invitation =
+        mojo::edk::IncomingBrokerClientInvitation::AcceptFromCommandLine(
+            mojo::edk::TransportProtocol::kLegacy);
     packaged_services_request =
-        service_manager::GetServiceRequestFromCommandLine();
+        service_manager::GetServiceRequestFromCommandLine(invitation.get());
   } else {
     std::unique_ptr<BuiltinManifestProvider> manifest_provider =
         base::MakeUnique<BuiltinManifestProvider>();

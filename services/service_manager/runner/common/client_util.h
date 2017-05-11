@@ -13,6 +13,7 @@ class CommandLine;
 
 namespace mojo {
 namespace edk {
+class IncomingBrokerClientInvitation;
 class OutgoingBrokerClientInvitation;
 }
 }
@@ -30,7 +31,8 @@ mojom::ServicePtr PassServiceRequestOnCommandLine(
 // Extracts a ServiceRequest from the command line of the current process.
 // The parent of this process should have passed a request using
 // PassServiceRequestOnCommandLine().
-mojom::ServiceRequest GetServiceRequestFromCommandLine();
+mojom::ServiceRequest GetServiceRequestFromCommandLine(
+    mojo::edk::IncomingBrokerClientInvitation* invitation);
 
 // Returns true if the ServiceRequest came via the command line from a service
 // manager

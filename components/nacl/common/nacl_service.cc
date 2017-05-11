@@ -12,6 +12,7 @@
 #include "content/public/common/service_names.mojom.h"
 #include "ipc/ipc.mojom.h"
 #include "mojo/edk/embedder/embedder.h"
+#include "mojo/edk/embedder/incoming_broker_client_invitation.h"
 #include "mojo/edk/embedder/scoped_ipc_support.h"
 #include "mojo/edk/embedder/scoped_platform_handle.h"
 #include "services/service_manager/public/cpp/bind_source_info.h"
@@ -28,7 +29,8 @@
 
 namespace {
 
-void EstablishMojoConnection() {
+std::unique_ptr<mojo::edk::IncomingBrokerClientInvitation>
+EstablishMojoConnection() {
 #if defined(OS_WIN)
   mojo::edk::ScopedPlatformHandle platform_channel(
       mojo::edk::PlatformChannelPair::PassClientHandleFromParentProcess(
@@ -38,16 +40,19 @@ void EstablishMojoConnection() {
       base::GlobalDescriptors::GetInstance()->Get(kMojoIPCChannel)));
 #endif
   DCHECK(platform_channel.is_valid());
-  mojo::edk::SetParentPipeHandle(std::move(platform_channel));
+  return mojo::edk::IncomingBrokerClientInvitation::Accept(
+      mojo::edk::ConnectionParams(mojo::edk::TransportProtocol::kLegacy,
+                                  std::move(platform_channel)));
 }
 
-service_manager::mojom::ServiceRequest ConnectToServiceManager() {
+service_manager::mojom::ServiceRequest ConnectToServiceManager(
+    mojo::edk::IncomingBrokerClientInvitation* invitation) {
   const std::string service_request_channel_token =
       base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
           switches::kServiceRequestChannelToken);
   DCHECK(!service_request_channel_token.empty());
   mojo::ScopedMessagePipeHandle parent_handle =
-      mojo::edk::CreateChildMessagePipe(service_request_channel_token);
+      invitation->ExtractMessagePipe(service_request_channel_token);
   DCHECK(parent_handle.is_valid());
   return mojo::MakeRequest<service_manager::mojom::Service>(
       std::move(parent_handle));
@@ -108,12 +113,12 @@ std::unique_ptr<service_manager::ServiceContext> CreateNaClServiceContext(
   auto ipc_support = base::MakeUnique<mojo::edk::ScopedIPCSupport>(
       std::move(io_task_runner),
       mojo::edk::ScopedIPCSupport::ShutdownPolicy::FAST);
-  EstablishMojoConnection();
-
+  auto invitation = EstablishMojoConnection();
   IPC::mojom::ChannelBootstrapPtr bootstrap;
   *ipc_channel = mojo::MakeRequest(&bootstrap).PassMessagePipe();
-  return base::MakeUnique<service_manager::ServiceContext>(
+  auto context = base::MakeUnique<service_manager::ServiceContext>(
       base::MakeUnique<NaClService>(bootstrap.PassInterface(),
                                     std::move(ipc_support)),
-      ConnectToServiceManager());
+      ConnectToServiceManager(invitation.get()));
+  return context;
 }

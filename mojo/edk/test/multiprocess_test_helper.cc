@@ -210,17 +210,18 @@ void MultiprocessTestHelper::ChildSetup() {
   NamedPlatformHandle named_pipe(
       command_line.GetSwitchValueNative(kNamedPipeName));
   if (command_line.HasSwitch(kRunAsBrokerClient)) {
-    IncomingBrokerClientInvitation invitation;
+    std::unique_ptr<IncomingBrokerClientInvitation> invitation;
 #if defined(OS_MACOSX) && !defined(OS_IOS)
     CHECK(base::MachPortBroker::ChildSendTaskPortToParent("mojo_test"));
 #endif
     if (named_pipe.is_valid()) {
-      invitation.Accept(ConnectionParams(TransportProtocol::kLegacy,
-                                         CreateClientHandle(named_pipe)));
+      invitation = IncomingBrokerClientInvitation::Accept(ConnectionParams(
+          TransportProtocol::kLegacy, CreateClientHandle(named_pipe)));
     } else {
-      invitation.AcceptFromCommandLine(TransportProtocol::kLegacy);
+      invitation = IncomingBrokerClientInvitation::AcceptFromCommandLine(
+          TransportProtocol::kLegacy);
     }
-    primordial_pipe = invitation.ExtractMessagePipe(kTestChildMessagePipeName);
+    primordial_pipe = invitation->ExtractMessagePipe(kTestChildMessagePipeName);
   } else {
     if (named_pipe.is_valid()) {
       primordial_pipe = ConnectToPeerProcess(CreateClientHandle(named_pipe));

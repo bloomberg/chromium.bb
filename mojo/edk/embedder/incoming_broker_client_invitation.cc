@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "mojo/edk/embedder/embedder_internal.h"
 #include "mojo/edk/embedder/platform_channel_pair.h"
 #include "mojo/edk/embedder/scoped_platform_handle.h"
@@ -14,28 +15,36 @@
 namespace mojo {
 namespace edk {
 
-IncomingBrokerClientInvitation::IncomingBrokerClientInvitation() {
-  DCHECK(internal::g_core);
-}
-
 IncomingBrokerClientInvitation::~IncomingBrokerClientInvitation() = default;
 
-void IncomingBrokerClientInvitation::Accept(ConnectionParams params) {
-  internal::g_core->AcceptBrokerClientInvitation(std::move(params));
+// static
+std::unique_ptr<IncomingBrokerClientInvitation>
+IncomingBrokerClientInvitation::Accept(ConnectionParams params) {
+  return base::WrapUnique(
+      new IncomingBrokerClientInvitation(std::move(params)));
 }
 
-void IncomingBrokerClientInvitation::AcceptFromCommandLine(
+// static
+std::unique_ptr<IncomingBrokerClientInvitation>
+IncomingBrokerClientInvitation::AcceptFromCommandLine(
     TransportProtocol protocol) {
   ScopedPlatformHandle platform_channel =
       PlatformChannelPair::PassClientHandleFromParentProcess(
           *base::CommandLine::ForCurrentProcess());
   DCHECK(platform_channel.is_valid());
-  Accept(ConnectionParams(protocol, std::move(platform_channel)));
+  return base::WrapUnique(new IncomingBrokerClientInvitation(
+      ConnectionParams(protocol, std::move(platform_channel))));
 }
 
 ScopedMessagePipeHandle IncomingBrokerClientInvitation::ExtractMessagePipe(
     const std::string& name) {
   return internal::g_core->ExtractMessagePipeFromInvitation(name);
+}
+
+IncomingBrokerClientInvitation::IncomingBrokerClientInvitation(
+    ConnectionParams params) {
+  DCHECK(internal::g_core);
+  internal::g_core->AcceptBrokerClientInvitation(std::move(params));
 }
 
 }  // namespace edk

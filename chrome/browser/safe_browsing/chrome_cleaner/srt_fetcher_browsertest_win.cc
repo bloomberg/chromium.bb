@@ -43,6 +43,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing_db/safe_browsing_prefs.h"
 #include "mojo/edk/embedder/embedder.h"
+#include "mojo/edk/embedder/incoming_broker_client_invitation.h"
 #include "mojo/edk/embedder/scoped_ipc_support.h"
 #include "mojo/edk/system/core.h"
 #include "testing/multiprocess_func_list.h"
@@ -151,19 +152,16 @@ void PromptUserCallback(const base::Closure& done,
 // process. Obtains the behavior to be mocked from special switches in
 // |command_line|. Sets |expected_value_received| as true if the parent
 // process replies with the expected prompt acceptance value.
-void SendScanResults(const std::string& chrome_mojo_pipe_token,
+void SendScanResults(chrome_cleaner::mojom::ChromePromptPtrInfo prompt_ptr_info,
                      const base::CommandLine& command_line,
                      const base::Closure& done,
                      bool* expected_value_received) {
   constexpr int kDefaultUwSId = 10;
   constexpr char kDefaultUwSName[] = "RemovedUwS";
 
-  mojo::ScopedMessagePipeHandle message_pipe_handle =
-      mojo::edk::CreateChildMessagePipe(chrome_mojo_pipe_token);
   // This pointer will be deleted by PromptUserCallback.
   g_chrome_prompt_ptr = new chrome_cleaner::mojom::ChromePromptPtr();
-  g_chrome_prompt_ptr->Bind(chrome_cleaner::mojom::ChromePromptPtrInfo(
-      std::move(message_pipe_handle), 0));
+  g_chrome_prompt_ptr->Bind(std::move(prompt_ptr_info));
 
   std::vector<chrome_cleaner::mojom::UwSPtr> removable_uws_found;
   if (command_line.HasSwitch(kReportUwSFoundSwitch)) {
@@ -211,7 +209,12 @@ bool ConnectAndSendDataToParentProcess(
   mojo::edk::ScopedIPCSupport ipc_support(
       io_thread.task_runner(),
       mojo::edk::ScopedIPCSupport::ShutdownPolicy::CLEAN);
-  mojo::edk::SetParentPipeHandleFromCommandLine();
+
+  auto invitation =
+      mojo::edk::IncomingBrokerClientInvitation::AcceptFromCommandLine(
+          mojo::edk::TransportProtocol::kLegacy);
+  chrome_cleaner::mojom::ChromePromptPtrInfo prompt_ptr_info(
+      invitation->ExtractMessagePipe(chrome_mojo_pipe_token), 0);
 
   CrashIf(MockedReporterFailure::kCrashAfterConnectedToParentProcess);
 
@@ -229,8 +232,8 @@ bool ConnectAndSendDataToParentProcess(
 
   bool expected_value_received = false;
   io_thread.task_runner()->PostTask(
-      FROM_HERE, base::Bind(&SendScanResults, chrome_mojo_pipe_token,
-                            command_line, done, &expected_value_received));
+      FROM_HERE, base::BindOnce(&SendScanResults, std::move(prompt_ptr_info),
+                                command_line, done, &expected_value_received));
 
   run_loop.Run();
 

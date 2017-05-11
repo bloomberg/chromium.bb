@@ -28,6 +28,7 @@
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_message.h"
 #include "mojo/edk/embedder/embedder.h"
+#include "mojo/edk/embedder/incoming_broker_client_invitation.h"
 #include "mojo/edk/embedder/outgoing_broker_client_invitation.h"
 #include "mojo/edk/embedder/platform_channel_pair.h"
 #include "mojo/edk/embedder/scoped_platform_handle.h"
@@ -280,13 +281,14 @@ MULTIPROCESS_TEST_MAIN(NSSDecrypterChildProcess) {
   base::MessageLoopForIO main_message_loop;
   FFDecryptorClientChannelListener listener;
 
-  mojo::edk::SetParentPipeHandle(
-      mojo::edk::ScopedPlatformHandle(mojo::edk::PlatformHandle(
-          kMojoIPCChannel + base::GlobalDescriptors::kBaseDescriptor)));
-  mojo::ScopedMessagePipeHandle mojo_handle =
-      mojo::edk::CreateChildMessagePipe(
-          base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-              switches::kMojoChannelToken));
+  auto invitation = mojo::edk::IncomingBrokerClientInvitation::Accept(
+      mojo::edk::ConnectionParams(
+          mojo::edk::TransportProtocol::kLegacy,
+          mojo::edk::ScopedPlatformHandle(mojo::edk::PlatformHandle(
+              kMojoIPCChannel + base::GlobalDescriptors::kBaseDescriptor))));
+  mojo::ScopedMessagePipeHandle mojo_handle = invitation->ExtractMessagePipe(
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          switches::kMojoChannelToken));
 
   std::unique_ptr<IPC::Channel> channel =
       IPC::Channel::CreateClient(mojo_handle.release(), &listener);
