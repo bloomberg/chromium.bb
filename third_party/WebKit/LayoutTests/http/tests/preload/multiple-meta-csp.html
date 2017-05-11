@@ -17,6 +17,8 @@ window.addEventListener("load", t.step_func(function() {
         assert_false(internals.isPreloaded('../resources/Ahem.ttf'), "fonts should not be preloaded");
         assert_false(internals.isPreloaded('../resources/dummy.css'), "css should not be preloaded");
         assert_false(internals.isPreloaded('../resources/square.png'), "imgs should not be preloaded");
+        assert_true(internals.isPreloaded('../resources/testharness.js'));
+        assert_true(internals.isPreloaded('../resources/testharnessreport.js'));
         t.done();
     }
 }));

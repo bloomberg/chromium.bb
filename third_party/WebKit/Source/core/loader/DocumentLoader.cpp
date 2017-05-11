@@ -217,6 +217,11 @@ Resource* DocumentLoader::StartPreload(Resource::Type type,
       NOTREACHED();
   }
 
+  // CSP layout tests verify that preloads are subject to access checks by
+  // seeing if they are in the `preload started` list. Therefore do not add
+  // them to the list if the load is immediately denied.
+  if (resource && !resource->GetResourceError().IsAccessCheck())
+    Fetcher()->PreloadStarted(resource);
   return resource;
 }
 
