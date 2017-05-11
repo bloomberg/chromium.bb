@@ -22,9 +22,8 @@
 #include "core/svg/SVGImageElement.h"
 
 #include "core/CSSPropertyNames.h"
+#include "core/SVGNames.h"
 #include "core/dom/StyleChangeReason.h"
-#include "core/frame/ImageBitmap.h"
-#include "core/frame/LocalDOMWindow.h"
 #include "core/layout/LayoutImageResource.h"
 #include "core/layout/svg/LayoutSVGImage.h"
 
@@ -53,8 +52,7 @@ inline SVGImageElement::SVGImageElement(Document& document)
       preserve_aspect_ratio_(SVGAnimatedPreserveAspectRatio::Create(
           this,
           SVGNames::preserveAspectRatioAttr)),
-      image_loader_(SVGImageLoader::Create(this)),
-      needs_loader_uri_update_(true) {
+      image_loader_(SVGImageLoader::Create(this)) {
   AddToPropertyMap(x_);
   AddToPropertyMap(y_);
   AddToPropertyMap(width_);
@@ -77,13 +75,13 @@ DEFINE_TRACE(SVGImageElement) {
 
 bool SVGImageElement::CurrentFrameHasSingleSecurityOrigin() const {
   if (LayoutSVGImage* layout_svg_image = ToLayoutSVGImage(GetLayoutObject())) {
-    if (layout_svg_image->ImageResource()->HasImage()) {
-      if (Image* image =
-              layout_svg_image->ImageResource()->CachedImage()->GetImage())
+    LayoutImageResource* layout_image_resource =
+        layout_svg_image->ImageResource();
+    if (layout_image_resource->HasImage()) {
+      if (Image* image = layout_image_resource->CachedImage()->GetImage())
         return image->CurrentFrameHasSingleSecurityOrigin();
     }
   }
-
   return true;
 }
 
@@ -140,11 +138,7 @@ void SVGImageElement::SvgAttributeChanged(const QualifiedName& attr_name) {
 
   if (SVGURIReference::IsKnownAttribute(attr_name)) {
     SVGElement::InvalidationGuard invalidation_guard(this);
-    if (isConnected())
-      GetImageLoader().UpdateFromElement(
-          ImageLoader::kUpdateIgnorePreviousError);
-    else
-      needs_loader_uri_update_ = true;
+    GetImageLoader().UpdateFromElement(ImageLoader::kUpdateIgnorePreviousError);
     return;
   }
 
@@ -162,40 +156,29 @@ LayoutObject* SVGImageElement::CreateLayoutObject(const ComputedStyle&) {
 }
 
 bool SVGImageElement::HaveLoadedRequiredResources() {
-  return !needs_loader_uri_update_ && !GetImageLoader().HasPendingActivity();
+  return !GetImageLoader().HasPendingActivity();
 }
 
 void SVGImageElement::AttachLayoutTree(const AttachContext& context) {
   SVGGraphicsElement::AttachLayoutTree(context);
 
   if (LayoutSVGImage* image_obj = ToLayoutSVGImage(GetLayoutObject())) {
-    if (image_obj->ImageResource()->HasImage())
+    LayoutImageResource* layout_image_resource = image_obj->ImageResource();
+    if (layout_image_resource->HasImage())
       return;
-
-    image_obj->ImageResource()->SetImageResource(GetImageLoader().GetImage());
+    layout_image_resource->SetImageResource(GetImageLoader().GetImage());
   }
 }
 
 Node::InsertionNotificationRequest SVGImageElement::InsertedInto(
     ContainerNode* root_parent) {
-  SVGGraphicsElement::InsertedInto(root_parent);
-  if (!root_parent->isConnected())
-    return kInsertionDone;
+  // A previous loader update may have failed to actually fetch the image if
+  // the document was inactive. In that case, force a re-update (but don't
+  // clear previous errors).
+  if (root_parent->isConnected() && !GetImageLoader().GetImage())
+    GetImageLoader().UpdateFromElement(ImageLoader::kUpdateNormal);
 
-  // We can only resolve base URIs properly after tree insertion - hence, URI
-  // mutations while detached are deferred until this point.
-  if (needs_loader_uri_update_) {
-    GetImageLoader().UpdateFromElement(ImageLoader::kUpdateIgnorePreviousError);
-    needs_loader_uri_update_ = false;
-  } else {
-    // A previous loader update may have failed to actually fetch the image if
-    // the document was inactive. In that case, force a re-update (but don't
-    // clear previous errors).
-    if (!GetImageLoader().GetImage())
-      GetImageLoader().UpdateFromElement();
-  }
-
-  return kInsertionDone;
+  return SVGGraphicsElement::InsertedInto(root_parent);
 }
 
 FloatSize SVGImageElement::SourceDefaultObjectSize() {
@@ -211,6 +194,7 @@ const AtomicString SVGImageElement::ImageSourceURL() const {
 }
 
 void SVGImageElement::DidMoveToNewDocument(Document& old_document) {
+  // TODO(fs): Initiate a new load (like HTMLImageElement.)
   GetImageLoader().ElementDidMoveToNewDocument();
   SVGGraphicsElement::DidMoveToNewDocument(old_document);
 }

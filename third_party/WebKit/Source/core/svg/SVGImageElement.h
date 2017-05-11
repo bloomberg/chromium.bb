@@ -21,7 +21,6 @@
 #ifndef SVGImageElement_h
 #define SVGImageElement_h
 
-#include "core/SVGNames.h"
 #include "core/html/canvas/ImageElementBase.h"
 #include "core/svg/SVGAnimatedLength.h"
 #include "core/svg/SVGAnimatedPreserveAspectRatio.h"
@@ -91,7 +90,6 @@ class CORE_EXPORT SVGImageElement final : public SVGGraphicsElement,
   Member<SVGAnimatedPreserveAspectRatio> preserve_aspect_ratio_;
 
   Member<SVGImageLoader> image_loader_;
-  bool needs_loader_uri_update_ : 1;
 };
 
 }  // namespace blink
