@@ -114,7 +114,7 @@ LayoutObject* NGInlineNode::CollectInlines(LayoutObject* start,
       // signal the presence of a non-text object to the unicode bidi algorithm.
       if (node->IsAtomicInlineLevel()) {
         builder->Append(NGInlineItem::kAtomicInline,
-                        kObjectReplacementCharacter, nullptr, node);
+                        kObjectReplacementCharacter, node->Style(), node);
       }
 
       // Otherwise traverse to children if they exist.
@@ -314,14 +314,13 @@ void NGInlineNode::CopyFragmentDataToLayoutBox(
                                physical_line_box);
     root_line_box->SetLogicalWidth(line_box.InlineSize());
     LayoutUnit line_top = line_box.BlockOffset();
-    root_line_box->SetLogicalTop(line_top);
     NGLineHeightMetrics line_metrics(Style(), baseline_type);
     const NGLineHeightMetrics& max_with_leading = physical_line_box->Metrics();
-    LayoutUnit baseline = line_top + line_metrics.ascent;
+    LayoutUnit baseline = line_top + max_with_leading.ascent;
+    root_line_box->SetLogicalTop(baseline - line_metrics.ascent);
     root_line_box->SetLineTopBottomPositions(
-        line_top, baseline + line_metrics.descent,
-        baseline - max_with_leading.ascent,
-        baseline + max_with_leading.descent);
+        baseline - line_metrics.ascent, baseline + line_metrics.descent,
+        line_top, baseline + max_with_leading.descent);
 
     bidi_runs.DeleteRuns();
     fragments_for_bidi_runs.clear();

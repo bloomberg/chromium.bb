@@ -68,15 +68,16 @@ class NGInlineLayoutStateStack {
   // Pop a box state stack.
   NGInlineBoxState* OnCloseTag(const NGInlineItem&,
                                NGLineBoxFragmentBuilder*,
-                               NGInlineBoxState*);
+                               NGInlineBoxState*,
+                               FontBaseline);
 
   // Compute all the pending positioning at the end of a line.
-  void OnEndPlaceItems(NGLineBoxFragmentBuilder*);
+  void OnEndPlaceItems(NGLineBoxFragmentBuilder*, FontBaseline);
 
  private:
   // End of a box state, either explicitly by close tag, or implicitly at the
   // end of a line.
-  void EndBoxState(NGInlineBoxState*, NGLineBoxFragmentBuilder*);
+  void EndBoxState(NGInlineBoxState*, NGLineBoxFragmentBuilder*, FontBaseline);
 
   enum PositionPending { kPositionNotPending, kPositionPending };
 
@@ -87,7 +88,8 @@ class NGInlineLayoutStateStack {
   // https://www.w3.org/TR/CSS22/visudet.html#propdef-vertical-align
   // https://www.w3.org/TR/css-inline-3/#propdef-vertical-align
   PositionPending ApplyBaselineShift(NGInlineBoxState*,
-                                     NGLineBoxFragmentBuilder*);
+                                     NGLineBoxFragmentBuilder*,
+                                     FontBaseline);
 
   Vector<NGInlineBoxState, 4> stack_;
 };
