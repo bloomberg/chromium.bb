@@ -24,7 +24,7 @@ IdentityManager::IdentityManager(SigninManagerBase* signin_manager)
 IdentityManager::~IdentityManager() {}
 
 void IdentityManager::GetPrimaryAccountId(
-    const GetPrimaryAccountIdCallback& callback) {
+    GetPrimaryAccountIdCallback callback) {
   AccountId account_id = EmptyAccountId();
 
   if (signin_manager_->IsAuthenticated()) {
@@ -33,7 +33,7 @@ void IdentityManager::GetPrimaryAccountId(
         AccountId::FromUserEmailGaiaId(account_info.email, account_info.gaia);
   }
 
-  callback.Run(account_id);
+  std::move(callback).Run(account_id);
 }
 
 }  // namespace identity
