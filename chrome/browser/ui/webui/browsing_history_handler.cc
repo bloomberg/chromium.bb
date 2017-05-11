@@ -280,8 +280,7 @@ void BrowsingHistoryHandler::RegisterMessages() {
   content::URLDataSource::Add(
       profile, new LargeIconSource(fallback_icon_service, large_icon_service));
 #else
-  content::URLDataSource::Add(
-      profile, new FaviconSource(profile, FaviconSource::ANY));
+  content::URLDataSource::Add(profile, new FaviconSource(profile));
 #endif
 
   web_ui()->RegisterMessageCallback("queryHistory",

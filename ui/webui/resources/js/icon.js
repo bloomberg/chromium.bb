@@ -86,17 +86,11 @@ cr.define('cr.icon', function() {
    *
    * @param {string} url Either the URL of the original page or of the favicon
    *     itself.
-   * @param {number=} opt_size Optional preferred size of the favicon.
-   * @param {string=} opt_type Optional type of favicon to request. Valid values
-   *     are 'favicon' and 'touch-icon'. Default is 'favicon'.
    * @return {string} -webkit-image-set for the favicon.
    */
-  function getFavicon(url, opt_size, opt_type) {
-    var size = opt_size || 16;
-    var type = opt_type || 'favicon';
-
+  function getFavicon(url) {
     return getImageSet(
-        'chrome://' + type + '/size/' + size + '@scalefactorx/' +
+        'chrome://favicon/size/16@scalefactorx/' +
         // Note: Literal 'iconurl' must match |kIconURLParameter| in
         // components/favicon_base/favicon_url_parser.cc.
         (FAVICON_URL_REGEX.test(url) ? 'iconurl/' : '') + url);

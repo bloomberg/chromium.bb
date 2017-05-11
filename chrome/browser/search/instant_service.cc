@@ -140,8 +140,7 @@ InstantService::InstantService(Profile* profile)
       LargeIconServiceFactory::GetForBrowserContext(profile_);
   content::URLDataSource::Add(
       profile_, new FallbackIconSource(fallback_icon_service));
-  content::URLDataSource::Add(
-      profile_, new FaviconSource(profile_, FaviconSource::FAVICON));
+  content::URLDataSource::Add(profile_, new FaviconSource(profile_));
   content::URLDataSource::Add(
       profile_, new LargeIconSource(fallback_icon_service, large_icon_service));
   content::URLDataSource::Add(profile_, new MostVisitedIframeSource());

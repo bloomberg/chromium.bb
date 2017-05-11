@@ -1044,8 +1044,7 @@ void BrowserOptionsHandler::InitializeHandler() {
     signin_observer_.Add(signin_manager);
 
   // Create our favicon data source.
-  content::URLDataSource::Add(
-      profile, new FaviconSource(profile, FaviconSource::FAVICON));
+  content::URLDataSource::Add(profile, new FaviconSource(profile));
 
 #if !defined(OS_CHROMEOS)
   default_browser_policy_.Init(

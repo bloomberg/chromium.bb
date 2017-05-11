@@ -45,19 +45,14 @@ FaviconSource::IconRequest::IconRequest(const IconRequest& other) = default;
 FaviconSource::IconRequest::~IconRequest() {
 }
 
-FaviconSource::FaviconSource(Profile* profile, IconType type)
-    : profile_(profile->GetOriginalProfile()),
-      icon_types_(type == FAVICON ? favicon_base::FAVICON
-                                  : favicon_base::TOUCH_PRECOMPOSED_ICON |
-                                        favicon_base::TOUCH_ICON |
-                                        favicon_base::FAVICON) {}
+FaviconSource::FaviconSource(Profile* profile)
+    : profile_(profile->GetOriginalProfile()) {}
 
 FaviconSource::~FaviconSource() {
 }
 
 std::string FaviconSource::GetSource() const {
-  return icon_types_ == favicon_base::FAVICON ? chrome::kChromeUIFaviconHost
-                                              : chrome::kChromeUITouchIconHost;
+  return chrome::kChromeUIFaviconHost;
 }
 
 void FaviconSource::StartDataRequest(
@@ -73,7 +68,7 @@ void FaviconSource::StartDataRequest(
   }
 
   chrome::ParsedFaviconPath parsed;
-  bool success = chrome::ParseFaviconPath(path, icon_types_, &parsed);
+  bool success = chrome::ParseFaviconPath(path, &parsed);
   if (!success) {
     SendDefaultResponse(callback);
     return;
@@ -114,14 +109,11 @@ void FaviconSource::StartDataRequest(
     }
 
     favicon_service->GetRawFaviconForPageURL(
-        url,
-        icon_types_,
-        desired_size_in_pixel,
-        base::Bind(
-            &FaviconSource::OnFaviconDataAvailable,
-            base::Unretained(this),
-            IconRequest(
-                callback, url, parsed.size_in_dip, parsed.device_scale_factor)),
+        url, favicon_base::FAVICON, desired_size_in_pixel,
+        base::Bind(&FaviconSource::OnFaviconDataAvailable,
+                   base::Unretained(this),
+                   IconRequest(callback, url, parsed.size_in_dip,
+                               parsed.device_scale_factor)),
         &cancelable_task_tracker_);
   }
 }
