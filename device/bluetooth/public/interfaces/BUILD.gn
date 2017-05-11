@@ -14,8 +14,6 @@ mojom("fake_bluetooth_interfaces") {
   sources = [
     "test/fake_bluetooth.mojom",
   ]
-
-  use_once_callback = true
 }
 
 mojom("experimental_interfaces") {
@@ -33,6 +31,4 @@ mojom("experimental_interfaces") {
     "//chrome/browser:*",
     "//chrome/browser/ui:*",
   ]
-
-  use_once_callback = true
 }

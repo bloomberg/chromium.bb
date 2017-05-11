@@ -18,8 +18,6 @@ mojom("mojom_parser") {
   public_deps = [
     "//url/mojo:url_mojom_gurl",
   ]
-
-  use_once_callback = true
 }
 
 mojom("mojom_payment_app") {
@@ -32,6 +30,4 @@ mojom("mojom_payment_app") {
     "//mojo/common:common_custom_types",
     "//url/mojo:url_mojom_gurl",
   ]
-
-  use_once_callback = true
 }

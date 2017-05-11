@@ -53,6 +53,9 @@ mojom("test_common_custom_types") {
   public_deps = [
     ":common_custom_types",
   ]
+
+  # TODO(crbug.com/714018): Convert the implementation to use OnceCallback.
+  use_once_callback = false
 }
 
 test("mojo_common_unittests") {

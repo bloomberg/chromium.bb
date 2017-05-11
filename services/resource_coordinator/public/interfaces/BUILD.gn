@@ -25,4 +25,7 @@ mojom("interfaces_internal") {
   export_define = "SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_IMPLEMENTATION=1"
   export_header =
       "services/resource_coordinator/public/cpp/resource_coordinator_export.h"
+
+  # TODO(crbug.com/714018): Convert the implementation to use OnceCallback.
+  use_once_callback = false
 }

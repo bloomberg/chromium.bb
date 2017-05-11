@@ -115,8 +115,6 @@ if (enable_nacl) {
     sources = [
       "nacl.mojom",
     ]
-
-    use_once_callback = true
   }
 }
 

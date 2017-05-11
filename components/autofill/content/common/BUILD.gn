@@ -30,6 +30,9 @@ mojom("mojo_interfaces") {
     "//ui/gfx/geometry/mojo",
     "//url/mojo:url_mojom_gurl",
   ]
+
+  # TODO(crbug.com/714018): Convert the implementation to use OnceCallback.
+  use_once_callback = false
 }
 
 mojom("mojo_types") {
@@ -52,6 +55,9 @@ mojom("mojo_test_types") {
   public_deps = [
     ":mojo_types",
   ]
+
+  # TODO(crbug.com/714018): Convert the implementation to use OnceCallback.
+  use_once_callback = false
 }
 
 source_set("unit_tests") {
