@@ -79,8 +79,10 @@ void GpuArcVideoServiceHost::OnBootstrapVideoAcceleratorFactory(
   std::string token = mojo::edk::GenerateRandomToken();
   mojo::ScopedMessagePipeHandle server_pipe =
       invitation.AttachMessagePipe(token);
-  invitation.Send(kUnusedChildProcessHandle,
-                  mojo::edk::ConnectionParams(channel_pair.PassServerHandle()));
+  invitation.Send(
+      kUnusedChildProcessHandle,
+      mojo::edk::ConnectionParams(mojo::edk::TransportProtocol::kLegacy,
+                                  channel_pair.PassServerHandle()));
 
   MojoHandle wrapped_handle;
   MojoResult wrap_result = mojo::edk::CreatePlatformHandleWrapper(

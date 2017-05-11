@@ -699,9 +699,11 @@ base::Process SwReporterProcess::LaunchConnectedReporterProcess() {
           ? base::Bind(&SwReporterTestingDelegate::OnConnectionError,
                        base::Unretained(g_testing_delegate_))
           : base::Bind(&OnConnectionError);
-  invitation.Send(reporter_process.Handle(),
-                  mojo::edk::ConnectionParams(channel.PassServerHandle()),
-                  on_connection_error);
+  invitation.Send(
+      reporter_process.Handle(),
+      mojo::edk::ConnectionParams(mojo::edk::TransportProtocol::kLegacy,
+                                  channel.PassServerHandle()),
+      on_connection_error);
 
   return reporter_process;
 }

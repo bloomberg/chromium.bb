@@ -50,7 +50,8 @@ InitializeMojoIPCChannel() {
 #endif
   CHECK(platform_channel.is_valid());
   return mojo::edk::IncomingBrokerClientInvitation::Accept(
-      mojo::edk::ConnectionParams(std::move(platform_channel)));
+      mojo::edk::ConnectionParams(mojo::edk::TransportProtocol::kLegacy,
+                                  std::move(platform_channel)));
 }
 
 ReplayProcess::ReplayProcess()

@@ -559,7 +559,8 @@ void WtsSessionProcessDelegate::Core::ReportProcessLaunched(
 
   broker_client_invitation_->Send(
       worker_process.Get(),
-      mojo::edk::ConnectionParams(std::move(server_handle)));
+      mojo::edk::ConnectionParams(mojo::edk::TransportProtocol::kLegacy,
+                                  std::move(server_handle)));
   broker_client_invitation_.reset();
   worker_process_ = std::move(worker_process);
 

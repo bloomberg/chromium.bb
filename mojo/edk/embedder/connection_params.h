@@ -17,10 +17,6 @@ namespace edk {
 // A set of parameters used when establishing a connection to another process.
 class MOJO_SYSTEM_IMPL_EXPORT ConnectionParams {
  public:
-  // Configures an OS pipe-based, |kBrokerClient| connection to the remote
-  // process using the legacy transport protocol.
-  explicit ConnectionParams(ScopedPlatformHandle channel);
-
   // Configures an OS pipe-based connection of type |type| to the remote process
   // using the given transport |protocol|.
   ConnectionParams(TransportProtocol protocol, ScopedPlatformHandle channel);

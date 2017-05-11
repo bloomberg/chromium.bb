@@ -87,9 +87,11 @@ void ChildProcessLauncher::Notify(
   if (process_.process.IsValid()) {
     // Set up Mojo IPC to the new process.
     DCHECK(invitation);
-    invitation->Send(process_.process.Handle(),
-                     mojo::edk::ConnectionParams(std::move(server_handle)),
-                     process_error_callback_);
+    invitation->Send(
+        process_.process.Handle(),
+        mojo::edk::ConnectionParams(mojo::edk::TransportProtocol::kLegacy,
+                                    std::move(server_handle)),
+        process_error_callback_);
     client_->OnProcessLaunched();
   } else {
     termination_status_ = base::TERMINATION_STATUS_LAUNCH_FAILED;

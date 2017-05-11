@@ -200,7 +200,8 @@ ScopedMessagePipeHandle Core::ConnectToPeerProcess(
   GetNodeController()->node()->CreatePortPair(&port0, &port1);
   MojoHandle handle = AddDispatcher(new MessagePipeDispatcher(
       GetNodeController(), port0, kUnknownPipeIdForDebug, 0));
-  ConnectionParams connection_params(std::move(pipe_handle));
+  ConnectionParams connection_params(TransportProtocol::kLegacy,
+                                     std::move(pipe_handle));
   GetNodeController()->ConnectToPeer(std::move(connection_params), port1,
                                      peer_token);
   return ScopedMessagePipeHandle(MessagePipeHandle(handle));
