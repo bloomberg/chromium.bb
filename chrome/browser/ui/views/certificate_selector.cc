@@ -15,6 +15,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/certificate_viewer.h"
+#include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/constrained_window/constrained_window_views.h"
 #include "components/guest_view/browser/guest_view_base.h"
@@ -27,7 +28,6 @@
 #include "ui/views/controls/button/md_text_button.h"
 #include "ui/views/controls/table/table_view.h"
 #include "ui/views/layout/grid_layout.h"
-#include "ui/views/layout/layout_constants.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/dialog_client_view.h"
 
@@ -207,7 +207,11 @@ void CertificateSelector::InitWithText(
   layout->StartRow(0, kColumnSetId);
   layout->AddView(text_label.release());
 
-  layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
+  ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
+  const int vertical_spacing = provider->GetDistanceMetric(
+      views::DISTANCE_RELATED_CONTROL_VERTICAL);
+
+  layout->AddPaddingRow(0, vertical_spacing);
 
   std::vector<ui::TableColumn> columns;
   columns.push_back(ui::TableColumn(IDS_CERT_SELECTOR_SUBJECT_COLUMN,
@@ -228,7 +232,7 @@ void CertificateSelector::InitWithText(
                   views::GridLayout::FILL, views::GridLayout::FILL,
                   kTableViewWidth, kTableViewHeight);
 
-  layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
+  layout->AddPaddingRow(0, vertical_spacing);
 }
 
 ui::TableModel* CertificateSelector::table_model_for_testing() const {

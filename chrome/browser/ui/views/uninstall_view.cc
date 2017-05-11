@@ -11,6 +11,7 @@
 #include "chrome/browser/lifetime/scoped_keep_alive.h"
 #include "chrome/browser/shell_integration.h"
 #include "chrome/browser/ui/uninstall_browser_prompt.h"
+#include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
 #include "chrome/common/chrome_result_codes.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/installer/util/shell_util.h"
@@ -19,7 +20,6 @@
 #include "ui/views/controls/combobox/combobox.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/grid_layout.h"
-#include "ui/views/layout/layout_constants.h"
 #include "ui/views/widget/widget.h"
 
 UninstallView::UninstallView(int* user_selection,
@@ -58,12 +58,25 @@ void UninstallView::SetupControls() {
   confirm_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   layout->AddView(confirm_label_);
 
-  layout->AddPaddingRow(0, views::kUnrelatedControlVerticalSpacing);
+  ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
+
+  const int checkbox_indent = provider->GetDistanceMetric(
+      DISTANCE_SUBSECTION_HORIZONTAL_INDENT);
+  const int unrelated_vertical_spacing = provider->GetDistanceMetric(
+      DISTANCE_UNRELATED_CONTROL_VERTICAL);
+  const int related_vertical_spacing = provider->GetDistanceMetric(
+      views::DISTANCE_RELATED_CONTROL_VERTICAL);
+  const int related_horizontal_spacing = provider->GetDistanceMetric(
+      views::DISTANCE_RELATED_CONTROL_HORIZONTAL);
+  const int related_vertical_small = provider->GetDistanceMetric(
+      DISTANCE_RELATED_CONTROL_VERTICAL_SMALL);
+
+  layout->AddPaddingRow(0, unrelated_vertical_spacing);
 
   // The "delete profile" check box.
   ++column_set_id;
   column_set = layout->AddColumnSet(column_set_id);
-  column_set->AddPaddingColumn(0, views::kCheckboxIndent);
+  column_set->AddPaddingColumn(0, checkbox_indent);
   column_set->AddColumn(GridLayout::LEADING, GridLayout::CENTER, 0,
                         GridLayout::USE_PREF, 0, 0);
   layout->StartRow(0, column_set_id);
@@ -80,14 +93,14 @@ void UninstallView::SetupControls() {
     browsers_.reset(new BrowsersMap());
     ShellUtil::GetRegisteredBrowsers(browsers_.get());
     if (!browsers_->empty()) {
-      layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
+      layout->AddPaddingRow(0, related_vertical_spacing);
 
       ++column_set_id;
       column_set = layout->AddColumnSet(column_set_id);
-      column_set->AddPaddingColumn(0, views::kCheckboxIndent);
+      column_set->AddPaddingColumn(0, checkbox_indent);
       column_set->AddColumn(GridLayout::LEADING, GridLayout::CENTER, 0,
                             GridLayout::USE_PREF, 0, 0);
-      column_set->AddPaddingColumn(0, views::kRelatedControlHorizontalSpacing);
+      column_set->AddPaddingColumn(0, related_horizontal_spacing);
       column_set->AddColumn(GridLayout::LEADING, GridLayout::CENTER, 0,
                             GridLayout::USE_PREF, 0, 0);
       layout->StartRow(0, column_set_id);
@@ -101,7 +114,7 @@ void UninstallView::SetupControls() {
     }
   }
 
-  layout->AddPaddingRow(0, views::kRelatedControlSmallVerticalSpacing);
+  layout->AddPaddingRow(0, related_vertical_small);
 }
 
 bool UninstallView::Accept() {
