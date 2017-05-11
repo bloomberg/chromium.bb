@@ -5,7 +5,7 @@
 #ifndef IOS_CHROME_BROWSER_UI_CONTENT_SUGGESTIONS_CONTENT_SUGGESTIONS_COMMANDS_H_
 #define IOS_CHROME_BROWSER_UI_CONTENT_SUGGESTIONS_CONTENT_SUGGESTIONS_COMMANDS_H_
 
-@class ContentSuggestionsArticleItem;
+@class ContentSuggestionsItem;
 class GURL;
 
 // Commands protocol for the ContentSuggestionsViewController.
@@ -16,7 +16,7 @@ class GURL;
 // Opens the |URL|.
 - (void)openURL:(const GURL&)URL;
 // Displays a context menu for opening the |articleItem|.
-- (void)displayContextMenuForArticle:(ContentSuggestionsArticleItem*)articleItem
+- (void)displayContextMenuForArticle:(ContentSuggestionsItem*)articleItem
                              atPoint:(CGPoint)touchLocation
                          atIndexPath:(NSIndexPath*)indexPath;
 // Dismisses the context menu if it is displayed.

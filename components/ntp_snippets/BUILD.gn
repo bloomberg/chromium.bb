@@ -47,8 +47,6 @@ static_library("ntp_snippets") {
     "pref_names.h",
     "pref_util.cc",
     "pref_util.h",
-    "reading_list/reading_list_distillation_state_util.cc",
-    "reading_list/reading_list_distillation_state_util.h",
     "reading_list/reading_list_suggestions_provider.cc",
     "reading_list/reading_list_suggestions_provider.h",
     "remote/json_request.cc",

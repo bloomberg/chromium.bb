@@ -6,8 +6,6 @@ source_set("content_suggestions") {
   sources = [
     "content_suggestion.h",
     "content_suggestion.mm",
-    "content_suggestion_extra_builder.h",
-    "content_suggestion_extra_builder.mm",
     "content_suggestions_collection_updater.h",
     "content_suggestions_collection_updater.mm",
     "content_suggestions_collection_utils.h",
@@ -30,7 +28,6 @@ source_set("content_suggestions") {
     "//ios/chrome/browser/ui/content_suggestions/cells",
     "//ios/chrome/browser/ui/content_suggestions/identifier",
     "//ios/chrome/browser/ui/favicon:favicon_ui",
-    "//ios/chrome/browser/ui/reading_list",
     "//ios/chrome/browser/ui/toolbar",
     "//mojo/common:common_custom_types",
     "//ui/base",
@@ -66,6 +63,9 @@ bundle_data("resources") {
     "resources/content_suggestions_no_image.png",
     "resources/content_suggestions_no_image@2x.png",
     "resources/content_suggestions_no_image@3x.png",
+    "resources/content_suggestions_offline.png",
+    "resources/content_suggestions_offline@2x.png",
+    "resources/content_suggestions_offline@3x.png",
   ]
   outputs = [
     "{{bundle_resources_dir}}/{{source_file_part}}",

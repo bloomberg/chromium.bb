@@ -11,7 +11,6 @@
 #include "components/ntp_snippets/category.h"
 #include "components/ntp_snippets/category_info.h"
 #include "components/ntp_snippets/content_suggestion.h"
-#include "components/ntp_snippets/reading_list/reading_list_distillation_state_util.h"
 #include "components/ntp_tiles/most_visited_sites.h"
 #include "components/ntp_tiles/ntp_tile.h"
 #import "ios/chrome/browser/content_suggestions/content_suggestions_category_wrapper.h"
@@ -371,13 +370,8 @@ initWithContentService:(ntp_snippets::ContentSuggestionsService*)contentService
         self.sectionInformationByCategory[categoryWrapper];
 
     if (category.IsKnownCategory(ntp_snippets::KnownCategories::READING_LIST)) {
-      ReadingListUIDistillationStatus status =
-          reading_list::UIStatusFromModelStatus(
-              ReadingListStateFromSuggestionState(
-                  contentSuggestion.reading_list_suggestion_extra()
-                      ->distilled_state));
-      suggestion.readingListExtra = [ContentSuggestionReadingListExtra
-          extraWithDistillationStatus:status];
+      suggestion.availableOffline =
+          contentSuggestion.reading_list_suggestion_extra()->distilled;
     }
 
     [contentArray addObject:suggestion];
