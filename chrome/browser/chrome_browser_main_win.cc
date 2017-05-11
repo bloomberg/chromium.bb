@@ -381,6 +381,10 @@ void ChromeBrowserMainPartsWin::PostBrowserStart() {
 
   InitializeChromeElf();
 
+#if defined(GOOGLE_CHROME_BUILD)
+  did_run_updater_.reset(new DidRunUpdater);
+#endif
+
   if (base::FeatureList::IsEnabled(safe_browsing::kSettingsResetPrompt)) {
     content::BrowserThread::PostAfterStartupTask(
         FROM_HERE,
