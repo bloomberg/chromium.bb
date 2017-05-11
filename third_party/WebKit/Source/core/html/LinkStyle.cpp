@@ -402,11 +402,11 @@ void LinkStyle::SetSheetTitle(const String& title) {
 }
 
 void LinkStyle::OwnerRemoved() {
-  if (sheet_)
-    ClearSheet();
-
   if (StyleSheetIsLoading())
     RemovePendingSheet();
+
+  if (sheet_)
+    ClearSheet();
 }
 
 DEFINE_TRACE(LinkStyle) {
