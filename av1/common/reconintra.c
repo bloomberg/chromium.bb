@@ -798,6 +798,7 @@ static void dr_prediction_z2(uint8_t *dst, ptrdiff_t stride, int bs,
 #endif  // CONFIG_INTRA_INTERP
       } else {
         base2 = y >> 8;
+        assert(base2 >= -1);
         shift2 = y & 0xFF;
 #if CONFIG_INTRA_INTERP
         val = intra_subpel_interp(base2, shift2, left, -1, bs - 1, filter_type);
