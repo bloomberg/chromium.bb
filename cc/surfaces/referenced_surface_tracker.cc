@@ -36,49 +36,36 @@ void ReferencedSurfaceTracker::UpdateReferences(
     referenced_surfaces_.clear();
   }
 
-  std::unordered_set<SurfaceId, SurfaceIdHash> referenced_surface_set;
+  base::flat_set<SurfaceId> new_referenced_surfaces;
   if (active_referenced_surfaces) {
-    referenced_surface_set.insert(active_referenced_surfaces->begin(),
-                                  active_referenced_surfaces->end());
+    new_referenced_surfaces = base::flat_set<SurfaceId>(
+        active_referenced_surfaces->begin(), active_referenced_surfaces->end(),
+        base::KEEP_FIRST_OF_DUPES);
   }
+  FindReferenceDiff(new_referenced_surfaces);
 
-  ProcessNewReferences(referenced_surface_set);
+  if (!references_to_add_.empty() || !references_to_remove_.empty())
+    swap(referenced_surfaces_, new_referenced_surfaces);
 }
 
-void ReferencedSurfaceTracker::ProcessNewReferences(
-    const std::unordered_set<SurfaceId, SurfaceIdHash>&
-        new_referenced_surfaces) {
-  // Removed references for each SurfaceId in |referenced_surfaces_| if they
-  // aren't referenced anymore. Removing from a set invalidates iterators, so
-  // create a new vector then remove everything in it.
-  std::vector<SurfaceId> not_referenced;
+void ReferencedSurfaceTracker::FindReferenceDiff(
+    const base::flat_set<SurfaceId>& new_referenced_surfaces) {
+  // Find SurfaceIds in |referenced_surfaces_| that aren't referenced anymore.
   for (const SurfaceId& surface_id : referenced_surfaces_) {
-    if (new_referenced_surfaces.count(surface_id) == 0)
-      not_referenced.push_back(surface_id);
+    if (new_referenced_surfaces.count(surface_id) == 0) {
+      references_to_remove_.push_back(
+          SurfaceReference(current_surface_id_, surface_id));
+    }
   }
-  for (const SurfaceId& surface_id : not_referenced)
-    RemoveSurfaceReference(surface_id);
 
-  // Add references for each SurfaceId in |new_referenced_surfaces| if they
-  // aren't already referenced.
+  // Find SurfaceIds in |new_referenced_surfaces| that aren't already
+  // referenced.
   for (const SurfaceId& surface_id : new_referenced_surfaces) {
-    if (referenced_surfaces_.count(surface_id) == 0)
-      AddSurfaceReference(surface_id);
+    if (referenced_surfaces_.count(surface_id) == 0) {
+      references_to_add_.push_back(
+          SurfaceReference(current_surface_id_, surface_id));
+    }
   }
-}
-
-void ReferencedSurfaceTracker::AddSurfaceReference(
-    const SurfaceId& surface_id) {
-  references_to_add_.push_back(
-      SurfaceReference(current_surface_id_, surface_id));
-  referenced_surfaces_.insert(surface_id);
-}
-
-void ReferencedSurfaceTracker::RemoveSurfaceReference(
-    const SurfaceId& surface_id) {
-  references_to_remove_.push_back(
-      SurfaceReference(current_surface_id_, surface_id));
-  referenced_surfaces_.erase(surface_id);
 }
 
 }  // namespace cc
