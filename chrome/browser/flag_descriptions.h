@@ -3422,6 +3422,19 @@ extern const char kEnableD3DVsyncDescription[];
 
 #endif  // defined(OS_WIN)
 
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
+
+// Name and description for the flag to use the local NTP if Google is the
+// default search engine.
+extern const char kUseGoogleLocalNtpName[];
+extern const char kUseGoogleLocalNtpDescription[];
+
+// Name and description for the flag to show a OneGoogleBar on the local NTP.
+extern const char kOneGoogleBarOnLocalNtpName[];
+extern const char kOneGoogleBarOnLocalNtpDescription[];
+
+#endif
+
 }  // namespace flag_descriptions
 
 #endif  // CHROME_BROWSER_FLAG_DESCRIPTIONS_H_

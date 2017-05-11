@@ -27,6 +27,7 @@
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/browser_resources.h"
@@ -47,9 +48,6 @@
 #include "url/gurl.h"
 
 namespace {
-
-base::Feature kOneGoogleBarOnLocalNtpFeature{"OneGoogleBarOnLocalNtp",
-                                             base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Signifies a locally constructed resource, i.e. not from grit/.
 const int kLocalResource = -1;
@@ -240,7 +238,7 @@ LocalNtpSource::LocalNtpSource(Profile* profile)
       weak_ptr_factory_(this) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  if (base::FeatureList::IsEnabled(kOneGoogleBarOnLocalNtpFeature)) {
+  if (base::FeatureList::IsEnabled(features::kOneGoogleBarOnLocalNtp)) {
     one_google_bar_service_ =
         OneGoogleBarServiceFactory::GetForProfile(profile_);
   }

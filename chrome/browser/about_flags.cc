@@ -2892,6 +2892,17 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(features::kD3DVsync)},
 #endif  // defined(OS_WIN)
 
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
+    {"use-google-local-ntp", flag_descriptions::kUseGoogleLocalNtpName,
+     flag_descriptions::kUseGoogleLocalNtpDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(features::kUseGoogleLocalNtp)},
+
+    {"one-google-bar-on-local-ntp",
+     flag_descriptions::kOneGoogleBarOnLocalNtpName,
+     flag_descriptions::kOneGoogleBarOnLocalNtpDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(features::kOneGoogleBarOnLocalNtp)},
+#endif  // !defined(OS_ANDROID) && !defined(OS_IOS)
+
     // NOTE: Adding new command-line switches requires adding corresponding
     // entries to enum "LoginCustomFlags" in histograms/enums.xml. See note in
     // enums.xml and don't forget to run AboutFlagsHistogramTest unit test.

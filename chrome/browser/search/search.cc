@@ -23,6 +23,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_instant_controller.h"
 #include "chrome/browser/ui/search/instant_search_prerenderer.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/features.h"
 #include "chrome/common/pref_names.h"
@@ -79,10 +80,6 @@ enum NewTabURLState {
   NEW_TAB_URL_BLOCKED = 6,
 
   NEW_TAB_URL_MAX
-};
-
-base::Feature kUseGoogleLocalNtp {
-  "UseGoogleLocalNtp", base::FEATURE_DISABLED_BY_DEFAULT
 };
 
 const TemplateURL* GetDefaultSearchProviderTemplateURL(Profile* profile) {
@@ -198,7 +195,7 @@ bool ShouldShowLocalNewTab(const GURL& url, Profile* profile) {
 #endif  // defined(OS_CHROMEOS)
 
   if (!profile->IsOffTheRecord() &&
-      base::FeatureList::IsEnabled(kUseGoogleLocalNtp) &&
+      base::FeatureList::IsEnabled(features::kUseGoogleLocalNtp) &&
       DefaultSearchProviderIsGoogle(profile)) {
     return true;
   }
