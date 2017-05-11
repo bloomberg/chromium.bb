@@ -215,9 +215,6 @@
     ],
     "instrumentation_tests": [
       {
-        "test": "android_webview_test_apk"
-      },
-      {
         "test": "chrome_public_test_apk"
       },
       {
@@ -225,30 +222,14 @@
       },
       {
         "test": "content_shell_test_apk"
+      },
+      {
+        "test": "webview_instrumentation_test_apk"
       }
     ]
   },
   "Lollipop Low-end Tester": {
     "gtest_tests": [
-      {
-        "override_compile_targets": [
-          "android_webview_test_apk"
-        ],
-        "override_isolate_target": "android_webview_test_apk",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "android_devices": "1",
-              "device_os": "LMY47W",
-              "device_type": "sprout"
-            }
-          ],
-          "expiration": 14400,
-          "shards": 2
-        },
-        "test": "android_webview_test_apk"
-      },
       {
         "override_isolate_target": "android_webview_unittests",
         "swarming": {
@@ -709,6 +690,25 @@
           "expiration": 14400
         },
         "test": "unit_tests"
+      },
+      {
+        "override_compile_targets": [
+          "webview_instrumentation_test_apk"
+        ],
+        "override_isolate_target": "webview_instrumentation_test_apk",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "android_devices": "1",
+              "device_os": "LMY47W",
+              "device_type": "sprout"
+            }
+          ],
+          "expiration": 14400,
+          "shards": 2
+        },
+        "test": "webview_instrumentation_test_apk"
       }
     ]
   },
@@ -745,43 +745,6 @@
   },
   "Nougat Phone Tester": {
     "gtest_tests": [
-      {
-        "override_compile_targets": [
-          "android_webview_test_apk"
-        ],
-        "override_isolate_target": "android_webview_test_apk",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "cipd_packages": [
-            {
-              "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
-              "location": "bin",
-              "revision": "git_revision:ff387eadf445b24c935f1cf7d6ddd279f8a6b04c"
-            }
-          ],
-          "dimension_sets": [
-            {
-              "android_devices": "1",
-              "device_os": "NRD91N",
-              "device_type": "bullhead"
-            }
-          ],
-          "expiration": 10800,
-          "hard_timeout": 1500,
-          "output_links": [
-            {
-              "link": [
-                "https://luci-logdog.appspot.com/v/?s",
-                "=android%2Fswarming%2Flogcats%2F",
-                "${TASK_ID}%2F%2B%2Funified_logcats"
-              ],
-              "name": "shard #${SHARD_INDEX} logcats"
-            }
-          ],
-          "shards": 6
-        },
-        "test": "android_webview_test_apk"
-      },
       {
         "override_isolate_target": "android_webview_unittests",
         "swarming": {
@@ -1791,6 +1754,43 @@
           ]
         },
         "test": "vr_shell_unittests"
+      },
+      {
+        "override_compile_targets": [
+          "webview_instrumentation_test_apk"
+        ],
+        "override_isolate_target": "webview_instrumentation_test_apk",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "cipd_packages": [
+            {
+              "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
+              "location": "bin",
+              "revision": "git_revision:ff387eadf445b24c935f1cf7d6ddd279f8a6b04c"
+            }
+          ],
+          "dimension_sets": [
+            {
+              "android_devices": "1",
+              "device_os": "NRD91N",
+              "device_type": "bullhead"
+            }
+          ],
+          "expiration": 10800,
+          "hard_timeout": 1500,
+          "output_links": [
+            {
+              "link": [
+                "https://luci-logdog.appspot.com/v/?s",
+                "=android%2Fswarming%2Flogcats%2F",
+                "${TASK_ID}%2F%2B%2Funified_logcats"
+              ],
+              "name": "shard #${SHARD_INDEX} logcats"
+            }
+          ],
+          "shards": 6
+        },
+        "test": "webview_instrumentation_test_apk"
       }
     ]
   },
@@ -1969,9 +1969,6 @@
     ],
     "instrumentation_tests": [
       {
-        "test": "android_webview_test_apk"
-      },
-      {
         "test": "chrome_public_test_apk"
       },
       {
@@ -1979,6 +1976,9 @@
       },
       {
         "test": "content_shell_test_apk"
+      },
+      {
+        "test": "webview_instrumentation_test_apk"
       }
     ],
     "scripts": [
@@ -2163,9 +2163,6 @@
     ],
     "instrumentation_tests": [
       {
-        "test": "android_webview_test_apk"
-      },
-      {
         "test": "chrome_public_test_apk"
       },
       {
@@ -2173,6 +2170,9 @@
       },
       {
         "test": "content_shell_test_apk"
+      },
+      {
+        "test": "webview_instrumentation_test_apk"
       }
     ],
     "scripts": [
@@ -2184,22 +2184,6 @@
   },
   "x64 Device Tester": {
     "gtest_tests": [
-      {
-        "override_compile_targets": [
-          "android_webview_test_apk"
-        ],
-        "override_isolate_target": "android_webview_test_apk",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "android_devices": "1",
-              "device_type": "coho"
-            }
-          ]
-        },
-        "test": "android_webview_test_apk"
-      },
       {
         "override_isolate_target": "angle_unittests",
         "swarming": {
@@ -2808,6 +2792,22 @@
         "test": "webkit_unit_tests"
       },
       {
+        "override_compile_targets": [
+          "webview_instrumentation_test_apk"
+        ],
+        "override_isolate_target": "webview_instrumentation_test_apk",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "android_devices": "1",
+              "device_type": "coho"
+            }
+          ]
+        },
+        "test": "webview_instrumentation_test_apk"
+      },
+      {
         "override_isolate_target": "wtf_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -2824,23 +2824,6 @@
   },
   "x86 Cloud Tester": {
     "gtest_tests": [
-      {
-        "override_compile_targets": [
-          "android_webview_test_apk"
-        ],
-        "override_isolate_target": "android_webview_test_apk",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "android_devices": "4",
-              "device_type": "gce_x86"
-            }
-          ],
-          "hard_timeout": 960
-        },
-        "test": "android_webview_test_apk"
-      },
       {
         "override_isolate_target": "android_webview_unittests",
         "swarming": {
@@ -3288,6 +3271,23 @@
           ]
         },
         "test": "unit_tests"
+      },
+      {
+        "override_compile_targets": [
+          "webview_instrumentation_test_apk"
+        ],
+        "override_isolate_target": "webview_instrumentation_test_apk",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "android_devices": "4",
+              "device_type": "gce_x86"
+            }
+          ],
+          "hard_timeout": 960
+        },
+        "test": "webview_instrumentation_test_apk"
       }
     ],
     "isolated_scripts": [

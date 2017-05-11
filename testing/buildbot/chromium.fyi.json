@@ -2707,22 +2707,6 @@
   "ClangToTAndroid x64": {
     "gtest_tests": [
       {
-        "override_compile_targets": [
-          "android_webview_test_apk"
-        ],
-        "override_isolate_target": "android_webview_test_apk",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "android_devices": "1",
-              "device_type": "coho"
-            }
-          ]
-        },
-        "test": "android_webview_test_apk"
-      },
-      {
         "override_isolate_target": "angle_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -3328,6 +3312,22 @@
           ]
         },
         "test": "webkit_unit_tests"
+      },
+      {
+        "override_compile_targets": [
+          "webview_instrumentation_test_apk"
+        ],
+        "override_isolate_target": "webview_instrumentation_test_apk",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "android_devices": "1",
+              "device_type": "coho"
+            }
+          ]
+        },
+        "test": "webview_instrumentation_test_apk"
       },
       {
         "override_isolate_target": "wtf_unittests",
