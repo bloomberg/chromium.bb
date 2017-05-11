@@ -7,6 +7,7 @@
 #include "core/dom/Document.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/frame/LocalFrame.h"
+#include "core/workers/MainThreadWorkletGlobalScope.h"
 #include "core/workers/WorkerOrWorkletGlobalScope.h"
 #include "core/workers/WorkerThread.h"
 #include "platform/WebFrameScheduler.h"
@@ -66,15 +67,19 @@ RefPtr<WebTaskRunner> TaskRunnerHelper::Get(TaskType type, Document* document) {
 
 RefPtr<WebTaskRunner> TaskRunnerHelper::Get(
     TaskType type,
-    ExecutionContext* executionContext) {
-  if (!executionContext)
-    return Get(type, ToDocument(executionContext));
-  if (executionContext->IsDocument())
-    return Get(type, ToDocument(executionContext));
-  if (executionContext->IsWorkerOrWorkletGlobalScope())
-    return Get(type, ToWorkerOrWorkletGlobalScope(executionContext));
-  executionContext = nullptr;
-  return Get(type, ToDocument(executionContext));
+    ExecutionContext* execution_context) {
+  if (!execution_context)
+    return Get(type, ToDocument(execution_context));
+  if (execution_context->IsDocument())
+    return Get(type, ToDocument(execution_context));
+  if (execution_context->IsMainThreadWorkletGlobalScope()) {
+    return Get(type,
+               ToMainThreadWorkletGlobalScope(execution_context)->GetFrame());
+  }
+  if (execution_context->IsWorkerOrWorkletGlobalScope())
+    return Get(type, ToWorkerOrWorkletGlobalScope(execution_context));
+  execution_context = nullptr;
+  return Get(type, ToDocument(execution_context));
 }
 
 RefPtr<WebTaskRunner> TaskRunnerHelper::Get(TaskType type,
