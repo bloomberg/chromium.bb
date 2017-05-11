@@ -152,8 +152,6 @@ TranslateRankerImpl::TranslateRankerImpl(const base::FilePath& model_path,
         base::Bind(&TranslateRankerImpl::OnModelAvailable,
                    weak_ptr_factory_.GetWeakPtr()),
         model_path, model_url, kUmaPrefix);
-    // Kick off the initial load from cache.
-    model_loader_->NotifyOfRankerActivity();
   }
 }
 
