@@ -128,27 +128,6 @@ std::unique_ptr<TestInMemoryStore> CreatePrefilledStore() {
   return base::MakeUnique<TestInMemoryStore>(std::move(events), true);
 }
 
-// A test-only implementation of ModelImpl to be able to change the current
-// day while a test is running.
-class TestModelImpl : public ModelImpl {
- public:
-  TestModelImpl(std::unique_ptr<Store> store,
-                std::unique_ptr<Configuration> configuration,
-                std::unique_ptr<StorageValidator> storage_validator)
-      : ModelImpl(std::move(store),
-                  std::move(configuration),
-                  std::move(storage_validator)),
-        current_day_(0) {}
-  ~TestModelImpl() override {}
-
-  uint32_t GetCurrentDay() override { return current_day_; }
-
-  void SetCurrentDay(uint32_t current_day) { current_day_ = current_day; }
-
- private:
-  uint32_t current_day_;
-};
-
 class ModelImplTest : public ::testing::Test {
  public:
   ModelImplTest()
@@ -167,8 +146,8 @@ class ModelImplTest : public ::testing::Test {
     std::unique_ptr<TestInMemoryStore> store = CreateStore();
     store_ = store.get();
 
-    model_.reset(new TestModelImpl(std::move(store), std::move(configuration),
-                                   base::MakeUnique<NeverStorageValidator>()));
+    model_.reset(new ModelImpl(std::move(store), std::move(configuration),
+                               base::MakeUnique<NeverStorageValidator>()));
   }
 
   virtual std::unique_ptr<TestInMemoryStore> CreateStore() {
@@ -181,7 +160,7 @@ class ModelImplTest : public ::testing::Test {
   }
 
  protected:
-  std::unique_ptr<TestModelImpl> model_;
+  std::unique_ptr<ModelImpl> model_;
   TestInMemoryStore* store_;
   bool got_initialize_callback_;
   bool initialize_callback_result_;
@@ -250,10 +229,8 @@ TEST_F(ModelImplTest, IncrementingNonExistingEvent) {
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(model_->IsReady());
 
-  model_->SetCurrentDay(1u);
-
   // Incrementing the event should work even if it does not exist.
-  model_->IncrementEvent("nonexisting");
+  model_->IncrementEvent("nonexisting", 1u);
   const Event* event1 = model_->GetEvent("nonexisting");
   EXPECT_EQ("nonexisting", event1->name());
   EXPECT_EQ(1, event1->events_size());
@@ -262,7 +239,7 @@ TEST_F(ModelImplTest, IncrementingNonExistingEvent) {
 
   // Incrementing the event after it has been initialized to 1, it should now
   // have a count of 2 for the given day.
-  model_->IncrementEvent("nonexisting");
+  model_->IncrementEvent("nonexisting", 1u);
   const Event* event2 = model_->GetEvent("nonexisting");
   Event_Count event2_count = event2->events(0);
   EXPECT_EQ(1, event2->events_size());
@@ -276,13 +253,10 @@ TEST_F(ModelImplTest, IncrementingNonExistingEventMultipleDays) {
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(model_->IsReady());
 
-  model_->SetCurrentDay(1u);
-  model_->IncrementEvent("nonexisting");
-  model_->SetCurrentDay(2u);
-  model_->IncrementEvent("nonexisting");
-  model_->IncrementEvent("nonexisting");
-  model_->SetCurrentDay(3u);
-  model_->IncrementEvent("nonexisting");
+  model_->IncrementEvent("nonexisting", 1u);
+  model_->IncrementEvent("nonexisting", 2u);
+  model_->IncrementEvent("nonexisting", 2u);
+  model_->IncrementEvent("nonexisting", 3u);
   const Event* event = model_->GetEvent("nonexisting");
   EXPECT_EQ(3, event->events_size());
   VerifyEventCount(event, 1u, 1u);
@@ -297,8 +271,6 @@ TEST_F(ModelImplTest, IncrementingSingleDayExistingEvent) {
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(model_->IsReady());
 
-  model_->SetCurrentDay(1u);
-
   // |foo| is inserted into the store with a count of 1 at day 1.
   const Event* foo_event = model_->GetEvent("foo");
   EXPECT_EQ("foo", foo_event->name());
@@ -306,7 +278,7 @@ TEST_F(ModelImplTest, IncrementingSingleDayExistingEvent) {
   VerifyEventCount(foo_event, 1u, 1u);
 
   // Incrementing |foo| should change count to 2.
-  model_->IncrementEvent("foo");
+  model_->IncrementEvent("foo", 1u);
   const Event* foo_event2 = model_->GetEvent("foo");
   EXPECT_EQ(1, foo_event2->events_size());
   VerifyEventCount(foo_event2, 1u, 2u);
@@ -319,12 +291,10 @@ TEST_F(ModelImplTest, IncrementingSingleDayExistingEventTwice) {
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(model_->IsReady());
 
-  model_->SetCurrentDay(1u);
-
   // |foo| is inserted into the store with a count of 1 at day 1, so
   // incrementing twice should lead to 3.
-  model_->IncrementEvent("foo");
-  model_->IncrementEvent("foo");
+  model_->IncrementEvent("foo", 1u);
+  model_->IncrementEvent("foo", 1u);
   const Event* foo_event = model_->GetEvent("foo");
   EXPECT_EQ(1, foo_event->events_size());
   VerifyEventCount(foo_event, 1u, 3u);
@@ -339,10 +309,9 @@ TEST_F(ModelImplTest, IncrementingExistingMultiDayEvent) {
 
   // |bar| is inserted into the store with a count of 3 at day 2. Incrementing
   // that day should lead to a count of 4.
-  model_->SetCurrentDay(2u);
   const Event* bar_event = model_->GetEvent("bar");
   VerifyEventCount(bar_event, 2u, 3u);
-  model_->IncrementEvent("bar");
+  model_->IncrementEvent("bar", 2u);
   const Event* bar_event2 = model_->GetEvent("bar");
   VerifyEventCount(bar_event2, 2u, 4u);
   VerifyEqual(bar_event2, store_->GetLastWrittenEvent());
@@ -356,12 +325,11 @@ TEST_F(ModelImplTest, IncrementingExistingMultiDayEventNewDay) {
 
   // |bar| does not contain entries for day 10, so incrementing should create
   // the day.
-  model_->SetCurrentDay(10u);
-  model_->IncrementEvent("bar");
+  model_->IncrementEvent("bar", 10u);
   const Event* bar_event = model_->GetEvent("bar");
   VerifyEventCount(bar_event, 10u, 1u);
   VerifyEqual(bar_event, store_->GetLastWrittenEvent());
-  model_->IncrementEvent("bar");
+  model_->IncrementEvent("bar", 10u);
   const Event* bar_event2 = model_->GetEvent("bar");
   VerifyEventCount(bar_event2, 10u, 2u);
   VerifyEqual(bar_event2, store_->GetLastWrittenEvent());

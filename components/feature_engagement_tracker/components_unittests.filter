@@ -10,3 +10,4 @@ ModelImplTest.*
 NeverConditionValidatorTest.*
 OnceConditionValidatorTest.*
 SingleInvalidConfigurationTest.*
+SystemTimeProviderTest.*

@@ -48,9 +48,7 @@ class TestModel : public Model {
     return nullptr;
   }
 
-  void IncrementEvent(const std::string& event_name) override {}
-
-  uint32_t GetCurrentDay() override { return 0u; }
+  void IncrementEvent(const std::string& event_name, uint32_t day) override {}
 
  private:
   FeatureConfig feature_config_;
