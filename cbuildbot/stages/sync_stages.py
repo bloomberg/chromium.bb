@@ -1081,8 +1081,12 @@ class CommitQueueSyncStage(MasterSlaveLKGMSyncStage):
     """Checks out the repository to the given manifest."""
     lkgm_version = self._GetLKGMVersionFromManifest(next_manifest)
     chroot_manager = chroot_lib.ChrootManager(self._build_root)
+
     # Make sure the chroot version is valid.
-    chroot_manager.EnsureChrootAtVersion(lkgm_version)
+    using_fresh_chroot = chroot_manager.EnsureChrootAtVersion(lkgm_version)
+    metrics.Counter(constants.MON_CHROOT_USED).increment(
+        fields={'build_config': self._run.config.name,
+                'used_fresh_chroot': using_fresh_chroot})
 
     # Clear the chroot version as we are in the middle of building it.
     chroot_manager.ClearChrootVersion()

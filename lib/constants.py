@@ -258,6 +258,7 @@ MON_CL_FALSE_REJ_TOTAL = ('chromeos/cbuildbot/submitted_change/'
                           'false_rejections_total')
 MON_CL_FALSE_REJ_COUNT = ('chromeos/cbuildbot/submitted_change/'
                           'false_rejection_count')
+MON_CHROOT_USED = 'chromeos/cbuildbot/chroot_at_version'
 MON_REPO_SYNC_COUNT = 'chromeos/cbuildbot/repo/sync_count'
 MON_REPO_SYNC_RETRY_COUNT = 'chromeos/cbuildbot/repo/sync_retry_count'
 MON_REPO_SELFUPDATE_FAILURE_COUNT = ('chromeos/cbuildbot/repo/'

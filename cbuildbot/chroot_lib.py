@@ -66,13 +66,19 @@ class ChrootManager(object):
 
     Args:
       version: Version of the chroot to look for. E.g. 6394.0.0-rc3
+
+    Returns:
+      Whether or not we wiped the existing chroot. True if yes (fresh chroot),
+      False otherwise (using existing chroot).
     """
     chroot = os.path.join(self._build_root, constants.DEFAULT_CHROOT_DIR)
     if version and self.GetChrootVersion(chroot) == version:
       logging.PrintBuildbotStepText('(Using existing chroot)')
+      return False
     else:
       logging.PrintBuildbotStepText('(Using fresh chroot)')
       osutils.RmDir(chroot, ignore_missing=True, sudo=True)
+      return True
 
   def ClearChrootVersion(self, chroot=None):
     """Clear the version in the specified |chroot|.

@@ -16,8 +16,6 @@ from chromite.lib import osutils
 class TestChrootManager(cros_test_lib.TempDirTestCase):
   """Class that tests the ChrootManager."""
 
-  sudo_cleanup = True
-
   def setUp(self):
     self.chroot_manager = chroot_lib.ChrootManager(self.tempdir)
 
@@ -49,11 +47,13 @@ class TestChrootManager(cros_test_lib.TempDirTestCase):
     chroot = os.path.join(self.tempdir, 'chroot')
     osutils.SafeMakedirs(os.path.join(chroot, 'etc'))
     self.chroot_manager.SetChrootVersion('foo')
-    self.chroot_manager.EnsureChrootAtVersion('foo')
+    fresh_chroot = self.chroot_manager.EnsureChrootAtVersion('foo')
     self.assertEquals(self.chroot_manager.GetChrootVersion(chroot), 'foo')
+    self.assertFalse(fresh_chroot)
 
   def testUseFreshChroot(self):
     """Tests that EnsureChrootAtVersion succeeds with invalid chroot."""
     chroot = os.path.join(self.tempdir, 'chroot')
-    self.chroot_manager.EnsureChrootAtVersion('foo')
+    fresh_chroot = self.chroot_manager.EnsureChrootAtVersion('foo')
     self.assertEquals(self.chroot_manager.GetChrootVersion(chroot), None)
+    self.assertTrue(fresh_chroot)
