@@ -10,7 +10,6 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "content/browser/permissions/permission_service_context.h"
-#include "mojo/public/cpp/bindings/binding.h"
 #include "third_party/WebKit/public/platform/modules/permissions/permission.mojom.h"
 #include "url/origin.h"
 
@@ -27,15 +26,8 @@ enum class PermissionType;
 // WebContents for example.
 class PermissionServiceImpl : public blink::mojom::PermissionService {
  public:
-  PermissionServiceImpl(
-      PermissionServiceContext* context,
-      mojo::InterfaceRequest<blink::mojom::PermissionService> request);
+  PermissionServiceImpl(PermissionServiceContext* context);
   ~PermissionServiceImpl() override;
-
-  // Clear pending operations currently run by the service. This will be called
-  // by PermissionServiceContext when it will need the service to clear its
-  // state for example, if the frame changes.
-  void CancelPendingOperations();
 
  private:
   using PermissionStatusCallback =
@@ -75,8 +67,6 @@ class PermissionServiceImpl : public blink::mojom::PermissionService {
       blink::mojom::PermissionStatus last_known_status,
       blink::mojom::PermissionObserverPtr observer) override;
 
-  void OnConnectionError();
-
   void OnRequestPermissionResponse(int pending_request_id,
                                    blink::mojom::PermissionStatus status);
   void OnRequestPermissionsResponse(
@@ -94,7 +84,6 @@ class PermissionServiceImpl : public blink::mojom::PermissionService {
   RequestsMap pending_requests_;
   // context_ owns |this|.
   PermissionServiceContext* context_;
-  mojo::Binding<blink::mojom::PermissionService> binding_;
   base::WeakPtrFactory<PermissionServiceImpl> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(PermissionServiceImpl);

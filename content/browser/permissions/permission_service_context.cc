@@ -74,8 +74,8 @@ PermissionServiceContext::~PermissionServiceContext() {
 void PermissionServiceContext::CreateService(
     const service_manager::BindSourceInfo& source_info,
     blink::mojom::PermissionServiceRequest request) {
-  services_.push_back(
-      base::MakeUnique<PermissionServiceImpl>(this, std::move(request)));
+  services_.AddBinding(base::MakeUnique<PermissionServiceImpl>(this),
+                       std::move(request));
 }
 
 void PermissionServiceContext::CreateSubscription(
@@ -102,17 +102,6 @@ void PermissionServiceContext::CreateSubscription(
   subscriptions_[subscription_id] = std::move(subscription);
 }
 
-void PermissionServiceContext::ServiceHadConnectionError(
-    PermissionServiceImpl* service) {
-  auto it = std::find_if(
-      services_.begin(), services_.end(),
-      [service](const std::unique_ptr<PermissionServiceImpl>& this_service) {
-        return service == this_service.get();
-      });
-  DCHECK(it != services_.end());
-  services_.erase(it);
-}
-
 void PermissionServiceContext::ObserverHadConnectionError(int subscription_id) {
   auto it = subscriptions_.find(subscription_id);
   DCHECK(it != subscriptions_.end());
@@ -122,12 +111,12 @@ void PermissionServiceContext::ObserverHadConnectionError(int subscription_id) {
 void PermissionServiceContext::RenderFrameHostChanged(
     RenderFrameHost* old_host,
     RenderFrameHost* new_host) {
-  CancelPendingOperations(old_host);
+  CloseBindings(old_host);
 }
 
 void PermissionServiceContext::FrameDeleted(
     RenderFrameHost* render_frame_host) {
-  CancelPendingOperations(render_frame_host);
+  CloseBindings(render_frame_host);
 }
 
 void PermissionServiceContext::DidFinishNavigation(
@@ -135,18 +124,16 @@ void PermissionServiceContext::DidFinishNavigation(
   if (!navigation_handle->HasCommitted() || navigation_handle->IsSameDocument())
     return;
 
-  CancelPendingOperations(navigation_handle->GetRenderFrameHost());
+  CloseBindings(navigation_handle->GetRenderFrameHost());
 }
 
-void PermissionServiceContext::CancelPendingOperations(
+void PermissionServiceContext::CloseBindings(
     RenderFrameHost* render_frame_host) {
   DCHECK(render_frame_host_);
   if (render_frame_host != render_frame_host_)
     return;
 
-  for (const auto& service : services_)
-    service->CancelPendingOperations();
-
+  services_.CloseAllBindings();
   subscriptions_.clear();
 }
 
