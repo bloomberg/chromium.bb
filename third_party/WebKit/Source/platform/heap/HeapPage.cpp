@@ -1052,8 +1052,7 @@ Address LargeObjectArena::LazySweepPages(size_t allocation_size,
   while (first_unswept_page_) {
     BasePage* page = first_unswept_page_;
     if (page->IsEmpty()) {
-      swept_size += static_cast<LargeObjectPage*>(page)->PayloadSize() +
-                    sizeof(HeapObjectHeader);
+      swept_size += static_cast<LargeObjectPage*>(page)->PayloadSize();
       page->Unlink(&first_unswept_page_);
       page->RemoveFromHeap();
       // For LargeObjectPage, stop lazy sweeping once we have swept
@@ -1328,7 +1327,7 @@ void NormalPage::Sweep() {
       continue;
     }
     if (!header->IsMarked()) {
-      // This is a fast version of header->payloadSize().
+      // This is a fast version of header->PayloadSize().
       size_t payload_size = size - sizeof(HeapObjectHeader);
       Address payload = header->Payload();
       // For ASan, unpoison the object before calling the finalizer. The
@@ -1397,7 +1396,7 @@ void NormalPage::SweepAndCompact(CompactionContext& context) {
       header_address += size;
       continue;
     }
-    // This is a fast version of header->payloadSize().
+    // This is a fast version of header->PayloadSize().
     size_t payload_size = size - sizeof(HeapObjectHeader);
     Address payload = header->Payload();
     if (!header->IsMarked()) {
