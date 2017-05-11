@@ -11,6 +11,11 @@
 #include "chrome/browser/ui/views/payments/payment_request_sheet_controller.h"
 #include "components/payments/content/payment_request_spec.h"
 #include "components/payments/content/payment_request_state.h"
+#include "ui/views/controls/styled_label_listener.h"
+
+namespace views {
+class StyledLabel;
+}
 
 namespace payments {
 
@@ -20,7 +25,8 @@ class PaymentRequestDialogView;
 // Payment Request dialog.
 class PaymentSheetViewController : public PaymentRequestSheetController,
                                    public PaymentRequestSpec::Observer,
-                                   public PaymentRequestState::Observer {
+                                   public PaymentRequestState::Observer,
+                                   public views::StyledLabelListener {
  public:
   // Does not take ownership of the arguments, which should outlive this object.
   PaymentSheetViewController(PaymentRequestSpec* spec,
@@ -44,6 +50,11 @@ class PaymentSheetViewController : public PaymentRequestSheetController,
   std::unique_ptr<views::View> CreateExtraFooterView() override;
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
+  // views::StyledLabelListener:
+  void StyledLabelLinkClicked(views::StyledLabel* label,
+                              const gfx::Range& range,
+                              int event_flags) override;
+
   void UpdatePayButtonState(bool enabled);
 
   std::unique_ptr<views::View> CreateShippingSectionContent();
@@ -53,6 +64,7 @@ class PaymentSheetViewController : public PaymentRequestSheetController,
   std::unique_ptr<views::View> CreateContactInfoSectionContent();
   std::unique_ptr<views::Button> CreateContactInfoRow();
   std::unique_ptr<views::Button> CreateShippingOptionRow();
+  std::unique_ptr<views::View> CreateDataSourceRow();
 
   views::Button* pay_button_;
 

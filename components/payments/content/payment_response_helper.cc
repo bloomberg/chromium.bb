@@ -4,6 +4,8 @@
 
 #include "components/payments/content/payment_response_helper.h"
 
+#include <string>
+
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/autofill_country.h"
@@ -61,9 +63,9 @@ PaymentResponseHelper::PaymentResponseHelper(
   // Start to get the instrument details. Will call back into
   // OnInstrumentDetailsReady.
   selected_instrument_->InvokePaymentApp(this);
-};
+}
 
-PaymentResponseHelper::~PaymentResponseHelper(){};
+PaymentResponseHelper::~PaymentResponseHelper() {}
 
 // static
 mojom::PaymentAddressPtr

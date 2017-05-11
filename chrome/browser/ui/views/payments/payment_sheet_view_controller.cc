@@ -15,8 +15,11 @@
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/views/payments/payment_request_dialog_view.h"
 #include "chrome/browser/ui/views/payments/payment_request_dialog_view_ids.h"
 #include "chrome/browser/ui/views/payments/payment_request_row_view.h"
@@ -28,7 +31,9 @@
 #include "components/payments/content/payment_request_state.h"
 #include "components/payments/core/currency_formatter.h"
 #include "components/payments/core/payment_instrument.h"
+#include "components/payments/core/payment_prefs.h"
 #include "components/payments/core/strings_util.h"
+#include "components/prefs/pref_service.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -39,6 +44,7 @@
 #include "ui/gfx/range/range.h"
 #include "ui/gfx/text_elider.h"
 #include "ui/gfx/text_utils.h"
+#include "ui/views/border.h"
 #include "ui/views/controls/button/md_text_button.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
@@ -460,6 +466,8 @@ void PaymentSheetViewController::FillContentView(views::View* content_view) {
     layout->StartRow(0, 0);
     layout->AddView(CreateContactInfoRow().release());
   }
+  layout->StartRow(0, 0);
+  layout->AddView(CreateDataSourceRow().release());
 }
 
 // Adds the product logo to the footer.
@@ -530,6 +538,15 @@ void PaymentSheetViewController::ButtonPressed(
       PaymentRequestSheetController::ButtonPressed(sender, event);
       break;
   }
+}
+
+void PaymentSheetViewController::StyledLabelLinkClicked(
+    views::StyledLabel* label,
+    const gfx::Range& range,
+    int event_flags) {
+  // The only thing that can trigger this is the user clicking on the "settings"
+  // link in the data attribution text.
+  chrome::ShowSettingsSubPageForProfile(dialog()->GetProfile(), "");
 }
 
 void PaymentSheetViewController::UpdatePayButtonState(bool enabled) {
@@ -895,6 +912,72 @@ PaymentSheetViewController::CreateShippingOptionRow() {
             l10n_util::GetStringUTF16(IDS_PAYMENT_REQUEST_CHOOSE_AN_ADDRESS),
             l10n_util::GetStringUTF16(IDS_CHOOSE), /*button_enabled=*/false);
   }
+}
+
+std::unique_ptr<views::View> PaymentSheetViewController::CreateDataSourceRow() {
+  std::unique_ptr<views::View> content_view = base::MakeUnique<views::View>();
+  views::BoxLayout* layout = new views::BoxLayout(
+      views::BoxLayout::kVertical, kPaymentRequestRowHorizontalInsets, 0, 0);
+  layout->set_main_axis_alignment(views::BoxLayout::MAIN_AXIS_ALIGNMENT_START);
+  layout->set_cross_axis_alignment(
+      views::BoxLayout::CROSS_AXIS_ALIGNMENT_START);
+  content_view->SetLayoutManager(layout);
+
+  base::string16 data_source;
+  // If no transaction has been completed so far, choose which string to display
+  // as a function of the profile's signed in state. Otherwise, always show the
+  // same string.
+  bool first_transaction_completed =
+      dialog()->GetProfile()->GetPrefs()->GetBoolean(
+          payments::kPaymentsFirstTransactionCompleted);
+  if (first_transaction_completed) {
+    data_source =
+        l10n_util::GetStringUTF16(IDS_PAYMENTS_CARD_AND_ADDRESS_SETTINGS);
+  } else {
+    std::string user_email = state()->GetAuthenticatedEmail();
+    if (!user_email.empty()) {
+      // Insert the user's email into the format string.
+      data_source = base::UTF8ToUTF16(base::StringPrintf(
+          l10n_util::GetStringUTF8(
+              IDS_PAYMENTS_CARD_AND_ADDRESS_SETTINGS_SIGNED_IN)
+              .c_str(),
+          user_email.c_str()));
+    } else {
+      data_source = l10n_util::GetStringUTF16(
+          IDS_PAYMENTS_CARD_AND_ADDRESS_SETTINGS_SIGNED_OUT);
+    }
+  }
+
+  // The translated string will surround the actual "Settings" substring with
+  // BEGIN_LINK and END_LINK. Find the beginning of the link range and the
+  // length of the "settings" part, then remove the BEGIN_LINK and END_LINK
+  // parts and linkify "settings".
+  base::string16 begin_tag = base::UTF8ToUTF16("BEGIN_LINK");
+  base::string16 end_tag = base::UTF8ToUTF16("END_LINK");
+  size_t link_begin = data_source.find(begin_tag);
+  DCHECK(link_begin != base::string16::npos);
+
+  size_t link_end = data_source.find(end_tag);
+  DCHECK(link_end != base::string16::npos);
+
+  size_t link_length = link_end - link_begin - begin_tag.size();
+  data_source.erase(link_end, end_tag.size());
+  data_source.erase(link_begin, begin_tag.size());
+
+  std::unique_ptr<views::StyledLabel> data_source_label =
+      base::MakeUnique<views::StyledLabel>(data_source, this);
+  data_source_label->SetBorder(views::CreateEmptyBorder(22, 0, 0, 0));
+
+  views::StyledLabel::RangeStyleInfo default_style;
+  default_style.color = data_source_label->GetNativeTheme()->GetSystemColor(
+      ui::NativeTheme::kColorId_LabelDisabledColor);
+  data_source_label->SetDefaultStyle(default_style);
+  data_source_label->AddStyleRange(
+      gfx::Range(link_begin, link_begin + link_length),
+      views::StyledLabel::RangeStyleInfo::CreateForLink());
+  data_source_label->SizeToFit(0);
+  content_view->AddChildView(data_source_label.release());
+  return content_view;
 }
 
 }  // namespace payments

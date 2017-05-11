@@ -8,6 +8,7 @@
 
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/views/payments/contact_info_editor_view_controller.h"
 #include "chrome/browser/ui/views/payments/credit_card_editor_view_controller.h"
@@ -26,6 +27,7 @@
 #include "components/payments/content/payment_request.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/web_contents.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/label.h"
@@ -292,6 +294,11 @@ void PaymentRequestDialogView::EditorViewUpdated() {
 void PaymentRequestDialogView::ShowProcessingSpinner() {
   throbber_.Start();
   throbber_overlay_.SetVisible(true);
+}
+
+Profile* PaymentRequestDialogView::GetProfile() {
+  return Profile::FromBrowserContext(
+      request_->web_contents()->GetBrowserContext());
 }
 
 void PaymentRequestDialogView::ShowInitialPaymentSheet() {

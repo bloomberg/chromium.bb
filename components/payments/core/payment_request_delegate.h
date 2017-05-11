@@ -19,6 +19,8 @@ class PersonalDataManager;
 class RegionDataLoader;
 }  // namespace autofill
 
+class PrefService;
+
 namespace ukm {
 class UkmService;
 }  // namespace ukm
@@ -74,6 +76,14 @@ class PaymentRequestDelegate {
 
   // Returns a pointer to the UKM service.
   virtual ukm::UkmService* GetUkmService() = 0;
+
+  // Returns the user's signed-in email address, or empty string if not signed
+  // in.
+  virtual std::string GetAuthenticatedEmail() const = 0;
+
+  // Gets the pref service for the browser context associated with this
+  // PaymentRequest.
+  virtual PrefService* GetPrefService() = 0;
 };
 
 }  // namespace payments

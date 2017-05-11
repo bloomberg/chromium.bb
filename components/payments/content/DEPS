@@ -5,6 +5,7 @@ include_rules = [
   "+components/data_use_measurement",
   "+components/keyed_service/content",
   "+components/link_header_util",
+  "+components/prefs",
   "+components/strings",
   "+content/public",
   "+mojo/public/cpp",
