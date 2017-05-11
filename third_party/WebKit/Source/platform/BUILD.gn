@@ -1284,6 +1284,8 @@ component("platform") {
     "scheduler/base/time_converter.h",
     "scheduler/base/time_domain.cc",
     "scheduler/base/time_domain.h",
+    "scheduler/base/trace_helper.cc",
+    "scheduler/base/trace_helper.h",
     "scheduler/base/virtual_time_domain.cc",
     "scheduler/base/virtual_time_domain.h",
     "scheduler/base/work_queue.cc",

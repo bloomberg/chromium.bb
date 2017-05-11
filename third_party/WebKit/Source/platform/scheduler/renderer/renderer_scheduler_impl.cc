@@ -9,7 +9,6 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_event_argument.h"
@@ -19,6 +18,7 @@
 #include "platform/scheduler/base/task_queue_impl.h"
 #include "platform/scheduler/base/task_queue_selector.h"
 #include "platform/scheduler/base/time_converter.h"
+#include "platform/scheduler/base/trace_helper.h"
 #include "platform/scheduler/base/virtual_time_domain.h"
 #include "platform/scheduler/child/scheduler_tqm_delegate.h"
 #include "platform/scheduler/renderer/auto_advancing_virtual_time_domain.h"
@@ -75,12 +75,6 @@ void ReportBackgroundRendererTaskLoad(base::TimeTicks time, double load) {
                            load_percentage);
   TRACE_COUNTER1(TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"),
                  "RendererScheduler.BackgroundRendererLoad", load_percentage);
-}
-
-std::string PointerToId(void* pointer) {
-  return base::StringPrintf(
-      "0x%" PRIx64,
-      static_cast<uint64_t>(reinterpret_cast<uintptr_t>(pointer)));
 }
 
 }  // namespace
@@ -1517,7 +1511,8 @@ RendererSchedulerImpl::AsValueLocked(base::TimeTicks optional_now) const {
   state->BeginDictionary("web_view_schedulers");
   for (WebViewSchedulerImpl* web_view_scheduler :
        GetMainThreadOnly().web_view_schedulers) {
-    state->BeginDictionaryWithCopiedName(PointerToId(web_view_scheduler));
+    state->BeginDictionaryWithCopiedName(
+        trace_helper::PointerToString(web_view_scheduler));
     web_view_scheduler->AsValueInto(state.get());
     state->EndDictionary();
   }
