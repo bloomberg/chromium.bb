@@ -80,8 +80,6 @@ class WebKitFinder(object):
         self._dirsep = filesystem.sep
         self._sys_path = sys.path
         self._env_path = os.environ['PATH'].split(os.pathsep)
-        self._chromium_base = None
-        self._depot_tools = None
 
     @memoized
     def _webkit_base(self):
@@ -96,10 +94,9 @@ class WebKitFinder(object):
         assert tools_index != -1, 'could not find location of this checkout from %s' % module_path
         return self._filesystem.normpath(module_path[0:tools_index - 1])
 
+    @memoized
     def chromium_base(self):
-        if not self._chromium_base:
-            self._chromium_base = self._filesystem.dirname(self._filesystem.dirname(self._webkit_base()))
-        return self._chromium_base
+        return self._filesystem.dirname(self._filesystem.dirname(self._webkit_base()))
 
     # Do not expose this function in order to make the code robust against
     # directory structure changes.
@@ -146,14 +143,13 @@ class WebKitFinder(object):
             return None
         return file_path[len(layout_tests_rel_path) + 1:]
 
+    @memoized
     def depot_tools_base(self):
-        if not self._depot_tools:
-            # This basically duplicates src/build/find_depot_tools.py without the side effects
-            # (adding the directory to sys.path and importing breakpad).
-            self._depot_tools = (self._check_paths_for_depot_tools(self._sys_path) or
-                                 self._check_paths_for_depot_tools(self._env_path) or
-                                 self._check_upward_for_depot_tools())
-        return self._depot_tools
+        # This basically duplicates src/build/find_depot_tools.py without the side effects
+        # (adding the directory to sys.path and importing breakpad).
+        return (self._check_paths_for_depot_tools(self._sys_path) or
+                self._check_paths_for_depot_tools(self._env_path) or
+                self._check_upward_for_depot_tools())
 
     def _check_paths_for_depot_tools(self, paths):
         for path in paths:
