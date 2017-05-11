@@ -82,7 +82,7 @@ IDBRequest* IDBFactory::getDatabaseNames(ScriptState* script_state,
   if (!IndexedDBClient::From(ExecutionContext::From(script_state))
            ->AllowIndexedDB(ExecutionContext::From(script_state),
                             "Database Listing")) {
-    request->OnError(
+    request->EnqueueResponse(
         DOMException::Create(kUnknownError, kPermissionDeniedErrorMessage));
     return request;
   }
@@ -129,7 +129,7 @@ IDBOpenDBRequest* IDBFactory::OpenInternal(ScriptState* script_state,
 
   if (!IndexedDBClient::From(ExecutionContext::From(script_state))
            ->AllowIndexedDB(ExecutionContext::From(script_state), name)) {
-    request->OnError(
+    request->EnqueueResponse(
         DOMException::Create(kUnknownError, kPermissionDeniedErrorMessage));
     return request;
   }
@@ -187,7 +187,7 @@ IDBOpenDBRequest* IDBFactory::DeleteDatabaseInternal(
 
   if (!IndexedDBClient::From(ExecutionContext::From(script_state))
            ->AllowIndexedDB(ExecutionContext::From(script_state), name)) {
-    request->OnError(
+    request->EnqueueResponse(
         DOMException::Create(kUnknownError, kPermissionDeniedErrorMessage));
     return request;
   }

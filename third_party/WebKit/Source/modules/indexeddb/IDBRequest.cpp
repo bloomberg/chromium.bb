@@ -163,7 +163,7 @@ void IDBRequest::Abort() {
 
   error_.Clear();
   result_.Clear();
-  OnError(DOMException::Create(
+  EnqueueResponse(DOMException::Create(
       kAbortError,
       "The transaction was aborted, so the request cannot be fulfilled."));
   request_aborted_ = true;
@@ -212,7 +212,7 @@ void IDBRequest::SetResultCursor(IDBCursor* cursor,
   cursor_value_ = std::move(value);
   AckReceivedBlobs(cursor_value_.Get());
 
-  OnSuccessInternal(IDBAny::Create(cursor));
+  EnqueueResultInternal(IDBAny::Create(cursor));
 }
 
 void IDBRequest::AckReceivedBlobs(const IDBValue* value) {
@@ -239,7 +239,7 @@ bool IDBRequest::ShouldEnqueueEvent() const {
   return true;
 }
 
-void IDBRequest::OnError(DOMException* error) {
+void IDBRequest::EnqueueResponse(DOMException* error) {
   IDB_TRACE("IDBRequest::onError()");
   ClearPutOperationBlobs();
   if (!ShouldEnqueueEvent())
@@ -251,7 +251,7 @@ void IDBRequest::OnError(DOMException* error) {
   EnqueueEvent(Event::CreateCancelableBubble(EventTypeNames::error));
 }
 
-void IDBRequest::OnSuccess(const Vector<String>& string_list) {
+void IDBRequest::EnqueueResponse(const Vector<String>& string_list) {
   IDB_TRACE("IDBRequest::onSuccess(StringList)");
   if (!ShouldEnqueueEvent())
     return;
@@ -259,13 +259,13 @@ void IDBRequest::OnSuccess(const Vector<String>& string_list) {
   DOMStringList* dom_string_list = DOMStringList::Create();
   for (size_t i = 0; i < string_list.size(); ++i)
     dom_string_list->Append(string_list[i]);
-  OnSuccessInternal(IDBAny::Create(dom_string_list));
+  EnqueueResultInternal(IDBAny::Create(dom_string_list));
 }
 
-void IDBRequest::OnSuccess(std::unique_ptr<WebIDBCursor> backend,
-                           IDBKey* key,
-                           IDBKey* primary_key,
-                           PassRefPtr<IDBValue> value) {
+void IDBRequest::EnqueueResponse(std::unique_ptr<WebIDBCursor> backend,
+                                 IDBKey* key,
+                                 IDBKey* primary_key,
+                                 PassRefPtr<IDBValue> value) {
   IDB_TRACE("IDBRequest::onSuccess(IDBCursor)");
   if (!ShouldEnqueueEvent())
     return;
@@ -288,25 +288,25 @@ void IDBRequest::OnSuccess(std::unique_ptr<WebIDBCursor> backend,
   SetResultCursor(cursor, key, primary_key, std::move(value));
 }
 
-void IDBRequest::OnSuccess(IDBKey* idb_key) {
+void IDBRequest::EnqueueResponse(IDBKey* idb_key) {
   IDB_TRACE("IDBRequest::onSuccess(IDBKey)");
   ClearPutOperationBlobs();
   if (!ShouldEnqueueEvent())
     return;
 
   if (idb_key && idb_key->IsValid())
-    OnSuccessInternal(IDBAny::Create(idb_key));
+    EnqueueResultInternal(IDBAny::Create(idb_key));
   else
-    OnSuccessInternal(IDBAny::CreateUndefined());
+    EnqueueResultInternal(IDBAny::CreateUndefined());
 }
 
-void IDBRequest::OnSuccess(const Vector<RefPtr<IDBValue>>& values) {
+void IDBRequest::EnqueueResponse(const Vector<RefPtr<IDBValue>>& values) {
   IDB_TRACE("IDBRequest::onSuccess([IDBValue])");
   if (!ShouldEnqueueEvent())
     return;
 
   AckReceivedBlobs(values);
-  OnSuccessInternal(IDBAny::Create(values));
+  EnqueueResultInternal(IDBAny::Create(values));
 }
 
 #if DCHECK_IS_ON()
@@ -321,7 +321,7 @@ static IDBObjectStore* EffectiveObjectStore(IDBAny* source) {
 }
 #endif  // DCHECK_IS_ON()
 
-void IDBRequest::OnSuccess(PassRefPtr<IDBValue> prp_value) {
+void IDBRequest::EnqueueResponse(PassRefPtr<IDBValue> prp_value) {
   IDB_TRACE("IDBRequest::onSuccess(IDBValue)");
   if (!ShouldEnqueueEvent())
     return;
@@ -342,24 +342,24 @@ void IDBRequest::OnSuccess(PassRefPtr<IDBValue> prp_value) {
          value->KeyPath() == EffectiveObjectStore(source_)->IdbKeyPath());
 #endif
 
-  OnSuccessInternal(IDBAny::Create(value.Release()));
+  EnqueueResultInternal(IDBAny::Create(value.Release()));
 }
 
-void IDBRequest::OnSuccess(int64_t value) {
+void IDBRequest::EnqueueResponse(int64_t value) {
   IDB_TRACE("IDBRequest::onSuccess(int64_t)");
   if (!ShouldEnqueueEvent())
     return;
-  OnSuccessInternal(IDBAny::Create(value));
+  EnqueueResultInternal(IDBAny::Create(value));
 }
 
-void IDBRequest::OnSuccess() {
+void IDBRequest::EnqueueResponse() {
   IDB_TRACE("IDBRequest::onSuccess()");
   if (!ShouldEnqueueEvent())
     return;
-  OnSuccessInternal(IDBAny::CreateUndefined());
+  EnqueueResultInternal(IDBAny::CreateUndefined());
 }
 
-void IDBRequest::OnSuccessInternal(IDBAny* result) {
+void IDBRequest::EnqueueResultInternal(IDBAny* result) {
   DCHECK(GetExecutionContext());
   DCHECK(!pending_cursor_);
   DCHECK(transit_blob_handles_.IsEmpty());
@@ -372,9 +372,9 @@ void IDBRequest::SetResult(IDBAny* result) {
   result_dirty_ = true;
 }
 
-void IDBRequest::OnSuccess(IDBKey* key,
-                           IDBKey* primary_key,
-                           PassRefPtr<IDBValue> value) {
+void IDBRequest::EnqueueResponse(IDBKey* key,
+                                 IDBKey* primary_key,
+                                 PassRefPtr<IDBValue> value) {
   IDB_TRACE("IDBRequest::onSuccess(key, primaryKey, value)");
   if (!ShouldEnqueueEvent())
     return;
