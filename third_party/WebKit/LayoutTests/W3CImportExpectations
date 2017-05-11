@@ -329,7 +329,8 @@ external/wpt/performance-timeline [ Skip ]
 # external/wpt/pointerevents [ Pass ]
 ## Owners: chongz@chromium.org
 # external/wpt/pointerlock [ Pass ]
-external/wpt/presentation-api [ Skip ]
+## Owners: media-dev@chromium.org
+# external/wpt/presentation-api [ Pass ]
 ## Owners: blink-network-dev@chromium.org
 # external/wpt/progress-events [ Pass ]
 external/wpt/proximity [ Skip ]
@@ -346,7 +347,8 @@ external/wpt/resources/docs [ Skip ]
 external/wpt/resources/examples [ Skip ]
 external/wpt/resources/webidl2/README.md [ Skip ]
 external/wpt/resources/webidl2/test [ Skip ]
-external/wpt/screen-orientation [ Skip ]
+## Owners: mlamouri@chromium.org
+# external/wpt/screen-orientation [ Pass ]
 ## Owners: mkwst@chromium.org
 # external/wpt/secure-contexts [ Pass ]
 ## Owners: dom-dev@chromium.org
