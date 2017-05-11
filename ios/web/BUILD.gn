@@ -16,6 +16,10 @@ group("all_tests") {
 }
 
 source_set("web_arc") {
+  public_deps = [
+    "//net",
+  ]
+
   deps = [
     ":core",
     ":js_resources",
@@ -29,7 +33,6 @@ source_set("web_arc") {
     "//ios/third_party/blink:html_tokenizer",
     "//mojo/public/cpp/system",
     "//mojo/public/js",
-    "//net",
     "//services/service_manager/public/cpp",
     "//ui/base",
     "//ui/gfx",

@@ -50,6 +50,9 @@ source_set("tabs") {
     "target_frame_cache.h",
     "target_frame_cache.mm",
   ]
+  public_deps = [
+    "//ios/chrome/browser/tabs",
+  ]
   deps = [
     ":resources",
     "//base",
@@ -57,7 +60,6 @@ source_set("tabs") {
     "//ios/chrome/app/strings",
     "//ios/chrome/browser",
     "//ios/chrome/browser/browser_state",
-    "//ios/chrome/browser/tabs",
     "//ios/chrome/browser/ui",
     "//ios/chrome/browser/ui/colors",
     "//ios/chrome/browser/ui/commands",
