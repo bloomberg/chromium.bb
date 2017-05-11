@@ -267,11 +267,11 @@ void ShippingAddressEditorViewController::UpdateEditorFields() {
         NOTREACHED();
         return;
       }
-      EditorField::LengthHint length_hint = EditorField::LengthHint::HINT_LONG;
-      if (field_length == autofill::kShortField)
-        length_hint = EditorField::LengthHint::HINT_SHORT;
+      EditorField::LengthHint length_hint = EditorField::LengthHint::HINT_SHORT;
+      if (field_length == autofill::kLongField)
+        length_hint = EditorField::LengthHint::HINT_LONG;
       else
-        DCHECK_EQ(autofill::kLongField, field_length);
+        DCHECK_EQ(autofill::kShortField, field_length);
       autofill::ServerFieldType server_field_type =
           GetFieldTypeFromString(field_type);
       EditorField::ControlType control_type =
@@ -291,7 +291,7 @@ void ShippingAddressEditorViewController::UpdateEditorFields() {
             autofill::ADDRESS_HOME_COUNTRY,
             l10n_util::GetStringUTF16(
                 IDS_LIBADDRESSINPUT_COUNTRY_OR_REGION_LABEL),
-            EditorField::LengthHint::HINT_LONG, /*required=*/true,
+            EditorField::LengthHint::HINT_SHORT, /*required=*/true,
             EditorField::ControlType::COMBOBOX);
       }
     }
@@ -300,7 +300,7 @@ void ShippingAddressEditorViewController::UpdateEditorFields() {
   editor_fields_.emplace_back(
       autofill::PHONE_HOME_WHOLE_NUMBER,
       l10n_util::GetStringUTF16(IDS_AUTOFILL_FIELD_LABEL_PHONE),
-      EditorField::LengthHint::HINT_LONG, /*required=*/true,
+      EditorField::LengthHint::HINT_SHORT, /*required=*/true,
       EditorField::ControlType::TEXTFIELD);
 }
 

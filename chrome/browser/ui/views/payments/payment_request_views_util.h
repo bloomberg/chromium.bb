@@ -40,6 +40,7 @@ constexpr int kPaymentRequestRowExtraRightInset = 8;
 constexpr int kPaymentRequestButtonSpacing = 10;
 
 // Dimensions of the dialog itself.
+constexpr int kDialogMinWidth = 512;
 constexpr int kDialogHeight = 450;
 
 // Fixed width of the amount sections in the payment sheet and the order summary
