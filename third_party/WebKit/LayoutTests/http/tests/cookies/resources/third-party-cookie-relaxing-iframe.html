@@ -25,13 +25,13 @@ var stage = 1;
 function showCookies()
 {
     alert("Test stage " + stage++ + " document.cookie is: " + document.cookie);
-    parent.window.postMessage("done", "*");    
+    parent.window.postMessage("done", "*");
 }
 
 function sendXHR(queryCommand)
 {
     if (window.testRunner) {
-        // setAlwaysAcceptCookies() takes effect asynchronously (IPC is involved).
+        // setBlockThirdPartyCookies() takes effect asynchronously (IPC is involved).
         testRunner.setBlockThirdPartyCookies(false);
     }
 
@@ -50,8 +50,8 @@ function sendXHR(queryCommand)
     if (window.testRunner) {
         testRunner.setBlockThirdPartyCookies(true);
     }
-    
-    parent.window.postMessage("done", "*");    
+
+    parent.window.postMessage("done", "*");
 }
 
 function resetCookiesAndNotifyDone()
