@@ -54,4 +54,26 @@ TEST(CSSSelector, Representations) {
 #endif
 }
 
+TEST(CSSSelector, OverflowRareDataMatchNth) {
+  int max_int = std::numeric_limits<int>::max();
+  int min_int = std::numeric_limits<int>::min();
+  CSSSelector selector;
+
+  // Overflow count - b (max_int - -1 = max_int + 1)
+  selector.SetNth(1, -1);
+  EXPECT_FALSE(selector.MatchNth(max_int));
+  // 0 - (min_int) = max_int + 1
+  selector.SetNth(1, min_int);
+  EXPECT_FALSE(selector.MatchNth(0));
+
+  // min_int - 1
+  selector.SetNth(-1, min_int);
+  EXPECT_FALSE(selector.MatchNth(1));
+
+  // a shouldn't negate to itself (and min_int negates to itself).
+  // Note: This test can only fail when using ubsan.
+  selector.SetNth(min_int, 10);
+  EXPECT_FALSE(selector.MatchNth(2));
+}
+
 }  // namespace blink

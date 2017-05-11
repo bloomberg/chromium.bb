@@ -925,7 +925,7 @@ void CSSSelector::SetNth(int a, int b) {
   data_.rare_data_->bits_.nth_.b_ = b;
 }
 
-bool CSSSelector::MatchNth(int count) const {
+bool CSSSelector::MatchNth(unsigned count) const {
   DCHECK(has_rare_data_);
   return data_.rare_data_->MatchNth(count);
 }
@@ -1006,7 +1006,17 @@ CSSSelector::RareData::RareData(const AtomicString& value)
 CSSSelector::RareData::~RareData() {}
 
 // a helper function for checking nth-arguments
-bool CSSSelector::RareData::MatchNth(int count) {
+bool CSSSelector::RareData::MatchNth(unsigned unsigned_count) {
+  // These very large values for aN + B or count can't ever match, so
+  // give up immediately if we see them.
+  int max_value = std::numeric_limits<int>::max() / 2;
+  int min_value = std::numeric_limits<int>::min() / 2;
+  if (UNLIKELY(unsigned_count > static_cast<unsigned>(max_value) ||
+               NthAValue() > max_value || NthAValue() < min_value ||
+               NthBValue() > max_value || NthBValue() < min_value))
+    return false;
+
+  int count = static_cast<int>(unsigned_count);
   if (!NthAValue())
     return count == NthBValue();
   if (NthAValue() > 0) {
