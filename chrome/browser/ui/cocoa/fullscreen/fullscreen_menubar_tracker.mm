@@ -138,6 +138,9 @@ OSStatus MenuBarRevealHandler(EventHandlerCallRef handler,
   else if (progress > menubarFraction_)
     state_ = FullscreenMenubarState::SHOWING;
 
+  menubarFraction_ = progress;
+  [owner_ updateToolbarLayout];
+
   // In 10.12. the toolbar to be janky since the UI doesn't update until the
   // menubar finished revealing itself. To smooth things out, animate the
   // toolbar in/out by locking/releasing its visibility instead of relying on
@@ -153,9 +156,6 @@ OSStatus MenuBarRevealHandler(EventHandlerCallRef handler,
                                                             withAnimation:YES];
     }
   }
-
-  menubarFraction_ = progress;
-  [owner_ updateToolbarLayout];
 }
 
 - (BOOL)isMouseOnScreen {
