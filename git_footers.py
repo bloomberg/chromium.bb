@@ -49,7 +49,7 @@ def matches_footer_key(line, key):
   """
   r = parse_footer(line)
   if r is None:
-    return None
+    return False
   return normalize_name(r[0]) == normalize_name(key)
 
 
