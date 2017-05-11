@@ -718,6 +718,33 @@ IN_PROC_BROWSER_TEST_P(WebViewFocusInteractiveTest, Focus_FocusEvent) {
   TestHelper("testFocusEvent", "web_view/focus", NO_TEST_SERVER);
 }
 
+IN_PROC_BROWSER_TEST_P(WebViewFocusInteractiveTest, Focus_FocusTakeFocus) {
+  TestHelper("testFocusTakeFocus", "web_view/focus", NO_TEST_SERVER);
+
+  // Compute where to click in the window to focus the guest input box.
+  int clickX, clickY;
+  EXPECT_TRUE(content::ExecuteScriptAndExtractInt(
+      embedder_web_contents(),
+      "domAutomationController.send(Math.floor(window.clickX));", &clickX));
+  EXPECT_TRUE(content::ExecuteScriptAndExtractInt(
+      embedder_web_contents(),
+      "domAutomationController.send(Math.floor(window.clickY));", &clickY));
+
+  ExtensionTestMessageListener next_step_listener("TEST_STEP_PASSED", false);
+  next_step_listener.set_failure_message("TEST_STEP_FAILED");
+  content::SimulateMouseClickAt(
+      (GetParam() ? guest_web_contents() : embedder_web_contents()), 0,
+      blink::WebMouseEvent::Button::kLeft, gfx::Point(clickX, clickY));
+  ASSERT_TRUE(next_step_listener.WaitUntilSatisfied());
+
+  // TAB back out to the embedder's input.
+  next_step_listener.Reset();
+  content::SimulateKeyPress(embedder_web_contents(), ui::DomKey::TAB,
+                            ui::DomCode::TAB, ui::VKEY_TAB, false, false, false,
+                            false);
+  ASSERT_TRUE(next_step_listener.WaitUntilSatisfied());
+}
+
 // Flaky on Mac and Linux - https://crbug.com/707648
 #if defined(OS_MACOSX) || defined(OS_LINUX)
 #define MAYBE_Focus_FocusTracksEmbedder DISABLED_Focus_FocusTracksEmbedder

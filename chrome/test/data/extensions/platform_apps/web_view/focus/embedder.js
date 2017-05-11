@@ -550,6 +550,55 @@ function testFocusRestoredRunNextStep(step) {
   });
 }
 
+// Ensures that the tab key can be used to navigate out of the webview. There is
+// a corner case where focus can be trapped in the webview if the next focusable
+// element in the embedder is focused when trying to tab or the previous element
+// when using shift-tab.
+//
+// Briefly:
+// 1) Start with the embedder input focused
+// 2) Click the guest input and wait for it to be focused
+// 3) Send a tab key event
+// 4) Wait for the embedder input to receive another input event.
+function testFocusTakeFocus() {
+  var input = document.createElement('input');
+  var webview = embedder.setUpGuest_();
+  g_webview = webview;
+  document.body.appendChild(input);
+
+  var onChannelEstablished = function(webview) {
+    input.focus();
+
+    var msg = ['request-coords'];
+    webview.contentWindow.postMessage(JSON.stringify(msg), '*');
+  };
+
+  var inputFocusedHandler = function(e) {
+      chrome.test.sendMessage('TEST_STEP_PASSED');
+  }
+
+  var guestFocusedHandler = function(e) {
+      console.log('input focused in guest');
+      window.removeEventListener('message', guestFocusedHandler);
+      input.addEventListener('focus', inputFocusedHandler);
+      chrome.test.sendMessage('TEST_STEP_PASSED');
+  };
+
+  var coordHandler = function(response) {
+    var rect = g_webview.getBoundingClientRect();
+    window.clickX = rect.left + response[1];
+    window.clickY = rect.top + response[2];
+    window.addEventListener('message', guestFocusedHandler);
+    chrome.test.sendMessage('TEST_PASSED');
+  };
+
+  embedder.waitForResponseFromGuest_(webview,
+      'inject_focus_take_focus.js',
+      onChannelEstablished,
+      'response-coords',
+      coordHandler);
+}
+
 // Tests that if we focus/blur the embedder, it also gets reflected in the
 // guest.
 //
@@ -686,7 +735,8 @@ embedder.test.testList = {
   'testInputMethod': testInputMethod,
   'testKeyboardFocusSimple': testKeyboardFocusSimple,
   'testKeyboardFocusWindowFocusCycle': testKeyboardFocusWindowFocusCycle,
-  'testFocusRestored': testFocusRestored
+  'testFocusRestored': testFocusRestored,
+  'testFocusTakeFocus': testFocusTakeFocus
 };
 
 onload = function() {
