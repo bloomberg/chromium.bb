@@ -47,6 +47,9 @@ _GCLIENT_SCHEMA = schema.Schema({
     # Also see 'pre_deps_hooks'.
     schema.Optional('hooks'): _GCLIENT_HOOKS_SCHEMA,
 
+    # Similar to 'hooks', also keyed by OS.
+    schema.Optional('hooks_os'): {basestring: _GCLIENT_HOOKS_SCHEMA},
+
     # Rules which #includes are allowed in the directory.
     # Also see 'skip_child_includes' and 'specific_include_rules'.
     schema.Optional('include_rules'): [basestring],

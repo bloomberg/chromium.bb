@@ -64,7 +64,7 @@
 # Specifying a target OS
 #   An optional key named "target_os" may be added to a gclient file to specify
 #   one or more additional operating systems that should be considered when
-#   processing the deps_os dict of a DEPS file.
+#   processing the deps_os/hooks_os dict of a DEPS file.
 #
 #   Example:
 #     target_os = [ "android" ]
@@ -711,6 +711,12 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
     for hook in local_scope.get('hooks', []):
       if hook.get('name', '') not in hook_names_to_suppress:
         hooks_to_run.append(hook)
+    if 'hooks_os' in local_scope and target_os_list:
+      hooks_os = local_scope['hooks_os']
+      # Specifically append these to ensure that hooks_os run after hooks.
+      for the_target_os in target_os_list:
+        the_target_os_hooks = hooks_os.get(the_target_os, [])
+        hooks_to_run.extend(the_target_os_hooks)
 
     # add the replacements and any additions
     for hook in self.custom_hooks:

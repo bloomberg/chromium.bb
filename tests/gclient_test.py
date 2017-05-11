@@ -482,6 +482,69 @@ class GclientTest(trial_dir.TestCase):
           ],
         sorted(self._get_processed()))
 
+  def testTargetOsForHooksInDepsFile(self):
+    """Verifies that specifying a target_os value in a DEPS file runs the right
+    entries in hooks_os.
+    """
+
+    write(
+        'DEPS',
+        'hooks = [\n'
+        '  {\n'
+        '    "name": "a",\n'
+        '    "pattern": ".",\n'
+        '    "action": [ "python", "do_a" ],\n'
+        '  },\n'
+        ']\n'
+        '\n'
+        'hooks_os = {\n'
+        '  "blorp": ['
+        '    {\n'
+        '      "name": "b",\n'
+        '      "pattern": ".",\n'
+        '      "action": [ "python", "do_b" ],\n'
+        '    },\n'
+        '  ],\n'
+        '}\n')
+
+    write(
+        '.gclient',
+        'solutions = [\n'
+        '  { "name": ".",\n'
+        '    "url": "svn://example.com/",\n'
+        '  }]\n')
+    # Test for an OS not in hooks_os.
+    parser = gclient.OptionParser()
+    options, args = parser.parse_args(['--jobs', '1'])
+    options.deps_os = 'zippy'
+
+    obj = gclient.GClient.LoadCurrentConfig(options)
+    obj.RunOnDeps('None', args)
+    self.assertEqual(['zippy'], sorted(obj.enforced_os))
+    all_hooks = obj.GetHooks(options)
+    self.assertEquals(
+        [('.', 'svn://example.com/'),],
+        sorted(self._get_processed()))
+    self.assertEquals(all_hooks,
+                      [['/usr/bin/python', 'do_a']])
+
+    # Test for OS that has extra hooks in hooks_os.
+    parser = gclient.OptionParser()
+    options, args = parser.parse_args(['--jobs', '1'])
+    options.deps_os = 'blorp'
+
+    obj = gclient.GClient.LoadCurrentConfig(options)
+    obj.RunOnDeps('None', args)
+    self.assertEqual(['blorp'], sorted(obj.enforced_os))
+    all_hooks = obj.GetHooks(options)
+    self.assertEquals(
+        [('.', 'svn://example.com/'),],
+        sorted(self._get_processed()))
+    self.assertEquals(all_hooks,
+                      [['/usr/bin/python', 'do_a'],
+                       ['/usr/bin/python', 'do_b']])
+
+
   def testUpdateWithOsDeps(self):
     """Verifies that complicated deps_os constructs result in the
     correct data also with multple operating systems. Also see
