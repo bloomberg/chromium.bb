@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import("//chromecast/chromecast.gni")
+import("//media/media_options.gni")
 
 # These targets shall only be referenced on Android builds.
 assert(is_android)
@@ -27,6 +28,7 @@ shared_library("libcast_shell_android") {
     ":platform_jni_loader",
     "//base",
     "//chromecast:cast_shell_lib",
+    "//chromecast:chromecast_features",
     "//chromecast/app",
     "//chromecast/app:cast_crash_client",
     "//chromecast/base",
@@ -41,5 +43,9 @@ shared_library("libcast_shell_android") {
 
   if (chromecast_branding == "public") {
     sources += [ "platform_jni_loader_stub.cc" ]
+  }
+
+  if (is_cast_using_cma_backend) {
+    deps += [ "//chromecast/media/cma/backend/android:cast_media_android" ]
   }
 }

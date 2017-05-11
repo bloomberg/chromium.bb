@@ -4,6 +4,7 @@
 
 import("//chromecast/chromecast.gni")
 import("//build/config/android/rules.gni")
+import("//media/media_options.gni")
 
 assert(is_android)
 
@@ -68,6 +69,10 @@ android_library("cast_shell_java") {
     "//third_party/android_tools:android_support_core_utils_java",
     "//ui/android:ui_java",
   ]
+
+  if (is_cast_using_cma_backend) {
+    deps += [ "//chromecast/media/cma/backend/android:audio_track_java" ]
+  }
 }
 
 junit_binary("cast_shell_junit_tests") {

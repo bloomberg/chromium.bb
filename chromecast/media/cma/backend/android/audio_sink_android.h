@@ -19,7 +19,7 @@ namespace chromecast {
 namespace media {
 
 class DecoderBufferBase;
-class AudioSinkAndroidDummyImpl;
+class AudioSinkAndroidAudioTrackImpl;
 
 // Input handle to the sink. All methods (including constructor and destructor)
 // must be called on the same thread.
@@ -71,7 +71,7 @@ class AudioSinkAndroid {
   void SetVolumeMultiplier(float multiplier);
 
  private:
-  std::unique_ptr<AudioSinkAndroidDummyImpl> impl_;
+  std::unique_ptr<AudioSinkAndroidAudioTrackImpl> impl_;
   base::ThreadChecker thread_checker_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioSinkAndroid);

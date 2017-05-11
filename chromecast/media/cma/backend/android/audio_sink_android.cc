@@ -7,7 +7,8 @@
 #include <string>
 #include <utility>
 
-#include "chromecast/media/cma/backend/android/audio_sink_android_dummy_impl.h"
+#include "chromecast/media/cma/backend/android/audio_sink_android_audiotrack_impl.h"
+#include "chromecast/media/cma/base/decoder_buffer_base.h"
 
 namespace chromecast {
 namespace media {
@@ -17,8 +18,8 @@ AudioSinkAndroid::AudioSinkAndroid(Delegate* delegate,
                                    bool primary,
                                    const std::string& device_id,
                                    AudioContentType content_type) {
-  impl_.reset(new AudioSinkAndroidDummyImpl(delegate, samples_per_second,
-                                            primary, device_id, content_type));
+  impl_.reset(new AudioSinkAndroidAudioTrackImpl(
+      delegate, samples_per_second, primary, device_id, content_type));
 }
 
 AudioSinkAndroid::~AudioSinkAndroid() {
