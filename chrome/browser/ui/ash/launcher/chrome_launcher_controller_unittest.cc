@@ -264,8 +264,8 @@ class TestV2AppLauncherItemController : public ash::ShelfItemDelegate {
   void ItemSelected(std::unique_ptr<ui::Event> event,
                     int64_t display_id,
                     ash::ShelfLaunchSource source,
-                    const ItemSelectedCallback& callback) override {
-    callback.Run(ash::SHELF_ACTION_WINDOW_ACTIVATED, base::nullopt);
+                    ItemSelectedCallback callback) override {
+    std::move(callback).Run(ash::SHELF_ACTION_WINDOW_ACTIVATED, base::nullopt);
   }
   void ExecuteCommand(uint32_t command_id, int32_t event_flags) override {}
   void Close() override {}

@@ -4,6 +4,8 @@
 
 #include "ash/shell/window_watcher_shelf_item_delegate.h"
 
+#include <utility>
+
 #include "ash/shell/window_watcher.h"
 #include "ash/wm/window_util.h"
 #include "ui/aura/window.h"
@@ -25,13 +27,13 @@ void WindowWatcherShelfItemDelegate::ItemSelected(
     std::unique_ptr<ui::Event> event,
     int64_t display_id,
     ShelfLaunchSource source,
-    const ItemSelectedCallback& callback) {
+    ItemSelectedCallback callback) {
   aura::Window* window = watcher_->GetWindowByID(shelf_id());
   if (window->type() == ui::wm::WINDOW_TYPE_PANEL)
     wm::MoveWindowToDisplay(window, display_id);
   window->Show();
   wm::ActivateWindow(window);
-  callback.Run(SHELF_ACTION_WINDOW_ACTIVATED, base::nullopt);
+  std::move(callback).Run(SHELF_ACTION_WINDOW_ACTIVATED, base::nullopt);
 }
 
 void WindowWatcherShelfItemDelegate::ExecuteCommand(uint32_t command_id,

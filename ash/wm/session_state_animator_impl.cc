@@ -4,6 +4,7 @@
 
 #include "ash/wm/session_state_animator_impl.h"
 
+#include <utility>
 #include <vector>
 
 #include "ash/public/cpp/shell_window_ids.h"
@@ -442,8 +443,8 @@ class SessionStateAnimatorImpl::AnimationSequence
       public ui::LayerAnimationObserver {
  public:
   explicit AnimationSequence(SessionStateAnimatorImpl* animator,
-                             base::Closure callback)
-      : SessionStateAnimator::AnimationSequence(callback),
+                             base::OnceClosure callback)
+      : SessionStateAnimator::AnimationSequence(std::move(callback)),
         animator_(animator),
         sequences_attached_(0),
         sequences_completed_(0) {}
@@ -546,11 +547,11 @@ void SessionStateAnimatorImpl::StartAnimationWithCallback(
     int container_mask,
     AnimationType type,
     AnimationSpeed speed,
-    base::Closure callback) {
+    base::OnceClosure callback) {
   aura::Window::Windows containers;
   GetContainers(container_mask, &containers);
   base::Closure animation_done_closure =
-      base::BarrierClosure(containers.size(), callback);
+      base::BarrierClosure(containers.size(), std::move(callback));
   for (aura::Window::Windows::const_iterator it = containers.begin();
        it != containers.end(); ++it) {
     ui::LayerAnimationObserver* observer =
@@ -560,8 +561,8 @@ void SessionStateAnimatorImpl::StartAnimationWithCallback(
 }
 
 SessionStateAnimator::AnimationSequence*
-SessionStateAnimatorImpl::BeginAnimationSequence(base::Closure callback) {
-  return new AnimationSequence(this, callback);
+SessionStateAnimatorImpl::BeginAnimationSequence(base::OnceClosure callback) {
+  return new AnimationSequence(this, std::move(callback));
 }
 
 bool SessionStateAnimatorImpl::IsWallpaperHidden() const {

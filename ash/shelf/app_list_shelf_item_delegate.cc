@@ -4,6 +4,8 @@
 
 #include "ash/shelf/app_list_shelf_item_delegate.h"
 
+#include <utility>
+
 #include "ash/shelf/shelf_model.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
@@ -41,13 +43,12 @@ AppListShelfItemDelegate::AppListShelfItemDelegate()
 
 AppListShelfItemDelegate::~AppListShelfItemDelegate() {}
 
-void AppListShelfItemDelegate::ItemSelected(
-    std::unique_ptr<ui::Event> event,
-    int64_t display_id,
-    ShelfLaunchSource source,
-    const ItemSelectedCallback& callback) {
+void AppListShelfItemDelegate::ItemSelected(std::unique_ptr<ui::Event> event,
+                                            int64_t display_id,
+                                            ShelfLaunchSource source,
+                                            ItemSelectedCallback callback) {
   Shell::Get()->ToggleAppList();
-  callback.Run(SHELF_ACTION_APP_LIST_SHOWN, base::nullopt);
+  std::move(callback).Run(SHELF_ACTION_APP_LIST_SHOWN, base::nullopt);
 }
 
 void AppListShelfItemDelegate::ExecuteCommand(uint32_t command_id,

@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/ash/launcher/arc_app_deferred_launcher_item_controller.h"
 
 #include <memory>
+#include <utility>
 
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
@@ -35,8 +36,8 @@ void ArcAppDeferredLauncherItemController::ItemSelected(
     std::unique_ptr<ui::Event> event,
     int64_t display_id,
     ash::ShelfLaunchSource source,
-    const ItemSelectedCallback& callback) {
-  callback.Run(ash::SHELF_ACTION_NONE, base::nullopt);
+    ItemSelectedCallback callback) {
+  std::move(callback).Run(ash::SHELF_ACTION_NONE, base::nullopt);
 }
 
 void ArcAppDeferredLauncherItemController::ExecuteCommand(uint32_t command_id,

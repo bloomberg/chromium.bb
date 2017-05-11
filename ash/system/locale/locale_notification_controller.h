@@ -29,7 +29,7 @@ class LocaleNotificationController
   void OnLocaleChanged(const std::string& cur_locale,
                        const std::string& from_locale,
                        const std::string& to_locale,
-                       const OnLocaleChangedCallback& callback) override;
+                       OnLocaleChangedCallback callback) override;
 
   std::string cur_locale_;
   std::string from_locale_;

@@ -6,6 +6,8 @@
 
 #include <stddef.h>
 
+#include <utility>
+
 #include "ash/wm/window_util.h"
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/chromeos/arc/arc_support_host.h"
@@ -93,11 +95,11 @@ void AppShortcutLauncherItemController::ItemSelected(
     std::unique_ptr<ui::Event> event,
     int64_t display_id,
     ash::ShelfLaunchSource source,
-    const ItemSelectedCallback& callback) {
+    ItemSelectedCallback callback) {
   // In case of a keyboard event, we were called by a hotkey. In that case we
   // activate the next item in line if an item of our list is already active.
   if (event && event->type() == ui::ET_KEY_RELEASED && AdvanceToNextApp()) {
-    callback.Run(ash::SHELF_ACTION_WINDOW_ACTIVATED, base::nullopt);
+    std::move(callback).Run(ash::SHELF_ACTION_WINDOW_ACTIVATED, base::nullopt);
     return;
   }
 
@@ -109,8 +111,9 @@ void AppShortcutLauncherItemController::ItemSelected(
     // they open a window. Since there is currently no other way to detect if an
     // app was started we suppress any further clicks within a special time out.
     if (IsV2App() && !AllowNextLaunchAttempt()) {
-      callback.Run(ash::SHELF_ACTION_NONE,
-                   GetAppMenuItems(event ? event->flags() : ui::EF_NONE));
+      std::move(callback).Run(
+          ash::SHELF_ACTION_NONE,
+          GetAppMenuItems(event ? event->flags() : ui::EF_NONE));
       return;
     }
 
@@ -118,12 +121,14 @@ void AppShortcutLauncherItemController::ItemSelected(
     // destroys its ShelfID string pair; making copies avoid crashes.
     ChromeLauncherController::instance()->LaunchApp(ash::ShelfID(shelf_id()),
                                                     source, ui::EF_NONE);
-    callback.Run(ash::SHELF_ACTION_NEW_WINDOW_CREATED, base::nullopt);
+    std::move(callback).Run(ash::SHELF_ACTION_NEW_WINDOW_CREATED,
+                            base::nullopt);
     return;
   }
 
   const ash::ShelfAction action = ActivateContent(content);
-  callback.Run(action, GetAppMenuItems(event ? event->flags() : ui::EF_NONE));
+  std::move(callback).Run(
+      action, GetAppMenuItems(event ? event->flags() : ui::EF_NONE));
 }
 
 ash::MenuItemList AppShortcutLauncherItemController::GetAppMenuItems(

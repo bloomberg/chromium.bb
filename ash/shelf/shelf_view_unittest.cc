@@ -154,9 +154,9 @@ class ShelfItemSelectionTracker : public ShelfItemDelegate {
   void ItemSelected(std::unique_ptr<ui::Event> event,
                     int64_t display_id,
                     ShelfLaunchSource source,
-                    const ItemSelectedCallback& callback) override {
+                    ItemSelectedCallback callback) override {
     item_selected_count_++;
-    callback.Run(item_selected_action_, base::nullopt);
+    std::move(callback).Run(item_selected_action_, base::nullopt);
   }
   void ExecuteCommand(uint32_t command_id, int32_t event_flags) override {}
   void Close() override {}
@@ -2016,12 +2016,12 @@ class ListMenuShelfItemDelegate : public ShelfItemDelegate {
   void ItemSelected(std::unique_ptr<ui::Event> event,
                     int64_t display_id,
                     ShelfLaunchSource source,
-                    const ItemSelectedCallback& callback) override {
+                    ItemSelectedCallback callback) override {
     // Two items are needed to show a menu; the data in the items is not tested.
     std::vector<mojom::MenuItemPtr> items;
     items.push_back(mojom::MenuItem::New());
     items.push_back(mojom::MenuItem::New());
-    callback.Run(SHELF_ACTION_NONE, std::move(items));
+    std::move(callback).Run(SHELF_ACTION_NONE, std::move(items));
   }
   void ExecuteCommand(uint32_t command_id, int32_t event_flags) override {}
   void Close() override {}
