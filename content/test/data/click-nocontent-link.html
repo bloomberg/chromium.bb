@@ -20,17 +20,44 @@
         "nocontent_scripted_targeted_link"));
   }
 
-  var w;
+  function getNewWindowReference() {
+    // Grab a reference to the existing foo window, but don't otherwise access
+    // it in any way.
+    var w = window.open("", "foo");
+    // w is intentionally unused after this point to avoid triggering a call to
+    // DidAccessInitialDocument().
+
+    // Modify the title to give the test a notification to listen for. Use a
+    // timeout so that any DidAccessInitialDocument() notification arrives
+    // first. Note that this intentionally uses |window| instead of |w| to avoid
+    // test boilerplate from triggering calls to DidAccessInitialDocument().
+    setTimeout(function() { window.document.title = "Modified Title"; });
+  }
+
   function modifyNewWindow() {
     // Grab a reference to the existing foo window and modify its content.
-    w = window.open("", "foo");
+    var w = window.open("", "foo");
     w.document.body.innerHTML += "Modified";
 
-    // Also modify the title to give the test a notification to listen for.
-    // Use a timeout so that the didAccessInitialDocument notification arrives
-    // first.
-    setTimeout('w.document.title = "Modified Title"');
-    return true;
+    // Modify the title to give the test a notification to listen for. Use a
+    // timeout so that any DidAccessInitialDocument() notification arrives
+    // first. Note that this intentionally uses |window| instead of |w| to avoid
+    // test boilerplate from triggering calls to DidAccessInitialDocument().
+    setTimeout(function() { window.document.title = "Modified Title"; });
+  }
+
+  function modifyNewWindowWithDocumentOpen() {
+    // Grab a reference to the existing foo window and modify its content.
+    var w = window.open("", "foo");
+    w.document.open();
+    w.document.write("Modified");
+    w.document.close();
+
+    // Modify the title to give the test a notification to listen for. Use a
+    // timeout so that any DidAccessInitialDocument() notification arrives
+    // first. Note that this intentionally uses |window| instead of |w| to avoid
+    // test boilerplate from triggering calls to DidAccessInitialDocument().
+    setTimeout(function() { window.document.title = "Modified Title"; });
   }
  </script>
  </head>
