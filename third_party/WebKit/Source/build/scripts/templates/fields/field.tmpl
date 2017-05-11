@@ -30,6 +30,15 @@ static_cast<{{field.type_name}}>({{value}})
 {%- endif %}
 {% endmacro %}
 
+{% macro set_if_changed(field, value) %}
+{% if field.group_member_name -%}
+if (!({{getter_expression(field)}} == {{value}}))
+  {{setter_expression(field)}} = {{value}};
+{%- else -%}
+{{field.name}} = {{value}};
+{%- endif %}
+{% endmacro %}
+
 {% macro nonconst_ref(field) %}
 {% if field.is_bit_field -%}
 {{field.type_name}}

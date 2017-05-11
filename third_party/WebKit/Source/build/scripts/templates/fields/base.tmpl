@@ -1,4 +1,4 @@
-{% from 'fields/field.tmpl' import encode, decode, const_ref, nonconst_ref, getter_expression, setter_expression %}
+{% from 'fields/field.tmpl' import encode, decode, const_ref, nonconst_ref, getter_expression, setter_expression, set_if_changed %}
 
 {% macro decl_initial_method(field) -%}
 inline static {{field.type_name}} {{field.initial_method_name}}() {
@@ -14,7 +14,7 @@ inline static {{field.type_name}} {{field.initial_method_name}}() {
 
 {% macro decl_setter_method(field) -%}
 void {{field.setter_method_name}}({{const_ref(field)}} v) {
-  {{setter_expression(field)}} = {{encode(field, "v")}};
+  {{set_if_changed(field, encode(field, "v"))|indent(2)}}
 }
 {%- endmacro %}
 
@@ -38,6 +38,6 @@ inline void {{field.resetter_method_name}}() {
 
 {% macro decl_internal_setter_method(field) -%}
 void {{field.internal_setter_method_name}}({{const_ref(field)}} v) {
-  {{setter_expression(field)}} = {{encode(field, "v")}};
+  {{set_if_changed(field, encode(field, "v"))|indent(2)}}
 }
 {%- endmacro %}
