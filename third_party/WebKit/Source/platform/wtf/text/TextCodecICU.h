@@ -65,12 +65,6 @@ class TextCodecICU final : public TextCodec {
 
   void CreateICUConverter() const;
   void ReleaseICUConverter() const;
-#if defined(USING_SYSTEM_ICU)
-  bool needsGBKFallbacks() const { return m_needsGBKFallbacks; }
-  void setNeedsGBKFallbacks(bool needsFallbacks) {
-    m_needsGBKFallbacks = needsFallbacks;
-  }
-#endif
 
   int DecodeToBuffer(UChar* buffer,
                      UChar* buffer_limit,
@@ -81,9 +75,9 @@ class TextCodecICU final : public TextCodec {
                      UErrorCode&);
 
   TextEncoding encoding_;
-  mutable UConverter* converter_icu_;
+  mutable UConverter* converter_icu_ = nullptr;
 #if defined(USING_SYSTEM_ICU)
-  mutable bool m_needsGBKFallbacks;
+  mutable bool needs_gbk_fallbacks_ = false;
 #endif
 
   FRIEND_TEST_ALL_PREFIXES(TextCodecICUTest, IgnorableCodePoint);

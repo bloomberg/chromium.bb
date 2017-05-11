@@ -247,14 +247,7 @@ void TextCodecICU::RegisterCodecs(TextCodecRegistrar registrar) {
 }
 
 TextCodecICU::TextCodecICU(const TextEncoding& encoding)
-    : encoding_(encoding),
-      converter_icu_(0)
-#if defined(USING_SYSTEM_ICU)
-      ,
-      m_needsGBKFallbacks(false)
-#endif
-{
-}
+    : encoding_(encoding) {}
 
 TextCodecICU::~TextCodecICU() {
   ReleaseICUConverter();
@@ -266,7 +259,7 @@ void TextCodecICU::ReleaseICUConverter() const {
     if (cached_converter)
       ucnv_close(cached_converter);
     cached_converter = converter_icu_;
-    converter_icu_ = 0;
+    converter_icu_ = nullptr;
   }
 }
 
@@ -275,7 +268,7 @@ void TextCodecICU::CreateICUConverter() const {
 
 #if defined(USING_SYSTEM_ICU)
   const char* name = encoding_.GetName();
-  m_needsGBKFallbacks =
+  needs_gbk_fallbacks_ =
       name[0] == 'G' && name[1] == 'B' && name[2] == 'K' && !name[3];
 #endif
 
@@ -416,7 +409,7 @@ String TextCodecICU::Decode(const char* bytes,
 #if defined(USING_SYSTEM_ICU)
 // U+01F9 and U+1E3F have to be mapped to xA8xBF and xA8xBC per the encoding
 // spec, but ICU converter does not have them.
-static UChar fallbackForGBK(UChar32 character) {
+static UChar FallbackForGBK(UChar32 character) {
   switch (character) {
     case 0x01F9:
       return 0xE7C8;  // mapped to xA8xBF by ICU.
@@ -494,86 +487,88 @@ static void UrlEscapedEntityCallback(const void* context,
 
 #if defined(USING_SYSTEM_ICU)
 // Substitutes special GBK characters, escaping all other unassigned entities.
-static void gbkCallbackEscape(const void* context,
-                              UConverterFromUnicodeArgs* fromUArgs,
-                              const UChar* codeUnits,
+static void GbkCallbackEscape(const void* context,
+                              UConverterFromUnicodeArgs* from_unicode_args,
+                              const UChar* code_units,
                               int32_t length,
-                              UChar32 codePoint,
+                              UChar32 code_point,
                               UConverterCallbackReason reason,
                               UErrorCode* err) {
-  UChar outChar;
-  if (reason == UCNV_UNASSIGNED && (outChar = fallbackForGBK(codePoint))) {
-    const UChar* source = &outChar;
+  UChar out_char;
+  if (reason == UCNV_UNASSIGNED && (out_char = FallbackForGBK(code_point))) {
+    const UChar* source = &out_char;
     *err = U_ZERO_ERROR;
-    ucnv_cbFromUWriteUChars(fromUArgs, &source, source + 1, 0, err);
+    ucnv_cbFromUWriteUChars(from_unicode_args, &source, source + 1, 0, err);
     return;
   }
-  NumericEntityCallback(context, fromUArgs, codeUnits, length, codePoint,
-                        reason, err);
+  NumericEntityCallback(context, from_unicode_args, code_units, length,
+                        code_point, reason, err);
 }
 
 // Combines both gbkCssEscapedEntityCallback and GBK character substitution.
-static void gbkCssEscapedEntityCallack(const void* context,
-                                       UConverterFromUnicodeArgs* fromUArgs,
-                                       const UChar* codeUnits,
-                                       int32_t length,
-                                       UChar32 codePoint,
-                                       UConverterCallbackReason reason,
-                                       UErrorCode* err) {
+static void GbkCssEscapedEntityCallack(
+    const void* context,
+    UConverterFromUnicodeArgs* from_unicode_args,
+    const UChar* code_units,
+    int32_t length,
+    UChar32 code_point,
+    UConverterCallbackReason reason,
+    UErrorCode* err) {
   if (reason == UCNV_UNASSIGNED) {
-    if (UChar outChar = fallbackForGBK(codePoint)) {
-      const UChar* source = &outChar;
+    if (UChar out_char = FallbackForGBK(code_point)) {
+      const UChar* source = &out_char;
       *err = U_ZERO_ERROR;
-      ucnv_cbFromUWriteUChars(fromUArgs, &source, source + 1, 0, err);
+      ucnv_cbFromUWriteUChars(from_unicode_args, &source, source + 1, 0, err);
       return;
     }
-    CssEscapedEntityCallback(context, fromUArgs, codeUnits, length, codePoint,
-                             reason, err);
+    CssEscapedEntityCallback(context, from_unicode_args, code_units, length,
+                             code_point, reason, err);
     return;
   }
-  UCNV_FROM_U_CALLBACK_ESCAPE(context, fromUArgs, codeUnits, length, codePoint,
-                              reason, err);
+  UCNV_FROM_U_CALLBACK_ESCAPE(context, from_unicode_args, code_units, length,
+                              code_point, reason, err);
 }
 
 // Combines both gbkUrlEscapedEntityCallback and GBK character substitution.
-static void gbkUrlEscapedEntityCallack(const void* context,
-                                       UConverterFromUnicodeArgs* fromUArgs,
-                                       const UChar* codeUnits,
-                                       int32_t length,
-                                       UChar32 codePoint,
-                                       UConverterCallbackReason reason,
-                                       UErrorCode* err) {
+static void GbkUrlEscapedEntityCallack(
+    const void* context,
+    UConverterFromUnicodeArgs* from_unicode_args,
+    const UChar* code_units,
+    int32_t length,
+    UChar32 code_point,
+    UConverterCallbackReason reason,
+    UErrorCode* err) {
   if (reason == UCNV_UNASSIGNED) {
-    if (UChar outChar = fallbackForGBK(codePoint)) {
-      const UChar* source = &outChar;
+    if (UChar out_char = FallbackForGBK(code_point)) {
+      const UChar* source = &out_char;
       *err = U_ZERO_ERROR;
-      ucnv_cbFromUWriteUChars(fromUArgs, &source, source + 1, 0, err);
+      ucnv_cbFromUWriteUChars(from_unicode_args, &source, source + 1, 0, err);
       return;
     }
-    UrlEscapedEntityCallback(context, fromUArgs, codeUnits, length, codePoint,
-                             reason, err);
+    UrlEscapedEntityCallback(context, from_unicode_args, code_units, length,
+                             code_point, reason, err);
     return;
   }
-  UCNV_FROM_U_CALLBACK_ESCAPE(context, fromUArgs, codeUnits, length, codePoint,
-                              reason, err);
+  UCNV_FROM_U_CALLBACK_ESCAPE(context, from_unicode_args, code_units, length,
+                              code_point, reason, err);
 }
 
-static void gbkCallbackSubstitute(const void* context,
-                                  UConverterFromUnicodeArgs* fromUArgs,
-                                  const UChar* codeUnits,
+static void GbkCallbackSubstitute(const void* context,
+                                  UConverterFromUnicodeArgs* from_unicode_args,
+                                  const UChar* code_units,
                                   int32_t length,
-                                  UChar32 codePoint,
+                                  UChar32 code_point,
                                   UConverterCallbackReason reason,
                                   UErrorCode* err) {
-  UChar outChar;
-  if (reason == UCNV_UNASSIGNED && (outChar = fallbackForGBK(codePoint))) {
-    const UChar* source = &outChar;
+  UChar out_char;
+  if (reason == UCNV_UNASSIGNED && (out_char = FallbackForGBK(code_point))) {
+    const UChar* source = &out_char;
     *err = U_ZERO_ERROR;
-    ucnv_cbFromUWriteUChars(fromUArgs, &source, source + 1, 0, err);
+    ucnv_cbFromUWriteUChars(from_unicode_args, &source, source + 1, 0, err);
     return;
   }
-  UCNV_FROM_U_CALLBACK_SUBSTITUTE(context, fromUArgs, codeUnits, length,
-                                  codePoint, reason, err);
+  UCNV_FROM_U_CALLBACK_SUBSTITUTE(context, from_unicode_args, code_units,
+                                  length, code_point, reason, err);
 }
 #endif  // USING_SYSTEM_ICU
 
@@ -623,10 +618,11 @@ CString TextCodecICU::EncodeInternal(const TextCodecInput& input,
       ucnv_setFromUCallBack(converter_icu_, UCNV_FROM_U_CALLBACK_SUBSTITUTE, 0,
                             0, 0, &err);
 #else
-      ucnv_setFromUCallBack(
-          converter_icu_, m_needsGBKFallbacks ? gbkCallbackSubstitute
-                                              : UCNV_FROM_U_CALLBACK_SUBSTITUTE,
-          0, 0, 0, &err);
+      ucnv_setFromUCallBack(converter_icu_,
+                            needs_gbk_fallbacks_
+                                ? GbkCallbackSubstitute
+                                : UCNV_FROM_U_CALLBACK_SUBSTITUTE,
+                            0, 0, 0, &err);
 #endif
       break;
     case kEntitiesForUnencodables:
@@ -636,8 +632,8 @@ CString TextCodecICU::EncodeInternal(const TextCodecInput& input,
 #else
       ucnv_setFromUCallBack(
           converter_icu_,
-          m_needsGBKFallbacks ? gbkCallbackEscape : NumericEntityCallback, 0, 0,
-          0, &err);
+          needs_gbk_fallbacks_ ? GbkCallbackEscape : NumericEntityCallback, 0,
+          0, 0, &err);
 #endif
       break;
     case kURLEncodedEntitiesForUnencodables:
@@ -646,8 +642,8 @@ CString TextCodecICU::EncodeInternal(const TextCodecInput& input,
                             &err);
 #else
       ucnv_setFromUCallBack(converter_icu_,
-                            m_needsGBKFallbacks ? gbkUrlEscapedEntityCallack
-                                                : UrlEscapedEntityCallback,
+                            needs_gbk_fallbacks_ ? GbkUrlEscapedEntityCallack
+                                                 : UrlEscapedEntityCallback,
                             0, 0, 0, &err);
 #endif
       break;
@@ -657,8 +653,8 @@ CString TextCodecICU::EncodeInternal(const TextCodecInput& input,
                             &err);
 #else
       ucnv_setFromUCallBack(converter_icu_,
-                            m_needsGBKFallbacks ? gbkCssEscapedEntityCallack
-                                                : CssEscapedEntityCallback,
+                            needs_gbk_fallbacks_ ? GbkCssEscapedEntityCallack
+                                                 : CssEscapedEntityCallback,
                             0, 0, 0, &err);
 #endif
       break;
