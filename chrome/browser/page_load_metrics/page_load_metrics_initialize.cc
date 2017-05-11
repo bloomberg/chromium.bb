@@ -21,6 +21,7 @@
 #include "chrome/browser/page_load_metrics/observers/from_gws_page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/observers/google_captcha_observer.h"
 #include "chrome/browser/page_load_metrics/observers/https_engagement_metrics/https_engagement_page_load_metrics_observer.h"
+#include "chrome/browser/page_load_metrics/observers/lofi_page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/observers/media_page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/observers/no_state_prefetch_page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/observers/omnibox_suggestion_used_page_load_metrics_observer.h"
@@ -78,6 +79,8 @@ void PageLoadMetricsEmbedder::RegisterObservers(
     tracker->AddObserver(
         base::MakeUnique<
             data_reduction_proxy::DataReductionProxyMetricsObserver>());
+    tracker->AddObserver(
+        base::MakeUnique<data_reduction_proxy::LoFiPageLoadMetricsObserver>());
     tracker->AddObserver(base::MakeUnique<FromGWSPageLoadMetricsObserver>());
     tracker->AddObserver(
         base::MakeUnique<google_captcha_observer::GoogleCaptchaObserver>());
