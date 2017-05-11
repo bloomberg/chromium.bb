@@ -1,3 +1,4 @@
 timvolodine@chromium.org
 
-# COMPONENT: IO>DeviceOrientation
+# COMPONENT: Blink>Sensor>DeviceOrientation
+# TEAM: device-dev@chromium.org
