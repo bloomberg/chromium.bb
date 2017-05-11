@@ -145,30 +145,7 @@ Profile* GetProfile() {
   return profile;
 }
 
-// Tests for the sign-in profile apps being enabled via the command line flag.
-// TODO(emaxx): Remove this smoke test once it's investigated whether just
-// specifying this command line flag leads to tests being timed out.
-class SigninProfileAppsEnabledViaCommandLineTest : public InProcessBrowserTest {
- protected:
-  SigninProfileAppsEnabledViaCommandLineTest() {}
-
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    InProcessBrowserTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitch(switches::kEnableLoginScreenApps);
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(SigninProfileAppsEnabledViaCommandLineTest);
-};
-
 }  // namespace
-
-IN_PROC_BROWSER_TEST_F(SigninProfileAppsEnabledViaCommandLineTest,
-                       NoExtensions) {
-  EXPECT_TRUE(extensions::ExtensionSystem::Get(GetProfile())
-                  ->extension_service()
-                  ->extensions_enabled());
-}
 
 namespace {
 
@@ -183,7 +160,6 @@ class SigninProfileAppsPolicyTestBase : public DevicePolicyCrosBrowserTest {
     DevicePolicyCrosBrowserTest::SetUpCommandLine(command_line);
     command_line->AppendSwitch(chromeos::switches::kLoginManager);
     command_line->AppendSwitch(chromeos::switches::kForceLoginManagerInTests);
-    command_line->AppendSwitch(switches::kEnableLoginScreenApps);
   }
 
   void SetUpInProcessBrowserTestFixture() override {
@@ -324,6 +300,14 @@ class SigninProfileAppsPolicyTest : public SigninProfileAppsPolicyTestBase {
 };
 
 }  // namespace
+
+// Tests that the extension system enables non-standard extensions in the
+// sign-in profile.
+IN_PROC_BROWSER_TEST_F(SigninProfileAppsPolicyTest, ExtensionsEnabled) {
+  EXPECT_TRUE(extensions::ExtensionSystem::Get(GetProfile())
+                  ->extension_service()
+                  ->extensions_enabled());
+}
 
 // Tests that a background page is created for the installed sign-in profile
 // app.

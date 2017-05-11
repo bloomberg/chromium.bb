@@ -70,8 +70,8 @@ bool ChromeProcessManagerDelegate::IsExtensionBackgroundPageAllowed(
 
   if (is_signin_profile) {
     // Check for flag.
-    if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kEnableLoginScreenApps)) {
+    if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kDisableLoginScreenApps)) {
       return false;
     }
 

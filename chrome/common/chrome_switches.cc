@@ -925,11 +925,12 @@ const char kWebApkServerUrl[] = "webapk-server-url";
 // Custom crosh command.
 const char kCroshCommand[] = "crosh-command";
 
+// Disables apps on the login screen. By default, they are allowed and can be
+// installed through policy.
+const char kDisableLoginScreenApps[] = "disable-login-screen-apps";
+
 // Disables native cups integration
 const char kDisableNativeCups[] = "disable-native-cups";
-
-// Enables apps on the login screen.
-const char kEnableLoginScreenApps[] = "enable-login-screen-apps";
 #endif  // defined(OS_CHROMEOS)
 
 #if defined(USE_ASH)

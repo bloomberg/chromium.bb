@@ -271,8 +271,8 @@ extern const char kWebApkServerUrl[];
 
 #if defined(OS_CHROMEOS)
 extern const char kCroshCommand[];
+extern const char kDisableLoginScreenApps[];
 extern const char kDisableNativeCups[];
-extern const char kEnableLoginScreenApps[];
 #endif  // defined(OS_CHROMEOS)
 
 #if defined(USE_ASH)
