@@ -219,14 +219,6 @@ bool ShouldQuicAllowServerMigration(
       "true");
 }
 
-bool ShouldQuicDoNotMarkAsBrokenOnNetworkChange(
-    const VariationParameters& quic_trial_params) {
-  return base::LowerCaseEqualsASCII(
-      GetVariationParam(quic_trial_params,
-                        "do_not_mark_as_broken_on_network_change"),
-      "true");
-}
-
 size_t GetQuicMaxPacketLength(const VariationParameters& quic_trial_params) {
   unsigned value;
   if (base::StringToUint(
@@ -302,8 +294,6 @@ void ConfigureQuicParams(base::StringPiece quic_trial_group,
         ShouldQuicMigrateSessionsEarly(quic_trial_params);
     params->quic_allow_server_migration =
         ShouldQuicAllowServerMigration(quic_trial_params);
-    params->quic_do_not_mark_as_broken_on_network_change =
-        ShouldQuicDoNotMarkAsBrokenOnNetworkChange(quic_trial_params);
   }
 
   size_t max_packet_length = GetQuicMaxPacketLength(quic_trial_params);
