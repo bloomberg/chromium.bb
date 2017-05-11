@@ -27884,6 +27884,7 @@ from previous Chrome versions.
   <int value="6" label="USB_C"/>
   <int value="7" label="USB_PD"/>
   <int value="8" label="USB_PD_DRP"/>
+  <int value="9" label="BrickID (Apple)"/>
 </enum>
 
 <enum name="PowerwashDialogViewType" type="int">
