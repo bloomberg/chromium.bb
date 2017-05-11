@@ -4,13 +4,17 @@
 
 package org.chromium.chrome.browser;
 
+import android.annotation.SuppressLint;
+import android.annotation.TargetApi;
 import android.app.ActivityManager;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentSender;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
+import android.content.pm.ResolveInfo;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
@@ -19,6 +23,7 @@ import android.graphics.Paint;
 import android.graphics.Rect;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
+import android.graphics.drawable.Icon;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.support.annotation.NonNull;
@@ -26,6 +31,7 @@ import android.text.TextUtils;
 import android.util.Base64;
 
 import org.chromium.base.ApiCompatibilityUtils;
+import org.chromium.base.BuildInfo;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
@@ -33,7 +39,6 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.blink_public.platform.WebDisplayMode;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.webapps.ChromeShortcutManager;
 import org.chromium.chrome.browser.webapps.ChromeWebApkHost;
 import org.chromium.chrome.browser.webapps.WebApkInfo;
 import org.chromium.chrome.browser.webapps.WebappActivity;
@@ -47,6 +52,9 @@ import org.chromium.ui.widget.Toast;
 import org.chromium.webapk.lib.client.WebApkValidator;
 
 import java.io.ByteArrayOutputStream;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -88,6 +96,8 @@ public class ShortcutHelper {
 
     private static final String TAG = "ShortcutHelper";
 
+    private static final String INSTALL_SHORTCUT = "com.android.launcher.action.INSTALL_SHORTCUT";
+
     // The activity class used for launching a WebApk.
     private static final String WEBAPK_MAIN_ACTIVITY = "org.chromium.webapk.shell_apk.MainActivity";
 
@@ -99,6 +109,15 @@ public class ShortcutHelper {
     private static final float GENERATED_ICON_PADDING_RATIO = 1.0f / 12.0f;
     private static final float GENERATED_ICON_FONT_SIZE_RATIO = 1.0f / 3.0f;
 
+    // True when Android O's ShortcutManager.requestPinShortcut() is supported.
+    private static boolean sIsRequestPinShortcutSupported;
+
+    // True when it is already checked if ShortcutManager.requestPinShortcut() is supported.
+    private static boolean sCheckedIfRequestPinShortcutSupported;
+
+    // TODO(martiw): Use 'ShortcutInfo' instead of 'Object' below when compileSdk is bumped to O.
+    private static Object sShortcutManager;
+
     /** Helper for generating home screen shortcuts. */
     public static class Delegate {
         /**
@@ -108,8 +127,12 @@ public class ShortcutHelper {
          * @param intent Intent to fire when the shortcut is activated.
          */
         public void addShortcutToHomescreen(String title, Bitmap icon, Intent shortcutIntent) {
-            ChromeShortcutManager.getInstance().addShortcutToHomeScreen(
-                    title, icon, shortcutIntent);
+            if (isRequestPinShortcutSupported()) {
+                addShortcutWithShortcutManager(title, icon, shortcutIntent);
+                return;
+            }
+            Intent intent = createAddToHomeIntent(title, icon, shortcutIntent);
+            ContextUtils.getApplicationContext().sendBroadcast(intent);
         }
 
         /**
@@ -173,7 +196,7 @@ public class ShortcutHelper {
                                 nativeOnWebappDataStored(callbackPointer);
                             }
                         });
-                if (ChromeShortcutManager.getInstance().shouldShowToastWhenAddingShortcut()) {
+                if (shouldShowToastWhenAddingShortcut()) {
                     showAddedToHomescreenToast(userTitle);
                 }
             }
@@ -192,8 +215,7 @@ public class ShortcutHelper {
             Intent i = new Intent();
             i.setClassName(packageName, WEBAPK_MAIN_ACTIVITY);
             i.addCategory(Intent.CATEGORY_LAUNCHER);
-            context.sendBroadcast(
-                    ChromeShortcutManager.createAddToHomeIntent(shortcutTitle, bitmap, i));
+            context.sendBroadcast(createAddToHomeIntent(shortcutTitle, bitmap, i));
         } catch (NameNotFoundException e) {
             e.printStackTrace();
         }
@@ -212,8 +234,56 @@ public class ShortcutHelper {
         shortcutIntent.putExtra(EXTRA_SOURCE, source);
         shortcutIntent.setPackage(context.getPackageName());
         sDelegate.addShortcutToHomescreen(userTitle, icon, shortcutIntent);
-        if (ChromeShortcutManager.getInstance().shouldShowToastWhenAddingShortcut()) {
+        if (shouldShowToastWhenAddingShortcut()) {
             showAddedToHomescreenToast(userTitle);
+        }
+    }
+
+    // TODO(martiw): Use Build.VERSION_CODES.O instead of hardcoded number when it is available.
+    @TargetApi(26)
+    private static void addShortcutWithShortcutManager(
+            String title, Bitmap icon, Intent shortcutIntent) {
+        String id = shortcutIntent.getStringExtra(ShortcutHelper.EXTRA_ID);
+        Context context = ContextUtils.getApplicationContext();
+
+        // The code in the try-block uses reflection in order to compile as it calls APIs newer than
+        // our compileSdkVersion of Android. The equivalent code without reflection looks like this:
+        //  ShortcutInfo shortcutInfo = new ShortcutInfo.Builder(context, id)
+        //                                  .setShortLabel(title)
+        //                                  .setLongLabel(title)
+        //                                  .setIcon(Icon.createWithBitmap(icon))
+        //                                  .setIntent(shortcutIntent)
+        //                                  .build();
+        //  sShortcutManager.requestPinShortcut(shortcutInfo, null);
+        // TODO(martiw): Remove the following reflection once compileSdk is bumped to O.
+        try {
+            Class<?> builderClass = Class.forName("android.content.pm.ShortcutInfo$Builder");
+            Constructor<?> builderConstructor =
+                    builderClass.getDeclaredConstructor(Context.class, String.class);
+            Object shortcutBuilder = builderConstructor.newInstance(context, id);
+
+            Method setShortLabel = builderClass.getMethod("setShortLabel", CharSequence.class);
+            setShortLabel.invoke(shortcutBuilder, title);
+
+            Method setLongLabel = builderClass.getMethod("setLongLabel", CharSequence.class);
+            setLongLabel.invoke(shortcutBuilder, title);
+
+            Method setIcon = builderClass.getMethod("setIcon", Icon.class);
+            setIcon.invoke(shortcutBuilder, Icon.createWithBitmap(icon));
+
+            Method setIntent = builderClass.getMethod("setIntent", Intent.class);
+            setIntent.invoke(shortcutBuilder, shortcutIntent);
+
+            Method build = builderClass.getMethod("build");
+            Object shortcutInfo = build.invoke(shortcutBuilder);
+
+            Class<?> ShortcutInfoClass = Class.forName("android.content.pm.ShortcutInfo");
+            Method requestPinShortcut = sShortcutManager.getClass().getMethod(
+                    "requestPinShortcut", ShortcutInfoClass, IntentSender.class);
+            requestPinShortcut.invoke(sShortcutManager, shortcutInfo, null);
+        } catch (ClassNotFoundException | NoSuchMethodException | InstantiationException
+                | InvocationTargetException | IllegalAccessException e) {
+            Log.e(TAG, "Error adding shortcut with ShortcutManager:", e);
         }
     }
 
@@ -268,6 +338,21 @@ public class ShortcutHelper {
                 }
             }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
         }
+    }
+
+    /**
+     * Creates an intent that will add a shortcut to the home screen.
+     * @param title          Title of the shortcut.
+     * @param icon           Image that represents the shortcut.
+     * @param shortcutIntent Intent to fire when the shortcut is activated.
+     * @return Intent for the shortcut.
+     */
+    public static Intent createAddToHomeIntent(String title, Bitmap icon, Intent shortcutIntent) {
+        Intent i = new Intent(INSTALL_SHORTCUT);
+        i.putExtra(Intent.EXTRA_SHORTCUT_INTENT, shortcutIntent);
+        i.putExtra(Intent.EXTRA_SHORTCUT_NAME, title);
+        i.putExtra(Intent.EXTRA_SHORTCUT_ICON, icon);
+        return i;
     }
 
     /**
@@ -342,8 +427,15 @@ public class ShortcutHelper {
      * Utility method to check if a shortcut can be added to the home screen.
      * @return if a shortcut can be added to the home screen under the current profile.
      */
+    // TODO(crbug.com/635567): Fix this properly.
+    @SuppressLint("WrongConstant")
     public static boolean isAddToHomeIntentSupported() {
-        return ChromeShortcutManager.getInstance().canAddShortcutToHomescreen();
+        if (isRequestPinShortcutSupported()) return true;
+        PackageManager pm = ContextUtils.getApplicationContext().getPackageManager();
+        Intent i = new Intent(INSTALL_SHORTCUT);
+        List<ResolveInfo> receivers =
+                pm.queryBroadcastReceivers(i, PackageManager.GET_INTENT_FILTERS);
+        return !receivers.isEmpty();
     }
 
     /**
@@ -621,6 +713,44 @@ public class ShortcutHelper {
             return true;
         }
         return false;
+    }
+
+    private static boolean shouldShowToastWhenAddingShortcut() {
+        return !isRequestPinShortcutSupported();
+    }
+
+    private static boolean isRequestPinShortcutSupported() {
+        if (!sCheckedIfRequestPinShortcutSupported) {
+            if (BuildInfo.isAtLeastO()) {
+                checkIfRequestPinShortcutSupported();
+            }
+            sCheckedIfRequestPinShortcutSupported = true;
+        }
+        return sIsRequestPinShortcutSupported;
+    }
+
+    // TODO(martiw): Use Build.VERSION_CODES.O instead of hardcoded number when it is available.
+    @TargetApi(26)
+    private static void checkIfRequestPinShortcutSupported() {
+        // The code in the try-block uses reflection in order to compile as it calls APIs newer than
+        // our target version of Android. The equivalent code without reflection is as follows:
+        //  sShortcutManager =
+        //          ContextUtils.getApplicationContext().getSystemService(ShortcutManager.class);
+        //  sIsRequestPinShortcutSupported = sShortcutManager.isRequestPinShortcutSupported();
+        // TODO(martiw): Remove the following reflection once compileSdk is bumped to O.
+        try {
+            Class<?> ShortcutManagerClass = Class.forName("android.content.pm.ShortcutManager");
+            sShortcutManager =
+                    ContextUtils.getApplicationContext().getSystemService(ShortcutManagerClass);
+
+            Method isRequestPinShortcutSupported =
+                    ShortcutManagerClass.getMethod("isRequestPinShortcutSupported");
+            sIsRequestPinShortcutSupported =
+                    (boolean) isRequestPinShortcutSupported.invoke(sShortcutManager);
+        } catch (ClassNotFoundException | NoSuchMethodException | InvocationTargetException
+                | IllegalAccessException e) {
+            Log.e(TAG, "Error checking if RequestPinShortcut is supported:", e);
+        }
     }
 
     private static int getSizeFromResourceInPx(Context context, int resource) {

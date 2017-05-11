@@ -38,7 +38,6 @@ import org.chromium.chrome.browser.signin.GoogleActivityController;
 import org.chromium.chrome.browser.sync.GmsCoreSyncListener;
 import org.chromium.chrome.browser.tab.AuthenticatorNavigationInterceptor;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.webapps.ChromeShortcutManager;
 import org.chromium.chrome.browser.webapps.GooglePlayWebApkInstallDelegate;
 import org.chromium.components.signin.AccountManagerDelegate;
 import org.chromium.components.signin.SystemAccountManagerDelegate;
@@ -112,12 +111,6 @@ public abstract class AppHooks {
      */
     public AuthenticatorNavigationInterceptor createAuthenticatorNavigationInterceptor(Tab tab) {
         return null;
-    }
-
-    /** Returns the singleton instance of ChromeShortcutManager */
-    // TODO(martiw): remove this function after ChromeShortcutManagerInternal is removed
-    public ChromeShortcutManager createChromeShortcutManager() {
-        return new ChromeShortcutManager();
     }
 
     /**
