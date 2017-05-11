@@ -157,20 +157,14 @@ IN_PROC_BROWSER_TEST_F(ReloadCacheControlBrowserTest, NormalReload) {
 
 // Test if bypassing reload issues requests with proper cache control flags.
 IN_PROC_BROWSER_TEST_F(ReloadCacheControlBrowserTest, BypassingReload) {
-  // TODO(crbug.com/671545): This test gets to be unstable if browser-side
-  // navigation is enabled. This is because we can not ensure which of frame and
-  // image requests hits the network first.
-  if (IsBrowserSideNavigationEnabled())
-    return;
 
   GURL url(embedded_test_server()->GetURL(kReloadTestPath));
 
-  EXPECT_TRUE(NavigateToURL(shell(), url));
-  ReloadBypassingCacheBlockUntilNavigationsComplete(shell(), 1);
-
+  NavigateToURLBlockUntilNavigationsComplete(shell(), url, 1);
   {
     base::AutoLock lock(request_log_lock_);
-    ASSERT_EQ(8UL, request_log_.size());
+    ASSERT_EQ(4UL, request_log_.size());
+
     EXPECT_EQ(kReloadTestPath, request_log_[0].relative_url);
     EXPECT_EQ(kNoCacheControl, request_log_[0].cache_control);
     EXPECT_EQ(kReloadImagePath, request_log_[1].relative_url);
@@ -179,6 +173,12 @@ IN_PROC_BROWSER_TEST_F(ReloadCacheControlBrowserTest, BypassingReload) {
     EXPECT_EQ(kNoCacheControl, request_log_[2].cache_control);
     EXPECT_EQ(kReloadImagePath, request_log_[3].relative_url);
     EXPECT_EQ(kNoCacheControl, request_log_[3].cache_control);
+  }
+
+  ReloadBypassingCacheBlockUntilNavigationsComplete(shell(), 1);
+  {
+    base::AutoLock lock(request_log_lock_);
+    ASSERT_EQ(8UL, request_log_.size());
 
     // Only the top main resource should be requested with kNoCacheCacheControl.
     EXPECT_EQ(kReloadTestPath, request_log_[4].relative_url);
