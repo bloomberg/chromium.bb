@@ -66,7 +66,6 @@ class UiSceneManager {
   bool in_cct_;
   bool web_vr_mode_;
   bool secure_origin_ = false;
-  bool content_rendering_enabled_ = true;
 
   int next_available_id_ = 1;
 
