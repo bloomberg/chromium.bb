@@ -59,6 +59,33 @@ My commit message is my best friend. It is my life. I must master it.
         { 'Bug': [''],
           'Cr-Commit-Position': [ self._position ] })
 
+  def testSkippingBadFooterLines(self):
+    message = ('Title.\n'
+               '\n'
+               'Last: paragraph starts\n'
+               'It-may: contain\n'
+               'bad lines, which should be skipped\n'
+               'For: example\n'
+               '(cherry picked from)\n'
+               'And-only-valid: footers taken')
+    self.assertEqual(git_footers.split_footers(message),
+                     (['Title.',
+                       ''],
+                      ['Last: paragraph starts',
+                       'It-may: contain',
+                       'bad lines, which should be skipped',
+                       'For: example',
+                       '(cherry picked from)',
+                       'And-only-valid: footers taken'],
+                      [('Last', 'paragraph starts'),
+                       ('It-may', 'contain'),
+                       ('For', 'example'),
+                       ('And-only-valid', 'footers taken')]))
+    self.assertEqual(git_footers.parse_footers(message),
+                     {'Last': ['paragraph starts'],
+                      'It-May': ['contain'],
+                      'For': ['example'],
+                      'And-Only-Valid': ['footers taken']})
 
   def testGetFooterChangeId(self):
     msg = '\n'.join(['whatever',
@@ -100,6 +127,10 @@ My commit message is my best friend. It is my life. I must master it.
     self.assertEqual(
         git_footers.add_footer_change_id('header: like footer', 'Ixxx'),
         'header: like footer\n\nChange-Id: Ixxx')
+
+    self.assertEqual(
+        git_footers.add_footer_change_id('Header.\n\nBug: v8\nN=t\nT=z', 'Ix'),
+        'Header.\n\nBug: v8\nChange-Id: Ix\nN=t\nT=z')
 
   def testAddFooter(self):
     self.assertEqual(

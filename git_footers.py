@@ -42,12 +42,25 @@ def parse_footers(message):
   return footer_map
 
 
+def matches_footer_key(line, key):
+  """Returns whether line is a valid footer whose key matches a given one.
+
+  Keys are compared in normalized form.
+  """
+  r = parse_footer(line)
+  if r is None:
+    return None
+  return normalize_name(r[0]) == normalize_name(key)
+
+
 def split_footers(message):
   """Returns (non_footer_lines, footer_lines, parsed footers).
 
   Guarantees that:
     (non_footer_lines + footer_lines) == message.splitlines().
     parsed_footers is parse_footer applied on each line of footer_lines.
+      There could be fewer parsed_footers than footer lines if some lines in
+      last paragraph are malformed.
   """
   message_lines = list(message.splitlines())
   footer_lines = []
@@ -61,8 +74,8 @@ def split_footers(message):
     footer_lines = []
 
   footer_lines.reverse()
-  footers = map(parse_footer, footer_lines)
-  if not footer_lines or not all(footers):
+  footers = filter(None, map(parse_footer, footer_lines))
+  if not footers:
     return message_lines, [], []
   return message_lines[:-len(footer_lines)], footer_lines, footers
 
@@ -111,11 +124,11 @@ def add_footer(message, key, value, after_keys=None, before_keys=None):
     after_keys = set(map(normalize_name, after_keys or []))
     after_indices = [
         footer_lines.index(x) for x in footer_lines for k in after_keys
-        if normalize_name(parse_footer(x)[0]) == k]
+        if matches_footer_key(x, k)]
     before_keys = set(map(normalize_name, before_keys or []))
     before_indices = [
         footer_lines.index(x) for x in footer_lines for k in before_keys
-        if normalize_name(parse_footer(x)[0]) == k]
+        if matches_footer_key(x, k)]
     if after_indices:
       # after_keys takes precedence, even if there's a conflict.
       insert_idx = max(after_indices) + 1
