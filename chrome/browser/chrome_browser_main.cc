@@ -200,7 +200,6 @@
 
 #if defined(OS_WIN)
 #include "base/trace_event/trace_event_etw_export_win.h"
-#include "base/win/registry.h"
 #include "base/win/win_util.h"
 #include "chrome/browser/chrome_browser_main_win.h"
 #include "chrome/browser/component_updater/sw_reporter_installer_win.h"
@@ -765,16 +764,6 @@ void ChromeBrowserMainParts::SetupFieldTrials() {
   metrics::DesktopSessionDurationTracker::Initialize();
 #endif
   metrics::RendererUptimeTracker::Initialize();
-
-#if defined(OS_WIN)
-  // Cleanup the PreRead field trial registry key.
-  // TODO(fdoray): Remove this when M56 hits stable.
-  const base::string16 pre_read_field_trial_registry_path =
-      install_static::GetRegistryPath() + L"\\PreReadFieldTrial";
-  base::win::RegKey(HKEY_CURRENT_USER,
-                    pre_read_field_trial_registry_path.c_str(), KEY_SET_VALUE)
-      .DeleteKey(L"");
-#endif  // defined(OS_WIN)
 }
 
 void ChromeBrowserMainParts::SetupMetrics() {
