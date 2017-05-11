@@ -693,14 +693,13 @@ const FeatureEntry::Choice kSSLVersionMaxChoices[] = {
 };
 
 #if !defined(OS_ANDROID)
-const FeatureEntry::Choice kEnableDefaultMediaSessionChoices[] = {
-    {flag_descriptions::kEnableDefaultMediaSessionDisabled, "", ""},
-    {flag_descriptions::kEnableDefaultMediaSessionEnabled,
-     switches::kEnableDefaultMediaSession, ""},
+const FeatureEntry::Choice kEnableAudioFocusChoices[] = {
+    {flag_descriptions::kEnableAudioFocusDisabled, "", ""},
+    {flag_descriptions::kEnableAudioFocusEnabled, switches::kEnableAudioFocus,
+     ""},
 #if BUILDFLAG(ENABLE_PLUGINS)
-    {flag_descriptions::kEnableDefaultMediaSessionEnabledDuckFlash,
-     switches::kEnableDefaultMediaSession,
-     switches::kEnableDefaultMediaSessionDuckFlash},
+    {flag_descriptions::kEnableAudioFocusEnabledDuckFlash,
+     switches::kEnableAudioFocus, switches::kEnableAudioFocusDuckFlash},
 #endif  // BUILDFLAG(ENABLE_PLUGINS)
 };
 #endif  // !defined(OS_ANDROID)
@@ -2539,10 +2538,9 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(features::kEnumerateAudioDevices)},
 #endif  // OS_CHROMEOS
 #if !defined(OS_ANDROID)
-    {"enable-default-media-session",
-     flag_descriptions::kEnableDefaultMediaSessionName,
-     flag_descriptions::kEnableDefaultMediaSessionDescription, kOsDesktop,
-     MULTI_VALUE_TYPE(kEnableDefaultMediaSessionChoices)},
+    {"enable-audio-focus", flag_descriptions::kEnableAudioFocusName,
+     flag_descriptions::kEnableAudioFocusDescription, kOsDesktop,
+     MULTI_VALUE_TYPE(kEnableAudioFocusChoices)},
 #endif  // !OS_ANDROID
 #if defined(OS_ANDROID)
     {"modal-permission-prompts", flag_descriptions::kModalPermissionPromptsName,

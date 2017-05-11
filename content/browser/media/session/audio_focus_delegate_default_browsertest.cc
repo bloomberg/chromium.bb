@@ -15,7 +15,7 @@ namespace content {
 class AudioFocusDelegateDefaultBrowserTest : public ContentBrowserTest {
  protected:
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    command_line->AppendSwitch(switches::kEnableDefaultMediaSession);
+    command_line->AppendSwitch(switches::kEnableAudioFocus);
   }
 
   void Run(WebContents* start_contents, WebContents* interrupt_contents) {

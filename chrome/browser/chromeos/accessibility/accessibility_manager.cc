@@ -1471,9 +1471,9 @@ void AccessibilityManager::PostLoadChromeVox() {
   }
 
   if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableDefaultMediaSession)) {
+          switches::kEnableAudioFocus)) {
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        switches::kEnableDefaultMediaSession);
+        switches::kEnableAudioFocus);
   }
 }
 

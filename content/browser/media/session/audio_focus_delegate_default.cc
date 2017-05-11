@@ -42,7 +42,7 @@ AudioFocusDelegateDefault::~AudioFocusDelegateDefault() = default;
 bool AudioFocusDelegateDefault::RequestAudioFocus(
     AudioFocusManager::AudioFocusType audio_focus_type) {
   if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableDefaultMediaSession)) {
+          switches::kEnableAudioFocus)) {
     return true;
   }
 

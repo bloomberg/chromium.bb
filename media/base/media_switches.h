@@ -50,11 +50,11 @@ MEDIA_EXPORT extern const char kUseCras[];
 #endif
 
 #if !defined(OS_ANDROID) || BUILDFLAG(ENABLE_PLUGINS)
-MEDIA_EXPORT extern const char kEnableDefaultMediaSession[];
+MEDIA_EXPORT extern const char kEnableAudioFocus[];
 #endif  // !defined(OS_ANDROID) || BUILDFLAG(ENABLE_PLUGINS)
 
 #if BUILDFLAG(ENABLE_PLUGINS)
-MEDIA_EXPORT extern const char kEnableDefaultMediaSessionDuckFlash[];
+MEDIA_EXPORT extern const char kEnableAudioFocusDuckFlash[];
 #endif  // BUILDFLAG(ENABLE_PLUGINS)
 
 #if BUILDFLAG(ENABLE_RUNTIME_MEDIA_RENDERER_SELECTION)

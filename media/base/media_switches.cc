@@ -69,17 +69,16 @@ const char kUseCras[] = "use-cras";
 #endif
 
 #if !defined(OS_ANDROID) || BUILDFLAG(ENABLE_PLUGINS)
-// Use a media session for each tabs in a way that two tabs can't play on top of
-// each other. This is different from the Media Session API as it is enabling a
-// default behaviour for the browser. The allowed values are: "" (empty),
-// |kEnableDefaultMediaSessionDuckFlash|.
-const char kEnableDefaultMediaSession[] = "enable-default-media-session";
+// Enable a internal audio focus management between tabs in such a way that two
+// tabs can't  play on top of each other.
+// The allowed values are: "" (empty) or |kEnableAudioFocusDuckFlash|.
+const char kEnableAudioFocus[] = "enable-audio-focus";
 #endif  // !defined(OS_ANDROID) || BUILDFLAG(ENABLE_PLUGINS)
 
 #if BUILDFLAG(ENABLE_PLUGINS)
-// This value is used as an option for |kEnableDefaultMediaSession|. Flash will
+// This value is used as an option for |kEnableAudioFocus|. Flash will
 // be ducked when losing audio focus.
-const char kEnableDefaultMediaSessionDuckFlash[] = "duck-flash";
+const char kEnableAudioFocusDuckFlash[] = "duck-flash";
 #endif  // BUILDFLAG(ENABLE_PLUGINS)
 
 #if BUILDFLAG(ENABLE_RUNTIME_MEDIA_RENDERER_SELECTION)
