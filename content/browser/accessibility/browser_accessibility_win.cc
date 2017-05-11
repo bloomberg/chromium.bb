@@ -26,20 +26,17 @@ BrowserAccessibilityWin::BrowserAccessibilityWin() {
   browser_accessibility_com_->Init(this);
 }
 
-BrowserAccessibilityWin::~BrowserAccessibilityWin() {}
+BrowserAccessibilityWin::~BrowserAccessibilityWin() {
+  if (browser_accessibility_com_) {
+    browser_accessibility_com_->Destroy();
+    browser_accessibility_com_ = nullptr;
+  }
+}
 
 void BrowserAccessibilityWin::UpdatePlatformAttributes() {
   GetCOM()->UpdateStep1ComputeWinAttributes();
   GetCOM()->UpdateStep2ComputeHypertext();
   GetCOM()->UpdateStep3FireEvents(false);
-}
-
-void BrowserAccessibilityWin::Destroy() {
-  if (browser_accessibility_com_) {
-    browser_accessibility_com_->Destroy();
-    browser_accessibility_com_ = nullptr;
-  }
-  BrowserAccessibility::Destroy();
 }
 
 void BrowserAccessibilityWin::OnSubtreeWillBeDeleted() {
