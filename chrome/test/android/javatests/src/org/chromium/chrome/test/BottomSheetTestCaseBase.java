@@ -6,13 +6,11 @@ package org.chromium.chrome.test;
 
 import static org.chromium.chrome.test.util.ChromeRestriction.RESTRICTION_TYPE_PHONE;
 
-import android.os.Build;
 import android.support.v7.widget.RecyclerView;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
-import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
@@ -27,7 +25,6 @@ import org.chromium.chrome.test.util.browser.RecyclerViewTestUtils;
  */
 @CommandLineFlags.Add({"enable-features=ChromeHome"})
 @Restriction(RESTRICTION_TYPE_PHONE) // ChromeHome is only enabled on phones
-@MinAndroidSdkLevel(Build.VERSION_CODES.LOLLIPOP_MR1)
 public abstract class BottomSheetTestCaseBase extends ChromeTabbedActivityTestBase {
     /** A handle to the sheet's observer. */
     protected TestBottomSheetObserver mObserver;
