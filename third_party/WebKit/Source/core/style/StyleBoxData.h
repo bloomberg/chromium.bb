@@ -45,13 +45,35 @@ class CORE_EXPORT StyleBoxData : public RefCountedCopyable<StyleBoxData> {
     return AdoptRef(new StyleBoxData(*this));
   }
 
-  bool operator==(const StyleBoxData&) const;
+  bool operator==(const StyleBoxData& other) const {
+    return width_ == other.width_ && height_ == other.height_ &&
+           min_width_ == other.min_width_ && max_width_ == other.max_width_ &&
+           min_height_ == other.min_height_ &&
+           max_height_ == other.max_height_ &&
+           vertical_align_length_ == other.vertical_align_length_ &&
+           z_index_ == other.z_index_ &&
+           has_auto_z_index_ == other.has_auto_z_index_ &&
+           box_sizing_ == other.box_sizing_ &&
+           box_decoration_break_ == other.box_decoration_break_;
+  }
   bool operator!=(const StyleBoxData& o) const { return !(*this == o); }
 
  private:
   friend class ComputedStyle;
 
-  StyleBoxData();
+  StyleBoxData()
+      : width_(Length()),
+        height_(Length()),
+        min_width_(Length()),
+        max_width_(Length(kMaxSizeNone)),
+        min_height_(Length()),
+        max_height_(Length(kMaxSizeNone)),
+        z_index_(0),
+        has_auto_z_index_(static_cast<unsigned>(true)),
+        box_sizing_(static_cast<unsigned>(EBoxSizing::kContentBox)),
+        box_decoration_break_(
+            static_cast<unsigned>(EBoxDecorationBreak::kSlice)) {}
+
   StyleBoxData(const StyleBoxData&) = default;
 
   Length width_;
