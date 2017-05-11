@@ -11,6 +11,7 @@
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/RemoteFrame.h"
+#include "core/frame/WebLocalFrameBase.h"
 #include "core/html/HTMLFrameElementBase.h"
 #include "core/html/HTMLFrameOwnerElement.h"
 #include "core/page/Page.h"
@@ -22,7 +23,6 @@
 #include "public/web/WebSandboxFlags.h"
 #include "web/OpenedFrameTracker.h"
 #include "web/RemoteFrameOwner.h"
-#include "web/WebLocalFrameImpl.h"
 #include "web/WebRemoteFrameImpl.h"
 
 namespace blink {
@@ -48,7 +48,7 @@ bool WebFrame::Swap(WebFrame* frame) {
   std::unique_ptr<IncrementLoadEventDelayCount> delay_parent_load =
       parent_ && parent_->IsWebLocalFrame()
           ? IncrementLoadEventDelayCount::Create(
-                *ToWebLocalFrameImpl(parent_)->GetFrame()->GetDocument())
+                *ToWebLocalFrameBase(parent_)->GetFrame()->GetDocument())
           : nullptr;
 
   if (parent_) {
@@ -101,7 +101,7 @@ bool WebFrame::Swap(WebFrame* frame) {
     // placeholder for loading state when swapping to a local frame.
     // In this case, the core LocalFrame is already initialized, so just
     // update a bit of state.
-    LocalFrame& local_frame = *ToWebLocalFrameImpl(frame)->GetFrame();
+    LocalFrame& local_frame = *ToWebLocalFrameBase(frame)->GetFrame();
     DCHECK_EQ(owner, local_frame.Owner());
     if (owner) {
       owner->SetContentFrame(local_frame);
@@ -292,7 +292,7 @@ WebFrame* WebFrame::FromFrame(Frame* frame) {
     return 0;
 
   if (frame->IsLocalFrame())
-    return WebLocalFrameImpl::FromFrame(ToLocalFrame(*frame));
+    return WebLocalFrameBase::FromFrame(ToLocalFrame(*frame));
   return WebRemoteFrameImpl::FromFrame(ToRemoteFrame(*frame));
 }
 
@@ -315,7 +315,7 @@ void WebFrame::TraceFrame(Visitor* visitor, WebFrame* frame) {
     return;
 
   if (frame->IsWebLocalFrame())
-    visitor->Trace(ToWebLocalFrameImpl(frame));
+    visitor->Trace(ToWebLocalFrameBase(frame));
   else
     visitor->Trace(ToWebRemoteFrameImpl(frame));
 }
@@ -334,7 +334,7 @@ void WebFrame::Close() {
 
 void WebFrame::InitializeCoreFrame(WebFrame& frame, Page& page) {
   if (frame.IsWebLocalFrame())
-    ToWebLocalFrameImpl(frame).InitializeCoreFrame(page, 0, g_null_atom);
+    ToWebLocalFrameBase(frame).InitializeCoreFrame(page, 0, g_null_atom);
   else if (frame.IsWebRemoteFrame())
     ToWebRemoteFrameImpl(frame).InitializeCoreFrame(page, 0, g_null_atom);
   else
@@ -343,7 +343,7 @@ void WebFrame::InitializeCoreFrame(WebFrame& frame, Page& page) {
 
 Frame* WebFrame::ToCoreFrame(const WebFrame& frame) {
   if (frame.IsWebLocalFrame())
-    return ToWebLocalFrameImpl(frame).GetFrame();
+    return ToWebLocalFrameBase(frame).GetFrame();
   if (frame.IsWebRemoteFrame())
     return ToWebRemoteFrameImpl(frame).GetFrame();
   NOTREACHED();

@@ -84,8 +84,7 @@ class WebVector;
 
 // Implementation of WebFrame, note that this is a reference counted object.
 class WEB_EXPORT WebLocalFrameImpl final
-    : public GarbageCollectedFinalized<WebLocalFrameImpl>,
-      NON_EXPORTED_BASE(public WebLocalFrameBase) {
+    : NON_EXPORTED_BASE(public WebLocalFrameBase) {
  public:
   // WebFrame methods:
   // TODO(dcheng): Fix sorting here; a number of method have been moved to
@@ -319,7 +318,9 @@ class WEB_EXPORT WebLocalFrameImpl final
                             WebString& clip_text,
                             WebString& clip_html) override;
 
-  void InitializeCoreFrame(Page&, FrameOwner*, const AtomicString& name);
+  void InitializeCoreFrame(Page&,
+                           FrameOwner*,
+                           const AtomicString& name) override;
   LocalFrame* GetFrame() const override { return frame_.Get(); }
 
   void WillBeDetached();
@@ -435,7 +436,7 @@ class WEB_EXPORT WebLocalFrameImpl final
 
   std::unique_ptr<WebURLLoader> CreateURLLoader() override;
 
-  DECLARE_TRACE();
+  DECLARE_VIRTUAL_TRACE();
 
  private:
   friend class LocalFrameClientImpl;

@@ -1631,6 +1631,8 @@ DEFINE_TRACE(WebLocalFrameImpl) {
   visitor->Trace(print_context_);
   visitor->Trace(context_menu_node_);
   visitor->Trace(text_checker_client_);
+  WebLocalFrameBase::Trace(visitor);
+  // TODO(slangley): Call this from WebLocalFrameBase, once WebFrame is in core.
   WebFrame::TraceFrames(visitor, this);
 }
 
