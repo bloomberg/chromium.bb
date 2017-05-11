@@ -17,7 +17,6 @@
 
 #include "base/lazy_instance.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
 #include "net/quic/platform/api/quic_flags.h"
@@ -254,7 +253,7 @@ size_t SpdyFramer::GetGoAwayMinimumSize() const {
   return GetFrameHeaderSize() + 8;
 }
 
-size_t SpdyFramer::GetHeadersMinimumSize() const  {
+size_t SpdyFramer::GetHeadersMinimumSize() const {
   // Size, in bytes, of a HEADERS frame not including the variable-length
   // header block.
   return GetFrameHeaderSize();
@@ -281,9 +280,9 @@ size_t SpdyFramer::GetContinuationMinimumSize() const {
 
 size_t SpdyFramer::GetAltSvcMinimumSize() const {
   // Size, in bytes, of an ALTSVC frame not including the Field-Value and
-  // (optional) Origin fields, both of which can vary in length.  Note that this
-  // gives a lower bound on the frame size rather than a true minimum; the
-  // actual frame should always be larger than this.
+  // (optional) Origin fields, both of which can vary in length.  Note that
+  // this gives a lower bound on the frame size rather than a true minimum;
+  // the actual frame should always be larger than this.
   // Calculated as frame prefix + 2 (origin_len).
   return GetFrameHeaderSize() + 2;
 }
@@ -757,7 +756,7 @@ void SpdyFramer::ProcessControlFrameHeader() {
       }
       break;
     case SpdyFrameType::SETTINGS: {
-      // Make sure that we have an integral number of 8-byte key/value pairs,
+      // Make sure that we have an integral number of 8-byte key/value pairs.
       // Size of each key/value pair in bytes.
       if (current_frame_length_ < GetSettingsMinimumSize() ||
           (current_frame_length_ - GetFrameHeaderSize()) %
@@ -961,7 +960,8 @@ void SpdyFramer::ProcessControlFrameHeader() {
   CHANGE_STATE(SPDY_CONTROL_FRAME_PAYLOAD);
 }
 
-size_t SpdyFramer::UpdateCurrentFrameBuffer(const char** data, size_t* len,
+size_t SpdyFramer::UpdateCurrentFrameBuffer(const char** data,
+                                            size_t* len,
                                             size_t max_bytes) {
   size_t bytes_to_read = std::min(*len, max_bytes);
   if (bytes_to_read > 0) {
@@ -972,8 +972,7 @@ size_t SpdyFramer::UpdateCurrentFrameBuffer(const char** data, size_t* len,
   return bytes_to_read;
 }
 
-size_t SpdyFramer::GetSerializedLength(
-    const SpdyHeaderBlock* headers) {
+size_t SpdyFramer::GetSerializedLength(const SpdyHeaderBlock* headers) {
   const size_t num_name_value_pairs_size = sizeof(uint32_t);
   const size_t length_of_name_size = num_name_value_pairs_size;
   const size_t length_of_value_size = num_name_value_pairs_size;
@@ -994,8 +993,8 @@ size_t SpdyFramer::ProcessControlFrameBeforeHeaderBlock(const char* data,
   const size_t original_len = len;
 
   if (remaining_control_header_ > 0) {
-    size_t bytes_read = UpdateCurrentFrameBuffer(&data, &len,
-                                                 remaining_control_header_);
+    size_t bytes_read =
+        UpdateCurrentFrameBuffer(&data, &len, remaining_control_header_);
     remaining_control_header_ -= bytes_read;
     remaining_data_length_ -= bytes_read;
   }
@@ -1301,8 +1300,8 @@ bool SpdyFramer::ProcessSetting(const char* data) {
 
 size_t SpdyFramer::ProcessControlFramePayload(const char* data, size_t len) {
   size_t original_len = len;
-  size_t bytes_read = UpdateCurrentFrameBuffer(&data, &len,
-                                               remaining_data_length_);
+  size_t bytes_read =
+      UpdateCurrentFrameBuffer(&data, &len, remaining_data_length_);
   remaining_data_length_ -= bytes_read;
   if (remaining_data_length_ == 0) {
     SpdyFrameReader reader(current_frame_buffer_.data(),
@@ -1499,6 +1498,7 @@ size_t SpdyFramer::ProcessDataFramePaddingLength(const char* data, size_t len) {
     set_error(SPDY_INVALID_PADDING);
     return 0;
   }
+
   CHANGE_STATE(SPDY_FORWARD_STREAM_FRAME);
   return original_len - len;
 }
@@ -1660,7 +1660,7 @@ SpdyFramer::SpdyFrameIterator::SpdyFrameIterator(SpdyFramer* framer)
 SpdyFramer::SpdyFrameIterator::~SpdyFrameIterator() {}
 
 size_t SpdyFramer::SpdyFrameIterator::NextFrame(ZeroCopyOutputBuffer* output) {
-  SpdyFrameWithHeaderBlockIR* frame_ir = GetIR();
+  const SpdyFrameWithHeaderBlockIR* frame_ir = GetIR();
   if (frame_ir == nullptr) {
     LOG(WARNING) << "frame_ir doesn't exist.";
     return false;
@@ -1694,15 +1694,14 @@ size_t SpdyFramer::SpdyFrameIterator::NextFrame(ZeroCopyOutputBuffer* output) {
     }
   }
 
+  framer_->SetIsLastFrame(!has_next_frame_);
   if (is_first_frame_) {
     is_first_frame_ = false;
-    frame_ir->set_end_headers(!has_next_frame_);
     size_t free_bytes_before = output->BytesFree();
     bool ok = SerializeGivenEncoding(*encoding, output);
     return ok ? free_bytes_before - output->BytesFree() : 0;
   } else {
     SpdyContinuationIR continuation_ir(frame_ir->stream_id());
-    continuation_ir.set_end_headers(!has_next_frame_);
     continuation_ir.take_encoding(std::move(encoding));
     return framer_->SerializeContinuation(continuation_ir, output);
   }
@@ -1714,14 +1713,16 @@ bool SpdyFramer::SpdyFrameIterator::HasNextFrame() const {
 
 SpdyFramer::SpdyHeaderFrameIterator::SpdyHeaderFrameIterator(
     SpdyFramer* framer,
-    std::unique_ptr<SpdyHeadersIR> headers_ir)
+    std::unique_ptr<const SpdyHeadersIR> headers_ir)
     : SpdyFrameIterator(framer), headers_ir_(std::move(headers_ir)) {
   SetEncoder(headers_ir_.get());
+  GetFramer()->SetOverwriteLastFrame(true);
 }
 
 SpdyFramer::SpdyHeaderFrameIterator::~SpdyHeaderFrameIterator() {}
 
-SpdyFrameWithHeaderBlockIR* SpdyFramer::SpdyHeaderFrameIterator::GetIR() const {
+const SpdyFrameWithHeaderBlockIR* SpdyFramer::SpdyHeaderFrameIterator::GetIR()
+    const {
   return headers_ir_.get();
 }
 
@@ -1738,15 +1739,16 @@ bool SpdyFramer::SpdyHeaderFrameIterator::SerializeGivenEncoding(
 
 SpdyFramer::SpdyPushPromiseFrameIterator::SpdyPushPromiseFrameIterator(
     SpdyFramer* framer,
-    std::unique_ptr<SpdyPushPromiseIR> push_promise_ir)
+    std::unique_ptr<const SpdyPushPromiseIR> push_promise_ir)
     : SpdyFrameIterator(framer), push_promise_ir_(std::move(push_promise_ir)) {
   SetEncoder(push_promise_ir_.get());
+  GetFramer()->SetOverwriteLastFrame(true);
 }
 
 SpdyFramer::SpdyPushPromiseFrameIterator::~SpdyPushPromiseFrameIterator() {}
 
-SpdyFrameWithHeaderBlockIR* SpdyFramer::SpdyPushPromiseFrameIterator::GetIR()
-    const {
+const SpdyFrameWithHeaderBlockIR*
+SpdyFramer::SpdyPushPromiseFrameIterator::GetIR() const {
   return push_promise_ir_.get();
 }
 
@@ -1763,7 +1765,7 @@ bool SpdyFramer::SpdyPushPromiseFrameIterator::SerializeGivenEncoding(
 
 SpdyFramer::SpdyControlFrameIterator::SpdyControlFrameIterator(
     SpdyFramer* framer,
-    std::unique_ptr<SpdyFrameIR> frame_ir)
+    std::unique_ptr<const SpdyFrameIR> frame_ir)
     : framer_(framer), frame_ir_(std::move(frame_ir)) {}
 
 SpdyFramer::SpdyControlFrameIterator::~SpdyControlFrameIterator() {}
@@ -1779,10 +1781,10 @@ bool SpdyFramer::SpdyControlFrameIterator::HasNextFrame() const {
   return frame_ir_ != nullptr;
 }
 
-// TODO(yasong): remove all the down_casts.
+// TODO(yasong): remove all the static_casts.
 std::unique_ptr<SpdyFrameSequence> SpdyFramer::CreateIterator(
     SpdyFramer* framer,
-    std::unique_ptr<SpdyFrameIR> frame_ir) {
+    std::unique_ptr<const SpdyFrameIR> frame_ir) {
   std::unique_ptr<SpdyFrameSequence> result = nullptr;
   switch (frame_ir->frame_type()) {
     case SpdyFrameType::DATA: {
@@ -1791,20 +1793,20 @@ std::unique_ptr<SpdyFrameSequence> SpdyFramer::CreateIterator(
       break;
     }
     case SpdyFrameType::HEADERS: {
-      result = base::MakeUnique<SpdyHeaderFrameIterator>(
+      result = SpdyMakeUnique<SpdyHeaderFrameIterator>(
           framer,
-          base::WrapUnique(static_cast<SpdyHeadersIR*>(frame_ir.get())));
+          SpdyWrapUnique(static_cast<const SpdyHeadersIR*>(frame_ir.get())));
       break;
     }
     case SpdyFrameType::PUSH_PROMISE: {
-      result = base::MakeUnique<SpdyPushPromiseFrameIterator>(
-          framer,
-          base::WrapUnique(static_cast<SpdyPushPromiseIR*>(frame_ir.get())));
+      result = SpdyMakeUnique<SpdyPushPromiseFrameIterator>(
+          framer, SpdyWrapUnique(
+                      static_cast<const SpdyPushPromiseIR*>(frame_ir.get())));
       break;
     }
     default: {
-      result = base::MakeUnique<SpdyControlFrameIterator>(framer,
-                                                          std::move(frame_ir));
+      result =
+          SpdyMakeUnique<SpdyControlFrameIterator>(framer, std::move(frame_ir));
     }
   }
   return result;
@@ -2197,7 +2199,10 @@ SpdySerializedFrame SpdyFramer::SerializeContinuation(
   const SpdyString& encoding = continuation.encoding();
   size_t frame_size = GetContinuationMinimumSize() + encoding.size();
   SpdyFrameBuilder builder(frame_size);
-  uint8_t flags = continuation.end_headers() ? HEADERS_FLAG_END_HEADERS : 0;
+  uint8_t flags = ((overwrite_last_frame_ && is_last_frame_) ||
+                   (!overwrite_last_frame_ && continuation.end_headers()))
+                      ? HEADERS_FLAG_END_HEADERS
+                      : 0;
   builder.BeginNewFrame(*this, SpdyFrameType::CONTINUATION, flags,
                         continuation.stream_id());
   DCHECK_EQ(GetFrameHeaderSize(), builder.length());
@@ -2648,7 +2653,10 @@ bool SpdyFramer::SerializeContinuation(const SpdyContinuationIR& continuation,
   const SpdyString& encoding = continuation.encoding();
   size_t frame_size = GetContinuationMinimumSize() + encoding.size();
   SpdyFrameBuilder builder(frame_size, output);
-  uint8_t flags = continuation.end_headers() ? HEADERS_FLAG_END_HEADERS : 0;
+  uint8_t flags = ((overwrite_last_frame_ && is_last_frame_) ||
+                   (!overwrite_last_frame_ && continuation.end_headers()))
+                      ? HEADERS_FLAG_END_HEADERS
+                      : 0;
   bool ok = builder.BeginNewFrame(*this, SpdyFrameType::CONTINUATION, flags,
                                   continuation.stream_id(),
                                   frame_size - GetFrameHeaderSize());
@@ -2684,8 +2692,7 @@ bool SpdyFramer::SerializePriority(const SpdyPriorityIR& priority,
   ok = ok &&
        builder.WriteUInt32(PackStreamDependencyValues(
            priority.exclusive(), priority.parent_stream_id())) &&
-       // Per RFC 7540 section 6.3, serialized weight value is actual value
-       // - 1.
+       // Per RFC 7540 section 6.3, serialized weight value is actual value - 1.
        builder.WriteUInt8(priority.weight() - 1);
   DCHECK_EQ(GetPrioritySize(), builder.length());
   return ok;
@@ -2793,9 +2800,12 @@ uint8_t SpdyFramer::SerializeHeaderFrameFlags(
   if (header_ir.fin()) {
     flags |= CONTROL_FLAG_FIN;
   }
-  if (header_ir.end_headers()) {
+
+  if ((overwrite_last_frame_ && is_last_frame_) ||
+      (!overwrite_last_frame_ && header_ir.end_headers())) {
     flags |= HEADERS_FLAG_END_HEADERS;
   }
+
   if (header_ir.padded()) {
     flags |= HEADERS_FLAG_PADDED;
   }
@@ -2813,7 +2823,8 @@ uint8_t SpdyFramer::SerializePushPromiseFrameFlags(
     flags = flags | PUSH_PROMISE_FLAG_PADDED;
   }
 
-  if (push_promise_ir.end_headers()) {
+  if ((overwrite_last_frame_ && is_last_frame_) ||
+      (!overwrite_last_frame_ && push_promise_ir.end_headers())) {
     flags |= PUSH_PROMISE_FLAG_END_PUSH_PROMISE;
   }
 
@@ -2836,8 +2847,8 @@ bool SpdyFramer::WritePayloadWithContinuation(SpdyFrameBuilder* builder,
                 << FrameTypeToString(type);
   }
 
-  // Write all the padding payload and as much of the data payload as
-  // possible into the initial frame.
+  // Write all the padding payload and as much of the data payload as possible
+  // into the initial frame.
   size_t bytes_remaining = 0;
   bytes_remaining =
       hpack_encoding.size() -
