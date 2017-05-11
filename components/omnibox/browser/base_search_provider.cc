@@ -253,8 +253,8 @@ AutocompleteMatch BaseSearchProvider::CreateSearchSuggestion(
   match.answer = SuggestionAnswer::copy(suggestion.answer());
   match.subtype_identifier = suggestion.subtype_identifier();
   if (suggestion.type() == AutocompleteMatchType::SEARCH_SUGGEST_TAIL) {
-    match.RecordAdditionalInfo(
-        kACMatchPropertyInputText, base::UTF16ToUTF8(input.text()));
+    match.RecordAdditionalInfo(kACMatchPropertySuggestionText,
+                               base::UTF16ToUTF8(suggestion.suggestion()));
     match.RecordAdditionalInfo(
         kACMatchPropertyContentsPrefix,
         base::UTF16ToUTF8(suggestion.match_contents_prefix()));

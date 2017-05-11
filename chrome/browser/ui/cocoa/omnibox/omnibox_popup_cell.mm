@@ -609,7 +609,7 @@ NSAttributedString* CreateClassifiedAttributedString(
 
 + (CGFloat)computeContentsOffset:(const AutocompleteMatch&)match {
   const base::string16& inputText = base::UTF8ToUTF16(
-      match.GetAdditionalInfo(kACMatchPropertyInputText));
+      match.GetAdditionalInfo(kACMatchPropertySuggestionText));
   int contentsStartIndex = 0;
   base::StringToInt(
       match.GetAdditionalInfo(kACMatchPropertyContentsStartIndex),
