@@ -176,6 +176,13 @@ class ScreenMac : public Screen {
     return GetCachedDisplayForScreen(match_screen);
   }
 
+  Display GetDisplayNearestView(gfx::NativeView view) const override {
+    NSWindow* window = [view window];
+    if (!window)
+      window = [NSApp keyWindow];
+    return GetDisplayNearestWindow(window);
+  }
+
   Display GetDisplayNearestPoint(const gfx::Point& point) const override {
     NSArray* screens = [NSScreen screens];
     if ([screens count] <= 1)
