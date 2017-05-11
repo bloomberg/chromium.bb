@@ -59,7 +59,6 @@ config("mesa_internal_config") {
     "USE_XCB",
     "GLX_INDIRECT_RENDERING",
     "GLX_DIRECT_RENDERING",
-    "USE_EXTERNAL_DXTN_LIB=1",
     "IN_DRI_DRIVER",
     "HAVE_ALIAS",
     "HAVE_MINCORE",
@@ -113,6 +112,14 @@ config("mesa_internal_config") {
     if (!is_android && !is_mac) {
       cflags += [ "-fPIC" ]
     }
+  }
+
+  if (is_msan) {
+    # Disable code in mesa that loads the libtxc_dxtn.so library if msan is
+    # enabled, as the library will be loaded from a system directory, which
+    # may cause spurious msan reports because msan expects most libraries in
+    # the process to be compiled with msan.
+    defines += [ "USE_EXTERNAL_DXTN_LIB=0" ]
   }
 }
 
