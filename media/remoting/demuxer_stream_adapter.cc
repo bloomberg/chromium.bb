@@ -23,13 +23,7 @@ namespace remoting {
 mojo::DataPipe* DemuxerStreamAdapter::CreateDataPipe() {
   // Capacity in bytes for Mojo data pipe.
   constexpr int kMojoDataPipeCapacityInBytes = 512 * 1024;
-
-  MojoCreateDataPipeOptions options;
-  options.struct_size = sizeof(MojoCreateDataPipeOptions);
-  options.flags = MOJO_WRITE_DATA_FLAG_NONE;
-  options.element_num_bytes = 1;
-  options.capacity_num_bytes = kMojoDataPipeCapacityInBytes;
-  return new mojo::DataPipe(options);
+  return new mojo::DataPipe(kMojoDataPipeCapacityInBytes);
 }
 
 DemuxerStreamAdapter::DemuxerStreamAdapter(

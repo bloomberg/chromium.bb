@@ -268,15 +268,7 @@ void URLLoaderImpl::OnResponseStarted(net::URLRequest* url_request,
         std::vector<uint8_t>(data, data + metadata->size()));
   }
 
-  MojoCreateDataPipeOptions options;
-  options.struct_size = sizeof(MojoCreateDataPipeOptions);
-  options.flags = MOJO_CREATE_DATA_PIPE_OPTIONS_FLAG_NONE;
-  options.element_num_bytes = 1;
-  options.capacity_num_bytes = kDefaultAllocationSize;
-  mojo::DataPipe data_pipe(options);
-
-  DCHECK(data_pipe.producer_handle.is_valid());
-  DCHECK(data_pipe.consumer_handle.is_valid());
+  mojo::DataPipe data_pipe(kDefaultAllocationSize);
 
   response_body_stream_ = std::move(data_pipe.producer_handle);
   response_body_consumer_handle_ = std::move(data_pipe.consumer_handle);
