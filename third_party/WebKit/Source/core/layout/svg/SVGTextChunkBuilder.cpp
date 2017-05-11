@@ -208,8 +208,11 @@ void SVGTextChunkBuilder::HandleTextChunk(BoxListConstIterator box_start,
   if (process_text_length) {
     float chunk_length = length_accumulator.length();
     if (length_adjust == kSVGLengthAdjustSpacing) {
-      float text_length_shift = (desired_text_length - chunk_length) /
-                                length_accumulator.NumCharacters();
+      float text_length_shift = 0;
+      if (length_accumulator.NumCharacters() > 1) {
+        text_length_shift = desired_text_length - chunk_length;
+        text_length_shift /= length_accumulator.NumCharacters() - 1;
+      }
       unsigned at_character = 0;
       for (auto box_iter = box_start; box_iter != box_end; ++box_iter) {
         Vector<SVGTextFragment>& fragments = (*box_iter)->TextFragments();
