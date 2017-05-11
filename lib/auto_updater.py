@@ -160,6 +160,7 @@ class ChromiumOSFlashUpdater(BaseUpdater):
   REMOTE_UPDATE_ENGINE_BIN_FILENAME = 'update_engine_client'
   REMOTE_UPDATE_ENGINE_LOGFILE_PATH = '/var/log/update_engine.log'
   REMOTE_PROVISION_FAILED_FILE_PATH = '/var/tmp/provision_failed'
+  REMOTE_HOSTLOG_FILE_PATH = '/var/log/devserver_hostlog'
 
   UPDATE_CHECK_INTERVAL_PROGRESSBAR = 0.5
   UPDATE_CHECK_INTERVAL_NORMAL = 10
@@ -521,10 +522,14 @@ class ChromiumOSFlashUpdater(BaseUpdater):
     self.device.CopyToDevice(payload, device_payload_dir, mode='scp',
                              log_output=True, **self._cmd_kwargs)
 
-    # If Rootfs was staged by Google Storage URI rather than build_name
+    # If Rootfs was staged by Google Storage URI rather than build_name we
+    # need to strip partial paths and rename it.
     if self.payload_filename:
       expected_path = os.path.join(device_payload_dir,
                                    ds_wrapper.ROOTFS_FILENAME)
+
+      # Strip any partial paths from the filename e.g payloads/payload.bin
+      payload_name = payload_name.rpartition('/')[2]
       current_path = os.path.join(device_payload_dir, payload_name)
       # Rename the payload on the DUT so we don't break the current
       # devserver staging. Rename to update.gz so DUTs devserver can respond.
@@ -601,7 +606,9 @@ class ChromiumOSFlashUpdater(BaseUpdater):
 
     try:
       ds.Start()
-      logging.debug('Successfully started devserver on the device.')
+      logging.debug('Successfully started devserver on the device on port '
+                    '%d.', ds.port)
+
       # Use the localhost IP address to ensure that update engine
       # client can connect to the devserver.
       omaha_url = ds.GetDevServerURL(
@@ -644,6 +651,8 @@ class ChromiumOSFlashUpdater(BaseUpdater):
 
         time.sleep(update_check_interval)
 
+      # Write the hostlog to a file before shutting off devserver.
+      self._CollectDevServerHostLog(ds)
       ds.Stop()
     except Exception as e:
       logging.error('Rootfs update failed.')
@@ -652,6 +661,8 @@ class ChromiumOSFlashUpdater(BaseUpdater):
       error_msg = 'Failed to perform rootfs update: %r'
       raise RootfsUpdateError(error_msg % e)
     finally:
+      if ds.is_alive():
+        self._CollectDevServerHostLog(ds)
       ds.Stop()
       self.device.CopyFromDevice(
           ds.log_file,
@@ -662,6 +673,11 @@ class ChromiumOSFlashUpdater(BaseUpdater):
           os.path.join(self.tempdir, os.path.basename(
               self.REMOTE_UPDATE_ENGINE_LOGFILE_PATH)),
           follow_symlinks=True,
+          **self._cmd_kwargs_omit_error)
+      self.device.CopyFromDevice(
+          self.REMOTE_HOSTLOG_FILE_PATH,
+          os.path.join(self.tempdir, '_'.join([os.path.basename(
+              self.REMOTE_HOSTLOG_FILE_PATH), 'rootfs'])),
           **self._cmd_kwargs_omit_error)
 
   def UpdateStateful(self, use_original_build=False):
@@ -782,6 +798,21 @@ class ChromiumOSFlashUpdater(BaseUpdater):
       logging.info('Disabling rootfs verification on the device...')
       self.device.DisableRootfsVerification()
 
+  def _CollectDevServerHostLog(self, devserver):
+    """Write the host_log events from the remote DUTs devserver to a file.
+
+    Args:
+      devserver: The remote devserver wrapper for the running devserver.
+    """
+    try:
+      host_log_url = devserver.GetDevServerHostLogURL(ip='127.0.0.1',
+                                                      port=devserver.port,
+                                                      host='127.0.0.1')
+      self.device.RunCommand(['curl', host_log_url, '-o',
+                              self.REMOTE_HOSTLOG_FILE_PATH],
+                             **self._cmd_kwargs)
+    except cros_build_lib.RunCommandError as e:
+      logging.debug('Exception raised while trying to write the hostlog: %s', e)
 
 class ChromiumOSUpdater(ChromiumOSFlashUpdater):
   """Used to auto-update Cros DUT with image.
@@ -1197,3 +1228,43 @@ class ChromiumOSUpdater(ChromiumOSFlashUpdater):
           '%s instead' % (self.device.hostname,
                           self.update_version,
                           self._GetReleaseVersion()))
+
+    if self.payload_filename:
+      logging.debug('Doing one final update check to get post update hostlog.')
+      self.PostRebootUpdateCheck()
+
+  def PostRebootUpdateCheck(self):
+    """Do another update check after reboot to get the post update hostlog."""
+    devserver_bin = os.path.join(self.device_dev_dir,
+                                 self.REMOTE_DEVSERVER_FILENAME)
+    ds = ds_wrapper.RemoteDevServerWrapper(
+        self.device, devserver_bin, static_dir=self.device_static_dir,
+        log_dir=self.device.work_dir)
+
+    try:
+      ds.Start()
+      logging.debug('Successfully started devserver on the device on port '
+                    '%d.', ds.port)
+
+      omaha_url = ds.GetDevServerURL(ip='127.0.0.1', port=ds.port,
+                                     sub_dir='update')
+      cmd = [self.REMOTE_UPDATE_ENGINE_BIN_FILENAME, '-check_for_update',
+             '-omaha_url=%s' % omaha_url]
+      self.device.RunCommand(cmd, **self._cmd_kwargs)
+      op = self.GetUpdateStatus(self.device)
+      logging.info('Post update check status: %s' % op)
+
+      self._CollectDevServerHostLog(ds)
+      ds.Stop()
+    except Exception:
+      logging.error('Post reboot update check failed.')
+      logging.warning(ds.TailLog() or 'No devserver log is available.')
+    finally:
+      if ds.is_alive():
+        self._CollectDevServerHostLog(ds)
+      ds.Stop()
+      self.device.CopyFromDevice(
+          self.REMOTE_HOSTLOG_FILE_PATH,
+          os.path.join(self.tempdir, '_'.join([os.path.basename(
+              self.REMOTE_HOSTLOG_FILE_PATH), 'reboot'])),
+          **self._cmd_kwargs_omit_error)

@@ -431,6 +431,7 @@ class DevServerWrapper(multiprocessing.Process):
 
     return url
 
+
   @classmethod
   def OpenURL(cls, url, ignore_url_error=False, timeout=60):
     """Returns the HTTP response of a URL."""
@@ -732,7 +733,8 @@ You can fix this with one of the following three options:
            '--logfile=%s' % self.log_file,
            '--pidfile', self._pid_file,
            '--port=%d' % port,
-           '--critical_update']
+           '--critical_update',
+           '--host_log']
 
     if not self.port:
       cmd.append('--portfile=%s' % self.port_file)
@@ -767,3 +769,18 @@ You can fix this with one of the following three options:
   def WipeStaticDirectory(cls, static_dir):
     """Cleans up |static_dir|."""
     raise NotImplementedError()
+
+  def GetDevServerHostLogURL(self, ip=None, port=None, host=None):
+    """Returns the dev server host log url.
+
+    Args:
+      ip: IP address of the devserver.
+      port: Port number of devserver.
+      host: The host to get the hostlog for.
+    """
+    if self.is_alive():
+      host_log = 'api/hostlog?ip=%s' % host
+      devserver_host_log = self.GetDevServerURL(ip=ip, port=port,
+                                                sub_dir=host_log)
+      logging.debug('Host Log URL: %s' % devserver_host_log)
+      return devserver_host_log
