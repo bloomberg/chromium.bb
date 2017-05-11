@@ -598,6 +598,7 @@ void av1_first_pass(AV1_COMP *cpi, const struct lookahead_entry *source) {
   av1_init_mv_probs(cm);
 #if CONFIG_ADAPT_SCAN
   av1_init_scan_order(cm);
+  av1_deliver_eob_threshold(cm, xd);
 #endif
   av1_convolve_init(cm);
 #if CONFIG_PVQ
