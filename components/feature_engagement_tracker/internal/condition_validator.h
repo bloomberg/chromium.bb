@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_FEATURE_ENGAGEMENT_TRACKER_INTERNAL_CONDITION_VALIDATOR_H_
 #define COMPONENTS_FEATURE_ENGAGEMENT_TRACKER_INTERNAL_CONDITION_VALIDATOR_H_
 
+#include <stdint.h>
+
 #include <string>
 
 #include "base/macros.h"
@@ -21,11 +23,45 @@ class Model;
 // and checks if all conditions are met.
 class ConditionValidator {
  public:
+  // The Result struct is used to categorize everything that could have the
+  // wrong state. By returning an instance of this where every value is true
+  // from MeetsConditions(...), it can be assumed that in-product help will
+  // be displayed.
+  struct Result {
+    explicit Result(bool initial_values);
+
+    // Whether the Model was ready.
+    bool model_ready_ok;
+
+    // Whether no other in-product helps were shown at the time.
+    bool currently_showing_ok;
+
+    // Whether the feature configuration was valid.
+    bool config_ok;
+
+    // Whether the used precondition was met.
+    bool used_ok;
+
+    // Whether the trigger precondition was met.
+    bool trigger_ok;
+
+    // Whether the other preconditions were met.
+    bool preconditions_ok;
+
+    // Whether the session rate precondition was met.
+    bool session_rate_ok;
+
+    // Returns true if this result object has no errors, i.e. no values that
+    // are false.
+    bool NoErrors();
+  };
+
   virtual ~ConditionValidator() = default;
 
-  // Returns true iff all conditions for the given feature have been met.
-  virtual bool MeetsConditions(const base::Feature& feature,
-                               const Model& model) = 0;
+  // Returns a Result object that describes whether each condition has been met.
+  virtual Result MeetsConditions(const base::Feature& feature,
+                                 const Model& model,
+                                 uint32_t current_day) = 0;
 
  protected:
   ConditionValidator() = default;

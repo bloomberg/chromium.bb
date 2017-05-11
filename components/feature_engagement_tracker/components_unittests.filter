@@ -1,5 +1,6 @@
 ChromeVariationsConfigurationTest.*
 ComparatorTest.*
+ConditionValidatorResultTest.*
 EditableConfigurationTest.*
 FailingInitFeatureEngagementTrackerImplTest.*
 FeatureConfigStorageValidatorTest.*
