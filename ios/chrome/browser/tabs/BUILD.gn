@@ -18,13 +18,15 @@ source_set("tabs") {
     "tab_private.h",
     "tab_snapshotting_delegate.h",
   ]
+  public_deps = [
+    "//ios/web",
+  ]
   deps = [
     "//components/sessions",
     "//components/signin/ios/browser",
     "//components/sync_sessions",
     "//ios/chrome/browser/web:sad_tab_tab_helper_delegate",
     "//ios/net",
-    "//ios/web",
     "//ios/web:user_agent",
     "//ui/base",
   ]
