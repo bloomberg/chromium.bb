@@ -80,7 +80,7 @@ class TestImporterTest(LoggingTestCase):
         self.assertEqual(
             description,
             ('Last commit message\n\n'
-             'TBR=jeffcarp@chromium.org\n'
+             'TBR=qyearsley@chromium.org\n'
              'NOEXPORT=true'))
         self.assertEqual(host.executive.calls, [['git', 'log', '-1', '--format=%B']])
 
@@ -96,7 +96,7 @@ class TestImporterTest(LoggingTestCase):
             description,
             ('Last commit message\n'
              'Build: https://build.chromium.org/p/my.master/builders/b/builds/123\n\n'
-             'TBR=jeffcarp@chromium.org\n'
+             'TBR=qyearsley@chromium.org\n'
              'NOEXPORT=true'))
         self.assertEqual(host.executive.calls, [['git', 'log', '-1', '--format=%B']])
 
@@ -108,7 +108,7 @@ class TestImporterTest(LoggingTestCase):
         self.assertEqual(
             description,
             ('Summary\n\n'
-             'TBR=jeffcarp@chromium.org\n'
+             'TBR=qyearsley@chromium.org\n'
              'NOEXPORT=true'))
 
     def test_cl_description_with_directory_owners(self):
@@ -128,7 +128,7 @@ class TestImporterTest(LoggingTestCase):
              '  external/wpt/bar\n'
              'x@chromium.org, y@chromium.org:\n'
              '  external/wpt/baz\n\n'
-             'TBR=jeffcarp@chromium.org\n'
+             'TBR=qyearsley@chromium.org\n'
              'NOEXPORT=true'))
 
     def test_generate_manifest_successful_run(self):
