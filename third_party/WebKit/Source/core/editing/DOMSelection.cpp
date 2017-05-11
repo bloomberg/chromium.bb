@@ -294,15 +294,24 @@ void DOMSelection::collapseToEnd(ExceptionState& exception_state) {
     return;
   }
 
-  // Otherwise, it must create a new range, set both its start and end to the
-  // end of the context object's range,
-  Range* new_range = getRangeAt(0, ASSERT_NO_EXCEPTION)->cloneRange();
-  new_range->collapse(false);
+  if (Range* current_range = DocumentCachedRange()) {
+    // Otherwise, it must create a new range, set both its start and end to the
+    // end of the context object's range,
+    Range* new_range = current_range->cloneRange();
+    new_range->collapse(false);
 
-  // and then set the context object's range to the newly-created range.
-  SelectionInDOMTree::Builder builder;
-  builder.Collapse(new_range->EndPosition());
-  UpdateFrameSelection(builder.Build(), new_range);
+    // and then set the context object's range to the newly-created range.
+    SelectionInDOMTree::Builder builder;
+    builder.Collapse(new_range->EndPosition());
+    UpdateFrameSelection(builder.Build(), new_range);
+  } else {
+    // TODO(tkent): The Selection API doesn't define this behavior. We should
+    // discuss this on https://github.com/w3c/selection-api/issues/83.
+    SelectionInDOMTree::Builder builder;
+    builder.Collapse(
+        GetFrame()->Selection().GetSelectionInDOMTree().ComputeEndPosition());
+    UpdateFrameSelection(builder.Build(), nullptr);
+  }
 }
 
 // https://www.w3.org/TR/selection-api/#dom-selection-collapsetostart
@@ -318,15 +327,24 @@ void DOMSelection::collapseToStart(ExceptionState& exception_state) {
     return;
   }
 
-  // Otherwise, it must create a new range, set both its start and end to the
-  // start of the context object's range,
-  Range* new_range = getRangeAt(0, ASSERT_NO_EXCEPTION)->cloneRange();
-  new_range->collapse(true);
+  if (Range* current_range = DocumentCachedRange()) {
+    // Otherwise, it must create a new range, set both its start and end to the
+    // start of the context object's range,
+    Range* new_range = current_range->cloneRange();
+    new_range->collapse(true);
 
-  // and then set the context object's range to the newly-created range.
-  SelectionInDOMTree::Builder builder;
-  builder.Collapse(new_range->StartPosition());
-  UpdateFrameSelection(builder.Build(), new_range);
+    // and then set the context object's range to the newly-created range.
+    SelectionInDOMTree::Builder builder;
+    builder.Collapse(new_range->StartPosition());
+    UpdateFrameSelection(builder.Build(), new_range);
+  } else {
+    // TODO(tkent): The Selection API doesn't define this behavior. We should
+    // discuss this on https://github.com/w3c/selection-api/issues/83.
+    SelectionInDOMTree::Builder builder;
+    builder.Collapse(
+        GetFrame()->Selection().GetSelectionInDOMTree().ComputeStartPosition());
+    UpdateFrameSelection(builder.Build(), nullptr);
+  }
 }
 
 void DOMSelection::empty() {
