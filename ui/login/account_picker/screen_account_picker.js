@@ -198,7 +198,8 @@ login.createScreen('AccountPickerScreen', 'account-picker', function() {
 
         var bubbleAnchor;
         var attachment;
-        if (activatedPod.pinContainer) {
+        if (activatedPod.pinContainer &&
+            activatedPod.pinContainer.style.visibility == 'visible') {
           // Anchor the bubble to the input field.
           bubbleAnchor = (
               activatedPod.getElementsByClassName('auth-container'))[0];
