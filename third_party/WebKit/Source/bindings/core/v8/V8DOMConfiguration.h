@@ -83,10 +83,7 @@ class CORE_EXPORT V8DOMConfiguration final {
     const char* const name;
     v8::AccessorNameGetterCallback getter;
     v8::AccessorNameSetterCallback setter;
-    // TODO(vogelheim): This has to be removed too since it's only used in
-    //                  accessors.
-    // The accessor's 'result' is stored in a private property.
-    CachedPropertyKey cached_property_key;
+
     const WrapperTypeInfo* data;
     // v8::PropertyAttribute
     unsigned attribute : 8;
