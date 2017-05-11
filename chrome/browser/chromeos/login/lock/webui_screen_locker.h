@@ -10,13 +10,13 @@
 #include <memory>
 #include <string>
 
+#include "ash/login/ui/lock_window.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/login/lock/screen_locker.h"
 #include "chrome/browser/chromeos/login/signin_screen_controller.h"
 #include "chrome/browser/chromeos/login/signin_specifics.h"
-#include "chrome/browser/chromeos/login/ui/lock_window.h"
 #include "chrome/browser/chromeos/login/ui/login_display.h"
 #include "chrome/browser/chromeos/login/ui/webui_login_view.h"
 #include "chromeos/dbus/power_manager_client.h"
@@ -147,7 +147,7 @@ class WebUIScreenLocker : public WebUILoginView,
   ScreenLocker* screen_locker_ = nullptr;
 
   // The screen locker window.
-  LockWindow* lock_window_ = nullptr;
+  ash::LockWindow* lock_window_ = nullptr;
 
   // Sign-in Screen controller instance (owns login screens).
   std::unique_ptr<SignInScreenController> signin_screen_controller_;

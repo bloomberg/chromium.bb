@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/login/ui/lock_window.h"
+#include "ash/login/ui/lock_window.h"
 
+#include "ash/public/cpp/config.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shell.h"
-#include "chrome/browser/ui/ash/ash_util.h"
 #include "services/ui/public/cpp/property_type_converters.h"
 #include "services/ui/public/interfaces/window_manager.mojom.h"
 #include "ui/aura/window.h"
 #include "ui/events/gestures/gesture_recognizer.h"
 
-namespace chromeos {
+namespace ash {
 
 LockWindow::LockWindow() {
   ui::GestureRecognizer::Get()->CancelActiveTouchesExcept(nullptr);
@@ -23,9 +23,8 @@ LockWindow::LockWindow() {
   params.show_state = ui::SHOW_STATE_FULLSCREEN;
   params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
   const int kLockContainer = ash::kShellWindowId_LockScreenContainer;
-  if (ash_util::IsRunningInMash()) {
-    using ui::mojom::WindowManager;
-    params.mus_properties[WindowManager::kContainerId_InitProperty] =
+  if (Shell::GetAshConfig() == Config::MASH) {
+    params.mus_properties[ui::mojom::WindowManager::kContainerId_InitProperty] =
         mojo::ConvertTo<std::vector<uint8_t>>(kLockContainer);
   } else {
     params.parent = ash::Shell::GetContainer(ash::Shell::GetPrimaryRootWindow(),
@@ -50,4 +49,4 @@ views::View* LockWindow::GetInitiallyFocusedView() {
   return views::Widget::GetContentsView();
 }
 
-}  // namespace chromeos
+}  // namespace ash
