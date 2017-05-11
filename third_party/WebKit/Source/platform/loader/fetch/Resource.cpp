@@ -246,67 +246,6 @@ void Resource::ServiceWorkerResponseCachedMetadataHandler::SendToPlatform() {
   }
 }
 
-// This class cannot be on-heap because the first callbackHandler() call
-// instantiates the singleton object while we can call it in the
-// pre-finalization step.
-class Resource::ResourceCallback final {
- public:
-  static ResourceCallback& CallbackHandler();
-  void Schedule(Resource*);
-  void Cancel(Resource*);
-  bool IsScheduled(Resource*) const;
-
- private:
-  ResourceCallback();
-
-  void RunTask();
-  TaskHandle task_handle_;
-  HashSet<Persistent<Resource>> resources_with_pending_clients_;
-};
-
-Resource::ResourceCallback& Resource::ResourceCallback::CallbackHandler() {
-  DEFINE_STATIC_LOCAL(ResourceCallback, callback_handler, ());
-  return callback_handler;
-}
-
-Resource::ResourceCallback::ResourceCallback() {}
-
-void Resource::ResourceCallback::Schedule(Resource* resource) {
-  if (!task_handle_.IsActive()) {
-    // WTF::unretained(this) is safe because a posted task is canceled when
-    // |task_handle_| is destroyed on the dtor of this ResourceCallback.
-    task_handle_ =
-        Platform::Current()
-            ->CurrentThread()
-            ->Scheduler()
-            ->LoadingTaskRunner()
-            ->PostCancellableTask(
-                BLINK_FROM_HERE,
-                WTF::Bind(&ResourceCallback::RunTask, WTF::Unretained(this)));
-  }
-  resources_with_pending_clients_.insert(resource);
-}
-
-void Resource::ResourceCallback::Cancel(Resource* resource) {
-  resources_with_pending_clients_.erase(resource);
-  if (task_handle_.IsActive() && resources_with_pending_clients_.IsEmpty())
-    task_handle_.Cancel();
-}
-
-bool Resource::ResourceCallback::IsScheduled(Resource* resource) const {
-  return resources_with_pending_clients_.Contains(resource);
-}
-
-void Resource::ResourceCallback::RunTask() {
-  HeapVector<Member<Resource>> resources;
-  for (const Member<Resource>& resource : resources_with_pending_clients_)
-    resources.push_back(resource.Get());
-  resources_with_pending_clients_.clear();
-
-  for (const auto& resource : resources)
-    resource->FinishPendingClients();
-}
-
 Resource::Resource(const ResourceRequest& request,
                    Type type,
                    const ResourceLoaderOptions& options)
@@ -722,7 +661,16 @@ void Resource::AddClient(ResourceClient* client,
       !TypeNeedsSynchronousCacheHit(GetType()) &&
       !needs_synchronous_cache_hit_) {
     clients_awaiting_callback_.insert(client);
-    ResourceCallback::CallbackHandler().Schedule(this);
+    if (!async_finish_pending_clients_task_.IsActive()) {
+      async_finish_pending_clients_task_ =
+          Platform::Current()
+              ->CurrentThread()
+              ->Scheduler()
+              ->LoadingTaskRunner()
+              ->PostCancellableTask(BLINK_FROM_HERE,
+                                    WTF::Bind(&Resource::FinishPendingClients,
+                                              WrapWeakPersistent(this)));
+    }
     return;
   }
 
@@ -744,8 +692,10 @@ void Resource::RemoveClient(ResourceClient* client) {
   else
     clients_.erase(client);
 
-  if (clients_awaiting_callback_.IsEmpty())
-    ResourceCallback::CallbackHandler().Cancel(this);
+  if (clients_awaiting_callback_.IsEmpty() &&
+      async_finish_pending_clients_task_.IsActive()) {
+    async_finish_pending_clients_task_.Cancel();
+  }
 
   DidRemoveClientOrObserver();
 }
@@ -827,9 +777,9 @@ void Resource::FinishPendingClients() {
 
   // It is still possible for the above loop to finish a new client
   // synchronously. If there's no client waiting we should deschedule.
-  bool scheduled = ResourceCallback::CallbackHandler().IsScheduled(this);
+  bool scheduled = async_finish_pending_clients_task_.IsActive();
   if (scheduled && clients_awaiting_callback_.IsEmpty())
-    ResourceCallback::CallbackHandler().Cancel(this);
+    async_finish_pending_clients_task_.Cancel();
 
   // Prevent the case when there are clients waiting but no callback scheduled.
   DCHECK(clients_awaiting_callback_.IsEmpty() || scheduled);

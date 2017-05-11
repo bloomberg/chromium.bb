@@ -29,6 +29,7 @@
 #include "platform/PlatformExport.h"
 #include "platform/SharedBuffer.h"
 #include "platform/Timer.h"
+#include "platform/WebTaskRunner.h"
 #include "platform/instrumentation/tracing/web_process_memory_dump.h"
 #include "platform/loader/fetch/CachedMetadataHandler.h"
 #include "platform/loader/fetch/IntegrityMetadata.h"
@@ -413,7 +414,6 @@ class PLATFORM_EXPORT Resource : public GarbageCollectedFinalized<Resource>,
   void ClearData();
 
  private:
-  class ResourceCallback;
   class CachedMetadataHandlerImpl;
   class ServiceWorkerResponseCachedMetadataHandler;
 
@@ -480,6 +480,7 @@ class PLATFORM_EXPORT Resource : public GarbageCollectedFinalized<Resource>,
   double response_timestamp_;
 
   TaskRunnerTimer<Resource> cancel_timer_;
+  TaskHandle async_finish_pending_clients_task_;
 
   ResourceRequest resource_request_;
   Member<ResourceLoader> loader_;
