@@ -11,8 +11,8 @@
 #include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/time/time.h"
 #include "components/ntp_snippets/category.h"
-#include "components/ntp_snippets/reading_list/reading_list_distillation_state_util.h"
 #include "components/reading_list/core/reading_list_entry.h"
 #include "components/reading_list/core/reading_list_model.h"
 #include "components/strings/grit/components_strings.h"
@@ -218,10 +218,16 @@ ContentSuggestion ReadingListSuggestionsProvider::ConvertEntry(
   }
   suggestion.set_publisher_name(
       url_formatter::FormatUrl(entry->URL().GetOrigin()));
+  int64_t entry_time = entry->DistillationTime();
+  if (entry_time == 0) {
+    entry_time = entry->CreationTime();
+  }
+
+  suggestion.set_publish_date(
+      base::Time::FromDoubleT(entry_time / base::Time::kMicrosecondsPerSecond));
 
   auto extra = base::MakeUnique<ReadingListSuggestionExtra>();
-  extra->distilled_state =
-      SuggestionStateFromReadingListState(entry->DistilledState());
+  extra->distilled = entry->DistilledState() == ReadingListEntry::PROCESSED;
   extra->favicon_page_url =
       entry->DistilledURL().is_valid() ? entry->DistilledURL() : entry->URL();
   suggestion.set_reading_list_suggestion_extra(std::move(extra));

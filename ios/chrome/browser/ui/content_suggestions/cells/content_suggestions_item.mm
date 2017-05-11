@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_article_item.h"
+#import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_item.h"
 
 #include "base/time/time.h"
 #import "ios/chrome/browser/ui/colors/MDCPalette+CrAdditions.h"
@@ -23,106 +23,129 @@ const CGFloat kImageSize = 72;
 const CGFloat kStandardSpacing = 16;
 const CGFloat kSmallSpacing = 8;
 
+// Name of the icon displayed when a suggestion is available offline.
+NSString* const kOfflineIconName = @"content_suggestions_offline";
+// Size of the icon displayed when a suggestion is available offline.
+const CGFloat kOfflineIconSize = 24;
+
 // Size of the favicon view.
 const CGFloat kFaviconSize = 16;
-// Size of the icon displayed when there is not image.
+// Size of the icon displayed when there is not image but one should be
+// displayed.
 const CGFloat kIconSize = 24;
-// Name of the icon displayed when there is not image.
+// Name of the icon displayed when there is not image but one should be
+// displayed.
 NSString* const kNoImageIconName = @"content_suggestions_no_image";
 // No image icon percentage of white.
 const CGFloat kNoImageIconWhite = 0.38;
 // No image background percentage of white.
 const CGFloat kNoImageBackgroundWhite = 0.95;
-// Duration of the animation to display the image for the article.
+// Duration of the animation to display the image.
 const CGFloat kAnimationDuration = 0.3;
 }
 
-@interface ContentSuggestionsArticleItem ()
+@interface ContentSuggestionsItem ()
 
 @property(nonatomic, copy) NSString* subtitle;
 // Used to check if the image has already been fetched. There is no way to
-// discriminate between failed image download and nonexitent image. The article
-// tries to download the image only once.
+// discriminate between failed image download and nonexitent image. The
+// suggestion tries to download the image only once.
 @property(nonatomic, assign) BOOL imageFetched;
 
 @end
 
-#pragma mark - ContentSuggestionsArticleItem
+#pragma mark - ContentSuggestionsItem
 
-@implementation ContentSuggestionsArticleItem
+@implementation ContentSuggestionsItem
 
 @synthesize title = _title;
 @synthesize subtitle = _subtitle;
 @synthesize image = _image;
-@synthesize articleURL = _articleURL;
+@synthesize URL = _URL;
 @synthesize publisher = _publisher;
 @synthesize publishDate = _publishDate;
 @synthesize suggestionIdentifier = _suggestionIdentifier;
 @synthesize delegate = _delegate;
 @synthesize imageFetched = _imageFetched;
 @synthesize attributes = _attributes;
+@synthesize hasImage = _hasImage;
+@synthesize availableOffline = _availableOffline;
 
 - (instancetype)initWithType:(NSInteger)type
                        title:(NSString*)title
                     subtitle:(NSString*)subtitle
-                    delegate:(id<ContentSuggestionsArticleItemDelegate>)delegate
+                    delegate:(id<ContentSuggestionsItemDelegate>)delegate
                          url:(const GURL&)url {
   self = [super initWithType:type];
   if (self) {
-    self.cellClass = [ContentSuggestionsArticleCell class];
+    self.cellClass = [ContentSuggestionsCell class];
     _title = [title copy];
     _subtitle = [subtitle copy];
-    _articleURL = url;
+    _URL = url;
     _delegate = delegate;
   }
   return self;
 }
 
-- (void)configureCell:(ContentSuggestionsArticleCell*)cell {
+- (void)configureCell:(ContentSuggestionsCell*)cell {
   [super configureCell:cell];
-  if (!self.imageFetched) {
+  if (self.hasImage && !self.imageFetched) {
     self.imageFetched = YES;
     // Fetch the image. During the fetch the cell's image should still be set.
-    [self.delegate loadImageForArticleItem:self];
+    [self.delegate loadImageForSuggestionItem:self];
   }
-  if (self.attributes)
-    [cell.faviconView configureWithAttributes:self.attributes];
+  [cell.faviconView configureWithAttributes:self.attributes];
   cell.titleLabel.text = self.title;
-  cell.subtitleLabel.text = self.subtitle;
+  [cell setSubtitleText:self.subtitle];
+  cell.displayImage = self.hasImage;
   [cell setContentImage:self.image];
-  [cell setPublisherName:self.publisher date:self.publishDate];
+  [cell setAdditionalInformationWithPublisherName:self.publisher
+                                             date:self.publishDate
+                              offlineAvailability:self.availableOffline];
 }
 
 @end
 
-#pragma mark - ContentSuggestionsArticleCell
+#pragma mark - ContentSuggestionsCell
 
-@interface ContentSuggestionsArticleCell ()
+@interface ContentSuggestionsCell ()
 
-@property(nonatomic, strong) UILabel* publisherLabel;
+@property(nonatomic, strong) UILabel* additionalInformationLabel;
 // Contains the no-image icon or the image.
 @property(nonatomic, strong) UIView* imageContainer;
 // The no-image icon displayed when there is no image.
 @property(nonatomic, strong) UIImageView* noImageIcon;
-// Displays the image associated with this article. It is added to the
+// Displays the image associated with this suggestion. It is added to the
 // imageContainer only if there is an image to display, hiding the no-image
 // icon.
 @property(nonatomic, strong) UIImageView* contentImageView;
+// Constraint for the size of the image.
+@property(nonatomic, strong) NSLayoutConstraint* imageSize;
+// Constraint for the distance between the texts and the image.
+@property(nonatomic, strong) NSLayoutConstraint* imageTitleSpacing;
+// Constraint for the vertical distance between the title and the subtitle.
+@property(nonatomic, strong) NSLayoutConstraint* titleSubtitleSpacing;
+// Label for the subtitle.
+@property(nonatomic, readonly, strong) UILabel* subtitleLabel;
 
 // Applies the constraints on the elements. Called in the init.
 - (void)applyConstraints;
 
 @end
 
-@implementation ContentSuggestionsArticleCell
+@implementation ContentSuggestionsCell
 
 @synthesize titleLabel = _titleLabel;
 @synthesize subtitleLabel = _subtitleLabel;
 @synthesize imageContainer = _imageContainer;
 @synthesize noImageIcon = _noImageIcon;
-@synthesize publisherLabel = _publisherLabel;
+@synthesize additionalInformationLabel = _additionalInformationLabel;
 @synthesize contentImageView = _contentImageView;
 @synthesize faviconView = _faviconView;
+@synthesize imageSize = _imageSize;
+@synthesize imageTitleSpacing = _imageTitleSpacing;
+@synthesize displayImage = _displayImage;
+@synthesize titleSubtitleSpacing = _titleSubtitleSpacing;
 
 - (instancetype)initWithFrame:(CGRect)frame {
   self = [super initWithFrame:frame];
@@ -131,7 +154,7 @@ const CGFloat kAnimationDuration = 0.3;
     _subtitleLabel = [[UILabel alloc] initWithFrame:CGRectZero];
     _imageContainer = [[UIView alloc] initWithFrame:CGRectZero];
     _noImageIcon = [[UIImageView alloc] initWithFrame:CGRectZero];
-    _publisherLabel = [[UILabel alloc] initWithFrame:CGRectZero];
+    _additionalInformationLabel = [[UILabel alloc] initWithFrame:CGRectZero];
     _contentImageView = [[UIImageView alloc] initWithFrame:CGRectZero];
     _faviconView = [[FaviconViewNew alloc] init];
 
@@ -150,14 +173,14 @@ const CGFloat kAnimationDuration = 0.3;
     _noImageIcon.translatesAutoresizingMaskIntoConstraints = NO;
     _titleLabel.translatesAutoresizingMaskIntoConstraints = NO;
     _subtitleLabel.translatesAutoresizingMaskIntoConstraints = NO;
-    _publisherLabel.translatesAutoresizingMaskIntoConstraints = NO;
+    _additionalInformationLabel.translatesAutoresizingMaskIntoConstraints = NO;
     _contentImageView.translatesAutoresizingMaskIntoConstraints = NO;
     _faviconView.translatesAutoresizingMaskIntoConstraints = NO;
 
     [self.contentView addSubview:_imageContainer];
     [self.contentView addSubview:_titleLabel];
     [self.contentView addSubview:_subtitleLabel];
-    [self.contentView addSubview:_publisherLabel];
+    [self.contentView addSubview:_additionalInformationLabel];
     [self.contentView addSubview:_faviconView];
 
     [_imageContainer addSubview:_noImageIcon];
@@ -172,11 +195,11 @@ const CGFloat kAnimationDuration = 0.3;
 
     _titleLabel.font = [MDCTypography subheadFont];
     _subtitleLabel.font = [MDCTypography body1Font];
-    _publisherLabel.font = [MDCTypography captionFont];
+    _additionalInformationLabel.font = [MDCTypography captionFont];
     _faviconView.font = [[MDCTypography fontLoader] mediumFontOfSize:10];
 
     _subtitleLabel.textColor = [[MDCPalette greyPalette] tint700];
-    _publisherLabel.textColor = [[MDCPalette greyPalette] tint700];
+    _additionalInformationLabel.textColor = [[MDCPalette greyPalette] tint700];
 
     [self applyConstraints];
   }
@@ -200,16 +223,61 @@ const CGFloat kAnimationDuration = 0.3;
                    }];
 }
 
-- (void)setPublisherName:(NSString*)publisherName date:(base::Time)publishDate {
+- (void)setAdditionalInformationWithPublisherName:(NSString*)publisherName
+                                             date:(base::Time)publishDate
+                              offlineAvailability:(BOOL)availableOffline {
   NSDate* date = [NSDate dateWithTimeIntervalSince1970:publishDate.ToDoubleT()];
   NSString* dateString =
       [NSDateFormatter localizedStringFromDate:date
                                      dateStyle:NSDateFormatterMediumStyle
                                      timeStyle:NSDateFormatterNoStyle];
 
-  self.publisherLabel.text = AdjustStringForLocaleDirection(
-      [NSString stringWithFormat:@"%@ - %@.", publisherName, dateString]);
+  NSString* publisherString = AdjustStringForLocaleDirection(
+      [NSString stringWithFormat:@"%@ - %@ ", publisherName, dateString]);
+
+  NSMutableAttributedString* additionInformation =
+      [[NSMutableAttributedString alloc] initWithString:publisherString
+                                             attributes:nil];
+
+  if (availableOffline) {
+    NSTextAttachment* offlineIcon = [[NSTextAttachment alloc] init];
+    offlineIcon.image = [[UIImage imageNamed:kOfflineIconName]
+        imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+    offlineIcon.bounds = CGRectMake(
+        0, (_additionalInformationLabel.font.xHeight - kOfflineIconSize) / 2,
+        kOfflineIconSize, kOfflineIconSize);
+
+    [additionInformation
+        appendAttributedString:[NSAttributedString
+                                   attributedStringWithAttachment:offlineIcon]];
+  }
+
+  self.additionalInformationLabel.attributedText = additionInformation;
 }
+
+- (void)setSubtitleText:(NSString*)subtitle {
+  self.subtitleLabel.text = subtitle;
+  if (subtitle.length > 0) {
+    self.titleSubtitleSpacing.constant = kSmallSpacing;
+  } else {
+    self.titleSubtitleSpacing.constant = 0;
+  }
+}
+
+- (void)setDisplayImage:(BOOL)displayImage {
+  if (displayImage) {
+    self.imageTitleSpacing.constant = kStandardSpacing;
+    self.imageSize.constant = kImageSize;
+    self.imageContainer.hidden = NO;
+  } else {
+    self.imageTitleSpacing.constant = 0;
+    self.imageSize.constant = 0;
+    self.imageContainer.hidden = YES;
+  }
+  _displayImage = displayImage;
+}
+
+#pragma mark - UICollectionViewCell
 
 - (void)prepareForReuse {
   self.contentImageView.hidden = YES;
@@ -226,11 +294,16 @@ const CGFloat kAnimationDuration = 0.3;
   // changes, for instance on screen rotation.
   CGFloat parentWidth = CGRectGetWidth(self.contentView.bounds);
 
+  CGFloat offset = 0;
+  if (self.displayImage) {
+    offset = kImageSize + kStandardSpacing;
+  }
+
   self.titleLabel.preferredMaxLayoutWidth =
-      parentWidth - kImageSize - 3 * kStandardSpacing;
+      parentWidth - 2 * kStandardSpacing - offset;
   self.subtitleLabel.preferredMaxLayoutWidth =
-      parentWidth - kImageSize - 3 * kStandardSpacing;
-  self.publisherLabel.preferredMaxLayoutWidth =
+      parentWidth - 2 * kStandardSpacing - offset;
+  self.additionalInformationLabel.preferredMaxLayoutWidth =
       parentWidth - kFaviconSize - kSmallSpacing - 2 * kStandardSpacing;
 
   // Re-layout with the new preferred width to allow the label to adjust its
@@ -241,20 +314,35 @@ const CGFloat kAnimationDuration = 0.3;
 #pragma mark - Private
 
 - (void)applyConstraints {
+  _imageSize =
+      [_imageContainer.heightAnchor constraintEqualToConstant:kImageSize];
+  _imageTitleSpacing = [_imageContainer.leadingAnchor
+      constraintEqualToAnchor:_titleLabel.trailingAnchor
+                     constant:kStandardSpacing];
+  _titleSubtitleSpacing =
+      [_subtitleLabel.topAnchor constraintEqualToAnchor:_titleLabel.bottomAnchor
+                                               constant:kSmallSpacing];
+
   [NSLayoutConstraint activateConstraints:@[
-    [_imageContainer.widthAnchor constraintEqualToConstant:kImageSize],
-    [_imageContainer.heightAnchor
-        constraintEqualToAnchor:_imageContainer.widthAnchor],
+    // Image.
+    _imageSize,
+    [_imageContainer.widthAnchor
+        constraintEqualToAnchor:_imageContainer.heightAnchor],
     [_imageContainer.topAnchor constraintEqualToAnchor:_titleLabel.topAnchor],
 
-    // Publisher.
-    [_publisherLabel.topAnchor
+    // Text.
+    _imageTitleSpacing, _titleSubtitleSpacing,
+    [_titleLabel.trailingAnchor
+        constraintEqualToAnchor:_subtitleLabel.trailingAnchor],
+
+    // Additional Information.
+    [_additionalInformationLabel.topAnchor
         constraintGreaterThanOrEqualToAnchor:_imageContainer.bottomAnchor
                                     constant:kStandardSpacing],
-    [_publisherLabel.topAnchor
+    [_additionalInformationLabel.topAnchor
         constraintGreaterThanOrEqualToAnchor:_subtitleLabel.bottomAnchor
                                     constant:kStandardSpacing],
-    [_publisherLabel.bottomAnchor
+    [_additionalInformationLabel.bottomAnchor
         constraintLessThanOrEqualToAnchor:self.contentView.bottomAnchor
                                  constant:-kStandardSpacing],
 
@@ -266,7 +354,7 @@ const CGFloat kAnimationDuration = 0.3;
         constraintGreaterThanOrEqualToAnchor:_subtitleLabel.bottomAnchor
                                     constant:kStandardSpacing],
     [_faviconView.centerYAnchor
-        constraintEqualToAnchor:_publisherLabel.centerYAnchor],
+        constraintEqualToAnchor:_additionalInformationLabel.centerYAnchor],
     [_faviconView.bottomAnchor
         constraintLessThanOrEqualToAnchor:self.contentView.bottomAnchor
                                  constant:-kStandardSpacing],
@@ -287,16 +375,17 @@ const CGFloat kAnimationDuration = 0.3;
 
   ApplyVisualConstraintsWithMetrics(
       @[
-        @"H:|-(space)-[title]-(space)-[image]-(space)-|",
-        @"H:|-(space)-[text]-(space)-[image]",
-        @"V:|-(space)-[title]-[text]",
-        @"H:|-(space)-[favicon]-(small)-[publish]-(space)-|",
+        @"H:|-(space)-[title]",
+        @"H:[image]-(space)-|",
+        @"H:|-(space)-[text]",
+        @"V:|-(space)-[title]",
+        @"H:|-(space)-[favicon]-(small)-[additional]-(space)-|",
       ],
       @{
         @"image" : _imageContainer,
         @"title" : _titleLabel,
         @"text" : _subtitleLabel,
-        @"publish" : _publisherLabel,
+        @"additional" : _additionalInformationLabel,
         @"favicon" : _faviconView,
       },
       @{ @"space" : @(kStandardSpacing),

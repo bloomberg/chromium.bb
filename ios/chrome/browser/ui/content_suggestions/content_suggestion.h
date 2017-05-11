@@ -7,7 +7,6 @@
 
 #import <UIKit/UIKit.h>
 
-#import "ios/chrome/browser/ui/content_suggestions/content_suggestion_extra_builder.h"
 #import "ios/chrome/browser/ui/content_suggestions/identifier/content_suggestion_identifier.h"
 
 namespace base {
@@ -41,10 +40,8 @@ typedef NS_ENUM(NSInteger, ContentSuggestionType) {
 @property(nonatomic, copy, nullable) NSString* publisher;
 // The date of publication.
 @property(nonatomic, assign) base::Time publishDate;
-
-// Extra information, only available if the suggestion is of type reading list.
-@property(nonatomic, strong, nullable)
-    ContentSuggestionReadingListExtra* readingListExtra;
+// Whether the suggestion is available offline.
+@property(nonatomic, assign) BOOL availableOffline;
 
 @property(nonatomic, assign) ContentSuggestionType type;
 

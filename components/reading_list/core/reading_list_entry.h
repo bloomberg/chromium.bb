@@ -92,7 +92,7 @@ class ReadingListEntry {
   // The URL that has been distilled to produce file stored at |DistilledPath|.
   const GURL& DistilledURL() const;
   // The time distillation was done. The value is in microseconds since Jan 1st
-  // 1970.
+  // 1970. Returns 0 if the entry was not distilled.
   int64_t DistillationTime() const;
   // The size of the stored page in bytes.
   int64_t DistillationSize() const;

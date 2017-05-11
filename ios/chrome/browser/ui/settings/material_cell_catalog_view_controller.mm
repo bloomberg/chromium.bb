@@ -25,8 +25,8 @@
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_switch_item.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_text_item.h"
 #import "ios/chrome/browser/ui/collection_view/collection_view_model.h"
-#import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_article_item.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_footer_item.h"
+#import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_item.h"
 #import "ios/chrome/browser/ui/icons/chrome_icon.h"
 #import "ios/chrome/browser/ui/payments/cells/accepted_payment_methods_item.h"
 #import "ios/chrome/browser/ui/payments/cells/autofill_profile_item.h"
@@ -339,7 +339,7 @@ const CGFloat kCardIssuerNetworkIconDimension = 25.0;
 
   // Content Suggestions cells.
   [model addSectionWithIdentifier:SectionIdentifierContentSuggestionsCell];
-  [model addItem:[self contentSuggestionsArticleItem]
+  [model addItem:[self ContentSuggestionsItem]
       toSectionWithIdentifier:SectionIdentifierContentSuggestionsCell];
   [model addItem:[self contentSuggestionsFooterItem]
       toSectionWithIdentifier:SectionIdentifierContentSuggestionsCell];
@@ -724,16 +724,15 @@ const CGFloat kCardIssuerNetworkIconDimension = 25.0;
   return footerItem;
 }
 
-- (ContentSuggestionsArticleItem*)contentSuggestionsArticleItem {
-  ContentSuggestionsArticleItem* articleItem =
-      [[ContentSuggestionsArticleItem alloc]
-          initWithType:ItemTypeContentSuggestions
-                 title:@"This is an incredible article, you should read it!"
-              subtitle:@"Really, this is the best article I have ever seen, it "
-                       @"is mandatory to read it! It describes how to write "
-                       @"the best article."
-              delegate:nil
-                   url:GURL()];
+- (ContentSuggestionsItem*)ContentSuggestionsItem {
+  ContentSuggestionsItem* articleItem = [[ContentSuggestionsItem alloc]
+      initWithType:ItemTypeContentSuggestions
+             title:@"This is an incredible article, you should read it!"
+          subtitle:@"Really, this is the best article I have ever seen, it "
+                   @"is mandatory to read it! It describes how to write "
+                   @"the best article."
+          delegate:nil
+               url:GURL()];
   articleItem.publisher = @"Top Publisher.com";
   return articleItem;
 }

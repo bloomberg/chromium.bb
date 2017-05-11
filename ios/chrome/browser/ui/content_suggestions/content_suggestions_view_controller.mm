@@ -8,8 +8,7 @@
 #import "ios/chrome/browser/ui/collection_view/cells/MDCCollectionViewCell+Chrome.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_item.h"
 #import "ios/chrome/browser/ui/collection_view/collection_view_model.h"
-#import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_article_item.h"
-#import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_reading_list_item.h"
+#import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_item.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestion.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_collection_updater.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_commands.h"
@@ -130,10 +129,8 @@
       [self.collectionViewModel itemAtIndexPath:indexPath];
   switch ([self.collectionUpdater contentSuggestionTypeForItem:item]) {
     case ContentSuggestionTypeReadingList:
-      [self openReadingListItem:item];
-      break;
     case ContentSuggestionTypeArticle:
-      [self openArticle:item];
+      [self openSuggestion:item];
       break;
     case ContentSuggestionTypeMostVisited:
       // TODO(crbug.com/707754): Open the most visited site.
@@ -184,20 +181,12 @@
 
 #pragma mark - Private
 
-// Opens the Reading List entry associated with |item|. |item| must be a
-// ContentSuggestionsReadingListItem.
-- (void)openReadingListItem:(CollectionViewItem*)item {
-  ContentSuggestionsReadingListItem* readingListItem =
-      base::mac::ObjCCastStrict<ContentSuggestionsReadingListItem>(item);
-  [self.suggestionCommandHandler openURL:readingListItem.url];
-}
-
 // Opens the article associated with |item|. |item| must be a
-// ContentSuggestionsArticleItem.
-- (void)openArticle:(CollectionViewItem*)item {
-  ContentSuggestionsArticleItem* article =
-      base::mac::ObjCCastStrict<ContentSuggestionsArticleItem>(item);
-  [self.suggestionCommandHandler openURL:article.articleURL];
+// ContentSuggestionsItem.
+- (void)openSuggestion:(CollectionViewItem*)item {
+  ContentSuggestionsItem* suggestion =
+      base::mac::ObjCCastStrict<ContentSuggestionsItem>(item);
+  [self.suggestionCommandHandler openURL:suggestion.URL];
 }
 
 - (void)handleLongPress:(UILongPressGestureRecognizer*)gestureRecognizer {
@@ -224,11 +213,11 @@
     return;
   }
 
-  ContentSuggestionsArticleItem* articleItem =
-      base::mac::ObjCCastStrict<ContentSuggestionsArticleItem>(touchedItem);
+  ContentSuggestionsItem* suggestionItem =
+      base::mac::ObjCCastStrict<ContentSuggestionsItem>(touchedItem);
 
   [self.suggestionCommandHandler
-      displayContextMenuForArticle:articleItem
+      displayContextMenuForArticle:suggestionItem
                            atPoint:touchLocation
                        atIndexPath:touchedItemIndexPath];
 }

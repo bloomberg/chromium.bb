@@ -49,14 +49,8 @@ struct RecentTabSuggestionExtra {
 // ReadingListSuggestionExtra contains additional data which is only available
 // for Reading List suggestions.
 struct ReadingListSuggestionExtra {
-  // State of the distillation a suggestion. This is the meaningful extract of
-  // ReadingListEntry::DistillationState for the suggestions. It is duplicated
-  // here to avoid a dependence on ReadingList.
-  enum class ReadingListSuggestionDistilledState { PENDING, SUCCESS, FAILURE };
-
   // State of the distillation of the suggestion.
-  ReadingListSuggestionDistilledState distilled_state =
-      ReadingListSuggestionDistilledState::PENDING;
+  bool distilled = false;
   // URL of the page whose favicon should be displayed for this suggestion.
   GURL favicon_page_url;
 };
