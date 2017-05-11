@@ -201,6 +201,62 @@ void PasswordProtectionService::CacheVerdict(
       std::string(), std::move(verdict_dictionary));
 }
 
+void PasswordProtectionService::CleanUpExpiredVerdicts() {
+  DCHECK(content_settings_);
+  if (GetStoredVerdictCount() <= 0)
+    return;
+
+  ContentSettingsForOneType password_protection_settings;
+  content_settings_->GetSettingsForOneType(
+      CONTENT_SETTINGS_TYPE_PASSWORD_PROTECTION, std::string(),
+      &password_protection_settings);
+
+  for (const ContentSettingPatternSource& source :
+       password_protection_settings) {
+    GURL primary_pattern_url = GURL(source.primary_pattern.ToString());
+    // Find all verdicts associated with this origin.
+    std::unique_ptr<base::DictionaryValue> verdict_dictionary =
+        base::DictionaryValue::From(content_settings_->GetWebsiteSetting(
+            primary_pattern_url, GURL(),
+            CONTENT_SETTINGS_TYPE_PASSWORD_PROTECTION, std::string(), nullptr));
+    std::vector<std::string> expired_keys;
+    for (base::DictionaryValue::Iterator it(*verdict_dictionary.get());
+         !it.IsAtEnd(); it.Advance()) {
+      base::DictionaryValue* verdict_entry = nullptr;
+      CHECK(verdict_dictionary->GetDictionaryWithoutPathExpansion(
+          it.key(), &verdict_entry));
+      int verdict_received_time;
+      LoginReputationClientResponse verdict;
+      CHECK(ParseVerdictEntry(verdict_entry, &verdict_received_time, &verdict));
+
+      if (IsCacheExpired(verdict_received_time, verdict.cache_duration_sec())) {
+        // Since DictionaryValue::Iterator cannot be used to modify the
+        // dictionary, we record the keys of expired verdicts in |expired_keys|
+        // and remove them in the next for-loop.
+        expired_keys.push_back(it.key());
+      }
+    }
+
+    for (const std::string& key : expired_keys) {
+      verdict_dictionary->RemoveWithoutPathExpansion(key, nullptr);
+      stored_verdict_count_--;
+    }
+
+    if (verdict_dictionary->size() == 0u) {
+      content_settings_->ClearSettingsForOneTypeWithPredicate(
+          CONTENT_SETTINGS_TYPE_PASSWORD_PROTECTION, base::Time(),
+          base::Bind(&OriginMatchPrimaryPattern, primary_pattern_url));
+    } else if (expired_keys.size() > 0u) {
+      // Set the website setting of this origin with the updated
+      // |verdict_diectionary|.
+      content_settings_->SetWebsiteSettingDefaultScope(
+          primary_pattern_url, GURL(),
+          CONTENT_SETTINGS_TYPE_PASSWORD_PROTECTION, std::string(),
+          std::move(verdict_dictionary));
+    }
+  }
+}
+
 void PasswordProtectionService::StartRequest(
     const GURL& main_frame_url,
     const GURL& password_form_action,
