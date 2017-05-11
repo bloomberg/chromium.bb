@@ -93,7 +93,6 @@ class LocalWPTTest(unittest.TestCase):
             ['git', 'reset', '--hard', 'HEAD'],
             ['git', 'clean', '-fdx'],
             ['git', 'checkout', 'origin/master'],
-            ['git', 'branch', '-D', 'chromium-export-decafbad'],
             ['git', 'checkout', '-b', 'chromium-export-decafbad'],
             ['git', 'apply', '-'],
             ['git', 'add', '.'],
