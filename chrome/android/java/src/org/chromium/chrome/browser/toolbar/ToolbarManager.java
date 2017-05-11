@@ -526,7 +526,8 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
                 if (!tracker.shouldTriggerHelpUI(FeatureConstants.DOWNLOAD_PAGE_FEATURE)) return;
 
                 mTextBubble = new ViewAnchoredTextBubble(mToolbar.getContext(), getMenuAnchor(),
-                        R.string.iph_download_page_for_offline_usage_text);
+                        R.string.iph_download_page_for_offline_usage_text,
+                        R.string.iph_download_page_for_offline_usage_accessibility_text);
                 mTextBubble.setDismissOnTouchInteraction(true);
                 mTextBubble.addOnDismissListener(new OnDismissListener() {
                     @Override

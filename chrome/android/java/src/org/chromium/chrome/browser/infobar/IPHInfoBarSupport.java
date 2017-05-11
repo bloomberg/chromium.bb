@@ -34,9 +34,11 @@ class IPHInfoBarSupport implements OnDismissListener, InfoBarContainer.InfoBarAn
 
     /** Helper class to hold all relevant display parameters for an in-product help window. */
     private static class TrackerParameters {
-        public TrackerParameters(String feature, @StringRes int textId) {
+        public TrackerParameters(
+                String feature, @StringRes int textId, @StringRes int accessibilityTextId) {
             this.feature = feature;
             this.textId = textId;
+            this.accessibilityTextId = accessibilityTextId;
         }
 
         /** @see FeatureConstants */
@@ -44,6 +46,9 @@ class IPHInfoBarSupport implements OnDismissListener, InfoBarContainer.InfoBarAn
 
         @StringRes
         public int textId;
+
+        @StringRes
+        public int accessibilityTextId;
     }
 
     /** Helper class to manage state relating to a particular instance of an in-product window. */
@@ -103,7 +108,8 @@ class IPHInfoBarSupport implements OnDismissListener, InfoBarContainer.InfoBarAn
 
         mCurrentState = new PopupState();
         mCurrentState.view = view;
-        mCurrentState.bubble = new ViewAnchoredTextBubble(mContext, view, params.textId);
+        mCurrentState.bubble = new ViewAnchoredTextBubble(
+                mContext, view, params.textId, params.accessibilityTextId);
         mCurrentState.bubble.addOnDismissListener(this);
         mCurrentState.bubble.setDismissOnTouchInteraction(true);
         mCurrentState.bubble.show();
@@ -153,8 +159,8 @@ class IPHInfoBarSupport implements OnDismissListener, InfoBarContainer.InfoBarAn
     private TrackerParameters getTrackerParameters(Item infoBar) {
         switch (infoBar.getInfoBarIdentifier()) {
             case InfoBarIdentifier.DATA_REDUCTION_PROXY_PREVIEW_INFOBAR_DELEGATE:
-                return new TrackerParameters(
-                        FeatureConstants.DATA_SAVER_PREVIEW, R.string.iph_data_saver_preview_text);
+                return new TrackerParameters(FeatureConstants.DATA_SAVER_PREVIEW,
+                        R.string.iph_data_saver_preview_text, R.string.iph_data_saver_preview_text);
             default:
                 return null;
         }

@@ -38,9 +38,11 @@ public class ViewAnchoredTextBubble extends TextBubble
      * @param context    Context to draw resources from.
      * @param anchorView The {@link View} to anchor to.
      * @param stringId The id of the string resource for the text that should be shown.
+     * @param accessibilityStringId The id of the string resource of the accessibility text.
      */
-    public ViewAnchoredTextBubble(Context context, View anchorView, @StringRes int stringId) {
-        super(context, anchorView.getRootView(), stringId);
+    public ViewAnchoredTextBubble(Context context, View anchorView, @StringRes int stringId,
+            @StringRes int accessibilityStringId) {
+        super(context, anchorView.getRootView(), stringId, accessibilityStringId);
         mAnchorView = anchorView;
 
         mViewPositionObserver = new ViewPositionObserver(mAnchorView);
