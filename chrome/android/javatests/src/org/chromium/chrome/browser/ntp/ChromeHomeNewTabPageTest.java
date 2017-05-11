@@ -8,6 +8,7 @@ import android.support.test.filters.SmallTest;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CallbackHelper;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelObserver;
@@ -69,6 +70,7 @@ public class ChromeHomeNewTabPageTest extends BottomSheetTestCaseBase {
     }
 
     @SmallTest
+    @DisabledTest(message = "crbug.com/720637")
     public void testCloseNTP_OneTab()
             throws IllegalArgumentException, InterruptedException, TimeoutException {
         // Load the NTP.

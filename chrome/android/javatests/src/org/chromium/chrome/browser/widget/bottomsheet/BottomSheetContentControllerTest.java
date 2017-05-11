@@ -49,7 +49,7 @@ public class BottomSheetContentControllerTest extends BottomSheetTestCaseBase {
                 R.id.action_history, mBottomSheetContentController.getSelectedItemIdForTests());
 
         setSheetState(BottomSheet.SHEET_STATE_PEEK, false);
-        mObserver.mOpenedCallbackHelper.waitForCallback(closedCount, 1);
+        mObserver.mClosedCallbackHelper.waitForCallback(closedCount, 1);
         mObserver.mContentChangedCallbackHelper.waitForCallback(contentChangedCount, 1);
         assertEquals(openedCount, mObserver.mOpenedCallbackHelper.getCallCount());
         assertTrue(mBottomSheet.getCurrentSheetContent() instanceof SuggestionsBottomSheetContent);
