@@ -239,11 +239,14 @@ void RawInputDataFetcher::EnumerateDevices() {
   }
 
   // Clear out old controllers that weren't part of this enumeration pass.
-  for (const auto& controller : controllers_) {
-    RawGamepadInfo* gamepad = controller.second;
+  auto controller_it = controllers_.begin();
+  while (controller_it != controllers_.end()) {
+    RawGamepadInfo* gamepad = controller_it->second;
     if (gamepad->enumeration_id != last_enumeration_id_) {
-      controllers_.erase(gamepad->handle);
+      controller_it = controllers_.erase(controller_it);
       delete gamepad;
+    } else {
+      ++controller_it;
     }
   }
 }
