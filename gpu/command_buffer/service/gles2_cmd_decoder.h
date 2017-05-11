@@ -296,10 +296,6 @@ class GPU_EXPORT GLES2Decoder : public base::SupportsWeakPtr<GLES2Decoder>,
       const NoParamCallback& callback) = 0;
 
   virtual void WaitForReadPixels(base::Closure callback) = 0;
-  virtual uint32_t GetTextureUploadCount() = 0;
-  virtual base::TimeDelta GetTotalTextureUploadTime() = 0;
-  virtual base::TimeDelta GetTotalProcessingCommandsTime() = 0;
-  virtual void AddProcessingCommandsTime(base::TimeDelta) = 0;
 
   // Returns true if the context was lost either by GL_ARB_robustness, forced
   // context loss or command buffer parse error.

@@ -615,11 +615,6 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
   bool GetServiceTextureId(uint32_t client_texture_id,
                            uint32_t* service_texture_id) override;
 
-  uint32_t GetTextureUploadCount() override;
-  base::TimeDelta GetTotalTextureUploadTime() override;
-  base::TimeDelta GetTotalProcessingCommandsTime() override;
-  void AddProcessingCommandsTime(base::TimeDelta) override;
-
   // Restores the current state to the user's settings.
   void RestoreCurrentFramebufferBindings();
 
@@ -2422,9 +2417,6 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
 
   // Cached value for the number of stencil bits for the default framebuffer.
   GLint num_stencil_bits_;
-
-  // Command buffer stats.
-  base::TimeDelta total_processing_commands_time_;
 
   // States related to each manager.
   DecoderTextureState texture_state_;
@@ -4734,22 +4726,6 @@ bool GLES2DecoderImpl::GetServiceTextureId(uint32_t client_texture_id,
     return true;
   }
   return false;
-}
-
-uint32_t GLES2DecoderImpl::GetTextureUploadCount() {
-  return texture_state_.texture_upload_count;
-}
-
-base::TimeDelta GLES2DecoderImpl::GetTotalTextureUploadTime() {
-  return texture_state_.total_texture_upload_time;
-}
-
-base::TimeDelta GLES2DecoderImpl::GetTotalProcessingCommandsTime() {
-  return total_processing_commands_time_;
-}
-
-void GLES2DecoderImpl::AddProcessingCommandsTime(base::TimeDelta time) {
-  total_processing_commands_time_ += time;
 }
 
 void GLES2DecoderImpl::Destroy(bool have_context) {

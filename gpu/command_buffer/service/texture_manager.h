@@ -706,10 +706,6 @@ struct DecoderTextureState {
   // group.
   bool tex_image_failed;
 
-  // Command buffer stats.
-  int texture_upload_count;
-  base::TimeDelta total_texture_upload_time;
-
   bool texsubimage_faster_than_teximage;
   bool force_cube_map_positive_x_allocation;
   bool force_cube_complete;
@@ -1241,18 +1237,6 @@ class GPU_EXPORT TextureManager : public base::trace_event::MemoryDumpProvider {
   ProgressReporter* progress_reporter_;
 
   DISALLOW_COPY_AND_ASSIGN(TextureManager);
-};
-
-// This class records texture upload time when in scope.
-class ScopedTextureUploadTimer {
- public:
-  explicit ScopedTextureUploadTimer(DecoderTextureState* texture_state);
-  ~ScopedTextureUploadTimer();
-
- private:
-  DecoderTextureState* texture_state_;
-  base::TimeTicks begin_time_;
-  DISALLOW_COPY_AND_ASSIGN(ScopedTextureUploadTimer);
 };
 
 }  // namespace gles2

@@ -159,10 +159,6 @@ class MockGLES2Decoder : public GLES2Decoder {
                void(const NoParamCallback& callback));
   MOCK_METHOD1(WaitForReadPixels,
                void(base::Closure callback));
-  MOCK_METHOD0(GetTextureUploadCount, uint32_t());
-  MOCK_METHOD0(GetTotalTextureUploadTime, base::TimeDelta());
-  MOCK_METHOD0(GetTotalProcessingCommandsTime, base::TimeDelta());
-  MOCK_METHOD1(AddProcessingCommandsTime, void(base::TimeDelta));
   MOCK_CONST_METHOD0(WasContextLost, bool());
   MOCK_CONST_METHOD0(WasContextLostByRobustnessExtension, bool());
   MOCK_METHOD1(MarkContextLost, void(gpu::error::ContextLostReason reason));
