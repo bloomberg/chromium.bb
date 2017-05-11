@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import("//build/config/android/config.gni")
+import("//build/config/android/rules.gni")
 
 source_set("cast_media_android") {
   sources = [
@@ -10,6 +11,8 @@ source_set("cast_media_android") {
     "audio_decoder_android.h",
     "audio_sink_android.cc",
     "audio_sink_android.h",
+    "audio_sink_android_audiotrack_impl.cc",
+    "audio_sink_android_audiotrack_impl.h",
     "audio_sink_android_dummy_impl.cc",
     "audio_sink_android_dummy_impl.h",
     "cast_media_android.cc",
@@ -19,6 +22,8 @@ source_set("cast_media_android") {
   ]
 
   deps = [
+    ":audio_track_java",
+    ":audio_track_jni_headers",
     "//base",
     "//chromecast/base",
     "//chromecast/media/cma/backend:null",
@@ -26,5 +31,23 @@ source_set("cast_media_android") {
     "//chromecast/media/cma/decoder",
     "//chromecast/public/media",
     "//media",
+  ]
+}
+
+generate_jni("audio_track_jni_headers") {
+  sources = [
+    "java/src/org/chromium/chromecast/cma/backend/android/AudioSinkAudioTrackImpl.java",
+  ]
+
+  jni_package = "audio_track"
+}
+
+android_library("audio_track_java") {
+  java_files = [ "java/src/org/chromium/chromecast/cma/backend/android/AudioSinkAudioTrackImpl.java" ]
+
+  deps = [
+    "//base:base_java",
+    "//chromecast/base:base_java",
+    "//third_party/android_tools:android_support_v13_java",
   ]
 }

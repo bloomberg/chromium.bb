@@ -9,6 +9,11 @@
 #include "base/macros.h"
 #include "chromecast/base/android/system_time_change_notifier_android.h"
 #include "chromecast/base/chromecast_config_android.h"
+#include "chromecast/chromecast_features.h"
+
+#if BUILDFLAG(IS_CAST_USING_CMA_BACKEND)
+#include "chromecast/media/cma/backend/android/audio_sink_android_audiotrack_impl.h"
+#endif
 
 namespace chromecast {
 namespace android {
@@ -19,6 +24,10 @@ static base::android::RegistrationMethod kMethods[] = {
     {"ChromecastConfigAndroid", ChromecastConfigAndroid::RegisterJni},
     {"SystemTimeChangeNotifierAndroid",
      SystemTimeChangeNotifierAndroid::RegisterJni},
+#if BUILDFLAG(IS_CAST_USING_CMA_BACKEND)
+    {"AudioSinkAudioTrackImpl",
+     media::AudioSinkAndroidAudioTrackImpl::RegisterJni},
+#endif
 };
 
 }  // namespace
