@@ -19,6 +19,7 @@
 #include "content/common/content_export.h"
 #include "content/common/url_loader_factory.mojom.h"
 #include "content/renderer/origin_trials/web_trial_token_validator_impl.h"
+#include "content/renderer/possibly_associated_interface_ptr.h"
 #include "content/renderer/top_level_blame_context.h"
 #include "content/renderer/webpublicsuffixlist_impl.h"
 #include "services/ui/public/cpp/bitmap/child_shared_bitmap_manager.h"
@@ -307,10 +308,7 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
 
   std::unique_ptr<BlinkInterfaceProviderImpl> blink_interface_provider_;
 
-  mojom::URLLoaderFactoryAssociatedPtr url_loader_factory_;
-
-  // Only used when network service is enabled.
-  mojom::URLLoaderFactoryPtr network_service_url_loader_factory_;
+  PossiblyAssociatedInterfacePtr<mojom::URLLoaderFactory> url_loader_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(RendererBlinkPlatformImpl);
 };

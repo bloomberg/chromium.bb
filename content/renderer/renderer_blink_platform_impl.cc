@@ -307,28 +307,26 @@ std::unique_ptr<blink::WebURLLoader>
 RendererBlinkPlatformImpl::CreateURLLoader() {
   ChildThreadImpl* child_thread = ChildThreadImpl::current();
 
-  mojom::URLLoaderFactory* factory =
-      url_loader_factory_ ? url_loader_factory_.get()
-                          : network_service_url_loader_factory_.get();
-  if (!factory && child_thread) {
+  if (!url_loader_factory_ && child_thread) {
     bool network_service_enabled =
         base::CommandLine::ForCurrentProcess()->HasSwitch(
             switches::kEnableNetworkService);
     if (network_service_enabled) {
-      connector_->BindInterface(mojom::kNetworkServiceName,
-                                &network_service_url_loader_factory_);
-      factory = network_service_url_loader_factory_.get();
+      mojom::URLLoaderFactoryPtr factory_ptr;
+      connector_->BindInterface(mojom::kNetworkServiceName, &factory_ptr);
+      url_loader_factory_ = std::move(factory_ptr);
     } else {
-      child_thread->channel()->GetRemoteAssociatedInterface(
-          &url_loader_factory_);
-      factory = url_loader_factory_.get();
+      mojom::URLLoaderFactoryAssociatedPtr factory_ptr;
+      child_thread->channel()->GetRemoteAssociatedInterface(&factory_ptr);
+      url_loader_factory_ = std::move(factory_ptr);
     }
   }
 
   // There may be no child thread in RenderViewTests.  These tests can still use
   // data URLs to bypass the ResourceDispatcher.
   return base::MakeUnique<WebURLLoaderImpl>(
-      child_thread ? child_thread->resource_dispatcher() : nullptr, factory);
+      child_thread ? child_thread->resource_dispatcher() : nullptr,
+      url_loader_factory_.get());
 }
 
 blink::WebThread* RendererBlinkPlatformImpl::CurrentThread() {
