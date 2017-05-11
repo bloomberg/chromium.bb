@@ -180,6 +180,7 @@
 #include "platform/graphics/skia/SkiaUtils.h"
 #include "platform/heap/Handle.h"
 #include "platform/instrumentation/tracing/TraceEvent.h"
+#include "platform/loader/fetch/FetchContext.h"
 #include "platform/loader/fetch/ResourceFetcher.h"
 #include "platform/loader/fetch/ResourceRequest.h"
 #include "platform/loader/fetch/SubstituteData.h"
@@ -200,6 +201,7 @@
 #include "public/platform/WebSecurityOrigin.h"
 #include "public/platform/WebSize.h"
 #include "public/platform/WebURLError.h"
+#include "public/platform/WebURLLoader.h"
 #include "public/platform/WebVector.h"
 #include "public/web/WebAssociatedURLLoaderOptions.h"
 #include "public/web/WebAutofillClient.h"
@@ -2428,6 +2430,16 @@ void WebLocalFrameImpl::SetFrameWidget(WebFrameWidgetBase* frame_widget) {
 
 WebFrameWidgetBase* WebLocalFrameImpl::FrameWidget() const {
   return frame_widget_;
+}
+
+std::unique_ptr<WebURLLoader> WebLocalFrameImpl::CreateURLLoader() {
+  DCHECK(frame_);
+  Document* document = frame_->GetDocument();
+  DCHECK(document);
+  ResourceFetcher* fetcher = document->Fetcher();
+  DCHECK(fetcher);
+
+  return fetcher->Context().CreateURLLoader();
 }
 
 void WebLocalFrameImpl::CopyImageAt(const WebPoint& pos_in_viewport) {

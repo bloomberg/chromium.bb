@@ -34,6 +34,7 @@ class WebInputMethodController;
 class WebRange;
 class WebScriptExecutionCallback;
 class WebTextCheckClient;
+class WebURLLoader;
 enum class WebCachePolicy;
 enum class WebSandboxFlags;
 enum class WebTreeScopeType;
@@ -539,6 +540,11 @@ class WebLocalFrame : public WebFrame {
 
   // Returns the WebInputMethodController associated with this local frame.
   virtual WebInputMethodController* GetInputMethodController() const = 0;
+
+  // Loading ------------------------------------------------------------------
+  // Creates and returns a loader. This function can be called only when this
+  // frame is attached to a document.
+  virtual std::unique_ptr<WebURLLoader> CreateURLLoader() = 0;
 
  protected:
   explicit WebLocalFrame(WebTreeScopeType scope) : WebFrame(scope) {}

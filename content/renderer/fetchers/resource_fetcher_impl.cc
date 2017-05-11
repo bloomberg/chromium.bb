@@ -10,7 +10,6 @@
 #include "base/macros.h"
 #include "base/strings/string_util.h"
 #include "base/time/time.h"
-#include "third_party/WebKit/public/platform/Platform.h"
 #include "third_party/WebKit/public/platform/WebHTTPBody.h"
 #include "third_party/WebKit/public/platform/WebSecurityOrigin.h"
 #include "third_party/WebKit/public/platform/WebString.h"
@@ -188,7 +187,7 @@ void ResourceFetcherImpl::Start(
 
   client_.reset(new ClientImpl(this, callback));
 
-  loader_ = blink::Platform::Current()->CreateURLLoader();
+  loader_ = frame->CreateURLLoader();
   loader_->LoadAsynchronously(request_, client_.get());
 
   // No need to hold on to the request; reset it now.
