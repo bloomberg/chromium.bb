@@ -103,9 +103,8 @@ interface HTMLInputElement : HTMLElement {
 
     // HTML Media Capture
     // https://w3c.github.io/html-media-capture/#the-capture-attribute
-    // TODO(mcasas): |capture| is a |CaptureFacingMode| enum in the spec.
-    // https://crbug.com/698853
-    [Measure, RuntimeEnabled=MediaCapture, Reflect] attribute boolean capture;
+    // Using DOMString as enum cannot be reflected. https://github.com/w3c/html-media-capture/issues/12
+    [Measure, RuntimeEnabled=MediaCapture, Reflect] attribute DOMString capture;
 
     // Non-standard APIs
     [Reflect, MeasureAs=PrefixedDirectoryAttribute] attribute boolean webkitdirectory;
