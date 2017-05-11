@@ -4,10 +4,10 @@
 
 #include "platform/scheduler/renderer/web_frame_scheduler_impl.h"
 
-#include "base/strings/stringprintf.h"
 #include "base/trace_event/blame_context.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/scheduler/base/real_time_domain.h"
+#include "platform/scheduler/base/trace_helper.h"
 #include "platform/scheduler/base/virtual_time_domain.h"
 #include "platform/scheduler/child/web_task_runner_impl.h"
 #include "platform/scheduler/renderer/auto_advancing_virtual_time_domain.h"
@@ -19,15 +19,6 @@
 
 namespace blink {
 namespace scheduler {
-namespace {
-
-std::string PointerToId(void* pointer) {
-  return base::StringPrintf(
-      "0x%" PRIx64,
-      static_cast<uint64_t>(reinterpret_cast<uintptr_t>(pointer)));
-}
-
-}  // namespace
 
 WebFrameSchedulerImpl::ActiveConnectionHandleImpl::ActiveConnectionHandleImpl(
     WebFrameSchedulerImpl* frame_scheduler)
@@ -238,22 +229,26 @@ void WebFrameSchedulerImpl::AsValueInto(
   state->SetBoolean("cross_origin", cross_origin_);
   if (loading_task_queue_) {
     state->SetString("loading_task_queue",
-                     PointerToId(loading_task_queue_.get()));
+                     trace_helper::PointerToString(loading_task_queue_.get()));
   }
   if (timer_task_queue_)
-    state->SetString("timer_task_queue", PointerToId(timer_task_queue_.get()));
+    state->SetString("timer_task_queue",
+                     trace_helper::PointerToString(timer_task_queue_.get()));
   if (unthrottled_task_queue_) {
-    state->SetString("unthrottled_task_queue",
-                     PointerToId(unthrottled_task_queue_.get()));
+    state->SetString(
+        "unthrottled_task_queue",
+        trace_helper::PointerToString(unthrottled_task_queue_.get()));
   }
   if (suspendable_task_queue_) {
-    state->SetString("suspendable_task_queue",
-                     PointerToId(suspendable_task_queue_.get()));
+    state->SetString(
+        "suspendable_task_queue",
+        trace_helper::PointerToString(suspendable_task_queue_.get()));
   }
   if (blame_context_) {
     state->BeginDictionary("blame_context");
-    state->SetString(
-        "id_ref", PointerToId(reinterpret_cast<void*>(blame_context_->id())));
+    state->SetString("id_ref",
+                     trace_helper::PointerToString(
+                         reinterpret_cast<void*>(blame_context_->id())));
     state->SetString("scope", blame_context_->scope());
     state->EndDictionary();
   }

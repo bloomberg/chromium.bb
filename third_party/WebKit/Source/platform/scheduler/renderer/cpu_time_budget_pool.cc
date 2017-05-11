@@ -6,25 +6,14 @@
 
 #include <cstdint>
 
-#include "base/format_macros.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/optional.h"
-#include "base/strings/stringprintf.h"
+#include "platform/scheduler/base/trace_helper.h"
 #include "platform/scheduler/renderer/task_queue_throttler.h"
 
 namespace blink {
 namespace scheduler {
-
-namespace {
-
-std::string PointerToId(void* pointer) {
-  return base::StringPrintf(
-      "0x%" PRIx64,
-      static_cast<uint64_t>(reinterpret_cast<uintptr_t>(pointer)));
-}
-
-}  // namespace
 
 CPUTimeBudgetPool::CPUTimeBudgetPool(
     const char* name,
@@ -153,7 +142,7 @@ void CPUTimeBudgetPool::AsValueInto(base::trace_event::TracedValue* state,
 
   state->BeginArray("task_queues");
   for (TaskQueue* queue : associated_task_queues_) {
-    state->AppendString(PointerToId(queue));
+    state->AppendString(trace_helper::PointerToString(queue));
   }
   state->EndArray();
 
