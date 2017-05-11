@@ -35,7 +35,6 @@ namespace blink {
 LayoutSelection::LayoutSelection(FrameSelection& frame_selection)
     : frame_selection_(&frame_selection),
       has_pending_selection_(false),
-      force_hide_(false),
       selection_start_(nullptr),
       selection_end_(nullptr),
       selection_start_pos_(-1),
@@ -316,14 +315,6 @@ void LayoutSelection::ClearSelection() {
   SetSelection(0, -1, 0, -1, kPaintInvalidationNewMinusOld);
 }
 
-void LayoutSelection::SetHasPendingSelection(PaintHint hint) {
-  has_pending_selection_ = true;
-  if (hint == PaintHint::kHide)
-    force_hide_ = true;
-  else if (hint == PaintHint::kPaint)
-    force_hide_ = false;
-}
-
 void LayoutSelection::Commit() {
   if (!HasPendingSelection())
     return;
@@ -339,7 +330,7 @@ void LayoutSelection::Commit() {
   const VisibleSelectionInFlatTree& selection =
       CreateVisibleSelection(CalcVisibleSelection(original_selection));
 
-  if (!selection.IsRange() || force_hide_) {
+  if (!selection.IsRange() || frame_selection_->IsHidden()) {
     ClearSelection();
     return;
   }
@@ -377,7 +368,6 @@ void LayoutSelection::Commit() {
 
 void LayoutSelection::OnDocumentShutdown() {
   has_pending_selection_ = false;
-  force_hide_ = false;
   selection_start_ = nullptr;
   selection_end_ = nullptr;
   selection_start_pos_ = -1;

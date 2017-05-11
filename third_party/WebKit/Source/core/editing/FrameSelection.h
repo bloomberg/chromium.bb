@@ -32,7 +32,6 @@
 #include "core/dom/Range.h"
 #include "core/dom/SynchronousMutationObserver.h"
 #include "core/editing/EphemeralRange.h"
-#include "core/editing/LayoutSelection.h"
 #include "core/editing/VisiblePosition.h"
 #include "core/editing/VisibleSelection.h"
 #include "core/editing/iterators/TextIteratorBehavior.h"
@@ -131,6 +130,7 @@ class CORE_EXPORT FrameSelection final
       FrameSelection::SetSelectionOptions = kCloseTyping | kClearTypingStyle);
   void SelectAll();
   void Clear();
+  bool IsHidden() const;
 
   // TODO(tkent): These two functions were added to fix crbug.com/695211 without
   // changing focus behavior. Once we fix crbug.com/690272, we can remove these
@@ -203,9 +203,11 @@ class CORE_EXPORT FrameSelection final
   bool IsCaretBlinkingSuspended() const;
 
   // Focus
-  void SetFocused(bool);
-  bool IsFocused() const { return focused_; }
-  bool IsFocusedAndActive() const;
+  bool SelectionHasFocus() const;
+  // TODO(hugoh): Rename the following 3 methods to:
+  void SetFocused(bool);                       // SetFrameIsFocused(),
+  bool IsFocused() const { return focused_; }  // FrameIsFocused(),
+  bool IsFocusedAndActive() const;             // FrameIsFocusedAndActive().
   void PageActivationChanged();
 
   void SetUseSecureKeyboardEntryWhenActive(bool);
@@ -242,7 +244,7 @@ class CORE_EXPORT FrameSelection final
       RevealExtentOption = kDoNotRevealExtent);
   void SetSelectionFromNone();
 
-  void UpdateAppearance(LayoutSelection::PaintHint);
+  void UpdateAppearance();
   bool ShouldShowBlockCursor() const;
   void SetShouldShowBlockCursor(bool);
 
@@ -308,7 +310,6 @@ class CORE_EXPORT FrameSelection final
 
   const Member<FrameCaret> frame_caret_;
   bool use_secure_keyboard_entry_when_active_ = false;
-  bool text_control_focused_ = false;
 };
 
 }  // namespace blink

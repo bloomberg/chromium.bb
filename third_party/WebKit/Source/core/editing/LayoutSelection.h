@@ -32,14 +32,12 @@ class FrameSelection;
 
 class LayoutSelection final : public GarbageCollected<LayoutSelection> {
  public:
-  enum class PaintHint { kHide, kKeep, kPaint };
-
   static LayoutSelection* Create(FrameSelection& frame_selection) {
     return new LayoutSelection(frame_selection);
   }
 
   bool HasPendingSelection() const { return has_pending_selection_; }
-  void SetHasPendingSelection(PaintHint);
+  void SetHasPendingSelection() { has_pending_selection_ = true; }
   void Commit();
 
   IntRect SelectionBounds();
@@ -68,7 +66,6 @@ class LayoutSelection final : public GarbageCollected<LayoutSelection> {
 
   Member<FrameSelection> frame_selection_;
   bool has_pending_selection_ : 1;
-  bool force_hide_ : 1;
 
   // The current selection represented as 2 boundaries.
   // Selection boundaries are represented in LayoutView by a tuple
