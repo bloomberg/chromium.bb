@@ -14,17 +14,20 @@
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/test/mock_callback.h"
+#include "base/test/scoped_feature_list.h"
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/fake_profile_oauth2_token_service.h"
 #include "components/signin/core/browser/fake_signin_manager.h"
 #include "components/signin/core/browser/test_signin_client.h"
 #include "components/suggestions/blacklist_store.h"
+#include "components/suggestions/features.h"
 #include "components/suggestions/image_manager.h"
 #include "components/suggestions/proto/suggestions.pb.h"
 #include "components/suggestions/suggestions_store.h"
 #include "components/sync/driver/fake_sync_service.h"
 #include "components/sync/driver/sync_service.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
+#include "net/base/url_util.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_status_code.h"
 #include "net/url_request/test_url_fetcher_factory.h"
@@ -320,6 +323,29 @@ TEST_F(SuggestionsServiceTest, DoesNotFetchOnStartup) {
   // Wait for eventual (but unexpected) network requests.
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(suggestions_service()->has_pending_request_for_testing());
+}
+
+TEST_F(SuggestionsServiceTest, BuildUrlWithDefaultMinZeroParamForFewFeature) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(kUseSuggestionsEvenIfFewFeature);
+
+  EXPECT_CALL(*thumbnail_manager(), Initialize(_));
+  EXPECT_CALL(*blacklist_store(), FilterSuggestions(_));
+  EXPECT_CALL(*blacklist_store(), GetTimeUntilReadyForUpload(_))
+      .WillOnce(Return(false));
+
+  // Send the request. The data should be returned to the callback.
+  suggestions_service()->FetchSuggestionsData();
+
+  // Wait for the eventual network request.
+  base::RunLoop().RunUntilIdle();
+  ASSERT_TRUE(GetCurrentlyQueriedUrl().is_valid());
+  EXPECT_EQ(GetCurrentlyQueriedUrl().path(), kSuggestionsUrlPath);
+  std::string min_suggestions;
+  EXPECT_TRUE(net::GetValueForKeyInQuery(GetCurrentlyQueriedUrl(), "min",
+                                         &min_suggestions));
+  EXPECT_EQ(min_suggestions, "0");
+  RespondToFetchWithProfile(CreateSuggestionsProfile());
 }
 
 TEST_F(SuggestionsServiceTest, FetchSuggestionsDataSyncNotInitializedEnabled) {

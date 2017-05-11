@@ -10,6 +10,7 @@
 #include "base/feature_list.h"
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/sparse_histogram.h"
 #include "base/strings/string_number_conversions.h"
@@ -22,6 +23,7 @@
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/signin/core/browser/signin_manager_base.h"
 #include "components/suggestions/blacklist_store.h"
+#include "components/suggestions/features.h"
 #include "components/suggestions/image_manager.h"
 #include "components/suggestions/suggestions_store.h"
 #include "components/sync/driver/sync_service.h"
@@ -82,13 +84,18 @@ GURL GetGoogleBaseURL() {
 // Format strings for the various suggestions URLs. They all have two string
 // params: The Google base URL and the device type.
 // TODO(mathp): Put this in TemplateURL.
-const char kSuggestionsURLFormat[] = "%schromesuggestions?t=%s";
+const char kSuggestionsURLFormat[] = "%schromesuggestions?%s";
 const char kSuggestionsBlacklistURLPrefixFormat[] =
     "%schromesuggestions/blacklist?t=%s&url=";
 const char kSuggestionsBlacklistClearURLFormat[] =
     "%schromesuggestions/blacklist/clear?t=%s";
 
 const char kSuggestionsBlacklistURLParam[] = "url";
+const char kSuggestionsDeviceParam[] = "t=%s";
+const char kSuggestionsMinParam[] = "min=%i";
+
+const char kSuggestionsMinVariationName[] = "min_suggestions";
+const int kSuggestionsMinVariationDefault = 0;
 
 #if defined(OS_ANDROID) || defined(OS_IOS)
 const char kDeviceType[] = "2";
@@ -104,6 +111,12 @@ const char kFaviconURL[] =
 
 // The default expiry timeout is 168 hours.
 const int64_t kDefaultExpiryUsec = 168 * base::Time::kMicrosecondsPerHour;
+
+int GetMinimumSuggestionsCount() {
+  return base::GetFieldTrialParamByFeatureAsInt(
+      kUseSuggestionsEvenIfFewFeature, kSuggestionsMinVariationName,
+      kSuggestionsMinVariationDefault);
+}
 
 }  // namespace
 
@@ -256,8 +269,16 @@ void SuggestionsServiceImpl::RegisterProfilePrefs(
 
 // static
 GURL SuggestionsServiceImpl::BuildSuggestionsURL() {
+  std::string device = base::StringPrintf(kSuggestionsDeviceParam, kDeviceType);
+  std::string query = device;
+  if (base::FeatureList::IsEnabled(kUseSuggestionsEvenIfFewFeature)) {
+    std::string min_suggestions =
+        base::StringPrintf(kSuggestionsMinParam, GetMinimumSuggestionsCount());
+    query =
+        base::StringPrintf("%s&%s", device.c_str(), min_suggestions.c_str());
+  }
   return GURL(base::StringPrintf(
-      kSuggestionsURLFormat, GetGoogleBaseURL().spec().c_str(), kDeviceType));
+      kSuggestionsURLFormat, GetGoogleBaseURL().spec().c_str(), query.c_str()));
 }
 
 // static
