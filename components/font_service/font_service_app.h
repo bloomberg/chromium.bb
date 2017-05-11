@@ -33,9 +33,8 @@ class FontServiceApp : public service_manager::Service,
   // FontService:
   void MatchFamilyName(const std::string& family_name,
                        mojom::TypefaceStylePtr requested_style,
-                       const MatchFamilyNameCallback& callback) override;
-  void OpenStream(uint32_t id_number,
-                  const OpenStreamCallback& callback) override;
+                       MatchFamilyNameCallback callback) override;
+  void OpenStream(uint32_t id_number, OpenStreamCallback callback) override;
 
   void Create(const service_manager::BindSourceInfo& source_info,
               mojom::FontServiceRequest request);
