@@ -32,8 +32,10 @@ var createTestForContentType = function(mimeType, isSupported = true) {
           assert_equals(isSupported, result.supported, mimeType + 'supported?');
           t.done();
         })
-        .catch(() => {
-          assert_unreached('encodingInfo() ' + mimeType);
+        .catch(e => {
+          assert_unreached('encodingInfo() failed with ' + e +
+                           ' using mimeType ' +  mimeType);
+          t.done();
         });
   });
 };
@@ -49,12 +51,12 @@ generate_tests(createTestForContentType, [
   [ 'video/webm;codecs=avc1', 'video/webm;codecs=avc1' ],
   // 'video/webm' supports audio codec specification, see
   // http://www.webmproject.org/docs/container/
-  [ 'video/webm;codecs=vp8,opus', 'video/webm;codecs=vp8,opus' ],
-  [ 'video/WEBM;codecs=VP8,OPUS', 'video/WEBM;codecs=VP8,OPUS' ],
-  [ 'video/webm;codecs=vp9,opus', 'video/webm;codecs=vp9,opus' ],
-  [ 'video/webm;codecs=vp8,vp9,opus', 'video/webm;codecs=vp8,vp9,opus' ],
-  [ 'video/webm;codecs=h264,opus', 'video/webm;codecs=h264,opus' ],
-  [ 'video/webm;codecs=h264,vp9,opus', 'video/webm;codecs=h264,vp9,opus' ],
+  [ 'video/webm;codecs="vp8,opus"', 'video/webm;codecs="vp8,opus"' ],
+  [ 'video/WEBM;codecs="VP8,OPUS"', 'video/WEBM;codecs="VP8,OPUS"' ],
+  [ 'video/webm;codecs="vp9,opus"', 'video/webm;codecs="vp9,opus"' ],
+  [ 'video/webm;codecs="vp8,vp9,opus"', 'video/webm;codecs="vp8,vp9,opus"' ],
+  [ 'video/webm;codecs="h264,opus"', 'video/webm;codecs="h264,opus"' ],
+  [ 'video/webm;codecs="h264,vp9,opus"', 'video/webm;codecs="h264,vp9,opus"' ],
   // https://matroska.org/technical/specs/notes.html#MIME
   [ 'video/x-matroska;codecs=vorbis', 'video/x-matroska;codecs=opus' ],
   [ 'audio/webm', 'audio/webm' ],
