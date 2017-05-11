@@ -23,7 +23,6 @@
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
-#include "ui/views/layout/layout_constants.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/dialog_delegate.h"
@@ -138,11 +137,15 @@ ArcAppDialogView::ArcAppDialogView(Profile* profile,
   if (parent_)
     parent_window_tracker_ = NativeWindowTracker::Create(parent_);
 
+  ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
+
   SetLayoutManager(new views::BoxLayout(
-      views::BoxLayout::kHorizontal, views::kButtonHEdgeMarginNew,
-      ChromeLayoutProvider::Get()->GetDistanceMetric(
+      views::BoxLayout::kHorizontal,
+      provider->GetDistanceMetric(DISTANCE_DIALOG_BUTTON_MARGIN),
+      provider->GetDistanceMetric(
           DISTANCE_PANEL_CONTENT_MARGIN),
-      views::kRelatedControlHorizontalSpacing));
+      provider->GetDistanceMetric(
+          views::DISTANCE_RELATED_CONTROL_HORIZONTAL)));
 
   icon_view_ = new FixedBoundarySizeImageView();
   AddChildView(icon_view_);
