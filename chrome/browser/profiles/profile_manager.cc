@@ -1213,8 +1213,8 @@ void ProfileManager::DoFinalInitForServices(Profile* profile,
 
   bool extensions_enabled = !go_off_the_record;
 #if defined(OS_CHROMEOS)
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableLoginScreenApps) &&
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableLoginScreenApps) &&
       chromeos::ProfileHelper::IsSigninProfile(profile)) {
     extensions_enabled = true;
   }

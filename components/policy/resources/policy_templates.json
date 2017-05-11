@@ -8952,8 +8952,7 @@
         'type': 'array',
         'items': { 'type': 'string' },
       },
-      'supported_on': ['chrome_os:58-'],
-      'future': True,
+      'supported_on': ['chrome_os:60-'],
       'device_only': True,
       'features': {
         'dynamic_refresh': True,
@@ -8968,6 +8967,8 @@
       All permissions requested by the apps are granted
       implicitly, without user interaction, including any additional
       permissions requested by future versions of the app.
+
+      Note that, for security and privacy reasons, extensions are not allowed to be installed using this policy. Moreover, the devices on the Stable channel will only install the apps that belong to the whitelist bundled into <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>. Any items that don't conform to these conditions will be ignored.
 
       If an app that previously had been force-installed is removed from this list, it is automatically uninstalled by <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
 
