@@ -62,12 +62,12 @@ static_assert(sizeof(StyleRareInheritedData) <=
               "StyleRareInheritedData should stay small");
 
 StyleRareInheritedData::StyleRareInheritedData()
-    : list_style_image(ComputedStyle::InitialListStyleImage()),
-      text_stroke_width(ComputedStyle::InitialTextStrokeWidth()),
-      indent(ComputedStyle::InitialTextIndent()),
+    : list_style_image_(ComputedStyle::InitialListStyleImage()),
+      text_stroke_width_(ComputedStyle::InitialTextStrokeWidth()),
+      indent_(ComputedStyle::InitialTextIndent()),
       effective_zoom_(ComputedStyle::InitialZoom()),
-      widows(ComputedStyle::InitialWidows()),
-      orphans(ComputedStyle::InitialOrphans()),
+      widows_(ComputedStyle::InitialWidows()),
+      orphans_(ComputedStyle::InitialOrphans()),
       text_stroke_color_is_current_color_(true),
       text_fill_color_is_current_color_(true),
       text_emphasis_color_is_current_color_(true),
@@ -78,17 +78,17 @@ StyleRareInheritedData::StyleRareInheritedData()
       visited_link_text_emphasis_color_is_current_color_(true),
       visited_link_caret_color_is_current_color_(false),
       visited_link_caret_color_is_auto_(true),
-      text_security(ComputedStyle::InitialTextSecurity()),
-      user_modify(READ_ONLY),
-      word_break(ComputedStyle::InitialWordBreak()),
-      overflow_wrap(ComputedStyle::InitialOverflowWrap()),
-      line_break(kLineBreakAuto),
-      user_select(ComputedStyle::InitialUserSelect()),
-      speak(kSpeakNormal),
-      hyphens(kHyphensManual),
-      text_emphasis_fill(kTextEmphasisFillFilled),
-      text_emphasis_mark(kTextEmphasisMarkNone),
-      text_emphasis_position(kTextEmphasisPositionOver),
+      text_security_(ComputedStyle::InitialTextSecurity()),
+      user_modify_(READ_ONLY),
+      word_break_(ComputedStyle::InitialWordBreak()),
+      overflow_wrap_(ComputedStyle::InitialOverflowWrap()),
+      line_break_(kLineBreakAuto),
+      user_select_(ComputedStyle::InitialUserSelect()),
+      speak_(kSpeakNormal),
+      hyphens_(kHyphensManual),
+      text_emphasis_fill_(kTextEmphasisFillFilled),
+      text_emphasis_mark_(kTextEmphasisMarkNone),
+      text_emphasis_position_(kTextEmphasisPositionOver),
       text_align_last_(ComputedStyle::InitialTextAlignLast()),
       text_justify_(ComputedStyle::InitialTextJustify()),
       text_orientation_(kTextOrientationMixed),
@@ -102,19 +102,19 @@ StyleRareInheritedData::StyleRareInheritedData()
       subtree_will_change_contents_(false),
       self_or_ancestor_has_dir_auto_attribute_(false),
       respect_image_orientation_(false),
-      hyphenation_limit_before(-1),
-      hyphenation_limit_after(-1),
-      hyphenation_limit_lines(-1),
+      hyphenation_limit_before_(-1),
+      hyphenation_limit_after_(-1),
+      hyphenation_limit_lines_(-1),
       line_height_step_(0),
-      tap_highlight_color(ComputedStyle::InitialTapHighlightColor()),
+      tap_highlight_color_(ComputedStyle::InitialTapHighlightColor()),
       tab_size_(ComputedStyle::InitialTabSize()),
       text_size_adjust_(ComputedStyle::InitialTextSizeAdjust()) {}
 
 StyleRareInheritedData::StyleRareInheritedData(const StyleRareInheritedData& o)
     : RefCounted<StyleRareInheritedData>(),
-      list_style_image(o.list_style_image),
+      list_style_image_(o.list_style_image_),
       text_stroke_color_(o.text_stroke_color_),
-      text_stroke_width(o.text_stroke_width),
+      text_stroke_width_(o.text_stroke_width_),
       text_fill_color_(o.text_fill_color_),
       text_emphasis_color_(o.text_emphasis_color_),
       caret_color_(o.caret_color_),
@@ -122,13 +122,13 @@ StyleRareInheritedData::StyleRareInheritedData(const StyleRareInheritedData& o)
       visited_link_text_fill_color_(o.visited_link_text_fill_color_),
       visited_link_text_emphasis_color_(o.visited_link_text_emphasis_color_),
       visited_link_caret_color_(o.visited_link_caret_color_),
-      text_shadow(o.text_shadow),
-      highlight(o.highlight),
-      cursor_data(o.cursor_data),
-      indent(o.indent),
+      text_shadow_(o.text_shadow_),
+      highlight_(o.highlight_),
+      cursor_data_(o.cursor_data_),
+      indent_(o.indent_),
       effective_zoom_(o.effective_zoom_),
-      widows(o.widows),
-      orphans(o.orphans),
+      widows_(o.widows_),
+      orphans_(o.orphans_),
       text_stroke_color_is_current_color_(
           o.text_stroke_color_is_current_color_),
       text_fill_color_is_current_color_(o.text_fill_color_is_current_color_),
@@ -145,17 +145,17 @@ StyleRareInheritedData::StyleRareInheritedData(const StyleRareInheritedData& o)
       visited_link_caret_color_is_current_color_(
           o.visited_link_caret_color_is_current_color_),
       visited_link_caret_color_is_auto_(o.visited_link_caret_color_is_auto_),
-      text_security(o.text_security),
-      user_modify(o.user_modify),
-      word_break(o.word_break),
-      overflow_wrap(o.overflow_wrap),
-      line_break(o.line_break),
-      user_select(o.user_select),
-      speak(o.speak),
-      hyphens(o.hyphens),
-      text_emphasis_fill(o.text_emphasis_fill),
-      text_emphasis_mark(o.text_emphasis_mark),
-      text_emphasis_position(o.text_emphasis_position),
+      text_security_(o.text_security_),
+      user_modify_(o.user_modify_),
+      word_break_(o.word_break_),
+      overflow_wrap_(o.overflow_wrap_),
+      line_break_(o.line_break_),
+      user_select_(o.user_select_),
+      speak_(o.speak_),
+      hyphens_(o.hyphens_),
+      text_emphasis_fill_(o.text_emphasis_fill_),
+      text_emphasis_mark_(o.text_emphasis_mark_),
+      text_emphasis_position_(o.text_emphasis_position_),
       text_align_last_(o.text_align_last_),
       text_justify_(o.text_justify_),
       text_orientation_(o.text_orientation_),
@@ -170,23 +170,23 @@ StyleRareInheritedData::StyleRareInheritedData(const StyleRareInheritedData& o)
       self_or_ancestor_has_dir_auto_attribute_(
           o.self_or_ancestor_has_dir_auto_attribute_),
       respect_image_orientation_(o.respect_image_orientation_),
-      hyphenation_string(o.hyphenation_string),
-      hyphenation_limit_before(o.hyphenation_limit_before),
-      hyphenation_limit_after(o.hyphenation_limit_after),
-      hyphenation_limit_lines(o.hyphenation_limit_lines),
+      hyphenation_string_(o.hyphenation_string_),
+      hyphenation_limit_before_(o.hyphenation_limit_before_),
+      hyphenation_limit_after_(o.hyphenation_limit_after_),
+      hyphenation_limit_lines_(o.hyphenation_limit_lines_),
       line_height_step_(o.line_height_step_),
-      text_emphasis_custom_mark(o.text_emphasis_custom_mark),
-      tap_highlight_color(o.tap_highlight_color),
-      applied_text_decorations(o.applied_text_decorations),
+      text_emphasis_custom_mark_(o.text_emphasis_custom_mark_),
+      tap_highlight_color_(o.tap_highlight_color_),
+      applied_text_decorations_(o.applied_text_decorations_),
       tab_size_(o.tab_size_),
-      variables(o.variables),
+      variables_(o.variables_),
       text_size_adjust_(o.text_size_adjust_) {}
 
 StyleRareInheritedData::~StyleRareInheritedData() {}
 
 bool StyleRareInheritedData::operator==(const StyleRareInheritedData& o) const {
   return text_stroke_color_ == o.text_stroke_color_ &&
-         text_stroke_width == o.text_stroke_width &&
+         text_stroke_width_ == o.text_stroke_width_ &&
          text_fill_color_ == o.text_fill_color_ &&
          text_emphasis_color_ == o.text_emphasis_color_ &&
          caret_color_ == o.caret_color_ &&
@@ -195,11 +195,11 @@ bool StyleRareInheritedData::operator==(const StyleRareInheritedData& o) const {
          visited_link_text_emphasis_color_ ==
              o.visited_link_text_emphasis_color_ &&
          visited_link_caret_color_ == o.visited_link_caret_color_ &&
-         tap_highlight_color == o.tap_highlight_color &&
-         ShadowDataEquivalent(o) && highlight == o.highlight &&
-         DataEquivalent(cursor_data, o.cursor_data) && indent == o.indent &&
-         effective_zoom_ == o.effective_zoom_ && widows == o.widows &&
-         orphans == o.orphans &&
+         tap_highlight_color_ == o.tap_highlight_color_ &&
+         ShadowDataEquivalent(o) && highlight_ == o.highlight_ &&
+         DataEquivalent(cursor_data_, o.cursor_data_) && indent_ == o.indent_ &&
+         effective_zoom_ == o.effective_zoom_ && widows_ == o.widows_ &&
+         orphans_ == o.orphans_ &&
          text_stroke_color_is_current_color_ ==
              o.text_stroke_color_is_current_color_ &&
          text_fill_color_is_current_color_ ==
@@ -218,16 +218,16 @@ bool StyleRareInheritedData::operator==(const StyleRareInheritedData& o) const {
              o.visited_link_caret_color_is_current_color_ &&
          visited_link_caret_color_is_auto_ ==
              o.visited_link_caret_color_is_auto_ &&
-         text_security == o.text_security && user_modify == o.user_modify &&
-         word_break == o.word_break && overflow_wrap == o.overflow_wrap &&
-         line_break == o.line_break && user_select == o.user_select &&
-         speak == o.speak && hyphens == o.hyphens &&
-         hyphenation_limit_before == o.hyphenation_limit_before &&
-         hyphenation_limit_after == o.hyphenation_limit_after &&
-         hyphenation_limit_lines == o.hyphenation_limit_lines &&
-         text_emphasis_fill == o.text_emphasis_fill &&
-         text_emphasis_mark == o.text_emphasis_mark &&
-         text_emphasis_position == o.text_emphasis_position &&
+         text_security_ == o.text_security_ && user_modify_ == o.user_modify_ &&
+         word_break_ == o.word_break_ && overflow_wrap_ == o.overflow_wrap_ &&
+         line_break_ == o.line_break_ && user_select_ == o.user_select_ &&
+         speak_ == o.speak_ && hyphens_ == o.hyphens_ &&
+         hyphenation_limit_before_ == o.hyphenation_limit_before_ &&
+         hyphenation_limit_after_ == o.hyphenation_limit_after_ &&
+         hyphenation_limit_lines_ == o.hyphenation_limit_lines_ &&
+         text_emphasis_fill_ == o.text_emphasis_fill_ &&
+         text_emphasis_mark_ == o.text_emphasis_mark_ &&
+         text_emphasis_position_ == o.text_emphasis_position_ &&
          text_align_last_ == o.text_align_last_ &&
          text_justify_ == o.text_justify_ &&
          text_orientation_ == o.text_orientation_ &&
@@ -238,28 +238,29 @@ bool StyleRareInheritedData::operator==(const StyleRareInheritedData& o) const {
          self_or_ancestor_has_dir_auto_attribute_ ==
              o.self_or_ancestor_has_dir_auto_attribute_ &&
          respect_image_orientation_ == o.respect_image_orientation_ &&
-         hyphenation_string == o.hyphenation_string &&
+         hyphenation_string_ == o.hyphenation_string_ &&
          line_height_step_ == o.line_height_step_ &&
-         text_emphasis_custom_mark == o.text_emphasis_custom_mark &&
+         text_emphasis_custom_mark_ == o.text_emphasis_custom_mark_ &&
          QuotesDataEquivalent(o) && tab_size_ == o.tab_size_ &&
          image_rendering_ == o.image_rendering_ &&
          text_underline_position_ == o.text_underline_position_ &&
          text_decoration_skip_ == o.text_decoration_skip_ &&
          ruby_position_ == o.ruby_position_ &&
-         DataEquivalent(list_style_image, o.list_style_image) &&
-         DataEquivalent(applied_text_decorations, o.applied_text_decorations) &&
-         DataEquivalent(variables, o.variables) &&
+         DataEquivalent(list_style_image_, o.list_style_image_) &&
+         DataEquivalent(applied_text_decorations_,
+                        o.applied_text_decorations_) &&
+         DataEquivalent(variables_, o.variables_) &&
          text_size_adjust_ == o.text_size_adjust_;
 }
 
 bool StyleRareInheritedData::ShadowDataEquivalent(
     const StyleRareInheritedData& o) const {
-  return DataEquivalent(text_shadow, o.text_shadow);
+  return DataEquivalent(text_shadow_, o.text_shadow_);
 }
 
 bool StyleRareInheritedData::QuotesDataEquivalent(
     const StyleRareInheritedData& o) const {
-  return DataEquivalent(quotes, o.quotes);
+  return DataEquivalent(quotes_, o.quotes_);
 }
 
 }  // namespace blink
