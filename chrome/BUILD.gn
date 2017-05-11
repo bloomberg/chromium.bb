@@ -1639,6 +1639,12 @@ if (is_android) {
     ]
   }
 
+  java_cpp_enum("sad_tab_event_enum_javagen") {
+    sources = [
+      "browser/ui/sad_tab.cc",
+    ]
+  }
+
   source_set("chrome_android_core") {
     sources = [
       "app/android/chrome_android_initializer.cc",
