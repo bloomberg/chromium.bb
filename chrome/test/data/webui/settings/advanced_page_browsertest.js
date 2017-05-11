@@ -16,10 +16,10 @@ SettingsAdvancedPageBrowserTest.prototype = {
   __proto__: SettingsPageBrowserTest.prototype,
 };
 
-// Times out on debug builders and may time out on memory bots because
-// the Settings page can take several seconds to load in a Release build
-// and several times that in a Debug build. See https://crbug.com/558434.
-GEN('#if defined(MEMORY_SANITIZER) || !defined(NDEBUG)');
+// Times out on debug builders because the Settings page can take several
+// seconds to load in a Release build and several times that in a Debug build.
+// See https://crbug.com/558434.
+GEN('#if !defined(NDEBUG)');
 GEN('#define MAYBE_Load DISABLED_Load');
 GEN('#else');
 GEN('#define MAYBE_Load Load');

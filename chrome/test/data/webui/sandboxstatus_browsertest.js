@@ -25,9 +25,7 @@ SandboxStatusUITest.prototype = {
 //   sandbox. See:
 //     https://chromium.googlesource.com/chromium/src/+/master/docs/linux_suid_sandbox_development.md
 // - PLEASE DO NOT GLOBALLY DISABLE THIS TEST.
-// SUID sandbox is currently incompatible with AddressSanitizer,
-// see http://crbug.com/137653.
-GEN('#if defined(OS_LINUX) && !defined(ADDRESS_SANITIZER)');
+GEN('#if defined(OS_LINUX)');
 GEN('# define MAYBE_testSUIDorNamespaceSandboxEnabled \\');
 GEN('     testSUIDorNamespaceSandboxEnabled');
 GEN('#else');
@@ -66,7 +64,7 @@ TEST_F('SandboxStatusUITest',
 });
 
 // The seccomp-bpf sandbox is also not compatible with ASAN.
-GEN('#if !defined(OS_LINUX) || defined(ADDRESS_SANITIZER)');
+GEN('#if !defined(OS_LINUX)');
 GEN('# define MAYBE_testBPFSandboxEnabled \\');
 GEN('     DISABLED_testBPFSandboxEnabled');
 GEN('#else');
