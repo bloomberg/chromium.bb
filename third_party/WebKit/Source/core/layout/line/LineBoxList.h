@@ -57,8 +57,6 @@ class LineBoxList {
   InlineFlowBox* FirstLineBox() const { return first_line_box_; }
   InlineFlowBox* LastLineBox() const { return last_line_box_; }
 
-  void CheckConsistency() const;
-
   void AppendLineBox(InlineFlowBox*);
 
   void DeleteLineBoxTree();
@@ -99,10 +97,6 @@ class LineBoxList {
   InlineFlowBox* first_line_box_;
   InlineFlowBox* last_line_box_;
 };
-
-#if !DCHECK_IS_ON()
-inline void LineBoxList::CheckConsistency() const {}
-#endif
 
 }  // namespace blink
 

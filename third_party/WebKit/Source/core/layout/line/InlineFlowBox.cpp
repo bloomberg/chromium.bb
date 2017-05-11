@@ -95,7 +95,6 @@ void InlineFlowBox::AddToLine(InlineBox* child) {
   DCHECK(!child->Parent());
   DCHECK(!child->NextOnLine());
   DCHECK(!child->PrevOnLine());
-  CheckConsistency();
 
   child->SetParent(this);
   if (!first_child_) {
@@ -195,13 +194,9 @@ void InlineFlowBox::AddToLine(InlineBox* child) {
         !ToInlineFlowBox(child)->KnownToHaveNoOverflow())
       ClearKnownToHaveNoOverflow();
   }
-
-  CheckConsistency();
 }
 
 void InlineFlowBox::RemoveChild(InlineBox* child, MarkLineBoxes mark_dirty) {
-  CheckConsistency();
-
   if (mark_dirty == kMarkLineBoxesDirty && !IsDirty())
     DirtyLineBoxes();
 
@@ -217,8 +212,6 @@ void InlineFlowBox::RemoveChild(InlineBox* child, MarkLineBoxes mark_dirty) {
     child->PrevOnLine()->SetNextOnLine(child->NextOnLine());
 
   child->SetParent(nullptr);
-
-  CheckConsistency();
 }
 
 void InlineFlowBox::DeleteLine() {
@@ -1716,23 +1709,6 @@ void InlineFlowBox::ShowLineTreeAndMark(const InlineBox* marked_box1,
   for (const InlineBox* box = FirstChild(); box; box = box->NextOnLine())
     box->ShowLineTreeAndMark(marked_box1, marked_label1, marked_box2,
                              marked_label2, obj, depth + 1);
-}
-
-#endif
-
-#if DCHECK_IS_ON()
-void InlineFlowBox::CheckConsistency() const {
-#ifdef CHECK_CONSISTENCY
-  DCHECK(!m_hasBadChildList);
-  const InlineBox* prev = nullptr;
-  for (const InlineBox* child = m_firstChild; child;
-       child = child->nextOnLine()) {
-    DCHECK_EQ(child->parent(), this);
-    DCHECK_EQ(child->prevOnLine(), prev);
-    prev = child;
-  }
-  DCHECK_EQ(prev, m_lastChild);
-#endif
 }
 
 #endif

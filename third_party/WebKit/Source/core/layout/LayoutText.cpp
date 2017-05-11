@@ -249,8 +249,6 @@ void LayoutText::WillBeDestroyed() {
 }
 
 void LayoutText::ExtractTextBox(InlineTextBox* box) {
-  CheckConsistency();
-
   last_text_box_ = box->PrevTextBox();
   if (box == first_text_box_)
     first_text_box_ = nullptr;
@@ -259,13 +257,9 @@ void LayoutText::ExtractTextBox(InlineTextBox* box) {
   box->SetPreviousTextBox(nullptr);
   for (InlineTextBox* curr = box; curr; curr = curr->NextTextBox())
     curr->SetExtracted();
-
-  CheckConsistency();
 }
 
 void LayoutText::AttachTextBox(InlineTextBox* box) {
-  CheckConsistency();
-
   if (last_text_box_) {
     last_text_box_->SetNextTextBox(box);
     box->SetPreviousTextBox(last_text_box_);
@@ -278,13 +272,9 @@ void LayoutText::AttachTextBox(InlineTextBox* box) {
     last = curr;
   }
   last_text_box_ = last;
-
-  CheckConsistency();
 }
 
 void LayoutText::RemoveTextBox(InlineTextBox* box) {
-  CheckConsistency();
-
   if (box == first_text_box_)
     first_text_box_ = box->NextTextBox();
   if (box == last_text_box_)
@@ -293,8 +283,6 @@ void LayoutText::RemoveTextBox(InlineTextBox* box) {
     box->NextTextBox()->SetPreviousTextBox(box->PrevTextBox());
   if (box->PrevTextBox())
     box->PrevTextBox()->SetNextTextBox(box->NextTextBox());
-
-  CheckConsistency();
 }
 
 void LayoutText::DeleteTextBoxes() {
@@ -2026,23 +2014,6 @@ unsigned LayoutText::ResolvedTextLength() const {
     len += box->Len();
   return len;
 }
-
-#if DCHECK_IS_ON()
-
-void LayoutText::CheckConsistency() const {
-#ifdef CHECK_CONSISTENCY
-  const InlineTextBox* prev = nullptr;
-  for (const InlineTextBox* child = m_firstTextBox; child;
-       child = child->nextTextBox()) {
-    DCHECK(child->getLineLayoutItem().isEqual(this));
-    DCHECK_EQ(child->prevTextBox(), prev);
-    prev = child;
-  }
-  DCHECK_EQ(prev, m_lastTextBox);
-#endif
-}
-
-#endif
 
 void LayoutText::MomentarilyRevealLastTypedCharacter(
     unsigned last_typed_character_offset) {

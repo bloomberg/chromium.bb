@@ -97,14 +97,8 @@ class InlineFlowBox : public InlineBox {
   void SetNextLineBox(InlineFlowBox* n) { next_line_box_ = n; }
   void SetPreviousLineBox(InlineFlowBox* p) { prev_line_box_ = p; }
 
-  InlineBox* FirstChild() const {
-    CheckConsistency();
-    return first_child_;
-  }
-  InlineBox* LastChild() const {
-    CheckConsistency();
-    return last_child_;
-  }
+  InlineBox* FirstChild() const { return first_child_; }
+  InlineBox* LastChild() const { return last_child_; }
 
   bool IsLeaf() const final { return false; }
 
@@ -282,7 +276,6 @@ class InlineFlowBox : public InlineBox {
   bool HasTextDescendants() const { return has_text_descendants_; }
   void SetHasTextDescendants() { has_text_descendants_ = true; }
 
-  void CheckConsistency() const;
   void SetHasBadChildList();
 
   // Line visual and layout overflow are in the coordinate space of the block.
@@ -482,10 +475,6 @@ class InlineFlowBox : public InlineBox {
 };
 
 DEFINE_INLINE_BOX_TYPE_CASTS(InlineFlowBox);
-
-#if !DCHECK_IS_ON()
-inline void InlineFlowBox::CheckConsistency() const {}
-#endif
 
 inline void InlineFlowBox::SetHasBadChildList() {
 #if DCHECK_IS_ON()
