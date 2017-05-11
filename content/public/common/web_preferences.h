@@ -66,6 +66,14 @@ enum class ProgressBarCompletion {
   LAST = RESOURCES_BEFORE_DCL_AND_SAME_ORIGIN_IFRAMES
 };
 
+// Defines the autoplay policy to be used. Should match the class in
+// WebSettings.h.
+enum class AutoplayPolicy {
+  kNoUserGestureRequired,
+  kUserGestureRequired,
+  kUserGestureRequiredForCrossOrigin,
+};
+
 // The ISO 15924 script code for undetermined script aka Common. It's the
 // default used on WebKit's side to get/set a font setting when no script is
 // specified.
@@ -223,7 +231,6 @@ struct CONTENT_EXPORT WebPreferences {
   bool force_enable_zoom;
   bool fullscreen_supported;
   bool double_tap_to_zoom_enabled;
-  bool user_gesture_required_for_media_playback;
   std::string media_playback_gesture_whitelist_scope;
   GURL default_video_poster_url;
   bool support_deprecated_target_density_dpi;
@@ -254,7 +261,6 @@ struct CONTENT_EXPORT WebPreferences {
   bool video_fullscreen_detection_enabled;
   bool embedded_media_experience_enabled;
 #else  // defined(OS_ANDROID)
-  bool cross_origin_media_playback_requires_user_gesture;
 #endif  // defined(OS_ANDROID)
 
   // Default (used if the page or UA doesn't override these) values for page
@@ -288,6 +294,9 @@ struct CONTENT_EXPORT WebPreferences {
   // https://crbug.com/699943 for details.
   // TODO(changwan): remove this once we no longer support Android N.
   bool do_not_update_selection_on_mutating_selection_range;
+
+  // Defines the current autoplay policy.
+  AutoplayPolicy autoplay_policy;
 
   // We try to keep the default values the same as the default values in
   // chrome, except for the cases where it would require lots of extra work for

@@ -3082,7 +3082,7 @@ const char kAutoplayPolicyNoUserGestureRequired[] =
 
 const char kAutoplayPolicyUserGestureRequired[] = "User gesture is required.";
 
-const char kAutoplayPolicyCrossOriginUserGestureRequired[] =
+const char kAutoplayPolicyUserGestureRequiredForCrossOrigin[] =
     "User gesture is required for cross-origin iframes.";
 
 const char kOmniboxDisplayTitleForCurrentUrlName[] =

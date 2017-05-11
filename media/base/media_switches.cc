@@ -2,8 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "build/build_config.h"
 #include "media/base/media_switches.h"
+#include "base/command_line.h"
+#include "build/build_config.h"
 #include "ppapi/features/features.h"
 
 namespace switches {
@@ -146,16 +147,16 @@ const char kIgnoreAutoplayRestrictionsForTests[] =
 
 namespace autoplay {
 
-// Autoplay policy to require a user gesture in ordor to play for cross origin
-// iframes.
-const char kCrossOriginUserGestureRequiredPolicy[] =
-    "cross-origin-user-gesture-required";
-
 // Autoplay policy that does not require any user gesture.
 const char kNoUserGestureRequiredPolicy[] = "no-user-gesture-required";
 
 // Autoplay policy to require a user gesture in order to play.
 const char kUserGestureRequiredPolicy[] = "user-gesture-required";
+
+// Autoplay policy to require a user gesture in ordor to play for cross origin
+// iframes.
+const char kUserGestureRequiredForCrossOriginPolicy[] =
+    "user-gesture-required-for-cross-origin";
 
 }  // namespace autoplay
 
@@ -254,5 +255,22 @@ const base::Feature kD3D11VideoDecoding{"D3D11VideoDecoding",
 const base::Feature kMediaFoundationH264Encoding{
     "MediaFoundationH264Encoding", base::FEATURE_ENABLED_BY_DEFAULT};
 #endif  // defined(OS_WIN)
+
+std::string GetEffectiveAutoplayPolicy(const base::CommandLine& command_line) {
+  // |kIgnoreAutoplayRestrictionsForTests| overrides all other settings.
+  if (command_line.HasSwitch(switches::kIgnoreAutoplayRestrictionsForTests))
+    return switches::autoplay::kNoUserGestureRequiredPolicy;
+
+  // Return the autoplay policy set in teh command line, if any.
+  if (command_line.HasSwitch(switches::kAutoplayPolicy))
+    return command_line.GetSwitchValueASCII(switches::kAutoplayPolicy);
+
+  // The default value is platform dependant.
+#if defined(OS_ANDROID)
+  return switches::autoplay::kUserGestureRequiredPolicy;
+#else
+  return switches::autoplay::kNoUserGestureRequiredPolicy;
+#endif
+}
 
 }  // namespace media

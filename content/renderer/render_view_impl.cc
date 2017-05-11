@@ -997,8 +997,6 @@ void RenderView::ApplyWebPreferences(const WebPreferences& prefs,
   web_view->SetIgnoreViewportTagScaleLimits(prefs.force_enable_zoom);
   settings->SetAutoZoomFocusedNodeToLegibleScale(true);
   settings->SetDoubleTapToZoomEnabled(prefs.double_tap_to_zoom_enabled);
-  settings->SetMediaPlaybackRequiresUserGesture(
-      prefs.user_gesture_required_for_media_playback);
   settings->SetMediaPlaybackGestureWhitelistScope(
       blink::WebString::FromUTF8(prefs.media_playback_gesture_whitelist_scope));
   settings->SetDefaultVideoPosterURL(
@@ -1050,10 +1048,23 @@ void RenderView::ApplyWebPreferences(const WebPreferences& prefs,
       prefs.embedded_media_experience_enabled);
   settings->SetDoNotUpdateSelectionOnMutatingSelectionRange(
       prefs.do_not_update_selection_on_mutating_selection_range);
-#else   // defined(OS_ANDROID)
-  settings->SetCrossOriginMediaPlaybackRequiresUserGesture(
-      prefs.cross_origin_media_playback_requires_user_gesture);
 #endif  // defined(OS_ANDROID)
+
+  // TODO(mlamouri): use an AutoplayPolicy in WebSettings.
+  switch (prefs.autoplay_policy) {
+    case AutoplayPolicy::kNoUserGestureRequired:
+      settings->SetMediaPlaybackRequiresUserGesture(false);
+      settings->SetCrossOriginMediaPlaybackRequiresUserGesture(false);
+      break;
+    case AutoplayPolicy::kUserGestureRequired:
+      settings->SetMediaPlaybackRequiresUserGesture(true);
+      settings->SetCrossOriginMediaPlaybackRequiresUserGesture(false);
+      break;
+    case AutoplayPolicy::kUserGestureRequiredForCrossOrigin:
+      settings->SetMediaPlaybackRequiresUserGesture(false);
+      settings->SetCrossOriginMediaPlaybackRequiresUserGesture(true);
+      break;
+  }
 
   settings->SetViewportEnabled(prefs.viewport_enabled);
   settings->SetViewportMetaEnabled(prefs.viewport_meta_enabled);
