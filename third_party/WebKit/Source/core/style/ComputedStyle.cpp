@@ -887,7 +887,8 @@ bool ComputedStyle::DiffNeedsPaintInvalidationObject(
       PrintColorAdjust() != other.PrintColorAdjust() ||
       InsideLink() != other.InsideLink() ||
       !Border().VisuallyEqual(other.Border()) || !RadiiEqual(other) ||
-      !BorderSizeEquals(other) || *background_data_ != *other.background_data_)
+      !BorderColorVisuallyEquals(other) || !BorderSizeEquals(other) ||
+      *background_data_ != *other.background_data_)
     return true;
 
   if (rare_inherited_data_.Get() != other.rare_inherited_data_.Get()) {

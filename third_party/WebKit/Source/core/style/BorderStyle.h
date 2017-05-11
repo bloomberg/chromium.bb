@@ -22,8 +22,8 @@
  *
  */
 
-#ifndef BorderColorAndStyle_h
-#define BorderColorAndStyle_h
+#ifndef BorderStyle_h
+#define BorderStyle_h
 
 #include "core/css/StyleColor.h"
 #include "core/style/ComputedStyleConstants.h"
@@ -32,31 +32,20 @@
 
 namespace blink {
 
-class BorderColorAndStyle {
+class BorderStyle {
   DISALLOW_NEW();
   friend class ComputedStyle;
 
  public:
-  BorderColorAndStyle()
-      : color_(0),
-        color_is_current_color_(true),
-        style_(kBorderStyleNone),
-        is_auto_(kOutlineIsAutoOff) {}
+  BorderStyle() : style_(kBorderStyleNone), is_auto_(kOutlineIsAutoOff) {}
 
   bool NonZero() const { return (style_ != kBorderStyleNone); }
 
-  bool IsTransparent() const {
-    return !color_is_current_color_ && !color_.Alpha();
-  }
-
-  bool operator==(const BorderColorAndStyle& o) const {
-    return style_ == o.style_ && color_ == o.color_ &&
-           color_is_current_color_ == o.color_is_current_color_;
-  }
+  bool operator==(const BorderStyle& o) const { return style_ == o.style_; }
 
   // The default width is 3px, but if the style is none we compute a value of 0
   // (in ComputedStyle itself)
-  bool VisuallyEqual(const BorderColorAndStyle& o) const {
+  bool VisuallyEqual(const BorderStyle& o) const {
     if (style_ == kBorderStyleNone && o.style_ == kBorderStyleNone)
       return true;
     if (style_ == kBorderStyleHidden && o.style_ == kBorderStyleHidden)
@@ -64,17 +53,7 @@ class BorderColorAndStyle {
     return *this == o;
   }
 
-  bool operator!=(const BorderColorAndStyle& o) const { return !(*this == o); }
-
-  void SetColor(const StyleColor& color) {
-    color_ = color.Resolve(Color());
-    color_is_current_color_ = color.IsCurrentColor();
-  }
-
-  StyleColor GetColor() const {
-    return color_is_current_color_ ? StyleColor::CurrentColor()
-                                   : StyleColor(color_);
-  }
+  bool operator!=(const BorderStyle& o) const { return !(*this == o); }
 
   EBorderStyle Style() const { return static_cast<EBorderStyle>(style_); }
   void SetStyle(EBorderStyle style) { style_ = style; }
@@ -82,15 +61,7 @@ class BorderColorAndStyle {
   OutlineIsAuto IsAuto() const { return static_cast<OutlineIsAuto>(is_auto_); }
   void SetIsAuto(OutlineIsAuto is_auto) { is_auto_ = is_auto; }
 
-  bool ColorIsCurrentColor() const { return color_is_current_color_; }
-  void SetColorIsCurrentColor(bool color_is_current_color) {
-    color_is_current_color_ = static_cast<unsigned>(color_is_current_color);
-  }
-
  protected:
-  Color color_;
-  unsigned color_is_current_color_ : 1;
-
   unsigned style_ : 4;  // EBorderStyle
 
   // This is only used by OutlineValue but moved here to keep the bits packed.
@@ -99,4 +70,4 @@ class BorderColorAndStyle {
 
 }  // namespace blink
 
-#endif  // BorderColorAndStyle_h
+#endif  // BorderStyle_h
