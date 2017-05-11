@@ -136,6 +136,10 @@ extern const base::Feature kNativeNotifications;
 
 extern const base::Feature kOfflinePageDownloadSuggestionsFeature;
 
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
+extern const base::Feature kOneGoogleBarOnLocalNtp;
+#endif
+
 extern const base::Feature kPermissionsBlacklist;
 
 #if defined(OS_WIN)
@@ -177,6 +181,8 @@ extern const base::Feature kSyzyasanDeferredFree;
 #endif
 
 extern const base::Feature kTabsInCbd;
+
+extern const base::Feature kUseGoogleLocalNtp;
 
 extern const base::Feature kUseGroupedPermissionInfobars;
 

@@ -3153,4 +3153,18 @@ const char kEnableD3DVsyncDescription[] =
 
 #endif  // defined(OS_WIN)
 
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
+
+const char kUseGoogleLocalNtpName[] = "Enable using the Google local NTP";
+const char kUseGoogleLocalNtpDescription[] =
+    "Use the local New Tab page if Google is the default search engine.";
+
+const char kOneGoogleBarOnLocalNtpName[] =
+    "Enable the OneGoogleBar on the local NTP";
+const char kOneGoogleBarOnLocalNtpDescription[] =
+    "Show a OneGoogleBar on the local New Tab page if Google is the default "
+    "search engine.";
+
+#endif  // !defined(OS_ANDROID) && !defined(OS_IOS)
+
 }  // namespace flag_descriptions

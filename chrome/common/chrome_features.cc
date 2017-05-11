@@ -249,6 +249,12 @@ const base::Feature kNativeNotifications{"NativeNotifications",
 const base::Feature kOfflinePageDownloadSuggestionsFeature{
     "NTPOfflinePageDownloadSuggestions", base::FEATURE_ENABLED_BY_DEFAULT};
 
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
+// Enables or disabled the OneGoogleBar on the local NTP.
+const base::Feature kOneGoogleBarOnLocalNtp{"OneGoogleBarOnLocalNtp",
+                                            base::FEATURE_DISABLED_BY_DEFAULT};
+#endif
+
 // Enables Permissions Blacklisting via Safe Browsing.
 const base::Feature kPermissionsBlacklist{
     "PermissionsBlacklist", base::FEATURE_DISABLED_BY_DEFAULT};
@@ -322,6 +328,10 @@ const base::Feature kSiteDetails{"SiteDetails",
 const base::Feature kSyzyasanDeferredFree{"SyzyasanDeferredFree",
                                           base::FEATURE_ENABLED_BY_DEFAULT};
 #endif
+
+// Enables using the local NTP if Google is the default search engine.
+const base::Feature kUseGoogleLocalNtp{"UseGoogleLocalNtp",
+                                       base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Experiment to use grouped permission infobars which could show and handle
 // multiple permission requests.
