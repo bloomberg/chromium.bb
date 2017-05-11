@@ -48,7 +48,7 @@ class CreditCardEditorViewController : public EditorViewController {
 
   // EditorViewController:
   std::unique_ptr<views::View> CreateHeaderView() override;
-  std::unique_ptr<views::View> CreateCustomFieldView(
+  std::unique_ptr<views::View> CreateExtraViewForField(
       autofill::ServerFieldType type) override;
   std::vector<EditorField> GetFieldDefinitions() override;
   base::string16 GetInitialValueForType(

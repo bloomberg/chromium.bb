@@ -41,6 +41,7 @@
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/layout/box_layout.h"
+#include "ui/views/layout/fill_layout.h"
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/view.h"
 
@@ -118,9 +119,12 @@ CreditCardEditorViewController::CreateHeaderView() {
 
   // 9dp is required between the first row (label) and second row (icons).
   constexpr int kRowVerticalSpacing = 9;
+  // 6dp is added to the bottom padding, for a total of 12 between the icons and
+  // the first input field.
+  constexpr int kRowBottomPadding = 6;
   views::BoxLayout* layout = new views::BoxLayout(
       views::BoxLayout::kVertical, payments::kPaymentRequestRowHorizontalInsets,
-      0, kRowVerticalSpacing);
+      kRowBottomPadding, kRowVerticalSpacing);
   layout->set_main_axis_alignment(views::BoxLayout::MAIN_AXIS_ALIGNMENT_START);
   layout->set_cross_axis_alignment(
       views::BoxLayout::CROSS_AXIS_ALIGNMENT_START);
@@ -160,66 +164,14 @@ CreditCardEditorViewController::CreateHeaderView() {
   return view;
 }
 
-// Creates the "Billing Address" custom field view.
-//           +------------------------------------+
-// Label*    | | Combobox     | | Add button |    |
-//           +------------------------------------+
 std::unique_ptr<views::View>
-CreditCardEditorViewController::CreateCustomFieldView(
+CreditCardEditorViewController::CreateExtraViewForField(
     autofill::ServerFieldType type) {
   if (type != kBillingAddressType)
-    return std::unique_ptr<views::View>();
-  std::unique_ptr<views::View> view = base::MakeUnique<views::View>();
+    return nullptr;
 
-  std::unique_ptr<views::GridLayout> layout =
-      base::MakeUnique<views::GridLayout>(view.get());
-
-  // Combobox column.
-  views::ColumnSet* columns = layout->AddColumnSet(0);
-  columns->AddColumn(views::GridLayout::FILL, views::GridLayout::CENTER, 0,
-                     views::GridLayout::FIXED, kMaximumLabelWidth, 0);
-
-  // This is the horizontal padding between the combobox and the add button.
-  constexpr int kComboboxAddButtonHorizontalPadding = 8;
-  columns->AddPaddingColumn(0, kComboboxAddButtonHorizontalPadding);
-
-  columns->AddColumn(views::GridLayout::LEADING, views::GridLayout::CENTER, 0,
-                     views::GridLayout::USE_PREF, 0, 0);
-
-  layout->StartRow(0, 0);
-
-  EditorField billing_address_field(
-      kBillingAddressType,
-      l10n_util::GetStringUTF16(IDS_AUTOFILL_FIELD_LABEL_BILLING_ADDRESS),
-      EditorField::LengthHint::HINT_SHORT, /*required=*/true,
-      EditorField::ControlType::COMBOBOX);
-
-  // The combobox filled with potential billing addresses.
-  std::unique_ptr<autofill::AddressComboboxModel> address_combobox_model =
-      base::MakeUnique<autofill::AddressComboboxModel>(
-          *state()->GetPersonalDataManager(), state()->GetApplicationLocale());
-  int selected_index = -1;
-  if (credit_card_to_edit_ &&
-      !credit_card_to_edit_->billing_address_id().empty()) {
-    selected_index = address_combobox_model->GetIndexOfIdentifier(
-        credit_card_to_edit_->billing_address_id());
-  }
-  // This takes care of rare cases where the the billing address set on the
-  // current card isn't valid anymore.
-  if (selected_index == -1)
-    selected_index = address_combobox_model->GetDefaultIndex();
-
-  ValidatingCombobox* combobox =
-      new ValidatingCombobox(std::move(address_combobox_model),
-                             CreateValidationDelegate(billing_address_field));
-  combobox->SetSelectedIndex(selected_index);
-
-  // Using autofill field type as a view ID (for testing).
-  combobox->set_id(static_cast<int>(billing_address_field.type));
-  combobox->set_listener(this);
-
-  // |combobox| will now be owned by |row|.
-  layout->AddView(combobox);
+  std::unique_ptr<views::View> button_view = base::MakeUnique<views::View>();
+  button_view->SetLayoutManager(new views::FillLayout);
 
   // The button to add new billing addresses.
   std::unique_ptr<views::Button> add_button(
@@ -227,21 +179,18 @@ CreditCardEditorViewController::CreateCustomFieldView(
   add_button->set_id(
       static_cast<int>(DialogViewID::ADD_BILLING_ADDRESS_BUTTON));
   add_button->set_tag(add_billing_address_button_tag_);
-
-  // |add_button| will now be owned by |row|.
-  layout->AddView(add_button.release());
-  view->SetLayoutManager(layout.release());
-  return view;
+  button_view->AddChildView(add_button.release());
+  return button_view;
 }
 
 std::vector<EditorField> CreditCardEditorViewController::GetFieldDefinitions() {
   return std::vector<EditorField>{
       {autofill::CREDIT_CARD_NUMBER,
        l10n_util::GetStringUTF16(IDS_AUTOFILL_FIELD_LABEL_CREDIT_CARD_NUMBER),
-       EditorField::LengthHint::HINT_LONG, /* required= */ true},
+       EditorField::LengthHint::HINT_SHORT, /* required= */ true},
       {autofill::CREDIT_CARD_NAME_FULL,
        l10n_util::GetStringUTF16(IDS_AUTOFILL_FIELD_LABEL_NAME_ON_CARD),
-       EditorField::LengthHint::HINT_LONG, /* required= */ true},
+       EditorField::LengthHint::HINT_SHORT, /* required= */ true},
       {autofill::CREDIT_CARD_EXP_MONTH,
        l10n_util::GetStringUTF16(IDS_AUTOFILL_FIELD_LABEL_EXPIRATION_MONTH),
        EditorField::LengthHint::HINT_SHORT, /* required= */ true,
@@ -252,13 +201,13 @@ std::vector<EditorField> CreditCardEditorViewController::GetFieldDefinitions() {
        EditorField::ControlType::COMBOBOX},
       {kBillingAddressType,
        l10n_util::GetStringUTF16(IDS_AUTOFILL_FIELD_LABEL_BILLING_ADDRESS),
-       EditorField::LengthHint::HINT_LONG, /* required= */ true,
-       EditorField::ControlType::CUSTOMFIELD}};
+       EditorField::LengthHint::HINT_SHORT, /* required= */ true,
+       EditorField::ControlType::COMBOBOX}};
 }
 
 base::string16 CreditCardEditorViewController::GetInitialValueForType(
     autofill::ServerFieldType type) {
-  if (!credit_card_to_edit_)
+  if (!credit_card_to_edit_ || type == kBillingAddressType)
     return base::string16();
 
   return credit_card_to_edit_->GetInfo(autofill::AutofillType(type),
@@ -283,24 +232,25 @@ bool CreditCardEditorViewController::ValidateModelAndSave() {
   }
   for (const auto& field : comboboxes()) {
     // ValidatingCombobox* is the key, EditorField is the value.
-    DCHECK_EQ(autofill::CREDIT_CARD,
-              autofill::AutofillType(field.second.type).group());
     ValidatingCombobox* combobox = field.first;
     if (combobox->invalid())
       return false;
 
-    credit_card.SetInfo(autofill::AutofillType(field.second.type),
-                        combobox->GetTextForRow(combobox->selected_index()),
-                        locale);
+    if (field.second.type == kBillingAddressType) {
+      views::Combobox* address_combobox = static_cast<views::Combobox*>(
+          dialog()->GetViewByID(kBillingAddressType));
+      autofill::AddressComboboxModel* model =
+          static_cast<autofill::AddressComboboxModel*>(
+              address_combobox->model());
+
+      credit_card.set_billing_address_id(
+          model->GetItemIdentifierAt(address_combobox->selected_index()));
+    } else {
+      credit_card.SetInfo(autofill::AutofillType(field.second.type),
+                          combobox->GetTextForRow(combobox->selected_index()),
+                          locale);
+    }
   }
-
-  views::Combobox* address_combobox =
-      static_cast<views::Combobox*>(dialog()->GetViewByID(kBillingAddressType));
-  autofill::AddressComboboxModel* model =
-      static_cast<autofill::AddressComboboxModel*>(address_combobox->model());
-
-  credit_card.set_billing_address_id(
-      model->GetItemIdentifierAt(address_combobox->selected_index()));
 
   // TODO(crbug.com/711365): Display global error message.
   if (autofill::GetCompletionStatusForCard(
@@ -327,6 +277,10 @@ bool CreditCardEditorViewController::ValidateModelAndSave() {
           locale);
     }
     for (const auto& field : comboboxes()) {
+      // The billing address is transfered above.
+      if (field.second.type == kBillingAddressType)
+        continue;
+
       credit_card_to_edit_->SetInfo(
           autofill::AutofillType(field.second.type),
           credit_card.GetInfo(autofill::AutofillType(field.second.type),
@@ -366,6 +320,14 @@ CreditCardEditorViewController::GetComboboxModelForType(
     case autofill::CREDIT_CARD_EXP_4_DIGIT_YEAR:
       return base::MakeUnique<ui::SimpleComboboxModel>(
           GetExpirationYearItems());
+    case kBillingAddressType:
+      // The combobox filled with potential billing addresses. It's fine to pass
+      // empty string as the default selected guid if there are no cards being
+      // edited.
+      return base::MakeUnique<autofill::AddressComboboxModel>(
+          *state()->GetPersonalDataManager(), state()->GetApplicationLocale(),
+          credit_card_to_edit_ ? credit_card_to_edit_->billing_address_id()
+                               : "");
     default:
       NOTREACHED();
       break;

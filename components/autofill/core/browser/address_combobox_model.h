@@ -25,15 +25,19 @@ class PersonalDataManager;
 class AddressComboboxModel : public ui::ComboboxModel {
  public:
   // Enumerate the profiles from |personal_data_manager| to expose them in a
-  // combobox using |app_locale| for proper format.
+  // combobox using |app_locale| for proper format. |default_selected_guid| is
+  // an optional argument to specify which address should be selected by
+  // default.
   AddressComboboxModel(const PersonalDataManager& personal_data_manager,
-                       const std::string& app_locale);
+                       const std::string& app_locale,
+                       const std::string& default_selected_guid);
   ~AddressComboboxModel() override;
 
   // ui::ComboboxModel implementation:
   int GetItemCount() const override;
   base::string16 GetItemAt(int index) override;
   bool IsItemSeparatorAt(int index) override;
+  int GetDefaultIndex() const override;
   void AddObserver(ui::ComboboxModelObserver* observer) override;
   void RemoveObserver(ui::ComboboxModelObserver* observer) override;
 
@@ -47,7 +51,7 @@ class AddressComboboxModel : public ui::ComboboxModel {
 
   // Returns the combobox index of the item with the given id or -1 if it's not
   // found.
-  int GetIndexOfIdentifier(const std::string& identifier);
+  int GetIndexOfIdentifier(const std::string& identifier) const;
 
  private:
   // Update |addresses_| based on |profiles_cache_| and notify observers.
@@ -63,6 +67,9 @@ class AddressComboboxModel : public ui::ComboboxModel {
 
   // Application locale, also needed when a new profile is added.
   std::string app_locale_;
+
+  // If non empty, the guid of the address that should be selected by default.
+  std::string default_selected_guid_;
 
   // To be called when the data for the given country code was loaded.
   base::ObserverList<ui::ComboboxModelObserver> observers_;

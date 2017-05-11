@@ -18,7 +18,7 @@ const char kAppLocale[] = "fr-CA";
 TEST(AddressComboboxModelTest, Empty) {
   TestPersonalDataManager test_personal_data_manager;
 
-  AddressComboboxModel model(test_personal_data_manager, kAppLocale);
+  AddressComboboxModel model(test_personal_data_manager, kAppLocale, "");
   EXPECT_EQ(1, model.GetItemCount());
   EXPECT_FALSE(model.IsItemSeparatorAt(0));
   EXPECT_TRUE(model.GetItemIdentifierAt(0).empty());
@@ -30,7 +30,8 @@ TEST(AddressComboboxModelTest, OneAddress) {
   AutofillProfile profile1(test::GetFullProfile());
   test_personal_data_manager.AddTestingProfile(&profile1);
 
-  AddressComboboxModel model(test_personal_data_manager, kAppLocale);
+  AddressComboboxModel model(test_personal_data_manager, kAppLocale,
+                             profile1.guid());
   EXPECT_EQ(3, model.GetItemCount());
   EXPECT_FALSE(model.IsItemSeparatorAt(0));
   EXPECT_TRUE(model.IsItemSeparatorAt(1));
@@ -39,6 +40,7 @@ TEST(AddressComboboxModelTest, OneAddress) {
   EXPECT_EQ(-1, model.GetIndexOfIdentifier("Anything"));
   EXPECT_EQ(profile1.guid(), model.GetItemIdentifierAt(2));
   EXPECT_EQ(2, model.GetIndexOfIdentifier(profile1.guid()));
+  EXPECT_EQ(2, model.GetDefaultIndex());
 }
 
 TEST(AddressComboboxModelTest, TwoAddresses) {
@@ -51,7 +53,8 @@ TEST(AddressComboboxModelTest, TwoAddresses) {
   test_personal_data_manager.AddTestingProfile(&profile1);
   test_personal_data_manager.AddTestingProfile(&profile2);
 
-  AddressComboboxModel model(test_personal_data_manager, kAppLocale);
+  AddressComboboxModel model(test_personal_data_manager, kAppLocale,
+                             profile2.guid());
   EXPECT_EQ(4, model.GetItemCount());
   EXPECT_FALSE(model.IsItemSeparatorAt(0));
   EXPECT_TRUE(model.IsItemSeparatorAt(1));
@@ -62,6 +65,7 @@ TEST(AddressComboboxModelTest, TwoAddresses) {
   EXPECT_EQ(profile2.guid(), model.GetItemIdentifierAt(3));
   EXPECT_EQ(2, model.GetIndexOfIdentifier(profile1.guid()));
   EXPECT_EQ(3, model.GetIndexOfIdentifier(profile2.guid()));
+  EXPECT_EQ(3, model.GetDefaultIndex());
 }
 
 TEST(AddressComboboxModelTest, AddAnAddress) {
@@ -69,7 +73,7 @@ TEST(AddressComboboxModelTest, AddAnAddress) {
   AutofillProfile profile1(test::GetFullProfile());
   test_personal_data_manager.AddTestingProfile(&profile1);
 
-  AddressComboboxModel model(test_personal_data_manager, kAppLocale);
+  AddressComboboxModel model(test_personal_data_manager, kAppLocale, "");
   EXPECT_EQ(3, model.GetItemCount());
   EXPECT_EQ(profile1.guid(), model.GetItemIdentifierAt(2));
   EXPECT_EQ(2, model.GetIndexOfIdentifier(profile1.guid()));

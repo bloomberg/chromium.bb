@@ -107,13 +107,16 @@ class EditorViewController : public PaymentRequestSheetController,
   const TextFieldsMap& text_fields() const { return text_fields_; }
 
  protected:
-  // A very long label will wrap. Value picked so that left + right label
-  // padding bring the label to half-way in the dialog (~225).
-  static constexpr int kMaximumLabelWidth = 192;
-
+  // Create a header view to be inserted before all fields.
   virtual std::unique_ptr<views::View> CreateHeaderView();
+  // Create a custom view for the specified |type|.
   virtual std::unique_ptr<views::View> CreateCustomFieldView(
       autofill::ServerFieldType type);
+  // Create an extra view to go to the right of the field with |type|, which
+  // can either be a textfield, combobox, or custom view.
+  virtual std::unique_ptr<views::View> CreateExtraViewForField(
+      autofill::ServerFieldType type);
+
   // Returns the field definitions used to build the UI.
   virtual std::vector<EditorField> GetFieldDefinitions() = 0;
   virtual base::string16 GetInitialValueForType(
@@ -159,6 +162,10 @@ class EditorViewController : public PaymentRequestSheetController,
   // about the length of the input field. A placeholder error label is also
   // added (see implementation).
   void CreateInputField(views::GridLayout* layout, const EditorField& field);
+
+  // Returns the widest column width of across all extra views of a certain
+  // |size| type.
+  int ComputeWidestExtraViewWidth(EditorField::LengthHint size);
 
   // Used to remember the association between the input field UI element and the
   // original field definition. The ValidatingTextfield* and ValidatingCombobox*

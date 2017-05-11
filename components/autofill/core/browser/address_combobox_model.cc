@@ -23,8 +23,9 @@ int kNbHeaderEntries = 2;
 
 AddressComboboxModel::AddressComboboxModel(
     const PersonalDataManager& personal_data_manager,
-    const std::string& app_locale)
-    : app_locale_(app_locale) {
+    const std::string& app_locale,
+    const std::string& default_selected_guid)
+    : app_locale_(app_locale), default_selected_guid_(default_selected_guid) {
   for (const auto* profile : personal_data_manager.GetProfilesToSuggest()) {
     profiles_cache_.push_back(base::MakeUnique<AutofillProfile>(*profile));
   }
@@ -72,6 +73,15 @@ bool AddressComboboxModel::IsItemSeparatorAt(int index) {
   return index == 1;
 }
 
+int AddressComboboxModel::GetDefaultIndex() const {
+  if (!default_selected_guid_.empty()) {
+    int address_index = GetIndexOfIdentifier(default_selected_guid_);
+    if (address_index != -1)
+      return address_index;
+  }
+  return ui::ComboboxModel::GetDefaultIndex();
+}
+
 void AddressComboboxModel::AddObserver(ui::ComboboxModelObserver* observer) {
   observers_.AddObserver(observer);
 }
@@ -95,7 +105,8 @@ std::string AddressComboboxModel::GetItemIdentifierAt(int index) {
   return addresses_[index - kNbHeaderEntries].first;
 }
 
-int AddressComboboxModel::GetIndexOfIdentifier(const std::string& identifier) {
+int AddressComboboxModel::GetIndexOfIdentifier(
+    const std::string& identifier) const {
   for (size_t i = 0; i < addresses_.size(); ++i) {
     if (addresses_[i].first == identifier)
       return i + kNbHeaderEntries;

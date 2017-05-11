@@ -178,7 +178,6 @@ class PaymentRequestRowBorderPainter : public views::Painter {
 }  // namespace
 
 int GetActualDialogWidth() {
-  constexpr int kDialogMinWidth = 512;
   static int actual_width =
       views::LayoutProvider::Get()->GetSnappedDialogWidth(kDialogMinWidth);
   return actual_width;
