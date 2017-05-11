@@ -1044,38 +1044,25 @@ void VrShellGl::DrawElements(const vr::Mat4f& view_proj_matrix,
 std::vector<const UiElement*> VrShellGl::GetElementsInDrawOrder(
     const vr::Mat4f& view_matrix,
     const std::vector<const UiElement*>& elements) {
-  typedef std::pair<float, const UiElement*> DistanceElementPair;
-  std::vector<DistanceElementPair> zOrderedElementPairs;
-  zOrderedElementPairs.reserve(elements.size());
-
-  for (const auto* element : elements) {
-    // Distance is the abs(z) value in view space.
-    gfx::Vector3dF element_position =
-        vr::GetTranslation(element->TransformMatrix());
-
-    float distance =
-        std::fabs(vr::MatrixVectorMul(view_matrix, element_position).z());
-    zOrderedElementPairs.push_back(std::make_pair(distance, element));
-  }
+  std::vector<const UiElement*> sorted_elements = elements;
 
   // Sort elements primarily based on their draw phase (lower draw phase first)
-  // and secondarily based on their distance (larger distance first).
-  std::sort(
-      zOrderedElementPairs.begin(), zOrderedElementPairs.end(),
-      [](const DistanceElementPair& first, const DistanceElementPair& second) {
-        if (first.second->draw_phase() != second.second->draw_phase()) {
-          return first.second->draw_phase() < second.second->draw_phase();
-        } else {
-          return first.first > second.first;
-        }
-      });
+  // and secondarily based on their z-axis distance (more distant first).
+  // TODO(mthiesse, crbug.com/721356): This will not work well for elements not
+  // directly in front of the user, but works well enough for our initial
+  // release, and provides a consistent ordering that we can easily design
+  // around.
+  std::sort(sorted_elements.begin(), sorted_elements.end(),
+            [](const UiElement* first, const UiElement* second) {
+              if (first->draw_phase() != second->draw_phase()) {
+                return first->draw_phase() < second->draw_phase();
+              } else {
+                return vr::GetTranslation(first->TransformMatrix()).z() <
+                       vr::GetTranslation(second->TransformMatrix()).z();
+              }
+            });
 
-  std::vector<const UiElement*> zOrderedElements;
-  zOrderedElements.reserve(elements.size());
-  for (auto distanceElementPair : zOrderedElementPairs) {
-    zOrderedElements.push_back(distanceElementPair.second);
-  }
-  return zOrderedElements;
+  return sorted_elements;
 }
 
 void VrShellGl::DrawCursor(const vr::Mat4f& render_matrix) {
