@@ -21,7 +21,8 @@ static constexpr int kMaxNumberOfSlowPathsBeforeVeto = 5;
 namespace blink {
 
 void PaintController::SetTracksRasterInvalidations(bool value) {
-  if (value) {
+  if (value ||
+      RuntimeEnabledFeatures::paintUnderInvalidationCheckingEnabled()) {
     paint_chunks_raster_invalidation_tracking_map_ =
         WTF::WrapUnique(new RasterInvalidationTrackingMap<const PaintChunk>);
   } else {
@@ -597,9 +598,15 @@ void PaintController::CommitNewDisplayItems(
 
   // The new list will not be appended to again so we can release unused memory.
   new_display_item_list_.ShrinkToFit();
+
+  if (paint_chunks_raster_invalidation_tracking_map_) {
+    for (const auto& chunk : current_paint_artifact_.PaintChunks())
+      paint_chunks_raster_invalidation_tracking_map_->Remove(&chunk);
+  }
   current_paint_artifact_ = PaintArtifact(
       std::move(new_display_item_list_), new_paint_chunks_.ReleasePaintChunks(),
       num_slow_paths <= kMaxNumberOfSlowPathsBeforeVeto);
+
   ResetCurrentListIndices();
   out_of_order_item_indices_.clear();
   out_of_order_chunk_indices_.clear();
