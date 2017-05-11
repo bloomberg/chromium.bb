@@ -92,43 +92,8 @@ void PrintInternal(PrintStream& out, const T& value) {
   value.Dump(out);
 }
 
-#define MAKE_PRINT_ADAPTOR(Name, Type, function)                 \
-  class Name final {                                             \
-    STACK_ALLOCATED();                                           \
-                                                                 \
-   public:                                                       \
-    Name(const Type& value) : value_(value) {}                   \
-    void Dump(PrintStream& out) const { function(out, value_); } \
-                                                                 \
-   private:                                                      \
-    Type value_;                                                 \
-  }
-
-#define MAKE_PRINT_METHOD_ADAPTOR(Name, Type, method)          \
-  class Name final {                                           \
-    STACK_ALLOCATED();                                         \
-                                                               \
-   public:                                                     \
-    Name(const Type& value) : m_value(value) {}                \
-    void dump(PrintStream& out) const { m_value.method(out); } \
-                                                               \
-   private:                                                    \
-    const Type& m_value;                                       \
-  }
-
-#define MAKE_PRINT_METHOD(Type, dumpMethod, method)                \
-  MAKE_PRINT_METHOD_ADAPTOR(DumperFor_##method, Type, dumpMethod); \
-  DumperFor_##method method() const { return DumperFor_##method(*this); }
-
-// Use an adaptor-based dumper for characters to avoid situations where
-// you've "compressed" an integer to a character and it ends up printing
-// as ASCII when you wanted it to print as a number.
-void DumpCharacter(PrintStream&, char);
-MAKE_PRINT_ADAPTOR(CharacterDump, char, DumpCharacter);
-
 }  // namespace WTF
 
-using WTF::CharacterDump;
 using WTF::PrintStream;
 
 #endif  // PrintStream_h
