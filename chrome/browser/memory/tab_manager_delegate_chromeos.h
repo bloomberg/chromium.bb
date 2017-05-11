@@ -41,7 +41,11 @@ enum class ProcessType {
   FOCUSED_TAB = 1,
   FOCUSED_APP = 2,
 
-  VISIBLE_APP = 3,
+  // Important apps are protected in two ways: 1) Chrome never kills them, and
+  // 2) the kernel is still allowed to kill them, but their OOM adjustment
+  // scores are better than BACKGROUND_TABs and BACKGROUND_APPs.
+  IMPORTANT_APP = 3,
+
   BACKGROUND_TAB = 4,
   BACKGROUND_APP = 5,
   UNKNOWN_TYPE = 6,
@@ -162,6 +166,12 @@ class TabManagerDelegate : public aura::client::ActivationChangeObserver,
       int range_end,
       ProcessScoreMap* new_map);
 
+  // Changes |candidates|' OOM scores to |score|. The new scores are set in
+  // |new_map|.
+  void SetOomScore(const std::vector<TabManagerDelegate::Candidate>& candidates,
+                   int score,
+                   ProcessScoreMap* new_map);
+
   // Initiates an oom priority adjustment.
   void ScheduleEarlyOomPrioritiesAdjustment();
 
@@ -172,6 +182,9 @@ class TabManagerDelegate : public aura::client::ActivationChangeObserver,
   static constexpr base::TimeDelta GetArcRespawnKillDelay() {
     return base::TimeDelta::FromSeconds(60);
   }
+
+  // The lowest OOM adjustment score that will make the process non-killable.
+  static const int kLowestOomScore;
 
   // Holds a reference to the owning TabManager.
   const base::WeakPtr<TabManager> tab_manager_;

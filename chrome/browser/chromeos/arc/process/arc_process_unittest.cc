@@ -20,7 +20,7 @@ TEST(ArcProcess, TestSorting) {
 
   std::list<ArcProcess> processes;  // use list<> for emplace_front.
   processes.emplace_back(0, 0, "process 0", mojom::ProcessState::PERSISTENT,
-                         false /* is_foreground */, kNow + 1);
+                         false /* is_focused */, kNow + 1);
   processes.emplace_front(1, 1, "process 1", mojom::ProcessState::PERSISTENT,
                           false, kNow);
   processes.emplace_back(2, 2, "process 2", mojom::ProcessState::LAST_ACTIVITY,
@@ -55,6 +55,156 @@ TEST(ArcProcess, TestSorting) {
   EXPECT_EQ(4, it->pid());
   ++it;
   EXPECT_EQ(5, it->pid());
+}
+
+TEST(ArcProcess, TestIsImportant) {
+  constexpr bool kIsNotFocused = false;
+
+  // Processes up to IMPORTANT_FOREGROUND are considered important.
+  EXPECT_TRUE(ArcProcess(0, 0, "process", mojom::ProcessState::PERSISTENT,
+                         kIsNotFocused, 0)
+                  .IsImportant());
+  EXPECT_TRUE(ArcProcess(0, 0, "process", mojom::ProcessState::PERSISTENT_UI,
+                         kIsNotFocused, 0)
+                  .IsImportant());
+  EXPECT_TRUE(ArcProcess(0, 0, "process", mojom::ProcessState::TOP, true, 0)
+                  .IsImportant());
+  EXPECT_TRUE(ArcProcess(0, 0, "process", mojom::ProcessState::TOP, false, 0)
+                  .IsImportant());
+  EXPECT_TRUE(ArcProcess(0, 0, "process",
+                         mojom::ProcessState::BOUND_FOREGROUND_SERVICE,
+                         kIsNotFocused, 0)
+                  .IsImportant());
+  EXPECT_TRUE(ArcProcess(0, 0, "process",
+                         mojom::ProcessState::FOREGROUND_SERVICE, kIsNotFocused,
+                         0)
+                  .IsImportant());
+  EXPECT_TRUE(ArcProcess(0, 0, "process", mojom::ProcessState::TOP_SLEEPING,
+                         kIsNotFocused, 0)
+                  .IsImportant());
+  EXPECT_TRUE(ArcProcess(0, 0, "process",
+                         mojom::ProcessState::IMPORTANT_FOREGROUND,
+                         kIsNotFocused, 0)
+                  .IsImportant());
+
+  // Others are not important.
+  EXPECT_FALSE(ArcProcess(0, 0, "process",
+                          mojom::ProcessState::IMPORTANT_BACKGROUND,
+                          kIsNotFocused, 0)
+                   .IsImportant());
+  EXPECT_FALSE(
+      ArcProcess(0, 0, "process", mojom::ProcessState::BACKUP, kIsNotFocused, 0)
+          .IsImportant());
+  EXPECT_FALSE(ArcProcess(0, 0, "process", mojom::ProcessState::HEAVY_WEIGHT,
+                          kIsNotFocused, 0)
+                   .IsImportant());
+  EXPECT_FALSE(ArcProcess(0, 0, "process", mojom::ProcessState::SERVICE,
+                          kIsNotFocused, 0)
+                   .IsImportant());
+  EXPECT_FALSE(ArcProcess(0, 0, "process", mojom::ProcessState::RECEIVER,
+                          kIsNotFocused, 0)
+                   .IsImportant());
+  EXPECT_FALSE(
+      ArcProcess(0, 0, "process", mojom::ProcessState::HOME, kIsNotFocused, 0)
+          .IsImportant());
+  EXPECT_FALSE(ArcProcess(0, 0, "process", mojom::ProcessState::LAST_ACTIVITY,
+                          kIsNotFocused, 0)
+                   .IsImportant());
+  EXPECT_FALSE(ArcProcess(0, 0, "process", mojom::ProcessState::CACHED_ACTIVITY,
+                          kIsNotFocused, 0)
+                   .IsImportant());
+  EXPECT_FALSE(ArcProcess(0, 0, "process",
+                          mojom::ProcessState::CACHED_ACTIVITY_CLIENT,
+                          kIsNotFocused, 0)
+                   .IsImportant());
+  EXPECT_FALSE(ArcProcess(0, 0, "process", mojom::ProcessState::CACHED_EMPTY,
+                          kIsNotFocused, 0)
+                   .IsImportant());
+
+  // Exceptions: the function always returns true ignoring ProcessState for our
+  // HOME process.
+  EXPECT_TRUE(ArcProcess(0, 0, "org.chromium.arc.home",
+                         mojom::ProcessState::TOP, kIsNotFocused, 0)
+                  .IsImportant());
+  EXPECT_TRUE(ArcProcess(0, 0, "org.chromium.arc.home",
+                         mojom::ProcessState::HOME, kIsNotFocused, 0)
+                  .IsImportant());
+}
+
+TEST(ArcProcess, TestIsKernelKillable) {
+  constexpr bool kIsNotFocused = false;
+
+  // Only PERSISITENT* processes are protected from the kernel OOM killer.
+  EXPECT_FALSE(ArcProcess(0, 0, "process", mojom::ProcessState::PERSISTENT,
+                          kIsNotFocused, 0)
+                   .IsKernelKillable());
+  EXPECT_FALSE(ArcProcess(0, 0, "process", mojom::ProcessState::PERSISTENT_UI,
+                          kIsNotFocused, 0)
+                   .IsKernelKillable());
+
+  // Both TOP+focused and TOP apps are still kernel-killable.
+  EXPECT_TRUE(ArcProcess(0, 0, "process", mojom::ProcessState::TOP, true, 0)
+                  .IsKernelKillable());
+  EXPECT_TRUE(ArcProcess(0, 0, "process", mojom::ProcessState::TOP, false, 0)
+                  .IsKernelKillable());
+
+  // Others are kernel-killable.
+  EXPECT_TRUE(ArcProcess(0, 0, "process",
+                         mojom::ProcessState::BOUND_FOREGROUND_SERVICE,
+                         kIsNotFocused, 0)
+                  .IsKernelKillable());
+  EXPECT_TRUE(ArcProcess(0, 0, "process",
+                         mojom::ProcessState::FOREGROUND_SERVICE, kIsNotFocused,
+                         0)
+                  .IsKernelKillable());
+  EXPECT_TRUE(ArcProcess(0, 0, "process", mojom::ProcessState::TOP_SLEEPING,
+                         kIsNotFocused, 0)
+                  .IsKernelKillable());
+  EXPECT_TRUE(ArcProcess(0, 0, "process",
+                         mojom::ProcessState::IMPORTANT_FOREGROUND,
+                         kIsNotFocused, 0)
+                  .IsKernelKillable());
+  EXPECT_TRUE(ArcProcess(0, 0, "process",
+                         mojom::ProcessState::IMPORTANT_BACKGROUND,
+                         kIsNotFocused, 0)
+                  .IsKernelKillable());
+  EXPECT_TRUE(
+      ArcProcess(0, 0, "process", mojom::ProcessState::BACKUP, kIsNotFocused, 0)
+          .IsKernelKillable());
+  EXPECT_TRUE(ArcProcess(0, 0, "process", mojom::ProcessState::HEAVY_WEIGHT,
+                         kIsNotFocused, 0)
+                  .IsKernelKillable());
+  EXPECT_TRUE(ArcProcess(0, 0, "process", mojom::ProcessState::SERVICE,
+                         kIsNotFocused, 0)
+                  .IsKernelKillable());
+  EXPECT_TRUE(ArcProcess(0, 0, "process", mojom::ProcessState::RECEIVER,
+                         kIsNotFocused, 0)
+                  .IsKernelKillable());
+  EXPECT_TRUE(
+      ArcProcess(0, 0, "process", mojom::ProcessState::HOME, kIsNotFocused, 0)
+          .IsKernelKillable());
+  EXPECT_TRUE(ArcProcess(0, 0, "process", mojom::ProcessState::LAST_ACTIVITY,
+                         kIsNotFocused, 0)
+                  .IsKernelKillable());
+  EXPECT_TRUE(ArcProcess(0, 0, "process", mojom::ProcessState::CACHED_ACTIVITY,
+                         kIsNotFocused, 0)
+                  .IsKernelKillable());
+  EXPECT_TRUE(ArcProcess(0, 0, "process",
+                         mojom::ProcessState::CACHED_ACTIVITY_CLIENT,
+                         kIsNotFocused, 0)
+                  .IsKernelKillable());
+  EXPECT_TRUE(ArcProcess(0, 0, "process", mojom::ProcessState::CACHED_EMPTY,
+                         kIsNotFocused, 0)
+                  .IsKernelKillable());
+
+  // Exceptions: the function always returns false ignoring ProcessState for our
+  // HOME process.
+  EXPECT_FALSE(ArcProcess(0, 0, "org.chromium.arc.home",
+                          mojom::ProcessState::TOP, kIsNotFocused, 0)
+                   .IsKernelKillable());
+  EXPECT_FALSE(ArcProcess(0, 0, "org.chromium.arc.home",
+                          mojom::ProcessState::HOME, kIsNotFocused, 0)
+                   .IsKernelKillable());
 }
 
 }  // namespace

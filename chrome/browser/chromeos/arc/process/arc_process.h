@@ -39,6 +39,17 @@ class ArcProcess {
   std::vector<std::string>& packages() { return packages_; }
   const std::vector<std::string>& packages() const { return packages_; }
 
+  // Returns true if the process is important and should be protected more
+  // from OOM kills than other processes.
+  // TODO(cylee|yusukes): Check what stock Android does for handling OOM and
+  // modify this function as needed (crbug.com/719537).
+  bool IsImportant() const;
+
+  // Returns true if it is okay for the kernel OOM killer to kill the process.
+  // TODO(cylee|yusukes): Consider removing this function. Having only
+  // IsImportant() might be good enough.
+  bool IsKernelKillable() const;
+
  private:
   base::ProcessId nspid_;
   base::ProcessId pid_;
