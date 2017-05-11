@@ -23,7 +23,6 @@
 #include "base/values.h"
 #include "components/crx_file/crx_file.h"
 #include "components/update_client/component_patcher.h"
-#include "components/update_client/component_patcher_operation.h"
 #include "components/update_client/update_client.h"
 #include "components/update_client/update_client_errors.h"
 #include "crypto/secure_hash.h"

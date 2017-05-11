@@ -20,6 +20,7 @@ static_library("update_client") {
     "crx_downloader.cc",
     "crx_downloader.h",
     "crx_update_item.h",
+    "out_of_process_patcher.h",
     "persisted_data.cc",
     "persisted_data.h",
     "ping_manager.cc",

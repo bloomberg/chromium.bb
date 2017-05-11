@@ -5,13 +5,14 @@
 #ifndef CHROME_BROWSER_COMPONENT_UPDATER_COMPONENT_PATCHER_OPERATION_OUT_OF_PROCESS_H_
 #define CHROME_BROWSER_COMPONENT_UPDATER_COMPONENT_PATCHER_OPERATION_OUT_OF_PROCESS_H_
 
+#include <memory>
 #include <string>
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "chrome/common/file_patcher.mojom.h"
-#include "components/update_client/component_patcher_operation.h"
+#include "components/update_client/out_of_process_patcher.h"
 #include "content/public/browser/utility_process_mojo_client.h"
 
 namespace base {
@@ -27,11 +28,11 @@ class ChromeOutOfProcessPatcher : public update_client::OutOfProcessPatcher {
 
   // update_client::OutOfProcessPatcher:
   void Patch(const std::string& operation,
-             scoped_refptr<base::SequencedTaskRunner> task_runner,
+             const scoped_refptr<base::SequencedTaskRunner>& task_runner,
              const base::FilePath& input_path,
              const base::FilePath& patch_path,
              const base::FilePath& output_path,
-             base::Callback<void(int result)> callback) override;
+             const base::Callback<void(int result)>& callback) override;
 
  private:
   ~ChromeOutOfProcessPatcher() override;

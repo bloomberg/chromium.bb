@@ -10,7 +10,7 @@
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/version.h"
 #include "components/component_updater/configurator_impl.h"
-#include "components/update_client/component_patcher_operation.h"
+#include "components/update_client/out_of_process_patcher.h"
 #include "components/update_client/update_query_params.h"
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/google/google_brand.h"
@@ -174,7 +174,7 @@ bool IOSConfigurator::IsPerUserInstall() const {
 scoped_refptr<update_client::Configurator> MakeIOSComponentUpdaterConfigurator(
     const base::CommandLine* cmdline,
     net::URLRequestContextGetter* context_getter) {
-  return new IOSConfigurator(cmdline, context_getter);
+  return base::MakeShared<IOSConfigurator>(cmdline, context_getter);
 }
 
 }  // namespace component_updater
