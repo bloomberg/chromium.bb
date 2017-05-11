@@ -223,8 +223,11 @@ void UiSceneManager::SetWebVrSecureOrigin(bool secure) {
 }
 
 void UiSceneManager::OnAppButtonClicked() {
-  // App button click exits the WebVR presentation.
-  browser_->ExitPresent();
+  // Pressing the app button currenly pauses content rendering. Note: its still
+  // unclear what we want to do here and this will most likely change.
+  content_rendering_enabled_ = !content_rendering_enabled_;
+  scene_->SetWebVrRenderingEnabled(content_rendering_enabled_);
+  browser_->OnContentPaused(!content_rendering_enabled_);
 }
 
 void UiSceneManager::OnAppButtonGesturePerformed(

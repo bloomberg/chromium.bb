@@ -25,7 +25,7 @@ namespace vr_shell {
 // interface are proxies to methods on VrShell.
 class VrBrowserInterface {
  public:
-  virtual ~VrBrowserInterface() = default;
+  virtual ~VrBrowserInterface() {}
 
   virtual void ContentSurfaceChanged(jobject surface) = 0;
   virtual void GvrDelegateReady() = 0;
@@ -35,7 +35,6 @@ class VrBrowserInterface {
   virtual void ProcessContentGesture(
       std::unique_ptr<blink::WebInputEvent> event) = 0;
   virtual void ForceExitVr() = 0;
-  virtual void ExitPresent() = 0;
   virtual void RunVRDisplayInfoCallback(
       const base::Callback<void(device::mojom::VRDisplayInfoPtr)>& callback,
       device::mojom::VRDisplayInfoPtr* info) = 0;
