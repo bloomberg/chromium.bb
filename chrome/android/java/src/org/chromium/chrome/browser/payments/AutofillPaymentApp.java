@@ -12,6 +12,7 @@ import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.CreditCard;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.payments.mojom.BasicCardNetwork;
+import org.chromium.payments.mojom.PaymentItem;
 import org.chromium.payments.mojom.PaymentMethodData;
 
 import java.util.ArrayList;
@@ -41,7 +42,7 @@ public class AutofillPaymentApp implements PaymentApp {
 
     @Override
     public void getInstruments(Map<String, PaymentMethodData> methodDataMap, String unusedOrigin,
-            String unusedIFRameOrigin, byte[][] unusedCertificateChain,
+            String unusedIFRameOrigin, byte[][] unusedCertificateChain, PaymentItem unusedTotal,
             final InstrumentsCallback callback) {
         PersonalDataManager pdm = PersonalDataManager.getInstance();
         List<CreditCard> cards = pdm.getCreditCardsToSuggest();

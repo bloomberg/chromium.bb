@@ -726,7 +726,7 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
         // cause NOT_SUPPORTED payment rejection.
         for (Map.Entry<PaymentApp, Map<String, PaymentMethodData>> q : queryApps.entrySet()) {
             q.getKey().getInstruments(q.getValue(), mSchemelessOriginForPaymentApp,
-                    mSchemelessIFrameOriginForPaymentApp, mCertificateChain, this);
+                    mSchemelessIFrameOriginForPaymentApp, mCertificateChain, mRawTotal, this);
         }
     }
 
