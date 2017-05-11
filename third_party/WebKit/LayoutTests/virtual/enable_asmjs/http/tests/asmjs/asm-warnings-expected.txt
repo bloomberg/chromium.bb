@@ -1,3 +1,0 @@
-CONSOLE WARNING: line 13: Invalid asm.js: Invalid type annotation - forbidden literal.
-CONSOLE WARNING: line 5: Invalid asm.js: Invalid initializer for foreign import - unrecognized annotation.
-
