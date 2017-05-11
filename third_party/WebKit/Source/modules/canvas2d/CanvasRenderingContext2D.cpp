@@ -167,9 +167,9 @@ void CanvasRenderingContext2D::ValidateStateStack() const {
 }
 
 bool CanvasRenderingContext2D::IsAccelerated() const {
-  if (!host()->GetImageBuffer())
+  if (!HasImageBuffer())
     return false;
-  return host()->GetImageBuffer()->IsAccelerated();
+  return GetImageBuffer()->IsAccelerated();
 }
 
 bool CanvasRenderingContext2D::IsComposited() const {
@@ -202,9 +202,9 @@ void CanvasRenderingContext2D::DidSetSurfaceSize() {
     return;
   // This code path is for restoring from an eviction
   // Restoring from surface failure is handled internally
-  DCHECK(context_lost_mode_ != kNotLostContext && !host()->GetImageBuffer());
+  DCHECK(context_lost_mode_ != kNotLostContext && !HasImageBuffer());
 
-  if (host()->GetOrCreateImageBuffer()) {
+  if (GetImageBuffer()) {
     if (ContextLostRestoredEventsEnabled()) {
       dispatch_context_restored_event_timer_.StartOneShot(0, BLINK_FROM_HERE);
     } else {
@@ -250,7 +250,7 @@ void CanvasRenderingContext2D::TryRestoreContextEvent(TimerBase* timer) {
   }
 
   DCHECK(context_lost_mode_ == kRealLostContext);
-  if (host()->GetImageBuffer() && host()->GetImageBuffer()->RestoreSurface()) {
+  if (HasImageBuffer() && GetImageBuffer()->RestoreSurface()) {
     try_restore_context_event_timer_.Stop();
     DispatchContextRestoredEvent(nullptr);
   }
@@ -259,7 +259,7 @@ void CanvasRenderingContext2D::TryRestoreContextEvent(TimerBase* timer) {
     // final attempt: allocate a brand new image buffer instead of restoring
     host()->DiscardImageBuffer();
     try_restore_context_event_timer_.Stop();
-    if (host()->GetOrCreateImageBuffer())
+    if (GetImageBuffer())
       DispatchContextRestoredEvent(nullptr);
   }
 }
@@ -368,7 +368,7 @@ void CanvasRenderingContext2D::DidDraw(const SkIRect& dirty_rect) {
 
   if (ExpensiveCanvasHeuristicParameters::kBlurredShadowsAreExpensive &&
       GetState().ShouldDrawShadows() && GetState().ShadowBlur() > 0) {
-    ImageBuffer* buffer = host()->GetOrCreateImageBuffer();
+    ImageBuffer* buffer = GetImageBuffer();
     if (buffer)
       buffer->SetHasExpensiveOp();
   }
@@ -615,7 +615,7 @@ PassRefPtr<Image> blink::CanvasRenderingContext2D::GetImage(
     SnapshotReason reason) const {
   if (!HasImageBuffer())
     return nullptr;
-  return host()->GetOrCreateImageBuffer()->NewImageSnapshot(hint, reason);
+  return GetImageBuffer()->NewImageSnapshot(hint, reason);
 }
 
 bool CanvasRenderingContext2D::ParseColorOrCurrentColor(
@@ -980,8 +980,8 @@ float CanvasRenderingContext2D::GetFontBaseline(
 }
 
 void CanvasRenderingContext2D::SetIsHidden(bool hidden) {
-  if (host()->GetImageBuffer())
-    host()->GetImageBuffer()->SetIsHidden(hidden);
+  if (HasImageBuffer())
+    GetImageBuffer()->SetIsHidden(hidden);
   if (hidden) {
     PruneLocalFontCache(0);
   }
@@ -992,9 +992,7 @@ bool CanvasRenderingContext2D::IsTransformInvertible() const {
 }
 
 WebLayer* CanvasRenderingContext2D::PlatformLayer() const {
-  return host()->GetOrCreateImageBuffer()
-             ? host()->GetImageBuffer()->PlatformLayer()
-             : 0;
+  return GetImageBuffer() ? GetImageBuffer()->PlatformLayer() : 0;
 }
 
 void CanvasRenderingContext2D::getContextAttributes(
