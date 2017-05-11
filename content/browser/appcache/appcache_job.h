@@ -25,6 +25,7 @@ class AppCacheEntry;
 class AppCacheHost;
 class AppCacheRequest;
 class AppCacheStorage;
+class AppCacheURLLoaderJob;
 class URLRequestJob;
 
 // Interface for an AppCache job. This is used to send data stored in the
@@ -100,8 +101,12 @@ class CONTENT_EXPORT AppCacheJob
   virtual const GURL& GetURL() const = 0;
 
   // Returns the underlying URLRequestJob if any. This only applies to
-  // AppCaches loaded via the URLRequest mechanism.
+  // AppCaches loaded via the URLLoader mechanism.
   virtual net::URLRequestJob* AsURLRequestJob();
+
+  // Returns the underlying ApppCacheURLLoaderJob if any. This only applies to
+  // AppCaches loaded via the URLRequest mechanism.
+  virtual AppCacheURLLoaderJob* AsURLLoaderJob();
 
  protected:
   AppCacheJob();

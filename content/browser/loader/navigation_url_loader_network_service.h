@@ -67,7 +67,8 @@ class NavigationURLLoaderNetworkService : public NavigationURLLoader,
       const ResourceRequestCompletionStatus& completion_status) override;
 
   // Initiates the request.
-  void StartURLRequest(std::unique_ptr<ResourceRequest> request);
+  void StartURLRequest(mojom::URLLoaderFactoryPtrInfo url_loader_factory_info,
+                       std::unique_ptr<ResourceRequest> request);
 
  private:
   void ConnectURLLoaderFactory(
@@ -77,6 +78,7 @@ class NavigationURLLoaderNetworkService : public NavigationURLLoader,
 
   NavigationURLLoaderDelegate* delegate_;
 
+  mojom::URLLoaderFactoryPtr url_loader_factory_;
   mojo::Binding<mojom::URLLoaderClient> binding_;
   std::unique_ptr<NavigationRequestInfo> request_info_;
   mojom::URLLoaderAssociatedPtr url_loader_associated_ptr_;

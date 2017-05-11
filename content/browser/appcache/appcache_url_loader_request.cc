@@ -8,25 +8,28 @@
 namespace content {
 
 // static
-AppCacheURLLoaderRequest* AppCacheURLLoaderRequest::Create(
-    const ResourceRequest& request) {
-  return new AppCacheURLLoaderRequest(request);
+std::unique_ptr<AppCacheURLLoaderRequest> AppCacheURLLoaderRequest::Create(
+    std::unique_ptr<ResourceRequest> request) {
+  return std::unique_ptr<AppCacheURLLoaderRequest>(
+      new AppCacheURLLoaderRequest(std::move(request)));
 }
 
+AppCacheURLLoaderRequest::~AppCacheURLLoaderRequest() {}
+
 const GURL& AppCacheURLLoaderRequest::GetURL() const {
-  return request_.url;
+  return request_->url;
 }
 
 const std::string& AppCacheURLLoaderRequest::GetMethod() const {
-  return request_.method;
+  return request_->method;
 }
 
 const GURL& AppCacheURLLoaderRequest::GetFirstPartyForCookies() const {
-  return request_.first_party_for_cookies;
+  return request_->first_party_for_cookies;
 }
 
 const GURL AppCacheURLLoaderRequest::GetReferrer() const {
-  return request_.referrer;
+  return request_->referrer;
 }
 
 bool AppCacheURLLoaderRequest::IsSuccess() const {
@@ -51,13 +54,11 @@ std::string AppCacheURLLoaderRequest::GetResponseHeaderByName(
 }
 
 ResourceRequest* AppCacheURLLoaderRequest::GetResourceRequest() {
-  return &request_;
+  return request_.get();
 }
 
 AppCacheURLLoaderRequest::AppCacheURLLoaderRequest(
-    const ResourceRequest& request)
-    : request_(request) {}
-
-AppCacheURLLoaderRequest::~AppCacheURLLoaderRequest() {}
+    std::unique_ptr<ResourceRequest> request)
+    : request_(std::move(request)) {}
 
 }  // namespace content

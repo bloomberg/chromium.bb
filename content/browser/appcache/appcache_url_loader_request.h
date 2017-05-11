@@ -16,7 +16,10 @@ class CONTENT_EXPORT AppCacheURLLoaderRequest : public AppCacheRequest {
  public:
   // Factory function to create an instance of the AppCacheResourceRequest
   // class.
-  static AppCacheURLLoaderRequest* Create(const ResourceRequest& request);
+  static std::unique_ptr<AppCacheURLLoaderRequest> Create(
+      std::unique_ptr<ResourceRequest> request);
+
+  ~AppCacheURLLoaderRequest() override;
 
   // AppCacheRequest overrides.
   // TODO(ananta)
@@ -39,11 +42,10 @@ class CONTENT_EXPORT AppCacheURLLoaderRequest : public AppCacheRequest {
   ResourceRequest* GetResourceRequest() override;
 
  protected:
-  explicit AppCacheURLLoaderRequest(const ResourceRequest& request);
-  ~AppCacheURLLoaderRequest() override;
+  explicit AppCacheURLLoaderRequest(std::unique_ptr<ResourceRequest> request);
 
  private:
-  ResourceRequest request_;
+  std::unique_ptr<ResourceRequest> request_;
 
   DISALLOW_COPY_AND_ASSIGN(AppCacheURLLoaderRequest);
 };
