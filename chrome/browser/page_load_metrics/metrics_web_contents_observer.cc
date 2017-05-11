@@ -607,7 +607,7 @@ void MetricsWebContentsObserver::OnTimingUpdated(
   committed_load_->UpdateTiming(timing, metadata);
 
   for (auto& observer : testing_observers_)
-    observer.OnTimingUpdated(timing, metadata);
+    observer.OnTimingUpdated(true /* is_main_frame */, timing, metadata);
 }
 
 bool MetricsWebContentsObserver::ShouldTrackNavigation(
