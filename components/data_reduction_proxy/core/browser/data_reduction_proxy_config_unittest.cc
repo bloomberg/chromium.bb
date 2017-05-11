@@ -38,6 +38,8 @@
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_server.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
 #include "components/data_reduction_proxy/proto/client_config.pb.h"
+#include "components/previews/core/previews_decider.h"
+#include "components/previews/core/previews_experiments.h"
 #include "components/variations/variations_associated_data.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
@@ -78,6 +80,28 @@ std::string GetRetryMapKeyFromOrigin(const std::string& origin) {
   // The retry map has the scheme prefix for https but not for http.
   return origin;
 }
+
+class TestPreviewsDecider : public previews::PreviewsDecider {
+ public:
+  TestPreviewsDecider(bool allow_previews) : allow_previews_(allow_previews) {}
+  ~TestPreviewsDecider() override {}
+
+  // previews::PreviewsDecider:
+  bool ShouldAllowPreviewAtECT(
+      const net::URLRequest& request,
+      previews::PreviewsType type,
+      net::EffectiveConnectionType effective_connection_type_threshold)
+      const override {
+    return allow_previews_;
+  }
+  bool ShouldAllowPreview(const net::URLRequest& request,
+                          previews::PreviewsType type) const override {
+    return allow_previews_;
+  }
+
+ private:
+  bool allow_previews_;
+};
 
 }  // namespace
 
@@ -812,90 +836,194 @@ TEST_F(DataReductionProxyConfigTest, IsDataReductionProxyWithMutableConfig) {
 
 TEST_F(DataReductionProxyConfigTest, LoFiOn) {
   const struct {
-    bool lofi_switch_enabled;
+    bool lofi_enabled;
+    bool previews_black_list_used;
     const std::string lofi_field_trial_group_name;
     bool network_prohibitively_slow;
     bool expect_lofi_header;
     int bucket_to_check_for_auto_lofi_uma;
     int expect_bucket_count;
+    bool is_opted_out;
   } tests[] = {
       {
           // The Lo-Fi switch is off and the user is not in the enabled field
           // trial group. Lo-Fi should not be used.
-          false, std::string(), false, false, 0,
+          false, false, std::string(), false, false, 0,
           0,  // not in enabled field trial, UMA is not recorded
+          false,
       },
       {
           // The Lo-Fi switch is off and the user is not in enabled field trial
           // group and the network quality is bad. Lo-Fi should not be used.
-          false, std::string(), true, false, 0,
+          false, false, std::string(), true, false, 0,
           0,  // not in enabled field trial, UMA is not recorded
+          false,
+
+      },
+      {
+          // Lo-Fi is enabled through command line switch, but opted out. LoFi
+          // should not be used.
+          true, false, std::string(), false, false, 0,
+          0,  // not in enabled field trial, UMA is not recorded
+          true,
       },
       {
           // Lo-Fi is enabled through command line switch. LoFi should be used.
-          true, std::string(), false, true, 0,
+          true, false, std::string(), false, true, 0,
           0,  // not in enabled field trial, UMA is not recorded
+          false,
       },
       {
           // The user is in the enabled field trial group but the network
           // quality is not bad. Lo-Fi should not be used.
-          false, "Enabled", false, false,
+          false, false, "Enabled", false, false,
           0,  // Lo-Fi request header is not used (state change: empty to empty)
-          1,
+          1, false,
       },
       {
           // The user is in the enabled field trial group but the network
           // quality is not bad. Lo-Fi should not be used.
-          false, "Enabled_Control", false, false,
+          false, false, "Enabled_Control", false, false,
           0,  // Lo-Fi request header is not used (state change: empty to empty)
-          1,
+          1, false,
       },
       {
           // The user is in the enabled field trial group and the network
           // quality is bad. Lo-Fi should be used.
-          false, "Enabled", true, true,
+          false, false, "Enabled", true, true,
           1,  // Lo-Fi request header is now used (state change: empty to low)
-          1,
+          1, false,
       },
       {
           // The user is in the enabled field trial group and the network
           // quality is bad. Lo-Fi should be used.
-          false, "Enabled_Control", true, true,
+          false, false, "Enabled_Control", true, true,
           3,  // Lo-Fi request header is now used (state change: low to low)
-          1,
+          1, false,
       },
       {
           // The user is in the enabled field trial group and the network
           // quality is bad. Lo-Fi should be used again.
-          false, "Enabled", true, true,
+          false, false, "Enabled", true, true,
           3,  // Lo-Fi request header is now used (state change: low to low)
-          1,
+          1, false,
       },
       {
           // The user is in the enabled field trial group and the network
           // quality is bad. Lo-Fi should be used again.
-          false, "Enabled_Control", true, true,
+          false, false, "Enabled_Control", true, true,
           3,  // Lo-Fi request header is now used (state change: low to low)
-          1,
+          1, false,
       },
       {
           // The user is in the enabled field trial group but the network
           // quality is not bad. Lo-Fi should not be used.
-          false, "Enabled", false, false,
+          false, false, "Enabled", false, false,
           2,  // Lo-Fi request header is not used (state change: low to empty)
-          1,
+          1, false,
       },
       {
           // The user is in the enabled field trial group but the network
           // quality is not bad. Lo-Fi should not be used.
-          false, "Enabled_Control", false, false,
+          false, false, "Enabled_Control", false, false,
           0,  // Lo-Fi request header is not used (state change: empty to empty)
-          1,
+          1, false,
+      },
+      {
+          // The Lo-Fi switch is off and the user is not in the enabled field
+          // trial group. Lo-Fi should not be used.
+          false, true, std::string(), false, false, 0,
+          0,  // not in enabled field trial, UMA is not recorded
+          false,
+      },
+      {
+          // The Lo-Fi switch is off and the user is not in enabled field trial
+          // group and the network quality is bad. Lo-Fi should not be used.
+          false, true, std::string(), true, false, 0,
+          0,  // not in enabled field trial, UMA is not recorded
+          false,
+      },
+      {
+          // Lo-Fi is enabled through command line switch. LoFi should be used.
+          true, true, std::string(), false, true, 0,
+          0,  // not in enabled field trial, UMA is not recorded
+          false,
+      },
+      {
+          // Lo-Fi is enabled through command line switch, but opted out. LoFi
+          // should not be used.
+          true, true, std::string(), false, false, 0,
+          0,  // not in enabled field trial, UMA is not recorded
+          true,
+      },
+      {
+          // The user is in the enabled field trial group but the network
+          // quality is not bad. Lo-Fi should not be used.
+          false, true, "Enabled", false, false,
+          0,  // Lo-Fi request header is not used (state change: empty to empty)
+          1, false,
+      },
+      {
+          // The user is in the enabled field trial group but the network
+          // quality is not bad. Lo-Fi should not be used.
+          false, true, "Enabled_Control", false, false,
+          0,  // Lo-Fi request header is not used (state change: empty to empty)
+          1, false,
+      },
+      {
+          // The user is in the enabled field trial group and the network
+          // quality is bad. Lo-Fi should be used.
+          false, true, "Enabled", true, true,
+          1,  // Lo-Fi request header is now used (state change: empty to low)
+          1, false,
+      },
+      {
+          // The user is in the enabled field trial group and the network
+          // quality is bad. Lo-Fi should be used.
+          false, true, "Enabled_Control", true, true,
+          3,  // Lo-Fi request header is now used (state change: low to low)
+          1, false,
+      },
+      {
+          // The user is in the enabled field trial group and the network
+          // quality is bad. Lo-Fi should be used again.
+          false, true, "Enabled", true, true,
+          3,  // Lo-Fi request header is now used (state change: low to low)
+          1, false,
+      },
+      {
+          // The user is in the enabled field trial group and the network
+          // quality is bad. Lo-Fi should be used again.
+          false, true, "Enabled_Control", true, true,
+          3,  // Lo-Fi request header is now used (state change: low to low)
+          1, false,
+      },
+      {
+          // The user is in the enabled field trial group but the network
+          // quality is not bad. Lo-Fi should not be used.
+          false, true, "Enabled", false, false,
+          2,  // Lo-Fi request header is not used (state change: low to empty)
+          1, false,
+      },
+      {
+          // The user is in the enabled field trial group but the network
+          // quality is not bad. Lo-Fi should not be used.
+          false, true, "Enabled_Control", false, false,
+          0,  // Lo-Fi request header is not used (state change: empty to empty)
+          1, false,
       },
   };
   for (size_t i = 0; i < arraysize(tests); ++i) {
     config()->ResetLoFiStatusForTest();
-    if (tests[i].lofi_switch_enabled) {
+
+    base::FieldTrialList field_trial_list(nullptr);
+    if (tests[i].previews_black_list_used) {
+      base::FieldTrialList::CreateFieldTrial(
+          "DataReductionProxyPreviewsBlackListTransition", "Enabled_");
+    } else if (tests[i].is_opted_out) {
+      config()->SetLoFiModeOff();
+    }
+    if (tests[i].lofi_enabled) {
       base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
           switches::kDataReductionProxyLoFi,
           switches::kDataReductionProxyLoFiValueAlwaysOn);
@@ -904,7 +1032,6 @@ TEST_F(DataReductionProxyConfigTest, LoFiOn) {
           switches::kDataReductionProxyLoFi, std::string());
     }
 
-    base::FieldTrialList field_trial_list(nullptr);
     if (!tests[i].lofi_field_trial_group_name.empty()) {
       base::FieldTrialList::CreateFieldTrial(
           params::GetLoFiFieldTrialName(),
@@ -921,7 +1048,10 @@ TEST_F(DataReductionProxyConfigTest, LoFiOn) {
         GURL(), net::IDLE, &delegate_, TRAFFIC_ANNOTATION_FOR_TESTS);
     request->SetLoadFlags(request->load_flags() |
                           net::LOAD_MAIN_FRAME_DEPRECATED);
-    bool should_enable_lofi = config()->ShouldEnableLoFi(*request.get());
+    std::unique_ptr<TestPreviewsDecider> previews_decider =
+        base::MakeUnique<TestPreviewsDecider>(!tests[i].is_opted_out);
+    bool should_enable_lofi =
+        config()->ShouldEnableLoFi(*request.get(), previews_decider.get());
     if (tests[i].expect_bucket_count != 0) {
       histogram_tester.ExpectBucketCount(
           "DataReductionProxy.AutoLoFiRequestHeaderState.Unknown",

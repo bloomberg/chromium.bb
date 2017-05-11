@@ -14,6 +14,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_pingback_client.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_service.h"
+#include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 #include "components/infobars/core/infobar.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
@@ -165,7 +166,8 @@ bool PreviewsInfoBarDelegate::LinkClicked(WindowOpenDisposition disposition) {
     auto* data_reduction_proxy_settings =
         DataReductionProxyChromeSettingsFactory::GetForBrowserContext(
             web_contents->GetBrowserContext());
-    data_reduction_proxy_settings->IncrementLoFiUserRequestsForImages();
+    if (!data_reduction_proxy::params::IsBlackListEnabledForServerPreviews())
+      data_reduction_proxy_settings->IncrementLoFiUserRequestsForImages();
     PreviewsInfoBarTabHelper* infobar_tab_helper =
         PreviewsInfoBarTabHelper::FromWebContents(web_contents);
     if (infobar_tab_helper &&

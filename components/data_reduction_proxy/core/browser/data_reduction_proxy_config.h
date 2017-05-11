@@ -42,6 +42,10 @@ class URLRequestContextGetter;
 class URLRequestStatus;
 }
 
+namespace previews {
+class PreviewsDecider;
+}
+
 namespace data_reduction_proxy {
 
 typedef base::Callback<void(const std::string&,
@@ -193,12 +197,17 @@ class DataReductionProxyConfig
 
   // Returns true when Lo-Fi Previews should be activated. Records metrics for
   // Lo-Fi state changes. |request| is used to get the network quality estimator
-  // from the URLRequestContext.
-  bool ShouldEnableLoFi(const net::URLRequest& request);
+  // from the URLRequestContext. |previews_decider| is a non-null object that
+  // determines eligibility of showing the preview based on past opt outs.
+  bool ShouldEnableLoFi(const net::URLRequest& request,
+                        previews::PreviewsDecider* previews_decider);
 
   // Returns true when Lite Page Previews should be activated. |request| is used
   // to get the network quality estimator from the URLRequestContext.
-  bool ShouldEnableLitePages(const net::URLRequest& request);
+  // |previews_decider| is a non-null object that determines eligibility of
+  // showing the preview based on past opt outs.
+  bool ShouldEnableLitePages(const net::URLRequest& request,
+                             previews::PreviewsDecider* previews_decider);
 
   // Returns true if the data saver has been enabled by the user, and the data
   // saver proxy is reachable.
@@ -294,15 +303,20 @@ class DataReductionProxyConfig
   // Returns true when Lo-Fi Previews should be activated. Determines if Lo-Fi
   // Previews should be activated by checking the Lo-Fi flags and if the network
   // quality is prohibitively slow. |network_quality_estimator| may be NULL.
-  bool ShouldEnableLoFiInternal(
-      const net::NetworkQualityEstimator* network_quality_estimator);
+  // |previews_decider| is a non-null object that determines eligibility of the
+  // showing the preview based on past opt outs.
+  bool ShouldEnableLoFiInternal(const net::URLRequest& request,
+                                previews::PreviewsDecider* previews_decider);
 
   // Returns true when Lite Page Previews should be activated. Determines if
   // Lite Page Previewsmode should be activated by checking the Lite Page
   // Previews flags and if the network quality is prohibitively slow.
-  // |network_quality_estimator| may be NULL.
+  // |network_quality_estimator| may be NULL. |previews_decider| is a non-null
+  // object that determines eligibility of showing the preview based on past opt
+  // outs.
   bool ShouldEnableLitePagesInternal(
-      const net::NetworkQualityEstimator* network_quality_estimator);
+      const net::URLRequest& request,
+      previews::PreviewsDecider* previews_decider);
 
   // Returns true if the network quality is at least as poor as the one
   // specified in the Auto Lo-Fi field trial parameters.
