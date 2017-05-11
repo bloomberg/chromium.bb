@@ -40,6 +40,13 @@ UiTexture::UiTexture() = default;
 
 UiTexture::~UiTexture() = default;
 
+bool UiTexture::SetDrawFlags(int draw_flags) {
+  if (draw_flags == draw_flags_)
+    return false;
+  draw_flags_ = draw_flags;
+  return true;
+}
+
 void UiTexture::DrawAndLayout(SkCanvas* canvas, const gfx::Size& texture_size) {
   canvas->drawColor(SK_ColorTRANSPARENT);
   Draw(canvas, texture_size);

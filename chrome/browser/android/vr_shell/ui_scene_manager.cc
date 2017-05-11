@@ -4,8 +4,10 @@
 
 #include "chrome/browser/android/vr_shell/ui_scene_manager.h"
 
+#include "base/callback.h"
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/android/vr_shell/textures/ui_texture.h"
+#include "chrome/browser/android/vr_shell/ui_elements/close_button.h"
 #include "chrome/browser/android/vr_shell/ui_elements/permanent_security_warning.h"
 #include "chrome/browser/android/vr_shell/ui_elements/transient_security_warning.h"
 #include "chrome/browser/android/vr_shell/ui_elements/ui_element.h"
@@ -67,6 +69,9 @@ UiSceneManager::UiSceneManager(VrBrowserInterface* browser,
   CreateContentQuad();
   CreateSecurityWarnings();
   CreateUrlBar();
+
+  if (in_cct_)
+    CreateCloseButton();
 }
 
 UiSceneManager::~UiSceneManager() {}
@@ -190,13 +195,27 @@ void UiSceneManager::CreateBackground() {
 void UiSceneManager::CreateUrlBar() {
   // TODO(cjgrant): Incorporate final size and position.
   // TODO(cjgrant): Add the loading progress indicator element.
-  auto element = base::MakeUnique<UrlBar>(512);
+  std::unique_ptr<UrlBar> element = base::MakeUnique<UrlBar>(512);
   element->set_id(AllocateId());
   element->set_translation({0, -0.9, -1.8});
   element->set_size({0.9, 0, 1});
   element->SetBackButtonCallback(
       base::Bind(&UiSceneManager::OnBackButtonClicked, base::Unretained(this)));
   url_bar_ = element.get();
+  browser_ui_elements_.push_back(element.get());
+  scene_->AddUiElement(std::move(element));
+}
+
+void UiSceneManager::CreateCloseButton() {
+  std::unique_ptr<CloseButton> element =
+      base::MakeUnique<CloseButton>(base::Bind(
+          &UiSceneManager::OnCloseButtonClicked, base::Unretained(this)));
+  element->set_id(AllocateId());
+  element->set_fill(vr_shell::Fill::NONE);
+  element->set_translation(
+      gfx::Vector3dF(0, kContentVerticalOffset - (kContentHeight / 2) - 0.3,
+                     -kContentDistance + 0.4));
+  element->set_size(gfx::Vector3dF(0.2, 0.2, 1));
   browser_ui_elements_.push_back(element.get());
   scene_->AddUiElement(std::move(element));
 }
@@ -293,6 +312,8 @@ void UiSceneManager::SetLoadProgress(double progress) {}
 
 void UiSceneManager::SetHistoryButtonsEnabled(bool can_go_back,
                                               bool can_go_forward) {}
+
+void UiSceneManager::OnCloseButtonClicked() {}
 
 int UiSceneManager::AllocateId() {
   return next_available_id_++;

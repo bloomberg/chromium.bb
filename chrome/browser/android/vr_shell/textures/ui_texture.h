@@ -27,6 +27,9 @@ class UiTexture {
   void DrawAndLayout(SkCanvas* canvas, const gfx::Size& texture_size);
   virtual gfx::Size GetPreferredTextureSize(int maximum_width) const = 0;
   virtual gfx::SizeF GetDrawnSize() const = 0;
+  // Returns true if the state changed.
+  bool SetDrawFlags(int draw_flags);
+  int GetDrawFlags() { return draw_flags_; }
 
  protected:
   virtual void Draw(SkCanvas* canvas, const gfx::Size& texture_size) = 0;
@@ -34,6 +37,9 @@ class UiTexture {
   static bool IsRTL();
   static gfx::FontList GetDefaultFontList(int size);
   static gfx::FontList GetFontList(int size, base::string16 text);
+
+ private:
+  int draw_flags_ = 0;
 };
 
 }  // namespace vr_shell

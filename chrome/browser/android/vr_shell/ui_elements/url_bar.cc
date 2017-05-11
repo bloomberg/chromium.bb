@@ -19,17 +19,19 @@ UiTexture* UrlBar::GetTexture() const {
   return texture_.get();
 }
 
-void UrlBar::OnHoverEnter() {
-  texture_->SetHover(true);
+void UrlBar::OnHoverEnter(gfx::PointF position) {
+  if (!texture_->SetDrawFlags(UrlBarTexture::FLAG_HOVER))
+    return;
   Update();
 }
 
 void UrlBar::OnHoverLeave() {
-  texture_->SetHover(false);
+  if (!texture_->SetDrawFlags(0))
+    return;
   Update();
 }
 
-void UrlBar::OnButtonUp() {
+void UrlBar::OnButtonUp(gfx::PointF position) {
   back_button_callback_.Run();
 }
 
