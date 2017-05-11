@@ -31,6 +31,8 @@ void swizzleUIImageImageNamed() {
   // TODO(crbug.com/720338): Add missing images.
   [whiteList addObject:@"glif-mic-to-dots-large_37"];
   [whiteList addObject:@"glif-google-to-dots_28"];
+  // TODO(crbug.com/721338): Add missing image.
+  [whiteList addObject:@"voice_icon_keyboard_accessory"];
 
   // The original implementation of [UIImage imageNamed:].
   // Called by the new implementation.
