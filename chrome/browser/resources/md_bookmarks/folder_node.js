@@ -83,19 +83,26 @@ Polymer({
    * @param {!Event} e
    */
   onKeydown_: function(e) {
-    var direction = 0;
+    var yDirection = 0;
+    var xDirection = 0;
     var handled = true;
-    // TODO(calamity): Handle left/right arrow keys.
     if (e.key == 'ArrowUp') {
-      direction = -1;
+      yDirection = -1;
     } else if (e.key == 'ArrowDown') {
-      direction = 1;
+      yDirection = 1;
+    } else if (e.key == 'ArrowLeft') {
+      xDirection = -1;
+    } else if (e.key == 'ArrowRight') {
+      xDirection = 1;
     } else {
       handled = false;
     }
 
-    if (direction)
-      this.changeKeyboardSelection_(direction, this.root.activeElement);
+    if (this.getComputedStyleValue('direction') == 'rtl')
+      xDirection *= -1;
+
+    this.changeKeyboardSelection_(
+        xDirection, yDirection, this.root.activeElement);
 
     if (!handled)
       return;
@@ -106,17 +113,45 @@ Polymer({
 
   /**
    * @private
-   * @param {number} direction
+   * @param {number} xDirection
+   * @param {number} yDirection
    * @param {!HTMLElement} currentFocus
    */
-  changeKeyboardSelection_: function(direction, currentFocus) {
+  changeKeyboardSelection_: function(xDirection, yDirection, currentFocus) {
     var newFocusFolderNode = null;
     var isChildFolderNodeFocused =
         currentFocus.tagName == 'BOOKMARKS-FOLDER-NODE';
-    var reverse = direction == -1;
+
+    if (xDirection == 1) {
+      // The right arrow opens a folder if closed and goes to the first child
+      // otherwise.
+      if (this.hasChildFolder_()) {
+        if (this.isClosed_) {
+          this.dispatch(
+              bookmarks.actions.changeFolderOpen(this.item_.id, true));
+        } else {
+          yDirection = 1;
+        }
+      }
+    } else if (xDirection == -1) {
+      // The left arrow closes a folder if open and goes to the parent
+      // otherwise.
+      if (this.hasChildFolder_() && !this.isClosed_) {
+        this.dispatch(bookmarks.actions.changeFolderOpen(this.item_.id, false));
+      } else {
+        var parentFolderNode = this.getParentFolderNode_();
+        if (parentFolderNode.itemId != ROOT_NODE_ID) {
+          parentFolderNode.selectFolder_();
+          parentFolderNode.getFocusTarget().focus();
+        }
+      }
+    }
+
+    if (!yDirection)
+      return;
 
     // The current node's successor is its first child when open.
-    if (!isChildFolderNodeFocused && !reverse && !this.isClosed_) {
+    if (!isChildFolderNodeFocused && yDirection == 1 && !this.isClosed_) {
       var children = this.getChildFolderNodes_();
       if (children.length)
         newFocusFolderNode = children[0];
@@ -126,19 +161,20 @@ Polymer({
       // Get the next child folder node if a child is focused.
       if (!newFocusFolderNode) {
         newFocusFolderNode = this.getNextChild_(
-            reverse,
+            yDirection == -1,
             /** @type {!BookmarksFolderNodeElement} */ (currentFocus));
       }
 
       // The first child's predecessor is this node.
-      if (!newFocusFolderNode && reverse)
+      if (!newFocusFolderNode && yDirection == -1)
         newFocusFolderNode = this;
     }
 
     // If there is no newly focused node, allow the parent to handle the change.
     if (!newFocusFolderNode) {
       if (this.itemId != ROOT_NODE_ID)
-        this.getParentFolderNode_().changeKeyboardSelection_(direction, this);
+        this.getParentFolderNode_().changeKeyboardSelection_(
+            0, yDirection, this);
 
       return;
     }
