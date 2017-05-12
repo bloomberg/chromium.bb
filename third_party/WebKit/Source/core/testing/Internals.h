@@ -421,6 +421,7 @@ class Internals final : public GarbageCollected<Internals>,
   void forceReload(bool bypass_cache);
 
   String getImageSourceURL(Element*);
+  void forceImageReload(Element*, ExceptionState&);
 
   String selectMenuListText(HTMLSelectElement*);
   bool isSelectPopupVisible(Node*);

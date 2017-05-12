@@ -2781,6 +2781,16 @@ String Internals::getImageSourceURL(Element* element) {
   return element->ImageSourceURL();
 }
 
+void Internals::forceImageReload(Element* element,
+                                 ExceptionState& exception_state) {
+  if (!element || !isHTMLImageElement(*element)) {
+    exception_state.ThrowDOMException(
+        kInvalidAccessError, "The element should be HTMLImageElement.");
+  }
+
+  toHTMLImageElement(*element).ForceReload();
+}
+
 String Internals::selectMenuListText(HTMLSelectElement* select) {
   DCHECK(select);
   LayoutObject* layout_object = select->GetLayoutObject();

@@ -270,6 +270,7 @@
     void forceReload(boolean endToEnd);
 
     DOMString getImageSourceURL(Element element);
+    [RaisesException] void forceImageReload(Element element);
 
     DOMString selectMenuListText(HTMLSelectElement select);
     boolean isSelectPopupVisible(Node node);
