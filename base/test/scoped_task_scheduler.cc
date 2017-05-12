@@ -20,6 +20,7 @@
 #include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
 #include "base/task_runner.h"
+#include "base/task_scheduler/single_thread_task_runner_thread_mode.h"
 #include "base/task_scheduler/task.h"
 #include "base/task_scheduler/task_scheduler.h"
 #include "base/task_scheduler/task_tracker.h"
@@ -60,10 +61,12 @@ class TestTaskScheduler : public TaskScheduler {
   scoped_refptr<SequencedTaskRunner> CreateSequencedTaskRunnerWithTraits(
       const TaskTraits& traits) override;
   scoped_refptr<SingleThreadTaskRunner> CreateSingleThreadTaskRunnerWithTraits(
-      const TaskTraits& traits) override;
+      const TaskTraits& traits,
+      SingleThreadTaskRunnerThreadMode thread_mode) override;
 #if defined(OS_WIN)
   scoped_refptr<SingleThreadTaskRunner> CreateCOMSTATaskRunnerWithTraits(
-      const TaskTraits& traits) override;
+      const TaskTraits& traits,
+      SingleThreadTaskRunnerThreadMode thread_mode) override;
 #endif  // defined(OS_WIN)
   std::vector<const HistogramBase*> GetHistograms() const override;
   int GetMaxConcurrentTasksWithTraitsDeprecated(
@@ -196,14 +199,17 @@ TestTaskScheduler::CreateSequencedTaskRunnerWithTraits(
 
 scoped_refptr<SingleThreadTaskRunner>
 TestTaskScheduler::CreateSingleThreadTaskRunnerWithTraits(
-    const TaskTraits& traits) {
+    const TaskTraits& traits,
+    SingleThreadTaskRunnerThreadMode thread_mode) {
   return make_scoped_refptr(new TestTaskSchedulerTaskRunner(
       this, ExecutionMode::SINGLE_THREADED, traits));
 }
 
 #if defined(OS_WIN)
 scoped_refptr<SingleThreadTaskRunner>
-TestTaskScheduler::CreateCOMSTATaskRunnerWithTraits(const TaskTraits& traits) {
+TestTaskScheduler::CreateCOMSTATaskRunnerWithTraits(
+    const TaskTraits& traits,
+    SingleThreadTaskRunnerThreadMode thread_mode) {
   EnsureCOMSTA();
   return make_scoped_refptr(new TestTaskSchedulerTaskRunner(
       this, ExecutionMode::SINGLE_THREADED, traits));

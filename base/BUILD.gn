@@ -847,6 +847,7 @@ component("base") {
     "task_scheduler/sequence.h",
     "task_scheduler/sequence_sort_key.cc",
     "task_scheduler/sequence_sort_key.h",
+    "task_scheduler/single_thread_task_runner_thread_mode.h",
     "task_scheduler/task.cc",
     "task_scheduler/task.h",
     "task_scheduler/task_scheduler.cc",
