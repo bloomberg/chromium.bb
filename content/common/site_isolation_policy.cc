@@ -39,8 +39,7 @@ bool SiteIsolationPolicy::IsTopDocumentIsolationEnabled() {
   if (UseDedicatedProcessesForAllSites())
     return false;
 
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kTopDocumentIsolation);
+  return base::FeatureList::IsEnabled(::features::kTopDocumentIsolation);
 }
 
 }  // namespace content

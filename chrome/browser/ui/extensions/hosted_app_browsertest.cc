@@ -21,7 +21,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/content_switches.h"
+#include "content/public/common/content_features.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/extension_registry.h"
@@ -203,16 +203,17 @@ class HostedAppVsTdiTest : public HostedAppTest {
   HostedAppVsTdiTest() {}
   ~HostedAppVsTdiTest() override {}
 
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    HostedAppTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitch(switches::kTopDocumentIsolation);
-  }
-
   void SetUpOnMainThread() override {
+    scoped_feature_list_.InitAndEnableFeature(features::kTopDocumentIsolation);
     HostedAppTest::SetUpOnMainThread();
     host_resolver()->AddRule("*", "127.0.0.1");
     ASSERT_TRUE(embedded_test_server()->Start());
   }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+
+  DISALLOW_COPY_AND_ASSIGN(HostedAppVsTdiTest);
 };
 
 // Tests that even with --top-document-isolation, app.site.com (covered by app's

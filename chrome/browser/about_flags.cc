@@ -1856,7 +1856,7 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-top-document-isolation",
      flag_descriptions::kTopDocumentIsolationName,
      flag_descriptions::kTopDocumentIsolationDescription, kOsAll,
-     SINGLE_VALUE_TYPE(switches::kTopDocumentIsolation)},
+     FEATURE_VALUE_TYPE(features::kTopDocumentIsolation)},
     {"enable-use-zoom-for-dsf", flag_descriptions::kEnableUseZoomForDsfName,
      flag_descriptions::kEnableUseZoomForDsfDescription, kOsAll,
      MULTI_VALUE_TYPE(kEnableUseZoomForDSFChoices)},

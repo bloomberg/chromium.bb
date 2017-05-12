@@ -240,7 +240,6 @@ CONTENT_EXPORT extern const char kStatsCollectionController[];
 CONTENT_EXPORT extern const char kTestingFixedHttpPort[];
 CONTENT_EXPORT extern const char kTestingFixedHttpsPort[];
 CONTENT_EXPORT extern const char kTestType[];
-CONTENT_EXPORT extern const char kTopDocumentIsolation[];
 CONTENT_EXPORT extern const char kTouchEventFeatureDetection[];
 CONTENT_EXPORT extern const char kTouchEventFeatureDetectionAuto[];
 CONTENT_EXPORT extern const char kTouchEventFeatureDetectionEnabled[];

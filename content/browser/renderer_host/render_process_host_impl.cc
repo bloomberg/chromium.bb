@@ -1925,7 +1925,6 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kSitePerProcess,
     switches::kStatsCollectionController,
     switches::kTestType,
-    switches::kTopDocumentIsolation,
     switches::kTouchEventFeatureDetection,
     switches::kTouchTextSelectionStrategy,
     switches::kTraceConfigFile,
