@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "components/sync/model/mock_model_type_store.h"
 #include "components/sync/protocol/entity_metadata.pb.h"

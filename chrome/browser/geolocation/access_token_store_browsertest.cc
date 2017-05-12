@@ -4,6 +4,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/message_loop/message_loop.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/geolocation/chrome_access_token_store.h"

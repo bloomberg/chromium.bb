@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
+#include "base/message_loop/message_loop.h"
 #include "device/geolocation/fake_access_token_store.h"
 #include "device/geolocation/fake_location_provider.h"
 #include "device/geolocation/geolocation_delegate.h"

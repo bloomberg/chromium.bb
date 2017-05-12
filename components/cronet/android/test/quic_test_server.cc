@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/message_loop/message_loop.h"
 #include "base/test/test_support_android.h"
 #include "base/threading/thread.h"
 #include "components/cronet/android/test/cronet_test_util.h"

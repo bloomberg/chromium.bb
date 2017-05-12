@@ -5,6 +5,7 @@
 #import "ios/clean/chrome/browser/ui/tab/tab_coordinator.h"
 
 #include "base/memory/ptr_util.h"
+#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #import "ios/clean/chrome/browser/ui/tab/tab_container_view_controller.h"

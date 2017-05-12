@@ -8,6 +8,7 @@
 #include <stdint.h>
 #include <memory>
 
+#include "base/message_loop/message_loop.h"
 #include "base/pickle.h"
 #include "base/run_loop.h"
 #include "base/threading/thread.h"

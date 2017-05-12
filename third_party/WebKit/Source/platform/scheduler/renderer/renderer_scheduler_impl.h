@@ -8,6 +8,7 @@
 #include "base/atomicops.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
+#include "base/message_loop/message_loop.h"
 #include "base/synchronization/lock.h"
 #include "base/trace_event/trace_log.h"
 #include "device/base/synchronization/shared_memory_seqlock_buffer.h"

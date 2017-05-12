@@ -7,6 +7,7 @@
 
 #include "base/json/json_string_value_serializer.h"
 #include "base/memory/ptr_util.h"
+#include "base/message_loop/message_loop.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "chrome/browser/prefs/pref_service_syncable_util.h"

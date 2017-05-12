@@ -6,6 +6,7 @@
 
 #include <memory>
 #include <queue>
+#include "base/message_loop/message_loop.h"
 #include "platform/scheduler/base/task_queue_impl.h"
 #include "platform/scheduler/child/web_scheduler.h"
 #include "platform/scheduler/child/web_task_runner_impl.h"

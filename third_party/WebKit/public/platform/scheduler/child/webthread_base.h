@@ -8,6 +8,7 @@
 #include <map>
 #include <memory>
 
+#include "base/message_loop/message_loop.h"
 #include "base/threading/thread.h"
 #include "public/platform/WebCommon.h"
 #include "public/platform/WebThread.h"

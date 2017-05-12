@@ -5,6 +5,7 @@
 #include "chromeos/process_proxy/process_proxy_registry.h"
 
 #include "base/bind.h"
+#include "base/message_loop/message_loop.h"
 
 namespace chromeos {
 

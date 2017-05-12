@@ -5,6 +5,7 @@
 #include "device/generic_sensor/platform_sensor_provider_linux.h"
 
 #include "base/memory/singleton.h"
+#include "base/message_loop/message_loop.h"
 #include "base/task_runner_util.h"
 #include "base/threading/thread.h"
 #include "device/generic_sensor/linux/sensor_data_linux.h"

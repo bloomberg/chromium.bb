@@ -10,6 +10,7 @@
 
 #include "base/command_line.h"
 #include "base/memory/ptr_util.h"
+#include "base/message_loop/message_loop.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/public/app/content_main.h"
 #include "content/public/browser/browser_thread.h"

@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_WEBKIT_SOURCE_PLATFORM_SCHEDULER_CHILD_WEBTHREAD_IMPL_FOR_WORKER_SCHEDULER_H_
 #define THIRD_PARTY_WEBKIT_SOURCE_PLATFORM_SCHEDULER_CHILD_WEBTHREAD_IMPL_FOR_WORKER_SCHEDULER_H_
 
+#include "base/message_loop/message_loop.h"
 #include "base/threading/thread.h"
 #include "public/platform/WebPrivatePtr.h"
 #include "public/platform/scheduler/child/webthread_base.h"

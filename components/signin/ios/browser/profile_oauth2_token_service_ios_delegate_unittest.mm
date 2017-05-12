@@ -5,6 +5,7 @@
 #include "components/signin/ios/browser/profile_oauth2_token_service_ios_delegate.h"
 
 #include "base/memory/ptr_util.h"
+#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/testing_pref_service.h"

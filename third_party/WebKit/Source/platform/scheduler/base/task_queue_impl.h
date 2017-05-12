@@ -12,6 +12,7 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "base/message_loop/message_loop.h"
 #include "base/pending_task.h"
 #include "base/threading/thread_checker.h"
 #include "base/trace_event/trace_event.h"

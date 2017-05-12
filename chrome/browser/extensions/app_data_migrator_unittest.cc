@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/callback_forward.h"
+#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/thread_task_runner_handle.h"

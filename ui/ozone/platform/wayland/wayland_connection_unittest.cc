@@ -5,6 +5,7 @@
 #include <wayland-server-core.h>
 #include <xdg-shell-unstable-v5-server-protocol.h>
 
+#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/ozone/platform/wayland/fake_server.h"

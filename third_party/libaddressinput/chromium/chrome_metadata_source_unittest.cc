@@ -4,6 +4,7 @@
 
 #include "third_party/libaddressinput/chromium/chrome_metadata_source.h"
 
+#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "net/url_request/test_url_fetcher_factory.h"

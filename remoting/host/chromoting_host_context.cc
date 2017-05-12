@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
+#include "base/message_loop/message_loop.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
 #include "remoting/base/auto_thread.h"
