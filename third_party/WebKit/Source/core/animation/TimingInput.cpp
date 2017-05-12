@@ -5,6 +5,7 @@
 #include "core/animation/TimingInput.h"
 
 #include "bindings/core/v8/ExceptionState.h"
+#include "bindings/core/v8/UnrestrictedDoubleOrKeyframeAnimationOptions.h"
 #include "bindings/core/v8/UnrestrictedDoubleOrKeyframeEffectOptions.h"
 #include "core/animation/AnimationInputHelpers.h"
 #include "core/animation/KeyframeEffectOptions.h"
@@ -138,6 +139,24 @@ bool TimingInput::Convert(
   return false;
 }
 
+bool TimingInput::Convert(
+    const UnrestrictedDoubleOrKeyframeAnimationOptions& options,
+    Timing& timing_output,
+    Document* document,
+    ExceptionState& exception_state) {
+  if (options.isKeyframeAnimationOptions()) {
+    return Convert(options.getAsKeyframeAnimationOptions(), timing_output,
+                   document, exception_state);
+  } else if (options.isUnrestrictedDouble()) {
+    return Convert(options.getAsUnrestrictedDouble(), timing_output,
+                   exception_state);
+  } else if (options.isNull()) {
+    return true;
+  }
+  NOTREACHED();
+  return false;
+}
+
 bool TimingInput::Convert(const KeyframeEffectOptions& timing_input,
                           Timing& timing_output,
                           Document* document,
@@ -168,6 +187,15 @@ bool TimingInput::Convert(const KeyframeEffectOptions& timing_input,
   timing_output.AssertValid();
 
   return true;
+}
+
+bool TimingInput::Convert(const KeyframeAnimationOptions& timing_input,
+                          Timing& timing_output,
+                          Document* document,
+                          ExceptionState& exception_state) {
+  // The "id" field isn't used, so upcast to KeyframeEffectOptions.
+  const KeyframeEffectOptions* const timing_input_ptr = &timing_input;
+  return Convert(*timing_input_ptr, timing_output, document, exception_state);
 }
 
 bool TimingInput::Convert(double duration,

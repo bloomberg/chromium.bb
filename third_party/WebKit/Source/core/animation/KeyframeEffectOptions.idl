@@ -6,5 +6,4 @@
 
 dictionary KeyframeEffectOptions : AnimationEffectTimingProperties {
     // TODO(alancutter): Implement iterationComposite, composite and spacing.
-    DOMString id = "";
 };
