@@ -134,7 +134,8 @@ NavigationURLLoaderNetworkService::NavigationURLLoaderNetworkService(
         BrowserThread::IO, FROM_HERE,
         base::Bind(
             &PrepareNavigationOnIOThread, base::Passed(std::move(new_request)),
-            resource_context, resource_type, appcache_handle->core(),
+            resource_context, resource_type,
+            appcache_handle ? appcache_handle->core() : nullptr,
             base::Bind(&NavigationURLLoaderNetworkService::StartURLRequest,
                        weak_factory_.GetWeakPtr())));
     return;
