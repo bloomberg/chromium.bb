@@ -23,10 +23,18 @@ namespace blink {
 void PaintController::SetTracksRasterInvalidations(bool value) {
   if (value ||
       RuntimeEnabledFeatures::paintUnderInvalidationCheckingEnabled()) {
-    raster_invalidation_tracking_map_ =
-        WTF::WrapUnique(new RasterInvalidationTrackingMap<const PaintChunk>);
+    raster_invalidation_tracking_info_ =
+        WTF::MakeUnique<RasterInvalidationTrackingInfo>();
+
+    // This is called just after a full document cycle update, so all clients in
+    // current_paint_artifact_ should be still alive.
+    DCHECK(new_display_item_list_.IsEmpty());
+    for (const auto& item : current_paint_artifact_.GetDisplayItemList()) {
+      raster_invalidation_tracking_info_->old_client_debug_names.Set(
+          &item.Client(), item.Client().DebugName());
+    }
   } else {
-    raster_invalidation_tracking_map_ = nullptr;
+    raster_invalidation_tracking_info_ = nullptr;
   }
 }
 
@@ -247,6 +255,11 @@ void PaintController::ProcessNewItem(DisplayItem& display_item) {
 
   if (IsSkippingCache())
     display_item.SetSkippedCache();
+
+  if (raster_invalidation_tracking_info_) {
+    raster_invalidation_tracking_info_->new_client_debug_names.insert(
+        &display_item.Client(), display_item.Client().DebugName());
+  }
 
   if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
     size_t last_chunk_index = new_paint_chunks_.LastChunkIndex();
@@ -600,9 +613,9 @@ void PaintController::CommitNewDisplayItems(
   // The new list will not be appended to again so we can release unused memory.
   new_display_item_list_.ShrinkToFit();
 
-  if (raster_invalidation_tracking_map_) {
+  if (raster_invalidation_tracking_info_) {
     for (const auto& chunk : current_paint_artifact_.PaintChunks())
-      raster_invalidation_tracking_map_->Remove(&chunk);
+      raster_invalidation_tracking_info_->map.Remove(&chunk);
   }
   current_paint_artifact_ = PaintArtifact(
       std::move(new_display_item_list_), new_paint_chunks_.ReleasePaintChunks(),
@@ -632,6 +645,12 @@ void PaintController::CommitNewDisplayItems(
   num_out_of_order_matches_ = 0;
   num_indexed_items_ = 0;
 #endif
+
+  if (raster_invalidation_tracking_info_) {
+    raster_invalidation_tracking_info_->old_client_debug_names.clear();
+    std::swap(raster_invalidation_tracking_info_->old_client_debug_names,
+              raster_invalidation_tracking_info_->new_client_debug_names);
+  }
 }
 
 size_t PaintController::ApproximateUnsharedMemoryUsage() const {
@@ -683,7 +702,10 @@ void PaintController::GenerateRasterInvalidations(PaintChunk& new_chunk) {
 
   static FloatRect infinite_float_rect(LayoutRect::InfiniteIntRect());
   if (!new_chunk.id) {
-    AddRasterInvalidation(nullptr, new_chunk, infinite_float_rect);
+    // This chunk is not cacheable, so always invalidate the whole chunk.
+    AddRasterInvalidation(
+        new_display_item_list_[new_chunk.begin_index].Client(), new_chunk,
+        infinite_float_rect);
     return;
   }
 
@@ -723,30 +745,41 @@ void PaintController::GenerateRasterInvalidations(PaintChunk& new_chunk) {
   }
 
   // We reach here because the chunk is new.
-  AddRasterInvalidation(nullptr, new_chunk, infinite_float_rect);
+  AddRasterInvalidation(new_display_item_list_[new_chunk.begin_index].Client(),
+                        new_chunk, infinite_float_rect);
 }
 
-void PaintController::AddRasterInvalidation(const DisplayItemClient* client,
+void PaintController::AddRasterInvalidation(const DisplayItemClient& client,
                                             PaintChunk& chunk,
                                             const FloatRect& rect) {
   chunk.raster_invalidation_rects.push_back(rect);
-  if (raster_invalidation_tracking_map_)
+  if (raster_invalidation_tracking_info_)
     TrackRasterInvalidation(client, chunk, rect);
 }
 
-void PaintController::TrackRasterInvalidation(const DisplayItemClient* client,
+void PaintController::TrackRasterInvalidation(const DisplayItemClient& client,
                                               PaintChunk& chunk,
                                               const FloatRect& rect) {
-  DCHECK(raster_invalidation_tracking_map_);
+  DCHECK(raster_invalidation_tracking_info_);
 
   RasterInvalidationInfo info;
   info.rect = EnclosingIntRect(rect);
-  info.client = client;
-  if (client) {
-    info.client_debug_name = client->DebugName();
-    info.reason = client->GetPaintInvalidationReason();
+  info.client = &client;
+  auto it =
+      raster_invalidation_tracking_info_->new_client_debug_names.find(&client);
+  if (it == raster_invalidation_tracking_info_->new_client_debug_names.end()) {
+    it = raster_invalidation_tracking_info_->old_client_debug_names.find(
+        &client);
+    // The client should be either in new list or in old list.
+    DCHECK(it !=
+           raster_invalidation_tracking_info_->old_client_debug_names.end());
+    info.reason = kPaintInvalidationLayoutObjectRemoval;
+  } else {
+    info.reason = client.GetPaintInvalidationReason();
   }
-  raster_invalidation_tracking_map_->Add(&chunk).invalidations.push_back(info);
+  info.client_debug_name = it->value;
+  raster_invalidation_tracking_info_->map.Add(&chunk).invalidations.push_back(
+      info);
 }
 
 void PaintController::GenerateRasterInvalidationsComparingChunks(
@@ -764,7 +797,7 @@ void PaintController::GenerateRasterInvalidationsComparingChunks(
     const DisplayItem& old_item =
         current_paint_artifact_.GetDisplayItemList()[old_index];
     const DisplayItemClient* client_to_invalidate = nullptr;
-    bool is_potentially_invalid_client = false;
+
     if (!old_item.HasValidClient()) {
       size_t moved_to_index = items_moved_into_new_list_[old_index];
       if (new_display_item_list_[moved_to_index].DrawsContent()) {
@@ -777,7 +810,7 @@ void PaintController::GenerateRasterInvalidationsComparingChunks(
           // And invalidate in the new chunk into which the item was moved.
           PaintChunk& moved_to_chunk =
               new_paint_chunks_.FindChunkByDisplayItemIndex(moved_to_index);
-          AddRasterInvalidation(client_to_invalidate, moved_to_chunk,
+          AddRasterInvalidation(*client_to_invalidate, moved_to_chunk,
                                 FloatRect(client_to_invalidate->VisualRect()));
         } else if (moved_to_index < highest_moved_to_index) {
           // The item has been moved behind other cached items, so need to
@@ -790,15 +823,13 @@ void PaintController::GenerateRasterInvalidationsComparingChunks(
         }
       }
     } else if (old_item.DrawsContent()) {
-      is_potentially_invalid_client = true;
       client_to_invalidate = &old_item.Client();
     }
     if (client_to_invalidate &&
         invalidated_clients_in_old_chunk.insert(client_to_invalidate)
             .is_new_entry) {
       AddRasterInvalidation(
-          is_potentially_invalid_client ? nullptr : client_to_invalidate,
-          new_chunk,
+          *client_to_invalidate, new_chunk,
           FloatRect(current_paint_artifact_.GetDisplayItemList().VisualRect(
               old_index)));
     }
@@ -811,7 +842,7 @@ void PaintController::GenerateRasterInvalidationsComparingChunks(
     if (new_item.DrawsContent() && !ClientCacheIsValid(new_item.Client()) &&
         invalidated_clients_in_new_chunk.insert(&new_item.Client())
             .is_new_entry) {
-      AddRasterInvalidation(&new_item.Client(), new_chunk,
+      AddRasterInvalidation(new_item.Client(), new_chunk,
                             FloatRect(new_item.Client().VisualRect()));
     }
   }

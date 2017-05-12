@@ -12,9 +12,9 @@
           "reason": "location change"
         },
         {
-          "object": "",
+          "object": "LayoutBlockFlow (positioned) DIV id='target'",
           "rect": [0, 0, 100, 100],
-          "reason": "full"
+          "reason": "location change"
         }
       ]
     }
