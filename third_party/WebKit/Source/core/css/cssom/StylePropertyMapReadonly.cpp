@@ -51,41 +51,24 @@ class StylePropertyMapIterationSource final
 
 CSSStyleValue* StylePropertyMapReadonly::get(const String& property_name,
                                              ExceptionState& exception_state) {
-  CSSPropertyID property_id = cssPropertyID(property_name);
-  if (property_id == CSSPropertyInvalid || property_id == CSSPropertyVariable) {
-    // TODO(meade): Handle custom properties here.
-    exception_state.ThrowTypeError("Invalid propertyName: " + property_name);
-    return nullptr;
-  }
-
-  CSSStyleValueVector style_vector = GetAllInternal(property_id);
-  if (style_vector.IsEmpty())
-    return nullptr;
-
-  return style_vector[0];
+  CSSStyleValueVector style_vector = getAll(property_name, exception_state);
+  return style_vector.IsEmpty() ? nullptr : style_vector[0];
 }
 
 CSSStyleValueVector StylePropertyMapReadonly::getAll(
     const String& property_name,
     ExceptionState& exception_state) {
   CSSPropertyID property_id = cssPropertyID(property_name);
-  if (property_id != CSSPropertyInvalid && property_id != CSSPropertyVariable)
-    return GetAllInternal(property_id);
-
-  // TODO(meade): Handle custom properties here.
-  exception_state.ThrowTypeError("Invalid propertyName: " + property_name);
-  return CSSStyleValueVector();
+  if (property_id == CSSPropertyInvalid)
+    exception_state.ThrowTypeError("Invalid propertyName: " + property_name);
+  if (property_id == CSSPropertyVariable)
+    return GetAllInternal(AtomicString(property_name));
+  return GetAllInternal(property_id);
 }
 
 bool StylePropertyMapReadonly::has(const String& property_name,
                                    ExceptionState& exception_state) {
-  CSSPropertyID property_id = cssPropertyID(property_name);
-  if (property_id != CSSPropertyInvalid && property_id != CSSPropertyVariable)
-    return !GetAllInternal(property_id).IsEmpty();
-
-  // TODO(meade): Handle custom properties here.
-  exception_state.ThrowTypeError("Invalid propertyName: " + property_name);
-  return false;
+  return !getAll(property_name, exception_state).IsEmpty();
 }
 
 StylePropertyMapReadonly::IterationSource*
