@@ -12,6 +12,9 @@
 #include "components/exo/wm_helper.h"
 #include "ui/accessibility/platform/ax_android_constants.h"
 #include "ui/aura/window.h"
+#include "ui/views/focus/focus_manager.h"
+#include "ui/views/view.h"
+#include "ui/views/widget/widget.h"
 
 namespace {
 
@@ -57,8 +60,11 @@ ui::AXEvent ToAXEvent(arc::mojom::AccessibilityEventType arc_event_type) {
 }
 
 const gfx::Rect GetBounds(arc::mojom::AccessibilityNodeInfoData* node) {
-  exo::WMHelper* wmHelper = exo::WMHelper::GetInstance();
-  aura::Window* focused_window = wmHelper->GetFocusedWindow();
+  exo::WMHelper* wm_helper = exo::WMHelper::GetInstance();
+  if (!wm_helper)
+    return gfx::Rect();
+
+  aura::Window* focused_window = wm_helper->GetFocusedWindow();
   gfx::Rect bounds_in_screen = node->boundsInScreen;
   if (focused_window) {
     aura::Window* toplevel_window = focused_window->GetToplevelWindow();
@@ -199,11 +205,35 @@ void PopulateAXState(arc::mojom::AccessibilityNodeInfoData* node,
 
 namespace arc {
 
-AXTreeSourceArc::AXTreeSourceArc(int32_t id)
-    : tree_id_(id),
-      current_tree_serializer_(new AXTreeArcSerializer(this)),
+// This class keeps focus on a |ShellSurface| without interfering with default
+// focus management in |ShellSurface|. For example, touch causes the
+// |ShellSurface| to lose focus to its ancestor containing View.
+class AXTreeSourceArc::FocusStealer : public views::View {
+ public:
+  explicit FocusStealer(int32_t id) : id_(id) { set_owned_by_client(); }
+
+  void Steal() {
+    SetFocusBehavior(views::View::FocusBehavior::ALWAYS);
+    RequestFocus();
+  }
+
+  // views::View overrides.
+  void GetAccessibleNodeData(ui::AXNodeData* node_data) override {
+    node_data->AddIntAttribute(ui::AX_ATTR_CHILD_TREE_ID, id_);
+    node_data->role = ui::AX_ROLE_CLIENT;
+  }
+
+ private:
+  const int32_t id_;
+  DISALLOW_COPY_AND_ASSIGN(FocusStealer);
+};
+
+AXTreeSourceArc::AXTreeSourceArc(Delegate* delegate)
+    : current_tree_serializer_(new AXTreeArcSerializer(this)),
       root_id_(-1),
-      focused_node_id_(-1) {}
+      focused_node_id_(-1),
+      delegate_(delegate),
+      focus_stealer_(new FocusStealer(tree_id())) {}
 
 AXTreeSourceArc::~AXTreeSourceArc() {
   Reset();
@@ -240,7 +270,7 @@ void AXTreeSourceArc::NotifyAccessibilityEvent(
   if (params.event_type == ui::AX_EVENT_FOCUS)
     focused_node_id_ = event_data->sourceId;
 
-  params.tree_id = tree_id_;
+  params.tree_id = tree_id();
   params.id = event_data->sourceId;
 
   current_tree_serializer_->SerializeChanges(GetFromId(event_data->sourceId),
@@ -251,8 +281,19 @@ void AXTreeSourceArc::NotifyAccessibilityEvent(
   router->DispatchAccessibilityEvent(params);
 }
 
+void AXTreeSourceArc::Focus(aura::Window* window) {
+  views::Widget* widget = views::Widget::GetWidgetForNativeView(window);
+  if (!widget || !widget->GetContentsView())
+    return;
+
+  views::View* view = widget->GetContentsView();
+  if (!view->Contains(focus_stealer_.get()))
+    view->AddChildView(focus_stealer_.get());
+  focus_stealer_->Steal();
+}
+
 bool AXTreeSourceArc::GetTreeData(ui::AXTreeData* data) const {
-  data->tree_id = tree_id_;
+  data->tree_id = tree_id();
   if (focused_node_id_ >= 0)
     data->focus_id = focused_node_id_;
   return true;
@@ -358,6 +399,10 @@ void AXTreeSourceArc::SerializeNode(mojom::AccessibilityNodeInfoData* node,
     out_data->AddIntAttribute(ui::AX_ATTR_TEXT_SEL_END, val);
 }
 
+void AXTreeSourceArc::PerformAction(const ui::AXActionData& data) {
+  delegate_->OnAction(data);
+}
+
 void AXTreeSourceArc::Reset() {
   tree_map_.clear();
   parent_map_.clear();
@@ -366,7 +411,10 @@ void AXTreeSourceArc::Reset() {
   focused_node_id_ = -1;
   extensions::AutomationEventRouter* router =
       extensions::AutomationEventRouter::GetInstance();
-  router->DispatchTreeDestroyedEvent(tree_id_, nullptr);
+  if (!router)
+    return;
+
+  router->DispatchTreeDestroyedEvent(tree_id(), nullptr);
 }
 
 }  // namespace arc

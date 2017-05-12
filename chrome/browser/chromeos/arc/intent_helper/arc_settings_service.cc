@@ -498,39 +498,9 @@ void ArcSettingsServiceImpl::SyncReportingConsent() const {
 }
 
 void ArcSettingsServiceImpl::SyncSpokenFeedbackEnabled() const {
-  // Chrome spoken feedback triggers enabling of Android spoken feedback.
-  // There are two types of spoken feedback from Android:
-  // 1. Talkback (default)
-  // 2. accessibility helper (experimental, works through ChromeVox).
-  // These two features are mutually exclusive.
-
-  const PrefService::Preference* pref = registrar_.prefs()->FindPreference(
-      prefs::kAccessibilitySpokenFeedbackEnabled);
-  DCHECK(pref);
-  bool enabled = false;
-  bool value_exists = pref->GetValue()->GetAsBoolean(&enabled);
-  CHECK(value_exists);
-  bool managed =
-      IsBooleanPrefManaged(prefs::kAccessibilitySpokenFeedbackEnabled);
-
-  std::string talkback_setting =
-      "org.chromium.arc.intent_helper.SET_SPOKEN_FEEDBACK_ENABLED";
-  std::string accessibility_helper_setting =
-      "org.chromium.arc.intent_helper.SET_ACCESSIBILITY_HELPER_ENABLED";
-
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          chromeos::switches::kEnableChromeVoxArcSupport)) {
-    // Make sure if ChromeVox is on, TalkBack is off.
-    if (enabled)
-      SendBoolValueSettingsBroadcast(false, managed, talkback_setting);
-
-    SendBoolValueSettingsBroadcast(enabled, managed,
-                                   accessibility_helper_setting);
-
-    return;
-  }
-
-  SendBoolValueSettingsBroadcast(enabled, managed, talkback_setting);
+  SendBoolPrefSettingsBroadcast(
+      prefs::kAccessibilitySpokenFeedbackEnabled,
+      "org.chromium.arc.intent_helper.SET_SPOKEN_FEEDBACK_ENABLED");
 }
 
 void ArcSettingsServiceImpl::SyncTimeZone() const {

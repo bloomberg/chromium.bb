@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Next MinVersion: 2
+// Next MinVersion: 3
 
 module arc.mojom;
 
@@ -156,7 +156,10 @@ enum AccessibilityFilterType {
   FOCUS,
 
   // Send a complete tree from the event source's root for every event.
-  ALL
+  ALL,
+
+  // Send complete subtrees for root nodes with whitelisted package names.
+  [MinVersion=2]WHITELISTED_PACKAGE_NAME
 };
 
 // AccessibilityEventData is a struct to contain info of

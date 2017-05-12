@@ -1559,6 +1559,7 @@ source_set("unit_tests") {
     "accessibility/magnification_manager_unittest.cc",
     "accessibility/select_to_speak_event_handler_unittest.cc",
     "accessibility/spoken_feedback_event_rewriter_unittest.cc",
+    "arc/accessibility/arc_accessibility_helper_bridge_unittest.cc",
     "arc/arc_play_store_enabled_preference_handler_unittest.cc",
     "arc/arc_session_manager_unittest.cc",
     "arc/arc_util_unittest.cc",
