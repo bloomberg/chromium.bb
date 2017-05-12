@@ -75,8 +75,7 @@ DiscardableImageStore::DiscardableImageStore(
     base::flat_map<ImageId, gfx::Rect>* image_id_to_rect)
     : canvas_(base::MakeUnique<PaintTrackingCanvas>(width, height)),
       image_set_(image_set),
-      image_id_to_rect_(image_id_to_rect),
-      unknown_stable_id_(PaintImage::GetNextId()) {}
+      image_id_to_rect_(image_id_to_rect) {}
 
 DiscardableImageStore::~DiscardableImageStore() = default;
 
@@ -183,7 +182,7 @@ void DiscardableImageStore::AddImageFromFlags(const SkRect& rect,
     SkShader::TileMode xy[2];
     SkImage* image = shader->isAImage(&matrix, xy);
     if (image) {
-      PaintImage paint_image(unknown_stable_id_, sk_ref_sp(image),
+      PaintImage paint_image(sk_ref_sp(image),
                              PaintImage::AnimationType::UNKNOWN,
                              PaintImage::CompletionState::UNKNOWN);
       // TODO(ericrk): Handle cases where we only need a sub-rect from the

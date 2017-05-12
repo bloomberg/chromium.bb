@@ -146,8 +146,7 @@ class LayerTreeHostBlendingPixelTest : public LayerTreeHostPixelResourceTest {
     scoped_refptr<PictureImageLayer> layer = PictureImageLayer::Create();
     layer->SetIsDrawable(true);
     layer->SetBounds(gfx::Size(width, height));
-    layer->SetImage(PaintImage(PaintImage::GetNextId(),
-                               backing_store->makeImageSnapshot()));
+    layer->SetImage(PaintImage(backing_store->makeImageSnapshot()));
     return layer;
   }
 
@@ -169,8 +168,7 @@ class LayerTreeHostBlendingPixelTest : public LayerTreeHostPixelResourceTest {
                                       bounds.width() - kMaskOffset * 2,
                                       bounds.height() - kMaskOffset * 2),
                      paint);
-    mask->SetImage(
-        PaintImage(PaintImage::GetNextId(), surface->makeImageSnapshot()));
+    mask->SetImage(PaintImage(surface->makeImageSnapshot()));
     layer->SetMaskLayer(mask.get());
   }
 

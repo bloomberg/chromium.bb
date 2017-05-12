@@ -52,9 +52,7 @@
 namespace blink {
 
 Image::Image(ImageObserver* observer)
-    : image_observer_disabled_(false),
-      image_observer_(observer),
-      stable_image_id_(PaintImage::GetNextId()) {}
+    : image_observer_disabled_(false), image_observer_(observer) {}
 
 Image::~Image() {}
 
@@ -299,8 +297,7 @@ void Image::DrawPattern(GraphicsContext& context,
   auto image_id = image.sk_image()->uniqueID();
 
   image =
-      PaintImage(stable_image_id_,
-                 image.sk_image()->makeSubset(EnclosingIntRect(norm_src_rect)),
+      PaintImage(image.sk_image()->makeSubset(EnclosingIntRect(norm_src_rect)),
                  image.animation_type(), image.completion_state());
   if (!image)
     return;
@@ -348,8 +345,7 @@ PaintImage Image::PaintImageForCurrentFrame() {
   auto completion_state = CurrentFrameIsComplete()
                               ? PaintImage::CompletionState::DONE
                               : PaintImage::CompletionState::PARTIALLY_DONE;
-  return PaintImage(stable_image_id_, ImageForCurrentFrame(), animation_type,
-                    completion_state);
+  return PaintImage(ImageForCurrentFrame(), animation_type, completion_state);
 }
 
 bool Image::ApplyShader(PaintFlags& flags, const SkMatrix& local_matrix) {
