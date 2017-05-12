@@ -4791,10 +4791,14 @@ static void debug_check_frame_counts(const AV1_COMMON *const cm) {
   assert(!memcmp(cm->counts.inter_compound_mode,
                  zero_counts.inter_compound_mode,
                  sizeof(cm->counts.inter_compound_mode)));
+#if CONFIG_INTERINTRA
   assert(!memcmp(cm->counts.interintra, zero_counts.interintra,
                  sizeof(cm->counts.interintra)));
+#if CONFIG_WEDGE
   assert(!memcmp(cm->counts.wedge_interintra, zero_counts.wedge_interintra,
                  sizeof(cm->counts.wedge_interintra)));
+#endif  // CONFIG_WEDGE
+#endif  // CONFIG_INTERINTRA
   assert(!memcmp(cm->counts.compound_interinter,
                  zero_counts.compound_interinter,
                  sizeof(cm->counts.compound_interinter)));
