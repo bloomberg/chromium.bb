@@ -589,14 +589,14 @@ public class IntentHandler {
      */
     public static void addTrustedIntentExtras(Intent intent) {
         if (ExternalNavigationDelegateImpl.willChromeHandleIntent(intent, true)) {
-            // The PendingIntent functions as an authentication token --- it could only have come
-            // from us. Stash it in the real Intent as an extra. shouldIgnoreIntent will retrieve it
-            // and check it with isIntentChromeInternal.
-            intent.putExtra(TRUSTED_APPLICATION_CODE_EXTRA, getAuthenticationToken());
             // It is crucial that we never leak the authentication token to other packages, because
             // then the other package could be used to impersonate us/do things as us. Therefore,
             // scope the real Intent to our package.
             intent.setPackage(ContextUtils.getApplicationContext().getPackageName());
+            // The PendingIntent functions as an authentication token --- it could only have come
+            // from us. Stash it in the real Intent as an extra. shouldIgnoreIntent will retrieve it
+            // and check it with isIntentChromeInternal.
+            intent.putExtra(TRUSTED_APPLICATION_CODE_EXTRA, getAuthenticationToken());
         }
     }
 
