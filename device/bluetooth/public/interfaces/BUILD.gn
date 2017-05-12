@@ -14,6 +14,12 @@ mojom("fake_bluetooth_interfaces") {
   sources = [
     "test/fake_bluetooth.mojom",
   ]
+
+  public_deps = [
+    ":interfaces",
+  ]
+
+  use_once_callback = true
 }
 
 mojom("experimental_interfaces") {

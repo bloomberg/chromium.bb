@@ -2,6 +2,8 @@
 <script src="../../resources/testharness.js"></script>
 <script src="../../resources/testharnessreport.js"></script>
 <script src="../../resources/bluetooth/bluetooth-helpers.js"></script>
+<script src="../../resources/bluetooth/web-bluetooth-test.js"></script>
+<script src="../../resources/mojo-helpers.js"></script>
 <body>
   <script>
   "use strict";
@@ -36,7 +38,7 @@
       });
     });
 
-    return setBluetoothFakeAdapter('HeartRateAdapter')
+    return setUpHealthThermometerAndHeartRateDevices()
       .then(() => {
         for (let i = 0; i < numIframes; i++) {
           let iframe = document.createElement('iframe');

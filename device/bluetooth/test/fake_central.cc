@@ -8,7 +8,9 @@
 #include <string>
 #include <utility>
 
+#include "device/bluetooth/bluetooth_device.h"
 #include "device/bluetooth/bluetooth_discovery_filter.h"
+#include "device/bluetooth/bluetooth_uuid.h"
 #include "device/bluetooth/public/interfaces/test/fake_bluetooth.mojom.h"
 #include "device/bluetooth/test/fake_peripheral.h"
 
@@ -21,6 +23,7 @@ FakeCentral::FakeCentral(mojom::CentralState state,
 void FakeCentral::SimulatePreconnectedPeripheral(
     const std::string& address,
     const std::string& name,
+    const std::vector<device::BluetoothUUID>& known_service_uuids,
     SimulatePreconnectedPeripheralCallback callback) {
   auto device_iter = devices_.find(address);
   if (device_iter == devices_.end()) {
@@ -35,6 +38,8 @@ void FakeCentral::SimulatePreconnectedPeripheral(
       static_cast<FakePeripheral*>(device_iter->second.get());
   fake_peripheral->SetName(name);
   fake_peripheral->SetGattConnected(true);
+  fake_peripheral->SetServiceUUIDs(device::BluetoothDevice::UUIDSet(
+      known_service_uuids.begin(), known_service_uuids.end()));
 
   std::move(callback).Run();
 }

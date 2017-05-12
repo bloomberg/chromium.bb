@@ -26,6 +26,19 @@
     return mojo_;
   }
 
+  function toMojoCentralState(state) {
+    switch (state) {
+      case 'absent':
+        return mojo_.CentralState.ABSENT;
+      case 'powered-off':
+        return mojo_.CentralState.POWERED_OFF;
+      case 'powered-on':
+        return mojo_.CentralState.POWERED_ON;
+      default:
+        throw `Unsupported value ${state} for state.`;
+    }
+  }
+
   class FakeBluetooth {
     constructor() {
       this.fake_bluetooth_ptr_ = undefined;
@@ -45,9 +58,10 @@
       // TODO(crbug.com/569709): Remove once setBluetoothFakeAdapter is no
       // longer used.
       await setBluetoothFakeAdapter('');
+      await this.initFakeBluetoothInterfacePtr_();
 
       if (typeof supported !== 'boolean') throw 'Type Not Supported';
-      await (await this.getFakeBluetoothInterface_()).setLESupported(supported);
+      await this.fake_bluetooth_ptr_.setLESupported(supported);
     }
 
     // Returns a promise that resolves with a FakeCentral that clients can use
@@ -71,33 +85,17 @@
       // TODO(crbug.com/569709): Remove once setBluetoothFakeAdapter is no
       // longer used.
       await setBluetoothFakeAdapter('');
+      await this.initFakeBluetoothInterfacePtr_();
 
       await this.setLESupported(true);
-      let mojo = await loadFakeBluetoothInterfaces();
-
-      let mojo_manager_state;
-      switch (state) {
-        case 'absent':
-          mojo_manager_state = mojo.CentralState.ABSENT;
-          break;
-        case 'powered-off':
-          mojo_manager_state = mojo.CentralState.POWERED_OFF;
-          break;
-        case 'powered-on':
-          mojo_manager_state = mojo.CentralState.POWERED_ON;
-          break;
-        default:
-          throw `Unsupported value ${state} for state.`;
-      }
 
       let {fake_central:fake_central_ptr} =
-        await (await this.getFakeBluetoothInterface_()).simulateCentral(
-          mojo_manager_state);
-
+        await this.fake_bluetooth_ptr_.simulateCentral(
+          toMojoCentralState(state));
       return new FakeCentral(fake_central_ptr);
     }
 
-    async getFakeBluetoothInterface_() {
+    async initFakeBluetoothInterfacePtr_() {
       if (typeof this.fake_bluetooth_ptr_ !== 'undefined') {
         return this.fake_bluetooth_ptr_;
       }
@@ -106,8 +104,6 @@
 
       this.fake_bluetooth_ptr_ = new mojo.FakeBluetoothPtr(
         mojo.interfaces.getInterface(mojo.FakeBluetooth.name));
-
-      return this.fake_bluetooth_ptr_;
     }
   }
 
@@ -120,17 +116,26 @@
       this.peripherals_ = new Map();
     }
 
-    // Simulates a peripheral with |address| and |name| that has already
-    // been connected to the system. If the peripheral existed already it
-    // updates its name.
+    // Simulates a peripheral with |address|, |name| and |known_service_uuids|
+    // that has already been connected to the system. If the peripheral existed
+    // already it updates its name and known UUIDs. |known_service_uuids| should
+    // be an array of BluetoothServiceUUIDs
+    // https://webbluetoothcg.github.io/web-bluetooth/#typedefdef-bluetoothserviceuuid
     //
     // Platforms offer methods to retrieve devices that have already been
-    // connected to the system or weren't connected through the UA e.g. a
-    // user connected a peripheral through the system's settings. This method is
+    // connected to the system or weren't connected through the UA e.g. a user
+    // connected a peripheral through the system's settings. This method is
     // intended to simulate peripherals that those methods would return.
-    async simulatePreconnectedPeripheral({address, name}) {
+    async simulatePreconnectedPeripheral({
+      address, name, knownServiceUUIDs = []}) {
+
+      // Canonicalize and convert to mojo UUIDs.
+      knownServiceUUIDs.forEach((val, i, arr) => {
+        knownServiceUUIDs[i] = {uuid: BluetoothUUID.getService(val)};
+      });
+
       await this.fake_central_ptr_.simulatePreconnectedPeripheral(
-        address, name);
+        address, name, knownServiceUUIDs);
 
       let peripheral = this.peripherals_.get(address);
       if (peripheral === undefined) {
