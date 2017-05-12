@@ -149,7 +149,6 @@ static int cros_gralloc_close(struct hw_device_t *dev)
 {
 	auto mod = (struct cros_gralloc_module *)dev->module;
 	auto alloc = (struct alloc_device_t *)dev;
-	std::lock_guard<std::mutex> lock(mod->mutex);
 
 	if (mod->drv) {
 		drv_destroy(mod->drv);
