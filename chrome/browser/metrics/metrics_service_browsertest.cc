@@ -27,6 +27,7 @@
 #include "components/prefs/pref_service.h"
 #include "content/public/test/browser_test_utils.h"
 #include "net/base/filename_util.h"
+#include "services/service_manager/embedder/switches.h"
 #include "ui/base/window_open_disposition.h"
 #include "url/gurl.h"
 
@@ -195,6 +196,11 @@ IN_PROC_BROWSER_TEST_F(MetricsServiceBrowserTest, MAYBE_CheckCrashRenderers) {
 // OOM code only works on Windows.
 #if defined(OS_WIN) && !defined(ADDRESS_SANITIZER)
 IN_PROC_BROWSER_TEST_F(MetricsServiceBrowserTest, OOMRenderers) {
+  // Disable stack traces during this test since DbgHelp is unreliable in
+  // low-memory conditions (see crbug.com/692564).
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      service_manager::switches::kDisableInProcessStackTraces);
+
   base::HistogramTester histogram_tester;
 
   OpenTabsAndNavigateToCrashyUrl(content::kChromeUIMemoryExhaustURL);
