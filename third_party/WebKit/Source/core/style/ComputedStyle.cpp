@@ -72,11 +72,11 @@ ASSERT_SIZE(BorderValue, SameSizeAsBorderValue);
 // re-create the same structure for an accurate size comparison.
 struct SameSizeAsComputedStyle : public RefCounted<SameSizeAsComputedStyle> {
   struct ComputedStyleBase {
-    void* data_refs[3];
+    void* data_refs[4];
     unsigned bitfields_[4];
   } base_;
 
-  void* data_refs[4];
+  void* data_refs[3];
   void* own_ptrs[1];
   void* data_ref_svg_style;
 };
@@ -115,7 +115,6 @@ PassRefPtr<ComputedStyle> ComputedStyle::Clone(const ComputedStyle& other) {
 
 ALWAYS_INLINE ComputedStyle::ComputedStyle()
     : ComputedStyleBase(), RefCounted<ComputedStyle>() {
-  box_data_.Init();
   rare_non_inherited_data_.Init();
   rare_non_inherited_data_.Access()->deprecated_flexible_box_.Init();
   rare_non_inherited_data_.Access()->flexible_box_.Init();
@@ -135,7 +134,6 @@ ALWAYS_INLINE ComputedStyle::ComputedStyle()
 ALWAYS_INLINE ComputedStyle::ComputedStyle(const ComputedStyle& o)
     : ComputedStyleBase(o),
       RefCounted<ComputedStyle>(),
-      box_data_(o.box_data_),
       rare_non_inherited_data_(o.rare_non_inherited_data_),
       rare_inherited_data_(o.rare_inherited_data_),
       inherited_data_(o.inherited_data_),
@@ -328,7 +326,6 @@ void ComputedStyle::InheritFrom(const ComputedStyle& inherit_parent,
 
 void ComputedStyle::CopyNonInheritedFromCached(const ComputedStyle& other) {
   ComputedStyleBase::CopyNonInheritedFromCached(other);
-  box_data_ = other.box_data_;
   rare_non_inherited_data_ = other.rare_non_inherited_data_;
 
   // The flags are copied one-by-one because they contain
@@ -468,7 +465,6 @@ bool ComputedStyle::LoadingCustomFontsEqual(const ComputedStyle& other) const {
 bool ComputedStyle::NonInheritedEqual(const ComputedStyle& other) const {
   // compare everything except the pseudoStyle pointer
   return ComputedStyleBase::NonInheritedEqual(other) &&
-         box_data_ == other.box_data_ &&
          rare_non_inherited_data_ == other.rare_non_inherited_data_ &&
          svg_style_->NonInheritedEqual(*other.svg_style_);
 }
