@@ -36,6 +36,9 @@ class TranslateCompactInfoBar
                                 int option,
                                 jboolean value);
 
+  // Check whether we should automatically trigger "Always Translate".
+  bool ShouldAutoAlwaysTranslate();
+
   // ContentTranslateDriver::Observer implementation.
   void OnPageTranslated(const std::string& original_lang,
                         const std::string& translated_lang,
