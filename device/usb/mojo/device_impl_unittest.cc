@@ -446,6 +446,7 @@ TEST_F(USBDeviceImplTest, Open) {
   EXPECT_FALSE(is_device_open());
 
   EXPECT_CALL(mock_device(), Open(_));
+  EXPECT_CALL(permission_provider(), IncrementConnectionCount());
 
   {
     base::RunLoop loop;
@@ -463,6 +464,7 @@ TEST_F(USBDeviceImplTest, Open) {
   }
 
   EXPECT_CALL(mock_handle(), Close());
+  EXPECT_CALL(permission_provider(), DecrementConnectionCount());
 }
 
 TEST_F(USBDeviceImplTest, Close) {
@@ -503,7 +505,6 @@ TEST_F(USBDeviceImplTest, SetInvalidConfiguration) {
   }
 
   EXPECT_CALL(mock_handle(), SetConfiguration(42, _));
-  EXPECT_CALL(permission_provider(), HasConfigurationPermission(42, _));
 
   {
     // SetConfiguration should fail because 42 is not a valid mock
@@ -530,7 +531,6 @@ TEST_F(USBDeviceImplTest, SetValidConfiguration) {
   }
 
   EXPECT_CALL(mock_handle(), SetConfiguration(42, _));
-  EXPECT_CALL(permission_provider(), HasConfigurationPermission(42, _));
 
   AddMockConfig(ConfigBuilder(42));
 
@@ -598,7 +598,6 @@ TEST_F(USBDeviceImplTest, ClaimAndReleaseInterface) {
   AddMockConfig(ConfigBuilder(1).AddInterface(1, 0, 1, 2, 3));
 
   EXPECT_CALL(mock_handle(), SetConfiguration(1, _));
-  EXPECT_CALL(permission_provider(), HasConfigurationPermission(1, _));
 
   {
     base::RunLoop loop;
@@ -616,7 +615,6 @@ TEST_F(USBDeviceImplTest, ClaimAndReleaseInterface) {
   }
 
   EXPECT_CALL(mock_handle(), ClaimInterface(1, _));
-  EXPECT_CALL(permission_provider(), HasFunctionPermission(1, 1, _));
 
   {
     base::RunLoop loop;
@@ -701,7 +699,6 @@ TEST_F(USBDeviceImplTest, ControlTransfer) {
   AddMockConfig(ConfigBuilder(1).AddInterface(7, 0, 1, 2, 3));
 
   EXPECT_CALL(mock_handle(), SetConfiguration(1, _));
-  EXPECT_CALL(permission_provider(), HasConfigurationPermission(1, _));
 
   {
     base::RunLoop loop;
@@ -722,7 +719,6 @@ TEST_F(USBDeviceImplTest, ControlTransfer) {
                               UsbControlTransferType::STANDARD,
                               UsbControlTransferRecipient::DEVICE, 5, 6, 7, _,
                               _, 0, _));
-  EXPECT_CALL(permission_provider(), HasConfigurationPermission(1, _));
 
   {
     auto params = mojom::UsbControlTransferParams::New();
@@ -747,7 +743,6 @@ TEST_F(USBDeviceImplTest, ControlTransfer) {
                               UsbControlTransferType::STANDARD,
                               UsbControlTransferRecipient::INTERFACE, 5, 6, 7,
                               _, _, 0, _));
-  EXPECT_CALL(permission_provider(), HasFunctionPermission(7, 1, _));
 
   {
     auto params = mojom::UsbControlTransferParams::New();

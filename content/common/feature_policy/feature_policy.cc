@@ -235,7 +235,9 @@ const FeaturePolicy::FeatureList& FeaturePolicy::GetDefaultFeatureList() {
                            {blink::WebFeaturePolicyFeature::kSyncXHR,
                             FeaturePolicy::FeatureDefault::EnableForAll},
                            {blink::WebFeaturePolicyFeature::kWebRTC,
-                            FeaturePolicy::FeatureDefault::EnableForAll}}));
+                            FeaturePolicy::FeatureDefault::EnableForAll},
+                           {blink::WebFeaturePolicyFeature::kUsb,
+                            FeaturePolicy::FeatureDefault::EnableForSelf}}));
   return default_feature_list;
 }
 

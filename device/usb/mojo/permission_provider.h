@@ -5,8 +5,6 @@
 #ifndef DEVICE_USB_MOJO_PERMISSION_PROVIDER_H_
 #define DEVICE_USB_MOJO_PERMISSION_PROVIDER_H_
 
-#include <stdint.h>
-
 #include "base/memory/ref_counted.h"
 
 namespace device {
@@ -23,13 +21,6 @@ class PermissionProvider {
   virtual ~PermissionProvider();
 
   virtual bool HasDevicePermission(
-      scoped_refptr<const UsbDevice> device) const = 0;
-  virtual bool HasConfigurationPermission(
-      uint8_t requested_configuration,
-      scoped_refptr<const UsbDevice> device) const = 0;
-  virtual bool HasFunctionPermission(
-      uint8_t requested_function,
-      uint8_t configuration_value,
       scoped_refptr<const UsbDevice> device) const = 0;
   virtual void IncrementConnectionCount() = 0;
   virtual void DecrementConnectionCount() = 0;

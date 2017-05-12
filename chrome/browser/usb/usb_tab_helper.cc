@@ -10,7 +10,11 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/usb/web_usb_permission_provider.h"
+#include "content/public/browser/render_frame_host.h"
+#include "content/public/common/content_features.h"
 #include "device/usb/mojo/device_manager_impl.h"
+#include "mojo/public/cpp/bindings/message.h"
+#include "third_party/WebKit/public/platform/WebFeaturePolicyFeature.h"
 
 #if defined(OS_ANDROID)
 #include "chrome/browser/android/usb/web_usb_chooser_service_android.h"
@@ -20,6 +24,15 @@
 
 using content::RenderFrameHost;
 using content::WebContents;
+
+namespace {
+
+// The renderer performs its own feature policy checks so a request that gets
+// to the browser process indicates malicous code.
+const char kFeaturePolicyViolation[] =
+    "Feature policy blocks access to WebUSB.";
+
+}  // namespace
 
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(UsbTabHelper);
 
@@ -49,7 +62,10 @@ UsbTabHelper::~UsbTabHelper() {}
 void UsbTabHelper::CreateDeviceManager(
     RenderFrameHost* render_frame_host,
     mojo::InterfaceRequest<device::mojom::UsbDeviceManager> request) {
-  DCHECK(WebContents::FromRenderFrameHost(render_frame_host) == web_contents());
+  if (!AllowedByFeaturePolicy(render_frame_host)) {
+    mojo::ReportBadMessage(kFeaturePolicyViolation);
+    return;
+  }
   device::usb::DeviceManagerImpl::Create(
       GetPermissionProvider(render_frame_host), std::move(request));
 }
@@ -57,6 +73,10 @@ void UsbTabHelper::CreateDeviceManager(
 void UsbTabHelper::CreateChooserService(
     content::RenderFrameHost* render_frame_host,
     mojo::InterfaceRequest<device::mojom::UsbChooserService> request) {
+  if (!AllowedByFeaturePolicy(render_frame_host)) {
+    mojo::ReportBadMessage(kFeaturePolicyViolation);
+    return;
+  }
   GetChooserService(render_frame_host, std::move(request));
 }
 
@@ -143,4 +163,14 @@ void UsbTabHelper::NotifyTabStateChanged() const {
         TabStripModelObserver::ALL);
   }
 #endif
+}
+
+bool UsbTabHelper::AllowedByFeaturePolicy(
+    RenderFrameHost* render_frame_host) const {
+  DCHECK(WebContents::FromRenderFrameHost(render_frame_host) == web_contents());
+  if (base::FeatureList::IsEnabled(features::kFeaturePolicy)) {
+    return render_frame_host->IsFeatureEnabled(
+        blink::WebFeaturePolicyFeature::kUsb);
+  }
+  return web_contents()->GetMainFrame() == render_frame_host;
 }

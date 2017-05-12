@@ -23,13 +23,6 @@ class MockPermissionProvider : public PermissionProvider {
   base::WeakPtr<PermissionProvider> GetWeakPtr();
   MOCK_CONST_METHOD1(HasDevicePermission,
                      bool(scoped_refptr<const UsbDevice> device));
-  MOCK_CONST_METHOD2(HasConfigurationPermission,
-                     bool(uint8_t requested_configuration,
-                          scoped_refptr<const UsbDevice> device));
-  MOCK_CONST_METHOD3(HasFunctionPermission,
-                     bool(uint8_t requested_function,
-                          uint8_t configuration_value,
-                          scoped_refptr<const UsbDevice> device));
 
   MOCK_METHOD0(IncrementConnectionCount, void());
   MOCK_METHOD0(DecrementConnectionCount, void());

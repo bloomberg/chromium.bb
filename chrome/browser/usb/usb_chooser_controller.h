@@ -66,7 +66,6 @@ class UsbChooserController : public ChooserController,
   device::mojom::UsbChooserService::GetPermissionCallback callback_;
   GURL requesting_origin_;
   GURL embedding_origin_;
-  bool is_embedded_frame_;
 
   base::WeakPtr<UsbChooserContext> chooser_context_;
   ScopedObserver<device::UsbService, device::UsbService::Observer>

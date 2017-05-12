@@ -68,6 +68,9 @@ class UsbTabHelper : public content::WebContentsObserver,
 
   void NotifyTabStateChanged() const;
 
+  bool AllowedByFeaturePolicy(
+      content::RenderFrameHost* render_frame_host) const;
+
   FrameUsbServicesMap frame_usb_services_;
 
   DISALLOW_COPY_AND_ASSIGN(UsbTabHelper);
