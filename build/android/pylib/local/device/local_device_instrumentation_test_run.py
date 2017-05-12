@@ -547,7 +547,6 @@ class LocalDeviceInstrumentationTestRun(
         logging.error('Golden images not found on device.')
 
       for failure_filename in os.listdir(os.path.join(temp_dir, 'failures')):
-
         m = RE_RENDER_IMAGE_NAME.match(failure_filename)
         if not m:
           logging.warning('Unexpected file in render test failures: %s',
@@ -555,29 +554,20 @@ class LocalDeviceInstrumentationTestRun(
           continue
 
         failure_filepath = os.path.join(temp_dir, 'failures', failure_filename)
-        failure_link = google_storage_helper.upload(
-            google_storage_helper.unique_name(
-                'failure_%s' % failure_filename, device=device),
-            failure_filepath,
-            bucket=render_tests_bucket)
+        failure_link = google_storage_helper.upload_content_addressed(
+            failure_filepath, bucket=render_tests_bucket)
 
         golden_filepath = os.path.join(temp_dir, 'goldens', failure_filename)
         if os.path.exists(golden_filepath):
-          golden_link = google_storage_helper.upload(
-              google_storage_helper.unique_name(
-                  'golden_%s' % failure_filename, device=device),
-              golden_filepath,
-              bucket=render_tests_bucket)
+          golden_link = google_storage_helper.upload_content_addressed(
+              golden_filepath, bucket=render_tests_bucket)
         else:
           golden_link = ''
 
         diff_filepath = os.path.join(temp_dir, 'diffs', failure_filename)
         if os.path.exists(diff_filepath):
-          diff_link = google_storage_helper.upload(
-              google_storage_helper.unique_name(
-                  'diff_%s' % failure_filename, device=device),
-              diff_filepath,
-              bucket=render_tests_bucket)
+          diff_link = google_storage_helper.upload_content_addressed(
+              diff_filepath, bucket=render_tests_bucket)
         else:
           diff_link = ''
 
@@ -594,8 +584,7 @@ class LocalDeviceInstrumentationTestRun(
 
           temp_html.write(processed_template_output)
           temp_html.flush()
-          html_results_link = google_storage_helper.upload(
-              google_storage_helper.unique_name('render_html', device=device),
+          html_results_link = google_storage_helper.upload_content_addressed(
               temp_html.name,
               bucket=render_tests_bucket,
               content_type='text/html')
@@ -643,4 +632,4 @@ def _IsRenderTest(test):
   if not isinstance(test, list):
     test = [test]
   return any([RENDER_TEST_FEATURE_ANNOTATION in t['annotations'].get(
-              FEATURE_ANNOTATION, ()) for t in test])
+              FEATURE_ANNOTATION, {}).get('value', ()) for t in test])
