@@ -9,21 +9,6 @@
 #include <iomanip>  // NOLINT
 #include <ostream>  // NOLINT
 
-namespace {
-class StreamStateSaver : private std::ios {
-  WTF_MAKE_NONCOPYABLE(StreamStateSaver);
-
- public:
-  StreamStateSaver(std::ios& other) : std::ios(nullptr), m_other(other) {
-    copyfmt(other);
-  }
-  ~StreamStateSaver() { m_other.copyfmt(*this); }
-
- private:
-  std::ios& m_other;
-};
-}  // unnamed namespace
-
 namespace blink {
 
 void PrintTo(const PaintChunk& chunk, std::ostream* os) {
