@@ -324,7 +324,6 @@ ifeq ($(CONFIG_ENCODERS),yes)
 DSP_SRCS-yes            += sad.c
 DSP_SRCS-yes            += subtract.c
 
-DSP_SRCS-$(HAVE_MEDIA)  += arm/sad_media$(ASM)
 DSP_SRCS-$(HAVE_NEON)   += arm/sad4d_neon.c
 DSP_SRCS-$(HAVE_NEON)   += arm/sad_neon.c
 DSP_SRCS-$(HAVE_NEON)   += arm/subtract_neon.c
@@ -373,12 +372,6 @@ ifneq ($(filter yes,$(CONFIG_ENCODERS)),)
 DSP_SRCS-yes            += variance.c
 DSP_SRCS-yes            += variance.h
 
-DSP_SRCS-$(HAVE_MEDIA)  += arm/bilinear_filter_media$(ASM)
-DSP_SRCS-$(HAVE_MEDIA)  += arm/subpel_variance_media.c
-DSP_SRCS-$(HAVE_MEDIA)  += arm/variance_halfpixvar16x16_h_media$(ASM)
-DSP_SRCS-$(HAVE_MEDIA)  += arm/variance_halfpixvar16x16_hv_media$(ASM)
-DSP_SRCS-$(HAVE_MEDIA)  += arm/variance_halfpixvar16x16_v_media$(ASM)
-DSP_SRCS-$(HAVE_MEDIA)  += arm/variance_media$(ASM)
 DSP_SRCS-$(HAVE_NEON)   += arm/subpel_variance_neon.c
 DSP_SRCS-$(HAVE_NEON)   += arm/variance_neon.c
 

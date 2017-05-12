@@ -386,8 +386,7 @@ if ($opts{arch} eq 'x86') {
   @ALL_ARCHS = filter(qw/media/);
   arm;
 } elsif ($opts{arch} =~ /armv7\w?/) {
-  @ALL_ARCHS = filter(qw/media neon_asm neon/);
-  @REQUIRES = filter(keys %required ? keys %required : qw/media/);
+  @ALL_ARCHS = filter(qw/neon_asm neon/);
   &require(@REQUIRES);
   arm;
 } elsif ($opts{arch} eq 'armv8' || $opts{arch} eq 'arm64' ) {
