@@ -12,6 +12,7 @@
 
 #include "base/macros.h"
 #include "components/payments/core/payment_options_provider.h"
+#include "components/payments/core/payments_profile_comparator.h"
 #include "ios/web/public/payments/payment_request.h"
 
 namespace autofill {
@@ -53,7 +54,7 @@ class PaymentRequest : payments::PaymentOptionsProvider {
   // Updates the payment details of the |web_payment_request_|. It also updates
   // the cached references to the shipping options in |web_payment_request_| as
   // well as the reference to the selected shipping option.
-  void set_payment_details(const web::PaymentDetails& details);
+  void UpdatePaymentDetails(const web::PaymentDetails& details);
 
   // PaymentOptionsProvider:
   bool request_shipping() const override;
@@ -207,6 +208,8 @@ class PaymentRequest : payments::PaymentOptionsProvider {
   // A vector of pointers to the shipping options in |web_payment_request_|.
   std::vector<web::PaymentShippingOption*> shipping_options_;
   web::PaymentShippingOption* selected_shipping_option_;
+
+  payments::PaymentsProfileComparator profile_comparator_;
 
   DISALLOW_COPY_AND_ASSIGN(PaymentRequest);
 };

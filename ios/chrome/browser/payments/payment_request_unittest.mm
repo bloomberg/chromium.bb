@@ -6,6 +6,8 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
+#include "components/autofill/core/browser/autofill_type.h"
+#include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/test_personal_data_manager.h"
 #include "components/payments/core/currency_formatter.h"
 #include "components/payments/core/payment_method_data.h"
@@ -17,9 +19,37 @@
 #error "This file requires ARC support."
 #endif
 
+class PaymentRequestTest : public testing::Test {
+ protected:
+  // Returns PaymentDetails with one shipping option that's selected.
+  web::PaymentDetails CreateDetailsWithShippingOption() {
+    web::PaymentDetails details;
+    std::vector<web::PaymentShippingOption> shipping_options;
+    web::PaymentShippingOption option1;
+    option1.id = base::UTF8ToUTF16("option:1");
+    option1.selected = true;
+    shipping_options.push_back(std::move(option1));
+    details.shipping_options = std::move(shipping_options);
+
+    return details;
+  }
+
+  web::PaymentOptions CreatePaymentOptions(bool request_payer_name,
+                                           bool request_payer_phone,
+                                           bool request_payer_email,
+                                           bool request_shipping) {
+    web::PaymentOptions options;
+    options.request_payer_name = request_payer_name;
+    options.request_payer_phone = request_payer_phone;
+    options.request_payer_email = request_payer_email;
+    options.request_shipping = request_shipping;
+    return options;
+  }
+};
+
 // Tests that the payments::CurrencyFormatter is constructed with the correct
 // currency code and currency system.
-TEST(PaymentRequestTest, CreatesCurrencyFormatterCorrectly) {
+TEST_F(PaymentRequestTest, CreatesCurrencyFormatterCorrectly) {
   ASSERT_EQ("en", GetApplicationContext()->GetApplicationLocale());
 
   web::PaymentRequest web_payment_request;
@@ -48,7 +78,7 @@ TEST(PaymentRequestTest, CreatesCurrencyFormatterCorrectly) {
 }
 
 // Tests that the accepted card networks are identified correctly.
-TEST(PaymentRequestTest, AcceptedPaymentNetworks) {
+TEST_F(PaymentRequestTest, AcceptedPaymentNetworks) {
   web::PaymentRequest web_payment_request;
   autofill::TestPersonalDataManager personal_data_manager;
 
@@ -67,7 +97,7 @@ TEST(PaymentRequestTest, AcceptedPaymentNetworks) {
 
 // Test that parsing supported methods (with invalid values and duplicates)
 // works as expected.
-TEST(PaymentRequestTest, SupportedMethods) {
+TEST_F(PaymentRequestTest, SupportedMethods) {
   web::PaymentRequest web_payment_request;
   autofill::TestPersonalDataManager personal_data_manager;
 
@@ -87,7 +117,7 @@ TEST(PaymentRequestTest, SupportedMethods) {
 
 // Test that parsing supported methods in different method data entries (with
 // invalid values and duplicates) works as expected.
-TEST(PaymentRequestTest, SupportedMethods_MultipleEntries) {
+TEST_F(PaymentRequestTest, SupportedMethods_MultipleEntries) {
   web::PaymentRequest web_payment_request;
   autofill::TestPersonalDataManager personal_data_manager;
 
@@ -111,7 +141,7 @@ TEST(PaymentRequestTest, SupportedMethods_MultipleEntries) {
 }
 
 // Test that only specifying basic-card means that all are supported.
-TEST(PaymentRequestTest, SupportedMethods_OnlyBasicCard) {
+TEST_F(PaymentRequestTest, SupportedMethods_OnlyBasicCard) {
   web::PaymentRequest web_payment_request;
   autofill::TestPersonalDataManager personal_data_manager;
 
@@ -135,7 +165,7 @@ TEST(PaymentRequestTest, SupportedMethods_OnlyBasicCard) {
 
 // Test that specifying a method AND basic-card means that all are supported,
 // but with the method as first.
-TEST(PaymentRequestTest, SupportedMethods_BasicCard_WithSpecificMethod) {
+TEST_F(PaymentRequestTest, SupportedMethods_BasicCard_WithSpecificMethod) {
   web::PaymentRequest web_payment_request;
   autofill::TestPersonalDataManager personal_data_manager;
 
@@ -161,7 +191,7 @@ TEST(PaymentRequestTest, SupportedMethods_BasicCard_WithSpecificMethod) {
 
 // Test that specifying basic-card with a supported network (with previous
 // supported methods) will work as expected
-TEST(PaymentRequestTest, SupportedMethods_BasicCard_Overlap) {
+TEST_F(PaymentRequestTest, SupportedMethods_BasicCard_Overlap) {
   web::PaymentRequest web_payment_request;
   autofill::TestPersonalDataManager personal_data_manager;
 
@@ -186,7 +216,7 @@ TEST(PaymentRequestTest, SupportedMethods_BasicCard_Overlap) {
 
 // Test that specifying basic-card with supported networks after specifying
 // some methods
-TEST(PaymentRequestTest, SupportedMethods_BasicCard_WithSupportedNetworks) {
+TEST_F(PaymentRequestTest, SupportedMethods_BasicCard_WithSupportedNetworks) {
   web::PaymentRequest web_payment_request;
   autofill::TestPersonalDataManager personal_data_manager;
 
@@ -205,7 +235,7 @@ TEST(PaymentRequestTest, SupportedMethods_BasicCard_WithSupportedNetworks) {
 }
 
 // Tests that credit cards can be added to the list of cached credit cards.
-TEST(PaymentRequestTest, AddCreditCard) {
+TEST_F(PaymentRequestTest, AddCreditCard) {
   web::PaymentRequest web_payment_request;
   autofill::TestPersonalDataManager personal_data_manager;
 
@@ -218,4 +248,163 @@ TEST(PaymentRequestTest, AddCreditCard) {
 
   ASSERT_EQ(1U, payment_request.credit_cards().size());
   EXPECT_EQ(credit_card, *added_credit_card);
+}
+
+// Test that parsing shipping options works as expected.
+TEST_F(PaymentRequestTest, SelectedShippingOptions) {
+  web::PaymentRequest web_payment_request;
+  autofill::TestPersonalDataManager personal_data_manager;
+
+  web::PaymentDetails details;
+  std::vector<web::PaymentShippingOption> shipping_options;
+  web::PaymentShippingOption option1;
+  option1.id = base::UTF8ToUTF16("option:1");
+  option1.selected = false;
+  shipping_options.push_back(std::move(option1));
+  web::PaymentShippingOption option2;
+  option2.id = base::UTF8ToUTF16("option:2");
+  option2.selected = true;
+  shipping_options.push_back(std::move(option2));
+  web::PaymentShippingOption option3;
+  option3.id = base::UTF8ToUTF16("option:3");
+  option3.selected = true;
+  shipping_options.push_back(std::move(option3));
+  details.shipping_options = std::move(shipping_options);
+  web_payment_request.details = std::move(details);
+
+  PaymentRequest payment_request(web_payment_request, &personal_data_manager);
+  // The last one marked "selected" should be selected.
+  EXPECT_EQ(base::UTF8ToUTF16("option:3"),
+            payment_request.selected_shipping_option()->id);
+
+  // Simulate an update that no longer has any shipping options. There is no
+  // longer a selected shipping option.
+  web::PaymentDetails new_details;
+  payment_request.UpdatePaymentDetails(std::move(new_details));
+  EXPECT_EQ(nullptr, payment_request.selected_shipping_option());
+}
+
+// Test that loading profiles when none are available works as expected.
+TEST_F(PaymentRequestTest, SelectedProfiles_NoProfiles) {
+  autofill::TestPersonalDataManager personal_data_manager;
+  web::PaymentRequest web_payment_request;
+  web_payment_request.details = CreateDetailsWithShippingOption();
+  web_payment_request.options = CreatePaymentOptions(
+      /*request_payer_name=*/true, /*request_payer_phone=*/true,
+      /*request_payer_email=*/true, /*request_shipping=*/true);
+
+  // No profiles are selected because none are available!
+  PaymentRequest payment_request(web_payment_request, &personal_data_manager);
+  EXPECT_EQ(nullptr, payment_request.selected_shipping_profile());
+  EXPECT_EQ(nullptr, payment_request.selected_contact_profile());
+}
+
+// Test that loading complete shipping and contact profiles works as expected.
+TEST_F(PaymentRequestTest, SelectedProfiles_Complete) {
+  autofill::TestPersonalDataManager personal_data_manager;
+  autofill::AutofillProfile address = autofill::test::GetFullProfile();
+  address.set_use_count(5U);
+  personal_data_manager.AddTestingProfile(&address);
+  autofill::AutofillProfile address2 = autofill::test::GetFullProfile2();
+  address2.set_use_count(15U);
+  personal_data_manager.AddTestingProfile(&address2);
+
+  web::PaymentRequest web_payment_request;
+  web_payment_request.details = CreateDetailsWithShippingOption();
+  web_payment_request.options = CreatePaymentOptions(
+      /*request_payer_name=*/true, /*request_payer_phone=*/true,
+      /*request_payer_email=*/true, /*request_shipping=*/true);
+
+  // address2 is selected because it has the most use count (Frecency model).
+  PaymentRequest payment_request(web_payment_request, &personal_data_manager);
+  EXPECT_EQ(address2.guid(),
+            payment_request.selected_shipping_profile()->guid());
+  EXPECT_EQ(address2.guid(),
+            payment_request.selected_contact_profile()->guid());
+}
+
+// Test that loading complete shipping and contact profiles, when there are no
+// shipping options available, works as expected.
+TEST_F(PaymentRequestTest, SelectedProfiles_Complete_NoShippingOption) {
+  autofill::TestPersonalDataManager personal_data_manager;
+  autofill::AutofillProfile address = autofill::test::GetFullProfile();
+  address.set_use_count(5U);
+  personal_data_manager.AddTestingProfile(&address);
+
+  web::PaymentRequest web_payment_request;
+  // No shipping options.
+  web_payment_request.details = web::PaymentDetails();
+  web_payment_request.options = CreatePaymentOptions(
+      /*request_payer_name=*/true, /*request_payer_phone=*/true,
+      /*request_payer_email=*/true, /*request_shipping=*/true);
+
+  // No shipping profile is selected because the merchant has not selected a
+  // shipping option. However there is a suitable contact profile.
+  PaymentRequest payment_request(web_payment_request, &personal_data_manager);
+  EXPECT_EQ(nullptr, payment_request.selected_shipping_profile());
+  EXPECT_EQ(address.guid(), payment_request.selected_contact_profile()->guid());
+}
+
+// Test that loading incomplete shipping and contact profiles works as expected.
+TEST_F(PaymentRequestTest, SelectedProfiles_Incomplete) {
+  autofill::TestPersonalDataManager personal_data_manager;
+  // Add a profile with no phone (incomplete).
+  autofill::AutofillProfile address1 = autofill::test::GetFullProfile();
+  address1.SetInfo(autofill::AutofillType(autofill::PHONE_HOME_WHOLE_NUMBER),
+                   base::string16(), "en-US");
+  address1.set_use_count(5U);
+  personal_data_manager.AddTestingProfile(&address1);
+  // Add a complete profile, with fewer use counts.
+  autofill::AutofillProfile address2 = autofill::test::GetFullProfile2();
+  address2.set_use_count(3U);
+  personal_data_manager.AddTestingProfile(&address2);
+
+  web::PaymentRequest web_payment_request;
+  web_payment_request.details = CreateDetailsWithShippingOption();
+  web_payment_request.options = CreatePaymentOptions(
+      /*request_payer_name=*/true, /*request_payer_phone=*/true,
+      /*request_payer_email=*/true, /*request_shipping=*/true);
+
+  // Even though address1 has more use counts, address2 is selected because it
+  // is complete.
+  PaymentRequest payment_request(web_payment_request, &personal_data_manager);
+  EXPECT_EQ(address2.guid(),
+            payment_request.selected_shipping_profile()->guid());
+  EXPECT_EQ(address2.guid(),
+            payment_request.selected_contact_profile()->guid());
+}
+
+// Test that loading incomplete contact profiles works as expected when the
+// merchant is not interested in the missing field. Test that the most complete
+// shipping profile is selected.
+TEST_F(PaymentRequestTest,
+       SelectedProfiles_IncompleteContact_NoRequestPayerPhone) {
+  autofill::TestPersonalDataManager personal_data_manager;
+  // Add a profile with no phone (incomplete).
+  autofill::AutofillProfile address1 = autofill::test::GetFullProfile();
+  address1.SetInfo(autofill::AutofillType(autofill::PHONE_HOME_WHOLE_NUMBER),
+                   base::string16(), "en-US");
+  address1.set_use_count(5U);
+  personal_data_manager.AddTestingProfile(&address1);
+  // Add a complete profile, with fewer use counts.
+  autofill::AutofillProfile address2 = autofill::test::GetFullProfile();
+  address2.set_use_count(3U);
+  personal_data_manager.AddTestingProfile(&address2);
+
+  web::PaymentRequest web_payment_request;
+  web_payment_request.details = CreateDetailsWithShippingOption();
+  // The merchant doesn't care about the phone number.
+  web_payment_request.options = CreatePaymentOptions(
+      /*request_payer_name=*/true, /*request_payer_phone=*/false,
+      /*request_payer_email=*/true, /*request_shipping=*/true);
+
+  // address1 has more use counts, and even though it has no phone number, it's
+  // still selected as the contact profile because merchant doesn't require
+  // phone. address2 is selected as the shipping profile because it's the most
+  // complete for shipping.
+  PaymentRequest payment_request(web_payment_request, &personal_data_manager);
+  EXPECT_EQ(address2.guid(),
+            payment_request.selected_shipping_profile()->guid());
+  EXPECT_EQ(address1.guid(),
+            payment_request.selected_contact_profile()->guid());
 }

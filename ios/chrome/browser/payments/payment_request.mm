@@ -4,6 +4,7 @@
 
 #include "ios/chrome/browser/payments/payment_request.h"
 
+#include "base/containers/adapters.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/autofill_data_util.h"
 #include "components/autofill/core/browser/autofill_profile.h"
@@ -27,15 +28,17 @@ PaymentRequest::PaymentRequest(
       selected_shipping_profile_(nullptr),
       selected_contact_profile_(nullptr),
       selected_credit_card_(nullptr),
-      selected_shipping_option_(nullptr) {
+      selected_shipping_option_(nullptr),
+      profile_comparator_(GetApplicationContext()->GetApplicationLocale(),
+                          *this) {
+  PopulateShippingOptionCache();
   PopulateProfileCache();
   PopulateCreditCardCache();
-  PopulateShippingOptionCache();
 }
 
 PaymentRequest::~PaymentRequest() {}
 
-void PaymentRequest::set_payment_details(const web::PaymentDetails& details) {
+void PaymentRequest::UpdatePaymentDetails(const web::PaymentDetails& details) {
   web_payment_request_.details = details;
   PopulateShippingOptionCache();
 }
@@ -91,25 +94,39 @@ bool PaymentRequest::CanMakePayment() const {
 void PaymentRequest::PopulateProfileCache() {
   const std::vector<autofill::AutofillProfile*>& profiles_to_suggest =
       personal_data_manager_->GetProfilesToSuggest();
+  // Return early if the user has no stored Autofill profiles.
+  if (profiles_to_suggest.empty())
+    return;
+
   profile_cache_.reserve(profiles_to_suggest.size());
   for (const auto* profile : profiles_to_suggest) {
     profile_cache_.push_back(*profile);
     shipping_profiles_.push_back(&profile_cache_.back());
-    contact_profiles_.push_back(&profile_cache_.back());
   }
 
-  payments::PaymentsProfileComparator comparator(
-      GetApplicationContext()->GetApplicationLocale(), *this);
-
-  // TODO(crbug.com/602666): Implement deduplication and prioritization rules
-  // for shipping profiles.
-
-  contact_profiles_ = comparator.FilterProfilesForContact(contact_profiles_);
-
-  if (!shipping_profiles_.empty())
+  // If the merchant provided a shipping option, select a suitable default
+  // shipping profile. We pick the profile that is most complete, going down
+  // the list in Frecency order.
+  // TODO(crbug.com/719652): Have a proper ordering of shipping addresses by
+  // completeness.
+  if (selected_shipping_option_) {
     selected_shipping_profile_ = shipping_profiles_[0];
+    for (autofill::AutofillProfile* profile : shipping_profiles_) {
+      if (profile_comparator_.IsShippingComplete(profile)) {
+        selected_shipping_profile_ = profile;
+        break;
+      }
+    }
+  }
+
+  // Contact profiles are deduped and ordered in completeness.
+  contact_profiles_ =
+      profile_comparator_.FilterProfilesForContact(shipping_profiles_);
+
+  // If the highest-ranking contact profile is usable, select it. Otherwise,
+  // select none.
   if (!contact_profiles_.empty() &&
-      comparator.IsContactInfoComplete(contact_profiles_[0])) {
+      profile_comparator_.IsContactInfoComplete(contact_profiles_[0])) {
     selected_contact_profile_ = contact_profiles_[0];
   }
 }
@@ -144,6 +161,10 @@ void PaymentRequest::PopulateCreditCardCache() {
 
 void PaymentRequest::PopulateShippingOptionCache() {
   shipping_options_.clear();
+  selected_shipping_option_ = nullptr;
+  if (web_payment_request_.details.shipping_options.empty())
+    return;
+
   shipping_options_.reserve(
       web_payment_request_.details.shipping_options.size());
   std::transform(std::begin(web_payment_request_.details.shipping_options),
@@ -151,12 +172,12 @@ void PaymentRequest::PopulateShippingOptionCache() {
                  std::back_inserter(shipping_options_),
                  [](web::PaymentShippingOption& option) { return &option; });
 
-  selected_shipping_option_ = nullptr;
-  for (auto* shipping_option : shipping_options_) {
+  for (auto* shipping_option : base::Reversed(shipping_options_)) {
     if (shipping_option->selected) {
       // If more than one option has |selected| set, the last one in the
       // sequence should be treated as the selected item.
       selected_shipping_option_ = shipping_option;
+      break;
     }
   }
 }
