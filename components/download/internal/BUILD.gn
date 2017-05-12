@@ -20,11 +20,14 @@ static_library("internal") {
     "download_service_impl.h",
     "scheduler/battery_listener.cc",
     "scheduler/battery_listener.h",
+    "scheduler/network_listener.cc",
+    "scheduler/network_listener.h",
   ]
 
   deps = [
     "//base",
     "//components/download/public",
+    "//net",
   ]
 }
 
@@ -36,6 +39,7 @@ source_set("unit_tests") {
   sources = [
     "download_service_impl_unittest.cc",
     "scheduler/battery_listener_unittest.cc",
+    "scheduler/network_listener_unittest.cc",
   ]
 
   deps = [
