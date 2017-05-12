@@ -254,6 +254,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
 
   bool OnTouchEvent(const ui::MotionEvent& event);
   bool OnTouchHandleEvent(const ui::MotionEvent& event);
+  int GetTouchHandleHeight();
   void ResetGestureDetection();
   void SetDoubleTapSupportEnabled(bool enabled);
   void SetMultiTouchZoomSupportEnabled(bool enabled);

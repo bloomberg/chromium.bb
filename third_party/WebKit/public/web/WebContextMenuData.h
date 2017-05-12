@@ -39,6 +39,7 @@
 #include "../platform/WebVector.h"
 #include "WebHistoryItem.h"
 #include "WebMenuItemInfo.h"
+#include "public/platform/WebRect.h"
 
 #define WEBCONTEXT_MEDIATYPEFILE_DEFINED
 
@@ -188,6 +189,9 @@ struct WebContextMenuData {
 
   // Custom context menu items provided by the WebCore internals.
   WebVector<WebMenuItemInfo> custom_items;
+
+  // Selection in viewport coordinates.
+  WebRect selection_rect;
 
   WebContextMenuData()
       : media_type(kMediaTypeNone),

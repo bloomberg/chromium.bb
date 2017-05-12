@@ -29,7 +29,6 @@ class SelectionPopupController : public RenderWidgetHostConnector {
 
   // Called from native -> java
   void OnSelectionEvent(ui::SelectionEventType event,
-                        const gfx::PointF& selection_anchor,
                         const gfx::RectF& selection_rect);
   void OnSelectionChanged(const std::string& text);
 

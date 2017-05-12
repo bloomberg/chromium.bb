@@ -268,13 +268,15 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
         return actionMode;
     }
 
-    void createAndShowPastePopup(int x, int y, boolean canSelectAll, boolean canEditRichly) {
+    void createAndShowPastePopup(
+            int left, int top, int right, int bottom, boolean canSelectAll, boolean canEditRichly) {
         if (mView.getParent() == null || mView.getVisibility() != View.VISIBLE) {
             return;
         }
 
         if (!supportsFloatingActionMode() && !canPaste()) return;
         destroyPastePopup();
+        mSelectionRect.set(left, top, right, bottom);
         mCanSelectAllForPastePopup = canSelectAll;
         mCanEditRichlyForPastePopup = canEditRichly;
         PastePopupMenuDelegate delegate = new PastePopupMenuDelegate() {
@@ -317,17 +319,12 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
         } else {
             mPastePopupMenu = new LegacyPastePopupMenu(windowContext, mView, delegate);
         }
-        showPastePopup(x, y);
+        showPastePopup();
     }
 
-    private void showPastePopup(int x, int y) {
-        // Coordinates are in DIP.
-        final float deviceScale = mRenderCoordinates.getDeviceScaleFactor();
-        final int xPix = (int) (x * deviceScale);
-        final int yPix = (int) (y * deviceScale);
-        final float browserControlsShownPix = mRenderCoordinates.getContentOffsetYPix();
+    private void showPastePopup() {
         try {
-            mPastePopupMenu.show(xPix, (int) (yPix + browserControlsShownPix));
+            mPastePopupMenu.show(getSelectionRectRelativeToContainingView());
         } catch (WindowManager.BadTokenException e) {
         }
     }
@@ -686,15 +683,20 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
      */
     @Override
     public void onGetContentRect(ActionMode mode, View view, Rect outRect) {
+        outRect.set(getSelectionRectRelativeToContainingView());
+    }
+
+    private Rect getSelectionRectRelativeToContainingView() {
         float deviceScale = mRenderCoordinates.getDeviceScaleFactor();
-        outRect.set((int) (mSelectionRect.left * deviceScale),
+        Rect viewSelectionRect = new Rect((int) (mSelectionRect.left * deviceScale),
                 (int) (mSelectionRect.top * deviceScale),
                 (int) (mSelectionRect.right * deviceScale),
                 (int) (mSelectionRect.bottom * deviceScale));
 
         // The selection coordinates are relative to the content viewport, but we need
         // coordinates relative to the containing View.
-        outRect.offset(0, (int) mRenderCoordinates.getContentOffsetYPix());
+        viewSelectionRect.offset(0, (int) mRenderCoordinates.getContentOffsetYPix());
+        return viewSelectionRect;
     }
 
     /**
@@ -924,8 +926,7 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
 
     // All coordinates are in DIP.
     @CalledByNative
-    private void onSelectionEvent(
-            int eventType, int xAnchor, int yAnchor, int left, int top, int right, int bottom) {
+    private void onSelectionEvent(int eventType, int left, int top, int right, int bottom) {
         // Ensure the provided selection coordinates form a non-empty rect, as required by
         // the selection action mode.
         if (left == right) ++right;
@@ -984,7 +985,7 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
             case SelectionEventType.INSERTION_HANDLE_MOVED:
                 mSelectionRect.set(left, top, right, bottom);
                 if (!mScrollInProgress && isPastePopupShowing()) {
-                    showPastePopup(xAnchor, yAnchor);
+                    showPastePopup();
                 } else {
                     destroyPastePopup();
                 }
@@ -994,7 +995,7 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
                 if (mWasPastePopupShowingOnInsertionDragStart) {
                     destroyPastePopup();
                 } else {
-                    mWebContents.showContextMenuAtPoint(xAnchor, yAnchor);
+                    mWebContents.showContextMenuAtPoint(mSelectionRect.left, mSelectionRect.bottom);
                 }
                 mWasPastePopupShowingOnInsertionDragStart = false;
                 break;
@@ -1012,7 +1013,7 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
 
             case SelectionEventType.INSERTION_HANDLE_DRAG_STOPPED:
                 if (mWasPastePopupShowingOnInsertionDragStart) {
-                    mWebContents.showContextMenuAtPoint(xAnchor, yAnchor);
+                    mWebContents.showContextMenuAtPoint(mSelectionRect.left, mSelectionRect.bottom);
                 }
                 mWasPastePopupShowingOnInsertionDragStart = false;
                 break;
@@ -1023,8 +1024,8 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
 
         if (mSelectionClient != null) {
             final float deviceScale = mRenderCoordinates.getDeviceScaleFactor();
-            int xAnchorPix = (int) (xAnchor * deviceScale);
-            int yAnchorPix = (int) (yAnchor * deviceScale);
+            int xAnchorPix = (int) (mSelectionRect.left * deviceScale);
+            int yAnchorPix = (int) (mSelectionRect.bottom * deviceScale);
             mSelectionClient.onSelectionEvent(eventType, xAnchorPix, yAnchorPix);
         }
     }

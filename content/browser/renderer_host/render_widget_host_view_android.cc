@@ -973,6 +973,13 @@ bool RenderWidgetHostViewAndroid::OnTouchHandleEvent(
          touch_selection_controller_->WillHandleTouchEvent(event);
 }
 
+int RenderWidgetHostViewAndroid::GetTouchHandleHeight() {
+  if (!touch_selection_controller_)
+    return 0;
+  return static_cast<int>(
+      touch_selection_controller_->GetStartHandleRect().height());
+}
+
 void RenderWidgetHostViewAndroid::ResetGestureDetection() {
   const ui::MotionEvent* current_down_event =
       gesture_provider_.GetCurrentDownEvent();
@@ -1309,8 +1316,7 @@ void RenderWidgetHostViewAndroid::OnSelectionEvent(
     ResetGestureDetection();
   }
   selection_popup_controller_->OnSelectionEvent(
-      event, touch_selection_controller_->GetStartPosition(),
-      GetSelectionRect(*touch_selection_controller_));
+      event, GetSelectionRect(*touch_selection_controller_));
 }
 
 std::unique_ptr<ui::TouchHandleDrawable>
