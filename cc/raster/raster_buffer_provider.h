@@ -54,6 +54,10 @@ class CC_EXPORT RasterBufferProvider {
   // Used for syncing resources to the worker context.
   virtual void OrderingBarrier() = 0;
 
+  // In addition to above, also ensures that pending work is sent to the GPU
+  // process.
+  virtual void Flush() = 0;
+
   // Returns the format to use for the tiles.
   virtual ResourceFormat GetResourceFormat(bool must_support_alpha) const = 0;
 

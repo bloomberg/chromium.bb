@@ -140,6 +140,16 @@ void OneCopyRasterBufferProvider::OrderingBarrier() {
   pending_raster_buffers_.clear();
 }
 
+void OneCopyRasterBufferProvider::Flush() {
+  if (async_worker_context_enabled_) {
+    int32_t worker_stream_id =
+        worker_context_provider_->ContextSupport()->GetStreamId();
+
+    compositor_context_provider_->ContextSupport()
+        ->FlushOrderingBarrierOnStream(worker_stream_id);
+  }
+}
+
 ResourceFormat OneCopyRasterBufferProvider::GetResourceFormat(
     bool must_support_alpha) const {
   if (resource_provider_->IsTextureFormatSupported(preferred_tile_format_) &&

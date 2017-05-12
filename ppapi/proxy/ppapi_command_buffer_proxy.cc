@@ -184,6 +184,14 @@ gpu::CommandBufferId PpapiCommandBufferProxy::GetCommandBufferID() const {
   return command_buffer_id_;
 }
 
+int32_t PpapiCommandBufferProxy::GetStreamId() const {
+  return 0;
+}
+
+void PpapiCommandBufferProxy::FlushOrderingBarrierOnStream(int32_t stream_id) {
+  // This is only relevant for out-of-process command buffers.
+}
+
 uint64_t PpapiCommandBufferProxy::GenerateFenceSyncRelease() {
   return next_fence_sync_release_++;
 }
@@ -225,10 +233,6 @@ void PpapiCommandBufferProxy::WaitSyncTokenHint(
 bool PpapiCommandBufferProxy::CanWaitUnverifiedSyncToken(
     const gpu::SyncToken& sync_token) {
   return false;
-}
-
-int32_t PpapiCommandBufferProxy::GetExtraCommandBufferData() const {
-  return 0;
 }
 
 void PpapiCommandBufferProxy::AddLatencyInfo(

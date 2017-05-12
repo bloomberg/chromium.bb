@@ -756,8 +756,8 @@ int32_t InProcessCommandBuffer::CreateImage(ClientBuffer buffer,
 
   if (fence_sync) {
     flushed_fence_sync_release_ = fence_sync;
-    SyncToken sync_token(GetNamespaceID(), GetExtraCommandBufferData(),
-                         GetCommandBufferID(), fence_sync);
+    SyncToken sync_token(GetNamespaceID(), GetStreamId(), GetCommandBufferID(),
+                         fence_sync);
     sync_token.SetVerifyFlush();
     gpu_memory_buffer_manager_->SetDestructionSyncToken(gpu_memory_buffer,
                                                         sync_token);
@@ -849,8 +849,8 @@ void InProcessCommandBuffer::DestroyImageOnGpuThread(int32_t id) {
 }
 
 void InProcessCommandBuffer::FenceSyncReleaseOnGpuThread(uint64_t release) {
-  SyncToken sync_token(GetNamespaceID(), GetExtraCommandBufferData(),
-                       GetCommandBufferID(), release);
+  SyncToken sync_token(GetNamespaceID(), GetStreamId(), GetCommandBufferID(),
+                       release);
 
   gles2::MailboxManager* mailbox_manager =
       decoder_->GetContextGroup()->mailbox_manager();
@@ -970,8 +970,12 @@ CommandBufferId InProcessCommandBuffer::GetCommandBufferID() const {
   return command_buffer_id_;
 }
 
-int32_t InProcessCommandBuffer::GetExtraCommandBufferData() const {
+int32_t InProcessCommandBuffer::GetStreamId() const {
   return 0;
+}
+
+void InProcessCommandBuffer::FlushOrderingBarrierOnStream(int32_t stream_id) {
+  // This is only relevant for out-of-process command buffers.
 }
 
 uint64_t InProcessCommandBuffer::GenerateFenceSyncRelease() {

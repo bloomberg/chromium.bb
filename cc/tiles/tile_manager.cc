@@ -526,6 +526,10 @@ void TileManager::Flush() {
 
   tile_task_manager_->CheckForCompletedTasks();
   did_check_for_completed_tasks_since_last_schedule_tasks_ = true;
+
+  // Actually flush.
+  raster_buffer_provider_->Flush();
+
   CheckPendingGpuWorkTiles(true /* issue_signals */);
 
   TRACE_EVENT_INSTANT1("cc", "DidFlush", TRACE_EVENT_SCOPE_THREAD, "stats",
@@ -1431,6 +1435,11 @@ bool TileManager::UsePartialRaster() const {
 }
 
 void TileManager::CheckPendingGpuWorkTiles(bool issue_signals) {
+  TRACE_EVENT2("cc", "TileManager::CheckPendingGpuWorkTiles",
+               "pending_gpu_work_tiles", pending_gpu_work_tiles_.size(),
+               "tree_priority",
+               TreePriorityToString(global_state_.tree_priority));
+
   ResourceProvider::ResourceIdArray required_for_activation_ids;
   ResourceProvider::ResourceIdArray required_for_draw_ids;
 

@@ -98,6 +98,8 @@ void BitmapRasterBufferProvider::OrderingBarrier() {
   // No need to sync resources as this provider does not use GL context.
 }
 
+void BitmapRasterBufferProvider::Flush() {}
+
 ResourceFormat BitmapRasterBufferProvider::GetResourceFormat(
     bool must_support_alpha) const {
   return resource_provider_->best_texture_format();

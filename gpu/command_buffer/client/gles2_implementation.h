@@ -183,12 +183,22 @@ class GLES2_IMPL_EXPORT GLES2Implementation
   // Gets client side generated errors.
   GLenum GetClientSideGLError();
 
+  // GLES2Interface implementation
+  void FreeSharedMemory(void*) override;
+
   // Include the auto-generated part of this class. We split this because
   // it means we can easily edit the non-auto generated parts right here in
   // this file instead of having to edit some template or the code generator.
   #include "gpu/command_buffer/client/gles2_implementation_autogen.h"
 
   // ContextSupport implementation.
+  int32_t GetStreamId() const override;
+  void FlushOrderingBarrierOnStream(int32_t stream_id) override;
+  void SignalSyncToken(const gpu::SyncToken& sync_token,
+                       const base::Closure& callback) override;
+  bool IsSyncTokenSignaled(const gpu::SyncToken& sync_token) override;
+  void SignalQuery(uint32_t query, const base::Closure& callback) override;
+  void SetAggressivelyFreeResources(bool aggressively_free_resources) override;
   void Swap() override;
   void SwapWithBounds(const std::vector<gfx::Rect>& rects) override;
   void PartialSwapBuffers(const gfx::Rect& sub_buffer) override;
@@ -248,15 +258,6 @@ class GLES2_IMPL_EXPORT GLES2Implementation
 
   void FreeUnusedSharedMemory();
   void FreeEverything();
-
-  void FreeSharedMemory(void*) override;
-
-  // ContextSupport implementation.
-  void SignalSyncToken(const gpu::SyncToken& sync_token,
-                       const base::Closure& callback) override;
-  bool IsSyncTokenSignaled(const gpu::SyncToken& sync_token) override;
-  void SignalQuery(uint32_t query, const base::Closure& callback) override;
-  void SetAggressivelyFreeResources(bool aggressively_free_resources) override;
 
   // Helper to set verified bit on sync token if allowed by gpu control.
   bool GetVerifiedSyncTokenForIPC(const gpu::SyncToken& sync_token,

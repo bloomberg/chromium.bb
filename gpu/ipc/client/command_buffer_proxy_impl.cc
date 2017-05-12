@@ -529,7 +529,7 @@ int32_t CommandBufferProxyImpl::CreateImage(ClientBuffer buffer,
   Send(new GpuCommandBufferMsg_CreateImage(route_id_, params));
 
   if (image_fence_sync) {
-    gpu::SyncToken sync_token(GetNamespaceID(), GetExtraCommandBufferData(),
+    gpu::SyncToken sync_token(GetNamespaceID(), GetStreamId(),
                               GetCommandBufferID(), image_fence_sync);
 
     // Force a synchronous IPC to validate sync token.
@@ -586,8 +586,13 @@ gpu::CommandBufferId CommandBufferProxyImpl::GetCommandBufferID() const {
   return command_buffer_id_;
 }
 
-int32_t CommandBufferProxyImpl::GetExtraCommandBufferData() const {
+int32_t CommandBufferProxyImpl::GetStreamId() const {
   return stream_id_;
+}
+
+void CommandBufferProxyImpl::FlushOrderingBarrierOnStream(int32_t stream_id) {
+  if (channel_)
+    channel_->FlushPendingStream(stream_id);
 }
 
 uint64_t CommandBufferProxyImpl::GenerateFenceSyncRelease() {

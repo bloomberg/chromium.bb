@@ -194,8 +194,12 @@ gpu::CommandBufferId Context::GetCommandBufferID() const {
   return gpu::CommandBufferId();
 }
 
-int32_t Context::GetExtraCommandBufferData() const {
+int32_t Context::GetStreamId() const {
   return 0;
+}
+
+void Context::FlushOrderingBarrierOnStream(int32_t stream_id) {
+  // This is only relevant for out-of-process command buffers.
 }
 
 uint64_t Context::GenerateFenceSyncRelease() {

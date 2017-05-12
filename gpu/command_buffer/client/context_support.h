@@ -26,6 +26,12 @@ struct SyncToken;
 
 class ContextSupport {
  public:
+  // Returns the stream id for this context.
+  virtual int32_t GetStreamId() const = 0;
+
+  // Flush any outstanding ordering barriers on given stream.
+  virtual void FlushOrderingBarrierOnStream(int32_t stream_id) = 0;
+
   // Runs |callback| when the given sync token is signalled. The sync token may
   // belong to any context.
   virtual void SignalSyncToken(const SyncToken& sync_token,
