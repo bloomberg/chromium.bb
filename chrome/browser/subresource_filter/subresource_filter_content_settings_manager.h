@@ -89,6 +89,10 @@ class SubresourceFilterContentSettingsManager
 
   HostContentSettingsMap* settings_map_;
 
+  // Used only for metrics so we don't report global changes which just keep
+  // the same value.
+  ContentSetting cached_global_setting_for_metrics_;
+
   // A clock is injected into this class so tests can set arbitrary timestamps
   // in website settings.
   std::unique_ptr<base::Clock> clock_;

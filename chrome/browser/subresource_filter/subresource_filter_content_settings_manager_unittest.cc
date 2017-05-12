@@ -109,16 +109,21 @@ TEST_F(SubresourceFilterContentSettingsManagerTest, IrrelevantSetting) {
 }
 
 TEST_F(SubresourceFilterContentSettingsManagerTest, DefaultSetting) {
+  // Setting to an existing value should not log any metrics.
   GetSettingsMap()->SetDefaultContentSetting(
       CONTENT_SETTINGS_TYPE_SUBRESOURCE_FILTER, CONTENT_SETTING_ALLOW);
-  histogram_tester().ExpectBucketCount(kActionsHistogram,
-                                       kActionContentSettingsAllowedGlobal, 1);
+  histogram_tester().ExpectTotalCount(kActionsHistogram, 0);
 
   GetSettingsMap()->SetDefaultContentSetting(
       CONTENT_SETTINGS_TYPE_SUBRESOURCE_FILTER, CONTENT_SETTING_BLOCK);
-  histogram_tester().ExpectTotalCount(kActionsHistogram, 2);
   histogram_tester().ExpectBucketCount(kActionsHistogram,
                                        kActionContentSettingsBlockedGlobal, 1);
+
+  GetSettingsMap()->SetDefaultContentSetting(
+      CONTENT_SETTINGS_TYPE_SUBRESOURCE_FILTER, CONTENT_SETTING_ALLOW);
+  histogram_tester().ExpectTotalCount(kActionsHistogram, 2);
+  histogram_tester().ExpectBucketCount(kActionsHistogram,
+                                       kActionContentSettingsAllowedGlobal, 1);
 }
 
 TEST_F(SubresourceFilterContentSettingsManagerTest, UrlSetting) {
@@ -249,6 +254,21 @@ TEST_F(SubresourceFilterContentSettingsManagerTest,
                                        kActionContentSettingsBlocked, 1);
   histogram_tester().ExpectBucketCount(kActionsHistogram,
                                        kActionContentSettingsBlockedFromUI, 1);
+}
+
+TEST_F(SubresourceFilterContentSettingsManagerTest,
+       IgnoreDuplicateGlobalSettings) {
+  histogram_tester().ExpectTotalCount(kActionsHistogram, 0);
+
+  GetSettingsMap()->SetDefaultContentSetting(
+      CONTENT_SETTINGS_TYPE_SUBRESOURCE_FILTER, CONTENT_SETTING_BLOCK);
+  histogram_tester().ExpectBucketCount(kActionsHistogram,
+                                       kActionContentSettingsBlockedGlobal, 1);
+
+  GetSettingsMap()->SetDefaultContentSetting(
+      CONTENT_SETTINGS_TYPE_SUBRESOURCE_FILTER, CONTENT_SETTING_BLOCK);
+  histogram_tester().ExpectBucketCount(kActionsHistogram,
+                                       kActionContentSettingsBlockedGlobal, 1);
 }
 
 TEST_F(SubresourceFilterContentSettingsManagerHistoryTest,
