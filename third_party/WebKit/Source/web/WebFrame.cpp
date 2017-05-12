@@ -12,6 +12,7 @@
 #include "core/frame/LocalFrame.h"
 #include "core/frame/RemoteFrame.h"
 #include "core/frame/WebLocalFrameBase.h"
+#include "core/frame/WebRemoteFrameBase.h"
 #include "core/html/HTMLFrameElementBase.h"
 #include "core/html/HTMLFrameOwnerElement.h"
 #include "core/page/Page.h"
@@ -23,7 +24,6 @@
 #include "public/web/WebSandboxFlags.h"
 #include "web/OpenedFrameTracker.h"
 #include "web/RemoteFrameOwner.h"
-#include "web/WebRemoteFrameImpl.h"
 
 namespace blink {
 
@@ -115,7 +115,7 @@ bool WebFrame::Swap(WebFrame* frame) {
                            TRACE_EVENT_SCOPE_THREAD, "frame", &local_frame);
     }
   } else {
-    ToWebRemoteFrameImpl(frame)->InitializeCoreFrame(*page, owner, name);
+    ToWebRemoteFrameBase(frame)->InitializeCoreFrame(*page, owner, name);
   }
 
   if (parent_ && old_frame->HasReceivedUserGesture())
@@ -293,7 +293,7 @@ WebFrame* WebFrame::FromFrame(Frame* frame) {
 
   if (frame->IsLocalFrame())
     return WebLocalFrameBase::FromFrame(ToLocalFrame(*frame));
-  return WebRemoteFrameImpl::FromFrame(ToRemoteFrame(*frame));
+  return WebRemoteFrameBase::FromFrame(ToRemoteFrame(*frame));
 }
 
 WebFrame::WebFrame(WebTreeScopeType scope)
@@ -317,7 +317,7 @@ void WebFrame::TraceFrame(Visitor* visitor, WebFrame* frame) {
   if (frame->IsWebLocalFrame())
     visitor->Trace(ToWebLocalFrameBase(frame));
   else
-    visitor->Trace(ToWebRemoteFrameImpl(frame));
+    visitor->Trace(ToWebRemoteFrameBase(frame));
 }
 
 void WebFrame::TraceFrames(Visitor* visitor, WebFrame* frame) {
@@ -336,7 +336,7 @@ void WebFrame::InitializeCoreFrame(WebFrame& frame, Page& page) {
   if (frame.IsWebLocalFrame())
     ToWebLocalFrameBase(frame).InitializeCoreFrame(page, 0, g_null_atom);
   else if (frame.IsWebRemoteFrame())
-    ToWebRemoteFrameImpl(frame).InitializeCoreFrame(page, 0, g_null_atom);
+    ToWebRemoteFrameBase(frame).InitializeCoreFrame(page, 0, g_null_atom);
   else
     NOTREACHED();
 }
@@ -345,7 +345,7 @@ Frame* WebFrame::ToCoreFrame(const WebFrame& frame) {
   if (frame.IsWebLocalFrame())
     return ToWebLocalFrameBase(frame).GetFrame();
   if (frame.IsWebRemoteFrame())
-    return ToWebRemoteFrameImpl(frame).GetFrame();
+    return ToWebRemoteFrameBase(frame).GetFrame();
   NOTREACHED();
   return nullptr;
 }
