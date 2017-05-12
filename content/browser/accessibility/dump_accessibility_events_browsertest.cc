@@ -152,7 +152,6 @@ void DumpAccessibilityEventsTest::RunEventTest(
 }
 
 // TODO(dmazzoni): port these tests to run on all platforms.
-// TODO(crbug.com/617146): All tests flaky on Windows 8.
 #if defined(OS_WIN) || defined(OS_MACOSX)
 
 // This is tasteless, but then so's the snippet it's replacing.
@@ -160,6 +159,12 @@ void DumpAccessibilityEventsTest::RunEventTest(
 #define DISABLED_ON_WIN(name) DISABLED_ ## name
 #else
 #define DISABLED_ON_WIN(name) name
+#endif
+
+#if defined(OS_MACOSX)
+#define DISABLED_ON_MAC(name) DISABLED_##name
+#else
+#define DISABLED_ON_MAC(name) name
 #endif
 
 #if defined(OS_WIN) || defined(OS_MACOSX)
@@ -173,27 +178,24 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityEventsTest,
   RunEventTest(FILE_PATH_LITERAL("aria-combo-box-collapse.html"));
 }
 
-// https://crbug.com/652706
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityEventsTest,
-    DISABLED_ON_WIN(AccessibilityEventsAriaComboBoxExpand)) {
+                       AccessibilityEventsAriaComboBoxExpand) {
   RunEventTest(FILE_PATH_LITERAL("aria-combo-box-expand.html"));
 }
 
-// Mac: https://crbug.com/615411, Win: https://crbug.com/652706
+// https://crbug.com/719030
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityEventsTest,
     DISABLED_ON_WIN_AND_MAC(AccessibilityEventsAriaComboBoxFocus)) {
   RunEventTest(FILE_PATH_LITERAL("aria-combo-box-focus.html"));
 }
 
-// https://crbug.com/652706
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityEventsTest,
-    DISABLED_ON_WIN(AccessibilityEventsAriaComboBoxNext)) {
+                       AccessibilityEventsAriaComboBoxNext) {
   RunEventTest(FILE_PATH_LITERAL("aria-combo-box-next.html"));
 }
 
-// https://crbug.com/652706
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityEventsTest,
-    DISABLED_ON_WIN(AccessibilityEventsAddAlert)) {
+                       AccessibilityEventsAddAlert) {
   RunEventTest(FILE_PATH_LITERAL("add-alert.html"));
 }
 
@@ -247,16 +249,10 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityEventsTest,
   RunEventTest(FILE_PATH_LITERAL("inner-html-change.html"));
 }
 
-#if defined(OS_MACOSX)
-// Mac failures: http://crbug.com/598527.
-#define MAYBE_AccessibilityEventsInputTypeTextValueChanged \
-    DISABLED_AccessibilityEventsInputTypeTextValueChanged
-#else
-#define MAYBE_AccessibilityEventsInputTypeTextValueChanged \
-    AccessibilityEventsInputTypeTextValueChanged
-#endif
-IN_PROC_BROWSER_TEST_F(DumpAccessibilityEventsTest,
-                       MAYBE_AccessibilityEventsInputTypeTextValueChanged) {
+// http://crbug.com/719030
+IN_PROC_BROWSER_TEST_F(
+    DumpAccessibilityEventsTest,
+    DISABLED_ON_MAC(AccessibilityEventsInputTypeTextValueChanged)) {
   RunEventTest(FILE_PATH_LITERAL("input-type-text-value-changed.html"));
 }
 
@@ -265,8 +261,6 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityEventsTest,
   RunEventTest(FILE_PATH_LITERAL("listbox-focus.html"));
 }
 
-// Flaky on Windows: http://crbug.com/486861
-// Flaky on Mac: http://crbug.com/588271
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityEventsTest,
                        AccessibilityEventsListboxNext) {
   RunEventTest(FILE_PATH_LITERAL("listbox-next.html"));
@@ -277,7 +271,7 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityEventsTest,
   RunEventTest(FILE_PATH_LITERAL("menulist-collapse.html"));
 }
 
-// Mac: https://crbug.com/615411, Win: https://crbug.com/652706
+// https://crbug.com/719030
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityEventsTest,
     DISABLED_ON_WIN_AND_MAC(AccessibilityEventsMenuListExpand)) {
   RunEventTest(FILE_PATH_LITERAL("menulist-expand.html"));
@@ -288,13 +282,13 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityEventsTest,
   RunEventTest(FILE_PATH_LITERAL("menulist-focus.html"));
 }
 
-// Mac: https://crbug.com/615411, Win: https://crbug.com/652706
+// https://crbug.com/719030
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityEventsTest,
     DISABLED_ON_WIN_AND_MAC(AccessibilityEventsMenuListNext)) {
   RunEventTest(FILE_PATH_LITERAL("menulist-next.html"));
 }
 
-// Flaky on Windows: http://crbug.com/486861
+// http://crbug.com/719030
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityEventsTest,
                        DISABLED_AccessibilityEventsMenuListPopup) {
   RunEventTest(FILE_PATH_LITERAL("menulist-popup.html"));
