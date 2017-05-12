@@ -341,8 +341,8 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
   // QuicChromiumPacketReader::Visitor methods:
   void OnReadError(int result, const DatagramClientSocket* socket) override;
   bool OnPacket(const QuicReceivedPacket& packet,
-                const IPEndPoint& local_address,
-                const IPEndPoint& peer_address) override;
+                const QuicSocketAddress& local_address,
+                const QuicSocketAddress& peer_address) override;
 
   // MultiplexedSession methods:
   bool GetRemoteEndpoint(IPEndPoint* endpoint) override;
