@@ -97,7 +97,7 @@ def _CheckFilesUsingEventSender(input_api, output_api):
         if f.Action() == 'A':
             for line_num, line in f.ChangedContents():
                 if any(action in line for action in actions):
-                    results.append(output_api.PresubmitError(
+                    results.append(output_api.PresubmitPromptWarning(
                         'eventSender is deprecated, please use chrome.gpuBenchmarking.pointerActionSequence instead ' +
                         '(see https://crbug.com/711340 and http://goo.gl/BND75q).\n' +
                         'Files: %s:%d %s ' % (f.LocalPath(), line_num, line)))
