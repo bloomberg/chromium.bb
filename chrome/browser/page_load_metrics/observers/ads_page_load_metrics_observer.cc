@@ -23,25 +23,37 @@ const base::Feature kAdsFeature{"AdsMetrics",
                                 base::FEATURE_DISABLED_BY_DEFAULT};
 
 bool FrameIsAd(content::NavigationHandle* navigation_handle) {
-  content::RenderFrameHost* current_frame_host =
-      navigation_handle->GetRenderFrameHost();
-  DCHECK(current_frame_host);
-  const std::string& name = current_frame_host->GetFrameName();
-  const GURL& url = navigation_handle->GetURL();
-
   // Because sub-resource filtering isn't always enabled, and doesn't work
   // well in monitoring mode (no CSS enforcement), it's difficult to identify
   // ads. Google ads are prevalent and easy to track, so we'll start by
   // tracking those. Note that the frame name can be very large, so be careful
   // to avoid full string searches if possible.
   // TODO(jkarlin): Track other ad networks that are easy to identify.
-  return base::StartsWith(name, "google_ads_iframe",
-                          base::CompareCase::SENSITIVE) ||
-         base::StartsWith(name, "google_ads_frame",
-                          base::CompareCase::SENSITIVE) ||
-         (url.host_piece() == "tpc.googlesyndication.com" &&
-          base::StartsWith(url.path_piece(), "/safeframe",
-                           base::CompareCase::SENSITIVE));
+
+  // In case the navigation aborted, look up the RFH by the Frame Tree Node
+  // ID. It returns the committed frame host or the initial frame host for the
+  // frame if no committed host exists. Using a previous host is fine because
+  // once a frame has an ad we always consider it to have an ad.
+  // We use the unsafe method of FindFrameByFrameTreeNodeId because we're not
+  // concerned with which process the frame lives on (we're just measuring
+  // bytes and not granting security priveleges).
+  content::RenderFrameHost* current_frame_host =
+      navigation_handle->GetWebContents()->UnsafeFindFrameByFrameTreeNodeId(
+          navigation_handle->GetFrameTreeNodeId());
+  if (current_frame_host) {
+    const std::string& frame_name = current_frame_host->GetFrameName();
+    if (base::StartsWith(frame_name, "google_ads_iframe",
+                         base::CompareCase::SENSITIVE) ||
+        base::StartsWith(frame_name, "google_ads_frame",
+                         base::CompareCase::SENSITIVE)) {
+      return true;
+    }
+  }
+
+  const GURL& url = navigation_handle->GetURL();
+  return url.host_piece() == "tpc.googlesyndication.com" &&
+         base::StartsWith(url.path_piece(), "/safeframe",
+                          base::CompareCase::SENSITIVE);
 }
 
 }  // namespace
@@ -77,22 +89,13 @@ AdsPageLoadMetricsObserver::OnCommit(
 page_load_metrics::PageLoadMetricsObserver::ObservePolicy
 AdsPageLoadMetricsObserver::OnDidFinishSubFrameNavigation(
     content::NavigationHandle* navigation_handle) {
+  // Determine if the frame is part of an existing ad, the root of a new ad,
+  // or a non-ad frame. Once a frame is labled as an ad, it is always
+  // considered an ad, even if it navigates to a non-ad page. This function
+  // labels all of a page's frames, even those that fail to commit.
   FrameTreeNodeId frame_tree_node_id = navigation_handle->GetFrameTreeNodeId();
-
-  if (!navigation_handle->HasCommitted() ||
-      navigation_handle->IsSameDocument() || navigation_handle->IsErrorPage()) {
-    // We're not interested in tracking this navigation. In case we've seen a
-    // resource for the navigation before this message, clear it from
-    // ongoing_navigation_resources_.
-    ongoing_navigation_resources_.erase(frame_tree_node_id);
-    return CONTINUE_OBSERVING;
-  }
-
   content::RenderFrameHost* parent_frame_host =
-      navigation_handle->GetRenderFrameHost()->GetParent();
-  DCHECK(parent_frame_host);
-
-  bool top_level_subframe = !parent_frame_host->GetParent();
+      navigation_handle->GetParentFrame();
 
   const auto& id_and_data = ad_frames_data_.find(frame_tree_node_id);
   if (id_and_data != ad_frames_data_.end()) {
@@ -107,7 +110,6 @@ AdsPageLoadMetricsObserver::OnDidFinishSubFrameNavigation(
             "PageLoad.Clients.Ads.Google.Navigations.AdFrameRenavigatedToAd",
             FrameIsAd(navigation_handle));
       }
-
       return CONTINUE_OBSERVING;
     }
     // This frame was previously not an ad, process it as usual. If it had
@@ -115,7 +117,7 @@ AdsPageLoadMetricsObserver::OnDidFinishSubFrameNavigation(
     UMA_HISTOGRAM_BOOLEAN(
         "PageLoad.Clients.Ads.Google.Navigations.NonAdFrameRenavigatedToAd",
         FrameIsAd(navigation_handle));
-  } else if (top_level_subframe) {
+  } else if (navigation_handle->IsParentMainFrame()) {
     top_level_subframe_count_ += 1;
   }
 
@@ -133,7 +135,7 @@ AdsPageLoadMetricsObserver::OnDidFinishSubFrameNavigation(
 
   ad_frames_data_[frame_tree_node_id] = ad_data;
 
-  if (top_level_subframe && ad_data)
+  if (navigation_handle->IsParentMainFrame() && ad_data)
     top_level_ad_frame_count_ += 1;
 
   ProcessOngoingNavigationResource(frame_tree_node_id);
@@ -176,12 +178,13 @@ void AdsPageLoadMetricsObserver::ProcessLoadedResource(
   const auto& id_and_data =
       ad_frames_data_.find(extra_request_info.frame_tree_node_id);
   if (id_and_data == ad_frames_data_.end()) {
-    // This resouce is for a frame that hasn't yet committed. It must be the
-    // main document for the frame. Hold onto it and once it commits we'll run
-    // it in ProcessOngoingNavigationResource.
-    // TODO(jkarlin): Plumb the resource type through and DCHECK that the type
-    // is document.
-    auto it_and_success = ongoing_navigation_resources_.emplace(
+    // This resource is for a frame that hasn't ever finished a navigation. We
+    // expect it to be the frame's main resource but don't have enough
+    // confidence in that to dcheck it. For example, there might be races
+    // between doc.written resources and navigation failure.
+    // TODO(jkarlin): Add UMA to measure how often we see multiple resources
+    // for a frame before navigation finishes.
+    ongoing_navigation_resources_.emplace(
         std::piecewise_construct,
         std::forward_as_tuple(extra_request_info.frame_tree_node_id),
         std::forward_as_tuple(
@@ -189,7 +192,6 @@ void AdsPageLoadMetricsObserver::ProcessLoadedResource(
             extra_request_info.was_cached, extra_request_info.raw_body_bytes,
             extra_request_info.original_network_content_length, nullptr,
             extra_request_info.resource_type));
-    DCHECK(it_and_success.second);
     return;
   }
 

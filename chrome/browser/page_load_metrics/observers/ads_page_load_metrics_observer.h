@@ -13,6 +13,8 @@
 #include "chrome/browser/page_load_metrics/page_load_metrics_observer.h"
 #include "net/http/http_response_info.h"
 
+// This observer labels each sub-frame as an ad or not, and keeps track of
+// relevant per-frame and whole-page byte statistics.
 class AdsPageLoadMetricsObserver
     : public page_load_metrics::PageLoadMetricsObserver {
  public:
