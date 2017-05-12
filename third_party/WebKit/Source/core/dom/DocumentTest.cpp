@@ -797,4 +797,49 @@ TEST_F(DocumentTest, SuboriginDisablesAppCache) {
   EXPECT_TRUE(mock_web_host->without_manifest_was_called_);
 }
 
+// Verifies that calling EnsurePaintLocationDataValidForNode cleans compositor
+// inputs only when necessary. We generally want to avoid cleaning the inputs,
+// as it is more expensive than just doing layout.
+TEST_F(DocumentTest,
+       EnsurePaintLocationDataValidForNodeCompositingInputsOnlyWhenNecessary) {
+  GetDocument().body()->setInnerHTML(
+      "<div id='ancestor'>"
+      "  <div id='sticky' style='position:sticky;'>"
+      "    <div id='stickyChild'></div>"
+      "  </div>"
+      "  <div id='nonSticky'></div>"
+      "</div>");
+  EXPECT_EQ(DocumentLifecycle::kStyleClean,
+            GetDocument().Lifecycle().GetState());
+
+  // Asking for any element that is not affected by a sticky element should only
+  // advance the lifecycle to layout clean.
+  GetDocument().EnsurePaintLocationDataValidForNode(
+      GetDocument().getElementById("ancestor"));
+  EXPECT_EQ(DocumentLifecycle::kLayoutClean,
+            GetDocument().Lifecycle().GetState());
+
+  GetDocument().EnsurePaintLocationDataValidForNode(
+      GetDocument().getElementById("nonSticky"));
+  EXPECT_EQ(DocumentLifecycle::kLayoutClean,
+            GetDocument().Lifecycle().GetState());
+
+  // However, asking for either the sticky element or it's descendents should
+  // clean compositing inputs as well.
+  GetDocument().EnsurePaintLocationDataValidForNode(
+      GetDocument().getElementById("sticky"));
+  EXPECT_EQ(DocumentLifecycle::kCompositingInputsClean,
+            GetDocument().Lifecycle().GetState());
+
+  // Dirty layout.
+  GetDocument().body()->setAttribute("style", "background: red;");
+  EXPECT_EQ(DocumentLifecycle::kVisualUpdatePending,
+            GetDocument().Lifecycle().GetState());
+
+  GetDocument().EnsurePaintLocationDataValidForNode(
+      GetDocument().getElementById("stickyChild"));
+  EXPECT_EQ(DocumentLifecycle::kCompositingInputsClean,
+            GetDocument().Lifecycle().GetState());
+}
+
 }  // namespace blink

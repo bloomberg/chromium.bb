@@ -1141,6 +1141,7 @@ const AtomicString& HTMLElement::EventParameterName() {
 }
 
 int HTMLElement::offsetLeftForBinding() {
+  GetDocument().EnsurePaintLocationDataValidForNode(this);
   Element* offset_parent = unclosedOffsetParent();
   if (LayoutBoxModelObject* layout_object = GetLayoutBoxModelObject())
     return AdjustLayoutUnitForAbsoluteZoom(
@@ -1151,6 +1152,7 @@ int HTMLElement::offsetLeftForBinding() {
 }
 
 int HTMLElement::offsetTopForBinding() {
+  GetDocument().EnsurePaintLocationDataValidForNode(this);
   Element* offset_parent = unclosedOffsetParent();
   if (LayoutBoxModelObject* layout_object = GetLayoutBoxModelObject())
     return AdjustLayoutUnitForAbsoluteZoom(
@@ -1161,6 +1163,7 @@ int HTMLElement::offsetTopForBinding() {
 }
 
 int HTMLElement::offsetWidthForBinding() {
+  GetDocument().EnsurePaintLocationDataValidForNode(this);
   Element* offset_parent = unclosedOffsetParent();
   if (LayoutBoxModelObject* layout_object = GetLayoutBoxModelObject())
     return AdjustLayoutUnitForAbsoluteZoom(
@@ -1173,6 +1176,7 @@ int HTMLElement::offsetWidthForBinding() {
 
 DISABLE_CFI_PERF
 int HTMLElement::offsetHeightForBinding() {
+  GetDocument().EnsurePaintLocationDataValidForNode(this);
   Element* offset_parent = unclosedOffsetParent();
   if (LayoutBoxModelObject* layout_object = GetLayoutBoxModelObject())
     return AdjustLayoutUnitForAbsoluteZoom(

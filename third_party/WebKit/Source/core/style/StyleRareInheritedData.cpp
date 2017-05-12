@@ -102,6 +102,7 @@ StyleRareInheritedData::StyleRareInheritedData()
       subtree_will_change_contents_(false),
       self_or_ancestor_has_dir_auto_attribute_(false),
       respect_image_orientation_(false),
+      subtree_is_sticky_(false),
       hyphenation_limit_before_(-1),
       hyphenation_limit_after_(-1),
       hyphenation_limit_lines_(-1),
@@ -170,6 +171,7 @@ StyleRareInheritedData::StyleRareInheritedData(const StyleRareInheritedData& o)
       self_or_ancestor_has_dir_auto_attribute_(
           o.self_or_ancestor_has_dir_auto_attribute_),
       respect_image_orientation_(o.respect_image_orientation_),
+      subtree_is_sticky_(o.subtree_is_sticky_),
       hyphenation_string_(o.hyphenation_string_),
       hyphenation_limit_before_(o.hyphenation_limit_before_),
       hyphenation_limit_after_(o.hyphenation_limit_after_),
@@ -238,6 +240,7 @@ bool StyleRareInheritedData::operator==(const StyleRareInheritedData& o) const {
          self_or_ancestor_has_dir_auto_attribute_ ==
              o.self_or_ancestor_has_dir_auto_attribute_ &&
          respect_image_orientation_ == o.respect_image_orientation_ &&
+         subtree_is_sticky_ == o.subtree_is_sticky_ &&
          hyphenation_string_ == o.hyphenation_string_ &&
          line_height_step_ == o.line_height_step_ &&
          text_emphasis_custom_mark_ == o.text_emphasis_custom_mark_ &&

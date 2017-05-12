@@ -221,6 +221,10 @@ class CORE_EXPORT StyleRareInheritedData
 
   unsigned respect_image_orientation_ : 1;
 
+  // Though position: sticky is not itself an inherited property, being a
+  // descendent of a sticky element changes some document lifecycle logic.
+  unsigned subtree_is_sticky_ : 1;
+
   AtomicString hyphenation_string_;
   short hyphenation_limit_before_;
   short hyphenation_limit_after_;

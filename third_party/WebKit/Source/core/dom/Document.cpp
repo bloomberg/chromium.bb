@@ -2381,6 +2381,30 @@ PassRefPtr<ComputedStyle> Document::StyleForPage(int page_index) {
   return EnsureStyleResolver().StyleForPage(page_index);
 }
 
+void Document::EnsurePaintLocationDataValidForNode(const Node* node) {
+  DCHECK(node);
+  if (!node->InActiveDocument())
+    return;
+
+  // For all nodes we must have up-to-date style and have performed layout to do
+  // any location-based calculation.
+  UpdateStyleAndLayoutIgnorePendingStylesheets();
+
+  // The location of elements that are position: sticky is not known until
+  // compositing inputs are cleaned. Therefore, for any elements that are either
+  // sticky or are in a sticky sub-tree (e.g. are affected by a sticky element),
+  // we need to also clean compositing inputs.
+  if (View() && node->GetLayoutObject() &&
+      node->GetLayoutObject()->StyleRef().SubtreeIsSticky()) {
+    if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
+      // In SPv2, compositing inputs are cleaned as part of PrePaint.
+      View()->UpdateAllLifecyclePhasesExceptPaint();
+    } else {
+      View()->UpdateLifecycleToCompositingInputsClean();
+    }
+  }
+}
+
 bool Document::IsPageBoxVisible(int page_index) {
   return StyleForPage(page_index)->Visibility() !=
          EVisibility::kHidden;  // display property doesn't apply to @page.
