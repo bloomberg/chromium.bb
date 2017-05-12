@@ -47,10 +47,6 @@ static constexpr int kFloorGridlineCount = 40;
 static constexpr vr::Colorf kBackgroundHorizonColor = {0.57, 0.57, 0.57, 1.0};
 static constexpr vr::Colorf kBackgroundCenterColor = {0.48, 0.48, 0.48, 1.0};
 
-// Placeholders to demonstrate UI changes when in CCT.
-static constexpr vr::Colorf kCctBackgroundHorizonColor = {0.2, 0.6, 0.2, 1.0};
-static constexpr vr::Colorf kCctBackgroundCenterColor = {0.13, 0.52, 0.13, 1.0};
-
 // Tiny distance to offset textures that should appear in the same plane.
 static constexpr float kTextureOffset = 0.01;
 
@@ -140,10 +136,6 @@ void UiSceneManager::CreateContentQuad() {
 
 void UiSceneManager::CreateBackground() {
   std::unique_ptr<UiElement> element;
-  vr::Colorf horizon =
-      in_cct_ ? kCctBackgroundHorizonColor : kBackgroundHorizonColor;
-  vr::Colorf center =
-      in_cct_ ? kCctBackgroundCenterColor : kBackgroundCenterColor;
 
   // Floor.
   element = base::MakeUnique<UiElement>();
@@ -152,8 +144,8 @@ void UiSceneManager::CreateBackground() {
   element->set_translation({0.0, -kSceneHeight / 2, 0.0});
   element->set_rotation({1.0, 0.0, 0.0, -M_PI / 2.0});
   element->set_fill(vr_shell::Fill::OPAQUE_GRADIENT);
-  element->set_edge_color(horizon);
-  element->set_center_color(center);
+  element->set_edge_color(kBackgroundHorizonColor);
+  element->set_center_color(kBackgroundCenterColor);
   element->set_draw_phase(0);
   browser_ui_elements_.push_back(element.get());
   scene_->AddUiElement(std::move(element));
@@ -166,8 +158,8 @@ void UiSceneManager::CreateBackground() {
   element->set_translation({0.0, kSceneHeight / 2, 0.0});
   element->set_rotation({1.0, 0.0, 0.0, M_PI / 2});
   element->set_fill(vr_shell::Fill::OPAQUE_GRADIENT);
-  element->set_edge_color(horizon);
-  element->set_center_color(center);
+  element->set_edge_color(kBackgroundHorizonColor);
+  element->set_center_color(kBackgroundCenterColor);
   element->set_draw_phase(0);
   browser_ui_elements_.push_back(element.get());
   scene_->AddUiElement(std::move(element));
@@ -180,8 +172,8 @@ void UiSceneManager::CreateBackground() {
   element->set_translation({0.0, -kSceneHeight / 2 + kTextureOffset, 0.0});
   element->set_rotation({1.0, 0.0, 0.0, -M_PI / 2});
   element->set_fill(vr_shell::Fill::GRID_GRADIENT);
-  element->set_center_color(horizon);
-  vr::Colorf edge_color = horizon;
+  element->set_center_color(kBackgroundHorizonColor);
+  vr::Colorf edge_color = kBackgroundHorizonColor;
   edge_color.a = 0.0;
   element->set_edge_color(edge_color);
   element->set_gridline_count(kFloorGridlineCount);
@@ -189,7 +181,7 @@ void UiSceneManager::CreateBackground() {
   browser_ui_elements_.push_back(element.get());
   scene_->AddUiElement(std::move(element));
 
-  scene_->SetBackgroundColor(horizon);
+  scene_->SetBackgroundColor(kBackgroundHorizonColor);
 }
 
 void UiSceneManager::CreateUrlBar() {
