@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/webui/ntp/new_tab_ui.h"
 
 #include <memory>
+#include <string>
 
 #include "base/i18n/rtl.h"
 #include "base/memory/ptr_util.h"
@@ -28,7 +29,6 @@
 #include "content/public/browser/web_ui.h"
 #include "extensions/browser/extension_system.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/resource/resource_bundle.h"
 #include "url/gurl.h"
 
 using content::BrowserThread;
@@ -181,18 +181,6 @@ void NewTabUI::NewTabHTMLSource::StartDataRequest(
     const content::URLDataSource::GotDataCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  std::map<std::string, std::pair<std::string, int> >::iterator it =
-    resource_map_.find(path);
-  if (it != resource_map_.end()) {
-    scoped_refptr<base::RefCountedMemory> resource_bytes(
-        it->second.second ?
-            ResourceBundle::GetSharedInstance().LoadDataResourceBytes(
-                it->second.second) :
-            new base::RefCountedStaticMemory);
-    callback.Run(resource_bytes.get());
-    return;
-  }
-
   if (!path.empty() && path[0] != '#') {
     // A path under new-tab was requested; it's likely a bad relative
     // URL from the new tab page, but in any case it's an error.
@@ -215,10 +203,6 @@ void NewTabUI::NewTabHTMLSource::StartDataRequest(
 
 std::string NewTabUI::NewTabHTMLSource::GetMimeType(const std::string& resource)
     const {
-  std::map<std::string, std::pair<std::string, int> >::const_iterator it =
-      resource_map_.find(resource);
-  if (it != resource_map_.end())
-    return it->second.first;
   return "text/html";
 }
 
@@ -247,15 +231,6 @@ std::string NewTabUI::NewTabHTMLSource::GetContentSecurityPolicyImgSrc()
 std::string NewTabUI::NewTabHTMLSource::GetContentSecurityPolicyChildSrc()
     const {
   return "child-src chrome-search://most-visited;";
-}
-
-void NewTabUI::NewTabHTMLSource::AddResource(const char* resource,
-                                             const char* mime_type,
-                                             int resource_id) {
-  DCHECK(resource);
-  DCHECK(mime_type);
-  resource_map_[std::string(resource)] =
-      std::make_pair(std::string(mime_type), resource_id);
 }
 
 NewTabUI::NewTabHTMLSource::~NewTabHTMLSource() {}
