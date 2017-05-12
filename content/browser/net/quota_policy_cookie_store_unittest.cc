@@ -56,7 +56,7 @@ class QuotaPolicyCookieStoreTest : public testing::Test {
   }
 
   void ReleaseStore() {
-    EXPECT_TRUE(background_task_runner()->RunsTasksOnCurrentThread());
+    EXPECT_TRUE(background_task_runner()->RunsTasksInCurrentSequence());
     store_ = nullptr;
     destroy_event_.Signal();
   }

@@ -133,7 +133,7 @@ struct BrowserThreadGlobals {
   // This array is filled either as the underlying threads start and invoke
   // Init() or in RedirectThreadIDToTaskRunner() for threads that are being
   // redirected. It is not emptied during shutdown in order to support
-  // RunsTasksOnCurrentThread() until the very end.
+  // RunsTasksInCurrentSequence() until the very end.
   scoped_refptr<base::SingleThreadTaskRunner>
       task_runners[BrowserThread::ID_COUNT];
 
@@ -208,7 +208,7 @@ void BrowserThreadImpl::Init() {
     // instead of BrowserThreadImpl::Start.*().
     DCHECK_EQ(globals.states[identifier_], BrowserThreadState::RUNNING);
     DCHECK(globals.task_runners[identifier_]);
-    DCHECK(globals.task_runners[identifier_]->RunsTasksOnCurrentThread());
+    DCHECK(globals.task_runners[identifier_]->RunsTasksInCurrentSequence());
   }
 #endif  // DCHECK_IS_ON()
 
@@ -574,7 +574,7 @@ bool BrowserThread::CurrentlyOn(ID identifier) {
   DCHECK_GE(identifier, 0);
   DCHECK_LT(identifier, ID_COUNT);
   return globals.task_runners[identifier] &&
-         globals.task_runners[identifier]->RunsTasksOnCurrentThread();
+         globals.task_runners[identifier]->RunsTasksInCurrentSequence();
 }
 
 // static
@@ -661,7 +661,7 @@ bool BrowserThread::GetCurrentThreadIdentifier(ID* identifier) {
   base::AutoLock lock(globals.lock);
   for (int i = 0; i < ID_COUNT; ++i) {
     if (globals.task_runners[i] &&
-        globals.task_runners[i]->RunsTasksOnCurrentThread()) {
+        globals.task_runners[i]->RunsTasksInCurrentSequence()) {
       *identifier = static_cast<ID>(i);
       return true;
     }

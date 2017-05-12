@@ -25,8 +25,8 @@ DOMStorageWorkerPoolTaskRunner::DOMStorageWorkerPoolTaskRunner(
 DOMStorageWorkerPoolTaskRunner::~DOMStorageWorkerPoolTaskRunner() = default;
 
 bool DOMStorageWorkerPoolTaskRunner::RunsTasksInCurrentSequence() const {
-  return primary_sequence_->RunsTasksOnCurrentThread() ||
-         commit_sequence_->RunsTasksOnCurrentThread();
+  return primary_sequence_->RunsTasksInCurrentSequence() ||
+         commit_sequence_->RunsTasksInCurrentSequence();
 }
 
 bool DOMStorageWorkerPoolTaskRunner::PostDelayedTask(
@@ -45,11 +45,11 @@ bool DOMStorageWorkerPoolTaskRunner::PostShutdownBlockingTask(
 }
 
 void DOMStorageWorkerPoolTaskRunner::AssertIsRunningOnPrimarySequence() const {
-  DCHECK(primary_sequence_->RunsTasksOnCurrentThread());
+  DCHECK(primary_sequence_->RunsTasksInCurrentSequence());
 }
 
 void DOMStorageWorkerPoolTaskRunner::AssertIsRunningOnCommitSequence() const {
-  DCHECK(commit_sequence_->RunsTasksOnCurrentThread());
+  DCHECK(commit_sequence_->RunsTasksInCurrentSequence());
 }
 
 scoped_refptr<base::SequencedTaskRunner>
@@ -87,11 +87,11 @@ bool MockDOMStorageTaskRunner::PostShutdownBlockingTask(
 }
 
 void MockDOMStorageTaskRunner::AssertIsRunningOnPrimarySequence() const {
-  DCHECK(RunsTasksOnCurrentThread());
+  DCHECK(RunsTasksInCurrentSequence());
 }
 
 void MockDOMStorageTaskRunner::AssertIsRunningOnCommitSequence() const {
-  DCHECK(RunsTasksOnCurrentThread());
+  DCHECK(RunsTasksInCurrentSequence());
 }
 
 scoped_refptr<base::SequencedTaskRunner>

@@ -103,7 +103,7 @@ void IndexedDBInternalsUI::GetAllOrigins(const base::ListValue* args) {
 void IndexedDBInternalsUI::GetAllOriginsOnIndexedDBThread(
     scoped_refptr<IndexedDBContext> context,
     const base::FilePath& context_path) {
-  DCHECK(context->TaskRunner()->RunsTasksOnCurrentThread());
+  DCHECK(context->TaskRunner()->RunsTasksInCurrentSequence());
 
   IndexedDBContextImpl* context_impl =
       static_cast<IndexedDBContextImpl*>(context.get());
@@ -213,7 +213,7 @@ void IndexedDBInternalsUI::DownloadOriginDataOnIndexedDBThread(
     const base::FilePath& partition_path,
     const scoped_refptr<IndexedDBContextImpl> context,
     const Origin& origin) {
-  DCHECK(context->TaskRunner()->RunsTasksOnCurrentThread());
+  DCHECK(context->TaskRunner()->RunsTasksInCurrentSequence());
   // This runs on the IndexedDB task runner to prevent script from reopening
   // the origin while we are zipping.
 
@@ -251,7 +251,7 @@ void IndexedDBInternalsUI::ForceCloseOriginOnIndexedDBThread(
     const base::FilePath& partition_path,
     const scoped_refptr<IndexedDBContextImpl> context,
     const Origin& origin) {
-  DCHECK(context->TaskRunner()->RunsTasksOnCurrentThread());
+  DCHECK(context->TaskRunner()->RunsTasksInCurrentSequence());
 
   // Make sure the database hasn't been deleted since the page was loaded.
   if (!context->HasOrigin(origin))

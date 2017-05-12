@@ -139,14 +139,14 @@ std::string WebRtcAudioSink::Adapter::kind() const {
 
 bool WebRtcAudioSink::Adapter::set_enabled(bool enable) {
   DCHECK(!signaling_task_runner_ ||
-         signaling_task_runner_->RunsTasksOnCurrentThread());
+         signaling_task_runner_->RunsTasksInCurrentSequence());
   return webrtc::MediaStreamTrack<webrtc::AudioTrackInterface>::
       set_enabled(enable);
 }
 
 void WebRtcAudioSink::Adapter::AddSink(webrtc::AudioTrackSinkInterface* sink) {
   DCHECK(!signaling_task_runner_ ||
-         signaling_task_runner_->RunsTasksOnCurrentThread());
+         signaling_task_runner_->RunsTasksInCurrentSequence());
   DCHECK(sink);
   base::AutoLock auto_lock(lock_);
   DCHECK(std::find(sinks_.begin(), sinks_.end(), sink) == sinks_.end());
@@ -156,7 +156,7 @@ void WebRtcAudioSink::Adapter::AddSink(webrtc::AudioTrackSinkInterface* sink) {
 void WebRtcAudioSink::Adapter::RemoveSink(
     webrtc::AudioTrackSinkInterface* sink) {
   DCHECK(!signaling_task_runner_ ||
-         signaling_task_runner_->RunsTasksOnCurrentThread());
+         signaling_task_runner_->RunsTasksInCurrentSequence());
   base::AutoLock auto_lock(lock_);
   const auto it = std::find(sinks_.begin(), sinks_.end(), sink);
   if (it != sinks_.end())
@@ -165,7 +165,7 @@ void WebRtcAudioSink::Adapter::RemoveSink(
 
 bool WebRtcAudioSink::Adapter::GetSignalLevel(int* level) {
   DCHECK(!signaling_task_runner_ ||
-         signaling_task_runner_->RunsTasksOnCurrentThread());
+         signaling_task_runner_->RunsTasksInCurrentSequence());
 
   // |level_| is only set once, so it's safe to read without first acquiring a
   // mutex.
@@ -183,13 +183,13 @@ bool WebRtcAudioSink::Adapter::GetSignalLevel(int* level) {
 rtc::scoped_refptr<webrtc::AudioProcessorInterface>
 WebRtcAudioSink::Adapter::GetAudioProcessor() {
   DCHECK(!signaling_task_runner_ ||
-         signaling_task_runner_->RunsTasksOnCurrentThread());
+         signaling_task_runner_->RunsTasksInCurrentSequence());
   return audio_processor_.get();
 }
 
 webrtc::AudioSourceInterface* WebRtcAudioSink::Adapter::GetSource() const {
   DCHECK(!signaling_task_runner_ ||
-         signaling_task_runner_->RunsTasksOnCurrentThread());
+         signaling_task_runner_->RunsTasksInCurrentSequence());
   return source_.get();
 }
 

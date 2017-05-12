@@ -59,7 +59,7 @@ TestBrowserThread::~TestBrowserThread() {
   // been flushed and deleted in Stop(). In the case of an externally provided
   // MessageLoop however, this means that TaskRunners obtained through
   // |BrowserThreadImpl::GetTaskRunnerForThread(identifier_)| will no longer
-  // recognize their BrowserThreadImpl for RunsTasksOnCurrentThread(). This
+  // recognize their BrowserThreadImpl for RunsTasksInCurrentSequence(). This
   // happens most often when such verifications are made from
   // MessageLoop::DestructionObservers. Callers that care to work around that
   // should instead use this shutdown sequence:

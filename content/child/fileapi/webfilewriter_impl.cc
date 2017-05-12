@@ -162,7 +162,7 @@ void WebFileWriterImpl::DoCancel() {
 }
 
 void WebFileWriterImpl::RunOnMainThread(const base::Closure& closure) {
-  if (main_thread_task_runner_->RunsTasksOnCurrentThread()) {
+  if (main_thread_task_runner_->RunsTasksInCurrentSequence()) {
     DCHECK(!bridge_->waitable_event());
     closure.Run();
     return;

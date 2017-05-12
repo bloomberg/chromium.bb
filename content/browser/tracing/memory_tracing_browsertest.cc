@@ -59,7 +59,7 @@ class MemoryTracingTest : public ContentBrowserTest {
       bool success) {
     // Make sure we run the RunLoop closure on the same thread that originated
     // the run loop (which is the IN_PROC_BROWSER_TEST_F main thread).
-    if (!task_runner->RunsTasksOnCurrentThread()) {
+    if (!task_runner->RunsTasksInCurrentSequence()) {
       task_runner->PostTask(
           FROM_HERE, base::Bind(&MemoryTracingTest::OnGlobalMemoryDumpDone,
                                 base::Unretained(this), task_runner, closure,

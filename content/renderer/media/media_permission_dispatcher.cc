@@ -53,7 +53,7 @@ MediaPermissionDispatcher::MediaPermissionDispatcher(
 }
 
 MediaPermissionDispatcher::~MediaPermissionDispatcher() {
-  DCHECK(task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
 
   // Fire all pending callbacks with |false|.
   for (auto& request : requests_)
@@ -64,7 +64,7 @@ void MediaPermissionDispatcher::HasPermission(
     Type type,
     const GURL& security_origin,
     const PermissionStatusCB& permission_status_cb) {
-  if (!task_runner_->RunsTasksOnCurrentThread()) {
+  if (!task_runner_->RunsTasksInCurrentSequence()) {
     task_runner_->PostTask(
         FROM_HERE, base::Bind(&MediaPermissionDispatcher::HasPermission,
                               weak_ptr_, type, security_origin,
@@ -72,7 +72,7 @@ void MediaPermissionDispatcher::HasPermission(
     return;
   }
 
-  DCHECK(task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
 
   if (!permission_service_)
     connect_to_service_cb_.Run(mojo::MakeRequest(&permission_service_));
@@ -91,7 +91,7 @@ void MediaPermissionDispatcher::RequestPermission(
     Type type,
     const GURL& security_origin,
     const PermissionStatusCB& permission_status_cb) {
-  if (!task_runner_->RunsTasksOnCurrentThread()) {
+  if (!task_runner_->RunsTasksInCurrentSequence()) {
     task_runner_->PostTask(
         FROM_HERE, base::Bind(&MediaPermissionDispatcher::RequestPermission,
                               weak_ptr_, type, security_origin,
@@ -99,7 +99,7 @@ void MediaPermissionDispatcher::RequestPermission(
     return;
   }
 
-  DCHECK(task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
 
   if (!permission_service_)
     connect_to_service_cb_.Run(mojo::MakeRequest(&permission_service_));
@@ -117,7 +117,7 @@ void MediaPermissionDispatcher::RequestPermission(
 
 uint32_t MediaPermissionDispatcher::RegisterCallback(
     const PermissionStatusCB& permission_status_cb) {
-  DCHECK(task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
 
   uint32_t request_id = next_request_id_++;
   DCHECK(!requests_.count(request_id));
@@ -130,7 +130,7 @@ void MediaPermissionDispatcher::OnPermissionStatus(
     uint32_t request_id,
     blink::mojom::PermissionStatus status) {
   DVLOG(2) << __func__ << ": (" << request_id << ", " << status << ")";
-  DCHECK(task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
 
   RequestMap::iterator iter = requests_.find(request_id);
   DCHECK(iter != requests_.end()) << "Request not found.";

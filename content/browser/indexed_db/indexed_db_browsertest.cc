@@ -314,7 +314,7 @@ IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTestWithGCExposed,
 static void CopyLevelDBToProfile(Shell* shell,
                                  scoped_refptr<IndexedDBContextImpl> context,
                                  const std::string& test_directory) {
-  DCHECK(context->TaskRunner()->RunsTasksOnCurrentThread());
+  DCHECK(context->TaskRunner()->RunsTasksInCurrentSequence());
   base::FilePath leveldb_dir(FILE_PATH_LITERAL("file__0.indexeddb.leveldb"));
   base::FilePath test_data_dir =
       GetTestFilePath("indexeddb", test_directory.c_str()).Append(leveldb_dir);

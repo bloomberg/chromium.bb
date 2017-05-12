@@ -134,7 +134,7 @@ void QuotaReservation::GotReservedQuota(const ReserveQuotaCallback& callback,
 void QuotaReservation::DeleteOnCorrectThread() const {
   if (file_system_context_.get() &&
       !file_system_context_->default_file_task_runner()
-           ->RunsTasksOnCurrentThread()) {
+           ->RunsTasksInCurrentSequence()) {
     file_system_context_->default_file_task_runner()->DeleteSoon(FROM_HERE,
                                                                  this);
   } else {

@@ -2612,7 +2612,7 @@ class LocalWriteClosure : public FileWriterDelegate::DelegateWriteCallback,
   // If necessary, update the timestamps on the file as a final
   // step before reporting success.
   void UpdateTimeStamp() {
-    DCHECK(task_runner_->RunsTasksOnCurrentThread());
+    DCHECK(task_runner_->RunsTasksInCurrentSequence());
     if (!base::TouchFile(file_path_, last_modified_, last_modified_)) {
       // TODO(ericu): Complain quietly; timestamp's probably not vital.
     }
@@ -2621,7 +2621,7 @@ class LocalWriteClosure : public FileWriterDelegate::DelegateWriteCallback,
 
   // Create an empty file.
   void CreateEmptyFile() {
-    DCHECK(task_runner_->RunsTasksOnCurrentThread());
+    DCHECK(task_runner_->RunsTasksInCurrentSequence());
     base::File file(file_path_,
                     base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_WRITE);
     bool success = file.created();
@@ -4153,7 +4153,7 @@ Status IndexedDBBackingStore::Transaction::CommitPhaseOne(
     scoped_refptr<BlobWriteCallback> callback) {
   IDB_TRACE("IndexedDBBackingStore::Transaction::CommitPhaseOne");
   DCHECK(transaction_.get());
-  DCHECK(backing_store_->task_runner()->RunsTasksOnCurrentThread());
+  DCHECK(backing_store_->task_runner()->RunsTasksInCurrentSequence());
 
   Status s;
 
