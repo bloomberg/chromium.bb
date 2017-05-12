@@ -78,15 +78,20 @@ NGExclusion CreateExclusion(const NGFragment& fragment,
   return exclusion;
 }
 
-// Calculates the Floating Object's left offset from the provided parent_space
-// and {@code floating_object}'s space and margins.
-LayoutUnit CalculateLeftOffset(const NGConstraintSpace& new_parent_space,
-                               const NGLogicalOffset& float_logical_offset,
-                               const NGFloatingObject& floating_object) {
+// Updates the Floating Object's left and top offsets.
+NGPhysicalOffset CalculateFloatingObjectPaintOffset(
+    const NGConstraintSpace& new_parent_space,
+    const NGLogicalOffset& float_logical_offset,
+    const NGFloatingObject& floating_object) {
   // TODO(glebl): We should use physical offset here.
-  return floating_object.from_offset.inline_offset -
-         new_parent_space.BfcOffset().inline_offset +
-         float_logical_offset.inline_offset;
+  LayoutUnit left_offset = floating_object.from_offset.inline_offset -
+                           new_parent_space.BfcOffset().inline_offset +
+                           float_logical_offset.inline_offset;
+  DCHECK(floating_object.parent_bfc_block_offset);
+  LayoutUnit top_offset = floating_object.from_offset.block_offset -
+                          floating_object.parent_bfc_block_offset.value() +
+                          float_logical_offset.block_offset;
+  return {left_offset, top_offset};
 }
 }  // namespace
 
@@ -131,17 +136,17 @@ NGPositionedFloat PositionFloat(NGFloatingObject* floating_object,
 
   NGLogicalOffset logical_offset = CalculateLogicalOffsetForOpportunity(
       opportunity, float_offset, floating_object);
-
-  LayoutUnit left_offset =
-      CalculateLeftOffset(*new_parent_space, logical_offset, *floating_object);
+  NGPhysicalOffset paint_offset = CalculateFloatingObjectPaintOffset(
+      *new_parent_space, logical_offset, *floating_object);
 
   return NGPositionedFloat(floating_object->fragment, logical_offset,
-                           left_offset);
+                           paint_offset);
 }
 
 const Vector<NGPositionedFloat> PositionFloats(
     LayoutUnit origin_block_offset,
     LayoutUnit from_block_offset,
+    LayoutUnit parent_bfc_offset,
     const Vector<RefPtr<NGFloatingObject>>& floating_objects,
     NGConstraintSpace* space) {
   Vector<NGPositionedFloat> positioned_floats;
@@ -150,6 +155,7 @@ const Vector<NGPositionedFloat> PositionFloats(
   for (auto& floating_object : floating_objects) {
     floating_object->origin_offset.block_offset = origin_block_offset;
     floating_object->from_offset.block_offset = from_block_offset;
+    floating_object->parent_bfc_block_offset = parent_bfc_offset;
     positioned_floats.push_back(PositionFloat(floating_object.Get(), space));
   }
 

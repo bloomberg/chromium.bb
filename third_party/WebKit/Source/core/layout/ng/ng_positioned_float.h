@@ -13,21 +13,23 @@ namespace blink {
 // Contains the information necessary for copying back data to a FloatingObject.
 struct CORE_EXPORT NGPositionedFloat {
   NGPositionedFloat(RefPtr<NGPhysicalFragment> fragment,
-                    NGLogicalOffset offset,
-                    LayoutUnit left_offset)
-      : fragment(fragment), offset(offset), left_offset(left_offset) {}
+                    const NGLogicalOffset& logical_offset,
+                    const NGPhysicalOffset& paint_offset)
+      : fragment(fragment),
+        logical_offset(logical_offset),
+        paint_offset(paint_offset) {}
 
   RefPtr<NGPhysicalFragment> fragment;
-  NGLogicalOffset offset;
+  NGLogicalOffset logical_offset;
 
   // In the case where a legacy FloatingObject is attached to not its own
   // parent, e.g. a float surrounded by a bunch of nested empty divs,
   // NG float fragment's LeftOffset() cannot be used as legacy FloatingObject's
   // left offset because that offset should be relative to the original float
   // parent.
-  // {@code left_offset} is calculated when we know to which parent this float
+  // {@code paint_offset} is calculated when we know to which parent this float
   // would be attached.
-  LayoutUnit left_offset;
+  NGPhysicalOffset paint_offset;
 };
 
 }  // namespace blink

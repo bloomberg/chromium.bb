@@ -198,8 +198,10 @@ RefPtr<NGLayoutResult> NGFragmentBuilder::ToBoxFragment() {
 
   for (auto& positioned_float : positioned_floats_) {
     NGPhysicalFragment* floating_fragment = positioned_float.fragment.Get();
-    floating_fragment->SetOffset(positioned_float.offset.ConvertToPhysical(
-        writing_mode_, direction_, physical_size, floating_fragment->Size()));
+    floating_fragment->SetOffset(
+        positioned_float.logical_offset.ConvertToPhysical(
+            writing_mode_, direction_, physical_size,
+            floating_fragment->Size()));
   }
 
   RefPtr<NGPhysicalBoxFragment> fragment = AdoptRef(new NGPhysicalBoxFragment(
