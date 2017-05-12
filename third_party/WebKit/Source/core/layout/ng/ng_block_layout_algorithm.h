@@ -48,13 +48,12 @@ class CORE_EXPORT NGBlockLayoutAlgorithm
   virtual RefPtr<NGLayoutResult> Layout() override;
 
  private:
-  NGBoxStrut CalculateMargins(NGLayoutInputNode* child,
-                              const NGConstraintSpace& space);
+  NGBoxStrut CalculateMargins(NGLayoutInputNode* child);
 
   // Creates a new constraint space for the current child.
   RefPtr<NGConstraintSpace> CreateConstraintSpaceForChild(
       const NGLogicalOffset& child_bfc_offset,
-      NGLayoutInputNode*);
+      const NGLayoutInputNode&);
 
   // @return Estimated BFC offset for the "to be layout" child.
   NGLogicalOffset PrepareChildLayout(NGLayoutInputNode*);
@@ -116,7 +115,8 @@ class CORE_EXPORT NGBlockLayoutAlgorithm
   NGLogicalOffset CalculateLogicalOffset(
       const WTF::Optional<NGLogicalOffset>& known_fragment_offset);
 
-  NGConstraintSpaceBuilder space_builder_;
+  NGLogicalSize child_available_size_;
+  NGLogicalSize child_percentage_size_;
 
   NGBoxStrut border_and_padding_;
   LayoutUnit content_size_;
