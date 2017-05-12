@@ -36,6 +36,7 @@ typedef NS_ENUM(NSInteger, MouseButton) {
  @private
   UILongPressGestureRecognizer* _longPressRecognizer;
   UIPanGestureRecognizer* _panRecognizer;
+  UIPanGestureRecognizer* _flingRecognizer;
   UIPanGestureRecognizer* _threeFingerPanRecognizer;
   UIPinchGestureRecognizer* _pinchRecognizer;
   UITapGestureRecognizer* _singleTapRecognizer;
@@ -58,6 +59,8 @@ typedef NS_ENUM(NSInteger, MouseButton) {
 - (IBAction)tapGestureTriggered:(UITapGestureRecognizer*)sender;
 // Scroll the view in 2d
 - (IBAction)panGestureTriggered:(UIPanGestureRecognizer*)sender;
+// Handle one finger fling gesture
+- (IBAction)flingGestureTriggered:(UIPanGestureRecognizer*)sender;
 // Right mouse click and drag, moves cursor
 - (IBAction)longPressGestureTriggered:(UILongPressGestureRecognizer*)sender;
 // Right mouse click

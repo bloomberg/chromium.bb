@@ -33,6 +33,8 @@ class CursorShapeStub;
 // Notifies the delegate that the size of the desktop image has changed.
 - (void)canvasSizeChanged:(CGSize)size;
 
+- (void)rendererTicked;
+
 @end
 
 @interface GlDisplayHandler : NSObject {

@@ -119,7 +119,6 @@ NSString* const kHostSessionPin = @"kHostSessionPin";
       _sessonDelegate->GetWeakPtr(), [_displayHandler CreateCursorShapeStub],
       [_displayHandler CreateVideoRenderer], audioPlayer, info,
       client_auth_config));
-  _session->Connect();
 
   __weak GlDisplayHandler* weakDisplayHandler = _displayHandler;
   _gestureInterpreter.reset(new remoting::GestureInterpreter(
@@ -127,6 +126,8 @@ NSString* const kHostSessionPin = @"kHostSessionPin";
         [weakDisplayHandler onPixelTransformationChanged:matrix];
       }),
       _session.get()));
+
+  _session->Connect();
 }
 
 - (void)disconnectFromHost {
@@ -233,9 +234,11 @@ NSString* const kHostSessionPin = @"kHostSessionPin";
 #pragma mark - GlDisplayHandlerDelegate
 
 - (void)canvasSizeChanged:(CGSize)size {
-  if (_gestureInterpreter) {
-    _gestureInterpreter->OnDesktopSizeChanged(size.width, size.height);
-  }
+  _gestureInterpreter->OnDesktopSizeChanged(size.width, size.height);
+}
+
+- (void)rendererTicked {
+  _gestureInterpreter->ProcessAnimations();
 }
 
 @end
