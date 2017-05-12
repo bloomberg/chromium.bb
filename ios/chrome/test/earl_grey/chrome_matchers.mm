@@ -14,7 +14,9 @@
 #include "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_switch_item.h"
 #import "ios/chrome/browser/ui/omnibox/omnibox_text_field_ios.h"
+#import "ios/chrome/browser/ui/settings/accounts_collection_view_controller.h"
 #import "ios/chrome/browser/ui/settings/clear_browsing_data_collection_view_controller.h"
+#import "ios/chrome/browser/ui/settings/settings_collection_view_controller.h"
 #import "ios/chrome/browser/ui/static_content/static_html_view_controller.h"
 #import "ios/chrome/browser/ui/toolbar/toolbar_controller.h"
 #import "ios/chrome/browser/ui/tools_menu/tools_menu_constants.h"
@@ -178,6 +180,15 @@ id<GREYMatcher> AccountConsistencySetupSigninButton() {
       IDS_IOS_ACCOUNT_CONSISTENCY_SETUP_SIGNIN_BUTTON);
 }
 
+id<GREYMatcher> AccountConsistencyConfirmationOkButton() {
+  return ButtonWithAccessibilityLabelId(
+      IDS_IOS_ACCOUNT_CONSISTENCY_CONFIRMATION_OK_BUTTON);
+}
+
+id<GREYMatcher> SignOutAccountsButton() {
+  return grey_accessibilityID(kSettingsAccountsSignoutCellId);
+}
+
 id<GREYMatcher> ClearBrowsingDataCollectionView() {
   return grey_accessibilityID(kClearBrowsingDataCollectionViewId);
 }
@@ -188,6 +199,18 @@ id<GREYMatcher> SettingsMenuButton() {
 
 id<GREYMatcher> OKButton() {
   return ButtonWithAccessibilityLabelId(IDS_OK);
+}
+
+id<GREYMatcher> SignInMenuButton() {
+  return grey_accessibilityID(kSettingsSignInCellId);
+}
+
+id<GREYMatcher> SettingsAccountButton() {
+  return grey_accessibilityID(kSettingsAccountCellId);
+}
+
+id<GREYMatcher> AccountsSyncButton() {
+  return grey_accessibilityID(kSettingsAccountsSyncCellId);
 }
 
 }  // namespace chrome_test_util
