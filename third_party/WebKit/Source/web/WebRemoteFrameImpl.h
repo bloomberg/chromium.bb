@@ -6,10 +6,10 @@
 #define WebRemoteFrameImpl_h
 
 #include "core/frame/RemoteFrame.h"
+#include "core/frame/WebRemoteFrameBase.h"
 #include "platform/heap/SelfKeepAlive.h"
 #include "platform/wtf/Compiler.h"
 #include "public/platform/WebInsecureRequestPolicy.h"
-#include "public/web/WebRemoteFrame.h"
 #include "public/web/WebRemoteFrameClient.h"
 #include "web/RemoteFrameClientImpl.h"
 #include "web/WebExport.h"
@@ -23,8 +23,7 @@ class WebAssociatedURLLoader;
 struct WebAssociatedURLLoaderOptions;
 
 class WEB_EXPORT WebRemoteFrameImpl final
-    : public GarbageCollectedFinalized<WebRemoteFrameImpl>,
-      NON_EXPORTED_BASE(public WebRemoteFrame) {
+    : NON_EXPORTED_BASE(public WebRemoteFrameBase) {
  public:
   static WebRemoteFrameImpl* Create(WebTreeScopeType,
                                     WebRemoteFrameClient*,
@@ -142,8 +141,10 @@ class WEB_EXPORT WebRemoteFrameImpl final
   void SetHasReceivedUserGesture() override;
   v8::Local<v8::Object> GlobalProxy() const override;
 
-  void InitializeCoreFrame(Page&, FrameOwner*, const AtomicString& name);
-  RemoteFrame* GetFrame() const { return frame_.Get(); }
+  void InitializeCoreFrame(Page&,
+                           FrameOwner*,
+                           const AtomicString& name) override;
+  RemoteFrame* GetFrame() const override { return frame_.Get(); }
 
   void SetCoreFrame(RemoteFrame*);
 

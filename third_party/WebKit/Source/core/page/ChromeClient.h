@@ -73,12 +73,14 @@ class LocalFrame;
 class Node;
 class Page;
 class PopupOpeningObserver;
+class RemoteFrame;
 class WebDragData;
 class WebFrameScheduler;
 class WebImage;
 class WebLayer;
 class WebLayerTreeView;
 class WebLocalFrameBase;
+class WebRemoteFrameBase;
 
 struct CompositedSelection;
 struct DateTimeChooserParameters;
@@ -355,6 +357,10 @@ class CORE_EXPORT ChromeClient : public PlatformChromeClient {
   virtual WebLayerTreeView* GetWebLayerTreeView(LocalFrame*) { return nullptr; }
 
   virtual WebLocalFrameBase* GetWebLocalFrameBase(LocalFrame*) {
+    return nullptr;
+  }
+
+  virtual WebRemoteFrameBase* GetWebRemoteFrameBase(RemoteFrame&) {
     return nullptr;
   }
 

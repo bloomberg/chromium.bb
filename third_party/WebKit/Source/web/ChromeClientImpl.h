@@ -239,6 +239,8 @@ class WEB_EXPORT ChromeClientImpl final : public ChromeClient {
 
   WebLocalFrameBase* GetWebLocalFrameBase(LocalFrame*) override;
 
+  WebRemoteFrameBase* GetWebRemoteFrameBase(RemoteFrame&) override;
+
  private:
   explicit ChromeClientImpl(WebViewBase*);
 

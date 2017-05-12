@@ -123,6 +123,7 @@
 #include "web/WebInputEventConversion.h"
 #include "web/WebLocalFrameImpl.h"
 #include "web/WebPluginContainerImpl.h"
+#include "web/WebRemoteFrameImpl.h"
 #include "web/WebSettingsImpl.h"
 
 namespace blink {
@@ -955,6 +956,11 @@ WebLayerTreeView* ChromeClientImpl::GetWebLayerTreeView(LocalFrame* frame) {
 
 WebLocalFrameBase* ChromeClientImpl::GetWebLocalFrameBase(LocalFrame* frame) {
   return WebLocalFrameImpl::FromFrame(frame);
+}
+
+WebRemoteFrameBase* ChromeClientImpl::GetWebRemoteFrameBase(
+    RemoteFrame& frame) {
+  return WebRemoteFrameImpl::FromFrame(frame);
 }
 
 void ChromeClientImpl::SetEventListenerProperties(
