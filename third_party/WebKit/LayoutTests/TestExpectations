@@ -125,6 +125,9 @@ crbug.com/717389 [ Linux Debug ] virtual/gpu/fast/canvas/canvas-path-context-cli
 crbug.com/717389 [ Win7 Debug ] virtual/gpu/fast/canvas/canvas-clip-rule.html [ Timeout ]
 crbug.com/717389 [ Win7 Debug ] virtual/gpu/fast/canvas/canvas-path-context-clip.html [ Timeout ]
 
+# This test fails only when spv2 is enabled.
+crbug.com/719533 compositing/overflow/absolute-element-in-isolated-composited-ancestor.html [ Failure ]
+
 # ====== Paint team owned tests to here ======
 
 # ====== Layout team owned tests from here ======

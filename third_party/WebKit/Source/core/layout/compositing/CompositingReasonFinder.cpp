@@ -147,7 +147,7 @@ CompositingReasons CompositingReasonFinder::NonStyleDeterminedDirectReasons(
   CompositingReasons direct_reasons = kCompositingReasonNone;
   LayoutObject& layout_object = layer->GetLayoutObject();
 
-  if (compositing_triggers_ & kOverflowScrollTrigger && layer->ClipParent())
+  if (layer->ClipParent())
     direct_reasons |= kCompositingReasonOutOfFlowClipping;
 
   if (layer->NeedsCompositedScrolling())
