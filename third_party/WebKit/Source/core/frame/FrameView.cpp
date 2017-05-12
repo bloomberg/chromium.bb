@@ -419,8 +419,6 @@ void FrameView::ScrollbarManager::SetHasHorizontalScrollbar(
 
   if (has_scrollbar) {
     h_bar_ = CreateScrollbar(kHorizontalScrollbar);
-    scrollable_area_->GetLayoutBox()->GetDocument().View()->AddScrollbar(
-        h_bar_);
     h_bar_is_attached_ = 1;
     scrollable_area_->DidAddScrollbar(*h_bar_, kHorizontalScrollbar);
     h_bar_->StyleChanged();
@@ -438,8 +436,6 @@ void FrameView::ScrollbarManager::SetHasVerticalScrollbar(bool has_scrollbar) {
 
   if (has_scrollbar) {
     v_bar_ = CreateScrollbar(kVerticalScrollbar);
-    scrollable_area_->GetLayoutBox()->GetDocument().View()->AddScrollbar(
-        v_bar_);
     v_bar_is_attached_ = 1;
     scrollable_area_->DidAddScrollbar(*v_bar_, kVerticalScrollbar);
     v_bar_->StyleChanged();
@@ -477,8 +473,6 @@ void FrameView::ScrollbarManager::DestroyScrollbar(
     return;
 
   scrollable_area_->WillRemoveScrollbar(*scrollbar, orientation);
-  scrollable_area_->GetLayoutBox()->GetDocument().View()->RemoveScrollbar(
-      scrollbar);
   scrollbar->DisconnectFromScrollableArea();
   scrollbar = nullptr;
 }
@@ -3884,13 +3878,11 @@ void FrameView::RemoveChild(FrameOrPlugin* child) {
 
 void FrameView::RemoveScrollbar(Scrollbar* scrollbar) {
   DCHECK(scrollbars_.Contains(scrollbar));
-  scrollbar->SetParent(nullptr);
   scrollbars_.erase(scrollbar);
 }
 
 void FrameView::AddScrollbar(Scrollbar* scrollbar) {
   DCHECK(!scrollbars_.Contains(scrollbar));
-  scrollbar->SetParent(this);
   scrollbars_.insert(scrollbar);
 }
 
@@ -4741,6 +4733,46 @@ IntPoint FrameView::ConvertToRootFrame(const IntPoint& local_point) const {
     return parent_->ConvertToRootFrame(parent_point);
   }
   return local_point;
+}
+
+IntRect FrameView::ConvertFromRootFrame(
+    const IntRect& rect_in_root_frame) const {
+  if (parent_) {
+    IntRect parent_rect = parent_->ConvertFromRootFrame(rect_in_root_frame);
+    return ConvertFromContainingFrameViewBase(parent_rect);
+  }
+  return rect_in_root_frame;
+}
+
+IntPoint FrameView::ConvertFromRootFrame(
+    const IntPoint& point_in_root_frame) const {
+  if (parent_) {
+    IntPoint parent_point = parent_->ConvertFromRootFrame(point_in_root_frame);
+    return ConvertFromContainingFrameViewBase(parent_point);
+  }
+  return point_in_root_frame;
+}
+
+FloatPoint FrameView::ConvertFromRootFrame(
+    const FloatPoint& point_in_root_frame) const {
+  // FrameViews / windows are required to be IntPoint aligned, but we may
+  // need to convert FloatPoint values within them (eg. for event
+  // co-ordinates).
+  IntPoint floored_point = FlooredIntPoint(point_in_root_frame);
+  FloatPoint parent_point = ConvertFromRootFrame(floored_point);
+  FloatSize window_fraction = point_in_root_frame - floored_point;
+  // Use linear interpolation handle any fractional value (eg. for iframes
+  // subject to a transform beyond just a simple translation).
+  // FIXME: Add FloatPoint variants of all co-ordinate space conversion APIs.
+  if (!window_fraction.IsEmpty()) {
+    const int kFactor = 1000;
+    IntPoint parent_line_end = ConvertFromRootFrame(
+        floored_point + RoundedIntSize(window_fraction.ScaledBy(kFactor)));
+    FloatSize parent_fraction =
+        (parent_line_end - parent_point).ScaledBy(1.0f / kFactor);
+    parent_point.Move(parent_fraction);
+  }
+  return parent_point;
 }
 
 IntPoint FrameView::ConvertFromContainingFrameViewBaseToScrollbar(

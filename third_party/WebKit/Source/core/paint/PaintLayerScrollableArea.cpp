@@ -358,6 +358,15 @@ PaintLayerScrollableArea::ConvertFromContainingFrameViewBaseToScrollbar(
   return point;
 }
 
+IntPoint PaintLayerScrollableArea::ConvertFromRootFrame(
+    const IntPoint& point_in_root_frame) const {
+  LayoutView* view = Box().View();
+  if (!view)
+    return point_in_root_frame;
+
+  return view->GetFrameView()->ConvertFromRootFrame(point_in_root_frame);
+}
+
 int PaintLayerScrollableArea::ScrollSize(
     ScrollbarOrientation orientation) const {
   IntSize scroll_dimensions =

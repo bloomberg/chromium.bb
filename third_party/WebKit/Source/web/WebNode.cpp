@@ -47,7 +47,6 @@
 #include "core/layout/LayoutPart.h"
 #include "modules/accessibility/AXObject.h"
 #include "modules/accessibility/AXObjectCacheImpl.h"
-#include "platform/FrameViewBase.h"
 #include "platform/wtf/PtrUtil.h"
 #include "public/platform/WebString.h"
 #include "public/web/WebAXObject.h"

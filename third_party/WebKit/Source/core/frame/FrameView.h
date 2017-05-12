@@ -40,7 +40,6 @@
 #include "core/paint/PaintInvalidationCapableScrollableArea.h"
 #include "core/paint/PaintPhase.h"
 #include "core/paint/ScrollbarManager.h"
-#include "platform/FrameViewBase.h"
 #include "platform/PlatformFrameView.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/animation/CompositorAnimationHost.h"
@@ -104,7 +103,6 @@ typedef unsigned long long DOMTimeStamp;
 class CORE_EXPORT FrameView final
     : public GarbageCollectedFinalized<FrameView>,
       public PlatformFrameView,
-      public FrameViewBase,
       public FrameOrPlugin,
       public PaintInvalidationCapableScrollableArea {
   USING_GARBAGE_COLLECTED_MIXIN(FrameView);
@@ -128,7 +126,7 @@ class CORE_EXPORT FrameView final
   int Width() const { return frame_rect_.Width(); }
   int Height() const { return frame_rect_.Height(); }
   IntSize Size() const { return frame_rect_.Size(); }
-  IntPoint Location() const override { return frame_rect_.Location(); }
+  IntPoint Location() const { return frame_rect_.Location(); }
   void Resize(int width, int height) {
     SetFrameRect(IntRect(frame_rect_.X(), frame_rect_.Y(), width, height));
   }
@@ -481,9 +479,6 @@ class CORE_EXPORT FrameView final
   // and repaints to the host window in the window's coordinate space.
   PlatformChromeClient* GetChromeClient() const;
 
-  typedef HeapHashSet<Member<FrameOrPlugin>> ChildrenSet;
-  typedef HeapHashSet<Member<Scrollbar>> ScrollbarsSet;
-
   // Functions for child manipulation and inspection.
   bool IsSelfVisible() const {
     return self_visible_;
@@ -500,10 +495,12 @@ class CORE_EXPORT FrameView final
   FrameView* Parent() const override { return parent_; }
   void RemoveChild(FrameOrPlugin*);
   void AddChild(FrameOrPlugin*);
+  using ChildrenSet = HeapHashSet<Member<FrameOrPlugin>>;
   const ChildrenSet& Children() const { return children_; }
+  // Custom scrollbars in PaintLayerScrollableArea need to be called with
+  // StyleChanged whenever window focus is changed.
   void RemoveScrollbar(Scrollbar*);
   void AddScrollbar(Scrollbar*);
-  const ScrollbarsSet* Scrollbars() const { return &scrollbars_; }
 
   // If the scroll view does not use a native widget, then it will have
   // cross-platform Scrollbars. These functions can be used to obtain those
@@ -650,6 +647,9 @@ class CORE_EXPORT FrameView final
 
   IntRect ConvertToRootFrame(const IntRect&) const;
   IntPoint ConvertToRootFrame(const IntPoint&) const;
+  IntRect ConvertFromRootFrame(const IntRect&) const;
+  IntPoint ConvertFromRootFrame(const IntPoint&) const override;
+  FloatPoint ConvertFromRootFrame(const FloatPoint&) const;
   IntPoint ConvertSelfToChild(const FrameOrPlugin&, const IntPoint&) const;
 
   // Handles painting of the contents of the view as well as the scrollbars.
@@ -1145,7 +1145,7 @@ class CORE_EXPORT FrameView final
   bool vertical_scrollbar_lock_;
 
   ChildrenSet children_;
-  ScrollbarsSet scrollbars_;
+  HeapHashSet<Member<Scrollbar>> scrollbars_;
 
   ScrollOffset pending_scroll_delta_;
   ScrollOffset scroll_offset_;
@@ -1267,11 +1267,6 @@ DEFINE_TYPE_CASTS(FrameView,
                   platform_frame_view,
                   platform_frame_view->IsFrameView(),
                   platform_frame_view.IsFrameView());
-DEFINE_TYPE_CASTS(FrameView,
-                  FrameViewBase,
-                  frameViewBase,
-                  frameViewBase->IsFrameView(),
-                  frameViewBase.IsFrameView());
 DEFINE_TYPE_CASTS(FrameView,
                   FrameOrPlugin,
                   frame_or_plugin,

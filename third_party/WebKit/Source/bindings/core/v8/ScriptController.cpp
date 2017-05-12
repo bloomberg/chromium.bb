@@ -54,7 +54,6 @@
 #include "core/loader/ProgressTracker.h"
 #include "core/plugins/PluginView.h"
 #include "core/probe/CoreProbes.h"
-#include "platform/FrameViewBase.h"
 #include "platform/Histogram.h"
 #include "platform/UserGestureIndicator.h"
 #include "platform/instrumentation/tracing/TraceEvent.h"

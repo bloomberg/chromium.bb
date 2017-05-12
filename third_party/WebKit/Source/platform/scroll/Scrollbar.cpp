@@ -63,8 +63,7 @@ Scrollbar::Scrollbar(ScrollableArea* scrollable_area,
                     &Scrollbar::AutoscrollTimerFired),
       elastic_overscroll_(0),
       track_needs_repaint_(true),
-      thumb_needs_repaint_(true),
-      parent_(nullptr) {
+      thumb_needs_repaint_(true) {
   theme_.RegisterScrollbar(*this);
 
   // FIXME: This is ugly and would not be necessary if we fix cross-platform
@@ -87,7 +86,6 @@ Scrollbar::~Scrollbar() {
 DEFINE_TRACE(Scrollbar) {
   visitor->Trace(scrollable_area_);
   visitor->Trace(chrome_client_);
-  visitor->Trace(parent_);
 }
 
 void Scrollbar::SetFrameRect(const IntRect& frame_rect) {
@@ -575,12 +573,11 @@ bool Scrollbar::IsWindowActive() const {
 
 IntPoint Scrollbar::ConvertFromRootFrame(
     const IntPoint& point_in_root_frame) const {
-  if (const FrameViewBase* parent = Parent()) {
-    IntPoint parent_point = parent->ConvertFromRootFrame(point_in_root_frame);
-    if (scrollable_area_) {
-      return scrollable_area_->ConvertFromContainingFrameViewBaseToScrollbar(
-          *this, parent_point);
-    }
+  if (scrollable_area_) {
+    IntPoint parent_point =
+        scrollable_area_->ConvertFromRootFrame(point_in_root_frame);
+    return scrollable_area_->ConvertFromContainingFrameViewBaseToScrollbar(
+        *this, parent_point);
   }
 
   return point_in_root_frame;

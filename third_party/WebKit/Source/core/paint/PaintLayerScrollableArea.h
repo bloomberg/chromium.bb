@@ -269,6 +269,7 @@ class CORE_EXPORT PaintLayerScrollableArea final
   IntPoint ConvertFromContainingFrameViewBaseToScrollbar(
       const Scrollbar&,
       const IntPoint&) const override;
+  IntPoint ConvertFromRootFrame(const IntPoint&) const override;
   int ScrollSize(ScrollbarOrientation) const override;
   IntSize ScrollOffsetInt() const override;
   ScrollOffset GetScrollOffset() const override;
