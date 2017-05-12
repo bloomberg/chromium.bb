@@ -149,6 +149,9 @@ void Core::OnFrameReceived(std::unique_ptr<webrtc::DesktopFrame> frame,
 
 void Core::OnFrameRendered() {
   [eagl_context_ presentRenderbuffer:GL_RENDERBUFFER];
+  runtime_->ui_task_runner()->PostTask(FROM_HERE, base::BindBlockArc(^() {
+                                         [handler_delegate_ rendererTicked];
+                                       }));
 }
 
 void Core::OnSizeChanged(int width, int height) {

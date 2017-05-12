@@ -33,6 +33,14 @@
   _panRecognizer.delegate = self;
   [view addGestureRecognizer:_panRecognizer];
 
+  _flingRecognizer = [[UIPanGestureRecognizer alloc]
+      initWithTarget:self
+              action:@selector(flingGestureTriggered:)];
+  _flingRecognizer.minimumNumberOfTouches = 1;
+  _flingRecognizer.maximumNumberOfTouches = 1;
+  _flingRecognizer.delegate = self;
+  [view addGestureRecognizer:_flingRecognizer];
+
   _threeFingerPanRecognizer = [[UIPanGestureRecognizer alloc]
       initWithTarget:self
               action:@selector(threeFingerPanGestureTriggered:)];
@@ -120,12 +128,8 @@
 
 // Change position of scene.  This can occur during a pinch or long press.
 // Or perform a Mouse Wheel Scroll.
-// TODO(yuweih): The comment above doesn't seem right. Non-panning gestures
-//     should be moved out of this method.
 - (IBAction)panGestureTriggered:(UIPanGestureRecognizer*)sender {
-  // TODO(yuweih): Need deceleration animation, probably in another class.
-  if ([sender state] == UIGestureRecognizerStateChanged &&
-      [sender numberOfTouches] == 1) {
+  if ([sender state] == UIGestureRecognizerStateChanged) {
     CGPoint translation = [sender translationInView:_view];
     _client.gestureInterpreter->Pan(translation.x, translation.y);
 
@@ -228,6 +232,17 @@
   //   }
 }
 
+// Do fling on the viewport. This will happen at the end of the one-finger
+// panning.
+- (IBAction)flingGestureTriggered:(UIPanGestureRecognizer*)sender {
+  if ([sender state] == UIGestureRecognizerStateEnded) {
+    CGPoint velocity = [sender velocityInView:_view];
+    if (velocity.x != 0 || velocity.y != 0) {
+      _client.gestureInterpreter->OneFingerFling(velocity.x, velocity.y);
+    }
+  }
+}
+
 // Click-Drag mouse operation.  This can occur during a Pan.
 - (IBAction)longPressGestureTriggered:(UILongPressGestureRecognizer*)sender {
   CGPoint touchPoint = [sender locationInView:_view];
@@ -327,6 +342,14 @@
   if (gestureRecognizer == _pinchRecognizer ||
       (gestureRecognizer == _panRecognizer)) {
     if (otherGestureRecognizer == _pinchRecognizer ||
+        otherGestureRecognizer == _panRecognizer) {
+      return YES;
+    }
+  }
+
+  if (gestureRecognizer == _flingRecognizer ||
+      (gestureRecognizer == _panRecognizer)) {
+    if (otherGestureRecognizer == _flingRecognizer ||
         otherGestureRecognizer == _panRecognizer) {
       return YES;
     }
