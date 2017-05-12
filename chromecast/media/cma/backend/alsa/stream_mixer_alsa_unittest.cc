@@ -133,33 +133,35 @@ const char kDelayModuleSolib[] = "delay.so";
 const int kNumPostProcessors = 5;
 const char kTestPipelineJsonTemplate[] = R"json(
 {
-  "output_streams": [{
-    "streams": [ "default" ],
-    "processors": [{
-      "processor": "%s",
-      "config": { "delay": %d }
-    }]
-  }, {
-    "streams": [ "assistant-tts" ],
-    "processors": [{
-      "processor": "%s",
-      "config": { "delay": %d }
-    }]
-  }, {
-    "streams": [ "communications" ],
-    "processors": []
-  }],
-  "mix": {
-    "processors": [{
-      "processor": "%s",
-      "config": { "delay": %d }
-     }]
-  },
-  "linearize": {
-    "processors": [{
-      "processor": "%s",
-      "config": { "delay": %d }
-    }]
+  "postprocessors": {
+    "output_streams": [{
+      "streams": [ "default" ],
+      "processors": [{
+        "processor": "%s",
+        "config": { "delay": %d }
+      }]
+    }, {
+      "streams": [ "assistant-tts" ],
+      "processors": [{
+        "processor": "%s",
+        "config": { "delay": %d }
+      }]
+    }, {
+      "streams": [ "communications" ],
+      "processors": []
+    }],
+    "mix": {
+      "processors": [{
+        "processor": "%s",
+        "config": { "delay": %d }
+       }]
+    },
+    "linearize": {
+      "processors": [{
+        "processor": "%s",
+        "config": { "delay": %d }
+      }]
+    }
   }
 }
 )json";
@@ -1056,19 +1058,21 @@ TEST_F(StreamMixerAlsaTest, PostProcessorDelayUnlistedDevice) {
 TEST_F(StreamMixerAlsaTest, PostProcessorRingingWithoutInput) {
   const char kTestPipelineJson[] = R"json(
 {
-  "output_streams": [{
-    "streams": [ "default" ],
-    "processors": [{
-      "processor": "%s",
-      "config": { "delay": 0, "ringing": true}
+  "postprocessors": {
+    "output_streams": [{
+      "streams": [ "default" ],
+      "processors": [{
+        "processor": "%s",
+        "config": { "delay": 0, "ringing": true}
+      }]
+    }, {
+      "streams": [ "assistant-tts" ],
+      "processors": [{
+        "processor": "%s",
+        "config": { "delay": 0, "ringing": true}
+      }]
     }]
-  }, {
-    "streams": [ "assistant-tts" ],
-    "processors": [{
-      "processor": "%s",
-      "config": { "delay": 0, "ringing": true}
-    }]
-  }]
+  }
 }
 )json";
 
@@ -1116,13 +1120,15 @@ TEST_F(StreamMixerAlsaTest, PostProcessorProvidesDefaultPipeline) {
 TEST_F(StreamMixerAlsaTest, InvalidStreamTypeCrashes) {
   const char json[] = R"json(
 {
-  "output_streams": [{
-    "streams": [ "foobar" ],
-    "processors": [{
-      "processor": "dont_care.so",
-      "config": { "delay": 0 }
+  "postprocessors": {
+    "output_streams": [{
+      "streams": [ "foobar" ],
+      "processors": [{
+        "processor": "dont_care.so",
+        "config": { "delay": 0 }
+      }]
     }]
-  }]
+  }
 }
 )json";
 
@@ -1139,24 +1145,26 @@ TEST_F(StreamMixerAlsaTest, BadJsonCrashes) {
 TEST_F(StreamMixerAlsaTest, MultiplePostProcessorsInOneStream) {
   const char kJsonTemplate[] = R"json(
 {
-  "output_streams": [{
-    "streams": [ "default" ],
-    "processors": [{
-      "processor": "%s",
-      "config": { "delay": 10 }
-    }, {
-      "processor": "%s",
-      "config": { "delay": 100 }
-    }]
-  }],
-  "mix": {
-    "processors": [{
-      "processor": "%s",
-      "config": { "delay": 1000 }
-    }, {
-      "processor": "%s",
-      "config": { "delay": 10000 }
-    }]
+  "postprocessors": {
+    "output_streams": [{
+      "streams": [ "default" ],
+      "processors": [{
+        "processor": "%s",
+        "config": { "delay": 10 }
+      }, {
+        "processor": "%s",
+        "config": { "delay": 100 }
+      }]
+    }],
+    "mix": {
+      "processors": [{
+        "processor": "%s",
+        "config": { "delay": 1000 }
+      }, {
+        "processor": "%s",
+        "config": { "delay": 10000 }
+      }]
+    }
   }
 }
 )json";
