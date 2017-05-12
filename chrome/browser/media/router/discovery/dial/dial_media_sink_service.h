@@ -28,22 +28,30 @@ class DialMediaSinkService : public MediaSinkService,
                        net::URLRequestContextGetter* request_context);
   ~DialMediaSinkService() override;
 
+  // Stops listening for DIAL device events.
+  virtual void Stop();
+
   // MediaSinkService implementation
   void Start() override;
 
-  void Stop();
-
  protected:
-  virtual DialRegistry* dial_registry();
 
   // Returns instance of device description service. Create a new one if none
   // exists.
-  virtual DeviceDescriptionService* GetDescriptionService();
+  DeviceDescriptionService* GetDescriptionService();
+
+  // Does not take ownership of |dial_registry|.
+  void SetDialRegistryForTest(DialRegistry* dial_registry);
+  void SetDescriptionServiceForTest(
+      std::unique_ptr<DeviceDescriptionService> description_service);
+  void SetTimerForTest(std::unique_ptr<base::Timer> timer);
 
  private:
   friend class DialMediaSinkServiceTest;
   FRIEND_TEST_ALL_PREFIXES(DialMediaSinkServiceTest, TestStart);
-  FRIEND_TEST_ALL_PREFIXES(DialMediaSinkServiceTest, TestFetchCompleted);
+  FRIEND_TEST_ALL_PREFIXES(DialMediaSinkServiceTest, TestTimer);
+  FRIEND_TEST_ALL_PREFIXES(DialMediaSinkServiceTest,
+                           TestFetchCompleted_SameSink);
   FRIEND_TEST_ALL_PREFIXES(DialMediaSinkServiceTest, TestIsDifferent);
   FRIEND_TEST_ALL_PREFIXES(DialMediaSinkServiceTest,
                            TestOnDeviceDescriptionAvailable);
@@ -65,12 +73,18 @@ class DialMediaSinkService : public MediaSinkService,
   // Called when |finish_timer_| expires.
   void OnFetchCompleted();
 
+  // Helper function to start |finish_timer_|.
+  void StartTimer();
+
   // Timer for finishing fetching. Starts in |OnDialDeviceEvent()|, and expires
   // 3 seconds later. If |OnDeviceDescriptionAvailable()| is called after
   // |finish_timer_| expires, |finish_timer_| is restarted.
-  std::unique_ptr<base::OneShotTimer> finish_timer_;
+  std::unique_ptr<base::Timer> finish_timer_;
 
   std::unique_ptr<DeviceDescriptionService> description_service_;
+
+  // Raw pointer to DialRegistry singleton.
+  DialRegistry* dial_registry_ = nullptr;
 
   // Sorted sinks from current round of discovery.
   std::set<MediaSinkInternal> current_sinks_;

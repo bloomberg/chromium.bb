@@ -62,8 +62,8 @@ class DialRegistry : public DialService::Observer,
   // Called by the DIAL API when event listeners are added or removed. The dial
   // service is started after the first listener is added and stopped after the
   // last listener is removed.
-  void OnListenerAdded();
-  void OnListenerRemoved();
+  virtual void OnListenerAdded();
+  virtual void OnListenerRemoved();
 
   // pass a reference of |observer| to allow it to notify on DIAL device events.
   // This class does not take ownership of observer.
