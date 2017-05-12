@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <title>Service Worker: respondWith with header value containing an ISO Latin 1 (ISO-8859-1 Character Set) string</title>
-<script src="../resources/testharness.js"></script>
-<script src="../resources/testharnessreport.js"></script>
-<script src="../resources/get-host-info.js?pipe=sub"></script>
-<script src="resources/test-helpers.js"></script>
+<script src="/resources/testharness.js"></script>
+<script src="/resources/testharnessreport.js"></script>
+<script src="/common/get-host-info.sub.js"></script>
+<script src="resources/test-helpers.sub.js"></script>
 <script>
 async_test(function(t) {
     var SCOPE = 'resources/iso-latin1-header-iframe.html';
@@ -16,16 +16,17 @@ async_test(function(t) {
       .then(function() { return with_iframe(SCOPE); })
       .then(function(frame) {
           var channel = new MessageChannel();
+          t.add_cleanup(function() {
+              frame.remove();
+            });
           channel.port1.onmessage = t.step_func(function(e) {
               assert_equals(e.data.results, 'finish');
-              frame.remove();
               service_worker_unregister_and_done(t, SCOPE);
             });
           frame.contentWindow.postMessage({},
-                                          host_info['HTTP_ORIGIN'],
+                                          host_info['HTTPS_ORIGIN'],
                                           [channel.port2]);
         })
       .catch(unreached_rejection(t));
   }, 'Verify the response of FetchEvent using XMLHttpRequest');
-
 </script>
