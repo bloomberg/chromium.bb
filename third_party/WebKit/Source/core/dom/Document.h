@@ -514,6 +514,16 @@ class CORE_EXPORT Document : public ContainerNode,
   PassRefPtr<ComputedStyle> StyleForElementIgnoringPendingStylesheets(Element*);
   PassRefPtr<ComputedStyle> StyleForPage(int page_index);
 
+  // Ensures that location-based data will be valid for a given node.
+  //
+  // This will run style and layout if they are currently dirty, and it may also
+  // run compositing inputs if the node is in a sticky subtree (as the sticky
+  // offset may change the node's position).
+  //
+  // Due to this you should only call this if you definitely need valid location
+  // data, otherwise use one of the |UpdateStyleAndLayout...| methods above.
+  void EnsurePaintLocationDataValidForNode(const Node*);
+
   // Returns true if page box (margin boxes and page borders) is visible.
   bool IsPageBoxVisible(int page_index);
 
