@@ -20,7 +20,7 @@
 #include "base/sequenced_task_runner.h"
 #include "base/strings/string_util.h"
 #include "base/task_runner_util.h"
-#include "base/threading/sequenced_worker_pool.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
@@ -41,7 +41,6 @@
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/user_manager/user_image/user_image.h"
 #include "components/user_manager/user_manager.h"
-#include "content/public/browser/browser_thread.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image_skia.h"
 
@@ -570,12 +569,9 @@ UserImageManagerImpl::UserImageManagerImpl(
       profile_image_requested_(false),
       has_managed_image_(false),
       weak_factory_(this) {
-  base::SequencedWorkerPool* blocking_pool =
-      content::BrowserThread::GetBlockingPool();
-  background_task_runner_ =
-      blocking_pool->GetSequencedTaskRunnerWithShutdownBehavior(
-          blocking_pool->GetSequenceToken(),
-          base::SequencedWorkerPool::CONTINUE_ON_SHUTDOWN);
+  background_task_runner_ = base::CreateSequencedTaskRunnerWithTraits(
+      {base::MayBlock(), base::TaskPriority::BACKGROUND,
+       base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN});
 }
 
 UserImageManagerImpl::~UserImageManagerImpl() {}
