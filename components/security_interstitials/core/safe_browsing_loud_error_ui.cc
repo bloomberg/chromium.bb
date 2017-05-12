@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/security_interstitials/core/safe_browsing_error_ui.h"
+#include "components/security_interstitials/core/safe_browsing_loud_error_ui.h"
 
 #include "base/i18n/time_formatting.h"
 #include "base/metrics/histogram_macros.h"
@@ -19,7 +19,8 @@ namespace security_interstitials {
 namespace {
 
 // URL for the Help Center article on Safe Browsing warnings.
-const char kLearnMore[] = "https://support.google.com/chrome/answer/99020";
+const char kLearnMore[] =
+    "https://support.google.com/chrome/?p=cpn_safe_browsing";
 
 // For malware interstitial pages, we link the problematic URL to Google's
 // diagnostic page.
@@ -50,7 +51,7 @@ void RecordExtendedReportingPrefChanged(bool report, bool is_scout) {
 
 }  // namespace
 
-SafeBrowsingErrorUI::SafeBrowsingErrorUI(
+SafeBrowsingLoudErrorUI::SafeBrowsingLoudErrorUI(
     const GURL& request_url,
     const GURL& main_frame_url,
     SBInterstitialReason reason,
@@ -58,26 +59,26 @@ SafeBrowsingErrorUI::SafeBrowsingErrorUI(
     const std::string& app_locale,
     const base::Time& time_triggered,
     ControllerClient* controller)
-    : request_url_(request_url),
-      main_frame_url_(main_frame_url),
-      interstitial_reason_(reason),
-      display_options_(display_options),
-      app_locale_(app_locale),
-      time_triggered_(time_triggered),
-      controller_(controller) {
-  controller_->metrics_helper()->RecordUserDecision(MetricsHelper::SHOW);
-  controller_->metrics_helper()->RecordUserInteraction(
+    : BaseSafeBrowsingErrorUI(request_url,
+                              main_frame_url,
+                              reason,
+                              display_options,
+                              app_locale,
+                              time_triggered,
+                              controller) {
+  controller->metrics_helper()->RecordUserDecision(MetricsHelper::SHOW);
+  controller->metrics_helper()->RecordUserInteraction(
       MetricsHelper::TOTAL_VISITS);
-  if (display_options_.is_proceed_anyway_disabled)
-    controller_->metrics_helper()->RecordUserDecision(
+  if (is_proceed_anyway_disabled())
+    controller->metrics_helper()->RecordUserDecision(
         security_interstitials::MetricsHelper::PROCEEDING_DISABLED);
 }
 
-SafeBrowsingErrorUI::~SafeBrowsingErrorUI() {
-  controller_->metrics_helper()->RecordShutdownMetrics();
+SafeBrowsingLoudErrorUI::~SafeBrowsingLoudErrorUI() {
+  controller()->metrics_helper()->RecordShutdownMetrics();
 }
 
-void SafeBrowsingErrorUI::PopulateStringsForHTML(
+void SafeBrowsingLoudErrorUI::PopulateStringsForHTML(
     base::DictionaryValue* load_time_data) {
   DCHECK(load_time_data);
 
@@ -93,18 +94,17 @@ void SafeBrowsingErrorUI::PopulateStringsForHTML(
   load_time_data->SetString(
       "primaryButtonText",
       l10n_util::GetStringUTF16(IDS_SAFEBROWSING_OVERRIDABLE_SAFETY_BUTTON));
-  load_time_data->SetBoolean("overridable",
-                             !display_options_.is_proceed_anyway_disabled);
-  load_time_data->SetBoolean("hide_primary_button", !controller_->CanGoBack());
+  load_time_data->SetBoolean("overridable", !is_proceed_anyway_disabled());
+  load_time_data->SetBoolean("hide_primary_button", !controller()->CanGoBack());
 
-  switch (interstitial_reason_) {
-    case SB_REASON_MALWARE:
+  switch (interstitial_reason()) {
+    case BaseSafeBrowsingErrorUI::SB_REASON_MALWARE:
       PopulateMalwareLoadTimeData(load_time_data);
       break;
-    case SB_REASON_HARMFUL:
+    case BaseSafeBrowsingErrorUI::SB_REASON_HARMFUL:
       PopulateHarmfulLoadTimeData(load_time_data);
       break;
-    case SB_REASON_PHISHING:
+    case BaseSafeBrowsingErrorUI::SB_REASON_PHISHING:
       PopulatePhishingLoadTimeData(load_time_data);
       break;
   }
@@ -112,14 +112,15 @@ void SafeBrowsingErrorUI::PopulateStringsForHTML(
   PopulateExtendedReportingOption(load_time_data);
 }
 
-void SafeBrowsingErrorUI::HandleCommand(SecurityInterstitialCommands command) {
+void SafeBrowsingLoudErrorUI::HandleCommand(
+    SecurityInterstitialCommands command) {
   switch (command) {
     case CMD_PROCEED: {
       // User pressed on the button to proceed.
-      if (!display_options_.is_proceed_anyway_disabled) {
-        controller_->metrics_helper()->RecordUserDecision(
+      if (!is_proceed_anyway_disabled()) {
+        controller()->metrics_helper()->RecordUserDecision(
             MetricsHelper::PROCEED);
-        controller_->Proceed();
+        controller()->Proceed();
         break;
       }
     }
@@ -128,83 +129,81 @@ void SafeBrowsingErrorUI::HandleCommand(SecurityInterstitialCommands command) {
       // User pressed on the button to return to safety.
       // Don't record the user action here because there are other ways of
       // triggering DontProceed, like clicking the back button.
-      if (display_options_.is_resource_cancellable) {
+      if (is_resource_cancellable()) {
         // If the load is blocked, we want to close the interstitial and discard
         // the pending entry.
-        controller_->GoBack();
+        controller()->GoBack();
       } else {
         // Otherwise the offending entry has committed, and we need to go back
         // or to a safe page.  We will close the interstitial when that page
         // commits.
-        controller_->GoBackAfterNavigationCommitted();
+        controller()->GoBackAfterNavigationCommitted();
       }
       break;
     }
     case CMD_DO_REPORT: {
       // User enabled SB Extended Reporting via the checkbox.
-      display_options_.is_extended_reporting_enabled = true;
-      controller_->SetReportingPreference(true);
-      RecordExtendedReportingPrefChanged(
-          true, display_options_.is_scout_reporting_enabled);
+      set_extended_reporting(true);
+      controller()->SetReportingPreference(true);
+      RecordExtendedReportingPrefChanged(true, is_scout_reporting_enabled());
       break;
     }
     case CMD_DONT_REPORT: {
       // User disabled SB Extended Reporting via the checkbox.
-      display_options_.is_extended_reporting_enabled = false;
-      controller_->SetReportingPreference(false);
-      RecordExtendedReportingPrefChanged(
-          false, display_options_.is_scout_reporting_enabled);
+      set_extended_reporting(false);
+      controller()->SetReportingPreference(false);
+      RecordExtendedReportingPrefChanged(false, is_scout_reporting_enabled());
       break;
     }
     case CMD_SHOW_MORE_SECTION: {
-      controller_->metrics_helper()->RecordUserInteraction(
+      controller()->metrics_helper()->RecordUserInteraction(
           security_interstitials::MetricsHelper::SHOW_ADVANCED);
       break;
     }
     case CMD_OPEN_HELP_CENTER: {
       // User pressed "Learn more".
-      controller_->metrics_helper()->RecordUserInteraction(
+      controller()->metrics_helper()->RecordUserInteraction(
           security_interstitials::MetricsHelper::SHOW_LEARN_MORE);
       GURL learn_more_url(kLearnMore);
       learn_more_url =
-          google_util::AppendGoogleLocaleParam(learn_more_url, app_locale_);
-      controller_->OpenUrlInCurrentTab(learn_more_url);
+          google_util::AppendGoogleLocaleParam(learn_more_url, app_locale());
+      controller()->OpenUrlInCurrentTab(learn_more_url);
       break;
     }
     case CMD_RELOAD: {
-      controller_->metrics_helper()->RecordUserInteraction(
+      controller()->metrics_helper()->RecordUserInteraction(
           security_interstitials::MetricsHelper::RELOAD);
-      controller_->Reload();
+      controller()->Reload();
       break;
     }
     case CMD_OPEN_REPORTING_PRIVACY: {
       // User pressed on the SB Extended Reporting "privacy policy" link.
-      controller_->OpenExtendedReportingPrivacyPolicy();
+      controller()->OpenExtendedReportingPrivacyPolicy();
       break;
     }
     case CMD_OPEN_WHITEPAPER: {
-      controller_->OpenExtendedReportingWhitepaper();
+      controller()->OpenExtendedReportingWhitepaper();
       break;
     }
     case CMD_OPEN_DIAGNOSTIC: {
-      controller_->metrics_helper()->RecordUserInteraction(
+      controller()->metrics_helper()->RecordUserInteraction(
           security_interstitials::MetricsHelper::SHOW_DIAGNOSTIC);
       std::string diagnostic = base::StringPrintf(
           kSbDiagnosticUrl,
-          net::EscapeQueryParamValue(request_url_.spec(), true).c_str());
+          net::EscapeQueryParamValue(request_url().spec(), true).c_str());
       GURL diagnostic_url(diagnostic);
       diagnostic_url =
-          google_util::AppendGoogleLocaleParam(diagnostic_url, app_locale_);
-      controller_->OpenUrlInCurrentTab(diagnostic_url);
+          google_util::AppendGoogleLocaleParam(diagnostic_url, app_locale());
+      controller()->OpenUrlInCurrentTab(diagnostic_url);
       break;
     }
     case CMD_REPORT_PHISHING_ERROR: {
-      controller_->metrics_helper()->RecordUserInteraction(
+      controller()->metrics_helper()->RecordUserInteraction(
           security_interstitials::MetricsHelper::REPORT_PHISHING_ERROR);
       GURL phishing_error_url(kReportPhishingErrorUrl);
-      phishing_error_url =
-          google_util::AppendGoogleLocaleParam(phishing_error_url, app_locale_);
-      controller_->OpenUrlInCurrentTab(phishing_error_url);
+      phishing_error_url = google_util::AppendGoogleLocaleParam(
+          phishing_error_url, app_locale());
+      controller()->OpenUrlInCurrentTab(phishing_error_url);
       break;
     }
     case CMD_OPEN_DATE_SETTINGS:
@@ -216,11 +215,7 @@ void SafeBrowsingErrorUI::HandleCommand(SecurityInterstitialCommands command) {
   }
 }
 
-bool SafeBrowsingErrorUI::CanShowExtendedReportingOption() {
-  return !is_off_the_record() && is_extended_reporting_opt_in_allowed();
-}
-
-void SafeBrowsingErrorUI::PopulateMalwareLoadTimeData(
+void SafeBrowsingLoudErrorUI::PopulateMalwareLoadTimeData(
     base::DictionaryValue* load_time_data) {
   load_time_data->SetBoolean("phishing", false);
   load_time_data->SetString("heading",
@@ -229,23 +224,23 @@ void SafeBrowsingErrorUI::PopulateMalwareLoadTimeData(
       "primaryParagraph",
       l10n_util::GetStringFUTF16(
           IDS_MALWARE_V3_PRIMARY_PARAGRAPH,
-          common_string_util::GetFormattedHostName(request_url_)));
+          common_string_util::GetFormattedHostName(request_url())));
   load_time_data->SetString(
       "explanationParagraph",
-      display_options_.is_main_frame_load_blocked
+      is_main_frame_load_blocked()
           ? l10n_util::GetStringFUTF16(
                 IDS_MALWARE_V3_EXPLANATION_PARAGRAPH,
-                common_string_util::GetFormattedHostName(request_url_))
+                common_string_util::GetFormattedHostName(request_url()))
           : l10n_util::GetStringFUTF16(
                 IDS_MALWARE_V3_EXPLANATION_PARAGRAPH_SUBRESOURCE,
-                base::UTF8ToUTF16(main_frame_url_.host()),
-                common_string_util::GetFormattedHostName(request_url_)));
+                base::UTF8ToUTF16(main_frame_url().host()),
+                common_string_util::GetFormattedHostName(request_url())));
   load_time_data->SetString(
       "finalParagraph",
       l10n_util::GetStringUTF16(IDS_MALWARE_V3_PROCEED_PARAGRAPH));
 }
 
-void SafeBrowsingErrorUI::PopulateHarmfulLoadTimeData(
+void SafeBrowsingLoudErrorUI::PopulateHarmfulLoadTimeData(
     base::DictionaryValue* load_time_data) {
   load_time_data->SetBoolean("phishing", false);
   load_time_data->SetString("heading",
@@ -254,18 +249,18 @@ void SafeBrowsingErrorUI::PopulateHarmfulLoadTimeData(
       "primaryParagraph",
       l10n_util::GetStringFUTF16(
           IDS_HARMFUL_V3_PRIMARY_PARAGRAPH,
-          common_string_util::GetFormattedHostName(request_url_)));
+          common_string_util::GetFormattedHostName(request_url())));
   load_time_data->SetString(
       "explanationParagraph",
       l10n_util::GetStringFUTF16(
           IDS_HARMFUL_V3_EXPLANATION_PARAGRAPH,
-          common_string_util::GetFormattedHostName(request_url_)));
+          common_string_util::GetFormattedHostName(request_url())));
   load_time_data->SetString(
       "finalParagraph",
       l10n_util::GetStringUTF16(IDS_HARMFUL_V3_PROCEED_PARAGRAPH));
 }
 
-void SafeBrowsingErrorUI::PopulatePhishingLoadTimeData(
+void SafeBrowsingLoudErrorUI::PopulatePhishingLoadTimeData(
     base::DictionaryValue* load_time_data) {
   load_time_data->SetBoolean("phishing", true);
   load_time_data->SetString("heading",
@@ -274,18 +269,18 @@ void SafeBrowsingErrorUI::PopulatePhishingLoadTimeData(
       "primaryParagraph",
       l10n_util::GetStringFUTF16(
           IDS_PHISHING_V4_PRIMARY_PARAGRAPH,
-          common_string_util::GetFormattedHostName(request_url_)));
+          common_string_util::GetFormattedHostName(request_url())));
   load_time_data->SetString(
       "explanationParagraph",
       l10n_util::GetStringFUTF16(
           IDS_PHISHING_V4_EXPLANATION_PARAGRAPH,
-          common_string_util::GetFormattedHostName(request_url_)));
+          common_string_util::GetFormattedHostName(request_url())));
   load_time_data->SetString(
       "finalParagraph",
       l10n_util::GetStringUTF16(IDS_PHISHING_V4_PROCEED_AND_REPORT_PARAGRAPH));
 }
 
-void SafeBrowsingErrorUI::PopulateExtendedReportingOption(
+void SafeBrowsingLoudErrorUI::PopulateExtendedReportingOption(
     base::DictionaryValue* load_time_data) {
   bool can_show_extended_reporting_option = CanShowExtendedReportingOption();
   load_time_data->SetBoolean(security_interstitials::kDisplayCheckBox,
@@ -299,12 +294,12 @@ void SafeBrowsingErrorUI::PopulateExtendedReportingOption(
       l10n_util::GetStringUTF8(IDS_SAFE_BROWSING_PRIVACY_POLICY_PAGE).c_str());
   load_time_data->SetString(security_interstitials::kOptInLink,
                             l10n_util::GetStringFUTF16(
-                                display_options_.is_scout_reporting_enabled
+                                is_scout_reporting_enabled()
                                     ? IDS_SAFE_BROWSING_SCOUT_REPORTING_AGREE
                                     : IDS_SAFE_BROWSING_MALWARE_REPORTING_AGREE,
                                 base::UTF8ToUTF16(privacy_link)));
   load_time_data->SetBoolean(security_interstitials::kBoxChecked,
-                             display_options_.is_extended_reporting_enabled);
+                             is_extended_reporting_enabled());
 }
 
 }  // security_interstitials

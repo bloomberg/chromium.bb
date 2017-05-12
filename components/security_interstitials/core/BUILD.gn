@@ -6,14 +6,16 @@ static_library("core") {
   sources = [
     "bad_clock_ui.cc",
     "bad_clock_ui.h",
+    "base_safe_browsing_error_ui.cc",
+    "base_safe_browsing_error_ui.h",
     "common_string_util.cc",
     "common_string_util.h",
     "controller_client.cc",
     "controller_client.h",
     "metrics_helper.cc",
     "metrics_helper.h",
-    "safe_browsing_error_ui.cc",
-    "safe_browsing_error_ui.h",
+    "safe_browsing_loud_error_ui.cc",
+    "safe_browsing_loud_error_ui.h",
     "ssl_error_ui.cc",
     "ssl_error_ui.h",
   ]

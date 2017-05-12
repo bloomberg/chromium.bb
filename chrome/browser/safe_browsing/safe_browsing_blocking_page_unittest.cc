@@ -29,7 +29,7 @@ using content::InterstitialPage;
 using content::NavigationEntry;
 using content::WebContents;
 using content::WebContentsTester;
-using security_interstitials::SafeBrowsingErrorUI;
+using security_interstitials::BaseSafeBrowsingErrorUI;
 
 static const char* kGoogleURL = "http://www.google.com/";
 static const char* kGoodURL = "http://www.goodguys.com/";
@@ -49,7 +49,7 @@ class TestSafeBrowsingBlockingPage : public SafeBrowsingBlockingPage {
       WebContents* web_contents,
       const GURL& main_frame_url,
       const UnsafeResourceList& unsafe_resources,
-      const SafeBrowsingErrorUI::SBErrorDisplayOptions& display_options)
+      const BaseSafeBrowsingErrorUI::SBErrorDisplayOptions& display_options)
       : SafeBrowsingBlockingPage(manager,
                                  web_contents,
                                  main_frame_url,
@@ -80,7 +80,7 @@ class TestSafeBrowsingBlockingPageFactory
         prefs->GetBoolean(prefs::kSafeBrowsingExtendedReportingOptInAllowed);
     bool is_proceed_anyway_disabled =
         prefs->GetBoolean(prefs::kSafeBrowsingProceedAnywayDisabled);
-    SafeBrowsingErrorUI::SBErrorDisplayOptions display_options(
+    BaseSafeBrowsingErrorUI::SBErrorDisplayOptions display_options(
         BaseBlockingPage::IsMainPageLoadBlocked(unsafe_resources),
         is_extended_reporting_opt_in_allowed,
         web_contents->GetBrowserContext()->IsOffTheRecord(),

@@ -27,7 +27,7 @@
 using content::BrowserThread;
 using content::InterstitialPage;
 using content::WebContents;
-using security_interstitials::SafeBrowsingErrorUI;
+using security_interstitials::BaseSafeBrowsingErrorUI;
 using security_interstitials::SecurityInterstitialControllerClient;
 
 namespace safe_browsing {
@@ -70,7 +70,7 @@ class SafeBrowsingBlockingPageFactoryImpl
     // Display Options below.
     safe_browsing::UpdatePrefsBeforeSecurityInterstitial(prefs);
 
-    SafeBrowsingErrorUI::SBErrorDisplayOptions display_options(
+    BaseSafeBrowsingErrorUI::SBErrorDisplayOptions display_options(
         BaseBlockingPage::IsMainPageLoadBlocked(unsafe_resources),
         is_extended_reporting_opt_in_allowed,
         web_contents->GetBrowserContext()->IsOffTheRecord(),
@@ -105,7 +105,7 @@ SafeBrowsingBlockingPage::SafeBrowsingBlockingPage(
     WebContents* web_contents,
     const GURL& main_frame_url,
     const UnsafeResourceList& unsafe_resources,
-    const SafeBrowsingErrorUI::SBErrorDisplayOptions& display_options)
+    const BaseSafeBrowsingErrorUI::SBErrorDisplayOptions& display_options)
     : BaseBlockingPage(
           ui_manager,
           web_contents,
@@ -188,9 +188,8 @@ void SafeBrowsingBlockingPage::FinishThreatDetails(const base::TimeDelta& delay,
   if (threat_details_.get() == NULL)
     return;  // Not all interstitials have threat details (eg., incognito mode).
 
-  const bool enabled =
-      sb_error_ui()->is_extended_reporting_enabled() &&
-      sb_error_ui()->is_extended_reporting_opt_in_allowed();
+  const bool enabled = sb_error_ui()->is_extended_reporting_enabled() &&
+                       sb_error_ui()->is_extended_reporting_opt_in_allowed();
   if (!enabled)
     return;
 
@@ -246,13 +245,13 @@ void SafeBrowsingBlockingPage::ShowBlockingPage(
 
 // static
 std::string SafeBrowsingBlockingPage::GetSamplingEventName(
-    SafeBrowsingErrorUI::SBInterstitialReason interstitial_reason) {
+    BaseSafeBrowsingErrorUI::SBInterstitialReason interstitial_reason) {
   switch (interstitial_reason) {
-    case SafeBrowsingErrorUI::SB_REASON_MALWARE:
+    case BaseSafeBrowsingErrorUI::SB_REASON_MALWARE:
       return kEventNameMalware;
-    case SafeBrowsingErrorUI::SB_REASON_HARMFUL:
+    case BaseSafeBrowsingErrorUI::SB_REASON_HARMFUL:
       return kEventNameHarmful;
-    case SafeBrowsingErrorUI::SB_REASON_PHISHING:
+    case BaseSafeBrowsingErrorUI::SB_REASON_PHISHING:
       return kEventNamePhishing;
     default:
       return kEventNameOther;

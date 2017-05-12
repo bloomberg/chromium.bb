@@ -6,7 +6,7 @@
 #define ANDROID_WEBVIEW_BROWSER_AW_SAFE_BROWSING_BLOCKING_PAGE_H_
 
 #include "components/safe_browsing/base_blocking_page.h"
-#include "components/security_interstitials/core/safe_browsing_error_ui.h"
+#include "components/security_interstitials/core/base_safe_browsing_error_ui.h"
 
 namespace security_interstitials {
 struct UnsafeResource;
@@ -33,7 +33,7 @@ class AwSafeBrowsingBlockingPage : public safe_browsing::BaseBlockingPage {
       std::unique_ptr<
           security_interstitials::SecurityInterstitialControllerClient>
           controller_client,
-      const SafeBrowsingErrorUI::SBErrorDisplayOptions& display_options);
+      const BaseSafeBrowsingErrorUI::SBErrorDisplayOptions& display_options);
 };
 
 }  // namespace android_webview
