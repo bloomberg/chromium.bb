@@ -1757,7 +1757,7 @@
             ],
             "experiments": [
                 {
-                    "name": "PrerenderDisabled",
+                    "name": "PrerenderDisabled_R2",
                     "params": {
                         "instant_mode": "simple_load",
                         "mode": "simple_load",
