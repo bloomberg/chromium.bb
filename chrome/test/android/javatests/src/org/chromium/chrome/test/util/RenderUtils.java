@@ -7,6 +7,7 @@ package org.chromium.chrome.test.util;
 import android.app.Activity;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
 import android.graphics.Point;
 import android.os.Build;
 import android.view.View;
@@ -28,7 +29,11 @@ import java.util.concurrent.Callable;
 public class RenderUtils {
     private static final String TAG = "RenderUtils";
 
+    private static final String DIFF_FOLDER_RELATIVE = "/diffs";
+
     private static final String FAILURE_FOLDER_RELATIVE = "/failures";
+
+    private static final String GOLDEN_FOLDER_RELATIVE = "/goldens";
 
     /**
      * This is a list of devices that we maintain golden images for. If render tests are being run
@@ -44,6 +49,11 @@ public class RenderUtils {
      * false/removed.
      */
     private static final boolean REPORT_ONLY_DO_NOT_FAIL = true;
+
+    /**
+     * How many pixels can be different in an image before counting the images as different.
+     */
+    private static final int PIXEL_DIFF_THRESHOLD = 0;
 
     private enum ComparisonResult { MATCH, MISMATCH, GOLDEN_NOT_FOUND }
 
@@ -72,11 +82,19 @@ public class RenderUtils {
         private final Activity mActivity;
         private final String mGoldenFolder;
         private final String mTestClass;
+        private String mOutputDirectory;
 
         public ViewRenderer(Activity activity, String goldenFolder, String testClass) {
             mActivity = activity;
             mGoldenFolder = goldenFolder;
             mTestClass = testClass;
+
+            // Render test will output results to subdirectory of |goldenFolder| unless
+            // --render-test-output-dir is passed.
+            mOutputDirectory = CommandLine.getInstance().getSwitchValue("render-test-output-dir");
+            if (mOutputDirectory == null) {
+                mOutputDirectory = UrlUtils.getIsolatedTestFilePath(mGoldenFolder);
+            }
         }
 
         /**
@@ -93,20 +111,34 @@ public class RenderUtils {
          */
         public void renderAndCompare(final View view, String id) throws IOException {
             // Compare the image against the Golden.
-            Bitmap bitmap = ThreadUtils.runOnUiThreadBlockingNoException(new Callable<Bitmap>() {
-                @Override
-                public Bitmap call() throws Exception {
-                    return UiUtils.generateScaledScreenshot(view, 0, Bitmap.Config.ARGB_8888);
-                }
-            });
+            Bitmap testBitmap =
+                    ThreadUtils.runOnUiThreadBlockingNoException(new Callable<Bitmap>() {
+                        @Override
+                        public Bitmap call() throws Exception {
+                            return UiUtils.generateScaledScreenshot(
+                                    view, 0, Bitmap.Config.ARGB_8888);
+                        }
+                    });
 
             String imagename = imageName(mActivity, mTestClass, id);
-            File goldenFile = createPath(mGoldenFolder, imagename);
-            ComparisonResult result = compareBmpToGolden(bitmap, goldenFile);
 
-            if (REPORT_ONLY_DO_NOT_FAIL && !isGenerateMode()) {
-                Log.d(TAG, "Image comparison for %s: %s", id, result.name());
-                return;
+            File goldenFile =
+                    createPath(UrlUtils.getIsolatedTestFilePath(mGoldenFolder), imagename);
+            BitmapFactory.Options options = new BitmapFactory.Options();
+            options.inPreferredConfig = testBitmap.getConfig();
+            Bitmap goldenBitmap = BitmapFactory.decodeFile(goldenFile.getAbsolutePath(), options);
+
+            Bitmap diffBitmap = null;
+            ComparisonResult result = null;
+
+            if (goldenBitmap == null) {
+                result = ComparisonResult.GOLDEN_NOT_FOUND;
+            } else {
+                diffBitmap = Bitmap.createBitmap(
+                        Math.max(testBitmap.getWidth(), goldenBitmap.getWidth()),
+                        Math.max(testBitmap.getHeight(), goldenBitmap.getHeight()),
+                        testBitmap.getConfig());
+                result = compareBitmapToGolden(testBitmap, goldenBitmap, diffBitmap);
             }
 
             if (result == ComparisonResult.MATCH) {
@@ -116,12 +148,28 @@ public class RenderUtils {
                 return;
             }
 
-            // Save the rendered View.
-            File failureFile = createPath(mGoldenFolder + FAILURE_FOLDER_RELATIVE, imagename);
-            saveBitmap(bitmap, failureFile);
+            File failureOutputFile =
+                    createPath(mOutputDirectory + FAILURE_FOLDER_RELATIVE, imagename);
+            saveBitmap(testBitmap, failureOutputFile);
+
+            if (result != ComparisonResult.GOLDEN_NOT_FOUND) {
+                File goldenOutputFile =
+                        createPath(mOutputDirectory + GOLDEN_FOLDER_RELATIVE, imagename);
+                saveBitmap(goldenBitmap, goldenOutputFile);
+
+                File diffOutputFile =
+                        createPath(mOutputDirectory + DIFF_FOLDER_RELATIVE, imagename);
+                saveBitmap(diffBitmap, diffOutputFile);
+            }
 
             if (isGenerateMode()) {
-                Log.i(TAG, "%s - generated image saved to %s.", id, failureFile.getAbsolutePath());
+                Log.i(TAG, "%s - generated image saved to %s.", id,
+                        failureOutputFile.getAbsolutePath());
+                return;
+            }
+
+            if (REPORT_ONLY_DO_NOT_FAIL) {
+                Log.d(TAG, "Image comparison for %s: %s", id, result.name());
                 return;
             }
 
@@ -137,8 +185,7 @@ public class RenderUtils {
             } else if (result == ComparisonResult.MISMATCH) {
                 throw new ImageMismatchException(
                         String.format("Image comparison failed on %s. Failure image saved to %s.",
-                                id, failureFile.getAbsolutePath()));
-
+                                id, failureOutputFile.getAbsolutePath()));
             }
         }
     }
@@ -163,6 +210,9 @@ public class RenderUtils {
     /**
      * Creates an image name combining the image description with details about the device
      * (eg model, current orientation).
+     *
+     * This function must be kept in sync with |RE_RENDER_IMAGE_NAME| from
+     * src/build/android/pylib/local/device/local_device_instrumentation_test_run.py.
      */
     private static String imageName(Activity activity, String testClass, String desc) {
         Point outSize = new Point();
@@ -185,14 +235,13 @@ public class RenderUtils {
     }
 
     /**
-     * Convenience method to create a File pointing to |filename| in |folder| in the external
-     * storage directory.
+     * Convenience method to create a File pointing to |filename| in |folder|.
      * @throws IOException
      */
     private static File createPath(String folder, String filename) throws IOException {
-        File path = new File(UrlUtils.getIsolatedTestFilePath(folder));
+        File path = new File(folder);
         if (!path.exists()) {
-            if (!path.mkdir()) {
+            if (!path.mkdirs()) {
                 throw new IOException("Could not create " + path.getAbsolutePath());
             }
         }
@@ -202,12 +251,111 @@ public class RenderUtils {
     /**
      * Returns whether the given |bitmap| is equal to the one stored in |file|.
      */
-    private static ComparisonResult compareBmpToGolden(Bitmap bitmap, File file) {
-        BitmapFactory.Options options = new BitmapFactory.Options();
-        options.inPreferredConfig = bitmap.getConfig();
-        Bitmap golden = BitmapFactory.decodeFile(file.getAbsolutePath(), options);
+    private static ComparisonResult compareBitmapToGolden(Bitmap test, Bitmap golden, Bitmap diff) {
+        int maxWidth = Math.max(test.getWidth(), golden.getWidth());
+        int maxHeight = Math.max(test.getHeight(), golden.getHeight());
+        int minWidth = Math.min(test.getWidth(), golden.getWidth());
+        int minHeight = Math.min(test.getHeight(), golden.getHeight());
 
-        if (golden == null) return ComparisonResult.GOLDEN_NOT_FOUND;
-        return bitmap.sameAs(golden) ? ComparisonResult.MATCH : ComparisonResult.MISMATCH;
+        int diffPixelsCount = comparePixels(test, golden, diff, 0, 0, minWidth, 0, minHeight)
+                + compareSizes(diff, minWidth, maxWidth, minHeight, maxHeight);
+
+        if (diffPixelsCount > PIXEL_DIFF_THRESHOLD) {
+            return ComparisonResult.MISMATCH;
+        }
+        return ComparisonResult.MATCH;
+    }
+
+    /**
+     * Compares two bitmaps pixel-wise.
+     *
+     * @param testImage Bitmap of test image.
+     *
+     * @param goldenImage Bitmap of golden image.
+     *
+     * @param diffImage This is an output argument. Function will set pixels in the |diffImage| to
+     * either transparent or red depending on whether that pixel differed in the golden and test
+     * bitmaps. diffImage should have its width and height be the max width and height of the
+     * golden and test bitmaps.
+     *
+     * @param diffThreshold Threshold for when to consider two color values as different. These
+     * values are 8 bit (256) so this threshold value should be in range 0-256.
+     *
+     * @param startWidth Start x-coord to start diffing the Bitmaps.
+     *
+     * @param endWidth End x-coord to start diffing the Bitmaps.
+     *
+     * @param startHeight Start y-coord to start diffing the Bitmaps.
+     *
+     * @param endHeight End x-coord to start diffing the Bitmaps.
+     *
+     * @return Returns number of pixels that differ between |goldenImage| and |testImage|
+     */
+    private static int comparePixels(Bitmap testImage, Bitmap goldenImage, Bitmap diffImage,
+            int diffThreshold, int startWidth, int endWidth, int startHeight, int endHeight) {
+        int diffPixels = 0;
+
+        for (int x = startWidth; x < endWidth; x++) {
+            for (int y = startHeight; y < endHeight; y++) {
+                int goldenImageColor = goldenImage.getPixel(x, y);
+                int testImageColor = testImage.getPixel(x, y);
+
+                int redDiff = Math.abs(Color.red(goldenImageColor) - Color.red(testImageColor));
+                int blueDiff =
+                        Math.abs(Color.green(goldenImageColor) - Color.green(testImageColor));
+                int greenDiff = Math.abs(Color.blue(goldenImageColor) - Color.blue(testImageColor));
+                int alphaDiff =
+                        Math.abs(Color.alpha(goldenImageColor) - Color.alpha(testImageColor));
+
+                if (redDiff > diffThreshold || blueDiff > diffThreshold || greenDiff > diffThreshold
+                        || alphaDiff > diffThreshold) {
+                    diffPixels++;
+                    diffImage.setPixel(x, y, Color.RED);
+                } else {
+                    diffImage.setPixel(x, y, Color.TRANSPARENT);
+                }
+            }
+        }
+        return diffPixels;
+    }
+
+    /**
+     * Compares two bitmaps size.
+     *
+     * @param diffImage This is an output argument. Function will set pixels in the |diffImage| to
+     * either transparent or red depending on whether that pixel coordinate occurs in the
+     * dimensions of the golden and not the test bitmap or vice-versa.
+     *
+     * @param minWidth Min width of golden and test bitmaps.
+     *
+     * @param maxWidth Max width of golden and test bitmaps.
+     *
+     * @param minHeight Min height of golden and test bitmaps.
+     *
+     * @param maxHeight Max height of golden and test bitmaps.
+     *
+     * @return Returns number of pixels that differ between |goldenImage| and |testImage| due to
+     * their size.
+     */
+    private static int compareSizes(
+            Bitmap diffImage, int minWidth, int maxWidth, int minHeight, int maxHeight) {
+        int diffPixels = 0;
+        if (maxWidth > minWidth) {
+            for (int x = minWidth; x < maxWidth; x++) {
+                for (int y = 0; y < maxHeight; y++) {
+                    diffImage.setPixel(x, y, Color.RED);
+                }
+            }
+            diffPixels += (maxWidth - minWidth) * maxHeight;
+        }
+        if (maxHeight > minHeight) {
+            for (int x = 0; x < maxWidth; x++) {
+                for (int y = minHeight; y < maxHeight; y++) {
+                    diffImage.setPixel(x, y, Color.RED);
+                }
+            }
+            diffPixels += (maxHeight - minHeight) * minWidth;
+        }
+        return diffPixels;
     }
 }
