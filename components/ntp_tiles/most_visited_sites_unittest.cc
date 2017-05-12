@@ -20,10 +20,12 @@
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/cancelable_task_tracker.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/sequenced_worker_pool_owner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/history/core/browser/top_sites.h"
 #include "components/history/core/browser/top_sites_observer.h"
+#include "components/ntp_tiles/constants.h"
 #include "components/ntp_tiles/icon_cacher.h"
 #include "components/ntp_tiles/json_unsafe_parser.h"
 #include "components/ntp_tiles/popular_sites_impl.h"
@@ -194,10 +196,12 @@ class MockMostVisitedSitesObserver : public MostVisitedSites::Observer {
 
 class MockIconCacher : public IconCacher {
  public:
-  MOCK_METHOD3(StartFetch,
+  MOCK_METHOD3(StartFetchPopularSites,
                void(PopularSites::Site site,
                     const base::Closure& icon_available,
                     const base::Closure& preliminary_icon_available));
+  MOCK_METHOD2(StartFetchMostLikely,
+               void(const GURL& page_url, const base::Closure& icon_available));
 };
 
 class PopularSitesFactoryForTest {
@@ -287,9 +291,14 @@ class MostVisitedSitesTest : public ::testing::TestWithParam<bool> {
           switches::kDisableNTPPopularSites);
     }
 
+    // Disable in most tests, this is overriden in a specific test.
+    feature_list_.InitAndDisableFeature(
+        kNtpMostLikelyFaviconsFromServerFeature);
+
     // We use StrictMock to make sure the object is not used unless Popular
     // Sites is enabled.
     auto icon_cacher = base::MakeUnique<StrictMock<MockIconCacher>>();
+    icon_cacher_ = icon_cacher.get();
 
     if (IsPopularSitesEnabledViaVariations()) {
       // Populate Popular Sites' internal cache by mimicking a past usage of
@@ -313,7 +322,8 @@ class MostVisitedSitesTest : public ::testing::TestWithParam<bool> {
           .WillRepeatedly(Return(false));
       // Mock icon cacher never replies, and we also don't verify whether the
       // code uses it correctly.
-      EXPECT_CALL(*icon_cacher, StartFetch(_, _, _)).Times(AtLeast(0));
+      EXPECT_CALL(*icon_cacher, StartFetchPopularSites(_, _, _))
+          .Times(AtLeast(0));
     }
 
     most_visited_sites_ = base::MakeUnique<MostVisitedSites>(
@@ -349,6 +359,8 @@ class MostVisitedSitesTest : public ::testing::TestWithParam<bool> {
   StrictMock<MockSuggestionsService> mock_suggestions_service_;
   StrictMock<MockMostVisitedSitesObserver> mock_observer_;
   std::unique_ptr<MostVisitedSites> most_visited_sites_;
+  base::test::ScopedFeatureList feature_list_;
+  MockIconCacher* icon_cacher_;
 };
 
 TEST_P(MostVisitedSitesTest, ShouldStartNoCallInConstructor) {
@@ -537,6 +549,18 @@ TEST_P(MostVisitedSitesWithCacheHitTest,
        MakeMostVisitedURL("Site 5", "http://site5/"),
        MakeMostVisitedURL("Site 6", "http://site6/"),
        MakeMostVisitedURL("Site 7", "http://site7/")});
+  base::RunLoop().RunUntilIdle();
+}
+
+TEST_P(MostVisitedSitesWithCacheHitTest, ShouldFetchFaviconsIfEnabled) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(kNtpMostLikelyFaviconsFromServerFeature);
+
+  EXPECT_CALL(mock_observer_, OnMostVisitedURLsAvailable(_));
+  EXPECT_CALL(*icon_cacher_, StartFetchMostLikely(GURL("http://site4/"), _));
+
+  suggestions_service_callbacks_.Notify(
+      MakeProfile({MakeSuggestion("Site 4", "http://site4/")}));
   base::RunLoop().RunUntilIdle();
 }
 
