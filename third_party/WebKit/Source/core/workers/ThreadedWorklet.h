@@ -44,6 +44,7 @@ class CORE_EXPORT ThreadedWorklet : public Worklet,
  private:
   // Worklet
   void FetchAndInvokeScript(const KURL& module_url_record,
+                            const WorkletOptions&,
                             ScriptPromiseResolver*) override;
 
   // Called when addModule() is called for the first time.

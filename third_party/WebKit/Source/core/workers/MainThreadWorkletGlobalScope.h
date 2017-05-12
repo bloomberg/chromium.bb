@@ -11,6 +11,7 @@
 #include "core/loader/WorkletScriptLoader.h"
 #include "core/workers/WorkletGlobalScope.h"
 #include "core/workers/WorkletPendingTasks.h"
+#include "public/platform/WebURLRequest.h"
 
 namespace blink {
 
@@ -39,6 +40,7 @@ class CORE_EXPORT MainThreadWorkletGlobalScope
   WorkerThread* GetThread() const final;
 
   void FetchAndInvokeScript(const KURL& module_url_record,
+                            WebURLRequest::FetchCredentialsMode,
                             WorkletPendingTasks*);
   void Terminate();
 

@@ -11,8 +11,25 @@
 #include "core/workers/WorkletGlobalScopeProxy.h"
 #include "core/workers/WorkletPendingTasks.h"
 #include "platform/wtf/WTF.h"
+#include "public/platform/WebURLRequest.h"
 
 namespace blink {
+
+namespace {
+
+WebURLRequest::FetchCredentialsMode ParseCredentialsOption(
+    const String& credentials_option) {
+  if (credentials_option == "omit")
+    return WebURLRequest::kFetchCredentialsModeOmit;
+  if (credentials_option == "same-origin")
+    return WebURLRequest::kFetchCredentialsModeSameOrigin;
+  if (credentials_option == "include")
+    return WebURLRequest::kFetchCredentialsModeInclude;
+  NOTREACHED();
+  return WebURLRequest::kFetchCredentialsModeOmit;
+}
+
+}  // namespace
 
 MainThreadWorklet::MainThreadWorklet(LocalFrame* frame) : Worklet(frame) {}
 
@@ -20,13 +37,16 @@ MainThreadWorklet::MainThreadWorklet(LocalFrame* frame) : Worklet(frame) {}
 // algorithm:
 // https://drafts.css-houdini.org/worklets/#dom-worklet-addmodule
 void MainThreadWorklet::FetchAndInvokeScript(const KURL& module_url_record,
+                                             const WorkletOptions& options,
                                              ScriptPromiseResolver* resolver) {
   DCHECK(IsMainThread());
   if (!GetExecutionContext())
     return;
 
   // Step 6: "Let credentialOptions be the credentials member of options."
-  // TODO(nhiroki): Implement credentialOptions (https://crbug.com/710837).
+  // TODO(nhiroki): Add tests for credentialOptions (https://crbug.com/710837).
+  WebURLRequest::FetchCredentialsMode credentials_mode =
+      ParseCredentialsOption(options.credentials());
 
   // Step 7: "Let outsideSettings be the relevant settings object of this."
   // TODO(nhiroki): outsideSettings will be used for posting a task to the
@@ -62,10 +82,9 @@ void MainThreadWorklet::FetchAndInvokeScript(const KURL& module_url_record,
   // invoke a worklet script given workletGlobalScope, moduleURLRecord,
   // moduleResponsesMap, credentialOptions, outsideSettings, pendingTaskStruct,
   // and promise."
-  // TODO(nhiroki): Pass the remaining parameters (e.g., credentialOptions).
   // TODO(nhiroki): Queue a task instead of executing this here.
-  GetWorkletGlobalScopeProxy()->FetchAndInvokeScript(module_url_record,
-                                                     pending_tasks);
+  GetWorkletGlobalScopeProxy()->FetchAndInvokeScript(
+      module_url_record, credentials_mode, pending_tasks);
 }
 
 void MainThreadWorklet::ContextDestroyed(ExecutionContext* execution_context) {
