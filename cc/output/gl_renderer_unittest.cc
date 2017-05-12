@@ -2045,7 +2045,7 @@ class GLRendererPartialSwapTest : public GLRendererTest {
 
     gfx::Size viewport_size(100, 100);
 
-    {
+    for (int i = 0; i < 2; ++i) {
       int root_pass_id = 1;
       RenderPass* root_pass = AddRenderPass(
           &render_passes_in_draw_order_, root_pass_id, gfx::Rect(viewport_size),
@@ -2064,8 +2064,13 @@ class GLRendererPartialSwapTest : public GLRendererTest {
       // Partial frame, we should use a scissor to swap only that part when
       // partial swap is enabled.
       root_pass->damage_rect = gfx::Rect(2, 2, 3, 3);
-      gfx::Rect output_rectangle =
-          partial_swap ? root_pass->damage_rect : gfx::Rect(viewport_size);
+      // With SetDrawRectangle the first frame will have its damage expanded
+      // to cover the entire output rect.
+      bool frame_has_partial_damage =
+          partial_swap && (!set_draw_rectangle || (i > 0));
+      gfx::Rect output_rectangle = frame_has_partial_damage
+                                       ? root_pass->damage_rect
+                                       : gfx::Rect(viewport_size);
 
       if (partial_swap || set_draw_rectangle) {
         EXPECT_CALL(*gl, Enable(GL_SCISSOR_TEST)).InSequence(seq);
@@ -2092,6 +2097,7 @@ class GLRendererPartialSwapTest : public GLRendererTest {
       if (set_draw_rectangle) {
         EXPECT_EQ(output_rectangle, output_surface->last_set_draw_rectangle());
       }
+      Mock::VerifyAndClearExpectations(gl);
     }
   }
 };

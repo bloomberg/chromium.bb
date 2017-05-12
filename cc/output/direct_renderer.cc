@@ -267,6 +267,7 @@ void DirectRenderer::DrawFrame(RenderPassList* render_passes_in_draw_order,
   bool frame_has_alpha =
       current_frame()->root_render_pass->has_transparent_background;
   bool use_stencil = overdraw_feedback_;
+  bool did_reshape = false;
   if (device_viewport_size != reshape_surface_size_ ||
       device_scale_factor != reshape_device_scale_factor_ ||
       root_render_pass->color_space != reshape_device_color_space_ ||
@@ -281,6 +282,7 @@ void DirectRenderer::DrawFrame(RenderPassList* render_passes_in_draw_order,
     output_surface_->Reshape(
         reshape_surface_size_, reshape_device_scale_factor_,
         reshape_device_color_space_, reshape_has_alpha_, reshape_use_stencil_);
+    did_reshape = true;
   }
 
   BeginDrawingFrame();
@@ -330,7 +332,11 @@ void DirectRenderer::DrawFrame(RenderPassList* render_passes_in_draw_order,
              kNumberOfFramesBeforeDisablingDCLayers) {
     using_dc_layers_ = false;
   }
-  if (was_using_dc_layers != using_dc_layers_) {
+  if (supports_dc_layers_ &&
+      (did_reshape || (was_using_dc_layers != using_dc_layers_))) {
+    // The entire surface has to be redrawn if it was reshaped or if switching
+    // from or to DirectComposition layers, because the previous contents are
+    // discarded and some contents would otherwise be undefined.
     current_frame()->root_damage_rect =
         current_frame()->root_render_pass->output_rect;
   }
