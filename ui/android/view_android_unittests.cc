@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/test/gtest_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/android/event_forwarder.h"
 #include "ui/android/view_android.h"
@@ -164,6 +165,39 @@ TEST_F(ViewAndroidBoundsTest, MatchesViewsWithOffset) {
   GenerateTouchEventAt(100, 70);
   EXPECT_TRUE(client1_.EventCalled());
   ExpectHit(client3_);
+}
+
+TEST(ViewAndroidTest, ChecksMultipleEventForwarders) {
+  ViewAndroid parent;
+  ViewAndroid child;
+  parent.GetEventForwarder();
+  child.GetEventForwarder();
+  EXPECT_DCHECK_DEATH(parent.AddChild(&child));
+
+  ViewAndroid parent2;
+  ViewAndroid child2;
+  parent2.GetEventForwarder();
+  parent2.AddChild(&child2);
+  EXPECT_DCHECK_DEATH(child2.GetEventForwarder());
+
+  ViewAndroid window;
+  ViewAndroid wcv1, wcv2;
+  ViewAndroid rwhv1a, rwhv1b, rwhv2;
+  wcv1.GetEventForwarder();
+  wcv2.GetEventForwarder();
+
+  window.AddChild(&wcv1);
+  wcv1.AddChild(&rwhv1a);
+  wcv1.AddChild(&rwhv1b);
+
+  wcv2.AddChild(&rwhv2);
+
+  // window should be able to add wcv2 since there's only one event forwarder
+  // in the path window - wcv2* - rwvh2
+  window.AddChild(&wcv2);
+
+  // Additional event forwarder will cause failure.
+  EXPECT_DCHECK_DEATH(rwhv2.GetEventForwarder());
 }
 
 }  // namespace ui
