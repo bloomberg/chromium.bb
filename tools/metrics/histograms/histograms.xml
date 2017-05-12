@@ -39249,7 +39249,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Net.TCP_Connection_Latency_IPv4_No_Race" units="ms">
-  <owner>mmenke@chromium.org</owner>
+  <owner>mgersh@chromium.org</owner>
   <summary>
     Time from when the Connect() starts until it completes when the network
     address only contains IPv4 addresses.  Only times under 10 minutes are
@@ -39258,7 +39258,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Net.TCP_Connection_Latency_IPv4_Wins_Race" units="ms">
-  <owner>mmenke@chromium.org</owner>
+  <owner>mgersh@chromium.org</owner>
   <summary>
     Time from when the Connect() starts until it completes when the IPv4
     fallback connection won the race against IPv6.  Only times under 10 minutes
@@ -39267,7 +39267,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Net.TCP_Connection_Latency_IPv6_Raceable" units="ms">
-  <owner>mmenke@chromium.org</owner>
+  <owner>mgersh@chromium.org</owner>
   <summary>
     Time from when the Connect() starts until it completes when we race an IPv6
     connection against an IPv4 connection with a 300ms delay.  Only times under
@@ -39276,7 +39276,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Net.TCP_Connection_Latency_IPv6_Solo" units="ms">
-  <owner>mmenke@chromium.org</owner>
+  <owner>mgersh@chromium.org</owner>
   <summary>
     Time from when the Connect() starts until it completes when the network
     address only contains IPv6 addresses.  Only times under 10 minutes are
