@@ -31,6 +31,7 @@
 #include "modules/vibration/VibrationController.h"
 #include "platform/Histogram.h"
 #include "platform/UserGestureIndicator.h"
+#include "platform/feature_policy/FeaturePolicy.h"
 #include "public/platform/site_engagement.mojom-blink.h"
 
 namespace blink {
@@ -81,10 +82,7 @@ bool NavigatorVibration::vibrate(Navigator& navigator,
   if (!frame->GetPage()->IsPageVisible())
     return false;
 
-  // TODO(lunalu): When FeaturePolicy is ready, take out the check for the
-  // runtime flag. Please pay attention to the user gesture code below.
-  if (RuntimeEnabledFeatures::featurePolicyEnabled() &&
-      RuntimeEnabledFeatures::featurePolicyExperimentalFeaturesEnabled() &&
+  if (IsSupportedInFeaturePolicy(blink::WebFeaturePolicyFeature::kVibrate) &&
       !frame->IsFeatureEnabled(blink::WebFeaturePolicyFeature::kVibrate)) {
     frame->DomWindow()->PrintErrorMessage(
         "Navigator.vibrate() is not enabled in feature policy for this "

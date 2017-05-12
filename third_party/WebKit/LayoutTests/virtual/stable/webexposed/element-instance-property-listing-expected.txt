@@ -541,6 +541,7 @@ html element html
 html element i
 html element iframe
     property align
+    property allow
     property allowFullscreen
     property allowPaymentRequest
     property contentDocument

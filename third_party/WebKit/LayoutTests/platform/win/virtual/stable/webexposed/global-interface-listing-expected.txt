@@ -1985,6 +1985,7 @@ interface HTMLHtmlElement : HTMLElement
 interface HTMLIFrameElement : HTMLElement
     attribute @@toStringTag
     getter align
+    getter allow
     getter allowFullscreen
     getter allowPaymentRequest
     getter contentDocument
@@ -2004,6 +2005,7 @@ interface HTMLIFrameElement : HTMLElement
     method constructor
     method getSVGDocument
     setter align
+    setter allow
     setter allowFullscreen
     setter allowPaymentRequest
     setter frameBorder

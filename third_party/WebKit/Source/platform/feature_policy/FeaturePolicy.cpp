@@ -128,6 +128,22 @@ WebParsedFeaturePolicy GetContainerPolicyFromAllowedFeatures(
   return whitelists;
 }
 
+bool IsSupportedInFeaturePolicy(WebFeaturePolicyFeature feature) {
+  switch (feature) {
+    // TODO(lunalu): Re-enabled fullscreen in feature policy once tests have
+    // been updated.
+    // crbug.com/666761
+    case WebFeaturePolicyFeature::kFullscreen:
+      return false;
+    case WebFeaturePolicyFeature::kPayment:
+      return true;
+    case WebFeaturePolicyFeature::kVibrate:
+      return RuntimeEnabledFeatures::featurePolicyExperimentalFeaturesEnabled();
+    default:
+      return false;
+  }
+}
+
 const FeatureNameMap& GetDefaultFeatureNameMap() {
   DEFINE_STATIC_LOCAL(FeatureNameMap, default_feature_name_map, ());
   if (default_feature_name_map.IsEmpty()) {

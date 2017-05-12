@@ -29,11 +29,10 @@ TEST(HTMLIFrameElementAllowTest, ParseAllowedFeatureNamesValid) {
   EXPECT_THAT(result,
               UnorderedElementsAre(WebFeaturePolicyFeature::kFullscreen));
 
-  allow->setValue("fullscreen payment vibrate");
+  allow->setValue("fullscreen payment");
   result = allow->ParseAllowedFeatureNames(error_message);
   EXPECT_THAT(result, UnorderedElementsAre(WebFeaturePolicyFeature::kFullscreen,
-                                           WebFeaturePolicyFeature::kPayment,
-                                           WebFeaturePolicyFeature::kVibrate));
+                                           WebFeaturePolicyFeature::kPayment));
 }
 
 TEST(HTMLIFrameElementAllowTest, ParseAllowedFeatureNamesInvalid) {
@@ -54,11 +53,11 @@ TEST(HTMLIFrameElementAllowTest, ParseAllowedFeatureNamesInvalid) {
               UnorderedElementsAre(WebFeaturePolicyFeature::kFullscreen));
   EXPECT_EQ("'invalid1', 'invalid2' are invalid feature names.", error_message);
 
-  allow->setValue("fullscreen invalid vibrate fullscreen");
+  allow->setValue("fullscreen invalid payment fullscreen");
   result = allow->ParseAllowedFeatureNames(error_message);
   EXPECT_EQ("'invalid' is an invalid feature name.", error_message);
   EXPECT_THAT(result, UnorderedElementsAre(WebFeaturePolicyFeature::kFullscreen,
-                                           WebFeaturePolicyFeature::kVibrate));
+                                           WebFeaturePolicyFeature::kPayment));
 }
 
 }  // namespace blink

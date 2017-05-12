@@ -49,6 +49,10 @@ PLATFORM_EXPORT WebParsedFeaturePolicy GetContainerPolicyFromAllowedFeatures(
     bool allowpayment,
     RefPtr<SecurityOrigin>);
 
+// Verifies whether feature policy is enabled and |feature| is supported in
+// feature policy.
+PLATFORM_EXPORT bool IsSupportedInFeaturePolicy(WebFeaturePolicyFeature);
+
 }  // namespace blink
 
 #endif  // FeaturePolicy_h
