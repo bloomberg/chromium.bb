@@ -224,7 +224,7 @@ class CORE_EXPORT FrameSelection final
 #endif
 
   void SetFocusedNodeIfNeeded();
-  void NotifyLayoutObjectOfSelectionChange(EUserTriggered);
+  void NotifyTextControlOfSelectionChange(EUserTriggered);
 
   String SelectedHTMLForClipboard() const;
   String SelectedText(const TextIteratorBehavior&) const;
