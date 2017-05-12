@@ -21,7 +21,9 @@
 #include "base/containers/mru_cache.h"
 #include "base/files/file.h"
 #include "base/files/file_path.h"
+#include "base/gtest_prod_util.h"
 #include "base/macros.h"
+#include "base/memory/memory_pressure_listener.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
@@ -178,6 +180,7 @@ class STORAGE_EXPORT BlobMemoryController {
   class FileQuotaAllocationTask;
   class MemoryQuotaAllocationTask;
 
+  FRIEND_TEST_ALL_PREFIXES(BlobMemoryControllerTest, OnMemoryPressure);
   // So this (and only this) class can call CalculateBlobStorageLimits().
   friend class content::ChromeBlobStorageContext;
 
@@ -205,10 +208,12 @@ class STORAGE_EXPORT BlobMemoryController {
   void MaybeGrantPendingMemoryRequests();
 
   size_t CollectItemsForEviction(
-      std::vector<scoped_refptr<ShareableBlobDataItem>>* output);
+      std::vector<scoped_refptr<ShareableBlobDataItem>>* output,
+      uint64_t min_page_file_size);
 
   // Schedule paging until our memory usage is below our memory limit.
-  void MaybeScheduleEvictionUntilSystemHealthy();
+  void MaybeScheduleEvictionUntilSystemHealthy(
+      base::MemoryPressureListener::MemoryPressureLevel level);
 
   // Called when we've completed evicting a list of items to disk. This is where
   // we swap the bytes items for file items, and update our bookkeeping.
@@ -216,7 +221,12 @@ class STORAGE_EXPORT BlobMemoryController {
       scoped_refptr<ShareableFileReference> file_reference,
       std::vector<scoped_refptr<ShareableBlobDataItem>> items,
       size_t total_items_size,
-      std::pair<FileCreationInfo, int64_t /* disk_avail */> result);
+      const char* evict_reason,
+      size_t memory_usage_before_eviction,
+      std::pair<FileCreationInfo, int64_t /* avail_disk */> result);
+
+  void OnMemoryPressure(
+      base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level);
 
   size_t GetAvailableMemoryForBlobs() const;
   uint64_t GetAvailableFileSpaceForBlobs() const;
@@ -265,6 +275,7 @@ class STORAGE_EXPORT BlobMemoryController {
   scoped_refptr<base::TaskRunner> file_runner_;
   // This defaults to calling base::SysInfo::AmountOfFreeDiskSpace.
   DiskSpaceFuncPtr disk_space_function_;
+  base::TimeTicks last_eviction_time_;
 
   // Lifetime of the ShareableBlobDataItem objects is handled externally in the
   // BlobStorageContext class.
@@ -274,6 +285,8 @@ class STORAGE_EXPORT BlobMemoryController {
   // another blob successfully grabs a ref, we can prevent it from adding the
   // item to the recent_item_cache_ above.
   std::unordered_set<uint64_t> items_paging_to_file_;
+
+  base::MemoryPressureListener memory_pressure_listener_;
 
   base::WeakPtrFactory<BlobMemoryController> weak_factory_;
 

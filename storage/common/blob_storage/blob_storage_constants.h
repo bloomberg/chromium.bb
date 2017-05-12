@@ -23,8 +23,10 @@ constexpr uint64_t kDefaultMaxPageFileSize = 100ull * 1024 * 1024;
 #if defined(OS_ANDROID)
 // On minimal Android maximum in-memory space can be as low as 5MB.
 constexpr uint64_t kDefaultMinPageFileSize = 5ull * 1024 * 1024 / 2;
+const float kDefaultMaxBlobInMemorySpaceUnderPressureRatio = 0.02f;
 #else
 constexpr uint64_t kDefaultMinPageFileSize = 5ull * 1024 * 1024;
+const float kDefaultMaxBlobInMemorySpaceUnderPressureRatio = 0.002f;
 #endif
 
 // All sizes are in bytes.
@@ -52,6 +54,12 @@ struct STORAGE_COMMON_EXPORT BlobStorageLimits {
 
   // This is the maximum amount of memory we can use to store blobs.
   size_t max_blob_in_memory_space = kDefaultMaxBlobInMemorySpace;
+  // The ratio applied to |max_blob_in_memory_space| to reduce memory usage
+  // under memory pressure. Note: Under pressure we modify the
+  // |min_page_file_size| to ensure we can evict items until we get below the
+  // reduced memory limit.
+  float max_blob_in_memory_space_under_pressure_ratio =
+      kDefaultMaxBlobInMemorySpaceUnderPressureRatio;
 
   // This is the maximum amount of disk space we can use.
   uint64_t desired_max_disk_space = kDefaultMaxBlobDiskSpace;
