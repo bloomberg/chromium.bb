@@ -189,6 +189,7 @@ enum BadMessageReason {
   BFSI_INVALID_REQUESTS = 165,
   BFSI_INVALID_TITLE = 166,
   RWH_INVALID_FRAME_TOKEN = 167,
+  RWH_BAD_FRAME_SINK_REQUEST = 168,
 
   // Please add new elements here. The naming convention is abbreviated class
   // name (e.g. RenderFrameHost becomes RFH) plus a unique description of the

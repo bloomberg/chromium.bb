@@ -2220,6 +2220,7 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="165" label="BFSI_INVALID_REQUESTS"/>
   <int value="166" label="BFSI_INVALID_TITLE"/>
   <int value="167" label="RWH_INVALID_FRAME_TOKEN"/>
+  <int value="168" label="RWH_BAD_FRAME_SINK_REQUEST"/>
 </enum>
 
 <enum name="BadMessageReasonExtensions" type="int">

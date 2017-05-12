@@ -1124,6 +1124,11 @@ void RenderWidgetCompositor::RequestNewCompositorFrameSink() {
 
   bool fallback = num_failed_recreate_attempts_ >=
                   COMPOSITOR_FRAME_SINK_RETRIES_BEFORE_FALLBACK;
+
+#ifdef OS_ANDROID
+  LOG_IF(FATAL, fallback) << "Android does not support fallback frame sinks.";
+#endif
+
   delegate_->RequestNewCompositorFrameSink(
       fallback, base::Bind(&RenderWidgetCompositor::SetCompositorFrameSink,
                            weak_factory_.GetWeakPtr()));
