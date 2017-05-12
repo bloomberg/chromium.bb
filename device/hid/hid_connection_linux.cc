@@ -32,37 +32,37 @@
 
 namespace device {
 
-class HidConnectionLinux::FileThreadHelper {
+class HidConnectionLinux::BlockingTaskHelper {
  public:
-  FileThreadHelper(base::ScopedFD fd,
-                   scoped_refptr<HidDeviceInfo> device_info,
-                   base::WeakPtr<HidConnectionLinux> connection)
+  BlockingTaskHelper(base::ScopedFD fd,
+                     scoped_refptr<HidDeviceInfo> device_info,
+                     base::WeakPtr<HidConnectionLinux> connection)
       : fd_(std::move(fd)),
         connection_(connection),
         origin_task_runner_(base::ThreadTaskRunnerHandle::Get()) {
-    sequence_checker_.DetachFromSequence();
+    DETACH_FROM_SEQUENCE(sequence_checker_);
     // Report buffers must always have room for the report ID.
     report_buffer_size_ = device_info->max_input_report_size() + 1;
     has_report_id_ = device_info->has_report_id();
   }
 
-  ~FileThreadHelper() { DCHECK(sequence_checker_.CalledOnValidSequence()); }
+  ~BlockingTaskHelper() { DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_); }
 
   // Starts the FileDescriptorWatcher that reads input events from the device.
   // Must be called on a thread that has a base::MessageLoopForIO.
   void Start() {
-    DCHECK(sequence_checker_.CalledOnValidSequence());
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     base::ThreadRestrictions::AssertIOAllowed();
 
     file_watcher_ = base::FileDescriptorWatcher::WatchReadable(
-        fd_.get(), base::Bind(&FileThreadHelper::OnFileCanReadWithoutBlocking,
+        fd_.get(), base::Bind(&BlockingTaskHelper::OnFileCanReadWithoutBlocking,
                               base::Unretained(this)));
   }
 
   void Write(scoped_refptr<net::IOBuffer> buffer,
              size_t size,
              const WriteCallback& callback) {
-    DCHECK(sequence_checker_.CalledOnValidSequence());
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     ssize_t result = HANDLE_EINTR(write(fd_.get(), buffer->data(), size));
     if (result < 0) {
       HID_PLOG(EVENT) << "Write failed";
@@ -77,7 +77,7 @@ class HidConnectionLinux::FileThreadHelper {
   void GetFeatureReport(uint8_t report_id,
                         scoped_refptr<net::IOBufferWithSize> buffer,
                         const ReadCallback& callback) {
-    DCHECK(sequence_checker_.CalledOnValidSequence());
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     int result = HANDLE_EINTR(
         ioctl(fd_.get(), HIDIOCGFEATURE(buffer->size()), buffer->data()));
     if (result < 0) {
@@ -103,7 +103,7 @@ class HidConnectionLinux::FileThreadHelper {
   void SendFeatureReport(scoped_refptr<net::IOBuffer> buffer,
                          size_t size,
                          const WriteCallback& callback) {
-    DCHECK(sequence_checker_.CalledOnValidSequence());
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     int result =
         HANDLE_EINTR(ioctl(fd_.get(), HIDIOCSFEATURE(size), buffer->data()));
     if (result < 0) {
@@ -116,7 +116,7 @@ class HidConnectionLinux::FileThreadHelper {
 
  private:
   void OnFileCanReadWithoutBlocking() {
-    DCHECK(sequence_checker_.CalledOnValidSequence());
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
     scoped_refptr<net::IOBuffer> buffer(new net::IOBuffer(report_buffer_size_));
     char* data = buffer->data();
@@ -151,7 +151,7 @@ class HidConnectionLinux::FileThreadHelper {
                               connection_, buffer, bytes_read));
   }
 
-  base::SequenceChecker sequence_checker_;
+  SEQUENCE_CHECKER(sequence_checker_);
   base::ScopedFD fd_;
   size_t report_buffer_size_;
   bool has_report_id_;
@@ -159,7 +159,7 @@ class HidConnectionLinux::FileThreadHelper {
   const scoped_refptr<base::SequencedTaskRunner> origin_task_runner_;
   std::unique_ptr<base::FileDescriptorWatcher::Controller> file_watcher_;
 
-  DISALLOW_COPY_AND_ASSIGN(FileThreadHelper);
+  DISALLOW_COPY_AND_ASSIGN(BlockingTaskHelper);
 };
 
 HidConnectionLinux::HidConnectionLinux(
@@ -169,15 +169,15 @@ HidConnectionLinux::HidConnectionLinux(
     : HidConnection(device_info),
       blocking_task_runner_(std::move(blocking_task_runner)),
       weak_factory_(this) {
-  helper_ = base::MakeUnique<FileThreadHelper>(std::move(fd), device_info,
-                                               weak_factory_.GetWeakPtr());
+  helper_ = base::MakeUnique<BlockingTaskHelper>(std::move(fd), device_info,
+                                                 weak_factory_.GetWeakPtr());
   blocking_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&FileThreadHelper::Start, base::Unretained(helper_.get())));
+      base::Bind(&BlockingTaskHelper::Start, base::Unretained(helper_.get())));
 }
 
 HidConnectionLinux::~HidConnectionLinux() {
-  DCHECK(sequence_checker_.CalledOnValidSequence());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
 void HidConnectionLinux::PlatformClose() {
@@ -207,7 +207,7 @@ void HidConnectionLinux::PlatformWrite(scoped_refptr<net::IOBuffer> buffer,
   // buffer can be used directly.
   blocking_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&FileThreadHelper::Write, base::Unretained(helper_.get()),
+      base::Bind(&BlockingTaskHelper::Write, base::Unretained(helper_.get()),
                  buffer, size, callback));
 }
 
@@ -223,7 +223,7 @@ void HidConnectionLinux::PlatformGetFeatureReport(
 
   blocking_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&FileThreadHelper::GetFeatureReport,
+      base::Bind(&BlockingTaskHelper::GetFeatureReport,
                  base::Unretained(helper_.get()), report_id, buffer, callback));
 }
 
@@ -235,7 +235,7 @@ void HidConnectionLinux::PlatformSendFeatureReport(
   // buffer can be used directly.
   blocking_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&FileThreadHelper::SendFeatureReport,
+      base::Bind(&BlockingTaskHelper::SendFeatureReport,
                  base::Unretained(helper_.get()), buffer, size, callback));
 }
 

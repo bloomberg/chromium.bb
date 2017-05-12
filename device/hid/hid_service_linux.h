@@ -19,8 +19,7 @@ namespace device {
 
 class HidServiceLinux : public HidService {
  public:
-  HidServiceLinux(
-      scoped_refptr<base::SequencedTaskRunner> blocking_task_runner);
+  HidServiceLinux();
   ~HidServiceLinux() override;
 
   // HidService:
@@ -30,7 +29,7 @@ class HidServiceLinux : public HidService {
 
  private:
   struct ConnectParams;
-  class FileThreadHelper;
+  class BlockingTaskHelper;
 
   // These functions implement the process of locating, requesting access to and
   // opening a device. Because this operation crosses multiple threads these
@@ -49,12 +48,11 @@ class HidServiceLinux : public HidService {
   static void FinishOpen(std::unique_ptr<ConnectParams> params);
   static void CreateConnection(std::unique_ptr<ConnectParams> params);
 
-  const scoped_refptr<base::SequencedTaskRunner> task_runner_;
   const scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
 
-  // The helper lives on the FILE thread and holds a weak reference back to the
-  // service that owns it.
-  std::unique_ptr<FileThreadHelper> helper_;
+  // |helper_| lives on the sequence |blocking_task_runner_| posts to and holds
+  // a weak reference back to the service that owns it.
+  std::unique_ptr<BlockingTaskHelper> helper_;
   base::WeakPtrFactory<HidServiceLinux> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(HidServiceLinux);

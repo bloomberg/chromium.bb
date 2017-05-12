@@ -36,10 +36,13 @@ void HidService::Observer::OnDeviceRemovedCleanup(
     scoped_refptr<HidDeviceInfo> device_info) {
 }
 
+// static
+constexpr base::TaskTraits HidService::kBlockingTaskTraits;
+
 std::unique_ptr<HidService> HidService::Create(
     scoped_refptr<base::SingleThreadTaskRunner> file_task_runner) {
 #if defined(OS_LINUX) && defined(USE_UDEV)
-  return base::WrapUnique(new HidServiceLinux(file_task_runner));
+  return base::WrapUnique(new HidServiceLinux());
 #elif defined(OS_MACOSX)
   return base::WrapUnique(new HidServiceMac(file_task_runner));
 #elif defined(OS_WIN)

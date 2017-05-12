@@ -31,7 +31,7 @@ class HidConnectionLinux : public HidConnection {
 
  private:
   friend class base::RefCountedThreadSafe<HidConnectionLinux>;
-  class FileThreadHelper;
+  class BlockingTaskHelper;
 
   ~HidConnectionLinux() override;
 
@@ -50,17 +50,17 @@ class HidConnectionLinux : public HidConnection {
   void ProcessInputReport(scoped_refptr<net::IOBuffer> buffer, size_t size);
   void ProcessReadQueue();
 
-  // This object lives on the sequence to which |blocking_task_runner_| posts
+  // |helper_| lives on the sequence to which |blocking_task_runner_| posts
   // tasks so all calls must be posted there including this object's
   // destruction.
-  std::unique_ptr<FileThreadHelper> helper_;
+  std::unique_ptr<BlockingTaskHelper> helper_;
 
   const scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
 
   std::queue<PendingHidReport> pending_reports_;
   std::queue<PendingHidRead> pending_reads_;
 
-  base::SequenceChecker sequence_checker_;
+  SEQUENCE_CHECKER(sequence_checker_);
 
   base::WeakPtrFactory<HidConnectionLinux> weak_factory_;
 
