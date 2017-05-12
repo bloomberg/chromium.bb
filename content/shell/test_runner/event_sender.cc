@@ -616,7 +616,7 @@ class EventSenderBindings : public gin::Wrappable<EventSenderBindings> {
   void GestureTwoFingerTap(gin::Arguments* args);
   void ContinuousMouseScrollBy(gin::Arguments* args);
   void MouseMoveTo(gin::Arguments* args);
-  void MouseLeave();
+  void MouseLeave(gin::Arguments* args);
   void MouseScrollBy(gin::Arguments* args);
   void ScheduleAsynchronousClick(gin::Arguments* args);
   void ScheduleAsynchronousKeyDown(gin::Arguments* args);
@@ -1015,9 +1015,24 @@ void EventSenderBindings::MouseMoveTo(gin::Arguments* args) {
     sender_->MouseMoveTo(args);
 }
 
-void EventSenderBindings::MouseLeave() {
-  if (sender_)
-    sender_->MouseLeave();
+void EventSenderBindings::MouseLeave(gin::Arguments* args) {
+  if (!sender_)
+    return;
+
+  WebPointerProperties::PointerType pointerType =
+      WebPointerProperties::PointerType::kMouse;
+  int pointerId = kRawMousePointerId;
+
+  // Only allow pen or mouse through this API.
+  if (!getPointerType(args, false, pointerType))
+    return;
+  if (!args->PeekNext().IsEmpty()) {
+    if (!args->GetNext(&pointerId)) {
+      args->ThrowError();
+      return;
+    }
+  }
+  sender_->MouseLeave(pointerType, pointerId);
 }
 
 void EventSenderBindings::MouseScrollBy(gin::Arguments* args) {
@@ -2211,16 +2226,18 @@ void EventSender::MouseMoveTo(gin::Arguments* args) {
   }
 }
 
-void EventSender::MouseLeave() {
+void EventSender::MouseLeave(
+    blink::WebPointerProperties::PointerType pointerType,
+    int pointerId) {
   if (force_layout_on_events_)
     widget()->UpdateAllLifecyclePhases();
 
   WebMouseEvent event(WebInputEvent::kMouseLeave,
-                      ModifiersForPointer(kRawMousePointerId),
-                      GetCurrentEventTimeSec());
-  InitMouseEvent(WebMouseEvent::Button::kNoButton, 0,
-                 current_pointer_state_[kRawMousePointerId].last_pos_,
-                 click_count_, &event);
+                      ModifiersForPointer(pointerId), GetCurrentEventTimeSec());
+  InitMouseEventGeneric(WebMouseEvent::Button::kNoButton, 0,
+                        current_pointer_state_[kRawMousePointerId].last_pos_,
+                        click_count_, pointerType, pointerId, 0.0, 0, 0,
+                        &event);
   HandleInputEventOnViewOrPopup(event);
 }
 

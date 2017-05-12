@@ -212,7 +212,7 @@ function runPenTests(x, y, id, eraseMode) {
 
   debug("--- move pen out of target ---");
   eventSender.mouseMoveTo(x - 5, y - 5, [], inputPointerType, penId, penPressure, penTiltX, penTiltY);
-
+  eventSender.mouseLeave(inputPointerType, penId);
   debug("");
 }
 
