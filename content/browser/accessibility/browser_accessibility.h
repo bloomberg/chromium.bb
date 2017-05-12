@@ -383,7 +383,7 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
 
   // If an object is focusable but has no accessible name, use this
   // to compute a name from its descendants.
-  std::string ComputeAccessibleNameFromDescendants();
+  std::string ComputeAccessibleNameFromDescendants() const;
 
   // Creates a text position rooted at this object.
   AXPlatformPosition::AXPositionInstance CreatePositionAt(

@@ -74,6 +74,7 @@ class CONTENT_EXPORT BrowserAccessibilityManagerAndroid
   }
   bool prune_tree_for_screen_reader() { return prune_tree_for_screen_reader_; }
 
+  bool ShouldRespectDisplayedPasswordText();
   bool ShouldExposePasswordText();
 
   // BrowserAccessibilityManager overrides.

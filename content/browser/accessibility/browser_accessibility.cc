@@ -1028,7 +1028,7 @@ bool BrowserAccessibility::HasExplicitlyEmptyName() const {
          ui::AX_NAME_FROM_ATTRIBUTE_EXPLICITLY_EMPTY;
 }
 
-std::string BrowserAccessibility::ComputeAccessibleNameFromDescendants() {
+std::string BrowserAccessibility::ComputeAccessibleNameFromDescendants() const {
   std::string name;
   for (size_t i = 0; i < InternalChildCount(); ++i) {
     BrowserAccessibility* child = InternalGetChild(i);

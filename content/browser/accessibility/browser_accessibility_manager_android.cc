@@ -211,6 +211,16 @@ void BrowserAccessibilityManagerAndroid::SetContentViewCore(
                .obj());
 }
 
+bool BrowserAccessibilityManagerAndroid::ShouldRespectDisplayedPasswordText() {
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> obj = GetJavaRefFromRootManager();
+  if (obj.is_null())
+    return false;
+
+  return Java_BrowserAccessibilityManager_shouldRespectDisplayedPasswordText(
+      env, obj);
+}
+
 bool BrowserAccessibilityManagerAndroid::ShouldExposePasswordText() {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj = GetJavaRefFromRootManager();
@@ -253,7 +263,20 @@ void BrowserAccessibilityManagerAndroid::NotifyAccessibilityEvent(
   // Sometimes we get events on nodes in our internal accessibility tree
   // that aren't exposed on Android. Update |node| to point to the highest
   // ancestor that's a leaf node.
+  BrowserAccessibility* original_node = node;
   node = node->GetClosestPlatformObject();
+  BrowserAccessibilityAndroid* android_node =
+      static_cast<BrowserAccessibilityAndroid*>(node);
+
+  // If the closest platform object is a password field, the event we're
+  // getting is doing something in the shadow dom, for example replacing a
+  // character with a dot after a short pause. On Android we don't want to
+  // fire an event for those changes, but we do want to make sure our internal
+  // state is correct, so we call OnDataChanged() and then return.
+  if (android_node->IsPassword() && original_node != node) {
+    android_node->OnDataChanged();
+    return;
+  }
 
   // Always send AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED to notify
   // the Android system that the accessibility hierarchy rooted at this
@@ -267,8 +290,6 @@ void BrowserAccessibilityManagerAndroid::NotifyAccessibilityEvent(
     return;
   }
 
-  BrowserAccessibilityAndroid* android_node =
-      static_cast<BrowserAccessibilityAndroid*>(node);
   switch (event_type) {
     case ui::AX_EVENT_LOAD_COMPLETE:
       Java_BrowserAccessibilityManager_handlePageLoaded(
@@ -499,7 +520,9 @@ jboolean BrowserAccessibilityManagerAndroid::PopulateAccessibilityNodeInfo(
 
   Java_BrowserAccessibilityManager_setAccessibilityNodeInfoKitKatAttributes(
       env, obj, info, is_root, node->IsEditableText(),
-      base::android::ConvertUTF16ToJavaString(env, node->GetRoleDescription()));
+      base::android::ConvertUTF16ToJavaString(env, node->GetRoleDescription()),
+      node->GetIntAttribute(ui::AX_ATTR_TEXT_SEL_START),
+      node->GetIntAttribute(ui::AX_ATTR_TEXT_SEL_END));
 
   Java_BrowserAccessibilityManager_setAccessibilityNodeInfoLollipopAttributes(
       env, obj, info,
