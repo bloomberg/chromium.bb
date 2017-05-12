@@ -182,7 +182,7 @@ LRESULT LegacyRenderWidgetHostHWND::OnGetObject(UINT message,
   BrowserAccessibilityManagerWin* manager =
       static_cast<BrowserAccessibilityManagerWin*>(
           rwhi->GetRootBrowserAccessibilityManager());
-  if (!manager)
+  if (!manager || !manager->GetRoot())
     return static_cast<LRESULT>(0L);
 
   base::win::ScopedComPtr<IAccessible> root(
