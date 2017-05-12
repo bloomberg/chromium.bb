@@ -50,7 +50,7 @@ const CGFloat kButtonHeight = 36;
   self = [super initWithFrame:frame];
   if (self) {
     self.isAccessibilityElement = YES;
-    _accessPoint = signin_metrics::AccessPoint::ACCESS_POINT_UNKNOWN;
+    [self disableChromeCommand];
 
     // Adding subviews.
     self.clipsToBounds = YES;
@@ -211,9 +211,13 @@ const CGFloat kButtonHeight = 36;
 
 - (void)enableChromeCommandWithAccessPoint:
     (signin_metrics::AccessPoint)accessPoint {
-  DCHECK(!_shouldSendChromeCommand);
   _shouldSendChromeCommand = YES;
   _accessPoint = accessPoint;
+}
+
+- (void)disableChromeCommand {
+  _shouldSendChromeCommand = NO;
+  _accessPoint = signin_metrics::AccessPoint::ACCESS_POINT_UNKNOWN;
 }
 
 - (void)onPrimaryButtonAction:(id)unused {

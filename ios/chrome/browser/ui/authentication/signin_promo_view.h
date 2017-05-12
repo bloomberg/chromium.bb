@@ -54,9 +54,11 @@ typedef NS_ENUM(NSInteger, SigninPromoViewMode) {
 // Enables SigninPromoView to send ShowSigninCommand when primary or secondary
 // buttons are tapped, and sets the metric access point. By default, command is
 // disabled.
-// This method should be called only once.
 - (void)enableChromeCommandWithAccessPoint:
     (signin_metrics::AccessPoint)accessPoint;
+
+// Disables ShowSigninCommand to be sent.
+- (void)disableChromeCommand;
 
 @end
 
