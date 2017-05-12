@@ -32,7 +32,6 @@
           ],
           "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
         },
-        "override_isolate_target": "android_webview_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -72,7 +71,6 @@
           ],
           "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
         },
-        "override_isolate_target": "base_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -112,7 +110,6 @@
           ],
           "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
         },
-        "override_isolate_target": "blink_heap_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -153,7 +150,6 @@
           ],
           "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
         },
-        "override_isolate_target": "boringssl_crypto_tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -193,7 +189,6 @@
           ],
           "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
         },
-        "override_isolate_target": "boringssl_ssl_tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -233,7 +228,6 @@
           ],
           "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
         },
-        "override_isolate_target": "breakpad_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -273,7 +267,6 @@
           ],
           "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
         },
-        "override_isolate_target": "capture_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -304,7 +297,6 @@
         "test": "capture_unittests"
       },
       {
-        "override_isolate_target": "cc_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -344,10 +336,6 @@
           ],
           "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
         },
-        "override_compile_targets": [
-          "chrome_public_test_apk"
-        ],
-        "override_isolate_target": "chrome_public_test_apk",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -388,10 +376,6 @@
           ],
           "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
         },
-        "override_compile_targets": [
-          "chrome_sync_shell_test_apk"
-        ],
-        "override_isolate_target": "chrome_sync_shell_test_apk",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -432,7 +416,6 @@
           ],
           "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
         },
-        "override_isolate_target": "components_browsertests",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -472,7 +455,6 @@
           ],
           "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
         },
-        "override_isolate_target": "components_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -512,7 +494,6 @@
           ],
           "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
         },
-        "override_isolate_target": "content_browsertests",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -553,10 +534,6 @@
           ],
           "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
         },
-        "override_compile_targets": [
-          "content_shell_test_apk"
-        ],
-        "override_isolate_target": "content_shell_test_apk",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -597,7 +574,6 @@
           ],
           "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
         },
-        "override_isolate_target": "content_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -637,7 +613,6 @@
           ],
           "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
         },
-        "override_isolate_target": "device_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -677,7 +652,6 @@
           ],
           "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
         },
-        "override_isolate_target": "events_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -717,7 +691,6 @@
           ],
           "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
         },
-        "override_isolate_target": "gl_tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -757,7 +730,6 @@
           ],
           "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
         },
-        "override_isolate_target": "gl_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -798,7 +770,6 @@
           ],
           "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
         },
-        "override_isolate_target": "gpu_ipc_service_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -838,7 +809,6 @@
           ],
           "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
         },
-        "override_isolate_target": "gpu_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -878,7 +848,6 @@
           ],
           "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
         },
-        "override_isolate_target": "ipc_tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -909,7 +878,6 @@
         "test": "ipc_tests"
       },
       {
-        "override_isolate_target": "libjingle_xmpp_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -949,7 +917,6 @@
           ],
           "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
         },
-        "override_isolate_target": "media_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -989,7 +956,6 @@
           ],
           "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
         },
-        "override_isolate_target": "mojo_common_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -1030,7 +996,6 @@
           ],
           "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
         },
-        "override_isolate_target": "mojo_public_bindings_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -1071,7 +1036,6 @@
           ],
           "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
         },
-        "override_isolate_target": "mojo_public_system_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -1112,7 +1076,6 @@
           ],
           "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
         },
-        "override_isolate_target": "mojo_system_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -1153,10 +1116,6 @@
           ],
           "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
         },
-        "override_compile_targets": [
-          "mojo_test_apk"
-        ],
-        "override_isolate_target": "mojo_test_apk",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -1197,7 +1156,6 @@
           ],
           "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
         },
-        "override_isolate_target": "net_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -1237,7 +1195,6 @@
           ],
           "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
         },
-        "override_isolate_target": "sandbox_linux_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -1277,7 +1234,6 @@
           ],
           "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
         },
-        "override_isolate_target": "sql_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -1317,7 +1273,6 @@
           ],
           "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
         },
-        "override_isolate_target": "storage_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -1357,7 +1312,6 @@
           ],
           "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
         },
-        "override_isolate_target": "ui_android_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -1397,7 +1351,6 @@
           ],
           "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
         },
-        "override_isolate_target": "ui_base_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -1437,7 +1390,6 @@
           ],
           "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
         },
-        "override_isolate_target": "ui_touch_selection_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -1477,7 +1429,6 @@
           ],
           "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
         },
-        "override_isolate_target": "unit_tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -1517,10 +1468,6 @@
           ],
           "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
         },
-        "override_compile_targets": [
-          "webview_instrumentation_test_apk"
-        ],
-        "override_isolate_target": "webview_instrumentation_test_apk",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -1561,9 +1508,6 @@
         ],
         "isolate_name": "telemetry_perf_unittests",
         "name": "telemetry_perf_unittests",
-        "override_compile_targets": [
-          "telemetry_perf_unittests"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -1635,7 +1579,6 @@
           ],
           "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
         },
-        "override_isolate_target": "android_webview_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -1675,7 +1618,6 @@
           ],
           "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
         },
-        "override_isolate_target": "base_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -1715,7 +1657,6 @@
           ],
           "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
         },
-        "override_isolate_target": "blink_heap_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -1756,7 +1697,6 @@
           ],
           "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
         },
-        "override_isolate_target": "boringssl_crypto_tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -1796,7 +1736,6 @@
           ],
           "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
         },
-        "override_isolate_target": "boringssl_ssl_tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -1836,7 +1775,6 @@
           ],
           "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
         },
-        "override_isolate_target": "breakpad_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -1876,7 +1814,6 @@
           ],
           "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
         },
-        "override_isolate_target": "capture_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -1907,7 +1844,6 @@
         "test": "capture_unittests"
       },
       {
-        "override_isolate_target": "cc_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -1947,10 +1883,6 @@
           ],
           "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
         },
-        "override_compile_targets": [
-          "chrome_public_test_apk"
-        ],
-        "override_isolate_target": "chrome_public_test_apk",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -1991,10 +1923,6 @@
           ],
           "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
         },
-        "override_compile_targets": [
-          "chrome_sync_shell_test_apk"
-        ],
-        "override_isolate_target": "chrome_sync_shell_test_apk",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -2035,7 +1963,6 @@
           ],
           "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
         },
-        "override_isolate_target": "components_browsertests",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -2075,7 +2002,6 @@
           ],
           "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
         },
-        "override_isolate_target": "components_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -2115,7 +2041,6 @@
           ],
           "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
         },
-        "override_isolate_target": "content_browsertests",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -2156,10 +2081,6 @@
           ],
           "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
         },
-        "override_compile_targets": [
-          "content_shell_test_apk"
-        ],
-        "override_isolate_target": "content_shell_test_apk",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -2200,7 +2121,6 @@
           ],
           "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
         },
-        "override_isolate_target": "content_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -2240,7 +2160,6 @@
           ],
           "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
         },
-        "override_isolate_target": "device_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -2280,7 +2199,6 @@
           ],
           "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
         },
-        "override_isolate_target": "events_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -2320,7 +2238,6 @@
           ],
           "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
         },
-        "override_isolate_target": "gl_tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -2360,7 +2277,6 @@
           ],
           "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
         },
-        "override_isolate_target": "gl_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -2401,7 +2317,6 @@
           ],
           "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
         },
-        "override_isolate_target": "gpu_ipc_service_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -2441,7 +2356,6 @@
           ],
           "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
         },
-        "override_isolate_target": "gpu_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -2481,7 +2395,6 @@
           ],
           "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
         },
-        "override_isolate_target": "ipc_tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -2512,7 +2425,6 @@
         "test": "ipc_tests"
       },
       {
-        "override_isolate_target": "libjingle_xmpp_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -2552,7 +2464,6 @@
           ],
           "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
         },
-        "override_isolate_target": "media_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -2592,7 +2503,6 @@
           ],
           "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
         },
-        "override_isolate_target": "mojo_common_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -2633,7 +2543,6 @@
           ],
           "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
         },
-        "override_isolate_target": "mojo_public_bindings_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -2674,7 +2583,6 @@
           ],
           "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
         },
-        "override_isolate_target": "mojo_public_system_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -2715,7 +2623,6 @@
           ],
           "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
         },
-        "override_isolate_target": "mojo_system_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -2756,10 +2663,6 @@
           ],
           "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
         },
-        "override_compile_targets": [
-          "mojo_test_apk"
-        ],
-        "override_isolate_target": "mojo_test_apk",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -2800,7 +2703,6 @@
           ],
           "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
         },
-        "override_isolate_target": "net_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -2840,7 +2742,6 @@
           ],
           "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
         },
-        "override_isolate_target": "sandbox_linux_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -2871,7 +2772,6 @@
         "test": "sandbox_linux_unittests"
       },
       {
-        "override_isolate_target": "service_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -2912,7 +2812,6 @@
           ],
           "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
         },
-        "override_isolate_target": "sql_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -2952,7 +2851,6 @@
           ],
           "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
         },
-        "override_isolate_target": "storage_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -2992,7 +2890,6 @@
           ],
           "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
         },
-        "override_isolate_target": "ui_android_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -3032,7 +2929,6 @@
           ],
           "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
         },
-        "override_isolate_target": "ui_base_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -3072,7 +2968,6 @@
           ],
           "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
         },
-        "override_isolate_target": "ui_touch_selection_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -3112,7 +3007,6 @@
           ],
           "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
         },
-        "override_isolate_target": "unit_tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -3152,10 +3046,6 @@
           ],
           "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
         },
-        "override_compile_targets": [
-          "webview_instrumentation_test_apk"
-        ],
-        "override_isolate_target": "webview_instrumentation_test_apk",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -3196,9 +3086,6 @@
         ],
         "isolate_name": "telemetry_perf_unittests",
         "name": "telemetry_perf_unittests",
-        "override_compile_targets": [
-          "telemetry_perf_unittests"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
