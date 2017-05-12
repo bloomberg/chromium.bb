@@ -30,7 +30,7 @@ class ASH_EXPORT ScreenLayoutObserver : public WmDisplayObserver {
   // Notifications are shown in production and are not shown in unit tests.
   // Allow individual unit tests to show notifications.
   void set_show_notifications_for_testing(bool show) {
-    show_notifications_for_testing = show;
+    show_notifications_for_testing_ = show;
   }
 
  private:
@@ -77,7 +77,7 @@ class ASH_EXPORT ScreenLayoutObserver : public WmDisplayObserver {
   DisplayMode old_display_mode_ = DisplayMode::SINGLE;
   DisplayMode current_display_mode_ = DisplayMode::SINGLE;
 
-  bool show_notifications_for_testing = true;
+  bool show_notifications_for_testing_ = true;
 
   DISALLOW_COPY_AND_ASSIGN(ScreenLayoutObserver);
 };
