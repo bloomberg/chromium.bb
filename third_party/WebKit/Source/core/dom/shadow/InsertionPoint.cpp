@@ -121,6 +121,14 @@ void InsertionPoint::DetachLayoutTree(const AttachContext& context) {
   HTMLElement::DetachLayoutTree(context);
 }
 
+void InsertionPoint::RebuildDistributedChildrenLayoutTrees() {
+  Text* next_text_sibling = nullptr;
+  // This loop traverses the nodes from right to left for the same reason as the
+  // one described in ContainerNode::RebuildChildrenLayoutTrees().
+  for (size_t i = distributed_nodes_.size(); i > 0; --i)
+    RebuildLayoutTreeForChild(distributed_nodes_.at(i - 1), next_text_sibling);
+}
+
 void InsertionPoint::WillRecalcStyle(StyleRecalcChange change) {
   StyleChangeType style_change_type = kNoStyleChange;
 

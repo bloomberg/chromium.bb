@@ -1316,32 +1316,49 @@ void ContainerNode::RecalcDescendantStyles(StyleRecalcChange change) {
   }
 }
 
+void ContainerNode::RebuildLayoutTreeForChild(Node* child,
+                                              Text*& next_text_sibling) {
+  bool rebuild_child =
+      child->NeedsReattachLayoutTree() || child->ChildNeedsReattachLayoutTree();
+
+  if (child->IsTextNode()) {
+    Text* text_node = ToText(child);
+    if (rebuild_child)
+      text_node->RebuildTextLayoutTree(next_text_sibling);
+    next_text_sibling = text_node;
+    return;
+  }
+
+  if (!child->IsElementNode())
+    return;
+
+  Element* element = ToElement(child);
+  if (rebuild_child)
+    element->RebuildLayoutTree(next_text_sibling);
+  if (element->GetLayoutObject())
+    next_text_sibling = nullptr;
+}
+
 void ContainerNode::RebuildChildrenLayoutTrees(Text*& next_text_sibling) {
   DCHECK(!NeedsReattachLayoutTree());
+
+  if (IsActiveSlotOrActiveInsertionPoint()) {
+    if (isHTMLSlotElement(this))
+      toHTMLSlotElement(this)->RebuildDistributedChildrenLayoutTrees();
+    else
+      ToInsertionPoint(this)->RebuildDistributedChildrenLayoutTrees();
+  }
 
   // This loop is deliberately backwards because we use insertBefore in the
   // layout tree, and want to avoid a potentially n^2 loop to find the insertion
   // point while building the layout tree.  Having us start from the last child
   // and work our way back means in the common case, we'll find the insertion
   // point in O(1) time.  See crbug.com/288225
-  for (Node* child = lastChild(); child; child = child->previousSibling()) {
-    bool rebuild_child = child->NeedsReattachLayoutTree() ||
-                         child->ChildNeedsReattachLayoutTree();
-    if (child->IsTextNode()) {
-      Text* text_node = ToText(child);
-      if (rebuild_child)
-        text_node->RebuildTextLayoutTree(next_text_sibling);
-      next_text_sibling = text_node;
-    } else if (child->IsElementNode()) {
-      Element* element = ToElement(child);
-      if (rebuild_child)
-        element->RebuildLayoutTree(next_text_sibling);
-      if (element->GetLayoutObject())
-        next_text_sibling = nullptr;
-    }
-  }
-  // This is done in ContainerNode::attachLayoutTree but will never be cleared
-  // if we don't enter ContainerNode::attachLayoutTree so we do it here.
+  for (Node* child = lastChild(); child; child = child->previousSibling())
+    RebuildLayoutTreeForChild(child, next_text_sibling);
+
+  // This is done in ContainerNode::AttachLayoutTree but will never be cleared
+  // if we don't enter ContainerNode::AttachLayoutTree so we do it here.
   ClearChildNeedsStyleRecalc();
   ClearChildNeedsReattachLayoutTree();
 }

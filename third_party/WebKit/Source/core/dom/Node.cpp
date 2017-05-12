@@ -769,9 +769,27 @@ void Node::MarkAncestorsWithChildNeedsStyleRecalc() {
   GetDocument().ScheduleLayoutTreeUpdateIfNeeded();
 }
 
+static ContainerNode* GetReattachParent(Node& node) {
+  if (node.IsPseudoElement())
+    return node.ParentOrShadowHostNode();
+  if (node.IsChildOfV1ShadowHost()) {
+    if (HTMLSlotElement* slot = node.FinalDestinationSlot())
+      return slot;
+  }
+  if (node.IsInV0ShadowTree() || node.IsChildOfV0ShadowHost()) {
+    if (ShadowWhereNodeCanBeDistributedForV0(node)) {
+      if (InsertionPoint* insertion_point =
+              const_cast<InsertionPoint*>(ResolveReprojection(&node))) {
+        return insertion_point;
+      }
+    }
+  }
+  return node.ParentOrShadowHostNode();
+}
+
 void Node::MarkAncestorsWithChildNeedsReattachLayoutTree() {
-  for (ContainerNode* p = ParentOrShadowHostNode();
-       p && !p->ChildNeedsReattachLayoutTree(); p = p->ParentOrShadowHostNode())
+  for (ContainerNode* p = GetReattachParent(*this);
+       p && !p->ChildNeedsReattachLayoutTree(); p = GetReattachParent(*p))
     p->SetChildNeedsReattachLayoutTree();
 }
 
@@ -2389,6 +2407,17 @@ HTMLSlotElement* Node::AssignedSlot() const {
   if (ShadowRoot* root = V1ShadowRootOfParent())
     return root->AssignedSlotFor(*this);
   return nullptr;
+}
+
+HTMLSlotElement* Node::FinalDestinationSlot() const {
+  HTMLSlotElement* slot = AssignedSlot();
+  if (!slot)
+    return nullptr;
+  for (HTMLSlotElement* next = slot->AssignedSlot(); next;
+       next = next->AssignedSlot()) {
+    slot = next;
+  }
+  return slot;
 }
 
 HTMLSlotElement* Node::assignedSlotForBinding() {

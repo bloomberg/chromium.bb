@@ -58,6 +58,7 @@ class CORE_EXPORT InsertionPoint : public HTMLElement {
 
   void AttachLayoutTree(const AttachContext& = AttachContext()) override;
   void DetachLayoutTree(const AttachContext& = AttachContext()) override;
+  void RebuildDistributedChildrenLayoutTrees();
 
   size_t DistributedNodesSize() const { return distributed_nodes_.size(); }
   Node* DistributedNodeAt(size_t index) const {
