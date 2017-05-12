@@ -195,7 +195,9 @@ class PLATFORM_EXPORT PaintController {
   void SetTracksRasterInvalidations(bool value);
   RasterInvalidationTrackingMap<const PaintChunk>*
   PaintChunksRasterInvalidationTrackingMap() {
-    return raster_invalidation_tracking_map_.get();
+    return raster_invalidation_tracking_info_
+               ? &raster_invalidation_tracking_info_->map
+               : nullptr;
   }
 
 #if CHECK_DISPLAY_ITEM_CLIENT_ALIVENESS
@@ -283,10 +285,10 @@ class PLATFORM_EXPORT PaintController {
   void GenerateRasterInvalidations(PaintChunk& new_chunk);
   void GenerateRasterInvalidationsComparingChunks(PaintChunk& new_chunk,
                                                   const PaintChunk& old_chunk);
-  inline void AddRasterInvalidation(const DisplayItemClient*,
+  inline void AddRasterInvalidation(const DisplayItemClient&,
                                     PaintChunk&,
                                     const FloatRect&);
-  void TrackRasterInvalidation(const DisplayItemClient*,
+  void TrackRasterInvalidation(const DisplayItemClient&,
                                PaintChunk&,
                                const FloatRect&);
 
@@ -412,8 +414,14 @@ class PLATFORM_EXPORT PaintController {
   int skipped_probable_under_invalidation_count_;
   String under_invalidation_message_prefix_;
 
-  std::unique_ptr<RasterInvalidationTrackingMap<const PaintChunk>>
-      raster_invalidation_tracking_map_;
+  struct RasterInvalidationTrackingInfo {
+    RasterInvalidationTrackingMap<const PaintChunk> map;
+    using ClientDebugNamesMap = HashMap<const DisplayItemClient*, String>;
+    ClientDebugNamesMap new_client_debug_names;
+    ClientDebugNamesMap old_client_debug_names;
+  };
+  std::unique_ptr<RasterInvalidationTrackingInfo>
+      raster_invalidation_tracking_info_;
 
 #if CHECK_DISPLAY_ITEM_CLIENT_ALIVENESS
   // A stack recording subsequence clients that are currently painting.

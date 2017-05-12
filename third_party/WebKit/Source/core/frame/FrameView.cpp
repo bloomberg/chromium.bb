@@ -3731,6 +3731,9 @@ void FrameView::SetTracksPaintInvalidations(bool track_paint_invalidations) {
   if (track_paint_invalidations == IsTrackingPaintInvalidations())
     return;
 
+  // Ensure the document is up-to-date before tracking invalidations.
+  UpdateAllLifecyclePhases();
+
   for (Frame* frame = &frame_->Tree().Top(); frame;
        frame = frame->Tree().TraverseNext()) {
     if (!frame->IsLocalFrame())

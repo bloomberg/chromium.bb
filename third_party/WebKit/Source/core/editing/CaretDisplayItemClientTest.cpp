@@ -312,10 +312,10 @@ TEST_F(CaretDisplayItemClientTest, CaretHideMoveAndShow) {
   EXPECT_EQ(1, caret_visual_rect.Width());
   EXPECT_EQ(block->Location(), caret_visual_rect.Location());
 
+  GetDocument().View()->SetTracksPaintInvalidations(true);
   // Simulate that the blinking cursor becomes invisible.
   Selection().SetCaretVisible(false);
   // Move the caret to the end of the text.
-  GetDocument().View()->SetTracksPaintInvalidations(true);
   Selection().SetSelection(
       SelectionInDOMTree::Builder().Collapse(Position(text, 5)).Build());
   // Simulate that the cursor blinking is restarted.
