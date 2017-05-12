@@ -2201,6 +2201,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
   ])
 
   _paladin_experimental_boards = frozenset([
+      'cobblepot',
       'fizz',
       'gale',
       'gonzo',

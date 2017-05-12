@@ -6142,6 +6142,7 @@
     },
     "cobblepot-paladin": {
         "_template": "paladin",
+        "active_waterfall": "chromeos",
         "boards": [
             "cobblepot"
         ],
@@ -14792,6 +14793,7 @@
             "butterfly-paladin",
             "cave-paladin",
             "chell-paladin",
+            "cobblepot-paladin",
             "cyan-paladin",
             "daisy-paladin",
             "daisy_skate-paladin",
