@@ -177,7 +177,7 @@ class FakePasswordAutofillAgent
       const autofill::FormsPredictionsMap& predictions) override {}
 
   void FindFocusedPasswordForm(
-      const FindFocusedPasswordFormCallback& callback) override {}
+      FindFocusedPasswordFormCallback callback) override {}
 
   // Records whether SetLoggingState() gets called.
   bool called_set_logging_state_;

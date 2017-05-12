@@ -59,7 +59,7 @@ class PasswordAutofillAgent : public content::RenderFrameObserver,
   void AutofillUsernameAndPasswordDataReceived(
       const FormsPredictionsMap& predictions) override;
   void FindFocusedPasswordForm(
-      const FindFocusedPasswordFormCallback& callback) override;
+      FindFocusedPasswordFormCallback callback) override;
 
   // WebFrameClient editor related calls forwarded by AutofillAgent.
   // If they return true, it indicates the event was consumed and should not

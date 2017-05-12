@@ -1546,7 +1546,7 @@ void PasswordAutofillAgent::AutofillUsernameAndPasswordDataReceived(
 }
 
 void PasswordAutofillAgent::FindFocusedPasswordForm(
-    const FindFocusedPasswordFormCallback& callback) {
+    FindFocusedPasswordFormCallback callback) {
   std::unique_ptr<PasswordForm> password_form;
 
   blink::WebElement element =
@@ -1577,7 +1577,7 @@ void PasswordAutofillAgent::FindFocusedPasswordForm(
 
   password_form->submission_event =
       PasswordForm::SubmissionIndicatorEvent::MANUAL_SAVE;
-  callback.Run(*password_form);
+  std::move(callback).Run(*password_form);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
