@@ -41,8 +41,8 @@ public class PaymentRequestAbortTest extends PaymentRequestTestBase {
     @Feature({"Payments"})
     public void testAbortBeforePayClicked() throws InterruptedException, ExecutionException,
             TimeoutException {
-        triggerUIAndWait(mReadyToPay);
-        clickNodeAndWait("abort", mDismissed);
+        triggerUIAndWait(getReadyToPay());
+        clickNodeAndWait("abort", getDismissed());
         expectResultContains(new String[] {"Aborted"});
     }
 
@@ -51,9 +51,9 @@ public class PaymentRequestAbortTest extends PaymentRequestTestBase {
     @Feature({"Payments"})
     public void testAbortWhileUnmaskingCard() throws InterruptedException, ExecutionException,
             TimeoutException {
-        triggerUIAndWait(mReadyToPay);
-        clickAndWait(R.id.button_primary, mReadyForUnmaskInput);
-        clickNodeAndWait("abort", mUnableToAbort);
+        triggerUIAndWait(getReadyToPay());
+        clickAndWait(R.id.button_primary, getReadyForUnmaskInput());
+        clickNodeAndWait("abort", getUnableToAbort());
         expectResultContains(new String[] {"Cannot abort"});
     }
 }

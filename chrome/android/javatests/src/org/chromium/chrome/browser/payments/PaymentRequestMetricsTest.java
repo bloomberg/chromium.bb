@@ -50,7 +50,7 @@ public class PaymentRequestMetricsTest extends PaymentRequestTestBase {
     public void testSuccessCheckoutFunnel() throws InterruptedException, ExecutionException,
             TimeoutException {
         // Initiate a payment request.
-        triggerUIAndWait("ccBuy", mReadyToPay);
+        triggerUIAndWait("ccBuy", getReadyToPay());
 
         // Make sure sure that the "Initiated" and "Shown" events were logged.
         assertEquals(1, RecordHistogram.getHistogramValueCountForTesting(
@@ -59,15 +59,15 @@ public class PaymentRequestMetricsTest extends PaymentRequestTestBase {
                 "PaymentRequest.CheckoutFunnel.Shown", 1));
 
         // Click the pay button.
-        clickAndWait(R.id.button_primary, mReadyForUnmaskInput);
+        clickAndWait(R.id.button_primary, getReadyForUnmaskInput());
 
         // Make sure sure that the "PayClicked" event was logged.
         assertEquals(1, RecordHistogram.getHistogramValueCountForTesting(
                 "PaymentRequest.CheckoutFunnel.PayClicked", 1));
 
         // Unmask the credit card,
-        setTextInCardUnmaskDialogAndWait(R.id.card_unmask_input, "123", mReadyToUnmask);
-        clickCardUnmaskButtonAndWait(DialogInterface.BUTTON_POSITIVE, mDismissed);
+        setTextInCardUnmaskDialogAndWait(R.id.card_unmask_input, "123", getReadyToUnmask());
+        clickCardUnmaskButtonAndWait(DialogInterface.BUTTON_POSITIVE, getDismissed());
 
         // Make sure sure that the "ReceivedInstrumentDetails" and "Completed" events were logged.
         assertEquals(1, RecordHistogram.getHistogramValueCountForTesting(
@@ -84,18 +84,21 @@ public class PaymentRequestMetricsTest extends PaymentRequestTestBase {
     @Feature({"Payments"})
     public void testAbortMetrics_AbortedByUser_CancelButton() throws InterruptedException,
             ExecutionException, TimeoutException {
-        triggerUIAndWait("ccBuy", mReadyToPay);
-        clickInShippingSummaryAndWait(R.id.payments_section, mReadyForInput);
+        triggerUIAndWait("ccBuy", getReadyToPay());
+        clickInShippingSummaryAndWait(R.id.payments_section, getReadyForInput());
 
         // Cancel the Payment Request.
-        int callCount = mDismissed.getCallCount();
+        int callCount = getDismissed().getCallCount();
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                mUI.getDialogForTest().findViewById(R.id.button_secondary).performClick();
+                getPaymentRequestUI()
+                        .getDialogForTest()
+                        .findViewById(R.id.button_secondary)
+                        .performClick();
             }
         });
-        mDismissed.waitForCallback(callCount);
+        getDismissed().waitForCallback(callCount);
         expectResultContains(new String[] {"Request cancelled"});
 
         assertOnlySpecificAbortMetricLogged(
@@ -110,11 +113,11 @@ public class PaymentRequestMetricsTest extends PaymentRequestTestBase {
     @Feature({"Payments"})
     public void testAbortMetrics_AbortedByUser_XButton() throws InterruptedException,
             ExecutionException, TimeoutException {
-        triggerUIAndWait("ccBuy", mReadyToPay);
-        clickInShippingSummaryAndWait(R.id.payments_section, mReadyForInput);
+        triggerUIAndWait("ccBuy", getReadyToPay());
+        clickInShippingSummaryAndWait(R.id.payments_section, getReadyForInput());
 
         // Press the [X] button.
-        clickAndWait(R.id.close_button, mDismissed);
+        clickAndWait(R.id.close_button, getDismissed());
         expectResultContains(new String[] {"Request cancelled"});
 
         assertOnlySpecificAbortMetricLogged(
@@ -129,18 +132,18 @@ public class PaymentRequestMetricsTest extends PaymentRequestTestBase {
     @Feature({"Payments"})
     public void testAbortMetrics_AbortedByUser_BackButton() throws InterruptedException,
             ExecutionException, TimeoutException {
-        triggerUIAndWait("ccBuy", mReadyToPay);
-        clickInShippingSummaryAndWait(R.id.payments_section, mReadyForInput);
+        triggerUIAndWait("ccBuy", getReadyToPay());
+        clickInShippingSummaryAndWait(R.id.payments_section, getReadyForInput());
 
         // Press the back button.
-        int callCount = mDismissed.getCallCount();
+        int callCount = getDismissed().getCallCount();
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                mUI.getDialogForTest().onBackPressed();
+                getPaymentRequestUI().getDialogForTest().onBackPressed();
             }
         });
-        mDismissed.waitForCallback(callCount);
+        getDismissed().waitForCallback(callCount);
         expectResultContains(new String[] {"Request cancelled"});
 
         assertOnlySpecificAbortMetricLogged(
@@ -155,8 +158,8 @@ public class PaymentRequestMetricsTest extends PaymentRequestTestBase {
     @Feature({"Payments"})
     public void testAbortMetrics_AbortedByUser_TabClosed() throws InterruptedException,
             ExecutionException, TimeoutException {
-        triggerUIAndWait("ccBuy", mReadyToPay);
-        clickInShippingSummaryAndWait(R.id.payments_section, mReadyForInput);
+        triggerUIAndWait("ccBuy", getReadyToPay());
+        clickInShippingSummaryAndWait(R.id.payments_section, getReadyForInput());
 
         // Press the back button.
         ChromeTabUtils.closeCurrentTab(getInstrumentation(), getActivity());
@@ -173,10 +176,10 @@ public class PaymentRequestMetricsTest extends PaymentRequestTestBase {
     @Feature({"Payments"})
     public void testAbortMetrics_AbortedByMerchant() throws InterruptedException,
             ExecutionException, TimeoutException {
-        triggerUIAndWait("ccBuy", mReadyToPay);
+        triggerUIAndWait("ccBuy", getReadyToPay());
 
         // Simulate an abort by the merchant.
-        clickNodeAndWait("abort", mDismissed);
+        clickNodeAndWait("abort", getDismissed());
         expectResultContains(new String[] {"Abort"});
 
         assertOnlySpecificAbortMetricLogged(
@@ -196,7 +199,7 @@ public class PaymentRequestMetricsTest extends PaymentRequestTestBase {
             throws InterruptedException, ExecutionException, TimeoutException {
         // Android Pay is supported but no instruments are present.
         installPaymentApp("https://android.com/pay", NO_INSTRUMENTS, DELAYED_RESPONSE);
-        openPageAndClickNodeAndWait("androidPayBuy", mShowFailed);
+        openPageAndClickNodeAndWait("androidPayBuy", getShowFailed());
         expectResultContains(new String[] {"The payment method is not supported"});
 
         // Make sure that it is not logged as an abort.
@@ -217,7 +220,7 @@ public class PaymentRequestMetricsTest extends PaymentRequestTestBase {
     @Feature({"Payments"})
     public void testMetrics_NoSupportedPaymentMethod()
             throws InterruptedException, ExecutionException, TimeoutException {
-        openPageAndClickNodeAndWait("noSupported", mShowFailed);
+        openPageAndClickNodeAndWait("noSupported", getShowFailed());
         expectResultContains(new String[] {"The payment method is not supported"});
 
         // Make sure that it is not logged as an abort.
@@ -237,10 +240,10 @@ public class PaymentRequestMetricsTest extends PaymentRequestTestBase {
     public void testSelectedPaymentMethod_CreditCard() throws InterruptedException,
             ExecutionException, TimeoutException {
         // Complete a Payment Request with a credit card.
-        triggerUIAndWait("ccBuy", mReadyToPay);
-        clickAndWait(R.id.button_primary, mReadyForUnmaskInput);
-        setTextInCardUnmaskDialogAndWait(R.id.card_unmask_input, "123", mReadyToUnmask);
-        clickCardUnmaskButtonAndWait(DialogInterface.BUTTON_POSITIVE, mDismissed);
+        triggerUIAndWait("ccBuy", getReadyToPay());
+        clickAndWait(R.id.button_primary, getReadyForUnmaskInput());
+        setTextInCardUnmaskDialogAndWait(R.id.card_unmask_input, "123", getReadyToUnmask());
+        clickCardUnmaskButtonAndWait(DialogInterface.BUTTON_POSITIVE, getDismissed());
 
         assertOnlySpecificSelectedPaymentMethodMetricLogged(
                 PaymentRequestMetrics.SELECTED_METHOD_CREDIT_CARD);
@@ -256,8 +259,8 @@ public class PaymentRequestMetricsTest extends PaymentRequestTestBase {
             ExecutionException, TimeoutException {
         // Complete a Payment Request with Android Pay.
         installPaymentApp("https://android.com/pay", HAVE_INSTRUMENTS, IMMEDIATE_RESPONSE);
-        triggerUIAndWait("androidPayBuy", mReadyToPay);
-        clickAndWait(R.id.button_primary, mDismissed);
+        triggerUIAndWait("androidPayBuy", getReadyToPay());
+        clickAndWait(R.id.button_primary, getDismissed());
 
         assertOnlySpecificSelectedPaymentMethodMetricLogged(
                 PaymentRequestMetrics.SELECTED_METHOD_ANDROID_PAY);
@@ -273,7 +276,7 @@ public class PaymentRequestMetricsTest extends PaymentRequestTestBase {
             throws InterruptedException, ExecutionException, TimeoutException {
         // Complete a Payment Request with Android Pay.
         installPaymentApp("https://android.com/pay", HAVE_INSTRUMENTS, IMMEDIATE_RESPONSE);
-        triggerUIAndWait("androidPaySkipUiBuy", mResultReady);
+        triggerUIAndWait("androidPaySkipUiBuy", getResultReady());
 
         assertEquals(1,
                 RecordHistogram.getHistogramValueCountForTesting(
@@ -294,7 +297,7 @@ public class PaymentRequestMetricsTest extends PaymentRequestTestBase {
             throws InterruptedException, ExecutionException, TimeoutException {
         // Complete a Payment Request with Android Pay.
         installPaymentApp("https://android.com/pay", HAVE_INSTRUMENTS, IMMEDIATE_RESPONSE);
-        triggerUIAndWait("androidPaySkipUiBuy", mReadyToPay);
+        triggerUIAndWait("androidPaySkipUiBuy", getReadyToPay());
 
         assertEquals(1,
                 RecordHistogram.getHistogramValueCountForTesting(
@@ -312,7 +315,7 @@ public class PaymentRequestMetricsTest extends PaymentRequestTestBase {
     public void testShownLoggedOnlyOnce()
             throws InterruptedException, ExecutionException, TimeoutException {
         // Initiate a payment request.
-        triggerUIAndWait("ccBuy", mReadyToPay);
+        triggerUIAndWait("ccBuy", getReadyToPay());
 
         // Make sure sure that the "Shown" event was logged.
         assertEquals(1,
@@ -320,11 +323,12 @@ public class PaymentRequestMetricsTest extends PaymentRequestTestBase {
                         "PaymentRequest.CheckoutFunnel.Shown", 1));
 
         // Add a shipping address, which triggers a second "Show".
-        clickInShippingSummaryAndWait(R.id.payments_section, mReadyForInput);
-        clickInShippingAddressAndWait(R.id.payments_add_option_button, mReadyToEdit);
+        clickInShippingSummaryAndWait(R.id.payments_section, getReadyForInput());
+        clickInShippingAddressAndWait(R.id.payments_add_option_button, getReadyToEdit());
         setTextInEditorAndWait(new String[] {"Seb Doe", "Google", "340 Main St", "Los Angeles",
-                "CA", "90291", "650-253-0000"}, mEditorTextUpdate);
-        clickInEditorAndWait(R.id.payments_edit_done_button, mReadyToPay);
+                "CA", "90291", "650-253-0000"},
+                getEditorTextUpdate());
+        clickInEditorAndWait(R.id.payments_edit_done_button, getReadyToPay());
 
         // Make sure "Shown" is still logged only once.
         assertEquals(1,

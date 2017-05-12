@@ -42,16 +42,16 @@ public class PaymentRequestIncompleteServerCardTest extends PaymentRequestTestBa
     @MediumTest
     @Feature({"Payments"})
     public void testPayAndDontUnmask() throws InterruptedException, ExecutionException,
-           TimeoutException {
-        triggerUIAndWait(mReadyForInput);
-        clickInPaymentMethodAndWait(R.id.payments_section, mReadyForInput);
-        clickInPaymentMethodAndWait(R.id.payments_first_radio_button, mReadyToEdit);
-        setSpinnerSelectionsInCardEditorAndWait(new int[] {FIRST_BILLING_ADDRESS},
-                mBillingAddressChangeProcessed);
-        clickInCardEditorAndWait(R.id.payments_edit_done_button, mReadyToPay);
-        clickAndWait(R.id.button_primary, mReadyForUnmaskInput);
-        clickCardUnmaskButtonAndWait(DialogInterface.BUTTON_NEGATIVE, mReadyToPay);
-        clickAndWait(R.id.button_secondary, mDismissed);
+            TimeoutException {
+        triggerUIAndWait(getReadyForInput());
+        clickInPaymentMethodAndWait(R.id.payments_section, getReadyForInput());
+        clickInPaymentMethodAndWait(R.id.payments_first_radio_button, getReadyToEdit());
+        setSpinnerSelectionsInCardEditorAndWait(
+                new int[] {FIRST_BILLING_ADDRESS}, getBillingAddressChangeProcessed());
+        clickInCardEditorAndWait(R.id.payments_edit_done_button, getReadyToPay());
+        clickAndWait(R.id.button_primary, getReadyForUnmaskInput());
+        clickCardUnmaskButtonAndWait(DialogInterface.BUTTON_NEGATIVE, getReadyToPay());
+        clickAndWait(R.id.button_secondary, getDismissed());
         expectResultContains(new String[] {"Request cancelled"});
     }
 }

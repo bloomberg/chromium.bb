@@ -51,15 +51,15 @@ public class PaymentRequestUseStatsTest extends PaymentRequestTestBase {
     @Feature({"Payments"})
     public void testLogProfileAndCreditCardUse() throws InterruptedException, ExecutionException,
             TimeoutException {
-        triggerUIAndWait(mReadyToPay);
+        triggerUIAndWait(getReadyToPay());
 
         // Get the current date value just before the start of the Payment Request.
         long timeBeforeRecord = mHelper.getCurrentDateForTesting();
 
         // Proceed with the payment.
-        clickAndWait(R.id.button_primary, mReadyForUnmaskInput);
-        setTextInCardUnmaskDialogAndWait(R.id.card_unmask_input, "123", mReadyToUnmask);
-        clickCardUnmaskButtonAndWait(DialogInterface.BUTTON_POSITIVE, mDismissed);
+        clickAndWait(R.id.button_primary, getReadyForUnmaskInput());
+        setTextInCardUnmaskDialogAndWait(R.id.card_unmask_input, "123", getReadyToUnmask());
+        clickCardUnmaskButtonAndWait(DialogInterface.BUTTON_POSITIVE, getDismissed());
 
         // Get the current date value just after the end of the Payment Request.
         long timeAfterRecord = mHelper.getCurrentDateForTesting();

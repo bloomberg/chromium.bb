@@ -84,7 +84,7 @@ public class PaymentRequestServiceWorkerPaymentAppTest extends PaymentRequestTes
     public void testNoOptions() throws InterruptedException, ExecutionException,
             TimeoutException {
         installMockServiceWorkerPaymentApp(NO_OPTIONS);
-        openPageAndClickBuyAndWait(mShowFailed);
+        openPageAndClickBuyAndWait(getShowFailed());
         expectResultContains(
                 new String[]{"show() rejected", "The payment method is not supported"});
     }
@@ -94,7 +94,7 @@ public class PaymentRequestServiceWorkerPaymentAppTest extends PaymentRequestTes
     public void testOneOption() throws InterruptedException, ExecutionException,
             TimeoutException {
         installMockServiceWorkerPaymentApp(ONE_OPTION);
-        triggerUIAndWait(mReadyForInput);
+        triggerUIAndWait(getReadyForInput());
         // TODO(tommyt): crbug.com/669876. Expand this test as we implement more
         // service worker based payment app functionality.
     }
@@ -104,7 +104,7 @@ public class PaymentRequestServiceWorkerPaymentAppTest extends PaymentRequestTes
     public void testTwoOptions() throws InterruptedException, ExecutionException,
             TimeoutException {
         installMockServiceWorkerPaymentApp(TWO_OPTIONS);
-        triggerUIAndWait(mReadyForInput);
+        triggerUIAndWait(getReadyForInput());
         // TODO(tommyt): crbug.com/669876. Expand this test as we implement more
         // service worker based payment app functionality.
     }

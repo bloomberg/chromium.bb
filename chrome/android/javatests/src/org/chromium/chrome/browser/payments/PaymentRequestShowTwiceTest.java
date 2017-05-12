@@ -40,7 +40,7 @@ public class PaymentRequestShowTwiceTest extends PaymentRequestTestBase {
     @Feature({"Payments"})
     public void testSecondShowRequestCancelled()
             throws InterruptedException, ExecutionException, TimeoutException {
-        triggerUIAndWait(mReadyToPay);
+        triggerUIAndWait(getReadyToPay());
         expectResultContains(new String[] {"Second request: AbortError: Request cancelled"});
 
         // The web payments UI was not aborted.
@@ -52,6 +52,6 @@ public class PaymentRequestShowTwiceTest extends PaymentRequestTestBase {
                         "PaymentRequest.CheckoutFunnel.NoShow",
                         PaymentRequestMetrics.NO_SHOW_CONCURRENT_REQUESTS));
 
-        clickAndWait(R.id.close_button, mDismissed);
+        clickAndWait(R.id.close_button, getDismissed());
     }
 }

@@ -44,20 +44,20 @@ public class PaymentRequestIncompleteEmailTest extends PaymentRequestTestBase {
     public void testEditIncompleteEmailAndCancel()
             throws InterruptedException, ExecutionException, TimeoutException {
         // Not ready to pay since Contact email is invalid.
-        triggerUIAndWait(mReadyForInput);
+        triggerUIAndWait(getReadyForInput());
         // Check that there is a selected payment method (makes sure we are not ready to pay because
         // of the Contact Details).
         expectPaymentMethodRowIsSelected(0);
         // Updating contact with an invalid value and cancelling means we're still not
         // ready to pay (the value is still the original value).
-        clickInContactInfoAndWait(R.id.payments_section, mReadyForInput);
-        clickInContactInfoAndWait(R.id.payments_first_radio_button, mReadyToEdit);
-        setTextInEditorAndWait(new String[] {"gmail.com"}, mEditorTextUpdate);
-        clickInEditorAndWait(R.id.payments_edit_done_button, mEditorValidationError);
-        clickInEditorAndWait(R.id.payments_edit_cancel_button, mReadyForInput);
+        clickInContactInfoAndWait(R.id.payments_section, getReadyForInput());
+        clickInContactInfoAndWait(R.id.payments_first_radio_button, getReadyToEdit());
+        setTextInEditorAndWait(new String[] {"gmail.com"}, getEditorTextUpdate());
+        clickInEditorAndWait(R.id.payments_edit_done_button, getEditorValidationError());
+        clickInEditorAndWait(R.id.payments_edit_cancel_button, getReadyForInput());
         assertEquals(PaymentRequestSection.EDIT_BUTTON_CHOOSE, getContactDetailsButtonState());
 
-        clickAndWait(R.id.close_button, mDismissed);
+        clickAndWait(R.id.close_button, getDismissed());
         expectResultContains(new String[] {"Request cancelled"});
     }
 
@@ -67,21 +67,21 @@ public class PaymentRequestIncompleteEmailTest extends PaymentRequestTestBase {
     public void testAddIncompleteEmailAndCancel()
             throws InterruptedException, ExecutionException, TimeoutException {
         // Not ready to pay since Contact email is invalid.
-        triggerUIAndWait(mReadyForInput);
+        triggerUIAndWait(getReadyForInput());
         // Check that there is a selected payment method (makes sure we are not ready to pay because
         // of the Contact Details).
         expectPaymentMethodRowIsSelected(0);
         // Updating contact with an invalid value and cancelling means we're still not
         // ready to pay (the value is still the original value).
-        clickInContactInfoAndWait(R.id.payments_section, mReadyForInput);
-        clickInContactInfoAndWait(R.id.payments_add_option_button, mReadyToEdit);
-        setTextInEditorAndWait(new String[] {"gmail.com"}, mEditorTextUpdate);
-        clickInEditorAndWait(R.id.payments_edit_done_button, mEditorValidationError);
+        clickInContactInfoAndWait(R.id.payments_section, getReadyForInput());
+        clickInContactInfoAndWait(R.id.payments_add_option_button, getReadyToEdit());
+        setTextInEditorAndWait(new String[] {"gmail.com"}, getEditorTextUpdate());
+        clickInEditorAndWait(R.id.payments_edit_done_button, getEditorValidationError());
         // The section collapses and the [CHOOSE] button is active.
-        clickInEditorAndWait(R.id.payments_edit_cancel_button, mReadyForInput);
+        clickInEditorAndWait(R.id.payments_edit_cancel_button, getReadyForInput());
         assertEquals(PaymentRequestSection.EDIT_BUTTON_CHOOSE, getContactDetailsButtonState());
 
-        clickAndWait(R.id.close_button, mDismissed);
+        clickAndWait(R.id.close_button, getDismissed());
         expectResultContains(new String[] {"Request cancelled"});
     }
 
@@ -90,12 +90,12 @@ public class PaymentRequestIncompleteEmailTest extends PaymentRequestTestBase {
     @Feature({"Payments"})
     public void testEditIncompleteEmailAndPay()
             throws InterruptedException, ExecutionException, TimeoutException {
-        triggerUIAndWait(mReadyForInput);
-        clickInContactInfoAndWait(R.id.payments_section, mReadyForInput);
-        clickInContactInfoAndWait(R.id.payments_first_radio_button, mReadyToEdit);
-        setTextInEditorAndWait(new String[] {"jon.doe@google.com"}, mEditorTextUpdate);
-        clickInEditorAndWait(R.id.payments_edit_done_button, mReadyToPay);
-        clickAndWait(R.id.button_primary, mDismissed);
+        triggerUIAndWait(getReadyForInput());
+        clickInContactInfoAndWait(R.id.payments_section, getReadyForInput());
+        clickInContactInfoAndWait(R.id.payments_first_radio_button, getReadyToEdit());
+        setTextInEditorAndWait(new String[] {"jon.doe@google.com"}, getEditorTextUpdate());
+        clickInEditorAndWait(R.id.payments_edit_done_button, getReadyToPay());
+        clickAndWait(R.id.button_primary, getDismissed());
         expectResultContains(new String[] {"jon.doe@google.com"});
     }
 }

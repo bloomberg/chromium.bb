@@ -44,17 +44,17 @@ public class PaymentRequestCanMakePaymentMetricsTest extends PaymentRequestTestB
     public void testCannotMakePayment_Abort()
             throws InterruptedException, ExecutionException, TimeoutException {
         // Initiate a payment request.
-        triggerUIAndWait("queryShow", mReadyForInput);
+        triggerUIAndWait("queryShow", getReadyForInput());
 
         // Press the back button.
-        int callCount = mDismissed.getCallCount();
+        int callCount = getDismissed().getCallCount();
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                mUI.getDialogForTest().onBackPressed();
+                getPaymentRequestUI().getDialogForTest().onBackPressed();
             }
         });
-        mDismissed.waitForCallback(callCount);
+        getDismissed().waitForCallback(callCount);
         expectResultContains(new String[] {"Request cancelled"});
 
         // CanMakePayment was queried.
@@ -86,19 +86,20 @@ public class PaymentRequestCanMakePaymentMetricsTest extends PaymentRequestTestB
     @Feature({"Payments"})
     public void testCannotMakePayment_Complete()
             throws InterruptedException, ExecutionException, TimeoutException {
-        triggerUIAndWait("queryShow", mReadyForInput);
+        triggerUIAndWait("queryShow", getReadyForInput());
 
         // Add a new credit card.
-        clickInPaymentMethodAndWait(R.id.payments_section, mReadyToEdit);
+        clickInPaymentMethodAndWait(R.id.payments_section, getReadyToEdit());
         setSpinnerSelectionsInCardEditorAndWait(
-                new int[] {11, 1, 0}, mBillingAddressChangeProcessed);
-        setTextInCardEditorAndWait(new String[] {"4111111111111111", "Jon Doe"}, mEditorTextUpdate);
-        clickInCardEditorAndWait(R.id.payments_edit_done_button, mReadyToPay);
+                new int[] {11, 1, 0}, getBillingAddressChangeProcessed());
+        setTextInCardEditorAndWait(
+                new String[] {"4111111111111111", "Jon Doe"}, getEditorTextUpdate());
+        clickInCardEditorAndWait(R.id.payments_edit_done_button, getReadyToPay());
 
         // Complete the transaction.
-        clickAndWait(R.id.button_primary, mReadyForUnmaskInput);
-        setTextInCardUnmaskDialogAndWait(R.id.card_unmask_input, "123", mReadyToUnmask);
-        clickCardUnmaskButtonAndWait(DialogInterface.BUTTON_POSITIVE, mDismissed);
+        clickAndWait(R.id.button_primary, getReadyForUnmaskInput());
+        setTextInCardUnmaskDialogAndWait(R.id.card_unmask_input, "123", getReadyToUnmask());
+        clickCardUnmaskButtonAndWait(DialogInterface.BUTTON_POSITIVE, getDismissed());
 
         // CanMakePayment was queried.
         assertEquals(1,
@@ -133,17 +134,17 @@ public class PaymentRequestCanMakePaymentMetricsTest extends PaymentRequestTestB
         installPaymentApp(HAVE_INSTRUMENTS, IMMEDIATE_RESPONSE);
 
         // Initiate a payment request.
-        triggerUIAndWait("queryShow", mReadyForInput);
+        triggerUIAndWait("queryShow", getReadyForInput());
 
         // Press the back button.
-        int callCount = mDismissed.getCallCount();
+        int callCount = getDismissed().getCallCount();
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                mUI.getDialogForTest().onBackPressed();
+                getPaymentRequestUI().getDialogForTest().onBackPressed();
             }
         });
-        mDismissed.waitForCallback(callCount);
+        getDismissed().waitForCallback(callCount);
         expectResultContains(new String[] {"Request cancelled"});
 
         // CanMakePayment was queried.
@@ -180,8 +181,8 @@ public class PaymentRequestCanMakePaymentMetricsTest extends PaymentRequestTestB
         installPaymentApp(HAVE_INSTRUMENTS, IMMEDIATE_RESPONSE);
 
         // Initiate an complete a payment request.
-        triggerUIAndWait("queryShow", mReadyForInput);
-        clickAndWait(R.id.button_primary, mDismissed);
+        triggerUIAndWait("queryShow", getReadyForInput());
+        clickAndWait(R.id.button_primary, getDismissed());
 
         // CanMakePayment was queried.
         assertEquals(1,
@@ -213,17 +214,17 @@ public class PaymentRequestCanMakePaymentMetricsTest extends PaymentRequestTestB
     public void testNoQuery_Abort()
             throws InterruptedException, ExecutionException, TimeoutException {
         // Initiate a payment request.
-        triggerUIAndWait("noQueryShow", mReadyForInput);
+        triggerUIAndWait("noQueryShow", getReadyForInput());
 
         // Press the back button.
-        int callCount = mDismissed.getCallCount();
+        int callCount = getDismissed().getCallCount();
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                mUI.getDialogForTest().onBackPressed();
+                getPaymentRequestUI().getDialogForTest().onBackPressed();
             }
         });
-        mDismissed.waitForCallback(callCount);
+        getDismissed().waitForCallback(callCount);
         expectResultContains(new String[] {"Request cancelled"});
 
         // CanMakePayment was not queried.
@@ -252,8 +253,8 @@ public class PaymentRequestCanMakePaymentMetricsTest extends PaymentRequestTestB
         installPaymentApp(HAVE_INSTRUMENTS, IMMEDIATE_RESPONSE);
 
         // Initiate a payment request.
-        triggerUIAndWait("noQueryShow", mReadyForInput);
-        clickAndWait(R.id.button_primary, mDismissed);
+        triggerUIAndWait("noQueryShow", getReadyForInput());
+        clickAndWait(R.id.button_primary, getDismissed());
 
         // CanMakePayment was not queried.
         assertEquals(1,

@@ -42,7 +42,7 @@ public class PaymentRequestFieldTrialTest extends PaymentRequestTestBase {
     @CommandLineFlags.Add("enable-features=NoCreditCardAbort")
     public void testAbortIfNoCard_Enabled_NoApp()
             throws InterruptedException, ExecutionException, TimeoutException {
-        openPageAndClickBuyAndWait(mShowFailed);
+        openPageAndClickBuyAndWait(getShowFailed());
         expectResultContains(new String[] {"The payment method is not supported"});
     }
 
@@ -56,7 +56,7 @@ public class PaymentRequestFieldTrialTest extends PaymentRequestTestBase {
     public void testAbortIfNoCard_Enabled_WithApp()
             throws InterruptedException, ExecutionException, TimeoutException {
         installPaymentApp(HAVE_INSTRUMENTS, IMMEDIATE_RESPONSE);
-        triggerUIAndWait(mReadyToPay);
+        triggerUIAndWait(getReadyToPay());
     }
 
     /**
@@ -69,6 +69,6 @@ public class PaymentRequestFieldTrialTest extends PaymentRequestTestBase {
     public void testAbortIfNoCard_Disabled()
             throws InterruptedException, ExecutionException, TimeoutException {
         // Check that the Payment Request UI is shown.
-        triggerUIAndWait(mReadyForInput);
+        triggerUIAndWait(getReadyForInput());
     }
 }

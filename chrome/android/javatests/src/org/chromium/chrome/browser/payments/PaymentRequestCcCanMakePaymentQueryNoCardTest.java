@@ -37,7 +37,7 @@ public class PaymentRequestCcCanMakePaymentQueryNoCardTest extends PaymentReques
     @Feature({"Payments"})
     public void testCannotMakePayment() throws InterruptedException, ExecutionException,
             TimeoutException {
-        openPageAndClickBuyAndWait(mCanMakePaymentQueryResponded);
+        openPageAndClickBuyAndWait(getCanMakePaymentQueryResponded());
         expectResultContains(new String[]{"false"});
     }
 }

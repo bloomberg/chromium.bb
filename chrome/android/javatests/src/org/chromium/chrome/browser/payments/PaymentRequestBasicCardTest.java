@@ -42,43 +42,43 @@ public class PaymentRequestBasicCardTest extends PaymentRequestTestBase {
     @Feature({"Payments"})
     public void testCanPayWithBasicCard() throws InterruptedException,
             ExecutionException, TimeoutException {
-        openPageAndClickNodeAndWait("checkBasicCard", mCanMakePaymentQueryResponded);
+        openPageAndClickNodeAndWait("checkBasicCard", getCanMakePaymentQueryResponded());
         expectResultContains(new String[] {"true"});
 
-        clickNodeAndWait("buyBasicCard", mReadyForInput);
+        clickNodeAndWait("buyBasicCard", getReadyForInput());
     }
 
     @MediumTest
     @Feature({"Payments"})
     public void testIgnoreCardType() throws InterruptedException,
             ExecutionException, TimeoutException {
-        openPageAndClickNodeAndWait("checkBasicDebit", mCanMakePaymentQueryResponded);
+        openPageAndClickNodeAndWait("checkBasicDebit", getCanMakePaymentQueryResponded());
         expectResultContains(new String[] {"true"});
 
-        clickNodeAndWait("buyBasicDebit", mReadyForInput);
+        clickNodeAndWait("buyBasicDebit", getReadyForInput());
     }
 
     @MediumTest
     @Feature({"Payments"})
     public void testCannotMakeActivePaymentWithBasicMasterCard() throws InterruptedException,
             ExecutionException, TimeoutException {
-        openPageAndClickNodeAndWait("checkBasicMasterCard", mCanMakePaymentQueryResponded);
+        openPageAndClickNodeAndWait("checkBasicMasterCard", getCanMakePaymentQueryResponded());
         expectResultContains(new String[] {"false"});
 
-        reTriggerUIAndWait("buyBasicMasterCard", mReadyForInput);
+        reTriggerUIAndWait("buyBasicMasterCard", getReadyForInput());
     }
 
     @MediumTest
     @Feature({"Payments"})
     public void testSupportedNetworksMustMatchForCanMakePayment()
             throws InterruptedException, ExecutionException, TimeoutException {
-        openPageAndClickNodeAndWait("checkBasicVisa", mCanMakePaymentQueryResponded);
+        openPageAndClickNodeAndWait("checkBasicVisa", getCanMakePaymentQueryResponded());
         expectResultContains(new String[] {"true"});
 
-        clickNodeAndWait("checkBasicMasterCard", mCanMakePaymentQueryResponded);
+        clickNodeAndWait("checkBasicMasterCard", getCanMakePaymentQueryResponded());
         expectResultContains(new String[] {"Not allowed to check whether can make payment"});
 
-        clickNodeAndWait("checkBasicVisa", mCanMakePaymentQueryResponded);
+        clickNodeAndWait("checkBasicVisa", getCanMakePaymentQueryResponded());
         expectResultContains(new String[] {"true"});
     }
 
@@ -86,13 +86,13 @@ public class PaymentRequestBasicCardTest extends PaymentRequestTestBase {
     @Feature({"Payments"})
     public void testSupportedTypesMustMatchForCanMakePayment()
             throws InterruptedException, ExecutionException, TimeoutException {
-        openPageAndClickNodeAndWait("checkBasicVisa", mCanMakePaymentQueryResponded);
+        openPageAndClickNodeAndWait("checkBasicVisa", getCanMakePaymentQueryResponded());
         expectResultContains(new String[] {"true"});
 
-        clickNodeAndWait("checkBasicDebit", mCanMakePaymentQueryResponded);
+        clickNodeAndWait("checkBasicDebit", getCanMakePaymentQueryResponded());
         expectResultContains(new String[] {"Not allowed to check whether can make payment"});
 
-        clickNodeAndWait("checkBasicVisa", mCanMakePaymentQueryResponded);
+        clickNodeAndWait("checkBasicVisa", getCanMakePaymentQueryResponded());
         expectResultContains(new String[] {"true"});
     }
 
@@ -105,13 +105,13 @@ public class PaymentRequestBasicCardTest extends PaymentRequestTestBase {
     @Feature({"Payments"})
     public void testPayWithBasicCard()  throws InterruptedException, ExecutionException,
             TimeoutException {
-        openPageAndClickNodeAndWait("checkBasicVisa", mCanMakePaymentQueryResponded);
+        openPageAndClickNodeAndWait("checkBasicVisa", getCanMakePaymentQueryResponded());
         expectResultContains(new String[] {"true"});
 
-        reTriggerUIAndWait("buy", mReadyToPay);
-        clickAndWait(R.id.button_primary, mReadyForUnmaskInput);
-        setTextInCardUnmaskDialogAndWait(R.id.card_unmask_input, "123", mReadyToUnmask);
-        clickCardUnmaskButtonAndWait(DialogInterface.BUTTON_POSITIVE, mDismissed);
+        reTriggerUIAndWait("buy", getReadyToPay());
+        clickAndWait(R.id.button_primary, getReadyForUnmaskInput());
+        setTextInCardUnmaskDialogAndWait(R.id.card_unmask_input, "123", getReadyToUnmask());
+        clickCardUnmaskButtonAndWait(DialogInterface.BUTTON_POSITIVE, getDismissed());
         expectResultContains(new String[] {"Jon Doe", "4111111111111111", "12", "2050",
                 "basic-card", "123"});
     }
@@ -125,18 +125,18 @@ public class PaymentRequestBasicCardTest extends PaymentRequestTestBase {
     @Feature({"Payments"})
     public void testAddMasterCard()  throws InterruptedException, ExecutionException,
             TimeoutException {
-        triggerUIAndWait(mReadyToPay);
-        clickInPaymentMethodAndWait(R.id.payments_section, mReadyForInput);
-        clickInPaymentMethodAndWait(R.id.payments_add_option_button, mReadyToEdit);
-        setTextInCardEditorAndWait(new String[] {"5555-5555-5555-4444", "Jane Jones"},
-                mEditorTextUpdate);
+        triggerUIAndWait(getReadyToPay());
+        clickInPaymentMethodAndWait(R.id.payments_section, getReadyForInput());
+        clickInPaymentMethodAndWait(R.id.payments_add_option_button, getReadyToEdit());
+        setTextInCardEditorAndWait(
+                new String[] {"5555-5555-5555-4444", "Jane Jones"}, getEditorTextUpdate());
         setSpinnerSelectionsInCardEditorAndWait(
                 new int[] {DECEMBER, NEXT_YEAR, FIRST_BILLING_ADDRESS},
-                mBillingAddressChangeProcessed);
-        clickInCardEditorAndWait(R.id.payments_edit_done_button, mReadyToPay);
-        clickAndWait(R.id.button_primary, mReadyForUnmaskInput);
-        setTextInCardUnmaskDialogAndWait(R.id.card_unmask_input, "123", mReadyToUnmask);
-        clickCardUnmaskButtonAndWait(DialogInterface.BUTTON_POSITIVE, mDismissed);
+                getBillingAddressChangeProcessed());
+        clickInCardEditorAndWait(R.id.payments_edit_done_button, getReadyToPay());
+        clickAndWait(R.id.button_primary, getReadyForUnmaskInput());
+        setTextInCardUnmaskDialogAndWait(R.id.card_unmask_input, "123", getReadyToUnmask());
+        clickCardUnmaskButtonAndWait(DialogInterface.BUTTON_POSITIVE, getDismissed());
         expectResultContains(
                 new String[] {"5555555555554444", "12", "Jane Jones", "123", "mastercard"});
     }
@@ -150,18 +150,18 @@ public class PaymentRequestBasicCardTest extends PaymentRequestTestBase {
     @Feature({"Payments"})
     public void testAddBasicCard()  throws InterruptedException, ExecutionException,
             TimeoutException {
-        triggerUIAndWait(mReadyToPay);
-        clickInPaymentMethodAndWait(R.id.payments_section, mReadyForInput);
-        clickInPaymentMethodAndWait(R.id.payments_add_option_button, mReadyToEdit);
-        setTextInCardEditorAndWait(new String[] {"4242-4242-4242-4242", "Jane Jones"},
-                mEditorTextUpdate);
+        triggerUIAndWait(getReadyToPay());
+        clickInPaymentMethodAndWait(R.id.payments_section, getReadyForInput());
+        clickInPaymentMethodAndWait(R.id.payments_add_option_button, getReadyToEdit());
+        setTextInCardEditorAndWait(
+                new String[] {"4242-4242-4242-4242", "Jane Jones"}, getEditorTextUpdate());
         setSpinnerSelectionsInCardEditorAndWait(
                 new int[] {DECEMBER, NEXT_YEAR, FIRST_BILLING_ADDRESS},
-                mBillingAddressChangeProcessed);
-        clickInCardEditorAndWait(R.id.payments_edit_done_button, mReadyToPay);
-        clickAndWait(R.id.button_primary, mReadyForUnmaskInput);
-        setTextInCardUnmaskDialogAndWait(R.id.card_unmask_input, "123", mReadyToUnmask);
-        clickCardUnmaskButtonAndWait(DialogInterface.BUTTON_POSITIVE, mDismissed);
+                getBillingAddressChangeProcessed());
+        clickInCardEditorAndWait(R.id.payments_edit_done_button, getReadyToPay());
+        clickAndWait(R.id.button_primary, getReadyForUnmaskInput());
+        setTextInCardUnmaskDialogAndWait(R.id.card_unmask_input, "123", getReadyToUnmask());
+        clickCardUnmaskButtonAndWait(DialogInterface.BUTTON_POSITIVE, getDismissed());
         expectResultContains(
                 new String[] {"4242424242424242", "12", "Jane Jones", "123", "basic-card"});
     }

@@ -44,21 +44,21 @@ public class PaymentRequestIncompleteContactDetailsTest extends PaymentRequestTe
     public void testEditIncompleteContactAndCancel()
             throws InterruptedException, ExecutionException, TimeoutException {
         // Not ready to pay since Contact email is invalid.
-        triggerUIAndWait(mReadyForInput);
+        triggerUIAndWait(getReadyForInput());
         // Check that there is a selected payment method (makes sure we are not ready to pay because
         // of the Contact Details).
         expectPaymentMethodRowIsSelected(0);
         // Updating contact with an invalid value and cancelling means we're still not
         // ready to pay (the value is still the original value).
-        clickInContactInfoAndWait(R.id.payments_section, mReadyForInput);
-        clickInContactInfoAndWait(R.id.payments_first_radio_button, mReadyToEdit);
-        setTextInEditorAndWait(new String[] {"", "---", "jane.jones"}, mEditorTextUpdate);
-        clickInEditorAndWait(R.id.payments_edit_done_button, mEditorValidationError);
+        clickInContactInfoAndWait(R.id.payments_section, getReadyForInput());
+        clickInContactInfoAndWait(R.id.payments_first_radio_button, getReadyToEdit());
+        setTextInEditorAndWait(new String[] {"", "---", "jane.jones"}, getEditorTextUpdate());
+        clickInEditorAndWait(R.id.payments_edit_done_button, getEditorValidationError());
         // The section collapses and the [CHOOSE] button is active.
-        clickInEditorAndWait(R.id.payments_edit_cancel_button, mReadyForInput);
+        clickInEditorAndWait(R.id.payments_edit_cancel_button, getReadyForInput());
         assertEquals(PaymentRequestSection.EDIT_BUTTON_CHOOSE, getContactDetailsButtonState());
 
-        clickAndWait(R.id.close_button, mDismissed);
+        clickAndWait(R.id.close_button, getDismissed());
         expectResultContains(new String[] {"Request cancelled"});
     }
 
@@ -68,21 +68,21 @@ public class PaymentRequestIncompleteContactDetailsTest extends PaymentRequestTe
     public void testAddIncompleteContactAndCancel()
             throws InterruptedException, ExecutionException, TimeoutException {
         // Not ready to pay since Contact email is invalid.
-        triggerUIAndWait(mReadyForInput);
+        triggerUIAndWait(getReadyForInput());
         // Check that there is a selected payment method (makes sure we are not ready to pay because
         // of the Contact Details).
         expectPaymentMethodRowIsSelected(0);
         // Adding contact with an invalid value and cancelling means we're still not
         // ready to pay (the value is still the original value).
-        clickInContactInfoAndWait(R.id.payments_section, mReadyForInput);
-        clickInContactInfoAndWait(R.id.payments_add_option_button, mReadyToEdit);
-        setTextInEditorAndWait(new String[] {"", "---", "jane.jones"}, mEditorTextUpdate);
-        clickInEditorAndWait(R.id.payments_edit_done_button, mEditorValidationError);
+        clickInContactInfoAndWait(R.id.payments_section, getReadyForInput());
+        clickInContactInfoAndWait(R.id.payments_add_option_button, getReadyToEdit());
+        setTextInEditorAndWait(new String[] {"", "---", "jane.jones"}, getEditorTextUpdate());
+        clickInEditorAndWait(R.id.payments_edit_done_button, getEditorValidationError());
         // The section collapses and the [CHOOSE] button is active.
-        clickInEditorAndWait(R.id.payments_edit_cancel_button, mReadyForInput);
+        clickInEditorAndWait(R.id.payments_edit_cancel_button, getReadyForInput());
         assertEquals(PaymentRequestSection.EDIT_BUTTON_CHOOSE, getContactDetailsButtonState());
 
-        clickAndWait(R.id.close_button, mDismissed);
+        clickAndWait(R.id.close_button, getDismissed());
         expectResultContains(new String[] {"Request cancelled"});
     }
 
@@ -91,13 +91,13 @@ public class PaymentRequestIncompleteContactDetailsTest extends PaymentRequestTe
     @Feature({"Payments"})
     public void testEditIncompleteContactAndPay()
             throws InterruptedException, ExecutionException, TimeoutException {
-        triggerUIAndWait(mReadyForInput);
-        clickInContactInfoAndWait(R.id.payments_section, mReadyForInput);
-        clickInContactInfoAndWait(R.id.payments_first_radio_button, mReadyToEdit);
+        triggerUIAndWait(getReadyForInput());
+        clickInContactInfoAndWait(R.id.payments_section, getReadyForInput());
+        clickInContactInfoAndWait(R.id.payments_first_radio_button, getReadyToEdit());
         setTextInEditorAndWait(new String[] {"Jon Doe", "555-555-5555", "jon.doe@google.com"},
-                mEditorTextUpdate);
-        clickInEditorAndWait(R.id.payments_edit_done_button, mReadyToPay);
-        clickAndWait(R.id.button_primary, mDismissed);
+                getEditorTextUpdate());
+        clickInEditorAndWait(R.id.payments_edit_done_button, getReadyToPay());
+        clickAndWait(R.id.button_primary, getDismissed());
         expectResultContains(new String[] {"Jon Doe", "+15555555555", "jon.doe@google.com"});
     }
 }

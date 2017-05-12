@@ -13,6 +13,7 @@ import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.CreditCard;
 import org.chromium.chrome.browser.payments.PaymentAppFactory.PaymentAppCreatedCallback;
 import org.chromium.chrome.browser.payments.PaymentAppFactory.PaymentAppFactoryAddition;
+import org.chromium.chrome.browser.payments.PaymentRequestTestCommon.TestPay;
 import org.chromium.content_public.browser.WebContents;
 
 import java.util.Arrays;
@@ -81,8 +82,8 @@ public class PaymentRequestPaymentAppsSortingTest extends PaymentRequestTestBase
         PaymentPreferencesUtil.setPaymentInstrumentUseCountForTest(appBCharliePayId, 15);
         PaymentPreferencesUtil.setPaymentInstrumentLastUseDate(appBCharliePayId, 15);
 
-        triggerUIAndWait(mReadyToPay);
-        clickInPaymentMethodAndWait(R.id.payments_section, mReadyForInput);
+        triggerUIAndWait(getReadyToPay());
+        clickInPaymentMethodAndWait(R.id.payments_section, getReadyForInput());
 
         // Checks Charlie Pay is listed at the first position.
         assertEquals(4, getNumberOfPaymentInstruments());
@@ -94,7 +95,7 @@ public class PaymentRequestPaymentAppsSortingTest extends PaymentRequestTestBase
                 getPaymentInstrumentLabel(3));
 
         // Cancel the Payment Request.
-        clickAndWait(R.id.button_secondary, mDismissed);
+        clickAndWait(R.id.button_secondary, getDismissed());
 
         // Checks the records for all payment instruments haven't been changed.
         assertEquals(5, PaymentPreferencesUtil.getPaymentInstrumentUseCount(appAAlicePayId));
@@ -108,8 +109,8 @@ public class PaymentRequestPaymentAppsSortingTest extends PaymentRequestTestBase
         PaymentPreferencesUtil.setPaymentInstrumentUseCountForTest(appAAlicePayId, 20);
         PaymentPreferencesUtil.setPaymentInstrumentLastUseDate(appAAlicePayId, 20);
 
-        reTriggerUIAndWait("buy", mReadyToPay);
-        clickInPaymentMethodAndWait(R.id.payments_section, mReadyForInput);
+        reTriggerUIAndWait("buy", getReadyToPay());
+        clickInPaymentMethodAndWait(R.id.payments_section, getReadyForInput());
 
         // Checks Alice Pay is listed at the first position. Checks Bob Pay is listed at the second
         // position together with Alice Pay since they come from the same app.
@@ -121,7 +122,7 @@ public class PaymentRequestPaymentAppsSortingTest extends PaymentRequestTestBase
                 "Visa\u0020\u0020\u2022\u2006\u2022\u2006\u2022\u2006\u2022\u20061111\nJon Doe",
                 getPaymentInstrumentLabel(3));
 
-        clickAndWait(R.id.button_primary, mDismissed);
+        clickAndWait(R.id.button_primary, getDismissed());
         // Checks Alice Pay is selected as the default payment method.
         expectResultContains(new String[] {"https://alicepay.com", "\"transaction\"", "1337"});
 

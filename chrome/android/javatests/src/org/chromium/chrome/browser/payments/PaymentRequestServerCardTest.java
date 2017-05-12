@@ -41,11 +41,11 @@ public class PaymentRequestServerCardTest extends PaymentRequestTestBase {
     @MediumTest
     @Feature({"Payments"})
     public void testPayAndDontUnmask() throws InterruptedException, ExecutionException,
-           TimeoutException {
-        triggerUIAndWait(mReadyToPay);
-        clickAndWait(R.id.button_primary, mReadyForUnmaskInput);
-        clickCardUnmaskButtonAndWait(DialogInterface.BUTTON_NEGATIVE, mReadyToPay);
-        clickAndWait(R.id.close_button, mDismissed);
+            TimeoutException {
+        triggerUIAndWait(getReadyToPay());
+        clickAndWait(R.id.button_primary, getReadyForUnmaskInput());
+        clickCardUnmaskButtonAndWait(DialogInterface.BUTTON_NEGATIVE, getReadyToPay());
+        clickAndWait(R.id.close_button, getDismissed());
         expectResultContains(new String[] {"Request cancelled"});
     }
 }

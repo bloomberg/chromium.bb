@@ -34,7 +34,7 @@ public class PaymentRequestPaymentAppUiSkipPreloadTest extends PaymentRequestTes
     public void testPayViaFastBobPay()
             throws InterruptedException, ExecutionException, TimeoutException {
         installPaymentApp(HAVE_INSTRUMENTS, IMMEDIATE_RESPONSE);
-        openPageAndClickBuyAndWait(mDismissed);
+        openPageAndClickBuyAndWait(getDismissed());
         expectResultContains(new String[] {"https://bobpay.com", "\"transaction\"", "1337"});
     }
 
@@ -47,7 +47,7 @@ public class PaymentRequestPaymentAppUiSkipPreloadTest extends PaymentRequestTes
     public void testPayViaSlowBobPay()
             throws InterruptedException, ExecutionException, TimeoutException {
         installPaymentApp(HAVE_INSTRUMENTS, DELAYED_RESPONSE);
-        openPageAndClickBuyAndWait(mDismissed);
+        openPageAndClickBuyAndWait(getDismissed());
         expectResultContains(new String[] {"https://bobpay.com", "\"transaction\"", "1337"});
     }
 
@@ -61,7 +61,7 @@ public class PaymentRequestPaymentAppUiSkipPreloadTest extends PaymentRequestTes
             throws InterruptedException, ExecutionException, TimeoutException {
         installPaymentApp(
                 "https://bobpay.com", HAVE_INSTRUMENTS, IMMEDIATE_RESPONSE, DELAYED_CREATION);
-        openPageAndClickBuyAndWait(mDismissed);
+        openPageAndClickBuyAndWait(getDismissed());
         expectResultContains(new String[] {"https://bobpay.com", "\"transaction\"", "1337"});
     }
 
@@ -75,7 +75,7 @@ public class PaymentRequestPaymentAppUiSkipPreloadTest extends PaymentRequestTes
             throws InterruptedException, ExecutionException, TimeoutException {
         installPaymentApp(
                 "https://bobpay.com", HAVE_INSTRUMENTS, DELAYED_RESPONSE, DELAYED_CREATION);
-        openPageAndClickBuyAndWait(mDismissed);
+        openPageAndClickBuyAndWait(getDismissed());
         expectResultContains(new String[] {"https://bobpay.com", "\"transaction\"", "1337"});
     }
 }

@@ -53,10 +53,10 @@ public class PaymentRequestJourneyLoggerTest extends PaymentRequestTestBase {
     public void testNumberOfSuggestionsShown_ShippingAddress_Completed()
             throws InterruptedException, ExecutionException, TimeoutException {
         // Complete a Payment Request with a credit card.
-        triggerUIAndWait("ccBuy", mReadyToPay);
-        clickAndWait(R.id.button_primary, mReadyForUnmaskInput);
-        setTextInCardUnmaskDialogAndWait(R.id.card_unmask_input, "123", mReadyToUnmask);
-        clickCardUnmaskButtonAndWait(DialogInterface.BUTTON_POSITIVE, mDismissed);
+        triggerUIAndWait("ccBuy", getReadyToPay());
+        clickAndWait(R.id.button_primary, getReadyForUnmaskInput());
+        setTextInCardUnmaskDialogAndWait(R.id.card_unmask_input, "123", getReadyToUnmask());
+        clickCardUnmaskButtonAndWait(DialogInterface.BUTTON_POSITIVE, getDismissed());
 
         // Make sure the right number of suggestions were logged.
         assertEquals(
@@ -83,8 +83,8 @@ public class PaymentRequestJourneyLoggerTest extends PaymentRequestTestBase {
     public void testNumberOfSuggestionsShown_ShippingAddress_AbortedByUser()
             throws InterruptedException, ExecutionException, TimeoutException {
         // Cancel the payment request.
-        triggerUIAndWait("ccBuy", mReadyToPay);
-        clickAndWait(R.id.close_button, mDismissed);
+        triggerUIAndWait("ccBuy", getReadyToPay());
+        clickAndWait(R.id.close_button, getDismissed());
 
         // Wait for the histograms to be logged.
         Thread.sleep(200);
@@ -114,18 +114,18 @@ public class PaymentRequestJourneyLoggerTest extends PaymentRequestTestBase {
     public void testNumberOfSelectionEdits_ShippingAddress_Completed()
             throws InterruptedException, ExecutionException, TimeoutException {
         // Complete a Payment Request with a credit card.
-        triggerUIAndWait("ccBuy", mReadyToPay);
-        clickInShippingSummaryAndWait(R.id.payments_section, mReadyForInput);
+        triggerUIAndWait("ccBuy", getReadyToPay());
+        clickInShippingSummaryAndWait(R.id.payments_section, getReadyForInput());
 
         // Select the incomplete address and edit it.
-        clickOnShippingAddressSuggestionOptionAndWait(1, mReadyToEdit);
+        clickOnShippingAddressSuggestionOptionAndWait(1, getReadyToEdit());
         setTextInEditorAndWait(
                 new String[] {"In Complete", "Google", "344 Main St", "CA", "Los Angeles"},
-                mEditorTextUpdate);
-        clickInEditorAndWait(R.id.payments_edit_done_button, mReadyToPay);
-        clickAndWait(R.id.button_primary, mReadyForUnmaskInput);
-        setTextInCardUnmaskDialogAndWait(R.id.card_unmask_input, "123", mReadyToUnmask);
-        clickCardUnmaskButtonAndWait(DialogInterface.BUTTON_POSITIVE, mDismissed);
+                getEditorTextUpdate());
+        clickInEditorAndWait(R.id.payments_edit_done_button, getReadyToPay());
+        clickAndWait(R.id.button_primary, getReadyForUnmaskInput());
+        setTextInCardUnmaskDialogAndWait(R.id.card_unmask_input, "123", getReadyToUnmask());
+        clickCardUnmaskButtonAndWait(DialogInterface.BUTTON_POSITIVE, getDismissed());
 
         // Make sure the edit was logged.
         assertEquals(
@@ -151,20 +151,21 @@ public class PaymentRequestJourneyLoggerTest extends PaymentRequestTestBase {
     public void testNumberOfSelectionAdds_ShippingAddress_Completed()
             throws InterruptedException, ExecutionException, TimeoutException {
         // Complete a Payment Request with a credit card.
-        triggerUIAndWait("ccBuy", mReadyToPay);
-        clickInShippingSummaryAndWait(R.id.payments_section, mReadyForInput);
+        triggerUIAndWait("ccBuy", getReadyToPay());
+        clickInShippingSummaryAndWait(R.id.payments_section, getReadyForInput());
 
         // Add a new shipping address.
-        clickInShippingAddressAndWait(R.id.payments_add_option_button, mReadyToEdit);
-        setSpinnerSelectionInEditorAndWait(0 /* Afghanistan */, mReadyToEdit);
+        clickInShippingAddressAndWait(R.id.payments_add_option_button, getReadyToEdit());
+        setSpinnerSelectionInEditorAndWait(0 /* Afghanistan */, getReadyToEdit());
         setTextInEditorAndWait(new String[] {"Alice", "Supreme Court", "Airport Road", "Kabul",
-                "1043", "650-253-0000"}, mEditorTextUpdate);
-        clickInEditorAndWait(R.id.payments_edit_done_button, mReadyToPay);
+                "1043", "650-253-0000"},
+                getEditorTextUpdate());
+        clickInEditorAndWait(R.id.payments_edit_done_button, getReadyToPay());
 
         // Complete the transaction.
-        clickAndWait(R.id.button_primary, mReadyForUnmaskInput);
-        setTextInCardUnmaskDialogAndWait(R.id.card_unmask_input, "123", mReadyToUnmask);
-        clickCardUnmaskButtonAndWait(DialogInterface.BUTTON_POSITIVE, mDismissed);
+        clickAndWait(R.id.button_primary, getReadyForUnmaskInput());
+        setTextInCardUnmaskDialogAndWait(R.id.card_unmask_input, "123", getReadyToUnmask());
+        clickCardUnmaskButtonAndWait(DialogInterface.BUTTON_POSITIVE, getDismissed());
 
         // Make sure the add was logged.
         assertEquals(
@@ -188,10 +189,10 @@ public class PaymentRequestJourneyLoggerTest extends PaymentRequestTestBase {
     public void testNumberOfSuggestionsShown_CreditCards_Completed()
             throws InterruptedException, ExecutionException, TimeoutException {
         // Complete a Payment Request with a credit card.
-        triggerUIAndWait("ccBuy", mReadyToPay);
-        clickAndWait(R.id.button_primary, mReadyForUnmaskInput);
-        setTextInCardUnmaskDialogAndWait(R.id.card_unmask_input, "123", mReadyToUnmask);
-        clickCardUnmaskButtonAndWait(DialogInterface.BUTTON_POSITIVE, mDismissed);
+        triggerUIAndWait("ccBuy", getReadyToPay());
+        clickAndWait(R.id.button_primary, getReadyForUnmaskInput());
+        setTextInCardUnmaskDialogAndWait(R.id.card_unmask_input, "123", getReadyToUnmask());
+        clickCardUnmaskButtonAndWait(DialogInterface.BUTTON_POSITIVE, getDismissed());
 
         // Make sure the right number of suggestions were logged.
         assertEquals(
@@ -216,8 +217,8 @@ public class PaymentRequestJourneyLoggerTest extends PaymentRequestTestBase {
     public void testNumberOfSuggestionsShown_CreditCards_AbortedByUser()
             throws InterruptedException, ExecutionException, TimeoutException {
         // Cancel the payment request.
-        triggerUIAndWait("ccBuy", mReadyToPay);
-        clickAndWait(R.id.close_button, mDismissed);
+        triggerUIAndWait("ccBuy", getReadyToPay());
+        clickAndWait(R.id.close_button, getDismissed());
 
         // Wait for the histograms to be logged.
         Thread.sleep(200);
@@ -246,20 +247,21 @@ public class PaymentRequestJourneyLoggerTest extends PaymentRequestTestBase {
     public void testNumberOfSelectionAdds_CreditCards_Completed()
             throws InterruptedException, ExecutionException, TimeoutException {
         // Complete a Payment Request with a credit card.
-        triggerUIAndWait("ccBuy", mReadyToPay);
+        triggerUIAndWait("ccBuy", getReadyToPay());
 
         // Add a new credit card.
-        clickInPaymentMethodAndWait(R.id.payments_section, mReadyForInput);
-        clickInPaymentMethodAndWait(R.id.payments_add_option_button, mReadyToEdit);
+        clickInPaymentMethodAndWait(R.id.payments_section, getReadyForInput());
+        clickInPaymentMethodAndWait(R.id.payments_add_option_button, getReadyToEdit());
         setSpinnerSelectionsInCardEditorAndWait(
-                new int[] {11, 1, 0}, mBillingAddressChangeProcessed);
-        setTextInCardEditorAndWait(new String[] {"4111111111111111", "Jon Doe"}, mEditorTextUpdate);
-        clickInCardEditorAndWait(R.id.payments_edit_done_button, mReadyToPay);
+                new int[] {11, 1, 0}, getBillingAddressChangeProcessed());
+        setTextInCardEditorAndWait(
+                new String[] {"4111111111111111", "Jon Doe"}, getEditorTextUpdate());
+        clickInCardEditorAndWait(R.id.payments_edit_done_button, getReadyToPay());
 
         // Complete the transaction.
-        clickAndWait(R.id.button_primary, mReadyForUnmaskInput);
-        setTextInCardUnmaskDialogAndWait(R.id.card_unmask_input, "123", mReadyToUnmask);
-        clickCardUnmaskButtonAndWait(DialogInterface.BUTTON_POSITIVE, mDismissed);
+        clickAndWait(R.id.button_primary, getReadyForUnmaskInput());
+        setTextInCardUnmaskDialogAndWait(R.id.card_unmask_input, "123", getReadyToUnmask());
+        clickCardUnmaskButtonAndWait(DialogInterface.BUTTON_POSITIVE, getDismissed());
 
         // Make sure the add was logged.
         assertEquals(1, RecordHistogram.getHistogramValueCountForTesting(
@@ -281,10 +283,10 @@ public class PaymentRequestJourneyLoggerTest extends PaymentRequestTestBase {
     public void testNoContactInfoHistogram()
             throws InterruptedException, ExecutionException, TimeoutException {
         // Complete a Payment Request with a credit card.
-        triggerUIAndWait("ccBuy", mReadyToPay);
-        clickAndWait(R.id.button_primary, mReadyForUnmaskInput);
-        setTextInCardUnmaskDialogAndWait(R.id.card_unmask_input, "123", mReadyToUnmask);
-        clickCardUnmaskButtonAndWait(DialogInterface.BUTTON_POSITIVE, mDismissed);
+        triggerUIAndWait("ccBuy", getReadyToPay());
+        clickAndWait(R.id.button_primary, getReadyForUnmaskInput());
+        setTextInCardUnmaskDialogAndWait(R.id.card_unmask_input, "123", getReadyToUnmask());
+        clickCardUnmaskButtonAndWait(DialogInterface.BUTTON_POSITIVE, getDismissed());
 
         // Make sure nothing was logged for contact info.
         assertEquals(
@@ -307,10 +309,10 @@ public class PaymentRequestJourneyLoggerTest extends PaymentRequestTestBase {
     @Feature({"Payments"})
     public void testTwoTimes() throws InterruptedException, ExecutionException, TimeoutException {
         // Complete a Payment Request with a credit card.
-        triggerUIAndWait("ccBuy", mReadyToPay);
-        clickAndWait(R.id.button_primary, mReadyForUnmaskInput);
-        setTextInCardUnmaskDialogAndWait(R.id.card_unmask_input, "123", mReadyToUnmask);
-        clickCardUnmaskButtonAndWait(DialogInterface.BUTTON_POSITIVE, mDismissed);
+        triggerUIAndWait("ccBuy", getReadyToPay());
+        clickAndWait(R.id.button_primary, getReadyForUnmaskInput());
+        setTextInCardUnmaskDialogAndWait(R.id.card_unmask_input, "123", getReadyToUnmask());
+        clickCardUnmaskButtonAndWait(DialogInterface.BUTTON_POSITIVE, getDismissed());
 
         // Make sure the right number of suggestions were logged.
         assertEquals(
@@ -329,10 +331,10 @@ public class PaymentRequestJourneyLoggerTest extends PaymentRequestTestBase {
                            "PaymentRequest.NumberOfSelectionEdits.ShippingAddress.Completed", 0));
 
         // Complete a second Payment Request with a credit card.
-        reTriggerUIAndWait("ccBuy", mReadyToPay);
-        clickAndWait(R.id.button_primary, mReadyForUnmaskInput);
-        setTextInCardUnmaskDialogAndWait(R.id.card_unmask_input, "123", mReadyToUnmask);
-        clickCardUnmaskButtonAndWait(DialogInterface.BUTTON_POSITIVE, mDismissed);
+        reTriggerUIAndWait("ccBuy", getReadyToPay());
+        clickAndWait(R.id.button_primary, getReadyForUnmaskInput());
+        setTextInCardUnmaskDialogAndWait(R.id.card_unmask_input, "123", getReadyToUnmask());
+        clickCardUnmaskButtonAndWait(DialogInterface.BUTTON_POSITIVE, getDismissed());
 
         // Make sure the right number of suggestions were logged.
         assertEquals(
@@ -359,7 +361,7 @@ public class PaymentRequestJourneyLoggerTest extends PaymentRequestTestBase {
     public void testNoShow() throws InterruptedException, ExecutionException, TimeoutException {
         // Android Pay is supported but no instruments are present.
         installPaymentApp("https://android.com/pay", NO_INSTRUMENTS, DELAYED_RESPONSE);
-        openPageAndClickNodeAndWait("androidPayBuy", mShowFailed);
+        openPageAndClickNodeAndWait("androidPayBuy", getShowFailed());
         expectResultContains(new String[] {"The payment method is not supported"});
 
         // Make sure that no journey metrics were logged.

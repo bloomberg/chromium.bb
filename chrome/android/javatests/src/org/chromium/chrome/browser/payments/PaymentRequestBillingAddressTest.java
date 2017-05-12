@@ -96,13 +96,14 @@ public class PaymentRequestBillingAddressTest extends PaymentRequestTestBase {
     @Feature({"Payments"})
     public void testNewCardBillingAddressFormat()
             throws InterruptedException, ExecutionException, TimeoutException {
-        triggerUIAndWait(mReadyToPay);
-        clickInPaymentMethodAndWait(R.id.payments_section, mReadyForInput);
-        clickInPaymentMethodAndWait(R.id.payments_add_option_button, mReadyToEdit);
-        setTextInCardEditorAndWait(new String[] {"5454-5454-5454-5454", "Bob"}, mEditorTextUpdate);
+        triggerUIAndWait(getReadyToPay());
+        clickInPaymentMethodAndWait(R.id.payments_section, getReadyForInput());
+        clickInPaymentMethodAndWait(R.id.payments_add_option_button, getReadyToEdit());
+        setTextInCardEditorAndWait(
+                new String[] {"5454-5454-5454-5454", "Bob"}, getEditorTextUpdate());
         setSpinnerSelectionsInCardEditorAndWait(
                 new int[] {DECEMBER, NEXT_YEAR, FIRST_BILLING_ADDRESS},
-                mBillingAddressChangeProcessed);
+                getBillingAddressChangeProcessed());
         // The billing address suggestions should include only the name, address, city, state and
         // zip code of the profile.
         assertTrue(getSpinnerSelectionTextInCardEditor(BILLING_ADDRESS_DROPDOWN_INDEX)
@@ -117,9 +118,9 @@ public class PaymentRequestBillingAddressTest extends PaymentRequestTestBase {
     @Feature({"Payments"})
     public void testNumberOfBillingAddressSuggestions()
             throws InterruptedException, ExecutionException, TimeoutException {
-        triggerUIAndWait(mReadyToPay);
-        clickInPaymentMethodAndWait(R.id.payments_section, mReadyForInput);
-        clickInPaymentMethodAndWait(R.id.payments_add_option_button, mReadyToEdit);
+        triggerUIAndWait(getReadyToPay());
+        clickInPaymentMethodAndWait(R.id.payments_section, getReadyForInput());
+        clickInPaymentMethodAndWait(R.id.payments_add_option_button, getReadyToEdit());
 
         // There should only be 8 suggestions, the 7 saved addresses and the option to add a new
         // address.
@@ -135,16 +136,16 @@ public class PaymentRequestBillingAddressTest extends PaymentRequestTestBase {
     public void testNumberOfBillingAddressSuggestions_AfterCancellingNewBillingAddress()
             throws InterruptedException, ExecutionException, TimeoutException {
         // Add a payment method and add a new billing address.
-        triggerUIAndWait(mReadyToPay);
-        clickInPaymentMethodAndWait(R.id.payments_section, mReadyForInput);
-        clickInPaymentMethodAndWait(R.id.payments_add_option_button, mReadyToEdit);
+        triggerUIAndWait(getReadyToPay());
+        clickInPaymentMethodAndWait(R.id.payments_section, getReadyForInput());
+        clickInPaymentMethodAndWait(R.id.payments_add_option_button, getReadyToEdit());
 
         // Select the "+ ADD ADDRESS" option for the billing address.
         setSpinnerSelectionsInCardEditorAndWait(
-                new int[] {DECEMBER, NEXT_YEAR, ADD_BILLING_ADDRESS}, mReadyToEdit);
+                new int[] {DECEMBER, NEXT_YEAR, ADD_BILLING_ADDRESS}, getReadyToEdit());
 
         // Cancel the creation of a new billing address.
-        clickInEditorAndWait(R.id.payments_edit_cancel_button, mReadyToEdit);
+        clickInEditorAndWait(R.id.payments_edit_cancel_button, getReadyToEdit());
 
         // There should still only be 8 suggestions, the 7 saved addresses and the option to add a
         // new address.
@@ -158,10 +159,10 @@ public class PaymentRequestBillingAddressTest extends PaymentRequestTestBase {
     @Feature({"Payments"})
     public void testAddBillingAddressOnCardAndCancel_MaintainsPreviousSelection()
             throws InterruptedException, ExecutionException, TimeoutException {
-        triggerUIAndWait(mReadyToPay);
+        triggerUIAndWait(getReadyToPay());
         // Edit the only card.
-        clickInPaymentMethodAndWait(R.id.payments_section, mReadyForInput);
-        clickInPaymentMethodAndWait(R.id.payments_open_editor_pencil_button, mReadyToEdit);
+        clickInPaymentMethodAndWait(R.id.payments_section, getReadyForInput());
+        clickInPaymentMethodAndWait(R.id.payments_open_editor_pencil_button, getReadyToEdit());
 
         // Jon Doe is selected as the billing address.
         assertTrue(getSpinnerSelectionTextInCardEditor(BILLING_ADDRESS_DROPDOWN_INDEX)
@@ -169,10 +170,10 @@ public class PaymentRequestBillingAddressTest extends PaymentRequestTestBase {
 
         // Select the "+ ADD ADDRESS" option for the billing address.
         setSpinnerSelectionsInCardEditorAndWait(
-                new int[] {DECEMBER, NEXT_YEAR, ADD_BILLING_ADDRESS}, mReadyToEdit);
+                new int[] {DECEMBER, NEXT_YEAR, ADD_BILLING_ADDRESS}, getReadyToEdit());
 
         // Cancel the creation of a new billing address.
-        clickInEditorAndWait(R.id.payments_edit_cancel_button, mReadyToEdit);
+        clickInEditorAndWait(R.id.payments_edit_cancel_button, getReadyToEdit());
 
         // Jon Doe is STILL selected as the billing address.
         assertTrue(getSpinnerSelectionTextInCardEditor(BILLING_ADDRESS_DROPDOWN_INDEX)
@@ -187,10 +188,10 @@ public class PaymentRequestBillingAddressTest extends PaymentRequestTestBase {
     @Feature({"Payments"})
     public void testAddBillingAddressOnCardWithNoBillingAndCancel_MaintainsPreviousSelection()
             throws InterruptedException, ExecutionException, TimeoutException {
-        triggerUIAndWait(mReadyToPay);
+        triggerUIAndWait(getReadyToPay());
         // Edit the second card.
-        clickInPaymentMethodAndWait(R.id.payments_section, mReadyForInput);
-        clickOnPaymentMethodSuggestionOptionAndWait(1, mReadyToEdit);
+        clickInPaymentMethodAndWait(R.id.payments_section, getReadyForInput());
+        clickOnPaymentMethodSuggestionOptionAndWait(1, getReadyToEdit());
 
         // Now in Card Editor to add a billing address. "Select" is selected in the dropdown.
         assertTrue(getSpinnerSelectionTextInCardEditor(BILLING_ADDRESS_DROPDOWN_INDEX)
@@ -198,10 +199,10 @@ public class PaymentRequestBillingAddressTest extends PaymentRequestTestBase {
 
         // Select the "+ ADD ADDRESS" option for the billing address.
         setSpinnerSelectionsInCardEditorAndWait(
-                new int[] {DECEMBER, NEXT_YEAR, ADD_BILLING_ADDRESS}, mReadyToEdit);
+                new int[] {DECEMBER, NEXT_YEAR, ADD_BILLING_ADDRESS}, getReadyToEdit());
 
         // Cancel the creation of a new billing address.
-        clickInEditorAndWait(R.id.payments_edit_cancel_button, mReadyToEdit);
+        clickInEditorAndWait(R.id.payments_edit_cancel_button, getReadyToEdit());
 
         // "Select" is STILL selected as the billing address.
         assertTrue(getSpinnerSelectionTextInCardEditor(BILLING_ADDRESS_DROPDOWN_INDEX)
@@ -216,9 +217,9 @@ public class PaymentRequestBillingAddressTest extends PaymentRequestTestBase {
     public void testBillingAddressSortedByFrecency()
             throws InterruptedException, ExecutionException, TimeoutException {
         // Add a payment method.
-        triggerUIAndWait(mReadyToPay);
-        clickInPaymentMethodAndWait(R.id.payments_section, mReadyForInput);
-        clickInPaymentMethodAndWait(R.id.payments_add_option_button, mReadyToEdit);
+        triggerUIAndWait(getReadyToPay());
+        clickInPaymentMethodAndWait(R.id.payments_section, getReadyForInput());
+        clickInPaymentMethodAndWait(R.id.payments_add_option_button, getReadyToEdit());
 
         // There should be 8 suggestions, the 7 saved addresses and the option to add a new address.
         assertEquals(8, getSpinnerItemCountInCardEditor(BILLING_ADDRESS_DROPDOWN_INDEX));
@@ -243,16 +244,18 @@ public class PaymentRequestBillingAddressTest extends PaymentRequestTestBase {
     public void testBillingAddressSortedByFrecency_AddNewAddress()
             throws InterruptedException, ExecutionException, TimeoutException {
         // Add a payment method.
-        triggerUIAndWait(mReadyToPay);
-        clickInPaymentMethodAndWait(R.id.payments_section, mReadyForInput);
-        clickInPaymentMethodAndWait(R.id.payments_add_option_button, mReadyToEdit);
+        triggerUIAndWait(getReadyToPay());
+        clickInPaymentMethodAndWait(R.id.payments_section, getReadyForInput());
+        clickInPaymentMethodAndWait(R.id.payments_add_option_button, getReadyToEdit());
 
         // Add a new billing address.
         setSpinnerSelectionsInCardEditorAndWait(
-                new int[] {DECEMBER, NEXT_YEAR, ADD_BILLING_ADDRESS}, mReadyToEdit);
-        setTextInEditorAndWait(new String[] {"Seb Doe", "Google", "340 Main St", "Los Angeles",
-                "CA", "90291", "650-253-0000"}, mEditorTextUpdate);
-        clickInEditorAndWait(R.id.payments_edit_done_button, mReadyToEdit);
+                new int[] {DECEMBER, NEXT_YEAR, ADD_BILLING_ADDRESS}, getReadyToEdit());
+        setTextInEditorAndWait(new String[] {
+                "Seb Doe", "Google", "340 Main St", "Los Angeles", "CA", "90291",
+                "650-253-0000"},
+                getEditorTextUpdate());
+        clickInEditorAndWait(R.id.payments_edit_done_button, getReadyToEdit());
 
         // There should be 9 suggestions, the 7 initial addresses, the newly added address and the
         // option to add a new address.
@@ -281,18 +284,19 @@ public class PaymentRequestBillingAddressTest extends PaymentRequestTestBase {
     @Feature({"Payments"})
     public void testNewShippingAddressSuggestedFirst()
             throws InterruptedException, ExecutionException, TimeoutException {
-        triggerUIAndWait(mReadyToPay);
+        triggerUIAndWait(getReadyToPay());
 
         // Add a shipping address.
-        clickInShippingSummaryAndWait(R.id.payments_section, mReadyForInput);
-        clickInShippingAddressAndWait(R.id.payments_add_option_button, mReadyToEdit);
+        clickInShippingSummaryAndWait(R.id.payments_section, getReadyForInput());
+        clickInShippingAddressAndWait(R.id.payments_add_option_button, getReadyToEdit());
         setTextInEditorAndWait(new String[] {"Seb Doe", "Google", "340 Main St", "Los Angeles",
-                "CA", "90291", "650-253-0000"}, mEditorTextUpdate);
-        clickInEditorAndWait(R.id.payments_edit_done_button, mReadyToPay);
+                "CA", "90291", "650-253-0000"},
+                getEditorTextUpdate());
+        clickInEditorAndWait(R.id.payments_edit_done_button, getReadyToPay());
 
         // Navigate to the card editor UI.
-        clickInPaymentMethodAndWait(R.id.payments_section, mReadyForInput);
-        clickInPaymentMethodAndWait(R.id.payments_add_option_button, mReadyToEdit);
+        clickInPaymentMethodAndWait(R.id.payments_section, getReadyForInput());
+        clickInPaymentMethodAndWait(R.id.payments_add_option_button, getReadyToEdit());
 
         // There should be 9 suggestions, the 7 initial addresses, the newly added address and the
         // option to add a new address.
@@ -307,10 +311,10 @@ public class PaymentRequestBillingAddressTest extends PaymentRequestTestBase {
     @Feature({"Payments"})
     public void testSelectIncompleteBillingAddress_EditComplete()
             throws InterruptedException, ExecutionException, TimeoutException {
-        triggerUIAndWait(mReadyToPay);
+        triggerUIAndWait(getReadyToPay());
         // Edit the second card.
-        clickInPaymentMethodAndWait(R.id.payments_section, mReadyForInput);
-        clickOnPaymentMethodSuggestionOptionAndWait(1, mReadyToEdit);
+        clickInPaymentMethodAndWait(R.id.payments_section, getReadyForInput());
+        clickOnPaymentMethodSuggestionOptionAndWait(1, getReadyToEdit());
 
         // Now "Select" is selected in the dropdown.
         assertTrue(getSpinnerSelectionTextInCardEditor(BILLING_ADDRESS_DROPDOWN_INDEX)
@@ -326,10 +330,12 @@ public class PaymentRequestBillingAddressTest extends PaymentRequestTestBase {
 
         // Selects the fourth billing addresss that misses recipient name brings up the address
         // editor.
-        setSpinnerSelectionsInCardEditorAndWait(new int[] {DECEMBER, NEXT_YEAR, 4}, mReadyToEdit);
+        setSpinnerSelectionsInCardEditorAndWait(
+                new int[] {DECEMBER, NEXT_YEAR, 4}, getReadyToEdit());
         setTextInEditorAndWait(new String[] {"Lisa Doh", "Google", "340 Main St", "Los Angeles",
-                "CA", "90291", "650-253-0000"}, mEditorTextUpdate);
-        clickInEditorAndWait(R.id.payments_edit_done_button, mReadyToEdit);
+                "CA", "90291", "650-253-0000"},
+                getEditorTextUpdate());
+        clickInEditorAndWait(R.id.payments_edit_done_button, getReadyToEdit());
 
         // The newly completed address must be selected and put at the top of the dropdown.
         assertTrue(getSpinnerSelectionTextInCardEditor(BILLING_ADDRESS_DROPDOWN_INDEX)
@@ -342,10 +348,10 @@ public class PaymentRequestBillingAddressTest extends PaymentRequestTestBase {
     @Feature({"Payments"})
     public void testSelectIncompleteBillingAddress_EditCancel()
             throws InterruptedException, ExecutionException, TimeoutException {
-        triggerUIAndWait(mReadyToPay);
+        triggerUIAndWait(getReadyToPay());
         // Edit the only complete card.
-        clickInPaymentMethodAndWait(R.id.payments_section, mReadyForInput);
-        clickInPaymentMethodAndWait(R.id.payments_open_editor_pencil_button, mReadyToEdit);
+        clickInPaymentMethodAndWait(R.id.payments_section, getReadyForInput());
+        clickInPaymentMethodAndWait(R.id.payments_open_editor_pencil_button, getReadyToEdit());
 
         // Jon Doe is selected as the billing address.
         assertTrue(getSpinnerSelectionTextInCardEditor(BILLING_ADDRESS_DROPDOWN_INDEX)
@@ -361,8 +367,9 @@ public class PaymentRequestBillingAddressTest extends PaymentRequestTestBase {
 
         // Selects the fifth billing addresss that misses recipient name brings up the address
         // editor.
-        setSpinnerSelectionsInCardEditorAndWait(new int[] {DECEMBER, NEXT_YEAR, 4}, mReadyToEdit);
-        clickInEditorAndWait(R.id.payments_edit_cancel_button, mReadyToEdit);
+        setSpinnerSelectionsInCardEditorAndWait(
+                new int[] {DECEMBER, NEXT_YEAR, 4}, getReadyToEdit());
+        clickInEditorAndWait(R.id.payments_edit_cancel_button, getReadyToEdit());
 
         // The previous selected address should be selected after canceling out from edit.
         assertTrue(getSpinnerSelectionTextInCardEditor(BILLING_ADDRESS_DROPDOWN_INDEX)
