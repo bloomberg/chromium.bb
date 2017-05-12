@@ -84,7 +84,6 @@ crbug.com/661182 fast/loader/open-in-srcdoc-unload.html [ Leak ]
 # the tests for IndexedDB are skipped.
 crbug.com/506752 external/wpt/IndexedDB/ [ Skip ]
 crbug.com/506752 storage/indexeddb/ [ Skip ]
-crbug.com/506752 virtual/sharedarraybuffer/storage/indexeddb/ [ Skip ]
 
 # -----------------------------------------------------------------
 # Untriaged but known leaks of ActiveDOMObject (http).

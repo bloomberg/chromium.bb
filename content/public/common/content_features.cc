@@ -214,7 +214,7 @@ const base::Feature kServiceWorkerNavigationPreload{
 
 // http://tc39.github.io/ecmascript_sharedmem/shmem.html
 const base::Feature kSharedArrayBuffer{"SharedArrayBuffer",
-                                       base::FEATURE_DISABLED_BY_DEFAULT};
+                                       base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Paint invalidation based on slimming paint. See https://goo.gl/eQczQW
 const base::Feature kSlimmingPaintInvalidation{

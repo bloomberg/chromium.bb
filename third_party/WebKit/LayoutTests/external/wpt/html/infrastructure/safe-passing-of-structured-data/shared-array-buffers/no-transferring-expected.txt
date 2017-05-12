@@ -1,6 +1,0 @@
-This is a testharness.js-based test.
-FAIL Trying to transfer a SharedArrayBuffer to this window throws SharedArrayBuffer is not defined
-FAIL Trying to transfer a SharedArrayBuffer to a worker throws SharedArrayBuffer is not defined
-FAIL Trying to transfer a SharedArrayBuffer through a MessagePort throws SharedArrayBuffer is not defined
-Harness: the test ran to completion.
-
