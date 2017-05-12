@@ -51,6 +51,8 @@ DesktopAutomationHandler = function(node) {
                     this.onAriaAttributeChanged);
   this.addListener_(EventType.AUTOCORRECTION_OCCURED,
                     this.onEventIfInRange);
+  this.addListener_(EventType.BLUR,
+                    this.onBlur);
   this.addListener_(EventType.CHECKED_STATE_CHANGED,
                     this.onCheckedStateChanged);
   this.addListener_(EventType.CHILDREN_CHANGED,
@@ -241,6 +243,14 @@ DesktopAutomationHandler.prototype = {
     var range = cursors.Range.fromNode(node);
 
     new Output().withSpeechAndBraille(range, null, evt.type).go();
+  },
+
+  onBlur: function(evt) {
+    // Nullify focus if it no longer exists.
+    chrome.automation.getFocus(function(focus) {
+      if (!focus)
+        ChromeVoxState.instance.setCurrentRange(null);
+    });
   },
 
   /**

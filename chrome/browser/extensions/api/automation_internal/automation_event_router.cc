@@ -110,6 +110,9 @@ void AutomationEventRouter::DispatchAccessibilityLocationChange(
 void AutomationEventRouter::DispatchTreeDestroyedEvent(
     int tree_id,
     content::BrowserContext* browser_context) {
+  if (listeners_.empty())
+    return;
+
   browser_context = browser_context ? browser_context : active_profile_;
   std::unique_ptr<base::ListValue> args(
       api::automation_internal::OnAccessibilityTreeDestroyed::Create(tree_id));

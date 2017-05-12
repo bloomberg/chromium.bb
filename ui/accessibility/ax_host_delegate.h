@@ -32,7 +32,7 @@ class AX_EXPORT AXHostDelegate {
 
   // A tree id appropriate for annotating events sent to an accessibility
   // client.
-  int32_t tree_id() { return tree_id_; }
+  int32_t tree_id() const { return tree_id_; }
 
  private:
   // Register or unregister this class with |AXTreeIDRegistry|.
