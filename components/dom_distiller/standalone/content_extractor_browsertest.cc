@@ -16,6 +16,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/dom_distiller/content/browser/distiller_javascript_utils.h"
 #include "components/dom_distiller/content/browser/distiller_page_web_contents.h"
@@ -31,7 +32,6 @@
 #include "components/leveldb_proto/proto_database_impl.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "content/public/browser/browser_context.h"
-#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/isolated_world_ids.h"
 #include "content/public/test/content_browser_test.h"
@@ -126,10 +126,8 @@ std::unique_ptr<DomDistillerService> CreateDomDistillerService(
     content::BrowserContext* context,
     const base::FilePath& db_path,
     const FileToUrlMap& file_to_url_map) {
-  base::SequencedWorkerPool* blocking_pool =
-      content::BrowserThread::GetBlockingPool();
   scoped_refptr<base::SequencedTaskRunner> background_task_runner =
-      blocking_pool->GetSequencedTaskRunner(blocking_pool->GetSequenceToken());
+      base::CreateSequencedTaskRunnerWithTraits({base::MayBlock()});
 
   // TODO(cjhopman): use an in-memory database instead of an on-disk one with
   // temporary directory.
