@@ -164,5 +164,28 @@
         '<(SHARED_INTERMEDIATE_DIR)/include/login_manager/proto_bindings/arc.pb.cc',
       ]
     },
+    {
+      'target_name': 'system_api-chaps-protos-gen',
+      'type': 'none',
+      'variables': {
+        'proto_in_dir': 'dbus/chaps',
+        'proto_out_dir': 'include/chaps/proto_bindings',
+      },
+      'sources': [
+        '<(proto_in_dir)/ck_structs.proto',
+      ],
+      'includes': ['../../platform2/common-mk/protoc.gypi'],
+    },
+    {
+      'target_name': 'system_api-chaps-protos',
+      'type': 'static_library',
+      'standalone_static_library': 1,
+      'dependencies': [
+        'system_api-chaps-protos-gen',
+      ],
+      'sources': [
+        '<(SHARED_INTERMEDIATE_DIR)/include/chaps/proto_bindings/ck_structs.pb.cc',
+      ]
+    },
   ]
 }
