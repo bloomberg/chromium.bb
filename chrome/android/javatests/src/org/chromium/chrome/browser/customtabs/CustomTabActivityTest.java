@@ -71,6 +71,7 @@ import org.chromium.chrome.browser.history.BrowsingHistoryBridge;
 import org.chromium.chrome.browser.history.HistoryItem;
 import org.chromium.chrome.browser.history.TestBrowsingHistoryObserver;
 import org.chromium.chrome.browser.metrics.PageLoadMetrics;
+import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.prerender.ExternalPrerenderHandler;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
@@ -1940,6 +1941,38 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
     public void testHiddenTabDisabled() throws Exception {
         testSpeculateCorrectUrl(CustomTabsConnection.SpeculationParams.HIDDEN_TAB,
                 CustomTabsConnection.SpeculationParams.PRERENDER);
+    }
+
+    /**
+     * Test that hidden tab speculation is not performed if 3rd party cookies are blocked.
+     **/
+    @SmallTest
+    @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
+    @RetryOnFailure
+    @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
+            "enable-features=" + ChromeFeatureList.CCT_BACKGROUND_TAB})
+    public void testHiddenTabThirdPartyCookiesBlocked() throws Exception {
+        final CustomTabsConnection connection = warmUpAndWait();
+        final CustomTabsSessionToken token =
+                CustomTabsSessionToken.createDummySessionTokenForTesting();
+        connection.newSession(token);
+        connection.setSpeculationModeForSession(
+                token, CustomTabsConnection.SpeculationParams.HIDDEN_TAB);
+        connection.warmup(0);
+
+        // Needs the browser process to be initialized.
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                PrefServiceBridge prefs = PrefServiceBridge.getInstance();
+                boolean old_block_pref = prefs.isBlockThirdPartyCookiesEnabled();
+                prefs.setBlockThirdPartyCookiesEnabled(false);
+                assertTrue(connection.maySpeculate(token));
+                prefs.setBlockThirdPartyCookiesEnabled(true);
+                assertFalse(connection.maySpeculate(token));
+                prefs.setBlockThirdPartyCookiesEnabled(old_block_pref);
+            }
+        });
     }
 
     private void testSpeculateCorrectUrl(int speculationMode) throws Exception {
