@@ -143,7 +143,7 @@ const char* LibSystemKernelName() {
 
   Dl_info info;
   dladdr(reinterpret_cast<void*>(_exit), &info);
-  strncpy(path, info.dli_fname, PATH_MAX);
+  strlcpy(path, info.dli_fname, PATH_MAX);
   name = path;
 
 #if !defined(ADDRESS_SANITIZER)
@@ -201,9 +201,14 @@ void WalkStack(const x86_thread_state64_t& thread_state,
 
 // Module identifiers ---------------------------------------------------------
 
-// Returns the hex encoding of a 16-byte ID for the binary loaded at
-// |module_addr|. Returns an empty string if the UUID cannot be found at
-// |module_addr|.
+// Returns the unique build ID for a module loaded at |module_addr|. Returns the
+// empty string if the function fails to get the build ID.
+//
+// Build IDs are created by the concatenation of the module's GUID (Windows) /
+// UUID (Mac) and an "age" field that indicates how many times that GUID/UUID
+// has been reused. In Windows binaries, the "age" field is present in the
+// module header, but on the Mac, UUIDs are never reused and so the "age" value
+// appended to the UUID is always 0.
 std::string GetUniqueId(const void* module_addr) {
   const mach_header_64* mach_header =
       reinterpret_cast<const mach_header_64*>(module_addr);
@@ -232,7 +237,9 @@ std::string GetUniqueId(const void* module_addr) {
           reinterpret_cast<const uuid_command*>(current_cmd);
       static_assert(sizeof(uuid_cmd->uuid) == sizeof(uuid_t),
                     "UUID field of UUID command should be 16 bytes.");
-      return HexEncode(&uuid_cmd->uuid, sizeof(uuid_cmd->uuid));
+      // The ID is comprised of the UUID concatenated with the Mac's "age" value
+      // which is always 0.
+      return HexEncode(&uuid_cmd->uuid, sizeof(uuid_cmd->uuid)) + "0";
     }
     offset += current_cmd->cmdsize;
   }
