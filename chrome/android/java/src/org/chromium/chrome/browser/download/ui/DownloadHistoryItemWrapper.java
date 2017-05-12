@@ -153,9 +153,6 @@ public abstract class DownloadHistoryItemWrapper extends TimedItem {
     /** @return How much of the download has completed, or null if there is no progress. */
     abstract Progress getDownloadProgress();
 
-    /** @return Whether the download has an unknown file size. */
-    abstract boolean isIndeterminate();
-
     /** @return String indicating the status of the download. */
     abstract String getStatusString();
 
@@ -309,11 +306,6 @@ public abstract class DownloadHistoryItemWrapper extends TimedItem {
         @Override
         public Progress getDownloadProgress() {
             return mItem.getDownloadInfo().getProgress();
-        }
-
-        @Override
-        public boolean isIndeterminate() {
-            return mItem.isIndeterminate();
         }
 
         @Override
@@ -497,12 +489,8 @@ public abstract class DownloadHistoryItemWrapper extends TimedItem {
         @Override
         public Progress getDownloadProgress() {
             // Only completed offline page downloads are shown.
-            return new Progress(100, 100L, OfflineItemProgressUnit.PERCENTAGE);
-        }
-
-        @Override
-        public boolean isIndeterminate() {
-            return true;
+            return isComplete() ? new Progress(100, 100L, OfflineItemProgressUnit.PERCENTAGE)
+                    : Progress.createIndeterminateProgress();
         }
 
         @Override
