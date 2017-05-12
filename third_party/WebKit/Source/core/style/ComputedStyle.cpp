@@ -1068,18 +1068,14 @@ void ComputedStyle::UpdatePropertySpecificDifferences(
         diff.SetTextDecorationOrColorChanged();
       } else {
         if (rare_inherited_data_.Get() != other.rare_inherited_data_.Get() &&
-            (rare_inherited_data_->TextFillColor() !=
-                 other.rare_inherited_data_->TextFillColor() ||
-             rare_inherited_data_->TextStrokeColor() !=
-                 other.rare_inherited_data_->TextStrokeColor() ||
-             rare_inherited_data_->TextEmphasisColor() !=
-                 other.rare_inherited_data_->TextEmphasisColor() ||
-             rare_inherited_data_->VisitedLinkTextFillColor() !=
-                 other.rare_inherited_data_->VisitedLinkTextFillColor() ||
-             rare_inherited_data_->VisitedLinkTextStrokeColor() !=
-                 other.rare_inherited_data_->VisitedLinkTextStrokeColor() ||
-             rare_inherited_data_->VisitedLinkTextEmphasisColor() !=
-                 other.rare_inherited_data_->VisitedLinkTextEmphasisColor() ||
+            (TextFillColor() != other.TextFillColor() ||
+             TextStrokeColor() != other.TextStrokeColor() ||
+             TextEmphasisColor() != other.TextEmphasisColor() ||
+             VisitedLinkTextFillColor() != other.VisitedLinkTextFillColor() ||
+             VisitedLinkTextStrokeColor() !=
+                 other.VisitedLinkTextStrokeColor() ||
+             VisitedLinkTextEmphasisColor() !=
+                 other.VisitedLinkTextEmphasisColor() ||
              rare_inherited_data_->text_emphasis_fill_ !=
                  other.rare_inherited_data_->text_emphasis_fill_ ||
              rare_inherited_data_->text_underline_position_ !=
@@ -1088,10 +1084,8 @@ void ComputedStyle::UpdatePropertySpecificDifferences(
                  other.rare_inherited_data_->text_decoration_skip_ ||
              rare_inherited_data_->applied_text_decorations_ !=
                  other.rare_inherited_data_->applied_text_decorations_ ||
-             rare_inherited_data_->CaretColor() !=
-                 other.rare_inherited_data_->CaretColor() ||
-             rare_inherited_data_->VisitedLinkCaretColor() !=
-                 other.rare_inherited_data_->VisitedLinkCaretColor())) {
+             CaretColor() != CaretColor() ||
+             VisitedLinkCaretColor() != other.VisitedLinkCaretColor())) {
           diff.SetTextDecorationOrColorChanged();
         }
       }
