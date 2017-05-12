@@ -80,7 +80,11 @@ NSString* const kMailtoDefaultHandlerKey = @"MailtoHandlerDefault";
 }
 
 - (NSArray<MailtoHandler*>*)defaultHandlers {
-  return [_handlers allValues];
+  return [[_handlers allValues]
+      sortedArrayUsingComparator:^NSComparisonResult(
+          MailtoHandler* _Nonnull obj1, MailtoHandler* _Nonnull obj2) {
+        return [[obj1 appName] compare:[obj2 appName]];
+      }];
 }
 
 - (NSString*)defaultHandlerID {

@@ -65,6 +65,7 @@ source_set("unit_tests") {
   ]
   deps = [
     ":sad_tab_tab_helper_delegate",
+    ":test_support",
     ":web",
     "//base:base",
     "//base/test:test_support",
@@ -246,12 +247,15 @@ source_set("test_support") {
   sources = [
     "chrome_web_test.h",
     "chrome_web_test.mm",
+    "fake_mailto_handler_helpers.h",
+    "fake_mailto_handler_helpers.mm",
   ]
   deps = [
     "//components/password_manager/core/browser:test_support",
     "//ios/chrome/browser/browser_state:test_support",
     "//ios/chrome/browser/passwords",
     "//ios/chrome/browser/ui:ui_internal",
+    "//ios/chrome/browser/web",
     "//ios/web",
     "//ios/web:test_support",
   ]

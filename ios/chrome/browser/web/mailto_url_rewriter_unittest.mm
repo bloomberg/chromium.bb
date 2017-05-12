@@ -4,8 +4,7 @@
 
 #import "ios/chrome/browser/web/mailto_url_rewriter.h"
 
-#import "ios/chrome/browser/web/mailto_handler.h"
-#import "ios/chrome/browser/web/mailto_handler_gmail.h"
+#import "ios/chrome/browser/web/fake_mailto_handler_helpers.h"
 #import "ios/chrome/browser/web/mailto_handler_system_mail.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
@@ -27,41 +26,6 @@ NSString* const kLegacyShouldAutoOpenKey = @"ShouldAutoOpenLinks_422689480";
 NSString* const kGmailAppStoreID = @"422689480";
 
 }  // namespace
-
-#pragma mark - Gmail not installed
-
-@interface FakeMailtoHandlerGmailNotInstalled : MailtoHandlerGmail
-@end
-
-@implementation FakeMailtoHandlerGmailNotInstalled
-- (BOOL)isAvailable {
-  return NO;
-}
-@end
-
-#pragma mark - Gmail is installed
-
-@interface FakeMailtoHandlerGmailInstalled : MailtoHandlerGmail
-@end
-
-@implementation FakeMailtoHandlerGmailInstalled
-- (BOOL)isAvailable {
-  return YES;
-}
-@end
-
-#pragma mark - Test Observer object
-
-@interface RewriterObserver : NSObject<MailtoURLRewriterObserver>
-@property(nonatomic, readonly) int changeCount;
-@end
-
-@implementation RewriterObserver
-@synthesize changeCount = _changeCount;
-- (void)rewriterDidChange:(MailtoURLRewriter*)rewriter {
-  ++_changeCount;
-}
-@end
 
 #pragma mark - MailtoURLRewriter private interfaces for testing.
 
@@ -130,7 +94,8 @@ TEST_F(MailtoURLRewriterTest, TestUserPreferencePersistence) {
 }
 
 TEST_F(MailtoURLRewriterTest, TestChangeObserver) {
-  RewriterObserver* observer = [[RewriterObserver alloc] init];
+  CountingMailtoURLRewriterObserver* observer =
+      [[CountingMailtoURLRewriterObserver alloc] init];
   ASSERT_EQ(0, [observer changeCount]);
 
   // Sets up a MailtoURLRewriter object. The default handler is Gmail app
