@@ -1135,7 +1135,7 @@
                 {
                     "name": "Enabled",
                     "params": {
-                        "engagement_threshold_for_flash": "16"
+                        "engagement_threshold_for_flash": "32"
                     },
                     "enable_features": [
                         "PreferHtmlOverPlugins"
