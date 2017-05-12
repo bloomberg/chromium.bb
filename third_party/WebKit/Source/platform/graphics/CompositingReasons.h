@@ -63,8 +63,9 @@ const uint64_t kCompositingReasonReflectionOfCompositedParent = UINT64_C(1)
                                                                 << 28;
 const uint64_t kCompositingReasonIsolateCompositedDescendants = UINT64_C(1)
                                                                 << 29;
-const uint64_t kCompositingReasonPositionFixedWithCompositedDescendants =
-    UINT64_C(1) << 30;
+const uint64_t
+    kCompositingReasonPositionFixedOrStickyWithCompositedDescendants =
+        UINT64_C(1) << 30;
 
 // The root layer is a special case. It may be forced to be a layer, but it also
 // needs to be a layer if anything else in the subtree is composited.
@@ -130,7 +131,7 @@ const uint64_t kCompositingReasonComboCompositedDescendants =
     kCompositingReasonBlendingWithCompositedDescendants |
     kCompositingReasonReflectionWithCompositedDescendants |
     kCompositingReasonClipsCompositingDescendants |
-    kCompositingReasonPositionFixedWithCompositedDescendants;
+    kCompositingReasonPositionFixedOrStickyWithCompositedDescendants;
 
 const uint64_t kCompositingReasonCombo3DDescendants =
     kCompositingReasonPreserve3DWith3DDescendants |
@@ -158,7 +159,7 @@ const uint64_t kCompositingReasonComboReasonsThatRequireOwnBacking =
                                                      // 3d-transformed elements
                                                      // intersect.
     kCompositingReasonBackdropFilter |
-    kCompositingReasonPositionFixedWithCompositedDescendants;
+    kCompositingReasonPositionFixedOrStickyWithCompositedDescendants;
 
 const uint64_t kCompositingReasonComboSquashableReasons =
     kCompositingReasonOverlap | kCompositingReasonAssumedOverlap |

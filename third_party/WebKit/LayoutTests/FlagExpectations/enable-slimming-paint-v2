@@ -1,7 +1,6 @@
 # Expectations for slimming paint v2
 # See: https://docs.google.com/document/d/1QCM912Dr6u38DqyQqd7pxQxDy8FFOoWMMDq7uAXqKdA/view
 # We are focused on fast/, compositing/, and svg/ with all other directories skipped (for now).
-
 Bug(none) accessibility/ [ Skip ]
 Bug(none) app_banner/ [ Skip ]
 Bug(none) battery-status/ [ Skip ]
@@ -330,6 +329,7 @@ Bug(none) compositing/overflow/content-loses-scrollbars.html [ Failure ]
 Bug(none) compositing/overflow/descendant-with-clip-path.html [ Failure ]
 Bug(none) compositing/overflow/mask-with-filter.html [ Failure Crash ]
 Bug(none) compositing/overflow/mask-with-small-content-rect.html [ Failure ]
+crbug.com/718971 compositing/overflow/mixed-composited-nested-sticky-overflow-scroller.html [ Failure ]
 Bug(none) compositing/overflow/nested-border-radius-clipping.html [ Failure ]
 Bug(none) compositing/overflow/nested-render-surfaces-with-intervening-clip.html [ Failure Crash ]
 Bug(none) compositing/overflow/nested-render-surfaces-with-rotation.html [ Failure ]
