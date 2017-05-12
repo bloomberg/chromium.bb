@@ -47,12 +47,13 @@ static bool SubimageIsPending(CSSValue* value) {
 }
 
 static bool SubimageKnownToBeOpaque(CSSValue* value,
-                                    const LayoutObject& layout_object) {
+                                    const Document& document,
+                                    const ComputedStyle& style) {
   if (value->IsImageValue())
-    return ToCSSImageValue(value)->KnownToBeOpaque(layout_object);
+    return ToCSSImageValue(value)->KnownToBeOpaque(document, style);
 
   if (value->IsImageGeneratorValue())
-    return ToCSSImageGeneratorValue(value)->KnownToBeOpaque(layout_object);
+    return ToCSSImageGeneratorValue(value)->KnownToBeOpaque(document, style);
 
   NOTREACHED();
 
@@ -188,10 +189,10 @@ bool CSSCrossfadeValue::IsPending() const {
          SubimageIsPending(to_value_.Get());
 }
 
-bool CSSCrossfadeValue::KnownToBeOpaque(
-    const LayoutObject& layout_object) const {
-  return SubimageKnownToBeOpaque(from_value_.Get(), layout_object) &&
-         SubimageKnownToBeOpaque(to_value_.Get(), layout_object);
+bool CSSCrossfadeValue::KnownToBeOpaque(const Document& document,
+                                        const ComputedStyle& style) const {
+  return SubimageKnownToBeOpaque(from_value_.Get(), document, style) &&
+         SubimageKnownToBeOpaque(to_value_.Get(), document, style);
 }
 
 void CSSCrossfadeValue::LoadSubimages(const Document& document) {

@@ -51,8 +51,8 @@ class BoxPainterBase {
       bool include_logical_left_edge = true,
       bool include_logical_right_edge = true);
 
-  static bool ShouldForceWhiteBackgroundForPrintEconomy(const ComputedStyle&,
-                                                        const Document&);
+  static bool ShouldForceWhiteBackgroundForPrintEconomy(const Document&,
+                                                        const ComputedStyle&);
 
   LayoutRect BoundsForDrawingRecorder(const PaintInfo&,
                                       const LayoutPoint& adjusted_paint_offset);

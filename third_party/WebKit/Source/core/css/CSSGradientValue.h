@@ -104,7 +104,7 @@ class CSSGradientValue : public CSSImageGeneratorValue {
   IntSize FixedSize(const Document&) const { return IntSize(); }
 
   bool IsPending() const { return false; }
-  bool KnownToBeOpaque(const LayoutObject&) const;
+  bool KnownToBeOpaque(const Document&, const ComputedStyle&) const;
 
   void LoadSubimages(const Document&) {}
 

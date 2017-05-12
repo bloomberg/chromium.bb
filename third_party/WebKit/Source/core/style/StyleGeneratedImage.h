@@ -53,7 +53,7 @@ class CORE_EXPORT StyleGeneratedImage final : public StyleImage {
   void RemoveClient(LayoutObject*) override;
   PassRefPtr<Image> GetImage(const LayoutObject&,
                              const IntSize&) const override;
-  bool KnownToBeOpaque(const LayoutObject&) const override;
+  bool KnownToBeOpaque(const Document&, const ComputedStyle&) const override;
 
   DECLARE_VIRTUAL_TRACE();
 

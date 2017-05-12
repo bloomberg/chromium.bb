@@ -100,7 +100,8 @@ void CSSPaintValue::PaintImageGeneratorReady() {
   }
 }
 
-bool CSSPaintValue::KnownToBeOpaque(const LayoutObject& layout_object) const {
+bool CSSPaintValue::KnownToBeOpaque(const Document&,
+                                    const ComputedStyle&) const {
   return generator_ && !generator_->HasAlpha();
 }
 

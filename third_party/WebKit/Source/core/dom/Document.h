@@ -699,6 +699,7 @@ class CORE_EXPORT Document : public ContainerNode,
   bool CanCreateHistoryEntry() const;
 
   TextLinkColors& GetTextLinkColors() { return text_link_colors_; }
+  const TextLinkColors& GetTextLinkColors() const { return text_link_colors_; }
   VisitedLinkState& GetVisitedLinkState() const { return *visited_link_state_; }
 
   MouseEventWithHitTestResults PerformMouseEventHitTest(const HitTestRequest&,

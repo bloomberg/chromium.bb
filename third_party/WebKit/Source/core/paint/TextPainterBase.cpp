@@ -125,7 +125,7 @@ TextPainterBase::Style TextPainterBase::TextPaintingStyle(
     DCHECK(document.Printing() == is_printing ||
            RuntimeEnabledFeatures::printBrowserEnabled());
     bool force_background_to_white =
-        BoxPainter::ShouldForceWhiteBackgroundForPrintEconomy(style, document);
+        BoxPainter::ShouldForceWhiteBackgroundForPrintEconomy(document, style);
     if (force_background_to_white) {
       text_style.fill_color =
           TextColorForWhiteBackground(text_style.fill_color);

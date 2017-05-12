@@ -116,8 +116,10 @@ String CSSImageValue::CustomCSSText() const {
   return SerializeURI(relative_url_);
 }
 
-bool CSSImageValue::KnownToBeOpaque(const LayoutObject& layout_object) const {
-  return cached_image_ ? cached_image_->KnownToBeOpaque(layout_object) : false;
+bool CSSImageValue::KnownToBeOpaque(const Document& document,
+                                    const ComputedStyle& style) const {
+  return cached_image_ ? cached_image_->KnownToBeOpaque(document, style)
+                       : false;
 }
 
 DEFINE_TRACE_AFTER_DISPATCH(CSSImageValue) {

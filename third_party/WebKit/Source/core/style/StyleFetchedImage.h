@@ -63,7 +63,7 @@ class StyleFetchedImage final : public StyleImage,
   String DebugName() const override { return "StyleFetchedImage"; }
   PassRefPtr<Image> GetImage(const LayoutObject&,
                              const IntSize&) const override;
-  bool KnownToBeOpaque(const LayoutObject&) const override;
+  bool KnownToBeOpaque(const Document&, const ComputedStyle&) const override;
   ImageResourceContent* CachedImage() const override;
 
   DECLARE_VIRTUAL_TRACE();

@@ -73,9 +73,9 @@ PassRefPtr<Image> StyleGeneratedImage::GetImage(
   return image_generator_value_->GetImage(layout_object, size);
 }
 
-bool StyleGeneratedImage::KnownToBeOpaque(
-    const LayoutObject& layout_object) const {
-  return image_generator_value_->KnownToBeOpaque(layout_object);
+bool StyleGeneratedImage::KnownToBeOpaque(const Document& document,
+                                          const ComputedStyle& style) const {
+  return image_generator_value_->KnownToBeOpaque(document, style);
 }
 
 DEFINE_TRACE(StyleGeneratedImage) {

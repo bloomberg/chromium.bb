@@ -84,7 +84,9 @@ class StylePendingImage final : public StyleImage {
     NOTREACHED();
     return nullptr;
   }
-  bool KnownToBeOpaque(const LayoutObject&) const override { return false; }
+  bool KnownToBeOpaque(const Document&, const ComputedStyle&) const override {
+    return false;
+  }
 
   DEFINE_INLINE_VIRTUAL_TRACE() {
     visitor->Trace(value_);

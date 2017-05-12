@@ -37,6 +37,7 @@ class LayoutObject;
 class LayoutSize;
 class SVGImage;
 class Document;
+class ComputedStyle;
 
 typedef void* WrappedImagePtr;
 
@@ -71,7 +72,7 @@ class CORE_EXPORT StyleImage : public GarbageCollectedFinalized<StyleImage> {
                                      const IntSize& container_size) const = 0;
   virtual WrappedImagePtr Data() const = 0;
   virtual float ImageScaleFactor() const { return 1; }
-  virtual bool KnownToBeOpaque(const LayoutObject&) const = 0;
+  virtual bool KnownToBeOpaque(const Document&, const ComputedStyle&) const = 0;
   virtual ImageResourceContent* CachedImage() const { return 0; }
 
   ALWAYS_INLINE bool IsImageResource() const { return is_image_resource_; }

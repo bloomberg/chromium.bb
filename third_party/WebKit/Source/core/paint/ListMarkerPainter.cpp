@@ -94,8 +94,8 @@ void ListMarkerPainter::Paint(const PaintInfo& paint_info,
   Color color(layout_list_marker_.ResolveColor(CSSPropertyColor));
 
   if (BoxPainter::ShouldForceWhiteBackgroundForPrintEconomy(
-          layout_list_marker_.StyleRef(),
-          layout_list_marker_.ListItem()->GetDocument()))
+          layout_list_marker_.ListItem()->GetDocument(),
+          layout_list_marker_.StyleRef()))
     color = TextPainter::TextColorForWhiteBackground(color);
 
   // Apply the color to the list marker text.

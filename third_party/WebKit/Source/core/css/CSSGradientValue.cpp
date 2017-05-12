@@ -284,9 +284,15 @@ static void ReplaceColorHintsWithColorStops(
 }
 
 static Color ResolveStopColor(const CSSValue& stop_color,
-                              const LayoutObject& object) {
-  return object.GetDocument().GetTextLinkColors().ColorFromCSSValue(
-      stop_color, object.ResolveColor(CSSPropertyColor));
+                              const Document& document,
+                              const ComputedStyle& style) {
+  return document.GetTextLinkColors().ColorFromCSSValue(
+      stop_color, style.VisitedDependentColor(CSSPropertyColor));
+}
+
+static Color ResolveStopColor(const CSSValue& stop_color,
+                              const LayoutObject& obj) {
+  return ResolveStopColor(stop_color, obj.GetDocument(), obj.StyleRef());
 }
 
 void CSSGradientValue::AddDeprecatedStops(GradientDesc& desc,
@@ -788,9 +794,11 @@ static FloatPoint ComputeEndPoint(
   return result;
 }
 
-bool CSSGradientValue::KnownToBeOpaque(const LayoutObject& object) const {
+bool CSSGradientValue::KnownToBeOpaque(const Document& document,
+                                       const ComputedStyle& style) const {
   for (auto& stop : stops_) {
-    if (!stop.IsHint() && ResolveStopColor(*stop.color_, object).HasAlpha())
+    if (!stop.IsHint() &&
+        ResolveStopColor(*stop.color_, document, style).HasAlpha())
       return false;
   }
   return true;
