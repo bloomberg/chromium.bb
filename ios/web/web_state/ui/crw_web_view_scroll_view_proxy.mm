@@ -213,6 +213,12 @@
   [_observers webViewScrollViewDidZoom:self];
 }
 
+- (void)scrollViewWillBeginZooming:(UIScrollView*)scrollView
+                          withView:(UIView*)view {
+  DCHECK_EQ(_scrollView, scrollView);
+  [_observers webViewScrollViewWillBeginZooming:self];
+}
+
 #pragma mark -
 
 + (NSArray*)scrollViewObserverKeyPaths {
