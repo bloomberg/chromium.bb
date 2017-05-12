@@ -6358,7 +6358,10 @@ I don't think this site should be blocked!
         Report an issue
       </message>
 
-      <!-- SRT bubble messages -->
+      <!-- SRT bubble messages.
+           These strings are for the old Chrome Cleanup version and should be
+           deleted as soon as all Chrome Cleanup UI is fully integrated into
+           Chrome. -->
       <message name="IDS_SRT_BUBBLE_DOWNLOAD_BUTTON_TEXT" desc="Download button of the Chrome Cleanup Tool bubble">
         Get the Chrome Cleanup Tool
       </message>
@@ -6382,6 +6385,49 @@ I don't think this site should be blocked!
       <if expr="not use_titlecase">
         <message name="IDS_SRT_MENU_ITEM" desc="Text for the Chrome menu option to be shown when unusual behavior was detected.">
           Unusual behavior detected
+        </message>
+      </if>
+
+      <!-- Chrome Cleanup prompt and web UI -->
+      <if expr="is_win">
+        <message name="IDS_CHROME_CLEANUP_PROMPT_DETAILS_BUTTON_LABEL" desc="The button in the Chrome Cleanup dialog that lets users see more details, such as what files will be deleted from their computer. Chrome browser shows the dialog when unwanted software, like ad injectors or software that changes the user's settings without their knowledge, is found on the user's computer. Noun; verb 'See' is omitted.">
+          Details
+        </message>
+        <message name="IDS_CHROME_CLEANUP_PROMPT_REMOVE_BUTTON_LABEL" desc="A button in the Chrome Cleanup dialog. When clicked, Chrome will begin to remove unwanted software and restore browser settings to default values. Appears next to a 'Cancel' button and a 'Details' button that opens a page that shows which unwanted software will be deleted. 'Remove' is imperative.">
+          Remove
+        </message>
+        <message name="IDS_CHROME_CLEANUP_PROMPT_TITLE" desc="Title of the Chrome Cleanup dialog. Chrome browser shows the dialog when unwanted software, like ad injectors or software that changes the user's settings without their knowledge, is found on the user's computer. Appears above a description of what the cleanup dialog does, along with a 'Remove', 'Cancel', and 'Details' button. 'Remove' is imperative, asking the user, do you want Chrome to remove harmful software?">
+          Remove harmful software?
+        </message>
+        <message name="IDS_CHROME_CLEANUP_WEBUI_DONE_BUTTON_LABEL" desc="A button on the web page for Chrome Cleanup. Clicking this button causes the card on the settings page to be dismissed.">
+          Done
+        </message>
+        <message name="IDS_CHROME_CLEANUP_WEBUI_FOOTER_POWERED_BY" desc="Branding footer on the web page for Chrome Cleanup. COMPANY_NAME is the name of a technology service that Chrome uses to remove harmful software from the user's computer. It is not necessary to translate 'powered by' literally; use an appropriate word for your language to convey the meaning of 'uses'. A similar use in other Google products is 'Powered by Google Translate.'">
+          Powered by <ph name="COMPANY_NAME">$1<ex>Google</ex></ph>
+        </message>
+        <message name="IDS_CHROME_CLEANUP_WEBUI_LINK_SHOW_FILES" desc="A link, appearing on the Chrome Cleanup web page, that user can click to show the files that will be removed. Imperative.">
+          Show files to be removed
+        </message>
+        <message name="IDS_CHROME_CLEANUP_WEBUI_REMOVE_BUTTON_LABEL" desc="Button on the Chrome Cleanup web page. Allows users to start a cleanup of unwanted software on their computer and restore browser settings to default values. 'Remove' is imperative.">
+          Remove
+        </message>
+        <message name="IDS_CHROME_CLEANUP_WEBUI_RESTART_BUTTON_LABEL" desc="Button on the web page for Chrome Cleanup. Clicking this button causes the user's computer to turn off (shut down) and turn back on again. Imperative. ">
+          Restart computer
+        </message>
+        <message name="IDS_CHROME_CLEANUP_WEBUI_TITLE_ERROR_CANT_REMOVE" desc="An error message, appearing on the Chrome Cleanup web page, that Chrome tried to clean up unwanted software, as requested by the user, but was unsuccessful. Omits subject, i.e. Chrome can't remove harmful software.">
+          Can't remove harmful software
+        </message>
+        <message name="IDS_CHROME_CLEANUP_WEBUI_TITLE_REMOVE" desc="Title of the Chrome Cleanup web page. Chrome browser shows the webpage when unwanted software, like ad injectors or software that changes the user's settings without their knowledge, is found on the user's computer. Appears above a description of what the cleanup does. 'Remove' is imperative.">
+          Remove harmful software
+        </message>
+        <message name="IDS_CHROME_CLEANUP_WEBUI_TITLE_REMOVED" desc="A confirmation, appearing on the Chrome Cleanup web page, that the cleanup of unwanted software is finished. Omits 'was', i.e. Harmful software was removed. Appears next to a Done button, which lets user dismiss the confirmation.">
+          Harmful software removed
+        </message>
+        <message name="IDS_CHROME_CLEANUP_WEBUI_TITLE_REMOVING" desc="A status message, appearing on the Chrome cleanup web page, that the cleanup of unwanted software initiated by the user is in progress. Omits subject, i.e. 'Chrome is removing harmful software.' If appropriate for your language, include ellipsis to show that the operation is in progress.">
+          Removing harmful software...
+        </message>
+        <message name="IDS_CHROME_CLEANUP_WEBUI_TITLE_RESTART" desc="A status message, appearing on the Chrome Cleanup web page, that the cleanup of unwanted software initiated by the user was performed but isn't finished. User must take additional action to finish the cleanup. 'Restart' is imperative. Short for 'To finish removing harmful software...'">
+          To finish, restart your computer
         </message>
       </if>
 
