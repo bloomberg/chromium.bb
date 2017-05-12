@@ -1580,6 +1580,8 @@ class CORE_EXPORT UseCounter {
     kAnchorClickDispatchForNonConnectedNode = 1971,
     kHTMLParseErrorNestedForm = 1972,
     kFontShapingNotDefGlyphObserved = 1973,
+    kPostMessageOutgoingWouldBeBlockedByConnectSrc = 1974,
+    kPostMessageIncomingWouldBeBlockedByConnectSrc = 1975,
 
     // Add new features immediately above this line. Don't change assigned
     // numbers of any item, and don't reuse removed slots.

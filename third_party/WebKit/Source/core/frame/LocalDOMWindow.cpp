@@ -65,6 +65,7 @@
 #include "core/frame/Settings.h"
 #include "core/frame/SuspendableTimer.h"
 #include "core/frame/VisualViewport.h"
+#include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/html/HTMLFrameOwnerElement.h"
 #include "core/input/EventHandler.h"
 #include "core/inspector/ConsoleMessage.h"
@@ -701,6 +702,14 @@ void LocalDOMWindow::DispatchMessageEventWithOriginCheck(
       GetFrameConsole()->AddMessage(console_message);
       return;
     }
+  }
+
+  KURL sender(kParsedURLString, static_cast<MessageEvent*>(event)->origin());
+  if (!document()->GetContentSecurityPolicy()->AllowConnectToSource(
+          sender, RedirectStatus::kNoRedirect,
+          SecurityViolationReportingPolicy::kSuppressReporting)) {
+    UseCounter::Count(
+        GetFrame(), UseCounter::kPostMessageIncomingWouldBeBlockedByConnectSrc);
   }
 
   DispatchEvent(event);

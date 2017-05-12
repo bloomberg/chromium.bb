@@ -18,6 +18,7 @@
 #include "core/frame/Location.h"
 #include "core/frame/Settings.h"
 #include "core/frame/UseCounter.h"
+#include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/input/InputDeviceCapabilities.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "core/loader/MixedContentChecker.h"
@@ -233,6 +234,13 @@ void DOMWindow::postMessage(PassRefPtr<SerializedScriptValue> message,
       UseCounter::Count(GetFrame(),
                         UseCounter::kPostMessageFromInsecureToSecureToplevel);
     }
+  }
+
+  if (!source_document->GetContentSecurityPolicy()->AllowConnectToSource(
+          target_url, RedirectStatus::kNoRedirect,
+          SecurityViolationReportingPolicy::kSuppressReporting)) {
+    UseCounter::Count(
+        GetFrame(), UseCounter::kPostMessageOutgoingWouldBeBlockedByConnectSrc);
   }
 
   MessageEvent* event =
