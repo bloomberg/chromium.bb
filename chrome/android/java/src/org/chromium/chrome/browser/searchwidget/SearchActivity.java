@@ -21,6 +21,7 @@ import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.WebContentsFactory;
 import org.chromium.chrome.browser.WindowDelegate;
 import org.chromium.chrome.browser.customtabs.CustomTabsConnection;
+import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.init.AsyncInitializationActivity;
 import org.chromium.chrome.browser.locale.LocaleManager;
 import org.chromium.chrome.browser.omnibox.AutocompleteController;
@@ -242,7 +243,7 @@ public class SearchActivity extends AsyncInitializationActivity
         String fixedUrl = UrlFormatter.fixupUrl(url);
         Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(fixedUrl));
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_NEW_DOCUMENT);
-        intent.setPackage(getPackageName());
+        intent.setClass(this, ChromeLauncherActivity.class);
         IntentHandler.addTrustedIntentExtras(intent);
         IntentUtils.safeStartActivity(this, intent,
                 ActivityOptionsCompat
