@@ -261,6 +261,9 @@ EnumTraits<mojom::PasswordFormSubmissionIndicatorEvent,
       return mojom::PasswordFormSubmissionIndicatorEvent::FRAME_DETACHED;
     case PasswordForm::SubmissionIndicatorEvent::MANUAL_SAVE:
       return mojom::PasswordFormSubmissionIndicatorEvent::MANUAL_SAVE;
+    case PasswordForm::SubmissionIndicatorEvent::DOM_MUTATION_AFTER_XHR:
+      return mojom::PasswordFormSubmissionIndicatorEvent::
+          DOM_MUTATION_AFTER_XHR;
     case PasswordForm::SubmissionIndicatorEvent::
         SUBMISSION_INDICATOR_EVENT_COUNT:
       return mojom::PasswordFormSubmissionIndicatorEvent::
@@ -295,6 +298,9 @@ bool EnumTraits<mojom::PasswordFormSubmissionIndicatorEvent,
       return true;
     case mojom::PasswordFormSubmissionIndicatorEvent::MANUAL_SAVE:
       *output = PasswordForm::SubmissionIndicatorEvent::MANUAL_SAVE;
+      return true;
+    case mojom::PasswordFormSubmissionIndicatorEvent::DOM_MUTATION_AFTER_XHR:
+      *output = PasswordForm::SubmissionIndicatorEvent::DOM_MUTATION_AFTER_XHR;
       return true;
     case mojom::PasswordFormSubmissionIndicatorEvent::
         SUBMISSION_INDICATOR_EVENT_COUNT:

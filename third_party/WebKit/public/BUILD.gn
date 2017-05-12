@@ -609,6 +609,8 @@ source_set("blink_headers") {
     "web/mac/WebScrollbarTheme.h",
     "web/mac/WebSubstringUtil.h",
     "web/mac/WebSubstringUtil.h",
+    "web/modules/password_manager/WebFormElementObserver.h",
+    "web/modules/password_manager/WebFormElementObserverCallback.h",
     "web/modules/serviceworker/WebServiceWorkerContextClient.h",
     "web/modules/serviceworker/WebServiceWorkerContextProxy.h",
     "web/win/WebFontRendering.h",

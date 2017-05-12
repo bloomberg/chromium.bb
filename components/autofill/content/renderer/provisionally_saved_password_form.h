@@ -39,8 +39,8 @@ class ProvisionallySavedPasswordForm {
     DCHECK(IsSet());
     return *password_form_;
   }
-  const blink::WebFormElement& form_element() const { return form_element_; }
-  const blink::WebInputElement& input_element() const { return input_element_; }
+  blink::WebFormElement& form_element() { return form_element_; }
+  blink::WebInputElement& input_element() { return input_element_; }
 
   void SetSubmissionIndicatorEvent(
       PasswordForm::SubmissionIndicatorEvent event);

@@ -1678,10 +1678,42 @@ TEST_F(PasswordAutofillAgentTest, RememberFieldPropertiesOnInPageNavigation) {
   SimulateUsernameChange("Bob");
   SimulatePasswordChange("mypassword");
 
-  username_element_.SetAttribute("style", "display:none;");
-  password_element_.SetAttribute("style", "display:none;");
+  std::string hide_elements =
+      "var password = document.getElementById('password');"
+      "password.style = 'display:none';"
+      "var username = document.getElementById('username');"
+      "username.style = 'display:none';";
+  ExecuteJavaScriptForTests(hide_elements.c_str());
 
   password_autofill_agent_->AJAXSucceeded();
+
+  std::map<base::string16, FieldPropertiesMask> expected_properties_masks;
+  expected_properties_masks[ASCIIToUTF16("username")] =
+      FieldPropertiesFlags::USER_TYPED;
+  expected_properties_masks[ASCIIToUTF16("password")] =
+      FieldPropertiesFlags::USER_TYPED | FieldPropertiesFlags::HAD_FOCUS;
+
+  ExpectFieldPropertiesMasks(PasswordFormInPageNavigation,
+                             expected_properties_masks);
+}
+
+TEST_F(PasswordAutofillAgentTest, RememberFieldPropertiesOnInPageNavigation_2) {
+  LoadHTML(kNoFormHTML);
+  UpdateUsernameAndPasswordElements();
+
+  SimulateUsernameChange("Bob");
+  SimulatePasswordChange("mypassword");
+
+  password_autofill_agent_->AJAXSucceeded();
+
+  std::string hide_elements =
+      "var password = document.getElementById('password');"
+      "password.style = 'display:none';"
+      "var username = document.getElementById('username');"
+      "username.style = 'display:none';";
+  ExecuteJavaScriptForTests(hide_elements.c_str());
+
+  base::RunLoop().RunUntilIdle();
 
   std::map<base::string16, FieldPropertiesMask> expected_properties_masks;
   expected_properties_masks[ASCIIToUTF16("username")] =
@@ -2248,14 +2280,42 @@ TEST_F(PasswordAutofillAgentTest, NoForm_PromptForAJAXSubmitWithoutNavigation) {
   SimulateUsernameChange("Bob");
   SimulatePasswordChange("mypassword");
 
-  username_element_.SetAttribute("style", "display:none;");
-  password_element_.SetAttribute("style", "display:none;");
+  std::string hide_elements =
+      "var password = document.getElementById('password');"
+      "password.style = 'display:none';"
+      "var username = document.getElementById('username');"
+      "username.style = 'display:none';";
+  ExecuteJavaScriptForTests(hide_elements.c_str());
 
   password_autofill_agent_->AJAXSucceeded();
 
   ExpectInPageNavigationWithUsernameAndPasswords(
       "Bob", "mypassword", "",
       PasswordForm::SubmissionIndicatorEvent::XHR_SUCCEEDED);
+}
+
+TEST_F(PasswordAutofillAgentTest,
+       NoForm_PromptForAJAXSubmitWithoutNavigation_2) {
+  LoadHTML(kNoFormHTML);
+  UpdateUsernameAndPasswordElements();
+
+  SimulateUsernameChange("Bob");
+  SimulatePasswordChange("mypassword");
+
+  password_autofill_agent_->AJAXSucceeded();
+
+  std::string hide_elements =
+      "var password = document.getElementById('password');"
+      "password.style = 'display:none';"
+      "var username = document.getElementById('username');"
+      "username.style = 'display:none';";
+  ExecuteJavaScriptForTests(hide_elements.c_str());
+
+  base::RunLoop().RunUntilIdle();
+
+  ExpectInPageNavigationWithUsernameAndPasswords(
+      "Bob", "mypassword", "",
+      PasswordForm::SubmissionIndicatorEvent::DOM_MUTATION_AFTER_XHR);
 }
 
 TEST_F(PasswordAutofillAgentTest,
@@ -2291,10 +2351,42 @@ TEST_F(PasswordAutofillAgentTest,
   SimulatePasswordChange("mypassword");
 
   // Simulate captcha element show up right before AJAX completed.
-  captcha_element.SetAttribute("style", "display:inline;");
+  std::string show_captcha =
+      "var captcha = document.getElementById('captcha');"
+      "captcha.style = 'display:inline';";
+  ExecuteJavaScriptForTests(show_captcha.c_str());
   password_autofill_agent_->AJAXSucceeded();
 
   base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(fake_driver_.called_inpage_navigation());
+  EXPECT_FALSE(fake_driver_.called_password_form_submitted());
+}
+
+TEST_F(PasswordAutofillAgentTest,
+       NoForm_NoPromptForAJAXSubmitWithoutNavigationAndNewElementAppeared_2) {
+  const char kNoFormHTMLWithHiddenField[] =
+      "<INPUT type='text' id='username'/>"
+      "<INPUT type='password' id='password'/>"
+      "<INPUT type='text' id='captcha' style='display:none'/>";
+  LoadHTML(kNoFormHTMLWithHiddenField);
+
+  UpdateUsernameAndPasswordElements();
+  WebElement captcha_element = GetMainFrame()->GetDocument().GetElementById(
+      WebString::FromUTF8("captcha"));
+  ASSERT_FALSE(captcha_element.IsNull());
+
+  SimulateUsernameChange("Bob");
+  SimulatePasswordChange("mypassword");
+
+  password_autofill_agent_->AJAXSucceeded();
+
+  // Simulate captcha element show up right after AJAX completed.
+  std::string show_captcha =
+      "var captcha = document.getElementById('captcha');"
+      "captcha.style = 'display:inline';";
+  ExecuteJavaScriptForTests(show_captcha.c_str());
+  base::RunLoop().RunUntilIdle();
+
   EXPECT_FALSE(fake_driver_.called_inpage_navigation());
   EXPECT_FALSE(fake_driver_.called_password_form_submitted());
 }
@@ -2325,6 +2417,37 @@ TEST_F(PasswordAutofillAgentTest,
   // Simulate captcha element show up right before AJAX completed.
   captcha_element.SetAttribute("style", "display:inline;");
   password_autofill_agent_->AJAXSucceeded();
+
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(fake_driver_.called_inpage_navigation());
+  EXPECT_FALSE(fake_driver_.called_password_form_submitted());
+}
+
+TEST_F(PasswordAutofillAgentTest,
+       NoAction_NoPromptForAJAXSubmitWithoutNavigationAndNewElementAppeared_2) {
+  // Form without an action URL.
+  const char kHTMLWithHiddenField[] =
+      "<FORM name='LoginTestForm'>"
+      "  <INPUT type='text' id='username'/>"
+      "  <INPUT type='password' id='password'/>"
+      "  <INPUT type='text' id='captcha' style='display:none'/>"
+      "  <INPUT type='submit' value='Login'/>"
+      "</FORM>";
+  // Set the valid URL so the form action URL can be generated properly.
+  LoadHTMLWithUrlOverride(kHTMLWithHiddenField, "https://www.example.com");
+
+  UpdateUsernameAndPasswordElements();
+  WebElement captcha_element = GetMainFrame()->GetDocument().GetElementById(
+      WebString::FromUTF8("captcha"));
+  ASSERT_FALSE(captcha_element.IsNull());
+
+  SimulateUsernameChange("Bob");
+  SimulatePasswordChange("mypassword");
+
+  password_autofill_agent_->AJAXSucceeded();
+
+  // Simulate captcha element show up right after AJAX completed.
+  captcha_element.SetAttribute("style", "display:inline;");
 
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(fake_driver_.called_inpage_navigation());
@@ -2541,14 +2664,43 @@ TEST_F(PasswordAutofillAgentTest,
   SimulateUsernameChange("Alice");
 
   // Hide form elements to simulate successful login.
-  username_element_.SetAttribute("style", "display:none;");
-  password_element_.SetAttribute("style", "display:none;");
+  std::string hide_elements =
+      "var password = document.getElementById('password');"
+      "password.style = 'display:none';"
+      "var username = document.getElementById('username');"
+      "username.style = 'display:none';";
+  ExecuteJavaScriptForTests(hide_elements.c_str());
 
   password_autofill_agent_->AJAXSucceeded();
 
   ExpectInPageNavigationWithUsernameAndPasswords(
       "Alice", "mypassword", "",
       PasswordForm::SubmissionIndicatorEvent::XHR_SUCCEEDED);
+}
+
+TEST_F(PasswordAutofillAgentTest,
+       UsernameChangedAfterPasswordInput_InPageNavigation_2) {
+  LoadHTML(kNoFormHTML);
+  UpdateUsernameAndPasswordElements();
+
+  SimulateUsernameChange("Bob");
+  SimulatePasswordChange("mypassword");
+  SimulateUsernameChange("Alice");
+
+  password_autofill_agent_->AJAXSucceeded();
+
+  // Hide form elements to simulate successful login.
+  std::string hide_elements =
+      "var password = document.getElementById('password');"
+      "password.style = 'display:none';"
+      "var username = document.getElementById('username');"
+      "username.style = 'display:none';";
+  ExecuteJavaScriptForTests(hide_elements.c_str());
+  base::RunLoop().RunUntilIdle();
+
+  ExpectInPageNavigationWithUsernameAndPasswords(
+      "Alice", "mypassword", "",
+      PasswordForm::SubmissionIndicatorEvent::DOM_MUTATION_AFTER_XHR);
 }
 
 TEST_F(PasswordAutofillAgentTest,
