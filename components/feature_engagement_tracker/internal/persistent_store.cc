@@ -54,6 +54,16 @@ void PersistentStore::WriteEvent(const Event& event) {
                      base::Bind(&NoopUpdateCallback));
 }
 
+void PersistentStore::DeleteEvent(const std::string& event_name) {
+  DCHECK(IsReady());
+  auto deletes = base::MakeUnique<std::vector<std::string>>();
+  deletes->push_back(event_name);
+
+  // TODO(dtrainor, nyquist): Consider tracking failures here and storing UMA.
+  db_->UpdateEntries(base::MakeUnique<KeyEventList>(), std::move(deletes),
+                     base::Bind(&NoopUpdateCallback));
+}
+
 void PersistentStore::OnInitComplete(const OnLoadedCallback& callback,
                                      bool success) {
   if (!success) {

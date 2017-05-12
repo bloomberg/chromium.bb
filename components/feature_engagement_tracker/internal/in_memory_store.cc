@@ -36,6 +36,10 @@ void InMemoryStore::WriteEvent(const Event& event) {
   // Intentionally ignore all writes.
 }
 
+void InMemoryStore::DeleteEvent(const std::string& event_name) {
+  // Intentionally ignore all deletes.
+}
+
 void InMemoryStore::HandleLoadResult(const OnLoadedCallback& callback,
                                      bool success) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(

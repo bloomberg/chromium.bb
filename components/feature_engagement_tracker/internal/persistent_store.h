@@ -33,6 +33,7 @@ class PersistentStore : public Store {
   void Load(const OnLoadedCallback& callback) override;
   bool IsReady() const override;
   void WriteEvent(const Event& event) override;
+  void DeleteEvent(const std::string& event_name) override;
 
  private:
   void OnInitComplete(const OnLoadedCallback& callback, bool success);

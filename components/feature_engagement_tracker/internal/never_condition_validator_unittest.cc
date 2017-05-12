@@ -26,7 +26,8 @@ class TestModel : public Model {
  public:
   TestModel() = default;
 
-  void Initialize(const OnModelInitializationFinished& callback) override {}
+  void Initialize(const OnModelInitializationFinished& callback,
+                  uint32_t current_day) override {}
 
   bool IsReady() const override { return true; }
 

@@ -17,14 +17,15 @@ FeatureConfigStorageValidator::FeatureConfigStorageValidator() = default;
 
 FeatureConfigStorageValidator::~FeatureConfigStorageValidator() = default;
 
-bool FeatureConfigStorageValidator::ShouldStore(const std::string& event_name) {
+bool FeatureConfigStorageValidator::ShouldStore(
+    const std::string& event_name) const {
   return should_store_event_names_.find(event_name) !=
          should_store_event_names_.end();
 }
 
 bool FeatureConfigStorageValidator::ShouldKeep(const std::string& event_name,
                                                uint32_t event_day,
-                                               uint32_t current_day) {
+                                               uint32_t current_day) const {
   // Should not keep events that will happen in the future.
   if (event_day > current_day)
     return false;

@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_FEATURE_ENGAGEMENT_TRACKER_INTERNAL_STORE_H_
 #define COMPONENTS_FEATURE_ENGAGEMENT_TRACKER_INTERNAL_STORE_H_
 
+#include <string>
+
 #include "base/callback.h"
 #include "base/macros.h"
 #include "components/feature_engagement_tracker/internal/proto/event.pb.h"
@@ -14,7 +16,6 @@ namespace feature_engagement_tracker {
 // Store represents the storage engine behind the FeatureEngagementTracker.
 class Store {
  public:
-  // TODO(nyquist): Add vector of all events to result callback.
   using OnLoadedCallback =
       base::Callback<void(bool success, std::unique_ptr<std::vector<Event>>)>;
 
@@ -31,6 +32,9 @@ class Store {
 
   // Stores the given event to persistent storage.
   virtual void WriteEvent(const Event& event) = 0;
+
+  // Deletes the event with the given name.
+  virtual void DeleteEvent(const std::string& event_name) = 0;
 
  protected:
   Store() = default;
