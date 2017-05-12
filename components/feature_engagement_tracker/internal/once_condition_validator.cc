@@ -16,6 +16,7 @@ OnceConditionValidator::~OnceConditionValidator() = default;
 
 ConditionValidator::Result OnceConditionValidator::MeetsConditions(
     const base::Feature& feature,
+    const FeatureConfig& config,
     const Model& model,
     uint32_t current_day) const {
   ConditionValidator::Result result(true);
@@ -23,7 +24,6 @@ ConditionValidator::Result OnceConditionValidator::MeetsConditions(
 
   result.currently_showing_ok = currently_showing_feature_ == nullptr;
 
-  const FeatureConfig& config = model.GetFeatureConfig(feature);
   result.config_ok = config.valid;
 
   result.session_rate_ok =

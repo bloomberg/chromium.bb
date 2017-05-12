@@ -12,6 +12,7 @@ NeverConditionValidator::~NeverConditionValidator() = default;
 
 ConditionValidator::Result NeverConditionValidator::MeetsConditions(
     const base::Feature& feature,
+    const FeatureConfig& config,
     const Model& model,
     uint32_t current_day) const {
   return ConditionValidator::Result(false);

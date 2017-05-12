@@ -11,9 +11,7 @@
 #include "base/feature_list.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
-#include "base/metrics/field_trial.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_feature_list.h"
 #include "components/feature_engagement_tracker/internal/editable_configuration.h"
 #include "components/feature_engagement_tracker/internal/in_memory_store.h"
 #include "components/feature_engagement_tracker/internal/never_storage_validator.h"
@@ -24,19 +22,6 @@
 namespace feature_engagement_tracker {
 
 namespace {
-const base::Feature kTestFeatureFoo{"test_foo",
-                                    base::FEATURE_DISABLED_BY_DEFAULT};
-const base::Feature kTestFeatureBar{"test_bar",
-                                    base::FEATURE_DISABLED_BY_DEFAULT};
-
-void RegisterFeatureConfig(EditableConfiguration* configuration,
-                           const base::Feature& feature,
-                           bool valid) {
-  FeatureConfig config;
-  config.valid = valid;
-  config.used.name = feature.name;
-  configuration->SetConfiguration(&feature, config);
-}
 
 // A test-only implementation of InMemoryStore that tracks calls to
 // WriteEvent(...).
@@ -99,19 +84,10 @@ class ModelImplTest : public ::testing::Test {
       : got_initialize_callback_(false), initialize_callback_result_(false) {}
 
   void SetUp() override {
-    std::unique_ptr<EditableConfiguration> configuration =
-        base::MakeUnique<EditableConfiguration>();
-
-    RegisterFeatureConfig(configuration.get(), kTestFeatureFoo, true);
-    RegisterFeatureConfig(configuration.get(), kTestFeatureBar, true);
-
-    scoped_feature_list_.InitWithFeatures({kTestFeatureFoo, kTestFeatureBar},
-                                          {});
-
     std::unique_ptr<TestInMemoryStore> store = CreateStore();
     store_ = store.get();
 
-    model_.reset(new ModelImpl(std::move(store), std::move(configuration),
+    model_.reset(new ModelImpl(std::move(store),
                                base::MakeUnique<NeverStorageValidator>()));
   }
 
@@ -132,7 +108,6 @@ class ModelImplTest : public ::testing::Test {
 
  private:
   base::MessageLoop message_loop_;
-  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 class LoadFailingModelImplTest : public ModelImplTest {

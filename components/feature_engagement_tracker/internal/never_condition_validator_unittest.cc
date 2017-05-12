@@ -7,8 +7,6 @@
 #include <string>
 
 #include "base/feature_list.h"
-#include "base/metrics/field_trial.h"
-#include "base/test/scoped_feature_list.h"
 #include "components/feature_engagement_tracker/internal/configuration.h"
 #include "components/feature_engagement_tracker/internal/model.h"
 #include "components/feature_engagement_tracker/internal/proto/event.pb.h"
@@ -26,19 +24,11 @@ const base::Feature kTestFeatureBar{"test_bar",
 // A Model that is always postive to show in-product help.
 class TestModel : public Model {
  public:
-  TestModel() {
-    feature_config_.valid = true;
-    feature_config_.used.name = "foobar";
-  }
+  TestModel() = default;
 
   void Initialize(const OnModelInitializationFinished& callback) override {}
 
   bool IsReady() const override { return true; }
-
-  const FeatureConfig& GetFeatureConfig(
-      const base::Feature& feature) const override {
-    return feature_config_;
-  }
 
   const Event* GetEvent(const std::string& event_name) const override {
     return nullptr;
@@ -47,8 +37,6 @@ class TestModel : public Model {
   void IncrementEvent(const std::string& event_name, uint32_t day) override {}
 
  private:
-  FeatureConfig feature_config_;
-
   DISALLOW_COPY_AND_ASSIGN(TestModel);
 };
 
@@ -57,7 +45,6 @@ class NeverConditionValidatorTest : public ::testing::Test {
   NeverConditionValidatorTest() = default;
 
  protected:
-  base::test::ScopedFeatureList scoped_feature_list_;
   TestModel model_;
   NeverConditionValidator validator_;
 
@@ -68,11 +55,12 @@ class NeverConditionValidatorTest : public ::testing::Test {
 }  // namespace
 
 TEST_F(NeverConditionValidatorTest, ShouldNeverMeetConditions) {
-  scoped_feature_list_.InitWithFeatures({kTestFeatureFoo, kTestFeatureBar}, {});
   EXPECT_FALSE(
-      validator_.MeetsConditions(kTestFeatureFoo, model_, 0u).NoErrors());
+      validator_.MeetsConditions(kTestFeatureFoo, FeatureConfig(), model_, 0u)
+          .NoErrors());
   EXPECT_FALSE(
-      validator_.MeetsConditions(kTestFeatureBar, model_, 0u).NoErrors());
+      validator_.MeetsConditions(kTestFeatureBar, FeatureConfig(), model_, 0u)
+          .NoErrors());
 }
 
 }  // namespace feature_engagement_tracker

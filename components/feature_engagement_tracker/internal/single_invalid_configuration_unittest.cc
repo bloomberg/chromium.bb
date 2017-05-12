@@ -5,8 +5,6 @@
 #include "components/feature_engagement_tracker/internal/single_invalid_configuration.h"
 
 #include "base/feature_list.h"
-#include "base/metrics/field_trial.h"
-#include "base/test/scoped_feature_list.h"
 #include "components/feature_engagement_tracker/internal/configuration.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -24,7 +22,6 @@ class SingleInvalidConfigurationTest : public ::testing::Test {
   SingleInvalidConfigurationTest() = default;
 
  protected:
-  base::test::ScopedFeatureList scoped_feature_list_;
   SingleInvalidConfiguration configuration_;
 
  private:
@@ -34,8 +31,6 @@ class SingleInvalidConfigurationTest : public ::testing::Test {
 }  // namespace
 
 TEST_F(SingleInvalidConfigurationTest, AllConfigurationsAreInvalid) {
-  scoped_feature_list_.InitWithFeatures({kTestFeatureFoo, kTestFeatureBar}, {});
-
   FeatureConfig foo_config = configuration_.GetFeatureConfig(kTestFeatureFoo);
   EXPECT_FALSE(foo_config.valid);
 

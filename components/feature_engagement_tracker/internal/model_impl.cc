@@ -14,7 +14,6 @@
 #include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "components/feature_engagement_tracker/internal/configuration.h"
 #include "components/feature_engagement_tracker/internal/model.h"
 #include "components/feature_engagement_tracker/internal/storage_validator.h"
 #include "components/feature_engagement_tracker/internal/store.h"
@@ -22,11 +21,9 @@
 namespace feature_engagement_tracker {
 
 ModelImpl::ModelImpl(std::unique_ptr<Store> store,
-                     std::unique_ptr<Configuration> configuration,
                      std::unique_ptr<StorageValidator> storage_validator)
     : Model(),
       store_(std::move(store)),
-      configuration_(std::move(configuration)),
       storage_validator_(std::move(storage_validator)),
       ready_(false),
       weak_factory_(this) {}
@@ -40,11 +37,6 @@ void ModelImpl::Initialize(const OnModelInitializationFinished& callback) {
 
 bool ModelImpl::IsReady() const {
   return ready_;
-}
-
-const FeatureConfig& ModelImpl::GetFeatureConfig(
-    const base::Feature& feature) const {
-  return configuration_->GetFeatureConfig(feature);
 }
 
 const Event* ModelImpl::GetEvent(const std::string& event_name) const {

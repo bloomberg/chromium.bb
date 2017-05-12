@@ -7,8 +7,6 @@
 #include <string>
 
 #include "base/feature_list.h"
-#include "base/metrics/field_trial.h"
-#include "base/test/scoped_feature_list.h"
 #include "components/feature_engagement_tracker/internal/editable_configuration.h"
 #include "components/feature_engagement_tracker/internal/model.h"
 #include "components/feature_engagement_tracker/internal/proto/event.pb.h"
@@ -23,23 +21,19 @@ const base::Feature kTestFeatureFoo{"test_foo",
 const base::Feature kTestFeatureBar{"test_bar",
                                     base::FEATURE_DISABLED_BY_DEFAULT};
 
+FeatureConfig kValidFeatureConfig;
+FeatureConfig kInvalidFeatureConfig;
+
 // A Model that is easily configurable at runtime.
 class TestModel : public Model {
  public:
-  TestModel() : ready_(false) {}
+  TestModel() : ready_(false) { kValidFeatureConfig.valid = true; }
 
   void Initialize(const OnModelInitializationFinished& callback) override {}
 
   bool IsReady() const override { return ready_; }
 
   void SetIsReady(bool ready) { ready_ = ready; }
-
-  const FeatureConfig& GetFeatureConfig(
-      const base::Feature& feature) const override {
-    return configuration_.GetFeatureConfig(feature);
-  }
-
-  EditableConfiguration& GetConfiguration() { return configuration_; }
 
   const Event* GetEvent(const std::string& event_name) const override {
     return nullptr;
@@ -48,7 +42,6 @@ class TestModel : public Model {
   void IncrementEvent(const std::string& event_name, uint32_t day) override {}
 
  private:
-  EditableConfiguration configuration_;
   bool ready_;
 };
 
@@ -59,14 +52,8 @@ class OnceConditionValidatorTest : public ::testing::Test {
     model_.SetIsReady(true);
   }
 
-  void AddFeature(const base::Feature& feature, bool valid) {
-    FeatureConfig feature_config;
-    feature_config.valid = valid;
-    model_.GetConfiguration().SetConfiguration(&feature, feature_config);
-  }
-
  protected:
-  base::test::ScopedFeatureList scoped_feature_list_;
+  EditableConfiguration configuration_;
   TestModel model_;
   OnceConditionValidator validator_;
 
@@ -77,100 +64,84 @@ class OnceConditionValidatorTest : public ::testing::Test {
 }  // namespace
 
 TEST_F(OnceConditionValidatorTest, EnabledFeatureShouldTriggerOnce) {
-  scoped_feature_list_.InitWithFeatures({kTestFeatureFoo}, {});
-
-  // Initialize validator with one enabled and valid feature.
-  AddFeature(kTestFeatureFoo, true);
-
   // Only the first call to MeetsConditions() should lead to enlightenment.
   EXPECT_TRUE(
-      validator_.MeetsConditions(kTestFeatureFoo, model_, 0u).NoErrors());
+      validator_
+          .MeetsConditions(kTestFeatureFoo, kValidFeatureConfig, model_, 0u)
+          .NoErrors());
   validator_.NotifyIsShowing(kTestFeatureFoo);
-  ConditionValidator::Result result =
-      validator_.MeetsConditions(kTestFeatureFoo, model_, 0u);
+  ConditionValidator::Result result = validator_.MeetsConditions(
+      kTestFeatureFoo, kValidFeatureConfig, model_, 0u);
   EXPECT_FALSE(result.NoErrors());
   EXPECT_FALSE(result.session_rate_ok);
 }
 
 TEST_F(OnceConditionValidatorTest,
        BothEnabledAndDisabledFeaturesShouldTrigger) {
-  scoped_feature_list_.InitWithFeatures({kTestFeatureFoo}, {kTestFeatureBar});
-
-  // Initialize validator with one enabled and one disabled feature, both valid.
-  AddFeature(kTestFeatureFoo, true);
-  AddFeature(kTestFeatureBar, true);
-
   // Only the kTestFeatureFoo feature should lead to enlightenment, since
   // kTestFeatureBar is disabled. Ordering disabled feature first to ensure this
   // captures a different behavior than the
   // OnlyOneFeatureShouldTriggerPerSession test below.
   EXPECT_TRUE(
-      validator_.MeetsConditions(kTestFeatureBar, model_, 0u).NoErrors());
+      validator_
+          .MeetsConditions(kTestFeatureBar, kValidFeatureConfig, model_, 0u)
+          .NoErrors());
   EXPECT_TRUE(
-      validator_.MeetsConditions(kTestFeatureFoo, model_, 0u).NoErrors());
+      validator_
+          .MeetsConditions(kTestFeatureFoo, kValidFeatureConfig, model_, 0u)
+          .NoErrors());
 }
 
 TEST_F(OnceConditionValidatorTest, StillTriggerWhenAllFeaturesDisabled) {
-  scoped_feature_list_.InitWithFeatures({}, {kTestFeatureFoo, kTestFeatureBar});
-
-  // Initialize validator with two enabled features, both valid.
-  AddFeature(kTestFeatureFoo, true);
-  AddFeature(kTestFeatureBar, true);
-
   // No features should get to show enlightenment.
   EXPECT_TRUE(
-      validator_.MeetsConditions(kTestFeatureFoo, model_, 0u).NoErrors());
+      validator_
+          .MeetsConditions(kTestFeatureFoo, kValidFeatureConfig, model_, 0u)
+          .NoErrors());
   EXPECT_TRUE(
-      validator_.MeetsConditions(kTestFeatureBar, model_, 0u).NoErrors());
+      validator_
+          .MeetsConditions(kTestFeatureBar, kValidFeatureConfig, model_, 0u)
+          .NoErrors());
 }
 
 TEST_F(OnceConditionValidatorTest, OnlyTriggerWhenModelIsReady) {
-  scoped_feature_list_.InitWithFeatures({kTestFeatureFoo}, {});
-
-  // Initialize validator with a single valid feature.
-  AddFeature(kTestFeatureFoo, true);
-
   model_.SetIsReady(false);
-  ConditionValidator::Result result =
-      validator_.MeetsConditions(kTestFeatureFoo, model_, 0u);
+  ConditionValidator::Result result = validator_.MeetsConditions(
+      kTestFeatureFoo, kValidFeatureConfig, model_, 0u);
   EXPECT_FALSE(result.NoErrors());
   EXPECT_FALSE(result.model_ready_ok);
 
   model_.SetIsReady(true);
   EXPECT_TRUE(
-      validator_.MeetsConditions(kTestFeatureFoo, model_, 0u).NoErrors());
+      validator_
+          .MeetsConditions(kTestFeatureFoo, kValidFeatureConfig, model_, 0u)
+          .NoErrors());
 }
 
 TEST_F(OnceConditionValidatorTest, OnlyTriggerIfNothingElseIsShowing) {
-  scoped_feature_list_.InitWithFeatures({kTestFeatureFoo}, {});
-
-  // Initialize validator with a single valid feature.
-  AddFeature(kTestFeatureFoo, true);
-
   validator_.NotifyIsShowing(kTestFeatureBar);
-  ConditionValidator::Result result =
-      validator_.MeetsConditions(kTestFeatureFoo, model_, 0u);
+  ConditionValidator::Result result = validator_.MeetsConditions(
+      kTestFeatureFoo, kValidFeatureConfig, model_, 0u);
   EXPECT_FALSE(result.NoErrors());
   EXPECT_FALSE(result.currently_showing_ok);
 
   validator_.NotifyDismissed(kTestFeatureBar);
   EXPECT_TRUE(
-      validator_.MeetsConditions(kTestFeatureFoo, model_, 0u).NoErrors());
+      validator_
+          .MeetsConditions(kTestFeatureFoo, kValidFeatureConfig, model_, 0u)
+          .NoErrors());
 }
 
 TEST_F(OnceConditionValidatorTest, DoNotTriggerForInvalidConfig) {
-  scoped_feature_list_.InitWithFeatures({kTestFeatureFoo}, {});
-
-  AddFeature(kTestFeatureFoo, false);
-  ConditionValidator::Result result =
-      validator_.MeetsConditions(kTestFeatureFoo, model_, 0u);
+  ConditionValidator::Result result = validator_.MeetsConditions(
+      kTestFeatureFoo, kInvalidFeatureConfig, model_, 0u);
   EXPECT_FALSE(result.NoErrors());
   EXPECT_FALSE(result.config_ok);
 
-  // Override config to be valid.
-  AddFeature(kTestFeatureFoo, true);
   EXPECT_TRUE(
-      validator_.MeetsConditions(kTestFeatureFoo, model_, 0u).NoErrors());
+      validator_
+          .MeetsConditions(kTestFeatureFoo, kValidFeatureConfig, model_, 0u)
+          .NoErrors());
 }
 
 }  // namespace feature_engagement_tracker

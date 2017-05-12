@@ -7,8 +7,6 @@
 #include <string>
 
 #include "base/feature_list.h"
-#include "base/metrics/field_trial.h"
-#include "base/test/scoped_feature_list.h"
 #include "components/feature_engagement_tracker/internal/configuration.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -32,15 +30,12 @@ class EditableConfigurationTest : public ::testing::Test {
   }
 
  protected:
-  base::test::ScopedFeatureList scoped_feature_list_;
   EditableConfiguration configuration_;
 };
 
 }  // namespace
 
 TEST_F(EditableConfigurationTest, SingleConfigAddAndGet) {
-  scoped_feature_list_.InitWithFeatures({kTestFeatureFoo}, {});
-
   FeatureConfig foo_config = CreateFeatureConfig("foo", true);
   configuration_.SetConfiguration(&kTestFeatureFoo, foo_config);
   const FeatureConfig& foo_config_result =
@@ -50,8 +45,6 @@ TEST_F(EditableConfigurationTest, SingleConfigAddAndGet) {
 }
 
 TEST_F(EditableConfigurationTest, TwoConfigAddAndGet) {
-  scoped_feature_list_.InitWithFeatures({kTestFeatureFoo, kTestFeatureBar}, {});
-
   FeatureConfig foo_config = CreateFeatureConfig("foo", true);
   configuration_.SetConfiguration(&kTestFeatureFoo, foo_config);
   FeatureConfig bar_config = CreateFeatureConfig("bar", true);
@@ -67,8 +60,6 @@ TEST_F(EditableConfigurationTest, TwoConfigAddAndGet) {
 }
 
 TEST_F(EditableConfigurationTest, ConfigShouldBeEditable) {
-  scoped_feature_list_.InitWithFeatures({kTestFeatureFoo}, {});
-
   FeatureConfig valid_foo_config = CreateFeatureConfig("foo", true);
   configuration_.SetConfiguration(&kTestFeatureFoo, valid_foo_config);
 
