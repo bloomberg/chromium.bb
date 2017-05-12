@@ -9,16 +9,135 @@
 
 #include "base/bind.h"
 #include "base/location.h"
+#include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/task_scheduler/post_task.h"
 #include "crypto/nss_util.h"
 #include "crypto/scoped_nss_types.h"
+#include "net/cert/cert_database.h"
 #include "net/cert/nss_cert_database.h"
 #include "net/cert/nss_cert_database_chromeos.h"
 #include "net/cert/x509_certificate.h"
 
 namespace chromeos {
+
+// Caches certificates from a NSSCertDatabase. Handles reloading of certificates
+// on update notifications and provides status flags (loading / loaded).
+// CertLoader can use multiple CertCaches to combine certificates from multiple
+// sources.
+class CertLoader::CertCache : public net::CertDatabase::Observer {
+ public:
+  explicit CertCache(base::RepeatingClosure certificates_updated_callback)
+      : certificates_updated_callback_(certificates_updated_callback),
+        weak_factory_(this) {}
+
+  ~CertCache() override {
+    net::CertDatabase::GetInstance()->RemoveObserver(this);
+  }
+
+  void SetNSSDB(net::NSSCertDatabase* nss_database) {
+    CHECK(!nss_database_);
+    nss_database_ = nss_database;
+
+    // Start observing cert database for changes.
+    // Observing net::CertDatabase is preferred over observing |nss_database_|
+    // directly, as |nss_database_| observers receive only events generated
+    // directly by |nss_database_|, so they may miss a few relevant ones.
+    // TODO(tbarzic): Once singleton NSSCertDatabase is removed, investigate if
+    // it would be OK to observe |nss_database_| directly; or change
+    // NSSCertDatabase to send notification on all relevant changes.
+    net::CertDatabase::GetInstance()->AddObserver(this);
+
+    LoadCertificates();
+  }
+
+  net::NSSCertDatabase* nss_database() { return nss_database_; }
+
+  // net::CertDatabase::Observer
+  void OnCertDBChanged() override {
+    VLOG(1) << "OnCertDBChanged";
+    LoadCertificates();
+  }
+
+  const net::CertificateList& cert_list() const { return cert_list_; }
+
+  bool initial_load_running() const {
+    return nss_database_ && !initial_load_finished_;
+  }
+
+  bool initial_load_finished() const { return initial_load_finished_; }
+
+  // Returns true if the underlying NSSCertDatabase has access to the system
+  // slot.
+  bool has_system_certificates() const { return has_system_certificates_; }
+
+ private:
+  // Trigger a certificate load. If a certificate loading task is already in
+  // progress, will start a reload once the current task is finished.
+  void LoadCertificates() {
+    CHECK(thread_checker_.CalledOnValidThread());
+    VLOG(1) << "LoadCertificates: " << certificates_update_running_;
+
+    if (certificates_update_running_) {
+      certificates_update_required_ = true;
+      return;
+    }
+
+    certificates_update_running_ = true;
+    certificates_update_required_ = false;
+
+    if (nss_database_) {
+      has_system_certificates_ =
+          static_cast<bool>(nss_database_->GetSystemSlot());
+      nss_database_->ListCerts(base::Bind(&CertCache::UpdateCertificates,
+                                          weak_factory_.GetWeakPtr()));
+    }
+  }
+
+  // Called if a certificate load task is finished.
+  void UpdateCertificates(std::unique_ptr<net::CertificateList> cert_list) {
+    CHECK(thread_checker_.CalledOnValidThread());
+    DCHECK(certificates_update_running_);
+    VLOG(1) << "UpdateCertificates: " << cert_list->size();
+
+    // Ignore any existing certificates.
+    cert_list_ = std::move(*cert_list);
+
+    initial_load_finished_ = true;
+    certificates_updated_callback_.Run();
+
+    certificates_update_running_ = false;
+    if (certificates_update_required_)
+      LoadCertificates();
+  }
+
+  // To be called when certificates have been updated.
+  base::RepeatingClosure certificates_updated_callback_;
+
+  bool has_system_certificates_ = false;
+
+  // This is true after certificates have been loaded initially.
+  bool initial_load_finished_ = false;
+  // This is true if a notification about certificate DB changes arrived while
+  // loading certificates and means that we will have to trigger another
+  // certificates load after that.
+  bool certificates_update_required_ = false;
+  // This is true while certificates are being loaded.
+  bool certificates_update_running_ = false;
+
+  // The NSS certificate database from which the certificates should be loaded.
+  net::NSSCertDatabase* nss_database_ = nullptr;
+
+  // Cached Certificates loaded from the database.
+  net::CertificateList cert_list_;
+
+  base::ThreadChecker thread_checker_;
+
+  base::WeakPtrFactory<CertCache> weak_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(CertCache);
+};
 
 namespace {
 
@@ -48,23 +167,23 @@ bool IsCertificateOnSlot(const net::X509Certificate* certificate,
 
 // Goes through all certificates in |all_certs| and copies those certificates
 // which are on |system_slot| to a new list.
-std::unique_ptr<net::CertificateList> FilterSystemTokenCertificates(
-    const net::CertificateList* all_certs,
+net::CertificateList FilterSystemTokenCertificates(
+    net::CertificateList certs,
     crypto::ScopedPK11Slot system_slot) {
   VLOG(1) << "FilterSystemTokenCertificates";
-  std::unique_ptr<net::CertificateList> system_certs =
-      base::MakeUnique<net::CertificateList>();
   if (!system_slot)
-    return system_certs;
+    return net::CertificateList();
 
-  // Extract certificates which are in the system token into the
-  // |system_certs_| sublist.
-  for (const auto& cert : *all_certs) {
-    if (IsCertificateOnSlot(cert.get(), system_slot.get())) {
-      system_certs->push_back(cert);
-    }
-  }
-  return system_certs;
+  // Only keep certificates which are on the |system_slot|.
+  PK11SlotInfo* system_slot_ptr = system_slot.get();
+  certs.erase(
+      std::remove_if(
+          certs.begin(), certs.end(),
+          [system_slot_ptr](const scoped_refptr<net::X509Certificate>& cert) {
+            return !IsCertificateOnSlot(cert.get(), system_slot_ptr);
+          }),
+      certs.end());
+  return certs;
 }
 
 }  // namespace
@@ -96,32 +215,22 @@ bool CertLoader::IsInitialized() {
   return g_cert_loader;
 }
 
-CertLoader::CertLoader()
-    : certificates_loaded_(false),
-      certificates_update_required_(false),
-      certificates_update_running_(false),
-      database_(nullptr),
-      all_certs_(base::MakeUnique<net::CertificateList>()),
-      weak_factory_(this) {}
-
-CertLoader::~CertLoader() {
-  net::CertDatabase::GetInstance()->RemoveObserver(this);
+CertLoader::CertLoader() : pending_initial_load_(true), weak_factory_(this) {
+  system_cert_cache_ = base::MakeUnique<CertCache>(
+      base::BindRepeating(&CertLoader::CacheUpdated, base::Unretained(this)));
+  user_cert_cache_ = base::MakeUnique<CertCache>(
+      base::BindRepeating(&CertLoader::CacheUpdated, base::Unretained(this)));
 }
 
-void CertLoader::StartWithNSSDB(net::NSSCertDatabase* database) {
-  CHECK(!database_);
-  database_ = database;
+CertLoader::~CertLoader() {
+}
 
-  // Start observing cert database for changes.
-  // Observing net::CertDatabase is preferred over observing |database_|
-  // directly, as |database_| observers receive only events generated directly
-  // by |database_|, so they may miss a few relevant ones.
-  // TODO(tbarzic): Once singleton NSSCertDatabase is removed, investigate if
-  // it would be OK to observe |database_| directly; or change NSSCertDatabase
-  // to send notification on all relevant changes.
-  net::CertDatabase::GetInstance()->AddObserver(this);
+void CertLoader::SetSystemNSSDB(net::NSSCertDatabase* system_slot_database) {
+  system_cert_cache_->SetNSSDB(system_slot_database);
+}
 
-  LoadCertificates();
+void CertLoader::SetUserNSSDB(net::NSSCertDatabase* user_database) {
+  user_cert_cache_->SetNSSDB(user_database);
 }
 
 void CertLoader::AddObserver(CertLoader::Observer* observer) {
@@ -140,8 +249,14 @@ bool CertLoader::IsCertificateHardwareBacked(const net::X509Certificate* cert) {
   return slot && PK11_IsHW(slot);
 }
 
-bool CertLoader::CertificatesLoading() const {
-  return database_ && !certificates_loaded_;
+bool CertLoader::initial_load_of_any_database_running() const {
+  return system_cert_cache_->initial_load_running() ||
+         user_cert_cache_->initial_load_running();
+}
+
+bool CertLoader::initial_load_finished() const {
+  return system_cert_cache_->initial_load_finished() ||
+         user_cert_cache_->initial_load_finished();
 }
 
 // static
@@ -183,66 +298,55 @@ std::string CertLoader::GetPkcs11IdAndSlotForCert(
   return pkcs11_id;
 }
 
-void CertLoader::LoadCertificates() {
+void CertLoader::CacheUpdated() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  VLOG(1) << "LoadCertificates: " << certificates_update_running_;
+  VLOG(1) << "CacheUpdated";
 
-  if (certificates_update_running_) {
-    certificates_update_required_ = true;
-    return;
+  // If user_cert_cache_ has access to system certificates and it has already
+  // finished its initial load, it will contain system certificates which we can
+  // filter.
+  if (user_cert_cache_->initial_load_finished() &&
+      user_cert_cache_->has_system_certificates()) {
+    crypto::ScopedPK11Slot system_slot =
+        user_cert_cache_->nss_database()->GetSystemSlot();
+    DCHECK(system_slot);
+    base::PostTaskWithTraitsAndReplyWithResult(
+        FROM_HERE,
+        {base::MayBlock(), base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
+        base::BindOnce(&FilterSystemTokenCertificates,
+                       user_cert_cache_->cert_list(), std::move(system_slot)),
+        base::BindOnce(&CertLoader::UpdateCertificates,
+                       weak_factory_.GetWeakPtr(),
+                       user_cert_cache_->cert_list()));
+  } else {
+    // The user's cert cache does not contain system certificates.
+    net::CertificateList system_certs = system_cert_cache_->cert_list();
+    net::CertificateList all_certs = user_cert_cache_->cert_list();
+    all_certs.insert(all_certs.end(), system_certs.begin(), system_certs.end());
+    UpdateCertificates(std::move(all_certs), std::move(system_certs));
   }
-
-  certificates_update_running_ = true;
-  certificates_update_required_ = false;
-
-  database_->ListCerts(
-      base::Bind(&CertLoader::CertificatesLoaded, weak_factory_.GetWeakPtr()));
 }
 
-void CertLoader::CertificatesLoaded(
-    std::unique_ptr<net::CertificateList> all_certs) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  VLOG(1) << "CertificatesLoaded: " << all_certs->size();
+void CertLoader::UpdateCertificates(net::CertificateList all_certs,
+                                    net::CertificateList system_certs) {
+  CHECK(thread_checker_.CalledOnValidThread());
+  bool initial_load = pending_initial_load_;
+  pending_initial_load_ = false;
 
-  crypto::ScopedPK11Slot system_slot = database_->GetSystemSlot();
-  base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE,
-      {base::MayBlock(), base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
-      base::BindOnce(&FilterSystemTokenCertificates,
-                     base::Unretained(all_certs.get()), std::move(system_slot)),
-      base::BindOnce(&CertLoader::UpdateCertificates,
-                     weak_factory_.GetWeakPtr(), std::move(all_certs)));
-}
-
-void CertLoader::UpdateCertificates(
-    std::unique_ptr<net::CertificateList> all_certs,
-    std::unique_ptr<net::CertificateList> system_certs) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(certificates_update_running_);
-  VLOG(1) << "UpdateCertificates: " << all_certs->size() << " ("
-          << system_certs->size() << " on system slot)";
+  VLOG(1) << "UpdateCertificates: " << all_certs.size() << " ("
+          << system_certs.size() << " on system slot)"
+          << ", initial_load=" << initial_load;
 
   // Ignore any existing certificates.
   all_certs_ = std::move(all_certs);
   system_certs_ = std::move(system_certs);
 
-  bool initial_load = !certificates_loaded_;
-  certificates_loaded_ = true;
   NotifyCertificatesLoaded(initial_load);
-
-  certificates_update_running_ = false;
-  if (certificates_update_required_)
-    LoadCertificates();
 }
 
 void CertLoader::NotifyCertificatesLoaded(bool initial_load) {
   for (auto& observer : observers_)
-    observer.OnCertificatesLoaded(*all_certs_, initial_load);
-}
-
-void CertLoader::OnCertDBChanged() {
-  VLOG(1) << "OnCertDBChanged";
-  LoadCertificates();
+    observer.OnCertificatesLoaded(all_certs_, initial_load);
 }
 
 }  // namespace chromeos

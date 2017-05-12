@@ -98,7 +98,7 @@ class ClientCertResolverTest : public testing::Test,
 
  protected:
   void StartCertLoader() {
-    cert_loader_->StartWithNSSDB(test_nsscertdb_.get());
+    cert_loader_->SetUserNSSDB(test_nsscertdb_.get());
     if (test_client_cert_.get()) {
       int slot_id = 0;
       const std::string pkcs11_id =

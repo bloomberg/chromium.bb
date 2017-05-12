@@ -65,7 +65,7 @@ class NetworkCertMigratorTest : public testing::Test {
 
     CertLoader::Initialize();
     CertLoader* cert_loader_ = CertLoader::Get();
-    cert_loader_->StartWithNSSDB(test_nsscertdb_.get());
+    cert_loader_->SetUserNSSDB(test_nsscertdb_.get());
   }
 
   void TearDown() override {

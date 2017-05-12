@@ -282,7 +282,7 @@ void LogError(const std::string& service_path,
 }
 
 bool ClientCertificatesLoaded() {
-  if (!CertLoader::Get()->certificates_loaded()) {
+  if (!CertLoader::Get()->initial_load_finished()) {
     VLOG(1) << "Certificates not loaded yet.";
     return false;
   }

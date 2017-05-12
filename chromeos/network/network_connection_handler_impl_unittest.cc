@@ -242,7 +242,7 @@ class NetworkConnectionHandlerImplTest : public NetworkStateTest {
   }
 
   void StartCertLoader() {
-    CertLoader::Get()->StartWithNSSDB(test_nsscertdb_.get());
+    CertLoader::Get()->SetUserNSSDB(test_nsscertdb_.get());
     base::RunLoop().RunUntilIdle();
   }
 
