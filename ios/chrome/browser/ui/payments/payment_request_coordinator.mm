@@ -120,7 +120,7 @@ using ::payments::data_util::GetPaymentAddressFromAutofillProfile;
 - (void)updatePaymentDetails:(web::PaymentDetails)paymentDetails {
   BOOL totalValueChanged =
       (_paymentRequest->payment_details().total != paymentDetails.total);
-  _paymentRequest->set_payment_details(paymentDetails);
+  _paymentRequest->UpdatePaymentDetails(paymentDetails);
 
   if (_paymentRequest->shipping_options().empty()) {
     // Display error in the shipping address/option selection view.

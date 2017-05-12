@@ -114,7 +114,7 @@ TEST_F(PaymentRequestViewControllerTest, TestModelNoDisplayItem) {
   CreateController();
   CheckController();
 
-  payment_request_->set_payment_details(web::PaymentDetails());
+  payment_request_->UpdatePaymentDetails(web::PaymentDetails());
   [GetPaymentRequestViewController() loadModel];
 
   // The only item in the Summary section should stil be of type PriceItem, but
@@ -152,7 +152,7 @@ TEST_F(PaymentRequestViewControllerTest, TestModelNoSelectedShippingOption) {
   CheckController();
 
   // Resetting the payment details should reset the selected shipping option.
-  payment_request_->set_payment_details(web::PaymentDetails());
+  payment_request_->UpdatePaymentDetails(web::PaymentDetails());
   [GetPaymentRequestViewController() loadModel];
 
   // There should still be two items in the Shipping section.

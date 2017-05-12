@@ -224,13 +224,11 @@ void PaymentRequestState::PopulateProfileCache() {
 
   // PaymentRequest may outlive the Profiles returned by the Data Manager.
   // Thus, we store copies, and return a vector of pointers to these copies
-  // whenever Profiles are requested. The same is true for credit cards.
+  // whenever Profiles are requested.
   for (size_t i = 0; i < profiles.size(); i++) {
     profile_cache_.push_back(
         base::MakeUnique<autofill::AutofillProfile>(*profiles[i]));
 
-    // TODO(tmartino): Implement deduplication rules specific to shipping
-    // profiles.
     shipping_profiles_.push_back(profile_cache_[i].get());
   }
 
@@ -245,7 +243,8 @@ void PaymentRequestState::PopulateProfileCache() {
   contact_profiles_ = profile_comparator()->FilterProfilesForContact(
       raw_profiles_for_filtering);
 
-  // Create the list of available instruments.
+  // Create the list of available instruments. A copy of each card will be made
+  // by their respective AutofillPaymentInstrument.
   const std::vector<autofill::CreditCard*>& cards =
       personal_data_manager_->GetCreditCardsToSuggest();
   for (autofill::CreditCard* card : cards)
@@ -255,9 +254,20 @@ void PaymentRequestState::PopulateProfileCache() {
 void PaymentRequestState::SetDefaultProfileSelections() {
   // Only pre-select an address if the merchant provided at least one selected
   // shipping option.
-  if (!shipping_profiles().empty() && spec_->selected_shipping_option())
-    selected_shipping_profile_ = shipping_profiles()[0];
+  if (!shipping_profiles().empty() && spec_->selected_shipping_option()) {
+    // Choose any complete shipping profile, or default to the most frecent
+    // address if no complete address could be found.
+    selected_shipping_profile_ = shipping_profiles_[0];
+    for (autofill::AutofillProfile* profile : shipping_profiles_) {
+      if (profile_comparator_.IsShippingComplete(profile)) {
+        selected_shipping_profile_ = profile;
+        break;
+      }
+    }
+  }
 
+  // Contact profiles were ordered by completeness in addition to frecency;
+  // the first one is the best default selection.
   if (!contact_profiles().empty())
     selected_contact_profile_ = contact_profiles()[0];
 
