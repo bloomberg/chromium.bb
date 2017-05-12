@@ -42,6 +42,7 @@ import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Callback;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeVersionInfo;
 import org.chromium.chrome.browser.payments.ShippingStrings;
 import org.chromium.chrome.browser.payments.ui.PaymentRequestSection.LineItemBreakdownSection;
 import org.chromium.chrome.browser.payments.ui.PaymentRequestSection.OptionSection;
@@ -436,6 +437,11 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
 
         mEditorView = new EditorView(activity, sObserverForTest);
         mCardEditorView = new EditorView(activity, sObserverForTest);
+
+        // Allow screenshots of the credit card number in Canary, Dev, and developer builds.
+        if (ChromeVersionInfo.isBetaBuild() || ChromeVersionInfo.isStableBuild()) {
+            mCardEditorView.disableScreenshots();
+        }
 
         // Set up the dialog.
         mDialog = new AlwaysDismissedDialog(activity, R.style.DialogWhenLarge);
