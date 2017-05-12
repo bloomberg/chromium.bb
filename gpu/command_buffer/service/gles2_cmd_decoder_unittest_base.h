@@ -708,14 +708,6 @@ class GLES2DecoderTestBase : public ::testing::TestWithParam<bool> {
 
     void set_token(int32_t token) override;
 
-    bool SetGetBuffer(int32_t /* transfer_buffer_id */) override;
-
-    // Overridden from CommandBufferEngine.
-    bool SetGetOffset(int32_t offset) override;
-
-    // Overridden from CommandBufferEngine.
-    int32_t GetGetOffset() override;
-
    private:
     scoped_refptr<gpu::Buffer> valid_buffer_;
     scoped_refptr<gpu::Buffer> invalid_buffer_;

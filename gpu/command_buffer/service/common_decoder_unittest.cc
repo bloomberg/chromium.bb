@@ -81,10 +81,7 @@ class MockCommandBufferEngine : public CommandBufferEngine {
   static const int32_t kValidOffset = kBufferSize / 2;
   static const int32_t kInvalidOffset = kBufferSize;
 
-  MockCommandBufferEngine()
-      : CommandBufferEngine(),
-        token_(),
-        get_offset_(0) {
+  MockCommandBufferEngine() : CommandBufferEngine(), token_() {
     std::unique_ptr<base::SharedMemory> shared_memory(new base::SharedMemory());
     shared_memory->CreateAndMapAnonymous(kBufferSize);
     buffer_ = MakeBufferFromSharedMemory(std::move(shared_memory), kBufferSize);
@@ -117,24 +114,6 @@ class MockCommandBufferEngine : public CommandBufferEngine {
 
   int32_t token() const { return token_; }
 
-  // Overridden from CommandBufferEngine.
-  bool SetGetBuffer(int32_t transfer_buffer_id) override {
-    NOTREACHED();
-    return false;
-  }
-
-  // Overridden from CommandBufferEngine.
-  bool SetGetOffset(int32_t offset) override {
-    if (static_cast<size_t>(offset) < kBufferSize) {
-      get_offset_ = offset;
-      return true;
-    }
-    return false;
-  }
-
-  // Overridden from CommandBufferEngine.
-  int32_t GetGetOffset() override { return get_offset_; }
-
  private:
   bool IsValidSharedMemoryId(int32_t shm_id) {
     return shm_id == kValidShmId || shm_id == kStartValidShmId;
@@ -142,7 +121,6 @@ class MockCommandBufferEngine : public CommandBufferEngine {
 
   scoped_refptr<gpu::Buffer> buffer_;
   int32_t token_;
-  int32_t get_offset_;
 };
 
 const int32_t MockCommandBufferEngine::kStartValidShmId;
@@ -177,10 +155,6 @@ class CommonDecoderTest : public testing::Test {
   MockCommandBufferEngine engine_;
   TestCommonDecoder decoder_;
 };
-
-TEST_F(CommonDecoderTest, Initialize) {
-  EXPECT_EQ(0, engine_.GetGetOffset());
-}
 
 TEST_F(CommonDecoderTest, DoCommonCommandInvalidCommand) {
   EXPECT_EQ(error::kUnknownCommand, decoder_.DoCommand(999999, 0, NULL));

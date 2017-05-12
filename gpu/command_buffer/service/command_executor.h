@@ -36,6 +36,7 @@ class GPU_EXPORT CommandExecutor
 
   ~CommandExecutor() override;
 
+  bool SetGetBuffer(int32_t transfer_buffer_id);
   void PutChanged();
 
   // Sets whether commands should be processed by this scheduler. Setting to
@@ -55,9 +56,6 @@ class GPU_EXPORT CommandExecutor
   // Implementation of CommandBufferEngine.
   scoped_refptr<Buffer> GetSharedMemoryBuffer(int32_t shm_id) override;
   void set_token(int32_t token) override;
-  bool SetGetBuffer(int32_t transfer_buffer_id) override;
-  bool SetGetOffset(int32_t offset) override;
-  int32_t GetGetOffset() override;
 
   void SetCommandProcessedCallback(const base::Closure& callback);
 
