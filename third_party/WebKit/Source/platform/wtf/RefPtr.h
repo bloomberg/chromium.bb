@@ -56,7 +56,7 @@ class RefPtr {
   // See comments in PassRefPtr.h for an explanation of why this takes a const
   // reference.
   template <typename U>
-  RefPtr(const PassRefPtr<U>&, EnsurePtrConvertibleArgDecl(U, T));
+  RefPtr(PassRefPtr<U>&&, EnsurePtrConvertibleArgDecl(U, T));
 
   // Hash table deleted values, which are only constructed and never copied or
   // destroyed.
@@ -104,8 +104,7 @@ class RefPtr {
 
 template <typename T>
 template <typename U>
-inline RefPtr<T>::RefPtr(const PassRefPtr<U>& o,
-                         EnsurePtrConvertibleArgDefn(U, T))
+inline RefPtr<T>::RefPtr(PassRefPtr<U>&& o, EnsurePtrConvertibleArgDefn(U, T))
     : ptr_(o.LeakRef()) {}
 
 template <typename T>
