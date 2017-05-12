@@ -1570,7 +1570,8 @@ static int cfl_alpha_dist(const uint8_t *y_pix, int y_stride, double y_avg,
 }
 
 static int cfl_compute_alpha_ind(MACROBLOCK *const x, const CFL_CTX *const cfl,
-                                 BLOCK_SIZE bsize, CFL_SIGN_TYPE *signs) {
+                                 BLOCK_SIZE bsize,
+                                 CFL_SIGN_TYPE signs_out[CFL_SIGNS]) {
   const struct macroblock_plane *const p_u = &x->plane[AOM_PLANE_U];
   const struct macroblock_plane *const p_v = &x->plane[AOM_PLANE_V];
   const uint8_t *const src_u = p_u->src.buf;
@@ -1598,8 +1599,8 @@ static int cfl_compute_alpha_ind(MACROBLOCK *const x, const CFL_CTX *const cfl,
   // Compute least squares parameter of the entire block
   // IMPORTANT: We assume that the first code is 0,0
   int ind = 0;
-  signs[CFL_PRED_U] = CFL_SIGN_POS;
-  signs[CFL_PRED_V] = CFL_SIGN_POS;
+  signs_out[CFL_PRED_U] = CFL_SIGN_POS;
+  signs_out[CFL_PRED_V] = CFL_SIGN_POS;
 
   dist = cfl_alpha_dist(tmp_pix, MAX_SB_SIZE, y_avg, src_u, src_stride_u,
                         block_width, block_height, dc_pred_u, 0, NULL) +
@@ -1626,8 +1627,8 @@ static int cfl_compute_alpha_ind(MACROBLOCK *const x, const CFL_CTX *const cfl,
         if (cost < best_cost) {
           best_cost = cost;
           ind = c;
-          signs[CFL_PRED_U] = sign_u;
-          signs[CFL_PRED_V] = sign_v;
+          signs_out[CFL_PRED_U] = sign_u;
+          signs_out[CFL_PRED_V] = sign_v;
         }
       }
     }
