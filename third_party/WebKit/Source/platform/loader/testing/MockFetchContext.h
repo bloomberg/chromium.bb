@@ -10,6 +10,7 @@
 #include "platform/loader/fetch/ResourceTimingInfo.h"
 #include "platform/scheduler/test/fake_web_task_runner.h"
 #include "platform/wtf/PtrUtil.h"
+#include "public/platform/Platform.h"
 
 #include <memory>
 
@@ -72,6 +73,10 @@ class MockFetchContext : public FetchContext {
   void AddResourceTiming(
       const ResourceTimingInfo& resource_timing_info) override {
     transfer_size_ = resource_timing_info.TransferSize();
+  }
+
+  std::unique_ptr<WebURLLoader> CreateURLLoader() override {
+    return Platform::Current()->CreateURLLoader();
   }
 
  private:

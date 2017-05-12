@@ -83,7 +83,7 @@ void ResourceLoader::Start(const ResourceRequest& request) {
     return;
   }
 
-  loader_ = Platform::Current()->CreateURLLoader();
+  loader_ = fetcher_->Context().CreateURLLoader();
   DCHECK(loader_);
   loader_->SetDefersLoading(Context().DefersLoading());
   loader_->SetLoadingTaskRunner(Context().LoadingTaskRunner().Get());
