@@ -96,13 +96,13 @@ async function test()
 
   function dump() {
     var consoleView = Console.ConsoleView.instance();
-    var select = consoleView._executionContextComboBox.selectElement();
+    var selector = consoleView._consoleContextSelector;
     InspectorTest.addResult('Console context selector:');
-    for (var i = 0; i < select.options.length; i++) {
-      var option = select.options[i];
-      var selected = select.selectedIndex === i;
-      var text = option.text.replace(new RegExp('\u00a0', 'g'), '_');
-      InspectorTest.addResult(`${selected ? '*' : ' '} ${text} ${option.disabled ? '[disabled]' : ''}`);
+    for (var executionContext of selector._list._items) {
+      var selected = selector._list.selectedItem() === executionContext;
+      var text = '____'.repeat(selector._depthFor(executionContext)) + selector._titleFor(executionContext);
+      var disabled = !selector.isItemSelectable(executionContext);
+      InspectorTest.addResult(`${selected ? '*' : ' '} ${text} ${disabled ? '[disabled]' : ''}`);
     }
   }
 }
