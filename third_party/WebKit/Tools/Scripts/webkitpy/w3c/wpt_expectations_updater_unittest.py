@@ -185,6 +185,12 @@ class WPTExpectationsUpdaterTest(LoggingTestCase):
         self.assertEqual(
             updater.get_expectations({'expected': 'Pass', 'actual': 'IMAGE+TEXT IMAGE IMAGE'}),
             {'Failure'})
+        self.assertEqual(
+            updater.get_expectations({'expected': 'Pass', 'actual': 'MISSING'}),
+            {'Skip'})
+        self.assertEqual(
+            updater.get_expectations({'expected': 'Pass', 'actual': 'TIMEOUT'}, test_name='foo/bar-manual.html'),
+            {'Skip'})
 
     def test_create_line_list_old_tests(self):
         # In this example, there are two failures that are not in w3c tests.
