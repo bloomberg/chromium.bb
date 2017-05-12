@@ -11,6 +11,7 @@
 #include "core/frame/FrameTypes.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/Settings.h"
+#include "core/html/media/AutoplayPolicy.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/EmptyClients.h"
 #include "core/testing/DummyPageHolder.h"
@@ -147,7 +148,8 @@ TEST_F(BaseAudioContextTest, AutoplayMetrics_NoRestriction) {
 TEST_F(BaseAudioContextTest, AutoplayMetrics_CreateNoGesture) {
   HistogramTester histogram_tester;
   CreateChildFrame();
-  ChildDocument().GetSettings()->SetMediaPlaybackRequiresUserGesture(true);
+  ChildDocument().GetSettings()->SetAutoplayPolicy(
+      AutoplayPolicy::Type::kUserGestureRequired);
 
   BaseAudioContext* audio_context = BaseAudioContext::Create(
       ChildDocument(), AudioContextOptions(), ASSERT_NO_EXCEPTION);
@@ -161,7 +163,8 @@ TEST_F(BaseAudioContextTest, AutoplayMetrics_CreateNoGesture) {
 TEST_F(BaseAudioContextTest, AutoplayMetrics_CallResumeNoGesture) {
   HistogramTester histogram_tester;
   CreateChildFrame();
-  ChildDocument().GetSettings()->SetMediaPlaybackRequiresUserGesture(true);
+  ChildDocument().GetSettings()->SetAutoplayPolicy(
+      AutoplayPolicy::Type::kUserGestureRequired);
 
   ScriptState::Scope scope(GetScriptStateFrom(ChildDocument()));
 
@@ -179,7 +182,8 @@ TEST_F(BaseAudioContextTest, AutoplayMetrics_CallResumeNoGesture) {
 TEST_F(BaseAudioContextTest, AutoplayMetrics_CreateGesture) {
   HistogramTester histogram_tester;
   CreateChildFrame();
-  ChildDocument().GetSettings()->SetMediaPlaybackRequiresUserGesture(true);
+  ChildDocument().GetSettings()->SetAutoplayPolicy(
+      AutoplayPolicy::Type::kUserGestureRequired);
 
   UserGestureIndicator user_gesture_scope(DocumentUserGestureToken::Create(
       &ChildDocument(), UserGestureToken::kNewGesture));
@@ -196,7 +200,8 @@ TEST_F(BaseAudioContextTest, AutoplayMetrics_CreateGesture) {
 TEST_F(BaseAudioContextTest, AutoplayMetrics_CallResumeGesture) {
   HistogramTester histogram_tester;
   CreateChildFrame();
-  ChildDocument().GetSettings()->SetMediaPlaybackRequiresUserGesture(true);
+  ChildDocument().GetSettings()->SetAutoplayPolicy(
+      AutoplayPolicy::Type::kUserGestureRequired);
 
   ScriptState::Scope scope(GetScriptStateFrom(ChildDocument()));
 
@@ -218,7 +223,8 @@ TEST_F(BaseAudioContextTest, AutoplayMetrics_CallResumeGesture) {
 TEST_F(BaseAudioContextTest, AutoplayMetrics_NodeStartNoGesture) {
   HistogramTester histogram_tester;
   CreateChildFrame();
-  ChildDocument().GetSettings()->SetMediaPlaybackRequiresUserGesture(true);
+  ChildDocument().GetSettings()->SetAutoplayPolicy(
+      AutoplayPolicy::Type::kUserGestureRequired);
 
   BaseAudioContext* audio_context = BaseAudioContext::Create(
       ChildDocument(), AudioContextOptions(), ASSERT_NO_EXCEPTION);
@@ -233,7 +239,8 @@ TEST_F(BaseAudioContextTest, AutoplayMetrics_NodeStartNoGesture) {
 TEST_F(BaseAudioContextTest, AutoplayMetrics_NodeStartGesture) {
   HistogramTester histogram_tester;
   CreateChildFrame();
-  ChildDocument().GetSettings()->SetMediaPlaybackRequiresUserGesture(true);
+  ChildDocument().GetSettings()->SetAutoplayPolicy(
+      AutoplayPolicy::Type::kUserGestureRequired);
 
   BaseAudioContext* audio_context = BaseAudioContext::Create(
       ChildDocument(), AudioContextOptions(), ASSERT_NO_EXCEPTION);
@@ -251,7 +258,8 @@ TEST_F(BaseAudioContextTest, AutoplayMetrics_NodeStartGesture) {
 TEST_F(BaseAudioContextTest, AutoplayMetrics_NodeStartNoGestureThenSuccess) {
   HistogramTester histogram_tester;
   CreateChildFrame();
-  ChildDocument().GetSettings()->SetMediaPlaybackRequiresUserGesture(true);
+  ChildDocument().GetSettings()->SetAutoplayPolicy(
+      AutoplayPolicy::Type::kUserGestureRequired);
 
   ScriptState::Scope scope(GetScriptStateFrom(ChildDocument()));
 
@@ -273,7 +281,8 @@ TEST_F(BaseAudioContextTest, AutoplayMetrics_NodeStartNoGestureThenSuccess) {
 TEST_F(BaseAudioContextTest, AutoplayMetrics_NodeStartGestureThenSucces) {
   HistogramTester histogram_tester;
   CreateChildFrame();
-  ChildDocument().GetSettings()->SetMediaPlaybackRequiresUserGesture(true);
+  ChildDocument().GetSettings()->SetAutoplayPolicy(
+      AutoplayPolicy::Type::kUserGestureRequired);
 
   ScriptState::Scope scope(GetScriptStateFrom(ChildDocument()));
 

@@ -17,7 +17,7 @@
   }, 'internals are exposed');
 
   async_test(function(t) {
-    window.internals.settings.setMediaPlaybackRequiresUserGesture(false);
+    window.internals.settings.setAutoplayPolicy('no-user-gesture-required');
     var v = createAndMoveVideo();
     assert_true(v.paused, 'Video should be paused before calling play()');
 
@@ -29,7 +29,7 @@
   }, 'Test that video should autoplay without gesture requirement');
 
   async_test(function(t) {
-    window.internals.settings.setMediaPlaybackRequiresUserGesture(true);
+    window.internals.settings.setAutoplayPolicy('user-gesture-required');
     var v = createAndMoveVideo();
     assert_true(v.paused, 'Video should be paused before calling play()');
 

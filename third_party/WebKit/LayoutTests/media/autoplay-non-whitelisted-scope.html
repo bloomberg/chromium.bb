@@ -13,7 +13,7 @@ test(function() {
               "This test only works when run as a layout test!");
 }, "Prerequisites to running the rest of the tests");
 
-window.internals.settings.setMediaPlaybackRequiresUserGesture(true);
+window.internals.settings.setAutoplayPolicy('user-gesture-required');
 window.internals.settings.setMediaPlaybackGestureWhitelistScope(
     document.URL.substring(0, document.URL.lastIndexOf('/') + 1) + "foo/");
 

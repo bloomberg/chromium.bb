@@ -35,6 +35,7 @@
 #include "core/dom/TaskRunnerHelper.h"
 #include "core/frame/Settings.h"
 #include "core/html/HTMLMediaElement.h"
+#include "core/html/media/AutoplayPolicy.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "core/inspector/ConsoleTypes.h"
 #include "modules/mediastream/MediaStream.h"
@@ -104,10 +105,11 @@ BaseAudioContext::BaseAudioContext(Document* document)
       periodic_wave_sawtooth_(nullptr),
       periodic_wave_triangle_(nullptr),
       output_position_() {
-  // If mediaPlaybackRequiresUserGesture is enabled, cross origin iframes will
-  // require user gesture for the AudioContext to produce sound.
-  if (document->GetSettings() &&
-      document->GetSettings()->GetMediaPlaybackRequiresUserGesture() &&
+  // If the autoplay policy requires a user gesture, cross origin iframes will
+  // require user gesture for the AudioContext to produce sound. This apply even
+  // if the autoplay policy requires user gesture for top frames.
+  if (AutoplayPolicy::GetAutoplayPolicyForDocument(*document) !=
+          AutoplayPolicy::Type::kNoUserGestureRequired &&
       document->GetFrame() && document->GetFrame()->IsCrossOriginSubframe()) {
     autoplay_status_ = AutoplayStatus::kAutoplayStatusFailed;
     user_gesture_required_ = true;

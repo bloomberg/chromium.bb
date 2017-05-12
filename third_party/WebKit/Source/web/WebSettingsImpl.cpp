@@ -139,6 +139,11 @@ void WebSettingsImpl::SetMinimumLogicalFontSize(int size) {
   settings_->SetMinimumLogicalFontSize(size);
 }
 
+void WebSettingsImpl::SetAutoplayPolicy(AutoplayPolicy policy) {
+  settings_->SetAutoplayPolicy(
+      static_cast<blink::AutoplayPolicy::Type>(policy));
+}
+
 void WebSettingsImpl::SetAutoZoomFocusedNodeToLegibleScale(
     bool auto_zoom_focused_node_to_legible_scale) {
   auto_zoom_focused_node_to_legible_scale_ =
@@ -623,10 +628,6 @@ void WebSettingsImpl::SetShouldRespectImageOrientation(bool enabled) {
   settings_->SetShouldRespectImageOrientation(enabled);
 }
 
-void WebSettingsImpl::SetMediaPlaybackRequiresUserGesture(bool required) {
-  settings_->SetMediaPlaybackRequiresUserGesture(required);
-}
-
 void WebSettingsImpl::SetMediaPlaybackGestureWhitelistScope(
     const WebString& scope) {
   settings_->SetMediaPlaybackGestureWhitelistScope(scope);
@@ -654,11 +655,6 @@ void WebSettingsImpl::SetSyncXHRInDocumentsEnabled(bool enabled) {
 
 void WebSettingsImpl::SetCookieEnabled(bool enabled) {
   settings_->SetCookieEnabled(enabled);
-}
-
-void WebSettingsImpl::SetCrossOriginMediaPlaybackRequiresUserGesture(
-    bool required) {
-  settings_->SetCrossOriginMediaPlaybackRequiresUserGesture(required);
 }
 
 void WebSettingsImpl::SetNavigateOnDragDrop(bool enabled) {

@@ -315,7 +315,7 @@ var tests = [
 ];
 
 tests.forEach(function(test) {
-    internals.settings.setMediaPlaybackRequiresUserGesture(false);
+    internals.settings.setAutoplayPolicy('no-user-gesture-required');
     async_test(function(t) {
         var audio = document.createElement("audio");
         test(t, audio);
@@ -339,7 +339,7 @@ var testsWithUserGesture = [
 ];
 
 testsWithUserGesture.forEach(function(test) {
-    internals.settings.setMediaPlaybackRequiresUserGesture(true);
+    internals.settings.setAutoplayPolicy('user-gesture-required');
     async_test(function(t) {
         var audio = document.createElement("audio");
         test(t, audio);

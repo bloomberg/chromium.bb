@@ -8,7 +8,7 @@
 <script src="../resources/testharnessreport.js"></script>
 <script src="media-file.js"></script>
 <script>
-  window.internals.settings.setMediaPlaybackRequiresUserGesture(true);
+  window.internals.settings.setAutoplayPolicy('user-gesture-required');
 
   async_test(function(t) {
     var video = document.createElement('video');

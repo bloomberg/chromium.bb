@@ -534,4 +534,23 @@ void InternalSettings::setPresentationReceiver(
   GetSettings()->SetPresentationReceiver(enabled);
 }
 
+void InternalSettings::setAutoplayPolicy(const String& policy_str,
+                                         ExceptionState& exception_state) {
+  InternalSettingsGuardForSettings();
+
+  AutoplayPolicy::Type policy = AutoplayPolicy::Type::kNoUserGestureRequired;
+  if (policy_str == "no-user-gesture-required") {
+    policy = AutoplayPolicy::Type::kNoUserGestureRequired;
+  } else if (policy_str == "user-gesture-required") {
+    policy = AutoplayPolicy::Type::kUserGestureRequired;
+  } else if (policy_str == "user-gesture-required-for-cross-origin") {
+    policy = AutoplayPolicy::Type::kUserGestureRequiredForCrossOrigin;
+  } else {
+    exception_state.ThrowDOMException(
+        kSyntaxError, "The autoplay policy ('" + policy_str + ")' is invalid.");
+  }
+
+  GetSettings()->SetAutoplayPolicy(policy);
+}
+
 }  // namespace blink

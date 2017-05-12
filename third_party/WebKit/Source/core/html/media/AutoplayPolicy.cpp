@@ -19,7 +19,7 @@ namespace blink {
 
 namespace {
 
-bool IsDocumentCrossOrigin(Document& document) {
+bool IsDocumentCrossOrigin(const Document& document) {
   const LocalFrame* frame = document.GetFrame();
   return frame && frame->IsCrossOriginSubframe();
 }
@@ -27,7 +27,7 @@ bool IsDocumentCrossOrigin(Document& document) {
 // Returns whether |document| is whitelisted for autoplay. If true, the user
 // gesture lock will be initilized as false, indicating that the element is
 // allowed to autoplay unmuted without user gesture.
-bool IsDocumentWhitelisted(Document& document) {
+bool IsDocumentWhitelisted(const Document& document) {
   DCHECK(document.GetSettings());
 
   const String& whitelist_scope =
@@ -40,24 +40,33 @@ bool IsDocumentWhitelisted(Document& document) {
 
 // Return true if and only if the document settings specifies media playback
 // requires user gesture.
-bool ComputeLockedPendingUserGesture(Document& document) {
-  if (!document.GetSettings())
-    return false;
-
-  if (IsDocumentWhitelisted(document)) {
-    return false;
+bool ComputeLockedPendingUserGesture(const Document& document) {
+  switch (AutoplayPolicy::GetAutoplayPolicyForDocument(document)) {
+    case AutoplayPolicy::Type::kNoUserGestureRequired:
+      return false;
+    case AutoplayPolicy::Type::kUserGestureRequiredForCrossOrigin:
+      return IsDocumentCrossOrigin(document);
+    case AutoplayPolicy::Type::kUserGestureRequired:
+      return true;
   }
 
-  if (document.GetSettings()
-          ->GetCrossOriginMediaPlaybackRequiresUserGesture() &&
-      IsDocumentCrossOrigin(document)) {
-    return true;
-  }
-
-  return document.GetSettings()->GetMediaPlaybackRequiresUserGesture();
+  NOTREACHED();
+  return true;
 }
 
 }  // anonymous namespace
+
+// static
+AutoplayPolicy::Type AutoplayPolicy::GetAutoplayPolicyForDocument(
+    const Document& document) {
+  if (!document.GetSettings())
+    return Type::kNoUserGestureRequired;
+
+  if (IsDocumentWhitelisted(document))
+    return Type::kNoUserGestureRequired;
+
+  return document.GetSettings()->GetAutoplayPolicy();
+}
 
 AutoplayPolicy::AutoplayPolicy(HTMLMediaElement* element)
     : locked_pending_user_gesture_(false),

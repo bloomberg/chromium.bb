@@ -6,6 +6,7 @@
 #define AutoplayPolicy_h
 
 #include "bindings/core/v8/Nullable.h"
+#include "core/CoreExport.h"
 #include "core/dom/ExceptionCode.h"
 #include "platform/heap/Handle.h"
 
@@ -19,6 +20,15 @@ class HTMLMediaElement;
 // AutoplayPolicy is the class for handles autoplay logics.
 class AutoplayPolicy final : public GarbageCollected<AutoplayPolicy> {
  public:
+  // Different autoplay policy types.
+  enum class Type {
+    kNoUserGestureRequired = 0,
+    kUserGestureRequired,
+    kUserGestureRequiredForCrossOrigin,
+  };
+
+  CORE_EXPORT static Type GetAutoplayPolicyForDocument(const Document&);
+
   explicit AutoplayPolicy(HTMLMediaElement*);
 
   void VideoWillBeDrawnToCanvas() const;

@@ -216,18 +216,8 @@
     },
 
     {
-      name: "mediaPlaybackRequiresUserGesture",
-      initial: false,
-    },
-    {
       name: "mediaPlaybackGestureWhitelistScope",
       type: "String",
-    },
-
-    // This flags overrides mediaPlaybackRequiresUserGesture
-    {
-      name: "crossOriginMediaPlaybackRequiresUserGesture",
-      initial: false,
     },
 
     {
@@ -926,6 +916,13 @@
     {
       name: "doNotUpdateSelectionOnMutatingSelectionRange",
       initial: false,
+    },
+
+    // Defines the autoplay policy to use.
+    {
+      name: "autoplayPolicy",
+      type: "AutoplayPolicy::Type",
+      initial: "AutoplayPolicy::Type::kNoUserGestureRequired",
     },
   ],
 }

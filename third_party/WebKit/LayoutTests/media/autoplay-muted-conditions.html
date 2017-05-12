@@ -90,14 +90,14 @@ function runTest(t, test) {
   internals.settings.setForcePreloadNoneForMediaElements(test.conditions.lowEndDevice);
 
   // Generic required settings.
-  internals.settings.setMediaPlaybackRequiresUserGesture(true);
+  internals.settings.setAutoplayPolicy('user-gesture-required');
   internals.runtimeFlags.autoplayMutedVideosEnabled = true;
 
   t.add_cleanup(() => {
     internals.settings.setDataSaverEnabled(false);
     internals.clearNetworkConnectionInfoOverride();
     internals.settings.setForcePreloadNoneForMediaElements(false);
-    internals.settings.setMediaPlaybackRequiresUserGesture(false);
+    internals.settings.setAutoplayPolicy('no-user-gesture-required');
     internals.runtimeFlags.autoplayMutedVideosEnabled = false;
   });
 
