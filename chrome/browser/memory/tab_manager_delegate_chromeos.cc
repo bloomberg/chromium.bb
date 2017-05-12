@@ -636,8 +636,6 @@ void TabManagerDelegate::LowMemoryKillImpl(
         MemoryKillsMonitor::LogLowMemoryKill("TAB", estimated_memory_freed_kb);
         MEMORY_LOG(ERROR) << "Killed " << *it << ", estimated "
                           << estimated_memory_freed_kb << " KB freed";
-      } else {
-        MEMORY_LOG(ERROR) << "Failed to kill " << *it;
       }
     }
   }
