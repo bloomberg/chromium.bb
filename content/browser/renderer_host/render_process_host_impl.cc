@@ -2210,7 +2210,7 @@ void RenderProcessHostImpl::OnChannelConnected(int32_t peer_pid) {
       observer.RenderProcessReady(this);
   }
 
-#if defined(IPC_MESSAGE_LOG_ENABLED)
+#if BUILDFLAG(IPC_MESSAGE_LOG_ENABLED)
   Send(new ChildProcessMsg_SetIPCLoggingEnabled(
       IPC::Logging::GetInstance()->Enabled()));
 #endif

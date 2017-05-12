@@ -199,9 +199,9 @@ bool ChannelNacl::Send(Message* message) {
            << " with type " << message->type();
   std::unique_ptr<Message> message_ptr(message);
 
-#ifdef IPC_MESSAGE_LOG_ENABLED
+#if BUILDFLAG(IPC_MESSAGE_LOG_ENABLED)
   Logging::GetInstance()->OnSendMessage(message_ptr.get());
-#endif  // IPC_MESSAGE_LOG_ENABLED
+#endif  // BUILDFLAG(IPC_MESSAGE_LOG_ENABLED)
 
   TRACE_EVENT_WITH_FLOW0(TRACE_DISABLED_BY_DEFAULT("ipc.flow"),
                          "ChannelNacl::Send",

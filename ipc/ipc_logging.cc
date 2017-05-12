@@ -4,7 +4,7 @@
 
 #include "ipc/ipc_logging.h"
 
-#ifdef IPC_MESSAGE_LOG_ENABLED
+#if BUILDFLAG(IPC_MESSAGE_LOG_ENABLED)
 #define IPC_MESSAGE_MACROS_LOG_ENABLED
 #endif
 
@@ -31,7 +31,7 @@
 #include <unistd.h>
 #endif
 
-#ifdef IPC_MESSAGE_LOG_ENABLED
+#if BUILDFLAG(IPC_MESSAGE_LOG_ENABLED)
 
 using base::Time;
 
@@ -310,4 +310,4 @@ void GenerateLogData(const Message& message, LogData* data, bool get_params) {
 
 }
 
-#endif  // IPC_MESSAGE_LOG_ENABLED
+#endif  // BUILDFLAG(IPC_MESSAGE_LOG_ENABLED)
