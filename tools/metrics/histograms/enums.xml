@@ -21380,6 +21380,7 @@ from previous Chrome versions.
   <int value="-1363709707" label="MaterialDesignHistory:disabled"/>
   <int value="-1358669137" label="enable-supervised-user-blacklist"/>
   <int value="-1357655121" label="enable-iframe-based-signin"/>
+  <int value="-1357008397" label="ContextualSuggestionsCarousel:disabled"/>
   <int value="-1349896789" label="DelayNavigation:enabled"/>
   <int value="-1349872906"
       label="disallow-autofill-sync-credential-for-reauth"/>
@@ -22002,6 +22003,7 @@ from previous Chrome versions.
   <int value="1067618884" label="enable-experimental-input-view-features"/>
   <int value="1070164693" label="MidiManagerDynamicInstantiation:disabled"/>
   <int value="1070300488" label="disable-webgl"/>
+  <int value="1070449228" label="ContextualSuggestionsCarousel:enabled"/>
   <int value="1074359194" label="UseSuggestionsEvenIfFew:enabled"/>
   <int value="1081546525" label="ash-enable-docked-windows"/>
   <int value="1087235172" label="file-manager-enable-new-audio-player"/>

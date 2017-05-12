@@ -54,6 +54,12 @@ extern const char kEnableMaterialDesignExtensionsDescription[];
 // Name for the flag to enable the material design feedback UI.
 extern const char kEnableMaterialDesignFeedbackName[];
 
+// Name for the flag to enable contextual suggestions carousel.
+extern const char kContextualSuggestionsCarouselName[];
+
+// Description for the flag to enable contextual suggestions carousel.
+extern const char kContextualSuggestionsCarouselDescription[];
+
 // Description for the flag to enable the material design feedback UI.
 extern const char kEnableMaterialDesignFeedbackDescription[];
 
