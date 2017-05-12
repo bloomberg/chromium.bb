@@ -15,6 +15,9 @@
 #include "core/html/HTMLHtmlElement.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+// Uncomment to run the SelectorQueryTests for stats in a release build.
+// #define RELEASE_QUERY_STATS
+
 namespace blink {
 
 namespace {
@@ -42,7 +45,7 @@ void RunTests(ContainerNode& scope, const QueryTest (&test_cases)[length]) {
       Element* match = scope.QuerySelector(selector);
       EXPECT_EQ(test_case.matches, match ? 1u : 0u);
     }
-#if DCHECK_IS_ON()
+#if DCHECK_IS_ON() || defined(RELEASE_QUERY_STATS)
     SelectorQuery::QueryStats stats = SelectorQuery::LastQueryStats();
     EXPECT_EQ(test_case.stats.total_count, stats.total_count);
     EXPECT_EQ(test_case.stats.fast_id, stats.fast_id);
@@ -298,24 +301,29 @@ TEST(SelectorQueryTest, QuirksModeSlowPath) {
       "  </body>"
       "</html>");
   static const struct QueryTest kTestCases[] = {
-      // Quirks mode always uses the slow path.
-      {"#one", false, 1, {5, 0, 0, 0, 0, 5, 0}},
-      {"#One", false, 1, {5, 0, 0, 0, 0, 5, 0}},
-      {"#ONE", false, 1, {5, 0, 0, 0, 0, 5, 0}},
-      {"#ONE", true, 2, {6, 0, 0, 0, 0, 6, 0}},
-      {"[id=One]", false, 1, {5, 0, 0, 0, 0, 5, 0}},
-      {"[id=One]", true, 1, {6, 0, 0, 0, 0, 6, 0}},
-      {"span", false, 1, {4, 0, 0, 0, 0, 4, 0}},
-      {"span", true, 3, {6, 0, 0, 0, 0, 6, 0}},
-      {".two", false, 1, {5, 0, 0, 0, 0, 5, 0}},
-      {".two", true, 2, {6, 0, 0, 0, 0, 6, 0}},
-      {"body #first", false, 1, {4, 0, 0, 0, 0, 4, 0}},
-      {"body #one", true, 2, {6, 0, 0, 0, 0, 6, 0}},
+      // Quirks mode can't use the id fast path due to being case-insensitive.
+      {"#one", false, 1, {5, 0, 0, 0, 5, 0, 0}},
+      {"#One", false, 1, {5, 0, 0, 0, 5, 0, 0}},
+      {"#ONE", false, 1, {5, 0, 0, 0, 5, 0, 0}},
+      {"#ONE", true, 2, {6, 0, 0, 0, 6, 0, 0}},
+      {"[id=One]", false, 1, {5, 0, 0, 0, 5, 0, 0}},
+      {"[id=One]", true, 1, {6, 0, 0, 0, 6, 0, 0}},
+      {"body #first", false, 1, {4, 0, 0, 0, 4, 0, 0}},
+      {"body #one", true, 2, {6, 0, 0, 0, 6, 0, 0}},
+      // Quirks can use the class and tag name fast paths though.
+      {"span", false, 1, {4, 0, 0, 4, 0, 0, 0}},
+      {"span", true, 3, {6, 0, 0, 6, 0, 0, 0}},
+      {".two", false, 1, {5, 0, 5, 0, 0, 0, 0}},
+      {".two", true, 2, {6, 0, 6, 0, 0, 0, 0}},
+      {"body span", false, 1, {4, 0, 0, 0, 4, 0, 0}},
+      {"body span", true, 3, {6, 0, 0, 0, 6, 0, 0}},
+      {"body .two", false, 1, {5, 0, 5, 0, 0, 0, 0}},
+      {"body .two", true, 2, {6, 0, 6, 0, 0, 0, 0}},
   };
   RunTests(*document, kTestCases);
 }
 
-TEST(SelectorQueryTest, DisconnectedSubtreeSlowPath) {
+TEST(SelectorQueryTest, DisconnectedSubtree) {
   Document* document = HTMLDocument::Create();
   Element* scope = document->createElement("div");
   scope->setInnerHTML(
@@ -327,38 +335,49 @@ TEST(SelectorQueryTest, DisconnectedSubtreeSlowPath) {
       "    <span id=multiple class=B></span>"
       "  </span>"
       "</section>");
-  ShadowRoot& shadowRoot =
-      scope->EnsureShadow().AddShadowRoot(*scope, ShadowRootType::kOpen);
-  // Make the inside the ShadowRoot look identical to the outer document.
-  shadowRoot.appendChild(
-      ElementTraversal::FirstChild(*scope)->CloneElementWithChildren());
   static const struct QueryTest kTestCases[] = {
-      // TODO(esprehn): Disconnected subtrees always uses the slow path, but
-      // we can actually use it in a number of cases, for example using the id
-      // map for things inside a tree scope, or using the fast class scanning
-      // always.
-      {"#A", false, 1, {3, 0, 0, 0, 0, 3, 0}},
-      {"#B", false, 1, {4, 0, 0, 0, 0, 4, 0}},
-      {"#B", true, 1, {6, 0, 0, 0, 0, 6, 0}},
-      {"#multiple", true, 2, {6, 0, 0, 0, 0, 6, 0}},
-      {".child", false, 1, {4, 0, 0, 0, 0, 4, 0}},
-      {".child", true, 2, {6, 0, 0, 0, 0, 6, 0}},
-      {"#first span", false, 1, {3, 0, 0, 0, 0, 3, 0}},
-      {"#first span", true, 4, {6, 0, 0, 0, 0, 6, 0}},
+      {"#A", false, 1, {3, 0, 0, 0, 3, 0, 0}},
+      {"#B", false, 1, {4, 0, 0, 0, 4, 0, 0}},
+      {"#B", true, 1, {6, 0, 0, 0, 6, 0, 0}},
+      {"#multiple", true, 2, {6, 0, 0, 0, 6, 0, 0}},
+      {".child", false, 1, {4, 0, 4, 0, 0, 0, 0}},
+      {".child", true, 2, {6, 0, 6, 0, 0, 0, 0}},
+      {"#first span", false, 1, {3, 0, 0, 0, 3, 0, 0}},
+      {"#first span", true, 4, {6, 0, 0, 0, 6, 0, 0}},
   };
 
-  {
-    SCOPED_TRACE("Inside disconnected subtree");
-    RunTests(*scope, kTestCases);
-  }
+  RunTests(*scope, kTestCases);
+}
 
-  {
-    // Run all the tests a second time but with a scope inside a shadow root,
-    // this tests for cases where we could have used the id map the ShadowRoot
-    // is keeping track of.
-    SCOPED_TRACE("Inside disconnected shadow root subtree");
-    RunTests(shadowRoot, kTestCases);
-  }
+TEST(SelectorQueryTest, DisconnectedTreeScope) {
+  Document* document = HTMLDocument::Create();
+  Element* host = document->createElement("div");
+  // TODO(esprehn): Element::attachShadow() should not require a ScriptState,
+  // it should handle the use counting in the bindings layer instead of in the
+  // C++.
+  ShadowRoot& shadowRoot =
+      host->EnsureShadow().AddShadowRoot(*host, ShadowRootType::kOpen);
+  shadowRoot.setInnerHTML(
+      "<section>"
+      "  <span id=first>"
+      "    <span id=A class=A></span>"
+      "    <span id=B class=child></span>"
+      "    <span id=multiple class=child></span>"
+      "    <span id=multiple class=B></span>"
+      "  </span>"
+      "</section>");
+  static const struct QueryTest kTestCases[] = {
+      {"#A", false, 1, {1, 1, 0, 0, 0, 0, 0}},
+      {"#B", false, 1, {1, 1, 0, 0, 0, 0, 0}},
+      {"#B", true, 1, {1, 1, 0, 0, 0, 0, 0}},
+      {"#multiple", true, 2, {2, 2, 0, 0, 0, 0, 0}},
+      {".child", false, 1, {4, 0, 4, 0, 0, 0, 0}},
+      {".child", true, 2, {6, 0, 6, 0, 0, 0, 0}},
+      {"#first span", false, 1, {2, 1, 0, 0, 1, 0, 0}},
+      {"#first span", true, 4, {5, 1, 0, 0, 4, 0, 0}},
+  };
+
+  RunTests(shadowRoot, kTestCases);
 }
 
 }  // namespace blink

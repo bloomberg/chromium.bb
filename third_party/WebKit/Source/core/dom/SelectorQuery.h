@@ -81,8 +81,6 @@ class CORE_EXPORT SelectorQuery {
  private:
   explicit SelectorQuery(CSSSelectorList);
 
-  bool CanUseFastQuery(const ContainerNode& root_node) const;
-
   template <typename SelectorQueryTrait>
   void ExecuteWithId(ContainerNode& root_node,
                      typename SelectorQueryTrait::OutputType&) const;
@@ -118,6 +116,7 @@ class CORE_EXPORT SelectorQuery {
   bool selector_id_affected_by_sibling_combinator_ : 1;
   bool uses_deep_combinator_or_shadow_pseudo_ : 1;
   bool needs_updated_distribution_ : 1;
+  bool use_slow_scan_ : 1;
 };
 
 class SelectorQueryCache {
