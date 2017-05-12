@@ -19,6 +19,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/threading/non_thread_safe.h"
 #include "components/prefs/base_prefs_export.h"
 #include "components/prefs/persistent_pref_store.h"
@@ -62,13 +63,18 @@ class COMPONENTS_PREFS_EXPORT JsonPrefStore
       const base::FilePath& pref_filename,
       base::SequencedWorkerPool* worker_pool);
 
-  // |sequenced_task_runner| must be a shutdown-blocking task runner, ideally
-  // created by the GetTaskRunnerForFile() method above.
-  // |pref_filename| is the path to the file to read prefs from.
-  JsonPrefStore(
-      const base::FilePath& pref_filename,
-      const scoped_refptr<base::SequencedTaskRunner>& sequenced_task_runner,
-      std::unique_ptr<PrefFilter> pref_filter);
+  // |pref_filename| is the path to the file to read prefs from. It is incorrect
+  // to create multiple JsonPrefStore with the same |pref_filename|.
+  // |sequenced_task_runner| is used for asynchronous reads and writes. It must
+  // have the base::TaskShutdownBehavior::BLOCK_SHUTDOWN and base::MayBlock()
+  // traits. Unless external tasks need to run on the same sequence as
+  // JsonPrefStore tasks, keep the default value.
+  JsonPrefStore(const base::FilePath& pref_filename,
+                scoped_refptr<base::SequencedTaskRunner> sequenced_task_runner =
+                    base::CreateSequencedTaskRunnerWithTraits(
+                        {base::MayBlock(),
+                         base::TaskShutdownBehavior::BLOCK_SHUTDOWN}),
+                std::unique_ptr<PrefFilter> pref_filter = nullptr);
 
   // PrefStore overrides:
   bool GetValue(const std::string& key,
