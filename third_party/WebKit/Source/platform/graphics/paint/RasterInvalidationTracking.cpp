@@ -41,12 +41,11 @@ static std::unique_ptr<JSONArray> RectAsJSONArray(const T& rect) {
 }
 
 void RasterInvalidationTracking::AsJSON(JSONObject* json) {
-  if (!tracked_raster_invalidations.IsEmpty()) {
-    std::sort(tracked_raster_invalidations.begin(),
-              tracked_raster_invalidations.end(),
+  if (!invalidations.IsEmpty()) {
+    std::sort(invalidations.begin(), invalidations.end(),
               &CompareRasterInvalidationInfo);
     std::unique_ptr<JSONArray> paint_invalidations_json = JSONArray::Create();
-    for (auto& info : tracked_raster_invalidations) {
+    for (auto& info : invalidations) {
       std::unique_ptr<JSONObject> info_json = JSONObject::Create();
       info_json->SetString("object", info.client_debug_name);
       if (!info.rect.IsEmpty()) {
@@ -62,10 +61,10 @@ void RasterInvalidationTracking::AsJSON(JSONObject* json) {
     json->SetArray("paintInvalidations", std::move(paint_invalidations_json));
   }
 
-  if (!under_paint_invalidations.IsEmpty()) {
+  if (!under_invalidations.IsEmpty()) {
     std::unique_ptr<JSONArray> under_paint_invalidations_json =
         JSONArray::Create();
-    for (auto& under_paint_invalidation : under_paint_invalidations) {
+    for (auto& under_paint_invalidation : under_invalidations) {
       std::unique_ptr<JSONObject> under_paint_invalidation_json =
           JSONObject::Create();
       under_paint_invalidation_json->SetDouble("x", under_paint_invalidation.x);

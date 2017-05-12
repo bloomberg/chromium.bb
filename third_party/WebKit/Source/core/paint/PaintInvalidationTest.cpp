@@ -192,7 +192,7 @@ TEST_P(PaintInvalidationTest, DelayedFullPaintInvalidation) {
   GetDocument().domWindow()->scrollTo(0, 4000);
   GetDocument().View()->UpdateAllLifecyclePhases();
   const auto& raster_invalidations =
-      GetRasterInvalidationTracking()->tracked_raster_invalidations;
+      GetRasterInvalidationTracking()->invalidations;
   ASSERT_EQ(1u, raster_invalidations.size());
   EXPECT_EQ(kPaintInvalidationNone, target->FullPaintInvalidationReason());
   EXPECT_EQ(IntRect(0, 4000, 100, 100), raster_invalidations[0].rect);

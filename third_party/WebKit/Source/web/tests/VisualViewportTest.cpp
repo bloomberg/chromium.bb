@@ -2255,8 +2255,7 @@ TEST_P(VisualViewportTest, ResizeNonCompositedAndFixedBackground) {
   // If no invalidations occured, this will be a nullptr.
   ASSERT_TRUE(invalidation_tracking);
 
-  const auto* raster_invalidations =
-      &invalidation_tracking->tracked_raster_invalidations;
+  const auto* raster_invalidations = &invalidation_tracking->invalidations;
 
   bool root_layer_scrolling = GetParam();
 
@@ -2287,7 +2286,7 @@ TEST_P(VisualViewportTest, ResizeNonCompositedAndFixedBackground) {
                               ->GraphicsLayerBacking(document->GetLayoutView())
                               ->GetRasterInvalidationTracking();
   ASSERT_TRUE(invalidation_tracking);
-  raster_invalidations = &invalidation_tracking->tracked_raster_invalidations;
+  raster_invalidations = &invalidation_tracking->invalidations;
 
   // Once again, the entire page should have been invalidated.
   expectedHeight = root_layer_scrolling ? 480 : 1000;
@@ -2429,8 +2428,7 @@ TEST_P(VisualViewportTest, InvalidateLayoutViewWhenDocumentSmallerThanView) {
             ->GraphicsLayerBacking()
             ->GetRasterInvalidationTracking();
     ASSERT_TRUE(invalidation_tracking);
-    const auto* raster_invalidations =
-        &invalidation_tracking->tracked_raster_invalidations;
+    const auto* raster_invalidations = &invalidation_tracking->invalidations;
     ASSERT_EQ(1u, raster_invalidations->size());
     EXPECT_EQ(IntRect(0, 0, page_width, largest_height),
               (*raster_invalidations)[0].rect);
