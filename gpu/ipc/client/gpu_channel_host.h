@@ -20,6 +20,7 @@
 #include "base/synchronization/lock.h"
 #include "gpu/config/gpu_info.h"
 #include "gpu/gpu_export.h"
+#include "gpu/ipc/common/gpu_stream_constants.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_sync_channel.h"
 #include "ipc/message_filter.h"
@@ -149,6 +150,9 @@ class GPU_EXPORT GpuChannelHost
   // Generate a route ID guaranteed to be unique for this channel.
   int32_t GenerateRouteID();
 
+  // Generate a stream ID guaranteed to be unique for this channel.
+  int32_t GenerateStreamID();
+
   // Sends a synchronous nop to the server which validate that all previous IPC
   // messages have been received. Once the synchronous nop has been sent to the
   // server all previous flushes will all be marked as validated, including
@@ -246,6 +250,7 @@ class GPU_EXPORT GpuChannelHost
   // except:
   // - |next_image_id_|, atomic type
   // - |next_route_id_|, atomic type
+  // - |next_stream_id_|, atomic type
   // - |channel_| and |stream_flush_info_|, protected by |context_lock_|
   GpuChannelHostFactory* const factory_;
 
@@ -264,6 +269,9 @@ class GPU_EXPORT GpuChannelHost
 
   // Route IDs are allocated in sequence.
   base::AtomicSequenceNumber next_route_id_;
+
+  // Stream IDs are allocated in sequence.
+  base::AtomicSequenceNumber next_stream_id_;
 
   // Protects channel_ and stream_flush_info_.
   mutable base::Lock context_lock_;
