@@ -16,6 +16,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
 #include "base/single_thread_task_runner.h"
+#include "base/task_scheduler/task_traits.h"
 #include "base/threading/thread_checker.h"
 #include "device/hid/hid_device_info.h"
 
@@ -41,10 +42,14 @@ class HidService {
     virtual void OnDeviceRemovedCleanup(scoped_refptr<HidDeviceInfo> info);
   };
 
-  typedef base::Callback<void(const std::vector<scoped_refptr<HidDeviceInfo>>&)>
-      GetDevicesCallback;
-  typedef base::Callback<void(scoped_refptr<HidConnection> connection)>
-      ConnectCallback;
+  using GetDevicesCallback =
+      base::Callback<void(const std::vector<scoped_refptr<HidDeviceInfo>>&)>;
+  using ConnectCallback =
+      base::Callback<void(scoped_refptr<HidConnection> connection)>;
+
+  static constexpr base::TaskTraits kBlockingTaskTraits = {
+      base::MayBlock(), base::TaskPriority::USER_VISIBLE,
+      base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN};
 
   // This function should be called on a thread with a MessageLoopForUI and be
   // passed the task runner for a thread with a MessageLoopForIO.
