@@ -569,37 +569,6 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
     return true;
   }
 
-  // 5th Clause:
-  // TODO(hiroshige): Reorder the clauses to match the spec.
-  // - "If the element does not have a src attribute,
-  //    and the element has been flagged as "parser-inserted",
-  //    and either the parser that created the script is an XML parser
-  //      or it's an HTML parser whose script nesting level is not greater than
-  //      one,
-  //    and the Document of the HTML parser or XML parser that created
-  //      the script element has a style sheet that is blocking scripts"
-  // The last part "... has a style sheet that is blocking scripts"
-  // is implemented in Document::isScriptExecutionReady().
-  // Part of the condition check is done in
-  // HTMLParserScriptRunner::processScriptElementInternal().
-  // TODO(hiroshige): Clean up the split condition check.
-  // We check that the type is "classic" here, because according to the spec
-  // a "module" script doesn't reach the 5th Clause because the 4th Clause
-  // catches all "module" scripts.
-  if (GetScriptType() == ScriptType::kClassic &&
-      !element_->HasSourceAttribute() && parser_inserted_ &&
-      !element_document.IsScriptExecutionReady()) {
-    // The former part of this clause is
-    // implemented by the caller-side of prepareScript():
-    // - HTMLParserScriptRunner::requestParsingBlockingScript()
-    // - TODO(hiroshige): Investigate XMLDocumentParser::endElementNs()
-    will_be_parser_executed_ = true;
-    // "Set the element's "ready to be parser-executed" flag."
-    ready_to_be_parser_executed_ = true;
-
-    return true;
-  }
-
   // 3rd Clause:
   // - "If the script's type is "classic",
   //    and the element has a src attribute,
@@ -608,7 +577,6 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
   // - "If the script's type is "module",
   //    and the element does not have an async attribute,
   //    and the element does not have the "non-blocking" flag set"
-  // TODO(hiroshige): Check the script's type and implement "module" case.
   if ((GetScriptType() == ScriptType::kClassic &&
        element_->HasSourceAttribute() && !element_->AsyncAttributeValue() &&
        !non_blocking_) ||
@@ -658,6 +626,37 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
     return true;
   }
 
+  // The following clauses are executed only if the script's type is "classic"
+  // and the element doesn't have a src attribute.
+  DCHECK_EQ(GetScriptType(), ScriptType::kClassic);
+  DCHECK(!is_external_script_);
+
+  // 5th Clause:
+  // - "If the element does not have a src attribute,
+  //    and the element has been flagged as "parser-inserted",
+  //    and either the parser that created the script is an XML parser
+  //      or it's an HTML parser whose script nesting level is not greater than
+  //      one,
+  //    and the Document of the HTML parser or XML parser that created
+  //      the script element has a style sheet that is blocking scripts"
+  // The last part "... has a style sheet that is blocking scripts"
+  // is implemented in Document::isScriptExecutionReady().
+  // Part of the condition check is done in
+  // HTMLParserScriptRunner::processScriptElementInternal().
+  // TODO(hiroshige): Clean up the split condition check.
+  if (!element_->HasSourceAttribute() && parser_inserted_ &&
+      !element_document.IsScriptExecutionReady()) {
+    // The former part of this clause is
+    // implemented by the caller-side of prepareScript():
+    // - HTMLParserScriptRunner::requestParsingBlockingScript()
+    // - TODO(hiroshige): Investigate XMLDocumentParser::endElementNs()
+    will_be_parser_executed_ = true;
+    // "Set the element's "ready to be parser-executed" flag."
+    ready_to_be_parser_executed_ = true;
+
+    return true;
+  }
+
   // 6th Clause:
   // - "Otherwise"
   // "Immediately execute the script block,
@@ -665,11 +664,6 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
   // Note: this block is also duplicated in
   // HTMLParserScriptRunner::processScriptElementInternal().
   // TODO(hiroshige): Merge the duplicated code.
-
-  // This clause is executed only if the script's type is "classic"
-  // and the element doesn't have a src attribute.
-  DCHECK_EQ(GetScriptType(), ScriptType::kClassic);
-  DCHECK(!is_external_script_);
 
   // Reset line numbering for nested writes.
   TextPosition position = element_document.IsInDocumentWrite()
