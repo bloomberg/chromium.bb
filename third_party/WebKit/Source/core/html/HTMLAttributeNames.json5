@@ -232,6 +232,7 @@
     "onloadstart",
     "onlostpointercapture",
     "onmessage",
+    "onmessageerror",
     "onmousedown",
     "onmouseenter",
     "onmouseleave",

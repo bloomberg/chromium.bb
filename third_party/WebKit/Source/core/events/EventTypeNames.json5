@@ -148,6 +148,7 @@
     "lostpointercapture",
     "mark",
     "message",
+    "messageerror",
     "midimessage",
     "mousedown",
     "mouseenter",

@@ -67,6 +67,7 @@ class CORE_EXPORT DedicatedWorkerGlobalScope final : public WorkerGlobalScope {
   static bool CanTransferArrayBuffersAndImageBitmaps() { return true; }
 
   DEFINE_ATTRIBUTE_EVENT_LISTENER(message);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(messageerror);
 
   DECLARE_VIRTUAL_TRACE();
 

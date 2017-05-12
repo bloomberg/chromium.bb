@@ -360,6 +360,7 @@ html element body
     property onhashchange
     property onlanguagechange
     property onmessage
+    property onmessageerror
     property onoffline
     property ononline
     property onpagehide
@@ -505,6 +506,7 @@ html element frameset
     property onhashchange
     property onlanguagechange
     property onmessage
+    property onmessageerror
     property onoffline
     property ononline
     property onpagehide

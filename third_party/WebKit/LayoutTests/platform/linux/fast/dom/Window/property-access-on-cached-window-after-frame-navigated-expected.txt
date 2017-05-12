@@ -109,6 +109,7 @@ PASS oldChildWindow.onloadedmetadata is newChildWindow.onloadedmetadata
 PASS oldChildWindow.onloadstart is newChildWindow.onloadstart
 PASS oldChildWindow.onlostpointercapture is newChildWindow.onlostpointercapture
 PASS oldChildWindow.onmessage is newChildWindow.onmessage
+PASS oldChildWindow.onmessageerror is newChildWindow.onmessageerror
 PASS oldChildWindow.onmousedown is newChildWindow.onmousedown
 PASS oldChildWindow.onmouseenter is newChildWindow.onmouseenter
 PASS oldChildWindow.onmouseleave is newChildWindow.onmouseleave

@@ -38,4 +38,5 @@
 
     // event handlers
     attribute EventHandler onmessage;
+    attribute EventHandler onmessageerror;
 };

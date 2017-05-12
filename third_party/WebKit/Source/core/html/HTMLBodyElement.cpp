@@ -176,6 +176,11 @@ void HTMLBodyElement::ParseAttribute(
         EventTypeNames::message,
         CreateAttributeEventListener(GetDocument().GetFrame(), name, value,
                                      EventParameterName()));
+  } else if (name == onmessageerrorAttr) {
+    GetDocument().SetWindowAttributeEventListener(
+        EventTypeNames::messageerror,
+        CreateAttributeEventListener(GetDocument().GetFrame(), name, value,
+                                     EventParameterName()));
   } else if (name == onresizeAttr) {
     GetDocument().SetWindowAttributeEventListener(
         EventTypeNames::resize,
