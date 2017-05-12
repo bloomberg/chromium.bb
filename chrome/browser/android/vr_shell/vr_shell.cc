@@ -405,6 +405,18 @@ void VrShell::GvrDelegateReady() {
   delegate_provider_->SetPresentingDelegate(this, gvr_api_);
 }
 
+void VrShell::OnPhysicalBackingSizeChanged(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    const JavaParamRef<jobject>& jweb_contents,
+    jint width,
+    jint height) {
+  content::WebContents* web_contents =
+      content::WebContents::FromJavaWebContents(jweb_contents);
+  gfx::Size size(width, height);
+  web_contents->GetNativeView()->OnPhysicalBackingSizeChanged(size);
+}
+
 void VrShell::ContentPhysicalBoundsChanged(JNIEnv* env,
                                            const JavaParamRef<jobject>& object,
                                            jint width,

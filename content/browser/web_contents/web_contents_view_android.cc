@@ -401,4 +401,9 @@ bool WebContentsViewAndroid::OnTouchEvent(const ui::MotionEventAndroid& event,
   return false;  // let the children handle the actual event.
 }
 
+void WebContentsViewAndroid::OnPhysicalBackingSizeChanged() {
+  if (web_contents_->GetRenderWidgetHostView())
+    web_contents_->SendScreenRects();
+}
+
 } // namespace content

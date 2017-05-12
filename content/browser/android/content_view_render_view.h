@@ -32,6 +32,12 @@ class ContentViewRenderView : public CompositorClient {
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,
       const base::android::JavaParamRef<jobject>& jweb_contents);
+  void OnPhysicalBackingSizeChanged(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj,
+      const base::android::JavaParamRef<jobject>& jweb_contents,
+      jint width,
+      jint height);
   void SurfaceCreated(JNIEnv* env,
                       const base::android::JavaParamRef<jobject>& obj);
   void SurfaceDestroyed(JNIEnv* env,

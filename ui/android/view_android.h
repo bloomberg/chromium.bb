@@ -133,6 +133,8 @@ class UI_ANDROID_EXPORT ViewAndroid {
   bool StartDragAndDrop(const base::android::JavaRef<jstring>& jtext,
                         const base::android::JavaRef<jobject>& jimage);
 
+  gfx::Size GetPhysicalBackingSize();
+  void OnPhysicalBackingSizeChanged(const gfx::Size& size);
   void OnBackgroundColorChanged(unsigned int color);
   void OnTopControlsChanged(float top_controls_offset,
                             float top_content_offset);
@@ -200,6 +202,8 @@ class UI_ANDROID_EXPORT ViewAndroid {
   // Basic view layout information. Used to do hit testing deciding whether
   // the passed events should be processed by the view.
   LayoutParams layout_params_;
+
+  gfx::Size physical_size_;
 
   gfx::Vector2dF content_offset_;  // in CSS pixel.
   std::unique_ptr<EventForwarder> event_forwarder_;

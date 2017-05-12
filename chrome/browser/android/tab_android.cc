@@ -434,6 +434,18 @@ void TabAndroid::DestroyWebContents(JNIEnv* env,
   }
 }
 
+void TabAndroid::OnPhysicalBackingSizeChanged(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    const JavaParamRef<jobject>& jweb_contents,
+    jint width,
+    jint height) {
+  content::WebContents* web_contents =
+      content::WebContents::FromJavaWebContents(jweb_contents);
+  gfx::Size size(width, height);
+  web_contents->GetNativeView()->OnPhysicalBackingSizeChanged(size);
+}
+
 base::android::ScopedJavaLocalRef<jobject> TabAndroid::GetProfileAndroid(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj) {

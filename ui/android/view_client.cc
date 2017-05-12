@@ -19,4 +19,6 @@ bool ViewClient::OnMouseWheelEvent(const MotionEventAndroid& event) {
   return false;
 }
 
+void ViewClient::OnPhysicalBackingSizeChanged() {}
+
 }  // namespace ui

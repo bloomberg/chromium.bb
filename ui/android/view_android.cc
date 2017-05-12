@@ -123,6 +123,7 @@ void ViewAndroid::AddChild(ViewAndroid* child) {
   if (child->parent_)
     child->RemoveFromParent();
   child->parent_ = this;
+  child->OnPhysicalBackingSizeChanged(physical_size_);
 }
 
 // static
@@ -277,6 +278,20 @@ int ViewAndroid::GetSystemWindowInsetBottom() {
     return 0;
   JNIEnv* env = base::android::AttachCurrentThread();
   return Java_ViewAndroidDelegate_getSystemWindowInsetBottom(env, delegate);
+}
+
+void ViewAndroid::OnPhysicalBackingSizeChanged(const gfx::Size& size) {
+  if (physical_size_ == size)
+    return;
+  physical_size_ = size;
+  client_->OnPhysicalBackingSizeChanged();
+
+  for (auto* child : children_)
+    child->OnPhysicalBackingSizeChanged(size);
+}
+
+gfx::Size ViewAndroid::GetPhysicalBackingSize() {
+  return physical_size_;
 }
 
 bool ViewAndroid::OnTouchEvent(const MotionEventAndroid& event,

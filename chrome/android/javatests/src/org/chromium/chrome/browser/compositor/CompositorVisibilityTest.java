@@ -52,7 +52,7 @@ public class CompositorVisibilityTest {
         public void onSurfaceCreated() {}
 
         @Override
-        public void onPhysicalBackingSizeChanged(int width, int height) {}
+        public void onSurfaceResized(int width, int height) {}
 
         @Override
         public void pushDebugRect(Rect rect, int color) {}

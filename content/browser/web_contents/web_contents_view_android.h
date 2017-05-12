@@ -110,6 +110,7 @@ class WebContentsViewAndroid : public WebContentsView,
   // ui::ViewClient implementation.
   bool OnTouchEvent(const ui::MotionEventAndroid& event,
                     bool for_touch_handle) override;
+  void OnPhysicalBackingSizeChanged() override;
 
  private:
   // The WebContents whose contents we display.

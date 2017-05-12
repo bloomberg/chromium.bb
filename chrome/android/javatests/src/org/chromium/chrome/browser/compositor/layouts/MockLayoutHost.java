@@ -62,7 +62,7 @@ class MockLayoutHost implements LayoutManagerHost, LayoutRenderHost {
     public void onSurfaceCreated() { }
 
     @Override
-    public void onPhysicalBackingSizeChanged(int width, int height) { }
+    public void onSurfaceResized(int width, int height) {}
 
     @Override
     public Context getContext() {

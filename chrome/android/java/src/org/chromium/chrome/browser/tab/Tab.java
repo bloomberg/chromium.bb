@@ -2291,7 +2291,8 @@ public class Tab
         // (see http://crbug.com/340987).
         newContentViewCore.onSizeChanged(originalWidth, originalHeight, 0, 0);
         if (!bounds.isEmpty()) {
-            newContentViewCore.onPhysicalBackingSizeChanged(bounds.right, bounds.bottom);
+            nativeOnPhysicalBackingSizeChanged(mNativeTabAndroid,
+                    newContentViewCore.getWebContents(), bounds.right, bounds.bottom);
         }
         newContentViewCore.onShow();
         setContentViewCore(newContentViewCore);
@@ -3045,6 +3046,8 @@ public class Tab
     private native void nativeUpdateDelegates(long nativeTabAndroid,
             TabWebContentsDelegateAndroid delegate, ContextMenuPopulator contextMenuPopulator);
     private native void nativeDestroyWebContents(long nativeTabAndroid, boolean deleteNative);
+    private native void nativeOnPhysicalBackingSizeChanged(
+            long nativeTabAndroid, WebContents webContents, int width, int height);
     private native Profile nativeGetProfileAndroid(long nativeTabAndroid);
     private native int nativeLoadUrl(long nativeTabAndroid, String url, String extraHeaders,
             ResourceRequestBody postData, int transition, String referrerUrl, int referrerPolicy,

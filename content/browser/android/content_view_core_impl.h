@@ -297,7 +297,6 @@ class ContentViewCoreImpl : public ContentViewCore,
   // Methods called from native code
   // --------------------------------------------------------------------------
 
-  gfx::Size GetPhysicalBackingSize() const;
   gfx::Size GetViewportSizeDip() const;
   bool DoBrowserControlsShrinkBlinkSize() const;
   float GetTopControlsHeightDip() const;
