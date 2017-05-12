@@ -92,6 +92,8 @@ public class SuggestionsBottomSheetContent implements BottomSheet.BottomSheetCon
             public void onSheetOpened() {
                 mRecyclerView.scrollToPosition(0);
                 prepareSuggestionsForReveal(adapter);
+
+                mRecyclerView.getScrollEventReporter().reset();
             }
 
             @Override
