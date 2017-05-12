@@ -23,6 +23,11 @@ CWV_EXPORT
               targetContentOffset:(inout CGPoint*)targetContentOffset;
 - (void)scrollViewDidScroll:(CWVScrollView*)scrollView;
 - (void)scrollViewDidEndDecelerating:(CWVScrollView*)scrollView;
+
+// The equivalent in UIScrollViewDelegate also takes a parameter (UIView*)view,
+// but CWVScrollViewDelegate doesn't expose it for flexibility of future
+// implementation.
+- (void)scrollViewWillBeginZooming:(CWVScrollView*)webViewScrollViewProxy;
 @end
 
 #endif  // IOS_WEB_VIEW_PUBLIC_CWV_SCROLL_VIEW_DELEGATE_H_

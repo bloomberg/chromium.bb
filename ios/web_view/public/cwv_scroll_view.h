@@ -25,8 +25,11 @@ CWV_EXPORT
 
 @property(nonatomic, readonly) CGRect bounds;
 @property(nonatomic) CGPoint contentOffset;
+@property(nonatomic) UIEdgeInsets scrollIndicatorInsets;
 @property(nonatomic, weak) id<CWVScrollViewDelegate> delegate;
+@property(nonatomic, readonly, getter=isDecelerating) BOOL decelerating;
 @property(nonatomic, readonly, getter=isDragging) BOOL dragging;
+@property(nonatomic, readonly) UIPanGestureRecognizer* panGestureRecognizer;
 
 // KVO compliant.
 @property(nonatomic, readonly) CGSize contentSize;
@@ -40,7 +43,9 @@ CWV_EXPORT
 // rdar://23584409 (not available on Open Radar)
 @property(nonatomic) UIEdgeInsets contentInset;
 
+- (void)setContentOffset:(CGPoint)contentOffset animated:(BOOL)animated;
 - (void)addGestureRecognizer:(UIGestureRecognizer*)gestureRecognizer;
+- (void)removeGestureRecognizer:(UIGestureRecognizer*)gestureRecognizer;
 
 @end
 
