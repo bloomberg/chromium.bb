@@ -263,7 +263,7 @@ def get_waterfall_config():
        'perf_tests': [
          ('tracing_perftests', 'build73-b1--device2'),
          ('gpu_perftests', 'build73-b1--device2'),
-         ('cc_perftests', 'build73-b1--device2'),
+         #  ('cc_perftests', 'build73-b1--device2'),  # crbug.com/721757
          ]
       }
     ])

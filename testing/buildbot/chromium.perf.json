@@ -916,26 +916,6 @@
         }
       },
       {
-        "args": [],
-        "isolate_name": "cc_perftests",
-        "name": "cc_perftests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "android_devices": "1",
-              "id": "build73-b1--device2",
-              "os": "Android",
-              "pool": "Chrome-perf"
-            }
-          ],
-          "expiration": 36000,
-          "hard_timeout": 7200,
-          "ignore_task_failure": false,
-          "io_timeout": 3600
-        }
-      },
-      {
         "args": [
           "dromaeo.domcoreattr",
           "-v",
