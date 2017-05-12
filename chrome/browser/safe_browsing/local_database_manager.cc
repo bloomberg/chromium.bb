@@ -17,7 +17,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
-#include "base/threading/sequenced_worker_pool.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -689,11 +689,9 @@ void LocalSafeBrowsingDatabaseManager::StartOnIOThread(
   // Only get a new task runner if there isn't one already. If the service has
   // previously been started and stopped, a task runner could already exist.
   if (!safe_browsing_task_runner_) {
-    base::SequencedWorkerPool* pool = BrowserThread::GetBlockingPool();
-    safe_browsing_task_runner_ =
-        pool->GetSequencedTaskRunnerWithShutdownBehavior(
-            pool->GetSequenceToken(),
-            base::SequencedWorkerPool::SKIP_ON_SHUTDOWN);
+    safe_browsing_task_runner_ = base::CreateSequencedTaskRunnerWithTraits(
+        {base::MayBlock(), base::TaskPriority::BACKGROUND,
+         base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
   }
 
   enabled_ = true;
