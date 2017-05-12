@@ -7,9 +7,9 @@ import unittest
 
 from telemetry.page import shared_page_state
 
-from benchmarks import rasterize_and_record_micro
-from benchmarks import repaint
-from benchmarks import skpicture_printer
+from contrib.cluster_telemetry import rasterize_and_record_micro_ct
+from contrib.cluster_telemetry import repaint
+from contrib.cluster_telemetry import skpicture_printer
 
 
 class MockErrorParser(object):
@@ -25,7 +25,7 @@ class CTBenchmarks(unittest.TestCase):
 
   def setUp(self):
     self.ct_benchmarks = [
-        rasterize_and_record_micro.RasterizeAndRecordMicroCT(),
+        rasterize_and_record_micro_ct.RasterizeAndRecordMicroCT(),
         repaint.RepaintCT(),
         skpicture_printer.SkpicturePrinterCT(),
     ]

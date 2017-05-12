@@ -2,19 +2,14 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from core import perf_benchmark
+from contrib.cluster_telemetry import ct_benchmarks_util
+from contrib.cluster_telemetry import page_set
+from contrib.cluster_telemetry import repaint_helpers
 
-import ct_benchmarks_util
+from core import perf_benchmark
 from measurements import smoothness
 
-import page_sets
-from page_sets import repaint_helpers
 
-from telemetry import benchmark
-
-# Disabled because we do not plan on running CT benchmarks on the perf
-# waterfall any time soon.
-@benchmark.Disabled('all')
 class RepaintCT(perf_benchmark.PerfBenchmark):
   """Measures repaint performance for Cluster Telemetry."""
 
@@ -41,7 +36,7 @@ class RepaintCT(perf_benchmark.PerfBenchmark):
     ct_benchmarks_util.ValidateCommandLineArgs(parser, args)
 
   def CreateStorySet(self, options):
-    return page_sets.CTPageSet(
+    return page_set.CTPageSet(
         options.urls_list, options.user_agent, options.archive_data_file,
         run_page_interaction_callback=repaint_helpers.WaitThenRepaint)
 

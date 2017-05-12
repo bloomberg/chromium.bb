@@ -3,7 +3,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-
 def AddBenchmarkCommandLineArgs(parser):
   parser.add_option('--user-agent',  action='store', type='string',
                     default=None, help='Options are mobile and desktop.')

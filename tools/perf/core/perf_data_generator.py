@@ -698,19 +698,6 @@ def generate_telemetry_tests(name, tester_config, benchmarks,
   return isolated_scripts
 
 
-# List of benchmarks that are to never be run on a waterfall.
-BENCHMARK_NAME_BLACKLIST = [
-    'multipage_skpicture_printer',
-    'multipage_skpicture_printer_ct',
-    'rasterize_and_record_micro_ct',
-    'repaint_ct',
-    'multipage_skpicture_printer',
-    'multipage_skpicture_printer_ct',
-    'skpicture_printer',
-    'skpicture_printer_ct',
-]
-
-
 # Overrides the default 2 hour timeout for swarming tasks.
 BENCHMARK_SWARMING_TIMEOUTS = {
     'loading.mobile': 14400, # 4 hours
@@ -733,12 +720,6 @@ def current_benchmarks():
   all_benchmarks = discover.DiscoverClasses(
       benchmarks_dir, top_level_dir, benchmark_module.Benchmark,
       index_by_class_name=True).values()
-  # Remove all blacklisted benchmarks
-  for blacklisted in BENCHMARK_NAME_BLACKLIST:
-    for benchmark in all_benchmarks:
-      if benchmark.Name() == blacklisted:
-        all_benchmarks.remove(benchmark)
-        break
 
   return sorted(all_benchmarks, key=lambda b: b.Name())
 

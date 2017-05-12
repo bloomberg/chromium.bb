@@ -2,6 +2,9 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from contrib.cluster_telemetry import repaint_helpers
+
+
 from telemetry import decorators
 from telemetry.page import page as page_module
 from telemetry.testing import options_for_unittests
@@ -9,7 +12,6 @@ from telemetry.testing import page_test_test_case
 from telemetry.util import wpr_modes
 
 from measurements import smoothness
-from page_sets import repaint_helpers
 
 
 class TestRepaintPage(page_module.Page):
