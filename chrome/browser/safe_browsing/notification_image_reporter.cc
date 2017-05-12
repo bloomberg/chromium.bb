@@ -14,7 +14,7 @@
 #include "base/memory/ref_counted_memory.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/rand_util.h"
-#include "base/threading/sequenced_worker_pool.h"
+#include "base/task_scheduler/post_task.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
@@ -150,9 +150,8 @@ void NotificationImageReporter::ReportNotificationImageOnUI(
                        weak_this_on_io));
     return;
   }
-
-  BrowserThread::GetBlockingPool()->PostWorkerTask(
-      FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
       base::BindOnce(
           &NotificationImageReporter::DownscaleNotificationImageOnBlockingPool,
           weak_this_on_io, origin, image));
@@ -163,8 +162,6 @@ void NotificationImageReporter::DownscaleNotificationImageOnBlockingPool(
     const base::WeakPtr<NotificationImageReporter>& weak_this_on_io,
     const GURL& origin,
     const SkBitmap& image) {
-  DCHECK(BrowserThread::GetBlockingPool()->RunsTasksOnCurrentThread());
-
   // Downscale to fit within 512x512. TODO(johnme): Get this from Finch.
   const double MAX_SIZE = 512;
   SkBitmap downscaled_image = image;
