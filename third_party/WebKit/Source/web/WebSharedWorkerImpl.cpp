@@ -35,6 +35,7 @@
 #include "core/dom/TaskRunnerHelper.h"
 #include "core/events/MessageEvent.h"
 #include "core/exported/WebDataSourceImpl.h"
+#include "core/frame/WebLocalFrameBase.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "core/loader/FrameLoadRequest.h"
 #include "core/loader/FrameLoader.h"
@@ -75,7 +76,6 @@
 #include "public/web/WebWorkerContentSettingsClientProxy.h"
 #include "web/IndexedDBClientImpl.h"
 #include "web/LocalFileSystemClient.h"
-#include "web/WebLocalFrameImpl.h"
 
 namespace blink {
 
@@ -137,7 +137,7 @@ void WebSharedWorkerImpl::InitializeLoader() {
   // FIXME: Settings information should be passed to the Worker process from
   // Browser process when the worker is created (similar to
   // RenderThread::OnCreateNewView).
-  main_frame_ = ToWebLocalFrameImpl(WebLocalFrame::Create(
+  main_frame_ = ToWebLocalFrameBase(WebLocalFrame::Create(
       WebTreeScopeType::kDocument, this,
       Platform::Current()->GetInterfaceProvider(), nullptr));
   web_view_->SetMainFrame(main_frame_.Get());
@@ -334,7 +334,7 @@ void WebSharedWorkerImpl::OnScriptLoaderFinished() {
   if (RuntimeEnabledFeatures::offMainThreadFetchEnabled()) {
     std::unique_ptr<WebWorkerFetchContext> web_worker_fetch_context =
         client_->CreateWorkerFetchContext(
-            WebLocalFrameImpl::FromFrame(main_frame_->GetFrame())
+            WebLocalFrameBase::FromFrame(main_frame_->GetFrame())
                 ->DataSource()
                 ->GetServiceWorkerNetworkProvider());
     DCHECK(web_worker_fetch_context);

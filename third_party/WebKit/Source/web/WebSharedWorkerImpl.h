@@ -49,7 +49,7 @@ namespace blink {
 
 class WebApplicationCacheHost;
 class WebApplicationCacheHostClient;
-class WebLocalFrameImpl;
+class WebLocalFrameBase;
 class WebServiceWorkerNetworkProvider;
 class WebSharedWorkerClient;
 class WebString;
@@ -134,7 +134,7 @@ class WebSharedWorkerImpl final : public WebFrameClient,
   Persistent<ExecutionContext> loading_document_;
   Persistent<ThreadableLoadingContext> loading_context_;
   WebView* web_view_;
-  Persistent<WebLocalFrameImpl> main_frame_;
+  Persistent<WebLocalFrameBase> main_frame_;
   bool asked_to_terminate_;
 
   std::unique_ptr<WebServiceWorkerNetworkProvider> network_provider_;

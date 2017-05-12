@@ -38,6 +38,7 @@
 #include "core/frame/FrameSerializer.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/RemoteFrame.h"
+#include "core/frame/WebLocalFrameBase.h"
 #include "core/html/HTMLAllCollection.h"
 #include "core/html/HTMLFrameElementBase.h"
 #include "core/html/HTMLFrameOwnerElement.h"
@@ -72,7 +73,6 @@
 #include "public/web/WebFrameSerializerCacheControlPolicy.h"
 #include "public/web/WebFrameSerializerClient.h"
 #include "web/WebFrameSerializerImpl.h"
-#include "web/WebLocalFrameImpl.h"
 #include "web/WebRemoteFrameImpl.h"
 
 namespace blink {
@@ -330,22 +330,22 @@ void MHTMLFrameSerializerDelegate::GetCustomAttributesForFormControlElement(
 }
 
 bool CacheControlNoStoreHeaderPresent(
-    const WebLocalFrameImpl& web_local_frame_impl) {
+    const WebLocalFrameBase& web_local_frame) {
   const ResourceResponse& response =
-      web_local_frame_impl.DataSource()->GetResponse().ToResourceResponse();
+      web_local_frame.DataSource()->GetResponse().ToResourceResponse();
   if (response.CacheControlContainsNoStore())
     return true;
 
   const ResourceRequest& request =
-      web_local_frame_impl.DataSource()->GetRequest().ToResourceRequest();
+      web_local_frame.DataSource()->GetRequest().ToResourceRequest();
   return request.CacheControlContainsNoStore();
 }
 
 bool FrameShouldBeSerializedAsMHTML(
     WebLocalFrame* frame,
     WebFrameSerializerCacheControlPolicy cache_control_policy) {
-  WebLocalFrameImpl* web_local_frame_impl = ToWebLocalFrameImpl(frame);
-  DCHECK(web_local_frame_impl);
+  WebLocalFrameBase* web_local_frame = ToWebLocalFrameBase(frame);
+  DCHECK(web_local_frame);
 
   if (cache_control_policy == WebFrameSerializerCacheControlPolicy::kNone)
     return true;
@@ -360,7 +360,7 @@ bool FrameShouldBeSerializedAsMHTML(
   if (!need_to_check_no_store)
     return true;
 
-  return !CacheControlNoStoreHeaderPresent(*web_local_frame_impl);
+  return !CacheControlNoStoreHeaderPresent(*web_local_frame);
 }
 
 }  // namespace
@@ -376,10 +376,10 @@ WebThreadSafeData WebFrameSerializer::GenerateMHTMLHeader(
   if (!FrameShouldBeSerializedAsMHTML(frame, delegate->CacheControlPolicy()))
     return WebThreadSafeData();
 
-  WebLocalFrameImpl* web_local_frame_impl = ToWebLocalFrameImpl(frame);
-  DCHECK(web_local_frame_impl);
+  WebLocalFrameBase* web_local_frame = ToWebLocalFrameBase(frame);
+  DCHECK(web_local_frame);
 
-  Document* document = web_local_frame_impl->GetFrame()->GetDocument();
+  Document* document = web_local_frame->GetFrame()->GetDocument();
 
   RefPtr<RawData> buffer = RawData::Create();
   MHTMLArchive::GenerateMHTMLHeader(boundary, document->title(),
@@ -401,7 +401,7 @@ WebThreadSafeData WebFrameSerializer::GenerateMHTMLParts(
     return WebThreadSafeData();
 
   // Translate arguments from public to internal blink APIs.
-  LocalFrame* frame = ToWebLocalFrameImpl(web_frame)->GetFrame();
+  LocalFrame* frame = ToWebLocalFrameBase(web_frame)->GetFrame();
   MHTMLArchive::EncodingPolicy encoding_policy =
       web_delegate->UseBinaryEncoding()
           ? MHTMLArchive::EncodingPolicy::kUseBinaryEncoding

@@ -367,7 +367,7 @@ class WEB_EXPORT WebLocalFrameImpl final
     return GetFrame() ? GetFrame()->View() : 0;
   }
 
-  WebDevToolsAgentImpl* DevToolsAgentImpl() const {
+  WebDevToolsAgentImpl* DevToolsAgentImpl() const override {
     return dev_tools_agent_.Get();
   }
 
@@ -393,7 +393,7 @@ class WEB_EXPORT WebLocalFrameImpl final
   void SetCanHaveScrollbars(bool) override;
 
   WebFrameClient* Client() const override { return client_; }
-  void SetClient(WebFrameClient* client) { client_ = client; }
+  void SetClient(WebFrameClient* client) override { client_ = client; }
 
   ContentSettingsClient& GetContentSettingsClient() {
     return content_settings_client_;
@@ -415,12 +415,12 @@ class WEB_EXPORT WebLocalFrameImpl final
   TextFinder* GetTextFinder() const;
   // Returns the text finder object if it already exists.
   // Otherwise creates it and then returns.
-  TextFinder& EnsureTextFinder();
+  TextFinder& EnsureTextFinder() override;
 
   // Returns a hit-tested VisiblePosition for the given point
   VisiblePosition VisiblePositionForViewportPoint(const WebPoint&);
 
-  void SetFrameWidget(WebFrameWidgetBase*);
+  void SetFrameWidget(WebFrameWidgetBase*) override;
 
   // DevTools front-end bindings.
   void SetDevToolsFrontend(WebDevToolsFrontendImpl* frontend) {

@@ -45,7 +45,7 @@ namespace blink {
 
 class ThreadableLoadingContext;
 class ServiceWorkerGlobalScopeProxy;
-class WebLocalFrameImpl;
+class WebLocalFrameBase;
 class WebView;
 class WorkerInspectorProxy;
 class WorkerScriptLoader;
@@ -123,7 +123,7 @@ class WebEmbeddedWorkerImpl final : public WebEmbeddedWorker,
   // are guaranteed to exist while this object is around.
   WebView* web_view_;
 
-  Persistent<WebLocalFrameImpl> main_frame_;
+  Persistent<WebLocalFrameBase> main_frame_;
   Persistent<ThreadableLoadingContext> loading_context_;
 
   bool loading_shadow_page_;

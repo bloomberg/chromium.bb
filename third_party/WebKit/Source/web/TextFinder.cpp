@@ -41,6 +41,7 @@
 #include "core/editing/markers/DocumentMarkerController.h"
 #include "core/exported/WebViewBase.h"
 #include "core/frame/FrameView.h"
+#include "core/frame/WebLocalFrameBase.h"
 #include "core/layout/LayoutObject.h"
 #include "core/layout/TextAutosizer.h"
 #include "core/page/Page.h"
@@ -54,7 +55,6 @@
 #include "public/web/WebFindOptions.h"
 #include "public/web/WebFrameClient.h"
 #include "public/web/WebViewClient.h"
-#include "web/WebLocalFrameImpl.h"
 
 namespace blink {
 
@@ -563,7 +563,7 @@ void TextFinder::UpdateFindMatchRects() {
   if (!find_match_rects_are_valid_)
     for (WebFrame* child = OwnerFrame().FirstChild(); child;
          child = child->NextSibling())
-      ToWebLocalFrameImpl(child)
+      ToWebLocalFrameBase(child)
           ->EnsureTextFinder()
           .find_match_rects_are_valid_ = false;
 
@@ -677,11 +677,11 @@ int TextFinder::SelectFindMatch(unsigned index, WebRect* selection_rect) {
   return active_match_index_ + 1;
 }
 
-TextFinder* TextFinder::Create(WebLocalFrameImpl& owner_frame) {
+TextFinder* TextFinder::Create(WebLocalFrameBase& owner_frame) {
   return new TextFinder(owner_frame);
 }
 
-TextFinder::TextFinder(WebLocalFrameImpl& owner_frame)
+TextFinder::TextFinder(WebLocalFrameBase& owner_frame)
     : owner_frame_(&owner_frame),
       current_active_match_frame_(false),
       active_match_index_(-1),
