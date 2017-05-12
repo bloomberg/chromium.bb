@@ -229,7 +229,7 @@ const CSSValue* CSSVariableResolver::ResolveVariableReferences(
                                   is_animation_tainted))
     return CSSUnsetValue::Create();
   const CSSValue* result =
-      CSSPropertyParser::ParseSingleValue(id, tokens, StrictCSSParserContext());
+      CSSPropertyParser::ParseSingleValue(id, tokens, value.ParserContext());
   if (!result)
     return CSSUnsetValue::Create();
   return result;
@@ -258,13 +258,13 @@ const CSSValue* CSSVariableResolver::ResolvePendingSubstitutions(
     if (resolver.ResolveTokenRange(
             shorthand_value->VariableDataValue()->Tokens(),
             disallow_animation_tainted, tokens, is_animation_tainted)) {
-      CSSParserContext* context = CSSParserContext::Create(kHTMLStandardMode);
 
       HeapVector<CSSProperty, 256> parsed_properties;
 
       if (CSSPropertyParser::ParseValue(
               shorthand_property_id, false, CSSParserTokenRange(tokens),
-              context, parsed_properties, StyleRule::RuleType::kStyle)) {
+              shorthand_value->ParserContext(), parsed_properties,
+              StyleRule::RuleType::kStyle)) {
         unsigned parsed_properties_count = parsed_properties.size();
         for (unsigned i = 0; i < parsed_properties_count; ++i) {
           property_cache.Set(parsed_properties[i].Id(),

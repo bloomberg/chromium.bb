@@ -203,7 +203,7 @@ const CSSValue* CSSSyntaxDescriptor::Parse(CSSParserTokenRange range,
                                            bool is_animation_tainted) const {
   if (IsTokenStream()) {
     return CSSVariableParser::ParseRegisteredPropertyValue(
-        range, false, is_animation_tainted);
+        range, *context, false, is_animation_tainted);
   }
   range.ConsumeWhitespace();
   for (const CSSSyntaxComponent& component : syntax_components_) {
@@ -211,7 +211,7 @@ const CSSValue* CSSSyntaxDescriptor::Parse(CSSParserTokenRange range,
             ConsumeSyntaxComponent(component, range, context))
       return result;
   }
-  return CSSVariableParser::ParseRegisteredPropertyValue(range, true,
+  return CSSVariableParser::ParseRegisteredPropertyValue(range, *context, true,
                                                          is_animation_tainted);
 }
 
