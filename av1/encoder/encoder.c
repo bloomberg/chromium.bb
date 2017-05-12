@@ -3946,9 +3946,9 @@ static void set_frame_size(AV1_COMP *cpi) {
   }
 #if CONFIG_INTRABC
 #if CONFIG_HIGHBITDEPTH
-  av1_setup_scale_factors_for_frame(
-      &xd->sf_identity, cm->width, cm->height, cm->width, cm->height,
-      (buf->flags & YV12_FLAG_HIGHBITDEPTH) ? 1 : 0);
+  av1_setup_scale_factors_for_frame(&xd->sf_identity, cm->width, cm->height,
+                                    cm->width, cm->height,
+                                    cm->use_highbitdepth);
 #else
   av1_setup_scale_factors_for_frame(&xd->sf_identity, cm->width, cm->height,
                                     cm->width, cm->height);
