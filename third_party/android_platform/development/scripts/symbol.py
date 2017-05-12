@@ -316,9 +316,15 @@ def GetCandidateLibraries(library_name):
   Returns:
     A list of matching library filenames for library_name.
   """
+  def extant_library(filename):
+    if (os.path.exists(filename)
+        and elf_symbolizer.ContainsElfMagic(filename)):
+      return [filename]
+    return []
+
   candidates = GetCandidates(
       GetLibrarySearchPaths(), library_name,
-      lambda filename: filter(os.path.exists, [filename]))
+      extant_library)
   # For GN, candidates includes both stripped an unstripped libraries. Stripped
   # libraries are always newer. Explicitly look for .unstripped and sort them
   # ahead.
