@@ -510,7 +510,7 @@ class TestBubbleDialogDelegateView : public BubbleDialogDelegateView {
     // This delegate is owned by the test case itself, so it should not delete
     // itself here.
   }
-  int GetDialogButtons() const override { return ui::DIALOG_BUTTON_NONE; }
+  int GetDialogButtons() const override { return ui::DIALOG_BUTTON_OK; }
   bool ShouldSnapFrameWidth() const override {
     return override_snap_.value_or(
         BubbleDialogDelegateView::ShouldSnapFrameWidth());

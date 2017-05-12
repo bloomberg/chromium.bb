@@ -217,7 +217,6 @@ class InternalPageInfoBubbleView : public views::BubbleDialogDelegateView {
   // views::BubbleDialogDelegateView:
   void OnWidgetDestroying(views::Widget* widget) override;
   int GetDialogButtons() const override;
-  bool ShouldSnapFrameWidth() const override;
 
  private:
   friend class PageInfoBubbleView;
@@ -377,10 +376,6 @@ void InternalPageInfoBubbleView::OnWidgetDestroying(views::Widget* widget) {
 
 int InternalPageInfoBubbleView::GetDialogButtons() const {
   return ui::DIALOG_BUTTON_NONE;
-}
-
-bool InternalPageInfoBubbleView::ShouldSnapFrameWidth() const {
-  return false;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
