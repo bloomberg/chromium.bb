@@ -8,6 +8,7 @@
 #include "chrome/browser/extensions/api/page_capture/page_capture_api.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/common/chrome_switches.h"
+#include "chromeos/login/scoped_test_public_session_login_state.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/extension_dialog_auto_confirm.h"
@@ -70,10 +71,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionPageCaptureApiTest,
                        PublicSessionRequestAllowed) {
   ASSERT_TRUE(StartEmbeddedTestServer());
   PageCaptureSaveAsMHTMLDelegate delegate;
-  // Set Public Session state.
-  chromeos::LoginState::Get()->SetLoggedInState(
-      chromeos::LoginState::LOGGED_IN_ACTIVE,
-      chromeos::LoginState::LOGGED_IN_USER_PUBLIC_ACCOUNT);
+  chromeos::ScopedTestPublicSessionLoginState login_state;
   // Resolve Permission dialog with Allow.
   ScopedTestDialogAutoConfirm auto_confirm(ScopedTestDialogAutoConfirm::ACCEPT);
   ASSERT_TRUE(RunExtensionTest("page_capture")) << message_;
@@ -87,10 +85,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionPageCaptureApiTest,
 IN_PROC_BROWSER_TEST_F(ExtensionPageCaptureApiTest,
                        PublicSessionRequestDenied) {
   ASSERT_TRUE(StartEmbeddedTestServer());
-  // Set Public Session state.
-  chromeos::LoginState::Get()->SetLoggedInState(
-      chromeos::LoginState::LOGGED_IN_ACTIVE,
-      chromeos::LoginState::LOGGED_IN_USER_PUBLIC_ACCOUNT);
+  chromeos::ScopedTestPublicSessionLoginState login_state;
   // Resolve Permission dialog with Deny.
   ScopedTestDialogAutoConfirm auto_confirm(ScopedTestDialogAutoConfirm::CANCEL);
   ASSERT_TRUE(RunExtensionTestWithArg("page_capture", "REQUEST_DENIED"))

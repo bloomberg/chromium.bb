@@ -9,6 +9,7 @@
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "chrome/common/extensions/extension_test_util.h"
+#include "chromeos/login/scoped_test_public_session_login_state.h"
 #include "content/public/browser/resource_request_info.h"
 #include "content/public/common/previews_state.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -221,11 +222,7 @@ TEST_F(ExtensionWebRequestHelpersTestWithThreadsTest,
                 false, // crosses_incognito
                 WebRequestPermissions::REQUIRE_HOST_PERMISSION));
 
-  // Set Public Session state.
-  chromeos::LoginState::Initialize();
-  chromeos::LoginState::Get()->SetLoggedInState(
-      chromeos::LoginState::LOGGED_IN_ACTIVE,
-      chromeos::LoginState::LOGGED_IN_USER_PUBLIC_ACCOUNT);
+  chromeos::ScopedTestPublicSessionLoginState login_state;
 
   // Host permission checks are disabled in Public Sessions, instead all URLs
   // are whitelisted.
