@@ -14,10 +14,12 @@
 #include "components/feature_engagement_tracker/internal/never_condition_validator.h"
 #include "components/feature_engagement_tracker/internal/never_storage_validator.h"
 #include "components/feature_engagement_tracker/internal/once_condition_validator.h"
+#include "components/feature_engagement_tracker/internal/persistent_store.h"
 #include "components/feature_engagement_tracker/internal/single_invalid_configuration.h"
 #include "components/feature_engagement_tracker/internal/system_time_provider.h"
 #include "components/feature_engagement_tracker/public/feature_constants.h"
 #include "components/feature_engagement_tracker/public/feature_list.h"
+#include "components/leveldb_proto/proto_database_impl.h"
 
 namespace feature_engagement_tracker {
 
@@ -53,11 +55,16 @@ CreateDemoModeFeatureEngagementTracker() {
 // static
 FeatureEngagementTracker* FeatureEngagementTracker::Create(
     const base::FilePath& storage_dir,
-    const scoped_refptr<base::SequencedTaskRunner>& background__task_runner) {
+    const scoped_refptr<base::SequencedTaskRunner>& background_task_runner) {
   if (base::FeatureList::IsEnabled(kIPHDemoMode))
     return CreateDemoModeFeatureEngagementTracker().release();
 
-  std::unique_ptr<Store> store = base::MakeUnique<InMemoryStore>();
+  std::unique_ptr<leveldb_proto::ProtoDatabase<Event>> db =
+      base::MakeUnique<leveldb_proto::ProtoDatabaseImpl<Event>>(
+          background_task_runner);
+
+  std::unique_ptr<Store> store =
+      base::MakeUnique<PersistentStore>(storage_dir, std::move(db));
   std::unique_ptr<Configuration> configuration =
       base::MakeUnique<SingleInvalidConfiguration>();
   std::unique_ptr<ConditionValidator> condition_validator =

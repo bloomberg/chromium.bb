@@ -37,6 +37,8 @@ static_library("internal") {
     "never_storage_validator.h",
     "once_condition_validator.cc",
     "once_condition_validator.h",
+    "persistent_store.cc",
+    "persistent_store.h",
     "single_invalid_configuration.cc",
     "single_invalid_configuration.h",
     "storage_validator.h",
@@ -54,6 +56,7 @@ static_library("internal") {
     "//base",
     "//components/feature_engagement_tracker/public",
     "//components/keyed_service/core",
+    "//components/leveldb_proto",
   ]
 
   if (is_android) {
@@ -86,6 +89,7 @@ source_set("unit_tests") {
     "never_condition_validator_unittest.cc",
     "never_storage_validator_unittest.cc",
     "once_condition_validator_unittest.cc",
+    "persistent_store_unittest.cc",
     "single_invalid_configuration_unittest.cc",
     "system_time_provider_unittest.cc",
   ]
@@ -93,6 +97,8 @@ source_set("unit_tests") {
   deps = [
     ":internal",
     "//base/test:test_support",
+    "//components/feature_engagement_tracker/internal/test:test_support",
+    "//components/leveldb_proto:test_support",
     "//testing/gtest",
   ]
 }
