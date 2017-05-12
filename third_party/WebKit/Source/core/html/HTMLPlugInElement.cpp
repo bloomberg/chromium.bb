@@ -93,57 +93,8 @@ HTMLPlugInElement::~HTMLPlugInElement() {
 
 DEFINE_TRACE(HTMLPlugInElement) {
   visitor->Trace(image_loader_);
-  visitor->Trace(plugin_);
   visitor->Trace(persisted_plugin_);
   HTMLFrameOwnerElement::Trace(visitor);
-}
-
-void HTMLPlugInElement::SetPlugin(PluginView* plugin) {
-  if (plugin == plugin_)
-    return;
-
-  // Remove and dispose the old plugin if we had one.
-  if (plugin_) {
-    GetDocument().View()->RemovePlugin(plugin_);
-    DisposeFrameOrPluginSoon(plugin_);
-  }
-  plugin_ = plugin;
-
-  // TODO(joelhockey): I copied the rest of this method from
-  // HTMLFrameOwnerElement.  There may be parts that can be removed
-  // such as the layoutPartItem.isNull check and DCHECKs.
-  // Once widget tree is removed (FrameView::m_children), try to unify
-  // this code with HTMLFrameOwnerElement::setWidget.
-  LayoutPart* layout_part = ToLayoutPart(GetLayoutObject());
-  LayoutPartItem layout_part_item = LayoutPartItem(layout_part);
-  if (layout_part_item.IsNull())
-    return;
-
-  // Update layout and frame with new plugin.
-  if (plugin_) {
-    layout_part_item.UpdateOnWidgetChange();
-
-    DCHECK_EQ(GetDocument().View(), layout_part_item.GetFrameView());
-    DCHECK(layout_part_item.GetFrameView());
-    GetDocument().View()->AddPlugin(plugin);
-  }
-
-  // Apparently accessibility objects might have been modified if plugin
-  // was removed.
-  if (AXObjectCache* cache = GetDocument().ExistingAXObjectCache())
-    cache->ChildrenChanged(layout_part);
-}
-
-PluginView* HTMLPlugInElement::ReleasePlugin() {
-  if (!plugin_)
-    return nullptr;
-  GetDocument().View()->RemovePlugin(plugin_);
-  LayoutPart* layout_part = ToLayoutPart(GetLayoutObject());
-  if (layout_part) {
-    if (AXObjectCache* cache = GetDocument().ExistingAXObjectCache())
-      cache->ChildrenChanged(layout_part);
-  }
-  return plugin_.Release();
 }
 
 void HTMLPlugInElement::SetPersistedPlugin(PluginView* plugin) {
@@ -157,8 +108,9 @@ void HTMLPlugInElement::SetPersistedPlugin(PluginView* plugin) {
 }
 
 void HTMLPlugInElement::SetFocused(bool focused, WebFocusType focus_type) {
-  if (plugin_)
-    plugin_->SetFocused(focused, focus_type);
+  PluginView* plugin = OwnedPlugin();
+  if (plugin)
+    plugin->SetFocused(focused, focus_type);
   HTMLFrameOwnerElement::SetFocused(focused, focus_type);
 }
 
@@ -208,9 +160,9 @@ bool HTMLPlugInElement::WillRespondToMouseClickEvents() {
 
 void HTMLPlugInElement::RemoveAllEventListeners() {
   HTMLFrameOwnerElement::RemoveAllEventListeners();
-  if (plugin_) {
-    plugin_->EventListenersRemoved();
-  }
+  PluginView* plugin = OwnedPlugin();
+  if (plugin)
+    plugin->EventListenersRemoved();
 }
 
 void HTMLPlugInElement::DidMoveToNewDocument(Document& old_document) {
@@ -309,7 +261,8 @@ void HTMLPlugInElement::CreatePluginWithoutLayoutObject() {
 }
 
 bool HTMLPlugInElement::ShouldAccelerate() const {
-  return plugin_ && plugin_->PlatformLayer();
+  PluginView* plugin = OwnedPlugin();
+  return plugin && plugin->PlatformLayer();
 }
 
 void HTMLPlugInElement::DetachLayoutTree(const AttachContext& context) {
@@ -325,11 +278,12 @@ void HTMLPlugInElement::DetachLayoutTree(const AttachContext& context) {
   }
 
   // Only try to persist a plugin we actually own.
-  if (plugin_ && context.performing_reattach) {
-    SetPersistedPlugin(ReleasePlugin());
+  PluginView* plugin = OwnedPlugin();
+  if (plugin && context.performing_reattach) {
+    SetPersistedPlugin(ToPluginView(ReleaseWidget()));
   } else {
     // Clear the plugin; will trigger disposal of it with Oilpan.
-    SetPlugin(nullptr);
+    SetWidget(nullptr);
   }
 
   ResetInstance();
@@ -382,7 +336,7 @@ v8::Local<v8::Object> HTMLPlugInElement::PluginWrapper() {
     PluginView* plugin;
 
     if (persisted_plugin_)
-      plugin = persisted_plugin_.Get();
+      plugin = persisted_plugin_;
     else
       plugin = PluginWidget();
 
@@ -398,8 +352,11 @@ PluginView* HTMLPlugInElement::PluginWidget() const {
   return nullptr;
 }
 
-PluginView* HTMLPlugInElement::Plugin() const {
-  return plugin_.Get();
+PluginView* HTMLPlugInElement::OwnedPlugin() const {
+  FrameOrPlugin* frame_or_plugin = OwnedWidget();
+  if (frame_or_plugin && frame_or_plugin->IsPluginView())
+    return ToPluginView(frame_or_plugin);
+  return nullptr;
 }
 
 bool HTMLPlugInElement::IsPresentationAttribute(
@@ -451,9 +408,10 @@ void HTMLPlugInElement::DefaultEventHandler(Event* event) {
             .ShowsUnavailablePluginIndicator())
       return;
   }
-  if (!plugin_)
+  PluginView* plugin = OwnedPlugin();
+  if (!plugin)
     return;
-  plugin_->HandleEvent(event);
+  plugin->HandleEvent(event);
   if (event->DefaultHandled())
     return;
   HTMLFrameOwnerElement::DefaultEventHandler(event);
@@ -588,7 +546,7 @@ bool HTMLPlugInElement::LoadPlugin(const KURL& url,
   loaded_url_ = url;
 
   if (persisted_plugin_) {
-    SetPlugin(persisted_plugin_.Release());
+    SetWidget(persisted_plugin_.Release());
   } else {
     bool load_manually =
         GetDocument().IsPluginDocument() && !GetDocument().ContainsPlugins();
@@ -607,7 +565,7 @@ bool HTMLPlugInElement::LoadPlugin(const KURL& url,
     }
 
     if (!layout_item.IsNull())
-      SetPlugin(plugin);
+      SetWidget(plugin);
     else
       SetPersistedPlugin(plugin);
   }

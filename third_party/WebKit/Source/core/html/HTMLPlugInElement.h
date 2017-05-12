@@ -51,14 +51,14 @@ class CORE_EXPORT HTMLPlugInElement : public HTMLFrameOwnerElement {
   // TODO(dcheng): Consider removing this, since HTMLEmbedElementLegacyCall
   // and HTMLObjectElementLegacyCall usage is extremely low.
   v8::Local<v8::Object> PluginWrapper();
-  // TODO(joelhockey): Clean up pluginWidget and plugin (maybe also
-  // pluginWrapper).  It would be good to remove and/or rename some of these.
-  // pluginWidget and plugin both return the plugin that is stored on this
-  // element.  However pluginWidget will synchronously create the plugin if
-  // required by calling layoutPartForJSBindings.  Possibly the pluginWidget
-  // code can be inlined into pluginWrapper.
+  // TODO(joelhockey): Clean up PluginWidget and OwnedPlugin (maybe also
+  // PluginWrapper).  It would be good to remove and/or rename some of these.
+  // PluginWidget and OwnedPlugin both return the plugin that is stored as
+  // widget in HTMLFrameOwnerElement.  However PluginWidget will synchronously
+  // create the plugin if required by calling LayoutPartForJSBindings.
+  // Possibly the PluginWidget code can be inlined into PluginWrapper.
   PluginView* PluginWidget() const;
-  PluginView* Plugin() const;
+  PluginView* OwnedPlugin() const;
   bool CanProcessDrag() const;
   const String& Url() const { return url_; }
 
@@ -166,8 +166,6 @@ class CORE_EXPORT HTMLPlugInElement : public HTMLFrameOwnerElement {
   bool AllowedToLoadObject(const KURL&, const String& mime_type);
   bool WouldLoadAsNetscapePlugin(const String& url, const String& service_type);
 
-  void SetPlugin(PluginView*);
-  PluginView* ReleasePlugin();
   void SetPersistedPlugin(PluginView*);
 
   bool RequestObjectInternal(const String& url,
@@ -183,11 +181,10 @@ class CORE_EXPORT HTMLPlugInElement : public HTMLFrameOwnerElement {
   // avoid accessing |layoutObject()| in layoutObjectIsFocusable().
   bool plugin_is_available_ = false;
 
-  Member<PluginView> plugin_;
-  // Normally the plugin is stored in HTMLFrameOwnerElement::m_widget.
+  // Normally the plugin is stored in HTMLFrameOwnerElement::widget_.
   // However, plugins can persist even when not rendered. In order to
-  // prevent confusing code which may assume that ownedWidget() != null
-  // means the frame is active, we save off m_widget here while
+  // prevent confusing code which may assume that OwnedWidget() != null
+  // means the frame is active, we save off widget_ here while
   // the plugin is persisting but not being displayed.
   Member<PluginView> persisted_plugin_;
 };

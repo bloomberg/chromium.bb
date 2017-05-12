@@ -46,16 +46,8 @@ class PLATFORM_EXPORT FrameViewBase : public GarbageCollectedMixin {
   virtual IntPoint Location() const = 0;
 
   virtual bool IsFrameView() const { return false; }
-  virtual bool IsRemoteFrameView() const { return false; }
-  virtual bool IsErrorplaceholder() { return false; }
 
-  virtual void SetParent(FrameViewBase*) = 0;
   virtual FrameViewBase* Parent() const = 0;
-
-  // TODO(joelhockey): Remove this from FrameViewBase once FrameView children
-  // use FrameOrPlugin rather than FrameViewBase.  This method does not apply to
-  // scrollbars.
-  virtual void SetParentVisible(bool visible) {}
 
   // ConvertFromRootFrame must be in FrameViewBase rather than FrameView
   // to be visible to Scrollbar::ConvertFromRootFrame and
@@ -100,20 +92,9 @@ class PLATFORM_EXPORT FrameViewBase : public GarbageCollectedMixin {
     return parent_point;
   }
 
-  // TODO(joelhockey): Change all these to pure virtual functions
-  // Once RemoteFrameView no longer inherits from FrameViewBase.
-  virtual IntRect ConvertFromContainingFrameViewBase(
-      const IntRect& parent_rect) const {
-    NOTREACHED();
-    return parent_rect;
-  }
+  virtual IntRect ConvertFromContainingFrameViewBase(const IntRect&) const = 0;
   virtual IntPoint ConvertFromContainingFrameViewBase(
-      const IntPoint& parent_point) const {
-    NOTREACHED();
-    return parent_point;
-  }
-
-  virtual void FrameRectsChanged() { NOTREACHED(); }
+      const IntPoint&) const = 0;
 
   virtual void Dispose() {}
 };

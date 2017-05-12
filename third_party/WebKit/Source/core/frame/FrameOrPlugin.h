@@ -11,6 +11,7 @@
 namespace blink {
 
 class CullRect;
+class FrameView;
 class GraphicsContext;
 class IntRect;
 
@@ -20,7 +21,14 @@ class CORE_EXPORT FrameOrPlugin : public GarbageCollectedMixin {
  public:
   virtual ~FrameOrPlugin() {}
 
+  virtual bool IsFrameView() const { return false; }
+  virtual bool IsPluginView() const { return false; }
+
+  virtual void SetParent(FrameView*) = 0;
+  virtual FrameView* Parent() const = 0;
+  virtual void SetParentVisible(bool) = 0;
   virtual void SetFrameRect(const IntRect&) = 0;
+  virtual void FrameRectsChanged() = 0;
   virtual const IntRect& FrameRect() const = 0;
   virtual void Paint(GraphicsContext&, const CullRect&) const = 0;
   virtual void Show() = 0;

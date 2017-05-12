@@ -28,6 +28,7 @@
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/LocalFrameClient.h"
+#include "core/frame/RemoteFrameView.h"
 #include "core/layout/LayoutPart.h"
 #include "core/layout/api/LayoutPartItem.h"
 #include "core/loader/FrameLoadRequest.h"
@@ -39,26 +40,26 @@
 
 namespace blink {
 
-typedef HeapHashMap<Member<FrameViewBase>, Member<FrameView>>
-    FrameViewBaseToParentMap;
-static FrameViewBaseToParentMap& WidgetNewParentMap() {
-  DEFINE_STATIC_LOCAL(FrameViewBaseToParentMap, map,
-                      (new FrameViewBaseToParentMap));
+using FrameOrPluginToParentMap =
+    HeapHashMap<Member<FrameOrPlugin>, Member<FrameView>>;
+
+static FrameOrPluginToParentMap& FrameOrPluginNewParentMap() {
+  DEFINE_STATIC_LOCAL(FrameOrPluginToParentMap, map,
+                      (new FrameOrPluginToParentMap));
   return map;
 }
 
-using FrameViewBaseSet = HeapHashSet<Member<FrameViewBase>>;
-static FrameViewBaseSet& WidgetsPendingTemporaryRemovalFromParent() {
-  // FrameViewBases in this set will not leak because it will be cleared in
+using FrameOrPluginSet = HeapHashSet<Member<FrameOrPlugin>>;
+static FrameOrPluginSet& FrameOrPluginsPendingTemporaryRemovalFromParent() {
+  // FrameOrPlugins in this set will not leak because it will be cleared in
   // HTMLFrameOwnerElement::UpdateSuspendScope::performDeferredWidgetTreeOperations.
-  DEFINE_STATIC_LOCAL(FrameViewBaseSet, set, (new FrameViewBaseSet));
+  DEFINE_STATIC_LOCAL(FrameOrPluginSet, set, (new FrameOrPluginSet));
   return set;
 }
 
-using FrameOrPluginList = HeapVector<Member<FrameOrPlugin>>;
-static FrameOrPluginList& FrameOrPluginsPendingDispose() {
-  DEFINE_STATIC_LOCAL(FrameOrPluginList, list, (new FrameOrPluginList));
-  return list;
+static FrameOrPluginSet& FrameOrPluginsPendingDispose() {
+  DEFINE_STATIC_LOCAL(FrameOrPluginSet, set, (new FrameOrPluginSet));
+  return set;
 }
 
 SubframeLoadingDisabler::SubtreeRootSet&
@@ -75,12 +76,12 @@ HTMLFrameOwnerElement::UpdateSuspendScope::UpdateSuspendScope() {
 
 void HTMLFrameOwnerElement::UpdateSuspendScope::
     PerformDeferredWidgetTreeOperations() {
-  FrameViewBaseToParentMap map;
-  WidgetNewParentMap().swap(map);
-  for (const auto& frame_view_base : map) {
-    FrameViewBase* child = frame_view_base.key.Get();
-    FrameView* current_parent = ToFrameView(child->Parent());
-    FrameView* new_parent = frame_view_base.value;
+  FrameOrPluginToParentMap map;
+  FrameOrPluginNewParentMap().swap(map);
+  for (const auto& entry : map) {
+    FrameOrPlugin* child = entry.key;
+    FrameView* current_parent = child->Parent();
+    FrameView* new_parent = entry.value;
     if (new_parent != current_parent) {
       if (current_parent)
         current_parent->RemoveChild(child);
@@ -91,22 +92,17 @@ void HTMLFrameOwnerElement::UpdateSuspendScope::
     }
   }
 
-  {
-    FrameViewBaseSet set;
-    WidgetsPendingTemporaryRemovalFromParent().swap(set);
-    for (const auto& frame_view_base : set) {
-      FrameView* current_parent = ToFrameView(frame_view_base->Parent());
-      if (current_parent)
-        current_parent->RemoveChild(frame_view_base.Get());
-    }
+  FrameOrPluginSet remove_set;
+  FrameOrPluginsPendingTemporaryRemovalFromParent().swap(remove_set);
+  for (const auto& child : remove_set) {
+    if (child->Parent())
+      child->Parent()->RemoveChild(child);
   }
 
-  {
-    FrameOrPluginList list;
-    FrameOrPluginsPendingDispose().swap(list);
-    for (const auto& frame_or_plugin : list) {
-      frame_or_plugin->Dispose();
-    }
+  FrameOrPluginSet dispose_set;
+  FrameOrPluginsPendingDispose().swap(dispose_set);
+  for (const auto& frame_or_plugin : dispose_set) {
+    frame_or_plugin->Dispose();
   }
 }
 
@@ -117,27 +113,27 @@ HTMLFrameOwnerElement::UpdateSuspendScope::~UpdateSuspendScope() {
   --g_update_suspend_count;
 }
 
-// Unlike moveWidgetToParentSoon, this will not call dispose.
-void TemporarilyRemoveWidgetFromParentSoon(FrameViewBase* frame_view_base) {
+// Unlike MoveFrameOrPluginToParentSoon, this will not call dispose.
+void TemporarilyRemoveFrameOrPluginFromParentSoon(FrameOrPlugin* child) {
   if (g_update_suspend_count) {
-    WidgetsPendingTemporaryRemovalFromParent().insert(frame_view_base);
+    FrameOrPluginsPendingTemporaryRemovalFromParent().insert(child);
   } else {
-    if (ToFrameView(frame_view_base->Parent()))
-      ToFrameView(frame_view_base->Parent())->RemoveChild(frame_view_base);
+    if (child->Parent())
+      child->Parent()->RemoveChild(child);
   }
 }
 
-void MoveWidgetToParentSoon(FrameViewBase* child, FrameView* parent) {
+void MoveFrameOrPluginToParentSoon(FrameOrPlugin* child, FrameView* parent) {
   if (!g_update_suspend_count) {
     if (parent) {
       parent->AddChild(child);
-    } else if (ToFrameView(child->Parent())) {
-      ToFrameView(child->Parent())->RemoveChild(child);
+    } else if (child->Parent()) {
+      child->Parent()->RemoveChild(child);
       child->Dispose();
     }
     return;
   }
-  WidgetNewParentMap().Set(child, parent);
+  FrameOrPluginNewParentMap().Set(child, parent);
 }
 
 HTMLFrameOwnerElement::HTMLFrameOwnerElement(const QualifiedName& tag_name,
@@ -227,10 +223,10 @@ bool HTMLFrameOwnerElement::IsKeyboardFocusable() const {
 void HTMLFrameOwnerElement::DisposeFrameOrPluginSoon(
     FrameOrPlugin* frame_or_plugin) {
   if (g_update_suspend_count) {
-    FrameOrPluginsPendingDispose().push_back(frame_or_plugin);
-    return;
+    FrameOrPluginsPendingDispose().insert(frame_or_plugin);
+  } else {
+    frame_or_plugin->Dispose();
   }
-  frame_or_plugin->Dispose();
 }
 
 void HTMLFrameOwnerElement::UpdateContainerPolicy() {
@@ -276,13 +272,13 @@ Document* HTMLFrameOwnerElement::getSVGDocument(
   return nullptr;
 }
 
-void HTMLFrameOwnerElement::SetWidget(FrameViewBase* frame_view_base) {
-  if (frame_view_base == widget_)
+void HTMLFrameOwnerElement::SetWidget(FrameOrPlugin* frame_or_plugin) {
+  if (frame_or_plugin == widget_)
     return;
 
   Document* doc = contentDocument();
   if (doc && doc->GetFrame()) {
-    bool will_be_display_none = !frame_view_base;
+    bool will_be_display_none = !frame_or_plugin;
     if (IsDisplayNone() != will_be_display_none) {
       doc->WillChangeFrameOwnerProperties(
           MarginWidth(), MarginHeight(), ScrollingMode(), will_be_display_none);
@@ -291,11 +287,10 @@ void HTMLFrameOwnerElement::SetWidget(FrameViewBase* frame_view_base) {
 
   if (widget_) {
     if (widget_->Parent())
-      MoveWidgetToParentSoon(widget_.Get(), 0);
-    widget_ = nullptr;
+      MoveFrameOrPluginToParentSoon(widget_, nullptr);
   }
 
-  widget_ = frame_view_base;
+  widget_ = frame_or_plugin;
   FrameOwnerPropertiesChanged();
 
   LayoutPart* layout_part = ToLayoutPart(GetLayoutObject());
@@ -308,28 +303,24 @@ void HTMLFrameOwnerElement::SetWidget(FrameViewBase* frame_view_base) {
 
     DCHECK_EQ(GetDocument().View(), layout_part_item.GetFrameView());
     DCHECK(layout_part_item.GetFrameView());
-    MoveWidgetToParentSoon(widget_.Get(), layout_part_item.GetFrameView());
+    MoveFrameOrPluginToParentSoon(widget_, layout_part_item.GetFrameView());
   }
 
   if (AXObjectCache* cache = GetDocument().ExistingAXObjectCache())
     cache->ChildrenChanged(layout_part);
 }
 
-FrameViewBase* HTMLFrameOwnerElement::ReleaseWidget() {
+FrameOrPlugin* HTMLFrameOwnerElement::ReleaseWidget() {
   if (!widget_)
     return nullptr;
   if (widget_->Parent())
-    TemporarilyRemoveWidgetFromParentSoon(widget_.Get());
+    TemporarilyRemoveFrameOrPluginFromParentSoon(widget_);
   LayoutPart* layout_part = ToLayoutPart(GetLayoutObject());
   if (layout_part) {
     if (AXObjectCache* cache = GetDocument().ExistingAXObjectCache())
       cache->ChildrenChanged(layout_part);
   }
   return widget_.Release();
-}
-
-FrameViewBase* HTMLFrameOwnerElement::OwnedWidget() const {
-  return widget_.Get();
 }
 
 bool HTMLFrameOwnerElement::LoadOrRedirectSubframe(

@@ -22,8 +22,7 @@ RemoteFrameView::RemoteFrameView(RemoteFrame* remote_frame)
 
 RemoteFrameView::~RemoteFrameView() {}
 
-void RemoteFrameView::SetParent(FrameViewBase* parent_frame_view_base) {
-  FrameView* parent = ToFrameView(parent_frame_view_base);
+void RemoteFrameView::SetParent(FrameView* parent) {
   if (parent == parent_)
     return;
 
@@ -138,16 +137,15 @@ void RemoteFrameView::SetParentVisible(bool visible) {
   remote_frame_->Client()->VisibilityChanged(self_visible_ && parent_visible_);
 }
 
-IntRect RemoteFrameView::ConvertFromContainingFrameViewBase(
-    const IntRect& parent_rect) const {
-  if (const FrameView* parent = ToFrameView(Parent())) {
-    IntRect local_rect = parent_rect;
-    local_rect.SetLocation(
-        parent->ConvertSelfToChild(this, local_rect.Location()));
-    return local_rect;
+IntRect RemoteFrameView::ConvertFromRootFrame(
+    const IntRect& rect_in_root_frame) const {
+  if (parent_) {
+    IntRect parent_rect = parent_->ConvertFromRootFrame(rect_in_root_frame);
+    parent_rect.SetLocation(
+        parent_->ConvertSelfToChild(*this, parent_rect.Location()));
+    return parent_rect;
   }
-
-  return parent_rect;
+  return rect_in_root_frame;
 }
 
 DEFINE_TRACE(RemoteFrameView) {
