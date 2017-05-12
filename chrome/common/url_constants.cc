@@ -823,7 +823,7 @@ const char kChooserBluetoothOverviewURL[] =
 
 const char kBluetoothAdapterOffHelpURL[] =
 #if defined(OS_CHROMEOS)
-    "chrome://settings/#Bluetooth";
+    "chrome://settings/?search=bluetooth";
 #else
     "https://support.google.com/chrome?p=bluetooth";
 #endif
