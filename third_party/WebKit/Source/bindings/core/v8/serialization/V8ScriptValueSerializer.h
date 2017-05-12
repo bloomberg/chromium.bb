@@ -38,8 +38,6 @@ class GC_PLUGIN_IGNORE("https://crbug.com/644725")
   explicit V8ScriptValueSerializer(RefPtr<ScriptState>,
                                    const Options& = Options());
 
-  void SetInlineWasm(bool inline_wasm) { inline_wasm_ = inline_wasm; }
-
   RefPtr<SerializedScriptValue> Serialize(v8::Local<v8::Value>,
                                           ExceptionState&);
 
@@ -98,7 +96,7 @@ class GC_PLUGIN_IGNORE("https://crbug.com/644725")
   const ExceptionState* exception_state_ = nullptr;
   WebBlobInfoArray* blob_info_array_ = nullptr;
   ArrayBufferArray shared_array_buffers_;
-  bool inline_wasm_ = false;
+  Options::WasmSerializationPolicy wasm_policy_;
   bool for_storage_ = false;
 #if DCHECK_IS_ON()
   bool serialize_invoked_ = false;

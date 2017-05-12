@@ -51,7 +51,7 @@ V8ScriptValueSerializer::V8ScriptValueSerializer(
       serializer_(script_state_->GetIsolate(), this),
       transferables_(options.transferables),
       blob_info_array_(options.blob_info),
-      inline_wasm_(options.write_wasm_to_stream),
+      wasm_policy_(options.wasm_policy),
       for_storage_(options.for_storage == SerializedScriptValue::kForStorage) {}
 
 RefPtr<SerializedScriptValue> V8ScriptValueSerializer::Serialize(
@@ -445,18 +445,38 @@ v8::Maybe<uint32_t> V8ScriptValueSerializer::GetSharedArrayBufferId(
 v8::Maybe<uint32_t> V8ScriptValueSerializer::GetWasmModuleTransferId(
     v8::Isolate* isolate,
     v8::Local<v8::WasmCompiledModule> module) {
-  if (inline_wasm_)
-    return v8::Nothing<uint32_t>();
+  switch (wasm_policy_) {
+    case Options::kSerialize:
+      return v8::Nothing<uint32_t>();
 
-  // We don't expect scenarios with numerous wasm modules being transferred
-  // around. Most likely, we'll have one module. The vector approach is simple
-  // and should perform sufficiently well under these expectations.
-  this->serialized_script_value_->WasmModules().push_back(
-      module->GetTransferrableModule());
-  uint32_t size =
-      static_cast<uint32_t>(serialized_script_value_->WasmModules().size());
-  DCHECK_GE(size, 1u);
-  return v8::Just(size - 1);
+    case Options::kBlockedInNonSecureContext: {
+      // This happens, currently, when we try to serialize to IndexedDB
+      // in an non-secure context.
+      ExceptionState exception_state(isolate, exception_state_->Context(),
+                                     exception_state_->InterfaceName(),
+                                     exception_state_->PropertyName());
+      exception_state.ThrowDOMException(kDataCloneError,
+                                        "Serializing WebAssembly modules in "
+                                        "non-secure contexts is not allowed.");
+      return v8::Nothing<uint32_t>();
+    }
+
+    case Options::kTransfer: {
+      // We don't expect scenarios with numerous wasm modules being transferred
+      // around. Most likely, we'll have one module. The vector approach is
+      // simple and should perform sufficiently well under these expectations.
+      serialized_script_value_->WasmModules().push_back(
+          module->GetTransferrableModule());
+      uint32_t size =
+          static_cast<uint32_t>(serialized_script_value_->WasmModules().size());
+      DCHECK_GE(size, 1u);
+      return v8::Just(size - 1);
+    }
+
+    case Options::kUnspecified:
+      NOTREACHED();
+  }
+  return v8::Nothing<uint32_t>();
 }
 
 void* V8ScriptValueSerializer::ReallocateBufferMemory(void* old_buffer,
