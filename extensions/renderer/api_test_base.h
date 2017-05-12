@@ -9,7 +9,6 @@
 #include <string>
 #include <utility>
 
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "extensions/renderer/module_system_test.h"
 #include "extensions/renderer/v8_schema_registry.h"
@@ -116,7 +115,6 @@ class ApiTestBase : public ModuleSystemTest {
   }
 
  private:
-  base::MessageLoop message_loop_;
   std::unique_ptr<ApiTestEnvironment> test_env_;
 };
 

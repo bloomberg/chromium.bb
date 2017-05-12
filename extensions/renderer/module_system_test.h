@@ -6,6 +6,7 @@
 #define EXTENSIONS_RENDERER_MODULE_SYSTEM_TEST_H_
 
 #include "base/macros.h"
+#include "base/test/scoped_task_environment.h"
 #include "extensions/renderer/module_system.h"
 #include "extensions/renderer/script_context.h"
 #include "gin/public/context_holder.h"
@@ -98,6 +99,7 @@ class ModuleSystemTest : public testing::Test {
   void RunResolvedPromises();
 
  private:
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   v8::Isolate* isolate_;
   std::unique_ptr<ModuleSystemTestEnvironment> env_;
   bool should_assertions_be_made_;
