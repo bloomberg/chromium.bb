@@ -57,15 +57,18 @@
       #arrow {
         color: var(--secondary-text-color);
         margin: 0 8px;
+      }
+
+      #arrow iron-icon {
         transform: rotate(-90deg);
         transition: transform 150ms;
       }
 
-      :host-context([dir='rtl']) #arrow {
+      :host-context([dir='rtl']) #arrow iron-icon {
         transform: rotate(90deg);
       }
 
-      #arrow[is-open] {
+      #arrow iron-icon[is-open] {
         transform: initial;
       }
 
@@ -80,9 +83,9 @@
         hidden="[[isRootFolder_(depth)]]">
       <template is="dom-if" if="[[hasChildFolder_(item_.children)]]">
         <button is="paper-icon-button-light" id="arrow"
-            is-open$="[[!isClosed_]]" on-tap="toggleFolder_"
-            on-mousedown="preventDefault_" tabindex="-1">
-          <iron-icon icon="cr:arrow-drop-down"></iron-icon>
+            on-tap="toggleFolder_" on-mousedown="preventDefault_" tabindex="-1">
+          <iron-icon icon="cr:arrow-drop-down" is-open$="[[!isClosed_]]">
+          </iron-icon>
         </button>
       </template>
       <div id="folder-label" class="v-centered">

@@ -97,6 +97,12 @@ TEST_F('MaterialBookmarksFocusTest', 'All', function() {
       keydown('1', 'ArrowDown');
 
       assertDeepEquals(bookmarks.actions.selectFolder('2'), store.lastAction);
+      store.data.selectedFolder = '2';
+      store.notifyObservers();
+
+      assertEquals('', getFolderNode('1').$.container.getAttribute('tabindex'));
+      assertEquals(
+          '0', getFolderNode('2').$.container.getAttribute('tabindex'));
       assertFocused('1', '2');
 
       // Move down past closed folders.
@@ -123,6 +129,54 @@ TEST_F('MaterialBookmarksFocusTest', 'All', function() {
       store.resetLastAction();
       keydown('1', 'ArrowUp');
       assertDeepEquals(null, store.lastAction);
+    });
+
+    test('keyboard left/right', function() {
+      store.data.closedFolders = new Set('2');
+      store.notifyObservers();
+
+      // Give keyboard focus to the first item.
+      getFolderNode('1').$.container.focus();
+
+      // Pressing right descends into first child.
+      keydown('1', 'ArrowRight');
+      assertDeepEquals(bookmarks.actions.selectFolder('2'), store.lastAction);
+
+      // Pressing right on a closed folder opens that folder
+      keydown('2', 'ArrowRight');
+      assertDeepEquals(
+          bookmarks.actions.changeFolderOpen('2', true), store.lastAction);
+
+      // Pressing right again descends into first child.
+      keydown('2', 'ArrowRight');
+      assertDeepEquals(bookmarks.actions.selectFolder('3'), store.lastAction);
+
+      // Pressing right on a folder with no children does nothing.
+      store.resetLastAction();
+      keydown('3', 'ArrowRight');
+      assertDeepEquals(null, store.lastAction);
+
+      // Pressing left on a folder with no children ascends to parent.
+      keydown('3', 'ArrowDown');
+      keydown('4', 'ArrowLeft');
+      assertDeepEquals(bookmarks.actions.selectFolder('2'), store.lastAction);
+
+      // Pressing left again closes the parent.
+      keydown('2', 'ArrowLeft');
+      assertDeepEquals(
+          bookmarks.actions.changeFolderOpen('2', false), store.lastAction);
+
+      // RTL flips left and right.
+      document.body.style.direction = 'rtl';
+      keydown('2', 'ArrowLeft');
+      assertDeepEquals(
+          bookmarks.actions.changeFolderOpen('2', true), store.lastAction);
+
+      keydown('2', 'ArrowRight');
+      assertDeepEquals(
+          bookmarks.actions.changeFolderOpen('2', false), store.lastAction);
+
+      document.body.style.direction = 'ltr';
     });
   });
 
