@@ -25,6 +25,9 @@
             {%- elif cell.cell_type == 'links' -%}
               {% for link in cell.links %}
                 <a href="{{link.href}}" target="{{link.target}}">{{link.data}}</a>
+                {% if not loop.last -%}
+                  <br />
+                {%- endif %}
               {% endfor %}
             {%- elif cell.cell_type == 'action' -%}
               <a onclick="{{cell.action}}">{{cell.data}}</a>
