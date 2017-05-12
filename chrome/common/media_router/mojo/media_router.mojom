@@ -187,6 +187,16 @@ enum RouteRequestResultCode {
 // New values must be added here.
 };
 
+// Used to pass feature configuration data from the Browser to Media Route
+// Provider.
+struct MediaRouteProviderConfig {
+  // If the MRP should enable DIAL discovery.
+  bool enable_dial_discovery;
+
+  // If the MRP should enable Cast discovery.
+  bool enable_cast_discovery;
+};
+
 // Modeled after the MediaRouter interface defined in
 // chrome/browser/media/router/media_router.h
 interface MediaRouteProvider {
@@ -423,7 +433,7 @@ interface MediaRouter {
   // Returns a string that uniquely identifies the Media Router browser
   // process.
   RegisterMediaRouteProvider(MediaRouteProvider media_router_provider) =>
-      (string instance_id);
+      (string instance_id, MediaRouteProviderConfig config);
 
   // Called when the Media Route Manager receives a new list of |sinks|
   // compatible with |media_source|. The result is only valid for |origins|. If

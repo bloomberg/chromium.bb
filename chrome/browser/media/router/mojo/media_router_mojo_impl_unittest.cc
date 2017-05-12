@@ -184,12 +184,6 @@ class TestProcessManager : public extensions::ProcessManager {
   DISALLOW_COPY_AND_ASSIGN(TestProcessManager);
 };
 
-// Mockable class for awaiting RegisterMediaRouteProvider callbacks.
-class RegisterMediaRouteProviderHandler {
- public:
-  MOCK_METHOD1(Invoke, void(const std::string& instance_id));
-};
-
 TEST_F(MediaRouterMojoImplTest, CreateRoute) {
   MediaSource media_source(kSource);
   MediaRoute expected_route(kRouteId, media_source, kSinkId, "", false, "",
@@ -1507,7 +1501,7 @@ TEST_F(MediaRouterMojoExtensionTest, DeferredBindingAndSuspension) {
   // itself via RegisterMediaRouteProvider().
   // Now that the |media_router| and |mojo_media_router| are fully initialized,
   // the queued DetachRoute() call should be executed.
-  EXPECT_CALL(provide_handler_, Invoke(testing::Not("")))
+  EXPECT_CALL(provide_handler_, InvokeInternal(testing::Not(""), _))
       .WillOnce(InvokeWithoutArgs([&run_loop]() { run_loop.Quit(); }));
   EXPECT_CALL(*process_manager_, IsEventPageSuspended(extension_->id()))
       .WillOnce(Return(false));
@@ -1535,7 +1529,7 @@ TEST_F(MediaRouterMojoExtensionTest, DeferredBindingAndSuspension) {
   base::RunLoop run_loop4, run_loop5;
   // RegisterMediaRouteProvider() is called.
   // The queued DetachRoute(kRouteId2) call should be executed.
-  EXPECT_CALL(provide_handler_, Invoke(testing::Not("")))
+  EXPECT_CALL(provide_handler_, InvokeInternal(testing::Not(""), _))
       .WillOnce(InvokeWithoutArgs([&run_loop4]() { run_loop4.Quit(); }));
   EXPECT_CALL(*process_manager_, IsEventPageSuspended(extension_->id()))
       .WillOnce(Return(false));
@@ -1645,7 +1639,7 @@ TEST_F(MediaRouterMojoExtensionTest, DropOldestPendingRequest) {
   // The oldest request should have been dropped, so we don't expect to see
   // DetachRoute(kRouteId) here.
   BindMediaRouteProvider();
-  EXPECT_CALL(provide_handler_, Invoke(testing::Not("")))
+  EXPECT_CALL(provide_handler_, InvokeInternal(testing::Not(""), _))
       .WillOnce(InvokeWithoutArgs([&run_loop]() { run_loop.Quit(); }));
   EXPECT_CALL(*process_manager_, IsEventPageSuspended(extension_->id()));
   EXPECT_CALL(mock_media_route_provider_, EnableMdnsDiscovery())
@@ -1672,10 +1666,8 @@ TEST_F(MediaRouterMojoExtensionTest, EnableMdnsAfterEachRegister) {
 
   base::RunLoop run_loop;
   base::RunLoop run_loop2;
-  EXPECT_CALL(provide_handler_, Invoke(testing::Not("")))
-      .WillOnce(InvokeWithoutArgs([&run_loop]() {
-                  run_loop.Quit();
-                }));
+  EXPECT_CALL(provide_handler_, InvokeInternal(testing::Not(""), _))
+      .WillOnce(InvokeWithoutArgs([&run_loop]() { run_loop.Quit(); }));
   EXPECT_CALL(*process_manager_, IsEventPageSuspended(extension_->id()))
       .WillOnce(Return(false)).WillOnce(Return(false));
   EXPECT_CALL(mock_media_route_provider_,
@@ -1712,10 +1704,8 @@ TEST_F(MediaRouterMojoExtensionTest, EnableMdnsAfterEachRegister) {
   base::RunLoop run_loop6;
   // RegisterMediaRouteProvider() is called.
   // The queued DetachRoute(kRouteId) call should be executed.
-  EXPECT_CALL(provide_handler_, Invoke(testing::Not("")))
-      .WillOnce(InvokeWithoutArgs([&run_loop5]() {
-                  run_loop5.Quit();
-                }));
+  EXPECT_CALL(provide_handler_, InvokeInternal(testing::Not(""), _))
+      .WillOnce(InvokeWithoutArgs([&run_loop5]() { run_loop5.Quit(); }));
   EXPECT_CALL(*process_manager_, IsEventPageSuspended(extension_->id()))
       .WillOnce(Return(false)).WillOnce(Return(false));
   // Expected because it was used to wake up the page.
@@ -1742,10 +1732,8 @@ TEST_F(MediaRouterMojoExtensionTest, UpdateMediaSinksOnUserGesture) {
   BindMediaRouteProvider();
 
   base::RunLoop run_loop;
-  EXPECT_CALL(provide_handler_, Invoke(testing::Not("")))
-      .WillOnce(InvokeWithoutArgs([&run_loop]() {
-                  run_loop.Quit();
-                }));
+  EXPECT_CALL(provide_handler_, InvokeInternal(testing::Not(""), _))
+      .WillOnce(InvokeWithoutArgs([&run_loop]() { run_loop.Quit(); }));
   EXPECT_CALL(*process_manager_, IsEventPageSuspended(extension_->id()))
 #if defined(OS_WIN)
       // Windows calls once for EnableMdnsDiscovery
@@ -1785,7 +1773,7 @@ TEST_F(MediaRouterMojoExtensionTest, SyncStateToMediaRouteProvider) {
   std::unique_ptr<NullMessageObserver> messages_observer;
 
   {
-    EXPECT_CALL(provide_handler_, Invoke(testing::Not("")));
+    EXPECT_CALL(provide_handler_, InvokeInternal(testing::Not(""), _));
     BindMediaRouteProvider();
     RegisterMediaRouteProvider();
     base::RunLoop().RunUntilIdle();
@@ -1815,7 +1803,7 @@ TEST_F(MediaRouterMojoExtensionTest, SyncStateToMediaRouteProvider) {
   }
 
   {
-    EXPECT_CALL(provide_handler_, Invoke(testing::Not("")));
+    EXPECT_CALL(provide_handler_, InvokeInternal(testing::Not(""), _));
     EXPECT_CALL(mock_media_route_provider_,
                 StartObservingMediaSinks(media_source.id()));
     EXPECT_CALL(mock_media_route_provider_,

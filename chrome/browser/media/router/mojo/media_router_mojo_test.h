@@ -174,6 +174,23 @@ class MockMediaRouteControllerObserver : public MediaRouteController::Observer {
   MOCK_METHOD0(OnControllerInvalidated, void());
 };
 
+// Mockable class for awaiting RegisterMediaRouteProvider callbacks.
+class RegisterMediaRouteProviderHandler {
+ public:
+  RegisterMediaRouteProviderHandler();
+  ~RegisterMediaRouteProviderHandler();
+
+  // A wrapper function to deal with move only parameter |config|.
+  void Invoke(const std::string& instance_id,
+              mojom::MediaRouteProviderConfigPtr config) {
+    InvokeInternal(instance_id, config.get());
+  }
+
+  MOCK_METHOD2(InvokeInternal,
+               void(const std::string& instance_id,
+                    mojom::MediaRouteProviderConfig* config));
+};
+
 // Tests the API call flow between the MediaRouterMojoImpl and the Media Router
 // Mojo service in both directions.
 class MediaRouterMojoTest : public ::testing::Test {
@@ -199,6 +216,8 @@ class MediaRouterMojoTest : public ::testing::Test {
 
   // Mojo proxy object for |mock_media_router_|
   media_router::mojom::MediaRouterPtr media_router_proxy_;
+
+  RegisterMediaRouteProviderHandler provide_handler_;
 
  private:
   content::TestBrowserThreadBundle test_thread_bundle_;
