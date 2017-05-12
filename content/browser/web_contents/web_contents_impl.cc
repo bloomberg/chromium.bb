@@ -530,10 +530,16 @@ WebContentsImpl::WebContentsImpl(BrowserContext* browser_context)
 }
 
 WebContentsImpl::~WebContentsImpl() {
+  // Imperfect sanity check against double free, given some crashes unexpectedly
+  // observed in the wild.
+  CHECK(!is_being_destroyed_);
+
+  // We generally keep track of is_being_destroyed_ to let other features know
+  // to avoid certain actions during destruction.
   is_being_destroyed_ = true;
 
   // A WebContents should never be deleted while it is notifying observers,
-  // since this will lead to a use-after-free as it continues to notfiy later
+  // since this will lead to a use-after-free as it continues to notify later
   // observers.
   CHECK(!is_notifying_observers_);
 
