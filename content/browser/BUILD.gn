@@ -1010,6 +1010,8 @@ source_set("browser") {
     "media/url_provision_fetcher.h",
     "memory/memory_condition_observer.cc",
     "memory/memory_condition_observer.h",
+    "memory/memory_coordinator_default_policy.cc",
+    "memory/memory_coordinator_default_policy.h",
     "memory/memory_coordinator_impl.cc",
     "memory/memory_coordinator_impl.h",
     "memory/memory_message_filter.cc",
