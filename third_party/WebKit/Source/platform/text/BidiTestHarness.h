@@ -58,22 +58,22 @@
 namespace bidi_test {
 
 enum ParagraphDirection {
-  DirectionNone = 0,
-  DirectionAutoLTR = 1,
-  DirectionLTR = 2,
-  DirectionRTL = 4,
+  kDirectionNone = 0,
+  kDirectionAutoLTR = 1,
+  kDirectionLTR = 2,
+  kDirectionRTL = 4,
 };
 const int kMaxParagraphDirection =
-    DirectionAutoLTR | DirectionLTR | DirectionRTL;
+    kDirectionAutoLTR | kDirectionLTR | kDirectionRTL;
 
 // For error printing:
-std::string nameFromParagraphDirection(ParagraphDirection paragraphDirection) {
-  switch (paragraphDirection) {
-    case bidi_test::DirectionAutoLTR:
+std::string NameFromParagraphDirection(ParagraphDirection paragraph_direction) {
+  switch (paragraph_direction) {
+    case bidi_test::kDirectionAutoLTR:
       return "Auto-LTR";
-    case bidi_test::DirectionLTR:
+    case bidi_test::kDirectionLTR:
       return "LTR";
-    case bidi_test::DirectionRTL:
+    case bidi_test::kDirectionRTL:
       return "RTL";
     default:
       // This should never be reached.
@@ -84,187 +84,190 @@ std::string nameFromParagraphDirection(ParagraphDirection paragraphDirection) {
 template <class Runner>
 class Harness {
  public:
-  Harness(Runner& runner) : m_runner(runner) {}
-  void parse(std::istream& bidiTestFile);
+  Harness(Runner& runner) : runner_(runner) {}
+  void Parse(std::istream& bidi_test_file);
 
  private:
-  Runner& m_runner;
+  Runner& runner_;
 };
 
 // We could use boost::trim, but no other part of Blink uses boost yet.
-inline void ltrim(std::string& s) {
-  static const std::string separators(" \t");
-  s.erase(0, s.find_first_not_of(separators));
+inline void Ltrim(std::string& s) {
+  static const std::string kSeparators(" \t");
+  s.erase(0, s.find_first_not_of(kSeparators));
 }
 
-inline void rtrim(std::string& s) {
-  static const std::string separators(" \t");
-  size_t lastNonSpace = s.find_last_not_of(separators);
-  if (lastNonSpace == std::string::npos) {
+inline void Rtrim(std::string& s) {
+  static const std::string kSeparators(" \t");
+  size_t last_non_space = s.find_last_not_of(kSeparators);
+  if (last_non_space == std::string::npos) {
     s.erase();
     return;
   }
-  size_t firstSpaceAtEndOfString = lastNonSpace + 1;
-  if (firstSpaceAtEndOfString >= s.size())
+  size_t first_space_at_end_of_string = last_non_space + 1;
+  if (first_space_at_end_of_string >= s.size())
     return;  // lastNonSpace was the last char.
-  s.erase(firstSpaceAtEndOfString,
+  s.erase(first_space_at_end_of_string,
           std::string::npos);  // erase to the end of the string.
 }
 
-inline void trim(std::string& s) {
-  rtrim(s);
-  ltrim(s);
+inline void Trim(std::string& s) {
+  Rtrim(s);
+  Ltrim(s);
 }
 
-static std::vector<std::string> parseStringList(const std::string& str) {
+static std::vector<std::string> ParseStringList(const std::string& str) {
   std::vector<std::string> strings;
-  static const std::string separators(" \t");
-  size_t lastPos = str.find_first_not_of(separators);   // skip leading spaces
-  size_t pos = str.find_first_of(separators, lastPos);  // find next space
+  static const std::string kSeparators(" \t");
+  size_t last_pos = str.find_first_not_of(kSeparators);   // skip leading spaces
+  size_t pos = str.find_first_of(kSeparators, last_pos);  // find next space
 
-  while (std::string::npos != pos || std::string::npos != lastPos) {
-    strings.push_back(str.substr(lastPos, pos - lastPos));
-    lastPos = str.find_first_not_of(separators, pos);
-    pos = str.find_first_of(separators, lastPos);
+  while (std::string::npos != pos || std::string::npos != last_pos) {
+    strings.push_back(str.substr(last_pos, pos - last_pos));
+    last_pos = str.find_first_not_of(kSeparators, pos);
+    pos = str.find_first_of(kSeparators, last_pos);
   }
   return strings;
 }
 
-static int parseInt(const std::string& str) {
+static int ParseInt(const std::string& str) {
   return atoi(str.c_str());
 }
 
-static std::vector<int> parseIntList(const std::string& str) {
+static std::vector<int> ParseIntList(const std::string& str) {
   std::vector<int> ints;
-  std::vector<std::string> strings = parseStringList(str);
+  std::vector<std::string> strings = ParseStringList(str);
   for (size_t x = 0; x < strings.size(); x++) {
-    int i = parseInt(strings[x]);
+    int i = ParseInt(strings[x]);
     ints.push_back(i);
   }
   return ints;
 }
 
-static std::vector<int> parseLevels(const std::string& line) {
+static std::vector<int> ParseLevels(const std::string& line) {
   std::vector<int> levels;
-  std::vector<std::string> strings = parseStringList(line);
+  std::vector<std::string> strings = ParseStringList(line);
   for (size_t x = 0; x < strings.size(); x++) {
-    const std::string& levelString = strings[x];
+    const std::string& level_string = strings[x];
     int i;
-    if (levelString == "x")
+    if (level_string == "x")
       i = -1;
     else
-      i = parseInt(levelString);
+      i = ParseInt(level_string);
     levels.push_back(i);
   }
   return levels;
 }
 
 // This is not thread-safe as written.
-static std::basic_string<UChar> parseTestString(const std::string& line) {
-  std::basic_string<UChar> testString;
-  static std::map<std::string, UChar> charClassExamples;
-  if (charClassExamples.empty()) {
+static std::basic_string<UChar> ParseTestString(const std::string& line) {
+  std::basic_string<UChar> test_string;
+  static std::map<std::string, UChar> char_class_examples;
+  if (char_class_examples.empty()) {
     // FIXME: Explicit make_pair is ugly, but required for C++98 compat.
-    charClassExamples.insert(std::make_pair("L", 0x6c));     // 'l' for L
-    charClassExamples.insert(std::make_pair("R", 0x05D0));   // HEBREW ALEF
-    charClassExamples.insert(std::make_pair("EN", 0x33));    // '3' for EN
-    charClassExamples.insert(std::make_pair("ES", 0x2d));    // '-' for ES
-    charClassExamples.insert(std::make_pair("ET", 0x25));    // '%' for ET
-    charClassExamples.insert(std::make_pair("AN", 0x0660));  // arabic 0
-    charClassExamples.insert(std::make_pair("CS", 0x2c));    // ',' for CS
-    charClassExamples.insert(std::make_pair("B", 0x0A));     // <control-000A>
-    charClassExamples.insert(std::make_pair("S", 0x09));     // <control-0009>
-    charClassExamples.insert(std::make_pair("WS", 0x20));    // ' ' for WS
-    charClassExamples.insert(std::make_pair("ON", 0x3d));    // '=' for ON
-    charClassExamples.insert(
+    char_class_examples.insert(std::make_pair("L", 0x6c));     // 'l' for L
+    char_class_examples.insert(std::make_pair("R", 0x05D0));   // HEBREW ALEF
+    char_class_examples.insert(std::make_pair("EN", 0x33));    // '3' for EN
+    char_class_examples.insert(std::make_pair("ES", 0x2d));    // '-' for ES
+    char_class_examples.insert(std::make_pair("ET", 0x25));    // '%' for ET
+    char_class_examples.insert(std::make_pair("AN", 0x0660));  // arabic 0
+    char_class_examples.insert(std::make_pair("CS", 0x2c));    // ',' for CS
+    char_class_examples.insert(std::make_pair("B", 0x0A));     // <control-000A>
+    char_class_examples.insert(std::make_pair("S", 0x09));     // <control-0009>
+    char_class_examples.insert(std::make_pair("WS", 0x20));    // ' ' for WS
+    char_class_examples.insert(std::make_pair("ON", 0x3d));    // '=' for ON
+    char_class_examples.insert(
         std::make_pair("NSM", 0x05BF));  // HEBREW POINT RAFE
-    charClassExamples.insert(std::make_pair("AL", 0x0608));  // ARABIC RAY
-    charClassExamples.insert(std::make_pair("BN", 0x00AD));  // SOFT HYPHEN
-    charClassExamples.insert(std::make_pair("LRE", 0x202A));
-    charClassExamples.insert(std::make_pair("RLE", 0x202B));
-    charClassExamples.insert(std::make_pair("PDF", 0x202C));
-    charClassExamples.insert(std::make_pair("LRO", 0x202D));
-    charClassExamples.insert(std::make_pair("RLO", 0x202E));
-    charClassExamples.insert(std::make_pair("LRI", 0x2066));
-    charClassExamples.insert(std::make_pair("RLI", 0x2067));
-    charClassExamples.insert(std::make_pair("FSI", 0x2068));
-    charClassExamples.insert(std::make_pair("PDI", 0x2069));
+    char_class_examples.insert(std::make_pair("AL", 0x0608));  // ARABIC RAY
+    char_class_examples.insert(std::make_pair("BN", 0x00AD));  // SOFT HYPHEN
+    char_class_examples.insert(std::make_pair("LRE", 0x202A));
+    char_class_examples.insert(std::make_pair("RLE", 0x202B));
+    char_class_examples.insert(std::make_pair("PDF", 0x202C));
+    char_class_examples.insert(std::make_pair("LRO", 0x202D));
+    char_class_examples.insert(std::make_pair("RLO", 0x202E));
+    char_class_examples.insert(std::make_pair("LRI", 0x2066));
+    char_class_examples.insert(std::make_pair("RLI", 0x2067));
+    char_class_examples.insert(std::make_pair("FSI", 0x2068));
+    char_class_examples.insert(std::make_pair("PDI", 0x2069));
   }
 
-  std::vector<std::string> charClasses = parseStringList(line);
-  for (size_t i = 0; i < charClasses.size(); i++) {
+  std::vector<std::string> char_classes = ParseStringList(line);
+  for (size_t i = 0; i < char_classes.size(); i++) {
     // FIXME: If the lookup failed we could return false for a parse error.
-    testString.push_back(charClassExamples.find(charClasses[i])->second);
+    test_string.push_back(char_class_examples.find(char_classes[i])->second);
   }
-  return testString;
+  return test_string;
 }
 
-static bool parseParagraphDirectionMask(const std::string& line,
-                                        int& modeMask) {
-  modeMask = parseInt(line);
-  return modeMask >= 1 && modeMask <= kMaxParagraphDirection;
+static bool ParseParagraphDirectionMask(const std::string& line,
+                                        int& mode_mask) {
+  mode_mask = ParseInt(line);
+  return mode_mask >= 1 && mode_mask <= kMaxParagraphDirection;
 }
 
-static void parseError(const std::string& line, size_t lineNumber) {
+static void ParseError(const std::string& line, size_t line_number) {
   // Use printf to avoid the expense of std::cout.
-  printf("Parse error, line %zu : %s\n", lineNumber, line.c_str());
+  printf("Parse error, line %zu : %s\n", line_number, line.c_str());
 }
 
 template <class Runner>
-void Harness<Runner>::parse(std::istream& bidiTestFile) {
-  static const std::string levelsPrefix("@Levels");
-  static const std::string reorderPrefix("@Reorder");
+void Harness<Runner>::Parse(std::istream& bidi_test_file) {
+  static const std::string kLevelsPrefix("@Levels");
+  static const std::string kReorderPrefix("@Reorder");
 
   // FIXME: UChar is an ICU type and cheating a bit to use here.
   // uint16_t might be more portable.
-  std::basic_string<UChar> testString;
+  std::basic_string<UChar> test_string;
   std::vector<int> levels;
   std::vector<int> reorder;
-  int paragraphDirectionMask;
+  int paragraph_direction_mask;
 
   std::string line;
-  size_t lineNumber = 0;
-  while (std::getline(bidiTestFile, line)) {
-    lineNumber++;
-    const std::string originalLine = line;
-    size_t commentStart = line.find_first_of('#');
-    if (commentStart != std::string::npos)
-      line = line.substr(0, commentStart);
-    trim(line);
+  size_t line_number = 0;
+  while (std::getline(bidi_test_file, line)) {
+    line_number++;
+    const std::string original_line = line;
+    size_t comment_start = line.find_first_of('#');
+    if (comment_start != std::string::npos)
+      line = line.substr(0, comment_start);
+    Trim(line);
     if (line.empty())
       continue;
     if (line[0] == '@') {
-      if (!line.find(levelsPrefix)) {
-        levels = parseLevels(line.substr(levelsPrefix.length() + 1));
+      if (!line.find(kLevelsPrefix)) {
+        levels = ParseLevels(line.substr(kLevelsPrefix.length() + 1));
         continue;
       }
-      if (!line.find(reorderPrefix)) {
-        reorder = parseIntList(line.substr(reorderPrefix.length() + 1));
+      if (!line.find(kReorderPrefix)) {
+        reorder = ParseIntList(line.substr(kReorderPrefix.length() + 1));
         continue;
       }
     } else {
       // Assume it's a data line.
-      size_t seperatorIndex = line.find_first_of(';');
-      if (seperatorIndex == std::string::npos) {
-        parseError(originalLine, lineNumber);
+      size_t seperator_index = line.find_first_of(';');
+      if (seperator_index == std::string::npos) {
+        ParseError(original_line, line_number);
         continue;
       }
-      testString = parseTestString(line.substr(0, seperatorIndex));
-      if (!parseParagraphDirectionMask(line.substr(seperatorIndex + 1),
-                                       paragraphDirectionMask)) {
-        parseError(originalLine, lineNumber);
+      test_string = ParseTestString(line.substr(0, seperator_index));
+      if (!ParseParagraphDirectionMask(line.substr(seperator_index + 1),
+                                       paragraph_direction_mask)) {
+        ParseError(original_line, line_number);
         continue;
       }
 
-      if (paragraphDirectionMask & DirectionAutoLTR)
-        m_runner.RunTest(testString, reorder, levels, DirectionAutoLTR,
-                         originalLine, lineNumber);
-      if (paragraphDirectionMask & DirectionLTR)
-        m_runner.RunTest(testString, reorder, levels, DirectionLTR,
-                         originalLine, lineNumber);
-      if (paragraphDirectionMask & DirectionRTL)
-        m_runner.RunTest(testString, reorder, levels, DirectionRTL,
-                         originalLine, lineNumber);
+      if (paragraph_direction_mask & kDirectionAutoLTR) {
+        runner_.RunTest(test_string, reorder, levels, kDirectionAutoLTR,
+                         original_line, line_number);
+      }
+      if (paragraph_direction_mask & kDirectionLTR) {
+        runner_.RunTest(test_string, reorder, levels, kDirectionLTR,
+                         original_line, line_number);
+      }
+      if (paragraph_direction_mask & kDirectionRTL) {
+        runner_.RunTest(test_string, reorder, levels, kDirectionRTL,
+                         original_line, line_number);
+      }
     }
   }
 }
@@ -272,17 +275,17 @@ void Harness<Runner>::parse(std::istream& bidiTestFile) {
 template <class Runner>
 class CharacterHarness {
  public:
-  CharacterHarness(Runner& runner) : m_runner(runner) {}
-  void parse(std::istream& bidiTestFile);
+  CharacterHarness(Runner& runner) : runner_(runner) {}
+  void Parse(std::istream& bidi_test_file);
 
  private:
-  Runner& m_runner;
+  Runner& runner_;
 };
 
-static std::basic_string<UChar> parseUCharHexadecimalList(
+static std::basic_string<UChar> ParseUCharHexadecimalList(
     const std::string& str) {
   std::basic_string<UChar> string;
-  std::vector<std::string> strings = parseStringList(str);
+  std::vector<std::string> strings = ParseStringList(str);
   for (size_t x = 0; x < strings.size(); x++) {
     int i = strtol(strings[x].c_str(), nullptr, 16);
     string.push_back((UChar)i);
@@ -290,119 +293,119 @@ static std::basic_string<UChar> parseUCharHexadecimalList(
   return string;
 }
 
-static ParagraphDirection parseParagraphDirection(const std::string& str) {
-  int i = parseInt(str);
+static ParagraphDirection ParseParagraphDirection(const std::string& str) {
+  int i = ParseInt(str);
   switch (i) {
     case 0:
-      return DirectionLTR;
+      return kDirectionLTR;
     case 1:
-      return DirectionRTL;
+      return kDirectionRTL;
     case 2:
-      return DirectionAutoLTR;
+      return kDirectionAutoLTR;
     default:
-      return DirectionNone;
+      return kDirectionNone;
   }
 }
 
-static int parseSuppresedChars(const std::string& str) {
-  std::vector<std::string> strings = parseStringList(str);
-  int suppresedChars = 0;
+static int ParseSuppresedChars(const std::string& str) {
+  std::vector<std::string> strings = ParseStringList(str);
+  int suppresed_chars = 0;
   for (size_t x = 0; x < strings.size(); x++) {
     if (strings[x] == "x")
-      suppresedChars++;
+      suppresed_chars++;
   }
-  return suppresedChars;
+  return suppresed_chars;
 }
 
 template <class Runner>
-void CharacterHarness<Runner>::parse(std::istream& bidiTestFile) {
+void CharacterHarness<Runner>::Parse(std::istream& bidi_test_file) {
   std::string line;
-  size_t lineNumber = 0;
-  while (std::getline(bidiTestFile, line)) {
-    lineNumber++;
+  size_t line_number = 0;
+  while (std::getline(bidi_test_file, line)) {
+    line_number++;
 
-    const std::string originalLine = line;
-    size_t commentStart = line.find_first_of('#');
-    if (commentStart != std::string::npos)
-      line = line.substr(0, commentStart);
-    trim(line);
+    const std::string original_line = line;
+    size_t comment_start = line.find_first_of('#');
+    if (comment_start != std::string::npos)
+      line = line.substr(0, comment_start);
+    Trim(line);
     if (line.empty())
       continue;
 
     // Field 0: list of uchars as 4 char strings
-    size_t separatorIndex = line.find_first_of(';');
-    if (separatorIndex == std::string::npos) {
-      parseError(originalLine, lineNumber);
+    size_t separator_index = line.find_first_of(';');
+    if (separator_index == std::string::npos) {
+      ParseError(original_line, line_number);
       continue;
     }
 
-    std::basic_string<UChar> testString =
-        parseUCharHexadecimalList(line.substr(0, separatorIndex));
-    if (testString.empty()) {
-      parseError(originalLine, lineNumber);
+    std::basic_string<UChar> test_string =
+        ParseUCharHexadecimalList(line.substr(0, separator_index));
+    if (test_string.empty()) {
+      ParseError(original_line, line_number);
       continue;
     }
-    line = line.substr(separatorIndex + 1);
+    line = line.substr(separator_index + 1);
 
     // Field 1: paragraph direction (0 LTR, 1 RTL, 2 AutoLTR)
-    separatorIndex = line.find_first_of(';');
-    if (separatorIndex == std::string::npos) {
-      parseError(originalLine, lineNumber);
+    separator_index = line.find_first_of(';');
+    if (separator_index == std::string::npos) {
+      ParseError(original_line, line_number);
       continue;
     }
 
-    ParagraphDirection paragraphDirection =
-        parseParagraphDirection(line.substr(0, separatorIndex));
-    if (paragraphDirection == DirectionNone) {
-      parseError(originalLine, lineNumber);
+    ParagraphDirection paragraph_direction =
+        ParseParagraphDirection(line.substr(0, separator_index));
+    if (paragraph_direction == kDirectionNone) {
+      ParseError(original_line, line_number);
       continue;
     }
-    line = line.substr(separatorIndex + 1);
+    line = line.substr(separator_index + 1);
 
     // Field 2: resolved paragraph embedding level
-    separatorIndex = line.find_first_of(';');
-    if (separatorIndex == std::string::npos) {
-      parseError(originalLine, lineNumber);
+    separator_index = line.find_first_of(';');
+    if (separator_index == std::string::npos) {
+      ParseError(original_line, line_number);
       continue;
     }
 
-    int paragraphEmbeddingLevel = parseInt(line.substr(0, separatorIndex));
-    if (paragraphEmbeddingLevel < 0) {
-      parseError(originalLine, lineNumber);
+    int paragraph_embedding_level = ParseInt(line.substr(0, separator_index));
+    if (paragraph_embedding_level < 0) {
+      ParseError(original_line, line_number);
       continue;
     }
-    line = line.substr(separatorIndex + 1);
+    line = line.substr(separator_index + 1);
 
     // Field 3: List of resolved levels
-    separatorIndex = line.find_first_of(';');
-    if (separatorIndex == std::string::npos) {
-      parseError(originalLine, lineNumber);
+    separator_index = line.find_first_of(';');
+    if (separator_index == std::string::npos) {
+      ParseError(original_line, line_number);
       continue;
     }
 
-    int supressedChars = parseSuppresedChars(line.substr(0, separatorIndex));
-    std::vector<int> levels = parseLevels(line.substr(0, separatorIndex));
-    if (testString.size() != levels.size()) {
-      parseError(originalLine, lineNumber);
+    int supressed_chars = ParseSuppresedChars(line.substr(0, separator_index));
+    std::vector<int> levels = ParseLevels(line.substr(0, separator_index));
+    if (test_string.size() != levels.size()) {
+      ParseError(original_line, line_number);
       continue;
     }
-    line = line.substr(separatorIndex + 1);
+    line = line.substr(separator_index + 1);
 
     // Field 4: visual ordering of characters
-    separatorIndex = line.find_first_of(';');
-    if (separatorIndex != std::string::npos) {
-      parseError(originalLine, lineNumber);
+    separator_index = line.find_first_of(';');
+    if (separator_index != std::string::npos) {
+      ParseError(original_line, line_number);
       continue;
     }
 
-    std::vector<int> visualOrdering = parseIntList(line);
-    if (testString.size() - supressedChars != visualOrdering.size()) {
-      parseError(originalLine, lineNumber);
+    std::vector<int> visual_ordering = ParseIntList(line);
+    if (test_string.size() - supressed_chars != visual_ordering.size()) {
+      ParseError(original_line, line_number);
       continue;
     }
 
-    m_runner.RunTest(testString, visualOrdering, levels, paragraphDirection,
-                     originalLine, lineNumber);
+    runner_.RunTest(test_string, visual_ordering, levels, paragraph_direction,
+                     original_line, line_number);
   }
 }
 

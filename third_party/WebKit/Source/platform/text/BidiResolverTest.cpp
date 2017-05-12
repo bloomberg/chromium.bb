@@ -183,13 +183,13 @@ void BidiTestRunner::RunTest(const std::basic_string<UChar>& input,
 
   TextRun text_run(input.data(), input.size());
   switch (paragraph_direction) {
-    case bidi_test::DirectionAutoLTR:
+    case bidi_test::kDirectionAutoLTR:
       text_run.SetDirection(DetermineParagraphDirectionality(text_run));
       break;
-    case bidi_test::DirectionLTR:
+    case bidi_test::kDirectionLTR:
       text_run.SetDirection(TextDirection::kLtr);
       break;
-    case bidi_test::DirectionRTL:
+    case bidi_test::kDirectionRTL:
       text_run.SetDirection(TextDirection::kRtl);
       break;
     default:
@@ -206,7 +206,7 @@ void BidiTestRunner::RunTest(const std::basic_string<UChar>& input,
   std::ostringstream error_context;
   error_context << ", line " << line_number << " \"" << line << "\"";
   error_context << " context: "
-                << bidi_test::nameFromParagraphDirection(paragraph_direction);
+                << bidi_test::NameFromParagraphDirection(paragraph_direction);
 
   std::vector<int> actual_order;
   std::vector<int> actual_levels;
@@ -273,7 +273,7 @@ TEST(BidiResolver, DISABLED_BidiTest_txt) {
   std::ifstream bidi_test_file(bidi_test_path.c_str());
   EXPECT_TRUE(bidi_test_file.is_open());
   bidi_test::Harness<BidiTestRunner> harness(runner);
-  harness.parse(bidi_test_file);
+  harness.Parse(bidi_test_file);
   bidi_test_file.close();
 
   if (runner.tests_skipped_)
@@ -305,7 +305,7 @@ TEST(BidiResolver, DISABLED_BidiCharacterTest_txt) {
   std::ifstream bidi_test_file(bidi_test_path.c_str());
   EXPECT_TRUE(bidi_test_file.is_open());
   bidi_test::CharacterHarness<BidiTestRunner> harness(runner);
-  harness.parse(bidi_test_file);
+  harness.Parse(bidi_test_file);
   bidi_test_file.close();
 
   if (runner.tests_skipped_)
