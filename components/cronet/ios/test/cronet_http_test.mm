@@ -181,13 +181,32 @@ class HttpTest : public ::testing::Test {
   base::scoped_nsobject<TestDelegate> delegate_;
 };
 
-TEST_F(HttpTest, CreateFile) {
-  bool ssl_file_created = [[NSFileManager defaultManager]
-      fileExistsAtPath:[Cronet getNetLogPathForFile:@"SSLKEYLOGFILE"]];
+TEST_F(HttpTest, CreateSslKeyLogFile) {
+  // Shutdown Cronet so that it can be restarted with specific configuration
+  // (SSL key log file specified in experimental options) for this one test.
+  // This is necessary because SslKeyLogFile can only be set once, before any
+  // SSL Client Sockets are created.
 
-  [[NSFileManager defaultManager]
-      removeItemAtPath:[Cronet getNetLogPathForFile:@"SSLKEYLOGFILE"]
-                 error:nil];
+  [Cronet shutdownForTesting];
+
+  NSString* ssl_key_log_file = [Cronet getNetLogPathForFile:@"SSLKEYLOGFILE"];
+
+  // Ensure that the keylog file doesn't exist.
+  [[NSFileManager defaultManager] removeItemAtPath:ssl_key_log_file error:nil];
+
+  [Cronet setExperimentalOptions:
+              [NSString stringWithFormat:@"{\"ssl_key_log_file\":\"%@\"}",
+                                         ssl_key_log_file]];
+
+  StartCronet(grpc_support::GetQuicTestServerPort());
+
+  bool ssl_file_created =
+      [[NSFileManager defaultManager] fileExistsAtPath:ssl_key_log_file];
+
+  [[NSFileManager defaultManager] removeItemAtPath:ssl_key_log_file error:nil];
+
+  [Cronet shutdownForTesting];
+  [Cronet setExperimentalOptions:@""];
 
   EXPECT_TRUE(ssl_file_created);
 }

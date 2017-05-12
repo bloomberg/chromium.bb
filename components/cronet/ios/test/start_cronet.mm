@@ -18,11 +18,6 @@ void StartCronet(int port) {
   [Cronet setHttp2Enabled:true];
   [Cronet setQuicEnabled:true];
   [Cronet setAcceptLanguages:@"en-US,en"];
-  [Cronet
-      setExperimentalOptions:
-          [NSString
-              stringWithFormat:@"{\"ssl_key_log_file\":\"%@\"}",
-                               [Cronet getNetLogPathForFile:@"SSLKEYLOGFILE"]]];
   [Cronet addQuicHint:@"test.example.com" port:443 altPort:443];
   [Cronet enableTestCertVerifierForTesting];
   [Cronet setHttpCacheType:CRNHttpCacheTypeDisabled];
