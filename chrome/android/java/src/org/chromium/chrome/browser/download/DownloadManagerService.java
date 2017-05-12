@@ -1159,14 +1159,18 @@ public class DownloadManagerService extends BroadcastReceiver implements
 
             @Override
             protected void onPostExecute(Intent intent) {
-                if (intent == null || !ExternalNavigationDelegateImpl.resolveIntent(intent, true)
-                        || !DownloadUtils.fireOpenIntentForDownload(context, intent)
-                        || !hasDownloadManagerService()) {
+                boolean didLaunchIntent = intent != null
+                        && ExternalNavigationDelegateImpl.resolveIntent(intent, true)
+                        && DownloadUtils.fireOpenIntentForDownload(context, intent);
+
+                if (!didLaunchIntent) {
                     openDownloadsPage(context);
-                } else {
-                    DownloadManagerService service =
-                            DownloadManagerService.getDownloadManagerService();
-                    service.updateLastAccessTime(downloadGuid, isOffTheRecord);
+                    return;
+                }
+
+                if (didLaunchIntent && hasDownloadManagerService()) {
+                    DownloadManagerService.getDownloadManagerService().updateLastAccessTime(
+                            downloadGuid, isOffTheRecord);
                 }
             }
         }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
