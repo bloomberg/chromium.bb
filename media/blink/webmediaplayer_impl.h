@@ -172,10 +172,12 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   size_t VideoDecodedByteCount() const override;
 
   bool CopyVideoTextureToPlatformTexture(gpu::gles2::GLES2Interface* gl,
+                                         unsigned int target,
                                          unsigned int texture,
                                          unsigned internal_format,
                                          unsigned format,
                                          unsigned type,
+                                         int level,
                                          bool premultiply_alpha,
                                          bool flip_y) override;
 

@@ -204,7 +204,8 @@ sk_sp<SkImage> NewSkImageFromVideoFrameNative(VideoFrame* video_frame,
     SkCanvasVideoRenderer::CopyVideoFrameSingleTextureToGLTexture(
         gl, video_frame,
         SkCanvasVideoRenderer::SingleFrameForVideoElementOrCanvas,
-        source_texture, GL_RGBA, GL_RGBA, GL_UNSIGNED_BYTE, true, false);
+        GL_TEXTURE_2D, source_texture, GL_RGBA, GL_RGBA, GL_UNSIGNED_BYTE, 0,
+        true, false);
     context_3d.gr_context->resetContext(kTextureBinding_GrGLBackendState);
   } else {
     gl->WaitSyncTokenCHROMIUM(mailbox_holder.sync_token.GetConstData());
@@ -805,10 +806,12 @@ void SkCanvasVideoRenderer::CopyVideoFrameSingleTextureToGLTexture(
     gpu::gles2::GLES2Interface* gl,
     VideoFrame* video_frame,
     SingleFrameCopyMode copy_mode,
+    unsigned int target,
     unsigned int texture,
     unsigned int internal_format,
     unsigned int format,
     unsigned int type,
+    int level,
     bool premultiply_alpha,
     bool flip_y) {
   DCHECK(video_frame);
@@ -834,7 +837,7 @@ void SkCanvasVideoRenderer::CopyVideoFrameSingleTextureToGLTexture(
   if (copy_mode == SingleFrameForVideoElementOrCanvas ||
       !VideoTextureNeedsClipping(video_frame)) {
     // No need to clip the source video texture.
-    gl->CopyTextureCHROMIUM(source_texture, 0, GL_TEXTURE_2D, texture, 0,
+    gl->CopyTextureCHROMIUM(source_texture, 0, target, texture, level,
                             internal_format, type, flip_y, premultiply_alpha,
                             false);
   } else {
@@ -852,12 +855,12 @@ void SkCanvasVideoRenderer::CopyVideoFrameSingleTextureToGLTexture(
     DCHECK_LE(dest_rect.width(), video_frame->coded_size().width());
     DCHECK_LE(dest_rect.height(), video_frame->coded_size().height());
 #endif
-    gl->TexImage2D(GL_TEXTURE_2D, 0, internal_format, dest_rect.width(),
+    gl->TexImage2D(target, level, internal_format, dest_rect.width(),
                    dest_rect.height(), 0, format, type, nullptr);
-    gl->CopySubTextureCHROMIUM(source_texture, 0, GL_TEXTURE_2D, texture, 0, 0,
-                               0, dest_rect.x(), dest_rect.y(),
-                               dest_rect.width(), dest_rect.height(), flip_y,
-                               premultiply_alpha, false);
+    gl->CopySubTextureCHROMIUM(source_texture, 0, target, texture, level, 0, 0,
+                               dest_rect.x(), dest_rect.y(), dest_rect.width(),
+                               dest_rect.height(), flip_y, premultiply_alpha,
+                               false);
   }
 
   gl->DeleteTextures(1, &source_texture);
@@ -871,10 +874,12 @@ bool SkCanvasVideoRenderer::CopyVideoFrameTexturesToGLTexture(
     const Context3D& context_3d,
     gpu::gles2::GLES2Interface* destination_gl,
     const scoped_refptr<VideoFrame>& video_frame,
+    unsigned int target,
     unsigned int texture,
     unsigned int internal_format,
     unsigned int format,
     unsigned int type,
+    int level,
     bool premultiply_alpha,
     bool flip_y) {
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -927,17 +932,17 @@ bool SkCanvasVideoRenderer::CopyVideoFrameTexturesToGLTexture(
       DCHECK_LE(dest_rect.width(), video_frame->coded_size().width());
       DCHECK_LE(dest_rect.height(), video_frame->coded_size().height());
 #endif
-      destination_gl->TexImage2D(GL_TEXTURE_2D, 0, internal_format,
+      destination_gl->TexImage2D(target, level, internal_format,
                                  dest_rect.width(), dest_rect.height(), 0,
                                  format, type, nullptr);
       destination_gl->CopySubTextureCHROMIUM(
-          intermediate_texture, 0, GL_TEXTURE_2D, texture, 0, 0, 0,
-          dest_rect.x(), dest_rect.y(), dest_rect.width(), dest_rect.height(),
-          flip_y, premultiply_alpha, false);
+          intermediate_texture, 0, target, texture, level, 0, 0, dest_rect.x(),
+          dest_rect.y(), dest_rect.width(), dest_rect.height(), flip_y,
+          premultiply_alpha, false);
     } else {
-      destination_gl->CopyTextureCHROMIUM(
-          intermediate_texture, 0, GL_TEXTURE_2D, texture, 0, internal_format,
-          type, flip_y, premultiply_alpha, false);
+      destination_gl->CopyTextureCHROMIUM(intermediate_texture, 0, target,
+                                          texture, level, internal_format, type,
+                                          flip_y, premultiply_alpha, false);
     }
 
     destination_gl->DeleteTextures(1, &intermediate_texture);
@@ -955,8 +960,8 @@ bool SkCanvasVideoRenderer::CopyVideoFrameTexturesToGLTexture(
     video_frame->UpdateReleaseSyncToken(&client);
   } else {
     CopyVideoFrameSingleTextureToGLTexture(
-        destination_gl, video_frame.get(), SingleFrameForWebGL, texture,
-        internal_format, format, type, premultiply_alpha, flip_y);
+        destination_gl, video_frame.get(), SingleFrameForWebGL, target, texture,
+        internal_format, format, type, level, premultiply_alpha, flip_y);
   }
 
   return true;

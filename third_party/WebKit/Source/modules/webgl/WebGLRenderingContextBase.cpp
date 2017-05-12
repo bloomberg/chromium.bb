@@ -5261,8 +5261,8 @@ void WebGLRenderingContextBase::TexImageHelperHTMLVideoElement(
     // SW path.
 
     if (video->CopyVideoTextureToPlatformTexture(
-            ContextGL(), texture->Object(), internalformat, format, type,
-            unpack_premultiply_alpha_, unpack_flip_y_)) {
+            ContextGL(), target, texture->Object(), internalformat, format,
+            type, level, unpack_premultiply_alpha_, unpack_flip_y_)) {
       texture->UpdateLastUploadedVideo(video->GetWebMediaPlayer());
       return;
     }
