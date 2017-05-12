@@ -78,6 +78,7 @@ const CGFloat kCloseButtonSize = 24;
 
 - (void)prepareForReuse {
   _closeButtonAction = nil;
+  [_signinPromoView disableChromeCommand];
 }
 
 - (void)closeButtonAction:(id)sender {
