@@ -1,3 +1,4 @@
+
 // Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
@@ -544,14 +545,14 @@ TEST(StrongConnectorTest, Math) {
 
 class WeakMathCalculatorImpl : public math::Calculator {
  public:
-  WeakMathCalculatorImpl(ScopedMessagePipeHandle handle,
+  WeakMathCalculatorImpl(math::CalculatorRequest request,
                          bool* error_received,
                          bool* destroyed,
                          const base::Closure& closure)
       : error_received_(error_received),
         destroyed_(destroyed),
         closure_(closure),
-        binding_(this, std::move(handle)) {
+        binding_(this, std::move(request)) {
     binding_.set_connection_error_handler(
         base::Bind(&SetFlagAndRunClosure, error_received_, closure_));
   }
@@ -585,8 +586,9 @@ TEST(WeakConnectorTest, Math) {
   bool destroyed = false;
   MessagePipe pipe;
   base::RunLoop run_loop;
-  WeakMathCalculatorImpl impl(std::move(pipe.handle0), &error_received,
-                              &destroyed, run_loop.QuitClosure());
+  WeakMathCalculatorImpl impl(math::CalculatorRequest(std::move(pipe.handle0)),
+                              &error_received, &destroyed,
+                              run_loop.QuitClosure());
 
   math::CalculatorPtr calc;
   calc.Bind(InterfacePtrInfo<math::Calculator>(std::move(pipe.handle1), 0u));

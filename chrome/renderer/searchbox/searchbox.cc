@@ -247,7 +247,7 @@ SearchBox::SearchBox(content::RenderFrame* render_frame)
   chrome::mojom::EmbeddedSearchConnectorAssociatedPtr connector;
   render_frame->GetRemoteAssociatedInterfaces()->GetInterface(&connector);
   chrome::mojom::SearchBoxAssociatedPtrInfo search_box;
-  binding_.Bind(&search_box);
+  binding_.Bind(mojo::MakeRequest(&search_box));
   connector->Connect(mojo::MakeRequest(&instant_service_),
                      std::move(search_box));
 }

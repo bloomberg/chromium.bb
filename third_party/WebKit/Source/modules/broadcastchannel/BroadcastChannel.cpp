@@ -129,7 +129,7 @@ BroadcastChannel::BroadcastChannel(ExecutionContext* execution_context,
   // Local BroadcastChannelClient for messages send from the browser to this
   // channel.
   mojom::blink::BroadcastChannelClientAssociatedPtrInfo local_client_info;
-  binding_.Bind(&local_client_info);
+  binding_.Bind(mojo::MakeRequest(&local_client_info));
   binding_.set_connection_error_handler(ConvertToBaseCallback(
       WTF::Bind(&BroadcastChannel::OnError, WrapWeakPersistent(this))));
 

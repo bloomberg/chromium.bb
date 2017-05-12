@@ -99,7 +99,7 @@ LocalStorageCachedArea::LocalStorageCachedArea(
   storage_partition_service->OpenLocalStorage(origin_,
                                               mojo::MakeRequest(&leveldb_));
   mojom::LevelDBObserverAssociatedPtrInfo ptr_info;
-  binding_.Bind(&ptr_info);
+  binding_.Bind(mojo::MakeRequest(&ptr_info));
   leveldb_->AddObserver(std::move(ptr_info));
 }
 

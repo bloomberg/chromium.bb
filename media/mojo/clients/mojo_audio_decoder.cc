@@ -141,7 +141,7 @@ void MojoAudioDecoder::BindRemoteDecoder() {
       base::Bind(&MojoAudioDecoder::OnConnectionError, base::Unretained(this)));
 
   mojom::AudioDecoderClientAssociatedPtrInfo client_ptr_info;
-  client_binding_.Bind(&client_ptr_info);
+  client_binding_.Bind(mojo::MakeRequest(&client_ptr_info));
 
   remote_decoder_->Construct(std::move(client_ptr_info));
 }

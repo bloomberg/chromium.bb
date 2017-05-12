@@ -65,7 +65,7 @@ ChromeNewWindowClient::ChromeNewWindowClient() : binding_(this) {
 
   // Register this object as the client interface implementation.
   ash::mojom::NewWindowClientAssociatedPtrInfo ptr_info;
-  binding_.Bind(&ptr_info);
+  binding_.Bind(mojo::MakeRequest(&ptr_info));
   new_window_controller_->SetClient(std::move(ptr_info));
 }
 

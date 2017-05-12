@@ -155,7 +155,7 @@ CastConfigClientMediaRouter::CastConfigClientMediaRouter() : binding_(this) {
 
   // Register this object as the client interface implementation.
   ash::mojom::CastConfigClientAssociatedPtrInfo ptr_info;
-  binding_.Bind(&ptr_info);
+  binding_.Bind(mojo::MakeRequest(&ptr_info));
   cast_config_->SetClient(std::move(ptr_info));
 }
 

@@ -262,13 +262,6 @@ class IntegerAccessorImpl : public sample::IntegerAccessor {
   DISALLOW_COPY_AND_ASSIGN(IntegerAccessorImpl);
 };
 
-TEST_F(BindingTest, SetInterfacePtrVersion) {
-  IntegerAccessorImpl impl;
-  sample::IntegerAccessorPtr ptr;
-  Binding<sample::IntegerAccessor> binding(&impl, &ptr);
-  EXPECT_EQ(3u, ptr.version());
-}
-
 TEST_F(BindingTest, PauseResume) {
   bool called = false;
   base::RunLoop run_loop;

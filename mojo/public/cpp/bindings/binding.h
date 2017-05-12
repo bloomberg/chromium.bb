@@ -77,29 +77,6 @@ class Binding {
   // Does not take ownership of |impl|, which must outlive the binding.
   explicit Binding(ImplPointerType impl) : internal_state_(std::move(impl)) {}
 
-  // Constructs a completed binding of message pipe |handle| to implementation
-  // |impl|. Does not take ownership of |impl|, which must outlive the binding.
-  Binding(ImplPointerType impl,
-          ScopedMessagePipeHandle handle,
-          scoped_refptr<base::SingleThreadTaskRunner> runner =
-              base::ThreadTaskRunnerHandle::Get())
-      : Binding(std::move(impl)) {
-    Bind(std::move(handle), std::move(runner));
-  }
-
-  // Constructs a completed binding of |impl| to a new message pipe, passing the
-  // client end to |ptr|, which takes ownership of it. The caller is expected to
-  // pass |ptr| on to the client of the service. Does not take ownership of any
-  // of the parameters. |impl| must outlive the binding. |ptr| only needs to
-  // last until the constructor returns.
-  Binding(ImplPointerType impl,
-          InterfacePtr<Interface>* ptr,
-          scoped_refptr<base::SingleThreadTaskRunner> runner =
-              base::ThreadTaskRunnerHandle::Get())
-      : Binding(std::move(impl)) {
-    Bind(ptr, std::move(runner));
-  }
-
   // Constructs a completed binding of |impl| to the message pipe endpoint in
   // |request|, taking ownership of the endpoint. Does not take ownership of
   // |impl|, which must outlive the binding.
@@ -108,7 +85,7 @@ class Binding {
           scoped_refptr<base::SingleThreadTaskRunner> runner =
               base::ThreadTaskRunnerHandle::Get())
       : Binding(std::move(impl)) {
-    Bind(request.PassMessagePipe(), std::move(runner));
+    Bind(std::move(request), std::move(runner));
   }
 
   // Tears down the binding, closing the message pipe and leaving the interface
@@ -121,32 +98,8 @@ class Binding {
       scoped_refptr<base::SingleThreadTaskRunner> runner =
           base::ThreadTaskRunnerHandle::Get()) {
     InterfacePtr<Interface> interface_ptr;
-    Bind(&interface_ptr, std::move(runner));
+    Bind(MakeRequest(&interface_ptr), std::move(runner));
     return interface_ptr;
-  }
-
-  // Completes a binding that was constructed with only an interface
-  // implementation. Takes ownership of |handle| and binds it to the previously
-  // specified implementation.
-  void Bind(ScopedMessagePipeHandle handle,
-            scoped_refptr<base::SingleThreadTaskRunner> runner =
-                base::ThreadTaskRunnerHandle::Get()) {
-    internal_state_.Bind(std::move(handle), std::move(runner));
-  }
-
-  // Completes a binding that was constructed with only an interface
-  // implementation by creating a new message pipe, binding one end of it to the
-  // previously specified implementation, and passing the other to |ptr|, which
-  // takes ownership of it. The caller is expected to pass |ptr| on to the
-  // eventual client of the service. Does not take ownership of |ptr|.
-  void Bind(InterfacePtr<Interface>* ptr,
-            scoped_refptr<base::SingleThreadTaskRunner> runner =
-                base::ThreadTaskRunnerHandle::Get()) {
-    MessagePipe pipe;
-    ptr->Bind(InterfacePtrInfo<Interface>(std::move(pipe.handle0),
-                                          Interface::Version_),
-              runner);
-    Bind(std::move(pipe.handle1), std::move(runner));
   }
 
   // Completes a binding that was constructed with only an interface
@@ -155,7 +108,7 @@ class Binding {
   void Bind(InterfaceRequest<Interface> request,
             scoped_refptr<base::SingleThreadTaskRunner> runner =
                 base::ThreadTaskRunnerHandle::Get()) {
-    Bind(request.PassMessagePipe(), std::move(runner));
+    internal_state_.Bind(request.PassMessagePipe(), std::move(runner));
   }
 
   // Adds a message filter to be notified of each incoming message before

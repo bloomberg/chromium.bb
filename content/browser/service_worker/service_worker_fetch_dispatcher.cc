@@ -197,7 +197,9 @@ class DelegatingURLLoaderClient final : public mojom::URLLoaderClient {
         base::Bind(&NotifyNavigationPreloadCompletedOnUI, completion_status));
   }
 
-  void Bind(mojom::URLLoaderClientPtr* ptr_info) { binding_.Bind(ptr_info); }
+  void Bind(mojom::URLLoaderClientPtr* ptr_info) {
+    binding_.Bind(mojo::MakeRequest(ptr_info));
+  }
 
  private:
   void MayBeRunDevToolsCallbacks() {

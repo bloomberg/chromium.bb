@@ -114,7 +114,7 @@ class LevelDBWrapperImplTest : public testing::Test,
 
     level_db_wrapper_.Bind(mojo::MakeRequest(&level_db_wrapper_ptr_));
     mojom::LevelDBObserverAssociatedPtrInfo ptr_info;
-    observer_binding_.Bind(&ptr_info);
+    observer_binding_.Bind(mojo::MakeRequest(&ptr_info));
     level_db_wrapper_ptr_->AddObserver(std::move(ptr_info));
   }
 

@@ -113,7 +113,7 @@ void TestURLLoaderClient::ClearHasReceivedRedirect() {
 
 mojom::URLLoaderClientPtr TestURLLoaderClient::CreateInterfacePtr() {
   mojom::URLLoaderClientPtr client_ptr;
-  binding_.Bind(&client_ptr);
+  binding_.Bind(mojo::MakeRequest(&client_ptr));
   return client_ptr;
 }
 

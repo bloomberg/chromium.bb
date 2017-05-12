@@ -74,7 +74,7 @@ class TestLevelDBObserver : public mojom::LevelDBObserver {
 
   mojom::LevelDBObserverAssociatedPtrInfo Bind() {
     mojom::LevelDBObserverAssociatedPtrInfo ptr_info;
-    binding_.Bind(&ptr_info);
+    binding_.Bind(mojo::MakeRequest(&ptr_info));
     return ptr_info;
   }
 

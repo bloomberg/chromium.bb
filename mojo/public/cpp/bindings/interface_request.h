@@ -33,6 +33,9 @@ class InterfaceRequest {
   InterfaceRequest() {}
   InterfaceRequest(decltype(nullptr)) {}
 
+  explicit InterfaceRequest(ScopedMessagePipeHandle handle)
+      : handle_(std::move(handle)) {}
+
   // Creates a new message pipe over which Interface is to be served, binding
   // the specified InterfacePtr to one end of the message pipe and this
   // InterfaceRequest to the other. For example usage, see comments on

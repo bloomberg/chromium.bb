@@ -136,7 +136,7 @@ MediaClient::MediaClient() : binding_(this), weak_ptr_factory_(this) {
 
   // Register this object as the client interface implementation.
   ash::mojom::MediaClientAssociatedPtrInfo ptr_info;
-  binding_.Bind(&ptr_info);
+  binding_.Bind(mojo::MakeRequest(&ptr_info));
   media_controller_->SetClient(std::move(ptr_info));
 }
 
