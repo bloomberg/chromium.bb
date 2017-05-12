@@ -33,6 +33,11 @@
 
 namespace blink {
 
+template <typename Enum>
+inline bool EnumHasFlags(Enum v, Enum mask) {
+  return static_cast<unsigned>(v) & static_cast<unsigned>(mask);
+}
+
 // Some enums are automatically generated in ComputedStyleBaseConstants
 
 // TODO(sashab): Change these enums to enum classes with an unsigned underlying
@@ -241,18 +246,24 @@ enum QuoteType { OPEN_QUOTE, CLOSE_QUOTE, NO_OPEN_QUOTE, NO_CLOSE_QUOTE };
 enum EAnimPlayState { kAnimPlayStatePlaying, kAnimPlayStatePaused };
 
 static const size_t kTextDecorationBits = 4;
-enum TextDecoration {
-  kTextDecorationNone = 0x0,
-  kTextDecorationUnderline = 0x1,
-  kTextDecorationOverline = 0x2,
-  kTextDecorationLineThrough = 0x4,
-  kTextDecorationBlink = 0x8
+enum class TextDecoration : unsigned {
+  kNone = 0x0,
+  kUnderline = 0x1,
+  kOverline = 0x2,
+  kLineThrough = 0x4,
+  kBlink = 0x8
 };
 inline TextDecoration operator|(TextDecoration a, TextDecoration b) {
-  return TextDecoration(int(a) | int(b));
+  return static_cast<TextDecoration>(static_cast<unsigned>(a) |
+                                     static_cast<unsigned>(b));
 }
 inline TextDecoration& operator|=(TextDecoration& a, TextDecoration b) {
-  return a = a | b;
+  return a = static_cast<TextDecoration>(static_cast<unsigned>(a) |
+                                         static_cast<unsigned>(b));
+}
+inline TextDecoration& operator^=(TextDecoration& a, TextDecoration b) {
+  return a = static_cast<TextDecoration>(static_cast<unsigned>(a) ^
+                                         static_cast<unsigned>(b));
 }
 
 enum TextDecorationStyle {

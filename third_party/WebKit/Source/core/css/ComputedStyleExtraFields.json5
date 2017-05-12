@@ -215,7 +215,7 @@
       field_template: "storage_only",
       type_name: "TextDecoration",
       field_size: 4,
-      default_value: "kTextDecorationNone",
+      default_value: "TextDecoration::kNone",
       field_group: "visual",
     },
     {

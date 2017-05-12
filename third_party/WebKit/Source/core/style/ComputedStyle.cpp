@@ -1732,18 +1732,18 @@ FontStretch ComputedStyle::GetFontStretch() const {
 
 TextDecoration ComputedStyle::TextDecorationsInEffect() const {
   if (HasSimpleUnderlineInternal())
-    return kTextDecorationUnderline;
+    return TextDecoration::kUnderline;
   if (!rare_inherited_data_->applied_text_decorations_)
-    return kTextDecorationNone;
+    return TextDecoration::kNone;
 
-  int decorations = 0;
+  TextDecoration decorations = TextDecoration::kNone;
 
   const Vector<AppliedTextDecoration>& applied = AppliedTextDecorations();
 
   for (size_t i = 0; i < applied.size(); ++i)
     decorations |= applied[i].Lines();
 
-  return static_cast<TextDecoration>(decorations);
+  return decorations;
 }
 
 const Vector<AppliedTextDecoration>& ComputedStyle::AppliedTextDecorations()
@@ -1752,7 +1752,7 @@ const Vector<AppliedTextDecoration>& ComputedStyle::AppliedTextDecorations()
     DEFINE_STATIC_LOCAL(
         Vector<AppliedTextDecoration>, underline,
         (1, AppliedTextDecoration(
-                kTextDecorationUnderline, kTextDecorationStyleSolid,
+                TextDecoration::kUnderline, kTextDecorationStyleSolid,
                 VisitedDependentColor(CSSPropertyTextDecorationColor))));
     // Since we only have one of these in memory, just update the color before
     // returning.
@@ -2035,7 +2035,7 @@ void ComputedStyle::OverrideTextDecorationColors(Color override_color) {
 void ComputedStyle::ApplyTextDecorations(
     const Color& parent_text_decoration_color,
     bool override_existing_colors) {
-  if (GetTextDecoration() == kTextDecorationNone &&
+  if (GetTextDecoration() == TextDecoration::kNone &&
       !HasSimpleUnderlineInternal() &&
       !rare_inherited_data_->applied_text_decorations_)
     return;
@@ -2045,24 +2045,24 @@ void ComputedStyle::ApplyTextDecorations(
   Color current_text_decoration_color =
       VisitedDependentColor(CSSPropertyTextDecorationColor);
   if (HasSimpleUnderlineInternal() &&
-      (GetTextDecoration() != kTextDecorationNone ||
+      (GetTextDecoration() != TextDecoration::kNone ||
        current_text_decoration_color != parent_text_decoration_color)) {
     SetHasSimpleUnderlineInternal(false);
     AddAppliedTextDecoration(AppliedTextDecoration(
-        kTextDecorationUnderline, kTextDecorationStyleSolid,
+        TextDecoration::kUnderline, kTextDecorationStyleSolid,
         parent_text_decoration_color));
   }
   if (override_existing_colors &&
       rare_inherited_data_->applied_text_decorations_)
     OverrideTextDecorationColors(current_text_decoration_color);
-  if (GetTextDecoration() == kTextDecorationNone)
+  if (GetTextDecoration() == TextDecoration::kNone)
     return;
   DCHECK(!HasSimpleUnderlineInternal());
   // To save memory, we don't use AppliedTextDecoration objects in the common
   // case of a single simple underline of currentColor.
   TextDecoration decoration_lines = GetTextDecoration();
   TextDecorationStyle decoration_style = GetTextDecorationStyle();
-  bool is_simple_underline = decoration_lines == kTextDecorationUnderline &&
+  bool is_simple_underline = decoration_lines == TextDecoration::kUnderline &&
                              decoration_style == kTextDecorationStyleSolid &&
                              TextDecorationColor().IsCurrentColor();
   if (is_simple_underline && !rare_inherited_data_->applied_text_decorations_) {

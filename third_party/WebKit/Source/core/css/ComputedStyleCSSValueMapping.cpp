@@ -1136,14 +1136,15 @@ static LayoutRect SizingBox(const LayoutObject* layout_object) {
              : box->ComputedCSSContentBoxRect();
 }
 
-static CSSValue* RenderTextDecorationFlagsToCSSValue(int text_decoration) {
+static CSSValue* RenderTextDecorationFlagsToCSSValue(
+    TextDecoration text_decoration) {
   // Blink value is ignored.
   CSSValueList* list = CSSValueList::CreateSpaceSeparated();
-  if (text_decoration & kTextDecorationUnderline)
+  if (EnumHasFlags(text_decoration, TextDecoration::kUnderline))
     list->Append(*CSSIdentifierValue::Create(CSSValueUnderline));
-  if (text_decoration & kTextDecorationOverline)
+  if (EnumHasFlags(text_decoration, TextDecoration::kOverline))
     list->Append(*CSSIdentifierValue::Create(CSSValueOverline));
-  if (text_decoration & kTextDecorationLineThrough)
+  if (EnumHasFlags(text_decoration, TextDecoration::kLineThrough))
     list->Append(*CSSIdentifierValue::Create(CSSValueLineThrough));
 
   if (!list->length())
