@@ -1301,11 +1301,6 @@ void Layer::SetScrollbarsHiddenFromImplSide(bool hidden) {
     inputs_.client->didChangeScrollbarsHidden(hidden);
 }
 
-bool Layer::TransformIsAnimating() const {
-  return GetMutatorHost()->IsAnimatingTransformProperty(
-      element_id(), GetElementTypeForAnimation());
-}
-
 gfx::ScrollOffset Layer::ScrollOffsetForAnimation() const {
   return CurrentScrollOffset();
 }
