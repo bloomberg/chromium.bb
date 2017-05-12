@@ -300,24 +300,6 @@ TEST_F(ModelImplTest, IncrementingExistingMultiDayEventNewDay) {
   test::VerifyEventsEqual(bar_event2, store_->GetLastWrittenEvent());
 }
 
-TEST_F(ModelImplTest, ShowState) {
-  model_->Initialize(base::Bind(&ModelImplTest::OnModelInitializationFinished,
-                                base::Unretained(this)));
-  base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(model_->IsReady());
-
-  EXPECT_FALSE(model_->IsCurrentlyShowing());
-
-  model_->SetIsCurrentlyShowing(false);
-  EXPECT_FALSE(model_->IsCurrentlyShowing());
-
-  model_->SetIsCurrentlyShowing(true);
-  EXPECT_TRUE(model_->IsCurrentlyShowing());
-
-  model_->SetIsCurrentlyShowing(false);
-  EXPECT_FALSE(model_->IsCurrentlyShowing());
-}
-
 TEST_F(LoadFailingModelImplTest, FailedInitializeInformsCaller) {
   model_->Initialize(base::Bind(&ModelImplTest::OnModelInitializationFinished,
                                 base::Unretained(this)));

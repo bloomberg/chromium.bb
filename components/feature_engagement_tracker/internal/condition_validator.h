@@ -61,7 +61,13 @@ class ConditionValidator {
   // Returns a Result object that describes whether each condition has been met.
   virtual Result MeetsConditions(const base::Feature& feature,
                                  const Model& model,
-                                 uint32_t current_day) = 0;
+                                 uint32_t current_day) const = 0;
+
+  // Must be called to notify that the |feature| is currently showing.
+  virtual void NotifyIsShowing(const base::Feature& feature) = 0;
+
+  // Must be called to notify that the |feature| is no longer showing.
+  virtual void NotifyDismissed(const base::Feature& feature) = 0;
 
  protected:
   ConditionValidator() = default;

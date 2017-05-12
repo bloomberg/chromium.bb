@@ -40,10 +40,6 @@ class TestModel : public Model {
     return feature_config_;
   }
 
-  void SetIsCurrentlyShowing(bool is_showing) override {}
-
-  bool IsCurrentlyShowing() const override { return false; }
-
   const Event* GetEvent(const std::string& event_name) const override {
     return nullptr;
   }

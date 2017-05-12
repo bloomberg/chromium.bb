@@ -40,12 +40,6 @@ class Model {
   virtual const FeatureConfig& GetFeatureConfig(
       const base::Feature& feature) const = 0;
 
-  // Update the state of whether any in-product help is currently showing.
-  virtual void SetIsCurrentlyShowing(bool is_showing) = 0;
-
-  // Returns whether any in-product help is currently showing.
-  virtual bool IsCurrentlyShowing() const = 0;
-
   // Retrieves the Event object for the event with the given name. If the event
   // is not found, a nullptr will be returned. Calling this before the
   // Model has finished initializing will result in undefined behavior.

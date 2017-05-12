@@ -29,7 +29,6 @@ ModelImpl::ModelImpl(std::unique_ptr<Store> store,
       configuration_(std::move(configuration)),
       storage_validator_(std::move(storage_validator)),
       ready_(false),
-      currently_showing_(false),
       weak_factory_(this) {}
 
 ModelImpl::~ModelImpl() = default;
@@ -46,14 +45,6 @@ bool ModelImpl::IsReady() const {
 const FeatureConfig& ModelImpl::GetFeatureConfig(
     const base::Feature& feature) const {
   return configuration_->GetFeatureConfig(feature);
-}
-
-void ModelImpl::SetIsCurrentlyShowing(bool is_showing) {
-  currently_showing_ = is_showing;
-}
-
-bool ModelImpl::IsCurrentlyShowing() const {
-  return currently_showing_;
 }
 
 const Event* ModelImpl::GetEvent(const std::string& event_name) const {

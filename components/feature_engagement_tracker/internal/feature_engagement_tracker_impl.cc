@@ -112,13 +112,14 @@ bool FeatureEngagementTrackerImpl::ShouldTriggerHelpUI(
           ->MeetsConditions(feature, *model_, time_provider_->GetCurrentDay())
           .NoErrors();
   if (result)
-    model_->SetIsCurrentlyShowing(true);
+    condition_validator_->NotifyIsShowing(feature);
+
   return result;
 }
 
 void FeatureEngagementTrackerImpl::Dismissed(const base::Feature& feature) {
   // TODO(nyquist): Track this event in UMA.
-  model_->SetIsCurrentlyShowing(false);
+  condition_validator_->NotifyDismissed(feature);
 }
 
 bool FeatureEngagementTrackerImpl::IsInitialized() {

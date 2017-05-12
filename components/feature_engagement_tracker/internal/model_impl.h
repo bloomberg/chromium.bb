@@ -37,8 +37,6 @@ class ModelImpl : public Model {
   bool IsReady() const override;
   const FeatureConfig& GetFeatureConfig(
       const base::Feature& feature) const override;
-  void SetIsCurrentlyShowing(bool is_showing) override;
-  bool IsCurrentlyShowing() const override;
   const Event* GetEvent(const std::string& event_name) const override;
   void IncrementEvent(const std::string& event_name,
                       uint32_t current_day) override;
@@ -68,9 +66,6 @@ class ModelImpl : public Model {
 
   // Whether the model has been fully initialized.
   bool ready_;
-
-  // Whether the model is currently showing an in-product help.
-  bool currently_showing_;
 
   base::WeakPtrFactory<ModelImpl> weak_factory_;
 

@@ -37,13 +37,20 @@ class OnceConditionValidator : public ConditionValidator {
   ~OnceConditionValidator() override;
 
   // ConditionValidator implementation.
-  ConditionValidator::Result MeetsConditions(const base::Feature& feature,
-                                             const Model& model,
-                                             uint32_t current_day) override;
+  ConditionValidator::Result MeetsConditions(
+      const base::Feature& feature,
+      const Model& model,
+      uint32_t current_day) const override;
+  void NotifyIsShowing(const base::Feature& feature) override;
+  void NotifyDismissed(const base::Feature& feature) override;
 
  private:
   // Contains all features that have met conditions within the current session.
   std::unordered_set<const base::Feature*> shown_features_;
+
+  // Which feature that is currently being shown, or nullptr if nothing is
+  // currently showing.
+  const base::Feature* currently_showing_feature_;
 
   DISALLOW_COPY_AND_ASSIGN(OnceConditionValidator);
 };

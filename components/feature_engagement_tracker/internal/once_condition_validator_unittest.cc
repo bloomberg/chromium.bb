@@ -26,7 +26,7 @@ const base::Feature kTestFeatureBar{"test_bar",
 // A Model that is easily configurable at runtime.
 class TestModel : public Model {
  public:
-  TestModel() : ready_(false), is_showing_(false) {}
+  TestModel() : ready_(false) {}
 
   void Initialize(const OnModelInitializationFinished& callback) override {}
 
@@ -39,12 +39,6 @@ class TestModel : public Model {
     return configuration_.GetFeatureConfig(feature);
   }
 
-  void SetIsCurrentlyShowing(bool is_showing) override {
-    is_showing_ = is_showing;
-  }
-
-  bool IsCurrentlyShowing() const override { return is_showing_; }
-
   EditableConfiguration& GetConfiguration() { return configuration_; }
 
   const Event* GetEvent(const std::string& event_name) const override {
@@ -56,7 +50,6 @@ class TestModel : public Model {
  private:
   EditableConfiguration configuration_;
   bool ready_;
-  bool is_showing_;
 };
 
 class OnceConditionValidatorTest : public ::testing::Test {
@@ -92,6 +85,7 @@ TEST_F(OnceConditionValidatorTest, EnabledFeatureShouldTriggerOnce) {
   // Only the first call to MeetsConditions() should lead to enlightenment.
   EXPECT_TRUE(
       validator_.MeetsConditions(kTestFeatureFoo, model_, 0u).NoErrors());
+  validator_.NotifyIsShowing(kTestFeatureFoo);
   ConditionValidator::Result result =
       validator_.MeetsConditions(kTestFeatureFoo, model_, 0u);
   EXPECT_FALSE(result.NoErrors());
@@ -153,13 +147,13 @@ TEST_F(OnceConditionValidatorTest, OnlyTriggerIfNothingElseIsShowing) {
   // Initialize validator with a single valid feature.
   AddFeature(kTestFeatureFoo, true);
 
-  model_.SetIsCurrentlyShowing(true);
+  validator_.NotifyIsShowing(kTestFeatureBar);
   ConditionValidator::Result result =
       validator_.MeetsConditions(kTestFeatureFoo, model_, 0u);
   EXPECT_FALSE(result.NoErrors());
   EXPECT_FALSE(result.currently_showing_ok);
 
-  model_.SetIsCurrentlyShowing(false);
+  validator_.NotifyDismissed(kTestFeatureBar);
   EXPECT_TRUE(
       validator_.MeetsConditions(kTestFeatureFoo, model_, 0u).NoErrors());
 }
