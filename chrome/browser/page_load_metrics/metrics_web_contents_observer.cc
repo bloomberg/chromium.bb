@@ -313,8 +313,12 @@ MetricsWebContentsObserver::GetPageLoadExtraInfoForCommittedLoad() {
 
 void MetricsWebContentsObserver::DidFinishNavigation(
     content::NavigationHandle* navigation_handle) {
-  if (!navigation_handle->IsInMainFrame() && committed_load_) {
-    committed_load_->DidFinishSubFrameNavigation(navigation_handle);
+  if (!navigation_handle->IsInMainFrame()) {
+    if (committed_load_ && navigation_handle->GetParentFrame() &&
+        GetMainFrame(navigation_handle->GetParentFrame()) ==
+            web_contents()->GetMainFrame()) {
+      committed_load_->DidFinishSubFrameNavigation(navigation_handle);
+    }
     return;
   }
 
