@@ -399,7 +399,7 @@ void HTMLObjectElement::RenderFallbackContent() {
     if (!IsImageType()) {
       // If we don't think we have an image type anymore, then clear the image
       // from the loader.
-      image_loader_->SetImage(0);
+      image_loader_->ClearImage();
       ReattachFallbackContent();
       return;
     }
