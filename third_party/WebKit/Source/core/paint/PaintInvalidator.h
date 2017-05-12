@@ -13,6 +13,9 @@
 namespace blink {
 
 struct PaintInvalidatorContext {
+  USING_FAST_MALLOC(PaintInvalidatorContext);
+
+ public:
   PaintInvalidatorContext() : parent_context(nullptr) {}
 
   PaintInvalidatorContext(const PaintInvalidatorContext& parent_context)
