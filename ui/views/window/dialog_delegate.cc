@@ -133,7 +133,7 @@ void DialogDelegate::UpdateButton(LabelButton* button, ui::DialogButton type) {
 }
 
 bool DialogDelegate::ShouldSnapFrameWidth() const {
-  return true;
+  return GetDialogButtons() != ui::DIALOG_BUTTON_NONE;
 }
 
 int DialogDelegate::GetDialogButtons() const {
