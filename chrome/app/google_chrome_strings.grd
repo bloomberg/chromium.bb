@@ -768,10 +768,23 @@ Signing in anyway will merge Chrome information like bookmarks, history, and oth
         </message>
       </if>
 
-      <!-- SRT bubble messages -->
+      <!-- SRT bubble messages.
+           This string is for the old Chrome Cleanup version and should be
+           deleted as soon as all Chrome Cleanup UI is fully integrated into
+           Chrome. -->
       <if expr="is_win">
         <message name="IDS_SRT_BUBBLE_TITLE" desc="Text for the title of the software removal tool bubble view.">
             Chrome has detected unusual behavior
+        </message>
+      </if>
+
+      <!-- Chrome Cleanup prompt and web UI -->
+      <if expr="is_win">
+        <message name="IDS_CHROME_CLEANUP_PROMPT_EXPLANATION" desc="Description in the Chrome Cleanup dialog that Chrome browser shows when unwanted software, like ad injectors or software that changes the user's settings without their knowledge, is found on the user's computer. Appears under the title asking 'Remove harmful software?' Actor is Chrome; we are asking, Do you want Chrome to remove harmful software? 'it' is harmful software. User has the option of clicking 'Remove' to proceed with a cleanup, or 'Details' to see more details. Preferrably, the translation for this string should match IDS_CHROME_CLEANUP_WEBUI_EXPLANATION.">
+          Chrome found harmful software on your computer. Chrome can remove it and restore your settings to make your browser work normally again.
+        </message>
+        <message name="IDS_CHROME_CLEANUP_WEBUI_EXPLANATION" desc="Description in the Chrome Cleanup web page that Chrome browser shows when unwanted software, like ad injectors or software that changes the user's settings without their knowledge, is found on the user's computer. Appears under the title asking 'Remove harmful software.' Actor is Chrome; we are asking, Do you want Chrome to remove harmful software? 'it' is harmful software. The user can click 'Remove' to proceed with a cleanup. Preferrably, the translation for this string should match IDS_CHROME_CLEANUP_PROMPT_EXPLANATION.">
+          Chrome found harmful software on your computer. Chrome can remove it and restore your settings to make your browser work normally again.
         </message>
       </if>
 
