@@ -13,9 +13,11 @@
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
+#include "base/trace_event/trace_event.h"
 #include "cc/paint/paint_canvas.h"
 #include "cc/paint/paint_flags.h"
 #include "third_party/skia/include/core/SkPath.h"
+#include "ui/gfx/animation/tween.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/canvas_image_source.h"
 #include "ui/gfx/scoped_canvas.h"
@@ -61,6 +63,7 @@ class PathParser {
         return 2;
 
       case CIRCLE:
+      case TRANSITION_END:
         return 3;
 
       case PATH_COLOR_ARGB:
@@ -85,6 +88,8 @@ class PathParser {
       case CLOSE:
       case DISABLE_AA:
       case FLIPS_IN_RTL:
+      case TRANSITION_FROM:
+      case TRANSITION_TO:
       case END:
         return 0;
     }
@@ -157,7 +162,8 @@ std::vector<PathElement> PathFromSource(const std::string& source) {
 void PaintPath(Canvas* canvas,
                const PathElement* path_elements,
                int dip_size,
-               SkColor color) {
+               SkColor color,
+               const base::TimeDelta& elapsed_time) {
   SkPath path;
   path.setFillType(SkPath::kEvenOdd_FillType);
 
@@ -172,14 +178,20 @@ void PaintPath(Canvas* canvas,
        parser.Advance()) {
     auto arg = [&parser](int i) { return parser.GetArgument(i); };
     const CommandType command_type = parser.CurrentCommand();
-    if (paths.empty() || command_type == NEW_PATH) {
+    auto start_new_path = [&paths]() {
       paths.push_back(SkPath());
       paths.back().setFillType(SkPath::kEvenOdd_FillType);
-
+    };
+    auto start_new_flags = [&flags_array, &color]() {
       flags_array.push_back(cc::PaintFlags());
       flags_array.back().setColor(color);
       flags_array.back().setAntiAlias(true);
       flags_array.back().setStrokeCap(cc::PaintFlags::kRound_Cap);
+    };
+
+    if (paths.empty() || command_type == NEW_PATH) {
+      start_new_path();
+      start_new_flags();
     }
 
     SkPath& path = paths.back();
@@ -339,6 +351,67 @@ void PaintPath(Canvas* canvas,
         flips_in_rtl = true;
         break;
 
+      // Transitions work by pushing new paths and a new set of flags onto the
+      // stack. When TRANSITION_END is seen, the paths and flags are
+      // interpolated based on |elapsed_time| and the tween type.
+      case TRANSITION_FROM: {
+        start_new_path();
+        break;
+      }
+
+      case TRANSITION_TO: {
+        start_new_path();
+        start_new_flags();
+        break;
+      }
+
+      case TRANSITION_END: {
+        DCHECK_GT(paths.size(), 2U);
+        // TODO(estade): check whether this operation (interpolation) is costly,
+        // and remove this TRACE log if not.
+        TRACE_EVENT0("ui", "PaintVectorIcon TRANSITION_END");
+
+        const base::TimeDelta delay =
+            base::TimeDelta::FromMillisecondsD(SkScalarToDouble(arg(0)));
+        const base::TimeDelta duration =
+            base::TimeDelta::FromMillisecondsD(SkScalarToDouble(arg(1)));
+
+        double state = 0;
+        if (elapsed_time >= delay + duration) {
+          state = 1;
+        } else if (elapsed_time > delay) {
+          state = (elapsed_time - delay).ToInternalValue() /
+                  static_cast<double>(duration.ToInternalValue());
+        }
+
+        auto weight = Tween::CalculateValue(
+            static_cast<Tween::Type>(SkScalarTruncToInt(arg(2))), state);
+
+        SkPath path1, path2;
+        path1.swap(paths.back());
+        paths.pop_back();
+        path2.swap(paths.back());
+        paths.pop_back();
+
+        SkPath interpolated_path;
+        bool could_interpolate =
+            path1.interpolate(path2, weight, &interpolated_path);
+        DCHECK(could_interpolate);
+        paths.back().addPath(interpolated_path);
+
+        // Perform manual interpolation of flags properties. TODO(estade): fill
+        // more of these in as necessary.
+        DCHECK_GT(flags_array.size(), 1U);
+        cc::PaintFlags& end_flags = flags_array.back();
+        cc::PaintFlags& start_flags = flags_array[flags_array.size() - 2];
+
+        start_flags.setColor(Tween::ColorValueBetween(
+            weight, start_flags.getColor(), end_flags.getColor()));
+
+        flags_array.pop_back();
+        break;
+      }
+
       case END:
         NOTREACHED();
         break;
@@ -347,8 +420,7 @@ void PaintPath(Canvas* canvas,
     previous_command_type = command_type;
   }
 
-  gfx::ScopedRTLFlipCanvas scoped_rtl_flip_canvas(canvas, canvas_size,
-                                                  flips_in_rtl);
+  ScopedRTLFlipCanvas scoped_rtl_flip_canvas(canvas, canvas_size, flips_in_rtl);
 
   if (dip_size != canvas_size) {
     SkScalar scale = SkIntToScalar(dip_size) / SkIntToScalar(canvas_size);
@@ -369,13 +441,13 @@ class VectorIconSource : public CanvasImageSource {
                    int dip_size,
                    SkColor color,
                    const VectorIcon& badge_icon)
-      : CanvasImageSource(gfx::Size(dip_size, dip_size), false),
+      : CanvasImageSource(Size(dip_size, dip_size), false),
         color_(color),
         icon_(icon),
         badge_(badge_icon) {}
 
   VectorIconSource(const std::string& definition, int dip_size, SkColor color)
-      : CanvasImageSource(gfx::Size(dip_size, dip_size), false),
+      : CanvasImageSource(Size(dip_size, dip_size), false),
         color_(color),
         icon_(kNoneIcon),
         badge_(kNoneIcon),
@@ -388,13 +460,13 @@ class VectorIconSource : public CanvasImageSource {
     return !icon_.is_empty();
   }
 
-  void Draw(gfx::Canvas* canvas) override {
+  void Draw(Canvas* canvas) override {
     if (path_.empty()) {
       PaintVectorIcon(canvas, icon_, size_.width(), color_);
       if (!badge_.is_empty())
         PaintVectorIcon(canvas, badge_, size_.width(), color_);
     } else {
-      PaintPath(canvas, path_.data(), size_.width(), color_);
+      PaintPath(canvas, path_.data(), size_.width(), color_, base::TimeDelta());
     }
   }
 
@@ -426,7 +498,7 @@ class VectorIconCache {
 
     ImageSkia icon_image(
         new VectorIconSource(icon, dip_size, color, badge_icon),
-        gfx::Size(dip_size, dip_size));
+        Size(dip_size, dip_size));
     images_.insert(std::make_pair(description, icon_image));
     return icon_image;
   }
@@ -448,10 +520,10 @@ class VectorIconCache {
                       other.badge_icon);
     }
 
-    const gfx::VectorIcon* icon;
+    const VectorIcon* icon;
     int dip_size;
     SkColor color;
-    const gfx::VectorIcon* badge_icon;
+    const VectorIcon* badge_icon;
   };
 
   std::map<IconDescription, ImageSkia> images_;
@@ -466,19 +538,23 @@ static base::LazyInstance<VectorIconCache>::DestructorAtExit g_icon_cache =
 
 const VectorIcon kNoneIcon = {};
 
-void PaintVectorIcon(Canvas* canvas, const VectorIcon& icon, SkColor color) {
-  PaintVectorIcon(canvas, icon, GetDefaultSizeOfVectorIcon(icon), color);
+void PaintVectorIcon(Canvas* canvas,
+                     const VectorIcon& icon,
+                     SkColor color,
+                     const base::TimeDelta& elapsed_time) {
+  PaintVectorIcon(canvas, icon, GetDefaultSizeOfVectorIcon(icon), color,
+                  elapsed_time);
 }
 
 void PaintVectorIcon(Canvas* canvas,
                      const VectorIcon& icon,
                      int dip_size,
-                     SkColor color) {
+                     SkColor color,
+                     const base::TimeDelta& elapsed_time) {
   DCHECK(!icon.is_empty());
-  const PathElement* path = (canvas->image_scale() == 1.f && icon.path_1x_)
-                                ? icon.path_1x_
-                                : icon.path_;
-  PaintPath(canvas, path, dip_size, color);
+  const PathElement* path =
+      (canvas->image_scale() == 1.f && icon.path_1x) ? icon.path_1x : icon.path;
+  PaintPath(canvas, path, dip_size, color, elapsed_time);
 }
 
 ImageSkia CreateVectorIcon(const VectorIcon& icon, SkColor color) {
@@ -495,7 +571,7 @@ ImageSkia CreateVectorIconWithBadge(const VectorIcon& icon,
                                     int dip_size,
                                     SkColor color,
                                     const VectorIcon& badge_icon) {
-  return icon.is_empty() ? gfx::ImageSkia()
+  return icon.is_empty() ? ImageSkia()
                          : g_icon_cache.Get().GetOrCreateIcon(
                                icon, dip_size, color, badge_icon);
 }
@@ -507,10 +583,25 @@ ImageSkia CreateVectorIconFromSource(const std::string& source,
                                                             color);
 }
 
-int GetDefaultSizeOfVectorIcon(const gfx::VectorIcon& icon) {
-  const PathElement* one_x_path = icon.path_1x_ ? icon.path_1x_ : icon.path_;
+int GetDefaultSizeOfVectorIcon(const VectorIcon& icon) {
+  const PathElement* one_x_path = icon.path_1x ? icon.path_1x : icon.path;
   return one_x_path[0].command == CANVAS_DIMENSIONS ? one_x_path[1].arg
                                                     : kReferenceSizeDip;
+}
+
+base::TimeDelta GetDurationOfAnimation(const VectorIcon& icon) {
+  base::TimeDelta last_motion;
+  for (PathParser parser(icon.path); parser.CurrentCommand() != END;
+       parser.Advance()) {
+    if (parser.CurrentCommand() != TRANSITION_END)
+      continue;
+
+    auto end_time = base::TimeDelta::FromMillisecondsD(parser.GetArgument(0)) +
+                    base::TimeDelta::FromMillisecondsD(parser.GetArgument(1));
+    if (end_time > last_motion)
+      last_motion = end_time;
+  }
+  return last_motion;
 }
 
 }  // namespace gfx

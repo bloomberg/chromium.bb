@@ -38,11 +38,11 @@ aggregate_vector_icons("ui_vector_icons") {
 
 static_library("vector_icons") {
   sources = get_target_outputs(":ui_vector_icons")
-  sources += [ "//ui/gfx/vector_icon_types.h" ]
 
   deps = [
     ":ui_vector_icons",
     "//base",
     "//skia",
+    "//ui/gfx",
   ]
 }
