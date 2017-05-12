@@ -3349,6 +3349,7 @@ static int fts3ColumnMethod(
     /* The extra column whose name is the same as the table.
     ** Return a blob which is a pointer to the cursor.  */
     sqlite3_result_blob(pCtx, &pCsr, sizeof(pCsr), SQLITE_TRANSIENT);
+    sqlite3_result_subtype(pCtx, '3');
   }else if( iCol==p->nColumn+2 && pCsr->pExpr ){
     sqlite3_result_int64(pCtx, pCsr->iLangid);
   }else{
@@ -3562,6 +3563,7 @@ static int fts3FunctionArg(
 ){
   Fts3Cursor *pRet;
   if( sqlite3_value_type(pVal)!=SQLITE_BLOB 
+   || sqlite3_value_subtype(pVal)!='3'
    || sqlite3_value_bytes(pVal)!=sizeof(Fts3Cursor *)
   ){
     char *zErr = sqlite3_mprintf("illegal first argument to %s", zFunc);

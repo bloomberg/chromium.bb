@@ -1,6 +1,6 @@
 Name: sqlite
 URL: http://sqlite.org/
-Version: 3.17
+Version: 3.17.patched
 Included In Release: Yes
 Security Critical: Yes
 License: Public domain
@@ -225,7 +225,7 @@ cd build
 # changing a variable to Tcl_WideInt.
 make -j -f ../Makefile.linux-gcc testfixture sqlite3 sqlite3_analyzer sqldiff
 make -f ../Makefile.linux-gcc test > /tmp/test.log
-egrep 'errors out of' /tmp/test.log 
+egrep 'errors out of' /tmp/test.log
 # Show broken tests:
 egrep 'Failures on these tests:' /tmp/test.log
 # Broken tests will also show lines ending in "..." instead of "... Ok".
