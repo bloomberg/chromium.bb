@@ -33,7 +33,6 @@ NSString* const kEnableAlertOnBackgroundUpload =
 NSString* const kEnableNewClearBrowsingDataUI = @"EnableNewClearBrowsingDataUI";
 NSString* const kEnableStartupCrash = @"EnableStartupCrash";
 NSString* const kEnableViewCopyPasswords = @"EnableViewCopyPasswords";
-NSString* const kExternalAppPromptDisabled = @"ExternalAppPromptDisabled";
 NSString* const kFirstRunForceEnabled = @"FirstRunForceEnabled";
 NSString* const kForceResetContextualSearch = @"ForceResetContextualSearch";
 NSString* const kGaiaEnvironment = @"GAIAEnvironment";
@@ -97,11 +96,6 @@ bool IsAutoReloadEnabled() {
     return false;
   return base::StartsWith(group_name, "Enabled",
                           base::CompareCase::INSENSITIVE_ASCII);
-}
-
-bool IsExternalApplicationPromptEnabled() {
-  return ![[NSUserDefaults standardUserDefaults]
-      boolForKey:kExternalAppPromptDisabled];
 }
 
 bool IsForceResetContextualSearchEnabled() {
