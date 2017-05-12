@@ -3,6 +3,7 @@ ComparatorTest.*
 ConditionValidatorResultTest.*
 EditableConfigurationTest.*
 FailingInitFeatureEngagementTrackerImplTest.*
+FeatureConfigConditionValidatorTest.*
 FeatureConfigStorageValidatorTest.*
 FeatureEngagementTrackerImplTest.*
 InMemoryStoreTest.*

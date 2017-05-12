@@ -28,6 +28,12 @@ TEST(ConditionValidatorResultTest, TestCurrentlyShowing) {
   EXPECT_FALSE(result.NoErrors());
 }
 
+TEST(ConditionValidatorResultTest, TestFeatureEnabled) {
+  ConditionValidator::Result result(true);
+  result.feature_enabled_ok = false;
+  EXPECT_FALSE(result.NoErrors());
+}
+
 TEST(ConditionValidatorResultTest, TestInvalidConfig) {
   ConditionValidator::Result result(true);
   result.config_ok = false;

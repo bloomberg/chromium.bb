@@ -37,6 +37,9 @@ class ConditionValidator {
     // Whether no other in-product helps were shown at the time.
     bool currently_showing_ok;
 
+    // Whether the feature is enabled.
+    bool feature_enabled_ok;
+
     // Whether the feature configuration was valid.
     bool config_ok;
 
