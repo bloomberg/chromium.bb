@@ -74,7 +74,7 @@
 
 - (void)webViewScrollViewWillBeginDragging:
     (CRWWebViewScrollViewProxy*)webViewScrollViewProxy {
-  SEL selector = @selector(webViewScrollViewWillBeginDragging:);
+  SEL selector = @selector(scrollViewWillBeginDragging:);
   if ([_delegate respondsToSelector:selector]) {
     [_delegate scrollViewWillBeginDragging:self];
   }
@@ -83,8 +83,8 @@
             (CRWWebViewScrollViewProxy*)webViewScrollViewProxy
                             withVelocity:(CGPoint)velocity
                      targetContentOffset:(inout CGPoint*)targetContentOffset {
-  SEL selector = @selector
-      (webViewScrollViewWillEndDragging:withVelocity:targetContentOffset:);
+  SEL selector =
+      @selector(scrollViewWillEndDragging:withVelocity:targetContentOffset:);
   if ([_delegate respondsToSelector:selector]) {
     [_delegate scrollViewWillEndDragging:self
                             withVelocity:velocity
@@ -102,7 +102,7 @@
 
 - (void)webViewScrollViewDidEndDecelerating:
     (CRWWebViewScrollViewProxy*)webViewScrollViewProxy {
-  SEL selector = @selector(webViewScrollViewDidEndDecelerating:);
+  SEL selector = @selector(scrollViewDidEndDecelerating:);
   if ([_delegate respondsToSelector:selector]) {
     [_delegate scrollViewDidEndDecelerating:self];
   }
