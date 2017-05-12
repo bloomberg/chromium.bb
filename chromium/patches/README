@@ -4,27 +4,15 @@ Autorename:
     by generate_gn.py. https://chromium-review.googlesource.com/#/c/274543/
 
 Current patches:
-  .gitignore has a "Chromium stuff" section.
+  .gitignore
+    Has a "Chromium stuff" section.
 
-  Changes to configure
-    Commented out a section that creates symlink for source_path. Using symlink
-    causes windows builds to fail (cl.exe cant find the files).
-    Commented out some pkg-config checks for libopus since we use Chromium's
-    copy.
-
-    Pinned older mipsel minimum ISA detection logic, including removal of
-    add_cflags "-mips64", which conflicts with --extra-cflags=-mips64r6 for
-    mips64el. In M56 roll, returned to previous logic here to prevent population
-    of CFLAGS etc with various -mips32r* which broke builds.
-
-    Turned off check for stdatomic.h, since it is banned in chromium.
-
-  Changes/additions to compat/atomics/win32/stdatomic.h
+  compat/atomics/win32/stdatomic.h
     Commented out atomic_compare_exchange_strong, since it doesn't compile and
     isn't used.
 
-  Changes/additions to compat/msvcrt/{snprintf.c,snprintf.h}
-  Changes/additions to compat/{strtod.c,strtod.h}
+  compat/msvcrt/{snprintf.c,snprintf.h}
+  compat/{strtod.c,strtod.h}
     Commit b5269bfb48c71fe17c02eee00c71b1e9762497db changes these files and
     relevant build rules to fix inconsistent linkage when building with MSVC.
     The rules/files expose overriden symbols as externs and force inject these
@@ -34,25 +22,45 @@ Current patches:
     4fe9bb85b83fffe4c3640493ef6655b0992a822c re-adds an "undef strod" and
     new strtod decl to fix Windows compilation issues to strtod.c .
 
+  configure
+    Commented out a section that creates symlink for source_path. Using symlink
+    causes windows builds to fail (cl.exe cant find the files).
+
+    Pinned older mipsel minimum ISA detection logic, including removal of
+    add_cflags "-mips64", which conflicts with --extra-cflags=-mips64r6 for
+    mips64el. In M56 roll, returned to previous logic here to prevent population
+    of CFLAGS etc with various -mips32r* which broke builds.
+
+    Turned off check for stdatomic.h, since it is banned in chromium.
+
+    Commented out pkg-config checks for libopus since we use Chromium's
+    copy.
+
+  libavcodec/avcodec.h
+    Don't deprecate avcodec_decode_audio4 and avcodec_decode_video2.
+    https://crbug.com/661350
+
   !!!SECURITY SENSITIVE ISSUE PLEASE VERIFY AFTER EACH FFMPEG ROLL!!!
   Remove UNCHECKED_BITSTREAM_READER defines in libavcodec/
     Remove "#define UNCHECKED_BITSTREAM_READER 1" from all codecs.
     In Chromium, all codecs should use the safe bitstream reader.
 
-  In libavcodec/libopusdec.c libopus_decode_init(), protect against OOB access
-    of ff_vorbis_channel_layouts[] with index < 0. TODO: push upstream.
+  libavcodec/flacdsp.c
+    #define SUINT for better overflow detection
 
-  Changes to libavcodec/utils.c
-    Disable deprecation warnings related to FF_API_AVPACKET_OLD_API.
-    We cannot just disable FF_API_AVPACKET_OLD_API because upstream does not yet
-    compile with it disabled. Therefore, suppress the warnings locally.
+  libavcodec/libopusdec.c, libavcodec/opus.c
+    Changes to support ambisonic_channels.
 
-    Locally disable deprecation warnings related to
-    avcodec_encode_{audio,video}2 until upstream introduces an appropriate
-    FF_API_AVsomething_OLD_API gate that we can use in our BUILD.gn, or upstream
-    stops using the deprecated methods.
+    libopus_decode_init(), protect against OOB access of
+    ff_vorbis_channel_layouts[] with index < 0.
+    ** FIXED UPSTREAM DIFFERENTLY **, remove Chromium change (it's obsolete).
 
-  Revert 'sidx' processing for .mov containers. (libavformat/isom.h and mov.c)
+  libavformat/id3v2.c
+    Change to 'return' in read_chapter to 'goto end' to fix a minor memory leak.
+    crbug.com/689339
+
+  libavformat/isom.h, libavformat/mov.c
+    Revert 'sidx' processing for .mov containers.
     8b946dec reverts commit 4ab56667594842283dc5ae07f0daba2a2cb4d3af.
     'sidx' box processing is broken for MOV containers. http://crbug.com/568336.
     Reported: http://ffmpeg.org/pipermail/ffmpeg-devel/2015-December/185040.html
@@ -64,7 +72,7 @@ Current patches:
     commit e4decbe7 includes a downstream declaration of |ret| in
     mov_seek_stream in mov.c.
 
-  Changes to libavformat/matroskadec.c
+  libavformat/matroskadec.c
     Add CONFIG_LZO and CONFIG_SIPR_DECODER (and other CONFIG_*) checks to remove
     code that may be a security risk. Discuss with cevans@ before removing.
 
@@ -75,50 +83,38 @@ Current patches:
     Revert upstream 7a9db61da39fbfaa910c10c0719be595a7d06f3d to fix seeking with
     text tracks.  crbug.com/681886 .
 
-  Changes to libavformat/id2v2.c
-    Change to 'return' in read_chapter to 'goto end' to fix a minor memory leak.
-    crbug.com/689339
+  libavformat/mp3dec.c
+    Don't change the start_time in mp3_parse_info_tag as Chromium should handle
+    it. https://crbug.com/504623
 
-  Changes to libavformat/mp3dec.c
     Change to mp3_read_header: check for the custom "skip_id3v1_tag" metadata
     flag we set in Chromium code, to avoid the costly reads of id3v1 tags.
     Also av_dict_free the dictionary before overwriting it to prevent leaks.
     See crbug.com/703965 (upstream patch discussion:
     http://ffmpeg.org/pipermail/ffmpeg-devel/2017-April/209953.html).
 
-    Other changes: TODO(chcunningham/dalecurtis): https://crbug.com/504623 -
-    Determine whether these changes are still necessary and either remove or
-    document them.
-
-  In libavformat/wavdec.c, exclude code blocks using #if to remove references
-    to symbols not in our builds which some toolchains don't elide, for each of
-    CONFIG_SPDIF_DEMUXER and CONFIG_W64_DEMUXER.
-
-  Changes to libavformat/utils.c
+  libavformat/utils.c
     Locally disable deprecation warnings related to AVStream.codec access until
     upstream stops using deprecated fields.
 
-    Protect against out-of-bounds access when searching for the next
-    non-discarded packet in ff_index_search_timestamp(). TODO: push upstream
+  libavformat/wavdec.c
+    Exclude code blocks using #if to remove references to symbols not in our
+    builds which some toolchains don't elide, for each of
+    CONFIG_SPDIF_DEMUXER and CONFIG_W64_DEMUXER.
 
-  Changes to libavutil/arm/intmath.h
+  libavutil/arm/intmath.h
     Remove static av_always_inline av_const unsigned av_clip_uintp2_arm() and
     av_clip_intp2_arm() due to compilation failure.
 
-  Changes to libavutil/mem.c
+  libavutil/mem.c
     Enable av_max_alloc(0) to remove alloc size bound.
 
-  Changes to libavutil/timer.h
+  libavutil/timer.h
     C++11 compatability for string concatenation (http://crbug.com/454590).
     Add spaces between string literals and tokens.
 
-  Changes/additions to libavutil/x86/x86inc.asm
+  libavutil/x86/x86inc.asm
     https://chromium-review.googlesource.com/#/c/272274/
     Fixes the conditionals on Linux so that these symbols are hidden and
     adds the Chromium-specific private_extern extension for hiding these
     symbols on OSX.
-
-  Changes to libavcodec/libopusdec.c and libavcodec/libopusdec.c
-    https://chromium-review.googlesource.com/c/477130/
-    libopus: +channel mapping 2 support in libopusdec.
-    Enables demuxing of Ambisonics content coded with channel mapping 2.
