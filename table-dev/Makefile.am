@@ -91,8 +91,21 @@ make-patterns.mk : Makefile
 		echo "	bash wrap_python.sh export_chunked_words.py -d \$$< -t \$$(BASE_TABLE),\$$(word 2,\$$^) >\$$@" && \
 		echo "	# dictionary file that we produced must be identical to the one that patgen produced" && \
 		echo "	diff \$$@ \$$(word 3,\$$^) >/dev/null" && \
+		echo "" && \
+		echo ".PHONY : clean-patterns" && \
+		echo "clean-patterns :" && \
+		echo "	rm -f patterns.$$level patterns.$$(($$level-1))" && \
+		echo "	rm -f dictionary.$$level dictionary.$$(($$level-1))" && \
+		echo "	rm -f pattmp.$$level" && \
+		echo "	" && \
 		echo ""; \
 	done >$@
 
 alphabet : $(DICTIONARY)
 	bash wrap_python.sh generate_alphabet.py -d $< -t $(BASE_TABLE) >$@
+
+clean : clean-table-dev
+
+.PHONY : clean-table-dev
+clean-table-dev : clean-patterns
+	rm -f patterns.$(HYPH_LEVEL).dic alphabet $(WORKING_FILE) make-patterns.mk
