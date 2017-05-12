@@ -1037,6 +1037,8 @@
     },
     {
       name: "d",
+      api_class: true,
+      api_methods: ["parseSingleValue"],
       converter: "ConvertPathOrNone",
       interpolable: true,
       svg: true,

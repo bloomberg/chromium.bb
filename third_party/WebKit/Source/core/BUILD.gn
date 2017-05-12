@@ -476,6 +476,7 @@ css_properties("make_core_generated_css_property_apis") {
     "$blink_core_output_dir/css/properties/CSSPropertyAPICounterIncrement.h",
     "$blink_core_output_dir/css/properties/CSSPropertyAPICounterReset.h",
     "$blink_core_output_dir/css/properties/CSSPropertyAPICursor.h",
+    "$blink_core_output_dir/css/properties/CSSPropertyAPID.h",
     "$blink_core_output_dir/css/properties/CSSPropertyAPIFilter.h",
     "$blink_core_output_dir/css/properties/CSSPropertyAPIFlexBasis.h",
     "$blink_core_output_dir/css/properties/CSSPropertyAPIFlexGrowOrShrink.h",
