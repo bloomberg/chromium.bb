@@ -177,15 +177,13 @@ NSString* PromptActionString(NSString* scheme) {
       UIApplicationStateActive)
     return NO;
 
-  if (experimental_flags::IsExternalApplicationPromptEnabled()) {
-    // Prompt user to open itunes when opening it is not a result of a link
-    // click.
-    if (!linkClicked && UrlHasAppStoreScheme(gURL)) {
-      [self performSelector:@selector(openExternalAppWithPromptForURL:)
-                 withObject:URL
-                 afterDelay:0.0];
-      return YES;
-    }
+  // Prompt user to open itunes when opening it is not a result of a link
+  // click.
+  if (!linkClicked && UrlHasAppStoreScheme(gURL)) {
+    [self performSelector:@selector(openExternalAppWithPromptForURL:)
+               withObject:URL
+               afterDelay:0.0];
+    return YES;
   }
 
   // Replaces |URL| with a rewritten URL if it is of mailto: scheme.

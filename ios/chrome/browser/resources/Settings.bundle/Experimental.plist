@@ -378,16 +378,6 @@
 			<key>Type</key>
 			<string>PSToggleSwitchSpecifier</string>
 			<key>Title</key>
-			<string>Disable External Application Prompt</string>
-			<key>Key</key>
-			<string>ExternalAppPromptDisabled</string>
-			<key>DefaultValue</key>
-			<false/>
-		</dict>
-		<dict>
-			<key>Type</key>
-			<string>PSToggleSwitchSpecifier</string>
-			<key>Title</key>
 			<string>Disable Update Password UI</string>
 			<key>Key</key>
 			<string>UpdatePasswordUIDisabled</string>

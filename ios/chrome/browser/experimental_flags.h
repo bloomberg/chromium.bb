@@ -45,9 +45,6 @@ bool IsAlertOnBackgroundUploadEnabled();
 // Whether auto-reload is enabled.
 bool IsAutoReloadEnabled();
 
-// Whether the external applicaiton prompt is enabled.
-bool IsExternalApplicationPromptEnabled();
-
 // Whether contextual search must be reset to undecided state.
 bool IsForceResetContextualSearchEnabled();
 
