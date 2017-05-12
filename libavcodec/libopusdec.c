@@ -57,10 +57,6 @@ static av_cold int libopus_decode_init(AVCodecContext *avc)
     avc->sample_rate    = 48000;
     avc->sample_fmt     = avc->request_sample_fmt == AV_SAMPLE_FMT_FLT ?
                           AV_SAMPLE_FMT_FLT : AV_SAMPLE_FMT_S16;
-    if (avc->channels <= 0) {
-        av_log(avc, AV_LOG_ERROR, "Invalid number of channels\n");
-        return AVERROR(EINVAL);
-    }
 
     if (avc->extradata_size >= OPUS_HEAD_SIZE) {
         opus->pre_skip = AV_RL16(avc->extradata + 10);

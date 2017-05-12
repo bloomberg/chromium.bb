@@ -53,10 +53,6 @@ Current patches:
   libavcodec/libopusdec.c, libavcodec/opus.c
     Changes to support ambisonic_channels.
 
-    libopus_decode_init(), protect against OOB access of
-    ff_vorbis_channel_layouts[] with index < 0.
-    ** FIXED UPSTREAM DIFFERENTLY **, remove Chromium change (it's obsolete).
-
   libavformat/id3v2.c
     Change to 'return' in read_chapter to 'goto end' to fix a minor memory leak.
     crbug.com/689339
