@@ -28,11 +28,11 @@ struct StreamPipelineDescriptor {
   //   {"processor": "PATH_TO_SHARED_OBJECT",
   //    "config": "CONFIGURATION_STRING"},
   //    ... ]
-  base::ListValue* pipeline;
+  const base::ListValue* pipeline;
   std::unordered_set<std::string> stream_types;
 
   StreamPipelineDescriptor(
-      base::ListValue* pipeline_in,
+      const base::ListValue* pipeline_in,
       const std::unordered_set<std::string>& stream_types_in);
   ~StreamPipelineDescriptor();
   StreamPipelineDescriptor(const StreamPipelineDescriptor& other);
@@ -52,15 +52,16 @@ class PostProcessingPipelineParser {
 
   // Gets the list of processors for the mix/linearize stages.
   // Same format as StreamPipelineDescriptor.pipeline
-  base::ListValue* GetMixPipeline();
-  base::ListValue* GetLinearizePipeline();
+  const base::ListValue* GetMixPipeline();
+  const base::ListValue* GetLinearizePipeline();
 
   static std::string GetFilePath();
 
  private:
-  base::ListValue* GetPipelineByKey(const std::string& key);
+  const base::ListValue* GetPipelineByKey(const std::string& key);
 
   std::unique_ptr<base::DictionaryValue> config_dict_;
+  const base::DictionaryValue* postprocessor_config_;
 
   DISALLOW_COPY_AND_ASSIGN(PostProcessingPipelineParser);
 };
