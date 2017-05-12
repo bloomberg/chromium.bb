@@ -77,9 +77,7 @@ void BoxPainter::PaintBoxDecorationBackground(const PaintInfo& paint_info,
     // The background painting code assumes that the borders are part of the
     // paintRect so we expand the paintRect by the border size when painting the
     // background into the scrolling contents layer.
-    paint_rect.ExpandEdges(layout_box_.BorderTop(), layout_box_.BorderRight(),
-                           layout_box_.BorderBottom(),
-                           layout_box_.BorderLeft());
+    paint_rect.Expand(layout_box_.BorderBoxOutsets());
   } else {
     paint_rect = layout_box_.BorderBoxRect();
   }

@@ -286,6 +286,11 @@ class CORE_EXPORT LayoutBoxModelObject : public LayoutObject {
   LayoutUnit BorderWidth() const { return BorderLeft() + BorderRight(); }
   LayoutUnit BorderHeight() const { return BorderTop() + BorderBottom(); }
 
+  virtual LayoutRectOutsets BorderBoxOutsets() const {
+    return LayoutRectOutsets(BorderTop(), BorderRight(), BorderBottom(),
+                             BorderLeft());
+  }
+
   // Insets from the border box to the inside of the border.
   LayoutRectOutsets BorderInsets() const {
     return LayoutRectOutsets(-BorderTop(), -BorderRight(), -BorderBottom(),
