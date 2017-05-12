@@ -1222,6 +1222,10 @@
       keywords: ["auto", "fit-content", "min-content", "max-content"],
       supports_percentage: true,
       typedom_types: ["Length"],
+      field_template: "storage_only",
+      field_type_path: "platform/Length",
+      field_group: "box",
+      default_value: "Length()",
     },
     {
       name: "hyphens",
@@ -1429,12 +1433,20 @@
       converter: "ConvertLengthMaxSizing",
       is_descriptor: true,
       interpolable: true,
+      field_template: "storage_only",
+      field_type_path: "platform/Length",
+      field_group: "box",
+      default_value: "Length(kMaxSizeNone)",
     },
     {
       name: "max-width",
       converter: "ConvertLengthMaxSizing",
       is_descriptor: true,
       interpolable: true,
+      field_template: "storage_only",
+      field_type_path: "platform/Length",
+      field_group: "box",
+      default_value: "Length(kMaxSizeNone)",
     },
     {
       name: "min-height",
@@ -1442,6 +1454,10 @@
       converter: "ConvertLengthSizing",
       is_descriptor: true,
       interpolable: true,
+      field_template: "storage_only",
+      field_type_path: "platform/Length",
+      field_group: "box",
+      default_value: "Length()",
     },
     {
       name: "min-width",
@@ -1449,6 +1465,10 @@
       converter: "ConvertLengthSizing",
       is_descriptor: true,
       interpolable: true,
+      field_template: "storage_only",
+      field_type_path: "platform/Length",
+      field_group: "box",
+      default_value: "Length()",
     },
     {
       name: "mix-blend-mode",
@@ -2496,6 +2516,10 @@
       keywords: ["auto", "fit-content", "min-content", "max-content"],
       supports_percentage: true,
       typedom_types: ["Length"],
+      field_template: "storage_only",
+      field_type_path: "platform/Length",
+      field_group: "box",
+      default_value: "Length()"
     },
     {
       name: "will-change",
@@ -2529,6 +2553,9 @@
       custom_all: true,
       interpolable: true,
       type_name: "int",
+      field_template: "storage_only",
+      field_group: "box",
+      default_value: "0"
     },
 
     // CSS logical props
