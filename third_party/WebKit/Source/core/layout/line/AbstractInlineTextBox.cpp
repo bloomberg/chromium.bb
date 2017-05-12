@@ -78,7 +78,7 @@ AbstractInlineTextBox::~AbstractInlineTextBox() {
 }
 
 void AbstractInlineTextBox::Detach() {
-  if (Node* node = line_layout_item_.GetNode()) {
+  if (Node* node = GetNode()) {
     if (AXObjectCache* cache = node->GetDocument().ExistingAXObjectCache())
       cache->Remove(this);
   }
