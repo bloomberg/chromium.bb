@@ -18,6 +18,7 @@ struct GpuPreferences {
   bool single_process;
   bool in_process_gpu;
   bool ui_prioritize_in_gpu_process;
+  bool enable_gpu_scheduler;
   bool disable_accelerated_video_decode;
 
   bool disable_vaapi_accelerated_video_encode;

@@ -42,6 +42,7 @@
 #include "content/browser/gpu/browser_gpu_memory_buffer_manager.h"
 #include "content/browser/gpu/gpu_data_manager_impl.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
+#include "content/common/gpu_stream_constants.h"
 #include "content/public/common/content_switches.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
@@ -133,6 +134,11 @@ scoped_refptr<ui::ContextProviderCommandBuffer> CreateContextCommon(
       content::GpuDataManagerImpl::GetInstance()->CanUseGpuBrowserCompositor());
   DCHECK(gpu_channel_host);
 
+  // All browser contexts get the same stream id because we don't use sync
+  // tokens for browser surfaces.
+  int32_t stream_id = content::kGpuStreamIdDefault;
+  gpu::SchedulingPriority stream_priority = content::kGpuStreamPriorityUI;
+
   // This is called from a few places to create different contexts:
   // - The shared main thread context (offscreen).
   // - The compositor context, which is used by the browser compositor
@@ -161,10 +167,9 @@ scoped_refptr<ui::ContextProviderCommandBuffer> CreateContextCommon(
 
   GURL url("chrome://gpu/GpuProcessTransportFactory::CreateContextCommon");
   return make_scoped_refptr(new ui::ContextProviderCommandBuffer(
-      std::move(gpu_channel_host), gpu::GPU_STREAM_DEFAULT,
-      gpu::GpuStreamPriority::NORMAL, surface_handle, url, automatic_flushes,
-      support_locking, gpu::SharedMemoryLimits(), attributes,
-      shared_context_provider, type));
+      std::move(gpu_channel_host), stream_id, stream_priority, surface_handle,
+      url, automatic_flushes, support_locking, gpu::SharedMemoryLimits(),
+      attributes, shared_context_provider, type));
 }
 
 #if defined(OS_MACOSX)

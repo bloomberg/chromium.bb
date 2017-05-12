@@ -44,6 +44,9 @@ struct GPU_EXPORT GpuPreferences {
   // Prioritizes the UI's command stream in the GPU process.
   bool ui_prioritize_in_gpu_process = false;
 
+  // Enable the GPU process scheduler.
+  bool enable_gpu_scheduler = false;
+
   // Disables hardware acceleration of video decode, where available.
   bool disable_accelerated_video_decode = false;
 

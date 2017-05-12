@@ -20,6 +20,7 @@
 #include "gpu/command_buffer/service/mailbox_manager.h"
 #include "gpu/command_buffer/service/memory_program_cache.h"
 #include "gpu/command_buffer/service/preemption_flag.h"
+#include "gpu/command_buffer/service/scheduler.h"
 #include "gpu/command_buffer/service/shader_translator_cache.h"
 #include "gpu/command_buffer/service/sync_point_manager.h"
 #include "gpu/ipc/common/gpu_messages.h"
@@ -41,7 +42,6 @@ const int kMaxGpuIdleTimeMs = 40;
 // draw.
 const int kMaxKeepAliveTimeMs = 200;
 #endif
-
 }
 
 GpuChannelManager::GpuChannelManager(
@@ -51,6 +51,7 @@ GpuChannelManager::GpuChannelManager(
     GpuWatchdogThread* watchdog,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
+    Scheduler* scheduler,
     SyncPointManager* sync_point_manager,
     GpuMemoryBufferFactory* gpu_memory_buffer_factory,
     const GpuFeatureInfo& gpu_feature_info,
@@ -64,6 +65,7 @@ GpuChannelManager::GpuChannelManager(
       share_group_(new gl::GLShareGroup()),
       mailbox_manager_(gles2::MailboxManager::Create(gpu_preferences)),
       gpu_memory_manager_(this),
+      scheduler_(scheduler),
       sync_point_manager_(sync_point_manager),
       gpu_memory_buffer_factory_(gpu_memory_buffer_factory),
       gpu_feature_info_(gpu_feature_info),
@@ -72,7 +74,7 @@ GpuChannelManager::GpuChannelManager(
       weak_factory_(this) {
   DCHECK(task_runner);
   DCHECK(io_task_runner);
-  if (gpu_preferences_.ui_prioritize_in_gpu_process)
+  if (gpu_preferences.ui_prioritize_in_gpu_process)
     preemption_flag_ = new PreemptionFlag;
 }
 
@@ -100,8 +102,7 @@ gles2::ProgramCache* GpuChannelManager::program_cache() {
   return program_cache_.get();
 }
 
-gles2::ShaderTranslatorCache*
-GpuChannelManager::shader_translator_cache() {
+gles2::ShaderTranslatorCache* GpuChannelManager::shader_translator_cache() {
   if (!shader_translator_cache_.get()) {
     shader_translator_cache_ =
         new gles2::ShaderTranslatorCache(gpu_preferences_);
@@ -112,8 +113,7 @@ GpuChannelManager::shader_translator_cache() {
 gles2::FramebufferCompletenessCache*
 GpuChannelManager::framebuffer_completeness_cache() {
   if (!framebuffer_completeness_cache_.get())
-    framebuffer_completeness_cache_ =
-        new gles2::FramebufferCompletenessCache;
+    framebuffer_completeness_cache_ = new gles2::FramebufferCompletenessCache;
   return framebuffer_completeness_cache_.get();
 }
 
@@ -131,8 +131,8 @@ GpuChannel* GpuChannelManager::EstablishChannel(int client_id,
                                                 uint64_t client_tracing_id,
                                                 bool is_gpu_host) {
   std::unique_ptr<GpuChannel> gpu_channel = base::MakeUnique<GpuChannel>(
-      this, sync_point_manager_, watchdog_, share_group_, mailbox_manager_,
-      is_gpu_host ? preemption_flag_ : nullptr,
+      this, scheduler_, sync_point_manager_, watchdog_, share_group_,
+      mailbox_manager_, is_gpu_host ? preemption_flag_ : nullptr,
       is_gpu_host ? nullptr : preemption_flag_, task_runner_, io_task_runner_,
       client_id, client_tracing_id, is_gpu_host);
 
@@ -156,10 +156,9 @@ void GpuChannelManager::InternalDestroyGpuMemoryBufferOnIO(
   gpu_memory_buffer_factory_->DestroyGpuMemoryBuffer(id, client_id);
 }
 
-void GpuChannelManager::DestroyGpuMemoryBuffer(
-    gfx::GpuMemoryBufferId id,
-    int client_id,
-    const SyncToken& sync_token) {
+void GpuChannelManager::DestroyGpuMemoryBuffer(gfx::GpuMemoryBufferId id,
+                                               int client_id,
+                                               const SyncToken& sync_token) {
   if (!sync_point_manager_->WaitOutOfOrder(
           sync_token,
           base::Bind(&GpuChannelManager::InternalDestroyGpuMemoryBuffer,
@@ -218,8 +217,8 @@ void GpuChannelManager::WakeUpGpu() {
 
 void GpuChannelManager::ScheduleWakeUpGpu() {
   base::TimeTicks now = base::TimeTicks::Now();
-  TRACE_EVENT2("gpu", "GpuChannelManager::ScheduleWakeUp",
-               "idle_time", (now - last_gpu_access_time_).InMilliseconds(),
+  TRACE_EVENT2("gpu", "GpuChannelManager::ScheduleWakeUp", "idle_time",
+               (now - last_gpu_access_time_).InMilliseconds(),
                "keep_awake_time", (now - begin_wake_up_time_).InMilliseconds());
   if (now - last_gpu_access_time_ <
       base::TimeDelta::FromMilliseconds(kMaxGpuIdleTimeMs))

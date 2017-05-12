@@ -12,6 +12,7 @@
 #include "base/numerics/safe_math.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
+#include "content/common/gpu_stream_constants.h"
 #include "content/common/pepper_file_util.h"
 #include "content/public/renderer/renderer_ppapi_host.h"
 #include "content/renderer/pepper/gfx_conversion.h"
@@ -530,10 +531,9 @@ bool PepperVideoEncoderHost::EnsureGpuChannel() {
     return false;
 
   command_buffer_ = gpu::CommandBufferProxyImpl::Create(
-      std::move(channel), gpu::kNullSurfaceHandle, nullptr,
-      gpu::GPU_STREAM_DEFAULT, gpu::GpuStreamPriority::NORMAL,
-      gpu::gles2::ContextCreationAttribHelper(), GURL::EmptyGURL(),
-      base::ThreadTaskRunnerHandle::Get());
+      std::move(channel), gpu::kNullSurfaceHandle, nullptr, kGpuStreamIdDefault,
+      kGpuStreamPriorityDefault, gpu::gles2::ContextCreationAttribHelper(),
+      GURL::EmptyGURL(), base::ThreadTaskRunnerHandle::Get());
   if (!command_buffer_) {
     Close();
     return false;
