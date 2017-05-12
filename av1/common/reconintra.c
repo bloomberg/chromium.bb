@@ -447,8 +447,10 @@ static int has_top_right(BLOCK_SIZE bsize, int mi_row, int mi_col,
   const int plane_bw_unit = AOMMAX(bw_unit >> ss_x, 1);
   const int top_right_count_unit = tx_size_wide_unit[txsz];
 
+#if !CONFIG_CB4X4
   // Special handling for block sizes 4x8 and 4x4.
   if (ss_x == 0 && bw_unit < 2 && col_off == 0) return 1;
+#endif
 
   if (row_off > 0) {  // Just need to check if enough pixels on the right.
     return col_off + top_right_count_unit < plane_bw_unit;
