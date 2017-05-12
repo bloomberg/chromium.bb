@@ -207,7 +207,9 @@ class CORE_EXPORT LayoutText : public LayoutObject {
 
   bool ContainsReversedText() const { return contains_reversed_text_; }
 
-  bool IsSecure() const { return Style()->TextSecurity() != TSNONE; }
+  bool IsSecure() const {
+    return Style()->TextSecurity() != ETextSecurity::kNone;
+  }
   void MomentarilyRevealLastTypedCharacter(
       unsigned last_typed_character_offset);
 

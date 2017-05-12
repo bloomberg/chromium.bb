@@ -1961,12 +1961,13 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   }
 
   // -webkit-text-security
-  static ETextSecurity InitialTextSecurity() { return TSNONE; }
+  static ETextSecurity InitialTextSecurity() { return ETextSecurity::kNone; }
   ETextSecurity TextSecurity() const {
     return static_cast<ETextSecurity>(rare_inherited_data_->text_security_);
   }
   void SetTextSecurity(ETextSecurity a_text_security) {
-    SET_VAR(rare_inherited_data_, text_security_, a_text_security);
+    SET_VAR(rare_inherited_data_, text_security_,
+            static_cast<unsigned>(a_text_security));
   }
 
   // -webkit-text-stroke-color

@@ -333,7 +333,7 @@ PassRefPtr<ComputedStyle> LayoutTextControlSingleLine::CreateInnerEditorStyle(
   text_block_style->SetUnique();
 
   if (InputElement()->ShouldRevealPassword())
-    text_block_style->SetTextSecurity(TSNONE);
+    text_block_style->SetTextSecurity(ETextSecurity::kNone);
 
   text_block_style->SetOverflowX(EOverflow::kScroll);
   // overflow-y:visible doesn't work because overflow-x:scroll makes a layer.

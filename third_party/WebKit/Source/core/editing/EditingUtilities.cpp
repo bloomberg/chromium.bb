@@ -2073,7 +2073,8 @@ bool IsInPasswordField(const Position& position) {
 
 bool IsTextSecurityNode(const Node* node) {
   return node && node->GetLayoutObject() &&
-         node->GetLayoutObject()->Style()->TextSecurity() != TSNONE;
+         node->GetLayoutObject()->Style()->TextSecurity() !=
+             ETextSecurity::kNone;
 }
 
 // If current position is at grapheme boundary, return 0; otherwise, return the

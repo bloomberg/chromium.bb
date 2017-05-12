@@ -197,7 +197,7 @@ enum EFlexDirection {
 };
 enum EFlexWrap { kFlexNoWrap, kFlexWrap, kFlexWrapReverse };
 
-enum ETextSecurity { TSNONE, TSDISC, TSCIRCLE, TSSQUARE };
+enum class ETextSecurity { kNone, kDisc, kCircle, kSquare };
 
 // CSS3 User Modify Properties
 
