@@ -19,6 +19,7 @@
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/path_service.h"
+#include "base/task_scheduler/post_task.h"
 #include "components/autofill/core/common/autofill_pref_names.h"
 #include "components/metrics/metrics_service.h"
 #include "components/policy/core/browser/browser_policy_connector_base.h"
@@ -94,9 +95,9 @@ bool OverrideBlacklistForURL(const GURL& url, bool* block, int* reason) {
 
 policy::URLBlacklistManager* CreateURLBlackListManager(
     PrefService* pref_service) {
-  base::SequencedWorkerPool* pool = BrowserThread::GetBlockingPool();
   scoped_refptr<base::SequencedTaskRunner> background_task_runner =
-      pool->GetSequencedTaskRunner(pool->GetSequenceToken());
+      base::CreateSequencedTaskRunnerWithTraits(
+          {base::MayBlock(), base::TaskPriority::BACKGROUND});
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner =
       BrowserThread::GetTaskRunnerForThread(BrowserThread::IO);
 
@@ -173,11 +174,10 @@ void AwBrowserContext::PreMainMessageLoopRun() {
   url_request_context_getter_ = new AwURLRequestContextGetter(
       cache_path, CreateProxyConfigService(), user_pref_service_.get());
 
-  base::SequencedWorkerPool* pool = BrowserThread::GetBlockingPool();
   scoped_refptr<base::SequencedTaskRunner> db_task_runner =
-      pool->GetSequencedTaskRunnerWithShutdownBehavior(
-          pool->GetSequenceToken(),
-          base::SequencedWorkerPool::SKIP_ON_SHUTDOWN);
+      base::CreateSequencedTaskRunnerWithTraits(
+          {base::MayBlock(), base::TaskPriority::BACKGROUND,
+           base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
   visitedlink_master_.reset(
       new visitedlink::VisitedLinkMaster(this, this, false));
   visitedlink_master_->Init();
