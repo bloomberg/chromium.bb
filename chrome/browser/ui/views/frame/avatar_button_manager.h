@@ -5,14 +5,14 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_FRAME_AVATAR_BUTTON_MANAGER_H_
 #define CHROME_BROWSER_UI_VIEWS_FRAME_AVATAR_BUTTON_MANAGER_H_
 
-#include "chrome/browser/ui/views/profiles/avatar_button_delegate.h"
 #include "chrome/browser/ui/views/profiles/avatar_button_style.h"
+#include "ui/views/controls/button/button.h"
 
 class BrowserNonClientFrameView;
 
 // Manages an avatar button displayed in a browser frame. The button displays
 // the name of the active or guest profile, and may be null.
-class AvatarButtonManager : public AvatarButtonDelegate {
+class AvatarButtonManager : public views::ButtonListener {
  public:
   explicit AvatarButtonManager(BrowserNonClientFrameView* frame_view);
 
@@ -23,13 +23,10 @@ class AvatarButtonManager : public AvatarButtonDelegate {
   // Gets the avatar button as a view::View.
   views::View* view() const { return view_; }
 
- private:
-  // AvatarButtonDelegate:
-  void ButtonPreferredSizeChanged() override;
-
   // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
+ private:
   BrowserNonClientFrameView* frame_view_;  // Weak. Owns |this|.
 
   // Menu button that displays the name of the active or guest profile.

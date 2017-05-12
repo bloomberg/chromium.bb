@@ -391,6 +391,10 @@ void LabelButton::SetFontList(const gfx::FontList& font_list) {
   label_->SetFontList(cached_normal_font_list_);
 }
 
+bool LabelButton::ShouldUseFloodFillInkDrop() const {
+  return !GetText().empty();
+}
+
 void LabelButton::OnPaint(gfx::Canvas* canvas) {
   View::OnPaint(canvas);
   Painter::PaintFocusPainter(this, canvas, focus_painter_.get());
@@ -433,12 +437,12 @@ void LabelButton::RemoveInkDropLayer(ui::Layer* ink_drop_layer) {
 }
 
 std::unique_ptr<InkDrop> LabelButton::CreateInkDrop() {
-  return UseFloodFillInkDrop() ? CreateDefaultFloodFillInkDropImpl()
-                               : CustomButton::CreateInkDrop();
+  return ShouldUseFloodFillInkDrop() ? CreateDefaultFloodFillInkDropImpl()
+                                     : CustomButton::CreateInkDrop();
 }
 
 std::unique_ptr<views::InkDropRipple> LabelButton::CreateInkDropRipple() const {
-  return UseFloodFillInkDrop()
+  return ShouldUseFloodFillInkDrop()
              ? base::MakeUnique<views::FloodFillInkDropRipple>(
                    size(), GetInkDropCenterBasedOnLastEvent(),
                    GetInkDropBaseColor(), ink_drop_visible_opacity())
@@ -448,7 +452,7 @@ std::unique_ptr<views::InkDropRipple> LabelButton::CreateInkDropRipple() const {
 
 std::unique_ptr<views::InkDropHighlight> LabelButton::CreateInkDropHighlight()
     const {
-  return UseFloodFillInkDrop()
+  return ShouldUseFloodFillInkDrop()
              ? base::MakeUnique<views::InkDropHighlight>(
                    size(), kInkDropSmallCornerRadius,
                    gfx::RectF(GetLocalBounds()).CenterPoint(),
@@ -603,10 +607,6 @@ void LabelButton::ResetLabelEnabledColor() {
           : PlatformStyle::TextColorForButton(button_state_colors_, *this);
   if (state() != STATE_DISABLED && label_->enabled_color() != color)
     label_->SetEnabledColor(color);
-}
-
-bool LabelButton::UseFloodFillInkDrop() const {
-  return !GetText().empty();
 }
 
 }  // namespace views

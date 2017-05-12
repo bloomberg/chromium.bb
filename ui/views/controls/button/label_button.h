@@ -124,6 +124,10 @@ class VIEWS_EXPORT LabelButton : public CustomButton,
   // Sets the font list used by this button.
   virtual void SetFontList(const gfx::FontList& font_list);
 
+  // Returns true if the CreateInkDrop*() methods should create flood fill ink
+  // drop components.
+  virtual bool ShouldUseFloodFillInkDrop() const;
+
   // View:
   void OnPaint(gfx::Canvas* canvas) override;
   void OnFocus() override;
@@ -184,10 +188,6 @@ class VIEWS_EXPORT LabelButton : public CustomButton,
   // merely the CustomButton::state(). E.g. ensures the label text color is
   // correct for the current background.
   void ResetLabelEnabledColor();
-
-  // Returns true if the CreateInkDrop*() methods should create flood fill ink
-  // drop components.
-  bool UseFloodFillInkDrop() const;
 
   // The image and label shown in the button.
   ImageView* image_;

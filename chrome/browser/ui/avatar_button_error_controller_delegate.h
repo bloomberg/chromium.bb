@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_UI_AVATAR_BUTTON_ERROR_CONTROLLER_DELEGATE_H_
 
 // Delegate that allows AvatarButtonErrorController to communicate to
-// NewAvatarButton.
+// AvatarButton.
 class AvatarButtonErrorControllerDelegate {
  public:
   // Called when the signin/sync errors that should be exposed in the avatar
