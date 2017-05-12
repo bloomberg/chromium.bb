@@ -257,6 +257,29 @@ void SharedModelTypeProcessor::Delete(
   FlushPendingCommitRequests();
 }
 
+void SharedModelTypeProcessor::UpdateStorageKey(
+    const std::string& old_storage_key,
+    const std::string& new_storage_key,
+    MetadataChangeList* metadata_change_list) {
+  ProcessorEntityTracker* entity = GetEntityForStorageKey(old_storage_key);
+  if (entity == nullptr) {
+    DLOG(WARNING) << "Attempted to update missing item."
+                  << " storage key: " << old_storage_key;
+    return;
+  }
+
+  entity->SetStorageKey(new_storage_key);
+
+  // Update storage key to tag hash map.
+  storage_key_to_tag_hash_.erase(old_storage_key);
+  storage_key_to_tag_hash_[new_storage_key] =
+      entity->metadata().client_tag_hash();
+
+  // Update metadata store.
+  metadata_change_list->ClearMetadata(old_storage_key);
+  metadata_change_list->UpdateMetadata(new_storage_key, entity->metadata());
+}
+
 void SharedModelTypeProcessor::FlushPendingCommitRequests() {
   CommitRequestDataList commit_requests;
 

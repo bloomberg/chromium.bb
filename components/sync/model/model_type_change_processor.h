@@ -48,6 +48,14 @@ class ModelTypeChangeProcessor {
   virtual void Delete(const std::string& storage_key,
                       MetadataChangeList* metadata_change_list) = 0;
 
+  // Inform the processor that storage key has chagned.
+  // TODO(gangwu): crbug.com/719570 should remove this after bug fixed.
+  // This function should only be called for the data type which does not create
+  // storage key based on syncer::EntityData.
+  virtual void UpdateStorageKey(const std::string& old_storage_key,
+                                const std::string& new_storage_key,
+                                MetadataChangeList* metadata_change_list) = 0;
+
   // The bridge is expected to call this exactly once unless it encounters an
   // error. Ideally ModelReadyToSync() is called as soon as possible during
   // initialization, and must be called before invoking either Put() or

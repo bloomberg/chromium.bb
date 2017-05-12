@@ -100,6 +100,12 @@ class ProcessorEntityTracker {
   // Clears any in-memory sync state associated with outstanding commits.
   void ClearTransientSyncState();
 
+  // Update storage_key_.
+  // This function should only be called by
+  // ModelTypeChangeProcessor::UpdateStorageKey for the data type which does not
+  // create storage key based on syncer::EntityData.
+  void SetStorageKey(const std::string& new_key);
+
   // Takes the passed commit data updates its fields with values from metadata
   // and caches it in the instance. The data is swapped from the input struct
   // without copying.
@@ -139,7 +145,7 @@ class ProcessorEntityTracker {
   void UpdateSpecificsHash(const sync_pb::EntitySpecifics& specifics);
 
   // Storage key. Should always be available.
-  const std::string storage_key_;
+  std::string storage_key_;
 
   // Serializable Sync metadata.
   sync_pb::EntityMetadata metadata_;
