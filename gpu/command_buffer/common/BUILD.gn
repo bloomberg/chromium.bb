@@ -53,6 +53,8 @@ source_set("common_sources") {
     "mailbox.h",
     "mailbox_holder.cc",
     "mailbox_holder.h",
+    "scheduling_priority.cc",
+    "scheduling_priority.h",
     "sync_token.cc",
     "sync_token.h",
     "texture_in_use_response.h",

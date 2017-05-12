@@ -29,6 +29,7 @@
 namespace gpu {
 class GpuMemoryBufferFactory;
 class GpuWatchdogThread;
+class Scheduler;
 class SyncPointManager;
 }
 
@@ -182,6 +183,8 @@ class GpuService : public gpu::GpuChannelManagerDelegate,
   // external sources.
   std::unique_ptr<gpu::SyncPointManager> owned_sync_point_manager_;
   gpu::SyncPointManager* sync_point_manager_ = nullptr;
+
+  std::unique_ptr<gpu::Scheduler> scheduler_;
 
   // An event that will be signalled when we shutdown. On some platforms it
   // comes from external sources.

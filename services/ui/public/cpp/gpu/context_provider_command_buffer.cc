@@ -152,7 +152,7 @@ ContextProviderCommandBuffer::SharedProviders::~SharedProviders() = default;
 ContextProviderCommandBuffer::ContextProviderCommandBuffer(
     scoped_refptr<gpu::GpuChannelHost> channel,
     int32_t stream_id,
-    gpu::GpuStreamPriority stream_priority,
+    gpu::SchedulingPriority stream_priority,
     gpu::SurfaceHandle surface_handle,
     const GURL& active_url,
     bool automatic_flushes,

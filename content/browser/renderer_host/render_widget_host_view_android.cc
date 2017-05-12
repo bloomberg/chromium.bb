@@ -60,6 +60,7 @@
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_input_event_router.h"
+#include "content/common/gpu_stream_constants.h"
 #include "content/common/input_messages.h"
 #include "content/common/site_isolation_policy.h"
 #include "content/common/view_messages.h"
@@ -175,6 +176,9 @@ void GLHelperHolder::Initialize() {
   if (!gpu_channel_host)
     return;
 
+  int32_t stream_id = kGpuStreamIdDefault;
+  gpu::SchedulingPriority stream_priority = kGpuStreamPriorityUI;
+
   // This is for an offscreen context, so we don't need the default framebuffer
   // to have alpha, stencil, depth, antialiasing.
   gpu::gles2::ContextCreationAttribHelper attributes;
@@ -202,9 +206,9 @@ void GLHelperHolder::Initialize() {
   const GURL url("chrome://gpu/RenderWidgetHostViewAndroid");
 
   provider_ = new ui::ContextProviderCommandBuffer(
-      std::move(gpu_channel_host), gpu::GPU_STREAM_DEFAULT,
-      gpu::GpuStreamPriority::NORMAL, gpu::kNullSurfaceHandle, url,
-      automatic_flushes, support_locking, limits, attributes, nullptr,
+      std::move(gpu_channel_host), stream_id, stream_priority,
+      gpu::kNullSurfaceHandle, url, automatic_flushes, support_locking, limits,
+      attributes, nullptr,
       ui::command_buffer_metrics::BROWSER_OFFSCREEN_MAINTHREAD_CONTEXT);
   if (!provider_->BindToCurrentThread())
     return;

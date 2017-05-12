@@ -37,6 +37,7 @@ namespace gpu {
 class GpuDriverBugWorkarounds;
 struct GpuPreferences;
 class PreemptionFlag;
+class Scheduler;
 class SyncPointManager;
 struct SyncToken;
 namespace gles2 {
@@ -64,6 +65,7 @@ class GPU_EXPORT GpuChannelManager {
                     GpuWatchdogThread* watchdog,
                     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
                     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
+                    Scheduler* scheduler,
                     SyncPointManager* sync_point_manager,
                     GpuMemoryBufferFactory* gpu_memory_buffer_factory,
                     const GpuFeatureInfo& gpu_feature_info,
@@ -122,6 +124,8 @@ class GPU_EXPORT GpuChannelManager {
 
   gl::GLShareGroup* share_group() const { return share_group_.get(); }
 
+  SyncPointManager* sync_point_manager() const { return sync_point_manager_; }
+
  private:
   void InternalDestroyGpuMemoryBuffer(gfx::GpuMemoryBufferId id, int client_id);
   void InternalDestroyGpuMemoryBufferOnIO(gfx::GpuMemoryBufferId id,
@@ -147,9 +151,12 @@ class GPU_EXPORT GpuChannelManager {
   GpuWatchdogThread* watchdog_;
 
   scoped_refptr<gl::GLShareGroup> share_group_;
-  scoped_refptr<gles2::MailboxManager> mailbox_manager_;
+
   scoped_refptr<PreemptionFlag> preemption_flag_;
+
+  scoped_refptr<gles2::MailboxManager> mailbox_manager_;
   GpuMemoryManager gpu_memory_manager_;
+  Scheduler* scheduler_;
   // SyncPointManager guaranteed to outlive running MessageLoop.
   SyncPointManager* sync_point_manager_;
   std::unique_ptr<gles2::ProgramCache> program_cache_;

@@ -75,6 +75,7 @@
 #include "content/common/field_trial_recorder.mojom.h"
 #include "content/common/frame_messages.h"
 #include "content/common/frame_owner_properties.h"
+#include "content/common/gpu_stream_constants.h"
 #include "content/common/render_process_messages.h"
 #include "content/common/resource_messages.h"
 #include "content/common/site_isolation_policy.h"
@@ -366,7 +367,7 @@ scoped_refptr<ui::ContextProviderCommandBuffer> CreateOffscreenContext(
     bool support_locking,
     ui::command_buffer_metrics::ContextType type,
     int32_t stream_id,
-    gpu::GpuStreamPriority stream_priority) {
+    gpu::SchedulingPriority stream_priority) {
   DCHECK(gpu_channel_host);
   // This is used to create a few different offscreen contexts:
   // - The shared main thread context (offscreen) used by blink for canvas.
@@ -1396,8 +1397,7 @@ media::GpuVideoAcceleratorFactories* RenderThreadImpl::GetGpuFactories() {
   scoped_refptr<ui::ContextProviderCommandBuffer> media_context_provider =
       CreateOffscreenContext(gpu_channel_host, limits, support_locking,
                              ui::command_buffer_metrics::MEDIA_CONTEXT,
-                             gpu::GPU_STREAM_DEFAULT,
-                             gpu::GpuStreamPriority::NORMAL);
+                             kGpuStreamIdDefault, kGpuStreamPriorityDefault);
   if (!media_context_provider->BindToCurrentThread())
     return nullptr;
 
@@ -1447,7 +1447,7 @@ RenderThreadImpl::SharedMainThreadContextProvider() {
   shared_main_thread_contexts_ = CreateOffscreenContext(
       std::move(gpu_channel_host), gpu::SharedMemoryLimits(), support_locking,
       ui::command_buffer_metrics::RENDERER_MAINTHREAD_CONTEXT,
-      gpu::GPU_STREAM_DEFAULT, gpu::GpuStreamPriority::NORMAL);
+      kGpuStreamIdDefault, kGpuStreamPriorityDefault);
   if (!shared_main_thread_contexts_->BindToCurrentThread())
     shared_main_thread_contexts_ = nullptr;
   return shared_main_thread_contexts_;
@@ -1960,9 +1960,9 @@ void RenderThreadImpl::RequestNewCompositorFrameSink(
 
   scoped_refptr<ui::ContextProviderCommandBuffer> context_provider(
       new ui::ContextProviderCommandBuffer(
-          gpu_channel_host, gpu::GPU_STREAM_DEFAULT,
-          gpu::GpuStreamPriority::NORMAL, gpu::kNullSurfaceHandle, url,
-          automatic_flushes, support_locking, limits, attributes, share_context,
+          gpu_channel_host, kGpuStreamIdDefault, kGpuStreamPriorityDefault,
+          gpu::kNullSurfaceHandle, url, automatic_flushes, support_locking,
+          limits, attributes, share_context,
           ui::command_buffer_metrics::RENDER_COMPOSITOR_CONTEXT));
 
   if (layout_test_deps_) {
@@ -2303,11 +2303,11 @@ RenderThreadImpl::SharedCompositorWorkerContextProvider() {
     return shared_worker_context_provider_;
   }
 
-  int32_t stream_id = gpu::GPU_STREAM_DEFAULT;
-  gpu::GpuStreamPriority stream_priority = gpu::GpuStreamPriority::NORMAL;
+  int32_t stream_id = kGpuStreamIdDefault;
+  gpu::SchedulingPriority stream_priority = kGpuStreamPriorityDefault;
   if (is_async_worker_context_enabled_) {
-    stream_id = gpu_channel_host->GenerateStreamID();
-    stream_priority = gpu::GpuStreamPriority::LOW;
+    stream_id = kGpuStreamIdWorker;
+    stream_priority = kGpuStreamPriorityWorker;
   }
 
   bool support_locking = true;

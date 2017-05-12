@@ -20,6 +20,7 @@
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/child/request_extra_data.h"
+#include "content/common/gpu_stream_constants.h"
 #include "content/common/renderer.mojom.h"
 #include "content/public/common/page_state.h"
 #include "content/public/common/screen_info.h"
@@ -391,8 +392,8 @@ class LayoutTestDependenciesImpl : public LayoutTestDependencies,
 
     auto context_provider =
         make_scoped_refptr(new ui::ContextProviderCommandBuffer(
-            gpu_channel_, gpu::GPU_STREAM_DEFAULT,
-            gpu::GpuStreamPriority::NORMAL, gpu::kNullSurfaceHandle,
+            gpu_channel_, kGpuStreamIdDefault, kGpuStreamPriorityDefault,
+            gpu::kNullSurfaceHandle,
             GURL("chrome://gpu/"
                  "LayoutTestDependenciesImpl::CreateOutputSurface"),
             automatic_flushes, support_locking, gpu::SharedMemoryLimits(),

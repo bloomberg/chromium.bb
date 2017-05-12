@@ -9,6 +9,7 @@
 #include "content/browser/compositor/image_transport_factory.h"
 #include "content/browser/gpu/browser_gpu_channel_host_factory.h"
 #include "content/browser/gpu/gpu_process_host.h"
+#include "content/common/gpu_stream_constants.h"
 #include "content/public/browser/gpu_data_manager.h"
 #include "content/public/browser/gpu_utils.h"
 #include "content/public/common/content_switches.h"
@@ -37,8 +38,8 @@ scoped_refptr<ui::ContextProviderCommandBuffer> CreateContext(
   constexpr bool automatic_flushes = false;
   constexpr bool support_locking = false;
   return make_scoped_refptr(new ui::ContextProviderCommandBuffer(
-      std::move(gpu_channel_host), gpu::GPU_STREAM_DEFAULT,
-      gpu::GpuStreamPriority::NORMAL, gpu::kNullSurfaceHandle, GURL(),
+      std::move(gpu_channel_host), content::kGpuStreamIdDefault,
+      content::kGpuStreamPriorityDefault, gpu::kNullSurfaceHandle, GURL(),
       automatic_flushes, support_locking, gpu::SharedMemoryLimits(), attributes,
       nullptr, ui::command_buffer_metrics::OFFSCREEN_CONTEXT_FOR_TESTING));
 }

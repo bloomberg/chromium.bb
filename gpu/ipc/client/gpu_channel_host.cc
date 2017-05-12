@@ -70,7 +70,6 @@ GpuChannelHost::GpuChannelHost(
       gpu_memory_buffer_manager_(gpu_memory_buffer_manager) {
   next_image_id_.GetNext();
   next_route_id_.GetNext();
-  next_stream_id_.GetNext();
 }
 
 void GpuChannelHost::Connect(const IPC::ChannelHandle& channel_handle,
@@ -243,13 +242,6 @@ int32_t GpuChannelHost::ReserveImageId() {
 
 int32_t GpuChannelHost::GenerateRouteID() {
   return next_route_id_.GetNext();
-}
-
-int32_t GpuChannelHost::GenerateStreamID() {
-  const int32_t stream_id = next_stream_id_.GetNext();
-  DCHECK_NE(gpu::GPU_STREAM_INVALID, stream_id);
-  DCHECK_NE(gpu::GPU_STREAM_DEFAULT, stream_id);
-  return stream_id;
 }
 
 uint32_t GpuChannelHost::ValidateFlushIDReachedServer(int32_t stream_id,

@@ -54,6 +54,7 @@
 #include "content/browser/gpu/browser_gpu_memory_buffer_manager.h"
 #include "content/browser/gpu/compositor_util.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
+#include "content/common/gpu_stream_constants.h"
 #include "content/public/browser/android/compositor.h"
 #include "content/public/browser/android/compositor_client.h"
 #include "content/public/common/content_switches.h"
@@ -203,12 +204,15 @@ void CreateContextProviderAfterGpuChannelEstablished(
   if (!gpu_channel_host)
     callback.Run(nullptr);
 
+  int32_t stream_id = kGpuStreamIdDefault;
+  gpu::SchedulingPriority stream_priority = kGpuStreamPriorityUI;
+
   constexpr bool automatic_flushes = false;
   constexpr bool support_locking = false;
+
   scoped_refptr<ui::ContextProviderCommandBuffer> context_provider =
       new ui::ContextProviderCommandBuffer(
-          std::move(gpu_channel_host), gpu::GPU_STREAM_DEFAULT,
-          gpu::GpuStreamPriority::NORMAL, handle,
+          std::move(gpu_channel_host), stream_id, stream_priority, handle,
           GURL(std::string("chrome://gpu/Compositor::CreateContextProvider")),
           automatic_flushes, support_locking, shared_memory_limits, attributes,
           nullptr /* shared_context */,
@@ -719,13 +723,18 @@ void CompositorImpl::OnGpuChannelEstablished(
 
   DCHECK(window_);
   DCHECK_NE(surface_handle_, gpu::kNullSurfaceHandle);
+
+  int32_t stream_id = kGpuStreamIdDefault;
+  gpu::SchedulingPriority stream_priority = kGpuStreamPriorityUI;
+
   constexpr bool support_locking = false;
   constexpr bool automatic_flushes = false;
+
   ui::ContextProviderCommandBuffer* shared_context = nullptr;
   scoped_refptr<ui::ContextProviderCommandBuffer> context_provider =
       new ui::ContextProviderCommandBuffer(
-          std::move(gpu_channel_host), gpu::GPU_STREAM_DEFAULT,
-          gpu::GpuStreamPriority::NORMAL, surface_handle_,
+          std::move(gpu_channel_host), stream_id, stream_priority,
+          surface_handle_,
           GURL(std::string("chrome://gpu/CompositorImpl::") +
                std::string("CompositorContextProvider")),
           automatic_flushes, support_locking,
