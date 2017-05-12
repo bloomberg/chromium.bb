@@ -220,6 +220,14 @@ ScriptPromise VRDisplay::requestPresent(ScriptState* script_state,
     return promise;
   }
 
+  // When we are requesting to start presentation with a user action or the
+  // display has activated, record the user action.
+  if (first_present &&
+      (UserGestureIndicator::ProcessingUserGesture() || in_display_activate_)) {
+    Platform::Current()->RecordAction(
+        UserMetricsAction("VR.WebVR.requestPresent"));
+  }
+
   // A valid number of layers must be provided in order to present.
   if (layers.size() == 0 || layers.size() > capabilities_->maxLayers()) {
     ForceExitPresent();
@@ -671,7 +679,13 @@ void VRDisplay::StopPresenting() {
       // Can't get into this presentation mode, so nothing to do here.
     }
     is_presenting_ = false;
+
     OnPresentChange();
+
+    // Record user action for stop presenting.  Note that this could be
+    // user-triggered or not.
+    Platform::Current()->RecordAction(
+        UserMetricsAction("VR.WebVR.StopPresenting"));
   }
 
   rendering_context_ = nullptr;
