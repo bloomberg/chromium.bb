@@ -29,13 +29,6 @@ class CORE_EXPORT ThreadedWorklet : public Worklet,
  public:
   virtual ~ThreadedWorklet() = default;
 
-  // Called when addModule() is called for the first time.
-  virtual void Initialize() = 0;
-  virtual bool IsInitialized() const = 0;
-
-  // Worklet
-  ScriptPromise addModule(ScriptState*, const String& module_url) final;
-
   // WorkletScriptLoader::Client
   void NotifyWorkletScriptLoadingFinished(WorkletScriptLoader*,
                                           const ScriptSourceCode&) final;
@@ -49,6 +42,16 @@ class CORE_EXPORT ThreadedWorklet : public Worklet,
   explicit ThreadedWorklet(LocalFrame*);
 
  private:
+  // Worklet
+  void FetchAndInvokeScript(const KURL& module_url_record,
+                            ScriptPromiseResolver*) override;
+
+  // Called when addModule() is called for the first time.
+  virtual void Initialize() = 0;
+  virtual bool IsInitialized() const = 0;
+
+  Member<LocalFrame> frame_;
+
   HeapHashMap<Member<WorkletScriptLoader>, Member<ScriptPromiseResolver>>
       loader_to_resolver_map_;
 };
