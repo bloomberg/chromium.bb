@@ -133,7 +133,58 @@ using SelectedObjectMap = HashMap<LayoutObject*, SelectionState>;
 // right rects individually, since otherwise the union of those rects might
 // remain the same even when changes have occurred.
 using SelectedBlockMap = HashMap<LayoutBlock*, SelectionState>;
-using SelectedMap = std::pair<SelectedObjectMap, SelectedBlockMap>;
+struct SelectedMap {
+  STACK_ALLOCATED();
+  SelectedObjectMap object_map;
+  SelectedBlockMap block_map;
+
+  SelectedMap() = default;
+  SelectedMap(SelectedMap&& other) {
+    object_map = std::move(other.object_map);
+    block_map = std::move(other.block_map);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(SelectedMap);
+};
+
+static SelectedMap CollectSelectedMap(
+    LayoutObject* selection_start,
+    LayoutObject* selection_end,
+    int selection_end_pos,
+    LayoutSelection::SelectionPaintInvalidationMode
+        block_paint_invalidation_mode) {
+  SelectedMap selected_map;
+  LayoutObject* runner = selection_start;
+  LayoutObject* const stop =
+      LayoutObjectAfterPosition(selection_end, selection_end_pos);
+  bool exploring_backwards = false;
+  bool continue_exploring = runner && (runner != stop);
+  while (continue_exploring) {
+    if ((runner->CanBeSelectionLeaf() || runner == selection_start ||
+         runner == selection_end) &&
+        runner->GetSelectionState() != SelectionNone) {
+      // Blocks are responsible for painting line gaps and margin gaps.  They
+      // must be examined as well.
+      selected_map.object_map.Set(runner, runner->GetSelectionState());
+      if (block_paint_invalidation_mode ==
+          LayoutSelection::kPaintInvalidationNewXOROld) {
+        LayoutBlock* containing_block = runner->ContainingBlock();
+        while (containing_block && !containing_block->IsLayoutView()) {
+          SelectedBlockMap::AddResult result = selected_map.block_map.insert(
+              containing_block, containing_block->GetSelectionState());
+          if (!result.is_new_entry)
+            break;
+          containing_block = containing_block->ContainingBlock();
+        }
+      }
+    }
+
+    runner = GetNextOrPrevLayoutObjectBasedOnDirection(
+        runner, stop, continue_exploring, exploring_backwards);
+  }
+  return selected_map;
+}
 
 void LayoutSelection::SetSelection(
     LayoutObject* start,
@@ -164,38 +215,14 @@ void LayoutSelection::SetSelection(
   int old_start_pos = selection_start_pos_;
   int old_end_pos = selection_end_pos_;
 
-  SelectedMap old_selected_map;
-  LayoutObject* os = selection_start_;
-  LayoutObject* stop =
-      LayoutObjectAfterPosition(selection_end_, selection_end_pos_);
-  bool exploring_backwards = false;
-  bool continue_exploring = os && (os != stop);
-  while (continue_exploring) {
-    if ((os->CanBeSelectionLeaf() || os == selection_start_ ||
-         os == selection_end_) &&
-        os->GetSelectionState() != SelectionNone) {
-      // Blocks are responsible for painting line gaps and margin gaps.  They
-      // must be examined as well.
-      old_selected_map.first.Set(os, os->GetSelectionState());
-      if (block_paint_invalidation_mode == kPaintInvalidationNewXOROld) {
-        LayoutBlock* cb = os->ContainingBlock();
-        while (cb && !cb->IsLayoutView()) {
-          SelectedBlockMap::AddResult result =
-              old_selected_map.second.insert(cb, cb->GetSelectionState());
-          if (!result.is_new_entry)
-            break;
-          cb = cb->ContainingBlock();
-        }
-      }
-    }
-
-    os = GetNextOrPrevLayoutObjectBasedOnDirection(os, stop, continue_exploring,
-                                                   exploring_backwards);
-  }
+  SelectedMap old_selected_map =
+      CollectSelectedMap(selection_start_, selection_end_, selection_end_pos_,
+                         block_paint_invalidation_mode);
 
   // Now clear the selection.
-  SelectedObjectMap::iterator old_objects_end = old_selected_map.first.end();
-  for (SelectedObjectMap::iterator i = old_selected_map.first.begin();
+  SelectedObjectMap::iterator old_objects_end =
+      old_selected_map.object_map.end();
+  for (SelectedObjectMap::iterator i = old_selected_map.object_map.begin();
        i != old_objects_end; ++i)
     i->key->SetSelectionStateIfNeeded(SelectionNone);
 
@@ -217,7 +244,7 @@ void LayoutSelection::SetSelection(
   }
 
   LayoutObject* o = start;
-  stop = LayoutObjectAfterPosition(end, end_pos);
+  LayoutObject* const stop = LayoutObjectAfterPosition(end, end_pos);
 
   while (o && o != stop) {
     if (o != start && o != end && o->CanBeSelectionLeaf())
@@ -227,33 +254,14 @@ void LayoutSelection::SetSelection(
 
   // Now that the selection state has been updated for the new objects, walk
   // them again and put them in the new objects list.
-  // FIXME: |new_selected_map| doesn't really need to store the
+  // TODO(editing-dev): |new_selected_map| doesn't really need to store the
   // SelectionState, it's just more convenient to have it use the same data
   // structure as |old_selected_map|.
-  SelectedMap new_selected_map;
-  o = start;
-  exploring_backwards = false;
-  continue_exploring = o && (o != stop);
-  while (continue_exploring) {
-    if ((o->CanBeSelectionLeaf() || o == start || o == end) &&
-        o->GetSelectionState() != SelectionNone) {
-      new_selected_map.first.Set(o, o->GetSelectionState());
-      LayoutBlock* cb = o->ContainingBlock();
-      while (cb && !cb->IsLayoutView()) {
-        SelectedBlockMap::AddResult result =
-            new_selected_map.second.insert(cb, cb->GetSelectionState());
-        if (!result.is_new_entry)
-          break;
-        cb = cb->ContainingBlock();
-      }
-    }
-
-    o = GetNextOrPrevLayoutObjectBasedOnDirection(o, stop, continue_exploring,
-                                                  exploring_backwards);
-  }
+  SelectedMap new_selected_map =
+      CollectSelectedMap(start, end, end_pos, kPaintInvalidationNewXOROld);
 
   // Have any of the old selected objects changed compared to the new selection?
-  for (SelectedObjectMap::iterator i = old_selected_map.first.begin();
+  for (SelectedObjectMap::iterator i = old_selected_map.object_map.begin();
        i != old_objects_end; ++i) {
     LayoutObject* obj = i->key;
     SelectionState new_selection_state = obj->GetSelectionState();
@@ -262,34 +270,35 @@ void LayoutSelection::SetSelection(
         (selection_start_ == obj && old_start_pos != selection_start_pos_) ||
         (selection_end_ == obj && old_end_pos != selection_end_pos_)) {
       obj->SetShouldInvalidateSelection();
-      new_selected_map.first.erase(obj);
+      new_selected_map.object_map.erase(obj);
     }
   }
 
   // Any new objects that remain were not found in the old objects dict, and so
   // they need to be updated.
-  SelectedObjectMap::iterator new_objects_end = new_selected_map.first.end();
-  for (SelectedObjectMap::iterator i = new_selected_map.first.begin();
+  SelectedObjectMap::iterator new_objects_end =
+      new_selected_map.object_map.end();
+  for (SelectedObjectMap::iterator i = new_selected_map.object_map.begin();
        i != new_objects_end; ++i)
     i->key->SetShouldInvalidateSelection();
 
   // Have any of the old blocks changed?
-  SelectedBlockMap::iterator old_blocks_end = old_selected_map.second.end();
-  for (SelectedBlockMap::iterator i = old_selected_map.second.begin();
+  SelectedBlockMap::iterator old_blocks_end = old_selected_map.block_map.end();
+  for (SelectedBlockMap::iterator i = old_selected_map.block_map.begin();
        i != old_blocks_end; ++i) {
     LayoutBlock* block = i->key;
     SelectionState new_selection_state = block->GetSelectionState();
     SelectionState old_selection_state = i->value;
     if (new_selection_state != old_selection_state) {
       block->SetShouldInvalidateSelection();
-      new_selected_map.second.erase(block);
+      new_selected_map.block_map.erase(block);
     }
   }
 
   // Any new blocks that remain were not found in the old blocks dict, and so
   // they need to be updated.
-  SelectedBlockMap::iterator new_blocks_end = new_selected_map.second.end();
-  for (SelectedBlockMap::iterator i = new_selected_map.second.begin();
+  SelectedBlockMap::iterator new_blocks_end = new_selected_map.block_map.end();
+  for (SelectedBlockMap::iterator i = new_selected_map.block_map.begin();
        i != new_blocks_end; ++i)
     i->key->SetShouldInvalidateSelection();
 }
