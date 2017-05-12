@@ -333,10 +333,6 @@ QuicTime::Delta BbrSender::GetMinRtt() const {
 
 QuicByteCount BbrSender::GetTargetCongestionWindow(float gain) const {
   QuicByteCount bdp = GetMinRtt() * BandwidthEstimate();
-  if (FLAGS_quic_reloadable_flag_quic_bbr_base_cwnd_on_srtt &&
-      mode_ == PROBE_BW && gain >= 1 && !rtt_stats_->smoothed_rtt().IsZero()) {
-    bdp = rtt_stats_->smoothed_rtt() * BandwidthEstimate();
-  }
   QuicByteCount congestion_window = gain * bdp;
 
   // BDP estimate will be zero if no bandwidth samples are available yet.

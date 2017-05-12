@@ -326,9 +326,6 @@ TEST_P(QuicSimpleServerStreamTest, SendResponseWithIllegalResponseStatus) {
 
   QuicSimpleServerStreamPeer::SendResponse(stream_);
   EXPECT_FALSE(QuicStreamPeer::read_side_closed(stream_));
-  if (!FLAGS_quic_reloadable_flag_quic_always_enable_bidi_streaming) {
-    EXPECT_TRUE(stream_->reading_stopped());
-  }
   EXPECT_TRUE(stream_->write_side_closed());
 }
 
@@ -359,9 +356,6 @@ TEST_P(QuicSimpleServerStreamTest, SendResponseWithIllegalResponseStatus2) {
 
   QuicSimpleServerStreamPeer::SendResponse(stream_);
   EXPECT_FALSE(QuicStreamPeer::read_side_closed(stream_));
-  if (!FLAGS_quic_reloadable_flag_quic_always_enable_bidi_streaming) {
-    EXPECT_TRUE(stream_->reading_stopped());
-  }
   EXPECT_TRUE(stream_->write_side_closed());
 }
 
@@ -417,9 +411,6 @@ TEST_P(QuicSimpleServerStreamTest, SendResponseWithValidHeaders) {
 
   QuicSimpleServerStreamPeer::SendResponse(stream_);
   EXPECT_FALSE(QuicStreamPeer::read_side_closed(stream_));
-  if (!FLAGS_quic_reloadable_flag_quic_always_enable_bidi_streaming) {
-    EXPECT_TRUE(stream_->reading_stopped());
-  }
   EXPECT_TRUE(stream_->write_side_closed());
 }
 
@@ -524,9 +515,6 @@ TEST_P(QuicSimpleServerStreamTest, TestSendErrorResponse) {
 
   QuicSimpleServerStreamPeer::SendErrorResponse(stream_);
   EXPECT_FALSE(QuicStreamPeer::read_side_closed(stream_));
-  if (!FLAGS_quic_reloadable_flag_quic_always_enable_bidi_streaming) {
-    EXPECT_TRUE(stream_->reading_stopped());
-  }
   EXPECT_TRUE(stream_->write_side_closed());
 }
 
@@ -583,22 +571,6 @@ TEST_P(QuicSimpleServerStreamTest, ValidMultipleContentLength) {
   EXPECT_FALSE(QuicStreamPeer::read_side_closed(stream_));
   EXPECT_FALSE(stream_->reading_stopped());
   EXPECT_FALSE(stream_->write_side_closed());
-}
-
-TEST_P(QuicSimpleServerStreamTest, SendQuicRstStreamNoErrorWithEarlyResponse) {
-  if (FLAGS_quic_reloadable_flag_quic_always_enable_bidi_streaming) {
-    return;
-  }
-  InSequence s;
-  EXPECT_CALL(session_, WriteHeadersMock(stream_->id(), _, false, _, _));
-  EXPECT_CALL(session_, WritevData(_, _, _, _, _, _))
-      .Times(1)
-      .WillOnce(Return(QuicConsumedData(3, true)));
-  EXPECT_CALL(session_, SendRstStream(_, QUIC_STREAM_NO_ERROR, _)).Times(1);
-  EXPECT_FALSE(stream_->fin_received());
-  QuicSimpleServerStreamPeer::SendErrorResponse(stream_);
-  EXPECT_TRUE(stream_->reading_stopped());
-  EXPECT_TRUE(stream_->write_side_closed());
 }
 
 TEST_P(QuicSimpleServerStreamTest,

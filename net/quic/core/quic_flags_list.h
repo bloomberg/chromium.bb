@@ -120,11 +120,6 @@ QUIC_FLAG(double, FLAGS_quic_bbr_rtt_variation_weight, 0.0f)
 // Congestion window gain for QUIC BBR during PROBE_BW phase.
 QUIC_FLAG(double, FLAGS_quic_bbr_cwnd_gain, 2.0f)
 
-// If true, bidi streaming is always enabled in QUIC.
-QUIC_FLAG(bool,
-          FLAGS_quic_reloadable_flag_quic_always_enable_bidi_streaming,
-          true)
-
 // If true, allows the 1RTT and 2RTT connection options to reduce the time
 // in BBR STARTUP to 1 or 2 RTTs with no bandwidth increase from 3.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_allow_2_rtt_bbr_startup, true)
@@ -186,9 +181,6 @@ QUIC_FLAG(bool,
 // reordering window for every spurious retransmit.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_fix_adaptive_time_loss, false)
 
-// Base CWND on SRTT instead of min_rtt for QUIC BBR.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_bbr_base_cwnd_on_srtt, false)
-
 // If true, enable random padding of size [1, 256] when response body is
 // compressed for QUIC version >= 38.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_random_padding, false)
@@ -220,3 +212,23 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_refactor_stream_creation, false)
 
 // A second take on fixing QUIC BBR packet conservation.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_bbr_fix_conservation2, false)
+
+// If true, GFEs generate and validate source address token using the actual
+// client IP for proxied session.
+QUIC_FLAG(bool,
+          FLAGS_quic_reloadable_flag_quic_use_client_address_for_stk_in_proxy,
+          false)
+
+// If true, export a varz mapping QUIC non 0-rtt handshake with corresponding
+// frontend service.
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_account_handshake, false)
+
+// Allows the 3RTO QUIC connection option to close a QUIC connection after
+// 3RTOs if there are no open streams.
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_3rtos, false)
+
+// If true, enable experiment for testing PCC congestion-control.
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_pcc, false)
+
+// If true, enable QUIC v40.
+QUIC_FLAG(bool, FLAGS_quic_enable_version_40, false)
