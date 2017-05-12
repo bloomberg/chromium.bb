@@ -175,21 +175,21 @@ void ServiceWorkerProviderContext::OnAssociateRegistration(
     std::unique_ptr<ServiceWorkerHandleReference> installing,
     std::unique_ptr<ServiceWorkerHandleReference> waiting,
     std::unique_ptr<ServiceWorkerHandleReference> active) {
-  DCHECK(main_thread_task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(main_thread_task_runner_->RunsTasksInCurrentSequence());
   delegate_->AssociateRegistration(std::move(registration),
                                    std::move(installing), std::move(waiting),
                                    std::move(active));
 }
 
 void ServiceWorkerProviderContext::OnDisassociateRegistration() {
-  DCHECK(main_thread_task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(main_thread_task_runner_->RunsTasksInCurrentSequence());
   delegate_->DisassociateRegistration();
 }
 
 void ServiceWorkerProviderContext::OnSetControllerServiceWorker(
     std::unique_ptr<ServiceWorkerHandleReference> controller,
     const std::set<uint32_t>& used_features) {
-  DCHECK(main_thread_task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(main_thread_task_runner_->RunsTasksInCurrentSequence());
   delegate_->SetController(std::move(controller));
   used_features_ = used_features;
 }
@@ -197,7 +197,7 @@ void ServiceWorkerProviderContext::OnSetControllerServiceWorker(
 void ServiceWorkerProviderContext::GetAssociatedRegistration(
     ServiceWorkerRegistrationObjectInfo* info,
     ServiceWorkerVersionAttributes* attrs) {
-  DCHECK(!main_thread_task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(!main_thread_task_runner_->RunsTasksInCurrentSequence());
   delegate_->GetAssociatedRegistration(info, attrs);
 }
 
@@ -206,12 +206,12 @@ bool ServiceWorkerProviderContext::HasAssociatedRegistration() {
 }
 
 ServiceWorkerHandleReference* ServiceWorkerProviderContext::controller() {
-  DCHECK(main_thread_task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(main_thread_task_runner_->RunsTasksInCurrentSequence());
   return delegate_->controller();
 }
 
 void ServiceWorkerProviderContext::DestructOnMainThread() const {
-  if (!main_thread_task_runner_->RunsTasksOnCurrentThread() &&
+  if (!main_thread_task_runner_->RunsTasksInCurrentSequence() &&
       main_thread_task_runner_->DeleteSoon(FROM_HERE, this)) {
     return;
   }

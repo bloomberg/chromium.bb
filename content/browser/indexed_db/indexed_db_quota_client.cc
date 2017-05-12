@@ -30,13 +30,13 @@ storage::QuotaStatusCode DeleteOriginDataOnIndexedDBThread(
 
 int64_t GetOriginUsageOnIndexedDBThread(IndexedDBContextImpl* context,
                                         const GURL& origin) {
-  DCHECK(context->TaskRunner()->RunsTasksOnCurrentThread());
+  DCHECK(context->TaskRunner()->RunsTasksInCurrentSequence());
   return context->GetOriginDiskUsage(origin);
 }
 
 void GetAllOriginsOnIndexedDBThread(IndexedDBContextImpl* context,
                                     std::set<GURL>* origins_to_return) {
-  DCHECK(context->TaskRunner()->RunsTasksOnCurrentThread());
+  DCHECK(context->TaskRunner()->RunsTasksInCurrentSequence());
   for (const auto& origin : context->GetAllOrigins())
     origins_to_return->insert(origin.GetURL());
 }
@@ -50,7 +50,7 @@ void DidGetOrigins(const IndexedDBQuotaClient::GetOriginsCallback& callback,
 void GetOriginsForHostOnIndexedDBThread(IndexedDBContextImpl* context,
                                         const std::string& host,
                                         std::set<GURL>* origins_to_return) {
-  DCHECK(context->TaskRunner()->RunsTasksOnCurrentThread());
+  DCHECK(context->TaskRunner()->RunsTasksInCurrentSequence());
   for (const auto& origin : context->GetAllOrigins()) {
     GURL origin_url(origin.Serialize());
     if (host == net::GetHostOrSpecFromURL(origin_url))

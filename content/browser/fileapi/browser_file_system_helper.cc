@@ -116,7 +116,7 @@ void SyncGetPlatformPath(storage::FileSystemContext* context,
                          const GURL& path,
                          base::FilePath* platform_path) {
   DCHECK(context->default_file_task_runner()->
-         RunsTasksOnCurrentThread());
+         RunsTasksInCurrentSequence());
   DCHECK(platform_path);
   *platform_path = base::FilePath();
   storage::FileSystemURL url(context->CrackURL(path));

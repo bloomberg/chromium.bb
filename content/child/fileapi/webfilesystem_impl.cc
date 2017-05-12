@@ -97,7 +97,7 @@ void CallDispatcherOnMainThread(
     const scoped_refptr<base::SingleThreadTaskRunner>& main_thread_task_runner,
     Method method, const Params& params,
     WaitableCallbackResults* waitable_results) {
-  if (!main_thread_task_runner->RunsTasksOnCurrentThread()) {
+  if (!main_thread_task_runner->RunsTasksInCurrentSequence()) {
     main_thread_task_runner->PostTask(
         FROM_HERE,
         base::Bind(&CallDispatcherOnMainThread<Method, Params>,

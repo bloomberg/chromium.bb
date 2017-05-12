@@ -171,7 +171,7 @@ void PlatformNotificationContextImpl::DoReadNotificationData(
     const std::string& notification_id,
     const GURL& origin,
     const ReadResultCallback& callback) {
-  DCHECK(task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
 
   NotificationDatabaseData database_data;
   NotificationDatabase::Status status =
@@ -269,7 +269,7 @@ void PlatformNotificationContextImpl::
         const ReadAllResultCallback& callback,
         std::unique_ptr<std::set<std::string>> displayed_notifications,
         bool supports_synchronization) {
-  DCHECK(task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
   DCHECK(displayed_notifications);
 
   std::vector<NotificationDatabaseData> notification_datas;
@@ -333,7 +333,7 @@ void PlatformNotificationContextImpl::DoWriteNotificationData(
     const GURL& origin,
     const NotificationDatabaseData& database_data,
     const WriteResultCallback& callback) {
-  DCHECK(task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
   DCHECK(database_data.notification_id.empty());
 
   // Eagerly delete data for replaced notifications from the database.
@@ -407,7 +407,7 @@ void PlatformNotificationContextImpl::DoDeleteNotificationData(
     const std::string& notification_id,
     const GURL& origin,
     const DeleteResultCallback& callback) {
-  DCHECK(task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
 
   NotificationDatabase::Status status =
       database_->DeleteNotificationData(notification_id, origin);
@@ -444,7 +444,7 @@ void PlatformNotificationContextImpl::
     DoDeleteNotificationsForServiceWorkerRegistration(
         const GURL& origin,
         int64_t service_worker_registration_id) {
-  DCHECK(task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
 
   std::set<std::string> deleted_notification_ids;
   NotificationDatabase::Status status =
@@ -492,7 +492,7 @@ void PlatformNotificationContextImpl::LazyInitialize(
 void PlatformNotificationContextImpl::OpenDatabase(
     const base::Closure& success_closure,
     const base::Closure& failure_closure) {
-  DCHECK(task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
 
   if (database_) {
     success_closure.Run();
@@ -542,7 +542,7 @@ void PlatformNotificationContextImpl::OpenDatabase(
 }
 
 bool PlatformNotificationContextImpl::DestroyDatabase() {
-  DCHECK(task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
   DCHECK(database_);
 
   NotificationDatabase::Status status = database_->Destroy();

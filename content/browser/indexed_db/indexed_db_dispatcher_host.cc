@@ -237,7 +237,7 @@ void IndexedDBDispatcherHost::InvalidateWeakPtrsAndClearBindings() {
 void IndexedDBDispatcherHost::IDBThreadHelper::GetDatabaseNamesOnIDBThread(
     scoped_refptr<IndexedDBCallbacks> callbacks,
     const url::Origin& origin) {
-  DCHECK(indexed_db_context_->TaskRunner()->RunsTasksOnCurrentThread());
+  DCHECK(indexed_db_context_->TaskRunner()->RunsTasksInCurrentSequence());
 
   base::FilePath indexed_db_path = indexed_db_context_->data_path();
   indexed_db_context_->GetIDBFactory()->GetDatabaseNames(
@@ -251,7 +251,7 @@ void IndexedDBDispatcherHost::IDBThreadHelper::OpenOnIDBThread(
     const base::string16& name,
     int64_t version,
     int64_t transaction_id) {
-  DCHECK(indexed_db_context_->TaskRunner()->RunsTasksOnCurrentThread());
+  DCHECK(indexed_db_context_->TaskRunner()->RunsTasksInCurrentSequence());
 
   base::TimeTicks begin_time = base::TimeTicks::Now();
   base::FilePath indexed_db_path = indexed_db_context_->data_path();
@@ -274,7 +274,7 @@ void IndexedDBDispatcherHost::IDBThreadHelper::DeleteDatabaseOnIDBThread(
     const url::Origin& origin,
     const base::string16& name,
     bool force_close) {
-  DCHECK(indexed_db_context_->TaskRunner()->RunsTasksOnCurrentThread());
+  DCHECK(indexed_db_context_->TaskRunner()->RunsTasksInCurrentSequence());
 
   base::FilePath indexed_db_path = indexed_db_context_->data_path();
   DCHECK(request_context_getter_);

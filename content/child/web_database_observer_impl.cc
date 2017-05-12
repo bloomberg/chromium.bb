@@ -95,7 +95,7 @@ void WebDatabaseObserverImpl::DatabaseModified(const WebSecurityOrigin& origin,
 
 void WebDatabaseObserverImpl::DatabaseClosed(const WebSecurityOrigin& origin,
                                              const WebString& database_name) {
-  DCHECK(!main_thread_task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(!main_thread_task_runner_->RunsTasksInCurrentSequence());
   base::string16 database_name_utf16 = database_name.Utf16();
   main_thread_task_runner_->PostTask(
       FROM_HERE,
@@ -181,7 +181,7 @@ void WebDatabaseObserverImpl::ReportVacuumDatabaseResult(
 
 bool WebDatabaseObserverImpl::WaitForAllDatabasesToClose(
     base::TimeDelta timeout) {
-  DCHECK(main_thread_task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(main_thread_task_runner_->RunsTasksInCurrentSequence());
   return open_connections_->WaitForAllDatabasesToClose(timeout);
 }
 

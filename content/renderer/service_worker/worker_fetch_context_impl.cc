@@ -19,7 +19,7 @@ WorkerFetchContextImpl::~WorkerFetchContextImpl() {}
 
 void WorkerFetchContextImpl::InitializeOnWorkerThread(
     base::SingleThreadTaskRunner* loading_task_runner) {
-  DCHECK(loading_task_runner->RunsTasksOnCurrentThread());
+  DCHECK(loading_task_runner->RunsTasksInCurrentSequence());
   DCHECK(!resource_dispatcher_);
   DCHECK(!binding_);
   resource_dispatcher_ =

@@ -650,12 +650,12 @@ void ServiceWorkerContextClient::ClearCachedMetadata(const blink::WebURL& url) {
 }
 
 void ServiceWorkerContextClient::WorkerReadyForInspection() {
-  DCHECK(main_thread_task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(main_thread_task_runner_->RunsTasksInCurrentSequence());
   (*instance_host_)->OnReadyForInspection();
 }
 
 void ServiceWorkerContextClient::WorkerContextFailedToStart() {
-  DCHECK(main_thread_task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(main_thread_task_runner_->RunsTasksInCurrentSequence());
   DCHECK(!proxy_);
 
   (*instance_host_)->OnScriptLoadFailed();
@@ -666,7 +666,7 @@ void ServiceWorkerContextClient::WorkerContextFailedToStart() {
 }
 
 void ServiceWorkerContextClient::WorkerScriptLoaded() {
-  DCHECK(main_thread_task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(main_thread_task_runner_->RunsTasksInCurrentSequence());
   DCHECK(!proxy_);
 
   (*instance_host_)->OnScriptLoaded();
@@ -719,7 +719,7 @@ void ServiceWorkerContextClient::WorkerContextStarted(
 }
 
 void ServiceWorkerContextClient::DidEvaluateWorkerScript(bool success) {
-  DCHECK(worker_task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(worker_task_runner_->RunsTasksInCurrentSequence());
   (*instance_host_)->OnScriptEvaluated(success);
 
   // Schedule a task to send back WorkerStarted asynchronously,
@@ -741,7 +741,7 @@ void ServiceWorkerContextClient::DidInitializeWorkerContext(
 void ServiceWorkerContextClient::WillDestroyWorkerContext(
     v8::Local<v8::Context> context) {
   // At this point WillStopCurrentWorkerThread is already called, so
-  // worker_task_runner_->RunsTasksOnCurrentThread() returns false
+  // worker_task_runner_->RunsTasksInCurrentSequence() returns false
   // (while we're still on the worker thread).
   proxy_ = NULL;
 
@@ -1083,7 +1083,7 @@ void ServiceWorkerContextClient::DidHandlePaymentRequestEvent(
 
 std::unique_ptr<blink::WebServiceWorkerNetworkProvider>
 ServiceWorkerContextClient::CreateServiceWorkerNetworkProvider() {
-  DCHECK(main_thread_task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(main_thread_task_runner_->RunsTasksInCurrentSequence());
 
   // Create a content::ServiceWorkerNetworkProvider for this data source so
   // we can observe its requests.
@@ -1105,7 +1105,7 @@ ServiceWorkerContextClient::CreateServiceWorkerNetworkProvider() {
 
 std::unique_ptr<blink::WebWorkerFetchContext>
 ServiceWorkerContextClient::CreateServiceWorkerFetchContext() {
-  DCHECK(main_thread_task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(main_thread_task_runner_->RunsTasksInCurrentSequence());
   DCHECK(base::FeatureList::IsEnabled(features::kOffMainThreadFetch));
   mojom::WorkerURLLoaderFactoryProviderPtr worker_url_loader_factory_provider;
   RenderThreadImpl::current()
@@ -1120,7 +1120,7 @@ ServiceWorkerContextClient::CreateServiceWorkerFetchContext() {
 
 std::unique_ptr<blink::WebServiceWorkerProvider>
 ServiceWorkerContextClient::CreateServiceWorkerProvider() {
-  DCHECK(main_thread_task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(main_thread_task_runner_->RunsTasksInCurrentSequence());
   DCHECK(provider_context_);
 
   // Blink is responsible for deleting the returned object.
@@ -1222,7 +1222,7 @@ void ServiceWorkerContextClient::Send(IPC::Message* message) {
 }
 
 void ServiceWorkerContextClient::SendWorkerStarted() {
-  DCHECK(worker_task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(worker_task_runner_->RunsTasksInCurrentSequence());
   TRACE_EVENT_ASYNC_END0("ServiceWorker",
                          "ServiceWorkerContextClient::StartingWorkerContext",
                          this);
@@ -1232,7 +1232,7 @@ void ServiceWorkerContextClient::SendWorkerStarted() {
 void ServiceWorkerContextClient::SetRegistrationInServiceWorkerGlobalScope(
     const ServiceWorkerRegistrationObjectInfo& info,
     const ServiceWorkerVersionAttributes& attrs) {
-  DCHECK(worker_task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(worker_task_runner_->RunsTasksInCurrentSequence());
   ServiceWorkerDispatcher* dispatcher =
       ServiceWorkerDispatcher::GetOrCreateThreadSpecificInstance(
           sender_.get(), main_thread_task_runner_.get());
@@ -1686,7 +1686,7 @@ void ServiceWorkerContextClient::OnNavigationPreloadComplete(
 
 base::WeakPtr<ServiceWorkerContextClient>
 ServiceWorkerContextClient::GetWeakPtr() {
-  DCHECK(worker_task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(worker_task_runner_->RunsTasksInCurrentSequence());
   DCHECK(context_);
   return context_->weak_factory.GetWeakPtr();
 }
