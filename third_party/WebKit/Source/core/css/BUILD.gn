@@ -431,6 +431,7 @@ blink_core_sources("css") {
     "properties/CSSPropertyAPIMarker.cpp",
     "properties/CSSPropertyAPIOffsetAnchor.cpp",
     "properties/CSSPropertyAPIOffsetDistance.cpp",
+    "properties/CSSPropertyAPIOffsetPath.cpp",
     "properties/CSSPropertyAPIOffsetPosition.cpp",
     "properties/CSSPropertyAPIOffsetRotate.cpp",
     "properties/CSSPropertyAPIOpacity.cpp",

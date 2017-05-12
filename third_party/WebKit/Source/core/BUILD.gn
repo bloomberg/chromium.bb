@@ -504,6 +504,7 @@ css_properties("make_core_generated_css_property_apis") {
     "$blink_core_output_dir/css/properties/CSSPropertyAPIMarker.h",
     "$blink_core_output_dir/css/properties/CSSPropertyAPIOffsetAnchor.h",
     "$blink_core_output_dir/css/properties/CSSPropertyAPIOffsetDistance.h",
+    "$blink_core_output_dir/css/properties/CSSPropertyAPIOffsetPath.h",
     "$blink_core_output_dir/css/properties/CSSPropertyAPIOffsetPosition.h",
     "$blink_core_output_dir/css/properties/CSSPropertyAPIOffsetRotate.h",
     "$blink_core_output_dir/css/properties/CSSPropertyAPIOpacity.h",
