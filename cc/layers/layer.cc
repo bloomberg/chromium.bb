@@ -771,17 +771,7 @@ void Layer::SetScrollOffset(const gfx::ScrollOffset& scroll_offset) {
   if (!layer_tree_host_)
     return;
 
-  PropertyTrees* property_trees = layer_tree_host_->property_trees();
-  if (scroll_tree_index() != ScrollTree::kInvalidNodeId && scrollable())
-    property_trees->scroll_tree.SetScrollOffset(id(), scroll_offset);
-
-  if (TransformNode* transform_node =
-          property_trees->transform_tree.UpdateNodeFromOwningLayerId(id())) {
-    DCHECK_EQ(transform_tree_index(), transform_node->id);
-    transform_node->scroll_offset = CurrentScrollOffset();
-    transform_node->needs_local_transform_update = true;
-    property_trees->transform_tree.set_needs_update(true);
-  }
+  UpdateScrollOffset(scroll_offset);
 
   SetNeedsCommit();
 }
@@ -797,23 +787,35 @@ void Layer::SetScrollOffsetFromImplSide(
   inputs_.scroll_offset = scroll_offset;
   SetNeedsPushProperties();
 
-  PropertyTrees* property_trees = layer_tree_host_->property_trees();
-  if (scroll_tree_index() != ScrollTree::kInvalidNodeId && scrollable())
-    property_trees->scroll_tree.SetScrollOffset(id(), scroll_offset);
-
-  if (TransformNode* transform_node =
-          property_trees->transform_tree.UpdateNodeFromOwningLayerId(id())) {
-    DCHECK_EQ(transform_tree_index(), transform_node->id);
-    transform_node->scroll_offset = CurrentScrollOffset();
-    transform_node->needs_local_transform_update = true;
-    property_trees->transform_tree.set_needs_update(true);
-  }
+  UpdateScrollOffset(scroll_offset);
 
   if (!inputs_.did_scroll_callback.is_null())
     inputs_.did_scroll_callback.Run(scroll_offset);
 
   // The callback could potentially change the layer structure:
   // "this" may have been destroyed during the process.
+}
+
+void Layer::UpdateScrollOffset(const gfx::ScrollOffset& scroll_offset) {
+  DCHECK(scrollable());
+  if (scroll_tree_index() == ScrollTree::kInvalidNodeId) {
+    // Ensure the property trees just have not been built yet but are marked for
+    // being built which will set the correct scroll offset values.
+    DCHECK(layer_tree_host_->property_trees()->needs_rebuild);
+    return;
+  }
+
+  // If a scroll node exists, it should have an associated transform node.
+  DCHECK(transform_tree_index() != TransformTree::kInvalidNodeId);
+
+  auto& property_trees = *layer_tree_host_->property_trees();
+  property_trees.scroll_tree.SetScrollOffset(id(), scroll_offset);
+  auto* transform_node =
+      property_trees.transform_tree.Node(transform_tree_index());
+  DCHECK_EQ(transform_tree_index(), transform_node->id);
+  transform_node->scroll_offset = CurrentScrollOffset();
+  transform_node->needs_local_transform_update = true;
+  property_trees.transform_tree.set_needs_update(true);
 }
 
 void Layer::SetScrollClipLayerId(int clip_layer_id) {
