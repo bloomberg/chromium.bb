@@ -64,7 +64,7 @@ std::unique_ptr<views::View> CreateLineItemView(const base::string16& label,
   // required.
   columns->AddColumn(views::GridLayout::LEADING, views::GridLayout::CENTER, 1,
                      views::GridLayout::USE_PREF, 0, 0);
-  columns->AddColumn(views::GridLayout::LEADING, views::GridLayout::CENTER, 0,
+  columns->AddColumn(views::GridLayout::TRAILING, views::GridLayout::CENTER, 0,
                      views::GridLayout::FIXED, kAmountSectionWidth,
                      kAmountSectionWidth);
 
