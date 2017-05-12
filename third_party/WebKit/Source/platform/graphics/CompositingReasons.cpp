@@ -88,9 +88,10 @@ const CompositingReasonStringMap kCompositingReasonStringMap[] = {
     {kCompositingReasonIsolateCompositedDescendants,
      "isolateCompositedDescendants",
      "Should isolate descendants to apply a blend effect"},
-    {kCompositingReasonPositionFixedWithCompositedDescendants,
-     "positionFixedWithCompositedDescendants"
-     "Is a position:fixed element with composited descendants"},
+    {kCompositingReasonPositionFixedOrStickyWithCompositedDescendants,
+     "positionFixedOrStickyWithCompositedDescendants"
+     "Is a position:fixed or position:sticky element with composited "
+     "descendants"},
     {kCompositingReasonRoot, "root", "Is the root layer"},
     {kCompositingReasonLayerForAncestorClip, "layerForAncestorClip",
      "Secondary layer, applies a clip due to a sibling in the compositing "

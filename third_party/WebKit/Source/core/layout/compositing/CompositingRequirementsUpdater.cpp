@@ -195,11 +195,10 @@ static CompositingReasons SubtreeReasonsForCompositing(
     // scroll-dependant fixed position elements with composited descendants for
     // correctness - even if we lose LCD.
     const bool ignore_lcd_text = true;
-    if (layer->GetLayoutObject().Style()->GetPosition() == EPosition::kFixed &&
-        compositing_reason_finder.RequiresCompositingForScrollDependentPosition(
+    if (compositing_reason_finder.RequiresCompositingForScrollDependentPosition(
             layer, ignore_lcd_text)) {
       subtree_reasons |=
-          kCompositingReasonPositionFixedWithCompositedDescendants;
+          kCompositingReasonPositionFixedOrStickyWithCompositedDescendants;
     }
   }
 
