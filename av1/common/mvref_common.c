@@ -772,41 +772,14 @@ void av1_update_mv_context(const AV1_COMMON *cm, const MACROBLOCKD *xd,
   const int bw = block_size_wide[mi->mbmi.sb_type];
   const int bh = block_size_high[mi->mbmi.sb_type];
   const TileInfo *const tile = &xd->tile;
-  POSITION mv_ref_search[MVREF_NEIGHBOURS];
+  POSITION mv_ref_search[2];
   const int num_8x8_blocks_wide = mi_size_wide[mi->mbmi.sb_type];
   const int num_8x8_blocks_high = mi_size_high[mi->mbmi.sb_type];
+
   mv_ref_search[0].row = num_8x8_blocks_high - 1;
   mv_ref_search[0].col = -1;
   mv_ref_search[1].row = -1;
   mv_ref_search[1].col = num_8x8_blocks_wide - 1;
-  mv_ref_search[2].row = -1;
-  mv_ref_search[2].col = (num_8x8_blocks_wide - 1) >> 1;
-  mv_ref_search[3].row = (num_8x8_blocks_high - 1) >> 1;
-  mv_ref_search[3].col = -1;
-  mv_ref_search[4].row = -1;
-  mv_ref_search[4].col = -1;
-#if CONFIG_EXT_PARTITION_TYPES
-  if (num_8x8_blocks_wide == num_8x8_blocks_high) {
-    mv_ref_search[5].row = -1;
-    mv_ref_search[5].col = 0;
-    mv_ref_search[6].row = 0;
-    mv_ref_search[6].col = -1;
-  } else {
-    mv_ref_search[5].row = -1;
-    mv_ref_search[5].col = num_8x8_blocks_wide;
-    mv_ref_search[6].row = num_8x8_blocks_high;
-    mv_ref_search[6].col = -1;
-  }
-#else
-  mv_ref_search[5].row = -1;
-  mv_ref_search[5].col = num_8x8_blocks_wide;
-  mv_ref_search[6].row = num_8x8_blocks_high;
-  mv_ref_search[6].col = -1;
-#endif  // CONFIG_EXT_PARTITION_TYPES
-  mv_ref_search[7].row = -1;
-  mv_ref_search[7].col = -3;
-  mv_ref_search[8].row = num_8x8_blocks_high - 1;
-  mv_ref_search[8].col = -3;
 
   // Blank the reference vector list
   memset(mv_ref_list, 0, sizeof(*mv_ref_list) * MAX_MV_REF_CANDIDATES);
