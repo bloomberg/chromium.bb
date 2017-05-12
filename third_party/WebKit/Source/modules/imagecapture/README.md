@@ -42,14 +42,18 @@ recognisable effect on `theTrack`, in other words if it's "live" or not. For
 example, changing the zoom level is instantly reflected on the `theTrack`,
 while connecting the Red Eye Reduction, if available, is not.
 
- Object | type | retrieved by... |
- :--| :-- | --: |
-[`PhotoCapabilities`](https://w3c.github.io/mediacapture-image/##photocapabilities-section) | non-live capabilities | `theImageCapturer.getPhotoCapabilities()` |
-[`MediaTrackCapabilities`](https://w3c.github.io/mediacapture-image/#mediatrackcapabilities-section) | live capabilities | `theTrack.getCapabilities()` |
-|  |  |
-[`PhotoSettings`](https://w3c.github.io/mediacapture-image/##photocapabilities-section) | non-live settings |  |
-[`MediaTrackSettings`](https://w3c.github.io/mediacapture-image/#mediatracksettings-section) | live settings | `theTrack.getSettings()` |
+| Object                   |type                 | retrieved by...                         |
+| :--                      |:--                  | --:                                     |
+|[`PhotoCapabilities`]     |non-live capabilities|`theImageCapturer.getPhotoCapabilities()`|
+|[`MediaTrackCapabilities`]|live capabilities    |`theTrack.getCapabilities()`             |
+|                          |                     |                                         |
+|[`PhotoSettings`]         |non-live settings    |                                         |
+|[`MediaTrackSettings`]    |live settings        |`theTrack.getSettings()`                 |
 
+[`PhotoCapabilities`]: https://w3c.github.io/mediacapture-image/##photocapabilities-section
+[`MediaTrackCapabilities`]: https://w3c.github.io/mediacapture-image/#mediatrackcapabilities-section
+[`PhotoSettings`]: https://w3c.github.io/mediacapture-image/##photosettings-section
+[`MediaTrackSettings`]: https://w3c.github.io/mediacapture-image/#mediatracksettings-section
 
 ## Other topics
 
