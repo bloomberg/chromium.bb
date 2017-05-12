@@ -6,31 +6,36 @@
 #define CHROME_BROWSER_UI_VIEWS_PROFILES_AVATAR_BUTTON_H_
 
 #include "base/macros.h"
+#include "base/scoped_observer.h"
 #include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/ui/avatar_button_error_controller.h"
 #include "chrome/browser/ui/avatar_button_error_controller_delegate.h"
 #include "chrome/browser/ui/views/profiles/avatar_button_style.h"
 #include "ui/views/controls/button/label_button.h"
 
-class AvatarButtonDelegate;
 class Profile;
 
-// Avatar button that displays the active profile's name in the caption area.
-class NewAvatarButton : public views::LabelButton,
-                        public AvatarButtonErrorControllerDelegate,
-                        public ProfileAttributesStorage::Observer {
+// Base class for avatar buttons that display the active profile's name in the
+// caption area.
+class AvatarButton : public views::LabelButton,
+                     public AvatarButtonErrorControllerDelegate,
+                     public ProfileAttributesStorage::Observer {
  public:
-  NewAvatarButton(AvatarButtonDelegate* delegate,
-                  AvatarButtonStyle button_style,
-                  Profile* profile);
-  ~NewAvatarButton() override;
+  AvatarButton(views::ButtonListener* listener,
+               AvatarButtonStyle button_style,
+               Profile* profile);
+  ~AvatarButton() override;
 
-  // Views::LabelButton
-  bool OnMousePressed(const ui::MouseEvent& event) override;
-  void OnMouseReleased(const ui::MouseEvent& event) override;
-
-  // Views
+  // views::LabelButton:
   void OnGestureEvent(ui::GestureEvent* event) override;
+  gfx::Size GetMinimumSize() const override;
+  gfx::Size GetPreferredSize() const override;
+  std::unique_ptr<views::InkDropHighlight> CreateInkDropHighlight()
+      const override;
+
+ protected:
+  // views::LabelButton:
+  bool ShouldUseFloodFillInkDrop() const override;
 
  private:
   friend class ProfileChooserViewExtensionsTest;
@@ -51,20 +56,23 @@ class NewAvatarButton : public views::LabelButton,
   // means we might have to update the icon/text of the button.
   void Update();
 
-  AvatarButtonDelegate* delegate_;
+  // Sets generic_avatar_ to the image with the specified IDR.
+  void SetButtonAvatar(int avatar_idr);
+
   AvatarButtonErrorController error_controller_;
   Profile* profile_;
+  ScopedObserver<ProfileAttributesStorage, AvatarButton> profile_observer_;
 
   // The icon displayed instead of the profile name in the local profile case.
   // Different assets are used depending on the OS version.
   gfx::ImageSkia generic_avatar_;
 
-  // This is used to check if the bubble was showing during the mouse pressed
-  // event. If this is true then the mouse released event is ignored to prevent
-  // the bubble from reshowing.
-  bool suppress_mouse_released_action_;
+  // True to use the Windows 10 native (non-themed) button, which is drawn using
+  // a vector icon and can change height to slide atop the tabstrip. False to
+  // use the old PNG, fixed-size icon button or a themed button.
+  bool use_win10_native_button_;
 
-  DISALLOW_COPY_AND_ASSIGN(NewAvatarButton);
+  DISALLOW_COPY_AND_ASSIGN(AvatarButton);
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_PROFILES_AVATAR_BUTTON_H_

@@ -123,9 +123,9 @@ class ProfileChooserViewExtensionsTest : public ExtensionBrowserTest {
 
     ProfileChooserView::close_on_deactivate_for_testing_ = false;
 
-    ui::MouseEvent e(ui::ET_MOUSE_RELEASED, gfx::Point(), gfx::Point(),
+    ui::MouseEvent e(ui::ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(),
                      ui::EventTimeForNow(), ui::EF_LEFT_MOUSE_BUTTON, 0);
-    button->OnMouseReleased(e);
+    button->OnMousePressed(e);
     base::RunLoop().RunUntilIdle();
     EXPECT_TRUE(ProfileChooserView::IsShowing());
 
@@ -140,7 +140,7 @@ class ProfileChooserViewExtensionsTest : public ExtensionBrowserTest {
   }
 
   void ClickProfileChooserViewLockButton() {
-    ui::MouseEvent e(ui::ET_MOUSE_RELEASED, gfx::Point(), gfx::Point(),
+    ui::MouseEvent e(ui::ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(),
                      ui::EventTimeForNow(), 0, 0);
     ProfileChooserView::profile_bubble_->ButtonPressed(
         ProfileChooserView::profile_bubble_->lock_button_, e);
