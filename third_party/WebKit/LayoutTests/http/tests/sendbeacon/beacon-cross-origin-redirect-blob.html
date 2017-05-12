@@ -1,31 +1,13 @@
 <!DOCTYPE HTML>
-<html>
-<head>
 <script src="/js-test-resources/js-test.js"></script>
 <script>
 description("Verifying navigator.sendBeacon(Blob) non-CORS cross-origin redirect handling.");
 
-window.jsTestIsAsync = true;
-
-var blob;
-function test() {
-    if (window.testRunner) {
-        testRunner.dumpAsText();
-        testRunner.dumpPingLoaderCallbacks();
-    }
-
-    blob = new Blob(["Cross", "Origin"], {type: "text/plain;from-beacon=true"});
-    // The "simple" parameter is just for differentiating the URLs.
-    shouldBeTrue('navigator.sendBeacon("http://127.0.0.1:8080/resources/redirection-response.php?status=302&simple=true&target=/non-existent.php", blob);');
-    // Wait a while for the redirect response handling to happen before finishing up.
-    setTimeout(function () {
-        blob = new Blob([new Uint8Array(20)], {type: "application/octet-stream"});
-        shouldBeTrue('navigator.sendBeacon("http://127.0.0.1:8080/resources/redirection-response.php?status=302&simple=false&target=/non-existent.php", blob);');
-        setTimeout(finishJSTest, 200);
-    }, 200);
+if (window.testRunner) {
+  testRunner.dumpPingLoaderCallbacks();
 }
+
+const blob = new Blob(["Cross", "Origin"], {type: "text/plain;from-beacon=true"});
+// The "simple" parameter is just for differentiating the URLs.
+shouldBeTrue('navigator.sendBeacon("http://127.0.0.1:8080/resources/redirection-response.php?status=302&simple=true&target=/non-existent.php", blob);');
 </script>
-</head>
-<body onload="test();">
-</body>
-</html>

@@ -853,7 +853,7 @@
     },
     {
       name: "SendBeaconThrowForBlobWithNonSimpleType",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "SendMouseEventsDisabledFormControls",

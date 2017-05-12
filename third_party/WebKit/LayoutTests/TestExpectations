@@ -2278,13 +2278,6 @@ crbug.com/705125 virtual/mojo-loading/http/tests/security/cors-rfc1918/addresssp
 crbug.com/705125 http/tests/security/suborigins/crossorigin/suborigin-cors-xhr-failure-output.php [ Failure Pass ]
 crbug.com/705125 virtual/mojo-loading/http/tests/security/suborigins/crossorigin/suborigin-cors-xhr-failure-output.php [ Failure Pass ]
 
-# This test breaks when the feature introduced in the bug is enabled. We keep
-# this tested without the feature by using the virtual test. See
-# virtual/stable/http/tests/sendbeacon/beacon-cross-origin-redirect-blob-expected.txt
-crbug.com/490015 http/tests/sendbeacon/beacon-cross-origin-redirect-blob.html [ Skip ]
-crbug.com/490015 virtual/mojo-loading/http/tests/sendbeacon/beacon-cross-origin-redirect-blob.html [ Skip ]
-# This test doesn't need to be run with the stable release mode.
-crbug.com/490015 virtual/stable/http/tests/sendbeacon/beacon-blob-with-non-simple-type.html [ Skip ]
 # This test fails with the stable release mode.
 crbug.com/694958 virtual/stable/http/tests/navigation/same-and-different-back.html [ Skip ]
 
