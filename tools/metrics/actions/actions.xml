@@ -16630,6 +16630,30 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="VR.DOFF">
+  <owner>billorr@chromium.org</owner>
+  <description>
+    The user has successfully completed the VR DOFF flow.
+  </description>
+</action>
+
+<action name="VR.DON">
+  <owner>billorr@chromium.org</owner>
+  <description>
+    The user has successfully completed the VR DON flow.
+  </description>
+</action>
+
+<action name="VR.WebVR.StopPresenting">
+  <owner>billorr@chromium.org</owner>
+  <description>The user (or site) has stopped WebVR presentation.</description>
+</action>
+
+<action name="VR.WebVR.requestPresent">
+  <owner>billorr@chromium.org</owner>
+  <description>The user has initiated WebVR presentation.</description>
+</action>
+
 <action name="VideoPlayer.CastVideoError">
   <owner>yoshiki@chromium.org</owner>
   <description>

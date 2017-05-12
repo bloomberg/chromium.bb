@@ -37,6 +37,7 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.library_loader.LibraryLoader;
+import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeFeatureList;
@@ -477,6 +478,9 @@ public class VrShellDelegate implements ApplicationStatus.ActivityStateListener,
         // in the vrdisplayactivate handler we will exit presentation later.
         enterVr(mListeningForWebVrActivateBeforePause && !mRequestedWebVr);
 
+        // The user has successfully completed a DON flow.
+        RecordUserAction.record("VR.DON");
+
         return true;
     }
 
@@ -760,6 +764,10 @@ public class VrShellDelegate implements ApplicationStatus.ActivityStateListener,
             mVrClassesWrapper.setVrModeEnabled(mActivity, false);
             mLastVrExit = SystemClock.uptimeMillis();
         }
+
+        // The user has exited VR.
+        RecordUserAction.record("VR.DOFF");
+
         restoreWindowMode();
         mVrShell.pause();
         removeVrViews();
