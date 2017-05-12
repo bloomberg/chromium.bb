@@ -245,6 +245,18 @@ TEST_F(NGInlineItemsBuilderTest, AppendEmptyString) {
   EXPECT_EQ(0u, items_.size());
 }
 
+TEST_F(NGInlineItemsBuilderTest, NewLines) {
+  SetWhiteSpace(EWhiteSpace::kPre);
+  EXPECT_EQ("apple\norange\ngrape\n", TestAppend("apple\norange\ngrape\n"));
+  EXPECT_EQ(6u, items_.size());
+  EXPECT_EQ(NGInlineItem::kText, items_[0].Type());
+  EXPECT_EQ(NGInlineItem::kControl, items_[1].Type());
+  EXPECT_EQ(NGInlineItem::kText, items_[2].Type());
+  EXPECT_EQ(NGInlineItem::kControl, items_[3].Type());
+  EXPECT_EQ(NGInlineItem::kText, items_[4].Type());
+  EXPECT_EQ(NGInlineItem::kControl, items_[5].Type());
+}
+
 TEST_F(NGInlineItemsBuilderTest, Empty) {
   Vector<NGInlineItem> items;
   NGInlineItemsBuilder builder(&items);

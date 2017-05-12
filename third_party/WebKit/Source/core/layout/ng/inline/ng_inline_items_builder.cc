@@ -113,9 +113,15 @@ static void AppendItem(Vector<NGInlineItem>* items,
   items->push_back(NGInlineItem(type, start, end, style, layout_object));
 }
 
-static inline bool IsCollapsibleSpace(UChar c, bool preserve_newline) {
+static inline bool IsCollapsibleSpace(UChar c) {
   return c == kSpaceCharacter || c == kTabulationCharacter ||
-         (!preserve_newline && c == kNewlineCharacter);
+         c == kNewlineCharacter;
+}
+
+// Characters needing a separate control item than other text items.
+// It makes the line breaker easier to handle.
+static inline bool IsControlItemCharacter(UChar c) {
+  return c == kTabulationCharacter || c == kNewlineCharacter;
 }
 
 void NGInlineItemsBuilder::Append(const String& string,
@@ -123,59 +129,60 @@ void NGInlineItemsBuilder::Append(const String& string,
                                   LayoutObject* layout_object) {
   if (string.IsEmpty())
     return;
+  text_.ReserveCapacity(string.length());
 
   EWhiteSpace whitespace = style->WhiteSpace();
-  bool preserve_newline =
-      ComputedStyle::PreserveNewline(whitespace) && !is_svgtext_;
-  bool collapse_whitespace = ComputedStyle::CollapseWhiteSpace(whitespace);
+  if (!ComputedStyle::CollapseWhiteSpace(whitespace))
+    return AppendWithoutWhiteSpaceCollapsing(string, style, layout_object);
+  if (ComputedStyle::PreserveNewline(whitespace) && !is_svgtext_)
+    return AppendWithPreservingNewlines(string, style, layout_object);
+
+  AppendWithWhiteSpaceCollapsing(string, 0, string.length(), style,
+                                 layout_object);
+}
+
+void NGInlineItemsBuilder::AppendWithWhiteSpaceCollapsing(
+    const String& string,
+    unsigned start,
+    unsigned end,
+    const ComputedStyle* style,
+    LayoutObject* layout_object) {
   unsigned start_offset = text_.length();
-
-  if (!collapse_whitespace) {
-    text_.Append(string);
-    last_collapsible_space_ = CollapsibleSpace::kNone;
-  } else {
-    text_.ReserveCapacity(string.length());
-    for (unsigned i = 0; i < string.length();) {
-      UChar c = string[i];
-      if (c == kNewlineCharacter) {
-        if (preserve_newline) {
-          RemoveTrailingCollapsibleSpaceIfExists(&start_offset);
-          text_.Append(c);
-          // Remove collapsible spaces immediately following a newline.
-          last_collapsible_space_ = CollapsibleSpace::kSpace;
-          i++;
-          continue;
-        }
-
-        if (last_collapsible_space_ == CollapsibleSpace::kNone)
-          text_.Append(kSpaceCharacter);
-        last_collapsible_space_ = CollapsibleSpace::kNewline;
-        i++;
-        continue;
+  for (unsigned i = start; i < end;) {
+    UChar c = string[i];
+    if (c == kNewlineCharacter) {
+      // LayoutBR does not set preserve_newline, but should be preserved.
+      if (!i && end == 1 && layout_object && layout_object->IsBR()) {
+        AppendForcedBreak(style, layout_object);
+        return;
       }
 
-      if (c == kSpaceCharacter || c == kTabulationCharacter) {
-        if (last_collapsible_space_ == CollapsibleSpace::kNone) {
-          text_.Append(kSpaceCharacter);
-          last_collapsible_space_ = CollapsibleSpace::kSpace;
-        }
-        i++;
-        continue;
-      }
-
-      if (last_collapsible_space_ == CollapsibleSpace::kNewline) {
-        RemoveTrailingCollapsibleNewlineIfNeeded(&start_offset, string, i,
-                                                 style);
-      }
-
-      unsigned start_of_non_space = i;
-      for (i++; i < string.length(); i++) {
-        if (IsCollapsibleSpace(string[i], false))
-          break;
-      }
-      text_.Append(string, start_of_non_space, i - start_of_non_space);
-      last_collapsible_space_ = CollapsibleSpace::kNone;
+      if (last_collapsible_space_ == CollapsibleSpace::kNone)
+        text_.Append(kSpaceCharacter);
+      last_collapsible_space_ = CollapsibleSpace::kNewline;
+      i++;
+      continue;
     }
+
+    if (c == kSpaceCharacter || c == kTabulationCharacter) {
+      if (last_collapsible_space_ == CollapsibleSpace::kNone) {
+        text_.Append(kSpaceCharacter);
+        last_collapsible_space_ = CollapsibleSpace::kSpace;
+      }
+      i++;
+      continue;
+    }
+
+    if (last_collapsible_space_ == CollapsibleSpace::kNewline) {
+      RemoveTrailingCollapsibleNewlineIfNeeded(&start_offset, string, i, style);
+    }
+
+    size_t end_of_non_space = string.Find(IsCollapsibleSpace, i + 1);
+    if (end_of_non_space == kNotFound)
+      end_of_non_space = string.length();
+    text_.Append(string, i, end_of_non_space - i);
+    i = end_of_non_space;
+    last_collapsible_space_ = CollapsibleSpace::kNone;
   }
 
   if (text_.length() > start_offset) {
@@ -184,13 +191,69 @@ void NGInlineItemsBuilder::Append(const String& string,
   }
 }
 
+// Even when without whitespace collapsing, control characters (newlines and
+// tabs) are in their own control items to make the line breaker easier.
+void NGInlineItemsBuilder::AppendWithoutWhiteSpaceCollapsing(
+    const String& string,
+    const ComputedStyle* style,
+    LayoutObject* layout_object) {
+  for (unsigned start = 0; start < string.length();) {
+    UChar c = string[start];
+    if (IsControlItemCharacter(c)) {
+      Append(NGInlineItem::kControl, c, style, layout_object);
+      start++;
+      continue;
+    }
+
+    size_t end = string.Find(IsControlItemCharacter, start + 1);
+    if (end == kNotFound)
+      end = string.length();
+    unsigned start_offset = text_.length();
+    text_.Append(string, start, end - start);
+    AppendItem(items_, NGInlineItem::kText, start_offset, text_.length(), style,
+               layout_object);
+    start = end;
+  }
+
+  last_collapsible_space_ = CollapsibleSpace::kNone;
+}
+
+void NGInlineItemsBuilder::AppendWithPreservingNewlines(
+    const String& string,
+    const ComputedStyle* style,
+    LayoutObject* layout_object) {
+  for (unsigned start = 0; start < string.length();) {
+    if (string[start] == kNewlineCharacter) {
+      AppendForcedBreak(style, layout_object);
+      start++;
+      continue;
+    }
+
+    size_t end = string.find(kNewlineCharacter, start + 1);
+    if (end == kNotFound)
+      end = string.length();
+    AppendWithWhiteSpaceCollapsing(string, start, end, style, layout_object);
+    start = end;
+  }
+}
+
+void NGInlineItemsBuilder::AppendForcedBreak(const ComputedStyle* style,
+                                             LayoutObject* layout_object) {
+  // Remove collapsible spaces immediately before a preserved newline.
+  unsigned start_offset = text_.length();
+  RemoveTrailingCollapsibleSpaceIfExists(&start_offset);
+
+  Append(NGInlineItem::kControl, kNewlineCharacter, style, layout_object);
+
+  // Remove collapsible spaces immediately after a preserved newline.
+  last_collapsible_space_ = CollapsibleSpace::kSpace;
+}
+
 void NGInlineItemsBuilder::Append(NGInlineItem::NGInlineItemType type,
                                   UChar character,
                                   const ComputedStyle* style,
                                   LayoutObject* layout_object) {
   DCHECK_NE(character, kSpaceCharacter);
-  DCHECK_NE(character, kTabulationCharacter);
-  DCHECK_NE(character, kNewlineCharacter);
   DCHECK_NE(character, kZeroWidthSpaceCharacter);
 
   text_.Append(character);
