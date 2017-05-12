@@ -376,9 +376,8 @@ PictureLayerTiling::CoverageIterator::CoverageIterator(
     const gfx::Rect& coverage_rect)
     : tiling_(tiling),
       coverage_rect_(coverage_rect),
-      coverage_to_content_(
-          gfx::PreScaleAxisTransform2d(tiling->raster_transform(),
-                                       1.f / coverage_scale)) {
+      coverage_to_content_(tiling->raster_transform().scale() / coverage_scale,
+                           tiling->raster_transform().translation()) {
   DCHECK(tiling_);
   // In order to avoid artifacts in geometry_rect scaling and clamping to ints,
   // the |coverage_scale| should always be at least as big as the tiling's
@@ -435,25 +434,70 @@ PictureLayerTiling::CoverageIterator::operator++() {
     return *this;
 
   bool first_time = tile_i_ < left_;
-  bool new_row = false;
-  tile_i_++;
-  if (tile_i_ > right_) {
-    tile_i_ = left_;
-    tile_j_++;
-    new_row = true;
-    if (tile_j_ > bottom_) {
-      current_tile_ = NULL;
-      return *this;
+  while (true) {
+    bool new_row = false;
+    tile_i_++;
+    if (tile_i_ > right_) {
+      tile_i_ = left_;
+      tile_j_++;
+      new_row = true;
+      if (tile_j_ > bottom_) {
+        current_tile_ = NULL;
+        break;
+      }
     }
+
+    DCHECK_LT(tile_i_, tiling_->tiling_data_.num_tiles_x());
+    DCHECK_LT(tile_j_, tiling_->tiling_data_.num_tiles_y());
+    current_tile_ = tiling_->TileAt(tile_i_, tile_j_);
+
+    gfx::Rect geometry_rect_candidate = ComputeGeometryRect();
+
+    // This can happen due to floating point inprecision when calculating the
+    // |wanted_texels| area in the constructor.
+    if (geometry_rect_candidate.IsEmpty())
+      continue;
+
+    gfx::Rect last_geometry_rect = current_geometry_rect_;
+    current_geometry_rect_ = geometry_rect_candidate;
+
+    if (first_time)
+      break;
+
+    // Iteration happens left->right, top->bottom.  Running off the bottom-right
+    // edge is handled by the intersection above with dest_rect_.  Here we make
+    // sure that the new current geometry rect doesn't overlap with the last.
+    int min_left;
+    int min_top;
+    if (new_row) {
+      min_left = coverage_rect_.x();
+      min_top = last_geometry_rect.bottom();
+    } else {
+      min_left = last_geometry_rect.right();
+      min_top = last_geometry_rect.y();
+    }
+
+    int inset_left = std::max(0, min_left - current_geometry_rect_.x());
+    int inset_top = std::max(0, min_top - current_geometry_rect_.y());
+    current_geometry_rect_.Inset(inset_left, inset_top, 0, 0);
+
+#if DCHECK_IS_ON()
+    if (!new_row) {
+      DCHECK_EQ(last_geometry_rect.right(), current_geometry_rect_.x());
+      DCHECK_EQ(last_geometry_rect.bottom(), current_geometry_rect_.bottom());
+      DCHECK_EQ(last_geometry_rect.y(), current_geometry_rect_.y());
+    }
+#endif
+
+    break;
   }
+  return *this;
+}
 
-  current_tile_ = tiling_->TileAt(tile_i_, tile_j_);
-
+gfx::Rect PictureLayerTiling::CoverageIterator::ComputeGeometryRect() const {
   // Calculate the current geometry rect. As we reserved overlap between tiles
   // to accommodate bilinear filtering and rounding errors in destination
   // space, the geometry rect might overlap on the edges.
-  gfx::Rect last_geometry_rect = current_geometry_rect_;
-
   gfx::RectF texel_extent = tiling_->tiling_data_.TexelExtent(tile_i_, tile_j_);
   {
     // Adjust tile extent to accommodate numerical errors.
@@ -470,7 +514,7 @@ PictureLayerTiling::CoverageIterator::operator++() {
 
   // Convert texel_extent to coverage scale, which is what we have to report
   // geometry_rect in.
-  current_geometry_rect_ =
+  gfx::Rect candidate =
       gfx::ToEnclosedRect(coverage_to_content_.InverseMapRect(texel_extent));
   {
     // Adjust external edges to cover the whole layer in dest space.
@@ -482,48 +526,18 @@ PictureLayerTiling::CoverageIterator::operator++() {
     // sampled as the AA fragment shader clamps sample coordinate and
     // antialiasing itself.
     const TilingData& data = tiling_->tiling_data_;
-    current_geometry_rect_.Inset(tile_i_ ? 0 : -current_geometry_rect_.x(),
-                                 tile_j_ ? 0 : -current_geometry_rect_.y(),
-                                 (tile_i_ != data.num_tiles_x() - 1)
-                                     ? 0
-                                     : current_geometry_rect_.right() -
-                                           coverage_rect_max_bounds_.width(),
-                                 (tile_j_ != data.num_tiles_y() - 1)
-                                     ? 0
-                                     : current_geometry_rect_.bottom() -
-                                           coverage_rect_max_bounds_.height());
+    candidate.Inset(
+        tile_i_ ? 0 : -candidate.x(), tile_j_ ? 0 : -candidate.y(),
+        (tile_i_ != data.num_tiles_x() - 1)
+            ? 0
+            : candidate.right() - coverage_rect_max_bounds_.width(),
+        (tile_j_ != data.num_tiles_y() - 1)
+            ? 0
+            : candidate.bottom() - coverage_rect_max_bounds_.height());
   }
 
-  current_geometry_rect_.Intersect(coverage_rect_);
-  DCHECK(!current_geometry_rect_.IsEmpty());
-
-  if (first_time)
-    return *this;
-
-  // Iteration happens left->right, top->bottom.  Running off the bottom-right
-  // edge is handled by the intersection above with dest_rect_.  Here we make
-  // sure that the new current geometry rect doesn't overlap with the last.
-  int min_left;
-  int min_top;
-  if (new_row) {
-    min_left = coverage_rect_.x();
-    min_top = last_geometry_rect.bottom();
-  } else {
-    min_left = last_geometry_rect.right();
-    min_top = last_geometry_rect.y();
-  }
-
-  int inset_left = std::max(0, min_left - current_geometry_rect_.x());
-  int inset_top = std::max(0, min_top - current_geometry_rect_.y());
-  current_geometry_rect_.Inset(inset_left, inset_top, 0, 0);
-
-  if (!new_row) {
-    DCHECK_EQ(last_geometry_rect.right(), current_geometry_rect_.x());
-    DCHECK_EQ(last_geometry_rect.bottom(), current_geometry_rect_.bottom());
-    DCHECK_EQ(last_geometry_rect.y(), current_geometry_rect_.y());
-  }
-
-  return *this;
+  candidate.Intersect(coverage_rect_);
+  return candidate;
 }
 
 gfx::Rect PictureLayerTiling::CoverageIterator::geometry_rect() const {

@@ -1255,5 +1255,33 @@ TEST_F(PictureLayerTilingIteratorTest, FractionalTranslatedTilingOverflow) {
   EXPECT_FALSE(++iter);
 }
 
+TEST_F(PictureLayerTilingIteratorTest, EdgeCaseLargeIntBounds) {
+  gfx::Size tile_size(256, 256);
+  float scale = 7352.331055f;
+  gfx::Size layer_bounds(292082, 26910);
+  gfx::Rect coverage_rect(2104641536, 522015, 29440, 66172);
+  Initialize(tile_size, scale, layer_bounds);
+  int count = 0;
+  for (PictureLayerTiling::CoverageIterator
+           iter(tiling_.get(), scale, coverage_rect);
+       iter && count < 200; ++count, ++iter) {
+    EXPECT_FALSE(iter.geometry_rect().IsEmpty());
+  }
+}
+
+TEST_F(PictureLayerTilingIteratorTest, EdgeCaseLargeIntBounds2) {
+  gfx::RectF rect(2104670720.f, 522014.5f, 192.f, 1.f);
+  gfx::Size tile_size(256, 256);
+  float scale = 7352.331055f;
+  gfx::Size layer_bounds(292082, 26910);
+  gfx::Rect coverage_rect(2104670720, 522015, 192, 1);
+  Initialize(tile_size, scale, layer_bounds);
+  for (PictureLayerTiling::CoverageIterator iter(tiling_.get(), scale,
+                                                 coverage_rect);
+       iter; ++iter) {
+    EXPECT_FALSE(iter.geometry_rect().IsEmpty());
+  }
+}
+
 }  // namespace
 }  // namespace cc
