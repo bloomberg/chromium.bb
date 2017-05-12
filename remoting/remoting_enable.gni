@@ -6,5 +6,5 @@ import("//build/config/ui.gni")
 import("//media/media_options.gni")
 
 declare_args() {
-  enable_remoting = !is_chromecast && enable_webrtc
+  enable_remoting = !is_chromecast && !is_fuchsia && enable_webrtc
 }

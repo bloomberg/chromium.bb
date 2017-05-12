@@ -58,6 +58,7 @@
 /flatbuffers/src
 /fontconfig/src
 /freetype/src
+/fuchsia-sdk
 /gestures/gestures
 /gles2_conform
 /glslang/src

@@ -69,14 +69,9 @@ group("gn_all") {
     ":gn_visibility",
     "//base:base_unittests",
     "//chrome/installer",
-    "//components:components_unittests",
     "//net:net_unittests",
-    "//skia:skia_unittests",
     "//sql:sql_unittests",
     "//tools/ipc_fuzzer:ipc_fuzzer_all",
-    "//tools/metrics:metrics_metadata",
-    "//ui/base:ui_base_unittests",
-    "//ui/gfx:gfx_unittests",
     "//url:url_unittests",
   ]
 
@@ -87,7 +82,17 @@ group("gn_all") {
     ]
   }
 
-  if (!is_ios && !is_android && !is_chromecast) {
+  if (!is_fuchsia) {
+    deps += [
+      "//components:components_unittests",
+      "//skia:skia_unittests",
+      "//tools/metrics:metrics_metadata",
+      "//ui/base:ui_base_unittests",
+      "//ui/gfx:gfx_unittests",
+    ]
+  }
+
+  if (!is_ios && !is_android && !is_chromecast && !is_fuchsia) {
     deps += [
       "//chrome",
       "//chrome/test:browser_tests",
@@ -146,7 +151,7 @@ group("gn_all") {
     ]
   }
 
-  if (!is_ios) {
+  if (!is_ios && !is_fuchsia) {
     deps += [
       "//cc:cc_unittests",
       "//chrome/test:telemetry_perf_unittests",
@@ -193,7 +198,7 @@ group("gn_all") {
       "//url/ipc:url_ipc_unittests",
       "//v8:gn_all",
     ]
-  } else {
+  } else if (is_ios) {
     deps += [ "//ios:all" ]
   }
 
@@ -397,7 +402,7 @@ group("gn_all") {
 
   # TODO(GYP): Figure out which of these should (and can) build
   # for chromeos/ios.
-  if (!is_chromeos && !is_ios) {
+  if (!is_chromeos && !is_ios && !is_fuchsia) {
     deps += [
       "//base:build_utf8_validator_tables",
       "//base:check_example",
@@ -574,11 +579,11 @@ group("gn_all") {
     ]
   }
 
-  if (!is_android && !is_ios) {
+  if (!is_android && !is_ios && !is_fuchsia) {
     deps += [ "//content/browser/bluetooth/tools:bluetooth_metrics_hash" ]
   }
 
-  if (!is_android && !is_ios && !is_chromeos) {
+  if (!is_android && !is_ios && !is_chromeos && !is_fuchsia) {
     deps += [ "//components/proximity_auth:proximity_auth_unittests" ]
   }
 
@@ -812,7 +817,7 @@ group("gn_visibility") {
   }
 }
 
-if (!is_ios) {
+if (!is_ios && !is_fuchsia) {
   # This group includes all of the targets needed to build and test Blink,
   # including running the layout tests (see below).
   group("blink_tests") {
@@ -942,7 +947,7 @@ group("chromium_swarm_tests") {
 group("chromium_builder_perf") {
   testonly = true
 
-  if (!is_ios && !is_android && !is_chromecast) {
+  if (!is_ios && !is_android && !is_chromecast && !is_fuchsia) {
     data_deps = [
       "//cc:cc_perftests",
       "//chrome/test:load_library_perf_tests",
@@ -982,7 +987,7 @@ group("chromium_builder_perf") {
   }
 }
 
-if (!is_ios && !is_android && !is_chromecast) {
+if (!is_ios && !is_android && !is_chromecast && !is_fuchsia) {
   group("chromium_builder_asan") {
     testonly = true
 

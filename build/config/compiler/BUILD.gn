@@ -168,6 +168,8 @@ config("compiler") {
     configs += [ "//build/config/mac:compiler" ]
   } else if (is_ios) {
     configs += [ "//build/config/ios:compiler" ]
+  } else if (is_fuchsia) {
+    configs += [ "//build/config/fuchsia:compiler" ]
   } else if (current_os == "aix") {
     configs += [ "//build/config/aix:compiler" ]
   }
@@ -308,7 +310,7 @@ config("compiler") {
 
   # Linux/Android common flags setup.
   # ---------------------------------
-  if (is_linux || is_android) {
+  if (is_linux || is_android || is_fuchsia) {
     if (use_pic) {
       cflags += [ "-fPIC" ]
       ldflags += [ "-fPIC" ]
