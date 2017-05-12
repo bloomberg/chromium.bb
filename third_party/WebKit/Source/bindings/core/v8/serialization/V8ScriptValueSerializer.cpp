@@ -52,7 +52,7 @@ V8ScriptValueSerializer::V8ScriptValueSerializer(
       transferables_(options.transferables),
       blob_info_array_(options.blob_info),
       inline_wasm_(options.write_wasm_to_stream),
-      for_storage_(options.for_storage) {}
+      for_storage_(options.for_storage == SerializedScriptValue::kForStorage) {}
 
 RefPtr<SerializedScriptValue> V8ScriptValueSerializer::Serialize(
     v8::Local<v8::Value> value,

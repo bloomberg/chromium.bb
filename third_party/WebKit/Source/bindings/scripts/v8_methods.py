@@ -275,7 +275,7 @@ def argument_context(interface, method, argument, index, is_visible=True):
         'use_permissive_dictionary_conversion': 'PermissiveDictionaryConversion' in extended_attributes,
         'v8_set_return_value': v8_set_return_value(interface.name, method, this_cpp_value),
         'v8_set_return_value_for_main_world': v8_set_return_value(interface.name, method, this_cpp_value, for_main_world=True),
-        'v8_value_to_local_cpp_value': v8_value_to_local_cpp_value(method, argument, index),
+        'v8_value_to_local_cpp_value': v8_value_to_local_cpp_value(interface.name, method, argument, index),
     }
     context.update({
         'is_optional_without_default_value':
@@ -370,13 +370,50 @@ def v8_value_to_local_cpp_variadic_value(method, argument, index, return_promise
     }
 
 
-def v8_value_to_local_cpp_value(method, argument, index, return_promise=False):
+def v8_value_to_local_cpp_ssv_value(extended_attributes, idl_type, v8_value, variable_name, for_storage):
+    this_cpp_type = idl_type.cpp_type_args(extended_attributes=extended_attributes, raw_type=True)
+
+    storage_policy = 'kForStorage' if for_storage else 'kNotForStorage'
+    arguments = ', '.join([
+        'info.GetIsolate()',
+        v8_value,
+        '{ssv}::SerializeOptions({ssv}::{storage_policy})',
+        'exceptionState'
+    ])
+    cpp_expression_format = 'NativeValueTraits<{ssv}>::NativeValue(%s)' % arguments
+    this_cpp_value = cpp_expression_format.format(
+        ssv='SerializedScriptValue',
+        storage_policy=storage_policy
+    )
+
+    return {
+        'assign_expression': this_cpp_value,
+        'check_expression': 'exceptionState.HadException()',
+        'cpp_type': this_cpp_type,
+        'cpp_name': variable_name,
+        'declare_variable': False,
+    }
+
+
+def v8_value_to_local_cpp_value(interface_name, method, argument, index, return_promise=False):
     extended_attributes = argument.extended_attributes
     idl_type = argument.idl_type
     name = argument.name
+    v8_value = 'info[%s]' % index
+
+    # History.pushState and History.replaceState are explicitly specified as
+    # serializing the value for storage. The default is to not serialize for
+    # storage. See https://html.spec.whatwg.org/multipage/browsers.html#dom-history-pushstate
+    if idl_type.name == 'SerializedScriptValue':
+        for_storage = (interface_name == 'History' and
+                       method.name in ('pushState', 'replaceState'))
+        return v8_value_to_local_cpp_ssv_value(extended_attributes, idl_type,
+                                               v8_value, name,
+                                               for_storage=for_storage)
+
     if argument.is_variadic:
         return v8_value_to_local_cpp_variadic_value(method, argument, index, return_promise)
-    return idl_type.v8_value_to_local_cpp_value(extended_attributes, 'info[%s]' % index,
+    return idl_type.v8_value_to_local_cpp_value(extended_attributes, v8_value,
                                                 name, declare_variable=False,
                                                 use_exception_state=method.returns_promise)
 

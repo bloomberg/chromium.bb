@@ -606,6 +606,11 @@ def v8_value_to_cpp_value(idl_type, extended_attributes, v8_value, variable_name
         elif 'Clamp' in extended_attributes:
             configuration = 'kClamp'
         arguments = ', '.join([v8_value, 'exceptionState', configuration])
+    elif base_idl_type == 'SerializedScriptValue':
+        arguments = ', '.join([
+            v8_value,
+            'SerializedScriptValue::SerializeOptions(SerializedScriptValue::kNotForStorage)',
+            'exceptionState'])
     elif idl_type.v8_conversion_needs_exception_state:
         arguments = ', '.join([v8_value, 'exceptionState'])
     else:

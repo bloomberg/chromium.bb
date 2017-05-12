@@ -87,7 +87,7 @@ WebNotificationData CreateWebNotificationData(
     v8::Isolate* isolate = data.GetIsolate();
     DCHECK(isolate->InContext());
     SerializedScriptValue::SerializeOptions options;
-    options.for_storage = true;
+    options.for_storage = SerializedScriptValue::kForStorage;
     RefPtr<SerializedScriptValue> serialized_script_value =
         SerializedScriptValue::Serialize(isolate, data.V8Value(), options,
                                          exception_state);
