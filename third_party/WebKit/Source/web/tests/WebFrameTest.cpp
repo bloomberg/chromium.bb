@@ -10960,8 +10960,7 @@ TEST_F(WebFrameTest, RootLayerMinimumHeight) {
           ->GraphicsLayerBacking()
           ->GetRasterInvalidationTracking();
   ASSERT_TRUE(invalidation_tracking);
-  const auto* raster_invalidations =
-      &invalidation_tracking->tracked_raster_invalidations;
+  const auto* raster_invalidations = &invalidation_tracking->invalidations;
 
   // The newly revealed content at the bottom of the screen should have been
   // invalidated. There are additional invalidations for the position: fixed

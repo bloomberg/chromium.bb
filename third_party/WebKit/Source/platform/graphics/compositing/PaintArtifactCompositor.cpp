@@ -91,7 +91,7 @@ class PaintArtifactCompositor::ContentLayerClientImpl
       return;
 
     if (RuntimeEnabledFeatures::paintUnderInvalidationCheckingEnabled())
-      tracking->tracked_raster_invalidations.clear();
+      tracking->invalidations.clear();
     else
       CcLayersRasterInvalidationTrackingMap().Remove(cc_picture_layer_.get());
   }
@@ -100,28 +100,28 @@ class PaintArtifactCompositor::ContentLayerClientImpl
     RasterInvalidationTracking* tracking =
         CcLayersRasterInvalidationTrackingMap().Find(cc_picture_layer_.get());
     if (tracking)
-      return !tracking->tracked_raster_invalidations.IsEmpty();
+      return !tracking->invalidations.IsEmpty();
     return false;
   }
 
-  void SetNeedsDisplayRect(const gfx::Rect& rect,
-                           RasterInvalidationInfo* raster_invalidation_info) {
+  void SetNeedsDisplayRect(const gfx::Rect& rect) {
     cc_picture_layer_->SetNeedsDisplayRect(rect);
+  }
 
-    if (!raster_invalidation_info || rect.IsEmpty())
-      return;
-
-    RasterInvalidationTracking& tracking =
+  void AddTrackedRasterInvalidations(
+      const RasterInvalidationTracking& tracking) {
+    auto& cc_tracking =
         CcLayersRasterInvalidationTrackingMap().Add(cc_picture_layer_.get());
+    cc_tracking.invalidations.AppendVector(tracking.invalidations);
 
-    tracking.tracked_raster_invalidations.push_back(*raster_invalidation_info);
-
-    if (RuntimeEnabledFeatures::paintUnderInvalidationCheckingEnabled()) {
+    if (!RuntimeEnabledFeatures::paintUnderInvalidationCheckingEnabled())
+      return;
+    for (const auto& info : tracking.invalidations) {
       // TODO(crbug.com/496260): Some antialiasing effects overflow the paint
       // invalidation rect.
-      IntRect r = raster_invalidation_info->rect;
+      IntRect r = info.rect;
       r.Inflate(1);
-      tracking.raster_invalidation_region_since_last_paint.Unite(r);
+      cc_tracking.invalidation_region_since_last_paint.Unite(r);
     }
   }
 
@@ -171,16 +171,9 @@ PaintArtifactCompositor::PaintArtifactCompositor() {
   root_layer_ = cc::Layer::Create();
   web_layer_ = Platform::Current()->CompositorSupport()->CreateLayerFromCCLayer(
       root_layer_.get());
-  is_tracking_raster_invalidations_ = false;
 }
 
 PaintArtifactCompositor::~PaintArtifactCompositor() {}
-
-void PaintArtifactCompositor::SetTracksRasterInvalidations(
-    bool tracks_paint_invalidations) {
-  ResetTrackedRasterInvalidations();
-  is_tracking_raster_invalidations_ = tracks_paint_invalidations;
-}
 
 void PaintArtifactCompositor::ResetTrackedRasterInvalidations() {
   for (auto& client : content_layer_clients_)
@@ -289,12 +282,6 @@ PaintArtifactCompositor::CompositedLayerForPendingLayer(
   content_layer_client->ClearPaintChunkDebugData();
 
   for (const auto& paint_chunk : pending_layer.paint_chunks) {
-    RasterInvalidationTracking* raster_tracking =
-        tracking_map ? tracking_map->Find(paint_chunk) : nullptr;
-    DCHECK(!raster_tracking ||
-           raster_tracking->tracked_raster_invalidations.size() ==
-               paint_chunk->raster_invalidation_rects.size());
-
     if (store_debug_info) {
       content_layer_client->AddPaintChunkDebugData(
           paint_artifact.GetDisplayItemList().SubsequenceAsJSON(
@@ -303,10 +290,8 @@ PaintArtifactCompositor::CompositedLayerForPendingLayer(
                   DisplayItemList::kShownOnlyDisplayItemTypes));
     }
 
-    for (unsigned index = 0;
-         index < paint_chunk->raster_invalidation_rects.size(); ++index) {
-      IntRect rect(
-          EnclosingIntRect(paint_chunk->raster_invalidation_rects[index]));
+    for (const auto& r : paint_chunk->raster_invalidation_rects) {
+      IntRect rect(EnclosingIntRect(r));
       gfx::Rect cc_invalidation_rect(rect.X(), rect.Y(),
                                      std::max(0, rect.Width()),
                                      std::max(0, rect.Height()));
@@ -315,12 +300,12 @@ PaintArtifactCompositor::CompositedLayerForPendingLayer(
       // Raster paintChunk.rasterInvalidationRects is in the space of the
       // containing transform node, so need to subtract off the layer offset.
       cc_invalidation_rect.Offset(-cc_combined_bounds.OffsetFromOrigin());
-      content_layer_client->SetNeedsDisplayRect(
-          cc_invalidation_rect,
-          raster_tracking
-              ? &raster_tracking->tracked_raster_invalidations[index]
-              : nullptr);
+      content_layer_client->SetNeedsDisplayRect(cc_invalidation_rect);
     }
+
+    if (auto* raster_tracking =
+            tracking_map ? tracking_map->Find(paint_chunk) : nullptr)
+      content_layer_client->AddTrackedRasterInvalidations(*raster_tracking);
   }
 
   new_content_layer_clients.push_back(std::move(content_layer_client));

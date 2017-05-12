@@ -81,7 +81,6 @@ class PLATFORM_EXPORT PaintArtifactCompositor {
     return extra_data_for_testing_.get();
   }
 
-  void SetTracksRasterInvalidations(bool);
   void ResetTrackedRasterInvalidations();
   bool HasTrackedRasterInvalidations() const;
 
@@ -178,7 +177,6 @@ class PLATFORM_EXPORT PaintArtifactCompositor {
   std::unique_ptr<ExtraDataForTesting> extra_data_for_testing_;
   friend class StubChromeClientForSPv2;
 
-  bool is_tracking_raster_invalidations_;
   FRIEND_TEST_ALL_PREFIXES(PaintArtifactCompositorTestWithPropertyTrees,
                            ForeignLayerPassesThrough);
   FRIEND_TEST_ALL_PREFIXES(PaintArtifactCompositorTestWithPropertyTrees,

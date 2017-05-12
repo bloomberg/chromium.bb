@@ -286,7 +286,7 @@ void GraphicsLayer::Paint(const IntRect* interest_rect,
           GetRasterInvalidationTrackingMap().Add(this);
       tracking.last_painted_record = std::move(record);
       tracking.last_interest_rect = previous_interest_rect_;
-      tracking.raster_invalidation_region_since_last_paint = Region();
+      tracking.invalidation_region_since_last_paint = Region();
     }
   }
 }
@@ -482,14 +482,14 @@ void GraphicsLayer::ResetTrackedRasterInvalidations() {
     return;
 
   if (RuntimeEnabledFeatures::paintUnderInvalidationCheckingEnabled())
-    tracking->tracked_raster_invalidations.clear();
+    tracking->invalidations.clear();
   else
     GetRasterInvalidationTrackingMap().Remove(this);
 }
 
 bool GraphicsLayer::HasTrackedRasterInvalidations() const {
   if (auto* tracking = GetRasterInvalidationTracking())
-    return !tracking->tracked_raster_invalidations.IsEmpty();
+    return !tracking->invalidations.IsEmpty();
   return false;
 }
 
@@ -513,7 +513,7 @@ void GraphicsLayer::TrackRasterInvalidation(const DisplayItemClient& client,
     info.client_debug_name = client.DebugName();
     info.rect = rect;
     info.reason = reason;
-    tracking.tracked_raster_invalidations.push_back(info);
+    tracking.invalidations.push_back(info);
   }
 
   if (RuntimeEnabledFeatures::paintUnderInvalidationCheckingEnabled()) {
@@ -521,7 +521,7 @@ void GraphicsLayer::TrackRasterInvalidation(const DisplayItemClient& client,
     // invalidation rect.
     IntRect r = rect;
     r.Inflate(1);
-    tracking.raster_invalidation_region_since_last_paint.Unite(r);
+    tracking.invalidation_region_since_last_paint.Unite(r);
   }
 }
 
@@ -1252,13 +1252,12 @@ void GraphicsLayer::CheckPaintUnderInvalidations(
       SkColor old_pixel = old_bitmap.getColor(bitmap_x, bitmap_y);
       SkColor new_pixel = new_bitmap.getColor(bitmap_x, bitmap_y);
       if (PixelsDiffer(old_pixel, new_pixel) &&
-          !tracking->raster_invalidation_region_since_last_paint.Contains(
+          !tracking->invalidation_region_since_last_paint.Contains(
               IntPoint(layer_x, layer_y))) {
         if (mismatching_pixels < kMaxMismatchesToReport) {
-          UnderPaintInvalidation under_paint_invalidation = {
-              layer_x, layer_y, old_pixel, new_pixel};
-          tracking->under_paint_invalidations.push_back(
-              under_paint_invalidation);
+          UnderRasterInvalidation under_invalidation = {layer_x, layer_y,
+                                                        old_pixel, new_pixel};
+          tracking->under_invalidations.push_back(under_invalidation);
           LOG(ERROR) << DebugName()
                      << " Uninvalidated old/new pixels mismatch at " << layer_x
                      << "," << layer_y << " old:" << std::hex << old_pixel

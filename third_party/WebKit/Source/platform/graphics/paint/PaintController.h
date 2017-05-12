@@ -195,7 +195,7 @@ class PLATFORM_EXPORT PaintController {
   void SetTracksRasterInvalidations(bool value);
   RasterInvalidationTrackingMap<const PaintChunk>*
   PaintChunksRasterInvalidationTrackingMap() {
-    return paint_chunks_raster_invalidation_tracking_map_.get();
+    return raster_invalidation_tracking_map_.get();
   }
 
 #if CHECK_DISPLAY_ITEM_CLIENT_ALIVENESS
@@ -280,13 +280,15 @@ class PLATFORM_EXPORT PaintController {
   // newly created, or is changed causing the previous indices to be invalid.
   void ResetCurrentListIndices();
 
-  void GenerateChunkRasterInvalidationRects(PaintChunk& new_chunk);
-  void GenerateChunkRasterInvalidationRectsComparingOldChunk(
-      PaintChunk& new_chunk,
-      const PaintChunk& old_chunk);
-  void AddRasterInvalidationInfo(const DisplayItemClient*,
-                                 PaintChunk&,
-                                 const FloatRect&);
+  void GenerateRasterInvalidations(PaintChunk& new_chunk);
+  void GenerateRasterInvalidationsComparingChunks(PaintChunk& new_chunk,
+                                                  const PaintChunk& old_chunk);
+  inline void AddRasterInvalidation(const DisplayItemClient*,
+                                    PaintChunk&,
+                                    const FloatRect&);
+  void TrackRasterInvalidation(const DisplayItemClient*,
+                               PaintChunk&,
+                               const FloatRect&);
 
   // The following two methods are for checking under-invalidations
   // (when RuntimeEnabledFeatures::paintUnderInvalidationCheckingEnabled).
@@ -411,7 +413,7 @@ class PLATFORM_EXPORT PaintController {
   String under_invalidation_message_prefix_;
 
   std::unique_ptr<RasterInvalidationTrackingMap<const PaintChunk>>
-      paint_chunks_raster_invalidation_tracking_map_;
+      raster_invalidation_tracking_map_;
 
 #if CHECK_DISPLAY_ITEM_CLIENT_ALIVENESS
   // A stack recording subsequence clients that are currently painting.
