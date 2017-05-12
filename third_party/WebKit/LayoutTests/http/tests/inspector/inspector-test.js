@@ -427,6 +427,27 @@ InspectorTest.dumpNavigatorViewInMode = function(view, mode)
     InspectorTest.dumpNavigatorView(view);
 }
 
+/**
+ * @param {symbol} event
+ * @param {!Common.Object} obj
+ * @param {function(?):boolean=}
+ * @return {!Promise}
+ */
+InspectorTest.waitForEvent = function(event, obj, condition)
+{
+    condition = condition || function() { return true;};
+    return new Promise(resolve => {
+        obj.addEventListener(event, onEventFired);
+
+        function onEventFired(event) {
+            if (!condition(event.data))
+                return;
+            obj.removeEventListener(event, onEventFired);
+            resolve(event.data);
+        }
+    });
+}
+
 InspectorTest.waitForUISourceCode = function(urlSuffix, projectType)
 {
     function matches(uiSourceCode)
@@ -445,28 +466,12 @@ InspectorTest.waitForUISourceCode = function(urlSuffix, projectType)
             return Promise.resolve(uiSourceCode);
     }
 
-    var fulfill;
-    var promise = new Promise(x => fulfill = x);
-    Workspace.workspace.addEventListener(Workspace.Workspace.Events.UISourceCodeAdded, uiSourceCodeAdded);
-    return promise;
-
-    function uiSourceCodeAdded(event)
-    {
-        if (!matches(event.data))
-            return;
-        Workspace.workspace.removeEventListener(Workspace.Workspace.Events.UISourceCodeAdded, uiSourceCodeAdded);
-        fulfill(event.data);
-    }
+    return InspectorTest.waitForEvent(Workspace.Workspace.Events.UISourceCodeAdded, Workspace.workspace, matches);
 }
 
 InspectorTest.waitForUISourceCodeRemoved = function(callback)
 {
-    Workspace.workspace.addEventListener(Workspace.Workspace.Events.UISourceCodeRemoved, uiSourceCodeRemoved);
-    function uiSourceCodeRemoved(event)
-    {
-        Workspace.workspace.removeEventListener(Workspace.Workspace.Events.UISourceCodeRemoved, uiSourceCodeRemoved);
-        callback(event.data);
-    }
+    InspectorTest.waitForEvent(Workspace.Workspace.Events.UISourceCodeRemoved, Workspace.workspace).then(callback);
 }
 
 InspectorTest.waitForTarget = function(filter) {
@@ -494,30 +499,15 @@ InspectorTest.waitForTarget = function(filter) {
 InspectorTest.waitForExecutionContext = function(runtimeModel) {
     if (runtimeModel.executionContexts().length)
         return Promise.resolve(runtimeModel.executionContexts()[0]);
-    var fulfill;
-    var promise = new Promise(callback => fulfill = callback);
-    function onContext(event) {
-      runtimeModel.removeEventListener(SDK.RuntimeModel.Events.ExecutionContextCreated, onContext);
-      fulfill(event.data);
-    }
-    runtimeModel.addEventListener(SDK.RuntimeModel.Events.ExecutionContextCreated, onContext);
-    return promise;
+    return InspectorTest.waitForEvent(SDK.RuntimeModel.Events.ExecutionContextCreated, runtimeModel);
 }
 
 InspectorTest.waitForExecutionContextDestroyed = function(context) {
     var runtimeModel = context.runtimeModel;
     if (runtimeModel.executionContexts().indexOf(context) === -1)
         return Promise.resolve();
-    var fulfill;
-    var promise = new Promise(callback => fulfill = callback);
-    function onContext(event) {
-        if (event.data === context) {
-            runtimeModel.removeEventListener(SDK.RuntimeModel.Events.ExecutionContextDestroyed, onContext);
-            fulfill();
-        }
-    }
-    runtimeModel.addEventListener(SDK.RuntimeModel.Events.ExecutionContextDestroyed, onContext);
-    return promise;
+    return InspectorTest.waitForEvent(SDK.RuntimeModel.Events.ExecutionContextDestroyed, runtimeModel,
+        destroyedContext => destroyedContext === context);
 }
 
 InspectorTest.assertGreaterOrEqual = function(a, b, message)

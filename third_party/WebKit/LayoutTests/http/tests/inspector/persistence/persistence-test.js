@@ -27,19 +27,8 @@ InspectorTest.waitForBinding = function(fileName)
         if (uiSourceCode.name() === fileName)
             return Promise.resolve(binding);
     }
-    var fulfill;
-    var promise = new Promise(x => fulfill = x);
-    Persistence.persistence.addEventListener(Persistence.Persistence.Events.BindingCreated, onBindingCreated);
-    return promise;
-
-    function onBindingCreated(event)
-    {
-        var binding = event.data;
-        if (binding.network.name() !== fileName && binding.fileSystem.name() !== fileName)
-            return;
-        Persistence.persistence.removeEventListener(Persistence.Persistence.Events.BindingCreated, onBindingCreated);
-        fulfill(binding);
-    }
+    return InspectorTest.waitForEvent(Persistence.Persistence.Events.BindingCreated, Persistence.persistence,
+        binding => binding.network.name() === fileName || binding.fileSystem.name() === fileName);
 }
 
 InspectorTest.addFooJSFile = function(fs)
