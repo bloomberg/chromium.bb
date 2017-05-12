@@ -6,11 +6,11 @@
 #define CONTENT_PUBLIC_BROWSER_BROWSER_IPC_LOGGING_H_
 
 #include "content/common/content_export.h"
-#include "ipc/ipc_message.h"  // For IPC_MESSAGE_LOG_ENABLED.
+#include "ipc/ipc_features.h"
 
 namespace content {
 
-#if defined(IPC_MESSAGE_LOG_ENABLED)
+#if BUILDFLAG(IPC_MESSAGE_LOG_ENABLED)
 
 // Enable or disable IPC logging for the browser, all processes
 // derived from ChildProcess (plugin etc), and all

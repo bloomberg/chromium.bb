@@ -1160,7 +1160,7 @@ IPC_EXPORT void GenerateLogData(const Message& message,
                                 LogData* data,
                                 bool get_params);
 
-#if defined(IPC_MESSAGE_LOG_ENABLED)
+#if BUILDFLAG(IPC_MESSAGE_LOG_ENABLED)
 inline void AddOutputParamsToLog(const Message* msg, std::string* l) {
   const std::string& output_params = msg->output_params();
   if (!l->empty() && !output_params.empty())

@@ -78,7 +78,7 @@ void ChannelProxy::Context::CreateChannel(
 
 bool ChannelProxy::Context::TryFilters(const Message& message) {
   DCHECK(message_filter_router_);
-#ifdef IPC_MESSAGE_LOG_ENABLED
+#if BUILDFLAG(IPC_MESSAGE_LOG_ENABLED)
   Logging* logger = Logging::GetInstance();
   if (logger->Enabled())
     logger->OnPreDispatchMessage(message);
@@ -89,7 +89,7 @@ bool ChannelProxy::Context::TryFilters(const Message& message) {
       listener_task_runner_->PostTask(
           FROM_HERE, base::Bind(&Context::OnDispatchBadMessage, this, message));
     }
-#ifdef IPC_MESSAGE_LOG_ENABLED
+#if BUILDFLAG(IPC_MESSAGE_LOG_ENABLED)
     if (logger->Enabled())
       logger->OnPostDispatchMessage(message);
 #endif
@@ -315,7 +315,7 @@ void ChannelProxy::Context::OnDispatchMessage(const Message& message) {
 
   OnDispatchConnected();
 
-#ifdef IPC_MESSAGE_LOG_ENABLED
+#if BUILDFLAG(IPC_MESSAGE_LOG_ENABLED)
   Logging* logger = Logging::GetInstance();
   if (message.type() == IPC_LOGGING_ID) {
     logger->OnReceivedLoggingMessage(message);
@@ -330,7 +330,7 @@ void ChannelProxy::Context::OnDispatchMessage(const Message& message) {
   if (message.dispatch_error())
     listener_->OnBadMessageReceived(message);
 
-#ifdef IPC_MESSAGE_LOG_ENABLED
+#if BUILDFLAG(IPC_MESSAGE_LOG_ENABLED)
   if (logger->Enabled())
     logger->OnPostDispatchMessage(message);
 #endif
@@ -530,7 +530,7 @@ bool ChannelProxy::Send(Message* message) {
     message = outgoing_message_filter()->Rewrite(message);
 #endif
 
-#ifdef IPC_MESSAGE_LOG_ENABLED
+#if BUILDFLAG(IPC_MESSAGE_LOG_ENABLED)
   Logging::GetInstance()->OnSendMessage(message);
 #endif
 

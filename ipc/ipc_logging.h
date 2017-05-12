@@ -5,12 +5,11 @@
 #ifndef IPC_IPC_LOGGING_H_
 #define IPC_IPC_LOGGING_H_
 
+#include "ipc/ipc_features.h"
+
+#if BUILDFLAG(IPC_MESSAGE_LOG_ENABLED)
+
 #include <stdint.h>
-
-#include "ipc/ipc_message.h"  // For IPC_MESSAGE_LOG_ENABLED.
-
-#ifdef IPC_MESSAGE_LOG_ENABLED
-
 #include <vector>
 
 #include "base/containers/hash_tables.h"
@@ -18,6 +17,7 @@
 #include "base/memory/singleton.h"
 #include "base/single_thread_task_runner.h"
 #include "ipc/ipc_export.h"
+#include "ipc/ipc_message.h"
 
 // Logging function. |name| is a string in ASCII and |params| is a string in
 // UTF-8.
@@ -123,6 +123,6 @@ class IPC_EXPORT Logging {
 
 }  // namespace IPC
 
-#endif // IPC_MESSAGE_LOG_ENABLED
+#endif  // BUILDFLAG(IPC_MESSAGE_LOG_ENABLED)
 
 #endif  // IPC_IPC_LOGGING_H_

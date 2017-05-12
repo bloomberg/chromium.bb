@@ -157,7 +157,7 @@ bool ChildProcessHostImpl::InitChannel() {
   delegate_->OnChannelInitialized(channel_.get());
 
   // Make sure these messages get sent first.
-#if defined(IPC_MESSAGE_LOG_ENABLED)
+#if BUILDFLAG(IPC_MESSAGE_LOG_ENABLED)
   bool enabled = IPC::Logging::GetInstance()->Enabled();
   Send(new ChildProcessMsg_SetIPCLoggingEnabled(enabled));
 #endif
@@ -213,7 +213,7 @@ uint64_t ChildProcessHostImpl::ChildProcessUniqueIdToTracingProcessId(
 }
 
 bool ChildProcessHostImpl::OnMessageReceived(const IPC::Message& msg) {
-#ifdef IPC_MESSAGE_LOG_ENABLED
+#if BUILDFLAG(IPC_MESSAGE_LOG_ENABLED)
   IPC::Logging* logger = IPC::Logging::GetInstance();
   if (msg.type() == IPC_LOGGING_ID) {
     logger->OnReceivedLoggingMessage(msg);
@@ -244,7 +244,7 @@ bool ChildProcessHostImpl::OnMessageReceived(const IPC::Message& msg) {
       handled = delegate_->OnMessageReceived(msg);
   }
 
-#ifdef IPC_MESSAGE_LOG_ENABLED
+#if BUILDFLAG(IPC_MESSAGE_LOG_ENABLED)
   if (logger->Enabled())
     logger->OnPostDispatchMessage(msg);
 #endif
