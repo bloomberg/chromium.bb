@@ -141,6 +141,8 @@ void PaymentRequestDialogView::ShowErrorMessage() {
                             request_->spec(), request_->state(), this),
                         &controller_map_),
                     /* animate = */ false);
+  HideProcessingSpinner();
+
   if (observer_for_testing_)
     observer_for_testing_->OnErrorMessageShown();
 }
@@ -347,6 +349,11 @@ void PaymentRequestDialogView::SetupSpinnerOverlay() {
 
   throbber_overlay_.SetLayoutManager(layout.release());
   AddChildView(&throbber_overlay_);
+}
+
+void PaymentRequestDialogView::HideProcessingSpinner() {
+  throbber_.Stop();
+  throbber_overlay_.SetVisible(false);
 }
 
 gfx::Size PaymentRequestDialogView::GetPreferredSize() const {
