@@ -5,6 +5,7 @@
 #include "core/animation/TimingInput.h"
 
 #include "bindings/core/v8/V8BindingForTesting.h"
+#include "bindings/core/v8/V8KeyframeAnimationOptions.h"
 #include "bindings/core/v8/V8KeyframeEffectOptions.h"
 #include "core/animation/AnimationEffectTiming.h"
 #include "core/animation/AnimationTestHelper.h"
@@ -17,38 +18,61 @@ namespace blink {
 Timing ApplyTimingInputNumber(v8::Isolate* isolate,
                               String timing_property,
                               double timing_property_value,
-                              bool& timing_conversion_success) {
+                              bool& timing_conversion_success,
+                              bool is_keyframeeffectoptions = true) {
   v8::Local<v8::Object> timing_input = v8::Object::New(isolate);
   SetV8ObjectPropertyAsNumber(isolate, timing_input, timing_property,
                               timing_property_value);
-  KeyframeEffectOptions timing_input_dictionary;
   DummyExceptionStateForTesting exception_state;
-  V8KeyframeEffectOptions::toImpl(isolate, timing_input,
-                                  timing_input_dictionary, exception_state);
   Timing result;
-  timing_conversion_success =
-      TimingInput::Convert(timing_input_dictionary, result, nullptr,
-                           exception_state) &&
-      !exception_state.HadException();
+  if (is_keyframeeffectoptions) {
+    KeyframeEffectOptions timing_input_dictionary;
+    V8KeyframeEffectOptions::toImpl(isolate, timing_input,
+                                    timing_input_dictionary, exception_state);
+    timing_conversion_success =
+        TimingInput::Convert(timing_input_dictionary, result, nullptr,
+                             exception_state) &&
+        !exception_state.HadException();
+  } else {
+    KeyframeAnimationOptions timing_input_dictionary;
+    V8KeyframeAnimationOptions::toImpl(
+        isolate, timing_input, timing_input_dictionary, exception_state);
+    timing_conversion_success =
+        TimingInput::Convert(timing_input_dictionary, result, nullptr,
+                             exception_state) &&
+        !exception_state.HadException();
+  }
   return result;
 }
 
 Timing ApplyTimingInputString(v8::Isolate* isolate,
                               String timing_property,
                               String timing_property_value,
-                              bool& timing_conversion_success) {
+                              bool& timing_conversion_success,
+                              bool is_keyframeeffectoptions = true) {
   v8::Local<v8::Object> timing_input = v8::Object::New(isolate);
   SetV8ObjectPropertyAsString(isolate, timing_input, timing_property,
                               timing_property_value);
-  KeyframeEffectOptions timing_input_dictionary;
+
   DummyExceptionStateForTesting exception_state;
-  V8KeyframeEffectOptions::toImpl(isolate, timing_input,
-                                  timing_input_dictionary, exception_state);
   Timing result;
-  timing_conversion_success =
-      TimingInput::Convert(timing_input_dictionary, result, nullptr,
-                           exception_state) &&
-      !exception_state.HadException();
+  if (is_keyframeeffectoptions) {
+    KeyframeEffectOptions timing_input_dictionary;
+    V8KeyframeEffectOptions::toImpl(isolate, timing_input,
+                                    timing_input_dictionary, exception_state);
+    timing_conversion_success =
+        TimingInput::Convert(timing_input_dictionary, result, nullptr,
+                             exception_state) &&
+        !exception_state.HadException();
+  } else {
+    KeyframeAnimationOptions timing_input_dictionary;
+    V8KeyframeAnimationOptions::toImpl(
+        isolate, timing_input, timing_input_dictionary, exception_state);
+    timing_conversion_success =
+        TimingInput::Convert(timing_input_dictionary, result, nullptr,
+                             exception_state) &&
+        !exception_state.HadException();
+  }
   return result;
 }
 
@@ -78,6 +102,35 @@ TEST(AnimationTimingInputTest, TimingInputStartDelay) {
                    .start_delay);
   EXPECT_EQ(0, ApplyTimingInputString(scope.GetIsolate(), "delay", "rubbish",
                                       ignored_success)
+                   .start_delay);
+}
+
+TEST(AnimationTimingInputTest, TimingInputStartDelayKeyframeAnimationOptions) {
+  V8TestingScope scope;
+  bool ignored_success;
+  EXPECT_EQ(1.1, ApplyTimingInputNumber(scope.GetIsolate(), "delay", 1100,
+                                        ignored_success, false)
+                     .start_delay);
+  EXPECT_EQ(-1, ApplyTimingInputNumber(scope.GetIsolate(), "delay", -1000,
+                                       ignored_success, false)
+                    .start_delay);
+  EXPECT_EQ(1, ApplyTimingInputString(scope.GetIsolate(), "delay", "1000",
+                                      ignored_success, false)
+                   .start_delay);
+  EXPECT_EQ(0, ApplyTimingInputString(scope.GetIsolate(), "delay", "1s",
+                                      ignored_success, false)
+                   .start_delay);
+  EXPECT_EQ(0, ApplyTimingInputString(scope.GetIsolate(), "delay", "Infinity",
+                                      ignored_success, false)
+                   .start_delay);
+  EXPECT_EQ(0, ApplyTimingInputString(scope.GetIsolate(), "delay", "-Infinity",
+                                      ignored_success, false)
+                   .start_delay);
+  EXPECT_EQ(0, ApplyTimingInputString(scope.GetIsolate(), "delay", "NaN",
+                                      ignored_success, false)
+                   .start_delay);
+  EXPECT_EQ(0, ApplyTimingInputString(scope.GetIsolate(), "delay", "rubbish",
+                                      ignored_success, false)
                    .start_delay);
 }
 
@@ -362,6 +415,25 @@ TEST(AnimationTimingInputTest, TimingInputEmpty) {
   Timing updated_timing;
   bool success = TimingInput::Convert(KeyframeEffectOptions(), updated_timing,
                                       nullptr, exception_state);
+  EXPECT_TRUE(success);
+  EXPECT_FALSE(exception_state.HadException());
+
+  EXPECT_EQ(control_timing.start_delay, updated_timing.start_delay);
+  EXPECT_EQ(control_timing.fill_mode, updated_timing.fill_mode);
+  EXPECT_EQ(control_timing.iteration_start, updated_timing.iteration_start);
+  EXPECT_EQ(control_timing.iteration_count, updated_timing.iteration_count);
+  EXPECT_TRUE(std::isnan(updated_timing.iteration_duration));
+  EXPECT_EQ(control_timing.playback_rate, updated_timing.playback_rate);
+  EXPECT_EQ(control_timing.direction, updated_timing.direction);
+  EXPECT_EQ(*control_timing.timing_function, *updated_timing.timing_function);
+}
+
+TEST(AnimationTimingInputTest, TimingInputEmptyKeyframeAnimationOptions) {
+  DummyExceptionStateForTesting exception_state;
+  Timing control_timing;
+  Timing updated_timing;
+  bool success = TimingInput::Convert(KeyframeAnimationOptions(),
+                                      updated_timing, nullptr, exception_state);
   EXPECT_TRUE(success);
   EXPECT_FALSE(exception_state.HadException());
 

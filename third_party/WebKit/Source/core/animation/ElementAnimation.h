@@ -32,7 +32,7 @@
 #define ElementAnimation_h
 
 #include "bindings/core/v8/DictionarySequenceOrDictionary.h"
-#include "bindings/core/v8/UnrestrictedDoubleOrKeyframeEffectOptions.h"
+#include "bindings/core/v8/UnrestrictedDoubleOrKeyframeAnimationOptions.h"
 #include "core/animation/DocumentTimeline.h"
 #include "core/animation/EffectInput.h"
 #include "core/animation/ElementAnimations.h"
@@ -52,11 +52,12 @@ class ElementAnimation {
   STATIC_ONLY(ElementAnimation);
 
  public:
-  static Animation* animate(ScriptState* script_state,
-                            Element& element,
-                            const DictionarySequenceOrDictionary& effect_input,
-                            UnrestrictedDoubleOrKeyframeEffectOptions options,
-                            ExceptionState& exception_state) {
+  static Animation* animate(
+      ScriptState* script_state,
+      Element& element,
+      const DictionarySequenceOrDictionary& effect_input,
+      UnrestrictedDoubleOrKeyframeAnimationOptions options,
+      ExceptionState& exception_state) {
     EffectModel* effect = EffectInput::Convert(
         &element, effect_input, ExecutionContext::From(script_state),
         exception_state);
@@ -68,9 +69,9 @@ class ElementAnimation {
                               exception_state))
       return nullptr;
 
-    if (options.isKeyframeEffectOptions()) {
+    if (options.isKeyframeAnimationOptions()) {
       Animation* animation = animate(element, effect, timing);
-      animation->setId(options.getAsKeyframeEffectOptions().id());
+      animation->setId(options.getAsKeyframeAnimationOptions().id());
       return animation;
     }
     return animate(element, effect, timing);

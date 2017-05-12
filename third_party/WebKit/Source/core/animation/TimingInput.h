@@ -13,8 +13,10 @@ namespace blink {
 
 class Document;
 class ExceptionState;
+class KeyframeAnimationOptions;
 class KeyframeEffectOptions;
 class UnrestrictedDoubleOrString;
+class UnrestrictedDoubleOrKeyframeAnimationOptions;
 class UnrestrictedDoubleOrKeyframeEffectOptions;
 
 class CORE_EXPORT TimingInput {
@@ -25,10 +27,19 @@ class CORE_EXPORT TimingInput {
                       Timing& timing_output,
                       Document*,
                       ExceptionState&);
+  static bool Convert(const UnrestrictedDoubleOrKeyframeAnimationOptions&,
+                      Timing& timing_output,
+                      Document*,
+                      ExceptionState&);
   static bool Convert(const KeyframeEffectOptions& timing_input,
                       Timing& timing_output,
                       Document*,
                       ExceptionState&);
+  static bool Convert(const KeyframeAnimationOptions& timing_input,
+                      Timing& timing_output,
+                      Document*,
+                      ExceptionState&);
+
   static bool Convert(double duration, Timing& timing_output, ExceptionState&);
 
   static void SetStartDelay(Timing&, double start_delay);
