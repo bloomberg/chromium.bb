@@ -8379,7 +8379,7 @@ TEST_F(LayerTreeHostImplTest, FarAwayQuadsDontNeedAA) {
   LayerImpl* scrolling_layer = scoped_scrolling_layer.get();
   root->test_properties()->AddChild(std::move(scoped_scrolling_layer));
 
-  gfx::Size content_layer_bounds(100000, 100);
+  gfx::Size content_layer_bounds(100001, 100);
   scoped_refptr<FakeRasterSource> raster_source(
       FakeRasterSource::CreateFilled(content_layer_bounds));
 
