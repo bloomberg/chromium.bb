@@ -56,6 +56,9 @@ SubresourceFilterContentSettingsManager::
           profile, ServiceAccessType::EXPLICIT_ACCESS)) {
     history_observer_.Add(history_service);
   }
+
+  cached_global_setting_for_metrics_ = settings_map_->GetDefaultContentSetting(
+      CONTENT_SETTINGS_TYPE_SUBRESOURCE_FILTER, nullptr);
 }
 
 SubresourceFilterContentSettingsManager::
@@ -140,9 +143,17 @@ void SubresourceFilterContentSettingsManager::OnContentSettingChanged(
 
   const ContentSettingsDetails details(primary_pattern, secondary_pattern,
                                        content_type, resource_identifier);
+  DCHECK(!details.update_all_types());
+
   if (details.update_all()) {
     ContentSetting global_setting = settings_map_->GetDefaultContentSetting(
         CONTENT_SETTINGS_TYPE_SUBRESOURCE_FILTER, nullptr);
+    // Ignore changes which retain the status quo. This also avoids logging
+    // metrics for changes which somehow notify this observer multiple times in
+    // a row. This shouldn't discount real user initiated changes.
+    if (global_setting == cached_global_setting_for_metrics_)
+      return;
+    cached_global_setting_for_metrics_ = global_setting;
     if (global_setting == CONTENT_SETTING_BLOCK) {
       ChromeSubresourceFilterClient::LogAction(
           kActionContentSettingsBlockedGlobal);
