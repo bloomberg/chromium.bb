@@ -309,11 +309,6 @@ DOMPatchSupport::Diff(const HeapVector<Member<Digest>>& old_list,
     }
   }
 
-#ifdef DEBUG_DOM_PATCH_SUPPORT
-  dumpMap(oldMap, "OLD");
-  dumpMap(newMap, "NEW");
-#endif
-
   return std::make_pair(old_map, new_map);
 }
 
@@ -551,22 +546,6 @@ void DOMPatchSupport::MarkNodeAsUsed(Digest* digest) {
       queue.push_back(first->children_[i].Get());
   }
 }
-
-#ifdef DEBUG_DOM_PATCH_SUPPORT
-static String nodeName(Node* node) {
-  if (node->document().isXHTMLDocument())
-    return node->nodeName();
-  return node->nodeName().lower();
-}
-
-void DOMPatchSupport::dumpMap(const ResultMap& map, const String& name) {
-  fprintf(stderr, "\n\n");
-  for (size_t i = 0; i < map.size(); ++i)
-    fprintf(stderr, "%s[%lu]: %s (%p) - [%lu]\n", name.utf8().data(), i,
-            map[i].first ? nodeName(map[i].first->m_node).utf8().data() : "",
-            map[i].first, map[i].second);
-}
-#endif
 
 DEFINE_TRACE(DOMPatchSupport::Digest) {
   visitor->Trace(node_);
