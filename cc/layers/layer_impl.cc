@@ -667,11 +667,6 @@ void LayerImpl::SetPosition(const gfx::PointF& position) {
   position_ = position;
 }
 
-bool LayerImpl::TransformIsAnimating() const {
-  return GetMutatorHost()->IsAnimatingTransformProperty(
-      element_id(), GetElementTypeForAnimation());
-}
-
 bool LayerImpl::HasPotentiallyRunningTransformAnimation() const {
   return GetMutatorHost()->HasPotentiallyRunningTransformAnimation(
       element_id(), GetElementTypeForAnimation());

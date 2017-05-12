@@ -335,7 +335,6 @@ class CC_EXPORT LayerImpl {
     return touch_event_handler_region_;
   }
 
-  bool TransformIsAnimating() const;
   bool HasPotentiallyRunningTransformAnimation() const;
 
   bool HasFilterAnimationThatInflatesBounds() const;

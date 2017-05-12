@@ -2134,6 +2134,11 @@ TEST_F(LayerTreeHostCommonTest, LargeTransforms) {
   EXPECT_EQ(gfx::Rect(), grand_child->visible_layer_rect());
 }
 
+static bool TransformIsAnimating(LayerImpl* layer) {
+  return layer->GetMutatorHost()->IsAnimatingTransformProperty(
+      layer->element_id(), layer->GetElementTypeForAnimation());
+}
+
 TEST_F(LayerTreeHostCommonTest,
        ScreenSpaceTransformIsAnimatingWithDelayedAnimation) {
   LayerImpl* root = root_layer_for_testing();
@@ -2166,7 +2171,7 @@ TEST_F(LayerTreeHostCommonTest,
   EXPECT_FALSE(root->screen_space_transform_is_animating());
   EXPECT_FALSE(child->screen_space_transform_is_animating());
 
-  EXPECT_FALSE(grand_child->TransformIsAnimating());
+  EXPECT_FALSE(TransformIsAnimating(grand_child));
   EXPECT_TRUE(grand_child->HasPotentiallyRunningTransformAnimation());
   EXPECT_TRUE(grand_child->screen_space_transform_is_animating());
   EXPECT_TRUE(great_grand_child->screen_space_transform_is_animating());
