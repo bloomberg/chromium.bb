@@ -387,6 +387,13 @@ void BrowserAccessibilityManager::OnAccessibilityEvents(
     connected_to_parent_tree_node_ = false;
   }
 
+  // Fire any events related to changes to the tree.
+  for (auto& event : tree_events_) {
+    NotifyAccessibilityEvent(BrowserAccessibilityEvent::FromTreeChange,
+                             event.first, event.second);
+  }
+  tree_events_.clear();
+
   // Based on the changes to the tree, first fire focus events if needed.
   // Screen readers might not do the right thing if they're not aware of what
   // has focus, so always try that first. Nothing will be fired if the window
@@ -394,8 +401,8 @@ void BrowserAccessibilityManager::OnAccessibilityEvents(
   GetRootManager()->FireFocusEventsIfNeeded(
       BrowserAccessibilityEvent::FromBlink);
 
-  // Now iterate over the events again and fire the events other than focus
-  // events.
+  // Now iterate over the events from the renderer and fire the events
+  // other than focus events.
   for (uint32_t index = 0; index < details.size(); index++) {
     const AXEventNotificationDetails& detail = details[index];
 
@@ -1184,11 +1191,10 @@ void BrowserAccessibilityManager::OnAtomicUpdateFinished(
     BrowserAccessibility* object = GetFromAXNode(created_node);
     if (object && object->HasStringAttribute(ui::AX_ATTR_LIVE_STATUS)) {
       if (object->GetRole() == ui::AX_ROLE_ALERT) {
-        NotifyAccessibilityEvent(BrowserAccessibilityEvent::FromTreeChange,
-                                 ui::AX_EVENT_ALERT, object);
+        tree_events_.push_back(std::make_pair(ui::AX_EVENT_ALERT, object));
       } else {
-        NotifyAccessibilityEvent(BrowserAccessibilityEvent::FromTreeChange,
-                                 ui::AX_EVENT_LIVE_REGION_CREATED, object);
+        tree_events_.push_back(
+            std::make_pair(ui::AX_EVENT_LIVE_REGION_CREATED, object));
       }
     }
   }

@@ -441,6 +441,11 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeDelegate {
   // A mapping from a node id to its wrapper of type BrowserAccessibility.
   base::hash_map<int32_t, BrowserAccessibility*> id_wrapper_map_;
 
+  // A list of accessibility events to fire based on changes to the
+  // accessibility tree. Only used within the scope of one call to
+  // OnAccessibilityEvents, so it's safe to store raw pointers.
+  std::vector<std::pair<ui::AXEvent, BrowserAccessibility*>> tree_events_;
+
   // True if the user has initiated a navigation to another page.
   bool user_is_navigating_away_;
 
