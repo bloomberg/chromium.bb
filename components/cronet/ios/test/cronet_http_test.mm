@@ -37,11 +37,16 @@
 // Error the request this delegate is attached to failed with, if any.
 @property(retain, atomic) NSError* error;
 
+// Contains total amount of received data.
+@property(readonly) long totalBytesReceived;
+
 @end
 
 @implementation TestDelegate
+
 @synthesize semaphore = _semaphore;
 @synthesize error = _error;
+@synthesize totalBytesReceived = _totalBytesReceived;
 
 NSMutableArray<NSData*>* _responseData;
 
@@ -63,6 +68,7 @@ NSMutableArray<NSData*>* _responseData;
   [_responseData dealloc];
   _responseData = nil;
   _error = nil;
+  _totalBytesReceived = 0;
 }
 
 - (NSString*)responseBody {
@@ -110,6 +116,7 @@ NSMutableArray<NSData*>* _responseData;
 - (void)URLSession:(NSURLSession*)session
           dataTask:(NSURLSessionDataTask*)dataTask
     didReceiveData:(NSData*)data {
+  _totalBytesReceived += [data length];
   if (_responseData == nil) {
     _responseData = [[NSMutableArray alloc] init];
   }
@@ -251,6 +258,7 @@ TEST_F(HttpTest, NSURLSessionReceivesBigHttpDataLoop) {
       elapsed_max = elapsed;
     EXPECT_TRUE(block_used);
     EXPECT_EQ(nil, [delegate_ error]);
+    EXPECT_EQ(size, [delegate_ totalBytesReceived]);
   }
   // Release the response buffer.
   TestServer::ReleaseBigDataURL();

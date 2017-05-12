@@ -53,6 +53,10 @@ namespace {
 // Size of the buffer used to read the net::URLRequest.
 const int kIOBufferSize = 64 * 1024;
 
+// The maximum size of NSData that can be passed to the client 'didReceiveData'
+// callback. This value must always be greater or equal to |kIOBufferSize|.
+const int kClientMaxBufferSize = 4 * kIOBufferSize;
+
 // Global instance of the HTTPProtocolHandlerDelegate.
 net::HTTPProtocolHandlerDelegate* g_protocol_handler_delegate = nullptr;
 
@@ -514,27 +518,29 @@ void HttpProtocolHandlerCore::OnReadCompleted(URLRequest* request,
   if (net_request_ == nullptr)
     return;
 
-  base::scoped_nsobject<NSMutableData> data([[NSMutableData alloc] init]);
+  DCHECK_EQ(net_request_, request);
+  DCHECK_GE(kClientMaxBufferSize, kIOBufferSize);
 
   // Read all we can from the socket and put it into data.
   // TODO(droger): It may be possible to avoid some of the copies (using
   // WrappedIOBuffer for example).
-  NSUInteger data_length;
-  uint64_t total_byte_read = 0;
+  uint64_t total_bytes_read = 0;
   while (bytes_read > 0) {
-    total_byte_read += bytes_read;
-    data_length = [data length];  // Assumes that getting the length is fast.
-    [data increaseLengthBy:bytes_read];
-    memcpy(reinterpret_cast<char*>([data mutableBytes]) + data_length,
-           buffer_->data(), bytes_read);
-    bytes_read = request->Read(buffer_.get(), kIOBufferSize);
-  }
+    base::scoped_nsobject<NSMutableData> data(
+        [[NSMutableData alloc] initWithCapacity:bytes_read]);
+    // |bytes_read| should always be less or equal to |kClientMaxBufferSize|.
+    // This is ensured by the fact that the max read buffer size (i.e.
+    // |kIOBufferSize|) is always smaller or equal to |kClientMaxBufferSize|.
+    while (bytes_read > 0 &&
+           [data length] + bytes_read <= kClientMaxBufferSize) {
+      total_bytes_read += bytes_read;
+      NSUInteger data_length = [data length];
+      [data increaseLengthBy:bytes_read];
+      memcpy(reinterpret_cast<char*>([data mutableBytes]) + data_length,
+             buffer_->data(), bytes_read);
+      bytes_read = request->Read(buffer_.get(), kIOBufferSize);
+    }
 
-  if (tracker_)
-    tracker_->CaptureReceivedBytes(request, total_byte_read);
-
-  // Notify the client.
-  if (bytes_read == net::OK || bytes_read == net::ERR_IO_PENDING) {
     if ([data length] > 0) {
       // If the data is not encoded in UTF8, the NSString is nil.
       DVLOG(3) << "To client:" << std::endl
@@ -543,14 +549,17 @@ void HttpProtocolHandlerCore::OnReadCompleted(URLRequest* request,
                           encoding:NSUTF8StringEncoding]);
       [client_ didLoadData:data];
     }
-    if (bytes_read == 0) {
-      DCHECK_EQ(net_request_, request);
-      // There is nothing more to read.
-      StopNetRequest();
-      [client_ didFinishLoading];
-    }
-  } else {
-    // Request failed (not canceled).
+  }
+
+  if (tracker_)
+    tracker_->CaptureReceivedBytes(request, total_bytes_read);
+
+  if (bytes_read == net::OK) {
+    // If there is nothing more to read.
+    StopNetRequest();
+    [client_ didFinishLoading];
+  } else if (bytes_read != net::ERR_IO_PENDING) {
+    // If there was an error (not canceled).
     int error = bytes_read;
     StopRequestWithError(IOSErrorCode(error), error);
   }
