@@ -38,17 +38,26 @@ Polymer({
   /** @private {?settings.AndroidAppsBrowserProxy} */
   browserProxy_: null,
 
+  /** @private {?WebUIListener} */
+  listener_: null,
+
   /** @override */
   created: function() {
     this.browserProxy_ = settings.AndroidAppsBrowserProxyImpl.getInstance();
   },
 
   /** @override */
-  ready: function() {
-    cr.addWebUIListener(
+  attached: function() {
+    this.listener_ = cr.addWebUIListener(
         'android-apps-info-update', this.androidAppsInfoUpdate_.bind(this));
     this.browserProxy_.requestAndroidAppsInfo();
   },
+
+  /** @override */
+  detached: function() {
+    cr.removeWebUIListener(this.listener_);
+  },
+
   /**
    * @param {AndroidAppsInfo} info
    * @private
@@ -68,7 +77,7 @@ Polymer({
 
   /** @private */
   onSubpageTap_: function() {
-    if (this.androidAppsInfo_.appReady)
+    if (this.androidAppsInfo_.playStoreEnabled)
       settings.navigateTo(settings.Route.ANDROID_APPS_DETAILS);
   },
 });

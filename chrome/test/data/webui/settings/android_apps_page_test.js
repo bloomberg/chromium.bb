@@ -20,7 +20,7 @@ TestAndroidAppsBrowserProxy.prototype = {
   /** @override */
   requestAndroidAppsInfo: function() {
     this.methodCalled('requestAndroidAppsInfo');
-    cr.webUIListenerCallback('android-apps-info-update', {appReady: false});
+    this.setAndroidAppsState(false, false);
   },
 
   /** override */
@@ -28,10 +28,14 @@ TestAndroidAppsBrowserProxy.prototype = {
     this.methodCalled('showAndroidAppsSettings');
   },
 
-  setAppReady: function(ready) {
+  setAndroidAppsState: function(playStoreEnabled, settingsAppAvailable) {
     // We need to make sure to pass a new object here, otherwise the property
     // change event may not get fired in the listener.
-    cr.webUIListenerCallback('android-apps-info-update', {appReady: ready});
+    var appsInfo = {
+      playStoreEnabled: playStoreEnabled,
+      settingsAppAvailable: settingsAppAvailable,
+    };
+    cr.webUIListenerCallback('android-apps-info-update', appsInfo);
   },
 };
 
@@ -62,7 +66,7 @@ suite('AndroidAppsPageTests', function() {
 
       return androidAppsBrowserProxy.whenCalled('requestAndroidAppsInfo')
           .then(function() {
-            androidAppsBrowserProxy.setAppReady(false);
+            androidAppsBrowserProxy.setAndroidAppsState(false, false);
           });
     });
 
@@ -75,7 +79,7 @@ suite('AndroidAppsPageTests', function() {
       Polymer.dom.flush();
       assertTrue(androidAppsPage.prefs.arc.enabled.value);
 
-      androidAppsBrowserProxy.setAppReady(true);
+      androidAppsBrowserProxy.setAndroidAppsState(true, false);
       Polymer.dom.flush();
       assertTrue(!!androidAppsPage.$$('.subpage-arrow'));
     });
@@ -84,11 +88,25 @@ suite('AndroidAppsPageTests', function() {
   suite('SubPage', function() {
     var subpage;
 
+    /**
+     * Returns a new promise that resolves after a window 'popstate' event.
+     * @return {!Promise}
+     */
+    function whenPopState() {
+      return new Promise(function(resolve) {
+        window.addEventListener('popstate', function callback() {
+          window.removeEventListener('popstate', callback);
+          resolve();
+        });
+      });
+    }
+
     setup(function() {
       androidAppsPage.prefs = {arc: {enabled: {value: true}}};
       return androidAppsBrowserProxy.whenCalled('requestAndroidAppsInfo')
           .then(function() {
-            androidAppsBrowserProxy.setAppReady(true);
+            settings.navigateTo(settings.Route.ANDROID_APPS);
+            androidAppsBrowserProxy.setAndroidAppsState(true, false);
             MockInteractions.tap(androidAppsPage.$$('#android-apps'));
             Polymer.dom.flush();
             subpage = androidAppsPage.$$('settings-android-apps-subpage');
@@ -97,8 +115,19 @@ suite('AndroidAppsPageTests', function() {
     });
 
     test('Sanity', function() {
-      assertTrue(!!subpage.$$('#manageApps'));
       assertTrue(!!subpage.$$('#remove'));
+      assertTrue(!!subpage.$$('#manageApps'));
+    });
+
+    test('ManageAppsUpdate', function() {
+      var manageApps = subpage.$$('#manageApps');
+      assertTrue(manageApps.hidden);
+      androidAppsBrowserProxy.setAndroidAppsState(true, true);
+      Polymer.dom.flush();
+      assertFalse(manageApps.hidden);
+      androidAppsBrowserProxy.setAndroidAppsState(true, false);
+      Polymer.dom.flush();
+      assertTrue(manageApps.hidden);
     });
 
     test('Disable', function() {
@@ -108,10 +137,22 @@ suite('AndroidAppsPageTests', function() {
 
       var remove = subpage.$$('#remove');
       assertTrue(!!remove);
-      MockInteractions.tap(remove);
 
+      subpage.onRemoveTap_();
       Polymer.dom.flush();
       assertTrue(dialog.open);
+      dialog.close();
+    });
+
+    test('HideOnDisable', function() {
+      assertEquals(settings.getCurrentRoute(),
+                   settings.Route.ANDROID_APPS_DETAILS);
+      androidAppsBrowserProxy.setAndroidAppsState(false, false);
+      Polymer.dom.flush();
+      return whenPopState().then(function() {
+        assertEquals(settings.getCurrentRoute(),
+            settings.Route.ANDROID_APPS);
+      });
     });
   });
 
@@ -129,7 +170,7 @@ suite('AndroidAppsPageTests', function() {
       };
       return androidAppsBrowserProxy.whenCalled('requestAndroidAppsInfo')
           .then(function() {
-            androidAppsBrowserProxy.setAppReady(true);
+            androidAppsBrowserProxy.setAndroidAppsState(true, true);
             MockInteractions.tap(androidAppsPage.$$('#android-apps'));
             Polymer.dom.flush();
             subpage = androidAppsPage.$$('settings-android-apps-subpage');

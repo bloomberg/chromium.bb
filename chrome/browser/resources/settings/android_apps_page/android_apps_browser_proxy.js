@@ -8,7 +8,13 @@
  */
 
 /**
- * @typedef {{appReady: boolean}}
+ * Type definition of AndroidAppsInfo entry. |playStoreEnabled| indicates that
+ * Play Store is enabled. |settingsAppAvailable| indicates that Android settings
+ * app is registered in the system.
+ * @typedef {{
+ *   playStoreEnabled: boolean,
+ *   settingsAppAvailable: boolean,
+ * }}
  * @see chrome/browser/ui/webui/settings/chromeos/android_apps_handler.cc
  */
 var AndroidAppsInfo;

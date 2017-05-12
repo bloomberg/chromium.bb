@@ -17,7 +17,10 @@ Polymer({
     prefs: Object,
 
     /** @private {!AndroidAppsInfo|undefined} */
-    androidAppsInfo: Object,
+    androidAppsInfo: {
+      type: Object,
+      observer: 'onAndroidAppsInfoUpdate_',
+    },
 
     /** @private */
     dialogBody_: {
@@ -36,6 +39,14 @@ Polymer({
   /** @override */
   created: function() {
     this.browserProxy_ = settings.AndroidAppsBrowserProxyImpl.getInstance();
+  },
+
+  /**
+   * @private
+   */
+  onAndroidAppsInfoUpdate_: function() {
+    if (!this.androidAppsInfo.playStoreEnabled)
+      settings.navigateToPreviousRoute();
   },
 
   /**
