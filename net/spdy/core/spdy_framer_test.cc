@@ -8,11 +8,8 @@
 #include <string.h>
 
 #include <algorithm>
-#include <cstdint>
 #include <limits>
-#include <memory>
 #include <tuple>
-#include <utility>
 #include <vector>
 
 #include "base/compiler_specific.h"

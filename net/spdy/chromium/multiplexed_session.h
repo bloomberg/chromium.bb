@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_SPDY_MULTIPLEXED_SESSION_H_
-#define NET_SPDY_MULTIPLEXED_SESSION_H_
+#ifndef NET_SPDY_CHROMIUM_MULTIPLEXED_SESSION_H_
+#define NET_SPDY_CHROMIUM_MULTIPLEXED_SESSION_H_
 
 #include <vector>
 
@@ -73,4 +73,4 @@ class NET_EXPORT_PRIVATE MultiplexedSessionHandle {
 
 }  // namespace net
 
-#endif  // NET_SPDY_MULTIPLEXED_SESSION_H_
+#endif  // NET_SPDY_CHROMIUM_MULTIPLEXED_SESSION_H_
