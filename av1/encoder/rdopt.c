@@ -2367,7 +2367,7 @@ static int64_t intra_model_yrd(const AV1_COMP *const cpi, MACROBLOCK *const x,
 #if CONFIG_EC_ADAPT
       FRAME_CONTEXT *const ec_ctx = xd->tile_ctx;
 #else
-      FRAME_CONTEXT *const ec_ctx = cm->fc;
+      FRAME_CONTEXT *const ec_ctx = cpi->common.fc;
 #endif  // CONFIG_EC_ADAPT
 
       av1_predict_intra_block_encoder_facade(x, ec_ctx, 0, block, col, row,
