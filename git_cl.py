@@ -860,7 +860,8 @@ class Settings(object):
   def GetIsGerrit(self):
     """Return true if this repo is assosiated with gerrit code review system."""
     if self.is_gerrit is None:
-      self.is_gerrit = self._GetConfig('gerrit.host', error_ok=True)
+      self.is_gerrit = (
+          self._GetConfig('gerrit.host', error_ok=True).lower() == 'true')
     return self.is_gerrit
 
   def GetSquashGerritUploads(self):
