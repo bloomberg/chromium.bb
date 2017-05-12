@@ -1263,6 +1263,13 @@ void LayerTreeHost::SetMutatorsNeedRebuildPropertyTrees() {
 void LayerTreeHost::SetElementFilterMutated(ElementId element_id,
                                             ElementListType list_type,
                                             const FilterOperations& filters) {
+  if (settings_.use_layer_lists) {
+    // In SPv2 we always have property trees and can set the filter
+    // directly on the effect node.
+    property_trees_.effect_tree.OnFilterAnimated(element_id, filters);
+    return;
+  }
+
   Layer* layer = LayerByElementId(element_id);
   DCHECK(layer);
   layer->OnFilterAnimated(filters);
