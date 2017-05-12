@@ -33,6 +33,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/task_scheduler/post_task.h"
 #include "base/threading/thread_restrictions.h"
+#include "base/time/time.h"
 #include "build/build_config.h"
 #include "components/autofill/core/browser/autocomplete_history_manager.h"
 #include "components/autofill/core/browser/autofill_client.h"
@@ -1348,6 +1349,20 @@ int AutofillManager::GetProfilesForCreditCardUpload(
 
   AutofillMetrics::LogHasModifiedProfileOnCreditCardFormSubmission(
       has_modified_profile);
+
+  // If there are no recently used or modified profiles and experiment to use
+  // profiles that were not recently is enabled, collect the profiles that were
+  // not recently used but used within the maximum time specified in the
+  // experiment.
+  if (candidate_profiles.empty()) {
+    const base::TimeDelta max_time_since_use =
+        GetMaxTimeSinceAutofillProfileUseForCardUpload();
+    if (!max_time_since_use.is_zero())
+      for (AutofillProfile* profile : personal_data_->GetProfiles())
+        if ((now - profile->modification_date()) < max_time_since_use ||
+            (now - profile->use_date()) < max_time_since_use)
+          candidate_profiles.push_back(*profile);
+  }
 
   if (candidate_profiles.empty()) {
     upload_decision_metrics |=

@@ -11,6 +11,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/time/time.h"
 #include "build/build_config.h"
 #include "components/autofill/core/browser/suggestion.h"
 #include "components/autofill/core/common/autofill_pref_names.h"
@@ -39,6 +40,9 @@ const base::Feature kAutofillUpstreamRequestCvcIfMissing{
 const base::Feature kAutofillUpstreamUseAutofillProfileComparatorForName{
     "AutofillUpstreamUseAutofillProfileComparatorForName",
     base::FEATURE_ENABLED_BY_DEFAULT};
+const base::Feature kAutofillUpstreamUseNotRecentlyUsedAutofillProfile{
+    "AutofillUpstreamUseNotRecentlyUsedAutofillProfile",
+    base::FEATURE_DISABLED_BY_DEFAULT};
 const char kCreditCardSigninPromoImpressionLimitParamKey[] = "impression_limit";
 const char kAutofillCreditCardPopupBackgroundColorKey[] = "background_color";
 const char kAutofillCreditCardPopupDividerColorKey[] = "dropdown_divider_color";
@@ -51,6 +55,8 @@ const char kAutofillCreditCardPopupIsIconAtStartKey[] =
 const char kAutofillPopupMarginKey[] = "margin";
 const char kAutofillCreditCardLastUsedDateShowExpirationDateKey[] =
     "show_expiration_date";
+const char kAutofillUpstreamMaxMinutesSinceAutofillProfileUseKey[] =
+    "max_minutes_since_autofill_profile_use";
 
 namespace {
 
@@ -240,6 +246,16 @@ bool IsAutofillUpstreamRequestCvcIfMissingExperimentEnabled() {
 #else
   return base::FeatureList::IsEnabled(kAutofillUpstreamRequestCvcIfMissing);
 #endif
+}
+
+base::TimeDelta GetMaxTimeSinceAutofillProfileUseForCardUpload() {
+  int value;
+  const std::string param_value = variations::GetVariationParamValueByFeature(
+      kAutofillUpstreamUseNotRecentlyUsedAutofillProfile,
+      kAutofillUpstreamMaxMinutesSinceAutofillProfileUseKey);
+  if (!param_value.empty() && base::StringToInt(param_value, &value))
+    return base::TimeDelta::FromMinutes(value);
+  return base::TimeDelta();
 }
 
 }  // namespace autofill
