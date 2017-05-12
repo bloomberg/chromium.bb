@@ -46,6 +46,7 @@ import org.chromium.base.BaseSwitches;
 import org.chromium.base.Callback;
 import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;
+import org.chromium.base.DiscardableReferencePool;
 import org.chromium.base.SysUtils;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.VisibleForTesting;
@@ -271,6 +272,8 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
     private int mUiMode;
     private int mScreenWidthDp;
     private Runnable mRecordMultiWindowModeScreenWidthRunnable;
+
+    private final DiscardableReferencePool mReferencePool = new DiscardableReferencePool();
 
     private AssistStatusHandler mAssistStatusHandler;
 
@@ -1778,6 +1781,16 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
         super.onBackPressed();
     }
 
+    @Override
+    public void onTrimMemory(int level) {
+        super.onTrimMemory(level);
+        // The conditions are expressed using ranges to capture intermediate levels possibly added
+        // to the API in the future.
+        if ((level >= TRIM_MEMORY_RUNNING_LOW && level < TRIM_MEMORY_UI_HIDDEN)
+                || level >= TRIM_MEMORY_MODERATE) {
+            mReferencePool.drain();
+        }
+    }
 
     private ContentViewCore getContentViewCore() {
         Tab tab = getActivityTab();
@@ -2202,5 +2215,12 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
      */
     public boolean supportsFullscreenActivity() {
         return false;
+    }
+
+    /**
+     * @return the reference pool for this activity.
+     */
+    public DiscardableReferencePool getReferencePool() {
+        return mReferencePool;
     }
 }

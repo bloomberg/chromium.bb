@@ -18,6 +18,7 @@ import android.view.View;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.CommandLine;
+import org.chromium.base.DiscardableReferencePool;
 import org.chromium.base.Log;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.VisibleForTesting;
@@ -178,8 +179,9 @@ public class NewTabPage
         public NewTabPageManagerImpl(SuggestionsSource suggestionsSource,
                 SuggestionsEventReporter eventReporter,
                 SuggestionsNavigationDelegate navigationDelegate, Profile profile,
-                NativePageHost nativePageHost) {
-            super(suggestionsSource, eventReporter, navigationDelegate, profile, nativePageHost);
+                NativePageHost nativePageHost, DiscardableReferencePool referencePool) {
+            super(suggestionsSource, eventReporter, navigationDelegate, profile, nativePageHost,
+                    referencePool);
         }
 
         @Override
@@ -322,8 +324,8 @@ public class NewTabPage
         SuggestionsNavigationDelegateImpl navigationDelegate =
                 new SuggestionsNavigationDelegateImpl(
                         activity, profile, nativePageHost, tabModelSelector);
-        mNewTabPageManager = new NewTabPageManagerImpl(
-                mSnippetsBridge, eventReporter, navigationDelegate, profile, nativePageHost);
+        mNewTabPageManager = new NewTabPageManagerImpl(mSnippetsBridge, eventReporter,
+                navigationDelegate, profile, nativePageHost, activity.getReferencePool());
         mTileGroupDelegate = new NewTabPageTileGroupDelegate(
                 activity, profile, tabModelSelector, navigationDelegate);
 
