@@ -3,22 +3,14 @@ import csv
 import fileinput
 from utils import *
 
-class UTF8Recoder:
-    def __init__(self, reader):
-        self.reader = reader
-    def __iter__(self):
-        return self
-    def next(self):
-        return self.reader.next().encode("utf-8")
-        
 class Reader:
     def __init__(self, files, encoding):
-        self.reader = csv.reader(UTF8Recoder(fileinput.FileInput(files, openhook=fileinput.hook_encoded(encoding))),
+        self.reader = csv.reader(fileinput.FileInput(files, openhook=fileinput.hook_encoded(encoding)),
                                  delimiter='\t', quoting=csv.QUOTE_NONE)
     def __iter__(self):
         return self
-    def next(self):
-        frequency, text = [unicode(s, "utf-8") for s in self.reader.next()]
+    def __next__(self):
+        frequency, text = next(self.reader)
         frequency = int(frequency)
         text = to_lowercase(text)
         return {'text': text,

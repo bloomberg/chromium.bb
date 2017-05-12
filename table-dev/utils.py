@@ -1,5 +1,8 @@
 from ctypes import *
-from itertools import takewhile, izip, izip_longest, chain, tee
+from itertools import takewhile, zip_longest, chain, tee
+izip = zip
+izip_longest = zip_longest
+
 from louis import _loader, liblouis, outlenMultiplier
 import re
 import sqlite3
@@ -18,7 +21,7 @@ liblouis_dev.toLowercase.argtypes = (c_wchar,)
 liblouis_dev.toLowercase.restype = c_wchar
 
 def println(line=""):
-    sys.stdout.write(("%s\n" % line).encode("utf-8"))
+    sys.stdout.write(("%s\n" % line))
 
 def validate_chunks(chunked_text):
     return re.search(r"^([^)(|]+|\([^)(|][^)(|]+\))(\|?([^)(|]+|\([^)(|][^)(|]+\)))*$", chunked_text) != None
@@ -108,6 +111,7 @@ table = None
 def load_table(new_table):
     global table
     table = new_table
+    table = table.encode("ASCII") if isinstance(table, str) else bytes(table)
     liblouis_dev.loadTable(table);
 
 def is_letter(text):
@@ -120,7 +124,7 @@ def to_dot_pattern(braille):
     c_braille = create_unicode_buffer(braille)
     c_dots = create_string_buffer(9 * len(braille))
     liblouis_dev.toDotPattern(c_braille, c_dots)
-    return c_dots.value
+    return c_dots.value.decode('ascii')
 
 def hyphenate(text):
     c_text = create_unicode_buffer(text)
@@ -154,7 +158,8 @@ def suggest_chunks(text, braille):
     c_hyphen_string = create_string_buffer(len(text) + 1)
     if not liblouis_dev.suggestChunks(c_text, c_braille, c_hyphen_string):
         return None;
-    hyphen_string = "".join(c_hyphen_string.value[1:len(c_hyphen_string.value)-1])
+    hyphen_string = c_hyphen_string.value.decode('ascii')
+    hyphen_string = hyphen_string[1:len(hyphen_string)-1]
     assert len(hyphen_string) == len(text) - 1 and re.search("^[01x]+$", hyphen_string)
     return hyphen_string
 

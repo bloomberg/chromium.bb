@@ -17,7 +17,7 @@ def main():
         if args.TABLE:
             actual_hyphen_string = hyphenate(text)
         else:
-            actual_hyphen_string = ["0" * (len(text) - 1)]
+            actual_hyphen_string = "".join(["0" * (len(text) - 1)])
         println(my_zip(text,
                        map(lambda e, a: ".0" if e == "x" and a == "1" else
                                         "0" if e == "x" else

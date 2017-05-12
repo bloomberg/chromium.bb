@@ -34,6 +34,7 @@ def main():
                                                  rule["text"] == text and
                                                  rule["braille"] == braille,
                                     rules)
+            rule = list(rule)
             if add_or_delete == '-':
                 exit_if_not(rule)
             else:
