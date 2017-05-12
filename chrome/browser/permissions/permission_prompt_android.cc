@@ -21,17 +21,14 @@ void PermissionPromptAndroid::SetDelegate(Delegate* delegate) {
   delegate_ = delegate;
 }
 
-void PermissionPromptAndroid::Show(
-    const std::vector<PermissionRequest*>& requests,
-    const std::vector<bool>& values) {
+void PermissionPromptAndroid::Show() {
   InfoBarService* infobar_service =
       InfoBarService::FromWebContents(web_contents_);
   if (!infobar_service)
     return;
 
-  requests_ = requests;
-  GroupedPermissionInfoBarDelegate::Create(this, infobar_service,
-                                           requests[0]->GetOrigin());
+  GroupedPermissionInfoBarDelegate::Create(
+      this, infobar_service, delegate_->Requests()[0]->GetOrigin());
 }
 
 bool PermissionPromptAndroid::CanAcceptRequestUpdate() {
@@ -58,7 +55,6 @@ gfx::NativeWindow PermissionPromptAndroid::GetNativeWindow() {
 }
 
 void PermissionPromptAndroid::Closing() {
-  requests_.clear();
   if (delegate_)
     delegate_->Closing();
 }
@@ -69,32 +65,37 @@ void PermissionPromptAndroid::ToggleAccept(int index, bool value) {
 }
 
 void PermissionPromptAndroid::Accept() {
-  requests_.clear();
   if (delegate_)
     delegate_->Accept();
 }
 
 void PermissionPromptAndroid::Deny() {
-  requests_.clear();
   if (delegate_)
     delegate_->Deny();
 }
 
+size_t PermissionPromptAndroid::PermissionCount() const {
+  return delegate_->Requests().size();
+}
+
 ContentSettingsType PermissionPromptAndroid::GetContentSettingType(
     size_t position) const {
-  DCHECK_LT(position, requests_.size());
-  return requests_[position]->GetContentSettingsType();
+  const std::vector<PermissionRequest*>& requests = delegate_->Requests();
+  DCHECK_LT(position, requests.size());
+  return requests[position]->GetContentSettingsType();
 }
 
 int PermissionPromptAndroid::GetIconIdForPermission(size_t position) const {
-  DCHECK_LT(position, requests_.size());
-  return requests_[position]->GetIconId();
+  const std::vector<PermissionRequest*>& requests = delegate_->Requests();
+  DCHECK_LT(position, requests.size());
+  return requests[position]->GetIconId();
 }
 
 base::string16 PermissionPromptAndroid::GetMessageTextFragment(
     size_t position) const {
-  DCHECK_LT(position, requests_.size());
-  return requests_[position]->GetMessageTextFragment();
+  const std::vector<PermissionRequest*>& requests = delegate_->Requests();
+  DCHECK_LT(position, requests.size());
+  return requests[position]->GetMessageTextFragment();
 }
 
 // static

@@ -29,8 +29,7 @@ class PermissionPromptImpl : public PermissionPrompt {
 
   // PermissionPrompt:
   void SetDelegate(Delegate* delegate) override;
-  void Show(const std::vector<PermissionRequest*>& requests,
-            const std::vector<bool>& accept_state) override;
+  void Show() override;
   bool CanAcceptRequestUpdate() override;
   bool HidesAutomatically() override;
   void Hide() override;

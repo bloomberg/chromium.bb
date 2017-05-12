@@ -31,7 +31,7 @@ infobars::InfoBar* GroupedPermissionInfoBarDelegate::Create(
 }
 
 size_t GroupedPermissionInfoBarDelegate::PermissionCount() const {
-  return permission_prompt_->permission_count();
+  return permission_prompt_->PermissionCount();
 }
 
 bool GroupedPermissionInfoBarDelegate::ShouldShowPersistenceToggle() const {

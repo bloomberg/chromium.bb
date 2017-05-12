@@ -281,12 +281,12 @@ const NSSize kPermissionIconSize = {18, 18};
   [self setAnchorPoint:[self getExpectedAnchorPoint]];
 }
 
-- (void)showWithDelegate:(PermissionPrompt::Delegate*)delegate
-             forRequests:(const std::vector<PermissionRequest*>&)requests
-            acceptStates:(const std::vector<bool>&)acceptStates {
-  DCHECK(!requests.empty());
+- (void)showWithDelegate:(PermissionPrompt::Delegate*)delegate {
   DCHECK(delegate);
   delegate_ = delegate;
+
+  const std::vector<PermissionRequest*>& requests = delegate->Requests();
+  DCHECK(!requests.empty());
 
   NSView* contentView = [[self window] contentView];
   [contentView setSubviews:@[]];
@@ -323,10 +323,9 @@ const NSSize kPermissionIconSize = {18, 18};
 
     if (!singlePermission) {
       int index = it - requests.begin();
-      base::scoped_nsobject<NSView> menu(
-          [[self menuForRequest:(*it)
-                        atIndex:index
-                          allow:acceptStates[index] ? YES : NO] retain]);
+      base::scoped_nsobject<NSView> menu([[self
+          menuForRequest:(*it)atIndex:index
+                   allow:delegate->AcceptStates()[index] ? YES : NO] retain]);
       // Align vertically.  Horizontal alignment will be adjusted once the
       // widest permission is know.
       [PermissionBubbleController alignCenterOf:menu

@@ -17,7 +17,7 @@
 IN_PROC_BROWSER_TEST_F(PermissionBubbleBrowserTest, HasLocationBarByDefault) {
   PermissionBubbleCocoa bubble(browser());
   bubble.SetDelegate(test_delegate());
-  bubble.Show(requests(), accept_states());
+  bubble.Show();
   EXPECT_TRUE([bubble.bubbleController_ hasVisibleLocationBar]);
   bubble.Hide();
 }
@@ -28,7 +28,7 @@ IN_PROC_BROWSER_TEST_F(PermissionBubbleBrowserTest,
 
   PermissionBubbleCocoa bubble(browser());
   bubble.SetDelegate(test_delegate());
-  bubble.Show(requests(), accept_states());
+  bubble.Show();
   EXPECT_TRUE([bubble.bubbleController_ hasVisibleLocationBar]);
 
   FullscreenController* controller =
@@ -61,7 +61,7 @@ IN_PROC_BROWSER_TEST_F(PermissionBubbleBrowserTest,
 
   PermissionBubbleCocoa bubble(browser());
   bubble.SetDelegate(test_delegate());
-  bubble.Show(requests(), accept_states());
+  bubble.Show();
   EXPECT_TRUE([bubble.bubbleController_ hasVisibleLocationBar]);
 
   FullscreenController* controller =
@@ -83,7 +83,7 @@ IN_PROC_BROWSER_TEST_F(PermissionBubbleBrowserTest, AppHasNoLocationBar) {
   Browser* app_browser = OpenExtensionAppWindow();
   PermissionBubbleCocoa bubble(app_browser);
   bubble.SetDelegate(test_delegate());
-  bubble.Show(requests(), accept_states());
+  bubble.Show();
   EXPECT_FALSE([bubble.bubbleController_ hasVisibleLocationBar]);
   bubble.Hide();
 }
@@ -94,7 +94,7 @@ IN_PROC_BROWSER_TEST_F(PermissionBubbleKioskBrowserTest,
                        DISABLED_KioskHasNoLocationBar) {
   PermissionBubbleCocoa bubble(browser());
   bubble.SetDelegate(test_delegate());
-  bubble.Show(requests(), accept_states());
+  bubble.Show();
   EXPECT_FALSE([bubble.bubbleController_ hasVisibleLocationBar]);
   bubble.Hide();
 }

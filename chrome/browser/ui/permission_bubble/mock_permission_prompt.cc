@@ -13,8 +13,7 @@ MockPermissionPrompt::~MockPermissionPrompt() {
   Hide();
 }
 
-void MockPermissionPrompt::Show(const std::vector<PermissionRequest*>& requests,
-                                const std::vector<bool>& accept_state) {
+void MockPermissionPrompt::Show() {
   factory_->ShowView(this);
   factory_->show_count_++;
   factory_->requests_count_ = manager_->requests_.size();
