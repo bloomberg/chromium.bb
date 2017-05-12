@@ -170,15 +170,11 @@ TABLE CONTRIBUTORS
   <Aliminator83@gmail.com>
   <eric@integra-belgium.com>
 
-HYPHEN AUTHORS
+LIBHNJ AUTHORS
 
-Code was borrowed from the hyphenation library Hyphen, which is based
-on Libhnj.
+Code was borrowed from the hyphenation library Libhnj.
 
   Raph Levien <raph@acm.org>
-  ALTLinux, Moscow <www.alt-linux.org>
-  Peter Novodvorsky <nidd@alt-linux.org>
-  László Németh <nemeth@numbertext.org>
 
 Hyphenation dictionaries were copied from OpenOffice.org.
 
