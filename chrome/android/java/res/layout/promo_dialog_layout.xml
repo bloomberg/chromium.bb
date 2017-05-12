@@ -42,7 +42,7 @@
                         android:layout_width="@dimen/promo_dialog_illustration_width"
                         android:layout_height="wrap_content"
                         android:layout_gravity="center"
-                        android:layout_marginTop="@dimen/promo_dialog_illustration_margin"
+                        android:paddingTop="@dimen/promo_dialog_illustration_margin"
                         android:layout_marginStart="@dimen/promo_dialog_illustration_margin"
                         android:layout_marginEnd="@dimen/promo_dialog_illustration_margin"
                         android:scaleType="fitCenter"
