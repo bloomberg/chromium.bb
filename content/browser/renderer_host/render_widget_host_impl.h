@@ -585,7 +585,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   void SubmitCompositorFrame(const cc::LocalSurfaceId& local_surface_id,
                              cc::CompositorFrame frame) override;
   void BeginFrameDidNotSwap(const cc::BeginFrameAck& ack) override;
-  void EvictFrame() override {}
+  void EvictCurrentSurface() override {}
 
  protected:
   // ---------------------------------------------------------------------------

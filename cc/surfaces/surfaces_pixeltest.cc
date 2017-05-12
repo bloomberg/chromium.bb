@@ -40,7 +40,7 @@ class SurfacesPixelTest : public RendererPixelTest<GLRenderer> {
                                                kIsRoot,
                                                kHandlesFrameSinkIdInvalidation,
                                                kNeedsSyncPoints)) {}
-  ~SurfacesPixelTest() override { support_->EvictFrame(); }
+  ~SurfacesPixelTest() override { support_->EvictCurrentSurface(); }
 
  protected:
   SurfaceManager manager_;
@@ -182,7 +182,7 @@ TEST_F(SurfacesPixelTest, DrawSimpleAggregatedFrame) {
                            base::FilePath(FILE_PATH_LITERAL("blue_yellow.png")),
                            pixel_comparator));
 
-  child_support->EvictFrame();
+  child_support->EvictCurrentSurface();
 }
 
 // Tests a surface quad that has a non-identity transform into its pass.
@@ -324,8 +324,8 @@ TEST_F(SurfacesPixelTest, DrawAggregatedFrameWithSurfaceTransforms) {
       base::FilePath(FILE_PATH_LITERAL("four_blue_green_checkers.png")),
       pixel_comparator));
 
-  left_support->EvictFrame();
-  right_support->EvictFrame();
+  left_support->EvictCurrentSurface();
+  right_support->EvictCurrentSurface();
 }
 
 }  // namespace

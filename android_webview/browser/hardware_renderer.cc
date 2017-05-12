@@ -167,7 +167,7 @@ void HardwareRenderer::DestroySurface() {
   DCHECK(child_id_.is_valid());
 
   surfaces_->RemoveChildId(cc::SurfaceId(frame_sink_id_, child_id_));
-  support_->EvictFrame();
+  support_->EvictCurrentSurface();
   child_id_ = cc::LocalSurfaceId();
 }
 

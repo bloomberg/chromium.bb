@@ -37,7 +37,7 @@ class GpuCompositorFrameSink
   ~GpuCompositorFrameSink() override;
 
   // cc::mojom::MojoCompositorFrameSink:
-  void EvictFrame() override;
+  void EvictCurrentSurface() override;
   void SetNeedsBeginFrame(bool needs_begin_frame) override;
   void SubmitCompositorFrame(const cc::LocalSurfaceId& local_surface_id,
                              cc::CompositorFrame frame) override;

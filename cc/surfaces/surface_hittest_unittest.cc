@@ -104,7 +104,7 @@ TEST(SurfaceHittestTest, Hittest_BadCompositorFrameDoesNotCrash) {
                   root_surface_id, gfx::Point(100, 100), &transform));
   }
 
-  root_support->EvictFrame();
+  root_support->EvictCurrentSurface();
 }
 
 TEST(SurfaceHittestTest, Hittest_SingleSurface) {
@@ -139,7 +139,7 @@ TEST(SurfaceHittestTest, Hittest_SingleSurface) {
 
   RunTests(nullptr, &manager, tests, arraysize(tests));
 
-  root_support->EvictFrame();
+  root_support->EvictCurrentSurface();
 }
 
 TEST(SurfaceHittestTest, Hittest_ChildSurface) {
@@ -279,8 +279,8 @@ TEST(SurfaceHittestTest, Hittest_ChildSurface) {
     EXPECT_EQ(gfx::Point(25, 25), point_in_target_space);
   }
 
-  root_support->EvictFrame();
-  child_support->EvictFrame();
+  root_support->EvictCurrentSurface();
+  child_support->EvictCurrentSurface();
 }
 
 // This test verifies that hit testing will progress to the next quad if it
@@ -392,8 +392,8 @@ TEST(SurfaceHittestTest, Hittest_InvalidRenderPassDrawQuad) {
 
   RunTests(nullptr, &manager, tests, arraysize(tests));
 
-  root_support->EvictFrame();
-  child_support->EvictFrame();
+  root_support->EvictCurrentSurface();
+  child_support->EvictCurrentSurface();
 }
 
 TEST(SurfaceHittestTest, Hittest_RenderPassDrawQuad) {
@@ -496,7 +496,7 @@ TEST(SurfaceHittestTest, Hittest_RenderPassDrawQuad) {
 
   RunTests(nullptr, &manager, tests, arraysize(tests));
 
-  support->EvictFrame();
+  support->EvictCurrentSurface();
 }
 
 TEST(SurfaceHittestTest, Hittest_SingleSurface_WithInsetsDelegate) {
@@ -634,8 +634,8 @@ TEST(SurfaceHittestTest, Hittest_SingleSurface_WithInsetsDelegate) {
   EXPECT_EQ(0, accept_delegate.reject_target_overrides());
   EXPECT_EQ(2, accept_delegate.accept_target_overrides());
 
-  root_support->EvictFrame();
-  child_support->EvictFrame();
+  root_support->EvictCurrentSurface();
+  child_support->EvictCurrentSurface();
 }
 
 }  // namespace cc

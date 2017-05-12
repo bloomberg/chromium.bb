@@ -679,7 +679,7 @@ RenderWidgetHostViewChildFrame::CreateBrowserAccessibilityManager(
 void RenderWidgetHostViewChildFrame::ClearCompositorSurfaceIfNecessary() {
   if (!support_)
     return;
-  support_->EvictFrame();
+  support_->EvictCurrentSurface();
   has_frame_ = false;
 }
 

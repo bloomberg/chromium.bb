@@ -645,8 +645,8 @@ TEST_F(SurfaceSynchronizationTest, EvictSurfaceWithPendingFrame) {
               UnorderedElementsAre(child_id2));
 
   // Evict child_support1's current Surface.
-  // TODO(fsamuel): EvictFrame => EvictCurrentSurface.
-  child_support1().EvictFrame();
+  // TODO(fsamuel): EvictCurrentSurface => EvictCurrentSurface.
+  child_support1().EvictCurrentSurface();
 
   // The parent Surface should immediately activate.
   EXPECT_TRUE(parent_surface()->HasActiveFrame());
@@ -1046,7 +1046,7 @@ TEST_F(SurfaceSynchronizationTest, SurfaceResurrection) {
 
   // Attempt to destroy the child surface. The surface must still exist since
   // the parent needs it but it will be marked as destroyed.
-  child_support1().EvictFrame();
+  child_support1().EvictCurrentSurface();
   surface = surface_manager().GetSurfaceForId(child_id);
   EXPECT_NE(nullptr, surface);
   EXPECT_TRUE(surface->destroyed());
@@ -1084,7 +1084,7 @@ TEST_F(SurfaceSynchronizationTest, LocalSurfaceIdIsReusable) {
                                          MakeCompositorFrame());
 
   // Destroy the surface.
-  child_support1().EvictFrame();
+  child_support1().EvictCurrentSurface();
   EXPECT_EQ(nullptr, surface_manager().GetSurfaceForId(child_id));
 
   // Submit another frame with the same local surface id. This should work fine
