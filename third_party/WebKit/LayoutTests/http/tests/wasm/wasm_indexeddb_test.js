@@ -21,7 +21,12 @@ function createAndSaveToIndexedDB() {
             var db = open_request.result;
             var tx = db.transaction(obj_store, 'readwrite');
             var store = tx.objectStore(obj_store);
-            store.put(mod, module_key);
+            try {
+              store.put(mod, module_key);
+            } catch(e) {
+              reject(e);
+              return;
+            }
             tx.oncomplete = function() {
               resolve();
             };
@@ -35,8 +40,6 @@ function createAndSaveToIndexedDB() {
   });
 }
 
-var kErrorMsg = "failed to retrieve object";
-
 function loadFromIndexedDB(prev) {
   return new Promise((resolve, reject) => {
     prev.then(() => {
@@ -48,18 +51,14 @@ function loadFromIndexedDB(prev) {
         var get_request = store.get(module_key);
         get_request.onsuccess = function() {
           var mod = get_request.result;
-          if (mod instanceof WebAssembly.Module) {
-            try {
-              var instance = new WebAssembly.Instance(mod);
-            } catch(e) {
-              reject(e);
-              return;
-            }
-            resolve(instance.exports.increment(1));
-          } else {
-            assert_equals(mod, null);
-            reject(new Error(kErrorMsg));
+          assert_true(mod instanceof WebAssembly.Module);
+          try {
+            var instance = new WebAssembly.Instance(mod);
+          } catch(e) {
+            reject(e);
+            return;
           }
+          resolve(instance.exports.increment(1));
         };
       };
     });
@@ -73,7 +72,10 @@ function TestIndexedDBLoadStoreSecure() {
 }
 
 function TestIndexedDBLoadStoreInsecure() {
-  return loadFromIndexedDB(createAndSaveToIndexedDB())
+  return createAndSaveToIndexedDB()
     .then(assert_unreached,
-          error => assert_equals(error.message, kErrorMsg));
+          error => {
+            assert_true(error instanceof DOMException);
+            assert_equals(error.name, 'DataCloneError');
+          });
 }

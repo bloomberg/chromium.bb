@@ -104,6 +104,12 @@ class CORE_EXPORT SerializedScriptValue
   };
 
   struct SerializeOptions {
+    enum WasmSerializationPolicy {
+      kUnspecified,  // Invalid value, used as default initializer.
+      kTransfer,     // In-memory transfer without (necessarily) serializing.
+      kSerialize,    // Serialize to a byte stream.
+      kBlockedInNonSecureContext  // Block transfer or serialization.
+    };
     STACK_ALLOCATED();
 
     SerializeOptions() {}
@@ -112,7 +118,7 @@ class CORE_EXPORT SerializedScriptValue
 
     Transferables* transferables = nullptr;
     WebBlobInfoArray* blob_info = nullptr;
-    bool write_wasm_to_stream = false;
+    WasmSerializationPolicy wasm_policy = kTransfer;
     StoragePolicy for_storage = kNotForStorage;
   };
   static PassRefPtr<SerializedScriptValue> Serialize(v8::Isolate*,

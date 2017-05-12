@@ -2691,7 +2691,7 @@ DOMArrayBuffer* Internals::serializeWithInlineWasm(ScriptValue value) const {
                                  "Internals", "serializeWithInlineWasm");
   v8::Local<v8::Value> v8_value = value.V8Value();
   SerializedScriptValue::SerializeOptions options;
-  options.write_wasm_to_stream = true;
+  options.wasm_policy = SerializedScriptValue::SerializeOptions::kSerialize;
   RefPtr<SerializedScriptValue> obj = SerializedScriptValue::Serialize(
       isolate, v8_value, options, exception_state);
   if (exception_state.HadException())
