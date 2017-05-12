@@ -1,7 +1,4 @@
-<script src="../../resources/testharness.js"></script>
-<script src="test-helpers.js"></script>
 <script>
-
 function xhr_send(method, data) {
   return new Promise(function(resolve, reject) {
       var xhr = new XMLHttpRequest();
@@ -23,5 +20,4 @@ window.addEventListener('message', function(evt) {
       .then(function() { port.postMessage({results: 'finish'}); })
       .catch(function(e) { port.postMessage({results: 'failure:' + e}); });
   });
-
 </script>
