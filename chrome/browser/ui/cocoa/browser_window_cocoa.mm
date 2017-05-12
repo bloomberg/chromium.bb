@@ -735,10 +735,10 @@ BrowserWindowCocoa::PreHandleKeyboardEvent(
     return [BrowserWindowUtils handleKeyboardEvent:event.os_event
                                           inWindow:window()]
                ? Result::HANDLED
-               : Result::NOT_HANDLED_IS_SHORTCUT;
+               : Result::NOT_HANDLED;
   }
 
-  return content::KeyboardEventProcessingResult::NOT_HANDLED;
+  return content::KeyboardEventProcessingResult::NOT_HANDLED_IS_SHORTCUT;
 }
 
 void BrowserWindowCocoa::HandleKeyboardEvent(
