@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.download;
 
-import android.app.DownloadManager;
 import android.content.Context;
 import android.os.Handler;
 import android.os.HandlerThread;
@@ -21,14 +20,12 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.ContextUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.AdvancedMockContext;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
-import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.browser.download.DownloadInfo.Builder;
 import org.chromium.chrome.browser.download.DownloadManagerServiceTest.MockDownloadNotifier.MethodID;
 import org.chromium.components.offline_items_collection.ContentId;
@@ -38,13 +35,11 @@ import org.chromium.content.browser.test.NativeLibraryTestRule;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.net.ConnectionType;
-import org.chromium.net.test.EmbeddedTestServer;
 
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Queue;
 import java.util.Random;
-import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
@@ -261,42 +256,6 @@ public class DownloadManagerServiceTest {
                 return ((OneTimeMatchSet) obj2).matches(obj1);
             }
             return false;
-        }
-    }
-
-    static class MockOMADownloadHandler extends OMADownloadHandler {
-        protected boolean mSuccess;
-        protected String mNofityURI;
-        protected long mDownloadId;
-
-        MockOMADownloadHandler(Context context) {
-            super(context);
-        }
-
-        protected void setDownloadId(long downloadId) {
-            mDownloadId = downloadId;
-        }
-
-        @Override
-        public void onDownloadCompleted(
-                DownloadInfo downloadInfo, long downloadId, String notifyURI) {
-            mSuccess = true;
-            mNofityURI = notifyURI;
-        }
-
-        @Override
-        public boolean isPendingOMADownload(long downloadId) {
-            return mDownloadId == downloadId;
-        }
-
-        @Override
-        public void updateDownloadInfo(long oldDownloadId, long newDownloadId) {
-            mDownloadId = newDownloadId;
-        }
-
-        @Override
-        public String getInstallNotifyInfo(long downloadId) {
-            return INSTALL_NOTIFY_URI;
         }
     }
 
@@ -574,87 +533,6 @@ public class DownloadManagerServiceTest {
         int resumableIdCount = dService.mAutoResumableDownloadIds.size();
         dService.onConnectionTypeChanged(ConnectionType.CONNECTION_2G);
         Assert.assertEquals(resumableIdCount, dService.mAutoResumableDownloadIds.size());
-    }
-
-    /**
-     * Test to make sure {@link DownloadManagerService#clearPendingDownloadNotifications}
-     * will clear the OMA notifications and pass the notification URI to {@link OMADownloadHandler}.
-     */
-    @Test
-    @MediumTest
-    @Feature({"Download"})
-    public void testClearPendingOMADownloads() {
-        DownloadManager manager =
-                (DownloadManager) getTestContext().getSystemService(Context.DOWNLOAD_SERVICE);
-        long downloadId = manager.addCompletedDownload(
-                "test", "test", false, "text/html",
-                UrlUtils.getIsolatedTestFilePath("chrome/test/data/android/download/download.txt"),
-                4, true);
-        MockDownloadNotifier notifier = new MockDownloadNotifier(getTestContext());
-        DownloadManagerServiceForTest dService = new DownloadManagerServiceForTest(
-                getTestContext(), notifier, UPDATE_DELAY_FOR_TEST);
-        final MockOMADownloadHandler handler = new MockOMADownloadHandler(getTestContext());
-        dService.setOMADownloadHandler(handler);
-        dService.addOMADownloadToSharedPrefs(String.valueOf(downloadId) + "," + INSTALL_NOTIFY_URI);
-        dService.clearPendingOMADownloads();
-        CriteriaHelper.pollUiThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return handler.mSuccess;
-            }
-        });
-        Assert.assertEquals(handler.mNofityURI, "http://test/test");
-        manager.remove(downloadId);
-    }
-
-    /**
-     * Test that calling {@link DownloadManagerService#enqueueDownloadManagerRequest} for an
-     * OMA download will enqueue a new DownloadManager request and insert an entry into the
-     * SharedPrefs.
-     */
-    @Test
-    @MediumTest
-    @Feature({"Download"})
-    public void testEnqueueOMADownloads() throws InterruptedException {
-        EmbeddedTestServer testServer = EmbeddedTestServer.createAndStartServer(
-                InstrumentationRegistry.getInstrumentation().getContext());
-
-        try {
-            DownloadInfo info = new DownloadInfo.Builder()
-                    .setMimeType(OMADownloadHandler.OMA_DRM_MESSAGE_MIME)
-                    .setFileName("test.gzip")
-                    .setUrl(testServer.getURL("/chrome/test/data/android/download/test.gzip"))
-                    .build();
-            MockDownloadNotifier notifier = new MockDownloadNotifier(getTestContext());
-            Context context = getTestContext();
-            DownloadManagerServiceForTest dService = new DownloadManagerServiceForTest(
-                    context, notifier, UPDATE_DELAY_FOR_TEST);
-            final MockOMADownloadHandler handler = new MockOMADownloadHandler(context);
-            dService.setOMADownloadHandler(handler);
-            handler.setDownloadId(0);
-            DownloadItem item = new DownloadItem(true, info);
-            item.setSystemDownloadId(0);
-            dService.enqueueDownloadManagerRequest(item, true);
-            CriteriaHelper.pollUiThread(new Criteria() {
-                @Override
-                public boolean isSatisfied() {
-                    return handler.mDownloadId != 0;
-                }
-            });
-            Set<String> downloads = dService.getStoredDownloadInfo(
-                    ContextUtils.getAppSharedPreferences(),
-                    DownloadManagerService.PENDING_OMA_DOWNLOADS);
-            Assert.assertEquals(1, downloads.size());
-            DownloadManagerService.OMAEntry entry = DownloadManagerService.OMAEntry.parseOMAEntry(
-                    (String) (downloads.toArray()[0]));
-            Assert.assertEquals(entry.mDownloadId, handler.mDownloadId);
-            Assert.assertEquals(entry.mInstallNotifyURI, INSTALL_NOTIFY_URI);
-            DownloadManager manager =
-                    (DownloadManager) getTestContext().getSystemService(Context.DOWNLOAD_SERVICE);
-            manager.remove(handler.mDownloadId);
-        } finally {
-            testServer.stopAndDestroyServer();
-        }
     }
 
     /**

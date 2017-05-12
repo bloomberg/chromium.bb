@@ -11,6 +11,7 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
+import android.os.Environment;
 import android.support.v4.app.NotificationManagerCompat;
 import android.text.TextUtils;
 
@@ -18,6 +19,7 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.chrome.browser.UrlConstants;
 
+import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
@@ -26,6 +28,7 @@ import java.lang.reflect.Method;
  */
 public class DownloadManagerDelegate {
     private static final String TAG = "DownloadDelegate";
+    private static final String DOWNLOAD_DIRECTORY = "Download";
     private static final long INVALID_SYSTEM_DOWNLOAD_ID = -1;
     private static final String DOWNLOAD_ID_MAPPINGS_FILE_NAME = "download_id_mappings";
     private static final Object sLock = new Object();
@@ -216,12 +219,13 @@ public class DownloadManagerDelegate {
                 int status = c.getInt(c.getColumnIndex(DownloadManager.COLUMN_STATUS));
                 if (status == DownloadManager.STATUS_SUCCESSFUL) {
                     downloadStatus = DownloadManagerService.DOWNLOAD_STATUS_COMPLETE;
-                    DownloadInfo info =
-                            DownloadInfo.Builder.fromDownloadInfo(mDownloadItem.getDownloadInfo())
-                                    .setFileName(c.getString(
-                                            c.getColumnIndex(DownloadManager.COLUMN_TITLE)))
-                                    .build();
-                    mDownloadItem.setDownloadInfo(info);
+                    DownloadInfo.Builder builder = mDownloadItem.getDownloadInfo() == null
+                            ? new DownloadInfo.Builder()
+                            : DownloadInfo.Builder.fromDownloadInfo(
+                                      mDownloadItem.getDownloadInfo());
+                    builder.setFileName(
+                            c.getString(c.getColumnIndex(DownloadManager.COLUMN_TITLE)));
+                    mDownloadItem.setDownloadInfo(builder.build());
                     if (mShowNotifications) {
                         canResolve = DownloadManagerService.isOMADownloadDescription(
                                 mDownloadItem.getDownloadInfo())
@@ -261,5 +265,143 @@ public class DownloadManagerDelegate {
             Log.e(TAG, "unable to get content URI from DownloadManager");
         }
         return contentUri;
+    }
+
+    /**
+     * Sends the download request to Android download manager. If |notifyCompleted| is true,
+     * a notification will be sent to the user once download is complete and the downloaded
+     * content will be saved to the public directory on external storage. Otherwise, the
+     * download will be saved in the app directory and user will not get any notifications
+     * after download completion.
+     * This will be used by OMA downloads as we need Android DownloadManager to encrypt the content.
+     *
+     * @param item The associated {@link DownloadItem}.
+     * @param notifyCompleted Whether to notify the user after DownloadManager completes the
+     *                        download.
+     * @param callback The callback to be executed after the download request is enqueued.
+     */
+    public void enqueueDownloadManagerRequest(final DownloadItem item, boolean notifyCompleted,
+            EnqueueDownloadRequestCallback callback) {
+        new EnqueueDownloadRequestTask(item, notifyCompleted, callback).execute();
+    }
+
+    /**
+     * Interface for returning the enqueue result when it completes.
+     */
+    public interface EnqueueDownloadRequestCallback {
+        /**
+         * Callback function to return result of enqueue download operation.
+         * @param result Result of enqueue operation on android DownloadManager.
+         * @param failureReason The reason for failure if any, provided by android DownloadManager.
+         * @param downloadItem The associated download item.
+         * @param downloadId The download id obtained from android DownloadManager as a result of
+         * this enqueue operation.
+         */
+        public void onDownloadEnqueued(
+                boolean result, int failureReason, DownloadItem downloadItem, long downloadId);
+    }
+
+    /**
+     * Async task to enqueue a download request into DownloadManager.
+     */
+    private class EnqueueDownloadRequestTask extends AsyncTask<Void, Void, Boolean> {
+        private final DownloadItem mDownloadItem;
+        private final boolean mNotifyCompleted;
+        private final EnqueueDownloadRequestCallback mCallback;
+        private long mDownloadId;
+        private int mFailureReason;
+        private long mStartTime;
+
+        public EnqueueDownloadRequestTask(DownloadItem downloadItem, Boolean notifyCompleted,
+                EnqueueDownloadRequestCallback callback) {
+            mDownloadItem = downloadItem;
+            mNotifyCompleted = notifyCompleted;
+            mCallback = callback;
+        }
+
+        @Override
+        public Boolean doInBackground(Void... voids) {
+            Uri uri = Uri.parse(mDownloadItem.getDownloadInfo().getUrl());
+            DownloadManager.Request request;
+            DownloadInfo info = mDownloadItem.getDownloadInfo();
+            try {
+                request = new DownloadManager.Request(uri);
+            } catch (IllegalArgumentException e) {
+                Log.e(TAG, "Cannot download non http or https scheme");
+                // Use ERROR_UNHANDLED_HTTP_CODE so that it will be treated as a server error.
+                mFailureReason = DownloadManager.ERROR_UNHANDLED_HTTP_CODE;
+                return false;
+            }
+
+            request.setMimeType(info.getMimeType());
+            try {
+                if (mNotifyCompleted) {
+                    if (info.getFileName() != null) {
+                        // Set downloaded file destination to /sdcard/Download or, should it be
+                        // set to one of several Environment.DIRECTORY* dirs depending on mimetype?
+                        request.setDestinationInExternalPublicDir(
+                                Environment.DIRECTORY_DOWNLOADS, info.getFileName());
+                    }
+                } else {
+                    File dir = new File(mContext.getExternalFilesDir(null), DOWNLOAD_DIRECTORY);
+                    if (dir.mkdir() || dir.isDirectory()) {
+                        File file = new File(dir, info.getFileName());
+                        request.setDestinationUri(Uri.fromFile(file));
+                    } else {
+                        Log.e(TAG, "Cannot create download directory");
+                        mFailureReason = DownloadManager.ERROR_FILE_ERROR;
+                        return false;
+                    }
+                }
+            } catch (IllegalStateException e) {
+                Log.e(TAG, "Cannot create download directory");
+                mFailureReason = DownloadManager.ERROR_FILE_ERROR;
+                return false;
+            }
+
+            if (mNotifyCompleted) {
+                // Let this downloaded file be scanned by MediaScanner - so that it can
+                // show up in Gallery app, for example.
+                request.allowScanningByMediaScanner();
+                request.setNotificationVisibility(
+                        DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
+            } else {
+                request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE);
+            }
+            String description = info.getDescription();
+            if (TextUtils.isEmpty(description)) {
+                description = info.getFileName();
+            }
+            request.setDescription(description);
+            request.setTitle(info.getFileName());
+            request.addRequestHeader("Cookie", info.getCookie());
+            request.addRequestHeader("Referer", info.getReferrer());
+            request.addRequestHeader("User-Agent", info.getUserAgent());
+
+            DownloadManager manager =
+                    (DownloadManager) mContext.getSystemService(Context.DOWNLOAD_SERVICE);
+            try {
+                mStartTime = System.currentTimeMillis();
+                mDownloadId = manager.enqueue(request);
+            } catch (IllegalArgumentException e) {
+                // See crbug.com/143499 for more details.
+                Log.e(TAG, "Download failed: " + e);
+                mFailureReason = DownloadManager.ERROR_UNKNOWN;
+                return false;
+            } catch (RuntimeException e) {
+                // See crbug.com/490442 for more details.
+                Log.e(TAG, "Failed to create target file on the external storage: " + e);
+                mFailureReason = DownloadManager.ERROR_FILE_ERROR;
+                return false;
+            }
+            return true;
+        }
+
+        @Override
+        protected void onPostExecute(Boolean result) {
+            mDownloadItem.setStartTime(mStartTime);
+            mCallback.onDownloadEnqueued(result, mFailureReason, mDownloadItem, mDownloadId);
+            mDownloadItem.setSystemDownloadId(mDownloadId);
+        }
     }
 }
