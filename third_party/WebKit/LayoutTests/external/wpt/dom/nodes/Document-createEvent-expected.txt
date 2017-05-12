@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 329 tests; 305 PASS, 24 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 329 tests; 323 PASS, 6 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS AnimationEvent should be an alias for AnimationEvent. 
 PASS createEvent('AnimationEvent') should be initialized correctly. 
 PASS animationevent should be an alias for AnimationEvent. 
@@ -15,11 +15,11 @@ PASS BEFOREUNLOADEVENT should be an alias for BeforeUnloadEvent.
 PASS createEvent('BEFOREUNLOADEVENT') should be initialized correctly. 
 PASS Should throw NOT_SUPPORTED_ERR for pluralized legacy event interface "BeforeUnloadEvents" 
 PASS CloseEvent should be an alias for CloseEvent. 
-FAIL createEvent('CloseEvent') should be initialized correctly. assert_equals: isTrusted should be initialized to false expected (boolean) false but got (undefined) undefined
+PASS createEvent('CloseEvent') should be initialized correctly. 
 PASS closeevent should be an alias for CloseEvent. 
-FAIL createEvent('closeevent') should be initialized correctly. assert_equals: isTrusted should be initialized to false expected (boolean) false but got (undefined) undefined
+PASS createEvent('closeevent') should be initialized correctly. 
 PASS CLOSEEVENT should be an alias for CloseEvent. 
-FAIL createEvent('CLOSEEVENT') should be initialized correctly. assert_equals: isTrusted should be initialized to false expected (boolean) false but got (undefined) undefined
+PASS createEvent('CLOSEEVENT') should be initialized correctly. 
 PASS Should throw NOT_SUPPORTED_ERR for pluralized legacy event interface "CloseEvents" 
 PASS CompositionEvent should be an alias for CompositionEvent. 
 PASS createEvent('CompositionEvent') should be initialized correctly. 
@@ -36,18 +36,18 @@ PASS CUSTOMEVENT should be an alias for CustomEvent.
 PASS createEvent('CUSTOMEVENT') should be initialized correctly. 
 PASS Should throw NOT_SUPPORTED_ERR for pluralized legacy event interface "CustomEvents" 
 PASS DeviceMotionEvent should be an alias for DeviceMotionEvent. 
-FAIL createEvent('DeviceMotionEvent') should be initialized correctly. assert_equals: isTrusted should be initialized to false expected (boolean) false but got (undefined) undefined
+PASS createEvent('DeviceMotionEvent') should be initialized correctly. 
 PASS devicemotionevent should be an alias for DeviceMotionEvent. 
-FAIL createEvent('devicemotionevent') should be initialized correctly. assert_equals: isTrusted should be initialized to false expected (boolean) false but got (undefined) undefined
+PASS createEvent('devicemotionevent') should be initialized correctly. 
 PASS DEVICEMOTIONEVENT should be an alias for DeviceMotionEvent. 
-FAIL createEvent('DEVICEMOTIONEVENT') should be initialized correctly. assert_equals: isTrusted should be initialized to false expected (boolean) false but got (undefined) undefined
+PASS createEvent('DEVICEMOTIONEVENT') should be initialized correctly. 
 PASS Should throw NOT_SUPPORTED_ERR for pluralized legacy event interface "DeviceMotionEvents" 
 PASS DeviceOrientationEvent should be an alias for DeviceOrientationEvent. 
-FAIL createEvent('DeviceOrientationEvent') should be initialized correctly. assert_equals: isTrusted should be initialized to false expected (boolean) false but got (undefined) undefined
+PASS createEvent('DeviceOrientationEvent') should be initialized correctly. 
 PASS deviceorientationevent should be an alias for DeviceOrientationEvent. 
-FAIL createEvent('deviceorientationevent') should be initialized correctly. assert_equals: isTrusted should be initialized to false expected (boolean) false but got (undefined) undefined
+PASS createEvent('deviceorientationevent') should be initialized correctly. 
 PASS DEVICEORIENTATIONEVENT should be an alias for DeviceOrientationEvent. 
-FAIL createEvent('DEVICEORIENTATIONEVENT') should be initialized correctly. assert_equals: isTrusted should be initialized to false expected (boolean) false but got (undefined) undefined
+PASS createEvent('DEVICEORIENTATIONEVENT') should be initialized correctly. 
 PASS Should throw NOT_SUPPORTED_ERR for pluralized legacy event interface "DeviceOrientationEvents" 
 PASS DragEvent should be an alias for DragEvent. 
 PASS createEvent('DragEvent') should be initialized correctly. 
@@ -96,11 +96,11 @@ PASS createEvent('htmlevents') should be initialized correctly.
 PASS HTMLEVENTS should be an alias for Event. 
 PASS createEvent('HTMLEVENTS') should be initialized correctly. 
 PASS IDBVersionChangeEvent should be an alias for IDBVersionChangeEvent. 
-FAIL createEvent('IDBVersionChangeEvent') should be initialized correctly. assert_equals: isTrusted should be initialized to false expected (boolean) false but got (undefined) undefined
+PASS createEvent('IDBVersionChangeEvent') should be initialized correctly. 
 PASS idbversionchangeevent should be an alias for IDBVersionChangeEvent. 
-FAIL createEvent('idbversionchangeevent') should be initialized correctly. assert_equals: isTrusted should be initialized to false expected (boolean) false but got (undefined) undefined
+PASS createEvent('idbversionchangeevent') should be initialized correctly. 
 PASS IDBVERSIONCHANGEEVENT should be an alias for IDBVersionChangeEvent. 
-FAIL createEvent('IDBVERSIONCHANGEEVENT') should be initialized correctly. assert_equals: isTrusted should be initialized to false expected (boolean) false but got (undefined) undefined
+PASS createEvent('IDBVERSIONCHANGEEVENT') should be initialized correctly. 
 PASS Should throw NOT_SUPPORTED_ERR for pluralized legacy event interface "IDBVersionChangeEvents" 
 PASS KeyboardEvent should be an alias for KeyboardEvent. 
 PASS createEvent('KeyboardEvent') should be initialized correctly. 
@@ -145,11 +145,11 @@ PASS POPSTATEEVENT should be an alias for PopStateEvent.
 PASS createEvent('POPSTATEEVENT') should be initialized correctly. 
 PASS Should throw NOT_SUPPORTED_ERR for pluralized legacy event interface "PopStateEvents" 
 PASS StorageEvent should be an alias for StorageEvent. 
-FAIL createEvent('StorageEvent') should be initialized correctly. assert_equals: isTrusted should be initialized to false expected (boolean) false but got (undefined) undefined
+PASS createEvent('StorageEvent') should be initialized correctly. 
 PASS storageevent should be an alias for StorageEvent. 
-FAIL createEvent('storageevent') should be initialized correctly. assert_equals: isTrusted should be initialized to false expected (boolean) false but got (undefined) undefined
+PASS createEvent('storageevent') should be initialized correctly. 
 PASS STORAGEEVENT should be an alias for StorageEvent. 
-FAIL createEvent('STORAGEEVENT') should be initialized correctly. assert_equals: isTrusted should be initialized to false expected (boolean) false but got (undefined) undefined
+PASS createEvent('STORAGEEVENT') should be initialized correctly. 
 PASS Should throw NOT_SUPPORTED_ERR for pluralized legacy event interface "StorageEvents" 
 PASS SVGEvents should be an alias for Event. 
 PASS createEvent('SVGEvents') should be initialized correctly. 
@@ -198,11 +198,11 @@ PASS createEvent('uievents') should be initialized correctly.
 PASS UIEVENTS should be an alias for UIEvent. 
 PASS createEvent('UIEVENTS') should be initialized correctly. 
 PASS WebGLContextEvent should be an alias for WebGLContextEvent. 
-FAIL createEvent('WebGLContextEvent') should be initialized correctly. assert_equals: isTrusted should be initialized to false expected (boolean) false but got (undefined) undefined
+PASS createEvent('WebGLContextEvent') should be initialized correctly. 
 PASS webglcontextevent should be an alias for WebGLContextEvent. 
-FAIL createEvent('webglcontextevent') should be initialized correctly. assert_equals: isTrusted should be initialized to false expected (boolean) false but got (undefined) undefined
+PASS createEvent('webglcontextevent') should be initialized correctly. 
 PASS WEBGLCONTEXTEVENT should be an alias for WebGLContextEvent. 
-FAIL createEvent('WEBGLCONTEXTEVENT') should be initialized correctly. assert_equals: isTrusted should be initialized to false expected (boolean) false but got (undefined) undefined
+PASS createEvent('WEBGLCONTEXTEVENT') should be initialized correctly. 
 PASS Should throw NOT_SUPPORTED_ERR for pluralized legacy event interface "WebGLContextEvents" 
 PASS WheelEvent should be an alias for WheelEvent. 
 PASS createEvent('WheelEvent') should be initialized correctly. 

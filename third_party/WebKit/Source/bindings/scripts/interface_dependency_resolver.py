@@ -320,9 +320,9 @@ def inherit_unforgeable_attributes(resolved_definitions, interfaces_info):
     """Inherits [Unforgeable] attributes and updates the arguments accordingly.
 
     For each interface in |resolved_definitions|, collects all [Unforgeable]
-    attributes in ancestor interfaces in the same component and adds them to
-    the interface.  'referenced_interfaces' and 'cpp_includes' in
-    |interfaces_info| are updated accordingly.
+    attributes in ancestor interfaces and adds them to the interface.
+    'referenced_interfaces' and 'cpp_includes' in |interfaces_info| are updated
+    accordingly.
     """
     def collect_unforgeable_attributes_in_ancestors(interface_name, component):
         if not interface_name:
@@ -330,7 +330,7 @@ def inherit_unforgeable_attributes(resolved_definitions, interfaces_info):
             return [], [], set()
         interface = interfaces_info[interface_name]
         unforgeable_attributes, referenced_interfaces, cpp_includes = collect_unforgeable_attributes_in_ancestors(interface.get('parent'), component)
-        this_unforgeable = interface.get('unforgeable_attributes', {}).get(component, [])
+        this_unforgeable = interface.get('unforgeable_attributes', [])
         unforgeable_attributes.extend(this_unforgeable)
         this_referenced = [attr.idl_type.base_type for attr in this_unforgeable
                            if attr.idl_type.base_type in
