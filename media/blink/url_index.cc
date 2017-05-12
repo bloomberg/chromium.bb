@@ -80,6 +80,7 @@ void UrlData::MergeFrom(const scoped_refptr<UrlData>& other) {
     if (last_modified_.is_null()) {
       last_modified_ = other->last_modified_;
     }
+    bytes_read_from_cache_ += other->bytes_read_from_cache_;
     multibuffer()->MergeFrom(other->multibuffer());
   }
 }
