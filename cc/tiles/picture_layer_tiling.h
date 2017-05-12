@@ -237,6 +237,8 @@ class CC_EXPORT PictureLayerTiling {
     int j() const { return tile_j_; }
 
    private:
+    gfx::Rect ComputeGeometryRect() const;
+
     const PictureLayerTiling* tiling_ = nullptr;
     gfx::Size coverage_rect_max_bounds_;
     gfx::Rect coverage_rect_;
