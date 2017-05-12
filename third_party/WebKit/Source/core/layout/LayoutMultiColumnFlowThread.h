@@ -253,6 +253,11 @@ class CORE_EXPORT LayoutMultiColumnFlowThread : public LayoutFlowThread,
   bool ColumnHeightsChanged() const { return column_heights_changed_; }
   void SetColumnHeightsChanged() { column_heights_changed_ = true; }
 
+  // Finish multicol layout. Returns true if we're really done, or false if we
+  // need another layout pass (typically because columns got new heights in the
+  // previous pass, so that we need to refragment).
+  bool FinishLayout();
+
   void ColumnRuleStyleDidChange();
 
   // Remove the spanner placeholder and return true if the specified object is
@@ -351,6 +356,8 @@ class CORE_EXPORT LayoutMultiColumnFlowThread : public LayoutFlowThread,
 
   // Set when column heights are out of sync with actual layout.
   bool column_heights_changed_;
+
+  bool all_columns_have_known_height_ = false;
 
   // Always true for regular multicol. False for paged-y overflow.
   bool progression_is_inline_;

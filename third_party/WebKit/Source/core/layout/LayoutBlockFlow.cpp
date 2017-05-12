@@ -445,7 +445,7 @@ void LayoutBlockFlow::UpdateBlockLayout(bool relayout_children) {
       LayoutChildren(relayout_children, layout_scope);
     }
 
-    if (flow_thread && flow_thread->ColumnHeightsChanged()) {
+    if (flow_thread && !flow_thread->FinishLayout()) {
       SetChildNeedsLayout(kMarkOnlyThis);
       continue;
     }
