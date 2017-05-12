@@ -6,11 +6,11 @@
 #define MEDIA_FILTERS_DECODER_SELECTOR_H_
 
 #include <memory>
+#include <vector>
 
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "build/build_config.h"
 #include "media/base/demuxer_stream.h"
@@ -42,7 +42,8 @@ class MEDIA_EXPORT DecoderSelector {
   // Callback to create a list of decoders to select from.
   // TODO(xhwang): Use a DecoderFactory to create decoders one by one as needed,
   // instead of creating a list of decoders all at once.
-  using CreateDecodersCB = base::RepeatingCallback<ScopedVector<Decoder>()>;
+  using CreateDecodersCB =
+      base::RepeatingCallback<std::vector<std::unique_ptr<Decoder>>()>;
 
   // Indicates completion of Decoder selection.
   // - First parameter: The initialized Decoder. If it's set to NULL, then
@@ -116,7 +117,7 @@ class MEDIA_EXPORT DecoderSelector {
   typename Decoder::OutputCB output_cb_;
   base::Closure waiting_for_decryption_key_cb_;
 
-  ScopedVector<Decoder> decoders_;
+  std::vector<std::unique_ptr<Decoder>> decoders_;
 
   std::unique_ptr<Decoder> decoder_;
   std::unique_ptr<DecryptingDemuxerStream> decrypted_stream_;

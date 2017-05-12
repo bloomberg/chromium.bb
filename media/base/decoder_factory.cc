@@ -14,11 +14,11 @@ DecoderFactory::~DecoderFactory() {}
 
 void DecoderFactory::CreateAudioDecoders(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-    ScopedVector<AudioDecoder>* audio_decoders) {}
+    std::vector<std::unique_ptr<AudioDecoder>>* audio_decoders) {}
 
 void DecoderFactory::CreateVideoDecoders(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
     GpuVideoAcceleratorFactories* gpu_factories,
-    ScopedVector<VideoDecoder>* video_decoders) {}
+    std::vector<std::unique_ptr<VideoDecoder>>* video_decoders) {}
 
 }  // namespace media

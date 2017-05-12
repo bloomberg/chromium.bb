@@ -8,6 +8,7 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
@@ -124,7 +125,7 @@ class VideoFrameStreamTest
   //   decoder_->SimulateFailureToInit(), and
   // - on decode error of the first buffer, which can be simulated by calling
   //   decoder_->SimulateError() before reading the first frame.
-  ScopedVector<VideoDecoder> CreateVideoDecodersForTest() {
+  std::vector<std::unique_ptr<VideoDecoder>> CreateVideoDecodersForTest() {
     // Previously decoders could have been destroyed on decoder reselection.
     decoders_.clear();
 
@@ -132,22 +133,22 @@ class VideoFrameStreamTest
     // TODO(xhwang): We should test the case where only certain decoder
     // supports encrypted streams. Currently this is hard to test because we use
     // parameterized tests which need to pass in all combinations.
-    ScopedVector<VideoDecoder> decoders;
+    std::vector<std::unique_ptr<VideoDecoder>> decoders;
     for (int i = 0; i < 3; ++i) {
-      FakeVideoDecoder* decoder =
-          new FakeVideoDecoder(GetDecoderName(i), GetParam().decoding_delay,
-                               GetParam().parallel_decoding,
-                               base::Bind(&VideoFrameStreamTest::OnBytesDecoded,
-                                          base::Unretained(this)));
+      auto decoder = base::MakeUnique<FakeVideoDecoder>(
+          GetDecoderName(i), GetParam().decoding_delay,
+          GetParam().parallel_decoding,
+          base::Bind(&VideoFrameStreamTest::OnBytesDecoded,
+                     base::Unretained(this)));
 
       if (GetParam().is_encrypted && !GetParam().has_decryptor)
         decoder->EnableEncryptedConfigSupport();
 
-      decoders.push_back(decoder);
-
       // Keep a copy of the raw pointers so we can change the behavior of each
       // decoder.
-      decoders_.push_back(decoder);
+      decoders_.push_back(decoder.get());
+
+      decoders.push_back(std::move(decoder));
     }
 
     for (const auto& i : decoder_indices_to_fail_init_)

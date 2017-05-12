@@ -4,10 +4,10 @@
 
 #include <stddef.h>
 #include <utility>
-#include <vector>
 
 #include "base/bind.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "build/build_config.h"
@@ -58,8 +58,8 @@ class VideoDecoderSelectorTest : public ::testing::Test {
             new StrictMock<MockDemuxerStream>(DemuxerStream::VIDEO)),
         decoder_1_(new StrictMock<MockVideoDecoder>(kDecoder1)),
         decoder_2_(new StrictMock<MockVideoDecoder>(kDecoder2)) {
-    all_decoders_.push_back(decoder_1_);
-    all_decoders_.push_back(decoder_2_);
+    all_decoders_.push_back(base::WrapUnique(decoder_1_));
+    all_decoders_.push_back(base::WrapUnique(decoder_2_));
     // |cdm_context_| and |decryptor_| are conditionally created in
     // InitializeDecoderSelector().
   }
@@ -84,7 +84,7 @@ class VideoDecoderSelectorTest : public ::testing::Test {
         TestVideoConfig::NormalEncrypted());
   }
 
-  ScopedVector<VideoDecoder> CreateVideoDecodersForTest() {
+  std::vector<std::unique_ptr<VideoDecoder>> CreateVideoDecodersForTest() {
     return std::move(all_decoders_);
   }
 
@@ -167,7 +167,7 @@ class VideoDecoderSelectorTest : public ::testing::Test {
 
   StrictMock<MockVideoDecoder>* decoder_1_;
   StrictMock<MockVideoDecoder>* decoder_2_;
-  ScopedVector<VideoDecoder> all_decoders_;
+  std::vector<std::unique_ptr<VideoDecoder>> all_decoders_;
   std::unique_ptr<VideoDecoder> selected_decoder_;
 
   base::MessageLoop message_loop_;

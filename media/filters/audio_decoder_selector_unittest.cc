@@ -4,10 +4,10 @@
 
 #include <stddef.h>
 #include <utility>
-#include <vector>
 
 #include "base/bind.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "build/build_config.h"
@@ -60,8 +60,8 @@ class AudioDecoderSelectorTest : public ::testing::Test {
             new StrictMock<MockDemuxerStream>(DemuxerStream::AUDIO)),
         decoder_1_(new StrictMock<MockAudioDecoder>(kDecoder1)),
         decoder_2_(new StrictMock<MockAudioDecoder>(kDecoder2)) {
-    all_decoders_.push_back(decoder_1_);
-    all_decoders_.push_back(decoder_2_);
+    all_decoders_.push_back(base::WrapUnique(decoder_1_));
+    all_decoders_.push_back(base::WrapUnique(decoder_2_));
     // |cdm_context_| and |decryptor_| are conditionally created in
     // InitializeDecoderSelector().
   }
@@ -91,7 +91,7 @@ class AudioDecoderSelectorTest : public ::testing::Test {
     demuxer_stream_->set_audio_decoder_config(encrypted_audio_config);
   }
 
-  ScopedVector<AudioDecoder> CreateVideoDecodersForTest() {
+  std::vector<std::unique_ptr<AudioDecoder>> CreateAudioDecodersForTest() {
     return std::move(all_decoders_);
   }
 
@@ -119,7 +119,7 @@ class AudioDecoderSelectorTest : public ::testing::Test {
 
     decoder_selector_.reset(new AudioDecoderSelector(
         message_loop_.task_runner(),
-        base::Bind(&AudioDecoderSelectorTest::CreateVideoDecodersForTest,
+        base::Bind(&AudioDecoderSelectorTest::CreateAudioDecodersForTest,
                    base::Unretained(this)),
         &media_log_));
   }
@@ -172,7 +172,7 @@ class AudioDecoderSelectorTest : public ::testing::Test {
 
   StrictMock<MockAudioDecoder>* decoder_1_;
   StrictMock<MockAudioDecoder>* decoder_2_;
-  ScopedVector<AudioDecoder> all_decoders_;
+  std::vector<std::unique_ptr<AudioDecoder>> all_decoders_;
   std::unique_ptr<AudioDecoder> selected_decoder_;
 
   base::MessageLoop message_loop_;

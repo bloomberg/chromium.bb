@@ -9,7 +9,6 @@
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_vector.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "media/base/media_log.h"
@@ -41,10 +40,10 @@ using ::testing::SaveArg;
 
 namespace media {
 
-static ScopedVector<VideoDecoder> CreateVideoDecodersForTest(
+static std::vector<std::unique_ptr<VideoDecoder>> CreateVideoDecodersForTest(
     MediaLog* media_log,
     CreateVideoDecodersCB prepend_video_decoders_cb) {
-  ScopedVector<VideoDecoder> video_decoders;
+  std::vector<std::unique_ptr<VideoDecoder>> video_decoders;
 
   if (!prepend_video_decoders_cb.is_null()) {
     video_decoders = prepend_video_decoders_cb.Run();
@@ -52,22 +51,22 @@ static ScopedVector<VideoDecoder> CreateVideoDecodersForTest(
   }
 
 #if !defined(MEDIA_DISABLE_LIBVPX)
-  video_decoders.push_back(new VpxVideoDecoder());
+  video_decoders.push_back(base::MakeUnique<VpxVideoDecoder>());
 #endif  // !defined(MEDIA_DISABLE_LIBVPX)
 
 // Android does not have an ffmpeg video decoder.
 #if !defined(MEDIA_DISABLE_FFMPEG) && !defined(OS_ANDROID) && \
     !defined(DISABLE_FFMPEG_VIDEO_DECODERS)
-  video_decoders.push_back(new FFmpegVideoDecoder(media_log));
+  video_decoders.push_back(base::MakeUnique<FFmpegVideoDecoder>(media_log));
 #endif
   return video_decoders;
 }
 
-static ScopedVector<AudioDecoder> CreateAudioDecodersForTest(
+static std::vector<std::unique_ptr<AudioDecoder>> CreateAudioDecodersForTest(
     MediaLog* media_log,
     const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner,
     CreateAudioDecodersCB prepend_audio_decoders_cb) {
-  ScopedVector<AudioDecoder> audio_decoders;
+  std::vector<std::unique_ptr<AudioDecoder>> audio_decoders;
 
   if (!prepend_audio_decoders_cb.is_null()) {
     audio_decoders = prepend_audio_decoders_cb.Run();
@@ -76,7 +75,7 @@ static ScopedVector<AudioDecoder> CreateAudioDecodersForTest(
 
 #if !defined(MEDIA_DISABLE_FFMPEG)
   audio_decoders.push_back(
-      new FFmpegAudioDecoder(media_task_runner, media_log));
+      base::MakeUnique<FFmpegAudioDecoder>(media_task_runner, media_log));
 #endif
   return audio_decoders;
 }

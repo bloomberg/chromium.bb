@@ -49,6 +49,7 @@ class MEDIA_EXPORT GpuVideoDecoder
   GpuVideoDecoder(GpuVideoAcceleratorFactories* factories,
                   const RequestSurfaceCB& request_surface_cb,
                   MediaLog* media_log);
+  ~GpuVideoDecoder() override;
 
   // VideoDecoder implementation.
   std::string GetDisplayName() const override;
@@ -79,9 +80,6 @@ class MEDIA_EXPORT GpuVideoDecoder
   void NotifyError(media::VideoDecodeAccelerator::Error error) override;
 
   static const char kDecoderName[];
-
- protected:
-  ~GpuVideoDecoder() override;
 
  private:
   enum State {
