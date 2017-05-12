@@ -89,8 +89,13 @@ class CORE_EXPORT ImageLoader : public GarbageCollectedFinalized<ImageLoader>,
   ImageResource* ImageResourceForImageDocument() const {
     return image_resource_for_image_document_;
   }
+
   // Cancels pending load events, and doesn't dispatch new ones.
-  void SetImage(ImageResourceContent*);
+  // Note: ClearImage/SetImage.*() are not a simple setter.
+  // Check the implementation to see what they do.
+  // TODO(hiroshige): Cleanup these methods.
+  void ClearImage();
+  void SetImageForTest(ImageResourceContent*);
 
   bool IsLoadingImageDocument() { return loading_image_document_; }
   void SetLoadingImageDocument() { loading_image_document_ = true; }
@@ -133,7 +138,13 @@ class CORE_EXPORT ImageLoader : public GarbageCollectedFinalized<ImageLoader>,
   LayoutImageResource* GetLayoutImageResource();
   void UpdateLayoutObject();
 
+  // Note: SetImage.*() are not a simple setter.
+  // Check the implementation to see what they do.
+  // TODO(hiroshige): Cleanup these methods.
+  void SetImageForImageDocument(ImageResource*);
   void SetImageWithoutConsideringPendingLoadEvent(ImageResourceContent*);
+  void UpdateImageState(ImageResourceContent*);
+
   void ClearFailedLoadURL();
   void DispatchErrorEvent();
   void CrossSiteOrCSPViolationOccurred(AtomicString);

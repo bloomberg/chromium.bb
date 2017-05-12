@@ -83,8 +83,8 @@ class CORE_EXPORT HTMLImageElement final
   ImageResource* CachedImageResourceForImageDocument() const {
     return GetImageLoader().ImageResourceForImageDocument();
   }
-  void SetImageResource(ImageResourceContent* i) {
-    GetImageLoader().SetImage(i);
+  void SetImageForTest(ImageResourceContent* content) {
+    GetImageLoader().SetImageForTest(content);
   }
 
   void SetLoadingImageDocument() { GetImageLoader().SetLoadingImageDocument(); }
