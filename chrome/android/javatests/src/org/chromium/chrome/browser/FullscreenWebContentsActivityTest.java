@@ -19,6 +19,7 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.FlakyTest;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
@@ -137,6 +138,7 @@ public class FullscreenWebContentsActivityTest {
 
     @Test
     @MediumTest
+    @FlakyTest(message = "https://crbug.com/721906")
     public void testExitOnBack() throws Throwable {
         final FullscreenWebContentsActivity fullscreenActivity = enterFullscreen();
         mUiThreadTestRule.runOnUiThread(new Runnable() {
