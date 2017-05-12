@@ -3382,3 +3382,5 @@ crbug.com/719298 [ Win ] fast/dnd/dropEffect-for-effectAllowed.html [ Failure Pa
 crbug.com/719299 [ Win ] external/wpt/css/css-ui-3/outline-004.html [ Failure Pass Timeout ]
 
 crbug.com/719837 [ Debug ] inspector/sources/debugger/rethrow-error-from-bindings-crash.html [ Timeout ]
+
+crbug.com/617168 [ Linux ] fast/text/shaping/same-script-different-lang.html [ NeedsRebaseline ]
