@@ -80330,6 +80330,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="WebCore.SpellChecker.RequestInterval" units="ms">
+  <owner>xiaochengh@chromium.org</owner>
+  <summary>
+    The amount of time between consecutive spellcheck requests made by Blink,
+    with the exception that requests made simultaneously checking different
+    parts of the same editing host count as only one request.
+  </summary>
+</histogram>
+
 <histogram name="WebCore.UseCounter_TEST.CSSProperties"
     enum="MappedCSSProperties">
   <obsolete>
