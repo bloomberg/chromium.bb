@@ -26,6 +26,7 @@ class NeverConditionValidator : public ConditionValidator {
   // ConditionValidator implementation.
   ConditionValidator::Result MeetsConditions(
       const base::Feature& feature,
+      const FeatureConfig& config,
       const Model& model,
       uint32_t current_day) const override;
   void NotifyIsShowing(const base::Feature& feature) override;

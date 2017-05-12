@@ -48,6 +48,9 @@ class FeatureEngagementTrackerImpl : public FeatureEngagementTracker,
   // The current model.
   std::unique_ptr<Model> model_;
 
+  // The current configuration for all features.
+  std::unique_ptr<Configuration> configuration_;
+
   // The ConditionValidator provides functionality for knowing when to trigger
   // help UI.
   std::unique_ptr<ConditionValidator> condition_validator_;

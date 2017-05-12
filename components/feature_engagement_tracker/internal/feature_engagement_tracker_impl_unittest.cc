@@ -6,12 +6,11 @@
 
 #include <memory>
 
+#include "base/bind.h"
 #include "base/feature_list.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
-#include "base/metrics/field_trial.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_feature_list.h"
 #include "components/feature_engagement_tracker/internal/editable_configuration.h"
 #include "components/feature_engagement_tracker/internal/in_memory_store.h"
 #include "components/feature_engagement_tracker/internal/never_storage_validator.h"
@@ -104,9 +103,6 @@ class FeatureEngagementTrackerImplTest : public ::testing::Test {
     RegisterFeatureConfig(configuration.get(), kTestFeatureBar, true);
     RegisterFeatureConfig(configuration.get(), kTestFeatureQux, false);
 
-    scoped_feature_list_.InitWithFeatures(
-        {kTestFeatureFoo, kTestFeatureBar, kTestFeatureQux}, {});
-
     tracker_.reset(new FeatureEngagementTrackerImpl(
         CreateStore(), std::move(configuration),
         base::MakeUnique<OnceConditionValidator>(),
@@ -122,7 +118,6 @@ class FeatureEngagementTrackerImplTest : public ::testing::Test {
 
   base::MessageLoop message_loop_;
   std::unique_ptr<FeatureEngagementTrackerImpl> tracker_;
-  base::test::ScopedFeatureList scoped_feature_list_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(FeatureEngagementTrackerImplTest);
