@@ -80,3 +80,5 @@ foreach(typemap, _typemaps_mac) {
         config = read_file(typemap, "scope")
       } ]
 }
+
+component_macro_suffix = ""

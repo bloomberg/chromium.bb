@@ -16,6 +16,7 @@ mojom("mojom") {
     "//services/ui/public/interfaces",
   ]
 
+  component_output_prefix = "app_list_presenter_mojom"
   export_class_attribute = "APP_LIST_PRESENTER_EXPORT"
   export_define = "APP_LIST_PRESENTER_IMPLEMENTATION=1"
   export_header = "ui/app_list/presenter/app_list_presenter_export.h"

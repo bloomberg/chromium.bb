@@ -22,6 +22,10 @@
 #include "{{import.path}}-shared-internal.h"
 {%- endfor %}
 
+{%- if export_header %}
+#include "{{export_header}}"
+{%- endif %}
+
 namespace mojo {
 namespace internal {
 class ValidationContext;

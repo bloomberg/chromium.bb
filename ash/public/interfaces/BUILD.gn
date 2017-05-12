@@ -41,6 +41,7 @@ mojom("interfaces_internal") {
     "//ui/gfx/image/mojo:interfaces",
   ]
 
+  component_output_prefix = "ash_public_interfaces_internal"
   export_class_attribute = "ASH_PUBLIC_EXPORT"
   export_define = "ASH_PUBLIC_IMPLEMENTATION=1"
   export_header = "ash/public/cpp/ash_public_export.h"
