@@ -233,6 +233,10 @@ class JumpList : public sessions::TabRestoreServiceObserver,
   // jumplist.
   base::OneShotTimer timer_recently_closed_;
 
+  // Number of updates to skip to alleviate the machine when a previous update
+  // was too slow. Updates will be resumed when this reaches 0 again.
+  int updates_to_skip_ = 0;
+
   // Holds data that can be accessed from multiple threads.
   scoped_refptr<base::RefCountedData<JumpListData>> jumplist_data_;
 
