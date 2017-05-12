@@ -139,7 +139,7 @@ class FaviconHandler {
 
   // Message Handler.  Must be public, because also called from
   // PrerenderContents. Collects the |image_urls| list.
-  void OnUpdateFaviconURL(const GURL& page_url,
+  void OnUpdateCandidates(const GURL& page_url,
                           const std::vector<favicon::FaviconURL>& candidates);
 
   // For testing.
@@ -206,9 +206,9 @@ class FaviconHandler {
                          favicon_bitmap_results);
 
   // Schedules a download for the specified entry. This adds the request to
-  // download_requests_.
-  void ScheduleDownload(const GURL& image_url,
-                        favicon_base::IconType icon_type);
+  // image_download_requests_.
+  void ScheduleImageDownload(const GURL& image_url,
+                             favicon_base::IconType icon_type);
 
   // Triggered when a download of an image has finished.
   void OnDidDownloadFavicon(
@@ -285,7 +285,7 @@ class FaviconHandler {
 
   // Requests to the renderer to download favicons.
   base::CancelableCallback<Delegate::ImageDownloadCallback::RunType>
-      download_request_;
+      image_download_request_;
 
   // The combination of the supported icon types.
   const int icon_types_;
@@ -310,7 +310,7 @@ class FaviconHandler {
 
   // Captures the number of download requests that were initiated for the
   // current url_.
-  int num_download_requests_;
+  int num_image_download_requests_;
 
   // The index of the favicon URL in |image_urls_| which is currently being
   // requested from history or downloaded.
