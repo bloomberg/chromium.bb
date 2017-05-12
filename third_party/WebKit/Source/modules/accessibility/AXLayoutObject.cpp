@@ -1084,23 +1084,30 @@ AXObject* AXLayoutObject::NextOnLine() const {
   if (!GetLayoutObject())
     return nullptr;
 
-  InlineBox* inline_box = nullptr;
-  if (GetLayoutObject()->IsLayoutInline())
-    inline_box = ToLayoutInline(GetLayoutObject())->LastLineBox();
-  else if (GetLayoutObject()->IsText())
-    inline_box = ToLayoutText(GetLayoutObject())->LastTextBox();
-
-  if (!inline_box)
-    return nullptr;
-
   AXObject* result = nullptr;
-  for (InlineBox* next = inline_box->NextOnLine(); next;
-       next = next->NextOnLine()) {
-    LayoutObject* layout_object =
-        LineLayoutAPIShim::LayoutObjectFrom(next->GetLineLayoutItem());
-    result = AxObjectCache().GetOrCreate(layout_object);
-    if (result)
-      break;
+  if (GetLayoutObject()->IsListMarker()) {
+    AXObject* next_sibling = RawNextSibling();
+    if (!next_sibling || !next_sibling->Children().size())
+      return nullptr;
+    result = next_sibling->Children()[0].Get();
+  } else {
+    InlineBox* inline_box = nullptr;
+    if (GetLayoutObject()->IsLayoutInline())
+      inline_box = ToLayoutInline(GetLayoutObject())->LastLineBox();
+    else if (GetLayoutObject()->IsText())
+      inline_box = ToLayoutText(GetLayoutObject())->LastTextBox();
+
+    if (!inline_box)
+      return nullptr;
+
+    for (InlineBox* next = inline_box->NextOnLine(); next;
+         next = next->NextOnLine()) {
+      LayoutObject* layout_object =
+          LineLayoutAPIShim::LayoutObjectFrom(next->GetLineLayoutItem());
+      result = AxObjectCache().GetOrCreate(layout_object);
+      if (result)
+        break;
+    }
   }
 
   // A static text node might span multiple lines. Try to return the first

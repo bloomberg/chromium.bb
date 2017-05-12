@@ -2013,9 +2013,6 @@ crbug.com/521124 crbug.com/410145 [ Win7 ] virtual/sharedarraybuffer/fast/css/fo
 # Temporary, until we stop use_system_harfbuzz on Linux including non-official builds
 crbug.com/462689 [ Linux ] fast/text/unicode-variation-selector.html [ Failure ]
 
-# Temporary, until WebAXObjectProxy support lands.
-crbug.com/421771 accessibility/inline-text-box-next-on-line.html [ Skip ]
-
 # Disabled briefly until test runner support lands.
 crbug.com/479533 accessibility/show-context-menu.html [ Skip ]
 crbug.com/479533 accessibility/show-context-menu-shadowdom.html [ Skip ]

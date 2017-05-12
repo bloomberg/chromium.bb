@@ -3,118 +3,143 @@
 <script src="../resources/testharnessreport.js"></script>
 
 <p id="paragraph">
-The <b id="quick">quick</b> brown fox
-<br>
-jumps over the lazy <b id="dog">dog</b>.
+  The <b id="quick">quick</b> brown fox
+  <br>
+  jumps over the lazy <b id="dog">dog</b>.
 </p>
 
 <div contentEditable="true" id="contentEditable">
-    <div>
-        <span>Line </span><span>one has one trailing space.</span><span> </span>
-    </div>
-    <div>
-        <span>&#9;&#9;</span><span>Line</span><span> two has two leading tabs.</span>
-    </div>
+  <div>
+    <span>Line </span><span>one has one trailing space.</span><span> </span>
+  </div>
+  <div>
+    <span>&#9;&#9;</span><span>Line</span><span> two has two leading tabs.</span>
+  </div>
 </div>
 
 <p id="paragraphWithLink">
-    Paragraph with <a href="#">link</a>
+  Paragraph with <a href="#">link</a>
 </p>
 
+<ol id="list">
+  <li>List item</li>
+</ol>
+
 <script>
-test(function(t)
-{
-    var axObj = accessibilityController.accessibleElementById('paragraph');
-    // Find the first inline text box.
-    while (axObj.childrenCount > 0)
-        axObj = axObj.childAtIndex(0);
-    assert_equals(axObj.role, 'AXRole: AXInlineTextBox');
-
-    var lineText = [];
-    var lastInlineText = axObj;
-    while (axObj && axObj.isValid) {
-        assert_equals(axObj.role, 'AXRole: AXInlineTextBox');
-        lineText.push(axObj.name.replace('AXValue: ', ''));
-        lastInlineText = axObj;
-        axObj = axObj.nextOnLine();
-    }
-    assert_array_equals(lineText, ['The ', 'quick', ' brown fox ', '\n']);
-
-    // Now walk backwards.
-    lineText = [];
-    axObj = lastInlineText;
-    while (axObj && axObj.isValid) {
-        assert_equals(axObj.role, 'AXRole: AXInlineTextBox');
-        lineText.unshift(axObj.name.replace('AXValue: ', ''));
-        axObj = axObj.previousOnLine();
-    }
-    assert_array_equals(lineText, ['The ', 'quick', ' brown fox ', '\n']);
-}, 'Test |nextOnLine| and |previousOnLine| for |AXInlineTextBox|.');
-
-test(function(t)
-{
-    var axEditable = accessibilityController.accessibleElementById('contentEditable');
-    // There should be two lines in this content editable.
-    assert_equals(axEditable.childrenCount, 2);
-    var lines = [axEditable.childAtIndex(0), axEditable.childAtIndex(1)];
-    var lineText = [
-      ['Line ', 'one has one trailing space.'],
-      ['Line', ' two has two leading tabs.']];
-
-    for (var i = 0; i < lines.length; ++i) {
-        var currentLine = lines[i];
-        assert_equals(currentLine.nextOnLine(), undefined);
-        assert_equals(currentLine.previousOnLine(), undefined);
-    }
-
-    for (var i = 0; i < lines.length; ++i) {
-        var currentLine = lines[i];
-        var currentLineText = lineText[i];
-        // There should be two spans per line since white space is removed.
-        assert_equals(currentLine.childrenCount, 2);
-
-        var span1 = currentLine.childAtIndex(0);
-        var span2 = currentLine.childAtIndex(1);
-        var inlineText1 = span1.childAtIndex(0);
-        var inlineText2 = span2.childAtIndex(0);
-        var spanText1 = currentLineText[0];
-        var spanText2 = currentLineText[1];
-        assert_equals(span1.role, 'AXRole: AXStaticText');
-        assert_equals(span2.role, 'AXRole: AXStaticText');
-        assert_equals(span1.name, spanText1);
-        assert_equals(span2.name, spanText2);
-
-        // |next/previousOnLine| APIs jump directly to the inline text boxes
-        // skipping the parent span element.
-        assert_equals(span1.nextOnLine(), inlineText2, 'span1 -> inlineText2');
-        assert_equals(inlineText1.nextOnLine(), inlineText2, 'inlineText1 -> inlineText2');
-        assert_equals(span2.previousOnLine(), inlineText1, 'span2 -> inlineText1');
-        assert_equals(inlineText2.previousOnLine(), inlineText1, 'inlineText2 -> inlineText1');
-    }
-}, 'Test |nextOnLine| and |previousOnLine| for |AXLayoutObject|.');
-
-test(function(t)
-{
-    var axObj = accessibilityController.accessibleElementById('paragraphWithLink');
-    // There should be one static text child and a link in this paragraph.
-    assert_equals(axObj.childrenCount, 2);
+test(function(t) {
+  var axObj = accessibilityController.accessibleElementById('paragraph');
+  // Find the first inline text box.
+  while (axObj.childrenCount > 0)
     axObj = axObj.childAtIndex(0);
-    assert_equals(axObj.role, 'AXRole: AXStaticText');
+  assert_equals(axObj.role, 'AXRole: AXInlineTextBox');
 
-    var lineText = [];
-    lineText.push(axObj.name);
+  var lineText = [];
+  var lastInlineText = axObj;
+  while (axObj && axObj.isValid) {
+    assert_equals(axObj.role, 'AXRole: AXInlineTextBox');
+    lineText.push(axObj.name.replace('AXValue: ', ''));
+    lastInlineText = axObj;
     axObj = axObj.nextOnLine();
+  }
+  assert_array_equals(lineText, ['The ', 'quick', ' brown fox ']);
+
+  // Now walk backwards.
+  lineText = [];
+  axObj = lastInlineText;
+  while (axObj && axObj.isValid) {
     assert_equals(axObj.role, 'AXRole: AXInlineTextBox');
-    lineText.push(axObj.name);
+    lineText.unshift(axObj.name.replace('AXValue: ', ''));
     axObj = axObj.previousOnLine();
-    assert_equals(axObj.role, 'AXRole: AXInlineTextBox');
-    lineText.push(axObj.name);
-    assert_array_equals(lineText, ['Paragraph with ', 'link', 'Paragraph with ']);
-}, 'Test |nextOnLine| and |previousOnLine| for paragraphs with links.');
+  }
+  assert_array_equals(lineText, ['The ', 'quick', ' brown fox ']);
+}, 'Test |NextOnLine| and |PreviousOnLine| on |AXInlineTextBox|.');
+
+test(function(t) {
+  var axEditable = accessibilityController.accessibleElementById('contentEditable');
+  // There should be two lines in this content editable.
+  assert_equals(axEditable.childrenCount, 2);
+  var lines = [axEditable.childAtIndex(0), axEditable.childAtIndex(1)];
+  var lineText = [
+    ['Line ', 'one has one trailing space.'],
+    ['Line', ' two has two leading tabs.']
+  ];
+
+  for (var i = 0; i < lines.length; ++i) {
+    var currentLine = lines[i];
+    assert_equals(currentLine.nextOnLine(), undefined);
+    assert_equals(currentLine.previousOnLine(), undefined);
+  }
+
+  for (var i = 0; i < lines.length; ++i) {
+    var currentLine = lines[i];
+    var currentLineText = lineText[i];
+    // There should be two spans per line since white space is removed.
+    assert_equals(currentLine.childrenCount, 2);
+
+    var span1 = currentLine.childAtIndex(0);
+    var span2 = currentLine.childAtIndex(1);
+    var inlineText1 = span1.childAtIndex(0);
+    var inlineText2 = span2.childAtIndex(0);
+    var spanText1 = currentLineText[0];
+    var spanText2 = currentLineText[1];
+    assert_equals(span1.role, 'AXRole: AXStaticText');
+    assert_equals(span2.role, 'AXRole: AXStaticText');
+    assert_equals(span1.name, spanText1);
+    assert_equals(span2.name, spanText2);
+
+    // |next/previousOnLine| APIs jump directly to the inline text boxes
+    // skipping the parent span element.
+    assert_equals(span1.nextOnLine(), inlineText2, 'span1 -> inlineText2');
+    assert_equals(inlineText1.nextOnLine(), inlineText2, 'inlineText1 -> inlineText2');
+    assert_equals(span2.previousOnLine(), inlineText1, 'span2 -> inlineText1');
+    assert_equals(inlineText2.previousOnLine(), inlineText1, 'inlineText2 -> inlineText1');
+  }
+}, 'Test |NextOnLine| and |PreviousOnLine| on |AXLayoutObject|.');
+
+test(function(t) {
+  var axObj = accessibilityController.accessibleElementById('paragraphWithLink');
+  // There should be one static text child and a link in this paragraph.
+  assert_equals(axObj.childrenCount, 2);
+  axObj = axObj.childAtIndex(0);
+  assert_equals(axObj.role, 'AXRole: AXStaticText');
+
+  var lineText = [];
+  lineText.push(axObj.name);
+  axObj = axObj.nextOnLine();
+  assert_equals(axObj.role, 'AXRole: AXInlineTextBox');
+  lineText.push(axObj.name);
+  axObj = axObj.previousOnLine();
+  assert_equals(axObj.role, 'AXRole: AXInlineTextBox');
+  lineText.push(axObj.name);
+  assert_array_equals(lineText, ['Paragraph with ', 'link', 'Paragraph with ']);
+}, 'Test |NextOnLine| and |PreviousOnLine| on paragraphs with links.');
+
+test(function(t) {
+  var axObj = accessibilityController.accessibleElementById('list');
+  // There should be a list item in this list.
+  assert_equals(axObj.childrenCount, 1);
+  axObj = axObj.childAtIndex(0);
+  assert_equals(axObj.role, 'AXRole: AXListItem');
+  // There should be a list marker and some text in this list item.
+  assert_equals(axObj.childrenCount, 2);
+  axObj = axObj.childAtIndex(0);
+  assert_equals(axObj.role, 'AXRole: AXListMarker');
+
+  var lineText = [];
+  lineText.push(axObj.name);
+  axObj = axObj.nextOnLine();
+  assert_equals(axObj.role, 'AXRole: AXInlineTextBox');
+  lineText.push(axObj.name);
+  axObj = axObj.previousOnLine();
+  assert_equals(axObj.role, 'AXRole: AXListMarker');
+  lineText.push(axObj.name);
+  assert_array_equals(lineText, ['1', 'List item', '1']);
+}, 'Test |NextOnLine| and |PreviousOnLine| on list markers.');
 
 if (window.testRunner) {
-    document.getElementById('paragraph').style.display = 'none';
-    document.getElementById('contentEditable').style.display = 'none';
-    document.getElementById('paragraphWithLink').style.display = 'none';
+  document.getElementById('paragraph').style.display = 'none';
+  document.getElementById('contentEditable').style.display = 'none';
+  document.getElementById('paragraphWithLink').style.display = 'none';
+  document.getElementById('list').style.display = 'none';
 }
 </script>
