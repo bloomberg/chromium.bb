@@ -64,7 +64,8 @@ BackgroundBleedAvoidance BoxDecorationData::DetermineBackgroundBleedAvoidance(
       // underneath.
       const FillLayer& fill_layer = layout_box.Style()->BackgroundLayers();
       if ((background_color.Alpha() || fill_layer.Next()) &&
-          !fill_layer.ImageOccludesNextLayers(layout_box))
+          !fill_layer.ImageOccludesNextLayers(layout_box.GetDocument(),
+                                              box_style))
         return kBackgroundBleedClipLayer;
     }
     return kBackgroundBleedNone;

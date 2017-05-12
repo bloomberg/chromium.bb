@@ -369,14 +369,13 @@ bool FillLayer::ImagesAreLoaded() const {
   return true;
 }
 
-bool FillLayer::ImageIsOpaque(const LayoutObject& layout_object) const {
+bool FillLayer::ImageIsOpaque(const Document& document,
+                              const ComputedStyle& style) const {
   // Returns true if we have an image that will cover the content below it when
   // m_composite == CompositeSourceOver && m_blendMode == WebBlendModeNormal.
   // Otherwise false.
-  return image_->KnownToBeOpaque(layout_object) &&
-         !image_
-              ->ImageSize(layout_object.GetDocument(),
-                          layout_object.Style()->EffectiveZoom(), LayoutSize())
+  return image_->KnownToBeOpaque(document, style) &&
+         !image_->ImageSize(document, style.EffectiveZoom(), LayoutSize())
               .IsEmpty();
 }
 
@@ -390,8 +389,8 @@ bool FillLayer::ImageTilesLayer() const {
          (repeat_y_ == kRepeatFill || repeat_y_ == kRoundFill);
 }
 
-bool FillLayer::ImageOccludesNextLayers(
-    const LayoutObject& layout_object) const {
+bool FillLayer::ImageOccludesNextLayers(const Document& document,
+                                        const ComputedStyle& style) const {
   // We can't cover without an image, regardless of other parameters
   if (!image_ || !image_->CanRender())
     return false;
@@ -402,7 +401,7 @@ bool FillLayer::ImageOccludesNextLayers(
       return ImageTilesLayer();
     case kCompositeSourceOver:
       return (blend_mode_ == kWebBlendModeNormal) && ImageTilesLayer() &&
-             ImageIsOpaque(layout_object);
+             ImageIsOpaque(document, style);
     default: {}
   }
 

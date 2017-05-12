@@ -32,7 +32,7 @@ namespace blink {
 class Document;
 class KURL;
 class StyleImage;
-class LayoutObject;
+class ComputedStyle;
 
 class CORE_EXPORT CSSImageValue : public CSSValue {
  public:
@@ -77,7 +77,7 @@ class CORE_EXPORT CSSImageValue : public CSSValue {
 
   bool Equals(const CSSImageValue&) const;
 
-  bool KnownToBeOpaque(const LayoutObject&) const;
+  bool KnownToBeOpaque(const Document&, const ComputedStyle&) const;
 
   CSSImageValue* ValueWithURLMadeAbsolute() const {
     return Create(KURL(kParsedURLString, absolute_url_), cached_image_.Get());

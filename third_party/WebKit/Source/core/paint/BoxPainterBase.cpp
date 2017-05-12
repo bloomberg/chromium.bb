@@ -194,8 +194,8 @@ void BoxPainterBase::PaintInsetBoxShadowInBounds(
 }
 
 bool BoxPainterBase::ShouldForceWhiteBackgroundForPrintEconomy(
-    const ComputedStyle& style,
-    const Document& document) {
+    const Document& document,
+    const ComputedStyle& style) {
   return document.Printing() &&
          style.PrintColorAdjust() == EPrintColorAdjust::kEconomy &&
          (!document.GetSettings() ||

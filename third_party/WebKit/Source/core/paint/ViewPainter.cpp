@@ -106,7 +106,7 @@ void ViewPainter::PaintBoxDecorationBackground(const PaintInfo& paint_info) {
   // Special handling for print economy mode.
   bool force_background_to_white =
       BoxPainter::ShouldForceWhiteBackgroundForPrintEconomy(
-          layout_view_.StyleRef(), document);
+          document, layout_view_.StyleRef());
   if (force_background_to_white) {
     // If for any reason the view background is not transparent, paint white
     // instead, otherwise keep transparent as is.

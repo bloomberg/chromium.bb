@@ -236,7 +236,8 @@ bool BoxPainter::CalculateFillLayerOcclusionCulling(
     // TODO(trchen): A fill layer cannot paint if the calculated tile size is
     // empty.  This occlusion check can be wrong.
     if (current_layer->ClipOccludesNextLayers() &&
-        current_layer->ImageOccludesNextLayers(layout_box_)) {
+        current_layer->ImageOccludesNextLayers(layout_box_.GetDocument(),
+                                               layout_box_.StyleRef())) {
       if (current_layer->Clip() == kBorderFillBox)
         is_non_associative = false;
       break;
@@ -346,7 +347,9 @@ FloatRoundedRect BackgroundRoundedRectAdjustedForBleedAvoidance(
 struct FillLayerInfo {
   STACK_ALLOCATED();
 
-  FillLayerInfo(const LayoutBoxModelObject& obj,
+  FillLayerInfo(const Document& doc,
+                const ComputedStyle& style,
+                bool has_overflow_clip,
                 Color bg_color,
                 const FillLayer& layer,
                 BackgroundBleedAvoidance bleed_avoidance,
@@ -357,7 +360,7 @@ struct FillLayerInfo {
         include_right_edge(box ? box->IncludeLogicalRightEdge() : true),
         is_bottom_layer(!layer.Next()),
         is_border_fill(layer.Clip() == kBorderFillBox),
-        is_clipped_with_local_scrolling(obj.HasOverflowClip() &&
+        is_clipped_with_local_scrolling(has_overflow_clip &&
                                         layer.Attachment() ==
                                             kLocalBackgroundAttachment) {
     // When printing backgrounds is disabled or using economy mode,
@@ -368,8 +371,7 @@ struct FillLayerInfo {
     // we've already loaded the background images anyway. (To avoid loading the
     // background images we'd have to do this check when applying styles rather
     // than while layout.)
-    if (BoxPainter::ShouldForceWhiteBackgroundForPrintEconomy(
-            obj.StyleRef(), obj.GetDocument())) {
+    if (BoxPainterBase::ShouldForceWhiteBackgroundForPrintEconomy(doc, style)) {
       // Note that we can't reuse this variable below because the bgColor might
       // be changed.
       bool should_paint_background_color = is_bottom_layer && color.Alpha();
@@ -379,8 +381,8 @@ struct FillLayerInfo {
       }
     }
 
-    const bool has_rounded_border = obj.Style()->HasBorderRadius() &&
-                                    (include_left_edge || include_right_edge);
+    const bool has_rounded_border =
+        style.HasBorderRadius() && (include_left_edge || include_right_edge);
     // BorderFillBox radius clipping is taken care of by
     // BackgroundBleedClip{Only,Layer}
     is_rounded_fill =
@@ -390,7 +392,7 @@ struct FillLayerInfo {
     should_paint_image = image && image->CanRender();
     should_paint_color =
         is_bottom_layer && color.Alpha() &&
-        (!should_paint_image || !layer.ImageOccludesNextLayers(obj));
+        (!should_paint_image || !layer.ImageOccludesNextLayers(doc, style));
   }
 
   // FillLayerInfo is a temporary, stack-allocated container which cannot
@@ -578,7 +580,9 @@ void BoxPainter::PaintFillLayer(const LayoutBoxModelObject& obj,
   if (rect.IsEmpty())
     return;
 
-  const FillLayerInfo info(obj, color, bg_layer, bleed_avoidance, box);
+  const FillLayerInfo info(obj.GetDocument(), obj.StyleRef(),
+                           obj.HasOverflowClip(), color, bg_layer,
+                           bleed_avoidance, box);
   Optional<BackgroundImageGeometry> geometry;
 
   // Fast path for drawing simple color backgrounds.

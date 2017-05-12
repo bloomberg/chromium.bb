@@ -882,7 +882,7 @@ LayoutRect LayoutBox::BackgroundRect(BackgroundRectType rect_type) const {
         if (const StyleImage* image = cur->GetImage()) {
           if ((cur->RepeatX() == kRepeatFill || cur->RepeatX() == kRoundFill) &&
               (cur->RepeatY() == kRepeatFill || cur->RepeatY() == kRoundFill) &&
-              image->KnownToBeOpaque(*this)) {
+              image->KnownToBeOpaque(GetDocument(), StyleRef())) {
             layer_known_opaque = true;
           }
         }
@@ -1883,9 +1883,8 @@ LayoutRect LayoutBox::OverflowClipRect(
   LayoutRect clip_rect = BorderBoxRect();
   clip_rect.SetLocation(location + clip_rect.Location() +
                         LayoutSize(BorderLeft(), BorderTop()));
-  clip_rect.SetSize(
-      clip_rect.Size() -
-      LayoutSize(BorderLeft() + BorderRight(), BorderTop() + BorderBottom()));
+  clip_rect.SetSize(clip_rect.Size() -
+                    LayoutSize(BorderWidth(), BorderHeight()));
 
   if (HasOverflowClip())
     ExcludeScrollbars(clip_rect, overlay_scrollbar_clip_behavior);

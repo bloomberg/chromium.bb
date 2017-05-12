@@ -189,19 +189,19 @@ bool CSSImageGeneratorValue::IsPending() const {
   return false;
 }
 
-bool CSSImageGeneratorValue::KnownToBeOpaque(
-    const LayoutObject& layout_object) const {
+bool CSSImageGeneratorValue::KnownToBeOpaque(const Document& document,
+                                             const ComputedStyle& style) const {
   switch (GetClassType()) {
     case kCrossfadeClass:
-      return ToCSSCrossfadeValue(this)->KnownToBeOpaque(layout_object);
+      return ToCSSCrossfadeValue(this)->KnownToBeOpaque(document, style);
     case kLinearGradientClass:
-      return ToCSSLinearGradientValue(this)->KnownToBeOpaque(layout_object);
+      return ToCSSLinearGradientValue(this)->KnownToBeOpaque(document, style);
     case kPaintClass:
-      return ToCSSPaintValue(this)->KnownToBeOpaque(layout_object);
+      return ToCSSPaintValue(this)->KnownToBeOpaque(document, style);
     case kRadialGradientClass:
-      return ToCSSRadialGradientValue(this)->KnownToBeOpaque(layout_object);
+      return ToCSSRadialGradientValue(this)->KnownToBeOpaque(document, style);
     case kConicGradientClass:
-      return ToCSSConicGradientValue(this)->KnownToBeOpaque(layout_object);
+      return ToCSSConicGradientValue(this)->KnownToBeOpaque(document, style);
     default:
       NOTREACHED();
   }

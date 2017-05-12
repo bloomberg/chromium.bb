@@ -126,8 +126,8 @@ PassRefPtr<Image> StyleFetchedImageSet::GetImage(
                                       obj.StyleRef().EffectiveZoom(), url_);
 }
 
-bool StyleFetchedImageSet::KnownToBeOpaque(
-    const LayoutObject& layout_object) const {
+bool StyleFetchedImageSet::KnownToBeOpaque(const Document&,
+                                           const ComputedStyle&) const {
   return best_fit_image_->GetImage()->CurrentFrameKnownToBeOpaque(
       Image::kPreCacheMetadata);
 }

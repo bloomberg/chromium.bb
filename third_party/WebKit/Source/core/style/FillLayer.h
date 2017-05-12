@@ -225,7 +225,7 @@ class CORE_EXPORT FillLayer {
     return next_ ? next_->HasFixedImage() : false;
   }
 
-  bool ImageOccludesNextLayers(const LayoutObject&) const;
+  bool ImageOccludesNextLayers(const Document&, const ComputedStyle&) const;
   bool HasRepeatXY() const;
   bool ClipOccludesNextLayers() const;
 
@@ -290,7 +290,7 @@ class CORE_EXPORT FillLayer {
 
   FillLayer() {}
 
-  bool ImageIsOpaque(const LayoutObject&) const;
+  bool ImageIsOpaque(const Document&, const ComputedStyle&) const;
   bool ImageTilesLayer() const;
 
   FillLayer* next_;

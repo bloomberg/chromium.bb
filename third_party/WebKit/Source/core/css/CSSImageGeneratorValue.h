@@ -39,6 +39,7 @@ class Document;
 class Image;
 class LayoutObject;
 class FloatSize;
+class ComputedStyle;
 
 struct SizeAndCount {
   DISALLOW_NEW();
@@ -63,7 +64,7 @@ class CORE_EXPORT CSSImageGeneratorValue : public CSSValue {
   IntSize FixedSize(const Document&, const FloatSize& default_object_size);
 
   bool IsPending() const;
-  bool KnownToBeOpaque(const LayoutObject&) const;
+  bool KnownToBeOpaque(const Document&, const ComputedStyle&) const;
 
   void LoadSubimages(const Document&);
 

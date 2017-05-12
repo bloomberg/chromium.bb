@@ -183,8 +183,9 @@ void BlendWithColorsFromGradient(CSSGradientValue* gradient,
       colors.push_back(existing_color.Blend(stop_color));
     }
   }
-  found_opaque_color =
-      found_opaque_color || gradient->KnownToBeOpaque(layout_object);
+  found_opaque_color = found_opaque_color ||
+                       gradient->KnownToBeOpaque(layout_object.GetDocument(),
+                                                 layout_object.StyleRef());
 }
 
 // Gets the colors from an image style, if one exists and it is a gradient.
