@@ -27,9 +27,6 @@ class CORE_EXPORT MainThreadWorklet : public Worklet {
  public:
   virtual ~MainThreadWorklet() = default;
 
-  // Worklet
-  ScriptPromise addModule(ScriptState*, const String& module_url) final;
-
   // ContextLifecycleObserver
   void ContextDestroyed(ExecutionContext*) final;
 
@@ -39,8 +36,9 @@ class CORE_EXPORT MainThreadWorklet : public Worklet {
   explicit MainThreadWorklet(LocalFrame*);
 
  private:
+  // Worklet.
   void FetchAndInvokeScript(const KURL& module_url_record,
-                            ScriptPromiseResolver*);
+                            ScriptPromiseResolver*) override;
 };
 
 }  // namespace blink

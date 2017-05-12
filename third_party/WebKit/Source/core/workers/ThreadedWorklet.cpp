@@ -15,35 +15,22 @@
 
 namespace blink {
 
-ThreadedWorklet::ThreadedWorklet(LocalFrame* frame) : Worklet(frame) {}
+ThreadedWorklet::ThreadedWorklet(LocalFrame* frame)
+    : Worklet(frame), frame_(frame) {}
 
-ScriptPromise ThreadedWorklet::addModule(ScriptState* script_state,
-                                         const String& url) {
+void ThreadedWorklet::FetchAndInvokeScript(const KURL& module_url_record,
+                                           ScriptPromiseResolver* resolver) {
   DCHECK(IsMainThread());
-  if (!GetExecutionContext()) {
-    return ScriptPromise::RejectWithDOMException(
-        script_state, DOMException::Create(kInvalidStateError,
-                                           "This frame is already detached"));
-  }
-
-  KURL script_url = GetExecutionContext()->CompleteURL(url);
-  if (!script_url.IsValid()) {
-    return ScriptPromise::RejectWithDOMException(
-        script_state, DOMException::Create(
-                          kSyntaxError, "'" + url + "' is not a valid URL."));
-  }
+  if (!GetExecutionContext())
+    return;
 
   if (!IsInitialized())
     Initialize();
 
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
-  ScriptPromise promise = resolver->Promise();
-
   WorkletScriptLoader* script_loader =
       WorkletScriptLoader::Create(frame_->GetDocument()->Fetcher(), this);
   loader_to_resolver_map_.Set(script_loader, resolver);
-  script_loader->FetchScript(script_url);
-  return promise;
+  script_loader->FetchScript(module_url_record);
 }
 
 void ThreadedWorklet::NotifyWorkletScriptLoadingFinished(
@@ -69,10 +56,11 @@ void ThreadedWorklet::ContextDestroyed(ExecutionContext* execution_context) {
   loader_to_resolver_map_.clear();
   if (IsInitialized())
     GetWorkletGlobalScopeProxy()->TerminateWorkletGlobalScope();
-  Worklet::ContextDestroyed(execution_context);
+  frame_ = nullptr;
 }
 
 DEFINE_TRACE(ThreadedWorklet) {
+  visitor->Trace(frame_);
   visitor->Trace(loader_to_resolver_map_);
   Worklet::Trace(visitor);
 }

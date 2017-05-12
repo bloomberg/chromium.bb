@@ -15,12 +15,12 @@ WorkletScriptLoader::WorkletScriptLoader(ResourceFetcher* fetcher,
                                          Client* client)
     : fetcher_(fetcher), client_(client) {}
 
-void WorkletScriptLoader::FetchScript(const String& script_url) {
+void WorkletScriptLoader::FetchScript(const KURL& module_url_record) {
   DCHECK(IsMainThread());
   DCHECK(!GetResource());
   DCHECK(!was_script_load_complete_);
 
-  ResourceRequest resource_request(script_url);
+  ResourceRequest resource_request(module_url_record);
   resource_request.SetRequestContext(WebURLRequest::kRequestContextScript);
   FetchParameters params(resource_request, FetchInitiatorTypeNames::internal);
   ScriptResource* resource = ScriptResource::Fetch(params, fetcher_);

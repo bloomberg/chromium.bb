@@ -44,7 +44,7 @@ class WorkletScriptLoader final
 
   // Fetches an URL and loads it as a classic script. Synchronously calls
   // Client::notifyWorkletScriptLoadingFinished() if there is an error.
-  void FetchScript(const String& script_url);
+  void FetchScript(const KURL& module_url_record);
 
   // Cancels resource loading and synchronously calls
   // Client::notifyWorkletScriptLoadingFinished().

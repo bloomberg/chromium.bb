@@ -7,10 +7,6 @@
 #include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "bindings/core/v8/ScriptSourceCode.h"
 #include "bindings/core/v8/V8BindingForCore.h"
-#include "core/dom/DOMException.h"
-#include "core/dom/Document.h"
-#include "core/dom/ExceptionCode.h"
-#include "core/dom/TaskRunnerHelper.h"
 #include "core/frame/LocalFrame.h"
 #include "core/workers/WorkletGlobalScopeProxy.h"
 #include "core/workers/WorkletPendingTasks.h"
@@ -19,49 +15,6 @@
 namespace blink {
 
 MainThreadWorklet::MainThreadWorklet(LocalFrame* frame) : Worklet(frame) {}
-
-// Implementation of the first half of the "addModule(moduleURL, options)"
-// algorithm:
-// https://drafts.css-houdini.org/worklets/#dom-worklet-addmodule
-ScriptPromise MainThreadWorklet::addModule(ScriptState* script_state,
-                                           const String& module_url) {
-  DCHECK(IsMainThread());
-  if (!GetExecutionContext()) {
-    return ScriptPromise::RejectWithDOMException(
-        script_state, DOMException::Create(kInvalidStateError,
-                                           "This frame is already detached"));
-  }
-
-  // Step 1: "Let promise be a new promise."
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
-  ScriptPromise promise = resolver->Promise();
-
-  // Step 2: "Let worklet be the current Worklet."
-  // |this| is the current Worklet.
-
-  // Step 3: "Let moduleURLRecord be the result of parsing the moduleURL
-  // argument relative to the relevant settings object of this."
-  KURL module_url_record = GetExecutionContext()->CompleteURL(module_url);
-
-  // Step 4: "If moduleURLRecord is failure, then reject promise with a
-  // "SyntaxError" DOMException and return promise."
-  if (!module_url_record.IsValid()) {
-    resolver->Reject(DOMException::Create(
-        kSyntaxError, "'" + module_url + "' is not a valid URL."));
-    return promise;
-  }
-
-  // Step 5: "Return promise, and then continue running this algorithm in
-  // parallel."
-  // |kUnspecedLoading| is used here because this is a part of script module
-  // loading.
-  TaskRunnerHelper::Get(TaskType::kUnspecedLoading, script_state)
-      ->PostTask(BLINK_FROM_HERE,
-                 WTF::Bind(&MainThreadWorklet::FetchAndInvokeScript,
-                           WrapPersistent(this), module_url_record,
-                           WrapPersistent(resolver)));
-  return promise;
-}
 
 // Implementation of the second half of the "addModule(moduleURL, options)"
 // algorithm:
@@ -118,7 +71,6 @@ void MainThreadWorklet::FetchAndInvokeScript(const KURL& module_url_record,
 void MainThreadWorklet::ContextDestroyed(ExecutionContext* execution_context) {
   DCHECK(IsMainThread());
   GetWorkletGlobalScopeProxy()->TerminateWorkletGlobalScope();
-  Worklet::ContextDestroyed(execution_context);
 }
 
 DEFINE_TRACE(MainThreadWorklet) {

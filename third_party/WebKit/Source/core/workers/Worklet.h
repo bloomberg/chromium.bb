@@ -14,6 +14,7 @@
 namespace blink {
 
 class LocalFrame;
+class ScriptPromiseResolver;
 class WorkletGlobalScopeProxy;
 
 // This is the base implementation of Worklet interface defined in the spec:
@@ -32,13 +33,10 @@ class CORE_EXPORT Worklet : public GarbageCollectedFinalized<Worklet>,
 
   // Worklet.idl
   // addModule() imports ES6 module scripts.
-  virtual ScriptPromise addModule(ScriptState*, const String& module_url) = 0;
+  virtual ScriptPromise addModule(ScriptState*, const String& module_url);
 
   // Returns a proxy to WorkletGlobalScope on the context thread.
   virtual WorkletGlobalScopeProxy* GetWorkletGlobalScopeProxy() const = 0;
-
-  // ContextLifecycleObserver
-  virtual void ContextDestroyed(ExecutionContext*);
 
   DECLARE_VIRTUAL_TRACE();
 
@@ -46,7 +44,9 @@ class CORE_EXPORT Worklet : public GarbageCollectedFinalized<Worklet>,
   // The Worklet inherits the url and userAgent from the frame->document().
   explicit Worklet(LocalFrame*);
 
-  Member<LocalFrame> frame_;
+ private:
+  virtual void FetchAndInvokeScript(const KURL& module_url_record,
+                                    ScriptPromiseResolver*) = 0;
 };
 
 }  // namespace blink
