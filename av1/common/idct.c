@@ -2809,7 +2809,6 @@ void av1_inverse_transform_block(const MACROBLOCKD *xd,
   int r, c;
 #if CONFIG_HIGHBITDEPTH
   if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
-    uint16_t *dst16 = CONVERT_TO_SHORTPTR(dst);
     for (r = 0; r < txb_height; r++)
       for (c = 0; c < txb_width; c++)
         CONVERT_TO_SHORTPTR(dst)[r * stride + c] = 0;
