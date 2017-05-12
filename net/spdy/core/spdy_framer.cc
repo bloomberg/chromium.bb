@@ -1591,66 +1591,6 @@ size_t SpdyFramer::ProcessIgnoredControlFramePayload(/*const char* data,*/
   return original_len - len;
 }
 
-bool SpdyFramer::ParseHeaderBlockInBuffer(const char* header_data,
-                                          size_t header_length,
-                                          SpdyHeaderBlock* block) const {
-  SpdyFrameReader reader(header_data, header_length);
-
-  // Read number of headers.
-  uint32_t num_headers;
-  if (!reader.ReadUInt32(&num_headers)) {
-    DVLOG(1) << "Unable to read number of headers.";
-    return false;
-  }
-
-  // Read each header.
-  for (uint32_t index = 0; index < num_headers; ++index) {
-    SpdyStringPiece temp;
-
-    // Read header name.
-    if (!reader.ReadStringPiece32(&temp)) {
-      DVLOG(1) << "Unable to read header name (" << index + 1 << " of "
-               << num_headers << ").";
-      return false;
-    }
-    const char* begin = temp.data();
-    const char* end = begin;
-    std::advance(end, temp.size());
-    if (std::any_of(begin, end, isupper)) {
-      DVLOG(1) << "Malformed header: Header name " << temp
-               << " contains upper-case characters.";
-      return false;
-    }
-    SpdyString name(temp);
-
-    // Read header value.
-    if (!reader.ReadStringPiece32(&temp)) {
-      DVLOG(1) << "Unable to read header value (" << index + 1 << " of "
-               << num_headers << ").";
-      return false;
-    }
-    SpdyString value(temp);
-
-    // Ensure no duplicates.
-    if (block->find(name) != block->end()) {
-      DVLOG(1) << "Duplicate header '" << name << "' (" << index + 1 << " of "
-               << num_headers << ").";
-      return false;
-    }
-
-    // Store header.
-    (*block)[name] = value;
-  }
-  if (reader.GetBytesConsumed() != header_length) {
-    SPDY_BUG << "Buffer expected to consist entirely of headers, but only "
-             << reader.GetBytesConsumed() << " bytes consumed, from "
-             << header_length;
-    return false;
-  }
-
-  return true;
-}
-
 SpdyFramer::SpdyFrameIterator::SpdyFrameIterator(SpdyFramer* framer)
     : framer_(framer),
       is_first_frame_(true),

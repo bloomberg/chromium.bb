@@ -386,13 +386,6 @@ class SPDY_EXPORT_PRIVATE SpdyFramer {
   SpdyState state() const;
   bool HasError() const { return state() == SPDY_ERROR; }
 
-  // Given a buffer containing a serialized header block parse out a
-  // SpdyHeaderBlock, putting the results in the given header block.
-  // Returns true if successfully parsed, false otherwise.
-  bool ParseHeaderBlockInBuffer(const char* header_data,
-                                size_t header_length,
-                                SpdyHeaderBlock* block) const;
-
   // Create a SpdyFrameSequence to serialize |frame_ir|.
   static std::unique_ptr<SpdyFrameSequence> CreateIterator(
       SpdyFramer* framer,

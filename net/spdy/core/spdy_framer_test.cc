@@ -859,39 +859,6 @@ TEST_P(SpdyFramerTest, UndersizedHeaderBlockInBuffer) {
   EXPECT_EQ(0u, visitor.headers_.size());
 }
 
-// Test that we treat incoming upper-case or mixed-case header values as
-// malformed.
-TEST_P(SpdyFramerTest, RejectUpperCaseHeaderBlockValue) {
-  SpdyFramer framer(SpdyFramer::DISABLE_COMPRESSION);
-
-  SpdyFrameBuilder frame(1024);
-  frame.BeginNewFrame(framer, SpdyFrameType::HEADERS, 0, 1);
-  frame.WriteUInt32(1);
-  frame.WriteStringPiece32("Name1");
-  frame.WriteStringPiece32("value1");
-
-  SpdyFrameBuilder frame2(1024);
-  frame2.BeginNewFrame(framer, SpdyFrameType::HEADERS, 0, 1);
-  frame2.WriteUInt32(2);
-  frame2.WriteStringPiece32("name1");
-  frame2.WriteStringPiece32("value1");
-  frame2.WriteStringPiece32("nAmE2");
-  frame2.WriteStringPiece32("value2");
-
-  SpdySerializedFrame control_frame(frame.take());
-  SpdyStringPiece serialized_headers =
-      GetSerializedHeaders(control_frame, framer);
-  SpdySerializedFrame control_frame2(frame2.take());
-  SpdyStringPiece serialized_headers2 =
-      GetSerializedHeaders(control_frame2, framer);
-
-  SpdyHeaderBlock new_headers;
-  EXPECT_FALSE(framer.ParseHeaderBlockInBuffer(
-      serialized_headers.data(), serialized_headers.size(), &new_headers));
-  EXPECT_FALSE(framer.ParseHeaderBlockInBuffer(
-      serialized_headers2.data(), serialized_headers2.size(), &new_headers));
-}
-
 // Test that we can encode and decode stream dependency values in a header
 // frame.
 TEST_P(SpdyFramerTest, HeaderStreamDependencyValues) {
@@ -1300,27 +1267,6 @@ TEST_P(SpdyFramerTest, PushPromiseWithPromisedStreamIdZero) {
   EXPECT_TRUE(framer.HasError());
   EXPECT_EQ(SpdyFramer::SPDY_INVALID_CONTROL_FRAME, framer.spdy_framer_error())
       << SpdyFramer::SpdyFramerErrorToString(framer.spdy_framer_error());
-}
-
-TEST_P(SpdyFramerTest, DuplicateHeader) {
-  SpdyFramer framer(SpdyFramer::DISABLE_COMPRESSION);
-  // Frame builder with plentiful buffer size.
-  SpdyFrameBuilder frame(1024);
-  frame.BeginNewFrame(framer, SpdyFrameType::HEADERS, 0, 3);
-
-  frame.WriteUInt32(2);  // Number of headers.
-  frame.WriteStringPiece32("name");
-  frame.WriteStringPiece32("value1");
-  frame.WriteStringPiece32("name");
-  frame.WriteStringPiece32("value2");
-
-  SpdyHeaderBlock new_headers;
-  SpdySerializedFrame control_frame(frame.take());
-  SpdyStringPiece serialized_headers =
-      GetSerializedHeaders(control_frame, framer);
-  // This should fail because duplicate headers are verboten by the spec.
-  EXPECT_FALSE(framer.ParseHeaderBlockInBuffer(
-      serialized_headers.data(), serialized_headers.size(), &new_headers));
 }
 
 TEST_P(SpdyFramerTest, MultiValueHeader) {
