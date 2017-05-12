@@ -13,6 +13,38 @@ bool SpellCheckMarkerListImpl::IsEmpty() const {
   return markers_.IsEmpty();
 }
 
+void SpellCheckMarkerListImpl::Add(DocumentMarker* marker) {
+  RenderedDocumentMarker* rendered_marker =
+      RenderedDocumentMarker::Create(*marker);
+  if (markers_.IsEmpty() ||
+      markers_.back()->EndOffset() < marker->StartOffset()) {
+    markers_.push_back(rendered_marker);
+    return;
+  }
+
+  auto first_overlapping = std::lower_bound(
+      markers_.begin(), markers_.end(), rendered_marker,
+      [](const Member<RenderedDocumentMarker>& marker_in_list,
+         const DocumentMarker* marker_to_insert) {
+        return marker_in_list->EndOffset() < marker_to_insert->StartOffset();
+      });
+
+  size_t index = first_overlapping - markers_.begin();
+  markers_.insert(index, rendered_marker);
+  const auto inserted = markers_.begin() + index;
+  first_overlapping = inserted + 1;
+  // TODO(rlanday): optimize this loop so it runs in O(N) time and not O(N^2)
+  for (const auto i = first_overlapping;
+       i != markers_.end() &&
+       (*i)->StartOffset() <= (*inserted)->EndOffset();) {
+    (*inserted)->SetStartOffset(
+        std::min((*inserted)->StartOffset(), (*i)->StartOffset()));
+    (*inserted)->SetEndOffset(
+        std::max((*inserted)->EndOffset(), (*i)->EndOffset()));
+    markers_.erase(i - markers_.begin());
+  }
+}
+
 void SpellCheckMarkerListImpl::Clear() {
   markers_.clear();
 }
