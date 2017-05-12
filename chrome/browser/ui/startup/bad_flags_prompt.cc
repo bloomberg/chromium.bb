@@ -27,6 +27,7 @@
 #include "content/public/common/content_switches.h"
 #include "extensions/common/switches.h"
 #include "google_apis/gaia/gaia_switches.h"
+#include "media/base/media_switches.h"
 #include "media/media_features.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -89,6 +90,10 @@ void ShowBadFlagsPrompt(Browser* browser) {
     // This flag allows sites to access the camera and microphone without
     // getting the user's permission.
     switches::kUseFakeUIForMediaStream,
+
+    // This flag allows sites to access protected media identifiers without
+    // getting the user's permission.
+    switches::kUnsafelyAllowProtectedMediaIdentifierForDomain,
 
     NULL
   };

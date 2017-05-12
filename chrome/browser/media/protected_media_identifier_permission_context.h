@@ -53,6 +53,9 @@ class ProtectedMediaIdentifierPermissionContext
                                const PermissionRequestID& id) override;
 
  private:
+  friend class ProtectedMediaIdentifierPermissionContextTest;
+  static bool IsOriginWhitelisted(const GURL& origin);
+
   void UpdateTabContext(const PermissionRequestID& id,
                         const GURL& requesting_frame,
                         bool allowed) override;
