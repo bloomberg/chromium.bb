@@ -54,7 +54,7 @@ function test()
         {
             var expression = copy.shift();
             if (expression)
-                InspectorTest.evaluateInConsoleAndDump(expression, inner);
+                InspectorTest.evaluateInConsoleAndDump(expression, inner, true);
             else
                 callback();
         }

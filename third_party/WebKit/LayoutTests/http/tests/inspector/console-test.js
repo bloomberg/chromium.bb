@@ -394,19 +394,14 @@ InspectorTest.waitUntilNthMessageReceivedPromise = function(count)
 
 InspectorTest.changeExecutionContext = function(namePrefix)
 {
-    var selector = Console.ConsoleView.instance()._consoleContextSelector._selectElement;
-    var option = selector.firstChild;
-    while (option) {
-        if (option.textContent && option.textContent.trim().startsWith(namePrefix))
-            break;
-        option = option.nextSibling;
+    var selector = Console.ConsoleView.instance()._consoleContextSelector;
+    for (var executionContext of selector._list._items) {
+        if (selector._titleFor(executionContext).startsWith(namePrefix)) {
+            UI.context.setFlavor(SDK.ExecutionContext, executionContext);
+            return;
+        }
     }
-    if (!option) {
-        InspectorTest.addResult("FAILED: context with prefix: "  + namePrefix + " not found in the context list");
-        return;
-    }
-    option.selected = true;
-    Console.ConsoleView.instance()._consoleContextSelector._executionContextChanged();
+    InspectorTest.addResult("FAILED: context with prefix: "  + namePrefix + " not found in the context list");
 }
 
 InspectorTest.waitForConsoleMessages = function(expectedCount, callback)
