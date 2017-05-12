@@ -5,7 +5,7 @@
 <script>
 'use strict';
 promise_test(() => {
-  let name_too_long = generate_string(249, 'a');
+  let name_too_long = 'a'.repeat(249);
   return assert_promise_rejects_with_message(
     requestDeviceWithKeyDown({filters: [{name: name_too_long}]}),
     new DOMException(

@@ -6,7 +6,7 @@
 promise_test(() => {
   // \u2764's UTF-8 respresentation is 3 bytes long.
   // 83 chars * 3 bytes/char = 249 bytes
-  const unicode_name = generate_string(83, '\u2764');
+  const unicode_name = '\u2764'.repeat(83);
   return assert_promise_rejects_with_message(
     requestDeviceWithKeyDown({filters: [{name: unicode_name}]}),
     new DOMException(

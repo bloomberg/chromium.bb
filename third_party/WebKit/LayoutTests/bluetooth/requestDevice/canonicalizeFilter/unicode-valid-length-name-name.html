@@ -6,9 +6,9 @@
 <script src="../../../resources/bluetooth/web-bluetooth-test.js"></script>
 <script>
 promise_test(() => {
-  let valid_unicode_name = generate_string(
-    9, '\u2764'); // \u2764's UTF-8 representation is 3 bytes long.
-                  // 9 chars * 3 bytes/char = 27 bytes
+  // \u2764's UTF-8 representation is 3 bytes long.
+  // 9 chars * 3 bytes/char = 27 bytes
+  let valid_unicode_name = '\u2764'.repeat(9);
   return setUpPreconnectedDevice({name: valid_unicode_name})
     .then(() => requestDeviceWithKeyDown({
       filters: [{name: valid_unicode_name}]}))
