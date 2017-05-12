@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/strings/string16.h"
+#include "base/time/time.h"
 #include "third_party/skia/include/core/SkColor.h"
 
 class PrefService;
@@ -31,9 +32,10 @@ extern const base::Feature kAutofillCreditCardLastUsedDateDisplay;
 extern const base::Feature kAutofillUkmLogging;
 extern const base::Feature kAutofillUpstreamRequestCvcIfMissing;
 extern const base::Feature kAutofillUpstreamUseAutofillProfileComparatorForName;
+extern const base::Feature kAutofillUpstreamUseNotRecentlyUsedAutofillProfile;
 extern const char kCreditCardSigninPromoImpressionLimitParamKey[];
-extern const char kAutofillCreditCardPopupSettingsSuggestionValueKey[];
 extern const char kAutofillCreditCardLastUsedDateShowExpirationDateKey[];
+extern const char kAutofillUpstreamMaxMinutesSinceAutofillProfileUseKey[];
 
 // Returns true if autofill should be enabled. See also
 // IsInAutofillSuggestionsDisabledExperiment below.
@@ -109,6 +111,11 @@ bool IsUkmLoggingEnabled();
 // Returns whether the experiment is enabled where Chrome Upstream requests CVC
 // in the offer to save bubble if it was not detected during the checkout flow.
 bool IsAutofillUpstreamRequestCvcIfMissingExperimentEnabled();
+
+// Returns the maximum time that could have elapsed since an address profile's
+// most recent use for the adress profile to be included in the candidate set
+// for card upload. Returns 0 if the experiment is not enabled.
+base::TimeDelta GetMaxTimeSinceAutofillProfileUseForCardUpload();
 
 }  // namespace autofill
 
