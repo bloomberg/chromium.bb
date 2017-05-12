@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.suggestions;
 
 import android.support.annotation.Nullable;
 
+import org.chromium.base.DiscardableReferencePool;
 import org.chromium.chrome.browser.NativePageHost;
 import org.chromium.chrome.browser.favicon.FaviconHelper;
 import org.chromium.chrome.browser.favicon.FaviconHelper.FaviconImageCallback;
@@ -32,6 +33,8 @@ public class SuggestionsUiDelegateImpl implements SuggestionsUiDelegate {
 
     private final NativePageHost mHost;
 
+    private final DiscardableReferencePool mReferencePool;
+
     private FaviconHelper mFaviconHelper;
     private LargeIconBridge mLargeIconBridge;
 
@@ -39,8 +42,8 @@ public class SuggestionsUiDelegateImpl implements SuggestionsUiDelegate {
 
     public SuggestionsUiDelegateImpl(SuggestionsSource suggestionsSource,
             SuggestionsEventReporter eventReporter,
-            SuggestionsNavigationDelegate navigationDelegate, Profile profile,
-            NativePageHost host) {
+            SuggestionsNavigationDelegate navigationDelegate, Profile profile, NativePageHost host,
+            DiscardableReferencePool referencePool) {
         mSuggestionsSource = suggestionsSource;
         mSuggestionsRanker = new SuggestionsRanker();
         mSuggestionsEventReporter = eventReporter;
@@ -48,6 +51,7 @@ public class SuggestionsUiDelegateImpl implements SuggestionsUiDelegate {
 
         mProfile = profile;
         mHost = host;
+        mReferencePool = referencePool;
     }
 
     @Override
@@ -94,6 +98,11 @@ public class SuggestionsUiDelegateImpl implements SuggestionsUiDelegate {
     @Override
     public SuggestionsNavigationDelegate getNavigationDelegate() {
         return mSuggestionsNavigationDelegate;
+    }
+
+    @Override
+    public DiscardableReferencePool getReferencePool() {
+        return mReferencePool;
     }
 
     @Override

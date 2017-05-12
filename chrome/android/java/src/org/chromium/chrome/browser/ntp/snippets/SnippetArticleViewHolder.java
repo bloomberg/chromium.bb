@@ -357,7 +357,7 @@ public class SnippetArticleViewHolder extends CardViewHolder implements Impressi
             mArticle.setThumbnailBitmap(null);
             Bitmap thumbnail = mThumbnailProvider.getThumbnail(mImageCallback);
             if (thumbnail == null || thumbnail.isRecycled()) return;
-            mArticle.setThumbnailBitmap(thumbnail);
+            mArticle.setThumbnailBitmap(mUiDelegate.getReferencePool().put(thumbnail));
             setThumbnailFromBitmap(thumbnail);
 
             return;
@@ -372,8 +372,9 @@ public class SnippetArticleViewHolder extends CardViewHolder implements Impressi
 
         // mThumbnailView's visibility is modified in updateLayout().
         if (mThumbnailView.getVisibility() != View.VISIBLE) return;
-        if (mArticle.getThumbnailBitmap() != null && !mArticle.getThumbnailBitmap().isRecycled()) {
-            setThumbnailFromBitmap(mArticle.getThumbnailBitmap());
+        Bitmap thumbnail = mArticle.getThumbnailBitmap();
+        if (thumbnail != null && !thumbnail.isRecycled()) {
+            setThumbnailFromBitmap(thumbnail);
             return;
         }
 
@@ -419,7 +420,7 @@ public class SnippetArticleViewHolder extends CardViewHolder implements Impressi
                 thumbnail, targetSize, targetSize, ThumbnailUtils.OPTIONS_RECYCLE_INPUT);
 
         // Store the bitmap to skip the download task next time we display this snippet.
-        snippet.setThumbnailBitmap(scaledThumbnail);
+        snippet.setThumbnailBitmap(mUiDelegate.getReferencePool().put(scaledThumbnail));
 
         // Cross-fade between the placeholder and the thumbnail. We cross-fade because the incoming
         // image may have transparency and we don't want the previous image showing up behind.

@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.suggestions;
 
+import org.chromium.base.DiscardableReferencePool;
 import org.chromium.chrome.browser.favicon.FaviconHelper.FaviconImageCallback;
 import org.chromium.chrome.browser.favicon.FaviconHelper.IconAvailabilityCallback;
 import org.chromium.chrome.browser.favicon.LargeIconBridge.LargeIconCallback;
@@ -28,6 +29,12 @@ public interface SuggestionsUiDelegate {
 
     /** Convenience method to access the {@link SuggestionsNavigationDelegate}. */
     SuggestionsNavigationDelegate getNavigationDelegate();
+
+    /**
+     * @return The reference pool to use for large objects that should be dropped under
+     * memory pressure.
+     */
+    DiscardableReferencePool getReferencePool();
 
     // Favicons
 
@@ -65,6 +72,6 @@ public interface SuggestionsUiDelegate {
      */
     void addDestructionObserver(DestructionObserver destructionObserver);
 
-    /** @return whether the suggestions UI is currently visible. */
+    /** @return Whether the suggestions UI is currently visible. */
     boolean isVisible();
 }

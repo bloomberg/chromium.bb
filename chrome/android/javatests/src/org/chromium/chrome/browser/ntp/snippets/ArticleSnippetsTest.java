@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.ntp.snippets;
 
+import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.MediumTest;
@@ -16,6 +17,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.chromium.base.DiscardableReferencePool;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
@@ -146,9 +148,11 @@ public class ArticleSnippetsTest {
                 1466614774, // Publish timestamp
                 10f, // Score
                 1466634774); // Fetch timestamp
-        shortSnippet.setThumbnailBitmap(
+
+        Bitmap thumbnail =
                 BitmapFactory.decodeResource(mActivityTestRule.getActivity().getResources(),
-                        R.drawable.signin_promo_illustration));
+                        R.drawable.signin_promo_illustration);
+        shortSnippet.setThumbnailBitmap(mUiDelegate.getReferencePool().put(thumbnail));
 
         SnippetArticle longSnippet = new SnippetArticle(fullCategory, "id2",
                 new String(new char[20]).replace("\0", "Snippet "),
@@ -206,6 +210,7 @@ public class ArticleSnippetsTest {
         private SuggestionsEventReporter mSuggestionsEventReporter =
                 new DummySuggestionsEventReporter();
         private SuggestionsRanker mSuggestionsRanker = new SuggestionsRanker();
+        private final DiscardableReferencePool mReferencePool = new DiscardableReferencePool();
 
         @Override
         public void getLocalFaviconImageForURL(
@@ -243,6 +248,11 @@ public class ArticleSnippetsTest {
         @Override
         public SuggestionsRanker getSuggestionsRanker() {
             return mSuggestionsRanker;
+        }
+
+        @Override
+        public DiscardableReferencePool getReferencePool() {
+            return mReferencePool;
         }
 
         @Override
