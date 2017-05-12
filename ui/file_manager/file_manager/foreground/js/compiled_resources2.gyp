@@ -105,6 +105,14 @@
       'includes': ['../../../compile_js2.gypi'],
     },
     {
+      'target_name': 'navigation_uma',
+      'dependencies': [
+        'dialog_type',
+        'volume_manager_wrapper',
+      ],
+      'includes': ['../../../compile_js2.gypi'],
+    },
+    {
       'target_name': 'directory_tree_naming_controller',
       'dependencies': [
         '../../common/js/compiled_resources2.gyp:util',

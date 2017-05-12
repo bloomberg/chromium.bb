@@ -120,6 +120,7 @@
           './metadata_update_controller.js',
           './naming_controller.js',
           './navigation_list_model.js',
+          './navigation_uma.js',
           './progress_center_item_group.js',
           './quick_view_controller.js',
           './quick_view_model.js',
