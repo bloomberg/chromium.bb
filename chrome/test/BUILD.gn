@@ -4102,7 +4102,10 @@ test("unit_tests") {
       "../browser/ui/input_method/input_method_engine_unittest.cc",
     ]
   }
-  if (!is_android && !is_chromeos) {
+
+  if (is_android || is_chromeos) {
+    sources += [ "../browser/media/protected_media_identifier_permission_context_unittest.cc" ]
+  } else {
     sources += [
       "../browser/net/disk_cache_dir_policy_handler_unittest.cc",
       "//chrome/browser/profiles/profile_list_desktop_unittest.cc",

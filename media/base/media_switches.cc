@@ -68,6 +68,18 @@ const char kWaveOutBuffers[] = "waveout-buffers";
 const char kUseCras[] = "use-cras";
 #endif
 
+// For automated testing of protected content, this switch allows specific
+// domains (e.g. example.com) to skip asking the user for permission to share
+// their personal identifier. In this context, domain does not include the
+// port number. This flag will have no effect if user-data-dir is not set and
+// will not affect the user's content settings.
+// Reference: http://crbug.com/718608
+// Example:
+// --unsafely-allow-protected-media-identifier-for-domain=a.com,b.ca
+// --user-data-dir=/test/only/profile/dir
+const char kUnsafelyAllowProtectedMediaIdentifierForDomain[] =
+    "unsafely-allow-protected-media-identifier-for-domain";
+
 #if !defined(OS_ANDROID) || BUILDFLAG(ENABLE_PLUGINS)
 // Enable a internal audio focus management between tabs in such a way that two
 // tabs can't  play on top of each other.
