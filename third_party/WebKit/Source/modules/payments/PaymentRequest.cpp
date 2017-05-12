@@ -40,6 +40,7 @@
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/UUID.h"
 #include "platform/bindings/ScriptState.h"
+#include "platform/feature_policy/FeaturePolicy.h"
 #include "platform/mojo/MojoHelper.h"
 #include "platform/wtf/HashSet.h"
 #include "public/platform/InterfaceProvider.h"
@@ -599,7 +600,7 @@ bool AllowedToUsePaymentRequest(const Frame* frame) {
   if (!frame)
     return false;
 
-  if (!RuntimeEnabledFeatures::featurePolicyEnabled()) {
+  if (!IsSupportedInFeaturePolicy(WebFeaturePolicyFeature::kPayment)) {
     // 2. If |document|'s browsing context is a top-level browsing context, then
     // return true.
     if (frame->IsMainFrame())

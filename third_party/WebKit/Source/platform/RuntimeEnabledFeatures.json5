@@ -392,11 +392,10 @@
     },
     {
       name: "FeaturePolicy",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "FeaturePolicyExperimentalFeatures",
-      status: "experimental",
     },
     {
       name:"FetchRequestCache",

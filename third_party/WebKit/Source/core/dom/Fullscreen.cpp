@@ -49,6 +49,7 @@
 #include "core/svg/SVGSVGElement.h"
 #include "platform/ScopedOrientationChangeIndicator.h"
 #include "platform/UserGestureIndicator.h"
+#include "platform/feature_policy/FeaturePolicy.h"
 
 namespace blink {
 
@@ -63,7 +64,7 @@ bool AllowedToUseFullscreen(const Frame* frame) {
   if (!frame)
     return false;
 
-  if (!RuntimeEnabledFeatures::featurePolicyEnabled()) {
+  if (!IsSupportedInFeaturePolicy(WebFeaturePolicyFeature::kFullscreen)) {
     // 2. If |document|'s browsing context is a top-level browsing context, then
     // return true.
     if (frame->IsMainFrame())

@@ -64,7 +64,7 @@ const base::Feature kExpensiveBackgroundTimerThrottling{
 // Enables the Feature Policy framework for granting and removing access to
 // other features through HTTP headers.
 const base::Feature kFeaturePolicy{"FeaturePolicy",
-                                   base::FEATURE_DISABLED_BY_DEFAULT};
+                                   base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enable filtering of same-origin tiny plugins
 const base::Feature kFilterSameOriginTinyPlugin{
