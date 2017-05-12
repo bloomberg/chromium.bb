@@ -20,6 +20,7 @@
 #include "components/prefs/pref_service.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "ui/views/test/widget_test.h"
 #include "ui/views/widget/widget.h"
 
 using ::testing::Field;
@@ -42,39 +43,6 @@ class TestURLFetcherCallback {
 
   MOCK_METHOD1(OnRequestDone, void(const GURL&));
 };
-
-// A Widget observer class used to observe bubbles closing.
-class BubbleCloseObserver : public views::WidgetObserver {
- public:
-  explicit BubbleCloseObserver(views::DialogDelegateView* bubble);
-  ~BubbleCloseObserver() override;
-
-  bool widget_closed() const { return !widget_; }
-
- private:
-  // WidgetObserver:
-  void OnWidgetClosing(views::Widget* widget) override;
-
-  views::Widget* widget_;
-
-  DISALLOW_COPY_AND_ASSIGN(BubbleCloseObserver);
-};
-
-BubbleCloseObserver::BubbleCloseObserver(views::DialogDelegateView* bubble)
-    : widget_(bubble->GetWidget()) {
-  widget_->AddObserver(this);
-}
-
-BubbleCloseObserver::~BubbleCloseObserver() {
-  if (widget_)
-    widget_->RemoveObserver(this);
-}
-
-void BubbleCloseObserver::OnWidgetClosing(views::Widget* widget) {
-  DCHECK_EQ(widget_, widget);
-  widget_->RemoveObserver(this);
-  widget_ = nullptr;
-}
 
 // ManagePasswordsUIController subclass to capture the dialog instance
 class TestManagePasswordsUIController : public ManagePasswordsUIController {
@@ -220,8 +188,8 @@ IN_PROC_BROWSER_TEST_F(PasswordDialogViewTest,
   // Prepare to capture the network request.
   TestURLFetcherCallback url_callback;
   net::FakeURLFetcherFactory factory(
-      NULL, base::Bind(&TestURLFetcherCallback::CreateURLFetcher,
-                       base::Unretained(&url_callback)));
+      nullptr, base::Bind(&TestURLFetcherCallback::CreateURLFetcher,
+                          base::Unretained(&url_callback)));
   factory.SetFakeResponse(icon_url, std::string(), net::HTTP_OK,
                           net::URLRequestStatus::FAILED);
   EXPECT_CALL(url_callback, OnRequestDone(icon_url));
@@ -302,7 +270,7 @@ IN_PROC_BROWSER_TEST_F(PasswordDialogViewTest,
 
   EXPECT_TRUE(controller()->current_account_chooser());
   views::DialogDelegateView* dialog = controller()->current_account_chooser();
-  BubbleCloseObserver bubble_observer(dialog);
+  views::test::WidgetClosingObserver bubble_observer(dialog->GetWidget());
   EXPECT_CALL(*this, OnChooseCredential(testing::Pointee(form)));
   dialog->Accept();
   EXPECT_TRUE(bubble_observer.widget_closed());
@@ -408,7 +376,7 @@ IN_PROC_BROWSER_TEST_F(PasswordDialogViewTest, PopupAutoSigninPrompt) {
   EXPECT_EQ(password_manager::ui::INACTIVE_STATE, controller()->GetState());
   AutoSigninFirstRunDialogView* dialog =
       controller()->current_autosignin_prompt();
-  BubbleCloseObserver bubble_observer(dialog);
+  views::test::WidgetClosingObserver bubble_observer(dialog->GetWidget());
   ui::Accelerator esc(ui::VKEY_ESCAPE, 0);
   EXPECT_CALL(*controller(), OnDialogClosed());
   EXPECT_TRUE(dialog->GetWidget()->client_view()->AcceleratorPressed(esc));
