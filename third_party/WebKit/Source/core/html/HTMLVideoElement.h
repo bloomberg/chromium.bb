@@ -79,10 +79,12 @@ class CORE_EXPORT HTMLVideoElement final : public HTMLMediaElement,
 
   // Used by WebGL to do GPU-GPU textures copy if possible.
   bool CopyVideoTextureToPlatformTexture(gpu::gles2::GLES2Interface*,
+                                         GLenum target,
                                          GLuint texture,
                                          GLenum internal_format,
                                          GLenum format,
                                          GLenum type,
+                                         GLint level,
                                          bool premultiply_alpha,
                                          bool flip_y);
 

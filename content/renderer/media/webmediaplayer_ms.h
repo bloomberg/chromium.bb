@@ -153,10 +153,12 @@ class CONTENT_EXPORT WebMediaPlayerMS
   void OnBecamePersistentVideo(bool value) override;
 
   bool CopyVideoTextureToPlatformTexture(gpu::gles2::GLES2Interface* gl,
+                                         unsigned target,
                                          unsigned int texture,
                                          unsigned internal_format,
                                          unsigned format,
                                          unsigned type,
+                                         int level,
                                          bool premultiply_alpha,
                                          bool flip_y) override;
 

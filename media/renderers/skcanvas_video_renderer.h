@@ -83,10 +83,12 @@ class MEDIA_EXPORT SkCanvasVideoRenderer {
       gpu::gles2::GLES2Interface* gl,
       VideoFrame* video_frame,
       SingleFrameCopyMode copy_mode,
+      unsigned int target,
       unsigned int texture,
       unsigned int internal_format,
       unsigned int format,
       unsigned int type,
+      int level,
       bool premultiply_alpha,
       bool flip_y);
 
@@ -100,10 +102,12 @@ class MEDIA_EXPORT SkCanvasVideoRenderer {
       const Context3D& context_3d,
       gpu::gles2::GLES2Interface* destination_gl,
       const scoped_refptr<VideoFrame>& video_frame,
+      unsigned int target,
       unsigned int texture,
       unsigned int internal_format,
       unsigned int format,
       unsigned int type,
+      int level,
       bool premultiply_alpha,
       bool flip_y);
 

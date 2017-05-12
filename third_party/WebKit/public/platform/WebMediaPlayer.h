@@ -180,34 +180,22 @@ class WebMediaPlayer {
 
   virtual void Paint(WebCanvas*, const WebRect&, cc::PaintFlags&) = 0;
 
-  // TODO(kbr): remove non-|target| version. crbug.com/349871
-  //
   // Do a GPU-GPU texture copy of the current video frame to |texture|,
   // reallocating |texture| at the appropriate size with given internal
   // format, format, and type if necessary. If the copy is impossible
   // or fails, it returns false.
   virtual bool CopyVideoTextureToPlatformTexture(gpu::gles2::GLES2Interface*,
-                                                 unsigned texture,
-                                                 unsigned internal_format,
-                                                 unsigned format,
-                                                 unsigned type,
-                                                 bool premultiply_alpha,
-                                                 bool flip_y) {
-    return false;
-  }
-
-  // Do a GPU-GPU textures copy. If the copy is impossible or fails, it returns
-  // false.
-  virtual bool CopyVideoTextureToPlatformTexture(gpu::gles2::GLES2Interface*,
                                                  unsigned target,
                                                  unsigned texture,
                                                  unsigned internal_format,
+                                                 unsigned format,
                                                  unsigned type,
                                                  int level,
                                                  bool premultiply_alpha,
                                                  bool flip_y) {
     return false;
   }
+
   // Copy sub video frame texture to |texture|. If the copy is impossible or
   // fails, it returns false.
   virtual bool CopyVideoSubTextureToPlatformTexture(gpu::gles2::GLES2Interface*,
