@@ -5,7 +5,9 @@
 #include "chrome/browser/extensions/api/feedback_private/feedback_private_api.h"
 
 #include <memory>
+#include <string>
 #include <utility>
+#include <vector>
 
 #include "base/lazy_instance.h"
 #include "base/macros.h"
@@ -39,7 +41,7 @@
 
 #if defined(OS_WIN)
 #include "base/feature_list.h"
-#include "chrome/browser/safe_browsing/chrome_cleaner/srt_fetcher_win.h"
+#include "chrome/browser/safe_browsing/chrome_cleaner/reporter_runner_win.h"
 #endif
 
 using extensions::api::feedback_private::SystemInformation;

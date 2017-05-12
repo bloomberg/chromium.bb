@@ -64,7 +64,6 @@ class IncidentReportingService;
 class ReporterRunner;
 class SafeBrowsingService;
 class SafeBrowsingUIManager;
-class SRTFetcher;
 class SRTGlobalError;
 }
 
@@ -124,7 +123,6 @@ class ChromeMetricsServiceAccessor : public metrics::MetricsServiceAccessor {
   friend class safe_browsing::DownloadUrlSBClient;
   friend class safe_browsing::IncidentReportingService;
   friend class safe_browsing::ReporterRunner;
-  friend class safe_browsing::SRTFetcher;
   friend class safe_browsing::SRTGlobalError;
   friend class safe_browsing::SafeBrowsingService;
   friend class safe_browsing::SafeBrowsingUIManager;

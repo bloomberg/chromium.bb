@@ -2,12 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SAFE_BROWSING_CHROME_CLEANER_SRT_FETCHER_WIN_H_
-#define CHROME_BROWSER_SAFE_BROWSING_CHROME_CLEANER_SRT_FETCHER_WIN_H_
+#ifndef CHROME_BROWSER_SAFE_BROWSING_CHROME_CLEANER_REPORTER_RUNNER_WIN_H_
+#define CHROME_BROWSER_SAFE_BROWSING_CHROME_CLEANER_REPORTER_RUNNER_WIN_H_
 
 #include <limits.h>
 #include <stdint.h>
 
+#include <memory>
 #include <queue>
 #include <string>
 
@@ -124,7 +125,7 @@ class SwReporterTestingDelegate {
                              const std::string& reporter_version) = 0;
 
   // Invoked by tests to override the current time.
-  // See Now() in srt_fetcher_win.cc.
+  // See Now() in reporter_runner_win.cc.
   virtual base::Time Now() const = 0;
 
   // A task runner used to spawn the reporter process (which blocks).
@@ -139,7 +140,7 @@ class SwReporterTestingDelegate {
       chrome_cleaner::mojom::ChromePromptRequest request) = 0;
 
   // Connection closed callback defined by tests in place of the default
-  // error handler. See SRTFetcherTest::CreateChromePromptImpl().
+  // error handler. See ReporterRunnerTest::CreateChromePromptImpl().
   virtual void OnConnectionClosed() = 0;
 
   // Bad message handler callback defined by tests in place of the default
@@ -157,4 +158,4 @@ void DisplaySRTPromptForTesting(const base::FilePath& download_path);
 
 }  // namespace safe_browsing
 
-#endif  // CHROME_BROWSER_SAFE_BROWSING_CHROME_CLEANER_SRT_FETCHER_WIN_H_
+#endif  // CHROME_BROWSER_SAFE_BROWSING_CHROME_CLEANER_REPORTER_RUNNER_WIN_H_
