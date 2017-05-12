@@ -13,7 +13,6 @@
 #include "base/memory/weak_ptr.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/system/core.h"
-#include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/service.h"
 #include "services/service_manager/public/interfaces/connector.mojom.h"
@@ -104,20 +103,6 @@ class ServiceContext : public mojom::Service {
   // See comments on DisconnectFromServiceManager() regarding abrupt
   // disconnection from the Service Manager.
   void QuitNow();
-
-  // Overrides the interface binder for |interface_name| of |service_name|.
-  // This is a process-wide override, meaning that |binder| can intercept
-  // requests against only those |service_name| service instances running in the
-  // same process with caller of this function.
-  static void SetGlobalBinderForTesting(
-      const std::string& service_name,
-      const std::string& interface_name,
-      const BinderRegistry::Binder& binder,
-      const scoped_refptr<base::SingleThreadTaskRunner>& task_runner = nullptr);
-
-  // Clears all overridden interface binders for service |service_name| set via
-  // SetGlobalBinderForTesting().
-  static void ClearGlobalBindersForTesting(const std::string& service_name);
 
  private:
   friend class service_manager::Service;
