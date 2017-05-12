@@ -157,24 +157,26 @@ void OnDoneReadingUrls(std::unique_ptr<WebUsbAllowedOrigins> allowed_origins,
                        uint8_t landing_page_id,
                        std::unique_ptr<std::map<uint8_t, GURL>> url_map,
                        const ReadWebUsbDescriptorsCallback& callback) {
-  for (uint8_t origin_id : allowed_origins->origin_ids) {
-    const auto& it = url_map->find(origin_id);
-    if (it != url_map->end())
-      allowed_origins->origins.push_back(it->second.GetOrigin());
-  }
-
-  for (auto& configuration : allowed_origins->configurations) {
-    for (uint8_t origin_id : configuration.origin_ids) {
+  if (allowed_origins) {
+    for (uint8_t origin_id : allowed_origins->origin_ids) {
       const auto& it = url_map->find(origin_id);
       if (it != url_map->end())
-        configuration.origins.push_back(it->second.GetOrigin());
+        allowed_origins->origins.push_back(it->second.GetOrigin());
     }
 
-    for (auto& function : configuration.functions) {
-      for (uint8_t origin_id : function.origin_ids) {
+    for (auto& configuration : allowed_origins->configurations) {
+      for (uint8_t origin_id : configuration.origin_ids) {
         const auto& it = url_map->find(origin_id);
         if (it != url_map->end())
-          function.origins.push_back(it->second.GetOrigin());
+          configuration.origins.push_back(it->second.GetOrigin());
+      }
+
+      for (auto& function : configuration.functions) {
+        for (uint8_t origin_id : function.origin_ids) {
+          const auto& it = url_map->find(origin_id);
+          if (it != url_map->end())
+            function.origins.push_back(it->second.GetOrigin());
+        }
       }
     }
   }
@@ -223,27 +225,25 @@ void ReadUrlDescriptor(scoped_refptr<UsbDeviceHandle> device_handle,
 }
 
 // Reads URL descriptors from the device so that it can fill |allowed_origins|
-// with the GURLs matching the indicies already collected.
+// with the GURLs matching the indices already collected.
 void ReadUrlDescriptors(scoped_refptr<UsbDeviceHandle> device_handle,
                         uint8_t vendor_code,
                         uint8_t landing_page_id,
                         const ReadWebUsbDescriptorsCallback& callback,
                         std::unique_ptr<WebUsbAllowedOrigins> allowed_origins) {
-  if (!allowed_origins) {
-    callback.Run(nullptr, GURL());
-    return;
-  }
-
   std::set<uint8_t> to_request;
   if (landing_page_id != 0)
     to_request.insert(landing_page_id);
 
-  to_request.insert(allowed_origins->origin_ids.begin(),
-                    allowed_origins->origin_ids.end());
-  for (auto& config : allowed_origins->configurations) {
-    to_request.insert(config.origin_ids.begin(), config.origin_ids.end());
-    for (auto& function : config.functions) {
-      to_request.insert(function.origin_ids.begin(), function.origin_ids.end());
+  if (allowed_origins) {
+    to_request.insert(allowed_origins->origin_ids.begin(),
+                      allowed_origins->origin_ids.end());
+    for (auto& config : allowed_origins->configurations) {
+      to_request.insert(config.origin_ids.begin(), config.origin_ids.end());
+      for (auto& function : config.functions) {
+        to_request.insert(function.origin_ids.begin(),
+                          function.origin_ids.end());
+      }
     }
   }
 
@@ -255,9 +255,8 @@ void ReadUrlDescriptors(scoped_refptr<UsbDeviceHandle> device_handle,
       base::Bind(&OnDoneReadingUrls, base::Passed(&allowed_origins),
                  landing_page_id, base::Passed(&url_map), callback));
 
-  for (uint8_t index : to_request) {
+  for (uint8_t index : to_request)
     ReadUrlDescriptor(device_handle, vendor_code, url_map_ptr, index, barrier);
-  }
 }
 
 void OnReadWebUsbAllowedOrigins(
