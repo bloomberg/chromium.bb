@@ -18,7 +18,6 @@ from chromite.lib import ts_mon_config
 
 class FakeException(Exception):
   """FakeException to raise during tests."""
-  pass
 
 
 class TestIndirectMetrics(cros_test_lib.MockTestCase):
@@ -185,11 +184,19 @@ class TestSuccessCounter(cros_test_lib.MockTestCase):
         fields={'success': True})
     self.assertEqual(self._mockMetric.increment.call_count, 1)
 
-  def testContextManagerFailed(self):
+  def testContextManagerFailedException(self):
     """Test that we fail when an exception is raised."""
     with self.assertRaises(FakeException):
       with metrics.SuccessCounter('fooname'):
         raise FakeException
+
+    self._mockMetric.increment.assert_called_with(
+        fields={'success': False})
+
+  def testContextManagerFailedExplicit(self):
+    """Test that we fail when an exception is raised."""
+    with metrics.SuccessCounter('fooname') as s:
+      s['success'] = False
 
     self._mockMetric.increment.assert_called_with(
         fields={'success': False})

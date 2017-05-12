@@ -313,14 +313,14 @@ def SuccessCounter(name, fields=None):
   c = Counter(name)
   f = fields or {}
   f = f.copy()
-  keys = f.keys()
+  keys = f.keys() + ['success']  # We add in the additional field success.
   success = False
   try:
     yield f
     success = True
   finally:
+    f.setdefault('success', success)
     f = {k: f[k] for k in keys}
-    f['success'] = success
     c.increment(fields=f)
 
 

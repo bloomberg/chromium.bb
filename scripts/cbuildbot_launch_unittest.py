@@ -21,6 +21,10 @@ from chromite.scripts import cbuildbot_launch
 EXPECTED_MANIFEST_URL = 'https://chrome-internal-review.googlesource.com/chromeos/manifest-internal'  # pylint: disable=line-too-long
 
 
+# It's reasonable for unittests to look at internals.
+# pylint: disable=protected-access
+
+
 class FakeException(Exception):
   """Test exception to raise during tests."""
 
@@ -103,7 +107,7 @@ class RunTests(cros_build_lib_unittest.RunCommandTestCase):
     cbuildbot_launch.RunCbuildbot(options)
 
     self.assertCommandCalled(
-        expected_cmd, cwd=options.buildroot)
+        expected_cmd, cwd=options.buildroot, error_code_ok=True)
 
   def testRunCbuildbotSimple(self):
     """Ensure we invoke cbuildbot correctly."""
@@ -141,7 +145,7 @@ class RunTests(cros_build_lib_unittest.RunCommandTestCase):
     mock_checkout = self.PatchObject(cbuildbot_launch, 'InitialCheckout',
                                      autospec=True)
 
-    cbuildbot_launch.main(['--buildroot', '/buildroot', 'config'])
+    cbuildbot_launch._main(['--buildroot', '/buildroot', 'config'])
 
     # Did we create the repo instance correctly?
     self.assertEqual(mock_repo_create.mock_calls,
@@ -150,7 +154,8 @@ class RunTests(cros_build_lib_unittest.RunCommandTestCase):
 
     # Ensure we clean, as expected.
     self.assertEqual(mock_clean.mock_calls,
-                     [mock.call('/buildroot', mock_repo)])
+                     [mock.call('/buildroot', mock_repo,
+                                {'branch_name': 'master'})])
 
     # Ensure we checkout, as expected.
     self.assertEqual(mock_checkout.mock_calls,
@@ -160,7 +165,8 @@ class RunTests(cros_build_lib_unittest.RunCommandTestCase):
     self.assertCommandCalled(
         ['/buildroot/chromite/bin/cbuildbot',
          'config', '--buildroot', '/buildroot'],
-        cwd='/buildroot')
+        cwd='/buildroot',
+        error_code_ok=True)
 
   def testMainMax(self):
     """Test a larger set of command line options."""
@@ -177,10 +183,10 @@ class RunTests(cros_build_lib_unittest.RunCommandTestCase):
     mock_checkout = self.PatchObject(cbuildbot_launch, 'InitialCheckout',
                                      autospec=True)
 
-    cbuildbot_launch.main(['--buildroot', '/buildroot',
-                           '--branch', 'branch',
-                           '--git-cache-dir', '/git-cache',
-                           'config'])
+    cbuildbot_launch._main(['--buildroot', '/buildroot',
+                            '--branch', 'branch',
+                            '--git-cache-dir', '/git-cache',
+                            'config'])
 
     # Did we create the repo instance correctly?
     self.assertEqual(mock_repo_create.mock_calls,
@@ -189,7 +195,8 @@ class RunTests(cros_build_lib_unittest.RunCommandTestCase):
 
     # Ensure we clean, as expected.
     self.assertEqual(mock_clean.mock_calls,
-                     [mock.call('/buildroot', mock_repo)])
+                     [mock.call('/buildroot', mock_repo,
+                                {'branch_name': 'branch'})])
 
     # Ensure we checkout, as expected.
     self.assertEqual(mock_checkout.mock_calls,
@@ -202,7 +209,8 @@ class RunTests(cros_build_lib_unittest.RunCommandTestCase):
          '--buildroot', '/buildroot',
          '--branch', 'branch',
          '--git-cache-dir', '/git-cache'],
-        cwd='/buildroot')
+        cwd='/buildroot',
+        error_code_ok=True)
 
 
 class CleanBuildrootTest(cros_test_lib.MockTempDirTestCase):
@@ -219,6 +227,8 @@ class CleanBuildrootTest(cros_test_lib.MockTempDirTestCase):
 
     self.mock_repo = mock.MagicMock()
 
+    self.metrics = {}
+
   def populateBuildroot(self, state=None):
     """Create standard buildroot contents for cleanup."""
     osutils.SafeMakedirs(self.root)
@@ -234,7 +244,7 @@ class CleanBuildrootTest(cros_test_lib.MockTempDirTestCase):
     """Test CleanBuildroot with no history."""
     self.mock_repo.branch = 'master'
 
-    cbuildbot_launch.CleanBuildroot(self.root, self.mock_repo)
+    cbuildbot_launch.CleanBuildroot(self.root, self.mock_repo, self.metrics)
 
     self.assertEqual(osutils.ReadFile(self.state), '1 master')
 
@@ -243,7 +253,7 @@ class CleanBuildrootTest(cros_test_lib.MockTempDirTestCase):
     self.populateBuildroot()
     self.mock_repo.branch = 'master'
 
-    cbuildbot_launch.CleanBuildroot(self.root, self.mock_repo)
+    cbuildbot_launch.CleanBuildroot(self.root, self.mock_repo, self.metrics)
 
     self.assertEqual(osutils.ReadFile(self.state), '1 master')
     self.assertNotExists(self.repo)
@@ -255,7 +265,7 @@ class CleanBuildrootTest(cros_test_lib.MockTempDirTestCase):
     self.populateBuildroot('0 master')
     self.mock_repo.branch = 'master'
 
-    cbuildbot_launch.CleanBuildroot(self.root, self.mock_repo)
+    cbuildbot_launch.CleanBuildroot(self.root, self.mock_repo, self.metrics)
 
     self.assertEqual(osutils.ReadFile(self.state), '1 master')
     self.assertNotExists(self.repo)
@@ -267,7 +277,7 @@ class CleanBuildrootTest(cros_test_lib.MockTempDirTestCase):
     self.populateBuildroot('1 branchA')
     self.mock_repo.branch = 'branchB'
 
-    cbuildbot_launch.CleanBuildroot(self.root, self.mock_repo)
+    cbuildbot_launch.CleanBuildroot(self.root, self.mock_repo, self.metrics)
 
     self.assertEqual(osutils.ReadFile(self.state), '1 branchB')
     self.assertExists(self.repo)
@@ -279,7 +289,7 @@ class CleanBuildrootTest(cros_test_lib.MockTempDirTestCase):
     self.populateBuildroot('1 branchA')
     self.mock_repo.branch = 'branchA'
 
-    cbuildbot_launch.CleanBuildroot(self.root, self.mock_repo)
+    cbuildbot_launch.CleanBuildroot(self.root, self.mock_repo, self.metrics)
 
     self.assertEqual(osutils.ReadFile(self.state), '1 branchA')
     self.assertExists(self.repo)
@@ -292,7 +302,7 @@ class CleanBuildrootTest(cros_test_lib.MockTempDirTestCase):
     self.mock_repo.branch = 'branchA'
     self.mock_repo.BuildRootGitCleanup.side_effect = Exception
 
-    cbuildbot_launch.CleanBuildroot(self.root, self.mock_repo)
+    cbuildbot_launch.CleanBuildroot(self.root, self.mock_repo, self.metrics)
 
     self.assertEqual(osutils.ReadFile(self.state), '1 branchA')
     self.assertNotExists(self.repo)

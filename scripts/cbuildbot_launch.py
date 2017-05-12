@@ -23,7 +23,9 @@ from chromite.cbuildbot.stages import sync_stages
 from chromite.lib import config_lib
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
+from chromite.lib import metrics
 from chromite.lib import osutils
+from chromite.lib import ts_mon_config
 from chromite.scripts import cbuildbot
 
 
@@ -31,23 +33,52 @@ from chromite.scripts import cbuildbot
 # in a non-backwards compatible way. This wipes all buildroots.
 BUILDROOT_BUILDROOT_LAYOUT = 1
 
+# Metrics reported to Monarch.
+METRIC_INVOKED = 'chromeos/chromite/cbuildbot_launch/invoked'
+METRIC_COMPLETED = 'chromeos/chromite/cbuildbot_launch/completed'
+METRIC_PREP = 'chromeos/chromite/cbuildbot_launch/prep_completed'
+METRIC_CLEAN = 'chromeos/chromite/cbuildbot_launch/clean_buildroot_durations'
+METRIC_INITIAL = 'chromeos/chromite/cbuildbot_launch/initial_checkout_durations'
+METRIC_CBUILDBOT = 'chromeos/chromite/cbuildbot_launch/cbuildbot_durations'
+METRIC_CLOBBER = 'chromeos/chromite/cbuildbot_launch/clobber'
+METRIC_BRANCH_CLEANUP = 'chromeos/chromite/cbuildbot_launch/branch_cleanup'
+
 
 def StageDecorator(functor):
   """A Decorator that adds buildbot stage tags around a method.
 
-  It uses the method name as the stage name, and assumes failure on exception.
+  It uses the method name as the stage name, and assumes failure on a true
+  return value, or an exception.
   """
   @functools.wraps(functor)
   def wrapped_functor(*args, **kwargs):
     try:
       logging.PrintBuildbotStepName(functor.__name__)
-      return functor(*args, **kwargs)
+      result = functor(*args, **kwargs)
     except Exception:
       logging.PrintBuildbotStepFailure()
       raise
 
+    if result:
+      logging.PrintBuildbotStepFailure()
+    return result
+
   return wrapped_functor
 
+
+def field(fields, **kwargs):
+  """Helper for inserting more fields into a metrics fields dictionary.
+
+  Args:
+    fields: Dictionary of metrics fields.
+    kwargs: Each argument is a key/value pair to insert into dict.
+
+  Returns:
+    Copy of original dictionary with kwargs set as fields.
+  """
+  f = fields.copy()
+  f.update(kwargs)
+  return f
 
 def PreParseArguments(argv):
   """Extract the branch name from cbuildbot command line arguments.
@@ -95,7 +126,7 @@ def SetBuildrootState(branchname, buildroot):
 
 
 @StageDecorator
-def CleanBuildroot(buildroot, repo):
+def CleanBuildroot(buildroot, repo, metrics_fields):
   """Some kinds of branch transitions break builds.
 
   This method tries to detect cases where that can happen, and clobber what's
@@ -105,17 +136,21 @@ def CleanBuildroot(buildroot, repo):
   Args:
     buildroot: Directory with old buildroot to clean as needed.
     repo: repository.RepoRepository instance.
+    metrics_fields: Dictionary of fields to include in metrics.
   """
   old_buildroot_layout, old_branch = GetBuildrootState(buildroot)
 
   if old_buildroot_layout != BUILDROOT_BUILDROOT_LAYOUT:
     logging.PrintBuildbotStepText('Unknown layout: Wiping buildroot.')
+    metrics.Counter(METRIC_CLOBBER).increment(
+        field(metrics_fields, reason='layout_change'))
     osutils.RmDir(buildroot, ignore_missing=True, sudo=True)
-
   else:
     if old_branch != repo.branch:
       logging.PrintBuildbotStepText('Branch change: Cleaning buildroot.')
       logging.info('Unmatched branch: %s -> %s', old_branch, repo.branch)
+      metrics.Counter(METRIC_BRANCH_CLEANUP).increment(
+          field(metrics_fields, old_branch=old_branch))
 
       logging.info('Remove Chroot.')
       osutils.RmDir(os.path.join(buildroot, 'chroot'),
@@ -130,6 +165,8 @@ def CleanBuildroot(buildroot, repo):
       repo.BuildRootGitCleanup(prune_all=True)
     except Exception:
       logging.info('Checkout cleanup failed, wiping buildroot:', exc_info=True)
+      metrics.Counter(METRIC_CLOBBER).increment(
+          field(metrics_fields, reason='repo_cleanup_failure'))
       repository.ClearBuildRoot(buildroot)
 
   # Ensure buildroot exists.
@@ -176,7 +213,9 @@ def RunCbuildbot(options):
   cmd = sync_stages.BootstrapStage.FilterArgsForTargetCbuildbot(
       options.buildroot, cbuildbot_path, options)
 
-  cros_build_lib.RunCommand(cmd, cwd=options.buildroot)
+  result = cros_build_lib.RunCommand(cmd, error_code_ok=True,
+                                     cwd=options.buildroot)
+  return result.returncode
 
 
 def ConfigureGlobalEnvironment():
@@ -197,7 +236,7 @@ def ConfigureGlobalEnvironment():
   os.environ['LANG'] = 'en_US.UTF-8'
 
 
-def main(argv):
+def _main(argv):
   """main method of script.
 
   Args:
@@ -206,31 +245,51 @@ def main(argv):
   Returns:
     Return code of cbuildbot as an integer.
   """
-  logging.EnableBuildbotMarkers()
-  ConfigureGlobalEnvironment()
+  metrics_fields = {'branch_name': 'unknown'}
 
-  options = PreParseArguments(argv)
+  # Does the entire build pass or fail.
+  with metrics.SuccessCounter(METRIC_COMPLETED, metrics_fields) as c_fields:
 
-  branchname = options.branch or 'master'
-  buildroot = options.buildroot
-  git_cache_dir = options.git_cache_dir
+    # Preliminary set, mostly command line parsing.
+    with metrics.SuccessCounter(METRIC_INVOKED, metrics_fields) as i_fields:
+      logging.EnableBuildbotMarkers()
+      ConfigureGlobalEnvironment()
 
-  site_config = config_lib.GetConfig()
-  manifest_url = site_config.params['MANIFEST_INT_URL']
+      options = PreParseArguments(argv)
 
-  repo = repository.RepoRepository(manifest_url, buildroot,
-                                   branch=branchname,
-                                   git_cache_dir=git_cache_dir)
+      branchname = options.branch or 'master'
+      buildroot = options.buildroot
+      git_cache_dir = options.git_cache_dir
 
-  # Sometimes, we have to cleanup things that can break cbuildbot, especially
-  # on the branch.
-  CleanBuildroot(buildroot, repo)
+      # Update metrics fields after parsing command line arguments.
+      metrics_fields['branch_name'] = branchname
+      i_fields.update(metrics_fields)
+      c_fields.update(metrics_fields)
 
-  # Get a checkout close enough the branched cbuildbot can handle it.
-  InitialCheckout(repo)
+    # Prepare the buildroot with source for the build.
+    with metrics.SuccessCounter(METRIC_PREP, metrics_fields):
+      site_config = config_lib.GetConfig()
+      manifest_url = site_config.params['MANIFEST_INT_URL']
+      repo = repository.RepoRepository(manifest_url, buildroot,
+                                       branch=branchname,
+                                       git_cache_dir=git_cache_dir)
 
-  # Run cbuildbot inside the full ChromeOS checkout, on the specified branch.
-  try:
-    RunCbuildbot(options)
-  except cros_build_lib.RunCommandError as e:
-    return e.result.returncode
+      # Clean up the buildroot to a safe state.
+      with metrics.SecondsTimer(METRIC_CLEAN, fields=metrics_fields):
+        CleanBuildroot(buildroot, repo, metrics_fields)
+
+      # Get a checkout close enough the branched cbuildbot can handle it.
+      with metrics.SecondsTimer(METRIC_INITIAL, fields=metrics_fields):
+        InitialCheckout(repo)
+
+    # Run cbuildbot inside the full ChromeOS checkout, on the specified branch.
+    with metrics.SecondsTimer(METRIC_CBUILDBOT, fields=metrics_fields):
+      result = RunCbuildbot(options)
+      c_fields['success'] = (result == 0)
+      return result
+
+
+def main(argv):
+  # Enable Monarch metrics gathering.
+  with ts_mon_config.SetupTsMonGlobalState('cbuildbot_launch', indirect=True):
+    return _main(argv)
