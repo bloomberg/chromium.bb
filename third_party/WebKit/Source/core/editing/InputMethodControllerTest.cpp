@@ -1272,7 +1272,7 @@ TEST_F(InputMethodControllerTest, CompositionInputEventForInsertEmptyText) {
   GetDocument().setTitle(g_empty_string);
   GetDocument().UpdateStyleAndLayout();
   Controller().CommitText("", underlines, 0);
-  EXPECT_STREQ("", GetDocument().title().Utf8().data());
+  EXPECT_STREQ("beforeinput.data:;", GetDocument().title().Utf8().data());
 
   GetDocument().setTitle(g_empty_string);
   Controller().SetComposition("n", underlines, 1, 1);
@@ -1505,6 +1505,22 @@ TEST_F(InputMethodControllerTest, WhitespaceFixup) {
 
   // The space at the end of the string should have been converted to an nbsp
   EXPECT_STREQ("&nbsp;text&nbsp;", div->innerHTML().Utf8().data());
+}
+
+TEST_F(InputMethodControllerTest, CommitEmptyTextDeletesSelection) {
+  HTMLInputElement* input =
+      toHTMLInputElement(InsertHTMLElement("<input id='sample'>", "sample"));
+
+  input->setValue("Abc Def Ghi");
+  GetDocument().UpdateStyleAndLayout();
+  Vector<CompositionUnderline> empty_underlines;
+  Controller().SetEditableSelectionOffsets(PlainTextRange(4, 8));
+  Controller().CommitText(String(""), empty_underlines, 0);
+  EXPECT_STREQ("Abc Ghi", input->value().Utf8().data());
+
+  Controller().SetEditableSelectionOffsets(PlainTextRange(4, 7));
+  Controller().CommitText(String("1"), empty_underlines, 0);
+  EXPECT_STREQ("Abc 1", input->value().Utf8().data());
 }
 
 static String GetMarkedText(
