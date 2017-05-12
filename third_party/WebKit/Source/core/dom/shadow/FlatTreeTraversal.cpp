@@ -106,17 +106,6 @@ Node* FlatTreeTraversal::V0ResolveDistributionStartingAt(
   return nullptr;
 }
 
-static HTMLSlotElement* FinalDestinationSlotFor(const Node& node) {
-  HTMLSlotElement* slot = node.AssignedSlot();
-  if (!slot)
-    return nullptr;
-  for (HTMLSlotElement* next = slot->AssignedSlot(); next;
-       next = next->AssignedSlot()) {
-    slot = next;
-  }
-  return slot;
-}
-
 // TODO(hayato): This may return a wrong result for a node which is not in a
 // document flat tree.  See FlatTreeTraversalTest's redistribution test for
 // details.
@@ -162,7 +151,7 @@ Node* FlatTreeTraversal::TraverseSiblings(const Node& node,
 Node* FlatTreeTraversal::TraverseSiblingsForV1HostChild(
     const Node& node,
     TraversalDirection direction) {
-  HTMLSlotElement* slot = FinalDestinationSlotFor(node);
+  HTMLSlotElement* slot = node.FinalDestinationSlot();
   if (!slot)
     return nullptr;
   if (Node* sibling_in_distributed_nodes =
@@ -195,7 +184,7 @@ ContainerNode* FlatTreeTraversal::TraverseParent(
     return node.ParentOrShadowHostNode();
 
   if (node.IsChildOfV1ShadowHost()) {
-    HTMLSlotElement* slot = FinalDestinationSlotFor(node);
+    HTMLSlotElement* slot = node.FinalDestinationSlot();
     if (!slot)
       return nullptr;
     return TraverseParent(*slot);

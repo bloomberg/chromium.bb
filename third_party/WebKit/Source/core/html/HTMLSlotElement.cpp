@@ -200,6 +200,18 @@ void HTMLSlotElement::DetachLayoutTree(const AttachContext& context) {
   HTMLElement::DetachLayoutTree(context);
 }
 
+void HTMLSlotElement::RebuildDistributedChildrenLayoutTrees() {
+  if (!SupportsDistribution())
+    return;
+  Text* next_text_sibling = nullptr;
+  // This loop traverses the nodes from right to left for the same reason as the
+  // one described in ContainerNode::RebuildChildrenLayoutTrees().
+  for (auto it = distributed_nodes_.rbegin(); it != distributed_nodes_.rend();
+       ++it) {
+    RebuildLayoutTreeForChild(*it, next_text_sibling);
+  }
+}
+
 void HTMLSlotElement::AttributeChanged(
     const AttributeModificationParams& params) {
   if (params.name == nameAttr) {
