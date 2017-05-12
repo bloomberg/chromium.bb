@@ -224,7 +224,10 @@ static CSSValue* ValueForPositionOffset(const ComputedStyle& style,
   if (offset.IsAuto() && layout_object) {
     // If the property applies to a positioned element and the resolved value of
     // the display property is not none, the resolved value is the used value.
-    if (layout_object->IsInFlowPositioned()) {
+    // Position offsets have special meaning for position sticky so we return
+    // auto when offset.isAuto() on a sticky position object:
+    // https://crbug.com/703816.
+    if (layout_object->IsRelPositioned()) {
       // If e.g. left is auto and right is not auto, then left's computed value
       // is negative right. So we get the opposite length unit and see if it is
       // auto.
