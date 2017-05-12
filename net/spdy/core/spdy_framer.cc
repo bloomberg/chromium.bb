@@ -1636,16 +1636,17 @@ size_t SpdyFramer::SpdyFrameIterator::NextFrame(ZeroCopyOutputBuffer* output) {
   }
 
   framer_->SetIsLastFrame(!has_next_frame_);
+  const size_t free_bytes_before = output->BytesFree();
+  bool ok = false;
   if (is_first_frame_) {
     is_first_frame_ = false;
-    size_t free_bytes_before = output->BytesFree();
-    bool ok = SerializeGivenEncoding(*encoding, output);
-    return ok ? free_bytes_before - output->BytesFree() : 0;
+    ok = SerializeGivenEncoding(*encoding, output);
   } else {
     SpdyContinuationIR continuation_ir(frame_ir->stream_id());
     continuation_ir.take_encoding(std::move(encoding));
-    return framer_->SerializeContinuation(continuation_ir, output);
+    ok = framer_->SerializeContinuation(continuation_ir, output);
   }
+  return ok ? free_bytes_before - output->BytesFree() : 0;
 }
 
 bool SpdyFramer::SpdyFrameIterator::HasNextFrame() const {
@@ -1712,12 +1713,12 @@ SpdyFramer::SpdyControlFrameIterator::~SpdyControlFrameIterator() {}
 size_t SpdyFramer::SpdyControlFrameIterator::NextFrame(
     ZeroCopyOutputBuffer* output) {
   size_t size_written = framer_->SerializeFrame(*frame_ir_, output);
-  frame_ir_.reset();
+  has_next_frame_ = false;
   return size_written;
 }
 
 bool SpdyFramer::SpdyControlFrameIterator::HasNextFrame() const {
-  return frame_ir_ != nullptr;
+  return has_next_frame_;
 }
 
 const SpdyFrameIR* SpdyFramer::SpdyControlFrameIterator::GetIR() const {
@@ -1730,22 +1731,21 @@ std::unique_ptr<SpdyFrameSequence> SpdyFramer::CreateIterator(
     std::unique_ptr<const SpdyFrameIR> frame_ir) {
   std::unique_ptr<SpdyFrameSequence> result = nullptr;
   switch (frame_ir->frame_type()) {
-    case SpdyFrameType::DATA: {
-      DLOG(ERROR) << "Data should use a different path to write";
-      result = nullptr;
-      break;
-    }
     case SpdyFrameType::HEADERS: {
       result = SpdyMakeUnique<SpdyHeaderFrameIterator>(
-          framer,
-          SpdyWrapUnique(static_cast<const SpdyHeadersIR*>(frame_ir.get())));
+          framer, SpdyWrapUnique(
+                      static_cast<const SpdyHeadersIR*>(frame_ir.release())));
       break;
     }
     case SpdyFrameType::PUSH_PROMISE: {
       result = SpdyMakeUnique<SpdyPushPromiseFrameIterator>(
-          framer, SpdyWrapUnique(
-                      static_cast<const SpdyPushPromiseIR*>(frame_ir.get())));
+          framer, SpdyWrapUnique(static_cast<const SpdyPushPromiseIR*>(
+                      frame_ir.release())));
       break;
+    }
+    case SpdyFrameType::DATA: {
+      DVLOG(1) << "Serialize a stream end DATA frame for VTL";
+      // FALLTHROUGH_INTENDED
     }
     default: {
       result =
