@@ -44,34 +44,46 @@ def main():
         help='Gerrit username (found on settings page or in .gitcookies).')
     parser.add_argument('--gerrit-token', default=None,
         help='Gerrit API key (found on settings page or in .gitcookies).')
+
+    # TODO(jeffcarp): Remove this after SSHing into wpt-exporter and updating file
     parser.add_argument(
         '--github-credentials-json',
-        help='A JSON file with schema {"GH_USER": "", "GH_TOKEN": ""}. '
-             'This will override credentials that were passed via command line or env var.')
+        help='Deprecated. Use --credentials-json.')
+
+    parser.add_argument(
+        '--credentials-json',
+        help='A JSON file with an object containing zero or more of the following '
+             'keys that can override command line flags: '
+             'GH_USER, GH_TOKEN, GERRIT_USER, GERRIT_TOKEN')
     args = parser.parse_args()
     host = Host()
-    gh_user = args.gh_user
-    gh_token = args.gh_token
+    credentials = {
+        'GH_USER': args.gh_user,
+        'GH_TOKEN': args.gh_token,
+    }
+    credentials_json = None
 
-    if not gh_user:
-        gh_user = host.environ.get('GH_USER')
-    if not gh_token:
-        gh_token = host.environ.get('GH_TOKEN')
     if args.github_credentials_json:
-        with open(args.github_credentials_json, 'r') as f:
-            contents = json.load(f)
-            gh_user = contents['GH_USER']
-            gh_token = contents['GH_TOKEN']
+        credentials_json = args.github_credentials_json
+    if args.credentials_json:
+        credentials_json = args.credentials_json
 
-    if not (gh_user and gh_token):
+    if credentials_json:
+        with open(credentials_json, 'r') as f:
+            contents = json.load(f)
+            for key in ('GH_USER', 'GH_TOKEN', 'GERRIT_USER', 'GERRIT_TOKEN'):
+                if key in contents:
+                    credentials[key] = contents[key]
+
+    if not (credentials['GH_USER'] and credentials['GH_TOKEN']):
         parser.error('Must provide both gh_user and gh_token for GitHub.')
 
     TestExporter(
-        host,
-        gh_user,
-        gh_token,
-        args.gerrit_user,
-        args.gerrit_token,
+        host=host,
+        gh_user=credentials['GH_USER'],
+        gh_token=credentials['GH_TOKEN'],
+        gerrit_user=credentials['GERRIT_USER'],
+        gerrit_token=credentials['GERRIT_TOKEN'],
         dry_run=args.dry_run
     ).run()
 
