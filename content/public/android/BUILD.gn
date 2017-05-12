@@ -203,9 +203,6 @@ android_library("content_java") {
     "java/src/org/chromium/content/browser/input/ThreadedInputConnection.java",
     "java/src/org/chromium/content/browser/input/ThreadedInputConnectionFactory.java",
     "java/src/org/chromium/content/browser/input/ThreadedInputConnectionProxyView.java",
-    "java/src/org/chromium/content/browser/installedapp/InstalledAppProviderFactory.java",
-    "java/src/org/chromium/content/browser/installedapp/InstalledAppProviderImpl.java",
-    "java/src/org/chromium/content/browser/installedapp/PackageHash.java",
     "java/src/org/chromium/content/browser/picker/DateDialogNormalizer.java",
     "java/src/org/chromium/content/browser/picker/DatePickerDialogCompat.java",
     "java/src/org/chromium/content/browser/picker/DateTimePickerDialog.java",
@@ -480,8 +477,6 @@ junit_binary("content_junit_tests") {
     "junit/src/org/chromium/content/browser/input/ThreadedInputConnectionFactoryTest.java",
     "junit/src/org/chromium/content/browser/input/ThreadedInputConnectionTest.java",
     "junit/src/org/chromium/content/browser/picker/DateDialogNormalizerTest.java",
-    "junit/src/org/chromium/content/browser/installedapp/InstalledAppProviderTest.java",
-    "junit/src/org/chromium/content/browser/installedapp/PackageHashTest.java",
   ]
   deps = [
     ":content_java",

@@ -9,12 +9,10 @@ import android.content.Context;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.content.browser.androidoverlay.AndroidOverlayProviderImpl;
-import org.chromium.content.browser.installedapp.InstalledAppProviderFactory;
 import org.chromium.content_public.browser.InterfaceRegistrar;
 import org.chromium.content_public.browser.RenderFrameHost;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.device.nfc.mojom.Nfc;
-import org.chromium.installedapp.mojom.InstalledAppProvider;
 import org.chromium.media.mojom.AndroidOverlayProvider;
 import org.chromium.mojo.system.impl.CoreImpl;
 import org.chromium.services.service_manager.InterfaceRegistry;
@@ -58,8 +56,6 @@ class InterfaceRegistrarImpl {
         InterfaceRegistrar.Registry.addContextRegistrar(new ContentContextInterfaceRegistrar());
         InterfaceRegistrar.Registry.addWebContentsRegistrar(
                 new ContentWebContentsInterfaceRegistrar());
-        InterfaceRegistrar.Registry.addRenderFrameHostRegistrar(
-                new ContentRenderFrameHostInterfaceRegistrar());
     }
 
     private static class ContentContextInterfaceRegistrar implements InterfaceRegistrar<Context> {
@@ -79,16 +75,6 @@ class InterfaceRegistrarImpl {
             if (ContentFeatureList.isEnabled(ContentFeatureList.WEB_NFC)) {
                 registry.addInterface(Nfc.MANAGER, new NfcFactory(webContents));
             }
-        }
-    }
-
-    private static class ContentRenderFrameHostInterfaceRegistrar
-            implements InterfaceRegistrar<RenderFrameHost> {
-        @Override
-        public void registerInterfaces(
-                InterfaceRegistry registry, final RenderFrameHost renderFrameHost) {
-            registry.addInterface(
-                    InstalledAppProvider.MANAGER, new InstalledAppProviderFactory(renderFrameHost));
         }
     }
 }
