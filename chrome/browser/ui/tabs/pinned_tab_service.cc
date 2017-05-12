@@ -30,16 +30,18 @@ bool IsOnlyNormalBrowser(Browser* browser) {
 PinnedTabService::PinnedTabService(Profile* profile)
     : profile_(profile),
       save_pinned_tabs_(true),
-      has_normal_browser_(false) {
+      has_normal_browser_(false),
+      browser_list_observer_(this) {
   registrar_.Add(this, chrome::NOTIFICATION_BROWSER_OPENED,
                  content::NotificationService::AllBrowserContextsAndSources());
-  registrar_.Add(this, chrome::NOTIFICATION_BROWSER_CLOSING,
-                 content::NotificationService::AllSources());
   registrar_.Add(this, chrome::NOTIFICATION_CLOSE_ALL_BROWSERS_REQUEST,
                  content::NotificationService::AllSources());
   registrar_.Add(this, chrome::NOTIFICATION_TAB_ADDED,
                  content::NotificationService::AllSources());
+  browser_list_observer_.Add(BrowserList::GetInstance());
 }
+
+PinnedTabService::~PinnedTabService() {}
 
 void PinnedTabService::Observe(int type,
                                const content::NotificationSource& source,
@@ -77,18 +79,6 @@ void PinnedTabService::Observe(int type,
       break;
     }
 
-    case chrome::NOTIFICATION_BROWSER_CLOSING: {
-      Browser* browser = content::Source<Browser>(source).ptr();
-      if (has_normal_browser_ && save_pinned_tabs_ &&
-          browser->profile() == profile_) {
-        if (IsOnlyNormalBrowser(browser)) {
-          has_normal_browser_ = false;
-          PinnedTabCodec::WritePinnedTabs(profile_);
-        }
-      }
-      break;
-    }
-
     case chrome::NOTIFICATION_CLOSE_ALL_BROWSERS_REQUEST: {
       if (has_normal_browser_ && save_pinned_tabs_) {
         PinnedTabCodec::WritePinnedTabs(profile_);
@@ -99,5 +89,13 @@ void PinnedTabService::Observe(int type,
 
     default:
       NOTREACHED();
+  }
+}
+
+void PinnedTabService::OnBrowserClosing(Browser* browser) {
+  if (has_normal_browser_ && save_pinned_tabs_ &&
+      browser->profile() == profile_ && IsOnlyNormalBrowser(browser)) {
+    has_normal_browser_ = false;
+    PinnedTabCodec::WritePinnedTabs(profile_);
   }
 }

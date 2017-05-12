@@ -751,11 +751,7 @@ void Browser::OnWindowClosing() {
   if (tab_restore_service && is_type_tabbed() && tab_strip_model_->count())
     tab_restore_service->BrowserClosing(live_tab_context());
 
-  // TODO(sky): convert session/tab restore to use notification.
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_BROWSER_CLOSING,
-      content::Source<Browser>(this),
-      content::NotificationService::NoDetails());
+  BrowserList::NotifyBrowserCloseStarted(this);
 
   if (!IsFastTabUnloadEnabled())
     tab_strip_model_->CloseAllTabs();

@@ -15,19 +15,17 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/api/commands/command_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_list_observer.h"
 #include "chrome/browser/ui/sync/sync_promo_ui.h"
 #include "chrome/common/extensions/api/extension_action/action_info.h"
 #include "chrome/common/extensions/api/omnibox/omnibox_handler.h"
 #include "chrome/common/extensions/command.h"
 #include "chrome/common/extensions/sync_helper.h"
 #include "chrome/grit/generated_resources.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
-#include "content/public/browser/notification_source.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_registry_observer.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -43,22 +41,21 @@ const int kAnimationWaitRetries = 10;
 
 // Class responsible for showing the bubble after it's installed. Owns itself.
 class ExtensionInstalledBubbleObserver
-    : public content::NotificationObserver,
+    : public chrome::BrowserListObserver,
       public extensions::ExtensionRegistryObserver {
  public:
   explicit ExtensionInstalledBubbleObserver(
       std::unique_ptr<ExtensionInstalledBubble> bubble)
       : bubble_(std::move(bubble)),
         extension_registry_observer_(this),
+        browser_list_observer_(this),
         animation_wait_retries_(0),
         weak_factory_(this) {
     // |extension| has been initialized but not loaded at this point. We need to
     // wait on showing the Bubble until the EXTENSION_LOADED gets fired.
     extension_registry_observer_.Add(
         extensions::ExtensionRegistry::Get(bubble_->browser()->profile()));
-
-    registrar_.Add(this, chrome::NOTIFICATION_BROWSER_CLOSING,
-                   content::Source<Browser>(bubble_->browser()));
+    browser_list_observer_.Add(BrowserList::GetInstance());
   }
 
   void Run() { OnExtensionLoaded(nullptr, bubble_->extension()); }
@@ -66,15 +63,13 @@ class ExtensionInstalledBubbleObserver
  private:
   ~ExtensionInstalledBubbleObserver() override {}
 
-  // content::NotificationObserver:
-  void Observe(int type,
-               const content::NotificationSource& source,
-               const content::NotificationDetails& details) override {
-    DCHECK_EQ(type, chrome::NOTIFICATION_BROWSER_CLOSING)
-        << "Received unexpected notification";
-    // Browser is closing before the bubble was shown.
-    // TODO(hcarmona): Look into logging this with the BubbleManager.
-    delete this;
+  // chrome::BrowserListObserver:
+  void OnBrowserClosing(Browser* browser) override {
+    if (bubble_->browser() == browser) {
+      // Browser is closing before the bubble was shown.
+      // TODO(hcarmona): Look into logging this with the BubbleManager.
+      delete this;
+    }
   }
 
   // extensions::ExtensionRegistryObserver:
@@ -141,7 +136,7 @@ class ExtensionInstalledBubbleObserver
                  extensions::ExtensionRegistryObserver>
       extension_registry_observer_;
 
-  content::NotificationRegistrar registrar_;
+  ScopedObserver<BrowserList, BrowserListObserver> browser_list_observer_;
 
   // The number of times to retry showing the bubble if the bubble_->browser()
   // action toolbar is animating.

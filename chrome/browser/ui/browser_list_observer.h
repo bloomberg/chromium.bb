@@ -14,6 +14,10 @@ class BrowserListObserver {
   // Called immediately after a browser is added to the list
   virtual void OnBrowserAdded(Browser* browser) {}
 
+  // Called when a Browser starts closing. This is called prior to
+  // removing the tabs. Removing the tabs may delay or stop the close.
+  virtual void OnBrowserClosing(Browser* browser) {}
+
   // Called immediately after a browser is removed from the list
   virtual void OnBrowserRemoved(Browser* browser) {}
 

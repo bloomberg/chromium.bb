@@ -11,13 +11,13 @@
 #include "base/mac/bundle_locations.h"
 #include "base/macros.h"
 #include "base/metrics/user_metrics.h"
+#include "base/scoped_observer.h"
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/avatar_menu.h"
@@ -38,6 +38,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_list_observer.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #import "chrome/browser/ui/cocoa/browser_window_utils.h"
@@ -64,7 +65,6 @@
 #include "components/signin/core/browser/signin_metrics.h"
 #include "components/signin/core/common/profile_management_switches.h"
 #include "content/public/browser/native_web_keyboard_event.h"
-#include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "google_apis/gaia/oauth2_token_service.h"
@@ -325,16 +325,16 @@ void GaiaWebContentsDelegate::HandleKeyboardEvent(
 // Class that listens to changes to the OAuth2Tokens for the active profile,
 // changes to the avatar menu model or browser close notifications.
 class ActiveProfileObserverBridge : public AvatarMenuObserver,
-                                    public content::NotificationObserver,
+                                    public chrome::BrowserListObserver,
                                     public OAuth2TokenService::Observer {
  public:
   ActiveProfileObserverBridge(ProfileChooserController* controller,
                               Browser* browser)
       : controller_(controller),
         browser_(browser),
+        browser_list_observer_(this),
         token_observer_registered_(false) {
-    registrar_.Add(this, chrome::NOTIFICATION_BROWSER_CLOSING,
-                   content::NotificationService::AllSources());
+    browser_list_observer_.Add(BrowserList::GetInstance());
     if (!browser_->profile()->IsGuestSession())
       AddTokenServiceObserver();
   }
@@ -394,12 +394,9 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
     }
   }
 
-  // content::NotificationObserver:
-  void Observe(int type,
-               const content::NotificationSource& source,
-               const content::NotificationDetails& details) override {
-    DCHECK_EQ(chrome::NOTIFICATION_BROWSER_CLOSING, type);
-    if (browser_ == content::Source<Browser>(source).ptr()) {
+  // chrome::BrowserListObserver:
+  void OnBrowserClosing(Browser* browser) override {
+    if (browser_ == browser) {
       RemoveTokenServiceObserver();
       // Clean up the bubble's WebContents (used by the Gaia embedded view), to
       // make sure the guest profile doesn't have any dangling host renderers.
@@ -412,7 +409,7 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
 
   ProfileChooserController* controller_;  // Weak; owns this.
   Browser* browser_;  // Weak.
-  content::NotificationRegistrar registrar_;
+  ScopedObserver<BrowserList, BrowserListObserver> browser_list_observer_;
 
   // The observer can be removed both when closing the browser, and by just
   // closing the avatar bubble. However, in the case of closing the browser,
