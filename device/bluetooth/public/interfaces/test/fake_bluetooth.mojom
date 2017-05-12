@@ -38,4 +38,13 @@ interface FakeBluetooth {
 // See Bluetooth 4.2 Vol 3 Part C 2.2.2 "Roles when Operating over an
 // LE Physical Transport".
 interface FakeCentral {
+  // Simulates a peripheral with |address| and |name| that has already
+  // been connected to the system. If the peripheral existed already it
+  // updates its name.
+  //
+  // Platforms offer methods to retrieve devices that have already been
+  // connected to the system or weren't connected through the UA e.g. a user
+  // connected a peripheral through the system's settings. This method is
+  // intended to simulate peripherals that those methods would return.
+  SimulatePreconnectedPeripheral(string address, string name) => ();
 };

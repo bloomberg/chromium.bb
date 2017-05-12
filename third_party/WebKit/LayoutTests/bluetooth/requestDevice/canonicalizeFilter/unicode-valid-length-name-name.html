@@ -2,12 +2,14 @@
 <script src="../../../resources/testharness.js"></script>
 <script src="../../../resources/testharnessreport.js"></script>
 <script src="../../../resources/bluetooth/bluetooth-helpers.js"></script>
+<script src="../../../resources/mojo-helpers.js"></script>
+<script src="../../../resources/bluetooth/web-bluetooth-test.js"></script>
 <script>
 promise_test(() => {
   let valid_unicode_name = generate_string(
     9, '\u2764'); // \u2764's UTF-8 representation is 3 bytes long.
                   // 9 chars * 3 bytes/char = 27 bytes
-  return setBluetoothFakeAdapter('UnicodeDeviceAdapter')
+  return setUpPreconnectedDevice({name: valid_unicode_name})
     .then(() => requestDeviceWithKeyDown({
       filters: [{name: valid_unicode_name}]}))
     .then(device => {
