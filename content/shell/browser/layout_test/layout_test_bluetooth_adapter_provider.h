@@ -107,24 +107,6 @@ class LayoutTestBluetoothAdapterProvider {
   static scoped_refptr<testing::NiceMock<device::MockBluetoothAdapter>>
   GetGlucoseHeartRateAdapter();
 
-  // |GetUnicodeDeviceAdapter|
-  // Inherits from |EmptyAdapter|
-  // Internal structure
-  //  - UnicodeDevice
-  //    - Mock Functions:
-  //      - GetName(): Returns "❤❤❤❤❤❤❤❤❤"
-  static scoped_refptr<testing::NiceMock<device::MockBluetoothAdapter>>
-  GetUnicodeDeviceAdapter();
-
-  // |GetDeviceNameLongerThan29BytesAdapter|
-  // Inherits from |EmptyAdapter|
-  // Internal structure
-  //  - DeviceNameLongerThan29Bytes
-  //    - Mock Functions:
-  //      - GetName(): Returns "a_device_name_that_is_longer_than_29_bytes_but_shorter_than_248_bytes"
-  static scoped_refptr<testing::NiceMock<device::MockBluetoothAdapter>>
-  GetDeviceNameLongerThan29BytesAdapter();
-
   // |SecondDiscoveryFindsHeartRateAdapter|
   // Inherits from |PoweredAdapter|
   // Mock Functions:
@@ -223,12 +205,6 @@ class LayoutTestBluetoothAdapterProvider {
   //           GetHeartRateService.
   static scoped_refptr<testing::NiceMock<device::MockBluetoothAdapter>>
   GetHeartRateAdapter();
-
-  // |GetEmptyNameDeviceAdapter|
-  // Inherits from |EmptyAdapter|
-  // Contains a single device with an empty name and no UUIDs.
-  static scoped_refptr<testing::NiceMock<device::MockBluetoothAdapter>>
-  GetEmptyNameDeviceAdapter();
 
   // |GetNoNameDeviceAdapter|
   // Inherits from |EmptyAdapter|

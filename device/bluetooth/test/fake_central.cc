@@ -10,6 +10,7 @@
 
 #include "device/bluetooth/bluetooth_discovery_filter.h"
 #include "device/bluetooth/public/interfaces/test/fake_bluetooth.mojom.h"
+#include "device/bluetooth/test/fake_peripheral.h"
 
 namespace bluetooth {
 
@@ -17,7 +18,26 @@ FakeCentral::FakeCentral(mojom::CentralState state,
                          mojom::FakeCentralRequest request)
     : state_(state), binding_(this, std::move(request)) {}
 
-FakeCentral::~FakeCentral() {}
+void FakeCentral::SimulatePreconnectedPeripheral(
+    const std::string& address,
+    const std::string& name,
+    SimulatePreconnectedPeripheralCallback callback) {
+  auto device_iter = devices_.find(address);
+  if (device_iter == devices_.end()) {
+    auto fake_peripheral = base::MakeUnique<FakePeripheral>(this, address);
+
+    auto insert_iter = devices_.emplace(address, std::move(fake_peripheral));
+    DCHECK(insert_iter.second);
+    device_iter = insert_iter.first;
+  }
+
+  FakePeripheral* fake_peripheral =
+      static_cast<FakePeripheral*>(device_iter->second.get());
+  fake_peripheral->SetName(name);
+  fake_peripheral->SetGattConnected(true);
+
+  std::move(callback).Run();
+}
 
 std::string FakeCentral::GetAddress() const {
   NOTREACHED();
@@ -157,5 +177,7 @@ void FakeCentral::RemovePairingDelegateInternal(
     device::BluetoothDevice::PairingDelegate* pairing_delegate) {
   NOTREACHED();
 }
+
+FakeCentral::~FakeCentral() {}
 
 }  // namespace bluetooth

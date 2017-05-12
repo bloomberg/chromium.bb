@@ -116,7 +116,36 @@
   // performed by the device in the Central/Observer role.
   class FakeCentral {
     constructor(fake_central_ptr) {
-      this.fake_central_ptr = fake_central_ptr;
+      this.fake_central_ptr_ = fake_central_ptr;
+      this.peripherals_ = new Map();
+    }
+
+    // Simulates a peripheral with |address| and |name| that has already
+    // been connected to the system. If the peripheral existed already it
+    // updates its name.
+    //
+    // Platforms offer methods to retrieve devices that have already been
+    // connected to the system or weren't connected through the UA e.g. a
+    // user connected a peripheral through the system's settings. This method is
+    // intended to simulate peripherals that those methods would return.
+    async simulatePreconnectedPeripheral({address, name}) {
+      await this.fake_central_ptr_.simulatePreconnectedPeripheral(
+        address, name);
+
+      let peripheral = this.peripherals_.get(address);
+      if (peripheral === undefined) {
+        peripheral = new FakePeripheral(address, this);
+        this.peripherals_.set(address, peripheral);
+      }
+
+      return peripheral;
+    }
+  }
+
+  class FakePeripheral {
+    constructor(address, fake_central) {
+      this.address = address;
+      this.fake_central_ = fake_central;
     }
   }
 

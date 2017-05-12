@@ -2,11 +2,12 @@
 <script src="../../../resources/testharness.js"></script>
 <script src="../../../resources/testharnessreport.js"></script>
 <script src="../../../resources/bluetooth/bluetooth-helpers.js"></script>
+<script src="../../../resources/mojo-helpers.js"></script>
+<script src="../../../resources/bluetooth/web-bluetooth-test.js"></script>
 <script>
 promise_test(() => {
-  // The UnicodeDevice's name is '❤❤❤❤❤❤❤❤❤'. ❤ = \u2764
-  let device_name = generate_string(9, '\u2764');
-  return setBluetoothFakeAdapter('UnicodeDeviceAdapter')
+  let device_name = 'LE Device';
+  return setUpPreconnectedDevice({name: device_name})
     .then(() => requestDeviceWithKeyDown({acceptAllDevices: true}))
     .then(device => {
       assert_equals(device.name, device_name);

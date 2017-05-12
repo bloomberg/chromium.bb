@@ -422,3 +422,11 @@ function generateRequestDeviceArgsWithServices(services = ['heart_rate']) {
     optionalServices: ['heart_rate']
   }];
 }
+
+function setUpPreconnectedDevice({address = '00:00:00:00:00:00', name}) {
+  return navigator.bluetooth.test.simulateCentral({state: 'powered-on'})
+    .then(fake_central => fake_central.simulatePreconnectedPeripheral({
+      address: address,
+      name: name
+    }));
+}
