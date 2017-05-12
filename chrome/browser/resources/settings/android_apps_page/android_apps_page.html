@@ -30,13 +30,13 @@
           <cr-policy-pref-indicator pref="[[prefs.arc.enabled]]"
               icon-aria-label="$i18n{androidAppsPageTitle}">
           </cr-policy-pref-indicator>
-          <template is="dom-if" if="[[androidAppsInfo_.appReady]]">
+          <template is="dom-if" if="[[androidAppsInfo_.playStoreEnabled]]">
             <button class="subpage-arrow" is="paper-icon-button-light"
                 aria-label="$i18n{androidAppsPageTitle}"
                 aria-describedby="secondaryText">
             </button>
           </template>
-          <template is="dom-if" if="[[!androidAppsInfo_.appReady]]">
+          <template is="dom-if" if="[[!androidAppsInfo_.playStoreEnabled]]">
             <div class="separator"></div>
             <paper-button id="enable" class="secondary-button"
                 on-tap="onEnableTap_"
