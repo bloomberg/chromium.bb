@@ -416,14 +416,15 @@ bool WallpaperController::MoveToUnlockedContainer() {
 
 void WallpaperController::GetInternalDisplayCompositorLock() {
   if (display::Display::HasInternalDisplay()) {
-    compositor_lock_ =
-        Shell::Get()
-            ->window_tree_host_manager()
-            ->GetRootWindowForDisplayId(display::Display::InternalDisplayId())
-            ->layer()
-            ->GetCompositor()
-            ->GetCompositorLock(this, base::TimeDelta::FromMilliseconds(
-                                          kCompositorLockTimeoutMs));
+    aura::Window* root_window =
+        Shell::Get()->window_tree_host_manager()->GetRootWindowForDisplayId(
+            display::Display::InternalDisplayId());
+    if (root_window) {
+      compositor_lock_ =
+          root_window->layer()->GetCompositor()->GetCompositorLock(
+              this,
+              base::TimeDelta::FromMilliseconds(kCompositorLockTimeoutMs));
+    }
   }
 }
 
