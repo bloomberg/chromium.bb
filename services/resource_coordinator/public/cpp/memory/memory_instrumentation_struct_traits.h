@@ -130,29 +130,6 @@ struct SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_EXPORT
                    base::trace_event::MemoryDumpCallbackResult::OSMemDump* out);
 };
 
-template <>
-struct SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_EXPORT StructTraits<
-    memory_instrumentation::mojom::MemoryDumpCallbackResultDataView,
-    base::trace_event::MemoryDumpCallbackResult> {
-  static base::trace_event::MemoryDumpCallbackResult::OSMemDump os_dump(
-      const base::trace_event::MemoryDumpCallbackResult& args) {
-    return args.os_dump;
-  }
-  static base::trace_event::MemoryDumpCallbackResult::ChromeMemDump chrome_dump(
-      const base::trace_event::MemoryDumpCallbackResult& args) {
-    return args.chrome_dump;
-  }
-  static const std::map<base::ProcessId,
-                        base::trace_event::MemoryDumpCallbackResult::OSMemDump>&
-  extra_processes_dump(
-      const base::trace_event::MemoryDumpCallbackResult& args) {
-    return args.extra_processes_dump;
-  }
-  static bool Read(
-      memory_instrumentation::mojom::MemoryDumpCallbackResultDataView input,
-      base::trace_event::MemoryDumpCallbackResult* out);
-};
-
 }  // namespace mojo
 
 #endif  // SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_MEMORY_MEMORY_INSTRUMENTATION_STRUCT_TRAITS_H_

@@ -36,7 +36,7 @@ class MockCoordinator : public Coordinator, public mojom::Coordinator {
   void RequestGlobalMemoryDump(
       const base::trace_event::MemoryDumpRequestArgs& args,
       const RequestGlobalMemoryDumpCallback& callback) override {
-    callback.Run(args.dump_guid, true);
+    callback.Run(args.dump_guid, true, mojom::GlobalMemoryDumpPtr());
   }
 
  private:
@@ -50,7 +50,9 @@ class ProcessLocalDumpManagerImplTest : public testing::Test {
     coordinator_.reset(new MockCoordinator());
     mdm_.reset(new MemoryDumpManager());
     MemoryDumpManager::SetInstanceForTesting(mdm_.get());
-    ProcessLocalDumpManagerImpl::Config config(coordinator_.get());
+    auto process_type = mojom::ProcessType::OTHER;
+    ProcessLocalDumpManagerImpl::Config config(coordinator_.get(),
+                                               process_type);
     local_manager_impl_.reset(new ProcessLocalDumpManagerImpl(config));
     local_manager_impl_->SetAsNonCoordinatorForTesting();
 
