@@ -1278,10 +1278,16 @@ void LayerTreeHost::SetElementFilterMutated(ElementId element_id,
 void LayerTreeHost::SetElementOpacityMutated(ElementId element_id,
                                              ElementListType list_type,
                                              float opacity) {
-  Layer* layer = LayerByElementId(element_id);
-  DCHECK(layer);
   DCHECK_GE(opacity, 0.f);
   DCHECK_LE(opacity, 1.f);
+
+  if (settings_.use_layer_lists) {
+    property_trees_.effect_tree.OnOpacityAnimated(element_id, opacity);
+    return;
+  }
+
+  Layer* layer = LayerByElementId(element_id);
+  DCHECK(layer);
   layer->OnOpacityAnimated(opacity);
 
   if (EffectNode* node =
@@ -1302,6 +1308,11 @@ void LayerTreeHost::SetElementTransformMutated(
     ElementId element_id,
     ElementListType list_type,
     const gfx::Transform& transform) {
+  if (settings_.use_layer_lists) {
+    property_trees_.transform_tree.OnTransformAnimated(element_id, transform);
+    return;
+  }
+
   Layer* layer = LayerByElementId(element_id);
   DCHECK(layer);
   layer->OnTransformAnimated(transform);
