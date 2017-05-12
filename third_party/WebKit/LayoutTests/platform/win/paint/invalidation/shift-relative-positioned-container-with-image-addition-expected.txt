@@ -60,6 +60,10 @@
       "reason": "location change"
     },
     {
+      "object": "VerticalScrollbar",
+      "reason": "scroll"
+    },
+    {
       "object": "LayoutView #document",
       "reason": "style change"
     },

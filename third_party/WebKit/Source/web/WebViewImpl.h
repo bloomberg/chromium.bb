@@ -523,7 +523,6 @@ class WEB_EXPORT WebViewImpl final
   void RefreshPageScaleFactorAfterLayout();
   IntSize ContentsSize() const;
 
-  void ResizeFrameView(WebLocalFrameImpl* webframe);
   void UpdateICBAndResizeViewport();
   void ResizeViewWhileAnchored(float browser_controls_height,
                                bool browser_controls_shrink_layout);

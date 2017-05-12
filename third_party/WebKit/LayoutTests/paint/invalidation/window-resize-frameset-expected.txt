@@ -39,18 +39,6 @@
     {
       "object": "LayoutFrame FRAME",
       "reason": "forced by layout"
-    },
-    {
-      "object": "VerticalScrollbar",
-      "reason": "scroll"
-    },
-    {
-      "object": "VerticalScrollbar",
-      "reason": "scroll"
-    },
-    {
-      "object": "VerticalScrollbar",
-      "reason": "scroll"
     }
   ]
 }
@@ -97,14 +85,6 @@
       "reason": "forced by layout"
     },
     {
-      "object": "HorizontalScrollbar",
-      "reason": "scroll"
-    },
-    {
-      "object": "HorizontalScrollbar",
-      "reason": "scroll"
-    },
-    {
       "object": "LayoutView #document",
       "reason": "location change"
     },
@@ -115,10 +95,6 @@
     {
       "object": "LayoutBlockFlow BODY",
       "reason": "location change"
-    },
-    {
-      "object": "HorizontalScrollbar",
-      "reason": "scroll"
     },
     {
       "object": "LayoutView #document",

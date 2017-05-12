@@ -37,6 +37,7 @@
 #include "core/layout/api/LayoutPartItem.h"
 #include "core/layout/api/LayoutViewItem.h"
 #include "core/layout/compositing/PaintLayerCompositor.h"
+#include "core/page/ChromeClient.h"
 #include "core/page/Page.h"
 #include "core/paint/PaintLayer.h"
 #include "core/paint/ViewPaintInvalidator.h"
@@ -699,6 +700,22 @@ LayoutUnit LayoutView::ViewLogicalHeightForPercentages() const {
 
 float LayoutView::ZoomFactor() const {
   return frame_view_->GetFrame().PageZoomFactor();
+}
+
+void LayoutView::UpdateAfterLayout() {
+  // Unlike every other layer, the root PaintLayer takes its size from the
+  // layout viewport size.  The call to AdjustViewSize() will update the
+  // frame's contents size, which will also update the page's minimum scale
+  // factor.  The call to ResizeAfterLayout() will calculate the layout viewport
+  // size based on the page minimum scale factor, and then update the FrameView
+  // with the new size.
+  if (HasOverflowClip())
+    GetScrollableArea()->ClampScrollOffsetAfterOverflowChange();
+  LocalFrame& frame = GetFrameView()->GetFrame();
+  if (!GetDocument().Printing())
+    GetFrameView()->AdjustViewSize();
+  frame.GetChromeClient().ResizeAfterLayout(&frame);
+  LayoutBlockFlow::UpdateAfterLayout();
 }
 
 void LayoutView::UpdateHitTestResult(HitTestResult& result,

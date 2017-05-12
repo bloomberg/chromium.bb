@@ -360,22 +360,22 @@
         {
           "object": "LayoutBlockFlow BODY",
           "rect": [437, 8, 355, 584],
-          "reason": "forced by layout"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutBlockFlow BODY",
           "rect": [37, 8, 355, 584],
-          "reason": "forced by layout"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutText #text",
           "rect": [438, 7, 353, 554],
-          "reason": "forced by layout"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutText #text",
           "rect": [38, 7, 353, 554],
-          "reason": "forced by layout"
+          "reason": "bounds change"
         }
       ]
     }
@@ -387,35 +387,35 @@
     },
     {
       "object": "LayoutBlockFlow BODY",
-      "reason": "forced by layout"
+      "reason": "bounds change"
     },
     {
       "object": "RootInlineBox",
-      "reason": "forced by layout"
+      "reason": "bounds change"
     },
     {
       "object": "LayoutText #text",
-      "reason": "forced by layout"
+      "reason": "bounds change"
     },
     {
       "object": "InlineTextBox 'AAAA BBBB CCCC'",
-      "reason": "forced by layout"
+      "reason": "bounds change"
     },
     {
       "object": "InlineTextBox 'DDDD EEEE FFFF'",
-      "reason": "forced by layout"
+      "reason": "bounds change"
     },
     {
       "object": "InlineTextBox 'GGGG HHHH IIII JJJJ'",
-      "reason": "forced by layout"
+      "reason": "bounds change"
     },
     {
       "object": "InlineTextBox 'KKKK LLLL MMMM'",
-      "reason": "forced by layout"
+      "reason": "bounds change"
     },
     {
       "object": "InlineTextBox 'NNNN'",
-      "reason": "forced by layout"
+      "reason": "bounds change"
     }
   ]
 }
