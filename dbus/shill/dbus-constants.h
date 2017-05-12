@@ -164,7 +164,6 @@ const char kEntriesProperty[] = "Entries";
 // Flimflam Device property names.
 const char kScanningProperty[] = "Scanning";
 const char kPoweredProperty[] = "Powered";
-const char kNetworksProperty[] = "Networks";
 const char kScanIntervalProperty[] = "ScanInterval";
 const char kBgscanMethodProperty[] = "BgscanMethod";
 const char kBgscanShortIntervalProperty[] = "BgscanShortInterval";
