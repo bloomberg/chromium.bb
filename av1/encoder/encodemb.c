@@ -1436,8 +1436,15 @@ void av1_encode_block_intra(int plane, int block, int blk_row, int blk_col,
   uint8_t *dst =
       &pd->dst.buf[(blk_row * dst_stride + blk_col) << tx_size_wide_log2[0]];
 #if CONFIG_CFL
-  av1_predict_intra_block_encoder_facade(x, plane, block, blk_col, blk_row,
-                                         tx_size, plane_bsize);
+
+#if CONFIG_EC_ADAPT
+  FRAME_CONTEXT *const ec_ctx = xd->tile_ctx;
+#else
+  FRAME_CONTEXT *const ec_ctx = cm->fc;
+#endif  // CONFIG_EC_ADAPT
+
+  av1_predict_intra_block_encoder_facade(x, ec_ctx, plane, block, blk_col,
+                                         blk_row, tx_size, plane_bsize);
 #else
   av1_predict_intra_block_facade(xd, plane, block, blk_col, blk_row, tx_size);
 #endif
@@ -1630,7 +1637,8 @@ static int cfl_compute_alpha_ind(MACROBLOCK *const x, const CFL_CTX *const cfl,
   return ind;
 }
 
-void av1_predict_intra_block_encoder_facade(MACROBLOCK *x, int plane,
+void av1_predict_intra_block_encoder_facade(MACROBLOCK *x,
+                                            FRAME_CONTEXT *ec_ctx, int plane,
                                             int block_idx, int blk_col,
                                             int blk_row, TX_SIZE tx_size,
                                             BLOCK_SIZE plane_bsize) {
@@ -1638,10 +1646,6 @@ void av1_predict_intra_block_encoder_facade(MACROBLOCK *x, int plane,
   MB_MODE_INFO *mbmi = &xd->mi[0]->mbmi;
   if (plane != AOM_PLANE_Y && mbmi->uv_mode == DC_PRED) {
     if (blk_col == 0 && blk_row == 0 && plane == AOM_PLANE_U) {
-#if !CONFIG_EC_ADAPT
-#error "CfL rate estimation requires ec_adapt."
-#endif
-      FRAME_CONTEXT *const ec_ctx = xd->tile_ctx;
       assert(ec_ctx->cfl_alpha_cdf[CFL_ALPHABET_SIZE - 1] ==
              AOM_ICDF(CDF_PROB_TOP));
       const int prob_den = CDF_PROB_TOP;
