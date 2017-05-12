@@ -6,6 +6,7 @@
 #include "base/bind.h"
 #include "base/files/file_descriptor_watcher_posix.h"
 #include "base/memory/ref_counted.h"
+#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "dbus/bus.h"
 #include "dbus/test_service.h"

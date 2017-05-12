@@ -5,6 +5,7 @@
 #include "services/service_manager/tests/lifecycle/app_client.h"
 
 #include "base/macros.h"
+#include "base/message_loop/message_loop.h"
 #include "services/service_manager/public/cpp/service_context.h"
 
 namespace service_manager {

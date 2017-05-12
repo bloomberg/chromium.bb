@@ -11,6 +11,7 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/message_loop/message_loop.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/task_runner.h"
 #include "base/threading/simple_thread.h"

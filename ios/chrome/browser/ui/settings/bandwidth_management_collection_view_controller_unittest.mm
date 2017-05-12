@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "base/compiler_specific.h"
+#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/test/test_simple_task_runner.h"
 #include "components/pref_registry/pref_registry_syncable.h"

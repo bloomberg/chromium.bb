@@ -4,6 +4,7 @@
 
 #include "base/at_exit.h"
 #include "base/command_line.h"
+#include "base/message_loop/message_loop.h"
 #include "base/test/test_timeouts.h"
 #include "dbus/bus.h"
 #include "dbus/test_service.h"

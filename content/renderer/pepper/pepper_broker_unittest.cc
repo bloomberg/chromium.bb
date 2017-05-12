@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "content/renderer/pepper/pepper_broker.h"
+#include "base/message_loop/message_loop.h"
 
 #if defined(OS_POSIX)
 #include <fcntl.h>

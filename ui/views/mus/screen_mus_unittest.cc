@@ -5,6 +5,7 @@
 #include "ui/views/mus/screen_mus.h"
 
 #include "base/command_line.h"
+#include "base/message_loop/message_loop.h"
 #include "ui/display/display_switches.h"
 #include "ui/display/screen.h"
 #include "ui/views/test/scoped_views_test_helper.h"

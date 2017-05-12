@@ -22,6 +22,7 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/i18n/rtl.h"
+#include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
 #include "components/crash/content/browser/crash_dump_manager_android.h"
 #include "components/crash/content/browser/crash_dump_observer_android.h"

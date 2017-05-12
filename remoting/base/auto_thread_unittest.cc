@@ -2,14 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "remoting/base/auto_thread.h"
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
+#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/scoped_native_library.h"
 #include "base/single_thread_task_runner.h"
 #include "build/build_config.h"
-#include "remoting/base/auto_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(OS_WIN)

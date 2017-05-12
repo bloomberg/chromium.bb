@@ -10,6 +10,7 @@
 #include <utility>
 
 #include "base/memory/ptr_util.h"
+#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/time/time.h"
 #include "chromecast/base/metrics/cast_metrics_test_helper.h"

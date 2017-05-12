@@ -6,6 +6,7 @@
 #define THIRD_PARTY_WEBKIT_SOURCE_PLATFORM_SCHEDULER_CHILD_COMPOSITOR_WORKER_SCHEDULER_H_
 
 #include "base/macros.h"
+#include "base/message_loop/message_loop.h"
 #include "platform/PlatformExport.h"
 #include "platform/scheduler/child/worker_scheduler.h"
 #include "public/platform/scheduler/child/single_thread_idle_task_runner.h"

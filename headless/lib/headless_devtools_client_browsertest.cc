@@ -5,6 +5,7 @@
 #include <memory>
 
 #include "base/json/json_reader.h"
+#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"

@@ -6,6 +6,7 @@
 #define THIRD_PARTY_WEBKIT_SOURCE_PLATFORM_SCHEDULER_CHILD_WORKER_SCHEDULER_IMPL_H_
 
 #include "base/macros.h"
+#include "base/message_loop/message_loop.h"
 #include "platform/scheduler/base/task_time_observer.h"
 #include "platform/scheduler/base/thread_load_tracker.h"
 #include "platform/scheduler/child/idle_canceled_delayed_task_sweeper.h"

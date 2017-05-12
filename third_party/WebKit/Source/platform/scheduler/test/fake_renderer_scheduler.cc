@@ -4,6 +4,7 @@
 
 #include "public/platform/scheduler/test/fake_renderer_scheduler.h"
 
+#include "base/message_loop/message_loop.h"
 #include "public/platform/WebThread.h"
 
 namespace blink {

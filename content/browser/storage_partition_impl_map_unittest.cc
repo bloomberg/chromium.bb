@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/files/file_util.h"
+#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_browser_context.h"

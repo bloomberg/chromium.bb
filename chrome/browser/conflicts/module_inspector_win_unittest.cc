@@ -13,6 +13,7 @@
 #include "base/environment.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
+#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_task_scheduler.h"
 #include "base/test/test_simple_task_runner.h"

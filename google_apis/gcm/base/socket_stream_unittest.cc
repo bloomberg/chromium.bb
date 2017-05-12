@@ -10,6 +10,7 @@
 
 #include "base/bind.h"
 #include "base/macros.h"
+#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/string_piece.h"
 #include "net/base/ip_address.h"

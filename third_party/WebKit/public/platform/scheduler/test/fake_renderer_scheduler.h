@@ -6,6 +6,7 @@
 #define THIRD_PARTY_WEBKIT_PUBLIC_PLATFORM_SCHEDULER_TEST_FAKE_RENDERER_SCHEDULER_H_
 
 #include "base/macros.h"
+#include "base/message_loop/message_loop.h"
 #include "public/platform/scheduler/renderer/renderer_scheduler.h"
 
 namespace blink {

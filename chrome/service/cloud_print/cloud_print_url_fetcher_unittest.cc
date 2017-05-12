@@ -2,16 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/service/cloud_print/cloud_print_url_fetcher.h"
 #include "base/command_line.h"
 #include "base/location.h"
 #include "base/memory/ref_counted.h"
+#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
-#include "chrome/service/cloud_print/cloud_print_url_fetcher.h"
 #include "chrome/service/service_process.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/url_request/url_request_context_getter.h"

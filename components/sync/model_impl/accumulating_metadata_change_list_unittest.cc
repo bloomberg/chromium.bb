@@ -7,6 +7,7 @@
 #include <set>
 
 #include "base/bind.h"
+#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "components/sync/model/mock_model_type_store.h"
 #include "testing/gtest/include/gtest/gtest.h"

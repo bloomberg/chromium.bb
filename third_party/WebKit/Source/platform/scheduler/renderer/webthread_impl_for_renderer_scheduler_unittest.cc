@@ -9,16 +9,17 @@
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/test/simple_test_tick_clock.h"
+#include "platform/WebTaskRunner.h"
 #include "platform/scheduler/base/test_time_source.h"
 #include "platform/scheduler/child/scheduler_tqm_delegate_impl.h"
 #include "platform/scheduler/renderer/renderer_scheduler_impl.h"
+#include "public/platform/WebTraceLocation.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "platform/WebTaskRunner.h"
-#include "public/platform/WebTraceLocation.h"
 
 namespace blink {
 namespace scheduler {

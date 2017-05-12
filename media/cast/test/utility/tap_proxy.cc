@@ -28,6 +28,7 @@
 #include "base/command_line.h"
 #include "base/files/file_descriptor_watcher_posix.h"
 #include "base/logging.h"
+#include "base/message_loop/message_loop.h"
 #include "base/rand_util.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"

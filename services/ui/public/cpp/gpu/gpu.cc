@@ -5,6 +5,7 @@
 #include "services/ui/public/cpp/gpu/gpu.h"
 
 #include "base/memory/ptr_util.h"
+#include "base/message_loop/message_loop.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "gpu/command_buffer/common/scheduling_priority.h"

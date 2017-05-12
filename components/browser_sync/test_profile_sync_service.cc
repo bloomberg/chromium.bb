@@ -6,6 +6,8 @@
 
 #include <utility>
 
+#include "base/message_loop/message_loop.h"
+
 namespace browser_sync {
 
 syncer::TestIdFactory* TestProfileSyncService::id_factory() {

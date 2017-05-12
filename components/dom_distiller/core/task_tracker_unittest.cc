@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "components/dom_distiller/core/article_distillation_update.h"
 #include "components/dom_distiller/core/article_entry.h"

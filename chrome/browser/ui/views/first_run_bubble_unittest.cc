@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/views/first_run_bubble.h"
 
 #include "base/macros.h"
+#include "base/message_loop/message_loop.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
 #include "chrome/test/base/testing_profile.h"

@@ -4,6 +4,7 @@
 
 #include "device/bluetooth/dbus/dbus_thread_manager_linux.h"
 
+#include "base/message_loop/message_loop.h"
 #include "base/threading/thread.h"
 #include "dbus/bus.h"
 

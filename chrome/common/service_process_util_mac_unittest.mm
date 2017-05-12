@@ -13,6 +13,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/mac/mac_util.h"
 #include "base/mac/scoped_nsobject.h"
+#include "base/message_loop/message_loop.h"
 #include "base/process/launch.h"
 #include "base/run_loop.h"
 #include "base/strings/sys_string_conversions.h"

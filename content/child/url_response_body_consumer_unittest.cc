@@ -8,6 +8,7 @@
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "content/child/request_extra_data.h"
 #include "content/child/resource_dispatcher.h"

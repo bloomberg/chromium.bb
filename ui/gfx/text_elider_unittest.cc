@@ -14,6 +14,7 @@
 #include "base/files/file_path.h"
 #include "base/i18n/rtl.h"
 #include "base/macros.h"
+#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"

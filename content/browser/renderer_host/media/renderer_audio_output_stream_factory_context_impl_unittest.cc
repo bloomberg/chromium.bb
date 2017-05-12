@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/memory/shared_memory.h"
 #include "base/memory/shared_memory_handle.h"
+#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/sync_socket.h"
 #include "cc/base/math_util.h"

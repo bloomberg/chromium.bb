@@ -6,6 +6,7 @@
 #include "ash/test/ash_test_helper.h"
 #include "ash/test/ash_test_views_delegate.h"
 #include "base/macros.h"
+#include "base/message_loop/message_loop.h"
 #include "chrome/browser/extensions/test_extension_environment.h"
 #include "chrome/browser/ui/views/apps/app_info_dialog/app_info_dialog_views.h"
 #include "chrome/browser/ui/views/apps/app_info_dialog/app_info_footer_panel.h"

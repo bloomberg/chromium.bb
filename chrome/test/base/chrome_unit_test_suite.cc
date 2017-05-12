@@ -5,6 +5,7 @@
 #include "chrome/test/base/chrome_unit_test_suite.h"
 
 #include "base/macros.h"
+#include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
 #include "base/process/process_handle.h"
 #include "build/build_config.h"

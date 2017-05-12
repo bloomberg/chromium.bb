@@ -7,6 +7,7 @@
 #include <string>
 
 #include "base/macros.h"
+#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "content/common/media/audio_messages.h"
 #include "content/renderer/media/audio_message_filter.h"

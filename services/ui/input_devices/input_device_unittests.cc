@@ -5,6 +5,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/macros.h"
+#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "services/ui/input_devices/input_device_server.h"
