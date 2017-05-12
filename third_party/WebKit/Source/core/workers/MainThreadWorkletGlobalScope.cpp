@@ -51,6 +51,7 @@ WorkerThread* MainThreadWorkletGlobalScope::GetThread() const {
 // https://drafts.css-houdini.org/worklets/#fetch-and-invoke-a-worklet-script
 void MainThreadWorkletGlobalScope::FetchAndInvokeScript(
     const KURL& module_url_record,
+    WebURLRequest::FetchCredentialsMode credentials_mode,
     WorkletPendingTasks* pending_tasks) {
   DCHECK(IsMainThread());
   // Step 1: "Let insideSettings be the workletGlobalScope's associated
@@ -58,7 +59,8 @@ void MainThreadWorkletGlobalScope::FetchAndInvokeScript(
   // Step 2: "Let script by the result of fetch a worklet script given
   // moduleURLRecord, moduleResponsesMap, credentialOptions, outsideSettings,
   // and insideSettings when it asynchronously completes."
-  // TODO(nhiroki): Replace this with module script loading.
+  // TODO(nhiroki): Replace this with module script loading. Set fetch request's
+  // credentials mode to |credentials_mode|.
   WorkletScriptLoader* script_loader =
       WorkletScriptLoader::Create(GetFrame()->GetDocument()->Fetcher(), this);
   loader_map_.Set(script_loader, pending_tasks);

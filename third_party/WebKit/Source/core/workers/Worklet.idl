@@ -8,5 +8,5 @@
     DependentLifetime,
     RuntimeEnabled=Worklet,
 ] interface Worklet {
-    [CallWith=ScriptState] Promise<void> addModule(DOMString url);
+    [CallWith=ScriptState] Promise<void> addModule(DOMString url, optional WorkletOptions options);
 };

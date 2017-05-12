@@ -8,6 +8,7 @@
 #include "bindings/core/v8/ScriptPromise.h"
 #include "core/CoreExport.h"
 #include "core/dom/ContextLifecycleObserver.h"
+#include "core/workers/WorkletOptions.h"
 #include "platform/bindings/ScriptWrappable.h"
 #include "platform/heap/Handle.h"
 
@@ -33,7 +34,9 @@ class CORE_EXPORT Worklet : public GarbageCollectedFinalized<Worklet>,
 
   // Worklet.idl
   // addModule() imports ES6 module scripts.
-  virtual ScriptPromise addModule(ScriptState*, const String& module_url);
+  virtual ScriptPromise addModule(ScriptState*,
+                                  const String& module_url,
+                                  const WorkletOptions&);
 
   // Returns a proxy to WorkletGlobalScope on the context thread.
   virtual WorkletGlobalScopeProxy* GetWorkletGlobalScopeProxy() const = 0;
@@ -46,6 +49,7 @@ class CORE_EXPORT Worklet : public GarbageCollectedFinalized<Worklet>,
 
  private:
   virtual void FetchAndInvokeScript(const KURL& module_url_record,
+                                    const WorkletOptions&,
                                     ScriptPromiseResolver*) = 0;
 };
 

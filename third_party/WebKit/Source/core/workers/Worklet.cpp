@@ -22,7 +22,8 @@ Worklet::Worklet(LocalFrame* frame)
 // algorithm:
 // https://drafts.css-houdini.org/worklets/#dom-worklet-addmodule
 ScriptPromise Worklet::addModule(ScriptState* script_state,
-                                 const String& module_url) {
+                                 const String& module_url,
+                                 const WorkletOptions& options) {
   DCHECK(IsMainThread());
   if (!GetExecutionContext()) {
     return ScriptPromise::RejectWithDOMException(
@@ -54,9 +55,10 @@ ScriptPromise Worklet::addModule(ScriptState* script_state,
   // |kUnspecedLoading| is used here because this is a part of script module
   // loading.
   TaskRunnerHelper::Get(TaskType::kUnspecedLoading, script_state)
-      ->PostTask(BLINK_FROM_HERE,
-                 WTF::Bind(&Worklet::FetchAndInvokeScript, WrapPersistent(this),
-                           module_url_record, WrapPersistent(resolver)));
+      ->PostTask(
+          BLINK_FROM_HERE,
+          WTF::Bind(&Worklet::FetchAndInvokeScript, WrapPersistent(this),
+                    module_url_record, options, WrapPersistent(resolver)));
   return promise;
 }
 

@@ -28,9 +28,11 @@ PaintWorkletGlobalScopeProxy::PaintWorkletGlobalScopeProxy(LocalFrame* frame) {
 
 void PaintWorkletGlobalScopeProxy::FetchAndInvokeScript(
     const KURL& module_url_record,
+    WebURLRequest::FetchCredentialsMode credentials_mode,
     WorkletPendingTasks* pending_tasks) {
   DCHECK(IsMainThread());
-  global_scope_->FetchAndInvokeScript(module_url_record, pending_tasks);
+  global_scope_->FetchAndInvokeScript(module_url_record, credentials_mode,
+                                      pending_tasks);
 }
 
 void PaintWorkletGlobalScopeProxy::EvaluateScript(

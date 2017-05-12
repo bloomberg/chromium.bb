@@ -167,6 +167,8 @@ generated_core_dictionary_files = [
   "$blink_core_output_dir/page/scrolling/ScrollStateInit.h",
   "$blink_core_output_dir/timing/PerformanceObserverInit.cpp",
   "$blink_core_output_dir/timing/PerformanceObserverInit.h",
+  "$blink_core_output_dir/workers/WorkletOptions.cpp",
+  "$blink_core_output_dir/workers/WorkletOptions.h",
 ]
 
 bindings_core_generated_union_type_files = [

@@ -7,6 +7,7 @@
 
 #include "core/CoreExport.h"
 #include "platform/weborigin/KURL.h"
+#include "public/platform/WebURLRequest.h"
 
 namespace blink {
 
@@ -23,6 +24,7 @@ class CORE_EXPORT WorkletGlobalScopeProxy {
   // Runs the "fetch and invoke a worklet script" algorithm:
   // https://drafts.css-houdini.org/worklets/#fetch-and-invoke-a-worklet-script
   virtual void FetchAndInvokeScript(const KURL& module_url_record,
+                                    WebURLRequest::FetchCredentialsMode,
                                     WorkletPendingTasks*) {}
 
   // Evaluates the given script source code. This should be called only for

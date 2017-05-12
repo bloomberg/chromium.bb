@@ -19,6 +19,7 @@ ThreadedWorklet::ThreadedWorklet(LocalFrame* frame)
     : Worklet(frame), frame_(frame) {}
 
 void ThreadedWorklet::FetchAndInvokeScript(const KURL& module_url_record,
+                                           const WorkletOptions&,
                                            ScriptPromiseResolver* resolver) {
   DCHECK(IsMainThread());
   if (!GetExecutionContext())

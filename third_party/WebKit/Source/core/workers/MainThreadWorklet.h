@@ -38,6 +38,7 @@ class CORE_EXPORT MainThreadWorklet : public Worklet {
  private:
   // Worklet.
   void FetchAndInvokeScript(const KURL& module_url_record,
+                            const WorkletOptions&,
                             ScriptPromiseResolver*) override;
 };
 
