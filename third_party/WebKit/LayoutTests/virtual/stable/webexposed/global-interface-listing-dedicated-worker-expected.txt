@@ -15,10 +15,12 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     attribute @@toStringTag
 [Worker]     getter name
 [Worker]     getter onmessage
+[Worker]     getter onmessageerror
 [Worker]     method close
 [Worker]     method constructor
 [Worker]     method postMessage
 [Worker]     setter onmessage
+[Worker]     setter onmessageerror
 [Worker] interface ByteLengthQueuingStrategy
 [Worker]     method constructor
 [Worker]     method size
@@ -416,11 +418,13 @@ Starting worker: resources/global-interface-listing.js
 [Worker] interface MessagePort : EventTarget
 [Worker]     attribute @@toStringTag
 [Worker]     getter onmessage
+[Worker]     getter onmessageerror
 [Worker]     method close
 [Worker]     method constructor
 [Worker]     method postMessage
 [Worker]     method start
 [Worker]     setter onmessage
+[Worker]     setter onmessageerror
 [Worker] interface NavigationPreloadManager
 [Worker]     attribute @@toStringTag
 [Worker]     method constructor
@@ -763,6 +767,7 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     attribute console
 [Worker]     attribute internals
 [Worker]     getter onmessage
+[Worker]     getter onmessageerror
 [Worker]     method close
 [Worker]     method gc
 [Worker]     method postMessage
@@ -771,6 +776,7 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     method webkitResolveLocalFileSystemSyncURL
 [Worker]     method webkitResolveLocalFileSystemURL
 [Worker]     setter onmessage
+[Worker]     setter onmessageerror
 PASS successfullyParsed is true
 
 TEST COMPLETE

@@ -474,10 +474,12 @@ interface BroadcastChannel : EventTarget
     attribute @@toStringTag
     getter name
     getter onmessage
+    getter onmessageerror
     method close
     method constructor
     method postMessage
     setter onmessage
+    setter onmessageerror
 interface BudgetService
     attribute @@toStringTag
     method constructor
@@ -2148,6 +2150,7 @@ interface HTMLBodyElement : HTMLElement
     getter onlanguagechange
     getter onload
     getter onmessage
+    getter onmessageerror
     getter onoffline
     getter ononline
     getter onpagehide
@@ -2174,6 +2177,7 @@ interface HTMLBodyElement : HTMLElement
     setter onlanguagechange
     setter onload
     setter onmessage
+    setter onmessageerror
     setter onoffline
     setter ononline
     setter onpagehide
@@ -2591,6 +2595,7 @@ interface HTMLFrameSetElement : HTMLElement
     getter onlanguagechange
     getter onload
     getter onmessage
+    getter onmessageerror
     getter onoffline
     getter ononline
     getter onpagehide
@@ -2613,6 +2618,7 @@ interface HTMLFrameSetElement : HTMLElement
     setter onlanguagechange
     setter onload
     setter onmessage
+    setter onmessageerror
     setter onoffline
     setter ononline
     setter onpagehide
@@ -4191,11 +4197,13 @@ interface MessageEvent : Event
 interface MessagePort : EventTarget
     attribute @@toStringTag
     getter onmessage
+    getter onmessageerror
     method close
     method constructor
     method postMessage
     method start
     setter onmessage
+    setter onmessageerror
 interface MimeType
     attribute @@toStringTag
     getter description
@@ -8929,6 +8937,7 @@ interface webkitURL
     getter onloadstart
     getter onlostpointercapture
     getter onmessage
+    getter onmessageerror
     getter onmousedown
     getter onmouseenter
     getter onmouseleave
@@ -9109,6 +9118,7 @@ interface webkitURL
     setter onloadstart
     setter onlostpointercapture
     setter onmessage
+    setter onmessageerror
     setter onmousedown
     setter onmouseenter
     setter onmouseleave

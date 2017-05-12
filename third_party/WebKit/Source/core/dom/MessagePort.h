@@ -114,6 +114,14 @@ class CORE_EXPORT MessagePort : public EventTargetWithInlineData,
     return GetAttributeEventListener(EventTypeNames::message);
   }
 
+  void setOnmessageerror(EventListener* listener) {
+    SetAttributeEventListener(EventTypeNames::messageerror, listener);
+    start();
+  }
+  EventListener* onmessageerror() {
+    return GetAttributeEventListener(EventTypeNames::messageerror);
+  }
+
   // A port starts out its life entangled, and remains entangled until it is
   // closed or is cloned.
   bool IsEntangled() const { return !closed_ && !IsNeutered(); }

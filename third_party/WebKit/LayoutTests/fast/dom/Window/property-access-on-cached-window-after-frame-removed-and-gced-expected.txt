@@ -81,6 +81,7 @@ PASS childWindow.onloadedmetadata is null
 PASS childWindow.onloadstart is null
 PASS childWindow.onlostpointercapture is null
 PASS childWindow.onmessage is null
+PASS childWindow.onmessageerror is null
 PASS childWindow.onmousedown is null
 PASS childWindow.onmouseenter is null
 PASS childWindow.onmouseleave is null

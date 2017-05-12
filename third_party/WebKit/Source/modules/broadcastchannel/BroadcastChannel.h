@@ -37,6 +37,7 @@ class BroadcastChannel final : public EventTargetWithInlineData,
   void postMessage(const ScriptValue&, ExceptionState&);
   void close();
   DEFINE_ATTRIBUTE_EVENT_LISTENER(message);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(messageerror);
 
   // EventTarget:
   const AtomicString& InterfaceName() const override;

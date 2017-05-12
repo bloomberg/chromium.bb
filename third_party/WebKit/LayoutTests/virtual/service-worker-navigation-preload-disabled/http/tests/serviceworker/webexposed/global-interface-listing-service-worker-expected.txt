@@ -42,10 +42,12 @@ interface Blob
 interface BroadcastChannel : EventTarget
     getter name
     getter onmessage
+    getter onmessageerror
     method close
     method constructor
     method postMessage
     setter onmessage
+    setter onmessageerror
 interface BudgetService
     method constructor
     method getBudget
@@ -615,11 +617,13 @@ interface MessageEvent : Event
     method initMessageEvent
 interface MessagePort : EventTarget
     getter onmessage
+    getter onmessageerror
     method close
     method constructor
     method postMessage
     method start
     setter onmessage
+    setter onmessageerror
 interface NetworkInformation : EventTarget
     getter downlinkMax
     getter onchange
