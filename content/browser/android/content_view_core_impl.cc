@@ -222,10 +222,6 @@ ContentViewCoreImpl::ContentViewCoreImpl(
       device_orientation_(0),
       accessibility_enabled_(false) {
   GetViewAndroid()->SetLayer(cc::Layer::Create());
-  gfx::Size physical_size(
-      Java_ContentViewCore_getPhysicalBackingWidthPix(env, obj),
-      Java_ContentViewCore_getPhysicalBackingHeightPix(env, obj));
-  GetViewAndroid()->GetLayer()->SetBounds(physical_size);
 
   // Currently, the only use case we have for overriding a user agent involves
   // spoofing a desktop Linux user agent for "Request desktop site".
@@ -661,16 +657,6 @@ gfx::Size ContentViewCoreImpl::GetViewSize() const {
   return size;
 }
 
-gfx::Size ContentViewCoreImpl::GetPhysicalBackingSize() const {
-  JNIEnv* env = AttachCurrentThread();
-  ScopedJavaLocalRef<jobject> j_obj = java_ref_.get(env);
-  if (j_obj.is_null())
-    return gfx::Size();
-  return gfx::Size(
-      Java_ContentViewCore_getPhysicalBackingWidthPix(env, j_obj),
-      Java_ContentViewCore_getPhysicalBackingHeightPix(env, j_obj));
-}
-
 gfx::Size ContentViewCoreImpl::GetViewportSizePix() const {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> j_obj = java_ref_.get(env);
@@ -1035,11 +1021,6 @@ void ContentViewCoreImpl::RemoveJavascriptInterface(
 
 void ContentViewCoreImpl::WasResized(JNIEnv* env,
                                      const JavaParamRef<jobject>& obj) {
-  gfx::Size physical_size(
-      Java_ContentViewCore_getPhysicalBackingWidthPix(env, obj),
-      Java_ContentViewCore_getPhysicalBackingHeightPix(env, obj));
-  GetViewAndroid()->GetLayer()->SetBounds(physical_size);
-
   SendScreenRectsAndResizeWidget();
 }
 

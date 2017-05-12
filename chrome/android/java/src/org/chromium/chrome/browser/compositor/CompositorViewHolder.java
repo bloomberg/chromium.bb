@@ -435,7 +435,7 @@ public class CompositorViewHolder extends FrameLayout
     }
 
     @Override
-    public void onPhysicalBackingSizeChanged(int width, int height) {
+    public void onSurfaceResized(int width, int height) {
         ContentViewCore content = getActiveContent();
         if (content != null) adjustPhysicalBackingSize(content, width, height);
     }
@@ -909,7 +909,8 @@ public class CompositorViewHolder extends FrameLayout
             width = MeasureSpec.getSize(mOverlayContentWidthMeasureSpec);
             height = MeasureSpec.getSize(mOverlayContentHeightMeasureSpec);
         }
-        contentViewCore.onPhysicalBackingSizeChanged(width, height);
+        mCompositorView.onPhysicalBackingSizeChanged(
+                contentViewCore.getWebContents(), width, height);
     }
 
     /**

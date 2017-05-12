@@ -22,6 +22,7 @@ class UI_ANDROID_EXPORT ViewClient {
                             bool for_touch_handle);
   virtual bool OnMouseEvent(const MotionEventAndroid& event);
   virtual bool OnMouseWheelEvent(const MotionEventAndroid& event);
+  virtual void OnPhysicalBackingSizeChanged();
 };
 
 }  // namespace ui

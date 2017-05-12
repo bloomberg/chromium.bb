@@ -680,7 +680,7 @@ gfx::Size RenderWidgetHostViewAndroid::GetPhysicalBackingSize() const {
                      default_bounds_.bottom() * scale_factor);
   }
 
-  return content_view_core_->GetPhysicalBackingSize();
+  return view_.GetPhysicalBackingSize();
 }
 
 bool RenderWidgetHostViewAndroid::DoBrowserControlsShrinkBlinkSize() const {
@@ -1980,6 +1980,10 @@ void RenderWidgetHostViewAndroid::OnGestureEvent(
     web_gesture.SetModifiers(blink::WebInputEvent::kNoModifiers);
   }
   SendGestureEvent(web_gesture);
+}
+
+void RenderWidgetHostViewAndroid::OnPhysicalBackingSizeChanged() {
+  WasResized();
 }
 
 void RenderWidgetHostViewAndroid::OnContentViewCoreDestroyed() {

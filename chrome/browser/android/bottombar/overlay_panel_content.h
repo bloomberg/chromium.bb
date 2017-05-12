@@ -32,6 +32,13 @@ class OverlayPanelContent {
   // Called by the Java OverlayPanelContent when it is being destroyed.
   void Destroy(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
 
+  void OnPhysicalBackingSizeChanged(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj,
+      const base::android::JavaParamRef<jobject>& jweb_contents,
+      jint width,
+      jint height);
+
   // Removes a search URL from history. |search_start_time_ms| represents the
   // time at which |search_url| was committed.
   void RemoveLastHistoryEntry(

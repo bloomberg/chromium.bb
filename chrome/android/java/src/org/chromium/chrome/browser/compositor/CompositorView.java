@@ -34,6 +34,7 @@ import org.chromium.chrome.browser.externalnav.IntentWithGesturesHandler;
 import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;
 import org.chromium.chrome.browser.tabmodel.TabModelImpl;
 import org.chromium.chrome.browser.widget.ClipDrawableProgressBar.DrawingInfo;
+import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.resources.AndroidResourceType;
 import org.chromium.ui.resources.ResourceManager;
@@ -267,7 +268,7 @@ public class CompositorView extends FrameLayout implements SurfaceHolder.Callbac
         if (mNativeCompositorView == 0) return;
 
         nativeSurfaceChanged(mNativeCompositorView, format, width, height, holder.getSurface());
-        mRenderHost.onPhysicalBackingSizeChanged(width, height);
+        mRenderHost.onSurfaceResized(width, height);
     }
 
     @Override
@@ -296,6 +297,10 @@ public class CompositorView extends FrameLayout implements SurfaceHolder.Callbac
             mWindowAndroid.onVisibilityChanged(true);
         }
         IntentWithGesturesHandler.getInstance().clear();
+    }
+
+    void onPhysicalBackingSizeChanged(WebContents webContents, int width, int height) {
+        nativeOnPhysicalBackingSizeChanged(mNativeCompositorView, webContents, width, height);
     }
 
     @CalledByNative
@@ -432,6 +437,8 @@ public class CompositorView extends FrameLayout implements SurfaceHolder.Callbac
     private native void nativeSurfaceDestroyed(long nativeCompositorView);
     private native void nativeSurfaceChanged(
             long nativeCompositorView, int format, int width, int height, Surface surface);
+    private native void nativeOnPhysicalBackingSizeChanged(
+            long nativeCompositorView, WebContents webContents, int width, int height);
     private native void nativeFinalizeLayers(long nativeCompositorView);
     private native void nativeSetNeedsComposite(long nativeCompositorView);
     private native void nativeSetLayoutBounds(long nativeCompositorView);

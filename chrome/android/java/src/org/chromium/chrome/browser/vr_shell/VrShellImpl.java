@@ -373,7 +373,8 @@ public class VrShellImpl
         mContentVirtualDisplay.update(size, dpr, null, null, null);
         if (mTab != null && mTab.getContentViewCore() != null) {
             mTab.getContentViewCore().onSizeChanged(surfaceWidth, surfaceHeight, 0, 0);
-            mTab.getContentViewCore().onPhysicalBackingSizeChanged(surfaceWidth, surfaceHeight);
+            nativeOnPhysicalBackingSizeChanged(mNativeVrShell,
+                    mTab.getContentViewCore().getWebContents(), surfaceWidth, surfaceHeight);
         }
         mRenderToSurfaceLayout.setLayoutParams(
                 new FrameLayout.LayoutParams(surfaceWidth, surfaceHeight));
@@ -608,6 +609,8 @@ public class VrShellImpl
     private native void nativeOnPause(long nativeVrShell);
     private native void nativeOnResume(long nativeVrShell);
     private native void nativeOnLoadProgressChanged(long nativeVrShell, double progress);
+    private native void nativeOnPhysicalBackingSizeChanged(
+            long nativeVrShell, WebContents webContents, int width, int height);
     private native void nativeContentPhysicalBoundsChanged(long nativeVrShell, int width,
             int height, float dpr);
     private native void nativeSetWebVrMode(long nativeVrShell, boolean enabled);

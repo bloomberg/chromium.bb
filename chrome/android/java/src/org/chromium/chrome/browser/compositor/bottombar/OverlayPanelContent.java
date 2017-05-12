@@ -38,6 +38,8 @@ public class OverlayPanelContent {
     /** The ContentViewCore that this panel will display. */
     private ContentViewCore mContentViewCore;
 
+    private WebContents mWebContents;
+
     /** The pointer to the native version of this class. */
     private long mNativeOverlayPanelContentPtr;
 
@@ -265,7 +267,7 @@ public class OverlayPanelContent {
         }
 
         // Creates an initially hidden WebContents which gets shown when the panel is opened.
-        WebContents panelWebContents = WebContentsFactory.createWebContents(false, true);
+        WebContents mWebContents = WebContentsFactory.createWebContents(false, true);
 
         // Dummny ViewAndroidDelegate since the container view for overlay panel is
         // never added to the view hierarchy.
@@ -295,13 +297,13 @@ public class OverlayPanelContent {
                         return mContainerView;
                     }
                 }.init(cv);
-        mContentViewCore.initialize(delegate, cv, panelWebContents, mActivity.getWindowAndroid());
+        mContentViewCore.initialize(delegate, cv, mWebContents, mActivity.getWindowAndroid());
 
         // Transfers the ownership of the WebContents to the native OverlayPanelContent.
-        nativeSetWebContents(mNativeOverlayPanelContentPtr, panelWebContents, mWebContentsDelegate);
+        nativeSetWebContents(mNativeOverlayPanelContentPtr, mWebContents, mWebContentsDelegate);
 
         mWebContentsObserver =
-                new WebContentsObserver(panelWebContents) {
+                new WebContentsObserver(mWebContents) {
                     @Override
                     public void didStartLoading(String url) {
                         mContentDelegate.onContentLoadStarted(url);
@@ -336,8 +338,8 @@ public class OverlayPanelContent {
                 };
 
         mInterceptNavigationDelegate = new InterceptNavigationDelegateImpl();
-        nativeSetInterceptNavigationDelegate(mNativeOverlayPanelContentPtr,
-                mInterceptNavigationDelegate, panelWebContents);
+        nativeSetInterceptNavigationDelegate(
+                mNativeOverlayPanelContentPtr, mInterceptNavigationDelegate, mWebContents);
 
         mContentDelegate.onContentViewCreated(mContentViewCore);
     }
@@ -479,6 +481,16 @@ public class OverlayPanelContent {
         return mContentViewCore;
     }
 
+    void onSizeChanged(int width, int height) {
+        mContentViewCore.onSizeChanged(width, height, mContentViewCore.getViewportWidthPix(),
+                mContentViewCore.getViewportHeightPix());
+    }
+
+    void onPhysicalBackingSizeChanged(int width, int height) {
+        nativeOnPhysicalBackingSizeChanged(
+                mNativeOverlayPanelContentPtr, mWebContents, width, height);
+    }
+
     /**
      * Remove the list history entry from this panel if it was within a certain timeframe.
      * @param historyUrl The URL to remove.
@@ -509,6 +521,8 @@ public class OverlayPanelContent {
     private native void nativeDestroy(long nativeOverlayPanelContent);
     private native void nativeRemoveLastHistoryEntry(
             long nativeOverlayPanelContent, String historyUrl, long urlTimeMs);
+    private native void nativeOnPhysicalBackingSizeChanged(
+            long nativeOverlayPanelContent, WebContents webContents, int width, int height);
     private native void nativeSetWebContents(long nativeOverlayPanelContent,
             WebContents webContents, WebContentsDelegateAndroid delegate);
     private native void nativeDestroyWebContents(long nativeOverlayPanelContent);

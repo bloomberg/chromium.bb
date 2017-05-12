@@ -3345,9 +3345,8 @@ public class AwContents implements SmartClipProvider {
             // to enter fixedLayoutSize mode is sent before the first resize
             // update.
             mLayoutSizer.onSizeChanged(w, h, ow, oh);
-            mContentViewCore.onPhysicalBackingSizeChanged(w, h);
-            mContentViewCore.onSizeChanged(w, h, ow, oh);
             nativeOnSizeChanged(mNativeAwContents, w, h, ow, oh);
+            mContentViewCore.onSizeChanged(w, h, ow, oh);
         }
 
         @Override

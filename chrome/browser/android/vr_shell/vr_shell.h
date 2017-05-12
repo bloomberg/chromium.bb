@@ -132,6 +132,12 @@ class VrShell : public device::PresentingGvrDelegate,
   void ContentSurfaceChanged(jobject surface);
   void GvrDelegateReady();
 
+  void OnPhysicalBackingSizeChanged(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj,
+      const base::android::JavaParamRef<jobject>& jweb_contents,
+      jint width,
+      jint height);
   void ContentPhysicalBoundsChanged(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& object,
