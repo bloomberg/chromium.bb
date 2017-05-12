@@ -480,8 +480,6 @@ class CC_EXPORT LayerImpl {
   gfx::Rect GetScaledEnclosingRectInTargetSpace(float scale) const;
 
  private:
-  bool HasOnlyTranslationTransforms() const;
-
   // This includes all animations, even those that are finished but haven't yet
   // been deleted.
   bool HasAnyAnimationTargetingProperty(TargetProperty::Type property) const;

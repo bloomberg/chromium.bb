@@ -699,11 +699,6 @@ bool Layer::ScrollOffsetAnimationWasInterrupted() const {
   return GetMutatorHost()->ScrollOffsetAnimationWasInterrupted(element_id());
 }
 
-bool Layer::HasOnlyTranslationTransforms() const {
-  return GetMutatorHost()->HasOnlyTranslationTransforms(
-      element_id(), GetElementTypeForAnimation());
-}
-
 void Layer::SetScrollParent(Layer* parent) {
   DCHECK(IsPropertyChangeAllowed());
   if (inputs_.scroll_parent == parent)

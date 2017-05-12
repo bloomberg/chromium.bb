@@ -475,7 +475,6 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   bool FilterIsAnimating() const;
   bool TransformIsAnimating() const;
   bool ScrollOffsetAnimationWasInterrupted() const;
-  bool HasOnlyTranslationTransforms() const;
 
   void AddScrollChild(Layer* child);
   void RemoveScrollChild(Layer* child);

@@ -484,7 +484,9 @@ void LayerImpl::UpdatePropertyTreeForScrollingAndAnimationIfNeeded() {
       bool has_potential_animation = HasPotentiallyRunningTransformAnimation();
       if (node->has_potential_animation != has_potential_animation) {
         node->has_potential_animation = has_potential_animation;
-        node->has_only_translation_animations = HasOnlyTranslationTransforms();
+        node->has_only_translation_animations =
+            GetMutatorHost()->HasOnlyTranslationTransforms(
+                element_id(), GetElementTypeForAnimation());
         GetTransformTree().set_needs_update(true);
         layer_tree_impl()->set_needs_update_draw_properties();
       }
@@ -677,11 +679,6 @@ bool LayerImpl::TransformIsAnimating() const {
 
 bool LayerImpl::HasPotentiallyRunningTransformAnimation() const {
   return GetMutatorHost()->HasPotentiallyRunningTransformAnimation(
-      element_id(), GetElementTypeForAnimation());
-}
-
-bool LayerImpl::HasOnlyTranslationTransforms() const {
-  return GetMutatorHost()->HasOnlyTranslationTransforms(
       element_id(), GetElementTypeForAnimation());
 }
 
