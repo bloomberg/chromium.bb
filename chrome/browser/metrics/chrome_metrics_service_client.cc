@@ -40,6 +40,7 @@
 #include "chrome/browser/metrics/https_engagement_metrics_provider.h"
 #include "chrome/browser/metrics/metrics_reporting_state.h"
 #include "chrome/browser/metrics/network_quality_estimator_provider_impl.h"
+#include "chrome/browser/metrics/process_memory_metrics_emitter.h"
 #include "chrome/browser/metrics/sampling_metrics_provider.h"
 #include "chrome/browser/metrics/subprocess_metrics_provider.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -813,6 +814,10 @@ void ChromeMetricsServiceClient::CollectFinalHistograms() {
   scoped_refptr<MetricsMemoryDetails> details(
       new MetricsMemoryDetails(callback, &memory_growth_tracker_));
   details->StartFetch();
+
+  scoped_refptr<ProcessMemoryMetricsEmitter> emitter(
+      new ProcessMemoryMetricsEmitter);
+  emitter->FetchAndEmitProcessMemoryMetrics();
 }
 
 void ChromeMetricsServiceClient::OnMemoryDetailCollectionDone() {

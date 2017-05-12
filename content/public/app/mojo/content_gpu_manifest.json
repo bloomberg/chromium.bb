@@ -15,7 +15,7 @@
         ]
       },
       "requires": {
-        "content_browser": [ "gpu" ],
+        "content_browser": [ "gpu", "memory_instrumentation" ],
         "device": [ "device:power_monitor" ]
       }
     }
