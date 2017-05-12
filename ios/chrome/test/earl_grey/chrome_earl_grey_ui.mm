@@ -4,6 +4,7 @@
 
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
 
+#import "ios/chrome/browser/ui/settings/accounts_collection_view_controller.h"
 #import "ios/chrome/browser/ui/settings/privacy_collection_view_controller.h"
 #import "ios/chrome/browser/ui/settings/settings_collection_view_controller.h"
 #import "ios/chrome/browser/ui/tools_menu/tools_menu_constants.h"
@@ -97,6 +98,13 @@ id<GREYAction> ScrollDown() {
   [[[EarlGrey selectElementWithMatcher:interactableButtonMatcher]
          usingSearchAction:ScrollDown()
       onElementWithMatcher:grey_accessibilityID(kPrivacyCollectionViewId)]
+      performAction:grey_tap()];
+}
+
++ (void)tapAccountsMenuButton:(id<GREYMatcher>)buttonMatcher {
+  [[[EarlGrey selectElementWithMatcher:buttonMatcher]
+         usingSearchAction:ScrollDown()
+      onElementWithMatcher:grey_accessibilityID(kSettingsAccountsId)]
       performAction:grey_tap()];
 }
 

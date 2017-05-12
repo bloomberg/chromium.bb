@@ -38,6 +38,11 @@
 // there will be a GREYAssert.
 + (void)tapClearBrowsingDataMenuButton:(id<GREYMatcher>)buttonMatcher;
 
+// Scrolls to find the button in the accounts menu with the corresponding
+// |buttonMatcher|, and then taps it. If |buttonMatcher| is not found, or the
+// accounts menu is not open when this is called there will be a GREYAssert.
++ (void)tapAccountsMenuButton:(id<GREYMatcher>)buttonMatcher;
+
 // Open a new tab via the tools menu.
 + (void)openNewTab;
 
