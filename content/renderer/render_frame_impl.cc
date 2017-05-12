@@ -775,7 +775,7 @@ double ConvertToBlinkTime(const base::TimeTicks& time_ticks) {
 NOINLINE void ExhaustMemory() {
   volatile void* ptr = nullptr;
   do {
-    ptr = malloc(0x10000000);
+    ptr = malloc(0x1000000);
     base::debug::Alias(&ptr);
   } while (ptr);
 }
