@@ -138,23 +138,6 @@ class QueryManagerTest : public GpuServiceTest {
 
     void set_token(int32_t token) override { DCHECK(false); }
 
-    bool SetGetBuffer(int32_t /* transfer_buffer_id */) override {
-      DCHECK(false);
-      return false;
-    }
-
-    // Overridden from CommandBufferEngine.
-    bool SetGetOffset(int32_t offset) override {
-      DCHECK(false);
-      return false;
-    }
-
-    // Overridden from CommandBufferEngine.
-    int32_t GetGetOffset() override {
-      DCHECK(false);
-      return 0;
-    }
-
    private:
     scoped_refptr<gpu::Buffer> valid_buffer_;
     scoped_refptr<gpu::Buffer> valid_buffer2_;

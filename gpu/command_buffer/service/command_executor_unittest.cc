@@ -90,22 +90,16 @@ TEST_F(CommandExecutorTest, ExecutorDoesNothingIfRingBufferIsEmpty) {
   executor_->PutChanged();
 }
 
-TEST_F(CommandExecutorTest, GetSetBuffer) {
-  CommandBuffer::State state;
-
-  // Set the get offset to something not 0.
-  EXPECT_CALL(*command_buffer_, SetGetOffset(2));
-  executor_->SetGetOffset(2);
-  EXPECT_EQ(2, executor_->GetGetOffset());
-
-  // Set the buffer.
+TEST_F(CommandExecutorTest, SetGetBuffer) {
+  executor_->parser()->set_get(2);
+  // Set the buffer, check that the get offset is reset.
   EXPECT_CALL(*command_buffer_, GetTransferBuffer(kTransferBufferId))
       .WillOnce(Return(shared_memory_buffer_));
   EXPECT_CALL(*command_buffer_, SetGetOffset(0));
   EXPECT_TRUE(executor_->SetGetBuffer(kTransferBufferId));
 
   // Check the get offset was reset.
-  EXPECT_EQ(0, executor_->GetGetOffset());
+  EXPECT_EQ(0, executor_->parser()->get());
 }
 
 TEST_F(CommandExecutorTest, ProcessesOneCommand) {

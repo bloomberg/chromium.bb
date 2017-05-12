@@ -2163,24 +2163,6 @@ void GLES2DecoderWithShaderTestBase::MockCommandBufferEngine::set_token(
   DCHECK(false);
 }
 
-bool GLES2DecoderWithShaderTestBase::MockCommandBufferEngine::SetGetBuffer(
-    int32_t /* transfer_buffer_id */) {
-  DCHECK(false);
-  return false;
-}
-
-bool GLES2DecoderWithShaderTestBase::MockCommandBufferEngine::SetGetOffset(
-    int32_t offset) {
-  DCHECK(false);
-  return false;
-}
-
-int32_t
-GLES2DecoderWithShaderTestBase::MockCommandBufferEngine::GetGetOffset() {
-  DCHECK(false);
-  return 0;
-}
-
 void GLES2DecoderWithShaderTestBase::SetUp() {
   GLES2DecoderTestBase::SetUp();
   SetupDefaultProgram();

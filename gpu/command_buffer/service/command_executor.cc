@@ -125,20 +125,10 @@ bool CommandExecutor::SetGetBuffer(int32_t transfer_buffer_id) {
   parser_->SetBuffer(ring_buffer->memory(), ring_buffer->size(), 0,
                      ring_buffer->size());
 
-  SetGetOffset(0);
+  if (!parser_->set_get(0))
+    return false;
+  command_buffer_->SetGetOffset(static_cast<int32_t>(parser_->get()));
   return true;
-}
-
-bool CommandExecutor::SetGetOffset(int32_t offset) {
-  if (parser_->set_get(offset)) {
-    command_buffer_->SetGetOffset(static_cast<int32_t>(parser_->get()));
-    return true;
-  }
-  return false;
-}
-
-int32_t CommandExecutor::GetGetOffset() {
-  return parser_->get();
 }
 
 void CommandExecutor::SetCommandProcessedCallback(
