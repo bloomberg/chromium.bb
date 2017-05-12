@@ -154,6 +154,7 @@ CSSCustomPropertyDeclaration* CSSVariableParser::ParseDeclarationValue(
 
 CSSVariableReferenceValue* CSSVariableParser::ParseRegisteredPropertyValue(
     CSSParserTokenRange range,
+    const CSSParserContext& context,
     bool require_var_reference,
     bool is_animation_tainted) {
   if (range.AtEnd())
@@ -170,7 +171,8 @@ CSSVariableReferenceValue* CSSVariableParser::ParseRegisteredPropertyValue(
     return nullptr;
   // TODO(timloh): Should this be hasReferences || hasAtApplyRule?
   return CSSVariableReferenceValue::Create(
-      CSSVariableData::Create(range, is_animation_tainted, has_references));
+      CSSVariableData::Create(range, is_animation_tainted, has_references),
+      context);
 }
 
 }  // namespace blink

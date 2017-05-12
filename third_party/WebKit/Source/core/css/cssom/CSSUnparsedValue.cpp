@@ -87,9 +87,13 @@ CSSValue* CSSUnparsedValue::ToCSSValue() const {
   }
 
   CSSTokenizer tokenizer(tokens.ToString());
-  return CSSVariableReferenceValue::Create(CSSVariableData::Create(
-      tokenizer.TokenRange(), false /* isAnimationTainted */,
-      true /* needsVariableResolution */));
+  // TODO(alancutter): This should be using a real parser context instead of
+  // StrictCSSParserContext.
+  return CSSVariableReferenceValue::Create(
+      CSSVariableData::Create(tokenizer.TokenRange(),
+                              false /* isAnimationTainted */,
+                              true /* needsVariableResolution */),
+      *StrictCSSParserContext());
 }
 
 }  // namespace blink
