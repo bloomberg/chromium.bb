@@ -150,6 +150,7 @@ const FeatureNameMap& GetDefaultFeatureNameMap() {
     default_feature_name_map.Set("fullscreen",
                                  WebFeaturePolicyFeature::kFullscreen);
     default_feature_name_map.Set("payment", WebFeaturePolicyFeature::kPayment);
+    default_feature_name_map.Set("usb", WebFeaturePolicyFeature::kUsb);
     if (RuntimeEnabledFeatures::featurePolicyExperimentalFeaturesEnabled()) {
       default_feature_name_map.Set("vibrate",
                                    WebFeaturePolicyFeature::kVibrate);

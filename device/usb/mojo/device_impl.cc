@@ -142,40 +142,30 @@ bool DeviceImpl::HasControlTransferPermission(
     UsbControlTransferRecipient recipient,
     uint16_t index) {
   DCHECK(device_handle_);
-  const UsbConfigDescriptor* config = device_->active_configuration();
 
-  if (!permission_provider_)
-    return false;
-
-  if (recipient == UsbControlTransferRecipient::INTERFACE ||
-      recipient == UsbControlTransferRecipient::ENDPOINT) {
-    if (!config)
-      return false;
-
-    const UsbInterfaceDescriptor* interface = nullptr;
-    if (recipient == UsbControlTransferRecipient::ENDPOINT) {
-      interface = device_handle_->FindInterfaceByEndpoint(index & 0xff);
-    } else {
-      auto interface_it =
-          std::find_if(config->interfaces.begin(), config->interfaces.end(),
-                       [index](const UsbInterfaceDescriptor& this_iface) {
-                         return this_iface.interface_number == (index & 0xff);
-                       });
-      if (interface_it != config->interfaces.end())
-        interface = &*interface_it;
-    }
-    if (interface == nullptr)
-      return false;
-
-    return permission_provider_->HasFunctionPermission(
-        interface->first_interface, config->configuration_value, device_);
-  } else if (config) {
-    return permission_provider_->HasConfigurationPermission(
-        config->configuration_value, device_);
-  } else {
-    // Client must already have device permission to have gotten this far.
+  if (recipient != UsbControlTransferRecipient::INTERFACE &&
+      recipient != UsbControlTransferRecipient::ENDPOINT) {
     return true;
   }
+
+  const UsbConfigDescriptor* config = device_->active_configuration();
+  if (!config)
+    return false;
+
+  const UsbInterfaceDescriptor* interface = nullptr;
+  if (recipient == UsbControlTransferRecipient::ENDPOINT) {
+    interface = device_handle_->FindInterfaceByEndpoint(index & 0xff);
+  } else {
+    auto interface_it =
+        std::find_if(config->interfaces.begin(), config->interfaces.end(),
+                     [index](const UsbInterfaceDescriptor& this_iface) {
+                       return this_iface.interface_number == (index & 0xff);
+                     });
+    if (interface_it != config->interfaces.end())
+      interface = &*interface_it;
+  }
+
+  return interface != nullptr;
 }
 
 // static
@@ -196,8 +186,7 @@ void DeviceImpl::OnOpen(base::WeakPtr<DeviceImpl> self,
 
 void DeviceImpl::OnPermissionGrantedForOpen(const OpenCallback& callback,
                                             bool granted) {
-  if (granted && permission_provider_ &&
-      permission_provider_->HasDevicePermission(device_)) {
+  if (granted) {
     device_->Open(
         base::Bind(&DeviceImpl::OnOpen, weak_factory_.GetWeakPtr(), callback));
   } else {
@@ -218,13 +207,8 @@ void DeviceImpl::Open(const OpenCallback& callback) {
     return;
   }
 
-  if (permission_provider_ &&
-      permission_provider_->HasDevicePermission(device_)) {
-    device_->Open(
-        base::Bind(&DeviceImpl::OnOpen, weak_factory_.GetWeakPtr(), callback));
-  } else {
-    callback.Run(mojom::UsbOpenDeviceError::ACCESS_DENIED);
-  }
+  device_->Open(
+      base::Bind(&DeviceImpl::OnOpen, weak_factory_.GetWeakPtr(), callback));
 }
 
 void DeviceImpl::Close(const CloseCallback& callback) {
@@ -239,12 +223,7 @@ void DeviceImpl::SetConfiguration(uint8_t value,
     return;
   }
 
-  if (permission_provider_ &&
-      permission_provider_->HasConfigurationPermission(value, device_)) {
-    device_handle_->SetConfiguration(value, callback);
-  } else {
-    callback.Run(false);
-  }
+  device_handle_->SetConfiguration(value, callback);
 }
 
 void DeviceImpl::ClaimInterface(uint8_t interface_number,
@@ -270,14 +249,7 @@ void DeviceImpl::ClaimInterface(uint8_t interface_number,
     return;
   }
 
-  if (permission_provider_ &&
-      permission_provider_->HasFunctionPermission(interface_it->first_interface,
-                                                  config->configuration_value,
-                                                  device_)) {
-    device_handle_->ClaimInterface(interface_number, callback);
-  } else {
-    callback.Run(false);
-  }
+  device_handle_->ClaimInterface(interface_number, callback);
 }
 
 void DeviceImpl::ReleaseInterface(uint8_t interface_number,

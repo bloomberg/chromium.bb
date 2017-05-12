@@ -64,10 +64,6 @@ class UsbChooserControllerTest : public ChromeRenderViewHostTestHarness {
       const std::string& serial_number) {
     scoped_refptr<device::MockUsbDevice> device(new device::MockUsbDevice(
         0, 1, "Google", product_string, serial_number));
-    std::unique_ptr<device::WebUsbAllowedOrigins> webusb_allowed_origins(
-        new device::WebUsbAllowedOrigins());
-    webusb_allowed_origins->origins.push_back(GURL(kDefaultTestUrl));
-    device->set_webusb_allowed_origins(std::move(webusb_allowed_origins));
     return device;
   }
 

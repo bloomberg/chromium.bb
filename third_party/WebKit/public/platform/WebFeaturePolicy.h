@@ -6,56 +6,12 @@
 #define WebFeaturePolicy_h
 
 #include "WebCommon.h"
+#include "WebFeaturePolicyFeature.h"
 #include "WebSecurityOrigin.h"
 #include "WebString.h"
 #include "WebVector.h"
 
 namespace blink {
-
-// These values map to the features which can be controlled by Feature Policy.
-//
-// Features are defined in
-// https://wicg.github.io/feature-policy/#defined-features. Many of these are
-// still under development in blink behind the featurePolicyExperimentalFeatures
-// flag, see getWebFeaturePolicyFeature().
-enum class WebFeaturePolicyFeature {
-  kNotFound = 0,
-  // Controls access to video input devices.
-  kCamera,
-  // Controls whether navigator.requestMediaKeySystemAccess is allowed.
-  kEme,
-  // Controls whether Element.requestFullscreen is allowed.
-  kFullscreen,
-  // Controls access to Geolocation interface.
-  kGeolocation,
-  // Controls access to audio input devices.
-  kMicrophone,
-  // Controls access to requestMIDIAccess method.
-  kMidiFeature,
-  // Controls access to PaymentRequest interface.
-  kPayment,
-  // Controls access to audio output devices.
-  kSpeaker,
-  // Controls access to navigator.vibrate method.
-  kVibrate,
-  // Controls access to document.cookie attribute.
-  kDocumentCookie,
-  // Contols access to document.domain attribute.
-  kDocumentDomain,
-  // Controls access to document.write and document.writeln methods.
-  kDocumentWrite,
-  // Controls access to Notification interface.
-  kNotifications,
-  // Controls access to PushManager interface.
-  kPush,
-  // Controls whether synchronous script elements will run.
-  kSyncScript,
-  // Controls use of synchronous XMLHTTPRequest API.
-  kSyncXHR,
-  // Controls access to RTCPeerConnection interface.
-  kWebRTC,
-  LAST_FEATURE = kWebRTC
-};
 
 struct BLINK_PLATFORM_EXPORT WebParsedFeaturePolicyDeclaration {
   WebParsedFeaturePolicyDeclaration() : matches_all_origins(false) {}

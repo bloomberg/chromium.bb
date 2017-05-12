@@ -27,7 +27,6 @@ class WebUSBPermissionProvider : public device::usb::PermissionProvider {
       UsbChooserContext* chooser_context,
       const GURL& requesting_origin,
       const GURL& embedding_origin,
-      bool is_embedded_frame,
       scoped_refptr<const device::UsbDevice> device);
 
   explicit WebUSBPermissionProvider(
@@ -38,13 +37,6 @@ class WebUSBPermissionProvider : public device::usb::PermissionProvider {
 
   // device::usb::PermissionProvider implementation.
   bool HasDevicePermission(
-      scoped_refptr<const device::UsbDevice> device) const override;
-  bool HasConfigurationPermission(
-      uint8_t requested_configuration,
-      scoped_refptr<const device::UsbDevice> device) const override;
-  bool HasFunctionPermission(
-      uint8_t requested_function,
-      uint8_t configuration_value,
       scoped_refptr<const device::UsbDevice> device) const override;
   void IncrementConnectionCount() override;
   void DecrementConnectionCount() override;

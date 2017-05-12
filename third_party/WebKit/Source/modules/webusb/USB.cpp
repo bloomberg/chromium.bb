@@ -28,6 +28,10 @@ using device::mojom::blink::UsbDevicePtr;
 namespace blink {
 namespace {
 
+const char kFeaturePolicyBlocked[] =
+    "Access to the feature \"usb\" is disallowed by feature policy.";
+const char kIframeBlocked[] =
+    "Access to this method is not allowed in embedded frames.";
 const char kNoDeviceSelected[] = "No device selected.";
 
 UsbDeviceFilterPtr ConvertDeviceFilter(const USBDeviceFilter& filter) {
@@ -72,31 +76,53 @@ void USB::Dispose() {
 }
 
 ScriptPromise USB::getDevices(ScriptState* script_state) {
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
-  ScriptPromise promise = resolver->Promise();
-  EnsureDeviceManagerConnection();
-  if (!device_manager_) {
-    resolver->Reject(DOMException::Create(kNotSupportedError));
-  } else {
-    device_manager_requests_.insert(resolver);
-    device_manager_->GetDevices(
-        nullptr, ConvertToBaseCallback(WTF::Bind(&USB::OnGetDevices,
-                                                 WrapPersistent(this),
-                                                 WrapPersistent(resolver))));
+  LocalFrame* frame = GetFrame();
+  if (!frame) {
+    return ScriptPromise::RejectWithDOMException(
+        script_state, DOMException::Create(kNotSupportedError));
   }
-  return promise;
+
+  if (RuntimeEnabledFeatures::featurePolicyEnabled()) {
+    if (!frame->IsFeatureEnabled(WebFeaturePolicyFeature::kUsb)) {
+      return ScriptPromise::RejectWithDOMException(
+          script_state,
+          DOMException::Create(kSecurityError, kFeaturePolicyBlocked));
+    }
+  } else if (!frame->IsMainFrame()) {
+    return ScriptPromise::RejectWithDOMException(
+        script_state, DOMException::Create(kSecurityError, kIframeBlocked));
+  }
+
+  EnsureDeviceManagerConnection();
+  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  device_manager_requests_.insert(resolver);
+  device_manager_->GetDevices(
+      nullptr,
+      ConvertToBaseCallback(WTF::Bind(&USB::OnGetDevices, WrapPersistent(this),
+                                      WrapPersistent(resolver))));
+  return resolver->Promise();
 }
 
 ScriptPromise USB::requestDevice(ScriptState* script_state,
                                  const USBDeviceRequestOptions& options) {
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
-  ScriptPromise promise = resolver->Promise();
+  LocalFrame* frame = GetFrame();
+  if (!frame) {
+    return ScriptPromise::RejectWithDOMException(
+        script_state, DOMException::Create(kNotSupportedError));
+  }
+
+  if (RuntimeEnabledFeatures::featurePolicyEnabled()) {
+    if (!frame->IsFeatureEnabled(WebFeaturePolicyFeature::kUsb)) {
+      return ScriptPromise::RejectWithDOMException(
+          script_state,
+          DOMException::Create(kSecurityError, kFeaturePolicyBlocked));
+    }
+  } else if (!frame->IsMainFrame()) {
+    return ScriptPromise::RejectWithDOMException(
+        script_state, DOMException::Create(kSecurityError, kIframeBlocked));
+  }
 
   if (!chooser_service_) {
-    if (!GetFrame()) {
-      resolver->Reject(DOMException::Create(kNotSupportedError));
-      return promise;
-    }
     GetFrame()->GetInterfaceProvider()->GetInterface(
         mojo::MakeRequest(&chooser_service_));
     chooser_service_.set_connection_error_handler(
@@ -105,23 +131,27 @@ ScriptPromise USB::requestDevice(ScriptState* script_state,
   }
 
   if (!UserGestureIndicator::ConsumeUserGesture()) {
-    resolver->Reject(DOMException::Create(
-        kSecurityError,
-        "Must be handling a user gesture to show a permission request."));
-  } else {
-    Vector<UsbDeviceFilterPtr> filters;
-    if (options.hasFilters()) {
-      filters.ReserveCapacity(options.filters().size());
-      for (const auto& filter : options.filters())
-        filters.push_back(ConvertDeviceFilter(filter));
-    }
-    chooser_service_requests_.insert(resolver);
-    chooser_service_->GetPermission(
-        std::move(filters), ConvertToBaseCallback(WTF::Bind(
-                                &USB::OnGetPermission, WrapPersistent(this),
-                                WrapPersistent(resolver))));
+    return ScriptPromise::RejectWithDOMException(
+        script_state,
+        DOMException::Create(
+            kSecurityError,
+            "Must be handling a user gesture to show a permission request."));
   }
-  return promise;
+
+  Vector<UsbDeviceFilterPtr> filters;
+  if (options.hasFilters()) {
+    filters.ReserveCapacity(options.filters().size());
+    for (const auto& filter : options.filters())
+      filters.push_back(ConvertDeviceFilter(filter));
+  }
+
+  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  chooser_service_requests_.insert(resolver);
+  chooser_service_->GetPermission(
+      std::move(filters), ConvertToBaseCallback(WTF::Bind(
+                              &USB::OnGetPermission, WrapPersistent(this),
+                              WrapPersistent(resolver))));
+  return resolver->Promise();
 }
 
 ExecutionContext* USB::GetExecutionContext() const {
@@ -175,11 +205,10 @@ void USB::OnGetPermission(ScriptPromiseResolver* resolver,
 
   EnsureDeviceManagerConnection();
 
-  if (device_manager_ && device_info) {
+  if (device_manager_ && device_info)
     resolver->Resolve(GetOrCreateDevice(std::move(device_info)));
-  } else {
+  else
     resolver->Reject(DOMException::Create(kNotFoundError, kNoDeviceSelected));
-  }
 }
 
 void USB::OnDeviceAdded(UsbDeviceInfoPtr device_info) {
@@ -219,16 +248,28 @@ void USB::OnChooserServiceConnectionError() {
 void USB::AddedEventListener(const AtomicString& event_type,
                              RegisteredEventListener& listener) {
   EventTargetWithInlineData::AddedEventListener(event_type, listener);
-  if (event_type == EventTypeNames::connect ||
-      event_type == EventTypeNames::disconnect) {
+  if (event_type != EventTypeNames::connect &&
+      event_type != EventTypeNames::disconnect) {
+    return;
+  }
+
+  LocalFrame* frame = GetFrame();
+  if (!frame)
+    return;
+
+  if (RuntimeEnabledFeatures::featurePolicyEnabled()) {
+    if (frame->IsFeatureEnabled(WebFeaturePolicyFeature::kUsb))
+      EnsureDeviceManagerConnection();
+  } else if (frame->IsMainFrame()) {
     EnsureDeviceManagerConnection();
   }
 }
 
 void USB::EnsureDeviceManagerConnection() {
-  if (device_manager_ || !GetFrame())
+  if (device_manager_)
     return;
 
+  DCHECK(GetFrame());
   GetFrame()->GetInterfaceProvider()->GetInterface(
       mojo::MakeRequest(&device_manager_));
   device_manager_.set_connection_error_handler(ConvertToBaseCallback(WTF::Bind(

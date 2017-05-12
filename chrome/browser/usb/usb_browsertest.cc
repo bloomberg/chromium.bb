@@ -19,7 +19,6 @@
 #include "device/usb/mock_usb_device.h"
 #include "device/usb/mock_usb_service.h"
 #include "device/usb/public/interfaces/chooser_service.mojom.h"
-#include "device/usb/webusb_descriptors.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/service_manager/public/cpp/bind_source_info.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
@@ -104,14 +103,6 @@ class WebUsbTest : public InProcessBrowserTest {
     scoped_refptr<MockUsbDevice> mock_device(
         new MockUsbDevice(0, 0, "Test Manufacturer", "Test Device", "123456"));
     device_client_->usb_service()->AddDevice(mock_device);
-
-    mock_device =
-        new MockUsbDevice(1, 0, "Test Manufacturer", "Test Device", "ABCDEF");
-    auto allowed_origins = base::MakeUnique<device::WebUsbAllowedOrigins>();
-    allowed_origins->origins.push_back(
-        embedded_test_server()->GetURL("localhost", "/").GetOrigin());
-    mock_device->set_webusb_allowed_origins(std::move(allowed_origins));
-    device_client_->usb_service()->AddDevice(mock_device);
   }
 
  private:
@@ -131,9 +122,16 @@ IN_PROC_BROWSER_TEST_F(WebUsbTest, RequestAndGetDevices) {
   render_frame_host->GetInterfaceRegistry()->AddInterface(
       base::Bind(&FakeChooserService::Create, render_frame_host));
 
-  // The mock device with vendorId == 0 has no WebUSB allowed origin descriptor
-  // but because this is a top level frame it will be allowed.
   std::string result;
+  EXPECT_TRUE(content::ExecuteScriptAndExtractString(
+      web_contents,
+      "navigator.usb.getDevices()"
+      "    .then(devices => {"
+      "        domAutomationController.send(devices.length.toString());"
+      "     });",
+      &result));
+  EXPECT_EQ("0", result);
+
   EXPECT_TRUE(content::ExecuteScriptAndExtractString(
       web_contents,
       "navigator.usb.requestDevice({ filters: [ { vendorId: 0 } ] })"
@@ -145,53 +143,6 @@ IN_PROC_BROWSER_TEST_F(WebUsbTest, RequestAndGetDevices) {
 
   EXPECT_TRUE(content::ExecuteScriptAndExtractString(
       web_contents,
-      "navigator.usb.getDevices()"
-      "    .then(devices => {"
-      "        domAutomationController.send(devices.length.toString());"
-      "     });",
-      &result));
-  EXPECT_EQ("1", result);
-}
-
-IN_PROC_BROWSER_TEST_F(WebUsbTest, RequestAndGetDevicesInIframe) {
-  ui_test_utils::NavigateToURL(
-      browser(),
-      embedded_test_server()->GetURL("localhost", "/page_with_iframe.html"));
-  content::WebContents* web_contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
-  RenderFrameHost* main_frame = web_contents->GetMainFrame();
-  EXPECT_THAT(main_frame->GetLastCommittedOrigin().Serialize(),
-              testing::StartsWith("http://localhost:"));
-  RenderFrameHost* embedded_frame = ChildFrameAt(main_frame, 0);
-  EXPECT_THAT(embedded_frame->GetLastCommittedOrigin().Serialize(),
-              testing::StartsWith("http://localhost:"));
-
-  embedded_frame->GetInterfaceRegistry()->AddInterface(
-      base::Bind(&FakeChooserService::Create, embedded_frame));
-
-  // The mock device with vendorId == 0 has no allowed origin descriptor so an
-  // embedded frame will not be able to select it.
-  std::string result;
-  EXPECT_TRUE(content::ExecuteScriptAndExtractString(
-      embedded_frame,
-      "navigator.usb.requestDevice({ filters: [ { vendorId: 0 } ] })"
-      "    .catch(e => { domAutomationController.send(e.toString()); });",
-      &result));
-  EXPECT_EQ("NotFoundError: No device selected.", result);
-
-  // The mock device with vendorId == 1 does however have the embedded test
-  // server listed as an allowed origin.
-  EXPECT_TRUE(content::ExecuteScriptAndExtractString(
-      embedded_frame,
-      "navigator.usb.requestDevice({ filters: [ { vendorId: 1 } ] })"
-      "    .then(device => {"
-      "        domAutomationController.send(device.serialNumber);"
-      "     });",
-      &result));
-  EXPECT_EQ("ABCDEF", result);
-
-  EXPECT_TRUE(content::ExecuteScriptAndExtractString(
-      embedded_frame,
       "navigator.usb.getDevices()"
       "    .then(devices => {"
       "        domAutomationController.send(devices.length.toString());"
