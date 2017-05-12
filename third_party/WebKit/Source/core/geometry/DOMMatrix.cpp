@@ -6,13 +6,21 @@
 
 namespace blink {
 
-DOMMatrix* DOMMatrix::Create(ExceptionState& exception_state) {
+DOMMatrix* DOMMatrix::Create(ExecutionContext* execution_context,
+                             ExceptionState& exception_state) {
   return new DOMMatrix(TransformationMatrix());
 }
 
-DOMMatrix* DOMMatrix::Create(StringOrUnrestrictedDoubleSequence& init,
+DOMMatrix* DOMMatrix::Create(ExecutionContext* execution_context,
+                             StringOrUnrestrictedDoubleSequence& init,
                              ExceptionState& exception_state) {
   if (init.isString()) {
+    if (!execution_context->IsDocument()) {
+      exception_state.ThrowTypeError(
+          "DOMMatrix can't be constructed with strings on workers.");
+      return nullptr;
+    }
+
     DOMMatrix* matrix = new DOMMatrix(TransformationMatrix());
     matrix->SetMatrixValueFromString(init.getAsString(), exception_state);
     return matrix;

@@ -7,6 +7,7 @@
 [
     Constructor(optional (DOMString or sequence<unrestricted double>) init),
     RaisesException=Constructor,
+    ConstructorCallWith=ExecutionContext,
     Exposed=(Window,Worker),
     RuntimeEnabled=GeometryInterfaces,
 ] interface DOMMatrixReadOnly {
