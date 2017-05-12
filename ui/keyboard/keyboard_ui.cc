@@ -44,7 +44,7 @@ void KeyboardUI::EnsureCaretInWorkArea() {
   const bool new_vk_behavior =
       (base::CommandLine::ForCurrentProcess()->HasSwitch(
            ::switches::kUseNewVirtualKeyboardBehavior) &&
-       !keyboard::KeyboardController::GetInstance()->keyboard_locked());
+       !keyboard_controller_->keyboard_locked());
 
   if (new_vk_behavior) {
     GetInputMethod()->SetOnScreenKeyboardBounds(keyboard_bounds_in_screen);
