@@ -43,7 +43,7 @@ example, changing the zoom level is instantly reflected on the `theTrack`,
 while connecting the Red Eye Reduction, if available, is not.
 
 | Object                   |type                 | retrieved by...                         |
-| :--                      |:--                  | --:                                     |
+|:------------------------ |:------------------- | ---------------------------------------:|
 |[`PhotoCapabilities`]     |non-live capabilities|`theImageCapturer.getPhotoCapabilities()`|
 |[`MediaTrackCapabilities`]|live capabilities    |`theTrack.getCapabilities()`             |
 |                          |                     |                                         |
