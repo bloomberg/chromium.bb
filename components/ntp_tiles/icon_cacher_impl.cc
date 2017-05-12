@@ -9,6 +9,8 @@
 #include "base/memory/ptr_util.h"
 #include "components/favicon/core/favicon_service.h"
 #include "components/favicon/core/favicon_util.h"
+#include "components/favicon/core/large_icon_service.h"
+#include "components/favicon_base/fallback_icon_style.h"
 #include "components/favicon_base/favicon_types.h"
 #include "components/favicon_base/favicon_util.h"
 #include "components/image_fetcher/core/image_decoder.h"
@@ -24,6 +26,12 @@ namespace {
 
 constexpr int kDesiredFrameSize = 128;
 
+// TODO(jkrcal): Make the size in dip and the scale factor be passed as
+// arguments from the UI so that we desire for the right size on a given device.
+// See crbug.com/696563.
+constexpr int kTileIconMinSizePx = 48;
+constexpr int kTileIconDesiredSizePx = 96;
+
 favicon_base::IconType IconType(const PopularSites::Site& site) {
   return site.large_icon_url.is_valid() ? favicon_base::TOUCH_ICON
                                         : favicon_base::FAVICON;
@@ -34,12 +42,22 @@ const GURL& IconURL(const PopularSites::Site& site) {
                                         : site.favicon_url;
 }
 
+bool HasResultDefaultBackgroundColor(
+    const favicon_base::LargeIconResult& result) {
+  if (!result.fallback_icon_style) {
+    return false;
+  }
+  return result.fallback_icon_style->is_default_background_color;
+}
+
 }  // namespace
 
 IconCacherImpl::IconCacherImpl(
     favicon::FaviconService* favicon_service,
+    favicon::LargeIconService* large_icon_service,
     std::unique_ptr<image_fetcher::ImageFetcher> image_fetcher)
     : favicon_service_(favicon_service),
+      large_icon_service_(large_icon_service),
       image_fetcher_(std::move(image_fetcher)),
       weak_ptr_factory_(this) {
   image_fetcher_->SetDataUseServiceName(
@@ -51,7 +69,7 @@ IconCacherImpl::IconCacherImpl(
 
 IconCacherImpl::~IconCacherImpl() = default;
 
-void IconCacherImpl::StartFetch(
+void IconCacherImpl::StartFetchPopularSites(
     PopularSites::Site site,
     const base::Closure& icon_available,
     const base::Closure& preliminary_icon_available) {
@@ -80,12 +98,13 @@ void IconCacherImpl::OnGetFaviconImageForPageURLFinished(
 
   image_fetcher_->StartOrQueueNetworkRequest(
       std::string(), IconURL(site),
-      base::Bind(&IconCacherImpl::OnFaviconDownloaded, base::Unretained(this),
-                 site, base::Passed(std::move(preliminary_callback)),
+      base::Bind(&IconCacherImpl::OnPopularSitesFaviconDownloaded,
+                 base::Unretained(this), site,
+                 base::Passed(std::move(preliminary_callback)),
                  icon_available));
 }
 
-void IconCacherImpl::OnFaviconDownloaded(
+void IconCacherImpl::OnPopularSitesFaviconDownloaded(
     PopularSites::Site site,
     std::unique_ptr<CancelableImageCallback> preliminary_callback,
     const base::Closure& icon_available,
@@ -138,6 +157,45 @@ IconCacherImpl::MaybeProvideDefaultIcon(const PopularSites::Site& site,
       gfx::Size(kDesiredFrameSize, kDesiredFrameSize),
       preliminary_callback->callback());
   return preliminary_callback;
+}
+
+void IconCacherImpl::StartFetchMostLikely(const GURL& page_url,
+                                          const base::Closure& icon_available) {
+  // Desired size 0 means that we do not want the service to resize the image
+  // (as we will not use it anyway).
+  large_icon_service_->GetLargeIconOrFallbackStyle(
+      page_url, kTileIconMinSizePx, /*desired_size_in_pixel=*/0,
+      base::Bind(&IconCacherImpl::OnGetLargeIconOrFallbackStyleFinished,
+                 weak_ptr_factory_.GetWeakPtr(), page_url, icon_available),
+      &tracker_);
+}
+
+void IconCacherImpl::OnGetLargeIconOrFallbackStyleFinished(
+    const GURL& page_url,
+    const base::Closure& icon_available,
+    const favicon_base::LargeIconResult& result) {
+  if (!HasResultDefaultBackgroundColor(result)) {
+    // We should only fetch for default "gray" tiles so that we never overrite
+    // any favicon of any size.
+    return;
+  }
+
+  large_icon_service_
+      ->GetLargeIconOrFallbackStyleFromGoogleServerSkippingLocalCache(
+          page_url, kTileIconMinSizePx, kTileIconDesiredSizePx,
+          base::Bind(&IconCacherImpl::OnMostLikelyFaviconDownloaded,
+                     weak_ptr_factory_.GetWeakPtr(), icon_available));
+}
+
+void IconCacherImpl::OnMostLikelyFaviconDownloaded(
+    const base::Closure& icon_available,
+    bool success) {
+  if (!success) {
+    return;
+  }
+  if (icon_available) {
+    icon_available.Run();
+  }
 }
 
 }  // namespace ntp_tiles

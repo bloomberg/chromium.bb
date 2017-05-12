@@ -11,6 +11,7 @@
 #include "base/callback.h"
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
+#include "chrome/browser/favicon/large_icon_service_factory.h"
 #include "chrome/browser/history/top_sites_factory.h"
 #include "chrome/browser/ntp_tiles/chrome_popular_sites_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -124,6 +125,7 @@ ChromeMostVisitedSitesFactory::NewForProfile(Profile* profile) {
       base::MakeUnique<ntp_tiles::IconCacherImpl>(
           FaviconServiceFactory::GetForProfile(
               profile, ServiceAccessType::IMPLICIT_ACCESS),
+          LargeIconServiceFactory::GetForBrowserContext(profile),
           base::MakeUnique<image_fetcher::ImageFetcherImpl>(
               base::MakeUnique<suggestions::ImageDecoderImpl>(),
               profile->GetRequestContext())),

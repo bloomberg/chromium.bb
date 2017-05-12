@@ -82,6 +82,8 @@ class LargeIconService : public KeyedService {
   // WARNING: This function will share the |page_url| with a Google server. This
   // Can be used only for urls that are not privacy sensitive or for users that
   // sync their history with Google servers.
+  // TODO(jkrcal): It is not clear from the name of this function, that it
+  // actually adds the icon to the local cache. Maybe "StoreLargeIcon..."?
   void GetLargeIconOrFallbackStyleFromGoogleServerSkippingLocalCache(
       const GURL& page_url,
       int min_source_size_in_pixel,

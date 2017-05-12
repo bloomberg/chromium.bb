@@ -276,6 +276,11 @@ void MostVisitedSites::BuildCurrentTilesGivenSuggestionsProfile(
     tile.whitelist_icon_path = GetWhitelistLargeIconPath(url);
     tile.thumbnail_url = GURL(suggestion_pb.thumbnail());
     tile.favicon_url = GURL(suggestion_pb.favicon_url());
+    if (AreNtpMostLikelyFaviconsFromServerEnabled()) {
+      icon_cacher_->StartFetchMostLikely(
+          url, base::Bind(&MostVisitedSites::OnIconMadeAvailable,
+                          base::Unretained(this), url));
+    }
 
     tiles.push_back(std::move(tile));
   }
@@ -368,7 +373,8 @@ NTPTilesVector MostVisitedSites::CreatePopularSitesTiles(
       base::Closure icon_available =
           base::Bind(&MostVisitedSites::OnIconMadeAvailable,
                      base::Unretained(this), popular_site.url);
-      icon_cacher_->StartFetch(popular_site, icon_available, icon_available);
+      icon_cacher_->StartFetchPopularSites(popular_site, icon_available,
+                                           icon_available);
       if (popular_sites_tiles.size() >= num_popular_sites_tiles)
         break;
     }
@@ -430,7 +436,8 @@ void MostVisitedSites::OnPopularSitesDownloaded(bool success) {
 
   for (const PopularSites::Site& popular_site : popular_sites_->sites()) {
     // Ignore callback; these icons will be seen on the *next* NTP.
-    icon_cacher_->StartFetch(popular_site, base::Closure(), base::Closure());
+    icon_cacher_->StartFetchPopularSites(popular_site, base::Closure(),
+                                         base::Closure());
   }
 }
 

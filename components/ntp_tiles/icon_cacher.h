@@ -10,12 +10,12 @@
 
 namespace ntp_tiles {
 
-// Ensures that a Popular Sites icon is cached, downloading and saving it if
-// not.
+// Ensures that Popular Sites icons and MostLikely icons are cached, downloading
+// and saving them if not.
 //
-// Does not provide any way to get a fetched favicon; use the FaviconService for
-// that. All this interface guarantees is that FaviconService will be able to
-// get you an icon (if it exists).
+// Does not provide any way to get a fetched favicon; use the FaviconService /
+// LargeIconService for that. All this interface guarantees is that
+// FaviconService will be able to get you an icon (if it exists).
 class IconCacher {
  public:
   virtual ~IconCacher() = default;
@@ -25,9 +25,15 @@ class IconCacher {
   // If there are preliminary icons (e.g. provided by static resources), the
   // optional |preliminary_icon_available| callback will be invoked in addition.
   // TODO(fhorschig): In case we keep these, make them OnceClosures.
-  virtual void StartFetch(PopularSites::Site site,
-                          const base::Closure& icon_available,
-                          const base::Closure& preliminary_icon_available) = 0;
+  virtual void StartFetchPopularSites(
+      PopularSites::Site site,
+      const base::Closure& icon_available,
+      const base::Closure& preliminary_icon_available) = 0;
+
+  // Fetches the icon if necessary, then invokes |done| with true if it was
+  // newly fetched (false if it was already cached or could not be fetched).
+  virtual void StartFetchMostLikely(const GURL& page_url,
+                                    const base::Closure& icon_available) = 0;
 };
 
 }  // namespace ntp_tiles
