@@ -91,15 +91,15 @@ class QuotaPolicyCookieStoreTest : public testing::Test {
   }
 
   // Adds a persistent cookie to store_.
-  void AddCookie(const GURL& url,
-                 const std::string& name,
+  void AddCookie(const std::string& name,
                  const std::string& value,
                  const std::string& domain,
                  const std::string& path,
                  const base::Time& creation) {
     store_->AddCookie(*net::CanonicalCookie::Create(
-        url, name, value, domain, path, creation, creation, false, false,
-        net::CookieSameSite::DEFAULT_MODE, net::COOKIE_PRIORITY_DEFAULT));
+        name, value, domain, path, creation, creation, base::Time(), false,
+        false, net::CookieSameSite::DEFAULT_MODE,
+        net::COOKIE_PRIORITY_DEFAULT));
   }
 
   void DestroyStore() {
@@ -136,9 +136,9 @@ TEST_F(QuotaPolicyCookieStoreTest, TestPersistence) {
   ASSERT_EQ(0U, cookies.size());
 
   base::Time t = base::Time::Now();
-  AddCookie(GURL("http://foo.com"), "A", "B", std::string(), "/", t);
+  AddCookie("A", "B", "foo.com", "/", t);
   t += base::TimeDelta::FromInternalValue(10);
-  AddCookie(GURL("http://persistent.com"), "A", "B", std::string(), "/", t);
+  AddCookie("A", "B", "persistent.com", "/", t);
 
   // Replace the store, which forces the current store to flush data to
   // disk. Then, after reloading the store, confirm that the data was flushed by
@@ -180,11 +180,11 @@ TEST_F(QuotaPolicyCookieStoreTest, TestPolicy) {
   ASSERT_EQ(0U, cookies.size());
 
   base::Time t = base::Time::Now();
-  AddCookie(GURL("http://foo.com"), "A", "B", std::string(), "/", t);
+  AddCookie("A", "B", "foo.com", "/", t);
   t += base::TimeDelta::FromInternalValue(10);
-  AddCookie(GURL("http://persistent.com"), "A", "B", std::string(), "/", t);
+  AddCookie("A", "B", "persistent.com", "/", t);
   t += base::TimeDelta::FromInternalValue(10);
-  AddCookie(GURL("http://nonpersistent.com"), "A", "B", std::string(), "/", t);
+  AddCookie("A", "B", "nonpersistent.com", "/", t);
 
   // Replace the store, which forces the current store to flush data to
   // disk. Then, after reloading the store, confirm that the data was flushed by
@@ -203,8 +203,7 @@ TEST_F(QuotaPolicyCookieStoreTest, TestPolicy) {
   EXPECT_EQ(3U, cookies.size());
 
   t += base::TimeDelta::FromInternalValue(10);
-  AddCookie(GURL("http://nonpersistent.com"), "A", "B", std::string(),
-            "/second", t);
+  AddCookie("A", "B", "nonpersistent.com", "/second", t);
 
   // Now close the store, and "nonpersistent.com" should be deleted according to
   // policy.
@@ -225,7 +224,7 @@ TEST_F(QuotaPolicyCookieStoreTest, ForceKeepSessionState) {
   ASSERT_EQ(0U, cookies.size());
 
   base::Time t = base::Time::Now();
-  AddCookie(GURL("http://foo.com"), "A", "B", std::string(), "/", t);
+  AddCookie("A", "B", "foo.com", "/", t);
 
   // Recreate |store_| with a storage policy that makes "nonpersistent.com"
   // session only, but then instruct the store to forcibly keep all cookies.
@@ -241,9 +240,9 @@ TEST_F(QuotaPolicyCookieStoreTest, ForceKeepSessionState) {
   EXPECT_EQ(1U, cookies.size());
 
   t += base::TimeDelta::FromInternalValue(10);
-  AddCookie(GURL("http://persistent.com"), "A", "B", std::string(), "/", t);
+  AddCookie("A", "B", "persistent.com", "/", t);
   t += base::TimeDelta::FromInternalValue(10);
-  AddCookie(GURL("http://nonpersistent.com"), "A", "B", std::string(), "/", t);
+  AddCookie("A", "B", "nonpersistent.com", "/", t);
 
   // Now close the store, but the "nonpersistent.com" cookie should not be
   // deleted.
@@ -270,7 +269,7 @@ TEST_F(QuotaPolicyCookieStoreTest, TestDestroyOnBackgroundThread) {
   ASSERT_EQ(0U, cookies.size());
 
   base::Time t = base::Time::Now();
-  AddCookie(GURL("http://nonpersistent.com"), "A", "B", std::string(), "/", t);
+  AddCookie("A", "B", "nonpersistent.com", "/", t);
 
   // Replace the store, which forces the current store to flush data to
   // disk. Then, after reloading the store, confirm that the data was flushed by
