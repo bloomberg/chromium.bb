@@ -952,12 +952,15 @@ public class CustomTabsConnection {
         });
     }
 
-    private boolean maySpeculate(CustomTabsSessionToken session) {
+    @VisibleForTesting
+    boolean maySpeculate(CustomTabsSessionToken session) {
         if (!DeviceClassManager.enablePrerendering()) return false;
+        PrefServiceBridge prefs = PrefServiceBridge.getInstance();
+        if (prefs.isBlockThirdPartyCookiesEnabled()) return false;
         // TODO(yusufo): The check for prerender in PrivacyManager now checks for the network
         // connection type as well, we should either change that or add another check for custom
         // tabs. Then PrivacyManager should be used to make the below check.
-        if (!PrefServiceBridge.getInstance().getNetworkPredictionEnabled()) return false;
+        if (!prefs.getNetworkPredictionEnabled()) return false;
         if (DataReductionProxySettings.getInstance().isDataReductionProxyEnabled()) return false;
         ConnectivityManager cm =
                 (ConnectivityManager) mApplication.getApplicationContext().getSystemService(
