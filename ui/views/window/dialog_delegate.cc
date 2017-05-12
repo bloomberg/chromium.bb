@@ -243,6 +243,7 @@ ui::AXRole DialogDelegate::GetAccessibleWindowRole() const {
 DialogDelegateView::DialogDelegateView() {
   // A WidgetDelegate should be deleted on DeleteDelegate.
   set_owned_by_client();
+  UMA_HISTOGRAM_BOOLEAN("Dialog.DialogDelegateView.Create", true);
 }
 
 DialogDelegateView::~DialogDelegateView() {}
