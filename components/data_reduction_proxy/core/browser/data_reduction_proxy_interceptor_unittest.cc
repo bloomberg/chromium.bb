@@ -25,6 +25,7 @@
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_server.h"
 #include "components/data_reduction_proxy/proto/client_config.pb.h"
 #include "components/prefs/pref_service.h"
+#include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
 #include "net/base/request_priority.h"
 #include "net/http/http_response_headers.h"
@@ -545,13 +546,7 @@ TEST_F(DataReductionProxyInterceptorEndToEndTest, RedirectWithBypassAndRetry) {
   EXPECT_EQ(std::vector<GURL>(1, GURL("http://foo.com")), request->url_chain());
 }
 
-// https://crbug.com/668197: Flaky on android_n5x_swarming_rel bot.
-#if defined(OS_ANDROID)
-#define MAYBE_RedirectChainToHttps DISABLED_RedirectChainToHttps
-#else
-#define MAYBE_RedirectChainToHttps RedirectChainToHttps
-#endif
-TEST_F(DataReductionProxyInterceptorEndToEndTest, MAYBE_RedirectChainToHttps) {
+TEST_F(DataReductionProxyInterceptorEndToEndTest, RedirectChainToHttps) {
   // First, a redirect is successfully received through the Data Reduction
   // Proxy. HSTS is forced for play.google.com and prebaked into Chrome, so
   // http://play.google.com will automatically be redirected to
@@ -583,6 +578,9 @@ TEST_F(DataReductionProxyInterceptorEndToEndTest, MAYBE_RedirectChainToHttps) {
 
   std::unique_ptr<net::URLRequest> request =
       CreateAndExecuteRequest(GURL("http://music.google.com"));
+  request->SetLoadFlags(net::LOAD_DISABLE_CACHE |
+                        net::LOAD_DO_NOT_SEND_COOKIES |
+                        net::LOAD_DO_NOT_SAVE_COOKIES);
   EXPECT_FALSE(delegate().request_failed());
   EXPECT_EQ(kBody, delegate().data_received());
 
