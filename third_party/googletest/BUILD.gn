@@ -6,6 +6,11 @@ config("gtest_config") {
   visibility = [ ":*" ]  # gmock also shares this config.
 
   defines = [
+    # Chromium always links googletest statically, so no API qualifier is
+    # necessary. The definition in gtest-port.h at the time of this writing
+    # causes crashes in content_browsertests.
+    "GTEST_API_=",
+
     # In order to allow regex matches in gtest to be shared between Windows
     # and other systems, we tell gtest to always use its internal engine.
     "GTEST_HAS_POSIX_RE=0",
@@ -23,7 +28,7 @@ config("gtest_config") {
 config("gmock_config") {
   # Gmock headers need to be able to find themselves.
   include_dirs = [
-    "gmock_custom",
+    "custom",
     "src/googlemock/include",
   ]
 }
@@ -104,7 +109,7 @@ source_set("gmock") {
     "src/googlemock/include/gmock/internal/gmock-port.h",
 
     # gmock helpers.
-    "gmock_custom/gmock/internal/custom/gmock-port.h",
+    "custom/gmock/internal/custom/gmock-port.h",
 
     #"src/googlemock/src/gmock-all.cc",  # Not needed by our build.
     "src/googlemock/src/gmock-cardinalities.cc",
@@ -113,9 +118,6 @@ source_set("gmock") {
     "src/googlemock/src/gmock-spec-builders.cc",
     "src/googlemock/src/gmock.cc",
   ]
-
-  # This project includes some stuff form gtest's guts.
-  include_dirs = [ "src/googletest/include" ]
 
   public_configs = [
     ":gmock_config",
