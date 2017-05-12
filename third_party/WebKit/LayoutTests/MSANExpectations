@@ -13,10 +13,8 @@ crbug.com/420198 [ Linux ] virtual/slimmingpaint/fast/css/fontface-arraybuffer.h
 # a stack overflow due to bloated stack frames under MSan.
 crbug.com/420606 [ Linux ] fast/workers/shared-worker-constructor.html [ Skip ]
 crbug.com/420606 [ Linux ] virtual/slimmingpaint/fast/workers/shared-worker-constructor.html [ Skip ]
-crbug.com/420606 [ Linux ] virtual/sharedarraybuffer/fast/workers/shared-worker-constructor.html [ Skip ]
 crbug.com/420606 [ Linux ] fast/workers/worker-constructor.html [ Skip ]
 crbug.com/420606 [ Linux ] virtual/slimmingpaint/fast/workers/worker-constructor.html [ Skip ]
-crbug.com/420606 [ Linux ] virtual/sharedarraybuffer/fast/workers/worker-constructor.html [ Skip ]
 
 # Flaky under MSan (hang forever).
 crbug.com/422982 [ Linux ] virtual/threaded [ Skip ]

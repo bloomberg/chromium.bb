@@ -1,4 +1,0 @@
-This is a testharness.js-based test.
-FAIL SharedArrayBuffer cannot cross agent clusters, BroadcastChannel edition SharedArrayBuffer is not defined
-Harness: the test ran to completion.
-

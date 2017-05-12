@@ -1,11 +1,6 @@
 # These tests currently fail when they run with --site-per-process.
 # See https://crbug.com/477150.
 
-# https://crbug.com/717092: Started failing after r468084 landed.
-crbug.com/717092 virtual/sharedarraybuffer/storage/indexeddb/blob-valid-after-deletion.html [ Failure ]
-crbug.com/717092 virtual/sharedarraybuffer/storage/indexeddb/blob-valid-before-commit.html [ Failure ]
-crbug.com/717092 virtual/sharedarraybuffer/storage/indexeddb/empty-crash.html [ Timeout ]
-
 # https://crbug.com/716085: Started failing after r466634 landed.
 crbug.com/716085 http/tests/feature-policy/payment-allowed-by-container-policy-relocate.html [ Failure ]
 crbug.com/716085 http/tests/feature-policy-experimental-features/vibrate-disabled.php [ Failure ]
