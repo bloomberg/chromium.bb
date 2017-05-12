@@ -11,9 +11,14 @@ mojom("bindings") {
     "pipe_control_messages.mojom",
   ]
 
+  component_output_prefix = "mojo_public_interfaces_bindings"
   export_class_attribute = "MOJO_CPP_BINDINGS_EXPORT"
   export_define = "MOJO_CPP_BINDINGS_IMPLEMENTATION"
   export_header = "mojo/public/cpp/bindings/bindings_export.h"
+
+  export_class_attribute_shared = "MOJO_CPP_BINDINGS_EXPORT"
+  export_define_shared = "MOJO_CPP_BINDINGS_IMPLEMENTATION"
+  export_header_shared = "mojo/public/cpp/bindings/bindings_export.h"
 }
 
 # TODO(yzshen): Remove this target and use the one above once

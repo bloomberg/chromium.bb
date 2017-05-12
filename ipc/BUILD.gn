@@ -129,13 +129,12 @@ component("ipc") {
   }
 }
 
-mojom("mojom") {
+mojom_component("mojom") {
+  output_prefix = "ipc_mojom"
+  macro_prefix = "IPC_MOJOM"
   sources = [
     "ipc.mojom",
   ]
-  export_class_attribute = "IPC_EXPORT"
-  export_define = "IPC_IMPLEMENTATION"
-  export_header = "ipc/ipc_export.h"
 }
 
 mojom("test_interfaces") {
