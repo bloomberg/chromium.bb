@@ -78,6 +78,12 @@
 #include "chrome/browser/android/offline_pages/recent_tab_helper.h"
 #include "chrome/browser/android/search_geolocation/search_geolocation_disclosure_tab_helper.h"
 #include "chrome/browser/android/voice_search_tab_helper.h"
+
+#include "device/vr/features/features.h"  // nogncheck
+#if BUILDFLAG(ENABLE_VR)
+#include "chrome/browser/android/vr_shell/vr_tab_helper.h"
+#endif  // BUILDFLAG(ENABLE_VR)
+
 #include "chrome/browser/android/webapps/single_tab_mode_tab_helper.h"
 #include "chrome/browser/ui/android/context_menu_helper.h"
 #include "chrome/browser/ui/android/view_android_helper.h"
@@ -231,6 +237,11 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
   SingleTabModeTabHelper::CreateForWebContents(web_contents);
   ViewAndroidHelper::CreateForWebContents(web_contents);
   VoiceSearchTabHelper::CreateForWebContents(web_contents);
+
+#if BUILDFLAG(ENABLE_VR)
+  vr_shell::VrTabHelper::CreateForWebContents(web_contents);
+#endif
+
 #else
   BookmarkTabHelper::CreateForWebContents(web_contents);
   extensions::ChromeExtensionWebContentsObserver::CreateForWebContents(

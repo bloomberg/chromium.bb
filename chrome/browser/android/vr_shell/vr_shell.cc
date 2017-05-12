@@ -29,6 +29,7 @@
 #include "chrome/browser/android/vr_shell/vr_input_manager.h"
 #include "chrome/browser/android/vr_shell/vr_shell_delegate.h"
 #include "chrome/browser/android/vr_shell/vr_shell_gl.h"
+#include "chrome/browser/android/vr_shell/vr_tab_helper.h"
 #include "chrome/browser/android/vr_shell/vr_usage_monitor.h"
 #include "chrome/browser/android/vr_shell/vr_web_contents_observer.h"
 #include "content/public/browser/browser_thread.h"
@@ -64,8 +65,16 @@ namespace {
 vr_shell::VrShell* g_instance;
 
 void SetIsInVR(content::WebContents* contents, bool is_in_vr) {
-  if (contents && contents->GetRenderWidgetHostView())
+  if (contents && contents->GetRenderWidgetHostView()) {
+    // TODO(asimjour) Contents should not be aware of VR mode. Instead, we
+    // should add a flag for disabling specific UI such as the keyboard (see
+    // VrTabHelper for details).
     contents->GetRenderWidgetHostView()->SetIsInVR(is_in_vr);
+
+    VrTabHelper* vr_tab_helper = VrTabHelper::FromWebContents(contents);
+    DCHECK(vr_tab_helper);
+    vr_tab_helper->SetIsInVr(is_in_vr);
+  }
 }
 
 void LoadControllerModelTask(

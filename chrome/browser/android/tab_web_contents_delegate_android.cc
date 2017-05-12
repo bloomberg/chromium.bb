@@ -13,6 +13,12 @@
 #include "chrome/browser/android/banners/app_banner_manager_android.h"
 #include "chrome/browser/android/feature_utilities.h"
 #include "chrome/browser/android/hung_renderer_infobar_delegate.h"
+
+#include "device/vr/features/features.h"
+#if BUILDFLAG(ENABLE_VR)
+#include "chrome/browser/android/vr_shell/vr_tab_helper.h"
+#endif  // BUILDFLAG(ENABLE_VR)
+
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/file_select_helper.h"
 #include "chrome/browser/infobars/infobar_service.h"
@@ -119,6 +125,12 @@ void TabWebContentsDelegateAndroid::LoadingStateChanged(
 void TabWebContentsDelegateAndroid::RunFileChooser(
     content::RenderFrameHost* render_frame_host,
     const FileChooserParams& params) {
+#if BUILDFLAG(ENABLE_VR)
+  if (vr_shell::VrTabHelper::IsInVr(
+          WebContents::FromRenderFrameHost(render_frame_host))) {
+    return;
+  }
+#endif
   FileSelectHelper::RunFileChooser(render_frame_host, params);
 }
 
@@ -255,6 +267,11 @@ void TabWebContentsDelegateAndroid::FindMatchRectsReply(
 content::JavaScriptDialogManager*
 TabWebContentsDelegateAndroid::GetJavaScriptDialogManager(
     WebContents* source) {
+#if BUILDFLAG(ENABLE_VR)
+  if (vr_shell::VrTabHelper::IsInVr(source)) {
+    return nullptr;
+  }
+#endif
   return app_modal::JavaScriptDialogManager::GetInstance();
 }
 
