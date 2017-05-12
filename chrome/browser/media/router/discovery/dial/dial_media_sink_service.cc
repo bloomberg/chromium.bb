@@ -26,22 +26,29 @@ DialMediaSinkService::DialMediaSinkService(
   DCHECK(request_context_);
 }
 
-DialMediaSinkService::~DialMediaSinkService() {}
+DialMediaSinkService::~DialMediaSinkService() {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  Stop();
+}
 
 void DialMediaSinkService::Start() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  dial_registry()->RegisterObserver(this);
-  dial_registry()->StartPeriodicDiscovery();
+  if (dial_registry_)
+    return;
+
+  dial_registry_ = DialRegistry::GetInstance();
+  dial_registry_->RegisterObserver(this);
+  dial_registry_->OnListenerAdded();
 }
 
 void DialMediaSinkService::Stop() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  dial_registry()->UnregisterObserver(this);
-}
+  if (!dial_registry_)
+    return;
 
-DialRegistry* DialMediaSinkService::dial_registry() {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  return DialRegistry::GetInstance();
+  dial_registry_->OnListenerRemoved();
+  dial_registry_->UnregisterObserver(this);
+  dial_registry_ = nullptr;
 }
 
 DeviceDescriptionService* DialMediaSinkService::GetDescriptionService() {
@@ -56,18 +63,33 @@ DeviceDescriptionService* DialMediaSinkService::GetDescriptionService() {
   return description_service_.get();
 }
 
+void DialMediaSinkService::SetDialRegistryForTest(DialRegistry* dial_registry) {
+  DCHECK(!dial_registry_);
+  dial_registry_ = dial_registry;
+
+  DCHECK(dial_registry);
+  dial_registry_->RegisterObserver(this);
+  dial_registry_->OnListenerAdded();
+}
+
+void DialMediaSinkService::SetDescriptionServiceForTest(
+    std::unique_ptr<DeviceDescriptionService> description_service) {
+  DCHECK(!description_service_);
+  description_service_ = std::move(description_service);
+}
+
+void DialMediaSinkService::SetTimerForTest(std::unique_ptr<base::Timer> timer) {
+  DCHECK(!finish_timer_);
+  finish_timer_ = std::move(timer);
+}
+
 void DialMediaSinkService::OnDialDeviceEvent(
     const DialRegistry::DeviceList& devices) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DVLOG(2) << "DialMediaSinkService::OnDialDeviceEvent found " << devices.size()
            << " devices";
 
-  // Add a finish timer.
-  finish_timer_.reset(new base::OneShotTimer());
-  base::TimeDelta finish_delay =
-      base::TimeDelta::FromSeconds(kFetchCompleteTimeoutSecs);
-  finish_timer_->Start(FROM_HERE, finish_delay, this,
-                       &DialMediaSinkService::OnFetchCompleted);
+  StartTimer();
 
   current_sinks_.clear();
   current_devices_ = devices;
@@ -107,16 +129,10 @@ void DialMediaSinkService::OnDeviceDescriptionAvailable(
 
   current_sinks_.insert(MediaSinkInternal(sink, extra_data));
 
-  if (finish_timer_)
-    return;
-
   // Start fetch timer again if device description comes back after
   // |finish_timer_| fires.
-  base::TimeDelta finish_delay =
-      base::TimeDelta::FromSeconds(kFetchCompleteTimeoutSecs);
-  finish_timer_.reset(new base::OneShotTimer());
-  finish_timer_->Start(FROM_HERE, finish_delay, this,
-                       &DialMediaSinkService::OnFetchCompleted);
+  if (!finish_timer_->IsRunning())
+    StartTimer();
 }
 
 void DialMediaSinkService::OnDeviceDescriptionError(
@@ -127,21 +143,29 @@ void DialMediaSinkService::OnDeviceDescriptionError(
 }
 
 void DialMediaSinkService::OnFetchCompleted() {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(!sink_discovery_callback_.is_null());
 
-  finish_timer_.reset();
-
-  auto sinks = current_sinks_;
-  if (sinks == mrp_sinks_) {
+  if (current_sinks_ == mrp_sinks_) {
     DVLOG(2) << "No update to sink list.";
     return;
   }
 
-  DVLOG(2) << "Send sinks to media router, [size]: " << sinks.size();
-  sink_discovery_callback_.Run(
-      std::vector<MediaSinkInternal>(sinks.begin(), sinks.end()));
-  mrp_sinks_ = std::move(sinks);
+  DVLOG(2) << "Send sinks to media router, [size]: " << current_sinks_.size();
+  sink_discovery_callback_.Run(std::vector<MediaSinkInternal>(
+      current_sinks_.begin(), current_sinks_.end()));
+  mrp_sinks_ = current_sinks_;
+}
+
+void DialMediaSinkService::StartTimer() {
+  // Create a finish timer.
+  if (!finish_timer_)
+    finish_timer_.reset(new base::OneShotTimer());
+
+  base::TimeDelta finish_delay =
+      base::TimeDelta::FromSeconds(kFetchCompleteTimeoutSecs);
+  finish_timer_->Start(FROM_HERE, finish_delay,
+                       base::Bind(&DialMediaSinkService::OnFetchCompleted,
+                                  base::Unretained(this)));
 }
 
 }  // namespace media_router
