@@ -724,6 +724,7 @@ class SPDY_EXPORT_PRIVATE SpdyFramer {
 
    private:
     SpdyFramer* const framer_;
+    bool has_next_frame_ = true;
     std::unique_ptr<const SpdyFrameIR> frame_ir_;
   };
 
