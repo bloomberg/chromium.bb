@@ -52,7 +52,8 @@ import java.util.Map.Entry;
 public class BottomSheetContentController extends BottomNavigationView
         implements OnNavigationItemSelectedListener {
     /** The different types of content that may be displayed in the bottom sheet. */
-    @IntDef({TYPE_SUGGESTIONS, TYPE_DOWNLOADS, TYPE_BOOKMARKS, TYPE_HISTORY, TYPE_INCOGNITO_HOME})
+    @IntDef({TYPE_SUGGESTIONS, TYPE_DOWNLOADS, TYPE_BOOKMARKS, TYPE_HISTORY, TYPE_INCOGNITO_HOME,
+            TYPE_PLACEHOLDER})
     @Retention(RetentionPolicy.SOURCE)
     public @interface ContentType {}
     public static final int TYPE_SUGGESTIONS = 0;
@@ -60,10 +61,15 @@ public class BottomSheetContentController extends BottomNavigationView
     public static final int TYPE_BOOKMARKS = 2;
     public static final int TYPE_HISTORY = 3;
     public static final int TYPE_INCOGNITO_HOME = 4;
+    public static final int TYPE_PLACEHOLDER = 5;
 
     // R.id.action_home is overloaded, so an invalid ID is used to reference the incognito version
     // of the home content.
     private static final int INCOGNITO_HOME_ID = -1;
+
+    // Since the placeholder content cannot be triggered by a navigation item like the others, this
+    // value must also be an invalid ID.
+    private static final int PLACEHOLDER_ID = -2;
 
     private final Map<Integer, BottomSheetContent> mBottomSheetContents = new HashMap<>();
 
@@ -201,6 +207,25 @@ public class BottomSheetContentController extends BottomNavigationView
         }
     }
 
+    /**
+     * A notification that the omnibox focus state is changing.
+     * @param hasFocus Whether or not the omnibox has focus.
+     */
+    public void onOmniboxFocusChange(boolean hasFocus) {
+        BottomSheetContent placeHolder = getSheetContentForId(PLACEHOLDER_ID);
+
+        // If the omnibox is being focused, show the placeholder.
+        if (hasFocus && mBottomSheet.getSheetState() != BottomSheet.SHEET_STATE_HALF
+                && mBottomSheet.getSheetState() != BottomSheet.SHEET_STATE_FULL) {
+            mBottomSheet.showContent(placeHolder);
+            mBottomSheet.endTransitionAnimations();
+        }
+
+        if (!hasFocus && mBottomSheet.getCurrentSheetContent() == placeHolder) {
+            showBottomSheetContent(R.id.action_home);
+        }
+    }
+
     @Override
     public boolean onNavigationItemSelected(MenuItem item) {
         if (mSelectedItemId == item.getItemId()) return false;
@@ -251,7 +276,10 @@ public class BottomSheetContentController extends BottomNavigationView
             content = new HistorySheetContent(mActivity, mSnackbarManager);
         } else if (navItemId == INCOGNITO_HOME_ID) {
             content = new IncognitoBottomSheetContent(mActivity);
+        } else if (navItemId == PLACEHOLDER_ID) {
+            content = new PlaceholderSheetContent(getContext());
         }
+
         mBottomSheetContents.put(navItemId, content);
         return content;
     }
