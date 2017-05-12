@@ -9,6 +9,7 @@
 #define UI_GFX_VECTOR_ICON_TYPES_H_
 
 #include "third_party/skia/include/core/SkScalar.h"
+#include "ui/gfx/animation/tween.h"
 
 namespace gfx {
 
@@ -58,6 +59,12 @@ enum CommandType {
   // Flips the x-axis in RTL locales. Default is false, this command sets it to
   // true.
   FLIPS_IN_RTL,
+  // Defines a timed transition for other elements.
+  TRANSITION_FROM,
+  TRANSITION_TO,
+  // Parameters are delay (ms), duration (ms), and tween type
+  // (gfx::Tween::Type).
+  TRANSITION_END,
   // Marks the end of the list of commands.
   END
 };
@@ -74,10 +81,10 @@ struct PathElement {
 };
 
 struct VectorIcon {
-  bool is_empty() const { return !path_; }
+  bool is_empty() const { return !path; }
 
-  const gfx::PathElement* path_;
-  const gfx::PathElement* path_1x_;
+  const gfx::PathElement* path;
+  const gfx::PathElement* path_1x;
 };
 
 // Returns an array of path commands and arguments, terminated by END.
