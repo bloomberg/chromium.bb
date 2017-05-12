@@ -56,7 +56,7 @@ class CONTENT_EXPORT URLResponseBodyConsumer final
   // small number will generate ton of tasks but setting a too large number will
   // lead to thread janks. Also, some clients cannot handle too large chunks
   // (512k for example).
-  static constexpr uint32_t kMaxNumConsumedBytesInTask = 64 * 1024;
+  static constexpr uint32_t kMaxNumConsumedBytesInTask = 32 * 1024;
 
  private:
   friend class base::RefCounted<URLResponseBodyConsumer>;
