@@ -8329,6 +8329,11 @@ TEST_F(LayerTreeHostCommonTest, AnimatedOpacityCreatesRenderSurface) {
   EXPECT_EQ(GetRenderSurface(grandchild), GetRenderSurface(child));
 }
 
+static bool FilterIsAnimating(LayerImpl* layer) {
+  return layer->GetMutatorHost()->IsAnimatingFilterProperty(
+      layer->element_id(), layer->GetElementTypeForAnimation());
+}
+
 // Verify that having an animated filter (but no current filter, as these
 // are mutually exclusive) correctly creates a render surface.
 TEST_F(LayerTreeHostCommonTest, AnimatedFilterCreatesRenderSurface) {
@@ -8352,9 +8357,9 @@ TEST_F(LayerTreeHostCommonTest, AnimatedFilterCreatesRenderSurface) {
   EXPECT_TRUE(GetRenderSurface(root)->Filters().IsEmpty());
   EXPECT_TRUE(GetRenderSurface(child)->Filters().IsEmpty());
 
-  EXPECT_FALSE(root->FilterIsAnimating());
-  EXPECT_TRUE(child->FilterIsAnimating());
-  EXPECT_FALSE(grandchild->FilterIsAnimating());
+  EXPECT_FALSE(FilterIsAnimating(root));
+  EXPECT_TRUE(FilterIsAnimating(child));
+  EXPECT_FALSE(FilterIsAnimating(grandchild));
 }
 
 // Verify that having a filter animation with a delayed start time creates a
@@ -8396,11 +8401,11 @@ TEST_F(LayerTreeHostCommonTest, DelayedFilterAnimationCreatesRenderSurface) {
   EXPECT_TRUE(GetRenderSurface(root)->Filters().IsEmpty());
   EXPECT_TRUE(GetRenderSurface(child)->Filters().IsEmpty());
 
-  EXPECT_FALSE(root->FilterIsAnimating());
+  EXPECT_FALSE(FilterIsAnimating(root));
   EXPECT_FALSE(root->HasPotentiallyRunningFilterAnimation());
-  EXPECT_FALSE(child->FilterIsAnimating());
+  EXPECT_FALSE(FilterIsAnimating(child));
   EXPECT_TRUE(child->HasPotentiallyRunningFilterAnimation());
-  EXPECT_FALSE(grandchild->FilterIsAnimating());
+  EXPECT_FALSE(FilterIsAnimating(grandchild));
   EXPECT_FALSE(grandchild->HasPotentiallyRunningFilterAnimation());
 }
 

@@ -1301,11 +1301,6 @@ void Layer::SetScrollbarsHiddenFromImplSide(bool hidden) {
     inputs_.client->didChangeScrollbarsHidden(hidden);
 }
 
-bool Layer::FilterIsAnimating() const {
-  return GetMutatorHost()->IsAnimatingFilterProperty(
-      element_id(), GetElementTypeForAnimation());
-}
-
 bool Layer::TransformIsAnimating() const {
   return GetMutatorHost()->IsAnimatingTransformProperty(
       element_id(), GetElementTypeForAnimation());

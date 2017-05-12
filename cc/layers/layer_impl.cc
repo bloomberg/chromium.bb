@@ -611,11 +611,6 @@ SkColor LayerImpl::SafeOpaqueBackgroundColor() const {
   return color;
 }
 
-bool LayerImpl::FilterIsAnimating() const {
-  return GetMutatorHost()->IsAnimatingFilterProperty(
-      element_id(), GetElementTypeForAnimation());
-}
-
 bool LayerImpl::HasPotentiallyRunningFilterAnimation() const {
   return GetMutatorHost()->HasPotentiallyRunningFilterAnimation(
       element_id(), GetElementTypeForAnimation());
