@@ -34,6 +34,7 @@
 
 namespace blink {
 
+class Node;
 class AXObjectCacheImpl;
 
 class AXInlineTextBox final : public AXObject {
@@ -46,9 +47,13 @@ class AXInlineTextBox final : public AXObject {
   static AXInlineTextBox* Create(PassRefPtr<AbstractInlineTextBox>,
                                  AXObjectCacheImpl&);
 
+ protected:
   void Init() override;
   void Detach() override;
+  bool IsDetached() const override { return !inline_text_box_; }
+  bool IsAXInlineTextBox() const override { return true; }
 
+ public:
   AccessibilityRole RoleValue() const override { return kInlineTextBoxRole; }
   String GetName(AXNameFrom&,
                  AXObject::AXObjectVector* name_objects) const override;
@@ -59,6 +64,7 @@ class AXInlineTextBox final : public AXObject {
                          SkMatrix44& out_container_transform) const override;
   AXObject* ComputeParent() const override;
   AccessibilityTextDirection GetTextDirection() const override;
+  Node* GetNode() const override { return inline_text_box_->GetNode(); }
   AXObject* NextOnLine() const override;
   AXObject* PreviousOnLine() const override;
 

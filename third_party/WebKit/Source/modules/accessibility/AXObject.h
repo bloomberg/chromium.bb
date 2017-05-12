@@ -614,6 +614,7 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
   // Determine subclass type.
   virtual bool IsAXNodeObject() const { return false; }
   virtual bool IsAXLayoutObject() const { return false; }
+  virtual bool IsAXInlineTextBox() const { return false; }
   virtual bool IsAXListBox() const { return false; }
   virtual bool IsAXListBoxOption() const { return false; }
   virtual bool IsAXRadioInput() const { return false; }
