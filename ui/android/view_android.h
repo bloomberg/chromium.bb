@@ -180,11 +180,11 @@ class UI_ANDROID_EXPORT ViewAndroid {
 
   bool has_event_forwarder() const { return !!event_forwarder_; }
 
-  // Returns true if any node of the tree along the hierarchy (view's children
-  // and parents) already has |EventForwarder| attached to it.
-  static bool ViewTreeHasEventForwarder(ViewAndroid* view);
+  // Checks if there is any event forwarder in any node up to root.
+  static bool RootPathHasEventForwarder(ViewAndroid* view);
 
-  // Returns true if any children node (or self) has |EventForwarder|.
+  // Checks if there is any event forwarder in the node paths down to
+  // each leaf of subtree.
   static bool SubtreeHasEventForwarder(ViewAndroid* view);
 
   // Returns the Java delegate for this view. This is used to delegate work
