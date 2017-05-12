@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.suggestions;
 
+import android.support.v7.widget.RecyclerView;
+
 import org.chromium.base.metrics.RecordUserAction;
 
 /**
@@ -42,5 +44,25 @@ public abstract class SuggestionsMetrics {
 
     public static void recordActionViewAll() {
         RecordUserAction.record("Suggestions.Category.ViewAll");
+    }
+
+    /**
+     * One-shot reporter that records the first time the user scrolls a {@link RecyclerView}. If it
+     * should be reused, call {@link #reset()} to rearm it.
+     */
+    public static class ScrollEventReporter extends RecyclerView.OnScrollListener {
+        private boolean mFired;
+        @Override
+        public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
+            if (mFired) return;
+            if (newState != RecyclerView.SCROLL_STATE_DRAGGING) return;
+
+            RecordUserAction.record("Suggestions.ScrolledAfterOpen");
+            mFired = true;
+        }
+
+        public void reset() {
+            mFired = false;
+        }
     }
 }

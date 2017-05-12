@@ -16005,6 +16005,15 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="Suggestions.ScrolledAfterOpen">
+  <owner>dgn@chromium.org</owner>
+  <owner>finkm@chromium.org</owner>
+  <description>
+    Android: Recorded the first time the user scrolls after opening the
+    suggestions UI.
+  </description>
+</action>
+
 <action name="Suggestions.Site.RemovalUndone">
   <owner>finkm@chromium.org</owner>
   <owner>dgn@chromium.org</owner>
