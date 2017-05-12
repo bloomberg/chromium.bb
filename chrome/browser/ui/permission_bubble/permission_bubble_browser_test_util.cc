@@ -22,6 +22,17 @@ TestPermissionBubbleViewDelegate::TestPermissionBubbleViewDelegate()
     : PermissionPrompt::Delegate() {
 }
 
+TestPermissionBubbleViewDelegate::~TestPermissionBubbleViewDelegate() {}
+
+const std::vector<PermissionRequest*>&
+TestPermissionBubbleViewDelegate::Requests() {
+  return requests_;
+}
+
+const std::vector<bool>& TestPermissionBubbleViewDelegate::AcceptStates() {
+  return accept_states_;
+}
+
 PermissionBubbleBrowserTest::PermissionBubbleBrowserTest() {
 }
 
@@ -35,6 +46,10 @@ void PermissionBubbleBrowserTest::SetUpOnMainThread() {
   requests_.push_back(base::MakeUnique<MockPermissionRequest>(
       "Request 1", l10n_util::GetStringUTF8(IDS_PERMISSION_ALLOW),
       l10n_util::GetStringUTF8(IDS_PERMISSION_DENY)));
+
+  std::vector<PermissionRequest*> raw_requests;
+  raw_requests.push_back(requests_[0].get());
+  test_delegate_.set_requests(raw_requests);
 }
 
 Browser* PermissionBubbleBrowserTest::OpenExtensionAppWindow() {
@@ -54,13 +69,6 @@ Browser* PermissionBubbleBrowserTest::OpenExtensionAppWindow() {
   CHECK(app_browser->is_app());
 
   return app_browser;
-}
-
-std::vector<PermissionRequest*> PermissionBubbleBrowserTest::requests() {
-  std::vector<PermissionRequest*> result;
-  for (const auto& request : requests_)
-    result.push_back(request.get());
-  return result;
 }
 
 PermissionBubbleKioskBrowserTest::PermissionBubbleKioskBrowserTest() {

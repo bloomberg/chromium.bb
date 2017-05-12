@@ -11,8 +11,6 @@
 #include "chrome/browser/ui/permission_bubble/permission_prompt.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 
-class PermissionRequest;
-
 namespace content {
 class WebContents;
 }
@@ -24,8 +22,7 @@ class PermissionPromptAndroid : public PermissionPrompt {
 
   // PermissionPrompt:
   void SetDelegate(Delegate* delegate) override;
-  void Show(const std::vector<PermissionRequest*>& requests,
-            const std::vector<bool>& accept_state) override;
+  void Show() override;
   bool CanAcceptRequestUpdate() override;
   bool HidesAutomatically() override;
   void Hide() override;
@@ -37,7 +34,7 @@ class PermissionPromptAndroid : public PermissionPrompt {
   void Accept();
   void Deny();
 
-  size_t permission_count() const { return requests_.size(); }
+  size_t PermissionCount() const;
   ContentSettingsType GetContentSettingType(size_t position) const;
   int GetIconIdForPermission(size_t position) const;
   base::string16 GetMessageTextFragment(size_t position) const;
@@ -49,8 +46,6 @@ class PermissionPromptAndroid : public PermissionPrompt {
   content::WebContents* web_contents_;
   // |delegate_| is the PermissionRequestManager, which owns this object.
   Delegate* delegate_;
-  // The current request being displayed (if any).
-  std::vector<PermissionRequest*> requests_;
 
   DISALLOW_COPY_AND_ASSIGN(PermissionPromptAndroid);
 };

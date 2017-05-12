@@ -29,6 +29,11 @@ class PermissionPrompt {
    public:
     virtual ~Delegate() {}
 
+    // These pointers should not be stored as the actual request objects may be
+    // deleted upon navigation and so on.
+    virtual const std::vector<PermissionRequest*>& Requests() = 0;
+    virtual const std::vector<bool>& AcceptStates() = 0;
+
     virtual void ToggleAccept(int index, bool new_value) = 0;
     virtual void TogglePersist(bool new_value) = 0;
     virtual void Accept() = 0;
@@ -48,14 +53,9 @@ class PermissionPrompt {
   // Sets the delegate which will receive UI events forwarded from the prompt.
   virtual void SetDelegate(Delegate* delegate) = 0;
 
-  // Causes the request UI to show up with the given contents. This method may
-  // be called with mostly-identical contents to the existing contents. This can
-  // happen, for instance, if a new permission is requested and
-  // CanAcceptRequestUpdate() is true.
-  // Important: the view must not store any of the request objects it receives
-  // in this call.
-  virtual void Show(const std::vector<PermissionRequest*>& requests,
-                    const std::vector<bool>& accept_state) = 0;
+  // Show a prompt with the requests from the delegate. This will only be called
+  // if there is no prompt showing.
+  virtual void Show() = 0;
 
   // Returns true if the view can accept a new Show() command to coalesce
   // requests. Currently the policy is that this should return true if the view

@@ -313,6 +313,14 @@ void PermissionRequestManager::WebContentsDestroyed() {
   // returning from this function is the only safe thing to do.
 }
 
+const std::vector<PermissionRequest*>& PermissionRequestManager::Requests() {
+  return requests_;
+}
+
+const std::vector<bool>& PermissionRequestManager::AcceptStates() {
+  return accept_states_;
+}
+
 void PermissionRequestManager::ToggleAccept(int request_index, bool new_value) {
   DCHECK(request_index < static_cast<int>(accept_states_.size()));
   accept_states_[request_index] = new_value;
@@ -400,7 +408,7 @@ void PermissionRequestManager::ShowBubble() {
   DCHECK(!requests_.empty());
   DCHECK(main_frame_has_fully_loaded_);
 
-  view_->Show(requests_, accept_states_);
+  view_->Show();
   PermissionUmaUtil::PermissionPromptShown(requests_);
   NotifyBubbleAdded();
 

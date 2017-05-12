@@ -21,6 +21,10 @@ class Browser;
 class TestPermissionBubbleViewDelegate : public PermissionPrompt::Delegate {
  public:
   TestPermissionBubbleViewDelegate();
+  ~TestPermissionBubbleViewDelegate() override;
+
+  const std::vector<PermissionRequest*>& Requests() override;
+  const std::vector<bool>& AcceptStates() override;
 
   void ToggleAccept(int, bool) override {}
   void TogglePersist(bool) override {}
@@ -28,7 +32,14 @@ class TestPermissionBubbleViewDelegate : public PermissionPrompt::Delegate {
   void Deny() override {}
   void Closing() override {}
 
+  void set_requests(std::vector<PermissionRequest*> requests) {
+    requests_ = requests;
+  }
+
  private:
+  std::vector<PermissionRequest*> requests_;
+  std::vector<bool> accept_states_;
+
   DISALLOW_COPY_AND_ASSIGN(TestPermissionBubbleViewDelegate);
 };
 
@@ -45,8 +56,6 @@ class PermissionBubbleBrowserTest : public ExtensionBrowserTest {
   // Opens an app window, and returns the associated browser.
   Browser* OpenExtensionAppWindow();
 
-  std::vector<PermissionRequest*> requests();
-  std::vector<bool> accept_states() { return accept_states_; }
   PermissionPrompt::Delegate* test_delegate() { return &test_delegate_; }
 
  private:

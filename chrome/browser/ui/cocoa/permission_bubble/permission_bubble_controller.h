@@ -16,7 +16,6 @@ class Browser;
 class LocationBarDecoration;
 @class MenuController;
 class PermissionBubbleCocoa;
-class PermissionRequest;
 
 @interface PermissionBubbleController
     : BaseBubbleController<NSTextViewDelegate> {
@@ -54,10 +53,8 @@ class PermissionRequest;
 + (bool)hasVisibleLocationBarForBrowser:(Browser*)browser;
 
 // Makes the bubble visible. The bubble will be populated with text retrieved
-// from |requests|. |delegate| will receive callbacks for user actions.
-- (void)showWithDelegate:(PermissionPrompt::Delegate*)delegate
-             forRequests:(const std::vector<PermissionRequest*>&)requests
-            acceptStates:(const std::vector<bool>&)acceptStates;
+// from |delegate|, which will also receive callbacks for user actions.
+- (void)showWithDelegate:(PermissionPrompt::Delegate*)delegate;
 
 // Will reposition the bubble based in case the anchor or parent should change.
 - (void)updateAnchorPosition;
