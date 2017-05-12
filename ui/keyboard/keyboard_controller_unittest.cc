@@ -22,6 +22,7 @@
 #include "ui/base/ime/input_method.h"
 #include "ui/base/ime/input_method_factory.h"
 #include "ui/base/ime/text_input_client.h"
+#include "ui/base/ui_base_switches.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/layer_type.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
@@ -208,7 +209,9 @@ class TestKeyboardLayoutDelegate : public KeyboardLayoutDelegate {
 
 }  // namespace
 
-class KeyboardControllerTest : public testing::Test,
+// Test parameter indicates if the new window behavior for the accessibility
+// keyboard should be used.
+class KeyboardControllerTest : public testing::TestWithParam<bool>,
                                public KeyboardControllerObserver {
  public:
   KeyboardControllerTest()
@@ -237,6 +240,11 @@ class KeyboardControllerTest : public testing::Test,
     layout_delegate_.reset(new TestKeyboardLayoutDelegate());
     controller_.reset(new KeyboardController(ui_, layout_delegate_.get()));
     controller()->AddObserver(this);
+
+    if (GetParam()) {
+      base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+      command_line->AppendSwitch(::switches::kUseNewVirtualKeyboardBehavior);
+    }
   }
 
   void TearDown() override {
@@ -321,7 +329,13 @@ class KeyboardControllerTest : public testing::Test,
   DISALLOW_COPY_AND_ASSIGN(KeyboardControllerTest);
 };
 
-TEST_F(KeyboardControllerTest, KeyboardSize) {
+// Run all KeyboardControllerTest with and without
+// "use-new-virtual-keyboard-behavior" flag.
+INSTANTIATE_TEST_CASE_P(NewAndOldBehavior,
+                        KeyboardControllerTest,
+                        testing::Bool());
+
+TEST_P(KeyboardControllerTest, KeyboardSize) {
   aura::Window* container(controller()->GetContainerWindow());
   aura::Window* keyboard(ui()->GetKeyboardWindow());
   gfx::Rect screen_bounds = root_window()->bounds();
@@ -360,7 +374,7 @@ TEST_F(KeyboardControllerTest, KeyboardSize) {
   VerifyKeyboardWindowSize(container, keyboard);
 }
 
-TEST_F(KeyboardControllerTest, KeyboardSizeMultiRootWindow) {
+TEST_P(KeyboardControllerTest, KeyboardSizeMultiRootWindow) {
   aura::Window* container(controller()->GetContainerWindow());
   aura::Window* keyboard(ui()->GetKeyboardWindow());
   gfx::Rect screen_bounds = root_window()->bounds();
@@ -392,7 +406,7 @@ TEST_F(KeyboardControllerTest, KeyboardSizeMultiRootWindow) {
   VerifyKeyboardWindowSize(container, keyboard);
 }
 
-TEST_F(KeyboardControllerTest, FloatingKeyboardSize) {
+TEST_P(KeyboardControllerTest, FloatingKeyboardSize) {
   aura::Window* container(controller()->GetContainerWindow());
   aura::Window* keyboard(ui()->GetKeyboardWindow());
   root_window()->AddChild(container);
@@ -405,7 +419,7 @@ TEST_F(KeyboardControllerTest, FloatingKeyboardSize) {
 }
 
 // Tests that tapping/clicking inside the keyboard does not give it focus.
-TEST_F(KeyboardControllerTest, ClickDoesNotFocusKeyboard) {
+TEST_P(KeyboardControllerTest, ClickDoesNotFocusKeyboard) {
   ScopedAccessibilityKeyboardEnabler scoped_keyboard_enabler;
   const gfx::Rect& root_bounds = root_window()->bounds();
   aura::test::EventCountDelegate delegate;
@@ -449,7 +463,7 @@ TEST_F(KeyboardControllerTest, ClickDoesNotFocusKeyboard) {
   keyboard_container->RemovePreTargetHandler(&observer);
 }
 
-TEST_F(KeyboardControllerTest, VisibilityChangeWithTextInputTypeChange) {
+TEST_P(KeyboardControllerTest, VisibilityChangeWithTextInputTypeChange) {
   ScopedAccessibilityKeyboardEnabler scoped_keyboard_enabler;
   ui::DummyTextInputClient input_client_0(ui::TEXT_INPUT_TYPE_TEXT);
   ui::DummyTextInputClient input_client_1(ui::TEXT_INPUT_TYPE_TEXT);
@@ -491,7 +505,7 @@ TEST_F(KeyboardControllerTest, VisibilityChangeWithTextInputTypeChange) {
 
 // Test to prevent spurious overscroll boxes when changing tabs during keyboard
 // hide. Refer to crbug.com/401670 for more context.
-TEST_F(KeyboardControllerTest, CheckOverscrollInsetDuringVisibilityChange) {
+TEST_P(KeyboardControllerTest, CheckOverscrollInsetDuringVisibilityChange) {
   ui::DummyTextInputClient input_client(ui::TEXT_INPUT_TYPE_TEXT);
   ui::DummyTextInputClient no_input_client(ui::TEXT_INPUT_TYPE_NONE);
 
@@ -515,7 +529,7 @@ TEST_F(KeyboardControllerTest, CheckOverscrollInsetDuringVisibilityChange) {
 
 // Verify switch to FLOATING mode will reset the overscroll or resize and when
 // in FLOATING mode, overscroll or resize wont be triggered.
-TEST_F(KeyboardControllerTest, FloatingKeyboardDontOverscrollOrResize) {
+TEST_P(KeyboardControllerTest, FloatingKeyboardDontOverscrollOrResize) {
   ScopedAccessibilityKeyboardEnabler scoped_keyboard_enabler;
   ui::DummyTextInputClient input_client(ui::TEXT_INPUT_TYPE_TEXT);
   ui::DummyTextInputClient no_input_client(ui::TEXT_INPUT_TYPE_NONE);
@@ -552,7 +566,7 @@ TEST_F(KeyboardControllerTest, FloatingKeyboardDontOverscrollOrResize) {
 
 // Verify switch to FULL_WIDTH mode will move virtual keyboard to the right
 // place and sets the correct overscroll.
-TEST_F(KeyboardControllerTest, SwitchToFullWidthVirtualKeyboard) {
+TEST_P(KeyboardControllerTest, SwitchToFullWidthVirtualKeyboard) {
   ScopedTouchKeyboardEnabler scoped_keyboard_enabler;
   ui::DummyTextInputClient input_client(ui::TEXT_INPUT_TYPE_TEXT);
 
@@ -573,7 +587,7 @@ TEST_F(KeyboardControllerTest, SwitchToFullWidthVirtualKeyboard) {
   EXPECT_EQ(expected_bounds, controller()->current_keyboard_bounds());
 }
 
-TEST_F(KeyboardControllerTest, AlwaysVisibleWhenLocked) {
+TEST_P(KeyboardControllerTest, AlwaysVisibleWhenLocked) {
   ScopedAccessibilityKeyboardEnabler scoped_keyboard_enabler;
   ui::DummyTextInputClient input_client_0(ui::TEXT_INPUT_TYPE_TEXT);
   ui::DummyTextInputClient input_client_1(ui::TEXT_INPUT_TYPE_TEXT);
@@ -614,7 +628,7 @@ TEST_F(KeyboardControllerTest, AlwaysVisibleWhenLocked) {
 }
 
 // Tests that deactivates keyboard will get closed event.
-TEST_F(KeyboardControllerTest, CloseKeyboard) {
+TEST_P(KeyboardControllerTest, CloseKeyboard) {
   ScopedAccessibilityKeyboardEnabler scoped_keyboard_enabler;
   aura::Window* keyboard_container(controller()->GetContainerWindow());
   root_window()->AddChild(keyboard_container);
@@ -663,8 +677,14 @@ class KeyboardControllerAnimationTest : public KeyboardControllerTest {
   DISALLOW_COPY_AND_ASSIGN(KeyboardControllerAnimationTest);
 };
 
+// Run all KeyboardControllerAnimationTest with and without
+// "use-new-virtual-keyboard-behavior flag.
+INSTANTIATE_TEST_CASE_P(NewAndOldBehavior,
+                        KeyboardControllerAnimationTest,
+                        testing::Bool());
+
 // Tests virtual keyboard has correct show and hide animation.
-TEST_F(KeyboardControllerAnimationTest, ContainerAnimation) {
+TEST_P(KeyboardControllerAnimationTest, ContainerAnimation) {
   ScopedAccessibilityKeyboardEnabler scoped_keyboard_enabler;
   ui::Layer* layer = keyboard_container()->layer();
   ShowKeyboard();
@@ -712,7 +732,7 @@ TEST_F(KeyboardControllerAnimationTest, ContainerAnimation) {
 // Show keyboard during keyboard hide animation should abort the hide animation
 // and the keyboard should animate in.
 // Test for crbug.com/333284.
-TEST_F(KeyboardControllerAnimationTest, ContainerShowWhileHide) {
+TEST_P(KeyboardControllerAnimationTest, ContainerShowWhileHide) {
   ScopedAccessibilityKeyboardEnabler scoped_keyboard_enabler;
   ui::Layer* layer = keyboard_container()->layer();
   ShowKeyboard();
@@ -729,7 +749,7 @@ TEST_F(KeyboardControllerAnimationTest, ContainerShowWhileHide) {
 }
 
 // Test for crbug.com/568274.
-TEST_F(KeyboardControllerTest, FloatingKeyboardShowOnFirstTap) {
+TEST_P(KeyboardControllerTest, FloatingKeyboardShowOnFirstTap) {
   ScopedTouchKeyboardEnabler scoped_keyboard_enabler;
   aura::Window* container(controller()->GetContainerWindow());
   aura::Window* keyboard(ui()->GetKeyboardWindow());
@@ -748,7 +768,7 @@ TEST_F(KeyboardControllerTest, FloatingKeyboardShowOnFirstTap) {
   EXPECT_TRUE(container->IsVisible());
 }
 
-TEST_F(KeyboardControllerTest, DisplayChangeShouldNotifyBoundsChange) {
+TEST_P(KeyboardControllerTest, DisplayChangeShouldNotifyBoundsChange) {
   ScopedTouchKeyboardEnabler scoped_keyboard_enabler;
   ui::DummyTextInputClient input_client(ui::TEXT_INPUT_TYPE_TEXT);
 
