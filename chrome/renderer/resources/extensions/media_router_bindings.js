@@ -295,14 +295,11 @@ define('media_router_bindings', [
 
   /**
    * Registers the Media Router Provider Manager with the Media Router.
-   * @return {!Promise<string>} Instance ID for the Media Router.
+   * @return {!Promise<Object>} Instance ID and config for the Media Router.
    */
   MediaRouter.prototype.start = function() {
     return this.service_.registerMediaRouteProvider(
-        this.mediaRouteProviderBinding_.createInterfacePtrAndBind()).then(
-            function(result) {
-      return result.instance_id;
-    }.bind(this));
+        this.mediaRouteProviderBinding_.createInterfacePtrAndBind());
   }
 
   /**

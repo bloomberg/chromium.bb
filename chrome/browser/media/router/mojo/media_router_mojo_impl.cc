@@ -17,6 +17,7 @@
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/media/router/issues_observer.h"
 #include "chrome/browser/media/router/media_router_factory.h"
+#include "chrome/browser/media/router/media_router_feature.h"
 #include "chrome/browser/media/router/media_routes_observer.h"
 #include "chrome/browser/media/router/media_sinks_observer.h"
 #include "chrome/browser/media/router/mojo/media_route_controller.h"
@@ -152,7 +153,14 @@ void MediaRouterMojoImpl::RegisterMediaRouteProvider(
   media_route_provider_ = std::move(media_route_provider_ptr);
   media_route_provider_.set_connection_error_handler(base::Bind(
       &MediaRouterMojoImpl::OnConnectionError, base::Unretained(this)));
-  callback.Run(instance_id_);
+
+  auto config = mojom::MediaRouteProviderConfig::New();
+  // Enabling browser side discovery means disabling extension side discovery.
+  // We are migrating discovery from the external Media Route Provider to the
+  // Media Router (crbug.com/687383), so we need to disable it in the provider.
+  config->enable_dial_discovery = !media_router::DialLocalDiscoveryEnabled();
+  config->enable_cast_discovery = !media_router::CastDiscoveryEnabled();
+  callback.Run(instance_id_, std::move(config));
   ExecutePendingRequests();
   SyncStateToMediaRouteProvider();
 

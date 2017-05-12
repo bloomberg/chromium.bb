@@ -4,6 +4,7 @@
 
 #include "chrome/browser/media/router/media_router_feature.h"
 
+#include "base/feature_list.h"
 #include "build/build_config.h"
 #include "content/public/browser/browser_context.h"
 #include "extensions/features/features.h"
@@ -15,6 +16,16 @@
 #endif  // defined(OS_ANDROID) || BUILDFLAG(ENABLE_EXTENSIONS)
 
 namespace media_router {
+
+#if !defined(OS_ANDROID)
+// Controls if browser side DIAL device discovery is enabled.
+const base::Feature kEnableDialLocalDiscovery{
+    "EnableDialLocalDiscovery", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Controls if browser side Cast device discovery is enabled.
+const base::Feature kEnableCastDiscovery{"EnableCastDiscovery",
+                                         base::FEATURE_DISABLED_BY_DEFAULT};
+#endif
 
 #if defined(OS_ANDROID) || BUILDFLAG(ENABLE_EXTENSIONS)
 namespace {
@@ -40,5 +51,17 @@ bool MediaRouterEnabled(content::BrowserContext* context) {
   return false;
 #endif  // defined(OS_ANDROID) || BUILDFLAG(ENABLE_EXTENSIONS)
 }
+
+#if !defined(OS_ANDROID)
+// Returns true if browser side DIAL discovery is enabled.
+bool DialLocalDiscoveryEnabled() {
+  return base::FeatureList::IsEnabled(kEnableDialLocalDiscovery);
+}
+
+// Returns true if browser side Cast discovery is enabled.
+bool CastDiscoveryEnabled() {
+  return base::FeatureList::IsEnabled(kEnableCastDiscovery);
+}
+#endif
 
 }  // namespace media_router

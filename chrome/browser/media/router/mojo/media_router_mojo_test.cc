@@ -11,14 +11,7 @@
 
 namespace media_router {
 namespace {
-
 const char kInstanceId[] = "instance123";
-
-void ExpectEqualStrings(const std::string& expected,
-                        const std::string& actual) {
-  EXPECT_EQ(expected, actual);
-}
-
 }  // namespace
 
 MockMediaRouteProvider::MockMediaRouteProvider() {}
@@ -32,6 +25,10 @@ MockEventPageTracker::~MockEventPageTracker() {}
 MockMediaController::MockMediaController() : binding_(this) {}
 
 MockMediaController::~MockMediaController() {}
+
+RegisterMediaRouteProviderHandler::RegisterMediaRouteProviderHandler() {}
+
+RegisterMediaRouteProviderHandler::~RegisterMediaRouteProviderHandler() {}
 
 void MockMediaController::Bind(mojom::MediaControllerRequest request) {
   binding_.Bind(std::move(request));
@@ -80,9 +77,11 @@ void MediaRouterMojoTest::ConnectProviderManagerService() {
   mojom::MediaRouteProviderPtr mojo_media_router;
   binding_.reset(new mojo::Binding<mojom::MediaRouteProvider>(
       &mock_media_route_provider_, mojo::MakeRequest(&mojo_media_router)));
+  EXPECT_CALL(provide_handler_, InvokeInternal(kInstanceId, testing::_));
   media_router_proxy_->RegisterMediaRouteProvider(
       std::move(mojo_media_router),
-      base::Bind(&ExpectEqualStrings, kInstanceId));
+      base::Bind(&RegisterMediaRouteProviderHandler::Invoke,
+                 base::Unretained(&provide_handler_)));
 }
 
 void MediaRouterMojoTest::SetUp() {
