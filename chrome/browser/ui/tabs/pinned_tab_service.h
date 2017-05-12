@@ -7,6 +7,9 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
+#include "base/scoped_observer.h"
+#include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_list_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -17,15 +20,20 @@ class Profile;
 // pinned tabs to restore at startup. PinnedTabService listens for the
 // appropriate set of notifications to know it should update preferences.
 class PinnedTabService : public content::NotificationObserver,
+                         public chrome::BrowserListObserver,
                          public KeyedService {
  public:
   explicit PinnedTabService(Profile* profile);
+  ~PinnedTabService() override;
 
  private:
   // content::NotificationObserver.
   void Observe(int type,
                const content::NotificationSource& source,
                const content::NotificationDetails& details) override;
+
+  // chrome::BrowserListObserver:
+  void OnBrowserClosing(Browser* browser) override;
 
   Profile* profile_;
 
@@ -37,6 +45,8 @@ class PinnedTabService : public content::NotificationObserver,
   bool has_normal_browser_;
 
   content::NotificationRegistrar registrar_;
+
+  ScopedObserver<BrowserList, BrowserListObserver> browser_list_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(PinnedTabService);
 };

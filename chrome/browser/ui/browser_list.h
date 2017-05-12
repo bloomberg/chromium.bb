@@ -82,6 +82,10 @@ class BrowserList {
   // Notifies the observers when the current active browser becomes not active.
   static void NotifyBrowserNoLongerActive(Browser* browser);
 
+  // Notifies the observers when browser close was started. This may be called
+  // more than once for a particular browser.
+  static void NotifyBrowserCloseStarted(Browser* browser);
+
   // Closes all browsers for |profile| across all desktops.
   // TODO(mlerman): Move the Profile Deletion flow to use the overloaded
   // version of this method with a callback, then remove this method.

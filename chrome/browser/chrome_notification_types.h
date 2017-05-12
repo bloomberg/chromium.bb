@@ -40,12 +40,6 @@ enum NotificationType {
   // containing the affected Browser.  No details are expected.
   NOTIFICATION_BROWSER_WINDOW_READY,
 
-  // This message is sent when a browser is closing. The source is a
-  // Source<Browser> containing the affected Browser. No details are expected.
-  // This is sent prior to BROWSER_CLOSED, and may be sent more than once for a
-  // particular browser.
-  NOTIFICATION_BROWSER_CLOSING,
-
   // This message is sent after a window has been closed.  The source is a
   // Source<Browser> containing the affected Browser.  No details are exptected.
   NOTIFICATION_BROWSER_CLOSED,

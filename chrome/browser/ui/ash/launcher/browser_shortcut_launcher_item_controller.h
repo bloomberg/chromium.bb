@@ -7,9 +7,9 @@
 
 #include "ash/public/cpp/shelf_item_delegate.h"
 #include "base/macros.h"
+#include "base/scoped_observer.h"
 #include "chrome/browser/ui/browser_list.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
+#include "chrome/browser/ui/browser_list_observer.h"
 
 namespace ash {
 class ShelfModel;
@@ -23,7 +23,7 @@ class WebContents;
 // This item shows an application menu that lists open browser windows or tabs.
 class BrowserShortcutLauncherItemController
     : public ash::ShelfItemDelegate,
-      public content::NotificationObserver {
+      public chrome::BrowserListObserver {
  public:
   explicit BrowserShortcutLauncherItemController(ash::ShelfModel* shelf_model);
 
@@ -61,18 +61,16 @@ class BrowserShortcutLauncherItemController
   // Get a list of active browsers.
   BrowserList::BrowserVector GetListOfActiveBrowsers();
 
-  // content::NotificationObserver:
-  void Observe(int type,
-               const content::NotificationSource& source,
-               const content::NotificationDetails& details) override;
+  // chrome::BrowserListObserver:
+  void OnBrowserClosing(Browser* browser) override;
 
   ash::ShelfModel* shelf_model_;
 
   // The cached list of open browser windows shown in an application menu.
   BrowserList::BrowserVector browser_menu_items_;
 
-  // Registers for notifications of closing browser windows.
-  content::NotificationRegistrar registrar_;
+  // Observer for browser windows closing events.
+  ScopedObserver<BrowserList, BrowserListObserver> browser_list_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserShortcutLauncherItemController);
 };

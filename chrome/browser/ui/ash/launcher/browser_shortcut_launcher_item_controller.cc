@@ -13,7 +13,6 @@
 #include "ash/shelf/shelf_model.h"
 #include "ash/wm_window.h"
 #include "base/memory/ptr_util.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller_util.h"
@@ -32,7 +31,6 @@
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/strings/grit/components_strings.h"
-#include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/url_constants.h"
 #include "ui/aura/window.h"
@@ -107,7 +105,8 @@ base::string16 GetBrowserListTitle(content::WebContents* web_contents) {
 BrowserShortcutLauncherItemController::BrowserShortcutLauncherItemController(
     ash::ShelfModel* shelf_model)
     : ash::ShelfItemDelegate(ash::ShelfID(extension_misc::kChromeAppId)),
-      shelf_model_(shelf_model) {
+      shelf_model_(shelf_model),
+      browser_list_observer_(this) {
   // Tag all open browser windows with the appropriate shelf id property. This
   // associates each window with the shelf item for the active web contents.
   for (auto* browser : *BrowserList::GetInstance()) {
@@ -221,7 +220,7 @@ void BrowserShortcutLauncherItemController::ItemSelected(
 ash::MenuItemList BrowserShortcutLauncherItemController::GetAppMenuItems(
     int event_flags) {
   browser_menu_items_.clear();
-  registrar_.RemoveAll();
+  browser_list_observer_.RemoveAll();
 
   ash::MenuItemList items;
   bool found_tabbed_browser = false;
@@ -253,15 +252,15 @@ ash::MenuItemList BrowserShortcutLauncherItemController::GetAppMenuItems(
       }
     }
     browser_menu_items_.push_back(browser);
-    registrar_.Add(this, chrome::NOTIFICATION_BROWSER_CLOSING,
-                   content::Source<Browser>(browser));
+    if (!browser_list_observer_.IsObservingSources())
+      browser_list_observer_.Add(BrowserList::GetInstance());
   }
   // If only windowed applications are open, we return an empty list to
   // enforce the creation of a new browser.
   if (!found_tabbed_browser) {
     items.clear();
     browser_menu_items_.clear();
-    registrar_.RemoveAll();
+    browser_list_observer_.RemoveAll();
   }
   return items;
 }
@@ -294,7 +293,7 @@ void BrowserShortcutLauncherItemController::ExecuteCommand(
   }
 
   browser_menu_items_.clear();
-  registrar_.RemoveAll();
+  browser_list_observer_.RemoveAll();
 }
 
 void BrowserShortcutLauncherItemController::Close() {
@@ -393,18 +392,11 @@ BrowserShortcutLauncherItemController::GetListOfActiveBrowsers() {
   return active_browsers;
 }
 
-void BrowserShortcutLauncherItemController::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
-  DCHECK_EQ(chrome::NOTIFICATION_BROWSER_CLOSING, type);
-  Browser* browser = content::Source<Browser>(source).ptr();
+void BrowserShortcutLauncherItemController::OnBrowserClosing(Browser* browser) {
   DCHECK(browser);
   BrowserList::BrowserVector::iterator item = std::find(
       browser_menu_items_.begin(), browser_menu_items_.end(), browser);
-  DCHECK(item != browser_menu_items_.end());
   // Clear the entry for the closed browser and leave other indices intact.
-  *item = nullptr;
-  registrar_.Remove(this, chrome::NOTIFICATION_BROWSER_CLOSING,
-                    content::Source<Browser>(browser));
+  if (item != browser_menu_items_.end())
+    *item = nullptr;
 }
