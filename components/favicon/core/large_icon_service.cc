@@ -40,7 +40,7 @@ const base::Feature kLargeIconServiceFetchingFeature{
 
 const char kGoogleServerV2RequestFormat[] =
     "https://t0.gstatic.com/faviconV2?"
-    "client=chrome&drop_404_icon=true&check_firsttimes=true&"
+    "client=chrome&drop_404_icon=true&check_seen=true&"
     "size=%d&min_size=%d&max_size=%d&fallback_opts=TYPE,SIZE,URL&url=%s";
 const char kGoogleServerV2RequestFormatParam[] = "request_format";
 
