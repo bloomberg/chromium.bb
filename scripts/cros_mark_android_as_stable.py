@@ -45,11 +45,6 @@ _GIT_COMMIT_MESSAGE = ('Marking latest for %(android_package)s ebuild '
 _ANDROID_VERSION_URL = ('http://android-build-uber.corp.google.com/repo.html?'
                         'last_bid=%(old)s&bid=%(new)s&branch=%(branch)s')
 
-# TODO(nya): Check if this default value can be used for NYC uprevs.
-# I'm afraid it's not, but NYC manual uprev instruction does not mention
-# the flag.
-_DEFAULT_ANDROID_GTS_BUILD_BRANCH = 'git_mnc-dev'
-
 
 def IsBuildIdValid(bucket_url, build_branch, build_id, targets):
   """Checks that a specific build_id is valid.
@@ -444,7 +439,6 @@ def GetParser():
                       help='Android branch to import from. '
                            'Ex: git_mnc-dr-arc-dev')
   parser.add_argument('--android_gts_build_branch',
-                      default=_DEFAULT_ANDROID_GTS_BUILD_BRANCH,
                       help='Android GTS branch to copy artifacts from. '
                            'Ex: git_mnc-dev')
   parser.add_argument('--android_package',
@@ -483,10 +477,11 @@ def main(argv):
                                      options.force_version)
 
   # Mirror GTS.
-  MirrorArtifacts(options.android_bucket_url,
-                  options.android_gts_build_branch,
-                  options.arc_bucket_url, acls,
-                  constants.ANDROID_GTS_BUILD_TARGETS)
+  if options.android_gts_build_branch:
+    MirrorArtifacts(options.android_bucket_url,
+                    options.android_gts_build_branch,
+                    options.arc_bucket_url, acls,
+                    constants.ANDROID_GTS_BUILD_TARGETS)
 
   stable_candidate = portage_util.BestEBuild(stable_ebuilds)
 

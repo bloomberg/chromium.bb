@@ -6,6 +6,7 @@
         "afdo_generate_min": false,
         "afdo_update_ebuild": false,
         "afdo_use": false,
+        "android_gts_build_branch": null,
         "android_import_branch": null,
         "android_package": null,
         "android_rev": null,
@@ -190,6 +191,7 @@
     "_templates": {
         "android_pfq": {
             "_template": "android_pfq",
+            "android_gts_build_branch": "git_mnc-dev",
             "android_import_branch": "git_mnc-dr-arc-dev",
             "android_package": "android-container",
             "android_rev": "latest_release",

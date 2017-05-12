@@ -652,6 +652,9 @@ def DefaultSettings():
       # Android package name.
       android_package=None,
 
+      # Android GTS package branch name, if it is necessary to uprev.
+      android_gts_build_branch=None,
+
       # Uprev Chrome, values of 'tot', 'stable_release', or None.
       chrome_rev=None,
 

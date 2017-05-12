@@ -51,6 +51,9 @@ class UprevAndroidStage(generic_stages.BuilderStage,
     logging.info('Android package: %s', android_package)
     logging.info('Android branch: %s', android_build_branch)
     logging.info('Android version: %s', android_version or 'LATEST')
+    if self._run.config.android_gts_build_branch:
+      logging.info('Android GTS branch: %s',
+                   self._run.config.android_gts_build_branch)
 
     try:
       android_atom_to_build = commands.MarkAndroidAsStable(
@@ -59,7 +62,8 @@ class UprevAndroidStage(generic_stages.BuilderStage,
           android_package=android_package,
           android_build_branch=android_build_branch,
           boards=self._boards,
-          android_version=android_version)
+          android_version=android_version,
+          android_gts_build_branch=self._run.config.android_gts_build_branch)
     except commands.AndroidIsPinnedUprevError as e:
       # If uprev failed due to a pin, record that failure (so that the
       # build ultimately fails) but try again without the pin, to allow the
