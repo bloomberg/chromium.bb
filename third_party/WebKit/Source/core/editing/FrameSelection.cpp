@@ -976,7 +976,7 @@ HTMLFormElement* FrameSelection::CurrentForm() const {
   // selection is.
   Node* start = GetDocument().FocusedElement();
   if (!start)
-    start = ComputeVisibleSelectionInDOMTreeDeprecated().Start().AnchorNode();
+    start = ComputeVisibleSelectionInDOMTree().Start().AnchorNode();
   if (!start)
     return 0;
 
