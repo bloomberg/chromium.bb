@@ -70,6 +70,11 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestContactInfoEditorTest, HappyPath) {
   EXPECT_EQ(base::ASCIIToUTF16(kEmailAddress),
             profile->GetInfo(autofill::AutofillType(autofill::EMAIL_ADDRESS),
                              GetLocale()));
+
+  PaymentRequest* request = GetPaymentRequests(GetActiveWebContents()).front();
+  EXPECT_EQ(1U, request->state()->contact_profiles().size());
+  EXPECT_EQ(request->state()->contact_profiles().back(),
+            request->state()->selected_contact_profile());
 }
 
 IN_PROC_BROWSER_TEST_F(PaymentRequestContactInfoEditorTest,
@@ -211,6 +216,68 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestContactInfoEditorTest, ModifyExisting) {
   EXPECT_EQ(base::ASCIIToUTF16(kEmailAddress),
             profile->GetInfo(autofill::AutofillType(autofill::EMAIL_ADDRESS),
                              GetLocale()));
+}
+
+IN_PROC_BROWSER_TEST_F(PaymentRequestContactInfoEditorTest,
+                       ModifyExistingSelectsIt) {
+  autofill::PersonalDataManager* personal_data_manager = GetDataManager();
+  personal_data_manager->AddObserver(&personal_data_observer_);
+
+  autofill::AutofillProfile incomplete_profile;
+  incomplete_profile.SetInfo(autofill::AutofillType(autofill::NAME_FULL),
+                             base::ASCIIToUTF16(kNameFull), GetLocale());
+  AddAutofillProfile(incomplete_profile);
+
+  autofill::AutofillProfile other_incomplete_profile;
+  other_incomplete_profile.SetInfo(autofill::AutofillType(autofill::NAME_FULL),
+                                   base::ASCIIToUTF16("other"), GetLocale());
+  AddAutofillProfile(other_incomplete_profile);
+
+  InvokePaymentRequestUI();
+  OpenContactInfoScreen();
+
+  PaymentRequest* request = GetPaymentRequests(GetActiveWebContents()).front();
+  EXPECT_EQ(request->state()->contact_profiles().front(),
+            request->state()->selected_contact_profile());
+
+  views::View* list_view = dialog_view()->GetViewByID(
+      static_cast<int>(DialogViewID::CONTACT_INFO_SHEET_LIST_VIEW));
+  DCHECK(list_view);
+  ClickOnDialogViewAndWait(list_view->child_at(1));
+
+  // Do not set name: This should have been populated when opening the screen.
+  EXPECT_EQ(base::ASCIIToUTF16(kNameFull),
+            GetEditorTextfieldValue(autofill::NAME_FULL));
+  SetEditorTextfieldValue(base::ASCIIToUTF16(kPhoneNumber),
+                          autofill::PHONE_HOME_WHOLE_NUMBER);
+  SetEditorTextfieldValue(base::ASCIIToUTF16(kEmailAddress),
+                          autofill::EMAIL_ADDRESS);
+
+  // Wait until the web database has been updated and the notification sent.
+  base::RunLoop save_data_loop;
+  EXPECT_CALL(personal_data_observer_, OnPersonalDataChanged())
+      .WillOnce(QuitMessageLoop(&save_data_loop));
+  ClickOnDialogViewAndWait(DialogViewID::EDITOR_SAVE_BUTTON);
+  save_data_loop.Run();
+
+  ASSERT_EQ(2UL, personal_data_manager->GetProfiles().size());
+  autofill::AutofillProfile* profile = personal_data_manager->GetProfiles()[0];
+  DCHECK(profile);
+
+  EXPECT_EQ(base::ASCIIToUTF16(kNameFull),
+            profile->GetInfo(autofill::AutofillType(autofill::NAME_FULL),
+                             GetLocale()));
+  EXPECT_EQ(base::ASCIIToUTF16(kPhoneNumber),
+            profile->GetInfo(
+                autofill::AutofillType(autofill::PHONE_HOME_WHOLE_NUMBER),
+                GetLocale()));
+  EXPECT_EQ(base::ASCIIToUTF16(kEmailAddress),
+            profile->GetInfo(autofill::AutofillType(autofill::EMAIL_ADDRESS),
+                             GetLocale()));
+
+  EXPECT_EQ(2U, request->state()->contact_profiles().size());
+  EXPECT_EQ(request->state()->contact_profiles().back(),
+            request->state()->selected_contact_profile());
 }
 
 }  // namespace payments
