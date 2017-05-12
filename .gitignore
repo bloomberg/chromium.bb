@@ -293,6 +293,7 @@ TAGS
 /table-dev/*.log
 /table-dev/*.trs
 /table-dev/test-suite.log
+/table-dev/make-patterns.mk
 
 # stuff used with /tools/lou_compare
 input.txt

@@ -23,4 +23,9 @@ echo y >$FIFO
 wait $!
 ret=$?
 rm -f $FIFO
+if [ $ret == 0 ]; then
+    touch $PATOUT_FILE pattmp.$HYPH_LEVEL
+else
+    rm -f $PATOUT_FILE pattmp.$HYPH_LEVEL
+fi
 exit $ret

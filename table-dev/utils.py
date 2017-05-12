@@ -73,11 +73,11 @@ def read_text(maybe_chunked_text):
 def compare_chunks(expected_hyphen_string, actual_hyphen_string, text):
     exit_if_not(len(expected_hyphen_string) == len(text) - 1 and re.search("^[01x]+$", expected_hyphen_string))
     exit_if_not(len(actual_hyphen_string) == len(text) - 1 and re.search("^[01]+$", actual_hyphen_string))
-    chunk_errors = "".join([x for x in chain(*izip_longest(text, map(lambda e, a: "*" if e in "1x" and a == "1" else
-                                                                                  "." if a == "1" else
-                                                                                  "-" if e == "1" else None,
-                                                                     expected_hyphen_string, actual_hyphen_string)))
-                            if x is not None])
+    chunk_errors = my_zip(text,
+                          map(lambda e, a: "*" if e in "1x" and a == "1" else
+                                           "." if a == "1" else
+                                           "-" if e == "1" else None,
+                              expected_hyphen_string, actual_hyphen_string))
     return chunk_errors if re.search(r"[-\.]", chunk_errors) else None
 
 def split_into_words(text, hyphen_string):
@@ -185,6 +185,9 @@ def pairwise(iterable):
     a, b = tee(iterable)
     next(b, None)
     return izip(a, b)
+
+def my_zip(*iterables):
+    return "".join([x for x in chain(*izip_longest(*iterables)) if x is not None])
 
 class future:
     def __init__(self, f):
