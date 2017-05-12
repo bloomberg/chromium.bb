@@ -48,30 +48,30 @@ public class PaymentRequestRemoveBillingAddressTest extends PaymentRequestTestBa
     @Feature({"Payments"})
     public void testPayWithCard()
             throws InterruptedException, ExecutionException, TimeoutException {
-        triggerUIAndWait(mReadyForInput);
+        triggerUIAndWait(getReadyForInput());
 
         // Expand the payment section.
-        clickInPaymentMethodAndWait(R.id.payments_section, mReadyForInput);
+        clickInPaymentMethodAndWait(R.id.payments_section, getReadyForInput());
 
         // Selecting the credit card should bring up the editor.
-        clickInPaymentMethodAndWait(R.id.payments_first_radio_button, mReadyToEdit);
+        clickInPaymentMethodAndWait(R.id.payments_first_radio_button, getReadyToEdit());
 
         // Tapping "save" in the editor should trigger a validation error.
-        clickInCardEditorAndWait(R.id.payments_edit_done_button, mEditorValidationError);
+        clickInCardEditorAndWait(R.id.payments_edit_done_button, getEditorValidationError());
 
         // Fix the validation error by selecting a billing address.
         setSpinnerSelectionsInCardEditorAndWait(
                 new int[] {DECEMBER, NEXT_YEAR, FIRST_BILLING_ADDRESS},
-                mBillingAddressChangeProcessed);
+                getBillingAddressChangeProcessed());
 
         // Tapping "save" in the editor now should close the editor dialog and enable the "pay"
         // button.
-        clickInCardEditorAndWait(R.id.payments_edit_done_button, mReadyToPay);
+        clickInCardEditorAndWait(R.id.payments_edit_done_button, getReadyToPay());
 
         // Pay with this card.
-        clickAndWait(R.id.button_primary, mReadyForUnmaskInput);
-        setTextInCardUnmaskDialogAndWait(R.id.card_unmask_input, "123", mReadyToUnmask);
-        clickCardUnmaskButtonAndWait(DialogInterface.BUTTON_POSITIVE, mDismissed);
+        clickAndWait(R.id.button_primary, getReadyForUnmaskInput());
+        setTextInCardUnmaskDialogAndWait(R.id.card_unmask_input, "123", getReadyToUnmask());
+        clickCardUnmaskButtonAndWait(DialogInterface.BUTTON_POSITIVE, getDismissed());
         expectResultContains(new String[] {"4111111111111111", "Alice", "12", "123", "Jane Smith",
                 "Google", "1600 Amphitheatre Pkwy", "CA", "Mountain View", "94043", "US",
                 "+15555555555", "en-US"});

@@ -100,8 +100,8 @@ public class PaymentRequestDynamicShippingMultipleAddressesTest extends PaymentR
         mCountsToSet = new int[] {20, 15, 10, 5, 1};
         mDatesToSet = new int[] {5000, 5000, 5000, 5000, 1};
 
-        triggerUIAndWait(mReadyForInput);
-        clickInShippingSummaryAndWait(R.id.payments_section, mReadyForInput);
+        triggerUIAndWait(getReadyForInput());
+        clickInShippingSummaryAndWait(R.id.payments_section, getReadyForInput());
         assertEquals(4, getNumberOfShippingAddressSuggestions());
         assertTrue(getShippingAddressSuggestionLabel(0).contains("Lisa Simpson"));
         assertTrue(getShippingAddressSuggestionLabel(1).contains("Maggie Simpson"));
@@ -123,8 +123,8 @@ public class PaymentRequestDynamicShippingMultipleAddressesTest extends PaymentR
         mCountsToSet = new int[] {20, 15, 10, 5, 2, 1};
         mDatesToSet = new int[] {5000, 5000, 5000, 5000, 2, 1};
 
-        triggerUIAndWait(mReadyForInput);
-        clickInShippingSummaryAndWait(R.id.payments_section, mReadyForInput);
+        triggerUIAndWait(getReadyForInput());
+        clickInShippingSummaryAndWait(R.id.payments_section, getReadyForInput());
         // Only four profiles should be suggested to the user.
         assertEquals(4, getNumberOfShippingAddressSuggestions());
         assertTrue(getShippingAddressSuggestionLabel(0).contains("Lisa Simpson"));
@@ -148,8 +148,8 @@ public class PaymentRequestDynamicShippingMultipleAddressesTest extends PaymentR
         mCountsToSet = new int[] {15, 10, 5, 1};
         mDatesToSet = new int[] {5000, 5000, 5000, 1};
 
-        triggerUIAndWait(mReadyForInput);
-        clickInShippingSummaryAndWait(R.id.payments_section, mReadyForInput);
+        triggerUIAndWait(getReadyForInput());
+        clickInShippingSummaryAndWait(R.id.payments_section, getReadyForInput());
         // Only 3 profiles should be suggested, the two complete ones and the incomplete one that
         // has a street address.
         assertEquals(3, getNumberOfShippingAddressSuggestions());
@@ -172,11 +172,11 @@ public class PaymentRequestDynamicShippingMultipleAddressesTest extends PaymentR
         mDatesToSet = new int[] {5000};
 
         // Click on the unacceptable shipping address.
-        triggerUIAndWait(mReadyForInput);
-        clickInShippingSummaryAndWait(R.id.payments_section, mReadyForInput);
+        triggerUIAndWait(getReadyForInput());
+        clickInShippingSummaryAndWait(R.id.payments_section, getReadyForInput());
         assertTrue(getShippingAddressSuggestionLabel(0).contains(
                 AUTOFILL_PROFILES[3].getFullName()));
-        clickOnShippingAddressSuggestionOptionAndWait(0, mSelectionChecked);
+        clickOnShippingAddressSuggestionOptionAndWait(0, getSelectionChecked());
 
         // The string should reflect the error sent from the merchant.
         CharSequence actualString = getShippingAddressOptionRowAtIndex(0).getLabelText();
@@ -197,8 +197,8 @@ public class PaymentRequestDynamicShippingMultipleAddressesTest extends PaymentR
         mCountsToSet = new int[] {15, 10, 5, 1};
         mDatesToSet = new int[] {5000, 5000, 5000, 1};
 
-        triggerUIAndWait(mReadyForInput);
-        clickInShippingSummaryAndWait(R.id.payments_section, mReadyForInput);
+        triggerUIAndWait(getReadyForInput());
+        clickInShippingSummaryAndWait(R.id.payments_section, getReadyForInput());
 
         assertEquals(4, getNumberOfShippingAddressSuggestions());
         assertTrue(getShippingAddressSuggestionLabel(0).contains("Phone number required"));

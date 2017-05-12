@@ -45,8 +45,8 @@ public class PaymentRequestNoShippingTest extends PaymentRequestTestBase {
     @Feature({"Payments"})
     public void testCloseDialog() throws InterruptedException, ExecutionException,
             TimeoutException {
-        triggerUIAndWait(mReadyForInput);
-        clickAndWait(R.id.close_button, mDismissed);
+        triggerUIAndWait(getReadyForInput());
+        clickAndWait(R.id.close_button, getDismissed());
         expectResultContains(new String[] {"Request cancelled"});
     }
 
@@ -55,9 +55,9 @@ public class PaymentRequestNoShippingTest extends PaymentRequestTestBase {
     @Feature({"Payments"})
     public void testEditAndCloseDialog() throws InterruptedException, ExecutionException,
             TimeoutException {
-        triggerUIAndWait(mReadyForInput);
-        clickAndWait(R.id.button_secondary, mReadyForInput);
-        clickAndWait(R.id.close_button, mDismissed);
+        triggerUIAndWait(getReadyForInput());
+        clickAndWait(R.id.button_secondary, getReadyForInput());
+        clickAndWait(R.id.close_button, getDismissed());
         expectResultContains(new String[] {"Request cancelled"});
     }
 
@@ -66,9 +66,9 @@ public class PaymentRequestNoShippingTest extends PaymentRequestTestBase {
     @Feature({"Payments"})
     public void testEditAndCancelDialog() throws InterruptedException, ExecutionException,
             TimeoutException {
-        triggerUIAndWait(mReadyForInput);
-        clickAndWait(R.id.button_secondary, mReadyForInput);
-        clickAndWait(R.id.button_secondary, mDismissed);
+        triggerUIAndWait(getReadyForInput());
+        clickAndWait(R.id.button_secondary, getReadyForInput());
+        clickAndWait(R.id.button_secondary, getDismissed());
         expectResultContains(new String[] {"Request cancelled"});
     }
 
@@ -76,10 +76,10 @@ public class PaymentRequestNoShippingTest extends PaymentRequestTestBase {
     @MediumTest
     @Feature({"Payments"})
     public void testPay() throws InterruptedException, ExecutionException, TimeoutException {
-        triggerUIAndWait(mReadyToPay);
-        clickAndWait(R.id.button_primary, mReadyForUnmaskInput);
-        setTextInCardUnmaskDialogAndWait(R.id.card_unmask_input, "123", mReadyToUnmask);
-        clickCardUnmaskButtonAndWait(DialogInterface.BUTTON_POSITIVE, mDismissed);
+        triggerUIAndWait(getReadyToPay());
+        clickAndWait(R.id.button_primary, getReadyForUnmaskInput());
+        setTextInCardUnmaskDialogAndWait(R.id.card_unmask_input, "123", getReadyToUnmask());
+        clickCardUnmaskButtonAndWait(DialogInterface.BUTTON_POSITIVE, getDismissed());
         expectResultContains(new String[] {"Jon Doe", "4111111111111111", "12", "2050", "visa",
                 "123"});
     }
@@ -89,12 +89,12 @@ public class PaymentRequestNoShippingTest extends PaymentRequestTestBase {
     @Feature({"Payments"})
     public void testCancelUnmaskAndRetry()
             throws InterruptedException, ExecutionException, TimeoutException {
-        triggerUIAndWait(mReadyToPay);
-        clickAndWait(R.id.button_primary, mReadyForUnmaskInput);
-        clickCardUnmaskButtonAndWait(DialogInterface.BUTTON_NEGATIVE, mReadyToPay);
-        clickAndWait(R.id.button_primary, mReadyForUnmaskInput);
-        setTextInCardUnmaskDialogAndWait(R.id.card_unmask_input, "123", mReadyToUnmask);
-        clickCardUnmaskButtonAndWait(DialogInterface.BUTTON_POSITIVE, mDismissed);
+        triggerUIAndWait(getReadyToPay());
+        clickAndWait(R.id.button_primary, getReadyForUnmaskInput());
+        clickCardUnmaskButtonAndWait(DialogInterface.BUTTON_NEGATIVE, getReadyToPay());
+        clickAndWait(R.id.button_primary, getReadyForUnmaskInput());
+        setTextInCardUnmaskDialogAndWait(R.id.card_unmask_input, "123", getReadyToUnmask());
+        clickCardUnmaskButtonAndWait(DialogInterface.BUTTON_POSITIVE, getDismissed());
         expectResultContains(new String[] {"Jon Doe", "4111111111111111", "12", "2050", "visa",
                 "123"});
     }
@@ -107,9 +107,9 @@ public class PaymentRequestNoShippingTest extends PaymentRequestTestBase {
         // Attempting to add an invalid card and cancelling out of the flow will result in the user
         // still being ready to pay with the previously selected credit card.
         fillNewCardForm("123", "Bob", DECEMBER, NEXT_YEAR, FIRST_BILLING_ADDRESS);
-        clickInCardEditorAndWait(R.id.payments_edit_done_button, mEditorValidationError);
-        clickInCardEditorAndWait(R.id.payments_edit_cancel_button, mReadyToPay);
-        clickAndWait(R.id.close_button, mDismissed);
+        clickInCardEditorAndWait(R.id.payments_edit_done_button, getEditorValidationError());
+        clickInCardEditorAndWait(R.id.payments_edit_cancel_button, getReadyToPay());
+        clickAndWait(R.id.close_button, getDismissed());
         expectResultContains(new String[] {"Request cancelled"});
     }
 
@@ -120,9 +120,9 @@ public class PaymentRequestNoShippingTest extends PaymentRequestTestBase {
     public void testAddEmptyNameOnCardAndCancel()
             throws InterruptedException, ExecutionException, TimeoutException {
         fillNewCardForm("5454-5454-5454-5454", "", DECEMBER, NEXT_YEAR, FIRST_BILLING_ADDRESS);
-        clickInCardEditorAndWait(R.id.payments_edit_done_button, mEditorValidationError);
-        clickInCardEditorAndWait(R.id.payments_edit_cancel_button, mReadyForInput);
-        clickAndWait(R.id.close_button, mDismissed);
+        clickInCardEditorAndWait(R.id.payments_edit_done_button, getEditorValidationError());
+        clickInCardEditorAndWait(R.id.payments_edit_cancel_button, getReadyForInput());
+        clickAndWait(R.id.close_button, getDismissed());
         expectResultContains(new String[] {"Request cancelled"});
     }
 
@@ -132,10 +132,10 @@ public class PaymentRequestNoShippingTest extends PaymentRequestTestBase {
     public void testSaveNewCardAndPay()
             throws InterruptedException, ExecutionException, TimeoutException {
         fillNewCardForm("5454-5454-5454-5454", "Bob", DECEMBER, NEXT_YEAR, FIRST_BILLING_ADDRESS);
-        clickInCardEditorAndWait(R.id.payments_edit_done_button, mReadyToPay);
-        clickAndWait(R.id.button_primary, mReadyForUnmaskInput);
-        setTextInCardUnmaskDialogAndWait(R.id.card_unmask_input, "123", mReadyToUnmask);
-        clickCardUnmaskButtonAndWait(DialogInterface.BUTTON_POSITIVE, mDismissed);
+        clickInCardEditorAndWait(R.id.payments_edit_done_button, getReadyToPay());
+        clickAndWait(R.id.button_primary, getReadyForUnmaskInput());
+        setTextInCardUnmaskDialogAndWait(R.id.card_unmask_input, "123", getReadyToUnmask());
+        clickCardUnmaskButtonAndWait(DialogInterface.BUTTON_POSITIVE, getDismissed());
         expectResultContains(new String[] {"5454545454545454", "12", "Bob"});
     }
 
@@ -147,23 +147,23 @@ public class PaymentRequestNoShippingTest extends PaymentRequestTestBase {
         fillNewCardForm("5454-5454-5454-5454", "Bob", DECEMBER, NEXT_YEAR, FIRST_BILLING_ADDRESS);
 
         // Uncheck the "Save this card on this device" checkbox, so the card is temporary.
-        selectCheckboxAndWait(R.id.payments_edit_checkbox, false, mReadyToEdit);
+        selectCheckboxAndWait(R.id.payments_edit_checkbox, false, getReadyToEdit());
 
-        clickInCardEditorAndWait(R.id.payments_edit_done_button, mReadyToPay);
-        clickAndWait(R.id.button_primary, mReadyForUnmaskInput);
-        setTextInCardUnmaskDialogAndWait(R.id.card_unmask_input, "123", mReadyToUnmask);
-        clickCardUnmaskButtonAndWait(DialogInterface.BUTTON_POSITIVE, mDismissed);
+        clickInCardEditorAndWait(R.id.payments_edit_done_button, getReadyToPay());
+        clickAndWait(R.id.button_primary, getReadyForUnmaskInput());
+        setTextInCardUnmaskDialogAndWait(R.id.card_unmask_input, "123", getReadyToUnmask());
+        clickCardUnmaskButtonAndWait(DialogInterface.BUTTON_POSITIVE, getDismissed());
         expectResultContains(new String[] {"5454545454545454", "12", "Bob"});
     }
 
     private void fillNewCardForm(String cardNumber, String nameOnCard, int month, int year,
             int billingAddress) throws InterruptedException, ExecutionException, TimeoutException {
-        triggerUIAndWait(mReadyToPay);
-        clickInPaymentMethodAndWait(R.id.payments_section, mReadyForInput);
-        clickInPaymentMethodAndWait(R.id.payments_add_option_button, mReadyToEdit);
-        setTextInCardEditorAndWait(new String[] {cardNumber, nameOnCard}, mEditorTextUpdate);
+        triggerUIAndWait(getReadyToPay());
+        clickInPaymentMethodAndWait(R.id.payments_section, getReadyForInput());
+        clickInPaymentMethodAndWait(R.id.payments_add_option_button, getReadyToEdit());
+        setTextInCardEditorAndWait(new String[] {cardNumber, nameOnCard}, getEditorTextUpdate());
         setSpinnerSelectionsInCardEditorAndWait(
-                new int[] {month, year, billingAddress}, mBillingAddressChangeProcessed);
+                new int[] {month, year, billingAddress}, getBillingAddressChangeProcessed());
     }
 
     /** Add a new card together with a new billing address and pay. */
@@ -171,25 +171,27 @@ public class PaymentRequestNoShippingTest extends PaymentRequestTestBase {
     @Feature({"Payments"})
     public void testSaveNewCardAndNewBillingAddressAndPay()
             throws InterruptedException, ExecutionException, TimeoutException {
-        triggerUIAndWait(mReadyToPay);
-        clickInPaymentMethodAndWait(R.id.payments_section, mReadyForInput);
-        clickInPaymentMethodAndWait(R.id.payments_add_option_button, mReadyToEdit);
-        setTextInCardEditorAndWait(new String[] {"5454 5454 5454 5454", "Bob"}, mEditorTextUpdate);
+        triggerUIAndWait(getReadyToPay());
+        clickInPaymentMethodAndWait(R.id.payments_section, getReadyForInput());
+        clickInPaymentMethodAndWait(R.id.payments_add_option_button, getReadyToEdit());
+        setTextInCardEditorAndWait(
+                new String[] {"5454 5454 5454 5454", "Bob"}, getEditorTextUpdate());
 
         // Select December of next year for expiration and [Add address] in the billing address
         // dropdown.
         int addBillingAddress = 1;
-        setSpinnerSelectionsInCardEditorAndWait(new int[] {DECEMBER, NEXT_YEAR, addBillingAddress},
-                mReadyToEdit);
+        setSpinnerSelectionsInCardEditorAndWait(
+                new int[] {DECEMBER, NEXT_YEAR, addBillingAddress}, getReadyToEdit());
 
         setTextInEditorAndWait(new String[] {"Bob", "Google", "1600 Amphitheatre Pkwy",
-                "Mountain View", "CA", "94043", "650-253-0000"}, mEditorTextUpdate);
-        clickInEditorAndWait(R.id.payments_edit_done_button, mReadyToEdit);
+                "Mountain View", "CA", "94043", "650-253-0000"},
+                getEditorTextUpdate());
+        clickInEditorAndWait(R.id.payments_edit_done_button, getReadyToEdit());
 
-        clickInCardEditorAndWait(R.id.payments_edit_done_button, mReadyToPay);
-        clickAndWait(R.id.button_primary, mReadyForUnmaskInput);
-        setTextInCardUnmaskDialogAndWait(R.id.card_unmask_input, "123", mReadyToUnmask);
-        clickCardUnmaskButtonAndWait(DialogInterface.BUTTON_POSITIVE, mDismissed);
+        clickInCardEditorAndWait(R.id.payments_edit_done_button, getReadyToPay());
+        clickAndWait(R.id.button_primary, getReadyForUnmaskInput());
+        setTextInCardUnmaskDialogAndWait(R.id.card_unmask_input, "123", getReadyToUnmask());
+        clickCardUnmaskButtonAndWait(DialogInterface.BUTTON_POSITIVE, getDismissed());
         expectResultContains(new String[] {"5454545454545454", "12", "Bob", "Google",
                 "1600 Amphitheatre Pkwy", "Mountain View", "CA", "94043", "+16502530000"});
     }
@@ -199,23 +201,28 @@ public class PaymentRequestNoShippingTest extends PaymentRequestTestBase {
     @Feature({"Payments"})
     public void testQuickAddCardAndCloseShouldNotCrash()
             throws InterruptedException, ExecutionException, TimeoutException {
-        triggerUIAndWait(mReadyToPay);
-        clickInPaymentMethodAndWait(R.id.payments_section, mReadyForInput);
+        triggerUIAndWait(getReadyToPay());
+        clickInPaymentMethodAndWait(R.id.payments_section, getReadyForInput());
 
         // Quickly press on "add card" and then [X].
-        int callCount = mReadyToEdit.getCallCount();
+        int callCount = getReadyToEdit().getCallCount();
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                mUI.getPaymentMethodSectionForTest().findViewById(
-                        R.id.payments_add_option_button).performClick();
-                mUI.getDialogForTest().findViewById(R.id.close_button).performClick();
+                getPaymentRequestUI()
+                        .getPaymentMethodSectionForTest()
+                        .findViewById(R.id.payments_add_option_button)
+                        .performClick();
+                getPaymentRequestUI()
+                        .getDialogForTest()
+                        .findViewById(R.id.close_button)
+                        .performClick();
             }
         });
-        mReadyToEdit.waitForCallback(callCount);
+        getReadyToEdit().waitForCallback(callCount);
 
-        clickInCardEditorAndWait(R.id.payments_edit_cancel_button, mReadyToPay);
-        clickAndWait(R.id.close_button, mDismissed);
+        clickInCardEditorAndWait(R.id.payments_edit_cancel_button, getReadyToPay());
+        clickAndWait(R.id.close_button, getDismissed());
         expectResultContains(new String[] {"Request cancelled"});
     }
 
@@ -224,20 +231,25 @@ public class PaymentRequestNoShippingTest extends PaymentRequestTestBase {
     @Feature({"Payments"})
     public void testQuickCloseAndAddCardShouldNotCrash()
             throws InterruptedException, ExecutionException, TimeoutException {
-        triggerUIAndWait(mReadyToPay);
-        clickInPaymentMethodAndWait(R.id.payments_section, mReadyForInput);
+        triggerUIAndWait(getReadyToPay());
+        clickInPaymentMethodAndWait(R.id.payments_section, getReadyForInput());
 
         // Quickly press on [X] and then "add card."
-        int callCount = mDismissed.getCallCount();
+        int callCount = getDismissed().getCallCount();
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                mUI.getDialogForTest().findViewById(R.id.close_button).performClick();
-                mUI.getPaymentMethodSectionForTest().findViewById(
-                        R.id.payments_add_option_button).performClick();
+                getPaymentRequestUI()
+                        .getDialogForTest()
+                        .findViewById(R.id.close_button)
+                        .performClick();
+                getPaymentRequestUI()
+                        .getPaymentMethodSectionForTest()
+                        .findViewById(R.id.payments_add_option_button)
+                        .performClick();
             }
         });
-        mDismissed.waitForCallback(callCount);
+        getDismissed().waitForCallback(callCount);
 
         expectResultContains(new String[] {"Request cancelled"});
     }
@@ -247,23 +259,28 @@ public class PaymentRequestNoShippingTest extends PaymentRequestTestBase {
     @Feature({"Payments"})
     public void testQuickAddCardAndCancelShouldNotCrash()
             throws InterruptedException, ExecutionException, TimeoutException {
-        triggerUIAndWait(mReadyToPay);
-        clickInPaymentMethodAndWait(R.id.payments_section, mReadyForInput);
+        triggerUIAndWait(getReadyToPay());
+        clickInPaymentMethodAndWait(R.id.payments_section, getReadyForInput());
 
         // Quickly press on "add card" and then "cancel."
-        int callCount = mReadyToEdit.getCallCount();
+        int callCount = getReadyToEdit().getCallCount();
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                mUI.getPaymentMethodSectionForTest().findViewById(
-                        R.id.payments_add_option_button).performClick();
-                mUI.getDialogForTest().findViewById(R.id.button_secondary).performClick();
+                getPaymentRequestUI()
+                        .getPaymentMethodSectionForTest()
+                        .findViewById(R.id.payments_add_option_button)
+                        .performClick();
+                getPaymentRequestUI()
+                        .getDialogForTest()
+                        .findViewById(R.id.button_secondary)
+                        .performClick();
             }
         });
-        mReadyToEdit.waitForCallback(callCount);
+        getReadyToEdit().waitForCallback(callCount);
 
-        clickInCardEditorAndWait(R.id.payments_edit_cancel_button, mReadyToPay);
-        clickAndWait(R.id.close_button, mDismissed);
+        clickInCardEditorAndWait(R.id.payments_edit_cancel_button, getReadyToPay());
+        clickAndWait(R.id.close_button, getDismissed());
         expectResultContains(new String[] {"Request cancelled"});
     }
 
@@ -272,20 +289,25 @@ public class PaymentRequestNoShippingTest extends PaymentRequestTestBase {
     @Feature({"Payments"})
     public void testQuickCancelAndAddCardShouldNotCrash()
             throws InterruptedException, ExecutionException, TimeoutException {
-        triggerUIAndWait(mReadyToPay);
-        clickInPaymentMethodAndWait(R.id.payments_section, mReadyForInput);
+        triggerUIAndWait(getReadyToPay());
+        clickInPaymentMethodAndWait(R.id.payments_section, getReadyForInput());
 
         // Quickly press on "cancel" and then "add card."
-        int callCount = mDismissed.getCallCount();
+        int callCount = getDismissed().getCallCount();
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                mUI.getDialogForTest().findViewById(R.id.button_secondary).performClick();
-                mUI.getPaymentMethodSectionForTest().findViewById(
-                        R.id.payments_add_option_button).performClick();
+                getPaymentRequestUI()
+                        .getDialogForTest()
+                        .findViewById(R.id.button_secondary)
+                        .performClick();
+                getPaymentRequestUI()
+                        .getPaymentMethodSectionForTest()
+                        .findViewById(R.id.payments_add_option_button)
+                        .performClick();
             }
         });
-        mDismissed.waitForCallback(callCount);
+        getDismissed().waitForCallback(callCount);
 
         expectResultContains(new String[] {"Request cancelled"});
     }
@@ -298,18 +320,21 @@ public class PaymentRequestNoShippingTest extends PaymentRequestTestBase {
     @Feature({"Payments"})
     public void testQuickDismissAndPayShouldNotCrash()
             throws InterruptedException, ExecutionException, TimeoutException {
-        triggerUIAndWait(mReadyToPay);
+        triggerUIAndWait(getReadyToPay());
 
         // Quickly dismiss and then press on "pay."
-        int callCount = mDismissed.getCallCount();
+        int callCount = getDismissed().getCallCount();
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                mUI.getDialogForTest().onBackPressed();
-                mUI.getDialogForTest().findViewById(R.id.button_primary).performClick();
+                getPaymentRequestUI().getDialogForTest().onBackPressed();
+                getPaymentRequestUI()
+                        .getDialogForTest()
+                        .findViewById(R.id.button_primary)
+                        .performClick();
             }
         });
-        mDismissed.waitForCallback(callCount);
+        getDismissed().waitForCallback(callCount);
 
         expectResultContains(new String[] {"Request cancelled"});
     }
@@ -322,18 +347,21 @@ public class PaymentRequestNoShippingTest extends PaymentRequestTestBase {
     @Feature({"Payments"})
     public void testQuickDismissAndCloseShouldNotCrash()
             throws InterruptedException, ExecutionException, TimeoutException {
-        triggerUIAndWait(mReadyToPay);
+        triggerUIAndWait(getReadyToPay());
 
         // Quickly dismiss and then press on [X].
-        int callCount = mDismissed.getCallCount();
+        int callCount = getDismissed().getCallCount();
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                mUI.getDialogForTest().onBackPressed();
-                mUI.getDialogForTest().findViewById(R.id.close_button).performClick();
+                getPaymentRequestUI().getDialogForTest().onBackPressed();
+                getPaymentRequestUI()
+                        .getDialogForTest()
+                        .findViewById(R.id.close_button)
+                        .performClick();
             }
         });
-        mDismissed.waitForCallback(callCount);
+        getDismissed().waitForCallback(callCount);
 
         expectResultContains(new String[] {"Request cancelled"});
     }
@@ -346,18 +374,21 @@ public class PaymentRequestNoShippingTest extends PaymentRequestTestBase {
     @Feature({"Payments"})
     public void testQuickCloseAndDismissShouldNotCrash()
             throws InterruptedException, ExecutionException, TimeoutException {
-        triggerUIAndWait(mReadyToPay);
+        triggerUIAndWait(getReadyToPay());
 
         // Quickly press on [X] and then dismiss.
-        int callCount = mDismissed.getCallCount();
+        int callCount = getDismissed().getCallCount();
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                mUI.getDialogForTest().findViewById(R.id.close_button).performClick();
-                mUI.getDialogForTest().onBackPressed();
+                getPaymentRequestUI()
+                        .getDialogForTest()
+                        .findViewById(R.id.close_button)
+                        .performClick();
+                getPaymentRequestUI().getDialogForTest().onBackPressed();
             }
         });
-        mDismissed.waitForCallback(callCount);
+        getDismissed().waitForCallback(callCount);
 
         expectResultContains(new String[] {"Request cancelled"});
     }
@@ -372,7 +403,7 @@ public class PaymentRequestNoShippingTest extends PaymentRequestTestBase {
     public void testRequestedInformationMetric() throws InterruptedException, ExecutionException,
             TimeoutException {
         // Start the Payment Request.
-        triggerUIAndWait(mReadyToPay);
+        triggerUIAndWait(getReadyToPay());
 
         // Make sure that only the appropriate enum value was logged.
         for (int i = 0; i < PaymentRequestMetrics.REQUESTED_INFORMATION_MAX; ++i) {

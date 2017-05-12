@@ -60,8 +60,8 @@ public class PaymentRequestEmailTest extends PaymentRequestTestBase {
     @MediumTest
     @Feature({"Payments"})
     public void testPay() throws InterruptedException, ExecutionException, TimeoutException {
-        triggerUIAndWait(mReadyToPay);
-        clickAndWait(R.id.button_primary, mDismissed);
+        triggerUIAndWait(getReadyToPay());
+        clickAndWait(R.id.button_primary, getDismissed());
         expectResultContains(new String[] {"jon.doe@google.com"});
     }
 
@@ -70,13 +70,13 @@ public class PaymentRequestEmailTest extends PaymentRequestTestBase {
     @Feature({"Payments"})
     public void testAddInvalidEmailAndCancel()
             throws InterruptedException, ExecutionException, TimeoutException {
-        triggerUIAndWait(mReadyToPay);
-        clickInContactInfoAndWait(R.id.payments_section, mReadyForInput);
-        clickInContactInfoAndWait(R.id.payments_add_option_button, mReadyToEdit);
-        setTextInEditorAndWait(new String[] {"jane.jones"}, mEditorTextUpdate);
-        clickInEditorAndWait(R.id.payments_edit_done_button, mEditorValidationError);
-        clickInEditorAndWait(R.id.payments_edit_cancel_button, mReadyToPay);
-        clickAndWait(R.id.close_button, mDismissed);
+        triggerUIAndWait(getReadyToPay());
+        clickInContactInfoAndWait(R.id.payments_section, getReadyForInput());
+        clickInContactInfoAndWait(R.id.payments_add_option_button, getReadyToEdit());
+        setTextInEditorAndWait(new String[] {"jane.jones"}, getEditorTextUpdate());
+        clickInEditorAndWait(R.id.payments_edit_done_button, getEditorValidationError());
+        clickInEditorAndWait(R.id.payments_edit_cancel_button, getReadyToPay());
+        clickAndWait(R.id.close_button, getDismissed());
         expectResultContains(new String[] {"Request cancelled"});
     }
 
@@ -85,13 +85,13 @@ public class PaymentRequestEmailTest extends PaymentRequestTestBase {
     @Feature({"Payments"})
     public void testAddEmailAndPay()
             throws InterruptedException, ExecutionException, TimeoutException {
-        triggerUIAndWait(mReadyToPay);
-        clickInContactInfoAndWait(R.id.payments_section, mReadyForInput);
-        clickInContactInfoAndWait(R.id.payments_add_option_button, mReadyToEdit);
-        setTextInEditorAndWait(new String[] {"jane.jones@google.com"}, mEditorTextUpdate);
-        clickInEditorAndWait(R.id.payments_edit_done_button, mReadyToPay);
+        triggerUIAndWait(getReadyToPay());
+        clickInContactInfoAndWait(R.id.payments_section, getReadyForInput());
+        clickInContactInfoAndWait(R.id.payments_add_option_button, getReadyToEdit());
+        setTextInEditorAndWait(new String[] {"jane.jones@google.com"}, getEditorTextUpdate());
+        clickInEditorAndWait(R.id.payments_edit_done_button, getReadyToPay());
 
-        clickAndWait(R.id.button_primary, mDismissed);
+        clickAndWait(R.id.button_primary, getDismissed());
         expectResultContains(new String[] {"jane.jones@google.com"});
     }
 
@@ -103,8 +103,8 @@ public class PaymentRequestEmailTest extends PaymentRequestTestBase {
     @Feature({"Payments"})
     public void testSuggestionsDeduped()
             throws InterruptedException, ExecutionException, TimeoutException {
-        triggerUIAndWait(mReadyToPay);
-        clickInContactInfoAndWait(R.id.payments_section, mReadyForInput);
+        triggerUIAndWait(getReadyToPay());
+        clickInContactInfoAndWait(R.id.payments_section, getReadyForInput());
         assertEquals(1, getNumberOfContactDetailSuggestions());
     }
 
@@ -117,7 +117,7 @@ public class PaymentRequestEmailTest extends PaymentRequestTestBase {
     public void testRequestedInformationMetric() throws InterruptedException, ExecutionException,
             TimeoutException {
         // Start the Payment Request.
-        triggerUIAndWait(mReadyToPay);
+        triggerUIAndWait(getReadyToPay());
 
         // Make sure that only the appropriate enum value was logged.
         for (int i = 0; i < PaymentRequestMetrics.REQUESTED_INFORMATION_MAX; ++i) {

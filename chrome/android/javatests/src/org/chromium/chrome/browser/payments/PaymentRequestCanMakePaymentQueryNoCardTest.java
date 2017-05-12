@@ -37,7 +37,7 @@ public class PaymentRequestCanMakePaymentQueryNoCardTest extends PaymentRequestT
     @Feature({"Payments"})
     public void testNoBobPayInstalled() throws InterruptedException, ExecutionException,
             TimeoutException {
-        openPageAndClickBuyAndWait(mCanMakePaymentQueryResponded);
+        openPageAndClickBuyAndWait(getCanMakePaymentQueryResponded());
         expectResultContains(new String[]{"false"});
     }
 
@@ -46,7 +46,7 @@ public class PaymentRequestCanMakePaymentQueryNoCardTest extends PaymentRequestT
     public void testNoInstrumentsInFastBobPay() throws InterruptedException, ExecutionException,
             TimeoutException {
         installPaymentApp(NO_INSTRUMENTS, IMMEDIATE_RESPONSE);
-        openPageAndClickBuyAndWait(mCanMakePaymentQueryResponded);
+        openPageAndClickBuyAndWait(getCanMakePaymentQueryResponded());
         expectResultContains(new String[]{"false"});
     }
 
@@ -55,7 +55,7 @@ public class PaymentRequestCanMakePaymentQueryNoCardTest extends PaymentRequestT
     public void testNoInstrumentsInSlowBobPay() throws InterruptedException, ExecutionException,
             TimeoutException {
         installPaymentApp(NO_INSTRUMENTS, DELAYED_RESPONSE);
-        openPageAndClickBuyAndWait(mCanMakePaymentQueryResponded);
+        openPageAndClickBuyAndWait(getCanMakePaymentQueryResponded());
         expectResultContains(new String[]{"false"});
     }
 
@@ -64,7 +64,7 @@ public class PaymentRequestCanMakePaymentQueryNoCardTest extends PaymentRequestT
     public void testPayViaFastBobPay() throws InterruptedException, ExecutionException,
             TimeoutException {
         installPaymentApp(HAVE_INSTRUMENTS, IMMEDIATE_RESPONSE);
-        openPageAndClickBuyAndWait(mCanMakePaymentQueryResponded);
+        openPageAndClickBuyAndWait(getCanMakePaymentQueryResponded());
         expectResultContains(new String[]{"true"});
     }
 
@@ -73,7 +73,7 @@ public class PaymentRequestCanMakePaymentQueryNoCardTest extends PaymentRequestT
     public void testPayViaSlowBobPay() throws InterruptedException, ExecutionException,
             TimeoutException {
         installPaymentApp(HAVE_INSTRUMENTS, DELAYED_RESPONSE);
-        openPageAndClickBuyAndWait(mCanMakePaymentQueryResponded);
+        openPageAndClickBuyAndWait(getCanMakePaymentQueryResponded());
         expectResultContains(new String[]{"true"});
     }
 }

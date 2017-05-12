@@ -90,13 +90,13 @@ public class PaymentRequestPaymentAppAndCardsTest extends PaymentRequestTestBase
     @Feature({"Payments"})
     public void testEditPaymentMethodAndCancelEditorShouldKeepCardSelected()
             throws InterruptedException, ExecutionException, TimeoutException {
-        triggerUIAndWait(mReadyToPay);
-        clickInPaymentMethodAndWait(R.id.payments_section, mReadyForInput);
+        triggerUIAndWait(getReadyToPay());
+        clickInPaymentMethodAndWait(R.id.payments_section, getReadyForInput());
         expectPaymentMethodRowIsSelected(0);
-        clickInPaymentMethodAndWait(R.id.payments_add_option_button, mReadyToEdit);
+        clickInPaymentMethodAndWait(R.id.payments_add_option_button, getReadyToEdit());
 
         // Cancel the editor.
-        clickInCardEditorAndWait(R.id.payments_edit_cancel_button, mReadyToPay);
+        clickInCardEditorAndWait(R.id.payments_edit_cancel_button, getReadyToPay());
 
         // Expect the existing row to still be selected in the Shipping Address section.
         expectPaymentMethodRowIsSelected(0);
@@ -107,13 +107,13 @@ public class PaymentRequestPaymentAppAndCardsTest extends PaymentRequestTestBase
     @Feature({"Payments"})
     public void testAddPaymentMethodAndCancelEditorShouldKeepExistingCardSelected()
             throws InterruptedException, ExecutionException, TimeoutException {
-        triggerUIAndWait(mReadyToPay);
-        clickInPaymentMethodAndWait(R.id.payments_section, mReadyForInput);
+        triggerUIAndWait(getReadyToPay());
+        clickInPaymentMethodAndWait(R.id.payments_section, getReadyForInput());
         expectPaymentMethodRowIsSelected(0);
-        clickInPaymentMethodAndWait(R.id.payments_open_editor_pencil_button, mReadyToEdit);
+        clickInPaymentMethodAndWait(R.id.payments_open_editor_pencil_button, getReadyToEdit());
 
         // Cancel the editor.
-        clickInCardEditorAndWait(R.id.payments_edit_cancel_button, mReadyToPay);
+        clickInCardEditorAndWait(R.id.payments_edit_cancel_button, getReadyToPay());
 
         // Expect the row to still be selected in the Shipping Address section.
         expectPaymentMethodRowIsSelected(0);
@@ -122,8 +122,8 @@ public class PaymentRequestPaymentAppAndCardsTest extends PaymentRequestTestBase
     private void runTest(int instrumentPresence, int responseSpeed) throws InterruptedException,
             ExecutionException, TimeoutException  {
         installPaymentApp(instrumentPresence, responseSpeed);
-        triggerUIAndWait(mReadyToPay);
-        clickInPaymentMethodAndWait(R.id.payments_section, mReadyForInput);
+        triggerUIAndWait(getReadyToPay());
+        clickInPaymentMethodAndWait(R.id.payments_section, getReadyForInput());
 
         // Check the number of instruments.
         assertEquals(
@@ -145,12 +145,12 @@ public class PaymentRequestPaymentAppAndCardsTest extends PaymentRequestTestBase
 
         // Check the output of the selected instrument.
         if (instrumentPresence == HAVE_INSTRUMENTS) {
-            clickAndWait(R.id.button_primary, mDismissed);
+            clickAndWait(R.id.button_primary, getDismissed());
             expectResultContains(new String[]{"https://bobpay.com", "\"transaction\"", "1337"});
         } else {
-            clickAndWait(R.id.button_primary, mReadyForUnmaskInput);
-            setTextInCardUnmaskDialogAndWait(R.id.card_unmask_input, "123", mReadyToUnmask);
-            clickCardUnmaskButtonAndWait(DialogInterface.BUTTON_POSITIVE, mDismissed);
+            clickAndWait(R.id.button_primary, getReadyForUnmaskInput());
+            setTextInCardUnmaskDialogAndWait(R.id.card_unmask_input, "123", getReadyToUnmask());
+            clickCardUnmaskButtonAndWait(DialogInterface.BUTTON_POSITIVE, getDismissed());
             expectResultContains(new String[] {"Jon Doe", "4111111111111111", "12", "2050", "visa",
                     "123"});
         }

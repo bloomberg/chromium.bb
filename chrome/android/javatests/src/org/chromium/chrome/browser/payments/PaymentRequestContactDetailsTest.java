@@ -61,8 +61,8 @@ public class PaymentRequestContactDetailsTest extends PaymentRequestTestBase {
     @MediumTest
     @Feature({"Payments"})
     public void testPay() throws InterruptedException, ExecutionException, TimeoutException {
-        triggerUIAndWait(mReadyToPay);
-        clickAndWait(R.id.button_primary, mDismissed);
+        triggerUIAndWait(getReadyToPay());
+        clickAndWait(R.id.button_primary, getDismissed());
         expectResultContains(new String[] {"Jon Doe", "+15555555555", "jon.doe@google.com"});
     }
 
@@ -71,13 +71,13 @@ public class PaymentRequestContactDetailsTest extends PaymentRequestTestBase {
     @Feature({"Payments"})
     public void testAddInvalidContactAndCancel()
             throws InterruptedException, ExecutionException, TimeoutException {
-        triggerUIAndWait(mReadyToPay);
-        clickInContactInfoAndWait(R.id.payments_section, mReadyForInput);
-        clickInContactInfoAndWait(R.id.payments_add_option_button, mReadyToEdit);
-        setTextInEditorAndWait(new String[] {"", "+++", "jane.jones"}, mEditorTextUpdate);
-        clickInEditorAndWait(R.id.payments_edit_done_button, mEditorValidationError);
-        clickInEditorAndWait(R.id.payments_edit_cancel_button, mReadyToPay);
-        clickAndWait(R.id.close_button, mDismissed);
+        triggerUIAndWait(getReadyToPay());
+        clickInContactInfoAndWait(R.id.payments_section, getReadyForInput());
+        clickInContactInfoAndWait(R.id.payments_add_option_button, getReadyToEdit());
+        setTextInEditorAndWait(new String[] {"", "+++", "jane.jones"}, getEditorTextUpdate());
+        clickInEditorAndWait(R.id.payments_edit_done_button, getEditorValidationError());
+        clickInEditorAndWait(R.id.payments_edit_cancel_button, getReadyToPay());
+        clickAndWait(R.id.close_button, getDismissed());
         expectResultContains(new String[] {"Request cancelled"});
     }
 
@@ -86,14 +86,14 @@ public class PaymentRequestContactDetailsTest extends PaymentRequestTestBase {
     @Feature({"Payments"})
     public void testAddContactAndPay()
             throws InterruptedException, ExecutionException, TimeoutException {
-        triggerUIAndWait(mReadyToPay);
-        clickInContactInfoAndWait(R.id.payments_section, mReadyForInput);
-        clickInContactInfoAndWait(R.id.payments_add_option_button, mReadyToEdit);
+        triggerUIAndWait(getReadyToPay());
+        clickInContactInfoAndWait(R.id.payments_section, getReadyForInput());
+        clickInContactInfoAndWait(R.id.payments_add_option_button, getReadyToEdit());
         setTextInEditorAndWait(new String[] {"Jane Jones", "999-999-9999", "jane.jones@google.com"},
-                mEditorTextUpdate);
-        clickInEditorAndWait(R.id.payments_edit_done_button, mReadyToPay);
+                getEditorTextUpdate());
+        clickInEditorAndWait(R.id.payments_edit_done_button, getReadyToPay());
 
-        clickAndWait(R.id.button_primary, mDismissed);
+        clickAndWait(R.id.button_primary, getDismissed());
         expectResultContains(new String[] {"Jane Jones", "+19999999999", "jane.jones@google.com"});
     }
 
@@ -102,23 +102,28 @@ public class PaymentRequestContactDetailsTest extends PaymentRequestTestBase {
     @Feature({"Payments"})
     public void testQuickAddContactAndCloseShouldNotCrash()
             throws InterruptedException, ExecutionException, TimeoutException {
-        triggerUIAndWait(mReadyToPay);
-        clickInContactInfoAndWait(R.id.payments_section, mReadyForInput);
+        triggerUIAndWait(getReadyToPay());
+        clickInContactInfoAndWait(R.id.payments_section, getReadyForInput());
 
         // Quickly press on "add contact info" and then [X].
-        int callCount = mReadyToEdit.getCallCount();
+        int callCount = getReadyToEdit().getCallCount();
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                mUI.getContactDetailsSectionForTest().findViewById(
-                        R.id.payments_add_option_button).performClick();
-                mUI.getDialogForTest().findViewById(R.id.close_button).performClick();
+                getPaymentRequestUI()
+                        .getContactDetailsSectionForTest()
+                        .findViewById(R.id.payments_add_option_button)
+                        .performClick();
+                getPaymentRequestUI()
+                        .getDialogForTest()
+                        .findViewById(R.id.close_button)
+                        .performClick();
             }
         });
-        mReadyToEdit.waitForCallback(callCount);
+        getReadyToEdit().waitForCallback(callCount);
 
-        clickInEditorAndWait(R.id.payments_edit_cancel_button, mReadyToPay);
-        clickAndWait(R.id.close_button, mDismissed);
+        clickInEditorAndWait(R.id.payments_edit_cancel_button, getReadyToPay());
+        clickAndWait(R.id.close_button, getDismissed());
         expectResultContains(new String[] {"Request cancelled"});
     }
 
@@ -127,20 +132,25 @@ public class PaymentRequestContactDetailsTest extends PaymentRequestTestBase {
     @Feature({"Payments"})
     public void testQuickCloseAndAddContactShouldNotCrash()
             throws InterruptedException, ExecutionException, TimeoutException {
-        triggerUIAndWait(mReadyToPay);
-        clickInContactInfoAndWait(R.id.payments_section, mReadyForInput);
+        triggerUIAndWait(getReadyToPay());
+        clickInContactInfoAndWait(R.id.payments_section, getReadyForInput());
 
         // Quickly press on [X] and then "add contact info."
-        int callCount = mDismissed.getCallCount();
+        int callCount = getDismissed().getCallCount();
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                mUI.getDialogForTest().findViewById(R.id.close_button).performClick();
-                mUI.getContactDetailsSectionForTest().findViewById(
-                        R.id.payments_add_option_button).performClick();
+                getPaymentRequestUI()
+                        .getDialogForTest()
+                        .findViewById(R.id.close_button)
+                        .performClick();
+                getPaymentRequestUI()
+                        .getContactDetailsSectionForTest()
+                        .findViewById(R.id.payments_add_option_button)
+                        .performClick();
             }
         });
-        mDismissed.waitForCallback(callCount);
+        getDismissed().waitForCallback(callCount);
 
         expectResultContains(new String[] {"Request cancelled"});
     }
@@ -150,13 +160,13 @@ public class PaymentRequestContactDetailsTest extends PaymentRequestTestBase {
     @Feature({"Payments"})
     public void testEditContactAndCancelEditorShouldKeepContactSelected()
             throws InterruptedException, ExecutionException, TimeoutException {
-        triggerUIAndWait(mReadyToPay);
-        clickInContactInfoAndWait(R.id.payments_section, mReadyForInput);
+        triggerUIAndWait(getReadyToPay());
+        clickInContactInfoAndWait(R.id.payments_section, getReadyForInput());
         expectContactDetailsRowIsSelected(0);
-        clickInContactInfoAndWait(R.id.payments_open_editor_pencil_button, mReadyToEdit);
+        clickInContactInfoAndWait(R.id.payments_open_editor_pencil_button, getReadyToEdit());
 
         // Cancel the editor.
-        clickInEditorAndWait(R.id.payments_edit_cancel_button, mReadyToPay);
+        clickInEditorAndWait(R.id.payments_edit_cancel_button, getReadyToPay());
 
         // Expect the row to still be selected in the Contact Details section.
         expectContactDetailsRowIsSelected(0);
@@ -167,13 +177,13 @@ public class PaymentRequestContactDetailsTest extends PaymentRequestTestBase {
     @Feature({"Payments"})
     public void testAddContactAndCancelEditorShouldKeepContactSelected()
             throws InterruptedException, ExecutionException, TimeoutException {
-        triggerUIAndWait(mReadyToPay);
-        clickInContactInfoAndWait(R.id.payments_section, mReadyForInput);
+        triggerUIAndWait(getReadyToPay());
+        clickInContactInfoAndWait(R.id.payments_section, getReadyForInput());
         expectContactDetailsRowIsSelected(0);
-        clickInContactInfoAndWait(R.id.payments_add_option_button, mReadyToEdit);
+        clickInContactInfoAndWait(R.id.payments_add_option_button, getReadyToEdit());
 
         // Cancel the editor.
-        clickInEditorAndWait(R.id.payments_edit_cancel_button, mReadyToPay);
+        clickInEditorAndWait(R.id.payments_edit_cancel_button, getReadyToPay());
 
         // Expect the existing row to still be selected in the Contact Details section.
         expectContactDetailsRowIsSelected(0);
@@ -184,23 +194,28 @@ public class PaymentRequestContactDetailsTest extends PaymentRequestTestBase {
     @Feature({"Payments"})
     public void testQuickAddContactAndCancelShouldNotCrash()
             throws InterruptedException, ExecutionException, TimeoutException {
-        triggerUIAndWait(mReadyToPay);
-        clickInContactInfoAndWait(R.id.payments_section, mReadyForInput);
+        triggerUIAndWait(getReadyToPay());
+        clickInContactInfoAndWait(R.id.payments_section, getReadyForInput());
 
         // Quickly press on "add contact info" and then "cancel."
-        int callCount = mReadyToEdit.getCallCount();
+        int callCount = getReadyToEdit().getCallCount();
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                mUI.getContactDetailsSectionForTest().findViewById(
-                        R.id.payments_add_option_button).performClick();
-                mUI.getDialogForTest().findViewById(R.id.button_secondary).performClick();
+                getPaymentRequestUI()
+                        .getContactDetailsSectionForTest()
+                        .findViewById(R.id.payments_add_option_button)
+                        .performClick();
+                getPaymentRequestUI()
+                        .getDialogForTest()
+                        .findViewById(R.id.button_secondary)
+                        .performClick();
             }
         });
-        mReadyToEdit.waitForCallback(callCount);
+        getReadyToEdit().waitForCallback(callCount);
 
-        clickInEditorAndWait(R.id.payments_edit_cancel_button, mReadyToPay);
-        clickAndWait(R.id.close_button, mDismissed);
+        clickInEditorAndWait(R.id.payments_edit_cancel_button, getReadyToPay());
+        clickAndWait(R.id.close_button, getDismissed());
         expectResultContains(new String[] {"Request cancelled"});
     }
 
@@ -209,20 +224,25 @@ public class PaymentRequestContactDetailsTest extends PaymentRequestTestBase {
     @Feature({"Payments"})
     public void testQuickCancelAndAddContactShouldNotCrash()
             throws InterruptedException, ExecutionException, TimeoutException {
-        triggerUIAndWait(mReadyToPay);
-        clickInContactInfoAndWait(R.id.payments_section, mReadyForInput);
+        triggerUIAndWait(getReadyToPay());
+        clickInContactInfoAndWait(R.id.payments_section, getReadyForInput());
 
         // Quickly press on "cancel" and then "add contact info."
-        int callCount = mDismissed.getCallCount();
+        int callCount = getDismissed().getCallCount();
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                mUI.getDialogForTest().findViewById(R.id.button_secondary).performClick();
-                mUI.getContactDetailsSectionForTest().findViewById(
-                        R.id.payments_add_option_button).performClick();
+                getPaymentRequestUI()
+                        .getDialogForTest()
+                        .findViewById(R.id.button_secondary)
+                        .performClick();
+                getPaymentRequestUI()
+                        .getContactDetailsSectionForTest()
+                        .findViewById(R.id.payments_add_option_button)
+                        .performClick();
             }
         });
-        mDismissed.waitForCallback(callCount);
+        getDismissed().waitForCallback(callCount);
 
         expectResultContains(new String[] {"Request cancelled"});
     }
@@ -235,8 +255,8 @@ public class PaymentRequestContactDetailsTest extends PaymentRequestTestBase {
     @Feature({"Payments"})
     public void testSuggestionsDeduped()
             throws InterruptedException, ExecutionException, TimeoutException {
-        triggerUIAndWait(mReadyToPay);
-        clickInContactInfoAndWait(R.id.payments_section, mReadyForInput);
+        triggerUIAndWait(getReadyToPay());
+        clickInContactInfoAndWait(R.id.payments_section, getReadyForInput());
         assertEquals(1, getNumberOfContactDetailSuggestions());
     }
 
@@ -250,7 +270,7 @@ public class PaymentRequestContactDetailsTest extends PaymentRequestTestBase {
     public void testRequestedInformationMetric() throws InterruptedException, ExecutionException,
             TimeoutException {
         // Start the Payment Request.
-        triggerUIAndWait(mReadyToPay);
+        triggerUIAndWait(getReadyToPay());
 
         // Make sure that only the appropriate enum value was logged.
         for (int i = 0; i < PaymentRequestMetrics.REQUESTED_INFORMATION_MAX; ++i) {

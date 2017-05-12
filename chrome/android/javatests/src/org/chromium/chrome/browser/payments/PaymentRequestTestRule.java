@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,58 +6,65 @@ package org.chromium.chrome.browser.payments;
 
 import android.view.View;
 
+import org.junit.runner.Description;
+import org.junit.runners.model.Statement;
+
 import org.chromium.base.test.util.CallbackHelper;
-import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.autofill.CardUnmaskPrompt;
+import org.chromium.chrome.browser.payments.PaymentRequestTestCommon.PaymentRequestTestCommonCallback;
 import org.chromium.chrome.browser.payments.PaymentRequestTestCommon.PaymentsCallbackHelper;
 import org.chromium.chrome.browser.payments.ui.PaymentRequestSection.OptionSection.OptionRow;
 import org.chromium.chrome.browser.payments.ui.PaymentRequestUI;
-import org.chromium.chrome.test.ChromeActivityTestCaseBase;
+import org.chromium.chrome.test.ChromeActivityTestRule;
 
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 
 /**
- * A base integration test for payments.
+ * Custom ActivityTestRule for integration test for payments.
  */
-@RetryOnFailure
-abstract class PaymentRequestTestBase extends ChromeActivityTestCaseBase<ChromeTabbedActivity>
-        implements PaymentRequestTestCommon.PaymentRequestTestCommonCallback {
+public class PaymentRequestTestRule extends ChromeActivityTestRule<ChromeTabbedActivity>
+        implements PaymentRequestTestCommonCallback {
     /** Flag for installing a payment app without instruments. */
-    protected static final int NO_INSTRUMENTS = PaymentRequestTestCommon.NO_INSTRUMENTS;
+    public static final int NO_INSTRUMENTS = PaymentRequestTestCommon.NO_INSTRUMENTS;
 
     /** Flag for installing a payment app with instruments. */
-    protected static final int HAVE_INSTRUMENTS = PaymentRequestTestCommon.HAVE_INSTRUMENTS;
+    public static final int HAVE_INSTRUMENTS = PaymentRequestTestCommon.HAVE_INSTRUMENTS;
 
     /** Flag for installing a fast payment app. */
-    protected static final int IMMEDIATE_RESPONSE = PaymentRequestTestCommon.IMMEDIATE_RESPONSE;
+    public static final int IMMEDIATE_RESPONSE = PaymentRequestTestCommon.IMMEDIATE_RESPONSE;
 
     /** Flag for installing a slow payment app. */
-    protected static final int DELAYED_RESPONSE = PaymentRequestTestCommon.DELAYED_RESPONSE;
+    public static final int DELAYED_RESPONSE = PaymentRequestTestCommon.DELAYED_RESPONSE;
 
     /** Flag for immediately installing a payment app. */
-    protected static final int IMMEDIATE_CREATION = PaymentRequestTestCommon.IMMEDIATE_CREATION;
+    public static final int IMMEDIATE_CREATION = PaymentRequestTestCommon.IMMEDIATE_CREATION;
 
     /** Flag for installing a payment app with a delay. */
-    protected static final int DELAYED_CREATION = PaymentRequestTestCommon.DELAYED_CREATION;
+    public static final int DELAYED_CREATION = PaymentRequestTestCommon.DELAYED_CREATION;
 
     /** The expiration month dropdown index for December. */
-    protected static final int DECEMBER = PaymentRequestTestCommon.DECEMBER;
+    public static final int DECEMBER = PaymentRequestTestCommon.DECEMBER;
 
     /** The expiration year dropdown index for the next year. */
-    protected static final int NEXT_YEAR = PaymentRequestTestCommon.NEXT_YEAR;
+    public static final int NEXT_YEAR = PaymentRequestTestCommon.NEXT_YEAR;
 
     /** The billing address dropdown index for the first billing address. */
-    protected static final int FIRST_BILLING_ADDRESS =
-            PaymentRequestTestCommon.FIRST_BILLING_ADDRESS;
+    public static final int FIRST_BILLING_ADDRESS = PaymentRequestTestCommon.FIRST_BILLING_ADDRESS;
 
     private final PaymentRequestTestCommon mTestCommon;
+    private final MainActivityStartCallback mCallback;
 
-    protected PaymentRequestTestBase(String testFileName) {
+    public PaymentRequestTestRule(String testFileName, MainActivityStartCallback callback) {
         super(ChromeTabbedActivity.class);
         mTestCommon = new PaymentRequestTestCommon(this, testFileName);
+        mCallback = callback;
+    }
+
+    public PaymentRequestTestRule(String testFileName) {
+        this(testFileName, null);
     }
 
     public PaymentsCallbackHelper<PaymentRequestUI> getReadyForInput() {
@@ -112,14 +119,9 @@ abstract class PaymentRequestTestBase extends ChromeActivityTestCaseBase<ChromeT
         return mTestCommon.mUI;
     }
 
-    @Override
     public void startMainActivity() throws InterruptedException {
         mTestCommon.startMainActivity();
     }
-
-    @Override
-    public abstract void onMainActivityStarted()
-            throws InterruptedException, ExecutionException, TimeoutException;
 
     protected void triggerUIAndWait(PaymentsCallbackHelper<PaymentRequestUI> helper)
             throws InterruptedException, ExecutionException, TimeoutException {
@@ -270,7 +272,7 @@ abstract class PaymentRequestTestBase extends ChromeActivityTestCaseBase<ChromeT
      */
     protected void clickOnShippingAddressSuggestionOptionAndWait(
             final int suggestionIndex, CallbackHelper helper)
-                    throws ExecutionException, TimeoutException, InterruptedException {
+            throws ExecutionException, TimeoutException, InterruptedException {
         mTestCommon.clickOnShippingAddressSuggestionOptionAndWait(suggestionIndex, helper);
     }
 
@@ -310,7 +312,7 @@ abstract class PaymentRequestTestBase extends ChromeActivityTestCaseBase<ChromeT
 
     /** Returns the selected spinner value in the editor UI for credit cards. */
     protected String getSpinnerSelectionTextInCardEditor(final int dropdownIndex)
-             throws ExecutionException {
+            throws ExecutionException {
         return mTestCommon.getSpinnerSelectionTextInCardEditor(dropdownIndex);
     }
 
@@ -467,7 +469,6 @@ abstract class PaymentRequestTestBase extends ChromeActivityTestCaseBase<ChromeT
         mTestCommon.onCardUnmaskPromptValidationDone(prompt);
     }
 
-
     /**
      * Installs a payment app for testing.
      *
@@ -516,12 +517,26 @@ abstract class PaymentRequestTestBase extends ChromeActivityTestCaseBase<ChromeT
     }
 
     @Override
-    public void startMainActivityWithURL(String url) throws InterruptedException {
-        super.startMainActivityWithURL(url);
+    public void onMainActivityStarted()
+            throws InterruptedException, ExecutionException, TimeoutException {
+        if (mCallback != null) {
+            mCallback.onMainActivityStarted();
+        }
     }
 
     @Override
-    public void assertWaitForPageScaleFactorMatch(float expectedScale) {
-        super.assertWaitForPageScaleFactorMatch(expectedScale);
+    public Statement apply(final Statement base, Description description) {
+        return super.apply(new Statement() {
+            @Override
+            public void evaluate() throws Throwable {
+                startMainActivity();
+                base.evaluate();
+            }
+        }, description);
+    }
+
+    public interface MainActivityStartCallback {
+        void onMainActivityStarted() throws
+                InterruptedException, ExecutionException, TimeoutException;
     }
 }

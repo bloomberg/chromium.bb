@@ -48,10 +48,10 @@ public class PaymentRequestShippingAddressChangeTest extends PaymentRequestTestB
     public void testShippingAddressChangeFormat()
             throws InterruptedException, ExecutionException, TimeoutException {
         // Select a shipping address and cancel out.
-        triggerUIAndWait(mReadyForInput);
-        clickInShippingSummaryAndWait(R.id.payments_section, mReadyForInput);
-        clickOnShippingAddressSuggestionOptionAndWait(0, mReadyForInput);
-        clickAndWait(R.id.close_button, mDismissed);
+        triggerUIAndWait(getReadyForInput());
+        clickInShippingSummaryAndWait(R.id.payments_section, getReadyForInput());
+        clickOnShippingAddressSuggestionOptionAndWait(0, getReadyForInput());
+        clickAndWait(R.id.close_button, getDismissed());
 
         // The phone number should be formatted to the internation format.
         expectResultContains(new String[] {"Jon Doe", "Google", "340 Main St", "CA", "Los Angeles",

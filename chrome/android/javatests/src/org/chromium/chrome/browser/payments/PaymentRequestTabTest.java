@@ -47,8 +47,8 @@ public class PaymentRequestTabTest extends PaymentRequestTestBase {
     @Feature({"Payments"})
     public void testDismissOnTabSwitch() throws InterruptedException, ExecutionException,
             TimeoutException {
-        triggerUIAndWait(mReadyForInput);
-        assertEquals(0, mDismissed.getCallCount());
+        triggerUIAndWait(getReadyForInput());
+        assertEquals(0, getDismissed().getCallCount());
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
@@ -56,7 +56,7 @@ public class PaymentRequestTabTest extends PaymentRequestTestBase {
                         new LoadUrlParams("about:blank"), TabLaunchType.FROM_CHROME_UI, null);
             }
         });
-        mDismissed.waitForCallback(0);
+        getDismissed().waitForCallback(0);
     }
 
     /** If the user closes the tab, the dialog is dismissed. */
@@ -66,8 +66,8 @@ public class PaymentRequestTabTest extends PaymentRequestTestBase {
     @DisabledTest
     public void testDismissOnTabClose() throws InterruptedException, ExecutionException,
             TimeoutException {
-        triggerUIAndWait(mReadyForInput);
-        assertEquals(0, mDismissed.getCallCount());
+        triggerUIAndWait(getReadyForInput());
+        assertEquals(0, getDismissed().getCallCount());
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
@@ -75,7 +75,7 @@ public class PaymentRequestTabTest extends PaymentRequestTestBase {
                 TabModelUtils.closeCurrentTab(currentModel);
             }
         });
-        mDismissed.waitForCallback(0);
+        getDismissed().waitForCallback(0);
     }
 
     /** If the user navigates anywhere, the dialog is dismissed. */
@@ -83,8 +83,8 @@ public class PaymentRequestTabTest extends PaymentRequestTestBase {
     @Feature({"Payments"})
     public void testDismissOnTabNavigate() throws InterruptedException, ExecutionException,
             TimeoutException {
-        triggerUIAndWait(mReadyForInput);
-        assertEquals(0, mDismissed.getCallCount());
+        triggerUIAndWait(getReadyForInput());
+        assertEquals(0, getDismissed().getCallCount());
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
@@ -92,6 +92,6 @@ public class PaymentRequestTabTest extends PaymentRequestTestBase {
                 TabModelUtils.getCurrentTab(currentModel).loadUrl(new LoadUrlParams("about:blank"));
             }
         });
-        mDismissed.waitForCallback(0);
+        getDismissed().waitForCallback(0);
     }
 }

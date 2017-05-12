@@ -45,10 +45,10 @@ public class PaymentRequestExtraShippingOptionsTest extends PaymentRequestTestBa
     @MediumTest
     @Feature({"Payments"})
     public void testPay() throws InterruptedException, ExecutionException, TimeoutException {
-        triggerUIAndWait(mReadyToPay);
-        clickAndWait(R.id.button_primary, mReadyForUnmaskInput);
-        setTextInCardUnmaskDialogAndWait(R.id.card_unmask_input, "123", mReadyToUnmask);
-        clickCardUnmaskButtonAndWait(DialogInterface.BUTTON_POSITIVE, mDismissed);
+        triggerUIAndWait(getReadyToPay());
+        clickAndWait(R.id.button_primary, getReadyForUnmaskInput());
+        setTextInCardUnmaskDialogAndWait(R.id.card_unmask_input, "123", getReadyToUnmask());
+        clickCardUnmaskButtonAndWait(DialogInterface.BUTTON_POSITIVE, getDismissed());
         expectResultContains(new String[] {"Jon Doe", "4111111111111111", "12", "2050", "visa",
                 "123", "Google", "340 Main St", "CA", "Los Angeles", "90291", "US", "en"});
     }

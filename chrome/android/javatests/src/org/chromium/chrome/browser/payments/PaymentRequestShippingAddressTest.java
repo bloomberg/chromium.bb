@@ -50,7 +50,7 @@ public class PaymentRequestShippingAddressTest extends PaymentRequestTestBase {
     @Feature({"Payments"})
     public void testShippingAddressFormat_BottomSheet()
             throws InterruptedException, ExecutionException, TimeoutException {
-        triggerUIAndWait(mReadyToPay);
+        triggerUIAndWait(getReadyToPay());
 
         // Make sure that the shipping label on the bottomsheet does not include the country.
         assertTrue(getShippingAddressOptionRowAtIndex(0).getLabelText().toString().equals(
@@ -62,10 +62,10 @@ public class PaymentRequestShippingAddressTest extends PaymentRequestTestBase {
     @Feature({"Payments"})
     public void testShippingAddressFormat_FullSheet()
             throws InterruptedException, ExecutionException, TimeoutException {
-        triggerUIAndWait(mReadyToPay);
+        triggerUIAndWait(getReadyToPay());
 
         // Focus on a section other that shipping addresses to enter fullsheet mode.
-        clickInShippingSummaryAndWait(R.id.payments_section, mReadyForInput);
+        clickInShippingSummaryAndWait(R.id.payments_section, getReadyForInput());
 
         // Make sure that the shipping label on the fullsheet does not include the country.
         assertTrue(getShippingAddressOptionRowAtIndex(0).getLabelText().toString().equals(
@@ -77,10 +77,10 @@ public class PaymentRequestShippingAddressTest extends PaymentRequestTestBase {
     @Feature({"Payments"})
     public void testShippingAddressFormat_Expanded()
             throws InterruptedException, ExecutionException, TimeoutException {
-        triggerUIAndWait(mReadyToPay);
+        triggerUIAndWait(getReadyToPay());
 
         // Focus on the shipping addresses section to enter expanded mode.
-        clickInShippingAddressAndWait(R.id.payments_section, mReadyForInput);
+        clickInShippingAddressAndWait(R.id.payments_section, getReadyForInput());
 
         // Make sure that the shipping label in expanded mode includes the country.
         assertTrue(getShippingAddressOptionRowAtIndex(0).getLabelText().toString().equals(
@@ -100,14 +100,15 @@ public class PaymentRequestShippingAddressTest extends PaymentRequestTestBase {
     @Feature({"Payments"})
     public void testShippingAddressFormat_NewAddress()
             throws InterruptedException, ExecutionException, TimeoutException {
-        triggerUIAndWait(mReadyToPay);
+        triggerUIAndWait(getReadyToPay());
 
         // Add a shipping address.
-        clickInShippingSummaryAndWait(R.id.payments_section, mReadyForInput);
-        clickInShippingAddressAndWait(R.id.payments_add_option_button, mReadyToEdit);
+        clickInShippingSummaryAndWait(R.id.payments_section, getReadyForInput());
+        clickInShippingAddressAndWait(R.id.payments_add_option_button, getReadyToEdit());
         setTextInEditorAndWait(new String[] {"Seb Doe", "Google", "340 Main St", "Los Angeles",
-                "CA", "90291", "650-253-0000"}, mEditorTextUpdate);
-        clickInEditorAndWait(R.id.payments_edit_done_button, mReadyToPay);
+                "CA", "90291", "650-253-0000"},
+                getEditorTextUpdate());
+        clickInEditorAndWait(R.id.payments_edit_done_button, getReadyToPay());
 
         // Make sure that the shipping label does not include the country.
         assertTrue(getShippingAddressOptionRowAtIndex(0).getLabelText().toString().equals(
@@ -122,13 +123,13 @@ public class PaymentRequestShippingAddressTest extends PaymentRequestTestBase {
     @Feature({"Payments"})
     public void testEditShippingAddressAndCancelEditorShouldKeepAddressSelected()
             throws InterruptedException, ExecutionException, TimeoutException {
-        triggerUIAndWait(mReadyToPay);
-        clickInShippingSummaryAndWait(R.id.payments_section, mReadyForInput);
+        triggerUIAndWait(getReadyToPay());
+        clickInShippingSummaryAndWait(R.id.payments_section, getReadyForInput());
         expectShippingAddressRowIsSelected(0);
-        clickInShippingAddressAndWait(R.id.payments_open_editor_pencil_button, mReadyToEdit);
+        clickInShippingAddressAndWait(R.id.payments_open_editor_pencil_button, getReadyToEdit());
 
         // Cancel the editor by clicking 'CANCEL' button in the editor view.
-        clickInEditorAndWait(R.id.payments_edit_cancel_button, mReadyToPay);
+        clickInEditorAndWait(R.id.payments_edit_cancel_button, getReadyToPay());
 
         // Expect the row to still be selected in the Shipping Address section.
         expectShippingAddressRowIsSelected(0);
@@ -142,13 +143,13 @@ public class PaymentRequestShippingAddressTest extends PaymentRequestTestBase {
     @Feature({"Payments"})
     public void testEditShippingAddressAndClickAndroidBackButtonShouldKeepAddressSelected()
             throws InterruptedException, ExecutionException, TimeoutException {
-        triggerUIAndWait(mReadyToPay);
-        clickInShippingSummaryAndWait(R.id.payments_section, mReadyForInput);
+        triggerUIAndWait(getReadyToPay());
+        clickInShippingSummaryAndWait(R.id.payments_section, getReadyForInput());
         expectShippingAddressRowIsSelected(0);
-        clickInShippingAddressAndWait(R.id.payments_open_editor_pencil_button, mReadyToEdit);
+        clickInShippingAddressAndWait(R.id.payments_open_editor_pencil_button, getReadyToEdit());
 
         // Cancel the editor by clicking Android back button.
-        clickAndroidBackButtonInEditorAndWait(mReadyToPay);
+        clickAndroidBackButtonInEditorAndWait(getReadyToPay());
 
         // Expect the row to still be selected in the Shipping Address section.
         expectShippingAddressRowIsSelected(0);
@@ -162,13 +163,13 @@ public class PaymentRequestShippingAddressTest extends PaymentRequestTestBase {
     @Feature({"Payments"})
     public void testAddShippingAddressAndCancelEditorShouldKeepAddressSelected()
             throws InterruptedException, ExecutionException, TimeoutException {
-        triggerUIAndWait(mReadyToPay);
-        clickInShippingSummaryAndWait(R.id.payments_section, mReadyForInput);
+        triggerUIAndWait(getReadyToPay());
+        clickInShippingSummaryAndWait(R.id.payments_section, getReadyForInput());
         expectShippingAddressRowIsSelected(0);
-        clickInShippingAddressAndWait(R.id.payments_add_option_button, mReadyToEdit);
+        clickInShippingAddressAndWait(R.id.payments_add_option_button, getReadyToEdit());
 
         // Cancel the editor by clicking 'CANCEL' button in the editor view.
-        clickInEditorAndWait(R.id.payments_edit_cancel_button, mReadyToPay);
+        clickInEditorAndWait(R.id.payments_edit_cancel_button, getReadyToPay());
 
         // Expect the existing row to still be selected in the Shipping Address section.
         expectShippingAddressRowIsSelected(0);
@@ -182,13 +183,13 @@ public class PaymentRequestShippingAddressTest extends PaymentRequestTestBase {
     @Feature({"Payments"})
     public void testAddShippingAddressAndClickAndroidBackButtonShouldKeepAddressSelected()
             throws InterruptedException, ExecutionException, TimeoutException {
-        triggerUIAndWait(mReadyToPay);
-        clickInShippingSummaryAndWait(R.id.payments_section, mReadyForInput);
+        triggerUIAndWait(getReadyToPay());
+        clickInShippingSummaryAndWait(R.id.payments_section, getReadyForInput());
         expectShippingAddressRowIsSelected(0);
-        clickInShippingAddressAndWait(R.id.payments_add_option_button, mReadyToEdit);
+        clickInShippingAddressAndWait(R.id.payments_add_option_button, getReadyToEdit());
 
         // Cancel the editor by clicking Android back button.
-        clickAndroidBackButtonInEditorAndWait(mReadyToPay);
+        clickAndroidBackButtonInEditorAndWait(getReadyToPay());
 
         // Expect the existing row to still be selected in the Shipping Address section.
         expectShippingAddressRowIsSelected(0);

@@ -38,22 +38,22 @@ public class PaymentRequestCcCanMakePaymentQueryTest extends PaymentRequestTestB
     @Feature({"Payments"})
     public void testCanMakePayment() throws InterruptedException, ExecutionException,
             TimeoutException {
-        openPageAndClickBuyAndWait(mCanMakePaymentQueryResponded);
+        openPageAndClickBuyAndWait(getCanMakePaymentQueryResponded());
         expectResultContains(new String[]{"true"});
 
         // Repeating a query does not count against the quota.
-        clickNodeAndWait("buy", mCanMakePaymentQueryResponded);
+        clickNodeAndWait("buy", getCanMakePaymentQueryResponded());
         expectResultContains(new String[]{"true"});
 
-        clickNodeAndWait("buy", mCanMakePaymentQueryResponded);
+        clickNodeAndWait("buy", getCanMakePaymentQueryResponded());
         expectResultContains(new String[]{"true"});
 
         // Different queries are throttled for a period of time.
-        clickNodeAndWait("other-buy", mCanMakePaymentQueryResponded);
+        clickNodeAndWait("other-buy", getCanMakePaymentQueryResponded());
         expectResultContains(new String[] {"Not allowed to check whether can make payment"});
 
         // Repeating the same query again does not count against the quota.
-        clickNodeAndWait("buy", mCanMakePaymentQueryResponded);
+        clickNodeAndWait("buy", getCanMakePaymentQueryResponded());
         expectResultContains(new String[]{"true"});
     }
 }

@@ -131,8 +131,8 @@ public class PaymentRequestMultipleContactDetailsTest extends PaymentRequestTest
         mCountsToSet = new int[] {20, 15, 10, 5, 1};
         mDatesToSet = new int[] {5000, 5000, 5000, 5000, 1};
 
-        triggerUIAndWait(mReadyForInput);
-        clickInContactInfoAndWait(R.id.payments_section, mReadyForInput);
+        triggerUIAndWait(getReadyForInput());
+        clickInContactInfoAndWait(R.id.payments_section, getReadyForInput());
         assertEquals(4, getNumberOfContactDetailSuggestions());
         assertEquals("Lisa Simpson\n555 123-4567\nlisa@simpson.com",
                 getContactDetailsSuggestionLabel(0));
@@ -157,8 +157,8 @@ public class PaymentRequestMultipleContactDetailsTest extends PaymentRequestTest
         mCountsToSet = new int[] {15, 10, 5, 1};
         mDatesToSet = new int[] {5000, 5000, 5000, 5000};
 
-        triggerUIAndWait(mReadyForInput);
-        clickInContactInfoAndWait(R.id.payments_section, mReadyForInput);
+        triggerUIAndWait(getReadyForInput());
+        clickInContactInfoAndWait(R.id.payments_section, getReadyForInput());
         assertEquals(4, getNumberOfContactDetailSuggestions());
         assertEquals("Bart Simpson\nbart@simpson.com\nPhone number required",
                 getContactDetailsSuggestionLabel(0));
@@ -187,8 +187,8 @@ public class PaymentRequestMultipleContactDetailsTest extends PaymentRequestTest
         mCountsToSet = new int[] {1, 20, 15, 10, 5};
         mDatesToSet = new int[] {1000, 4000, 3000, 2000, 1000};
 
-        triggerUIAndWait(mReadyForInput);
-        clickInContactInfoAndWait(R.id.payments_section, mReadyForInput);
+        triggerUIAndWait(getReadyForInput());
+        clickInContactInfoAndWait(R.id.payments_section, getReadyForInput());
 
         // Only the original profile with all the fields should be suggested.
         assertEquals(1, getNumberOfContactDetailSuggestions());
@@ -210,8 +210,8 @@ public class PaymentRequestMultipleContactDetailsTest extends PaymentRequestTest
         mCountsToSet = new int[] {15, 5};
         mDatesToSet = new int[] {5000, 2000};
 
-        triggerUIAndWait(mReadyForInput);
-        clickInContactInfoAndWait(R.id.payments_section, mReadyForInput);
+        triggerUIAndWait(getReadyForInput());
+        clickInContactInfoAndWait(R.id.payments_section, getReadyForInput());
         assertEquals(1, getNumberOfContactDetailSuggestions());
         assertEquals("Lisa Simpson\n555 123-4567\nlisa@simpson.com",
                 getContactDetailsSuggestionLabel(0));
@@ -232,8 +232,8 @@ public class PaymentRequestMultipleContactDetailsTest extends PaymentRequestTest
         mCountsToSet = new int[] {15, 25};
         mDatesToSet = new int[] {5000, 7000};
 
-        triggerUIAndWait(mReadyForInput);
-        clickInContactInfoAndWait(R.id.payments_section, mReadyForInput);
+        triggerUIAndWait(getReadyForInput());
+        clickInContactInfoAndWait(R.id.payments_section, getReadyForInput());
         assertEquals(2, getNumberOfContactDetailSuggestions());
         assertEquals("Lisa Simpson\n555 123-4567\nfakelisa@simpson.com",
                 getContactDetailsSuggestionLabel(0));

@@ -56,10 +56,10 @@ public class PaymentRequestBillingAddressWithoutPhoneTest extends PaymentRequest
     @Feature({"Payments"})
     public void testCanPayWithBillingNoPhone()
             throws InterruptedException, ExecutionException, TimeoutException {
-        triggerUIAndWait(mReadyToPay);
-        clickAndWait(R.id.button_primary, mReadyForUnmaskInput);
-        setTextInCardUnmaskDialogAndWait(R.id.card_unmask_input, "123", mReadyToUnmask);
-        clickCardUnmaskButtonAndWait(DialogInterface.BUTTON_POSITIVE, mDismissed);
+        triggerUIAndWait(getReadyToPay());
+        clickAndWait(R.id.button_primary, getReadyForUnmaskInput());
+        setTextInCardUnmaskDialogAndWait(R.id.card_unmask_input, "123", getReadyToUnmask());
+        clickCardUnmaskButtonAndWait(DialogInterface.BUTTON_POSITIVE, getDismissed());
         expectResultContains(new String[] {"Jon NoPhone"});
     }
 
@@ -67,11 +67,11 @@ public class PaymentRequestBillingAddressWithoutPhoneTest extends PaymentRequest
     @Feature({"Payments"})
     public void testCanSelectBillingAddressWithoutPhone()
             throws InterruptedException, ExecutionException, TimeoutException {
-        triggerUIAndWait(mReadyToPay);
+        triggerUIAndWait(getReadyToPay());
 
         // Go edit the credit card.
-        clickInPaymentMethodAndWait(R.id.payments_section, mReadyForInput);
-        clickOnPaymentMethodSuggestionEditIconAndWait(0, mReadyToEdit);
+        clickInPaymentMethodAndWait(R.id.payments_section, getReadyForInput());
+        clickOnPaymentMethodSuggestionEditIconAndWait(0, getReadyToEdit());
 
         // Make sure that the currently selected address is valid and can be selected (does not
         // include error messages).
@@ -88,8 +88,8 @@ public class PaymentRequestBillingAddressWithoutPhoneTest extends PaymentRequest
     @Feature({"Payments"})
     public void testCantSelectShippingAddressWithoutPhone()
             throws InterruptedException, ExecutionException, TimeoutException {
-        triggerUIAndWait(mReadyToPay);
-        clickInShippingSummaryAndWait(R.id.payments_section, mReadyForInput);
+        triggerUIAndWait(getReadyToPay());
+        clickInShippingSummaryAndWait(R.id.payments_section, getReadyForInput());
 
         // The first suggestion should be the address with a phone.
         assertTrue(getShippingAddressSuggestionLabel(0).contains("Rob Phone"));
@@ -105,18 +105,18 @@ public class PaymentRequestBillingAddressWithoutPhoneTest extends PaymentRequest
     @Feature({"Payments"})
     public void testCantAddNewBillingAddressWithoutPhone()
             throws InterruptedException, ExecutionException, TimeoutException {
-        triggerUIAndWait(mReadyToPay);
-        clickInPaymentMethodAndWait(R.id.payments_section, mReadyForInput);
-        clickInPaymentMethodAndWait(R.id.payments_add_option_button, mReadyToEdit);
+        triggerUIAndWait(getReadyToPay());
+        clickInPaymentMethodAndWait(R.id.payments_section, getReadyForInput());
+        clickInPaymentMethodAndWait(R.id.payments_add_option_button, getReadyToEdit());
 
         // Add a new billing address without a phone.
         setSpinnerSelectionsInCardEditorAndWait(
-                new int[] {DECEMBER, NEXT_YEAR, ADD_BILLING_ADDRESS}, mReadyToEdit);
+                new int[] {DECEMBER, NEXT_YEAR, ADD_BILLING_ADDRESS}, getReadyToEdit());
         setTextInEditorAndWait(
                 new String[] {"Seb Doe", "Google", "340 Main St", "Los Angeles", "CA", "90291", ""},
-                mEditorTextUpdate);
+                getEditorTextUpdate());
 
         // Trying to add the address without a phone number should fail.
-        clickInEditorAndWait(R.id.payments_edit_done_button, mEditorValidationError);
+        clickInEditorAndWait(R.id.payments_edit_done_button, getEditorValidationError());
     }
 }

@@ -46,22 +46,22 @@ public class PaymentRequestCardEditorAutoAdvanceTest extends PaymentRequestTestB
     @Feature({"Payments"})
     public void test14DigitsCreditCard()
             throws InterruptedException, ExecutionException, TimeoutException {
-        triggerUIAndWait(mReadyToPay);
+        triggerUIAndWait(getReadyToPay());
 
-        clickInPaymentMethodAndWait(R.id.payments_section, mReadyForInput);
-        clickInPaymentMethodAndWait(R.id.payments_add_option_button, mReadyToEdit);
+        clickInPaymentMethodAndWait(R.id.payments_section, getReadyForInput());
+        clickInPaymentMethodAndWait(R.id.payments_add_option_button, getReadyToEdit());
 
         // Diners credit card.
         final View focusedChildView = getCardEditorFocusedView();
-        setTextInCardEditorAndWait(new String[] {"3056 9309 0259 0"}, mEditorTextUpdate);
+        setTextInCardEditorAndWait(new String[] {"3056 9309 0259 0"}, getEditorTextUpdate());
         assertTrue(getCardEditorFocusedView() == focusedChildView);
 
         // '3056 9309 0259 00' is an invalid 14 digits card number.
-        setTextInCardEditorAndWait(new String[] {"3056 9309 0259 00"}, mEditorTextUpdate);
+        setTextInCardEditorAndWait(new String[] {"3056 9309 0259 00"}, getEditorTextUpdate());
         assertTrue(getCardEditorFocusedView() == focusedChildView);
 
         // '3056 9309 0259 04' is a valid 14 digits card number.
-        setTextInCardEditorAndWait(new String[] {"3056 9309 0259 04"}, mEditorTextUpdate);
+        setTextInCardEditorAndWait(new String[] {"3056 9309 0259 04"}, getEditorTextUpdate());
         assertTrue(getCardEditorFocusedView() != focusedChildView);
 
         // Request focus to card number field after auto advancing above.
@@ -71,7 +71,7 @@ public class PaymentRequestCardEditorAutoAdvanceTest extends PaymentRequestTestB
                 focusedChildView.requestFocus();
             }
         });
-        setTextInCardEditorAndWait(new String[] {"3056 9309 0259 041"}, mEditorTextUpdate);
+        setTextInCardEditorAndWait(new String[] {"3056 9309 0259 041"}, getEditorTextUpdate());
         assertTrue(getCardEditorFocusedView() == focusedChildView);
     }
 
@@ -79,22 +79,22 @@ public class PaymentRequestCardEditorAutoAdvanceTest extends PaymentRequestTestB
     @Feature({"Payments"})
     public void test15DigitsCreditCard()
             throws InterruptedException, ExecutionException, TimeoutException {
-        triggerUIAndWait(mReadyToPay);
+        triggerUIAndWait(getReadyToPay());
 
-        clickInPaymentMethodAndWait(R.id.payments_section, mReadyForInput);
-        clickInPaymentMethodAndWait(R.id.payments_add_option_button, mReadyToEdit);
+        clickInPaymentMethodAndWait(R.id.payments_section, getReadyForInput());
+        clickInPaymentMethodAndWait(R.id.payments_add_option_button, getReadyToEdit());
 
         // American Express credit card.
         final View focusedChildView = getCardEditorFocusedView();
-        setTextInCardEditorAndWait(new String[] {"3782 822463 1000"}, mEditorTextUpdate);
+        setTextInCardEditorAndWait(new String[] {"3782 822463 1000"}, getEditorTextUpdate());
         assertTrue(getCardEditorFocusedView() == focusedChildView);
 
         // '3782 822463 10000' is an invalid 15 digits card number.
-        setTextInCardEditorAndWait(new String[] {"3782 822463 10000"}, mEditorTextUpdate);
+        setTextInCardEditorAndWait(new String[] {"3782 822463 10000"}, getEditorTextUpdate());
         assertTrue(getCardEditorFocusedView() == focusedChildView);
 
         // '3782 822463 10005' is a valid 15 digits card number.
-        setTextInCardEditorAndWait(new String[] {"3782 822463 10005"}, mEditorTextUpdate);
+        setTextInCardEditorAndWait(new String[] {"3782 822463 10005"}, getEditorTextUpdate());
         assertTrue(getCardEditorFocusedView() != focusedChildView);
 
         // Request focus to card number field after auto advancing above.
@@ -104,7 +104,7 @@ public class PaymentRequestCardEditorAutoAdvanceTest extends PaymentRequestTestB
                 focusedChildView.requestFocus();
             }
         });
-        setTextInCardEditorAndWait(new String[] {"3782 822463 10005 1"}, mEditorTextUpdate);
+        setTextInCardEditorAndWait(new String[] {"3782 822463 10005 1"}, getEditorTextUpdate());
         assertTrue(getCardEditorFocusedView() == focusedChildView);
     }
 
@@ -112,30 +112,30 @@ public class PaymentRequestCardEditorAutoAdvanceTest extends PaymentRequestTestB
     @Feature({"Payments"})
     public void test16DigitsCreditCard()
             throws InterruptedException, ExecutionException, TimeoutException {
-        triggerUIAndWait(mReadyToPay);
+        triggerUIAndWait(getReadyToPay());
 
-        clickInPaymentMethodAndWait(R.id.payments_section, mReadyForInput);
-        clickInPaymentMethodAndWait(R.id.payments_add_option_button, mReadyToEdit);
+        clickInPaymentMethodAndWait(R.id.payments_section, getReadyForInput());
+        clickInPaymentMethodAndWait(R.id.payments_add_option_button, getReadyToEdit());
 
         // DISCOVER, JCB, MASTERCARD, MIR and VISA cards have 16 digits. Takes VISA as test input
         // which has 13 digits valid card.
         final View focusedChildView = getCardEditorFocusedView();
-        setTextInCardEditorAndWait(new String[] {"4012 8888 8888 "}, mEditorTextUpdate);
+        setTextInCardEditorAndWait(new String[] {"4012 8888 8888 "}, getEditorTextUpdate());
         assertTrue(getCardEditorFocusedView() == focusedChildView);
 
         // '4012 8888 8888 1' is a valid 13 digits card number.
-        setTextInCardEditorAndWait(new String[] {"4012 8888 8888 1"}, mEditorTextUpdate);
+        setTextInCardEditorAndWait(new String[] {"4012 8888 8888 1"}, getEditorTextUpdate());
         assertTrue(getCardEditorFocusedView() == focusedChildView);
 
-        setTextInCardEditorAndWait(new String[] {"4012 8888 8888 188"}, mEditorTextUpdate);
+        setTextInCardEditorAndWait(new String[] {"4012 8888 8888 188"}, getEditorTextUpdate());
         assertTrue(getCardEditorFocusedView() == focusedChildView);
 
         // '4012 8888 8888 1880' is an invalid 16 digits card number.
-        setTextInCardEditorAndWait(new String[] {"4012 8888 8888 1880"}, mEditorTextUpdate);
+        setTextInCardEditorAndWait(new String[] {"4012 8888 8888 1880"}, getEditorTextUpdate());
         assertTrue(getCardEditorFocusedView() == focusedChildView);
 
         // '4012 8888 8888 1881' is a valid 16 digits card number.
-        setTextInCardEditorAndWait(new String[] {"4012 8888 8888 1881"}, mEditorTextUpdate);
+        setTextInCardEditorAndWait(new String[] {"4012 8888 8888 1881"}, getEditorTextUpdate());
         assertTrue(getCardEditorFocusedView() != focusedChildView);
 
         // Request focus to card number field after auto advancing above.
@@ -145,7 +145,7 @@ public class PaymentRequestCardEditorAutoAdvanceTest extends PaymentRequestTestB
                 focusedChildView.requestFocus();
             }
         });
-        setTextInCardEditorAndWait(new String[] {"4012 8888 8888 1881 1"}, mEditorTextUpdate);
+        setTextInCardEditorAndWait(new String[] {"4012 8888 8888 1881 1"}, getEditorTextUpdate());
         assertTrue(getCardEditorFocusedView() == focusedChildView);
     }
 
@@ -153,29 +153,29 @@ public class PaymentRequestCardEditorAutoAdvanceTest extends PaymentRequestTestB
     @Feature({"Payments"})
     public void test19DigitsCreditCard()
             throws InterruptedException, ExecutionException, TimeoutException {
-        triggerUIAndWait(mReadyToPay);
+        triggerUIAndWait(getReadyToPay());
 
-        clickInPaymentMethodAndWait(R.id.payments_section, mReadyForInput);
-        clickInPaymentMethodAndWait(R.id.payments_add_option_button, mReadyToEdit);
+        clickInPaymentMethodAndWait(R.id.payments_section, getReadyForInput());
+        clickInPaymentMethodAndWait(R.id.payments_add_option_button, getReadyToEdit());
 
         // UNIONPAY credit card.
         final View focusedChildView = getCardEditorFocusedView();
-        setTextInCardEditorAndWait(new String[] {"6250 9410 0652 859"}, mEditorTextUpdate);
+        setTextInCardEditorAndWait(new String[] {"6250 9410 0652 859"}, getEditorTextUpdate());
         assertTrue(getCardEditorFocusedView() == focusedChildView);
 
         // '6250 9410 0652 8599' is a valid 16 digits card number.
-        setTextInCardEditorAndWait(new String[] {"6250 9410 0652 8599"}, mEditorTextUpdate);
+        setTextInCardEditorAndWait(new String[] {"6250 9410 0652 8599"}, getEditorTextUpdate());
         assertTrue(getCardEditorFocusedView() == focusedChildView);
 
-        setTextInCardEditorAndWait(new String[] {"6212 3456 7890 0000 00"}, mEditorTextUpdate);
+        setTextInCardEditorAndWait(new String[] {"6212 3456 7890 0000 00"}, getEditorTextUpdate());
         assertTrue(getCardEditorFocusedView() == focusedChildView);
 
         // '6212 3456 7890 0000 001' is an invalid 19 digits card number.
-        setTextInCardEditorAndWait(new String[] {"6212 3456 7890 0000 001"}, mEditorTextUpdate);
+        setTextInCardEditorAndWait(new String[] {"6212 3456 7890 0000 001"}, getEditorTextUpdate());
         assertTrue(getCardEditorFocusedView() == focusedChildView);
 
         // '6212 3456 7890 0000 003' is a valid 19 digits card number.
-        setTextInCardEditorAndWait(new String[] {"6212 3456 7890 0000 003"}, mEditorTextUpdate);
+        setTextInCardEditorAndWait(new String[] {"6212 3456 7890 0000 003"}, getEditorTextUpdate());
         assertTrue(getCardEditorFocusedView() != focusedChildView);
 
         // Request focus to card number field after auto advancing above.
@@ -185,7 +185,8 @@ public class PaymentRequestCardEditorAutoAdvanceTest extends PaymentRequestTestB
                 focusedChildView.requestFocus();
             }
         });
-        setTextInCardEditorAndWait(new String[] {"6212 3456 7890 0000 0031"}, mEditorTextUpdate);
+        setTextInCardEditorAndWait(
+                new String[] {"6212 3456 7890 0000 0031"}, getEditorTextUpdate());
         assertTrue(getCardEditorFocusedView() == focusedChildView);
     }
 }
