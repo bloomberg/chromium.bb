@@ -27,6 +27,10 @@ class FakePeripheral : public device::BluetoothDevice {
   // Set it to indicate if the Peripheral is connected or not.
   void SetGattConnected(bool gatt_connected);
 
+  // Updates the peripheral's UUIDs that are returned by
+  // BluetoothDevice::GetUUIDs().
+  void SetServiceUUIDs(UUIDSet service_uuids);
+
   // BluetoothDevice overrides:
   uint32_t GetBluetoothClass() const override;
 #if defined(OS_CHROMEOS) || defined(OS_LINUX)
@@ -80,6 +84,7 @@ class FakePeripheral : public device::BluetoothDevice {
   const std::string address_;
   base::Optional<std::string> name_;
   bool gatt_connected_;
+  UUIDSet service_uuids_;
 
   DISALLOW_COPY_AND_ASSIGN(FakePeripheral);
 };

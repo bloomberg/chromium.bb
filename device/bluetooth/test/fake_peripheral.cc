@@ -15,11 +15,15 @@ FakePeripheral::FakePeripheral(FakeCentral* fake_central,
 FakePeripheral::~FakePeripheral() {}
 
 void FakePeripheral::SetName(base::Optional<std::string> name) {
-  name_ = name;
+  name_ = std::move(name);
 }
 
 void FakePeripheral::SetGattConnected(bool connected) {
   gatt_connected_ = connected;
+}
+
+void FakePeripheral::SetServiceUUIDs(UUIDSet service_uuids) {
+  service_uuids_ = std::move(service_uuids);
 }
 
 uint32_t FakePeripheral::GetBluetoothClass() const {
@@ -102,7 +106,7 @@ bool FakePeripheral::IsConnecting() const {
 }
 
 device::BluetoothDevice::UUIDSet FakePeripheral::GetUUIDs() const {
-  return UUIDSet();
+  return service_uuids_;
 }
 
 bool FakePeripheral::ExpectingPinCode() const {

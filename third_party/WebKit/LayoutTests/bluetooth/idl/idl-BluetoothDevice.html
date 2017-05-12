@@ -2,6 +2,8 @@
 <script src="../../resources/testharness.js"></script>
 <script src="../../resources/testharnessreport.js"></script>
 <script src="../../resources/bluetooth/bluetooth-helpers.js"></script>
+<script src="../../resources/bluetooth/web-bluetooth-test.js"></script>
+<script src="../../resources/mojo-helpers.js"></script>
 <script>
 test(() => {
   assert_throws(null, () => new BluetoothDevice(),
@@ -11,7 +13,7 @@ test(() => {
 }, 'BluetoothDevice IDL test');
 
 promise_test(() => {
-  return setBluetoothFakeAdapter('GlucoseHeartRateAdapter')
+  return setUpHealthThermometerAndHeartRateDevices()
     .then(() => requestDeviceWithKeyDown({
       filters: [{services: ['heart_rate']}]}))
     .then(device => {
@@ -23,7 +25,7 @@ promise_test(() => {
       device.id = 'overwritten';
       device.name = 'overwritten';
       assert_equals(device.id, old_device_id);
-      assert_equals(device.name, 'Heart Rate Device');
+      assert_equals(device.name, 'Heart Rate');
     });
 }, 'BluetoothDevice attributes.');
 </script>
