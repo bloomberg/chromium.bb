@@ -92,14 +92,23 @@ bool DOMMatrixReadOnly::ValidateAndFixup(DOMMatrixInit& other,
   return true;
 }
 
-DOMMatrixReadOnly* DOMMatrixReadOnly::Create(ExceptionState& exception_state) {
+DOMMatrixReadOnly* DOMMatrixReadOnly::Create(
+    ExecutionContext* execution_context,
+    ExceptionState& exception_state) {
   return new DOMMatrixReadOnly(TransformationMatrix());
 }
 
 DOMMatrixReadOnly* DOMMatrixReadOnly::Create(
+    ExecutionContext* execution_context,
     StringOrUnrestrictedDoubleSequence& init,
     ExceptionState& exception_state) {
   if (init.isString()) {
+    if (!execution_context->IsDocument()) {
+      exception_state.ThrowTypeError(
+          "DOMMatrix can't be constructed with strings on workers.");
+      return nullptr;
+    }
+
     DOMMatrixReadOnly* matrix = new DOMMatrixReadOnly(TransformationMatrix());
     matrix->SetMatrixValueFromString(init.getAsString(), exception_state);
     return matrix;

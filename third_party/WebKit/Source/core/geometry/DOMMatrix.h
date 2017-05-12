@@ -17,8 +17,9 @@ class CORE_EXPORT DOMMatrix : public DOMMatrixReadOnly {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static DOMMatrix* Create(ExceptionState&);
-  static DOMMatrix* Create(StringOrUnrestrictedDoubleSequence&,
+  static DOMMatrix* Create(ExecutionContext*, ExceptionState&);
+  static DOMMatrix* Create(ExecutionContext*,
+                           StringOrUnrestrictedDoubleSequence&,
                            ExceptionState&);
   // TODO(fserb): double check those two bellow are needed:
   static DOMMatrix* Create(DOMMatrixReadOnly*,

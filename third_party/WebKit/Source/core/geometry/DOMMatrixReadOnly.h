@@ -27,8 +27,9 @@ class CORE_EXPORT DOMMatrixReadOnly
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static DOMMatrixReadOnly* Create(ExceptionState&);
-  static DOMMatrixReadOnly* Create(StringOrUnrestrictedDoubleSequence&,
+  static DOMMatrixReadOnly* Create(ExecutionContext*, ExceptionState&);
+  static DOMMatrixReadOnly* Create(ExecutionContext*,
+                                   StringOrUnrestrictedDoubleSequence&,
                                    ExceptionState&);
   static DOMMatrixReadOnly* fromFloat32Array(NotShared<DOMFloat32Array>,
                                              ExceptionState&);
