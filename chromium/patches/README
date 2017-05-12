@@ -40,6 +40,8 @@ Current patches:
     Don't deprecate avcodec_decode_audio4 and avcodec_decode_video2.
     https://crbug.com/661350
 
+    Don't deprecate av_packet_split_side_data. http://crbug.com/720142
+
   !!!SECURITY SENSITIVE ISSUE PLEASE VERIFY AFTER EACH FFMPEG ROLL!!!
   Remove UNCHECKED_BITSTREAM_READER defines in libavcodec/
     Remove "#define UNCHECKED_BITSTREAM_READER 1" from all codecs.
