@@ -11,7 +11,11 @@ from webkitpy.w3c.chromium_finder import absolute_chromium_dir
 
 
 WPT_DEST_NAME = 'wpt'
-WPT_GH_REPO_URL_TEMPLATE = 'https://{}@github.com/w3c/web-platform-tests.git'
+WPT_GH_ORG = 'w3c'
+WPT_GH_REPO_NAME = 'web-platform-tests'
+WPT_GH_URL = 'https://github.com/%s/%s/' % (WPT_GH_ORG, WPT_GH_REPO_NAME)
+WPT_GH_SSH_URL_TEMPLATE = 'https://{}@github.com/%s/%s.git' % (WPT_GH_ORG, WPT_GH_REPO_NAME)
+WPT_REVISION_FOOTER = 'WPT-Export-Revision:'
 
 # TODO(qyearsley): This directory should be able to be constructed with
 # WebKitFinder and WPT_DEST_NAME, plus the string "external".
