@@ -9,18 +9,19 @@
 
 namespace feature_engagement_tracker {
 
-OnceConditionValidator::OnceConditionValidator() = default;
+OnceConditionValidator::OnceConditionValidator()
+    : currently_showing_feature_(nullptr) {}
 
 OnceConditionValidator::~OnceConditionValidator() = default;
 
 ConditionValidator::Result OnceConditionValidator::MeetsConditions(
     const base::Feature& feature,
     const Model& model,
-    uint32_t current_day) {
+    uint32_t current_day) const {
   ConditionValidator::Result result(true);
   result.model_ready_ok = model.IsReady();
 
-  result.currently_showing_ok = !model.IsCurrentlyShowing();
+  result.currently_showing_ok = currently_showing_feature_ == nullptr;
 
   const FeatureConfig& config = model.GetFeatureConfig(feature);
   result.config_ok = config.valid;
@@ -28,12 +29,19 @@ ConditionValidator::Result OnceConditionValidator::MeetsConditions(
   result.session_rate_ok =
       shown_features_.find(&feature) == shown_features_.end();
 
-  // Only show if there are no other errors.
-  if (result.NoErrors() && result.session_rate_ok) {
-    shown_features_.insert(&feature);
-  }
-
   return result;
+}
+
+void OnceConditionValidator::NotifyIsShowing(const base::Feature& feature) {
+  DCHECK(currently_showing_feature_ == nullptr);
+  DCHECK(shown_features_.find(&feature) == shown_features_.end());
+  shown_features_.insert(&feature);
+  currently_showing_feature_ = &feature;
+}
+
+void OnceConditionValidator::NotifyDismissed(const base::Feature& feature) {
+  DCHECK(&feature == currently_showing_feature_);
+  currently_showing_feature_ = nullptr;
 }
 
 }  // namespace feature_engagement_tracker
