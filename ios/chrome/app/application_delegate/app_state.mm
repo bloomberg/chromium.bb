@@ -340,12 +340,11 @@ initWithBrowserLauncher:(id<BrowserLauncher>)browserLauncher
                           startupInformation:_startupInformation
                       browserViewInformation:[_browserLauncher
                                                  browserViewInformation]];
-  } else if (_shouldOpenNTPTabOnActive) {
-    if (![tabSwitcher openNewTabFromTabSwitcher]) {
-      [[[_browserLauncher browserViewInformation] currentBVC] newTab:nil];
-    }
-    _shouldOpenNTPTabOnActive = NO;
+  } else if (_shouldOpenNTPTabOnActive &&
+             ![tabSwitcher openNewTabFromTabSwitcher]) {
+    [[[_browserLauncher browserViewInformation] currentBVC] newTab:nil];
   }
+  _shouldOpenNTPTabOnActive = NO;
 
   [MetricsMediator logStartupDuration:_startupInformation];
 }
