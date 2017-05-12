@@ -43,6 +43,7 @@ import org.chromium.chrome.test.util.OmniboxTestUtils;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.KeyUtils;
+import org.chromium.content_public.common.ContentUrlConstants;
 
 import java.util.concurrent.Callable;
 
@@ -146,7 +147,17 @@ public class SearchActivityTest {
 
     @Test
     @SmallTest
-    public void testStartsBrowserAfterUrlSubmitted() throws Exception {
+    public void testStartsBrowserAfterUrlSubmitted_aboutblank() throws Exception {
+        verifyUrlLoads(ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL);
+    }
+
+    @Test
+    @SmallTest
+    public void testStartsBrowserAfterUrlSubmitted_chromeUrl() throws Exception {
+        verifyUrlLoads("chrome://flags/");
+    }
+
+    private void verifyUrlLoads(final String url) throws Exception {
         SearchActivity searchActivity = startSearchActivity();
 
         // Wait for the Activity to fully load.
@@ -161,10 +172,10 @@ public class SearchActivityTest {
         instrumentation.addMonitor(browserMonitor);
 
         // Type in a URL that should get kicked to ChromeTabbedActivity.
-        setUrlBarText(searchActivity, "about:blank");
+        setUrlBarText(searchActivity, url);
         final UrlBar urlBar = (UrlBar) searchActivity.findViewById(R.id.url_bar);
         KeyUtils.singleKeyEventView(instrumentation, urlBar, KeyEvent.KEYCODE_ENTER);
-        waitForChromeTabbedActivityToStart(browserMonitor);
+        waitForChromeTabbedActivityToStart(browserMonitor, url);
     }
 
     @Test
@@ -178,7 +189,7 @@ public class SearchActivityTest {
         Assert.assertEquals(0, mTestDelegate.onFinishDeferredInitializationCallback.getCallCount());
 
         // Set some text in the search box (but don't hit enter).
-        setUrlBarText(searchActivity, "about:blank");
+        setUrlBarText(searchActivity, ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL);
 
         // Start loading native, then let the activity finish initialization.
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
@@ -206,7 +217,8 @@ public class SearchActivityTest {
         instrumentation.addMonitor(browserMonitor);
         UrlBar urlBar = (UrlBar) searchActivity.findViewById(R.id.url_bar);
         KeyUtils.singleKeyEventView(instrumentation, urlBar, KeyEvent.KEYCODE_ENTER);
-        waitForChromeTabbedActivityToStart(browserMonitor);
+        waitForChromeTabbedActivityToStart(
+                browserMonitor, ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL);
     }
 
     @Test
@@ -221,7 +233,7 @@ public class SearchActivityTest {
 
         // Submit a URL before native is loaded.  The browser shouldn't start yet.
         final Instrumentation instrumentation = InstrumentationRegistry.getInstrumentation();
-        setUrlBarText(searchActivity, "about:blank");
+        setUrlBarText(searchActivity, ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL);
         UrlBar urlBar = (UrlBar) searchActivity.findViewById(R.id.url_bar);
         KeyUtils.singleKeyEventView(instrumentation, urlBar, KeyEvent.KEYCODE_ENTER);
         Assert.assertEquals(searchActivity, ApplicationStatus.getLastTrackedFocusedActivity());
@@ -242,7 +254,8 @@ public class SearchActivityTest {
                 1, mTestDelegate.shouldDelayNativeInitializationCallback.getCallCount());
         mTestDelegate.showSearchEngineDialogIfNeededCallback.waitForCallback(0);
         mTestDelegate.onFinishDeferredInitializationCallback.waitForCallback(0);
-        waitForChromeTabbedActivityToStart(browserMonitor);
+        waitForChromeTabbedActivityToStart(
+                browserMonitor, ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL);
     }
 
     @Test
@@ -256,7 +269,7 @@ public class SearchActivityTest {
         Assert.assertEquals(0, mTestDelegate.onFinishDeferredInitializationCallback.getCallCount());
 
         // Set some text in the search box, then continue startup.
-        setUrlBarText(searchActivity, "about:blank");
+        setUrlBarText(searchActivity, ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL);
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
@@ -283,7 +296,8 @@ public class SearchActivityTest {
         instrumentation.addMonitor(browserMonitor);
         UrlBar urlBar = (UrlBar) searchActivity.findViewById(R.id.url_bar);
         KeyUtils.singleKeyEventView(instrumentation, urlBar, KeyEvent.KEYCODE_ENTER);
-        waitForChromeTabbedActivityToStart(browserMonitor);
+        waitForChromeTabbedActivityToStart(
+                browserMonitor, ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL);
     }
 
     @Test
@@ -298,7 +312,7 @@ public class SearchActivityTest {
         Assert.assertEquals(0, mTestDelegate.onFinishDeferredInitializationCallback.getCallCount());
 
         // Set some text in the search box, then select the first engine to continue startup.
-        setUrlBarText(searchActivity, "about:blank");
+        setUrlBarText(searchActivity, ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL);
         DefaultSearchEngineDialogHelperUtils.clickOnFirstEngine(
                 mTestDelegate.shownPromoDialog.findViewById(android.R.id.content));
 
@@ -321,7 +335,8 @@ public class SearchActivityTest {
         instrumentation.addMonitor(browserMonitor);
         UrlBar urlBar = (UrlBar) searchActivity.findViewById(R.id.url_bar);
         KeyUtils.singleKeyEventView(instrumentation, urlBar, KeyEvent.KEYCODE_ENTER);
-        waitForChromeTabbedActivityToStart(browserMonitor);
+        waitForChromeTabbedActivityToStart(
+                browserMonitor, ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL);
     }
 
     @Test
@@ -404,8 +419,8 @@ public class SearchActivityTest {
         return (SearchActivity) searchActivity;
     }
 
-    private void waitForChromeTabbedActivityToStart(ActivityMonitor browserMonitor)
-            throws Exception {
+    private void waitForChromeTabbedActivityToStart(
+            ActivityMonitor browserMonitor, String expectedUrl) throws Exception {
         final Instrumentation instrumentation = InstrumentationRegistry.getInstrumentation();
         final Activity browserActivity = instrumentation.waitForMonitorWithTimeout(
                 browserMonitor, CriteriaHelper.DEFAULT_MAX_TIME_TO_POLL);
@@ -413,16 +428,16 @@ public class SearchActivityTest {
         Assert.assertTrue(
                 "Wrong activity started", browserActivity instanceof ChromeTabbedActivity);
 
-        CriteriaHelper.pollUiThread(new Criteria() {
+        CriteriaHelper.pollUiThread(Criteria.equals(expectedUrl, new Callable<String>() {
             @Override
-            public boolean isSatisfied() {
+            public String call() throws Exception {
                 ChromeTabbedActivity chromeActivity = (ChromeTabbedActivity) browserActivity;
                 Tab tab = chromeActivity.getActivityTab();
-                if (tab == null) return false;
+                if (tab == null) return null;
 
-                return TextUtils.equals("about:blank", tab.getUrl());
+                return tab.getUrl();
             }
-        });
+        }));
     }
 
     @SuppressLint("SetTextI18n")
