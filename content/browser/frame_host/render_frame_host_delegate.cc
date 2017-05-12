@@ -107,4 +107,8 @@ RenderFrameHostDelegate::GetJavaRenderFrameHostDelegate() {
 }
 #endif
 
+bool RenderFrameHostDelegate::IsBeingDestroyed() const {
+  return false;
+}
+
 }  // namespace content

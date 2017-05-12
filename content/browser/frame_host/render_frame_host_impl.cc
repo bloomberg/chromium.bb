@@ -1067,6 +1067,12 @@ bool RenderFrameHostImpl::CreateRenderFrame(int proxy_routing_id,
 }
 
 void RenderFrameHostImpl::SetRenderFrameCreated(bool created) {
+  // We should not create new RenderFrames while our delegate is being destroyed
+  // (e.g., via a WebContentsObserver during WebContents shutdown).  This seems
+  // to have caused crashes in https://crbug.com/717650.
+  if (created && delegate_)
+    CHECK(!delegate_->IsBeingDestroyed());
+
   bool was_created = render_frame_created_;
   render_frame_created_ = created;
 
