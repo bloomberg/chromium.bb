@@ -15,11 +15,11 @@ class PageCyclerStory(page.Page):
 
   def __init__(self, url, page_set,
       shared_page_state_class=shared_page_state.SharedDesktopPageState,
-      cache_temperature=cache_temperature_module.ANY, **kwargs):
+      cache_temperature=cache_temperature_module.ANY, name='', **kwargs):
     super(PageCyclerStory, self).__init__(
         url=url, page_set=page_set,
         shared_page_state_class=shared_page_state_class,
-        cache_temperature=cache_temperature,
+        cache_temperature=cache_temperature, name=name,
         **kwargs)
 
   def RunNavigateSteps(self, action_runner):

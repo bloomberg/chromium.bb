@@ -24,6 +24,25 @@ class _LoadingBase(perf_benchmark.PerfBenchmark):
     return tbm_options
 
 
+@benchmark.Disabled('android')
+@benchmark.Owner(emails=['kouhei@chormium.org', 'ksakamoto@chromium.org'])
+class LoadingDesktop(_LoadingBase):
+  """ A benchmark measuring loading performance of desktop sites. """
+
+  @classmethod
+  def ShouldDisable(cls, possible_browser):
+    return possible_browser.browser_type == 'reference'
+
+  def CreateStorySet(self, options):
+    return page_sets.LoadingDesktopStorySet(
+        cache_temperatures=[cache_temperature.PCV1_COLD,
+                            cache_temperature.PCV1_WARM,])
+
+  @classmethod
+  def Name(cls):
+    return 'loading.desktop'
+
+
 @benchmark.Enabled('android')
 @benchmark.Owner(emails=['kouhei@chromium.org', 'ksakamoto@chromium.org'])
 class LoadingMobile(_LoadingBase):
@@ -43,14 +62,14 @@ class LoadingMobile(_LoadingBase):
 
     return False
 
-  @classmethod
-  def Name(cls):
-    return 'loading.mobile'
-
   def CreateStorySet(self, options):
     return page_sets.LoadingMobileStorySet(
         cache_temperatures=[cache_temperature.ANY],
         traffic_settings=[traffic_setting.NONE, traffic_setting.REGULAR_3G])
+
+  @classmethod
+  def Name(cls):
+    return 'loading.mobile'
 
 
 # Disabled because we do not plan on running CT benchmarks on the perf
@@ -61,10 +80,6 @@ class LoadingClusterTelemetry(_LoadingBase):
   options = {'upload_results': True}
 
   _ALL_NET_CONFIGS = traffic_setting.NETWORK_CONFIGS.keys()
-
-  @classmethod
-  def Name(cls):
-    return 'loading.cluster_telemetry'
 
   @classmethod
   def AddBenchmarkCommandLineArgs(cls, parser):
@@ -86,3 +101,7 @@ class LoadingClusterTelemetry(_LoadingBase):
       options.urls_list, options.user_agent, options.archive_data_file,
       traffic_setting=options.traffic_setting,
       run_page_interaction_callback=Wait)
+
+  @classmethod
+  def Name(cls):
+    return 'loading.cluster_telemetry'

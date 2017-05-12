@@ -36,6 +36,7 @@ jetstream,"bmeurer@chromium.org, mvstanton@chromium.org",
 kraken,"bmeurer@chromium.org, mvstanton@chromium.org",
 load_library_perf_tests,,
 loading.cluster_telemetry,,
+loading.desktop,"kouhei@chormium.org, ksakamoto@chromium.org",
 loading.mobile,"kouhei@chromium.org, ksakamoto@chromium.org",
 media.android.tough_video_cases,"crouleau@chromium.org, videostack-eng@google.com",Internals>Media
 media.android.tough_video_cases_tbmv2,"johnchen@chromium.org, crouleau@chromium.org",Internals>Media
