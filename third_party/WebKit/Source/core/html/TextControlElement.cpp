@@ -99,6 +99,18 @@ void TextControlElement::DefaultEventHandler(Event* event) {
   if (event->type() == EventTypeNames::webkitEditableContentChanged &&
       GetLayoutObject() && GetLayoutObject()->IsTextControl()) {
     last_change_was_user_edit_ = !GetDocument().IsRunningExecCommand();
+
+    if (IsFocused()) {
+      // Updating the cache in SelectionChanged() isn't enough because
+      // SelectionChanged() is not called if:
+      // - Text nodes in the inner-editor is split to multiple, and
+      // - The caret is on the beginning of a Text node, and its previous node
+      //   is updated, or
+      // - The caret is on the end of a text node, and its next node is updated.
+      CacheSelection(ComputeSelectionStart(), ComputeSelectionEnd(),
+                     ComputeSelectionDirection());
+    }
+
     SubtreeHasChanged();
     return;
   }
