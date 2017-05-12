@@ -352,24 +352,25 @@ gfx::Vector2dF StickyPositionOffset(TransformTree* tree, TransformNode* node) {
     return gfx::Vector2dF();
   StickyPositionNodeData* sticky_data = tree->StickyPositionData(node->id);
   const LayerStickyPositionConstraint& constraint = sticky_data->constraints;
+  auto& property_trees = *tree->property_trees();
   ScrollNode* scroll_node =
-      tree->property_trees()->scroll_tree.Node(sticky_data->scroll_ancestor);
-  gfx::ScrollOffset scroll_offset =
-      tree->property_trees()->scroll_tree.current_scroll_offset(
-          scroll_node->owning_layer_id);
+      property_trees.scroll_tree.Node(sticky_data->scroll_ancestor);
+  TransformNode* transform_node =
+      property_trees.transform_tree.Node(scroll_node->transform_id);
+  const auto& scroll_offset = transform_node->scroll_offset;
+  DCHECK(property_trees.scroll_tree.current_scroll_offset(
+             scroll_node->owning_layer_id) == scroll_offset);
   gfx::PointF scroll_position(scroll_offset.x(), scroll_offset.y());
-  TransformNode* scroll_ancestor_transform_node =
-      tree->Node(scroll_node->transform_id);
-  if (scroll_ancestor_transform_node->scrolls) {
+  if (transform_node->scrolls) {
     // The scroll position does not include snapping which shifts the scroll
     // offset to align to a pixel boundary, we need to manually include it here.
     // In this case, snapping is caused by a scroll.
-    scroll_position -= scroll_ancestor_transform_node->snap_amount;
+    scroll_position -= transform_node->snap_amount;
   }
 
   gfx::RectF clip(
       scroll_position,
-      gfx::SizeF(tree->property_trees()->scroll_tree.scroll_clip_layer_bounds(
+      gfx::SizeF(property_trees.scroll_tree.scroll_clip_layer_bounds(
           scroll_node->id)));
   gfx::Vector2dF layer_offset(sticky_data->main_thread_offset);
 
