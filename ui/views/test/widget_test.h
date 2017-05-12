@@ -177,6 +177,24 @@ class WidgetActivationWaiter : public WidgetObserver {
   DISALLOW_COPY_AND_ASSIGN(WidgetActivationWaiter);
 };
 
+// Use in tests to provide functionality to observe the widget passed in the
+// constructor for the widget closing event.
+class WidgetClosingObserver : public WidgetObserver {
+ public:
+  explicit WidgetClosingObserver(Widget* widget);
+  ~WidgetClosingObserver() override;
+
+  bool widget_closed() const { return !widget_; }
+
+ private:
+  // views::WidgetObserver override:
+  void OnWidgetClosing(Widget* widget) override;
+
+  Widget* widget_;
+
+  DISALLOW_COPY_AND_ASSIGN(WidgetClosingObserver);
+};
+
 }  // namespace test
 }  // namespace views
 
