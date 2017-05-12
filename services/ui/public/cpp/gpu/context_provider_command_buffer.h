@@ -18,7 +18,7 @@
 #include "cc/output/context_provider.h"
 #include "gpu/command_buffer/client/shared_memory_limits.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
-#include "gpu/ipc/common/gpu_stream_constants.h"
+#include "gpu/command_buffer/common/scheduling_priority.h"
 #include "gpu/ipc/common/surface_handle.h"
 #include "services/ui/public/cpp/gpu/command_buffer_metrics.h"
 #include "ui/gl/gpu_preference.h"
@@ -50,7 +50,7 @@ class ContextProviderCommandBuffer
   ContextProviderCommandBuffer(
       scoped_refptr<gpu::GpuChannelHost> channel,
       int32_t stream_id,
-      gpu::GpuStreamPriority stream_priority,
+      gpu::SchedulingPriority stream_priority,
       gpu::SurfaceHandle surface_handle,
       const GURL& active_url,
       bool automatic_flushes,
@@ -112,7 +112,7 @@ class ContextProviderCommandBuffer
   bool bind_failed_ = false;
 
   const int32_t stream_id_;
-  const gpu::GpuStreamPriority stream_priority_;
+  const gpu::SchedulingPriority stream_priority_;
   const gpu::SurfaceHandle surface_handle_;
   const GURL active_url_;
   const bool automatic_flushes_;

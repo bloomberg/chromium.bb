@@ -14,6 +14,7 @@
 #include "cc/output/in_process_context_provider.h"
 #include "gpu/command_buffer/client/gpu_memory_buffer_manager.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
+#include "gpu/command_buffer/service/scheduler.h"
 #include "gpu/command_buffer/service/sync_point_manager.h"
 #include "gpu/config/gpu_info_collector.h"
 #include "gpu/config/gpu_switches.h"
@@ -96,7 +97,6 @@ GpuService::GpuService(const gpu::GPUInfo& gpu_info,
       gpu_workarounds_(base::CommandLine::ForCurrentProcess()),
       gpu_info_(gpu_info),
       gpu_feature_info_(gpu_feature_info),
-      sync_point_manager_(nullptr),
       bindings_(base::MakeUnique<mojo::BindingSet<mojom::GpuService>>()),
       weak_ptr_factory_(this) {
   DCHECK(!io_runner_->BelongsToCurrentThread());
@@ -176,13 +176,18 @@ void GpuService::InitializeWithHost(mojom::GpuHostPtr gpu_host,
     shutdown_event_ = owned_shutdown_event_.get();
   }
 
+  if (gpu_preferences_.enable_gpu_scheduler) {
+    scheduler_ = base::MakeUnique<gpu::Scheduler>(
+        base::ThreadTaskRunnerHandle::Get(), sync_point_manager_);
+  }
+
   // Defer creation of the render thread. This is to prevent it from handling
   // IPC messages before the sandbox has been enabled and all other necessary
   // initialization has succeeded.
   gpu_channel_manager_.reset(new gpu::GpuChannelManager(
       gpu_preferences_, gpu_workarounds_, this, watchdog_thread_.get(),
-      base::ThreadTaskRunnerHandle::Get(), io_runner_, sync_point_manager_,
-      gpu_memory_buffer_factory_.get(), gpu_feature_info_,
+      base::ThreadTaskRunnerHandle::Get(), io_runner_, scheduler_.get(),
+      sync_point_manager_, gpu_memory_buffer_factory_.get(), gpu_feature_info_,
       std::move(activity_flags)));
 
   media_gpu_channel_manager_.reset(

@@ -7,6 +7,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
+#include "gpu/command_buffer/common/scheduling_priority.h"
 #include "mojo/public/cpp/bindings/sync_call_restrictions.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -59,8 +60,12 @@ std::unique_ptr<Gpu> Gpu::Create(
 
 scoped_refptr<cc::ContextProvider> Gpu::CreateContextProvider(
     scoped_refptr<gpu::GpuChannelHost> gpu_channel) {
+  int32_t stream_id = 0;
+  gpu::SchedulingPriority stream_priority = gpu::SchedulingPriority::kNormal;
+
   constexpr bool automatic_flushes = false;
   constexpr bool support_locking = false;
+
   gpu::gles2::ContextCreationAttribHelper attributes;
   attributes.alpha_size = -1;
   attributes.depth_size = 0;
@@ -69,12 +74,11 @@ scoped_refptr<cc::ContextProvider> Gpu::CreateContextProvider(
   attributes.sample_buffers = 0;
   attributes.bind_generates_resource = false;
   attributes.lose_context_when_out_of_memory = true;
-  constexpr ui::ContextProviderCommandBuffer* shared_context_provider = nullptr;
+  ui::ContextProviderCommandBuffer* shared_context_provider = nullptr;
   return make_scoped_refptr(new ui::ContextProviderCommandBuffer(
-      std::move(gpu_channel), gpu::GPU_STREAM_DEFAULT,
-      gpu::GpuStreamPriority::NORMAL, gpu::kNullSurfaceHandle,
-      GURL("chrome://gpu/MusContextFactory"), automatic_flushes,
-      support_locking, gpu::SharedMemoryLimits(), attributes,
+      std::move(gpu_channel), stream_id, stream_priority,
+      gpu::kNullSurfaceHandle, GURL("chrome://gpu/MusContextFactory"),
+      automatic_flushes, support_locking, gpu::SharedMemoryLimits(), attributes,
       shared_context_provider, ui::command_buffer_metrics::MUS_CLIENT_CONTEXT));
 }
 

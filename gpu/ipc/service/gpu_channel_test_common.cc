@@ -79,11 +79,12 @@ GpuChannelTestCommon::GpuChannelTestCommon()
           new GpuChannelManager(GpuPreferences(),
                                 GpuDriverBugWorkarounds(),
                                 channel_manager_delegate_.get(),
-                                nullptr /* watchdog */,
+                                nullptr, /* watchdog */
                                 task_runner_.get(),
                                 io_task_runner_.get(),
+                                nullptr, /* scheduler */
                                 sync_point_manager_.get(),
-                                nullptr /* gpu_memory_buffer_factory */,
+                                nullptr, /* gpu_memory_buffer_factory */
                                 GpuFeatureInfo(),
                                 GpuProcessActivityFlags())) {
   // We need GL bindings to actually initialize command buffers.

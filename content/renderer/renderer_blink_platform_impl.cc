@@ -39,6 +39,7 @@
 #include "content/child/webmessageportchannel_impl.h"
 #include "content/common/file_utilities_messages.h"
 #include "content/common/frame_messages.h"
+#include "content/common/gpu_stream_constants.h"
 #include "content/common/render_process_messages.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/service_manager_connection.h"
@@ -72,7 +73,6 @@
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/config/gpu_info.h"
 #include "gpu/ipc/client/gpu_channel_host.h"
-#include "gpu/ipc/common/gpu_stream_constants.h"
 #include "ipc/ipc_sync_message_filter.h"
 #include "media/audio/audio_output_device.h"
 #include "media/blink/webcontentdecryptionmodule_impl.h"
@@ -1041,8 +1041,8 @@ RendererBlinkPlatformImpl::CreateOffscreenGraphicsContext3DProvider(
 
   scoped_refptr<ui::ContextProviderCommandBuffer> provider(
       new ui::ContextProviderCommandBuffer(
-          std::move(gpu_channel_host), gpu::GPU_STREAM_DEFAULT,
-          gpu::GpuStreamPriority::NORMAL, gpu::kNullSurfaceHandle,
+          std::move(gpu_channel_host), kGpuStreamIdDefault,
+          kGpuStreamPriorityDefault, gpu::kNullSurfaceHandle,
           GURL(top_document_web_url), automatic_flushes, support_locking,
           gpu::SharedMemoryLimits(), attributes, share_context,
           ui::command_buffer_metrics::OFFSCREEN_CONTEXT_FOR_WEBGL));

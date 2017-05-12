@@ -174,6 +174,9 @@ const char kDisableLowResTiling[] = "disable-low-res-tiling";
 // Disable the GPU process sandbox.
 const char kDisableGpuSandbox[]             = "disable-gpu-sandbox";
 
+// Disable GPU service scheduler.
+const char kDisableGpuScheduler[] = "disable-gpu-scheduler";
+
 // Suppresses hang monitor dialogs in renderer processes.  This may allow slow
 // unload handlers on a page to prevent the tab from closing, but the Task
 // Manager can be used to terminate the offending process in this case.
@@ -389,6 +392,9 @@ const char kEnableWebFontsInterventionV2SwitchValueEnabledWith3G[] =
 const char kEnableWebFontsInterventionV2SwitchValueEnabledWithSlow2G[] =
     "enabled-slow2g";
 const char kEnableWebFontsInterventionV2SwitchValueDisabled[] = "disabled";
+
+// Enables GPU channel scheduler.
+const char kEnableGpuScheduler[] = "enable-gpu-scheduler";
 
 // Makes the GL worker context run asynchronously by using a separate stream.
 const char kEnableGpuAsyncWorkerContext[] = "enable-gpu-async-worker-context";
