@@ -59,7 +59,7 @@ class FaviconDriverImpl : public FaviconDriver,
   void SetFaviconOutOfDateForPage(const GURL& url, bool force_reload);
 
   // Broadcasts new favicon URL candidates to FaviconHandlers.
-  void OnUpdateFaviconURL(const GURL& page_url,
+  void OnUpdateCandidates(const GURL& page_url,
                           const std::vector<FaviconURL>& candidates);
 
  protected:

@@ -141,7 +141,7 @@ WebFaviconDriver::~WebFaviconDriver() {
 void WebFaviconDriver::FaviconUrlUpdated(
     const std::vector<web::FaviconURL>& candidates) {
   DCHECK(!candidates.empty());
-  OnUpdateFaviconURL(GetActiveURL(), FaviconURLsFromWebFaviconURLs(candidates));
+  OnUpdateCandidates(GetActiveURL(), FaviconURLsFromWebFaviconURLs(candidates));
 }
 
 }  // namespace favicon

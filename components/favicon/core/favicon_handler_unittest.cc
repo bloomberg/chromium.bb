@@ -212,8 +212,8 @@ class MockDelegate : public FaviconHandler::Delegate {
   MockDelegate() {
     // Delegate image downloading to FakeImageDownloader.
     ON_CALL(*this, DownloadImage(_, _, _))
-        .WillByDefault(
-            Invoke(&fake_downloader_, &FakeImageDownloader::DownloadImage));
+        .WillByDefault(Invoke(&fake_image_downloader_,
+                              &FakeImageDownloader::DownloadImage));
   }
 
   MOCK_METHOD3(DownloadImage,
@@ -229,14 +229,18 @@ class MockDelegate : public FaviconHandler::Delegate {
                     bool icon_url_changed,
                     const gfx::Image& image));
 
-  FakeImageDownloader& fake_downloader() { return fake_downloader_; }
+  FakeImageDownloader& fake_image_downloader() {
+    return fake_image_downloader_;
+  }
 
   // Convenience getter for test readability. Returns pending and completed
   // download URLs.
-  const URLVector& downloads() const { return fake_downloader_.downloads(); }
+  const URLVector& downloads() const {
+    return fake_image_downloader_.downloads();
+  }
 
  private:
-  FakeImageDownloader fake_downloader_;
+  FakeImageDownloader fake_image_downloader_;
 };
 
 // FakeFaviconService mimics a FaviconService backend that allows setting up
@@ -383,10 +387,10 @@ class FaviconHandlerTest : public testing::Test {
       : scoped_task_environment_(
             base::test::ScopedTaskEnvironment::MainThreadType::UI) {
     // Register various known icon URLs.
-    delegate_.fake_downloader().Add(kIconURL10x10, IntVector{10});
-    delegate_.fake_downloader().Add(kIconURL12x12, IntVector{12});
-    delegate_.fake_downloader().Add(kIconURL16x16, IntVector{16});
-    delegate_.fake_downloader().Add(kIconURL64x64, IntVector{64});
+    delegate_.fake_image_downloader().Add(kIconURL10x10, IntVector{10});
+    delegate_.fake_image_downloader().Add(kIconURL12x12, IntVector{12});
+    delegate_.fake_image_downloader().Add(kIconURL16x16, IntVector{16});
+    delegate_.fake_image_downloader().Add(kIconURL64x64, IntVector{64});
 
     // The score computed by SelectFaviconFrames() is dependent on the supported
     // scale factors of the platform. It is used for determining the goodness of
@@ -400,7 +404,7 @@ class FaviconHandlerTest : public testing::Test {
   bool VerifyAndClearExpectations() {
     base::RunLoop().RunUntilIdle();
     favicon_service_.fake()->ClearDbRequests();
-    delegate_.fake_downloader().ClearDownloads();
+    delegate_.fake_image_downloader().ClearDownloads();
     return testing::Mock::VerifyAndClearExpectations(&favicon_service_) &&
            testing::Mock::VerifyAndClearExpectations(&delegate_);
   }
@@ -414,9 +418,9 @@ class FaviconHandlerTest : public testing::Test {
                                                     &delegate_, handler_type);
     handler->FetchFavicon(kPageURL);
     // The first RunUntilIdle() causes the FaviconService lookups be faster than
-    // OnUpdateFaviconURL(), which is the most likely scenario.
+    // OnUpdateCandidates(), which is the most likely scenario.
     base::RunLoop().RunUntilIdle();
-    handler->OnUpdateFaviconURL(kPageURL, candidates);
+    handler->OnUpdateCandidates(kPageURL, candidates);
     base::RunLoop().RunUntilIdle();
     return handler;
   }
@@ -475,7 +479,7 @@ TEST_F(FaviconHandlerTest, UpdateFaviconMappingsAndFetch) {
 // - There is data in the database for neither the page URL nor the icon URL.
 // AND
 // - FaviconService::GetFaviconForPageURL() callback returns before
-//   FaviconHandler::OnUpdateFaviconURL() is called.
+//   FaviconHandler::OnUpdateCandidates() is called.
 TEST_F(FaviconHandlerTest, DownloadUnknownFaviconIfCandidatesSlower) {
   // Defer the database lookup completion to control the exact timing.
   favicon_service_.fake()->SetRunCallbackManuallyForUrl(kPageURL);
@@ -489,7 +493,7 @@ TEST_F(FaviconHandlerTest, DownloadUnknownFaviconIfCandidatesSlower) {
   base::RunLoop().RunUntilIdle();
   // Database lookup for |kPageURL| is ongoing.
   ASSERT_TRUE(favicon_service_.fake()->HasPendingManualCallback());
-  // Causes FaviconService lookups be faster than OnUpdateFaviconURL().
+  // Causes FaviconService lookups be faster than OnUpdateCandidates().
   ASSERT_TRUE(favicon_service_.fake()->RunCallbackManually());
   ASSERT_TRUE(VerifyAndClearExpectations());
 
@@ -499,7 +503,7 @@ TEST_F(FaviconHandlerTest, DownloadUnknownFaviconIfCandidatesSlower) {
                              kPageURL, FaviconDriverObserver::NON_TOUCH_16_DIP,
                              kIconURL16x16, /*icon_url_changed=*/true, _));
   // Feed in favicons now that the database lookup is completed.
-  handler.OnUpdateFaviconURL(kPageURL,
+  handler.OnUpdateCandidates(kPageURL,
                              {FaviconURL(kIconURL16x16, FAVICON, kEmptySizes)});
   base::RunLoop().RunUntilIdle();
 
@@ -512,7 +516,7 @@ TEST_F(FaviconHandlerTest, DownloadUnknownFaviconIfCandidatesSlower) {
 // - There is data in the database for neither the page URL nor the icon URL.
 // AND
 // - FaviconService::GetFaviconForPageURL() callback returns after
-//   FaviconHandler::OnUpdateFaviconURL() is called.
+//   FaviconHandler::OnUpdateCandidates() is called.
 TEST_F(FaviconHandlerTest, DownloadUnknownFaviconIfCandidatesFaster) {
   // Defer the database lookup completion to control the exact timing.
   favicon_service_.fake()->SetRunCallbackManuallyForUrl(kPageURL);
@@ -525,7 +529,7 @@ TEST_F(FaviconHandlerTest, DownloadUnknownFaviconIfCandidatesFaster) {
   handler.FetchFavicon(kPageURL);
   base::RunLoop().RunUntilIdle();
   // Feed in favicons before completing the database lookup.
-  handler.OnUpdateFaviconURL(kPageURL,
+  handler.OnUpdateCandidates(kPageURL,
                              {FaviconURL(kIconURL16x16, FAVICON, kEmptySizes)});
 
   ASSERT_TRUE(VerifyAndClearExpectations());
@@ -590,8 +594,9 @@ TEST_F(FaviconHandlerTest, RedownloadExpiredPageUrlFavicon) {
       CreateRawBitmapResult(kIconURL, FAVICON, /*expired=*/true,
                             gfx::kFaviconSize, kOldColor));
 
-  delegate_.fake_downloader().Add(kIconURL, IntVector{gfx::kFaviconSize},
-                                  IntVector{gfx::kFaviconSize}, kNewColor);
+  delegate_.fake_image_downloader().Add(kIconURL, IntVector{gfx::kFaviconSize},
+                                        IntVector{gfx::kFaviconSize},
+                                        kNewColor);
 
   EXPECT_CALL(favicon_service_,
               SetFavicons(_, kIconURL, _, ImageColorIs(kNewColor)));
@@ -638,8 +643,9 @@ TEST_F(FaviconHandlerTest, UpdateAndDownloadFavicon) {
 TEST_F(FaviconHandlerTest, FaviconInHistoryInvalid) {
   const GURL kIconURL("http://www.google.com/favicon");
 
-  delegate_.fake_downloader().Add(kIconURL, IntVector{gfx::kFaviconSize},
-                                  IntVector{gfx::kFaviconSize}, SK_ColorBLUE);
+  delegate_.fake_image_downloader().Add(kIconURL, IntVector{gfx::kFaviconSize},
+                                        IntVector{gfx::kFaviconSize},
+                                        SK_ColorBLUE);
 
   // Set non empty but invalid data.
   std::vector<FaviconRawBitmapResult> bitmap_result =
@@ -685,7 +691,7 @@ TEST_F(FaviconHandlerTest, UpdateFavicon) {
 TEST_F(FaviconHandlerTest, Download2ndFaviconURLCandidate) {
   const GURL kIconURLReturning500("http://www.google.com/500.png");
 
-  delegate_.fake_downloader().AddError(kIconURLReturning500, 500);
+  delegate_.fake_image_downloader().AddError(kIconURLReturning500, 500);
 
   favicon_service_.fake()->Store(
       kPageURL, kIconURL64x64,
@@ -712,7 +718,7 @@ TEST_F(FaviconHandlerTest, Download2ndFaviconURLCandidate) {
 
 // Test that download data for icon URLs other than the current favicon
 // candidate URLs is ignored. This test tests the scenario where a download is
-// in flight when FaviconHandler::OnUpdateFaviconURL() is called.
+// in flight when FaviconHandler::OnUpdateCandidates() is called.
 // TODO(mastiz): Make this test deal with FaviconURLs of type
 // favicon_base::FAVICON and add new ones like OnlyDownloadMatchingIconType and
 // CallSetFaviconsWithCorrectIconType.
@@ -723,27 +729,27 @@ TEST_F(FaviconHandlerTest, UpdateDuringDownloading) {
 
   // Defer the download completion such that RunUntilIdle() doesn't complete
   // the download.
-  delegate_.fake_downloader().SetRunCallbackManuallyForUrl(kIconURL1);
+  delegate_.fake_image_downloader().SetRunCallbackManuallyForUrl(kIconURL1);
 
-  delegate_.fake_downloader().Add(kIconURL1, IntVector{16});
-  delegate_.fake_downloader().Add(kIconURL3, IntVector{64});
+  delegate_.fake_image_downloader().Add(kIconURL1, IntVector{16});
+  delegate_.fake_image_downloader().Add(kIconURL3, IntVector{64});
 
   std::unique_ptr<FaviconHandler> handler =
       RunHandlerWithSimpleFaviconCandidates({kIconURL1, kIconURL2});
 
   ASSERT_TRUE(VerifyAndClearExpectations());
-  ASSERT_TRUE(delegate_.fake_downloader().HasPendingManualCallback());
+  ASSERT_TRUE(delegate_.fake_image_downloader().HasPendingManualCallback());
 
   // Favicon update should invalidate the ongoing download.
   EXPECT_CALL(favicon_service_, SetFavicons(_, kIconURL3, _, _));
   EXPECT_CALL(delegate_, OnFaviconUpdated(_, _, kIconURL3, _, _));
 
-  handler->OnUpdateFaviconURL(kPageURL,
+  handler->OnUpdateCandidates(kPageURL,
                               {FaviconURL(kIconURL3, FAVICON, kEmptySizes)});
 
   // Finalizes download, which should be thrown away as the favicon URLs were
   // updated.
-  EXPECT_TRUE(delegate_.fake_downloader().RunCallbackManually());
+  EXPECT_TRUE(delegate_.fake_image_downloader().RunCallbackManually());
   base::RunLoop().RunUntilIdle();
 
   EXPECT_THAT(favicon_service_.fake()->db_requests(), ElementsAre(kIconURL3));
@@ -761,8 +767,8 @@ TEST_F(FaviconHandlerTest, UpdateDuringDatabaseLookup) {
   // lookup.
   favicon_service_.fake()->SetRunCallbackManuallyForUrl(kIconURL1);
 
-  delegate_.fake_downloader().Add(kIconURL1, IntVector{16});
-  delegate_.fake_downloader().Add(kIconURL2, IntVector{64});
+  delegate_.fake_image_downloader().Add(kIconURL1, IntVector{16});
+  delegate_.fake_image_downloader().Add(kIconURL2, IntVector{64});
 
   std::unique_ptr<FaviconHandler> handler =
       RunHandlerWithSimpleFaviconCandidates(URLVector{kIconURL1});
@@ -775,7 +781,7 @@ TEST_F(FaviconHandlerTest, UpdateDuringDatabaseLookup) {
   EXPECT_CALL(favicon_service_, SetFavicons(_, kIconURL2, _, _));
   EXPECT_CALL(delegate_, OnFaviconUpdated(_, _, kIconURL2, _, _));
 
-  handler->OnUpdateFaviconURL(kPageURL,
+  handler->OnUpdateCandidates(kPageURL,
                               {FaviconURL(kIconURL2, FAVICON, kEmptySizes)});
 
   // Finalizes the DB lookup, which should be thrown away as the favicon URLs
@@ -799,8 +805,9 @@ TEST_F(FaviconHandlerTest, UpdateSameIconURLsWhileDownloadingShouldBeNoop) {
 
   // Defer the download completion such that RunUntilIdle() doesn't complete
   // the download.
-  delegate_.fake_downloader().SetRunCallbackManuallyForUrl(kSlowLoadingIconURL);
-  delegate_.fake_downloader().Add(kSlowLoadingIconURL, IntVector{16});
+  delegate_.fake_image_downloader().SetRunCallbackManuallyForUrl(
+      kSlowLoadingIconURL);
+  delegate_.fake_image_downloader().Add(kSlowLoadingIconURL, IntVector{16});
 
   std::unique_ptr<FaviconHandler> handler = RunHandlerWithCandidates(
       FaviconDriverObserver::NON_TOUCH_16_DIP, favicon_urls);
@@ -808,11 +815,11 @@ TEST_F(FaviconHandlerTest, UpdateSameIconURLsWhileDownloadingShouldBeNoop) {
   ASSERT_THAT(favicon_service_.fake()->db_requests(),
               ElementsAre(kPageURL, kIconURL64x64, kSlowLoadingIconURL));
   ASSERT_TRUE(VerifyAndClearExpectations());
-  ASSERT_TRUE(delegate_.fake_downloader().HasPendingManualCallback());
+  ASSERT_TRUE(delegate_.fake_image_downloader().HasPendingManualCallback());
 
-  // Calling OnUpdateFaviconURL() with the same icon URLs should have no effect,
+  // Calling OnUpdateCandidates() with the same icon URLs should have no effect,
   // despite the ongoing download.
-  handler->OnUpdateFaviconURL(kPageURL, favicon_urls);
+  handler->OnUpdateCandidates(kPageURL, favicon_urls);
   base::RunLoop().RunUntilIdle();
   EXPECT_THAT(favicon_service_.fake()->db_requests(), IsEmpty());
   EXPECT_THAT(delegate_.downloads(), IsEmpty());
@@ -820,7 +827,7 @@ TEST_F(FaviconHandlerTest, UpdateSameIconURLsWhileDownloadingShouldBeNoop) {
   // Complete the download.
   EXPECT_CALL(favicon_service_, SetFavicons(_, _, _, _));
   EXPECT_CALL(delegate_, OnFaviconUpdated(_, _, _, _, _));
-  EXPECT_TRUE(delegate_.fake_downloader().RunCallbackManually());
+  EXPECT_TRUE(delegate_.fake_image_downloader().RunCallbackManually());
   base::RunLoop().RunUntilIdle();
   EXPECT_THAT(delegate_.downloads(), IsEmpty());
 }
@@ -844,9 +851,9 @@ TEST_F(FaviconHandlerTest, UpdateSameIconURLsWhileDatabaseLookupShouldBeNoop) {
   ASSERT_TRUE(VerifyAndClearExpectations());
   ASSERT_TRUE(favicon_service_.fake()->HasPendingManualCallback());
 
-  // Calling OnUpdateFaviconURL() with the same icon URLs should have no effect,
+  // Calling OnUpdateCandidates() with the same icon URLs should have no effect,
   // despite the ongoing DB lookup.
-  handler->OnUpdateFaviconURL(kPageURL, favicon_urls);
+  handler->OnUpdateCandidates(kPageURL, favicon_urls);
   base::RunLoop().RunUntilIdle();
   EXPECT_THAT(favicon_service_.fake()->db_requests(), IsEmpty());
   EXPECT_THAT(delegate_.downloads(), IsEmpty());
@@ -873,11 +880,11 @@ TEST_F(FaviconHandlerTest, UpdateSameIconURLsAfterFinishedShouldBeNoop) {
 
   ASSERT_TRUE(VerifyAndClearExpectations());
 
-  // Calling OnUpdateFaviconURL() with identical data should be a no-op.
+  // Calling OnUpdateCandidates() with identical data should be a no-op.
   EXPECT_CALL(delegate_, OnFaviconUpdated(_, _, _, _, _)).Times(0);
   EXPECT_CALL(favicon_service_, SetFavicons(_, _, _, _)).Times(0);
 
-  handler->OnUpdateFaviconURL(kPageURL, favicon_urls);
+  handler->OnUpdateCandidates(kPageURL, favicon_urls);
   base::RunLoop().RunUntilIdle();
   EXPECT_THAT(favicon_service_.fake()->db_requests(), IsEmpty());
   EXPECT_THAT(delegate_.downloads(), IsEmpty());
@@ -898,8 +905,8 @@ TEST_F(FaviconHandlerTest,
       "http://wwww.page_which_animates_favicon.com/frame2.png");
 
   // |kIconURL1| is the better match.
-  delegate_.fake_downloader().Add(kIconURL1, IntVector{15});
-  delegate_.fake_downloader().Add(kIconURL2, IntVector{10});
+  delegate_.fake_image_downloader().Add(kIconURL1, IntVector{15});
+  delegate_.fake_image_downloader().Add(kIconURL2, IntVector{10});
 
   // Two FaviconDriver::OnFaviconUpdated() notifications should be sent for
   // |kIconURL1|, one before and one after the download.
@@ -919,7 +926,7 @@ TEST_F(FaviconHandlerTest,
   // Simulate the page changing it's icon URL to just |kIconURL2| via
   // Javascript.
   EXPECT_CALL(delegate_, OnFaviconUpdated(_, _, kIconURL2, _, _));
-  handler->OnUpdateFaviconURL(kPageURL,
+  handler->OnUpdateCandidates(kPageURL,
                               {FaviconURL(kIconURL2, FAVICON, kEmptySizes)});
   base::RunLoop().RunUntilIdle();
 }
@@ -957,7 +964,7 @@ class FaviconHandlerMultipleFaviconsTest : public FaviconHandlerTest {
       const GURL icon_url(base::StringPrintf(
           "https://www.google.com/generated/%dx%d", icon_size, icon_size));
       // Set up 200 responses for all images, and the corresponding size.
-      delegate_.fake_downloader().Add(icon_url, IntVector{icon_size});
+      delegate_.fake_image_downloader().Add(icon_url, IntVector{icon_size});
       // Create test candidates of type FAVICON and a fake URL.
       candidate_icons.emplace_back(icon_url, FAVICON, kEmptySizes);
 
@@ -1013,7 +1020,7 @@ TEST_F(FaviconHandlerTest, Report404) {
 TEST_F(FaviconHandlerTest, NotReport503) {
   const GURL k503IconURL("http://www.google.com/503.png");
 
-  delegate_.fake_downloader().AddError(k503IconURL, 503);
+  delegate_.fake_image_downloader().AddError(k503IconURL, 503);
 
   EXPECT_CALL(favicon_service_, UnableToDownloadFavicon(_)).Times(0);
 
@@ -1146,8 +1153,8 @@ TEST_F(FaviconHandlerTest, TestSelectLargestFavicon) {
   const GURL kIconURL1("http://www.google.com/b");
   const GURL kIconURL2("http://www.google.com/c");
 
-  delegate_.fake_downloader().Add(kIconURL1, IntVector{15});
-  delegate_.fake_downloader().Add(kIconURL2, IntVector{14, 16});
+  delegate_.fake_image_downloader().Add(kIconURL1, IntVector{15});
+  delegate_.fake_image_downloader().Add(kIconURL2, IntVector{14, 16});
 
   // Verify NotifyFaviconAvailable().
   EXPECT_CALL(delegate_,
@@ -1172,10 +1179,12 @@ TEST_F(FaviconHandlerTest, TestFaviconWasScaledAfterDownload) {
   const int kOriginalSize1 = kMaximalSize + 1;
   const int kOriginalSize2 = kMaximalSize + 2;
 
-  delegate_.fake_downloader().Add(kIconURL1, IntVector{kMaximalSize},
-                                  IntVector{kOriginalSize1}, SK_ColorBLUE);
-  delegate_.fake_downloader().Add(kIconURL2, IntVector{kMaximalSize},
-                                  IntVector{kOriginalSize2}, SK_ColorBLUE);
+  delegate_.fake_image_downloader().Add(kIconURL1, IntVector{kMaximalSize},
+                                        IntVector{kOriginalSize1},
+                                        SK_ColorBLUE);
+  delegate_.fake_image_downloader().Add(kIconURL2, IntVector{kMaximalSize},
+                                        IntVector{kOriginalSize2},
+                                        SK_ColorBLUE);
 
   // Verify the best bitmap was selected (although smaller than |kIconURL2|)
   // and that it was scaled down to |kMaximalSize|.
@@ -1334,7 +1343,7 @@ TEST_F(FaviconHandlerTest, TestRecordFailingDownloadAttempt) {
   base::HistogramTester histogram_tester;
   const GURL k404IconURL("http://www.google.com/404.png");
 
-  delegate_.fake_downloader().AddError(k404IconURL, 404);
+  delegate_.fake_image_downloader().AddError(k404IconURL, 404);
 
   EXPECT_CALL(favicon_service_, UnableToDownloadFavicon(k404IconURL));
 

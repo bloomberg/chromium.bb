@@ -96,13 +96,13 @@ void FaviconDriverImpl::SetFaviconOutOfDateForPage(const GURL& url,
   }
 }
 
-void FaviconDriverImpl::OnUpdateFaviconURL(
+void FaviconDriverImpl::OnUpdateCandidates(
     const GURL& page_url,
     const std::vector<FaviconURL>& candidates) {
   DCHECK(!candidates.empty());
   RecordCandidateMetrics(candidates);
   for (const std::unique_ptr<FaviconHandler>& handler : handlers_)
-    handler->OnUpdateFaviconURL(page_url, candidates);
+    handler->OnUpdateCandidates(page_url, candidates);
 }
 
 }  // namespace favicon
