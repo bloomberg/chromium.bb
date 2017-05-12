@@ -292,6 +292,8 @@ void DataReductionProxyNetworkDelegate::OnBeforeSendHeadersInternal(
     data = DataReductionProxyData::GetDataAndCreateIfNecessary(request);
     if (data)
       data->set_used_data_reduction_proxy(true);
+
+    headers->RemoveHeader(chrome_proxy_header());
     VerifyHttpRequestHeaders(false, *headers);
     return;
   }
@@ -319,6 +321,7 @@ void DataReductionProxyNetworkDelegate::OnBeforeSendHeadersInternal(
       lofi_decider->RemoveAcceptTransformHeader(headers);
     }
     RemoveChromeProxyECTHeader(headers);
+    headers->RemoveHeader(chrome_proxy_header());
     VerifyHttpRequestHeaders(false, *headers);
     return;
   }

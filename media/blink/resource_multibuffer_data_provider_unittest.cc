@@ -54,8 +54,16 @@ const int kHttpPartialContent = 206;
 
 enum NetworkState { NONE, LOADED, LOADING };
 
+static bool got_frfr = false;
+
 // Predicate that tests that request disallows compressed data.
-static bool CorrectAcceptEncoding(const blink::WebURLRequest& request) {
+static bool CorrectAcceptEncodingAndProxy(const blink::WebURLRequest& request) {
+  std::string chrome_proxy =
+      request.HttpHeaderField(WebString::FromUTF8("chrome-proxy")).Utf8();
+  if (chrome_proxy != (got_frfr ? "" : "frfr")) {
+    return false;
+  }
+
   std::string value = request
                           .HttpHeaderField(WebString::FromUTF8(
                               net::HttpRequestHeaders::kAcceptEncoding))
@@ -105,8 +113,10 @@ class ResourceMultiBufferDataProviderTest : public testing::Test {
 
   void Start() {
     InSequence s;
-    EXPECT_CALL(*url_loader_,
-                LoadAsynchronously(Truly(CorrectAcceptEncoding), loader_));
+    got_frfr = false;
+    EXPECT_CALL(
+        *url_loader_,
+        LoadAsynchronously(Truly(CorrectAcceptEncodingAndProxy), loader_));
 
     loader_->Start();
   }

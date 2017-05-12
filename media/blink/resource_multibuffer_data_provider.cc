@@ -85,6 +85,15 @@ void ResourceMultiBufferDataProvider::Start() {
       WebString::FromUTF8(
           net::HttpByteRange::RightUnbounded(byte_pos()).GetHeaderValue()));
 
+  if (url_data_->length() == kPositionNotSpecified &&
+      url_data_->CachedSize() == 0 && url_data_->BytesReadFromCache() == 0) {
+    // This lets the data reduction proxy know that we don't have anything
+    // previously cached data for this resource. We can only send it if this is
+    // the first request for this resource.
+    request.SetHTTPHeaderField(WebString::FromUTF8("chrome-proxy"),
+                               WebString::FromUTF8("frfr"));
+  }
+
   // We would like to send an if-match header with the request to
   // tell the remote server that we really can't handle files other
   // than the one we already started playing. Unfortunately, doing
