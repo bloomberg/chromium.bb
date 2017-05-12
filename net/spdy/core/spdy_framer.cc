@@ -11,7 +11,6 @@
 #include <ios>
 #include <iterator>
 #include <list>
-#include <memory>
 #include <new>
 #include <vector>
 

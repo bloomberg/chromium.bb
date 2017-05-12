@@ -6,7 +6,6 @@
 #define NET_SPDY_CORE_SPDY_FRAMER_H_
 
 #include <stddef.h>
-#include <stdint.h>
 
 #include <cstdint>
 #include <map>

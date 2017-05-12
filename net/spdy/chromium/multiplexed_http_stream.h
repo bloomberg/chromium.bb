@@ -2,8 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_SPDY_MULTIPLEXED_HTTP_STREAM_H_
-#define NET_SPDY_MULTIPLEXED_HTTP_STREAM_H_
+#ifndef NET_SPDY_CHROMIUM_MULTIPLEXED_HTTP_STREAM_H_
+#define NET_SPDY_CHROMIUM_MULTIPLEXED_HTTP_STREAM_H_
+
+#include <memory>
+#include <vector>
 
 #include "net/http/http_stream.h"
 #include "net/spdy/chromium/multiplexed_session.h"
@@ -41,4 +44,4 @@ class NET_EXPORT_PRIVATE MultiplexedHttpStream : public HttpStream {
 
 }  // namespace net
 
-#endif  // NET_SPDY_MULTIPLEXED_HTTP_STREAM_H_
+#endif  // NET_SPDY_CHROMIUM_MULTIPLEXED_HTTP_STREAM_H_
