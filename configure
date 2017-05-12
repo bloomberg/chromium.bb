@@ -505,7 +505,6 @@ post_process_cmdline() {
     soft_enable palette_throughput
 
     # Workaround features currently incompatible with highbitdepth
-    enabled daala_dist && disable_feature highbitdepth
     enabled tx64x64 && disable_feature highbitdepth
     enabled ext_partition && disable_feature highbitdepth
 

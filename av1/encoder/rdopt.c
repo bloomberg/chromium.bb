@@ -6545,12 +6545,12 @@ static int64_t rd_pick_inter_best_sub8x8_mode(
 #if CONFIG_HIGHBITDEPTH
         if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
           aom_highbd_subtract_block(
-              height, width,
+              bsh, bsw,
               av1_raster_block_offset_int16(BLOCK_8X8, i, p->src_diff), 8,
               src_sub8x8, p->src.stride, dst_sub8x8, pd->dst.stride, xd->bd);
         } else {
           aom_subtract_block(
-              height, width,
+              bsh, bsw,
               av1_raster_block_offset_int16(BLOCK_8X8, i, p->src_diff), 8,
               src_sub8x8, p->src.stride, dst_sub8x8, pd->dst.stride);
         }
