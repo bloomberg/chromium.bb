@@ -86,6 +86,7 @@ def _RunApp(name, args, debug_measures=False):
 
 
 class IntegrationTest(unittest.TestCase):
+  maxDiff = None  # Don't trucate diffs in errors.
   cached_size_info = [None, None, None]
 
   def _CloneSizeInfo(self, use_output_directory=True, use_elf=True):

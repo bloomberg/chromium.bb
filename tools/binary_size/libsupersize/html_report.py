@@ -12,7 +12,7 @@ import shutil
 import sys
 
 import archive
-import helpers
+import paths
 
 
 # Node dictionary keys. These are output in json read by the webapp so
@@ -154,7 +154,7 @@ def _CopyTemplateFiles(dest_dir):
   d3_out = os.path.join(dest_dir, 'd3')
   if not os.path.exists(d3_out):
     os.makedirs(d3_out, 0755)
-  d3_src = os.path.join(helpers.SRC_ROOT, 'third_party', 'd3', 'src')
+  d3_src = os.path.join(paths.SRC_ROOT, 'third_party', 'd3', 'src')
   template_src = os.path.join(os.path.dirname(__file__), 'template')
   shutil.copy(os.path.join(d3_src, 'LICENSE'), d3_out)
   shutil.copy(os.path.join(d3_src, 'd3.js'), d3_out)
@@ -184,7 +184,7 @@ def Run(args, parser):
   symbols = size_info.symbols
   if not args.include_bss:
     symbols = symbols.WhereInSection('b').Inverted()
-  symbols = symbols.WhereBiggerThan(0)
+  symbols = symbols.WherePssBiggerThan(0)
 
   # Copy report boilerplate into output directory. This also proves that the
   # output directory is safe for writing, so there should be no problems writing

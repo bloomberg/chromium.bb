@@ -382,12 +382,14 @@ def CreateMetadata(map_path, elf_path, apk_path, tool_prefix, output_directory):
     timestamp_obj = datetime.datetime.utcfromtimestamp(os.path.getmtime(
         elf_path))
     timestamp = calendar.timegm(timestamp_obj.timetuple())
+    relative_tool_prefix = paths.ToSrcRootRelative(tool_prefix)
 
     metadata = {
         models.METADATA_GIT_REVISION: git_rev,
         models.METADATA_ELF_ARCHITECTURE: architecture,
         models.METADATA_ELF_MTIME: timestamp,
         models.METADATA_ELF_BUILD_ID: build_id,
+        models.METADATA_TOOL_PREFIX: relative_tool_prefix,
     }
 
     if output_directory:

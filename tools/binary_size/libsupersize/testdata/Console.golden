@@ -4,7 +4,7 @@ Entering interactive Python shell. Quick reference:
 SizeInfo: Clustered, metadata, raw_symbols, section_sizes, symbols
 Symbol: FlagsString, IsBss, IsGeneratedByToolchain, IsGroup, address, aliases, end_address, flags, full_name, generated_source, is_anonymous, name, num_aliases, object_path, padding, pss, pss_without_padding, section, section_name, size, size_without_padding, source_path, template_name
 
-SymbolGroup (extends Symbol): Clustered, CountUniqueSymbols, Filter, GroupedBy, GroupedByName, GroupedByPath, GroupedBySectionName, Inverted, IterLeafSymbols, IterUniqueSymbols, Sorted, SortedByAddress, SortedByCount, SortedByName, WhereAddressInRange, WhereBiggerThan, WhereFullNameMatches, WhereGeneratedByToolchain, WhereHasAnyAttribution, WhereHasPath, WhereInSection, WhereIsTemplate, WhereMatches, WhereNameMatches, WhereObjectPathMatches, WherePathMatches, WhereSourceIsGenerated, WhereSourcePathMatches, WhereTemplateNameMatches, is_sorted
+SymbolGroup (extends Symbol): Clustered, CountUniqueSymbols, Filter, GroupedBy, GroupedByName, GroupedByPath, GroupedBySectionName, Inverted, IterLeafSymbols, IterUniqueSymbols, Sorted, SortedByAddress, SortedByCount, SortedByName, WhereAddressInRange, WhereFullNameMatches, WhereGeneratedByToolchain, WhereHasAnyAttribution, WhereHasPath, WhereInSection, WhereIsTemplate, WhereMatches, WhereNameMatches, WhereObjectPathMatches, WherePathMatches, WherePssBiggerThan, WhereSizeBiggerThan, WhereSourceIsGenerated, WhereSourcePathMatches, WhereTemplateNameMatches, is_sorted
 
 SymbolDiff (extends SymbolGroup): IsAdded, IsRemoved, IsSimilar, WhereNotUnchanged, added_count, changed_count, removed_count, unchanged_count
 
@@ -23,7 +23,7 @@ Print(size_info, verbose=True)
 # Show two levels of .text, grouped by first two subdirectories
 text_syms = size_info.symbols.WhereInSection("t")
 by_path = text_syms.GroupedByPath(depth=2)
-Print(by_path.WhereBiggerThan(1024))
+Print(by_path.WherePssBiggerThan(1024))
 
 # Show all non-vtable generated symbols
 generated_syms = size_info.symbols.WhereGeneratedByToolchain()
@@ -54,6 +54,7 @@ Metadata:
     git_revision=abc123
     gn_args=var1=true var2="foo"
     map_file_name=../test.map
+    tool_prefix=tools/binary_size/libsupersize/testdata/mock_toolchain/
 
 Section Sizes (Total=41.8mb (43785380 bytes)):
     .bss: 1.24mb (1300456 bytes) (not included in totals)

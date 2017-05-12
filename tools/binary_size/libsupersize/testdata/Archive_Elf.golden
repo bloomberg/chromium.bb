@@ -5,6 +5,7 @@ elf_mtime={redacted}
 git_revision=abc123
 gn_args=var1=true var2="foo"
 map_file_name=../test.map
+tool_prefix=tools/binary_size/libsupersize/testdata/mock_toolchain/
 Section r: has 100.0% of 5927652 bytes accounted for from 9 symbols. 0 bytes are unaccounted for.
 * Padding accounts for 11 bytes (0.0%)
 * 4 placeholders (symbols that start with **) account for 5927509 bytes (100.0%)
