@@ -231,8 +231,7 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
   std::queue<EstablishChannelCallback> channel_requests_;
 
   // The pending create gpu memory buffer requests we need to reply to.
-  base::flat_map<gfx::GpuMemoryBufferId, CreateGpuMemoryBufferCallback>
-      create_gpu_memory_buffer_requests_;
+  std::queue<CreateGpuMemoryBufferCallback> create_gpu_memory_buffer_requests_;
 
   // A callback to signal the completion of a SendDestroyingVideoSurface call.
   base::Closure send_destroying_video_surface_done_cb_;
