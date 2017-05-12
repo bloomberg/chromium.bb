@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.vr_shell;
 
+import static org.chromium.chrome.browser.vr_shell.VrUtils.POLL_CHECK_INTERVAL_LONG_MS;
 import static org.chromium.chrome.browser.vr_shell.VrUtils.POLL_TIMEOUT_LONG_MS;
 import static org.chromium.chrome.test.util.ChromeRestriction.RESTRICTION_TYPE_DEVICE_DAYDREAM;
 import static org.chromium.chrome.test.util.ChromeRestriction.RESTRICTION_TYPE_DEVICE_NON_DAYDREAM;
@@ -189,6 +190,45 @@ public class VrShellTest extends VrTestBase {
     @MediumTest
     public void testEnterExitVrModeUnsupportedImage() throws IOException {
         enterExitVrModeImage(false);
+    }
+
+    /**
+     * Verifies that swiping up/down on the Daydream controller's touchpad scrolls
+     * the webpage while in the VR browser.
+     */
+    @Restriction({RESTRICTION_TYPE_DEVICE_DAYDREAM, RESTRICTION_TYPE_VIEWER_DAYDREAM})
+    @MediumTest
+    public void testControllerScrolling() throws InterruptedException {
+        // Load page in VR and make sure the controller is pointed at the content quad
+        loadUrl("chrome://credits", PAGE_LOAD_TIMEOUT_S);
+        VrUtils.forceEnterVr();
+        VrUtils.waitForVrSupported(POLL_TIMEOUT_LONG_MS);
+        EmulatedVrController controller = new EmulatedVrController(getActivity());
+        final ContentViewCore cvc = getActivity().getActivityTab().getActiveContentViewCore();
+        controller.recenterView();
+
+        // Wait for the page to be scrollable
+        CriteriaHelper.pollUiThread(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                return cvc.computeVerticalScrollRange() > cvc.getContainerView().getHeight();
+            }
+        }, POLL_TIMEOUT_LONG_MS, POLL_CHECK_INTERVAL_LONG_MS);
+
+        // Test that scrolling down works
+        int startScrollY = cvc.getNativeScrollYForTest();
+        // Arbitrary, but valid values to scroll smoothly
+        int scrollSteps = 20;
+        int scrollSpeed = 60;
+        controller.scrollDown(scrollSteps, scrollSpeed);
+        int endScrollY = cvc.getNativeScrollYForTest();
+        assertTrue("Controller was able to scroll down", startScrollY < endScrollY);
+
+        // Test that scrolling up works
+        startScrollY = endScrollY;
+        controller.scrollUp(scrollSteps, scrollSpeed);
+        endScrollY = cvc.getNativeScrollYForTest();
+        assertTrue("Controller was able to scroll up", startScrollY > endScrollY);
     }
 
     /**
