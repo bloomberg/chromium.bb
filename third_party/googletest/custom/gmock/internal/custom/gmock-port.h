@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef TESTING_GMOCK_CUSTOM_GMOCK_INTERNAL_CUSTOM_GMOCK_PORT_H_
-#define TESTING_GMOCK_CUSTOM_GMOCK_INTERNAL_CUSTOM_GMOCK_PORT_H_
+#ifndef THIRD_PARTY_GOOGLETEST_CUSTOM_GMOCK_INTERNAL_CUSTOM_GMOCK_PORT_H_
+#define THIRD_PARTY_GOOGLETEST_CUSTOM_GMOCK_INTERNAL_CUSTOM_GMOCK_PORT_H_
 
 #include <type_traits>
 
@@ -22,4 +22,4 @@ using is_default_constructible = std::is_constructible<T>;
 #endif
 }
 
-#endif  // TESTING_GMOCK_CUSTOM_GMOCK_INTERNAL_CUSTOM_GMOCK_PORT_H_
+#endif  // THIRD_PARTY_GOOGLETEST_CUSTOM_GMOCK_INTERNAL_CUSTOM_GMOCK_PORT_H_
