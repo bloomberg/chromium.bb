@@ -19,6 +19,7 @@ import android.widget.ImageView;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.device.DeviceClassManager;
+import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.widget.TintedImageButton;
@@ -179,6 +180,17 @@ public class BottomToolbarPhone extends ToolbarPhone {
     protected ToolbarProgressBar createProgressBar() {
         return new ToolbarProgressBar(
                 getContext(), getProgressBarHeight(), getProgressBarTopMargin(), true);
+    }
+
+    @Override
+    public void onUrlFocusChange(boolean hasFocus) {
+        Tab currentTab = getToolbarDataProvider().getTab();
+        if (currentTab != null) {
+            currentTab.getActivity().getBottomSheetContentController().onOmniboxFocusChange(
+                    hasFocus);
+        }
+
+        super.onUrlFocusChange(hasFocus);
     }
 
     @Override

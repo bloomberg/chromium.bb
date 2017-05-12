@@ -178,9 +178,6 @@ public class BottomSheet
     /** A handle to the toolbar control container. */
     private View mControlContainer;
 
-    /** A placeholder for if there is no content in the bottom sheet. */
-    private View mPlaceholder;
-
     /** A handle to the find-in-page toolbar. */
     private View mFindInPageView;
 
@@ -392,6 +389,15 @@ public class BottomSheet
         setSheetState(BottomSheet.SHEET_STATE_HALF, true);
     }
 
+    /**
+     * Immediately end the bottom sheet content transition animations and null the animator.
+     */
+    public void endTransitionAnimations() {
+        if (mContentSwapAnimatorSet == null || !mContentSwapAnimatorSet.isRunning()) return;
+        mContentSwapAnimatorSet.end();
+        mContentSwapAnimatorSet = null;
+    }
+
     @Override
     public boolean onInterceptTouchEvent(MotionEvent e) {
         // If touch is disabled, act like a black hole and consume touch events without doing
@@ -554,13 +560,6 @@ public class BottomSheet
             }
         });
 
-        mPlaceholder = new View(getContext());
-        LayoutParams placeHolderParams =
-                new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
-        mPlaceholder.setBackgroundColor(
-                ApiCompatibilityUtils.getColor(getResources(), R.color.default_primary_color));
-        mBottomSheetContentContainer.addView(mPlaceholder, placeHolderParams);
-
         mToolbarHolder = (FrameLayout) mControlContainer.findViewById(R.id.toolbar_holder);
         mDefaultToolbarView = (BottomToolbarPhone) mControlContainer.findViewById(R.id.toolbar);
     }
@@ -653,8 +652,6 @@ public class BottomSheet
 
         // If the desired content is already showing, do nothing.
         if (mSheetContent == content) return;
-
-        mBottomSheetContentContainer.removeView(mPlaceholder);
 
         View newToolbar =
                 content.getToolbarView() != null ? content.getToolbarView() : mDefaultToolbarView;
