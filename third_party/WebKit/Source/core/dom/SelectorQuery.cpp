@@ -41,11 +41,14 @@
 #include "core/dom/shadow/ShadowRoot.h"
 #include "platform/wtf/PtrUtil.h"
 
+// Uncomment to run the SelectorQueryTests for stats in a release build.
+// #define RELEASE_QUERY_STATS
+
 namespace blink {
 
 using namespace HTMLNames;
 
-#if DCHECK_IS_ON()
+#if DCHECK_IS_ON() || defined(RELEASE_QUERY_STATS)
 static SelectorQuery::QueryStats& CurrentQueryStats() {
   DEFINE_STATIC_LOCAL(SelectorQuery::QueryStats, stats, ());
   return stats;
@@ -195,19 +198,6 @@ static void CollectElementsByTagName(
         return;
     }
   }
-}
-
-inline bool SelectorQuery::CanUseFastQuery(
-    const ContainerNode& root_node) const {
-  if (uses_deep_combinator_or_shadow_pseudo_)
-    return false;
-  if (needs_updated_distribution_)
-    return false;
-  if (root_node.GetDocument().InQuirksMode())
-    return false;
-  if (!root_node.isConnected())
-    return false;
-  return selectors_.size() == 1;
 }
 
 inline bool AncestorHasClassName(ContainerNode& root_node,
@@ -387,6 +377,9 @@ template <typename SelectorQueryTrait>
 void SelectorQuery::ExecuteWithId(
     ContainerNode& root_node,
     typename SelectorQueryTrait::OutputType& output) const {
+  DCHECK_EQ(selectors_.size(), 1u);
+  DCHECK(!root_node.GetDocument().InQuirksMode());
+
   const CSSSelector& first_selector = *selectors_[0];
   const TreeScope& scope = root_node.ContainingTreeScope();
 
@@ -440,7 +433,7 @@ void SelectorQuery::Execute(
   if (selectors_.IsEmpty())
     return;
 
-  if (!CanUseFastQuery(root_node)) {
+  if (use_slow_scan_) {
     if (needs_updated_distribution_)
       root_node.UpdateDistribution();
     if (uses_deep_combinator_or_shadow_pseudo_) {
@@ -452,9 +445,15 @@ void SelectorQuery::Execute(
   }
 
   DCHECK_EQ(selectors_.size(), 1u);
-  DCHECK(!root_node.GetDocument().InQuirksMode());
+  DCHECK(!needs_updated_distribution_);
+  DCHECK(!uses_deep_combinator_or_shadow_pseudo_);
 
-  if (selector_id_) {
+  // In quirks mode getElementById("a") is case sensitive and should only
+  // match elements with lowercase id "a", but querySelector is case-insensitive
+  // so querySelector("#a") == querySelector("#A"), which means we can only use
+  // the id fast path when we're in a standards mode document.
+  if (selector_id_ && root_node.IsInTreeScope() &&
+      !root_node.GetDocument().InQuirksMode()) {
     ExecuteWithId<SelectorQueryTrait>(root_node, output);
     return;
   }
@@ -496,7 +495,8 @@ SelectorQuery::SelectorQuery(CSSSelectorList selector_list)
       selector_id_is_rightmost_(true),
       selector_id_affected_by_sibling_combinator_(false),
       uses_deep_combinator_or_shadow_pseudo_(false),
-      needs_updated_distribution_(false) {
+      needs_updated_distribution_(false),
+      use_slow_scan_(true) {
   selectors_.ReserveInitialCapacity(selector_list_.ComputeLength());
   for (const CSSSelector* selector = selector_list_.First(); selector;
        selector = CSSSelectorList::Next(*selector)) {
@@ -510,6 +510,7 @@ SelectorQuery::SelectorQuery(CSSSelectorList selector_list)
 
   if (selectors_.size() == 1 && !uses_deep_combinator_or_shadow_pseudo_ &&
       !needs_updated_distribution_) {
+    use_slow_scan_ = false;
     for (const CSSSelector* current = selectors_[0]; current;
          current = current->TagHistory()) {
       if (current->Match() == CSSSelector::kId) {
