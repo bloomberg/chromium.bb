@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="../resources/mojo-helpers.js"></script>
+<script src="resources/mock-barcodedetection.js"></script>
+<script src="resources/mock-facedetection.js"></script>
+<script src="resources/mock-textdetection.js"></script>
+<script>
+
+var createTestForImageData = function(createDetector, mockReady,
+                                      detectionResultTest) {
+  async_test(function(t) {
+
+    var img = new Image();
+    img.onload = function() {
+
+      var canvas = document.createElement("canvas");;
+      canvas.getContext("2d").drawImage(img, 0, 0);
+
+      var theMock = null;
+      mockReady()
+        .then(mock => {
+          theMock = mock;
+          var detector = createDetector();
+          return detector;
+        })
+        .catch(error => {
+          assert_unreached("Error creating Mock Detector: " + error);
+        })
+        .then(detector => {
+          return detector.detect(canvas.getContext("2d").getImageData(
+              0, 0, canvas.width, canvas.height));
+        })
+        .then(detectionResult => {
+          detectionResultTest(detectionResult);
+          t.done();
+        })
+        .catch(error => {
+          assert_unreached("Error during detect(canvas): " + error);
+        });
+    }
+
+    img.src = "../media/content/greenbox.png";
+  });
+};
+
+function CheckDetectedFaceSameObjects(detectedFaces) {
+  assert_greater_than(detectedFaces.length, 0, "Number of faces");
+  assert_equals(detectedFaces[0].boundingBox, detectedFaces[0].boundingBox);
+  assert_equals(detectedFaces[0].landmarks, detectedFaces[0].landmarks);
+}
+
+function CheckDetectedBarcodesSameObjects(detectedBarcodes) {
+  assert_greater_than(detectedBarcodes.length, 0, "Number of barcodes");
+  assert_equals(detectedBarcodes[0].rawValue, detectedBarcodes[0].rawValue);
+  assert_equals(detectedBarcodes[0].boundingBox, detectedBarcodes[0].boundingBox);
+  assert_equals(detectedBarcodes[0].cornerPoints, detectedBarcodes[0].cornerPoints);
+}
+
+function CheckDetectedTextBlocksSameObjects(detectedTextBlocks) {
+  assert_greater_than(detectedTextBlocks.length, 0, "Number of textBlocks");
+  assert_equals(detectedTextBlocks[0].rawValue, detectedTextBlocks[0].rawValue);
+  assert_equals(detectedTextBlocks[0].boundingBox, detectedTextBlocks[0].boundingBox);
+}
+
+// These tests verify that detect()ed Detected{Barcode,Face,Text}'s individual
+// fields are [SameObject].
+generate_tests(createTestForImageData, [
+  [
+    "Face - detect(ImageData), [SameObject]",
+    () => { return new FaceDetector(); },
+    () => { return mockFaceDetectionProviderReady; },
+    CheckDetectedFaceSameObjects
+  ],
+  [
+    "Barcode - detect(ImageData), [SameObject]",
+    () => { return new BarcodeDetector(); },
+    () => { return mockBarcodeDetectionReady; },
+    CheckDetectedBarcodesSameObjects
+  ],
+  [
+    "Text - detect(ImageData), [SameObject]",
+    () => { return new TextDetector(); },
+    () => { return mockTextDetectionReady; },
+    CheckDetectedTextBlocksSameObjects
+  ]
+]);
+
+</script>

@@ -13,5 +13,5 @@
     [SameObject] readonly attribute DOMRect boundingBox;
     // 4 corner points in clockwise direction starting with top-left. Due to
     // possible perspective distortions, this is not necessarily a rectangle.
-    [SameObject] readonly attribute FrozenArray<Point2D> cornerPoints;
+    [SameObject, SaveSameObject] readonly attribute FrozenArray<Point2D> cornerPoints;
 };
