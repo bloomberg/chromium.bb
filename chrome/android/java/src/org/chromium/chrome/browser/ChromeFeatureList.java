@@ -160,6 +160,7 @@ public abstract class ChromeFeatureList {
     public static final String CONTENT_SUGGESTIONS_SHOW_SUMMARY = "ContentSuggestionsShowSummary";
     public static final String CONTEXTUAL_SEARCH_SINGLE_ACTIONS = "ContextualSearchSingleActions";
     public static final String CONTEXTUAL_SEARCH_URL_ACTIONS = "ContextualSearchUrlActions";
+    public static final String CONTEXTUAL_SUGGESTIONS_CAROUSEL = "ContextualSuggestionsCarousel";
     public static final String COPYLESS_PASTE = "CopylessPaste";
     public static final String CUSTOM_CONTEXT_MENU = "CustomContextMenu";
     public static final String CUSTOM_FEEDBACK_UI = "CustomFeedbackUi";

@@ -56,6 +56,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kContentSuggestionsShowSummary,
     &kContextualSearchSingleActions,
     &kContextualSearchUrlActions,
+    &kContextualSuggestionsCarousel,
     &kCustomContextMenu,
     &kCustomFeedbackUi,
     &data_reduction_proxy::features::kDataReductionMainMenu,
@@ -141,6 +142,9 @@ const base::Feature kContextualSearchSingleActions{
 
 const base::Feature kContextualSearchUrlActions{
     "ContextualSearchUrlActions", base::FEATURE_ENABLED_BY_DEFAULT};
+
+const base::Feature kContextualSuggestionsCarousel{
+    "ContextualSuggestionsCarousel", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kCustomContextMenu{"CustomContextMenu",
                                        base::FEATURE_DISABLED_BY_DEFAULT};

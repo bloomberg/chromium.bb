@@ -51,6 +51,13 @@ const char kEnableMaterialDesignFeedbackDescription[] =
     "If enabled, reporting an issue will load the Material Design feedback "
     "UI.";
 
+const char kContextualSuggestionsCarouselName[] =
+    "Enable Contextual Suggestions";
+
+const char kContextualSuggestionsCarouselDescription[] =
+    "If enabled, shows contextual suggestions in a horizontal carousel in "
+    "bottom sheet content.";
+
 //  Report URL to SafeSearch
 
 const char kSafeSearchUrlReportingName[] = "SafeSearch URLs reporting.";

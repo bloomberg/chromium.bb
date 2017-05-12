@@ -25,6 +25,7 @@ extern const base::Feature kContentSuggestionsSettings;
 extern const base::Feature kContentSuggestionsShowSummary;
 extern const base::Feature kContextualSearchSingleActions;
 extern const base::Feature kContextualSearchUrlActions;
+extern const base::Feature kContextualSuggestionsCarousel;
 extern const base::Feature kCustomContextMenu;
 extern const base::Feature kCustomFeedbackUi;
 extern const base::Feature kDownloadAutoResumptionThrottling;
