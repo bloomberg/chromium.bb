@@ -6,6 +6,7 @@
 
 from __future__ import print_function
 
+import collections
 import datetime
 import json
 
@@ -25,6 +26,12 @@ from chromite.lib import som
 
 # Only display this many links per stage
 MAX_STAGE_LINKS = 7
+
+# Max history to look back in days and number of builds.
+MAX_HISTORY_DAYS = 30
+MAX_CONSECUTIVE_BUILDS = 50
+# Last N builds to show as history.
+MAX_LAST_N_BUILDS = 10
 
 def GetParser():
   """Creates the argparse parser."""
@@ -226,8 +233,59 @@ def GenerateAlertStage(build, stage, exceptions, aborted,
                               logs_links, stage_links, notes)
 
 
+def SummarizeHistory(build, db):
+  """Summarizes recent history.
+
+  Args:
+    build: Dictionary of build details from CIDB.
+    db: cidb.CIDBConnection object.
+
+  Returns:
+    string describing recent history.
+  """
+  # Get all the recent builds of the same type.
+  now = datetime.datetime.utcnow()
+  start_date = now - datetime.timedelta(days=MAX_HISTORY_DAYS)
+  history = db.GetBuildHistory(
+      build['build_config'], MAX_CONSECUTIVE_BUILDS, start_date=start_date,
+      ending_build_number=build['build_number'], waterfall=build['waterfall'],
+      buildbot_generation=build['buildbot_generation'])
+  history = sorted(history, key=lambda s: s['build_number'], reverse=True)
+
+  # Count how many times the current status happened consecutively.
+  consecutive = 0
+  for h in history:
+    if h['status'] != build['status']:
+      break
+    consecutive += 1
+
+  # Determine histogram of last N builds.
+  last_n, frequencies = SummarizeStatuses(history[:MAX_LAST_N_BUILDS])
+
+  # Generate string.
+  note = 'History of %s: %d %s build(s) in a row' % (
+      build['builder_name'], consecutive, MapCIDBToSOMStatus(build['status']))
+  if len(frequencies) > 1:
+    note += '; Last %d builds: %s' % (MAX_LAST_N_BUILDS, last_n)
+  return note
+
+
+def SummarizeStatuses(statuses):
+  """Summarizes a list of statuses.
+
+  Args:
+    statuses: A list of dictionaries of build details from CIDB.
+
+  Returns:
+    (string describing frequency of all the statuses,
+     Counter object of status to count)
+  """
+  frequencies = collections.Counter([s['status'] for s in statuses])
+  return ', '.join('%d %s' % (frequencies[h], MapCIDBToSOMStatus(h))
+                   for h in frequencies), frequencies
+
 def GenerateBuildAlert(build, slave_stages, exceptions, messages, annotations,
-                       severity, now,
+                       siblings, severity, now, db,
                        logdog_client, milo_client, allow_experimental=False):
   """Generate an alert for a single build.
 
@@ -237,8 +295,10 @@ def GenerateBuildAlert(build, slave_stages, exceptions, messages, annotations,
     exceptions: A list of instances of failure_message_lib.StageFailure.
     messages: A list of build message dictionaries from CIDB.
     annotations: A list of dictionaries of build annotations from CIDB.
+    siblings: A list of dictionaries of build details from CIDB.
     severity: Sheriff-o-Matic severity to use for the alert.
     now: Current datettime.
+    db: cidb.CIDBConnection object.
     logdog_client: logdog.LogdogClient object.
     milo_client: milo.MiloClient object.
     allow_experimental: Boolean if non-important builds should be included.
@@ -283,11 +343,13 @@ def GenerateBuildAlert(build, slave_stages, exceptions, messages, annotations,
                    build['builder_name'], build['build_number'])),
   ]
 
-  # Include annotations from CIDB.
-  notes = [
+  notes = [SummarizeHistory(build, db)]
+  if len(siblings) > 1:
+    notes.append('Siblings: %s' % SummarizeStatuses(siblings)[0])
+  notes.extend([
       ('Annotation: %(failure_category)s(%(failure_message)s) '
        '%(blame_url)s %(notes)s') % a for a in annotations
-  ]
+  ])
 
   # If the CIDB status was indeterminate (inflight/aborted), provide link
   # for sheriffs.
@@ -405,10 +467,10 @@ def GenerateAlertsSummary(db, builds=None,
     for build in sorted(statuses, key=lambda s: s['builder_name']):
       funcs.append(lambda build_=build, stages_=stages, exceptions_=exceptions,
                           messages_=messages, annotations_=annotations,
-                          severity_=severity:
+                          siblings_=statuses, severity_=severity:
                    GenerateBuildAlert(build_, stages_, exceptions_, messages_,
-                                      annotations_, severity_,
-                                      now, logdog_client, milo_client,
+                                      annotations_, siblings_, severity_,
+                                      now, db, logdog_client, milo_client,
                                       allow_experimental=allow_experimental))
 
   alerts = [alert for alert in parallel.RunParallelSteps(funcs,
