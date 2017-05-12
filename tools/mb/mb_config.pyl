@@ -667,6 +667,10 @@
         '1': 'official_optimize_chrome_pgo_phase_1_x86',
         '2': 'official_optimize_chrome_pgo_phase_2_x86',
       },
+      'win_pgo_x64': {
+        '1': 'official_optimize_chrome_pgo_phase_1',
+        '2': 'official_optimize_chrome_pgo_phase_2',
+      },
       'win_upload_clang': 'release_bot',
       'win_chrome_official': 'official_goma_x86',
     },
