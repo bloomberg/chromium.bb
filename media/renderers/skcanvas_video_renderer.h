@@ -15,7 +15,6 @@
 #include "base/timer/timer.h"
 #include "cc/paint/paint_canvas.h"
 #include "cc/paint/paint_flags.h"
-#include "cc/paint/paint_image.h"
 #include "media/base/media_export.h"
 #include "media/base/timestamp_constants.h"
 #include "media/base/video_frame.h"
@@ -175,8 +174,6 @@ class MEDIA_EXPORT SkCanvasVideoRenderer {
   base::TimeDelta last_timestamp_ = media::kNoTimestamp;
   // If |last_image_| is not used for a while, it's deleted to save memory.
   base::DelayTimer last_image_deleting_timer_;
-  // Stable paint image id to provide to draw image calls.
-  cc::PaintImage::Id renderer_stable_id_;
 
   // Used for DCHECKs to ensure method calls executed in the correct thread.
   base::ThreadChecker thread_checker_;

@@ -345,8 +345,7 @@ SkCanvasVideoRenderer::SkCanvasVideoRenderer()
           FROM_HERE,
           base::TimeDelta::FromSeconds(kTemporaryResourceDeletionDelay),
           this,
-          &SkCanvasVideoRenderer::ResetCache),
-      renderer_stable_id_(cc::PaintImage::GetNextId()) {}
+          &SkCanvasVideoRenderer::ResetCache) {}
 
 SkCanvasVideoRenderer::~SkCanvasVideoRenderer() {
   ResetCache();
@@ -439,10 +438,10 @@ void SkCanvasVideoRenderer::Paint(const scoped_refptr<VideoFrame>& video_frame,
     image = last_image_->makeNonTextureImage();
   else
     image = last_image_;
-  canvas->drawImage(cc::PaintImage(renderer_stable_id_, std::move(image),
-                                   cc::PaintImage::AnimationType::VIDEO,
-                                   cc::PaintImage::CompletionState::DONE),
-                    0, 0, &video_flags);
+  canvas->drawImage(
+      cc::PaintImage(std::move(image), cc::PaintImage::AnimationType::VIDEO,
+                     cc::PaintImage::CompletionState::DONE),
+      0, 0, &video_flags);
 
   if (need_transform)
     canvas->restore();

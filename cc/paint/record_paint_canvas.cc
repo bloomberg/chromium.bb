@@ -286,11 +286,10 @@ void RecordPaintCanvas::drawBitmap(const SkBitmap& bitmap,
   // TODO(enne): Move into base class?
   if (bitmap.drawsNothing())
     return;
-  drawImage(
-      PaintImage(PaintImage::kNonLazyStableId, SkImage::MakeFromBitmap(bitmap),
-                 PaintImage::AnimationType::UNKNOWN,
-                 PaintImage::CompletionState::UNKNOWN),
-      left, top, flags);
+  drawImage(PaintImage(SkImage::MakeFromBitmap(bitmap),
+                       PaintImage::AnimationType::UNKNOWN,
+                       PaintImage::CompletionState::UNKNOWN),
+            left, top, flags);
 }
 
 void RecordPaintCanvas::drawText(const void* text,
