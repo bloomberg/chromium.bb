@@ -2,7 +2,7 @@
 {%- set enum_name = union.name ~ "_Tag" -%}
 {%- import "struct_macros.tmpl" as struct_macros %}
 
-class {{export_attribute}} {{class_name}} {
+class {{class_name}} {
  public:
   // Used to identify Mojom Union Data Classes.
   typedef void MojomUnionDataType;
