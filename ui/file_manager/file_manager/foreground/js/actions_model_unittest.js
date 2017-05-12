@@ -224,6 +224,26 @@ function testDriveFileEntry(callback) {
   }), callback);
 }
 
+function testTeamDriveEntry(callback) {
+  driveFileSystem.entries['/team_drives/ABC Team'] =
+      new MockDirectoryEntry(driveFileSystem, '/team_drives/ABC Team', {});
+
+  var model = new ActionsModel(
+      volumeManager, metadataModel, shortcutsModel, driveSyncHandler, ui,
+      [driveFileSystem.entries['/team_drives/ABC Team']]);
+  return reportPromise(
+      model.initialize().then(function() {
+        var actions = model.getActions();
+        assertEquals(1, Object.keys(actions).length);
+
+        // "share" action is disabled for Team Drive entries.
+        var shareAction = actions[ActionsModel.CommonActionId.SHARE];
+        assertTrue(!!shareAction);
+        assertFalse(shareAction.canExecute());
+      }),
+      callback);
+}
+
 function testProvidedEntry(callback) {
   providedFileSystem.entries['/test'] =
       new MockDirectoryEntry(providedFileSystem, '/test', {});
