@@ -5,6 +5,7 @@
 #ifndef UI_COMPOSITOR_TEST_FAKE_CONTEXT_FACTORY_H_
 #define UI_COMPOSITOR_TEST_FAKE_CONTEXT_FACTORY_H_
 
+#include "cc/output/renderer_settings.h"
 #include "cc/test/test_gpu_memory_buffer_manager.h"
 #include "cc/test/test_task_graph_runner.h"
 #include "ui/compositor/compositor.h"
@@ -21,8 +22,8 @@ namespace ui {
 
 class FakeContextFactory : public ui::ContextFactory {
  public:
-  FakeContextFactory() = default;
-  ~FakeContextFactory() override = default;
+  FakeContextFactory();
+  ~FakeContextFactory() override;
 
   const cc::CompositorFrame& GetLastCompositorFrame() const;
 
@@ -32,10 +33,9 @@ class FakeContextFactory : public ui::ContextFactory {
   scoped_refptr<cc::ContextProvider> SharedMainThreadContextProvider() override;
   void RemoveCompositor(ui::Compositor* compositor) override;
   double GetRefreshRate() const override;
-  uint32_t GetImageTextureTarget(gfx::BufferFormat format,
-                                 gfx::BufferUsage usage) override;
   gpu::GpuMemoryBufferManager* GetGpuMemoryBufferManager() override;
   cc::TaskGraphRunner* GetTaskGraphRunner() override;
+  const cc::RendererSettings& GetRendererSettings() const override;
   void AddObserver(ui::ContextFactoryObserver* observer) override {}
   void RemoveObserver(ui::ContextFactoryObserver* observer) override {}
 
@@ -43,6 +43,7 @@ class FakeContextFactory : public ui::ContextFactory {
   cc::FakeCompositorFrameSink* frame_sink_ = nullptr;
   cc::TestTaskGraphRunner task_graph_runner_;
   cc::TestGpuMemoryBufferManager gpu_memory_buffer_manager_;
+  cc::RendererSettings renderer_settings_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeContextFactory);
 };

@@ -152,15 +152,14 @@ class COMPOSITOR_EXPORT ContextFactory {
   // Returns refresh rate. Tests may return higher values.
   virtual double GetRefreshRate() const = 0;
 
-  // Returns the OpenGL target to use for image textures.
-  virtual uint32_t GetImageTextureTarget(gfx::BufferFormat format,
-                                         gfx::BufferUsage usage) = 0;
-
   // Gets the GPU memory buffer manager.
   virtual gpu::GpuMemoryBufferManager* GetGpuMemoryBufferManager() = 0;
 
   // Gets the task graph runner.
   virtual cc::TaskGraphRunner* GetTaskGraphRunner() = 0;
+
+  // Gets the renderer settings.
+  virtual const cc::RendererSettings& GetRendererSettings() const = 0;
 
   virtual void AddObserver(ContextFactoryObserver* observer) = 0;
 
@@ -355,7 +354,6 @@ class COMPOSITOR_EXPORT Compositor
 
   const cc::LayerTreeDebugState& GetLayerTreeDebugState() const;
   void SetLayerTreeDebugState(const cc::LayerTreeDebugState& debug_state);
-  const cc::RendererSettings& GetRendererSettings() const;
 
   LayerAnimatorCollection* layer_animator_collection() {
     return &layer_animator_collection_;

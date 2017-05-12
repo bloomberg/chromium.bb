@@ -82,17 +82,6 @@ Compositor::Compositor(const cc::FrameSinkId& frame_sink_id,
   refresh_rate_ = settings.renderer_settings.refresh_rate =
       context_factory_->GetRefreshRate();
   settings.main_frame_before_activation_enabled = false;
-  settings.renderer_settings.partial_swap_enabled =
-      !command_line->HasSwitch(switches::kUIDisablePartialSwap);
-#if defined(OS_WIN)
-  settings.renderer_settings.finish_rendering_on_resize = true;
-#elif defined(OS_MACOSX)
-  settings.renderer_settings.release_overlay_resources_after_gpu_query = true;
-#endif
-  settings.renderer_settings.gl_composited_texture_quad_border =
-      command_line->HasSwitch(cc::switches::kGlCompositedTextureQuadBorder);
-  settings.renderer_settings.show_overdraw_feedback =
-      command_line->HasSwitch(cc::switches::kShowOverdrawFeedback);
 
   if (command_line->HasSwitch(cc::switches::kUIShowCompositedLayerBorders)) {
     std::string layer_borders_string = command_line->GetSwitchValueASCII(
@@ -141,35 +130,15 @@ Compositor::Compositor(const cc::FrameSinkId& frame_sink_id,
 
   settings.use_zero_copy = IsUIZeroCopyEnabled();
 
-  if (command_line->HasSwitch(switches::kUIEnableRGBA4444Textures))
-    settings.renderer_settings.preferred_tile_format = cc::RGBA_4444;
-
   settings.use_layer_lists =
       command_line->HasSwitch(cc::switches::kUIEnableLayerLists);
 
   settings.enable_color_correct_rasterization =
       command_line->HasSwitch(switches::kEnableColorCorrectRendering);
-  settings.renderer_settings.enable_color_correct_rendering =
-      settings.enable_color_correct_rasterization ||
-      command_line->HasSwitch(switches::kEnableHDR);
 
   // UI compositor always uses partial raster if not using zero-copy. Zero copy
   // doesn't currently support partial raster.
   settings.use_partial_raster = !settings.use_zero_copy;
-
-  // Populate buffer_to_texture_target_map for all buffer usage/formats.
-  for (int usage_idx = 0; usage_idx <= static_cast<int>(gfx::BufferUsage::LAST);
-       ++usage_idx) {
-    gfx::BufferUsage usage = static_cast<gfx::BufferUsage>(usage_idx);
-    for (int format_idx = 0;
-         format_idx <= static_cast<int>(gfx::BufferFormat::LAST);
-         ++format_idx) {
-      gfx::BufferFormat format = static_cast<gfx::BufferFormat>(format_idx);
-      uint32_t target = context_factory_->GetImageTextureTarget(format, usage);
-      settings.renderer_settings
-          .buffer_to_texture_target_map[std::make_pair(usage, format)] = target;
-    }
-  }
 
   settings.gpu_memory_policy.bytes_limit_when_visible = 512 * 1024 * 1024;
   settings.gpu_memory_policy.priority_cutoff_when_visible =
@@ -177,8 +146,9 @@ Compositor::Compositor(const cc::FrameSinkId& frame_sink_id,
 
   settings.disallow_non_exact_resource_reuse =
       command_line->HasSwitch(cc::switches::kDisallowNonExactResourceReuse);
-  settings.renderer_settings.disallow_non_exact_resource_reuse =
-      settings.disallow_non_exact_resource_reuse;
+
+  // TODO(staraz): LayerTreeSettings shouldn't have a RendererSettings.
+  settings.renderer_settings = context_factory_->GetRendererSettings();
 
   base::TimeTicks before_create = base::TimeTicks::Now();
 
@@ -540,10 +510,6 @@ const cc::LayerTreeDebugState& Compositor::GetLayerTreeDebugState() const {
 void Compositor::SetLayerTreeDebugState(
     const cc::LayerTreeDebugState& debug_state) {
   host_->SetDebugState(debug_state);
-}
-
-const cc::RendererSettings& Compositor::GetRendererSettings() const {
-  return host_->GetSettings().renderer_settings;
 }
 
 std::unique_ptr<CompositorLock> Compositor::GetCompositorLock(

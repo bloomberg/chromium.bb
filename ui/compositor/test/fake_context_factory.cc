@@ -4,14 +4,42 @@
 
 #include "ui/compositor/test/fake_context_factory.h"
 
+#include "base/command_line.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "cc/base/switches.h"
 #include "cc/output/compositor_frame.h"
 #include "cc/output/compositor_frame_sink_client.h"
 #include "cc/scheduler/begin_frame_source.h"
 #include "cc/scheduler/delay_based_time_source.h"
 #include "cc/test/fake_compositor_frame_sink.h"
+#include "ui/compositor/compositor_switches.h"
+#include "ui/display/display_switches.h"
+#include "ui/gfx/switches.h"
 
 namespace ui {
+
+FakeContextFactory::FakeContextFactory() {
+#if defined(OS_WIN)
+  renderer_settings_.finish_rendering_on_resize = true;
+#elif defined(OS_MACOSX)
+  renderer_settings_.release_overlay_resources_after_gpu_query = true;
+#endif
+  // Populate buffer_to_texture_target_map for all buffer usage/formats.
+  for (int usage_idx = 0; usage_idx <= static_cast<int>(gfx::BufferUsage::LAST);
+       ++usage_idx) {
+    gfx::BufferUsage usage = static_cast<gfx::BufferUsage>(usage_idx);
+    for (int format_idx = 0;
+         format_idx <= static_cast<int>(gfx::BufferFormat::LAST);
+         ++format_idx) {
+      gfx::BufferFormat format = static_cast<gfx::BufferFormat>(format_idx);
+      renderer_settings_
+          .buffer_to_texture_target_map[std::make_pair(usage, format)] =
+          GL_TEXTURE_2D;
+    }
+  }
+}
+
+FakeContextFactory::~FakeContextFactory() = default;
 
 const cc::CompositorFrame& FakeContextFactory::GetLastCompositorFrame() const {
   return *frame_sink_->last_sent_frame();
@@ -37,17 +65,16 @@ double FakeContextFactory::GetRefreshRate() const {
   return 200.0;
 }
 
-uint32_t FakeContextFactory::GetImageTextureTarget(gfx::BufferFormat format,
-                                                   gfx::BufferUsage usage) {
-  return GL_TEXTURE_2D;
-}
-
 gpu::GpuMemoryBufferManager* FakeContextFactory::GetGpuMemoryBufferManager() {
   return &gpu_memory_buffer_manager_;
 }
 
 cc::TaskGraphRunner* FakeContextFactory::GetTaskGraphRunner() {
   return &task_graph_runner_;
+}
+
+const cc::RendererSettings& FakeContextFactory::GetRendererSettings() const {
+  return renderer_settings_;
 }
 
 }  // namespace ui
