@@ -92,6 +92,20 @@ class CORE_EXPORT NGInlineItemsBuilder {
   bool is_svgtext_ = false;
   bool has_bidi_controls_ = false;
 
+  void AppendWithWhiteSpaceCollapsing(const String&,
+                                      unsigned start,
+                                      unsigned end,
+                                      const ComputedStyle*,
+                                      LayoutObject*);
+  void AppendWithoutWhiteSpaceCollapsing(const String&,
+                                         const ComputedStyle*,
+                                         LayoutObject*);
+  void AppendWithPreservingNewlines(const String&,
+                                    const ComputedStyle*,
+                                    LayoutObject*);
+
+  void AppendForcedBreak(const ComputedStyle*, LayoutObject*);
+
   // Because newlines may be removed depends on following characters, newlines
   // at the end of input string is not added to |text_| but instead
   // |has_pending_newline_| flag is set.

@@ -144,6 +144,18 @@ TEST_F(NGInlineNodeTest, CollectInlinesText) {
   EXPECT_EQ(5u, items.size());
 }
 
+TEST_F(NGInlineNodeTest, CollectInlinesBR) {
+  SetupHtml("t", u"<div id=t>Hello<br>World</div>");
+  NGInlineNodeForTest* node = CreateInlineNode();
+  node->CollectInlines(layout_object_, layout_block_flow_);
+  EXPECT_EQ("Hello\nWorld", node->Text());
+  Vector<NGInlineItem>& items = node->Items();
+  TEST_ITEM_TYPE_OFFSET(items[0], kText, 0u, 5u);
+  TEST_ITEM_TYPE_OFFSET(items[1], kControl, 5u, 6u);
+  TEST_ITEM_TYPE_OFFSET(items[2], kText, 6u, 11u);
+  EXPECT_EQ(3u, items.size());
+}
+
 TEST_F(NGInlineNodeTest, CollectInlinesRtlText) {
   SetupHtml("t", u"<div id=t dir=rtl>\u05E2 <span>\u05E2</span> \u05E2</div>");
   NGInlineNodeForTest* node = CreateInlineNode();

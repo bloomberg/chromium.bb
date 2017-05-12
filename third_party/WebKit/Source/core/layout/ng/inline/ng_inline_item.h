@@ -28,6 +28,7 @@ class NGInlineItem {
  public:
   enum NGInlineItemType {
     kText,
+    kControl,
     kAtomicInline,
     kOpenTag,
     kCloseTag,
