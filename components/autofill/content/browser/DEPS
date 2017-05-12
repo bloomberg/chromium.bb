@@ -8,6 +8,7 @@ include_rules = [
   "+gpu/config/gpu_info.h",
   "+sql",
   "+third_party/libphonenumber",  # For phone number i18n.
+  "+third_party/WebKit/public/platform/WebRect.h",
 ]
 
 specific_include_rules = {

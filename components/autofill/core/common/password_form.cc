@@ -242,6 +242,9 @@ std::ostream& operator<<(
     case PasswordForm::SubmissionIndicatorEvent::MANUAL_SAVE:
       os << "MANUAL_SAVE";
       break;
+    case PasswordForm::SubmissionIndicatorEvent::DOM_MUTATION_AFTER_XHR:
+      os << "DOM_MUTATION_AFTER_XHR";
+      break;
     default:
       os << "NO_SUBMISSION";
       break;

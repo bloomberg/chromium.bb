@@ -60,6 +60,7 @@ enum PasswordFormSubmissionIndicatorEvent {
     XHR_SUCCEEDED,
     FRAME_DETACHED,
     MANUAL_SAVE,
+    DOM_MUTATION_AFTER_XHR,
     SUBMISSION_INDICATOR_EVENT_COUNT
 };
 

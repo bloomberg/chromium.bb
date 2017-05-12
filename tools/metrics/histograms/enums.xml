@@ -33543,6 +33543,7 @@ from previous Chrome versions.
   <int value="3" label="XHR succeeded"/>
   <int value="4" label="Frame detached"/>
   <int value="5" label="By context menu"/>
+  <int value="6" label="DOM mutation after XHR"/>
 </enum>
 
 <enum name="SubresourceFilterActions" type="int">

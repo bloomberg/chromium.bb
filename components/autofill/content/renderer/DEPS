@@ -2,6 +2,9 @@ include_rules = [
   "+content/public/common",
   "+content/public/renderer",
   "+third_party/re2",
+  # Allow inclusion of WebKit API files.
+  "+third_party/WebKit/public/platform",
+  "+third_party/WebKit/public/web",
 ]
 
 specific_include_rules = {

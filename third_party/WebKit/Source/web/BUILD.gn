@@ -136,6 +136,8 @@ component("web") {
     "WebExport.h",
     "WebFormControlElement.cpp",
     "WebFormElement.cpp",
+    "WebFormElementObserverImpl.cpp",
+    "WebFormElementObserverImpl.h",
     "WebFrame.cpp",
     "WebFrameClient.cpp",
     "WebFrameContentDumper.cpp",

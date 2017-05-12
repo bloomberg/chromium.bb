@@ -26,6 +26,7 @@
 #include "third_party/WebKit/public/web/WebInputElement.h"
 
 namespace blink {
+class WebFormElementObserver;
 class WebInputElement;
 class WebSecurityOrigin;
 }
@@ -147,6 +148,8 @@ class PasswordAutofillAgent : public content::RenderFrameObserver,
       const blink::WebSecurityOrigin& origin);
 
  private:
+  class FormElementObserverCallback;
+
   // Ways to restrict which passwords are saved in ProvisionallySavePassword.
   enum ProvisionallySaveRestriction {
     RESTRICTION_NONE,
@@ -258,7 +261,8 @@ class PasswordAutofillAgent : public content::RenderFrameObserver,
                                  ProvisionallySaveRestriction restriction);
 
   // Helper function called when same-document navigation completed
-  void OnSameDocumentNavigationCompleted(bool is_inpage_navigation);
+  void OnSameDocumentNavigationCompleted(
+      PasswordForm::SubmissionIndicatorEvent event);
 
   const mojom::AutofillDriverPtr& GetAutofillDriver();
 
@@ -307,6 +311,8 @@ class PasswordAutofillAgent : public content::RenderFrameObserver,
   mojom::PasswordManagerDriverPtr password_manager_driver_;
 
   mojo::Binding<mojom::PasswordAutofillAgent> binding_;
+
+  blink::WebFormElementObserver* form_element_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(PasswordAutofillAgent);
 };
