@@ -68,10 +68,12 @@ void DeathDataSnapshotToValue(const DeathDataSnapshot& death_data,
 
   dictionary->SetInteger("alloc_ops", death_data.alloc_ops);
   dictionary->SetInteger("free_ops", death_data.free_ops);
-  dictionary->SetInteger("allocated_bytes", death_data.allocated_bytes);
-  dictionary->SetInteger("freed_bytes", death_data.freed_bytes);
-  dictionary->SetInteger("alloc_overhead_bytes",
-                         death_data.alloc_overhead_bytes);
+  // The byte counts are 64 bit integers, pass them through as doubles, as
+  // integer values truncate to 32 bits.
+  dictionary->SetDouble("allocated_bytes", death_data.allocated_bytes);
+  dictionary->SetDouble("freed_bytes", death_data.freed_bytes);
+  dictionary->SetDouble("alloc_overhead_bytes",
+                        death_data.alloc_overhead_bytes);
   dictionary->SetInteger("max_allocated_bytes", death_data.max_allocated_bytes);
 }
 
