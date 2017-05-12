@@ -5,9 +5,11 @@
 #ifndef MEDIA_BASE_DECODER_FACTORY_H_
 #define MEDIA_BASE_DECODER_FACTORY_H_
 
+#include <memory>
+#include <vector>
+
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_vector.h"
 #include "media/base/media_export.h"
 
 namespace base {
@@ -30,14 +32,14 @@ class MEDIA_EXPORT DecoderFactory {
   // Decoders are single-threaded, each decoder should run on |task_runner|.
   virtual void CreateAudioDecoders(
       scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-      ScopedVector<AudioDecoder>* audio_decoders);
+      std::vector<std::unique_ptr<AudioDecoder>>* audio_decoders);
 
   // Creates video decoders and append them to the end of |video_decoders|.
   // Decoders are single-threaded, each decoder should run on |task_runner|.
   virtual void CreateVideoDecoders(
       scoped_refptr<base::SingleThreadTaskRunner> task_runner,
       GpuVideoAcceleratorFactories* gpu_factories,
-      ScopedVector<VideoDecoder>* video_decoders);
+      std::vector<std::unique_ptr<VideoDecoder>>* video_decoders);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DecoderFactory);

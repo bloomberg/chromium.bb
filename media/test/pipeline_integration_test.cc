@@ -1369,9 +1369,9 @@ TEST_F(PipelineIntegrationTest, BasicPlaybackHi10P) {
   ASSERT_TRUE(WaitUntilOnEnded());
 }
 
-ScopedVector<VideoDecoder> CreateFailingVideoDecoder() {
-  ScopedVector<VideoDecoder> failing_video_decoder;
-  failing_video_decoder.push_back(new FailingVideoDecoder());
+std::vector<std::unique_ptr<VideoDecoder>> CreateFailingVideoDecoder() {
+  std::vector<std::unique_ptr<VideoDecoder>> failing_video_decoder;
+  failing_video_decoder.push_back(base::MakeUnique<FailingVideoDecoder>());
   return failing_video_decoder;
 }
 

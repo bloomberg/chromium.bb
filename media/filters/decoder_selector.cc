@@ -202,8 +202,8 @@ void DecoderSelector<StreamType>::InitializeDecoder() {
 
   // Select the next non-blacklisted decoder.
   while (!decoders_.empty()) {
-    std::unique_ptr<Decoder> decoder(decoders_.front());
-    decoders_.weak_erase(decoders_.begin());
+    std::unique_ptr<Decoder> decoder(std::move(decoders_.front()));
+    decoders_.erase(decoders_.begin());
     // When |decrypted_stream_| is selected, the |config_| has changed so ignore
     // the blacklist.
     if (decrypted_stream_ ||

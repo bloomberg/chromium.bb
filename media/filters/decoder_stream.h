@@ -8,11 +8,11 @@
 #include <deque>
 #include <list>
 #include <memory>
+#include <vector>
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "media/base/audio_decoder.h"
 #include "media/base/audio_timestamp_helper.h"
@@ -51,7 +51,8 @@ class MEDIA_EXPORT DecoderStream {
   };
 
   // Callback to create a list of decoders.
-  using CreateDecodersCB = base::RepeatingCallback<ScopedVector<Decoder>()>;
+  using CreateDecodersCB =
+      base::RepeatingCallback<std::vector<std::unique_ptr<Decoder>>()>;
 
   // Indicates completion of a DecoderStream initialization.
   using InitCB = base::Callback<void(bool success)>;

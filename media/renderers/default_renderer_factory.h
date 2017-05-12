@@ -6,10 +6,10 @@
 #define MEDIA_RENDERERS_DEFAULT_RENDERER_FACTORY_H_
 
 #include <memory>
+#include <vector>
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/scoped_vector.h"
 #include "media/base/media_export.h"
 #include "media/base/renderer_factory.h"
 
@@ -24,9 +24,9 @@ class VideoDecoder;
 class VideoRendererSink;
 
 using CreateAudioDecodersCB =
-    base::RepeatingCallback<ScopedVector<AudioDecoder>()>;
+    base::RepeatingCallback<std::vector<std::unique_ptr<AudioDecoder>>()>;
 using CreateVideoDecodersCB =
-    base::RepeatingCallback<ScopedVector<VideoDecoder>()>;
+    base::RepeatingCallback<std::vector<std::unique_ptr<VideoDecoder>>()>;
 
 // The default factory class for creating RendererImpl.
 class MEDIA_EXPORT DefaultRendererFactory : public RendererFactory {
@@ -46,9 +46,9 @@ class MEDIA_EXPORT DefaultRendererFactory : public RendererFactory {
       const RequestSurfaceCB& request_surface_cb) final;
 
  private:
-  ScopedVector<AudioDecoder> CreateAudioDecoders(
+  std::vector<std::unique_ptr<AudioDecoder>> CreateAudioDecoders(
       const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner);
-  ScopedVector<VideoDecoder> CreateVideoDecoders(
+  std::vector<std::unique_ptr<VideoDecoder>> CreateVideoDecoders(
       const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner,
       const RequestSurfaceCB& request_surface_cb,
       GpuVideoAcceleratorFactories* gpu_factories);

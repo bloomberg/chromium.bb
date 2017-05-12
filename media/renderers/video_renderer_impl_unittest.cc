@@ -53,10 +53,10 @@ MATCHER_P(HasTimestampMatcher, ms, "") {
 
 class VideoRendererImplTest : public testing::Test {
  public:
-  ScopedVector<VideoDecoder> CreateVideoDecodersForTest() {
+  std::vector<std::unique_ptr<VideoDecoder>> CreateVideoDecodersForTest() {
     decoder_ = new NiceMock<MockVideoDecoder>();
-    ScopedVector<VideoDecoder> decoders;
-    decoders.push_back(decoder_);
+    std::vector<std::unique_ptr<VideoDecoder>> decoders;
+    decoders.push_back(base::WrapUnique(decoder_));
     ON_CALL(*decoder_, Initialize(_, _, _, _, _))
         .WillByDefault(DoAll(SaveArg<4>(&output_cb_),
                              RunCallback<3>(expect_init_success_)));

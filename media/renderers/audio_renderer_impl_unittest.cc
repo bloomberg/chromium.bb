@@ -6,11 +6,13 @@
 
 #include <memory>
 #include <utility>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/format_macros.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
@@ -66,8 +68,8 @@ ACTION_P(EnterPendingDecoderInitStateAction, test) {
 
 class AudioRendererImplTest : public ::testing::Test, public RendererClient {
  public:
-  ScopedVector<AudioDecoder> CreateAudioDecoderForTest() {
-    MockAudioDecoder* decoder = new MockAudioDecoder();
+  std::vector<std::unique_ptr<AudioDecoder>> CreateAudioDecoderForTest() {
+    auto decoder = base::MakeUnique<MockAudioDecoder>();
     if (!enter_pending_decoder_init_) {
       EXPECT_CALL(*decoder, Initialize(_, _, _, _))
           .WillOnce(DoAll(SaveArg<3>(&output_cb_),
@@ -80,8 +82,8 @@ class AudioRendererImplTest : public ::testing::Test, public RendererClient {
         .WillRepeatedly(Invoke(this, &AudioRendererImplTest::DecodeDecoder));
     EXPECT_CALL(*decoder, Reset(_))
         .WillRepeatedly(Invoke(this, &AudioRendererImplTest::ResetDecoder));
-    ScopedVector<AudioDecoder> decoders;
-    decoders.push_back(decoder);
+    std::vector<std::unique_ptr<AudioDecoder>> decoders;
+    decoders.push_back(std::move(decoder));
     return decoders;
   }
 
