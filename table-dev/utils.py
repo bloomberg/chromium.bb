@@ -14,7 +14,12 @@ def exit_if_not(expression):
 
 exit_if_not(liblouis.lou_charSize() == 4)
 
-liblouis_dev = _loader["liblouis-table-dev.so.0"]
+try:
+    # Linux
+    liblouis_dev = _loader["liblouis-table-dev.so.0"]
+except OSError:
+    # Mac OS
+    liblouis_dev = _loader["liblouis-table-dev.dylib"]
 
 liblouis_dev.isLetter.argtypes = (c_wchar,)
 liblouis_dev.toLowercase.argtypes = (c_wchar,)

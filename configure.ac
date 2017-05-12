@@ -157,6 +157,15 @@ case $host in
   ;;
 esac
 
+AC_CANONICAL_HOST
+build_macosx=no
+case $host_os in
+  darwin*)
+    build_macosx=yes
+  ;;
+esac
+AM_CONDITIONAL([OSX], [test "$build_macosx" = "yes"])
+
 AC_CONFIG_FILES([
 	Makefile
 	doc/Makefile
