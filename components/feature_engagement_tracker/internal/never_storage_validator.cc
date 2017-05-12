@@ -10,13 +10,13 @@ NeverStorageValidator::NeverStorageValidator() = default;
 
 NeverStorageValidator::~NeverStorageValidator() = default;
 
-bool NeverStorageValidator::ShouldStore(const std::string& event_name) {
+bool NeverStorageValidator::ShouldStore(const std::string& event_name) const {
   return false;
 }
 
 bool NeverStorageValidator::ShouldKeep(const std::string& event_name,
                                        uint32_t event_day,
-                                       uint32_t current_day) {
+                                       uint32_t current_day) const {
   return false;
 }
 

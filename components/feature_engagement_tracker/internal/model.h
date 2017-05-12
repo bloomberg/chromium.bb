@@ -25,7 +25,8 @@ class Model {
 
   // Initialize the model, including all underlying sub systems. When all
   // required operations have been finished, a callback is posted.
-  virtual void Initialize(const OnModelInitializationFinished& callback) = 0;
+  virtual void Initialize(const OnModelInitializationFinished& callback,
+                          uint32_t current_day) = 0;
 
   // Returns whether the model is ready, i.e. whether it has been successfully
   // initialized.

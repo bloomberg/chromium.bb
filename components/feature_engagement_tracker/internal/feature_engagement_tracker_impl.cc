@@ -95,7 +95,8 @@ FeatureEngagementTrackerImpl::FeatureEngagementTrackerImpl(
                                        std::move(storage_validator));
   model_->Initialize(
       base::Bind(&FeatureEngagementTrackerImpl::OnModelInitializationFinished,
-                 weak_ptr_factory_.GetWeakPtr()));
+                 weak_ptr_factory_.GetWeakPtr()),
+      time_provider_->GetCurrentDay());
 }
 
 FeatureEngagementTrackerImpl::~FeatureEngagementTrackerImpl() = default;

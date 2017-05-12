@@ -190,4 +190,27 @@ TEST_F(PersistentStoreTest, WriteEvent) {
   test::VerifyEventsEqual(&event, &it->second);
 }
 
+TEST_F(PersistentStoreTest, WriteAndDeleteEvent) {
+  SetUpDB();
+
+  store_->Load(load_callback_);
+  db_->InitCallback(true);
+  db_->LoadCallback(true);
+
+  Event event;
+  event.set_name("event");
+  test::SetEventCountForDay(&event, 1, 2);
+
+  store_->WriteEvent(event);
+  db_->UpdateCallback(true);
+
+  EXPECT_EQ(1U, db_events_.size());
+
+  store_->DeleteEvent("event");
+  db_->UpdateCallback(true);
+
+  const auto& it = db_events_.find("event");
+  EXPECT_EQ(db_events_.end(), it);
+}
+
 }  // namespace feature_engagement_tracker

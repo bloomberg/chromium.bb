@@ -25,10 +25,10 @@ class FeatureConfigStorageValidator : public StorageValidator {
   ~FeatureConfigStorageValidator() override;
 
   // StorageValidator implementation.
-  bool ShouldStore(const std::string& event_name) override;
+  bool ShouldStore(const std::string& event_name) const override;
   bool ShouldKeep(const std::string& event_name,
                   uint32_t event_day,
-                  uint32_t current_day) override;
+                  uint32_t current_day) const override;
 
   // Set up internal configuration required for the given |features|.
   void InitializeFeatures(FeatureVector features,

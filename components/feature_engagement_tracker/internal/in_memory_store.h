@@ -24,6 +24,7 @@ class InMemoryStore : public Store {
   void Load(const OnLoadedCallback& callback) override;
   bool IsReady() const override;
   void WriteEvent(const Event& event) override;
+  void DeleteEvent(const std::string& event_name) override;
 
  protected:
   // Posts the result of loading and sets up the ready state.

@@ -30,9 +30,10 @@ ModelImpl::ModelImpl(std::unique_ptr<Store> store,
 
 ModelImpl::~ModelImpl() = default;
 
-void ModelImpl::Initialize(const OnModelInitializationFinished& callback) {
+void ModelImpl::Initialize(const OnModelInitializationFinished& callback,
+                           uint32_t current_day) {
   store_->Load(base::Bind(&ModelImpl::OnStoreLoaded, weak_factory_.GetWeakPtr(),
-                          callback));
+                          callback, current_day));
 }
 
 bool ModelImpl::IsReady() const {
@@ -49,10 +50,12 @@ const Event* ModelImpl::GetEvent(const std::string& event_name) const {
 
 void ModelImpl::IncrementEvent(const std::string& event_name,
                                uint32_t current_day) {
-  // TODO(nyquist): Add support for pending events, and also add UMA.
+  // TODO(nyquist): Add support for pending events.
+  // TODO(nyquist): Track this event in UMA.
   DCHECK(ready_);
 
-  // TODO(nyquist): Use StorageValidator to check if the event should be stored.
+  if (!storage_validator_->ShouldStore(event_name))
+    return;
 
   Event& event = GetNonConstEvent(event_name);
   for (int i = 0; i < event.events_size(); ++i) {
@@ -74,6 +77,7 @@ void ModelImpl::IncrementEvent(const std::string& event_name,
 }
 
 void ModelImpl::OnStoreLoaded(const OnModelInitializationFinished& callback,
+                              uint32_t current_day,
                               bool success,
                               std::unique_ptr<std::vector<Event>> events) {
   if (!success) {
@@ -84,10 +88,32 @@ void ModelImpl::OnStoreLoaded(const OnModelInitializationFinished& callback,
 
   for (auto& event : *events) {
     DCHECK_NE("", event.name());
-    events_[event.name()] = event;
-  }
 
-  // TODO(nyquist): Use StorageValidator to only keep relevant event data.
+    Event new_event;
+    for (const auto& event_count : event.events()) {
+      if (!storage_validator_->ShouldKeep(event.name(), event_count.day(),
+                                          current_day)) {
+        continue;
+      }
+
+      Event_Count* new_event_count = new_event.add_events();
+      new_event_count->set_day(event_count.day());
+      new_event_count->set_count(event_count.count());
+    }
+
+    // Only keep Event object that have days with activity.
+    if (new_event.events_size() > 0) {
+      new_event.set_name(event.name());
+      events_[event.name()] = new_event;
+
+      // If the number of events is not the same, overwrite DB entry.
+      if (new_event.events_size() != event.events_size())
+        store_->WriteEvent(new_event);
+    } else {
+      // If there are no more activity for an Event, delete the whole event.
+      store_->DeleteEvent(event.name());
+    }
+  }
 
   ready_ = true;
 
