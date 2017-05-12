@@ -1285,9 +1285,10 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
   @minimum_schema(47)
   def GetBuildHistory(self, build_config, num_results,
                       ignore_build_id=None, start_date=None, end_date=None,
-                      starting_build_number=None, milestone_version=None,
-                      platform_version=None, starting_build_id=None,
-                      final=False):
+                      starting_build_number=None, ending_build_number=None,
+                      milestone_version=None, platform_version=None,
+                      starting_build_id=None, waterfall=None,
+                      buildbot_generation=None, final=False):
     """Returns basic information about most recent builds.
 
     By default this function returns the most recent builds. Some arguments can
@@ -1305,14 +1306,19 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
           after this date.
       end_date: (Optional, type:datetime.date) Get builds that occured on or
           before this date.
-      starting_build_number: (Optional) The minimum build_number on the CQ
-          master for which data should be retrieved.
+      starting_build_number: (Optional) The minimum build_number for which
+          data should be retrieved.
+      ending_build_number: (Optional) The maximum build_number for which
+          data should be retrieved.
       milestone_version: (Optional) Return only results for this
           milestone_version.
       platform_version: (Optional) Return only results for this
           platform_version.
       starting_build_id: (Optional) The minimum build_id for which data should
           be retrieved.
+      waterfall: (Optional) The waterfall for which data should be retrieved.
+      buildbot_generation: (Optional) The buildbot_generation for which data
+          should be retrieved.
       final: (Optional) If True, only retrieve final (ie finished) builds.
 
     Returns:
@@ -1333,12 +1339,18 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
       where_clauses.append('build_number >= %d' % starting_build_number)
     if starting_build_id is not None:
       where_clauses.append('id >= %d' % starting_build_id)
+    if ending_build_number is not None:
+      where_clauses.append('build_number <= %d' % ending_build_number)
     if ignore_build_id is not None:
       where_clauses.append('id != %d' % ignore_build_id)
     if milestone_version is not None:
       where_clauses.append('milestone_version = "%s"' % milestone_version)
     if platform_version is not None:
       where_clauses.append('platform_version = "%s"' % platform_version)
+    if waterfall is not None:
+      where_clauses.append('waterfall = "%s"' % waterfall)
+    if buildbot_generation is not None:
+      where_clauses.append('buildbot_generation = "%s"' % buildbot_generation)
     if final:
       where_clauses.append('final = 1')
     query = (
