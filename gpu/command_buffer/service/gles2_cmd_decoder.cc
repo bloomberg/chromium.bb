@@ -16030,9 +16030,6 @@ error::Error GLES2DecoderImpl::HandleInsertFenceSyncCHROMIUM(
   const uint64_t release_count = c.release_count();
   if (!fence_sync_release_callback_.is_null())
     fence_sync_release_callback_.Run(release_count);
-  // Exit inner command processing loop so that we check the scheduling state
-  // and yield if necessary as we may have unblocked a higher priority context.
-  ExitCommandProcessingEarly();
   return error::kNoError;
 }
 

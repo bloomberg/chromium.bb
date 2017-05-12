@@ -60,7 +60,6 @@ CONTENT_EXPORT extern const char kDisableGpuMemoryBufferCompositorResources[];
 CONTENT_EXPORT extern const char kDisableGpuMemoryBufferVideoFrames[];
 extern const char kDisableGpuProcessCrashLimit[];
 CONTENT_EXPORT extern const char kDisableGpuSandbox[];
-CONTENT_EXPORT extern const char kDisableGpuScheduler[];
 CONTENT_EXPORT extern const char kDisableJavaScriptHarmonyShipping[];
 CONTENT_EXPORT extern const char kDisableLowLatencyDxva[];
 CONTENT_EXPORT extern const char kDisableLowResTiling[];
@@ -126,7 +125,6 @@ CONTENT_EXPORT extern const char
     kEnableWebFontsInterventionV2SwitchValueEnabledWithSlow2G[];
 CONTENT_EXPORT extern const char
     kEnableWebFontsInterventionV2SwitchValueDisabled[];
-CONTENT_EXPORT extern const char kEnableGpuScheduler[];
 CONTENT_EXPORT extern const char kEnableGpuAsyncWorkerContext[];
 CONTENT_EXPORT extern const char kEnableGpuMemoryBufferCompositorResources[];
 CONTENT_EXPORT extern const char kEnableGpuMemoryBufferVideoFrames[];
