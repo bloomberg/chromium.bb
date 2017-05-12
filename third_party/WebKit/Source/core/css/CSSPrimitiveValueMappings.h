@@ -1372,16 +1372,16 @@ template <>
 inline CSSIdentifierValue::CSSIdentifierValue(ETextSecurity e)
     : CSSValue(kIdentifierClass) {
   switch (e) {
-    case TSNONE:
+    case ETextSecurity::kNone:
       value_id_ = CSSValueNone;
       break;
-    case TSDISC:
+    case ETextSecurity::kDisc:
       value_id_ = CSSValueDisc;
       break;
-    case TSCIRCLE:
+    case ETextSecurity::kCircle:
       value_id_ = CSSValueCircle;
       break;
-    case TSSQUARE:
+    case ETextSecurity::kSquare:
       value_id_ = CSSValueSquare;
       break;
   }
@@ -1391,19 +1391,19 @@ template <>
 inline ETextSecurity CSSIdentifierValue::ConvertTo() const {
   switch (value_id_) {
     case CSSValueNone:
-      return TSNONE;
+      return ETextSecurity::kNone;
     case CSSValueDisc:
-      return TSDISC;
+      return ETextSecurity::kDisc;
     case CSSValueCircle:
-      return TSCIRCLE;
+      return ETextSecurity::kCircle;
     case CSSValueSquare:
-      return TSSQUARE;
+      return ETextSecurity::kSquare;
     default:
       break;
   }
 
   NOTREACHED();
-  return TSNONE;
+  return ETextSecurity::kNone;
 }
 
 template <>

@@ -208,7 +208,8 @@ void LayoutText::StyleDidChange(StyleDifference diff,
   const ComputedStyle& new_style = StyleRef();
   ETextTransform old_transform =
       old_style ? old_style->TextTransform() : ETextTransform::kNone;
-  ETextSecurity old_security = old_style ? old_style->TextSecurity() : TSNONE;
+  ETextSecurity old_security =
+      old_style ? old_style->TextSecurity() : ETextSecurity::kNone;
   if (old_transform != new_style.TextTransform() ||
       old_security != new_style.TextSecurity())
     TransformText();
@@ -1673,15 +1674,15 @@ void LayoutText::SetTextInternal(PassRefPtr<StringImpl> text) {
     // We use the same characters here as for list markers.
     // See the listMarkerText function in LayoutListMarker.cpp.
     switch (Style()->TextSecurity()) {
-      case TSNONE:
+      case ETextSecurity::kNone:
         break;
-      case TSCIRCLE:
+      case ETextSecurity::kCircle:
         SecureText(kWhiteBulletCharacter);
         break;
-      case TSDISC:
+      case ETextSecurity::kDisc:
         SecureText(kBulletCharacter);
         break;
-      case TSSQUARE:
+      case ETextSecurity::kSquare:
         SecureText(kBlackSquareCharacter);
     }
   }

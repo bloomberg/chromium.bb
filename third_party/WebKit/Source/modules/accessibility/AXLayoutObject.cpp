@@ -964,15 +964,15 @@ String AXLayoutObject::GetText() const {
 
     UChar mask_character = 0;
     switch (style->TextSecurity()) {
-      case TSNONE:
+      case ETextSecurity::kNone:
         break;  // Fall through to the non-password branch.
-      case TSDISC:
+      case ETextSecurity::kDisc:
         mask_character = kBulletCharacter;
         break;
-      case TSCIRCLE:
+      case ETextSecurity::kCircle:
         mask_character = kWhiteBulletCharacter;
         break;
-      case TSSQUARE:
+      case ETextSecurity::kSquare:
         mask_character = kBlackSquareCharacter;
         break;
     }
