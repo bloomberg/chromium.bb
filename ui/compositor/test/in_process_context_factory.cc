@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/threading/thread.h"
+#include "cc/base/switches.h"
 #include "cc/output/context_provider.h"
 #include "cc/output/output_surface_client.h"
 #include "cc/output/output_surface_frame.h"
@@ -29,6 +30,8 @@
 #include "ui/compositor/layer.h"
 #include "ui/compositor/reflector.h"
 #include "ui/compositor/test/in_process_context_provider.h"
+#include "ui/display/display_switches.h"
+#include "ui/gfx/switches.h"
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/test/gl_surface_test_support.h"
 
@@ -139,6 +142,25 @@ InProcessContextFactory::InProcessContextFactory(
   DCHECK_NE(gl::GetGLImplementation(), gl::kGLImplementationNone)
       << "If running tests, ensure that main() is calling "
       << "gl::GLSurfaceTestSupport::InitializeOneOff()";
+
+#if defined(OS_WIN)
+  renderer_settings_.finish_rendering_on_resize = true;
+#elif defined(OS_MACOSX)
+  renderer_settings_.release_overlay_resources_after_gpu_query = true;
+#endif
+  // Populate buffer_to_texture_target_map for all buffer usage/formats.
+  for (int usage_idx = 0; usage_idx <= static_cast<int>(gfx::BufferUsage::LAST);
+       ++usage_idx) {
+    gfx::BufferUsage usage = static_cast<gfx::BufferUsage>(usage_idx);
+    for (int format_idx = 0;
+         format_idx <= static_cast<int>(gfx::BufferFormat::LAST);
+         ++format_idx) {
+      gfx::BufferFormat format = static_cast<gfx::BufferFormat>(format_idx);
+      renderer_settings_
+          .buffer_to_texture_target_map[std::make_pair(usage, format)] =
+          GL_TEXTURE_2D;
+    }
+  }
 }
 
 InProcessContextFactory::~InProcessContextFactory() {
@@ -214,11 +236,11 @@ void InProcessContextFactory::CreateCompositorFrameSink(
       display_output_surface->capabilities().max_frames_pending));
 
   data->display = base::MakeUnique<cc::Display>(
-      &shared_bitmap_manager_, &gpu_memory_buffer_manager_,
-      compositor->GetRendererSettings(), compositor->frame_sink_id(),
-      begin_frame_source.get(), std::move(display_output_surface),
-      std::move(scheduler), base::MakeUnique<cc::TextureMailboxDeleter>(
-                                compositor->task_runner().get()));
+      &shared_bitmap_manager_, &gpu_memory_buffer_manager_, renderer_settings_,
+      compositor->frame_sink_id(), begin_frame_source.get(),
+      std::move(display_output_surface), std::move(scheduler),
+      base::MakeUnique<cc::TextureMailboxDeleter>(
+          compositor->task_runner().get()));
   // Note that we are careful not to destroy a prior |data->begin_frame_source|
   // until we have reset |data->display|.
   data->begin_frame_source = std::move(begin_frame_source);
@@ -275,12 +297,6 @@ double InProcessContextFactory::GetRefreshRate() const {
   return refresh_rate_;
 }
 
-uint32_t InProcessContextFactory::GetImageTextureTarget(
-    gfx::BufferFormat format,
-    gfx::BufferUsage usage) {
-  return GL_TEXTURE_2D;
-}
-
 gpu::GpuMemoryBufferManager*
 InProcessContextFactory::GetGpuMemoryBufferManager() {
   return &gpu_memory_buffer_manager_;
@@ -310,6 +326,11 @@ void InProcessContextFactory::ResizeDisplay(ui::Compositor* compositor,
   if (!per_compositor_data_.count(compositor))
     return;
   per_compositor_data_[compositor]->display->Resize(size);
+}
+
+const cc::RendererSettings& InProcessContextFactory::GetRendererSettings()
+    const {
+  return renderer_settings_;
 }
 
 void InProcessContextFactory::AddObserver(ContextFactoryObserver* observer) {

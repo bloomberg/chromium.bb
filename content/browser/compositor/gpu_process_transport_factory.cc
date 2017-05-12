@@ -19,6 +19,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "cc/base/histograms.h"
+#include "cc/base/switches.h"
 #include "cc/output/texture_mailbox_deleter.h"
 #include "cc/output/vulkan_in_process_context_provider.h"
 #include "cc/raster/single_thread_task_graph_runner.h"
@@ -57,7 +58,9 @@
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/compositor_constants.h"
 #include "ui/compositor/compositor_switches.h"
+#include "ui/compositor/compositor_util.h"
 #include "ui/compositor/layer.h"
+#include "ui/display/display_switches.h"
 #include "ui/display/types/display_snapshot.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/switches.h"
@@ -197,6 +200,8 @@ struct GpuProcessTransportFactory::PerCompositorData {
 
 GpuProcessTransportFactory::GpuProcessTransportFactory()
     : frame_sink_id_allocator_(kDefaultClientId),
+      renderer_settings_(
+          ui::CreateRendererSettings(&gpu::GetImageTextureTarget)),
       task_graph_runner_(new cc::SingleThreadTaskGraphRunner),
       callback_factory_(this) {
   cc::SetClientNameForMetrics("Browser");
@@ -601,7 +606,7 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
   // The Display owns and uses the |display_output_surface| created above.
   data->display = base::MakeUnique<cc::Display>(
       display_compositor::HostSharedBitmapManager::current(),
-      GetGpuMemoryBufferManager(), compositor->GetRendererSettings(),
+      GetGpuMemoryBufferManager(), renderer_settings_,
       compositor->frame_sink_id(), begin_frame_source,
       std::move(display_output_surface), std::move(scheduler),
       base::MakeUnique<cc::TextureMailboxDeleter>(
@@ -693,12 +698,6 @@ void GpuProcessTransportFactory::RemoveCompositor(ui::Compositor* compositor) {
 
 double GpuProcessTransportFactory::GetRefreshRate() const {
   return 60.0;
-}
-
-uint32_t GpuProcessTransportFactory::GetImageTextureTarget(
-    gfx::BufferFormat format,
-    gfx::BufferUsage usage) {
-  return gpu::GetImageTextureTarget(format, usage);
 }
 
 gpu::GpuMemoryBufferManager*
@@ -801,6 +800,11 @@ void GpuProcessTransportFactory::SetOutputIsSecure(ui::Compositor* compositor,
   data->output_is_secure = secure;
   if (data->display)
     data->display->SetOutputIsSecure(secure);
+}
+
+const cc::RendererSettings& GpuProcessTransportFactory::GetRendererSettings()
+    const {
+  return renderer_settings_;
 }
 
 void GpuProcessTransportFactory::AddObserver(

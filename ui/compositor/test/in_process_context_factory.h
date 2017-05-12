@@ -57,8 +57,6 @@ class InProcessContextFactory : public ContextFactory,
   scoped_refptr<cc::ContextProvider> SharedMainThreadContextProvider() override;
   void RemoveCompositor(Compositor* compositor) override;
   double GetRefreshRate() const override;
-  uint32_t GetImageTextureTarget(gfx::BufferFormat format,
-                                 gfx::BufferUsage usage) override;
   gpu::GpuMemoryBufferManager* GetGpuMemoryBufferManager() override;
   cc::TaskGraphRunner* GetTaskGraphRunner() override;
   cc::FrameSinkId AllocateFrameSinkId() override;
@@ -76,6 +74,7 @@ class InProcessContextFactory : public ContextFactory,
                                  base::TimeTicks timebase,
                                  base::TimeDelta interval) override {}
   void SetOutputIsSecure(ui::Compositor* compositor, bool secure) override {}
+  const cc::RendererSettings& GetRendererSettings() const override;
   void AddObserver(ContextFactoryObserver* observer) override;
   void RemoveObserver(ContextFactoryObserver* observer) override;
 
@@ -96,6 +95,7 @@ class InProcessContextFactory : public ContextFactory,
   cc::SurfaceManager* surface_manager_;
   base::ObserverList<ContextFactoryObserver> observer_list_;
 
+  cc::RendererSettings renderer_settings_;
   using PerCompositorDataMap =
       base::hash_map<ui::Compositor*, std::unique_ptr<PerCompositorData>>;
   PerCompositorDataMap per_compositor_data_;

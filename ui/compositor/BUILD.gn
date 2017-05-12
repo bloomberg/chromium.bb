@@ -26,6 +26,8 @@ component("compositor") {
     "compositor_observer.h",
     "compositor_switches.cc",
     "compositor_switches.h",
+    "compositor_util.cc",
+    "compositor_util.h",
     "compositor_vsync_manager.cc",
     "compositor_vsync_manager.h",
     "debug_utils.cc",

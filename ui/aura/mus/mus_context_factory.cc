@@ -4,16 +4,28 @@
 
 #include "ui/aura/mus/mus_context_factory.h"
 
+#include "base/command_line.h"
 #include "base/memory/ptr_util.h"
+#include "cc/base/switches.h"
 #include "services/ui/public/cpp/gpu/gpu.h"
 #include "ui/aura/mus/window_port_mus.h"
 #include "ui/aura/window_tree_host.h"
+#include "ui/compositor/compositor_switches.h"
+#include "ui/compositor/compositor_util.h"
+#include "ui/display/display_switches.h"
+#include "ui/gfx/switches.h"
 #include "ui/gl/gl_bindings.h"
 
 namespace aura {
 
 MusContextFactory::MusContextFactory(ui::Gpu* gpu)
-    : gpu_(gpu), weak_ptr_factory_(this) {}
+    : gpu_(gpu),
+      renderer_settings_(ui::CreateRendererSettings(
+          [](gfx::BufferFormat format, gfx::BufferUsage usage) -> uint32_t {
+            // TODO(sad): http://crbug.com/675431
+            return GL_TEXTURE_2D;
+          })),
+      weak_ptr_factory_(this) {}
 
 MusContextFactory::~MusContextFactory() {}
 
@@ -62,18 +74,16 @@ double MusContextFactory::GetRefreshRate() const {
   return 60.0;
 }
 
-uint32_t MusContextFactory::GetImageTextureTarget(gfx::BufferFormat format,
-                                                  gfx::BufferUsage usage) {
-  // TODO(sad): http://crbug.com/675431
-  return GL_TEXTURE_2D;
-}
-
 gpu::GpuMemoryBufferManager* MusContextFactory::GetGpuMemoryBufferManager() {
   return gpu_->gpu_memory_buffer_manager();
 }
 
 cc::TaskGraphRunner* MusContextFactory::GetTaskGraphRunner() {
   return raster_thread_helper_.task_graph_runner();
+}
+
+const cc::RendererSettings& MusContextFactory::GetRendererSettings() const {
+  return renderer_settings_;
 }
 
 }  // namespace aura
