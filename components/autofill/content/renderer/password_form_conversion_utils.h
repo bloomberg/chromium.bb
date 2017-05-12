@@ -68,6 +68,10 @@ bool HasAutocompleteAttributeValue(const blink::WebInputElement& element,
 // the given |element| are present.
 bool HasCreditCardAutocompleteAttributes(const blink::WebInputElement& element);
 
+// Returns whether the form |field| has a "password" type, but looks like a
+// credit card verification field.
+bool IsCreditCardVerificationPasswordField(const blink::WebInputElement& field);
+
 }  // namespace autofill
 
 #endif  // COMPONENTS_AUTOFILL_CONTENT_RENDERER_PASSWORD_FORM_CONVERSION_UTILS_H__

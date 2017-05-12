@@ -19,6 +19,8 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/content/renderer/form_autofill_util.h"
+#include "components/autofill/core/common/autofill_regex_constants.h"
+#include "components/autofill/core/common/autofill_regexes.h"
 #include "components/autofill/core/common/autofill_util.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/autofill/core/common/password_form_field_prediction_map.h"
@@ -429,6 +431,8 @@ bool GetPasswordForm(
 
     if (HasCreditCardAutocompleteAttributes(*input_element))
       continue;
+    if (IsCreditCardVerificationPasswordField(*input_element))
+      continue;
 
     bool element_is_invisible = !form_util::IsWebElementVisible(*input_element);
     if (input_element->IsTextField()) {
@@ -764,6 +768,17 @@ bool HasCreditCardAutocompleteAttributes(
     }
   }
   return false;
+}
+
+bool IsCreditCardVerificationPasswordField(
+    const blink::WebInputElement& field) {
+  if (!field.IsPasswordField())
+    return false;
+
+  static const base::string16 kCardCvcReCached = base::UTF8ToUTF16(kCardCvcRe);
+
+  return MatchesPattern(field.GetAttribute("id").Utf16(), kCardCvcReCached) ||
+         MatchesPattern(field.GetAttribute("name").Utf16(), kCardCvcReCached);
 }
 
 }  // namespace autofill

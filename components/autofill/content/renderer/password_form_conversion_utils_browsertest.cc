@@ -1291,7 +1291,7 @@ TEST_F(MAYBE_PasswordFormConversionUtilsTest,
 
   std::unique_ptr<PasswordForm> password_form =
       LoadHTMLAndConvertForm(html, &predictions, false);
-  EXPECT_TRUE(password_form);
+  EXPECT_FALSE(password_form);
 }
 
 TEST_F(MAYBE_PasswordFormConversionUtilsTest, IsGaiaReauthFormIgnored) {
