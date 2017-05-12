@@ -33,6 +33,7 @@
 #include "platform/wtf/Noncopyable.h"
 
 namespace blink {
+
 class IntRect;
 
 class PLATFORM_EXPORT PlatformChromeClient

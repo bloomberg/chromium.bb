@@ -26,7 +26,6 @@
 #ifndef Scrollbar_h
 #define Scrollbar_h
 
-#include "platform/FrameViewBase.h"
 #include "platform/Timer.h"
 #include "platform/graphics/paint/DisplayItem.h"
 #include "platform/heap/Handle.h"
@@ -75,9 +74,6 @@ class PLATFORM_EXPORT Scrollbar : public GarbageCollectedFinalized<Scrollbar>,
   IntSize Size() const override { return frame_rect_.Size(); }
   IntPoint Location() const override { return frame_rect_.Location(); }
 
-  virtual void SetParent(FrameViewBase* parent) { parent_ = parent; }
-  FrameViewBase* Parent() const { return parent_; }
-
   void SetFrameRect(const IntRect&);
   IntRect FrameRect() const override { return frame_rect_; }
 
@@ -85,8 +81,7 @@ class PLATFORM_EXPORT Scrollbar : public GarbageCollectedFinalized<Scrollbar>,
   void GetTickmarks(Vector<IntRect>&) const override;
   bool IsScrollableAreaActive() const override;
 
-  IntPoint ConvertFromRootFrame(
-      const IntPoint& point_in_root_frame) const override;
+  IntPoint ConvertFromRootFrame(const IntPoint&) const override;
 
   bool IsCustomScrollbar() const override { return false; }
   ScrollbarOrientation Orientation() const override { return orientation_; }
@@ -117,7 +112,7 @@ class PLATFORM_EXPORT Scrollbar : public GarbageCollectedFinalized<Scrollbar>,
   // Will trigger paint invalidation if required.
   void OffsetDidChange();
 
-  void DisconnectFromScrollableArea();
+  virtual void DisconnectFromScrollableArea();
   ScrollableArea* GetScrollableArea() const { return scrollable_area_; }
 
   int PressedPos() const { return pressed_pos_; }
@@ -252,7 +247,6 @@ class PLATFORM_EXPORT Scrollbar : public GarbageCollectedFinalized<Scrollbar>,
   bool track_needs_repaint_;
   bool thumb_needs_repaint_;
   LayoutRect visual_rect_;
-  Member<FrameViewBase> parent_;
   IntRect frame_rect_;
 };
 

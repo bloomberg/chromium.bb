@@ -99,12 +99,9 @@ LayoutBox* LayoutScrollbar::StyleSource() const {
              : 0;
 }
 
-void LayoutScrollbar::SetParent(FrameViewBase* parent) {
-  Scrollbar::SetParent(parent);
-  if (!parent) {
-    // Destroy all of the scrollbar's LayoutBoxes.
-    UpdateScrollbarParts(true);
-  }
+void LayoutScrollbar::DisconnectFromScrollableArea() {
+  UpdateScrollbarParts(true);
+  Scrollbar::DisconnectFromScrollableArea();
 }
 
 void LayoutScrollbar::SetEnabled(bool e) {

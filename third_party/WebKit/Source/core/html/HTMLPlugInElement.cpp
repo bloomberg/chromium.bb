@@ -46,7 +46,6 @@
 #include "core/page/Page.h"
 #include "core/page/scrolling/ScrollingCoordinator.h"
 #include "core/plugins/PluginView.h"
-#include "platform/FrameViewBase.h"
 #include "platform/Histogram.h"
 #include "platform/bindings/V8PerIsolateData.h"
 #include "platform/loader/fetch/ResourceRequest.h"

@@ -200,6 +200,12 @@ class PLATFORM_EXPORT ScrollableArea : public GarbageCollectedMixin,
     NOTREACHED();
     return scrollbar_point;
   }
+  virtual IntPoint ConvertFromRootFrame(
+      const IntPoint& point_in_root_frame) const {
+    NOTREACHED();
+    return point_in_root_frame;
+  }
+
   virtual Scrollbar* HorizontalScrollbar() const { return nullptr; }
   virtual Scrollbar* VerticalScrollbar() const { return nullptr; }
 

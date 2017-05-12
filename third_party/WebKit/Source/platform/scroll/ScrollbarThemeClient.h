@@ -54,8 +54,7 @@ class PLATFORM_EXPORT ScrollbarThemeClient {
   virtual void GetTickmarks(Vector<IntRect>&) const = 0;
   virtual bool IsScrollableAreaActive() const = 0;
 
-  virtual IntPoint ConvertFromRootFrame(
-      const IntPoint& point_in_root_frame) const = 0;
+  virtual IntPoint ConvertFromRootFrame(const IntPoint&) const = 0;
 
   virtual bool IsCustomScrollbar() const = 0;
   virtual ScrollbarOrientation Orientation() const = 0;

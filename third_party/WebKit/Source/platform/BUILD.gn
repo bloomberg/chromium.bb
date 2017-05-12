@@ -257,7 +257,6 @@ component("platform") {
     "FileMetadata.cpp",
     "FileMetadata.h",
     "FileSystemType.h",
-    "FrameViewBase.h",
     "Histogram.cpp",
     "Histogram.h",
     "InstanceCounters.cpp",
