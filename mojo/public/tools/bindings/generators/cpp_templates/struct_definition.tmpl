@@ -2,6 +2,11 @@
 {%- set class_name = struct.name ~ "_Data" %}
 
 // static
+{{class_name}}* {{class_name}}::New(mojo::internal::Buffer* buf) {
+  return new (buf->Allocate(sizeof({{class_name}}))) {{class_name}}();
+}
+
+// static
 bool {{class_name}}::Validate(
     const void* data,
     mojo::internal::ValidationContext* validation_context) {
@@ -68,3 +73,5 @@ bool {{class_name}}::Validate(
   return true;
 }
 
+{{class_name}}::{{class_name}}()
+    : header_({sizeof(*this), {{struct.versions[-1].version}}}) {}
