@@ -78,6 +78,22 @@ static_library("libwebp_demux") {
   ]
 }
 
+static_library("libwebp_mux") {
+  sources = [
+    "mux/anim_encode.c",
+    "mux/muxedit.c",
+    "mux/muxinternal.c",
+    "mux/muxread.c",
+  ]
+  all_dependent_configs = [ ":libwebp_config" ]
+  configs -= [ "//build/config/compiler:chromium_code" ]
+  configs += [ "//build/config/compiler:no_chromium_code" ]
+  deps = [
+    ":libwebp_utils",
+    ":libwebp_webp",
+  ]
+}
+
 static_library("libwebp_dsp") {
   sources = [
     "dsp/alpha_processing.c",
@@ -343,6 +359,7 @@ group("libwebp") {
     ":libwebp_demux",
     ":libwebp_dsp",
     ":libwebp_enc",
+    ":libwebp_mux",
     ":libwebp_utils",
   ]
   public_configs = [ ":libwebp_config" ]
