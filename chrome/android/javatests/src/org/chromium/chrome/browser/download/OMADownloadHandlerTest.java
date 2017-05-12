@@ -4,29 +4,140 @@
 
 package org.chromium.chrome.browser.download;
 
+import android.app.DownloadManager;
+import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.support.test.InstrumentationRegistry;
+import android.support.test.filters.MediumTest;
 import android.support.test.filters.SmallTest;
 import android.test.MoreAsserts;
 
 import org.junit.Assert;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.chromium.base.ContextUtils;
+import org.chromium.base.test.util.AdvancedMockContext;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.RetryOnFailure;
+import org.chromium.base.test.util.UrlUtils;
+import org.chromium.chrome.browser.download.DownloadManagerDelegate.DownloadQueryCallback;
+import org.chromium.chrome.browser.download.DownloadManagerDelegate.DownloadQueryResult;
+import org.chromium.chrome.browser.download.OMADownloadHandler.OMAInfo;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.content.browser.test.NativeLibraryTestRule;
+import org.chromium.content.browser.test.util.Criteria;
+import org.chromium.content.browser.test.util.CriteriaHelper;
+import org.chromium.net.test.EmbeddedTestServer;
 
 import java.io.ByteArrayInputStream;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Tests for OMADownloadHandler class.
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
 public class OMADownloadHandlerTest {
+    @Rule
+    public NativeLibraryTestRule mActivityTestRule = new NativeLibraryTestRule();
+
+    private static final String PENDING_OMA_DOWNLOADS = "PendingOMADownloads";
+    private static final String INSTALL_NOTIFY_URI = "http://test/test";
+
+    private Context getTestContext() {
+        return new AdvancedMockContext(
+                InstrumentationRegistry.getInstrumentation().getTargetContext());
+    }
+
     /**
-     * Test to make sure {@link OMADownloadHandler#getSize} returns the
-     * right size for OMAInfo.
+     * Mock implementation of the DownloadSnackbarController.
+     */
+    static class MockDownloadSnackbarController extends DownloadSnackbarController {
+        public boolean mSucceeded;
+        public boolean mFailed;
+
+        public MockDownloadSnackbarController() {
+            super(null);
+        }
+
+        public void waitForSnackbarControllerToFinish(final boolean success) {
+            CriteriaHelper.pollInstrumentationThread(
+                    new Criteria("Failed while waiting for all calls to complete.") {
+                        @Override
+                        public boolean isSatisfied() {
+                            return success ? mSucceeded : mFailed;
+                        }
+                    });
+        }
+
+        @Override
+        public void onDownloadSucceeded(DownloadInfo downloadInfo, int notificationId,
+                long downloadId, boolean canBeResolved, boolean usesAndroidDownloadManager) {
+            mSucceeded = true;
+        }
+
+        @Override
+        public void onDownloadFailed(String errorMessage, boolean showAllDownloads) {
+            mFailed = true;
+        }
+    }
+
+    private static class OMADownloadHandlerForTest extends OMADownloadHandler {
+        public String mNofityURI;
+        public long mDownloadId;
+
+        public OMADownloadHandlerForTest(Context context, DownloadManagerDelegate delegate,
+                DownloadSnackbarController downloadSnackbarController) {
+            super(context, delegate, downloadSnackbarController);
+        }
+
+        @Override
+        protected boolean sendNotification(
+                OMAInfo omaInfo, DownloadInfo downloadInfo, long downloadId, String statusMessage) {
+            mNofityURI = omaInfo.getValue(OMA_INSTALL_NOTIFY_URI);
+            return true;
+        }
+
+        @Override
+        public void onDownloadEnqueued(
+                boolean result, int failureReason, DownloadItem downloadItem, long downloadId) {
+            super.onDownloadEnqueued(result, failureReason, downloadItem, downloadId);
+            mDownloadId = downloadId;
+        }
+    }
+
+    /** Helper class to verify the result of {@DownloadManagerDelegate.queryDownloadResult}. */
+    private static class DownloadQueryResultVerifier implements DownloadQueryCallback {
+        private int mExpectedDownloadStatus;
+
+        public boolean mQueryCompleted;
+
+        public DownloadQueryResultVerifier(int expectedDownloadStatus) {
+            mExpectedDownloadStatus = expectedDownloadStatus;
+        }
+
+        @Override
+        public void onQueryCompleted(DownloadQueryResult result, boolean showNotifications) {
+            mQueryCompleted = true;
+            Assert.assertEquals(mExpectedDownloadStatus, result.downloadStatus);
+        }
+    }
+
+    private void waitForQueryCompletion(final DownloadQueryResultVerifier verifier) {
+        CriteriaHelper.pollUiThread(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                return verifier.mQueryCompleted;
+            }
+        });
+    }
+
+    /**
+     * Test to make sure {@link OMADownloadHandler#getSize} returns the right size for OMAInfo.
      */
     @Test
     @SmallTest
@@ -46,8 +157,7 @@ public class OMADownloadHandlerTest {
     }
 
     /**
-     * Test to make sure {@link OMADownloadHandler.OMAInfo#getDrmType} returns the
-     * right DRM type.
+     * Test to make sure {@link OMADownloadHandler.OMAInfo#getDrmType} returns the right DRM type.
      */
     @Test
     @SmallTest
@@ -68,8 +178,7 @@ public class OMADownloadHandlerTest {
     }
 
     /**
-     * Test to make sure {@link OMADownloadHandler#getOpennableType} returns the
-     * right MIME type.
+     * Test to make sure {@link OMADownloadHandler#getOpennableType} returns the right MIME type.
      */
     @Test
     @SmallTest
@@ -132,8 +241,8 @@ public class OMADownloadHandlerTest {
     }
 
     /**
-     * Test that {@link OMADownloadHandler#parseDownloadDescriptor} returns empty
-     * result on invalid input.
+     * Test that {@link OMADownloadHandler#parseDownloadDescriptor} returns empty result on invalid
+     * input.
      */
     @Test
     @SmallTest
@@ -166,5 +275,146 @@ public class OMADownloadHandlerTest {
         info = OMADownloadHandler.parseDownloadDescriptor(
                 new ByteArrayInputStream(downloadDescriptor.getBytes()));
         Assert.assertNull(info);
+    }
+
+    /**
+     * Test to make sure {@link DownloadManagerDelegate#queryDownloadResult} will report correctly
+     * about the status of completed downloads and removed downloads.
+     */
+    @Test
+    @MediumTest
+    @Feature({"Download"})
+    public void testQueryDownloadResult() {
+        Context context = getTestContext();
+        DownloadManager manager =
+                (DownloadManager) getTestContext().getSystemService(Context.DOWNLOAD_SERVICE);
+        long downloadId1 = manager.addCompletedDownload("test", "test", false, "text/html",
+                UrlUtils.getIsolatedTestFilePath("chrome/test/data/android/download/download.txt"),
+                4, true);
+
+        DownloadItem downloadItem = new DownloadItem(true, new DownloadInfo.Builder().build());
+        downloadItem.setSystemDownloadId(downloadId1);
+
+        DownloadManagerDelegate downloadManagerDelegate = new DownloadManagerDelegate(context);
+        DownloadQueryResultVerifier verifier =
+                new DownloadQueryResultVerifier(DownloadManagerService.DOWNLOAD_STATUS_COMPLETE);
+        downloadManagerDelegate.queryDownloadResult(downloadItem, false, verifier);
+        waitForQueryCompletion(verifier);
+
+        manager.remove(downloadId1);
+        downloadItem.setSystemDownloadId(downloadId1);
+        verifier =
+                new DownloadQueryResultVerifier(DownloadManagerService.DOWNLOAD_STATUS_CANCELLED);
+        downloadManagerDelegate.queryDownloadResult(downloadItem, false, verifier);
+        waitForQueryCompletion(verifier);
+    }
+
+    /**
+     * Test to make sure {@link OMADownloadHandler#clearPendingOMADownloads} will clear the OMA
+     * notifications and pass the notification URI to {@link OMADownloadHandler}.
+     */
+    @Test
+    @MediumTest
+    @RetryOnFailure
+    @Feature({"Download"})
+    public void testClearPendingOMADownloads() {
+        Context context = getTestContext();
+        DownloadManager manager =
+                (DownloadManager) getTestContext().getSystemService(Context.DOWNLOAD_SERVICE);
+        long downloadId1 = manager.addCompletedDownload("test", "test", false, "text/html",
+                UrlUtils.getIsolatedTestFilePath("chrome/test/data/android/download/download.txt"),
+                4, true);
+
+        DownloadManagerDelegate downloadManagerDelegate = new DownloadManagerDelegate(context);
+        final MockDownloadSnackbarController snackbarController =
+                new MockDownloadSnackbarController();
+        final OMADownloadHandlerForTest omaHandler =
+                new OMADownloadHandlerForTest(context, downloadManagerDelegate, snackbarController);
+
+        // Write a few pending downloads into shared preferences.
+        Set<String> pendingOmaDownloads = new HashSet<>();
+        pendingOmaDownloads.add(String.valueOf(downloadId1) + "," + INSTALL_NOTIFY_URI);
+        DownloadManagerService.storeDownloadInfo(
+                ContextUtils.getAppSharedPreferences(), PENDING_OMA_DOWNLOADS, pendingOmaDownloads);
+
+        pendingOmaDownloads = DownloadManagerService.getStoredDownloadInfo(
+                ContextUtils.getAppSharedPreferences(), PENDING_OMA_DOWNLOADS);
+        Assert.assertEquals(1, pendingOmaDownloads.size());
+
+        omaHandler.clearPendingOMADownloads();
+
+        // Wait for OMADownloadHandler to clear the pending downloads.
+        CriteriaHelper.pollUiThread(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                return snackbarController.mSucceeded;
+            }
+        });
+
+        // The pending downloads set in the shared prefs should be empty now.
+        pendingOmaDownloads = DownloadManagerService.getStoredDownloadInfo(
+                ContextUtils.getAppSharedPreferences(), PENDING_OMA_DOWNLOADS);
+        Assert.assertEquals(0, pendingOmaDownloads.size());
+        Assert.assertEquals(omaHandler.mNofityURI, INSTALL_NOTIFY_URI);
+
+        manager.remove(downloadId1);
+    }
+
+    /**
+     * Test that calling {@link OMADownloadHandler#enqueueDownloadManagerRequest} for an
+     * OMA download will enqueue a new DownloadManager request and insert an entry into the
+     * SharedPrefs.
+     */
+    @Test
+    @MediumTest
+    @Feature({"Download"})
+    public void testEnqueueOMADownloads() throws InterruptedException {
+        EmbeddedTestServer testServer = EmbeddedTestServer.createAndStartServer(
+                InstrumentationRegistry.getInstrumentation().getContext());
+        Context context = getTestContext();
+        mActivityTestRule.loadNativeLibraryAndInitBrowserProcess();
+
+        OMADownloadHandler.OMAInfo omaInfo = new OMAInfo();
+        omaInfo.addAttributeValue(OMADownloadHandler.OMA_NAME, "test.gzip");
+        omaInfo.addAttributeValue(OMADownloadHandler.OMA_OBJECT_URI,
+                testServer.getURL("/chrome/test/data/android/download/test.gzip"));
+        omaInfo.addAttributeValue(OMADownloadHandler.OMA_INSTALL_NOTIFY_URI, INSTALL_NOTIFY_URI);
+
+        try {
+            DownloadInfo info = new DownloadInfo.Builder().build();
+            final DownloadManagerDelegate downloadManagerDelegate =
+                    new DownloadManagerDelegate(context);
+            final MockDownloadSnackbarController snackbarController =
+                    new MockDownloadSnackbarController();
+            final OMADownloadHandlerForTest omaHandler = new OMADownloadHandlerForTest(
+                    context, downloadManagerDelegate, snackbarController) {
+                @Override
+                public void onReceive(Context context, Intent intent) {
+                    // Ignore all the broadcasts.
+                }
+            };
+
+            omaHandler.clearPendingOMADownloads();
+            omaHandler.downloadOMAContent(0, info, omaInfo);
+            CriteriaHelper.pollUiThread(new Criteria() {
+                @Override
+                public boolean isSatisfied() {
+                    return omaHandler.mDownloadId != 0;
+                }
+            });
+
+            Set<String> downloads = DownloadManagerService.getStoredDownloadInfo(
+                    ContextUtils.getAppSharedPreferences(), PENDING_OMA_DOWNLOADS);
+            Assert.assertEquals(1, downloads.size());
+            OMADownloadHandler.OMAEntry entry =
+                    OMADownloadHandler.OMAEntry.parseOMAEntry((String) (downloads.toArray()[0]));
+            Assert.assertEquals(entry.mDownloadId, omaHandler.mDownloadId);
+            Assert.assertEquals(entry.mInstallNotifyURI, INSTALL_NOTIFY_URI);
+            DownloadManager manager =
+                    (DownloadManager) getTestContext().getSystemService(Context.DOWNLOAD_SERVICE);
+            manager.remove(omaHandler.mDownloadId);
+        } finally {
+            testServer.stopAndDestroyServer();
+        }
     }
 }
