@@ -278,6 +278,13 @@ function FileManager() {
    */
   this.quickViewController_ = null;
 
+  /**
+   * Records histograms of directory-changed event.
+   * @type {NavigationUma}
+   * @private
+   */
+  this.navigationUma_ = null;
+
   // --------------------------------------------------------------------------
   // DOM elements.
 
@@ -513,6 +520,13 @@ FileManager.prototype = /** @struct */ {
       listBeingUpdated.endBatchUpdates();
       listBeingUpdated = null;
     });
+
+    this.directoryModel_.addEventListener(
+        'directory-changed',
+        /** @param {!Event} event */
+        function(event) {
+          this.navigationUma_.onDirectoryChanged(event.newDirEntry);
+        }.bind(this));
 
     this.initCommands_();
 
@@ -1117,6 +1131,7 @@ FileManager.prototype = /** @struct */ {
     var addNewServicesVisible =
         this.dialogType === DialogType.FULL_PAGE &&
         !chrome.extension.inIncognitoContext;
+    this.navigationUma_ = new NavigationUma(assert(this.volumeManager_));
     DirectoryTree.decorate(directoryTree,
                            assert(this.directoryModel_),
                            assert(this.volumeManager_),
