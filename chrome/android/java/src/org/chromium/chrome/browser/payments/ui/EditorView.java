@@ -26,6 +26,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.view.inputmethod.EditorInfo;
 import android.widget.Button;
 import android.widget.CheckBox;
@@ -151,6 +152,13 @@ public class EditorView extends AlwaysDismissedDialog implements OnClickListener
 
         mCardNumberFormatter = new CreditCardNumberFormattingTextWatcher();
         mPhoneFormatter = new PhoneNumberUtil.FormatTextWatcher();
+    }
+
+    /** Prevents screenshots of this editor. */
+    public void disableScreenshots() {
+        WindowManager.LayoutParams attributes = getWindow().getAttributes();
+        attributes.flags |= WindowManager.LayoutParams.FLAG_SECURE;
+        getWindow().setAttributes(attributes);
     }
 
     /** Launches the Autofill help page on top of the current Context. */
