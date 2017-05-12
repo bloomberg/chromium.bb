@@ -46,6 +46,10 @@ const int kAlwaysTranslateMinCount = 3;
 const int kNeverTranslateMinCount = 3;
 #endif
 
+// For Compact UI, if number of consecutive translations is equal to this
+// number, infobar will automatically trigger "Always Translate".
+const int kAcceptCountThreshold = 5;
+
 }  // namespace
 
 const base::Feature kTranslateCompactUI{"TranslateCompactUI",
@@ -298,6 +302,12 @@ void TranslateInfoBarDelegate::ShowNeverTranslateInfobar() {
 }
 #endif
 
+bool TranslateInfoBarDelegate::ShouldAutoAlwaysTranslate() {
+  return (IsCompactUIEnabled() &&
+          prefs_->GetTranslationAcceptedCount(original_language_code()) ==
+              kAcceptCountThreshold);
+}
+
 // static
 void TranslateInfoBarDelegate::GetAfterTranslateStrings(
     std::vector<base::string16>* strings,
@@ -378,7 +388,8 @@ int TranslateInfoBarDelegate::GetIconId() const {
 void TranslateInfoBarDelegate::InfoBarDismissed() {
   if (step_ != translate::TRANSLATE_STEP_BEFORE_TRANSLATE)
     return;
-
+  if (IsCompactUIEnabled())
+    return;
   // The user closed the infobar without clicking the translate button.
   TranslationDeclined();
   UMA_HISTOGRAM_BOOLEAN("Translate.DeclineTranslateCloseInfobar", true);

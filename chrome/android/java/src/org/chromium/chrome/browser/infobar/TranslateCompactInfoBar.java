@@ -40,8 +40,8 @@ class TranslateCompactInfoBar extends InfoBar
     // showing language menu after dismissing overflow menu.
     private TranslateMenuHelper mOverflowMenuHelper;
     private TranslateMenuHelper mLanguageMenuHelper;
-
     private TintedImageButton mMenuButton;
+    private boolean mUserInteracted;
 
     /** The controller for translate UI snackbars. */
     class TranslateSnackbarController implements SnackbarController {
@@ -98,6 +98,7 @@ class TranslateCompactInfoBar extends InfoBar
         if (mInitialStep == TRANSLATING_INFOBAR) {
             mTabLayout.getTabAt(TARGET_TAB_INDEX).select();
             mTabLayout.showProgressBarOnTab(TARGET_TAB_INDEX);
+            mUserInteracted = true;
         }
 
         mTabLayout.addOnTabSelectedListener(this);
@@ -134,11 +135,12 @@ class TranslateCompactInfoBar extends InfoBar
         }
     }
 
-    private void startTranslating(int tabPostion) {
-        if (TARGET_TAB_INDEX == tabPostion) {
+    private void startTranslating(int tabPosition) {
+        if (TARGET_TAB_INDEX == tabPosition) {
             // Already on the target tab.
             mTabLayout.showProgressBarOnTab(TARGET_TAB_INDEX);
             onButtonClicked(ActionType.TRANSLATE);
+            mUserInteracted = true;
         } else {
             mTabLayout.getTabAt(TARGET_TAB_INDEX).select();
         }
@@ -165,10 +167,25 @@ class TranslateCompactInfoBar extends InfoBar
         mNativeTranslateInfoBarPtr = nativePtr;
     }
 
+    @CalledByNative
+    private void setAutoAlwaysTranslate() {
+        createAndShowSnackbar(getContext().getString(R.string.translate_snackbar_always_translate,
+                                      mOptions.sourceLanguageName(), mOptions.targetLanguageName()),
+                Snackbar.UMA_TRANSLATE_ALWAYS, TranslateMenu.ID_OVERFLOW_ALWAYS_TRANSLATE);
+    }
+
     @Override
     protected void onNativeDestroyed() {
         mNativeTranslateInfoBarPtr = 0;
         super.onNativeDestroyed();
+    }
+
+    @Override
+    public void onCloseButtonClicked() {
+        if (!mUserInteracted) {
+            onButtonClicked(ActionType.CANCEL);
+        }
+        super.onCloseButtonClicked();
     }
 
     @Override
@@ -193,6 +210,7 @@ class TranslateCompactInfoBar extends InfoBar
 
     @Override
     public void onOverflowMenuItemClicked(int itemId) {
+        mUserInteracted = true;
         switch (itemId) {
             case TranslateMenu.ID_OVERFLOW_MORE_LANGUAGE:
                 initMenuHelper(TranslateMenu.MENU_TARGET_LANGUAGE);

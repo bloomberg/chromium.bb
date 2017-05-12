@@ -167,6 +167,10 @@ class TranslateInfoBarDelegate : public infobars::InfoBarDelegate {
   bool ShouldShowNeverTranslateShortcut();
   bool ShouldShowAlwaysTranslateShortcut();
 
+  // Called by translate compact infobar.  This check whether we should
+  // automatically trigger "Always Translate".
+  bool ShouldAutoAlwaysTranslate();
+
 #if defined(OS_IOS)
   // Shows the Infobar offering to never translate the language or the site.
   void ShowNeverTranslateInfobar();
