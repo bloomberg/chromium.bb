@@ -169,6 +169,12 @@ if (CONFIG_AV1_ENCODER)
         "${AOM_ROOT}/test/fht32x32_test.cc")
   endif ()
 
+  if (CONFIG_GLOBAL_MOTION)
+    set(AOM_UNIT_TEST_ENCODER_INTRIN_SSE4_1
+        ${AOM_UNIT_TEST_ENCODER_INTRIN_SSE4_1}
+        "${AOM_ROOT}/test/corner_match_test.cc")
+  endif ()
+
   if (CONFIG_MOTION_VAR)
     set(AOM_UNIT_TEST_ENCODER_SOURCES
         ${AOM_UNIT_TEST_ENCODER_SOURCES}
@@ -298,6 +304,12 @@ function (setup_aom_test_targets)
   if (HAVE_SSE4_1)
     add_intrinsics_source_to_target("-msse4.1" "test_libaom"
                                     "AOM_UNIT_TEST_COMMON_INTRIN_SSE4_1")
+    if (CONFIG_ENCODERS)
+      if (AOM_UNIT_TEST_ENCODER_INTRIN_SSE4_1)
+        add_intrinsics_source_to_target("-msse4.1" "test_libaom"
+                                        "AOM_UNIT_TEST_ENCODER_INTRIN_SSE4_1")
+      endif ()
+    endif ()
   endif ()
   if (HAVE_NEON)
     add_intrinsics_source_to_target("${AOM_NEON_INTRIN_FLAG}" "test_libaom"

@@ -306,6 +306,10 @@ if (CONFIG_GLOBAL_MOTION)
       "${AOM_ROOT}/third_party/fastfeat/fast.c"
       "${AOM_ROOT}/third_party/fastfeat/fast.h"
       "${AOM_ROOT}/third_party/fastfeat/nonmax.c")
+
+  set(AOM_AV1_ENCODER_INTRIN_SSE4_1
+      ${AOM_AV1_ENCODER_INTRIN_SSE4_1}
+      "${AOM_ROOT}/av1/encoder/x86/corner_match_sse4.c")
 endif ()
 
 if (CONFIG_INSPECTION)
