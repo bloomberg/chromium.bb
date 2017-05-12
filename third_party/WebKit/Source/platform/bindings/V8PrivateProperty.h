@@ -55,6 +55,8 @@ class ScriptWrappable;
   X(NamedConstructor, Initialized)                    \
   X(PerformanceObserver, Callback)                    \
   X(PopStateEvent, State)                             \
+  X(SameObject, DetectedBarcodeCornerPoints)          \
+  X(SameObject, DetectedFaceLandmarks)                \
   X(SameObject, NotificationActions)                  \
   X(SameObject, NotificationData)                     \
   X(SameObject, NotificationVibrate)                  \

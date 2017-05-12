@@ -9,7 +9,6 @@
     RuntimeEnabled=ShapeDetection,
 ] interface DetectedFace {
     // TODO(xianglu): Implement any other fields. https://crbug.com/646083
-    readonly attribute DOMRect boundingBox;
-
-    [SameObject] readonly attribute FrozenArray<Landmark> landmarks;
+    [SameObject] readonly attribute DOMRect boundingBox;
+    [SameObject, SaveSameObject] readonly attribute FrozenArray<Landmark> landmarks;
 };

@@ -31,8 +31,8 @@ class MODULES_EXPORT DetectedFace final : public GarbageCollected<DetectedFace>,
   explicit DetectedFace(DOMRect*);
   DetectedFace(DOMRect*, const HeapVector<Landmark>&);
 
-  Member<DOMRect> bounding_box_;
-  HeapVector<Landmark> landmarks_;
+  const Member<DOMRect> bounding_box_;
+  const HeapVector<Landmark> landmarks_;
 };
 
 }  // namespace blink

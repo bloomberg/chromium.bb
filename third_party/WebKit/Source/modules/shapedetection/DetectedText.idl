@@ -8,6 +8,6 @@
     Constructor,
     RuntimeEnabled=ShapeDetection,
 ] interface DetectedText {
-    [SameObject] readonly attribute DOMRect boundingBox;
     [SameObject] readonly attribute DOMString rawValue;
+    [SameObject] readonly attribute DOMRect boundingBox;
 };
