@@ -33,6 +33,8 @@ class MemoryMonitor;
 class RenderProcessHost;
 struct MemoryCoordinatorSingletonTraits;
 
+using MemoryState = base::MemoryState;
+
 // MemoryCondition is an internal state of memory coordinator which is used for
 // various things; calculating memory state for processes, requesting processes
 // to purge memory, and scheduling tab discarding.
@@ -48,9 +50,38 @@ class CONTENT_EXPORT MemoryCoordinatorImpl : public base::MemoryCoordinator,
                                              public NotificationObserver,
                                              public base::NonThreadSafe {
  public:
-  using MemoryState = base::MemoryState;
-
   static MemoryCoordinatorImpl* GetInstance();
+
+  // A policy determines what actions (e.g. purging memory from a process)
+  // MemoryCoordinator takes on various events.
+  class Policy {
+   public:
+    virtual ~Policy() {}
+
+    // Called periodically while the memory condition is WARNING.
+    virtual void OnWarningCondition() {}
+    // Called periodically while the memory condition is CRITICAL.
+    virtual void OnCriticalCondition() {}
+    // Called when the current MemoryCondition has changed.
+    virtual void OnConditionChanged(MemoryCondition prev,
+                                    MemoryCondition next) {}
+    // Called when the visibility of a child process has changed.
+    virtual void OnChildVisibilityChanged(int render_process_id,
+                                          bool is_visible) {}
+  };
+
+  // Stores information about any known child processes.
+  struct ChildInfo {
+    // This object must be compatible with STL containers.
+    ChildInfo();
+    ChildInfo(const ChildInfo& rhs);
+    ~ChildInfo();
+
+    MemoryState memory_state;
+    bool is_visible = false;
+    base::TimeTicks can_purge_after;
+    std::unique_ptr<MemoryCoordinatorHandleImpl> handle;
+  };
 
   MemoryCoordinatorImpl(scoped_refptr<base::SingleThreadTaskRunner> task_runner,
                         std::unique_ptr<MemoryMonitor> monitor);
@@ -72,14 +103,19 @@ class CONTENT_EXPORT MemoryCoordinatorImpl : public base::MemoryCoordinator,
   void CreateHandle(int render_process_id,
                     mojom::MemoryCoordinatorHandleRequest request);
 
+  // Set the browser's memory state and notifies it to in-process clients.
+  void SetBrowserMemoryState(MemoryState state);
+
   // Dispatches a memory state change to the provided process. Returns true if
   // the process is tracked by this coordinator and successfully dispatches,
   // returns false otherwise.
   bool SetChildMemoryState(int render_process_id, MemoryState memory_state);
 
-  // Returns the memory state of the specified render process. Returns UNKNOWN
-  // if the process is not tracked by this coordinator.
-  MemoryState GetChildMemoryState(int render_process_id) const;
+  // Tries to purge memory from the browser process.
+  bool TryToPurgeMemoryFromBrowser();
+
+  // Tries to purge memory from the provided child process.
+  bool TryToPurgeMemoryFromChild(int render_process_id);
 
   // Records memory pressure notifications. Called by MemoryPressureMonitor.
   // TODO(bashi): Remove this when MemoryPressureMonitor is retired.
@@ -114,6 +150,14 @@ class CONTENT_EXPORT MemoryCoordinatorImpl : public base::MemoryCoordinator,
   // Asks the delegate to discard a tab.
   void DiscardTab();
 
+  // Gets the current TimeTicks.
+  base::TimeTicks NowTicks() const { return tick_clock_->NowTicks(); }
+
+  // A map from process ID (RenderProcessHost::GetID()) to child process info.
+  using ChildInfoMap = std::map<int, ChildInfo>;
+
+  ChildInfoMap& children() { return children_; }
+
  protected:
   // Returns the RenderProcessHost which is correspond to the given id.
   // Returns nullptr if there is no corresponding RenderProcessHost.
@@ -141,24 +185,6 @@ class CONTENT_EXPORT MemoryCoordinatorImpl : public base::MemoryCoordinator,
   // Returns true when a given renderer can be suspended.
   bool CanSuspendRenderer(int render_process_id);
 
-  // Stores information about any known child processes.
-  struct ChildInfo {
-    // This object must be compatible with STL containers.
-    ChildInfo();
-    ChildInfo(const ChildInfo& rhs);
-    ~ChildInfo();
-
-    MemoryState memory_state;
-    bool is_visible = false;
-    base::TimeTicks can_purge_after;
-    std::unique_ptr<MemoryCoordinatorHandleImpl> handle;
-  };
-
-  // A map from process ID (RenderProcessHost::GetID()) to child process info.
-  using ChildInfoMap = std::map<int, ChildInfo>;
-
-  ChildInfoMap& children() { return children_; }
-
   base::SingleThreadTaskRunner* task_runner() { return task_runner_.get(); }
 
  private:
@@ -184,9 +210,6 @@ class CONTENT_EXPORT MemoryCoordinatorImpl : public base::MemoryCoordinator,
   // Called when ChildMemoryCoordinator calls AddChild().
   void OnChildAdded(int render_process_id);
 
-  // Called when visibility of a child process is changed.
-  void OnChildVisibilityChanged(int render_process_id, bool is_visible);
-
   // Called by SetChildMemoryState() to determine a child memory state based on
   // the current status of the child process.
   MemoryState OverrideState(MemoryState memroy_state, const ChildInfo& child);
@@ -196,34 +219,11 @@ class CONTENT_EXPORT MemoryCoordinatorImpl : public base::MemoryCoordinator,
       int render_process_id,
       std::unique_ptr<MemoryCoordinatorHandleImpl> handle);
 
-  // Updates the browser's memory state and notifies it to in-process clients.
-  void UpdateBrowserStateAndNotifyStateToClients(MemoryState state);
-
   // Notifies a state change to in-process clients.
   void NotifyStateToClients(MemoryState state);
 
-  // Notifies a state change to child processes.
-  void NotifyStateToChildren(MemoryState state);
-
-  // Called periodically while the memory condition is WARNING.
-  void OnWarningCondition();
-
-  // Called periodically while the memory condition is CRITICAL.
-  void OnCriticalCondition();
-
-  enum class PurgeTarget {
-    BACKGROUNDED,
-    ALL,
-  };
-
-  // Tries to find a candidate child process for purging memory and asks the
-  // child to purge memory.
-  bool TryToPurgeMemoryFromChildren(PurgeTarget target);
-
-  // Tries to purge memory from the browser process.
-  bool TryToPurgeMemoryFromBrowser();
-
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+  std::unique_ptr<Policy> policy_;
   std::unique_ptr<MemoryCoordinatorDelegate> delegate_;
   std::unique_ptr<MemoryMonitor> memory_monitor_;
   std::unique_ptr<MemoryConditionObserver> condition_observer_;

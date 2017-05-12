@@ -308,14 +308,15 @@ TEST_F(MemoryCoordinatorImplTest, SetChildMemoryState) {
   render_process_host->DecrementSharedWorkerRefCount();
 }
 
+// TODO(bashi): Move policy specific tests into a separate file.
 TEST_F(MemoryCoordinatorImplTest, OnChildVisibilityChanged) {
   auto* child = coordinator_->CreateChildMemoryCoordinator(1);
 
   coordinator_->memory_condition_ = MemoryCondition::NORMAL;
-  coordinator_->OnChildVisibilityChanged(1, true);
+  coordinator_->policy_->OnChildVisibilityChanged(1, true);
   RunUntilIdle();
   EXPECT_EQ(mojom::MemoryState::NORMAL, child->state());
-  coordinator_->OnChildVisibilityChanged(1, false);
+  coordinator_->policy_->OnChildVisibilityChanged(1, false);
   RunUntilIdle();
 #if defined(OS_ANDROID)
   EXPECT_EQ(mojom::MemoryState::THROTTLED, child->state());
@@ -324,18 +325,18 @@ TEST_F(MemoryCoordinatorImplTest, OnChildVisibilityChanged) {
 #endif
 
   coordinator_->memory_condition_ = MemoryCondition::WARNING;
-  coordinator_->OnChildVisibilityChanged(1, true);
+  coordinator_->policy_->OnChildVisibilityChanged(1, true);
   RunUntilIdle();
   EXPECT_EQ(mojom::MemoryState::NORMAL, child->state());
-  coordinator_->OnChildVisibilityChanged(1, false);
+  coordinator_->policy_->OnChildVisibilityChanged(1, false);
   RunUntilIdle();
   EXPECT_EQ(mojom::MemoryState::THROTTLED, child->state());
 
   coordinator_->memory_condition_ = MemoryCondition::CRITICAL;
-  coordinator_->OnChildVisibilityChanged(1, true);
+  coordinator_->policy_->OnChildVisibilityChanged(1, true);
   RunUntilIdle();
   EXPECT_EQ(mojom::MemoryState::THROTTLED, child->state());
-  coordinator_->OnChildVisibilityChanged(1, false);
+  coordinator_->policy_->OnChildVisibilityChanged(1, false);
   RunUntilIdle();
   EXPECT_EQ(mojom::MemoryState::THROTTLED, child->state());
 }
@@ -570,6 +571,7 @@ TEST_F(MemoryCoordinatorImplTest, DiscardTabUnderCritical) {
   EXPECT_EQ(2, delegate->discard_tab_count());
 }
 
+// TODO(bashi): Move policy specific tests into a separate file.
 TEST_F(MemoryCoordinatorImplTest, OnWarningCondition) {
   MockMemoryCoordinatorClient client;
   base::MemoryCoordinatorClientRegistry::GetInstance()->Register(&client);
@@ -578,15 +580,15 @@ TEST_F(MemoryCoordinatorImplTest, OnWarningCondition) {
   base::TimeDelta interval = base::TimeDelta::FromSeconds(31);
 
   // child1: Foreground, child2: Background
-  coordinator_->OnChildVisibilityChanged(1, true);
-  coordinator_->OnChildVisibilityChanged(2, false);
+  coordinator_->policy_->OnChildVisibilityChanged(1, true);
+  coordinator_->policy_->OnChildVisibilityChanged(2, false);
 
   // Note: we never ask foreground processes (including the browser process) to
   // purge memory on WARNING condition.
 
   // Don't ask the background child to purge until the child remains
   // backgrounded for a certain period of time.
-  coordinator_->OnWarningCondition();
+  coordinator_->policy_->OnWarningCondition();
   RunUntilIdle();
   EXPECT_EQ(0, client.purge_memory_calls());
   EXPECT_EQ(0, child1->purge_memory_calls());
@@ -595,7 +597,7 @@ TEST_F(MemoryCoordinatorImplTest, OnWarningCondition) {
   // After a certain period of time is passed, request the child to purge
   // memory.
   task_runner_->FastForwardBy(interval);
-  coordinator_->OnWarningCondition();
+  coordinator_->policy_->OnWarningCondition();
   task_runner_->RunUntilIdle();
   RunUntilIdle();
   EXPECT_EQ(0, client.purge_memory_calls());
@@ -604,7 +606,7 @@ TEST_F(MemoryCoordinatorImplTest, OnWarningCondition) {
 
   // Don't purge memory more than once when the child stays backgrounded.
   task_runner_->FastForwardBy(interval);
-  coordinator_->OnWarningCondition();
+  coordinator_->policy_->OnWarningCondition();
   RunUntilIdle();
   EXPECT_EQ(0, client.purge_memory_calls());
   EXPECT_EQ(0, child1->purge_memory_calls());
@@ -612,10 +614,10 @@ TEST_F(MemoryCoordinatorImplTest, OnWarningCondition) {
 
   // The background child goes to foreground, goes to background, then a
   // certain period of time is passed. Another purging request should be sent.
-  coordinator_->OnChildVisibilityChanged(2, true);
-  coordinator_->OnChildVisibilityChanged(2, false);
+  coordinator_->policy_->OnChildVisibilityChanged(2, true);
+  coordinator_->policy_->OnChildVisibilityChanged(2, false);
   task_runner_->FastForwardBy(interval);
-  coordinator_->OnWarningCondition();
+  coordinator_->policy_->OnWarningCondition();
   RunUntilIdle();
   EXPECT_EQ(0, client.purge_memory_calls());
   EXPECT_EQ(0, child1->purge_memory_calls());
@@ -624,6 +626,7 @@ TEST_F(MemoryCoordinatorImplTest, OnWarningCondition) {
   base::MemoryCoordinatorClientRegistry::GetInstance()->Unregister(&client);
 }
 
+// TODO(bashi): Move policy specific tests into a separate file.
 TEST_F(MemoryCoordinatorImplTest, OnCriticalCondition) {
   MockMemoryCoordinatorClient client;
   base::MemoryCoordinatorClientRegistry::GetInstance()->Register(&client);
@@ -633,15 +636,15 @@ TEST_F(MemoryCoordinatorImplTest, OnCriticalCondition) {
   base::TimeDelta interval = base::TimeDelta::FromSeconds(31);
 
   // child1: Foreground, child2: Background
-  coordinator_->OnChildVisibilityChanged(1, true);
-  coordinator_->OnChildVisibilityChanged(2, false);
+  coordinator_->policy_->OnChildVisibilityChanged(1, true);
+  coordinator_->policy_->OnChildVisibilityChanged(2, false);
 
   // Purge memory from all children regardless of their visibility.
   task_runner_->FastForwardBy(interval);
-  coordinator_->OnCriticalCondition();
+  coordinator_->policy_->OnCriticalCondition();
   RunUntilIdle();
   task_runner_->FastForwardBy(interval);
-  coordinator_->OnCriticalCondition();
+  coordinator_->policy_->OnCriticalCondition();
   RunUntilIdle();
   EXPECT_EQ(2, delegate->discard_tab_count());
   EXPECT_EQ(0, client.purge_memory_calls());
@@ -651,7 +654,7 @@ TEST_F(MemoryCoordinatorImplTest, OnCriticalCondition) {
   // Purge memory from browser process only after we asked all children to
   // purge memory.
   task_runner_->FastForwardBy(interval);
-  coordinator_->OnCriticalCondition();
+  coordinator_->policy_->OnCriticalCondition();
   RunUntilIdle();
   EXPECT_EQ(3, delegate->discard_tab_count());
   EXPECT_EQ(1, client.purge_memory_calls());
@@ -660,7 +663,7 @@ TEST_F(MemoryCoordinatorImplTest, OnCriticalCondition) {
 
   // Don't request purging for a certain period of time if we already requested.
   task_runner_->FastForwardBy(interval);
-  coordinator_->OnCriticalCondition();
+  coordinator_->policy_->OnCriticalCondition();
   RunUntilIdle();
   EXPECT_EQ(4, delegate->discard_tab_count());
   EXPECT_EQ(1, client.purge_memory_calls());
