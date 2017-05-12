@@ -22,13 +22,13 @@ const char* PointerTypeNameForWebPointPointerType(
     case WebPointerProperties::PointerType::kTouch:
       return "touch";
     case WebPointerProperties::PointerType::kPen:
-    case WebPointerProperties::PointerType::kEraser:
       return "pen";
     case WebPointerProperties::PointerType::kMouse:
       return "mouse";
+    default:
+      NOTREACHED();
+      return "";
   }
-  NOTREACHED();
-  return "";
 }
 }
 
