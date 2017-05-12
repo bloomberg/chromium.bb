@@ -86,9 +86,6 @@ class DOMPatchSupport final {
                                  ExceptionState&);
   bool RemoveChildAndMoveToNew(Digest*, ExceptionState&);
   void MarkNodeAsUsed(Digest*);
-#ifdef DEBUG_DOM_PATCH_SUPPORT
-  void dumpMap(const ResultMap&, const String& name);
-#endif
   Document& GetDocument() const { return *document_; }
 
   Member<DOMEditor> dom_editor_;
