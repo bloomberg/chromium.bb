@@ -64,6 +64,14 @@ TEST(GoogleUtilTest, GoodHomePagesNonSecure) {
   EXPECT_TRUE(IsHomePage("http://www.google.com/ig/foo"));
   EXPECT_TRUE(IsHomePage("http://www.google.com/ig?rlz=TEST"));
   EXPECT_TRUE(IsHomePage("http://www.google.com/ig/foo?rlz=TEST"));
+
+  // Accepted subdomains.
+  EXPECT_TRUE(IsHomePage("http://ipv4.google.com/"));
+  EXPECT_TRUE(IsHomePage("http://ipv6.google.com/"));
+
+  // Trailing dots.
+  EXPECT_TRUE(IsHomePage("http://ipv4.google.com./"));
+  EXPECT_TRUE(IsHomePage("http://google.com./"));
 }
 
 TEST(GoogleUtilTest, GoodHomePagesSecure) {
@@ -121,37 +129,52 @@ TEST(GoogleUtilTest, BadHomePages) {
 
   // Path is case sensitive.
   EXPECT_FALSE(IsHomePage("https://www.google.com/WEBHP"));
+
+  // Only .com subdomain and no www.
+  EXPECT_FALSE(IsHomePage("http://ipv4.google.co.uk"));
+  EXPECT_FALSE(IsHomePage("http://www.ipv4.google.com"));
 }
 
 TEST(GoogleUtilTest, GoodSearches) {
   const std::string patterns[] = {
-    // Queries with path "/search" need to have the query parameter in either
-    // the url parameter or the hash fragment.
-    "%s://www.google.com/search?%s=something",
-    "%s://www.google.com/search#%s=something",
-    "%s://www.google.com/search?name=bob&%s=something",
-    "%s://www.google.com/search?name=bob#%s=something",
-    "%s://www.google.com/search?name=bob#age=24&%s=thng",
-    "%s://www.google.co.uk/search?%s=something",
-    // It's actually valid for both to have the query parameter.
-    "%s://www.google.com/search?%s=something#q=other",
+      // Queries with path "/search" need to have the query parameter in either
+      // the url parameter or the hash fragment.
+      "%s://www.google.com/search?%s=something",
+      "%s://www.google.com/search#%s=something",
+      "%s://www.google.com/search?name=bob&%s=something",
+      "%s://www.google.com/search?name=bob#%s=something",
+      "%s://www.google.com/search?name=bob#age=24&%s=thng",
+      "%s://www.google.co.uk/search?%s=something",
+      // It's actually valid for both to have the query parameter.
+      "%s://www.google.com/search?%s=something#q=other",
 
-    // Queries with path "/webhp", "/" or "" need to have the query parameter in
-    // the hash fragment.
-    "%s://www.google.com/webhp#%s=something",
-    "%s://www.google.com/webhp#name=bob&%s=something",
-    "%s://www.google.com/webhp?name=bob#%s=something",
-    "%s://www.google.com/webhp?name=bob#age=24&%s=thing",
+      // Queries with path "/webhp", "/" or "" need to have the query parameter
+      // in the hash fragment.
+      "%s://www.google.com/webhp#%s=something",
+      "%s://www.google.com/webhp#name=bob&%s=something",
+      "%s://www.google.com/webhp?name=bob#%s=something",
+      "%s://www.google.com/webhp?name=bob#age=24&%s=thing",
 
-    "%s://www.google.com/#%s=something",
-    "%s://www.google.com/#name=bob&%s=something",
-    "%s://www.google.com/?name=bob#%s=something",
-    "%s://www.google.com/?name=bob#age=24&%s=something",
+      "%s://www.google.com/#%s=something",
+      "%s://www.google.com/#name=bob&%s=something",
+      "%s://www.google.com/?name=bob#%s=something",
+      "%s://www.google.com/?name=bob#age=24&%s=something",
 
-    "%s://www.google.com#%s=something",
-    "%s://www.google.com#name=bob&%s=something",
-    "%s://www.google.com?name=bob#%s=something",
-    "%s://www.google.com?name=bob#age=24&%s=something"
+      "%s://www.google.com#%s=something",
+      "%s://www.google.com#name=bob&%s=something",
+      "%s://www.google.com?name=bob#%s=something",
+      "%s://www.google.com?name=bob#age=24&%s=something",
+
+      // Google subdomain queries.
+      "%s://ipv4.google.com/search?%s=something",
+      "%s://ipv4.google.com#name=bob&%s=something",
+      "%s://ipv6.google.com?name=bob#%s=something",
+      "%s://ipv6.google.com?name=bob#age=24&%s=something",
+
+      // Trailing dots in the hosts.
+      "%s://www.google.com./#%s=something", "%s://www.google.de./#%s=something",
+      "%s://ipv4.google.com./#%s=something",
+      "%s://ipv6.google.com./#%s=something",
   };
 
   for (const std::string& pattern : patterns) {
