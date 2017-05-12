@@ -91,14 +91,29 @@ class CORE_EXPORT SerializedScriptValue
   // has been the cause of at least one bug in the past.
   static constexpr uint32_t kWireFormatVersion = 17;
 
+  // This enumeration specifies whether we're serializing a value for storage;
+  // e.g. when writing to IndexedDB. This corresponds to the forStorage flag of
+  // the HTML spec:
+  // https://html.spec.whatwg.org/multipage/infrastructure.html#safe-passing-of-structured-data
+  enum StoragePolicy {
+    // Not persisted; used only during the execution of the browser.
+    kNotForStorage,
+    // May be written to disk and read during a subsequent execution of the
+    // browser.
+    kForStorage,
+  };
+
   struct SerializeOptions {
     STACK_ALLOCATED();
+
+    SerializeOptions() {}
+    explicit SerializeOptions(StoragePolicy for_storage)
+        : for_storage(for_storage) {}
+
     Transferables* transferables = nullptr;
     WebBlobInfoArray* blob_info = nullptr;
     bool write_wasm_to_stream = false;
-    // Set when serializing a value for storage; e.g. when writing to
-    // IndexedDB.
-    bool for_storage = false;
+    StoragePolicy for_storage = kNotForStorage;
   };
   static PassRefPtr<SerializedScriptValue> Serialize(v8::Isolate*,
                                                      v8::Local<v8::Value>,
@@ -238,10 +253,10 @@ struct NativeValueTraits<SerializedScriptValue>
   CORE_EXPORT static inline PassRefPtr<SerializedScriptValue> NativeValue(
       v8::Isolate* isolate,
       v8::Local<v8::Value> value,
+      const SerializedScriptValue::SerializeOptions& options,
       ExceptionState& exception_state) {
-    return SerializedScriptValue::Serialize(
-        isolate, value, SerializedScriptValue::SerializeOptions(),
-        exception_state);
+    return SerializedScriptValue::Serialize(isolate, value, options,
+                                            exception_state);
   }
 };
 

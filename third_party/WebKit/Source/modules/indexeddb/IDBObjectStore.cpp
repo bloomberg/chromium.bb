@@ -383,7 +383,7 @@ IDBRequest* IDBObjectStore::put(ScriptState* script_state,
   // TODO(crbug.com/719053): This wasm behavior differs from other browsers.
   options.write_wasm_to_stream =
       ExecutionContext::From(script_state)->IsSecureContext();
-  options.for_storage = true;
+  options.for_storage = SerializedScriptValue::kForStorage;
   RefPtr<SerializedScriptValue> serialized_value =
       SerializedScriptValue::Serialize(isolate, value.V8Value(), options,
                                        exception_state);

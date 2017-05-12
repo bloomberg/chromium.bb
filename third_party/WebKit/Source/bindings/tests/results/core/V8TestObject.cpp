@@ -868,7 +868,7 @@ static void serializedScriptValueAttributeAttributeSetter(v8::Local<v8::Value> v
   ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestObject", "serializedScriptValueAttribute");
 
   // Prepare the value to be set.
-  RefPtr<SerializedScriptValue> cppValue = NativeValueTraits<SerializedScriptValue>::NativeValue(info.GetIsolate(), v8Value, exceptionState);
+  RefPtr<SerializedScriptValue> cppValue = NativeValueTraits<SerializedScriptValue>::NativeValue(info.GetIsolate(), v8Value, SerializedScriptValue::SerializeOptions(SerializedScriptValue::kNotForStorage), exceptionState);
   if (exceptionState.HadException())
     return;
 
@@ -6037,7 +6037,7 @@ static void voidMethodSerializedScriptValueArgMethod(const v8::FunctionCallbackI
   }
 
   RefPtr<SerializedScriptValue> serializedScriptValueArg;
-  serializedScriptValueArg = NativeValueTraits<SerializedScriptValue>::NativeValue(info.GetIsolate(), info[0], exceptionState);
+  serializedScriptValueArg = NativeValueTraits<SerializedScriptValue>::NativeValue(info.GetIsolate(), info[0], SerializedScriptValue::SerializeOptions(SerializedScriptValue::kNotForStorage), exceptionState);
   if (exceptionState.HadException())
     return;
 
