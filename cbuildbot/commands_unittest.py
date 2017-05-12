@@ -534,7 +534,7 @@ The suite job has another 2:39:39.789250 till timeout.
          ('', False, None),
          ('', False, None),
         ])
-    def fail_swarming_cmd(cmd, *args, **kwargs):
+    def fail_swarming_cmd(cmd, *_args, **_kwargs):
       result = swarming_lib.SwarmingCommandResult(None, cmd=cmd,
                                                   error='injected error',
                                                   output='', returncode=3)
