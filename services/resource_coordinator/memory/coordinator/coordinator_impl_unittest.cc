@@ -47,7 +47,8 @@ class CoordinatorImplTest : public testing::Test {
 
   void OnGlobalMemoryDumpResponse(base::Closure closure,
                                   uint64_t dump_guid,
-                                  bool success) {
+                                  bool success,
+                                  mojom::GlobalMemoryDumpPtr) {
     dump_response_args_ = {dump_guid, success};
     closure.Run();
   }
@@ -82,8 +83,7 @@ class MockDumpManager : public mojom::ProcessLocalDumpManager {
       const base::trace_event::MemoryDumpRequestArgs& args,
       const RequestProcessMemoryDumpCallback& callback) override {
     expected_calls_--;
-    base::trace_event::MemoryDumpCallbackResult result;
-    callback.Run(args.dump_guid, true, result);
+    callback.Run(args.dump_guid, true, mojom::ProcessMemoryDumpPtr());
   }
 
  private:

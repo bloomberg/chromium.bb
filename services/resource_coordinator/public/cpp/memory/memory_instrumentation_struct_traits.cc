@@ -149,19 +149,4 @@ bool StructTraits<memory_instrumentation::mojom::OSMemDumpDataView,
   return true;
 }
 
-// static
-bool StructTraits<
-    memory_instrumentation::mojom::MemoryDumpCallbackResultDataView,
-    base::trace_event::MemoryDumpCallbackResult>::
-    Read(memory_instrumentation::mojom::MemoryDumpCallbackResultDataView input,
-         base::trace_event::MemoryDumpCallbackResult* out) {
-  if (!input.ReadChromeDump(&out->chrome_dump))
-    return false;
-  if (!input.ReadOsDump(&out->os_dump))
-    return false;
-  if (!input.ReadExtraProcessesDump(&out->extra_processes_dump))
-    return false;
-  return true;
-}
-
 }  // namespace mojo

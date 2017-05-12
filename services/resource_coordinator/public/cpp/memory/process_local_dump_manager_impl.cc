@@ -58,7 +58,30 @@ void ProcessLocalDumpManagerImpl::RequestProcessMemoryDump(
     const base::trace_event::MemoryDumpRequestArgs& args,
     const RequestProcessMemoryDumpCallback& callback) {
   base::trace_event::MemoryDumpManager::GetInstance()->CreateProcessDump(
-      args, callback);
+      args, base::Bind(&ProcessLocalDumpManagerImpl::OnProcessMemoryDumpDone,
+                       base::Unretained(this), callback));
+}
+
+void ProcessLocalDumpManagerImpl::OnProcessMemoryDumpDone(
+    const RequestProcessMemoryDumpCallback& callback,
+    uint64_t dump_guid,
+    bool success,
+    const base::Optional<base::trace_event::MemoryDumpCallbackResult>& result) {
+  mojom::ProcessMemoryDumpPtr process_memory_dump(
+      mojom::ProcessMemoryDump::New());
+  process_memory_dump->process_type = config_.process_type();
+  if (result) {
+    process_memory_dump->os_dump = result->os_dump;
+    process_memory_dump->chrome_dump = result->chrome_dump;
+    for (const auto& kv : result->extra_processes_dump) {
+      const base::ProcessId pid = kv.first;
+      const base::trace_event::MemoryDumpCallbackResult::OSMemDump&
+          os_mem_dump = kv.second;
+      DCHECK_EQ(0u, process_memory_dump->extra_processes_dump.count(pid));
+      process_memory_dump->extra_processes_dump[pid] = os_mem_dump;
+    }
+  }
+  callback.Run(dump_guid, success, std::move(process_memory_dump));
 }
 
 void ProcessLocalDumpManagerImpl::RequestGlobalMemoryDump(
@@ -70,23 +93,33 @@ void ProcessLocalDumpManagerImpl::RequestGlobalMemoryDump(
   // CoordinatorImpl::RequestGlobalMemoryDump). If the delegate is in a child
   // process, parallel requests will be cancelled.
   //
-  // TODO(chiniforooshan): Unify the child and browser behavior.
+  // TODO(primiano): Remove all this boilerplate. There should be no need of
+  // any lock, proxy, callback adaption or early out. The service is able to
+  // deal with queueing.
   if (task_runner_) {
+    auto callback_proxy =
+        base::Bind(&ProcessLocalDumpManagerImpl::MemoryDumpCallbackProxy,
+                   base::Unretained(this), callback);
     task_runner_->PostTask(
         FROM_HERE,
         base::Bind(&mojom::Coordinator::RequestGlobalMemoryDump,
-                   base::Unretained(coordinator_.get()), args, callback));
+                   base::Unretained(coordinator_.get()), args, callback_proxy));
     return;
   }
 
+  bool early_out_because_of_another_dump_pending = false;
   {
     base::AutoLock lock(pending_memory_dump_guid_lock_);
-    if (pending_memory_dump_guid_) {
-      callback.Run(args.dump_guid, false);
-      return;
-    }
-    pending_memory_dump_guid_ = args.dump_guid;
+    if (pending_memory_dump_guid_)
+      early_out_because_of_another_dump_pending = true;
+    else
+      pending_memory_dump_guid_ = args.dump_guid;
   }
+  if (early_out_because_of_another_dump_pending) {
+    callback.Run(args.dump_guid, false);
+    return;
+  }
+
   auto callback_proxy =
       base::Bind(&ProcessLocalDumpManagerImpl::MemoryDumpCallbackProxy,
                  base::Unretained(this), callback);
@@ -96,12 +129,17 @@ void ProcessLocalDumpManagerImpl::RequestGlobalMemoryDump(
 void ProcessLocalDumpManagerImpl::MemoryDumpCallbackProxy(
     const base::trace_event::GlobalMemoryDumpCallback& callback,
     uint64_t dump_guid,
-    bool success) {
+    bool success,
+    mojom::GlobalMemoryDumpPtr) {
   {
     base::AutoLock lock(pending_memory_dump_guid_lock_);
-    DCHECK_NE(0U, pending_memory_dump_guid_);
     pending_memory_dump_guid_ = 0;
   }
+
+  // The GlobalMemoryDumpPtr argument is ignored. The actual data of the dump
+  // is exposed only through the service and is not passed back to base.
+  // TODO(primiano): All these roundtrips are transitional until we move all
+  // the clients of memory-infra to use directly the service. crbug.com/720352 .
   callback.Run(dump_guid, success);
 }
 

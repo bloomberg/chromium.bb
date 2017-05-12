@@ -69,6 +69,7 @@
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "services/device/public/cpp/power_monitor/power_monitor_broadcast_source.h"
 #include "services/resource_coordinator/public/cpp/memory/process_local_dump_manager_impl.h"
+#include "services/resource_coordinator/public/interfaces/memory/memory_instrumentation.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "services/service_manager/runner/common/client_util.h"
@@ -499,8 +500,21 @@ void ChildThreadImpl::Init(const Options& options) {
     channel_->AddFilter(new ChildMemoryMessageFilter());
 
     if (service_manager_connection_) {
+      std::string process_type_str =
+          base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+              switches::kProcessType);
+      auto process_type = memory_instrumentation::mojom::ProcessType::OTHER;
+      if (process_type_str == switches::kRendererProcess)
+        process_type = memory_instrumentation::mojom::ProcessType::RENDERER;
+      else if (process_type_str == switches::kGpuProcess)
+        process_type = memory_instrumentation::mojom::ProcessType::GPU;
+      else if (process_type_str == switches::kUtilityProcess)
+        process_type = memory_instrumentation::mojom::ProcessType::UTILITY;
+      else if (process_type_str == switches::kPpapiPluginProcess)
+        process_type = memory_instrumentation::mojom::ProcessType::PLUGIN;
+
       memory_instrumentation::ProcessLocalDumpManagerImpl::Config config(
-          GetConnector(), mojom::kBrowserServiceName);
+          GetConnector(), mojom::kBrowserServiceName, process_type);
       memory_instrumentation::ProcessLocalDumpManagerImpl::CreateInstance(
           config);
     }

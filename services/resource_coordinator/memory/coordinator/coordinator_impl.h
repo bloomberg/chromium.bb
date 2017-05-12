@@ -6,8 +6,8 @@
 #define SERVICES_RESOURCE_COORDINATOR_MEMORY_COORDINATOR_COORDINATOR_IMPL_H_
 
 #include <list>
+#include <map>
 #include <set>
-#include <unordered_map>
 
 #include "base/memory/ref_counted.h"
 #include "base/threading/thread_checker.h"
@@ -45,6 +45,9 @@ class CoordinatorImpl : public Coordinator, public mojom::Coordinator {
     ~QueuedMemoryDumpRequest();
     const base::trace_event::MemoryDumpRequestArgs args;
     const RequestGlobalMemoryDumpCallback callback;
+
+    // Collects the data received from OnProcessMemoryDumpResponse().
+    std::vector<mojom::ProcessMemoryDumpPtr> process_memory_dumps;
   };
 
   ~CoordinatorImpl() override;
@@ -69,8 +72,7 @@ class CoordinatorImpl : public Coordinator, public mojom::Coordinator {
       mojom::ProcessLocalDumpManager* process_manager,
       uint64_t dump_guid,
       bool success,
-      const base::Optional<base::trace_event::MemoryDumpCallbackResult>&
-          result);
+      mojom::ProcessMemoryDumpPtr process_memory_dump);
 
   void PerformNextQueuedGlobalMemoryDump();
   void FinalizeGlobalMemoryDumpIfAllManagersReplied();
@@ -78,8 +80,7 @@ class CoordinatorImpl : public Coordinator, public mojom::Coordinator {
   mojo::BindingSet<mojom::Coordinator> bindings_;
 
   // Registered ProcessLocalDumpManagers.
-  std::unordered_map<mojom::ProcessLocalDumpManager*,
-                     mojom::ProcessLocalDumpManagerPtr>
+  std::map<mojom::ProcessLocalDumpManager*, mojom::ProcessLocalDumpManagerPtr>
       process_managers_;
 
   // Pending process managers for RequestGlobalMemoryDump.

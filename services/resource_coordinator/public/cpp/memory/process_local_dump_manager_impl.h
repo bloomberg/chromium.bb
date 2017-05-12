@@ -33,23 +33,30 @@ class SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_EXPORT
   class SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_EXPORT Config {
    public:
     Config(service_manager::Connector* connector,
-           const std::string& service_name)
+           const std::string& service_name,
+           mojom::ProcessType process_type)
         : connector_(connector),
           service_name_(service_name),
+          process_type_(process_type),
           coordinator_(nullptr) {}
-    Config(Coordinator* coordinator)
-        : connector_(nullptr), coordinator_(coordinator) {}
+    Config(Coordinator* coordinator, mojom::ProcessType process_type)
+        : connector_(nullptr),
+          process_type_(process_type),
+          coordinator_(coordinator) {}
     ~Config();
 
     service_manager::Connector* connector() const { return connector_; }
 
     const std::string& service_name() const { return service_name_; }
 
+    mojom::ProcessType process_type() const { return process_type_; }
+
     Coordinator* coordinator() const { return coordinator_; }
 
    private:
     service_manager::Connector* connector_;
     const std::string service_name_;
+    const mojom::ProcessType process_type_;
     Coordinator* coordinator_;
     bool is_test_config_;
   };
@@ -77,11 +84,19 @@ class SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_EXPORT
       const base::trace_event::MemoryDumpRequestArgs& args,
       const RequestProcessMemoryDumpCallback& callback) override;
 
+  // Callback passed to base::MemoryDUmpManager::CreateProcessDump().
+  void OnProcessMemoryDumpDone(
+      const RequestProcessMemoryDumpCallback&,
+      uint64_t dump_guid,
+      bool success,
+      const base::Optional<base::trace_event::MemoryDumpCallbackResult>&);
+
   // A proxy callback for updating |pending_memory_dump_guid_|.
   void MemoryDumpCallbackProxy(
       const base::trace_event::GlobalMemoryDumpCallback& callback,
       uint64_t dump_guid,
-      bool success);
+      bool success,
+      mojom::GlobalMemoryDumpPtr global_memory_dump);
 
   mojom::CoordinatorPtr coordinator_;
   mojo::Binding<mojom::ProcessLocalDumpManager> binding_;

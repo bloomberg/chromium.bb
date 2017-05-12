@@ -10,7 +10,7 @@ enum DumpType {
   PERIODIC_INTERVAL,
   EXPLICITLY_TRIGGERED,
   PEAK_MEMORY_USAGE,
-  SUMMARY_ONLY 
+  SUMMARY_ONLY
 };
 
 enum LevelOfDetail {
@@ -45,25 +45,58 @@ struct ChromeMemDump {
   uint32 v8_total_kb = 0;
 };
 
-struct MemoryDumpCallbackResult {
+enum ProcessType {
+  OTHER,
+  BROWSER,
+  RENDERER,
+  GPU,
+  UTILITY,
+  PLUGIN
+};
+
+// This struct is used both for:
+// 1) The internal communication between the memory service (Coordinator) and
+//    the client library (ProcessLocalDumpManager).
+// 2) The public-facing API Coordinator::RequestGlobalMemoryDump().
+struct ProcessMemoryDump {
+  ProcessType process_type;
   OSMemDump os_dump;
   ChromeMemDump chrome_dump;
+
+  // TODO(hjd): add the computed Consistent Memory Metrics footprints here.
+
+  // This is used only in the use-case (1) and only on Linux/CrOS to get
+  // around sandboxing. See crbug.com/461788 .
   map<mojo.common.mojom.ProcessId, OSMemDump> extra_processes_dump;
 };
 
-// There should be at most one implementation of this interface per process.
-interface ProcessLocalDumpManager {
-  // When successful, the dump is appended in the process-local trace buffer of
-  // the target process and an ACK. A summary of the dump is also returned in
-  // case of success.
-  RequestProcessMemoryDump(RequestArgs args) =>
-      (uint64 dump_guid, bool success, MemoryDumpCallbackResult? result);
+
+// This struct is returned by the public-facing API
+// Coordinator::RequestGlobalMemoryDump().
+struct GlobalMemoryDump {
+  array<ProcessMemoryDump> process_dumps;
 };
 
-// Memory Infra service implements this interface. ProcessLocalDumpManagers
-// register themselves using the RegisterProcessLocalDumpManager method and
-// suggest a global memory dump using the RequestGlobalMemoryDump method.
+// This is the interface implemented by the client library. This allows a
+// remote process to contribute to memory-infra dumps. There should be at
+// most one instance of this per hosting process.
+interface ProcessLocalDumpManager {
+  // When |success| == true the dump is appended in the process-local trace
+  // buffer of the target process and an ACK. A summary of the dump is also
+  // returned in case of success.
+  RequestProcessMemoryDump(RequestArgs args) =>
+      (uint64 dump_guid, bool success, ProcessMemoryDump? process_memory_dump);
+};
+
+// The memory-infra service implements this interface.
 interface Coordinator {
+  // Used to register a client library to obtain a process-local dump from it
+  // when RequestGlobalMemoryDump() is called.
   RegisterProcessLocalDumpManager(ProcessLocalDumpManager local_manager);
-  RequestGlobalMemoryDump(RequestArgs args) => (uint64 dump_guid, bool success);
+
+  // Broadcasts a dump request to all registered client libraries, injects the
+  // dump in the trace buffer (if tracing is enabled) and returns a summarized
+  // dump back if args.dump_type == SUMMARY_ONLY.
+  RequestGlobalMemoryDump(RequestArgs args) =>
+      (uint64 dump_guid, bool success, GlobalMemoryDump? global_memory_dump);
 };
