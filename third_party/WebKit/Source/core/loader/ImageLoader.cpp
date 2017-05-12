@@ -519,6 +519,16 @@ void ImageLoader::ImageNotifyFinished(ImageResourceContent* resource) {
   DCHECK(failed_load_url_.IsEmpty());
   DCHECK_EQ(resource, image_.Get());
 
+  // |has_pending_load_event_| is always false and |image_complete_| is
+  // always true for entire ImageDocument loading for historical reason.
+  // DoUpdateFromElement() is not called and SetImageForImageDocument()
+  // is called instead for ImageDocument loading.
+  // TODO(hiroshige): Turn the CHECK()s to DCHECK()s before going to beta.
+  if (loading_image_document_)
+    CHECK(image_complete_);
+  else
+    CHECK(!image_complete_);
+
   image_complete_ = true;
 
   // Update ImageAnimationPolicy for image_.
@@ -531,8 +541,12 @@ void ImageLoader::ImageNotifyFinished(ImageResourceContent* resource) {
     ToSVGImage(image_->GetImage())
         ->UpdateUseCounters(GetElement()->GetDocument());
 
-  if (!has_pending_load_event_)
+  if (loading_image_document_) {
+    CHECK(!has_pending_load_event_);
     return;
+  }
+
+  CHECK(has_pending_load_event_);
 
   if (resource->ErrorOccurred()) {
     LoadEventSender().CancelEvent(this);
@@ -632,10 +646,10 @@ void ImageLoader::DispatchPendingEvent(ImageEventSender* event_sender) {
 }
 
 void ImageLoader::DispatchPendingLoadEvent() {
-  if (!has_pending_load_event_)
-    return;
+  CHECK(has_pending_load_event_);
   if (!image_)
     return;
+  CHECK(image_complete_);
   has_pending_load_event_ = false;
   if (GetElement()->GetDocument().GetFrame())
     DispatchLoadEvent();
@@ -647,8 +661,7 @@ void ImageLoader::DispatchPendingLoadEvent() {
 }
 
 void ImageLoader::DispatchPendingErrorEvent() {
-  if (!has_pending_error_event_)
-    return;
+  CHECK(has_pending_error_event_);
   has_pending_error_event_ = false;
 
   if (GetElement()->GetDocument().GetFrame())
