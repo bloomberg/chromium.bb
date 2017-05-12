@@ -125,6 +125,11 @@ class FakeModelTypeSyncBridge : public ModelTypeSyncBridge {
   // Sets an error that the next fallible call to the bridge will generate.
   void ErrorOnNextCall();
 
+  // It is intentionally very difficult to copy an EntityData, as in normal code
+  // we never want to. However, since we store the data as an EntityData for the
+  // test code here, this function is needed to manually copy it.
+  static std::unique_ptr<EntityData> CopyEntityData(const EntityData& old_data);
+
   const Store& db() { return *db_; }
 
  protected:

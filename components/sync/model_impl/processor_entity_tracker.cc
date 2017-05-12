@@ -61,6 +61,10 @@ ProcessorEntityTracker::ProcessorEntityTracker(
 
 ProcessorEntityTracker::~ProcessorEntityTracker() {}
 
+void ProcessorEntityTracker::SetStorageKey(const std::string& new_key) {
+  storage_key_ = new_key;
+}
+
 void ProcessorEntityTracker::SetCommitData(EntityData* data) {
   DCHECK(data);
   // Update data's fields from metadata.
