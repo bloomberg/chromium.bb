@@ -70,15 +70,14 @@ class
     import java.lang.annotation.Retention;
     import java.lang.annotation.RetentionPolicy;
 
-    public class FooBar {
-      @IntDef({
-          A, B, C
-      })
-      @Retention(RetentionPolicy.SOURCE)
-      public @interface FooBarEnum {}
-      public static final int A = 0;
-      public static final int B = 1;
-      public static final int C = 1;
+    @IntDef({
+        FooBar.A, FooBar.B, FooBar.C
+    })
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface FooBar {
+      int A = 0;
+      int B = 1;
+      int C = 1;
     }
     ```
 
@@ -130,14 +129,14 @@ class
 
     ```java
     ...
-    public class CommentEnum {
+    public @interface CommentEnum {
       ...
       /**
        * This comment will be preserved.
        */
-      public static final int ONE = 0;
-      public static final int TWO = 1;
-      public static final int THREE = 2;
+      int ONE = 0;
+      int TWO = 1;
+      int THREE = 2;
     }
     ```
 
