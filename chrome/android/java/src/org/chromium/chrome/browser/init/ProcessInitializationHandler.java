@@ -82,6 +82,7 @@ import org.chromium.printing.PrintDocumentAdapterWrapper;
 import org.chromium.printing.PrintingControllerImpl;
 import org.chromium.ui.PhotoPickerListener;
 import org.chromium.ui.UiUtils;
+import org.chromium.ui.base.SelectFileDialog;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -292,6 +293,8 @@ public class ProcessInitializationHandler {
                 ShareHelper.clearSharedImages();
 
                 OfflinePageUtils.clearSharedOfflineFiles(application);
+
+                SelectFileDialog.clearCapturedCameraFiles();
 
                 if (ChannelsUpdater.getInstance().shouldUpdateChannels()) {
                     initChannelsAsync();
