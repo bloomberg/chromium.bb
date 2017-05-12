@@ -18,7 +18,7 @@ distribute digital images more efficiently.
 
 Local changes:
  * Removed examples/, documentation and build related files, keeping only
-   the contents of src/ less mux/ which is unused.
+   the contents of src/.
  * Merged COPYING/PATENTS to LICENSE
  * Disabled "-frename-registers" flag for ARM64 linux build as clang(3.9.0)
    build fails with error - unsupported flag.

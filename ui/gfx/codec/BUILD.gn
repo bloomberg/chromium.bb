@@ -11,8 +11,6 @@ component("codec") {
     "jpeg_codec.h",
     "png_codec.cc",
     "png_codec.h",
-    "skia_image_encoder_adapter.cc",
-    "skia_image_encoder_adapter.h",
   ]
 
   deps = [
