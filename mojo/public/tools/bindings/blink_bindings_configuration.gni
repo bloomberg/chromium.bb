@@ -31,4 +31,3 @@ foreach(typemap, _typemaps) {
 }
 
 blacklist = []
-component_macro_suffix = "_BLINK"
