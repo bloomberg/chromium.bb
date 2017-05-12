@@ -8,6 +8,7 @@
 #include "platform/graphics/paint/PaintShader.h"
 #include "platform/graphics/skia/SkiaUtils.h"
 #include "third_party/skia/include/core/SkImage.h"
+#include "third_party/skia/include/core/SkPictureRecorder.h"
 #include "third_party/skia/include/core/SkSurface.h"
 
 namespace blink {
@@ -60,24 +61,28 @@ sk_sp<PaintShader> ImagePattern::CreateShader(const SkMatrix& local_matrix) {
 
   // Create a transparent image 2 pixels wider and/or taller than the
   // original, then copy the orignal into the middle of it.
-  // FIXME: Is there a better way to pad (not scale) an image in skia?
-  sk_sp<SkSurface> surface = SkSurface::MakeRasterN32Premul(
-      tile_image_->width() + 2 * border_pixel_x,
-      tile_image_->height() + 2 * border_pixel_y);
-  if (!surface)
-    return WrapSkShader(SkShader::MakeColorShader(SK_ColorTRANSPARENT));
+  const SkISize tile_size =
+      SkISize::Make(tile_image_->width() + 2 * border_pixel_x,
+                    tile_image_->height() + 2 * border_pixel_y);
+  SkPictureRecorder recorder;
+  recorder.beginRecording(tile_size.width(), tile_size.height());
 
   SkPaint paint;
   paint.setBlendMode(SkBlendMode::kSrc);
-  surface->getCanvas()->drawImage(tile_image_, border_pixel_x, border_pixel_y,
-                                  &paint);
+  recorder.getRecordingCanvas()->drawImage(tile_image_, border_pixel_x,
+                                           border_pixel_y, &paint);
+  // Note: we use a picture *image* (as opposed to a picture *shader*) to
+  // lock-in the resolution (for 1px padding in particular).
+  sk_sp<SkImage> tile_image = SkImage::MakeFromPicture(
+      recorder.finishRecordingAsPicture(), tile_size, nullptr, nullptr,
+      SkImage::BitDepth::kU8, SkColorSpace::MakeSRGB());
 
   previous_local_matrix_ = local_matrix;
   SkMatrix adjusted_matrix(local_matrix);
   adjusted_matrix.postTranslate(-border_pixel_x, -border_pixel_y);
 
-  return MakePaintShaderImage(surface->makeImageSnapshot(), tile_mode_x,
-                              tile_mode_y, &adjusted_matrix);
+  return MakePaintShaderImage(std::move(tile_image), tile_mode_x, tile_mode_y,
+                              &adjusted_matrix);
 }
 
 bool ImagePattern::IsTextureBacked() const {
