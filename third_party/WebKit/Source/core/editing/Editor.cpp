@@ -1057,15 +1057,12 @@ bool Editor::InsertTextWithoutSendingTextEvent(
     bool select_inserted_text,
     TextEvent* triggering_event,
     InputEvent::InputType input_type) {
-  if (text.IsEmpty())
-    return false;
-
   const VisibleSelection& selection = SelectionForCommand(triggering_event);
   if (!selection.IsContentEditable())
     return false;
 
   GetSpellChecker().UpdateMarkersForWordsAffectedByEditing(
-      IsSpaceOrNewline(text[0]));
+      !text.IsEmpty() && IsSpaceOrNewline(text[0]));
 
   // Insert the text
   TypingCommand::InsertText(

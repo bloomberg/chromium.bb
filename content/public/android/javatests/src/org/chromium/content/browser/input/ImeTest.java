@@ -340,6 +340,12 @@ public class ImeTest {
         // Without previous composition.
         mRule.commitText("", -1);
         mRule.waitAndVerifyUpdateSelection(4, 2, 2, -1, -1);
+
+        // Although it is not documented in the spec, commitText() also removes existing selection.
+        mRule.setSelection(2, 5);
+        mRule.commitText("", 1);
+        mRule.waitAndVerifyUpdateSelection(5, 2, 5, -1, -1);
+        mRule.waitAndVerifyUpdateSelection(6, 2, 2, -1, -1);
     }
 
     @Test

@@ -1304,10 +1304,6 @@ bool WebLocalFrameImpl::SetCompositionFromExistingText(
 
   InputMethodController& input_method_controller =
       GetFrame()->GetInputMethodController();
-  input_method_controller.CancelComposition();
-
-  if (composition_start == composition_end)
-    return true;
 
   // TODO(editing-dev): The use of updateStyleAndLayoutIgnorePendingStylesheets
   // needs to be audited.  See http://crbug.com/590369 for more details.

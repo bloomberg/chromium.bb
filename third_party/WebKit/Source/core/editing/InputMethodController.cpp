@@ -409,13 +409,6 @@ bool InputMethodController::CommitText(
                                           underlines);
   }
 
-  // We should do nothing in this case, because:
-  // 1. No need to insert text when text is empty.
-  // 2. Shouldn't move caret when relativeCaretPosition == 0 to avoid
-  // duplicate selection change event.
-  if (!text.length() && !relative_caret_position)
-    return false;
-
   return InsertTextAndMoveCaret(text, relative_caret_position, underlines);
 }
 
@@ -527,18 +520,15 @@ bool InputMethodController::InsertTextAndMoveCaret(
     return false;
   int text_start = selection_range.Start();
 
-  if (text.length()) {
-    if (!InsertText(text))
-      return false;
-
-    Element* root_editable_element =
-        GetFrame()
-            .Selection()
-            .ComputeVisibleSelectionInDOMTreeDeprecated()
-            .RootEditableElement();
-    if (root_editable_element) {
-      AddCompositionUnderlines(underlines, root_editable_element, text_start);
-    }
+  if (!InsertText(text))
+    return false;
+  Element* root_editable_element =
+      GetFrame()
+          .Selection()
+          .ComputeVisibleSelectionInDOMTreeDeprecated()
+          .RootEditableElement();
+  if (root_editable_element) {
+    AddCompositionUnderlines(underlines, root_editable_element, text_start);
   }
 
   int absolute_caret_position = ComputeAbsoluteCaretPosition(
