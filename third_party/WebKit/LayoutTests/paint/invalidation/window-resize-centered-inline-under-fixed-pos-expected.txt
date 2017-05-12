@@ -97,7 +97,7 @@
         {
           "object": "LayoutBlockFlow (positioned) DIV class='container'",
           "rect": [0, 0, 400, 600],
-          "reason": "full"
+          "reason": "forced by layout"
         },
         {
           "object": "LayoutView #document",
@@ -114,7 +114,7 @@
     },
     {
       "object": "LayoutBlockFlow (positioned) DIV class='container'",
-      "reason": "full"
+      "reason": "forced by layout"
     },
     {
       "object": "LayoutBlockFlow DIV class='parent'",
@@ -141,7 +141,7 @@
         {
           "object": "LayoutBlockFlow (positioned) DIV class='container'",
           "rect": [0, 0, 800, 600],
-          "reason": "full"
+          "reason": "forced by layout"
         },
         {
           "object": "LayoutView #document",
@@ -158,7 +158,7 @@
     },
     {
       "object": "LayoutBlockFlow (positioned) DIV class='container'",
-      "reason": "full"
+      "reason": "forced by layout"
     },
     {
       "object": "LayoutBlockFlow DIV class='parent'",

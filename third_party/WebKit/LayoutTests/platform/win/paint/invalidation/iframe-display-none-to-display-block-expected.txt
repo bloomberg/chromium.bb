@@ -25,6 +25,10 @@
       "reason": "layoutObject insertion"
     },
     {
+      "object": "VerticalScrollbar",
+      "reason": "scroll"
+    },
+    {
       "object": "LayoutView #document",
       "reason": "style change"
     },

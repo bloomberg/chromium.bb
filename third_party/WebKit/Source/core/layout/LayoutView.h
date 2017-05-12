@@ -116,6 +116,8 @@ class CORE_EXPORT LayoutView final : public LayoutBlockFlow {
 
   FrameView* GetFrameView() const { return frame_view_; }
 
+  void UpdateAfterLayout() override;
+
   // See comments for the equivalent method on LayoutObject.
   bool MapToVisualRectInAncestorSpace(const LayoutBoxModelObject* ancestor,
                                       LayoutRect&,
