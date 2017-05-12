@@ -96,7 +96,7 @@
 #oobe.oauth-enrollment #inner-container,
 #oobe.password-changed #inner-container,
 #oobe.ad-password-change #inner-container,
-#oobe.not([md-mode]).reset #inner-container,
+#oobe:not([md-mode]).reset #inner-container,
 #oobe.supervised-user-creation #inner-container,
 #oobe.supervised-user-creation-dialog #inner-container,
 #oobe.terms-of-service #inner-container,
