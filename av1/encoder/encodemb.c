@@ -1570,8 +1570,7 @@ static int cfl_alpha_dist(const uint8_t *y_pix, int y_stride, double y_avg,
 }
 
 static int cfl_compute_alpha_ind(MACROBLOCK *const x, const CFL_CTX *const cfl,
-                                 BLOCK_SIZE bsize, int *const cfl_cost,
-                                 CFL_SIGN_TYPE *signs) {
+                                 BLOCK_SIZE bsize, CFL_SIGN_TYPE *signs) {
   const struct macroblock_plane *const p_u = &x->plane[AOM_PLANE_U];
   const struct macroblock_plane *const p_v = &x->plane[AOM_PLANE_V];
   const uint8_t *const src_u = p_u->src.buf;
@@ -1607,7 +1606,7 @@ static int cfl_compute_alpha_ind(MACROBLOCK *const x, const CFL_CTX *const cfl,
          cfl_alpha_dist(tmp_pix, MAX_SB_SIZE, y_avg, src_v, src_stride_v,
                         block_width, block_height, dc_pred_v, 0, NULL);
   dist *= 16;
-  best_cost = RDCOST(x->rdmult, x->rddiv, *cfl_cost, dist);
+  best_cost = RDCOST(x->rdmult, x->rddiv, cfl->costs[0], dist);
 
   for (int c = 1; c < CFL_ALPHABET_SIZE; c++) {
     dist_u = cfl_alpha_dist(tmp_pix, MAX_SB_SIZE, y_avg, src_u, src_stride_u,
@@ -1623,7 +1622,7 @@ static int cfl_compute_alpha_ind(MACROBLOCK *const x, const CFL_CTX *const cfl,
         dist = (sign_u == CFL_SIGN_POS ? dist_u : dist_u_neg) +
                (sign_v == CFL_SIGN_POS ? dist_v : dist_v_neg);
         dist *= 16;
-        cost = RDCOST(x->rdmult, x->rddiv, cfl_cost[c], dist);
+        cost = RDCOST(x->rdmult, x->rddiv, cfl->costs[c], dist);
         if (cost < best_cost) {
           best_cost = cost;
           ind = c;
@@ -1637,6 +1636,24 @@ static int cfl_compute_alpha_ind(MACROBLOCK *const x, const CFL_CTX *const cfl,
   return ind;
 }
 
+static inline void cfl_update_costs(CFL_CTX *cfl, FRAME_CONTEXT *ec_ctx) {
+  assert(ec_ctx->cfl_alpha_cdf[CFL_ALPHABET_SIZE - 1] ==
+         AOM_ICDF(CDF_PROB_TOP));
+  const int prob_den = CDF_PROB_TOP;
+
+  int prob_num = AOM_ICDF(ec_ctx->cfl_alpha_cdf[0]);
+  cfl->costs[0] = av1_cost_zero(get_prob(prob_num, prob_den));
+
+  for (int c = 1; c < CFL_ALPHABET_SIZE; c++) {
+    int sign_bit_cost = (cfl_alpha_codes[c][CFL_PRED_U] != 0.0) +
+                        (cfl_alpha_codes[c][CFL_PRED_V] != 0.0);
+    prob_num = AOM_ICDF(ec_ctx->cfl_alpha_cdf[c]) -
+               AOM_ICDF(ec_ctx->cfl_alpha_cdf[c - 1]);
+    cfl->costs[c] = av1_cost_zero(get_prob(prob_num, prob_den)) +
+                    av1_cost_literal(sign_bit_cost);
+  }
+}
+
 void av1_predict_intra_block_encoder_facade(MACROBLOCK *x,
                                             FRAME_CONTEXT *ec_ctx, int plane,
                                             int block_idx, int blk_col,
@@ -1646,23 +1663,11 @@ void av1_predict_intra_block_encoder_facade(MACROBLOCK *x,
   MB_MODE_INFO *mbmi = &xd->mi[0]->mbmi;
   if (plane != AOM_PLANE_Y && mbmi->uv_mode == DC_PRED) {
     if (blk_col == 0 && blk_row == 0 && plane == AOM_PLANE_U) {
-      assert(ec_ctx->cfl_alpha_cdf[CFL_ALPHABET_SIZE - 1] ==
-             AOM_ICDF(CDF_PROB_TOP));
-      const int prob_den = CDF_PROB_TOP;
-
       CFL_CTX *const cfl = xd->cfl;
-      int cfl_costs[CFL_ALPHABET_SIZE];
-      for (int c = 0; c < CFL_ALPHABET_SIZE; c++) {
-        int sign_bit_cost = (cfl_alpha_codes[c][CFL_PRED_U] != 0.0) +
-                            (cfl_alpha_codes[c][CFL_PRED_V] != 0.0);
-        int prob_num = AOM_ICDF(ec_ctx->cfl_alpha_cdf[c]);
-        if (c > 0) prob_num -= AOM_ICDF(ec_ctx->cfl_alpha_cdf[c - 1]);
-        cfl_costs[c] = av1_cost_zero(get_prob(prob_num, prob_den)) +
-                       av1_cost_literal(sign_bit_cost);
-      }
+      cfl_update_costs(cfl, ec_ctx);
       cfl_dc_pred(xd, plane_bsize, tx_size);
-      mbmi->cfl_alpha_idx = cfl_compute_alpha_ind(
-          x, cfl, plane_bsize, cfl_costs, mbmi->cfl_alpha_signs);
+      mbmi->cfl_alpha_idx =
+          cfl_compute_alpha_ind(x, cfl, plane_bsize, mbmi->cfl_alpha_signs);
     }
   }
   av1_predict_intra_block_facade(xd, plane, block_idx, blk_col, blk_row,

@@ -37,6 +37,9 @@ typedef struct {
   // CfL Performs its own block level DC_PRED for each chromatic plane
   double dc_pred[CFL_PRED_PLANES];
 
+  // The rate associated with each alpha codeword
+  int costs[CFL_ALPHABET_SIZE];
+
   // Count the number of TX blocks in a predicted block to know when you are at
   // the last one, so you can check for skips.
   // TODO(any) Is there a better way to do this?
