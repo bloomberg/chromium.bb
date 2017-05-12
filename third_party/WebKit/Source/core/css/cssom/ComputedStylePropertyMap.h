@@ -32,19 +32,13 @@ class CORE_EXPORT ComputedStylePropertyMap : public StylePropertyMapReadonly {
   Vector<String> getProperties() override;
 
   DEFINE_INLINE_VIRTUAL_TRACE() {
-    visitor->Trace(computed_style_declaration_);
     visitor->Trace(node_);
     StylePropertyMapReadonly::Trace(visitor);
   }
 
- private:
-  Node* GetNode() const;
-
  protected:
   ComputedStylePropertyMap(Node* node, const String& pseudo_element = String())
       : StylePropertyMapReadonly(),
-        computed_style_declaration_(
-            CSSComputedStyleDeclaration::Create(node, false, pseudo_element)),
         pseudo_id_(CSSSelector::ParsePseudoId(pseudo_element)),
         node_(node) {}
 
@@ -56,9 +50,12 @@ class CORE_EXPORT ComputedStylePropertyMap : public StylePropertyMapReadonly {
     return HeapVector<StylePropertyMapEntry>();
   }
 
-  Member<CSSComputedStyleDeclaration> computed_style_declaration_;
   PseudoId pseudo_id_;
   Member<Node> node_;
+
+ private:
+  Node* StyledNode() const;
+  const ComputedStyle* UpdateStyle();
 };
 
 }  // namespace blink

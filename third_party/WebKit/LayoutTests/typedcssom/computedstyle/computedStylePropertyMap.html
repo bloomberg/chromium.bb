@@ -37,7 +37,11 @@ test(function() {
 }, 'Unsupported and unserializable property returns null.');
 
 test(function() {
-  assert_false(computedStyleMap.has('max-zoom'));
+  assert_throws(null, function() { computedStyleMap.get('bananas'); });
+}, 'get() throws for an invalid property.');
+
+test(function() {
+  assert_false(computedStyleMap.has('-webkit-mask'));
 }, 'has() return false for an unsupported property.');
 
 test(function() {
@@ -58,5 +62,12 @@ test(function() {
 test(function() {
   assert_true(computedStyleMap.has('width'));
 }, 'has() returns true for a supported property.');
+
+test(function() {
+  testElement.style.width = '100px';
+  assert_equals(computedStyleMap.get('width').cssText, '100px');
+  testElement.style.display = 'none';
+  assert_equals(computedStyleMap.get('width').cssText, '100px');
+}, 'get() returns correct values for an element with display: none.');
 
 </script>

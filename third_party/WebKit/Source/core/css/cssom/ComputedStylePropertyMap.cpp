@@ -4,53 +4,17 @@
 
 #include "core/css/cssom/ComputedStylePropertyMap.h"
 
-#include "core/css/CSSComputedStyleDeclaration.h"
 #include "core/css/ComputedStyleCSSValueMapping.h"
-#include "core/css/cssom/CSSCalcLength.h"
-#include "core/css/cssom/CSSKeywordValue.h"
-#include "core/css/cssom/CSSNumberValue.h"
-#include "core/css/cssom/CSSSimpleLength.h"
-#include "core/css/cssom/CSSUnsupportedStyleValue.h"
 #include "core/css/cssom/StyleValueFactory.h"
-#include "core/css/resolver/StyleResolver.h"
 #include "core/dom/PseudoElement.h"
-#include "core/dom/StyleEngine.h"
 
 namespace blink {
 
-namespace {
-
-CSSStyleValue* StyleValueForLength(const Length& length) {
-  if (length.IsAuto()) {
-    return CSSKeywordValue::Create("auto");
-  }
-  if (length.IsFixed()) {
-    return CSSSimpleLength::Create(length.Pixels(),
-                                   CSSPrimitiveValue::UnitType::kPixels);
-  }
-  if (length.IsPercent()) {
-    return CSSSimpleLength::Create(length.Percent(),
-                                   CSSPrimitiveValue::UnitType::kPercentage);
-  }
-  if (length.IsCalculated()) {
-    return CSSCalcLength::FromLength(length);
-  }
-  NOTREACHED();
-  return nullptr;
-}
-
-}  // namespace
-
-Node* ComputedStylePropertyMap::GetNode() const {
-  if (!node_) {
-    return nullptr;
-  }
-  if (!pseudo_id_) {
+Node* ComputedStylePropertyMap::StyledNode() const {
+  DCHECK(node_);
+  if (!pseudo_id_)
     return node_;
-  }
   if (node_->IsElementNode()) {
-    // Seems to only support before, after, backdrop, first-letter. See
-    // PseudoElementData::GetPseudoElement.
     if (PseudoElement* element =
             (ToElement(node_))->GetPseudoElement(pseudo_id_)) {
       return element;
@@ -59,111 +23,50 @@ Node* ComputedStylePropertyMap::GetNode() const {
   return nullptr;
 }
 
-// ComputedStylePropertyMap::GetAllInternal/Get should return computed styles
-// (as opposed to resolved styles a la getComputedStyle()).
-//
-// Property values are read from an up-to-date ComputedStyle and converted into
-// CSSStyleValues. This has not been implemented for all properties yet.
-// Unsupported properties fall back to using resolved styles & converting them
-// to CSSStyleValues via StyleValueFactory. For some types of values, such as
-// images, the difference between the two is minor.
-CSSStyleValueVector ComputedStylePropertyMap::GetAllInternal(
-    CSSPropertyID property_id) {
-  CSSStyleValueVector style_value_vector;
-
-  Node* node = this->GetNode();
-  if (!node || !node->InActiveDocument()) {
-    return style_value_vector;
-  }
+const ComputedStyle* ComputedStylePropertyMap::UpdateStyle() {
+  Node* node = StyledNode();
+  if (!node || !node->InActiveDocument())
+    return nullptr;
 
   // Update style before getting the value for the property
+  // This could cause the node to be blown away. This code is copied from
+  // CSSComputedStyleDeclaration::GetPropertyCSSValue.
   node->GetDocument().UpdateStyleAndLayoutTreeForNode(node);
-  node = this->GetNode();
-  if (!node) {
-    return style_value_vector;
-  }
-  // I have copied this from
-  // CSSComputedStyleDeclaration::ComputeComputedStyle(). I don't know if there
-  // is any use in passing pseudo_id_ if node is not already a PseudoElement,
-  // but passing pseudo_id_ when it IS already a PseudoElement leads to
-  // disaster.
+  node = StyledNode();
+  if (!node)
+    return nullptr;
+  // This is copied from CSSComputedStyleDeclaration::computeComputedStyle().
+  // PseudoIdNone must be used if node() is a PseudoElement.
   const ComputedStyle* style = node->EnsureComputedStyle(
       node->IsPseudoElement() ? kPseudoIdNone : pseudo_id_);
-  node = this->GetNode();
-  if (!node || !node->InActiveDocument() || !style) {
-    return style_value_vector;
-  }
+  node = StyledNode();
+  if (!node || !node->InActiveDocument() || !style)
+    return nullptr;
+  return style;
+}
 
-  CSSStyleValue* style_value = nullptr;
-
-  switch (property_id) {
-    // TODO(rjwright): Generate this code.
-    case CSSPropertyLeft:
-      style_value = StyleValueForLength(style->Left());
-      break;
-    case CSSPropertyRight:
-      style_value = StyleValueForLength(style->Right());
-      break;
-    case CSSPropertyTop:
-      style_value = StyleValueForLength(style->Top());
-      break;
-    case CSSPropertyBottom:
-      style_value = StyleValueForLength(style->Bottom());
-      break;
-    case CSSPropertyHeight:
-      style_value = StyleValueForLength(style->Height());
-      break;
-    case CSSPropertyWidth:
-      style_value = StyleValueForLength(style->Width());
-      break;
-    case CSSPropertyLineHeight: {
-      // LineHeight is represented as a Length in ComputedStyle, even though it
-      // can be a number or the "normal" keyword. "normal" is encoded as a
-      // negative percent, and numbers (which must be positive) are encoded as
-      // percents.
-      Length line_height = style->LineHeight();
-      if (line_height.IsNegative()) {
-        style_value = CSSKeywordValue::Create("normal");
-        break;
-      }
-      if (line_height.IsPercent()) {
-        style_value = CSSNumberValue::Create(line_height.Percent());
-        break;
-      }
-      if (line_height.IsFixed()) {
-        style_value = CSSSimpleLength::Create(
-            line_height.Pixels(), CSSPrimitiveValue::UnitType::kPixels);
-        break;
-      }
-      NOTREACHED();
-      break;
-    }
-    default:
-      // For properties not yet handled above, fall back to using resolved
-      // style.
-      const CSSValue* value = ComputedStyleCSSValueMapping::Get(
-          property_id, *style, nullptr, node, false);
-      if (value) {
-        return StyleValueFactory::CssValueToStyleValueVector(property_id,
-                                                             *value);
-      }
-      break;
-  }
-
-  if (style_value) {
-    style_value_vector.push_back(style_value);
-  }
-  return style_value_vector;
+CSSStyleValueVector ComputedStylePropertyMap::GetAllInternal(
+    CSSPropertyID property_id) {
+  const ComputedStyle* style = UpdateStyle();
+  if (!style)
+    return CSSStyleValueVector();
+  const CSSValue* css_value = ComputedStyleCSSValueMapping::Get(
+      property_id, *style, nullptr /* layout_object */);
+  if (!css_value)
+    return CSSStyleValueVector();
+  return StyleValueFactory::CssValueToStyleValueVector(property_id, *css_value);
 }
 
 CSSStyleValueVector ComputedStylePropertyMap::GetAllInternal(
     AtomicString custom_property_name) {
-  const CSSValue* css_value =
-      computed_style_declaration_->GetPropertyCSSValue(custom_property_name);
+  const ComputedStyle* style = UpdateStyle();
+  if (!style)
+    return CSSStyleValueVector();
+  const CSSValue* css_value = ComputedStyleCSSValueMapping::Get(
+      custom_property_name, *style, node_->GetDocument().GetPropertyRegistry());
   if (!css_value)
     return CSSStyleValueVector();
-  return StyleValueFactory::CssValueToStyleValueVector(CSSPropertyInvalid,
-                                                       *css_value);
+  return StyleValueFactory::CssValueToStyleValueVector(*css_value);
 }
 
 Vector<String> ComputedStylePropertyMap::getProperties() {
