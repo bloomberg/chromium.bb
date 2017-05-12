@@ -93,6 +93,10 @@
   [_scrollView setBounces:bounces];
 }
 
+- (BOOL)isDecelerating {
+  return [_scrollView isDecelerating];
+}
+
 - (BOOL)isDragging {
   return [_scrollView isDragging];
 }
