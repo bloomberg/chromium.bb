@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/safe_browsing/chrome_cleaner/srt_fetcher_win.h"
+#include "chrome/browser/safe_browsing/chrome_cleaner/reporter_runner_win.h"
 
 #include <initializer_list>
 #include <set>
@@ -299,13 +299,13 @@ class ReportBadMessageChromePromptImpl : public ChromePromptImpl {
 //    cleanup.
 //  - MockedReporterFailure expected_reporter_failure: indicates errors that
 //    should be simulated in the reporter process.
-class SRTFetcherTest
+class ReporterRunnerTest
     : public InProcessBrowserTest,
       public SwReporterTestingDelegate,
       public ::testing::WithParamInterface<
           std::tuple<bool, ElevationStatus, MockedReporterFailure>> {
  public:
-  SRTFetcherTest() = default;
+  ReporterRunnerTest() = default;
 
   void SetUpInProcessBrowserTestFixture() override {
     SetSwReporterTestingDelegate(this);
@@ -416,7 +416,7 @@ class SRTFetcherTest
       chrome_cleaner::mojom::ChromePromptRequest request) override {
     return base::MakeUnique<ReportBadMessageChromePromptImpl>(
         std::move(request), bad_message_expected_,
-        base::Bind(&SRTFetcherTest::OnConnectionClosed,
+        base::Bind(&ReporterRunnerTest::OnConnectionClosed,
                    base::Unretained(this)));
   }
 
@@ -611,10 +611,11 @@ class SRTFetcherTest
 
   base::test::ScopedFeatureList scoped_feature_list_;
 
-  DISALLOW_COPY_AND_ASSIGN(SRTFetcherTest);
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ReporterRunnerTest);
 };
 
-class SRTFetcherPromptTest : public DialogBrowserTest {
+class ReporterRunnerPromptTest : public DialogBrowserTest {
  public:
   void ShowDialog(const std::string& name) override {
     if (name == "SRTErrorNoFile")
@@ -629,19 +630,19 @@ class SRTFetcherPromptTest : public DialogBrowserTest {
 
 }  // namespace
 
-IN_PROC_BROWSER_TEST_P(SRTFetcherTest, NothingFound) {
+IN_PROC_BROWSER_TEST_P(ReporterRunnerTest, NothingFound) {
   RunReporter(chrome_cleaner::kSwReporterNothingFound);
   ExpectReporterLaunches(0, 1, false);
   ExpectToRunAgain(kDaysBetweenSuccessfulSwReporterRuns);
 }
 
-IN_PROC_BROWSER_TEST_P(SRTFetcherTest, CleanupNeeded) {
+IN_PROC_BROWSER_TEST_P(ReporterRunnerTest, CleanupNeeded) {
   RunReporter(chrome_cleaner::kSwReporterCleanupNeeded);
   ExpectReporterLaunches(0, 1, true);
   ExpectToRunAgain(kDaysBetweenSuccessfulSwReporterRuns);
 }
 
-IN_PROC_BROWSER_TEST_P(SRTFetcherTest, RanRecently) {
+IN_PROC_BROWSER_TEST_P(ReporterRunnerTest, RanRecently) {
   constexpr int kDaysLeft = 1;
   SetDaysSinceLastTriggered(kDaysBetweenSuccessfulSwReporterRuns - kDaysLeft);
   RunReporter(chrome_cleaner::kSwReporterNothingFound);
@@ -652,7 +653,7 @@ IN_PROC_BROWSER_TEST_P(SRTFetcherTest, RanRecently) {
 }
 
 // Test is flaky. crbug.com/705608
-IN_PROC_BROWSER_TEST_P(SRTFetcherTest, DISABLED_WaitForBrowser) {
+IN_PROC_BROWSER_TEST_P(ReporterRunnerTest, DISABLED_WaitForBrowser) {
   Profile* profile = browser()->profile();
 
   // Ensure that even though we're closing the last browser, we don't enter the
@@ -692,13 +693,13 @@ IN_PROC_BROWSER_TEST_P(SRTFetcherTest, DISABLED_WaitForBrowser) {
   ExpectToRunAgain(kDaysBetweenSuccessfulSwReporterRuns);
 }
 
-IN_PROC_BROWSER_TEST_P(SRTFetcherTest, Failure) {
+IN_PROC_BROWSER_TEST_P(ReporterRunnerTest, Failure) {
   RunReporter(kReporterNotLaunchedExitCode);
   ExpectReporterLaunches(0, 1, false);
   ExpectToRunAgain(kDaysBetweenSuccessfulSwReporterRuns);
 }
 
-IN_PROC_BROWSER_TEST_P(SRTFetcherTest, RunDaily) {
+IN_PROC_BROWSER_TEST_P(ReporterRunnerTest, RunDaily) {
   PrefService* local_state = g_browser_process->local_state();
   local_state->SetBoolean(prefs::kSwReporterPendingPrompt, true);
   SetDaysSinceLastTriggered(kDaysBetweenSuccessfulSwReporterRuns - 1);
@@ -727,7 +728,7 @@ IN_PROC_BROWSER_TEST_P(SRTFetcherTest, RunDaily) {
   ExpectToRunAgain(kDaysBetweenSuccessfulSwReporterRuns);
 }
 
-IN_PROC_BROWSER_TEST_P(SRTFetcherTest, ParameterChange) {
+IN_PROC_BROWSER_TEST_P(ReporterRunnerTest, ParameterChange) {
   // If the reporter is run several times with different parameters, it should
   // only be launched once, with the last parameter set.
   const base::FilePath path1(L"path1");
@@ -784,7 +785,7 @@ IN_PROC_BROWSER_TEST_P(SRTFetcherTest, ParameterChange) {
   ExpectToRunAgain(kDaysBetweenSuccessfulSwReporterRuns);
 }
 
-IN_PROC_BROWSER_TEST_P(SRTFetcherTest, MultipleLaunches) {
+IN_PROC_BROWSER_TEST_P(ReporterRunnerTest, MultipleLaunches) {
   const base::FilePath path1(L"path1");
   const base::FilePath path2(L"path2");
   const base::FilePath path3(L"path3");
@@ -818,7 +819,7 @@ IN_PROC_BROWSER_TEST_P(SRTFetcherTest, MultipleLaunches) {
     SCOPED_TRACE("Add third launch while running");
     invocations.push(SwReporterInvocation::FromFilePath(path3));
     first_launch_callback_ = base::BindOnce(
-        &SRTFetcherTest::RunReporterQueue, base::Unretained(this),
+        &ReporterRunnerTest::RunReporterQueue, base::Unretained(this),
         chrome_cleaner::kSwReporterNothingFound, invocations);
 
     // Only the first two elements should execute since the third was added
@@ -852,7 +853,8 @@ IN_PROC_BROWSER_TEST_P(SRTFetcherTest, MultipleLaunches) {
   }
 }
 
-IN_PROC_BROWSER_TEST_P(SRTFetcherTest, ReporterLogging_NoSBExtendedReporting) {
+IN_PROC_BROWSER_TEST_P(ReporterRunnerTest,
+                       ReporterLogging_NoSBExtendedReporting) {
   RunReporter(chrome_cleaner::kSwReporterNothingFound);
   ExpectReporterLaunches(0, 1, false);
   ExpectLoggingSwitches(reporter_launch_parameters_.front(), false);
@@ -860,7 +862,7 @@ IN_PROC_BROWSER_TEST_P(SRTFetcherTest, ReporterLogging_NoSBExtendedReporting) {
   ExpectToRunAgain(kDaysBetweenSuccessfulSwReporterRuns);
 }
 
-IN_PROC_BROWSER_TEST_P(SRTFetcherTest, ReporterLogging_EnabledFirstRun) {
+IN_PROC_BROWSER_TEST_P(ReporterRunnerTest, ReporterLogging_EnabledFirstRun) {
   EnableSBExtendedReporting();
   // Note: don't set last time sent logs in the local state.
   // SBER is enabled and there is no record in the local state of the last time
@@ -872,7 +874,8 @@ IN_PROC_BROWSER_TEST_P(SRTFetcherTest, ReporterLogging_EnabledFirstRun) {
   ExpectToRunAgain(kDaysBetweenSuccessfulSwReporterRuns);
 }
 
-IN_PROC_BROWSER_TEST_P(SRTFetcherTest, ReporterLogging_EnabledNoRecentLogging) {
+IN_PROC_BROWSER_TEST_P(ReporterRunnerTest,
+                       ReporterLogging_EnabledNoRecentLogging) {
   // SBER is enabled and last time logs were sent was more than
   // |kDaysBetweenReporterLogsSent| day ago, so we should send logs in this run.
   EnableSBExtendedReporting();
@@ -884,7 +887,8 @@ IN_PROC_BROWSER_TEST_P(SRTFetcherTest, ReporterLogging_EnabledNoRecentLogging) {
   ExpectToRunAgain(kDaysBetweenSuccessfulSwReporterRuns);
 }
 
-IN_PROC_BROWSER_TEST_P(SRTFetcherTest, ReporterLogging_EnabledRecentlyLogged) {
+IN_PROC_BROWSER_TEST_P(ReporterRunnerTest,
+                       ReporterLogging_EnabledRecentlyLogged) {
   // SBER is enabled, but logs have been sent less than
   // |kDaysBetweenReporterLogsSent| day ago, so we shouldn't send any logs in
   // this run.
@@ -898,7 +902,7 @@ IN_PROC_BROWSER_TEST_P(SRTFetcherTest, ReporterLogging_EnabledRecentlyLogged) {
   ExpectToRunAgain(kDaysBetweenSuccessfulSwReporterRuns);
 }
 
-IN_PROC_BROWSER_TEST_P(SRTFetcherTest, ReporterLogging_MultipleLaunches) {
+IN_PROC_BROWSER_TEST_P(ReporterRunnerTest, ReporterLogging_MultipleLaunches) {
   EnableSBExtendedReporting();
   SetLastTimeSentReport(kDaysBetweenReporterLogsSent + 3);
 
@@ -918,7 +922,7 @@ IN_PROC_BROWSER_TEST_P(SRTFetcherTest, ReporterLogging_MultipleLaunches) {
   {
     SCOPED_TRACE("first launch");
     first_launch_callback_ =
-        base::BindOnce(&SRTFetcherTest::ExpectLastReportSentInTheLastHour,
+        base::BindOnce(&ReporterRunnerTest::ExpectLastReportSentInTheLastHour,
                        base::Unretained(this));
     ExpectReporterLaunches(0, {path1, path2}, false);
     ExpectLoggingSwitches(reporter_launch_parameters_[0], true);
@@ -936,7 +940,7 @@ IN_PROC_BROWSER_TEST_P(SRTFetcherTest, ReporterLogging_MultipleLaunches) {
 
 INSTANTIATE_TEST_CASE_P(
     NoInBrowserCleanerUI,
-    SRTFetcherTest,
+    ReporterRunnerTest,
     testing::Combine(testing::Values(false),
                      testing::Values(ElevationStatus::NOT_REQUIRED),
                      testing::Values(MockedReporterFailure::kNone,
@@ -944,7 +948,7 @@ INSTANTIATE_TEST_CASE_P(
 
 INSTANTIATE_TEST_CASE_P(
     InBrowserCleanerUI,
-    SRTFetcherTest,
+    ReporterRunnerTest,
     testing::Combine(
         testing::Values(true),
         testing::Values(ElevationStatus::NOT_REQUIRED,
@@ -961,11 +965,11 @@ INSTANTIATE_TEST_CASE_P(
 // useful for checking dialog layout or any other interactive functionality
 // tests. See docs/testing/test_browser_dialog.md for description of the
 // testing framework.
-IN_PROC_BROWSER_TEST_F(SRTFetcherPromptTest, InvokeDialog_SRTErrorNoFile) {
+IN_PROC_BROWSER_TEST_F(ReporterRunnerPromptTest, InvokeDialog_SRTErrorNoFile) {
   RunDialog();
 }
 
-IN_PROC_BROWSER_TEST_F(SRTFetcherPromptTest, InvokeDialog_SRTErrorFile) {
+IN_PROC_BROWSER_TEST_F(ReporterRunnerPromptTest, InvokeDialog_SRTErrorFile) {
   RunDialog();
 }
 

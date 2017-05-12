@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/safe_browsing/chrome_cleaner/srt_fetcher_win.h"
+#include "chrome/browser/safe_browsing/chrome_cleaner/reporter_runner_win.h"
 
 #include <stdint.h>
 
@@ -34,7 +34,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/profiles/profile_io_data.h"
+#include "chrome/browser/safe_browsing/chrome_cleaner/chrome_cleaner_fetcher_win.h"
 #include "chrome/browser/safe_browsing/chrome_cleaner/srt_chrome_prompt_impl.h"
 #include "chrome/browser/safe_browsing/chrome_cleaner/srt_client_info_win.h"
 #include "chrome/browser/safe_browsing/chrome_cleaner/srt_global_error_win.h"
@@ -46,20 +46,14 @@
 #include "chrome/common/pref_names.h"
 #include "components/chrome_cleaner/public/constants/constants.h"
 #include "components/component_updater/pref_names.h"
-#include "components/data_use_measurement/core/data_use_user_data.h"
 #include "components/prefs/pref_service.h"
-#include "components/variations/net/variations_http_headers.h"
 #include "components/version_info/version_info.h"
 #include "content/public/browser/browser_thread.h"
 #include "mojo/edk/embedder/connection_params.h"
 #include "mojo/edk/embedder/outgoing_broker_client_invitation.h"
 #include "mojo/edk/embedder/platform_channel_pair.h"
 #include "mojo/public/cpp/system/message_pipe.h"
-#include "net/base/load_flags.h"
 #include "net/http/http_status_code.h"
-#include "net/url_request/url_fetcher.h"
-#include "net/url_request/url_fetcher_delegate.h"
-#include "net/url_request/url_request_context_getter.h"
 
 using content::BrowserThread;
 
@@ -495,7 +489,19 @@ void RecordReporterStepHistogram(SwReporterUmaValue value) {
   uma.RecordReporterStep(value);
 }
 
-void DisplaySRTPrompt(const base::FilePath& download_path) {
+void DisplaySRTPrompt(base::FilePath download_path, int http_response_code) {
+  // As long as the fetch didn't fail due to HTTP_NOT_FOUND, show a prompt
+  // (either offering the tool directly or pointing to the download page).
+  // If the fetch failed to find the file, don't prompt the user since the
+  // tool is not currently available.
+  // TODO(csharp): In the event the browser is closed before the prompt
+  //               displays, we will wait until the next scanner run to
+  //               re-display it.  Improve this. http://crbug.com/460295
+  if (http_response_code == net::HTTP_NOT_FOUND) {
+    RecordSRTPromptHistogram(SRT_PROMPT_DOWNLOAD_UNAVAILABLE);
+    return;
+  }
+
   // Find the last active browser, which may be NULL, in which case we won't
   // show the prompt this time and will wait until the next run of the
   // reporter. We can't use other ways of finding a browser because we don't
@@ -739,92 +745,8 @@ void SwReporterProcess::ReleaseChromePromptImpl() {
 }  // namespace
 
 void DisplaySRTPromptForTesting(const base::FilePath& download_path) {
-  DisplaySRTPrompt(download_path);
+  DisplaySRTPrompt(download_path, net::HTTP_OK);
 }
-
-// Class that will attempt to download the SRT, showing the SRT notification
-// bubble when the download operation is complete. Instances of SRTFetcher own
-// themselves, they will self-delete on completion of the network request when
-// OnURLFetchComplete is called.
-class SRTFetcher : public net::URLFetcherDelegate {
- public:
-  explicit SRTFetcher(Profile* profile)
-      : profile_(profile),
-        url_fetcher_(net::URLFetcher::Create(0,
-                                             GURL(GetSRTDownloadURL()),
-                                             net::URLFetcher::GET,
-                                             this)) {
-    data_use_measurement::DataUseUserData::AttachToFetcher(
-        url_fetcher_.get(),
-        data_use_measurement::DataUseUserData::SAFE_BROWSING);
-    url_fetcher_->SetLoadFlags(net::LOAD_DISABLE_CACHE);
-    url_fetcher_->SetMaxRetriesOn5xx(3);
-    url_fetcher_->SaveResponseToTemporaryFile(
-        BrowserThread::GetTaskRunnerForThread(BrowserThread::FILE));
-    url_fetcher_->SetRequestContext(
-        g_browser_process->system_request_context());
-    // Adds the UMA bit to the download request if the user is enrolled in UMA.
-    ProfileIOData* io_data = ProfileIOData::FromResourceContext(
-        profile_->GetResourceContext());
-    net::HttpRequestHeaders headers;
-    // Note: It's OK to pass |is_signed_in| false if it's unknown, as it does
-    // not affect transmission of experiments coming from the variations server.
-    bool is_signed_in = false;
-    variations::AppendVariationHeaders(
-        url_fetcher_->GetOriginalURL(), io_data->IsOffTheRecord(),
-        ChromeMetricsServiceAccessor::IsMetricsAndCrashReportingEnabled(),
-        is_signed_in, &headers);
-    url_fetcher_->SetExtraRequestHeaders(headers.ToString());
-    url_fetcher_->Start();
-  }
-
-  // net::URLFetcherDelegate:
-  void OnURLFetchComplete(const net::URLFetcher* source) override {
-    // Take ownership of the fetcher in this scope (source == url_fetcher_).
-    DCHECK_EQ(url_fetcher_.get(), source);
-
-    base::FilePath download_path;
-    if (source->GetStatus().is_success() &&
-        source->GetResponseCode() == net::HTTP_OK) {
-      if (source->GetResponseAsFilePath(true, &download_path)) {
-        DCHECK(!download_path.empty());
-      }
-    }
-
-    // As long as the fetch didn't fail due to HTTP_NOT_FOUND, show a prompt
-    // (either offering the tool directly or pointing to the download page).
-    // If the fetch failed to find the file, don't prompt the user since the
-    // tool is not currently available.
-    // TODO(mad): Consider implementing another layer of retries / alternate
-    //            fetching mechanisms. http://crbug.com/460293
-    // TODO(mad): In the event the browser is closed before the prompt displays,
-    //            we will wait until the next scanner run to re-display it.
-    //            Improve this. http://crbug.com/460295
-    if (source->GetResponseCode() != net::HTTP_NOT_FOUND)
-      DisplaySRTPrompt(download_path);
-    else
-      RecordSRTPromptHistogram(SRT_PROMPT_DOWNLOAD_UNAVAILABLE);
-
-    // Explicitly destroy the url_fetcher_ to avoid destruction races.
-    url_fetcher_.reset();
-
-    // At this point, the url_fetcher_ is gone and this SRTFetcher instance is
-    // no longer needed.
-    delete this;
-  }
-
- private:
-  ~SRTFetcher() override {}
-
-  // The user profile.
-  Profile* profile_;
-
-  // The underlying URL fetcher. The instance is alive from construction through
-  // OnURLFetchComplete.
-  std::unique_ptr<net::URLFetcher> url_fetcher_;
-
-  DISALLOW_COPY_AND_ASSIGN(SRTFetcher);
-};
 
 namespace {
 
@@ -867,7 +789,7 @@ void MaybeFetchSRT(Browser* browser, const base::Version& reporter_version) {
   RecordReporterStepHistogram(SW_REPORTER_DOWNLOAD_START);
 
   // All the work happens in the self-deleting class below.
-  new SRTFetcher(profile);
+  FetchChromeCleaner(base::Bind(DisplaySRTPrompt));
 }
 
 base::Time Now() {

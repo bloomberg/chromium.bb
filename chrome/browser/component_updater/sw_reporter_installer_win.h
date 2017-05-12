@@ -12,7 +12,7 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "chrome/browser/safe_browsing/chrome_cleaner/srt_fetcher_win.h"
+#include "chrome/browser/safe_browsing/chrome_cleaner/reporter_runner_win.h"
 #include "components/component_updater/default_component_installer.h"
 
 class PrefRegistrySimple;

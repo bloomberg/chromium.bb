@@ -6,6 +6,7 @@
 
 #include <map>
 #include <memory>
+#include <set>
 #include <string>
 #include <utility>
 
@@ -22,7 +23,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/values.h"
 #include "base/version.h"
-#include "chrome/browser/safe_browsing/chrome_cleaner/srt_fetcher_win.h"
+#include "chrome/browser/safe_browsing/chrome_cleaner/reporter_runner_win.h"
 #include "components/chrome_cleaner/public/constants/constants.h"
 #include "components/variations/variations_params_manager.h"
 #include "content/public/test/test_browser_thread_bundle.h"
