@@ -100,6 +100,8 @@ void ZeroCopyRasterBufferProvider::OrderingBarrier() {
   // No need to sync resources as this provider does not use GL context.
 }
 
+void ZeroCopyRasterBufferProvider::Flush() {}
+
 ResourceFormat ZeroCopyRasterBufferProvider::GetResourceFormat(
     bool must_support_alpha) const {
   if (resource_provider_->IsTextureFormatSupported(preferred_tile_format_) &&

@@ -23,6 +23,8 @@ void FakeRasterBufferProviderImpl::ReleaseBufferForRaster(
 
 void FakeRasterBufferProviderImpl::OrderingBarrier() {}
 
+void FakeRasterBufferProviderImpl::Flush() {}
+
 ResourceFormat FakeRasterBufferProviderImpl::GetResourceFormat(
     bool must_support_alpha) const {
   return ResourceFormat::RGBA_8888;
