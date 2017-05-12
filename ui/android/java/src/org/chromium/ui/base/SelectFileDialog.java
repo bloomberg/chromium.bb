@@ -18,11 +18,11 @@ import android.os.AsyncTask;
 import android.os.Build;
 import android.provider.MediaStore;
 import android.text.TextUtils;
-import android.util.Log;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ContentUriUtils;
 import org.chromium.base.ContextUtils;
+import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
@@ -39,6 +39,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 /**
  * A dialog that is triggered from a file input field that allows a user to select a file based on
@@ -56,6 +57,9 @@ public class SelectFileDialog implements WindowAndroid.IntentCallback,
     private static final String ALL_VIDEO_TYPES = VIDEO_TYPE + "*";
     private static final String ALL_AUDIO_TYPES = AUDIO_TYPE + "*";
     private static final String ANY_TYPES = "*/*";
+
+    // Duration before temporary camera file is cleaned up, in milliseconds.
+    private static final long DURATION_BEFORE_FILE_CLEAN_UP_IN_MILLIS = TimeUnit.HOURS.toMillis(1);
 
     // A list of some of the more popular image extensions. Not meant to be
     // exhaustive, but should cover the vast majority of image types.
@@ -615,6 +619,32 @@ public class SelectFileDialog implements WindowAndroid.IntentCallback,
                 nativeOnFileSelected(mNativeSelectFileDialog, mFilePaths[0], result[0]);
             }
         }
+    }
+
+    /**
+     * Clears all captured camera files.
+     */
+    public static void clearCapturedCameraFiles() {
+        AsyncTask.THREAD_POOL_EXECUTOR.execute(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    File path = UiUtils.getDirectoryForImageCapture(
+                            ContextUtils.getApplicationContext());
+                    if (!path.isDirectory()) return;
+                    File[] files = path.listFiles();
+                    if (files == null) return;
+                    long now = System.currentTimeMillis();
+                    for (File file : files) {
+                        if (now - file.lastModified() > DURATION_BEFORE_FILE_CLEAN_UP_IN_MILLIS) {
+                            if (!file.delete()) Log.e(TAG, "Failed to delete: " + file);
+                        }
+                    }
+                } catch (IOException e) {
+                    Log.w(TAG, "Failed to delete captured camera files.", e);
+                }
+            }
+        });
     }
 
     @VisibleForTesting
