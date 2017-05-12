@@ -220,6 +220,7 @@ class PLATFORM_EXPORT Image : public ThreadSafeRefCounted<Image> {
   // The observer (an ImageResourceContent) is an untraced member, with the
   // ImageResourceContent being responsible for clearing itself out.
   UntracedMember<ImageObserver> image_observer_;
+  PaintImage::Id stable_image_id_;
 };
 
 #define DEFINE_IMAGE_TYPE_CASTS(typeName)                          \

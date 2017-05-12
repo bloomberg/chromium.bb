@@ -524,8 +524,10 @@ void ImageBuffer::SetSurface(std::unique_ptr<ImageBufferSurface> surface) {
   // TODO(vmpstr): Figure out actual values for this.
   auto animation_type = PaintImage::AnimationType::UNKNOWN;
   auto completion_state = PaintImage::CompletionState::UNKNOWN;
-  surface->Canvas()->drawImage(
-      PaintImage(std::move(image), animation_type, completion_state), 0, 0);
+  static PaintImage::Id unknown_stable_id = PaintImage::GetNextId();
+  surface->Canvas()->drawImage(PaintImage(unknown_stable_id, std::move(image),
+                                          animation_type, completion_state),
+                               0, 0);
 
   surface->SetImageBuffer(this);
   if (client_)

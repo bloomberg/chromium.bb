@@ -192,7 +192,8 @@ void ChildFrameCompositingHelper::ChildFrameGone() {
         web_layer_->Bounds().height > sad_bitmap->height()) {
       scoped_refptr<cc::PictureImageLayer> sad_layer =
           cc::PictureImageLayer::Create();
-      sad_layer->SetImage(cc::PaintImage(SkImage::MakeFromBitmap(*sad_bitmap)));
+      sad_layer->SetImage(cc::PaintImage(cc::PaintImage::kNonLazyStableId,
+                                         SkImage::MakeFromBitmap(*sad_bitmap)));
       sad_layer->SetBounds(
           gfx::Size(sad_bitmap->width(), sad_bitmap->height()));
       sad_layer->SetPosition(gfx::PointF(
