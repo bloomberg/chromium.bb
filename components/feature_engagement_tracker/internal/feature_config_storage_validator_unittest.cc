@@ -171,6 +171,7 @@ class FeatureConfigStorageValidatorTest : public ::testing::Test {
  protected:
   FeatureConfigStorageValidator validator_;
   uint32_t current_day_;
+  base::test::ScopedFeatureList scoped_feature_list_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(FeatureConfigStorageValidatorTest);
@@ -179,7 +180,24 @@ class FeatureConfigStorageValidatorTest : public ::testing::Test {
 }  // namespace
 
 TEST_F(FeatureConfigStorageValidatorTest,
+       ShouldOnlyUseConfigFromEnabledFeatures) {
+  scoped_feature_list_.InitWithFeatures({kTestFeatureFoo}, {kTestFeatureBar});
+
+  FeatureConfig foo_config = kNeverStored;
+  foo_config.used = EventConfig("fooevent", Comparator(ANY, 0), 0, 1);
+  FeatureConfig bar_config = kNeverStored;
+  bar_config.used = EventConfig("barevent", Comparator(ANY, 0), 0, 1);
+  UseConfigs(foo_config, bar_config);
+
+  EXPECT_FALSE(validator_.ShouldStore("myevent"));
+  EXPECT_TRUE(validator_.ShouldStore("fooevent"));
+  EXPECT_FALSE(validator_.ShouldStore("barevent"));
+}
+
+TEST_F(FeatureConfigStorageValidatorTest,
        ShouldStoreIfSingleConfigHasMinimum1DayStorage) {
+  scoped_feature_list_.InitWithFeatures({kTestFeatureFoo}, {});
+
   UseConfig(kNeverStored);
   EXPECT_FALSE(validator_.ShouldStore("myevent"));
 
@@ -197,6 +215,8 @@ TEST_F(FeatureConfigStorageValidatorTest,
 
 TEST_F(FeatureConfigStorageValidatorTest,
        ShouldStoreIfAnyConfigHasMinimum1DayStorage) {
+  scoped_feature_list_.InitWithFeatures({kTestFeatureFoo, kTestFeatureBar}, {});
+
   UseConfigs(kNeverStored, kNeverStored);
   EXPECT_FALSE(validator_.ShouldStore("myevent"));
 
@@ -214,6 +234,8 @@ TEST_F(FeatureConfigStorageValidatorTest,
 
 TEST_F(FeatureConfigStorageValidatorTest,
        ShouldKeepIfSingleConfigMeetsEventAge) {
+  scoped_feature_list_.InitWithFeatures({kTestFeatureFoo}, {});
+
   UseConfig(kNeverStored);
   VerifyNeverKeep();
 
@@ -241,6 +263,8 @@ TEST_F(FeatureConfigStorageValidatorTest,
 }
 
 TEST_F(FeatureConfigStorageValidatorTest, ShouldKeepIfAnyConfigMeetsEventAge) {
+  scoped_feature_list_.InitWithFeatures({kTestFeatureFoo, kTestFeatureBar}, {});
+
   UseConfigs(kNeverStored, kNeverStored);
   VerifyNeverKeep();
 

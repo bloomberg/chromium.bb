@@ -7,6 +7,7 @@
 #include <unordered_map>
 #include <unordered_set>
 
+#include "base/feature_list.h"
 #include "components/feature_engagement_tracker/internal/configuration.h"
 #include "components/feature_engagement_tracker/public/feature_list.h"
 
@@ -45,8 +46,12 @@ bool FeatureConfigStorageValidator::ShouldKeep(const std::string& event_name,
 void FeatureConfigStorageValidator::InitializeFeatures(
     FeatureVector features,
     const Configuration& configuration) {
-  for (const auto* feature : features)
+  for (const auto* feature : features) {
+    if (!base::FeatureList::IsEnabled(*feature))
+      continue;
+
     InitializeFeatureConfig(configuration.GetFeatureConfig(*feature));
+  }
 }
 
 void FeatureConfigStorageValidator::ClearForTesting() {
