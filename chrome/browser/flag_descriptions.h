@@ -2070,6 +2070,12 @@ extern const char kTouchscreenCalibrationName[];
 // chrome://md-settings/display.
 extern const char kTouchscreenCalibrationDescription[];
 
+// Name of option to enable Team Drives integration
+extern const char kTeamDrivesName[];
+
+// Description of option to enable Team Drives integration
+extern const char kTeamDrivesDescription[];
+
 #endif  // defined(OS_CHROMEOS)
 
 //  Strings for controlling credit card assist feature in about:flags.
