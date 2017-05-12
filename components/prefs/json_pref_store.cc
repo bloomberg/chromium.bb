@@ -143,13 +143,13 @@ scoped_refptr<base::SequencedTaskRunner> JsonPrefStore::GetTaskRunnerForFile(
 
 JsonPrefStore::JsonPrefStore(
     const base::FilePath& pref_filename,
-    scoped_refptr<base::SequencedTaskRunner> sequenced_task_runner,
+    const scoped_refptr<base::SequencedTaskRunner>& sequenced_task_runner,
     std::unique_ptr<PrefFilter> pref_filter)
     : path_(pref_filename),
-      sequenced_task_runner_(std::move(sequenced_task_runner)),
+      sequenced_task_runner_(sequenced_task_runner),
       prefs_(new base::DictionaryValue()),
       read_only_(false),
-      writer_(pref_filename, sequenced_task_runner_),
+      writer_(pref_filename, sequenced_task_runner),
       pref_filter_(std::move(pref_filter)),
       initialized_(false),
       filtering_in_progress_(false),
