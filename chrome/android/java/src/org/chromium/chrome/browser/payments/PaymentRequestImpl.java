@@ -857,13 +857,14 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
                 formatter.format(total.amount.value), false /* isPending */));
         mUiShoppingCart.setAdditionalContents(
                 modifier == null ? null : getLineItems(modifier.additionalDisplayItems));
-        mUI.updateOrderSummarySection(mUiShoppingCart);
+        if (mUI != null) mUI.updateOrderSummarySection(mUiShoppingCart);
     }
 
     /** @return The first modifier that matches the given instrument, or null. */
     @Nullable private PaymentDetailsModifier getModifier(@Nullable PaymentInstrument instrument) {
         if (mModifiers == null || instrument == null) return null;
-        Set<String> methodNames = instrument.getInstrumentMethodNames();
+        // Makes a copy to ensure it is modifiable.
+        Set<String> methodNames = new HashSet<>(instrument.getInstrumentMethodNames());
         methodNames.retainAll(mModifiers.keySet());
         return methodNames.isEmpty() ? null : mModifiers.get(methodNames.iterator().next());
     }
