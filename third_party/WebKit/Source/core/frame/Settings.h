@@ -28,6 +28,7 @@
 #ifndef Settings_h
 #define Settings_h
 
+#include <memory>
 #include "bindings/core/v8/V8CacheOptions.h"
 #include "bindings/core/v8/V8CacheStrategiesForCacheStorage.h"
 #include "core/CoreExport.h"
@@ -36,6 +37,7 @@
 #include "core/editing/SelectionStrategy.h"
 #include "core/events/AddEventListenerOptionsDefaults.h"
 #include "core/frame/SettingsDelegate.h"
+#include "core/html/media/AutoplayPolicy.h"
 #include "core/html/track/TextTrackKindUserPreference.h"
 #include "core/loader/FrameLoaderTypes.h"
 #include "platform/Timer.h"
@@ -46,7 +48,6 @@
 #include "public/platform/PointerProperties.h"
 #include "public/platform/WebDisplayMode.h"
 #include "public/platform/WebViewportStyle.h"
-#include <memory>
 
 namespace blink {
 

@@ -1050,19 +1050,18 @@ void RenderView::ApplyWebPreferences(const WebPreferences& prefs,
       prefs.do_not_update_selection_on_mutating_selection_range);
 #endif  // defined(OS_ANDROID)
 
-  // TODO(mlamouri): use an AutoplayPolicy in WebSettings.
   switch (prefs.autoplay_policy) {
     case AutoplayPolicy::kNoUserGestureRequired:
-      settings->SetMediaPlaybackRequiresUserGesture(false);
-      settings->SetCrossOriginMediaPlaybackRequiresUserGesture(false);
+      settings->SetAutoplayPolicy(
+          WebSettings::AutoplayPolicy::kNoUserGestureRequired);
       break;
     case AutoplayPolicy::kUserGestureRequired:
-      settings->SetMediaPlaybackRequiresUserGesture(true);
-      settings->SetCrossOriginMediaPlaybackRequiresUserGesture(false);
+      settings->SetAutoplayPolicy(
+          WebSettings::AutoplayPolicy::kUserGestureRequired);
       break;
     case AutoplayPolicy::kUserGestureRequiredForCrossOrigin:
-      settings->SetMediaPlaybackRequiresUserGesture(false);
-      settings->SetCrossOriginMediaPlaybackRequiresUserGesture(true);
+      settings->SetAutoplayPolicy(
+          WebSettings::AutoplayPolicy::kUserGestureRequiredForCrossOrigin);
       break;
   }
 

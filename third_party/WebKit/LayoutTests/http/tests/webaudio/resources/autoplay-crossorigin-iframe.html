@@ -2,7 +2,7 @@
 <body><span>click me</span></body>
 <script>
 if ('internals' in window)
-  window.internals.settings.setMediaPlaybackRequiresUserGesture(true);
+  window.internals.settings.setAutoplayPolicy('user-gesture-required');
 
 function synthesizeClick(callback) {
   document.onclick = callback;

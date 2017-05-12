@@ -50,6 +50,7 @@
 #include "core/html/HTMLInputElement.h"
 #include "core/html/HTMLMediaElement.h"
 #include "core/html/forms/TextControlInnerElements.h"
+#include "core/html/media/AutoplayPolicy.h"
 #include "core/layout/compositing/CompositedSelectionBound.h"
 #include "core/loader/FrameLoaderTypes.h"
 #include "core/loader/NavigationPolicy.h"
@@ -872,6 +873,14 @@ STATIC_ASSERT_ENUM(WebSettings::ProgressBarCompletion::kDOMContentLoaded,
 STATIC_ASSERT_ENUM(
     WebSettings::ProgressBarCompletion::kResourcesBeforeDCLAndSameOriginIFrames,
     ProgressBarCompletion::kResourcesBeforeDCLAndSameOriginIFrames);
+
+STATIC_ASSERT_ENUM(WebSettings::AutoplayPolicy::kNoUserGestureRequired,
+                   AutoplayPolicy::Type::kNoUserGestureRequired);
+STATIC_ASSERT_ENUM(WebSettings::AutoplayPolicy::kUserGestureRequired,
+                   AutoplayPolicy::Type::kUserGestureRequired);
+STATIC_ASSERT_ENUM(
+    WebSettings::AutoplayPolicy::kUserGestureRequiredForCrossOrigin,
+    AutoplayPolicy::Type::kUserGestureRequiredForCrossOrigin);
 
 // This ensures that the version number published in
 // WebSerializedScriptValueVersion.h matches the serializer's understanding.
