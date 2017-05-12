@@ -42,7 +42,9 @@ namespace vr_shell {
 
 namespace {
 static constexpr float kZNear = 0.1f;
-static constexpr float kZFar = 1000.0f;
+// This should be kept fairly small with current reticle rendering technique
+// which requires fairly high precision to draw on top of elements correctly.
+static constexpr float kZFar = 100.0f;
 
 static constexpr float kReticleWidth = 0.025f;
 static constexpr float kReticleHeight = 0.025f;
@@ -51,9 +53,12 @@ static constexpr float kLaserWidth = 0.01f;
 
 static constexpr gfx::Point3F kOrigin = {0.0f, 0.0f, 0.0f};
 
-// Fraction of the distance to the object the cursor is drawn at to avoid
-// rounding errors drawing the cursor behind the object.
-static constexpr float kReticleOffset = 0.99f;
+// Fraction of the distance to the object the reticle is drawn at to avoid
+// rounding errors drawing the reticle behind the object.
+// TODO(mthiesse): Find a better approach for drawing the reticle on an object.
+// Right now we have to wedge it very precisely between the content window and
+// backplane to avoid rendering artifacts.
+static constexpr float kReticleOffset = 0.999f;
 
 // GVR buffer indices for use with viewport->SetSourceBufferIndex
 // or frame.BindBuffer. We use one for world content (with reprojection)
@@ -536,9 +541,9 @@ void VrShellGl::HandleControllerInput(const gfx::Vector3dF& head_direction) {
     return;
   gfx::PointF target_local_point;
   gfx::Vector3dF eye_to_target;
-  cursor_render_target_ = nullptr;
+  reticle_render_target_ = nullptr;
   GetVisualTargetElement(controller_direction, eye_to_target, target_point_,
-                         &cursor_render_target_, target_local_point);
+                         &reticle_render_target_, target_local_point);
 
   UiElement* target_element = nullptr;
   if (input_locked_element_) {
@@ -549,7 +554,7 @@ void VrShellGl::HandleControllerInput(const gfx::Vector3dF& head_direction) {
                         plane_intersection_point, distance_to_plane);
     target_element = input_locked_element_;
   } else if (!in_scroll_ && !in_click_) {
-    target_element = cursor_render_target_;
+    target_element = reticle_render_target_;
   }
 
   // Handle input targeting on the content quad, ignoring any other elements.
@@ -1075,7 +1080,7 @@ void VrShellGl::DrawUiView(const vr::Mat4f& head_pose,
                            const std::vector<const UiElement*>& elements,
                            const gfx::Size& render_size,
                            int viewport_offset,
-                           bool draw_cursor) {
+                           bool draw_reticle) {
   TRACE_EVENT0("gpu", "VrShellGl::DrawUiView");
 
   auto elementsInDrawOrder = GetElementsInDrawOrder(head_pose, elements);
@@ -1094,57 +1099,79 @@ void VrShellGl::DrawUiView(const vr::Mat4f& head_pose,
     glViewport(pixel_rect.x(), pixel_rect.y(), pixel_rect.width(),
                pixel_rect.height());
 
-    vr::Mat4f render_matrix;
+    vr::Mat4f view_proj_matrix;
     vr::Mat4f perspective_matrix;
     GvrMatToMatf(PerspectiveMatrixFromView(buffer_viewport_->GetSourceFov(),
                                            kZNear, kZFar),
                  &perspective_matrix);
 
-    vr::MatrixMul(perspective_matrix, eye_view_matrix, &render_matrix);
+    vr::MatrixMul(perspective_matrix, eye_view_matrix, &view_proj_matrix);
 
-    DrawElements(render_matrix, elementsInDrawOrder);
-    if (draw_cursor) {
-      DrawController(render_matrix);
-      DrawCursor(render_matrix);
+    DrawElements(view_proj_matrix, elementsInDrawOrder, draw_reticle);
+    if (draw_reticle) {
+      DrawLaser(view_proj_matrix);
+      DrawController(view_proj_matrix);
     }
   }
 }
 
 void VrShellGl::DrawElements(const vr::Mat4f& view_proj_matrix,
-                             const std::vector<const UiElement*>& elements) {
-  for (const auto* rect : elements) {
-    vr::Mat4f transform;
-    vr::MatrixMul(view_proj_matrix, rect->TransformMatrix(), &transform);
+                             const std::vector<const UiElement*>& elements,
+                             bool draw_reticle) {
+  if (elements.empty())
+    return;
+  int initial_draw_phase = elements.front()->draw_phase();
+  bool drawn_reticle = false;
+  for (const auto* element : elements) {
+    // If we have no element to draw the reticle on, draw it after the
+    // background (the initial draw phase).
+    if (!reticle_render_target_ && draw_reticle && !drawn_reticle &&
+        element->draw_phase() > initial_draw_phase) {
+      DrawReticle(view_proj_matrix);
+      drawn_reticle = true;
+    }
 
-    switch (rect->fill()) {
-      case Fill::OPAQUE_GRADIENT: {
-        vr_shell_renderer_->GetGradientQuadRenderer()->Draw(
-            transform, rect->edge_color(), rect->center_color(),
-            rect->computed_opacity());
-        break;
-      }
-      case Fill::GRID_GRADIENT: {
-        vr_shell_renderer_->GetGradientGridRenderer()->Draw(
-            transform, rect->edge_color(), rect->center_color(),
-            rect->gridline_count(), rect->computed_opacity());
-        break;
-      }
-      case Fill::CONTENT: {
-        gfx::RectF copy_rect(0, 0, 1, 1);
-        vr_shell_renderer_->GetExternalTexturedQuadRenderer()->Draw(
-            content_texture_id_, transform, copy_rect,
-            rect->computed_opacity());
-        break;
-      }
-      case Fill::SELF: {
-        rect->Render(vr_shell_renderer_.get(), transform);
-        break;
-      }
-      default:
-        break;
+    DrawElement(view_proj_matrix, *element);
+
+    if (draw_reticle && (reticle_render_target_ == element)) {
+      DrawReticle(view_proj_matrix);
     }
   }
   vr_shell_renderer_->Flush();
+}
+
+void VrShellGl::DrawElement(const vr::Mat4f& view_proj_matrix,
+                            const UiElement& element) {
+  vr::Mat4f transform;
+  vr::MatrixMul(view_proj_matrix, element.TransformMatrix(), &transform);
+
+  switch (element.fill()) {
+    case Fill::OPAQUE_GRADIENT: {
+      vr_shell_renderer_->GetGradientQuadRenderer()->Draw(
+          transform, element.edge_color(), element.center_color(),
+          element.computed_opacity());
+      break;
+    }
+    case Fill::GRID_GRADIENT: {
+      vr_shell_renderer_->GetGradientGridRenderer()->Draw(
+          transform, element.edge_color(), element.center_color(),
+          element.gridline_count(), element.computed_opacity());
+      break;
+    }
+    case Fill::CONTENT: {
+      gfx::RectF copy_rect(0, 0, 1, 1);
+      vr_shell_renderer_->GetExternalTexturedQuadRenderer()->Draw(
+          content_texture_id_, transform, copy_rect,
+          element.computed_opacity());
+      break;
+    }
+    case Fill::SELF: {
+      element.Render(vr_shell_renderer_.get(), transform);
+      break;
+    }
+    default:
+      break;
+  }
 }
 
 std::vector<const UiElement*> VrShellGl::GetElementsInDrawOrder(
@@ -1171,13 +1198,11 @@ std::vector<const UiElement*> VrShellGl::GetElementsInDrawOrder(
   return sorted_elements;
 }
 
-void VrShellGl::DrawCursor(const vr::Mat4f& render_matrix) {
+void VrShellGl::DrawReticle(const vr::Mat4f& render_matrix) {
   vr::Mat4f mat;
   vr::SetIdentityM(&mat);
 
-  // Draw the reticle.
-
-  // Scale the pointer to have a fixed FOV size at any distance.
+  // Scale the reticle to have a fixed FOV size at any distance.
   const float eye_to_target =
       std::sqrt(target_point_.SquaredDistanceTo(kOrigin));
   vr::ScaleM(
@@ -1186,11 +1211,11 @@ void VrShellGl::DrawCursor(const vr::Mat4f& render_matrix) {
       &mat);
 
   vr::Quatf rotation;
-  if (cursor_render_target_ != nullptr) {
+  if (reticle_render_target_ != nullptr) {
     // Make the reticle planar to the element it's hitting.
-    rotation = GetRotationFromZAxis(cursor_render_target_->GetNormal());
+    rotation = GetRotationFromZAxis(reticle_render_target_->GetNormal());
   } else {
-    // Rotate the cursor to directly face the eyes.
+    // Rotate the reticle to directly face the eyes.
     rotation = GetRotationFromZAxis(target_point_ - kOrigin);
   }
   vr::Mat4f rotation_mat;
@@ -1204,13 +1229,15 @@ void VrShellGl::DrawCursor(const vr::Mat4f& render_matrix) {
   vr::Mat4f transform;
   vr::MatrixMul(render_matrix, mat, &transform);
   vr_shell_renderer_->GetReticleRenderer()->Draw(transform);
+}
 
-  // Draw the laser.
-
+void VrShellGl::DrawLaser(const vr::Mat4f& render_matrix) {
+  gfx::Point3F target_point = ScalePoint(target_point_, kReticleOffset);
   // Find the length of the beam (from hand to target).
   const float laser_length =
       std::sqrt(pointer_start_.SquaredDistanceTo(target_point));
 
+  vr::Mat4f mat;
   // Build a beam, originating from the origin.
   vr::SetIdentityM(&mat);
 
@@ -1220,6 +1247,7 @@ void VrShellGl::DrawCursor(const vr::Mat4f& render_matrix) {
 
   // Tip back 90 degrees to flat, pointing at the scene.
   const vr::Quatf quat = vr::QuatFromAxisAngle({1.0f, 0.0f, 0.0f, -M_PI / 2});
+  vr::Mat4f rotation_mat;
   vr::QuatToMatrix(quat, &rotation_mat);
   vr::MatrixMul(rotation_mat, mat, &mat);
 
@@ -1231,11 +1259,12 @@ void VrShellGl::DrawCursor(const vr::Mat4f& render_matrix) {
   float opacity = controller_->GetOpacity();
   // Render multiple faces to make the laser appear cylindrical.
   const int faces = 4;
+  vr::Mat4f face_transform;
+  vr::Mat4f transform;
   for (int i = 0; i < faces; i++) {
     // Rotate around Z.
     const float angle = M_PI * 2 * i / faces;
     const vr::Quatf rot = vr::QuatFromAxisAngle({0.0f, 0.0f, 1.0f, angle});
-    vr::Mat4f face_transform;
     vr::QuatToMatrix(rot, &face_transform);
     vr::MatrixMul(face_transform, mat, &face_transform);
     // Orient according to target direction.
@@ -1243,7 +1272,6 @@ void VrShellGl::DrawCursor(const vr::Mat4f& render_matrix) {
 
     // Move the beam origin to the hand.
     vr::TranslateM(face_transform, pointer_start_ - kOrigin, &face_transform);
-
     vr::MatrixMul(render_matrix, face_transform, &transform);
     vr_shell_renderer_->GetLaserRenderer()->Draw(opacity, transform);
   }
