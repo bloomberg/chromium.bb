@@ -624,8 +624,11 @@ public class ClearBrowsingDataPreferences extends PreferenceFragment
         // Now that the dialog's view has been created, update the button state.
         updateButtonState();
 
-        // Remove the dividers between checkboxes.
-        ((ListView) getView().findViewById(android.R.id.list)).setDivider(null);
+        // Remove the dividers between checkboxes, and make sure the individual widgets can be
+        // focused.
+        ListView view = (ListView) getView().findViewById(android.R.id.list);
+        view.setDivider(null);
+        view.setItemsCanFocus(true);
     }
 
     @Override
