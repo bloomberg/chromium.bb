@@ -46,10 +46,10 @@ class UiScene {
   // Remove |animation_id| from element |element_id|.
   void RemoveAnimation(int element_id, int animation_id);
 
-  // Update the positions of all elements in the scene, according to active
-  // animations and time.  The units of time are arbitrary, but must match the
-  // unit used in animations.
-  void UpdateTransforms(const base::TimeTicks& current_time);
+  // Handles per-frame updates, giving each element the opportunity to update,
+  // if necessary (eg, for animations). NB: |current_time| is the shared,
+  // absolute begin frame time.
+  void OnBeginFrame(const base::TimeTicks& current_time);
 
   // Handle a batch of commands passed from the UI HTML.
   void HandleCommands(std::unique_ptr<base::ListValue> commands,
@@ -74,6 +74,7 @@ class UiScene {
   void OnGLInitialized();
 
  private:
+  void Animate(const base::TimeTicks& current_time);
   void ApplyRecursiveTransforms(UiElement* element);
 
   std::vector<std::unique_ptr<UiElement>> ui_elements_;

@@ -31,7 +31,7 @@ class TexturedElement : public UiElement {
 
  protected:
   virtual UiTexture* GetTexture() const = 0;
-  void Update();
+  virtual void UpdateTexture();
 
  private:
   void Flush(SkSurface* surface);

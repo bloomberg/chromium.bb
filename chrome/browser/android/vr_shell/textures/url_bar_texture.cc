@@ -62,10 +62,14 @@ UrlBarTexture::UrlBarTexture() : security_level_(SecurityLevel::DANGEROUS) {}
 UrlBarTexture::~UrlBarTexture() = default;
 
 void UrlBarTexture::SetURL(const GURL& gurl) {
+  if (gurl_ != gurl)
+    dirty_ = true;
   gurl_ = gurl;
 }
 
 void UrlBarTexture::SetSecurityLevel(int level) {
+  if (&getSecurityIcon(security_level_) != &getSecurityIcon(level))
+    dirty_ = true;
   security_level_ = level;
 }
 
@@ -153,6 +157,12 @@ gfx::Size UrlBarTexture::GetPreferredTextureSize(int maximum_width) const {
 
 gfx::SizeF UrlBarTexture::GetDrawnSize() const {
   return size_;
+}
+
+bool UrlBarTexture::SetDrawFlags(int draw_flags) {
+  if (draw_flags != GetDrawFlags())
+    dirty_ = true;
+  return UiTexture::SetDrawFlags(draw_flags);
 }
 
 }  // namespace vr_shell

@@ -28,7 +28,7 @@ class UiTexture {
   virtual gfx::Size GetPreferredTextureSize(int maximum_width) const = 0;
   virtual gfx::SizeF GetDrawnSize() const = 0;
   // Returns true if the state changed.
-  bool SetDrawFlags(int draw_flags);
+  virtual bool SetDrawFlags(int draw_flags);
   int GetDrawFlags() { return draw_flags_; }
 
  protected:

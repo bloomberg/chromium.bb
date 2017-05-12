@@ -50,7 +50,7 @@ void CloseButton::OnStateUpdated() {
   flags |= (down_ && hover_) ? CloseButtonTexture::FLAG_DOWN : 0;
   if (!texture_->SetDrawFlags(flags))
     return;
-  Update();
+  UpdateTexture();
 }
 
 }  // namespace vr_shell

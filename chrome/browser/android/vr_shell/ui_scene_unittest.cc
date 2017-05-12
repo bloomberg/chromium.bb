@@ -136,7 +136,7 @@ TEST(UiScene, ParentTransformAppliesToChild) {
   const gfx::Vector3dF origin(0, 0, 0);
   const gfx::Vector3dF point(1, 0, 0);
 
-  scene.UpdateTransforms(usToTicks(0));
+  scene.OnBeginFrame(usToTicks(0));
   auto new_origin = vr::MatrixVectorMul(child->TransformMatrix(), origin);
   auto new_point = vr::MatrixVectorMul(child->TransformMatrix(), point);
   EXPECT_VEC3F_NEAR(gfx::Vector3dF(6, 10, 0), new_origin);
@@ -157,7 +157,7 @@ TEST(UiScene, Opacity) {
   element->set_opacity(0.5);
   scene.AddUiElement(std::move(element));
 
-  scene.UpdateTransforms(usToTicks(0));
+  scene.OnBeginFrame(usToTicks(0));
   EXPECT_EQ(0.5f, scene.GetUiElementById(0)->computed_opacity());
   EXPECT_EQ(0.25f, scene.GetUiElementById(1)->computed_opacity());
 }
@@ -176,7 +176,7 @@ TEST(UiScene, LockToFov) {
   element->set_lock_to_fov(false);
   scene.AddUiElement(std::move(element));
 
-  scene.UpdateTransforms(usToTicks(0));
+  scene.OnBeginFrame(usToTicks(0));
   EXPECT_TRUE(scene.GetUiElementById(0)->computed_lock_to_fov());
   EXPECT_TRUE(scene.GetUiElementById(1)->computed_lock_to_fov());
 }
@@ -208,7 +208,7 @@ TEST_P(AnchoringTest, VerifyCorrectPosition) {
   element->set_y_anchoring(GetParam().y_anchoring);
   scene.AddUiElement(std::move(element));
 
-  scene.UpdateTransforms(usToTicks(0));
+  scene.OnBeginFrame(usToTicks(0));
   const UiElement* child = scene.GetUiElementById(1);
   EXPECT_NEAR(GetParam().expected_x, child->GetCenter().x(), TOLERANCE);
   EXPECT_NEAR(GetParam().expected_y, child->GetCenter().y(), TOLERANCE);
