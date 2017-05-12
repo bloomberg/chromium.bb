@@ -2221,7 +2221,7 @@ Color ComputedStyle::VisitedDependentColor(int color_property) const {
                unvisited_color.Alpha());
 }
 
-const BorderValue ComputedStyle::BorderBefore() const {
+BorderValue ComputedStyle::BorderBefore() const {
   switch (GetWritingMode()) {
     case WritingMode::kHorizontalTb:
       return BorderTop();
@@ -2234,7 +2234,7 @@ const BorderValue ComputedStyle::BorderBefore() const {
   return BorderTop();
 }
 
-const BorderValue ComputedStyle::BorderAfter() const {
+BorderValue ComputedStyle::BorderAfter() const {
   switch (GetWritingMode()) {
     case WritingMode::kHorizontalTb:
       return BorderBottom();
@@ -2247,13 +2247,13 @@ const BorderValue ComputedStyle::BorderAfter() const {
   return BorderBottom();
 }
 
-const BorderValue ComputedStyle::BorderStart() const {
+BorderValue ComputedStyle::BorderStart() const {
   if (IsHorizontalWritingMode())
     return IsLeftToRightDirection() ? BorderLeft() : BorderRight();
   return IsLeftToRightDirection() ? BorderTop() : BorderBottom();
 }
 
-const BorderValue ComputedStyle::BorderEnd() const {
+BorderValue ComputedStyle::BorderEnd() const {
   if (IsHorizontalWritingMode())
     return IsLeftToRightDirection() ? BorderRight() : BorderLeft();
   return IsLeftToRightDirection() ? BorderBottom() : BorderTop();

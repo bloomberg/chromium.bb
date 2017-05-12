@@ -2874,19 +2874,19 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
 
   void SetBorderImageSlicesFill(bool);
   const BorderData& Border() const { return surround_data_->border_; }
-  const BorderValue BorderLeft() const {
+  BorderValue BorderLeft() const {
     return BorderValue(surround_data_->border_.Left(), BorderLeftColor(),
                        BorderLeftWidth());
   }
-  const BorderValue BorderRight() const {
+  BorderValue BorderRight() const {
     return BorderValue(surround_data_->border_.Right(), BorderRightColor(),
                        BorderRightWidth());
   }
-  const BorderValue BorderTop() const {
+  BorderValue BorderTop() const {
     return BorderValue(surround_data_->border_.Top(), BorderTopColor(),
                        BorderTopWidth());
   }
-  const BorderValue BorderBottom() const {
+  BorderValue BorderBottom() const {
     return BorderValue(surround_data_->border_.Bottom(), BorderBottomColor(),
                        BorderBottomWidth());
   }
@@ -2896,10 +2896,10 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
            BorderWidthEquals(BorderRightWidth(), o.BorderRightWidth()) &&
            BorderWidthEquals(BorderBottomWidth(), o.BorderBottomWidth());
   }
-  const BorderValue BorderBefore() const;
-  const BorderValue BorderAfter() const;
-  const BorderValue BorderStart() const;
-  const BorderValue BorderEnd() const;
+  BorderValue BorderBefore() const;
+  BorderValue BorderAfter() const;
+  BorderValue BorderStart() const;
+  BorderValue BorderEnd() const;
   float BorderAfterWidth() const;
   float BorderBeforeWidth() const;
   float BorderEndWidth() const;
