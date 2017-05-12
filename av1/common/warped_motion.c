@@ -780,14 +780,14 @@ int get_shear_params(WarpedMotionParams *wm) {
   if (!is_affine_shear_allowed(wm->alpha, wm->beta, wm->gamma, wm->delta))
     return 0;
 
-  wm->alpha = ROUND_POWER_OF_TWO_SIGNED(wm->alpha, WARP_PARAM_REDUCE_BITS)
-              << WARP_PARAM_REDUCE_BITS;
-  wm->beta = ROUND_POWER_OF_TWO_SIGNED(wm->beta, WARP_PARAM_REDUCE_BITS)
-             << WARP_PARAM_REDUCE_BITS;
-  wm->gamma = ROUND_POWER_OF_TWO_SIGNED(wm->gamma, WARP_PARAM_REDUCE_BITS)
-              << WARP_PARAM_REDUCE_BITS;
-  wm->delta = ROUND_POWER_OF_TWO_SIGNED(wm->delta, WARP_PARAM_REDUCE_BITS)
-              << WARP_PARAM_REDUCE_BITS;
+  wm->alpha = ROUND_POWER_OF_TWO_SIGNED(wm->alpha, WARP_PARAM_REDUCE_BITS) *
+              (1 << WARP_PARAM_REDUCE_BITS);
+  wm->beta = ROUND_POWER_OF_TWO_SIGNED(wm->beta, WARP_PARAM_REDUCE_BITS) *
+             (1 << WARP_PARAM_REDUCE_BITS);
+  wm->gamma = ROUND_POWER_OF_TWO_SIGNED(wm->gamma, WARP_PARAM_REDUCE_BITS) *
+              (1 << WARP_PARAM_REDUCE_BITS);
+  wm->delta = ROUND_POWER_OF_TWO_SIGNED(wm->delta, WARP_PARAM_REDUCE_BITS) *
+              (1 << WARP_PARAM_REDUCE_BITS);
   return 1;
 }
 
