@@ -29,27 +29,6 @@ namespace base {
 
 namespace {
 
-// Miscellaneous --------------------------------------------------------------
-
-size_t StackCopyBufferSize() {
-  static size_t stack_size = 0;
-  if (stack_size)
-    return stack_size;
-
-  // In platform_thread_mac's GetDefaultThreadStackSize(), RLIMIT_STACK is used
-  // for all stacks, not just the main thread's, so it is good for use here.
-  struct rlimit stack_rlimit;
-  if (getrlimit(RLIMIT_STACK, &stack_rlimit) == 0 &&
-      stack_rlimit.rlim_cur != RLIM_INFINITY) {
-    stack_size = stack_rlimit.rlim_cur;
-    return stack_size;
-  }
-
-  // If getrlimit somehow fails, return the default macOS main thread stack size
-  // of 8 MB (DFLSSIZ in <i386/vmparam.h>) with extra wiggle room.
-  return 12 * 1024 * 1024;
-}
-
 // Stack walking --------------------------------------------------------------
 
 // Fills |state| with |target_thread|'s context.
@@ -323,13 +302,15 @@ class NativeStackSamplerMac : public NativeStackSampler {
   // StackSamplingProfiler::NativeStackSampler:
   void ProfileRecordingStarting(
       std::vector<StackSamplingProfiler::Module>* modules) override;
-  void RecordStackSample(StackSamplingProfiler::Sample* sample) override;
-  void ProfileRecordingStopped() override;
+  void RecordStackSample(StackBuffer* stack_buffer,
+                         StackSamplingProfiler::Sample* sample) override;
+  void ProfileRecordingStopped(StackBuffer* stack_buffer) override;
 
  private:
   // Suspends the thread with |thread_port_|, copies its stack and resumes the
   // thread, then records the stack frames and associated modules into |sample|.
-  void SuspendThreadAndRecordStack(StackSamplingProfiler::Sample* sample);
+  void SuspendThreadAndRecordStack(StackBuffer* stack_buffer,
+                                   StackSamplingProfiler::Sample* sample);
 
   // Weak reference: Mach port for thread being profiled.
   mach_port_t thread_port_;
@@ -340,13 +321,6 @@ class NativeStackSamplerMac : public NativeStackSampler {
 
   // The stack base address corresponding to |thread_handle_|.
   const void* const thread_stack_base_address_;
-
-  // The size of the |stack_copy_buffer_|.
-  const size_t stack_copy_buffer_size_;
-
-  // Buffer to use for copies of the stack. We use the same buffer for all the
-  // samples to avoid the overhead of multiple allocations and frees.
-  const std::unique_ptr<unsigned char[]> stack_copy_buffer_;
 
   // Weak. Points to the modules associated with the profile being recorded
   // between ProfileRecordingStarting() and ProfileRecordingStopped().
@@ -367,9 +341,7 @@ NativeStackSamplerMac::NativeStackSamplerMac(
       annotator_(annotator),
       test_delegate_(test_delegate),
       thread_stack_base_address_(
-          pthread_get_stackaddr_np(pthread_from_mach_thread_np(thread_port))),
-      stack_copy_buffer_size_(StackCopyBufferSize()),
-      stack_copy_buffer_(new unsigned char[stack_copy_buffer_size_]) {
+          pthread_get_stackaddr_np(pthread_from_mach_thread_np(thread_port))) {
   DCHECK(annotator_);
 
   // This class suspends threads, and those threads might be suspended in dyld.
@@ -389,17 +361,19 @@ void NativeStackSamplerMac::ProfileRecordingStarting(
 }
 
 void NativeStackSamplerMac::RecordStackSample(
+    StackBuffer* stack_buffer,
     StackSamplingProfiler::Sample* sample) {
   DCHECK(current_modules_);
 
-  SuspendThreadAndRecordStack(sample);
+  SuspendThreadAndRecordStack(stack_buffer, sample);
 }
 
-void NativeStackSamplerMac::ProfileRecordingStopped() {
+void NativeStackSamplerMac::ProfileRecordingStopped(StackBuffer* stack_buffer) {
   current_modules_ = nullptr;
 }
 
 void NativeStackSamplerMac::SuspendThreadAndRecordStack(
+    StackBuffer* stack_buffer,
     StackSamplingProfiler::Sample* sample) {
   x86_thread_state64_t thread_state;
 
@@ -424,18 +398,18 @@ void NativeStackSamplerMac::SuspendThreadAndRecordStack(
       return;
     uintptr_t stack_size = stack_top - stack_bottom;
 
-    if (stack_size > stack_copy_buffer_size_)
+    if (stack_size > stack_buffer->size())
       return;
 
     (*annotator_)(sample);
 
     CopyStackAndRewritePointers(
-        reinterpret_cast<uintptr_t*>(stack_copy_buffer_.get()),
+        reinterpret_cast<uintptr_t*>(stack_buffer->buffer()),
         reinterpret_cast<uintptr_t*>(stack_bottom),
         reinterpret_cast<uintptr_t*>(stack_top), &thread_state);
 
     new_stack_top =
-        reinterpret_cast<uintptr_t>(stack_copy_buffer_.get()) + stack_size;
+        reinterpret_cast<uintptr_t>(stack_buffer->buffer()) + stack_size;
   }  // ScopedSuspendThread
 
   if (test_delegate_)
@@ -466,6 +440,20 @@ std::unique_ptr<NativeStackSampler> NativeStackSampler::Create(
     NativeStackSamplerTestDelegate* test_delegate) {
   return base::MakeUnique<NativeStackSamplerMac>(thread_id, annotator,
                                                  test_delegate);
+}
+
+size_t NativeStackSampler::GetStackBufferSize() {
+  // In platform_thread_mac's GetDefaultThreadStackSize(), RLIMIT_STACK is used
+  // for all stacks, not just the main thread's, so it is good for use here.
+  struct rlimit stack_rlimit;
+  if (getrlimit(RLIMIT_STACK, &stack_rlimit) == 0 &&
+      stack_rlimit.rlim_cur != RLIM_INFINITY) {
+    return stack_rlimit.rlim_cur;
+  }
+
+  // If getrlimit somehow fails, return the default macOS main thread stack size
+  // of 8 MB (DFLSSIZ in <i386/vmparam.h>) with extra wiggle room.
+  return 12 * 1024 * 1024;
 }
 
 }  // namespace base
