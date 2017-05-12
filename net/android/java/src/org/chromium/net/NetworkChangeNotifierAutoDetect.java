@@ -208,7 +208,9 @@ public class NetworkChangeNotifierAutoDetect extends BroadcastReceiver {
         @TargetApi(Build.VERSION_CODES.LOLLIPOP)
         @VisibleForTesting
         protected Network[] getAllNetworksUnfiltered() {
-            return mConnectivityManager.getAllNetworks();
+            Network[] networks = mConnectivityManager.getAllNetworks();
+            // Very rarely this API inexplicably returns {@code null}, crbug.com/721116.
+            return networks == null ? new Network[0] : networks;
         }
 
         /**

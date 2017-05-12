@@ -733,6 +733,7 @@ public class NetworkChangeNotifierTest {
                     ConnectionType.CONNECTION_NONE, delegate.getConnectionType(invalidNetwork));
 
             Network[] networks = delegate.getAllNetworksUnfiltered();
+            Assert.assertNotNull(networks);
             if (networks.length >= 1) {
                 delegate.getConnectionType(networks[0]);
             }
