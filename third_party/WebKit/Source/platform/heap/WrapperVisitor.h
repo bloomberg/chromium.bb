@@ -27,37 +27,33 @@ class TraceWrapperBase;
 template <typename T>
 class TraceWrapperMember;
 
-/**
- * Declares non-virtual traceWrappers method. Should be used on
- * non-ScriptWrappable classes which should participate in wrapper tracing (e.g.
- * StyleEngine):
- *
- *     class StyleEngine: public TraceWrapperBase {
- *      public:
- *       DECLARE_TRACE_WRAPPERS();
- *     };
- */
+// Declares non-virtual TraceWrappers method. Should be used on
+// non-ScriptWrappable classes which should participate in wrapper tracing (e.g.
+// StyleEngine):
+//
+//     class StyleEngine: public TraceWrapperBase {
+//      public:
+//       DECLARE_TRACE_WRAPPERS();
+//     };
+//
 #define DECLARE_TRACE_WRAPPERS() \
   void TraceWrappers(const WrapperVisitor* visitor) const
 
-/**
- * Declares virtual traceWrappers method. It is used in ScriptWrappable, can be
- * used to override the method in the subclasses, and can be used by
- * non-ScriptWrappable classes which expect to be inherited.
- */
+// Declares virtual TraceWrappers method. It is used in ScriptWrappable, can be
+// used to override the method in the subclasses, and can be used by
+// non-ScriptWrappable classes which expect to be inherited.
 #define DECLARE_VIRTUAL_TRACE_WRAPPERS() virtual DECLARE_TRACE_WRAPPERS()
 
-/**
- * Provides definition of traceWrappers method. Custom code will usually call
- * visitor->traceWrappers with all objects which could contribute to the set of
- * reachable wrappers:
- *
- *     DEFINE_TRACE_WRAPPERS(NodeRareData)
- *     {
- *         visitor->traceWrappers(m_nodeLists);
- *         visitor->traceWrappers(m_mutationObserverData);
- *     }
- */
+// Provides definition of TraceWrappers method. Custom code will usually call
+// visitor->TraceWrappers with all objects which could contribute to the set of
+// reachable wrappers:
+//
+//     DEFINE_TRACE_WRAPPERS(NodeRareData)
+//     {
+//         visitor->TraceWrappers(node_lists_);
+//         visitor->TraceWrappers(mutation_observer_data_);
+//     }
+//
 #define DEFINE_TRACE_WRAPPERS(T) \
   void T::TraceWrappers(const WrapperVisitor* visitor) const
 
@@ -106,25 +102,21 @@ class PLATFORM_EXPORT WrapperVisitor {
     MarkAndPushToMarkingDeque(traceable);
   }
 
-  /**
-   * Trace all wrappers of |t|.
-   *
-   * If you cannot use TraceWrapperMember & the corresponding traceWrappers()
-   * for some reason (e.g., due to sizeof(TraceWrapperMember)), you can use
-   * Member and |traceWrappersWithManualWriteBarrier()|. See below.
-   */
+  // Trace all wrappers of |t|.
+  //
+  // If you cannot use TraceWrapperMember & the corresponding TraceWrappers()
+  // for some reason (e.g., due to sizeof(TraceWrapperMember)), you can use
+  // Member and |TraceWrappersWithManualWriteBarrier()|. See below.
   template <typename T>
   void TraceWrappers(const TraceWrapperMember<T>& t) const {
     TraceWrappers(t.Get());
   }
 
-  /**
-   * Require all users of manual write barriers to make this explicit in their
-   * |traceWrappers| definition. Be sure to add
-   * |ScriptWrappableVisitor::writeBarrier(this, new_value)| after all
-   * assignments to the field. Otherwise, the objects may be collected
-   * prematurely.
-   */
+  // Require all users of manual write barriers to make this explicit in their
+  // |TraceWrappers| definition. Be sure to add
+  // |ScriptWrappableVisitor::writeBarrier(this, new_value)| after all
+  // assignments to the field. Otherwise, the objects may be collected
+  // prematurely.
   template <typename T>
   void TraceWrappersWithManualWriteBarrier(const Member<T>& t) const {
     TraceWrappers(t.Get());

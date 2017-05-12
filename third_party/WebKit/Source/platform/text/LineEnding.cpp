@@ -36,6 +36,7 @@
 #include "platform/wtf/text/CString.h"
 #include "platform/wtf/text/WTFString.h"
 
+namespace blink {
 namespace {
 
 class OutputBuffer {
@@ -44,53 +45,53 @@ class OutputBuffer {
 
  public:
   OutputBuffer() {}
-  virtual char* allocate(size_t) = 0;
-  virtual void copy(const CString&) = 0;
+  virtual char* Allocate(size_t) = 0;
+  virtual void Copy(const CString&) = 0;
   virtual ~OutputBuffer() {}
 };
 
 class CStringBuffer final : public OutputBuffer {
  public:
-  CStringBuffer(CString& buffer) : m_buffer(buffer) {}
+  CStringBuffer(CString& buffer) : buffer_(buffer) {}
   ~CStringBuffer() override {}
 
-  char* allocate(size_t size) override {
+  char* Allocate(size_t size) override {
     char* ptr;
-    m_buffer = CString::CreateUninitialized(size, ptr);
+    buffer_ = CString::CreateUninitialized(size, ptr);
     return ptr;
   }
 
-  void copy(const CString& source) override { m_buffer = source; }
+  void Copy(const CString& source) override { buffer_ = source; }
 
-  const CString& buffer() const { return m_buffer; }
+  const CString& Buffer() const { return buffer_; }
 
  private:
-  CString m_buffer;
+  CString buffer_;
 };
 
 class VectorCharAppendBuffer final : public OutputBuffer {
  public:
-  VectorCharAppendBuffer(Vector<char>& buffer) : m_buffer(buffer) {}
+  VectorCharAppendBuffer(Vector<char>& buffer) : buffer_(buffer) {}
   ~VectorCharAppendBuffer() override {}
 
-  char* allocate(size_t size) override {
-    size_t oldSize = m_buffer.size();
-    m_buffer.Grow(oldSize + size);
-    return m_buffer.data() + oldSize;
+  char* Allocate(size_t size) override {
+    size_t old_size = buffer_.size();
+    buffer_.Grow(old_size + size);
+    return buffer_.data() + old_size;
   }
 
-  void copy(const CString& source) override {
-    m_buffer.Append(source.data(), source.length());
+  void Copy(const CString& source) override {
+    buffer_.Append(source.data(), source.length());
   }
 
  private:
-  Vector<char>& m_buffer;
+  Vector<char>& buffer_;
 };
 
-void internalNormalizeLineEndingsToCRLF(const CString& from,
+void InternalNormalizeLineEndingsToCRLF(const CString& from,
                                         OutputBuffer& buffer) {
   // Compute the new length.
-  size_t newLen = 0;
+  size_t new_len = 0;
   const char* p = from.data();
   while (p < from.data() + from.length()) {
     char c = *p++;
@@ -98,26 +99,26 @@ void internalNormalizeLineEndingsToCRLF(const CString& from,
       // Safe to look ahead because of trailing '\0'.
       if (*p != '\n') {
         // Turn CR into CRLF.
-        newLen += 2;
+        new_len += 2;
       }
     } else if (c == '\n') {
       // Turn LF into CRLF.
-      newLen += 2;
+      new_len += 2;
     } else {
       // Leave other characters alone.
-      newLen += 1;
+      new_len += 1;
     }
   }
-  if (newLen < from.length())
+  if (new_len < from.length())
     return;
 
-  if (newLen == from.length()) {
-    buffer.copy(from);
+  if (new_len == from.length()) {
+    buffer.Copy(from);
     return;
   }
 
   p = from.data();
-  char* q = buffer.allocate(newLen);
+  char* q = buffer.Allocate(new_len);
 
   // Make a copy of the string.
   while (p < from.data() + from.length()) {
@@ -140,9 +141,7 @@ void internalNormalizeLineEndingsToCRLF(const CString& from,
   }
 }
 
-}  // namespace;
-
-namespace blink {
+}  // namespace
 
 void NormalizeLineEndingsToLF(const CString& from, Vector<char>& result) {
   // Compute the new length.
@@ -198,14 +197,14 @@ CString NormalizeLineEndingsToCRLF(const CString& from) {
     return from;
   CString result;
   CStringBuffer buffer(result);
-  internalNormalizeLineEndingsToCRLF(from, buffer);
-  return buffer.buffer();
+  InternalNormalizeLineEndingsToCRLF(from, buffer);
+  return buffer.Buffer();
 }
 
 void NormalizeLineEndingsToNative(const CString& from, Vector<char>& result) {
 #if OS(WIN)
   VectorCharAppendBuffer buffer(result);
-  internalNormalizeLineEndingsToCRLF(from, buffer);
+  InternalNormalizeLineEndingsToCRLF(from, buffer);
 #else
   NormalizeLineEndingsToLF(from, result);
 #endif
