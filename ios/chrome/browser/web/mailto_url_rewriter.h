@@ -37,8 +37,9 @@ class GURL;
 // different handlers.
 - (instancetype)initWithStandardHandlers;
 
-// Returns an array of all the currently supported Mail client apps that claims
-// to handle mailto: URL scheme through their own custom defined URL schemes.
+// Returns a sorted array of all the currently supported Mail client apps that
+// claim to handle mailto: URL scheme through their own custom defined URL
+// schemes.
 - (NSArray<MailtoHandler*>*)defaultHandlers;
 
 // Returns the name of the application that handles mailto: URLs.

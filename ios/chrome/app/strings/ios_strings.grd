@@ -1516,6 +1516,9 @@ Your data was encrypted with your sync passphrase on <ph name="TIME">$2<ex>Sept 
       <message name="IDS_IOS_SYSTEM_MAIL_APP" desc="Name of iOS system-provided Mail app. Note that this is not consistently translated for all locales, e.g. it is still 'Mail' (in English) for French locale, but is translated to '邮件' for Chinese locale. [Length: 10em]">
         Mail
       </message>
+      <message name="IDS_IOS_COMPOSE_EMAIL_SETTING" desc="Title for the view and option to select a handler for mailto: URLs. [Length: 20em]">
+        Compose Email
+      </message>
     </messages>
   </release>
 </grit>
