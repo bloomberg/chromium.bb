@@ -93,10 +93,10 @@ class BbrSenderTest : public QuicTest {
     // These will be changed by the appropriate tests as necessary.
     FLAGS_quic_reloadable_flag_quic_bbr_slow_recent_delivery = false;
     FLAGS_quic_reloadable_flag_quic_bbr_add_tso_cwnd = false;
-    // TODO(ianswett): Determine why tests become flaky with CWND based on SRTT.
-    FLAGS_quic_reloadable_flag_quic_bbr_base_cwnd_on_srtt = false;
+
     FLAGS_quic_reloadable_flag_quic_bbr_extra_conservation = true;
     FLAGS_quic_reloadable_flag_quic_bbr_fix_conservation2 = true;
+
     rtt_stats_ = bbr_sender_.connection()->sent_packet_manager().GetRttStats();
     sender_ = SetupBbrSender(&bbr_sender_);
 
