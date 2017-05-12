@@ -358,7 +358,6 @@ if (XCODE)
 endif ()
 
 # Aomedia install rule.
-# TODO(tomfinegan): Add the missing pkg-config related bits.
 set(AOM_INSTALL_INCS
     "${AOM_ROOT}/aom/aom.h"
     "${AOM_ROOT}/aom/aomcx.h"
@@ -375,5 +374,7 @@ set(AOM_INSTALL_LIBS aom)
 
 install(FILES ${AOM_INSTALL_INCS}
         DESTINATION "${CMAKE_INSTALL_PREFIX}/include/aom")
+install(FILES "${AOM_CONFIG_DIR}/aom.pc"
+        DESTINATION "${CMAKE_INSTALL_PREFIX}/lib/pkgconfig")
 install(TARGETS ${AOM_INSTALL_LIBS} DESTINATION "${CMAKE_INSTALL_PREFIX}/lib")
 install(TARGETS ${AOM_INSTALL_BINS} DESTINATION "${CMAKE_INSTALL_PREFIX}/bin")

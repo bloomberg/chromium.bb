@@ -334,3 +334,35 @@ execute_process(
   COMMAND ${PERL_EXECUTABLE} "${AOM_ROOT}/build/cmake/aom_version.pl"
   --version_data=${AOM_GIT_DESCRIPTION}
   --version_filename=${AOM_CONFIG_DIR}/aom_version.h)
+
+# Generate aom.pc (pkg-config file).
+if (NOT MSVC)
+  # Extract the version string from aom_version.h
+  file(STRINGS "${AOM_CONFIG_DIR}/aom_version.h" aom_version
+       REGEX "VERSION_STRING_NOSP")
+  string(REPLACE "#define VERSION_STRING_NOSP \"v" "" aom_version
+         "${aom_version}")
+  string(REPLACE "\"" "" aom_version "${aom_version}")
+
+  # Write pkg-config info.
+  set(prefix "${CMAKE_INSTALL_PREFIX}")
+  set(pkgconfig_file "${AOM_CONFIG_DIR}/aom.pc")
+  string(TOLOWER ${CMAKE_PROJECT_NAME} pkg_name)
+  file(WRITE "${pkgconfig_file}" "# libaom pkg-config.\n")
+  file(APPEND "${pkgconfig_file}" "prefix=${prefix}\n")
+  file(APPEND "${pkgconfig_file}" "exec_prefix=${prefix}/bin\n")
+  file(APPEND "${pkgconfig_file}" "libdir=${prefix}/lib\n")
+  file(APPEND "${pkgconfig_file}" "includedir=${prefix}/include\n\n")
+  file(APPEND "${pkgconfig_file}" "Name: ${pkg_name}\n")
+  file(APPEND "${pkgconfig_file}" "Description: AV1 codec library.\n")
+  file(APPEND "${pkgconfig_file}" "Version: ${aom_version}\n")
+  file(APPEND "${pkgconfig_file}" "Requires:\n")
+  file(APPEND "${pkgconfig_file}" "Conflicts:\n")
+  file(APPEND "${pkgconfig_file}" "Libs: -L${prefix}/lib -l${pkg_name} -lm\n")
+  if (CONFIG_MULTITHREAD AND HAVE_PTHREAD_H)
+    file(APPEND "${pkgconfig_file}" "Libs.private: -lm -lpthread\n")
+  else ()
+    file(APPEND "${pkgconfig_file}" "Libs.private: -lm\n")
+  endif ()
+  file(APPEND "${pkgconfig_file}" "Cflags: -I${prefix}/include\n")
+endif ()
