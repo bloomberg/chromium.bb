@@ -1155,6 +1155,14 @@ void RenderWidgetHostViewAndroid::ReclaimResources(
 
 void RenderWidgetHostViewAndroid::DidCreateNewRendererCompositorFrameSink(
     cc::mojom::MojoCompositorFrameSinkClient* renderer_compositor_frame_sink) {
+  if (!delegated_frame_host_) {
+    DCHECK(!using_browser_compositor_);
+    // We don't expect RendererCompositorFrameSink on Android WebView.
+    // (crbug.com/721102)
+    bad_message::ReceivedBadMessage(host_->GetProcess(),
+                                    bad_message::RWH_BAD_FRAME_SINK_REQUEST);
+    return;
+  }
   delegated_frame_host_->CompositorFrameSinkChanged();
   renderer_compositor_frame_sink_ = renderer_compositor_frame_sink;
   // Accumulated resources belong to the old RendererCompositorFrameSink and
@@ -1165,8 +1173,12 @@ void RenderWidgetHostViewAndroid::DidCreateNewRendererCompositorFrameSink(
 void RenderWidgetHostViewAndroid::SubmitCompositorFrame(
     const cc::LocalSurfaceId& local_surface_id,
     cc::CompositorFrame frame) {
+  if (!delegated_frame_host_) {
+    DCHECK(!using_browser_compositor_);
+    return;
+  }
+
   last_scroll_offset_ = frame.metadata.root_scroll_offset;
-  DCHECK(delegated_frame_host_);
   DCHECK(!frame.render_pass_list.empty());
 
   cc::RenderPass* root_pass = frame.render_pass_list.back().get();
