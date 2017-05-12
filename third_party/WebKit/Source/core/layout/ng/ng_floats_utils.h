@@ -23,6 +23,7 @@ PositionFloat(NGFloatingObject*, NGConstraintSpace* new_parent_space);
 CORE_EXPORT const Vector<NGPositionedFloat> PositionFloats(
     LayoutUnit origin_block_offset,
     LayoutUnit from_block_offset,
+    LayoutUnit container_block_offset,
     const Vector<RefPtr<NGFloatingObject>>& floating_objects,
     NGConstraintSpace* space);
 

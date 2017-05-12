@@ -78,8 +78,8 @@ void FloatingObjectPositionedUpdated(const NGPositionedFloat& positioned_float,
     FloatingObject* floating_object =
         ToLayoutBlockFlow(parent)->InsertFloatingObject(*layout_box);
     floating_object->SetIsInPlacedTree(false);
-    floating_object->SetX(positioned_float.left_offset);
-    floating_object->SetY(box_fragment->TopOffset());
+    floating_object->SetX(positioned_float.paint_offset.left);
+    floating_object->SetY(positioned_float.paint_offset.top);
     floating_object->SetIsPlaced(true);
     floating_object->SetIsInPlacedTree(true);
   }

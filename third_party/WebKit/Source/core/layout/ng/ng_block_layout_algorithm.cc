@@ -87,16 +87,29 @@ void MaybeUpdateFragmentBfcOffset(const NGConstraintSpace& space,
   }
 }
 
+void PositionPendingFloatsFromOffset(LayoutUnit origin_block_offset,
+                                     LayoutUnit from_block_offset,
+                                     NGFragmentBuilder* container_builder,
+                                     NGConstraintSpace* space) {
+  DCHECK(container_builder->BfcOffset())
+      << "Parent BFC offset should be known here";
+  const auto& floating_objects = container_builder->UnpositionedFloats();
+  container_builder->MutablePositionedFloats().AppendVector(
+      PositionFloats(origin_block_offset, from_block_offset,
+                     container_builder->BfcOffset().value().block_offset,
+                     floating_objects, space));
+  container_builder->MutableUnpositionedFloats().clear();
+}
+
 void PositionPendingFloats(LayoutUnit origin_block_offset,
                            NGFragmentBuilder* container_builder,
                            NGConstraintSpace* space) {
   DCHECK(container_builder->BfcOffset())
       << "Parent BFC offset should be known here";
-  const auto& floating_objects = container_builder->UnpositionedFloats();
-  container_builder->MutablePositionedFloats().AppendVector(PositionFloats(
-      origin_block_offset, container_builder->BfcOffset().value().block_offset,
-      floating_objects, space));
-  container_builder->MutableUnpositionedFloats().clear();
+  LayoutUnit from_block_offset =
+      container_builder->BfcOffset().value().block_offset;
+  PositionPendingFloatsFromOffset(origin_block_offset, from_block_offset,
+                                  container_builder, space);
 }
 
 NGBlockLayoutAlgorithm::NGBlockLayoutAlgorithm(NGBlockNode* node,
@@ -394,7 +407,7 @@ void NGBlockLayoutAlgorithm::FinishChildLayout(
   else if (IsLegacyBlock(*child))
     child_bfc_offset = PositionLegacy(child_space);
   else if (container_builder_.BfcOffset())
-    child_bfc_offset = PositionWithParentBfc(fragment);
+    child_bfc_offset = PositionWithParentBfc(child_space, fragment);
 
   NGLogicalOffset logical_offset = CalculateLogicalOffset(child_bfc_offset);
 
@@ -428,6 +441,7 @@ NGLogicalOffset NGBlockLayoutAlgorithm::PositionNewFc(
           .SetIsNewFormattingContext(false)
           .ToConstraintSpace(child_space.WritingMode());
   PositionFloats(curr_bfc_offset_.block_offset, curr_bfc_offset_.block_offset,
+                 curr_bfc_offset_.block_offset,
                  container_builder_.UnpositionedFloats(), tmp_space.Get());
 
   NGLogicalOffset origin_offset = curr_bfc_offset_;
@@ -477,6 +491,7 @@ NGLogicalOffset NGBlockLayoutAlgorithm::PositionWithBfcOffset(
 }
 
 NGLogicalOffset NGBlockLayoutAlgorithm::PositionWithParentBfc(
+    const NGConstraintSpace& space,
     const NGBoxFragment& fragment) {
   // The child must be an in-flow zero-block-size fragment, use its end margin
   // strut for positioning.
@@ -489,6 +504,10 @@ NGLogicalOffset NGBlockLayoutAlgorithm::PositionWithParentBfc(
   curr_bfc_offset_ +=
       {border_and_padding_.inline_start + curr_child_margins_.inline_start,
        margin_strut.Sum()};
+  AdjustToClearance(space.ClearanceOffset(), &curr_bfc_offset_);
+  PositionPendingFloatsFromOffset(
+      curr_bfc_offset_.block_offset, curr_bfc_offset_.block_offset,
+      &container_builder_, MutableConstraintSpace());
   return curr_bfc_offset_;
 }
 
