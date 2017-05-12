@@ -10,5 +10,6 @@ LoadFailingModelImplTest.*
 ModelImplTest.*
 NeverConditionValidatorTest.*
 OnceConditionValidatorTest.*
+PersistentStoreTest.*
 SingleInvalidConfigurationTest.*
 SystemTimeProviderTest.*
