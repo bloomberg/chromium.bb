@@ -250,38 +250,49 @@ void av1_warp_affine_ssse3(const int32_t *mat, const uint8_t *ref, int width,
       iy4 = y4 >> WARPEDMODEL_PREC_BITS;
       sy4 = y4 & ((1 << WARPEDMODEL_PREC_BITS) - 1);
 
-      sx4 += alpha * (-4) + beta * (-4);
-      sy4 += gamma * (-4) + delta * (-4);
+      // Add in all the constant terms, including rounding and offset
+      sx4 += alpha * (-4) + beta * (-4) + (1 << (WARPEDDIFF_PREC_BITS - 1)) +
+             (WARPEDPIXEL_PREC_SHIFTS << WARPEDDIFF_PREC_BITS);
+      sy4 += gamma * (-4) + delta * (-4) + (1 << (WARPEDDIFF_PREC_BITS - 1)) +
+             (WARPEDPIXEL_PREC_SHIFTS << WARPEDDIFF_PREC_BITS);
 
-      sx4 = ROUND_POWER_OF_TWO_SIGNED(sx4, WARP_PARAM_REDUCE_BITS) *
-            (1 << WARP_PARAM_REDUCE_BITS);
-      sy4 = ROUND_POWER_OF_TWO_SIGNED(sy4, WARP_PARAM_REDUCE_BITS) *
-            (1 << WARP_PARAM_REDUCE_BITS);
+      sx4 &= ~((1 << WARP_PARAM_REDUCE_BITS) - 1);
+      sy4 &= ~((1 << WARP_PARAM_REDUCE_BITS) - 1);
 
       // Horizontal filter
-      for (k = -7; k < AOMMIN(8, p_height - i); ++k) {
-        int iy = iy4 + k;
-        if (iy < 0)
-          iy = 0;
-        else if (iy > height - 1)
-          iy = height - 1;
-
-        // If the block is aligned such that, after clamping, every sample
-        // would be taken from the leftmost/rightmost column, then we can
-        // skip the expensive horizontal filter.
-        if (ix4 <= -7) {
+      // If the block is aligned such that, after clamping, every sample
+      // would be taken from the leftmost/rightmost column, then we can
+      // skip the expensive horizontal filter.
+      if (ix4 <= -7) {
+        for (k = -7; k < AOMMIN(8, p_height - i); ++k) {
+          int iy = iy4 + k;
+          if (iy < 0)
+            iy = 0;
+          else if (iy > height - 1)
+            iy = height - 1;
           tmp[k + 7] = _mm_set1_epi16(
               ref[iy * stride] *
               (1 << (WARPEDPIXEL_FILTER_BITS - HORSHEAR_REDUCE_PREC_BITS)));
-        } else if (ix4 >= width + 6) {
+        }
+      } else if (ix4 >= width + 6) {
+        for (k = -7; k < AOMMIN(8, p_height - i); ++k) {
+          int iy = iy4 + k;
+          if (iy < 0)
+            iy = 0;
+          else if (iy > height - 1)
+            iy = height - 1;
           tmp[k + 7] = _mm_set1_epi16(
               ref[iy * stride + (width - 1)] *
               (1 << (WARPEDPIXEL_FILTER_BITS - HORSHEAR_REDUCE_PREC_BITS)));
-        } else {
-          int sx = sx4 + beta * (k + 4) +
-                   // Include rounding and offset here
-                   (1 << (WARPEDDIFF_PREC_BITS - 1)) +
-                   (WARPEDPIXEL_PREC_SHIFTS << WARPEDDIFF_PREC_BITS);
+        }
+      } else {
+        for (k = -7; k < AOMMIN(8, p_height - i); ++k) {
+          int iy = iy4 + k;
+          if (iy < 0)
+            iy = 0;
+          else if (iy > height - 1)
+            iy = height - 1;
+          int sx = sx4 + beta * (k + 4);
 
           // Load source pixels
           const __m128i src =
@@ -375,8 +386,7 @@ void av1_warp_affine_ssse3(const int32_t *mat, const uint8_t *ref, int width,
 
       // Vertical filter
       for (k = -4; k < AOMMIN(4, p_height - i - 4); ++k) {
-        int sy = sy4 + delta * (k + 4) + (1 << (WARPEDDIFF_PREC_BITS - 1)) +
-                 (WARPEDPIXEL_PREC_SHIFTS << WARPEDDIFF_PREC_BITS);
+        int sy = sy4 + delta * (k + 4);
 
         // Load from tmp and rearrange pairs of consecutive rows into the
         // column order 0 0 2 2 4 4 6 6; 1 1 3 3 5 5 7 7
