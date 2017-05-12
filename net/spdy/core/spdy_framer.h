@@ -222,6 +222,10 @@ class SPDY_EXPORT_PRIVATE SpdyFrameSequence {
 
   // Returns true iff there is at least one more frame in the sequence.
   virtual bool HasNextFrame() const = 0;
+
+  // Get SpdyFrameIR of the frame to be serialized.
+  // TODO(yasong): return const SpdyFrameIR& instead.
+  virtual const SpdyFrameIR* GetIR() const = 0;
 };
 
 class ExtensionVisitorInterface {
@@ -643,7 +647,6 @@ class SPDY_EXPORT_PRIVATE SpdyFramer {
     SpdyFrameIterator& operator=(const SpdyFrameIterator&) = delete;
 
    protected:
-    virtual const SpdyFrameWithHeaderBlockIR* GetIR() const = 0;
     virtual size_t GetFrameSizeSansBlock() const = 0;
     virtual bool SerializeGivenEncoding(const SpdyString& encoding,
                                         ZeroCopyOutputBuffer* output) const = 0;
@@ -676,7 +679,7 @@ class SPDY_EXPORT_PRIVATE SpdyFramer {
     ~SpdyHeaderFrameIterator() override;
 
    private:
-    const SpdyFrameWithHeaderBlockIR* GetIR() const override;
+    const SpdyFrameIR* GetIR() const override;
     size_t GetFrameSizeSansBlock() const override;
     bool SerializeGivenEncoding(const SpdyString& encoding,
                                 ZeroCopyOutputBuffer* output) const override;
@@ -698,7 +701,7 @@ class SPDY_EXPORT_PRIVATE SpdyFramer {
     ~SpdyPushPromiseFrameIterator() override;
 
    private:
-    const SpdyFrameWithHeaderBlockIR* GetIR() const override;
+    const SpdyFrameIR* GetIR() const override;
     size_t GetFrameSizeSansBlock() const override;
     bool SerializeGivenEncoding(const SpdyString& encoding,
                                 ZeroCopyOutputBuffer* output) const override;
@@ -717,6 +720,8 @@ class SPDY_EXPORT_PRIVATE SpdyFramer {
     size_t NextFrame(ZeroCopyOutputBuffer* output) override;
 
     bool HasNextFrame() const override;
+
+    const SpdyFrameIR* GetIR() const override;
 
    private:
     SpdyFramer* const framer_;

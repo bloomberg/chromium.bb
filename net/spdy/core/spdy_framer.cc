@@ -1600,7 +1600,7 @@ SpdyFramer::SpdyFrameIterator::SpdyFrameIterator(SpdyFramer* framer)
 SpdyFramer::SpdyFrameIterator::~SpdyFrameIterator() {}
 
 size_t SpdyFramer::SpdyFrameIterator::NextFrame(ZeroCopyOutputBuffer* output) {
-  const SpdyFrameWithHeaderBlockIR* frame_ir = GetIR();
+  const SpdyFrameIR* frame_ir = GetIR();
   if (frame_ir == nullptr) {
     LOG(WARNING) << "frame_ir doesn't exist.";
     return false;
@@ -1622,12 +1622,14 @@ size_t SpdyFramer::SpdyFrameIterator::NextFrame(ZeroCopyOutputBuffer* output) {
     debug_total_size_ += size_without_block;
     debug_total_size_ += encoding->size();
     if (!has_next_frame_) {
+      auto* header_block_frame_ir =
+          static_cast<const SpdyFrameWithHeaderBlockIR*>(frame_ir);
       // TODO(birenroy) are these (here and below) still necessary?
       // HTTP2 uses HPACK for header compression. However, continue to
       // use GetSerializedLength() for an apples-to-apples comparision of
       // compression performance between HPACK and SPDY w/ deflate.
       size_t debug_payload_len =
-          framer_->GetSerializedLength(&frame_ir->header_block());
+          framer_->GetSerializedLength(&header_block_frame_ir->header_block());
       framer_->debug_visitor_->OnSendCompressedFrame(
           frame_ir->stream_id(), frame_ir->frame_type(), debug_payload_len,
           debug_total_size_);
@@ -1661,8 +1663,7 @@ SpdyFramer::SpdyHeaderFrameIterator::SpdyHeaderFrameIterator(
 
 SpdyFramer::SpdyHeaderFrameIterator::~SpdyHeaderFrameIterator() {}
 
-const SpdyFrameWithHeaderBlockIR* SpdyFramer::SpdyHeaderFrameIterator::GetIR()
-    const {
+const SpdyFrameIR* SpdyFramer::SpdyHeaderFrameIterator::GetIR() const {
   return headers_ir_.get();
 }
 
@@ -1687,8 +1688,7 @@ SpdyFramer::SpdyPushPromiseFrameIterator::SpdyPushPromiseFrameIterator(
 
 SpdyFramer::SpdyPushPromiseFrameIterator::~SpdyPushPromiseFrameIterator() {}
 
-const SpdyFrameWithHeaderBlockIR*
-SpdyFramer::SpdyPushPromiseFrameIterator::GetIR() const {
+const SpdyFrameIR* SpdyFramer::SpdyPushPromiseFrameIterator::GetIR() const {
   return push_promise_ir_.get();
 }
 
@@ -1719,6 +1719,10 @@ size_t SpdyFramer::SpdyControlFrameIterator::NextFrame(
 
 bool SpdyFramer::SpdyControlFrameIterator::HasNextFrame() const {
   return frame_ir_ != nullptr;
+}
+
+const SpdyFrameIR* SpdyFramer::SpdyControlFrameIterator::GetIR() const {
+  return frame_ir_.get();
 }
 
 // TODO(yasong): remove all the static_casts.
