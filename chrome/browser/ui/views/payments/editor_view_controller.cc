@@ -138,28 +138,8 @@ void EditorViewController::FillContentView(views::View* content_view) {
   content_view->AddChildView(CreateEditorView().release());
 }
 
-// Adds the "required fields" label in disabled text, to obtain this result.
-// +---------------------------------------------------------+
-// | "* indicates required fields"           | CANCEL | DONE |
-// +---------------------------------------------------------+
-std::unique_ptr<views::View> EditorViewController::CreateExtraFooterView() {
-  std::unique_ptr<views::View> content_view = base::MakeUnique<views::View>();
-
-  views::BoxLayout* layout =
-      new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0, 0);
-  layout->set_main_axis_alignment(views::BoxLayout::MAIN_AXIS_ALIGNMENT_START);
-  layout->set_cross_axis_alignment(
-      views::BoxLayout::CROSS_AXIS_ALIGNMENT_START);
-  content_view->SetLayoutManager(layout);
-
-  // Adds the "* indicates a required field" label in "disabled" grey text.
-  std::unique_ptr<views::Label> label = base::MakeUnique<views::Label>(
-      l10n_util::GetStringUTF16(IDS_PAYMENTS_REQUIRED_FIELD_MESSAGE));
-  label->SetDisabledColor(label->GetNativeTheme()->GetSystemColor(
-      ui::NativeTheme::kColorId_LabelDisabledColor));
-  label->SetEnabled(false);
-  content_view->AddChildView(label.release());
-  return content_view;
+base::string16 EditorViewController::GetSecondaryButtonLabel() {
+  return l10n_util::GetStringUTF16(IDS_PAYMENTS_CANCEL_PAYMENT);
 }
 
 void EditorViewController::UpdateEditorView() {
@@ -281,12 +261,25 @@ std::unique_ptr<views::View> EditorViewController::CreateEditorView() {
                      kFieldExtraViewHorizontalPadding - long_extra_view_width;
   columns_long->AddPaddingColumn(0, long_padding);
 
+  for (const auto& field : GetFieldDefinitions())
+    CreateInputField(editor_layout.get(), field);
+
+  // Adds the "* indicates a required field" label in "disabled" grey text.
+  std::unique_ptr<views::Label> required_field = base::MakeUnique<views::Label>(
+      l10n_util::GetStringUTF16(IDS_PAYMENTS_REQUIRED_FIELD_MESSAGE));
+  required_field->SetDisabledColor(
+      required_field->GetNativeTheme()->GetSystemColor(
+          ui::NativeTheme::kColorId_LabelDisabledColor));
+  required_field->SetEnabled(false);
+
+  views::ColumnSet* required_field_columns = editor_layout->AddColumnSet(2);
+  required_field_columns->AddColumn(views::GridLayout::LEADING,
+                                    views::GridLayout::CENTER, 1,
+                                    views::GridLayout::USE_PREF, 0, 0);
+  editor_layout->StartRow(0, 2);
+  editor_layout->AddView(required_field.release());
+
   editor_view->SetLayoutManager(editor_layout.release());
-  for (const auto& field : GetFieldDefinitions()) {
-    CreateInputField(
-        static_cast<views::GridLayout*>(editor_view->GetLayoutManager()),
-        field);
-  }
 
   return editor_view;
 }

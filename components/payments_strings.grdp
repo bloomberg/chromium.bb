@@ -115,6 +115,9 @@
   <message name="IDS_PAYMENTS_CARD_AND_ADDRESS_SETTINGS_SIGNED_OUT" desc="Label of the section containing the origin description and the link to go to the settings page for card and address options. This label is used when the user is not signed in." formatter_data="android_java">
     Cards and addresses are from Chrome. You can manage them in <ph name="BEGIN_LINK">BEGIN_LINK</ph>Settings<ph name="END_LINK">END_LINK</ph>.
   </message>
+  <message name="IDS_PAYMENTS_CANCEL_PAYMENT" desc="Label of the secondary button in payment request editors. Clicking that button closes the dialog and aborts the payment request completely">
+    Cancel Payment
+  </message>
 
   <!-- Credit Card form -->
   <if expr="is_ios">
