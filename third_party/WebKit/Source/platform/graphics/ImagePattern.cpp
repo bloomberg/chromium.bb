@@ -21,14 +21,6 @@ PassRefPtr<ImagePattern> ImagePattern::Create(PassRefPtr<Image> image,
 ImagePattern::ImagePattern(PassRefPtr<Image> image, RepeatMode repeat_mode)
     : Pattern(repeat_mode), tile_image_(image->ImageForCurrentFrame()) {
   previous_local_matrix_.setIdentity();
-  if (tile_image_) {
-    // TODO(fmalita): mechanism to extract the actual SkImageInfo from an
-    // SkImage?
-    const SkImageInfo info = SkImageInfo::MakeN32Premul(
-        tile_image_->width() + (IsRepeatX() ? 0 : 2),
-        tile_image_->height() + (IsRepeatY() ? 0 : 2));
-    AdjustExternalMemoryAllocated(info.getSafeSize(info.minRowBytes()));
-  }
 }
 
 bool ImagePattern::IsLocalMatrixChanged(const SkMatrix& local_matrix) const {
