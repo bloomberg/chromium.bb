@@ -20,22 +20,38 @@
 //
 // Typical usage: request to be called back on the current thread:
 // other->StartAsyncProcessAndCallMeBack(
-//    media::BindToCurrentLoop(base::Bind(&MyClass::MyMethod, this)));
+//    media::BindToCurrentLoop(base::BindOnce(&MyClass::MyMethod, this)));
+//
+// media::BindToCurrentLoop returns the same type of callback to the given
+// callback. I.e. it returns a RepeatingCallback for a given RepeatingCallback,
+// and returns OnceCallback for a given OnceCallback.
 
 namespace media {
 namespace internal {
 
-// First, tell the compiler TrampolineHelper is a struct template with one
-// type parameter.  Then define specializations where the type is a function
-// returning void and taking zero or more arguments.
-template <typename Signature>
-class TrampolineHelper;
+inline base::OnceClosure MakeClosure(base::RepeatingClosure* callback) {
+  return *callback;
+}
 
-template <typename... Args>
-class TrampolineHelper<void(Args...)> {
+inline base::OnceClosure MakeClosure(base::OnceClosure* callback) {
+  return std::move(*callback);
+}
+
+template <typename Signature, typename... Args>
+base::OnceClosure MakeClosure(base::RepeatingCallback<Signature>* callback,
+                              Args&&... args) {
+  return base::BindOnce(*callback, std::forward<Args>(args)...);
+}
+
+template <typename Signature, typename... Args>
+base::OnceClosure MakeClosure(base::OnceCallback<Signature>* callback,
+                              Args&&... args) {
+  return base::BindOnce(std::move(*callback), std::forward<Args>(args)...);
+}
+
+template <typename CallbackType>
+class TrampolineHelper {
  public:
-  using CallbackType = base::Callback<void(Args...)>;
-
   TrampolineHelper(const tracked_objects::Location& posted_from,
                    scoped_refptr<base::SequencedTaskRunner> task_runner,
                    CallbackType callback)
@@ -46,48 +62,56 @@ class TrampolineHelper<void(Args...)> {
     DCHECK(callback_);
   }
 
-  inline void Run(Args... args);
+  template <typename... Args>
+  void Run(Args... args) {
+    // MakeClosure consumes |callback_| if it's OnceCallback.
+    task_runner_->PostTask(
+        posted_from_, MakeClosure(&callback_, std::forward<Args>(args)...));
+  }
 
   ~TrampolineHelper() {
-    task_runner_->PostTask(
-        posted_from_,
-        base::Bind(&TrampolineHelper::ClearCallbackOnTargetTaskRunner,
-                   base::Passed(&callback_)));
+    if (callback_) {
+      task_runner_->PostTask(
+          posted_from_,
+          base::BindOnce(&TrampolineHelper::ClearCallbackOnTargetTaskRunner,
+                         std::move(callback_)));
+    }
   }
 
  private:
   static void ClearCallbackOnTargetTaskRunner(CallbackType) {}
-  static void RunOnceClosure(base::OnceClosure cb) { std::move(cb).Run(); }
 
   tracked_objects::Location posted_from_;
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
   CallbackType callback_;
 };
 
-template <>
-inline void TrampolineHelper<void()>::Run() {
-  task_runner_->PostTask(posted_from_, callback_);
+}  // namespace internal
+
+template <typename... Args>
+inline base::RepeatingCallback<void(Args...)> BindToCurrentLoop(
+    base::RepeatingCallback<void(Args...)> cb) {
+  using CallbackType = base::RepeatingCallback<void(Args...)>;
+  using Helper = internal::TrampolineHelper<CallbackType>;
+  using RunnerType = void (Helper::*)(Args...);
+  RunnerType run = &Helper::Run;
+  // TODO(tzik): Propagate FROM_HERE from the caller.
+  return base::BindRepeating(
+      run, base::MakeUnique<Helper>(
+               FROM_HERE, base::ThreadTaskRunnerHandle::Get(), std::move(cb)));
 }
 
 template <typename... Args>
-inline void TrampolineHelper<void(Args...)>::Run(Args... args) {
-  // TODO(tzik): Use OnceCallback directly without RunOnceClosure, once
-  // TaskRunner::PostTask migrates to OnceClosure.
-  base::OnceClosure cb = base::BindOnce(callback_, std::forward<Args>(args)...);
-  task_runner_->PostTask(
-      posted_from_,
-      base::Bind(&TrampolineHelper::RunOnceClosure, base::Passed(&cb)));
-}
-
-}  // namespace internal
-
-template <typename T>
-inline base::Callback<T> BindToCurrentLoop(base::Callback<T> cb) {
-  return base::Bind(
-      &internal::TrampolineHelper<T>::Run,
-      base::MakeUnique<internal::TrampolineHelper<T>>(
-          FROM_HERE,  // TODO(tzik): Propagate FROM_HERE from the caller.
-          base::ThreadTaskRunnerHandle::Get(), std::move(cb)));
+inline base::OnceCallback<void(Args...)> BindToCurrentLoop(
+    base::OnceCallback<void(Args...)> cb) {
+  using CallbackType = base::OnceCallback<void(Args...)>;
+  using Helper = internal::TrampolineHelper<CallbackType>;
+  using RunnerType = void (Helper::*)(Args...);
+  RunnerType run = &Helper::Run;
+  // TODO(tzik): Propagate FROM_HERE from the caller.
+  return base::BindOnce(
+      run, base::MakeUnique<Helper>(
+               FROM_HERE, base::ThreadTaskRunnerHandle::Get(), std::move(cb)));
 }
 
 }  // namespace media
