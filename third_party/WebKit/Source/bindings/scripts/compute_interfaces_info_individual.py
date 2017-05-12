@@ -190,10 +190,7 @@ class InterfaceInfoCollector(object):
             """Collects [Unforgeable] attributes so that we can define them on
             sub-interfaces later.  The resulting structure is as follows.
                 interfaces_info[interface_name] = {
-                    'unforgeable_attributes': {
-                        'core': [IdlAttribute, ...],
-                        'modules': [IdlAttribute, ...],
-                    },
+                    'unforgeable_attributes': [IdlAttribute, ...],
                     ...
                 }
             """
@@ -209,9 +206,7 @@ class InterfaceInfoCollector(object):
                 # Come up with a better way to keep them consistent.
                 for attr in unforgeable_attributes:
                     attr.extended_attributes['PartialInterfaceImplementedAs'] = definition.extended_attributes.get('ImplementedAs', interface_basename)
-            component = idl_filename_to_component(idl_filename)
-            interface_info['unforgeable_attributes'] = {}
-            interface_info['unforgeable_attributes'][component] = unforgeable_attributes
+            interface_info['unforgeable_attributes'] = unforgeable_attributes
             return interface_info
 
         definitions = self.reader.read_idl_file(idl_filename)
