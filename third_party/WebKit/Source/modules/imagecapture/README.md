@@ -1,22 +1,46 @@
 # Image Capture API
 
-This folder contains the implementation of the [W3C Image Capture API](https://w3c.github.io/mediacapture-image/).  Image Capture was shipped in Chrome M59; please consult the [Implementation Status](https://github.com/w3c/mediacapture-image/blob/master/implementation-status.md) if you think a feature should be available and isn't.
+This folder contains the implementation of the [W3C Image Capture API].
+Image Capture was shipped in Chrome M59; please consult the
+[Implementation Status] if you think a feature should be available and isn't.
 
-This API is structured around the [ImageCapture class](https://w3c.github.io/mediacapture-image/#imagecaptureapi) _and_ a number of [extensions](https://w3c.github.io/mediacapture-image/#extensions) to the `MediaStreamTrack` feeding it (let's call them `theImageCapturer` and `theTrack`, respectively).
+[W3C Image Capture API]: https://w3c.github.io/mediacapture-image/
+[Implementation Status]: https://github.com/w3c/mediacapture-image/blob/master/implementation-status.md
+
+This API is structured around the [ImageCapture class] _and_ a number of
+[extensions] to the `MediaStreamTrack` feeding it (let's call them
+`theImageCapturer` and `theTrack`, respectively).
+
+[ImageCapture class]: https://w3c.github.io/mediacapture-image/#imagecaptureapi
+[extensions]: https://w3c.github.io/mediacapture-image/#extensions
+
 
 ## API Mechanics
 
 ### `takePhoto()` and `grabFrame()`
 
-- `takePhoto()` returns the result of a single photographic exposure as a `Blob` which can be downloaded, stored by the browser or displayed in an `img` element. This method uses the highest available photographic camera resolution.
+*   `takePhoto()` returns the result of a single photographic exposure as a
+    `Blob` which can be downloaded, stored by the browser or displayed in an
+    `img` element. This method uses the highest available photographic camera
+    resolution.
 
-- `grabFrame()` returns a snapshot of the live video in `theTrack` as an `ImageBitmap` object  which could (for example) be drawn on a `canvas` and then post-processed to selectively change color values. Note that the `ImageBitmap` will only have the resolution of the video track — which will generally be lower than the camera's still-image resolution.
+*   `grabFrame()` returns a snapshot of the live video in `theTrack` as an
+    `ImageBitmap` object  which could (for example) be drawn on a `canvas` and
+    then post-processed to selectively change color values. Note that the
+    `ImageBitmap` will only have the resolution of the video track — which
+    will generally be lower than the camera's still-image resolution.
 
-(_Adapted from the [Origin Trials Web Update post](https://developers.google.com/web/updates/2016/12/imagecapture)_)
+(_Adapted from the [Origin Trials Web Update post](
+https://developers.google.com/web/updates/2016/12/imagecapture)_)
+
 
 ### Photo settings and capabilities
 
-The photo-specific options and settings are associated to `theImageCapturer` or `theTrack` depending on whether a given capability/setting has an immediately recognisable effect on `theTrack`, in other words if it's "live" or not. For example, changing the zoom level is instantly reflected on the `theTrack`, while connecting the Red Eye Reduction, if available, is not.
+The photo-specific options and settings are associated to `theImageCapturer` or
+`theTrack` depending on whether a given capability/setting has an immediately
+recognisable effect on `theTrack`, in other words if it's "live" or not. For
+example, changing the zoom level is instantly reflected on the `theTrack`,
+while connecting the Red Eye Reduction, if available, is not.
 
  Object | type | retrieved by... |
  :--| :-- | --: |
@@ -26,11 +50,14 @@ The photo-specific options and settings are associated to `theImageCapturer` or 
 [`PhotoSettings`](https://w3c.github.io/mediacapture-image/##photocapabilities-section) | non-live settings |  |
 [`MediaTrackSettings`](https://w3c.github.io/mediacapture-image/#mediatracksettings-section) | live settings | `theTrack.getSettings()` |
 
+
 ## Other topics
 
 ### Are `takePhoto()` and `grabFrame()` the same?
 
-These methods would not produce the same results as explained in [this issue comment](https://bugs.chromium.org/p/chromium/issues/detail?id=655107#c8):
+These methods would not produce the same results as explained in
+[this issue comment](
+https://bugs.chromium.org/p/chromium/issues/detail?id=655107#c8):
 
 
 >  Let me reconstruct the conversion steps each image goes through in CrOs/Linux;
@@ -80,12 +107,22 @@ These methods would not produce the same results as explained in [this issue com
 
 ### Why are `PhotoCapabilities.fillLightMode` and `MediaTrackCapabilities.torch` separated?
 
-Because they are different things: `torch` means flash constantly on/off whereas `fillLightMode` means flash always-on/always-off/auto _when taking a photographic exposure_.
+Because they are different things: `torch` means flash constantly on/off whereas
+`fillLightMode` means flash always-on/always-off/auto _when taking a
+photographic exposure_.
 
-`torch` lives in `theTrack` because the effect can be seen "live" on it, whereas `fillLightMode` lives in `theImageCapture` object because the effect of modifying it can only be seen after taking a picture.
+`torch` lives in `theTrack` because the effect can be seen "live" on it,
+whereas `fillLightMode` lives in `theImageCapture` object because the effect
+of modifying it can only be seen after taking a picture.
 
 
 
 ## Testing
 
-Sensors layout tests are located in [`LayoutTests/imagecapture`](https://chromium.googlesource.com/chromium/src/+/master/third_party/WebKit/LayoutTests/imagecapture/), [`LayoutTests/fast/imagecapture`](https://chromium.googlesource.com/chromium/src/+/master/third_party/WebKit/LayoutTests/fast/imagecapture/) and [`LayoutTests/external/mediacapture-image`](https://chromium.googlesource.com/chromium/src/+/master/third_party/WebKit/LayoutTests/external/wpt/mediacapture-image/).
+Sensors layout tests are located in [LayoutTests/imagecapture],
+[LayoutTests/fast/imagecapture] and [LayoutTests/external/mediacapture-image].
+
+[LayoutTests/imagecapture]: https://chromium.googlesource.com/chromium/src/+/master/third_party/WebKit/LayoutTests/imagecapture
+[LayoutTests/fast/imagecapture]: https://chromium.googlesource.com/chromium/src/+/master/third_party/WebKit/LayoutTests/fast/imagecapture/
+[LayoutTests/external/mediacapture-image]: https://chromium.googlesource.com/chromium/src/+/master/third_party/WebKit/LayoutTests/external/wpt/mediacapture-image/
+
