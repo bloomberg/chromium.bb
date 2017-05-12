@@ -1731,8 +1731,6 @@ const CSSValue* CSSPropertyParser::ParseSingleValue(
     case CSSPropertyWebkitTextDecorationsInEffect:
     case CSSPropertyTextDecorationLine:
       return ConsumeTextDecorationLine(range_);
-    case CSSPropertyOffsetPath:
-      return CSSPropertyOffsetPathUtils::ConsumeOffsetPath(range_, context_);
     case CSSPropertyOffsetDistance:
       return ConsumeLengthOrPercent(range_, context_->Mode(), kValueRangeAll);
     case CSSPropertyOffsetRotate:
