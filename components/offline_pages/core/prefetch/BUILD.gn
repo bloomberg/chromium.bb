@@ -5,16 +5,26 @@
 if (is_android) {
   import("//build/config/android/rules.gni")
 }
+import("//third_party/protobuf/proto_library.gni")
 
 static_library("prefetch") {
   sources = [
+    "generate_page_bundle_request.cc",
+    "generate_page_bundle_request.h",
     "prefetch_request_fetcher.cc",
     "prefetch_request_fetcher.h",
     "prefetch_service.h",
     "prefetch_service_impl.cc",
     "prefetch_service_impl.h",
+    "prefetch_types.cc",
+    "prefetch_types.h",
+    "prefetch_utils.cc",
+    "prefetch_utils.h",
   ]
 
+  public_deps = [
+    ":proto",
+  ]
   deps = [
     "//base",
     "//components/keyed_service/core",
@@ -24,10 +34,23 @@ static_library("prefetch") {
   ]
 }
 
+proto_library("proto") {
+  sources = [
+    "proto/any.proto",
+    "proto/offline_pages.proto",
+    "proto/operation.proto",
+    "proto/status.proto",
+    "proto/timestamp.proto",
+  ]
+}
+
 source_set("unit_tests") {
   testonly = true
   sources = [
+    "generate_page_bundle_request_unittest.cc",
     "prefetch_request_fetcher_unittest.cc",
+    "prefetch_request_test_base.cc",
+    "prefetch_request_test_base.h",
     "prefetch_service_impl_unittest.cc",
   ]
 

@@ -13,7 +13,7 @@
 #include "net/url_request/url_request_status.h"
 #include "url/gurl.h"
 
-namespace offline_prefetch {
+namespace offline_pages {
 
 namespace {
 const char kRequestContentType[] = "application/x-protobuf";
@@ -22,7 +22,7 @@ const char kRequestContentType[] = "application/x-protobuf";
 PrefetchRequestFetcher::PrefetchRequestFetcher(
     const GURL& url,
     const std::string& message,
-    scoped_refptr<net::URLRequestContextGetter> request_context_getter,
+    net::URLRequestContextGetter* request_context_getter,
     const FinishedCallback& callback)
     : request_context_getter_(request_context_getter), callback_(callback) {
   net::NetworkTrafficAnnotationTag traffic_annotation =
@@ -61,22 +61,22 @@ PrefetchRequestFetcher::~PrefetchRequestFetcher() {}
 
 void PrefetchRequestFetcher::OnURLFetchComplete(const net::URLFetcher* source) {
   std::string data;
-  Status status = ParseResponse(source, &data);
+  PrefetchRequestStatus status = ParseResponse(source, &data);
 
   // TODO(jianli): Report UMA.
 
   callback_.Run(status, data);
 }
 
-PrefetchRequestFetcher::Status PrefetchRequestFetcher::ParseResponse(
+PrefetchRequestStatus PrefetchRequestFetcher::ParseResponse(
     const net::URLFetcher* source,
     std::string* data) {
   if (!source->GetStatus().is_success()) {
     net::Error net_error = source->GetStatus().ToNetError();
     DVLOG(1) << "Net error: " << net_error;
     return (net_error == net::ERR_BLOCKED_BY_ADMINISTRATOR)
-               ? Status::SHOULD_SUSPEND
-               : Status::SHOULD_RETRY_WITHOUT_BACKOFF;
+               ? PrefetchRequestStatus::SHOULD_SUSPEND
+               : PrefetchRequestStatus::SHOULD_RETRY_WITHOUT_BACKOFF;
   }
 
   net::HttpStatusCode response_status =
@@ -84,16 +84,16 @@ PrefetchRequestFetcher::Status PrefetchRequestFetcher::ParseResponse(
   if (response_status != net::HTTP_OK) {
     DVLOG(1) << "HTTP status: " << response_status;
     return (response_status == net::HTTP_NOT_IMPLEMENTED)
-               ? Status::SHOULD_SUSPEND
-               : Status::SHOULD_RETRY_WITH_BACKOFF;
+               ? PrefetchRequestStatus::SHOULD_SUSPEND
+               : PrefetchRequestStatus::SHOULD_RETRY_WITH_BACKOFF;
   }
 
   if (!source->GetResponseAsString(data) || data->empty()) {
     DVLOG(1) << "Failed to get response or empty response";
-    return Status::SHOULD_RETRY_WITH_BACKOFF;
+    return PrefetchRequestStatus::SHOULD_RETRY_WITH_BACKOFF;
   }
 
-  return Status::SUCCESS;
+  return PrefetchRequestStatus::SUCCESS;
 }
 
-}  // offline_prefetch
+}  // offline_pages
