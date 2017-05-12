@@ -26,6 +26,7 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.BaseActivityInstrumentationTestCase;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.Restriction;
+import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
@@ -269,6 +270,7 @@ public class HistoryActivityTest extends BaseActivityInstrumentationTestCase<His
     }
 
     @SmallTest
+    @RetryOnFailure(message = "crbug.com/718689")
     public void testOpenSelectedItems() throws Exception {
         IntentFilter filter = new IntentFilter(Intent.ACTION_VIEW);
         filter.addDataPath(mItem1.getUrl(), PatternMatcher.PATTERN_LITERAL);
