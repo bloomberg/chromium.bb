@@ -1003,10 +1003,18 @@ static INLINE void load_buffer_from_32x32(const tran_low_t *coeff, __m256i *in,
   }
 }
 
+static INLINE void zero_buffer(__m256i *in, int num) {
+  int i;
+  for (i = 0; i < num; ++i) {
+    in[i] = _mm256_setzero_si256();
+  }
+}
+
 // Only upper-left 16x16 has non-zero coeff
 void aom_idct32x32_135_add_avx2(const tran_low_t *input, uint8_t *dest,
                                 int stride) {
   __m256i in[32];
+  zero_buffer(in, 32);
   load_buffer_from_32x32(input, in, 16);
   mm256_transpose_16x16(in, in);
   idct32_16x32_135(in);
@@ -1215,6 +1223,7 @@ static void idct32_16x32_34(__m256i *in /*in[32]*/) {
 void aom_idct32x32_34_add_avx2(const tran_low_t *input, uint8_t *dest,
                                int stride) {
   __m256i in[32];
+  zero_buffer(in, 32);
   load_buffer_from_32x32(input, in, 8);
   mm256_transpose_16x16(in, in);
   idct32_16x32_34(in);
