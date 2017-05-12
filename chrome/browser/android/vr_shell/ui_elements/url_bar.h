@@ -9,6 +9,7 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "base/time/time.h"
 #include "chrome/browser/android/vr_shell/ui_elements/textured_element.h"
 #include "url/gurl.h"
 
@@ -23,6 +24,7 @@ class UrlBar : public TexturedElement {
 
   void OnHoverEnter(gfx::PointF position) override;
   void OnHoverLeave() override;
+  void OnBeginFrame(const base::TimeTicks& begin_frame_time) override;
   void OnButtonUp(gfx::PointF position) override;
   void SetEnabled(bool enabled);
 
@@ -31,10 +33,13 @@ class UrlBar : public TexturedElement {
   void SetBackButtonCallback(const base::Callback<void()>& callback);
 
  private:
+  void UpdateTexture() override;
   UiTexture* GetTexture() const override;
   std::unique_ptr<UrlBarTexture> texture_;
   base::Callback<void()> back_button_callback_;
   bool enabled_ = false;
+  base::TimeTicks last_begin_frame_time_;
+  base::TimeTicks last_update_time_;
 
   DISALLOW_COPY_AND_ASSIGN(UrlBar);
 };

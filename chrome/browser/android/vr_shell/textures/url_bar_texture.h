@@ -21,15 +21,19 @@ class UrlBarTexture : public UiTexture {
   ~UrlBarTexture() override;
   gfx::Size GetPreferredTextureSize(int width) const override;
   gfx::SizeF GetDrawnSize() const override;
+  bool SetDrawFlags(int draw_flags) override;
 
   void SetURL(const GURL& gurl);
   void SetSecurityLevel(int level);
+
+  bool dirty() const { return dirty_; }
 
  private:
   void Draw(SkCanvas* canvas, const gfx::Size& texture_size) override;
   float ToPixels(float meters) const;
 
   gfx::SizeF size_;
+  bool dirty_ = false;
   int security_level_;
   GURL gurl_;
 };

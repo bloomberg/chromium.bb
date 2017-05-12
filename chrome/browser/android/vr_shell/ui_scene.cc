@@ -102,10 +102,18 @@ void UiScene::RemoveAnimation(int element_id, int animation_id) {
   }
 }
 
-void UiScene::UpdateTransforms(const base::TimeTicks& time) {
+void UiScene::OnBeginFrame(const base::TimeTicks& current_time) {
   for (const auto& element : ui_elements_) {
     // Process all animations before calculating object transforms.
-    element->Animate(time);
+    // TODO: eventually, we'd like to stop assuming that animations are
+    // element-level concepts. A single animation may simultaneously update
+    // properties on multiple elements, say.
+    element->Animate(current_time);
+
+    // Even if we're not animating, an element may wish to know about the
+    // current frame. It may throttle, for example.
+    element->OnBeginFrame(current_time);
+
     element->set_dirty(true);
   }
   for (auto& element : ui_elements_) {

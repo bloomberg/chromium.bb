@@ -94,6 +94,8 @@ class UiElement : public WorldRectangle {
   UiElement();
   virtual ~UiElement();
 
+  virtual void OnBeginFrame(const base::TimeTicks& begin_frame_time);
+
   void Animate(const base::TimeTicks& time);
 
   // Indicates whether the element should be visually rendered.

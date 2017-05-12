@@ -126,6 +126,8 @@ void UiElement::OnButtonDown(gfx::PointF position) {}
 
 void UiElement::OnButtonUp(gfx::PointF position) {}
 
+void UiElement::OnBeginFrame(const base::TimeTicks& begin_frame_time) {}
+
 void UiElement::Animate(const base::TimeTicks& time) {
   for (auto& it : animations_) {
     Animation& animation = *it;

@@ -985,7 +985,7 @@ void VrShellGl::DrawFrame(int16_t frame_index) {
   }
 
   // Update the render position of all UI elements (including desktop).
-  scene_->UpdateTransforms(current_time);
+  scene_->OnBeginFrame(current_time);
 
   {
     // TODO(crbug.com/704690): Acquire controller state in a way that's timely
