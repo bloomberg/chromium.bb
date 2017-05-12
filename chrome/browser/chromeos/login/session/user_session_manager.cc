@@ -258,7 +258,7 @@ void OnGetNSSCertDatabaseForUser(net::NSSCertDatabase* database) {
   if (!CertLoader::IsInitialized())
     return;
 
-  CertLoader::Get()->StartWithNSSDB(database);
+  CertLoader::Get()->SetUserNSSDB(database);
 }
 
 // Returns new CommandLine with per-user flags.

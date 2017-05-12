@@ -138,11 +138,11 @@ void CertLibrary::RemoveObserver(CertLibrary::Observer* observer) {
 }
 
 bool CertLibrary::CertificatesLoading() const {
-  return CertLoader::Get()->CertificatesLoading();
+  return CertLoader::Get()->initial_load_of_any_database_running();
 }
 
 bool CertLibrary::CertificatesLoaded() const {
-  return CertLoader::Get()->certificates_loaded();
+  return CertLoader::Get()->initial_load_finished();
 }
 
 int CertLibrary::NumCertificates(CertType type) const {

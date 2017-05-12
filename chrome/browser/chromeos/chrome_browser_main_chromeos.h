@@ -49,6 +49,7 @@ class ExternalLoader;
 
 namespace internal {
 class DBusServices;
+class SystemTokenCertDBInitializer;
 }
 
 class ChromeBrowserMainPartsChromeos : public ChromeBrowserMainPartsLinux {
@@ -85,6 +86,9 @@ class ChromeBrowserMainPartsChromeos : public ChromeBrowserMainPartsLinux {
   std::unique_ptr<NetworkThrottlingObserver> network_throttling_observer_;
 
   std::unique_ptr<internal::DBusServices> dbus_services_;
+
+  std::unique_ptr<internal::SystemTokenCertDBInitializer>
+      system_token_certdb_initializer_;
 
   std::unique_ptr<session_manager::SessionManager> session_manager_;
 

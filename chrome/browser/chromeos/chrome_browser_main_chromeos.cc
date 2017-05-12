@@ -20,6 +20,7 @@
 #include "base/linux_util.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/memory/weak_ptr.h"
 #include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
@@ -146,11 +147,15 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/main_function_params.h"
+#include "crypto/nss_util_internal.h"
+#include "crypto/scoped_nss_types.h"
 #include "dbus/object_path.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "device/bluetooth/dbus/bluez_dbus_manager.h"
 #include "media/audio/sounds/sounds_manager.h"
 #include "net/base/network_change_notifier.h"
+#include "net/cert/nss_cert_database.h"
+#include "net/cert/nss_cert_database_chromeos.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "printing/backend/print_backend.h"
@@ -202,6 +207,36 @@ void InitializeNetworkPortalDetector() {
     network_portal_detector::SetNetworkPortalDetector(
         new NetworkPortalDetectorImpl(
             g_browser_process->system_request_context(), true));
+  }
+}
+
+// Called on UI Thread when the system slot has been retrieved.
+void GotSystemSlotOnUIThread(
+    base::Callback<void(crypto::ScopedPK11Slot)> callback_ui_thread,
+    crypto::ScopedPK11Slot system_slot) {
+  callback_ui_thread.Run(std::move(system_slot));
+}
+
+// Called on IO Thread when the system slot has been retrieved.
+void GotSystemSlotOnIOThread(
+    base::Callback<void(crypto::ScopedPK11Slot)> callback_ui_thread,
+    crypto::ScopedPK11Slot system_slot) {
+  content::BrowserThread::PostTask(
+      content::BrowserThread::UI, FROM_HERE,
+      base::BindOnce(&GotSystemSlotOnUIThread, callback_ui_thread,
+                     std::move(system_slot)));
+}
+
+// Called on IO Thread, initiates retrieval of system slot. |callback_ui_thread|
+// will be executed on the UI thread when the system slot has been retrieved.
+void GetSystemSlotOnIOThread(
+    base::Callback<void(crypto::ScopedPK11Slot)> callback_ui_thread) {
+  auto callback =
+      base::BindRepeating(&GotSystemSlotOnIOThread, callback_ui_thread);
+  crypto::ScopedPK11Slot system_nss_slot =
+      crypto::GetSystemNSSKeySlot(callback);
+  if (system_nss_slot) {
+    callback.Run(std::move(system_nss_slot));
   }
 }
 
@@ -365,6 +400,52 @@ class DBusServices {
   DISALLOW_COPY_AND_ASSIGN(DBusServices);
 };
 
+// Initializes a global NSSCertDatabase for the system token and starts
+// CertLoader with that database. Note that this is triggered from
+// PreMainMessageLoopRun, which is executed after PostMainMessageLoopStart,
+// where CertLoader is initialized. We can thus assume that CertLoader is
+// initialized.
+class SystemTokenCertDBInitializer {
+ public:
+  SystemTokenCertDBInitializer() : weak_ptr_factory_(this) {}
+  ~SystemTokenCertDBInitializer() {}
+
+  // Entry point, called on UI thread.
+  void Initialize() {
+    base::Callback<void(crypto::ScopedPK11Slot)> callback =
+        base::BindRepeating(&SystemTokenCertDBInitializer::InitializeDatabase,
+                            weak_ptr_factory_.GetWeakPtr());
+    content::BrowserThread::PostTask(
+        content::BrowserThread::IO, FROM_HERE,
+        base::BindOnce(&GetSystemSlotOnIOThread, callback));
+  }
+
+ private:
+  // Initializes the global system token NSSCertDatabase with |system_slot|.
+  // Also starts CertLoader with the system token database.
+  void InitializeDatabase(crypto::ScopedPK11Slot system_slot) {
+    // Currently, NSSCertDatabase requires a public slot to be set, so we use
+    // the system slot there. We also want GetSystemSlot() to return the system
+    // slot. As ScopedPK11Slot is actually a unique_ptr which will be moved into
+    // the NSSCertDatabase, we need to create a copy, referencing the same slot
+    // (using PK11_ReferenceSlot).
+    crypto::ScopedPK11Slot system_slot_copy =
+        crypto::ScopedPK11Slot(PK11_ReferenceSlot(system_slot.get()));
+    auto database = base::MakeUnique<net::NSSCertDatabaseChromeOS>(
+        std::move(system_slot) /* public_slot */,
+        crypto::ScopedPK11Slot() /* private_slot */);
+    database->SetSystemSlot(std::move(system_slot_copy));
+    system_token_cert_database_ = std::move(database);
+
+    CertLoader::Get()->SetSystemNSSDB(system_token_cert_database_.get());
+  }
+
+  // Global NSSCertDatabase which sees the system token.
+  std::unique_ptr<net::NSSCertDatabase> system_token_cert_database_;
+
+  base::WeakPtrFactory<SystemTokenCertDBInitializer> weak_ptr_factory_;
+};
+
 }  //  namespace internal
 
 // ChromeBrowserMainPartsChromeos ----------------------------------------------
@@ -469,6 +550,12 @@ void ChromeBrowserMainPartsChromeos::PreMainMessageLoopRun() {
   TPMTokenLoader::Get()->SetCryptoTaskRunner(
       content::BrowserThread::GetTaskRunnerForThread(
           content::BrowserThread::IO));
+
+  // Initialize NSS database for system token.
+  TPMTokenLoader::Get()->EnsureStarted();
+  system_token_certdb_initializer_ =
+      base::MakeUnique<internal::SystemTokenCertDBInitializer>();
+  system_token_certdb_initializer_->Initialize();
 
   CrasAudioHandler::Initialize(
       new AudioDevicesPrefHandlerImpl(g_browser_process->local_state()));
@@ -998,6 +1085,10 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
 void ChromeBrowserMainPartsChromeos::PostDestroyThreads() {
   // Destroy DBus services immediately after threads are stopped.
   dbus_services_.reset();
+
+  // Reset SystemTokenCertDBInitializer after DBus services because it should
+  // outlive CertLoader.
+  system_token_certdb_initializer_.reset();
 
   ChromeBrowserMainPartsLinux::PostDestroyThreads();
 

@@ -15,11 +15,10 @@
 #include "base/observer_list.h"
 #include "base/threading/thread_checker.h"
 #include "chromeos/chromeos_export.h"
-#include "net/cert/cert_database.h"
+#include "net/cert/x509_certificate.h"
 
 namespace net {
 class NSSCertDatabase;
-class X509Certificate;
 typedef std::vector<scoped_refptr<X509Certificate> > CertificateList;
 }
 
@@ -31,13 +30,19 @@ namespace chromeos {
 // When certificates have been loaded (after login completes and tpm token is
 // initialized), or the cert database changes, observers are called with
 // OnCertificatesLoaded().
-class CHROMEOS_EXPORT CertLoader : public net::CertDatabase::Observer {
+// This class supports using one or two cert databases. The expected usage is
+// that CertLoader is used with a NSSCertDatabase backed by the system token
+// before user sign-in, and additionally with a user-specific NSSCertDatabase
+// after user sign-in. When both NSSCertDatabase are used, CertLoader combines
+// certificates from both into |all_certs()|.
+class CHROMEOS_EXPORT CertLoader {
  public:
   class Observer {
    public:
     // Called when the certificates, passed for convenience as |all_certs|,
     // have completed loading. |initial_load| is true the first time this
-    // is called.
+    // is called. It will be false if this is called because another slot has
+    // been added to CertLoader's data sources.
     virtual void OnCertificatesLoaded(const net::CertificateList& all_certs,
                                       bool initial_load) = 0;
 
@@ -64,12 +69,21 @@ class CHROMEOS_EXPORT CertLoader : public net::CertDatabase::Observer {
   static std::string GetPkcs11IdAndSlotForCert(const net::X509Certificate& cert,
                                                int* slot_id);
 
-  // Starts the CertLoader with the NSS cert database.
+  // Starts the CertLoader with the passed system NSS cert database.
+  // The CertLoader will _not_ take ownership of the database - see comment on
+  // SetUserNSSDB.
+  // CertLoader supports working with only one database or with both (system and
+  // user) databases.
+  void SetSystemNSSDB(net::NSSCertDatabase* system_slot_database);
+
+  // Starts the CertLoader with the passed user NSS cert database.
   // The CertLoader will _not_ take the ownership of the database, but it
   // expects it to stay alive at least until the shutdown starts on the main
-  // thread. This assumes that |StartWithNSSDB| and other methods directly
+  // thread. This assumes that SetUserNSSDB and other methods directly
   // using |database_| are not called during shutdown.
-  void StartWithNSSDB(net::NSSCertDatabase* database);
+  // CertLoader supports working with only one database or with both (system and
+  // user) databases.
+  void SetUserNSSDB(net::NSSCertDatabase* user_database);
 
   void AddObserver(CertLoader::Observer* observer);
   void RemoveObserver(CertLoader::Observer* observer);
@@ -79,22 +93,33 @@ class CHROMEOS_EXPORT CertLoader : public net::CertDatabase::Observer {
   static bool IsCertificateHardwareBacked(const net::X509Certificate* cert);
 
   // Returns true when the certificate list has been requested but not loaded.
-  bool CertificatesLoading() const;
+  // When two databases are in use (SetSystemNSSDB and SetUserNSSDB have both
+  // been called), this returns true when at least one of them is currently
+  // loading certificates.
+  // Note that this method poses an exception in the CertLoader interface:
+  // While most of CertLoader's interface treats the initial load of a second
+  // database the same way as an update in the first database, this method does
+  // not. The reason is that it's targeted at displaying a message in the GUI,
+  // so the user knows that (more) certificates will be available soon.
+  bool initial_load_of_any_database_running() const;
 
-  bool certificates_loaded() const { return certificates_loaded_; }
+  // Returns true if any certificates have been loaded. If CertLoader uses a
+  // system and a user NSS database, this returns true after the certificates
+  // from the first (usually system) database have been loaded.
+  bool initial_load_finished() const;
 
   // Returns all certificates. This will be empty until certificates_loaded() is
   // true.
   const net::CertificateList& all_certs() const {
     DCHECK(thread_checker_.CalledOnValidThread());
-    return *all_certs_;
+    return all_certs_;
   }
 
   // Returns certificates from the system token. This will be empty until
   // certificates_loaded() is true.
   const net::CertificateList& system_certs() const {
     DCHECK(thread_checker_.CalledOnValidThread());
-    return *system_certs_;
+    return system_certs_;
   }
 
   // Called in tests if |IsCertificateHardwareBacked()| should always return
@@ -102,42 +127,37 @@ class CHROMEOS_EXPORT CertLoader : public net::CertDatabase::Observer {
   static void ForceHardwareBackedForTesting();
 
  private:
+  class CertCache;
+
   CertLoader();
-  ~CertLoader() override;
+  ~CertLoader();
 
-  // Trigger a certificate load. If a certificate loading task is already in
-  // progress, will start a reload once the current task is finished.
-  void LoadCertificates();
-
-  // Called when the underlying NSS database finished loading certificates.
-  void CertificatesLoaded(std::unique_ptr<net::CertificateList> all_certs);
+  // Called by |system_cert_cache_| or |user_cert_cache| when these had an
+  // update.
+  void CacheUpdated();
 
   // Called if a certificate load task is finished.
-  void UpdateCertificates(std::unique_ptr<net::CertificateList> all_certs,
-                          std::unique_ptr<net::CertificateList> system_certs);
+  void UpdateCertificates(net::CertificateList all_certs,
+                          net::CertificateList system_certs);
 
   void NotifyCertificatesLoaded(bool initial_load);
 
-  // net::CertDatabase::Observer
-  void OnCertDBChanged() override;
+  // True if the initial load of CertLoader is still pending. This is used to
+  // set the |initial_load| parameter when calling Observers.
+  bool pending_initial_load_;
 
   base::ObserverList<Observer> observers_;
 
-  // Flags describing current CertLoader state.
-  bool certificates_loaded_;
-  bool certificates_update_required_;
-  bool certificates_update_running_;
+  // Cache for certificates from the system-token NSSCertDatabase.
+  std::unique_ptr<CertCache> system_cert_cache_;
+  // Cache for certificates from the user-specific NSSCertDatabase.
+  std::unique_ptr<CertCache> user_cert_cache_;
 
-  // The user-specific NSS certificate database from which the certificates
-  // should be loaded.
-  net::NSSCertDatabase* database_;
+  // Cached certificates loaded from the database(s).
+  net::CertificateList all_certs_;
 
-  // Cached certificates loaded from the database.
-  std::unique_ptr<net::CertificateList> all_certs_;
-
-  // Cached certificates from system token. Currently this is a sublist of
-  // |all_certs_|.
-  std::unique_ptr<net::CertificateList> system_certs_;
+  // Cached certificates from system token.
+  net::CertificateList system_certs_;
 
   base::ThreadChecker thread_checker_;
 

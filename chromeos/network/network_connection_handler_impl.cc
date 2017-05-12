@@ -141,7 +141,7 @@ void NetworkConnectionHandlerImpl::Init(
   if (CertLoader::IsInitialized()) {
     cert_loader_ = CertLoader::Get();
     cert_loader_->AddObserver(this);
-    if (cert_loader_->certificates_loaded()) {
+    if (cert_loader_->initial_load_finished()) {
       NET_LOG_EVENT("Certificates Loaded", "");
       certificates_loaded_ = true;
     }
