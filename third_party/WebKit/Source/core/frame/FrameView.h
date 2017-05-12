@@ -40,7 +40,6 @@
 #include "core/paint/PaintInvalidationCapableScrollableArea.h"
 #include "core/paint/PaintPhase.h"
 #include "core/paint/ScrollbarManager.h"
-#include "core/plugins/PluginView.h"
 #include "platform/FrameViewBase.h"
 #include "platform/PlatformFrameView.h"
 #include "platform/RuntimeEnabledFeatures.h"
@@ -482,8 +481,7 @@ class CORE_EXPORT FrameView final
   // and repaints to the host window in the window's coordinate space.
   PlatformChromeClient* GetChromeClient() const;
 
-  typedef HeapHashSet<Member<FrameViewBase>> ChildrenSet;
-  typedef HeapHashSet<Member<PluginView>> PluginsSet;
+  typedef HeapHashSet<Member<FrameOrPlugin>> ChildrenSet;
   typedef HeapHashSet<Member<Scrollbar>> ScrollbarsSet;
 
   // Functions for child manipulation and inspection.
@@ -496,16 +494,13 @@ class CORE_EXPORT FrameView final
   bool IsVisible() const {
     return self_visible_ && parent_visible_;
   }  // Whether or not we are actually visible.
-  void SetParentVisible(bool);
+  void SetParentVisible(bool) override;
   void SetSelfVisible(bool v) { self_visible_ = v; }
-  void SetParent(FrameViewBase*) override;
-  FrameViewBase* Parent() const override { return parent_; }
-  void RemoveChild(FrameViewBase*);
-  void AddChild(FrameViewBase*);
-  const ChildrenSet* Children() const { return &children_; }
-  void RemovePlugin(PluginView*);
-  void AddPlugin(PluginView*);
-  const PluginsSet* Plugins() const { return &plugins_; }
+  void SetParent(FrameView*) override;
+  FrameView* Parent() const override { return parent_; }
+  void RemoveChild(FrameOrPlugin*);
+  void AddChild(FrameOrPlugin*);
+  const ChildrenSet& Children() const { return children_; }
   void RemoveScrollbar(Scrollbar*);
   void AddScrollbar(Scrollbar*);
   const ScrollbarsSet* Scrollbars() const { return &scrollbars_; }
@@ -655,10 +650,9 @@ class CORE_EXPORT FrameView final
 
   IntRect ConvertToRootFrame(const IntRect&) const;
   IntPoint ConvertToRootFrame(const IntPoint&) const;
-  IntPoint ConvertSelfToChild(const FrameViewBase*, const IntPoint&) const;
+  IntPoint ConvertSelfToChild(const FrameOrPlugin&, const IntPoint&) const;
 
-  // FrameViewBase override. Handles painting of the contents of the view as
-  // well as the scrollbars.
+  // Handles painting of the contents of the view as well as the scrollbars.
   void Paint(GraphicsContext&, const CullRect&) const override;
   void Paint(GraphicsContext&, const GlobalPaintFlags, const CullRect&) const;
   void PaintContents(GraphicsContext&,
@@ -1071,7 +1065,7 @@ class CORE_EXPORT FrameView final
   EmbeddedObjectSet part_update_set_;
 
   // FIXME: These are just "children" of the FrameView and should be
-  // Member<FrameViewBase> instead.
+  // Member<FrameView> instead.
   HashSet<RefPtr<LayoutPart>> parts_;
 
   Member<LocalFrame> frame_;
@@ -1151,7 +1145,6 @@ class CORE_EXPORT FrameView final
   bool vertical_scrollbar_lock_;
 
   ChildrenSet children_;
-  PluginsSet plugins_;
   ScrollbarsSet scrollbars_;
 
   ScrollOffset pending_scroll_delta_;
@@ -1182,7 +1175,7 @@ class CORE_EXPORT FrameView final
 
   // Paint properties for SPv2 Only.
   // The hierarchy of transform subtree created by a FrameView.
-  // [ preTranslation ]               The offset from FrameViewBase::frameRect.
+  // [ preTranslation ]               The offset from FrameView::FrameRect.
   //     |                            Establishes viewport.
   //     +---[ scrollTranslation ]    Frame scrolling.
   // TODO(trchen): These will not be needed once settings->rootLayerScrolls() is
@@ -1279,6 +1272,11 @@ DEFINE_TYPE_CASTS(FrameView,
                   frameViewBase,
                   frameViewBase->IsFrameView(),
                   frameViewBase.IsFrameView());
+DEFINE_TYPE_CASTS(FrameView,
+                  FrameOrPlugin,
+                  frame_or_plugin,
+                  frame_or_plugin->IsFrameView(),
+                  frame_or_plugin.IsFrameView());
 DEFINE_TYPE_CASTS(FrameView,
                   ScrollableArea,
                   scrollableArea,

@@ -37,7 +37,6 @@ namespace blink {
 class ExceptionState;
 class Frame;
 class FrameOrPlugin;
-class FrameViewBase;
 class LayoutPart;
 
 class CORE_EXPORT HTMLFrameOwnerElement : public HTMLElement,
@@ -62,9 +61,9 @@ class CORE_EXPORT HTMLFrameOwnerElement : public HTMLElement,
   virtual bool LoadedNonEmptyDocument() const { return false; }
   virtual void DidLoadNonEmptyDocument() {}
 
-  void SetWidget(FrameViewBase*);
-  FrameViewBase* ReleaseWidget();
-  FrameViewBase* OwnedWidget() const;
+  void SetWidget(FrameOrPlugin*);
+  FrameOrPlugin* ReleaseWidget();
+  FrameOrPlugin* OwnedWidget() const { return widget_; }
 
   class UpdateSuspendScope {
     STACK_ALLOCATED();
@@ -141,7 +140,7 @@ class CORE_EXPORT HTMLFrameOwnerElement : public HTMLElement,
   }
 
   Member<Frame> content_frame_;
-  Member<FrameViewBase> widget_;
+  Member<FrameOrPlugin> widget_;
   SandboxFlags sandbox_flags_;
 
   WebParsedFeaturePolicy container_policy_;

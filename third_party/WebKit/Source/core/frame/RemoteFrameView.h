@@ -7,7 +7,6 @@
 
 #include "core/frame/FrameOrPlugin.h"
 #include "core/frame/FrameView.h"
-#include "platform/FrameViewBase.h"
 #include "platform/geometry/IntRect.h"
 #include "platform/heap/Handle.h"
 
@@ -18,7 +17,6 @@ class GraphicsContext;
 class RemoteFrame;
 
 class RemoteFrameView final : public GarbageCollectedFinalized<RemoteFrameView>,
-                              public FrameViewBase,
                               public FrameOrPlugin {
   USING_GARBAGE_COLLECTED_MIXIN(RemoteFrameView);
 
@@ -27,9 +25,8 @@ class RemoteFrameView final : public GarbageCollectedFinalized<RemoteFrameView>,
 
   ~RemoteFrameView() override;
 
-  bool IsRemoteFrameView() const override { return true; }
-  void SetParent(FrameViewBase*) override;
-  FrameViewBase* Parent() const override { return parent_; }
+  void SetParent(FrameView*) override;
+  FrameView* Parent() const override { return parent_; }
 
   RemoteFrame& GetFrame() const {
     DCHECK(remote_frame_);
@@ -42,13 +39,10 @@ class RemoteFrameView final : public GarbageCollectedFinalized<RemoteFrameView>,
   void InvalidateRect(const IntRect&);
   void SetFrameRect(const IntRect&) override;
   const IntRect& FrameRect() const override { return frame_rect_; }
-  IntPoint Location() const override { return frame_rect_.Location(); }
   void Paint(GraphicsContext&, const CullRect&) const override {}
   void Hide() override;
   void Show() override;
   void SetParentVisible(bool) override;
-
-  IntRect ConvertFromContainingFrameViewBase(const IntRect&) const override;
 
   void UpdateRemoteViewportIntersection();
 
@@ -56,6 +50,8 @@ class RemoteFrameView final : public GarbageCollectedFinalized<RemoteFrameView>,
 
  private:
   explicit RemoteFrameView(RemoteFrame*);
+
+  IntRect ConvertFromRootFrame(const IntRect&) const;
 
   // The properties and handling of the cycle between RemoteFrame
   // and its RemoteFrameView corresponds to that between LocalFrame
@@ -68,12 +64,6 @@ class RemoteFrameView final : public GarbageCollectedFinalized<RemoteFrameView>,
   bool self_visible_;
   bool parent_visible_;
 };
-
-DEFINE_TYPE_CASTS(RemoteFrameView,
-                  FrameViewBase,
-                  frameViewBase,
-                  frameViewBase->IsRemoteFrameView(),
-                  frameViewBase.IsRemoteFrameView());
 
 }  // namespace blink
 

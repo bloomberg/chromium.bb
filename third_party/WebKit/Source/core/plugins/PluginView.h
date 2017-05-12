@@ -50,6 +50,8 @@ class CORE_EXPORT PluginView : public FrameOrPlugin {
  public:
   virtual ~PluginView() {}
 
+  bool IsPluginView() const override { return true; }
+
   virtual void SetParent(FrameView*) = 0;
   virtual FrameView* Parent() const = 0;
   virtual void SetParentVisible(bool) = 0;
@@ -76,6 +78,12 @@ class CORE_EXPORT PluginView : public FrameOrPlugin {
   virtual void UpdateAllLifecyclePhases() {}
   virtual void InvalidatePaint() {}
 };
+
+DEFINE_TYPE_CASTS(PluginView,
+                  FrameOrPlugin,
+                  frame_or_plugin,
+                  frame_or_plugin->IsPluginView(),
+                  frame_or_plugin.IsPluginView());
 
 }  // namespace blink
 

@@ -27,6 +27,7 @@
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/HTMLNames.h"
 #include "core/dom/RawDataDocumentParser.h"
+#include "core/frame/FrameOrPlugin.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/LocalFrameClient.h"
@@ -119,7 +120,7 @@ void PluginDocumentParser::CreateDocumentStructure() {
     return;
   }
 
-  ToPluginDocument(GetDocument())->SetPluginNode(embed_element_.Get());
+  ToPluginDocument(GetDocument())->SetPluginNode(embed_element_);
 
   GetDocument()->UpdateStyleAndLayout();
 
@@ -176,13 +177,7 @@ DocumentParser* PluginDocument::CreateParser() {
 }
 
 PluginView* PluginDocument::GetPluginView() {
-  return plugin_node_ && IsHTMLPlugInElement(plugin_node_)
-             ? ToHTMLPlugInElement(plugin_node_)->Plugin()
-             : nullptr;
-}
-
-Node* PluginDocument::PluginNode() {
-  return plugin_node_.Get();
+  return plugin_node_ ? plugin_node_->OwnedPlugin() : nullptr;
 }
 
 void PluginDocument::Shutdown() {

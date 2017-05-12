@@ -65,9 +65,9 @@ void LayoutPart::WillBeDestroyed() {
     cache->Remove(this);
   }
 
-  Element* element = ToElement(GetNode());
-  if (element && element->IsFrameOwnerElement())
-    ToHTMLFrameOwnerElement(element)->SetWidget(nullptr);
+  Node* node = GetNode();
+  if (node && node->IsFrameOwnerElement())
+    ToHTMLFrameOwnerElement(node)->SetWidget(nullptr);
 
   LayoutReplaced::WillBeDestroyed();
 }
@@ -92,39 +92,24 @@ LayoutPart::~LayoutPart() {
 }
 
 FrameView* LayoutPart::ChildFrameView() const {
-  // FrameViews are stored in HTMLFrameOwnerElement node.
-  Node* node = GetNode();
-  if (node && node->IsFrameOwnerElement()) {
-    FrameViewBase* frame_view_base =
-        ToHTMLFrameOwnerElement(node)->OwnedWidget();
-    if (frame_view_base && frame_view_base->IsFrameView())
-      return ToFrameView(frame_view_base);
-  }
+  FrameOrPlugin* frame_or_plugin = GetFrameOrPlugin();
+  if (frame_or_plugin && frame_or_plugin->IsFrameView())
+    return ToFrameView(frame_or_plugin);
   return nullptr;
 }
 
 PluginView* LayoutPart::Plugin() const {
-  // Plugins are stored in HTMLPlugInElement node.
-  Node* node = GetNode();
-  return node && IsHTMLPlugInElement(node) ? ToHTMLPlugInElement(node)->Plugin()
-                                           : nullptr;
+  FrameOrPlugin* frame_or_plugin = GetFrameOrPlugin();
+  if (frame_or_plugin && frame_or_plugin->IsPluginView())
+    return ToPluginView(frame_or_plugin);
+  return nullptr;
 }
 
 FrameOrPlugin* LayoutPart::GetFrameOrPlugin() const {
   Node* node = GetNode();
-  if (node && node->IsFrameOwnerElement()) {
-    FrameViewBase* frame_view_base =
-        ToHTMLFrameOwnerElement(node)->OwnedWidget();
-    if (frame_view_base) {
-      if (frame_view_base->IsFrameView())
-        return ToFrameView(frame_view_base);
-      if (frame_view_base->IsRemoteFrameView())
-        return ToRemoteFrameView(frame_view_base);
-      // Must be either FrameView or RemoteFrameView.
-      NOTREACHED();
-    }
-  }
-  return Plugin();
+  if (node && node->IsFrameOwnerElement())
+    return ToHTMLFrameOwnerElement(node)->OwnedWidget();
+  return nullptr;
 }
 
 PaintLayerType LayoutPart::LayerTypeRequired() const {

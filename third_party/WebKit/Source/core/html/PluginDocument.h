@@ -30,7 +30,7 @@
 
 namespace blink {
 
-class Node;
+class HTMLPlugInElement;
 class PluginView;
 
 class CORE_EXPORT PluginDocument final : public HTMLDocument {
@@ -40,10 +40,12 @@ class CORE_EXPORT PluginDocument final : public HTMLDocument {
     return new PluginDocument(initializer);
   }
 
-  void SetPluginNode(Node* plugin_node) { plugin_node_ = plugin_node; }
+  void SetPluginNode(HTMLPlugInElement* plugin_node) {
+    plugin_node_ = plugin_node;
+  }
+  HTMLPlugInElement* PluginNode() { return plugin_node_; }
 
   PluginView* GetPluginView();
-  Node* PluginNode();
 
   void Shutdown() override;
 
@@ -54,7 +56,7 @@ class CORE_EXPORT PluginDocument final : public HTMLDocument {
 
   DocumentParser* CreateParser() override;
 
-  Member<Node> plugin_node_;
+  Member<HTMLPlugInElement> plugin_node_;
 };
 
 DEFINE_DOCUMENT_TYPE_CASTS(PluginDocument);
