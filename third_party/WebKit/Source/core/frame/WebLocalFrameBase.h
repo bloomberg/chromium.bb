@@ -15,7 +15,10 @@ class FrameView;
 class LocalFrame;
 class Node;
 class Page;
+class TextFinder;
+class WebDevToolsAgentImpl;
 class WebFrameClient;
+class WebFrameWidgetBase;
 class WebTextCheckClient;
 class WebViewBase;
 
@@ -35,6 +38,7 @@ class WebLocalFrameBase : public GarbageCollectedFinalized<WebLocalFrameBase>,
 
   virtual WebViewBase* ViewImpl() const = 0;
   virtual WebFrameClient* Client() const = 0;
+  virtual void SetClient(WebFrameClient*) = 0;
   virtual WebTextCheckClient* TextCheckClient() const = 0;
   virtual void SetContextMenuNode(Node*) = 0;
   virtual void ClearContextMenuNode() = 0;
@@ -43,6 +47,9 @@ class WebLocalFrameBase : public GarbageCollectedFinalized<WebLocalFrameBase>,
   virtual void InitializeCoreFrame(Page&,
                                    FrameOwner*,
                                    const AtomicString& name) = 0;
+  virtual TextFinder& EnsureTextFinder() = 0;
+  virtual void SetFrameWidget(WebFrameWidgetBase*) = 0;
+  virtual WebDevToolsAgentImpl* DevToolsAgentImpl() const = 0;
 
   DEFINE_INLINE_VIRTUAL_TRACE() {}
 

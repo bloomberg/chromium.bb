@@ -83,6 +83,7 @@
 #include "core/dom/Element.h"
 #include "core/editing/serializers/Serialization.h"
 #include "core/frame/FrameSerializer.h"
+#include "core/frame/WebLocalFrameBase.h"
 #include "core/html/HTMLAllCollection.h"
 #include "core/html/HTMLElement.h"
 #include "core/html/HTMLFormElement.h"
@@ -95,7 +96,6 @@
 #include "platform/wtf/text/TextEncoding.h"
 #include "public/platform/WebCString.h"
 #include "public/platform/WebVector.h"
-#include "web/WebLocalFrameImpl.h"
 
 namespace blink {
 
@@ -445,7 +445,7 @@ WebFrameSerializerImpl::WebFrameSerializerImpl(
       xml_entities_(true) {
   // Must specify available webframe.
   DCHECK(frame);
-  specified_web_local_frame_impl_ = ToWebLocalFrameImpl(frame);
+  specified_web_local_frame_impl_ = ToWebLocalFrameBase(frame);
   // Make sure we have non null client and delegate.
   DCHECK(client);
   DCHECK(delegate);

@@ -36,6 +36,7 @@
 #include "core/dom/SecurityContext.h"
 #include "core/dom/TaskRunnerHelper.h"
 #include "core/exported/WebDataSourceImpl.h"
+#include "core/frame/WebLocalFrameBase.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "core/loader/FrameLoadRequest.h"
@@ -77,7 +78,6 @@
 #include "web/IndexedDBClientImpl.h"
 #include "web/ServiceWorkerGlobalScopeClientImpl.h"
 #include "web/ServiceWorkerGlobalScopeProxy.h"
-#include "web/WebLocalFrameImpl.h"
 
 namespace blink {
 
@@ -293,7 +293,7 @@ void WebEmbeddedWorkerImpl::PrepareShadowPageForLoader() {
   settings->SetStrictMixedContentChecking(true);
   settings->SetAllowRunningOfInsecureContent(false);
   settings->SetDataSaverEnabled(worker_start_data_.data_saver_enabled);
-  main_frame_ = ToWebLocalFrameImpl(WebLocalFrame::Create(
+  main_frame_ = ToWebLocalFrameBase(WebLocalFrame::Create(
       WebTreeScopeType::kDocument, this, nullptr, nullptr));
   web_view_->SetMainFrame(main_frame_.Get());
   main_frame_->SetDevToolsAgentClient(this);
