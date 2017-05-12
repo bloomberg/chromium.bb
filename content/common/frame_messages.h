@@ -160,11 +160,8 @@ IPC_STRUCT_TRAITS_BEGIN(content::ContextMenuParams)
   IPC_STRUCT_TRAITS_MEMBER(custom_context)
   IPC_STRUCT_TRAITS_MEMBER(custom_items)
   IPC_STRUCT_TRAITS_MEMBER(source_type)
-#if defined(OS_ANDROID)
-  IPC_STRUCT_TRAITS_MEMBER(selection_start)
-  IPC_STRUCT_TRAITS_MEMBER(selection_end)
-#endif
   IPC_STRUCT_TRAITS_MEMBER(input_field_type)
+  IPC_STRUCT_TRAITS_MEMBER(selection_rect)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(content::CustomContextMenuContext)

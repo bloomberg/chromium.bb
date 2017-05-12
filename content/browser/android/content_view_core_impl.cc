@@ -597,9 +597,12 @@ bool ContentViewCoreImpl::ShowPastePopup(const ContextMenuParams& params) {
   const bool can_edit_richly =
       !!(params.edit_flags & blink::WebContextMenuData::kCanEditRichly);
 
-  Java_ContentViewCore_showPastePopup(env, obj, params.selection_start.x(),
-                                      params.selection_start.y(),
-                                      can_select_all, can_edit_richly);
+  int handle_height = GetRenderWidgetHostViewAndroid()->GetTouchHandleHeight();
+  Java_ContentViewCore_showPastePopup(
+      env, obj, params.selection_rect.x(), params.selection_rect.y(),
+      params.selection_rect.right(),
+      params.selection_rect.bottom() + handle_height, can_select_all,
+      can_edit_richly);
   return true;
 }
 

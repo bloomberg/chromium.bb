@@ -4,6 +4,8 @@
 
 package org.chromium.content.browser.input;
 
+import android.graphics.Rect;
+
 /**
  * Paste popup implementation based on TextView.PastePopupMenu.
  */
@@ -44,9 +46,9 @@ public interface PastePopupMenu {
     }
 
     /**
-     * Shows the paste popup at an appropriate location relative to the specified position.
+     * Shows the paste popup at an appropriate location relative to the specified selection.
      */
-    public void show(int x, int y);
+    public void show(Rect selectionRect);
 
     /**
      * Hides the paste popup.

@@ -8,7 +8,6 @@ import android.annotation.TargetApi;
 import android.content.Context;
 import android.graphics.Rect;
 import android.os.Build;
-import android.util.TypedValue;
 import android.view.ActionMode;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -23,25 +22,12 @@ import org.chromium.ui.base.DeviceFormFactor;
  */
 @TargetApi(Build.VERSION_CODES.M)
 public class FloatingPastePopupMenu implements PastePopupMenu {
-    private static final int CONTENT_RECT_OFFSET_DIP = 15;
-    private static final int SLOP_LENGTH_DIP = 10;
-
     private final View mParent;
     private final PastePopupMenuDelegate mDelegate;
     private final Context mContext;
 
-    // Offset from the paste coordinates to provide the floating ActionMode.
-    private final int mContentRectOffset;
-
-    // Slack for ignoring small deltas in the paste popup position. The initial
-    // position can change by a few pixels due to differences in how context
-    // menu and selection coordinates are computed. Suppressing this small delta
-    // avoids the floating ActionMode flicker when the popup is repositioned.
-    private final int mSlopLengthSquared;
-
     private ActionMode mActionMode;
-    private int mRawPositionX;
-    private int mRawPositionY;
+    private Rect mSelectionRect;
 
     public FloatingPastePopupMenu(Context context, View parent, PastePopupMenuDelegate delegate) {
         assert Build.VERSION.SDK_INT >= Build.VERSION_CODES.M;
@@ -49,22 +35,11 @@ public class FloatingPastePopupMenu implements PastePopupMenu {
         mParent = parent;
         mDelegate = delegate;
         mContext = context;
-
-        mContentRectOffset = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
-                CONTENT_RECT_OFFSET_DIP, mContext.getResources().getDisplayMetrics());
-        int slopLength = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
-                SLOP_LENGTH_DIP, mContext.getResources().getDisplayMetrics());
-        mSlopLengthSquared = slopLength * slopLength;
     }
 
     @Override
-    public void show(int x, int y) {
-        int dx = mRawPositionX - x;
-        int dy = mRawPositionY - y;
-        if (dx * dx + dy * dy < mSlopLengthSquared) return;
-
-        mRawPositionX = x;
-        mRawPositionY = y;
+    public void show(Rect selectionRect) {
+        mSelectionRect = selectionRect;
         if (mActionMode != null) {
             mActionMode.invalidateContentRect();
             return;
@@ -154,10 +129,7 @@ public class FloatingPastePopupMenu implements PastePopupMenu {
 
         @Override
         public void onGetContentRect(ActionMode mode, View view, Rect outRect) {
-            // Use a rect that spans above and below the insertion point.
-            // This avoids paste popup overlap with selection handles.
-            outRect.set(mRawPositionX - mContentRectOffset, mRawPositionY - mContentRectOffset,
-                    mRawPositionX + mContentRectOffset, mRawPositionY + mContentRectOffset);
+            outRect.set(mSelectionRect);
         }
     };
 }
