@@ -155,10 +155,12 @@ class PaymentRequestDialogView : public views::DialogDelegateView,
   Profile* GetProfile();
 
   ViewStack* view_stack_for_testing() { return view_stack_.get(); }
+  views::View* throbber_overlay_for_testing() { return &throbber_overlay_; }
 
  private:
   void ShowInitialPaymentSheet();
   void SetupSpinnerOverlay();
+  void HideProcessingSpinner();
 
   // views::View
   gfx::Size GetPreferredSize() const override;
