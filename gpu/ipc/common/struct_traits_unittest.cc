@@ -430,6 +430,7 @@ TEST_F(StructTraitsTest, GpuPreferences) {
   prefs.single_process = true;
   prefs.in_process_gpu = true;
   prefs.ui_prioritize_in_gpu_process = true;
+  prefs.enable_gpu_scheduler = true;
 #if defined(OS_WIN)
   const GpuPreferences::VpxDecodeVendors vendor =
       GpuPreferences::VPX_VENDOR_AMD;
@@ -443,6 +444,7 @@ TEST_F(StructTraitsTest, GpuPreferences) {
   EXPECT_TRUE(echo.single_process);
   EXPECT_TRUE(echo.in_process_gpu);
   EXPECT_TRUE(echo.ui_prioritize_in_gpu_process);
+  EXPECT_TRUE(echo.enable_gpu_scheduler);
   EXPECT_TRUE(echo.enable_gpu_driver_debug_logging);
 #if defined(OS_WIN)
   EXPECT_EQ(vendor, echo.enable_accelerated_vpx_decode);

@@ -7,10 +7,10 @@
 
 #include "gpu/command_buffer/common/constants.h"
 #include "gpu/command_buffer/common/gpu_memory_allocation.h"
+#include "gpu/command_buffer/common/scheduling_priority.h"
 #include "gpu/config/gpu_feature_info.h"
 #include "gpu/config/gpu_info.h"
 #include "gpu/gpu_export.h"
-#include "gpu/ipc/common/gpu_stream_constants.h"
 #include "ipc/ipc_message_macros.h"
 #include "ui/gfx/ipc/geometry/gfx_param_traits.h"
 #include "ui/gfx/ipc/gfx_param_traits.h"
@@ -38,7 +38,8 @@ IPC_STRUCT_TRAITS_BEGIN(gpu::VideoEncodeAcceleratorSupportedProfile)
   IPC_STRUCT_TRAITS_MEMBER(max_framerate_denominator)
 IPC_STRUCT_TRAITS_END()
 
-IPC_ENUM_TRAITS_MAX_VALUE(gpu::GpuStreamPriority, gpu::GpuStreamPriority::LAST)
+IPC_ENUM_TRAITS_MAX_VALUE(gpu::SchedulingPriority,
+                          gpu::SchedulingPriority::kLast)
 IPC_ENUM_TRAITS_MAX_VALUE(gpu::MemoryAllocation::PriorityCutoff,
                           gpu::MemoryAllocation::CUTOFF_LAST)
 IPC_ENUM_TRAITS_MAX_VALUE(gpu::error::ContextLostReason,

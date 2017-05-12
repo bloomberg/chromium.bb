@@ -31,6 +31,7 @@
 #include "gpu/command_buffer/service/memory_tracking.h"
 #include "gpu/command_buffer/service/preemption_flag.h"
 #include "gpu/command_buffer/service/query_manager.h"
+#include "gpu/command_buffer/service/scheduler.h"
 #include "gpu/command_buffer/service/service_utils.h"
 #include "gpu/command_buffer/service/sync_point_manager.h"
 #include "gpu/command_buffer/service/transfer_buffer_manager.h"
@@ -652,8 +653,11 @@ bool GpuCommandBufferStub::Initialize(
       channel_->sync_point_manager()->CreateSyncPointClientState(
           CommandBufferNamespace::GPU_IO, command_buffer_id_, sequence_id_);
 
-  // TODO(sunnyps): Hook callback to gpu scheduler.
-  if (channel_->preempted_flag()) {
+  if (channel_->scheduler()) {
+    executor_->SetPauseExecutionCallback(
+        base::Bind(&Scheduler::ShouldYield,
+                   base::Unretained(channel_->scheduler()), sequence_id_));
+  } else if (channel_->preempted_flag()) {
     executor_->SetPauseExecutionCallback(
         base::Bind(&PreemptionFlag::IsSet, channel_->preempted_flag()));
   }

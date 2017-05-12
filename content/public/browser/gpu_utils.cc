@@ -55,6 +55,9 @@ const gpu::GpuPreferences GetGpuPreferencesFromCommandLine() {
       command_line->HasSwitch(switches::kInProcessGPU);
   gpu_preferences.ui_prioritize_in_gpu_process =
       command_line->HasSwitch(switches::kUIPrioritizeInGpuProcess);
+  gpu_preferences.enable_gpu_scheduler =
+      command_line->HasSwitch(switches::kEnableGpuScheduler) &&
+      !command_line->HasSwitch(switches::kDisableGpuScheduler);
   gpu_preferences.disable_accelerated_video_decode =
       command_line->HasSwitch(switches::kDisableAcceleratedVideoDecode);
 #if defined(OS_CHROMEOS)

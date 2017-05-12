@@ -27,8 +27,8 @@
 #include "gpu/command_buffer/common/command_buffer_id.h"
 #include "gpu/command_buffer/common/command_buffer_shared.h"
 #include "gpu/command_buffer/common/gpu_memory_allocation.h"
+#include "gpu/command_buffer/common/scheduling_priority.h"
 #include "gpu/gpu_export.h"
-#include "gpu/ipc/common/gpu_stream_constants.h"
 #include "gpu/ipc/common/surface_handle.h"
 #include "ipc/ipc_listener.h"
 #include "ui/gfx/swap_result.h"
@@ -83,7 +83,7 @@ class GPU_EXPORT CommandBufferProxyImpl
       gpu::SurfaceHandle surface_handle,
       CommandBufferProxyImpl* share_group,
       int32_t stream_id,
-      gpu::GpuStreamPriority stream_priority,
+      gpu::SchedulingPriority stream_priority,
       const gpu::gles2::ContextCreationAttribHelper& attribs,
       const GURL& active_url,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner);

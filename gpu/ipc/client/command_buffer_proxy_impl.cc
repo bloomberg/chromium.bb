@@ -60,7 +60,6 @@ CommandBufferProxyImpl::CommandBufferProxyImpl(int channel_id,
       stream_id_(stream_id),
       weak_this_(AsWeakPtr()) {
   DCHECK(route_id);
-  DCHECK_NE(stream_id, GPU_STREAM_INVALID);
 }
 
 // static
@@ -69,7 +68,7 @@ std::unique_ptr<CommandBufferProxyImpl> CommandBufferProxyImpl::Create(
     gpu::SurfaceHandle surface_handle,
     CommandBufferProxyImpl* share_group,
     int32_t stream_id,
-    gpu::GpuStreamPriority stream_priority,
+    gpu::SchedulingPriority stream_priority,
     const gpu::gles2::ContextCreationAttribHelper& attribs,
     const GURL& active_url,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
@@ -672,9 +671,6 @@ bool CommandBufferProxyImpl::CanWaitUnverifiedSyncToken(
 
   // If waiting on a different stream, flush pending commands on that stream.
   int32_t release_stream_id = sync_token.extra_data_field();
-  if (release_stream_id == gpu::GPU_STREAM_INVALID)
-    return false;
-
   if (release_stream_id != stream_id_)
     channel_->FlushPendingStream(release_stream_id);
 
