@@ -269,7 +269,7 @@ void FrameSelection::DidSetSelectionDeprecated(SetSelectionOptions options,
   }
 
   EUserTriggered user_triggered = SelectionOptionsToUserTriggered(options);
-  NotifyLayoutObjectOfSelectionChange(user_triggered);
+  NotifyTextControlOfSelectionChange(user_triggered);
   if (user_triggered == kUserTriggered) {
     ScrollAlignment alignment;
 
@@ -708,7 +708,7 @@ void FrameSelection::SelectAll() {
                    .SetIsHandleVisible(IsHandleVisible())
                    .Build());
   SelectFrameElementInParentIfFullySelected();
-  NotifyLayoutObjectOfSelectionChange(kUserTriggered);
+  NotifyTextControlOfSelectionChange(kUserTriggered);
 }
 
 bool FrameSelection::SetSelectedRange(const EphemeralRange& range,
@@ -840,7 +840,7 @@ void FrameSelection::UpdateAppearance() {
   layout_selection_->SetHasPendingSelection();
 }
 
-void FrameSelection::NotifyLayoutObjectOfSelectionChange(
+void FrameSelection::NotifyTextControlOfSelectionChange(
     EUserTriggered user_triggered) {
   TextControlElement* text_control =
       EnclosingTextControl(GetSelectionInDOMTree().Base());
