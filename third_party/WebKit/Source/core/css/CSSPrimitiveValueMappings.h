@@ -1283,21 +1283,21 @@ template <>
 inline TextDecoration CSSIdentifierValue::ConvertTo() const {
   switch (value_id_) {
     case CSSValueNone:
-      return kTextDecorationNone;
+      return TextDecoration::kNone;
     case CSSValueUnderline:
-      return kTextDecorationUnderline;
+      return TextDecoration::kUnderline;
     case CSSValueOverline:
-      return kTextDecorationOverline;
+      return TextDecoration::kOverline;
     case CSSValueLineThrough:
-      return kTextDecorationLineThrough;
+      return TextDecoration::kLineThrough;
     case CSSValueBlink:
-      return kTextDecorationBlink;
+      return TextDecoration::kBlink;
     default:
       break;
   }
 
   NOTREACHED();
-  return kTextDecorationNone;
+  return TextDecoration::kNone;
 }
 
 template <>

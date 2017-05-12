@@ -175,7 +175,7 @@ void TextPainterBase::PaintDecorationsOnlyLineThrough(
   context.SetStrokeThickness(decoration_info.thickness);
   for (const AppliedTextDecoration& decoration : decorations) {
     TextDecoration lines = decoration.Lines();
-    if (lines & kTextDecorationLineThrough) {
+    if (EnumHasFlags(lines, TextDecoration::kLineThrough)) {
       const float line_through_offset = 2 * decoration_info.baseline / 3;
       AppliedDecorationPainter decoration_painter(
           context, decoration_info, line_through_offset, decoration,

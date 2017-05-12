@@ -52,7 +52,8 @@ static LineLayoutItem EnclosingUnderlineObject(
       return nullptr;
 
     const ComputedStyle& style_to_use = current.StyleRef(first_line);
-    if (style_to_use.GetTextDecoration() & kTextDecorationUnderline)
+    if (EnumHasFlags(style_to_use.GetTextDecoration(),
+                     TextDecoration::kUnderline))
       return current;
 
     current = current.Parent();
@@ -226,10 +227,10 @@ static void PaintDecorationsExceptLineThrough(
   for (const AppliedTextDecoration& decoration : decorations) {
     TextDecoration lines = decoration.Lines();
     if (flip_underline_and_overline) {
-      lines = static_cast<TextDecoration>(
-          lines ^ (kTextDecorationUnderline | kTextDecorationOverline));
+      lines ^= (TextDecoration::kUnderline | TextDecoration::kOverline);
     }
-    if ((lines & kTextDecorationUnderline) && decoration_info.font_data) {
+    if (EnumHasFlags(lines, TextDecoration::kUnderline) &&
+        decoration_info.font_data) {
       const int underline_offset = ComputeUnderlineOffset(
           underline_position, *decoration_info.style,
           decoration_info.font_data->GetFontMetrics(), &box, decorating_box,
@@ -238,7 +239,7 @@ static void PaintDecorationsExceptLineThrough(
           context, decoration_info, decoration, underline_offset,
           decoration_info.double_offset);
     }
-    if (lines & kTextDecorationOverline) {
+    if (EnumHasFlags(lines, TextDecoration::kOverline)) {
       const int overline_offset = ComputeUnderlineOffsetForUnder(
           *decoration_info.style, &box, decorating_box,
           decoration_info.thickness,
@@ -250,7 +251,8 @@ static void PaintDecorationsExceptLineThrough(
     }
     // We could instead build a vector of the TextDecoration instances needing
     // line-through but this is a rare case so better to avoid vector overhead.
-    has_line_through_decoration |= ((lines & kTextDecorationLineThrough) != 0);
+    has_line_through_decoration |=
+        EnumHasFlags(lines, TextDecoration::kLineThrough);
   }
 }
 
@@ -459,7 +461,7 @@ void InlineTextBoxPainter::Paint(const PaintInfo& paint_info,
     // Paint text decorations except line-through.
     DecorationInfo decoration_info;
     bool has_line_through_decoration = false;
-    if (style_to_use.TextDecorationsInEffect() != kTextDecorationNone &&
+    if (style_to_use.TextDecorationsInEffect() != TextDecoration::kNone &&
         inline_text_box_.Truncation() != kCFullTruncation) {
       LayoutPoint local_origin = LayoutPoint(box_origin);
       LayoutUnit width = inline_text_box_.LogicalWidth();

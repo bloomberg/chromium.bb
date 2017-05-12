@@ -1484,12 +1484,14 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
 
   // Text decoration properties.
   // text-decoration-line
-  static TextDecoration InitialTextDecoration() { return kTextDecorationNone; }
+  static TextDecoration InitialTextDecoration() {
+    return TextDecoration::kNone;
+  }
   TextDecoration GetTextDecoration() const {
     return static_cast<TextDecoration>(visual_data_->text_decoration_);
   }
   void SetTextDecoration(TextDecoration v) {
-    SET_VAR(visual_data_, text_decoration_, v);
+    SET_VAR(visual_data_, text_decoration_, static_cast<unsigned>(v));
   }
 
   // text-decoration-color

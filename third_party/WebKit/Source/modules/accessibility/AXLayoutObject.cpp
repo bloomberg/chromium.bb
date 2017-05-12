@@ -1035,9 +1035,9 @@ TextStyle AXLayoutObject::GetTextStyle() const {
     text_style |= kTextStyleBold;
   if (style->GetFontDescription().Style() == kFontStyleItalic)
     text_style |= kTextStyleItalic;
-  if (style->GetTextDecoration() == kTextDecorationUnderline)
+  if (style->GetTextDecoration() == TextDecoration::kUnderline)
     text_style |= kTextStyleUnderline;
-  if (style->GetTextDecoration() == kTextDecorationLineThrough)
+  if (style->GetTextDecoration() == TextDecoration::kLineThrough)
     text_style |= kTextStyleLineThrough;
 
   return static_cast<TextStyle>(text_style);

@@ -9,7 +9,7 @@ namespace blink {
 AppliedTextDecoration::AppliedTextDecoration(TextDecoration line,
                                              TextDecorationStyle style,
                                              Color color)
-    : lines_(line), style_(style), color_(color) {}
+    : lines_(static_cast<unsigned>(line)), style_(style), color_(color) {}
 
 bool AppliedTextDecoration::operator==(const AppliedTextDecoration& o) const {
   return color_ == o.color_ && lines_ == o.lines_ && style_ == o.style_;
