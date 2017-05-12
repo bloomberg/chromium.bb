@@ -398,7 +398,8 @@ class ChromePrintContext : public PrintContext {
     context.ConcatCTM(transform);
     context.ClipRect(page_rect);
 
-    PaintRecordBuilder builder(bounds, &context.Canvas()->getMetaData());
+    PaintRecordBuilder builder(bounds, &context.Canvas()->getMetaData(),
+                               &context);
 
     // The local scope is so that the cache skipper is destroyed before
     // we call endRecording().
