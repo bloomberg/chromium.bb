@@ -1123,8 +1123,12 @@ FileTransferController.prototype.canCutOrCopy_ = function(isMove) {
  * @private
  */
 FileTransferController.prototype.canCopyOrDrag_ = function() {
-  return this.selectionHandler_.isAvailable() &&
-      this.selectionHandler_.selection.entries.length > 0;
+  if (!this.selectionHandler_.isAvailable())
+    return false;
+  if (this.selectionHandler_.selection.entries.length <= 0)
+    return false;
+  var entries = this.selectionHandler_.selection.entries;
+  return entries.every(entry => !util.isTeamDriveRoot(entry));
 };
 
 /**

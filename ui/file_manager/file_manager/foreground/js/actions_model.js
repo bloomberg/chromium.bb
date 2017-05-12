@@ -89,7 +89,8 @@ DriveShareAction.prototype.execute = function() {
  */
 DriveShareAction.prototype.canExecute = function() {
   return this.volumeManager_.getDriveConnectionState().type !==
-      VolumeManagerCommon.DriveConnectionType.OFFLINE;
+      VolumeManagerCommon.DriveConnectionType.OFFLINE &&
+      !util.isTeamDriveRoot(this.entry_);
 };
 
 /**
