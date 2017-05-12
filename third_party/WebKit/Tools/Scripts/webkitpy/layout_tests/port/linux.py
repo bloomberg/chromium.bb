@@ -116,7 +116,7 @@ class LinuxPort(base.Port):
 
     def clean_up_test_run(self):
         super(LinuxPort, self).clean_up_test_run()
-        self._stop_xvfb()
+        self._stop_xvfb(save_logs=False)
         self._clean_up_dummy_home_dir()
 
     #
@@ -190,13 +190,13 @@ class LinuxPort(base.Port):
             exit_code = self.host.executive.run_command(
                 ['xdpyinfo'], return_exit_code=True)
             if exit_code == 0:
-                _log.info('Successfully started Xvfb with display "%s".', display)
+                _log.debug('Successfully started Xvfb with display "%s".', display)
                 return
             _log.warn('xdpyinfo check failed with exit code %s while starting Xvfb on "%s".', exit_code, display)
             self.host.sleep(0.1)
 
         retcode = self._xvfb_process.poll()
-        self._stop_xvfb()
+        self._stop_xvfb(save_logs=True)
         _log.critical('Failed to start Xvfb on display "%s" (xvfb retcode: %r).', display, retcode)
 
     def _find_display(self):
@@ -210,7 +210,7 @@ class LinuxPort(base.Port):
                 return display
         return None
 
-    def _stop_xvfb(self):
+    def _stop_xvfb(self, save_logs):
         if self._original_display:
             self.host.environ['DISPLAY'] = self._original_display
         if self._xvfb_stdout:
@@ -221,11 +221,11 @@ class LinuxPort(base.Port):
             _log.debug('Killing Xvfb process pid %d.', self._xvfb_process.pid)
             self._xvfb_process.kill()
             self._xvfb_process.wait()
-        if self._xvfb_stdout and self.host.filesystem.exists(self._xvfb_stdout.name):
+        if save_logs and self._xvfb_stdout and self.host.filesystem.exists(self._xvfb_stdout.name):
             for line in self.host.filesystem.read_text_file(self._xvfb_stdout.name).splitlines():
                 _log.warn('Xvfb stdout:  %s', line)
             self.host.filesystem.remove(self._xvfb_stdout.name)
-        if self._xvfb_stderr and self.host.filesystem.exists(self._xvfb_stderr.name):
+        if save_logs and self._xvfb_stderr and self.host.filesystem.exists(self._xvfb_stderr.name):
             for line in self.host.filesystem.read_text_file(self._xvfb_stderr.name).splitlines():
                 _log.warn('Xvfb stderr:  %s', line)
             self.host.filesystem.remove(self._xvfb_stderr.name)
