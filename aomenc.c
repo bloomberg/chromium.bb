@@ -1061,15 +1061,8 @@ static int parse_stream_params(struct AvxEncoderConfig *global,
     }
   }
 #if CONFIG_HIGHBITDEPTH
-#if CONFIG_LOWBITDEPTH
-  if (strcmp(global->codec->name, "av1") == 0 ||
-      strcmp(global->codec->name, "av1") == 0) {
-    config->use_16bit_internal =
-        test_16bit_internal | (config->cfg.g_profile > 1);
-  }
-#else
-  config->use_16bit_internal = 1;
-#endif
+  config->use_16bit_internal =
+      test_16bit_internal || (config->cfg.g_profile > 1) || !CONFIG_LOWBITDEPTH;
 #endif
   return eos_mark_found;
 }
