@@ -95,7 +95,7 @@ void MojoRenderer::InitializeRendererFromStreams(
   BindRemoteRendererIfNeeded();
 
   mojom::RendererClientAssociatedPtrInfo client_ptr_info;
-  client_binding_.Bind(&client_ptr_info);
+  client_binding_.Bind(mojo::MakeRequest(&client_ptr_info));
 
   // Using base::Unretained(this) is safe because |this| owns
   // |remote_renderer_|, and the callback won't be dispatched if
@@ -113,7 +113,7 @@ void MojoRenderer::InitializeRendererFromUrl(media::RendererClient* client) {
   BindRemoteRendererIfNeeded();
 
   mojom::RendererClientAssociatedPtrInfo client_ptr_info;
-  client_binding_.Bind(&client_ptr_info);
+  client_binding_.Bind(mojo::MakeRequest(&client_ptr_info));
 
   MediaUrlParams url_params = media_resource_->GetMediaUrlParams();
 

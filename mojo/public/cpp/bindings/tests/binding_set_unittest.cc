@@ -329,7 +329,8 @@ TEST_F(BindingSetTest, PreDispatchHandler) {
 TEST_F(BindingSetTest, AssociatedBindingSetConnectionErrorWithReason) {
   AssociatedPingProviderPtr master_ptr;
   PingProviderImpl master_impl;
-  Binding<AssociatedPingProvider> master_binding(&master_impl, &master_ptr);
+  Binding<AssociatedPingProvider> master_binding(&master_impl,
+                                                 MakeRequest(&master_ptr));
 
   base::RunLoop run_loop;
   master_impl.ping_bindings().set_connection_error_with_reason_handler(

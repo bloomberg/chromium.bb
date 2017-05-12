@@ -123,17 +123,6 @@ class AssociatedBinding : public AssociatedBindingBase {
 
   ~AssociatedBinding() {}
 
-  // Creates an associated inteface and sets up this object as the
-  // implementation side. The output |ptr_info| should be sent by another
-  // interface.
-  void Bind(AssociatedInterfacePtrInfo<Interface>* ptr_info,
-            scoped_refptr<base::SingleThreadTaskRunner> runner =
-                base::ThreadTaskRunnerHandle::Get()) {
-    auto request = MakeRequest(ptr_info);
-    ptr_info->set_version(Interface::Version_);
-    Bind(std::move(request), std::move(runner));
-  }
-
   // Sets up this object as the implementation side of an associated interface.
   void Bind(AssociatedInterfaceRequest<Interface> request,
             scoped_refptr<base::SingleThreadTaskRunner> runner =

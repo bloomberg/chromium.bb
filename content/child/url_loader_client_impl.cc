@@ -29,7 +29,7 @@ URLLoaderClientImpl::~URLLoaderClientImpl() {
 }
 
 void URLLoaderClientImpl::Bind(mojom::URLLoaderClientPtr* client_ptr) {
-  binding_.Bind(client_ptr, task_runner_);
+  binding_.Bind(mojo::MakeRequest(client_ptr), task_runner_);
 }
 
 void URLLoaderClientImpl::SetDefersLoading() {

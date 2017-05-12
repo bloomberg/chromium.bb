@@ -38,7 +38,7 @@ class InstallEventMethodsReceiver
 
   void BindInterface(
       mojom::ServiceWorkerInstallEventMethodsAssociatedPtrInfo* ptr_info) {
-    install_methods_binding_.Bind(ptr_info);
+    install_methods_binding_.Bind(mojo::MakeRequest(ptr_info));
   }
 
   // Implements mojom::ServiceWorkerInstallEventMethod.

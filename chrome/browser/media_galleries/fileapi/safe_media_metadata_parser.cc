@@ -20,7 +20,8 @@ class SafeMediaMetadataParser::MediaDataSourceImpl
  public:
   MediaDataSourceImpl(SafeMediaMetadataParser* owner,
                       extensions::mojom::MediaDataSourcePtr* interface)
-      : binding_(this, interface), safe_media_metadata_parser_(owner) {
+      : binding_(this, mojo::MakeRequest(interface)),
+        safe_media_metadata_parser_(owner) {
     DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   }
 

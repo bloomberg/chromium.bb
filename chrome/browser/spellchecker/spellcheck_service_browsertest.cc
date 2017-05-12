@@ -177,7 +177,7 @@ class SpellcheckServiceBrowserTest : public InProcessBrowserTest,
 
   // Binds requests for the SpellChecker interface.
   void Bind(mojo::ScopedMessagePipeHandle handle) {
-    binding_.Bind(std::move(handle));
+    binding_.Bind(spellcheck::mojom::SpellCheckerRequest(std::move(handle)));
     binding_.set_connection_error_handler(
         base::Bind(&SpellcheckServiceBrowserTest::BoundConnectionClosed,
                    base::Unretained(this)));

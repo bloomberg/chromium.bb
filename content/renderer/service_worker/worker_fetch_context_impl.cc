@@ -29,7 +29,7 @@ void WorkerFetchContextImpl::InitializeOnWorkerThread(
   DCHECK(provider_info_.is_valid());
   provider_.Bind(std::move(provider_info_));
   mojom::ServiceWorkerWorkerClientAssociatedPtrInfo ptr_info;
-  binding_->Bind(&ptr_info);
+  binding_->Bind(mojo::MakeRequest(&ptr_info));
   provider_->GetURLLoaderFactoryAndRegisterClient(
       mojo::MakeRequest(&url_loader_factory_), std::move(ptr_info),
       service_worker_provider_id_);

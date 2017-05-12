@@ -14,7 +14,8 @@ namespace media {
 MediaCapsObserverImpl::MediaCapsObserverImpl(
     mojom::MediaCapsObserverPtr* proxy,
     SupportedCodecProfileLevelsMemo* supported_profiles)
-    : supported_profiles_(supported_profiles), binding_(this, proxy) {}
+    : supported_profiles_(supported_profiles),
+      binding_(this, mojo::MakeRequest(proxy)) {}
 
 MediaCapsObserverImpl::~MediaCapsObserverImpl() = default;
 

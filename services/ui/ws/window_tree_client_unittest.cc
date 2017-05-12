@@ -1964,7 +1964,8 @@ TEST_F(WindowTreeClientTest, EmbedSupplyingWindowTreeClient) {
 
   TestWindowTreeClient client2;
   mojom::WindowTreeClientPtr client2_ptr;
-  mojo::Binding<WindowTreeClient> client2_binding(&client2, &client2_ptr);
+  mojo::Binding<WindowTreeClient> client2_binding(
+      &client2, mojo::MakeRequest(&client2_ptr));
   ASSERT_TRUE(Embed(wt1(), BuildWindowId(client_id_1(), 1),
                     std::move(client2_ptr)));
   client2.WaitForOnEmbed();

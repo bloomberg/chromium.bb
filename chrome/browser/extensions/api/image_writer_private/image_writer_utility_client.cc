@@ -24,7 +24,8 @@ class ImageWriterUtilityClient::RemovableStorageWriterClientImpl
   RemovableStorageWriterClientImpl(
       ImageWriterUtilityClient* owner,
       extensions::mojom::RemovableStorageWriterClientPtr* interface)
-      : binding_(this, interface), image_writer_utility_client_(owner) {
+      : binding_(this, mojo::MakeRequest(interface)),
+        image_writer_utility_client_(owner) {
     DCHECK_CURRENTLY_ON(content::BrowserThread::FILE);
 
     binding_.set_connection_error_handler(

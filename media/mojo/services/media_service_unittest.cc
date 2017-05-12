@@ -126,7 +126,7 @@ class MediaServiceTest : public service_manager::test::ServiceTest {
         &video_stream_, MakeRequest(&video_stream_proxy)));
 
     mojom::RendererClientAssociatedPtrInfo client_ptr_info;
-    renderer_client_binding_.Bind(&client_ptr_info);
+    renderer_client_binding_.Bind(mojo::MakeRequest(&client_ptr_info));
 
     EXPECT_CALL(*this, OnRendererInitialized(expected_result))
         .Times(Exactly(1))

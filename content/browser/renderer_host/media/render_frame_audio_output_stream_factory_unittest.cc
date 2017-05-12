@@ -153,8 +153,8 @@ class MockContext : public RendererAudioOutputStreamFactoryContext {
     factory_ = base::MakeUnique<RenderFrameAudioOutputStreamFactory>(
         kRenderFrameId, this);
     factory_binding_ = base::MakeUnique<
-        mojo::Binding<mojom::RendererAudioOutputStreamFactory>>(factory_.get(),
-                                                                &ret);
+        mojo::Binding<mojom::RendererAudioOutputStreamFactory>>(
+        factory_.get(), mojo::MakeRequest(&ret));
     return ret;
   }
 

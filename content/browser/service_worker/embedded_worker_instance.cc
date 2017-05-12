@@ -592,7 +592,7 @@ ServiceWorkerStatusCode EmbeddedWorkerInstance::SendStartWorker(
 
   DCHECK(!instance_host_binding_.is_bound());
   mojom::EmbeddedWorkerInstanceHostAssociatedPtrInfo host_ptr_info;
-  instance_host_binding_.Bind(&host_ptr_info);
+  instance_host_binding_.Bind(mojo::MakeRequest(&host_ptr_info));
 
   DCHECK(pending_dispatcher_request_.is_pending());
   client_->StartWorker(*params, std::move(pending_dispatcher_request_),
