@@ -7,7 +7,6 @@ gpu_times.gpu_rasterization.key_mobile_sites_smooth
 gpu_times.gpu_rasterization.top_25_smooth
 gpu_times.key_mobile_sites_smooth
 gpu_times.top_25_smooth
-loading.cluster_telemetry
 load_library_perf_tests
 power.idle_platform
 power.steady_state
