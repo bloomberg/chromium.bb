@@ -178,20 +178,21 @@ void AshTestHelper::SetUp(bool start_session) {
   if (start_session)
     session_controller_client_->CreatePredefinedUserSessions(1);
 
-  if (config_ == Config::CLASSIC) {
-    // ScreenLayoutObserver is specific to classic-ash.
+  // TODO(sky): mash should use this too http://crbug.com/718860.
+  if (config_ != Config::MASH) {
     // Tests that change the display configuration generally don't care about
     // the notifications and the popup UI can interfere with things like
     // cursors.
     shell->screen_layout_observer()->set_show_notifications_for_testing(false);
 
-    // DisplayManager is specific to classic-ash.
     display::test::DisplayManagerTestApi(shell->display_manager())
         .DisableChangeDisplayUponHostResize();
     DisplayConfigurationControllerTestApi(
         shell->display_configuration_controller())
         .DisableDisplayAnimator();
+  }
 
+  if (config_ == Config::CLASSIC) {
     // TODO: disabled for mash as AcceleratorControllerDelegateAura isn't
     // created in mash http://crbug.com/632111.
     test_screenshot_delegate_ = new TestScreenshotDelegate();

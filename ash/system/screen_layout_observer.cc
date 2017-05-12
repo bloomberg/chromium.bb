@@ -370,7 +370,7 @@ void ScreenLayoutObserver::OnDisplayConfigurationChanged() {
   else
     current_display_mode_ = DisplayMode::SINGLE;
 
-  if (!show_notifications_for_testing)
+  if (!show_notifications_for_testing_)
     return;
 
   base::string16 message;

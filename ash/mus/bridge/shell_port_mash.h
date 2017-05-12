@@ -10,6 +10,7 @@
 #include <memory>
 #include <vector>
 
+#include "ash/display/window_tree_host_manager.h"
 #include "ash/shell_port.h"
 #include "base/macros.h"
 
@@ -36,7 +37,7 @@ class WindowManager;
 class ShellPortMashTestApi;
 
 // ShellPort implementation for mash/mus. See ash/README.md for more.
-class ShellPortMash : public ShellPort {
+class ShellPortMash : public ShellPort, public WindowTreeHostManager::Observer {
  public:
   // If |create_session_state_delegate_stub| is true SessionStateDelegateStub is
   // created. If false, the SessionStateDelegate from Shell is used.
@@ -138,6 +139,10 @@ class ShellPortMash : public ShellPort {
         accelerator_controller_delegate;
   };
 
+  // WindowTreeHostManager::Observer:
+  void OnDisplayConfigurationChanging() override;
+  void OnDisplayConfigurationChanged() override;
+
   WindowManager* window_manager_;
 
   // TODO(sky): remove this once mash supports simple display management.
@@ -149,6 +154,9 @@ class ShellPortMash : public ShellPort {
   std::unique_ptr<MusSpecificState> mus_state_;
 
   std::unique_ptr<SessionStateDelegate> session_state_delegate_;
+
+  bool added_display_observer_ = false;
+  base::ObserverList<WmDisplayObserver> display_observers_;
 
   DISALLOW_COPY_AND_ASSIGN(ShellPortMash);
 };
