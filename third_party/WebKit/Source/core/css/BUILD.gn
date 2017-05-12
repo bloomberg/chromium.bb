@@ -403,6 +403,7 @@ blink_core_sources("css") {
     "properties/CSSPropertyAPICounterIncrement.cpp",
     "properties/CSSPropertyAPICounterReset.cpp",
     "properties/CSSPropertyAPICursor.cpp",
+    "properties/CSSPropertyAPID.cpp",
     "properties/CSSPropertyAPIFilter.cpp",
     "properties/CSSPropertyAPIFlexBasis.cpp",
     "properties/CSSPropertyAPIFlexGrowOrShrink.cpp",
