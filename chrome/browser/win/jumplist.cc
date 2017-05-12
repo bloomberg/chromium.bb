@@ -55,14 +55,27 @@ using JumpListData = JumpList::JumpListData;
 
 namespace {
 
+// The number of updates to skip to alleviate the machine when a previous update
+// was too slow.
+constexpr int kUpdatesToSkipUnderHeavyLoad = 10;
+
 // The delay before updating the JumpList to prevent update storms.
 constexpr base::TimeDelta kDelayForJumplistUpdate =
     base::TimeDelta::FromMilliseconds(3500);
 
 // The maximum allowed time for JumpListUpdater::BeginUpdate. Updates taking
 // longer than this are discarded to prevent bogging down slow machines.
-constexpr base::TimeDelta kTimeOutForJumplistUpdate =
+constexpr base::TimeDelta kTimeOutForJumplistBeginUpdate =
     base::TimeDelta::FromMilliseconds(500);
+
+// The maximum allowed time for updating both "most visited" and "recently
+// closed" categories via JumpListUpdater::AddCustomCategory.
+constexpr base::TimeDelta kTimeOutForAddCustomCategory =
+    base::TimeDelta::FromMilliseconds(500);
+
+// The maximum allowed time for JumpListUpdater::CommitUpdate.
+constexpr base::TimeDelta kTimeOutForJumplistCommitUpdate =
+    base::TimeDelta::FromMilliseconds(1000);
 
 // Appends the common switches to each shell link.
 void AppendCommonSwitches(ShellLinkItem* shell_link) {
@@ -514,6 +527,11 @@ void JumpList::TopSitesChanged(history::TopSites* top_sites,
 }
 
 void JumpList::DeferredTopSitesChanged() {
+  if (updates_to_skip_ > 0) {
+    --updates_to_skip_;
+    return;
+  }
+
   scoped_refptr<history::TopSites> top_sites =
       TopSitesFactory::GetForProfile(profile_);
   if (top_sites) {
@@ -525,6 +543,11 @@ void JumpList::DeferredTopSitesChanged() {
 }
 
 void JumpList::DeferredTabRestoreServiceChanged() {
+  if (updates_to_skip_ > 0) {
+    --updates_to_skip_;
+    return;
+  }
+
   // Create a list of ShellLinkItems from the "Recently Closed" pages.
   // As noted above, we create a ShellLinkItem objects with the following
   // parameters.
@@ -610,9 +633,12 @@ bool JumpList::UpdateJumpList(
 
   // Discard this JumpList update if JumpListUpdater::BeginUpdate takes longer
   // than the maximum allowed time, as it's very likely the following update
-  // steps will also take a long time.
-  if (begin_update_timer.Elapsed() >= kTimeOutForJumplistUpdate)
+  // steps will also take a long time. As we've not updated the icons on the
+  // disk, discarding this update wont't affect the current JumpList used by OS.
+  if (begin_update_timer.Elapsed() >= kTimeOutForJumplistBeginUpdate) {
+    updates_to_skip_ = kUpdatesToSkipUnderHeavyLoad;
     return false;
+  }
 
   // The default maximum number of items to display in JumpList is 10.
   // https://msdn.microsoft.com/library/windows/desktop/dd378398.aspx
@@ -677,6 +703,8 @@ bool JumpList::UpdateJumpList(
   // TODO(chengx): Remove the UMA histogram after fixing http://crbug.com/40407.
   SCOPED_UMA_HISTOGRAM_TIMER("WinJumplist.UpdateJumpListDuration");
 
+  base::ElapsedTimer add_custom_category_timer;
+
   // Update the "Most Visited" category of the JumpList if it exists.
   // This update request is applied into the JumpList when we commit this
   // transaction.
@@ -693,12 +721,30 @@ bool JumpList::UpdateJumpList(
     return false;
   }
 
+  // If JumpListUpdater::AddCustomCategory or JumpListUpdater::CommitUpdate
+  // takes longer than the maximum allowed time, skip the next
+  // |kUpdatesToSkipUnderHeavyLoad| updates. This update should be finished
+  // because we've already updated the icons on the disk. If discarding this
+  // update from here, some items in the current JumpList may not have icons
+  // as they've been delete from the disk. In this case, the background color of
+  // the JumpList panel is used instead, which doesn't look nice.
+
+  if (add_custom_category_timer.Elapsed() >= kTimeOutForAddCustomCategory)
+    updates_to_skip_ = kUpdatesToSkipUnderHeavyLoad;
+
   // Update the "Tasks" category of the JumpList.
   if (!UpdateTaskCategory(&jumplist_updater, incognito_availability))
     return false;
 
+  base::ElapsedTimer commit_update_timer;
+
   // Commit this transaction and send the updated JumpList to Windows.
-  return jumplist_updater.CommitUpdate();
+  bool commit_result = jumplist_updater.CommitUpdate();
+
+  if (commit_update_timer.Elapsed() >= kTimeOutForJumplistCommitUpdate)
+    updates_to_skip_ = kUpdatesToSkipUnderHeavyLoad;
+
+  return commit_result;
 }
 
 void JumpList::RunUpdateJumpList(
