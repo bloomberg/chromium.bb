@@ -142,7 +142,8 @@ TaskSchedulerImpl::CreateSequencedTaskRunnerWithTraits(
 
 scoped_refptr<SingleThreadTaskRunner>
 TaskSchedulerImpl::CreateSingleThreadTaskRunnerWithTraits(
-    const TaskTraits& traits) {
+    const TaskTraits& traits,
+    SingleThreadTaskRunnerThreadMode thread_mode) {
   const auto& environment_params =
       kEnvironmentParams[GetEnvironmentIndexForTraits(traits)];
   return single_thread_task_runner_manager_
@@ -153,7 +154,9 @@ TaskSchedulerImpl::CreateSingleThreadTaskRunnerWithTraits(
 
 #if defined(OS_WIN)
 scoped_refptr<SingleThreadTaskRunner>
-TaskSchedulerImpl::CreateCOMSTATaskRunnerWithTraits(const TaskTraits& traits) {
+TaskSchedulerImpl::CreateCOMSTATaskRunnerWithTraits(
+    const TaskTraits& traits,
+    SingleThreadTaskRunnerThreadMode thread_mode) {
   const auto& environment_params =
       kEnvironmentParams[GetEnvironmentIndexForTraits(traits)];
   return single_thread_task_runner_manager_.CreateCOMSTATaskRunnerWithTraits(

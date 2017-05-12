@@ -384,7 +384,8 @@ TEST_F(TaskSchedulerImplTest, GetMaxConcurrentTasksWithTraitsDeprecated) {
 TEST_F(TaskSchedulerImplTest, SequencedRunsTasksOnCurrentThread) {
   StartTaskScheduler();
   auto single_thread_task_runner =
-      scheduler_.CreateSingleThreadTaskRunnerWithTraits(TaskTraits());
+      scheduler_.CreateSingleThreadTaskRunnerWithTraits(
+          TaskTraits(), SingleThreadTaskRunnerThreadMode::SHARED);
   auto sequenced_task_runner =
       scheduler_.CreateSequencedTaskRunnerWithTraits(TaskTraits());
 
@@ -409,7 +410,8 @@ TEST_F(TaskSchedulerImplTest, SingleThreadRunsTasksOnCurrentThread) {
   auto sequenced_task_runner =
       scheduler_.CreateSequencedTaskRunnerWithTraits(TaskTraits());
   auto single_thread_task_runner =
-      scheduler_.CreateSingleThreadTaskRunnerWithTraits(TaskTraits());
+      scheduler_.CreateSingleThreadTaskRunnerWithTraits(
+          TaskTraits(), SingleThreadTaskRunnerThreadMode::SHARED);
 
   WaitableEvent task_ran(WaitableEvent::ResetPolicy::MANUAL,
                          WaitableEvent::InitialState::NOT_SIGNALED);
@@ -428,8 +430,8 @@ TEST_F(TaskSchedulerImplTest, SingleThreadRunsTasksOnCurrentThread) {
 #if defined(OS_WIN)
 TEST_F(TaskSchedulerImplTest, COMSTATaskRunnersRunWithCOMSTA) {
   StartTaskScheduler();
-  auto com_sta_task_runner =
-      scheduler_.CreateCOMSTATaskRunnerWithTraits(TaskTraits());
+  auto com_sta_task_runner = scheduler_.CreateCOMSTATaskRunnerWithTraits(
+      TaskTraits(), SingleThreadTaskRunnerThreadMode::SHARED);
 
   WaitableEvent task_ran(WaitableEvent::ResetPolicy::MANUAL,
                          WaitableEvent::InitialState::NOT_SIGNALED);

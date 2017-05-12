@@ -18,6 +18,7 @@
 #include "base/task_scheduler/delayed_task_manager.h"
 #include "base/task_scheduler/scheduler_single_thread_task_runner_manager.h"
 #include "base/task_scheduler/scheduler_worker_pool_impl.h"
+#include "base/task_scheduler/single_thread_task_runner_thread_mode.h"
 #include "base/task_scheduler/task_scheduler.h"
 #include "base/task_scheduler/task_tracker.h"
 #include "base/task_scheduler/task_traits.h"
@@ -52,10 +53,12 @@ class BASE_EXPORT TaskSchedulerImpl : public TaskScheduler {
   scoped_refptr<SequencedTaskRunner> CreateSequencedTaskRunnerWithTraits(
       const TaskTraits& traits) override;
   scoped_refptr<SingleThreadTaskRunner> CreateSingleThreadTaskRunnerWithTraits(
-      const TaskTraits& traits) override;
+      const TaskTraits& traits,
+      SingleThreadTaskRunnerThreadMode thread_mode) override;
 #if defined(OS_WIN)
   scoped_refptr<SingleThreadTaskRunner> CreateCOMSTATaskRunnerWithTraits(
-      const TaskTraits& traits) override;
+      const TaskTraits& traits,
+      SingleThreadTaskRunnerThreadMode thread_mode) override;
 #endif  // defined(OS_WIN)
   std::vector<const HistogramBase*> GetHistograms() const override;
   int GetMaxConcurrentTasksWithTraitsDeprecated(
