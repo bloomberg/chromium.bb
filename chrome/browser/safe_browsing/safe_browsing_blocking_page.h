@@ -44,6 +44,8 @@ class ThreatDetails;
 
 class SafeBrowsingBlockingPage : public BaseBlockingPage {
  public:
+  typedef security_interstitials::BaseSafeBrowsingErrorUI
+      BaseSafeBrowsingErrorUI;
   // Interstitial type, used in tests.
   static content::InterstitialPageDelegate::TypeID kTypeForTesting;
 
@@ -104,7 +106,7 @@ class SafeBrowsingBlockingPage : public BaseBlockingPage {
       content::WebContents* web_contents,
       const GURL& main_frame_url,
       const UnsafeResourceList& unsafe_resources,
-      const SafeBrowsingErrorUI::SBErrorDisplayOptions& display_options);
+      const BaseSafeBrowsingErrorUI::SBErrorDisplayOptions& display_options);
 
   // Called after the user clicks OnProceed(). If the page has malicious
   // subresources, then we show another interstitial.
@@ -129,7 +131,7 @@ class SafeBrowsingBlockingPage : public BaseBlockingPage {
   static SafeBrowsingBlockingPageFactory* factory_;
  private:
   static std::string GetSamplingEventName(
-      SafeBrowsingErrorUI::SBInterstitialReason interstitial_reason);
+      BaseSafeBrowsingErrorUI::SBInterstitialReason interstitial_reason);
 
   static std::unique_ptr<
       security_interstitials::SecurityInterstitialControllerClient>

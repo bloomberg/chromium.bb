@@ -12,8 +12,8 @@
 #include "base/macros.h"
 #include "components/safe_browsing/base_ui_manager.h"
 #include "components/security_interstitials/content/security_interstitial_page.h"
+#include "components/security_interstitials/core/base_safe_browsing_error_ui.h"
 #include "components/security_interstitials/core/metrics_helper.h"
-#include "components/security_interstitials/core/safe_browsing_error_ui.h"
 #include "content/public/browser/interstitial_page_delegate.h"
 #include "url/gurl.h"
 
@@ -24,14 +24,15 @@ class BaseBlockingPage
     : public security_interstitials::SecurityInterstitialPage {
  public:
   typedef security_interstitials::UnsafeResource UnsafeResource;
-  typedef security_interstitials::SafeBrowsingErrorUI SafeBrowsingErrorUI;
+  typedef security_interstitials::BaseSafeBrowsingErrorUI
+      BaseSafeBrowsingErrorUI;
   typedef std::vector<UnsafeResource> UnsafeResourceList;
   typedef std::unordered_map<content::WebContents*, UnsafeResourceList>
       UnsafeResourceMap;
 
   ~BaseBlockingPage() override;
 
-  static const SafeBrowsingErrorUI::SBErrorDisplayOptions
+  static const BaseSafeBrowsingErrorUI::SBErrorDisplayOptions
   CreateDefaultDisplayOptions(const UnsafeResourceList& unsafe_resources);
 
   // Shows a blocking page warning the user about phishing/malware for a
@@ -61,7 +62,7 @@ class BaseBlockingPage
       std::unique_ptr<
           security_interstitials::SecurityInterstitialControllerClient>
           controller_client,
-      const SafeBrowsingErrorUI::SBErrorDisplayOptions& display_options);
+      const BaseSafeBrowsingErrorUI::SBErrorDisplayOptions& display_options);
 
   // SecurityInterstitialPage methods:
   bool ShouldCreateNewNavigation() const override;
@@ -81,14 +82,14 @@ class BaseBlockingPage
 
   static std::string GetMetricPrefix(
       const UnsafeResourceList& unsafe_resources,
-      SafeBrowsingErrorUI::SBInterstitialReason interstitial_reason);
+      BaseSafeBrowsingErrorUI::SBInterstitialReason interstitial_reason);
 
   static std::string GetExtraMetricsSuffix(
       const UnsafeResourceList& unsafe_resources);
 
   // Return the most severe interstitial reason from a list of unsafe resources.
   // Severity ranking: malware > UwS (harmful) > phishing.
-  static SafeBrowsingErrorUI::SBInterstitialReason GetInterstitialReason(
+  static BaseSafeBrowsingErrorUI::SBInterstitialReason GetInterstitialReason(
       const UnsafeResourceList& unsafe_resources);
 
   BaseUIManager* ui_manager() const;
@@ -97,7 +98,7 @@ class BaseBlockingPage
 
   UnsafeResourceList unsafe_resources() const;
 
-  SafeBrowsingErrorUI* sb_error_ui() const;
+  BaseSafeBrowsingErrorUI* sb_error_ui() const;
 
   void set_proceeded(bool proceeded);
 
@@ -131,7 +132,7 @@ class BaseBlockingPage
   UnsafeResourceList unsafe_resources_;
 
   // For displaying safe browsing interstitial.
-  std::unique_ptr<SafeBrowsingErrorUI> sb_error_ui_;
+  std::unique_ptr<BaseSafeBrowsingErrorUI> sb_error_ui_;
 
   // Indicate whether user has proceeded this blocking page.
   bool proceeded_;

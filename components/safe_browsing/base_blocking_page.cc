@@ -12,13 +12,15 @@
 #include "components/safe_browsing_db/safe_browsing_prefs.h"
 #include "components/security_interstitials/content/security_interstitial_controller_client.h"
 #include "components/security_interstitials/core/metrics_helper.h"
+#include "components/security_interstitials/core/safe_browsing_loud_error_ui.h"
 #include "content/public/browser/interstitial_page.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
 
 using content::InterstitialPage;
 using content::WebContents;
-using security_interstitials::SafeBrowsingErrorUI;
+using security_interstitials::BaseSafeBrowsingErrorUI;
+using security_interstitials::SafeBrowsingLoudErrorUI;
 using security_interstitials::SecurityInterstitialControllerClient;
 
 namespace safe_browsing {
@@ -42,7 +44,7 @@ BaseBlockingPage::BaseBlockingPage(
     const GURL& main_frame_url,
     const UnsafeResourceList& unsafe_resources,
     std::unique_ptr<SecurityInterstitialControllerClient> controller_client,
-    const SafeBrowsingErrorUI::SBErrorDisplayOptions& display_options)
+    const BaseSafeBrowsingErrorUI::SBErrorDisplayOptions& display_options)
     : SecurityInterstitialPage(web_contents,
                                unsafe_resources[0].url,
                                std::move(controller_client)),
@@ -53,7 +55,7 @@ BaseBlockingPage::BaseBlockingPage(
               ? -1
               : web_contents->GetController().GetLastCommittedEntryIndex()),
       unsafe_resources_(unsafe_resources),
-      sb_error_ui_(base::MakeUnique<SafeBrowsingErrorUI>(
+      sb_error_ui_(base::MakeUnique<SafeBrowsingLoudErrorUI>(
           unsafe_resources_[0].url,
           main_frame_url_,
           GetInterstitialReason(unsafe_resources_),
@@ -68,10 +70,10 @@ BaseBlockingPage::BaseBlockingPage(
 BaseBlockingPage::~BaseBlockingPage() {}
 
 // static
-const SafeBrowsingErrorUI::SBErrorDisplayOptions
+const security_interstitials::BaseSafeBrowsingErrorUI::SBErrorDisplayOptions
 BaseBlockingPage::CreateDefaultDisplayOptions(
     const UnsafeResourceList& unsafe_resources) {
-  return SafeBrowsingErrorUI::SBErrorDisplayOptions(
+  return BaseSafeBrowsingErrorUI::SBErrorDisplayOptions(
       IsMainPageLoadBlocked(unsafe_resources),
       false,  // kSafeBrowsingExtendedReportingOptInAllowed
       false,  // is_off_the_record
@@ -222,14 +224,14 @@ BaseBlockingPage::GetUnsafeResourcesMap() {
 // static
 std::string BaseBlockingPage::GetMetricPrefix(
     const UnsafeResourceList& unsafe_resources,
-    SafeBrowsingErrorUI::SBInterstitialReason interstitial_reason) {
+    BaseSafeBrowsingErrorUI::SBInterstitialReason interstitial_reason) {
   bool primary_subresource = unsafe_resources[0].is_subresource;
   switch (interstitial_reason) {
-    case SafeBrowsingErrorUI::SB_REASON_MALWARE:
+    case BaseSafeBrowsingErrorUI::SB_REASON_MALWARE:
       return primary_subresource ? "malware_subresource" : "malware";
-    case SafeBrowsingErrorUI::SB_REASON_HARMFUL:
+    case BaseSafeBrowsingErrorUI::SB_REASON_HARMFUL:
       return primary_subresource ? "harmful_subresource" : "harmful";
-    case SafeBrowsingErrorUI::SB_REASON_PHISHING:
+    case BaseSafeBrowsingErrorUI::SB_REASON_PHISHING:
       ThreatPatternType threat_pattern_type =
           unsafe_resources[0].threat_metadata.threat_pattern_type;
       if (threat_pattern_type == ThreatPatternType::PHISHING ||
@@ -271,7 +273,7 @@ std::string BaseBlockingPage::GetExtraMetricsSuffix(
 }
 
 // static
-SafeBrowsingErrorUI::SBInterstitialReason
+security_interstitials::BaseSafeBrowsingErrorUI::SBInterstitialReason
 BaseBlockingPage::GetInterstitialReason(
     const UnsafeResourceList& unsafe_resources) {
   bool harmful = false;
@@ -281,7 +283,7 @@ BaseBlockingPage::GetInterstitialReason(
     safe_browsing::SBThreatType threat_type = resource.threat_type;
     if (threat_type == SB_THREAT_TYPE_URL_MALWARE ||
         threat_type == SB_THREAT_TYPE_CLIENT_SIDE_MALWARE_URL) {
-      return SafeBrowsingErrorUI::SB_REASON_MALWARE;
+      return BaseSafeBrowsingErrorUI::SB_REASON_MALWARE;
     } else if (threat_type == SB_THREAT_TYPE_URL_UNWANTED) {
       harmful = true;
     } else {
@@ -291,8 +293,8 @@ BaseBlockingPage::GetInterstitialReason(
   }
 
   if (harmful)
-    return SafeBrowsingErrorUI::SB_REASON_HARMFUL;
-  return SafeBrowsingErrorUI::SB_REASON_PHISHING;
+    return BaseSafeBrowsingErrorUI::SB_REASON_HARMFUL;
+  return BaseSafeBrowsingErrorUI::SB_REASON_PHISHING;
 }
 
 BaseUIManager* BaseBlockingPage::ui_manager() const {
@@ -308,7 +310,7 @@ BaseBlockingPage::unsafe_resources() const {
   return unsafe_resources_;
 }
 
-SafeBrowsingErrorUI* BaseBlockingPage::sb_error_ui() const {
+BaseSafeBrowsingErrorUI* BaseBlockingPage::sb_error_ui() const {
   return sb_error_ui_.get();
 }
 
@@ -319,7 +321,7 @@ void BaseBlockingPage::set_proceeded(bool proceeded) {
 // static
 security_interstitials::MetricsHelper::ReportDetails
 BaseBlockingPage::GetReportingInfo(const UnsafeResourceList& unsafe_resources) {
-  SafeBrowsingErrorUI::SBInterstitialReason interstitial_reason =
+  BaseSafeBrowsingErrorUI::SBInterstitialReason interstitial_reason =
       GetInterstitialReason(unsafe_resources);
 
   security_interstitials::MetricsHelper::ReportDetails reporting_info;

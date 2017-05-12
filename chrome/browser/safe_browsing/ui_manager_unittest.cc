@@ -12,7 +12,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "components/safe_browsing_db/safe_browsing_prefs.h"
 #include "components/safe_browsing_db/util.h"
-#include "components/security_interstitials/core/safe_browsing_error_ui.h"
+#include "components/security_interstitials/core/base_safe_browsing_error_ui.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
@@ -344,7 +344,7 @@ class TestSafeBrowsingBlockingPage : public SafeBrowsingBlockingPage {
             web_contents,
             main_frame_url,
             unsafe_resources,
-            SafeBrowsingErrorUI::SBErrorDisplayOptions(
+            BaseSafeBrowsingErrorUI::SBErrorDisplayOptions(
                 BaseBlockingPage::IsMainPageLoadBlocked(unsafe_resources),
                 false,
                 false,

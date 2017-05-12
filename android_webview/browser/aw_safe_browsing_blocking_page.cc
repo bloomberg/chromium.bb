@@ -7,14 +7,14 @@
 #include "android_webview/browser/aw_safe_browsing_ui_manager.h"
 #include "components/security_interstitials/content/security_interstitial_controller_client.h"
 #include "components/security_interstitials/content/unsafe_resource.h"
-#include "components/security_interstitials/core/safe_browsing_error_ui.h"
+#include "components/security_interstitials/core/base_safe_browsing_error_ui.h"
 #include "content/public/browser/interstitial_page.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
 
 using content::InterstitialPage;
 using content::WebContents;
-using security_interstitials::SafeBrowsingErrorUI;
+using security_interstitials::BaseSafeBrowsingErrorUI;
 using security_interstitials::SecurityInterstitialControllerClient;
 
 namespace android_webview {
@@ -25,7 +25,7 @@ AwSafeBrowsingBlockingPage::AwSafeBrowsingBlockingPage(
     const GURL& main_frame_url,
     const UnsafeResourceList& unsafe_resources,
     std::unique_ptr<SecurityInterstitialControllerClient> controller_client,
-    const SafeBrowsingErrorUI::SBErrorDisplayOptions& display_options)
+    const BaseSafeBrowsingErrorUI::SBErrorDisplayOptions& display_options)
     : BaseBlockingPage(ui_manager,
                        web_contents,
                        main_frame_url,
@@ -52,8 +52,8 @@ void AwSafeBrowsingBlockingPage::ShowBlockingPage(
     content::NavigationEntry* entry =
         unsafe_resource.GetNavigationEntryForResource();
     const UnsafeResourceList unsafe_resources{unsafe_resource};
-    SafeBrowsingErrorUI::SBErrorDisplayOptions display_options =
-        SafeBrowsingErrorUI::SBErrorDisplayOptions(
+    BaseSafeBrowsingErrorUI::SBErrorDisplayOptions display_options =
+        BaseSafeBrowsingErrorUI::SBErrorDisplayOptions(
             IsMainPageLoadBlocked(unsafe_resources),
             false,  // kSafeBrowsingExtendedReportingOptInAllowed
             false,  // is_off_the_record

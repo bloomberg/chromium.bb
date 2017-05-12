@@ -1,9 +1,9 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_SECURITY_INTERSTITIALS_CORE_SAFE_BROWSING_ERROR_UI_H_
-#define COMPONENTS_SECURITY_INTERSTITIALS_CORE_SAFE_BROWSING_ERROR_UI_H_
+#ifndef COMPONENTS_SECURITY_INTERSTITIALS_CORE_BASE_SAFE_BROWSING_ERROR_UI_H_
+#define COMPONENTS_SECURITY_INTERSTITIALS_CORE_BASE_SAFE_BROWSING_ERROR_UI_H_
 
 #include "base/macros.h"
 #include "base/time/time.h"
@@ -13,10 +13,11 @@
 
 namespace security_interstitials {
 
+// A base class for quiet vs loud versions of the safe browsing interstitial.
 // This class displays UI for Safe Browsing errors that block page loads. This
 // class is purely about visual display; it does not do any error-handling logic
 // to determine what type of error should be displayed when.
-class SafeBrowsingErrorUI {
+class BaseSafeBrowsingErrorUI {
  public:
   enum SBInterstitialReason {
     SB_REASON_MALWARE,
@@ -64,22 +65,15 @@ class SafeBrowsingErrorUI {
     bool is_resource_cancellable;
   };
 
-  SafeBrowsingErrorUI(const GURL& request_url,
-                      const GURL& main_frame_url,
-                      SBInterstitialReason reason,
-                      const SBErrorDisplayOptions& display_options,
-                      const std::string& app_locale,
-                      const base::Time& time_triggered,
-                      ControllerClient* controller);
-  ~SafeBrowsingErrorUI();
-
-  void PopulateStringsForHTML(base::DictionaryValue* load_time_data);
-  void HandleCommand(SecurityInterstitialCommands command);
-
-  // Checks if we should even show the extended reporting option. We don't show
-  // it in incognito mode or if kSafeBrowsingExtendedReportingOptInAllowed
-  // preference is disabled.
-  bool CanShowExtendedReportingOption();
+  BaseSafeBrowsingErrorUI(
+      const GURL& request_url,
+      const GURL& main_frame_url,
+      BaseSafeBrowsingErrorUI::SBInterstitialReason reason,
+      const BaseSafeBrowsingErrorUI::SBErrorDisplayOptions& display_options,
+      const std::string& app_locale,
+      const base::Time& time_triggered,
+      ControllerClient* controller);
+  virtual ~BaseSafeBrowsingErrorUI();
 
   bool is_main_frame_load_blocked() const {
     return display_options_.is_main_frame_load_blocked;
@@ -89,30 +83,51 @@ class SafeBrowsingErrorUI {
     return display_options_.is_extended_reporting_opt_in_allowed;
   }
 
-  bool is_off_the_record() const {
-    return display_options_.is_off_the_record;
-  }
+  bool is_off_the_record() const { return display_options_.is_off_the_record; }
 
   bool is_extended_reporting_enabled() const {
     return display_options_.is_extended_reporting_enabled;
+  }
+
+  void set_extended_reporting(bool pref) {
+    display_options_.is_extended_reporting_enabled = pref;
+  }
+
+  bool is_scout_reporting_enabled() const {
+    return display_options_.is_scout_reporting_enabled;
   }
 
   bool is_proceed_anyway_disabled() const {
     return display_options_.is_proceed_anyway_disabled;
   }
 
-  const std::string app_locale() const {
-    return app_locale_;
+  bool is_resource_cancellable() const {
+    return display_options_.is_resource_cancellable;
   }
 
- private:
-  // Fills the passed dictionary with the values to be passed to the template
-  // when creating the HTML.
-  void PopulateExtendedReportingOption(base::DictionaryValue* load_time_data);
-  void PopulateMalwareLoadTimeData(base::DictionaryValue* load_time_data);
-  void PopulateHarmfulLoadTimeData(base::DictionaryValue* load_time_data);
-  void PopulatePhishingLoadTimeData(base::DictionaryValue* load_time_data);
+  // Checks if we should even show the extended reporting option. We don't show
+  // it in incognito mode or if kSafeBrowsingExtendedReportingOptInAllowed
+  // preference is disabled.
+  bool CanShowExtendedReportingOption() {
+    return !is_off_the_record() && is_extended_reporting_opt_in_allowed();
+  }
 
+  SBInterstitialReason interstitial_reason() const {
+    return interstitial_reason_;
+  }
+
+  const std::string app_locale() const { return app_locale_; }
+
+  ControllerClient* controller() { return controller_; };
+
+  GURL request_url() const { return request_url_; }
+  GURL main_frame_url() const { return main_frame_url_; }
+
+  virtual void PopulateStringsForHTML(
+      base::DictionaryValue* load_time_data) = 0;
+  virtual void HandleCommand(SecurityInterstitialCommands command) = 0;
+
+ private:
   const GURL request_url_;
   const GURL main_frame_url_;
   const SBInterstitialReason interstitial_reason_;
@@ -122,9 +137,9 @@ class SafeBrowsingErrorUI {
 
   ControllerClient* controller_;
 
-  DISALLOW_COPY_AND_ASSIGN(SafeBrowsingErrorUI);
+  DISALLOW_COPY_AND_ASSIGN(BaseSafeBrowsingErrorUI);
 };
 
 }  // security_interstitials
 
-#endif  // COMPONENTS_SECURITY_INTERSTITIALS_CORE_SAFE_BROWSING_ERROR_UI_H_
+#endif  // COMPONENTS_SECURITY_INTERSTITIALS_CORE_BASE_SAFE_BROWSING_ERROR_UI_H_
