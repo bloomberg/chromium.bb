@@ -374,12 +374,43 @@ void CookieStoreIOS::SetCookieWithDetailsAsync(
   if (creation_time.is_null())
     creation_time = base::Time::Now();
 
+  // Validate consistency of passed arguments.
+  if (ParsedCookie::ParseTokenString(name) != name ||
+      ParsedCookie::ParseValueString(value) != value ||
+      ParsedCookie::ParseValueString(domain) != domain ||
+      ParsedCookie::ParseValueString(path) != path) {
+    if (!callback.is_null())
+      callback.Run(false);
+    return;
+  }
+
+  // Validate passed arguments against URL.
+  std::string cookie_domain;
+  std::string cookie_path = CanonicalCookie::CanonPathWithString(url, path);
+  if ((secure && !url.SchemeIsCryptographic()) ||
+      !cookie_util::GetCookieDomainWithString(url, domain, &cookie_domain) ||
+      (!path.empty() && cookie_path != path)) {
+    if (!callback.is_null())
+      callback.Run(false);
+    return;
+  }
+
+  // Canonicalize path again to make sure it escapes characters as needed.
+  url::Component path_component(0, cookie_path.length());
+  url::RawCanonOutputT<char> canon_path;
+  url::Component canon_path_component;
+  url::CanonicalizePath(cookie_path.data(), path_component, &canon_path,
+                        &canon_path_component);
+  cookie_path = std::string(canon_path.data() + canon_path_component.begin,
+                            canon_path_component.len);
+
   // First create a CanonicalCookie, to normalize the arguments,
   // particularly domain and path, and perform validation.
   std::unique_ptr<net::CanonicalCookie> canonical_cookie =
-      net::CanonicalCookie::Create(
-          url, name, value, domain, path, creation_time, expiration_time,
-          secure, http_only, same_site, priority);
+      net::CanonicalCookie::Create(name, value, cookie_domain, cookie_path,
+                                   creation_time, expiration_time,
+                                   creation_time, secure, http_only, same_site,
+                                   priority);
 
   if (canonical_cookie) {
     NSHTTPCookie* cookie = SystemCookieFromCanonicalCookie(*canonical_cookie);
