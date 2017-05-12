@@ -414,7 +414,6 @@ def write_gn_ninja(path, root_gen_dir, options):
       'base/environment.cc',
       'base/feature_list.cc',
       'base/files/file.cc',
-      'base/files/file_descriptor_watcher_posix.cc',
       'base/files/file_enumerator.cc',
       'base/files/file_path.cc',
       'base/files/file_path_constants.cc',
@@ -437,7 +436,6 @@ def write_gn_ninja(path, root_gen_dir, options):
       'base/memory/ref_counted_memory.cc',
       'base/memory/singleton.cc',
       'base/memory/shared_memory_handle.cc',
-      'base/memory/shared_memory_helper.cc',
       'base/memory/weak_ptr.cc',
       'base/message_loop/incoming_task_queue.cc',
       'base/message_loop/message_loop.cc',
@@ -539,6 +537,7 @@ def write_gn_ninja(path, root_gen_dir, options):
       'base/trace_event/heap_profiler_serialization_state.cc',
       'base/trace_event/heap_profiler_stack_frame_deduplicator.cc',
       'base/trace_event/heap_profiler_type_name_deduplicator.cc',
+      'base/trace_event/malloc_dump_provider.cc',
       'base/trace_event/memory_allocator_dump.cc',
       'base/trace_event/memory_allocator_dump_guid.cc',
       'base/trace_event/memory_dump_manager.cc',
@@ -576,9 +575,11 @@ def write_gn_ninja(path, root_gen_dir, options):
         'base/debug/debugger_posix.cc',
         'base/debug/stack_trace_posix.cc',
         'base/files/file_enumerator_posix.cc',
+        'base/files/file_descriptor_watcher_posix.cc',
         'base/files/file_posix.cc',
         'base/files/file_util_posix.cc',
         'base/files/memory_mapped_file_posix.cc',
+        'base/memory/shared_memory_helper.cc',
         'base/message_loop/message_pump_libevent.cc',
         'base/posix/file_descriptor_shuffle.cc',
         'base/posix/global_descriptors.cc',
@@ -647,7 +648,6 @@ def write_gn_ninja(path, root_gen_dir, options):
         'base/strings/sys_string_conversions_posix.cc',
         'base/sys_info_linux.cc',
         'base/threading/platform_thread_linux.cc',
-        'base/trace_event/malloc_dump_provider.cc',
     ])
     if is_linux:
       static_libraries['base']['sources'].extend([
@@ -696,7 +696,6 @@ def write_gn_ninja(path, root_gen_dir, options):
         'base/sys_info_mac.mm',
         'base/time/time_mac.cc',
         'base/threading/platform_thread_mac.mm',
-        'base/trace_event/malloc_dump_provider.cc',
     ])
     static_libraries['libevent']['include_dirs'].extend([
         os.path.join(SRC_ROOT, 'base', 'third_party', 'libevent', 'mac')
@@ -727,6 +726,7 @@ def write_gn_ninja(path, root_gen_dir, options):
         'base/files/file_util_win.cc',
         'base/files/file_win.cc',
         'base/files/memory_mapped_file_win.cc',
+        'base/guid.cc',
         'base/logging_win.cc',
         'base/memory/memory_pressure_monitor_win.cc',
         'base/memory/shared_memory_handle_win.cc',
@@ -755,7 +755,6 @@ def write_gn_ninja(path, root_gen_dir, options):
         'base/sys_info_win.cc',
         'base/threading/platform_thread_win.cc',
         'base/threading/thread_local_storage_win.cc',
-        'base/threading/thread_local_win.cc',
         'base/threading/worker_pool_win.cc',
         'base/time/time_win.cc',
         'base/timer/hi_res_timer_manager_win.cc',
@@ -786,15 +785,16 @@ def write_gn_ninja(path, root_gen_dir, options):
     ])
 
     libs.extend([
+        'advapi32.lib',
+        'dbghelp.lib',
         'kernel32.lib',
-        'user32.lib',
-        'shell32.lib',
         'ole32.lib',
-        'winmm.lib',
-        'ws2_32.lib',
+        'shell32.lib',
+        'user32.lib',
         'userenv.lib',
         'version.lib',
-        'dbghelp.lib',
+        'winmm.lib',
+        'ws2_32.lib',
     ])
 
   # we just build static libraries that GN needs
