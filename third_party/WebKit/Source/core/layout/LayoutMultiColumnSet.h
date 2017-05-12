@@ -159,7 +159,7 @@ class CORE_EXPORT LayoutMultiColumnSet : public LayoutBlockFlow {
   // group can hold without overflowing.
   LayoutUnit FragmentainerGroupCapacity(
       const MultiColumnFragmentainerGroup& group) const {
-    return group.LogicalHeight() * UsedColumnCount();
+    return group.ColumnLogicalHeight() * UsedColumnCount();
   }
 
   LayoutRect FlowThreadPortionRect() const;

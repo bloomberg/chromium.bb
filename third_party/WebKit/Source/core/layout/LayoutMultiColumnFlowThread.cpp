@@ -673,7 +673,7 @@ void LayoutMultiColumnFlowThread::AppendNewFragmentainerGroupIfNeeded(
         // multicol container.
         LayoutUnit logical_offset_in_outer =
             last_row.BlockOffsetInEnclosingFragmentationContext() +
-            last_row.LogicalHeight();
+            last_row.GroupLogicalHeight();
         enclosing_flow_thread->AppendNewFragmentainerGroupIfNeeded(
             logical_offset_in_outer, kAssociateWithLatterPage);
       }
@@ -682,8 +682,8 @@ void LayoutMultiColumnFlowThread::AppendNewFragmentainerGroupIfNeeded(
           column_set->AppendNewFragmentainerGroup();
       // Zero-height rows should really not occur here, but if it does anyway,
       // break, so that we don't get stuck in an infinite loop.
-      DCHECK_GT(new_row.LogicalHeight(), 0);
-      if (new_row.LogicalHeight() <= 0)
+      DCHECK_GT(new_row.ColumnLogicalHeight(), 0);
+      if (new_row.ColumnLogicalHeight() <= 0)
         break;
     } while (column_set->NeedsNewFragmentainerGroupAt(offset_in_flow_thread,
                                                       page_boundary_rule));

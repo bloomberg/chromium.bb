@@ -79,7 +79,7 @@ LayoutMultiColumnSet::FragmentainerGroupAtVisualPoint(
       IsHorizontalWritingMode() ? visual_point.Y() : visual_point.X();
   for (unsigned index = 0; index < fragmentainer_groups_.size(); index++) {
     const auto& row = fragmentainer_groups_[index];
-    if (row.LogicalTop() + row.LogicalHeight() > block_offset)
+    if (row.LogicalTop() + row.GroupLogicalHeight() > block_offset)
       return row;
   }
   return fragmentainer_groups_.Last();
@@ -88,7 +88,7 @@ LayoutMultiColumnSet::FragmentainerGroupAtVisualPoint(
 LayoutUnit LayoutMultiColumnSet::PageLogicalHeightForOffset(
     LayoutUnit offset_in_flow_thread) const {
   const MultiColumnFragmentainerGroup& last_row = LastFragmentainerGroup();
-  if (!last_row.LogicalHeight() && fragmentainer_groups_.size() == 1) {
+  if (!last_row.GroupLogicalHeight() && fragmentainer_groups_.size() == 1) {
     // In the first layout pass of an auto-height multicol container, height
     // isn't set. No need to perform the series of complicated dance steps below
     // to figure out that we should simply return 0. Bail now.
@@ -108,14 +108,14 @@ LayoutUnit LayoutMultiColumnSet::PageLogicalHeightForOffset(
       // we have found so far.
       LayoutUnit enclosing_context_bottom =
           last_row.BlockOffsetInEnclosingFragmentationContext() +
-          last_row.LogicalHeight();
+          last_row.GroupLogicalHeight();
       LayoutUnit enclosing_fragmentainer_height =
           enclosing_fragmentation_context->FragmentainerLogicalHeightAt(
               enclosing_context_bottom);
       // Constrain against specified height / max-height.
       LayoutUnit current_multicol_height = LogicalTopFromMulticolContentEdge() +
                                            last_row.LogicalTop() +
-                                           last_row.LogicalHeight();
+                                           last_row.GroupLogicalHeight();
       LayoutUnit multicol_height_with_extra_row =
           current_multicol_height + enclosing_fragmentainer_height;
       multicol_height_with_extra_row =
@@ -127,7 +127,7 @@ LayoutUnit LayoutMultiColumnSet::PageLogicalHeightForOffset(
   }
   return FragmentainerGroupAtFlowThreadOffset(offset_in_flow_thread,
                                               kAssociateWithLatterPage)
-      .LogicalHeight();
+      .ColumnLogicalHeight();
 }
 
 LayoutUnit LayoutMultiColumnSet::PageRemainingLogicalHeightForOffset(
@@ -136,7 +136,7 @@ LayoutUnit LayoutMultiColumnSet::PageRemainingLogicalHeightForOffset(
   const MultiColumnFragmentainerGroup& row =
       FragmentainerGroupAtFlowThreadOffset(offset_in_flow_thread,
                                            page_boundary_rule);
-  LayoutUnit page_logical_height = row.LogicalHeight();
+  LayoutUnit page_logical_height = row.ColumnLogicalHeight();
   LayoutUnit page_logical_bottom =
       row.ColumnLogicalTopForOffset(offset_in_flow_thread) +
       page_logical_height;
@@ -161,7 +161,7 @@ LayoutUnit LayoutMultiColumnSet::PageRemainingLogicalHeightForOffset(
 }
 
 bool LayoutMultiColumnSet::IsPageLogicalHeightKnown() const {
-  return FirstFragmentainerGroup().LogicalHeight();
+  return FirstFragmentainerGroup().ColumnLogicalHeight();
 }
 
 bool LayoutMultiColumnSet::NewFragmentainerGroupsAllowed() const {
@@ -214,7 +214,7 @@ LayoutUnit LayoutMultiColumnSet::NextLogicalTopForUnbreakableContent(
   LayoutUnit new_logical_height =
       enclosing_fragmentation_context->FragmentainerLogicalHeightAt(
           first_row.BlockOffsetInEnclosingFragmentationContext() +
-          first_row.LogicalHeight());
+          first_row.GroupLogicalHeight());
   if (content_logical_height > new_logical_height) {
     // The next outer column or page doesn't have enough space either. Give up
     // and stay where we are.
@@ -283,7 +283,8 @@ bool LayoutMultiColumnSet::NeedsNewFragmentainerGroupAt(
   // useless fragmentainer groups, and possibly broken layout too. Instead,
   // we'll just allow additional (overflowing) columns to be created in the
   // last fragmentainer group, similar to what we do when we're not nested.
-  LayoutUnit logical_bottom = last_row.LogicalTop() + last_row.LogicalHeight();
+  LayoutUnit logical_bottom =
+      last_row.LogicalTop() + last_row.GroupLogicalHeight();
   LayoutUnit space_used = logical_bottom + LogicalTopFromMulticolContentEdge();
   LayoutUnit max_column_height =
       MultiColumnFlowThread()->MaxColumnLogicalHeight();
@@ -306,7 +307,7 @@ LayoutMultiColumnSet::AppendNewFragmentainerGroup() {
     previous_group.SetLogicalBottomInFlowThread(block_offset_in_flow_thread);
     new_group.SetLogicalTopInFlowThread(block_offset_in_flow_thread);
     new_group.SetLogicalTop(previous_group.LogicalTop() +
-                            previous_group.LogicalHeight());
+                            previous_group.GroupLogicalHeight());
     new_group.ResetColumnHeight();
   }
   fragmentainer_groups_.Append(new_group);
@@ -462,7 +463,7 @@ void LayoutMultiColumnSet::ComputeLogicalHeight(
     LogicalExtentComputedValues& computed_values) const {
   LayoutUnit logical_height;
   for (const auto& group : fragmentainer_groups_)
-    logical_height += group.LogicalHeight();
+    logical_height += group.GroupLogicalHeight();
   computed_values.extent_ = logical_height;
   computed_values.position_ = logical_top;
 }
