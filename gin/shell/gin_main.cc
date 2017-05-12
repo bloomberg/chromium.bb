@@ -14,6 +14,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/task_scheduler/task_scheduler.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "gin/array_buffer.h"
 #include "gin/modules/console.h"
@@ -73,34 +74,43 @@ int main(int argc, char** argv) {
 #endif
 
   base::MessageLoop message_loop;
+  base::TaskScheduler::CreateAndStartWithDefaultParams("gin");
 
   // Initialize the base::FeatureList since IsolateHolder can depend on it.
   base::FeatureList::SetInstance(base::WrapUnique(new base::FeatureList));
 
-  gin::IsolateHolder::Initialize(gin::IsolateHolder::kStrictMode,
-                                 gin::IsolateHolder::kStableV8Extras,
-                                 gin::ArrayBufferAllocator::SharedInstance());
-  gin::IsolateHolder instance(base::ThreadTaskRunnerHandle::Get());
-
-  gin::GinShellRunnerDelegate delegate;
-  gin::ShellRunner runner(&delegate, instance.isolate());
-
   {
-    gin::Runner::Scope scope(&runner);
-    runner.GetContextHolder()
-        ->isolate()
-        ->SetCaptureStackTraceForUncaughtExceptions(true);
+    gin::IsolateHolder::Initialize(gin::IsolateHolder::kStrictMode,
+                                   gin::IsolateHolder::kStableV8Extras,
+                                   gin::ArrayBufferAllocator::SharedInstance());
+    gin::IsolateHolder instance(base::ThreadTaskRunnerHandle::Get());
+
+    gin::GinShellRunnerDelegate delegate;
+    gin::ShellRunner runner(&delegate, instance.isolate());
+
+    {
+      gin::Runner::Scope scope(&runner);
+      runner.GetContextHolder()
+          ->isolate()
+          ->SetCaptureStackTraceForUncaughtExceptions(true);
+    }
+
+    base::CommandLine::StringVector args =
+        base::CommandLine::ForCurrentProcess()->GetArgs();
+    for (base::CommandLine::StringVector::const_iterator it = args.begin();
+         it != args.end(); ++it) {
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
+          FROM_HERE,
+          base::Bind(gin::Run, runner.GetWeakPtr(), base::FilePath(*it)));
+    }
+
+    base::RunLoop().RunUntilIdle();
   }
 
-  base::CommandLine::StringVector args =
-      base::CommandLine::ForCurrentProcess()->GetArgs();
-  for (base::CommandLine::StringVector::const_iterator it = args.begin();
-       it != args.end(); ++it) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::Bind(gin::Run, runner.GetWeakPtr(), base::FilePath(*it)));
-  }
+  // gin::IsolateHolder waits for tasks running in TaskScheduler in its
+  // destructor and thus must be destroyed before TaskScheduler starts skipping
+  // CONTINUE_ON_SHUTDOWN tasks.
+  base::TaskScheduler::GetInstance()->Shutdown();
 
-  base::RunLoop().RunUntilIdle();
   return 0;
 }
