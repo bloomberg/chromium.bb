@@ -1586,12 +1586,11 @@ void QuicChromiumClientSession::OnReadError(
                                 ConnectionCloseBehavior::SILENT_CLOSE);
 }
 
-bool QuicChromiumClientSession::OnPacket(const QuicReceivedPacket& packet,
-                                         const IPEndPoint& local_address,
-                                         const IPEndPoint& peer_address) {
-  ProcessUdpPacket(QuicSocketAddress(QuicSocketAddressImpl(local_address)),
-                   QuicSocketAddress(QuicSocketAddressImpl(peer_address)),
-                   packet);
+bool QuicChromiumClientSession::OnPacket(
+    const QuicReceivedPacket& packet,
+    const QuicSocketAddress& local_address,
+    const QuicSocketAddress& peer_address) {
+  ProcessUdpPacket(local_address, peer_address, packet);
   if (!connection()->connected()) {
     NotifyFactoryOfSessionClosedLater();
     return false;
