@@ -86,9 +86,6 @@ class CORE_EXPORT ImageLoader : public GarbageCollectedFinalized<ImageLoader>,
   bool ImageComplete() const { return image_complete_ && !pending_task_; }
 
   ImageResourceContent* GetImage() const { return image_.Get(); }
-  ImageResource* ImageResourceForImageDocument() const {
-    return image_resource_for_image_document_;
-  }
 
   // Cancels pending load events, and doesn't dispatch new ones.
   // Note: ClearImage/SetImage.*() are not a simple setter.
@@ -97,8 +94,21 @@ class CORE_EXPORT ImageLoader : public GarbageCollectedFinalized<ImageLoader>,
   void ClearImage();
   void SetImageForTest(ImageResourceContent*);
 
+  // Image document loading:
+  // When |loading_image_document_| is true:
+  //   Loading via ImageDocument.
+  //   |image_resource_for_image_document_| points to a ImageResource that is
+  //   not associated with a ResourceLoader.
+  //   The corresponding ImageDocument is responsible for supplying the response
+  //   and data to |image_resource_for_image_document_| and thus |image_|.
+  // Otherwise:
+  //   Normal loading via ResourceFetcher/ResourceLoader.
+  //   |image_resource_for_image_document_| is null.
   bool IsLoadingImageDocument() { return loading_image_document_; }
   void SetLoadingImageDocument() { loading_image_document_ = true; }
+  ImageResource* ImageResourceForImageDocument() const {
+    return image_resource_for_image_document_;
+  }
 
   bool HasPendingActivity() const {
     return has_pending_load_event_ || has_pending_error_event_ || pending_task_;
