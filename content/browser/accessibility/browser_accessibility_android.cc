@@ -77,9 +77,16 @@ base::string16 BrowserAccessibilityAndroid::GetValue() const {
   // Optionally replace entered password text with bullet characters
   // based on a user preference.
   if (IsPassword()) {
-    bool should_expose = static_cast<BrowserAccessibilityManagerAndroid*>(
-        manager())->ShouldExposePasswordText();
-    if (!should_expose) {
+    auto* manager =
+        static_cast<BrowserAccessibilityManagerAndroid*>(this->manager());
+    if (manager->ShouldRespectDisplayedPasswordText()) {
+      // In the Chrome accessibility tree, the value of a password node is
+      // unobscured. However, if ShouldRespectDisplayedPasswordText() returns
+      // true we should try to expose whatever's actually visually displayed,
+      // whether that's the actual password or dots or whatever. To do this
+      // we rely on the password field's shadow dom.
+      value = base::UTF8ToUTF16(ComputeAccessibleNameFromDescendants());
+    } else if (!manager->ShouldExposePasswordText()) {
       value = base::string16(value.size(), ui::kSecurePasswordBullet);
     }
   }

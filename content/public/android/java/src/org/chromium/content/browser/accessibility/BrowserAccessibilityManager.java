@@ -5,6 +5,7 @@
 package org.chromium.content.browser.accessibility;
 
 import android.annotation.SuppressLint;
+import android.content.ContentResolver;
 import android.content.Context;
 import android.graphics.Rect;
 import android.os.Build;
@@ -21,6 +22,7 @@ import android.view.accessibility.AccessibilityManager;
 import android.view.accessibility.AccessibilityNodeInfo;
 import android.view.accessibility.AccessibilityNodeProvider;
 
+import org.chromium.base.BuildInfo;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.content.browser.ContentViewCore;
@@ -1030,7 +1032,8 @@ public class BrowserAccessibilityManager {
 
     @CalledByNative
     protected void setAccessibilityNodeInfoKitKatAttributes(AccessibilityNodeInfo node,
-            boolean isRoot, boolean isEditableText, String roleDescription) {
+            boolean isRoot, boolean isEditableText, String roleDescription, int selectionStartIndex,
+            int selectionEndIndex) {
         // Requires KitKat or higher.
     }
 
@@ -1176,11 +1179,35 @@ public class BrowserAccessibilityManager {
         bundle.putFloat("AccessibilityNodeInfo.RangeInfo.current", current);
     }
 
+    /**
+     * On Android O and higher, we should respect whatever is displayed
+     * in a password box and report that via accessibility APIs, whether
+     * that's the unobscured password, or all dots.
+     *
+     * Previous to O, shouldExposePasswordText() returns a system setting
+     * that determines whether we should return the unobscured password or all
+     * dots, independent of what was displayed visually.
+     */
+    @CalledByNative
+    boolean shouldRespectDisplayedPasswordText() {
+        return BuildInfo.isAtLeastO();
+    }
+
+    /**
+     * Only relevant prior to Android O, see shouldRespectDisplayedPasswordText.
+     */
     @CalledByNative
     boolean shouldExposePasswordText() {
+        ContentResolver contentResolver = mContentViewCore.getContext().getContentResolver();
+
+        if (BuildInfo.isAtLeastO()) {
+            return (Settings.System.getInt(contentResolver, Settings.System.TEXT_SHOW_PASSWORD, 1)
+                    == 1);
+        }
+
         return (Settings.Secure.getInt(
-                        mContentViewCore.getContext().getContentResolver(),
-                        Settings.Secure.ACCESSIBILITY_SPEAK_PASSWORD, 0) == 1);
+                        contentResolver, Settings.Secure.ACCESSIBILITY_SPEAK_PASSWORD, 0)
+                == 1);
     }
 
     private native void nativeOnAutofillPopupDisplayed(
