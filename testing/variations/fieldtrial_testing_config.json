@@ -226,6 +226,26 @@
             ]
         }
     ],
+    "AutofillUkmLogging": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "ios",
+                "linux",
+                "mac",
+                "win"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "AutofillUkmLogging"
+                    ]
+                }
+            ]
+        }
+    ],
     "AutomaticTabDiscarding": [
         {
             "platforms": [
