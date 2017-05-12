@@ -92,7 +92,7 @@ class DisplayTest : public testing::Test {
             true /* needs_sync_points */)),
         task_runner_(new base::NullTaskRunner) {}
 
-  ~DisplayTest() override { support_->EvictFrame(); }
+  ~DisplayTest() override { support_->EvictCurrentSurface(); }
 
   void SetUpDisplay(const RendererSettings& settings,
                     std::unique_ptr<TestWebGraphicsContext3D> context) {

@@ -73,7 +73,7 @@ class SurfaceAggregatorTest : public testing::Test {
   SurfaceAggregatorTest() : SurfaceAggregatorTest(false) {}
 
   void TearDown() override {
-    support_->EvictFrame();
+    support_->EvictCurrentSurface();
     testing::Test::TearDown();
   }
 
@@ -106,7 +106,7 @@ class SurfaceAggregatorValidSurfaceTest : public SurfaceAggregatorTest {
   }
 
   void TearDown() override {
-    child_support_->EvictFrame();
+    child_support_->EvictCurrentSurface();
     SurfaceAggregatorTest::TearDown();
   }
 
@@ -230,7 +230,7 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, OpacityCopied) {
   ASSERT_EQ(1u, shared_quad_state_list2.size());
   EXPECT_EQ(.5f, shared_quad_state_list2.ElementAt(0)->opacity);
 
-  embedded_support->EvictFrame();
+  embedded_support->EvictCurrentSurface();
 }
 
 TEST_F(SurfaceAggregatorValidSurfaceTest, MultiPassSimpleFrame) {
@@ -340,7 +340,7 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, SimpleSurfaceReference) {
   AggregateAndVerify(
       expected_passes, arraysize(expected_passes), ids, arraysize(ids));
 
-  embedded_support->EvictFrame();
+  embedded_support->EvictCurrentSurface();
 }
 
 // This test verifies that in the absence of a primary Surface,
@@ -415,8 +415,8 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, FallbackSurfaceReference) {
   AggregateAndVerify(expected_passes2, arraysize(expected_passes2), ids,
                      arraysize(ids));
 
-  primary_child_support->EvictFrame();
-  fallback_child_support->EvictFrame();
+  primary_child_support->EvictCurrentSurface();
+  fallback_child_support->EvictCurrentSurface();
 }
 
 // This test verifies that in the presence of both primary Surface and fallback
@@ -480,8 +480,8 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, FallbackSurfaceReferenceWithPrimary) {
   AggregateAndVerify(expected_passes1, arraysize(expected_passes1), ids,
                      arraysize(ids));
 
-  primary_child_support->EvictFrame();
-  fallback_child_support->EvictFrame();
+  primary_child_support->EvictCurrentSurface();
+  fallback_child_support->EvictCurrentSurface();
 }
 
 TEST_F(SurfaceAggregatorValidSurfaceTest, CopyRequest) {
@@ -539,7 +539,7 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, CopyRequest) {
         aggregator_.previous_contained_surfaces().end());
   }
 
-  embedded_support->EvictFrame();
+  embedded_support->EvictCurrentSurface();
 }
 
 // Root surface may contain copy requests.
@@ -620,7 +620,7 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, RootCopyRequest) {
   DCHECK(original_pass_list[0]->copy_requests.empty());
   DCHECK(original_pass_list[1]->copy_requests.empty());
 
-  embedded_support->EvictFrame();
+  embedded_support->EvictCurrentSurface();
 }
 
 TEST_F(SurfaceAggregatorValidSurfaceTest, UnreferencedSurface) {
@@ -717,8 +717,8 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, UnreferencedSurface) {
         aggregator_.previous_contained_surfaces().end());
   }
 
-  embedded_support->EvictFrame();
-  parent_support->EvictFrame();
+  embedded_support->EvictCurrentSurface();
+  parent_support->EvictCurrentSurface();
 }
 
 // This tests referencing a surface that has multiple render passes.
@@ -1201,9 +1201,9 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, AggregateSharedQuadStateProperties) {
         << iter.index();
   }
 
-  grandchild_support->EvictFrame();
-  child_one_support->EvictFrame();
-  child_two_support->EvictFrame();
+  grandchild_support->EvictCurrentSurface();
+  child_one_support->EvictCurrentSurface();
+  child_two_support->EvictCurrentSurface();
 }
 
 // This tests that when aggregating a frame with multiple render passes that we
@@ -1391,7 +1391,7 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, AggregateMultiplePassWithTransform) {
                 ->shared_quad_state_list.ElementAt(1)
                 ->clip_rect.ToString());
 
-  middle_support->EvictFrame();
+  middle_support->EvictCurrentSurface();
 }
 
 // Tests that damage rects are aggregated correctly when surfaces change.
@@ -1569,7 +1569,7 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, AggregateDamageRect) {
         gfx::Rect(SurfaceSize())));
   }
 
-  parent_support->EvictFrame();
+  parent_support->EvictCurrentSurface();
 }
 
 // Check that damage is correctly calculated for surfaces.
@@ -2029,7 +2029,7 @@ TEST_F(SurfaceAggregatorWithResourcesTest, TakeResourcesOneSurface) {
   EXPECT_THAT(returned_ids,
               testing::WhenSorted(testing::ElementsAreArray(ids)));
 
-  support->EvictFrame();
+  support->EvictCurrentSurface();
 }
 
 TEST_F(SurfaceAggregatorWithResourcesTest, TakeInvalidResources) {
@@ -2063,7 +2063,7 @@ TEST_F(SurfaceAggregatorWithResourcesTest, TakeInvalidResources) {
   ASSERT_EQ(1u, client.returned_resources().size());
   EXPECT_EQ(11u, client.returned_resources()[0].id);
 
-  support->EvictFrame();
+  support->EvictCurrentSurface();
 }
 
 TEST_F(SurfaceAggregatorWithResourcesTest, TwoSurfaces) {
@@ -2109,8 +2109,8 @@ TEST_F(SurfaceAggregatorWithResourcesTest, TwoSurfaces) {
               testing::WhenSorted(testing::ElementsAreArray(ids)));
   EXPECT_EQ(3u, resource_provider_->num_resources());
 
-  support1->EvictFrame();
-  support2->EvictFrame();
+  support1->EvictCurrentSurface();
+  support2->EvictCurrentSurface();
 }
 
 // Ensure that aggregator completely ignores Surfaces that reference invalid
@@ -2170,9 +2170,9 @@ TEST_F(SurfaceAggregatorWithResourcesTest, InvalidChildSurface) {
   EXPECT_EQ(3u, pass_list->back()->shared_quad_state_list.size());
   EXPECT_EQ(9u, pass_list->back()->quad_list.size());
 
-  root_support->EvictFrame();
-  middle_support->EvictFrame();
-  child_support->EvictFrame();
+  root_support->EvictCurrentSurface();
+  middle_support->EvictCurrentSurface();
+  child_support->EvictCurrentSurface();
 }
 
 TEST_F(SurfaceAggregatorWithResourcesTest, SecureOutputTexture) {
@@ -2241,8 +2241,8 @@ TEST_F(SurfaceAggregatorWithResourcesTest, SecureOutputTexture) {
   // Output is insecure, so texture should be drawn.
   EXPECT_EQ(DrawQuad::SOLID_COLOR, render_pass->quad_list.back()->material);
 
-  support1->EvictFrame();
-  support2->EvictFrame();
+  support1->EvictCurrentSurface();
+  support2->EvictCurrentSurface();
 }
 
 // Ensure that the render passes have correct color spaces.

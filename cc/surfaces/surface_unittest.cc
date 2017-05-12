@@ -35,7 +35,7 @@ TEST(SurfaceTest, SurfaceLifetime) {
   SurfaceId surface_id(kArbitraryFrameSinkId, local_surface_id);
   support->SubmitCompositorFrame(local_surface_id, test::MakeCompositorFrame());
   EXPECT_TRUE(manager.GetSurfaceForId(surface_id));
-  support->EvictFrame();
+  support->EvictCurrentSurface();
 
   EXPECT_EQ(NULL, manager.GetSurfaceForId(surface_id));
 }
@@ -106,7 +106,7 @@ TEST(SurfaceTest, CopyRequestLifetime) {
   copy_requests.find(last_pass_id)->second->SendEmptyResult();
   EXPECT_TRUE(copy_called);
 
-  support->EvictFrame();
+  support->EvictCurrentSurface();
 }
 
 }  // namespace

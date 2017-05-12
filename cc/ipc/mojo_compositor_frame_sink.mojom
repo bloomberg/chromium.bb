@@ -41,7 +41,7 @@ interface MojoCompositorFrameSink {
 
   // Notify that the surface is no longer in use (and is okay to be evicted) so
   // that its resources gets returned in time.
-  EvictFrame();
+  EvictCurrentSurface();
 };
 
 interface MojoCompositorFrameSinkClient {

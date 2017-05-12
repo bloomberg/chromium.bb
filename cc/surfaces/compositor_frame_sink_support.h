@@ -57,7 +57,7 @@ class CC_SURFACES_EXPORT CompositorFrameSinkSupport
   // FrameSinkManagerClient implementation.
   void SetBeginFrameSource(BeginFrameSource* begin_frame_source) override;
 
-  void EvictFrame();
+  void EvictCurrentSurface();
   void SetNeedsBeginFrame(bool needs_begin_frame);
   void BeginFrameDidNotSwap(const BeginFrameAck& ack);
   void SubmitCompositorFrame(const LocalSurfaceId& local_surface_id,

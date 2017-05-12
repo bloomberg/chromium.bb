@@ -45,7 +45,7 @@ CompositorFrameSinkSupport::~CompositorFrameSinkSupport() {
       reference_tracker_.current_surface_id().is_valid())
     RemoveTopLevelRootReference(reference_tracker_.current_surface_id());
 
-  EvictFrame();
+  EvictCurrentSurface();
   surface_manager_->UnregisterFrameSinkManagerClient(frame_sink_id_);
   if (handles_frame_sink_id_invalidation_)
     surface_manager_->InvalidateFrameSinkId(frame_sink_id_);
@@ -74,7 +74,7 @@ void CompositorFrameSinkSupport::SetBeginFrameSource(
   UpdateNeedsBeginFramesInternal();
 }
 
-void CompositorFrameSinkSupport::EvictFrame() {
+void CompositorFrameSinkSupport::EvictCurrentSurface() {
   if (!current_surface_)
     return;
   DestroyCurrentSurface();

@@ -108,7 +108,7 @@ class CompositorFrameSinkSupportTest : public testing::Test,
   }
   ~CompositorFrameSinkSupportTest() override {
     manager_.RemoveObserver(this);
-    support_->EvictFrame();
+    support_->EvictCurrentSurface();
   }
 
   const SurfaceId& last_created_surface_id() const {
@@ -506,11 +506,11 @@ TEST_F(CompositorFrameSinkSupportTest, AddDuringEviction) {
         support->SubmitCompositorFrame(new_id, MakeCompositorFrame());
       }))
       .WillRepeatedly(testing::Return());
-  support->EvictFrame();
+  support->EvictCurrentSurface();
 }
 
-// Tests doing an EvictFrame before shutting down the factory.
-TEST_F(CompositorFrameSinkSupportTest, EvictFrame) {
+// Tests doing an EvictCurrentSurface before shutting down the factory.
+TEST_F(CompositorFrameSinkSupportTest, EvictCurrentSurface) {
   MockCompositorFrameSinkSupportClient mock_client;
   std::unique_ptr<CompositorFrameSinkSupport> support =
       CompositorFrameSinkSupport::Create(
@@ -532,12 +532,13 @@ TEST_F(CompositorFrameSinkSupportTest, EvictFrame) {
   EXPECT_TRUE(manager_.GetSurfaceForId(id));
   EXPECT_CALL(mock_client, DidReceiveCompositorFrameAck(returned_resources))
       .Times(1);
-  support->EvictFrame();
+  support->EvictCurrentSurface();
   EXPECT_FALSE(manager_.GetSurfaceForId(id));
 }
 
-// Tests doing an EvictSurface which has unregistered dependency.
-TEST_F(CompositorFrameSinkSupportTest, EvictSurfaceDependencyUnRegistered) {
+// Tests doing an EvictCurrentSurface which has unregistered dependency.
+TEST_F(CompositorFrameSinkSupportTest,
+       EvictCurrentSurfaceDependencyUnRegistered) {
   MockCompositorFrameSinkSupportClient mock_client;
   std::unique_ptr<CompositorFrameSinkSupport> support =
       CompositorFrameSinkSupport::Create(
@@ -564,12 +565,13 @@ TEST_F(CompositorFrameSinkSupportTest, EvictSurfaceDependencyUnRegistered) {
   EXPECT_TRUE(manager_.GetSurfaceForId(surface_id));
   EXPECT_CALL(mock_client, DidReceiveCompositorFrameAck(returned_resource))
       .Times(1);
-  support->EvictFrame();
+  support->EvictCurrentSurface();
   EXPECT_FALSE(manager_.GetSurfaceForId(surface_id));
 }
 
-// Tests doing an EvictSurface which has registered dependency.
-TEST_F(CompositorFrameSinkSupportTest, EvictSurfaceDependencyRegistered) {
+// Tests doing an EvictCurrentSurface which has registered dependency.
+TEST_F(CompositorFrameSinkSupportTest,
+       EvictCurrentSurfaceDependencyRegistered) {
   MockCompositorFrameSinkSupportClient mock_client;
   std::unique_ptr<CompositorFrameSinkSupport> support =
       CompositorFrameSinkSupport::Create(
@@ -596,7 +598,7 @@ TEST_F(CompositorFrameSinkSupportTest, EvictSurfaceDependencyRegistered) {
 
   ReturnedResourceArray returned_resources;
   EXPECT_TRUE(manager_.GetSurfaceForId(surface_id));
-  support->EvictFrame();
+  support->EvictCurrentSurface();
   EXPECT_TRUE(manager_.GetSurfaceForId(surface_id));
   EXPECT_EQ(0u, execute_count);
 
@@ -619,7 +621,7 @@ TEST_F(CompositorFrameSinkSupportTest, DestroySequence) {
   // Check that waiting before the sequence is satisfied works.
   manager_.GetSurfaceForId(id2)->AddDestructionDependency(
       SurfaceSequence(kYetAnotherArbitraryFrameSinkId, 4));
-  support2->EvictFrame();
+  support2->EvictCurrentSurface();
 
   DCHECK(manager_.GetSurfaceForId(id2));
   manager_.SatisfySequence(SurfaceSequence(kYetAnotherArbitraryFrameSinkId, 4));
@@ -631,7 +633,7 @@ TEST_F(CompositorFrameSinkSupportTest, DestroySequence) {
   DCHECK(manager_.GetSurfaceForId(id2));
   manager_.GetSurfaceForId(id2)->AddDestructionDependency(
       SurfaceSequence(kAnotherArbitraryFrameSinkId, 6));
-  support2->EvictFrame();
+  support2->EvictCurrentSurface();
   DCHECK(!manager_.GetSurfaceForId(id2));
 }
 
@@ -648,7 +650,7 @@ TEST_F(CompositorFrameSinkSupportTest, InvalidFrameSinkId) {
   manager_.GetSurfaceForId(id)->AddDestructionDependency(
       SurfaceSequence(frame_sink_id, 4));
 
-  support_->EvictFrame();
+  support_->EvictCurrentSurface();
 
   // Verify the dependency has prevented the surface from getting destroyed.
   EXPECT_TRUE(manager_.GetSurfaceForId(id));
@@ -680,7 +682,7 @@ TEST_F(CompositorFrameSinkSupportTest, DestroyCycle) {
   }
   manager_.GetSurfaceForId(id2)->AddDestructionDependency(
       SurfaceSequence(kAnotherArbitraryFrameSinkId, 4));
-  support2->EvictFrame();
+  support2->EvictCurrentSurface();
   // Give local_surface_id_ a frame that references id2.
   {
     std::unique_ptr<RenderPass> render_pass(RenderPass::Create());
@@ -689,7 +691,7 @@ TEST_F(CompositorFrameSinkSupportTest, DestroyCycle) {
     frame.metadata.referenced_surfaces.push_back(id2);
     support_->SubmitCompositorFrame(local_surface_id_, std::move(frame));
   }
-  support_->EvictFrame();
+  support_->EvictCurrentSurface();
   EXPECT_TRUE(manager_.GetSurfaceForId(id2));
   // local_surface_id_ should be retained by reference from id2.
   EXPECT_TRUE(manager_.GetSurfaceForId(
@@ -753,7 +755,7 @@ TEST_F(CompositorFrameSinkSupportTest, DuplicateCopyRequest) {
   EXPECT_FALSE(called2);
   EXPECT_FALSE(called3);
 
-  support_->EvictFrame();
+  support_->EvictCurrentSurface();
   local_surface_id_ = LocalSurfaceId();
   EXPECT_TRUE(called1);
   EXPECT_TRUE(called2);

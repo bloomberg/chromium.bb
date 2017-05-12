@@ -36,8 +36,8 @@ GpuCompositorFrameSink::GpuCompositorFrameSink(
 
 GpuCompositorFrameSink::~GpuCompositorFrameSink() {}
 
-void GpuCompositorFrameSink::EvictFrame() {
-  support_->EvictFrame();
+void GpuCompositorFrameSink::EvictCurrentSurface() {
+  support_->EvictCurrentSurface();
 }
 
 void GpuCompositorFrameSink::SetNeedsBeginFrame(bool needs_begin_frame) {
