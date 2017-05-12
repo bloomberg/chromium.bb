@@ -19,7 +19,7 @@
         ]
       },
       "requires": {
-        "content_browser": [ "renderer" ],
+        "content_browser": [ "memory_instrumentation", "renderer" ],
         "device": [
           "device:battery_monitor",
           "device:generic_sensor",
@@ -47,7 +47,7 @@
         ]
       },
       "requires": {
-        "content_browser": [ "renderer" ]
+        "content_browser": [ "memory_instrumentation", "renderer" ]
       }
     }
   },

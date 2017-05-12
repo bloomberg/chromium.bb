@@ -6,7 +6,9 @@
       "provides": {
         "gpu": [
           "content::mojom::FieldTrialRecorder",
-          "media::mojom::AndroidOverlayProvider",
+          "media::mojom::AndroidOverlayProvider"
+        ],
+        "memory_instrumentation": [
           "memory_instrumentation::mojom::Coordinator"
         ],
         "plugin": [
@@ -37,7 +39,6 @@
           "discardable_memory::mojom::DiscardableSharedMemoryManager",
           "media::mojom::ImageCapture",
           "memory_coordinator::mojom::MemoryCoordinatorHandle",
-          "memory_instrumentation::mojom::Coordinator",
           "metrics::mojom::SingleSampleMetricsProvider",
           "payments::mojom::PaymentManager",
           "shape_detection::mojom::BarcodeDetection",
@@ -47,15 +48,12 @@
         ],
         "service_manager:service_factory": [
           "service_manager::mojom::ServiceFactory"
-        ],
-        "utility": [
-          "memory_instrumentation::mojom::Coordinator"
         ]
       },
       "requires": {
         "*": [ "app" ],
         // In classic ash, the browser supplies ash interfaces to itself.
-        "content_browser": [ "ash" ],
+        "content_browser": [ "ash", "memory_instrumentation" ],
         "content_gpu": [ "browser" ],
         "content_plugin": [ "browser" ],
         "content_renderer": [ "browser" ],
