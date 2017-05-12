@@ -42,6 +42,7 @@ METADATA_ELF_FILENAME = 'elf_file_name'  # Path relative to output_directory.
 METADATA_ELF_MTIME = 'elf_mtime'  # int timestamp in utc.
 METADATA_ELF_BUILD_ID = 'elf_build_id'
 METADATA_GN_ARGS = 'gn_args'
+METADATA_TOOL_PREFIX = 'tool_prefix'  # Path relative to SRC_ROOT.
 
 
 SECTION_TO_SECTION_NAME = {
@@ -456,8 +457,11 @@ class SymbolGroup(BaseSymbol):
                                    filtered_symbols=filtered_and_kept[0],
                                    section_name=self.section_name)
 
-  def WhereBiggerThan(self, min_size):
+  def WhereSizeBiggerThan(self, min_size):
     return self.Filter(lambda s: s.size >= min_size)
+
+  def WherePssBiggerThan(self, min_pss):
+    return self.Filter(lambda s: s.pss >= min_pss)
 
   def WhereInSection(self, section):
     if len(section) == 1:
