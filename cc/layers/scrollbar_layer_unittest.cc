@@ -437,6 +437,7 @@ TEST_F(ScrollbarLayerTest, ThumbRect) {
 
   // Over-scroll (thumb position should clamp on the far side).
   root_layer->SetScrollOffset(gfx::ScrollOffset(85, 0));
+  layer_tree_host_->UpdateLayers();
 
   UPDATE_AND_EXTRACT_LAYER_POINTERS();
   EXPECT_EQ(gfx::Rect(56, 0, 4, 10).ToString(),
@@ -909,6 +910,7 @@ class ScrollbarLayerTestResourceCreationAndRelease : public ScrollbarLayerTest {
                           int expected_deleted,
                           bool use_solid_color_scrollbar) {
     std::unique_ptr<Scrollbar> scrollbar(new FakeScrollbar(false, true, false));
+    scoped_refptr<Layer> root_clip_layer = Layer::Create();
     scoped_refptr<Layer> layer_tree_root = Layer::Create();
     scoped_refptr<Layer> content_layer = Layer::Create();
     scoped_refptr<Layer> scrollbar_layer;
@@ -930,6 +932,7 @@ class ScrollbarLayerTestResourceCreationAndRelease : public ScrollbarLayerTest {
 
     scrollbar_layer->SetIsDrawable(true);
     scrollbar_layer->SetBounds(gfx::Size(100, 100));
+    layer_tree_root->SetScrollClipLayerId(root_clip_layer->id());
     layer_tree_root->SetScrollOffset(gfx::ScrollOffset(10, 20));
     layer_tree_root->SetBounds(gfx::Size(100, 200));
     content_layer->SetBounds(gfx::Size(100, 200));
