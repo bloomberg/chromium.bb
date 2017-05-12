@@ -369,6 +369,7 @@ _VALID_OS_MACROS = (
     'OS_CAT',       # For testing.
     'OS_CHROMEOS',
     'OS_FREEBSD',
+    'OS_FUCHSIA',
     'OS_IOS',
     'OS_LINUX',
     'OS_MACOSX',

@@ -137,6 +137,7 @@ declare_args() {
   # to configure warnings.
   is_clang =
       current_os == "mac" || current_os == "ios" || current_os == "chromeos" ||
+      current_os == "fuchsia" ||
       (current_os == "linux" && current_cpu != "s390x" &&
        current_cpu != "s390" && current_cpu != "ppc64" && current_cpu != "ppc")
 
@@ -163,7 +164,8 @@ declare_args() {
   #
   # For more information see
   # https://chromium.googlesource.com/chromium/src/+/master/docs/component_build.md
-  is_component_build = is_debug && current_os != "ios"
+  is_component_build =
+      is_debug && current_os != "ios" && current_os != "fuchsia"
 }
 
 assert(!(is_debug && is_official_build), "Can't do official debug builds")
@@ -233,6 +235,8 @@ if (target_os == "android") {
   } else {
     _default_toolchain = "//build/toolchain/linux:$target_cpu"
   }
+} else if (target_os == "fuchsia") {
+  _default_toolchain = "//build/toolchain/fuchsia:$target_cpu"
 } else if (target_os == "ios") {
   _default_toolchain = "//build/toolchain/mac:ios_clang_$target_cpu"
 } else if (target_os == "mac") {
@@ -285,6 +289,7 @@ if (current_os == "win" || current_os == "winrt_81" ||
     current_os == "winrt_81_phone" || current_os == "winrt_10") {
   is_android = false
   is_chromeos = false
+  is_fuchsia = false
   is_ios = false
   is_linux = false
   is_mac = false
@@ -294,6 +299,7 @@ if (current_os == "win" || current_os == "winrt_81" ||
 } else if (current_os == "mac") {
   is_android = false
   is_chromeos = false
+  is_fuchsia = false
   is_ios = false
   is_linux = false
   is_mac = true
@@ -303,6 +309,7 @@ if (current_os == "win" || current_os == "winrt_81" ||
 } else if (current_os == "android") {
   is_android = true
   is_chromeos = false
+  is_fuchsia = false
   is_ios = false
   is_linux = false
   is_mac = false
@@ -312,6 +319,7 @@ if (current_os == "win" || current_os == "winrt_81" ||
 } else if (current_os == "chromeos") {
   is_android = false
   is_chromeos = true
+  is_fuchsia = false
   is_ios = false
   is_linux = true
   is_mac = false
@@ -324,15 +332,27 @@ if (current_os == "win" || current_os == "winrt_81" ||
   # Posix variant.
   is_android = false
   is_chromeos = false
+  is_fuchsia = false
   is_ios = false
   is_linux = false
   is_mac = false
   is_nacl = true
   is_posix = true
   is_win = false
+} else if (current_os == "fuchsia") {
+  is_android = false
+  is_chromeos = false
+  is_fuchsia = true
+  is_ios = false
+  is_linux = false
+  is_mac = false
+  is_nacl = false
+  is_posix = true
+  is_win = false
 } else if (current_os == "ios") {
   is_android = false
   is_chromeos = false
+  is_fuchsia = false
   is_ios = true
   is_linux = false
   is_mac = false
@@ -342,6 +362,7 @@ if (current_os == "win" || current_os == "winrt_81" ||
 } else if (current_os == "linux") {
   is_android = false
   is_chromeos = false
+  is_fuchsia = false
   is_ios = false
   is_linux = true
   is_mac = false
