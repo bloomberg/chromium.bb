@@ -14,22 +14,22 @@
         {
           "object": "LayoutBlockFlow (relative positioned) DIV class='relative paddingTop'",
           "rect": [8, 186, 769, 642],
-          "reason": "bounds change"
+          "reason": "geometry"
         },
         {
           "object": "LayoutBlockFlow (relative positioned) DIV class='relative paddingTop'",
           "rect": [8, 92, 769, 642],
-          "reason": "bounds change"
+          "reason": "geometry"
         },
         {
           "object": "LayoutIFrame IFRAME id='iframe'",
           "rect": [8, 92, 732, 94],
-          "reason": "layoutObject insertion"
+          "reason": "appeared"
         },
         {
           "object": "LayoutBlockFlow HTML",
           "rect": [10, 94, 728, 90],
-          "reason": "layoutObject insertion"
+          "reason": "appeared"
         },
         {
           "object": "LayoutView #document",
@@ -39,17 +39,17 @@
         {
           "object": "LayoutBlockFlow BODY",
           "rect": [18, 102, 712, 74],
-          "reason": "layoutObject insertion"
+          "reason": "appeared"
         },
         {
           "object": "LayoutImage IMG",
           "rect": [58, 236, 489, 537],
-          "reason": "bounds change"
+          "reason": "geometry"
         },
         {
           "object": "LayoutImage IMG",
           "rect": [58, 142, 489, 537],
-          "reason": "bounds change"
+          "reason": "geometry"
         }
       ]
     }
@@ -61,27 +61,27 @@
     },
     {
       "object": "LayoutIFrame IFRAME id='iframe'",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutBlockFlow (relative positioned) DIV class='relative paddingTop'",
-      "reason": "bounds change"
+      "reason": "geometry"
     },
     {
       "object": "RootInlineBox",
-      "reason": "bounds change"
+      "reason": "geometry"
     },
     {
       "object": "LayoutImage IMG",
-      "reason": "bounds change"
+      "reason": "geometry"
     },
     {
       "object": "LayoutText #text",
-      "reason": "location change"
+      "reason": "geometry"
     },
     {
       "object": "VerticalScrollbar",
-      "reason": "scroll"
+      "reason": "scroll control"
     },
     {
       "object": "LayoutView #document",
@@ -89,11 +89,11 @@
     },
     {
       "object": "LayoutBlockFlow HTML",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutBlockFlow BODY",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     }
   ]
 }

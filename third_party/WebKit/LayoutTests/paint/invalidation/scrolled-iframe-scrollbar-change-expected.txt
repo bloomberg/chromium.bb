@@ -2,11 +2,11 @@
   "objectPaintInvalidations": [
     {
       "object": "VerticalScrollbar",
-      "reason": "scroll"
+      "reason": "scroll control"
     },
     {
       "object": "LayoutView #document",
-      "reason": "scroll"
+      "reason": "geometry"
     },
     {
       "object": "LayoutView #document",
@@ -18,11 +18,11 @@
     },
     {
       "object": "LayoutBlockFlow DIV id='container'",
-      "reason": "border box change"
+      "reason": "geometry"
     },
     {
       "object": "LayoutBlockFlow (positioned) DIV id='overlay'",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     }
   ]
 }

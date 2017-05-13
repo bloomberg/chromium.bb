@@ -9,12 +9,12 @@
         {
           "object": "LayoutBlockFlow DIV",
           "rect": [8, 93, 85, 15],
-          "reason": "scroll"
+          "reason": "scroll control"
         },
         {
           "object": "LayoutBlockFlow DIV",
           "rect": [93, 8, 15, 85],
-          "reason": "scroll"
+          "reason": "scroll control"
         }
       ]
     }
@@ -22,11 +22,11 @@
   "objectPaintInvalidations": [
     {
       "object": "HorizontalScrollbar",
-      "reason": "scroll"
+      "reason": "scroll control"
     },
     {
       "object": "VerticalScrollbar",
-      "reason": "scroll"
+      "reason": "scroll control"
     }
   ]
 }

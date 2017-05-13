@@ -9,12 +9,12 @@
         {
           "object": "LayoutBlockFlow DIV class='outlined'",
           "rect": [0, 240, 220, 50],
-          "reason": "bounds change"
+          "reason": "geometry"
         },
         {
           "object": "LayoutBlockFlow DIV class='outlined'",
           "rect": [0, 140, 220, 50],
-          "reason": "bounds change"
+          "reason": "geometry"
         }
       ]
     }
@@ -22,7 +22,7 @@
   "objectPaintInvalidations": [
     {
       "object": "LayoutBlockFlow DIV class='outlined'",
-      "reason": "bounds change"
+      "reason": "geometry"
     }
   ]
 }

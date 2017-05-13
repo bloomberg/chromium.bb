@@ -9,7 +9,7 @@
         {
           "object": "LayoutBlockFlow BODY",
           "rect": [0, 0, 800, 105],
-          "reason": "forced by layout"
+          "reason": "geometry"
         }
       ]
     }
@@ -17,23 +17,23 @@
   "objectPaintInvalidations": [
     {
       "object": "LayoutBlockFlow BODY",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "RootInlineBox",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "LayoutBlockFlow DIV class='other'",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "LayoutBlockFlow DIV id='target'",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "LayoutBlockFlow DIV class='other'",
-      "reason": "forced by layout"
+      "reason": "geometry"
     }
   ]
 }

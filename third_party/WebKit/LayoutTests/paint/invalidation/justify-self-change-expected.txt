@@ -9,27 +9,27 @@
         {
           "object": "LayoutBlockFlow DIV class='item1'",
           "rect": [0, 52, 100, 300],
-          "reason": "bounds change"
+          "reason": "geometry"
         },
         {
           "object": "LayoutBlockFlow DIV class='item3'",
           "rect": [150, 52, 50, 300],
-          "reason": "bounds change"
+          "reason": "geometry"
         },
         {
           "object": "LayoutBlockFlow DIV class='item2'",
           "rect": [125, 52, 50, 300],
-          "reason": "bounds change"
+          "reason": "geometry"
         },
         {
           "object": "LayoutBlockFlow DIV class='item3'",
           "rect": [125, 52, 50, 300],
-          "reason": "bounds change"
+          "reason": "geometry"
         },
         {
           "object": "LayoutBlockFlow DIV class='item2'",
           "rect": [100, 52, 50, 300],
-          "reason": "bounds change"
+          "reason": "geometry"
         }
       ]
     }
@@ -37,27 +37,27 @@
   "objectPaintInvalidations": [
     {
       "object": "LayoutBlockFlow DIV class='item1'",
-      "reason": "bounds change"
+      "reason": "geometry"
     },
     {
       "object": "LayoutBlockFlow DIV",
-      "reason": "location change"
+      "reason": "geometry"
     },
     {
       "object": "LayoutBlockFlow DIV class='item2'",
-      "reason": "bounds change"
+      "reason": "geometry"
     },
     {
       "object": "LayoutBlockFlow DIV",
-      "reason": "location change"
+      "reason": "geometry"
     },
     {
       "object": "LayoutBlockFlow DIV class='item3'",
-      "reason": "bounds change"
+      "reason": "geometry"
     },
     {
       "object": "LayoutBlockFlow DIV",
-      "reason": "location change"
+      "reason": "geometry"
     }
   ]
 }

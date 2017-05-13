@@ -1190,8 +1190,8 @@ PaintInvalidationReason LayoutObject::DeprecatedInvalidatePaint(
 
   LayoutView* v = View();
   if (v->GetDocument().Printing())
-    return kPaintInvalidationNone;  // Don't invalidate paints if we're
-                                    // printing.
+    return PaintInvalidationReason::kNone;  // Don't invalidate paints if we're
+                                            // printing.
 
   PaintInvalidatorContextAdapter context(paint_invalidation_state);
 
@@ -1215,7 +1215,7 @@ PaintInvalidationReason LayoutObject::DeprecatedInvalidatePaint(
           .ForcedSubtreeInvalidationRectUpdateWithinContainerOnly()) {
     // We are done updating the visual rect. No other paint invalidation work
     // to do for this object.
-    return kPaintInvalidationNone;
+    return PaintInvalidationReason::kNone;
   }
 
   return InvalidatePaint(context);
@@ -3396,15 +3396,15 @@ static PaintInvalidationReason DocumentLifecycleBasedPaintInvalidationReason(
     const DocumentLifecycle& document_lifecycle) {
   switch (document_lifecycle.GetState()) {
     case DocumentLifecycle::kInStyleRecalc:
-      return kPaintInvalidationStyleChange;
+      return PaintInvalidationReason::kStyle;
     case DocumentLifecycle::kInPreLayout:
     case DocumentLifecycle::kInPerformLayout:
     case DocumentLifecycle::kAfterPerformLayout:
-      return kPaintInvalidationForcedByLayout;
+      return PaintInvalidationReason::kGeometry;
     case DocumentLifecycle::kInCompositingUpdate:
-      return kPaintInvalidationCompositingUpdate;
+      return PaintInvalidationReason::kCompositing;
     default:
-      return kPaintInvalidationFull;
+      return PaintInvalidationReason::kFull;
   }
 }
 
@@ -3468,14 +3468,16 @@ void LayoutObject::SetShouldDoFullPaintInvalidationWithoutGeometryChange(
 
   bool is_upgrading_delayed_full_to_full =
       bitfields_.FullPaintInvalidationReason() ==
-          kPaintInvalidationDelayedFull &&
-      reason != kPaintInvalidationDelayedFull;
+          PaintInvalidationReason::kDelayedFull &&
+      reason != PaintInvalidationReason::kDelayedFull;
 
-  if (bitfields_.FullPaintInvalidationReason() == kPaintInvalidationNone ||
+  if (bitfields_.FullPaintInvalidationReason() ==
+          PaintInvalidationReason::kNone ||
       is_upgrading_delayed_full_to_full) {
-    if (reason == kPaintInvalidationFull)
+    if (reason == PaintInvalidationReason::kFull) {
       reason = DocumentLifecycleBasedPaintInvalidationReason(
           GetDocument().Lifecycle());
+    }
     bitfields_.SetFullPaintInvalidationReason(reason);
     if (!is_upgrading_delayed_full_to_full)
       MarkAncestorsForPaintInvalidation();
@@ -3546,7 +3548,7 @@ void LayoutObject::
   // Clear first because PaintInvalidationSubtree overrides other full paint
   // invalidation reasons.
   ClearShouldDoFullPaintInvalidation();
-  SetShouldDoFullPaintInvalidation(kPaintInvalidationSubtree);
+  SetShouldDoFullPaintInvalidation(PaintInvalidationReason::kSubtree);
 }
 
 void LayoutObject::SetIsBackgroundAttachmentFixedObject(

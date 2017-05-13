@@ -9,12 +9,12 @@
         {
           "object": "LayoutTableCell TD",
           "rect": [256, 306, 204, 104],
-          "reason": "bounds change"
+          "reason": "geometry"
         },
         {
           "object": "LayoutTableCell TD",
           "rect": [256, 156, 204, 104],
-          "reason": "bounds change"
+          "reason": "geometry"
         },
         {
           "object": "LayoutTableCell TD id='target'",
@@ -24,12 +24,12 @@
         {
           "object": "LayoutTableCell TD",
           "rect": [52, 306, 202, 104],
-          "reason": "bounds change"
+          "reason": "geometry"
         },
         {
           "object": "LayoutTableCell TD",
           "rect": [52, 156, 202, 104],
-          "reason": "bounds change"
+          "reason": "geometry"
         }
       ]
     }
@@ -41,11 +41,11 @@
     },
     {
       "object": "LayoutTableCell TD",
-      "reason": "bounds change"
+      "reason": "geometry"
     },
     {
       "object": "LayoutTableCell TD",
-      "reason": "bounds change"
+      "reason": "geometry"
     }
   ]
 }

@@ -19,12 +19,12 @@
         {
           "object": "LayoutBlockFlow H3",
           "rect": [8, 300, 400, 23],
-          "reason": "became visible"
+          "reason": "appeared"
         },
         {
           "object": "LayoutView #document",
           "rect": [485, 0, 15, 200],
-          "reason": "scroll"
+          "reason": "scroll control"
         }
       ]
     }
@@ -40,19 +40,19 @@
     },
     {
       "object": "VerticalScrollbar",
-      "reason": "scroll"
+      "reason": "scroll control"
     },
     {
       "object": "LayoutView #document",
-      "reason": "scroll"
+      "reason": "geometry"
     },
     {
       "object": "LayoutBlockFlow H3",
-      "reason": "became visible"
+      "reason": "appeared"
     },
     {
       "object": "RootInlineBox",
-      "reason": "became visible"
+      "reason": "appeared"
     }
   ]
 }

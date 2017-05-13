@@ -210,12 +210,12 @@ void CaretDisplayItemClient::InvalidatePaintInPreviousLayoutBlock(
   if (!IsImmediateFullPaintInvalidationReason(
           previous_layout_block_->FullPaintInvalidationReason())) {
     object_invalidator.InvalidatePaintRectangleWithContext(
-        visual_rect_in_previous_layout_block_, kPaintInvalidationCaret);
+        visual_rect_in_previous_layout_block_, PaintInvalidationReason::kCaret);
   }
 
   context.painting_layer->SetNeedsRepaint();
-  object_invalidator.InvalidateDisplayItemClient(*this,
-                                                 kPaintInvalidationCaret);
+  object_invalidator.InvalidateDisplayItemClient(
+      *this, PaintInvalidationReason::kCaret);
   previous_layout_block_ = nullptr;
 }
 
@@ -261,8 +261,8 @@ void CaretDisplayItemClient::InvalidatePaintInCurrentLayoutBlock(
         (!RuntimeEnabledFeatures::slimmingPaintV2Enabled() &&
          (context.forced_subtree_invalidation_flags &
           PaintInvalidatorContext::kForcedSubtreeInvalidationChecking))) {
-      object_invalidator.InvalidateDisplayItemClient(*this,
-                                                     kPaintInvalidationCaret);
+      object_invalidator.InvalidateDisplayItemClient(
+          *this, PaintInvalidationReason::kCaret);
     }
     return;
   }
@@ -271,13 +271,13 @@ void CaretDisplayItemClient::InvalidatePaintInCurrentLayoutBlock(
 
   if (!IsImmediateFullPaintInvalidationReason(
           layout_block_->FullPaintInvalidationReason())) {
-    object_invalidator.FullyInvalidatePaint(kPaintInvalidationCaret,
+    object_invalidator.FullyInvalidatePaint(PaintInvalidationReason::kCaret,
                                             visual_rect_, new_visual_rect);
   }
 
   context.painting_layer->SetNeedsRepaint();
-  object_invalidator.InvalidateDisplayItemClient(*this,
-                                                 kPaintInvalidationCaret);
+  object_invalidator.InvalidateDisplayItemClient(
+      *this, PaintInvalidationReason::kCaret);
 
   visual_rect_ = new_visual_rect;
 }

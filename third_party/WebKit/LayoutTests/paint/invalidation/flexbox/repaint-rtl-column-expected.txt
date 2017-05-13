@@ -29,22 +29,22 @@
         {
           "object": "LayoutBlockFlow DIV",
           "rect": [13, 124, 190, 351],
-          "reason": "bounds change"
+          "reason": "geometry"
         },
         {
           "object": "LayoutBlockFlow DIV",
           "rect": [13, 124, 190, 351],
-          "reason": "bounds change"
+          "reason": "geometry"
         },
         {
           "object": "LayoutBlockFlow DIV",
           "rect": [13, 121, 190, 351],
-          "reason": "bounds change"
+          "reason": "geometry"
         },
         {
           "object": "LayoutBlockFlow DIV",
           "rect": [13, 218, 190, 350],
-          "reason": "bounds change"
+          "reason": "geometry"
         }
       ]
     }
@@ -60,7 +60,7 @@
     },
     {
       "object": "LayoutBlockFlow DIV",
-      "reason": "bounds change"
+      "reason": "geometry"
     },
     {
       "object": "LayoutBlockFlow DIV id='left'",
@@ -72,7 +72,7 @@
     },
     {
       "object": "LayoutBlockFlow DIV",
-      "reason": "bounds change"
+      "reason": "geometry"
     }
   ]
 }

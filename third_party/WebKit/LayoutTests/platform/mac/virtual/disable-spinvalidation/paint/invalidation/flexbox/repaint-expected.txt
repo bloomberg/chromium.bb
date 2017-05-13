@@ -14,12 +14,12 @@
         {
           "object": "LayoutBlockFlow P",
           "rect": [138, 116, 654, 90],
-          "reason": "forced by layout"
+          "reason": "geometry"
         },
         {
           "object": "LayoutText #text",
           "rect": [138, 116, 652, 90],
-          "reason": "forced by layout"
+          "reason": "geometry"
         },
         {
           "object": "LayoutBlockFlow DIV id='content'",
@@ -34,22 +34,22 @@
         {
           "object": "LayoutBlockFlow P",
           "rect": [148, 116, 644, 108],
-          "reason": "forced by layout"
+          "reason": "geometry"
         },
         {
           "object": "LayoutBlockFlow P",
           "rect": [148, 116, 644, 108],
-          "reason": "forced by layout"
+          "reason": "geometry"
         },
         {
           "object": "LayoutText #text",
           "rect": [148, 116, 632, 108],
-          "reason": "forced by layout"
+          "reason": "geometry"
         },
         {
           "object": "LayoutText #text",
           "rect": [148, 116, 632, 108],
-          "reason": "forced by layout"
+          "reason": "geometry"
         },
         {
           "object": "LayoutBlockFlow DIV id='content'",
@@ -59,7 +59,7 @@
         {
           "object": "LayoutBlockFlow P",
           "rect": [400, 116, 392, 162],
-          "reason": "forced by layout"
+          "reason": "geometry"
         },
         {
           "object": "LayoutBlockFlow DIV id='left'",
@@ -69,7 +69,7 @@
         {
           "object": "LayoutText #text",
           "rect": [400, 116, 391, 162],
-          "reason": "forced by layout"
+          "reason": "geometry"
         },
         {
           "object": "LayoutBlockFlow DIV id='left'",
@@ -100,39 +100,39 @@
     },
     {
       "object": "LayoutBlockFlow P",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "RootInlineBox",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "LayoutText #text",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "InlineTextBox 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aenean laoreet dolor id urna eleifend'",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "InlineTextBox 'aliquet. Nulla vel dolor ipsum. Aliquam ut turpis nisl, in vulputate sapien. Cum sociis natoque'",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "InlineTextBox 'penatibus et magnis dis parturient montes, nascetur ridiculus mus. Sed congue magna vitae dolor'",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "InlineTextBox 'feugiat vehicula. Sed volutpat, tellus vel varius vestibulum, purus quam mollis sapien, in'",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "InlineTextBox 'condimentum leo neque sed nulla. Nunc quis porta elit. Pellentesque erat lectus, ultricies a lobortis'",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "InlineTextBox 'id, faucibus id quam.'",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "LayoutBlockFlow DIV id='left'",
@@ -144,35 +144,35 @@
     },
     {
       "object": "LayoutBlockFlow P",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "RootInlineBox",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "LayoutText #text",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "InlineTextBox 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aenean laoreet dolor id urna eleifend aliquet.'",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "InlineTextBox 'Nulla vel dolor ipsum. Aliquam ut turpis nisl, in vulputate sapien. Cum sociis natoque penatibus et'",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "InlineTextBox 'magnis dis parturient montes, nascetur ridiculus mus. Sed congue magna vitae dolor feugiat vehicula.'",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "InlineTextBox 'Sed volutpat, tellus vel varius vestibulum, purus quam mollis sapien, in condimentum leo neque sed'",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "InlineTextBox 'nulla. Nunc quis porta elit. Pellentesque erat lectus, ultricies a lobortis id, faucibus id quam.'",
-      "reason": "forced by layout"
+      "reason": "geometry"
     }
   ]
 }

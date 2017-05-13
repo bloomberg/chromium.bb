@@ -1147,7 +1147,7 @@ void PaintPropertyTreeBuilder::UpdateForObjectLocationAndSize(
 
     if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
       object.GetMutableForPainting().SetShouldDoFullPaintInvalidation(
-          kPaintInvalidationLocationChange);
+          PaintInvalidationReason::kGeometry);
     }
     object.GetMutableForPainting().SetPaintOffset(context.current.paint_offset);
   }

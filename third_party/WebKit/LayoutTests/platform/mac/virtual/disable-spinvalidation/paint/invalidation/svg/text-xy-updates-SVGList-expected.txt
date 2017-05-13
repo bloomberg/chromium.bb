@@ -9,7 +9,7 @@
         {
           "object": "LayoutSVGInlineText #text",
           "rect": [208, 14, 170, 18],
-          "reason": "forced by layout"
+          "reason": "geometry"
         },
         {
           "object": "LayoutSVGText text id='ttt'",
@@ -19,7 +19,7 @@
         {
           "object": "LayoutSVGInlineText #text",
           "rect": [18, 194, 170, 18],
-          "reason": "forced by layout"
+          "reason": "geometry"
         },
         {
           "object": "LayoutSVGText text id='ttt'",
@@ -40,11 +40,11 @@
     },
     {
       "object": "LayoutSVGInlineText #text",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "InlineTextBox 'Passes, if text is at 200x20'",
-      "reason": "forced by layout"
+      "reason": "geometry"
     }
   ]
 }

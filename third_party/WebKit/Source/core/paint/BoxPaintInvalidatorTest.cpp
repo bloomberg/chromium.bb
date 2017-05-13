@@ -78,9 +78,11 @@ TEST_P(BoxPaintInvalidatorTest, IncrementalInvalidationExpand) {
       GetRasterInvalidationTracking()->invalidations;
   ASSERT_EQ(2u, raster_invalidations.size());
   EXPECT_EQ(IntRect(60, 0, 60, 240), raster_invalidations[0].rect);
-  EXPECT_EQ(kPaintInvalidationIncremental, raster_invalidations[0].reason);
+  EXPECT_EQ(PaintInvalidationReason::kIncremental,
+            raster_invalidations[0].reason);
   EXPECT_EQ(IntRect(0, 120, 120, 120), raster_invalidations[1].rect);
-  EXPECT_EQ(kPaintInvalidationIncremental, raster_invalidations[1].reason);
+  EXPECT_EQ(PaintInvalidationReason::kIncremental,
+            raster_invalidations[1].reason);
   GetDocument().View()->SetTracksPaintInvalidations(false);
 }
 
@@ -93,9 +95,11 @@ TEST_P(BoxPaintInvalidatorTest, IncrementalInvalidationShrink) {
       GetRasterInvalidationTracking()->invalidations;
   ASSERT_EQ(2u, raster_invalidations.size());
   EXPECT_EQ(IntRect(30, 0, 40, 140), raster_invalidations[0].rect);
-  EXPECT_EQ(kPaintInvalidationIncremental, raster_invalidations[0].reason);
+  EXPECT_EQ(PaintInvalidationReason::kIncremental,
+            raster_invalidations[0].reason);
   EXPECT_EQ(IntRect(0, 100, 70, 40), raster_invalidations[1].rect);
-  EXPECT_EQ(kPaintInvalidationIncremental, raster_invalidations[1].reason);
+  EXPECT_EQ(PaintInvalidationReason::kIncremental,
+            raster_invalidations[1].reason);
   GetDocument().View()->SetTracksPaintInvalidations(false);
 }
 
@@ -108,9 +112,11 @@ TEST_P(BoxPaintInvalidatorTest, IncrementalInvalidationMixed) {
       GetRasterInvalidationTracking()->invalidations;
   ASSERT_EQ(2u, raster_invalidations.size());
   EXPECT_EQ(IntRect(60, 0, 60, 120), raster_invalidations[0].rect);
-  EXPECT_EQ(kPaintInvalidationIncremental, raster_invalidations[0].reason);
+  EXPECT_EQ(PaintInvalidationReason::kIncremental,
+            raster_invalidations[0].reason);
   EXPECT_EQ(IntRect(0, 100, 70, 40), raster_invalidations[1].rect);
-  EXPECT_EQ(kPaintInvalidationIncremental, raster_invalidations[1].reason);
+  EXPECT_EQ(PaintInvalidationReason::kIncremental,
+            raster_invalidations[1].reason);
   GetDocument().View()->SetTracksPaintInvalidations(false);
 }
 
@@ -127,9 +133,11 @@ TEST_P(BoxPaintInvalidatorTest, SubpixelVisualRectChagne) {
       &GetRasterInvalidationTracking()->invalidations;
   ASSERT_EQ(2u, raster_invalidations->size());
   EXPECT_EQ(IntRect(60, 0, 61, 111), (*raster_invalidations)[0].rect);
-  EXPECT_EQ(kPaintInvalidationIncremental, (*raster_invalidations)[0].reason);
+  EXPECT_EQ(PaintInvalidationReason::kIncremental,
+            (*raster_invalidations)[0].reason);
   EXPECT_EQ(IntRect(0, 90, 70, 50), (*raster_invalidations)[1].rect);
-  EXPECT_EQ(kPaintInvalidationIncremental, (*raster_invalidations)[1].reason);
+  EXPECT_EQ(PaintInvalidationReason::kIncremental,
+            (*raster_invalidations)[1].reason);
   GetDocument().View()->SetTracksPaintInvalidations(false);
 
   GetDocument().View()->SetTracksPaintInvalidations(true);
@@ -138,9 +146,11 @@ TEST_P(BoxPaintInvalidatorTest, SubpixelVisualRectChagne) {
   raster_invalidations = &GetRasterInvalidationTracking()->invalidations;
   ASSERT_EQ(2u, raster_invalidations->size());
   EXPECT_EQ(IntRect(60, 0, 61, 111), (*raster_invalidations)[0].rect);
-  EXPECT_EQ(kPaintInvalidationIncremental, (*raster_invalidations)[0].reason);
+  EXPECT_EQ(PaintInvalidationReason::kIncremental,
+            (*raster_invalidations)[0].reason);
   EXPECT_EQ(IntRect(0, 90, 70, 50), (*raster_invalidations)[1].rect);
-  EXPECT_EQ(kPaintInvalidationIncremental, (*raster_invalidations)[1].reason);
+  EXPECT_EQ(PaintInvalidationReason::kIncremental,
+            (*raster_invalidations)[1].reason);
   GetDocument().View()->SetTracksPaintInvalidations(false);
 }
 
@@ -159,10 +169,10 @@ TEST_P(BoxPaintInvalidatorTest, SubpixelVisualRectChangeWithTransform) {
       &GetRasterInvalidationTracking()->invalidations;
   ASSERT_EQ(2u, raster_invalidations->size());
   EXPECT_EQ(IntRect(0, 0, 140, 280), (*raster_invalidations)[0].rect);
-  EXPECT_EQ(kPaintInvalidationBorderBoxChange,
+  EXPECT_EQ(PaintInvalidationReason::kGeometry,
             (*raster_invalidations)[0].reason);
   EXPECT_EQ(IntRect(0, 0, 242, 222), (*raster_invalidations)[1].rect);
-  EXPECT_EQ(kPaintInvalidationBorderBoxChange,
+  EXPECT_EQ(PaintInvalidationReason::kGeometry,
             (*raster_invalidations)[1].reason);
   GetDocument().View()->SetTracksPaintInvalidations(false);
 
@@ -172,10 +182,10 @@ TEST_P(BoxPaintInvalidatorTest, SubpixelVisualRectChangeWithTransform) {
   raster_invalidations = &GetRasterInvalidationTracking()->invalidations;
   ASSERT_EQ(2u, raster_invalidations->size());
   EXPECT_EQ(IntRect(0, 0, 242, 222), (*raster_invalidations)[0].rect);
-  EXPECT_EQ(kPaintInvalidationBorderBoxChange,
+  EXPECT_EQ(PaintInvalidationReason::kGeometry,
             (*raster_invalidations)[0].reason);
   EXPECT_EQ(IntRect(0, 0, 140, 280), (*raster_invalidations)[1].rect);
-  EXPECT_EQ(kPaintInvalidationBorderBoxChange,
+  EXPECT_EQ(PaintInvalidationReason::kGeometry,
             (*raster_invalidations)[1].reason);
   GetDocument().View()->SetTracksPaintInvalidations(false);
 }
@@ -199,7 +209,8 @@ TEST_P(BoxPaintInvalidatorTest, SubpixelWithinPixelsChange) {
       &GetRasterInvalidationTracking()->invalidations;
   ASSERT_EQ(1u, raster_invalidations->size());
   EXPECT_EQ(IntRect(0, 0, 70, 140), (*raster_invalidations)[0].rect);
-  EXPECT_EQ(kPaintInvalidationBoundsChange, (*raster_invalidations)[0].reason);
+  EXPECT_EQ(PaintInvalidationReason::kGeometry,
+            (*raster_invalidations)[0].reason);
   GetDocument().View()->SetTracksPaintInvalidations(false);
 
   GetDocument().View()->SetTracksPaintInvalidations(true);
@@ -212,9 +223,11 @@ TEST_P(BoxPaintInvalidatorTest, SubpixelWithinPixelsChange) {
   raster_invalidations = &GetRasterInvalidationTracking()->invalidations;
   ASSERT_EQ(2u, raster_invalidations->size());
   EXPECT_EQ(IntRect(59, 0, 11, 140), (*raster_invalidations)[0].rect);
-  EXPECT_EQ(kPaintInvalidationIncremental, (*raster_invalidations)[0].reason);
+  EXPECT_EQ(PaintInvalidationReason::kIncremental,
+            (*raster_invalidations)[0].reason);
   EXPECT_EQ(IntRect(0, 119, 70, 21), (*raster_invalidations)[1].rect);
-  EXPECT_EQ(kPaintInvalidationIncremental, (*raster_invalidations)[1].reason);
+  EXPECT_EQ(PaintInvalidationReason::kIncremental,
+            (*raster_invalidations)[1].reason);
   GetDocument().View()->SetTracksPaintInvalidations(false);
 }
 
@@ -235,7 +248,7 @@ TEST_P(BoxPaintInvalidatorTest, ResizeRotated) {
       &GetRasterInvalidationTracking()->invalidations;
   ASSERT_EQ(1u, raster_invalidations->size());
   EXPECT_EQ(IntRect(-99, 0, 255, 255), (*raster_invalidations)[0].rect);
-  EXPECT_EQ(kPaintInvalidationBorderBoxChange,
+  EXPECT_EQ(PaintInvalidationReason::kGeometry,
             (*raster_invalidations)[0].reason);
   GetDocument().View()->SetTracksPaintInvalidations(false);
 }
@@ -262,7 +275,7 @@ TEST_P(BoxPaintInvalidatorTest, ResizeRotatedChild) {
       &GetRasterInvalidationTracking()->invalidations;
   ASSERT_EQ(1u, raster_invalidations->size());
   EXPECT_EQ(IntRect(-43, 21, 107, 107), (*raster_invalidations)[0].rect);
-  EXPECT_EQ(kPaintInvalidationBorderBoxChange,
+  EXPECT_EQ(PaintInvalidationReason::kGeometry,
             (*raster_invalidations)[0].reason);
   GetDocument().View()->SetTracksPaintInvalidations(false);
 }
@@ -285,10 +298,11 @@ TEST_P(BoxPaintInvalidatorTest, CompositedLayoutViewResize) {
   EXPECT_EQ(static_cast<const DisplayItemClient*>(&GetLayoutView()),
             raster_invalidations[0].client);
   if (RuntimeEnabledFeatures::rootLayerScrollingEnabled()) {
-    EXPECT_EQ(kPaintInvalidationBackgroundOnScrollingContentsLayer,
+    EXPECT_EQ(PaintInvalidationReason::kBackgroundOnScrollingContentsLayer,
               raster_invalidations[0].reason);
   } else {
-    EXPECT_EQ(kPaintInvalidationIncremental, raster_invalidations[0].reason);
+    EXPECT_EQ(PaintInvalidationReason::kIncremental,
+              raster_invalidations[0].reason);
   }
 
   GetDocument().View()->SetTracksPaintInvalidations(false);
@@ -321,10 +335,10 @@ TEST_P(BoxPaintInvalidatorTest, CompositedLayoutViewGradientResize) {
   EXPECT_EQ(static_cast<const DisplayItemClient*>(&GetLayoutView()),
             raster_invalidations[0].client);
   if (RuntimeEnabledFeatures::rootLayerScrollingEnabled()) {
-    EXPECT_EQ(kPaintInvalidationBackgroundOnScrollingContentsLayer,
+    EXPECT_EQ(PaintInvalidationReason::kBackgroundOnScrollingContentsLayer,
               raster_invalidations[0].reason);
   } else {
-    EXPECT_EQ(kPaintInvalidationLayoutOverflowBoxChange,
+    EXPECT_EQ(PaintInvalidationReason::kBackground,
               raster_invalidations[0].reason);
   }
 
@@ -375,12 +389,14 @@ TEST_P(BoxPaintInvalidatorTest, NonCompositedLayoutViewResize) {
   EXPECT_EQ(IntRect(0, 100, 100, 100), raster_invalidations[0].rect);
   EXPECT_EQ(static_cast<const DisplayItemClient*>(iframe->GetLayoutObject()),
             raster_invalidations[0].client);
-  EXPECT_EQ(kPaintInvalidationIncremental, raster_invalidations[0].reason);
+  EXPECT_EQ(PaintInvalidationReason::kIncremental,
+            raster_invalidations[0].reason);
   EXPECT_EQ(
       static_cast<const DisplayItemClient*>(content->GetLayoutObject()->View()),
       raster_invalidations[1].client);
   EXPECT_EQ(IntRect(0, 100, 100, 100), raster_invalidations[1].rect);
-  EXPECT_EQ(kPaintInvalidationIncremental, raster_invalidations[1].reason);
+  EXPECT_EQ(PaintInvalidationReason::kIncremental,
+            raster_invalidations[1].reason);
   GetDocument().View()->SetTracksPaintInvalidations(false);
 }
 
@@ -418,7 +434,7 @@ TEST_P(BoxPaintInvalidatorTest, NonCompositedLayoutViewGradientResize) {
   EXPECT_EQ(IntRect(0, 0, 100, 100), (*raster_invalidations)[0].rect);
   EXPECT_EQ(static_cast<const DisplayItemClient*>(frame_layout_view),
             (*raster_invalidations)[0].client);
-  EXPECT_EQ(kPaintInvalidationLayoutOverflowBoxChange,
+  EXPECT_EQ(PaintInvalidationReason::kBackground,
             (*raster_invalidations)[0].reason);
   GetDocument().View()->SetTracksPaintInvalidations(false);
 
@@ -431,11 +447,12 @@ TEST_P(BoxPaintInvalidatorTest, NonCompositedLayoutViewGradientResize) {
   EXPECT_EQ(IntRect(0, 100, 100, 100), (*raster_invalidations)[0].rect);
   EXPECT_EQ(static_cast<const DisplayItemClient*>(iframe->GetLayoutObject()),
             (*raster_invalidations)[0].client);
-  EXPECT_EQ(kPaintInvalidationIncremental, (*raster_invalidations)[0].reason);
+  EXPECT_EQ(PaintInvalidationReason::kIncremental,
+            (*raster_invalidations)[0].reason);
   EXPECT_EQ(static_cast<const DisplayItemClient*>(frame_layout_view),
             (*raster_invalidations)[1].client);
   EXPECT_EQ(IntRect(0, 0, 100, 200), (*raster_invalidations)[1].rect);
-  EXPECT_EQ(kPaintInvalidationViewBackground,
+  EXPECT_EQ(PaintInvalidationReason::kBackground,
             (*raster_invalidations)[1].reason);
   GetDocument().View()->SetTracksPaintInvalidations(false);
 }
@@ -470,7 +487,7 @@ TEST_P(BoxPaintInvalidatorTest, CompositedBackgroundAttachmentLocalResize) {
   EXPECT_EQ(IntRect(0, 500, 500, 500), contents_raster_invalidations[0].rect);
   EXPECT_EQ(static_cast<const DisplayItemClient*>(target->GetLayoutObject()),
             contents_raster_invalidations[0].client);
-  EXPECT_EQ(kPaintInvalidationBackgroundOnScrollingContentsLayer,
+  EXPECT_EQ(PaintInvalidationReason::kBackgroundOnScrollingContentsLayer,
             contents_raster_invalidations[0].reason);
   GetDocument().View()->SetTracksPaintInvalidations(false);
 
@@ -488,7 +505,7 @@ TEST_P(BoxPaintInvalidatorTest, CompositedBackgroundAttachmentLocalResize) {
   EXPECT_EQ(IntRect(0, 120, 70, 120), container_raster_invalidations[0].rect);
   EXPECT_EQ(static_cast<const DisplayItemClient*>(target->GetLayoutObject()),
             container_raster_invalidations[0].client);
-  EXPECT_EQ(kPaintInvalidationIncremental,
+  EXPECT_EQ(PaintInvalidationReason::kIncremental,
             container_raster_invalidations[0].reason);
   GetDocument().View()->SetTracksPaintInvalidations(false);
 }
@@ -526,7 +543,7 @@ TEST_P(BoxPaintInvalidatorTest,
   EXPECT_EQ(IntRect(0, 0, 500, 1000), contents_raster_invalidations[0].rect);
   EXPECT_EQ(static_cast<const DisplayItemClient*>(target->GetLayoutObject()),
             contents_raster_invalidations[0].client);
-  EXPECT_EQ(kPaintInvalidationBackgroundOnScrollingContentsLayer,
+  EXPECT_EQ(PaintInvalidationReason::kBackgroundOnScrollingContentsLayer,
             contents_raster_invalidations[0].reason);
   GetDocument().View()->SetTracksPaintInvalidations(false);
 
@@ -543,7 +560,7 @@ TEST_P(BoxPaintInvalidatorTest,
   EXPECT_EQ(IntRect(0, 0, 70, 240), container_raster_invalidations[0].rect);
   EXPECT_EQ(static_cast<const DisplayItemClient*>(target->GetLayoutObject()),
             container_raster_invalidations[0].client);
-  EXPECT_EQ(kPaintInvalidationBorderBoxChange,
+  EXPECT_EQ(PaintInvalidationReason::kGeometry,
             container_raster_invalidations[0].reason);
   GetDocument().View()->SetTracksPaintInvalidations(false);
 }
@@ -576,7 +593,8 @@ TEST_P(BoxPaintInvalidatorTest, NonCompositedBackgroundAttachmentLocalResize) {
   EXPECT_EQ(IntRect(0, 120, 70, 120), raster_invalidations[0].rect);
   EXPECT_EQ(static_cast<const DisplayItemClient*>(target->GetLayoutObject()),
             raster_invalidations[0].client);
-  EXPECT_EQ(kPaintInvalidationIncremental, raster_invalidations[0].reason);
+  EXPECT_EQ(PaintInvalidationReason::kIncremental,
+            raster_invalidations[0].reason);
   GetDocument().View()->SetTracksPaintInvalidations(false);
 }
 

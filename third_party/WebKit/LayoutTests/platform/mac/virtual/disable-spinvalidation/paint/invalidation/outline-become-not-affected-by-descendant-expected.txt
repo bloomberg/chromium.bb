@@ -9,7 +9,7 @@
         {
           "object": "LayoutBlockFlow DIV id='outline'",
           "rect": [4, 4, 158, 108],
-          "reason": "bounds change"
+          "reason": "geometry"
         },
         {
           "object": "LayoutBlockFlow DIV id='child'",
@@ -22,7 +22,7 @@
   "objectPaintInvalidations": [
     {
       "object": "LayoutBlockFlow DIV id='outline'",
-      "reason": "bounds change"
+      "reason": "geometry"
     },
     {
       "object": "LayoutBlockFlow DIV id='child'",

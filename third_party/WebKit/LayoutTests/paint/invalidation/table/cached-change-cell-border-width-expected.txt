@@ -19,12 +19,12 @@
         {
           "object": "LayoutTableCell TD",
           "rect": [64, 8, 58, 54],
-          "reason": "bounds change"
+          "reason": "geometry"
         },
         {
           "object": "LayoutTableCell TD",
           "rect": [62, 8, 55, 52],
-          "reason": "bounds change"
+          "reason": "geometry"
         },
         {
           "object": "LayoutTable TABLE",
@@ -49,7 +49,7 @@
     },
     {
       "object": "LayoutTableRow TR",
-      "reason": "location change"
+      "reason": "geometry"
     },
     {
       "object": "LayoutTableCell TD id='foo'",
@@ -57,7 +57,7 @@
     },
     {
       "object": "LayoutTableCell TD",
-      "reason": "bounds change"
+      "reason": "geometry"
     }
   ]
 }

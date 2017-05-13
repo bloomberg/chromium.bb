@@ -12,13 +12,13 @@ namespace blink {
 TEST(PaintInvalidationReasonTest, StreamOutput) {
   {
     std::stringstream string_stream;
-    PaintInvalidationReason reason = kPaintInvalidationNone;
+    PaintInvalidationReason reason = PaintInvalidationReason::kNone;
     string_stream << reason;
     EXPECT_EQ("none", string_stream.str());
   }
   {
     std::stringstream string_stream;
-    PaintInvalidationReason reason = kPaintInvalidationDelayedFull;
+    PaintInvalidationReason reason = PaintInvalidationReason::kDelayedFull;
     string_stream << reason;
     EXPECT_EQ("delayed full", string_stream.str());
   }

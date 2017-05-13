@@ -9,7 +9,7 @@
         {
           "object": "LayoutView #document",
           "rect": [187, 102, 15, 200],
-          "reason": "scroll"
+          "reason": "scroll control"
         }
       ]
     }
@@ -17,7 +17,7 @@
   "objectPaintInvalidations": [
     {
       "object": "VerticalScrollbar",
-      "reason": "scroll"
+      "reason": "scroll control"
     }
   ]
 }

@@ -10,7 +10,7 @@
   "objectPaintInvalidations": [
     {
       "object": "LayoutBlockFlow DIV",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     }
   ]
 }

@@ -24,12 +24,12 @@
         {
           "object": "LayoutTextControl TEXTAREA id='editor'",
           "rect": [9, 30, 164, 15],
-          "reason": "scroll"
+          "reason": "scroll control"
         },
         {
           "object": "LayoutTextControl TEXTAREA id='editor'",
           "rect": [173, 30, 15, 15],
-          "reason": "scroll"
+          "reason": "scroll control"
         }
       ]
     }
@@ -41,11 +41,11 @@
     },
     {
       "object": "LayoutTextControl TEXTAREA id='editor'",
-      "reason": "scroll"
+      "reason": "geometry"
     },
     {
       "object": "HorizontalScrollbar",
-      "reason": "scroll"
+      "reason": "scroll control"
     },
     {
       "object": "LayoutBlockFlow DIV id='inner-editor'",

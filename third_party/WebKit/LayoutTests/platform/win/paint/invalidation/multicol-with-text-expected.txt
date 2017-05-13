@@ -1,0 +1,52 @@
+{
+  "layers": [
+    {
+      "name": "LayoutView #document",
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "paintInvalidations": [
+        {
+          "object": "LayoutMultiColumnFlowThread (anonymous)",
+          "rect": [8, 8, 630, 20],
+          "reason": "geometry"
+        }
+      ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutMultiColumnFlowThread (anonymous)",
+      "reason": "geometry"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "geometry"
+    },
+    {
+      "object": "LayoutBR BR",
+      "reason": "geometry"
+    },
+    {
+      "object": "InlineTextBox '\n'",
+      "reason": "geometry"
+    },
+    {
+      "object": "LayoutBR BR",
+      "reason": "geometry"
+    },
+    {
+      "object": "InlineTextBox '\n'",
+      "reason": "geometry"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "appeared"
+    },
+    {
+      "object": "InlineTextBox 'PASS'",
+      "reason": "appeared"
+    }
+  ]
+}
+

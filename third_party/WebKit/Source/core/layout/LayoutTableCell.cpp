@@ -1343,7 +1343,7 @@ void LayoutTableCell::CollectCollapsedBorderValues(
   if (collapsed_borders_visually_changed_) {
     ObjectPaintInvalidator(*Table())
         .SlowSetPaintingLayerNeedsRepaintAndInvalidateDisplayItemClient(
-            *this, kPaintInvalidationStyleChange);
+            *this, PaintInvalidationReason::kStyle);
     collapsed_borders_visually_changed_ = false;
   }
 

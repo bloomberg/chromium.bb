@@ -9,12 +9,12 @@
         {
           "object": "LayoutSVGInlineText #text",
           "rect": [59, 143, 95, 23],
-          "reason": "forced by layout"
+          "reason": "geometry"
         },
         {
           "object": "LayoutSVGInlineText #text",
           "rect": [59, 143, 95, 23],
-          "reason": "forced by layout"
+          "reason": "geometry"
         },
         {
           "object": "LayoutSVGTSpan tspan",
@@ -34,17 +34,17 @@
         {
           "object": "LayoutSVGInlineText #text",
           "rect": [59, 43, 95, 23],
-          "reason": "forced by layout"
+          "reason": "geometry"
         },
         {
           "object": "LayoutSVGInlineText #text",
           "rect": [59, 43, 95, 23],
-          "reason": "forced by layout"
+          "reason": "geometry"
         },
         {
           "object": "LayoutSVGInlineText #text",
           "rect": [59, 43, 95, 23],
-          "reason": "became visible"
+          "reason": "appeared"
         },
         {
           "object": "LayoutSVGTSpan tspan",
@@ -79,11 +79,11 @@
     },
     {
       "object": "LayoutSVGInlineText #text",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "InlineTextBox 'PASS '",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "LayoutSVGTSpan tspan",
@@ -95,15 +95,15 @@
     },
     {
       "object": "LayoutSVGInlineText #text",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "InlineTextBox 'PASS'",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "LayoutSVGInlineText #text",
-      "reason": "became visible"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGViewportContainer svg id='inner2'",
@@ -119,11 +119,11 @@
     },
     {
       "object": "LayoutSVGInlineText #text",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "InlineTextBox 'PASS '",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "LayoutSVGTSpan tspan",
@@ -135,11 +135,11 @@
     },
     {
       "object": "LayoutSVGInlineText #text",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "InlineTextBox 'PASS'",
-      "reason": "forced by layout"
+      "reason": "geometry"
     }
   ]
 }

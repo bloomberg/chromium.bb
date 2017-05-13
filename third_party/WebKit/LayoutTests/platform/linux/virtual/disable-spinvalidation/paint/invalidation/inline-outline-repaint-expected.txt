@@ -9,12 +9,12 @@
         {
           "object": "LayoutBlockFlow DIV",
           "rect": [8, 176, 100, 40],
-          "reason": "forced by layout"
+          "reason": "geometry"
         },
         {
           "object": "LayoutInline SPAN id='test'",
           "rect": [5, 173, 95, 45],
-          "reason": "forced by layout"
+          "reason": "geometry"
         },
         {
           "object": "LayoutText #text",
@@ -27,15 +27,15 @@
   "objectPaintInvalidations": [
     {
       "object": "LayoutText #text",
-      "reason": "layoutObject removal"
+      "reason": "disappeared"
     },
     {
       "object": "LayoutBlockFlow DIV",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "RootInlineBox",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "Caret",
@@ -43,15 +43,15 @@
     },
     {
       "object": "LayoutInline SPAN id='test'",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "InlineFlowBox",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "InlineFlowBox",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "LayoutText #text",

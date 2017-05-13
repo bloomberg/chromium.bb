@@ -25,11 +25,11 @@
     },
     {
       "object": "LayoutSVGTSpan tspan id='modify'",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "InlineFlowBox",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "LayoutSVGInlineText #text",
@@ -41,51 +41,51 @@
     },
     {
       "object": "LayoutSVGInlineText #text",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "InlineTextBox ' '",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "LayoutSVGTSpan tspan",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "InlineFlowBox",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "LayoutSVGInlineText #text",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "InlineTextBox 'PASS'",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "LayoutSVGInlineText #text",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "InlineTextBox ' '",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "LayoutSVGTSpan tspan",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "InlineFlowBox",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "LayoutSVGInlineText #text",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "InlineTextBox 'PASS'",
-      "reason": "forced by layout"
+      "reason": "geometry"
     }
   ]
 }

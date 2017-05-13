@@ -9,7 +9,7 @@
         {
           "object": "LayoutBlockFlow div id='contentBox'",
           "rect": [8, 52, 602, 422],
-          "reason": "forced by layout"
+          "reason": "geometry"
         }
       ]
     }
@@ -17,15 +17,15 @@
   "objectPaintInvalidations": [
     {
       "object": "LayoutBlockFlow div id='contentBox'",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "RootInlineBox",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "LayoutImage img",
-      "reason": "forced by layout"
+      "reason": "geometry"
     }
   ]
 }

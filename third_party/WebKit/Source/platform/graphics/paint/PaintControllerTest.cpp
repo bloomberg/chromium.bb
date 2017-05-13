@@ -1776,7 +1776,8 @@ TEST_P(PaintControllerTest, PartialSkipCache) {
 
   // Content's cache is invalid because it has display items skipped cache.
   EXPECT_FALSE(GetPaintController().ClientCacheIsValid(content));
-  EXPECT_EQ(kPaintInvalidationFull, content.GetPaintInvalidationReason());
+  EXPECT_EQ(PaintInvalidationReason::kFull,
+            content.GetPaintInvalidationReason());
 
   if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
     GetPaintController().UpdateCurrentPaintChunkProperties(

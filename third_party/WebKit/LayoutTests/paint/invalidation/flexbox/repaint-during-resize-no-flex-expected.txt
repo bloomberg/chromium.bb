@@ -14,22 +14,22 @@
         {
           "object": "LayoutBlockFlow DIV class='flex-item'",
           "rect": [160, 20, 10, 50],
-          "reason": "bounds change"
+          "reason": "geometry"
         },
         {
           "object": "LayoutBlockFlow DIV class='flex-item'",
           "rect": [120, 20, 10, 50],
-          "reason": "bounds change"
+          "reason": "geometry"
         },
         {
           "object": "LayoutBlockFlow DIV class='flex-item'",
           "rect": [110, 20, 10, 50],
-          "reason": "bounds change"
+          "reason": "geometry"
         },
         {
           "object": "LayoutBlockFlow DIV class='flex-item'",
           "rect": [70, 20, 10, 50],
-          "reason": "bounds change"
+          "reason": "geometry"
         }
       ]
     }
@@ -41,11 +41,11 @@
     },
     {
       "object": "LayoutBlockFlow DIV class='flex-item'",
-      "reason": "bounds change"
+      "reason": "geometry"
     },
     {
       "object": "LayoutBlockFlow DIV class='flex-item'",
-      "reason": "bounds change"
+      "reason": "geometry"
     }
   ]
 }

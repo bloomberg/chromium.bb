@@ -22,17 +22,18 @@ PaintInvalidationReason TableCellPaintInvalidator::InvalidatePaint() {
   if (context_.old_location != context_.new_location ||
       cell_.Size() != cell_.PreviousSize()) {
     const auto& row = *cell_.Row();
-    if (row.GetPaintInvalidationReason() == kPaintInvalidationNone &&
+    if (row.GetPaintInvalidationReason() == PaintInvalidationReason::kNone &&
         row.StyleRef().HasBackground()) {
       if (RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled())
         context_.parent_context->painting_layer->SetNeedsRepaint();
       else
         ObjectPaintInvalidator(row).SlowSetPaintingLayerNeedsRepaint();
-      row.InvalidateDisplayItemClients(kPaintInvalidationForcedByLayout);
+      row.InvalidateDisplayItemClients(PaintInvalidationReason::kGeometry);
     }
 
     const auto& section = *row.Section();
-    if (section.GetPaintInvalidationReason() == kPaintInvalidationNone) {
+    if (section.GetPaintInvalidationReason() ==
+        PaintInvalidationReason::kNone) {
       bool section_paints_background = section.StyleRef().HasBackground();
       if (!section_paints_background) {
         auto col_and_colgroup = section.Table()->ColElementAtAbsoluteColumn(
@@ -50,7 +51,8 @@ PaintInvalidationReason TableCellPaintInvalidator::InvalidatePaint() {
         } else {
           ObjectPaintInvalidator(section).SlowSetPaintingLayerNeedsRepaint();
         }
-        section.InvalidateDisplayItemClients(kPaintInvalidationForcedByLayout);
+        section.InvalidateDisplayItemClients(
+            PaintInvalidationReason::kGeometry);
       }
     }
   }

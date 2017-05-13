@@ -1004,7 +1004,8 @@ void GraphicsLayer::SetIsRootForIsolatedGroup(bool isolated) {
 void GraphicsLayer::SetContentsNeedsDisplay() {
   if (WebLayer* contents_layer = ContentsLayerIfRegistered()) {
     contents_layer->Invalidate();
-    TrackRasterInvalidation(*this, contents_rect_, kPaintInvalidationFull);
+    TrackRasterInvalidation(*this, contents_rect_,
+                            PaintInvalidationReason::kFull);
   }
 }
 
@@ -1020,7 +1021,7 @@ void GraphicsLayer::SetNeedsDisplay() {
   GetPaintController().InvalidateAll();
 
   TrackRasterInvalidation(*this, IntRect(IntPoint(), ExpandedIntSize(size_)),
-                          kPaintInvalidationFull);
+                          PaintInvalidationReason::kFull);
 }
 
 DISABLE_CFI_PERF

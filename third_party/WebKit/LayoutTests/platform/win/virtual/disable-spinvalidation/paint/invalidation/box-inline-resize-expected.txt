@@ -9,32 +9,32 @@
         {
           "object": "LayoutBlockFlow H2",
           "rect": [40, 107, 111, 28],
-          "reason": "bounds change"
+          "reason": "geometry"
         },
         {
           "object": "LayoutText #text",
           "rect": [40, 107, 111, 28],
-          "reason": "bounds change"
+          "reason": "geometry"
         },
         {
           "object": "LayoutBlockFlow H2",
           "rect": [8, 107, 111, 28],
-          "reason": "bounds change"
+          "reason": "geometry"
         },
         {
           "object": "LayoutText #text",
           "rect": [8, 107, 111, 28],
-          "reason": "bounds change"
+          "reason": "geometry"
         },
         {
           "object": "LayoutBlockFlow (anonymous)",
           "rect": [8, 88, 32, 67],
-          "reason": "forced by layout"
+          "reason": "geometry"
         },
         {
           "object": "LayoutImage IMG id='foo'",
           "rect": [8, 88, 32, 32],
-          "reason": "forced by layout"
+          "reason": "geometry"
         }
       ]
     }
@@ -42,31 +42,31 @@
   "objectPaintInvalidations": [
     {
       "object": "LayoutBlockFlow (anonymous)",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "RootInlineBox",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "LayoutImage IMG id='foo'",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "LayoutBlockFlow H2",
-      "reason": "bounds change"
+      "reason": "geometry"
     },
     {
       "object": "RootInlineBox",
-      "reason": "bounds change"
+      "reason": "geometry"
     },
     {
       "object": "LayoutText #text",
-      "reason": "bounds change"
+      "reason": "geometry"
     },
     {
       "object": "InlineTextBox 'Chromium'",
-      "reason": "bounds change"
+      "reason": "geometry"
     }
   ]
 }

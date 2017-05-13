@@ -14,7 +14,7 @@
         {
           "object": "LayoutSVGEllipse circle",
           "rect": [0, 0, 4, 4],
-          "reason": "layoutObject insertion"
+          "reason": "appeared"
         }
       ]
     }
@@ -22,11 +22,11 @@
   "objectPaintInvalidations": [
     {
       "object": "LayoutSVGResourceMarker marker id='markerMiddle'",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGEllipse circle",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGPath path",

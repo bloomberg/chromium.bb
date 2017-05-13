@@ -22,7 +22,7 @@
         {
           "object": "LayoutBlockFlow DIV id='resize' class='drop-shadow accelerated'",
           "rect": [0, 0, 200, 200],
-          "reason": "border box change"
+          "reason": "geometry"
         }
       ]
     }
@@ -30,7 +30,7 @@
   "objectPaintInvalidations": [
     {
       "object": "LayoutBlockFlow DIV id='resize' class='drop-shadow accelerated'",
-      "reason": "border box change"
+      "reason": "geometry"
     }
   ]
 }

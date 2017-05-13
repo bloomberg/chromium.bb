@@ -9,12 +9,12 @@
         {
           "object": "LayoutText #text",
           "rect": [11, 35, 77, 19],
-          "reason": "bounds change"
+          "reason": "geometry"
         },
         {
           "object": "LayoutText #text",
           "rect": [11, 11, 58, 19],
-          "reason": "bounds change"
+          "reason": "geometry"
         }
       ]
     }
@@ -38,11 +38,11 @@
     },
     {
       "object": "LayoutText #text",
-      "reason": "bounds change"
+      "reason": "geometry"
     },
     {
       "object": "InlineTextBox 'First cell'",
-      "reason": "bounds change"
+      "reason": "geometry"
     },
     {
       "object": "LayoutTableCell TD id='secondCell'",
@@ -50,11 +50,11 @@
     },
     {
       "object": "LayoutText #text",
-      "reason": "bounds change"
+      "reason": "geometry"
     },
     {
       "object": "InlineTextBox 'Second cell'",
-      "reason": "bounds change"
+      "reason": "geometry"
     }
   ]
 }

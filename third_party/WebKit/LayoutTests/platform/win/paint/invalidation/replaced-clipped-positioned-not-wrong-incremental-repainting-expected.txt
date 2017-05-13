@@ -9,7 +9,7 @@
         {
           "object": "LayoutBlockFlow (relative positioned) (floating) DIV class='imgContainer'",
           "rect": [8, 8, 194, 237],
-          "reason": "location change"
+          "reason": "geometry"
         }
       ]
     }
@@ -17,19 +17,19 @@
   "objectPaintInvalidations": [
     {
       "object": "LayoutBlockFlow (relative positioned) (floating) DIV class='imgContainer'",
-      "reason": "location change"
+      "reason": "geometry"
     },
     {
       "object": "RootInlineBox",
-      "reason": "location change"
+      "reason": "geometry"
     },
     {
       "object": "LayoutImage IMG",
-      "reason": "location change"
+      "reason": "geometry"
     },
     {
       "object": "LayoutText #text",
-      "reason": "location change"
+      "reason": "geometry"
     }
   ]
 }

@@ -21,19 +21,19 @@
     },
     {
       "object": "LayoutBlockFlow (relative positioned) P",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "RootInlineBox",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "LayoutText #text",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "InlineTextBox 'SUCCESS'",
-      "reason": "forced by layout"
+      "reason": "geometry"
     }
   ]
 }

@@ -9,12 +9,12 @@
         {
           "object": "LayoutBlockFlow DIV id='child-to-grow' class='child'",
           "rect": [48, 28, 20, 20],
-          "reason": "bounds change"
+          "reason": "geometry"
         },
         {
           "object": "LayoutBlockFlow DIV id='child-to-grow' class='child'",
           "rect": [8, 28, 20, 20],
-          "reason": "bounds change"
+          "reason": "geometry"
         }
       ]
     }
@@ -22,7 +22,7 @@
   "objectPaintInvalidations": [
     {
       "object": "LayoutBlockFlow DIV id='child-to-grow' class='child'",
-      "reason": "bounds change"
+      "reason": "geometry"
     }
   ]
 }

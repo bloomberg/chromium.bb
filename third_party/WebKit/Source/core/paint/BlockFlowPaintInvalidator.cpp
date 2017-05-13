@@ -46,8 +46,8 @@ void BlockFlowPaintInvalidator::InvalidateDisplayItemClients(
   // PaintInvalidationRectangle happens when we invalidate the caret.
   // The later conditions don't apply when we invalidate the caret or the
   // selection.
-  if (reason == kPaintInvalidationRectangle ||
-      reason == kPaintInvalidationSelection)
+  if (reason == PaintInvalidationReason::kRectangle ||
+      reason == PaintInvalidationReason::kSelection)
     return;
 
   RootInlineBox* line = block_flow_.FirstRootBox();

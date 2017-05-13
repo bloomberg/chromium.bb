@@ -9,17 +9,17 @@
         {
           "object": "LayoutBlockFlow (anonymous)",
           "rect": [8, 52, 784, 237],
-          "reason": "forced by layout"
+          "reason": "geometry"
         },
         {
           "object": "LayoutImage (relative positioned) IMG id='test' class='moved'",
           "rect": [8, 132, 214, 232],
-          "reason": "forced by layout"
+          "reason": "geometry"
         },
         {
           "object": "LayoutImage (relative positioned) IMG id='test' class='moved'",
           "rect": [8, 52, 214, 232],
-          "reason": "forced by layout"
+          "reason": "geometry"
         }
       ]
     }
@@ -27,15 +27,15 @@
   "objectPaintInvalidations": [
     {
       "object": "LayoutBlockFlow (anonymous)",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "RootInlineBox",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "LayoutImage (relative positioned) IMG id='test' class='moved'",
-      "reason": "forced by layout"
+      "reason": "geometry"
     }
   ]
 }

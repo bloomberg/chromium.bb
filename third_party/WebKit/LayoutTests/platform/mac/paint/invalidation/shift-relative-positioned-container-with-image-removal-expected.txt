@@ -14,32 +14,32 @@
         {
           "object": "LayoutBlockFlow (relative positioned) DIV class='relative paddingTop'",
           "rect": [8, 184, 769, 641],
-          "reason": "bounds change"
+          "reason": "geometry"
         },
         {
           "object": "LayoutBlockFlow (relative positioned) DIV class='relative paddingTop'",
           "rect": [8, 86, 769, 641],
-          "reason": "bounds change"
+          "reason": "geometry"
         },
         {
           "object": "LayoutBlockFlow (anonymous)",
           "rect": [8, 86, 769, 98],
-          "reason": "layoutObject removal"
+          "reason": "disappeared"
         },
         {
           "object": "LayoutIFrame IFRAME id='iframe'",
           "rect": [8, 86, 732, 94],
-          "reason": "layoutObject removal"
+          "reason": "disappeared"
         },
         {
           "object": "LayoutBlockFlow HTML",
           "rect": [10, 88, 728, 90],
-          "reason": "layoutObject removal"
+          "reason": "disappeared"
         },
         {
           "object": "LayoutBlockFlow BODY",
           "rect": [18, 96, 712, 74],
-          "reason": "layoutObject removal"
+          "reason": "disappeared"
         }
       ]
     }
@@ -47,15 +47,15 @@
   "objectPaintInvalidations": [
     {
       "object": "LayoutIFrame IFRAME id='iframe'",
-      "reason": "layoutObject removal"
+      "reason": "disappeared"
     },
     {
       "object": "LayoutText #text",
-      "reason": "layoutObject removal"
+      "reason": "disappeared"
     },
     {
       "object": "LayoutBlockFlow (anonymous)",
-      "reason": "layoutObject removal"
+      "reason": "disappeared"
     },
     {
       "object": "LayoutView #document",
@@ -63,27 +63,27 @@
     },
     {
       "object": "LayoutBlockFlow (relative positioned) DIV class='relative paddingTop'",
-      "reason": "bounds change"
+      "reason": "geometry"
     },
     {
       "object": "RootInlineBox",
-      "reason": "bounds change"
+      "reason": "geometry"
     },
     {
       "object": "LayoutImage IMG",
-      "reason": "bounds change"
+      "reason": "geometry"
     },
     {
       "object": "LayoutText #text",
-      "reason": "location change"
+      "reason": "geometry"
     },
     {
       "object": "LayoutBlockFlow BODY",
-      "reason": "layoutObject removal"
+      "reason": "disappeared"
     },
     {
       "object": "LayoutBlockFlow HTML",
-      "reason": "layoutObject removal"
+      "reason": "disappeared"
     }
   ]
 }

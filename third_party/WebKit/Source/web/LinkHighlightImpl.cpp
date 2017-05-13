@@ -377,13 +377,14 @@ void LinkHighlightImpl::UpdateGeometry() {
       // repaint.
       content_layer_->Layer()->Invalidate();
 
-      if (current_graphics_layer_)
+      if (current_graphics_layer_) {
         current_graphics_layer_->TrackRasterInvalidation(
             LinkHighlightDisplayItemClientForTracking(),
             EnclosingIntRect(
                 FloatRect(Layer()->GetPosition().x, Layer()->GetPosition().y,
                           Layer()->Bounds().width, Layer()->Bounds().height)),
-            kPaintInvalidationFull);
+            PaintInvalidationReason::kFull);
+      }
     }
   } else {
     ClearGraphicsLayerLinkHighlightPointer();

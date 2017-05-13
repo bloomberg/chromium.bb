@@ -14,7 +14,7 @@
         {
           "object": "LayoutSVGContainer g",
           "rect": [122, 127, 66, 66],
-          "reason": "bounds change"
+          "reason": "geometry"
         }
       ]
     }
@@ -22,7 +22,7 @@
   "objectPaintInvalidations": [
     {
       "object": "LayoutSVGContainer g",
-      "reason": "bounds change"
+      "reason": "geometry"
     },
     {
       "object": "LayoutSVGPath path id='path'",

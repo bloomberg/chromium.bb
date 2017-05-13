@@ -10,7 +10,7 @@
         {
           "object": "LayoutSVGInlineText #text",
           "rect": [203, 335, 121, 43],
-          "reason": "forced by layout"
+          "reason": "geometry"
         },
         {
           "object": "LayoutSVGText text id='text'",
@@ -20,7 +20,7 @@
         {
           "object": "LayoutSVGInlineText #text",
           "rect": [246, 104, 119, 28],
-          "reason": "forced by layout"
+          "reason": "geometry"
         },
         {
           "object": "LayoutSVGText text id='text'",
@@ -65,11 +65,11 @@
     },
     {
       "object": "LayoutSVGInlineText #text",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "InlineTextBox 'This is some text'",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "LayoutSVGImage image id='image'",

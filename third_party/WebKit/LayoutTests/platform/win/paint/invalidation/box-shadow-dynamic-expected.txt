@@ -9,12 +9,12 @@
         {
           "object": "LayoutBlockFlow DIV",
           "rect": [18, 72, 55, 75],
-          "reason": "border box change"
+          "reason": "geometry"
         },
         {
           "object": "LayoutBlockFlow DIV",
           "rect": [18, 192, 55, 55],
-          "reason": "border box change"
+          "reason": "geometry"
         }
       ]
     }
@@ -22,11 +22,11 @@
   "objectPaintInvalidations": [
     {
       "object": "LayoutBlockFlow DIV",
-      "reason": "border box change"
+      "reason": "geometry"
     },
     {
       "object": "LayoutBlockFlow DIV",
-      "reason": "border box change"
+      "reason": "geometry"
     }
   ]
 }

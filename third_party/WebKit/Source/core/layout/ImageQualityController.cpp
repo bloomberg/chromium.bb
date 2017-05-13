@@ -148,8 +148,8 @@ void ImageQualityController::HighQualityRepaintTimerFired(TimerBase*) {
     if (!i.value.is_resizing)
       continue;
 
-    // TODO(wangxianzhu): Use LayoutObject::getMutableForPainting().
-    const_cast<LayoutObject*>(i.key)->SetShouldDoFullPaintInvalidation();
+    i.key->GetMutableForPainting().SetShouldDoFullPaintInvalidation(
+        PaintInvalidationReason::kImage);
     i.value.is_resizing = false;
   }
   frame_time_when_timer_started_ = 0.0;

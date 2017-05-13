@@ -1727,20 +1727,22 @@ void LayoutBox::PaintMask(const PaintInfo& paint_info,
 }
 
 void LayoutBox::ImageChanged(WrappedImagePtr image, const IntRect*) {
-  // TODO(chrishtr): support kPaintInvalidationDelayedFull for animated border
-  // images.
+  // TODO(chrishtr): support PaintInvalidationReason::kDelayedFull for animated
+  // border images.
   if ((StyleRef().BorderImage().GetImage() &&
        StyleRef().BorderImage().GetImage()->Data() == image) ||
       (StyleRef().MaskBoxImage().GetImage() &&
        StyleRef().MaskBoxImage().GetImage()->Data() == image) ||
       (StyleRef().BoxReflect() && StyleRef().BoxReflect()->Mask().GetImage() &&
        StyleRef().BoxReflect()->Mask().GetImage()->Data() == image)) {
-    SetShouldDoFullPaintInvalidationWithoutGeometryChange();
+    SetShouldDoFullPaintInvalidationWithoutGeometryChange(
+        PaintInvalidationReason::kImage);
   } else {
     for (const FillLayer* layer = &StyleRef().MaskLayers(); layer;
          layer = layer->Next()) {
       if (layer->GetImage() && image == layer->GetImage()->Data()) {
-        SetShouldDoFullPaintInvalidationWithoutGeometryChange();
+        SetShouldDoFullPaintInvalidationWithoutGeometryChange(
+            PaintInvalidationReason::kImage);
         break;
       }
     }
@@ -1758,7 +1760,8 @@ void LayoutBox::ImageChanged(WrappedImagePtr image, const IntRect*) {
         if (maybe_animated) {
           SetMayNeedPaintInvalidationAnimatedBackgroundImage();
         } else {
-          SetShouldDoFullPaintInvalidationWithoutGeometryChange();
+          SetShouldDoFullPaintInvalidationWithoutGeometryChange(
+              PaintInvalidationReason::kImage);
           SetBackgroundChangedSinceLastPaintInvalidation();
         }
         break;
@@ -1841,19 +1844,20 @@ void LayoutBox::EnsureIsReadyForPaintInvalidation() {
   if (MayNeedPaintInvalidationAnimatedBackgroundImage() &&
       !BackgroundIsKnownToBeObscured()) {
     SetShouldDoFullPaintInvalidationWithoutGeometryChange(
-        kPaintInvalidationDelayedFull);
+        PaintInvalidationReason::kDelayedFull);
   }
 
-  if (FullPaintInvalidationReason() != kPaintInvalidationDelayedFull ||
+  if (FullPaintInvalidationReason() != PaintInvalidationReason::kDelayedFull ||
       !IntersectsVisibleViewport())
     return;
 
   // Do regular full paint invalidation if the object with
-  // kPaintInvalidationDelayedFull is onscreen.
+  // PaintInvalidationReason::kDelayedFull is onscreen.
   // Conservatively assume the delayed paint invalidation was caused by
   // background image change.
   SetBackgroundChangedSinceLastPaintInvalidation();
-  SetShouldDoFullPaintInvalidationWithoutGeometryChange(kPaintInvalidationFull);
+  SetShouldDoFullPaintInvalidationWithoutGeometryChange(
+      PaintInvalidationReason::kFull);
 }
 
 PaintInvalidationReason LayoutBox::DeprecatedInvalidatePaint(

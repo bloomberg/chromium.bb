@@ -20,7 +20,7 @@
         {
           "object": "LayoutBlockFlow P",
           "rect": [8, 16, 784, 20],
-          "reason": "forced by layout"
+          "reason": "geometry"
         },
         {
           "object": "LayoutBlockFlow (positioned) HTML class='changed'",
@@ -30,17 +30,17 @@
         {
           "object": "LayoutBlockFlow P",
           "rect": [108, 116, 402, 20],
-          "reason": "forced by layout"
+          "reason": "geometry"
         },
         {
           "object": "LayoutText #text",
           "rect": [108, 116, 402, 19],
-          "reason": "forced by layout"
+          "reason": "geometry"
         },
         {
           "object": "LayoutText #text",
           "rect": [8, 16, 402, 19],
-          "reason": "forced by layout"
+          "reason": "geometry"
         }
       ]
     }
@@ -56,23 +56,23 @@
     },
     {
       "object": "LayoutBlockFlow BODY",
-      "reason": "location change"
+      "reason": "geometry"
     },
     {
       "object": "LayoutBlockFlow P",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "RootInlineBox",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "LayoutText #text",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "InlineTextBox 'Tests that the entire viewport is painted with a floated html element.'",
-      "reason": "forced by layout"
+      "reason": "geometry"
     }
   ]
 }

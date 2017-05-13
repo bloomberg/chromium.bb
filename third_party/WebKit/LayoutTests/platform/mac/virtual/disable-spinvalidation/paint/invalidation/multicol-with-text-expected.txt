@@ -9,12 +9,12 @@
         {
           "object": "LayoutMultiColumnFlowThread (anonymous)",
           "rect": [8, 8, 630, 20],
-          "reason": "border box change"
+          "reason": "geometry"
         },
         {
           "object": "LayoutText #text",
           "rect": [328, 8, 240, 21],
-          "reason": "layoutObject insertion"
+          "reason": "appeared"
         }
       ]
     }
@@ -22,35 +22,35 @@
   "objectPaintInvalidations": [
     {
       "object": "LayoutMultiColumnFlowThread (anonymous)",
-      "reason": "border box change"
+      "reason": "geometry"
     },
     {
       "object": "RootInlineBox",
-      "reason": "border box change"
+      "reason": "geometry"
     },
     {
       "object": "LayoutBR BR",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "InlineTextBox '\n'",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "LayoutBR BR",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "InlineTextBox '\n'",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "LayoutText #text",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "InlineTextBox 'PASS'",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     }
   ]
 }

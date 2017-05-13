@@ -9,82 +9,82 @@
         {
           "object": "LayoutBlockFlow DIV class='half'",
           "rect": [8, 353, 60, 38],
-          "reason": "bounds change"
+          "reason": "geometry"
         },
         {
           "object": "LayoutBlockFlow DIV class='half'",
           "rect": [8, 338, 60, 38],
-          "reason": "bounds change"
+          "reason": "geometry"
         },
         {
           "object": "LayoutBlockFlow DIV class='red half'",
           "rect": [8, 248, 60, 30],
-          "reason": "bounds change"
+          "reason": "geometry"
         },
         {
           "object": "LayoutBlockFlow DIV class='green half'",
           "rect": [8, 218, 60, 30],
-          "reason": "bounds change"
+          "reason": "geometry"
         },
         {
           "object": "LayoutBlockFlow DIV class='red half'",
           "rect": [8, 218, 60, 30],
-          "reason": "bounds change"
+          "reason": "geometry"
         },
         {
           "object": "LayoutBlockFlow DIV class='green half'",
           "rect": [8, 188, 60, 30],
-          "reason": "bounds change"
+          "reason": "geometry"
         },
         {
           "object": "LayoutBlockFlow DIV class='green half'",
           "rect": [8, 158, 60, 30],
-          "reason": "bounds change"
+          "reason": "geometry"
         },
         {
           "object": "LayoutBlockFlow DIV class='green half'",
           "rect": [8, 128, 60, 30],
-          "reason": "bounds change"
+          "reason": "geometry"
         },
         {
           "object": "LayoutBlockFlow DIV class='red half'",
           "rect": [8, 128, 60, 30],
-          "reason": "bounds change"
+          "reason": "geometry"
         },
         {
           "object": "LayoutBlockFlow DIV class='red half'",
           "rect": [8, 98, 60, 30],
-          "reason": "bounds change"
+          "reason": "geometry"
         },
         {
           "object": "LayoutBlockFlow DIV id='top' class='blue half'",
           "rect": [8, 98, 60, 30],
-          "reason": "became invisible"
+          "reason": "disappeared"
         },
         {
           "object": "LayoutBlockFlow DIV class='green half'",
           "rect": [8, 68, 60, 30],
-          "reason": "bounds change"
+          "reason": "geometry"
         },
         {
           "object": "LayoutBlockFlow DIV class='green half'",
           "rect": [8, 38, 60, 30],
-          "reason": "bounds change"
+          "reason": "geometry"
         },
         {
           "object": "LayoutBlockFlow DIV class='red half'",
           "rect": [8, 38, 60, 30],
-          "reason": "bounds change"
+          "reason": "geometry"
         },
         {
           "object": "LayoutBlockFlow DIV class='red half'",
           "rect": [8, 8, 60, 30],
-          "reason": "bounds change"
+          "reason": "geometry"
         },
         {
           "object": "LayoutBlockFlow DIV id='div1' class='blue half'",
           "rect": [8, 8, 60, 30],
-          "reason": "became invisible"
+          "reason": "disappeared"
         }
       ]
     }
@@ -92,39 +92,39 @@
   "objectPaintInvalidations": [
     {
       "object": "LayoutBlockFlow DIV id='div1' class='blue half'",
-      "reason": "became invisible"
+      "reason": "disappeared"
     },
     {
       "object": "LayoutBlockFlow DIV class='red half'",
-      "reason": "bounds change"
+      "reason": "geometry"
     },
     {
       "object": "LayoutBlockFlow DIV class='green half'",
-      "reason": "bounds change"
+      "reason": "geometry"
     },
     {
       "object": "LayoutBlockFlow DIV id='top' class='blue half'",
-      "reason": "became invisible"
+      "reason": "disappeared"
     },
     {
       "object": "LayoutBlockFlow DIV class='red half'",
-      "reason": "bounds change"
+      "reason": "geometry"
     },
     {
       "object": "LayoutBlockFlow DIV class='green half'",
-      "reason": "bounds change"
+      "reason": "geometry"
     },
     {
       "object": "LayoutBlockFlow DIV class='green half'",
-      "reason": "bounds change"
+      "reason": "geometry"
     },
     {
       "object": "LayoutBlockFlow DIV class='red half'",
-      "reason": "bounds change"
+      "reason": "geometry"
     },
     {
       "object": "LayoutBlockFlow DIV class='half'",
-      "reason": "bounds change"
+      "reason": "geometry"
     }
   ]
 }

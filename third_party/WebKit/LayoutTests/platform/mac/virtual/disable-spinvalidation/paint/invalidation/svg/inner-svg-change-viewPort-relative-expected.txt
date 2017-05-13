@@ -19,7 +19,7 @@
         {
           "object": "LayoutSVGInlineText #text",
           "rect": [89, 86, 111, 18],
-          "reason": "forced by layout"
+          "reason": "geometry"
         },
         {
           "object": "LayoutSVGText text",
@@ -29,7 +29,7 @@
         {
           "object": "LayoutSVGInlineText #text",
           "rect": [0, 86, 101, 18],
-          "reason": "forced by layout"
+          "reason": "geometry"
         },
         {
           "object": "LayoutSVGText text",
@@ -44,7 +44,7 @@
         {
           "object": "LayoutSVGPath polygon id='triangle'",
           "rect": [180, 120, 20, 20],
-          "reason": "bounds change"
+          "reason": "geometry"
         },
         {
           "object": "LayoutSVGRect rect",
@@ -59,7 +59,7 @@
         {
           "object": "LayoutSVGPath polygon id='triangle'",
           "rect": [80, 120, 20, 20],
-          "reason": "bounds change"
+          "reason": "geometry"
         },
         {
           "object": "LayoutSVGRect rect",
@@ -92,11 +92,11 @@
     },
     {
       "object": "LayoutSVGInlineText #text",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "InlineTextBox 'right-aligned text'",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "LayoutSVGContainer use",
@@ -104,7 +104,7 @@
     },
     {
       "object": "LayoutSVGPath polygon id='triangle'",
-      "reason": "bounds change"
+      "reason": "geometry"
     }
   ]
 }

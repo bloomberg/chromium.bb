@@ -14,12 +14,12 @@
         {
           "object": "LayoutBlockFlow DIV id='scroller'",
           "rect": [185, 0, 15, 100],
-          "reason": "scroll"
+          "reason": "scroll control"
         },
         {
           "object": "LayoutText #text",
           "rect": [0, 4, 15, 17],
-          "reason": "layoutObject removal"
+          "reason": "disappeared"
         }
       ]
     }
@@ -27,11 +27,11 @@
   "objectPaintInvalidations": [
     {
       "object": "LayoutText #text",
-      "reason": "layoutObject removal"
+      "reason": "disappeared"
     },
     {
       "object": "VerticalScrollbar",
-      "reason": "scroll"
+      "reason": "scroll control"
     },
     {
       "object": "LayoutBlockFlow DIV id='dynamic' class='content'",
@@ -43,11 +43,11 @@
     },
     {
       "object": "LayoutText #text",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "InlineTextBox 'z'",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     }
   ]
 }

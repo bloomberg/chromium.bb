@@ -32,22 +32,22 @@
         {
           "object": "LayoutBlockFlow BODY",
           "rect": [8, 508, 284, 20],
-          "reason": "forced by layout"
+          "reason": "geometry"
         },
         {
           "object": "LayoutBlockFlow BODY",
           "rect": [8, 508, 269, 142],
-          "reason": "forced by layout"
+          "reason": "geometry"
         },
         {
           "object": "LayoutText #text",
           "rect": [8, 508, 29, 19],
-          "reason": "forced by layout"
+          "reason": "geometry"
         },
         {
           "object": "LayoutView #document",
           "rect": [285, 500, 15, 150],
-          "reason": "scroll"
+          "reason": "scroll control"
         }
       ]
     }
@@ -55,11 +55,11 @@
   "objectPaintInvalidations": [
     {
       "object": "LayoutView #document",
-      "reason": "scroll"
+      "reason": "geometry"
     },
     {
       "object": "VerticalScrollbar",
-      "reason": "scroll"
+      "reason": "scroll control"
     },
     {
       "object": "LayoutView #document",
@@ -67,19 +67,19 @@
     },
     {
       "object": "LayoutBlockFlow BODY",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "RootInlineBox",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "LayoutText #text",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "InlineTextBox 'test1'",
-      "reason": "forced by layout"
+      "reason": "geometry"
     }
   ]
 }

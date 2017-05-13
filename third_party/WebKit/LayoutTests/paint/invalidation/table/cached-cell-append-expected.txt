@@ -14,7 +14,7 @@
         {
           "object": "LayoutTableCell TD",
           "rect": [64, 8, 64, 56],
-          "reason": "layoutObject insertion"
+          "reason": "appeared"
         },
         {
           "object": "LayoutTable TABLE",
@@ -24,7 +24,7 @@
         {
           "object": "LayoutTableCell TD",
           "rect": [8, 8, 62, 56],
-          "reason": "location change"
+          "reason": "geometry"
         }
       ]
     }
@@ -44,15 +44,15 @@
     },
     {
       "object": "LayoutTableRow TR id='row'",
-      "reason": "location change"
+      "reason": "geometry"
     },
     {
       "object": "LayoutTableCell TD",
-      "reason": "location change"
+      "reason": "geometry"
     },
     {
       "object": "LayoutTableCell TD",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     }
   ]
 }

@@ -21,11 +21,11 @@
     },
     {
       "object": "LayoutSVGResourceMasker mask id='dynMask'",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGRect rect",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     }
   ]
 }

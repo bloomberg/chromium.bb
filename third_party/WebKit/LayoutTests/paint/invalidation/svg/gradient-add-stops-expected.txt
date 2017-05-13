@@ -21,7 +21,7 @@
     },
     {
       "object": "LayoutSVGGradientStop stop",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGRect rect",

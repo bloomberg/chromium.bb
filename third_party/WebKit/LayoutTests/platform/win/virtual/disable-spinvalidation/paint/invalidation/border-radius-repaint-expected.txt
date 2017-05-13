@@ -9,12 +9,12 @@
         {
           "object": "LayoutBlockFlow DIV",
           "rect": [19, 245, 200, 88],
-          "reason": "border box change"
+          "reason": "geometry"
         },
         {
           "object": "LayoutBlockFlow DIV",
           "rect": [19, 83, 200, 88],
-          "reason": "border box change"
+          "reason": "geometry"
         },
         {
           "object": "LayoutBlockFlow DIV id='b'",
@@ -32,7 +32,7 @@
   "objectPaintInvalidations": [
     {
       "object": "LayoutBlockFlow DIV",
-      "reason": "border box change"
+      "reason": "geometry"
     },
     {
       "object": "LayoutBlockFlow DIV id='a'",
@@ -40,7 +40,7 @@
     },
     {
       "object": "LayoutBlockFlow DIV",
-      "reason": "border box change"
+      "reason": "geometry"
     },
     {
       "object": "LayoutBlockFlow DIV id='b'",

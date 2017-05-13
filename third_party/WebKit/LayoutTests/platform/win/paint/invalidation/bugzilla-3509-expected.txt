@@ -9,7 +9,7 @@
         {
           "object": "LayoutBlockFlow DIV id='im'",
           "rect": [11, 131, 100, 100],
-          "reason": "forced by layout"
+          "reason": "geometry"
         }
       ]
     }
@@ -17,19 +17,19 @@
   "objectPaintInvalidations": [
     {
       "object": "LayoutBlockFlow DIV id='im'",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "RootInlineBox",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "LayoutText #text",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "InlineTextBox '\u00A0'",
-      "reason": "forced by layout"
+      "reason": "geometry"
     }
   ]
 }

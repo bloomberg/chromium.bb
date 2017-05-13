@@ -22,7 +22,7 @@
   "objectPaintInvalidations": [
     {
       "object": "LayoutSVGResourceFilterPrimitive feImage id='feimage-green'",
-      "reason": "layoutObject removal"
+      "reason": "disappeared"
     },
     {
       "object": "LayoutSVGResourceFilter filter id='filter'",
@@ -38,7 +38,7 @@
     },
     {
       "object": "LayoutSVGResourceFilterPrimitive feImage id='feimage-green'",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGRect rect",

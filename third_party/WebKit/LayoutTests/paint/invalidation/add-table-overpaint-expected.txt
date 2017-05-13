@@ -9,7 +9,7 @@
         {
           "object": "LayoutBlockFlow DIV",
           "rect": [0, 312, 800, 156],
-          "reason": "layoutObject insertion"
+          "reason": "appeared"
         }
       ]
     }
@@ -17,23 +17,23 @@
   "objectPaintInvalidations": [
     {
       "object": "LayoutBlockFlow DIV",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutTable TABLE",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutTableSection TBODY",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutTableRow TR",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutTableCell TD",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     }
   ]
 }

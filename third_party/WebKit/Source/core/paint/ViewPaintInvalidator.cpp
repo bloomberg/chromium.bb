@@ -43,7 +43,7 @@ void ViewPaintInvalidator::InvalidateBackgroundIfNeeded() {
        LayoutBox::MustInvalidateFillLayersPaintOnHeightChange(
            background_layers))) {
     view_.GetMutableForPainting().SetShouldDoFullPaintInvalidation(
-        kPaintInvalidationViewBackground);
+        PaintInvalidationReason::kBackground);
   }
 }
 

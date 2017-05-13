@@ -9,7 +9,7 @@
         {
           "object": "LayoutSVGContainer g",
           "rect": [9, 12, 48, 30],
-          "reason": "bounds change"
+          "reason": "geometry"
         }
       ]
     }
@@ -17,7 +17,7 @@
   "objectPaintInvalidations": [
     {
       "object": "LayoutSVGContainer g",
-      "reason": "bounds change"
+      "reason": "geometry"
     },
     {
       "object": "LayoutSVGText text id='t'",

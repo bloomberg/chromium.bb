@@ -9,22 +9,22 @@
         {
           "object": "LayoutBlockFlow (floating) SPAN",
           "rect": [305, 35, 296, 18],
-          "reason": "layoutObject insertion"
+          "reason": "appeared"
         },
         {
           "object": "LayoutText #text",
           "rect": [305, 35, 296, 18],
-          "reason": "layoutObject insertion"
+          "reason": "appeared"
         },
         {
           "object": "LayoutBlockFlow (positioned) SPAN",
           "rect": [153, 35, 296, 18],
-          "reason": "layoutObject insertion"
+          "reason": "appeared"
         },
         {
           "object": "LayoutText #text",
           "rect": [153, 35, 296, 18],
-          "reason": "layoutObject insertion"
+          "reason": "appeared"
         }
       ]
     }
@@ -32,35 +32,35 @@
   "objectPaintInvalidations": [
     {
       "object": "LayoutBlockFlow (floating) SPAN",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "RootInlineBox",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutText #text",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "InlineTextBox 'the quick brown fox jumped over the lazy dog'",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutBlockFlow (positioned) SPAN",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "RootInlineBox",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutText #text",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "InlineTextBox 'the quick brown fox jumped over the lazy dog'",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     }
   ]
 }

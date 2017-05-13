@@ -9,7 +9,7 @@
         {
           "object": "LayoutBlockFlow DIV",
           "rect": [8, 8, 30, 40],
-          "reason": "forced by layout"
+          "reason": "geometry"
         },
         {
           "object": "LayoutText #text",
@@ -19,12 +19,12 @@
         {
           "object": "LayoutText #text",
           "rect": [7, 8, 22, 20],
-          "reason": "forced by layout"
+          "reason": "geometry"
         },
         {
           "object": "LayoutRubyRun (anonymous)",
           "rect": [8, 28, 20, 20],
-          "reason": "forced by layout"
+          "reason": "geometry"
         },
         {
           "object": "LayoutText #text",
@@ -37,23 +37,23 @@
   "objectPaintInvalidations": [
     {
       "object": "LayoutBlockFlow DIV",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "RootInlineBox",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "LayoutText #text",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "InlineTextBox 'a'",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "LayoutRubyRun (anonymous)",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "LayoutText #text",

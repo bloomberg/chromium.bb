@@ -9,7 +9,7 @@
         {
           "object": "LayoutBlockFlow (positioned) DIV",
           "rect": [8, 136, 100, 100],
-          "reason": "location change"
+          "reason": "geometry"
         }
       ]
     }
@@ -17,11 +17,11 @@
   "objectPaintInvalidations": [
     {
       "object": "LayoutBlockFlow (positioned) DIV",
-      "reason": "location change"
+      "reason": "geometry"
     },
     {
       "object": "LayoutBlockFlow DIV",
-      "reason": "became invisible"
+      "reason": "disappeared"
     }
   ]
 }

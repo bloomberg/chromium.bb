@@ -17,7 +17,7 @@
   "objectPaintInvalidations": [
     {
       "object": "LayoutSVGResourceFilterPrimitive feImage id='feimage-red'",
-      "reason": "layoutObject removal"
+      "reason": "disappeared"
     },
     {
       "object": "LayoutSVGResourceFilter filter id='filter'",

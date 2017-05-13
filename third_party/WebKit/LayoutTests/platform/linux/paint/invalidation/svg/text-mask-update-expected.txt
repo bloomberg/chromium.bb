@@ -14,7 +14,7 @@
         {
           "object": "LayoutSVGInlineText #text",
           "rect": [10, 33, 43, 22],
-          "reason": "layoutObject removal"
+          "reason": "disappeared"
         },
         {
           "object": "LayoutSVGRect rect",
@@ -27,7 +27,7 @@
   "objectPaintInvalidations": [
     {
       "object": "LayoutSVGInlineText #text",
-      "reason": "layoutObject removal"
+      "reason": "disappeared"
     },
     {
       "object": "LayoutSVGText text id='text1'",
@@ -39,11 +39,11 @@
     },
     {
       "object": "LayoutSVGInlineText #text",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "InlineTextBox 'PASS'",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGText text id='text2'",

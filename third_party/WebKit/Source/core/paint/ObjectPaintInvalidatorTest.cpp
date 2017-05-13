@@ -45,7 +45,7 @@ TEST_F(ObjectPaintInvalidatorTest,
   GetDocument().View()->SetTracksPaintInvalidations(true);
   ObjectPaintInvalidator(*GetLayoutObjectByElementId("container"))
       .InvalidateDisplayItemClientsIncludingNonCompositingDescendants(
-          kPaintInvalidationSubtree);
+          PaintInvalidationReason::kSubtree);
   std::unique_ptr<JSONArray> invalidations =
       GetDocument().View()->TrackedObjectPaintInvalidationsAsJSON();
   GetDocument().View()->SetTracksPaintInvalidations(false);
@@ -103,7 +103,7 @@ TEST_F(ObjectPaintInvalidatorTest, TraverseFloatUnderCompositedInline) {
   EXPECT_FALSE(composited_container_layer->NeedsRepaint());
   ObjectPaintInvalidator(*target)
       .InvalidateDisplayItemClientsIncludingNonCompositingDescendants(
-          kPaintInvalidationSubtree);
+          PaintInvalidationReason::kSubtree);
   EXPECT_TRUE(containing_block_layer->NeedsRepaint());
   EXPECT_TRUE(composited_container_layer->NeedsRepaint());
   EXPECT_FALSE(span_layer->NeedsRepaint());
@@ -115,7 +115,7 @@ TEST_F(ObjectPaintInvalidatorTest, TraverseFloatUnderCompositedInline) {
   EXPECT_FALSE(composited_container_layer->NeedsRepaint());
   ObjectPaintInvalidator(*span)
       .InvalidateDisplayItemClientsIncludingNonCompositingDescendants(
-          kPaintInvalidationSubtree);
+          PaintInvalidationReason::kSubtree);
   EXPECT_TRUE(containing_block_layer->NeedsRepaint());
   EXPECT_TRUE(composited_container_layer->NeedsRepaint());
   EXPECT_TRUE(span_layer->NeedsRepaint());
@@ -128,7 +128,7 @@ TEST_F(ObjectPaintInvalidatorTest, TraverseFloatUnderCompositedInline) {
   EXPECT_FALSE(composited_container_layer->NeedsRepaint());
   ObjectPaintInvalidator(*composited_container)
       .InvalidateDisplayItemClientsIncludingNonCompositingDescendants(
-          kPaintInvalidationSubtree);
+          PaintInvalidationReason::kSubtree);
   EXPECT_TRUE(containing_block_layer->NeedsRepaint());
   EXPECT_TRUE(composited_container_layer->NeedsRepaint());
   EXPECT_FALSE(span_layer->NeedsRepaint());
@@ -195,7 +195,7 @@ TEST_F(ObjectPaintInvalidatorTest,
   EXPECT_FALSE(composited_container_layer->NeedsRepaint());
   ObjectPaintInvalidator(*composited_container)
       .InvalidateDisplayItemClientsIncludingNonCompositingDescendants(
-          kPaintInvalidationSubtree);
+          PaintInvalidationReason::kSubtree);
   EXPECT_TRUE(containing_block_layer->NeedsRepaint());
   EXPECT_TRUE(composited_container_layer->NeedsRepaint());
   EXPECT_FALSE(span_layer->NeedsRepaint());
@@ -243,7 +243,7 @@ TEST_F(ObjectPaintInvalidatorTest, TraverseStackedFloatUnderCompositedInline) {
   EXPECT_FALSE(span_layer->NeedsRepaint());
   ObjectPaintInvalidator(*span)
       .InvalidateDisplayItemClientsIncludingNonCompositingDescendants(
-          kPaintInvalidationSubtree);
+          PaintInvalidationReason::kSubtree);
   EXPECT_TRUE(span_layer->NeedsRepaint());
 
   std::unique_ptr<JSONArray> invalidations =

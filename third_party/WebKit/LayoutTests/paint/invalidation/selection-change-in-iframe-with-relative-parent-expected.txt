@@ -24,27 +24,27 @@
         {
           "object": "LayoutBR BR",
           "rect": [58, 238, 10, 10],
-          "reason": "became visible"
+          "reason": "appeared"
         },
         {
           "object": "LayoutBR BR",
           "rect": [48, 218, 10, 10],
-          "reason": "became visible"
+          "reason": "appeared"
         },
         {
           "object": "LayoutBR BR",
           "rect": [48, 198, 10, 10],
-          "reason": "became visible"
+          "reason": "appeared"
         },
         {
           "object": "LayoutBR BR",
           "rect": [18, 228, 10, 10],
-          "reason": "became visible"
+          "reason": "appeared"
         },
         {
           "object": "LayoutBR BR",
           "rect": [18, 208, 10, 10],
-          "reason": "became visible"
+          "reason": "appeared"
         }
       ]
     }
@@ -68,19 +68,19 @@
     },
     {
       "object": "LayoutBR BR",
-      "reason": "became visible"
+      "reason": "appeared"
     },
     {
       "object": "InlineTextBox '\n'",
-      "reason": "became visible"
+      "reason": "appeared"
     },
     {
       "object": "LayoutBR BR",
-      "reason": "became visible"
+      "reason": "appeared"
     },
     {
       "object": "InlineTextBox '\n'",
-      "reason": "became visible"
+      "reason": "appeared"
     },
     {
       "object": "LayoutText #text",
@@ -92,19 +92,19 @@
     },
     {
       "object": "LayoutBR BR",
-      "reason": "became visible"
+      "reason": "appeared"
     },
     {
       "object": "InlineTextBox '\n'",
-      "reason": "became visible"
+      "reason": "appeared"
     },
     {
       "object": "LayoutBR BR",
-      "reason": "became visible"
+      "reason": "appeared"
     },
     {
       "object": "InlineTextBox '\n'",
-      "reason": "became visible"
+      "reason": "appeared"
     },
     {
       "object": "LayoutText #text",
@@ -116,11 +116,11 @@
     },
     {
       "object": "LayoutBR BR",
-      "reason": "became visible"
+      "reason": "appeared"
     },
     {
       "object": "InlineTextBox '\n'",
-      "reason": "became visible"
+      "reason": "appeared"
     }
   ]
 }

@@ -71,7 +71,7 @@ class PLATFORM_EXPORT DisplayItemClient {
   }
 
   void SetDisplayItemsUncached(
-      PaintInvalidationReason reason = kPaintInvalidationFull) const {
+      PaintInvalidationReason reason = PaintInvalidationReason::kFull) const {
     cache_generation_or_invalidation_reason_.Invalidate(reason);
 #if CHECK_DISPLAY_ITEM_CLIENT_ALIVENESS
     // Clear should-keep-alive of DisplayItemClients in a subsequence if this
@@ -122,7 +122,8 @@ class PLATFORM_EXPORT DisplayItemClient {
    public:
     CacheGenerationOrInvalidationReason() : value_(kJustCreated) {}
 
-    void Invalidate(PaintInvalidationReason reason = kPaintInvalidationFull) {
+    void Invalidate(
+        PaintInvalidationReason reason = PaintInvalidationReason::kFull) {
       if (value_ != kJustCreated)
         value_ = static_cast<ValueType>(reason);
     }
@@ -142,12 +143,12 @@ class PLATFORM_EXPORT DisplayItemClient {
     PaintInvalidationReason GetPaintInvalidationReason() const {
       return value_ < kJustCreated
                  ? static_cast<PaintInvalidationReason>(value_)
-                 : kPaintInvalidationNone;
+                 : PaintInvalidationReason::kNone;
     }
 
     bool IsJustCreated() const { return value_ == kJustCreated; }
     void ClearIsJustCreated() {
-      value_ = static_cast<ValueType>(kPaintInvalidationFull);
+      value_ = static_cast<ValueType>(PaintInvalidationReason::kFull);
     }
 
    private:
@@ -156,9 +157,9 @@ class PLATFORM_EXPORT DisplayItemClient {
         : value_(value) {}
 
     static const ValueType kJustCreated =
-        static_cast<ValueType>(kPaintInvalidationReasonMax) + 1;
+        static_cast<ValueType>(PaintInvalidationReason::kMax) + 1;
     static const ValueType kFirstValidGeneration =
-        static_cast<ValueType>(kPaintInvalidationReasonMax) + 2;
+        static_cast<ValueType>(PaintInvalidationReason::kMax) + 2;
     static ValueType next_generation_;
     ValueType value_;
   };

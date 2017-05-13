@@ -9,7 +9,7 @@
         {
           "object": "LayoutBlockFlow (floating) DIV id='target'",
           "rect": [8, 8, 100, 100],
-          "reason": "layoutObject insertion"
+          "reason": "appeared"
         }
       ]
     }
@@ -17,7 +17,7 @@
   "objectPaintInvalidations": [
     {
       "object": "LayoutBlockFlow (floating) DIV id='target'",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     }
   ]
 }

@@ -9,17 +9,17 @@
         {
           "object": "LayoutBlockFlow DIV id='container'",
           "rect": [8, 8, 769, 110],
-          "reason": "forced by layout"
+          "reason": "geometry"
         },
         {
           "object": "LayoutBlockFlow (anonymous)",
           "rect": [8, 118, 769, 55],
-          "reason": "bounds change"
+          "reason": "geometry"
         },
         {
           "object": "LayoutBlockFlow (anonymous)",
           "rect": [8, 63, 769, 55],
-          "reason": "bounds change"
+          "reason": "geometry"
         }
       ]
     },
@@ -56,12 +56,12 @@
         {
           "object": "LayoutBlockFlow (relative positioned) DIV class='mv-tile'",
           "rect": [0, 0, 100, 50],
-          "reason": "forced by layout"
+          "reason": "geometry"
         },
         {
           "object": "LayoutBlockFlow (relative positioned) DIV id='foo' class='mv-tile'",
           "rect": [0, 0, 100, 50],
-          "reason": "layoutObject removal"
+          "reason": "disappeared"
         }
       ]
     }
@@ -69,7 +69,7 @@
   "objectPaintInvalidations": [
     {
       "object": "LayoutBlockFlow (relative positioned) DIV id='foo' class='mv-tile'",
-      "reason": "layoutObject removal"
+      "reason": "disappeared"
     },
     {
       "object": "LayoutBlockFlow (relative positioned) DIV class='mv-tile'",
@@ -81,23 +81,23 @@
     },
     {
       "object": "LayoutBlockFlow DIV id='container'",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "RootInlineBox",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "LayoutBlockFlow (relative positioned) DIV class='mv-tile'",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "LayoutBlockFlow (anonymous)",
-      "reason": "bounds change"
+      "reason": "geometry"
     },
     {
       "object": "RootInlineBox",
-      "reason": "bounds change"
+      "reason": "geometry"
     },
     {
       "object": "LayoutBlockFlow (relative positioned) DIV class='mv-tile'",
@@ -105,11 +105,11 @@
     },
     {
       "object": "LayoutText #text",
-      "reason": "location change"
+      "reason": "geometry"
     },
     {
       "object": "LayoutText #text",
-      "reason": "location change"
+      "reason": "geometry"
     }
   ]
 }

@@ -27,7 +27,7 @@
         {
           "object": "LayoutBlockFlow DIV id='imgElement'",
           "rect": [392, 400, 200, 200],
-          "reason": "style change"
+          "reason": "image"
         }
       ]
     }
@@ -35,7 +35,7 @@
   "objectPaintInvalidations": [
     {
       "object": "LayoutBlockFlow DIV id='imgElement'",
-      "reason": "style change"
+      "reason": "image"
     }
   ]
 }

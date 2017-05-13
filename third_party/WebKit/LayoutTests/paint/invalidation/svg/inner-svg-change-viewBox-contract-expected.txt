@@ -21,7 +21,7 @@
     },
     {
       "object": "LayoutSVGRect rect",
-      "reason": "bounds change"
+      "reason": "geometry"
     }
   ]
 }

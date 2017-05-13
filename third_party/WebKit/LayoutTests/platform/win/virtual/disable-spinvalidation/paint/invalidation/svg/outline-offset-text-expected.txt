@@ -9,7 +9,7 @@
         {
           "object": "LayoutSVGInlineText #text",
           "rect": [103, 26, 160, 113],
-          "reason": "forced by layout"
+          "reason": "geometry"
         },
         {
           "object": "LayoutSVGText text",
@@ -19,7 +19,7 @@
         {
           "object": "LayoutSVGInlineText #text",
           "rect": [63, 26, 160, 113],
-          "reason": "forced by layout"
+          "reason": "geometry"
         },
         {
           "object": "LayoutSVGText text",
@@ -40,11 +40,11 @@
     },
     {
       "object": "LayoutSVGInlineText #text",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "InlineTextBox 'Foo'",
-      "reason": "forced by layout"
+      "reason": "geometry"
     }
   ]
 }

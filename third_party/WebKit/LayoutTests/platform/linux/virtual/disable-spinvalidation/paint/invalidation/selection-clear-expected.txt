@@ -14,7 +14,7 @@
         {
           "object": "LayoutBlockFlow (anonymous)",
           "rect": [8, 208, 100, 100],
-          "reason": "bounds change"
+          "reason": "geometry"
         },
         {
           "object": "LayoutBlockFlow DIV id='root'",
@@ -24,17 +24,17 @@
         {
           "object": "LayoutBlockFlow (anonymous)",
           "rect": [8, 108, 100, 100],
-          "reason": "bounds change"
+          "reason": "geometry"
         },
         {
           "object": "LayoutText #text",
           "rect": [8, 48, 97, 119],
-          "reason": "layoutObject removal"
+          "reason": "disappeared"
         },
         {
           "object": "LayoutText #text",
           "rect": [8, 48, 8, 19],
-          "reason": "layoutObject insertion"
+          "reason": "appeared"
         }
       ]
     }
@@ -42,7 +42,7 @@
   "objectPaintInvalidations": [
     {
       "object": "LayoutText #text",
-      "reason": "layoutObject removal"
+      "reason": "disappeared"
     },
     {
       "object": "LayoutBlockFlow HTML",
@@ -70,19 +70,19 @@
     },
     {
       "object": "LayoutText #text",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "InlineTextBox '\u00A0'",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutBlockFlow (anonymous)",
-      "reason": "bounds change"
+      "reason": "geometry"
     },
     {
       "object": "RootInlineBox",
-      "reason": "bounds change"
+      "reason": "geometry"
     },
     {
       "object": "LayoutBR BR",
@@ -94,11 +94,11 @@
     },
     {
       "object": "LayoutBR BR",
-      "reason": "location change"
+      "reason": "geometry"
     },
     {
       "object": "InlineTextBox '\n'",
-      "reason": "location change"
+      "reason": "geometry"
     }
   ]
 }

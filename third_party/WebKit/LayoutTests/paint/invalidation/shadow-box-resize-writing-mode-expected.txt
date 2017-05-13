@@ -9,22 +9,22 @@
         {
           "object": "LayoutBlockFlow (positioned) DIV id='target1'",
           "rect": [100, 100, 190, 120],
-          "reason": "border box change"
+          "reason": "geometry"
         },
         {
           "object": "LayoutBlockFlow (positioned) DIV id='target3'",
           "rect": [100, 300, 140, 170],
-          "reason": "border box change"
+          "reason": "geometry"
         },
         {
           "object": "LayoutBlockFlow (positioned) DIV id='target4'",
           "rect": [300, 300, 140, 120],
-          "reason": "border box change"
+          "reason": "geometry"
         },
         {
           "object": "LayoutBlockFlow (positioned) DIV id='target2'",
           "rect": [300, 100, 140, 120],
-          "reason": "border box change"
+          "reason": "geometry"
         }
       ]
     }
@@ -32,19 +32,19 @@
   "objectPaintInvalidations": [
     {
       "object": "LayoutBlockFlow (positioned) DIV id='target1'",
-      "reason": "border box change"
+      "reason": "geometry"
     },
     {
       "object": "LayoutBlockFlow (positioned) DIV id='target2'",
-      "reason": "border box change"
+      "reason": "geometry"
     },
     {
       "object": "LayoutBlockFlow (positioned) DIV id='target3'",
-      "reason": "border box change"
+      "reason": "geometry"
     },
     {
       "object": "LayoutBlockFlow (positioned) DIV id='target4'",
-      "reason": "border box change"
+      "reason": "geometry"
     }
   ]
 }

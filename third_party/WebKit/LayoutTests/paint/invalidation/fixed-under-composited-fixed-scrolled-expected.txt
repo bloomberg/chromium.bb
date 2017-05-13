@@ -18,7 +18,7 @@
         {
           "object": "LayoutBlockFlow (positioned) DIV id='fixed'",
           "rect": [100, 100, 200, 200],
-          "reason": "layoutObject removal"
+          "reason": "disappeared"
         }
       ]
     }
@@ -26,7 +26,7 @@
   "objectPaintInvalidations": [
     {
       "object": "LayoutBlockFlow (positioned) DIV id='fixed'",
-      "reason": "layoutObject removal"
+      "reason": "disappeared"
     }
   ]
 }

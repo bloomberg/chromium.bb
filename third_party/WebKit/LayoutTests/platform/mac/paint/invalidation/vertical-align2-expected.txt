@@ -1,0 +1,40 @@
+{
+  "layers": [
+    {
+      "name": "LayoutView #document",
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "paintInvalidations": [
+        {
+          "object": "LayoutBlockFlow BODY",
+          "rect": [0, 0, 800, 246],
+          "reason": "geometry"
+        }
+      ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutBlockFlow BODY",
+      "reason": "geometry"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "geometry"
+    },
+    {
+      "object": "LayoutBlockFlow DIV class='other'",
+      "reason": "geometry"
+    },
+    {
+      "object": "LayoutBlockFlow DIV id='target'",
+      "reason": "geometry"
+    },
+    {
+      "object": "LayoutBlockFlow DIV class='other'",
+      "reason": "geometry"
+    }
+  ]
+}
+

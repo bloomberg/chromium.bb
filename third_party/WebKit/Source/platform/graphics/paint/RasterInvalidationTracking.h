@@ -26,7 +26,7 @@ struct RasterInvalidationInfo {
   const DisplayItemClient* client = nullptr;
   String client_debug_name;
   IntRect rect;
-  PaintInvalidationReason reason = kPaintInvalidationFull;
+  PaintInvalidationReason reason = PaintInvalidationReason::kFull;
 };
 
 inline bool operator==(const RasterInvalidationInfo& a,

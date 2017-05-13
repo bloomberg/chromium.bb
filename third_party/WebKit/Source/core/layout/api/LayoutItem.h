@@ -161,7 +161,7 @@ class LayoutItem {
   }
 
   void SetShouldDoFullPaintInvalidation(
-      PaintInvalidationReason reason = kPaintInvalidationFull) {
+      PaintInvalidationReason reason = PaintInvalidationReason::kFull) {
     layout_object_->SetShouldDoFullPaintInvalidation(reason);
   }
 

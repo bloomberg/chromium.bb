@@ -15,7 +15,7 @@
         {
           "object": "LayoutBlockFlow DIV",
           "rect": [8, 8, 866, 764],
-          "reason": "border box change"
+          "reason": "geometry"
         },
         {
           "object": "LayoutBlockFlow BODY",
@@ -36,11 +36,11 @@
     },
     {
       "object": "LayoutBlockFlow DIV",
-      "reason": "border box change"
+      "reason": "geometry"
     },
     {
       "object": "LayoutBlockFlow DIV",
-      "reason": "border box change"
+      "reason": "geometry"
     }
   ]
 }

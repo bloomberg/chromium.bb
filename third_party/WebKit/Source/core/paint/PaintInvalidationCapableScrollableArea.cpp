@@ -24,10 +24,11 @@ void PaintInvalidationCapableScrollableArea::WillRemoveScrollbar(
     ScrollbarOrientation orientation) {
   if (!scrollbar.IsCustomScrollbar() &&
       !(orientation == kHorizontalScrollbar ? LayerForHorizontalScrollbar()
-                                            : LayerForVerticalScrollbar()))
+                                            : LayerForVerticalScrollbar())) {
     ObjectPaintInvalidator(*GetLayoutBox())
         .SlowSetPaintingLayerNeedsRepaintAndInvalidateDisplayItemClient(
-            scrollbar, kPaintInvalidationScroll);
+            scrollbar, PaintInvalidationReason::kScrollControl);
+  }
 
   ScrollableArea::WillRemoveScrollbar(scrollbar, orientation);
 }
@@ -70,13 +71,13 @@ static bool InvalidatePaintOfScrollControlIfNeeded(
   if (new_visual_rect != previous_visual_rect) {
     ObjectPaintInvalidator(box).InvalidatePaintUsingContainer(
         paint_invalidation_container, previous_visual_rect,
-        kPaintInvalidationScroll);
+        PaintInvalidationReason::kScrollControl);
     should_invalidate_new_rect = true;
   }
   if (should_invalidate_new_rect) {
     ObjectPaintInvalidator(box).InvalidatePaintUsingContainer(
         paint_invalidation_container, new_visual_rect,
-        kPaintInvalidationScroll);
+        PaintInvalidationReason::kScrollControl);
     return true;
   }
   return false;
@@ -132,7 +133,7 @@ static LayoutRect InvalidatePaintOfScrollbarIfNeeded(
   if (new_scrollbar_used_space_in_box != previous_scrollbar_used_space_in_box) {
     context.painting_layer->SetNeedsRepaint();
     ObjectPaintInvalidator(box).InvalidateDisplayItemClient(
-        box, kPaintInvalidationScroll);
+        box, PaintInvalidationReason::kGeometry);
   }
 
   bool invalidated = InvalidatePaintOfScrollControlIfNeeded(
@@ -146,7 +147,7 @@ static LayoutRect InvalidatePaintOfScrollbarIfNeeded(
 
   context.painting_layer->SetNeedsRepaint();
   ObjectPaintInvalidator(box).InvalidateDisplayItemClient(
-      *scrollbar, kPaintInvalidationScroll);
+      *scrollbar, PaintInvalidationReason::kScrollControl);
   if (scrollbar->IsCustomScrollbar()) {
     ToLayoutScrollbar(scrollbar)
         ->InvalidateDisplayItemClientsOfScrollbarParts();
@@ -184,12 +185,12 @@ void PaintInvalidationCapableScrollableArea::
     if (LayoutScrollbarPart* scroll_corner = this->ScrollCorner()) {
       ObjectPaintInvalidator(*scroll_corner)
           .InvalidateDisplayItemClientsIncludingNonCompositingDescendants(
-              kPaintInvalidationScroll);
+              PaintInvalidationReason::kScrollControl);
     }
     if (LayoutScrollbarPart* resizer = this->Resizer()) {
       ObjectPaintInvalidator(*resizer)
           .InvalidateDisplayItemClientsIncludingNonCompositingDescendants(
-              kPaintInvalidationScroll);
+              PaintInvalidationReason::kScrollControl);
     }
   }
 

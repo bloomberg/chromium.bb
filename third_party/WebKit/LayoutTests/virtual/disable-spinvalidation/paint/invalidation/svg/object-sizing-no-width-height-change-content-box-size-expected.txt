@@ -9,32 +9,32 @@
         {
           "object": "LayoutBlockFlow div id='contentBox'",
           "rect": [8, 8, 402, 402],
-          "reason": "forced by layout"
+          "reason": "geometry"
         },
         {
           "object": "LayoutEmbeddedObject object",
           "rect": [9, 9, 400, 400],
-          "reason": "forced by layout"
+          "reason": "geometry"
         },
         {
           "object": "LayoutSVGRect rect",
           "rect": [9, 9, 400, 400],
-          "reason": "forced by layout"
+          "reason": "geometry"
         },
         {
           "object": "LayoutSVGRoot svg",
           "rect": [9, 9, 400, 400],
-          "reason": "forced by layout"
+          "reason": "geometry"
         },
         {
           "object": "LayoutSVGEllipse circle",
           "rect": [169, 169, 80, 80],
-          "reason": "forced by layout"
+          "reason": "geometry"
         },
         {
           "object": "LayoutSVGEllipse circle",
           "rect": [89, 189, 40, 40],
-          "reason": "forced by layout"
+          "reason": "geometry"
         }
       ]
     }
@@ -42,27 +42,27 @@
   "objectPaintInvalidations": [
     {
       "object": "LayoutBlockFlow div id='contentBox'",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "RootInlineBox",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "LayoutEmbeddedObject object",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "LayoutSVGRoot svg",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "LayoutSVGRect rect",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "LayoutSVGEllipse circle",
-      "reason": "forced by layout"
+      "reason": "geometry"
     }
   ]
 }

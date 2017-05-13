@@ -24,12 +24,12 @@
         {
           "object": "LayoutTableCell TD",
           "rect": [114, 74, 2, 102],
-          "reason": "bounds change"
+          "reason": "geometry"
         },
         {
           "object": "LayoutTableCell TD",
           "rect": [14, 74, 2, 3],
-          "reason": "bounds change"
+          "reason": "geometry"
         }
       ]
     }
@@ -45,19 +45,19 @@
     },
     {
       "object": "LayoutTableCell TD",
-      "reason": "bounds change"
+      "reason": "geometry"
     },
     {
       "object": "LayoutBlockFlow DIV",
-      "reason": "location change"
+      "reason": "geometry"
     },
     {
       "object": "LayoutBlockFlow DIV",
-      "reason": "location change"
+      "reason": "geometry"
     },
     {
       "object": "LayoutBlockFlow DIV",
-      "reason": "location change"
+      "reason": "geometry"
     }
   ]
 }

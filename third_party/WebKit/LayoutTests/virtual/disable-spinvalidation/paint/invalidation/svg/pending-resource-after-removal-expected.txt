@@ -9,17 +9,17 @@
         {
           "object": "LayoutSVGRect rect",
           "rect": [0, 0, 200, 200],
-          "reason": "layoutObject insertion"
+          "reason": "appeared"
         },
         {
           "object": "LayoutSVGRect rect",
           "rect": [0, 0, 200, 200],
-          "reason": "layoutObject insertion"
+          "reason": "appeared"
         },
         {
           "object": "LayoutSVGRect rect",
           "rect": [0, 0, 200, 200],
-          "reason": "layoutObject removal"
+          "reason": "disappeared"
         },
         {
           "object": "LayoutSVGRect rect id='shape'",
@@ -37,11 +37,11 @@
   "objectPaintInvalidations": [
     {
       "object": "LayoutSVGResourcePattern pattern id='pat'",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGRect rect",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGRect rect id='shape'",
@@ -49,19 +49,19 @@
     },
     {
       "object": "LayoutSVGRect rect",
-      "reason": "layoutObject removal"
+      "reason": "disappeared"
     },
     {
       "object": "LayoutSVGResourcePattern pattern id='pat'",
-      "reason": "layoutObject removal"
+      "reason": "disappeared"
     },
     {
       "object": "LayoutSVGResourcePattern pattern id='pat'",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGRect rect",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGRect rect id='shape'",

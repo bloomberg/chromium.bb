@@ -1,0 +1,40 @@
+{
+  "layers": [
+    {
+      "name": "LayoutView #document",
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "paintInvalidations": [
+        {
+          "object": "LayoutBlockFlow DIV id='allcontent'",
+          "rect": [8, 130, 784, 50],
+          "reason": "style change"
+        }
+      ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutBlockFlow DIV id='allcontent'",
+      "reason": "style change"
+    },
+    {
+      "object": "LayoutBlockFlow (relative positioned) P",
+      "reason": "geometry"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "geometry"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "geometry"
+    },
+    {
+      "object": "InlineTextBox 'SUCCESS'",
+      "reason": "geometry"
+    }
+  ]
+}
+

@@ -56,12 +56,12 @@ bool BoxPaintInvalidator::IncrementallyInvalidatePaint(
   DCHECK(old_rect.Location() == new_rect.Location());
   LayoutRect right_delta = ComputeRightDelta(
       new_rect.Location(), old_rect.Size(), new_rect.Size(),
-      reason == kPaintInvalidationIncremental ? box_.BorderRight()
-                                              : LayoutUnit());
+      reason == PaintInvalidationReason::kIncremental ? box_.BorderRight()
+                                                      : LayoutUnit());
   LayoutRect bottom_delta = ComputeBottomDelta(
       new_rect.Location(), old_rect.Size(), new_rect.Size(),
-      reason == kPaintInvalidationIncremental ? box_.BorderBottom()
-                                              : LayoutUnit());
+      reason == PaintInvalidationReason::kIncremental ? box_.BorderBottom()
+                                                      : LayoutUnit());
 
   if (right_delta.IsEmpty() && bottom_delta.IsEmpty())
     return false;
@@ -79,7 +79,7 @@ PaintInvalidationReason BoxPaintInvalidator::ComputePaintInvalidationReason() {
       ObjectPaintInvalidatorWithContext(box_, context_)
           .ComputePaintInvalidationReason();
 
-  if (reason != kPaintInvalidationIncremental)
+  if (reason != PaintInvalidationReason::kIncremental)
     return reason;
 
   if (box_.IsLayoutView()) {
@@ -100,13 +100,13 @@ PaintInvalidationReason BoxPaintInvalidator::ComputePaintInvalidationReason() {
   if ((style.BackgroundLayers().ThisOrNextLayersUseContentBox() ||
        style.MaskLayers().ThisOrNextLayersUseContentBox()) &&
       box_.PreviousContentBoxSize() != box_.ContentBoxRect().Size())
-    return kPaintInvalidationContentBoxChange;
+    return PaintInvalidationReason::kGeometry;
 
   LayoutSize old_border_box_size = box_.PreviousSize();
   LayoutSize new_border_box_size = box_.Size();
   bool border_box_changed = old_border_box_size != new_border_box_size;
   if (!border_box_changed && context_.old_visual_rect == box_.VisualRect())
-    return kPaintInvalidationNone;
+    return PaintInvalidationReason::kNone;
 
   // If either border box changed or bounds changed, and old or new border box
   // doesn't equal old or new bounds, incremental invalidation is not
@@ -118,35 +118,34 @@ PaintInvalidationReason BoxPaintInvalidator::ComputePaintInvalidationReason() {
           LayoutRect(context_.old_location, old_border_box_size) ||
       box_.VisualRect() !=
           LayoutRect(context_.new_location, new_border_box_size)) {
-    return border_box_changed ? kPaintInvalidationBorderBoxChange
-                              : kPaintInvalidationBoundsChange;
+    return PaintInvalidationReason::kGeometry;
   }
 
   DCHECK(border_box_changed);
 
   if (style.HasVisualOverflowingEffect() || style.HasAppearance() ||
       style.HasFilterInducingProperty() || style.HasMask())
-    return kPaintInvalidationBorderBoxChange;
+    return PaintInvalidationReason::kGeometry;
 
   if (style.HasBorderRadius())
-    return kPaintInvalidationBorderBoxChange;
+    return PaintInvalidationReason::kGeometry;
 
   if (old_border_box_size.Width() != new_border_box_size.Width() &&
       box_.MustInvalidateBackgroundOrBorderPaintOnWidthChange())
-    return kPaintInvalidationBorderBoxChange;
+    return PaintInvalidationReason::kGeometry;
   if (old_border_box_size.Height() != new_border_box_size.Height() &&
       box_.MustInvalidateBackgroundOrBorderPaintOnHeightChange())
-    return kPaintInvalidationBorderBoxChange;
+    return PaintInvalidationReason::kGeometry;
 
   // Needs to repaint frame boundaries.
   if (box_.IsFrameSet())
-    return kPaintInvalidationBorderBoxChange;
+    return PaintInvalidationReason::kGeometry;
 
   // Needs to repaint column rules.
   if (box_.IsLayoutMultiColumnSet())
-    return kPaintInvalidationBorderBoxChange;
+    return PaintInvalidationReason::kGeometry;
 
-  return kPaintInvalidationIncremental;
+  return PaintInvalidationReason::kIncremental;
 }
 
 bool BoxPaintInvalidator::BackgroundGeometryDependsOnLayoutOverflowRect() {
@@ -219,7 +218,7 @@ void BoxPaintInvalidator::InvalidateScrollingContentsBackgroundIfNeeded() {
       if (should_fully_invalidate) {
         box_.GetMutableForPainting()
             .SetShouldDoFullPaintInvalidationWithoutGeometryChange(
-                kPaintInvalidationLayoutOverflowBoxChange);
+                PaintInvalidationReason::kBackground);
       }
       return;
     }
@@ -230,11 +229,11 @@ void BoxPaintInvalidator::InvalidateScrollingContentsBackgroundIfNeeded() {
   if (should_fully_invalidate_on_scrolling_contents_layer) {
     ObjectPaintInvalidatorWithContext(box_, context_)
         .FullyInvalidatePaint(
-            kPaintInvalidationBackgroundOnScrollingContentsLayer,
+            PaintInvalidationReason::kBackgroundOnScrollingContentsLayer,
             old_layout_overflow, new_layout_overflow);
   } else {
     IncrementallyInvalidatePaint(
-        kPaintInvalidationBackgroundOnScrollingContentsLayer,
+        PaintInvalidationReason::kBackgroundOnScrollingContentsLayer,
         old_layout_overflow, new_layout_overflow);
   }
 
@@ -243,14 +242,14 @@ void BoxPaintInvalidator::InvalidateScrollingContentsBackgroundIfNeeded() {
   // background on the scrolling contents layer.
   ObjectPaintInvalidator(box_).InvalidateDisplayItemClient(
       *box_.Layer()->GetCompositedLayerMapping()->ScrollingContentsLayer(),
-      kPaintInvalidationBackgroundOnScrollingContentsLayer);
+      PaintInvalidationReason::kBackgroundOnScrollingContentsLayer);
 }
 
 PaintInvalidationReason BoxPaintInvalidator::InvalidatePaint() {
   InvalidateScrollingContentsBackgroundIfNeeded();
 
   PaintInvalidationReason reason = ComputePaintInvalidationReason();
-  if (reason == kPaintInvalidationIncremental) {
+  if (reason == PaintInvalidationReason::kIncremental) {
     bool invalidated;
     if (box_.IsLayoutView() &&
         !RuntimeEnabledFeatures::rootLayerScrollingEnabled()) {
@@ -265,15 +264,15 @@ PaintInvalidationReason BoxPaintInvalidator::InvalidatePaint() {
       context_.painting_layer->SetNeedsRepaint();
       box_.InvalidateDisplayItemClients(reason);
     } else {
-      reason = kPaintInvalidationNone;
+      reason = PaintInvalidationReason::kNone;
     }
 
     // Though we have done incremental invalidation, we still need to call
     // ObjectPaintInvalidator with PaintInvalidationNone to do any other
     // required operations.
-    reason = std::max(
-        reason, ObjectPaintInvalidatorWithContext(box_, context_)
-                    .InvalidatePaintWithComputedReason(kPaintInvalidationNone));
+    reason = std::max(reason, ObjectPaintInvalidatorWithContext(box_, context_)
+                                  .InvalidatePaintWithComputedReason(
+                                      PaintInvalidationReason::kNone));
   } else {
     reason = ObjectPaintInvalidatorWithContext(box_, context_)
                  .InvalidatePaintWithComputedReason(reason);

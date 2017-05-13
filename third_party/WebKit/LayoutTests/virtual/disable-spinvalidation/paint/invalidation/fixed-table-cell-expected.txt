@@ -14,22 +14,22 @@
         {
           "object": "LayoutTableSection TBODY",
           "rect": [0, 0, 350, 350],
-          "reason": "forced by layout"
+          "reason": "geometry"
         },
         {
           "object": "LayoutTableCell (anonymous)",
           "rect": [200, 200, 100, 100],
-          "reason": "layoutObject insertion"
+          "reason": "appeared"
         },
         {
           "object": "LayoutTableCell TD id='moveMe' class='fixed'",
           "rect": [200, 200, 100, 100],
-          "reason": "layoutObject removal"
+          "reason": "disappeared"
         },
         {
           "object": "LayoutBlockFlow (positioned) TD id='moveMe' class='fixed'",
           "rect": [50, 200, 100, 100],
-          "reason": "layoutObject insertion"
+          "reason": "appeared"
         }
       ]
     }
@@ -37,7 +37,7 @@
   "objectPaintInvalidations": [
     {
       "object": "LayoutTableCell TD id='moveMe' class='fixed'",
-      "reason": "layoutObject removal"
+      "reason": "disappeared"
     },
     {
       "object": "LayoutTable (positioned) TABLE",
@@ -45,15 +45,15 @@
     },
     {
       "object": "LayoutTableSection TBODY",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "LayoutTableCell (anonymous)",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutBlockFlow (positioned) TD id='moveMe' class='fixed'",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     }
   ]
 }

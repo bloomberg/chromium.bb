@@ -9,22 +9,22 @@
         {
           "object": "LayoutSVGContainer g id='objectsToRemove'",
           "rect": [0, 0, 212, 129],
-          "reason": "became invisible"
+          "reason": "disappeared"
         },
         {
           "object": "LayoutSVGInlineText #text",
           "rect": [50, 110, 162, 19],
-          "reason": "layoutObject removal"
+          "reason": "disappeared"
         },
         {
           "object": "LayoutSVGText text",
           "rect": [50, 110, 162, 19],
-          "reason": "layoutObject removal"
+          "reason": "disappeared"
         },
         {
           "object": "LayoutSVGRect rect",
           "rect": [0, 0, 20, 20],
-          "reason": "layoutObject removal"
+          "reason": "disappeared"
         }
       ]
     }
@@ -32,19 +32,19 @@
   "objectPaintInvalidations": [
     {
       "object": "LayoutSVGRect rect",
-      "reason": "layoutObject removal"
+      "reason": "disappeared"
     },
     {
       "object": "LayoutSVGInlineText #text",
-      "reason": "layoutObject removal"
+      "reason": "disappeared"
     },
     {
       "object": "LayoutSVGText text",
-      "reason": "layoutObject removal"
+      "reason": "disappeared"
     },
     {
       "object": "LayoutSVGContainer g id='objectsToRemove'",
-      "reason": "became invisible"
+      "reason": "disappeared"
     }
   ]
 }

@@ -582,8 +582,10 @@ void LayoutMultiColumnFlowThread::LayoutColumns(
 
 void LayoutMultiColumnFlowThread::ColumnRuleStyleDidChange() {
   for (LayoutMultiColumnSet* column_set = FirstMultiColumnSet(); column_set;
-       column_set = column_set->NextSiblingMultiColumnSet())
-    column_set->SetShouldDoFullPaintInvalidation(kPaintInvalidationStyleChange);
+       column_set = column_set->NextSiblingMultiColumnSet()) {
+    column_set->SetShouldDoFullPaintInvalidation(
+        PaintInvalidationReason::kStyle);
+  }
 }
 
 bool LayoutMultiColumnFlowThread::RemoveSpannerPlaceholderIfNoLongerValid(

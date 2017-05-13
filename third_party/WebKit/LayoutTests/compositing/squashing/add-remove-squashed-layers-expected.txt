@@ -59,7 +59,7 @@ CASE 2, overlap3 gets added:
         {
           "object": "LayoutBlockFlow (positioned) DIV id='C' class='overlap3'",
           "rect": [160, 160, 100, 100],
-          "reason": "layoutObject insertion"
+          "reason": "appeared"
         }
       ]
     }
@@ -71,7 +71,7 @@ CASE 2, overlap3 gets added:
     },
     {
       "object": "LayoutBlockFlow (positioned) DIV id='C' class='overlap3'",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     }
   ]
 }
@@ -105,7 +105,7 @@ CASE 3, overlap2 gets removed. Since this does not resize the layer, there shoul
         {
           "object": "LayoutBlockFlow (positioned) DIV id='B' class='overlap2'",
           "rect": [80, 80, 100, 100],
-          "reason": "layoutObject removal"
+          "reason": "disappeared"
         }
       ]
     }
@@ -113,7 +113,7 @@ CASE 3, overlap2 gets removed. Since this does not resize the layer, there shoul
   "objectPaintInvalidations": [
     {
       "object": "LayoutBlockFlow (positioned) DIV id='B' class='overlap2'",
-      "reason": "layoutObject removal"
+      "reason": "disappeared"
     }
   ]
 }
@@ -152,7 +152,7 @@ CASE 4, overlap1 gets removed:
         {
           "object": "LayoutBlockFlow (positioned) DIV id='A' class='overlap1'",
           "rect": [0, 0, 100, 100],
-          "reason": "layoutObject removal"
+          "reason": "disappeared"
         },
         {
           "object": "LayoutBlockFlow (positioned) DIV id='C' class='overlap3'",
@@ -165,7 +165,7 @@ CASE 4, overlap1 gets removed:
   "objectPaintInvalidations": [
     {
       "object": "LayoutBlockFlow (positioned) DIV id='A' class='overlap1'",
-      "reason": "layoutObject removal"
+      "reason": "disappeared"
     },
     {
       "object": "LayoutBlockFlow (positioned) DIV id='C' class='overlap3'",
@@ -212,7 +212,7 @@ CASE 5, overlap2 gets added back:
         {
           "object": "LayoutBlockFlow (positioned) DIV id='B' class='overlap2'",
           "rect": [0, 0, 100, 100],
-          "reason": "layoutObject insertion"
+          "reason": "appeared"
         },
         {
           "object": "LayoutBlockFlow (positioned) DIV id='C' class='overlap3'",
@@ -237,7 +237,7 @@ CASE 5, overlap2 gets added back:
     },
     {
       "object": "LayoutBlockFlow (positioned) DIV id='B' class='overlap2'",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutBlockFlow (positioned) DIV id='C' class='overlap3'",
@@ -280,12 +280,12 @@ CASE 6, overlap1 gets added back, and overlap3 gets removed:
         {
           "object": "LayoutBlockFlow (positioned) DIV id='C' class='overlap3'",
           "rect": [80, 80, 100, 100],
-          "reason": "layoutObject removal"
+          "reason": "disappeared"
         },
         {
           "object": "LayoutBlockFlow (positioned) DIV id='A' class='overlap1'",
           "rect": [0, 0, 100, 100],
-          "reason": "layoutObject insertion"
+          "reason": "appeared"
         },
         {
           "object": "LayoutBlockFlow (positioned) DIV id='B' class='overlap2'",
@@ -298,7 +298,7 @@ CASE 6, overlap1 gets added back, and overlap3 gets removed:
   "objectPaintInvalidations": [
     {
       "object": "LayoutBlockFlow (positioned) DIV id='C' class='overlap3'",
-      "reason": "layoutObject removal"
+      "reason": "disappeared"
     },
     {
       "object": "LayoutBlockFlow (positioned) DIV id='A' class='overlap1'",
@@ -314,7 +314,7 @@ CASE 6, overlap1 gets added back, and overlap3 gets removed:
     },
     {
       "object": "LayoutBlockFlow (positioned) DIV id='A' class='overlap1'",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutBlockFlow (positioned) DIV id='B' class='overlap2'",

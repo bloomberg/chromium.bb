@@ -9,7 +9,7 @@
         {
           "object": "LayoutView #document",
           "rect": [0, 0, 785, 5000],
-          "reason": "full"
+          "reason": "background"
         }
       ]
     }
@@ -17,7 +17,7 @@
   "objectPaintInvalidations": [
     {
       "object": "LayoutView #document",
-      "reason": "full"
+      "reason": "background"
     }
   ]
 }

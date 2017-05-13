@@ -9,7 +9,7 @@
         {
           "object": "LayoutBlockFlow DIV id='dv'",
           "rect": [8, 70, 80, 36],
-          "reason": "forced by layout"
+          "reason": "geometry"
         },
         {
           "object": "LayoutText #text",
@@ -27,11 +27,11 @@
   "objectPaintInvalidations": [
     {
       "object": "LayoutBlockFlow DIV id='dv'",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "RootInlineBox",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "LayoutText #text",

@@ -9,7 +9,7 @@
         {
           "object": "LayoutBlockFlow BODY",
           "rect": [0, 0, 800, 200],
-          "reason": "forced by layout"
+          "reason": "geometry"
         },
         {
           "object": "LayoutView #document",
@@ -22,15 +22,15 @@
   "objectPaintInvalidations": [
     {
       "object": "LayoutBlockFlow BODY",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "RootInlineBox",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "LayoutIFrame IFRAME",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     }
   ]
 }

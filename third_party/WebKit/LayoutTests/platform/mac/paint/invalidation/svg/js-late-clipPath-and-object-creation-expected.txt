@@ -9,12 +9,12 @@
         {
           "object": "LayoutSVGContainer g id='content'",
           "rect": [16, 39, 784, 174],
-          "reason": "bounds change"
+          "reason": "geometry"
         },
         {
           "object": "LayoutSVGContainer g id='content'",
           "rect": [16, 39, 784, 174],
-          "reason": "became visible"
+          "reason": "appeared"
         }
       ]
     }
@@ -22,27 +22,27 @@
   "objectPaintInvalidations": [
     {
       "object": "LayoutSVGContainer g id='content'",
-      "reason": "became visible"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGText text",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "RootInlineBox",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGInlineText #text",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "InlineTextBox 'Clipped. INVISIBLE.'",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGContainer g id='content'",
-      "reason": "bounds change"
+      "reason": "geometry"
     },
     {
       "object": "LayoutSVGText text",
@@ -54,19 +54,19 @@
     },
     {
       "object": "LayoutSVGInlineText #text",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "InlineTextBox 'Clipped. INVISIBLE.'",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "LayoutSVGResourceClipper clipPath id='dynClip'",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGPath path",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     }
   ]
 }

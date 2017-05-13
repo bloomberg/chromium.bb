@@ -9,12 +9,12 @@
         {
           "object": "LayoutBlockFlow P",
           "rect": [0, 34, 800, 18],
-          "reason": "forced by layout"
+          "reason": "geometry"
         },
         {
           "object": "LayoutBlockFlow (anonymous)",
           "rect": [0, 0, 800, 18],
-          "reason": "forced by layout"
+          "reason": "geometry"
         },
         {
           "object": "LayoutInline A id='link'",
@@ -24,7 +24,7 @@
         {
           "object": "LayoutText #text",
           "rect": [0, 0, 40, 18],
-          "reason": "forced by layout"
+          "reason": "geometry"
         }
       ]
     }
@@ -32,11 +32,11 @@
   "objectPaintInvalidations": [
     {
       "object": "LayoutBlockFlow (anonymous)",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "RootInlineBox",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "LayoutInline A id='link'",
@@ -44,27 +44,27 @@
     },
     {
       "object": "LayoutText #text",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "InlineTextBox 'Home'",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "LayoutBlockFlow P",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "RootInlineBox",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "LayoutText #text",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "InlineTextBox 'crbug.com/424078: ensure inline elements get their outline painted'",
-      "reason": "forced by layout"
+      "reason": "geometry"
     }
   ]
 }

@@ -9,7 +9,7 @@
         {
           "object": "LayoutBlockFlow (positioned) DIV id='target'",
           "rect": [45, 45, 310, 310],
-          "reason": "border box change"
+          "reason": "geometry"
         }
       ]
     }
@@ -17,7 +17,7 @@
   "objectPaintInvalidations": [
     {
       "object": "LayoutBlockFlow (positioned) DIV id='target'",
-      "reason": "border box change"
+      "reason": "geometry"
     }
   ]
 }

@@ -9,7 +9,7 @@
         {
           "object": "LayoutTableRow TR",
           "rect": [0, 292, 106, 236],
-          "reason": "bounds change"
+          "reason": "geometry"
         },
         {
           "object": "LayoutTableRow TR",
@@ -19,42 +19,42 @@
         {
           "object": "LayoutTableRow TR",
           "rect": [0, 102, 106, 46],
-          "reason": "bounds change"
+          "reason": "geometry"
         },
         {
           "object": "LayoutTableCell TD",
           "rect": [2, 52, 102, 238],
-          "reason": "forced by layout"
+          "reason": "geometry"
         },
         {
           "object": "LayoutTableCell TD",
           "rect": [2, 292, 102, 236],
-          "reason": "forced by layout"
+          "reason": "geometry"
         },
         {
           "object": "LayoutTableCell TD",
           "rect": [2, 102, 102, 46],
-          "reason": "forced by layout"
+          "reason": "geometry"
         },
         {
           "object": "LayoutText #text",
           "rect": [3, 401, 46, 18],
-          "reason": "forced by layout"
+          "reason": "geometry"
         },
         {
           "object": "LayoutText #text",
           "rect": [3, 162, 46, 18],
-          "reason": "forced by layout"
+          "reason": "geometry"
         },
         {
           "object": "LayoutText #text",
           "rect": [3, 116, 46, 18],
-          "reason": "forced by layout"
+          "reason": "geometry"
         },
         {
           "object": "LayoutText #text",
           "rect": [3, 67, 46, 18],
-          "reason": "forced by layout"
+          "reason": "geometry"
         }
       ]
     }
@@ -66,39 +66,39 @@
     },
     {
       "object": "LayoutTableCell TD",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "RootInlineBox",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "LayoutText #text",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "InlineTextBox 'ROW1'",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "LayoutTableRow TR",
-      "reason": "bounds change"
+      "reason": "geometry"
     },
     {
       "object": "LayoutTableCell TD",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "RootInlineBox",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "LayoutText #text",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "InlineTextBox 'ROW2'",
-      "reason": "forced by layout"
+      "reason": "geometry"
     }
   ]
 }

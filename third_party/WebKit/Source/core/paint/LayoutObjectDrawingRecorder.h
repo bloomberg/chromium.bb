@@ -27,7 +27,7 @@ class LayoutObjectDrawingRecorder final {
                                          const LayoutObject& layout_object,
                                          DisplayItem::Type display_item_type) {
     if (layout_object.FullPaintInvalidationReason() ==
-        kPaintInvalidationDelayedFull)
+        PaintInvalidationReason::kDelayedFull)
       return false;
     return DrawingRecorder::UseCachedDrawingIfPossible(context, layout_object,
                                                        display_item_type);
@@ -47,7 +47,7 @@ class LayoutObjectDrawingRecorder final {
     // We may paint a delayed-invalidation object before it's actually
     // invalidated.
     if (layout_object.FullPaintInvalidationReason() ==
-        kPaintInvalidationDelayedFull)
+        PaintInvalidationReason::kDelayedFull)
       cache_skipper_.emplace(context);
     drawing_recorder_.emplace(context, layout_object, display_item_type, clip);
   }

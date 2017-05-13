@@ -1,0 +1,86 @@
+{
+  "layers": [
+    {
+      "name": "LayoutView #document",
+      "bounds": [1250, 585],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "paintInvalidations": [
+        {
+          "object": "LayoutBlockFlow (positioned) DIV id='shiftMe'",
+          "rect": [0, 0, 1500, 236],
+          "reason": "geometry"
+        },
+        {
+          "object": "LayoutBlockFlow (positioned) DIV id='shiftMe'",
+          "rect": [-250, 0, 1500, 236],
+          "reason": "geometry"
+        },
+        {
+          "object": "LayoutView #document",
+          "rect": [1250, 0, 250, 585],
+          "reason": "incremental"
+        }
+      ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutView #document",
+      "reason": "incremental"
+    },
+    {
+      "object": "LayoutBlockFlow (positioned) DIV id='shiftMe'",
+      "reason": "geometry"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "geometry"
+    },
+    {
+      "object": "LayoutBlockFlow (relative positioned) DIV class='imageWrapper'",
+      "reason": "geometry"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "geometry"
+    },
+    {
+      "object": "LayoutImage IMG",
+      "reason": "geometry"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "geometry"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "geometry"
+    },
+    {
+      "object": "InlineTextBox '\n'",
+      "reason": "geometry"
+    },
+    {
+      "object": "LayoutBlockFlow (relative positioned) DIV class='imageWrapper'",
+      "reason": "geometry"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "geometry"
+    },
+    {
+      "object": "LayoutImage IMG",
+      "reason": "geometry"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "geometry"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "geometry"
+    }
+  ]
+}
+

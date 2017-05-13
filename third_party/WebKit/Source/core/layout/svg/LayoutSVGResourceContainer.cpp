@@ -162,7 +162,7 @@ void LayoutSVGResourceContainer::MarkClientForInvalidation(
       // paint invalidation reason that will force paint invalidation of the
       // entire <text>/<tspan>/... subtree.
       client->SetShouldDoFullPaintInvalidation(
-          kPaintInvalidationSVGResourceChange);
+          PaintInvalidationReason::kSVGResource);
       // Invalidate paint properties to update effects if any.
       client->SetNeedsPaintPropertyUpdate();
       break;
