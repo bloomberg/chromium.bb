@@ -183,6 +183,7 @@ SKIP_GN_ISOLATE_MAP_TARGETS = {
   'motopho_latency_test',
   'net_junit_tests',
   'net_junit_tests',
+  'service_junit_tests',
   'ui_junit_tests',
   'webapk_client_junit_tests',
   'webapk_shell_apk_junit_tests',

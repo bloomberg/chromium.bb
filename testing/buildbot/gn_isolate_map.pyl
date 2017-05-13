@@ -857,6 +857,10 @@
     "label": "//services/service_manager/tests:service_manager_unittests",
     "type": "console_test_launcher",
   },
+  "service_junit_tests": {
+    "label": "//services:service_junit_tests",
+    "type": "junit_test",
+  },
   "service_unittests": {
     "label": "//services:service_unittests",
     "type": "console_test_launcher",
