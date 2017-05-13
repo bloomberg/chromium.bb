@@ -56,7 +56,7 @@ public class TranslateInfoBar extends InfoBar implements SubPanelListener {
         super(R.drawable.infobar_translate, null, null);
 
         mOptions = TranslateOptions.create(sourceLanguageCode, targetLanguageCode, languages, codes,
-                alwaysTranslate, triggeredFromMenu);
+                alwaysTranslate, triggeredFromMenu, null);
         mInfoBarType = infoBarType;
         mShouldShowNeverBar = shouldShowNeverBar;
         mOptionsPanelViewType = NO_PANEL;

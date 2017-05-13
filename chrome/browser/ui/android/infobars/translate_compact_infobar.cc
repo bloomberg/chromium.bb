@@ -43,6 +43,8 @@ ScopedJavaLocalRef<jobject> TranslateCompactInfoBar::CreateRenderInfoBar(
       TranslateUtils::GetJavaLanguages(env, delegate);
   base::android::ScopedJavaLocalRef<jobjectArray> java_codes =
       TranslateUtils::GetJavaLanguageCodes(env, delegate);
+  base::android::ScopedJavaLocalRef<jintArray> java_hash_codes =
+      TranslateUtils::GetJavaLanguageHashCodes(env, delegate);
 
   ScopedJavaLocalRef<jstring> source_language_code =
       base::android::ConvertUTF8ToJavaString(
@@ -54,7 +56,8 @@ ScopedJavaLocalRef<jobject> TranslateCompactInfoBar::CreateRenderInfoBar(
   return Java_TranslateCompactInfoBar_create(
       env, delegate->translate_step(), source_language_code,
       target_language_code, delegate->ShouldAlwaysTranslate(),
-      delegate->triggered_from_menu(), java_languages, java_codes);
+      delegate->triggered_from_menu(), java_languages, java_codes,
+      java_hash_codes);
 }
 
 void TranslateCompactInfoBar::ProcessButton(int action) {

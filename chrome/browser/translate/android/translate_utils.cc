@@ -10,6 +10,7 @@
 #include "base/android/jni_string.h"
 #include "base/android/jni_weak_ref.h"
 #include "base/memory/ptr_util.h"
+#include "components/metrics/metrics_log.h"
 #include "components/translate/core/browser/translate_infobar_delegate.h"
 
 using base::android::JavaParamRef;
@@ -35,4 +36,16 @@ ScopedJavaLocalRef<jobjectArray> TranslateUtils::GetJavaLanguageCodes(
     codes.push_back(delegate->language_code_at(i));
   }
   return base::android::ToJavaArrayOfStrings(env, codes);
+}
+
+ScopedJavaLocalRef<jintArray> TranslateUtils::GetJavaLanguageHashCodes(
+    JNIEnv* env,
+    translate::TranslateInfoBarDelegate* delegate) {
+  std::vector<int> hashCodes;
+  hashCodes.reserve(delegate->num_languages());
+  for (size_t i = 0; i < delegate->num_languages(); ++i) {
+    hashCodes.push_back(
+        metrics::MetricsLog::Hash(delegate->language_code_at(i)));
+  }
+  return base::android::ToJavaIntArray(env, hashCodes);
 }
