@@ -88,18 +88,23 @@ class NET_EXPORT URLRequestContextBuilder {
     HttpNetworkSessionParams();
     ~HttpNetworkSessionParams();
 
+    // Configutes |params| to match the settings in |this|.
+    // TODO(mmenke):  Temporary utility function. Once everything is using a
+    // URLRequestContextBuilder, can make this no longer publicly accessible.
+    void ConfigureSessionParams(HttpNetworkSession::Params* params) const;
+
     // These fields mirror those in HttpNetworkSession::Params;
-    bool ignore_certificate_errors;
     HostMappingRules* host_mapping_rules;
+    bool ignore_certificate_errors;
     uint16_t testing_fixed_http_port;
     uint16_t testing_fixed_https_port;
     bool enable_http2;
     bool enable_quic;
     std::string quic_user_agent_id;
     int quic_max_server_configs_stored_in_properties;
-    int quic_idle_connection_timeout_seconds;
     QuicTagVector quic_connection_options;
     bool quic_close_sessions_on_ip_change;
+    int quic_idle_connection_timeout_seconds;
     bool quic_migrate_sessions_on_network_change;
     bool quic_migrate_sessions_early;
     bool quic_disable_bidirectional_streams;
