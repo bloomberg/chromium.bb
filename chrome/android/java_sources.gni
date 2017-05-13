@@ -1438,7 +1438,7 @@ chrome_test_java_sources = [
   "javatests/src/org/chromium/chrome/browser/media/remote/CastPositionTransferTest.java",
   "javatests/src/org/chromium/chrome/browser/media/remote/CastStartStopTest.java",
   "javatests/src/org/chromium/chrome/browser/media/remote/CastSwitchVideoTest.java",
-  "javatests/src/org/chromium/chrome/browser/media/remote/CastTestBase.java",
+  "javatests/src/org/chromium/chrome/browser/media/remote/CastTestRule.java",
   "javatests/src/org/chromium/chrome/browser/media/remote/CastVideoControlsTest.java",
   "javatests/src/org/chromium/chrome/browser/media/router/MediaRouterIntegrationTest.java",
   "javatests/src/org/chromium/chrome/browser/media/router/MockMediaRouteProvider.java",

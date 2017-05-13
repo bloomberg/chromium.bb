@@ -3,16 +3,29 @@
 // found in the LICENSE file.
 
 package org.chromium.chrome.browser.media.remote;
-
 import static org.chromium.base.test.util.Restriction.RESTRICTION_TYPE_NON_LOW_END_DEVICE;
+import static org.chromium.chrome.browser.media.remote.CastTestRule.CAST_TEST_ROUTE;
+import static org.chromium.chrome.browser.media.remote.CastTestRule.DEFAULT_VIDEO_PAGE;
+import static org.chromium.chrome.browser.media.remote.CastTestRule.MAX_VIEW_TIME_MS;
+import static org.chromium.chrome.browser.media.remote.CastTestRule.VIDEO_ELEMENT;
+import static org.chromium.chrome.browser.media.remote.CastTestRule.VIEW_RETRY_MS;
 
 import android.graphics.Rect;
 import android.support.test.filters.LargeTest;
 
+import org.junit.Assert;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
+import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.base.test.util.RetryOnFailure;
+import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.test.ChromeActivityTestRule;
+import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.content.browser.test.util.JavaScriptUtils;
 
 import java.util.Date;
@@ -23,8 +36,15 @@ import java.util.concurrent.TimeoutException;
  * Tests related to the transfer of the playback position between the local and
  * the remote player.
  */
+@RunWith(ChromeJUnit4ClassRunner.class)
+@CommandLineFlags.Add({
+        ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
+        ChromeActivityTestRule.DISABLE_NETWORK_PREDICTION_FLAG,
+})
 @RetryOnFailure
-public class CastPositionTransferTest extends CastTestBase {
+public class CastPositionTransferTest {
+    @Rule
+    public CastTestRule mCastTestRule = new CastTestRule();
 
     /** Reference position in the video where we should start casting */
     private static final int CAST_START_TIME_MS = 3000;
@@ -64,49 +84,53 @@ public class CastPositionTransferTest extends CastTestBase {
     }
 
     /** Test for crbug.com/428409 */
+    @Test
     @Feature({"VideoFling"})
     @LargeTest
     @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE) // crbug.com/652872
     public void testLocalToRemotePositionTransfer() throws InterruptedException, TimeoutException {
-        final Tab tab = getActivity().getActivityTab();
-        final Rect videoRect = prepareDefaultVideofromPage(DEFAULT_VIDEO_PAGE, tab);
+        final Tab tab = mCastTestRule.getActivity().getActivityTab();
+        final Rect videoRect = mCastTestRule.prepareDefaultVideofromPage(DEFAULT_VIDEO_PAGE, tab);
 
         // Jump to the position
         seekFromJS(tab, CAST_START_TIME_MS);
         final double localPositionMs = getLocalPositionMillis(tab, VIDEO_ELEMENT);
-        assertTrue("Local playback position (" + localPositionMs + ") did not advance past "
-                + CAST_START_TIME_MS, localPositionMs >= CAST_START_TIME_MS);
+        Assert.assertTrue("Local playback position (" + localPositionMs + ") did not advance past "
+                        + CAST_START_TIME_MS,
+                localPositionMs >= CAST_START_TIME_MS);
 
         // Start cast
         final long castStartTimeMs = new Date().getTime();
-        castVideoAndWaitUntilPlaying(CAST_TEST_ROUTE, tab, videoRect);
+        mCastTestRule.castVideoAndWaitUntilPlaying(CAST_TEST_ROUTE, tab, videoRect);
 
         // Test the position
-        final long remotePositionMs = getRemotePositionMs();
+        final long remotePositionMs = mCastTestRule.getRemotePositionMs();
         final long castDelayMs = new Date().getTime() - castStartTimeMs;
 
-        assertTrue("The remote playback position (" + remotePositionMs + ") did not advance past "
-                + CAST_START_TIME_MS, remotePositionMs >= CAST_START_TIME_MS);
-        assertTrue("The remote playback position (" + remotePositionMs + ") went too far.",
+        Assert.assertTrue("The remote playback position (" + remotePositionMs
+                        + ") did not advance past " + CAST_START_TIME_MS,
+                remotePositionMs >= CAST_START_TIME_MS);
+        Assert.assertTrue("The remote playback position (" + remotePositionMs + ") went too far.",
                 remotePositionMs <= CAST_START_TIME_MS + castDelayMs);
     }
 
     /** Test for crbug.com/428409 */
+    @Test
     @Feature({"VideoFling"})
     @LargeTest
     @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE) // crbug.com/652872
     public void testRemoteToLocalPositionTransfer() throws InterruptedException, TimeoutException {
-        final Tab tab = getActivity().getActivityTab();
-        final Rect videoRect = prepareDefaultVideofromPage(DEFAULT_VIDEO_PAGE, tab);
+        final Tab tab = mCastTestRule.getActivity().getActivityTab();
+        final Rect videoRect = mCastTestRule.prepareDefaultVideofromPage(DEFAULT_VIDEO_PAGE, tab);
 
         // Start cast
-        castVideoAndWaitUntilPlaying(CAST_TEST_ROUTE, tab, videoRect);
+        mCastTestRule.castVideoAndWaitUntilPlaying(CAST_TEST_ROUTE, tab, videoRect);
 
-        tapPlayPauseButton(tab, videoRect);
-        long pausePosition = getRemotePositionMs();
+        mCastTestRule.tapPlayPauseButton(tab, videoRect);
+        long pausePosition = mCastTestRule.getRemotePositionMs();
         for (int time = 0; time < MAX_VIEW_TIME_MS; time += VIEW_RETRY_MS) {
             Thread.sleep(VIEW_RETRY_MS);
-            long newPosition = getRemotePositionMs();
+            long newPosition = mCastTestRule.getRemotePositionMs();
             if (newPosition == pausePosition) {
                 break;
             }
@@ -114,46 +138,49 @@ public class CastPositionTransferTest extends CastTestBase {
         }
         // Jump to the position
         seekFromJS(tab, CAST_START_TIME_MS);
-        for (int time = 0; time < MAX_VIEW_TIME_MS
-                && getRemotePositionMs() != pausePosition; time += VIEW_RETRY_MS) {
+        for (int time = 0;
+                time < MAX_VIEW_TIME_MS && mCastTestRule.getRemotePositionMs() != pausePosition;
+                time += VIEW_RETRY_MS) {
             Thread.sleep(VIEW_RETRY_MS);
         }
-        long remotePositionMs = getRemotePositionMs();
-        assertEquals("The remote player did not seek",
-                CAST_START_TIME_MS, remotePositionMs, SEEK_EPSILON_MS);
+        long remotePositionMs = mCastTestRule.getRemotePositionMs();
+        Assert.assertEquals("The remote player did not seek", CAST_START_TIME_MS, remotePositionMs,
+                SEEK_EPSILON_MS);
 
         // Stop cast and play locally
         final long castStopTimeMs = new Date().getTime();
-        clickDisconnectFromRoute(tab, videoRect);
-        tapPlayPauseButton(tab, videoRect);
-        sleepNoThrow(SMALL_STABILIZE_TIME_MS);
+        mCastTestRule.clickDisconnectFromRoute(tab, videoRect);
+        mCastTestRule.tapPlayPauseButton(tab, videoRect);
+        mCastTestRule.sleepNoThrow(SMALL_STABILIZE_TIME_MS);
 
         // Test the position
         final double localPositionMs = getLocalPositionMillis(tab, VIDEO_ELEMENT);
         final long castDelayMs = new Date().getTime() - castStopTimeMs;
-        assertTrue("The local playback position (" + localPositionMs + ") did not advance past "
-                + CAST_START_TIME_MS, localPositionMs >= CAST_START_TIME_MS);
-        assertTrue("The local playback position (" + localPositionMs + ") went too far.",
+        Assert.assertTrue("The local playback position (" + localPositionMs
+                        + ") did not advance past " + CAST_START_TIME_MS,
+                localPositionMs >= CAST_START_TIME_MS);
+        Assert.assertTrue("The local playback position (" + localPositionMs + ") went too far.",
                 localPositionMs <= CAST_START_TIME_MS + castDelayMs);
     }
 
     /** Test for crbug.com/425105 */
+    @Test
     @Feature({"VideoFling"})
     @LargeTest
     @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE) // crbug.com/593840, crbug.com/652872
     public void testPositionUpdate() throws InterruptedException, TimeoutException {
-        final Tab tab = getActivity().getActivityTab();
-        final Rect videoRect = prepareDefaultVideofromPage(DEFAULT_VIDEO_PAGE, tab);
-        castVideoAndWaitUntilPlaying(CAST_TEST_ROUTE, tab, videoRect);
+        final Tab tab = mCastTestRule.getActivity().getActivityTab();
+        final Rect videoRect = mCastTestRule.prepareDefaultVideofromPage(DEFAULT_VIDEO_PAGE, tab);
+        mCastTestRule.castVideoAndWaitUntilPlaying(CAST_TEST_ROUTE, tab, videoRect);
 
-        sleepNoThrow(CAST_START_TIME_MS);
+        mCastTestRule.sleepNoThrow(CAST_START_TIME_MS);
 
-        final long remotePositionMs = getRemotePositionMs();
+        final long remotePositionMs = mCastTestRule.getRemotePositionMs();
         final long localPositionMs = getLocalPositionMillis(tab, VIDEO_ELEMENT);
 
-        assertEquals("Remote playback position was not properly updated.",
+        Assert.assertEquals("Remote playback position was not properly updated.",
                 CAST_START_TIME_MS, remotePositionMs, SEEK_EPSILON_MS);
-        assertEquals("The remote playback position was updated, but the local one was not.",
+        Assert.assertEquals("The remote playback position was updated, but the local one was not.",
                 CAST_START_TIME_MS, localPositionMs, SEEK_EPSILON_MS);
     }
 }
