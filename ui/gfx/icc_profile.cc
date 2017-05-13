@@ -6,12 +6,14 @@
 
 #include <list>
 
+#include "base/command_line.h"
 #include "base/containers/mru_cache.h"
 #include "base/lazy_instance.h"
 #include "base/synchronization/lock.h"
 #include "third_party/skia/include/core/SkColorSpaceXform.h"
 #include "third_party/skia/include/core/SkICC.h"
 #include "ui/gfx/skia_color_space_util.h"
+#include "ui/gfx/switches.h"
 
 namespace gfx {
 
@@ -105,9 +107,40 @@ ICCProfile ICCProfile::FromDataWithId(const void* data,
 #if !defined(OS_WIN) && !defined(OS_MACOSX) && !defined(USE_X11)
 // static
 ICCProfile ICCProfile::FromBestMonitor() {
+  if (HasForcedProfile())
+    return GetForcedProfile();
   return ICCProfile();
 }
 #endif
+
+// static
+bool ICCProfile::HasForcedProfile() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kForceColorProfile);
+}
+
+// static
+ICCProfile ICCProfile::GetForcedProfile() {
+  DCHECK(HasForcedProfile());
+  ICCProfile icc_profile;
+  std::string value =
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          switches::kForceColorProfile);
+  if (value == "srgb") {
+    ColorSpace::CreateSRGB().GetICCProfile(&icc_profile);
+  } else if (value == "generic-rgb") {
+    ColorSpace generic_rgb_color_space(ColorSpace::PrimaryID::APPLE_GENERIC_RGB,
+                                       ColorSpace::TransferID::GAMMA18);
+    generic_rgb_color_space.GetICCProfile(&icc_profile);
+  } else if (value == "bt2020-gamma18") {
+    ColorSpace generic_rgb_color_space(ColorSpace::PrimaryID::BT2020,
+                                       ColorSpace::TransferID::GAMMA18);
+    generic_rgb_color_space.GetICCProfile(&icc_profile);
+  } else {
+    LOG(ERROR) << "Invalid forced color profile";
+  }
+  return icc_profile;
+}
 
 // static
 const std::vector<char>& ICCProfile::GetData() const {

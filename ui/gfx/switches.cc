@@ -25,4 +25,10 @@ const char kHeadless[] = "headless";
 // before operating on them.
 const char kEnableColorCorrectRendering[] = "enable-color-correct-rendering";
 
+// Force all monitors to be treated as though they have the specified color
+// profile. Accepted values are "srgb" and "generic-rgb" (currently used by Mac
+// layout tests) and "bt2020-gamma18" (to be used by Mac layout tests in the
+// future).
+const char kForceColorProfile[] = "force-color-profile";
+
 }  // namespace switches

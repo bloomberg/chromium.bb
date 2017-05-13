@@ -413,6 +413,7 @@ component("color_space") {
     "//skia",
   ]
   deps = [
+    ":switches_sources",
     "//base",
     "//skia",
   ]

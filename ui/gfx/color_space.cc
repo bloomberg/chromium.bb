@@ -444,6 +444,17 @@ void ColorSpace::GetPrimaryMatrix(SkMatrix44* to_XYZD50) const {
       primaries.fWY = 0.3290f;
       break;
 
+    case ColorSpace::PrimaryID::APPLE_GENERIC_RGB:
+      primaries.fRX = 0.63002f;
+      primaries.fRY = 0.34000f;
+      primaries.fGX = 0.29505f;
+      primaries.fGY = 0.60498f;
+      primaries.fBX = 0.15501f;
+      primaries.fBY = 0.07701f;
+      primaries.fWX = 0.3127f;
+      primaries.fWY = 0.3290f;
+      break;
+
     case ColorSpace::PrimaryID::FILM:
       primaries.fRX = 0.681f;
       primaries.fRY = 0.319f;
@@ -546,6 +557,9 @@ bool ColorSpace::GetTransferFunction(SkColorSpaceTransferFn* fn) const {
       return true;
     case ColorSpace::TransferID::LINEAR:
     case ColorSpace::TransferID::LINEAR_HDR:
+      return true;
+    case ColorSpace::TransferID::GAMMA18:
+      fn->fG = 1.801f;
       return true;
     case ColorSpace::TransferID::GAMMA22:
       fn->fG = 2.2f;
