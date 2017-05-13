@@ -27,6 +27,7 @@
 #include "media/audio/audio_system_impl.h"
 #include "media/audio/fake_audio_log_factory.h"
 #include "media/audio/fake_audio_manager.h"
+#include "media/audio/test_audio_thread.h"
 #include "media/base/media_switches.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -265,8 +266,7 @@ class AudioInputRendererHostTest : public testing::Test {
     flags->AppendSwitch(switches::kUseFakeUIForMediaStream);
 
     audio_manager_.reset(new media::FakeAudioManager(
-        base::ThreadTaskRunnerHandle::Get(),
-        base::ThreadTaskRunnerHandle::Get(), &log_factory_));
+        base::MakeUnique<media::TestAudioThread>(), &log_factory_));
     audio_system_ = media::AudioSystemImpl::Create(audio_manager_.get());
     media_stream_manager_ =
         base::MakeUnique<MediaStreamManager>(audio_system_.get());
@@ -279,6 +279,8 @@ class AudioInputRendererHostTest : public testing::Test {
   ~AudioInputRendererHostTest() override {
     airh_->OnChannelClosing();
     base::RunLoop().RunUntilIdle();
+
+    audio_manager_->Shutdown();
   }
 
  protected:
@@ -316,7 +318,7 @@ class AudioInputRendererHostTest : public testing::Test {
   StrictMock<MockControllerFactory> controller_factory_;
   std::unique_ptr<MediaStreamManager> media_stream_manager_;
   TestBrowserThreadBundle thread_bundle_;
-  media::ScopedAudioManagerPtr audio_manager_;
+  std::unique_ptr<media::AudioManager> audio_manager_;
   std::unique_ptr<media::AudioSystem> audio_system_;
   StrictMock<MockRenderer> renderer_;
   scoped_refptr<AudioInputRendererHost> airh_;

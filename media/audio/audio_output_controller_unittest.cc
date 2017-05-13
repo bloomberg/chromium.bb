@@ -22,6 +22,7 @@
 #include "base/time/time.h"
 #include "media/audio/audio_device_description.h"
 #include "media/audio/audio_source_diverter.h"
+#include "media/audio/test_audio_thread.h"
 #include "media/base/audio_bus.h"
 #include "media/base/audio_parameters.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -112,11 +113,11 @@ class AudioOutputControllerTest : public testing::Test {
  public:
   AudioOutputControllerTest()
       : audio_manager_(AudioManager::CreateForTesting(
-            base::ThreadTaskRunnerHandle::Get())) {
+            base::MakeUnique<TestAudioThread>())) {
     base::RunLoop().RunUntilIdle();
   }
 
-  ~AudioOutputControllerTest() override {}
+  ~AudioOutputControllerTest() override { audio_manager_->Shutdown(); }
 
  protected:
   void Create(int samples_per_packet) {
@@ -263,7 +264,7 @@ class AudioOutputControllerTest : public testing::Test {
 
  private:
   base::TestMessageLoop message_loop_;
-  ScopedAudioManagerPtr audio_manager_;
+  std::unique_ptr<AudioManager> audio_manager_;
   MockAudioOutputControllerEventHandler mock_event_handler_;
   MockAudioOutputControllerSyncReader mock_sync_reader_;
   MockAudioOutputStream mock_stream_;

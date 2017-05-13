@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "base/environment.h"
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
@@ -18,6 +19,7 @@
 #include "media/audio/audio_manager_base.h"
 #include "media/audio/audio_unittest_util.h"
 #include "media/audio/mac/audio_low_latency_input_mac.h"
+#include "media/audio/test_audio_thread.h"
 #include "media/base/seekable_buffer.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -112,16 +114,13 @@ class MacAudioInputTest : public testing::Test {
  protected:
   MacAudioInputTest()
       : message_loop_(base::MessageLoop::TYPE_UI),
-        audio_manager_(
-            AudioManager::CreateForTesting(message_loop_.task_runner())) {
+        audio_manager_(AudioManager::CreateForTesting(
+            base::MakeUnique<TestAudioThread>())) {
     // Wait for the AudioManager to finish any initialization on the audio loop.
     base::RunLoop().RunUntilIdle();
   }
 
-  ~MacAudioInputTest() override {
-    audio_manager_.reset();
-    base::RunLoop().RunUntilIdle();
-  }
+  ~MacAudioInputTest() override { audio_manager_->Shutdown(); }
 
   bool InputDevicesAvailable() {
     return AudioDeviceInfoAccessorForTests(audio_manager_.get())
@@ -160,7 +159,7 @@ class MacAudioInputTest : public testing::Test {
   void OnLogMessage(const std::string& message) { log_message_ = message; }
 
   base::MessageLoop message_loop_;
-  ScopedAudioManagerPtr audio_manager_;
+  std::unique_ptr<AudioManager> audio_manager_;
   std::string log_message_;
 };
 

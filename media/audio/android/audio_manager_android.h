@@ -20,10 +20,9 @@ class OpenSLESOutputStream;
 // Android implemention of AudioManager.
 class MEDIA_EXPORT AudioManagerAndroid : public AudioManagerBase {
  public:
-  AudioManagerAndroid(
-      scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-      scoped_refptr<base::SingleThreadTaskRunner> worker_task_runner,
-      AudioLogFactory* audio_log_factory);
+  AudioManagerAndroid(std::unique_ptr<AudioThread> audio_thread,
+                      AudioLogFactory* audio_log_factory);
+  ~AudioManagerAndroid() override;
 
   void InitializeIfNeeded();
 
@@ -76,8 +75,7 @@ class MEDIA_EXPORT AudioManagerAndroid : public AudioManagerBase {
   bool HasOutputVolumeOverride(double* out_volume) const;
 
  protected:
-  ~AudioManagerAndroid() override;
-
+  void ShutdownOnAudioThread() override;
   AudioParameters GetPreferredOutputStreamParameters(
       const std::string& output_device_id,
       const AudioParameters& input_params) override;

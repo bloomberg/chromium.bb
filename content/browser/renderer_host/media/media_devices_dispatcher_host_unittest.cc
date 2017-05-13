@@ -27,6 +27,7 @@
 #include "media/audio/audio_device_description.h"
 #include "media/audio/audio_system_impl.h"
 #include "media/audio/mock_audio_manager.h"
+#include "media/audio/test_audio_thread.h"
 #include "media/base/media_switches.h"
 #include "media/capture/video/fake_video_capture_device_factory.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -81,8 +82,8 @@ class MediaDevicesDispatcherHostTest : public testing::Test {
         switches::kUseFakeDeviceForMediaStream,
         base::StringPrintf("device-count=%zu, video-input-default-id=%s",
                            kNumFakeVideoDevices, kDefaultVideoDeviceID));
-    audio_manager_.reset(
-        new media::MockAudioManager(base::ThreadTaskRunnerHandle::Get()));
+    audio_manager_.reset(new media::MockAudioManager(
+        base::MakeUnique<media::TestAudioThread>()));
     audio_system_ = media::AudioSystemImpl::Create(audio_manager_.get());
     media_stream_manager_ =
         base::MakeUnique<MediaStreamManager>(audio_system_.get());
@@ -91,6 +92,7 @@ class MediaDevicesDispatcherHostTest : public testing::Test {
         kProcessId, kRenderId, browser_context_.GetMediaDeviceIDSalt(),
         media_stream_manager_.get());
   }
+  ~MediaDevicesDispatcherHostTest() override { audio_manager_->Shutdown(); }
 
   void SetUp() override {
     base::RunLoop run_loop;
@@ -298,8 +300,7 @@ class MediaDevicesDispatcherHostTest : public testing::Test {
   content::TestBrowserThreadBundle thread_bundle_;
   std::unique_ptr<MediaDevicesDispatcherHost> host_;
 
-  std::unique_ptr<media::AudioManager, media::AudioManagerDeleter>
-      audio_manager_;
+  std::unique_ptr<media::AudioManager> audio_manager_;
   std::unique_ptr<media::AudioSystem> audio_system_;
   content::TestBrowserContext browser_context_;
   MediaDeviceEnumeration physical_devices_;

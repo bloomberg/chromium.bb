@@ -29,6 +29,7 @@
 #include "media/audio/audio_system_impl.h"
 #include "media/audio/fake_audio_log_factory.h"
 #include "media/audio/fake_audio_manager.h"
+#include "media/audio/test_audio_thread.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/media_switches.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -97,10 +98,8 @@ class MockRenderProcessHostWithSignaling : public MockRenderProcessHost {
 
 class FakeAudioManagerWithAssociations : public media::FakeAudioManager {
  public:
-  FakeAudioManagerWithAssociations(
-      scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-      media::AudioLogFactory* factory)
-      : FakeAudioManager(task_runner, task_runner, factory) {}
+  FakeAudioManagerWithAssociations(media::AudioLogFactory* factory)
+      : FakeAudioManager(base::MakeUnique<media::TestAudioThread>(), factory) {}
 
   void CreateDeviceAssociation(const std::string& input_device_id,
                                const std::string& output_device_id) {
@@ -236,7 +235,6 @@ class AudioRendererHostTest : public testing::Test {
   AudioRendererHostTest()
       : log_factory(base::MakeUnique<media::FakeAudioLogFactory>()),
         audio_manager_(base::MakeUnique<FakeAudioManagerWithAssociations>(
-            base::ThreadTaskRunnerHandle::Get(),
             log_factory.get())),
         audio_system_(media::AudioSystemImpl::Create(audio_manager_.get())),
         render_process_host_(&browser_context_, &auth_run_loop_) {
@@ -257,11 +255,7 @@ class AudioRendererHostTest : public testing::Test {
     // Simulate closing the IPC channel and give the audio thread time to close
     // the underlying streams.
     host_->OnChannelClosing();
-    SyncWithAudioThread();
-    // To correctly clean up the audio manager, we first put it in a
-    // ScopedAudioManagerPtr. It will immediately destruct, cleaning up the
-    // audio manager correctly.
-    media::ScopedAudioManagerPtr(audio_manager_.release());
+    audio_manager_->Shutdown();
 
     // Release the reference to the mock object.  The object will be destructed
     // on message_loop_.

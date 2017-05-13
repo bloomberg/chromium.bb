@@ -23,6 +23,7 @@
 #include "media/audio/fake_audio_output_stream.h"
 #include "media/audio/mock_audio_manager.h"
 #include "media/audio/test_audio_input_controller_factory.h"
+#include "media/audio/test_audio_thread.h"
 #include "media/base/audio_bus.h"
 #include "media/base/test_helpers.h"
 #include "net/base/net_errors.h"
@@ -43,8 +44,7 @@ class SpeechRecognizerImplTest : public SpeechRecognitionEventListener,
                                  public testing::Test {
  public:
   SpeechRecognizerImplTest()
-      : audio_thread_("SpeechAudioThread"),
-        recognition_started_(false),
+      : recognition_started_(false),
         recognition_ended_(false),
         result_received_(false),
         audio_started_(false),
@@ -65,9 +65,8 @@ class SpeechRecognizerImplTest : public SpeechRecognitionEventListener,
 
     const int kTestingSessionId = 1;
 
-    audio_thread_.StartAndWaitForTesting();
-    audio_manager_.reset(
-        new media::MockAudioManager(audio_thread_.task_runner()));
+    audio_manager_.reset(new media::MockAudioManager(
+        base::MakeUnique<media::TestAudioThread>(true)));
     audio_manager_->SetInputStreamParameters(
         media::AudioParameters::UnavailableDeviceParams());
     audio_system_ = media::AudioSystemImpl::Create(audio_manager_.get());
@@ -90,12 +89,7 @@ class SpeechRecognizerImplTest : public SpeechRecognitionEventListener,
     audio_bus_->Zero();
   }
 
-  ~SpeechRecognizerImplTest() override {
-    // Deleting |audio_manager_| on audio thread.
-    audio_system_.reset();
-    audio_manager_.reset();
-    audio_thread_.Stop();
-  }
+  ~SpeechRecognizerImplTest() override { audio_manager_->Shutdown(); }
 
   void CheckEventsConsistency() {
     // Note: "!x || y" == "x implies y".
@@ -208,9 +202,9 @@ class SpeechRecognizerImplTest : public SpeechRecognitionEventListener,
 
   void WaitForAudioThreadToPostDeviceInfo() {
     media::WaitableMessageLoopEvent event;
-    audio_thread_.task_runner()->PostTaskAndReply(
+    audio_manager_->GetTaskRunner()->PostTaskAndReply(
         FROM_HERE, base::Bind(&base::DoNothing), event.GetClosure());
-    // Runs the loop and waits for the |audio_thread_| to call event's closure,
+    // Runs the loop and waits for the audio thread to call event's closure,
     // which means AudioSystem reply containing device parameters is already
     // queued on the main thread.
     event.RunAndWait();
@@ -219,8 +213,7 @@ class SpeechRecognizerImplTest : public SpeechRecognitionEventListener,
  protected:
   TestBrowserThreadBundle thread_bundle_;
   scoped_refptr<SpeechRecognizerImpl> recognizer_;
-  base::Thread audio_thread_;
-  media::MockAudioManager::UniquePtr audio_manager_;
+  std::unique_ptr<media::MockAudioManager> audio_manager_;
   std::unique_ptr<media::AudioSystem> audio_system_;
   bool recognition_started_;
   bool recognition_ended_;
@@ -261,7 +254,7 @@ TEST_F(SpeechRecognizerImplTest, StopBeforeDeviceInfoReceived) {
                             base::WaitableEvent::InitialState::NOT_SIGNALED);
 
   // Block audio thread.
-  audio_thread_.task_runner()->PostTask(
+  audio_manager_->GetTaskRunner()->PostTask(
       FROM_HERE,
       base::Bind(&base::WaitableEvent::Wait, base::Unretained(&event)));
 
@@ -289,7 +282,7 @@ TEST_F(SpeechRecognizerImplTest, CancelBeforeDeviceInfoReceived) {
                             base::WaitableEvent::InitialState::NOT_SIGNALED);
 
   // Block audio thread.
-  audio_thread_.task_runner()->PostTask(
+  audio_manager_->GetTaskRunner()->PostTask(
       FROM_HERE,
       base::Bind(&base::WaitableEvent::Wait, base::Unretained(&event)));
 

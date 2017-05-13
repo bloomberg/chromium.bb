@@ -15,6 +15,7 @@
 #include "content/public/browser/navigation_ui_data.h"
 #include "content/public/browser/vpn_service_proxy.h"
 #include "content/public/common/sandbox_type.h"
+#include "media/audio/audio_manager.h"
 #include "media/base/cdm_factory.h"
 #include "media/media_features.h"
 #include "net/cert/x509_certificate.h"
@@ -117,7 +118,7 @@ bool ContentBrowserClient::ShouldSwapBrowsingInstancesForNavigation(
   return false;
 }
 
-media::ScopedAudioManagerPtr ContentBrowserClient::CreateAudioManager(
+std::unique_ptr<media::AudioManager> ContentBrowserClient::CreateAudioManager(
     media::AudioLogFactory* audio_log_factory) {
   return nullptr;
 }

@@ -28,6 +28,7 @@
 #include "content/shell/browser/shell.h"
 #include "content/test/mock_google_streaming_server.h"
 #include "media/audio/audio_system_impl.h"
+#include "media/audio/audio_thread_impl.h"
 #include "media/audio/mock_audio_manager.h"
 #include "media/audio/test_audio_input_controller_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -122,7 +123,7 @@ class SpeechRecognitionBrowserTest :
     media::AudioManager::StartHangMonitorIfNeeded(
         BrowserThread::GetTaskRunnerForThread(BrowserThread::IO));
     audio_manager_.reset(new media::MockAudioManager(
-        BrowserThread::GetTaskRunnerForThread(BrowserThread::IO)));
+        base::MakeUnique<media::AudioThreadImpl>()));
     audio_manager_->SetInputStreamParameters(
         media::AudioParameters::UnavailableDeviceParams());
     audio_system_ = media::AudioSystemImpl::Create(audio_manager_.get());
@@ -133,9 +134,7 @@ class SpeechRecognitionBrowserTest :
   void TearDownOnMainThread() override {
     SpeechRecognizerImpl::SetAudioEnvironmentForTesting(nullptr, nullptr);
 
-    // Deleting AudioManager on audio thread,
-    audio_system_.reset();
-    audio_manager_.reset();
+    audio_manager_->Shutdown();
 
     test_audio_input_controller_factory_.set_delegate(nullptr);
     mock_streaming_server_.reset();
@@ -195,7 +194,7 @@ class SpeechRecognitionBrowserTest :
     return result;
   }
 
-  media::MockAudioManager::UniquePtr audio_manager_;
+  std::unique_ptr<media::MockAudioManager> audio_manager_;
   std::unique_ptr<media::AudioSystem> audio_system_;
   StreamingServerState streaming_server_state_;
   std::unique_ptr<MockGoogleStreamingServer> mock_streaming_server_;

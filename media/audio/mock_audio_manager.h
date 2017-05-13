@@ -18,19 +18,13 @@ namespace media {
 // would causing failures on classes which expect that.
 class MockAudioManager : public AudioManager {
  public:
-  class Deleter {
-   public:
-    void operator()(const MockAudioManager* instance) const;
-  };
-
-  using UniquePtr = std::unique_ptr<MockAudioManager, Deleter>;
   using GetDeviceDescriptionsCallback =
       base::RepeatingCallback<void(AudioDeviceDescriptions*)>;
   using GetAssociatedOutputDeviceIDCallback =
       base::RepeatingCallback<std::string(const std::string&)>;
 
-  explicit MockAudioManager(
-      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
+  explicit MockAudioManager(std::unique_ptr<AudioThread> audio_thread);
+  ~MockAudioManager() override;
 
   AudioOutputStream* MakeAudioOutputStream(
       const media::AudioParameters& params,
@@ -74,7 +68,7 @@ class MockAudioManager : public AudioManager {
       GetAssociatedOutputDeviceIDCallback callback);
 
  protected:
-  ~MockAudioManager() override;
+  void ShutdownOnAudioThread() override;
 
   bool HasAudioOutputDevices() override;
 
@@ -99,8 +93,6 @@ class MockAudioManager : public AudioManager {
       const std::string& input_device_id) override;
 
  private:
-  friend class base::DeleteHelper<MockAudioManager>;
-
   AudioParameters input_params_;
   AudioParameters output_params_;
   AudioParameters default_output_params_;

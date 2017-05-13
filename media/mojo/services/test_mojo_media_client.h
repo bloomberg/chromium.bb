@@ -9,7 +9,6 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "media/audio/audio_manager.h"
 #include "media/mojo/services/mojo_media_client.h"
 
 namespace base {
@@ -18,6 +17,7 @@ class SingleThreadTaskRunner;
 
 namespace media {
 
+class AudioManager;
 class AudioRendererSink;
 class MediaLog;
 class RendererFactory;
@@ -41,7 +41,7 @@ class TestMojoMediaClient : public MojoMediaClient {
       service_manager::mojom::InterfaceProvider* /* host_interfaces */) final;
 
  private:
-  ScopedAudioManagerPtr audio_manager_;
+  std::unique_ptr<AudioManager> audio_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(TestMojoMediaClient);
 };

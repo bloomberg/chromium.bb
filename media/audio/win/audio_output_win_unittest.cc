@@ -24,6 +24,7 @@
 #include "media/audio/audio_unittest_util.h"
 #include "media/audio/mock_audio_source_callback.h"
 #include "media/audio/simple_sources.h"
+#include "media/audio/test_audio_thread.h"
 #include "media/base/limits.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -156,20 +157,16 @@ class WinAudioTest : public ::testing::Test {
  public:
   WinAudioTest() {
     audio_manager_ =
-        AudioManager::CreateForTesting(message_loop_.task_runner());
+        AudioManager::CreateForTesting(base::MakeUnique<TestAudioThread>());
     audio_manager_device_info_ =
         base::MakeUnique<AudioDeviceInfoAccessorForTests>(audio_manager_.get());
     base::RunLoop().RunUntilIdle();
   }
-  ~WinAudioTest() override {
-    audio_manager_device_info_.reset();
-    audio_manager_.reset();
-    base::RunLoop().RunUntilIdle();
-  }
+  ~WinAudioTest() override { audio_manager_->Shutdown(); }
 
  protected:
   base::MessageLoop message_loop_;
-  ScopedAudioManagerPtr audio_manager_;
+  std::unique_ptr<AudioManager> audio_manager_;
   std::unique_ptr<AudioDeviceInfoAccessorForTests> audio_manager_device_info_;
 };
 

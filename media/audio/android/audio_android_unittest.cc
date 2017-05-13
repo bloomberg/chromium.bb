@@ -26,6 +26,7 @@
 #include "media/audio/audio_io.h"
 #include "media/audio/audio_unittest_util.h"
 #include "media/audio/mock_audio_source_callback.h"
+#include "media/audio/test_audio_thread.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/seekable_buffer.h"
 #include "media/base/test_data_util.h"
@@ -423,7 +424,8 @@ class AudioAndroidOutputTest : public testing::Test {
  public:
   AudioAndroidOutputTest()
       : loop_(new base::MessageLoopForUI()),
-        audio_manager_(AudioManager::CreateForTesting(loop_->task_runner())),
+        audio_manager_(AudioManager::CreateForTesting(
+            base::MakeUnique<TestAudioThread>())),
         audio_manager_device_info_(audio_manager_.get()),
         audio_output_stream_(NULL) {
     // Flush the message loop to ensure that AudioManager is fully initialized.
@@ -431,7 +433,7 @@ class AudioAndroidOutputTest : public testing::Test {
   }
 
   ~AudioAndroidOutputTest() override {
-    audio_manager_.reset();
+    audio_manager_->Shutdown();
     base::RunLoop().RunUntilIdle();
   }
 
@@ -582,7 +584,7 @@ class AudioAndroidOutputTest : public testing::Test {
   }
 
   std::unique_ptr<base::MessageLoopForUI> loop_;
-  ScopedAudioManagerPtr audio_manager_;
+  std::unique_ptr<AudioManager> audio_manager_;
   AudioDeviceInfoAccessorForTests audio_manager_device_info_;
   AudioParameters audio_output_parameters_;
   AudioOutputStream* audio_output_stream_;

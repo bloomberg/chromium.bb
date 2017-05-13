@@ -12,11 +12,12 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/sequenced_task_runner_helpers.h"
 #include "base/strings/string16.h"
+#include "base/threading/thread_checker.h"
 #include "build/build_config.h"
 #include "media/audio/audio_device_description.h"
 #include "media/audio/audio_logging.h"
+#include "media/audio/audio_thread.h"
 #include "media/base/audio_parameters.h"
 
 namespace base {
@@ -30,13 +31,6 @@ class AudioInputStream;
 class AudioManager;
 class AudioOutputStream;
 
-class MEDIA_EXPORT AudioManagerDeleter {
- public:
-  void operator()(const AudioManager* instance) const;
-};
-using ScopedAudioManagerPtr =
-    std::unique_ptr<AudioManager, AudioManagerDeleter>;
-
 // Manages all audio resources.  Provides some convenience functions that avoid
 // the need to provide iterators over the existing streams.
 //
@@ -44,35 +38,33 @@ using ScopedAudioManagerPtr =
 // thread hang is detected, it is reported to UMA.
 class MEDIA_EXPORT AudioManager {
  public:
+  virtual ~AudioManager();
+
   // Construct the audio manager; only one instance is allowed.
-  // The returned instance must be deleted on AudioManager::GetTaskRunnner().
   //
   // The manager will forward CreateAudioLog() calls to the provided
   // AudioLogFactory; as such |audio_log_factory| must outlive the AudioManager.
   //
-  // The manager will use |task_runner| for audio IO. This same task runner
-  // is returned by GetTaskRunner().
-  // On OS_MACOSX, CoreAudio requires that |task_runner| must belong to the
-  // main thread of the process, which in our case is sadly the browser UI
-  // thread. Failure to execute calls on the right thread leads to crashes and
-  // odd behavior. See http://crbug.com/158170.
+  // The manager will use |audio_thread->GetTaskRunner()| for audio IO.
+  // On OS_MACOSX, CoreAudio requires that |audio_thread->GetTaskRunner()|
+  // must belong to the main thread of the process, which in our case is sadly
+  // the browser UI thread. Failure to execute calls on the right thread leads
+  // to crashes and odd behavior. See http://crbug.com/158170.
   //
-  // The manager will use |worker_task_runner| for heavyweight tasks.
-  // The |worker_task_runner| may be the same as |task_runner|. This same
-  // task runner is returned by GetWorkerTaskRunner.
+  // The manager will use |audio_thread->GetWorkerTaskRunner()| for heavyweight
+  // tasks. The |audio_thread->GetWorkerTaskRunner()| may be the same as
+  // |audio_thread->GetTaskRunner()|.
   //
   // |file_task_runner| is used for audio debug recordings and is the task
   // runner to do file output operations on.
-  static ScopedAudioManagerPtr Create(
-      scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-      scoped_refptr<base::SingleThreadTaskRunner> worker_task_runner,
+  static std::unique_ptr<AudioManager> Create(
+      std::unique_ptr<AudioThread> audio_thread,
       scoped_refptr<base::SingleThreadTaskRunner> file_task_runner,
       AudioLogFactory* audio_log_factory);
 
   // A convenience wrapper of AudioManager::Create for testing.
-  // The given |task_runner| is shared for both audio io and heavyweight tasks.
-  static ScopedAudioManagerPtr CreateForTesting(
-      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
+  static std::unique_ptr<AudioManager> CreateForTesting(
+      std::unique_ptr<AudioThread> audio_thread);
 
   // Starts monitoring AudioManager task runner for hangs.
   // Runs the monitor on the given |task_runner|, which must be different from
@@ -94,6 +86,11 @@ class MEDIA_EXPORT AudioManager {
   // created. This is a utility method for the code outside of media directory,
   // like src/chrome.
   static AudioManager* Get();
+
+  // Releases all audio resources.
+  // Must be called before deletion and on the same thread as AudioManager
+  // was created.
+  void Shutdown();
 
   // Log callback used for sending log messages from a stream to the object
   // that manages the stream.
@@ -151,17 +148,15 @@ class MEDIA_EXPORT AudioManager {
       const LogCallback& log_callback) = 0;
 
   // Returns the task runner used for audio IO.
-  // TODO(alokp): Rename to task_runner().
   base::SingleThreadTaskRunner* GetTaskRunner() const {
-    return task_runner_.get();
+    return audio_thread_->GetTaskRunner();
   }
 
   // Heavyweight tasks should use GetWorkerTaskRunner() instead of
   // GetTaskRunner(). On most platforms they are the same, but some share the
   // UI loop with the audio IO loop.
-  // TODO(alokp): Rename to worker_task_runner().
   base::SingleThreadTaskRunner* GetWorkerTaskRunner() const {
-    return worker_task_runner_.get();
+    return audio_thread_->GetWorkerTaskRunner();
   }
 
   // Allows clients to listen for device state changes; e.g. preferred sample
@@ -200,9 +195,9 @@ class MEDIA_EXPORT AudioManager {
   FRIEND_TEST_ALL_PREFIXES(AudioManagerTest, AudioDebugRecording);
   friend class AudioDeviceInfoAccessorForTests;
 
-  AudioManager(scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-               scoped_refptr<base::SingleThreadTaskRunner> worker_task_runner);
-  virtual ~AudioManager();
+  explicit AudioManager(std::unique_ptr<AudioThread> audio_thread);
+
+  virtual void ShutdownOnAudioThread() = 0;
 
   // Initializes output debug recording. Can be called on any thread; will post
   // to the audio thread if not called on it.
@@ -274,12 +269,12 @@ class MEDIA_EXPORT AudioManager {
       const std::string& input_device_id) = 0;
 
  private:
-  friend class base::DeleteHelper<AudioManager>;
-  friend class AudioManagerDeleter;
   friend class AudioSystemImpl;
 
-  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
-  scoped_refptr<base::SingleThreadTaskRunner> worker_task_runner_;
+  std::unique_ptr<AudioThread> audio_thread_;
+  bool shutdown_ = false;  // True after |this| has been shutdown.
+
+  THREAD_CHECKER(thread_checker_);
   DISALLOW_COPY_AND_ASSIGN(AudioManager);
 };
 

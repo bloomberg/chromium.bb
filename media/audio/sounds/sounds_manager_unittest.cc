@@ -16,6 +16,7 @@
 #include "media/audio/sounds/audio_stream_handler.h"
 #include "media/audio/sounds/sounds_manager.h"
 #include "media/audio/sounds/test_data.h"
+#include "media/audio/test_audio_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace media {
@@ -27,13 +28,14 @@ class SoundsManagerTest : public testing::Test {
 
   void SetUp() override {
     audio_manager_ =
-        AudioManager::CreateForTesting(base::ThreadTaskRunnerHandle::Get());
+        AudioManager::CreateForTesting(base::MakeUnique<TestAudioThread>());
     SoundsManager::Create();
     base::RunLoop().RunUntilIdle();
   }
 
   void TearDown() override {
     SoundsManager::Shutdown();
+    audio_manager_->Shutdown();
     base::RunLoop().RunUntilIdle();
   }
 
@@ -48,7 +50,7 @@ class SoundsManagerTest : public testing::Test {
 
  private:
   base::TestMessageLoop message_loop_;
-  ScopedAudioManagerPtr audio_manager_;
+  std::unique_ptr<AudioManager> audio_manager_;
 };
 
 TEST_F(SoundsManagerTest, Play) {

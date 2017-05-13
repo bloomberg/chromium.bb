@@ -6,11 +6,21 @@
 
 #include <stdint.h>
 
+#include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "media/audio/audio_device_description.h"
 #include "media/base/audio_parameters.h"
 #include "media/base/audio_timestamp_helper.h"
+
+#if defined(DLOPEN_PULSEAUDIO)
+#include "media/audio/pulse/pulse_stubs.h"
+
+using media_audio_pulse::kModulePulse;
+using media_audio_pulse::InitializeStubs;
+using media_audio_pulse::StubPathMap;
+#endif  // defined(DLOPEN_PULSEAUDIO)
 
 namespace media {
 
@@ -23,6 +33,22 @@ static const char kBrowserDisplayName[] = "google-chrome";
 #else
 static const char kBrowserDisplayName[] = "chromium-browser";
 #endif
+
+#if defined(DLOPEN_PULSEAUDIO)
+static const base::FilePath::CharType kPulseLib[] =
+    FILE_PATH_LITERAL("libpulse.so.0");
+#endif
+
+void DestroyMainloop(pa_threaded_mainloop* mainloop) {
+  pa_threaded_mainloop_stop(mainloop);
+  pa_threaded_mainloop_free(mainloop);
+}
+
+void DestroyContext(pa_context* context) {
+  pa_context_set_state_callback(context, NULL, NULL);
+  pa_context_disconnect(context);
+  pa_context_unref(context);
+}
 
 pa_channel_position ChromiumToPAChannelPosition(Channels channel) {
   switch (channel) {
@@ -69,6 +95,87 @@ class ScopedPropertyList {
 };
 
 }  // namespace
+
+bool InitPulse(pa_threaded_mainloop** mainloop, pa_context** context) {
+#if defined(DLOPEN_PULSEAUDIO)
+  StubPathMap paths;
+
+  // Check if the pulse library is avialbale.
+  paths[kModulePulse].push_back(kPulseLib);
+  if (!InitializeStubs(paths)) {
+    VLOG(1) << "Failed on loading the Pulse library and symbols";
+    return false;
+  }
+#endif  // defined(DLOPEN_PULSEAUDIO)
+
+  // Create a mainloop API and connect to the default server.
+  // The mainloop is the internal asynchronous API event loop.
+  pa_threaded_mainloop* pa_mainloop = pa_threaded_mainloop_new();
+  if (!pa_mainloop)
+    return false;
+
+  // Start the threaded mainloop.
+  if (pa_threaded_mainloop_start(pa_mainloop)) {
+    pa_threaded_mainloop_free(pa_mainloop);
+    return false;
+  }
+
+  // Lock the event loop object, effectively blocking the event loop thread
+  // from processing events. This is necessary.
+  auto mainloop_lock = base::MakeUnique<AutoPulseLock>(pa_mainloop);
+
+  pa_mainloop_api* pa_mainloop_api = pa_threaded_mainloop_get_api(pa_mainloop);
+  pa_context* pa_context = pa_context_new(pa_mainloop_api, "Chrome input");
+  if (!pa_context) {
+    mainloop_lock.reset();
+    DestroyMainloop(pa_mainloop);
+    return false;
+  }
+
+  pa_context_set_state_callback(pa_context, &pulse::ContextStateCallback,
+                                pa_mainloop);
+  if (pa_context_connect(pa_context, NULL, PA_CONTEXT_NOAUTOSPAWN, NULL)) {
+    VLOG(1) << "Failed to connect to the context.  Error: "
+            << pa_strerror(pa_context_errno(pa_context));
+    pa_context_set_state_callback(pa_context, NULL, NULL);
+    pa_context_unref(pa_context);
+    mainloop_lock.reset();
+    DestroyMainloop(pa_mainloop);
+    return false;
+  }
+
+  // Wait until |pa_context| is ready.  pa_threaded_mainloop_wait() must be
+  // called after pa_context_get_state() in case the context is already ready,
+  // otherwise pa_threaded_mainloop_wait() will hang indefinitely.
+  while (true) {
+    pa_context_state_t context_state = pa_context_get_state(pa_context);
+    if (!PA_CONTEXT_IS_GOOD(context_state)) {
+      DestroyContext(pa_context);
+      mainloop_lock.reset();
+      DestroyMainloop(pa_mainloop);
+      return false;
+    }
+    if (context_state == PA_CONTEXT_READY)
+      break;
+    pa_threaded_mainloop_wait(pa_mainloop);
+  }
+
+  *mainloop = pa_mainloop;
+  *context = pa_context;
+  return true;
+}
+
+void DestroyPulse(pa_threaded_mainloop* mainloop, pa_context* context) {
+  DCHECK(mainloop);
+  DCHECK(context);
+
+  {
+    AutoPulseLock auto_lock(mainloop);
+    DestroyContext(context);
+  }
+
+  DestroyMainloop(mainloop);
+}
 
 // static, pa_stream_success_cb_t
 void StreamSuccessCallback(pa_stream* s, int error, void* mainloop) {

@@ -84,11 +84,9 @@ class AudioManagerBase::CompareByParams {
   const DispatcherParams* dispatcher_;
 };
 
-AudioManagerBase::AudioManagerBase(
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-    scoped_refptr<base::SingleThreadTaskRunner> worker_task_runner,
-    AudioLogFactory* audio_log_factory)
-    : AudioManager(std::move(task_runner), std::move(worker_task_runner)),
+AudioManagerBase::AudioManagerBase(std::unique_ptr<AudioThread> audio_thread,
+                                   AudioLogFactory* audio_log_factory)
+    : AudioManager(std::move(audio_thread)),
       max_num_output_streams_(kDefaultMaxOutputStreams),
       max_num_input_streams_(kDefaultMaxInputStreams),
       num_output_streams_(0),
@@ -99,8 +97,6 @@ AudioManagerBase::AudioManagerBase(
       audio_log_factory_(audio_log_factory) {}
 
 AudioManagerBase::~AudioManagerBase() {
-  DCHECK(GetTaskRunner()->BelongsToCurrentThread());
-
   // All the output streams should have been deleted.
   CHECK_EQ(0, num_output_streams_);
   // All the input streams should have been deleted.
@@ -292,7 +288,7 @@ AudioOutputStream* AudioManagerBase::MakeAudioOutputStreamProxy(
   std::unique_ptr<AudioOutputDispatcher> dispatcher;
   if (output_params.format() != AudioParameters::AUDIO_FAKE) {
     // Using unretained for |debug_recording_manager_| is safe since it
-    // outlives the dispatchers (cleared in Shutdown()).
+    // outlives the dispatchers (cleared in ShutdownOnAudioThread()).
     dispatcher = base::MakeUnique<AudioOutputResampler>(
         this, params, output_params, output_device_id, kCloseDelay,
         debug_recording_manager_
@@ -341,7 +337,7 @@ void AudioManagerBase::ReleaseInputStream(AudioInputStream* stream) {
   delete stream;
 }
 
-void AudioManagerBase::Shutdown() {
+void AudioManagerBase::ShutdownOnAudioThread() {
   DCHECK(GetTaskRunner()->BelongsToCurrentThread());
 
   // Close all output streams.

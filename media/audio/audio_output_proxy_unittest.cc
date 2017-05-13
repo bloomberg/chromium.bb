@@ -20,6 +20,7 @@
 #include "media/audio/audio_output_resampler.h"
 #include "media/audio/fake_audio_log_factory.h"
 #include "media/audio/fake_audio_output_stream.h"
+#include "media/audio/test_audio_thread.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -40,6 +41,7 @@ using media::AudioOutputProxy;
 using media::AudioOutputStream;
 using media::AudioParameters;
 using media::FakeAudioOutputStream;
+using media::TestAudioThread;
 
 namespace {
 
@@ -98,8 +100,7 @@ class MockAudioOutputStream : public AudioOutputStream {
 class MockAudioManager : public AudioManagerBase {
  public:
   MockAudioManager()
-      : AudioManagerBase(base::ThreadTaskRunnerHandle::Get(),
-                         base::ThreadTaskRunnerHandle::Get(),
+      : AudioManagerBase(base::MakeUnique<TestAudioThread>(),
                          &fake_audio_log_factory_) {}
   ~MockAudioManager() override { Shutdown(); }
 

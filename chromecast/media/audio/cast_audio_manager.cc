@@ -28,12 +28,10 @@ namespace chromecast {
 namespace media {
 
 CastAudioManager::CastAudioManager(
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-    scoped_refptr<base::SingleThreadTaskRunner> worker_task_runner,
+    std::unique_ptr<::media::AudioThread> audio_thread,
     ::media::AudioLogFactory* audio_log_factory,
     MediaPipelineBackendManager* backend_manager)
-    : CastAudioManager(task_runner,
-                       worker_task_runner,
+    : CastAudioManager(std::move(audio_thread),
                        audio_log_factory,
                        backend_manager,
                        new CastAudioMixer(
@@ -41,20 +39,15 @@ CastAudioManager::CastAudioManager(
                                       base::Unretained(this)))) {}
 
 CastAudioManager::CastAudioManager(
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-    scoped_refptr<base::SingleThreadTaskRunner> worker_task_runner,
+    std::unique_ptr<::media::AudioThread> audio_thread,
     ::media::AudioLogFactory* audio_log_factory,
     MediaPipelineBackendManager* backend_manager,
     CastAudioMixer* audio_mixer)
-    : AudioManagerBase(std::move(task_runner),
-                       std::move(worker_task_runner),
-                       audio_log_factory),
+    : AudioManagerBase(std::move(audio_thread), audio_log_factory),
       backend_manager_(backend_manager),
       mixer_(audio_mixer) {}
 
-CastAudioManager::~CastAudioManager() {
-  Shutdown();
-}
+CastAudioManager::~CastAudioManager() = default;
 
 bool CastAudioManager::HasAudioOutputDevices() {
   return true;

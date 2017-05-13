@@ -38,6 +38,7 @@
 #include "media/audio/audio_device_description.h"
 #include "media/audio/audio_system_impl.h"
 #include "media/audio/mock_audio_manager.h"
+#include "media/audio/test_audio_thread.h"
 #include "media/base/media_switches.h"
 #include "media/capture/video/fake_video_capture_device_factory.h"
 #include "net/url_request/url_request_context.h"
@@ -244,8 +245,8 @@ class MediaStreamDispatcherHostTest : public testing::Test {
       : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
         old_browser_client_(NULL),
         origin_(GURL("https://test.com")) {
-    audio_manager_.reset(
-        new media::MockAudioManager(base::ThreadTaskRunnerHandle::Get()));
+    audio_manager_.reset(new media::MockAudioManager(
+        base::MakeUnique<media::TestAudioThread>()));
     audio_system_ = media::AudioSystemImpl::Create(audio_manager_.get());
     // Make sure we use fake devices to avoid long delays.
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
@@ -272,6 +273,7 @@ class MediaStreamDispatcherHostTest : public testing::Test {
   }
 
   ~MediaStreamDispatcherHostTest() override {
+    audio_manager_->Shutdown();
 #if defined(OS_CHROMEOS)
     chromeos::CrasAudioHandler::Shutdown();
 #endif
@@ -446,8 +448,7 @@ class MediaStreamDispatcherHostTest : public testing::Test {
   scoped_refptr<MockMediaStreamDispatcherHost> host_;
   std::unique_ptr<MediaStreamManager> media_stream_manager_;
   content::TestBrowserThreadBundle thread_bundle_;
-  std::unique_ptr<media::AudioManager, media::AudioManagerDeleter>
-      audio_manager_;
+  std::unique_ptr<media::AudioManager> audio_manager_;
   std::unique_ptr<media::AudioSystem> audio_system_;
   MockMediaStreamUIProxy* stream_ui_;
   ContentBrowserClient* old_browser_client_;

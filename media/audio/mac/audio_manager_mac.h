@@ -29,10 +29,9 @@ class AUHALStream;
 // the AudioManager class.
 class MEDIA_EXPORT AudioManagerMac : public AudioManagerBase {
  public:
-  AudioManagerMac(
-      scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-      scoped_refptr<base::SingleThreadTaskRunner> worker_task_runner,
-      AudioLogFactory* audio_log_factory);
+  AudioManagerMac(std::unique_ptr<AudioThread> audio_thread,
+                  AudioLogFactory* audio_log_factory);
+  ~AudioManagerMac() override;
 
   // Implementation of AudioManager.
   bool HasAudioOutputDevices() override;
@@ -121,10 +120,10 @@ class MEDIA_EXPORT AudioManagerMac : public AudioManagerBase {
   size_t basic_input_streams() const { return basic_input_streams_.size(); }
 
  protected:
-  ~AudioManagerMac() override;
   AudioParameters GetPreferredOutputStreamParameters(
       const std::string& output_device_id,
       const AudioParameters& input_params) override;
+  void ShutdownOnAudioThread() override;
 
  private:
   void InitializeOnAudioThread();

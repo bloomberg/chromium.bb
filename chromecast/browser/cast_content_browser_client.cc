@@ -55,6 +55,7 @@
 #include "content/public/common/service_names.mojom.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/common/web_preferences.h"
+#include "media/audio/audio_thread_impl.h"
 #include "net/ssl/ssl_cert_request_info.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "services/service_manager/public/cpp/bind_source_info.h"
@@ -192,11 +193,12 @@ CastContentBrowserClient::media_pipeline_backend_manager() {
   return cast_browser_main_parts_->media_pipeline_backend_manager();
 }
 
-::media::ScopedAudioManagerPtr CastContentBrowserClient::CreateAudioManager(
+std::unique_ptr<::media::AudioManager>
+CastContentBrowserClient::CreateAudioManager(
     ::media::AudioLogFactory* audio_log_factory) {
-  return ::media::ScopedAudioManagerPtr(new media::CastAudioManager(
-      GetMediaTaskRunner(), GetMediaTaskRunner(), audio_log_factory,
-      media_pipeline_backend_manager()));
+  return base::MakeUnique<media::CastAudioManager>(
+      base::MakeUnique<::media::AudioThreadImpl>(), audio_log_factory,
+      media_pipeline_backend_manager());
 }
 
 std::unique_ptr<::media::CdmFactory>

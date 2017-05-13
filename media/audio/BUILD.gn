@@ -104,6 +104,9 @@ source_set("audio") {
     "audio_system.h",
     "audio_system_impl.cc",
     "audio_system_impl.h",
+    "audio_thread.h",
+    "audio_thread_impl.cc",
+    "audio_thread_impl.h",
     "clockless_audio_sink.cc",
     "clockless_audio_sink.h",
     "fake_audio_input_stream.cc",
@@ -299,15 +302,19 @@ static_library("test_support") {
     "mock_audio_source_callback.h",
     "test_audio_input_controller_factory.cc",
     "test_audio_input_controller_factory.h",
+    "test_audio_thread.cc",
+    "test_audio_thread.h",
   ]
-  configs += [ ":platform_config" ]
+  configs += [
+    ":platform_config",
+    "//media:media_config",
+  ]
   deps = [
     "//base",
     "//media",
     "//testing/gmock",
     "//testing/gtest",
   ]
-  configs += [ "//media:media_config" ]
 }
 
 source_set("unit_tests") {

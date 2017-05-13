@@ -14,6 +14,7 @@
 #include "media/audio/audio_manager.h"
 #include "media/audio/audio_unittest_util.h"
 #include "media/audio/mock_audio_source_callback.h"
+#include "media/audio/test_audio_thread.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -40,13 +41,13 @@ class AUHALStreamTest : public testing::Test {
   AUHALStreamTest()
       : message_loop_(base::MessageLoop::TYPE_UI),
         manager_(AudioManager::CreateForTesting(
-            base::ThreadTaskRunnerHandle::Get())),
+            base::MakeUnique<TestAudioThread>())),
         manager_device_info_(manager_.get()) {
     // Wait for the AudioManager to finish any initialization on the audio loop.
     base::RunLoop().RunUntilIdle();
   }
 
-  ~AUHALStreamTest() override {}
+  ~AUHALStreamTest() override { manager_->Shutdown(); }
 
   AudioOutputStream* Create() {
     return manager_->MakeAudioOutputStream(
@@ -62,7 +63,7 @@ class AUHALStreamTest : public testing::Test {
 
  protected:
   base::TestMessageLoop message_loop_;
-  ScopedAudioManagerPtr manager_;
+  std::unique_ptr<AudioManager> manager_;
   AudioDeviceInfoAccessorForTests manager_device_info_;
   MockAudioSourceCallback source_;
   std::string log_message_;

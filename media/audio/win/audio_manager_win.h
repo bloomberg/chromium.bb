@@ -20,10 +20,9 @@ class AudioDeviceListenerWin;
 // the AudioManager class.
 class MEDIA_EXPORT AudioManagerWin : public AudioManagerBase {
  public:
-  AudioManagerWin(
-      scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-      scoped_refptr<base::SingleThreadTaskRunner> worker_task_runner,
-      AudioLogFactory* audio_log_factory);
+  AudioManagerWin(std::unique_ptr<AudioThread> audio_thread,
+                  AudioLogFactory* audio_log_factory);
+  ~AudioManagerWin() override;
 
   // Implementation of AudioManager.
   bool HasAudioOutputDevices() override;
@@ -57,8 +56,7 @@ class MEDIA_EXPORT AudioManagerWin : public AudioManagerBase {
   std::string GetDefaultOutputDeviceID() override;
 
  protected:
-  ~AudioManagerWin() override;
-
+  void ShutdownOnAudioThread() override;
   AudioParameters GetPreferredOutputStreamParameters(
       const std::string& output_device_id,
       const AudioParameters& input_params) override;

@@ -18,10 +18,9 @@ namespace media {
 
 class MEDIA_EXPORT AudioManagerCras : public AudioManagerBase {
  public:
-  AudioManagerCras(
-      scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-      scoped_refptr<base::SingleThreadTaskRunner> worker_task_runner,
-      AudioLogFactory* audio_log_factory);
+  AudioManagerCras(std::unique_ptr<AudioThread> audio_thread,
+                   AudioLogFactory* audio_log_factory);
+  ~AudioManagerCras() override;
 
   // AudioManager implementation.
   bool HasAudioOutputDevices() override;
@@ -57,8 +56,6 @@ class MEDIA_EXPORT AudioManagerCras : public AudioManagerBase {
   bool IsDefault(const std::string& device_id, bool is_input);
 
  protected:
-  ~AudioManagerCras() override;
-
   AudioParameters GetPreferredOutputStreamParameters(
       const std::string& output_device_id,
       const AudioParameters& input_params) override;

@@ -20,6 +20,7 @@
 #include "media/audio/audio_system_impl.h"
 #include "media/audio/fake_audio_log_factory.h"
 #include "media/audio/fake_audio_manager.h"
+#include "media/audio/test_audio_thread.h"
 #include "media/capture/video/fake_video_capture_device_factory.h"
 #include "media/capture/video/video_capture_system_impl.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -42,8 +43,7 @@ const int kNumCalls = 3;
 class MockAudioManager : public media::FakeAudioManager {
  public:
   MockAudioManager()
-      : FakeAudioManager(base::ThreadTaskRunnerHandle::Get(),
-                         base::ThreadTaskRunnerHandle::Get(),
+      : FakeAudioManager(base::MakeUnique<media::TestAudioThread>(),
                          &fake_audio_log_factory_),
         num_output_devices_(2),
         num_input_devices_(2) {}
@@ -130,7 +130,7 @@ class MediaDevicesManagerTest : public ::testing::Test {
   MediaDevicesManagerTest()
       : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
         video_capture_device_factory_(nullptr) {}
-  ~MediaDevicesManagerTest() override {}
+  ~MediaDevicesManagerTest() override { audio_manager_->Shutdown(); }
 
   MOCK_METHOD1(MockCallback, void(const MediaDeviceEnumeration&));
 
@@ -171,7 +171,7 @@ class MediaDevicesManagerTest : public ::testing::Test {
   std::unique_ptr<MediaDevicesManager> media_devices_manager_;
   scoped_refptr<VideoCaptureManager> video_capture_manager_;
   MockVideoCaptureDeviceFactory* video_capture_device_factory_;
-  std::unique_ptr<MockAudioManager, media::AudioManagerDeleter> audio_manager_;
+  std::unique_ptr<MockAudioManager> audio_manager_;
   std::unique_ptr<media::AudioSystem> audio_system_;
 
  private:

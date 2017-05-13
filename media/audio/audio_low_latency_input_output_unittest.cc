@@ -24,48 +24,16 @@
 #include "media/audio/audio_device_description.h"
 #include "media/audio/audio_device_info_accessor_for_tests.h"
 #include "media/audio/audio_io.h"
+#include "media/audio/audio_manager.h"
 #include "media/audio/audio_unittest_util.h"
-#include "media/audio/fake_audio_log_factory.h"
+#include "media/audio/test_audio_thread.h"
 #include "media/base/seekable_buffer.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-#if defined(USE_PULSEAUDIO)
-#include "media/audio/pulse/audio_manager_pulse.h"
-#elif defined(USE_ALSA)
-#include "media/audio/alsa/audio_manager_alsa.h"
-#elif defined(USE_CRAS)
-#include "media/audio/cras/audio_manager_cras.h"
-#elif defined(OS_MACOSX)
-#include "media/audio/mac/audio_manager_mac.h"
-#elif defined(OS_WIN)
-#include "media/audio/win/audio_manager_win.h"
-#include "media/audio/win/core_audio_util_win.h"
-#elif defined(OS_ANDROID)
-#include "media/audio/android/audio_manager_android.h"
-#else
-#include "media/audio/fake_audio_manager.h"
-#endif
-
 namespace media {
 
 namespace {
-
-#if defined(USE_PULSEAUDIO)
-typedef AudioManagerPulse AudioManagerAnyPlatform;
-#elif defined(USE_ALSA)
-typedef AudioManagerAlsa AudioManagerAnyPlatform;
-#elif defined(USE_CRAS)
-typedef AudioManagerCras AudioManagerAnyPlatform;
-#elif defined(OS_MACOSX)
-typedef AudioManagerMac AudioManagerAnyPlatform;
-#elif defined(OS_WIN)
-typedef AudioManagerWin AudioManagerAnyPlatform;
-#elif defined(OS_ANDROID)
-typedef AudioManagerAndroid AudioManagerAnyPlatform;
-#else
-typedef FakeAudioManager AudioManagerAnyPlatform;
-#endif
 
 // Limits the number of delay measurements we can store in an array and
 // then write to file at end of the WASAPIAudioInputOutputFullDuplex test.
@@ -103,35 +71,22 @@ struct AudioDelayState {
 
 void OnLogMessage(const std::string& message) {}
 
-// This class mocks the platform specific audio manager and overrides
-// the GetMessageLoop() method to ensure that we can run our tests on
-// the main thread instead of the audio thread.
-class MockAudioManager : public AudioManagerAnyPlatform {
- public:
-  MockAudioManager()
-      : AudioManagerAnyPlatform(base::ThreadTaskRunnerHandle::Get(),
-                                base::ThreadTaskRunnerHandle::Get(),
-                                &fake_audio_log_factory_) {}
-  ~MockAudioManager() override {}
-
- private:
-  FakeAudioLogFactory fake_audio_log_factory_;
-  DISALLOW_COPY_AND_ASSIGN(MockAudioManager);
-};
-
 // Test fixture class.
 class AudioLowLatencyInputOutputTest : public testing::Test {
  protected:
-  AudioLowLatencyInputOutputTest() {}
+  AudioLowLatencyInputOutputTest() {
+    audio_manager_ =
+        AudioManager::CreateForTesting(base::MakeUnique<TestAudioThread>());
+  }
 
-  ~AudioLowLatencyInputOutputTest() override {}
+  ~AudioLowLatencyInputOutputTest() override { audio_manager_->Shutdown(); }
 
-  AudioManager* audio_manager() { return &mock_audio_manager_; }
+  AudioManager* audio_manager() { return audio_manager_.get(); }
   base::MessageLoopForUI* message_loop() { return &message_loop_; }
 
  private:
   base::MessageLoopForUI message_loop_;
-  MockAudioManager mock_audio_manager_;
+  std::unique_ptr<AudioManager> audio_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioLowLatencyInputOutputTest);
 };
