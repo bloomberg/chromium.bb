@@ -41,7 +41,7 @@ class AudioPostProcessor {
   virtual bool SetSampleRate(int sample_rate) = 0;
 
   // Processes audio frames from |data|, overwriting contents.
-  // |data| will always be 32-bit planar float.
+  // |data| will always be 32-bit interleaved float.
   // |frames| is the number of audio frames in data and is
   // always non-zero and less than or equal to 20ms of audio.
   // AudioPostProcessor must always provide |frames| frames of data back
@@ -51,9 +51,7 @@ class AudioPostProcessor {
   // Returns the current rendering delay of the filter in frames,
   // or negative if an error occurred during processing.
   // If an error occurred during processing, |data| should be unchanged.
-  virtual int ProcessFrames(const std::vector<float*>& data,
-                            int frames,
-                            float volume) = 0;
+  virtual int ProcessFrames(float* data, int frames, float volume) = 0;
 
   // Returns the number of frames of silence it will take for the
   // processor to come to rest.

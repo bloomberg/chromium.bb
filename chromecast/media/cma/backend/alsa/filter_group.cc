@@ -11,6 +11,7 @@
 #include "base/values.h"
 #include "chromecast/media/cma/backend/alsa/post_processing_pipeline.h"
 #include "media/base/audio_bus.h"
+#include "media/base/audio_sample_types.h"
 #include "media/base/vector_math.h"
 
 namespace chromecast {
@@ -25,7 +26,6 @@ FilterGroup::FilterGroup(int num_channels,
       device_ids_(device_ids),
       mixed_inputs_(mixed_inputs),
       output_samples_per_second_(0),
-      channels_(num_channels_),
       post_processing_pipeline_(
           PostProcessingPipeline::Create(name_, filter_list, num_channels_)) {}
 
@@ -66,8 +66,8 @@ float FilterGroup::MixAndFilter(int chunk_size) {
   if (active_inputs_.empty() && volume == 0.0f &&
       !post_processing_pipeline_->IsRinging()) {
     if (frames_zeroed_ < chunk_size) {
-      // Ensure mixed_ is zeros. This is necessary if |mixed_| is read later.
-      mixed_->ZeroFramesPartial(0, chunk_size);
+      // Ensure interleaved_ is zeros.
+      std::fill_n(interleaved(), chunk_size * num_channels_, 0);
       frames_zeroed_ = chunk_size;
     }
     return 0.0f;  // Output will be silence, no need to mix.
@@ -80,20 +80,20 @@ float FilterGroup::MixAndFilter(int chunk_size) {
   for (StreamMixerAlsa::InputQueue* input : active_inputs_) {
     input->GetResampledData(temp_.get(), chunk_size);
     for (int c = 0; c < num_channels_; ++c) {
-      DCHECK(channels_[c]);
       input->VolumeScaleAccumulate(c != 0, temp_->channel(c), chunk_size,
-                                   channels_[c]);
+                                   mixed_->channel(c));
     }
     volume = std::max(volume, input->EffectiveVolume());
   }
 
+  mixed_->ToInterleaved<::media::FloatSampleTypeTraits<float>>(chunk_size,
+                                                               interleaved());
+
   // Mix FilterGroups
   for (FilterGroup* group : mixed_inputs_) {
     if (group->last_volume() > 0.0f) {
-      for (int c = 0; c < num_channels_; ++c) {
-        ::media::vector_math::FMAC(group->data()->channel(c), 1.0f, chunk_size,
-                                   channels_[c]);
-      }
+      ::media::vector_math::FMAC(group->interleaved(), 1.0f,
+                                 chunk_size * num_channels_, interleaved());
     }
   }
 
@@ -107,7 +107,7 @@ float FilterGroup::MixAndFilter(int chunk_size) {
   }
 
   delay_frames_ = post_processing_pipeline_->ProcessFrames(
-      channels_, chunk_size, last_volume_, is_silence);
+      interleaved(), chunk_size, last_volume_, is_silence);
   return last_volume_;
 }
 
@@ -123,12 +123,10 @@ void FilterGroup::ClearActiveInputs() {
 void FilterGroup::ResizeBuffersIfNecessary(int chunk_size) {
   if (!mixed_ || mixed_->frames() < chunk_size) {
     mixed_ = ::media::AudioBus::Create(num_channels_, chunk_size);
-    for (int c = 0; c < num_channels_; ++c) {
-      channels_[c] = mixed_->channel(c);
-    }
-  }
-  if (!temp_ || temp_->frames() < chunk_size) {
     temp_ = ::media::AudioBus::Create(num_channels_, chunk_size);
+    interleaved_.reset(static_cast<float*>(
+        base::AlignedAlloc(chunk_size * num_channels_ * sizeof(float),
+                           ::media::AudioBus::kChannelAlignment)));
   }
 }
 

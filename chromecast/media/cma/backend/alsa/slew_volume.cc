@@ -107,21 +107,24 @@ void SlewVolume::Interrupted() {
 void SlewVolume::ProcessFMAC(bool repeat_transition,
                              const float* src,
                              int frames,
+                             int channels,
                              float* dest) {
-  ProcessData<FMACTraits>(repeat_transition, src, frames, dest);
+  ProcessData<FMACTraits>(repeat_transition, src, frames, channels, dest);
 }
 
 void SlewVolume::ProcessFMUL(bool repeat_transition,
                              const float* src,
                              int frames,
+                             int channels,
                              float* dest) {
-  ProcessData<FMULTraits>(repeat_transition, src, frames, dest);
+  ProcessData<FMULTraits>(repeat_transition, src, frames, channels, dest);
 }
 
 template <typename Traits>
 void SlewVolume::ProcessData(bool repeat_transition,
                              const float* src,
                              int frames,
+                             int channels,
                              float* dest) {
   DCHECK(src);
   DCHECK(dest);
@@ -144,31 +147,35 @@ void SlewVolume::ProcessData(bool repeat_transition,
 
   if (current_volume_ == volume_scale_) {
     if (current_volume_ == 0.0) {
-      Traits::ProcessZeroVolume(src, frames, dest);
+      Traits::ProcessZeroVolume(src, frames * channels, dest);
       return;
     }
     if (current_volume_ == 1.0) {
-      Traits::ProcessUnityVolume(src, frames, dest);
+      Traits::ProcessUnityVolume(src, frames * channels, dest);
       return;
     }
-    Traits::ProcessBulkData(src, current_volume_, frames, dest);
+    Traits::ProcessBulkData(src, current_volume_, frames * channels, dest);
     return;
   }
 
   if (current_volume_ < volume_scale_) {
     do {
-      Traits::ProcessSingleDatum(src, current_volume_, dest);
-      ++src;
-      ++dest;
+      for (int i = 0; i < channels; ++i) {
+        Traits::ProcessSingleDatum(src, current_volume_, dest);
+        ++src;
+        ++dest;
+      }
       --frames;
       current_volume_ += max_slew_per_sample_;
     } while (current_volume_ < volume_scale_ && frames);
     current_volume_ = std::min(current_volume_, volume_scale_);
   } else {  // current_volume_ > volume_scale_
     do {
-      Traits::ProcessSingleDatum(src, current_volume_, dest);
-      ++src;
-      ++dest;
+      for (int i = 0; i < channels; ++i) {
+        Traits::ProcessSingleDatum(src, current_volume_, dest);
+        ++src;
+        ++dest;
+      }
       --frames;
       current_volume_ -= max_slew_per_sample_;
     } while (current_volume_ > volume_scale_ && frames);
@@ -176,15 +183,17 @@ void SlewVolume::ProcessData(bool repeat_transition,
   }
   while (frames && (reinterpret_cast<uintptr_t>(src) &
                     (::media::vector_math::kRequiredAlignment - 1))) {
-    Traits::ProcessSingleDatum(src, current_volume_, dest);
-    ++src;
-    ++dest;
+    for (int i = 0; i < channels; ++i) {
+      Traits::ProcessSingleDatum(src, current_volume_, dest);
+      ++src;
+      ++dest;
+    }
     --frames;
   }
   if (!frames) {
     return;
   }
-  Traits::ProcessBulkData(src, current_volume_, frames, dest);
+  Traits::ProcessBulkData(src, current_volume_, frames * channels, dest);
 }
 
 }  // namespace media

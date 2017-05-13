@@ -18,7 +18,7 @@ namespace media {
 class PostProcessingPipeline {
  public:
   virtual ~PostProcessingPipeline() = default;
-  virtual int ProcessFrames(const std::vector<float*>& data,
+  virtual int ProcessFrames(float* data,
                             int num_frames,
                             float current_volume,
                             bool is_silence) = 0;

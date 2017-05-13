@@ -21,6 +21,7 @@
 #include "chromecast/media/cma/backend/alsa/post_processing_pipeline.h"
 #include "media/audio/audio_device_description.h"
 #include "media/base/audio_bus.h"
+#include "media/base/audio_sample_types.h"
 #include "media/base/vector_math.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -31,6 +32,8 @@ namespace chromecast {
 namespace media {
 
 namespace {
+
+using FloatType = ::media::Float32SampleTypeTraits;
 
 // Testing constants that are common to multiple test cases.
 const size_t kBytesPerSample = sizeof(int32_t);
@@ -328,11 +331,9 @@ class MockPostProcessor : public PostProcessingPipeline {
             testing::Invoke(this, &MockPostProcessor::DoProcessFrames));
   }
   ~MockPostProcessor() override { instances_.erase(name_); }
-  MOCK_METHOD4(ProcessFrames,
-               int(const std::vector<float*>& data,
-                   int num_frames,
-                   float current_volume,
-                   bool is_silence));
+  MOCK_METHOD4(
+      ProcessFrames,
+      int(float* data, int num_frames, float current_volume, bool is_silence));
   bool SetSampleRate(int sample_rate) override { return false; }
   bool IsRinging() override { return ringing_; }
   int delay() { return rendering_delay_; }
@@ -343,7 +344,7 @@ class MockPostProcessor : public PostProcessingPipeline {
   }
 
  private:
-  int DoProcessFrames(const std::vector<float*>& data,
+  int DoProcessFrames(float* data,
                       int num_frames,
                       float current_volume,
                       bool is_sience) {
@@ -402,6 +403,15 @@ std::unique_ptr<::media::AudioBus> GetMixedAudioData(
     testing::StrictMock<MockInputQueue>* input) {
   return GetMixedAudioData(
       std::vector<testing::StrictMock<MockInputQueue>*>(1, input));
+}
+
+void ToPlanar(const uint8_t* interleaved,
+              int num_frames,
+              ::media::AudioBus* planar) {
+  ASSERT_GE(planar->frames(), num_frames);
+
+  planar->FromInterleaved<FloatType>(
+      reinterpret_cast<const float*>(interleaved), num_frames);
 }
 
 // Asserts that |expected| matches |actual| exactly.
@@ -614,8 +624,7 @@ TEST_F(StreamMixerAlsaTest, OneStreamMixesProperly) {
   // expected stream. The stream should match exactly.
   auto actual = ::media::AudioBus::Create(kNumChannels, kNumFrames);
   ASSERT_GT(mock_alsa()->data().size(), 0u);
-  actual->FromInterleaved(
-      &(mock_alsa()->data()[0]), kNumFrames, kBytesPerSample);
+  ToPlanar(&(mock_alsa()->data()[0]), kNumFrames, actual.get());
   CompareAudioData(input->data(), *actual);
 }
 
@@ -646,8 +655,7 @@ TEST_F(StreamMixerAlsaTest, OneStreamIsScaledDownProperly) {
 
   // Check that the retrieved stream is scaled correctly.
   auto actual = ::media::AudioBus::Create(kNumChannels, kNumFrames);
-  actual->FromInterleaved(
-      &(mock_alsa()->data()[0]), kNumFrames, kBytesPerSample);
+  ToPlanar(&(mock_alsa()->data()[0]), kNumFrames, actual.get());
   auto expected = GetMixedAudioData(input);
   CompareAudioData(*expected, *actual);
 }
@@ -687,8 +695,7 @@ TEST_F(StreamMixerAlsaTest, TwoUnscaledStreamsMixProperly) {
   // Get the actual stream rendered to ALSA, and compare it against the
   // expected stream. The stream should match exactly.
   auto actual = ::media::AudioBus::Create(kNumChannels, kNumFrames);
-  actual->FromInterleaved(&(mock_alsa()->data()[0]), kNumFrames,
-                          kBytesPerSample);
+  ToPlanar(&(mock_alsa()->data()[0]), kNumFrames, actual.get());
   CompareAudioData(*expected, *actual);
 }
 
@@ -729,8 +736,7 @@ TEST_F(StreamMixerAlsaTest, TwoUnscaledStreamsWithDifferentIdsMixProperly) {
   // Get the actual stream rendered to ALSA, and compare it against the
   // expected stream. The stream should match exactly.
   auto actual = ::media::AudioBus::Create(kNumChannels, kNumFrames);
-  actual->FromInterleaved(
-      &(mock_alsa()->data()[0]), kNumFrames, kBytesPerSample);
+  ToPlanar(&(mock_alsa()->data()[0]), kNumFrames, actual.get());
   CompareAudioData(*expected, *actual);
 }
 
@@ -804,8 +810,7 @@ TEST_F(StreamMixerAlsaTest, TwoUnscaledStreamsMixProperlyWithEdgeCases) {
   // Get the actual stream rendered to ALSA, and compare it against the
   // expected stream. The stream should match exactly.
   auto actual = ::media::AudioBus::Create(kNumChannels, kNumFrames);
-  actual->FromInterleaved(
-      &(mock_alsa()->data()[0]), kNumFrames, kBytesPerSample);
+  ToPlanar(&(mock_alsa()->data()[0]), kNumFrames, actual.get());
   CompareAudioData(*expected, *actual);
 }
 

@@ -34,7 +34,6 @@ Governor::Governor(const std::string& config, int channels)
   CHECK(config_dict) << "Governor config is not valid json: " << config;
   CHECK(config_dict->GetDouble(kOnsetVolumeKey, &onset_volume_));
   CHECK(config_dict->GetDouble(kClampMultiplierKey, &clamp_multiplier_));
-  DCHECK_EQ(channels_, 2);
   slew_volume_.SetVolume(1.0);
   LOG(INFO) << "Created a governor: onset_volume = " << onset_volume_
             << ", clamp_multiplier = " << clamp_multiplier_;
@@ -48,21 +47,13 @@ bool Governor::SetSampleRate(int sample_rate) {
   return true;
 }
 
-int Governor::ProcessFrames(const std::vector<float*>& data,
-                            int frames,
-                            float volume) {
-  DCHECK_EQ(data.size(), static_cast<size_t>(channels_));
-
+int Governor::ProcessFrames(float* data, int frames, float volume) {
   if (volume != volume_) {
     volume_ = volume;
     slew_volume_.SetVolume(GetGovernorMultiplier());
   }
 
-  for (int c = 0; c < channels_; ++c) {
-    DCHECK(data[c]);
-    slew_volume_.ProcessFMUL(c != 0 /* repeat_transition */, data[c], frames,
-                             data[c]);
-  }
+  slew_volume_.ProcessFMUL(false, data, frames, channels_, data);
 
   return 0;  // No delay in this pipeline.
 }

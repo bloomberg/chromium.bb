@@ -76,7 +76,7 @@ PostProcessingPipelineImpl::PostProcessingPipelineImpl(
 
 PostProcessingPipelineImpl::~PostProcessingPipelineImpl() = default;
 
-int PostProcessingPipelineImpl::ProcessFrames(const std::vector<float*>& data,
+int PostProcessingPipelineImpl::ProcessFrames(float* data,
                                               int num_frames,
                                               float current_multiplier,
                                               bool is_silence) {

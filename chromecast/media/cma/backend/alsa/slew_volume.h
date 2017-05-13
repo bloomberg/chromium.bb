@@ -28,23 +28,32 @@ class SlewVolume {
   // applied immediately.
   void Interrupted();
 
-  // Assumes 1 channel float data that is 16-byte aligned. Smoothly calculates
-  // dest[i] += src[i] * volume_scaling
-  // ProcessFMAC will be called once for each channel of audio present and
-  // |repeat_transition| will be true for channels 2 through n.
+  // Smoothly calculates dest[i] += src[i] * |volume_scale|.
+  // |volume_scale| will always be consistent across a frame.
+  // |src| and |dest| are interleaved buffers with |channels| channels and at
+  // least |frames| frames (|channels| * |frames| total size).
+  // |src| and |dest| may be the same.
+  // |src| and |dest| must be 16-byte aligned.
+  // If using planar data, |repeat_transition| should be true for channels 2
+  // through n, which will cause the slewing process to be repeated.
   void ProcessFMAC(bool repeat_transition,
                    const float* src,
                    int frames,
+                   int channels,
                    float* dest);
 
-  // Processes a single channel of float data
-  // dest[i] = src[i] * volume_scaling.
-  // ProcessFMUL will be called once for each channel of audio present.
-  // |repeat_transition| should be true for channels 2 through n.
-  // Assumes 2 channels.
+  // Smoothly calculates dest[i] = src[i] * |volume_scale|.
+  // |volume_scale| will always be consistent across a frame.
+  // |src| and |dest| are interleaved buffers with |channels| channels and at
+  // least |frames| frames (|channels| * |frames| total size).
+  // |src| and |dest| may be the same.
+  // |src| and |dest| must be 16-byte aligned.
+  // If using planar data, |repeat_transition| should be true for channels 2
+  // through n, which will cause the slewing process to be repeated.
   void ProcessFMUL(bool repeat_transition,
                    const float* src,
                    int frames,
+                   int channels,
                    float* dest);
 
  private:
@@ -52,6 +61,7 @@ class SlewVolume {
   void ProcessData(bool repeat_transition,
                    const float* src,
                    int frames,
+                   int channels,
                    float* dest);
 
   double sample_rate_;

@@ -13,6 +13,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/memory/aligned_memory.h"
 #include "base/values.h"
 #include "chromecast/media/cma/backend/alsa/stream_mixer_alsa.h"
 #include "chromecast/public/volume_control.h"
@@ -77,7 +78,7 @@ class FilterGroup {
   void ClearActiveInputs();
 
   // Retrieves a pointer to the output buffer.
-  ::media::AudioBus* data() { return mixed_.get(); }
+  float* interleaved() { return interleaved_.get(); }
 
   // Get the last used volume.
   float last_volume() const { return last_volume_; }
@@ -103,7 +104,9 @@ class FilterGroup {
   // allocations.
   std::unique_ptr<::media::AudioBus> temp_;
   std::unique_ptr<::media::AudioBus> mixed_;
-  std::vector<float*> channels_;
+
+  // Interleaved data must be aligned to 16 bytes.
+  std::unique_ptr<float, base::AlignedFreeDeleter> interleaved_;
 
   std::unique_ptr<PostProcessingPipeline> post_processing_pipeline_;
 
