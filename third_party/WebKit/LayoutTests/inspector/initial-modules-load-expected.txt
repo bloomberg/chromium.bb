@@ -17,6 +17,7 @@ Loaded modules:
     network_log
     persistence
     platform
+    product_registry
     protocol
     sdk
     services
@@ -45,6 +46,7 @@ Loaded modules:
     object_ui
     persistence
     platform
+    product_registry
     protocol
     sdk
     services
