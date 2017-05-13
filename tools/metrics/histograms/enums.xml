@@ -35143,6 +35143,7 @@ from previous Chrome versions.
   <int value="47" label="kErrorCodeFilesystemVerifierError"/>
   <int value="48" label="kErrorCodeUserCanceled"/>
   <int value="49" label="kErrorCodeNonCriticalUpdateInOOBE"/>
+  <int value="50" label="kErrorCodeOmahaUpdateIgnoredOverCellular"/>
 </enum>
 
 <enum name="UpdateEngineInstallDateProvisioningSource" type="int">

@@ -197,6 +197,7 @@ void UpdateScreen::ExitUpdate(UpdateScreen::ExitReason reason) {
         case UpdateEngineClient::UPDATE_STATUS_DOWNLOADING:
         case UpdateEngineClient::UPDATE_STATUS_FINALIZING:
         case UpdateEngineClient::UPDATE_STATUS_VERIFYING:
+        case UpdateEngineClient::UPDATE_STATUS_NEED_PERMISSION_TO_UPDATE:
           DCHECK(!HasCriticalUpdate());
         // Noncritical update, just exit screen as if there is no update.
         // no break
@@ -330,6 +331,7 @@ void UpdateScreen::UpdateStatusChanged(
       // else no break
     case UpdateEngineClient::UPDATE_STATUS_ERROR:
     case UpdateEngineClient::UPDATE_STATUS_REPORTING_ERROR_EVENT:
+    case UpdateEngineClient::UPDATE_STATUS_NEED_PERMISSION_TO_UPDATE:
       ExitUpdate(REASON_UPDATE_ENDED);
       break;
     default:

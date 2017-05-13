@@ -69,6 +69,8 @@ UpdateEngineClient::UpdateStatusOperation UpdateStatusFromString(
     return UpdateEngineClient::UPDATE_STATUS_REPORTING_ERROR_EVENT;
   if (str == update_engine::kUpdateStatusAttemptingRollback)
     return UpdateEngineClient::UPDATE_STATUS_ATTEMPTING_ROLLBACK;
+  if (str == update_engine::kUpdateStatusNeedPermissionToUpdate)
+    return UpdateEngineClient::UPDATE_STATUS_NEED_PERMISSION_TO_UPDATE;
   return UpdateEngineClient::UPDATE_STATUS_ERROR;
 }
 
@@ -242,6 +244,26 @@ class UpdateEngineClientImpl : public UpdateEngineClient {
     return update_engine_proxy_->CallMethod(
         &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
         base::Bind(&UpdateEngineClientImpl::OnSetUpdateOverCellularPermission,
+                   weak_ptr_factory_.GetWeakPtr(), callback));
+  }
+
+  void SetUpdateOverCellularTarget(
+      const std::string& target_version,
+      int64_t target_size,
+      const SetUpdateOverCellularTargetCallback& callback) override {
+    dbus::MethodCall method_call(update_engine::kUpdateEngineInterface,
+                                 update_engine::kSetUpdateOverCellularTarget);
+    dbus::MessageWriter writer(&method_call);
+    writer.AppendString(target_version);
+    writer.AppendInt64(target_size);
+
+    VLOG(1) << "Requesting UpdateEngine to allow updates over cellular "
+            << "to target version: \"" << target_version << "\" "
+            << "target_size: " << target_size;
+
+    return update_engine_proxy_->CallMethod(
+        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::Bind(&UpdateEngineClientImpl::OnSetUpdateOverCellularTarget,
                    weak_ptr_factory_.GetWeakPtr(), callback));
   }
 
@@ -432,30 +454,27 @@ class UpdateEngineClientImpl : public UpdateEngineClient {
   // Called when a response for SetUpdateOverCellularPermission() is received.
   void OnSetUpdateOverCellularPermission(const base::Closure& callback,
                                          dbus::Response* response) {
-    constexpr char kFailureMessage[] =
-        "Failed to set UpdateEngine to allow updates over cellular: ";
-
-    if (response) {
-      switch (response->GetMessageType()) {
-        case dbus::Message::MESSAGE_ERROR:
-          LOG(ERROR) << kFailureMessage
-                     << "DBus responded with error: " << response->ToString();
-          break;
-        case dbus::Message::MESSAGE_INVALID:
-          LOG(ERROR) << kFailureMessage
-                     << "Invalid response from DBus (cannot be parsed).";
-          break;
-        default:
-          VLOG(1) << "Successfully set UpdateEngine to allow update over cell.";
-          break;
-      }
-    } else {
-      LOG(ERROR) << kFailureMessage << "No response from DBus.";
+    if (!response) {
+      LOG(ERROR) << update_engine::kSetUpdateOverCellularPermission
+                 << " call failed";
     }
 
     // Callback should run anyway, regardless of whether DBus call to enable
     // update over cellular succeeded or failed.
     callback.Run();
+  }
+
+  // Called when a response for SetUpdateOverCellularPermission() is received.
+  void OnSetUpdateOverCellularTarget(
+      const SetUpdateOverCellularTargetCallback& callback,
+      dbus::Response* response) {
+    if (!response) {
+      LOG(ERROR) << update_engine::kSetUpdateOverCellularTarget
+                 << " call failed";
+      callback.Run(false);
+      return;
+    }
+    callback.Run(true);
   }
 
   // Called when a status update signal is received.
@@ -563,6 +582,11 @@ class UpdateEngineClientStubImpl : public UpdateEngineClient {
     callback.Run();
   }
 
+  void SetUpdateOverCellularTarget(
+      const std::string& target_version,
+      int64_t target_size,
+      const SetUpdateOverCellularTargetCallback& callback) override {}
+
   std::string current_channel_;
   std::string target_channel_;
 };
@@ -619,6 +643,7 @@ class UpdateEngineClientFakeImpl : public UpdateEngineClientStubImpl {
       case UPDATE_STATUS_UPDATED_NEED_REBOOT:
       case UPDATE_STATUS_REPORTING_ERROR_EVENT:
       case UPDATE_STATUS_ATTEMPTING_ROLLBACK:
+      case UPDATE_STATUS_NEED_PERMISSION_TO_UPDATE:
         return;
       case UPDATE_STATUS_CHECKING_FOR_UPDATE:
         next_status = UPDATE_STATUS_UPDATE_AVAILABLE;
