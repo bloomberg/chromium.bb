@@ -22,7 +22,6 @@
 #include "headless/lib/browser/headless_content_browser_client.h"
 #include "headless/lib/headless_crash_reporter_client.h"
 #include "headless/lib/headless_macros.h"
-#include "headless/lib/renderer/headless_content_renderer_client.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/gfx/switches.h"
@@ -35,6 +34,10 @@
 
 #if defined(OS_MACOSX)
 #include "components/crash/content/app/crashpad.h"
+#endif
+
+#if !defined(CHROME_MULTIPLE_DLL_BROWSER)
+#include "headless/lib/renderer/headless_content_renderer_client.h"
 #endif
 
 namespace headless {
@@ -95,10 +98,16 @@ bool HeadlessContentMainDelegate::BasicStartupComplete(int* exit_code) {
 
 void HeadlessContentMainDelegate::InitLogging(
     const base::CommandLine& command_line) {
+  const std::string process_type =
+      command_line.GetSwitchValueASCII(switches::kProcessType);
 #if !defined(OS_WIN)
   if (!command_line.HasSwitch(switches::kEnableLogging))
     return;
-#endif
+#else
+  // Child processes in Windows are not able to initialize logging.
+  if (!process_type.empty())
+    return;
+#endif  // !defined(OS_WIN)
 
   logging::LoggingDestination log_mode;
   base::FilePath log_filename(FILE_PATH_LITERAL("chrome_debug.log"));
@@ -142,9 +151,6 @@ void HeadlessContentMainDelegate::InitLogging(
   if (env->GetVar(kLogFileName, &filename) && !filename.empty()) {
     log_path = base::FilePath::FromUTF8Unsafe(filename);
   }
-
-  const std::string process_type =
-      command_line.GetSwitchValueASCII(switches::kProcessType);
 
   settings.logging_dest = log_mode;
   settings.log_file = log_path.value().c_str();
@@ -194,6 +200,10 @@ void HeadlessContentMainDelegate::PreSandboxStartup() {
 int HeadlessContentMainDelegate::RunProcess(
     const std::string& process_type,
     const content::MainFunctionParams& main_function_params) {
+// TODO(dvallet): Consider making a Windows specific class to make specific
+// child builds clearer.
+#if !defined(CHROME_MULTIPLE_DLL_CHILD)
+
   if (!process_type.empty())
     return -1;
 
@@ -215,6 +225,9 @@ int HeadlessContentMainDelegate::RunProcess(
 
   // Return value >=0 here to disable calling content::BrowserMain.
   return 0;
+#else
+  return -1;
+#endif  // !defined(CHROME_MULTIPLE_DLL_CHILD)
 }
 
 #if !defined(OS_MACOSX) && defined(OS_POSIX) && !defined(OS_ANDROID)
@@ -275,15 +288,23 @@ void HeadlessContentMainDelegate::InitializeResourceBundle() {
 
 content::ContentBrowserClient*
 HeadlessContentMainDelegate::CreateContentBrowserClient() {
+#if defined(CHROME_MULTIPLE_DLL_CHILD)
+  return nullptr;
+#else
   browser_client_ =
       base::MakeUnique<HeadlessContentBrowserClient>(browser_.get());
   return browser_client_.get();
+#endif
 }
 
 content::ContentRendererClient*
 HeadlessContentMainDelegate::CreateContentRendererClient() {
+#if defined(CHROME_MULTIPLE_DLL_BROWSER)
+  return nullptr;
+#else
   renderer_client_ = base::MakeUnique<HeadlessContentRendererClient>();
   return renderer_client_.get();
+#endif
 }
 
 }  // namespace headless

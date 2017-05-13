@@ -9,6 +9,10 @@
 #include "content/public/common/user_agent.h"
 #include "headless/public/version.h"
 
+#if defined(OS_WIN)
+#include "sandbox/win/src/sandbox_types.h"
+#endif
+
 using Options = headless::HeadlessBrowser::Options;
 using Builder = headless::HeadlessBrowser::Options::Builder;
 
@@ -27,6 +31,10 @@ std::string GetProductNameAndVersion() {
 Options::Options(int argc, const char** argv)
     : argc(argc),
       argv(argv),
+#if defined(OS_WIN)
+      instance(0),
+      sandbox_info(nullptr),
+#endif
       devtools_socket_fd(0),
       message_pump(nullptr),
       single_process_mode(false),
@@ -114,6 +122,18 @@ Builder& Builder::AddMojoServiceName(const std::string& mojo_service_name) {
   options_.mojo_service_names.insert(mojo_service_name);
   return *this;
 }
+
+#if defined(OS_WIN)
+Builder& Builder::SetInstance(HINSTANCE instance) {
+  options_.instance = instance;
+  return *this;
+}
+
+Builder& Builder::SetSandboxInfo(sandbox::SandboxInterfaceInfo* sandbox_info) {
+  options_.sandbox_info = sandbox_info;
+  return *this;
+}
+#endif  // defined(OS_WIN)
 
 Builder& Builder::SetUserDataDir(const base::FilePath& user_data_dir) {
   options_.user_data_dir = user_data_dir;

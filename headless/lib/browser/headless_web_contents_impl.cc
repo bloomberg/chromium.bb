@@ -90,6 +90,7 @@ class HeadlessWebContentsImpl::Delegate : public content::WebContentsDelegate {
     browser_context_->RegisterWebContents(std::move(web_contents));
   }
 
+#if !defined(CHROME_MULTIPLE_DLL_CHILD)
   // Return the security style of the given |web_contents|, populating
   // |security_style_explanations| to explain why the SecurityStyle was chosen.
   blink::WebSecurityStyle GetSecurityStyle(
@@ -104,6 +105,7 @@ class HeadlessWebContentsImpl::Delegate : public content::WebContentsDelegate {
     return security_state::GetSecurityStyle(security_info,
                                             security_style_explanations);
   }
+#endif  // !defined(CHROME_MULTIPLE_DLL_CHILD)
 
   void ActivateContents(content::WebContents* contents) override {
     contents->GetRenderViewHost()->GetWidget()->Focus();
@@ -202,7 +204,7 @@ HeadlessWebContentsImpl::HeadlessWebContentsImpl(
       agent_host_(content::DevToolsAgentHost::GetOrCreateFor(web_contents)),
       browser_context_(browser_context),
       render_process_host_(web_contents->GetRenderProcessHost()) {
-#if BUILDFLAG(ENABLE_BASIC_PRINTING)
+#if BUILDFLAG(ENABLE_BASIC_PRINTING) && !defined(CHROME_MULTIPLE_DLL_CHILD)
   printing::HeadlessPrintManager::CreateForWebContents(web_contents);
 #endif
   web_contents_->SetDelegate(web_contents_delegate_.get());

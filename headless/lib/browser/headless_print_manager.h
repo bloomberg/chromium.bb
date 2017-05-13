@@ -12,6 +12,7 @@
 #include "components/printing/browser/print_manager.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents_user_data.h"
+#include "headless/public/headless_export.h"
 #include "printing/print_settings.h"
 #include "printing/printing_export.h"
 
@@ -59,7 +60,7 @@ class HeadlessPrintManager
   };
 
   enum PageRangeStatus {
-    NO_ERROR,
+    PRINT_NO_ERROR,
     SYNTAX_ERROR,
     LIMIT_ERROR,
   };
@@ -71,9 +72,11 @@ class HeadlessPrintManager
   static std::string PrintResultToString(PrintResult result);
   static std::unique_ptr<base::DictionaryValue> PDFContentsToDictionaryValue(
       const std::string& data);
-  static PageRangeStatus PageRangeTextToPages(base::StringPiece page_range_text,
-                                              int pages_count,
-                                              std::vector<int>* pages);
+  // Exported for tests.
+  HEADLESS_EXPORT static PageRangeStatus PageRangeTextToPages(
+      base::StringPiece page_range_text,
+      int pages_count,
+      std::vector<int>* pages);
 
   // Prints the current document immediately. Since the rendering is
   // asynchronous, the actual printing will not be completed on the return of

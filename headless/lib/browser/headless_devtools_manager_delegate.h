@@ -17,13 +17,15 @@
 
 #if BUILDFLAG(ENABLE_BASIC_PRINTING)
 #include "headless/lib/browser/headless_print_manager.h"
+#include "headless/public/headless_export.h"
 #endif
 
 namespace headless {
 class HeadlessBrowserImpl;
 
 #if BUILDFLAG(ENABLE_BASIC_PRINTING)
-std::unique_ptr<base::DictionaryValue> ParsePrintSettings(
+// Exported for tests.
+HEADLESS_EXPORT std::unique_ptr<base::DictionaryValue> ParsePrintSettings(
     int command_id,
     const base::DictionaryValue* params,
     printing::HeadlessPrintSettings* settings);

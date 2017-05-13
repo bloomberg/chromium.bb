@@ -360,6 +360,7 @@ if (is_win) {
       "//content/app/resources",
       "//content/public/common:service_names",
       "//crypto",
+      "//headless:headless_shell_browser_lib",
       "//net:net_resources",
       "//ppapi/features",
       "//services/service_manager/embedder",
@@ -452,6 +453,7 @@ if (is_win) {
         "//components/crash/content/app",
         "//content/public/app:child",
         "//content/public/common:service_names",
+        "//headless:headless_shell_child_lib",
         "//services/service_manager/embedder",
       ]
 

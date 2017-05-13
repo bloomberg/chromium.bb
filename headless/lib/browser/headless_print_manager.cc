@@ -117,7 +117,7 @@ HeadlessPrintManager::PageRangeTextToPages(base::StringPiece page_range_text,
     page_ranges.push_back(range);
   }
   *pages = PageRange::GetPages(page_ranges);
-  return NO_ERROR;
+  return PRINT_NO_ERROR;
 }
 
 void HeadlessPrintManager::GetPDFContents(content::RenderFrameHost* rfh,
@@ -206,7 +206,7 @@ void HeadlessPrintManager::OnScriptedPrint(
       printing_rfh_->Send(reply_msg);
       ReleaseJob(PAGE_COUNT_EXCEEDED);
       return;
-    case NO_ERROR:
+    case PRINT_NO_ERROR:
       PrintHostMsg_ScriptedPrint::WriteReplyParams(reply_msg, *print_params_);
       printing_rfh_->Send(reply_msg);
       return;

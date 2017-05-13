@@ -18,6 +18,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/string_number_conversions.h"
+#include "content/public/app/content_main.h"
 #include "content/public/common/content_switches.h"
 #include "headless/app/headless_shell.h"
 #include "headless/app/headless_shell_switches.h"
@@ -29,6 +30,10 @@
 #include "net/base/net_errors.h"
 #include "net/http/http_util.h"
 #include "ui/gfx/geometry/size.h"
+
+#if defined(OS_WIN)
+#include "sandbox/win/src/sandbox_types.h"
+#endif
 
 namespace headless {
 namespace {
@@ -62,14 +67,17 @@ HeadlessShell::HeadlessShell()
 HeadlessShell::~HeadlessShell() {}
 
 void HeadlessShell::OnStart(HeadlessBrowser* browser) {
+// TODO(dvallet): Consider making a Windows specific class to make specific
+// child builds clearer.
+#if !defined(CHROME_MULTIPLE_DLL_CHILD)
   browser_ = browser;
 
   HeadlessBrowserContext::Builder context_builder =
       browser_->CreateBrowserContextBuilder();
   // TODO(eseckler): These switches should also affect BrowserContexts that
   // are created via DevTools later.
-  DeterministicHttpProtocolHandler* http_handler;
-  DeterministicHttpProtocolHandler* https_handler;
+  DeterministicHttpProtocolHandler* http_handler = nullptr;
+  DeterministicHttpProtocolHandler* https_handler = nullptr;
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDeterministicFetch)) {
     deterministic_dispatcher_.reset(
@@ -125,9 +133,11 @@ void HeadlessShell::OnStart(HeadlessBrowser* browser) {
       web_contents_->AddObserver(this);
     }
   }
+#endif  // !defined(CHROME_MULTIPLE_DLL_CHILD)
 }
 
 void HeadlessShell::Shutdown() {
+#if !defined(CHROME_MULTIPLE_DLL_CHILD)
   if (!web_contents_)
     return;
   if (!RemoteDebuggingEnabled()) {
@@ -142,9 +152,11 @@ void HeadlessShell::Shutdown() {
   web_contents_ = nullptr;
   browser_context_->Close();
   browser_->Shutdown();
+#endif  // !defined(CHROME_MULTIPLE_DLL_CHILD)
 }
 
 void HeadlessShell::DevToolsTargetReady() {
+#if !defined(CHROME_MULTIPLE_DLL_CHILD)
   web_contents_->GetDevToolsTarget()->AttachClient(devtools_client_.get());
   devtools_client_->GetInspector()->GetExperimental()->AddObserver(this);
   devtools_client_->GetPage()->GetExperimental()->AddObserver(this);
@@ -216,6 +228,7 @@ void HeadlessShell::DevToolsTargetReady() {
   }
 
   // TODO(skyostil): Implement more features to demonstrate the devtools API.
+#endif  // !defined(CHROME_MULTIPLE_DLL_CHILD)
 }
 
 void HeadlessShell::FetchTimeout() {
@@ -440,10 +453,10 @@ void HeadlessShell::OnFileOpened(const std::string& base64_data,
 }
 
 void HeadlessShell::OnFileWritten(const base::FilePath file_name,
-                                  const int length,
+                                  const size_t length,
                                   base::File::Error error_code,
                                   int write_result) {
-  if (write_result < length) {
+  if (write_result < static_cast<int>(length)) {
     // TODO(eseckler): Support recovering from partial writes.
     LOG(ERROR) << "Writing to file " << file_name.value()
                << " was unsuccessful: "
@@ -527,18 +540,28 @@ bool ValidateCommandLine(const base::CommandLine& command_line) {
   return true;
 }
 
+#if defined(OS_WIN)
+int HeadlessShellMain(HINSTANCE instance,
+                      sandbox::SandboxInterfaceInfo* sandbox_info) {
+  base::CommandLine::Init(0, nullptr);
+  RunChildProcessIfNeeded(instance, sandbox_info);
+  HeadlessBrowser::Options::Builder builder(0, nullptr);
+  builder.SetInstance(instance);
+  builder.SetSandboxInfo(std::move(sandbox_info));
+#else
 int HeadlessShellMain(int argc, const char** argv) {
   base::CommandLine::Init(argc, argv);
   RunChildProcessIfNeeded(argc, argv);
-  HeadlessShell shell;
   HeadlessBrowser::Options::Builder builder(argc, argv);
+#endif  // defined(OS_WIN)
+  HeadlessShell shell;
 
   const base::CommandLine& command_line(
       *base::CommandLine::ForCurrentProcess());
   if (!ValidateCommandLine(command_line))
     return EXIT_FAILURE;
 
-  if (command_line.HasSwitch(::switches::kEnableCrashReporter))
+  if (command_line.HasSwitch(switches::kEnableCrashReporter))
     builder.SetCrashReporterEnabled(true);
   if (command_line.HasSwitch(switches::kCrashDumpsDir)) {
     builder.SetCrashDumpsDir(
@@ -637,6 +660,14 @@ int HeadlessShellMain(int argc, const char** argv) {
   return HeadlessBrowserMain(
       builder.Build(),
       base::Bind(&HeadlessShell::OnStart, base::Unretained(&shell)));
+}
+
+int HeadlessShellMain(const content::ContentMainParams& params) {
+#if defined(OS_WIN)
+  return HeadlessShellMain(params.instance, params.sandbox_info);
+#else
+  return HeadlessShellMain(params.argc, params.argv);
+#endif
 }
 
 }  // namespace headless
