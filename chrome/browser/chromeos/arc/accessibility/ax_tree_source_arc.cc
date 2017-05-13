@@ -65,7 +65,7 @@ const gfx::Rect GetBounds(arc::mojom::AccessibilityNodeInfoData* node) {
     return gfx::Rect();
 
   aura::Window* focused_window = wm_helper->GetFocusedWindow();
-  gfx::Rect bounds_in_screen = node->boundsInScreen;
+  gfx::Rect bounds_in_screen = node->bounds_in_screen;
   if (focused_window) {
     aura::Window* toplevel_window = focused_window->GetToplevelWindow();
     return gfx::ScaleToEnclosingRect(
@@ -77,11 +77,11 @@ const gfx::Rect GetBounds(arc::mojom::AccessibilityNodeInfoData* node) {
 
 bool GetBooleanProperty(arc::mojom::AccessibilityNodeInfoData* node,
                         arc::mojom::AccessibilityBooleanProperty prop) {
-  if (!node->booleanProperties)
+  if (!node->boolean_properties)
     return false;
 
-  auto it = node->booleanProperties->find(prop);
-  if (it == node->booleanProperties->end())
+  auto it = node->boolean_properties->find(prop);
+  if (it == node->boolean_properties->end())
     return false;
 
   return it->second;
@@ -90,11 +90,11 @@ bool GetBooleanProperty(arc::mojom::AccessibilityNodeInfoData* node,
 bool GetIntProperty(arc::mojom::AccessibilityNodeInfoData* node,
                     arc::mojom::AccessibilityIntProperty prop,
                     int32_t* out_value) {
-  if (!node->intProperties)
+  if (!node->int_properties)
     return false;
 
-  auto it = node->intProperties->find(prop);
-  if (it == node->intProperties->end())
+  auto it = node->int_properties->find(prop);
+  if (it == node->int_properties->end())
     return false;
 
   *out_value = it->second;
@@ -104,11 +104,11 @@ bool GetIntProperty(arc::mojom::AccessibilityNodeInfoData* node,
 bool GetStringProperty(arc::mojom::AccessibilityNodeInfoData* node,
                        arc::mojom::AccessibilityStringProperty prop,
                        std::string* out_value) {
-  if (!node->stringProperties)
+  if (!node->string_properties)
     return false;
 
-  auto it = node->stringProperties->find(prop);
-  if (it == node->stringProperties->end())
+  auto it = node->string_properties->find(prop);
+  if (it == node->string_properties->end())
     return false;
 
   *out_value = it->second;
@@ -244,20 +244,20 @@ void AXTreeSourceArc::NotifyAccessibilityEvent(
   tree_map_.clear();
   parent_map_.clear();
   root_id_ = -1;
-  for (size_t i = 0; i < event_data->nodeData.size(); ++i) {
-    if (!event_data->nodeData[i]->intListProperties)
+  for (size_t i = 0; i < event_data->node_data.size(); ++i) {
+    if (!event_data->node_data[i]->int_list_properties)
       continue;
-    auto it = event_data->nodeData[i]->intListProperties->find(
+    auto it = event_data->node_data[i]->int_list_properties->find(
         arc::mojom::AccessibilityIntListProperty::CHILD_NODE_IDS);
-    if (it != event_data->nodeData[i]->intListProperties->end()) {
+    if (it != event_data->node_data[i]->int_list_properties->end()) {
       for (size_t j = 0; j < it->second.size(); ++j)
-        parent_map_[it->second[j]] = event_data->nodeData[i]->id;
+        parent_map_[it->second[j]] = event_data->node_data[i]->id;
     }
   }
 
-  for (size_t i = 0; i < event_data->nodeData.size(); ++i) {
-    int32_t id = event_data->nodeData[i]->id;
-    tree_map_[id] = event_data->nodeData[i].get();
+  for (size_t i = 0; i < event_data->node_data.size(); ++i) {
+    int32_t id = event_data->node_data[i]->id;
+    tree_map_[id] = event_data->node_data[i].get();
     if (parent_map_.find(id) == parent_map_.end()) {
       CHECK_EQ(-1, root_id_) << "Duplicated root";
       root_id_ = id;
@@ -265,15 +265,15 @@ void AXTreeSourceArc::NotifyAccessibilityEvent(
   }
 
   ExtensionMsg_AccessibilityEventParams params;
-  params.event_type = ToAXEvent(event_data->eventType);
+  params.event_type = ToAXEvent(event_data->event_type);
 
   if (params.event_type == ui::AX_EVENT_FOCUS)
-    focused_node_id_ = event_data->sourceId;
+    focused_node_id_ = event_data->source_id;
 
   params.tree_id = tree_id();
-  params.id = event_data->sourceId;
+  params.id = event_data->source_id;
 
-  current_tree_serializer_->SerializeChanges(GetFromId(event_data->sourceId),
+  current_tree_serializer_->SerializeChanges(GetFromId(event_data->source_id),
                                              &params.update);
 
   extensions::AutomationEventRouter* router =
@@ -320,12 +320,12 @@ int32_t AXTreeSourceArc::GetId(mojom::AccessibilityNodeInfoData* node) const {
 void AXTreeSourceArc::GetChildren(
     mojom::AccessibilityNodeInfoData* node,
     std::vector<mojom::AccessibilityNodeInfoData*>* out_children) const {
-  if (!node || !node->intListProperties)
+  if (!node || !node->int_list_properties)
     return;
 
-  auto it = node->intListProperties->find(
+  auto it = node->int_list_properties->find(
       arc::mojom::AccessibilityIntListProperty::CHILD_NODE_IDS);
-  if (it == node->intListProperties->end())
+  if (it == node->int_list_properties->end())
     return;
 
   for (size_t i = 0; i < it->second.size(); ++i) {
