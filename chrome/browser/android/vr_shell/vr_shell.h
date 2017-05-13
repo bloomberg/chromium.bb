@@ -191,6 +191,8 @@ class VrShell : public device::PresentingGvrDelegate,
 
   void ProcessTabArray(JNIEnv* env, jobjectArray tabs, bool incognito);
 
+  void PollMediaAccessFlag();
+
   bool vr_shell_enabled_;
 
   bool content_paused_ = false;
@@ -216,6 +218,10 @@ class VrShell : public device::PresentingGvrDelegate,
   bool reprojected_rendering_;
 
   jobject content_surface_ = nullptr;
+  base::CancelableClosure poll_capturing_media_task_;
+  bool is_capturing_audio_ = false;
+  bool is_capturing_video_ = false;
+  bool is_capturing_screen_ = false;
 
   // TODO(mthiesse): Remove the need for this to be stored here.
   // crbug.com/674594
