@@ -78,28 +78,21 @@ void AudioManagerAlsa::ShowLinuxAudioInputSettings() {
   base::LaunchProcess(command_line, base::LaunchOptions());
 }
 
-// Implementation of AudioManager.
+AudioManagerAlsa::AudioManagerAlsa(std::unique_ptr<AudioThread> audio_thread,
+                                   AudioLogFactory* audio_log_factory)
+    : AudioManagerBase(std::move(audio_thread), audio_log_factory),
+      wrapper_(new AlsaWrapper()) {
+  SetMaxOutputStreamsAllowed(kMaxOutputStreams);
+}
+
+AudioManagerAlsa::~AudioManagerAlsa() = default;
+
 bool AudioManagerAlsa::HasAudioOutputDevices() {
   return HasAnyAlsaAudioDevice(kStreamPlayback);
 }
 
 bool AudioManagerAlsa::HasAudioInputDevices() {
   return HasAnyAlsaAudioDevice(kStreamCapture);
-}
-
-AudioManagerAlsa::AudioManagerAlsa(
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-    scoped_refptr<base::SingleThreadTaskRunner> worker_task_runner,
-    AudioLogFactory* audio_log_factory)
-    : AudioManagerBase(std::move(task_runner),
-                       std::move(worker_task_runner),
-                       audio_log_factory),
-      wrapper_(new AlsaWrapper()) {
-  SetMaxOutputStreamsAllowed(kMaxOutputStreams);
-}
-
-AudioManagerAlsa::~AudioManagerAlsa() {
-  Shutdown();
 }
 
 void AudioManagerAlsa::ShowAudioInputSettings() {

@@ -11,6 +11,7 @@
 #include "media/audio/audio_device_description.h"
 #include "media/audio/audio_manager.h"
 #include "media/audio/audio_output_stream_sink.h"
+#include "media/audio/audio_thread_impl.h"
 #include "media/base/cdm_factory.h"
 #include "media/base/media.h"
 #include "media/base/media_log.h"
@@ -42,7 +43,7 @@ void TestMojoMediaClient::Initialize(
   AudioManager* audio_manager = AudioManager::Get();
   if (!audio_manager) {
     audio_manager_ = media::AudioManager::CreateForTesting(
-        base::ThreadTaskRunnerHandle::Get());
+        base::MakeUnique<AudioThreadImpl>());
     audio_manager = audio_manager_.get();
     // Flush the message loop to ensure that the audio manager is initialized.
     base::RunLoop().RunUntilIdle();

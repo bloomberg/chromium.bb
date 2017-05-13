@@ -19,6 +19,7 @@
 #include "media/audio/audio_manager.h"
 #include "media/audio/simple_sources.h"
 #include "media/audio/sounds/test_data.h"
+#include "media/audio/test_audio_thread.h"
 #include "media/base/channel_layout.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -31,7 +32,7 @@ class AudioStreamHandlerTest : public testing::Test {
 
   void SetUp() override {
     audio_manager_ =
-        AudioManager::CreateForTesting(base::ThreadTaskRunnerHandle::Get());
+        AudioManager::CreateForTesting(base::MakeUnique<TestAudioThread>());
     base::RunLoop().RunUntilIdle();
 
     base::StringPiece data(kTestAudioData, arraysize(kTestAudioData));
@@ -40,6 +41,7 @@ class AudioStreamHandlerTest : public testing::Test {
 
   void TearDown() override {
     audio_stream_handler_.reset();
+    audio_manager_->Shutdown();
     base::RunLoop().RunUntilIdle();
   }
 
@@ -58,7 +60,7 @@ class AudioStreamHandlerTest : public testing::Test {
 
  private:
   base::TestMessageLoop message_loop_;
-  ScopedAudioManagerPtr audio_manager_;
+  std::unique_ptr<AudioManager> audio_manager_;
   std::unique_ptr<AudioStreamHandler> audio_stream_handler_;
 };
 

@@ -2,15 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "media/audio/audio_input_controller.h"
 #include "base/bind.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/thread.h"
 #include "media/audio/audio_device_description.h"
-#include "media/audio/audio_input_controller.h"
+#include "media/audio/audio_thread_impl.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -80,22 +82,15 @@ class MockSyncWriter : public AudioInputController::SyncWriter {
 class AudioInputControllerTest : public testing::Test {
  public:
   AudioInputControllerTest()
-      : audio_thread_("AudioThread"),
-        suspend_event_(WaitableEvent::ResetPolicy::AUTOMATIC,
+      : suspend_event_(WaitableEvent::ResetPolicy::AUTOMATIC,
                        WaitableEvent::InitialState::NOT_SIGNALED) {
-    audio_thread_.StartAndWaitForTesting();
     audio_manager_ =
-        AudioManager::CreateForTesting(audio_thread_.task_runner());
+        AudioManager::CreateForTesting(base::MakeUnique<AudioThreadImpl>());
   }
-  ~AudioInputControllerTest() override {
-    audio_task_runner()->PostTask(
-        FROM_HERE, base::Bind(&AudioInputControllerTest::DeleteAudioManager,
-                              base::Unretained(this)));
-    audio_thread_.Stop();
-  }
+  ~AudioInputControllerTest() override { audio_manager_->Shutdown(); }
 
   scoped_refptr<base::SingleThreadTaskRunner> audio_task_runner() const {
-    return audio_thread_.task_runner();
+    return audio_manager_->GetTaskRunner();
   }
 
   void SuspendAudioThread() {
@@ -107,13 +102,11 @@ class AudioInputControllerTest : public testing::Test {
   void ResumeAudioThread() { suspend_event_.Signal(); }
 
  private:
-  void DeleteAudioManager() { audio_manager_.reset(); }
   void WaitForResume() { suspend_event_.Wait(); }
 
  protected:
-  base::Thread audio_thread_;
   base::MessageLoop message_loop_;
-  ScopedAudioManagerPtr audio_manager_;
+  std::unique_ptr<AudioManager> audio_manager_;
   WaitableEvent suspend_event_;
 
  private:
@@ -142,8 +135,6 @@ TEST_F(AudioInputControllerTest, CreateAndClose) {
   ResumeAudioThread();
 
   CloseAudioController(controller.get());
-
-  audio_thread_.FlushForTesting();
 }
 
 // Test a normal call sequence of create, record and close.

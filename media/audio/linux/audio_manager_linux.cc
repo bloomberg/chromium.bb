@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/command_line.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "media/base/media_switches.h"
 
@@ -16,6 +17,7 @@
 #endif
 #if defined(USE_PULSEAUDIO)
 #include "media/audio/pulse/audio_manager_pulse.h"
+#include "media/audio/pulse/pulse_util.h"
 #endif
 
 namespace media {
@@ -27,42 +29,35 @@ enum LinuxAudioIO {
   kAudioIOMax = kCras  // Must always be equal to largest logged entry.
 };
 
-ScopedAudioManagerPtr CreateAudioManager(
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-    scoped_refptr<base::SingleThreadTaskRunner> worker_task_runner,
+std::unique_ptr<media::AudioManager> CreateAudioManager(
+    std::unique_ptr<AudioThread> audio_thread,
     AudioLogFactory* audio_log_factory) {
 #if defined(USE_CRAS)
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kUseCras)) {
     UMA_HISTOGRAM_ENUMERATION("Media.LinuxAudioIO", kCras, kAudioIOMax + 1);
-    return ScopedAudioManagerPtr(
-        new AudioManagerCras(std::move(task_runner),
-                             std::move(worker_task_runner), audio_log_factory));
+    return base::MakeUnique<AudioManagerCras>(std::move(audio_thread),
+                                              audio_log_factory);
   }
 #endif
 
 #if defined(USE_PULSEAUDIO)
-  // Do not move task runners when creating AudioManagerPulse.
-  // If the creation fails, we need to use the task runners to create other
-  // AudioManager implementations.
-  std::unique_ptr<AudioManagerPulse, AudioManagerDeleter> manager(
-      new AudioManagerPulse(task_runner, worker_task_runner,
-                            audio_log_factory));
-  if (manager->Init()) {
+  pa_threaded_mainloop* pa_mainloop = nullptr;
+  pa_context* pa_context = nullptr;
+  if (pulse::InitPulse(&pa_mainloop, &pa_context)) {
     UMA_HISTOGRAM_ENUMERATION("Media.LinuxAudioIO", kPulse, kAudioIOMax + 1);
-    return std::move(manager);
+    return base::MakeUnique<AudioManagerPulse>(
+        std::move(audio_thread), audio_log_factory, pa_mainloop, pa_context);
   }
   DVLOG(1) << "PulseAudio is not available on the OS";
 #endif
 
 #if defined(USE_ALSA)
   UMA_HISTOGRAM_ENUMERATION("Media.LinuxAudioIO", kAlsa, kAudioIOMax + 1);
-  return ScopedAudioManagerPtr(
-      new AudioManagerAlsa(std::move(task_runner),
-                           std::move(worker_task_runner), audio_log_factory));
+  return base::MakeUnique<AudioManagerAlsa>(std::move(audio_thread),
+                                            audio_log_factory);
 #else
-  return ScopedAudioManagerPtr(
-      new FakeAudioManager(std::move(task_runner),
-                           std::move(worker_task_runner), audio_log_factory));
+  return base::MakeUnique<FakeAudioManager>(std::move(audio_thread),
+                                            audio_log_factory);
 #endif
 }
 

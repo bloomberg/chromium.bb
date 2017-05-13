@@ -25,6 +25,7 @@
 #include "media/audio/audio_device_description.h"
 #include "media/audio/audio_system_impl.h"
 #include "media/audio/fake_audio_log_factory.h"
+#include "media/audio/test_audio_thread.h"
 #include "media/base/media_switches.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -68,8 +69,7 @@ const char kMockSalt[] = "";
 class MockAudioManager : public AudioManagerPlatform {
  public:
   MockAudioManager()
-      : AudioManagerPlatform(base::ThreadTaskRunnerHandle::Get(),
-                             base::ThreadTaskRunnerHandle::Get(),
+      : AudioManagerPlatform(base::MakeUnique<media::TestAudioThread>(),
                              &fake_audio_log_factory_),
         num_output_devices_(2),
         num_input_devices_(2) {}
@@ -173,7 +173,7 @@ class MediaStreamManagerTest : public ::testing::Test {
     base::RunLoop().RunUntilIdle();
   }
 
-  ~MediaStreamManagerTest() override {}
+  ~MediaStreamManagerTest() override { audio_manager_->Shutdown(); }
 
   MOCK_METHOD1(Response, void(int index));
   void ResponseCallback(int index,
@@ -204,7 +204,7 @@ class MediaStreamManagerTest : public ::testing::Test {
   // thread_bundle_ because it uses the underlying message loop.
   std::unique_ptr<MediaStreamManager> media_stream_manager_;
   content::TestBrowserThreadBundle thread_bundle_;
-  std::unique_ptr<MockAudioManager, media::AudioManagerDeleter> audio_manager_;
+  std::unique_ptr<MockAudioManager> audio_manager_;
   std::unique_ptr<media::AudioSystem> audio_system_;
   base::RunLoop run_loop_;
 

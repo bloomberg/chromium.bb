@@ -17,6 +17,7 @@
 #include "media/audio/audio_device_description.h"
 #include "media/audio/cras/audio_manager_cras.h"
 #include "media/audio/fake_audio_log_factory.h"
+#include "media/audio/test_audio_thread.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -44,8 +45,7 @@ class MockAudioInputCallback : public AudioInputStream::AudioInputCallback {
 class MockAudioManagerCrasInput : public AudioManagerCras {
  public:
   MockAudioManagerCrasInput()
-      : AudioManagerCras(base::ThreadTaskRunnerHandle::Get(),
-                         base::ThreadTaskRunnerHandle::Get(),
+      : AudioManagerCras(base::MakeUnique<TestAudioThread>(),
                          &fake_audio_log_factory_) {}
 
   // We need to override this function in order to skip checking the number
@@ -68,7 +68,7 @@ class CrasInputStreamTest : public testing::Test {
     base::RunLoop().RunUntilIdle();
   }
 
-  ~CrasInputStreamTest() override {}
+  ~CrasInputStreamTest() override { mock_manager_->Shutdown(); }
 
   CrasInputStream* CreateStream(ChannelLayout layout) {
     return CreateStream(layout, kTestFramesPerPacket);
@@ -125,8 +125,7 @@ class CrasInputStreamTest : public testing::Test {
   static const int kTestSampleRate;
 
   base::TestMessageLoop message_loop_;
-  std::unique_ptr<StrictMock<MockAudioManagerCrasInput>, AudioManagerDeleter>
-      mock_manager_;
+  std::unique_ptr<StrictMock<MockAudioManagerCrasInput>> mock_manager_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(CrasInputStreamTest);

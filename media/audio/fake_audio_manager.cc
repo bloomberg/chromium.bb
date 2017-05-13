@@ -16,18 +16,11 @@ const int kDefaultSampleRate = 48000;
 
 }  // namespace
 
-FakeAudioManager::FakeAudioManager(
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-    scoped_refptr<base::SingleThreadTaskRunner> worker_task_runner,
-    AudioLogFactory* audio_log_factory)
-    : AudioManagerBase(std::move(task_runner),
-                       std::move(worker_task_runner),
-                       audio_log_factory) {
-}
+FakeAudioManager::FakeAudioManager(std::unique_ptr<AudioThread> audio_thread,
+                                   AudioLogFactory* audio_log_factory)
+    : AudioManagerBase(std::move(audio_thread), audio_log_factory) {}
 
-FakeAudioManager::~FakeAudioManager() {
-  Shutdown();
-}
+FakeAudioManager::~FakeAudioManager() = default;
 
 // Implementation of AudioManager.
 bool FakeAudioManager::HasAudioOutputDevices() { return false; }

@@ -509,13 +509,9 @@ class AudioManagerMac::AudioPowerObserver : public base::PowerObserver {
   DISALLOW_COPY_AND_ASSIGN(AudioPowerObserver);
 };
 
-AudioManagerMac::AudioManagerMac(
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-    scoped_refptr<base::SingleThreadTaskRunner> worker_task_runner,
-    AudioLogFactory* audio_log_factory)
-    : AudioManagerBase(std::move(task_runner),
-                       std::move(worker_task_runner),
-                       audio_log_factory),
+AudioManagerMac::AudioManagerMac(std::unique_ptr<AudioThread> audio_thread,
+                                 AudioLogFactory* audio_log_factory)
+    : AudioManagerBase(std::move(audio_thread), audio_log_factory),
       current_sample_rate_(0),
       current_output_device_(kAudioDeviceUnknown),
       in_shutdown_(false) {
@@ -529,13 +525,14 @@ AudioManagerMac::AudioManagerMac(
                             base::Unretained(this)));
 }
 
-AudioManagerMac::~AudioManagerMac() {
-  DCHECK(GetTaskRunner()->BelongsToCurrentThread());
+AudioManagerMac::~AudioManagerMac() = default;
+
+void AudioManagerMac::ShutdownOnAudioThread() {
   // We are now in shutdown mode. This flag disables MaybeChangeBufferSize()
   // and IncreaseIOBufferSizeIfPossible() which both touches native Core Audio
   // APIs and they can fail and disrupt tests during shutdown.
   in_shutdown_ = true;
-  Shutdown();
+  AudioManagerBase::ShutdownOnAudioThread();
 }
 
 bool AudioManagerMac::HasAudioOutputDevices() {
@@ -1185,13 +1182,11 @@ void AudioManagerMac::ReleaseInputStream(AudioInputStream* stream) {
   AudioManagerBase::ReleaseInputStream(stream);
 }
 
-ScopedAudioManagerPtr CreateAudioManager(
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-    scoped_refptr<base::SingleThreadTaskRunner> worker_task_runner,
+std::unique_ptr<AudioManager> CreateAudioManager(
+    std::unique_ptr<AudioThread> audio_thread,
     AudioLogFactory* audio_log_factory) {
-  return ScopedAudioManagerPtr(
-      new AudioManagerMac(std::move(task_runner), std::move(worker_task_runner),
-                          audio_log_factory));
+  return base::MakeUnique<AudioManagerMac>(std::move(audio_thread),
+                                           audio_log_factory);
 }
 
 }  // namespace media

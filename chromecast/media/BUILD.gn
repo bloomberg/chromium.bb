@@ -31,6 +31,7 @@ test("cast_media_unittests") {
     "//chromecast/base/metrics:test_support",
     "//chromecast/public",
     "//media",
+    "//media/audio:test_support",
     "//media/base:test_support",
     "//testing/gmock",
     "//testing/gtest",

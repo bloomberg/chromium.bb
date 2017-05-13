@@ -52,7 +52,6 @@
 #include "components/tracing/common/trace_config_file.h"
 #include "components/tracing/common/trace_to_console.h"
 #include "components/tracing/common/tracing_switches.h"
-#include "content/browser/audio_manager_thread.h"
 #include "content/browser/browser_thread_impl.h"
 #include "content/browser/dom_storage/dom_storage_area.h"
 #include "content/browser/download/download_resource_handler.h"
@@ -93,7 +92,9 @@
 #include "content/public/common/result_codes.h"
 #include "device/gamepad/gamepad_service.h"
 #include "gpu/vulkan/features.h"
+#include "media/audio/audio_manager.h"
 #include "media/audio/audio_system_impl.h"
+#include "media/audio/audio_thread_impl.h"
 #include "media/base/media.h"
 #include "media/base/user_input_monitor.h"
 #include "media/midi/midi_service.h"
@@ -1366,6 +1367,10 @@ void BrowserMainLoop::ShutdownThreadsAndCleanUp() {
     TRACE_EVENT0("shutdown", "BrowserMainLoop::Subsystem:DeleteDataSources");
     URLDataManager::DeleteDataSources();
   }
+  {
+    TRACE_EVENT0("shutdown", "BrowserMainLoop::Subsystem:AudioMan");
+    audio_manager_->Shutdown();
+  }
 
   if (parts_) {
     TRACE_EVENT0("shutdown", "BrowserMainLoop::Subsystem:PostDestroyThreads");
@@ -1760,15 +1765,13 @@ void BrowserMainLoop::EndStartupTracing() {
 }
 
 void BrowserMainLoop::CreateAudioManager() {
-  DCHECK(!audio_thread_);
   DCHECK(!audio_manager_);
 
   audio_manager_ = GetContentClient()->browser()->CreateAudioManager(
       MediaInternals::GetInstance());
   if (!audio_manager_) {
-    audio_thread_ = base::MakeUnique<AudioManagerThread>();
     audio_manager_ = media::AudioManager::Create(
-        audio_thread_->task_runner(), audio_thread_->worker_task_runner(),
+        base::MakeUnique<media::AudioThreadImpl>(),
         BrowserThread::GetTaskRunnerForThread(BrowserThread::FILE),
         MediaInternals::GetInstance());
   }

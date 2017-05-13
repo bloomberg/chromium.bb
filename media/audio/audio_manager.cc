@@ -241,51 +241,18 @@ AudioManagerHelper* GetHelper() {
 
 }  // namespace
 
-void AudioManagerDeleter::operator()(const AudioManager* instance) const {
-  CHECK(instance);
-  // We reset g_last_created here instead of in the destructor of AudioManager
-  // because the destructor runs on the audio thread. We want to always change
-  // g_last_created from the main thread.
-  if (g_last_created == instance) {
-    g_last_created = nullptr;
-  } else {
-    // We create multiple instances of AudioManager only when testing.
-    // We should not encounter this case in production.
-    LOG(WARNING) << "Multiple instances of AudioManager detected";
-  }
-
-  // The deleter runs on the main thread, and AudioManager must be destroyed on
-  // the audio thread. If the audio thread is the same as the main one, tasks
-  // after this point are not executed, hence this is the only chance to delete
-  // AudioManager. See http://crbug.com/623703 for more details.
-  if (instance->GetTaskRunner()->BelongsToCurrentThread()) {
-    delete instance;
-    return;
-  }
-
-  // AudioManager must be destroyed on the audio thread. See
-  // http://crbug.com/705455 for an existing AudioManager lifetime issue.
-  if (!instance->GetTaskRunner()->DeleteSoon(FROM_HERE, instance))
-    LOG(WARNING) << "Failed to delete AudioManager instance.";
-}
-
 // Forward declaration of the platform specific AudioManager factory function.
-ScopedAudioManagerPtr CreateAudioManager(
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-    scoped_refptr<base::SingleThreadTaskRunner> worker_task_runner,
+std::unique_ptr<AudioManager> CreateAudioManager(
+    std::unique_ptr<AudioThread> audio_thread,
     AudioLogFactory* audio_log_factory);
 
 void AudioManager::SetMaxStreamCountForTesting(int max_input, int max_output) {
   NOTREACHED();
 }
 
-AudioManager::AudioManager(
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-    scoped_refptr<base::SingleThreadTaskRunner> worker_task_runner)
-    : task_runner_(std::move(task_runner)),
-      worker_task_runner_(std::move(worker_task_runner)) {
-  DCHECK(task_runner_);
-  DCHECK(worker_task_runner_);
+AudioManager::AudioManager(std::unique_ptr<AudioThread> audio_thread)
+    : audio_thread_(std::move(audio_thread)) {
+  DCHECK(audio_thread_);
 
   if (g_last_created) {
     // We create multiple instances of AudioManager only when testing.
@@ -298,19 +265,25 @@ AudioManager::AudioManager(
 }
 
 AudioManager::~AudioManager() {
-  DCHECK(task_runner_->BelongsToCurrentThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK(shutdown_);
+
+  if (g_last_created == this) {
+    g_last_created = nullptr;
+  } else {
+    // We create multiple instances of AudioManager only when testing.
+    // We should not encounter this case in production.
+    LOG(WARNING) << "Multiple instances of AudioManager detected";
+  }
 }
 
 // static
-ScopedAudioManagerPtr AudioManager::Create(
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-    scoped_refptr<base::SingleThreadTaskRunner> worker_task_runner,
+std::unique_ptr<AudioManager> AudioManager::Create(
+    std::unique_ptr<AudioThread> audio_thread,
     scoped_refptr<base::SingleThreadTaskRunner> file_task_runner,
     AudioLogFactory* audio_log_factory) {
-  DCHECK(task_runner);
-  DCHECK(worker_task_runner);
-  ScopedAudioManagerPtr manager = CreateAudioManager(
-      std::move(task_runner), std::move(worker_task_runner), audio_log_factory);
+  std::unique_ptr<AudioManager> manager =
+      CreateAudioManager(std::move(audio_thread), audio_log_factory);
 #if BUILDFLAG(ENABLE_WEBRTC)
   manager->InitializeOutputDebugRecording(std::move(file_task_runner));
 #endif
@@ -318,12 +291,14 @@ ScopedAudioManagerPtr AudioManager::Create(
 }
 
 // static
-ScopedAudioManagerPtr AudioManager::CreateForTesting(
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
+std::unique_ptr<AudioManager> AudioManager::CreateForTesting(
+    std::unique_ptr<AudioThread> audio_thread) {
 #if defined(OS_WIN)
   GetHelper()->InitializeCOMForTesting();
 #endif
-  return Create(task_runner, task_runner, task_runner,
+  scoped_refptr<base::SingleThreadTaskRunner> file_task_runner =
+      audio_thread->GetWorkerTaskRunner();
+  return Create(std::move(audio_thread), std::move(file_task_runner),
                 GetHelper()->fake_log_factory());
 }
 
@@ -355,6 +330,22 @@ const std::string& AudioManager::GetGlobalAppName() {
 // static
 AudioManager* AudioManager::Get() {
   return g_last_created;
+}
+
+void AudioManager::Shutdown() {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+
+  // TODO(alokp): Suspend hang monitor.
+
+  if (audio_thread_->GetTaskRunner()->BelongsToCurrentThread()) {
+    ShutdownOnAudioThread();
+  } else {
+    audio_thread_->GetTaskRunner()->PostTask(
+        FROM_HERE, base::Bind(&AudioManager::ShutdownOnAudioThread,
+                              base::Unretained(this)));
+  }
+  audio_thread_->Stop();
+  shutdown_ = true;
 }
 
 }  // namespace media

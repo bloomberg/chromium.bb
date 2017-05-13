@@ -14,7 +14,6 @@
 #include "build/build_config.h"
 #include "content/browser/browser_process_sub_thread.h"
 #include "content/public/browser/browser_main_runner.h"
-#include "media/audio/audio_manager.h"
 #include "services/resource_coordinator/memory/coordinator/coordinator_impl.h"
 
 #if defined(USE_AURA)
@@ -41,6 +40,7 @@ class DiscardableSharedMemoryManager;
 }
 
 namespace media {
+class AudioManager;
 class AudioSystem;
 #if defined(OS_WIN)
 class SystemMessageWindowWin;
@@ -74,7 +74,6 @@ class ClientNativePixmapFactory;
 #endif
 
 namespace content {
-class AudioManagerThread;
 class BrowserMainParts;
 class BrowserOnlineStateObserver;
 class BrowserThreadImpl;
@@ -192,6 +191,7 @@ class CONTENT_EXPORT BrowserMainLoop {
   void EndStartupTracing();
 
   void CreateAudioManager();
+
   bool UsingInProcessGpu() const;
 
   void InitializeMemoryManagementComponent();
@@ -289,9 +289,7 @@ class CONTENT_EXPORT BrowserMainLoop {
 
   // |user_input_monitor_| has to outlive |audio_manager_|, so declared first.
   std::unique_ptr<media::UserInputMonitor> user_input_monitor_;
-  // AudioThread needs to outlive |audio_manager_|.
-  std::unique_ptr<AudioManagerThread> audio_thread_;
-  media::ScopedAudioManagerPtr audio_manager_;
+  std::unique_ptr<media::AudioManager> audio_manager_;
   // Calls to |audio_system_| must not be posted to the audio thread if it
   // differs from the UI one. See http://crbug.com/705455.
   std::unique_ptr<media::AudioSystem> audio_system_;

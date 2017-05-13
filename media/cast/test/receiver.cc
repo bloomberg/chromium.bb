@@ -32,6 +32,7 @@
 #include "media/audio/audio_io.h"
 #include "media/audio/audio_manager.h"
 #include "media/audio/fake_audio_log_factory.h"
+#include "media/audio/test_audio_thread.h"
 #include "media/base/audio_bus.h"
 #include "media/base/audio_parameters.h"
 #include "media/base/channel_layout.h"
@@ -561,9 +562,8 @@ int main(int argc, char** argv) {
       new media::cast::StandaloneCastEnvironment);
 
   // Start up Chromium audio system.
-  const media::ScopedAudioManagerPtr audio_manager(
-      media::AudioManager::CreateForTesting(
-          base::ThreadTaskRunnerHandle::Get()));
+  auto audio_manager = media::AudioManager::CreateForTesting(
+      base::MakeUnique<media::TestAudioThread>());
   CHECK(media::AudioManager::Get());
 
   media::cast::FrameReceiverConfig audio_config =

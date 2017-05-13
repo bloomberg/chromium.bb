@@ -94,12 +94,11 @@ class MEDIA_EXPORT AudioManagerBase : public AudioManager {
   int output_stream_count() const { return num_output_streams_; }
 
  protected:
-  AudioManagerBase(
-      scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-      scoped_refptr<base::SingleThreadTaskRunner> worker_task_runner,
-      AudioLogFactory* audio_log_factory);
+  AudioManagerBase(std::unique_ptr<AudioThread> audio_thread,
+                   AudioLogFactory* audio_log_factory);
 
   // AudioManager:
+  void ShutdownOnAudioThread() override;
   base::string16 GetAudioInputDeviceModel() override;
   void ShowAudioInputSettings() override;
 
@@ -115,12 +114,6 @@ class MEDIA_EXPORT AudioManagerBase : public AudioManager {
       const std::string& device_id) override;
   std::string GetAssociatedOutputDeviceID(
       const std::string& input_device_id) override;
-
-  // Releases all the audio output dispatchers.
-  // All audio streams should be closed before Shutdown() is called.
-  // This must be called in the destructor of every AudioManagerBase
-  // implementation.
-  void Shutdown();
 
   void SetMaxOutputStreamsAllowed(int max) { max_num_output_streams_ = max; }
 

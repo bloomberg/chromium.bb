@@ -131,13 +131,9 @@ static int NumberOfWaveOutBuffers() {
   return (base::win::GetVersion() == base::win::VERSION_VISTA) ? 4 : 3;
 }
 
-AudioManagerWin::AudioManagerWin(
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-    scoped_refptr<base::SingleThreadTaskRunner> worker_task_runner,
-    AudioLogFactory* audio_log_factory)
-    : AudioManagerBase(std::move(task_runner),
-                       std::move(worker_task_runner),
-                       audio_log_factory) {
+AudioManagerWin::AudioManagerWin(std::unique_ptr<AudioThread> audio_thread,
+                                 AudioLogFactory* audio_log_factory)
+    : AudioManagerBase(std::move(audio_thread), audio_log_factory) {
   // |CoreAudioUtil::IsSupported()| uses static variables to avoid doing
   // multiple initializations.  This is however not thread safe.
   // So, here we call it explicitly before we kick off the audio thread
@@ -157,8 +153,14 @@ AudioManagerWin::AudioManagerWin(
                             base::Unretained(this)));
 }
 
-AudioManagerWin::~AudioManagerWin() {
-  Shutdown();
+AudioManagerWin::~AudioManagerWin() = default;
+
+void AudioManagerWin::ShutdownOnAudioThread() {
+  AudioManagerBase::ShutdownOnAudioThread();
+
+  // Destroy AudioDeviceListenerWin instance on the audio thread because it
+  // expects to be constructed and destroyed on the same thread.
+  output_device_listener_.reset();
 }
 
 bool AudioManagerWin::HasAudioOutputDevices() {
@@ -464,13 +466,11 @@ AudioParameters AudioManagerWin::GetPreferredOutputStreamParameters(
 }
 
 // static
-ScopedAudioManagerPtr CreateAudioManager(
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-    scoped_refptr<base::SingleThreadTaskRunner> worker_task_runner,
+std::unique_ptr<AudioManager> CreateAudioManager(
+    std::unique_ptr<AudioThread> audio_thread,
     AudioLogFactory* audio_log_factory) {
-  return ScopedAudioManagerPtr(
-      new AudioManagerWin(std::move(task_runner), std::move(worker_task_runner),
-                          audio_log_factory));
+  return base::MakeUnique<AudioManagerWin>(std::move(audio_thread),
+                                           audio_log_factory);
 }
 
 }  // namespace media

@@ -11,25 +11,13 @@
 
 namespace media {
 
-void MockAudioManager::Deleter::operator()(
-    const MockAudioManager* instance) const {
-  CHECK(instance);
-  if (instance->GetTaskRunner()->BelongsToCurrentThread()) {
-    delete instance;
-    return;
-  }
-  // AudioManager must be destroyed on the audio thread.
-  if (!instance->GetTaskRunner()->DeleteSoon(FROM_HERE, instance)) {
-    LOG(WARNING) << "Failed to delete AudioManager instance.";
-  }
-}
-
-MockAudioManager::MockAudioManager(
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner)
-    : AudioManager(task_runner, task_runner) {}
+MockAudioManager::MockAudioManager(std::unique_ptr<AudioThread> audio_thread)
+    : AudioManager(std::move(audio_thread)) {}
 
 MockAudioManager::~MockAudioManager() {
 }
+
+void MockAudioManager::ShutdownOnAudioThread() {}
 
 bool MockAudioManager::HasAudioOutputDevices() {
   DCHECK(GetTaskRunner()->BelongsToCurrentThread());

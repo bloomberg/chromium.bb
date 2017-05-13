@@ -6,7 +6,6 @@
 
 #include "base/command_line.h"
 #include "base/environment.h"
-#include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/nix/xdg_util.h"
 #include "base/stl_util.h"
@@ -19,14 +18,6 @@
 #include "media/audio/pulse/pulse_util.h"
 #include "media/base/audio_parameters.h"
 #include "media/base/channel_layout.h"
-
-#if defined(DLOPEN_PULSEAUDIO)
-#include "media/audio/pulse/pulse_stubs.h"
-
-using media_audio_pulse::kModulePulse;
-using media_audio_pulse::InitializeStubs;
-using media_audio_pulse::StubPathMap;
-#endif  // defined(DLOPEN_PULSEAUDIO)
 
 namespace media {
 
@@ -43,43 +34,30 @@ static const int kMaximumOutputBufferSize = 8192;
 // Default input buffer size.
 static const int kDefaultInputBufferSize = 1024;
 
-#if defined(DLOPEN_PULSEAUDIO)
-static const base::FilePath::CharType kPulseLib[] =
-    FILE_PATH_LITERAL("libpulse.so.0");
-#endif
-
-AudioManagerPulse::AudioManagerPulse(
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-    scoped_refptr<base::SingleThreadTaskRunner> worker_task_runner,
-    AudioLogFactory* audio_log_factory)
-    : AudioManagerBase(std::move(task_runner),
-                       std::move(worker_task_runner),
-                       audio_log_factory),
-      input_mainloop_(NULL),
-      input_context_(NULL),
+AudioManagerPulse::AudioManagerPulse(std::unique_ptr<AudioThread> audio_thread,
+                                     AudioLogFactory* audio_log_factory,
+                                     pa_threaded_mainloop* pa_mainloop,
+                                     pa_context* pa_context)
+    : AudioManagerBase(std::move(audio_thread), audio_log_factory),
+      input_mainloop_(pa_mainloop),
+      input_context_(pa_context),
       devices_(NULL),
       native_input_sample_rate_(0),
       native_channel_count_(0) {
+  DCHECK(input_mainloop_);
+  DCHECK(input_context_);
   SetMaxOutputStreamsAllowed(kMaxOutputStreams);
 }
 
-AudioManagerPulse::~AudioManagerPulse() {
-  Shutdown();
-  // The Pulse objects are the last things to be destroyed since Shutdown()
-  // needs them.
-  DestroyPulse();
+AudioManagerPulse::~AudioManagerPulse() = default;
+
+void AudioManagerPulse::ShutdownOnAudioThread() {
+  AudioManagerBase::ShutdownOnAudioThread();
+  // The Pulse objects are the last things to be destroyed since
+  // AudioManagerBase::ShutdownOnAudioThread() needs them.
+  pulse::DestroyPulse(input_mainloop_, input_context_);
 }
 
-bool AudioManagerPulse::Init() {
-  // TODO(alokp): Investigate if InitPulse can happen on the audio thread.
-  // It currently needs to happen on the main thread so that is InitPulse fails,
-  // we can fallback to ALSA implementation. Initializing it on audio thread
-  // would unblock the main thread and make InitPulse consistent with
-  // DestroyPulse which happens on the audio thread.
-  return InitPulse();
-}
-
-// Implementation of AudioManager.
 bool AudioManagerPulse::HasAudioOutputDevices() {
   AudioDeviceNames devices;
   GetAudioOutputDeviceNames(&devices);
@@ -231,85 +209,6 @@ void AudioManagerPulse::UpdateNativeAudioHardwareInfo() {
   pa_operation* operation = pa_context_get_server_info(
       input_context_, AudioHardwareInfoCallback, this);
   WaitForOperationCompletion(input_mainloop_, operation);
-}
-
-bool AudioManagerPulse::InitPulse() {
-  DCHECK(!input_mainloop_);
-
-#if defined(DLOPEN_PULSEAUDIO)
-  StubPathMap paths;
-
-  // Check if the pulse library is avialbale.
-  paths[kModulePulse].push_back(kPulseLib);
-  if (!InitializeStubs(paths)) {
-    VLOG(1) << "Failed on loading the Pulse library and symbols";
-    return false;
-  }
-#endif  // defined(DLOPEN_PULSEAUDIO)
-
-  // Create a mainloop API and connect to the default server.
-  // The mainloop is the internal asynchronous API event loop.
-  input_mainloop_ = pa_threaded_mainloop_new();
-  if (!input_mainloop_)
-    return false;
-
-  // Start the threaded mainloop.
-  if (pa_threaded_mainloop_start(input_mainloop_))
-    return false;
-
-  // Lock the event loop object, effectively blocking the event loop thread
-  // from processing events. This is necessary.
-  AutoPulseLock auto_lock(input_mainloop_);
-
-  pa_mainloop_api* pa_mainloop_api =
-      pa_threaded_mainloop_get_api(input_mainloop_);
-  input_context_ = pa_context_new(pa_mainloop_api, "Chrome input");
-  if (!input_context_)
-    return false;
-
-  pa_context_set_state_callback(input_context_, &pulse::ContextStateCallback,
-                                input_mainloop_);
-  if (pa_context_connect(input_context_, NULL, PA_CONTEXT_NOAUTOSPAWN, NULL)) {
-    VLOG(1) << "Failed to connect to the context.  Error: "
-            << pa_strerror(pa_context_errno(input_context_));
-    return false;
-  }
-
-  // Wait until |input_context_| is ready.  pa_threaded_mainloop_wait() must be
-  // called after pa_context_get_state() in case the context is already ready,
-  // otherwise pa_threaded_mainloop_wait() will hang indefinitely.
-  while (true) {
-    pa_context_state_t context_state = pa_context_get_state(input_context_);
-    if (!PA_CONTEXT_IS_GOOD(context_state))
-      return false;
-    if (context_state == PA_CONTEXT_READY)
-      break;
-    pa_threaded_mainloop_wait(input_mainloop_);
-  }
-
-  return true;
-}
-
-void AudioManagerPulse::DestroyPulse() {
-  if (!input_mainloop_) {
-    DCHECK(!input_context_);
-    return;
-  }
-
-  {
-    AutoPulseLock auto_lock(input_mainloop_);
-    if (input_context_) {
-      // Clear our state callback.
-      pa_context_set_state_callback(input_context_, NULL, NULL);
-      pa_context_disconnect(input_context_);
-      pa_context_unref(input_context_);
-      input_context_ = NULL;
-    }
-  }
-
-  pa_threaded_mainloop_stop(input_mainloop_);
-  pa_threaded_mainloop_free(input_mainloop_);
-  input_mainloop_ = NULL;
 }
 
 void AudioManagerPulse::InputDevicesInfoCallback(pa_context* context,

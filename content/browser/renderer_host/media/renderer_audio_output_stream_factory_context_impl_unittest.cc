@@ -13,7 +13,6 @@
 #include "base/run_loop.h"
 #include "base/sync_socket.h"
 #include "cc/base/math_util.h"
-#include "content/browser/audio_manager_thread.h"
 #include "content/browser/renderer_host/media/media_stream_manager.h"
 #include "content/common/media/renderer_audio_output_stream_factory.mojom.h"
 #include "content/public/browser/browser_thread.h"
@@ -23,6 +22,7 @@
 #include "media/audio/audio_manager_base.h"
 #include "media/audio/audio_output_controller.h"
 #include "media/audio/audio_system_impl.h"
+#include "media/audio/audio_thread_impl.h"
 #include "media/audio/fake_audio_log_factory.h"
 #include "media/audio/simple_sources.h"
 #include "media/base/audio_parameters.h"
@@ -104,17 +104,13 @@ void SyncWithAllThreads() {
 
 class MockAudioManager : public media::AudioManagerBase {
  public:
-  MockAudioManager(
-      scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-      scoped_refptr<base::SingleThreadTaskRunner> worker_task_runner,
-      media::AudioLogFactory* audio_log_factory)
-      : media::AudioManagerBase(task_runner,
-                                worker_task_runner,
-                                audio_log_factory) {
+  MockAudioManager(std::unique_ptr<media::AudioThread> audio_thread,
+                   media::AudioLogFactory* audio_log_factory)
+      : media::AudioManagerBase(std::move(audio_thread), audio_log_factory) {
     ON_CALL(*this, HasAudioOutputDevices()).WillByDefault(Return(true));
   }
 
-  ~MockAudioManager() override { Shutdown(); }
+  ~MockAudioManager() override = default;
 
   MOCK_METHOD2(MakeLinearOutputStream,
                media::AudioOutputStream*(const media::AudioParameters& params,
@@ -303,14 +299,16 @@ class RendererAudioOutputStreamFactoryIntegrationTest : public Test {
   RendererAudioOutputStreamFactoryIntegrationTest()
       : media_stream_manager_(),
         thread_bundle_(TestBrowserThreadBundle::Options::REAL_IO_THREAD),
-        audio_thread_(),
         log_factory_(),
-        audio_manager_(new MockAudioManager(audio_thread_.task_runner(),
-                                            audio_thread_.worker_task_runner(),
-                                            &log_factory_)),
+        audio_manager_(
+            new MockAudioManager(base::MakeUnique<media::AudioThreadImpl>(),
+                                 &log_factory_)),
         audio_system_(media::AudioSystemImpl::Create(audio_manager_.get())) {
     media_stream_manager_ =
         base::MakeUnique<MediaStreamManager>(audio_system_.get());
+  }
+  ~RendererAudioOutputStreamFactoryIntegrationTest() override {
+    audio_manager_->Shutdown();
   }
 
   void CreateAndBindFactory(AudioOutputStreamFactoryRequest request) {
@@ -322,9 +320,8 @@ class RendererAudioOutputStreamFactoryIntegrationTest : public Test {
 
   std::unique_ptr<MediaStreamManager> media_stream_manager_;
   TestBrowserThreadBundle thread_bundle_;
-  AudioManagerThread audio_thread_;
   media::FakeAudioLogFactory log_factory_;
-  media::ScopedAudioManagerPtr audio_manager_;
+  std::unique_ptr<media::AudioManager> audio_manager_;
   std::unique_ptr<media::AudioSystem> audio_system_;
   std::unique_ptr<RendererAudioOutputStreamFactoryContextImpl,
                   BrowserThread::DeleteOnIOThread>

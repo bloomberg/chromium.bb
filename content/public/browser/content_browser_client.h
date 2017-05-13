@@ -26,7 +26,6 @@
 #include "content/public/common/service_info.h"
 #include "content/public/common/socket_permission_request.h"
 #include "content/public/common/window_container_type.mojom.h"
-#include "media/audio/audio_manager.h"
 #include "media/media_features.h"
 #include "media/mojo/interfaces/remoting.mojom.h"
 #include "net/base/mime_util.h"
@@ -62,6 +61,8 @@ class GpuChannelEstablishFactory;
 }
 
 namespace media {
+class AudioLogFactory;
+class AudioManager;
 class CdmFactory;
 }
 
@@ -776,7 +777,7 @@ class CONTENT_EXPORT ContentBrowserClient {
   // Allows the embedder to provide its own AudioManager implementation.
   // If this function returns nullptr, a default platform implementation
   // will be used.
-  virtual media::ScopedAudioManagerPtr CreateAudioManager(
+  virtual std::unique_ptr<media::AudioManager> CreateAudioManager(
       media::AudioLogFactory* audio_log_factory);
   // Creates and returns a factory used for creating CDM instances for playing
   // protected content.

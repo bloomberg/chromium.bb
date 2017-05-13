@@ -14,6 +14,7 @@
 #include "base/environment.h"
 #include "base/files/file_util.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
@@ -26,6 +27,7 @@
 #include "media/audio/audio_io.h"
 #include "media/audio/audio_manager.h"
 #include "media/audio/audio_unittest_util.h"
+#include "media/audio/test_audio_thread.h"
 #include "media/audio/win/core_audio_util_win.h"
 #include "media/base/seekable_buffer.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -261,17 +263,14 @@ class WinAudioInputTest : public ::testing::Test {
  public:
   WinAudioInputTest() {
     audio_manager_ =
-        AudioManager::CreateForTesting(message_loop_.task_runner());
+        AudioManager::CreateForTesting(base::MakeUnique<TestAudioThread>());
     base::RunLoop().RunUntilIdle();
   }
-  ~WinAudioInputTest() override {
-    audio_manager_.reset();
-    base::RunLoop().RunUntilIdle();
-  }
+  ~WinAudioInputTest() override { audio_manager_->Shutdown(); }
 
  protected:
   base::MessageLoop message_loop_;
-  ScopedAudioManagerPtr audio_manager_;
+  std::unique_ptr<AudioManager> audio_manager_;
 };
 
 // Verify that we can retrieve the current hardware/mixing sample rate

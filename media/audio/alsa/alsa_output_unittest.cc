@@ -17,6 +17,7 @@
 #include "media/audio/alsa/audio_manager_alsa.h"
 #include "media/audio/fake_audio_log_factory.h"
 #include "media/audio/mock_audio_source_callback.h"
+#include "media/audio/test_audio_thread.h"
 #include "media/base/audio_timestamp_helper.h"
 #include "media/base/data_buffer.h"
 #include "media/base/seekable_buffer.h"
@@ -80,8 +81,7 @@ class MockAlsaWrapper : public AlsaWrapper {
 class MockAudioManagerAlsa : public AudioManagerAlsa {
  public:
   MockAudioManagerAlsa()
-      : AudioManagerAlsa(base::ThreadTaskRunnerHandle::Get(),
-                         base::ThreadTaskRunnerHandle::Get(),
+      : AudioManagerAlsa(base::MakeUnique<TestAudioThread>(),
                          &fake_audio_log_factory_) {}
   MOCK_METHOD0(Init, void());
   MOCK_METHOD0(HasAudioOutputDevices, bool());
@@ -117,8 +117,7 @@ class AlsaPcmOutputStreamTest : public testing::Test {
     mock_manager_.reset(new StrictMock<MockAudioManagerAlsa>());
   }
 
-  virtual ~AlsaPcmOutputStreamTest() {
-  }
+  virtual ~AlsaPcmOutputStreamTest() { mock_manager_->Shutdown(); }
 
   AlsaPcmOutputStream* CreateStream(ChannelLayout layout) {
     return CreateStream(layout, kTestFramesPerPacket);
@@ -178,8 +177,7 @@ class AlsaPcmOutputStreamTest : public testing::Test {
 
   base::TestMessageLoop message_loop_;
   StrictMock<MockAlsaWrapper> mock_alsa_wrapper_;
-  std::unique_ptr<StrictMock<MockAudioManagerAlsa>, AudioManagerDeleter>
-      mock_manager_;
+  std::unique_ptr<StrictMock<MockAudioManagerAlsa>> mock_manager_;
   scoped_refptr<DataBuffer> packet_;
 
  private:

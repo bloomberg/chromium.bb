@@ -37,6 +37,10 @@ class AutoPulseLock {
   DISALLOW_COPY_AND_ASSIGN(AutoPulseLock);
 };
 
+bool MEDIA_EXPORT InitPulse(pa_threaded_mainloop** mainloop,
+                            pa_context** context);
+void DestroyPulse(pa_threaded_mainloop* mainloop, pa_context* context);
+
 // Triggers pa_threaded_mainloop_signal() to avoid deadlocks.
 void StreamSuccessCallback(pa_stream* s, int error, void* mainloop);
 void ContextStateCallback(pa_context* context, void* mainloop);

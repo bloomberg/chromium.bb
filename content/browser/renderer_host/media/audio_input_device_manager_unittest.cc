@@ -22,6 +22,7 @@
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "media/audio/audio_manager_base.h"
 #include "media/audio/audio_system_impl.h"
+#include "media/audio/audio_thread_impl.h"
 #include "media/base/media_switches.h"
 #include "media/base/test_helpers.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -60,9 +61,7 @@ class MockAudioInputDeviceManagerListener
 
 class MAYBE_AudioInputDeviceManagerTest : public testing::Test {
  public:
-  MAYBE_AudioInputDeviceManagerTest() : audio_thread_("AudioSystemThread") {
-    audio_thread_.StartAndWaitForTesting();
-  }
+  MAYBE_AudioInputDeviceManagerTest() {}
 
  protected:
   void SetUp() override {
@@ -70,8 +69,8 @@ class MAYBE_AudioInputDeviceManagerTest : public testing::Test {
         switches::kUseFakeDeviceForMediaStream);
     // AudioInputDeviceManager accesses AudioSystem from IO thread, so it never
     // runs on the same thread with it, even on Mac.
-    audio_manager_ =
-        media::AudioManager::CreateForTesting(audio_thread_.task_runner());
+    audio_manager_ = media::AudioManager::CreateForTesting(
+        base::MakeUnique<media::AudioThreadImpl>());
     // Flush the message loop to ensure proper initialization of AudioManager.
     base::RunLoop().RunUntilIdle();
 
@@ -92,24 +91,21 @@ class MAYBE_AudioInputDeviceManagerTest : public testing::Test {
 
   void TearDown() override {
     manager_->UnregisterListener(audio_input_listener_.get());
-    audio_system_.reset();
-    audio_manager_.reset();
-    audio_thread_.Stop();
+    audio_manager_->Shutdown();
   }
 
   void WaitForOpenCompletion() {
     media::WaitableMessageLoopEvent event;
-    audio_thread_.task_runner()->PostTaskAndReply(
+    audio_manager_->GetTaskRunner()->PostTaskAndReply(
         FROM_HERE, base::Bind(&base::DoNothing), event.GetClosure());
-    // Runs the loop and waits for the |audio_thread_| to call event's
+    // Runs the loop and waits for the audio thread to call event's
     // closure.
     event.RunAndWait();
     base::RunLoop().RunUntilIdle();
   }
 
   TestBrowserThreadBundle thread_bundle_;
-  base::Thread audio_thread_;
-  media::ScopedAudioManagerPtr audio_manager_;
+  std::unique_ptr<media::AudioManager> audio_manager_;
   std::unique_ptr<media::AudioSystem> audio_system_;
   scoped_refptr<AudioInputDeviceManager> manager_;
   std::unique_ptr<MockAudioInputDeviceManagerListener> audio_input_listener_;

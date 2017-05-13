@@ -100,7 +100,7 @@ class CastContentBrowserClient : public content::ContentBrowserClient {
 
   media::MediaPipelineBackendManager* media_pipeline_backend_manager();
 
-  ::media::ScopedAudioManagerPtr CreateAudioManager(
+  std::unique_ptr<::media::AudioManager> CreateAudioManager(
       ::media::AudioLogFactory* audio_log_factory) override;
   std::unique_ptr<::media::CdmFactory> CreateCdmFactory() override;
 #endif  // BUILDFLAG(IS_CAST_USING_CMA_BACKEND)

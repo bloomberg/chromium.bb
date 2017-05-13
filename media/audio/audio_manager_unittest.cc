@@ -24,6 +24,7 @@
 #include "media/audio/audio_unittest_util.h"
 #include "media/audio/fake_audio_log_factory.h"
 #include "media/audio/fake_audio_manager.h"
+#include "media/audio/test_audio_thread.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -38,6 +39,7 @@
 
 #if defined(USE_PULSEAUDIO)
 #include "media/audio/pulse/audio_manager_pulse.h"
+#include "media/audio/pulse/pulse_util.h"
 #endif  // defined(USE_PULSEAUDIO)
 
 #if defined(USE_CRAS)
@@ -54,32 +56,34 @@ namespace {
 
 template <typename T>
 struct TestAudioManagerFactory {
-  static ScopedAudioManagerPtr Create(AudioLogFactory* audio_log_factory) {
-    return ScopedAudioManagerPtr(new T(base::ThreadTaskRunnerHandle::Get(),
-                                       base::ThreadTaskRunnerHandle::Get(),
-                                       audio_log_factory));
+  static std::unique_ptr<AudioManager> Create(
+      AudioLogFactory* audio_log_factory) {
+    return base::MakeUnique<T>(base::MakeUnique<TestAudioThread>(),
+                               audio_log_factory);
   }
 };
 
 #if defined(USE_PULSEAUDIO)
 template <>
 struct TestAudioManagerFactory<AudioManagerPulse> {
-  static ScopedAudioManagerPtr Create(AudioLogFactory* audio_log_factory) {
-    std::unique_ptr<AudioManagerPulse, AudioManagerDeleter> manager(
-        new AudioManagerPulse(base::ThreadTaskRunnerHandle::Get(),
-                              base::ThreadTaskRunnerHandle::Get(),
-                              audio_log_factory));
-    if (!manager->Init())
-      manager.reset();
-    return std::move(manager);
+  static std::unique_ptr<AudioManager> Create(
+      AudioLogFactory* audio_log_factory) {
+    pa_threaded_mainloop* pa_mainloop = nullptr;
+    pa_context* pa_context = nullptr;
+    if (!pulse::InitPulse(&pa_mainloop, &pa_context))
+      return nullptr;
+    return base::MakeUnique<AudioManagerPulse>(
+        base::MakeUnique<TestAudioThread>(), audio_log_factory, pa_mainloop,
+        pa_context);
   }
 };
 #endif  // defined(USE_PULSEAUDIO)
 
 template <>
 struct TestAudioManagerFactory<std::nullptr_t> {
-  static ScopedAudioManagerPtr Create(AudioLogFactory* audio_log_factory) {
-    return AudioManager::CreateForTesting(base::ThreadTaskRunnerHandle::Get());
+  static std::unique_ptr<AudioManager> Create(
+      AudioLogFactory* audio_log_factory) {
+    return AudioManager::CreateForTesting(base::MakeUnique<TestAudioThread>());
   }
 };
 
@@ -234,7 +238,7 @@ class AudioManagerTest : public ::testing::Test {
 
  protected:
   AudioManagerTest() { CreateAudioManagerForTesting(); }
-  ~AudioManagerTest() override {}
+  ~AudioManagerTest() override { audio_manager_->Shutdown(); }
 
   // Helper method which verifies that the device list starts with a valid
   // default record followed by non-default device names.
@@ -331,8 +335,10 @@ class AudioManagerTest : public ::testing::Test {
     // Only one AudioManager may exist at a time, so destroy the one we're
     // currently holding before creating a new one.
     // Flush the message loop to run any shutdown tasks posted by AudioManager.
-    audio_manager_.reset();
-    base::RunLoop().RunUntilIdle();
+    if (audio_manager_) {
+      audio_manager_->Shutdown();
+      audio_manager_.reset();
+    }
 
     audio_manager_ =
         TestAudioManagerFactory<T>::Create(&fake_audio_log_factory_);
@@ -347,7 +353,7 @@ class AudioManagerTest : public ::testing::Test {
 
   base::TestMessageLoop message_loop_;
   FakeAudioLogFactory fake_audio_log_factory_;
-  ScopedAudioManagerPtr audio_manager_;
+  std::unique_ptr<AudioManager> audio_manager_;
   std::unique_ptr<AudioDeviceInfoAccessorForTests> device_info_accessor_;
 
 #if defined(USE_CRAS)
@@ -583,11 +589,9 @@ class TestAudioManager : public FakeAudioManager {
   // Default input is input1.
   // Default output is output2.
  public:
-  TestAudioManager(
-      scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-      scoped_refptr<base::SingleThreadTaskRunner> worker_task_runner,
-      AudioLogFactory* audio_log_factory)
-      : FakeAudioManager(task_runner, worker_task_runner, audio_log_factory) {}
+  TestAudioManager(std::unique_ptr<AudioThread> audio_thread,
+                   AudioLogFactory* audio_log_factory)
+      : FakeAudioManager(std::move(audio_thread), audio_log_factory) {}
 
   std::string GetDefaultOutputDeviceID() override { return "output4"; }
 

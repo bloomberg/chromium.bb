@@ -20,10 +20,9 @@ class AlsaWrapper;
 
 class MEDIA_EXPORT AudioManagerAlsa : public AudioManagerBase {
  public:
-  AudioManagerAlsa(
-      scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-      scoped_refptr<base::SingleThreadTaskRunner> worker_task_runner,
-      AudioLogFactory* audio_log_factory);
+  AudioManagerAlsa(std::unique_ptr<AudioThread> audio_thread,
+                   AudioLogFactory* audio_log_factory);
+  ~AudioManagerAlsa() override;
 
   static void ShowLinuxAudioInputSettings();
 
@@ -55,8 +54,6 @@ class MEDIA_EXPORT AudioManagerAlsa : public AudioManagerBase {
       const LogCallback& log_callback) override;
 
  protected:
-  ~AudioManagerAlsa() override;
-
   AudioParameters GetPreferredOutputStreamParameters(
       const std::string& output_device_id,
       const AudioParameters& input_params) override;

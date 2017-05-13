@@ -18,6 +18,7 @@
 #include "media/audio/audio_io.h"
 #include "media/audio/audio_manager.h"
 #include "media/audio/audio_unittest_util.h"
+#include "media/audio/test_audio_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace media {
@@ -56,12 +57,12 @@ class AudioInputTest : public testing::Test {
   AudioInputTest()
       : message_loop_(base::MessageLoop::TYPE_UI),
         audio_manager_(AudioManager::CreateForTesting(
-            base::ThreadTaskRunnerHandle::Get())),
+            base::MakeUnique<TestAudioThread>())),
         audio_input_stream_(NULL) {
     base::RunLoop().RunUntilIdle();
   }
 
-  ~AudioInputTest() override {}
+  ~AudioInputTest() override { audio_manager_->Shutdown(); }
 
  protected:
   bool InputDevicesAvailable() {
@@ -156,7 +157,7 @@ class AudioInputTest : public testing::Test {
   void OnLogMessage(const std::string& message) {}
 
   base::TestMessageLoop message_loop_;
-  ScopedAudioManagerPtr audio_manager_;
+  std::unique_ptr<AudioManager> audio_manager_;
   AudioInputStream* audio_input_stream_;
 
  private:
