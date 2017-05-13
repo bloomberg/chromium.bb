@@ -177,7 +177,6 @@ class SmoothnessKeyMobileSites(_Smoothness):
 @benchmark.Disabled('mac')  # crbug.com/563615
 @benchmark.Owner(emails=['alancutter@chromium.org'])
 class SmoothnessToughAnimationCases(_Smoothness):
-  test = smoothness.SmoothnessWithRestart
   page_set = page_sets.ToughAnimationCasesPageSet
 
   @classmethod
