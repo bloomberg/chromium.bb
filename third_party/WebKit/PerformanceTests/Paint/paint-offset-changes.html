@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <body>
 <script src="../resources/runner.js"></script>
+<script src="resources/paint.js"></script>
 <style>
   .column {
     width: 180px;
@@ -56,7 +57,7 @@ var changeFirstRowHeight = function(rowCount) {
 }
 
 var runCount = 0;
-PerfTestRunner.measureFrameTime({
+measurePaint({
   run: function() {
     runCount++;
     changeRowMargins(runCount);

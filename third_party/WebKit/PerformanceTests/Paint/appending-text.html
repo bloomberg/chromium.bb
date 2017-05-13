@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <body>
 <script src="../resources/runner.js"></script>
+<script src="resources/paint.js"></script>
 <div id="container"></div>
 <script>
 // This test measures the lifecycle update performance when adding small
@@ -12,7 +13,7 @@ for (var i = 0; i < initialTextCount; i++)
   initialText += '<span>a</span>';
 
 var textToAppendEachRun = 5;
-PerfTestRunner.measureFrameTime({
+measurePaint({
   run: function() {
     var text = document.createElement('span');
     text.innerText = 'abc';

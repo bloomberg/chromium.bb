@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <body>
 <script src="../resources/runner.js"></script>
+<script src="resources/paint.js"></script>
 <style>td { border: 1px solid blue }</style>
 <script>
 function createTable(rows, columns) {
@@ -23,7 +24,7 @@ var table = createTable(300, 320);
 table.style.border = '2px solid green';
 document.body.appendChild(table);
 
-PerfTestRunner.measureFrameTime({
+measurePaint({
     run: function() {
         table.style.borderColor = table.style.borderColor == 'green' ?
             'yellow' : 'green';

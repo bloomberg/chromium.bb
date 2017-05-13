@@ -2,6 +2,7 @@
 <div style="position: fixed; width: 10px; height: 10px; background-color: blue"></div>
 <table id="table"></table>
 <script src="../resources/runner.js"></script>
+<script src="resources/paint.js"></script>
 <script>
 function createRow(i) {
   var tr = document.createElement('tr');
@@ -14,7 +15,7 @@ for (var i = 0; i < 20000; ++i)
   createRow(i);
 
 var count = 0;
-PerfTestRunner.measureFrameTime({
+measurePaint({
   run: function() {
     window.scrollTo(0, 20 * count++);
   },

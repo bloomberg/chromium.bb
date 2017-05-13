@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <body>
 <script src="../resources/runner.js"></script>
+<script src="resources/paint.js"></script>
 <script>
 function createTable(rows, columns) {
     var table = document.createElement("TABLE");
@@ -24,7 +25,7 @@ document.body.appendChild(table);
 var ix = 30;
 var iy = 30;
 
-PerfTestRunner.measureFrameTime({
+measurePaint({
     run: function() {
         table.childNodes[iy].childNodes[ix].style.backgroundColor = 'teal';
         ix++;
