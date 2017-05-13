@@ -13,6 +13,14 @@ option optimize_for = LITE_RUNTIME;
 
 package sync_pb;
 
+message FieldTrialEvent {
+  message FieldTrial {
+    optional fixed32 name_id = 1;
+    optional fixed32 group_id = 2;
+  }
+  repeated FieldTrial field_trials = 1;
+}
+
 message UserEventSpecifics {
   // Time of event, as measured on the client (unix epoch).
   optional int64 event_time_usec = 1;
@@ -24,5 +32,5 @@ message UserEventSpecifics {
   // other events belonged to.
   optional fixed64 session_id = 3;
 
-  // TODO(skym): Wrap actual event payloads in a oneof.
+  oneof event { FieldTrialEvent field_trial_event = 4; }
 }

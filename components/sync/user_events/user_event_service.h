@@ -6,14 +6,12 @@
 #define COMPONENTS_SYNC_USER_EVENTS_USER_EVENT_SERVICE_H_
 
 #include <memory>
+#include <string>
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "components/keyed_service/core/keyed_service.h"
-
-namespace sync_pb {
-class UserEventSpecifics;
-}  // namespace sync_pb
+#include "components/sync/protocol/user_event_specifics.pb.h"
 
 namespace syncer {
 
@@ -36,6 +34,12 @@ class UserEventService : public KeyedService {
   // requisite permissions are not present.
   void RecordUserEvent(std::unique_ptr<sync_pb::UserEventSpecifics> specifics);
   void RecordUserEvent(const sync_pb::UserEventSpecifics& specifics);
+
+  // Register that knowledge about a given field trial is important when
+  // interpreting specified user event type, and should be recorded if assigned.
+  void RegisterDependentFieldTrial(
+      const std::string& trial_name,
+      sync_pb::UserEventSpecifics::EventCase event_case);
 
   base::WeakPtr<ModelTypeSyncBridge> GetSyncBridge();
 
