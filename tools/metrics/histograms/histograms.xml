@@ -42875,6 +42875,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="NewTabPage.Interests.ImageDownloadSuccess"
     enum="BooleanSuccess">
+  <obsolete>
+    Deprecated 2017-05 (and not recorded for some time before that).
+  </obsolete>
   <owner>knn@chromium.org</owner>
   <summary>
     Android: Whether an attempt to download the image for an interest was
@@ -42884,6 +42887,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="NewTabPage.Interests.InterestsFetchSuccess"
     enum="BooleanSuccess">
+  <obsolete>
+    Deprecated 2017-05 (and not recorded for some time before that).
+  </obsolete>
   <owner>knn@chromium.org</owner>
   <summary>
     Android: Whether an attempt to fetch the interests for a user was
@@ -42892,6 +42898,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="NewTabPage.Interests.NumInterests" units="interests">
+  <obsolete>
+    Deprecated 2017-05 (and not recorded for some time before that).
+  </obsolete>
   <owner>knn@chromium.org</owner>
   <summary>
     Android: The number of interests fetched for a user to display on the NTP.
@@ -42918,7 +42927,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="NewTabPage.LoadTime" units="ms">
-  <owner>fserb@chromium.org</owner>
+  <owner>treib@chromium.org</owner>
   <summary>
     Histogram of the time, in milliseconds, it took for the NTP to load all of
     its tiles since navigation start.
@@ -43007,9 +43016,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="NewTabPage.MostVisited" enum="MostVisitedTileIndex">
-  <owner>beaudoin@chromium.org</owner>
   <owner>justincohen@chromium.org</owner>
-  <owner>newt@chromium.org</owner>
+  <owner>mastiz@chromium.org</owner>
+  <owner>treib@chromium.org</owner>
   <summary>
     Histogram for user clicks of the most visited tile. The value is equal to
     the index of the tile.
@@ -43196,7 +43205,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="NewTabPage.NumberOfTiles">
-  <owner>beaudoin@chromium.org</owner>
+  <owner>treib@chromium.org</owner>
   <summary>
     The number of tiles that are displayed on the NTP, no matter if they are
     thumbnails, gray tiles, or external tiles. Recorded before reloading the
@@ -43601,7 +43610,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="NewTabPage.Snippets.EnteredState" enum="NTPSnippetsState">
-  <owner>knn@chromium.org</owner>
+  <owner>treib@chromium.org</owner>
   <summary>
     Android: The state of the RemoteSuggestionsProvider. Recorded when the state
     changes, typically once at startup and rarely afterwards, e.g. on database
@@ -43669,7 +43678,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="NewTabPage.Snippets.NumArticles" units="articles">
-  <owner>knn@chromium.org</owner>
+  <owner>treib@chromium.org</owner>
   <summary>
     Android: The number of snippet articles available to show on the NTP, logged
     once every time the list is updated.
@@ -43707,7 +43716,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="NewTabPage.Snippets.NumIncompleteSnippets" units="snippets">
-  <owner>maybelle@chromium.org</owner>
+  <owner>treib@chromium.org</owner>
   <summary>
     The number of snippets that we discard per fetch due to having incomplete
     data.
@@ -43773,7 +43782,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="NewTabPage.SuggestionsImpression" enum="MostVisitedTileIndex">
-  <owner>beaudoin@chromium.org</owner>
+  <owner>treib@chromium.org</owner>
   <summary>
     Histogram for impressions on the various most visited tiles. The value is
     equal to the index of the thumbnail.
@@ -43862,7 +43871,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="NewTabPage.TimeSpent" units="ms">
-  <owner>knn@chromium.org</owner>
+  <owner>bauerb@chromium.org</owner>
   <summary>
     The time spent on the new tab page as measured from when it was loaded or
     last brought to the foreground until it was navigated away from or hidden.
@@ -43871,7 +43880,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="NewTabPage.URLState" enum="NewTabURLState">
-  <owner>beaudoin@chromium.org</owner>
+  <owner>treib@chromium.org</owner>
   <summary>
     Records the status of the New Tab page URL when an NTP is opened.
   </summary>
