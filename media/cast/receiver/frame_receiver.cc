@@ -113,6 +113,10 @@ bool FrameReceiver::ProcessPacket(std::unique_ptr<Packet> packet) {
   return true;
 }
 
+base::WeakPtr<FrameReceiver> FrameReceiver::AsWeakPtr() {
+  return weak_factory_.GetWeakPtr();
+}
+
 void FrameReceiver::ProcessParsedPacket(const RtpCastHeader& rtp_header,
                                         const uint8_t* payload_data,
                                         size_t payload_size) {
@@ -242,10 +246,9 @@ void FrameReceiver::EmitAvailableEncodedFrames() {
         if (!is_waiting_for_consecutive_frame_) {
           is_waiting_for_consecutive_frame_ = true;
           cast_environment_->PostDelayedTask(
-              CastEnvironment::MAIN,
-              FROM_HERE,
+              CastEnvironment::MAIN, FROM_HERE,
               base::Bind(&FrameReceiver::EmitAvailableEncodedFramesAfterWaiting,
-                         weak_factory_.GetWeakPtr()),
+                         AsWeakPtr()),
               playout_time - now);
         }
         return;
@@ -277,12 +280,10 @@ void FrameReceiver::EmitAvailableEncodedFrames() {
       target_playout_delay_ = base::TimeDelta::FromMilliseconds(
           encoded_frame->new_playout_delay_ms);
     }
-    cast_environment_->PostTask(CastEnvironment::MAIN,
-                                FROM_HERE,
-                                base::Bind(&FrameReceiver::EmitOneFrame,
-                                           weak_factory_.GetWeakPtr(),
-                                           frame_request_queue_.front(),
-                                           base::Passed(&encoded_frame)));
+    cast_environment_->PostTask(
+        CastEnvironment::MAIN, FROM_HERE,
+        base::Bind(&FrameReceiver::EmitOneFrame, AsWeakPtr(),
+                   frame_request_queue_.front(), base::Passed(&encoded_frame)));
     frame_request_queue_.pop_front();
   }
 }
@@ -323,10 +324,8 @@ void FrameReceiver::ScheduleNextCastMessage() {
   time_to_send = std::max(
       time_to_send, base::TimeDelta::FromMilliseconds(kMinSchedulingDelayMs));
   cast_environment_->PostDelayedTask(
-      CastEnvironment::MAIN,
-      FROM_HERE,
-      base::Bind(&FrameReceiver::SendNextCastMessage,
-                 weak_factory_.GetWeakPtr()),
+      CastEnvironment::MAIN, FROM_HERE,
+      base::Bind(&FrameReceiver::SendNextCastMessage, AsWeakPtr()),
       time_to_send);
 }
 
@@ -341,8 +340,7 @@ void FrameReceiver::ScheduleNextRtcpReport() {
 
   cast_environment_->PostDelayedTask(
       CastEnvironment::MAIN, FROM_HERE,
-      base::Bind(&FrameReceiver::SendNextRtcpReport,
-                 weak_factory_.GetWeakPtr()),
+      base::Bind(&FrameReceiver::SendNextRtcpReport, AsWeakPtr()),
       base::TimeDelta::FromMilliseconds(kRtcpReportIntervalMs));
 }
 

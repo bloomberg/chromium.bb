@@ -50,8 +50,7 @@ class CastEnvironment;
 //
 // This class is not thread safe.  Should only be called from the Main cast
 // thread.
-class FrameReceiver : public RtpPayloadFeedback,
-                      public base::SupportsWeakPtr<FrameReceiver> {
+class FrameReceiver : public RtpPayloadFeedback {
  public:
   FrameReceiver(const scoped_refptr<CastEnvironment>& cast_environment,
                 const FrameReceiverConfig& config,
@@ -69,6 +68,8 @@ class FrameReceiver : public RtpPayloadFeedback,
   // Called to deliver another packet, possibly a duplicate, and possibly
   // out-of-order.  Returns true if the parsing of the packet succeeded.
   bool ProcessPacket(std::unique_ptr<Packet> packet);
+
+  base::WeakPtr<FrameReceiver> AsWeakPtr();
 
  protected:
   friend class FrameReceiverTest;  // Invokes ProcessParsedPacket().
