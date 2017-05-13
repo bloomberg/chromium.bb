@@ -1932,7 +1932,8 @@ void RenderFrameImpl::OnAdjustSelectionByCharacterOffset(int start_adjust,
   // the document, a positive amount moves the selection towards the end of
   // the document.
   frame_->SelectRange(WebRange(range.StartOffset() + start_adjust,
-                               range.length() + end_adjust - start_adjust));
+                               range.length() + end_adjust - start_adjust),
+                      WebLocalFrame::kPreserveHandleVisibility);
 }
 
 void RenderFrameImpl::OnCollapseSelection() {

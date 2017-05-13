@@ -5386,6 +5386,70 @@ TEST_P(ParameterizedWebFrameTest, SelectRange) {
               selection_string == "Some offscreen test text for testing");
 }
 
+TEST_P(ParameterizedWebFrameTest, SelectRangeDefaultHandleVisibility) {
+  RegisterMockedHttpURLLoad("select_range_basic.html");
+
+  FrameTestHelpers::WebViewHelper web_view_helper;
+  InitializeTextSelectionWebView(base_url_ + "select_range_basic.html",
+                                 &web_view_helper);
+
+  WebLocalFrameImpl* frame = web_view_helper.WebView()->MainFrameImpl();
+  frame->SelectRange(WebRange(0, 5));
+  EXPECT_FALSE(frame->SelectionRange().IsNull());
+
+  EXPECT_FALSE(frame->GetFrame()->Selection().IsHandleVisible())
+      << "By default selection handles should not be visible";
+}
+
+TEST_P(ParameterizedWebFrameTest, SelectRangeHideHandle) {
+  RegisterMockedHttpURLLoad("select_range_basic.html");
+
+  FrameTestHelpers::WebViewHelper web_view_helper;
+  InitializeTextSelectionWebView(base_url_ + "select_range_basic.html",
+                                 &web_view_helper);
+
+  WebLocalFrameImpl* frame = web_view_helper.WebView()->MainFrameImpl();
+  frame->SelectRange(WebRange(0, 5), WebLocalFrame::kHideSelectionHandle);
+
+  EXPECT_FALSE(frame->GetFrame()->Selection().IsHandleVisible())
+      << "Selection handle should not be visible with kHideSelectionHandle";
+}
+
+TEST_P(ParameterizedWebFrameTest, SelectRangeShowHandle) {
+  RegisterMockedHttpURLLoad("select_range_basic.html");
+
+  FrameTestHelpers::WebViewHelper web_view_helper;
+  InitializeTextSelectionWebView(base_url_ + "select_range_basic.html",
+                                 &web_view_helper);
+
+  WebLocalFrameImpl* frame = web_view_helper.WebView()->MainFrameImpl();
+  frame->SelectRange(WebRange(0, 5), WebLocalFrame::kShowSelectionHandle);
+
+  EXPECT_TRUE(frame->GetFrame()->Selection().IsHandleVisible())
+      << "Selection handle should be visible with kShowSelectionHandle";
+}
+
+TEST_P(ParameterizedWebFrameTest, SelectRangePreserveHandleVisibility) {
+  RegisterMockedHttpURLLoad("select_range_basic.html");
+
+  FrameTestHelpers::WebViewHelper web_view_helper;
+  InitializeTextSelectionWebView(base_url_ + "select_range_basic.html",
+                                 &web_view_helper);
+
+  WebLocalFrameImpl* frame = web_view_helper.WebView()->MainFrameImpl();
+  frame->SelectRange(WebRange(0, 5), WebLocalFrame::kHideSelectionHandle);
+  frame->SelectRange(WebRange(0, 6), WebLocalFrame::kPreserveHandleVisibility);
+
+  EXPECT_FALSE(frame->GetFrame()->Selection().IsHandleVisible())
+      << "kPreserveHandleVisibility should keep handles invisible";
+
+  frame->SelectRange(WebRange(0, 5), WebLocalFrame::kShowSelectionHandle);
+  frame->SelectRange(WebRange(0, 6), WebLocalFrame::kPreserveHandleVisibility);
+
+  EXPECT_TRUE(frame->GetFrame()->Selection().IsHandleVisible())
+      << "kPreserveHandleVisibility should keep handles visible";
+}
+
 TEST_P(ParameterizedWebFrameTest, SelectRangeInIframe) {
   WebFrame* frame;
   WebRect start_web_rect;

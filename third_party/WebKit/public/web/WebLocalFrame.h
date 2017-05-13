@@ -339,7 +339,17 @@ class WebLocalFrame : public WebFrame {
   // DEPRECATED: Use moveRangeSelection.
   virtual void SelectRange(const WebPoint& base, const WebPoint& extent) = 0;
 
-  virtual void SelectRange(const WebRange&) = 0;
+  enum HandleVisibilityBehavior {
+    // Hide handle(s) in the new selection.
+    kHideSelectionHandle,
+    // Show handle(s) in the new selection.
+    kShowSelectionHandle,
+    // Keep the current handle visibility.
+    kPreserveHandleVisibility,
+  };
+  virtual void SelectRange(const WebRange&,
+                           HandleVisibilityBehavior = kHideSelectionHandle) = 0;
+
   virtual WebString RangeAsText(const WebRange&) = 0;
 
   // Move the current selection to the provided viewport point/points. If the

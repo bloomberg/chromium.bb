@@ -1218,16 +1218,31 @@ void WebLocalFrameImpl::SelectRange(const WebPoint& base_in_viewport,
   MoveRangeSelection(base_in_viewport, extent_in_viewport);
 }
 
-void WebLocalFrameImpl::SelectRange(const WebRange& web_range) {
+void WebLocalFrameImpl::SelectRange(
+    const WebRange& web_range,
+    HandleVisibilityBehavior handle_visibility_behavior) {
   TRACE_EVENT0("blink", "WebLocalFrameImpl::selectRange");
 
   // TODO(editing-dev): The use of updateStyleAndLayoutIgnorePendingStylesheets
   // needs to be audited.  see http://crbug.com/590369 for more details.
   GetFrame()->GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
 
-  GetFrame()->Selection().SetSelectedRange(
-      web_range.CreateEphemeralRange(GetFrame()), VP_DEFAULT_AFFINITY,
-      SelectionDirectionalMode::kNonDirectional, kNotUserTriggered);
+  const EphemeralRange& range = web_range.CreateEphemeralRange(GetFrame());
+  if (range.IsNull())
+    return;
+
+  FrameSelection& selection = GetFrame()->Selection();
+  const bool show_handles =
+      handle_visibility_behavior == kShowSelectionHandle ||
+      (handle_visibility_behavior == kPreserveHandleVisibility &&
+       selection.IsHandleVisible());
+  selection.SetSelection(SelectionInDOMTree::Builder()
+                             .SetBaseAndExtent(range)
+                             .SetAffinity(VP_DEFAULT_AFFINITY)
+                             .SetIsHandleVisible(show_handles)
+                             .SetIsDirectional(false)
+                             .Build(),
+                         kNotUserTriggered);
 }
 
 WebString WebLocalFrameImpl::RangeAsText(const WebRange& web_range) {

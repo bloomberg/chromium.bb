@@ -193,7 +193,8 @@ class WEB_EXPORT WebLocalFrameImpl final
   WebString SelectionAsMarkup() const override;
   bool SelectWordAroundCaret() override;
   void SelectRange(const WebPoint& base, const WebPoint& extent) override;
-  void SelectRange(const WebRange&) override;
+  void SelectRange(const WebRange&,
+                   HandleVisibilityBehavior = kHideSelectionHandle) override;
   WebString RangeAsText(const WebRange&) override;
   void MoveRangeSelectionExtent(const WebPoint&) override;
   void MoveRangeSelection(

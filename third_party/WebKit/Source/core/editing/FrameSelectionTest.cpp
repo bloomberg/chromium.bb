@@ -296,7 +296,7 @@ TEST_F(FrameSelectionTest, SelectAllPreservesHandle) {
          "after it.";
 }
 
-TEST_F(FrameSelectionTest, SetSelectedRangePreservesHandle) {
+TEST_F(FrameSelectionTest, SetSelectedRangeHidesHandle) {
   Text* text = AppendTextNode("Hello, World!");
   GetDocument().View()->UpdateAllLifecyclePhases();
   Selection().SetSelection(
@@ -310,9 +310,7 @@ TEST_F(FrameSelectionTest, SetSelectedRangePreservesHandle) {
       VP_DEFAULT_AFFINITY, SelectionDirectionalMode::kNonDirectional, 0);
 
   EXPECT_FALSE(Selection().IsHandleVisible())
-      << "If handles weren't present before"
-         "setSelectedRange they shouldn't be present"
-         "after it.";
+      << "After SetSelectedRange handles shouldn't be present.";
 
   Selection().SetSelection(
       SelectionInDOMTree::Builder()
@@ -324,9 +322,8 @@ TEST_F(FrameSelectionTest, SetSelectedRangePreservesHandle) {
       EphemeralRange(Position(text, 0), Position(text, 12)),
       VP_DEFAULT_AFFINITY, SelectionDirectionalMode::kNonDirectional, 0);
 
-  EXPECT_TRUE(Selection().IsHandleVisible())
-      << "If handles were present before"
-         "selectSetSelectedRange they should be present after it.";
+  EXPECT_FALSE(Selection().IsHandleVisible())
+      << "After SetSelectedRange handles shouldn't be present.";
 }
 
 // Regression test for crbug.com/702756
