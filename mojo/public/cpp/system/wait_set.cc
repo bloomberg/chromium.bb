@@ -271,12 +271,9 @@ class WaitSet::State : public base::RefCountedThreadSafe<State> {
               Context* context) {
     base::AutoLock lock(lock_);
 
-    // This could be a cancellation notification following an explicit
-    // RemoveHandle(), in which case we really don't care and don't want to
-    // add it to the ready set. Only update and signal if that's not the case.
-    if (!handle_to_context_.count(handle)) {
-      DCHECK_EQ(MOJO_RESULT_CANCELLED, result);
-    } else {
+    // This notification may have raced with RemoveHandle() from another thread.
+    // We only signal the WaitSet if that's not the case.
+    if (handle_to_context_.count(handle)) {
       ready_handles_[handle] = {result, signals_state};
       handle_event_.Signal();
     }
