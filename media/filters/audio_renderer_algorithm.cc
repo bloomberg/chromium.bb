@@ -64,6 +64,16 @@ static const int kMaxCapacityInSeconds = 3;
 // The minimum size in ms for the |audio_buffer_|. Arbitrarily determined.
 static const int kStartingCapacityInMs = 200;
 
+// The minimum size in ms for the |audio_buffer_| for encrypted streams.
+// This is a temporary workaround for http://crbug.com/718161. Encrypted
+// audio may be decrypted on the renderer main thread, so if that thread
+// is blocked for a significant amount of time, decoding can stall. By
+// maintaining a larger audio buffer we are more resilient to underflows
+// caused by long running main thread tasks.
+// TODO(watk,xhwang): Delete this when decrypting moves to the media thread
+// (http://crbug.com/403462).
+static const int kStartingCapacityForEncryptedInMs = 500;
+
 AudioRendererAlgorithm::AudioRendererAlgorithm()
     : channels_(0),
       samples_per_second_(0),
@@ -82,14 +92,17 @@ AudioRendererAlgorithm::AudioRendererAlgorithm()
 
 AudioRendererAlgorithm::~AudioRendererAlgorithm() {}
 
-void AudioRendererAlgorithm::Initialize(const AudioParameters& params) {
+void AudioRendererAlgorithm::Initialize(const AudioParameters& params,
+                                        bool is_encrypted) {
   CHECK(params.IsValid());
 
   channels_ = params.channels();
   samples_per_second_ = params.sample_rate();
-  initial_capacity_ = capacity_ =
-      std::max(params.frames_per_buffer() * 2,
-               ConvertMillisecondsToFrames(kStartingCapacityInMs));
+  initial_capacity_ = capacity_ = std::max(
+      params.frames_per_buffer() * 2,
+      ConvertMillisecondsToFrames(is_encrypted
+                                      ? kStartingCapacityForEncryptedInMs
+                                      : kStartingCapacityInMs));
   max_capacity_ =
       std::max(initial_capacity_, kMaxCapacityInSeconds * samples_per_second_);
   num_candidate_blocks_ = ConvertMillisecondsToFrames(kWsolaSearchIntervalMs);

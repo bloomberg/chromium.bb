@@ -251,7 +251,8 @@ void FakeMediaSource::Start(scoped_refptr<AudioFrameInput> audio_frame_input,
   }
 
   // Send transcoding streams.
-  audio_algo_.Initialize(source_audio_params_);
+  bool is_encrypted = false;
+  audio_algo_.Initialize(source_audio_params_, is_encrypted);
   audio_algo_.FlushBuffers();
   audio_fifo_input_bus_ = AudioBus::Create(
       source_audio_params_.channels(),

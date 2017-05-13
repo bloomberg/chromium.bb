@@ -47,6 +47,7 @@ AudioRendererImpl::AudioRendererImpl(
       last_audio_memory_usage_(0),
       last_decoded_sample_rate_(0),
       last_decoded_channel_layout_(CHANNEL_LAYOUT_NONE),
+      is_encrypted_(false),
       playback_rate_(0.0),
       state_(kUninitialized),
       create_audio_decoders_cb_(create_audio_decoders_cb),
@@ -454,6 +455,8 @@ void AudioRendererImpl::Initialize(DemuxerStream* stream,
   last_decoded_channel_layout_ =
       stream->audio_decoder_config().channel_layout();
 
+  is_encrypted_ = stream->audio_decoder_config().is_encrypted();
+
   audio_clock_.reset(
       new AudioClock(base::TimeDelta(), audio_parameters_.sample_rate()));
 
@@ -492,7 +495,7 @@ void AudioRendererImpl::OnAudioBufferStreamInitialized(bool success) {
   // We're all good! Continue initializing the rest of the audio renderer
   // based on the decoder format.
   algorithm_.reset(new AudioRendererAlgorithm());
-  algorithm_->Initialize(audio_parameters_);
+  algorithm_->Initialize(audio_parameters_, is_encrypted_);
   ConfigureChannelMask();
 
   ChangeState_Locked(kFlushed);

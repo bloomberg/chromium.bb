@@ -42,7 +42,7 @@ class MEDIA_EXPORT AudioRendererAlgorithm {
   ~AudioRendererAlgorithm();
 
   // Initializes this object with information about the audio stream.
-  void Initialize(const AudioParameters& params);
+  void Initialize(const AudioParameters& params, bool is_encrypted);
 
   // Allows clients to specify which channels will be considered by the
   // algorithm when adapting for playback rate, other channels will be muted.
