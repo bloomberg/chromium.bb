@@ -725,6 +725,19 @@ void ServiceWorkerContextWrapper::GetUserDataForAllRegistrations(
   context_core_->storage()->GetUserDataForAllRegistrations(key, callback);
 }
 
+void ServiceWorkerContextWrapper::GetUserDataForAllRegistrationsByKeyPrefix(
+    const std::string& key_prefix,
+    const GetUserDataForAllRegistrationsCallback& callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  if (!context_core_) {
+    RunSoon(base::Bind(callback, std::vector<std::pair<int64_t, std::string>>(),
+                       SERVICE_WORKER_ERROR_ABORT));
+    return;
+  }
+  context_core_->storage()->GetUserDataForAllRegistrationsByKeyPrefix(
+      key_prefix, callback);
+}
+
 void ServiceWorkerContextWrapper::AddObserver(
     ServiceWorkerContextObserver* observer) {
   observer_list_->AddObserver(observer);

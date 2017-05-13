@@ -205,6 +205,11 @@ class CONTENT_EXPORT ServiceWorkerStorage
   void GetUserDataForAllRegistrations(
       const std::string& key,
       const GetUserDataForAllRegistrationsCallback& callback);
+  // Responds with all registrations that have user data with a particular key,
+  // as well as that user data.
+  void GetUserDataForAllRegistrationsByKeyPrefix(
+      const std::string& key_prefix,
+      const GetUserDataForAllRegistrationsCallback& callback);
 
   // Returns true if any service workers at |origin| have registered for foreign
   // fetch.
@@ -513,6 +518,11 @@ class CONTENT_EXPORT ServiceWorkerStorage
       ServiceWorkerDatabase* database,
       scoped_refptr<base::SequencedTaskRunner> original_task_runner,
       const std::string& key,
+      const GetUserDataForAllRegistrationsInDBCallback& callback);
+  static void GetUserDataForAllRegistrationsByKeyPrefixInDB(
+      ServiceWorkerDatabase* database,
+      scoped_refptr<base::SequencedTaskRunner> original_task_runner,
+      const std::string& key_prefix,
       const GetUserDataForAllRegistrationsInDBCallback& callback);
   static void DeleteAllDataForOriginsFromDB(
       ServiceWorkerDatabase* database,

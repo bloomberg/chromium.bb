@@ -5,6 +5,7 @@
 #ifndef CONTENT_BROWSER_PAYMENTS_PAYMENT_APP_DATABASE_H_
 #define CONTENT_BROWSER_PAYMENTS_PAYMENT_APP_DATABASE_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -15,6 +16,7 @@
 #include "content/browser/service_worker/service_worker_registration.h"
 #include "content/common/content_export.h"
 #include "content/common/service_worker/service_worker_status_code.h"
+#include "content/public/browser/stored_payment_instrument.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
 namespace content {
@@ -32,6 +34,11 @@ class CONTENT_EXPORT PaymentAppDatabase {
       std::pair<int64_t, payments::mojom::PaymentAppManifestPtr>;
   using Manifests = std::vector<ManifestWithID>;
   using ReadAllManifestsCallback = base::OnceCallback<void(Manifests)>;
+
+  using Instruments = std::vector<std::unique_ptr<StoredPaymentInstrument>>;
+  using PaymentApps = std::map<GURL, Instruments>;
+  using ReadAllPaymentAppsCallback = base::OnceCallback<void(PaymentApps)>;
+
   using DeletePaymentInstrumentCallback =
       base::OnceCallback<void(payments::mojom::PaymentHandlerStatus)>;
   using ReadPaymentInstrumentCallback =
@@ -56,6 +63,9 @@ class CONTENT_EXPORT PaymentAppDatabase {
                      WriteManifestCallback callback);
   void ReadManifest(const GURL& scope, ReadManifestCallback callback);
   void ReadAllManifests(ReadAllManifestsCallback callback);
+
+  void ReadAllPaymentApps(ReadAllPaymentAppsCallback callback);
+
   void DeletePaymentInstrument(const GURL& scope,
                                const std::string& instrument_key,
                                DeletePaymentInstrumentCallback callback);
@@ -96,6 +106,12 @@ class CONTENT_EXPORT PaymentAppDatabase {
   // ReadAllManifests callbacks
   void DidReadAllManifests(
       ReadAllManifestsCallback callback,
+      const std::vector<std::pair<int64_t, std::string>>& raw_data,
+      ServiceWorkerStatusCode status);
+
+  // ReadAllPaymentApps callbacks
+  void DidReadAllPaymentApps(
+      ReadAllPaymentAppsCallback callback,
       const std::vector<std::pair<int64_t, std::string>>& raw_data,
       ServiceWorkerStatusCode status);
 

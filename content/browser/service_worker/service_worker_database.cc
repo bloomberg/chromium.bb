@@ -1029,6 +1029,71 @@ ServiceWorkerDatabase::ReadUserDataForAllRegistrations(
   return status;
 }
 
+ServiceWorkerDatabase::Status
+ServiceWorkerDatabase::ReadUserDataForAllRegistrationsByKeyPrefix(
+    const std::string& user_data_name_prefix,
+    std::vector<std::pair<int64_t, std::string>>* user_data) {
+  DCHECK(sequence_checker_.CalledOnValidSequence());
+  DCHECK(user_data->empty());
+
+  Status status = LazyOpen(false);
+  if (IsNewOrNonexistentDatabase(status))
+    return STATUS_OK;
+  if (status != STATUS_OK)
+    return status;
+
+  std::string key_prefix = kRegHasUserDataKeyPrefix + user_data_name_prefix;
+  {
+    std::unique_ptr<leveldb::Iterator> itr(
+        db_->NewIterator(leveldb::ReadOptions()));
+    for (itr->Seek(key_prefix); itr->Valid(); itr->Next()) {
+      status = LevelDBStatusToStatus(itr->status());
+      if (status != STATUS_OK) {
+        user_data->clear();
+        break;
+      }
+
+      if (!itr->key().starts_with(key_prefix))
+        break;
+
+      std::string user_data_name_with_id;
+      if (!RemovePrefix(itr->key().ToString(), kRegHasUserDataKeyPrefix,
+                        &user_data_name_with_id)) {
+        break;
+      }
+
+      std::vector<std::string> parts = base::SplitString(
+          user_data_name_with_id, base::StringPrintf("%c", kKeySeparator),
+          base::KEEP_WHITESPACE, base::SPLIT_WANT_ALL);
+      if (parts.size() != 2) {
+        status = STATUS_ERROR_CORRUPTED;
+        user_data->clear();
+        break;
+      }
+
+      int64_t registration_id;
+      status = ParseId(parts[1], &registration_id);
+      if (status != STATUS_OK) {
+        user_data->clear();
+        break;
+      }
+
+      std::string value;
+      status = LevelDBStatusToStatus(
+          db_->Get(leveldb::ReadOptions(),
+                   CreateUserDataKey(registration_id, parts[0]), &value));
+      if (status != STATUS_OK) {
+        user_data->clear();
+        break;
+      }
+      user_data->push_back(std::make_pair(registration_id, value));
+    }
+  }
+
+  HandleReadResult(FROM_HERE, status);
+  return status;
+}
+
 ServiceWorkerDatabase::Status ServiceWorkerDatabase::GetUncommittedResourceIds(
     std::set<int64_t>* ids) {
   return ReadResourceIds(kUncommittedResIdKeyPrefix, ids);

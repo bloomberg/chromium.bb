@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/memory/ptr_util.h"
 #include "base/optional.h"
 #include "base/time/time.h"
 #include "content/browser/payments/payment_app.pb.h"
@@ -62,11 +63,11 @@ payments::mojom::PaymentAppManifestPtr DeserializePaymentAppManifest(
   return manifest;
 }
 
-std::map<uint64_t, std::string> DeserializePaymentInstrumentKeyInfo(
+std::map<uint64_t, std::string> ToStoredPaymentInstrumentKeyInfos(
     const std::vector<std::string>& inputs) {
   std::map<uint64_t, std::string> key_info;
   for (const auto& input : inputs) {
-    PaymentInstrumentKeyInfoProto key_info_proto;
+    StoredPaymentInstrumentKeyInfoProto key_info_proto;
     if (!key_info_proto.ParseFromString(input))
       return std::map<uint64_t, std::string>();
 
@@ -77,8 +78,8 @@ std::map<uint64_t, std::string> DeserializePaymentInstrumentKeyInfo(
   return key_info;
 }
 
-PaymentInstrumentPtr DeserializePaymentInstrument(const std::string& input) {
-  PaymentInstrumentProto instrument_proto;
+PaymentInstrumentPtr ToPaymentInstrumentForMojo(const std::string& input) {
+  StoredPaymentInstrumentProto instrument_proto;
   if (!instrument_proto.ParseFromString(input))
     return nullptr;
 
@@ -88,6 +89,24 @@ PaymentInstrumentPtr DeserializePaymentInstrument(const std::string& input) {
     instrument->enabled_methods.push_back(method);
   instrument->stringified_capabilities =
       instrument_proto.stringified_capabilities();
+
+  return instrument;
+}
+
+std::unique_ptr<StoredPaymentInstrument> ToStoredPaymentInstrument(
+    const std::string& input) {
+  StoredPaymentInstrumentProto instrument_proto;
+  if (!instrument_proto.ParseFromString(input))
+    return std::unique_ptr<StoredPaymentInstrument>();
+
+  std::unique_ptr<StoredPaymentInstrument> instrument =
+      base::MakeUnique<StoredPaymentInstrument>();
+  instrument->registration_id = instrument_proto.registration_id();
+  instrument->instrument_key = instrument_proto.instrument_key();
+  instrument->origin = GURL(instrument_proto.origin());
+  instrument->name = instrument_proto.name();
+  for (const auto& method : instrument_proto.enabled_methods())
+    instrument->enabled_methods.push_back(method);
 
   return instrument;
 }
@@ -133,6 +152,17 @@ void PaymentAppDatabase::ReadAllManifests(ReadAllManifestsCallback callback) {
       kPaymentAppManifestDataKey,
       base::Bind(&PaymentAppDatabase::DidReadAllManifests,
                  weak_ptr_factory_.GetWeakPtr(), base::Passed(&callback)));
+}
+
+void PaymentAppDatabase::ReadAllPaymentApps(
+    ReadAllPaymentAppsCallback callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  service_worker_context_->GetUserDataForAllRegistrationsByKeyPrefix(
+      kPaymentInstrumentPrefix,
+      base::Bind(&PaymentAppDatabase::DidReadAllPaymentApps,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 base::Passed(std::move(callback))));
 }
 
 void PaymentAppDatabase::DeletePaymentInstrument(
@@ -330,6 +360,30 @@ void PaymentAppDatabase::DidReadAllManifests(
   std::move(callback).Run(std::move(manifests));
 }
 
+void PaymentAppDatabase::DidReadAllPaymentApps(
+    ReadAllPaymentAppsCallback callback,
+    const std::vector<std::pair<int64_t, std::string>>& raw_data,
+    ServiceWorkerStatusCode status) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  if (status != SERVICE_WORKER_OK) {
+    std::move(callback).Run(PaymentApps());
+    return;
+  }
+
+  PaymentApps apps;
+  for (const auto& item_of_raw_data : raw_data) {
+    std::unique_ptr<StoredPaymentInstrument> instrument =
+        ToStoredPaymentInstrument(item_of_raw_data.second);
+    if (!instrument)
+      continue;
+    if (!base::ContainsKey(apps, instrument->origin))
+      apps.insert(std::make_pair(instrument->origin, Instruments()));
+    apps[instrument->origin].push_back(std::move(instrument));
+  }
+
+  std::move(callback).Run(std::move(apps));
+}
+
 void PaymentAppDatabase::DidFindRegistrationToDeletePaymentInstrument(
     const std::string& instrument_key,
     DeletePaymentInstrumentCallback callback,
@@ -408,7 +462,7 @@ void PaymentAppDatabase::DidReadPaymentInstrument(
     return;
   }
 
-  PaymentInstrumentPtr instrument = DeserializePaymentInstrument(data[0]);
+  PaymentInstrumentPtr instrument = ToPaymentInstrumentForMojo(data[0]);
   if (!instrument) {
     std::move(callback).Run(PaymentInstrument::New(),
                             PaymentHandlerStatus::STORAGE_OPERATION_FAILED);
@@ -448,7 +502,7 @@ void PaymentAppDatabase::DidGetKeysOfPaymentInstruments(
   }
 
   std::vector<std::string> keys;
-  for (const auto& key_info : DeserializePaymentInstrumentKeyInfo(data)) {
+  for (const auto& key_info : ToStoredPaymentInstrumentKeyInfos(data)) {
     keys.push_back(key_info.second);
   }
 
@@ -500,7 +554,10 @@ void PaymentAppDatabase::DidFindRegistrationToWritePaymentInstrument(
     return;
   }
 
-  PaymentInstrumentProto instrument_proto;
+  StoredPaymentInstrumentProto instrument_proto;
+  instrument_proto.set_registration_id(registration->id());
+  instrument_proto.set_instrument_key(instrument_key);
+  instrument_proto.set_origin(registration->pattern().GetOrigin().spec());
   instrument_proto.set_name(instrument->name);
   for (const auto& method : instrument->enabled_methods) {
     instrument_proto.add_enabled_methods(method);
@@ -512,7 +569,7 @@ void PaymentAppDatabase::DidFindRegistrationToWritePaymentInstrument(
   bool success = instrument_proto.SerializeToString(&serialized_instrument);
   DCHECK(success);
 
-  PaymentInstrumentKeyInfoProto key_info_proto;
+  StoredPaymentInstrumentKeyInfoProto key_info_proto;
   key_info_proto.set_key(instrument_key);
   key_info_proto.set_insertion_order(base::Time::Now().ToInternalValue());
 

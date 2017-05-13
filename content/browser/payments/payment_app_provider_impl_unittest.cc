@@ -23,6 +23,10 @@ class PaymentManager;
 
 namespace {
 
+using ::payments::mojom::PaymentHandlerStatus;
+using ::payments::mojom::PaymentInstrument;
+using ::payments::mojom::PaymentInstrumentPtr;
+
 void SetManifestCallback(bool* called,
                          PaymentAppManifestError* out_error,
                          PaymentAppManifestError error) {
@@ -35,6 +39,16 @@ void GetAllManifestsCallback(bool* called,
                              PaymentAppProvider::Manifests manifests) {
   *called = true;
   *out_manifests = std::move(manifests);
+}
+
+void SetPaymentInstrumentCallback(PaymentHandlerStatus* out_status,
+                                  PaymentHandlerStatus status) {
+  *out_status = status;
+}
+
+void GetAllPaymentAppsCallback(PaymentAppProvider::PaymentApps* out_apps,
+                               PaymentAppProvider::PaymentApps apps) {
+  *out_apps = std::move(apps);
 }
 
 void InvokePaymentAppCallback(bool* called,
@@ -52,6 +66,24 @@ class PaymentAppProviderTest : public PaymentAppContentUnitTestBase {
   void GetAllManifests(PaymentAppProvider::GetAllManifestsCallback callback) {
     PaymentAppProviderImpl::GetInstance()->GetAllManifests(browser_context(),
                                                            callback);
+    base::RunLoop().RunUntilIdle();
+  }
+
+  void SetPaymentInstrument(
+      PaymentManager* manager,
+      const std::string& instrument_key,
+      PaymentInstrumentPtr instrument,
+      PaymentManager::SetPaymentInstrumentCallback callback) {
+    ASSERT_NE(nullptr, manager);
+    manager->SetPaymentInstrument(instrument_key, std::move(instrument),
+                                  std::move(callback));
+    base::RunLoop().RunUntilIdle();
+  }
+
+  void GetAllPaymentApps(
+      PaymentAppProvider::GetAllPaymentAppsCallback callback) {
+    PaymentAppProviderImpl::GetInstance()->GetAllPaymentApps(
+        browser_context(), std::move(callback));
     base::RunLoop().RunUntilIdle();
   }
 
@@ -146,6 +178,28 @@ TEST_F(PaymentAppProviderTest, InvokePaymentAppTest) {
 
   EXPECT_EQ(manifests[1].first, last_sw_registration_id());
   EXPECT_EQ(GURL(kPaymentAppInfo[1].scopeUrl), last_sw_scope_url());
+}
+
+TEST_F(PaymentAppProviderTest, GetAllPaymentAppsTest) {
+  PaymentManager* manager1 = CreatePaymentManager(
+      GURL("https://hellopay.com/a"), GURL("https://hellopay.com/a/script.js"));
+  PaymentManager* manager2 = CreatePaymentManager(
+      GURL("https://bobpay.com/b"), GURL("https://bobpay.com/b/script.js"));
+
+  PaymentHandlerStatus status;
+  SetPaymentInstrument(manager1, "test_key1", PaymentInstrument::New(),
+                       base::Bind(&SetPaymentInstrumentCallback, &status));
+  SetPaymentInstrument(manager2, "test_key2", PaymentInstrument::New(),
+                       base::Bind(&SetPaymentInstrumentCallback, &status));
+  SetPaymentInstrument(manager2, "test_key3", PaymentInstrument::New(),
+                       base::Bind(&SetPaymentInstrumentCallback, &status));
+
+  PaymentAppProvider::PaymentApps apps;
+  GetAllPaymentApps(base::Bind(&GetAllPaymentAppsCallback, &apps));
+
+  ASSERT_EQ(2U, apps.size());
+  ASSERT_EQ(1U, apps[GURL("https://hellopay.com/")].size());
+  ASSERT_EQ(2U, apps[GURL("https://bobpay.com/")].size());
 }
 
 }  // namespace content

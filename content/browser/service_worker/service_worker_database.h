@@ -224,6 +224,12 @@ class CONTENT_EXPORT ServiceWorkerDatabase {
       const std::string& user_data_name,
       std::vector<std::pair<int64_t, std::string>>* user_data);
 
+  // Reads user data for all registrations that have data with |user_data_name|
+  // from the database. Returns OK if they are successfully read or not found.
+  Status ReadUserDataForAllRegistrationsByKeyPrefix(
+      const std::string& user_data_name_prefix,
+      std::vector<std::pair<int64_t, std::string>>* user_data);
+
   // Resources should belong to one of following resource lists: uncommitted,
   // committed and purgeable.
   // As new resources are put into the diskcache, they go into the uncommitted

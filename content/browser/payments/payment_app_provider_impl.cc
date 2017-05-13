@@ -73,6 +73,23 @@ void GetAllManifestsOnIO(
       base::Bind(&DidGetAllManifestsOnIO, callback));
 }
 
+void DidGetAllPaymentAppsOnIO(
+    PaymentAppProvider::GetAllPaymentAppsCallback callback,
+    PaymentAppProvider::PaymentApps apps) {
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::BindOnce(std::move(callback), base::Passed(std::move(apps))));
+}
+
+void GetAllPaymentAppsOnIO(
+    scoped_refptr<PaymentAppContextImpl> payment_app_context,
+    PaymentAppProvider::GetAllPaymentAppsCallback callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  payment_app_context->payment_app_database()->ReadAllPaymentApps(
+      base::BindOnce(&DidGetAllPaymentAppsOnIO, std::move(callback)));
+}
+
 void DispatchPaymentRequestEventError(
     ServiceWorkerStatusCode service_worker_status) {
   NOTIMPLEMENTED();
@@ -161,6 +178,22 @@ void PaymentAppProviderImpl::GetAllManifests(
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::Bind(&GetAllManifestsOnIO, payment_app_context, callback));
+}
+
+void PaymentAppProviderImpl::GetAllPaymentApps(
+    BrowserContext* browser_context,
+    GetAllPaymentAppsCallback callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  StoragePartitionImpl* partition = static_cast<StoragePartitionImpl*>(
+      BrowserContext::GetDefaultStoragePartition(browser_context));
+  scoped_refptr<PaymentAppContextImpl> payment_app_context =
+      partition->GetPaymentAppContext();
+
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::BindOnce(&GetAllPaymentAppsOnIO, payment_app_context,
+                     std::move(callback)));
 }
 
 void PaymentAppProviderImpl::InvokePaymentApp(
