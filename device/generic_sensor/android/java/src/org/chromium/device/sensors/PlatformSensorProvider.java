@@ -13,7 +13,6 @@ import android.os.HandlerThread;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
-
 import org.chromium.device.mojom.SensorType;
 
 import java.util.HashSet;
@@ -152,6 +151,8 @@ class PlatformSensorProvider {
                 return PlatformSensor.create(Sensor.TYPE_MAGNETIC_FIELD, 3, this);
             case SensorType.ABSOLUTE_ORIENTATION:
                 return PlatformSensor.create(Sensor.TYPE_ROTATION_VECTOR, 4, this);
+            case SensorType.RELATIVE_ORIENTATION:
+                return PlatformSensor.create(Sensor.TYPE_GAME_ROTATION_VECTOR, 4, this);
             default:
                 return null;
         }

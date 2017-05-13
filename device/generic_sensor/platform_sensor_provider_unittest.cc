@@ -105,35 +105,77 @@ class PlatformSensorProviderTest : public ::testing::Test {
 };
 
 TEST_F(PlatformSensorProviderTest, CreateSensorsAndCheckType) {
-  TestSensorCreateCallback callback1;
-  scoped_refptr<PlatformSensor> sensor1 =
-      CreateSensor(SensorType::AMBIENT_LIGHT, &callback1);
-  EXPECT_TRUE(sensor1);
-  EXPECT_EQ(SensorType::AMBIENT_LIGHT, sensor1->GetType());
+  {
+    TestSensorCreateCallback callback;
+    scoped_refptr<PlatformSensor> sensor =
+        CreateSensor(SensorType::AMBIENT_LIGHT, &callback);
+    EXPECT_TRUE(sensor);
+    EXPECT_EQ(SensorType::AMBIENT_LIGHT, sensor->GetType());
+  }
 
-  TestSensorCreateCallback callback2;
-  scoped_refptr<PlatformSensor> sensor2 =
-      CreateSensor(SensorType::PROXIMITY, &callback2);
-  EXPECT_TRUE(sensor2);
-  EXPECT_EQ(SensorType::PROXIMITY, sensor2->GetType());
+  {
+    TestSensorCreateCallback callback;
+    scoped_refptr<PlatformSensor> sensor =
+        CreateSensor(SensorType::PROXIMITY, &callback);
+    EXPECT_TRUE(sensor);
+    EXPECT_EQ(SensorType::PROXIMITY, sensor->GetType());
+  }
 
-  TestSensorCreateCallback callback3;
-  scoped_refptr<PlatformSensor> sensor3 =
-      CreateSensor(SensorType::ACCELEROMETER, &callback3);
-  EXPECT_TRUE(sensor3);
-  EXPECT_EQ(SensorType::ACCELEROMETER, sensor3->GetType());
+  {
+    TestSensorCreateCallback callback;
+    scoped_refptr<PlatformSensor> sensor =
+        CreateSensor(SensorType::ACCELEROMETER, &callback);
+    EXPECT_TRUE(sensor);
+    EXPECT_EQ(SensorType::ACCELEROMETER, sensor->GetType());
+  }
 
-  TestSensorCreateCallback callback4;
-  scoped_refptr<PlatformSensor> sensor4 =
-      CreateSensor(SensorType::GYROSCOPE, &callback4);
-  EXPECT_TRUE(sensor4);
-  EXPECT_EQ(SensorType::GYROSCOPE, sensor4->GetType());
+  {
+    TestSensorCreateCallback callback;
+    scoped_refptr<PlatformSensor> sensor =
+        CreateSensor(SensorType::LINEAR_ACCELERATION, &callback);
+    EXPECT_TRUE(sensor);
+    EXPECT_EQ(SensorType::LINEAR_ACCELERATION, sensor->GetType());
+  }
 
-  TestSensorCreateCallback callback5;
-  scoped_refptr<PlatformSensor> sensor5 =
-      CreateSensor(SensorType::PRESSURE, &callback5);
-  EXPECT_TRUE(sensor5);
-  EXPECT_EQ(SensorType::PRESSURE, sensor5->GetType());
+  {
+    TestSensorCreateCallback callback;
+    scoped_refptr<PlatformSensor> sensor =
+        CreateSensor(SensorType::GYROSCOPE, &callback);
+    EXPECT_TRUE(sensor);
+    EXPECT_EQ(SensorType::GYROSCOPE, sensor->GetType());
+  }
+
+  {
+    TestSensorCreateCallback callback;
+    scoped_refptr<PlatformSensor> sensor =
+        CreateSensor(SensorType::MAGNETOMETER, &callback);
+    EXPECT_TRUE(sensor);
+    EXPECT_EQ(SensorType::MAGNETOMETER, sensor->GetType());
+  }
+
+  {
+    TestSensorCreateCallback callback;
+    scoped_refptr<PlatformSensor> sensor =
+        CreateSensor(SensorType::PRESSURE, &callback);
+    EXPECT_TRUE(sensor);
+    EXPECT_EQ(SensorType::PRESSURE, sensor->GetType());
+  }
+
+  {
+    TestSensorCreateCallback callback;
+    scoped_refptr<PlatformSensor> sensor =
+        CreateSensor(SensorType::ABSOLUTE_ORIENTATION, &callback);
+    EXPECT_TRUE(sensor);
+    EXPECT_EQ(SensorType::ABSOLUTE_ORIENTATION, sensor->GetType());
+  }
+
+  {
+    TestSensorCreateCallback callback;
+    scoped_refptr<PlatformSensor> sensor =
+        CreateSensor(SensorType::RELATIVE_ORIENTATION, &callback);
+    EXPECT_TRUE(sensor);
+    EXPECT_EQ(SensorType::RELATIVE_ORIENTATION, sensor->GetType());
+  }
 }
 
 TEST_F(PlatformSensorProviderTest, CreateAndGetSensor) {
