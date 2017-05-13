@@ -1,0 +1,89 @@
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+[JavaPackage="org.chromium.webauth.mojom"]
+module webauth.mojom;
+
+// This file describes the communication between the WebAuthentication renderer
+// implementation and browser-side implementations to create scoped credentials
+// and use already-created credentials to get assertions.
+// See https://w3c.github.io/webauthn/.
+
+// The public key and attestation that is returned by an authenticator's 
+// call to makeCredential.
+struct ScopedCredentialInfo {
+  // A blob of data containing the JSON serialization of client data passed
+  // to the authenticator.
+  array<uint8> client_data;
+  // A blob of data returned from the authenticator.
+  array<uint8> attestation;
+};
+
+// Information about the relying party and the user account held by that 
+// relying party. This information is used by the authenticator to create 
+// or retrieve an appropriate scoped credential for this account.
+// These fields take arbitrary input.
+
+struct RelyingPartyAccount {
+  // Friendly name of the Relying Party, e.g. "Acme Corporation"
+  string relying_party_display_name;
+  // Friendly name associated with the user account, e.g. "John P. Smith"
+  string display_name;
+  // Identifier for the account, corresponding to no more than one credential 
+  // per authenticator and Relying Party.
+  string id;
+  // Detailed name for the account, e.g. john.p.smith@example.com
+  string name;
+  // User image, if any.
+  // Todo make this url.mojom.Url in a followup CL
+  string image_url;
+};
+
+// Parameters that are used to generate an appropriate scoped credential.
+struct ScopedCredentialParameters {
+  ScopedCredentialType type;
+  // TODO(kpaulhamus): add AlgorithmIdentifier algorithm;
+};
+
+// Optional parameters that are used during makeCredential. 
+struct ScopedCredentialOptions {
+  //TODO(kpaulhamus): Make this mojo.common.mojom.TimeDelta in followup CL
+  int32 timeout_seconds;
+  string relying_party_id;
+  array<ScopedCredentialDescriptor> exclude_list;
+  // TODO(kpaulhamus): add Extensions
+};
+
+enum ScopedCredentialType {
+  SCOPEDCRED,
+};
+
+// Describes the credentials that the relying party already knows about for
+// the given account. If any of these are known to the authenticator, 
+// it should not create a new credential.
+struct ScopedCredentialDescriptor {
+  ScopedCredentialType type;
+  // Blob representing a credential key handle. Up to 255 bytes for 
+  // U2F authenticators.
+  array<uint8> id;
+  array<Transport> transports;
+};
+
+enum Transport {
+  USB,
+  NFC,
+  BLE,
+};
+
+// Interface to direct authenticators to create or use a scoped credential.
+interface Authenticator {
+  // Gets the credential info for a new credential created by an authenticator
+  // for the given relying party and account. 
+  // |attestation_challenge| is a blob passed from the relying party server.
+  MakeCredential(RelyingPartyAccount account_information,
+                 array<ScopedCredentialParameters> crypto_parameters,
+                 array<uint8> attestation_challenge,
+                 ScopedCredentialOptions? options)
+      => (array<ScopedCredentialInfo> scoped_credentials);
+};

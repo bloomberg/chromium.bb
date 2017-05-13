@@ -69,7 +69,7 @@ interface ScopedCredential {
 dictionary ScopedCredentialDescriptor {
     required ScopedCredentialType type;
     required BufferSource   id;
-    sequence < Transport >  transports;
+    sequence <Transport>  transports;
 };
 
 enum Transport {
@@ -79,14 +79,14 @@ enum Transport {
 };
 [SecureContext]
 interface WebAuthentication {
-    Promise < ScopedCredentialInfo > makeCredential (
+    Promise <ScopedCredentialInfo> makeCredential (
         Account                                 accountInformation,
         sequence < ScopedCredentialParameters > cryptoParameters,
         BufferSource                            attestationChallenge,
         optional ScopedCredentialOptions        options
     );
 
-    Promise < AuthenticationAssertion > getAssertion (
+    Promise <AuthenticationAssertion> getAssertion (
         BufferSource               assertionChallenge,
         optional AssertionOptions  options
     );
