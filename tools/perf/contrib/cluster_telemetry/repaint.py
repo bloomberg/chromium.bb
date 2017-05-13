@@ -13,6 +13,8 @@ from measurements import smoothness
 class RepaintCT(perf_benchmark.PerfBenchmark):
   """Measures repaint performance for Cluster Telemetry."""
 
+  test = smoothness.Smoothness
+
   @classmethod
   def Name(cls):
     return 'repaint_ct'
@@ -39,6 +41,3 @@ class RepaintCT(perf_benchmark.PerfBenchmark):
     return page_set.CTPageSet(
         options.urls_list, options.user_agent, options.archive_data_file,
         run_page_interaction_callback=repaint_helpers.WaitThenRepaint)
-
-  def CreatePageTest(self, options):
-    return smoothness.Repaint()

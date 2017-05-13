@@ -41,7 +41,7 @@ class RepaintUnitTest(page_test_test_case.PageTestTestCase):
   def testRepaint(self):
     ps = self.CreateEmptyPageSet()
     ps.AddStory(TestRepaintPage(ps, ps.base_dir))
-    measurement = smoothness.Repaint()
+    measurement = smoothness.Smoothness()
     results = self.RunMeasurement(measurement, ps, options=self._options)
     self.assertEquals(0, len(results.failures))
 
@@ -68,7 +68,3 @@ class RepaintUnitTest(page_test_test_case.PageTestTestCase):
     mainthread_jank = results.FindAllPageSpecificValuesNamed(
         'responsive-total_big_jank_thread_time')
     self.assertEquals(len(mainthread_jank), 0)
-
-  @decorators.Disabled('android')
-  def testCleanUpTrace(self):
-    self.TestTracingCleanedUp(smoothness.Repaint, self._options)
