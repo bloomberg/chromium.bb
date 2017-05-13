@@ -49,7 +49,10 @@ import javax.annotation.concurrent.GuardedBy;
 // TODO(crbug.com/635567): Fix this properly.
 @SuppressLint("NewApi")
 public class NetworkChangeNotifierAutoDetect extends BroadcastReceiver {
-    static class NetworkState {
+    /**
+     * Immutable class representing the state of a device's network.
+     */
+    public static class NetworkState {
         private final boolean mConnected;
         private final int mType;
         private final int mSubtype;
@@ -80,6 +83,72 @@ public class NetworkChangeNotifierAutoDetect extends BroadcastReceiver {
         // WiFi SSID, always non-null to facilitate .equals()
         public String getWifiSsid() {
             return mWifiSsid;
+        }
+
+        /**
+         * Returns the connection type for the given NetworkState.
+         */
+        @ConnectionType
+        public int getConnectionType() {
+            if (!isConnected()) {
+                return ConnectionType.CONNECTION_NONE;
+            }
+            return convertToConnectionType(getNetworkType(), getNetworkSubType());
+        }
+
+        /**
+         * Returns the connection subtype for the given NetworkState.
+         */
+        public int getConnectionSubtype() {
+            if (!isConnected()) {
+                return ConnectionSubtype.SUBTYPE_NONE;
+            }
+
+            switch (getNetworkType()) {
+                case ConnectivityManager.TYPE_ETHERNET:
+                case ConnectivityManager.TYPE_WIFI:
+                case ConnectivityManager.TYPE_WIMAX:
+                case ConnectivityManager.TYPE_BLUETOOTH:
+                    return ConnectionSubtype.SUBTYPE_UNKNOWN;
+                case ConnectivityManager.TYPE_MOBILE:
+                    // Use information from TelephonyManager to classify the connection.
+                    switch (getNetworkSubType()) {
+                        case TelephonyManager.NETWORK_TYPE_GPRS:
+                            return ConnectionSubtype.SUBTYPE_GPRS;
+                        case TelephonyManager.NETWORK_TYPE_EDGE:
+                            return ConnectionSubtype.SUBTYPE_EDGE;
+                        case TelephonyManager.NETWORK_TYPE_CDMA:
+                            return ConnectionSubtype.SUBTYPE_CDMA;
+                        case TelephonyManager.NETWORK_TYPE_1xRTT:
+                            return ConnectionSubtype.SUBTYPE_1XRTT;
+                        case TelephonyManager.NETWORK_TYPE_IDEN:
+                            return ConnectionSubtype.SUBTYPE_IDEN;
+                        case TelephonyManager.NETWORK_TYPE_UMTS:
+                            return ConnectionSubtype.SUBTYPE_UMTS;
+                        case TelephonyManager.NETWORK_TYPE_EVDO_0:
+                            return ConnectionSubtype.SUBTYPE_EVDO_REV_0;
+                        case TelephonyManager.NETWORK_TYPE_EVDO_A:
+                            return ConnectionSubtype.SUBTYPE_EVDO_REV_A;
+                        case TelephonyManager.NETWORK_TYPE_HSDPA:
+                            return ConnectionSubtype.SUBTYPE_HSDPA;
+                        case TelephonyManager.NETWORK_TYPE_HSUPA:
+                            return ConnectionSubtype.SUBTYPE_HSUPA;
+                        case TelephonyManager.NETWORK_TYPE_HSPA:
+                            return ConnectionSubtype.SUBTYPE_HSPA;
+                        case TelephonyManager.NETWORK_TYPE_EVDO_B:
+                            return ConnectionSubtype.SUBTYPE_EVDO_REV_B;
+                        case TelephonyManager.NETWORK_TYPE_EHRPD:
+                            return ConnectionSubtype.SUBTYPE_EHRPD;
+                        case TelephonyManager.NETWORK_TYPE_HSPAP:
+                            return ConnectionSubtype.SUBTYPE_HSPAP;
+                        case TelephonyManager.NETWORK_TYPE_LTE:
+                            return ConnectionSubtype.SUBTYPE_LTE;
+                        default:
+                            return ConnectionSubtype.SUBTYPE_UNKNOWN;
+                    }
+                default:
+                    return ConnectionSubtype.SUBTYPE_UNKNOWN;
+            }
         }
     }
 
@@ -516,7 +585,7 @@ public class NetworkChangeNotifierAutoDetect extends BroadcastReceiver {
                     onAvailable(newNetwork);
                 }
                 @ConnectionType
-                final int newConnectionType = convertToConnectionType(getCurrentNetworkState());
+                final int newConnectionType = getCurrentNetworkState().getConnectionType();
                 runOnThread(new Runnable() {
                     @Override
                     public void run() {
@@ -581,11 +650,7 @@ public class NetworkChangeNotifierAutoDetect extends BroadcastReceiver {
     private final MyNetworkCallback mNetworkCallback;
     private final NetworkRequest mNetworkRequest;
     private boolean mRegistered;
-    @ConnectionType
-    private int mConnectionType;
-    private String mWifiSSID;
-    private double mMaxBandwidthMbps;
-    private int mMaxBandwidthConnectionType;
+    private NetworkState mNetworkState;
     // When a BroadcastReceiver is registered for a sticky broadcast that has been sent out at
     // least once, onReceive() will immediately be called. mIgnoreNextBroadcast is set to true
     // when this class is registered in such a circumstance, and indicates that the next
@@ -610,9 +675,9 @@ public class NetworkChangeNotifierAutoDetect extends BroadcastReceiver {
          */
         public void onConnectionTypeChanged(@ConnectionType int newConnectionType);
         /**
-         * Called when maximum bandwidth of default network changes.
+         * Called when connection subtype of default network changes.
          */
-        public void onMaxBandwidthChanged(double maxBandwidthMbps);
+        public void onConnectionSubtypeChanged(int newConnectionSubtype);
         /**
          * Called when device connects to network with NetID netId. For
          * example device associates with a WiFi access point.
@@ -671,11 +736,7 @@ public class NetworkChangeNotifierAutoDetect extends BroadcastReceiver {
             mNetworkCallback = null;
             mNetworkRequest = null;
         }
-        final NetworkState networkState = getCurrentNetworkState();
-        mConnectionType = convertToConnectionType(networkState);
-        mWifiSSID = networkState.getWifiSsid();
-        mMaxBandwidthMbps = getCurrentMaxBandwidthInMbps(networkState);
-        mMaxBandwidthConnectionType = mConnectionType;
+        mNetworkState = getCurrentNetworkState();
         mIntentFilter = new NetworkConnectivityIntentFilter();
         mIgnoreNextBroadcast = false;
         mShouldSignalObserver = false;
@@ -744,9 +805,7 @@ public class NetworkChangeNotifierAutoDetect extends BroadcastReceiver {
         if (mRegistered) return;
 
         if (mShouldSignalObserver) {
-            final NetworkState networkState = getCurrentNetworkState();
-            connectionTypeChanged(networkState);
-            maxBandwidthChanged(networkState);
+            connectionTypeChanged();
         }
         // When registering for a sticky broadcast, like CONNECTIVITY_ACTION, if registerReceiver
         // returns non-null, it means the broadcast was previously issued and onReceive() will be
@@ -866,18 +925,6 @@ public class NetworkChangeNotifierAutoDetect extends BroadcastReceiver {
     }
 
     /**
-     * Returns the connection type for the given NetworkState.
-     */
-    @ConnectionType
-    public static int convertToConnectionType(NetworkState networkState) {
-        if (!networkState.isConnected()) {
-            return ConnectionType.CONNECTION_NONE;
-        }
-        return convertToConnectionType(
-                networkState.getNetworkType(), networkState.getNetworkSubType());
-    }
-
-    /**
      * Returns the connection type for the given ConnectivityManager type and subtype.
      */
     @ConnectionType
@@ -920,72 +967,6 @@ public class NetworkChangeNotifierAutoDetect extends BroadcastReceiver {
         }
     }
 
-    /**
-     * Returns the connection subtype for the given NetworkState.
-     */
-    public static int convertToConnectionSubtype(NetworkState networkState) {
-        if (!networkState.isConnected()) {
-            return ConnectionSubtype.SUBTYPE_NONE;
-        }
-
-        switch (networkState.getNetworkType()) {
-            case ConnectivityManager.TYPE_ETHERNET:
-            case ConnectivityManager.TYPE_WIFI:
-            case ConnectivityManager.TYPE_WIMAX:
-            case ConnectivityManager.TYPE_BLUETOOTH:
-                return ConnectionSubtype.SUBTYPE_UNKNOWN;
-            case ConnectivityManager.TYPE_MOBILE:
-                // Use information from TelephonyManager to classify the connection.
-                switch (networkState.getNetworkSubType()) {
-                    case TelephonyManager.NETWORK_TYPE_GPRS:
-                        return ConnectionSubtype.SUBTYPE_GPRS;
-                    case TelephonyManager.NETWORK_TYPE_EDGE:
-                        return ConnectionSubtype.SUBTYPE_EDGE;
-                    case TelephonyManager.NETWORK_TYPE_CDMA:
-                        return ConnectionSubtype.SUBTYPE_CDMA;
-                    case TelephonyManager.NETWORK_TYPE_1xRTT:
-                        return ConnectionSubtype.SUBTYPE_1XRTT;
-                    case TelephonyManager.NETWORK_TYPE_IDEN:
-                        return ConnectionSubtype.SUBTYPE_IDEN;
-                    case TelephonyManager.NETWORK_TYPE_UMTS:
-                        return ConnectionSubtype.SUBTYPE_UMTS;
-                    case TelephonyManager.NETWORK_TYPE_EVDO_0:
-                        return ConnectionSubtype.SUBTYPE_EVDO_REV_0;
-                    case TelephonyManager.NETWORK_TYPE_EVDO_A:
-                        return ConnectionSubtype.SUBTYPE_EVDO_REV_A;
-                    case TelephonyManager.NETWORK_TYPE_HSDPA:
-                        return ConnectionSubtype.SUBTYPE_HSDPA;
-                    case TelephonyManager.NETWORK_TYPE_HSUPA:
-                        return ConnectionSubtype.SUBTYPE_HSUPA;
-                    case TelephonyManager.NETWORK_TYPE_HSPA:
-                        return ConnectionSubtype.SUBTYPE_HSPA;
-                    case TelephonyManager.NETWORK_TYPE_EVDO_B:
-                        return ConnectionSubtype.SUBTYPE_EVDO_REV_B;
-                    case TelephonyManager.NETWORK_TYPE_EHRPD:
-                        return ConnectionSubtype.SUBTYPE_EHRPD;
-                    case TelephonyManager.NETWORK_TYPE_HSPAP:
-                        return ConnectionSubtype.SUBTYPE_HSPAP;
-                    case TelephonyManager.NETWORK_TYPE_LTE:
-                        return ConnectionSubtype.SUBTYPE_LTE;
-                    default:
-                        return ConnectionSubtype.SUBTYPE_UNKNOWN;
-                }
-            default:
-                return ConnectionSubtype.SUBTYPE_UNKNOWN;
-        }
-    }
-
-    /**
-     * Returns the bandwidth of the current connection in Mbps. The result is
-     * derived from the NetInfo v3 specification's mapping from network type to
-     * max link speed. In cases where more information is available that is used
-     * instead. For more on NetInfo, see http://w3c.github.io/netinfo/.
-     */
-    public double getCurrentMaxBandwidthInMbps(NetworkState networkState) {
-        return NetworkChangeNotifier.getMaxBandwidthForConnectionSubtype(
-                convertToConnectionSubtype(networkState));
-    }
-
     // BroadcastReceiver
     @Override
     public void onReceive(Context context, Intent intent) {
@@ -1001,33 +982,22 @@ public class NetworkChangeNotifierAutoDetect extends BroadcastReceiver {
                     mIgnoreNextBroadcast = false;
                     return;
                 }
-                final NetworkState networkState = getCurrentNetworkState();
-                connectionTypeChanged(networkState);
-                maxBandwidthChanged(networkState);
+                connectionTypeChanged();
             }
         });
     }
 
-    private void connectionTypeChanged(NetworkState networkState) {
-        @ConnectionType
-        int newConnectionType = convertToConnectionType(networkState);
-        String newWifiSSID = networkState.getWifiSsid();
-        if (newConnectionType == mConnectionType && newWifiSSID.equals(mWifiSSID)) return;
-
-        mConnectionType = newConnectionType;
-        mWifiSSID = newWifiSSID;
-        mObserver.onConnectionTypeChanged(newConnectionType);
-    }
-
-    private void maxBandwidthChanged(NetworkState networkState) {
-        double newMaxBandwidthMbps = getCurrentMaxBandwidthInMbps(networkState);
-        if (newMaxBandwidthMbps == mMaxBandwidthMbps
-                && mConnectionType == mMaxBandwidthConnectionType) {
-            return;
+    private void connectionTypeChanged() {
+        NetworkState networkState = getCurrentNetworkState();
+        if (networkState.getConnectionType() != mNetworkState.getConnectionType()
+                || !networkState.getWifiSsid().equals(mNetworkState.getWifiSsid())) {
+            mObserver.onConnectionTypeChanged(networkState.getConnectionType());
         }
-        mMaxBandwidthMbps = newMaxBandwidthMbps;
-        mMaxBandwidthConnectionType = mConnectionType;
-        mObserver.onMaxBandwidthChanged(newMaxBandwidthMbps);
+        if (networkState.getConnectionType() != mNetworkState.getConnectionType()
+                || networkState.getConnectionSubtype() != mNetworkState.getConnectionSubtype()) {
+            mObserver.onConnectionSubtypeChanged(networkState.getConnectionSubtype());
+        }
+        mNetworkState = networkState;
     }
 
     // TODO(crbug.com/635567): Fix this properly.

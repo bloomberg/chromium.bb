@@ -1556,7 +1556,7 @@ public class DownloadManagerService
     }
 
     @Override
-    public void onMaxBandwidthChanged(double maxBandwidthMbps) {}
+    public void onConnectionSubtypeChanged(int newConnectionSubtype) {}
 
     @Override
     public void onNetworkConnect(long netId, int connectionType) {}
