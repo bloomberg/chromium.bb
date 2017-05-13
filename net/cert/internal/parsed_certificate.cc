@@ -194,6 +194,15 @@ scoped_refptr<ParsedCertificate> ParsedCertificate::CreateInternal(
         return nullptr;
       }
     }
+
+    // Policy constraints.
+    if (result->GetExtension(PolicyConstraintsOid(), &extension)) {
+      result->has_policy_constraints_ = true;
+      if (!ParsePolicyConstraints(extension.value,
+                                  &result->policy_constraints_)) {
+        return nullptr;
+      }
+    }
   }
 
   return result;
