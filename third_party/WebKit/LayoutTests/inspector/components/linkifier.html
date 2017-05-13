@@ -39,10 +39,6 @@ function test()
         InspectorTest.addResult("Linkified script location B");
         dumpLiveLocationsCount();
 
-        linkifier.disposeAnchor(target, linkA);
-        InspectorTest.addResult("Disposed link A");
-        dumpLiveLocationsCount();
-
         linkifier.reset();
         InspectorTest.addResult("Reseted linkifier");
         dumpLiveLocationsCount();
