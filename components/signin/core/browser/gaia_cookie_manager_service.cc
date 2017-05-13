@@ -25,6 +25,7 @@
 #include "google_apis/gaia/oauth2_token_service.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_status_code.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_fetcher_delegate.h"
 
@@ -213,8 +214,35 @@ void GaiaCookieManagerService::ExternalCcResultFetcher::
 std::unique_ptr<net::URLFetcher>
 GaiaCookieManagerService::ExternalCcResultFetcher::CreateFetcher(
     const GURL& url) {
-  std::unique_ptr<net::URLFetcher> fetcher =
-      net::URLFetcher::Create(0, url, net::URLFetcher::GET, this);
+  net::NetworkTrafficAnnotationTag traffic_annotation =
+      net::DefineNetworkTrafficAnnotation(
+          "gaia_cookie_manager_external_cc_result", R"(
+          semantics {
+            sender: "Gaia Cookie Manager"
+            description:
+              "This request is used by the GaiaCookieManager when adding an "
+              "account to the Google authentication cookies to check the "
+              "authentication server's connection state."
+            trigger:
+              "This is used at most once per lifetime of the application "
+              "during the first merge session flow (the flow used to add an "
+              "account for which Chrome has a valid OAuth2 refresh token to "
+              "the Gaia authentication cookies). The value of the first fetch "
+              "is stored in RAM for future uses."
+            data: "None."
+            destination: GOOGLE_OWNED_SERVICE
+          }
+          policy {
+            cookies_allowed: false
+            setting: "This feature cannot be disabled in settings."
+            policy_exception_justification:
+              "Not implemented. Disabling GaiaCookieManager would break "
+              "features that depend on it (like account consistency and "
+              "support for child accounts). It makes sense to control top "
+              "level features that use the GaiaCookieManager."
+          })");
+  std::unique_ptr<net::URLFetcher> fetcher = net::URLFetcher::Create(
+      0, url, net::URLFetcher::GET, this, traffic_annotation);
   fetcher->SetRequestContext(helper_->request_context());
   fetcher->SetLoadFlags(net::LOAD_DO_NOT_SEND_COOKIES |
                         net::LOAD_DO_NOT_SAVE_COOKIES);
