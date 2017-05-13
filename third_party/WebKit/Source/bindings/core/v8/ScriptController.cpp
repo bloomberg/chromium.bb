@@ -205,6 +205,7 @@ void ScriptController::ClearWindowProxy() {
 
 void ScriptController::UpdateDocument() {
   window_proxy_manager_->MainWorldProxyMaybeUninitialized()->UpdateDocument();
+  EnableEval();
 }
 
 bool ScriptController::ExecuteScriptIfJavaScriptURL(const KURL& url,

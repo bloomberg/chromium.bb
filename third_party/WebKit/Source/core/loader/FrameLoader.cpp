@@ -239,9 +239,6 @@ FrameLoader::FrameLoader(LocalFrame* frame)
     : frame_(frame),
       progress_tracker_(ProgressTracker::Create(frame)),
       in_stop_all_loaders_(false),
-      check_timer_(TaskRunnerHelper::Get(TaskType::kNetworking, frame),
-                   this,
-                   &FrameLoader::CheckTimerFired),
       forced_sandbox_flags_(kSandboxNone),
       dispatching_did_clear_window_object_in_main_world_(false),
       protect_provisional_loader_(false),
@@ -303,10 +300,8 @@ void FrameLoader::SetDefersLoading(bool defers) {
       document->ResumeScheduledTasks();
   }
 
-  if (!defers) {
+  if (!defers)
     frame_->GetNavigationScheduler().StartTimer();
-    ScheduleCheckCompleted();
-  }
 }
 
 void FrameLoader::SaveScrollState() {
@@ -374,16 +369,9 @@ void FrameLoader::Clear() {
     return;
 
   frame_->GetEditor().Clear();
-  frame_->GetDocument()->RemoveFocusedElementOfSubtree(frame_->GetDocument());
   frame_->GetEventHandler().Clear();
   if (frame_->View())
     frame_->View()->Clear();
-
-  frame_->GetScriptController().EnableEval();
-
-  frame_->GetNavigationScheduler().Cancel();
-
-  check_timer_.Stop();
 
   if (state_machine_.IsDisplayingInitialEmptyDocument())
     state_machine_.AdvanceTo(FrameLoaderStateMachine::kCommittedFirstRealLoad);
@@ -488,19 +476,6 @@ void FrameLoader::DidFinishNavigation() {
   Frame* parent = frame_->Tree().Parent();
   if (parent && parent->IsLocalFrame())
     ToLocalFrame(parent)->GetDocument()->CheckCompleted();
-}
-
-void FrameLoader::CheckTimerFired(TimerBase*) {
-  if (Page* page = frame_->GetPage()) {
-    if (page->Suspended())
-      return;
-  }
-  frame_->GetDocument()->CheckCompleted();
-}
-
-void FrameLoader::ScheduleCheckCompleted() {
-  if (!check_timer_.IsActive())
-    check_timer_.StartOneShot(0, BLINK_FROM_HERE);
 }
 
 Frame* FrameLoader::Opener() {
@@ -981,7 +956,6 @@ void FrameLoader::StopAllLoaders() {
   if (!protect_provisional_loader_)
     DetachDocumentLoader(provisional_document_loader_);
 
-  check_timer_.Stop();
   frame_->GetNavigationScheduler().Cancel();
 
   // It's possible that the above actions won't have stopped loading if load
@@ -1209,9 +1183,6 @@ void FrameLoader::Detach() {
   DetachDocumentLoader(document_loader_);
   DetachDocumentLoader(provisional_document_loader_);
 
-  Frame* parent = frame_->Tree().Parent();
-  if (parent && parent->IsLocalFrame())
-    ToLocalFrame(parent)->Loader().ScheduleCheckCompleted();
   if (progress_tracker_) {
     progress_tracker_->Dispose();
     progress_tracker_.Clear();
@@ -1490,7 +1461,6 @@ void FrameLoader::StartLoad(FrameLoadRequest& frame_load_request,
   if (!had_placeholder_client_document_loader ||
       navigation_policy == kNavigationPolicyHandledByClient) {
     frame_->GetNavigationScheduler().Cancel();
-    check_timer_.Stop();
   }
 
   if (frame_load_request.Form())

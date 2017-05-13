@@ -121,7 +121,6 @@ class CORE_EXPORT ScriptController final
   // ignored when evaluating resources injected into the DOM.
   bool ShouldBypassMainWorldCSP();
 
-  void EnableEval();
   void DisableEval(const String& error_message);
 
   TextPosition EventHandlerPosition() const;
@@ -148,6 +147,7 @@ class CORE_EXPORT ScriptController final
   v8::Isolate* GetIsolate() const {
     return window_proxy_manager_->GetIsolate();
   }
+  void EnableEval();
 
   v8::Local<v8::Value> EvaluateScriptInMainWorld(const ScriptSourceCode&,
                                                  AccessControlStatus,
