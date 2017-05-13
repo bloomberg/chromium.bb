@@ -37,6 +37,10 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 struct drm_amdgpu_info_hw_ip;
 
 /*--------------------------------------------------------------------------*/
@@ -1323,5 +1327,9 @@ int amdgpu_cs_destroy_semaphore(amdgpu_semaphore_handle sem);
  *          "NULL" means the ASIC is not found
 */
 const char *amdgpu_get_marketing_name(amdgpu_device_handle dev);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* #ifdef _AMDGPU_H_ */
