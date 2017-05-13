@@ -326,7 +326,8 @@ class CC_EXPORT LayerTreeHostImpl
 
   size_t SourceAnimationFrameNumberForTesting() const;
 
-  void RegisterScrollbarAnimationController(ElementId scroll_element_id);
+  void RegisterScrollbarAnimationController(ElementId scroll_element_id,
+                                            float initial_opacity);
   void UnregisterScrollbarAnimationController(ElementId scroll_element_id);
   ScrollbarAnimationController* ScrollbarAnimationControllerForElementId(
       ElementId scroll_element_id) const;
@@ -710,6 +711,10 @@ class CC_EXPORT LayerTreeHostImpl
 
   bool IsScrolledBy(LayerImpl* child, ScrollNode* ancestor);
   void ShowScrollbarsForImplScroll(ElementId element_id);
+
+  // Copy any opacity values already in the active tree to the pending
+  // tree, because the active tree value always takes precedence for scrollbars.
+  void PushScrollbarOpacitiesFromActiveToPending();
 
   using UIResourceMap = std::unordered_map<UIResourceId, UIResourceData>;
   UIResourceMap ui_resource_map_;

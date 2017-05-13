@@ -93,21 +93,21 @@ void ScrollState::ConsumeDeltaNative(double x, double y) {
 }
 
 Element* ScrollState::CurrentNativeScrollingElement() const {
-  DOMNodeId dom_node_id = DomNodeIdFromCompositorElementId(
-      data_->current_native_scrolling_element());
+  uint64_t dom_node_id =
+      IdFromCompositorElementId(data_->current_native_scrolling_element());
   if (dom_node_id == kInvalidDOMNodeId)
     return nullptr;
   return ElementForId(dom_node_id);
 }
 
 void ScrollState::SetCurrentNativeScrollingElement(Element* element) {
-  data_->set_current_native_scrolling_element(CreateCompositorElementId(
-      DOMNodeIds::IdForNode(element), CompositorSubElementId::kScroll));
+  data_->set_current_native_scrolling_element(CompositorElementIdFromDOMNodeId(
+      DOMNodeIds::IdForNode(element), CompositorElementIdNamespace::kScroll));
 }
 
 void ScrollState::SetCurrentNativeScrollingElementById(int element_id) {
-  data_->set_current_native_scrolling_element(
-      CreateCompositorElementId(element_id, CompositorSubElementId::kScroll));
+  data_->set_current_native_scrolling_element(CompositorElementIdFromDOMNodeId(
+      element_id, CompositorElementIdNamespace::kScroll));
 }
 
 }  // namespace blink

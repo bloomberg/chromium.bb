@@ -466,8 +466,8 @@ void CompositorAnimations::AttachCompositedLayers(Element& element,
   }
 
   CompositorAnimationPlayer* compositor_player = animation.CompositorPlayer();
-  compositor_player->AttachElement(CreateCompositorElementId(
-      DOMNodeIds::IdForNode(&element), CompositorSubElementId::kPrimary));
+  compositor_player->AttachElement(CompositorElementIdFromDOMNodeId(
+      DOMNodeIds::IdForNode(&element), CompositorElementIdNamespace::kPrimary));
 }
 
 bool CompositorAnimations::ConvertTimingForCompositor(

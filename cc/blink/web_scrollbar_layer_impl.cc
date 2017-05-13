@@ -75,4 +75,8 @@ void WebScrollbarLayerImpl::SetScrollLayer(blink::WebLayer* layer) {
       scroll_layer ? scroll_layer->element_id() : cc::ElementId());
 }
 
+void WebScrollbarLayerImpl::SetElementId(const cc::ElementId& element_id) {
+  layer_->SetElementId(element_id);
+}
+
 }  // namespace cc_blink

@@ -129,8 +129,6 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   float EffectiveOpacity() const;
   virtual bool OpacityCanAnimateOnImplThread() const;
 
-  virtual bool AlwaysUseActiveTreeOpacity() const;
-
   void SetBlendMode(SkBlendMode blend_mode);
   SkBlendMode blend_mode() const { return inputs_.blend_mode; }
 

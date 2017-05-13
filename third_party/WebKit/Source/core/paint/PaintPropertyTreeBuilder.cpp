@@ -76,8 +76,9 @@ static CompositorElementId CreateDomNodeBasedCompositorElementId(
     const LayoutObject& object) {
   // TODO(wkorman): Centralize this implementation with similar across
   // animation, scrolling and compositing logic.
-  return CreateCompositorElementId(DOMNodeIds::IdForNode(object.GetNode()),
-                                   CompositorSubElementId::kPrimary);
+  return CompositorElementIdFromDOMNodeId(
+      DOMNodeIds::IdForNode(object.GetNode()),
+      CompositorElementIdNamespace::kPrimary);
 }
 
 // True if a new property was created or a main thread scrolling reason changed

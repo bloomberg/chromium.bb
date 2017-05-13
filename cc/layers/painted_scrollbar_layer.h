@@ -25,7 +25,6 @@ class CC_EXPORT PaintedScrollbarLayer : public ScrollbarLayerInterface,
       ElementId element_id = ElementId());
 
   bool OpacityCanAnimateOnImplThread() const override;
-  bool AlwaysUseActiveTreeOpacity() const override;
   ScrollbarLayerInterface* ToScrollbarLayer() override;
 
   // ScrollbarLayerInterface

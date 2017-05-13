@@ -94,7 +94,8 @@ class CC_EXPORT LayerTreeImpl {
   gfx::Rect DeviceViewport() const;
   const gfx::Rect ViewportRectForTilePriority() const;
   std::unique_ptr<ScrollbarAnimationController>
-  CreateScrollbarAnimationController(ElementId scroll_element_id);
+  CreateScrollbarAnimationController(ElementId scroll_element_id,
+                                     float initial_opacity);
   void DidAnimateScrollOffset();
   bool use_gpu_rasterization() const;
   GpuRasterizationStatus GetGpuRasterizationStatus() const;
@@ -141,10 +142,6 @@ class CC_EXPORT LayerTreeImpl {
   LayerImplList::const_iterator end() const;
   LayerImplList::reverse_iterator rbegin();
   LayerImplList::reverse_iterator rend();
-
-  // TODO(crbug.com/702832): This won't be needed if overlay scrollbars have
-  // element ids.
-  void AddToOpacityAnimationsMap(int id, float opacity);
 
   void SetTransformMutated(ElementId element_id,
                            const gfx::Transform& transform);

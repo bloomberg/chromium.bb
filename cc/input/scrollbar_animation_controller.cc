@@ -16,9 +16,10 @@ ScrollbarAnimationController::CreateScrollbarAnimationControllerAndroid(
     ElementId scroll_element_id,
     ScrollbarAnimationControllerClient* client,
     base::TimeDelta fade_delay,
-    base::TimeDelta fade_duration) {
+    base::TimeDelta fade_duration,
+    float initial_opacity) {
   return base::WrapUnique(new ScrollbarAnimationController(
-      scroll_element_id, client, fade_delay, fade_duration));
+      scroll_element_id, client, fade_delay, fade_duration, initial_opacity));
 }
 
 std::unique_ptr<ScrollbarAnimationController>
@@ -27,30 +28,11 @@ ScrollbarAnimationController::CreateScrollbarAnimationControllerAuraOverlay(
     ScrollbarAnimationControllerClient* client,
     base::TimeDelta fade_delay,
     base::TimeDelta fade_duration,
-    base::TimeDelta thinning_duration) {
+    base::TimeDelta thinning_duration,
+    float initial_opacity) {
   return base::WrapUnique(new ScrollbarAnimationController(
-      scroll_element_id, client, fade_delay, fade_duration, thinning_duration));
-}
-
-ScrollbarAnimationController::ScrollbarAnimationController(
-    ElementId scroll_element_id,
-    ScrollbarAnimationControllerClient* client,
-    base::TimeDelta fade_delay,
-    base::TimeDelta fade_duration)
-    : client_(client),
-      fade_delay_(fade_delay),
-      fade_duration_(fade_duration),
-      need_trigger_scrollbar_fade_in_(false),
-      is_animating_(false),
-      animation_change_(NONE),
-      scroll_element_id_(scroll_element_id),
-      currently_scrolling_(false),
-      show_in_fast_scroll_(false),
-      opacity_(0.0f),
-      show_scrollbars_on_scroll_gesture_(false),
-      need_thinning_animation_(false),
-      weak_factory_(this) {
-  ApplyOpacityToScrollbars(0.0f);
+      scroll_element_id, client, fade_delay, fade_duration, thinning_duration,
+      initial_opacity));
 }
 
 ScrollbarAnimationController::ScrollbarAnimationController(
@@ -58,7 +40,7 @@ ScrollbarAnimationController::ScrollbarAnimationController(
     ScrollbarAnimationControllerClient* client,
     base::TimeDelta fade_delay,
     base::TimeDelta fade_duration,
-    base::TimeDelta thinning_duration)
+    float initial_opacity)
     : client_(client),
       fade_delay_(fade_delay),
       fade_duration_(fade_duration),
@@ -68,7 +50,28 @@ ScrollbarAnimationController::ScrollbarAnimationController(
       scroll_element_id_(scroll_element_id),
       currently_scrolling_(false),
       show_in_fast_scroll_(false),
-      opacity_(0.0f),
+      opacity_(initial_opacity),
+      show_scrollbars_on_scroll_gesture_(false),
+      need_thinning_animation_(false),
+      weak_factory_(this) {}
+
+ScrollbarAnimationController::ScrollbarAnimationController(
+    ElementId scroll_element_id,
+    ScrollbarAnimationControllerClient* client,
+    base::TimeDelta fade_delay,
+    base::TimeDelta fade_duration,
+    base::TimeDelta thinning_duration,
+    float initial_opacity)
+    : client_(client),
+      fade_delay_(fade_delay),
+      fade_duration_(fade_duration),
+      need_trigger_scrollbar_fade_in_(false),
+      is_animating_(false),
+      animation_change_(NONE),
+      scroll_element_id_(scroll_element_id),
+      currently_scrolling_(false),
+      show_in_fast_scroll_(false),
+      opacity_(initial_opacity),
       show_scrollbars_on_scroll_gesture_(true),
       need_thinning_animation_(true),
       weak_factory_(this) {
@@ -78,8 +81,6 @@ ScrollbarAnimationController::ScrollbarAnimationController(
   horizontal_controller_ = SingleScrollbarAnimationControllerThinning::Create(
       scroll_element_id, ScrollbarOrientation::HORIZONTAL, client,
       thinning_duration);
-
-  ApplyOpacityToScrollbars(0.0f);
 }
 
 ScrollbarAnimationController::~ScrollbarAnimationController() {}

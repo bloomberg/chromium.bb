@@ -363,8 +363,10 @@ void VisualViewport::CreateLayerTree() {
   inner_viewport_scroll_layer_->PlatformLayer()->SetUserScrollable(true, true);
   if (MainFrame()) {
     if (Document* document = MainFrame()->GetDocument()) {
-      inner_viewport_scroll_layer_->SetElementId(CreateCompositorElementId(
-          DOMNodeIds::IdForNode(document), CompositorSubElementId::kViewport));
+      inner_viewport_scroll_layer_->SetElementId(
+          CompositorElementIdFromDOMNodeId(
+              DOMNodeIds::IdForNode(document),
+              CompositorElementIdNamespace::kViewport));
     }
   }
 

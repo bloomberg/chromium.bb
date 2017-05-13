@@ -98,8 +98,9 @@ LinkHighlightImpl::LinkHighlightImpl(Node* node, WebViewBase* owning_web_view)
   if (owning_web_view_->LinkHighlightsTimeline())
     owning_web_view_->LinkHighlightsTimeline()->PlayerAttached(*this);
 
-  CompositorElementId element_id = CreateCompositorElementId(
-      DOMNodeIds::IdForNode(node), CompositorSubElementId::kLinkHighlight);
+  CompositorElementId element_id = CompositorElementIdFromDOMNodeId(
+      DOMNodeIds::IdForNode(node),
+      CompositorElementIdNamespace::kLinkHighlight);
   compositor_player_->AttachElement(element_id);
   content_layer_->Layer()->SetDrawsContent(true);
   content_layer_->Layer()->SetOpacity(1);

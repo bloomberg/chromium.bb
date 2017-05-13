@@ -3168,9 +3168,6 @@ class LayerTreeHostImplTestScrollbarOpacity : public LayerTreeHostImplTest {
     EffectNode* pending_tree_node =
         host_impl_->pending_tree()->property_trees()->effect_tree.Node(
             pending_scrollbar_layer->effect_tree_index());
-    host_impl_->pending_tree()
-        ->property_trees()
-        ->always_use_active_tree_opacity_effect_ids.push_back(400);
     if (expecting_animations) {
       EXPECT_FLOAT_EQ(1.f, active_tree_node->opacity);
       EXPECT_FLOAT_EQ(1.f, active_scrollbar_layer->Opacity());
@@ -3329,22 +3326,36 @@ TEST_F(LayerTreeHostImplTest, ScrollbarRegistration) {
   const int child_scroll_id = 15;
 
   CreateScrollAndContentsLayers(host_impl_->active_tree(), content_size);
-  host_impl_->active_tree()->InnerViewportContainerLayer()->SetBounds(
-      viewport_size);
+  LayerImpl* container =
+      host_impl_->active_tree()->InnerViewportContainerLayer();
+  container->SetBounds(viewport_size);
   LayerImpl* root_scroll =
       host_impl_->active_tree()->OuterViewportScrollLayer();
-  std::unique_ptr<SolidColorScrollbarLayerImpl> vert_1_scrollbar =
-      SolidColorScrollbarLayerImpl::Create(host_impl_->active_tree(), vert_1_id,
-                                           VERTICAL, 5, 5, true, true);
-  std::unique_ptr<SolidColorScrollbarLayerImpl> horiz_1_scrollbar =
-      SolidColorScrollbarLayerImpl::Create(
-          host_impl_->active_tree(), horiz_1_id, HORIZONTAL, 5, 5, true, true);
-  std::unique_ptr<SolidColorScrollbarLayerImpl> vert_2_scrollbar =
-      SolidColorScrollbarLayerImpl::Create(host_impl_->active_tree(), vert_2_id,
-                                           VERTICAL, 5, 5, true, true);
-  std::unique_ptr<SolidColorScrollbarLayerImpl> horiz_2_scrollbar =
-      SolidColorScrollbarLayerImpl::Create(
-          host_impl_->active_tree(), horiz_2_id, HORIZONTAL, 5, 5, true, true);
+
+  container->test_properties()->AddChild(SolidColorScrollbarLayerImpl::Create(
+      host_impl_->active_tree(), vert_1_id, VERTICAL, 5, 5, true, true));
+  SolidColorScrollbarLayerImpl* vert_1_scrollbar =
+      static_cast<SolidColorScrollbarLayerImpl*>(
+          container->test_properties()->children[1]);
+
+  container->test_properties()->AddChild(SolidColorScrollbarLayerImpl::Create(
+      host_impl_->active_tree(), horiz_1_id, HORIZONTAL, 5, 5, true, true));
+  SolidColorScrollbarLayerImpl* horiz_1_scrollbar =
+      static_cast<SolidColorScrollbarLayerImpl*>(
+          container->test_properties()->children[2]);
+
+  container->test_properties()->AddChild(SolidColorScrollbarLayerImpl::Create(
+      host_impl_->active_tree(), vert_2_id, VERTICAL, 5, 5, true, true));
+  SolidColorScrollbarLayerImpl* vert_2_scrollbar =
+      static_cast<SolidColorScrollbarLayerImpl*>(
+          container->test_properties()->children[3]);
+
+  container->test_properties()->AddChild(SolidColorScrollbarLayerImpl::Create(
+      host_impl_->active_tree(), horiz_2_id, HORIZONTAL, 5, 5, true, true));
+  SolidColorScrollbarLayerImpl* horiz_2_scrollbar =
+      static_cast<SolidColorScrollbarLayerImpl*>(
+          container->test_properties()->children[4]);
+
   std::unique_ptr<LayerImpl> child =
       LayerImpl::Create(host_impl_->active_tree(), child_scroll_id);
   child->SetBounds(content_size);
@@ -3353,6 +3364,8 @@ TEST_F(LayerTreeHostImplTest, ScrollbarRegistration) {
   child->SetBounds(viewport_size);
   LayerImpl* child_ptr = child.get();
   LayerImpl* child_clip_ptr = child_clip.get();
+
+  host_impl_->active_tree()->BuildPropertyTreesForTesting();
 
   // Check scrollbar registration on the viewport layers.
   EXPECT_EQ(0ul, host_impl_->ScrollbarsFor(root_scroll->element_id()).size());
@@ -3403,21 +3416,21 @@ TEST_F(LayerTreeHostImplTest, ScrollbarRegistration) {
   animation_task_ = base::Closure();
 
   // Check scrollbar unregistration.
-  vert_1_scrollbar.reset();
+  container->test_properties()->RemoveChild(vert_1_scrollbar);
   EXPECT_EQ(1ul, host_impl_->ScrollbarsFor(root_scroll->element_id()).size());
   EXPECT_TRUE(host_impl_->ScrollbarAnimationControllerForElementId(
       root_scroll->element_id()));
-  horiz_1_scrollbar.reset();
+  container->test_properties()->RemoveChild(horiz_1_scrollbar);
   EXPECT_EQ(0ul, host_impl_->ScrollbarsFor(root_scroll->element_id()).size());
   EXPECT_EQ(nullptr, host_impl_->ScrollbarAnimationControllerForElementId(
                          root_scroll->element_id()));
 
   EXPECT_EQ(2ul, host_impl_->ScrollbarsFor(child_scroll_element_id).size());
-  vert_2_scrollbar.reset();
+  container->test_properties()->RemoveChild(vert_2_scrollbar);
   EXPECT_EQ(1ul, host_impl_->ScrollbarsFor(child_scroll_element_id).size());
   EXPECT_TRUE(host_impl_->ScrollbarAnimationControllerForElementId(
       child_scroll_element_id));
-  horiz_2_scrollbar.reset();
+  container->test_properties()->RemoveChild(horiz_2_scrollbar);
   EXPECT_EQ(0ul, host_impl_->ScrollbarsFor(child_scroll_element_id).size());
   EXPECT_EQ(nullptr, host_impl_->ScrollbarAnimationControllerForElementId(
                          root_scroll->element_id()));

@@ -797,8 +797,9 @@ TEST_F(AnimationAnimationTest, NoCompositeWithoutCompositedElementId) {
   Optional<CompositorElementIdSet> composited_element_ids =
       CompositorElementIdSet();
   CompositorElementId expected_compositor_element_id =
-      CreateCompositorElementId(DOMNodeIds::IdForNode(element_composited),
-                                CompositorSubElementId::kPrimary);
+      CompositorElementIdFromDOMNodeId(
+          DOMNodeIds::IdForNode(element_composited),
+          CompositorElementIdNamespace::kPrimary);
   composited_element_ids->insert(expected_compositor_element_id);
 
   Timing timing;

@@ -50,6 +50,7 @@
 #include "platform/exported/WebScrollbarThemeGeometryNative.h"
 #include "platform/geometry/Region.h"
 #include "platform/geometry/TransformState.h"
+#include "platform/graphics/CompositorElementId.h"
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/instrumentation/tracing/TraceEvent.h"
 #if OS(MACOSX)
@@ -337,6 +338,11 @@ void ScrollingCoordinator::RemoveWebScrollbarLayer(
     GraphicsLayer::UnregisterContentsLayer(scrollbar_layer->Layer());
 }
 
+static uint64_t NextScrollbarId() {
+  static ScrollbarId next_scrollbar_id = 0;
+  return ++next_scrollbar_id;
+}
+
 static std::unique_ptr<WebScrollbarLayer> CreateScrollbarLayer(
     Scrollbar& scrollbar,
     float device_scale_factor) {
@@ -350,10 +356,14 @@ static std::unique_ptr<WebScrollbarLayer> CreateScrollbarLayer(
     scrollbar_layer =
         Platform::Current()->CompositorSupport()->CreateOverlayScrollbarLayer(
             WebScrollbarImpl::Create(&scrollbar), painter, std::move(geometry));
+    scrollbar_layer->SetElementId(CompositorElementIdFromDOMNodeId(
+        NextScrollbarId(), CompositorElementIdNamespace::kScrollbar));
   } else {
     scrollbar_layer =
         Platform::Current()->CompositorSupport()->CreateScrollbarLayer(
             WebScrollbarImpl::Create(&scrollbar), painter, std::move(geometry));
+    scrollbar_layer->SetElementId(CompositorElementIdFromDOMNodeId(
+        NextScrollbarId(), CompositorElementIdNamespace::kScrollbar));
   }
   GraphicsLayer::RegisterContentsLayer(scrollbar_layer->Layer());
   return scrollbar_layer;
@@ -372,6 +382,8 @@ ScrollingCoordinator::CreateSolidColorScrollbarLayer(
       Platform::Current()->CompositorSupport()->CreateSolidColorScrollbarLayer(
           web_orientation, thumb_thickness, track_start,
           is_left_side_vertical_scrollbar);
+  scrollbar_layer->SetElementId(CompositorElementIdFromDOMNodeId(
+      NextScrollbarId(), CompositorElementIdNamespace::kScrollbar));
   GraphicsLayer::RegisterContentsLayer(scrollbar_layer->Layer());
   return scrollbar_layer;
 }

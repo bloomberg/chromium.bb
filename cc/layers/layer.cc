@@ -512,10 +512,6 @@ bool Layer::OpacityCanAnimateOnImplThread() const {
   return false;
 }
 
-bool Layer::AlwaysUseActiveTreeOpacity() const {
-  return false;
-}
-
 void Layer::SetBlendMode(SkBlendMode blend_mode) {
   DCHECK(IsPropertyChangeAllowed());
   if (inputs_.blend_mode == blend_mode)

@@ -11,22 +11,23 @@ namespace blink {
 class CompositorElementIdTest : public ::testing::Test {};
 
 TEST_F(CompositorElementIdTest, EncodeDecode) {
-  CompositorElementId element_id =
-      CreateCompositorElementId(1, CompositorSubElementId::kPrimary);
-  EXPECT_EQ(1u, DomNodeIdFromCompositorElementId(element_id));
-  EXPECT_EQ(CompositorSubElementId::kPrimary,
-            SubElementIdFromCompositorElementId(element_id));
+  CompositorElementId element_id = CompositorElementIdFromDOMNodeId(
+      1, CompositorElementIdNamespace::kPrimary);
+  EXPECT_EQ(1u, IdFromCompositorElementId(element_id));
+  EXPECT_EQ(CompositorElementIdNamespace::kPrimary,
+            NamespaceFromCompositorElementId(element_id));
 
-  element_id =
-      CreateCompositorElementId(1, CompositorSubElementId::kLinkHighlight);
-  EXPECT_EQ(1u, DomNodeIdFromCompositorElementId(element_id));
-  EXPECT_EQ(CompositorSubElementId::kLinkHighlight,
-            SubElementIdFromCompositorElementId(element_id));
+  element_id = CompositorElementIdFromDOMNodeId(
+      1, CompositorElementIdNamespace::kLinkHighlight);
+  EXPECT_EQ(1u, IdFromCompositorElementId(element_id));
+  EXPECT_EQ(CompositorElementIdNamespace::kLinkHighlight,
+            NamespaceFromCompositorElementId(element_id));
 
-  element_id = CreateCompositorElementId(23, CompositorSubElementId::kScroll);
-  EXPECT_EQ(23u, DomNodeIdFromCompositorElementId(element_id));
-  EXPECT_EQ(CompositorSubElementId::kScroll,
-            SubElementIdFromCompositorElementId(element_id));
+  element_id = CompositorElementIdFromDOMNodeId(
+      23, CompositorElementIdNamespace::kScroll);
+  EXPECT_EQ(23u, IdFromCompositorElementId(element_id));
+  EXPECT_EQ(CompositorElementIdNamespace::kScroll,
+            NamespaceFromCompositorElementId(element_id));
 }
 
 }  // namespace blink
