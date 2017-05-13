@@ -9,7 +9,10 @@ import android.support.test.filters.MediumTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.content_public.browser.WebContents;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
@@ -43,33 +46,26 @@ public class PaymentRequestServiceWorkerPaymentAppTest extends PaymentRequestTes
                     @Override
                     public void create(WebContents webContents, Set<String> methodNames,
                             PaymentAppFactory.PaymentAppCreatedCallback callback) {
-                        ServiceWorkerPaymentAppBridge.Manifest testManifest =
-                                new ServiceWorkerPaymentAppBridge.Manifest();
-                        testManifest.registrationId = 0;
-                        testManifest.label = "BobPay";
+                        List<PaymentInstrument> instruments = new ArrayList<PaymentInstrument>();
 
                         if (instrumentPresence != NO_OPTIONS) {
-                            ServiceWorkerPaymentAppBridge.Option testOption =
-                                    new ServiceWorkerPaymentAppBridge.Option();
-                            testOption.id = "new";
-                            testOption.label = "Create BobPay account";
-                            testOption.enabledMethods =
-                                Arrays.asList("https://bobpay.com", "basic-card");
-                            testManifest.options.add(testOption);
+                            instruments.add(new ServiceWorkerPaymentInstrument(webContents,
+                                    0 /* swRegistrationId */, "new" /* instrumentId */,
+                                    "Create BobPay account" /* label */,
+                                    new HashSet<String>(Arrays.asList("https://bobpay.com",
+                                            "basic-card")) /* methodNames */));
                         }
 
                         if (instrumentPresence == TWO_OPTIONS) {
-                            ServiceWorkerPaymentAppBridge.Option testOption =
-                                    new ServiceWorkerPaymentAppBridge.Option();
-                            testOption.id = "existing";
-                            testOption.label = "Existing BobPay account";
-                            testOption.enabledMethods =
-                                Arrays.asList("https://bobpay.com", "basic-card");
-                            testManifest.options.add(testOption);
+                            instruments.add(new ServiceWorkerPaymentInstrument(webContents,
+                                    0 /* swRegistrationId */, "existing" /* instrumentId */,
+                                    "Existing BobPay account" /* label */,
+                                    new HashSet<String>(Arrays.asList("https://bobpay.com",
+                                            "basic-card")) /* methodNames */));
                         }
 
                         callback.onPaymentAppCreated(
-                                new ServiceWorkerPaymentApp(webContents, testManifest));
+                                new ServiceWorkerPaymentApp(webContents, instruments));
                         callback.onAllPaymentAppsCreated();
                     }
                 });
