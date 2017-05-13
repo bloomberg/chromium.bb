@@ -15,17 +15,17 @@ PerformanceServerTiming::PerformanceServerTiming(const String& name,
                                                  double duration,
                                                  const String& description)
     : PerformanceEntry(name, "server", 0.0, duration),
-      m_metric(metric),
-      m_description(description) {}
+      metric_(metric),
+      description_(description) {}
 
 PerformanceServerTiming::~PerformanceServerTiming() {}
 
 String PerformanceServerTiming::metric() const {
-  return m_metric;
+  return metric_;
 }
 
 String PerformanceServerTiming::description() const {
-  return m_description;
+  return description_;
 }
 
 void PerformanceServerTiming::BuildJSONValue(V8ObjectBuilder& builder) const {

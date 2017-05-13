@@ -34,8 +34,8 @@ class CORE_EXPORT PerformanceServerTiming : public PerformanceEntry {
                           double duration,
                           const String& description);
 
-  const String m_metric;
-  const String m_description;
+  const String metric_;
+  const String description_;
 };
 
 }  // namespace blink
