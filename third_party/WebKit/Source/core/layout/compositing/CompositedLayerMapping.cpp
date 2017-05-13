@@ -3465,7 +3465,8 @@ void CompositedLayerMapping::InvalidateTargetElementForTesting() {
   target_object->EnclosingLayer()->SetNeedsRepaint();
   // TODO(wkorman): Consider revising the below to invalidate all
   // non-compositing descendants as well.
-  target_object->InvalidateDisplayItemClients(kPaintInvalidationForTesting);
+  target_object->InvalidateDisplayItemClients(
+      PaintInvalidationReason::kForTesting);
 }
 
 IntRect CompositedLayerMapping::PixelSnappedCompositedBounds() const {

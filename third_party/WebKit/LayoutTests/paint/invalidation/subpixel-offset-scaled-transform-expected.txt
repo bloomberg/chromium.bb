@@ -9,12 +9,12 @@
         {
           "object": "LayoutBlockFlow (relative positioned) DIV class='child scale'",
           "rect": [9, 58, 40, 40],
-          "reason": "bounds change"
+          "reason": "geometry"
         },
         {
           "object": "LayoutBlockFlow (relative positioned) DIV class='child scale'",
           "rect": [8, 58, 40, 40],
-          "reason": "bounds change"
+          "reason": "geometry"
         }
       ]
     }
@@ -22,7 +22,7 @@
   "objectPaintInvalidations": [
     {
       "object": "LayoutBlockFlow (relative positioned) DIV class='child scale'",
-      "reason": "bounds change"
+      "reason": "geometry"
     }
   ]
 }

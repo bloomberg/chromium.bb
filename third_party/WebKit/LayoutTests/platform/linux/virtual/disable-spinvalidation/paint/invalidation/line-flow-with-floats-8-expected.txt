@@ -9,77 +9,77 @@
         {
           "object": "LayoutBlockFlow P",
           "rect": [8, 74, 418, 526],
-          "reason": "forced by layout"
+          "reason": "geometry"
         },
         {
           "object": "LayoutText #text",
           "rect": [13, 240, 407, 139],
-          "reason": "forced by layout"
+          "reason": "geometry"
         },
         {
           "object": "LayoutText #text",
           "rect": [14, 180, 407, 79],
-          "reason": "forced by layout"
+          "reason": "geometry"
         },
         {
           "object": "LayoutText #text",
           "rect": [14, 360, 406, 39],
-          "reason": "forced by layout"
+          "reason": "geometry"
         },
         {
           "object": "LayoutText #text",
           "rect": [13, 440, 358, 79],
-          "reason": "forced by layout"
+          "reason": "geometry"
         },
         {
           "object": "LayoutText #text",
           "rect": [65, 360, 356, 39],
-          "reason": "forced by layout"
+          "reason": "geometry"
         },
         {
           "object": "LayoutText #text",
           "rect": [14, 80, 355, 119],
-          "reason": "forced by layout"
+          "reason": "geometry"
         },
         {
           "object": "LayoutText #text",
           "rect": [14, 420, 355, 39],
-          "reason": "forced by layout"
+          "reason": "geometry"
         },
         {
           "object": "LayoutText #text",
           "rect": [14, 400, 354, 59],
-          "reason": "forced by layout"
+          "reason": "geometry"
         },
         {
           "object": "LayoutText #text",
           "rect": [65, 400, 304, 19],
-          "reason": "forced by layout"
+          "reason": "geometry"
         },
         {
           "object": "LayoutText #text",
           "rect": [14, 400, 297, 19],
-          "reason": "forced by layout"
+          "reason": "geometry"
         },
         {
           "object": "LayoutText #text",
           "rect": [184, 440, 68, 19],
-          "reason": "forced by layout"
+          "reason": "geometry"
         },
         {
           "object": "LayoutText #text",
           "rect": [302, 440, 66, 19],
-          "reason": "forced by layout"
+          "reason": "geometry"
         },
         {
           "object": "LayoutBlockFlow (floating) SPAN id='blueFloat'",
           "rect": [14, 363, 48, 65],
-          "reason": "layoutObject removal"
+          "reason": "disappeared"
         },
         {
           "object": "LayoutText #text",
           "rect": [238, 180, 40, 19],
-          "reason": "forced by layout"
+          "reason": "geometry"
         }
       ]
     }
@@ -87,223 +87,223 @@
   "objectPaintInvalidations": [
     {
       "object": "LayoutBlockFlow (floating) SPAN id='blueFloat'",
-      "reason": "layoutObject removal"
+      "reason": "disappeared"
     },
     {
       "object": "LayoutBlockFlow P",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "RootInlineBox",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "LayoutText #text",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "InlineTextBox 'The chief difficulty Alice found at first was in managing'",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "InlineTextBox 'her\n'",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "InlineTextBox 'flamingo: she succeeded in getting its body tucked'",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "InlineTextBox 'away,\n'",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "InlineTextBox 'comfortably enough, under her arm, with its legs'",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "InlineTextBox 'hanging down,\n'",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "InlineTextBox 'but generally, just as she had got its'",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "InlineTextBox 'neck nicely straightened\n'",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "InlineTextBox 'out, and was going to give the'",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "InlineTextBox 'hedgehog a blow with its head, it\n'",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "LayoutText #text",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "InlineTextBox 'would'",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "LayoutText #text",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "InlineTextBox ' twist itself round and'",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "InlineTextBox 'look up in her face, with\n'",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "InlineTextBox 'such a puzzled expression that she'",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "InlineTextBox 'could not help bursting out\n'",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "InlineTextBox 'laughing: and when she had got its'",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "InlineTextBox 'head down, and was going to\n'",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "LayoutText #text",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "InlineTextBox 'begin again, it was very'",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "InlineTextBox 'provoking to find that the hedgehog had\n'",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "InlineTextBox 'unrolled itself, and was'",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "InlineTextBox 'in the act of crawling away: besides all\n'",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "InlineTextBox 'this, there was generally'",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "InlineTextBox 'a ridge or furrow in the way wherever\n'",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "InlineTextBox 'she wanted to send the'",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "InlineTextBox 'hedgehog to, and, as the doubled-up\n'",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "InlineTextBox 'soldiers were always'",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "InlineTextBox 'getting up and walking off to other parts of\n'",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "InlineTextBox 'the ground, Alice'",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "InlineTextBox 'soon came to the conclusion that it was a very\n'",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "LayoutText #text",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "InlineTextBox 'difficult game'",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "InlineTextBox 'indeed.\n'",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "LayoutText #text",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "InlineTextBox 'The players all played at once without waiting\n'",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "LayoutText #text",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "InlineTextBox 'for turns,'",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "InlineTextBox 'quarrelling all the while, and fighting for the hedgehogs;'",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "InlineTextBox 'and in\n'",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "InlineTextBox 'a very short time '",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "LayoutText #text",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "InlineTextBox 'the Queen'",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "LayoutText #text",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "InlineTextBox ' was in a furious'",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "InlineTextBox 'passion, and went\n'",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "InlineTextBox 'stamping about, and shouting \u2018Off'",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "InlineTextBox 'with his head!\u2019 or \u2018Off with\n'",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "InlineTextBox 'her head!\u2019 about once in a'",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "InlineTextBox 'minute.\n'",
-      "reason": "forced by layout"
+      "reason": "geometry"
     }
   ]
 }

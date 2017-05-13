@@ -48,7 +48,7 @@ PaintInvalidationReason TablePaintInvalidator::InvalidatePaint() {
       section->EnsureIsReadyForPaintInvalidation();
       ObjectPaintInvalidator(*section)
           .SlowSetPaintingLayerNeedsRepaintAndInvalidateDisplayItemClient(
-              *section, kPaintInvalidationStyleChange);
+              *section, PaintInvalidationReason::kStyle);
     }
   }
 

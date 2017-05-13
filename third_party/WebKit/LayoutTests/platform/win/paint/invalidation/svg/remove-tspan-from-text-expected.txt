@@ -9,12 +9,12 @@
         {
           "object": "LayoutSVGInlineText #text",
           "rect": [10, 63, 307, 257],
-          "reason": "layoutObject removal"
+          "reason": "disappeared"
         },
         {
           "object": "LayoutSVGTSpan tspan id='remove'",
           "rect": [10, 63, 307, 257],
-          "reason": "layoutObject removal"
+          "reason": "disappeared"
         },
         {
           "object": "LayoutSVGText text id='text'",
@@ -27,11 +27,11 @@
   "objectPaintInvalidations": [
     {
       "object": "LayoutSVGInlineText #text",
-      "reason": "layoutObject removal"
+      "reason": "disappeared"
     },
     {
       "object": "LayoutSVGTSpan tspan id='remove'",
-      "reason": "layoutObject removal"
+      "reason": "disappeared"
     },
     {
       "object": "LayoutSVGText text id='text'",
@@ -43,47 +43,47 @@
     },
     {
       "object": "LayoutSVGTSpan tspan",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "InlineFlowBox",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "LayoutSVGInlineText #text",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "InlineTextBox 'PASS'",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "LayoutSVGInlineText #text",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "InlineTextBox ' '",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "LayoutSVGInlineText #text",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "LayoutSVGTSpan tspan",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "InlineFlowBox",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "LayoutSVGInlineText #text",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "InlineTextBox 'PASS'",
-      "reason": "forced by layout"
+      "reason": "geometry"
     }
   ]
 }

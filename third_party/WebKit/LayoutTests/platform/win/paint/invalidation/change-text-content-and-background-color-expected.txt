@@ -21,11 +21,11 @@
     },
     {
       "object": "LayoutBlockFlow DIV id='inner-editor'",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "RootInlineBox",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "LayoutText #text",

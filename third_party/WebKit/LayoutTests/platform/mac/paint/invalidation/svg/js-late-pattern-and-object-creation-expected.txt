@@ -9,7 +9,7 @@
         {
           "object": "LayoutSVGContainer g id='content'",
           "rect": [0, 14, 678, 366],
-          "reason": "became visible"
+          "reason": "appeared"
         }
       ]
     }
@@ -17,79 +17,79 @@
   "objectPaintInvalidations": [
     {
       "object": "LayoutSVGResourcePattern pattern id='fillPattern'",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGRect rect",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGRect rect",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGResourcePattern pattern id='strokePattern'",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGRect rect",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGRect rect",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGContainer g id='content'",
-      "reason": "became visible"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGText text",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "RootInlineBox",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGInlineText #text",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "InlineTextBox 'Pattern on fill'",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGText text",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "RootInlineBox",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGInlineText #text",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "InlineTextBox 'Pattern on stroke'",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGText text",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "RootInlineBox",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGInlineText #text",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "InlineTextBox 'Pattern on fill/stroke'",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     }
   ]
 }

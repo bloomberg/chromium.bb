@@ -9,7 +9,7 @@
         {
           "object": "LayoutBlockFlow DIV class='em-units'",
           "rect": [8, 8, 784, 146],
-          "reason": "forced by layout"
+          "reason": "geometry"
         },
         {
           "object": "LayoutBlockFlow DIV id='box4' class='box'",
@@ -19,7 +19,7 @@
         {
           "object": "LayoutBlockFlow DIV id='box3' class='box'",
           "rect": [18, 18, 302, 122],
-          "reason": "forced by layout"
+          "reason": "geometry"
         },
         {
           "object": "LayoutBlockFlow DIV class='indicator'",
@@ -29,7 +29,7 @@
         {
           "object": "LayoutText #text",
           "rect": [330, 136, 4, 18],
-          "reason": "forced by layout"
+          "reason": "geometry"
         }
       ]
     }
@@ -37,23 +37,23 @@
   "objectPaintInvalidations": [
     {
       "object": "LayoutBlockFlow DIV class='em-units'",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "RootInlineBox",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "LayoutBlockFlow DIV id='box3' class='box'",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "LayoutText #text",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "InlineTextBox '\n'",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "LayoutBlockFlow DIV id='box4' class='box'",

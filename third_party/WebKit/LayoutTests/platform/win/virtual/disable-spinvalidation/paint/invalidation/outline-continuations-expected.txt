@@ -9,12 +9,12 @@
         {
           "object": "LayoutBlockFlow (anonymous)",
           "rect": [18, 150, 200, 20],
-          "reason": "forced by layout"
+          "reason": "geometry"
         },
         {
           "object": "LayoutBlockFlow (anonymous)",
           "rect": [18, 110, 200, 20],
-          "reason": "forced by layout"
+          "reason": "geometry"
         },
         {
           "object": "LayoutInline SPAN id='outer'",
@@ -29,12 +29,12 @@
         {
           "object": "LayoutText #text",
           "rect": [18, 150, 83, 19],
-          "reason": "forced by layout"
+          "reason": "geometry"
         },
         {
           "object": "LayoutText #text",
           "rect": [18, 110, 83, 19],
-          "reason": "forced by layout"
+          "reason": "geometry"
         }
       ]
     }
@@ -42,11 +42,11 @@
   "objectPaintInvalidations": [
     {
       "object": "LayoutBlockFlow (anonymous)",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "RootInlineBox",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "LayoutInline SPAN id='outer'",
@@ -58,19 +58,19 @@
     },
     {
       "object": "LayoutText #text",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "InlineTextBox 'CONTENTS'",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "LayoutBlockFlow (anonymous)",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "RootInlineBox",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "LayoutInline SPAN id='outer'",
@@ -82,15 +82,15 @@
     },
     {
       "object": "LayoutText #text",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "InlineTextBox 'CONTENTS'",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "LayoutBlockFlow (anonymous)",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "LayoutInline SPAN id='outer'",

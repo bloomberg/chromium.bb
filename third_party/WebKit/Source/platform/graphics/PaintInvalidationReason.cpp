@@ -10,61 +10,49 @@ namespace blink {
 
 const char* PaintInvalidationReasonToString(PaintInvalidationReason reason) {
   switch (reason) {
-    case kPaintInvalidationNone:
+    case PaintInvalidationReason::kNone:
       return "none";
-    case kPaintInvalidationIncremental:
+    case PaintInvalidationReason::kIncremental:
       return "incremental";
-    case kPaintInvalidationRectangle:
+    case PaintInvalidationReason::kRectangle:
       return "invalidate paint rectangle";
-    case kPaintInvalidationFull:
+    case PaintInvalidationReason::kFull:
       return "full";
-    case kPaintInvalidationStyleChange:
+    case PaintInvalidationReason::kStyle:
       return "style change";
-    case kPaintInvalidationForcedByLayout:
-      return "forced by layout";
-    case kPaintInvalidationCompositingUpdate:
+    case PaintInvalidationReason::kGeometry:
+      return "geometry";
+    case PaintInvalidationReason::kCompositing:
       return "compositing update";
-    case kPaintInvalidationBorderBoxChange:
-      return "border box change";
-    case kPaintInvalidationContentBoxChange:
-      return "content box change";
-    case kPaintInvalidationLayoutOverflowBoxChange:
-      return "layout overflow box change";
-    case kPaintInvalidationBoundsChange:
-      return "bounds change";
-    case kPaintInvalidationLocationChange:
-      return "location change";
-    case kPaintInvalidationBackgroundObscurationChange:
-      return "background obscuration change";
-    case kPaintInvalidationBecameVisible:
-      return "became visible";
-    case kPaintInvalidationBecameInvisible:
-      return "became invisible";
-    case kPaintInvalidationScroll:
+    case PaintInvalidationReason::kBackground:
+      return "background";
+    case PaintInvalidationReason::kAppeared:
+      return "appeared";
+    case PaintInvalidationReason::kDisappeared:
+      return "disappeared";
+    case PaintInvalidationReason::kScroll:
       return "scroll";
-    case kPaintInvalidationSelection:
+    case PaintInvalidationReason::kScrollControl:
+      return "scroll control";
+    case PaintInvalidationReason::kSelection:
       return "selection";
-    case kPaintInvalidationOutline:
+    case PaintInvalidationReason::kOutline:
       return "outline";
-    case kPaintInvalidationSubtree:
+    case PaintInvalidationReason::kSubtree:
       return "subtree";
-    case kPaintInvalidationLayoutObjectInsertion:
-      return "layoutObject insertion";
-    case kPaintInvalidationLayoutObjectRemoval:
-      return "layoutObject removal";
-    case kPaintInvalidationSVGResourceChange:
+    case PaintInvalidationReason::kSVGResource:
       return "SVG resource change";
-    case kPaintInvalidationBackgroundOnScrollingContentsLayer:
+    case PaintInvalidationReason::kBackgroundOnScrollingContentsLayer:
       return "background on scrolling contents layer";
-    case kPaintInvalidationCaret:
+    case PaintInvalidationReason::kCaret:
       return "caret";
-    case kPaintInvalidationViewBackground:
-      return "view background";
-    case kPaintInvalidationDocumentMarkerChange:
+    case PaintInvalidationReason::kDocumentMarker:
       return "DocumentMarker change";
-    case kPaintInvalidationForTesting:
+    case PaintInvalidationReason::kImage:
+      return "image";
+    case PaintInvalidationReason::kForTesting:
       return "for testing";
-    case kPaintInvalidationDelayedFull:
+    case PaintInvalidationReason::kDelayedFull:
       return "delayed full";
   }
   NOTREACHED();

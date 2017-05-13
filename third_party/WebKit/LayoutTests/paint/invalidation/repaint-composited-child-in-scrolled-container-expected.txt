@@ -9,7 +9,7 @@
         {
           "object": "LayoutBlockFlow (positioned) DIV id='outer'",
           "rect": [8, 293, 285, 15],
-          "reason": "scroll"
+          "reason": "scroll control"
         }
       ]
     },
@@ -38,7 +38,7 @@
   "objectPaintInvalidations": [
     {
       "object": "HorizontalScrollbar",
-      "reason": "scroll"
+      "reason": "scroll control"
     },
     {
       "object": "LayoutBlockFlow DIV id='inner'",

@@ -1441,7 +1441,7 @@ void LayoutInline::ImageChanged(WrappedImagePtr, const IntRect*) {
     return;
 
   // FIXME: We can do better.
-  SetShouldDoFullPaintInvalidation();
+  SetShouldDoFullPaintInvalidation(PaintInvalidationReason::kImage);
 }
 
 namespace {

@@ -14,47 +14,47 @@
         {
           "object": "LayoutText #text",
           "rect": [8, 150, 113, 18],
-          "reason": "layoutObject removal"
+          "reason": "disappeared"
         },
         {
           "object": "LayoutText #text",
           "rect": [8, 132, 80, 18],
-          "reason": "layoutObject removal"
+          "reason": "disappeared"
         },
         {
           "object": "LayoutText #text",
           "rect": [8, 96, 80, 18],
-          "reason": "layoutObject removal"
+          "reason": "disappeared"
         },
         {
           "object": "LayoutText #text",
           "rect": [8, 168, 69, 18],
-          "reason": "layoutObject removal"
+          "reason": "disappeared"
         },
         {
           "object": "LayoutText #text",
           "rect": [8, 204, 64, 18],
-          "reason": "layoutObject removal"
+          "reason": "disappeared"
         },
         {
           "object": "LayoutText #text",
           "rect": [8, 114, 45, 18],
-          "reason": "layoutObject removal"
+          "reason": "disappeared"
         },
         {
           "object": "LayoutText #text",
           "rect": [8, 78, 44, 18],
-          "reason": "layoutObject removal"
+          "reason": "disappeared"
         },
         {
           "object": "LayoutText #text",
           "rect": [8, 60, 40, 18],
-          "reason": "layoutObject removal"
+          "reason": "disappeared"
         },
         {
           "object": "LayoutText #text",
           "rect": [8, 186, 30, 18],
-          "reason": "layoutObject removal"
+          "reason": "disappeared"
         }
       ]
     }
@@ -62,71 +62,71 @@
   "objectPaintInvalidations": [
     {
       "object": "LayoutText #text",
-      "reason": "layoutObject removal"
+      "reason": "disappeared"
     },
     {
       "object": "LayoutBR BR",
-      "reason": "layoutObject removal"
+      "reason": "disappeared"
     },
     {
       "object": "LayoutText #text",
-      "reason": "layoutObject removal"
+      "reason": "disappeared"
     },
     {
       "object": "LayoutBR BR",
-      "reason": "layoutObject removal"
+      "reason": "disappeared"
     },
     {
       "object": "LayoutText #text",
-      "reason": "layoutObject removal"
+      "reason": "disappeared"
     },
     {
       "object": "LayoutBR BR",
-      "reason": "layoutObject removal"
+      "reason": "disappeared"
     },
     {
       "object": "LayoutText #text",
-      "reason": "layoutObject removal"
+      "reason": "disappeared"
     },
     {
       "object": "LayoutBR BR",
-      "reason": "layoutObject removal"
+      "reason": "disappeared"
     },
     {
       "object": "LayoutText #text",
-      "reason": "layoutObject removal"
+      "reason": "disappeared"
     },
     {
       "object": "LayoutBR BR",
-      "reason": "layoutObject removal"
+      "reason": "disappeared"
     },
     {
       "object": "LayoutText #text",
-      "reason": "layoutObject removal"
+      "reason": "disappeared"
     },
     {
       "object": "LayoutBR BR",
-      "reason": "layoutObject removal"
+      "reason": "disappeared"
     },
     {
       "object": "LayoutText #text",
-      "reason": "layoutObject removal"
+      "reason": "disappeared"
     },
     {
       "object": "LayoutBR BR",
-      "reason": "layoutObject removal"
+      "reason": "disappeared"
     },
     {
       "object": "LayoutText #text",
-      "reason": "layoutObject removal"
+      "reason": "disappeared"
     },
     {
       "object": "LayoutBR BR",
-      "reason": "layoutObject removal"
+      "reason": "disappeared"
     },
     {
       "object": "LayoutText #text",
-      "reason": "layoutObject removal"
+      "reason": "disappeared"
     },
     {
       "object": "LayoutBlockFlow DIV",
@@ -134,11 +134,11 @@
     },
     {
       "object": "LayoutBlockFlow (anonymous)",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "RootInlineBox",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutText #text",
@@ -222,15 +222,15 @@
     },
     {
       "object": "LayoutBlockFlow DIV id='target'",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutBlockFlow (anonymous)",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "RootInlineBox",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutText #text",

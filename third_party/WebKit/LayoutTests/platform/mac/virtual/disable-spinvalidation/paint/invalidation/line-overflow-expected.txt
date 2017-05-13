@@ -9,12 +9,12 @@
         {
           "object": "LayoutText #text",
           "rect": [8, 114, 200, 90],
-          "reason": "forced by layout"
+          "reason": "geometry"
         },
         {
           "object": "LayoutText #text",
           "rect": [8, 78, 198, 54],
-          "reason": "forced by layout"
+          "reason": "geometry"
         },
         {
           "object": "LayoutInline SPAN id='t'",
@@ -24,7 +24,7 @@
         {
           "object": "LayoutText #text",
           "rect": [115, 114, 37, 18],
-          "reason": "forced by layout"
+          "reason": "geometry"
         },
         {
           "object": "LayoutInline SPAN id='t'",
@@ -34,7 +34,7 @@
         {
           "object": "LayoutText #text",
           "rect": [38, 132, 36, 18],
-          "reason": "forced by layout"
+          "reason": "geometry"
         }
       ]
     }
@@ -42,23 +42,23 @@
   "objectPaintInvalidations": [
     {
       "object": "LayoutText #text",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "InlineTextBox 'Cras faucibus. Nunc'",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "InlineTextBox 'adipiscing, enim in scelerisque'",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "InlineTextBox 'convallis,\n'",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "InlineTextBox 'augue '",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "LayoutInline SPAN id='t'",
@@ -70,35 +70,35 @@
     },
     {
       "object": "LayoutText #text",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "InlineTextBox 'purus'",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "LayoutText #text",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "InlineTextBox ' eleifend'",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "InlineTextBox 'lacus, at sagittis eros leo'",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "InlineTextBox 'pulvinar velit. Integer'",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "InlineTextBox 'sollicitudin nisi ut urna blandit'",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "InlineTextBox 'convallis.'",
-      "reason": "forced by layout"
+      "reason": "geometry"
     }
   ]
 }

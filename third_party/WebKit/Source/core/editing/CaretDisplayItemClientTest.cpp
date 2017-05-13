@@ -100,7 +100,7 @@ TEST_F(CaretDisplayItemClientTest, CaretPaintInvalidation) {
   EXPECT_EQ(EnclosingIntRect(caret_visual_rect),
             (*raster_invalidations)[0].rect);
   EXPECT_EQ(block, (*raster_invalidations)[0].client);
-  EXPECT_EQ(kPaintInvalidationCaret, (*raster_invalidations)[0].reason);
+  EXPECT_EQ(PaintInvalidationReason::kCaret, (*raster_invalidations)[0].reason);
 
   std::unique_ptr<JSONArray> object_invalidations =
       GetDocument().View()->TrackedObjectPaintInvalidationsAsJSON();
@@ -128,11 +128,11 @@ TEST_F(CaretDisplayItemClientTest, CaretPaintInvalidation) {
   EXPECT_EQ(EnclosingIntRect(caret_visual_rect),
             (*raster_invalidations)[0].rect);
   EXPECT_EQ(block, (*raster_invalidations)[0].client);
-  EXPECT_EQ(kPaintInvalidationCaret, (*raster_invalidations)[0].reason);
+  EXPECT_EQ(PaintInvalidationReason::kCaret, (*raster_invalidations)[0].reason);
   EXPECT_EQ(EnclosingIntRect(new_caret_visual_rect),
             (*raster_invalidations)[1].rect);
   EXPECT_EQ(block, (*raster_invalidations)[1].client);
-  EXPECT_EQ(kPaintInvalidationCaret, (*raster_invalidations)[1].reason);
+  EXPECT_EQ(PaintInvalidationReason::kCaret, (*raster_invalidations)[1].reason);
 
   object_invalidations =
       GetDocument().View()->TrackedObjectPaintInvalidationsAsJSON();
@@ -201,11 +201,11 @@ TEST_F(CaretDisplayItemClientTest, CaretMovesBetweenBlocks) {
   EXPECT_EQ(EnclosingIntRect(caret_visual_rect1),
             (*raster_invalidations)[0].rect);
   EXPECT_EQ(block1, (*raster_invalidations)[0].client);
-  EXPECT_EQ(kPaintInvalidationCaret, (*raster_invalidations)[0].reason);
+  EXPECT_EQ(PaintInvalidationReason::kCaret, (*raster_invalidations)[0].reason);
   EXPECT_EQ(EnclosingIntRect(caret_visual_rect2),
             (*raster_invalidations)[1].rect);
   EXPECT_EQ(block2, (*raster_invalidations)[1].client);
-  EXPECT_EQ(kPaintInvalidationCaret, (*raster_invalidations)[1].reason);
+  EXPECT_EQ(PaintInvalidationReason::kCaret, (*raster_invalidations)[1].reason);
 
   std::unique_ptr<JSONArray> object_invalidations =
       GetDocument().View()->TrackedObjectPaintInvalidationsAsJSON();
@@ -228,11 +228,11 @@ TEST_F(CaretDisplayItemClientTest, CaretMovesBetweenBlocks) {
   EXPECT_EQ(EnclosingIntRect(caret_visual_rect1),
             (*raster_invalidations)[0].rect);
   EXPECT_EQ(block1, (*raster_invalidations)[0].client);
-  EXPECT_EQ(kPaintInvalidationCaret, (*raster_invalidations)[0].reason);
+  EXPECT_EQ(PaintInvalidationReason::kCaret, (*raster_invalidations)[0].reason);
   EXPECT_EQ(EnclosingIntRect(caret_visual_rect2),
             (*raster_invalidations)[1].rect);
   EXPECT_EQ(block2, (*raster_invalidations)[1].client);
-  EXPECT_EQ(kPaintInvalidationCaret, (*raster_invalidations)[1].reason);
+  EXPECT_EQ(PaintInvalidationReason::kCaret, (*raster_invalidations)[1].reason);
 
   object_invalidations =
       GetDocument().View()->TrackedObjectPaintInvalidationsAsJSON();
@@ -332,11 +332,11 @@ TEST_F(CaretDisplayItemClientTest, CaretHideMoveAndShow) {
   ASSERT_EQ(2u, raster_invalidations.size());
   EXPECT_EQ(EnclosingIntRect(caret_visual_rect), raster_invalidations[0].rect);
   EXPECT_EQ(block, raster_invalidations[0].client);
-  EXPECT_EQ(kPaintInvalidationCaret, raster_invalidations[0].reason);
+  EXPECT_EQ(PaintInvalidationReason::kCaret, raster_invalidations[0].reason);
   EXPECT_EQ(EnclosingIntRect(new_caret_visual_rect),
             raster_invalidations[1].rect);
   EXPECT_EQ(block, raster_invalidations[1].client);
-  EXPECT_EQ(kPaintInvalidationCaret, raster_invalidations[1].reason);
+  EXPECT_EQ(PaintInvalidationReason::kCaret, raster_invalidations[1].reason);
 
   auto object_invalidations =
       GetDocument().View()->TrackedObjectPaintInvalidationsAsJSON();

@@ -9,12 +9,12 @@
         {
           "object": "LayoutBlockFlow (floating) DIV class='state'",
           "rect": [712, 8, 80, 20],
-          "reason": "forced by layout"
+          "reason": "geometry"
         },
         {
           "object": "LayoutBlockFlow DIV id='badge'",
           "rect": [712, 8, 80, 20],
-          "reason": "layoutObject removal"
+          "reason": "disappeared"
         }
       ]
     }
@@ -22,15 +22,15 @@
   "objectPaintInvalidations": [
     {
       "object": "LayoutBlockFlow DIV id='badge'",
-      "reason": "layoutObject removal"
+      "reason": "disappeared"
     },
     {
       "object": "LayoutBlockFlow (floating) DIV class='state'",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "LayoutText #text",
-      "reason": "location change"
+      "reason": "geometry"
     }
   ]
 }

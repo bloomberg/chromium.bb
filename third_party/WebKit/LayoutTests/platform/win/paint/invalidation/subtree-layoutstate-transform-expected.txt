@@ -9,7 +9,7 @@
         {
           "object": "LayoutBlockFlow DIV class='layoutroot'",
           "rect": [28, 48, 200, 200],
-          "reason": "background obscuration change"
+          "reason": "background"
         }
       ]
     }
@@ -17,11 +17,11 @@
   "objectPaintInvalidations": [
     {
       "object": "LayoutBlockFlow DIV class='layoutroot'",
-      "reason": "background obscuration change"
+      "reason": "background"
     },
     {
       "object": "LayoutBlockFlow DIV id='target'",
-      "reason": "border box change"
+      "reason": "geometry"
     }
   ]
 }

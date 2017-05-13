@@ -14,7 +14,7 @@
         {
           "object": "LayoutSVGContainer g",
           "rect": [90, 95, 98, 98],
-          "reason": "bounds change"
+          "reason": "geometry"
         }
       ]
     }
@@ -26,11 +26,11 @@
     },
     {
       "object": "LayoutSVGRect rect",
-      "reason": "bounds change"
+      "reason": "geometry"
     },
     {
       "object": "LayoutSVGContainer g",
-      "reason": "bounds change"
+      "reason": "geometry"
     },
     {
       "object": "LayoutSVGPath path id='go'",

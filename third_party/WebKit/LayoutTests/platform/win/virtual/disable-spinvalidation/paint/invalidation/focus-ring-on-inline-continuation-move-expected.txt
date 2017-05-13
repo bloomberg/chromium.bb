@@ -9,12 +9,12 @@
         {
           "object": "LayoutBlockFlow (anonymous)",
           "rect": [8, 8, 784, 105],
-          "reason": "forced by layout"
+          "reason": "geometry"
         },
         {
           "object": "LayoutInline SPAN",
           "rect": [7, 7, 102, 182],
-          "reason": "forced by layout"
+          "reason": "geometry"
         },
         {
           "object": "LayoutInline SPAN",
@@ -24,12 +24,12 @@
         {
           "object": "LayoutBlockFlow (relative positioned) DIV id='block'",
           "rect": [8, 88, 100, 100],
-          "reason": "forced by layout"
+          "reason": "geometry"
         },
         {
           "object": "LayoutBlockFlow (relative positioned) DIV id='block'",
           "rect": [8, 8, 100, 100],
-          "reason": "forced by layout"
+          "reason": "geometry"
         }
       ]
     }
@@ -41,23 +41,23 @@
     },
     {
       "object": "LayoutBlockFlow (anonymous)",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "RootInlineBox",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "LayoutInline SPAN",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "InlineFlowBox",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "LayoutBlockFlow (relative positioned) DIV id='block'",
-      "reason": "forced by layout"
+      "reason": "geometry"
     }
   ]
 }

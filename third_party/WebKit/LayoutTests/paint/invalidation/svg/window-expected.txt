@@ -9,247 +9,247 @@
         {
           "object": "LayoutSVGContainer g id='Windows'",
           "rect": [38, 81, 760, 454],
-          "reason": "bounds change"
+          "reason": "geometry"
         },
         {
           "object": "LayoutSVGContainer g id='Windows'",
           "rect": [38, 92, 760, 443],
-          "reason": "layoutObject insertion"
+          "reason": "appeared"
         },
         {
           "object": "LayoutSVGRect rect",
           "rect": [38, 142, 549, 394],
-          "reason": "layoutObject insertion"
+          "reason": "appeared"
         },
         {
           "object": "LayoutSVGRect rect id='titleBarbigWindow'",
           "rect": [38, 142, 549, 16],
-          "reason": "layoutObject insertion"
+          "reason": "appeared"
         },
         {
           "object": "LayoutSVGRect rect",
           "rect": [38, 523, 549, 13],
-          "reason": "layoutObject insertion"
+          "reason": "appeared"
         },
         {
           "object": "LayoutSVGRect rect",
           "rect": [77, 181, 315, 238],
-          "reason": "layoutObject insertion"
+          "reason": "appeared"
         },
         {
           "object": "LayoutSVGRect rect id='titleBarnestedWindow'",
           "rect": [77, 181, 315, 16],
-          "reason": "layoutObject insertion"
+          "reason": "appeared"
         },
         {
           "object": "LayoutSVGRect rect",
           "rect": [77, 406, 315, 13],
-          "reason": "layoutObject insertion"
+          "reason": "appeared"
         },
         {
           "object": "LayoutSVGRect rect",
           "rect": [624, 92, 174, 159],
-          "reason": "layoutObject insertion"
+          "reason": "appeared"
         },
         {
           "object": "LayoutSVGRect rect",
           "rect": [77, 195, 174, 143],
-          "reason": "layoutObject insertion"
+          "reason": "appeared"
         },
         {
           "object": "LayoutSVGRect rect id='titleBarcolourPickerWindow'",
           "rect": [77, 195, 174, 16],
-          "reason": "layoutObject insertion"
+          "reason": "appeared"
         },
         {
           "object": "LayoutSVGRect rect",
           "rect": [624, 238, 174, 13],
-          "reason": "layoutObject insertion"
+          "reason": "appeared"
         },
         {
           "object": "LayoutSVGRect rect",
           "rect": [77, 325, 174, 13],
-          "reason": "layoutObject insertion"
+          "reason": "appeared"
         },
         {
           "object": "LayoutSVGRect rect",
           "rect": [311, 377, 159, 143],
-          "reason": "layoutObject insertion"
+          "reason": "appeared"
         },
         {
           "object": "LayoutSVGRect rect id='titleBarsmallWindow'",
           "rect": [311, 377, 159, 16],
-          "reason": "layoutObject insertion"
+          "reason": "appeared"
         },
         {
           "object": "LayoutSVGRect rect",
           "rect": [311, 507, 159, 13],
-          "reason": "layoutObject insertion"
+          "reason": "appeared"
         },
         {
           "object": "LayoutSVGRect rect",
           "rect": [249, 343, 143, 65],
-          "reason": "layoutObject insertion"
+          "reason": "appeared"
         },
         {
           "object": "LayoutSVGRect rect id='titleBarstatusWindow'",
           "rect": [249, 343, 143, 16],
-          "reason": "layoutObject insertion"
+          "reason": "appeared"
         },
         {
           "object": "LayoutSVGRect rect",
           "rect": [38, 475, 120, 50],
-          "reason": "layoutObject insertion"
+          "reason": "appeared"
         },
         {
           "object": "LayoutSVGRect rect",
           "rect": [615, 99, 12, 11],
-          "reason": "bounds change"
+          "reason": "geometry"
         },
         {
           "object": "LayoutSVGPath line",
           "rect": [571, 145, 12, 11],
-          "reason": "layoutObject insertion"
+          "reason": "appeared"
         },
         {
           "object": "LayoutSVGPath line",
           "rect": [571, 145, 12, 11],
-          "reason": "layoutObject insertion"
+          "reason": "appeared"
         },
         {
           "object": "LayoutSVGPath line",
           "rect": [235, 197, 12, 11],
-          "reason": "layoutObject insertion"
+          "reason": "appeared"
         },
         {
           "object": "LayoutSVGPath line",
           "rect": [235, 197, 12, 11],
-          "reason": "layoutObject insertion"
+          "reason": "appeared"
         },
         {
           "object": "LayoutSVGPath line",
           "rect": [616, 83, 11, 12],
-          "reason": "bounds change"
+          "reason": "geometry"
         },
         {
           "object": "LayoutSVGPath line",
           "rect": [616, 83, 11, 12],
-          "reason": "bounds change"
+          "reason": "geometry"
         },
         {
           "object": "LayoutSVGRect rect",
           "rect": [376, 345, 11, 12],
-          "reason": "layoutObject insertion"
+          "reason": "appeared"
         },
         {
           "object": "LayoutSVGPath line",
           "rect": [782, 94, 11, 11],
-          "reason": "bounds change"
+          "reason": "geometry"
         },
         {
           "object": "LayoutSVGPath line",
           "rect": [782, 94, 11, 11],
-          "reason": "bounds change"
+          "reason": "geometry"
         },
         {
           "object": "LayoutSVGPath line",
           "rect": [782, 94, 11, 11],
-          "reason": "layoutObject insertion"
+          "reason": "appeared"
         },
         {
           "object": "LayoutSVGPath line",
           "rect": [782, 94, 11, 11],
-          "reason": "layoutObject insertion"
+          "reason": "appeared"
         },
         {
           "object": "LayoutSVGRect rect",
           "rect": [769, 94, 11, 11],
-          "reason": "bounds change"
+          "reason": "geometry"
         },
         {
           "object": "LayoutSVGRect rect",
           "rect": [769, 94, 11, 11],
-          "reason": "layoutObject insertion"
+          "reason": "appeared"
         },
         {
           "object": "LayoutSVGRect rect",
           "rect": [558, 145, 11, 11],
-          "reason": "layoutObject insertion"
+          "reason": "appeared"
         },
         {
           "object": "LayoutSVGPath line",
           "rect": [454, 379, 11, 11],
-          "reason": "layoutObject insertion"
+          "reason": "appeared"
         },
         {
           "object": "LayoutSVGPath line",
           "rect": [454, 379, 11, 11],
-          "reason": "layoutObject insertion"
+          "reason": "appeared"
         },
         {
           "object": "LayoutSVGRect rect",
           "rect": [441, 379, 11, 11],
-          "reason": "layoutObject insertion"
+          "reason": "appeared"
         },
         {
           "object": "LayoutSVGPath line",
           "rect": [376, 184, 11, 11],
-          "reason": "layoutObject insertion"
+          "reason": "appeared"
         },
         {
           "object": "LayoutSVGPath line",
           "rect": [376, 184, 11, 11],
-          "reason": "layoutObject insertion"
+          "reason": "appeared"
         },
         {
           "object": "LayoutSVGRect rect",
           "rect": [363, 184, 11, 11],
-          "reason": "layoutObject insertion"
+          "reason": "appeared"
         },
         {
           "object": "LayoutSVGRect rect",
           "rect": [222, 197, 11, 11],
-          "reason": "layoutObject insertion"
+          "reason": "appeared"
         },
         {
           "object": "LayoutSVGPath line",
           "rect": [545, 153, 11, 3],
-          "reason": "layoutObject insertion"
+          "reason": "appeared"
         },
         {
           "object": "LayoutSVGPath line",
           "rect": [363, 354, 11, 3],
-          "reason": "layoutObject insertion"
+          "reason": "appeared"
         },
         {
           "object": "LayoutSVGPath line",
           "rect": [756, 103, 11, 2],
-          "reason": "bounds change"
+          "reason": "geometry"
         },
         {
           "object": "LayoutSVGPath line",
           "rect": [756, 103, 11, 2],
-          "reason": "layoutObject insertion"
+          "reason": "appeared"
         },
         {
           "object": "LayoutSVGPath line",
           "rect": [209, 206, 11, 2],
-          "reason": "layoutObject insertion"
+          "reason": "appeared"
         },
         {
           "object": "LayoutSVGPath line",
           "rect": [616, 123, 10, 3],
-          "reason": "bounds change"
+          "reason": "geometry"
         },
         {
           "object": "LayoutSVGPath line",
           "rect": [350, 192, 10, 3],
-          "reason": "layoutObject insertion"
+          "reason": "appeared"
         },
         {
           "object": "LayoutSVGPath line",
           "rect": [428, 388, 10, 2],
-          "reason": "layoutObject insertion"
+          "reason": "appeared"
         }
       ]
     }
@@ -257,979 +257,979 @@
   "objectPaintInvalidations": [
     {
       "object": "LayoutSVGHiddenContainer symbol id='closeButton'",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGRect rect",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGPath line",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGPath line",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGHiddenContainer symbol id='maximizeButton'",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGRect rect",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGHiddenContainer symbol id='minimizeButton'",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGRect rect",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGPath line",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGContainer g id='Windows'",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGContainer g id='navWindow'",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGContainer g id='windowMainGroupnavWindow'",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGRect rect",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGContainer g",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGText text id='textNavWindow'",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "RootInlineBox",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGInlineText #text",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "InlineTextBox 'This window should'",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGTSpan tspan",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "InlineFlowBox",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGInlineText #text",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "InlineTextBox 'contain navigation tools'",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGTSpan tspan",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "InlineFlowBox",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGInlineText #text",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "InlineTextBox 'Click on button'",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGTSpan tspan",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "InlineFlowBox",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGInlineText #text",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "InlineTextBox ''Resize Navigation Window' for a'",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGTSpan tspan",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "InlineFlowBox",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGInlineText #text",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "InlineTextBox 'random resize of this Window'",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGTSpan tspan",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "InlineFlowBox",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGInlineText #text",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "InlineTextBox 'Note that this window also'",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGTSpan tspan",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "InlineFlowBox",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGInlineText #text",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "InlineTextBox 'features a window decoration'",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGRect rect",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGText text",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "RootInlineBox",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGInlineText #text",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "InlineTextBox 'Statusbar'",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGContainer g id='windowTitlebarGroupnavWindow'",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGContainer use id='closeButtonnavWindow'",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGViewportContainer svg id='closeButton'",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGRect rect",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGPath line",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGPath line",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGContainer use id='maximizeButtonnavWindow'",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGViewportContainer svg id='maximizeButton'",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGRect rect",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGContainer use id='minimizeButtonnavWindow'",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGViewportContainer svg id='minimizeButton'",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGRect rect",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGPath line",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGContainer g id='bigWindow'",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGContainer g id='windowMainGroupbigWindow'",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGRect rect",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGContainer g",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGRect rect",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGText text",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "RootInlineBox",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGInlineText #text",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "InlineTextBox 'This is a big movable window'",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGContainer g id='nestedWindow'",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGContainer g id='windowMainGroupnestedWindow'",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGRect rect",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGContainer g",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGRect rect",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGText text",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "RootInlineBox",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGInlineText #text",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "InlineTextBox 'This window contains other windows'",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGContainer g id='colourPickerWindow'",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGContainer g id='windowMainGroupcolourPickerWindow'",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGRect rect",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGContainer g",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGRect rect",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGText text",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "RootInlineBox",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGInlineText #text",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "InlineTextBox 'Changing a colour changes background'",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGContainer g id='windowTitlebarGroupcolourPickerWindow'",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGRect rect id='titleBarcolourPickerWindow'",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGText text",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "RootInlineBox",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGInlineText #text",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "InlineTextBox 'Colour Picker'",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGContainer use id='closeButtoncolourPickerWindow'",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGViewportContainer svg id='closeButton'",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGRect rect",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGPath line",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGPath line",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGContainer use id='maximizeButtoncolourPickerWindow'",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGViewportContainer svg id='maximizeButton'",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGRect rect",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGContainer use id='minimizeButtoncolourPickerWindow'",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGViewportContainer svg id='minimizeButton'",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGRect rect",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGPath line",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGContainer g id='statusWindow'",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGContainer g id='windowMainGroupstatusWindow'",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGRect rect",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGContainer g",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGText text id='textStatusWindow'",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "RootInlineBox",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGInlineText #text",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "InlineTextBox 'This is a none-moveable'",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGTSpan tspan",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "InlineFlowBox",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGInlineText #text",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "InlineTextBox 'none-closeable status'",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGTSpan tspan",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "InlineFlowBox",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGInlineText #text",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "InlineTextBox 'window'",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGContainer g id='windowTitlebarGroupstatusWindow'",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGRect rect id='titleBarstatusWindow'",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGText text",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "RootInlineBox",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGInlineText #text",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "InlineTextBox 'Status Window'",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGContainer use id='maximizeButtonstatusWindow'",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGViewportContainer svg id='maximizeButton'",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGRect rect",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGContainer use id='minimizeButtonstatusWindow'",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGViewportContainer svg id='minimizeButton'",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGRect rect",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGPath line",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGContainer g id='windowTitlebarGroupnestedWindow'",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGRect rect id='titleBarnestedWindow'",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGText text",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "RootInlineBox",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGInlineText #text",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "InlineTextBox 'Nested middlesize Window'",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGContainer use id='closeButtonnestedWindow'",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGViewportContainer svg id='closeButton'",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGRect rect",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGPath line",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGPath line",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGContainer use id='maximizeButtonnestedWindow'",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGViewportContainer svg id='maximizeButton'",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGRect rect",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGContainer use id='minimizeButtonnestedWindow'",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGViewportContainer svg id='minimizeButton'",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGRect rect",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGPath line",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGContainer g id='smallWindow'",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGContainer g id='windowMainGroupsmallWindow'",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGRect rect",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGContainer g",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGText text id='textSmallWindow'",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "RootInlineBox",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGInlineText #text",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "InlineTextBox 'This window has a callback'",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGTSpan tspan",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "InlineFlowBox",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGInlineText #text",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "InlineTextBox 'function indicating mouse'",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGTSpan tspan",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "InlineFlowBox",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGInlineText #text",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "InlineTextBox 'movements in the statusbar'",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGTSpan tspan",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "InlineFlowBox",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGInlineText #text",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "InlineTextBox 'and alerting window'",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGTSpan tspan",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "InlineFlowBox",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGInlineText #text",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "InlineTextBox 'events'",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGRect rect",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGText text",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "RootInlineBox",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGInlineText #text",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "InlineTextBox 'Callback function is active'",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGContainer g id='windowTitlebarGroupsmallWindow'",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGRect rect id='titleBarsmallWindow'",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGText text",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "RootInlineBox",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGInlineText #text",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "InlineTextBox 'Small Window'",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGContainer use id='closeButtonsmallWindow'",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGViewportContainer svg id='closeButton'",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGRect rect",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGPath line",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGPath line",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGContainer use id='maximizeButtonsmallWindow'",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGViewportContainer svg id='maximizeButton'",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGRect rect",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGContainer use id='minimizeButtonsmallWindow'",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGViewportContainer svg id='minimizeButton'",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGRect rect",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGPath line",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGContainer g id='minimalWindow'",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGContainer g id='windowMainGroupminimalWindow'",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGRect rect",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGContainer g",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGText text id='textMinimalWindow'",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "RootInlineBox",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGInlineText #text",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "InlineTextBox 'This is a minimal window'",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGTSpan tspan",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "InlineFlowBox",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGInlineText #text",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "InlineTextBox 'without title and status bar.'",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGTSpan tspan",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "InlineFlowBox",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGInlineText #text",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "InlineTextBox 'it is also not moveable'",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGContainer g id='windowTitlebarGroupminimalWindow'",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGContainer g id='windowTitlebarGroupbigWindow'",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGRect rect id='titleBarbigWindow'",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGText text",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "RootInlineBox",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGInlineText #text",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "InlineTextBox 'Big Window'",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGContainer use id='closeButtonbigWindow'",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGViewportContainer svg id='closeButton'",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGRect rect",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGPath line",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGPath line",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGContainer use id='maximizeButtonbigWindow'",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGViewportContainer svg id='maximizeButton'",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGRect rect",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGContainer use id='minimizeButtonbigWindow'",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGViewportContainer svg id='minimizeButton'",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGRect rect",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGPath line",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGContainer g id='Windows'",
-      "reason": "bounds change"
+      "reason": "geometry"
     },
     {
       "object": "LayoutSVGContainer g id='navWindow'",
-      "reason": "bounds change"
+      "reason": "geometry"
     },
     {
       "object": "LayoutSVGContainer g id='windowTitlebarGroupnavWindow'",
-      "reason": "bounds change"
+      "reason": "geometry"
     },
     {
       "object": "LayoutSVGContainer g id='decoGroupnavWindow'",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGRect rect",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGRect rect id='decoGroupMinimizednavWindow'",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGText text",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "RootInlineBox",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGInlineText #text",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "InlineTextBox 'Navigation Window'",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGContainer use id='closeButtonnavWindow'",
@@ -1241,15 +1241,15 @@
     },
     {
       "object": "LayoutSVGRect rect",
-      "reason": "bounds change"
+      "reason": "geometry"
     },
     {
       "object": "LayoutSVGPath line",
-      "reason": "bounds change"
+      "reason": "geometry"
     },
     {
       "object": "LayoutSVGPath line",
-      "reason": "bounds change"
+      "reason": "geometry"
     },
     {
       "object": "LayoutSVGContainer use id='maximizeButtonnavWindow'",
@@ -1261,7 +1261,7 @@
     },
     {
       "object": "LayoutSVGRect rect",
-      "reason": "bounds change"
+      "reason": "geometry"
     },
     {
       "object": "LayoutSVGContainer use id='minimizeButtonnavWindow'",
@@ -1273,11 +1273,11 @@
     },
     {
       "object": "LayoutSVGRect rect",
-      "reason": "bounds change"
+      "reason": "geometry"
     },
     {
       "object": "LayoutSVGPath line",
-      "reason": "bounds change"
+      "reason": "geometry"
     }
   ]
 }

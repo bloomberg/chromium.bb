@@ -185,7 +185,7 @@ void LayoutObjectChildList::InsertChildNode(LayoutObject* owner,
   new_child->SetNeedsLayoutAndPrefWidthsRecalc(
       LayoutInvalidationReason::kAddedToLayout);
   new_child->SetShouldDoFullPaintInvalidation(
-      kPaintInvalidationLayoutObjectInsertion);
+      PaintInvalidationReason::kAppeared);
   new_child->SetSubtreeNeedsPaintPropertyUpdate();
   if (!owner->NormalChildNeedsLayout())
     owner->SetChildNeedsLayout();  // We may supply the static position for an
@@ -207,7 +207,7 @@ void LayoutObjectChildList::InvalidatePaintOnRemoval(LayoutObject& old_child) {
   paint_invalidator.SlowSetPaintingLayerNeedsRepaint();
   paint_invalidator.InvalidatePaintOfPreviousVisualRect(
       old_child.ContainerForPaintInvalidation(),
-      kPaintInvalidationLayoutObjectRemoval);
+      PaintInvalidationReason::kDisappeared);
 }
 
 }  // namespace blink

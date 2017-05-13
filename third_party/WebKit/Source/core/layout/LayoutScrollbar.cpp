@@ -384,7 +384,7 @@ void LayoutScrollbar::InvalidateDisplayItemClientsOfScrollbarParts() {
   for (auto& part : parts_) {
     ObjectPaintInvalidator(*part.value)
         .InvalidateDisplayItemClientsIncludingNonCompositingDescendants(
-            kPaintInvalidationScroll);
+            PaintInvalidationReason::kScrollControl);
   }
 }
 

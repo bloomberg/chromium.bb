@@ -2,11 +2,11 @@
   "objectPaintInvalidations": [
     {
       "object": "LayoutBlockFlow BODY",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "RootInlineBox",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "LayoutEmbeddedObject OBJECT",
@@ -14,55 +14,55 @@
     },
     {
       "object": "HorizontalScrollbar",
-      "reason": "scroll"
+      "reason": "scroll control"
     },
     {
       "object": "VerticalScrollbar",
-      "reason": "scroll"
+      "reason": "scroll control"
     },
     {
       "object": "LayoutView #document",
-      "reason": "scroll"
+      "reason": "geometry"
     },
     {
       "object": "LayoutView #document",
-      "reason": "scroll"
+      "reason": "geometry"
     },
     {
       "object": "LayoutBlockFlow HTML",
-      "reason": "location change"
+      "reason": "geometry"
     },
     {
       "object": "LayoutBlockFlow BODY",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "RootInlineBox",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "LayoutEmbeddedObject OBJECT",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "LayoutText #text",
-      "reason": "location change"
+      "reason": "geometry"
     },
     {
       "object": "LayoutView #document",
-      "reason": "location change"
+      "reason": "geometry"
     },
     {
       "object": "LayoutSVGRoot svg",
-      "reason": "location change"
+      "reason": "geometry"
     },
     {
       "object": "LayoutSVGRect rect",
-      "reason": "bounds change"
+      "reason": "geometry"
     },
     {
       "object": "LayoutSVGRect rect",
-      "reason": "bounds change"
+      "reason": "geometry"
     }
   ]
 }

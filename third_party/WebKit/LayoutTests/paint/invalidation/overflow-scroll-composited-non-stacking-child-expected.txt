@@ -24,7 +24,7 @@
         {
           "object": "LayoutBlockFlow DIV class='scroller'",
           "rect": [308, 65, 15, 175],
-          "reason": "scroll"
+          "reason": "scroll control"
         }
       ]
     },
@@ -61,7 +61,7 @@
     },
     {
       "object": "VerticalScrollbar",
-      "reason": "scroll"
+      "reason": "scroll control"
     },
     {
       "object": "LayoutBlockFlow (positioned) DIV class='back'",

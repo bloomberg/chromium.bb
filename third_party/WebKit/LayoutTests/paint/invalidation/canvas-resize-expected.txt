@@ -9,7 +9,7 @@
         {
           "object": "LayoutHTMLCanvas (positioned) CANVAS id='canvas'",
           "rect": [50, 50, 600, 500],
-          "reason": "forced by layout"
+          "reason": "geometry"
         }
       ]
     }
@@ -17,7 +17,7 @@
   "objectPaintInvalidations": [
     {
       "object": "LayoutHTMLCanvas (positioned) CANVAS id='canvas'",
-      "reason": "forced by layout"
+      "reason": "geometry"
     }
   ]
 }

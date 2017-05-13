@@ -14,7 +14,7 @@
         {
           "object": "LayoutBlockFlow DIV id='innerDiv'",
           "rect": [762, 8, 15, 300],
-          "reason": "scroll"
+          "reason": "scroll control"
         }
       ]
     }
@@ -26,7 +26,7 @@
     },
     {
       "object": "VerticalScrollbar",
-      "reason": "scroll"
+      "reason": "scroll control"
     },
     {
       "object": "LayoutBlockFlow DIV",

@@ -9,7 +9,7 @@
         {
           "object": "LayoutBlockFlow DIV id='details-content'",
           "rect": [8, 68, 784, 19],
-          "reason": "layoutObject insertion"
+          "reason": "appeared"
         },
         {
           "object": "LayoutDetailsMarker DIV id='details-marker'",
@@ -26,35 +26,35 @@
     },
     {
       "object": "LayoutBlockFlow DIV id='details-content'",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "RootInlineBox",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutTextControl INPUT",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutBlockFlow DIV id='inner-editor'",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutBlockFlow DIV id='inner-editor'",
-      "reason": "scroll"
+      "reason": "geometry"
     },
     {
       "object": "HorizontalScrollbar",
-      "reason": "scroll"
+      "reason": "scroll control"
     },
     {
       "object": "LayoutText #text",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutText #text",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     }
   ]
 }

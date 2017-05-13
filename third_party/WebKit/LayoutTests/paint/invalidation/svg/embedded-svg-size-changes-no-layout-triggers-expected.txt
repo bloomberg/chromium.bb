@@ -9,27 +9,27 @@
         {
           "object": "LayoutBlockFlow BODY",
           "rect": [0, 0, 800, 600],
-          "reason": "forced by layout"
+          "reason": "geometry"
         },
         {
           "object": "LayoutSVGRect rect",
           "rect": [211, 11, 180, 180],
-          "reason": "bounds change"
+          "reason": "geometry"
         },
         {
           "object": "LayoutSVGRect rect",
           "rect": [210, 10, 180, 180],
-          "reason": "bounds change"
+          "reason": "geometry"
         },
         {
           "object": "LayoutSVGRect rect",
           "rect": [11, 11, 180, 180],
-          "reason": "bounds change"
+          "reason": "geometry"
         },
         {
           "object": "LayoutSVGRect rect",
           "rect": [10, 10, 180, 180],
-          "reason": "bounds change"
+          "reason": "geometry"
         }
       ]
     }
@@ -37,11 +37,11 @@
   "objectPaintInvalidations": [
     {
       "object": "LayoutBlockFlow BODY",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "RootInlineBox",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "LayoutEmbeddedObject OBJECT",
@@ -49,15 +49,15 @@
     },
     {
       "object": "LayoutSVGRoot svg",
-      "reason": "location change"
+      "reason": "geometry"
     },
     {
       "object": "LayoutSVGRect rect",
-      "reason": "bounds change"
+      "reason": "geometry"
     },
     {
       "object": "LayoutSVGRect rect",
-      "reason": "bounds change"
+      "reason": "geometry"
     }
   ]
 }

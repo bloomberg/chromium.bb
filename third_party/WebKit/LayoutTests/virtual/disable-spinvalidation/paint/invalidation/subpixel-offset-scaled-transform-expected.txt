@@ -9,22 +9,22 @@
         {
           "object": "LayoutBlockFlow (relative positioned) DIV class='child'",
           "rect": [8, 8, 81, 40],
-          "reason": "bounds change"
+          "reason": "geometry"
         },
         {
           "object": "LayoutBlockFlow (relative positioned) DIV class='child'",
           "rect": [8, 8, 80, 40],
-          "reason": "bounds change"
+          "reason": "geometry"
         },
         {
           "object": "LayoutBlockFlow (relative positioned) DIV class='child scale'",
           "rect": [8, 58, 41, 40],
-          "reason": "bounds change"
+          "reason": "geometry"
         },
         {
           "object": "LayoutBlockFlow (relative positioned) DIV class='child scale'",
           "rect": [8, 58, 41, 40],
-          "reason": "bounds change"
+          "reason": "geometry"
         }
       ]
     }
@@ -32,11 +32,11 @@
   "objectPaintInvalidations": [
     {
       "object": "LayoutBlockFlow (relative positioned) DIV class='child'",
-      "reason": "bounds change"
+      "reason": "geometry"
     },
     {
       "object": "LayoutBlockFlow (relative positioned) DIV class='child scale'",
-      "reason": "bounds change"
+      "reason": "geometry"
     }
   ]
 }

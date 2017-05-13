@@ -299,16 +299,16 @@ void PaintInvalidationState::UpdateForChildren(PaintInvalidationReason reason) {
 #endif
 
   switch (reason) {
-    case kPaintInvalidationDelayedFull:
+    case PaintInvalidationReason::kDelayedFull:
       pending_delayed_paint_invalidations_.push_back(&current_object_);
       break;
-    case kPaintInvalidationSubtree:
+    case PaintInvalidationReason::kSubtree:
       forced_subtree_invalidation_flags_ |=
           (PaintInvalidatorContext::kForcedSubtreeFullInvalidation |
            PaintInvalidatorContext::
                kForcedSubtreeFullInvalidationForStackedContents);
       break;
-    case kPaintInvalidationSVGResourceChange:
+    case PaintInvalidationReason::kSVGResource:
       forced_subtree_invalidation_flags_ |=
           PaintInvalidatorContext::kForcedSubtreeSVGResourceChange;
       break;

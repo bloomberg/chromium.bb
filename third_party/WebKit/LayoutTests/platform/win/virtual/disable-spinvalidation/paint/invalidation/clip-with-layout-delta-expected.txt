@@ -9,7 +9,7 @@
         {
           "object": "LayoutBlockFlow (relative positioned) DIV",
           "rect": [108, 8, 100, 100],
-          "reason": "background obscuration change"
+          "reason": "background"
         },
         {
           "object": "LayoutBlockFlow SPAN id='t2' class='blue'",
@@ -19,7 +19,7 @@
         {
           "object": "LayoutBlockFlow DIV",
           "rect": [8, 8, 100, 100],
-          "reason": "background obscuration change"
+          "reason": "background"
         },
         {
           "object": "LayoutBlockFlow SPAN id='t1'",
@@ -29,12 +29,12 @@
         {
           "object": "LayoutText #text",
           "rect": [108, 8, 4, 19],
-          "reason": "forced by layout"
+          "reason": "geometry"
         },
         {
           "object": "LayoutText #text",
           "rect": [8, 8, 4, 19],
-          "reason": "forced by layout"
+          "reason": "geometry"
         }
       ]
     }
@@ -42,7 +42,7 @@
   "objectPaintInvalidations": [
     {
       "object": "LayoutBlockFlow DIV",
-      "reason": "background obscuration change"
+      "reason": "background"
     },
     {
       "object": "LayoutBlockFlow SPAN id='t1'",
@@ -54,15 +54,15 @@
     },
     {
       "object": "LayoutText #text",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "InlineTextBox '\u00A0'",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "LayoutBlockFlow (relative positioned) DIV",
-      "reason": "background obscuration change"
+      "reason": "background"
     },
     {
       "object": "LayoutBlockFlow SPAN id='t2' class='blue'",
@@ -74,11 +74,11 @@
     },
     {
       "object": "LayoutText #text",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "InlineTextBox '\u00A0'",
-      "reason": "forced by layout"
+      "reason": "geometry"
     }
   ]
 }

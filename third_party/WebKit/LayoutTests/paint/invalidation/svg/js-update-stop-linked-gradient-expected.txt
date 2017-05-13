@@ -27,7 +27,7 @@
   "objectPaintInvalidations": [
     {
       "object": "LayoutSVGGradientStop stop id='stop1'",
-      "reason": "layoutObject removal"
+      "reason": "disappeared"
     },
     {
       "object": "LayoutSVGResourceLinearGradient linearGradient id='gradient'",

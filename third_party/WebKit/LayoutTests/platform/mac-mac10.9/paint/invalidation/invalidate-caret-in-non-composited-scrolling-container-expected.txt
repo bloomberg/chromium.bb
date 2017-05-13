@@ -41,7 +41,7 @@
     },
     {
       "object": "HorizontalScrollbar",
-      "reason": "scroll"
+      "reason": "scroll control"
     },
     {
       "object": "Caret",

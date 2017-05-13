@@ -490,16 +490,16 @@ void PaintInvalidator::InvalidatePaint(
 
   PaintInvalidationReason reason = object.InvalidatePaint(context);
   switch (reason) {
-    case kPaintInvalidationDelayedFull:
+    case PaintInvalidationReason::kDelayedFull:
       pending_delayed_paint_invalidations_.push_back(&object);
       break;
-    case kPaintInvalidationSubtree:
+    case PaintInvalidationReason::kSubtree:
       context.forced_subtree_invalidation_flags |=
           (PaintInvalidatorContext::kForcedSubtreeFullInvalidation |
            PaintInvalidatorContext::
                kForcedSubtreeFullInvalidationForStackedContents);
       break;
-    case kPaintInvalidationSVGResourceChange:
+    case PaintInvalidationReason::kSVGResource:
       context.forced_subtree_invalidation_flags |=
           PaintInvalidatorContext::kForcedSubtreeSVGResourceChange;
       break;
@@ -531,7 +531,7 @@ void PaintInvalidator::ProcessPendingDelayedPaintInvalidations() {
   for (auto target : pending_delayed_paint_invalidations_) {
     target->GetMutableForPainting()
         .SetShouldDoFullPaintInvalidationWithoutGeometryChange(
-            kPaintInvalidationDelayedFull);
+            PaintInvalidationReason::kDelayedFull);
   }
 }
 

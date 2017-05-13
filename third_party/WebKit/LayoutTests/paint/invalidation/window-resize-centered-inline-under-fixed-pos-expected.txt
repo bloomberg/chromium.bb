@@ -9,7 +9,7 @@
         {
           "object": "LayoutBlockFlow (positioned) DIV class='container'",
           "rect": [0, 0, 600, 500],
-          "reason": "forced by layout"
+          "reason": "geometry"
         },
         {
           "object": "LayoutView #document",
@@ -26,19 +26,19 @@
     },
     {
       "object": "LayoutBlockFlow (positioned) DIV class='container'",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "LayoutBlockFlow DIV class='parent'",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "RootInlineBox",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "LayoutBlockFlow (relative positioned) DIV class='child'",
-      "reason": "forced by layout"
+      "reason": "geometry"
     }
   ]
 }
@@ -53,7 +53,7 @@
         {
           "object": "LayoutBlockFlow (positioned) DIV class='container'",
           "rect": [0, 0, 600, 250],
-          "reason": "forced by layout"
+          "reason": "geometry"
         },
         {
           "object": "LayoutView #document",
@@ -70,19 +70,19 @@
     },
     {
       "object": "LayoutBlockFlow (positioned) DIV class='container'",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "LayoutBlockFlow DIV class='parent'",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "RootInlineBox",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "LayoutBlockFlow (relative positioned) DIV class='child'",
-      "reason": "forced by layout"
+      "reason": "geometry"
     }
   ]
 }
@@ -97,7 +97,7 @@
         {
           "object": "LayoutBlockFlow (positioned) DIV class='container'",
           "rect": [0, 0, 400, 600],
-          "reason": "forced by layout"
+          "reason": "geometry"
         },
         {
           "object": "LayoutView #document",
@@ -114,19 +114,19 @@
     },
     {
       "object": "LayoutBlockFlow (positioned) DIV class='container'",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "LayoutBlockFlow DIV class='parent'",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "RootInlineBox",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "LayoutBlockFlow (relative positioned) DIV class='child'",
-      "reason": "forced by layout"
+      "reason": "geometry"
     }
   ]
 }
@@ -141,7 +141,7 @@
         {
           "object": "LayoutBlockFlow (positioned) DIV class='container'",
           "rect": [0, 0, 800, 600],
-          "reason": "forced by layout"
+          "reason": "geometry"
         },
         {
           "object": "LayoutView #document",
@@ -158,19 +158,19 @@
     },
     {
       "object": "LayoutBlockFlow (positioned) DIV class='container'",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "LayoutBlockFlow DIV class='parent'",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "RootInlineBox",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "LayoutBlockFlow (relative positioned) DIV class='child'",
-      "reason": "forced by layout"
+      "reason": "geometry"
     }
   ]
 }

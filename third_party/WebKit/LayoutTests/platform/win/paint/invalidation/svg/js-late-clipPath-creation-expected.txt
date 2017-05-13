@@ -9,7 +9,7 @@
         {
           "object": "LayoutSVGContainer g id='content'",
           "rect": [16, 42, 784, 170],
-          "reason": "bounds change"
+          "reason": "geometry"
         }
       ]
     }
@@ -17,7 +17,7 @@
   "objectPaintInvalidations": [
     {
       "object": "LayoutSVGContainer g id='content'",
-      "reason": "bounds change"
+      "reason": "geometry"
     },
     {
       "object": "LayoutSVGText text",
@@ -29,19 +29,19 @@
     },
     {
       "object": "LayoutSVGInlineText #text",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "InlineTextBox 'Clipped. INVISIBLE.'",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "LayoutSVGResourceClipper clipPath id='dynClip'",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGPath path",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     }
   ]
 }

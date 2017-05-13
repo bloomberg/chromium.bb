@@ -9,7 +9,7 @@
         {
           "object": "LayoutText #text",
           "rect": [14, 80, 406, 119],
-          "reason": "forced by layout"
+          "reason": "geometry"
         },
         {
           "object": "LayoutBlockFlow (floating) DIV id='pinkFloat'",
@@ -26,47 +26,47 @@
     },
     {
       "object": "LayoutText #text",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "InlineTextBox 'The chief difficulty Alice found at first was in managing'",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "InlineTextBox 'her\n'",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "InlineTextBox 'flamingo: she succeeded in getting its body tucked'",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "InlineTextBox 'away,\n'",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "InlineTextBox 'comfortably enough, under her arm, with its legs'",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "InlineTextBox 'hanging down,\n'",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "InlineTextBox 'but generally, just as she had got its'",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "InlineTextBox 'neck nicely straightened\n'",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "InlineTextBox 'out, and was going to give the'",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "InlineTextBox 'hedgehog a blow with its head, it\n'",
-      "reason": "forced by layout"
+      "reason": "geometry"
     }
   ]
 }

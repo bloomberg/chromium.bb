@@ -16,12 +16,12 @@
         {
           "object": "LayoutBlockFlow (positioned) DIV id='test'",
           "rect": [12, 0, 12, 12],
-          "reason": "bounds change"
+          "reason": "geometry"
         },
         {
           "object": "LayoutBlockFlow (positioned) DIV id='test'",
           "rect": [10, 0, 12, 12],
-          "reason": "bounds change"
+          "reason": "geometry"
         }
       ]
     }
@@ -29,7 +29,7 @@
   "objectPaintInvalidations": [
     {
       "object": "LayoutBlockFlow (positioned) DIV id='test'",
-      "reason": "bounds change"
+      "reason": "geometry"
     }
   ]
 }
@@ -51,12 +51,12 @@
         {
           "object": "LayoutBlockFlow (positioned) DIV id='test'",
           "rect": [11, 0, 13, 12],
-          "reason": "bounds change"
+          "reason": "geometry"
         },
         {
           "object": "LayoutBlockFlow (positioned) DIV id='test'",
           "rect": [9, 0, 13, 12],
-          "reason": "bounds change"
+          "reason": "geometry"
         }
       ]
     }
@@ -64,7 +64,7 @@
   "objectPaintInvalidations": [
     {
       "object": "LayoutBlockFlow (positioned) DIV id='test'",
-      "reason": "bounds change"
+      "reason": "geometry"
     }
   ]
 }
@@ -86,12 +86,12 @@
         {
           "object": "LayoutBlockFlow (positioned) DIV id='test'",
           "rect": [12, 0, 13, 12],
-          "reason": "bounds change"
+          "reason": "geometry"
         },
         {
           "object": "LayoutBlockFlow (positioned) DIV id='test'",
           "rect": [10, 0, 13, 12],
-          "reason": "bounds change"
+          "reason": "geometry"
         }
       ]
     }
@@ -99,7 +99,7 @@
   "objectPaintInvalidations": [
     {
       "object": "LayoutBlockFlow (positioned) DIV id='test'",
-      "reason": "bounds change"
+      "reason": "geometry"
     }
   ]
 }
@@ -121,12 +121,12 @@
         {
           "object": "LayoutBlockFlow (positioned) DIV id='test'",
           "rect": [12, 0, 13, 12],
-          "reason": "bounds change"
+          "reason": "geometry"
         },
         {
           "object": "LayoutBlockFlow (positioned) DIV id='test'",
           "rect": [10, 0, 13, 12],
-          "reason": "bounds change"
+          "reason": "geometry"
         }
       ]
     }
@@ -134,7 +134,7 @@
   "objectPaintInvalidations": [
     {
       "object": "LayoutBlockFlow (positioned) DIV id='test'",
-      "reason": "bounds change"
+      "reason": "geometry"
     }
   ]
 }
@@ -156,12 +156,12 @@
         {
           "object": "LayoutBlockFlow (positioned) DIV id='test'",
           "rect": [12, 0, 13, 12],
-          "reason": "bounds change"
+          "reason": "geometry"
         },
         {
           "object": "LayoutBlockFlow (positioned) DIV id='test'",
           "rect": [10, 0, 13, 12],
-          "reason": "bounds change"
+          "reason": "geometry"
         }
       ]
     }
@@ -169,7 +169,7 @@
   "objectPaintInvalidations": [
     {
       "object": "LayoutBlockFlow (positioned) DIV id='test'",
-      "reason": "bounds change"
+      "reason": "geometry"
     }
   ]
 }

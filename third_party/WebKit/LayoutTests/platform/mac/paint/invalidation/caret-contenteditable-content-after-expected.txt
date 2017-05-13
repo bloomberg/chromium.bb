@@ -14,47 +14,47 @@
         {
           "object": "LayoutBlockFlow DIV id='editor'",
           "rect": [3, 39, 794, 28],
-          "reason": "forced by layout"
+          "reason": "geometry"
         },
         {
           "object": "LayoutBlockFlow DIV id='editor'",
           "rect": [3, 39, 794, 28],
-          "reason": "forced by layout"
+          "reason": "geometry"
         },
         {
           "object": "LayoutBlockFlow DIV id='editor'",
           "rect": [3, 39, 794, 28],
-          "reason": "forced by layout"
+          "reason": "geometry"
         },
         {
           "object": "LayoutTextFragment (anonymous)",
           "rect": [30, 44, 9, 18],
-          "reason": "forced by layout"
+          "reason": "geometry"
         },
         {
           "object": "LayoutTextFragment (anonymous)",
           "rect": [23, 44, 9, 18],
-          "reason": "forced by layout"
+          "reason": "geometry"
         },
         {
           "object": "LayoutTextFragment (anonymous)",
           "rect": [23, 44, 9, 18],
-          "reason": "forced by layout"
+          "reason": "geometry"
         },
         {
           "object": "LayoutTextFragment (anonymous)",
           "rect": [15, 44, 9, 18],
-          "reason": "forced by layout"
+          "reason": "geometry"
         },
         {
           "object": "LayoutTextFragment (anonymous)",
           "rect": [15, 44, 9, 18],
-          "reason": "forced by layout"
+          "reason": "geometry"
         },
         {
           "object": "LayoutTextFragment (anonymous)",
           "rect": [8, 44, 8, 18],
-          "reason": "forced by layout"
+          "reason": "geometry"
         }
       ]
     }
@@ -74,11 +74,11 @@
     },
     {
       "object": "LayoutBlockFlow DIV id='editor'",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "RootInlineBox",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "Caret",
@@ -86,27 +86,27 @@
     },
     {
       "object": "LayoutText #text",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "InlineTextBox 'a'",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutTextFragment (anonymous)",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "InlineTextBox 'x'",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "LayoutBlockFlow DIV id='editor'",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "RootInlineBox",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "Caret",
@@ -122,19 +122,19 @@
     },
     {
       "object": "LayoutTextFragment (anonymous)",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "InlineTextBox 'x'",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "LayoutBlockFlow DIV id='editor'",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "RootInlineBox",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "Caret",
@@ -150,11 +150,11 @@
     },
     {
       "object": "LayoutTextFragment (anonymous)",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "InlineTextBox 'x'",
-      "reason": "forced by layout"
+      "reason": "geometry"
     }
   ]
 }

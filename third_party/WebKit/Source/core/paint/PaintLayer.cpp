@@ -3247,7 +3247,8 @@ void PaintLayer::SetNeedsRepaint() {
 
 void PaintLayer::SetNeedsRepaintInternal() {
   needs_repaint_ = true;
-  SetDisplayItemsUncached();  // Invalidate as a display item client.
+  // Invalidate as a display item client.
+  SetDisplayItemsUncached();
 }
 
 void PaintLayer::MarkCompositingContainerChainForNeedsRepaint() {

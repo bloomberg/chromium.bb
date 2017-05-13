@@ -1700,8 +1700,10 @@ void FrameView::ViewportSizeChanged(bool width_changed, bool height_changed) {
       // above.
       LayoutViewItem lvi = GetLayoutViewItem();
       DCHECK(!lvi.IsNull());
-      if (lvi.DocumentRect().Height() < lvi.ViewRect().Height())
-        lvi.SetShouldDoFullPaintInvalidation();
+      if (lvi.DocumentRect().Height() < lvi.ViewRect().Height()) {
+        lvi.SetShouldDoFullPaintInvalidation(
+            PaintInvalidationReason::kGeometry);
+      }
     }
   }
 
@@ -1754,8 +1756,10 @@ void FrameView::ScrollContentsIfNeededRecursive() {
 }
 
 void FrameView::InvalidateBackgroundAttachmentFixedObjects() {
-  for (const auto& layout_object : background_attachment_fixed_objects_)
-    layout_object->SetShouldDoFullPaintInvalidation();
+  for (const auto& layout_object : background_attachment_fixed_objects_) {
+    layout_object->SetShouldDoFullPaintInvalidation(
+        PaintInvalidationReason::kBackground);
+  }
 }
 
 bool FrameView::HasBackgroundAttachmentFixedDescendants(
@@ -3474,9 +3478,10 @@ void FrameView::DeprecatedInvalidateTreeRecursiveInternal() {
 
   // Process objects needing paint invalidation on the next frame. See the
   // definition of PaintInvalidationDelayedFull for more details.
-  for (auto& target : pending_delayed_paint_invalidations)
+  for (auto& target : pending_delayed_paint_invalidations) {
     target->GetMutableForPainting().SetShouldDoFullPaintInvalidation(
-        kPaintInvalidationDelayedFull);
+        PaintInvalidationReason::kDelayedFull);
+  }
 }
 
 void FrameView::EnableAutoSizeMode(const IntSize& min_size,

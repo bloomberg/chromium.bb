@@ -9,7 +9,7 @@
         {
           "object": "LayoutFrameSet FRAMESET",
           "rect": [0, 0, 600, 500],
-          "reason": "border box change"
+          "reason": "geometry"
         },
         {
           "object": "LayoutView #document",
@@ -26,19 +26,19 @@
     },
     {
       "object": "LayoutFrameSet FRAMESET",
-      "reason": "border box change"
+      "reason": "geometry"
     },
     {
       "object": "LayoutFrame FRAME",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "LayoutFrame FRAME",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "LayoutFrame FRAME",
-      "reason": "forced by layout"
+      "reason": "geometry"
     }
   ]
 }
@@ -53,7 +53,7 @@
         {
           "object": "LayoutFrameSet FRAMESET",
           "rect": [0, 0, 600, 250],
-          "reason": "border box change"
+          "reason": "geometry"
         },
         {
           "object": "LayoutView #document",
@@ -70,43 +70,43 @@
     },
     {
       "object": "LayoutFrameSet FRAMESET",
-      "reason": "border box change"
+      "reason": "geometry"
     },
     {
       "object": "LayoutFrame FRAME",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "LayoutFrame FRAME",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "LayoutFrame FRAME",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "LayoutView #document",
-      "reason": "location change"
+      "reason": "geometry"
     },
     {
       "object": "LayoutBlockFlow HTML",
-      "reason": "location change"
+      "reason": "geometry"
     },
     {
       "object": "LayoutBlockFlow BODY",
-      "reason": "location change"
+      "reason": "geometry"
     },
     {
       "object": "LayoutView #document",
-      "reason": "location change"
+      "reason": "geometry"
     },
     {
       "object": "LayoutBlockFlow HTML",
-      "reason": "location change"
+      "reason": "geometry"
     },
     {
       "object": "LayoutBlockFlow BODY",
-      "reason": "location change"
+      "reason": "geometry"
     }
   ]
 }
@@ -121,7 +121,7 @@
         {
           "object": "LayoutFrameSet FRAMESET",
           "rect": [0, 0, 400, 600],
-          "reason": "border box change"
+          "reason": "geometry"
         },
         {
           "object": "LayoutView #document",
@@ -138,19 +138,19 @@
     },
     {
       "object": "LayoutFrameSet FRAMESET",
-      "reason": "border box change"
+      "reason": "geometry"
     },
     {
       "object": "LayoutFrame FRAME",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "LayoutFrame FRAME",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "LayoutFrame FRAME",
-      "reason": "forced by layout"
+      "reason": "geometry"
     }
   ]
 }
@@ -165,7 +165,7 @@
         {
           "object": "LayoutFrameSet FRAMESET",
           "rect": [0, 0, 800, 600],
-          "reason": "border box change"
+          "reason": "geometry"
         },
         {
           "object": "LayoutView #document",
@@ -182,43 +182,43 @@
     },
     {
       "object": "LayoutFrameSet FRAMESET",
-      "reason": "border box change"
+      "reason": "geometry"
     },
     {
       "object": "LayoutFrame FRAME",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "LayoutFrame FRAME",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "LayoutFrame FRAME",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "LayoutView #document",
-      "reason": "location change"
+      "reason": "geometry"
     },
     {
       "object": "LayoutBlockFlow HTML",
-      "reason": "location change"
+      "reason": "geometry"
     },
     {
       "object": "LayoutBlockFlow BODY",
-      "reason": "location change"
+      "reason": "geometry"
     },
     {
       "object": "LayoutView #document",
-      "reason": "location change"
+      "reason": "geometry"
     },
     {
       "object": "LayoutBlockFlow HTML",
-      "reason": "location change"
+      "reason": "geometry"
     },
     {
       "object": "LayoutBlockFlow BODY",
-      "reason": "location change"
+      "reason": "geometry"
     }
   ]
 }

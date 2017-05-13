@@ -9,7 +9,7 @@
         {
           "object": "LayoutSVGInlineText #text",
           "rect": [23, 8, 85, 24],
-          "reason": "forced by layout"
+          "reason": "geometry"
         },
         {
           "object": "LayoutSVGText text id='target'",
@@ -19,7 +19,7 @@
         {
           "object": "LayoutSVGInlineText #text",
           "rect": [58, 45, 50, 27],
-          "reason": "forced by layout"
+          "reason": "geometry"
         },
         {
           "object": "LayoutSVGText text id='source'",
@@ -40,15 +40,15 @@
     },
     {
       "object": "LayoutSVGInlineText #text",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "InlineTextBox 'A'",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "InlineTextBox ' B C'",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "LayoutSVGText text id='source'",
@@ -60,11 +60,11 @@
     },
     {
       "object": "LayoutSVGInlineText #text",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "InlineTextBox 'X Y Z'",
-      "reason": "forced by layout"
+      "reason": "geometry"
     }
   ]
 }

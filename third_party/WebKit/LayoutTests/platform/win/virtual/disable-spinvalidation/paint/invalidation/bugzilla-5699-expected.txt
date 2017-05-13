@@ -9,17 +9,17 @@
         {
           "object": "LayoutBlockFlow P",
           "rect": [8, 136, 784, 68],
-          "reason": "forced by layout"
+          "reason": "geometry"
         },
         {
           "object": "LayoutText #text",
           "rect": [8, 184, 32, 19],
-          "reason": "forced by layout"
+          "reason": "geometry"
         },
         {
           "object": "LayoutText #text",
           "rect": [8, 156, 32, 19],
-          "reason": "forced by layout"
+          "reason": "geometry"
         },
         {
           "object": "LayoutInline SPAN id='d'",
@@ -42,11 +42,11 @@
   "objectPaintInvalidations": [
     {
       "object": "LayoutBlockFlow P",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "RootInlineBox",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "LayoutInline SPAN id='d'",
@@ -66,27 +66,27 @@
     },
     {
       "object": "LayoutBR BR",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "InlineTextBox '\n'",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "LayoutText #text",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "InlineTextBox 'Hello'",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "LayoutBR BR",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "InlineTextBox '\n'",
-      "reason": "forced by layout"
+      "reason": "geometry"
     }
   ]
 }

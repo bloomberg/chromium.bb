@@ -14,7 +14,7 @@
         {
           "object": "LayoutTableSection TBODY",
           "rect": [8, 182, 110, 76],
-          "reason": "forced by layout"
+          "reason": "geometry"
         },
         {
           "object": "LayoutTable TABLE",
@@ -24,7 +24,7 @@
         {
           "object": "LayoutTableSection TBODY",
           "rect": [8, 96, 101, 76],
-          "reason": "forced by layout"
+          "reason": "geometry"
         },
         {
           "object": "LayoutTable TABLE id='t'",
@@ -34,72 +34,72 @@
         {
           "object": "LayoutTableCell TD id='d2'",
           "rect": [22, 210, 96, 20],
-          "reason": "layoutObject removal"
+          "reason": "disappeared"
         },
         {
           "object": "LayoutTableCell TD",
           "rect": [22, 316, 87, 28],
-          "reason": "forced by layout"
+          "reason": "geometry"
         },
         {
           "object": "LayoutTableCell TD",
           "rect": [22, 268, 87, 28],
-          "reason": "forced by layout"
+          "reason": "geometry"
         },
         {
           "object": "LayoutTableCell TD",
           "rect": [22, 144, 87, 28],
-          "reason": "forced by layout"
+          "reason": "geometry"
         },
         {
           "object": "LayoutTableCell TD",
           "rect": [22, 96, 87, 28],
-          "reason": "forced by layout"
+          "reason": "geometry"
         },
         {
           "object": "LayoutTableCell TD id='d3'",
           "rect": [22, 296, 87, 20],
-          "reason": "forced by layout"
+          "reason": "geometry"
         },
         {
           "object": "LayoutTableCell TD id='d'",
           "rect": [22, 124, 87, 20],
-          "reason": "layoutObject removal"
+          "reason": "disappeared"
         },
         {
           "object": "LayoutText #text",
           "rect": [23, 297, 77, 18],
-          "reason": "layoutObject insertion"
+          "reason": "appeared"
         },
         {
           "object": "LayoutText #text",
           "rect": [23, 125, 77, 18],
-          "reason": "layoutObject removal"
+          "reason": "disappeared"
         },
         {
           "object": "LayoutText #text",
           "rect": [23, 317, 51, 18],
-          "reason": "forced by layout"
+          "reason": "geometry"
         },
         {
           "object": "LayoutText #text",
           "rect": [23, 145, 51, 18],
-          "reason": "forced by layout"
+          "reason": "geometry"
         },
         {
           "object": "LayoutText #text",
           "rect": [23, 277, 43, 18],
-          "reason": "forced by layout"
+          "reason": "geometry"
         },
         {
           "object": "LayoutText #text",
           "rect": [23, 105, 43, 18],
-          "reason": "forced by layout"
+          "reason": "geometry"
         },
         {
           "object": "LayoutText #text",
           "rect": [23, 211, 34, 18],
-          "reason": "layoutObject removal"
+          "reason": "disappeared"
         },
         {
           "object": "LayoutTable TABLE",
@@ -109,22 +109,22 @@
         {
           "object": "LayoutTableCell TD",
           "rect": [8, 210, 14, 20],
-          "reason": "forced by layout"
+          "reason": "geometry"
         },
         {
           "object": "LayoutTableCell TD",
           "rect": [8, 124, 14, 20],
-          "reason": "forced by layout"
+          "reason": "geometry"
         },
         {
           "object": "LayoutText #text",
           "rect": [17, 211, 4, 18],
-          "reason": "forced by layout"
+          "reason": "geometry"
         },
         {
           "object": "LayoutText #text",
           "rect": [17, 125, 4, 18],
-          "reason": "forced by layout"
+          "reason": "geometry"
         }
       ]
     }
@@ -132,19 +132,19 @@
   "objectPaintInvalidations": [
     {
       "object": "LayoutText #text",
-      "reason": "layoutObject removal"
+      "reason": "disappeared"
     },
     {
       "object": "LayoutTableCell TD id='d'",
-      "reason": "layoutObject removal"
+      "reason": "disappeared"
     },
     {
       "object": "LayoutText #text",
-      "reason": "layoutObject removal"
+      "reason": "disappeared"
     },
     {
       "object": "LayoutTableCell TD id='d2'",
-      "reason": "layoutObject removal"
+      "reason": "disappeared"
     },
     {
       "object": "LayoutTableCell TD",
@@ -180,55 +180,55 @@
     },
     {
       "object": "LayoutTableSection TBODY",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "LayoutTableCell TD",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "RootInlineBox",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "LayoutText #text",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "InlineTextBox 'Lorem'",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "LayoutTableCell TD",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "RootInlineBox",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "LayoutText #text",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "InlineTextBox '\u00A0'",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "LayoutTableCell TD",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "RootInlineBox",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "LayoutText #text",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "InlineTextBox 'sit amet'",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "LayoutTable TABLE",
@@ -236,23 +236,23 @@
     },
     {
       "object": "LayoutTableSection TBODY",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "LayoutTableCell TD",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "RootInlineBox",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "LayoutText #text",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "InlineTextBox '\u00A0'",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "LayoutTable TABLE",
@@ -260,51 +260,51 @@
     },
     {
       "object": "LayoutTableCell TD",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "RootInlineBox",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "LayoutText #text",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "InlineTextBox 'Lorem'",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "LayoutTableCell TD id='d3'",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "RootInlineBox",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "LayoutText #text",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "InlineTextBox 'ipsum dolor'",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutTableCell TD",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "RootInlineBox",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "LayoutText #text",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "InlineTextBox 'sit amet'",
-      "reason": "forced by layout"
+      "reason": "geometry"
     }
   ]
 }

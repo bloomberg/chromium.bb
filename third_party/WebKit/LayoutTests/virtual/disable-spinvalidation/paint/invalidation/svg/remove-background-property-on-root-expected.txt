@@ -9,7 +9,7 @@
         {
           "object": "LayoutBlockFlow DIV",
           "rect": [8, 8, 100, 100],
-          "reason": "background obscuration change"
+          "reason": "background"
         },
         {
           "object": "LayoutSVGRoot svg",
@@ -22,11 +22,11 @@
   "objectPaintInvalidations": [
     {
       "object": "LayoutBlockFlow DIV",
-      "reason": "background obscuration change"
+      "reason": "background"
     },
     {
       "object": "RootInlineBox",
-      "reason": "background obscuration change"
+      "reason": "background"
     },
     {
       "object": "LayoutSVGRoot svg",

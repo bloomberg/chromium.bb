@@ -14,12 +14,12 @@
         {
           "object": "LayoutBlockFlow (positioned) DIV",
           "rect": [0, 250, 20, 20],
-          "reason": "bounds change"
+          "reason": "geometry"
         },
         {
           "object": "LayoutBlockFlow (positioned) DIV",
           "rect": [0, 125, 20, 20],
-          "reason": "bounds change"
+          "reason": "geometry"
         }
       ]
     }
@@ -31,7 +31,7 @@
     },
     {
       "object": "LayoutBlockFlow (positioned) DIV",
-      "reason": "bounds change"
+      "reason": "geometry"
     }
   ]
 }
@@ -74,12 +74,12 @@
         {
           "object": "LayoutBlockFlow (positioned) DIV",
           "rect": [0, 300, 20, 20],
-          "reason": "bounds change"
+          "reason": "geometry"
         },
         {
           "object": "LayoutBlockFlow (positioned) DIV",
           "rect": [0, 125, 20, 20],
-          "reason": "bounds change"
+          "reason": "geometry"
         }
       ]
     }
@@ -91,7 +91,7 @@
     },
     {
       "object": "LayoutBlockFlow (positioned) DIV",
-      "reason": "bounds change"
+      "reason": "geometry"
     }
   ]
 }

@@ -9,7 +9,7 @@
         {
           "object": "LayoutBlockFlow DIV id='inner-editor'",
           "rect": [11, 11, 125, 13],
-          "reason": "forced by layout"
+          "reason": "geometry"
         },
         {
           "object": "LayoutText #text",
@@ -19,7 +19,7 @@
         {
           "object": "LayoutBlockFlow (positioned) DIV id='div'",
           "rect": [8, 288, 10, 20],
-          "reason": "bounds change"
+          "reason": "geometry"
         }
       ]
     }
@@ -27,11 +27,11 @@
   "objectPaintInvalidations": [
     {
       "object": "LayoutBlockFlow DIV id='inner-editor'",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "RootInlineBox",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "LayoutText #text",
@@ -43,7 +43,7 @@
     },
     {
       "object": "LayoutBlockFlow (positioned) DIV id='div'",
-      "reason": "bounds change"
+      "reason": "geometry"
     }
   ]
 }

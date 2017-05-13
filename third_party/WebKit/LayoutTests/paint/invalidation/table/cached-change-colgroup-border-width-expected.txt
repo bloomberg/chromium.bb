@@ -9,7 +9,7 @@
         {
           "object": "LayoutTableSection TBODY",
           "rect": [7, 7, 167, 104],
-          "reason": "bounds change"
+          "reason": "geometry"
         },
         {
           "object": "LayoutTableCol COLGROUP id='colgroup'",
@@ -19,52 +19,52 @@
         {
           "object": "LayoutTableCell TD",
           "rect": [63, 7, 58, 53],
-          "reason": "bounds change"
+          "reason": "geometry"
         },
         {
           "object": "LayoutTableCell TD",
           "rect": [7, 58, 58, 53],
-          "reason": "bounds change"
+          "reason": "geometry"
         },
         {
           "object": "LayoutTableCell TD",
           "rect": [7, 7, 58, 53],
-          "reason": "bounds change"
+          "reason": "geometry"
         },
         {
           "object": "LayoutTableCell TD",
           "rect": [117, 59, 57, 52],
-          "reason": "bounds change"
+          "reason": "geometry"
         },
         {
           "object": "LayoutTableCell TD",
           "rect": [117, 7, 57, 52],
-          "reason": "bounds change"
+          "reason": "geometry"
         },
         {
           "object": "LayoutTableCell TD",
           "rect": [64, 59, 57, 52],
-          "reason": "bounds change"
+          "reason": "geometry"
         },
         {
           "object": "LayoutTableCell TD",
           "rect": [62, 8, 55, 52],
-          "reason": "bounds change"
+          "reason": "geometry"
         },
         {
           "object": "LayoutTableCell TD",
           "rect": [116, 59, 54, 51],
-          "reason": "bounds change"
+          "reason": "geometry"
         },
         {
           "object": "LayoutTableCell TD",
           "rect": [63, 59, 54, 51],
-          "reason": "bounds change"
+          "reason": "geometry"
         },
         {
           "object": "LayoutTableCell TD",
           "rect": [116, 9, 54, 50],
-          "reason": "bounds change"
+          "reason": "geometry"
         },
         {
           "object": "LayoutTable TABLE",
@@ -109,31 +109,31 @@
     },
     {
       "object": "LayoutTableSection TBODY",
-      "reason": "bounds change"
+      "reason": "geometry"
     },
     {
       "object": "LayoutTableCell TD",
-      "reason": "bounds change"
+      "reason": "geometry"
     },
     {
       "object": "LayoutTableCell TD",
-      "reason": "bounds change"
+      "reason": "geometry"
     },
     {
       "object": "LayoutTableCell TD",
-      "reason": "bounds change"
+      "reason": "geometry"
     },
     {
       "object": "LayoutTableCell TD",
-      "reason": "bounds change"
+      "reason": "geometry"
     },
     {
       "object": "LayoutTableCell TD",
-      "reason": "bounds change"
+      "reason": "geometry"
     },
     {
       "object": "LayoutTableCell TD",
-      "reason": "bounds change"
+      "reason": "geometry"
     }
   ]
 }

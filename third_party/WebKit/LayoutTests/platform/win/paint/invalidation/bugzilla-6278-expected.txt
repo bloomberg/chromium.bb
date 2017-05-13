@@ -9,22 +9,22 @@
         {
           "object": "LayoutBlockFlow DIV",
           "rect": [10, 138, 292, 160],
-          "reason": "forced by layout"
+          "reason": "geometry"
         },
         {
           "object": "LayoutBlockFlow DIV",
           "rect": [10, 303, 292, 50],
-          "reason": "bounds change"
+          "reason": "geometry"
         },
         {
           "object": "LayoutBlockFlow DIV",
           "rect": [10, 138, 242, 180],
-          "reason": "forced by layout"
+          "reason": "geometry"
         },
         {
           "object": "LayoutBlockFlow DIV",
           "rect": [10, 323, 242, 50],
-          "reason": "bounds change"
+          "reason": "geometry"
         },
         {
           "object": "LayoutTableCell TD id='col1'",
@@ -34,7 +34,7 @@
         {
           "object": "LayoutTableCell TD id='target'",
           "rect": [254, 138, 52, 235],
-          "reason": "bounds change"
+          "reason": "geometry"
         },
         {
           "object": "LayoutTableCell TD id='col1'",
@@ -51,59 +51,59 @@
     },
     {
       "object": "LayoutBlockFlow DIV",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "RootInlineBox",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "LayoutText #text",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "InlineTextBox 'Curabitur pretium, quam quis semper'",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "InlineTextBox 'malesuada, est libero feugiat libero, vel'",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "InlineTextBox 'fringilla orci nibh sed neque. Quisque eu'",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "InlineTextBox 'nulla non nisi molestie accumsan. Etiam'",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "InlineTextBox 'tellus urna, laoreet ac, laoreet non,'",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "InlineTextBox 'suscipit sed, sapien. Phasellus vehicula,'",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "InlineTextBox 'sem at posuere vehicula, augue nibh'",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "InlineTextBox 'molestie nisl, nec ullamcorper lacus ante'",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "InlineTextBox 'vulputate pede.'",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "LayoutBlockFlow DIV",
-      "reason": "bounds change"
+      "reason": "geometry"
     },
     {
       "object": "LayoutTableCell TD id='target'",
-      "reason": "bounds change"
+      "reason": "geometry"
     }
   ]
 }

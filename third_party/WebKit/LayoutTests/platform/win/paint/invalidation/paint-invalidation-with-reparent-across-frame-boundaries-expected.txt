@@ -9,17 +9,17 @@
         {
           "object": "LayoutBlockFlow DIV id='inner-target'",
           "rect": [8, 187, 784, 20],
-          "reason": "layoutObject insertion"
+          "reason": "appeared"
         },
         {
           "object": "LayoutBlockFlow DIV id='inner-target'",
           "rect": [18, 18, 284, 20],
-          "reason": "layoutObject removal"
+          "reason": "disappeared"
         },
         {
           "object": "LayoutText #text",
           "rect": [18, 18, 22, 19],
-          "reason": "layoutObject removal"
+          "reason": "disappeared"
         }
       ]
     }
@@ -27,27 +27,27 @@
   "objectPaintInvalidations": [
     {
       "object": "LayoutBlockFlow DIV id='inner-target'",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "RootInlineBox",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutText #text",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "InlineTextBox 'abc'",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutText #text",
-      "reason": "layoutObject removal"
+      "reason": "disappeared"
     },
     {
       "object": "LayoutBlockFlow DIV id='inner-target'",
-      "reason": "layoutObject removal"
+      "reason": "disappeared"
     }
   ]
 }

@@ -24,7 +24,7 @@
         {
           "object": "LayoutTableCell (relative positioned) TD id='cellToScroll' class='relative'",
           "rect": [314, 564, 435, 15],
-          "reason": "scroll"
+          "reason": "scroll control"
         }
       ]
     }
@@ -36,7 +36,7 @@
     },
     {
       "object": "HorizontalScrollbar",
-      "reason": "scroll"
+      "reason": "scroll control"
     },
     {
       "object": "LayoutBlockFlow (relative positioned) DIV class='relative red'",

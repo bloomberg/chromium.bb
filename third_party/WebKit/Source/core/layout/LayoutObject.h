@@ -1661,14 +1661,15 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     return bitfields_.FullPaintInvalidationReason();
   }
   bool ShouldDoFullPaintInvalidation() const {
-    return bitfields_.FullPaintInvalidationReason() != kPaintInvalidationNone;
+    return bitfields_.FullPaintInvalidationReason() !=
+           PaintInvalidationReason::kNone;
   }
   void SetShouldDoFullPaintInvalidation(
-      PaintInvalidationReason = kPaintInvalidationFull);
+      PaintInvalidationReason = PaintInvalidationReason::kFull);
   void SetShouldDoFullPaintInvalidationWithoutGeometryChange(
-      PaintInvalidationReason = kPaintInvalidationFull);
+      PaintInvalidationReason = PaintInvalidationReason::kFull);
   void ClearShouldDoFullPaintInvalidation() {
-    bitfields_.SetFullPaintInvalidationReason(kPaintInvalidationNone);
+    bitfields_.SetFullPaintInvalidationReason(PaintInvalidationReason::kNone);
   }
 
   void ClearPaintInvalidationFlags();
@@ -2302,7 +2303,8 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
           positioned_state_(kIsStaticallyPositioned),
           selection_state_(SelectionNone),
           background_obscuration_state_(kBackgroundObscurationStatusInvalid),
-          full_paint_invalidation_reason_(kPaintInvalidationNone) {}
+          full_paint_invalidation_reason_(
+              static_cast<unsigned>(PaintInvalidationReason::kNone)) {}
 
     // Self needs layout means that this layout object is marked for a full
     // layout. This is the default layout but it is expensive as it recomputes
@@ -2509,7 +2511,11 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     // Mutable for getter which lazily update this field.
     mutable unsigned
         background_obscuration_state_ : 2;         // BackgroundObscurationState
+
     unsigned full_paint_invalidation_reason_ : 5;  // PaintInvalidationReason
+    static_assert(static_cast<unsigned>(PaintInvalidationReason::kMax) <
+                      (1u << 5),
+                  "PaintInvalidationReason should fit in the bit field");
 
    public:
     bool IsOutOfFlowPositioned() const {
@@ -2577,7 +2583,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
           full_paint_invalidation_reason_);
     }
     void SetFullPaintInvalidationReason(PaintInvalidationReason reason) {
-      full_paint_invalidation_reason_ = reason;
+      full_paint_invalidation_reason_ = static_cast<unsigned>(reason);
     }
   };
 

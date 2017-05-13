@@ -30,11 +30,11 @@
     },
     {
       "object": "LayoutSVGInlineText #text",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "InlineTextBox 'Foo'",
-      "reason": "forced by layout"
+      "reason": "geometry"
     }
   ]
 }

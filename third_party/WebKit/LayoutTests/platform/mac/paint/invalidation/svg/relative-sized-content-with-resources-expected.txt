@@ -1,0 +1,41 @@
+{
+  "layers": [
+    {
+      "name": "LayoutView #document",
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "paintInvalidations": [
+        {
+          "object": "LayoutBlockFlow div id='contentBox'",
+          "rect": [8, 68, 402, 402],
+          "reason": "geometry"
+        },
+        {
+          "object": "LayoutSVGEllipse circle",
+          "rect": [8, 151, 102, 236],
+          "reason": "SVG resource change"
+        }
+      ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutBlockFlow div id='contentBox'",
+      "reason": "geometry"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "geometry"
+    },
+    {
+      "object": "LayoutSVGRoot svg",
+      "reason": "geometry"
+    },
+    {
+      "object": "LayoutSVGEllipse circle",
+      "reason": "SVG resource change"
+    }
+  ]
+}
+

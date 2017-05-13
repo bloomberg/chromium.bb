@@ -241,7 +241,7 @@ void LayoutView::SetShouldDoFullPaintInvalidationOnResizeIfNeeded(
                               Style()->BackgroundLayers())) ||
         (height_changed && MustInvalidateFillLayersPaintOnHeightChange(
                                Style()->BackgroundLayers())))
-      SetShouldDoFullPaintInvalidation(kPaintInvalidationBoundsChange);
+      SetShouldDoFullPaintInvalidation(PaintInvalidationReason::kBackground);
   }
 }
 

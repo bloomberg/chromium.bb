@@ -9,12 +9,12 @@
         {
           "object": "LayoutBlockFlow (positioned) DIV id='target'",
           "rect": [20, 20, 100, 100],
-          "reason": "bounds change"
+          "reason": "geometry"
         },
         {
           "object": "LayoutBlockFlow (positioned) DIV id='target'",
           "rect": [0, 0, 100, 100],
-          "reason": "bounds change"
+          "reason": "geometry"
         }
       ]
     }
@@ -22,7 +22,7 @@
   "objectPaintInvalidations": [
     {
       "object": "LayoutBlockFlow (positioned) DIV id='target'",
-      "reason": "bounds change"
+      "reason": "geometry"
     }
   ]
 }

@@ -9,182 +9,182 @@
         {
           "object": "LayoutBlockFlow (positioned) div id='html' class='outerBox'",
           "rect": [550, 350, 150, 150],
-          "reason": "bounds change"
+          "reason": "geometry"
         },
         {
           "object": "LayoutBlockFlow (positioned) div id='html' class='outerBox'",
           "rect": [535, 325, 150, 150],
-          "reason": "bounds change"
+          "reason": "geometry"
         },
         {
           "object": "LayoutBlockFlow (positioned) div id='html' class='outerBox'",
           "rect": [535, 325, 150, 150],
-          "reason": "bounds change"
+          "reason": "geometry"
         },
         {
           "object": "LayoutBlockFlow (positioned) div id='html' class='outerBox'",
           "rect": [520, 300, 150, 150],
-          "reason": "bounds change"
+          "reason": "geometry"
         },
         {
           "object": "LayoutBlockFlow (positioned) div id='html' class='outerBox'",
           "rect": [520, 300, 150, 150],
-          "reason": "bounds change"
+          "reason": "geometry"
         },
         {
           "object": "LayoutBlockFlow (positioned) div id='html' class='outerBox'",
           "rect": [505, 275, 150, 150],
-          "reason": "bounds change"
+          "reason": "geometry"
         },
         {
           "object": "LayoutBlockFlow (positioned) div id='html' class='outerBox'",
           "rect": [505, 275, 150, 150],
-          "reason": "bounds change"
+          "reason": "geometry"
         },
         {
           "object": "LayoutBlockFlow (positioned) div id='html' class='outerBox'",
           "rect": [490, 250, 150, 150],
-          "reason": "bounds change"
+          "reason": "geometry"
         },
         {
           "object": "LayoutBlockFlow (positioned) div id='html' class='outerBox'",
           "rect": [490, 250, 150, 150],
-          "reason": "bounds change"
+          "reason": "geometry"
         },
         {
           "object": "LayoutBlockFlow (positioned) div id='html' class='outerBox'",
           "rect": [475, 225, 150, 150],
-          "reason": "bounds change"
+          "reason": "geometry"
         },
         {
           "object": "LayoutBlockFlow (positioned) div id='html' class='outerBox'",
           "rect": [475, 225, 150, 150],
-          "reason": "bounds change"
+          "reason": "geometry"
         },
         {
           "object": "LayoutBlockFlow (positioned) div id='html' class='outerBox'",
           "rect": [460, 200, 150, 150],
-          "reason": "bounds change"
+          "reason": "geometry"
         },
         {
           "object": "LayoutBlockFlow (positioned) div id='html' class='outerBox'",
           "rect": [460, 200, 150, 150],
-          "reason": "bounds change"
+          "reason": "geometry"
         },
         {
           "object": "LayoutBlockFlow (positioned) div id='html' class='outerBox'",
           "rect": [445, 175, 150, 150],
-          "reason": "bounds change"
+          "reason": "geometry"
         },
         {
           "object": "LayoutBlockFlow (positioned) div id='html' class='outerBox'",
           "rect": [445, 175, 150, 150],
-          "reason": "bounds change"
+          "reason": "geometry"
         },
         {
           "object": "LayoutBlockFlow (positioned) div id='html' class='outerBox'",
           "rect": [430, 150, 150, 150],
-          "reason": "bounds change"
+          "reason": "geometry"
         },
         {
           "object": "LayoutBlockFlow (positioned) div id='html' class='outerBox'",
           "rect": [430, 150, 150, 150],
-          "reason": "bounds change"
+          "reason": "geometry"
         },
         {
           "object": "LayoutBlockFlow (positioned) div id='html' class='outerBox'",
           "rect": [400, 100, 150, 150],
-          "reason": "bounds change"
+          "reason": "geometry"
         },
         {
           "object": "LayoutSVGRoot (positioned) svg id='svg'",
           "rect": [250, 350, 150, 150],
-          "reason": "bounds change"
+          "reason": "geometry"
         },
         {
           "object": "LayoutSVGRoot (positioned) svg id='svg'",
           "rect": [235, 325, 150, 150],
-          "reason": "bounds change"
+          "reason": "geometry"
         },
         {
           "object": "LayoutSVGRoot (positioned) svg id='svg'",
           "rect": [235, 325, 150, 150],
-          "reason": "bounds change"
+          "reason": "geometry"
         },
         {
           "object": "LayoutSVGRoot (positioned) svg id='svg'",
           "rect": [220, 300, 150, 150],
-          "reason": "bounds change"
+          "reason": "geometry"
         },
         {
           "object": "LayoutSVGRoot (positioned) svg id='svg'",
           "rect": [220, 300, 150, 150],
-          "reason": "bounds change"
+          "reason": "geometry"
         },
         {
           "object": "LayoutSVGRoot (positioned) svg id='svg'",
           "rect": [205, 275, 150, 150],
-          "reason": "bounds change"
+          "reason": "geometry"
         },
         {
           "object": "LayoutSVGRoot (positioned) svg id='svg'",
           "rect": [205, 275, 150, 150],
-          "reason": "bounds change"
+          "reason": "geometry"
         },
         {
           "object": "LayoutSVGRoot (positioned) svg id='svg'",
           "rect": [190, 250, 150, 150],
-          "reason": "bounds change"
+          "reason": "geometry"
         },
         {
           "object": "LayoutSVGRoot (positioned) svg id='svg'",
           "rect": [190, 250, 150, 150],
-          "reason": "bounds change"
+          "reason": "geometry"
         },
         {
           "object": "LayoutSVGRoot (positioned) svg id='svg'",
           "rect": [175, 225, 150, 150],
-          "reason": "bounds change"
+          "reason": "geometry"
         },
         {
           "object": "LayoutSVGRoot (positioned) svg id='svg'",
           "rect": [175, 225, 150, 150],
-          "reason": "bounds change"
+          "reason": "geometry"
         },
         {
           "object": "LayoutSVGRoot (positioned) svg id='svg'",
           "rect": [160, 200, 150, 150],
-          "reason": "bounds change"
+          "reason": "geometry"
         },
         {
           "object": "LayoutSVGRoot (positioned) svg id='svg'",
           "rect": [160, 200, 150, 150],
-          "reason": "bounds change"
+          "reason": "geometry"
         },
         {
           "object": "LayoutSVGRoot (positioned) svg id='svg'",
           "rect": [145, 175, 150, 150],
-          "reason": "bounds change"
+          "reason": "geometry"
         },
         {
           "object": "LayoutSVGRoot (positioned) svg id='svg'",
           "rect": [145, 175, 150, 150],
-          "reason": "bounds change"
+          "reason": "geometry"
         },
         {
           "object": "LayoutSVGRoot (positioned) svg id='svg'",
           "rect": [130, 150, 150, 150],
-          "reason": "bounds change"
+          "reason": "geometry"
         },
         {
           "object": "LayoutSVGRoot (positioned) svg id='svg'",
           "rect": [130, 150, 150, 150],
-          "reason": "bounds change"
+          "reason": "geometry"
         },
         {
           "object": "LayoutSVGRoot (positioned) svg id='svg'",
           "rect": [100, 100, 150, 150],
-          "reason": "bounds change"
+          "reason": "geometry"
         }
       ]
     }
@@ -192,147 +192,147 @@
   "objectPaintInvalidations": [
     {
       "object": "LayoutSVGRoot (positioned) svg id='svg'",
-      "reason": "bounds change"
+      "reason": "geometry"
     },
     {
       "object": "LayoutSVGRect rect",
-      "reason": "bounds change"
+      "reason": "geometry"
     },
     {
       "object": "LayoutBlockFlow (positioned) div id='html' class='outerBox'",
-      "reason": "bounds change"
+      "reason": "geometry"
     },
     {
       "object": "LayoutBlockFlow div class='innerBox'",
-      "reason": "bounds change"
+      "reason": "geometry"
     },
     {
       "object": "LayoutSVGRoot (positioned) svg id='svg'",
-      "reason": "bounds change"
+      "reason": "geometry"
     },
     {
       "object": "LayoutSVGRect rect",
-      "reason": "bounds change"
+      "reason": "geometry"
     },
     {
       "object": "LayoutBlockFlow (positioned) div id='html' class='outerBox'",
-      "reason": "bounds change"
+      "reason": "geometry"
     },
     {
       "object": "LayoutBlockFlow div class='innerBox'",
-      "reason": "bounds change"
+      "reason": "geometry"
     },
     {
       "object": "LayoutSVGRoot (positioned) svg id='svg'",
-      "reason": "bounds change"
+      "reason": "geometry"
     },
     {
       "object": "LayoutSVGRect rect",
-      "reason": "bounds change"
+      "reason": "geometry"
     },
     {
       "object": "LayoutBlockFlow (positioned) div id='html' class='outerBox'",
-      "reason": "bounds change"
+      "reason": "geometry"
     },
     {
       "object": "LayoutBlockFlow div class='innerBox'",
-      "reason": "bounds change"
+      "reason": "geometry"
     },
     {
       "object": "LayoutSVGRoot (positioned) svg id='svg'",
-      "reason": "bounds change"
+      "reason": "geometry"
     },
     {
       "object": "LayoutSVGRect rect",
-      "reason": "bounds change"
+      "reason": "geometry"
     },
     {
       "object": "LayoutBlockFlow (positioned) div id='html' class='outerBox'",
-      "reason": "bounds change"
+      "reason": "geometry"
     },
     {
       "object": "LayoutBlockFlow div class='innerBox'",
-      "reason": "bounds change"
+      "reason": "geometry"
     },
     {
       "object": "LayoutSVGRoot (positioned) svg id='svg'",
-      "reason": "bounds change"
+      "reason": "geometry"
     },
     {
       "object": "LayoutSVGRect rect",
-      "reason": "bounds change"
+      "reason": "geometry"
     },
     {
       "object": "LayoutBlockFlow (positioned) div id='html' class='outerBox'",
-      "reason": "bounds change"
+      "reason": "geometry"
     },
     {
       "object": "LayoutBlockFlow div class='innerBox'",
-      "reason": "bounds change"
+      "reason": "geometry"
     },
     {
       "object": "LayoutSVGRoot (positioned) svg id='svg'",
-      "reason": "bounds change"
+      "reason": "geometry"
     },
     {
       "object": "LayoutSVGRect rect",
-      "reason": "bounds change"
+      "reason": "geometry"
     },
     {
       "object": "LayoutBlockFlow (positioned) div id='html' class='outerBox'",
-      "reason": "bounds change"
+      "reason": "geometry"
     },
     {
       "object": "LayoutBlockFlow div class='innerBox'",
-      "reason": "bounds change"
+      "reason": "geometry"
     },
     {
       "object": "LayoutSVGRoot (positioned) svg id='svg'",
-      "reason": "bounds change"
+      "reason": "geometry"
     },
     {
       "object": "LayoutSVGRect rect",
-      "reason": "bounds change"
+      "reason": "geometry"
     },
     {
       "object": "LayoutBlockFlow (positioned) div id='html' class='outerBox'",
-      "reason": "bounds change"
+      "reason": "geometry"
     },
     {
       "object": "LayoutBlockFlow div class='innerBox'",
-      "reason": "bounds change"
+      "reason": "geometry"
     },
     {
       "object": "LayoutSVGRoot (positioned) svg id='svg'",
-      "reason": "bounds change"
+      "reason": "geometry"
     },
     {
       "object": "LayoutSVGRect rect",
-      "reason": "bounds change"
+      "reason": "geometry"
     },
     {
       "object": "LayoutBlockFlow (positioned) div id='html' class='outerBox'",
-      "reason": "bounds change"
+      "reason": "geometry"
     },
     {
       "object": "LayoutBlockFlow div class='innerBox'",
-      "reason": "bounds change"
+      "reason": "geometry"
     },
     {
       "object": "LayoutSVGRoot (positioned) svg id='svg'",
-      "reason": "bounds change"
+      "reason": "geometry"
     },
     {
       "object": "LayoutSVGRect rect",
-      "reason": "bounds change"
+      "reason": "geometry"
     },
     {
       "object": "LayoutBlockFlow (positioned) div id='html' class='outerBox'",
-      "reason": "bounds change"
+      "reason": "geometry"
     },
     {
       "object": "LayoutBlockFlow div class='innerBox'",
-      "reason": "bounds change"
+      "reason": "geometry"
     }
   ]
 }

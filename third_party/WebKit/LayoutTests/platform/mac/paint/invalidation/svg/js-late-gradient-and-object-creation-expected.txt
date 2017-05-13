@@ -9,7 +9,7 @@
         {
           "object": "LayoutSVGContainer g id='content'",
           "rect": [0, 14, 753, 366],
-          "reason": "became visible"
+          "reason": "appeared"
         }
       ]
     }
@@ -17,75 +17,75 @@
   "objectPaintInvalidations": [
     {
       "object": "LayoutSVGResourceLinearGradient linearGradient id='fillLinearGradient'",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGGradientStop stop",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGGradientStop stop",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGResourceLinearGradient linearGradient id='strokeLinearGradient'",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGGradientStop stop",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGContainer g id='content'",
-      "reason": "became visible"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGText text",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "RootInlineBox",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGInlineText #text",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "InlineTextBox 'Gradient on fill'",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGText text",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "RootInlineBox",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGInlineText #text",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "InlineTextBox 'Gradient on stroke'",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGText text",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "RootInlineBox",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGInlineText #text",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "InlineTextBox 'Gradient on fill/stroke'",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     }
   ]
 }

@@ -15,7 +15,7 @@
         {
           "object": "LayoutView #document",
           "rect": [2, 300, 236, 15],
-          "reason": "scroll"
+          "reason": "scroll control"
         },
         {
           "object": "LayoutBlockFlow BODY",
@@ -30,7 +30,7 @@
         {
           "object": "LayoutView #document",
           "rect": [3, 300, 235, 15],
-          "reason": "scroll"
+          "reason": "scroll control"
         },
         {
           "object": "LayoutBlockFlow HTML",
@@ -45,22 +45,22 @@
         {
           "object": "LayoutView #document",
           "rect": [237, 65, 16, 235],
-          "reason": "scroll"
+          "reason": "scroll control"
         },
         {
           "object": "LayoutView #document",
           "rect": [237, 300, 16, 15],
-          "reason": "scroll"
+          "reason": "scroll control"
         },
         {
           "object": "LayoutView #document",
           "rect": [238, 65, 15, 235],
-          "reason": "scroll"
+          "reason": "scroll control"
         },
         {
           "object": "LayoutView #document",
           "rect": [238, 300, 15, 15],
-          "reason": "scroll"
+          "reason": "scroll control"
         }
       ]
     }
@@ -72,11 +72,11 @@
     },
     {
       "object": "HorizontalScrollbar",
-      "reason": "scroll"
+      "reason": "scroll control"
     },
     {
       "object": "VerticalScrollbar",
-      "reason": "scroll"
+      "reason": "scroll control"
     },
     {
       "object": "LayoutView #document",

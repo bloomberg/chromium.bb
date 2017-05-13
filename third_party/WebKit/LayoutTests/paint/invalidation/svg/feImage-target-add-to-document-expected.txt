@@ -21,7 +21,7 @@
     },
     {
       "object": "LayoutSVGResourceFilterPrimitive feImage",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGRect rect",

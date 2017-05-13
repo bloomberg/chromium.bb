@@ -174,15 +174,15 @@ TEST_P(PaintInvalidationTest, DelayedFullPaintInvalidation) {
 
   auto* target = GetLayoutObjectByElementId("target");
   target->SetShouldDoFullPaintInvalidationWithoutGeometryChange(
-      kPaintInvalidationDelayedFull);
-  EXPECT_EQ(kPaintInvalidationDelayedFull,
+      PaintInvalidationReason::kDelayedFull);
+  EXPECT_EQ(PaintInvalidationReason::kDelayedFull,
             target->FullPaintInvalidationReason());
   EXPECT_FALSE(target->NeedsPaintOffsetAndVisualRectUpdate());
 
   GetDocument().View()->SetTracksPaintInvalidations(true);
   GetDocument().View()->UpdateAllLifecyclePhases();
   EXPECT_EQ(nullptr, GetRasterInvalidationTracking());
-  EXPECT_EQ(kPaintInvalidationDelayedFull,
+  EXPECT_EQ(PaintInvalidationReason::kDelayedFull,
             target->FullPaintInvalidationReason());
   EXPECT_FALSE(target->NeedsPaintOffsetAndVisualRectUpdate());
   GetDocument().View()->SetTracksPaintInvalidations(false);
@@ -194,9 +194,10 @@ TEST_P(PaintInvalidationTest, DelayedFullPaintInvalidation) {
   const auto& raster_invalidations =
       GetRasterInvalidationTracking()->invalidations;
   ASSERT_EQ(1u, raster_invalidations.size());
-  EXPECT_EQ(kPaintInvalidationNone, target->FullPaintInvalidationReason());
+  EXPECT_EQ(PaintInvalidationReason::kNone,
+            target->FullPaintInvalidationReason());
   EXPECT_EQ(IntRect(0, 4000, 100, 100), raster_invalidations[0].rect);
-  EXPECT_EQ(kPaintInvalidationFull, raster_invalidations[0].reason);
+  EXPECT_EQ(PaintInvalidationReason::kFull, raster_invalidations[0].reason);
   EXPECT_FALSE(target->NeedsPaintOffsetAndVisualRectUpdate());
   GetDocument().View()->SetTracksPaintInvalidations(false);
 };

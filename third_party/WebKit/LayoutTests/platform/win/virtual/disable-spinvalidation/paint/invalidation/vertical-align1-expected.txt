@@ -9,32 +9,32 @@
         {
           "object": "LayoutBlockFlow BODY",
           "rect": [0, 0, 800, 105],
-          "reason": "forced by layout"
+          "reason": "geometry"
         },
         {
           "object": "LayoutBlockFlow DIV id='target'",
           "rect": [20, 0, 100, 100],
-          "reason": "forced by layout"
+          "reason": "geometry"
         },
         {
           "object": "LayoutBlockFlow DIV class='other'",
           "rect": [120, 80, 20, 20],
-          "reason": "forced by layout"
+          "reason": "geometry"
         },
         {
           "object": "LayoutBlockFlow DIV class='other'",
           "rect": [120, 33, 20, 20],
-          "reason": "forced by layout"
+          "reason": "geometry"
         },
         {
           "object": "LayoutBlockFlow DIV class='other'",
           "rect": [0, 80, 20, 20],
-          "reason": "forced by layout"
+          "reason": "geometry"
         },
         {
           "object": "LayoutBlockFlow DIV class='other'",
           "rect": [0, 33, 20, 20],
-          "reason": "forced by layout"
+          "reason": "geometry"
         }
       ]
     }
@@ -42,23 +42,23 @@
   "objectPaintInvalidations": [
     {
       "object": "LayoutBlockFlow BODY",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "RootInlineBox",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "LayoutBlockFlow DIV class='other'",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "LayoutBlockFlow DIV id='target'",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "LayoutBlockFlow DIV class='other'",
-      "reason": "forced by layout"
+      "reason": "geometry"
     }
   ]
 }

@@ -14,7 +14,7 @@
         {
           "object": "LayoutText #text",
           "rect": [19, 168, 130, 41],
-          "reason": "layoutObject removal"
+          "reason": "disappeared"
         }
       ]
     }
@@ -22,7 +22,7 @@
   "objectPaintInvalidations": [
     {
       "object": "LayoutText #text",
-      "reason": "layoutObject removal"
+      "reason": "disappeared"
     },
     {
       "object": "LayoutBlockFlow DIV id='stacked'",

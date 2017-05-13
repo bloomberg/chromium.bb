@@ -21,7 +21,7 @@
     },
     {
       "object": "LayoutBlockFlow (positioned) DIV id='child'",
-      "reason": "bounds change"
+      "reason": "geometry"
     }
   ]
 }

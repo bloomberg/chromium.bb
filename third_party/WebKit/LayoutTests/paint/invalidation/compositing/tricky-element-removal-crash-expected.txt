@@ -28,7 +28,7 @@
   "objectPaintInvalidations": [
     {
       "object": "LayoutBlockFlow DIV id='target'",
-      "reason": "layoutObject removal"
+      "reason": "disappeared"
     }
   ]
 }

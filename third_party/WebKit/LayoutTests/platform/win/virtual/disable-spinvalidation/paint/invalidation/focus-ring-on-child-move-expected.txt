@@ -14,12 +14,12 @@
         {
           "object": "LayoutBlockFlow (positioned) DIV id='child'",
           "rect": [300, 50, 20, 300],
-          "reason": "bounds change"
+          "reason": "geometry"
         },
         {
           "object": "LayoutBlockFlow (positioned) DIV id='child'",
           "rect": [150, 50, 20, 300],
-          "reason": "bounds change"
+          "reason": "geometry"
         }
       ]
     }
@@ -31,7 +31,7 @@
     },
     {
       "object": "LayoutBlockFlow (positioned) DIV id='child'",
-      "reason": "bounds change"
+      "reason": "geometry"
     }
   ]
 }

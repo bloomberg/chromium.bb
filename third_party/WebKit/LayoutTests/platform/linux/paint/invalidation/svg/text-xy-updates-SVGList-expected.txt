@@ -30,11 +30,11 @@
     },
     {
       "object": "LayoutSVGInlineText #text",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "InlineTextBox 'Passes, if text is at 200x20'",
-      "reason": "forced by layout"
+      "reason": "geometry"
     }
   ]
 }

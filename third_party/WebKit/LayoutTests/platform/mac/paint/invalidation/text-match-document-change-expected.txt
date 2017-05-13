@@ -14,12 +14,12 @@
         {
           "object": "LayoutText #text",
           "rect": [18, 128, 256, 36],
-          "reason": "layoutObject removal"
+          "reason": "disappeared"
         },
         {
           "object": "LayoutView #document",
           "rect": [295, 102, 15, 400],
-          "reason": "scroll"
+          "reason": "scroll control"
         }
       ]
     }
@@ -27,11 +27,11 @@
   "objectPaintInvalidations": [
     {
       "object": "LayoutText #text",
-      "reason": "layoutObject removal"
+      "reason": "disappeared"
     },
     {
       "object": "VerticalScrollbar",
-      "reason": "scroll"
+      "reason": "scroll control"
     },
     {
       "object": "LayoutBlockFlow DIV id='to-be-changed'",
@@ -43,11 +43,11 @@
     },
     {
       "object": "LayoutText #text",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "InlineTextBox 'After change'",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     }
   ]
 }

@@ -9,7 +9,7 @@
         {
           "object": "LayoutSVGContainer g id='content'",
           "rect": [0, 100, 800, 100],
-          "reason": "became visible"
+          "reason": "appeared"
         },
         {
           "object": "LayoutSVGRect rect",
@@ -22,11 +22,11 @@
   "objectPaintInvalidations": [
     {
       "object": "LayoutSVGContainer g id='content'",
-      "reason": "became visible"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGRect rect",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGRect rect",
@@ -34,11 +34,11 @@
     },
     {
       "object": "LayoutSVGResourceMasker mask id='dynMask'",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGRect rect",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     }
   ]
 }

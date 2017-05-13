@@ -9,12 +9,12 @@
         {
           "object": "LayoutBlockFlow DIV id='container'",
           "rect": [8, 8, 230, 130],
-          "reason": "border box change"
+          "reason": "geometry"
         },
         {
           "object": "LayoutBlockFlow DIV",
           "rect": [23, 23, 100, 100],
-          "reason": "layoutObject insertion"
+          "reason": "appeared"
         }
       ]
     }
@@ -22,11 +22,11 @@
   "objectPaintInvalidations": [
     {
       "object": "LayoutBlockFlow DIV id='container'",
-      "reason": "border box change"
+      "reason": "geometry"
     },
     {
       "object": "LayoutBlockFlow DIV",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     }
   ]
 }

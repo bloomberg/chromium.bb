@@ -9,7 +9,7 @@
         {
           "object": "LayoutSVGRect rect",
           "rect": [0, 0, 800, 300],
-          "reason": "layoutObject insertion"
+          "reason": "appeared"
         },
         {
           "object": "LayoutSVGRect rect",
@@ -26,11 +26,11 @@
     },
     {
       "object": "LayoutSVGResourceMasker mask id='dynMask'",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGRect rect",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     }
   ]
 }

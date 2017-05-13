@@ -9,47 +9,47 @@
         {
           "object": "LayoutSVGInlineText #text",
           "rect": [10, 63, 307, 377],
-          "reason": "forced by layout"
+          "reason": "geometry"
         },
         {
           "object": "LayoutSVGInlineText #text",
           "rect": [10, 63, 307, 377],
-          "reason": "forced by layout"
+          "reason": "geometry"
         },
         {
           "object": "LayoutSVGInlineText #text",
           "rect": [10, 63, 307, 377],
-          "reason": "forced by layout"
+          "reason": "geometry"
         },
         {
           "object": "LayoutSVGInlineText #text",
           "rect": [10, 63, 307, 377],
-          "reason": "forced by layout"
+          "reason": "geometry"
         },
         {
           "object": "LayoutSVGInlineText #text",
           "rect": [10, 63, 307, 377],
-          "reason": "forced by layout"
+          "reason": "geometry"
         },
         {
           "object": "LayoutSVGInlineText #text",
           "rect": [10, 63, 307, 377],
-          "reason": "layoutObject insertion"
+          "reason": "appeared"
         },
         {
           "object": "LayoutSVGTSpan tspan",
           "rect": [10, 63, 307, 377],
-          "reason": "forced by layout"
+          "reason": "geometry"
         },
         {
           "object": "LayoutSVGTSpan tspan",
           "rect": [10, 63, 307, 377],
-          "reason": "forced by layout"
+          "reason": "geometry"
         },
         {
           "object": "LayoutSVGTSpan tspan id='modify'",
           "rect": [10, 63, 307, 377],
-          "reason": "forced by layout"
+          "reason": "geometry"
         },
         {
           "object": "LayoutSVGText text",
@@ -70,75 +70,75 @@
     },
     {
       "object": "LayoutSVGTSpan tspan id='modify'",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "InlineFlowBox",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "LayoutSVGInlineText #text",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "InlineTextBox 'PA'",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "LayoutSVGInlineText #text",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "InlineTextBox 'SS'",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGInlineText #text",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "InlineTextBox ' '",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "LayoutSVGTSpan tspan",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "InlineFlowBox",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "LayoutSVGInlineText #text",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "InlineTextBox 'PASS'",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "LayoutSVGInlineText #text",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "InlineTextBox ' '",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "LayoutSVGTSpan tspan",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "InlineFlowBox",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "LayoutSVGInlineText #text",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "InlineTextBox 'PASS'",
-      "reason": "forced by layout"
+      "reason": "geometry"
     }
   ]
 }

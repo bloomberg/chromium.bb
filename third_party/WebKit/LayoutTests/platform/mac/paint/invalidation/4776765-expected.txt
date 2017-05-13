@@ -9,7 +9,7 @@
         {
           "object": "LayoutBlockFlow DIV",
           "rect": [3, 37, 794, 64],
-          "reason": "border box change"
+          "reason": "geometry"
         }
       ]
     }
@@ -17,7 +17,7 @@
   "objectPaintInvalidations": [
     {
       "object": "LayoutBlockFlow DIV",
-      "reason": "border box change"
+      "reason": "geometry"
     },
     {
       "object": "Caret",
@@ -25,11 +25,11 @@
     },
     {
       "object": "LayoutBlockFlow DIV id='div'",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "RootInlineBox",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "Caret",
@@ -37,11 +37,11 @@
     },
     {
       "object": "LayoutBR BR",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "InlineTextBox '\n'",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     }
   ]
 }

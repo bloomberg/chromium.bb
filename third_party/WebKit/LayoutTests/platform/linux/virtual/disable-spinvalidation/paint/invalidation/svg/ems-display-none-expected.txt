@@ -9,37 +9,37 @@
         {
           "object": "LayoutSVGContainer g",
           "rect": [50, 54, 572, 86],
-          "reason": "became visible"
+          "reason": "appeared"
         },
         {
           "object": "LayoutSVGInlineText #text",
           "rect": [50, 54, 572, 86],
-          "reason": "layoutObject insertion"
+          "reason": "appeared"
         },
         {
           "object": "LayoutSVGInlineText #text",
           "rect": [50, 54, 572, 86],
-          "reason": "layoutObject insertion"
+          "reason": "appeared"
         },
         {
           "object": "LayoutSVGInlineText #text",
           "rect": [50, 54, 572, 86],
-          "reason": "layoutObject insertion"
+          "reason": "appeared"
         },
         {
           "object": "LayoutSVGTSpan tspan",
           "rect": [50, 54, 572, 86],
-          "reason": "layoutObject insertion"
+          "reason": "appeared"
         },
         {
           "object": "LayoutSVGTSpan tspan id='tspan'",
           "rect": [50, 54, 572, 86],
-          "reason": "layoutObject insertion"
+          "reason": "appeared"
         },
         {
           "object": "LayoutSVGText text id='text'",
           "rect": [50, 54, 572, 86],
-          "reason": "layoutObject insertion"
+          "reason": "appeared"
         }
       ]
     }
@@ -47,55 +47,55 @@
   "objectPaintInvalidations": [
     {
       "object": "LayoutSVGContainer g",
-      "reason": "became visible"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGText text id='text'",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "RootInlineBox",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGTSpan tspan id='tspan'",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "InlineFlowBox",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGInlineText #text",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "InlineTextBox 'Two lines of text should be visible.'",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGInlineText #text",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "InlineTextBox ' '",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGTSpan tspan",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "InlineFlowBox",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGInlineText #text",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "InlineTextBox 'Two lines of text should be visible.'",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     }
   ]
 }

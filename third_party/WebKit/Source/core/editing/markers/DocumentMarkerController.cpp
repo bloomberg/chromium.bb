@@ -229,7 +229,7 @@ void DocumentMarkerController::AddMarker(Node* node,
   // repaint the affected node
   if (node->GetLayoutObject()) {
     node->GetLayoutObject()->SetShouldDoFullPaintInvalidation(
-        kPaintInvalidationDocumentMarkerChange);
+        PaintInvalidationReason::kDocumentMarker);
   }
 }
 
@@ -272,7 +272,7 @@ void DocumentMarkerController::MoveMarkers(Node* src_node,
   // repaint the affected node
   if (doc_dirty && dst_node->GetLayoutObject()) {
     dst_node->GetLayoutObject()->SetShouldDoFullPaintInvalidation(
-        kPaintInvalidationDocumentMarkerChange);
+        PaintInvalidationReason::kDocumentMarker);
   }
 }
 
@@ -323,7 +323,7 @@ void DocumentMarkerController::RemoveMarkersInternal(
   // repaint the affected node
   if (doc_dirty && node->GetLayoutObject()) {
     node->GetLayoutObject()->SetShouldDoFullPaintInvalidation(
-        kPaintInvalidationDocumentMarkerChange);
+        PaintInvalidationReason::kDocumentMarker);
   }
 }
 
@@ -576,7 +576,7 @@ void DocumentMarkerController::RemoveMarkersFromList(
     const Node& node = *iterator->key;
     if (LayoutObject* layout_object = node.GetLayoutObject()) {
       layout_object->SetShouldDoFullPaintInvalidation(
-          kPaintInvalidationDocumentMarkerChange);
+          PaintInvalidationReason::kDocumentMarker);
     }
     InvalidatePaintForTickmarks(node);
   }
@@ -609,7 +609,7 @@ void DocumentMarkerController::RepaintMarkers(
       // cause the node to be redrawn
       if (LayoutObject* layout_object = node->GetLayoutObject()) {
         layout_object->SetShouldDoFullPaintInvalidation(
-            kPaintInvalidationDocumentMarkerChange);
+            PaintInvalidationReason::kDocumentMarker);
         break;
       }
     }
@@ -680,7 +680,7 @@ bool DocumentMarkerController::SetMarkersActive(Node* node,
   // repaint the affected node
   if (doc_dirty && node->GetLayoutObject()) {
     node->GetLayoutObject()->SetShouldDoFullPaintInvalidation(
-        kPaintInvalidationDocumentMarkerChange);
+        PaintInvalidationReason::kDocumentMarker);
   }
   return doc_dirty;
 }

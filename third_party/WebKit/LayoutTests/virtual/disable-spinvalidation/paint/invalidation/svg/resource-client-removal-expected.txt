@@ -9,52 +9,52 @@
         {
           "object": "LayoutSVGContainer g",
           "rect": [0, 0, 100, 100],
-          "reason": "layoutObject insertion"
+          "reason": "appeared"
         },
         {
           "object": "LayoutSVGContainer g",
           "rect": [0, 0, 100, 100],
-          "reason": "layoutObject insertion"
+          "reason": "appeared"
         },
         {
           "object": "LayoutSVGContainer g",
           "rect": [0, 0, 100, 100],
-          "reason": "layoutObject insertion"
+          "reason": "appeared"
         },
         {
           "object": "LayoutSVGContainer g",
           "rect": [0, 0, 100, 100],
-          "reason": "layoutObject insertion"
+          "reason": "appeared"
         },
         {
           "object": "LayoutSVGContainer g",
           "rect": [0, 0, 100, 100],
-          "reason": "layoutObject insertion"
+          "reason": "appeared"
         },
         {
           "object": "LayoutSVGContainer g",
           "rect": [0, 0, 100, 100],
-          "reason": "layoutObject removal"
+          "reason": "disappeared"
         },
         {
           "object": "LayoutSVGContainer g",
           "rect": [0, 0, 100, 100],
-          "reason": "layoutObject removal"
+          "reason": "disappeared"
         },
         {
           "object": "LayoutSVGContainer g",
           "rect": [0, 0, 100, 100],
-          "reason": "layoutObject removal"
+          "reason": "disappeared"
         },
         {
           "object": "LayoutSVGContainer g",
           "rect": [0, 0, 100, 100],
-          "reason": "layoutObject removal"
+          "reason": "disappeared"
         },
         {
           "object": "LayoutSVGContainer g",
           "rect": [0, 0, 100, 100],
-          "reason": "layoutObject removal"
+          "reason": "disappeared"
         },
         {
           "object": "LayoutSVGContainer g id='inneruse'",
@@ -84,102 +84,102 @@
         {
           "object": "LayoutSVGContainer g id='inneruse'",
           "rect": [0, 0, 100, 100],
-          "reason": "layoutObject insertion"
+          "reason": "appeared"
         },
         {
           "object": "LayoutSVGContainer g id='inneruse'",
           "rect": [0, 0, 100, 100],
-          "reason": "layoutObject insertion"
+          "reason": "appeared"
         },
         {
           "object": "LayoutSVGContainer g id='inneruse'",
           "rect": [0, 0, 100, 100],
-          "reason": "layoutObject insertion"
+          "reason": "appeared"
         },
         {
           "object": "LayoutSVGContainer g id='inneruse'",
           "rect": [0, 0, 100, 100],
-          "reason": "layoutObject insertion"
+          "reason": "appeared"
         },
         {
           "object": "LayoutSVGContainer g id='inneruse'",
           "rect": [0, 0, 100, 100],
-          "reason": "layoutObject insertion"
+          "reason": "appeared"
         },
         {
           "object": "LayoutSVGContainer g id='inneruse'",
           "rect": [0, 0, 100, 100],
-          "reason": "layoutObject removal"
+          "reason": "disappeared"
         },
         {
           "object": "LayoutSVGContainer g id='inneruse'",
           "rect": [0, 0, 100, 100],
-          "reason": "layoutObject removal"
+          "reason": "disappeared"
         },
         {
           "object": "LayoutSVGContainer g id='inneruse'",
           "rect": [0, 0, 100, 100],
-          "reason": "layoutObject removal"
+          "reason": "disappeared"
         },
         {
           "object": "LayoutSVGContainer g id='inneruse'",
           "rect": [0, 0, 100, 100],
-          "reason": "layoutObject removal"
+          "reason": "disappeared"
         },
         {
           "object": "LayoutSVGContainer g id='inneruse'",
           "rect": [0, 0, 100, 100],
-          "reason": "layoutObject removal"
+          "reason": "disappeared"
         },
         {
           "object": "LayoutSVGPath path id='hp'",
           "rect": [0, 0, 100, 100],
-          "reason": "layoutObject insertion"
+          "reason": "appeared"
         },
         {
           "object": "LayoutSVGPath path id='hp'",
           "rect": [0, 0, 100, 100],
-          "reason": "layoutObject insertion"
+          "reason": "appeared"
         },
         {
           "object": "LayoutSVGPath path id='hp'",
           "rect": [0, 0, 100, 100],
-          "reason": "layoutObject insertion"
+          "reason": "appeared"
         },
         {
           "object": "LayoutSVGPath path id='hp'",
           "rect": [0, 0, 100, 100],
-          "reason": "layoutObject insertion"
+          "reason": "appeared"
         },
         {
           "object": "LayoutSVGPath path id='hp'",
           "rect": [0, 0, 100, 100],
-          "reason": "layoutObject insertion"
+          "reason": "appeared"
         },
         {
           "object": "LayoutSVGPath path id='hp'",
           "rect": [0, 0, 100, 100],
-          "reason": "layoutObject removal"
+          "reason": "disappeared"
         },
         {
           "object": "LayoutSVGPath path id='hp'",
           "rect": [0, 0, 100, 100],
-          "reason": "layoutObject removal"
+          "reason": "disappeared"
         },
         {
           "object": "LayoutSVGPath path id='hp'",
           "rect": [0, 0, 100, 100],
-          "reason": "layoutObject removal"
+          "reason": "disappeared"
         },
         {
           "object": "LayoutSVGPath path id='hp'",
           "rect": [0, 0, 100, 100],
-          "reason": "layoutObject removal"
+          "reason": "disappeared"
         },
         {
           "object": "LayoutSVGPath path id='hp'",
           "rect": [0, 0, 100, 100],
-          "reason": "layoutObject removal"
+          "reason": "disappeared"
         },
         {
           "object": "LayoutSVGPath path id='hp'",
@@ -212,15 +212,15 @@
   "objectPaintInvalidations": [
     {
       "object": "LayoutSVGPath path id='hp'",
-      "reason": "layoutObject removal"
+      "reason": "disappeared"
     },
     {
       "object": "LayoutSVGContainer g",
-      "reason": "layoutObject removal"
+      "reason": "disappeared"
     },
     {
       "object": "LayoutSVGContainer g id='inneruse'",
-      "reason": "layoutObject removal"
+      "reason": "disappeared"
     },
     {
       "object": "LayoutSVGGradientStop stop id='offset'",
@@ -236,27 +236,27 @@
     },
     {
       "object": "LayoutSVGContainer g id='inneruse'",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGContainer g",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGPath path id='hp'",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGPath path id='hp'",
-      "reason": "layoutObject removal"
+      "reason": "disappeared"
     },
     {
       "object": "LayoutSVGContainer g",
-      "reason": "layoutObject removal"
+      "reason": "disappeared"
     },
     {
       "object": "LayoutSVGContainer g id='inneruse'",
-      "reason": "layoutObject removal"
+      "reason": "disappeared"
     },
     {
       "object": "LayoutSVGGradientStop stop id='offset'",
@@ -272,27 +272,27 @@
     },
     {
       "object": "LayoutSVGContainer g id='inneruse'",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGContainer g",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGPath path id='hp'",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGPath path id='hp'",
-      "reason": "layoutObject removal"
+      "reason": "disappeared"
     },
     {
       "object": "LayoutSVGContainer g",
-      "reason": "layoutObject removal"
+      "reason": "disappeared"
     },
     {
       "object": "LayoutSVGContainer g id='inneruse'",
-      "reason": "layoutObject removal"
+      "reason": "disappeared"
     },
     {
       "object": "LayoutSVGGradientStop stop id='offset'",
@@ -308,27 +308,27 @@
     },
     {
       "object": "LayoutSVGContainer g id='inneruse'",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGContainer g",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGPath path id='hp'",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGPath path id='hp'",
-      "reason": "layoutObject removal"
+      "reason": "disappeared"
     },
     {
       "object": "LayoutSVGContainer g",
-      "reason": "layoutObject removal"
+      "reason": "disappeared"
     },
     {
       "object": "LayoutSVGContainer g id='inneruse'",
-      "reason": "layoutObject removal"
+      "reason": "disappeared"
     },
     {
       "object": "LayoutSVGGradientStop stop id='offset'",
@@ -344,27 +344,27 @@
     },
     {
       "object": "LayoutSVGContainer g id='inneruse'",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGContainer g",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGPath path id='hp'",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGPath path id='hp'",
-      "reason": "layoutObject removal"
+      "reason": "disappeared"
     },
     {
       "object": "LayoutSVGContainer g",
-      "reason": "layoutObject removal"
+      "reason": "disappeared"
     },
     {
       "object": "LayoutSVGContainer g id='inneruse'",
-      "reason": "layoutObject removal"
+      "reason": "disappeared"
     },
     {
       "object": "LayoutSVGGradientStop stop id='offset'",
@@ -380,15 +380,15 @@
     },
     {
       "object": "LayoutSVGContainer g id='inneruse'",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGContainer g",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGPath path id='hp'",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     }
   ]
 }

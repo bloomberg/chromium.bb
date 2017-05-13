@@ -773,7 +773,7 @@ void PaintController::TrackRasterInvalidation(const DisplayItemClient& client,
     // The client should be either in new list or in old list.
     DCHECK(it !=
            raster_invalidation_tracking_info_->old_client_debug_names.end());
-    info.reason = kPaintInvalidationLayoutObjectRemoval;
+    info.reason = PaintInvalidationReason::kDisappeared;
   } else {
     info.reason = client.GetPaintInvalidationReason();
   }

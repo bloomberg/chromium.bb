@@ -9,7 +9,7 @@
         {
           "object": "LayoutBlockFlow (positioned) DIV id='scrollable'",
           "rect": [18, 145, 285, 15],
-          "reason": "scroll"
+          "reason": "scroll control"
         },
         {
           "object": "LayoutBlockFlow (positioned) DIV id='scrollable'",
@@ -19,27 +19,27 @@
         {
           "object": "LayoutBlockFlow (positioned) DIV id='scrollable'",
           "rect": [18, 145, 85, 15],
-          "reason": "scroll"
+          "reason": "scroll control"
         },
         {
           "object": "LayoutBlockFlow (positioned) DIV id='scrollable'",
           "rect": [303, 60, 15, 85],
-          "reason": "scroll"
+          "reason": "scroll control"
         },
         {
           "object": "LayoutBlockFlow (positioned) DIV id='scrollable'",
           "rect": [103, 60, 15, 85],
-          "reason": "scroll"
+          "reason": "scroll control"
         },
         {
           "object": "LayoutBlockFlow (positioned) DIV id='scrollable'",
           "rect": [303, 145, 15, 15],
-          "reason": "scroll"
+          "reason": "scroll control"
         },
         {
           "object": "LayoutBlockFlow (positioned) DIV id='scrollable'",
           "rect": [103, 145, 15, 15],
-          "reason": "scroll"
+          "reason": "scroll control"
         }
       ]
     }
@@ -51,15 +51,15 @@
     },
     {
       "object": "LayoutBlockFlow (positioned) DIV id='scrollable'",
-      "reason": "scroll"
+      "reason": "geometry"
     },
     {
       "object": "HorizontalScrollbar",
-      "reason": "scroll"
+      "reason": "scroll control"
     },
     {
       "object": "VerticalScrollbar",
-      "reason": "scroll"
+      "reason": "scroll control"
     }
   ]
 }

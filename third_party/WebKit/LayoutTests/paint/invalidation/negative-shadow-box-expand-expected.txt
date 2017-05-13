@@ -9,7 +9,7 @@
         {
           "object": "LayoutBlockFlow DIV id='outer'",
           "rect": [100, 60, 640, 240],
-          "reason": "border box change"
+          "reason": "geometry"
         }
       ]
     }
@@ -17,11 +17,11 @@
   "objectPaintInvalidations": [
     {
       "object": "LayoutBlockFlow DIV id='outer'",
-      "reason": "border box change"
+      "reason": "geometry"
     },
     {
       "object": "LayoutBlockFlow DIV id='inner2'",
-      "reason": "layoutObject insertion"
+      "reason": "appeared"
     }
   ]
 }

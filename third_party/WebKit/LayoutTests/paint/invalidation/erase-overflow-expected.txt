@@ -9,7 +9,7 @@
         {
           "object": "LayoutBlockFlow DIV class='square'",
           "rect": [8, 108, 100, 100],
-          "reason": "became invisible"
+          "reason": "disappeared"
         },
         {
           "object": "LayoutBlockFlow DIV id='target' class='square'",
@@ -26,11 +26,11 @@
     },
     {
       "object": "LayoutBlockFlow DIV class='square'",
-      "reason": "location change"
+      "reason": "geometry"
     },
     {
       "object": "LayoutBlockFlow DIV class='square'",
-      "reason": "became invisible"
+      "reason": "disappeared"
     }
   ]
 }

@@ -9,7 +9,7 @@
         {
           "object": "LayoutText #text",
           "rect": [-8, 7, 48, 34],
-          "reason": "bounds change"
+          "reason": "geometry"
         }
       ]
     }
@@ -29,15 +29,15 @@
     },
     {
       "object": "LayoutText #text",
-      "reason": "bounds change"
+      "reason": "geometry"
     },
     {
       "object": "InlineTextBox 'xx'",
-      "reason": "bounds change"
+      "reason": "geometry"
     },
     {
       "object": "InlineTextBox 'y'",
-      "reason": "bounds change"
+      "reason": "geometry"
     }
   ]
 }

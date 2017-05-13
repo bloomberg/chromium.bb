@@ -18,8 +18,8 @@ PaintInvalidationReason HTMLCanvasPaintInvalidator::InvalidatePaint() {
   HTMLCanvasElement* element = toHTMLCanvasElement(html_canvas_.GetNode());
   if (element->IsDirty()) {
     element->DoDeferredPaintInvalidation();
-    if (reason < kPaintInvalidationRectangle)
-      reason = kPaintInvalidationRectangle;
+    if (reason < PaintInvalidationReason::kRectangle)
+      reason = PaintInvalidationReason::kRectangle;
   }
 
   return reason;

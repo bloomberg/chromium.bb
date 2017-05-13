@@ -14,22 +14,22 @@
         {
           "object": "LayoutBlockFlow (relative positioned) P",
           "rect": [8, 146, 784, 18],
-          "reason": "forced by layout"
+          "reason": "geometry"
         },
         {
           "object": "LayoutBlockFlow (relative positioned) P",
           "rect": [8, 130, 784, 18],
-          "reason": "forced by layout"
+          "reason": "geometry"
         },
         {
           "object": "LayoutText #text",
           "rect": [8, 146, 70, 18],
-          "reason": "forced by layout"
+          "reason": "geometry"
         },
         {
           "object": "LayoutText #text",
           "rect": [8, 130, 70, 18],
-          "reason": "forced by layout"
+          "reason": "geometry"
         }
       ]
     }
@@ -41,19 +41,19 @@
     },
     {
       "object": "LayoutBlockFlow (relative positioned) P",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "RootInlineBox",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "LayoutText #text",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "InlineTextBox 'SUCCESS'",
-      "reason": "forced by layout"
+      "reason": "geometry"
     }
   ]
 }

@@ -9,7 +9,7 @@
         {
           "object": "LayoutBlockFlow (positioned) DIV id='target'",
           "rect": [8, 58, 100, 100],
-          "reason": "layoutObject removal"
+          "reason": "disappeared"
         }
       ]
     }
@@ -17,7 +17,7 @@
   "objectPaintInvalidations": [
     {
       "object": "LayoutBlockFlow (positioned) DIV id='target'",
-      "reason": "layoutObject removal"
+      "reason": "disappeared"
     }
   ]
 }

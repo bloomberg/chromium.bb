@@ -118,7 +118,7 @@ void BoxPainter::PaintBoxDecorationBackgroundWithRect(
       // LayoutObjectDrawingRecorder but we have to use DrawingRecorder as we
       // may use the scrolling contents layer as DisplayItemClient below.
       || layout_box_.FullPaintInvalidationReason() ==
-             kPaintInvalidationDelayedFull) {
+             PaintInvalidationReason::kDelayedFull) {
     cache_skipper.emplace(paint_info.context);
   }
 

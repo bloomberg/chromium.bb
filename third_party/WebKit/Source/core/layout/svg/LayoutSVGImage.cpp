@@ -106,7 +106,7 @@ bool LayoutSVGImage::UpdateBoundingBox() {
     object_bounding_box_.SetSize(CalculateObjectSize());
 
   if (old_object_bounding_box != object_bounding_box_) {
-    SetShouldDoFullPaintInvalidation();
+    SetShouldDoFullPaintInvalidation(PaintInvalidationReason::kImage);
     needs_boundaries_update_ = true;
   }
 
@@ -199,7 +199,7 @@ void LayoutSVGImage::ImageChanged(WrappedImagePtr, const IntRect*) {
       SetNeedsLayout(LayoutInvalidationReason::kSizeChanged);
   }
 
-  SetShouldDoFullPaintInvalidation();
+  SetShouldDoFullPaintInvalidation(PaintInvalidationReason::kImage);
 }
 
 void LayoutSVGImage::AddOutlineRects(Vector<LayoutRect>& rects,

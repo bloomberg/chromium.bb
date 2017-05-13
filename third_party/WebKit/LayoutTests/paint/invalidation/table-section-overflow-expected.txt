@@ -9,22 +9,22 @@
         {
           "object": "LayoutBlockFlow DIV",
           "rect": [33, 58, 100, 100],
-          "reason": "bounds change"
+          "reason": "geometry"
         },
         {
           "object": "LayoutBlockFlow DIV",
           "rect": [33, 8, 100, 100],
-          "reason": "bounds change"
+          "reason": "geometry"
         },
         {
           "object": "LayoutTableCell TD",
           "rect": [58, 58, 50, 100],
-          "reason": "bounds change"
+          "reason": "geometry"
         },
         {
           "object": "LayoutTableCell TD",
           "rect": [58, 8, 50, 100],
-          "reason": "bounds change"
+          "reason": "geometry"
         }
       ]
     }
@@ -32,23 +32,23 @@
   "objectPaintInvalidations": [
     {
       "object": "LayoutTableSection TBODY",
-      "reason": "location change"
+      "reason": "geometry"
     },
     {
       "object": "LayoutTableRow TR",
-      "reason": "location change"
+      "reason": "geometry"
     },
     {
       "object": "LayoutTableCell TD",
-      "reason": "bounds change"
+      "reason": "geometry"
     },
     {
       "object": "LayoutBlockFlow DIV",
-      "reason": "location change"
+      "reason": "geometry"
     },
     {
       "object": "LayoutBlockFlow DIV",
-      "reason": "bounds change"
+      "reason": "geometry"
     }
   ]
 }

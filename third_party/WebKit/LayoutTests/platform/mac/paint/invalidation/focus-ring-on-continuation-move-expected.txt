@@ -19,12 +19,12 @@
         {
           "object": "LayoutBlockFlow (relative positioned) DIV id='block'",
           "rect": [208, 232, 100, 100],
-          "reason": "bounds change"
+          "reason": "geometry"
         },
         {
           "object": "LayoutBlockFlow (relative positioned) DIV id='block'",
           "rect": [8, 232, 100, 100],
-          "reason": "bounds change"
+          "reason": "geometry"
         }
       ]
     }
@@ -36,7 +36,7 @@
     },
     {
       "object": "LayoutBlockFlow (relative positioned) DIV id='block'",
-      "reason": "bounds change"
+      "reason": "geometry"
     }
   ]
 }

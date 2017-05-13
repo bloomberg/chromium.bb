@@ -14,7 +14,7 @@
         {
           "object": "LayoutTableCell TD",
           "rect": [8, 8, 60, 54],
-          "reason": "location change"
+          "reason": "geometry"
         }
       ]
     }
@@ -30,11 +30,11 @@
     },
     {
       "object": "LayoutTableRow TR",
-      "reason": "location change"
+      "reason": "geometry"
     },
     {
       "object": "LayoutTableCell TD",
-      "reason": "location change"
+      "reason": "geometry"
     }
   ]
 }

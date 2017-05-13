@@ -29,12 +29,12 @@
         {
           "object": "LayoutSVGContainer g",
           "rect": [150, 50, 100, 100],
-          "reason": "bounds change"
+          "reason": "geometry"
         },
         {
           "object": "LayoutSVGContainer g",
           "rect": [50, 150, 100, 100],
-          "reason": "bounds change"
+          "reason": "geometry"
         }
       ]
     }
@@ -42,7 +42,7 @@
   "objectPaintInvalidations": [
     {
       "object": "LayoutSVGContainer g",
-      "reason": "bounds change"
+      "reason": "geometry"
     },
     {
       "object": "LayoutSVGRect rect id='masker'",
@@ -50,7 +50,7 @@
     },
     {
       "object": "LayoutSVGContainer g",
-      "reason": "bounds change"
+      "reason": "geometry"
     },
     {
       "object": "LayoutSVGRect rect id='clipper'",

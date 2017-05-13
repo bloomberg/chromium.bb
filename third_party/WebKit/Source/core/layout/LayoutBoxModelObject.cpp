@@ -402,10 +402,11 @@ void LayoutBoxModelObject::StyleDidChange(StyleDifference diff,
         Style()->GetPosition() == EPosition::kFixed;
     bool old_style_is_fixed_position =
         old_style->GetPosition() == EPosition::kFixed;
-    if (new_style_is_fixed_position != old_style_is_fixed_position)
+    if (new_style_is_fixed_position != old_style_is_fixed_position) {
       ObjectPaintInvalidator(*this)
           .InvalidateDisplayItemClientsIncludingNonCompositingDescendants(
-              kPaintInvalidationStyleChange);
+              PaintInvalidationReason::kStyle);
+    }
   }
 
   // The used style for body background may change due to computed style change

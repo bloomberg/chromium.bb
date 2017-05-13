@@ -9,32 +9,32 @@
         {
           "object": "LayoutBlockFlow DIV id='keep' class='item'",
           "rect": [408, 84, 100, 100],
-          "reason": "bounds change"
+          "reason": "geometry"
         },
         {
           "object": "LayoutBlockFlow DIV id='to_remove' class='item'",
           "rect": [408, 84, 100, 100],
-          "reason": "layoutObject removal"
+          "reason": "disappeared"
         },
         {
           "object": "LayoutBlockFlow DIV id='keep' class='item'",
           "rect": [208, 84, 100, 100],
-          "reason": "bounds change"
+          "reason": "geometry"
         },
         {
           "object": "LayoutText #text",
           "rect": [408, 84, 4, 18],
-          "reason": "bounds change"
+          "reason": "geometry"
         },
         {
           "object": "LayoutText #text",
           "rect": [408, 84, 4, 18],
-          "reason": "layoutObject removal"
+          "reason": "disappeared"
         },
         {
           "object": "LayoutText #text",
           "rect": [208, 84, 4, 18],
-          "reason": "bounds change"
+          "reason": "geometry"
         }
       ]
     }
@@ -42,43 +42,43 @@
   "objectPaintInvalidations": [
     {
       "object": "LayoutText #text",
-      "reason": "layoutObject removal"
+      "reason": "disappeared"
     },
     {
       "object": "LayoutBlockFlow DIV id='to_remove' class='item'",
-      "reason": "layoutObject removal"
+      "reason": "disappeared"
     },
     {
       "object": "LayoutBlockFlow (relative positioned) (floating) DIV id='to_remove_inner' class='inner'",
-      "reason": "layoutObject removal"
+      "reason": "disappeared"
     },
     {
       "object": "LayoutBlockFlow (relative positioned) (floating) DIV id='node' class='outer'",
-      "reason": "layoutObject removal"
+      "reason": "disappeared"
     },
     {
       "object": "LayoutBlockFlow (positioned) DIV class='abs_pos'",
-      "reason": "location change"
+      "reason": "geometry"
     },
     {
       "object": "LayoutBlockFlow (relative positioned) (floating) DIV id='keep_inner' class='inner'",
-      "reason": "location change"
+      "reason": "geometry"
     },
     {
       "object": "LayoutBlockFlow DIV id='keep' class='item'",
-      "reason": "bounds change"
+      "reason": "geometry"
     },
     {
       "object": "RootInlineBox",
-      "reason": "bounds change"
+      "reason": "geometry"
     },
     {
       "object": "LayoutText #text",
-      "reason": "bounds change"
+      "reason": "geometry"
     },
     {
       "object": "InlineTextBox '\u00A0'",
-      "reason": "bounds change"
+      "reason": "geometry"
     }
   ]
 }

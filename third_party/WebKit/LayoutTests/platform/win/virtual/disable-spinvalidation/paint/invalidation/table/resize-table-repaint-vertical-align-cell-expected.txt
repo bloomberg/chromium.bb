@@ -9,17 +9,17 @@
         {
           "object": "LayoutTableCell TD",
           "rect": [2, 52, 102, 476],
-          "reason": "forced by layout"
+          "reason": "geometry"
         },
         {
           "object": "LayoutText #text",
           "rect": [3, 280, 59, 19],
-          "reason": "forced by layout"
+          "reason": "geometry"
         },
         {
           "object": "LayoutText #text",
           "rect": [3, 90, 59, 19],
-          "reason": "forced by layout"
+          "reason": "geometry"
         }
       ]
     }
@@ -27,19 +27,19 @@
   "objectPaintInvalidations": [
     {
       "object": "LayoutTableCell TD",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "RootInlineBox",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "LayoutText #text",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "InlineTextBox 'MIDDLE'",
-      "reason": "forced by layout"
+      "reason": "geometry"
     }
   ]
 }

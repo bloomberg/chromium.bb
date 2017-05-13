@@ -9,7 +9,7 @@
         {
           "object": "LayoutSVGInlineText #text",
           "rect": [200, 185, 251, 19],
-          "reason": "forced by layout"
+          "reason": "geometry"
         },
         {
           "object": "LayoutSVGTSpan tspan id='ts'",
@@ -19,12 +19,12 @@
         {
           "object": "LayoutSVGText text",
           "rect": [200, 185, 251, 19],
-          "reason": "forced by layout"
+          "reason": "geometry"
         },
         {
           "object": "LayoutSVGInlineText #text",
           "rect": [20, 5, 251, 19],
-          "reason": "forced by layout"
+          "reason": "geometry"
         },
         {
           "object": "LayoutSVGTSpan tspan id='ts'",
@@ -34,7 +34,7 @@
         {
           "object": "LayoutSVGText text",
           "rect": [20, 5, 251, 19],
-          "reason": "forced by layout"
+          "reason": "geometry"
         }
       ]
     }
@@ -42,11 +42,11 @@
   "objectPaintInvalidations": [
     {
       "object": "LayoutSVGText text",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "RootInlineBox",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "LayoutSVGTSpan tspan id='ts'",
@@ -58,11 +58,11 @@
     },
     {
       "object": "LayoutSVGInlineText #text",
-      "reason": "forced by layout"
+      "reason": "geometry"
     },
     {
       "object": "InlineTextBox 'This text should be at visible at 200,200'",
-      "reason": "forced by layout"
+      "reason": "geometry"
     }
   ]
 }

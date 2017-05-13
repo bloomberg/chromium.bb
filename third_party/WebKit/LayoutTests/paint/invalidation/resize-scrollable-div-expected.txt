@@ -14,7 +14,7 @@
         {
           "object": "LayoutBlockFlow DIV id='div'",
           "rect": [8, 393, 285, 15],
-          "reason": "scroll"
+          "reason": "scroll control"
         },
         {
           "object": "LayoutBlockFlow DIV id='div'",
@@ -24,27 +24,27 @@
         {
           "object": "LayoutBlockFlow DIV id='div'",
           "rect": [8, 193, 85, 15],
-          "reason": "scroll"
+          "reason": "scroll control"
         },
         {
           "object": "LayoutBlockFlow DIV id='div'",
           "rect": [293, 108, 15, 285],
-          "reason": "scroll"
+          "reason": "scroll control"
         },
         {
           "object": "LayoutBlockFlow DIV id='div'",
           "rect": [93, 108, 15, 85],
-          "reason": "scroll"
+          "reason": "scroll control"
         },
         {
           "object": "LayoutBlockFlow DIV id='div'",
           "rect": [293, 393, 15, 15],
-          "reason": "scroll"
+          "reason": "scroll control"
         },
         {
           "object": "LayoutBlockFlow DIV id='div'",
           "rect": [93, 193, 15, 15],
-          "reason": "scroll"
+          "reason": "scroll control"
         }
       ]
     }
@@ -56,19 +56,19 @@
     },
     {
       "object": "LayoutBlockFlow DIV id='div'",
-      "reason": "scroll"
+      "reason": "geometry"
     },
     {
       "object": "HorizontalScrollbar",
-      "reason": "scroll"
+      "reason": "scroll control"
     },
     {
       "object": "LayoutBlockFlow DIV id='div'",
-      "reason": "scroll"
+      "reason": "geometry"
     },
     {
       "object": "VerticalScrollbar",
-      "reason": "scroll"
+      "reason": "scroll control"
     }
   ]
 }

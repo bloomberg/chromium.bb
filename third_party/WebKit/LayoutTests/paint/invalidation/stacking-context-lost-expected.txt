@@ -44,7 +44,7 @@
     },
     {
       "object": "LayoutBlockFlow (relative positioned) DIV id='inner'",
-      "reason": "layoutObject removal"
+      "reason": "disappeared"
     },
     {
       "object": "LayoutBlockFlow (relative positioned) DIV id='outer'",
