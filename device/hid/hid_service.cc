@@ -44,7 +44,7 @@ std::unique_ptr<HidService> HidService::Create(
 #if defined(OS_LINUX) && defined(USE_UDEV)
   return base::WrapUnique(new HidServiceLinux());
 #elif defined(OS_MACOSX)
-  return base::WrapUnique(new HidServiceMac(file_task_runner));
+  return base::WrapUnique(new HidServiceMac());
 #elif defined(OS_WIN)
   return base::WrapUnique(new HidServiceWin(file_task_runner));
 #else

@@ -10,9 +10,11 @@
 #include "base/numerics/safe_math.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/device_event_log/device_event_log.h"
 #include "device/hid/hid_connection_mac.h"
+#include "device/hid/hid_service.h"
 
 namespace device {
 
@@ -24,23 +26,19 @@ std::string HexErrorCode(IOReturn error_code) {
 
 }  // namespace
 
-HidConnectionMac::HidConnectionMac(
-    base::ScopedCFTypeRef<IOHIDDeviceRef> device,
-    scoped_refptr<HidDeviceInfo> device_info,
-    scoped_refptr<base::SingleThreadTaskRunner> file_task_runner)
+HidConnectionMac::HidConnectionMac(base::ScopedCFTypeRef<IOHIDDeviceRef> device,
+                                   scoped_refptr<HidDeviceInfo> device_info)
     : HidConnection(device_info),
       device_(std::move(device)),
-      file_task_runner_(file_task_runner) {
-  task_runner_ = base::ThreadTaskRunnerHandle::Get();
-  DCHECK(task_runner_.get());
-
+      task_runner_(base::ThreadTaskRunnerHandle::Get()),
+      blocking_task_runner_(base::CreateSequencedTaskRunnerWithTraits(
+          HidService::kBlockingTaskTraits)) {
   IOHIDDeviceScheduleWithRunLoop(
       device_.get(), CFRunLoopGetMain(), kCFRunLoopDefaultMode);
 
   size_t expected_report_size = device_info->max_input_report_size();
-  if (device_info->has_report_id()) {
+  if (device_info->has_report_id())
     expected_report_size++;
-  }
   inbound_buffer_.resize(expected_report_size);
 
   if (inbound_buffer_.size() > 0) {
@@ -54,8 +52,7 @@ HidConnectionMac::HidConnectionMac(
   }
 }
 
-HidConnectionMac::~HidConnectionMac() {
-}
+HidConnectionMac::~HidConnectionMac() {}
 
 void HidConnectionMac::PlatformClose() {
   if (inbound_buffer_.size() > 0) {
@@ -89,34 +86,25 @@ void HidConnectionMac::PlatformRead(const ReadCallback& callback) {
 void HidConnectionMac::PlatformWrite(scoped_refptr<net::IOBuffer> buffer,
                                      size_t size,
                                      const WriteCallback& callback) {
-  file_task_runner_->PostTask(FROM_HERE,
-                              base::Bind(&HidConnectionMac::SetReportAsync,
-                                         this,
-                                         kIOHIDReportTypeOutput,
-                                         buffer,
-                                         size,
-                                         callback));
+  blocking_task_runner_->PostTask(
+      FROM_HERE, base::Bind(&HidConnectionMac::SetReportAsync, this,
+                            kIOHIDReportTypeOutput, buffer, size, callback));
 }
 
 void HidConnectionMac::PlatformGetFeatureReport(uint8_t report_id,
                                                 const ReadCallback& callback) {
-  file_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(
-          &HidConnectionMac::GetFeatureReportAsync, this, report_id, callback));
+  blocking_task_runner_->PostTask(
+      FROM_HERE, base::Bind(&HidConnectionMac::GetFeatureReportAsync, this,
+                            report_id, callback));
 }
 
 void HidConnectionMac::PlatformSendFeatureReport(
     scoped_refptr<net::IOBuffer> buffer,
     size_t size,
     const WriteCallback& callback) {
-  file_task_runner_->PostTask(FROM_HERE,
-                              base::Bind(&HidConnectionMac::SetReportAsync,
-                                         this,
-                                         kIOHIDReportTypeFeature,
-                                         buffer,
-                                         size,
-                                         callback));
+  blocking_task_runner_->PostTask(
+      FROM_HERE, base::Bind(&HidConnectionMac::SetReportAsync, this,
+                            kIOHIDReportTypeFeature, buffer, size, callback));
 }
 
 // static
@@ -249,6 +237,8 @@ void HidConnectionMac::SetReportAsync(IOHIDReportType report_type,
 }
 
 void HidConnectionMac::ReturnAsyncResult(const base::Closure& callback) {
+  // This function is used so that the last reference to |this| can be released
+  // on the thread where it was created.
   callback.Run();
 }
 
