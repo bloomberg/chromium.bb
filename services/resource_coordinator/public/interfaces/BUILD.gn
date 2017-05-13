@@ -21,6 +21,7 @@ mojom("interfaces_internal") {
     "//mojo/common:common_custom_types",
   ]
 
+  component_output_prefix = "resource_coordinator_public_interfaces_internal"
   export_class_attribute = "SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_EXPORT"
   export_define = "SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_IMPLEMENTATION=1"
   export_header =

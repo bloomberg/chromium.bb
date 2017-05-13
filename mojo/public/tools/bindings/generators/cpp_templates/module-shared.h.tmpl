@@ -57,6 +57,10 @@ namespace {{namespace}} {
 #include "{{import.path}}-shared.h"
 {%- endfor %}
 
+{%- if export_header %}
+#include "{{export_header}}"
+{%- endif %}
+
 {{namespace_begin()}}
 
 {#--- Struct Forward Declarations -#}

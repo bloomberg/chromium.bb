@@ -9,25 +9,18 @@ if (is_android) {
   import("//build/config/android/rules.gni")  # For generate_jni().
 }
 
-component("vr") {
-  output_name = "device_vr"
+if (enable_vr) {
+  component("vr") {
+    output_name = "device_vr"
 
-  sources = [
-    "vr_export.h",
-  ]
-  defines = [ "DEVICE_VR_IMPLEMENTATION" ]
-  deps = [
-    ":mojo_bindings",
-    "features",
-  ]
-
-  if (!enable_vr) {
-    sources += [
-      # We need to include an empty .cc file so that mac and windows don't fall over when trying to
-      # compile this when webvr is disabled.
-      "empty.cc",
+    sources = [
+      "vr_export.h",
     ]
-  } else {
+    defines = [ "DEVICE_VR_IMPLEMENTATION" ]
+    deps = [
+      ":mojo_bindings",
+      "features",
+    ]
     sources += [
       "vr_device.cc",
       "vr_device.h",
@@ -90,9 +83,7 @@ component("vr") {
       ]
     }
   }
-}
 
-if (enable_vr) {
   static_library("fakes") {
     testonly = true
 
@@ -114,9 +105,20 @@ if (enable_vr) {
       "//mojo/public/cpp/bindings",
     ]
   }
+} else {
+  source_set("vr") {
+    # We need to include an empty .cc file so that mac and windows don't fall over when trying to
+    # compile this when webvr is disabled.
+    sources = [
+      "empty.cc",
+    ]
+  }
 }
 
-mojom("mojo_bindings") {
+mojom_component("mojo_bindings") {
+  output_prefix = "device_vr_mojo_bindings"
+  macro_prefix = "DEVICE_VR_MOJO_BINDINGS"
+
   sources = [
     "vr_service.mojom",
   ]
@@ -125,10 +127,6 @@ mojom("mojo_bindings") {
     "//gpu/ipc/common:interfaces",
     "//mojo/common:common_custom_types",
   ]
-
-  export_class_attribute = "DEVICE_VR_EXPORT"
-  export_define = "DEVICE_VR_IMPLEMENTATION=1"
-  export_header = "device/vr/vr_export.h"
 
   # TODO(crbug.com/714018): Convert the implementation to use OnceCallback.
   use_once_callback = false
