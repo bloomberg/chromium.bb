@@ -10,6 +10,7 @@
 #include "base/strings/string_util.h"
 #include "net/base/load_flags.h"
 #include "net/base/request_priority.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/url_request_context.h"
 #include "storage/browser/blob/blob_data_handle.h"
 #include "storage/browser/blob/blob_storage_context.h"
@@ -30,8 +31,33 @@ std::unique_ptr<net::URLRequest> BlobProtocolHandler::CreateBlobRequest(
     const net::URLRequestContext* request_context,
     net::URLRequest::Delegate* request_delegate) {
   const GURL kBlobUrl("blob://see_user_data/");
+  net::NetworkTrafficAnnotationTag traffic_annotation =
+      net::DefineNetworkTrafficAnnotation("blob_read", R"(
+        semantics {
+          sender: "BlobProtocolHandler"
+          description:
+            "Blobs are used for a variety of use cases, and are basically "
+            "immutable blocks of data. See https://chromium.googlesource.com/"
+            "chromium/src/+/master/storage/browser/blob/README.md for an "
+            "explanation of blobs and their implementation in Chrome. These "
+            "can be created by scripts in a website, web platform features, or "
+            "internally in the browser."
+          trigger:
+            "Request for reading the contents of a blob."
+          data:
+            "A reference to a Blob, File, or CacheStorage entry created from "
+            "script, a web platform feature, or browser internals."
+          destination: LOCAL
+        }
+        policy {
+          cookies_allowed: false
+          setting: "This feature cannot be disabled by settings."
+          policy_exception_justification:
+            "Not implemented. This is a local data fetch request and has no "
+            "network activity."
+        })");
   std::unique_ptr<net::URLRequest> request = request_context->CreateRequest(
-      kBlobUrl, net::DEFAULT_PRIORITY, request_delegate);
+      kBlobUrl, net::DEFAULT_PRIORITY, request_delegate, traffic_annotation);
   request->SetLoadFlags(net::LOAD_DO_NOT_SAVE_COOKIES |
                         net::LOAD_DO_NOT_SEND_COOKIES);
   SetRequestedBlobDataHandle(request.get(), std::move(blob_data_handle));
