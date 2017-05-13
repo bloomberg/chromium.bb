@@ -540,7 +540,7 @@ def generate_isolate_script_entry(swarming_dimensions, test_args,
       # supports swarming. It doesn't hurt.
       'can_use_on_swarming_builders': True,
       'expiration': 10 * 60 * 60, # 10 hour timeout for now (crbug.com/699312)
-      'hard_timeout': swarming_timeout if swarming_timeout else 7200,
+      'hard_timeout': swarming_timeout if swarming_timeout else 9000, # 2.5hrs
       'ignore_task_failure': ignore_task_failure,
       'io_timeout': 3600,
       'dimension_sets': swarming_dimensions,
