@@ -13,57 +13,48 @@
 #include "components/payments/mojom/payment_app.mojom.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/payment_app_provider.h"
+#include "content/public/browser/stored_payment_instrument.h"
 #include "content/public/browser/web_contents.h"
 #include "jni/ServiceWorkerPaymentAppBridge_jni.h"
 
-using base::android::AttachCurrentThread;
-using base::android::ConvertJavaStringToUTF8;
-using base::android::ConvertUTF8ToJavaString;
-using base::android::JavaParamRef;
-using base::android::JavaRef;
-using base::android::ScopedJavaGlobalRef;
-using base::android::ScopedJavaLocalRef;
-using payments::mojom::PaymentAppRequest;
-using payments::mojom::PaymentAppRequestPtr;
-using payments::mojom::PaymentCurrencyAmount;
-using payments::mojom::PaymentDetailsModifier;
-using payments::mojom::PaymentDetailsModifierPtr;
-using payments::mojom::PaymentItem;
-using payments::mojom::PaymentMethodData;
-using payments::mojom::PaymentMethodDataPtr;
-
 namespace {
 
-void OnGotAllManifests(const JavaRef<jobject>& jweb_contents,
-                       const JavaRef<jobject>& jcallback,
-                       content::PaymentAppProvider::Manifests manifests) {
+using ::base::android::AttachCurrentThread;
+using ::base::android::ConvertJavaStringToUTF8;
+using ::base::android::ConvertUTF8ToJavaString;
+using ::base::android::JavaParamRef;
+using ::base::android::JavaRef;
+using ::base::android::ScopedJavaGlobalRef;
+using ::base::android::ScopedJavaLocalRef;
+using ::base::android::ToJavaArrayOfStrings;
+using ::payments::mojom::PaymentAppRequest;
+using ::payments::mojom::PaymentAppRequestPtr;
+using ::payments::mojom::PaymentCurrencyAmount;
+using ::payments::mojom::PaymentDetailsModifier;
+using ::payments::mojom::PaymentDetailsModifierPtr;
+using ::payments::mojom::PaymentItem;
+using ::payments::mojom::PaymentMethodData;
+using ::payments::mojom::PaymentMethodDataPtr;
+
+void OnGotAllPaymentApps(const JavaRef<jobject>& jweb_contents,
+                         const JavaRef<jobject>& jcallback,
+                         content::PaymentAppProvider::PaymentApps apps) {
   JNIEnv* env = AttachCurrentThread();
 
-  for (const auto& entry : manifests) {
-    ScopedJavaLocalRef<jobject> java_manifest =
-        Java_ServiceWorkerPaymentAppBridge_createManifest(
-            env, entry.first, ConvertUTF8ToJavaString(env, entry.second->name),
-            entry.second->icon
-                ? ConvertUTF8ToJavaString(env, *entry.second->icon)
-                : nullptr);
-    for (const auto& option : entry.second->options) {
-      ScopedJavaLocalRef<jobject> java_option =
-          Java_ServiceWorkerPaymentAppBridge_createAndAddOption(
-              env, java_manifest, ConvertUTF8ToJavaString(env, option->id),
-              ConvertUTF8ToJavaString(env, option->name),
-              option->icon ? ConvertUTF8ToJavaString(env, *option->icon)
-                           : nullptr);
-      for (const auto& enabled_method : option->enabled_methods) {
-        Java_ServiceWorkerPaymentAppBridge_addEnabledMethod(
-            env, java_option, ConvertUTF8ToJavaString(env, enabled_method));
-      }
+  for (const auto& app_info : apps) {
+    ScopedJavaLocalRef<jobject> java_instruments =
+        Java_ServiceWorkerPaymentAppBridge_createInstrumentList(env);
+    for (const auto& instrument : app_info.second) {
+      Java_ServiceWorkerPaymentAppBridge_addInstrument(
+          env, java_instruments, jweb_contents, instrument->registration_id,
+          ConvertUTF8ToJavaString(env, instrument->instrument_key),
+          ConvertUTF8ToJavaString(env, instrument->name),
+          ToJavaArrayOfStrings(env, instrument->enabled_methods));
     }
-
-    Java_ServiceWorkerPaymentAppBridge_onGotManifest(env, java_manifest,
-                                                     jweb_contents, jcallback);
+    Java_ServiceWorkerPaymentAppBridge_onPaymentAppCreated(
+        env, java_instruments, jweb_contents, jcallback);
   }
-
-  Java_ServiceWorkerPaymentAppBridge_onGotAllManifests(env, jcallback);
+  Java_ServiceWorkerPaymentAppBridge_onAllPaymentAppsCreated(env, jcallback);
 }
 
 void OnPaymentAppInvoked(const JavaRef<jobject>& jweb_contents,
@@ -78,18 +69,18 @@ void OnPaymentAppInvoked(const JavaRef<jobject>& jweb_contents,
 
 }  // namespace
 
-static void GetAllAppManifests(JNIEnv* env,
-                               const JavaParamRef<jclass>& jcaller,
-                               const JavaParamRef<jobject>& jweb_contents,
-                               const JavaParamRef<jobject>& jcallback) {
+static void GetAllPaymentApps(JNIEnv* env,
+                              const JavaParamRef<jclass>& jcaller,
+                              const JavaParamRef<jobject>& jweb_contents,
+                              const JavaParamRef<jobject>& jcallback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   content::WebContents* web_contents =
       content::WebContents::FromJavaWebContents(jweb_contents);
 
-  content::PaymentAppProvider::GetInstance()->GetAllManifests(
+  content::PaymentAppProvider::GetInstance()->GetAllPaymentApps(
       web_contents->GetBrowserContext(),
-      base::Bind(&OnGotAllManifests,
+      base::Bind(&OnGotAllPaymentApps,
                  ScopedJavaGlobalRef<jobject>(env, jweb_contents),
                  ScopedJavaGlobalRef<jobject>(env, jcallback)));
 }
