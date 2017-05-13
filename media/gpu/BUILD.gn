@@ -222,6 +222,7 @@ component("gpu") {
     # media service. See http://crbug.com/522298
     if (mojo_media_host == "gpu") {
       deps += [ "//media:cdm_manager" ]
+      configs += [ "//media/mojo/services:mojo_media_config" ]
     }
   }
 
