@@ -663,6 +663,7 @@ test("ios_web_inttests") {
     "navigation/window_location_inttest.mm",
     "public/test/http_server_inttest.mm",
     "test/run_all_unittests.cc",
+    "web_state/favicon_callbacks_inttest.mm",
     "web_state/http_auth_inttest.mm",
     "web_state/navigation_callbacks_inttest.mm",
     "webui/web_ui_mojo_inttest.mm",
