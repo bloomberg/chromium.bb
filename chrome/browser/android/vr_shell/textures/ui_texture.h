@@ -44,6 +44,7 @@ class UiTexture {
   // Returns true if the state changed.
   virtual bool SetDrawFlags(int draw_flags);
   int GetDrawFlags() { return draw_flags_; }
+  bool dirty() const { return dirty_; }
 
  protected:
   virtual void Draw(SkCanvas* canvas, const gfx::Size& texture_size) = 0;
@@ -61,12 +62,15 @@ class UiTexture {
       gfx::Rect* bounds,
       int flags);
 
+  void set_dirty() { dirty_ = true; }
+
   static bool IsRTL();
   static gfx::FontList GetDefaultFontList(int size);
   static gfx::FontList GetFontList(int size, base::string16 text);
 
  private:
   int draw_flags_ = 0;
+  bool dirty_ = false;
 };
 
 }  // namespace vr_shell

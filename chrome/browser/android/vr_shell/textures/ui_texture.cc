@@ -80,6 +80,7 @@ bool UiTexture::SetDrawFlags(int draw_flags) {
 void UiTexture::DrawAndLayout(SkCanvas* canvas, const gfx::Size& texture_size) {
   TRACE_EVENT0("gpu", "UiTexture::DrawAndLayout");
   canvas->drawColor(SK_ColorTRANSPARENT);
+  dirty_ = false;
   Draw(canvas, texture_size);
 }
 

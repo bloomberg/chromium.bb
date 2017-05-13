@@ -32,14 +32,11 @@ class UrlBarTexture : public UiTexture {
   void SetURL(const GURL& gurl);
   void SetSecurityLevel(int level);
 
-  bool dirty() const { return dirty_; }
-
  private:
   void Draw(SkCanvas* canvas, const gfx::Size& texture_size) override;
   float ToPixels(float meters) const;
 
   gfx::SizeF size_;
-  bool dirty_ = false;
   int security_level_;
   GURL gurl_;
   GURL last_drawn_gurl_;

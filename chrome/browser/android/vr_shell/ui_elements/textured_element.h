@@ -39,6 +39,7 @@ class TexturedElement : public UiElement {
   gfx::Size texture_size_;
   GLuint texture_handle_;
   int maximum_width_;
+  bool initialized_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(TexturedElement);
 };

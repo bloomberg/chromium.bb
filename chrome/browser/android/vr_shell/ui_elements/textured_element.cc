@@ -22,6 +22,7 @@ void TexturedElement::Initialize() {
   glGenTextures(1, &texture_handle_);
   DCHECK(GetTexture() != nullptr);
   texture_size_ = GetTexture()->GetPreferredTextureSize(maximum_width_);
+  initialized_ = true;
   UpdateTexture();
   set_fill(Fill::SELF);
   gfx::SizeF drawn_size = GetTexture()->GetDrawnSize();
@@ -30,6 +31,8 @@ void TexturedElement::Initialize() {
 }
 
 void TexturedElement::UpdateTexture() {
+  if (!initialized_)
+    return;
   sk_sp<SkSurface> surface = SkSurface::MakeRasterN32Premul(
       texture_size_.width(), texture_size_.height());
   GetTexture()->DrawAndLayout(surface->getCanvas(), texture_size_);
@@ -38,6 +41,8 @@ void TexturedElement::UpdateTexture() {
 
 void TexturedElement::Render(VrShellRenderer* renderer,
                              vr::Mat4f view_proj_matrix) const {
+  if (!initialized_)
+    return;
   gfx::SizeF drawn_size = GetTexture()->GetDrawnSize();
   gfx::RectF copy_rect(0, 0, drawn_size.width() / texture_size_.width(),
                        drawn_size.height() / texture_size_.height());

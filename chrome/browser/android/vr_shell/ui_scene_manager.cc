@@ -8,6 +8,7 @@
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/android/vr_shell/textures/ui_texture.h"
 #include "chrome/browser/android/vr_shell/ui_elements/close_button.h"
+#include "chrome/browser/android/vr_shell/ui_elements/loading_indicator.h"
 #include "chrome/browser/android/vr_shell/ui_elements/permanent_security_warning.h"
 #include "chrome/browser/android/vr_shell/ui_elements/transient_security_warning.h"
 #include "chrome/browser/android/vr_shell/ui_elements/ui_element.h"
@@ -65,9 +66,10 @@ UiSceneManager::UiSceneManager(VrBrowserInterface* browser,
   CreateContentQuad();
   CreateSecurityWarnings();
   CreateUrlBar();
-
   if (in_cct_)
     CreateCloseButton();
+
+  ConfigureScene();
 }
 
 UiSceneManager::~UiSceneManager() {}
@@ -115,7 +117,7 @@ void UiSceneManager::CreateContentQuad() {
   element->set_translation({0, kContentVerticalOffset, -kContentDistance});
   element->set_visible(false);
   main_content_ = element.get();
-  browser_ui_elements_.push_back(element.get());
+  content_elements_.push_back(element.get());
   scene_->AddUiElement(std::move(element));
 
   // Place an invisible but hittable plane behind the content quad, to keep the
@@ -126,7 +128,7 @@ void UiSceneManager::CreateContentQuad() {
   element->set_size({kBackplaneSize, kBackplaneSize, 1.0});
   element->set_translation({0.0, 0.0, -kTextureOffset});
   element->set_parent_id(main_content_->id());
-  browser_ui_elements_.push_back(element.get());
+  content_elements_.push_back(element.get());
   scene_->AddUiElement(std::move(element));
 
   // Limit reticle distance to a sphere based on content distance.
@@ -147,7 +149,7 @@ void UiSceneManager::CreateBackground() {
   element->set_edge_color(kBackgroundHorizonColor);
   element->set_center_color(kBackgroundCenterColor);
   element->set_draw_phase(0);
-  browser_ui_elements_.push_back(element.get());
+  control_elements_.push_back(element.get());
   scene_->AddUiElement(std::move(element));
 
   // Ceiling.
@@ -161,7 +163,7 @@ void UiSceneManager::CreateBackground() {
   element->set_edge_color(kBackgroundHorizonColor);
   element->set_center_color(kBackgroundCenterColor);
   element->set_draw_phase(0);
-  browser_ui_elements_.push_back(element.get());
+  control_elements_.push_back(element.get());
   scene_->AddUiElement(std::move(element));
 
   // Floor grid.
@@ -178,7 +180,7 @@ void UiSceneManager::CreateBackground() {
   element->set_edge_color(edge_color);
   element->set_gridline_count(kFloorGridlineCount);
   element->set_draw_phase(0);
-  browser_ui_elements_.push_back(element.get());
+  control_elements_.push_back(element.get());
   scene_->AddUiElement(std::move(element));
 
   scene_->SetBackgroundColor(kBackgroundHorizonColor);
@@ -186,16 +188,23 @@ void UiSceneManager::CreateBackground() {
 
 void UiSceneManager::CreateUrlBar() {
   // TODO(cjgrant): Incorporate final size and position.
-  // TODO(cjgrant): Add the loading progress indicator element.
-  std::unique_ptr<UrlBar> element = base::MakeUnique<UrlBar>(512);
-  element->set_id(AllocateId());
-  element->set_translation({0, -0.9, -1.8});
-  element->set_size({0.9, 0, 1});
-  element->SetBackButtonCallback(
+  auto url_bar = base::MakeUnique<UrlBar>(512);
+  url_bar->set_id(AllocateId());
+  url_bar->set_translation({0, -0.9, -1.8});
+  url_bar->set_size({0.9, 0, 1});
+  url_bar->SetBackButtonCallback(
       base::Bind(&UiSceneManager::OnBackButtonClicked, base::Unretained(this)));
-  url_bar_ = element.get();
-  browser_ui_elements_.push_back(element.get());
-  scene_->AddUiElement(std::move(element));
+  url_bar_ = url_bar.get();
+  control_elements_.push_back(url_bar.get());
+  scene_->AddUiElement(std::move(url_bar));
+
+  auto indicator = base::MakeUnique<LoadingIndicator>(256);
+  indicator->set_id(AllocateId());
+  indicator->set_translation({0, -0.8, -1.8});
+  indicator->set_size({0.4, 0, 1});
+  loading_indicator_ = indicator.get();
+  control_elements_.push_back(indicator.get());
+  scene_->AddUiElement(std::move(indicator));
 }
 
 void UiSceneManager::CreateCloseButton() {
@@ -208,7 +217,7 @@ void UiSceneManager::CreateCloseButton() {
       gfx::Vector3dF(0, kContentVerticalOffset - (kContentHeight / 2) - 0.3,
                      -kContentDistance + 0.4));
   element->set_size(gfx::Vector3dF(0.2, 0.2, 1));
-  browser_ui_elements_.push_back(element.get());
+  control_elements_.push_back(element.get());
   scene_->AddUiElement(std::move(element));
 }
 
@@ -217,15 +226,41 @@ base::WeakPtr<UiSceneManager> UiSceneManager::GetWeakPtr() {
 }
 
 void UiSceneManager::SetWebVrMode(bool web_vr) {
+  if (web_vr_mode_ == web_vr)
+    return;
   web_vr_mode_ = web_vr;
+  ConfigureScene();
+}
 
-  // Make all VR scene UI elements visible if not in WebVR.
-  for (UiElement* element : browser_ui_elements_) {
-    element->set_visible(!web_vr_mode_);
+void UiSceneManager::ConfigureScene() {
+  // Controls (URL bar, loading progress, etc).
+  bool controls_visible = !web_vr_mode_ && !fullscreen_;
+  for (UiElement* element : control_elements_) {
+    element->SetEnabled(controls_visible);
   }
-  url_bar_->SetEnabled(!web_vr);
 
-  ConfigureSecurityWarnings();
+  // Content elements.
+  for (UiElement* element : content_elements_) {
+    element->SetEnabled(!web_vr_mode_);
+  }
+
+  // Update content quad parameters depending on fullscreen.
+  // TODO(http://crbug.com/642937): Animate fullscreen transitions.
+  if (fullscreen_) {
+    scene_->SetBackgroundColor(kFullscreenBackgroundColor);
+    main_content_->set_translation(
+        {0, kFullscreenVerticalOffset, -kFullscreenDistance});
+    main_content_->set_size({kFullscreenWidth, kFullscreenHeight, 1});
+  } else {
+    scene_->SetBackgroundColor(kBackgroundHorizonColor);
+    // Note that main_content_ is already visible in this case.
+    main_content_->set_translation(
+        {0, kContentVerticalOffset, -kContentDistance});
+    main_content_->set_size({kContentWidth, kContentHeight, 1});
+  }
+
+  scene_->SetBackgroundDistance(main_content_->translation().z() *
+                                -kBackgroundDistanceMultiplier);
 }
 
 void UiSceneManager::SetWebVrSecureOrigin(bool secure) {
@@ -243,30 +278,10 @@ void UiSceneManager::OnAppButtonGesturePerformed(
     UiInterface::Direction direction) {}
 
 void UiSceneManager::SetFullscreen(bool fullscreen) {
-  // Make all VR scene UI elements visible if not in fullscreen.
-  for (UiElement* element : browser_ui_elements_) {
-    element->set_visible(!fullscreen);
-  }
-
-  // Show the content quad in full screen.
-  if (fullscreen) {
-    scene_->SetBackgroundColor(kFullscreenBackgroundColor);
-    main_content_->set_visible(true);
-    main_content_->set_translation(
-        {0, kFullscreenVerticalOffset, -kFullscreenDistance});
-    main_content_->set_size({kFullscreenWidth, kFullscreenHeight, 1});
-
-    // TODO(http://crbug.com/642937): Animate fullscreen transitions.
-  } else {
-    scene_->SetBackgroundColor(kBackgroundHorizonColor);
-    // Note that main_content_ is already visible in this case.
-    main_content_->set_translation(
-        {0, kContentVerticalOffset, -kContentDistance});
-    main_content_->set_size({kContentWidth, kContentHeight, 1});
-  }
-
-  scene_->SetBackgroundDistance(main_content_->translation().z() *
-                                -kBackgroundDistanceMultiplier);
+  if (fullscreen_ == fullscreen)
+    return;
+  fullscreen_ = fullscreen;
+  ConfigureScene();
 }
 
 void UiSceneManager::ConfigureSecurityWarnings() {
@@ -298,9 +313,13 @@ void UiSceneManager::SetSecurityLevel(int level) {
   url_bar_->SetSecurityLevel(level);
 }
 
-void UiSceneManager::SetLoading(bool loading) {}
+void UiSceneManager::SetLoading(bool loading) {
+  loading_indicator_->SetLoading(loading);
+}
 
-void UiSceneManager::SetLoadProgress(double progress) {}
+void UiSceneManager::SetLoadProgress(float progress) {
+  loading_indicator_->SetLoadProgress(progress);
+}
 
 void UiSceneManager::SetHistoryButtonsEnabled(bool can_go_back,
                                               bool can_go_forward) {}

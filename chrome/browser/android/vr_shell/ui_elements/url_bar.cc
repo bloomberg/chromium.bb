@@ -61,6 +61,7 @@ void UrlBar::OnBeginFrame(const base::TimeTicks& begin_frame_time) {
 
 void UrlBar::SetEnabled(bool enabled) {
   enabled_ = enabled;
+  set_visible(enabled);
 }
 
 void UrlBar::SetURL(const GURL& gurl) {

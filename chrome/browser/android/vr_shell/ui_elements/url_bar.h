@@ -26,7 +26,7 @@ class UrlBar : public TexturedElement {
   void OnHoverLeave() override;
   void OnBeginFrame(const base::TimeTicks& begin_frame_time) override;
   void OnButtonUp(gfx::PointF position) override;
-  void SetEnabled(bool enabled);
+  void SetEnabled(bool enabled) override;
 
   void SetURL(const GURL& gurl);
   void SetSecurityLevel(int level);
