@@ -281,7 +281,7 @@ ScriptPromise USBDevice::selectAlternateInterface(ScriptState* script_state,
   if (EnsureInterfaceClaimed(interface_number, resolver)) {
     // TODO(reillyg): This is duplicated work.
     int interface_index = FindInterfaceIndex(interface_number);
-    ASSERT(interface_index != -1);
+    DCHECK_NE(interface_index, -1);
     int alternate_index =
         FindAlternateIndex(interface_index, alternate_setting);
     if (alternate_index == -1) {
@@ -486,7 +486,7 @@ int USBDevice::FindConfigurationIndex(uint8_t configuration_value) const {
 }
 
 int USBDevice::FindInterfaceIndex(uint8_t interface_number) const {
-  ASSERT(configuration_index_ != -1);
+  DCHECK_NE(configuration_index_, -1);
   const auto& interfaces =
       Info().configurations[configuration_index_]->interfaces;
   for (size_t i = 0; i < interfaces.size(); ++i) {
@@ -498,7 +498,7 @@ int USBDevice::FindInterfaceIndex(uint8_t interface_number) const {
 
 int USBDevice::FindAlternateIndex(size_t interface_index,
                                   uint8_t alternate_setting) const {
-  ASSERT(configuration_index_ != -1);
+  DCHECK_NE(configuration_index_, -1);
   const auto& alternates = Info()
                                .configurations[configuration_index_]
                                ->interfaces[interface_index]

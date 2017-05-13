@@ -122,7 +122,7 @@ ExceptionParams GetExceptionParams(const WebServiceWorkerError& web_error) {
 DOMException* ServiceWorkerError::Take(ScriptPromiseResolver*,
                                        const WebServiceWorkerError& web_error) {
   ExceptionParams params = GetExceptionParams(web_error);
-  ASSERT(params.code != kUnknownError);
+  DCHECK_NE(params.code, kUnknownError);
   return DOMException::Create(params.code, params.message);
 }
 

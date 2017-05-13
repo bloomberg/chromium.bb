@@ -610,7 +610,7 @@ bool WebGL2RenderingContextBase::CheckAndTranslateAttachments(
   }
 
   WebGLFramebuffer* framebuffer_binding = GetFramebufferBinding(target);
-  ASSERT(framebuffer_binding || GetDrawingBuffer());
+  DCHECK(framebuffer_binding || GetDrawingBuffer());
   if (!framebuffer_binding) {
     // For the default framebuffer, translate GL_COLOR/GL_DEPTH/GL_STENCIL.
     // The default framebuffer of WebGL is not fb 0, it is an internal fbo.
@@ -5313,7 +5313,7 @@ bool WebGL2RenderingContextBase::ValidateGetFramebufferAttachmentParameterFunc(
   }
 
   WebGLFramebuffer* framebuffer_binding = GetFramebufferBinding(target);
-  ASSERT(framebuffer_binding || GetDrawingBuffer());
+  DCHECK(framebuffer_binding || GetDrawingBuffer());
   if (!framebuffer_binding) {
     // for the default framebuffer
     switch (attachment) {
@@ -5364,7 +5364,7 @@ ScriptValue WebGL2RenderingContextBase::getFramebufferAttachmentParameter(
     return ScriptValue::CreateNull(script_state);
 
   WebGLFramebuffer* framebuffer_binding = GetFramebufferBinding(target);
-  ASSERT(!framebuffer_binding || framebuffer_binding->Object());
+  DCHECK(!framebuffer_binding || framebuffer_binding->Object());
 
   // Default framebuffer (an internal fbo)
   if (!framebuffer_binding) {
@@ -5447,7 +5447,7 @@ ScriptValue WebGL2RenderingContextBase::getFramebufferAttachmentParameter(
         return ScriptValue::CreateNull(script_state);
     }
   }
-  ASSERT(attachment_object->IsTexture() || attachment_object->IsRenderbuffer());
+  DCHECK(attachment_object->IsTexture() || attachment_object->IsRenderbuffer());
 
   switch (pname) {
     case GL_FRAMEBUFFER_ATTACHMENT_OBJECT_TYPE:

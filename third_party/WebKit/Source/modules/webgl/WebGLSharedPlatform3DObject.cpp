@@ -14,7 +14,8 @@ WebGLSharedPlatform3DObject::WebGLSharedPlatform3DObject(
 
 void WebGLSharedPlatform3DObject::SetObject(GLuint object) {
   // object==0 && deleted==false indicating an uninitialized state;
-  ASSERT(!object_ && !IsDeleted());
+  DCHECK(!object_);
+  DCHECK(!IsDeleted());
   object_ = object;
 }
 

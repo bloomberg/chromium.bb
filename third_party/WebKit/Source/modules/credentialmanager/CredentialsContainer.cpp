@@ -104,7 +104,7 @@ class RequestCallbacks : public WebCredentialManagerClient::RequestCallbacks {
       return;
     }
 
-    ASSERT(credential->IsPasswordCredential() ||
+    DCHECK(credential->IsPasswordCredential() ||
            credential->IsFederatedCredential());
     UseCounter::Count(ExecutionContext::From(resolver_->GetScriptState()),
                       UseCounter::kCredentialManagerGetReturnedCredential);

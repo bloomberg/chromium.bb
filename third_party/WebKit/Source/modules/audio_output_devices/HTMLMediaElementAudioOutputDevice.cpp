@@ -66,7 +66,8 @@ void SetSinkIdResolver::StartAsync() {
 
 void SetSinkIdResolver::TimerFired(TimerBase* timer) {
   ExecutionContext* context = GetExecutionContext();
-  ASSERT(context && context->IsDocument());
+  DCHECK(context);
+  DCHECK(context->IsDocument());
   std::unique_ptr<SetSinkIdCallbacks> callbacks =
       WTF::WrapUnique(new SetSinkIdCallbacks(this, *element_, sink_id_));
   WebMediaPlayer* web_media_player = element_->GetWebMediaPlayer();

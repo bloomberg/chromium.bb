@@ -72,13 +72,13 @@ USBEndpoint::USBEndpoint(const USBAlternateInterface* alternate,
                          size_t endpoint_index)
     : alternate_(alternate), endpoint_index_(endpoint_index) {
   DCHECK(alternate_);
-  ASSERT(endpoint_index_ < alternate_->Info().endpoints.size());
+  DCHECK_LT(endpoint_index_, alternate_->Info().endpoints.size());
 }
 
 const device::mojom::blink::UsbEndpointInfo& USBEndpoint::Info() const {
   const device::mojom::blink::UsbAlternateInterfaceInfo& alternate_info =
       alternate_->Info();
-  ASSERT(endpoint_index_ < alternate_info.endpoints.size());
+  DCHECK_LT(endpoint_index_, alternate_info.endpoints.size());
   return *alternate_info.endpoints[endpoint_index_];
 }
 

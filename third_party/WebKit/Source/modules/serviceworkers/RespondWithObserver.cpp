@@ -45,7 +45,7 @@ class RespondWithObserver::ThenFunction final : public ScriptFunction {
 
   ScriptValue Call(ScriptValue value) override {
     DCHECK(observer_);
-    ASSERT(resolve_type_ == kFulfilled || resolve_type_ == kRejected);
+    DCHECK(resolve_type_ == kFulfilled || resolve_type_ == kRejected);
     if (resolve_type_ == kRejected) {
       observer_->ResponseWasRejected(
           kWebServiceWorkerResponseErrorPromiseRejected);

@@ -105,7 +105,7 @@ GLint WebGLTexture::ComputeLevelCount(GLsizei width,
       log += shift;
     }
   }
-  ASSERT(value == 1);
+  DCHECK_EQ(value, 1);
   return log + 1;
 }
 

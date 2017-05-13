@@ -289,13 +289,13 @@ class Cache::BarrierCallbackForPut final
       : number_of_remaining_operations_(number_of_operations),
         cache_(cache),
         resolver_(resolver) {
-    ASSERT(0 < number_of_remaining_operations_);
+    DCHECK_LT(0, number_of_remaining_operations_);
     batch_operations_.resize(number_of_operations);
   }
 
   void OnSuccess(size_t index,
                  const WebServiceWorkerCache::BatchOperation& batch_operation) {
-    ASSERT(index < batch_operations_.size());
+    DCHECK_LT(index, batch_operations_.size());
     if (completed_)
       return;
     if (!resolver_->GetExecutionContext() ||

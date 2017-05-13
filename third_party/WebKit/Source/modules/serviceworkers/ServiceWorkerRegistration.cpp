@@ -71,7 +71,7 @@ ServiceWorkerRegistration* ServiceWorkerRegistration::GetOrCreate(
   ServiceWorkerRegistration* existing_registration =
       static_cast<ServiceWorkerRegistration*>(handle->Registration()->Proxy());
   if (existing_registration) {
-    ASSERT(existing_registration->GetExecutionContext() == execution_context);
+    DCHECK_EQ(existing_registration->GetExecutionContext(), execution_context);
     return existing_registration;
   }
 
