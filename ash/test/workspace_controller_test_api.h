@@ -2,9 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_WM_WORKSPACE_CONTROLLER_TEST_HELPER_H_
-#define ASH_WM_WORKSPACE_CONTROLLER_TEST_HELPER_H_
+#ifndef ASH_TEST_WORKSPACE_CONTROLLER_TEST_API_H_
+#define ASH_TEST_WORKSPACE_CONTROLLER_TEST_API_H_
 
+#include "ash/ash_export.h"
 #include "ash/wm/workspace_controller.h"
 #include "base/macros.h"
 
@@ -12,10 +13,12 @@ namespace ash {
 class MultiWindowResizeController;
 class WorkspaceEventHandler;
 
-class WorkspaceControllerTestHelper {
+namespace test {
+
+class ASH_EXPORT WorkspaceControllerTestApi {
  public:
-  explicit WorkspaceControllerTestHelper(WorkspaceController* controller);
-  ~WorkspaceControllerTestHelper();
+  explicit WorkspaceControllerTestApi(WorkspaceController* controller);
+  ~WorkspaceControllerTestApi();
 
   WorkspaceEventHandler* GetEventHandler();
   MultiWindowResizeController* GetMultiWindowResizeController();
@@ -23,9 +26,10 @@ class WorkspaceControllerTestHelper {
  private:
   WorkspaceController* controller_;
 
-  DISALLOW_COPY_AND_ASSIGN(WorkspaceControllerTestHelper);
+  DISALLOW_COPY_AND_ASSIGN(WorkspaceControllerTestApi);
 };
 
+}  // namespace test
 }  // namespace ash
 
-#endif  // ASH_WM_WORKSPACE_CONTROLLER_TEST_HELPER_H_
+#endif  // ASH_TEST_WORKSPACE_CONTROLLER_TEST_API_H_

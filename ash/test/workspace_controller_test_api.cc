@@ -2,27 +2,29 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/wm/workspace_controller_test_helper.h"
+#include "ash/test/workspace_controller_test_api.h"
 
 #include "ash/test/workspace_event_handler_test_helper.h"
 #include "ash/wm/workspace_controller.h"
 #include "ui/aura/window.h"
 
 namespace ash {
+namespace test {
 
-WorkspaceControllerTestHelper::WorkspaceControllerTestHelper(
+WorkspaceControllerTestApi::WorkspaceControllerTestApi(
     WorkspaceController* controller)
     : controller_(controller) {}
 
-WorkspaceControllerTestHelper::~WorkspaceControllerTestHelper() {}
+WorkspaceControllerTestApi::~WorkspaceControllerTestApi() {}
 
-WorkspaceEventHandler* WorkspaceControllerTestHelper::GetEventHandler() {
+WorkspaceEventHandler* WorkspaceControllerTestApi::GetEventHandler() {
   return controller_->event_handler_.get();
 }
 
 MultiWindowResizeController*
-WorkspaceControllerTestHelper::GetMultiWindowResizeController() {
+WorkspaceControllerTestApi::GetMultiWindowResizeController() {
   return WorkspaceEventHandlerTestHelper(GetEventHandler()).resize_controller();
 }
 
+}  // namespace test
 }  // namespace ash
