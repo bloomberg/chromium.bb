@@ -40,7 +40,7 @@ class FakePluginService : public PluginService {
                            WebPluginInfo* info) override;
   base::string16 GetPluginDisplayNameByPath(
       const base::FilePath& path) override;
-  void GetPlugins(const GetPluginsCallback& callback) override;
+  void GetPlugins(GetPluginsCallback callback) override;
   PepperPluginInfo* GetRegisteredPpapiPluginInfo(
       const base::FilePath& plugin_path) override;
   void SetFilter(PluginServiceFilter* filter) override;

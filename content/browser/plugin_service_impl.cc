@@ -6,6 +6,8 @@
 
 #include <stddef.h>
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
@@ -13,13 +15,12 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/task_runner_util.h"
 #include "base/task_scheduler/post_task.h"
 #include "base/threading/thread.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "content/browser/ppapi_plugin_process_host.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
@@ -303,25 +304,14 @@ base::string16 PluginServiceImpl::GetPluginDisplayNameByPath(
   return plugin_name;
 }
 
-void PluginServiceImpl::GetPlugins(const GetPluginsCallback& callback) {
-  scoped_refptr<base::SingleThreadTaskRunner> target_task_runner(
-      base::ThreadTaskRunnerHandle::Get());
-
-  plugin_list_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&PluginServiceImpl::GetPluginsInternal, base::Unretained(this),
-                 base::RetainedRef(target_task_runner), callback));
-}
-
-void PluginServiceImpl::GetPluginsInternal(
-    base::SingleThreadTaskRunner* target_task_runner,
-    const PluginService::GetPluginsCallback& callback) {
-  DCHECK(plugin_list_sequence_checker_.CalledOnValidSequence());
-
-  std::vector<WebPluginInfo> plugins;
-  PluginList::Singleton()->GetPlugins(&plugins);
-
-  target_task_runner->PostTask(FROM_HERE, base::Bind(callback, plugins));
+void PluginServiceImpl::GetPlugins(GetPluginsCallback callback) {
+  base::PostTaskAndReplyWithResult(
+      plugin_list_task_runner_.get(), FROM_HERE, base::BindOnce([]() {
+        std::vector<WebPluginInfo> plugins;
+        PluginList::Singleton()->GetPlugins(&plugins);
+        return plugins;
+      }),
+      std::move(callback));
 }
 
 void PluginServiceImpl::RegisterPepperPlugins() {
