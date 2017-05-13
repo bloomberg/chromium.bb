@@ -7,7 +7,6 @@ package org.chromium.chrome.browser.suggestions;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
-import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyInt;
@@ -19,14 +18,8 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
-import android.content.Context;
-import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.Color;
-import android.support.annotation.ColorRes;
-import android.support.annotation.DimenRes;
-import android.support.annotation.LayoutRes;
-import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
@@ -43,12 +36,8 @@ import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
-import org.robolectric.annotation.Implementation;
-import org.robolectric.annotation.Implements;
-import org.robolectric.shadows.ShadowResources;
 
 import org.chromium.base.Callback;
-import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.favicon.LargeIconBridge.LargeIconCallback;
 import org.chromium.chrome.browser.ntp.ContextMenuManager;
@@ -60,9 +49,7 @@ import org.chromium.testing.local.LocalRobolectricTestRunner;
  * Unit tests for {@link TileGroup}.
  */
 @RunWith(LocalRobolectricTestRunner.class)
-@Config(manifest = Config.NONE, sdk = 21,
-        shadows = {TileGroupTest.TileShadowResources.class,
-                TileGroupTest.ShadowLayoutInflater.class})
+@Config(manifest = Config.NONE)
 @Features(@Features.Register(ChromeFeatureList.NTP_OFFLINE_PAGES_FEATURE_NAME))
 public class TileGroupTest {
     private static final int MAX_TILES_TO_FETCH = 4;
@@ -429,47 +416,5 @@ public class TileGroupTest {
 
         @Override
         public void destroy() {}
-    }
-
-    /**
-     * Replacement for the {@link Resources} to allow loading resources used by {@link TileGroup} in
-     * unit tests.
-     * TODO(https://crbug.com/693573): Needed until unit tests can pick up resources themselves.
-     */
-    @Implements(Resources.class)
-    public static class TileShadowResources extends ShadowResources {
-        @Implementation
-        public int getDimensionPixelSize(@DimenRes int id) {
-            if (id == R.dimen.tile_view_icon_size) return 48;
-
-            throw new IllegalArgumentException();
-        }
-
-        @Implementation
-        public int getColor(@ColorRes int id) {
-            if (id == R.color.default_favicon_background_color) return Color.BLACK;
-
-            throw new IllegalArgumentException();
-        }
-    }
-
-    /** Intercepts calls to inflate views to replace them with mocks. */
-    @Implements(LayoutInflater.class)
-    public static class ShadowLayoutInflater {
-        @Implementation
-        public static LayoutInflater from(Context context) {
-            LayoutInflater layoutInflater = mock(LayoutInflater.class);
-            when(layoutInflater.inflate(anyInt(), any(ViewGroup.class), anyBoolean()))
-                    .thenAnswer(new Answer<View>() {
-                        @Override
-                        public View answer(InvocationOnMock invocation) throws Throwable {
-                            @LayoutRes
-                            int layoutId = invocation.getArgument(0);
-                            if (layoutId != R.layout.tile_view) fail("Unexpected resource id.");
-                            return createMockTileView();
-                        }
-                    });
-            return layoutInflater;
-        }
     }
 }

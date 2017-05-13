@@ -463,6 +463,21 @@ def AddJUnitTestOptions(parser):
       dest='test_suite', required=True,
       help='JUnit test suite to run.')
 
+  # These arguments are for Android Robolectric tests.
+  parser.add_argument(
+      '--android-manifest-path',
+      help='Path to Android Manifest to configure Robolectric.')
+  parser.add_argument(
+      '--package-name',
+      help='Default app package name for Robolectric tests.')
+  parser.add_argument(
+      '--resource-zip',
+      action='append', dest='resource_zips', default=[],
+      help='Path to resource zips to configure Robolectric.')
+  parser.add_argument(
+      '--robolectric-runtime-deps-dir',
+      help='Path to runtime deps for Robolectric.')
+
 
 def AddLinkerTestOptions(parser):
 

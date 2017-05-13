@@ -388,6 +388,8 @@ junit_binary("chrome_junit_tests") {
     google_play_services_library,
   ]
   srcjar_deps = [ "//base:base_build_config_gen" ]
+
+  package_name = manifest_package
 }
 
 chrome_version_java_dir = "$root_gen_dir/templates/chrome_version_java"
