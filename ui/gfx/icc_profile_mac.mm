@@ -16,6 +16,9 @@ ICCProfile ICCProfile::FromBestMonitor() {
 
 // static
 ICCProfile ICCProfile::FromCGColorSpace(CGColorSpaceRef cg_color_space) {
+  if (HasForcedProfile())
+    return GetForcedProfile();
+
   base::ScopedCFTypeRef<CFDataRef> cf_icc_profile(
       CGColorSpaceCopyICCProfile(cg_color_space));
   if (!cf_icc_profile)

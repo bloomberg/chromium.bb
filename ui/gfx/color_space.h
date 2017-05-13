@@ -42,6 +42,9 @@ class GFX_EXPORT ColorSpace {
     SMPTEST432_1,
     XYZ_D50,
     ADOBE_RGB,
+    // Corresponds the the primaries of the "Generic RGB" profile used in the
+    // Apple ColorSync application, used by layout tests on Mac.
+    APPLE_GENERIC_RGB,
     // Primaries defined by the primary matrix |custom_primary_matrix_|.
     CUSTOM,
     // For color spaces defined by an ICC profile which cannot be represented
@@ -54,6 +57,7 @@ class GFX_EXPORT ColorSpace {
   enum class TransferID : uint8_t {
     INVALID,
     BT709,
+    GAMMA18,
     GAMMA22,
     GAMMA24,
     GAMMA28,

@@ -102,6 +102,9 @@ class GFX_EXPORT ICCProfile {
                                    size_t size,
                                    uint64_t id);
 
+  static bool HasForcedProfile();
+  static ICCProfile GetForcedProfile();
+
   void ComputeColorSpaceAndCache();
 
   // This globally identifies this ICC profile. It is used to look up this ICC

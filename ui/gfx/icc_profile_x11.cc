@@ -18,6 +18,9 @@ namespace gfx {
 
 // static
 ICCProfile ICCProfile::FromBestMonitor() {
+  if (HasForcedProfile())
+    return GetForcedProfile();
+
   ICCProfile icc_profile;
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kHeadless))
     return icc_profile;
