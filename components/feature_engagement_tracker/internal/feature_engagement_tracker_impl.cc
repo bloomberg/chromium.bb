@@ -120,8 +120,13 @@ bool FeatureEngagementTrackerImpl::ShouldTriggerHelpUI(
           ->MeetsConditions(feature, configuration_->GetFeatureConfig(feature),
                             *model_, time_provider_->GetCurrentDay())
           .NoErrors();
-  if (result)
+  if (result) {
     condition_validator_->NotifyIsShowing(feature);
+    FeatureConfig feature_config = configuration_->GetFeatureConfig(feature);
+    DCHECK_NE("", feature_config.trigger.name);
+    model_->IncrementEvent(feature_config.trigger.name,
+                           time_provider_->GetCurrentDay());
+  }
 
   return result;
 }
