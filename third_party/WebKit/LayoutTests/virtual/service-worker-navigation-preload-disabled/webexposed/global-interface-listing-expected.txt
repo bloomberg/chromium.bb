@@ -6495,11 +6495,6 @@ interface ShadowRoot : DocumentFragment
     method elementsFromPoint
     method getSelection
     setter innerHTML
-interface SharedArrayBuffer
-    attribute @@toStringTag
-    getter byteLength
-    method constructor
-    method slice
 interface SharedWorker : EventTarget
     attribute @@toStringTag
     getter onerror
@@ -8845,7 +8840,6 @@ interface webkitURL
     setter search
     setter username
 [GLOBAL OBJECT]
-    attribute Atomics
     attribute GCController
     attribute accessibilityController
     attribute chrome

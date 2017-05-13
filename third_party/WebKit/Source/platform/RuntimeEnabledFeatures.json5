@@ -884,7 +884,6 @@
     },
     {
       name: "SharedArrayBuffer",
-      status: "stable",
     },
     {
       name: "SharedWorker",
