@@ -95,11 +95,13 @@ TYPED_TEST_P(VerifyCertificateChainSingleRootTest, TargetSignedUsingEcdsa) {
 }
 
 TYPED_TEST_P(VerifyCertificateChainSingleRootTest, Expired) {
-  this->RunTest("expired-target/main.test");
-  this->RunTest("expired-intermediate/main.test");
-  this->RunTest("expired-target-notBefore/main.test");
-  this->RunTest("expired-root/main.test");
-  this->RunTest("expired-root/ta-with-constraints.test");
+  this->RunTest("expired-target/not-before.test");
+  this->RunTest("expired-target/not-after.test");
+  this->RunTest("expired-intermediate/not-before.test");
+  this->RunTest("expired-intermediate/not-after.test");
+  this->RunTest("expired-root/not-before.test");
+  this->RunTest("expired-root/not-after.test");
+  this->RunTest("expired-root/not-after-ta-with-constraints.test");
 }
 
 TYPED_TEST_P(VerifyCertificateChainSingleRootTest, TargetNotEndEntity) {
