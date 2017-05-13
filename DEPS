@@ -403,7 +403,7 @@ deps_os = {
 
     # For Linux and Chromium OS.
     'src/third_party/cros_system_api':
-      Var('chromium_git') + '/chromiumos/platform/system_api.git' + '@' + '6139ae00925a21b9eb8eae77d0db9399061731e0',
+      Var('chromium_git') + '/chromiumos/platform/system_api.git' + '@' + '2a19709e6f2e52d8e8e276b63e46a0ff31020d57',
 
     # Build tools for Chrome OS. Note: This depends on third_party/pyelftools.
     'src/third_party/chromite':
