@@ -3645,7 +3645,7 @@ IntPoint FrameView::ConvertSelfToChild(const FrameOrPlugin& child,
                                        const IntPoint& point) const {
   IntPoint new_point = point;
   new_point = FrameToContents(point);
-  new_point.MoveBy(child.FrameRect().Location());
+  new_point.MoveBy(-child.FrameRect().Location());
   return new_point;
 }
 
