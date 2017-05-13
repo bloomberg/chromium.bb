@@ -7,9 +7,6 @@
   "Android N5X Swarm Builder": {
     "gtest_tests": [
       {
-        "args": [
-          "--gs-results-bucket=chromium-result-details"
-        ],
         "merge": {
           "args": [
             "--bucket",
@@ -279,9 +276,6 @@
         "test": "chrome_public_test_vr_apk"
       },
       {
-        "args": [
-          "--gs-results-bucket=chromium-result-details"
-        ],
         "merge": {
           "args": [
             "--bucket",
@@ -400,9 +394,6 @@
         "test": "components_unittests"
       },
       {
-        "args": [
-          "--gs-results-bucket=chromium-result-details"
-        ],
         "merge": {
           "args": [
             "--bucket",
@@ -1033,9 +1024,6 @@
         "test": "mojo_system_unittests"
       },
       {
-        "args": [
-          "--gs-results-bucket=chromium-result-details"
-        ],
         "merge": {
           "args": [
             "--bucket",
@@ -2778,9 +2766,6 @@
         "test": "vr_shell_unittests"
       },
       {
-        "args": [
-          "--gs-results-bucket=chromium-result-details"
-        ],
         "merge": {
           "args": [
             "--bucket",
@@ -2824,8 +2809,7 @@
       {
         "args": [
           "--shared-prefs-file=../../chrome/android/shared_preference_files/test/vr_cardboard_skipdon_setupcomplete.json",
-          "--additional-apk=../../third_party/gvr-android-sdk/test-apks/vr_services/vr_services_current.apk",
-          "--gs-results-bucket=chromium-result-details"
+          "--additional-apk=../../third_party/gvr-android-sdk/test-apks/vr_services/vr_services_current.apk"
         ],
         "merge": {
           "args": [
@@ -2909,9 +2893,6 @@
         "test": "chrome_sync_shell_test_apk"
       },
       {
-        "args": [
-          "--gs-results-bucket=chromium-result-details"
-        ],
         "merge": {
           "args": [
             "--bucket",
@@ -2953,9 +2934,6 @@
         "test": "content_shell_test_apk"
       },
       {
-        "args": [
-          "--gs-results-bucket=chromium-result-details"
-        ],
         "merge": {
           "args": [
             "--bucket",
@@ -3139,9 +3117,6 @@
         "test": "android_webview_unittests"
       },
       {
-        "args": [
-          "--gs-results-bucket=chromium-result-details"
-        ],
         "merge": {
           "args": [
             "--bucket",
@@ -3328,9 +3303,6 @@
         "test": "cc_unittests"
       },
       {
-        "args": [
-          "--gs-results-bucket=chromium-result-details"
-        ],
         "merge": {
           "args": [
             "--bucket",
@@ -3340,6 +3312,7 @@
           ],
           "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
         },
+        "render_results_dir": "chrome/test/data/android/render_tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -3415,8 +3388,7 @@
       },
       {
         "args": [
-          "--enable-browser-side-navigation",
-          "--gs-results-bucket=chromium-result-details"
+          "--enable-browser-side-navigation"
         ],
         "merge": {
           "args": [
@@ -3428,6 +3400,7 @@
           "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
         },
         "name": "browser_side_navigation_chrome_public_test_apk",
+        "render_results_dir": "chrome/test/data/android/render_tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -3458,9 +3431,6 @@
         "test": "chrome_public_test_apk"
       },
       {
-        "args": [
-          "--gs-results-bucket=chromium-result-details"
-        ],
         "merge": {
           "args": [
             "--bucket",
@@ -3501,8 +3471,7 @@
       },
       {
         "args": [
-          "--enable-browser-side-navigation",
-          "--gs-results-bucket=chromium-result-details"
+          "--enable-browser-side-navigation"
         ],
         "merge": {
           "args": [
@@ -3790,9 +3759,6 @@
         "test": "content_browsertests"
       },
       {
-        "args": [
-          "--gs-results-bucket=chromium-result-details"
-        ],
         "merge": {
           "args": [
             "--bucket",
@@ -3833,8 +3799,7 @@
       },
       {
         "args": [
-          "--enable-browser-side-navigation",
-          "--gs-results-bucket=chromium-result-details"
+          "--enable-browser-side-navigation"
         ],
         "merge": {
           "args": [
