@@ -468,21 +468,22 @@ static void init_wedge_master_masks() {
   const int h = MASK_MASTER_SIZE;
   const int stride = MASK_MASTER_STRIDE;
   for (s = 0; s < NSMOOTHERS; s++) {
+// Note: index [0] stores the masters, and [1] its complement.
 #if MASK_MASTER_SIZE == 64
     // Generate prototype by shifting the masters
     int shift = h / 4;
     for (i = 0; i < h; i += 2) {
       shift_copy(wedge_master_oblique_even[s],
-                 &wedge_mask_obl[s][1][WEDGE_OBLIQUE63][i * stride], shift,
+                 &wedge_mask_obl[s][0][WEDGE_OBLIQUE63][i * stride], shift,
                  MASK_MASTER_SIZE);
       shift--;
       shift_copy(wedge_master_oblique_odd[s],
-                 &wedge_mask_obl[s][1][WEDGE_OBLIQUE63][(i + 1) * stride],
+                 &wedge_mask_obl[s][0][WEDGE_OBLIQUE63][(i + 1) * stride],
                  shift, MASK_MASTER_SIZE);
-      memcpy(&wedge_mask_obl[s][1][WEDGE_VERTICAL][i * stride],
+      memcpy(&wedge_mask_obl[s][0][WEDGE_VERTICAL][i * stride],
              wedge_master_vertical[s],
              MASK_MASTER_SIZE * sizeof(wedge_master_vertical[s][0]));
-      memcpy(&wedge_mask_obl[s][1][WEDGE_VERTICAL][(i + 1) * stride],
+      memcpy(&wedge_mask_obl[s][0][WEDGE_VERTICAL][(i + 1) * stride],
              wedge_master_vertical[s],
              MASK_MASTER_SIZE * sizeof(wedge_master_vertical[s][0]));
     }
@@ -495,29 +496,29 @@ static void init_wedge_master_masks() {
         int y = (2 * i + 1 - h);
         double d = (a[0] * x + a[1] * y) / asqrt;
         const int msk = (int)rint((1.0 + tanh(d / smoother_param[s])) * 32);
-        wedge_mask_obl[s][1][WEDGE_OBLIQUE63][i * stride + j] = msk;
+        wedge_mask_obl[s][0][WEDGE_OBLIQUE63][i * stride + j] = msk;
         const int mskx = (int)rint((1.0 + tanh(x / smoother_param[s])) * 32);
-        wedge_mask_obl[s][1][WEDGE_VERTICAL][i * stride + j] = mskx;
+        wedge_mask_obl[s][0][WEDGE_VERTICAL][i * stride + j] = mskx;
       }
     }
 #endif  // MASK_MASTER_SIZE == 64
     for (i = 0; i < h; ++i) {
       for (j = 0; j < w; ++j) {
-        const int msk = wedge_mask_obl[s][1][WEDGE_OBLIQUE63][i * stride + j];
-        wedge_mask_obl[s][1][WEDGE_OBLIQUE27][j * stride + i] = msk;
-        wedge_mask_obl[s][1][WEDGE_OBLIQUE117][i * stride + w - 1 - j] =
-            wedge_mask_obl[s][1][WEDGE_OBLIQUE153][(w - 1 - j) * stride + i] =
-                (1 << WEDGE_WEIGHT_BITS) - msk;
-        wedge_mask_obl[s][0][WEDGE_OBLIQUE63][i * stride + j] =
-            wedge_mask_obl[s][0][WEDGE_OBLIQUE27][j * stride + i] =
-                (1 << WEDGE_WEIGHT_BITS) - msk;
+        const int msk = wedge_mask_obl[s][0][WEDGE_OBLIQUE63][i * stride + j];
+        wedge_mask_obl[s][0][WEDGE_OBLIQUE27][j * stride + i] = msk;
         wedge_mask_obl[s][0][WEDGE_OBLIQUE117][i * stride + w - 1 - j] =
             wedge_mask_obl[s][0][WEDGE_OBLIQUE153][(w - 1 - j) * stride + i] =
+                (1 << WEDGE_WEIGHT_BITS) - msk;
+        wedge_mask_obl[s][1][WEDGE_OBLIQUE63][i * stride + j] =
+            wedge_mask_obl[s][1][WEDGE_OBLIQUE27][j * stride + i] =
+                (1 << WEDGE_WEIGHT_BITS) - msk;
+        wedge_mask_obl[s][1][WEDGE_OBLIQUE117][i * stride + w - 1 - j] =
+            wedge_mask_obl[s][1][WEDGE_OBLIQUE153][(w - 1 - j) * stride + i] =
                 msk;
-        const int mskx = wedge_mask_obl[s][1][WEDGE_VERTICAL][i * stride + j];
-        wedge_mask_obl[s][1][WEDGE_HORIZONTAL][j * stride + i] = mskx;
-        wedge_mask_obl[s][0][WEDGE_VERTICAL][i * stride + j] =
-            wedge_mask_obl[s][0][WEDGE_HORIZONTAL][j * stride + i] =
+        const int mskx = wedge_mask_obl[s][0][WEDGE_VERTICAL][i * stride + j];
+        wedge_mask_obl[s][0][WEDGE_HORIZONTAL][j * stride + i] = mskx;
+        wedge_mask_obl[s][1][WEDGE_VERTICAL][i * stride + j] =
+            wedge_mask_obl[s][1][WEDGE_HORIZONTAL][j * stride + i] =
                 (1 << WEDGE_WEIGHT_BITS) - mskx;
       }
     }
@@ -539,12 +540,23 @@ static void init_wedge_signs() {
     int i, w;
     if (wbits == 0) continue;
     for (w = 0; w < wtypes; ++w) {
+      // Get the mask master, i.e. index [0]
       const uint8_t *mask = get_wedge_mask_inplace(w, 0, sb_type);
-      int sum = 0;
-      for (i = 0; i < bw; ++i) sum += mask[i];
-      for (i = 0; i < bh; ++i) sum += mask[i * MASK_MASTER_STRIDE];
-      sum = (sum + (bw + bh) / 2) / (bw + bh);
-      wedge_params.signflip[w] = (sum < 32);
+      int avg = 0;
+      for (i = 0; i < bw; ++i) avg += mask[i];
+      for (i = 1; i < bh; ++i) avg += mask[i * MASK_MASTER_STRIDE];
+      avg = (avg + (bw + bh - 1) / 2) / (bw + bh - 1);
+      // Default sign of this wedge is 1 if the average < 32, 0 otherwise.
+      // If default sign is 1:
+      //   If sign requested is 0, we need to flip the sign and return
+      //   the complement i.e. index [1] instead. If sign requested is 1
+      //   we need to flip the sign and return index [0] instead.
+      // If default sign is 0:
+      //   If sign requested is 0, we need to return index [0] the master
+      //   if sign requested is 1, we need to return the complement index [1]
+      //   instead.
+      wedge_params.signflip[w] = (avg < 32);
+      // printf("%d[%d] = %d\n", sb_type, w, wedge_params.signflip[w]);
     }
   }
 }
