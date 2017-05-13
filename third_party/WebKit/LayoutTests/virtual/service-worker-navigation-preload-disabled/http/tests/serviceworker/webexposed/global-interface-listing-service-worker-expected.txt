@@ -876,6 +876,10 @@ interface ServiceWorkerRegistration : EventTarget
     method unregister
     method update
     setter onupdatefound
+interface SharedArrayBuffer
+    getter byteLength
+    method constructor
+    method slice
 interface StorageManager
     method constructor
     method estimate
@@ -2269,6 +2273,7 @@ interface WritableStream
     method constructor
     method getWriter
 global object
+    attribute Atomics
     attribute console
     attribute internals
     getter clients

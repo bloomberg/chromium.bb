@@ -14,6 +14,7 @@ PASS DOMMatrix.is2D can never be set to 'true' when it was set to 'false' before
 PASS DOMMatrix fromFloat*Array - invalid array size of nearby 6 
 PASS DOMMatrix fromFloat*Array - invalid array size of nearby 16 
 PASS DOMMatrix fromFloat*Array - invalid array size 
+PASS DOMMatrix fromFloat*Array - can't use SharedArrayBuffer view 
 PASS DOMMatrix.fromMatrix() with no parameter 
 PASS DOMMatrix.fromMatrix() with null 
 PASS DOMMatrix.fromMatrix() with undefined 

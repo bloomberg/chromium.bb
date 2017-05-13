@@ -40,6 +40,8 @@ PASS output.send([], NaN) threw exception TypeError: Failed to execute 'send' on
 PASS output.send([], Infinity) threw exception TypeError: Failed to execute 'send' on 'MIDIOutput': The provided double value is non-finite..
 PASS output.send(new Uint8Array(), NaN) threw exception TypeError: Failed to execute 'send' on 'MIDIOutput': The provided double value is non-finite..
 PASS output.send(new Uint8Array(), Infinity) threw exception TypeError: Failed to execute 'send' on 'MIDIOutput': The provided double value is non-finite..
+PASS output.send(new Uint8Array(new SharedArrayBuffer(4))) threw exception TypeError: Failed to execute 'send' on 'MIDIOutput': The provided ArrayBufferView value must not be shared..
+PASS output.send(new Uint8Array(new SharedArrayBuffer(4), 0)) threw exception TypeError: Failed to execute 'send' on 'MIDIOutput': The provided ArrayBufferView value must not be shared..
 PASS successfullyParsed is true
 
 TEST COMPLETE

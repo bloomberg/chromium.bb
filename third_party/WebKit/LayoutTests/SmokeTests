@@ -1010,11 +1010,6 @@ virtual/prefer_compositing_to_lcd_text/scrollbars/custom-scroll-corner-crash.htm
 virtual/prefer_compositing_to_lcd_text/scrollbars/viewport-scrollbar-corner-with-percent-padding-crash.html
 virtual/rootlayerscrolls/fast/scrolling/scrollable-area-overflow-auto-display-none-in-parent.html
 virtual/rootlayerscrolls/fast/scrolling/scroll-without-document-element-renderer.html
-virtual/sharedarraybuffer/fast/css/parse-timing-function-crash.html
-virtual/sharedarraybuffer/http/tests/websocket/handshake-fail-by-more-protocol-header.html
-virtual/sharedarraybuffer/http/tests/websocket/invalid-continuation.html
-virtual/sharedarraybuffer/webmidi/requestmidiaccess-basic.html
-virtual/sharedarraybuffer/webmidi/requestmidiaccess-fail.html
 virtual/stable/fast/css3-text/css3-text-decoration/stable/getComputedStyle-text-decoration.html
 virtual/stable/http/tests/navigation/location-assign-adds-history-item.html
 virtual/stable/http/tests/navigation/replacestate-base-legal.html
