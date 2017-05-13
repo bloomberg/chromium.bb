@@ -198,20 +198,18 @@ login.createScreen('AccountPickerScreen', 'account-picker', function() {
 
         var bubbleAnchor;
         var attachment;
-        if (activatedPod.pinContainer) {
-          // Anchor the bubble to the input field.
-          bubbleAnchor = (
-              activatedPod.getElementsByClassName('auth-container'))[0];
-          if (!bubbleAnchor) {
-            console.error('auth-container not found!');
-            bubbleAnchor = activatedPod.mainInput;
-          }
-          attachment = cr.ui.Bubble.Attachment.RIGHT;
-        } else {
-          // Anchor the bubble to the pod instead of the input.
-          bubbleAnchor = activatedPod;
-          attachment = cr.ui.Bubble.Attachment.BOTTOM;
+        // Anchor the bubble to the input field.
+        bubbleAnchor =
+            activatedPod.getElementsByClassName('auth-container')[0];
+        if (!bubbleAnchor) {
+          console.error('auth-container not found!');
+          bubbleAnchor = activatedPod.mainInput;
         }
+        if (activatedPod.pinContainer &&
+            activatedPod.pinContainer.style.visibility == 'visible')
+          attachment = cr.ui.Bubble.Attachment.RIGHT;
+        else
+          attachment = cr.ui.Bubble.Attachment.BOTTOM;
 
         var bubble = $('bubble');
 

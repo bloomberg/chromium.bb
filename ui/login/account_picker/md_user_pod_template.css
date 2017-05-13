@@ -7,14 +7,8 @@
  */
 
 .action-box-remove-user-warning .remove-warning-button {
-  --paper-button: {
-    background: var(--google-red-700);
-    color: white;
-    font-weight: 600;
-    @apply(--layout-vertical);
-  };
-  --paper-button-flat-keyboard-focus: {
-    background: rgb(173, 50, 36);
-  };
-  @apply(--action-button);
+  color: #E67C73;
+  margin: 0;
+  padding: 0;
+  text-transform: none;
 }

@@ -48,12 +48,12 @@ cr.define('login', function() {
    * Variables used for pod placement processing. Width and height should be
    * synced with computed CSS sizes of pods.
    */
-  var CROS_POD_WIDTH = 180;
+  var CROS_POD_WIDTH = 306;
   var DESKTOP_POD_WIDTH = 180;
   var MD_DESKTOP_POD_WIDTH = 160;
   var PUBLIC_EXPANDED_BASIC_WIDTH = 500;
   var PUBLIC_EXPANDED_ADVANCED_WIDTH = 610;
-  var CROS_POD_HEIGHT = 213;
+  var CROS_POD_HEIGHT = 346;
   var DESKTOP_POD_HEIGHT = 226;
   var MD_DESKTOP_POD_HEIGHT = 200;
   var POD_ROW_PADDING = 10;
@@ -1085,14 +1085,6 @@ cr.define('login', function() {
     },
 
     /**
-     * Gets action box menu, remove user command item.
-     * @type {!HTMLInputElement}
-     */
-    get actionBoxMenuCommandElement() {
-      return this.querySelector('.action-box-menu-remove-command');
-    },
-
-    /**
      * Gets action box menu, remove user command item div.
      * @type {!HTMLInputElement}
      */
@@ -1193,9 +1185,6 @@ cr.define('login', function() {
 
       this.actionBoxMenuTitleEmailElement.hidden =
           this.user_.legacySupervisedUser;
-
-      this.actionBoxMenuCommandElement.textContent =
-          loadTimeData.getString('removeUser');
     },
 
     customizeUserPodPerUserType: function() {
@@ -2006,16 +1995,24 @@ cr.define('login', function() {
      * button color and state and hides the error popup bubble.
      */
     updateInput_: function() {
+      var isEmpty = this.passwordElement.value.length == 0;
       if (this.submitButton) {
-        this.submitButton.disabled = this.passwordElement.value.length == 0;
+        this.submitButton.disabled = isEmpty;
         if (this.isFingerprintIconShown()) {
-          this.submitButton.hidden = this.passwordElement.value.length == 0;
+          this.submitButton.hidden = isEmpty;
         } else {
           this.submitButton.hidden = false;
         }
       }
       this.showError = false;
       $('bubble').hide();
+      var inputLine = this.querySelector('#input-line');
+      if (inputLine) {
+        if (!isEmpty)
+          inputLine.setAttribute('active', 'true');
+        else
+          inputLine.removeAttribute('active');
+      }
     },
 
     /**
@@ -3935,6 +3932,8 @@ cr.define('login', function() {
         this.placePods_();
         this.maybePreselectPod();
       }
+
+      this.updatePodNameArea();
     },
 
     /**
@@ -3961,6 +3960,21 @@ cr.define('login', function() {
       if (this.podsWithPendingImages_.length == 0) {
         this.classList.remove('images-loading');
       }
+    },
+
+    /**
+     * Makes sure user name is centered in each pod and extra long name
+     * does not exceed max width.
+     */
+    updatePodNameArea: function() {
+      this.querySelectorAll('.name-container').forEach(function(nameArea) {
+        var nameElement = nameArea.querySelector('.name');
+        var leftMargin = (CROS_POD_WIDTH - nameElement.offsetWidth) / 2;
+        if (leftMargin > 0)
+          nameArea.style.left = leftMargin + 'px';
+        else
+          nameElement.style.width = CROS_POD_WIDTH + 'px';
+      });
     },
 
     /**
