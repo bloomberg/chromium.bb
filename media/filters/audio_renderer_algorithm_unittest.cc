@@ -109,7 +109,8 @@ class AudioRendererAlgorithmTest : public testing::Test {
     AudioParameters params(media::AudioParameters::AUDIO_PCM_LINEAR,
                            channel_layout, samples_per_second,
                            bytes_per_sample_ * 8, frames_per_buffer);
-    algorithm_.Initialize(params);
+    bool is_encrypted = false;
+    algorithm_.Initialize(params, is_encrypted);
     algorithm_.SetChannelMask(std::move(channel_mask));
     FillAlgorithmQueue();
   }
@@ -252,7 +253,8 @@ class AudioRendererAlgorithmTest : public testing::Test {
     channels_ = ChannelLayoutToChannelCount(kChannelLayout);
     AudioParameters params(AudioParameters::AUDIO_PCM_LINEAR, kChannelLayout,
                            kSampleRateHz, kBytesPerSample * 8, kNumFrames);
-    algorithm_.Initialize(params);
+    bool is_encrypted = false;
+    algorithm_.Initialize(params, is_encrypted);
 
     // A pulse is 6 milliseconds (even number of samples).
     const int kPulseWidthSamples = 6 * kSampleRateHz / 1000;

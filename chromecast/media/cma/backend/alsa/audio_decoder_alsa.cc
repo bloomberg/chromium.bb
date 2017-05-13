@@ -280,10 +280,13 @@ void AudioDecoderAlsa::CreateRateShifter(int samples_per_second) {
   rate_shifter_info_.push_back(RateShifterInfo(1.0f));
 
   rate_shifter_.reset(new ::media::AudioRendererAlgorithm());
-  rate_shifter_->Initialize(::media::AudioParameters(
-      ::media::AudioParameters::AUDIO_PCM_LINEAR,
-      ::media::CHANNEL_LAYOUT_STEREO, samples_per_second, kBitsPerSample,
-      kDefaultFramesPerBuffer));
+  bool is_encrypted = false;
+  rate_shifter_->Initialize(
+      ::media::AudioParameters(::media::AudioParameters::AUDIO_PCM_LINEAR,
+                               ::media::CHANNEL_LAYOUT_STEREO,
+                               samples_per_second, kBitsPerSample,
+                               kDefaultFramesPerBuffer),
+      is_encrypted);
 }
 
 bool AudioDecoderAlsa::SetVolume(float multiplier) {
