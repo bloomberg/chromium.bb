@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "services/service_manager/public/c/main.h"
 #include "base/at_exit.h"
 #include "base/command_line.h"
 #include "base/debug/stack_trace.h"
@@ -9,7 +10,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/process/launch.h"
-#include "services/service_manager/public/c/main.h"
+#include "base/task_scheduler/task_scheduler.h"
 #include "services/service_manager/public/cpp/standalone_service/standalone_service.h"
 #include "services/service_manager/public/cpp/standalone_service/switches.h"
 #include "services/service_manager/public/interfaces/service.mojom.h"
@@ -53,6 +54,11 @@ int main(int argc, char** argv) {
 
   service_manager::WaitForDebuggerIfNecessary();
 
+  base::TaskScheduler::CreateAndStartWithDefaultParams("StandaloneService");
+
   service_manager::RunStandaloneService(base::Bind(&RunServiceMain));
+
+  base::TaskScheduler::GetInstance()->Shutdown();
+
   return 0;
 }
