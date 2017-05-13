@@ -40,6 +40,7 @@ NSString* const kHostSessionPin = @"kHostSessionPin";
   // Call _secretFetchedCallback on the network thread.
   remoting::protocol::SecretFetchedCallback _secretFetchedCallback;
   std::unique_ptr<remoting::GestureInterpreter> _gestureInterpreter;
+  //  std::unique_ptr<remoting::KeyboardInterpreter> _keyboardInterpreter;
 }
 @end
 

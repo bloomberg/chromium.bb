@@ -7,8 +7,11 @@
 #endif
 
 #import "remoting/ios/client_gestures.h"
+
+#import "remoting/ios/key_input.h"
 #import "remoting/ios/session/remoting_client.h"
 
+#include "base/logging.h"
 #include "remoting/client/gesture_interpreter.h"
 
 @implementation ClientGestures

@@ -25,6 +25,8 @@ source_set("ios_core") {
   sources = [
     "client_gestures.h",
     "client_gestures.mm",
+    "client_keyboard.h",
+    "client_keyboard.mm",
     "host_preferences.h",
     "host_preferences.mm",
     "host_preferences_persistence.h",

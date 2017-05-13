@@ -77,6 +77,8 @@ extern NSString* const kHostSessionPin;
 // This is valid only after the client has connected to the host. Always use
 // RemotingClient.gestureInterpreter instead of storing the pointer separately.
 @property(nonatomic, readonly) remoting::GestureInterpreter* gestureInterpreter;
+// @property(nonatomic, readonly)
+//     remoting::KeyboardInterpreter* keyboardInterpreter;
 
 @end
 
