@@ -39,7 +39,6 @@ fast/harness/sample-fail-mismatch-reftest.html [ WontFix ]
 
 # This test only applies to overlay scrollbar platforms.
 [ Win Linux ] fast/dom/partial-layout-overlay-scrollbars.html [ WontFix ]
-[ Win Linux ] virtual/sharedarraybuffer/fast/dom/partial-layout-overlay-scrollbars.html [ WontFix ]
 
 # Mac's popup behavior is different.
 [ Mac ] fast/forms/select/menulist-onchange-fired-with-key-up-down.html [ WontFix ]
@@ -102,12 +101,6 @@ media/stable [ WontFix ]
 [ Android ] virtual/mojo-loading/http/tests/media/media-source/mediasource-config-change-mp4-v-bitrate.html [ WontFix ]
 [ Android ] virtual/mojo-loading/http/tests/media/media-source/mediasource-config-change-mp4-v-framerate.html [ WontFix ]
 [ Android ] virtual/mojo-loading/http/tests/media/media-source/mediasource-config-change-mp4-v-framesize.html [ WontFix ]
-[ Android ] virtual/sharedarraybuffer/http/tests/media/media-source/mediasource-config-change-mp4-av-audio-bitrate.html [ WontFix ]
-[ Android ] virtual/sharedarraybuffer/http/tests/media/media-source/mediasource-config-change-mp4-av-framesize.html [ WontFix ]
-[ Android ] virtual/sharedarraybuffer/http/tests/media/media-source/mediasource-config-change-mp4-av-video-bitrate.html [ WontFix ]
-[ Android ] virtual/sharedarraybuffer/http/tests/media/media-source/mediasource-config-change-mp4-v-bitrate.html [ WontFix ]
-[ Android ] virtual/sharedarraybuffer/http/tests/media/media-source/mediasource-config-change-mp4-v-framerate.html [ WontFix ]
-[ Android ] virtual/sharedarraybuffer/http/tests/media/media-source/mediasource-config-change-mp4-v-framesize.html [ WontFix ]
 
 # Only run fake-Android tests on Linux
 [ Mac Win ] virtual/android [ WontFix ]
@@ -224,8 +217,6 @@ crbug.com/712970 virtual/mojo-loading/http/tests/wasm_streaming/ [ WontFix ]
 # these tests can still be run manually with --skiped=ignore.
 webaudio/codec-tests/mp3 [ WontFix ]
 webaudio/codec-tests/aac [ WontFix ]
-virtual/sharedarraybuffer/webaudio/codec-tests/mp3 [ WontFix ]
-virtual/sharedarraybuffer/webaudio/codec-tests/aac [ WontFix ]
 
 # WPT subdirectories without owners.
 external/wpt/accelerometer [ WontFix ]

@@ -264,6 +264,10 @@ CONSOLE MESSAGE: line 138:     method getReader
 CONSOLE MESSAGE: line 138:     method pipeThrough
 CONSOLE MESSAGE: line 138:     method pipeTo
 CONSOLE MESSAGE: line 138:     method tee
+CONSOLE MESSAGE: line 138: interface SharedArrayBuffer
+CONSOLE MESSAGE: line 138:     getter byteLength
+CONSOLE MESSAGE: line 138:     method constructor
+CONSOLE MESSAGE: line 138:     method slice
 CONSOLE MESSAGE: line 138: interface StylePropertyMap : StylePropertyMapReadonly
 CONSOLE MESSAGE: line 138:     method append
 CONSOLE MESSAGE: line 138:     method constructor
@@ -287,6 +291,7 @@ CONSOLE MESSAGE: line 138:     method abort
 CONSOLE MESSAGE: line 138:     method constructor
 CONSOLE MESSAGE: line 138:     method getWriter
 CONSOLE MESSAGE: line 138: global object
+CONSOLE MESSAGE: line 138:     attribute Atomics
 CONSOLE MESSAGE: line 138:     attribute console
 CONSOLE MESSAGE: line 138:     method gc
 CONSOLE MESSAGE: line 138:     method registerPaint
