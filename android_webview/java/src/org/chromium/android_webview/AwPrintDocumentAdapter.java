@@ -68,6 +68,11 @@ public class AwPrintDocumentAdapter extends PrintDocumentAdapter {
     @Override
     public void onWrite(final PageRange[] pages, ParcelFileDescriptor destination,
             CancellationSignal cancellationSignal, final WriteResultCallback callback) {
+        if (pages == null || pages.length == 0) {
+            callback.onWriteFailed(null);
+            return;
+        }
+
         mPdfExporter.exportToPdf(
                 destination, mAttributes, normalizeRanges(pages), new ValueCallback<Boolean>() {
                     @Override
@@ -100,4 +105,3 @@ public class AwPrintDocumentAdapter extends PrintDocumentAdapter {
         return ret;
     }
 }
-
