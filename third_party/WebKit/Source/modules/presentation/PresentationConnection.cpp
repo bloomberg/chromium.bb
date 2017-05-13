@@ -34,7 +34,8 @@ namespace {
 
 // TODO(mlamouri): refactor in one common place.
 WebPresentationClient* PresentationClient(ExecutionContext* execution_context) {
-  ASSERT(execution_context && execution_context->IsDocument());
+  DCHECK(execution_context);
+  DCHECK(execution_context->IsDocument());
 
   Document* document = ToDocument(execution_context);
   if (!document->GetFrame())
@@ -274,7 +275,8 @@ void PresentationConnection::send(const String& message,
 
 void PresentationConnection::send(DOMArrayBuffer* array_buffer,
                                   ExceptionState& exception_state) {
-  ASSERT(array_buffer && array_buffer->Buffer());
+  DCHECK(array_buffer);
+  DCHECK(array_buffer->Buffer());
   if (!CanSendMessage(exception_state))
     return;
 
@@ -476,8 +478,10 @@ void PresentationConnection::DidClose() {
 }
 
 void PresentationConnection::DidFinishLoadingBlob(DOMArrayBuffer* buffer) {
-  ASSERT(!messages_.IsEmpty() && messages_.front()->type == kMessageTypeBlob);
-  ASSERT(buffer && buffer->Buffer());
+  DCHECK(!messages_.IsEmpty());
+  DCHECK_EQ(messages_.front()->type, kMessageTypeBlob);
+  DCHECK(buffer);
+  DCHECK(buffer->Buffer());
   // Send the loaded blob immediately here and continue processing the queue.
   WebPresentationClient* client = PresentationClient(GetExecutionContext());
   if (client) {
@@ -492,7 +496,8 @@ void PresentationConnection::DidFinishLoadingBlob(DOMArrayBuffer* buffer) {
 
 void PresentationConnection::DidFailLoadingBlob(
     FileError::ErrorCode error_code) {
-  ASSERT(!messages_.IsEmpty() && messages_.front()->type == kMessageTypeBlob);
+  DCHECK(!messages_.IsEmpty());
+  DCHECK_EQ(messages_.front()->type, kMessageTypeBlob);
   // FIXME: generate error message?
   // Ignore the current failed blob item and continue with next items.
   messages_.pop_front();

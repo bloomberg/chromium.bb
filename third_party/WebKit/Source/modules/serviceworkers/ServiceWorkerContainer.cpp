@@ -111,7 +111,7 @@ class ServiceWorkerContainer::GetRegistrationForReadyCallback
 
   void OnSuccess(
       std::unique_ptr<WebServiceWorkerRegistration::Handle> handle) override {
-    ASSERT(ready_->GetState() == ReadyProperty::kPending);
+    DCHECK_EQ(ready_->GetState(), ReadyProperty::kPending);
 
     if (ready_->GetExecutionContext() &&
         !ready_->GetExecutionContext()->IsContextDestroyed()) {

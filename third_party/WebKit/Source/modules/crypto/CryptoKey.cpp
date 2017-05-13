@@ -110,7 +110,7 @@ class DictionaryBuilder : public WebCryptoKeyAlgorithmDictionary {
 
   virtual void SetAlgorithm(const char* property_name,
                             const WebCryptoAlgorithm& algorithm) {
-    ASSERT(algorithm.ParamsType() == kWebCryptoAlgorithmParamsTypeNone);
+    DCHECK_EQ(algorithm.ParamsType(), kWebCryptoAlgorithmParamsTypeNone);
 
     V8ObjectBuilder algorithm_value(builder_.GetScriptState());
     algorithm_value.AddString(

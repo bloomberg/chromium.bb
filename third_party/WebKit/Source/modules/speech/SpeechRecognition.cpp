@@ -37,7 +37,8 @@
 namespace blink {
 
 SpeechRecognition* SpeechRecognition::Create(ExecutionContext* context) {
-  ASSERT(context && context->IsDocument());
+  DCHECK(context);
+  DCHECK(context->IsDocument());
   Document* document = ToDocument(context);
   DCHECK(document);
   return new SpeechRecognition(document->GetPage(), context);

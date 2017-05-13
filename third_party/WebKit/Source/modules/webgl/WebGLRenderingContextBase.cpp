@@ -2875,7 +2875,7 @@ ScriptValue WebGLRenderingContextBase::getFramebufferAttachmentParameter(
     return ScriptValue::CreateNull(script_state);
   }
 
-  ASSERT(attachment_object->IsTexture() || attachment_object->IsRenderbuffer());
+  DCHECK(attachment_object->IsTexture() || attachment_object->IsRenderbuffer());
   if (attachment_object->IsTexture()) {
     switch (pname) {
       case GL_FRAMEBUFFER_ATTACHMENT_OBJECT_TYPE:
@@ -6266,7 +6266,7 @@ void WebGLRenderingContextBase::LoseContextImpl(
     return;
 
   context_lost_mode_ = mode;
-  ASSERT(context_lost_mode_ != kNotLostContext);
+  DCHECK_NE(context_lost_mode_, kNotLostContext);
   auto_recovery_method_ = auto_recovery_method;
 
   // Lose all the extensions.
@@ -6339,7 +6339,7 @@ Extensions3DUtil* WebGLRenderingContextBase::ExtensionsUtil() {
     extensions_util_ = Extensions3DUtil::Create(gl);
     // The only reason the ExtensionsUtil should be invalid is if the gl context
     // is lost.
-    ASSERT(extensions_util_->IsValid() ||
+    DCHECK(extensions_util_->IsValid() ||
            gl->GetGraphicsResetStatusKHR() != GL_NO_ERROR);
   }
   return extensions_util_.get();

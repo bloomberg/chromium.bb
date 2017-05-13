@@ -33,14 +33,14 @@ USBAlternateInterface::USBAlternateInterface(const USBInterface* interface,
                                              size_t alternate_index)
     : interface_(interface), alternate_index_(alternate_index) {
   DCHECK(interface_);
-  ASSERT(alternate_index_ < interface_->Info().alternates.size());
+  DCHECK_LT(alternate_index_, interface_->Info().alternates.size());
 }
 
 const device::mojom::blink::UsbAlternateInterfaceInfo&
 USBAlternateInterface::Info() const {
   const device::mojom::blink::UsbInterfaceInfo& interface_info =
       interface_->Info();
-  ASSERT(alternate_index_ < interface_info.alternates.size());
+  DCHECK_LT(alternate_index_, interface_info.alternates.size());
   return *interface_info.alternates[alternate_index_];
 }
 

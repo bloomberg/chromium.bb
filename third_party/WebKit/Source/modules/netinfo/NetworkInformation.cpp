@@ -116,7 +116,7 @@ void NetworkInformation::RemoveAllEventListeners() {
 }
 
 bool NetworkInformation::HasPendingActivity() const {
-  ASSERT(context_stopped_ || observing_ == HasEventListeners());
+  DCHECK(context_stopped_ || observing_ == HasEventListeners());
 
   // Prevent collection of this object when there are active listeners.
   return observing_;

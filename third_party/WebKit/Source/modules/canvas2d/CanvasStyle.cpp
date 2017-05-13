@@ -128,7 +128,7 @@ void CanvasStyle::ApplyToFlags(PaintFlags& flags) const {
 RGBA32 CanvasStyle::PaintColor() const {
   if (type_ == kColorRGBA)
     return rgba_;
-  ASSERT(type_ == kGradient || type_ == kImagePattern);
+  DCHECK(type_ == kGradient || type_ == kImagePattern);
   return Color::kBlack;
 }
 

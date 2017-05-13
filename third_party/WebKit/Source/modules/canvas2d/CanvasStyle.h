@@ -48,7 +48,7 @@ class CanvasStyle final : public GarbageCollected<CanvasStyle> {
   static CanvasStyle* CreateFromPattern(CanvasPattern*);
 
   String GetColor() const {
-    ASSERT(type_ == kColorRGBA);
+    DCHECK_EQ(type_, kColorRGBA);
     return Color(rgba_).Serialized();
   }
   CanvasGradient* GetCanvasGradient() const { return gradient_.Get(); }

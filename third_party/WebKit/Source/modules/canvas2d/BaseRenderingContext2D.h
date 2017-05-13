@@ -456,7 +456,7 @@ void BaseRenderingContext2D::CompositedDraw(
     CanvasRenderingContext2DState::PaintType paint_type,
     CanvasRenderingContext2DState::ImageType image_type) {
   sk_sp<SkImageFilter> filter = StateGetFilter();
-  ASSERT(IsFullCanvasCompositeMode(GetState().GlobalComposite()) || filter);
+  DCHECK(IsFullCanvasCompositeMode(GetState().GlobalComposite()) || filter);
   SkMatrix ctm = c->getTotalMatrix();
   c->setMatrix(SkMatrix::I());
   PaintFlags composite_flags;

@@ -181,7 +181,7 @@ class ResponsesAccumulator : public RefCounted<ResponsesAccumulator> {
 
   void AddRequestResponsePair(const WebServiceWorkerRequest& request,
                               const WebServiceWorkerResponse& response) {
-    ASSERT(num_responses_left_ > 0);
+    DCHECK_GT(num_responses_left_, 0);
     RequestResponse& request_response =
         responses_.at(responses_.size() - num_responses_left_);
     request_response.request = request.Url().GetString();

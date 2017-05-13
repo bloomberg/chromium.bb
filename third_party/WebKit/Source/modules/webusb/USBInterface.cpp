@@ -37,9 +37,9 @@ USBInterface::USBInterface(const USBDevice* device,
     : device_(device),
       configuration_index_(configuration_index),
       interface_index_(interface_index) {
-  ASSERT(configuration_index_ < device_->Info().configurations.size());
-  ASSERT(
-      interface_index_ <
+  DCHECK_LT(configuration_index_, device_->Info().configurations.size());
+  DCHECK_LT(
+      interface_index_,
       device_->Info().configurations[configuration_index_]->interfaces.size());
 }
 

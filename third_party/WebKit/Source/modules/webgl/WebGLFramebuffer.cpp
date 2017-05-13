@@ -533,7 +533,7 @@ void WebGLFramebuffer::CommitWebGL1DepthStencilIfConsistent(GLenum target) {
 
 GLenum WebGLFramebuffer::GetDrawBuffer(GLenum draw_buffer) {
   int index = static_cast<int>(draw_buffer - GL_DRAW_BUFFER0_EXT);
-  ASSERT(index >= 0);
+  DCHECK_GE(index, 0);
   if (index < static_cast<int>(draw_buffers_.size()))
     return draw_buffers_[index];
   if (draw_buffer == GL_DRAW_BUFFER0_EXT)
