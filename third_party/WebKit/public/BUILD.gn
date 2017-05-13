@@ -738,6 +738,8 @@ mojom("mojo_bindings") {
     "//url/mojo:url_mojom_origin",
   ]
 
+  component_output_prefix = "blink_mojo_bindings"
+
   # The chromium variant must be linked with content and use the same export
   # settings in component build because of the WebBluetoothDeviceId typemap
   # inside content.
@@ -770,6 +772,8 @@ mojom("android_mojo_bindings") {
     "//url/mojo:url_mojom_gurl",
   ]
 
+  component_output_prefix = "blink_android_mojo_bindings"
+
   # See comment above.
   export_class_attribute = "CONTENT_EXPORT"
   export_define = "CONTENT_IMPLEMENTATION=1"
@@ -794,6 +798,8 @@ mojom("offscreen_canvas_mojo_bindings") {
   deps = [
     "//cc/ipc:interfaces",
   ]
+
+  component_output_prefix = "blink_offscreen_canvas_mojo_bindings"
 
   # See comment above
   export_class_attribute = "CONTENT_EXPORT"

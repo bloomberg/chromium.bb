@@ -110,6 +110,10 @@ if (current_cpu == "arm" || current_cpu == "arm64") {
       "//ui/vector_icons",
     ]
 
+    public_deps = [
+      "//device/vr:mojo_bindings",
+    ]
+
     libs = [
       "//third_party/gvr-android-sdk/libgvr_shim_static_${current_cpu}.a",
       "android",

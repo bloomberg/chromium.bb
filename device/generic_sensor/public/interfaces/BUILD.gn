@@ -7,6 +7,7 @@ import("//mojo/public/tools/bindings/mojom.gni")
 mojom("interfaces") {
   visibility = [ "//device/generic_sensor/public/cpp" ]
   visibility_blink = [ "//third_party/WebKit/Source/*" ]
+  component_output_prefix = "generic_sensor_public_interfaces"
   export_class_attribute = "DEVICE_GENERIC_SENSOR_PUBLIC_EXPORT"
   export_define = "DEVICE_GENERIC_SENSOR_PUBLIC_IMPLEMENTATION=1"
   export_header =
