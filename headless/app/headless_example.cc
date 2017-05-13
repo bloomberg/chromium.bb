@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/memory/weak_ptr.h"
+#include "build/build_config.h"
 #include "headless/public/devtools/domains/page.h"
 #include "headless/public/devtools/domains/runtime.h"
 #include "headless/public/headless_browser.h"
@@ -18,6 +19,11 @@
 #include "headless/public/headless_devtools_target.h"
 #include "headless/public/headless_web_contents.h"
 #include "ui/gfx/geometry/size.h"
+
+#if defined(OS_WIN)
+#include "content/public/app/sandbox_helper_win.h"
+#include "sandbox/win/src/sandbox_types.h"
+#endif
 
 // This class contains the main application logic, i.e., waiting for a page to
 // load and printing its DOM. Note that browser initialization happens outside
@@ -158,15 +164,24 @@ void OnHeadlessBrowserStarted(headless::HeadlessBrowser* browser) {
 }
 
 int main(int argc, const char** argv) {
+#if !defined(OS_WIN)
   // This function must be the first thing we call to make sure child processes
   // such as the renderer are started properly. The headless library starts
   // child processes by forking and exec'ing the main application.
   headless::RunChildProcessIfNeeded(argc, argv);
+#endif
 
   // Create a headless browser instance. There can be one of these per process
   // and it can only be initialized once.
   headless::HeadlessBrowser::Options::Builder builder(argc, argv);
 
+#if defined(OS_WIN)
+  // In windows, you must initialize and set the sandbox, or pass it along
+  // if it has already been initialized.
+  sandbox::SandboxInterfaceInfo sandbox_info = {0};
+  content::InitializeSandboxInfo(&sandbox_info);
+  builder.SetSandboxInfo(&sandbox_info);
+#endif
   // Here you can customize browser options. As an example we set the window
   // size.
   builder.SetWindowSize(gfx::Size(800, 600));

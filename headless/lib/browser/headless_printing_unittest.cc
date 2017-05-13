@@ -157,27 +157,27 @@ TEST(PageRangeTextToPagesTest, General) {
   PM::PageRangeStatus status = PM::PageRangeTextToPages("-", 10, &pages);
   expected_pages = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
   EXPECT_EQ(expected_pages, pages);
-  EXPECT_EQ(PM::NO_ERROR, status);
+  EXPECT_EQ(PM::PRINT_NO_ERROR, status);
 
   status = PM::PageRangeTextToPages("-5", 10, &pages);
   expected_pages = {0, 1, 2, 3, 4};
   EXPECT_EQ(expected_pages, pages);
-  EXPECT_EQ(PM::NO_ERROR, status);
+  EXPECT_EQ(PM::PRINT_NO_ERROR, status);
 
   status = PM::PageRangeTextToPages("5-", 10, &pages);
   expected_pages = {4, 5, 6, 7, 8, 9};
   EXPECT_EQ(expected_pages, pages);
-  EXPECT_EQ(PM::NO_ERROR, status);
+  EXPECT_EQ(PM::PRINT_NO_ERROR, status);
 
   status = PM::PageRangeTextToPages("1-3,9-10,4-6", 10, &pages);
   expected_pages = {0, 1, 2, 3, 4, 5, 8, 9};
   EXPECT_EQ(expected_pages, pages);
-  EXPECT_EQ(PM::NO_ERROR, status);
+  EXPECT_EQ(PM::PRINT_NO_ERROR, status);
 
   status = PM::PageRangeTextToPages("1- 3, 9-10,4 -6", 10, &pages);
   expected_pages = {0, 1, 2, 3, 4, 5, 8, 9};
   EXPECT_EQ(expected_pages, pages);
-  EXPECT_EQ(PM::NO_ERROR, status);
+  EXPECT_EQ(PM::PRINT_NO_ERROR, status);
 
   status = PM::PageRangeTextToPages("1-3,9-10,4-6", 5, &pages);
   EXPECT_EQ(PM::LIMIT_ERROR, status);

@@ -30,11 +30,6 @@
 #include "ui/events/devices/device_data_manager.h"
 #include "ui/gfx/geometry/size.h"
 
-#if defined(OS_WIN)
-#include "content/public/app/sandbox_helper_win.h"
-#include "sandbox/win/src/sandbox_types.h"
-#endif
-
 namespace content {
 class DevToolsAgentHost;
 }
@@ -47,9 +42,10 @@ int RunContentMain(
     const base::Callback<void(HeadlessBrowser*)>& on_browser_start_callback) {
   content::ContentMainParams params(nullptr);
 #if defined(OS_WIN)
-  sandbox::SandboxInterfaceInfo sandbox_info = {0};
-  content::InitializeSandboxInfo(&sandbox_info);
-  params.sandbox_info = &sandbox_info;
+  // Sandbox info has to be set and initialized.
+  CHECK(options.sandbox_info);
+  params.instance = options.instance;
+  params.sandbox_info = std::move(options.sandbox_info);
 #elif !defined(OS_ANDROID)
   params.argc = options.argc;
   params.argv = options.argv;
@@ -238,15 +234,24 @@ bool HeadlessBrowserImpl::IsAttached() {
   return agent_host_->IsAttached();
 }
 
+#if defined(OS_WIN)
+void RunChildProcessIfNeeded(HINSTANCE instance,
+                             sandbox::SandboxInterfaceInfo* sandbox_info) {
+  base::CommandLine::Init(0, nullptr);
+  HeadlessBrowser::Options::Builder builder(0, nullptr);
+  builder.SetInstance(instance);
+  builder.SetSandboxInfo(std::move(sandbox_info));
+#else
 void RunChildProcessIfNeeded(int argc, const char** argv) {
   base::CommandLine::Init(argc, argv);
+  HeadlessBrowser::Options::Builder builder(argc, argv);
+#endif  // defined(OS_WIN)
   const base::CommandLine& command_line(
       *base::CommandLine::ForCurrentProcess());
 
   if (!command_line.HasSwitch(::switches::kProcessType))
     return;
 
-  HeadlessBrowser::Options::Builder builder(argc, argv);
   if (command_line.HasSwitch(switches::kUserAgent)) {
     std::string ua = command_line.GetSwitchValueASCII(switches::kUserAgent);
     if (net::HttpUtil::IsValidHeaderValue(ua))

@@ -11,6 +11,8 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "content/public/app/content_main_delegate.h"
+#include "content/public/browser/content_browser_client.h"
+#include "content/public/renderer/content_renderer_client.h"
 #include "headless/lib/browser/headless_platform_event_source.h"
 #include "headless/lib/headless_content_client.h"
 #include "headless/public/headless_export.h"
@@ -22,8 +24,6 @@ class CommandLine;
 namespace headless {
 
 class HeadlessBrowserImpl;
-class HeadlessContentBrowserClient;
-class HeadlessContentRendererClient;
 
 // Exported for tests.
 class HEADLESS_EXPORT HeadlessContentMainDelegate
@@ -57,8 +57,8 @@ class HEADLESS_EXPORT HeadlessContentMainDelegate
 
   static HeadlessContentMainDelegate* GetInstance();
 
-  std::unique_ptr<HeadlessContentBrowserClient> browser_client_;
-  std::unique_ptr<HeadlessContentRendererClient> renderer_client_;
+  std::unique_ptr<content::ContentRendererClient> renderer_client_;
+  std::unique_ptr<content::ContentBrowserClient> browser_client_;
   HeadlessContentClient content_client_;
   HeadlessPlatformEventSource platform_event_source_;
 
