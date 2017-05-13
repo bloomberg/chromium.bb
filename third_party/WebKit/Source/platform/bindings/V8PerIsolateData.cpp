@@ -91,12 +91,6 @@ void V8PerIsolateData::EnableIdleTasks(
   From(isolate)->isolate_holder_.EnableIdleTasks(std::move(task_runner));
 }
 
-v8::Persistent<v8::Value>& V8PerIsolateData::EnsureLiveRoot() {
-  if (live_root_.IsEmpty())
-    live_root_.Set(GetIsolate(), v8::Null(GetIsolate()));
-  return live_root_.Get();
-}
-
 // willBeDestroyed() clear things that should be cleared before
 // ThreadState::detach() gets called.
 void V8PerIsolateData::WillBeDestroyed(v8::Isolate* isolate) {
@@ -120,7 +114,6 @@ void V8PerIsolateData::Destroy(v8::Isolate* isolate) {
   // Clear everything before exiting the Isolate.
   if (data->script_regexp_script_state_)
     data->script_regexp_script_state_->DisposePerContextData();
-  data->live_root_.Clear();
   data->private_property_.reset();
   data->string_cache_->Dispose();
   data->string_cache_.reset();
