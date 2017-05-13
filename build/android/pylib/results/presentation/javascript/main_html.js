@@ -88,7 +88,7 @@ function sortByColumn(head) {
   // Determine whether to asc or desc and set arrows.
   var headers = head.parentNode.getElementsByTagName('th');
   var headIndex = Array.prototype.slice.call(headers).indexOf(head);
-  var asc = 1;
+  var asc = -1;
   for (var i = 0; i < headers.length; i++) {
     if (headers[i].dataset.ascSorted != 0) {
       if (headers[i].dataset.ascSorted == 1) {
@@ -186,4 +186,8 @@ function sortByColumn(head) {
   for (var i = 0; i < rowBlocks.length; i++) {
     table.appendChild(rowBlocks[i]);
   }
+}
+
+function sortSuiteTableByFailedTestCases() {
+  sortByColumn(document.getElementById('number_fail_tests'));
 }
