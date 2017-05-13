@@ -102,6 +102,10 @@ static_library("client") {
       "OpenSLES",
     ]
   }
+  if (is_ios) {
+    sources += [ "native_device_keymap_ios.cc" ]
+    sources -= [ "native_device_keymap.cc" ]
+  }
 }
 
 source_set("unit_tests") {

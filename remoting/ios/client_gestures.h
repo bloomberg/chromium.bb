@@ -7,8 +7,6 @@
 
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
-#include "base/logging.h"
-#import "remoting/ios/key_input.h"
 
 @class RemotingClient;
 
@@ -24,12 +22,10 @@ typedef NS_ENUM(NSInteger, HostInputScheme) {
 };
 
 typedef NS_ENUM(NSInteger, MouseButton) {
-
   NO_BUTTON = 0,
   LEFT_BUTTON = 1,
   MIDDLE_BUTTON = 2,
   RIGHT_BUTTON = 3,
-
 };
 
 @interface ClientGestures : NSObject<UIGestureRecognizerDelegate> {
