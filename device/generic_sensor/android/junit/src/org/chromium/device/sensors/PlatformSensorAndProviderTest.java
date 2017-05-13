@@ -161,6 +161,8 @@ public class PlatformSensorAndProviderTest {
         verify(mSensorManager).getSensorList(Sensor.TYPE_MAGNETIC_FIELD);
         provider.createSensor(SensorType.ABSOLUTE_ORIENTATION);
         verify(mSensorManager).getSensorList(Sensor.TYPE_ROTATION_VECTOR);
+        provider.createSensor(SensorType.RELATIVE_ORIENTATION);
+        verify(mSensorManager).getSensorList(Sensor.TYPE_GAME_ROTATION_VECTOR);
     }
 
     /**

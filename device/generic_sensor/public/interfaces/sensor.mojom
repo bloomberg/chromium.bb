@@ -5,6 +5,8 @@
 module device.mojom;
 
 // Types of supported sensors
+// When adding new sensor type, update the documentation of sensor data values
+// in SensorReading struct at sensor_reading.h file.
 enum SensorType {
   FIRST = 1,
   AMBIENT_LIGHT = FIRST,
@@ -15,7 +17,8 @@ enum SensorType {
   MAGNETOMETER,
   PRESSURE,
   ABSOLUTE_ORIENTATION,
-  LAST = ABSOLUTE_ORIENTATION // Note: LAST is also equal to the types count.
+  RELATIVE_ORIENTATION,
+  LAST = RELATIVE_ORIENTATION // Note: LAST is also equal to the types count.
 };
 
 // Reporting mode supported by the Sensor.
