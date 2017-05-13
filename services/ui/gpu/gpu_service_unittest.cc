@@ -71,13 +71,11 @@ class GpuServiceTest : public testing::Test {
 // Tests that GpuService can be destroyed before Bind() succeeds on the IO
 // thread.
 TEST_F(GpuServiceTest, ServiceDestroyedBeforeBind) {
-  mojom::GpuServicePtr ptr;
-  mojom::GpuServiceRequest request(&ptr);
-
   // Block the IO thread to make sure that the GpuService is destroyed before
   // the binding happens on the IO thread.
+  mojom::GpuServicePtr ptr;
   BlockIOThread();
-  gpu_service()->Bind(std::move(request));
+  gpu_service()->Bind(mojo::MakeRequest(&ptr));
   UnblockIOThread();
   DestroyService();
 }
@@ -86,8 +84,7 @@ TEST_F(GpuServiceTest, ServiceDestroyedBeforeBind) {
 // thread.
 TEST_F(GpuServiceTest, ServiceDestroyedAfterBind) {
   mojom::GpuServicePtr ptr;
-  mojom::GpuServiceRequest request(&ptr);
-  gpu_service()->Bind(std::move(request));
+  gpu_service()->Bind(mojo::MakeRequest(&ptr));
   base::WaitableEvent wait(base::WaitableEvent::ResetPolicy::MANUAL,
                            base::WaitableEvent::InitialState::NOT_SIGNALED);
   io_runner()->PostTask(FROM_HERE, base::Bind(&base::WaitableEvent::Signal,

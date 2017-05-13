@@ -52,8 +52,7 @@ class FakeAutofillAgent : public mojom::AutofillAgent {
   ~FakeAutofillAgent() override {}
 
   void BindRequest(mojo::ScopedMessagePipeHandle handle) {
-    bindings_.AddBinding(
-        this, mojo::MakeRequest<mojom::AutofillAgent>(std::move(handle)));
+    bindings_.AddBinding(this, mojom::AutofillAgentRequest(std::move(handle)));
   }
 
   void SetQuitLoopClosure(base::Closure closure) { quit_closure_ = closure; }

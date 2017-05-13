@@ -102,8 +102,7 @@ class MojoTestState : public content::TestState {
     background_service_manager_->RegisterService(
         service_manager::Identity(content::mojom::kPackagedServicesServiceName,
                                   service_manager::mojom::kRootUserID),
-        std::move(service_),
-        service_manager::mojom::PIDReceiverRequest(&pid_receiver_));
+        std::move(service_), mojo::MakeRequest(&pid_receiver_));
 
     DCHECK(pid_receiver_.is_bound());
     pid_receiver_->SetPID(pid);
@@ -216,7 +215,7 @@ service_manager::mojom::ServiceRequest MojoTestConnector::Init() {
   }
 
   service_manager::mojom::ServicePtr service;
-  service_manager::mojom::ServiceRequest request(&service);
+  auto request = mojo::MakeRequest(&service);
 
   // BackgroundServiceManager must be created after mojo::edk::Init() as it
   // attempts to create mojo pipes for the provided catalog on a separate

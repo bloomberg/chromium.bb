@@ -21,9 +21,7 @@ template <typename Interface0, typename Interface1>
 InterfaceRequest<Interface0> ConvertInterfaceRequest(
     InterfaceRequest<Interface1> request) {
   DCHECK_EQ(0, strcmp(Interface0::Name_, Interface1::Name_));
-  InterfaceRequest<Interface0> result;
-  result.Bind(request.PassMessagePipe());
-  return result;
+  return InterfaceRequest<Interface0>(request.PassMessagePipe());
 }
 
 }  // namespace test

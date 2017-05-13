@@ -132,7 +132,7 @@ class PasswordGenerationAgentTest : public ChromeRenderViewTest {
 
   void BindPasswordManagerDriver(mojo::ScopedMessagePipeHandle handle) {
     fake_driver_.BindRequest(
-        mojo::MakeRequest<mojom::PasswordManagerDriver>(std::move(handle)));
+        mojom::PasswordManagerDriverRequest(std::move(handle)));
   }
 
   void BindPasswordManagerClient(mojo::ScopedInterfaceEndpointHandle handle) {

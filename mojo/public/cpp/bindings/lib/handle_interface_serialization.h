@@ -149,7 +149,8 @@ struct Serializer<InterfaceRequestDataView<Base>, InterfaceRequest<T>> {
   static bool Deserialize(Handle_Data* input,
                           InterfaceRequest<T>* output,
                           SerializationContext* context) {
-    output->Bind(context->handles.TakeHandleAs<MessagePipeHandle>(*input));
+    *output = InterfaceRequest<T>(
+        context->handles.TakeHandleAs<MessagePipeHandle>(*input));
     return true;
   }
 };

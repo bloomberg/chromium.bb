@@ -231,7 +231,7 @@ TEST(RenderFrameAudioOutputStreamFactoryTest, CreateStream) {
   EXPECT_TRUE(id.empty());
 
   provider->Acquire(
-      mojo::MakeRequest<AudioOutputStream>(&output_stream), params,
+      mojo::MakeRequest(&output_stream), params,
       base::Bind(&MockClient::StreamCreated, base::Unretained(&client)));
   base::RunLoop().RunUntilIdle();
   ASSERT_NE(event_handler, nullptr);
@@ -291,8 +291,7 @@ TEST(RenderFrameAudioOutputStreamFactoryTest, ConnectionError_DeletesStream) {
   base::RunLoop().RunUntilIdle();
 
   provider->Acquire(
-      mojo::MakeRequest<AudioOutputStream>(&output_stream),
-      GetTestAudioParameters(),
+      mojo::MakeRequest(&output_stream), GetTestAudioParameters(),
       base::Bind(&MockClient::StreamCreated, base::Unretained(&client)));
   base::RunLoop().RunUntilIdle();
   ASSERT_NE(event_handler, nullptr);
@@ -325,8 +324,7 @@ TEST(RenderFrameAudioOutputStreamFactoryTest, DelegateError_DeletesStream) {
   base::RunLoop().RunUntilIdle();
 
   provider->Acquire(
-      mojo::MakeRequest<AudioOutputStream>(&output_stream),
-      GetTestAudioParameters(),
+      mojo::MakeRequest(&output_stream), GetTestAudioParameters(),
       base::Bind(&MockClient::StreamCreated, base::Unretained(&client)));
   base::RunLoop().RunUntilIdle();
   ASSERT_NE(event_handler, nullptr);

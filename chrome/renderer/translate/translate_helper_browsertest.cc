@@ -35,9 +35,8 @@ class FakeContentTranslateDriver
   ~FakeContentTranslateDriver() override {}
 
   void BindHandle(mojo::ScopedMessagePipeHandle handle) {
-    bindings_.AddBinding(
-        this, mojo::MakeRequest<translate::mojom::ContentTranslateDriver>(
-                  std::move(handle)));
+    bindings_.AddBinding(this, translate::mojom::ContentTranslateDriverRequest(
+                                   std::move(handle)));
   }
 
   // translate::mojom::ContentTranslateDriver implementation.

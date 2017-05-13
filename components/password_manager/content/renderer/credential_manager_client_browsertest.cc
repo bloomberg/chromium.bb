@@ -108,8 +108,7 @@ class CredentialManagerClientTest : public content::RenderViewTest {
   void set_callback_succeeded(bool state) { callback_succeeded_ = state; }
 
   void BindCredentialManager(mojo::ScopedMessagePipeHandle handle) {
-    fake_cm_.BindRequest(
-        mojo::MakeRequest<mojom::CredentialManager>(std::move(handle)));
+    fake_cm_.BindRequest(mojom::CredentialManagerRequest(std::move(handle)));
   }
 
   std::unique_ptr<blink::WebPasswordCredential> credential_;

@@ -121,7 +121,7 @@ WindowTree* WindowServer::EmbedAtWindow(
     tree->set_embedder_intercepts_events();
 
   mojom::WindowTreePtr window_tree_ptr;
-  mojom::WindowTreeRequest window_tree_request(&window_tree_ptr);
+  auto window_tree_request = mojo::MakeRequest(&window_tree_ptr);
   std::unique_ptr<WindowTreeBinding> binding =
       delegate_->CreateWindowTreeBinding(
           WindowServerDelegate::BindingType::EMBED, this, tree,

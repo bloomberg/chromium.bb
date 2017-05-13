@@ -233,9 +233,8 @@ void LevelDBMojoProxy::GetChildrenImpl(
     filesystem::mojom::FileError* out_error) {
   mojo::SyncCallRestrictions::ScopedAllowSyncCall allow_sync;
   filesystem::mojom::DirectoryPtr target;
-  filesystem::mojom::DirectoryRequest proxy(&target);
   bool completed = dir->directory->OpenDirectory(
-      name, std::move(proxy),
+      name, mojo::MakeRequest(&target),
       filesystem::mojom::kFlagRead | filesystem::mojom::kFlagWrite, out_error);
   DCHECK(completed);
 
@@ -304,8 +303,7 @@ void LevelDBMojoProxy::LockFileImpl(OpaqueDir* dir,
   // Since a lock is associated with a file descriptor, we need to open and
   // have a persistent file on the other side of the connection.
   filesystem::mojom::FilePtr target;
-  filesystem::mojom::FileRequest proxy(&target);
-  bool completed = dir->directory->OpenFile(path, std::move(proxy),
+  bool completed = dir->directory->OpenFile(path, mojo::MakeRequest(&target),
                                             filesystem::mojom::kFlagOpenAlways |
                                                 filesystem::mojom::kFlagRead |
                                                 filesystem::mojom::kFlagWrite,

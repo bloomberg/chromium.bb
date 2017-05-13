@@ -443,8 +443,7 @@ TEST_F(ValidationIntegrationTest, InterfacePtr) {
 TEST_F(ValidationIntegrationTest, Binding) {
   IntegrationTestInterfaceImpl interface_impl;
   Binding<IntegrationTestInterface> binding(
-      &interface_impl,
-      MakeRequest<IntegrationTestInterface>(testee_endpoint()));
+      &interface_impl, IntegrationTestInterfaceRequest(testee_endpoint()));
   binding.EnableTestingMode();
 
   RunValidationTests("integration_intf_rqst", test_message_receiver());

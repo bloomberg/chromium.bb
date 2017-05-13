@@ -118,9 +118,7 @@ void EmbeddedWorkerTestHelper::MockEmbeddedWorkerInstanceClient::
 void EmbeddedWorkerTestHelper::MockEmbeddedWorkerInstanceClient::Bind(
     const base::WeakPtr<EmbeddedWorkerTestHelper>& helper,
     mojo::ScopedMessagePipeHandle request_handle) {
-  mojom::EmbeddedWorkerInstanceClientRequest request =
-      mojo::MakeRequest<mojom::EmbeddedWorkerInstanceClient>(
-          std::move(request_handle));
+  mojom::EmbeddedWorkerInstanceClientRequest request(std::move(request_handle));
   std::vector<std::unique_ptr<MockEmbeddedWorkerInstanceClient>>* clients =
       helper->mock_instance_clients();
   size_t next_client_index = helper->mock_instance_clients_next_index_;

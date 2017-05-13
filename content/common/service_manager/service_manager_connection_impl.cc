@@ -248,13 +248,12 @@ class ServiceManagerConnectionImpl::IOThreadContext
     if (source_info.identity.name() == service_manager::mojom::kServiceName &&
         interface_name == service_manager::mojom::ServiceFactory::Name_) {
       factory_bindings_.AddBinding(
-          this, mojo::MakeRequest<service_manager::mojom::ServiceFactory>(
+          this, service_manager::mojom::ServiceFactoryRequest(
                     std::move(interface_pipe)));
     } else if (source_info.identity.name() == mojom::kBrowserServiceName &&
                interface_name == mojom::Child::Name_) {
       DCHECK(!child_binding_.is_bound());
-      child_binding_.Bind(
-          mojo::MakeRequest<mojom::Child>(std::move(interface_pipe)));
+      child_binding_.Bind(mojom::ChildRequest(std::move(interface_pipe)));
     } else {
       base::AutoLock lock(lock_);
       for (auto& entry : connection_filters_) {

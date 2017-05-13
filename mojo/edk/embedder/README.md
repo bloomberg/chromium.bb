@@ -298,9 +298,7 @@ int main(int argc, char** argv) {
   mojo::ScopedMessagePipeHandle my_pipe =
       invitation->ExtractMessagePipe("pretty_cool_pipe");
 
-  local::mojom::FooRequest foo_request;
-  foo_request.Bind(std::move(my_pipe));
-  FooImpl impl(std::move(foo_request));
+  FooImpl impl(local::mojom::FooRequest(std::move(my_pipe)));
 
   // Run forever!
   base::RunLoop().Run();

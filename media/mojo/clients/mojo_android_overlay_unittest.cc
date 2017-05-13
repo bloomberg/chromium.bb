@@ -86,7 +86,7 @@ class MojoAndroidOverlayTest : public ::testing::Test {
 
       // Actually do the work.
       provider_binding_.Bind(
-          mojo::MakeRequest<mojom::AndroidOverlayProvider>(std::move(handle)));
+          mojom::AndroidOverlayProviderRequest(std::move(handle)));
     }
 
     mojo::Binding<mojom::AndroidOverlayProvider> provider_binding_;

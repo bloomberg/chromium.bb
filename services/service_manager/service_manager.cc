@@ -301,7 +301,7 @@ class ServiceManager::Instance
         HasCapability(source->GetConnectionSpec(),
                       kCapability_ServiceManager)) {
       mojom::ServiceManagerRequest request =
-          mojo::MakeRequest<mojom::ServiceManager>(std::move(interface_pipe));
+          mojom::ServiceManagerRequest(std::move(interface_pipe));
       service_manager_bindings_.AddBinding(this, std::move(request));
     }
   }
@@ -698,9 +698,6 @@ ServiceManager::ServiceManager(
     : service_process_launcher_factory_(
           std::move(service_process_launcher_factory)),
       weak_ptr_factory_(this) {
-  mojom::ServicePtr service;
-  mojom::ServiceRequest request(&service);
-
   InterfaceProviderSpec spec;
   spec.provides[kCapability_ServiceManager].insert(
       "service_manager::mojom::ServiceManager");
@@ -712,10 +709,12 @@ ServiceManager::ServiceManager(
 
   service_manager_instance_ = CreateInstance(
       Identity(), CreateServiceManagerIdentity(), std::move(specs));
-  service_manager_instance_->StartWithService(std::move(service));
   singletons_.insert(service_manager::mojom::kServiceName);
-  service_context_.reset(new ServiceContext(
-      base::MakeUnique<ServiceImpl>(this), std::move(request)));
+
+  mojom::ServicePtr service;
+  service_context_.reset(new ServiceContext(base::MakeUnique<ServiceImpl>(this),
+                                            mojo::MakeRequest(&service)));
+  service_manager_instance_->StartWithService(std::move(service));
 
   if (catalog)
     InitCatalog(std::move(catalog));
@@ -776,7 +775,7 @@ void ServiceManager::RegisterService(
 
   if (!pid_receiver_request.is_pending()) {
     mojom::PIDReceiverPtr pid_receiver;
-    pid_receiver_request = mojom::PIDReceiverRequest(&pid_receiver);
+    pid_receiver_request = mojo::MakeRequest(&pid_receiver);
     pid_receiver->SetPID(base::Process::Current().Pid());
   }
 
@@ -1086,10 +1085,6 @@ void ServiceManager::OnGotResolvedName(
     instance->StartWithService(params->TakeService());
     return;
   } else {
-    // Otherwise we create a new Service pipe.
-    mojom::ServicePtr service;
-    mojom::ServiceRequest request(&service);
-
     // The catalog was unable to read a manifest for this service. We can't do
     // anything more.
     // TODO(beng): There may be some cases where it's valid to have an empty
@@ -1114,10 +1109,12 @@ void ServiceManager::OnGotResolvedName(
       Identity packaged_service_target(target);
       packaged_service_target.set_user_id(original_target.user_id());
       instance->set_identity(packaged_service_target);
-      instance->StartWithService(std::move(service));
 
+      mojom::ServicePtr service;
       Identity factory(*parent_name, *target_user_id, factory_instance_name);
-      CreateServiceWithFactory(factory, target.name(), std::move(request));
+      CreateServiceWithFactory(factory, target.name(),
+                               mojo::MakeRequest(&service));
+      instance->StartWithService(std::move(service));
     } else {
       base::FilePath package_path;
       if (!service_overrides_ || !service_overrides_->GetExecutablePathOverride(

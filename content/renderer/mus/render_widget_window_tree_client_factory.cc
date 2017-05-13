@@ -52,9 +52,9 @@ class RenderWidgetWindowTreeClientFactoryImpl
                        mojo::ScopedMessagePipeHandle* interface_pipe,
                        service_manager::Connector* connector) override {
     if (interface_name == mojom::RenderWidgetWindowTreeClientFactory::Name_) {
-      bindings_.AddBinding(
-          this, mojo::MakeRequest<mojom::RenderWidgetWindowTreeClientFactory>(
-                    std::move(*interface_pipe)));
+      bindings_.AddBinding(this,
+                           mojom::RenderWidgetWindowTreeClientFactoryRequest(
+                               std::move(*interface_pipe)));
     }
   }
 

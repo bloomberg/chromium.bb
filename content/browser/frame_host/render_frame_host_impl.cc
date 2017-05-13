@@ -3141,11 +3141,9 @@ void RenderFrameHostImpl::SetUpMojoIfNeeded() {
       frame_host_interface_broker_binding_.CreateInterfacePtrAndBind());
 
   service_manager::mojom::InterfaceProviderPtr remote_interfaces;
-  service_manager::mojom::InterfaceProviderRequest remote_interfaces_request(
-      &remote_interfaces);
+  frame_->GetInterfaceProvider(mojo::MakeRequest(&remote_interfaces));
   remote_interfaces_.reset(new service_manager::InterfaceProvider);
   remote_interfaces_->Bind(std::move(remote_interfaces));
-  frame_->GetInterfaceProvider(std::move(remote_interfaces_request));
 }
 
 void RenderFrameHostImpl::InvalidateMojoConnection() {

@@ -144,7 +144,7 @@ Catalog::Catalog(std::unique_ptr<base::Value> static_manifest,
                  ManifestProvider* service_manifest_provider)
     : service_context_(new service_manager::ServiceContext(
           base::MakeUnique<ServiceImpl>(this),
-          service_manager::mojom::ServiceRequest(&service_))),
+          mojo::MakeRequest(&service_))),
       service_manifest_provider_(service_manifest_provider),
       weak_factory_(this) {
   if (static_manifest) {

@@ -31,7 +31,7 @@ RemotingCdmFactory::~RemotingCdmFactory() {}
 std::unique_ptr<RemotingCdmController>
 RemotingCdmFactory::CreateRemotingCdmController() {
   mojom::RemotingSourcePtr remoting_source;
-  mojom::RemotingSourceRequest remoting_source_request(&remoting_source);
+  auto remoting_source_request = mojo::MakeRequest(&remoting_source);
   mojom::RemoterPtr remoter;
   remoter_factory_->Create(std::move(remoting_source),
                            mojo::MakeRequest(&remoter));

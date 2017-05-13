@@ -197,8 +197,7 @@ class ServiceManagerConnection {
             nullptr, nullptr);
     service_manager::mojom::ServicePtr service;
     context_ = base::MakeUnique<service_manager::ServiceContext>(
-        base::MakeUnique<DefaultService>(),
-        service_manager::mojom::ServiceRequest(&service));
+        base::MakeUnique<DefaultService>(), mojo::MakeRequest(&service));
     background_service_manager_->RegisterService(
         service_manager::Identity(
             GetTestName(), service_manager::mojom::kRootUserID),

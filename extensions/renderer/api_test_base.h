@@ -61,7 +61,7 @@ class TestInterfaceProvider : public gin::Wrappable<TestInterfaceProvider> {
       const base::Callback<void(mojo::InterfaceRequest<Interface>)>
           factory_callback,
       mojo::ScopedMessagePipeHandle handle) {
-    factory_callback.Run(mojo::MakeRequest<Interface>(std::move(handle)));
+    factory_callback.Run(mojo::InterfaceRequest<Interface>(std::move(handle)));
   }
 
   static void IgnoreHandle(mojo::ScopedMessagePipeHandle handle);

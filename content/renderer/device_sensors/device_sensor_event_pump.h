@@ -26,7 +26,7 @@ class CONTENT_EXPORT DeviceSensorMojoClientMixin : public Base {
   template <typename... Args>
   explicit DeviceSensorMojoClientMixin(Args&&... args)
       : Base(std::forward<Args>(args)...) {
-    mojo::InterfaceRequest<MojoInterface> request(&mojo_interface_);
+    auto request = mojo::MakeRequest(&mojo_interface_);
 
     // When running layout tests, those observers should not listen to the
     // actual hardware changes. In order to make that happen, don't connect

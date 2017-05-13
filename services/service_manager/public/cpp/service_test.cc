@@ -76,7 +76,7 @@ void ServiceTest::SetUp() {
 
   mojom::ServicePtr service;
   context_ = base::MakeUnique<ServiceContext>(CreateService(),
-                                              mojom::ServiceRequest(&service));
+                                              mojo::MakeRequest(&service));
   background_service_manager_->RegisterService(
       Identity(test_name_, mojom::kRootUserID), std::move(service), nullptr);
   connector_ = context_->connector();

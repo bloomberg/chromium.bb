@@ -137,12 +137,13 @@ class HeadlessWebContentsImpl::Delegate : public content::WebContentsDelegate {
 };
 
 namespace {
+
 void ForwardToServiceFactory(
-    const base::Callback<void(mojo::InterfaceRequest<TabSocket>)>&
-        service_factory,
+    const base::Callback<void(TabSocketRequest)>& service_factory,
     mojo::ScopedMessagePipeHandle handle) {
-  service_factory.Run(mojo::MakeRequest<TabSocket>(std::move(handle)));
+  service_factory.Run(TabSocketRequest(std::move(handle)));
 }
+
 }  // namespace
 
 // static
