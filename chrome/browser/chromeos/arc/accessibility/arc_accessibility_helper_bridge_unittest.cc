@@ -143,14 +143,14 @@ TEST_F(ArcAccessibilityHelperBridgeTest, AXTreeSourceLifetime) {
   ASSERT_EQ(1U, it1->second.count(1));
 
   auto event = arc::mojom::AccessibilityEventData::New();
-  event->sourceId = 1;
-  event->eventType = arc::mojom::AccessibilityEventType::VIEW_FOCUSED;
-  event->nodeData.push_back(arc::mojom::AccessibilityNodeInfoData::New());
-  event->nodeData[0]->id = 1;
-  event->nodeData[0]->stringProperties =
+  event->source_id = 1;
+  event->event_type = arc::mojom::AccessibilityEventType::VIEW_FOCUSED;
+  event->node_data.push_back(arc::mojom::AccessibilityNodeInfoData::New());
+  event->node_data[0]->id = 1;
+  event->node_data[0]->string_properties =
       std::unordered_map<arc::mojom::AccessibilityStringProperty,
                          std::string>();
-  event->nodeData[0]->stringProperties.value().insert(
+  event->node_data[0]->string_properties.value().insert(
       std::make_pair(arc::mojom::AccessibilityStringProperty::PACKAGE_NAME,
                      "com.android.vending"));
 

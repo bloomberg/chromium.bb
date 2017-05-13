@@ -137,12 +137,13 @@ enum AccessibilityIntListProperty {
 // AccessibilityNodeInfo in Android.
 // https://developer.android.com/reference/android/view/accessibility/AccessibilityNodeInfo.html
 struct AccessibilityNodeInfoData {
-  ScreenRect boundsInScreen;
+  ScreenRect bounds_in_screen;
   [MinVersion=1]int32 id;
-  [MinVersion=1]map<AccessibilityBooleanProperty, bool>? booleanProperties;
-  [MinVersion=1]map<AccessibilityStringProperty, string>? stringProperties;
-  [MinVersion=1]map<AccessibilityIntProperty, int32>? intProperties;
-  [MinVersion=1]map<AccessibilityIntListProperty, array<int32>>? intListProperties;
+  [MinVersion=1]map<AccessibilityBooleanProperty, bool>? boolean_properties;
+  [MinVersion=1]map<AccessibilityStringProperty, string>? string_properties;
+  [MinVersion=1]map<AccessibilityIntProperty, int32>? int_properties;
+  [MinVersion=1]
+      map<AccessibilityIntListProperty, array<int32>>? int_list_properties;
 };
 
 // Filters the event type (and implicitly the data) sent by the ARC
@@ -166,19 +167,19 @@ enum AccessibilityFilterType {
 // AccessibilityEvent in Android.
 // https://developer.android.com/reference/android/view/accessibility/AccessibilityEvent.html
 struct AccessibilityEventData {
-  AccessibilityEventType eventType;
-  int32 sourceId;
-  array<AccessibilityNodeInfoData> nodeData;
+  AccessibilityEventType event_type;
+  int32 source_id;
+  array<AccessibilityNodeInfoData> node_data;
 };
 
 // Next method ID: 2
 interface AccessibilityHelperHost {
-  OnAccessibilityEventDeprecated@0(AccessibilityEventType eventType,
-                                   AccessibilityNodeInfoData? eventSource);
+  OnAccessibilityEventDeprecated@0(AccessibilityEventType event_type,
+                                   AccessibilityNodeInfoData? event_source);
 
   // OnAccessibilityEvent is called when a converted Android accessibility event
   // is sent from Android.
-  OnAccessibilityEvent@1(AccessibilityEventData eventData);
+  OnAccessibilityEvent@1(AccessibilityEventData event_data);
 };
 
 // Next method ID: 3
@@ -189,5 +190,5 @@ interface AccessibilityHelperInstance {
   PerformAction@1(int32 id, AccessibilityActionType action);
 
   // Set a filter on the event types received.
-  SetFilter@2(AccessibilityFilterType filterType);
+  SetFilter@2(AccessibilityFilterType filter_type);
 };

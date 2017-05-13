@@ -60,7 +60,7 @@ void DispatchFocusChange(arc::mojom::AccessibilityNodeInfoData* node_data) {
   aura::Window* toplevel_window = focused_window->GetToplevelWindow();
 
   gfx::Rect bounds_in_screen = gfx::ScaleToEnclosingRect(
-      node_data->boundsInScreen,
+      node_data->bounds_in_screen,
       1.0f / toplevel_window->layer()->device_scale_factor());
 
   accessibility_manager->OnViewFocusedInArc(bounds_in_screen);
@@ -158,16 +158,17 @@ void ArcAccessibilityHelperBridge::OnAccessibilityEvent(
       filter_type ==
           arc::mojom::AccessibilityFilterType::WHITELISTED_PACKAGE_NAME) {
     // Get the task id for this package which requires inspecting node data.
-    if (event_data->nodeData.empty())
+    if (event_data->node_data.empty())
       return;
 
-    arc::mojom::AccessibilityNodeInfoData* node = event_data->nodeData[0].get();
-    if (!node->stringProperties)
+    arc::mojom::AccessibilityNodeInfoData* node =
+        event_data->node_data[0].get();
+    if (!node->string_properties)
       return;
 
-    auto package_it = node->stringProperties->find(
+    auto package_it = node->string_properties->find(
         arc::mojom::AccessibilityStringProperty::PACKAGE_NAME);
-    if (package_it == node->stringProperties->end())
+    if (package_it == node->string_properties->end())
       return;
 
     auto task_ids_it = package_name_to_task_ids_.find(package_it->second);
@@ -194,11 +195,12 @@ void ArcAccessibilityHelperBridge::OnAccessibilityEvent(
     return;
   }
 
-  if (event_data->eventType != arc::mojom::AccessibilityEventType::VIEW_FOCUSED)
+  if (event_data->event_type !=
+      arc::mojom::AccessibilityEventType::VIEW_FOCUSED)
     return;
 
-  CHECK_EQ(1U, event_data.get()->nodeData.size());
-  DispatchFocusChange(event_data.get()->nodeData[0].get());
+  CHECK_EQ(1U, event_data.get()->node_data.size());
+  DispatchFocusChange(event_data.get()->node_data[0].get());
 }
 
 void ArcAccessibilityHelperBridge::OnAction(
