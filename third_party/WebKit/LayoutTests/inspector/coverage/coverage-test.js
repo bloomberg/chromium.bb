@@ -61,5 +61,19 @@ InspectorTest.dumpDecorationsInSourceFrame = function(sourceFrame)
     }
 }
 
+InspectorTest.dumpCoverageListView = function()
+{
+    var coverageListView = self.runtime.sharedInstance(Coverage.CoverageView)._listView;
+    var dataGrid = coverageListView._dataGrid;
+    dataGrid.updateInstantly();
+    for (var child of dataGrid.rootNode().children) {
+        var data = child._coverageInfo;
+        var url = InspectorTest.formatters.formatAsURL(data.url());
+        if (url.endsWith("-test.js") || url.endsWith(".html"))
+            continue;
+        var type = Coverage.CoverageListView._typeToString(data.type());
+        InspectorTest.addResult(`${url} ${type} used: ${data.usedSize()} unused: ${data.unusedSize()} total: ${data.size()}`);
+    }
+}
 
 }

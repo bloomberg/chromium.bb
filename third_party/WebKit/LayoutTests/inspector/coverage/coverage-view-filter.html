@@ -14,8 +14,23 @@ async function test()
     await InspectorTest.evaluateInPagePromise("performActions()");
     await InspectorTest.stopCoverage();
 
+    var coverageView = self.runtime.sharedInstance(Coverage.CoverageView);
+    setFilter("inspector");
+    InspectorTest.dumpCoverageListView();
+    setFilter("CES/COV");
+    InspectorTest.dumpCoverageListView();
+    setFilter("no pasaran");
+    InspectorTest.dumpCoverageListView();
+    setFilter("");
     InspectorTest.dumpCoverageListView();
     InspectorTest.completeTest();
+
+    function setFilter(text)
+    {
+        coverageView._filterInput.setValue(text);
+        coverageView._filterInput._onChangeCallback();
+        InspectorTest.addResult(`Filter: ${text}`);
+    }
 }
 
 </script>
@@ -23,7 +38,7 @@ async function test()
 
 <body onload="runTest()">
 <p class="class">
-Tests the coverage list view after finishing recording in the Coverage view.
+Tests the filter is properly applied to coverage list view.
 </p>
 
 </body>
