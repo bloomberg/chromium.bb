@@ -32860,6 +32860,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="NCN.getNetInfo1stSuccess"
     enum="BooleanAvoidedNullPointerException">
+  <obsolete>
+    Deprecated 5/2017 for Issue 592131.
+  </obsolete>
   <owner>pauljensen@chromium.org</owner>
   <summary>
     True if the first call to ConnectivityManager.getNetworkInfo(Network) did
@@ -32870,6 +32873,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="NCN.getNetInfo2ndSuccess"
     enum="BooleanAvoidedNullPointerException">
+  <obsolete>
+    Deprecated 5/2017 for Issue 592131.
+  </obsolete>
   <owner>pauljensen@chromium.org</owner>
   <summary>
     Recorded after the first call to ConnectivityManager.getNetworkInfo(Network)
@@ -32882,6 +32888,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="NCN.getWifiInfo1stSuccess"
     enum="BooleanAvoidedNullPointerException">
+  <obsolete>
+    Deprecated 5/2017 for Issue 592131.
+  </obsolete>
   <owner>pauljensen@chromium.org</owner>
   <summary>
     True if the first call to WifiManager.getConnectionInfo() did not throw
@@ -32892,6 +32901,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="NCN.getWifiInfo2ndSuccess"
     enum="BooleanAvoidedNullPointerException">
+  <obsolete>
+    Deprecated 5/2017 for Issue 592131.
+  </obsolete>
   <owner>pauljensen@chromium.org</owner>
   <summary>
     Recorded after the first call to WifiManager.getConnectionInfo() threw a

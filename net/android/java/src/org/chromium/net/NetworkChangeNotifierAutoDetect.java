@@ -35,7 +35,6 @@ import org.chromium.base.ApplicationStatus;
 import org.chromium.base.BuildConfig;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.VisibleForTesting;
-import org.chromium.base.metrics.RecordHistogram;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -161,19 +160,12 @@ public class NetworkChangeNotifierAutoDetect extends BroadcastReceiver {
         // Fetches NetworkInfo and records UMA for NullPointerExceptions.
         private NetworkInfo getNetworkInfo(Network network) {
             try {
-                NetworkInfo networkInfo = mConnectivityManager.getNetworkInfo(network);
-                RecordHistogram.recordBooleanHistogram("NCN.getNetInfo1stSuccess", true);
-                return networkInfo;
+                return mConnectivityManager.getNetworkInfo(network);
             } catch (NullPointerException firstException) {
-                RecordHistogram.recordBooleanHistogram("NCN.getNetInfo1stSuccess", false);
-                // Try the IPC again to test if the NPE is a random/transient/ephemeral failure.
-                // This will indicate if retrying is a viable solution.
+                // Rarely this unexpectedly throws. Retry or just return {@code null} if it fails.
                 try {
-                    NetworkInfo networkInfo = mConnectivityManager.getNetworkInfo(network);
-                    RecordHistogram.recordBooleanHistogram("NCN.getNetInfo2ndSuccess", true);
-                    return networkInfo;
+                    return mConnectivityManager.getNetworkInfo(network);
                 } catch (NullPointerException secondException) {
-                    RecordHistogram.recordBooleanHistogram("NCN.getNetInfo2ndSuccess", false);
                     return null;
                 }
             }
@@ -366,19 +358,12 @@ public class NetworkChangeNotifierAutoDetect extends BroadcastReceiver {
         @GuardedBy("mLock")
         private WifiInfo getWifiInfoLocked() {
             try {
-                WifiInfo wifiInfo = mWifiManager.getConnectionInfo();
-                RecordHistogram.recordBooleanHistogram("NCN.getWifiInfo1stSuccess", true);
-                return wifiInfo;
+                return mWifiManager.getConnectionInfo();
             } catch (NullPointerException firstException) {
-                RecordHistogram.recordBooleanHistogram("NCN.getWifiInfo1stSuccess", false);
-                // Try the IPC again to test if the NPE is a random/transient/ephemeral failure.
-                // This will indicate if retrying is a viable solution.
+                // Rarely this unexpectedly throws. Retry or just return {@code null} if it fails.
                 try {
-                    WifiInfo wifiInfo = mWifiManager.getConnectionInfo();
-                    RecordHistogram.recordBooleanHistogram("NCN.getWifiInfo2ndSuccess", true);
-                    return wifiInfo;
+                    return mWifiManager.getConnectionInfo();
                 } catch (NullPointerException secondException) {
-                    RecordHistogram.recordBooleanHistogram("NCN.getWifiInfo2ndSuccess", false);
                     return null;
                 }
             }
