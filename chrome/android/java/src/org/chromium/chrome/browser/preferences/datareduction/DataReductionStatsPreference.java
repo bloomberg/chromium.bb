@@ -201,19 +201,12 @@ public class DataReductionStatsPreference extends Preference {
         final long start = mLeftPosition;
         // Include up to the last second of the currently selected day.
         final long end = mRightPosition;
-        final long now = mCurrentTime;
         final Context context = getContext();
 
-        NetworkStatsHistory.Entry compressedEntry =
-                mReceivedNetworkStatsHistory.getValues(start, end, now, null);
-        // Only received bytes are tracked.
-        final long compressedTotalBytes = compressedEntry.rxBytes;
+        final long compressedTotalBytes = mReceivedNetworkStatsHistory.getTotalBytes();
         mReceivedTotalPhrase = Formatter.formatFileSize(context, compressedTotalBytes);
 
-        NetworkStatsHistory.Entry originalEntry =
-                mOriginalNetworkStatsHistory.getValues(start, end, now, null);
-        // Only received bytes are tracked.
-        final long originalTotalBytes = originalEntry.rxBytes;
+        final long originalTotalBytes = mOriginalNetworkStatsHistory.getTotalBytes();
         mOriginalTotalPhrase = Formatter.formatFileSize(context, originalTotalBytes);
         mSavingsTotalPhrase =
                 Formatter.formatFileSize(context, originalTotalBytes - compressedTotalBytes);
