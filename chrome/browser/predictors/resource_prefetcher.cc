@@ -15,6 +15,7 @@
 #include "net/base/io_buffer.h"
 #include "net/base/load_flags.h"
 #include "net/base/request_priority.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/url_request_context.h"
 #include "url/origin.h"
 
@@ -139,8 +140,49 @@ void ResourcePrefetcher::TryToLaunchPrefetchRequests() {
 }
 
 void ResourcePrefetcher::SendRequest(const GURL& url) {
+  net::NetworkTrafficAnnotationTag traffic_annotation =
+      net::DefineNetworkTrafficAnnotation("resource_prefetch", R"(
+        semantics {
+          sender: "Resource Prefetch"
+          description:
+            "Speculative Prefetch is based on the observation that users do "
+            "most of their browsing to a limited number of websites (per "
+            "device). It observes subresource requests made during a page "
+            "load, and builds a local database of likely resources, keyed by "
+            "URL and/or hostname. When a user navigates (or intends to navigate"
+            ") to a URL, this database is leveraged to pre-emptively fetch "
+            "subresources."
+          trigger:
+            "Prefetching can start from two different origins:\n"
+            " - When a navigation hint is given (for instance, from Custom "
+            "Tabs), before any actual navigation.\n"
+            " - At navigation time.\n"
+            "Given a URL of the page that a user is going to navigate to, "
+            "ResourcePrefetchPredictor generates a list of resources (from the "
+            "URL or host database, after following the most likely redirect "
+            "chain from the local redirect database). This list is ranked, and "
+            "given to a ResourcePrefetcher."
+          data:
+            "An HTTP Get request to the resource."
+          destination: WEBSITE
+        }
+        policy {
+          cookies_allowed: true
+          cookies_store: "user"
+          setting:
+            "Users can control this feature via the 'Use prediction service to "
+            "load pages more quickly' setting under Privacy. The feature is "
+            "enabled by default."
+          chrome_policy {
+            NetworkPredictionOptions {
+              policy_options {mode: MANDATORY}
+              NetworkPredictionOptions: 2
+            }
+          }
+        })");
   std::unique_ptr<net::URLRequest> url_request =
-      delegate_->GetURLRequestContext()->CreateRequest(url, net::IDLE, this);
+      delegate_->GetURLRequestContext()->CreateRequest(url, net::IDLE, this,
+                                                       traffic_annotation);
   host_inflight_counts_[url.host()] += 1;
 
   url_request->set_method("GET");
