@@ -37,8 +37,8 @@ struct WebPluginInfo;
 // doing expensive disk operations on the IO/UI threads.
 class PluginService {
  public:
-  typedef base::Callback<void(const std::vector<WebPluginInfo>&)>
-      GetPluginsCallback;
+  using GetPluginsCallback =
+      base::OnceCallback<void(const std::vector<WebPluginInfo>&)>;
 
   // Returns the PluginService singleton.
   CONTENT_EXPORT static PluginService* GetInstance();
@@ -94,8 +94,8 @@ class PluginService {
       const base::FilePath& plugin_path) = 0;
 
   // Asynchronously loads plugins if necessary and then calls back to the
-  // provided function on the calling MessageLoop on completion.
-  virtual void GetPlugins(const GetPluginsCallback& callback) = 0;
+  // provided function on the calling sequence on completion.
+  virtual void GetPlugins(GetPluginsCallback callback) = 0;
 
   // Returns information about a pepper plugin if it exists, otherwise nullptr.
   // The caller does not own the pointer, and it's not guaranteed to live past

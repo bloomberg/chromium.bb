@@ -7,6 +7,7 @@
 #include <stdint.h>
 
 #include <memory>
+#include <utility>
 
 #include "base/files/file_path.h"
 #include "base/location.h"
@@ -141,11 +142,11 @@ class TestFakePluginService : public FakePluginService {
     return true;
   }
 
-  void GetPlugins(const GetPluginsCallback& callback) override {
+  void GetPlugins(GetPluginsCallback callback) override {
     is_plugin_stale_ = false;
     std::vector<WebPluginInfo> plugins;
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(callback, plugins));
+        FROM_HERE, base::BindOnce(std::move(callback), plugins));
   }
 
  private:
