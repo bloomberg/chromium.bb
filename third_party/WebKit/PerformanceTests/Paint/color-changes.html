@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <body>
 <script src="../resources/runner.js"></script>
+<script src="resources/paint.js"></script>
 <style>
   span {
     padding: 1px;
@@ -67,7 +68,7 @@ var colors = [
  "rgb(18, 128, 237)",
  "rgb(64, 64, 255)"
 ];
-PerfTestRunner.measureFrameTime({
+measurePaint({
   run: function() {
     runCount++;
     var newColor = colors[runCount % colors.length];

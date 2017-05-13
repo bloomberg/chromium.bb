@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <body>
 <script src="../resources/runner.js"></script>
+<script src="resources/paint.js"></script>
 <style>
   span {
     border: 1px solid blue;
@@ -54,7 +55,7 @@ buildTree(document.body, 6, 6,
 
 var runCount = 0;
 var elementsToChange = document.getElementsByClassName('changeTransform');
-PerfTestRunner.measureFrameTime({
+measurePaint({
   run: function() {
     runCount += 10;
     for (var index = 0; index < elementsToChange.length; index++)

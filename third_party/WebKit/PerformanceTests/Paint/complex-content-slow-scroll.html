@@ -16,12 +16,13 @@
   </div>
 </div>
 <script src="../resources/runner.js"></script>
+<script src="resources/paint.js"></script>
 <script>
 var cloned = template.cloneNode(true);
 for (var i = 0; i < 10000; ++i)
   container.appendChild(cloned.cloneNode(true));
 
-PerfTestRunner.measureFrameTime({
+measurePaint({
   run: function() {
     container.scrollTop += 20;
   },
