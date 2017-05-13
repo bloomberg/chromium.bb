@@ -720,7 +720,6 @@ bool FrameSelection::SetSelectedRange(const EphemeralRange& range,
   SetSelection(SelectionInDOMTree::Builder()
                    .SetBaseAndExtent(range)
                    .SetAffinity(affinity)
-                   .SetIsHandleVisible(IsHandleVisible())
                    .SetIsDirectional(directional ==
                                      SelectionDirectionalMode::kDirectional)
                    .Build(),
