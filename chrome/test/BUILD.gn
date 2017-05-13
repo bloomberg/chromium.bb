@@ -669,13 +669,6 @@ if (!is_android) {
           data_deps += [ "//components/nacl/loader:helper_nonsfi" ]
         }
       }
-
-      if (is_chrome_branded) {
-        sources -= [
-          # These tests are failing on official cros bots. crbug.com/431450.
-          "../browser/ui/views/bookmarks/bookmark_bar_view_test.cc",
-        ]
-      }
     } else {  # ! is_chromeos
       # Non-ChromeOS notifications tests (ChromeOS does not use cross-platform
       # panels).
