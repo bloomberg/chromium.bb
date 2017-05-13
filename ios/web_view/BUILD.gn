@@ -4,6 +4,7 @@
 
 import("//build/config/ios/ios_sdk.gni")
 import("//build/config/ios/rules.gni")
+import("//components/grpc_support/include/headers.gni")
 import("//tools/grit/repack.gni")
 
 config("config") {
@@ -149,6 +150,40 @@ ios_framework_bundle("crnet_web_view_combined") {
 
   configs += [
     ":config",
+    "//build/config/compiler:enable_arc",
+  ]
+}
+
+# Same framework as ChromeWebView above, but also exposes CroNet.
+ios_framework_bundle("cronet_web_view_combined") {
+  output_name = "CroNetChromeWebView"
+  info_plist = "Info.plist"
+
+  public_headers = ios_web_view_public_headers
+  public_headers += [
+    "//components/cronet/ios/Cronet.h",
+    "//components/cronet/ios/cronet_c_for_grpc.h",
+  ]
+  public_headers += grpc_public_headers
+
+  public = [
+    "public/ChromeWebView.h",
+  ]
+
+  sources = ios_web_view_sources
+  sources += [ "//components/cronet/ios/Cronet.h" ]
+
+  deps = ios_web_view_deps
+  deps += [ "//components/cronet/ios:cronet_sources" ]
+
+  public_deps = [
+    "//components/grpc_support",
+  ]
+
+  configs -= [ "//build/config/compiler:default_symbols" ]
+  configs += [
+    ":config",
+    "//build/config/compiler:symbols",
     "//build/config/compiler:enable_arc",
   ]
 }
