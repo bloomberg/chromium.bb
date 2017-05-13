@@ -140,7 +140,6 @@ dist_yaml_TESTS =				\
 	yaml/da-dk-g26-dictionary_harness.yaml	\
 	yaml/da-dk-g28-back.yaml		\
 	yaml/da-dk-g28-dictionary_harness.yaml	\
-	yaml/da-dk-g28l-back.yaml		\
 	yaml/da-dk-g28l.yaml			\
 	yaml/da-dk-g28.yaml			\
 	yaml/el-backward.yaml			\

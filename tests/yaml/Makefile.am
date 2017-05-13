@@ -13,7 +13,6 @@ EXTRA_DIST =					\
 	da-dk-g26-dictionary_harness.yaml	\
 	da-dk-g28-back.yaml			\
 	da-dk-g28-dictionary_harness.yaml	\
-	da-dk-g28l-back.yaml			\
 	da-dk-g28l.yaml				\
 	da-dk-g28.yaml				\
 	el-backward.yaml			\
