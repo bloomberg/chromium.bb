@@ -59,10 +59,13 @@ bool ParseWindowSize(std::string window_size, gfx::Size* parsed_window_size) {
 HeadlessShell::HeadlessShell()
     : browser_(nullptr),
       devtools_client_(HeadlessDevToolsClient::Create()),
+#if !defined(CHROME_MULTIPLE_DLL_CHILD)
       web_contents_(nullptr),
-      processed_page_ready_(false),
       browser_context_(nullptr),
-      weak_factory_(this) {}
+#endif
+      processed_page_ready_(false),
+      weak_factory_(this) {
+}
 
 HeadlessShell::~HeadlessShell() {}
 

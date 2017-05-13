@@ -44,7 +44,9 @@ namespace headless {
 namespace {
 // Keep in sync with content/common/content_constants_internal.h.
 // TODO(skyostil): Add a tracing test for this.
+#if !defined(CHROME_MULTIPLE_DLL_CHILD)
 const int kTraceEventBrowserProcessSortIndex = -6;
+#endif
 
 HeadlessContentMainDelegate* g_current_headless_content_main_delegate = nullptr;
 
