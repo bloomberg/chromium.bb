@@ -29,6 +29,7 @@
 #include "gpu/ipc/service/gpu_channel_manager_delegate.h"
 #include "gpu/ipc/service/gpu_config.h"
 #include "gpu/ipc/service/x_util.h"
+#include "media/base/android_overlay_mojo_factory.h"
 #include "mojo/public/cpp/bindings/associated_binding_set.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/service_manager/public/interfaces/service_factory.mojom.h"
@@ -114,6 +115,12 @@ class GpuChildThread : public ChildThreadImpl,
   gpu::GpuChannelManager* gpu_channel_manager() {
     return gpu_service_->gpu_channel_manager();
   }
+
+#if defined(OS_ANDROID)
+  static std::unique_ptr<media::AndroidOverlay> CreateAndroidOverlay(
+      const base::UnguessableToken& routing_token,
+      media::AndroidOverlayConfig);
+#endif
 
   // Set this flag to true if a fatal error occurred before we receive the
   // OnInitialize message, in which case we just declare ourselves DOA.

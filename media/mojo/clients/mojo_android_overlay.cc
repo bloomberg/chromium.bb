@@ -6,20 +6,14 @@
 
 #include "gpu/ipc/common/gpu_surface_lookup.h"
 #include "services/service_manager/public/cpp/connect.h"
-#include "services/service_manager/public/interfaces/interface_provider.mojom.h"
 
 namespace media {
 
 MojoAndroidOverlay::MojoAndroidOverlay(
-    service_manager::mojom::InterfaceProvider* interface_provider,
+    mojom::AndroidOverlayProviderPtr provider_ptr,
     AndroidOverlayConfig config,
     const base::UnguessableToken& routing_token)
-    : interface_provider_(interface_provider), config_(std::move(config)) {
-  // Connect to the provider service.
-  mojom::AndroidOverlayProviderPtr provider_ptr;
-  service_manager::GetInterface<mojom::AndroidOverlayProvider>(
-      interface_provider_, &provider_ptr_);
-
+    : config_(std::move(config)) {
   // Fill in details of |config| into |mojo_config|.  Our caller could do this
   // too, but since we want to retain |config_| anyway, we do it here.
   mojom::AndroidOverlayConfigPtr mojo_config =
@@ -32,8 +26,8 @@ MojoAndroidOverlay::MojoAndroidOverlay(
   binding_ = base::MakeUnique<mojo::Binding<mojom::AndroidOverlayClient>>(
       this, mojo::MakeRequest(&ptr));
 
-  provider_ptr_->CreateOverlay(mojo::MakeRequest(&overlay_ptr_), std::move(ptr),
-                               std::move(mojo_config));
+  provider_ptr->CreateOverlay(mojo::MakeRequest(&overlay_ptr_), std::move(ptr),
+                              std::move(mojo_config));
 }
 
 MojoAndroidOverlay::~MojoAndroidOverlay() {

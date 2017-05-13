@@ -11,22 +11,15 @@
 #include "media/mojo/interfaces/android_overlay.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
-namespace service_manager {
-namespace mojom {
-class InterfaceProvider;
-}
-}
-
 namespace media {
 
 // AndroidOverlay implementation via mojo.
 class MojoAndroidOverlay : public AndroidOverlay,
                            public mojom::AndroidOverlayClient {
  public:
-  MojoAndroidOverlay(
-      service_manager::mojom::InterfaceProvider* interface_provider,
-      AndroidOverlayConfig config,
-      const base::UnguessableToken& routing_token);
+  MojoAndroidOverlay(mojom::AndroidOverlayProviderPtr provider_ptr,
+                     AndroidOverlayConfig config,
+                     const base::UnguessableToken& routing_token);
 
   ~MojoAndroidOverlay() override;
 
@@ -39,9 +32,7 @@ class MojoAndroidOverlay : public AndroidOverlay,
   void OnDestroyed() override;
 
  private:
-  service_manager::mojom::InterfaceProvider* interface_provider_;
   AndroidOverlayConfig config_;
-  mojom::AndroidOverlayProviderPtr provider_ptr_;
   mojom::AndroidOverlayPtr overlay_ptr_;
   std::unique_ptr<mojo::Binding<mojom::AndroidOverlayClient>> binding_;
   gl::ScopedJavaSurface surface_;

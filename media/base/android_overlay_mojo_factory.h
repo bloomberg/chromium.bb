@@ -7,13 +7,14 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "base/unguessable_token.h"
 #include "media/base/android_overlay_config.h"
 
 namespace media {
 
 // Note that this compiles on non-android too.
 using AndroidOverlayMojoFactoryCB = base::RepeatingCallback<std::unique_ptr<
-    AndroidOverlay>(base::UnguessableToken&, const AndroidOverlayConfig&)>
+    AndroidOverlay>(const base::UnguessableToken&, AndroidOverlayConfig)>;
 
 }  // namespace media
 

@@ -67,34 +67,9 @@ class MojoAndroidOverlayTest : public ::testing::Test {
     mojom::AndroidOverlayConfigPtr config_;
   };
 
-  // When the overlay client needs the provider interface, it'll ask us.
-  class MockInterfaceProvider
-      : public StrictMock<service_manager::mojom::InterfaceProvider> {
-   public:
-    // |provider| is the provider that we'll provide, provided that we're only
-    // asked to provide it once.  Savvy?
-    MockInterfaceProvider(mojom::AndroidOverlayProvider& provider)
-        : provider_binding_(&provider) {}
-
-    // We can't mock GetInterface directly because of |handle|'s deleted ctor.
-    MOCK_METHOD1(InterfaceGotten, void(const std::string&));
-
-    void GetInterface(const std::string& name,
-                      mojo::ScopedMessagePipeHandle handle) override {
-      // Let the mock know.
-      InterfaceGotten(name);
-
-      // Actually do the work.
-      provider_binding_.Bind(
-          mojom::AndroidOverlayProviderRequest(std::move(handle)));
-    }
-
-    mojo::Binding<mojom::AndroidOverlayProvider> provider_binding_;
-  };
-
  public:
   MojoAndroidOverlayTest()
-      : overlay_binding_(&mock_overlay_), interface_provider_(mock_provider_) {}
+      : provider_binding_(&mock_provider_), overlay_binding_(&mock_overlay_) {}
 
   ~MojoAndroidOverlayTest() override {}
 
@@ -128,14 +103,14 @@ class MojoAndroidOverlayTest : public ::testing::Test {
   // Create an overlay in |overlay_client_| using the current config, but do
   // not bind anything to |overlay_request_| yet.
   void CreateOverlay() {
-    EXPECT_CALL(interface_provider_,
-                InterfaceGotten(mojom::AndroidOverlayProvider::Name_))
-        .Times(1);
     EXPECT_CALL(mock_provider_, OverlayCreated());
 
     base::UnguessableToken routing_token = base::UnguessableToken::Create();
+    mojom::AndroidOverlayProviderPtr provider_ptr;
+    provider_binding_.Bind(mojo::MakeRequest(&provider_ptr));
+
     overlay_client_.reset(new MojoAndroidOverlay(
-        &interface_provider_, std::move(config_), routing_token));
+        std::move(provider_ptr), std::move(config_), routing_token));
     base::RunLoop().RunUntilIdle();
   }
 
@@ -182,13 +157,12 @@ class MojoAndroidOverlayTest : public ::testing::Test {
   // |interface_provider_| will bind it.
   MockAndroidOverlayProvider mock_provider_;
 
+  // Binding for |mock_provider_|.
+  mojo::Binding<mojom::AndroidOverlayProvider> provider_binding_;
+
   // The mock overlay impl that |mock_provider_| will provide.
   MockAndroidOverlay mock_overlay_;
   mojo::Binding<mojom::AndroidOverlay> overlay_binding_;
-
-  // The InterfaceProvider impl that will provide |mock_provider_| to the
-  // overlay client |overlay_client_|.
-  MockInterfaceProvider interface_provider_;
 
   // The client under test.
   std::unique_ptr<AndroidOverlay> overlay_client_;

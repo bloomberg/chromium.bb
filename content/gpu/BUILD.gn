@@ -66,6 +66,7 @@ target(link_target_type, "gpu_sources") {
     # component build, determine if it should not be included here.
     # http://crbug.com/702833.
     "//media/gpu/ipc/service",
+    "//media/mojo/clients:clients",
     "//services/service_manager/public/cpp",
     "//services/service_manager/public/interfaces",
     "//services/shape_detection:lib",
