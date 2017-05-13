@@ -12,6 +12,7 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/vector2d.h"
 #include "ui/gfx/paint_vector_icon.h"
+#include "ui/gfx/render_text.h"
 #include "ui/gfx/vector_icon_types.h"
 #include "ui/vector_icons/vector_icons.h"
 
@@ -38,33 +39,29 @@ void InsecureContentTransientTexture::Draw(SkCanvas* sk_canvas,
   gfx::Canvas* canvas = &gfx_canvas;
 
   size_.set_width(texture_size.width());
-  int max_height = texture_size.height();
-  cc::PaintFlags flags;
-  flags.setColor(kBackgroundColor);
-
-  int text_flags = gfx::Canvas::TEXT_ALIGN_CENTER | gfx::Canvas::MULTI_LINE;
+  SkPaint paint;
+  paint.setColor(kBackgroundColor);
   auto text =
       l10n_util::GetStringUTF16(IDS_PAGE_INFO_INSECURE_WEBVR_CONTENT_TRANSIENT);
   auto fonts = GetFontList(size_.width() * kFontSizeFactor, text);
-  int text_width = size_.width() * kTextWidthFactor;
-  int text_height = 0;  // Will be increased during text measurement.
-  gfx::Canvas::SizeStringInt(text, fonts, &text_width, &text_height, 0,
-                             text_flags);
+  gfx::Rect text_size(size_.width() * kTextWidthFactor, 0);
 
-  // Making sure the drawing fits within the texture.
-  text_height = std::min(
-      text_height, static_cast<int>((1.0 - 2 * kBorderFactor) * size_.width()));
-  size_.set_height(size_.width() * 2 * kBorderFactor + text_height);
-  DCHECK_LE(size_.height(), max_height);
-  canvas->DrawRoundRect(gfx::Rect(size_.width(), size_.height()),
-                        size_.height() * kBorderFactor, flags);
+  std::vector<std::unique_ptr<gfx::RenderText>> lines =
+      PrepareDrawStringRect(text, fonts, kForegroundColor, &text_size,
+                            TEXT_ALIGN_CENTER | MULTI_LINE);
+
+  DCHECK_LE(text_size.height(),
+            static_cast<int>((1.0 - 2 * kBorderFactor) * size_.width()));
+  size_.set_height(size_.width() * 2 * kBorderFactor + text_size.height());
+  float radius = size_.height() * kBorderFactor;
+  sk_canvas->drawRoundRect(SkRect::MakeWH(size_.width(), size_.height()),
+                           radius, radius, paint);
 
   canvas->Save();
   canvas->Translate(gfx::Vector2d(size_.width() * kBorderFactor,
                                   size_.width() * kBorderFactor));
-  canvas->DrawStringRectWithFlags(
-      text, fonts, kForegroundColor,
-      gfx::Rect(kTextWidthFactor * size_.width(), text_height), text_flags);
+  for (auto& render_text : lines)
+    render_text->Draw(canvas);
   canvas->Restore();
 }
 

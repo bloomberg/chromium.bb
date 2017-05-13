@@ -12,6 +12,7 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/vector2d.h"
 #include "ui/gfx/paint_vector_icon.h"
+#include "ui/gfx/render_text.h"
 #include "ui/gfx/vector_icon_types.h"
 #include "ui/vector_icons/vector_icons.h"
 
@@ -41,33 +42,29 @@ void InsecureContentPermanentTexture::Draw(SkCanvas* sk_canvas,
 
   DCHECK(texture_size.height() * 4 == texture_size.width());
   size_.set_height(texture_size.height());
-  int max_width = texture_size.width();
-  cc::PaintFlags flags;
-  flags.setColor(kBackgroundColor);
-
-  int text_flags = gfx::Canvas::TEXT_ALIGN_CENTER | gfx::Canvas::NO_ELLIPSIS;
+  SkPaint paint;
+  paint.setColor(kBackgroundColor);
   auto text =
       l10n_util::GetStringUTF16(IDS_PAGE_INFO_INSECURE_WEBVR_CONTENT_PERMANENT);
   auto fonts = GetFontList(size_.height() * kFontSizeFactor, text);
-  int text_height = kTextHeightFactor * size_.height();
-  int text_width = kTextWidthFactor * size_.height();
-  gfx::Canvas::SizeStringInt(text, fonts, &text_width, &text_height, 0,
-                             text_flags);
-  // Giving some extra width without reaching the texture limit.
-  text_width =
-      static_cast<int>(std::min(text_width + 2 * kBorderFactor * size_.height(),
-                                kTextWidthFactor * size_.height()));
-  size_.set_width((3 * kBorderFactor + kIconSizeFactor) * size_.height() +
-                  text_width);
-  DCHECK_LE(size_.width(), max_width);
-  canvas->DrawRoundRect(gfx::Rect(size_.width(), size_.height()),
-                        size_.height() * kBorderFactor, flags);
+  gfx::Rect text_size(0, kTextHeightFactor * size_.height());
+
+  std::vector<std::unique_ptr<gfx::RenderText>> lines =
+      PrepareDrawStringRect(text, fonts, kForegroundColor, &text_size, 0);
+
+  DCHECK_LE(text_size.width(), kTextWidthFactor * size_.height());
+  // Setting background size giving some extra lateral padding to the text.
+  size_.set_width((5 * kBorderFactor + kIconSizeFactor) * size_.height() +
+                  text_size.width());
+  float radius = size_.height() * kBorderFactor;
+  sk_canvas->drawRoundRect(SkRect::MakeWH(size_.width(), size_.height()),
+                           radius, radius, paint);
 
   canvas->Save();
-  canvas->Translate(
-      gfx::Vector2d(IsRTL() ? 2 * kBorderFactor * size_.height() + text_width
-                            : size_.height() * kBorderFactor,
-                    size_.height() * (1.0 - kIconSizeFactor) / 2.0));
+  canvas->Translate(gfx::Vector2d(
+      IsRTL() ? 4 * kBorderFactor * size_.height() + text_size.width()
+              : size_.height() * kBorderFactor,
+      size_.height() * (1.0 - kIconSizeFactor) / 2.0));
   PaintVectorIcon(canvas, ui::kInfoOutlineIcon,
                   size_.height() * kIconSizeFactor, kForegroundColor);
   canvas->Restore();
@@ -75,11 +72,10 @@ void InsecureContentPermanentTexture::Draw(SkCanvas* sk_canvas,
   canvas->Save();
   canvas->Translate(gfx::Vector2d(
       size_.height() *
-          (IsRTL() ? kBorderFactor : 2 * kBorderFactor + kIconSizeFactor),
+          (IsRTL() ? 2 * kBorderFactor : 3 * kBorderFactor + kIconSizeFactor),
       size_.height() * kBorderFactor));
-  canvas->DrawStringRectWithFlags(
-      text, fonts, kForegroundColor,
-      gfx::Rect(text_width, kTextHeightFactor * size_.height()), text_flags);
+  for (auto& render_text : lines)
+    render_text->Draw(canvas);
   canvas->Restore();
 }
 
