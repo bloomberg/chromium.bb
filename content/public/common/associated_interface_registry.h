@@ -53,9 +53,7 @@ class AssociatedInterfaceRegistry {
   template <typename Interface>
   static void BindInterface(const InterfaceBinder<Interface>& binder,
                             mojo::ScopedInterfaceEndpointHandle handle) {
-    mojo::AssociatedInterfaceRequest<Interface> request;
-    request.Bind(std::move(handle));
-    binder.Run(std::move(request));
+    binder.Run(mojo::AssociatedInterfaceRequest<Interface>(std::move(handle)));
   }
 };
 

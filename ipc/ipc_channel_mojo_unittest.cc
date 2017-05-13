@@ -724,9 +724,8 @@ class ListenerWithSimpleProxyAssociatedInterface
       const std::string& interface_name,
       mojo::ScopedInterfaceEndpointHandle handle) override {
     DCHECK_EQ(interface_name, IPC::mojom::SimpleTestDriver::Name_);
-    IPC::mojom::SimpleTestDriverAssociatedRequest request;
-    request.Bind(std::move(handle));
-    binding_.Bind(std::move(request));
+    binding_.Bind(
+        IPC::mojom::SimpleTestDriverAssociatedRequest(std::move(handle)));
   }
 
   bool received_all_messages() const {
@@ -856,9 +855,8 @@ class ListenerWithIndirectProxyAssociatedInterface
       mojo::ScopedInterfaceEndpointHandle handle) override {
     DCHECK(!driver_binding_.is_bound());
     DCHECK_EQ(interface_name, IPC::mojom::IndirectTestDriver::Name_);
-    IPC::mojom::IndirectTestDriverAssociatedRequest request;
-    request.Bind(std::move(handle));
-    driver_binding_.Bind(std::move(request));
+    driver_binding_.Bind(
+        IPC::mojom::IndirectTestDriverAssociatedRequest(std::move(handle)));
   }
 
   void set_ping_handler(const base::Closure& handler) {
@@ -986,10 +984,8 @@ class ListenerWithSyncAssociatedInterface
       mojo::ScopedInterfaceEndpointHandle handle) override {
     DCHECK(!binding_.is_bound());
     DCHECK_EQ(interface_name, IPC::mojom::SimpleTestDriver::Name_);
-
-    IPC::mojom::SimpleTestDriverAssociatedRequest request;
-    request.Bind(std::move(handle));
-    binding_.Bind(std::move(request));
+    binding_.Bind(
+        IPC::mojom::SimpleTestDriverAssociatedRequest(std::move(handle)));
   }
 
   void BindRequest(IPC::mojom::SimpleTestDriverAssociatedRequest request) {
@@ -1122,9 +1118,8 @@ class SimpleTestClientImpl : public IPC::mojom::SimpleTestClient,
     DCHECK(!binding_.is_bound());
     DCHECK_EQ(interface_name, IPC::mojom::SimpleTestClient::Name_);
 
-    IPC::mojom::SimpleTestClientAssociatedRequest request;
-    request.Bind(std::move(handle));
-    binding_.Bind(std::move(request));
+    binding_.Bind(
+        IPC::mojom::SimpleTestClientAssociatedRequest(std::move(handle)));
   }
 
   bool use_sync_sender_ = false;

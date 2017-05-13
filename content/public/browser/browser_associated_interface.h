@@ -93,8 +93,8 @@ class BrowserAssociatedInterface {
       // If this interface has already been shut down we drop the request.
       if (!bindings_)
         return;
-      bindings_->AddBinding(
-          impl_, mojo::MakeAssociatedRequest<Interface>(std::move(handle)));
+      bindings_->AddBinding(impl_, mojo::AssociatedInterfaceRequest<Interface>(
+                                       std::move(handle)));
     }
 
    private:

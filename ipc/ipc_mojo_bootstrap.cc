@@ -116,7 +116,7 @@ class ChannelAssociatedGroupController
         CreateScopedInterfaceEndpointHandle(receiver_id);
 
     sender->Bind(mojom::ChannelAssociatedPtrInfo(std::move(sender_handle), 0));
-    receiver->Bind(std::move(receiver_handle));
+    *receiver = mojom::ChannelAssociatedRequest(std::move(receiver_handle));
   }
 
   void ShutDown() {

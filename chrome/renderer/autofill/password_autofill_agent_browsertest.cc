@@ -581,8 +581,7 @@ class PasswordAutofillAgentTest : public ChromeRenderViewTest {
 
   void BindPasswordManagerClient(mojo::ScopedInterfaceEndpointHandle handle) {
     fake_pw_client_.BindRequest(
-        mojo::MakeAssociatedRequest<mojom::PasswordManagerClient>(
-            std::move(handle)));
+        mojom::PasswordManagerClientAssociatedRequest(std::move(handle)));
   }
 
   FakeContentPasswordManagerDriver fake_driver_;

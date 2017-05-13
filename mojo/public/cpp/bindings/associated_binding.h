@@ -101,16 +101,6 @@ class AssociatedBinding : public AssociatedBindingBase {
     stub_.set_sink(std::move(impl));
   }
 
-  // Constructs a completed associated binding of |impl|. The output |ptr_info|
-  // should be sent by another interface. |impl| must outlive this object.
-  AssociatedBinding(ImplPointerType impl,
-                    AssociatedInterfacePtrInfo<Interface>* ptr_info,
-                    scoped_refptr<base::SingleThreadTaskRunner> runner =
-                        base::ThreadTaskRunnerHandle::Get())
-      : AssociatedBinding(std::move(impl)) {
-    Bind(ptr_info, std::move(runner));
-  }
-
   // Constructs a completed associated binding of |impl|. |impl| must outlive
   // the binding.
   AssociatedBinding(ImplPointerType impl,
@@ -138,12 +128,9 @@ class AssociatedBinding : public AssociatedBindingBase {
   // implementation. Puts this object into a state where it can be rebound.
   AssociatedInterfaceRequest<Interface> Unbind() {
     DCHECK(endpoint_client_);
-
-    AssociatedInterfaceRequest<Interface> request;
-    request.Bind(endpoint_client_->PassHandle());
-
+    AssociatedInterfaceRequest<Interface> request(
+        endpoint_client_->PassHandle());
     endpoint_client_.reset();
-
     return request;
   }
 

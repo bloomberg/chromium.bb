@@ -79,9 +79,8 @@ void MessagePipeReader::GetRemoteInterface(
     mojo::ScopedInterfaceEndpointHandle handle) {
   if (!sender_.is_bound())
     return;
-  mojom::GenericInterfaceAssociatedRequest request;
-  request.Bind(std::move(handle));
-  sender_->GetAssociatedInterface(name, std::move(request));
+  sender_->GetAssociatedInterface(
+      name, mojom::GenericInterfaceAssociatedRequest(std::move(handle)));
 }
 
 void MessagePipeReader::SetPeerPid(int32_t peer_pid) {
