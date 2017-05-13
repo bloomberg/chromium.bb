@@ -2246,9 +2246,10 @@ void CompositedLayerMapping::UpdateElementIdAndCompositorMutableProperties() {
     element_id = DOMNodeIds::IdForNode(owning_node);
 
   CompositorElementId compositor_element_id;
-  if (element_id)
-    compositor_element_id =
-        CreateCompositorElementId(element_id, CompositorSubElementId::kPrimary);
+  if (element_id) {
+    compositor_element_id = CompositorElementIdFromDOMNodeId(
+        element_id, CompositorElementIdNamespace::kPrimary);
+  }
 
   graphics_layer_->SetElementId(compositor_element_id);
   graphics_layer_->SetCompositorMutableProperties(primary_mutable_properties);
@@ -2372,10 +2373,12 @@ bool CompositedLayerMapping::UpdateScrollingLayers(
       scrolling_contents_layer_ =
           CreateGraphicsLayer(kCompositingReasonLayerForScrollingContents);
 
-      if (Node* owning_node = owning_layer_.GetLayoutObject().GetNode())
+      if (Node* owning_node = owning_layer_.GetLayoutObject().GetNode()) {
         scrolling_contents_layer_->SetElementId(
-            CreateCompositorElementId(DOMNodeIds::IdForNode(owning_node),
-                                      CompositorSubElementId::kScroll));
+            CompositorElementIdFromDOMNodeId(
+                DOMNodeIds::IdForNode(owning_node),
+                CompositorElementIdNamespace::kScroll));
+      }
 
       scrolling_layer_->AddChild(scrolling_contents_layer_.get());
 

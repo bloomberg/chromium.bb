@@ -13,20 +13,29 @@
 
 namespace blink {
 
-enum class CompositorSubElementId {
+const int kCompositorNamespaceBitCount = 3;
+
+enum class CompositorElementIdNamespace {
   kPrimary,
   kScroll,
   kViewport,
   kLinkHighlight,
-  // A sentinel to indicate how many enum values there are.
-  kNumSubElementTypes
+  kScrollbar,
+  // A sentinel to indicate the maximum representable namespace id
+  // (the maximum is one less than this value).
+  kMaxRepresentableNamespaceId = 1 << kCompositorNamespaceBitCount
 };
 
 using CompositorElementId = cc::ElementId;
 using DOMNodeId = uint64_t;
+using ScrollbarId = uint64_t;
 
 CompositorElementId PLATFORM_EXPORT
-    CreateCompositorElementId(DOMNodeId, CompositorSubElementId);
+    CompositorElementIdFromDOMNodeId(DOMNodeId, CompositorElementIdNamespace);
+
+CompositorElementId PLATFORM_EXPORT
+    CompositorElementIdFromScrollbarId(ScrollbarId,
+                                       CompositorElementIdNamespace);
 
 // Note cc::ElementId has a hash function already implemented via
 // ElementIdHash::operator(). However for consistency's sake we choose to use
@@ -42,9 +51,9 @@ struct CompositorElementIdHash {
   static const bool safe_to_compare_to_empty_or_deleted = true;
 };
 
-DOMNodeId PLATFORM_EXPORT DomNodeIdFromCompositorElementId(CompositorElementId);
-CompositorSubElementId PLATFORM_EXPORT
-    SubElementIdFromCompositorElementId(CompositorElementId);
+uint64_t PLATFORM_EXPORT IdFromCompositorElementId(CompositorElementId);
+CompositorElementIdNamespace PLATFORM_EXPORT
+    NamespaceFromCompositorElementId(CompositorElementId);
 
 struct CompositorElementIdHashTraits
     : WTF::GenericHashTraits<CompositorElementId> {

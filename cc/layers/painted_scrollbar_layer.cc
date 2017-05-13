@@ -73,10 +73,6 @@ bool PaintedScrollbarLayer::OpacityCanAnimateOnImplThread() const {
   return scrollbar_->IsOverlay();
 }
 
-bool PaintedScrollbarLayer::AlwaysUseActiveTreeOpacity() const {
-  return true;
-}
-
 ScrollbarOrientation PaintedScrollbarLayer::orientation() const {
   return scrollbar_->Orientation();
 }

@@ -26,7 +26,6 @@ class CC_EXPORT SolidColorScrollbarLayer : public ScrollbarLayerInterface,
 
   // Layer overrides.
   bool OpacityCanAnimateOnImplThread() const override;
-  bool AlwaysUseActiveTreeOpacity() const override;
   ScrollbarLayerInterface* ToScrollbarLayer() override;
 
   void SetOpacity(float opacity) override;

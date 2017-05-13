@@ -44,7 +44,8 @@ class CC_EXPORT ScrollbarAnimationController {
       ElementId scroll_element_id,
       ScrollbarAnimationControllerClient* client,
       base::TimeDelta fade_delay,
-      base::TimeDelta fade_duration);
+      base::TimeDelta fade_duration,
+      float initial_opacity);
 
   // ScrollbarAnimationController for Desktop Overlay Scrollbar. It has show &
   // fade out animation and thinning animation.
@@ -54,7 +55,8 @@ class CC_EXPORT ScrollbarAnimationController {
       ScrollbarAnimationControllerClient* client,
       base::TimeDelta fade_delay,
       base::TimeDelta fade_duration,
-      base::TimeDelta thinning_duration);
+      base::TimeDelta thinning_duration,
+      float initial_opacity);
 
   ~ScrollbarAnimationController();
 
@@ -88,6 +90,8 @@ class CC_EXPORT ScrollbarAnimationController {
   bool MouseIsNearScrollbar(ScrollbarOrientation orientation) const;
   bool MouseIsNearAnyScrollbar() const;
 
+  ScrollbarSet Scrollbars() const;
+
   static constexpr float kMouseMoveDistanceToTriggerFadeIn = 30.0f;
 
  private:
@@ -97,15 +101,16 @@ class CC_EXPORT ScrollbarAnimationController {
   ScrollbarAnimationController(ElementId scroll_element_id,
                                ScrollbarAnimationControllerClient* client,
                                base::TimeDelta fade_delay,
-                               base::TimeDelta fade_duration);
+                               base::TimeDelta fade_duration,
+                               float initial_opacity);
 
   ScrollbarAnimationController(ElementId scroll_element_id,
                                ScrollbarAnimationControllerClient* client,
                                base::TimeDelta fade_delay,
                                base::TimeDelta fade_duration,
-                               base::TimeDelta thinning_duration);
+                               base::TimeDelta thinning_duration,
+                               float initial_opacity);
 
-  ScrollbarSet Scrollbars() const;
   SingleScrollbarAnimationControllerThinning& GetScrollbarAnimationController(
       ScrollbarOrientation) const;
 

@@ -1197,9 +1197,9 @@ void PaintLayerCompositor::EnsureRootLayer() {
     // In RLS mode, LayoutView scrolling contents layer gets this element ID (in
     // CompositedLayerMapping::updateElementIdAndCompositorMutableProperties).
     if (!RuntimeEnabledFeatures::rootLayerScrollingEnabled()) {
-      scroll_layer_->SetElementId(CreateCompositorElementId(
+      scroll_layer_->SetElementId(CompositorElementIdFromDOMNodeId(
           DOMNodeIds::IdForNode(&layout_view_.GetDocument()),
-          CompositorSubElementId::kScroll));
+          CompositorElementIdNamespace::kScroll));
     }
 
     // Hook them up

@@ -644,16 +644,19 @@ TEST_F(ScrollbarLayerTest, ScrollbarLayerOpacity) {
   scoped_refptr<Layer> layer_tree_root = Layer::Create();
   scoped_refptr<Layer> scroll_layer = Layer::Create();
   scroll_layer->SetScrollClipLayerId(layer_tree_root->id());
+  scroll_layer->SetElementId(ElementId(200));
   scoped_refptr<Layer> child1 = Layer::Create();
-  scoped_refptr<Layer> scrollbar_layer;
+  scoped_refptr<SolidColorScrollbarLayer> scrollbar_layer;
   const bool kIsLeftSideVerticalScrollbar = false;
   scrollbar_layer = SolidColorScrollbarLayer::Create(
       scrollbar->Orientation(), kThumbThickness, kTrackStart,
       kIsLeftSideVerticalScrollbar, scroll_layer->element_id());
+  scrollbar_layer->SetElementId(ElementId(300));
   scroll_layer->AddChild(child1);
   scroll_layer->InsertChild(scrollbar_layer, 1);
   layer_tree_root->AddChild(scroll_layer);
   layer_tree_host_->SetRootLayer(layer_tree_root);
+  scrollbar_layer->SetScrollElementId(scroll_layer->element_id());
 
   // Choose layer bounds to give max_scroll_offset = (8, 8).
   layer_tree_root->SetBounds(gfx::Size(2, 2));
@@ -662,14 +665,8 @@ TEST_F(ScrollbarLayerTest, ScrollbarLayerOpacity) {
   // Building property trees twice shouldn't change the size of
   // PropertyTrees::always_use_active_tree_opacity_effect_ids.
   layer_tree_host_->BuildPropertyTreesForTesting();
-  EXPECT_EQ(layer_tree_host_->property_trees()
-                ->always_use_active_tree_opacity_effect_ids.size(),
-            1u);
   layer_tree_host_->property_trees()->needs_rebuild = true;
   layer_tree_host_->BuildPropertyTreesForTesting();
-  EXPECT_EQ(layer_tree_host_->property_trees()
-                ->always_use_active_tree_opacity_effect_ids.size(),
-            1u);
 
   // A solid color scrollbar layer's opacity is initialized to 0 on main thread
   layer_tree_host_->UpdateLayers();

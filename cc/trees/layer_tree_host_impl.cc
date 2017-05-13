@@ -2044,6 +2044,34 @@ void LayerTreeHostImpl::CreatePendingTree() {
   pending_tree_duration_timer_.reset(new PendingTreeDurationHistogramTimer());
 }
 
+void LayerTreeHostImpl::PushScrollbarOpacitiesFromActiveToPending() {
+  if (!active_tree())
+    return;
+  for (auto& pair : scrollbar_animation_controllers_) {
+    for (auto* scrollbar : pair.second->Scrollbars()) {
+      if (const EffectNode* source_effect_node =
+              active_tree()
+                  ->property_trees()
+                  ->effect_tree.FindNodeFromElementId(
+                      scrollbar->element_id())) {
+        if (EffectNode* target_effect_node =
+                pending_tree()
+                    ->property_trees()
+                    ->effect_tree.FindNodeFromElementId(
+                        scrollbar->element_id())) {
+          DCHECK(target_effect_node);
+          float source_opacity = source_effect_node->opacity;
+          float target_opacity = target_effect_node->opacity;
+          if (source_opacity == target_opacity)
+            continue;
+          target_effect_node->opacity = source_opacity;
+          pending_tree()->property_trees()->effect_tree.set_needs_update(true);
+        }
+      }
+    }
+  }
+}
+
 void LayerTreeHostImpl::ActivateSyncTree() {
   if (pending_tree_) {
     TRACE_EVENT_ASYNC_END0("cc", "PendingTree:waiting", pending_tree_.get());
@@ -2074,8 +2102,8 @@ void LayerTreeHostImpl::ActivateSyncTree() {
         active_tree_->MoveChangeTrackingToLayers();
     }
     TreeSynchronizer::PushLayerProperties(pending_tree(), active_tree());
-    active_tree_->property_trees()->PushOpacityIfNeeded(
-        pending_tree_->property_trees());
+
+    PushScrollbarOpacitiesFromActiveToPending();
 
     pending_tree_->PushPropertiesTo(active_tree_.get());
     if (!pending_tree_->LayerListIsEmpty())
@@ -3693,14 +3721,16 @@ std::string LayerTreeHostImpl::LayerTreeAsJson() const {
 }
 
 void LayerTreeHostImpl::RegisterScrollbarAnimationController(
-    ElementId scroll_element_id) {
+    ElementId scroll_element_id,
+    float scrollbar_opacity) {
   if (settings().scrollbar_animator == LayerTreeSettings::NO_ANIMATOR)
     return;
   if (ScrollbarAnimationControllerForElementId(scroll_element_id))
     return;
 
   scrollbar_animation_controllers_[scroll_element_id] =
-      active_tree_->CreateScrollbarAnimationController(scroll_element_id);
+      active_tree_->CreateScrollbarAnimationController(scroll_element_id,
+                                                       scrollbar_opacity);
 }
 
 void LayerTreeHostImpl::UnregisterScrollbarAnimationController(

@@ -52,6 +52,8 @@ class ScrollableArea;
 class WebLayerTreeView;
 class WebScrollbarLayer;
 
+using ScrollbarId = uint64_t;
+
 class CORE_EXPORT ScrollingCoordinator final
     : public GarbageCollectedFinalized<ScrollingCoordinator> {
   WTF_MAKE_NONCOPYABLE(ScrollingCoordinator);

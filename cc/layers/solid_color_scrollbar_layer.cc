@@ -91,10 +91,6 @@ bool SolidColorScrollbarLayer::OpacityCanAnimateOnImplThread() const {
   return true;
 }
 
-bool SolidColorScrollbarLayer::AlwaysUseActiveTreeOpacity() const {
-  return true;
-}
-
 ElementId SolidColorScrollbarLayer::scroll_element_id() const {
   return solid_color_scrollbar_layer_inputs_.scroll_element_id;
 }

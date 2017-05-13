@@ -752,9 +752,9 @@ bool Animation::CanStartAnimationOnCompositor(
     if (!target_element)
       return false;
 
-    CompositorElementId target_element_id =
-        CreateCompositorElementId(DOMNodeIds::IdForNode(target_element),
-                                  CompositorSubElementId::kPrimary);
+    CompositorElementId target_element_id = CompositorElementIdFromDOMNodeId(
+        DOMNodeIds::IdForNode(target_element),
+        CompositorElementIdNamespace::kPrimary);
     if (!composited_element_ids->Contains(target_element_id))
       return false;
   }

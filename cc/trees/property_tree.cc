@@ -1623,8 +1623,6 @@ bool PropertyTrees::operator==(const PropertyTrees& other) const {
              other.element_id_to_scroll_node_index &&
          element_id_to_transform_node_index ==
              other.element_id_to_transform_node_index &&
-         always_use_active_tree_opacity_effect_ids ==
-             other.always_use_active_tree_opacity_effect_ids &&
          needs_rebuild == other.needs_rebuild && changed == other.changed &&
          full_tree_damaged == other.full_tree_damaged &&
          is_main_thread == other.is_main_thread &&
@@ -1638,8 +1636,6 @@ PropertyTrees& PropertyTrees::operator=(const PropertyTrees& from) {
   effect_tree = from.effect_tree;
   clip_tree = from.clip_tree;
   scroll_tree = from.scroll_tree;
-  always_use_active_tree_opacity_effect_ids =
-      from.always_use_active_tree_opacity_effect_ids;
   element_id_to_effect_node_index = from.element_id_to_effect_node_index;
   element_id_to_scroll_node_index = from.element_id_to_scroll_node_index;
   element_id_to_transform_node_index = from.element_id_to_transform_node_index;
@@ -1672,7 +1668,6 @@ void PropertyTrees::clear() {
   element_id_to_effect_node_index.clear();
   element_id_to_scroll_node_index.clear();
   element_id_to_transform_node_index.clear();
-  always_use_active_tree_opacity_effect_ids.clear();
 
   needs_rebuild = true;
   full_tree_damaged = false;
@@ -1716,22 +1711,6 @@ void PropertyTrees::SetOuterViewportContainerBoundsDelta(
 void PropertyTrees::SetInnerViewportScrollBoundsDelta(
     gfx::Vector2dF bounds_delta) {
   inner_viewport_scroll_bounds_delta_ = bounds_delta;
-}
-
-void PropertyTrees::PushOpacityIfNeeded(PropertyTrees* target_tree) {
-  for (int id : target_tree->always_use_active_tree_opacity_effect_ids) {
-    if (const EffectNode* source_effect_node =
-            effect_tree.FindNodeFromOwningLayerId(id)) {
-      EffectNode* target_effect_node =
-          target_tree->effect_tree.UpdateNodeFromOwningLayerId(id);
-      float source_opacity = source_effect_node->opacity;
-      float target_opacity = target_effect_node->opacity;
-      if (source_opacity == target_opacity)
-        continue;
-      target_effect_node->opacity = source_opacity;
-      target_tree->effect_tree.set_needs_update(true);
-    }
-  }
 }
 
 void PropertyTrees::RemoveIdFromIdToIndexMaps(int id) {

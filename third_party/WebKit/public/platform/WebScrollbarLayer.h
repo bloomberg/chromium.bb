@@ -30,6 +30,11 @@
 #include "WebScrollbarThemeGeometry.h"
 #include "WebScrollbarThemePainter.h"
 
+namespace cc {
+
+struct ElementId;
+}
+
 namespace blink {
 
 class WebScrollbarLayer {
@@ -39,6 +44,12 @@ class WebScrollbarLayer {
   virtual WebLayer* Layer() = 0;
 
   virtual void SetScrollLayer(WebLayer*) = 0;
+
+  // This is an element id for the scrollbar, not the scrolling layer.
+  // This is not to be confused with scrolling_element_id, which is the
+  // element id of the scrolling layer that has a scrollbar.
+  // All scrollbar layers require element ids.
+  virtual void SetElementId(const cc::ElementId&) = 0;
 };
 
 }  // namespace blink

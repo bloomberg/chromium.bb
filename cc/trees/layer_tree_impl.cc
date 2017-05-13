@@ -584,11 +584,6 @@ void LayerTreeImpl::RemoveFromElementMap(LayerImpl* layer) {
   element_layers_map_.erase(layer->element_id());
 }
 
-void LayerTreeImpl::AddToOpacityAnimationsMap(int id, float opacity) {
-  if (LayerImpl* layer = LayerById(id))
-    element_id_to_opacity_animations_[layer->element_id()] = opacity;
-}
-
 void LayerTreeImpl::SetTransformMutated(ElementId element_id,
                                         const gfx::Transform& transform) {
   DCHECK_EQ(1u, property_trees()->element_id_to_transform_node_index.count(
@@ -1415,7 +1410,8 @@ const gfx::Rect LayerTreeImpl::ViewportRectForTilePriority() const {
 }
 
 std::unique_ptr<ScrollbarAnimationController>
-LayerTreeImpl::CreateScrollbarAnimationController(ElementId scroll_element_id) {
+LayerTreeImpl::CreateScrollbarAnimationController(ElementId scroll_element_id,
+                                                  float initial_opacity) {
   DCHECK(!settings().scrollbar_fade_delay.is_zero());
   DCHECK(!settings().scrollbar_fade_duration.is_zero());
   base::TimeDelta fade_delay = settings().scrollbar_fade_delay;
@@ -1423,9 +1419,9 @@ LayerTreeImpl::CreateScrollbarAnimationController(ElementId scroll_element_id) {
   switch (settings().scrollbar_animator) {
     case LayerTreeSettings::ANDROID_OVERLAY: {
       return ScrollbarAnimationController::
-          CreateScrollbarAnimationControllerAndroid(scroll_element_id,
-                                                    layer_tree_host_impl_,
-                                                    fade_delay, fade_duration);
+          CreateScrollbarAnimationControllerAndroid(
+              scroll_element_id, layer_tree_host_impl_, fade_delay,
+              fade_duration, initial_opacity);
     }
     case LayerTreeSettings::AURA_OVERLAY: {
       base::TimeDelta thinning_duration =
@@ -1433,7 +1429,7 @@ LayerTreeImpl::CreateScrollbarAnimationController(ElementId scroll_element_id) {
       return ScrollbarAnimationController::
           CreateScrollbarAnimationControllerAuraOverlay(
               scroll_element_id, layer_tree_host_impl_, fade_delay,
-              fade_duration, thinning_duration);
+              fade_duration, thinning_duration, initial_opacity);
     }
     case LayerTreeSettings::NO_ANIMATOR:
       NOTREACHED();
@@ -1671,7 +1667,7 @@ void LayerTreeImpl::RegisterScrollbar(ScrollbarLayerImplBase* scrollbar_layer) {
       std::pair<ElementId, int>(scroll_element_id, scrollbar_layer->id()));
   if (IsActiveTree() && scrollbar_layer->is_overlay_scrollbar()) {
     layer_tree_host_impl_->RegisterScrollbarAnimationController(
-        scroll_element_id);
+        scroll_element_id, scrollbar_layer->Opacity());
   }
 
   // TODO(pdr): Refactor DidUpdateScrollState to use ElementIds instead of

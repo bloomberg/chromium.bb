@@ -94,10 +94,12 @@ class ScrollbarAnimationControllerAuraOverlayTest : public testing::Test {
         SolidColorScrollbarLayerImpl::Create(
             host_impl_.active_tree(), 3, HORIZONTAL, kThumbThickness,
             kTrackStart, kIsLeftSideVerticalScrollbar, kIsOverlayScrollbar);
+    h_scrollbar->test_properties()->opacity = 0.0f;
     std::unique_ptr<SolidColorScrollbarLayerImpl> v_scrollbar =
         SolidColorScrollbarLayerImpl::Create(
             host_impl_.active_tree(), 4, VERTICAL, kThumbThickness, kTrackStart,
             kIsLeftSideVerticalScrollbar, kIsOverlayScrollbar);
+    v_scrollbar->test_properties()->opacity = 0.0f;
     v_scrollbar_layer_ = v_scrollbar.get();
     h_scrollbar_layer_ = h_scrollbar.get();
 
@@ -123,7 +125,7 @@ class ScrollbarAnimationControllerAuraOverlayTest : public testing::Test {
     scrollbar_controller_ = ScrollbarAnimationController::
         CreateScrollbarAnimationControllerAuraOverlay(
             scroll_layer_ptr->element_id(), &client_, kFadeDelay, kFadeDuration,
-            kThinningDuration);
+            kThinningDuration, 0.0f);
     v_scrollbar_layer_->SetCurrentPos(0);
     h_scrollbar_layer_->SetCurrentPos(0);
   }
@@ -1240,6 +1242,7 @@ class ScrollbarAnimationControllerAndroidTest
         SolidColorScrollbarLayerImpl::Create(
             host_impl_.active_tree(), 2, orientation(), kThumbThickness,
             kTrackStart, kIsLeftSideVerticalScrollbar, kIsOverlayScrollbar);
+    scrollbar->test_properties()->opacity = 0.0f;
     scrollbar_layer_ = scrollbar.get();
     scrollbar_layer_->test_properties()->opacity_can_animate = true;
     std::unique_ptr<LayerImpl> clip =
@@ -1262,7 +1265,8 @@ class ScrollbarAnimationControllerAndroidTest
     scrollbar_controller_ =
         ScrollbarAnimationController::CreateScrollbarAnimationControllerAndroid(
             scroll_layer_ptr->element_id(), this,
-            base::TimeDelta::FromSeconds(2), base::TimeDelta::FromSeconds(3));
+            base::TimeDelta::FromSeconds(2), base::TimeDelta::FromSeconds(3),
+            0.0f);
   }
 
   virtual ScrollbarOrientation orientation() const { return HORIZONTAL; }

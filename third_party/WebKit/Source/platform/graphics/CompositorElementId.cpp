@@ -6,28 +6,43 @@
 
 namespace blink {
 
-CompositorElementId CreateCompositorElementId(
-    DOMNodeId dom_node_id,
-    CompositorSubElementId sub_element_id) {
-  DCHECK(dom_node_id > 0 &&
-         dom_node_id < std::numeric_limits<DOMNodeId>::max() /
-                           static_cast<unsigned>(
-                               CompositorSubElementId::kNumSubElementTypes));
-  cc::ElementIdType id =
-      dom_node_id << 2;  // Shift to make room for sub_element_id enum bits.
-  id += static_cast<uint64_t>(sub_element_id);
+static CompositorElementId CreateCompositorElementId(
+    uint64_t blink_id,
+    CompositorElementIdNamespace namespace_id) {
+  DCHECK(
+      blink_id > 0 &&
+      blink_id <
+          std::numeric_limits<uint64_t>::max() /
+              static_cast<unsigned>(
+                  CompositorElementIdNamespace::kMaxRepresentableNamespaceId));
+  // Shift to make room for namespace_id enum bits.
+  cc::ElementIdType id = blink_id << kCompositorNamespaceBitCount;
+  id += static_cast<uint64_t>(namespace_id);
   return CompositorElementId(id);
 }
 
-DOMNodeId DomNodeIdFromCompositorElementId(CompositorElementId element_id) {
-  return element_id.id_ >> 2;
+CompositorElementId PLATFORM_EXPORT
+CompositorElementIdFromDOMNodeId(DOMNodeId id,
+                                 CompositorElementIdNamespace namespace_id) {
+  return CreateCompositorElementId(id, namespace_id);
 }
 
-CompositorSubElementId SubElementIdFromCompositorElementId(
+CompositorElementId PLATFORM_EXPORT
+CompositorElementIdFromScrollbarId(ScrollbarId id,
+                                   CompositorElementIdNamespace namespace_id) {
+  return CreateCompositorElementId(id, namespace_id);
+}
+
+uint64_t IdFromCompositorElementId(CompositorElementId element_id) {
+  return element_id.id_ >> kCompositorNamespaceBitCount;
+}
+
+CompositorElementIdNamespace NamespaceFromCompositorElementId(
     CompositorElementId element_id) {
-  return static_cast<CompositorSubElementId>(
+  return static_cast<CompositorElementIdNamespace>(
       element_id.id_ %
-      static_cast<unsigned>(CompositorSubElementId::kNumSubElementTypes));
+      static_cast<uint64_t>(
+          CompositorElementIdNamespace::kMaxRepresentableNamespaceId));
 }
 
 }  // namespace blink

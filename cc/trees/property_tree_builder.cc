@@ -708,14 +708,6 @@ static inline bool HideLayerAndSubtree(LayerImpl* layer) {
   return layer->test_properties()->hide_layer_and_subtree;
 }
 
-static inline bool AlwaysUseActiveTreeOpacity(Layer* layer) {
-  return layer->AlwaysUseActiveTreeOpacity();
-}
-
-static inline bool AlwaysUseActiveTreeOpacity(LayerImpl* layer) {
-  return false;
-}
-
 static inline bool HasCopyRequest(Layer* layer) {
   return layer->HasCopyRequest();
 }
@@ -918,11 +910,6 @@ bool AddEffectNodeIfNeeded(
   EffectNode* node = effect_tree.back();
 
   node->owning_layer_id = layer->id();
-  if (AlwaysUseActiveTreeOpacity(layer)) {
-    data_for_children->property_trees->always_use_active_tree_opacity_effect_ids
-        .push_back(node->owning_layer_id);
-  }
-
   node->opacity = Opacity(layer);
   node->blend_mode = BlendMode(layer);
   node->unscaled_mask_target_size = layer->bounds();
