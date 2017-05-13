@@ -72,12 +72,39 @@ class TestInMemoryStore : public InMemoryStore {
     HandleLoadResult(callback, load_should_succeed_);
   }
 
+  void WriteEvent(const Event& event) override {
+    events_[event.name()] = event;
+  }
+
+  Event GetEvent(const std::string& event_name) { return events_[event_name]; }
+
  private:
   // Denotes whether the call to Load(...) should succeed or not. This impacts
   // both the ready-state and the result for the OnLoadedCallback.
   bool load_should_succeed_;
 
+  std::map<std::string, Event> events_;
+
   DISALLOW_COPY_AND_ASSIGN(TestInMemoryStore);
+};
+
+class StoreEverythingStorageValidator : public StorageValidator {
+ public:
+  StoreEverythingStorageValidator() = default;
+  ~StoreEverythingStorageValidator() override = default;
+
+  bool ShouldStore(const std::string& event_name) const override {
+    return true;
+  }
+
+  bool ShouldKeep(const std::string& event_name,
+                  uint32_t event_day,
+                  uint32_t current_day) const override {
+    return true;
+  };
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(StoreEverythingStorageValidator);
 };
 
 class TestTimeProvider : public TimeProvider {
@@ -86,7 +113,7 @@ class TestTimeProvider : public TimeProvider {
   ~TestTimeProvider() override = default;
 
   // TimeProvider implementation.
-  uint32_t GetCurrentDay() const override { return 0u; };
+  uint32_t GetCurrentDay() const override { return 1u; };
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestTimeProvider);
@@ -104,8 +131,11 @@ class FeatureEngagementTrackerImplTest : public ::testing::Test {
     RegisterFeatureConfig(configuration.get(), kTestFeatureBar, true);
     RegisterFeatureConfig(configuration.get(), kTestFeatureQux, false);
 
+    std::unique_ptr<TestInMemoryStore> store = CreateStore();
+    store_ = store.get();
+
     auto model = base::MakeUnique<ModelImpl>(
-        CreateStore(), base::MakeUnique<NeverStorageValidator>());
+        std::move(store), base::MakeUnique<StoreEverythingStorageValidator>());
 
     tracker_.reset(new FeatureEngagementTrackerImpl(
         std::move(model), std::move(configuration),
@@ -114,13 +144,14 @@ class FeatureEngagementTrackerImplTest : public ::testing::Test {
   }
 
  protected:
-  virtual std::unique_ptr<Store> CreateStore() {
+  virtual std::unique_ptr<TestInMemoryStore> CreateStore() {
     // Returns a Store that will successfully initialize.
     return base::MakeUnique<TestInMemoryStore>(true);
   }
 
   base::MessageLoop message_loop_;
   std::unique_ptr<FeatureEngagementTrackerImpl> tracker_;
+  TestInMemoryStore* store_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(FeatureEngagementTrackerImplTest);
@@ -133,7 +164,7 @@ class FailingInitFeatureEngagementTrackerImplTest
   FailingInitFeatureEngagementTrackerImplTest() = default;
 
  protected:
-  std::unique_ptr<Store> CreateStore() override {
+  std::unique_ptr<TestInMemoryStore> CreateStore() override {
     // Returns a Store that will fail to initialize.
     return base::MakeUnique<TestInMemoryStore>(false);
   }
@@ -301,6 +332,27 @@ TEST_F(FeatureEngagementTrackerImplTest, TestTriggering) {
   EXPECT_FALSE(tracker_->ShouldTriggerHelpUI(kTestFeatureFoo));
   EXPECT_FALSE(tracker_->ShouldTriggerHelpUI(kTestFeatureBar));
   EXPECT_FALSE(tracker_->ShouldTriggerHelpUI(kTestFeatureQux));
+}
+
+TEST_F(FeatureEngagementTrackerImplTest, TestNotifyEvent) {
+  StoringInitializedCallback callback;
+  tracker_->AddOnInitializedCallback(base::Bind(
+      &StoringInitializedCallback::OnInitialized, base::Unretained(&callback)));
+  base::RunLoop().RunUntilIdle();
+
+  tracker_->NotifyEvent("foo");
+  tracker_->NotifyEvent("foo");
+  tracker_->NotifyEvent("bar");
+
+  Event foo_event = store_->GetEvent("foo");
+  ASSERT_EQ(1, foo_event.events_size());
+  EXPECT_EQ(1u, foo_event.events(0).day());
+  EXPECT_EQ(2u, foo_event.events(0).count());
+
+  Event bar_event = store_->GetEvent("bar");
+  ASSERT_EQ(1, bar_event.events_size());
+  EXPECT_EQ(1u, bar_event.events(0).day());
+  EXPECT_EQ(1u, bar_event.events(0).count());
 }
 
 }  // namespace feature_engagement_tracker

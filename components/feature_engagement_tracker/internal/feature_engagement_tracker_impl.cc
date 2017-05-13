@@ -103,7 +103,7 @@ FeatureEngagementTrackerImpl::~FeatureEngagementTrackerImpl() = default;
 
 void FeatureEngagementTrackerImpl::NotifyEvent(const std::string& event) {
   // TODO(nyquist): Track this event in UMA.
-  // TODO(nyquist): Invoke model_->IncrementEvent(...).
+  model_->IncrementEvent(event, time_provider_->GetCurrentDay());
 }
 
 bool FeatureEngagementTrackerImpl::ShouldTriggerHelpUI(
