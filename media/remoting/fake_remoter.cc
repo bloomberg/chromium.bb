@@ -180,7 +180,7 @@ void FakeRemoterFactory::Create(mojom::RemotingSourcePtr source,
 scoped_refptr<SharedSession> FakeRemoterFactory::CreateSharedSession(
     bool start_will_fail) {
   mojom::RemotingSourcePtr remoting_source;
-  mojom::RemotingSourceRequest remoting_source_request(&remoting_source);
+  auto remoting_source_request = mojo::MakeRequest(&remoting_source);
   mojom::RemoterPtr remoter;
   FakeRemoterFactory remoter_factory(start_will_fail);
   remoter_factory.Create(std::move(remoting_source),

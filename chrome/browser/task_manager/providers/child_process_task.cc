@@ -133,13 +133,11 @@ void ConnectResourceReporterOnIOThread(
 ProcessResourceUsage* CreateProcessResourcesSampler(
     int unique_child_process_id) {
   chrome::mojom::ResourceUsageReporterPtr usage_reporter;
-  chrome::mojom::ResourceUsageReporterRequest request(&usage_reporter);
   content::BrowserThread::PostTask(
-      content::BrowserThread::IO,
-      FROM_HERE,
-      base::Bind(&ConnectResourceReporterOnIOThread,
-                 unique_child_process_id, base::Passed(&request)));
-
+      content::BrowserThread::IO, FROM_HERE,
+      base::BindOnce(&ConnectResourceReporterOnIOThread,
+                     unique_child_process_id,
+                     mojo::MakeRequest(&usage_reporter)));
   return new ProcessResourceUsage(std::move(usage_reporter));
 }
 

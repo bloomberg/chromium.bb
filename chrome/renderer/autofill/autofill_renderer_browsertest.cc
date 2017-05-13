@@ -136,8 +136,7 @@ class AutofillRendererTest : public ChromeRenderViewTest {
   }
 
   void BindAutofillDriver(mojo::ScopedMessagePipeHandle handle) {
-    fake_driver_.BindRequest(
-        mojo::MakeRequest<mojom::AutofillDriver>(std::move(handle)));
+    fake_driver_.BindRequest(mojom::AutofillDriverRequest(std::move(handle)));
   }
 
   FakeContentAutofillDriver fake_driver_;

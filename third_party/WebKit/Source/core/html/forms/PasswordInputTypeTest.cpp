@@ -28,7 +28,7 @@ class MockInterfaceProvider : public blink::InterfaceProvider {
   void GetInterface(const char* name,
                     mojo::ScopedMessagePipeHandle handle) override {
     mock_sensitive_input_visibility_service_.BindRequest(
-        mojo::MakeRequest<mojom::blink::SensitiveInputVisibilityService>(
+        mojom::blink::SensitiveInputVisibilityServiceRequest(
             std::move(handle)));
   }
 

@@ -157,20 +157,18 @@ class PickleTest : public testing::Test {
   template <typename ProxyType = PicklePasser>
   InterfacePtr<ProxyType> ConnectToChromiumService() {
     InterfacePtr<ProxyType> proxy;
-    InterfaceRequest<ProxyType> request(&proxy);
     chromium_bindings_.AddBinding(
         &chromium_service_,
-        ConvertInterfaceRequest<PicklePasser>(std::move(request)));
+        ConvertInterfaceRequest<PicklePasser>(mojo::MakeRequest(&proxy)));
     return proxy;
   }
 
   template <typename ProxyType = blink::PicklePasser>
   InterfacePtr<ProxyType> ConnectToBlinkService() {
     InterfacePtr<ProxyType> proxy;
-    InterfaceRequest<ProxyType> request(&proxy);
-    blink_bindings_.AddBinding(
-        &blink_service_,
-        ConvertInterfaceRequest<blink::PicklePasser>(std::move(request)));
+    blink_bindings_.AddBinding(&blink_service_,
+                               ConvertInterfaceRequest<blink::PicklePasser>(
+                                   mojo::MakeRequest(&proxy)));
     return proxy;
   }
 

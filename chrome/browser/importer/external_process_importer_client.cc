@@ -44,14 +44,12 @@ ExternalProcessImporterClient::ExternalProcessImporterClient(
 void ExternalProcessImporterClient::Start() {
   AddRef();  // balanced in Cleanup.
 
-  chrome::mojom::ProfileImportRequest request(&profile_import_);
-
   BrowserThread::ID thread_id;
   CHECK(BrowserThread::GetCurrentThreadIdentifier(&thread_id));
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::BindOnce(&ExternalProcessImporterClient::StartProcessOnIOThread,
-                     this, thread_id, base::Passed(std::move(request))));
+                     this, thread_id, mojo::MakeRequest(&profile_import_)));
 
   // Dictionary of all localized strings that could be needed by the importer
   // in the external process.

@@ -62,9 +62,9 @@ SingleSampleMetricsFactoryImpl::CreateMetric(const std::string& histogram_name,
                                              uint32_t bucket_count,
                                              int32_t flags) {
   mojom::SingleSampleMetricPtr metric;
-  GetProvider()->AcquireSingleSampleMetric(
-      histogram_name, min, max, bucket_count, flags,
-      mojo::MakeRequest<mojom::SingleSampleMetric>(&metric));
+  GetProvider()->AcquireSingleSampleMetric(histogram_name, min, max,
+                                           bucket_count, flags,
+                                           mojo::MakeRequest(&metric));
   return base::MakeUnique<SingleSampleMetricImpl>(std::move(metric));
 }
 

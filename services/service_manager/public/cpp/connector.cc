@@ -81,8 +81,7 @@ std::unique_ptr<Connector> Connector::Clone() {
     return nullptr;
 
   mojom::ConnectorPtr connector;
-  mojom::ConnectorRequest request(&connector);
-  connector_->Clone(std::move(request));
+  connector_->Clone(mojo::MakeRequest(&connector));
   return base::MakeUnique<Connector>(connector.PassInterface());
 }
 

@@ -44,12 +44,11 @@ class CallbackBinder : public InterfaceBinder {
   void BindInterface(const BindSourceInfo& source_info,
                      const std::string& interface_name,
                      mojo::ScopedMessagePipeHandle handle) override {
-    mojo::InterfaceRequest<Interface> request =
-        mojo::MakeRequest<Interface>(std::move(handle));
+    mojo::InterfaceRequest<Interface> request(std::move(handle));
     if (task_runner_) {
-      task_runner_->PostTask(FROM_HERE,
-                             base::Bind(&CallbackBinder::RunCallback, callback_,
-                                        source_info, base::Passed(&request)));
+      task_runner_->PostTask(
+          FROM_HERE, base::BindOnce(&CallbackBinder::RunCallback, callback_,
+                                    source_info, std::move(request)));
     } else {
       RunCallback(callback_, source_info, std::move(request));
     }

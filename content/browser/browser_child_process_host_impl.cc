@@ -288,7 +288,7 @@ service_manager::mojom::ServiceRequest
 BrowserChildProcessHostImpl::TakeInProcessServiceRequest() {
   DCHECK(broker_client_invitation_);
   auto invitation = std::move(broker_client_invitation_);
-  return mojo::MakeRequest<service_manager::mojom::Service>(
+  return service_manager::mojom::ServiceRequest(
       invitation->ExtractInProcessMessagePipe(
           child_connection_->service_token()));
 }

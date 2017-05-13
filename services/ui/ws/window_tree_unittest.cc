@@ -227,8 +227,7 @@ TEST_F(WindowTreeTest, FocusOnPointer) {
       mojom::EventTargetingPolicy::TARGET_AND_DESCENDANTS);
   display()->root_window()->SetBounds(gfx::Rect(0, 0, 100, 100));
   mojom::WindowTreeClientPtr client;
-  mojom::WindowTreeClientRequest client_request(&client);
-  wm_client()->Bind(std::move(client_request));
+  wm_client()->Bind(mojo::MakeRequest(&client));
   const uint32_t embed_flags = 0;
   wm_tree()->Embed(embed_window_id, std::move(client), embed_flags);
   WindowTree* tree1 = window_server()->GetTreeWithRoot(embed_window);
@@ -691,8 +690,7 @@ TEST_F(WindowTreeTest, Embed) {
   ServerWindow* wm_root = FirstRoot(wm_tree());
   ASSERT_TRUE(wm_root);
   mojom::WindowTreeClientPtr client;
-  mojom::WindowTreeClientRequest client_request(&client);
-  wm_client()->Bind(std::move(client_request));
+  wm_client()->Bind(mojo::MakeRequest(&client));
   const uint32_t embed_flags = 0;
   wm_tree()->Embed(embed_window_id, std::move(client), embed_flags);
   ASSERT_EQ(1u, wm_client()->tracker()->changes()->size())

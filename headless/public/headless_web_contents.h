@@ -132,7 +132,7 @@ class HEADLESS_EXPORT HeadlessWebContents::Builder {
       const base::Callback<void(mojo::InterfaceRequest<Interface>)>&
           service_factory,
       mojo::ScopedMessagePipeHandle handle) {
-    service_factory.Run(mojo::MakeRequest<Interface>(std::move(handle)));
+    service_factory.Run(mojo::InterfaceRequest<Interface>(std::move(handle)));
   }
 
   struct MojoService {

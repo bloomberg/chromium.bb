@@ -639,10 +639,10 @@ bool GpuProcessHost::Init() {
   process_->child_channel()
       ->GetAssociatedInterfaceSupport()
       ->GetRemoteAssociatedInterface(&gpu_main_ptr_);
-  ui::mojom::GpuServiceRequest request(&gpu_service_ptr_);
-  gpu_main_ptr_->CreateGpuService(
-      std::move(request), gpu_host_binding_.CreateInterfacePtrAndBind(),
-      gpu_preferences, activity_flags_.CloneHandle());
+  gpu_main_ptr_->CreateGpuService(mojo::MakeRequest(&gpu_service_ptr_),
+                                  gpu_host_binding_.CreateInterfacePtrAndBind(),
+                                  gpu_preferences,
+                                  activity_flags_.CloneHandle());
 
 #if defined(USE_OZONE)
   // Ozone needs to send the primary DRM device to GPU process as early as

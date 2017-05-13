@@ -149,37 +149,28 @@ So how do we create a strongly-typed message pipe?
 
 ### Creating Interface Pipes
 
-One way to do this is by manually creating a pipe and binding each end:
+One way to do this is by manually creating a pipe and wrapping each end with a
+strongly-typed object:
 
 ``` cpp
 #include "sample/logger.mojom.h"
 
 mojo::MessagePipe pipe;
-sample::mojom::LoggerPtr logger;
-sample::mojom::LoggerRequest request;
-
-logger.Bind(sample::mojom::LoggerPtrInfo(std::move(pipe.handle0), 0u));
-request.Bind(std::move(pipe.handle1));
+sample::mojom::LoggerPtr logger(
+    sample::mojom::LoggerPtrInfo(std::move(pipe.handle0), 0));
+sample::mojom::LoggerRequest request(std::move(pipe.handle1));
 ```
 
-That's pretty verbose, but the C++ Bindings library provides more convenient
-ways to accomplish the same thing. [interface_request.h](https://cs.chromium.org/chromium/src/mojo/public/cpp/bindings/interface_request.h)
+That's pretty verbose, but the C++ Bindings library provides a more convenient
+way to accomplish the same thing. [interface_request.h](https://cs.chromium.org/chromium/src/mojo/public/cpp/bindings/interface_request.h)
 defines a `MakeRequest` function:
 
 ``` cpp
 sample::mojom::LoggerPtr logger;
-sample::mojom::LoggerRequest request = mojo::MakeRequest(&logger);
+auto request = mojo::MakeRequest(&logger);
 ```
 
-and the `InterfaceRequest<T>` constructor can also take an explicit
-`InterfacePtr<T>*` output argument:
-
-``` cpp
-sample::mojom::LoggerPtr logger;
-sample::mojom::LoggerRequest request(&logger);
-```
-
-Both of these last two snippets are equivalent to the first one.
+This second snippet is equivalent to the first one.
 
 *** note
 **NOTE:** In the first example above you may notice usage of the `LoggerPtrInfo`

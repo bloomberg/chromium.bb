@@ -282,9 +282,9 @@ class ChannelBootstrapFilter : public ConnectionFilter {
 
     if (interface_name == IPC::mojom::ChannelBootstrap::Name_) {
       DCHECK(bootstrap_.is_valid());
-      mojo::FuseInterface(mojo::MakeRequest<IPC::mojom::ChannelBootstrap>(
-                              std::move(*interface_pipe)),
-                          std::move(bootstrap_));
+      mojo::FuseInterface(
+          IPC::mojom::ChannelBootstrapRequest(std::move(*interface_pipe)),
+          std::move(bootstrap_));
     }
   }
 
@@ -459,8 +459,7 @@ void ChildThreadImpl::Init(const Options& options) {
 
   if (service_request_pipe.is_valid()) {
     service_manager_connection_ = ServiceManagerConnection::Create(
-        mojo::MakeRequest<service_manager::mojom::Service>(
-            std::move(service_request_pipe)),
+        service_manager::mojom::ServiceRequest(std::move(service_request_pipe)),
         GetIOTaskRunner());
   }
 

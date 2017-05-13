@@ -168,8 +168,8 @@ DEFINE_TEST_CLIENT_TEST_WITH_PIPE(PingService, MojoE2EPerftest, mp) {
   MojoHandle service_mp;
   EXPECT_EQ("hello", ReadMessageWithHandles(mp, &service_mp, 1));
 
-  InterfaceRequest<test::EchoService> request;
-  request.Bind(ScopedMessagePipeHandle(MessagePipeHandle(service_mp)));
+  auto request = InterfaceRequest<test::EchoService>(
+      ScopedMessagePipeHandle(MessagePipeHandle(service_mp)));
   base::RunLoop run_loop;
   edk::GetIOTaskRunner()->PostTask(
       FROM_HERE,

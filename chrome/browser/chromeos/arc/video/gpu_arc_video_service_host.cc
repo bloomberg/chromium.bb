@@ -96,9 +96,9 @@ void GpuArcVideoServiceHost::OnBootstrapVideoAcceleratorFactory(
 
   callback.Run(std::move(child_handle), token);
 
-  mojo::MakeStrongBinding(base::MakeUnique<VideoAcceleratorFactoryService>(),
-                          mojo::MakeRequest<mojom::VideoAcceleratorFactory>(
-                              std::move(server_pipe)));
+  mojo::MakeStrongBinding(
+      base::MakeUnique<VideoAcceleratorFactoryService>(),
+      mojom::VideoAcceleratorFactoryRequest(std::move(server_pipe)));
 }
 
 }  // namespace arc

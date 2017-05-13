@@ -688,9 +688,6 @@ base::Process SwReporterProcess::LaunchConnectedReporterProcess() {
   if (!reporter_process.IsValid())
     return reporter_process;
 
-  chrome_cleaner::mojom::ChromePromptRequest chrome_prompt_request;
-  chrome_prompt_request.Bind(std::move(mojo_pipe));
-
   // ChromePromptImpl tasks will need to run on the IO thread. There is no
   // need to synchronize its creation, since the client end will wait for this
   // initialization to be done before sending requests.
@@ -698,7 +695,8 @@ base::Process SwReporterProcess::LaunchConnectedReporterProcess() {
       ->PostTask(FROM_HERE,
                  base::BindOnce(&SwReporterProcess::CreateChromePromptImpl,
                                 base::RetainedRef(this),
-                                std::move(chrome_prompt_request)));
+                                chrome_cleaner::mojom::ChromePromptRequest(
+                                    std::move(mojo_pipe))));
 
   mojo::edk::ProcessErrorCallback on_connection_error =
       g_testing_delegate_

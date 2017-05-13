@@ -82,8 +82,7 @@ class ChildConnection::IOThreadContext
     service_manager::mojom::ServicePtr service;
     service.Bind(mojo::InterfacePtrInfo<service_manager::mojom::Service>(
         std::move(service_pipe), 0u));
-    service_manager::mojom::PIDReceiverRequest pid_receiver_request(
-        &pid_receiver_);
+    auto pid_receiver_request = mojo::MakeRequest(&pid_receiver_);
 
     if (connector_) {
       connector_->StartService(child_identity, std::move(service),

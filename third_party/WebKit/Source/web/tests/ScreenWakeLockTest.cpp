@@ -66,8 +66,8 @@ class MockInterfaceProvider : public InterfaceProvider {
 
 void MockInterfaceProvider::GetInterface(const char* name,
                                          mojo::ScopedMessagePipeHandle handle) {
-  mock_wake_lock_service_.reset(new MockWakeLockService(
-      this, mojo::MakeRequest<WakeLockService>(std::move(handle))));
+  mock_wake_lock_service_.reset(
+      new MockWakeLockService(this, WakeLockServiceRequest(std::move(handle))));
 }
 
 // A TestWebFrameClient to allow overriding the interfaceProvider() with a mock.

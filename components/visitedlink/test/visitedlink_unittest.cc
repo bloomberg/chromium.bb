@@ -529,8 +529,7 @@ class VisitCountingContext : public mojom::VisitedLinkNotificationSink {
         binding_(this) {}
 
   void Bind(mojo::ScopedMessagePipeHandle handle) {
-    binding_.Bind(mojo::MakeRequest<mojom::VisitedLinkNotificationSink>(
-        std::move(handle)));
+    binding_.Bind(mojom::VisitedLinkNotificationSinkRequest(std::move(handle)));
   }
 
   void WaitForUpdate() {

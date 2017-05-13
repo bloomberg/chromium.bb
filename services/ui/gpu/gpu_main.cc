@@ -174,13 +174,12 @@ void GpuMain::CreateFrameSinkManagerInternal(
       gpu_service_->mailbox_manager(), gpu_service_->share_group());
 
   gpu::ImageFactory* image_factory = gpu_service_->gpu_image_factory();
-  mojom::GpuServicePtr gpu_service;
-  mojom::GpuServiceRequest gpu_service_request(&gpu_service);
 
   // If the FrameSinkManager creation was delayed because GpuService had not
   // been created yet, then this is called, in gpu thread, right after
   // GpuService is created.
-  BindGpuInternalOnGpuThread(std::move(gpu_service_request));
+  mojom::GpuServicePtr gpu_service;
+  BindGpuInternalOnGpuThread(mojo::MakeRequest(&gpu_service));
   compositor_thread_task_runner_->PostTask(
       FROM_HERE, base::Bind(&GpuMain::CreateFrameSinkManagerOnCompositorThread,
                             base::Unretained(this), image_factory,

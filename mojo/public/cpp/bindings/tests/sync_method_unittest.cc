@@ -742,7 +742,8 @@ TYPED_TEST(SyncMethodCommonTest, InvalidMessageDuringSyncCall) {
   auto ptr = TypeParam::Wrap(std::move(interface_ptr));
 
   MessagePipeHandle raw_binding_handle = pipe.handle1.get();
-  ImplTypeFor<Interface> impl(MakeRequest<Interface>(std::move(pipe.handle1)));
+  ImplTypeFor<Interface> impl(
+      InterfaceRequest<Interface>(std::move(pipe.handle1)));
 
   impl.set_echo_handler([&raw_binding_handle](
       int32_t value, const TestSync::EchoCallback& callback) {

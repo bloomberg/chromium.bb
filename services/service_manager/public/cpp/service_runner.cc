@@ -54,7 +54,7 @@ MojoResult ServiceRunner::Run(MojoHandle service_request_handle,
 
     context_.reset(new ServiceContext(
         std::move(service_),
-        mojo::MakeRequest<mojom::Service>(mojo::MakeScopedHandle(
+        mojom::ServiceRequest(mojo::MakeScopedHandle(
             mojo::MessagePipeHandle(service_request_handle)))));
     base::RunLoop run_loop;
     context_->SetQuitClosure(run_loop.QuitClosure());

@@ -709,12 +709,9 @@ TEST_F(InterfacePtrTest, Fusion) {
   sample::PingTestPtrInfo proxy_info;
   PingTestImpl impl(MakeRequest(&proxy_info));
 
-  // Create another PingTest pipe.
+  // Create another PingTest pipe and fuse it to the one hanging off |impl|.
   sample::PingTestPtr ptr;
-  sample::PingTestRequest request(&ptr);
-
-  // Fuse the new pipe to the one hanging off |impl|.
-  EXPECT_TRUE(FuseInterface(std::move(request), std::move(proxy_info)));
+  EXPECT_TRUE(FuseInterface(mojo::MakeRequest(&ptr), std::move(proxy_info)));
 
   // Ping!
   bool called = false;
@@ -799,7 +796,7 @@ TEST_F(InterfacePtrTest, InterfaceRequestResetWithReason) {
 
 TEST_F(InterfacePtrTest, CallbackIsPassedInterfacePtr) {
   sample::PingTestPtr ptr;
-  sample::PingTestRequest request(&ptr);
+  auto request = mojo::MakeRequest(&ptr);
 
   base::RunLoop run_loop;
 
@@ -818,7 +815,7 @@ TEST_F(InterfacePtrTest, CallbackIsPassedInterfacePtr) {
 
 TEST_F(InterfacePtrTest, ConnectionErrorHandlerOwnsInterfacePtr) {
   sample::PingTestPtr* ptr = new sample::PingTestPtr;
-  sample::PingTestRequest request(ptr);
+  auto request = mojo::MakeRequest(ptr);
 
   base::RunLoop run_loop;
 
@@ -885,7 +882,7 @@ TEST_F(InterfacePtrTest, ThreadSafeInterfacePointerWithTaskRunner) {
       other_thread.message_loop()->task_runner();
 
   math::CalculatorPtr ptr;
-  math::CalculatorRequest request(&ptr);
+  auto request = mojo::MakeRequest(&ptr);
 
   // Create a ThreadSafeInterfacePtr that we'll bind from a different thread.
   scoped_refptr<math::ThreadSafeCalculatorPtr> thread_safe_ptr =

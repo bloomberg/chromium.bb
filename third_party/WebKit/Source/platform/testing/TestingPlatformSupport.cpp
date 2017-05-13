@@ -74,7 +74,7 @@ class TestingPlatformSupport::TestingInterfaceProvider
     if (std::string(name) == mojom::blink::MimeRegistry::Name_) {
       mojo::MakeStrongBinding(
           WTF::MakeUnique<MockMimeRegistry>(),
-          mojo::MakeRequest<mojom::blink::MimeRegistry>(std::move(handle)));
+          mojom::blink::MimeRegistryRequest(std::move(handle)));
       return;
     }
   }

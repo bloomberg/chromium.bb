@@ -325,7 +325,7 @@ TEST_F(HandlePassingTest, CreateNamedObject) {
   sample::NamedObjectPtr object1;
   EXPECT_FALSE(object1);
 
-  InterfaceRequest<sample::NamedObject> object1_request(&object1);
+  auto object1_request = mojo::MakeRequest(&object1);
   EXPECT_TRUE(object1_request.is_pending());
   factory->CreateNamedObject(std::move(object1_request));
   EXPECT_FALSE(object1_request.is_pending());  // We've passed the request.

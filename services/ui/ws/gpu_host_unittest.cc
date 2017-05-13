@@ -92,8 +92,7 @@ class GpuHostTest : public testing::Test {
 };
 
 base::WeakPtr<GpuClient> GpuHostTest::AddGpuClient() {
-  mojom::GpuRequest request;
-  GpuClient* client = gpu_host_->AddInternal(std::move(request));
+  GpuClient* client = gpu_host_->AddInternal(mojom::GpuRequest());
   return client->weak_factory_.GetWeakPtr();
 }
 
@@ -104,9 +103,7 @@ void GpuHostTest::DestroyHost() {
 void GpuHostTest::SetUp() {
   testing::Test::SetUp();
   gpu_host_ = base::MakeUnique<GpuHost>(&gpu_host_delegate_);
-
-  ui::mojom::GpuServiceRequest request(&gpu_service_ptr_);
-  gpu_service_->Bind(std::move(request));
+  gpu_service_->Bind(mojo::MakeRequest(&gpu_service_ptr_));
   gpu_host_->gpu_service_ = std::move(gpu_service_ptr_);
 }
 

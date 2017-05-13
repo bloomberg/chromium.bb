@@ -108,8 +108,7 @@ class BindingState : public BindingStateBase {
 
   InterfaceRequest<Interface> Unbind() {
     endpoint_client_.reset();
-    InterfaceRequest<Interface> request =
-        MakeRequest<Interface>(router_->PassMessagePipe());
+    InterfaceRequest<Interface> request(router_->PassMessagePipe());
     router_ = nullptr;
     return request;
   }

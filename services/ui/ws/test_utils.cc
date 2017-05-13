@@ -570,9 +570,8 @@ ServerWindow* WindowEventTargetingHelper::CreatePrimaryTree(
   EXPECT_TRUE(wm_tree->AddWindow(FirstRootId(wm_tree), embed_window_id));
   display_->root_window()->SetBounds(root_window_bounds, base::nullopt);
   mojom::WindowTreeClientPtr client;
-  mojom::WindowTreeClientRequest client_request(&client);
   ws_test_helper_.window_server_delegate()->last_client()->Bind(
-      std::move(client_request));
+      mojo::MakeRequest(&client));
   const uint32_t embed_flags = 0;
   wm_tree->Embed(embed_window_id, std::move(client), embed_flags);
   ServerWindow* embed_window = wm_tree->GetWindowByClientId(embed_window_id);

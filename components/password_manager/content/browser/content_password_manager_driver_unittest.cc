@@ -62,8 +62,8 @@ class FakePasswordAutofillAgent
   ~FakePasswordAutofillAgent() override {}
 
   void BindRequest(mojo::ScopedMessagePipeHandle handle) {
-    binding_.Bind(mojo::MakeRequest<autofill::mojom::PasswordAutofillAgent>(
-        std::move(handle)));
+    binding_.Bind(
+        autofill::mojom::PasswordAutofillAgentRequest(std::move(handle)));
   }
 
   bool called_set_logging_state() { return called_set_logging_state_; }

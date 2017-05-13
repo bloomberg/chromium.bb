@@ -459,7 +459,7 @@ void BrowserContext::Initialize(
     // Mojo or the global service manager connection.
 
     service_manager::mojom::ServicePtr service;
-    service_manager::mojom::ServiceRequest service_request(&service);
+    auto service_request = mojo::MakeRequest(&service);
 
     service_manager::mojom::PIDReceiverPtr pid_receiver;
     service_manager::Identity identity(mojom::kBrowserServiceName, new_id);

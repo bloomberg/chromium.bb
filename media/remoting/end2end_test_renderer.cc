@@ -129,7 +129,7 @@ scoped_refptr<SharedSession> CreateSharedSession(
     const TestRemoter::SendMessageToSinkCallback& send_message_to_sink_cb,
     const TestStreamSender::SendFrameToSinkCallback& send_frame_to_sink_cb) {
   mojom::RemotingSourcePtr remoting_source;
-  mojom::RemotingSourceRequest remoting_source_request(&remoting_source);
+  auto remoting_source_request = mojo::MakeRequest(&remoting_source);
   mojom::RemoterPtr remoter;
   std::unique_ptr<TestRemoter> test_remoter = base::MakeUnique<TestRemoter>(
       std::move(remoting_source), send_message_to_sink_cb,

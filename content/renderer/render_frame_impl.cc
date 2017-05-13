@@ -1183,7 +1183,7 @@ RenderFrameImpl::RenderFrameImpl(const CreateParams& params)
   // Create the SinkAvailabilityObserver to monitor the remoting sink
   // availablity.
   media::mojom::RemotingSourcePtr remoting_source;
-  media::mojom::RemotingSourceRequest remoting_source_request(&remoting_source);
+  auto remoting_source_request = mojo::MakeRequest(&remoting_source);
   media::mojom::RemoterPtr remoter;
   GetRemoterFactory()->Create(std::move(remoting_source),
                               mojo::MakeRequest(&remoter));
@@ -2855,7 +2855,7 @@ blink::WebMediaPlayer* RenderFrameImpl::CreateMediaPlayer(
 
 #if BUILDFLAG(ENABLE_MEDIA_REMOTING)
   media::mojom::RemotingSourcePtr remoting_source;
-  media::mojom::RemotingSourceRequest remoting_source_request(&remoting_source);
+  auto remoting_source_request = mojo::MakeRequest(&remoting_source);
   media::mojom::RemoterPtr remoter;
   GetRemoterFactory()->Create(std::move(remoting_source),
                               mojo::MakeRequest(&remoter));

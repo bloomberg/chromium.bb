@@ -54,8 +54,7 @@ service_manager::mojom::ServiceRequest ConnectToServiceManager(
   mojo::ScopedMessagePipeHandle parent_handle =
       invitation->ExtractMessagePipe(service_request_channel_token);
   DCHECK(parent_handle.is_valid());
-  return mojo::MakeRequest<service_manager::mojom::Service>(
-      std::move(parent_handle));
+  return service_manager::mojom::ServiceRequest(std::move(parent_handle));
 }
 
 void ConnectBootstrapChannel(IPC::mojom::ChannelBootstrapPtrInfo ptr,

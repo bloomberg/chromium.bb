@@ -31,7 +31,7 @@ mojom::ServiceRequest GetServiceRequestFromCommandLine(
           switches::kServicePipeToken);
   mojom::ServiceRequest request;
   if (!token.empty())
-    request.Bind(invitation->ExtractMessagePipe(token));
+    request = mojom::ServiceRequest(invitation->ExtractMessagePipe(token));
   return request;
 }
 

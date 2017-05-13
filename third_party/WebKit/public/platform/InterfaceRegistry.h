@@ -41,7 +41,7 @@ class BLINK_PLATFORM_EXPORT InterfaceRegistry {
       const std::unique_ptr<
           WTF::Function<void(mojo::InterfaceRequest<Interface>)>>& factory,
       mojo::ScopedMessagePipeHandle handle) {
-    (*factory)(mojo::MakeRequest<Interface>(std::move(handle)));
+    (*factory)(mojo::InterfaceRequest<Interface>(std::move(handle)));
   }
 #endif  // INSIDE_BLINK
 };

@@ -72,7 +72,7 @@ class UtilityProcessMojoClient {
 
     start_called_ = true;
 
-    mojo::InterfaceRequest<MojoInterface> request(&service_);
+    auto request = MakeRequest(&service_);
     service_.set_connection_error_handler(error_callback_);
     helper_->Start(MojoInterface::Name_, request.PassMessagePipe());
   }
