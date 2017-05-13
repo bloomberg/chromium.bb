@@ -109,7 +109,6 @@ TEST_F(PaymentResponseHelperTest, GeneratePaymentResponse_SupportedMethod) {
   // Default options (no shipping, no contact info).
   RecreateSpecWithOptions(mojom::PaymentOptions::New());
 
-  // TODO(mathp): Currently synchronous, when async will need a RunLoop.
   // "visa" is specified directly in the supportedMethods so it is returned
   // as the method name.
   PaymentResponseHelper helper("en-US", spec(), test_instrument(),
@@ -147,7 +146,6 @@ TEST_F(PaymentResponseHelperTest, GeneratePaymentResponse_BasicCard) {
                                     mojom::PaymentDetails::New(),
                                     std::move(method_data));
 
-  // TODO(mathp): Currently synchronous, when async will need a RunLoop.
   // "basic-card" is specified so it is returned as the method name.
   PaymentResponseHelper helper("en-US", spec(), test_instrument(),
                                test_payment_request_delegate(), test_address(),
