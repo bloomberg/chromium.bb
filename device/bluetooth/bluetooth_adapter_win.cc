@@ -50,10 +50,8 @@ BluetoothAdapterWin::BluetoothAdapterWin(const InitCallback& init_callback)
       weak_ptr_factory_(this) {}
 
 BluetoothAdapterWin::~BluetoothAdapterWin() {
-  if (task_manager_.get()) {
+  if (task_manager_.get())
     task_manager_->RemoveObserver(this);
-    task_manager_->Shutdown();
-  }
 }
 
 std::string BluetoothAdapterWin::GetAddress() const {
