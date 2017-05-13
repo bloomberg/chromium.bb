@@ -196,7 +196,7 @@ int av1_index_color_cache(uint16_t *color_cache, int n_cache,
                           const void *colors, int n_colors,
                           uint8_t *cache_color_found, int *out_cache_colors) {
 #if CONFIG_HIGHBITDEPTH
-  const uint16_t *colors_in = (const uint16 *)colors;
+  const uint16_t *colors_in = (const uint16_t *)colors;
 #else
   const uint8_t *colors_in = (const uint8_t *)colors;
 #endif  // CONFIG_HIGHBITDEPTH

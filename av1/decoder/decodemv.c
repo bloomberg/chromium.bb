@@ -648,8 +648,8 @@ static int read_skip(AV1_COMMON *cm, const MACROBLOCKD *xd, int segment_id,
 #if CONFIG_PALETTE_DELTA_ENCODING
 #if CONFIG_HIGHBITDEPTH
 static int uint16_compare(const void *a, const void *b) {
-  const uint16 va = *(const uint16 *)a;
-  const uint16 vb = *(const uint16 *)b;
+  const uint16_t va = *(const uint16_t *)a;
+  const uint16_t vb = *(const uint16_t *)b;
   return va - vb;
 }
 #else
