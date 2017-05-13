@@ -126,6 +126,7 @@ ExtensionFunction::ResponseAction SystemPrivateGetUpdateStatusFunction::Run() {
       break;
     case chromeos::UpdateEngineClient::UPDATE_STATUS_REPORTING_ERROR_EVENT:
     case chromeos::UpdateEngineClient::UPDATE_STATUS_ATTEMPTING_ROLLBACK:
+    case chromeos::UpdateEngineClient::UPDATE_STATUS_NEED_PERMISSION_TO_UPDATE:
       state = kNotAvailableState;
       break;
   }
