@@ -25,18 +25,14 @@ pin-keyboard {
 
 .pod {
   -webkit-tap-highlight-color: transparent;
-  background-color: white;
   border-radius: 2px;
-  box-shadow: 0 4px 23px 5px rgba(0, 0, 0, 0.2),
-              0 2px 6px rgba(0, 0, 0, 0.15),
-              0 3px 0 rgba(0, 0, 0, 0.08);
   cursor: pointer;
-  height: 213px;
+  height: 346px;
   outline: none;
   position: absolute;
   top: 0;
   transform: scale3d(0.9, 0.9, 0.9);
-  width: 180px;
+  width: 306px;
   z-index: 0;
 }
 
@@ -75,17 +71,16 @@ podrow[ncolumns='6'] .pod {
 }
 
 .user-image-pane {
-  background-color: white;
-  height: 160px;
-  left: 10px;
+  height: 96px;
+  left: 105px;
   position: absolute;
-  top: 10px;
+  top: 54px;
   transition: height 180ms ease-in-out,
               left 180ms ease-in-out,
               right 180ms ease-in-out,
               top 180ms ease-in-out,
               width 180ms ease-in-out;
-  width: 160px;
+  width: 96px;
   z-index: 3;
 }
 
@@ -99,6 +94,12 @@ html[dir=rtl] .user-image-pane {
   display: flex;
   height: 100%;
   justify-content: center;
+  width: 100%;
+}
+
+.user-image {
+  border-radius: 50%;
+  height: 100%;
   width: 100%;
 }
 
@@ -139,9 +140,7 @@ html:not([screen=login-add-user]) .pod.focused .user-image {
 }
 
 .main-pane {
-  left: 10px;
   position: absolute;
-  top: 10px;
   z-index: 2;
 }
 
@@ -150,12 +149,19 @@ html[dir=rtl] .main-pane {
   right: 10px;
 }
 
-.name-container,
-.pod.focused:not(.multiprofiles-policy-applied) .auth-container {
-  background-color: white;
+.name-container {
   display: flex;
   position: absolute;
-  top: 160px;
+  top: 182px;
+}
+
+.pod.focused:not(.multiprofiles-policy-applied) .auth-container {
+  display: flex;
+  height: 40px;
+  left: 51px;
+  padding-bottom: 16px;
+  position: absolute;
+  top: 244px;
 /* On chromeos we extend the width to cover the padding on the user pods. This
  is so the submit button on chromeos can extend onto the padding as shown on
  mocks. */
@@ -163,24 +169,26 @@ html[dir=rtl] .main-pane {
   width: 160px;
 </if>
 <if expr="chromeos">
-  width: 170px;
+  width: 204px;
 </if>
 }
 
+polygon #arrow[active] {
+  fill: #7BAAF7;
+  opacity: 1;
+}
+
 .auth-container .submit-button[disabled] {
-  color: #000;
-  opacity: 0.26;
+  color: #FFFFFF;
+  opacity: 0.34;
 }
 
 .auth-container .submit-button {
-  box-sizing: border-box;
-  color: var(--google-blue-500);
-  height: 43px;
-  min-height: 43px;
-  min-width: 43px;
-  padding: 11.5px 10px;
-  position: relative;
-  width: 43px;
+  color: #7BAAF7;
+  height: 40px;
+  opacity: 1;
+  padding: 12px 0 4px 0;
+  width: 24px;
 }
 
 .auth-container .submit-button.error-shown {
@@ -192,7 +200,7 @@ html[dir=rtl] .main-pane {
 }
 
 .pod.focused .name-container {
-  display: none;
+  display: flex;
 }
 
 .pod.focused.multiprofiles-policy-applied .name-container {
@@ -200,14 +208,13 @@ html[dir=rtl] .main-pane {
 }
 
 .name {
-  color: #565656;
+  color: #FFFFFF;
   /* This should be 15.6px - the equivalent of 14px at 90% scale. */
   flex: auto;
-  font-size: 16px;
-  margin-top: 12px;
+  font-family: "Roboto";
+  font-size: 26px;
   outline: none;
   overflow: hidden;
-  padding: 0 6px;
   text-align: center;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -218,6 +225,18 @@ html[dir=rtl] .main-pane {
 .password-entry-container,
 .reauth-hint-container {
   display: none;
+}
+
+#input-line {
+  opacity: 0.34;
+  position: absolute;
+  stroke: #FFFFFF;
+  stroke-width: 1;
+  top: 40px;
+}
+
+#input-line[active] {
+  opacity: 1;
 }
 
 .pod[is-active-directory] .reauth-warning {
@@ -231,16 +250,23 @@ html[dir=rtl] .main-pane {
 }
 
 .password-container {
-  flex: auto;
+  height: 40px;
+  width: 180px;
 }
 
 .pod input[type='password'] {
-  background-color: white;
+  background-color: transparent;
   border: none;
-  padding: 4px 6px;
-  position: relative;
-  top: 6px;
+  color: #FFFFFF;
+  font-family: "Roboto";
+  font-size: 13px;
+  height: 100%;
+  padding: 0;
   width: 100%;
+}
+
+.pod input[type='password']::-webkit-input-placeholder {
+  opacity: 0.34;
 }
 
 .capslock-hint-container {
@@ -458,7 +484,6 @@ html[dir=rtl] .main-pane {
   white-space: nowrap;
 }
 
-.action-box-area,
 .user-type-icon-area {
   background-color: white;
   border-radius: 2px;
@@ -469,13 +494,13 @@ html[dir=rtl] .main-pane {
 .action-box-area {
   opacity: 0;
   outline: none;
-  right: 0;
   transition: opacity 100ms;
   z-index: 4;
 }
 
 html[dir=rtl] .action-box-area {
   left: 0;
+  position: absolute;
   right: auto;
 }
 
@@ -487,18 +512,10 @@ html[dir=rtl] .action-box-area {
 }
 
 .action-box-button {
-  background-image: url(chrome://theme/IDR_OOBE_ACTION_BOX_BUTTON_NORMAL);
-  height: 13px;
-  margin: 5px;
-  width: 13px;
-}
-
-.action-box-button:hover {
-  background-image: url(chrome://theme/IDR_OOBE_ACTION_BOX_BUTTON_HOVER);
-}
-
-.action-box-area.active .action-box-button {
-  background-image: url(chrome://theme/IDR_OOBE_ACTION_BOX_BUTTON_PRESSED);
+  height: 24px;
+  margin: 3px 0 0 8px;
+  padding: 0;
+  width: 24px;
 }
 
 .action-box-area .action-box-icon {
@@ -588,14 +605,12 @@ html[dir=rtl] .user-type-icon-area {
 }
 
 .action-box-area.active ~ .action-box-menu {
-  background-color: white;
-  border: 1px solid lightgray;
+  background-color: rgba(0, 0, 0, .34);
   border-radius: 2px;
   display: flex;
   flex-direction: column;
   font-size: 13px;
-  position: absolute;
-  right: 5px;
+  margin: 3px 0 0 12px;
   width: 220px;
 }
 
@@ -608,7 +623,7 @@ html[dir=rtl] .user-type-icon-area {
 }
 
 .action-box-area.active ~ .action-box-menu:not(.menu-moved-up) {
-  top: 18px;
+  top: 200px;
 }
 
 .action-box-area.active ~ .action-box-menu.menu-moved-up {
@@ -625,10 +640,10 @@ html[dir=rtl] .action-box-area.active ~ .action-box-menu {
 }
 
 .action-box-menu-title {
-  color: #757575;
+  color: #FFFFFF;
   display: flex;
   flex-direction: column;
-  padding: 7px 20px;
+  padding: 13px 14px 18px;
 }
 
 .action-box-menu-title:focus {
@@ -638,36 +653,43 @@ html[dir=rtl] .action-box-area.active ~ .action-box-menu {
 .action-box-menu-title-name,
 .action-box-menu-title-email {
   flex: none;
-  height: 23px;
-  line-height: 19px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
+.action-box-menu-title-name {
+  padding-bottom: 7px;
+}
+
+.action-box-menu-title-email {
+  opacity: 0.54;
+}
+
 .action-box-menu-remove {
-  border-top: 1px solid lightgray;
-  line-height: 19px;
-  min-height: 24px;
+  border-top: 0.25px solid grey;
+  color: #7BAAF7;
   outline: none;
-  padding: 12px 20px 7px;
+  padding: 18px 14px;
 }
 
 .action-box-menu-remove:hover,
 .action-box-menu-remove:focus {
-  background-color: #f3f3f3;
+  background-color: grey;
+  color: white;
 }
 
 .action-box-remove-user-warning {
-  border-top: 1px solid lightgray;
-  font-size: 12px;
+  border-top: 0.25px solid grey;
+  color: white;
+  font-size: 13px;
   line-height: 18px;
-  padding: 20px;
+  padding: 13px 14px 18px;
 }
 
 .action-box-remove-user-warning > div,
 .action-box-remove-user-warning > table {
-  padding-bottom: 20px;
+  padding-bottom: 19px;
 }
 
 .total-count {
@@ -748,7 +770,7 @@ html[dir=rtl] .user-type-bubble {
 }
 
 .pod.public-account.expanded .name-container {
-  display: none;
+  display: flex;
 }
 
 .pod.public-account .learn-more-container {
