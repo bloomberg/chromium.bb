@@ -14213,6 +14213,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Download.ParallelDownload.BandwidthRatioPercentage" units="%">
+  <owner>xingliu@chromium.org</owner>
+  <summary>
+    Records the ratio of parallel streams bandwidth to single stream bandwidth
+    in parallel download.
+  </summary>
+</histogram>
+
 <histogram name="Download.ParallelDownload.CreationEvent"
     enum="ParallelDownloadCreationEvent">
   <owner>xingliu@chromium.org</owner>
@@ -14231,6 +14239,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>qinmin@chromium.org</owner>
   <summary>
     Records the remaining download time when building parallel requests.
+  </summary>
+</histogram>
+
+<histogram name="Download.ParallelDownload.TotalTimeRatioPercentage" units="%">
+  <owner>xingliu@chromium.org</owner>
+  <summary>
+    Records the ratio of the actual total time of the download to the total time
+    without parallel streams. The total time without parallel streams is
+    calculated as the size of the file divided by the single stream bandwidth.
   </summary>
 </histogram>
 
