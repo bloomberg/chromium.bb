@@ -14,6 +14,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ssl/security_state_tab_helper.h"
+#include "chrome/browser/usb/usb_blocklist.h"
 #include "chrome/browser/usb/usb_chooser_context.h"
 #include "chrome/browser/usb/usb_chooser_context_factory.h"
 #include "chrome/browser/usb/web_usb_histograms.h"
@@ -33,6 +34,7 @@
 #include "url/gurl.h"
 
 using device::UsbDevice;
+using device::UsbDeviceFilter;
 
 namespace {
 
@@ -49,7 +51,7 @@ void OnDevicePermissionRequestComplete(
 }  // namespace
 
 UsbChooserDialogAndroid::UsbChooserDialogAndroid(
-    const std::vector<device::UsbDeviceFilter>& filters,
+    const std::vector<UsbDeviceFilter>& filters,
     content::RenderFrameHost* render_frame_host,
     const device::mojom::UsbChooserService::GetPermissionCallback& callback)
     : render_frame_host_(render_frame_host),
@@ -225,19 +227,13 @@ void UsbChooserDialogAndroid::OpenUrl(const std::string& url) {
 
 bool UsbChooserDialogAndroid::DisplayDevice(
     scoped_refptr<UsbDevice> device) const {
-  if (!device::UsbDeviceFilter::MatchesAny(*device, filters_))
+  if (!UsbDeviceFilter::MatchesAny(*device, filters_))
     return false;
 
-  // On Android it is not possible to read the WebUSB descriptors until Chrome
-  // has been granted permission to open it. Instead we must list all devices
-  // and perform the allowed origins check after the device has been selected.
-  if (!device->permission_granted())
-    return true;
+  if (UsbBlocklist::Get().IsExcluded(device))
+    return false;
 
-  return device::FindInWebUsbAllowedOrigins(
-      device->webusb_allowed_origins(),
-      render_frame_host_->GetLastCommittedURL().GetOrigin(), base::nullopt,
-      base::nullopt);
+  return true;
 }
 
 // static

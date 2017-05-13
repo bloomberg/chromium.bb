@@ -19,7 +19,6 @@
 #include "build/build_config.h"
 #include "device/usb/usb_descriptors.h"
 #include "device/usb/usb_device.h"
-#include "device/usb/webusb_descriptors.h"
 
 struct libusb_device;
 struct libusb_device_descriptor;
@@ -54,10 +53,6 @@ class UsbDeviceImpl : public UsbDevice {
   }
   void set_serial_number(const base::string16& value) {
     serial_number_ = value;
-  }
-  void set_webusb_allowed_origins(
-      std::unique_ptr<WebUsbAllowedOrigins> allowed_origins) {
-    webusb_allowed_origins_ = std::move(allowed_origins);
   }
   void set_webusb_landing_page(const GURL& url) { webusb_landing_page_ = url; }
 

@@ -155,13 +155,10 @@ void SaveStringsAndRunContinuation(
 
 void OnReadBosDescriptor(scoped_refptr<UsbDeviceHandle> device_handle,
                          const base::Closure& barrier,
-                         std::unique_ptr<WebUsbAllowedOrigins> allowed_origins,
                          const GURL& landing_page) {
   scoped_refptr<UsbDeviceImpl> device =
       static_cast<UsbDeviceImpl*>(device_handle->GetDevice().get());
 
-  if (allowed_origins)
-    device->set_webusb_allowed_origins(std::move(allowed_origins));
   if (landing_page.is_valid())
     device->set_webusb_landing_page(landing_page);
 

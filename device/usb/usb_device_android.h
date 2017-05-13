@@ -52,7 +52,6 @@ class UsbDeviceAndroid : public UsbDevice {
                          std::unique_ptr<UsbDeviceDescriptor> descriptor);
   void OnReadWebUsbDescriptors(
       scoped_refptr<UsbDeviceHandle> device_handle,
-      std::unique_ptr<WebUsbAllowedOrigins> allowed_origins,
       const GURL& landing_page);
 
   const jint device_id_;

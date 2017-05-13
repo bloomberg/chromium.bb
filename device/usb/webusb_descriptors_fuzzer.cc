@@ -22,8 +22,7 @@ TestCase* test_case = new TestCase();
 
 namespace device {
 
-void Done(std::unique_ptr<WebUsbAllowedOrigins> allowed_origins,
-          const GURL& landing_page) {}
+void Done(const GURL& landing_page) {}
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   scoped_refptr<UsbDeviceHandle> device_handle =

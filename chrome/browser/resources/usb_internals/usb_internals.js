@@ -20,14 +20,11 @@
         let name = document.createElement('td');
         let serialNumber = document.createElement('td');
         let landingPage = document.createElement('td');
-        let allowedOrigin = document.createElement('td');
         let remove = document.createElement('td');
         let removeButton = document.createElement('button');
         name.textContent = device.name;
         serialNumber.textContent = device.serial_number;
         landingPage.textContent = device.landing_page.url;
-        allowedOrigin.textContent = device.allowed_origin.scheme + '://' +
-            device.allowed_origin.host + ':' + device.allowed_origin.port;
         removeButton.addEventListener('click', function() {
           pageHandler.removeDeviceForTesting(device.guid)
               .then(refreshDeviceList);
@@ -36,7 +33,6 @@
         row.appendChild(name);
         row.appendChild(serialNumber);
         row.appendChild(landingPage);
-        row.appendChild(allowedOrigin);
         remove.appendChild(removeButton);
         row.appendChild(remove);
         tableBody.appendChild(row);
@@ -48,8 +44,7 @@
     pageHandler.addDeviceForTesting(
         $('test-device-name').value,
         $('test-device-serial').value,
-        $('test-device-landing-page').value,
-        $('test-device-allowed-origin').value).then(function(response) {
+        $('test-device-landing-page').value).then(function(response) {
       if (response.success)
         refreshDeviceList();
       $('add-test-device-result').textContent = response.message;
