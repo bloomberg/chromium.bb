@@ -16,6 +16,7 @@ blink_modules_sources("webauth") {
   ]
 
   deps = [
+    "//components/webauth:authenticator_blink",
     "//device/usb/public/interfaces:interfaces_blink",
   ]
 }
