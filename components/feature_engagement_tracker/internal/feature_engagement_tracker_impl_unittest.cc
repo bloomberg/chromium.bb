@@ -34,7 +34,8 @@ void RegisterFeatureConfig(EditableConfiguration* configuration,
                            bool valid) {
   FeatureConfig config;
   config.valid = valid;
-  config.used.name = feature.name;
+  config.used.name = feature.name + std::string("_used");
+  config.trigger.name = feature.name + std::string("_trigger");
   configuration->SetConfiguration(&feature, config);
 }
 
@@ -126,6 +127,7 @@ class FeatureEngagementTrackerImplTest : public ::testing::Test {
   void SetUp() override {
     std::unique_ptr<EditableConfiguration> configuration =
         base::MakeUnique<EditableConfiguration>();
+    configuration_ = configuration.get();
 
     RegisterFeatureConfig(configuration.get(), kTestFeatureFoo, true);
     RegisterFeatureConfig(configuration.get(), kTestFeatureBar, true);
@@ -143,6 +145,19 @@ class FeatureEngagementTrackerImplTest : public ::testing::Test {
         base::MakeUnique<TestTimeProvider>()));
   }
 
+  void VerifyEventTriggerEvents(const base::Feature& feature, uint32_t count) {
+    Event trigger_event = store_->GetEvent(
+        configuration_->GetFeatureConfig(feature).trigger.name);
+    if (count == 0) {
+      EXPECT_EQ(0, trigger_event.events_size());
+      return;
+    }
+
+    EXPECT_EQ(1, trigger_event.events_size());
+    EXPECT_EQ(1u, trigger_event.events(0).day());
+    EXPECT_EQ(count, trigger_event.events(0).count());
+  }
+
  protected:
   virtual std::unique_ptr<TestInMemoryStore> CreateStore() {
     // Returns a Store that will successfully initialize.
@@ -152,6 +167,7 @@ class FeatureEngagementTrackerImplTest : public ::testing::Test {
   base::MessageLoop message_loop_;
   std::unique_ptr<FeatureEngagementTrackerImpl> tracker_;
   TestInMemoryStore* store_;
+  Configuration* configuration_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(FeatureEngagementTrackerImplTest);
@@ -307,31 +323,45 @@ TEST_F(FailingInitFeatureEngagementTrackerImplTest,
 
 TEST_F(FeatureEngagementTrackerImplTest, TestTriggering) {
   // Ensure all initialization is finished.
+  StoringInitializedCallback callback;
+  tracker_->AddOnInitializedCallback(base::Bind(
+      &StoringInitializedCallback::OnInitialized, base::Unretained(&callback)));
   base::RunLoop().RunUntilIdle();
 
   // The first time a feature triggers it should be shown.
   EXPECT_TRUE(tracker_->ShouldTriggerHelpUI(kTestFeatureFoo));
+  VerifyEventTriggerEvents(kTestFeatureFoo, 1u);
   EXPECT_FALSE(tracker_->ShouldTriggerHelpUI(kTestFeatureFoo));
+  VerifyEventTriggerEvents(kTestFeatureFoo, 1u);
   EXPECT_FALSE(tracker_->ShouldTriggerHelpUI(kTestFeatureQux));
+  VerifyEventTriggerEvents(kTestFeatureQux, 0);
 
   // While in-product help is currently showing, no other features should be
   // shown.
   EXPECT_FALSE(tracker_->ShouldTriggerHelpUI(kTestFeatureBar));
+  VerifyEventTriggerEvents(kTestFeatureBar, 0);
   EXPECT_FALSE(tracker_->ShouldTriggerHelpUI(kTestFeatureQux));
+  VerifyEventTriggerEvents(kTestFeatureQux, 0);
 
   // After dismissing the current in-product help, that feature can not be shown
   // again, but a different feature should.
   tracker_->Dismissed(kTestFeatureFoo);
   EXPECT_FALSE(tracker_->ShouldTriggerHelpUI(kTestFeatureFoo));
+  VerifyEventTriggerEvents(kTestFeatureFoo, 1u);
   EXPECT_TRUE(tracker_->ShouldTriggerHelpUI(kTestFeatureBar));
+  VerifyEventTriggerEvents(kTestFeatureBar, 1u);
   EXPECT_FALSE(tracker_->ShouldTriggerHelpUI(kTestFeatureQux));
+  VerifyEventTriggerEvents(kTestFeatureQux, 0);
 
   // After dismissing the second registered feature, no more in-product help
   // should be shown, since kTestFeatureQux is invalid.
   tracker_->Dismissed(kTestFeatureBar);
   EXPECT_FALSE(tracker_->ShouldTriggerHelpUI(kTestFeatureFoo));
+  VerifyEventTriggerEvents(kTestFeatureFoo, 1u);
   EXPECT_FALSE(tracker_->ShouldTriggerHelpUI(kTestFeatureBar));
+  VerifyEventTriggerEvents(kTestFeatureBar, 1u);
   EXPECT_FALSE(tracker_->ShouldTriggerHelpUI(kTestFeatureQux));
+  VerifyEventTriggerEvents(kTestFeatureQux, 0);
 }
 
 TEST_F(FeatureEngagementTrackerImplTest, TestNotifyEvent) {
