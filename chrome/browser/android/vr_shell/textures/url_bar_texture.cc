@@ -63,13 +63,13 @@ UrlBarTexture::~UrlBarTexture() = default;
 
 void UrlBarTexture::SetURL(const GURL& gurl) {
   if (gurl_ != gurl)
-    dirty_ = true;
+    set_dirty();
   gurl_ = gurl;
 }
 
 void UrlBarTexture::SetSecurityLevel(int level) {
   if (&getSecurityIcon(security_level_) != &getSecurityIcon(level))
-    dirty_ = true;
+    set_dirty();
   security_level_ = level;
 }
 
@@ -166,7 +166,7 @@ gfx::SizeF UrlBarTexture::GetDrawnSize() const {
 
 bool UrlBarTexture::SetDrawFlags(int draw_flags) {
   if (draw_flags != GetDrawFlags())
-    dirty_ = true;
+    set_dirty();
   return UiTexture::SetDrawFlags(draw_flags);
 }
 

@@ -222,4 +222,8 @@ bool UiElement::IsHitTestable() const {
   return IsVisible() && hit_testable_;
 }
 
+void UiElement::SetEnabled(bool enabled) {
+  visible_ = enabled;
+}
+
 }  // namespace vr_shell

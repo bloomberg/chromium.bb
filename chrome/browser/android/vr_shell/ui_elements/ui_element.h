@@ -223,6 +223,10 @@ class UiElement : public WorldRectangle {
   bool dirty() const { return dirty_; }
   void set_dirty(bool dirty) { dirty_ = dirty; }
 
+  // By default, sets an element to be visible or not. This may be overridden to
+  // allow finer control of element visibility.
+  virtual void SetEnabled(bool enabled);
+
  private:
   // Valid IDs are non-negative.
   int id_ = -1;

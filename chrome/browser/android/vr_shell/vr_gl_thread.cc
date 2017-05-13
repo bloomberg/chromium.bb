@@ -128,7 +128,7 @@ void VrGLThread::SetHistoryButtonsEnabled(bool can_go_back,
                             weak_scene_manager_, can_go_forward, can_go_back));
 }
 
-void VrGLThread::SetLoadProgress(double progress) {
+void VrGLThread::SetLoadProgress(float progress) {
   WaitUntilThreadStarted();
   task_runner()->PostTask(FROM_HERE,
                           base::Bind(&UiSceneManager::SetLoadProgress,

@@ -61,7 +61,7 @@ class VrGLThread : public base::Thread,
   // UiInterface implementation (VrShell calling to the UI).
   void SetFullscreen(bool enabled) override;
   void SetHistoryButtonsEnabled(bool can_go_back, bool can_go_forward) override;
-  void SetLoadProgress(double progress) override;
+  void SetLoadProgress(float progress) override;
   void SetLoading(bool loading) override;
   void SetSecurityLevel(int level) override;
   void SetURL(const GURL& gurl) override;
