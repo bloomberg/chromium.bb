@@ -8,15 +8,16 @@
 #include "base/feature_list.h"
 #include "base/memory/ptr_util.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "components/feature_engagement_tracker/internal/chrome_variations_configuration.h"
 #include "components/feature_engagement_tracker/internal/editable_configuration.h"
+#include "components/feature_engagement_tracker/internal/feature_config_condition_validator.h"
+#include "components/feature_engagement_tracker/internal/feature_config_storage_validator.h"
 #include "components/feature_engagement_tracker/internal/in_memory_store.h"
 #include "components/feature_engagement_tracker/internal/init_aware_model.h"
 #include "components/feature_engagement_tracker/internal/model_impl.h"
-#include "components/feature_engagement_tracker/internal/never_condition_validator.h"
 #include "components/feature_engagement_tracker/internal/never_storage_validator.h"
 #include "components/feature_engagement_tracker/internal/once_condition_validator.h"
 #include "components/feature_engagement_tracker/internal/persistent_store.h"
-#include "components/feature_engagement_tracker/internal/single_invalid_configuration.h"
 #include "components/feature_engagement_tracker/internal/system_time_provider.h"
 #include "components/feature_engagement_tracker/public/feature_constants.h"
 #include "components/feature_engagement_tracker/public/feature_list.h"
@@ -68,14 +69,19 @@ FeatureEngagementTracker* FeatureEngagementTracker::Create(
           background_task_runner);
 
   auto store = base::MakeUnique<PersistentStore>(storage_dir, std::move(db));
-  auto storage_validator = base::MakeUnique<NeverStorageValidator>();
+  auto storage_validator = base::MakeUnique<FeatureConfigStorageValidator>();
   auto raw_model = base::MakeUnique<ModelImpl>(std::move(store),
                                                std::move(storage_validator));
 
   auto model = base::MakeUnique<InitAwareModel>(std::move(raw_model));
-  auto configuration = base::MakeUnique<SingleInvalidConfiguration>();
-  auto condition_validator = base::MakeUnique<NeverConditionValidator>();
+  auto configuration = base::MakeUnique<ChromeVariationsConfiguration>();
+  auto condition_validator =
+      base::MakeUnique<FeatureConfigConditionValidator>();
   auto time_provider = base::MakeUnique<SystemTimeProvider>();
+
+  // Initialize the configuration.
+  configuration->ParseFeatureConfigs(GetAllFeatures());
+  storage_validator->InitializeFeatures(GetAllFeatures(), *configuration);
 
   return new FeatureEngagementTrackerImpl(
       std::move(model), std::move(configuration),
