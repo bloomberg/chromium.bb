@@ -21,13 +21,16 @@ message PaymentAppOptionProto {
   repeated string enabled_methods = 4;
 }
 
-message PaymentInstrumentKeyInfoProto {
+message StoredPaymentInstrumentKeyInfoProto {
   optional uint64 insertion_order = 1;
   optional string key = 2;
 }
 
-message PaymentInstrumentProto {
-  optional string name = 1;
-  repeated string enabled_methods = 2;
-  optional string stringified_capabilities = 3;
+message StoredPaymentInstrumentProto {
+  optional int64 registration_id = 1;
+  optional string instrument_key = 2;
+  optional string origin = 3;
+  optional string name = 4;
+  repeated string enabled_methods = 5;
+  optional string stringified_capabilities = 6;
 }

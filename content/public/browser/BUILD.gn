@@ -247,6 +247,8 @@ source_set("browser_sources") {
     "ssl_status.cc",
     "ssl_status.h",
     "storage_partition.h",
+    "stored_payment_instrument.cc",
+    "stored_payment_instrument.h",
     "stream_handle.h",
     "stream_info.cc",
     "stream_info.h",

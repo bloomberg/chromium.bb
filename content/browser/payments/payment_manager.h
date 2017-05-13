@@ -29,6 +29,7 @@ class CONTENT_EXPORT PaymentManager
 
  private:
   friend class PaymentAppContentUnitTestBase;
+  friend class PaymentAppProviderTest;
   friend class PaymentManagerTest;
 
   // payments::mojom::PaymentManager methods:

@@ -6,12 +6,14 @@
 #define CONTENT_PUBLIC_BROWSER_PAYMENT_APP_PROVIDER_H_
 
 #include <stdint.h>
+#include <memory>
 #include <utility>
 #include <vector>
 
 #include "base/callback_forward.h"
 #include "components/payments/mojom/payment_app.mojom.h"
 #include "content/common/content_export.h"
+#include "content/public/browser/stored_payment_instrument.h"
 
 namespace content {
 
@@ -21,6 +23,9 @@ class BrowserContext;
 // Chrome layer. This class is a singleton, the instance of which can be
 // retrieved using the static GetInstance() method.
 // All methods must be called on the UI thread.
+//
+// Design Doc:
+//   https://docs.google.com/document/d/1rWsvKQAwIboN2ZDuYYAkfce8GF27twi4UHTt0hcbyxQ/edit?usp=sharing
 class CONTENT_EXPORT PaymentAppProvider {
  public:
   // This static function is actually implemented in PaymentAppProviderImpl.cc.
@@ -33,15 +38,21 @@ class CONTENT_EXPORT PaymentAppProvider {
       std::pair<int64_t, payments::mojom::PaymentAppManifestPtr>;
   using Manifests = std::vector<ManifestWithID>;
 
+  using Instruments = std::vector<std::unique_ptr<StoredPaymentInstrument>>;
+  using PaymentApps = std::map<GURL, Instruments>;
+
   // TODO(zino): Consider to use base::OnceCallback instead of base::Callback.
   // Please see: http://crbug.com/704193
   using GetAllManifestsCallback = base::Callback<void(Manifests)>;
+  using GetAllPaymentAppsCallback = base::OnceCallback<void(PaymentApps)>;
   using InvokePaymentAppCallback =
       base::Callback<void(payments::mojom::PaymentAppResponsePtr)>;
 
   // Should be accessed only on the UI thread.
   virtual void GetAllManifests(BrowserContext* browser_context,
                                const GetAllManifestsCallback& callback) = 0;
+  virtual void GetAllPaymentApps(BrowserContext* browser_context,
+                                 GetAllPaymentAppsCallback callback) = 0;
   virtual void InvokePaymentApp(
       BrowserContext* browser_context,
       int64_t registration_id,

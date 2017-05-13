@@ -800,6 +800,39 @@ void ServiceWorkerStorage::GetUserDataForAllRegistrations(
                      callback)));
 }
 
+void ServiceWorkerStorage::GetUserDataForAllRegistrationsByKeyPrefix(
+    const std::string& key_prefix,
+    const ServiceWorkerStorage::GetUserDataForAllRegistrationsCallback&
+        callback) {
+  if (!LazyInitialize(base::Bind(
+          &ServiceWorkerStorage::GetUserDataForAllRegistrationsByKeyPrefix,
+          weak_factory_.GetWeakPtr(), key_prefix, callback))) {
+    if (state_ != INITIALIZING) {
+      RunSoon(
+          FROM_HERE,
+          base::Bind(callback, std::vector<std::pair<int64_t, std::string>>(),
+                     SERVICE_WORKER_ERROR_ABORT));
+    }
+    return;
+  }
+  DCHECK_EQ(INITIALIZED, state_);
+
+  if (key_prefix.empty()) {
+    RunSoon(FROM_HERE,
+            base::Bind(callback, std::vector<std::pair<int64_t, std::string>>(),
+                       SERVICE_WORKER_ERROR_FAILED));
+    return;
+  }
+
+  database_task_manager_->GetTaskRunner()->PostTask(
+      FROM_HERE,
+      base::Bind(
+          &ServiceWorkerStorage::GetUserDataForAllRegistrationsByKeyPrefixInDB,
+          database_.get(), base::ThreadTaskRunnerHandle::Get(), key_prefix,
+          base::Bind(&ServiceWorkerStorage::DidGetUserDataForAllRegistrations,
+                     weak_factory_.GetWeakPtr(), callback)));
+}
+
 bool ServiceWorkerStorage::OriginHasForeignFetchRegistrations(
     const GURL& origin) {
   return !IsDisabled() &&
@@ -1827,6 +1860,19 @@ void ServiceWorkerStorage::GetUserDataForAllRegistrationsInDB(
   std::vector<std::pair<int64_t, std::string>> user_data;
   ServiceWorkerDatabase::Status status =
       database->ReadUserDataForAllRegistrations(key, &user_data);
+  original_task_runner->PostTask(FROM_HERE,
+                                 base::Bind(callback, user_data, status));
+}
+
+void ServiceWorkerStorage::GetUserDataForAllRegistrationsByKeyPrefixInDB(
+    ServiceWorkerDatabase* database,
+    scoped_refptr<base::SequencedTaskRunner> original_task_runner,
+    const std::string& key_prefix,
+    const GetUserDataForAllRegistrationsInDBCallback& callback) {
+  std::vector<std::pair<int64_t, std::string>> user_data;
+  ServiceWorkerDatabase::Status status =
+      database->ReadUserDataForAllRegistrationsByKeyPrefix(key_prefix,
+                                                           &user_data);
   original_task_runner->PostTask(FROM_HERE,
                                  base::Bind(callback, user_data, status));
 }
