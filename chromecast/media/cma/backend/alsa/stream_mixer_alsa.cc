@@ -28,6 +28,7 @@
 #include "chromecast/media/cma/backend/alsa/stream_mixer_alsa_input_impl.h"
 #include "media/audio/audio_device_description.h"
 #include "media/base/audio_bus.h"
+#include "media/base/audio_sample_types.h"
 #include "media/base/media_switches.h"
 
 #define RETURN_REPORT_ERROR(snd_func, ...)                        \
@@ -115,8 +116,8 @@ static int* kAlsaDirDontCare = nullptr;
 
 // These sample formats will be tried in order. 32 bit samples is ideal, but
 // some devices do not support 32 bit samples.
-const snd_pcm_format_t kPreferredSampleFormats[] = {SND_PCM_FORMAT_S32,
-                                                    SND_PCM_FORMAT_S16};
+const snd_pcm_format_t kPreferredSampleFormats[] = {
+    SND_PCM_FORMAT_FLOAT, SND_PCM_FORMAT_S32, SND_PCM_FORMAT_S16};
 
 const int64_t kNoTimestamp = std::numeric_limits<int64_t>::min();
 
@@ -148,6 +149,38 @@ class StreamMixerAlsaInstance : public StreamMixerAlsa {
 
 base::LazyInstance<StreamMixerAlsaInstance>::DestructorAtExit g_mixer_instance =
     LAZY_INSTANCE_INITIALIZER;
+
+template <class TargetSampleTypeTraits>
+void ToFixedPoint(const float* input,
+                  int frames,
+                  typename TargetSampleTypeTraits::ValueType* dest_buffer) {
+  for (int f = 0; f < frames; ++f) {
+    dest_buffer[f] = TargetSampleTypeTraits::FromFloat(input[f]);
+  }
+}
+
+void ToFixedPoint(const float* input,
+                  int frames,
+                  int bytes_per_sample,
+                  uint8_t* dest_buffer) {
+  switch (bytes_per_sample) {
+    case 1:
+      ToFixedPoint<::media::UnsignedInt8SampleTypeTraits>(
+          input, frames, reinterpret_cast<uint8_t*>(dest_buffer));
+      break;
+    case 2:
+      ToFixedPoint<::media::SignedInt16SampleTypeTraits>(
+          input, frames, reinterpret_cast<int16_t*>(dest_buffer));
+      break;
+    case 4:
+      ToFixedPoint<::media::SignedInt32SampleTypeTraits>(
+          input, frames, reinterpret_cast<int32_t*>(dest_buffer));
+      break;
+    default:
+      NOTREACHED() << "Unsupported bytes per sample encountered: "
+                   << bytes_per_sample;
+  }
+}
 
 }  // namespace
 
@@ -531,20 +564,10 @@ void StreamMixerAlsa::Start() {
   // b/24747205
   int err = SetAlsaPlaybackParams();
   if (err < 0) {
-    LOG(WARNING) << "32-bit playback is not supported on this device, falling "
-                 "back to 16-bit playback. This can degrade audio quality.";
-    pcm_format_ = SND_PCM_FORMAT_S16;
-    // Free pcm_hw_params_, which is re-allocated in SetAlsaPlaybackParams().
-    // See b/25572466.
-    alsa_->PcmHwParamsFree(pcm_hw_params_);
-    pcm_hw_params_ = nullptr;
-    int err = SetAlsaPlaybackParams();
-    if (err < 0) {
-      LOG(ERROR) << "Error setting ALSA playback parameters: "
-                 << alsa_->StrError(err);
-      SignalError();
-      return;
-    }
+    LOG(ERROR) << "Error setting ALSA playback parameters: "
+               << alsa_->StrError(err);
+    SignalError();
+    return;
   }
 
   // Initialize filters
@@ -885,13 +908,6 @@ void StreamMixerAlsa::WriteMixedPcm(int frames) {
   // Resize interleaved if necessary.
   size_t interleaved_size = static_cast<size_t>(frames) * kNumOutputChannels *
                             BytesPerOutputFormatSample();
-  if (interleaved_.size() < interleaved_size) {
-    interleaved_.resize(interleaved_size);
-  }
-
-  // Get data for loopback.
-  mix_filter_->data()->ToInterleaved(frames, BytesPerOutputFormatSample(),
-                                     interleaved_.data());
 
   int64_t expected_playback_time;
   if (alsa_rendering_delay_.timestamp_microseconds == kNoTimestamp) {
@@ -902,15 +918,36 @@ void StreamMixerAlsa::WriteMixedPcm(int frames) {
                              linearize_filter_->GetRenderingDelayMicroseconds();
   }
 
-  for (CastMediaShlib::LoopbackAudioObserver* observer : loopback_observers_) {
-    observer->OnLoopbackAudio(expected_playback_time, kSampleFormatS32,
-                              output_samples_per_second_, kNumOutputChannels,
-                              interleaved_.data(), InterleavedSize(frames));
+  // Hard limit to [1.0, -1.0]
+  for (int i = 0; i < frames * kNumOutputChannels; ++i) {
+    mix_filter_->interleaved()[i] =
+        std::min(1.0f, std::max(-1.0f, mix_filter_->interleaved()[i]));
   }
 
-  // Get data for playout.
-  linearize_filter_->data()->ToInterleaved(frames, BytesPerOutputFormatSample(),
-                                           interleaved_.data());
+  for (CastMediaShlib::LoopbackAudioObserver* observer : loopback_observers_) {
+    observer->OnLoopbackAudio(
+        expected_playback_time, kSampleFormatF32, output_samples_per_second_,
+        kNumOutputChannels,
+        reinterpret_cast<uint8_t*>(mix_filter_->interleaved()),
+        InterleavedSize(frames));
+  }
+
+  uint8_t* data;
+  if (pcm_format_ == SND_PCM_FORMAT_FLOAT) {
+    // Hard limit to [1.0, -1.0]. ToFixedPoint handles this for other cases.
+    for (int i = 0; i < frames * kNumOutputChannels; ++i) {
+      linearize_filter_->interleaved()[i] =
+          std::min(1.0f, std::max(-1.0f, linearize_filter_->interleaved()[i]));
+    }
+    data = reinterpret_cast<uint8_t*>(linearize_filter_->interleaved());
+  } else {
+    if (interleaved_.size() < interleaved_size) {
+      interleaved_.resize(interleaved_size);
+    }
+    ToFixedPoint(linearize_filter_->interleaved(), frames * kNumOutputChannels,
+                 BytesPerOutputFormatSample(), interleaved_.data());
+    data = interleaved_.data();
+  }
 
   // If the PCM has been drained it will be in SND_PCM_STATE_SETUP and need
   // to be prepared in order for playback to work.
@@ -919,7 +956,6 @@ void StreamMixerAlsa::WriteMixedPcm(int frames) {
   }
 
   int frames_left = frames;
-  uint8_t* data = interleaved_.data();
   while (frames_left) {
     int frames_or_error;
     while ((frames_or_error = alsa_->PcmWritei(pcm_, data, frames_left)) < 0) {

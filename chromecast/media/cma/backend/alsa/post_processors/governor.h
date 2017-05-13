@@ -29,9 +29,7 @@ class Governor : public AudioPostProcessor {
 
   // AudioPostProcessor implementation:
   bool SetSampleRate(int sample_rate) override;
-  int ProcessFrames(const std::vector<float*>& data,
-                    int frames,
-                    float volume) override;
+  int ProcessFrames(float* data, int frames, float volume) override;
   int GetRingingTimeInFrames() override;
 
   void SetSlewTimeMsForTest(int slew_time_ms);

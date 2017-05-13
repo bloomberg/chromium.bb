@@ -596,7 +596,7 @@ void StreamMixerAlsaInputImpl::VolumeScaleAccumulate(bool repeat_transition,
                                                      const float* src,
                                                      int frames,
                                                      float* dest) {
-  slew_volume_.ProcessFMAC(repeat_transition, src, frames, dest);
+  slew_volume_.ProcessFMAC(repeat_transition, src, frames, 1, dest);
 }
 
 }  // namespace media

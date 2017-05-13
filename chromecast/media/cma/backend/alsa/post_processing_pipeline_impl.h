@@ -31,7 +31,7 @@ class PostProcessingPipelineImpl : public PostProcessingPipeline {
                              int channels);
   ~PostProcessingPipelineImpl() override;
 
-  int ProcessFrames(const std::vector<float*>& data,
+  int ProcessFrames(float* data,
                     int num_frames,
                     float current_volume,
                     bool is_silence) override;

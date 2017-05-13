@@ -13,6 +13,7 @@
 #include "base/strings/stringprintf.h"
 #include "chromecast/media/cma/backend/alsa/post_processors/governor.h"
 #include "media/base/audio_bus.h"
+#include "media/base/audio_sample_types.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromecast {
@@ -48,31 +49,18 @@ std::unique_ptr<::media::AudioBus> GetSineData(size_t frames, float frequency) {
   return data;
 }
 
-std::vector<float*> GetDataChannels(::media::AudioBus* audio) {
-  std::vector<float*> data(kNumChannels);
-  for (int i = 0; i < kNumChannels; ++i) {
-    data[i] = audio->channel(i);
-  }
-  return data;
-}
-
-void ScaleData(const std::vector<float*>& data, int frames, float scale) {
-  for (size_t ch = 0; ch < data.size(); ++ch) {
-    for (int f = 0; f < frames; ++f) {
-      data[ch][f] *= scale;
-    }
+void ScaleData(float* data, int frames, float scale) {
+  for (int f = 0; f < frames; ++f) {
+    data[f] *= scale;
   }
 }
 
-void CompareData(const std::vector<float*>& expected,
-                 const std::vector<float*>& actual,
+void CompareData(const std::vector<float>& expected,
+                 const std::vector<float>& actual,
                  int frames) {
   ASSERT_EQ(expected.size(), actual.size());
-  for (size_t ch = 0; ch < expected.size(); ++ch) {
-    for (int f = 0; f < frames; ++f) {
-      EXPECT_FLOAT_EQ(expected[ch][f], actual[ch][f])
-          << "ch: " << ch << " f: " << f;
-    }
+  for (int f = 0; f < frames; ++f) {
+    EXPECT_FLOAT_EQ(expected[f], actual[f]) << "f: " << f;
   }
 }
 
@@ -90,25 +78,29 @@ class GovernorTest : public ::testing::TestWithParam<float> {
     governor_->SetSlewTimeMsForTest(0);
     governor_->SetSampleRate(kSampleRate);
 
-    data_bus_ = GetSineData(kNumFrames, kFrequency);
-    expected_bus_ = GetSineData(kNumFrames, kFrequency);
-    data_ = GetDataChannels(data_bus_.get());
-    expected_ = GetDataChannels(expected_bus_.get());
+    auto data_bus = GetSineData(kNumFrames, kFrequency);
+    auto expected_bus = GetSineData(kNumFrames, kFrequency);
+    data_.resize(kNumFrames * kNumChannels);
+    expected_.resize(kNumFrames * kNumChannels);
+    data_bus->ToInterleaved<::media::FloatSampleTypeTraits<float>>(
+        kNumFrames, data_.data());
+    expected_bus->ToInterleaved<::media::FloatSampleTypeTraits<float>>(
+        kNumFrames, expected_.data());
   }
 
-  void CompareBuffers() { CompareData(expected_, data_, kNumFrames); }
+  void CompareBuffers() {
+    CompareData(expected_, data_, kNumFrames * kNumChannels);
+  }
 
   void ProcessFrames(float volume) {
-    EXPECT_EQ(governor_->ProcessFrames(data_, kNumFrames, volume), 0);
+    EXPECT_EQ(governor_->ProcessFrames(data_.data(), kNumFrames, volume), 0);
   }
 
   float clamp_;
   float onset_volume_;
   std::unique_ptr<Governor> governor_;
-  std::unique_ptr<::media::AudioBus> data_bus_;
-  std::unique_ptr<::media::AudioBus> expected_bus_;
-  std::vector<float*> data_;
-  std::vector<float*> expected_;
+  std::vector<float> data_;
+  std::vector<float> expected_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(GovernorTest);
@@ -117,7 +109,7 @@ class GovernorTest : public ::testing::TestWithParam<float> {
 TEST_P(GovernorTest, ZeroVolume) {
   ProcessFrames(0.0f);
   if (onset_volume_ <= 0.0f) {
-    ScaleData(expected_, kNumFrames, clamp_);
+    ScaleData(expected_.data(), kNumFrames * kNumChannels, clamp_);
   }
   CompareBuffers();
 }
@@ -131,14 +123,14 @@ TEST_P(GovernorTest, EpsilonBelowOnset) {
 TEST_P(GovernorTest, EpsilonAboveOnset) {
   float volume = onset_volume_ + std::numeric_limits<float>::epsilon();
   ProcessFrames(volume);
-  ScaleData(expected_, kNumFrames, clamp_);
+  ScaleData(expected_.data(), kNumFrames * kNumChannels, clamp_);
   CompareBuffers();
 }
 
 TEST_P(GovernorTest, MaxVolume) {
   ProcessFrames(1.0);
   if (onset_volume_ <= 1.0) {
-    ScaleData(expected_, kNumFrames, clamp_);
+    ScaleData(expected_.data(), kNumFrames * kNumChannels, clamp_);
   }
   CompareBuffers();
 }
