@@ -375,6 +375,8 @@ class BuildReexecutionFinishedStage(generic_stages.BuilderStage,
         old_version = build['full_version']
         if old_version is None:
           continue
+        if build['status'] == constants.BUILDER_STATUS_PASSED:
+          continue
         for suite_config in self._run.config.hw_tests:
           if not suite_config.async:
             commands.AbortHWTests(self._run.config.name, old_version,
