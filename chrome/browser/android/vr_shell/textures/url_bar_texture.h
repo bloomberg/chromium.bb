@@ -5,9 +5,15 @@
 #ifndef CHROME_BROWSER_ANDROID_VR_SHELL_TEXTURES_URL_BAR_TEXTURE_H_
 #define CHROME_BROWSER_ANDROID_VR_SHELL_TEXTURES_URL_BAR_TEXTURE_H_
 
-#include "chrome/browser/android/vr_shell/textures/ui_texture.h"
+#include <memory>
+#include <vector>
 
+#include "chrome/browser/android/vr_shell/textures/ui_texture.h"
 #include "url/gurl.h"
+
+namespace gfx {
+class RenderText;
+}  // namespace gfx
 
 namespace vr_shell {
 
@@ -36,6 +42,8 @@ class UrlBarTexture : public UiTexture {
   bool dirty_ = false;
   int security_level_;
   GURL gurl_;
+  GURL last_drawn_gurl_;
+  std::vector<std::unique_ptr<gfx::RenderText>> gurl_render_texts_;
 };
 
 }  // namespace vr_shell

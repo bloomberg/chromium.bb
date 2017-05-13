@@ -12,6 +12,7 @@
 #include "ui/gfx/font_list.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/paint_vector_icon.h"
+#include "ui/gfx/render_text.h"
 #include "ui/gfx/vector_icon_types.h"
 #include "ui/vector_icons/vector_icons.h"
 
@@ -19,7 +20,6 @@ namespace vr_shell {
 
 namespace {
 
-static constexpr SkColor kTextureBackground = 0x00AAAAAA;
 static constexpr SkColor kBackground = 0xCCAAAAAA;
 static constexpr SkColor kBackgroundHover = 0xCCDDDDDD;
 static constexpr SkColor kForeground = 0xCC444444;
@@ -88,8 +88,6 @@ void UrlBarTexture::Draw(SkCanvas* canvas, const gfx::Size& texture_size) {
   cc::SkiaPaintCanvas paint_canvas(canvas);
   gfx::Canvas gfx_canvas(&paint_canvas, 1.0f);
 
-  canvas->drawColor(kTextureBackground);
-
   // Back button area.
   SkRRect round_rect;
   SkVector rounded_corner = {kHeight / 2, kHeight / 2};
@@ -122,8 +120,7 @@ void UrlBarTexture::Draw(SkCanvas* canvas, const gfx::Size& texture_size) {
   canvas->restore();
 
   // Site security state icon.
-  // TODO(cjgrant): Plug in the correct icons based on security level.
-  if (!gurl_.spec().empty()) {
+  if (!gurl_.is_empty()) {
     canvas->save();
     canvas->translate(
         kBackButtonWidth + kSeparatorWidth + kSecurityFieldWidth / 2,
@@ -139,16 +136,24 @@ void UrlBarTexture::Draw(SkCanvas* canvas, const gfx::Size& texture_size) {
 
   canvas->restore();
 
-  // Draw text based on pixel sizes rather than meters, for correct font sizing.
-  int pixel_font_height = texture_size.height() * kFontHeight / kHeight;
-  int text_flags = gfx::Canvas::TEXT_ALIGN_LEFT;
-  float url_x = kBackButtonWidth + kSeparatorWidth + kSecurityFieldWidth;
-  float url_width = kWidth - url_x - kUrlRightMargin;
-  gfx_canvas.DrawStringRectWithFlags(
-      base::UTF8ToUTF16(gurl_.spec()), GetDefaultFontList(pixel_font_height),
-      SK_ColorBLACK,
-      gfx::Rect(ToPixels(url_x), 0, ToPixels(url_width), ToPixels(kHeight)),
-      text_flags);
+  if (!gurl_.is_empty()) {
+    if (last_drawn_gurl_ != gurl_) {
+      // Draw text based on pixel sizes rather than meters, for correct font
+      // sizing.
+      int pixel_font_height = texture_size.height() * kFontHeight / kHeight;
+      float url_x = kBackButtonWidth + kSeparatorWidth + kSecurityFieldWidth;
+      float url_width = kWidth - url_x - kUrlRightMargin;
+      gfx::Rect text_bounds(ToPixels(url_x), 0, ToPixels(url_width),
+                            ToPixels(kHeight));
+      gurl_render_texts_ =
+          PrepareDrawStringRect(base::UTF8ToUTF16(gurl_.spec()),
+                                GetDefaultFontList(pixel_font_height),
+                                SK_ColorBLACK, &text_bounds, TEXT_ALIGN_LEFT);
+      last_drawn_gurl_ = gurl_;
+    }
+    for (auto& render_text : gurl_render_texts_)
+      render_text->Draw(&gfx_canvas);
+  }
 }
 
 gfx::Size UrlBarTexture::GetPreferredTextureSize(int maximum_width) const {
