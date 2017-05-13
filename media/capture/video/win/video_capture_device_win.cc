@@ -7,7 +7,6 @@
 #include <ks.h>
 #include <ksmedia.h>
 #include <objbase.h>
-#include <vidcap.h>
 
 #include <algorithm>
 #include <list>
@@ -266,7 +265,10 @@ void VideoCaptureDeviceWin::ScopedMediaType::DeleteMediaType(
 
 VideoCaptureDeviceWin::VideoCaptureDeviceWin(
     const VideoCaptureDeviceDescriptor& device_descriptor)
-    : device_descriptor_(device_descriptor), state_(kIdle) {
+    : device_descriptor_(device_descriptor),
+      state_(kIdle),
+      white_balance_mode_manual_(false),
+      exposure_mode_manual_(false) {
   // TODO(mcasas): Check that CoInitializeEx() has been called with the
   // appropriate Apartment model, i.e., Single Threaded.
 }
@@ -431,6 +433,7 @@ void VideoCaptureDeviceWin::AllocateAndStart(
     SetErrorState(FROM_HERE, "Failed to set capture device output format", hr);
     return;
   }
+  capture_format_ = found_capability.supported_format;
 
   SetAntiFlickerInCaptureFilter(params);
 
@@ -464,6 +467,44 @@ void VideoCaptureDeviceWin::AllocateAndStart(
 
   client_->OnStarted();
   state_ = kCapturing;
+
+  base::win::ScopedComPtr<IKsTopologyInfo> info;
+  hr = capture_filter_.CopyTo(info.GetAddressOf());
+  if (FAILED(hr)) {
+    SetErrorState(FROM_HERE, "Failed to obtain the topology info.", hr);
+    return;
+  }
+
+  DWORD num_nodes = 0;
+  hr = info->get_NumNodes(&num_nodes);
+  if (FAILED(hr)) {
+    SetErrorState(FROM_HERE, "Failed to obtain the number of nodes.", hr);
+    return;
+  }
+
+  // Every UVC camera is expected to have a single ICameraControl and a single
+  // IVideoProcAmp nodes, and both are needed; ignore any unlikely later ones.
+  GUID node_type;
+  for (size_t i = 0; i < num_nodes; i++) {
+    info->get_NodeType(i, &node_type);
+    if (IsEqualGUID(node_type, KSNODETYPE_VIDEO_CAMERA_TERMINAL)) {
+      hr = info->CreateNodeInstance(i, IID_PPV_ARGS(&camera_control_));
+      if (SUCCEEDED(hr))
+        break;
+      SetErrorState(FROM_HERE, "Failed to retrieve the ICameraControl.", hr);
+      return;
+    }
+  }
+  for (size_t i = 0; i < num_nodes; i++) {
+    info->get_NodeType(i, &node_type);
+    if (IsEqualGUID(node_type, KSNODETYPE_VIDEO_PROCESSING)) {
+      hr = info->CreateNodeInstance(i, IID_PPV_ARGS(&video_control_));
+      if (SUCCEEDED(hr))
+        break;
+      SetErrorState(FROM_HERE, "Failed to retrieve the IVideoProcAmp.", hr);
+      return;
+    }
+  }
 }
 
 void VideoCaptureDeviceWin::StopAndDeAllocate() {
@@ -497,79 +538,38 @@ void VideoCaptureDeviceWin::GetPhotoCapabilities(
     GetPhotoCapabilitiesCallback callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  base::win::ScopedComPtr<IKsTopologyInfo> info;
-  HRESULT hr = capture_filter_.CopyTo(info.GetAddressOf());
-  if (FAILED(hr)) {
-    SetErrorState(FROM_HERE, "Failed to obtain the topology info.", hr);
-    return;
-  }
-
-  DWORD num_nodes = 0;
-  hr = info->get_NumNodes(&num_nodes);
-  if (FAILED(hr)) {
-    SetErrorState(FROM_HERE, "Failed to obtain the number of nodes.", hr);
-    return;
-  }
-
-  // Every UVC camera is expected to have a single ICameraControl and a single
-  // IVideoProcAmp nodes, and both are needed; ignore any unlikely later ones.
-  GUID node_type;
-  base::win::ScopedComPtr<ICameraControl> camera_control;
-  for (size_t i = 0; i < num_nodes; i++) {
-    info->get_NodeType(i, &node_type);
-    if (IsEqualGUID(node_type, KSNODETYPE_VIDEO_CAMERA_TERMINAL)) {
-      hr = info->CreateNodeInstance(i, IID_PPV_ARGS(&camera_control));
-      if (SUCCEEDED(hr))
-        break;
-      SetErrorState(FROM_HERE, "Failed to retrieve the ICameraControl.", hr);
-      return;
-    }
-  }
-  if (!camera_control)
-    return;
-  base::win::ScopedComPtr<IVideoProcAmp> video_control;
-  for (size_t i = 0; i < num_nodes; i++) {
-    info->get_NodeType(i, &node_type);
-    if (IsEqualGUID(node_type, KSNODETYPE_VIDEO_PROCESSING)) {
-      hr = info->CreateNodeInstance(i, IID_PPV_ARGS(&video_control));
-      if (SUCCEEDED(hr))
-        break;
-      SetErrorState(FROM_HERE, "Failed to retrieve the IVideoProcAmp.", hr);
-      return;
-    }
-  }
-  if (!video_control)
+  if (!camera_control_ || !video_control_)
     return;
 
   auto photo_capabilities = mojom::PhotoCapabilities::New();
 
   photo_capabilities->exposure_compensation = RetrieveControlRangeAndCurrent(
-      [camera_control](auto... args) {
-        return camera_control->getRange_Exposure(args...);
+      [this](auto... args) {
+        return this->camera_control_->getRange_Exposure(args...);
       },
-      [camera_control](auto... args) {
-        return camera_control->get_Exposure(args...);
+      [this](auto... args) {
+        return this->camera_control_->get_Exposure(args...);
       },
       &photo_capabilities->supported_exposure_modes,
       &photo_capabilities->current_exposure_mode);
 
   photo_capabilities->color_temperature = RetrieveControlRangeAndCurrent(
-      [video_control](auto... args) {
-        return video_control->getRange_WhiteBalance(args...);
+      [this](auto... args) {
+        return this->video_control_->getRange_WhiteBalance(args...);
       },
-      [video_control](auto... args) {
-        return video_control->get_WhiteBalance(args...);
+      [this](auto... args) {
+        return this->video_control_->get_WhiteBalance(args...);
       },
       &photo_capabilities->supported_white_balance_modes,
       &photo_capabilities->current_white_balance_mode);
 
   // Ignore the returned Focus control range and status.
   RetrieveControlRangeAndCurrent(
-      [camera_control](auto... args) {
-        return camera_control->getRange_Focus(args...);
+      [this](auto... args) {
+        return this->camera_control_->getRange_Focus(args...);
       },
-      [camera_control](auto... args) {
-        return camera_control->get_Focus(args...);
+      [this](auto... args) {
+        return this->camera_control_->get_Focus(args...);
       },
       &photo_capabilities->supported_focus_modes,
       &photo_capabilities->current_focus_mode);
@@ -577,50 +577,124 @@ void VideoCaptureDeviceWin::GetPhotoCapabilities(
   photo_capabilities->iso = mojom::Range::New();
 
   photo_capabilities->brightness = RetrieveControlRangeAndCurrent(
-      [video_control](auto... args) {
-        return video_control->getRange_Brightness(args...);
+      [this](auto... args) {
+        return this->video_control_->getRange_Brightness(args...);
       },
-      [video_control](auto... args) {
-        return video_control->get_Brightness(args...);
+      [this](auto... args) {
+        return this->video_control_->get_Brightness(args...);
       });
   photo_capabilities->contrast = RetrieveControlRangeAndCurrent(
-      [video_control](auto... args) {
-        return video_control->getRange_Contrast(args...);
+      [this](auto... args) {
+        return this->video_control_->getRange_Contrast(args...);
       },
-      [video_control](auto... args) {
-        return video_control->get_Contrast(args...);
+      [this](auto... args) {
+        return this->video_control_->get_Contrast(args...);
       });
   photo_capabilities->saturation = RetrieveControlRangeAndCurrent(
-      [video_control](auto... args) {
-        return video_control->getRange_Saturation(args...);
+      [this](auto... args) {
+        return this->video_control_->getRange_Saturation(args...);
       },
-      [video_control](auto... args) {
-        return video_control->get_Saturation(args...);
+      [this](auto... args) {
+        return this->video_control_->get_Saturation(args...);
       });
   photo_capabilities->sharpness = RetrieveControlRangeAndCurrent(
-      [video_control](auto... args) {
-        return video_control->getRange_Sharpness(args...);
+      [this](auto... args) {
+        return this->video_control_->getRange_Sharpness(args...);
       },
-      [video_control](auto... args) {
-        return video_control->get_Sharpness(args...);
+      [this](auto... args) {
+        return this->video_control_->get_Sharpness(args...);
       });
 
   photo_capabilities->zoom = RetrieveControlRangeAndCurrent(
-      [camera_control](auto... args) {
-        return camera_control->getRange_Zoom(args...);
+      [this](auto... args) {
+        return this->camera_control_->getRange_Zoom(args...);
       },
-      [camera_control](auto... args) {
-        return camera_control->get_Zoom(args...);
+      [this](auto... args) {
+        return this->camera_control_->get_Zoom(args...);
       });
 
   photo_capabilities->red_eye_reduction = mojom::RedEyeReduction::NEVER;
-  photo_capabilities->height = mojom::Range::New();
-  photo_capabilities->width = mojom::Range::New();
+  photo_capabilities->height = mojom::Range::New(
+      capture_format_.frame_size.height(), capture_format_.frame_size.height(),
+      capture_format_.frame_size.height(), 0 /* step */);
+  photo_capabilities->width = mojom::Range::New(
+      capture_format_.frame_size.width(), capture_format_.frame_size.width(),
+      capture_format_.frame_size.width(), 0 /* step */);
   photo_capabilities->torch = false;
 
   callback.Run(std::move(photo_capabilities));
 }
 
+void VideoCaptureDeviceWin::SetPhotoOptions(
+    mojom::PhotoSettingsPtr settings,
+    VideoCaptureDevice::SetPhotoOptionsCallback callback) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  if (!camera_control_ || !video_control_)
+    return;
+
+  if (settings->has_zoom) {
+    HRESULT hr =
+        camera_control_->put_Zoom(settings->zoom, CameraControl_Flags_Manual);
+    DLOG_IF_FAILED_WITH_HRESULT("Zoom config failed", hr);
+  }
+
+  if (settings->has_white_balance_mode) {
+    if (settings->white_balance_mode == mojom::MeteringMode::CONTINUOUS) {
+      HRESULT hr =
+          video_control_->put_WhiteBalance(0L, VideoProcAmp_Flags_Auto);
+      DLOG_IF_FAILED_WITH_HRESULT("Auto white balance config failed", hr);
+
+      white_balance_mode_manual_ = false;
+    } else {
+      white_balance_mode_manual_ = true;
+    }
+  }
+  if (white_balance_mode_manual_ && settings->has_color_temperature) {
+    HRESULT hr = video_control_->put_WhiteBalance(settings->color_temperature,
+                                                  CameraControl_Flags_Manual);
+    DLOG_IF_FAILED_WITH_HRESULT("Color temperature config failed", hr);
+  }
+
+  if (settings->has_exposure_mode) {
+    if (settings->exposure_mode == mojom::MeteringMode::CONTINUOUS) {
+      HRESULT hr = camera_control_->put_Exposure(0L, VideoProcAmp_Flags_Auto);
+      DLOG_IF_FAILED_WITH_HRESULT("Auto exposure config failed", hr);
+
+      exposure_mode_manual_ = false;
+    } else {
+      exposure_mode_manual_ = true;
+    }
+  }
+  if (exposure_mode_manual_ && settings->has_exposure_compensation) {
+    HRESULT hr = camera_control_->put_Exposure(settings->exposure_compensation,
+                                               CameraControl_Flags_Manual);
+    DLOG_IF_FAILED_WITH_HRESULT("Exposure Compensation config failed", hr);
+  }
+
+  if (settings->has_brightness) {
+    HRESULT hr = video_control_->put_Brightness(settings->brightness,
+                                                CameraControl_Flags_Manual);
+    DLOG_IF_FAILED_WITH_HRESULT("Brightness config failed", hr);
+  }
+  if (settings->has_contrast) {
+    HRESULT hr = video_control_->put_Contrast(settings->contrast,
+                                              CameraControl_Flags_Manual);
+    DLOG_IF_FAILED_WITH_HRESULT("Contrast config failed", hr);
+  }
+  if (settings->has_saturation) {
+    HRESULT hr = video_control_->put_Saturation(settings->saturation,
+                                                CameraControl_Flags_Manual);
+    DLOG_IF_FAILED_WITH_HRESULT("Saturation config failed", hr);
+  }
+  if (settings->has_sharpness) {
+    HRESULT hr = video_control_->put_Sharpness(settings->sharpness,
+                                               CameraControl_Flags_Manual);
+    DLOG_IF_FAILED_WITH_HRESULT("Sharpness config failed", hr);
+  }
+
+  callback.Run(true);
+}
 // Implements SinkFilterObserver::SinkFilterObserver.
 void VideoCaptureDeviceWin::FrameReceived(const uint8_t* buffer,
                                           int length,
