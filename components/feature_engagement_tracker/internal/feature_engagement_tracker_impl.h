@@ -18,8 +18,6 @@ namespace feature_engagement_tracker {
 class Configuration;
 class ConditionValidator;
 class Model;
-class Store;
-class StorageValidator;
 class TimeProvider;
 
 // The internal implementation of the FeatureEngagementTracker.
@@ -27,10 +25,9 @@ class FeatureEngagementTrackerImpl : public FeatureEngagementTracker,
                                      public base::SupportsUserData {
  public:
   FeatureEngagementTrackerImpl(
-      std::unique_ptr<Store> store,
+      std::unique_ptr<Model> store,
       std::unique_ptr<Configuration> configuration,
       std::unique_ptr<ConditionValidator> condition_validator,
-      std::unique_ptr<StorageValidator> storage_validator,
       std::unique_ptr<TimeProvider> time_provider);
   ~FeatureEngagementTrackerImpl() override;
 

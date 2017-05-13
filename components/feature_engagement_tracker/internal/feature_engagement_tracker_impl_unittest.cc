@@ -13,6 +13,7 @@
 #include "base/run_loop.h"
 #include "components/feature_engagement_tracker/internal/editable_configuration.h"
 #include "components/feature_engagement_tracker/internal/in_memory_store.h"
+#include "components/feature_engagement_tracker/internal/model_impl.h"
 #include "components/feature_engagement_tracker/internal/never_storage_validator.h"
 #include "components/feature_engagement_tracker/internal/once_condition_validator.h"
 #include "components/feature_engagement_tracker/internal/time_provider.h"
@@ -103,10 +104,12 @@ class FeatureEngagementTrackerImplTest : public ::testing::Test {
     RegisterFeatureConfig(configuration.get(), kTestFeatureBar, true);
     RegisterFeatureConfig(configuration.get(), kTestFeatureQux, false);
 
+    auto model = base::MakeUnique<ModelImpl>(
+        CreateStore(), base::MakeUnique<NeverStorageValidator>());
+
     tracker_.reset(new FeatureEngagementTrackerImpl(
-        CreateStore(), std::move(configuration),
+        std::move(model), std::move(configuration),
         base::MakeUnique<OnceConditionValidator>(),
-        base::MakeUnique<NeverStorageValidator>(),
         base::MakeUnique<TestTimeProvider>()));
   }
 

@@ -10,6 +10,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/feature_engagement_tracker/internal/editable_configuration.h"
 #include "components/feature_engagement_tracker/internal/in_memory_store.h"
+#include "components/feature_engagement_tracker/internal/init_aware_model.h"
 #include "components/feature_engagement_tracker/internal/model_impl.h"
 #include "components/feature_engagement_tracker/internal/never_condition_validator.h"
 #include "components/feature_engagement_tracker/internal/never_storage_validator.h"
@@ -40,10 +41,13 @@ CreateDemoModeFeatureEngagementTracker() {
     configuration->SetConfiguration(feature, feature_config);
   }
 
+  auto raw_model =
+      base::MakeUnique<ModelImpl>(base::MakeUnique<InMemoryStore>(),
+                                  base::MakeUnique<NeverStorageValidator>());
+
   return base::MakeUnique<FeatureEngagementTrackerImpl>(
-      base::MakeUnique<InMemoryStore>(), std::move(configuration),
-      base::MakeUnique<OnceConditionValidator>(),
-      base::MakeUnique<NeverStorageValidator>(),
+      base::MakeUnique<InitAwareModel>(std::move(raw_model)),
+      std::move(configuration), base::MakeUnique<OnceConditionValidator>(),
       base::MakeUnique<SystemTimeProvider>());
 }
 
@@ -63,36 +67,32 @@ FeatureEngagementTracker* FeatureEngagementTracker::Create(
       base::MakeUnique<leveldb_proto::ProtoDatabaseImpl<Event>>(
           background_task_runner);
 
-  std::unique_ptr<Store> store =
-      base::MakeUnique<PersistentStore>(storage_dir, std::move(db));
-  std::unique_ptr<Configuration> configuration =
-      base::MakeUnique<SingleInvalidConfiguration>();
-  std::unique_ptr<ConditionValidator> condition_validator =
-      base::MakeUnique<NeverConditionValidator>();
-  std::unique_ptr<StorageValidator> storage_validator =
-      base::MakeUnique<NeverStorageValidator>();
-  std::unique_ptr<TimeProvider> time_provider =
-      base::MakeUnique<SystemTimeProvider>();
+  auto store = base::MakeUnique<PersistentStore>(storage_dir, std::move(db));
+  auto storage_validator = base::MakeUnique<NeverStorageValidator>();
+  auto raw_model = base::MakeUnique<ModelImpl>(std::move(store),
+                                               std::move(storage_validator));
+
+  auto model = base::MakeUnique<InitAwareModel>(std::move(raw_model));
+  auto configuration = base::MakeUnique<SingleInvalidConfiguration>();
+  auto condition_validator = base::MakeUnique<NeverConditionValidator>();
+  auto time_provider = base::MakeUnique<SystemTimeProvider>();
 
   return new FeatureEngagementTrackerImpl(
-      std::move(store), std::move(configuration),
-      std::move(condition_validator), std::move(storage_validator),
-      std::move(time_provider));
+      std::move(model), std::move(configuration),
+      std::move(condition_validator), std::move(time_provider));
 }
 
 FeatureEngagementTrackerImpl::FeatureEngagementTrackerImpl(
-    std::unique_ptr<Store> store,
+    std::unique_ptr<Model> model,
     std::unique_ptr<Configuration> configuration,
     std::unique_ptr<ConditionValidator> condition_validator,
-    std::unique_ptr<StorageValidator> storage_validator,
     std::unique_ptr<TimeProvider> time_provider)
-    : configuration_(std::move(configuration)),
+    : model_(std::move(model)),
+      configuration_(std::move(configuration)),
       condition_validator_(std::move(condition_validator)),
       time_provider_(std::move(time_provider)),
       initialization_finished_(false),
       weak_ptr_factory_(this) {
-  model_ = base::MakeUnique<ModelImpl>(std::move(store),
-                                       std::move(storage_validator));
   model_->Initialize(
       base::Bind(&FeatureEngagementTrackerImpl::OnModelInitializationFinished,
                  weak_ptr_factory_.GetWeakPtr()),

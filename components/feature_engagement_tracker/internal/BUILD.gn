@@ -30,6 +30,8 @@ static_library("internal") {
     "feature_engagement_tracker_impl.h",
     "in_memory_store.cc",
     "in_memory_store.h",
+    "init_aware_model.cc",
+    "init_aware_model.h",
     "model.h",
     "model_impl.cc",
     "model_impl.h",
@@ -88,6 +90,7 @@ source_set("unit_tests") {
     "feature_config_storage_validator_unittest.cc",
     "feature_engagement_tracker_impl_unittest.cc",
     "in_memory_store_unittest.cc",
+    "init_aware_model_unittest.cc",
     "model_impl_unittest.cc",
     "never_condition_validator_unittest.cc",
     "never_storage_validator_unittest.cc",
@@ -102,6 +105,7 @@ source_set("unit_tests") {
     "//base/test:test_support",
     "//components/feature_engagement_tracker/internal/test:test_support",
     "//components/leveldb_proto:test_support",
+    "//testing/gmock",
     "//testing/gtest",
   ]
 }
