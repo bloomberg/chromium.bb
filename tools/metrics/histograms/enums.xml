@@ -34791,6 +34791,28 @@ from previous Chrome versions.
   <int value="25" label="Bubble not shown: editable field is active"/>
 </enum>
 
+<enum name="TranslateCompactUIEvent" type="int">
+  <int value="0" label="Infobar impression"/>
+  <int value="1" label="Tab language clicked"/>
+  <int value="2" label="Infobar closed"/>
+  <int value="3" label="Options menu clicked"/>
+  <int value="4" label="More languages clicked"/>
+  <int value="5" label="Language picked from more languages"/>
+  <int value="6" label="Page not in language clicked"/>
+  <int value="7" label="Always translate clicked"/>
+  <int value="8" label="Never translate clicked"/>
+  <int value="9" label="Never translate site clicked"/>
+  <int value="10" label="Infobar hidden on scroll"/>
+  <int value="11" label="Infobar shown on scroll"/>
+  <int value="12" label="Show original language clicked"/>
+  <int value="13" label="Always translate snackbar impression"/>
+  <int value="14" label="Never translate snackbar impression"/>
+  <int value="15" label="Never translate site snackbar impression"/>
+  <int value="16" label="Cancel clicked on always translate snackbar"/>
+  <int value="17" label="Cancel clicked on never translate this site snackbar"/>
+  <int value="18" label="Cancel clicked on never translate snackbar"/>
+</enum>
+
 <enum name="TranslateError" type="int">
   <int value="0" label="No error"/>
   <int value="1" label="Network error"/>

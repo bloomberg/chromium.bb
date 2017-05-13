@@ -17,6 +17,7 @@ public class TranslateOptionsTest extends AndroidTestCase {
     private static final boolean ALWAYS_TRANSLATE = true;
     private static final String[] LANGUAGES = {"English", "Spanish", "French"};
     private static final String[] CODES = {"en", "es", "fr"};
+    private static final int[] UMA_HASH_CODES = {10, 20, 30};
 
     @Override
     public void setUp() throws Exception {
@@ -26,8 +27,8 @@ public class TranslateOptionsTest extends AndroidTestCase {
     @SmallTest
     @Feature({"Translate"})
     public void testNoChanges() {
-        TranslateOptions options =
-                TranslateOptions.create("en", "es", LANGUAGES, CODES, ALWAYS_TRANSLATE, false);
+        TranslateOptions options = TranslateOptions.create(
+                "en", "es", LANGUAGES, CODES, ALWAYS_TRANSLATE, false, null);
         assertEquals("English", options.sourceLanguageName());
         assertEquals("Spanish", options.targetLanguageName());
         assertEquals("en", options.sourceLanguageCode());
@@ -36,13 +37,14 @@ public class TranslateOptionsTest extends AndroidTestCase {
         assertTrue(options.alwaysTranslateLanguageState());
         assertFalse(options.neverTranslateDomainState());
         assertFalse(options.optionsChanged());
+        assertNull(options.getUMAHashCodeFromCode("en"));
     }
 
     @SmallTest
     @Feature({"Translate"})
     public void testBasicLanguageChanges() {
-        TranslateOptions options =
-                TranslateOptions.create("en", "es", LANGUAGES, CODES, !ALWAYS_TRANSLATE, true);
+        TranslateOptions options = TranslateOptions.create(
+                "en", "es", LANGUAGES, CODES, !ALWAYS_TRANSLATE, true, UMA_HASH_CODES);
         options.setTargetLanguage("fr");
         options.setSourceLanguage("en");
         assertEquals("English", options.sourceLanguageName());
@@ -50,6 +52,8 @@ public class TranslateOptionsTest extends AndroidTestCase {
         assertEquals("en", options.sourceLanguageCode());
         assertEquals("fr", options.targetLanguageCode());
         assertTrue(options.triggeredFromMenu());
+        assertEquals(Integer.valueOf(10), options.getUMAHashCodeFromCode("en"));
+        assertEquals("English", options.getRepresentationFromCode("en"));
 
         assertTrue(options.optionsChanged());
 
@@ -62,8 +66,8 @@ public class TranslateOptionsTest extends AndroidTestCase {
     @SmallTest
     @Feature({"Translate"})
     public void testInvalidLanguageChanges() {
-        TranslateOptions options =
-                TranslateOptions.create("en", "es", LANGUAGES, CODES, ALWAYS_TRANSLATE, false);
+        TranslateOptions options = TranslateOptions.create(
+                "en", "es", LANGUAGES, CODES, ALWAYS_TRANSLATE, false, null);
 
         // Same target language as source
         assertFalse(options.setTargetLanguage("en"));
@@ -85,8 +89,8 @@ public class TranslateOptionsTest extends AndroidTestCase {
     @SmallTest
     @Feature({"Translate"})
     public void testBasicOptionsChanges() {
-        TranslateOptions options =
-                TranslateOptions.create("en", "es", LANGUAGES, CODES, !ALWAYS_TRANSLATE, false);
+        TranslateOptions options = TranslateOptions.create(
+                "en", "es", LANGUAGES, CODES, !ALWAYS_TRANSLATE, false, null);
         assertFalse(options.optionsChanged());
         options.toggleNeverTranslateDomainState(true);
         assertTrue(options.neverTranslateDomainState());
@@ -110,8 +114,8 @@ public class TranslateOptionsTest extends AndroidTestCase {
     @SmallTest
     @Feature({"Translate"})
     public void testInvalidOptionsChanges() {
-        TranslateOptions options =
-                TranslateOptions.create("en", "es", LANGUAGES, CODES, ALWAYS_TRANSLATE, false);
+        TranslateOptions options = TranslateOptions.create(
+                "en", "es", LANGUAGES, CODES, ALWAYS_TRANSLATE, false, null);
 
         // Never translate language should not work, but never translate domain
         // should

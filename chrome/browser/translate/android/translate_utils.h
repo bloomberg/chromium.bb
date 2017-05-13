@@ -41,6 +41,9 @@ class TranslateUtils {
   static base::android::ScopedJavaLocalRef<jobjectArray> GetJavaLanguageCodes(
       JNIEnv* env,
       translate::TranslateInfoBarDelegate* delegate);
+  static base::android::ScopedJavaLocalRef<jintArray> GetJavaLanguageHashCodes(
+      JNIEnv* env,
+      translate::TranslateInfoBarDelegate* delegate);
 };
 
 #endif  // CHROME_BROWSER_TRANSLATE_ANDROID_TRANSLATE_UTILS_H_

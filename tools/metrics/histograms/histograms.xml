@@ -75724,6 +75724,54 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Translate.CompactInfobar.Event" enum="TranslateCompactUIEvent">
+  <owner>ramyasharma@google.com</owner>
+  <summary>Various user actions performed in the translate infobar.</summary>
+</histogram>
+
+<histogram name="Translate.CompactInfobar.Language.AlwaysTranslate"
+    enum="CLD3LanguageCode">
+  <owner>ramyasharma@google.com</owner>
+  <summary>
+    Records the hashcode of the source language when always translate this
+    language option is clicked in the menu.
+  </summary>
+</histogram>
+
+<histogram name="Translate.CompactInfobar.Language.MoreLanguages"
+    enum="CLD3LanguageCode">
+  <owner>ramyasharma@google.com</owner>
+  <summary>
+    Records the hashcode of the language clicked on the more languages menu.
+  </summary>
+</histogram>
+
+<histogram name="Translate.CompactInfobar.Language.NeverTranslate"
+    enum="CLD3LanguageCode">
+  <owner>ramyasharma@google.com</owner>
+  <summary>
+    Records the hashcode of the source language when never translate this
+    language option is clicked in the menu.
+  </summary>
+</histogram>
+
+<histogram name="Translate.CompactInfobar.Language.PageNotIn"
+    enum="CLD3LanguageCode">
+  <owner>ramyasharma@google.com</owner>
+  <summary>
+    Records the hashcode of the language clicked on the menu to indicate the
+    page is not in the selected language.
+  </summary>
+</histogram>
+
+<histogram name="Translate.CompactInfobar.Language.Translate"
+    enum="CLD3LanguageCode">
+  <owner>ramyasharma@google.com</owner>
+  <summary>
+    Records the hashcode of the language clicked on the infobar.
+  </summary>
+</histogram>
+
 <histogram name="Translate.ContentLanguage" enum="TranslateLanguage">
   <owner>kenjibaheux@google.com</owner>
   <summary>
