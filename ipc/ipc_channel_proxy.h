@@ -387,9 +387,7 @@ class IPC_EXPORT ChannelProxy : public Sender, public base::NonThreadSafe {
   static void BindAssociatedInterfaceRequest(
       const AssociatedInterfaceFactory<Interface>& factory,
       mojo::ScopedInterfaceEndpointHandle handle) {
-    mojo::AssociatedInterfaceRequest<Interface> request;
-    request.Bind(std::move(handle));
-    factory.Run(std::move(request));
+    factory.Run(mojo::AssociatedInterfaceRequest<Interface>(std::move(handle)));
   }
 
   // Always called once immediately after Init.

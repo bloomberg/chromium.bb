@@ -59,9 +59,8 @@ AssociatedInterfaceProviderImpl::~AssociatedInterfaceProviderImpl() {}
 void AssociatedInterfaceProviderImpl::GetInterface(
     const std::string& name,
     mojo::ScopedInterfaceEndpointHandle handle) {
-  mojom::AssociatedInterfaceAssociatedRequest request;
-  request.Bind(std::move(handle));
-  proxy_->GetAssociatedInterface(name, std::move(request));
+  proxy_->GetAssociatedInterface(
+      name, mojom::AssociatedInterfaceAssociatedRequest(std::move(handle)));
 }
 
 void AssociatedInterfaceProviderImpl::OverrideBinderForTesting(

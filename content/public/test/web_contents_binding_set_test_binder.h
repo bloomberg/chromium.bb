@@ -25,9 +25,8 @@ class WebContentsBindingSetTestBinder : public WebContentsBindingSet::Binder {
   // Binder:
   void OnRequestForFrame(RenderFrameHost* render_frame_host,
                          mojo::ScopedInterfaceEndpointHandle handle) override {
-    mojo::AssociatedInterfaceRequest<Interface> request;
-    request.Bind(std::move(handle));
-    BindRequest(render_frame_host, std::move(request));
+    BindRequest(render_frame_host,
+                mojo::AssociatedInterfaceRequest<Interface>(std::move(handle)));
   }
 };
 

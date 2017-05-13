@@ -228,9 +228,7 @@ AssociatedInterfaceRequest<Interface> MakeRequest(
   ptr_info->set_handle(std::move(handle0));
   ptr_info->set_version(0);
 
-  AssociatedInterfaceRequest<Interface> request;
-  request.Bind(std::move(handle1));
-  return request;
+  return AssociatedInterfaceRequest<Interface>(std::move(handle1));
 }
 
 // Like MakeRequest() above, but it creates a dedicated message pipe. The
@@ -265,10 +263,7 @@ AssociatedInterfaceRequest<Interface> MakeIsolatedRequest(
 
   ptr->Bind(AssociatedInterfacePtrInfo<Interface>(std::move(endpoint0),
                                                   Interface::Version_));
-
-  AssociatedInterfaceRequest<Interface> request;
-  request.Bind(std::move(endpoint1));
-  return request;
+  return AssociatedInterfaceRequest<Interface>(std::move(endpoint1));
 }
 
 // |handle| is supposed to be the request of an associated interface. This

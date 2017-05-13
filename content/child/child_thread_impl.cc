@@ -737,9 +737,8 @@ void ChildThreadImpl::OnAssociatedInterfaceRequest(
     mojo::ScopedInterfaceEndpointHandle handle) {
   if (interface_name == mojom::RouteProvider::Name_) {
     DCHECK(!route_provider_binding_.is_bound());
-    mojom::RouteProviderAssociatedRequest request;
-    request.Bind(std::move(handle));
-    route_provider_binding_.Bind(std::move(request));
+    route_provider_binding_.Bind(
+        mojom::RouteProviderAssociatedRequest(std::move(handle)));
   } else {
     LOG(ERROR) << "Request for unknown Channel-associated interface: "
                << interface_name;

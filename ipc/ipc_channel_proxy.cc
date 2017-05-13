@@ -562,10 +562,8 @@ void ChannelProxy::GetGenericRemoteAssociatedInterface(
     const std::string& name,
     mojo::ScopedInterfaceEndpointHandle handle) {
   DCHECK(did_init_);
-  mojom::GenericInterfaceAssociatedRequest request;
-  request.Bind(std::move(handle));
-  context()->thread_safe_channel().GetAssociatedInterface(name,
-                                                          std::move(request));
+  context()->thread_safe_channel().GetAssociatedInterface(
+      name, mojom::GenericInterfaceAssociatedRequest(std::move(handle)));
 }
 
 void ChannelProxy::ClearIPCTaskRunner() {

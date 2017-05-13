@@ -191,8 +191,8 @@ bool ServiceWorkerDispatcherHost::OnMessageReceived(
 void ServiceWorkerDispatcherHost::AddMojoBinding(
     mojo::ScopedInterfaceEndpointHandle handle) {
   bindings_.AddBinding(
-      this, mojo::MakeAssociatedRequest<mojom::ServiceWorkerDispatcherHost>(
-                std::move(handle)));
+      this,
+      mojom::ServiceWorkerDispatcherHostAssociatedRequest(std::move(handle)));
 }
 
 bool ServiceWorkerDispatcherHost::Send(IPC::Message* message) {

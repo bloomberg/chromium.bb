@@ -31,8 +31,7 @@ class MockFrameHost : public mojom::FrameHost {
   }
 
   void Bind(mojo::ScopedInterfaceEndpointHandle handle) {
-    binding_.Bind(
-        mojo::MakeAssociatedRequest<mojom::FrameHost>(std::move(handle)));
+    binding_.Bind(mojom::FrameHostAssociatedRequest(std::move(handle)));
   }
 
  private:
