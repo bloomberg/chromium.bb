@@ -19,6 +19,7 @@
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/device_event_log/device_event_log.h"
@@ -90,12 +91,7 @@ scoped_refptr<HidDeviceInfo> CreateDeviceInfo(
 
 }  // namespace
 
-HidServiceMac::HidServiceMac(
-    scoped_refptr<base::SingleThreadTaskRunner> file_task_runner)
-    : file_task_runner_(file_task_runner), weak_factory_(this) {
-  task_runner_ = base::ThreadTaskRunnerHandle::Get();
-  DCHECK(task_runner_.get());
-
+HidServiceMac::HidServiceMac() : weak_factory_(this) {
   notify_port_.reset(IONotificationPortCreate(kIOMasterPortDefault));
   CFRunLoopAddSource(CFRunLoopGetMain(),
                      IONotificationPortGetRunLoopSource(notify_port_.get()),
@@ -137,29 +133,27 @@ void HidServiceMac::Connect(const HidDeviceId& device_id,
 
   const auto& map_entry = devices().find(device_id);
   if (map_entry == devices().end()) {
-    task_runner_->PostTask(FROM_HERE, base::Bind(callback, nullptr));
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::Bind(callback, nullptr));
     return;
   }
 
-  file_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&HidServiceMac::OpenOnBlockingThread, map_entry->second,
-                 task_runner_, weak_factory_.GetWeakPtr(), callback));
+  base::PostTaskWithTraitsAndReplyWithResult(
+      FROM_HERE, kBlockingTaskTraits,
+      base::Bind(&HidServiceMac::OpenOnBlockingThread, map_entry->second),
+      base::Bind(&HidServiceMac::DeviceOpened, weak_factory_.GetWeakPtr(),
+                 map_entry->second, callback));
 }
 
 // static
-void HidServiceMac::OpenOnBlockingThread(
-    scoped_refptr<HidDeviceInfo> device_info,
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-    base::WeakPtr<HidServiceMac> hid_service,
-    const ConnectCallback& callback) {
+base::ScopedCFTypeRef<IOHIDDeviceRef> HidServiceMac::OpenOnBlockingThread(
+    scoped_refptr<HidDeviceInfo> device_info) {
   base::ScopedCFTypeRef<CFDictionaryRef> matching_dict(
       IORegistryEntryIDMatching(device_info->device_id()));
   if (!matching_dict.get()) {
     HID_LOG(EVENT) << "Failed to create matching dictionary for ID: "
                    << device_info->device_id();
-    task_runner->PostTask(FROM_HERE, base::Bind(callback, nullptr));
-    return;
+    return base::ScopedCFTypeRef<IOHIDDeviceRef>();
   }
 
   // IOServiceGetMatchingService consumes a reference to the matching dictionary
@@ -169,36 +163,35 @@ void HidServiceMac::OpenOnBlockingThread(
   if (!service.get()) {
     HID_LOG(EVENT) << "IOService not found for ID: "
                    << device_info->device_id();
-    task_runner->PostTask(FROM_HERE, base::Bind(callback, nullptr));
-    return;
+    return base::ScopedCFTypeRef<IOHIDDeviceRef>();
   }
 
   base::ScopedCFTypeRef<IOHIDDeviceRef> hid_device(
       IOHIDDeviceCreate(kCFAllocatorDefault, service));
   if (!hid_device) {
     HID_LOG(EVENT) << "Unable to create IOHIDDevice object.";
-    task_runner->PostTask(FROM_HERE, base::Bind(callback, nullptr));
-    return;
+    return base::ScopedCFTypeRef<IOHIDDeviceRef>();
   }
 
   IOReturn result = IOHIDDeviceOpen(hid_device, kIOHIDOptionsTypeNone);
   if (result != kIOReturnSuccess) {
     HID_LOG(EVENT) << "Failed to open device: " << HexErrorCode(result);
-    task_runner->PostTask(FROM_HERE, base::Bind(callback, nullptr));
-    return;
+    return base::ScopedCFTypeRef<IOHIDDeviceRef>();
   }
 
-  task_runner->PostTask(
-      FROM_HERE, base::Bind(&HidServiceMac::DeviceOpened, hid_service,
-                            device_info, base::Passed(&hid_device), callback));
+  return hid_device;
 }
 
 void HidServiceMac::DeviceOpened(
     scoped_refptr<HidDeviceInfo> device_info,
-    base::ScopedCFTypeRef<IOHIDDeviceRef> hid_device,
-    const ConnectCallback& callback) {
-  callback.Run(make_scoped_refptr(new HidConnectionMac(
-      std::move(hid_device), std::move(device_info), file_task_runner_)));
+    const ConnectCallback& callback,
+    base::ScopedCFTypeRef<IOHIDDeviceRef> hid_device) {
+  if (hid_device) {
+    callback.Run(base::MakeShared<HidConnectionMac>(std::move(hid_device),
+                                                    std::move(device_info)));
+  } else {
+    callback.Run(nullptr);
+  }
 }
 
 // static

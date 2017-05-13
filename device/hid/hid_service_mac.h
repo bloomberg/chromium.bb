@@ -19,29 +19,22 @@
 #include "base/memory/weak_ptr.h"
 #include "device/hid/hid_service.h"
 
-namespace base {
-class SingleThreadTaskRunner;
-}
-
 namespace device {
 
 class HidServiceMac : public HidService {
  public:
-  HidServiceMac(scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner);
+  HidServiceMac();
   ~HidServiceMac() override;
 
   void Connect(const HidDeviceId& device_id,
                const ConnectCallback& connect) override;
 
  private:
-  static void OpenOnBlockingThread(
-      scoped_refptr<HidDeviceInfo> device_info,
-      scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-      base::WeakPtr<HidServiceMac> hid_service,
-      const ConnectCallback& callback);
+  static base::ScopedCFTypeRef<IOHIDDeviceRef> OpenOnBlockingThread(
+      scoped_refptr<HidDeviceInfo> device_info);
   void DeviceOpened(scoped_refptr<HidDeviceInfo> device_info,
-                    base::ScopedCFTypeRef<IOHIDDeviceRef> hid_device,
-                    const ConnectCallback& callback);
+                    const ConnectCallback& callback,
+                    base::ScopedCFTypeRef<IOHIDDeviceRef> hid_device);
 
   // IOService matching callbacks.
   static void FirstMatchCallback(void* context, io_iterator_t iterator);
@@ -54,13 +47,6 @@ class HidServiceMac : public HidService {
   base::mac::ScopedIONotificationPortRef notify_port_;
   base::mac::ScopedIOObject<io_iterator_t> devices_added_iterator_;
   base::mac::ScopedIOObject<io_iterator_t> devices_removed_iterator_;
-
-  // The task runner for the thread on which this service was created.
-  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
-
-  // The task runner for the FILE thread of the application using this service
-  // on which slow running I/O operations can be performed.
-  scoped_refptr<base::SingleThreadTaskRunner> file_task_runner_;
 
   base::WeakPtrFactory<HidServiceMac> weak_factory_;
 

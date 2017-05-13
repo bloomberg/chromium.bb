@@ -17,7 +17,7 @@
 #include "device/hid/hid_connection.h"
 
 namespace base {
-class SingleThreadTaskRunner;
+class SequencedTaskRunner;
 }
 
 namespace net {
@@ -28,10 +28,8 @@ namespace device {
 
 class HidConnectionMac : public HidConnection {
  public:
-  HidConnectionMac(
-      base::ScopedCFTypeRef<IOHIDDeviceRef> device,
-      scoped_refptr<HidDeviceInfo> device_info,
-      scoped_refptr<base::SingleThreadTaskRunner> file_task_runner);
+  HidConnectionMac(base::ScopedCFTypeRef<IOHIDDeviceRef> device,
+                   scoped_refptr<HidDeviceInfo> device_info);
 
  private:
   ~HidConnectionMac() override;
@@ -65,8 +63,8 @@ class HidConnectionMac : public HidConnection {
   void ReturnAsyncResult(const base::Closure& callback);
 
   base::ScopedCFTypeRef<IOHIDDeviceRef> device_;
-  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
-  scoped_refptr<base::SingleThreadTaskRunner> file_task_runner_;
+  const scoped_refptr<base::SequencedTaskRunner> task_runner_;
+  const scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
   std::vector<uint8_t> inbound_buffer_;
 
   std::queue<PendingHidReport> pending_reports_;
