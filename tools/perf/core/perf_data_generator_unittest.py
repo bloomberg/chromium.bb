@@ -89,7 +89,7 @@ class PerfDataGeneratorTest(unittest.TestCase):
         'swarming': {
           'ignore_task_failure': False,
           'dimension_sets': [{'os': 'SkyNet', 'id': 'T-850', 'pool': 'T-RIP'}],
-          'hard_timeout': 7200,
+          'hard_timeout': 9000,
           'can_use_on_swarming_builders': True,
           'expiration': 36000,
           'io_timeout': 3600,
@@ -111,7 +111,7 @@ class PerfDataGeneratorTest(unittest.TestCase):
         'swarming': {
           'ignore_task_failure': True,
           'dimension_sets': [{'os': 'SkyNet', 'id': 'T-850', 'pool': 'T-RIP'}],
-          'hard_timeout': 7200,
+          'hard_timeout': 9000,
           'can_use_on_swarming_builders': True,
           'expiration': 36000,
           'io_timeout': 3600,
