@@ -33,13 +33,13 @@ console-dir.html:16 Object
     c d: "c d"
     negZero: -0
     __proto__: Object
-console-dir.html:19 ƒ anonymous()
+console-dir.html:19 function anonymous()
     arguments: null
     caller: null
     length: 0
     name: ""
     prototype: Object
-    __proto__: ƒ ()
+    __proto__: function ()
     [[FunctionLocation]]: console-dir.html:19
     [[Scopes]]: Scopes[1]
 console-dir.html:23 inner
@@ -50,12 +50,12 @@ console-dir.html:27 Object
     foo: Object
         No Properties
     __proto__: Object
-console-dir.html:29 ƒ __proto__()
+console-dir.html:29 function __proto__()
     arguments: null
     caller: null
     length: 0
     name: "get __proto__"
-    __proto__: ƒ ()
+    __proto__: function ()
 console-dir.html:34 Uint8Array(400000000)
     [0 … 99999999]
     [100000000 … 199999999]

@@ -111,7 +111,7 @@ console-dir-es6.html:85 Array(27)
     0: class 
     1: class classWithWhitespace
     2: class FooClass
-    3: ƒ jump(x)
+    3: function jump(x)
     4: class BarClass
     5: class BarClass2
     6: class BarClass3
@@ -124,24 +124,24 @@ console-dir-es6.html:85 Array(27)
     13: () => {…}
     14: (...x) => { return 1 }
     15: (x, y, ...z) => { return 1 }
-    16: ƒ (...x)
-    17: ƒ (x, y, ...z)
-    18: ƒ ({a})
-    19: ƒ ([a])
-    20: ƒ ({a, b})
-    21: ƒ (...{a})
-    22: ƒ (a = (1), b)
-    23: ƒ (a = {x: (1)}, b)
-    24: ƒ (a = (x) => { return 1 }, b)
-    25: ƒ ({a: b})
-    26: ƒ (c = ")", {a: b})
+    16: function (...x)
+    17: function (x, y, ...z)
+    18: function ({a})
+    19: function ([a])
+    20: function ({a, b})
+    21: function (...{a})
+    22: function (a = (1), b)
+    23: function (a = {x: (1)}, b)
+    24: function (a = (x) => { return 1 }, b)
+    25: function ({a: b})
+    26: function (c = ")", {a: b})
     length: 27
     __proto__: Array(0)
 console-dir-es6.html:93 Array(4)
     0: badArrow(x = a => {…}
-    1: ƒ (a = ")
-    2: ƒ (a = function()
-    3: ƒ (a = class{ constructor()
+    1: function (a = ")
+    2: function (a = function()
+    3: function (a = class{ constructor()
     length: 4
     __proto__: Array(0)
 
