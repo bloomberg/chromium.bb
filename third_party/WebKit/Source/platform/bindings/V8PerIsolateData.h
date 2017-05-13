@@ -120,8 +120,6 @@ class PLATFORM_EXPORT V8PerIsolateData {
 
   StringCache* GetStringCache() { return string_cache_.get(); }
 
-  v8::Persistent<v8::Value>& EnsureLiveRoot();
-
   bool IsHandlingRecursionLevelError() const {
     return is_handling_recursion_level_error_;
   }
@@ -253,7 +251,6 @@ class PLATFORM_EXPORT V8PerIsolateData {
 
   std::unique_ptr<StringCache> string_cache_;
   std::unique_ptr<V8PrivateProperty> private_property_;
-  ScopedPersistent<v8::Value> live_root_;
   RefPtr<ScriptState> script_regexp_script_state_;
 
   bool constructor_mode_;
