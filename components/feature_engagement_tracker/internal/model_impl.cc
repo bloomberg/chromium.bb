@@ -50,7 +50,6 @@ const Event* ModelImpl::GetEvent(const std::string& event_name) const {
 
 void ModelImpl::IncrementEvent(const std::string& event_name,
                                uint32_t current_day) {
-  // TODO(nyquist): Add support for pending events.
   // TODO(nyquist): Track this event in UMA.
   DCHECK(ready_);
 
@@ -81,8 +80,7 @@ void ModelImpl::OnStoreLoaded(const OnModelInitializationFinished& callback,
                               bool success,
                               std::unique_ptr<std::vector<Event>> events) {
   if (!success) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
-                                                  base::Bind(callback, false));
+    callback.Run(false);
     return;
   }
 
@@ -116,9 +114,7 @@ void ModelImpl::OnStoreLoaded(const OnModelInitializationFinished& callback,
   }
 
   ready_ = true;
-
-  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
-                                                base::Bind(callback, true));
+  callback.Run(true);
 }
 
 Event& ModelImpl::GetNonConstEvent(const std::string& event_name) {

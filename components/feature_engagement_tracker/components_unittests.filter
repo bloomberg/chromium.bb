@@ -6,6 +6,7 @@ FailingInitFeatureEngagementTrackerImplTest.*
 FeatureConfigConditionValidatorTest.*
 FeatureConfigStorageValidatorTest.*
 FeatureEngagementTrackerImplTest.*
+InitAwareModelTest.*
 InMemoryStoreTest.*
 LoadFailingModelImplTest.*
 ModelImplTest.*

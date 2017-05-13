@@ -10,8 +10,8 @@
 #include "base/callback.h"
 #include "base/feature_list.h"
 #include "base/memory/ptr_util.h"
-#include "base/message_loop/message_loop.h"
-#include "base/run_loop.h"
+#include "base/test/test_simple_task_runner.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "components/feature_engagement_tracker/internal/editable_configuration.h"
 #include "components/feature_engagement_tracker/internal/in_memory_store.h"
 #include "components/feature_engagement_tracker/internal/never_storage_validator.h"
@@ -129,7 +129,10 @@ std::unique_ptr<TestInMemoryStore> CreatePrefilledStore() {
 class ModelImplTest : public ::testing::Test {
  public:
   ModelImplTest()
-      : got_initialize_callback_(false), initialize_callback_result_(false) {}
+      : task_runner_(new base::TestSimpleTaskRunner),
+        handle_(task_runner_),
+        got_initialize_callback_(false),
+        initialize_callback_result_(false) {}
 
   void SetUp() override {
     std::unique_ptr<TestInMemoryStore> store = CreateStore();
@@ -156,14 +159,14 @@ class ModelImplTest : public ::testing::Test {
   }
 
  protected:
+  scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
+  base::ThreadTaskRunnerHandle handle_;
+
   std::unique_ptr<ModelImpl> model_;
   TestInMemoryStore* store_;
   TestStorageValidator* storage_validator_;
   bool got_initialize_callback_;
   bool initialize_callback_result_;
-
- private:
-  base::MessageLoop message_loop_;
 };
 
 class LoadFailingModelImplTest : public ModelImplTest {
@@ -178,11 +181,24 @@ class LoadFailingModelImplTest : public ModelImplTest {
 
 }  // namespace
 
+TEST_F(ModelImplTest, InitializeShouldBeReadyImmediatelyAfterCallback) {
+  model_->Initialize(base::Bind(&ModelImplTest::OnModelInitializationFinished,
+                                base::Unretained(this)),
+                     1000u);
+
+  // Only run pending tasks on the queue.  Do not run any subsequently queued
+  // tasks that result from running the current pending tasks.
+  task_runner_->RunPendingTasks();
+
+  EXPECT_TRUE(got_initialize_callback_);
+  EXPECT_TRUE(model_->IsReady());
+}
+
 TEST_F(ModelImplTest, InitializeShouldLoadEntries) {
   model_->Initialize(base::Bind(&ModelImplTest::OnModelInitializationFinished,
                                 base::Unretained(this)),
                      1000u);
-  base::RunLoop().RunUntilIdle();
+  task_runner_->RunUntilIdle();
   EXPECT_TRUE(model_->IsReady());
   EXPECT_TRUE(got_initialize_callback_);
   EXPECT_TRUE(initialize_callback_result_);
@@ -222,7 +238,7 @@ TEST_F(ModelImplTest, InitializeShouldOnlyLoadEntriesThatShouldBeKept) {
   model_->Initialize(base::Bind(&ModelImplTest::OnModelInitializationFinished,
                                 base::Unretained(this)),
                      5u);
-  base::RunLoop().RunUntilIdle();
+  task_runner_->RunUntilIdle();
   EXPECT_TRUE(model_->IsReady());
   EXPECT_TRUE(got_initialize_callback_);
   EXPECT_TRUE(initialize_callback_result_);
@@ -257,7 +273,7 @@ TEST_F(ModelImplTest, RetrievingNewEventsShouldYieldNullptr) {
   model_->Initialize(base::Bind(&ModelImplTest::OnModelInitializationFinished,
                                 base::Unretained(this)),
                      1000u);
-  base::RunLoop().RunUntilIdle();
+  task_runner_->RunUntilIdle();
   EXPECT_TRUE(model_->IsReady());
 
   const Event* no_event = model_->GetEvent("no");
@@ -269,7 +285,7 @@ TEST_F(ModelImplTest, IncrementingNonExistingEvent) {
   model_->Initialize(base::Bind(&ModelImplTest::OnModelInitializationFinished,
                                 base::Unretained(this)),
                      1000u);
-  base::RunLoop().RunUntilIdle();
+  task_runner_->RunUntilIdle();
   EXPECT_TRUE(model_->IsReady());
 
   // Incrementing the event should work even if it does not exist.
@@ -296,7 +312,7 @@ TEST_F(ModelImplTest, IncrementingNonExistingEventMultipleDays) {
   model_->Initialize(base::Bind(&ModelImplTest::OnModelInitializationFinished,
                                 base::Unretained(this)),
                      1000u);
-  base::RunLoop().RunUntilIdle();
+  task_runner_->RunUntilIdle();
   EXPECT_TRUE(model_->IsReady());
 
   model_->IncrementEvent("nonexisting", 1u);
@@ -316,7 +332,7 @@ TEST_F(ModelImplTest, IncrementingNonExistingEventWithoutStoring) {
   model_->Initialize(base::Bind(&ModelImplTest::OnModelInitializationFinished,
                                 base::Unretained(this)),
                      1000u);
-  base::RunLoop().RunUntilIdle();
+  task_runner_->RunUntilIdle();
   EXPECT_TRUE(model_->IsReady());
 
   storage_validator_->SetShouldStore(false);
@@ -332,7 +348,7 @@ TEST_F(ModelImplTest, IncrementingExistingEventWithoutStoring) {
   model_->Initialize(base::Bind(&ModelImplTest::OnModelInitializationFinished,
                                 base::Unretained(this)),
                      1000u);
-  base::RunLoop().RunUntilIdle();
+  task_runner_->RunUntilIdle();
   EXPECT_TRUE(model_->IsReady());
 
   // Write one event before turning off storage.
@@ -354,7 +370,7 @@ TEST_F(ModelImplTest, IncrementingSingleDayExistingEvent) {
   model_->Initialize(base::Bind(&ModelImplTest::OnModelInitializationFinished,
                                 base::Unretained(this)),
                      1000u);
-  base::RunLoop().RunUntilIdle();
+  task_runner_->RunUntilIdle();
   EXPECT_TRUE(model_->IsReady());
 
   // |foo| is inserted into the store with a count of 1 at day 1.
@@ -375,7 +391,7 @@ TEST_F(ModelImplTest, IncrementingSingleDayExistingEventTwice) {
   model_->Initialize(base::Bind(&ModelImplTest::OnModelInitializationFinished,
                                 base::Unretained(this)),
                      1000u);
-  base::RunLoop().RunUntilIdle();
+  task_runner_->RunUntilIdle();
   EXPECT_TRUE(model_->IsReady());
 
   // |foo| is inserted into the store with a count of 1 at day 1, so
@@ -392,7 +408,7 @@ TEST_F(ModelImplTest, IncrementingExistingMultiDayEvent) {
   model_->Initialize(base::Bind(&ModelImplTest::OnModelInitializationFinished,
                                 base::Unretained(this)),
                      1000u);
-  base::RunLoop().RunUntilIdle();
+  task_runner_->RunUntilIdle();
   EXPECT_TRUE(model_->IsReady());
 
   // |bar| is inserted into the store with a count of 3 at day 2. Incrementing
@@ -409,7 +425,7 @@ TEST_F(ModelImplTest, IncrementingExistingMultiDayEventNewDay) {
   model_->Initialize(base::Bind(&ModelImplTest::OnModelInitializationFinished,
                                 base::Unretained(this)),
                      1000u);
-  base::RunLoop().RunUntilIdle();
+  task_runner_->RunUntilIdle();
   EXPECT_TRUE(model_->IsReady());
 
   // |bar| does not contain entries for day 10, so incrementing should create
@@ -428,7 +444,7 @@ TEST_F(LoadFailingModelImplTest, FailedInitializeInformsCaller) {
   model_->Initialize(base::Bind(&ModelImplTest::OnModelInitializationFinished,
                                 base::Unretained(this)),
                      1000u);
-  base::RunLoop().RunUntilIdle();
+  task_runner_->RunUntilIdle();
   EXPECT_FALSE(model_->IsReady());
   EXPECT_TRUE(got_initialize_callback_);
   EXPECT_FALSE(initialize_callback_result_);
