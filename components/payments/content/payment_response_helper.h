@@ -16,8 +16,6 @@ namespace payments {
 class PaymentRequestDelegate;
 class PaymentRequestSpec;
 
-// TODO(sebsg): Asynchronously normalize the billing and shipping addresses
-// before adding them to the PaymentResponse.
 // A helper class to facilitate the creation of the PaymentResponse.
 class PaymentResponseHelper : public PaymentInstrument::Delegate,
                               public AddressNormalizer::Delegate {
