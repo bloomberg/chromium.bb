@@ -292,7 +292,6 @@ if (is_android) {
   junit_binary("device_junit_tests") {
     java_files = [
       "gamepad/android/junit/src/org/chromium/device/gamepad/GamepadMappingsTest.java",
-      "generic_sensor/android/junit/src/org/chromium/device/sensors/PlatformSensorAndProviderTest.java",
       "geolocation/android/junit/src/org/chromium/device/geolocation/LocationProviderTest.java",
       "nfc/android/junit/src/org/chromium/device/nfc/NFCTest.java",
     ]
@@ -303,8 +302,6 @@ if (is_android) {
       "//base:base_java",
       "//base:base_java_test_support",
       "//device/gamepad:java",
-      "//device/generic_sensor:java",
-      "//device/generic_sensor/public/interfaces:interfaces_java",
       "//device/geolocation:geolocation_java",
       "//device/geolocation:geolocation_java_test_support",
       "//device/nfc:mojo_bindings_java",

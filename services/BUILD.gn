@@ -49,3 +49,17 @@ catalog("service_unittests_catalog") {
     "//services/video_capture:tests_catalog",
   ]
 }
+
+if (is_android) {
+  junit_binary("service_junit_tests") {
+    java_files = [ "device/generic_sensor/android/junit/src/org/chromium/device/sensors/PlatformSensorAndProviderTest.java" ]
+    deps = [
+      "//base:base_java",
+      "//base:base_java_test_support",
+      "//device/generic_sensor:java",
+      "//device/generic_sensor/public/interfaces:interfaces_java",
+      "//mojo/public/java:bindings_java",
+      "//third_party/android_tools:android_support_annotations_java",
+    ]
+  }
+}

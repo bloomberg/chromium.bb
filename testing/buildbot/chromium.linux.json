@@ -1557,6 +1557,9 @@
         "test": "net_junit_tests"
       },
       {
+        "test": "service_junit_tests"
+      },
+      {
         "test": "ui_junit_tests"
       },
       {
@@ -3133,6 +3136,9 @@
       },
       {
         "test": "net_junit_tests"
+      },
+      {
+        "test": "service_junit_tests"
       },
       {
         "test": "ui_junit_tests"
