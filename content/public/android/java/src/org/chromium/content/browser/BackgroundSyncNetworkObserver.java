@@ -86,8 +86,7 @@ class BackgroundSyncNetworkObserver implements NetworkChangeNotifierAutoDetect.O
         mNativePtrs.add(nativePtr);
 
         nativeNotifyConnectionTypeChanged(
-                nativePtr, NetworkChangeNotifierAutoDetect.convertToConnectionType(
-                                   mNotifier.getCurrentNetworkState()));
+                nativePtr, mNotifier.getCurrentNetworkState().getConnectionType());
     }
 
     @CalledByNative
@@ -110,7 +109,7 @@ class BackgroundSyncNetworkObserver implements NetworkChangeNotifierAutoDetect.O
     }
 
     @Override
-    public void onMaxBandwidthChanged(double maxBandwidthMbps) {}
+    public void onConnectionSubtypeChanged(int newConnectionSubtype) {}
     @Override
     public void onNetworkConnect(long netId, int connectionType) {}
     @Override
