@@ -12,15 +12,13 @@ struct TestDeviceInfo {
   string name;
   string serial_number;
   url.mojom.Url landing_page;
-  url.mojom.Origin allowed_origin;
 };
 
 interface UsbInternalsPageHandler {
   // Simulate the connection of a new device with the given properties.
   AddDeviceForTesting(string name,
                       string serial_number,
-                      string landing_page,
-                      string allowed_origin) => (bool success, string message);
+                      string landing_page) => (bool success, string message);
 
   // Simulate the disconnection of a device added with the function above.
   RemoveDeviceForTesting(string guid) => ();

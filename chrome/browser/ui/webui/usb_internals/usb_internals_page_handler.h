@@ -22,7 +22,6 @@ class UsbInternalsPageHandler : public mojom::UsbInternalsPageHandler,
       const std::string& name,
       const std::string& serial_number,
       const std::string& landing_page,
-      const std::string& allowed_origin,
       const AddDeviceForTestingCallback& callback) override;
   void RemoveDeviceForTesting(
       const std::string& guid,

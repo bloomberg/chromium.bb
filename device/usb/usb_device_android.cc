@@ -195,10 +195,7 @@ void UsbDeviceAndroid::OnReadDescriptors(
 
 void UsbDeviceAndroid::OnReadWebUsbDescriptors(
     scoped_refptr<UsbDeviceHandle> device_handle,
-    std::unique_ptr<WebUsbAllowedOrigins> allowed_origins,
     const GURL& landing_page) {
-  if (allowed_origins)
-    webusb_allowed_origins_ = std::move(allowed_origins);
   if (landing_page.is_valid())
     webusb_landing_page_ = landing_page;
 
