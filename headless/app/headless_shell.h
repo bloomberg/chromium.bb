@@ -96,10 +96,12 @@ class HeadlessShell : public HeadlessWebContents::Observer,
   GURL url_;
   HeadlessBrowser* browser_;  // Not owned.
   std::unique_ptr<HeadlessDevToolsClient> devtools_client_;
+#if !defined(CHROME_MULTIPLE_DLL_CHILD)
   HeadlessWebContents* web_contents_;
+  HeadlessBrowserContext* browser_context_;
+#endif
   bool processed_page_ready_;
   std::unique_ptr<base::FileProxy> file_proxy_;
-  HeadlessBrowserContext* browser_context_;
   std::unique_ptr<DeterministicDispatcher> deterministic_dispatcher_;
   base::WeakPtrFactory<HeadlessShell> weak_factory_;
 
