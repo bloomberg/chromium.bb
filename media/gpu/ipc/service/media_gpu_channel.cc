@@ -89,9 +89,11 @@ class MediaGpuChannelFilter : public IPC::MessageFilter {
   base::UnguessableToken channel_token_;
 };
 
-MediaGpuChannel::MediaGpuChannel(gpu::GpuChannel* channel,
-                                 const base::UnguessableToken& channel_token)
-    : channel_(channel) {
+MediaGpuChannel::MediaGpuChannel(
+    gpu::GpuChannel* channel,
+    const base::UnguessableToken& channel_token,
+    const AndroidOverlayMojoFactoryCB& overlay_factory_cb)
+    : channel_(channel), overlay_factory_cb_(overlay_factory_cb) {
   channel_->AddFilter(new MediaGpuChannelFilter(channel_token));
 }
 
@@ -149,7 +151,8 @@ void MediaGpuChannel::OnCreateVideoDecoder(
     return;
   }
   GpuVideoDecodeAccelerator* decoder = new GpuVideoDecodeAccelerator(
-      decoder_route_id, stub, stub->channel()->io_task_runner());
+      decoder_route_id, stub, stub->channel()->io_task_runner(),
+      overlay_factory_cb_);
   bool succeeded = decoder->Initialize(config);
   GpuCommandBufferMsg_CreateVideoDecoder::WriteReplyParams(reply_message,
                                                            succeeded);

@@ -242,6 +242,7 @@ AndroidVideoDecodeAccelerator::AndroidVideoDecodeAccelerator(
     std::unique_ptr<AndroidVideoSurfaceChooser> surface_chooser,
     const MakeGLContextCurrentCallback& make_context_current_cb,
     const GetGLES2DecoderCallback& get_gles2_decoder_cb,
+    const AndroidOverlayMojoFactoryCB& overlay_factory_cb,
     const PlatformConfig& platform_config)
     : client_(nullptr),
       codec_allocator_(codec_allocator),
@@ -259,6 +260,7 @@ AndroidVideoDecodeAccelerator::AndroidVideoDecodeAccelerator(
       defer_surface_creation_(false),
       surface_chooser_(std::move(surface_chooser)),
       platform_config_(platform_config),
+      overlay_factory_cb_(overlay_factory_cb),
       weak_this_factory_(this) {}
 
 AndroidVideoDecodeAccelerator::~AndroidVideoDecodeAccelerator() {

@@ -157,7 +157,8 @@ class GpuVideoDecodeAccelerator::MessageFilter : public IPC::MessageFilter {
 GpuVideoDecodeAccelerator::GpuVideoDecodeAccelerator(
     int32_t host_route_id,
     gpu::GpuCommandBufferStub* stub,
-    const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner)
+    const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner,
+    const AndroidOverlayMojoFactoryCB& overlay_factory_cb)
     : host_route_id_(host_route_id),
       stub_(stub),
       texture_target_(0),
@@ -166,6 +167,7 @@ GpuVideoDecodeAccelerator::GpuVideoDecodeAccelerator(
                       base::WaitableEvent::InitialState::NOT_SIGNALED),
       child_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       io_task_runner_(io_task_runner),
+      overlay_factory_cb_(overlay_factory_cb),
       weak_factory_for_io_(this) {
   DCHECK(stub_);
   stub_->AddDestructionObserver(this);
@@ -359,7 +361,7 @@ bool GpuVideoDecodeAccelerator::Initialize(
   std::unique_ptr<GpuVideoDecodeAcceleratorFactory> vda_factory =
       GpuVideoDecodeAcceleratorFactory::CreateWithGLES2Decoder(
           get_gl_context_cb_, make_context_current_cb_, bind_image_cb_,
-          get_gles2_decoder_cb_);
+          get_gles2_decoder_cb_, overlay_factory_cb_);
 
   if (!vda_factory) {
     LOG(ERROR) << "Failed creating the VDA factory";

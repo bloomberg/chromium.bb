@@ -333,7 +333,7 @@ class AndroidVideoDecodeAcceleratorTest : public testing::Test {
         &codec_allocator_, std::move(chooser_that_is_usually_null_),
         base::Bind(&MakeContextCurrent),
         base::Bind(&GetGLES2Decoder, gl_decoder_.AsWeakPtr()),
-        platform_config_);
+        AndroidOverlayMojoFactoryCB(), platform_config_);
     vda_.reset(avda);
 
     bool result = vda_->Initialize(config_, &client_);

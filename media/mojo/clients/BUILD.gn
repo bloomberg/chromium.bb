@@ -16,6 +16,8 @@ source_set("clients") {
 
     "//media/test/*",
 
+    "//content/gpu:*",
+
     # TODO(liberato): can we avoid this?
     "//content/test/*",
   ]

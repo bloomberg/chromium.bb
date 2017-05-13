@@ -36,6 +36,7 @@
 
 #if defined(OS_ANDROID)
 #include "media/base/android/media_drm_bridge_client.h"
+#include "media/mojo/clients/mojo_android_overlay.h"
 #endif
 
 namespace content {
@@ -284,6 +285,11 @@ void GpuChildThread::CreateGpuService(
   service_factory_.reset(new GpuServiceFactory(
       gpu_service_->media_gpu_channel_manager()->AsWeakPtr()));
 
+#if defined(OS_ANDROID)
+  gpu_service_->media_gpu_channel_manager()->SetOverlayFactory(
+      base::Bind(&GpuChildThread::CreateAndroidOverlay));
+#endif
+
   if (GetContentClient()->gpu())  // NULL in tests.
     GetContentClient()->gpu()->GpuServiceInitialized(gpu_preferences);
 
@@ -304,5 +310,18 @@ void GpuChildThread::BindServiceFactoryRequest(
   service_factory_bindings_.AddBinding(service_factory_.get(),
                                        std::move(request));
 }
+
+#if defined(OS_ANDROID)
+// static
+std::unique_ptr<media::AndroidOverlay> GpuChildThread::CreateAndroidOverlay(
+    const base::UnguessableToken& routing_token,
+    media::AndroidOverlayConfig config) {
+  media::mojom::AndroidOverlayProviderPtr provider_ptr;
+  ChildThread::Get()->GetConnector()->BindInterface(
+      content::mojom::kBrowserServiceName, &provider_ptr);
+  return base::MakeUnique<media::MojoAndroidOverlay>(
+      std::move(provider_ptr), std::move(config), routing_token);
+}
+#endif
 
 }  // namespace content
