@@ -6,7 +6,6 @@
 
 #include <limits>
 
-#include "ash/default_accessibility_delegate.h"
 #include "ash/gpu_support_stub.h"
 #include "ash/palette_delegate.h"
 #include "ash/public/cpp/shell_window_ids.h"
@@ -16,6 +15,7 @@
 #include "ash/shell.h"
 #include "ash/shell_observer.h"
 #include "ash/system/tray/system_tray_notifier.h"
+#include "ash/test/test_accessibility_delegate.h"
 #include "ash/test/test_keyboard_ui.h"
 #include "ash/test/test_session_state_delegate.h"
 #include "ash/test/test_system_tray_delegate.h"
@@ -123,7 +123,7 @@ TestSessionStateDelegate* TestShellDelegate::CreateSessionStateDelegate() {
 }
 
 AccessibilityDelegate* TestShellDelegate::CreateAccessibilityDelegate() {
-  return new DefaultAccessibilityDelegate();
+  return new TestAccessibilityDelegate();
 }
 
 std::unique_ptr<PaletteDelegate> TestShellDelegate::CreatePaletteDelegate() {

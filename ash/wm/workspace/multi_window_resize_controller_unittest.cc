@@ -9,10 +9,10 @@
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/shell_test_api.h"
+#include "ash/test/workspace_controller_test_api.h"
 #include "ash/test/workspace_event_handler_test_helper.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/workspace_controller.h"
-#include "ash/wm/workspace_controller_test_helper.h"
 #include "ash/wm_window.h"
 #include "base/stl_util.h"
 #include "ui/aura/test/test_window_delegate.h"
@@ -57,7 +57,7 @@ class MultiWindowResizeControllerTest : public test::AshTestBase {
     WorkspaceController* wc =
         test::ShellTestApi(Shell::Get()).workspace_controller();
     WorkspaceEventHandler* event_handler =
-        WorkspaceControllerTestHelper(wc).GetEventHandler();
+        test::WorkspaceControllerTestApi(wc).GetEventHandler();
     resize_controller_ =
         WorkspaceEventHandlerTestHelper(event_handler).resize_controller();
   }

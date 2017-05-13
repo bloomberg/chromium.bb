@@ -93,6 +93,8 @@ static_library("test_support_common") {
     "status_area_widget_test_helper.h",
     "task_switch_time_tracker_test_api.cc",
     "task_switch_time_tracker_test_api.h",
+    "test_accessibility_delegate.cc",
+    "test_accessibility_delegate.h",
     "test_activation_delegate.cc",
     "test_activation_delegate.h",
     "test_app_list_view_presenter_impl.cc",
@@ -129,6 +131,8 @@ static_library("test_support_common") {
     "wallpaper_controller_test_api.h",
     "wm_window_test_api.cc",
     "wm_window_test_api.h",
+    "workspace_controller_test_api.cc",
+    "workspace_controller_test_api.h",
     "workspace_event_handler_test_helper.cc",
     "workspace_event_handler_test_helper.h",
   ]
