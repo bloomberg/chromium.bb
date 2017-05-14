@@ -111,23 +111,49 @@ static String SelectMisspellingAsync(LocalFrame* selected_frame,
     return String();
 
   // Caret and range selections always return valid normalized ranges.
-  Range* selection_range = CreateRange(selection.ToNormalizedEphemeralRange());
-  DocumentMarkerVector markers =
-      selected_frame->GetDocument()->Markers().MarkersInRange(
-          EphemeralRange(selection_range),
-          DocumentMarker::MisspellingMarkers());
-  if (markers.size() != 1)
-    return String();
-  description = markers[0]->Description();
+  const EphemeralRange& selection_range =
+      selection.ToNormalizedEphemeralRange();
 
-  // Cloning a range fails only for invalid ranges.
-  Range* marker_range = selection_range->cloneRange();
-  marker_range->setStart(marker_range->startContainer(),
-                         markers[0]->StartOffset());
-  marker_range->setEnd(marker_range->endContainer(), markers[0]->EndOffset());
+  Node* const selection_start_container =
+      selection_range.StartPosition().ComputeContainerNode();
+  Node* const selection_end_container =
+      selection_range.EndPosition().ComputeContainerNode();
+
+  // We don't currently support the case where a misspelling spans multiple
+  // nodes
+  if (selection_start_container != selection_end_container)
+    return String();
+
+  const unsigned selection_start_offset =
+      selection_range.StartPosition().ComputeOffsetInContainerNode();
+  const unsigned selection_end_offset =
+      selection_range.EndPosition().ComputeOffsetInContainerNode();
+
+  const DocumentMarkerVector& markers_in_node =
+      selected_frame->GetDocument()->Markers().MarkersFor(
+          selection_start_container, DocumentMarker::MisspellingMarkers());
+
+  const auto marker_it =
+      std::find_if(markers_in_node.begin(), markers_in_node.end(),
+                   [=](const DocumentMarker* marker) {
+                     return marker->StartOffset() < selection_end_offset &&
+                            marker->EndOffset() > selection_start_offset;
+                   });
+  if (marker_it == markers_in_node.end())
+    return String();
+
+  const DocumentMarker* const found_marker = *marker_it;
+  description = found_marker->Description();
+
+  Range* const marker_range =
+      Range::Create(*selected_frame->GetDocument(), selection_start_container,
+                    found_marker->StartOffset(), selection_start_container,
+                    found_marker->EndOffset());
 
   if (marker_range->GetText().StripWhiteSpace(&IsWhiteSpaceOrPunctuation) !=
-      selection_range->GetText().StripWhiteSpace(&IsWhiteSpaceOrPunctuation))
+      CreateRange(selection_range)
+          ->GetText()
+          .StripWhiteSpace(&IsWhiteSpaceOrPunctuation))
     return String();
 
   return marker_range->GetText();

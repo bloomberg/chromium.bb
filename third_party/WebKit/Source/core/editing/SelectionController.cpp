@@ -519,14 +519,14 @@ void SelectionController::SelectClosestMisspellingFromHitTestResult(
   if (pos.IsNotNull()) {
     const PositionInFlatTree& marker_position =
         pos.DeepEquivalent().ParentAnchoredEquivalent();
-    DocumentMarkerVector markers =
-        inner_node->GetDocument().Markers().MarkersInRange(
-            EphemeralRange(ToPositionInDOMTree(marker_position)),
+    const DocumentMarker* const marker =
+        inner_node->GetDocument().Markers().MarkerAtPosition(
+            ToPositionInDOMTree(marker_position),
             DocumentMarker::MisspellingMarkers());
-    if (markers.size() == 1) {
+    if (marker) {
       Node* container_node = marker_position.ComputeContainerNode();
-      const PositionInFlatTree start(container_node, markers[0]->StartOffset());
-      const PositionInFlatTree end(container_node, markers[0]->EndOffset());
+      const PositionInFlatTree start(container_node, marker->StartOffset());
+      const PositionInFlatTree end(container_node, marker->EndOffset());
       new_selection = CreateVisibleSelection(
           SelectionInFlatTree::Builder().Collapse(start).Extend(end).Build());
     }
@@ -1018,13 +1018,10 @@ static bool HitTestResultIsMisspelled(const HitTestResult& result) {
       inner_node->GetLayoutObject()->PositionForPoint(result.LocalPoint()));
   if (pos.IsNull())
     return false;
-  return inner_node->GetDocument()
-             .Markers()
-             .MarkersInRange(
-                 EphemeralRange(
-                     pos.DeepEquivalent().ParentAnchoredEquivalent()),
-                 DocumentMarker::MisspellingMarkers())
-             .size() > 0;
+  const Position& marker_position =
+      pos.DeepEquivalent().ParentAnchoredEquivalent();
+  return inner_node->GetDocument().Markers().MarkerAtPosition(
+      marker_position, DocumentMarker::MisspellingMarkers());
 }
 
 void SelectionController::SendContextMenuEvent(

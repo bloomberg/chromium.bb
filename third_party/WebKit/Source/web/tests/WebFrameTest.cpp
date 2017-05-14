@@ -321,6 +321,36 @@ class WebFrameTest : public ::testing::Test {
                                         WebFrame* parent,
                                         WebFrame* new_child);
 
+  int NumMarkersInRange(const Document* document,
+                        const EphemeralRange& range,
+                        DocumentMarker::MarkerTypes marker_types) {
+    Node* start_container = range.StartPosition().ComputeContainerNode();
+    unsigned start_offset = static_cast<unsigned>(
+        range.StartPosition().ComputeOffsetInContainerNode());
+
+    Node* end_container = range.EndPosition().ComputeContainerNode();
+    unsigned end_offset = static_cast<unsigned>(
+        range.EndPosition().ComputeOffsetInContainerNode());
+
+    int node_count = 0;
+    for (Node& node : range.Nodes()) {
+      const DocumentMarkerVector& markers_in_node =
+          document->Markers().MarkersFor(&node, marker_types);
+      node_count += std::count_if(
+          markers_in_node.begin(), markers_in_node.end(),
+          [start_offset, end_offset, &node, &start_container,
+           &end_container](const DocumentMarker* marker) {
+            if (node == start_container && marker->EndOffset() <= start_offset)
+              return false;
+            if (node == end_container && marker->StartOffset() >= end_offset)
+              return false;
+            return true;
+          });
+    }
+
+    return node_count;
+  }
+
   std::string base_url_;
   std::string not_base_url_;
   std::string chrome_url_;
@@ -6611,9 +6641,8 @@ TEST_P(ParameterizedWebFrameTest, ReplaceMisspelledRange) {
           .ToNormalizedEphemeralRange();
 
   EXPECT_EQ(1, textcheck.NumberOfTimesChecked());
-  EXPECT_EQ(1U, document->Markers()
-                    .MarkersInRange(selection_range, DocumentMarker::kSpelling)
-                    .size());
+  EXPECT_EQ(1, NumMarkersInRange(document, selection_range,
+                                 DocumentMarker::kSpelling));
 
   frame->ReplaceMisspelledRange("welcome");
   EXPECT_EQ("_welcome_.",
@@ -6660,9 +6689,8 @@ TEST_P(ParameterizedWebFrameTest, RemoveSpellingMarkers) {
           .ComputeVisibleSelectionInDOMTreeDeprecated()
           .ToNormalizedEphemeralRange();
 
-  EXPECT_EQ(0U, document->Markers()
-                    .MarkersInRange(selection_range, DocumentMarker::kSpelling)
-                    .size());
+  EXPECT_EQ(0, NumMarkersInRange(document, selection_range,
+                                 DocumentMarker::kSpelling));
 }
 
 static void GetSpellingMarkerOffsets(WebVector<unsigned>* offsets,

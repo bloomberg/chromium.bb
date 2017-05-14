@@ -802,17 +802,39 @@ void SpellChecker::ReplaceMisspelledRange(const String& text) {
                                    .ToNormalizedEphemeralRange();
   if (caret_range.IsNull())
     return;
-  DocumentMarkerVector markers =
-      GetFrame().GetDocument()->Markers().MarkersInRange(
-          caret_range, DocumentMarker::MisspellingMarkers());
-  if (markers.size() < 1 ||
-      markers[0]->StartOffset() >= markers[0]->EndOffset())
+
+  Node* const caret_start_container =
+      caret_range.StartPosition().ComputeContainerNode();
+  Node* const caret_end_container =
+      caret_range.EndPosition().ComputeContainerNode();
+
+  // We don't currently support the case where a misspelling spans multiple
+  // nodes
+  if (caret_start_container != caret_end_container)
     return;
+
+  const unsigned caret_start_offset =
+      caret_range.StartPosition().ComputeOffsetInContainerNode();
+  const unsigned caret_end_offset =
+      caret_range.EndPosition().ComputeOffsetInContainerNode();
+
+  const DocumentMarkerVector& markers_in_node =
+      GetFrame().GetDocument()->Markers().MarkersFor(
+          caret_start_container, DocumentMarker::MisspellingMarkers());
+
+  const auto marker_it =
+      std::find_if(markers_in_node.begin(), markers_in_node.end(),
+                   [=](const DocumentMarker* marker) {
+                     return marker->StartOffset() < caret_end_offset &&
+                            marker->EndOffset() > caret_start_offset;
+                   });
+  if (marker_it == markers_in_node.end())
+    return;
+
+  const DocumentMarker* found_marker = *marker_it;
   EphemeralRange marker_range = EphemeralRange(
-      Position(caret_range.StartPosition().ComputeContainerNode(),
-               markers[0]->StartOffset()),
-      Position(caret_range.EndPosition().ComputeContainerNode(),
-               markers[0]->EndOffset()));
+      Position(caret_start_container, found_marker->StartOffset()),
+      Position(caret_start_container, found_marker->EndOffset()));
   if (marker_range.IsNull())
     return;
 
