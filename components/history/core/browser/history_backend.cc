@@ -2035,7 +2035,8 @@ bool HistoryBackend::GetFaviconBitmapResultsForBestMatch(
                               &score);
     if (score > highest_score) {
       highest_score = score;
-      best_favicon_id = candidate_favicon_ids[i], best_bitmap_ids.clear();
+      best_favicon_id = candidate_favicon_ids[i];
+      best_bitmap_ids.clear();
       for (size_t j = 0; j < candidate_bitmap_indices.size(); ++j) {
         size_t candidate_index = candidate_bitmap_indices[j];
         best_bitmap_ids.push_back(bitmap_id_sizes[candidate_index].bitmap_id);
