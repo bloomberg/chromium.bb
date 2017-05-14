@@ -1040,6 +1040,8 @@ int AXPlatformNodeWin::MSAARole() {
       return ROLE_SYSTEM_BUTTONDROPDOWN;
     case ui::AX_ROLE_POP_UP_BUTTON:
       return ROLE_SYSTEM_BUTTONMENU;
+    case ui::AX_ROLE_CARET:
+      return ROLE_SYSTEM_CARET;
     case ui::AX_ROLE_CHECK_BOX:
       return ROLE_SYSTEM_CHECKBUTTON;
     case ui::AX_ROLE_COMBO_BOX:

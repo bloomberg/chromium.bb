@@ -205,7 +205,6 @@ BrowserAccessibilityEvent::Result
   // we can use to retrieve the IAccessible for this node.
   LONG child_id = -target->unique_id();
   ::NotifyWinEvent(win_event_type, hwnd, OBJID_CLIENT, child_id);
-
   return BrowserAccessibilityEvent::Sent;
 }
 

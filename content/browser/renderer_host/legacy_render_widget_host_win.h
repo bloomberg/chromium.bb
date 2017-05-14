@@ -24,6 +24,7 @@ class DirectManipulationHelper;
 }  // namespace gfx
 
 namespace ui {
+class AXFakeCaretWin;
 class WindowEventTarget;
 }
 
@@ -120,6 +121,9 @@ class CONTENT_EXPORT LegacyRenderWidgetHostHWND
     host_ = host;
   }
 
+  // Changes the position of the fake caret.
+  void MoveCaretTo(const gfx::Rect& bounds);
+
  protected:
   void OnFinalMessage(HWND hwnd) override;
 
@@ -158,6 +162,9 @@ class CONTENT_EXPORT LegacyRenderWidgetHostHWND
   bool mouse_tracking_enabled_;
 
   RenderWidgetHostViewAura* host_;
+
+  // Some assistive software need to track the location of the caret.
+  std::unique_ptr<ui::AXFakeCaretWin> ax_fake_caret_;
 
   // This class provides functionality to register the legacy window as a
   // Direct Manipulation consumer. This allows us to support smooth scroll
