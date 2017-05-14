@@ -46,6 +46,7 @@ static bool ShouldTypeOnlyIncludeDirectChildren(CollectionType type) {
   switch (type) {
     case kClassCollectionType:
     case kTagCollectionType:
+    case kTagCollectionNSType:
     case kHTMLTagCollectionType:
     case kDocAll:
     case kDocAnchors:
@@ -95,6 +96,7 @@ static NodeListRootType RootTypeFromCollectionType(const ContainerNode& owner,
       return NodeListRootType::kTreeScope;
     case kClassCollectionType:
     case kTagCollectionType:
+    case kTagCollectionNSType:
     case kHTMLTagCollectionType:
     case kNodeChildren:
     case kTableTBodies:
@@ -125,6 +127,7 @@ static NodeListInvalidationType InvalidationTypeExcludingIdAndNameAttributes(
     CollectionType type) {
   switch (type) {
     case kTagCollectionType:
+    case kTagCollectionNSType:
     case kHTMLTagCollectionType:
     case kDocImages:
     case kDocEmbeds:
@@ -244,6 +247,7 @@ static inline bool IsMatchingHTMLElement(const HTMLCollection& html_collection,
       return isHTMLObjectElement(element) || IsHTMLFormControlElement(element);
     case kClassCollectionType:
     case kTagCollectionType:
+    case kTagCollectionNSType:
     case kHTMLTagCollectionType:
     case kDocAll:
     case kNodeChildren:
@@ -270,6 +274,8 @@ inline bool HTMLCollection::ElementMatches(const Element& element) const {
       return ToTagCollection(*this).ElementMatches(element);
     case kHTMLTagCollectionType:
       return ToHTMLTagCollection(*this).ElementMatches(element);
+    case kTagCollectionNSType:
+      return ToTagCollectionNS(*this).ElementMatches(element);
     case kWindowNamedItems:
       return ToWindowNameCollection(*this).ElementMatches(element);
     default:

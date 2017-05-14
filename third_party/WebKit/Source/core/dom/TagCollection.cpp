@@ -30,17 +30,32 @@ namespace blink {
 
 TagCollection::TagCollection(ContainerNode& root_node,
                              CollectionType type,
-                             const AtomicString& namespace_uri,
-                             const AtomicString& local_name)
+                             const AtomicString& qualified_name)
+    : HTMLCollection(root_node, type, kDoesNotOverrideItemAfter),
+      qualified_name_(qualified_name) {}
+
+TagCollection::~TagCollection() {}
+
+bool TagCollection::ElementMatches(const Element& test_node) const {
+  if (qualified_name_ == g_star_atom)
+    return true;
+
+  return qualified_name_ == test_node.TagQName().ToString();
+}
+
+TagCollectionNS::TagCollectionNS(ContainerNode& root_node,
+                                 CollectionType type,
+                                 const AtomicString& namespace_uri,
+                                 const AtomicString& local_name)
     : HTMLCollection(root_node, type, kDoesNotOverrideItemAfter),
       namespace_uri_(namespace_uri),
       local_name_(local_name) {
   DCHECK(namespace_uri_.IsNull() || !namespace_uri_.IsEmpty());
 }
 
-TagCollection::~TagCollection() {}
+TagCollectionNS::~TagCollectionNS() {}
 
-bool TagCollection::ElementMatches(const Element& test_node) const {
+bool TagCollectionNS::ElementMatches(const Element& test_node) const {
   // Implements
   // https://dom.spec.whatwg.org/#concept-getelementsbytagnamens
   if (local_name_ != g_star_atom && local_name_ != test_node.localName())

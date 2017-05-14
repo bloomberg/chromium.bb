@@ -57,6 +57,7 @@ enum CollectionType {
   kClassCollectionType,
   kTagCollectionType,
   kHTMLTagCollectionType,
+  kTagCollectionNSType,
 
   // Live NodeList.
   kNameNodeListType,

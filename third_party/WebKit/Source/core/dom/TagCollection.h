@@ -33,19 +33,10 @@ namespace blink {
 class TagCollection : public HTMLCollection {
  public:
   static TagCollection* Create(ContainerNode& root_node,
-                               const AtomicString& namespace_uri,
-                               const AtomicString& local_name) {
-    DCHECK(namespace_uri != g_star_atom);
-    return new TagCollection(root_node, kTagCollectionType, namespace_uri,
-                             local_name);
-  }
-
-  static TagCollection* Create(ContainerNode& root_node,
                                CollectionType type,
-                               const AtomicString& local_name) {
+                               const AtomicString& qualified_name) {
     DCHECK_EQ(type, kTagCollectionType);
-    return new TagCollection(root_node, kTagCollectionType, g_star_atom,
-                             local_name);
+    return new TagCollection(root_node, kTagCollectionType, qualified_name);
   }
 
   ~TagCollection() override;
@@ -55,8 +46,29 @@ class TagCollection : public HTMLCollection {
  protected:
   TagCollection(ContainerNode& root_node,
                 CollectionType,
-                const AtomicString& namespace_uri,
-                const AtomicString& local_name);
+                const AtomicString& qualified_name);
+
+  AtomicString qualified_name_;
+};
+
+class TagCollectionNS : public HTMLCollection {
+ public:
+  static TagCollectionNS* Create(ContainerNode& root_node,
+                                 const AtomicString& namespace_uri,
+                                 const AtomicString& local_name) {
+    return new TagCollectionNS(root_node, kTagCollectionNSType, namespace_uri,
+                               local_name);
+  }
+
+  ~TagCollectionNS() override;
+
+  bool ElementMatches(const Element&) const;
+
+ private:
+  TagCollectionNS(ContainerNode& root_node,
+                  CollectionType,
+                  const AtomicString& namespace_uri,
+                  const AtomicString& local_name);
 
   AtomicString namespace_uri_;
   AtomicString local_name_;
@@ -67,6 +79,12 @@ DEFINE_TYPE_CASTS(TagCollection,
                   collection,
                   collection->GetType() == kTagCollectionType,
                   collection.GetType() == kTagCollectionType);
+
+DEFINE_TYPE_CASTS(TagCollectionNS,
+                  LiveNodeListBase,
+                  collection,
+                  collection->GetType() == kTagCollectionNSType,
+                  collection.GetType() == kTagCollectionNSType);
 
 }  // namespace blink
 
