@@ -183,12 +183,24 @@ size_t ShapeResult::ByteSize() const {
   return self_byte_size;
 }
 
+unsigned ShapeResult::StartIndexForResult() const {
+  return !Rtl() ? runs_.front()->start_index_ : runs_.back()->start_index_;
+}
+
+unsigned ShapeResult::EndIndexForResult() const {
+  return StartIndexForResult() + NumCharacters();
+}
+
+// If the position is outside of the result, returns the start or the end offset
+// depends on the position.
 unsigned ShapeResult::OffsetForPosition(float target_x,
                                         bool include_partial_glyphs) const {
   unsigned characters_so_far = 0;
   float current_x = 0;
 
   if (Rtl()) {
+    if (target_x <= 0)
+      return num_characters_;
     characters_so_far = num_characters_;
     for (unsigned i = 0; i < runs_.size(); ++i) {
       if (!runs_[i])
@@ -205,6 +217,8 @@ unsigned ShapeResult::OffsetForPosition(float target_x,
       current_x = next_x;
     }
   } else {
+    if (target_x <= 0)
+      return 0;
     for (unsigned i = 0; i < runs_.size(); ++i) {
       if (!runs_[i])
         continue;

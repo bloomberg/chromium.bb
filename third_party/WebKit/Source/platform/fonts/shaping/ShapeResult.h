@@ -68,6 +68,9 @@ class PLATFORM_EXPORT ShapeResult : public RefCounted<ShapeResult> {
   LayoutUnit SnappedWidth() const { return LayoutUnit::FromFloatCeil(width_); }
   const FloatRect& Bounds() const { return glyph_bounding_box_; }
   unsigned NumCharacters() const { return num_characters_; }
+  // The character start/end index of a range shape result.
+  unsigned StartIndexForResult() const;
+  unsigned EndIndexForResult() const;
   void FallbackFonts(HashSet<const SimpleFontData*>*) const;
   TextDirection Direction() const {
     return static_cast<TextDirection>(direction_);
