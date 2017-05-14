@@ -31,7 +31,7 @@ import logging
 import threading
 import Queue
 
-from webkitpy.common.webkit_finder import WebKitFinder
+from webkitpy.common.path_finder import PathFinder
 from webkitpy.layout_tests.breakpad.dump_reader import DumpReader
 
 
@@ -43,7 +43,7 @@ class DumpReaderMultipart(DumpReader):
 
     def __init__(self, host, build_dir):
         super(DumpReaderMultipart, self).__init__(host, build_dir)
-        self._webkit_finder = WebKitFinder(host.filesystem)
+        self._path_finder = PathFinder(host.filesystem)
         self._breakpad_tools_available = None
         self._generated_symbols = False
 
@@ -119,7 +119,7 @@ class DumpReaderMultipart(DumpReader):
         return self._host.filesystem.join(self._build_dir, 'minidump_stackwalk')
 
     def _path_to_generate_breakpad_symbols(self):
-        return self._webkit_finder.path_from_chromium_base(
+        return self._path_finder.path_from_chromium_base(
             'components', 'crash', 'content', 'tools', 'generate_breakpad_symbols.py')
 
     def _symbols_dir(self):

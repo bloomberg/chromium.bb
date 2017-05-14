@@ -31,8 +31,8 @@
 import os
 import sys
 
-from webkitpy.common import webkit_finder
-webkit_finder.add_typ_dir_to_sys_path()
+from webkitpy.common import path_finder
+path_finder.add_typ_dir_to_sys_path()
 
 import typ
 
@@ -49,7 +49,7 @@ if sys.platform == 'win32':
         'webkitpy.layout_tests.layout_package.bot_test_expectations_unittest.*',
     ]
 
-sys.exit(typ.main(top_level_dir=webkit_finder.get_scripts_dir(),
+sys.exit(typ.main(top_level_dir=path_finder.get_scripts_dir(),
                   skip=skip,
-                  path=[webkit_finder.get_webkitpy_thirdparty_dir()],
+                  path=[path_finder.get_webkitpy_thirdparty_dir()],
                   win_multiprocessing='spawn'))

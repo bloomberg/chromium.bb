@@ -33,7 +33,7 @@ import BaseHTTPServer
 import subprocess
 from subprocess import STDOUT
 
-from webkitpy.common.webkit_finder import WebKitFinder
+from webkitpy.common.path_finder import PathFinder
 from webkitpy.common.system.filesystem import FileSystem
 from webkitpy.tool.servers.reflection_handler import ReflectionHandler
 
@@ -54,8 +54,8 @@ class LayoutTestsServerHTTPRequestHandler(ReflectionHandler):
         for each in json_data['tests']:
             test_list += each + ' '
         filesystem = FileSystem()
-        webkit_finder = WebKitFinder(filesystem)
-        script_dir = webkit_finder.path_from_tools_scripts()
+        path_finder = PathFinder(filesystem)
+        script_dir = path_finder.path_from_tools_scripts()
         executable_path = script_dir + '/run-webkit-tests'
         cmd = 'python ' + executable_path + ' --no-show-results '
         cmd += test_list

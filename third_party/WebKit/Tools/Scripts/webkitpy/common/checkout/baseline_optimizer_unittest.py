@@ -30,7 +30,7 @@ import unittest
 
 from webkitpy.common.checkout.baseline_optimizer import BaselineOptimizer
 from webkitpy.common.host_mock import MockHost
-from webkitpy.common.webkit_finder import WebKitFinder
+from webkitpy.common.path_finder import PathFinder
 
 
 class BaselineOptimizerTest(unittest.TestCase):
@@ -38,7 +38,7 @@ class BaselineOptimizerTest(unittest.TestCase):
     def _assert_optimization(self, results_by_directory, directory_to_new_results, baseline_dirname='', host=None):
         host = host or MockHost()
         fs = host.filesystem
-        layout_tests_dir = WebKitFinder(fs).layout_tests_dir()
+        layout_tests_dir = PathFinder(fs).layout_tests_dir()
         baseline_name = 'mock-baseline-expected.txt'
         fs.write_text_file(
             fs.join(layout_tests_dir, 'VirtualTestSuites'),

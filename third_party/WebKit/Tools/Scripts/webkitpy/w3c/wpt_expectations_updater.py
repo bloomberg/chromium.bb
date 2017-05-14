@@ -15,7 +15,7 @@ import logging
 
 from webkitpy.common.memoized import memoized
 from webkitpy.common.net.git_cl import GitCL
-from webkitpy.common.webkit_finder import WebKitFinder
+from webkitpy.common.path_finder import PathFinder
 from webkitpy.layout_tests.models.test_expectations import TestExpectationLine, TestExpectations
 from webkitpy.w3c.wpt_manifest import WPTManifest
 
@@ -29,7 +29,7 @@ class WPTExpectationsUpdater(object):
     def __init__(self, host):
         self.host = host
         self.port = self.host.port_factory.get()
-        self.finder = WebKitFinder(self.host.filesystem)
+        self.finder = PathFinder(self.host.filesystem)
         self.port = self.host.port_factory.get()
 
     def run(self, args=None):

@@ -27,9 +27,9 @@ import re
 import sys
 
 
+from webkitpy.common.path_finder import PathFinder
 from webkitpy.common.system.filesystem import FileSystem
 from webkitpy.common.system.executive import Executive
-from webkitpy.common.webkit_finder import WebKitFinder
 from webkitpy.thirdparty import pep8
 
 
@@ -72,23 +72,23 @@ class PythonChecker(object):
             self._handle_style_error(line_number, category, 5, message)
 
     def run_pylint(self, path):
-        wkf = WebKitFinder(FileSystem())
+        finder = PathFinder(FileSystem())
         executive = Executive()
         env = os.environ.copy()
         env['PYTHONPATH'] = os.pathsep.join([
-            wkf.path_from_tools_scripts(),
-            wkf.path_from_blink_source('build', 'scripts'),
-            wkf.path_from_tools_scripts('webkitpy', 'thirdparty'),
-            wkf.path_from_blink_source('bindings', 'scripts'),
-            wkf.path_from_chromium_base('build', 'android'),
-            wkf.path_from_chromium_base('third_party', 'catapult', 'devil'),
-            wkf.path_from_chromium_base('third_party', 'pymock'),
+            finder.path_from_tools_scripts(),
+            finder.path_from_blink_source('build', 'scripts'),
+            finder.path_from_tools_scripts('webkitpy', 'thirdparty'),
+            finder.path_from_blink_source('bindings', 'scripts'),
+            finder.path_from_chromium_base('build', 'android'),
+            finder.path_from_chromium_base('third_party', 'catapult', 'devil'),
+            finder.path_from_chromium_base('third_party', 'pymock'),
         ])
         return executive.run_command([
             sys.executable,
-            wkf.path_from_depot_tools_base('pylint.py'),
+            finder.path_from_depot_tools_base('pylint.py'),
             '--output-format=parseable',
-            '--rcfile=' + wkf.path_from_tools_scripts('webkitpy', 'pylintrc'),
+            '--rcfile=' + finder.path_from_tools_scripts('webkitpy', 'pylintrc'),
             path,
         ], env=env, error_handler=executive.ignore_error)
 

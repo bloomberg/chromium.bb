@@ -31,9 +31,9 @@ import optparse
 import subprocess
 import sys
 
+from webkitpy.common.path_finder import PathFinder
 from webkitpy.common.system.executive import Executive
 from webkitpy.common.system.filesystem import FileSystem
-from webkitpy.common.webkit_finder import WebKitFinder
 
 _log = logging.getLogger(__name__)
 
@@ -54,7 +54,7 @@ class Bisector(object):
         self.tests = tests
         self.expected_failure = tests[-1]
         self.is_debug = is_debug
-        self.webkit_finder = WebKitFinder(FileSystem())
+        self.path_finder = PathFinder(FileSystem())
 
     def bisect(self):
         if self.test_fails_in_isolation():
@@ -145,7 +145,7 @@ class Bisector(object):
 
     def test_fails(self, tests):
         extra_args = ['--debug'] if self.is_debug else []
-        path_to_run_webkit_tests = self.webkit_finder.path_from_tools_scripts('run-webkit-tests')
+        path_to_run_webkit_tests = self.path_finder.path_from_tools_scripts('run-webkit-tests')
         output = self.executive.popen(
             [path_to_run_webkit_tests, '--child-processes', '1', '--order', 'none', '--no-retry',
              '--no-show-results', '--verbose'] + extra_args + tests, stdout=subprocess.PIPE, stderr=subprocess.PIPE)

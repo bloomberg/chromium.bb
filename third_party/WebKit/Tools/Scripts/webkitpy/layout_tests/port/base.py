@@ -46,9 +46,9 @@ from webkitpy.common import exit_codes
 from webkitpy.common import find_files
 from webkitpy.common import read_checksum_from_png
 from webkitpy.common.memoized import memoized
+from webkitpy.common.path_finder import PathFinder
 from webkitpy.common.system.executive import ScriptError
 from webkitpy.common.system.path import abspath_to_uri
-from webkitpy.common.webkit_finder import WebKitFinder
 from webkitpy.layout_tests.layout_package.bot_test_expectations import BotTestExpectationsFactory
 from webkitpy.layout_tests.models import test_run_results
 from webkitpy.layout_tests.models.test_configuration import TestConfiguration
@@ -167,7 +167,7 @@ class Port(object):
         self.host = host
         self._executive = host.executive
         self._filesystem = host.filesystem
-        self._webkit_finder = WebKitFinder(host.filesystem)
+        self._path_finder = PathFinder(host.filesystem)
 
         self._http_server = None
         self._websocket_server = None
@@ -178,7 +178,7 @@ class Port(object):
         self._dump_reader = None
 
         # FIXME: prettypatch.py knows this path; it should not be copied here.
-        self._pretty_patch_path = self._webkit_finder.path_from_tools_scripts('webkitruby', 'PrettyPatch', 'prettify.rb')
+        self._pretty_patch_path = self._path_finder.path_from_tools_scripts('webkitruby', 'PrettyPatch', 'prettify.rb')
         self._pretty_patch_available = None
 
         if not hasattr(options, 'configuration') or not options.configuration:
@@ -873,16 +873,16 @@ class Port(object):
     # TODO(qyearsley): Update callers to create a finder and call it instead
     # of these next two routines (which should be protected).
     def path_from_chromium_base(self, *comps):
-        return self._webkit_finder.path_from_chromium_base(*comps)
+        return self._path_finder.path_from_chromium_base(*comps)
 
     def perf_tests_dir(self):
-        return self._webkit_finder.perf_tests_dir()
+        return self._path_finder.perf_tests_dir()
 
     def layout_tests_dir(self):
         custom_layout_tests_dir = self.get_option('layout_tests_directory')
         if custom_layout_tests_dir:
             return custom_layout_tests_dir
-        return self._webkit_finder.layout_tests_dir()
+        return self._path_finder.layout_tests_dir()
 
     def skipped_layout_tests(self, _):
         # TODO(qyearsley): Remove this method.
@@ -988,7 +988,7 @@ class Port(object):
 
         Ports may legitimately return absolute paths here if no relative path
         makes sense.
-        TODO(qyearsley): De-duplicate this and WebKitFinder.layout_test_name.
+        TODO(qyearsley): De-duplicate this and PathFinder.layout_test_name.
         """
         # Ports that run on windows need to override this method to deal with
         # filenames with backslashes in them.
@@ -1022,7 +1022,7 @@ class Port(object):
         return self._build_path('resources', 'inspector')
 
     def apache_config_directory(self):
-        return self._webkit_finder.path_from_tools_scripts('apache_config')
+        return self._path_finder.path_from_tools_scripts('apache_config')
 
     def default_results_directory(self):
         """Returns the absolute path to the default place to store the test results."""

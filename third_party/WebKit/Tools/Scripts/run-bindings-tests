@@ -26,8 +26,8 @@
 import sys
 
 from webkitpy.bindings.bindings_tests import run_bindings_tests
-from webkitpy.common import webkit_finder
-webkit_finder.add_typ_dir_to_sys_path()
+from webkitpy.common import path_finder
+path_finder.add_typ_dir_to_sys_path()
 
 import typ
 
@@ -67,7 +67,7 @@ def main(argv):
         return argument_parser.exit_status
 
     args = runner.args
-    args.top_level_dir = webkit_finder.get_bindings_scripts_dir()
+    args.top_level_dir = path_finder.get_bindings_scripts_dir()
     if not args.skip_unit_tests:
         return_code, _, _ = runner.run()
         if return_code != 0:

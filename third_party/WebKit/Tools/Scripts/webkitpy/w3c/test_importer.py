@@ -19,8 +19,8 @@ import argparse
 import logging
 
 from webkitpy.common.net.git_cl import GitCL
-from webkitpy.common.webkit_finder import WebKitFinder
 from webkitpy.common.net.buildbot import current_build_link
+from webkitpy.common.path_finder import PathFinder
 from webkitpy.layout_tests.models.test_expectations import TestExpectations, TestExpectationParser
 from webkitpy.layout_tests.port.base import Port
 from webkitpy.w3c.common import WPT_REPO_URL, WPT_DEST_NAME, exportable_commits_since
@@ -43,7 +43,7 @@ class TestImporter(object):
         self.host = host
         self.executive = host.executive
         self.fs = host.filesystem
-        self.finder = WebKitFinder(self.fs)
+        self.finder = PathFinder(self.fs)
         self.verbose = False
         self.git_cl = None
 

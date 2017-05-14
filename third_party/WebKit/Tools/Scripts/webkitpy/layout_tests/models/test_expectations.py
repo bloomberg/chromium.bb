@@ -33,7 +33,7 @@ from collections import defaultdict
 import logging
 import re
 
-from webkitpy.common.webkit_finder import WebKitFinder
+from webkitpy.common.path_finder import PathFinder
 from webkitpy.layout_tests.models.test_configuration import TestConfigurationConverter
 
 _log = logging.getLogger(__name__)
@@ -1096,7 +1096,7 @@ class TestExpectations(object):
         return REBASELINE in self._model.get_expectations(test)
 
     def _shorten_filename(self, filename):
-        finder = WebKitFinder(self._port.host.filesystem)
+        finder = PathFinder(self._port.host.filesystem)
         if filename.startswith(finder.path_from_chromium_base()):
             return self._port.host.filesystem.relpath(filename, finder.path_from_chromium_base())
         return filename
