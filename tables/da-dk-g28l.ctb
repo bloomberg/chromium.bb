@@ -289,23 +289,6 @@ multind f-6 capsletter letsign
 multind 6-f letsign capsletter
 capsnocont
 
-# Special characters that always need letsigns because they represent contractions
-#always * 6-35
-#always ° 6-356
-#always µ 6-236
-#always \x2013 6-36 # en dash
-#noback always \x0096 6-36 # en dash
-#always \x2014 6-367 # em dash
-#noback always \x0097 6-367 # em dash
-#always \x00a1 6-256 # inverted exclamationmark
-#always \x00bf 6-34 # inverted questionmark
-
-#always \x2026 6-3-3-3
-#noback always \x0085 6-3-3-3
-
-#always ¾ 6-3456 # 3/4 or ve
-#always \x00ac 6-34567 # not sign or Ve
-
 #Special sequences, urls emails and file names.
 
 nocont $
@@ -583,7 +566,439 @@ noback context _$d["nd"]!$l @1345-145
 # Ensure that we get a letsign between a digit and a single letter.
 noback context $d[]$l!$l @6
 noback context $d[]$l~ @6
-include capsrules_temp.cti
+
+noback pass2 @f-235 @2357
+noback pass2 @f-6-235 @6-2357
+noback pass2 @f-5-235 @5-2357
+nofor pass2 @2357 @f-235
+nofor pass2 @5-2357 @f-5-235
+
+noback pass2 @f-35 @357
+noback pass2 @f-6-35 @6-357
+noback pass2 @f-5-35 @5-357
+nofor pass2 @357 @f-35
+nofor pass2 @5-357 @f-5-35
+
+noback pass2 @f-1 @17
+noback pass2 @f-6-1 @6-17
+noback pass2 @f-5-1 @5-17
+nofor pass2 @17 @f-1
+nofor pass2 @5-17 @f-5-1
+
+noback pass2 @f-12 @127
+noback pass2 @f-6-12 @6-127
+noback pass2 @f-5-12 @5-127
+nofor pass2 @127 @f-12
+nofor pass2 @5-127 @f-5-12
+
+noback pass2 @f-14 @147
+noback pass2 @f-6-14 @6-147
+noback pass2 @f-5-14 @5-147
+nofor pass2 @147 @f-14
+nofor pass2 @5-147 @f-5-14
+
+noback pass2 @f-145 @1457
+noback pass2 @f-6-145 @6-1457
+noback pass2 @f-5-145 @5-1457
+nofor pass2 @1457 @f-145
+nofor pass2 @5-1457 @f-5-145
+
+noback pass2 @f-15 @157
+noback pass2 @f-6-15 @6-157
+noback pass2 @f-5-15 @5-157
+nofor pass2 @157 @f-15
+nofor pass2 @5-157 @f-5-15
+
+noback pass2 @f-124 @1247
+noback pass2 @f-6-124 @6-1247
+noback pass2 @f-5-124 @5-1247
+nofor pass2 @1247 @f-124
+nofor pass2 @5-1247 @f-5-124
+
+noback pass2 @f-1245 @12457
+noback pass2 @f-6-1245 @6-12457
+noback pass2 @f-5-1245 @5-12457
+nofor pass2 @12457 @f-1245
+nofor pass2 @5-12457 @f-5-1245
+
+noback pass2 @f-125 @1257
+noback pass2 @f-6-125 @6-1257
+noback pass2 @f-5-125 @5-1257
+nofor pass2 @1257 @f-125
+nofor pass2 @5-1257 @f-5-125
+
+noback pass2 @f-24 @247
+noback pass2 @f-6-24 @6-247
+noback pass2 @f-5-24 @5-247
+nofor pass2 @247 @f-24
+nofor pass2 @5-247 @f-5-24
+
+noback pass2 @f-245 @2457
+noback pass2 @f-6-245 @6-2457
+noback pass2 @f-5-245 @5-2457
+nofor pass2 @2457 @f-245
+nofor pass2 @5-2457 @f-5-245
+
+noback pass2 @f-13 @137
+noback pass2 @f-6-13 @6-137
+noback pass2 @f-5-13 @5-137
+nofor pass2 @137 @f-13
+nofor pass2 @5-137 @f-5-13
+
+noback pass2 @f-123 @1237
+noback pass2 @f-6-123 @6-1237
+noback pass2 @f-5-123 @5-1237
+nofor pass2 @1237 @f-123
+nofor pass2 @5-1237 @f-5-123
+
+noback pass2 @f-134 @1347
+noback pass2 @f-6-134 @6-1347
+noback pass2 @f-5-134 @5-1347
+nofor pass2 @1347 @f-134
+nofor pass2 @5-1347 @f-5-134
+
+noback pass2 @f-1345 @13457
+noback pass2 @f-6-1345 @6-13457
+noback pass2 @f-5-1345 @5-13457
+nofor pass2 @13457 @f-1345
+nofor pass2 @5-13457 @f-5-1345
+
+noback pass2 @f-135 @1357
+noback pass2 @f-6-135 @6-1357
+noback pass2 @f-5-135 @5-1357
+nofor pass2 @1357 @f-135
+nofor pass2 @5-1357 @f-5-135
+
+noback pass2 @f-1234 @12347
+noback pass2 @f-6-1234 @6-12347
+noback pass2 @f-5-1234 @5-12347
+nofor pass2 @12347 @f-1234
+nofor pass2 @5-12347 @f-5-1234
+
+noback pass2 @f-12345 @123457
+noback pass2 @f-6-12345 @6-123457
+noback pass2 @f-5-12345 @5-123457
+nofor pass2 @123457 @f-12345
+nofor pass2 @5-123457 @f-5-12345
+
+noback pass2 @f-1235 @12357
+noback pass2 @f-6-1235 @6-12357
+noback pass2 @f-5-1235 @5-12357
+nofor pass2 @12357 @f-1235
+nofor pass2 @5-12357 @f-5-1235
+
+noback pass2 @f-234 @2347
+noback pass2 @f-6-234 @6-2347
+noback pass2 @f-5-234 @5-2347
+nofor pass2 @2347 @f-234
+nofor pass2 @5-2347 @f-5-234
+
+noback pass2 @f-2345 @23457
+noback pass2 @f-6-2345 @6-23457
+noback pass2 @f-5-2345 @5-23457
+nofor pass2 @23457 @f-2345
+nofor pass2 @5-23457 @f-5-2345
+
+noback pass2 @f-136 @1367
+noback pass2 @f-6-136 @6-1367
+noback pass2 @f-5-136 @5-1367
+nofor pass2 @1367 @f-136
+nofor pass2 @5-1367 @f-5-136
+
+noback pass2 @f-1236 @12367
+noback pass2 @f-6-1236 @6-12367
+noback pass2 @f-5-1236 @5-12367
+nofor pass2 @12367 @f-1236
+nofor pass2 @5-12367 @f-5-1236
+
+noback pass2 @f-2456 @24567
+noback pass2 @f-6-2456 @6-24567
+noback pass2 @f-5-2456 @5-24567
+nofor pass2 @24567 @f-2456
+nofor pass2 @5-24567 @f-5-2456
+
+noback pass2 @f-1346 @13467
+noback pass2 @f-6-1346 @6-13467
+noback pass2 @f-5-1346 @5-13467
+nofor pass2 @13467 @f-1346
+nofor pass2 @5-13467 @f-5-1346
+
+noback pass2 @f-13456 @134567
+noback pass2 @f-6-13456 @6-134567
+noback pass2 @f-5-13456 @5-134567
+nofor pass2 @134567 @f-13456
+nofor pass2 @5-134567 @f-5-13456
+
+noback pass2 @f-1356 @13567
+noback pass2 @f-6-1356 @6-13567
+noback pass2 @f-5-1356 @5-13567
+nofor pass2 @13567 @f-1356
+nofor pass2 @5-13567 @f-5-1356
+
+noback pass2 @f-34 @347
+noback pass2 @f-6-34 @6-347
+noback pass2 @f-5-34 @5-347
+nofor pass2 @347 @f-34
+nofor pass2 @5-347 @f-5-34
+
+noback pass2 @f-346 @3467
+noback pass2 @f-6-346 @6-3467
+noback pass2 @f-5-346 @5-3467
+nofor pass2 @3467 @f-346
+nofor pass2 @5-3467 @f-5-346
+
+noback pass2 @f-2348 @23478
+noback pass2 @f-6-2348 @6-23478
+noback pass2 @f-5-2348 @5-23478
+nofor pass2 @23478 @f-2348
+nofor pass2 @5-23478 @f-5-2348
+
+noback pass2 @f-1358 @13578
+noback pass2 @f-6-1358 @6-13578
+noback pass2 @f-5-1358 @5-13578
+nofor pass2 @13578 @f-1358
+nofor pass2 @5-13578 @f-5-1358
+
+noback pass2 @f-234568 @2345678
+noback pass2 @f-6-234568 @6-2345678
+noback pass2 @f-5-234568 @5-2345678
+nofor pass2 @2345678 @f-234568
+nofor pass2 @5-2345678 @f-5-234568
+
+noback pass2 @f-236 @2367
+noback pass2 @f-6-236 @6-2367
+noback pass2 @f-5-236 @5-2367
+nofor pass2 @2367 @f-236
+nofor pass2 @5-2367 @f-5-236
+
+noback pass2 @f-256 @2567
+noback pass2 @f-6-256 @6-2567
+noback pass2 @f-5-256 @5-2567
+nofor pass2 @2567 @f-256
+nofor pass2 @5-2567 @f-5-256
+
+noback pass2 @f-356 @3567
+noback pass2 @f-6-356 @6-3567
+noback pass2 @f-5-356 @5-3567
+nofor pass2 @3567 @f-356
+nofor pass2 @5-3567 @f-5-356
+
+noback pass2 @f-3456 @34567
+noback pass2 @f-6-3456 @6-34567
+noback pass2 @f-5-3456 @5-34567
+nofor pass2 @34567 @f-3456
+nofor pass2 @5-34567 @f-5-3456
+
+noback pass2 @f-12356 @123567
+noback pass2 @f-6-12356 @6-123567
+noback pass2 @f-5-12356 @5-123567
+nofor pass2 @123567 @f-12356
+nofor pass2 @5-123567 @f-5-12356
+
+noback pass2 @f-123568 @1235678
+noback pass2 @f-6-123568 @6-1235678
+noback pass2 @f-5-123568 @5-1235678
+nofor pass2 @1235678 @f-123568
+nofor pass2 @5-1235678 @f-5-123568
+
+noback pass2 @f-168 @1678
+noback pass2 @f-6-168 @6-1678
+noback pass2 @f-5-168 @5-1678
+nofor pass2 @1678 @f-168
+nofor pass2 @5-1678 @f-5-168
+
+noback pass2 @f-1468 @14678
+noback pass2 @f-6-1468 @6-14678
+noback pass2 @f-5-1468 @5-14678
+nofor pass2 @14678 @f-1468
+nofor pass2 @5-14678 @f-5-1468
+
+noback pass2 @f-3458 @34578
+noback pass2 @f-6-3458 @6-34578
+noback pass2 @f-5-3458 @5-34578
+nofor pass2 @34578 @f-3458
+nofor pass2 @5-34578 @f-5-3458
+
+noback pass2 @f-16 @167
+noback pass2 @f-6-16 @6-167
+noback pass2 @f-5-16 @5-167
+nofor pass2 @167 @f-16
+nofor pass2 @5-167 @f-5-16
+
+noback pass2 @f-345 @3457
+noback pass2 @f-6-345 @6-3457
+noback pass2 @f-5-345 @5-3457
+nofor pass2 @3457 @f-345
+nofor pass2 @5-3457 @f-5-345
+
+noback pass2 @f-12346 @123467
+noback pass2 @f-6-12346 @6-123467
+noback pass2 @f-5-12346 @5-123467
+nofor pass2 @123467 @f-12346
+nofor pass2 @5-123467 @f-5-12346
+
+noback pass2 @f-2346 @23467
+noback pass2 @f-6-2346 @6-23467
+noback pass2 @f-5-2346 @5-23467
+nofor pass2 @23467 @f-2346
+nofor pass2 @5-23467 @f-5-2346
+
+noback pass2 @f-123456 @1234567
+noback pass2 @f-6-123456 @6-1234567
+noback pass2 @f-5-123456 @5-1234567
+nofor pass2 @1234567 @f-123456
+nofor pass2 @5-1234567 @f-5-123456
+
+noback pass2 @f-126 @1267
+noback pass2 @f-6-126 @6-1267
+noback pass2 @f-5-126 @5-1267
+nofor pass2 @1267 @f-126
+nofor pass2 @5-1267 @f-5-126
+
+noback pass2 @f-1246 @12467
+noback pass2 @f-6-1246 @6-12467
+noback pass2 @f-5-1246 @5-12467
+nofor pass2 @12467 @f-1246
+nofor pass2 @5-12467 @f-5-1246
+
+noback pass2 @f-1568 @15678
+noback pass2 @f-6-1568 @6-15678
+noback pass2 @f-5-1568 @5-15678
+nofor pass2 @15678 @f-1568
+nofor pass2 @5-15678 @f-5-1568
+
+noback pass2 @f-1268 @12678
+noback pass2 @f-6-1268 @6-12678
+noback pass2 @f-5-1268 @5-12678
+nofor pass2 @12678 @f-1268
+nofor pass2 @5-12678 @f-5-1268
+
+noback pass2 @f-146 @1467
+noback pass2 @f-6-146 @6-1467
+noback pass2 @f-5-146 @5-1467
+nofor pass2 @1467 @f-146
+nofor pass2 @5-1467 @f-5-146
+
+noback pass2 @f-12456 @124567
+noback pass2 @f-6-12456 @6-124567
+noback pass2 @f-5-12456 @5-124567
+nofor pass2 @124567 @f-12456
+nofor pass2 @5-124567 @f-5-12456
+
+noback pass2 @f-134568 @1345678
+noback pass2 @f-6-134568 @6-1345678
+noback pass2 @f-5-134568 @5-1345678
+nofor pass2 @1345678 @f-134568
+nofor pass2 @5-1345678 @f-5-134568
+
+noback pass2 @f-124568 @1245678
+noback pass2 @f-6-124568 @6-1245678
+noback pass2 @f-5-124568 @5-1245678
+nofor pass2 @1245678 @f-124568
+nofor pass2 @5-1245678 @f-5-124568
+
+noback pass2 @f-12468 @124678
+noback pass2 @f-6-12468 @6-124678
+noback pass2 @f-5-12468 @5-124678
+nofor pass2 @124678 @f-12468
+nofor pass2 @5-124678 @f-5-12468
+
+noback pass2 @f-3468 @34678
+noback pass2 @f-6-3468 @6-34678
+noback pass2 @f-5-3468 @5-34678
+nofor pass2 @34678 @f-3468
+nofor pass2 @5-34678 @f-5-3468
+
+noback pass2 @f-1456 @14567
+noback pass2 @f-6-1456 @6-14567
+noback pass2 @f-5-1456 @5-14567
+nofor pass2 @14567 @f-1456
+nofor pass2 @5-14567 @f-5-1456
+
+noback pass2 @f-14568 @145678
+noback pass2 @f-6-14568 @6-145678
+noback pass2 @f-5-14568 @5-145678
+nofor pass2 @145678 @f-14568
+nofor pass2 @5-145678 @f-5-14568
+
+noback pass2 @f-2468 @24678
+noback pass2 @f-6-2468 @6-24678
+noback pass2 @f-5-2468 @5-24678
+nofor pass2 @24678 @f-2468
+nofor pass2 @5-24678 @f-5-2468
+
+noback pass2 @f-246 @2467
+noback pass2 @f-6-246 @6-2467
+noback pass2 @f-5-246 @5-2467
+nofor pass2 @2467 @f-246
+nofor pass2 @5-2467 @f-5-246
+
+noback pass2 @f-23456 @234567
+noback pass2 @f-6-23456 @6-234567
+noback pass2 @f-5-23456 @5-234567
+nofor pass2 @234567 @f-23456
+nofor pass2 @5-234567 @f-5-23456
+
+noback pass2 @f-12568 @125678
+noback pass2 @f-6-12568 @6-125678
+noback pass2 @f-5-12568 @5-125678
+nofor pass2 @125678 @f-12568
+nofor pass2 @5-125678 @f-5-12568
+
+noback pass2 @f-156 @1567
+noback pass2 @f-6-156 @6-1567
+noback pass2 @f-5-156 @5-1567
+nofor pass2 @1567 @f-156
+nofor pass2 @5-1567 @f-5-156
+
+noback pass2 @f-1256 @12567
+noback pass2 @f-6-1256 @6-12567
+noback pass2 @f-5-1256 @5-12567
+nofor pass2 @12567 @f-1256
+nofor pass2 @5-12567 @f-5-1256
+
+noback pass2 @f-1348 @13478
+noback pass2 @f-6-1348 @6-13478
+noback pass2 @f-5-1348 @5-13478
+nofor pass2 @13478 @f-1348
+nofor pass2 @5-13478 @f-5-1348
+
+noback pass2 @f-138 @1378
+noback pass2 @f-6-138 @6-1378
+noback pass2 @f-5-138 @5-1378
+nofor pass2 @1378 @f-138
+nofor pass2 @5-1378 @f-5-138
+
+noback pass2 @f-234568 @2345678
+noback pass2 @f-6-234568 @6-2345678
+noback pass2 @f-5-234568 @5-2345678
+nofor pass2 @2345678 @f-234568
+nofor pass2 @5-2345678 @f-5-234568
+
+nofor pass2 @6-123457 @f-6-6-12345
+nofor pass2 @6-24567 @f-6-6-2456
+nofor pass2 @6-13467 @f-6-6-1346
+nofor pass2 @6-134567 @f-6-6-13456
+nofor pass2 @6-13567 @f-6-6-1356
+nofor pass2 @6-123567 @f-6-6-12356
+nofor pass2 @6-123467 @f-6-6-12346
+nofor pass2 @6-23467 @f-6-6-2346
+nofor pass2 @6-1234567 @f-6-6-123456
+nofor pass2 @6-1267 @f-6-6-126
+nofor pass2 @6-12467 @f-6-6-1246
+nofor pass2 @6-1467 @f-6-6-146
+nofor pass2 @6-124567 @f-6-6-12456
+nofor pass2 @6-14567 @f-6-6-1456
+nofor pass2 @6-234567 @f-6-6-23456
+nofor pass2 @6-1567 @f-6-6-156
+nofor pass2 @6-12567 @f-6-6-1256
+
+nofor pass2 @6-347 *
+nofor pass2 @6-2357 *
+nofor pass2 @6-3467 *
+nofor pass2 @6-2567 *
+nofor pass2 @6-2367 *
+nofor pass2 @6-34567 *
 
 noback pass2 @f ?
 
