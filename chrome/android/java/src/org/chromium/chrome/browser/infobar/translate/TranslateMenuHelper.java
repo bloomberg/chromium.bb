@@ -184,7 +184,7 @@ public class TranslateMenuHelper implements AdapterView.OnItemClickListener {
     /**
      * Dismisses the translate option menu.
      */
-    private void dismiss() {
+    public void dismiss() {
         if (isShowing()) {
             mPopup.dismiss();
         }
