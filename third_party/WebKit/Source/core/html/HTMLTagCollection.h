@@ -36,17 +36,18 @@ class HTMLTagCollection final : public TagCollection {
  public:
   static HTMLTagCollection* Create(ContainerNode& root_node,
                                    CollectionType type,
-                                   const AtomicString& local_name) {
+                                   const AtomicString& qualified_name) {
     DCHECK_EQ(type, kHTMLTagCollectionType);
-    return new HTMLTagCollection(root_node, local_name);
+    return new HTMLTagCollection(root_node, qualified_name);
   }
 
   bool ElementMatches(const Element&) const;
 
  private:
-  HTMLTagCollection(ContainerNode& root_node, const AtomicString& local_name);
+  HTMLTagCollection(ContainerNode& root_node,
+                    const AtomicString& qualified_name);
 
-  AtomicString lowered_local_name_;
+  AtomicString lowered_qualified_name_;
 };
 
 DEFINE_TYPE_CASTS(HTMLTagCollection,
@@ -57,16 +58,11 @@ DEFINE_TYPE_CASTS(HTMLTagCollection,
 
 inline bool HTMLTagCollection::ElementMatches(
     const Element& test_element) const {
-  // Implements
-  // https://dom.spec.whatwg.org/#concept-getelementsbytagname
-  if (local_name_ != g_star_atom) {
-    const AtomicString& local_name =
-        test_element.IsHTMLElement() ? lowered_local_name_ : local_name_;
-    if (local_name != test_element.localName())
-      return false;
-  }
-  DCHECK_EQ(namespace_uri_, g_star_atom);
-  return true;
+  if (qualified_name_ == g_star_atom)
+    return true;
+  if (test_element.IsHTMLElement())
+    return lowered_qualified_name_ == test_element.TagQName().ToString();
+  return qualified_name_ == test_element.TagQName().ToString();
 }
 
 }  // namespace blink

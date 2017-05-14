@@ -41,14 +41,14 @@ void NodeListsNodeData::InvalidateCaches(const QualifiedName* attr_name) {
   if (attr_name)
     return;
 
-  for (auto& cache : tag_collection_cache_ns_)
+  for (auto& cache : tag_collection_ns_caches_)
     cache.value->InvalidateCache();
 }
 
 DEFINE_TRACE(NodeListsNodeData) {
   visitor->Trace(child_node_list_);
   visitor->Trace(atomic_name_caches_);
-  visitor->Trace(tag_collection_cache_ns_);
+  visitor->Trace(tag_collection_ns_caches_);
 }
 
 DEFINE_TRACE_WRAPPERS(NodeListsNodeData) {
@@ -62,7 +62,7 @@ DEFINE_TRACE_WRAPPERS(NodeListsNodeData) {
           static_cast<const LiveNodeList*>(list.Get()));
     }
   }
-  for (const auto list : tag_collection_cache_ns_.Values()) {
+  for (const auto list : tag_collection_ns_caches_.Values()) {
     visitor->TraceWrappersWithManualWriteBarrier(list.Get());
   }
 }

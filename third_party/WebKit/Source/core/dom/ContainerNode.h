@@ -42,7 +42,6 @@ class HTMLCollection;
 class NameNodeList;
 using StaticElementList = StaticNodeTypeList<Element>;
 class RadioNodeList;
-class TagCollection;
 
 enum DynamicRestyleFlags {
   kChildrenOrSiblingsAffectedByFocus = 1 << 0,
@@ -120,9 +119,9 @@ class CORE_EXPORT ContainerNode : public Node {
   Node* AppendChild(Node* new_child, ExceptionState& = ASSERT_NO_EXCEPTION);
 
   Element* getElementById(const AtomicString& id) const;
-  TagCollection* getElementsByTagName(const AtomicString&);
-  TagCollection* getElementsByTagNameNS(const AtomicString& namespace_uri,
-                                        const AtomicString& local_name);
+  HTMLCollection* getElementsByTagName(const AtomicString&);
+  HTMLCollection* getElementsByTagNameNS(const AtomicString& namespace_uri,
+                                         const AtomicString& local_name);
   NameNodeList* getElementsByName(const AtomicString& element_name);
   ClassCollection* getElementsByClassName(const AtomicString& class_names);
   RadioNodeList* GetRadioNodeList(const AtomicString&,

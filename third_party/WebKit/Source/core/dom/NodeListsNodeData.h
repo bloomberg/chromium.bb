@@ -83,8 +83,8 @@ class NodeListsNodeData final : public GarbageCollected<NodeListsNodeData> {
                       WeakMember<LiveNodeListBase>,
                       NodeListAtomicCacheMapEntryHash>
       NodeListAtomicNameCacheMap;
-  typedef HeapHashMap<QualifiedName, WeakMember<TagCollection>>
-      TagCollectionCacheNS;
+  typedef HeapHashMap<QualifiedName, WeakMember<TagCollectionNS>>
+      TagCollectionNSCache;
 
   template <typename T>
   T* AddCache(ContainerNode& node,
@@ -124,18 +124,18 @@ class NodeListsNodeData final : public GarbageCollected<NodeListsNodeData> {
         atomic_name_caches_.at(NamedNodeListKey(collection_type, g_star_atom)));
   }
 
-  TagCollection* AddCache(ContainerNode& node,
-                          const AtomicString& namespace_uri,
-                          const AtomicString& local_name) {
+  TagCollectionNS* AddCache(ContainerNode& node,
+                            const AtomicString& namespace_uri,
+                            const AtomicString& local_name) {
     DCHECK(ThreadState::Current()->IsGCForbidden());
     QualifiedName name(g_null_atom, local_name, namespace_uri);
-    TagCollectionCacheNS::AddResult result =
-        tag_collection_cache_ns_.insert(name, nullptr);
+    TagCollectionNSCache::AddResult result =
+        tag_collection_ns_caches_.insert(name, nullptr);
     if (!result.is_new_entry)
       return result.stored_value->value;
 
-    TagCollection* list =
-        TagCollection::Create(node, namespace_uri, local_name);
+    TagCollectionNS* list =
+        TagCollectionNS::Create(node, namespace_uri, local_name);
     result.stored_value->value = list;
     ScriptWrappableVisitor::WriteBarrier(this, list);
     return list;
@@ -147,7 +147,7 @@ class NodeListsNodeData final : public GarbageCollected<NodeListsNodeData> {
 
   bool IsEmpty() const {
     return !child_node_list_ && atomic_name_caches_.IsEmpty() &&
-           tag_collection_cache_ns_.IsEmpty();
+           tag_collection_ns_caches_.IsEmpty();
   }
 
   void AdoptTreeScope() { InvalidateCaches(); }
@@ -164,10 +164,10 @@ class NodeListsNodeData final : public GarbageCollected<NodeListsNodeData> {
       list->DidMoveToDocument(old_document, new_document);
     }
 
-    TagCollectionCacheNS::const_iterator tag_end =
-        tag_collection_cache_ns_.end();
-    for (TagCollectionCacheNS::const_iterator it =
-             tag_collection_cache_ns_.begin();
+    TagCollectionNSCache::const_iterator tag_end =
+        tag_collection_ns_caches_.end();
+    for (TagCollectionNSCache::const_iterator it =
+             tag_collection_ns_caches_.begin();
          it != tag_end; ++it) {
       LiveNodeListBase* list = it->value;
       DCHECK(!list->IsRootedAtTreeScope());
@@ -193,7 +193,7 @@ class NodeListsNodeData final : public GarbageCollected<NodeListsNodeData> {
   // Can be a ChildNodeList or an EmptyNodeList.
   WeakMember<NodeList> child_node_list_;
   NodeListAtomicNameCacheMap atomic_name_caches_;
-  TagCollectionCacheNS tag_collection_cache_ns_;
+  TagCollectionNSCache tag_collection_ns_caches_;
 };
 
 DEFINE_TRAIT_FOR_TRACE_WRAPPERS(NodeListsNodeData);
@@ -217,7 +217,7 @@ inline Collection* ContainerNode::EnsureCachedCollection(
     CollectionType type,
     const AtomicString& namespace_uri,
     const AtomicString& local_name) {
-  DCHECK_EQ(type, kTagCollectionType);
+  DCHECK_EQ(type, kTagCollectionNSType);
   ThreadState::MainThreadGCForbiddenScope gc_forbidden;
   return EnsureNodeLists().AddCache(*this, namespace_uri, local_name);
 }

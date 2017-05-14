@@ -1457,23 +1457,24 @@ void ContainerNode::InvalidateNodeListCachesInAncestors(
   }
 }
 
-TagCollection* ContainerNode::getElementsByTagName(
-    const AtomicString& local_name) {
-  if (GetDocument().IsHTMLDocument())
+HTMLCollection* ContainerNode::getElementsByTagName(
+    const AtomicString& qualified_name) {
+  DCHECK(!qualified_name.IsNull());
+
+  if (GetDocument().IsHTMLDocument()) {
     return EnsureCachedCollection<HTMLTagCollection>(kHTMLTagCollectionType,
-                                                     local_name);
-  return EnsureCachedCollection<TagCollection>(kTagCollectionType, local_name);
+                                                     qualified_name);
+  }
+  return EnsureCachedCollection<TagCollection>(kTagCollectionType,
+                                               qualified_name);
 }
 
-TagCollection* ContainerNode::getElementsByTagNameNS(
+HTMLCollection* ContainerNode::getElementsByTagNameNS(
     const AtomicString& namespace_uri,
     const AtomicString& local_name) {
-  if (namespace_uri == g_star_atom)
-    return getElementsByTagName(local_name);
-
-  return EnsureCachedCollection<TagCollection>(
-      kTagCollectionType, namespace_uri.IsEmpty() ? g_null_atom : namespace_uri,
-      local_name);
+  return EnsureCachedCollection<TagCollectionNS>(
+      kTagCollectionNSType,
+      namespace_uri.IsEmpty() ? g_null_atom : namespace_uri, local_name);
 }
 
 // Takes an AtomicString in argument because it is common for elements to share

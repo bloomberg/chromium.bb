@@ -27,9 +27,9 @@
 namespace blink {
 
 HTMLTagCollection::HTMLTagCollection(ContainerNode& root_node,
-                                     const AtomicString& local_name)
-    : TagCollection(root_node, kHTMLTagCollectionType, g_star_atom, local_name),
-      lowered_local_name_(local_name.LowerASCII()) {
+                                     const AtomicString& qualified_name)
+    : TagCollection(root_node, kHTMLTagCollectionType, qualified_name),
+      lowered_qualified_name_(qualified_name.LowerASCII()) {
   DCHECK(root_node.GetDocument().IsHTMLDocument());
 }
 
