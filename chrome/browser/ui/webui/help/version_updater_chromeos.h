@@ -26,6 +26,9 @@ class VersionUpdaterCros : public VersionUpdater,
                   bool is_powerwash_allowed) override;
   void GetChannel(bool get_current_channel,
                   const ChannelCallback& callback) override;
+  void SetUpdateOverCellularTarget(const StatusCallback& callback,
+                                   const std::string& target_version,
+                                   int64_t target_size) override;
 
   // Gets the last update status, without triggering a new check or download.
   void GetUpdateStatus(const StatusCallback& callback);
@@ -46,6 +49,9 @@ class VersionUpdaterCros : public VersionUpdater,
 
   // Callback from UpdateEngineClient::RequestUpdateCheck().
   void OnUpdateCheck(chromeos::UpdateEngineClient::UpdateCheckResult result);
+
+  // Callback from UpdateEngineClient::SetUpdateOverCellularTarget().
+  void OnSetUpdateOverCellularTarget(bool success);
 
   // Callback from UpdateEngineClient::GetChannel().
   void OnGetChannel(const ChannelCallback& cb,

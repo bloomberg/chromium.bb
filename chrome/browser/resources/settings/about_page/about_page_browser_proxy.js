@@ -35,6 +35,14 @@ var ChannelInfo;
 var VersionInfo;
 
 /**
+ * @typedef {{
+ *   version: (string|undefined),
+ *   size: (string|undefined),
+ * }}
+ */
+var AboutPageUpdateInfo;
+
+/**
  * Enumeration of all possible browser channels.
  * @enum {string}
  */
@@ -58,6 +66,7 @@ var UpdateStatus = {
   FAILED: 'failed',
   DISABLED: 'disabled',
   DISABLED_BY_ADMIN: 'disabled_by_admin',
+  NEED_PERMISSION_TO_UPDATE: 'need_permission_to_update',
 };
 
 // <if expr="_google_chrome and is_macosx">
@@ -78,6 +87,8 @@ var PromoteUpdaterStatus;
  *   progress: (number|undefined),
  *   message: (string|undefined),
  *   connectionTypes: (string|undefined),
+ *   version: (string|undefined),
+ *   size: (string|undefined),
  * }}
  */
 var UpdateStatusChangedEvent;
@@ -147,6 +158,18 @@ cr.define('settings', function() {
     requestUpdate: function() {},
 
     /**
+     * Checks for the update with specified version and size and applies over
+     * cellular. The target version and size are the same as were received from
+     * 'update-status-changed' WebUI event. We send this back all the way to
+     * update engine for it to double check with update server in case there's a
+     * new update available. This prevents downloading the new update that user
+     * didn't agree to.
+     * @param {string} target_version
+     * @param {string} target_size
+     */
+    requestUpdateOverCellular: function(target_version, target_size) {},
+
+    /**
      * @param {!BrowserChannel} channel
      * @param {boolean} isPowerwashAllowed
      */
@@ -211,6 +234,11 @@ cr.define('settings', function() {
     /** @override */
     requestUpdate: function() {
       chrome.send('requestUpdate');
+    },
+
+    /** @override */
+    requestUpdateOverCellular: function(target_version, target_size) {
+      chrome.send('requestUpdateOverCellular', [target_version, target_size]);
     },
 
     /** @override */

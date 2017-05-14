@@ -25,6 +25,7 @@ class VersionUpdater {
   // Update process state machine.
   enum Status {
     CHECKING,
+    NEED_PERMISSION_TO_UPDATE,
     UPDATING,
     NEARLY_UPDATED,
     UPDATED,
@@ -53,8 +54,13 @@ class VersionUpdater {
 
   // Used to update the client of status changes. int parameter is the progress
   // and should only be non-zero for the UPDATING state.
+  // std::string parameter is the version of the available update and should be
+  // empty string when update is not available.
+  // int64_t parameter is the size in bytes of the available update and should
+  // be 0 when update is not available.
   // base::string16 parameter is a message explaining a failure.
-  typedef base::Callback<void(Status, int, const base::string16&)>
+  typedef base::Callback<
+      void(Status, int, const std::string&, int64_t, const base::string16&)>
       StatusCallback;
 
   // Used to show or hide the promote UI elements. Mac-only.
@@ -86,6 +92,14 @@ class VersionUpdater {
   virtual void GetChannel(bool get_current_channel,
                           const ChannelCallback& callback) = 0;
   virtual void GetEolStatus(const EolStatusCallback& callback) = 0;
+
+  // Set the update over cellular target in |target_version| and |target_size|
+  // arguments maintained by update engine. The arguments are later used by
+  // update engine to match the given target with the server head and to allow
+  // update over cellular to this given target.
+  virtual void SetUpdateOverCellularTarget(const StatusCallback& callback,
+                                           const std::string& target_version,
+                                           int64_t target_size) = 0;
 #endif
 };
 

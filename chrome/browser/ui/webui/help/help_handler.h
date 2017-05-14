@@ -90,6 +90,8 @@ class HelpHandler : public content::WebUIMessageHandler,
   // Callback method which forwards status updates to the page.
   void SetUpdateStatus(VersionUpdater::Status status,
                        int progress,
+                       const std::string& version,
+                       int64_t size,
                        const base::string16& fail_message);
 
 #if defined(OS_MACOSX)

@@ -6,6 +6,7 @@
  * @fileoverview 'settings-about-page' contains version and OS related
  * information.
  */
+
 Polymer({
   is: 'settings-about-page',
 
@@ -84,7 +85,16 @@ Polymer({
             '#detailed-build-info-trigger');
         return map;
       },
-    }
+    },
+
+    /** @private */
+    showUpdateWarningDialog_: {
+      type: Boolean,
+      value: false,
+    },
+
+    /** @private {!AboutPageUpdateInfo|undefined} */
+    updateInfo_: Object,
 // </if>
   },
 
@@ -163,6 +173,10 @@ Polymer({
 // <if expr="chromeos">
     if (event.status == UpdateStatus.CHECKING)
       this.hasCheckedForUpdates_ = true;
+    else if (event.status == UpdateStatus.NEED_PERMISSION_TO_UPDATE) {
+      this.showUpdateWarningDialog_ = true;
+      this.updateInfo_ = {version: event.version, size: event.size};
+    }
 // </if>
     this.currentUpdateStatusEvent_ = event;
   },
@@ -258,6 +272,13 @@ Polymer({
     switch (this.currentUpdateStatusEvent_.status) {
       case UpdateStatus.CHECKING:
         return this.i18n('aboutUpgradeCheckStarted');
+      case UpdateStatus.NEED_PERMISSION_TO_UPDATE:
+        // This status is immediately followed by an reporting error status.
+        // When update engine reports error, UI just shows that your device is
+        // up to date. This is a bug that needs to be fixed in the future.
+        // TODO(weidongg/581071): Show proper message when update engine aborts
+        // due to cellular connection.
+        return '';
       case UpdateStatus.NEARLY_UPDATED:
 // <if expr="chromeos">
         if (this.currentChannel_ != this.targetChannel_)
@@ -399,7 +420,8 @@ Polymer({
     var staleUpdatedStatus = !this.hasCheckedForUpdates_ &&
         this.checkStatus_(UpdateStatus.UPDATED);
 
-    return staleUpdatedStatus || this.checkStatus_(UpdateStatus.FAILED);
+    return staleUpdatedStatus || this.checkStatus_(UpdateStatus.FAILED) ||
+        this.checkStatus_(UpdateStatus.NEED_PERMISSION_TO_UPDATE);
   },
 
   /**
@@ -408,6 +430,11 @@ Polymer({
    */
   shouldShowRegulatoryInfo_: function() {
     return this.regulatoryInfo_ !== null;
+  },
+
+  /** @private */
+  onUpdateWarningDialogClose_: function() {
+    this.showUpdateWarningDialog_ = false;
   },
 // </if>
 
