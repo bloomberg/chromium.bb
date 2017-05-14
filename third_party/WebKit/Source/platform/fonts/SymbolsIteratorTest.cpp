@@ -223,13 +223,12 @@ TEST_F(SymbolsIteratorTest, JudgePilot) {
 }
 
 // Extracted from http://unicode.org/emoji/charts/emoji-released.html for Emoji
-// v5.0, except for the subdivision-flag section. Currently blocked on ICU 59
-// upgrade, TODO(jshin): crbug.com/699469
+// v5.0, except for the subdivision-flag section.
 // Before ICU 59 new emoji sequences and new single emoji are not detected as
 // emoji type text and sequences get split up in the middle so that shaping
 // cannot form the right glyph from the emoji font. Running this as one run in
 // one test ensures that the new emoji form an unbroken emoji-type sequence.
-TEST_F(SymbolsIteratorTest, DISABLED_Emoji5AdditionsExceptFlags) {
+TEST_F(SymbolsIteratorTest, Emoji5AdditionsExceptFlags) {
   CHECK_RUNS(
       {{"\xF0\x9F\xA7\x94\xF0\x9F\x8F\xBB\xF0\x9F\xA7\x94\xF0\x9F\x8F\xBC\xF0"
         "\x9F\xA7\x94\xF0\x9F\x8F\xBD\xF0\x9F\xA7\x94\xF0\x9F\x8F\xBE\xF0\x9F"
