@@ -12,6 +12,7 @@
 #define NO_DSHOW_STRSAFE
 #include <dshow.h>
 #include <stdint.h>
+#include <vidcap.h>
 
 #include <map>
 #include <string>
@@ -77,6 +78,8 @@ class VideoCaptureDeviceWin : public VideoCaptureDevice,
   void StopAndDeAllocate() override;
   void TakePhoto(TakePhotoCallback callback) override;
   void GetPhotoCapabilities(GetPhotoCapabilitiesCallback callback) override;
+  void SetPhotoOptions(mojom::PhotoSettingsPtr settings,
+                       SetPhotoOptionsCallback callback) override;
 
  private:
   enum InternalState {
@@ -115,6 +118,14 @@ class VideoCaptureDeviceWin : public VideoCaptureDevice,
 
   // Map of all capabilities this device support.
   CapabilityList capabilities_;
+
+  VideoCaptureFormat capture_format_;
+
+  base::win::ScopedComPtr<ICameraControl> camera_control_;
+  base::win::ScopedComPtr<IVideoProcAmp> video_control_;
+  // These flags keep the manual/auto mode between cycles of SetPhotoOptions().
+  bool white_balance_mode_manual_;
+  bool exposure_mode_manual_;
 
   base::TimeTicks first_ref_time_;
 
