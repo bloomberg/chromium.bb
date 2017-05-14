@@ -1034,14 +1034,14 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnable2dCanvasDynamicRenderingModeSwitchingDescription,
      kOsAll,
      SINGLE_VALUE_TYPE(switches::kEnableCanvas2dDynamicRenderingModeSwitching)},
-    {"composited-layer-borders", flag_descriptions::kCompositedLayerBorders,
+    {"composited-layer-borders", flag_descriptions::kCompositedLayerBordersName,
      flag_descriptions::kCompositedLayerBordersDescription, kOsAll,
      SINGLE_VALUE_TYPE(cc::switches::kShowCompositedLayerBorders)},
     {"gl-composited-texture-quad-borders",
-     flag_descriptions::kGlCompositedTextureQuadBorders,
+     flag_descriptions::kGlCompositedTextureQuadBordersName,
      flag_descriptions::kGlCompositedTextureQuadBordersDescription, kOsAll,
      SINGLE_VALUE_TYPE(cc::switches::kGlCompositedTextureQuadBorder)},
-    {"show-overdraw-feedback", flag_descriptions::kShowOverdrawFeedback,
+    {"show-overdraw-feedback", flag_descriptions::kShowOverdrawFeedbackName,
      flag_descriptions::kShowOverdrawFeedbackDescription, kOsAll,
      SINGLE_VALUE_TYPE(cc::switches::kShowOverdrawFeedback)},
     {"ui-disable-partial-swap", flag_descriptions::kUiPartialSwapName,
@@ -1119,16 +1119,16 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kHyperlinkAuditingDescription, kOsAll,
      SINGLE_DISABLE_VALUE_TYPE(switches::kNoPings)},
 #if defined(OS_ANDROID)
-    {"contextual-search", flag_descriptions::kContextualSearch,
+    {"contextual-search", flag_descriptions::kContextualSearchName,
      flag_descriptions::kContextualSearchDescription, kOsAndroid,
      ENABLE_DISABLE_VALUE_TYPE(switches::kEnableContextualSearch,
                                switches::kDisableContextualSearch)},
     {"cs-contextual-cards-single-actions",
-     flag_descriptions::kContextualSearchSingleActions,
+     flag_descriptions::kContextualSearchSingleActionsName,
      flag_descriptions::kContextualSearchSingleActionsDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kContextualSearchSingleActions)},
     {"cs-contextual-cards-url-actions",
-     flag_descriptions::kContextualSearchUrlActions,
+     flag_descriptions::kContextualSearchUrlActionsName,
      flag_descriptions::kContextualSearchUrlActionsDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kContextualSearchUrlActions)},
 #endif  // OS_ANDROID
@@ -1311,7 +1311,7 @@ const FeatureEntry kFeatureEntries[] = {
 #endif  // USE_ASH
 #if defined(OS_CHROMEOS)
     {
-        "disable-boot-animation", flag_descriptions::kBootAnimation,
+        "disable-boot-animation", flag_descriptions::kBootAnimationName,
         flag_descriptions::kBootAnimationDescription, kOsCrOSOwnerOnly,
         SINGLE_DISABLE_VALUE_TYPE(chromeos::switches::kDisableBootAnimation),
     },
@@ -1396,7 +1396,7 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kUiShowCompositedLayerBordersName,
      flag_descriptions::kUiShowCompositedLayerBordersDescription, kOsCrOS,
      MULTI_VALUE_TYPE(kUiShowCompositedLayerBordersChoices)},
-    {"disable-cloud-import", flag_descriptions::kCloudImport,
+    {"disable-cloud-import", flag_descriptions::kCloudImportName,
      flag_descriptions::kCloudImportDescription, kOsCrOS,
      SINGLE_DISABLE_VALUE_TYPE(chromeos::switches::kDisableCloudImport)},
     {"enable-request-tablet-site", flag_descriptions::kRequestTabletSiteName,
@@ -1421,7 +1421,7 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(
          password_manager::features::kEnableManualPasswordGeneration)},
     {"enable-show-autofill-signatures",
-     flag_descriptions::kShowAutofillSignatures,
+     flag_descriptions::kShowAutofillSignaturesName,
      flag_descriptions::kShowAutofillSignaturesDescription, kOsAll,
      SINGLE_VALUE_TYPE(autofill::switches::kShowAutofillSignatures)},
     {"affiliation-based-matching",
@@ -1461,10 +1461,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kTouchSelectionStrategyDescription,
      kOsAndroid,  // TODO(mfomitchev): Add CrOS/Win/Linux support soon.
      MULTI_VALUE_TYPE(kTouchTextSelectionStrategyChoices)},
-    {"enable-navigation-tracing", flag_descriptions::kEnableNavigationTracing,
+    {"enable-navigation-tracing",
+     flag_descriptions::kEnableNavigationTracingName,
      flag_descriptions::kEnableNavigationTracingDescription, kOsAll,
      SINGLE_VALUE_TYPE(switches::kEnableNavigationTracing)},
-    {"trace-upload-url", flag_descriptions::kTraceUploadUrl,
+    {"trace-upload-url", flag_descriptions::kTraceUploadUrlName,
      flag_descriptions::kTraceUploadUrlDescription, kOsAll,
      MULTI_VALUE_TYPE(kTraceUploadURL)},
     {"enable-service-worker-navigation-preload",
@@ -1492,7 +1493,7 @@ const FeatureEntry kFeatureEntries[] = {
      ENABLE_DISABLE_VALUE_TYPE(switches::kEnableLCDText,
                                switches::kDisableLCDText)},
     {"enable-offer-store-unmasked-wallet-cards",
-     flag_descriptions::kOfferStoreUnmaskedWalletCards,
+     flag_descriptions::kOfferStoreUnmaskedWalletCardsName,
      flag_descriptions::kOfferStoreUnmaskedWalletCardsDescription, kOsAll,
      ENABLE_DISABLE_VALUE_TYPE(
          autofill::switches::kEnableOfferStoreUnmaskedWalletCards,
@@ -1683,7 +1684,8 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kTranslateLanguageByUlpDescription, kOsAll,
      FEATURE_VALUE_TYPE(translate::kTranslateLanguageByULP)},
 #if BUILDFLAG(ENABLE_NATIVE_NOTIFICATIONS)
-    {"enable-native-notifications", flag_descriptions::kNotificationsNativeFlag,
+    {"enable-native-notifications",
+     flag_descriptions::kNotificationsNativeFlagName,
      flag_descriptions::kNotificationsNativeFlagDescription, kOsMac | kOsLinux,
      FEATURE_VALUE_TYPE(features::kNativeNotifications)},
 #endif  // ENABLE_NATIVE_NOTIFICATIONS
@@ -1710,7 +1712,7 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(chrome::android::kChromeHomeExpandButton)},
 #endif  // OS_ANDROID
 #if defined(OS_ANDROID)
-    {"enable-iph-demo-mode", flag_descriptions::kEnableIphDemoMode,
+    {"enable-iph-demo-mode", flag_descriptions::kEnableIphDemoModeName,
      flag_descriptions::kEnableIphDemoModeDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(feature_engagement_tracker::kIPHDemoMode)},
 #endif  // OS_ANDROID
@@ -1902,7 +1904,7 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableClientLoFiDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(previews::features::kClientLoFi)},
 #endif  // OS_ANDROID
-    {"allow-insecure-localhost", flag_descriptions::kAllowInsecureLocalhost,
+    {"allow-insecure-localhost", flag_descriptions::kAllowInsecureLocalhostName,
      flag_descriptions::kAllowInsecureLocalhostDescription, kOsAll,
      SINGLE_VALUE_TYPE(switches::kAllowInsecureLocalhost)},
     {"enable-add-to-shelf", flag_descriptions::kAddToShelfName,
@@ -1933,7 +1935,7 @@ const FeatureEntry kFeatureEntries[] = {
 // enable-drive-search-in-chrome-launcher flag.
 #if BUILDFLAG(ENABLE_APP_LIST)
     {"enable-drive-search-in-app-launcher",
-     flag_descriptions::kDriveSearchInChromeLauncher,
+     flag_descriptions::kDriveSearchInChromeLauncherName,
      flag_descriptions::kDriveSearchInChromeLauncherDescription, kOsCrOS,
      ENABLE_DISABLE_VALUE_TYPE(
          app_list::switches::kEnableDriveSearchInChromeLauncher,
@@ -2227,11 +2229,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableScrollAnchoringDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kScrollAnchoring)},
     {"disable-audio-support-for-desktop-share",
-     flag_descriptions::kDisableAudioForDesktopShare,
+     flag_descriptions::kDisableAudioForDesktopShareName,
      flag_descriptions::kDisableAudioForDesktopShareDescription, kOsAll,
      SINGLE_VALUE_TYPE(switches::kDisableAudioSupportForDesktopShare)},
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-    {"tab-for-desktop-share", flag_descriptions::kDisableTabForDesktopShare,
+    {"tab-for-desktop-share", flag_descriptions::kDisableTabForDesktopShareName,
      flag_descriptions::kDisableTabForDesktopShareDescription, kOsAll,
      SINGLE_VALUE_TYPE(extensions::switches::kDisableTabForDesktopShare)},
 #endif  // ENABLE_EXTENSIONS
@@ -2493,7 +2495,7 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kNewRemotePlaybackPipelineDescription, kOsAll,
      FEATURE_VALUE_TYPE(media::kNewRemotePlaybackPipeline)},
 #if defined(OS_CHROMEOS)
-    {"quick-unlock-pin", flag_descriptions::kQuickUnlockPin,
+    {"quick-unlock-pin", flag_descriptions::kQuickUnlockPinName,
      flag_descriptions::kQuickUnlockPinDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(features::kQuickUnlockPin)},
     {"quick-unlock-fingerprint", flag_descriptions::kQuickUnlockFingerprint,
@@ -2602,7 +2604,7 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kVideoRotateToFullscreenDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(media::kVideoRotateToFullscreen)},
 #endif
-    {"enable-nostate-prefetch", flag_descriptions::kNostatePrefetch,
+    {"enable-nostate-prefetch", flag_descriptions::kNostatePrefetchName,
      flag_descriptions::kNostatePrefetchDescription, kOsAll,
      FEATURE_WITH_PARAMS_VALUE_TYPE(prerender::kNoStatePrefetchFeature,
                                     kNoStatePrefetchFeatureVariations,
@@ -2619,7 +2621,7 @@ const FeatureEntry kFeatureEntries[] = {
 
 #if defined(OS_ANDROID)
     {"enable-expanded-autofill-credit-card-popup",
-     flag_descriptions::kEnableExpandedAutofillCreditCardPopupLayout,
+     flag_descriptions::kEnableExpandedAutofillCreditCardPopupLayoutName,
      flag_descriptions::kEnableExpandedAutofillCreditCardPopupLayoutDescription,
      kOsAndroid,
      FEATURE_WITH_PARAMS_VALUE_TYPE(
@@ -2630,7 +2632,7 @@ const FeatureEntry kFeatureEntries[] = {
          "AutofillCreditCardDropdownVariations")},
 #endif  // OS_ANDROID
     {"enable-autofill-credit-card-last-used-date-display",
-     flag_descriptions::kEnableAutofillCreditCardLastUsedDateDisplay,
+     flag_descriptions::kEnableAutofillCreditCardLastUsedDateDisplayName,
      flag_descriptions::kEnableAutofillCreditCardLastUsedDateDisplayDescription,
      kOsAll,
      FEATURE_WITH_PARAMS_VALUE_TYPE(
@@ -2640,7 +2642,7 @@ const FeatureEntry kFeatureEntries[] = {
          // when the flag is manually enabled in a local build.
          "AutofillCreditCardDropdownVariations")},
     {"enable-autofill-credit-card-upload-cvc-prompt",
-     flag_descriptions::kEnableAutofillCreditCardUploadCvcPrompt,
+     flag_descriptions::kEnableAutofillCreditCardUploadCvcPromptName,
      flag_descriptions::kEnableAutofillCreditCardUploadCvcPromptDescription,
      kOsDesktop,
      FEATURE_VALUE_TYPE(autofill::kAutofillUpstreamRequestCvcIfMissing)},
