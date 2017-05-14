@@ -12,6 +12,8 @@ static_library("url_formatter") {
     "android/component_jni_registrar.h",
     "elide_url.cc",
     "elide_url.h",
+    "idn_spoof_checker.cc",
+    "idn_spoof_checker.h",
     "url_fixer.cc",
     "url_fixer.h",
     "url_formatter.cc",
