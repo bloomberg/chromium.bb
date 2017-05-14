@@ -45,7 +45,7 @@ import time
 
 from webkitpy.common import exit_codes
 from webkitpy.common.net.file_uploader import FileUploader
-from webkitpy.common.webkit_finder import WebKitFinder
+from webkitpy.common.path_finder import PathFinder
 from webkitpy.layout_tests.controllers.layout_test_finder import LayoutTestFinder
 from webkitpy.layout_tests.controllers.layout_test_runner import LayoutTestRunner
 from webkitpy.layout_tests.controllers.test_result_writer import TestResultWriter
@@ -91,7 +91,7 @@ class Manager(object):
 
         self._results_directory = self._port.results_directory()
         self._finder = LayoutTestFinder(self._port, self._options)
-        self._webkit_finder = WebKitFinder(port.host.filesystem)
+        self._path_finder = PathFinder(port.host.filesystem)
         self._runner = LayoutTestRunner(self._options, self._port, self._printer, self._results_directory, self._test_is_slow)
 
     def run(self, args):
@@ -541,7 +541,7 @@ class Manager(object):
             _log.error("Upload failed: %s", err)
 
     def _copy_results_html_file(self, destination_path):
-        base_dir = self._webkit_finder.path_from_layout_tests('fast', 'harness')
+        base_dir = self._path_finder.path_from_layout_tests('fast', 'harness')
         results_file = self._filesystem.join(base_dir, 'results.html')
         # Note that the results.html template file won't exist when we're using a MockFileSystem during unit tests,
         # so make sure it exists before we try to copy it.

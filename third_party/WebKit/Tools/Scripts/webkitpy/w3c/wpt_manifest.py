@@ -12,7 +12,7 @@ test type, options, URLs to use, and reference file paths if applicable.
 import json
 import logging
 
-from webkitpy.common.webkit_finder import WebKitFinder
+from webkitpy.common.path_finder import PathFinder
 
 _log = logging.getLogger(__file__)
 
@@ -90,7 +90,7 @@ class WPTManifest(object):
     @staticmethod
     def ensure_manifest(host):
         """Checks whether the manifest exists, and then generates it if necessary."""
-        finder = WebKitFinder(host.filesystem)
+        finder = PathFinder(host.filesystem)
         manifest_path = finder.path_from_layout_tests('external', 'wpt', 'MANIFEST.json')
         base_manifest_path = finder.path_from_layout_tests('external', 'WPT_BASE_MANIFEST.json')
 
@@ -112,7 +112,7 @@ class WPTManifest(object):
     def generate_manifest(host, dest_path):
         """Generates MANIFEST.json on the specified directory."""
         executive = host.executive
-        finder = WebKitFinder(host.filesystem)
+        finder = PathFinder(host.filesystem)
         manifest_exec_path = finder.path_from_tools_scripts('webkitpy', 'thirdparty', 'wpt', 'wpt', 'manifest')
 
         cmd = ['python', manifest_exec_path, '--work', '--tests-root', dest_path]

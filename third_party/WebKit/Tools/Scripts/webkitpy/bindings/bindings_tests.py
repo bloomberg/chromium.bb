@@ -31,8 +31,8 @@ import tempfile
 
 from webkitpy.common.system.executive import Executive
 
-from webkitpy.common import webkit_finder
-webkit_finder.add_bindings_scripts_dir_to_sys_path()
+from webkitpy.common import path_finder
+path_finder.add_bindings_scripts_dir_to_sys_path()
 
 from code_generator_v8 import CodeGeneratorDictionaryImpl
 from code_generator_v8 import CodeGeneratorV8
@@ -77,7 +77,7 @@ DEPENDENCY_IDL_FILES = frozenset([
 
 COMPONENT_DIRECTORY = frozenset(['core', 'modules'])
 
-SOURCE_PATH = webkit_finder.get_source_dir()
+SOURCE_PATH = path_finder.get_source_dir()
 TEST_INPUT_DIRECTORY = os.path.join(SOURCE_PATH, 'bindings', 'tests', 'idls')
 REFERENCE_DIRECTORY = os.path.join(SOURCE_PATH, 'bindings', 'tests', 'results')
 

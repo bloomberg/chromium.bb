@@ -30,7 +30,7 @@ import optparse
 import unittest
 
 from webkitpy.common.host_mock import MockHost
-from webkitpy.common.webkit_finder import WebKitFinder
+from webkitpy.common.path_finder import PathFinder
 from webkitpy.layout_tests.port import android
 from webkitpy.layout_tests.port import factory
 from webkitpy.layout_tests.port import linux
@@ -80,10 +80,10 @@ class FactoryTest(unittest.TestCase):
 
     def get_port(self, target=None, configuration=None, files=None):
         host = MockHost()
-        wkf = WebKitFinder(host.filesystem)
+        finder = PathFinder(host.filesystem)
         files = files or {}
         for path, contents in files.items():
-            host.filesystem.write_text_file(wkf.path_from_chromium_base(path), contents)
+            host.filesystem.write_text_file(finder.path_from_chromium_base(path), contents)
         options = optparse.Values({'target': target, 'configuration': configuration})
         return factory.PortFactory(host).get(options=options)
 

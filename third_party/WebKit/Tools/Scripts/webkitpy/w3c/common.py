@@ -18,7 +18,7 @@ WPT_GH_SSH_URL_TEMPLATE = 'https://{}@github.com/%s/%s.git' % (WPT_GH_ORG, WPT_G
 WPT_REVISION_FOOTER = 'WPT-Export-Revision:'
 
 # TODO(qyearsley): This directory should be able to be constructed with
-# WebKitFinder and WPT_DEST_NAME, plus the string "external".
+# PathFinder and WPT_DEST_NAME, plus the string "external".
 CHROMIUM_WPT_DIR = 'third_party/WebKit/LayoutTests/external/wpt/'
 
 # Our mirrors of the official wpt repo, which we pull from.

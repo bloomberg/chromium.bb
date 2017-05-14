@@ -34,7 +34,7 @@ a local W3C repository source directory into a destination directory.
 import logging
 import mimetypes
 
-from webkitpy.common.webkit_finder import WebKitFinder
+from webkitpy.common.path_finder import PathFinder
 from webkitpy.layout_tests.models.test_expectations import TestExpectationParser
 
 _log = logging.getLogger(__name__)
@@ -59,8 +59,8 @@ class TestCopier(object):
         self.dest_dir_name = dest_dir_name
 
         self.filesystem = self.host.filesystem
-        self.webkit_finder = WebKitFinder(self.filesystem)
-        self.layout_tests_dir = self.webkit_finder.layout_tests_dir()
+        self.path_finder = PathFinder(self.filesystem)
+        self.layout_tests_dir = self.path_finder.layout_tests_dir()
         self.destination_directory = self.filesystem.normpath(
             self.filesystem.join(
                 self.layout_tests_dir,
@@ -141,7 +141,7 @@ class TestCopier(object):
     def find_paths_to_skip(self):
         paths_to_skip = set()
         port = self.host.port_factory.get()
-        w3c_import_expectations_path = self.webkit_finder.path_from_layout_tests('W3CImportExpectations')
+        w3c_import_expectations_path = self.path_finder.path_from_layout_tests('W3CImportExpectations')
         w3c_import_expectations = self.filesystem.read_text_file(w3c_import_expectations_path)
         parser = TestExpectationParser(port, all_tests=(), is_lint_mode=False)
         expectation_lines = parser.parse(w3c_import_expectations_path, w3c_import_expectations)

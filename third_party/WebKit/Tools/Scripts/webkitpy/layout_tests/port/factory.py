@@ -32,7 +32,7 @@ import fnmatch
 import optparse
 import re
 
-from webkitpy.common.webkit_finder import WebKitFinder
+from webkitpy.common.path_finder import PathFinder
 
 
 class PortFactory(object):
@@ -168,7 +168,7 @@ def _read_configuration_from_gn(fs, options):
     build_directory = getattr(options, 'build_directory', None) or 'out'
 
     target = options.target
-    finder = WebKitFinder(fs)
+    finder = PathFinder(fs)
     path = fs.join(finder.chromium_base(), build_directory, target, 'args.gn')
     if not fs.exists(path):
         path = fs.join(finder.chromium_base(), build_directory, target, 'toolchain.ninja')

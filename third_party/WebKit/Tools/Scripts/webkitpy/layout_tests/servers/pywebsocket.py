@@ -32,7 +32,7 @@ import os
 import sys
 import time
 
-from webkitpy.common.webkit_finder import WebKitFinder
+from webkitpy.common.path_finder import PathFinder
 from webkitpy.layout_tests.servers import server_base
 
 
@@ -56,7 +56,7 @@ class PyWebSocket(server_base.ServerBase):
         time_str = time.strftime('%d%b%Y-%H%M%S')
         log_file_name = _WS_LOG_PREFIX + time_str
         self._error_log = self._filesystem.join(self._output_dir, log_file_name + '-err.txt')
-        pywebsocket_base = WebKitFinder(self._filesystem).path_from_tools_scripts('webkitpy', 'thirdparty')
+        pywebsocket_base = PathFinder(self._filesystem).path_from_tools_scripts('webkitpy', 'thirdparty')
         pywebsocket_script = self._filesystem.join(pywebsocket_base, 'mod_pywebsocket', 'standalone.py')
 
         self._start_cmd = [

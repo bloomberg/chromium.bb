@@ -5,15 +5,15 @@
 import collections
 import re
 
+from webkitpy.common.path_finder import PathFinder
 from webkitpy.common.system.filesystem import FileSystem
-from webkitpy.common.webkit_finder import WebKitFinder
 
 
 class DirectoryOwnersExtractor(object):
 
     def __init__(self, filesystem=None):
         self.filesystem = filesystem or FileSystem
-        self.finder = WebKitFinder(filesystem)
+        self.finder = PathFinder(filesystem)
         self.owner_map = None
 
     def read_owner_map(self):

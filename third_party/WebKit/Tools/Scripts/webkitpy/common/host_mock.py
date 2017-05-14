@@ -30,8 +30,8 @@ from webkitpy.common.config.builders import BUILDERS
 from webkitpy.common.checkout.git_mock import MockGit
 from webkitpy.common.net.buildbot_mock import MockBuildBot
 from webkitpy.common.net.web_mock import MockWeb
+from webkitpy.common.path_finder import PathFinder
 from webkitpy.common.system.system_host_mock import MockSystemHost
-from webkitpy.common.webkit_finder import WebKitFinder
 
 # New-style ports need to move down into webkitpy.common.
 from webkitpy.layout_tests.builder_list import BuilderList
@@ -78,9 +78,9 @@ class MockHost(MockSystemHost):
         return self._git
 
     def _add_base_manifest_to_mock_filesystem(self, filesystem):
-        webkit_finder = WebKitFinder(filesystem)
+        path_finder = PathFinder(filesystem)
 
-        external_dir = webkit_finder.path_from_layout_tests('external')
+        external_dir = path_finder.path_from_layout_tests('external')
         filesystem.maybe_make_directory(filesystem.join(external_dir, 'wpt'))
 
         manifest_base_path = filesystem.join(external_dir, 'WPT_BASE_MANIFEST.json')

@@ -73,7 +73,7 @@ def get_webkitpy_thirdparty_dir():
     return os.path.join(get_scripts_dir(), 'webkitpy', 'thirdparty')
 
 
-class WebKitFinder(object):
+class PathFinder(object):
 
     def __init__(self, filesystem):
         self._filesystem = filesystem
