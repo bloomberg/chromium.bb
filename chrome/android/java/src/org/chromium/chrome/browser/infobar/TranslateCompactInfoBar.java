@@ -342,6 +342,14 @@ class TranslateCompactInfoBar extends InfoBar
         }
     }
 
+    @Override
+    protected void onStartedHiding() {
+        if (mOverflowMenuHelper != null) mOverflowMenuHelper.dismiss();
+        if (mLanguageMenuHelper != null) mLanguageMenuHelper.dismiss();
+        if (getSnackbarManager() != null) getSnackbarManager().dismissAllSnackbars();
+        super.onStartedHiding();
+    }
+
     private void createAndShowSnackbar(String title, int umaType, int itemId) {
         if (getSnackbarManager() == null) {
             // Directly apply menu option, if snackbar system is not working.

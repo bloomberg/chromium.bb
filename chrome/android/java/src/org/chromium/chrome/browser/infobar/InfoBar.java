@@ -161,12 +161,19 @@ public abstract class InfoBar implements InfoBarView {
             mIsDismissed = true;
             if (!mContainer.hasBeenDestroyed()) {
                 // If the container was destroyed, it's already been emptied of all its infobars.
+                onStartedHiding();
                 mContainer.removeInfoBar(this);
             }
             return true;
         }
         return false;
     }
+
+    /**
+     * Called just before the Java infobar has begun hiding.  Give the chance to clean up any child
+     * UI that may remain open.
+     */
+    protected void onStartedHiding() {}
 
     long getNativeInfoBarPtr() {
         return mNativeInfoBarPtr;
