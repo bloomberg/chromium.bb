@@ -95,12 +95,16 @@ class SVGUseElement final : public SVGGraphicsElement,
   }
 
   // Instance tree handling
-  Element* ResolveTargetElement();
+  enum ObserveBehavior {
+    kAddObserver,
+    kDontAddObserver,
+  };
+  Element* ResolveTargetElement(ObserveBehavior);
   void BuildShadowAndInstanceTree(SVGElement& target);
   void ClearInstanceRoot();
   Element* CreateInstanceTree(SVGElement& target_root) const;
   void ClearResourceReference();
-  bool HasCycleUseReferencing(const SVGUseElement&,
+  bool HasCycleUseReferencing(SVGUseElement&,
                               const ContainerNode& target_instance,
                               SVGElement*& new_target) const;
   bool ExpandUseElementsInShadowTree();

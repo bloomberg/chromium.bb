@@ -298,10 +298,12 @@ void SVGUseElement::ClearResourceReference() {
   RemoveAllOutgoingReferences();
 }
 
-Element* SVGUseElement::ResolveTargetElement() {
+Element* SVGUseElement::ResolveTargetElement(ObserveBehavior observe_behavior) {
   if (element_identifier_.IsEmpty())
     return nullptr;
   if (element_identifier_is_local_) {
+    if (observe_behavior == kDontAddObserver)
+      return GetTreeScope().getElementById(element_identifier_);
     return ObserveTarget(target_id_observer_, GetTreeScope(),
                          element_identifier_,
                          WTF::Bind(&SVGUseElement::InvalidateShadowTree,
@@ -321,7 +323,7 @@ void SVGUseElement::BuildPendingResource() {
   CancelShadowTreeRecreation();
   if (!isConnected())
     return;
-  Element* target = ResolveTargetElement();
+  Element* target = ResolveTargetElement(kAddObserver);
   // TODO(fs): Why would the Element not be "connected" at this point?
   if (target && target->isConnected() && target->IsSVGElement()) {
     BuildShadowAndInstanceTree(ToSVGElement(*target));
@@ -554,11 +556,10 @@ void SVGUseElement::CloneNonMarkupEventListeners() {
   }
 }
 
-bool SVGUseElement::HasCycleUseReferencing(const SVGUseElement& use,
+bool SVGUseElement::HasCycleUseReferencing(SVGUseElement& use,
                                            const ContainerNode& target_instance,
                                            SVGElement*& new_target) const {
-  Element* target_element =
-      TargetElementFromIRIString(use.HrefString(), use.GetTreeScope());
+  Element* target_element = use.ResolveTargetElement(kDontAddObserver);
   new_target = 0;
   if (target_element && target_element->IsSVGElement())
     new_target = ToSVGElement(target_element);
