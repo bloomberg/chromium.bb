@@ -80,7 +80,7 @@ const char kEnableUseZoomForDsfChoiceEnabled[] = "Enabled";
 
 const char kEnableUseZoomForDsfChoiceDisabled[] = "Disabled";
 
-const char kNostatePrefetch[] = "No-State Prefetch";
+const char kNostatePrefetchName[] = "No-State Prefetch";
 
 const char kNostatePrefetchDescription[] =
     R"*("No-State Prefetch" pre-downloads resources to improve load )*"
@@ -123,52 +123,35 @@ const char kPrintPdfAsImageDescription[] =
     "If enabled, an option to print PDF files as images will be available "
     "in print preview.";
 
+#if !defined(DISABLE_NACL)
+
 const char kNaclName[] = "Native Client";
-
-#if defined(OS_ANDROID)
-
-const char kNaclDescription[] = "Enable support for Native Client.";
-
-#endif  // defined(OS_ANDROID)
-
-#if !defined(OS_ANDROID)
-
 const char kNaclDescription[] =
     "Support Native Client for all web applications, even those that were "
     "not installed from the Chrome Web Store.";
 
-#endif  // !defined(OS_ANDROID)
-
 const char kNaclDebugName[] = "Native Client GDB-based debugging";
-
 const char kNaclDebugDescription[] =
     "Enable GDB debug stub. This will stop a Native Client application on "
     "startup and wait for nacl-gdb (from the NaCl SDK) to attach to it.";
 
-#if !defined(OS_ANDROID)
-
 const char kPnaclSubzeroName[] = "Force PNaCl Subzero";
-
 const char kPnaclSubzeroDescription[] =
     "Force the use of PNaCl's fast Subzero translator for all pexe files.";
 
-#endif  // !defined(OS_ANDROID)
-
 const char kNaclDebugMaskName[] =
     "Restrict Native Client GDB-based debugging by pattern";
-
 const char kNaclDebugMaskDescription[] =
     "Restricts Native Client application GDB-based debugging by URL of "
     "manifest file. Native Client GDB-based debugging must be enabled for "
     "this option to work.";
-
 const char kNaclDebugMaskChoiceDebugAll[] = "Debug everything.";
-
 const char kNaclDebugMaskChoiceExcludeUtilsPnacl[] =
     "Debug everything except secure shell and the PNaCl translator.";
-
 const char kNaclDebugMaskChoiceIncludeDebug[] =
     "Debug only if manifest URL ends with debug.nmf.";
+
+#endif
 
 const char kEnableHttpFormWarningName[] =
     "Show in-form warnings for sensitive fields when the top-level page is "
@@ -321,20 +304,20 @@ const char kTouchAdjustmentDescription[] =
     "Refine the position of a touch gesture in order to compensate for "
     "touches having poor resolution compared to a mouse.";
 
-const char kCompositedLayerBorders[] = "Composited render layer borders";
+const char kCompositedLayerBordersName[] = "Composited render layer borders";
 
 const char kCompositedLayerBordersDescription[] =
     "Renders a border around composited Render Layers to help debug and "
     "study layer compositing.";
 
-const char kGlCompositedTextureQuadBorders[] =
+const char kGlCompositedTextureQuadBordersName[] =
     "GL composited texture quad borders";
 
 const char kGlCompositedTextureQuadBordersDescription[] =
     "Renders a border around GL composited texture quads to help debug and "
     "study overlay support.";
 
-const char kShowOverdrawFeedback[] = "Show overdraw feedback";
+const char kShowOverdrawFeedbackName[] = "Show overdraw feedback";
 
 const char kShowOverdrawFeedbackDescription[] =
     "Visualize overdraw by color-coding elements based on if they have "
@@ -429,7 +412,7 @@ const char kHyperlinkAuditingDescription[] = "Sends hyperlink auditing pings.";
 
 #if defined(OS_ANDROID)
 
-const char kContextualSearch[] = "Contextual Search";
+const char kContextualSearchName[] = "Contextual Search";
 
 const char kContextualSearchDescription[] =
     "Whether or not Contextual Search is enabled.";
@@ -441,14 +424,15 @@ const char kContextualSearchContextualCardsBarIntegrationDescription[] =
     "Whether or not integration of Contextual Cards data in the Contextual "
     "Search Bar is enabled.";
 
-const char kContextualSearchSingleActions[] =
+const char kContextualSearchSingleActionsName[] =
     "Contextual Search - Single Actions";
 
 const char kContextualSearchSingleActionsDescription[] =
     "Whether or not single actions using Contextual Cards data in the "
     "Contextual Search Bar is enabled.";
 
-const char kContextualSearchUrlActions[] = "Contextual Search - URL Actions";
+const char kContextualSearchUrlActionsName[] =
+    "Contextual Search - URL Actions";
 
 const char kContextualSearchUrlActionsDescription[] =
     "Whether or not URL actions using Contextual Cards data in the "
@@ -958,7 +942,7 @@ const char kAshEnableUnifiedDesktopDescription[] =
     "Enable unified desktop mode which allows a window to span multiple "
     "displays.";
 
-const char kBootAnimation[] = "Boot animation";
+const char kBootAnimationName[] = "Boot animation";
 
 const char kBootAnimationDescription[] =
     "Wallpaper boot animation (except for OOBE case).";
@@ -981,7 +965,7 @@ const char kEnableHDRName[] = "HDR mode";
 const char kEnableHDRDescription[] =
     "Enables HDR support on compatible displays.";
 
-const char kCloudImport[] = "Cloud Import";
+const char kCloudImportName[] = "Cloud Import";
 
 const char kCloudImportDescription[] = "Allows the cloud-import feature.";
 
@@ -1025,7 +1009,7 @@ const char kManualPasswordGenerationDescription[] =
     "Show a 'Generate Password' option on the context menu for all password "
     "fields.";
 
-const char kShowAutofillSignatures[] = "Show autofill signatures.";
+const char kShowAutofillSignaturesName[] = "Show autofill signatures.";
 
 const char kShowAutofillSignaturesDescription[] =
     "Annotates web forms with Autofill signatures as HTML attributes.";
@@ -1073,7 +1057,7 @@ const char kPushApiBackgroundModeDescription[] =
     "continue running after the last window is closed, and to launch at OS "
     "startup, if the Push API needs it.";
 
-const char kEnableNavigationTracing[] = "Enable navigation tracing";
+const char kEnableNavigationTracingName[] = "Enable navigation tracing";
 
 const char kEnableNavigationTracingDescription[] =
     "This is to be used in conjunction with the trace-upload-url flag. "
@@ -1082,7 +1066,7 @@ const char kEnableNavigationTracingDescription[] =
     "flag. The trace may include personally identifiable information (PII) "
     "such as the titles and URLs of websites you visit.";
 
-const char kTraceUploadUrl[] = "Trace label for navigation tracing";
+const char kTraceUploadUrlName[] = "Trace label for navigation tracing";
 
 const char kTraceUploadUrlDescription[] =
     "This is to be used in conjunction with the enable-navigation-tracing "
@@ -1091,13 +1075,14 @@ const char kTraceUploadUrlDescription[] =
     "are not sure, select other. If left empty, no traces will be "
     "uploaded.";
 
-const char kDisableAudioForDesktopShare[] = "Disable Audio For Desktop Share";
+const char kDisableAudioForDesktopShareName[] =
+    "Disable Audio For Desktop Share";
 
 const char kDisableAudioForDesktopShareDescription[] =
     "With this flag on, desktop share picker window will not let the user "
     "choose whether to share audio.";
 
-const char kDisableTabForDesktopShare[] =
+const char kDisableTabForDesktopShareName[] =
     "Disable Desktop Share with tab source";
 
 const char kDisableTabForDesktopShareDescription[] =
@@ -1123,7 +1108,7 @@ const char kSyncAppListDescription[] =
     "Enable App Launcher sync. This also enables Folders where available "
     "(non OSX).";
 
-const char kDriveSearchInChromeLauncher[] =
+const char kDriveSearchInChromeLauncherName[] =
     "Drive Search in Chrome App Launcher";
 
 const char kDriveSearchInChromeLauncherDescription[] =
@@ -1719,7 +1704,7 @@ const char kTabsInCbdDescription[] =
 
 #endif  // defined(OS_ANDROID)
 
-const char kNotificationsNativeFlag[] = "Enable native notifications.";
+const char kNotificationsNativeFlagName[] = "Enable native notifications.";
 
 const char kNotificationsNativeFlagDescription[] =
     "Enable support for using the native notification toasts and "
@@ -1754,7 +1739,7 @@ const char kGoogleProfileInfoDescription[] =
     "Enables using Google information to populate the profile name and icon "
     "in the avatar menu.";
 
-const char kOfferStoreUnmaskedWalletCards[] =
+const char kOfferStoreUnmaskedWalletCardsName[] =
     "Google Payments card saving checkbox";
 
 const char kOfferStoreUnmaskedWalletCardsDescription[] =
@@ -2006,7 +1991,7 @@ const char kChromeHomeExpandButtonDescription[] =
 
 #if defined(OS_ANDROID)
 
-const char kEnableIphDemoMode[] = "In-Product Help Demo Mode";
+const char kEnableIphDemoModeName[] = "In-Product Help Demo Mode";
 
 const char kEnableIphDemoModeDescription[] =
     "Enables In-Product Help demo mode on Android.";
@@ -2083,7 +2068,7 @@ const char kCastStreamingHwEncodingDescription[] =
     "This option enables support in Cast Streaming for encoding video "
     "streams using platform hardware.";
 
-const char kAllowInsecureLocalhost[] =
+const char kAllowInsecureLocalhostName[] =
     "Allow invalid certificates for resources loaded from localhost.";
 
 const char kAllowInsecureLocalhostDescription[] =
@@ -2501,7 +2486,7 @@ const char kOfflinePagesCtDescription[] = "Enable Offline Pages CT features.";
 
 #if defined(OS_ANDROID)
 
-const char kEnableExpandedAutofillCreditCardPopupLayout[] =
+const char kEnableExpandedAutofillCreditCardPopupLayoutName[] =
     "Use expanded autofill credit card popup layout.";
 
 const char kEnableExpandedAutofillCreditCardPopupLayoutDescription[] =
@@ -2510,13 +2495,13 @@ const char kEnableExpandedAutofillCreditCardPopupLayoutDescription[] =
 
 #endif  // defined(OS_ANDROID)
 
-const char kEnableAutofillCreditCardLastUsedDateDisplay[] =
+const char kEnableAutofillCreditCardLastUsedDateDisplayName[] =
     "Display the last used date of a credit card in autofill.";
 
 const char kEnableAutofillCreditCardLastUsedDateDisplayDescription[] =
     "If enabled, display the last used date of a credit card in autofill.";
 
-const char kEnableAutofillCreditCardUploadCvcPrompt[] =
+const char kEnableAutofillCreditCardUploadCvcPromptName[] =
     "Enable requesting missing CVC during Autofill credit card upload";
 
 const char kEnableAutofillCreditCardUploadCvcPromptDescription[] =
@@ -2949,7 +2934,7 @@ const char kWakeOnPacketsDescription[] =
     "Enables waking the device based on the receipt of some network "
     "packets.";
 
-const char kQuickUnlockPin[] = "Quick Unlock (PIN)";
+const char kQuickUnlockPinName[] = "Quick Unlock (PIN)";
 
 const char kQuickUnlockPinDescription[] =
     "Enabling PIN quick unlock allows you to use a PIN to unlock your ChromeOS "
