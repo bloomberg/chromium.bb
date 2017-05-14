@@ -86,11 +86,13 @@ class CORE_EXPORT DocumentMarkerController final
                         bool);
   bool HasMarkers(Node* node) const { return markers_.Contains(node); }
 
+  // Returns a marker of one of the specified types that includes the specified
+  // Position in its interior (not at an endpoint), if one exists.
+  DocumentMarker* MarkerAtPosition(const Position&,
+                                   DocumentMarker::MarkerTypes);
   DocumentMarkerVector MarkersFor(
       Node*,
       DocumentMarker::MarkerTypes = DocumentMarker::AllMarkers());
-  DocumentMarkerVector MarkersInRange(const EphemeralRange&,
-                                      DocumentMarker::MarkerTypes);
   DocumentMarkerVector Markers();
   Vector<IntRect> RenderedRectsForMarkers(DocumentMarker::MarkerType);
   void UpdateMarkerRenderedRectIfNeeded(const Node&, RenderedDocumentMarker&);

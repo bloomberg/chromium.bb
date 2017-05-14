@@ -327,6 +327,23 @@ void DocumentMarkerController::RemoveMarkersInternal(
   }
 }
 
+DocumentMarker* DocumentMarkerController::MarkerAtPosition(
+    const Position& position,
+    DocumentMarker::MarkerTypes marker_types) {
+  if (!PossiblyHasMarkers(marker_types))
+    return nullptr;
+  Node* const node = position.ComputeContainerNode();
+  const unsigned offset =
+      static_cast<unsigned>(position.ComputeOffsetInContainerNode());
+
+  const auto& markers = MarkersFor(node, marker_types);
+  const auto& it =
+      std::find_if(markers.begin(), markers.end(), [=](DocumentMarker* marker) {
+        return marker->StartOffset() < offset && offset < marker->EndOffset();
+      });
+  return it == markers.end() ? nullptr : *it;
+}
+
 DocumentMarkerVector DocumentMarkerController::MarkersFor(
     Node* node,
     DocumentMarker::MarkerTypes marker_types) {
@@ -369,37 +386,6 @@ DocumentMarkerVector DocumentMarkerController::Markers() {
               return marker1->StartOffset() < marker2->StartOffset();
             });
   return result;
-}
-
-DocumentMarkerVector DocumentMarkerController::MarkersInRange(
-    const EphemeralRange& range,
-    DocumentMarker::MarkerTypes marker_types) {
-  if (!PossiblyHasMarkers(marker_types))
-    return DocumentMarkerVector();
-
-  DocumentMarkerVector found_markers;
-
-  Node* start_container = range.StartPosition().ComputeContainerNode();
-  DCHECK(start_container);
-  unsigned start_offset = static_cast<unsigned>(
-      range.StartPosition().ComputeOffsetInContainerNode());
-  Node* end_container = range.EndPosition().ComputeContainerNode();
-  DCHECK(end_container);
-  unsigned end_offset =
-      static_cast<unsigned>(range.EndPosition().ComputeOffsetInContainerNode());
-
-  for (Node& node : range.Nodes()) {
-    for (DocumentMarker* marker : MarkersFor(&node)) {
-      if (!marker_types.Contains(marker->GetType()))
-        continue;
-      if (node == start_container && marker->EndOffset() <= start_offset)
-        continue;
-      if (node == end_container && marker->StartOffset() >= end_offset)
-        continue;
-      found_markers.push_back(marker);
-    }
-  }
-  return found_markers;
 }
 
 Vector<IntRect> DocumentMarkerController::RenderedRectsForMarkers(
