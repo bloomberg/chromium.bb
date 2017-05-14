@@ -1301,7 +1301,7 @@ static REFERENCE_MODE read_block_reference_mode(AV1_COMMON *cm,
                                                 const MACROBLOCKD *xd,
                                                 aom_reader *r) {
 #if !SUB8X8_COMP_REF
-  if (xd->mi[0]->mbmi.sb_type < BLOCK_8X8) return SINGLE_REFERENCE;
+  if (xd->mi[0]->mbmi.sb_type == BLOCK_4X4) return SINGLE_REFERENCE;
 #endif
   if (cm->reference_mode == REFERENCE_MODE_SELECT) {
     const int ctx = av1_get_reference_mode_context(cm, xd);

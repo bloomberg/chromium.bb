@@ -1221,7 +1221,7 @@ static void write_ref_frames(const AV1_COMMON *cm, const MACROBLOCKD *xd,
 #if SUB8X8_COMP_REF
       aom_write(w, is_compound, av1_get_reference_mode_prob(cm, xd));
 #else
-      if (mbmi->sb_type >= BLOCK_8X8)
+      if (mbmi->sb_type != BLOCK_4X4)
         aom_write(w, is_compound, av1_get_reference_mode_prob(cm, xd));
 #endif
     } else {

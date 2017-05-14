@@ -38,7 +38,11 @@
 extern "C" {
 #endif
 
-#define SUB8X8_COMP_REF (!(CONFIG_CB4X4 && CONFIG_CHROMA_2X2))
+#if (CONFIG_CHROMA_SUB8X8 || CONFIG_CHROMA_2X2)
+#define SUB8X8_COMP_REF 0
+#else
+#define SUB8X8_COMP_REF 1
+#endif
 
 #define MAX_MB_PLANE 3
 

@@ -2115,7 +2115,7 @@ static void update_stats(const AV1_COMMON *const cm, ThreadData *td, int mi_row,
 
         if (cm->reference_mode == REFERENCE_MODE_SELECT) {
 #if !SUB8X8_COMP_REF
-          if (mbmi->sb_type >= BLOCK_8X8)
+          if (mbmi->sb_type != BLOCK_4X4)
             counts->comp_inter[av1_get_reference_mode_context(cm, xd)]
                               [has_second_ref(mbmi)]++;
 #else
