@@ -63,7 +63,9 @@ struct ProcessMemoryDump {
   OSMemDump os_dump;
   ChromeMemDump chrome_dump;
 
-  // TODO(hjd): add the computed Consistent Memory Metrics footprints here.
+  // This is roughly private, anonymous, non-discardable, resident or swapped
+  // memory. For more details, see https://goo.gl/3kPb9S.
+  uint32 private_footprint = 0;
 
   // This is used only in the use-case (1) and only on Linux/CrOS to get
   // around sandboxing. See crbug.com/461788 .
