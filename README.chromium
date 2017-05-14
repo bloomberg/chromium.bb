@@ -180,12 +180,12 @@ them when updating ICU.
    c. Other locales in Accept-Language list : will only have bare minimum
    locale data
 
-  - brklocal.mk drops all *loose.brk to save space ( ~370kB) for now.
+  - brklocal.mk drops some line*brk files to save space for now.
 
 3. source/data/brkitr
-  - khmerdict.txt: Abridged Khmer dictionary. See
+  - dictionaries/khmerdict.txt: Abridged Khmer dictionary. See
     http://bugs.icu-project.org/trac/ticket/9451
-  - word_ja.txt (used only on Android)
+  - rules/word_ja.txt (used only on Android)
     Added for Japanese-specific word-breaking without the C+J dictionary.
 
 4. source/data/trnslit/root_subset.txt
@@ -244,9 +244,9 @@ D. Local Modifications
      windowsZones.txt
      zoneinfo64.txt
 
-  As of Dec 7, 2016, the latest version is 2016j and the above files
+  As of May 8, 2017, the latest version is 2017b and the above files
   are available at
-  http://source.icu-project.org/repos/icu/data/trunk/tzdata/icunew/2016j/44/
+  http://source.icu-project.org/repos/icu/data/trunk/tzdata/icunew/2017b/44/
 
 4. Build-related changes
 
@@ -272,15 +272,18 @@ D. Local Modifications
 
    - patches/utf32.patch
 
-6. Fix four bugs found in 58.1 that will fixed in 58.1 maintenance release
+6. Don't use '__cdecl' for function arguments (as opposed to functions)
+   in uclean.h to make MSVC happy (C4229 warning).
 
-   upstream bugs:
-     http://www.icu-project.org/trac/ticket/12825 (scriptset)
-     http://www.icu-project.org/trac/ticket/12815 (uspoof)
-     http://www.icu-project.org/trac/ticket/12822 (without std::string on Win)
-     http://www.icu-project.org/trac/ticket/12832 (greek_upper)
+   http://www.icu-project.org/trac/ticket/13030
 
-   - patches/scriptset.patch
-   - patches/uspoof.patch
-   - patches/digilist.patch
-   - patches/greek_upper.patch
+   - patches/msvc4229.patch
+
+7. C++ 11 does not allow a string literal to be assigned to a variable
+   of char*.
+
+   http://www.icu-project.org/trac/ticket/13192
+
+   - patches/string_literal_charptr.patch
+
+   
