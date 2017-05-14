@@ -109,6 +109,14 @@ class AboutHandler : public settings::SettingsPageUIHandler,
   // Checks for and applies update, triggered by JS.
   void HandleRequestUpdate(const base::ListValue* args);
 
+  // Checks for and applies update over cellular connection, triggered by JS.
+  // Target version and size should be included in the list of arguments.
+  void HandleRequestUpdateOverCellular(const base::ListValue* args);
+
+  // Checks for and applies update over cellular connection to the given target.
+  void RequestUpdateOverCellular(const std::string& target_version,
+                                 int64_t target_size);
+
 #endif
 
   // Checks for and applies update.
@@ -117,6 +125,8 @@ class AboutHandler : public settings::SettingsPageUIHandler,
   // Callback method which forwards status updates to the page.
   void SetUpdateStatus(VersionUpdater::Status status,
                        int progress,
+                       const std::string& version,
+                       int64_t size,
                        const base::string16& fail_message);
 
 #if defined(OS_MACOSX)

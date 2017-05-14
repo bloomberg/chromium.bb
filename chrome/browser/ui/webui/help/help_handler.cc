@@ -602,7 +602,10 @@ void HelpHandler::RequestUpdate(const base::ListValue* args) {
 }
 
 void HelpHandler::SetUpdateStatus(VersionUpdater::Status status,
-                                  int progress, const base::string16& message) {
+                                  int progress,
+                                  const std::string& /* version */,
+                                  int64_t /* size */,
+                                  const base::string16& message) {
   // Only UPDATING state should have progress set.
   DCHECK(status == VersionUpdater::UPDATING || progress == 0);
 
@@ -623,6 +626,9 @@ void HelpHandler::SetUpdateStatus(VersionUpdater::Status status,
   case VersionUpdater::FAILED:
   case VersionUpdater::FAILED_OFFLINE:
   case VersionUpdater::FAILED_CONNECTION_TYPE_DISALLOWED:
+  // Old help page does not support update over cellular connection. Treat this
+  // signal as FAILED.
+  case VersionUpdater::NEED_PERMISSION_TO_UPDATE:
     status_str = "failed";
     break;
   case VersionUpdater::DISABLED:

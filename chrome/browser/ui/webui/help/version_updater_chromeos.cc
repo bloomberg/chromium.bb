@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/strings/string_number_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
@@ -49,15 +50,13 @@ const bool kDefaultAutoUpdateDisabled = false;
 NetworkStatus GetNetworkStatus(const chromeos::NetworkState* network) {
   if (!network || !network->IsConnectedState())  // Offline state.
     return NETWORK_STATUS_OFFLINE;
-
   // The connection type checking strategy must be the same as the one
   // used in update engine.
   if (network->type() == shill::kTypeBluetooth)
     return NETWORK_STATUS_DISALLOWED;
-  if (network->type() == shill::kTypeCellular &&
-      !help_utils_chromeos::IsUpdateOverCellularAllowed()) {
-    return NETWORK_STATUS_DISALLOWED;
-  }
+  // Allow updates over cellular by default in chrome, as update engine still
+  // needs to check device policy and user preferences when checking for
+  // updates to decide whether to proceed to downloading.
   return NETWORK_STATUS_ALLOWED;
 }
 
@@ -78,7 +77,7 @@ bool IsAutoUpdateDisabled() {
 // the appropriate status.
 bool EnsureCanUpdate(const VersionUpdater::StatusCallback& callback) {
   if (IsAutoUpdateDisabled()) {
-    callback.Run(VersionUpdater::DISABLED_BY_ADMIN, 0,
+    callback.Run(VersionUpdater::DISABLED_BY_ADMIN, 0, std::string(), 0,
                  l10n_util::GetStringUTF16(IDS_UPGRADE_DISABLED_BY_POLICY));
     return false;
   }
@@ -92,15 +91,16 @@ bool EnsureCanUpdate(const VersionUpdater::StatusCallback& callback) {
   // to a network for which updates are disallowed.
   NetworkStatus status = GetNetworkStatus(network);
   if (status == NETWORK_STATUS_OFFLINE) {
-    callback.Run(VersionUpdater::FAILED_OFFLINE, 0,
-                  l10n_util::GetStringUTF16(IDS_UPGRADE_OFFLINE));
+    callback.Run(VersionUpdater::FAILED_OFFLINE, 0, std::string(), 0,
+                 l10n_util::GetStringUTF16(IDS_UPGRADE_OFFLINE));
     return false;
   } else if (status == NETWORK_STATUS_DISALLOWED) {
     base::string16 message =
         l10n_util::GetStringFUTF16(
             IDS_UPGRADE_DISALLOWED,
             help_utils_chromeos::GetConnectionTypeAsUTF16(network->type()));
-    callback.Run(VersionUpdater::FAILED_CONNECTION_TYPE_DISALLOWED, 0, message);
+    callback.Run(VersionUpdater::FAILED_CONNECTION_TYPE_DISALLOWED, 0,
+                 std::string(), 0, message);
     return false;
   }
 
@@ -169,6 +169,32 @@ void VersionUpdaterCros::SetChannel(const std::string& channel,
       SetChannel(channel, is_powerwash_allowed);
 }
 
+void VersionUpdaterCros::SetUpdateOverCellularTarget(
+    const StatusCallback& callback,
+    const std::string& target_version,
+    int64_t target_size) {
+  callback_ = callback;
+  DBusThreadManager::Get()
+      ->GetUpdateEngineClient()
+      ->SetUpdateOverCellularTarget(
+          target_version, target_size,
+          base::Bind(&VersionUpdaterCros::OnSetUpdateOverCellularTarget,
+                     weak_ptr_factory_.GetWeakPtr()));
+}
+
+void VersionUpdaterCros::OnSetUpdateOverCellularTarget(bool success) {
+  if (success) {
+    // Target is set successfully, so we can proceed to update.
+    CheckForUpdate(callback_, VersionUpdater::PromoteCallback());
+  } else {
+    // TODO(weidongg/691108): invoke callback to signal about page to show
+    // appropriate error message.
+    LOG(ERROR) << "Error setting update over cellular target.";
+    callback_.Run(VersionUpdater::FAILED, 0, std::string(), 0,
+                  base::string16());
+  }
+}
+
 void VersionUpdaterCros::GetChannel(bool get_current_channel,
                                     const ChannelCallback& cb) {
   UpdateEngineClient* update_engine_client =
@@ -218,6 +244,8 @@ void VersionUpdaterCros::UpdateStatusChanged(
     const UpdateEngineClient::Status& status) {
   Status my_status = UPDATED;
   int progress = 0;
+  std::string version = status.new_version;
+  int64_t size = status.new_size;
   base::string16 message;
 
   // If the updater is currently idle, just show the last operation (unless it
@@ -248,6 +276,9 @@ void VersionUpdaterCros::UpdateStatusChanged(
     case UpdateEngineClient::UPDATE_STATUS_UPDATE_AVAILABLE:
       my_status = UPDATING;
       break;
+    case UpdateEngineClient::UPDATE_STATUS_NEED_PERMISSION_TO_UPDATE:
+      my_status = NEED_PERMISSION_TO_UPDATE;
+      break;
     case UpdateEngineClient::UPDATE_STATUS_VERIFYING:
     case UpdateEngineClient::UPDATE_STATUS_FINALIZING:
       // Once the download is finished, keep the progress at 100; it shouldn't
@@ -262,7 +293,7 @@ void VersionUpdaterCros::UpdateStatusChanged(
       break;
   }
 
-  callback_.Run(my_status, progress, message);
+  callback_.Run(my_status, progress, version, size, message);
   last_operation_ = status.status;
 
   if (check_for_update_when_idle_ &&
@@ -276,5 +307,5 @@ void VersionUpdaterCros::OnUpdateCheck(
   // If version updating is not implemented, this binary is the most up-to-date
   // possible with respect to automatic updating.
   if (result == UpdateEngineClient::UPDATE_RESULT_NOTIMPLEMENTED)
-    callback_.Run(UPDATED, 0, base::string16());
+    callback_.Run(UPDATED, 0, std::string(), 0, base::string16());
 }

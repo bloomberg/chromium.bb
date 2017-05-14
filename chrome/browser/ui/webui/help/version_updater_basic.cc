@@ -11,9 +11,9 @@ void VersionUpdaterBasic::CheckForUpdate(
     const StatusCallback& status_callback,
     const PromoteCallback&) {
   if (UpgradeDetector::GetInstance()->notify_upgrade())
-    status_callback.Run(NEARLY_UPDATED, 0, base::string16());
+    status_callback.Run(NEARLY_UPDATED, 0, std::string(), 0, base::string16());
   else
-    status_callback.Run(DISABLED, 0, base::string16());
+    status_callback.Run(DISABLED, 0, std::string(), 0, base::string16());
 }
 
 VersionUpdater* VersionUpdater::Create(content::WebContents* web_contents) {

@@ -19,6 +19,7 @@
 
 <if expr="chromeos">
 <link rel="import" href="detailed_build_info.html">
+<link rel="import" href="update_warning_dialog.html">
 <link rel="import" href="../settings_page/settings_subpage.html">
 </if>
 
@@ -222,6 +223,13 @@
         </settings-animated-pages>
       </settings-section>
     </div>
+<if expr="chromeos">
+    <template is="dom-if" if="[[showUpdateWarningDialog_]]" restamp>
+      <settings-update-warning-dialog update-info="[[updateInfo_]]"
+          on-close="onUpdateWarningDialogClose_">
+      </settings-update-warning-dialog>
+    </template>
+</if>
   </template>
   <script src="about_page.js"></script>
 </dom-module>

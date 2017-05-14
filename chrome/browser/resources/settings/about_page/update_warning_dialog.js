@@ -12,6 +12,17 @@ Polymer({
 
   behaviors: [I18nBehavior],
 
+  properties: {
+    /** @type {!AboutPageUpdateInfo|undefined} */
+    updateInfo: {
+      type: Object,
+      observer: 'updateInfoChanged_',
+    },
+  },
+
+  /** @private {?settings.AboutPageBrowserProxy} */
+  browserProxy_: null,
+
   /** @override */
   ready: function() {
     this.browserProxy_ = settings.AboutPageBrowserProxyImpl.getInstance();
@@ -24,22 +35,21 @@ Polymer({
 
   /** @private */
   onCancelTap_: function() {
-    // TODO(weidongg): implement the real behaviors here.
     this.$.dialog.close();
   },
 
   /** @private */
   onContinueTap_: function() {
-    // TODO(weidongg): implement the real behaviors here.
+    this.browserProxy_.requestUpdateOverCellular(this.updateInfo.version,
+                                                 this.updateInfo.size);
     this.$.dialog.close();
   },
 
-  /**
-   * @param {string} updateSizeMb Size of the update in megabytes.
-   * @private
-   */
-  setUpdateWarningMessage: function(updateSizeMb) {
-     this.$$("#update-warning-message").innerHTML =
-         this.i18n("aboutUpdateWarningMessage", updateSizeMb);
+  /** @private */
+  updateInfoChanged_: function() {
+    this.$$("#update-warning-message").innerHTML =
+        this.i18n("aboutUpdateWarningMessage",
+                  // Convert bytes to megabytes
+                  Math.floor(Number(this.updateInfo.size) / (1024 * 1024)));
   },
 });
