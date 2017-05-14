@@ -133,6 +133,12 @@ void WakeLockServiceImpl::CreateWakeLock() {
     return;
 
 #if defined(OS_ANDROID)
+  if (context_id_ == WakeLockServiceContext::WakeLockInvalidContextId) {
+    LOG(ERROR) << "Client must pass a valid context_id when requests wake lock "
+                  "on Android.";
+    return;
+  }
+
   gfx::NativeView native_view = native_view_getter_.Run(context_id_);
   if (native_view)
     wake_lock_.get()->InitDisplaySleepBlocker(native_view);

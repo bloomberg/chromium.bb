@@ -14,7 +14,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "device/generic_sensor/sensor_provider_impl.h"
 #include "device/sensors/device_sensor_host.h"
-#include "device/wake_lock/wake_lock_context_provider.h"
+#include "device/wake_lock/wake_lock_provider.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "services/device/fingerprint/fingerprint.h"
 #include "services/device/power_monitor/power_monitor_message_broadcaster.h"
@@ -105,9 +105,8 @@ void DeviceService::OnStart() {
   }
   registry_.AddInterface<mojom::TimeZoneMonitor>(base::Bind(
       &DeviceService::BindTimeZoneMonitorRequest, base::Unretained(this)));
-  registry_.AddInterface<mojom::WakeLockContextProvider>(
-      base::Bind(&DeviceService::BindWakeLockContextProviderRequest,
-                 base::Unretained(this)));
+  registry_.AddInterface<mojom::WakeLockProvider>(base::Bind(
+      &DeviceService::BindWakeLockProviderRequest, base::Unretained(this)));
 
 #if defined(OS_ANDROID)
   registry_.AddInterface(GetJavaInterfaceProvider()
@@ -244,11 +243,11 @@ void DeviceService::BindTimeZoneMonitorRequest(
   time_zone_monitor_->Bind(std::move(request));
 }
 
-void DeviceService::BindWakeLockContextProviderRequest(
+void DeviceService::BindWakeLockProviderRequest(
     const service_manager::BindSourceInfo& source_info,
-    mojom::WakeLockContextProviderRequest request) {
-  WakeLockContextProvider::Create(std::move(request), file_task_runner_,
-                                  wake_lock_context_callback_);
+    mojom::WakeLockProviderRequest request) {
+  WakeLockProvider::Create(std::move(request), file_task_runner_,
+                           wake_lock_context_callback_);
 }
 
 #if defined(OS_ANDROID)

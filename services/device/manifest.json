@@ -17,7 +17,7 @@
         ],
         "device:time_zone_monitor": [ "device::mojom::TimeZoneMonitor" ],
         "device:vibration": [ "device::mojom::VibrationManager" ],
-        "device:wake_lock": [ "device::mojom::WakeLockContextProvider" ]
+        "device:wake_lock": [ "device::mojom::WakeLockProvider" ]
       },
       "requires": {
         "service_manager": [ "service_manager:all_users" ]

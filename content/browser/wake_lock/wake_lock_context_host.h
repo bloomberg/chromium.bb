@@ -7,7 +7,7 @@
 
 #include "content/public/browser/web_contents.h"
 #include "device/wake_lock/public/interfaces/wake_lock_context.mojom.h"
-#include "device/wake_lock/public/interfaces/wake_lock_context_provider.mojom.h"
+#include "device/wake_lock/public/interfaces/wake_lock_provider.mojom.h"
 #include "ui/gfx/native_widget_types.h"
 
 namespace content {

@@ -18,10 +18,7 @@
 #include "content/public/browser/download_interrupt_reasons.h"
 #include "content/public/browser/download_save_info.h"
 #include "content/public/browser/download_url_parameters.h"
-
-namespace device {
-class PowerSaveBlocker;
-}  // namespace device
+#include "device/wake_lock/public/interfaces/wake_lock_service.mojom.h"
 
 namespace net {
 class HttpResponseHeaders;
@@ -145,10 +142,10 @@ class CONTENT_EXPORT DownloadRequestCore
   scoped_refptr<net::IOBuffer> read_buffer_;    // From URLRequest.
   std::unique_ptr<ByteStreamWriter> stream_writer_;  // To rest of system.
 
-  // Keeps the system from sleeping while this is alive. If the
-  // system enters power saving mode while a request is alive, it can cause the
-  // request to fail and the associated download will be interrupted.
-  std::unique_ptr<device::PowerSaveBlocker> power_save_blocker_;
+  // Used to keep the system from sleeping while a download is ongoing. If the
+  // system enters power saving mode while a URLRequest is alive, it can cause
+  // URLRequest to fail and the associated download will be interrupted.
+  device::mojom::WakeLockServicePtr wake_lock_;
 
   // The following are used to collect stats.
   base::TimeTicks download_start_time_;
