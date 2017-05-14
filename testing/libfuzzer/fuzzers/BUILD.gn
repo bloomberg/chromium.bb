@@ -235,6 +235,7 @@ fuzzer_test("v8_script_parser_fuzzer") {
   ]
   dict = "dicts/generated/v8_script_parser_fuzzer.dict"
   seed_corpus = "//v8/test/mjsunit/regress/"
+  libfuzzer_options = [ "only_ascii=1" ]
 }
 
 fuzzer_test("v8_json_parser_fuzzer") {
