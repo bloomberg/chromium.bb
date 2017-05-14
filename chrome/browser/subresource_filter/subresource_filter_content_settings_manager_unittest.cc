@@ -78,8 +78,8 @@ class SubresourceFilterContentSettingsManagerTest : public testing::Test {
   base::ScopedTempDir scoped_dir_;
 
   content::TestBrowserThreadBundle thread_bundle_;
-  TestingProfile testing_profile_;
   base::HistogramTester histogram_tester_;
+  TestingProfile testing_profile_;
 
   // Owned by the testing_profile_.
   SubresourceFilterContentSettingsManager* settings_manager_ = nullptr;
@@ -101,6 +101,13 @@ class SubresourceFilterContentSettingsManagerHistoryTest
     SubresourceFilterContentSettingsManagerTest::SetUp();
   }
 };
+
+TEST_F(SubresourceFilterContentSettingsManagerTest, LogDefaultSetting) {
+  const char kDefaultContentSetting[] =
+      "ContentSettings.DefaultSubresourceFilterSetting";
+  // The histogram should be logged at profile creation.
+  histogram_tester().ExpectTotalCount(kDefaultContentSetting, 1);
+}
 
 TEST_F(SubresourceFilterContentSettingsManagerTest, IrrelevantSetting) {
   GetSettingsMap()->SetDefaultContentSetting(CONTENT_SETTINGS_TYPE_POPUPS,

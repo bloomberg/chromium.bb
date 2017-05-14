@@ -8584,6 +8584,12 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="ContentSettings.DefaultSubresourceFilterSetting"
+    enum="ContentSetting">
+  <owner>csharrison@chromium.org</owner>
+  <summary>The default subresource filter setting at profile open</summary>
+</histogram>
+
 <histogram name="ContentSettings.DefaultWebBluetoothGuardSetting"
     enum="ContentSetting">
   <owner>jyasskin@chromium.org</owner>
@@ -84717,6 +84723,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <suffix name="push-messaging" label="Push messaging exceptions"/>
   <suffix name="site-engagement" label="Site engagement exceptions"/>
   <suffix name="ssl-cert-decisions" label="SSL cert decisions exceptions"/>
+  <suffix name="subresource-filter" label="Subresource filter exceptions"/>
   <suffix name="usb-chooser-data" label="USB chooser data exceptions"/>
   <affected-histogram name="ContentSettings.Exceptions"/>
 </histogram_suffixes>
