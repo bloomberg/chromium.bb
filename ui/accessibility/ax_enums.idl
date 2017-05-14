@@ -93,6 +93,7 @@
     button_drop_down,  // Not used on Web.
     canvas,
     caption,
+    caret,
     cell,
     check_box,
     client,

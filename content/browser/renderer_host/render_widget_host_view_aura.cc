@@ -892,7 +892,7 @@ void RenderWidgetHostViewAura::UpdateMouseLockRegion() {
 }
 
 void RenderWidgetHostViewAura::OnLegacyWindowDestroyed() {
-  legacy_render_widget_host_HWND_ = NULL;
+  legacy_render_widget_host_HWND_ = nullptr;
   legacy_window_destroyed_ = true;
 }
 #endif
@@ -2351,7 +2351,6 @@ void RenderWidgetHostViewAura::OnSelectionBoundsChanged(
 void RenderWidgetHostViewAura::OnTextSelectionChanged(
     TextInputManager* text_input_manager,
     RenderWidgetHostViewBase* updated_view) {
-#if defined(USE_X11) && !defined(OS_CHROMEOS)
   if (!GetTextInputManager())
     return;
 
@@ -2368,6 +2367,7 @@ void RenderWidgetHostViewAura::OnTextSelectionChanged(
   if (!focused_view)
     return;
 
+#if defined(USE_X11) && !defined(OS_CHROMEOS)
   const TextInputManager::TextSelection* selection =
       GetTextInputManager()->GetTextSelection(focused_view);
   if (selection->selected_text().length()) {
@@ -2375,7 +2375,23 @@ void RenderWidgetHostViewAura::OnTextSelectionChanged(
     ui::ScopedClipboardWriter clipboard_writer(ui::CLIPBOARD_TYPE_SELECTION);
     clipboard_writer.WriteText(selection->selected_text());
   }
-#endif  // defined(USE_X11) && !defined(OS_CHROMEOS)
+
+#elif defined(OS_WIN)
+  // Some assistive software need to track the location of the caret.
+  if (!GetRenderWidgetHost() || !legacy_render_widget_host_HWND_)
+    return;
+
+  // Not using |GetCaretBounds| because it includes the whole of the selection,
+  // not just the focus.
+  const TextInputManager::SelectionRegion* region =
+      GetTextInputManager()->GetSelectionRegion(focused_view);
+  if (!region)
+    return;
+  const gfx::Rect caret_rect = ConvertRectToScreen(gfx::Rect(
+      region->focus.edge_top_rounded().x(),
+      region->focus.edge_top_rounded().y(), 1, region->focus.GetHeight()));
+  legacy_render_widget_host_HWND_->MoveCaretTo(caret_rect);
+#endif  // defined(OS_WIN)
 }
 
 void RenderWidgetHostViewAura::SetPopupChild(

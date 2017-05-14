@@ -79,6 +79,7 @@
     buttonDropDown,
     canvas,
     caption,
+    caret,
     cell,
     checkBox,
     client,

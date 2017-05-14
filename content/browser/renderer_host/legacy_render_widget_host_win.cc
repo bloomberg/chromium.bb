@@ -7,6 +7,7 @@
 #include <objbase.h>
 
 #include <memory>
+#include <utility>
 
 #include "base/command_line.h"
 #include "base/win/win_util.h"
@@ -17,6 +18,7 @@
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_view_aura.h"
 #include "content/public/common/content_switches.h"
+#include "ui/accessibility/platform/ax_fake_caret_win.h"
 #include "ui/base/view_prop.h"
 #include "ui/base/win/internal_constants.h"
 #include "ui/base/win/window_event_target.h"
@@ -87,6 +89,11 @@ void LegacyRenderWidgetHostHWND::SetBounds(const gfx::Rect& bounds) {
     direct_manipulation_helper_->SetBounds(bounds_in_pixel);
 }
 
+void LegacyRenderWidgetHostHWND::MoveCaretTo(const gfx::Rect& bounds) {
+  DCHECK(ax_fake_caret_);
+  ax_fake_caret_->MoveCaretTo(bounds);
+}
+
 void LegacyRenderWidgetHostHWND::OnFinalMessage(HWND hwnd) {
   if (host_) {
     host_->OnLegacyWindowDestroyed();
@@ -100,12 +107,15 @@ void LegacyRenderWidgetHostHWND::OnFinalMessage(HWND hwnd) {
 }
 
 LegacyRenderWidgetHostHWND::LegacyRenderWidgetHostHWND(HWND parent)
-    : mouse_tracking_enabled_(false),
-      host_(NULL) {
+    : mouse_tracking_enabled_(false), host_(nullptr) {
   RECT rect = {0};
   Base::Create(parent, rect, L"Chrome Legacy Window",
                WS_CHILDWINDOW | WS_CLIPCHILDREN | WS_CLIPSIBLINGS,
                WS_EX_TRANSPARENT);
+  // We create the fake caret regardless of accessibility mode since not all
+  // assistive software that makes use of a fake caret is classified as a screen
+  // reader, e.g. the built-in Windows Magnifier.
+  ax_fake_caret_ = std::make_unique<ui::AXFakeCaretWin>(hwnd());
 }
 
 LegacyRenderWidgetHostHWND::~LegacyRenderWidgetHostHWND() {
@@ -171,24 +181,36 @@ LRESULT LegacyRenderWidgetHostHWND::OnGetObject(UINT message,
     return static_cast<LRESULT>(0L);
   }
 
-  if (static_cast<DWORD>(OBJID_CLIENT) != obj_id || !host_)
+  if (!host_)
     return static_cast<LRESULT>(0L);
 
-  RenderWidgetHostImpl* rwhi = RenderWidgetHostImpl::From(
-      host_->GetRenderWidgetHost());
-  if (!rwhi)
-    return static_cast<LRESULT>(0L);
+  if (static_cast<DWORD>(OBJID_CLIENT) == obj_id) {
+    RenderWidgetHostImpl* rwhi =
+        RenderWidgetHostImpl::From(host_->GetRenderWidgetHost());
+    if (!rwhi)
+      return static_cast<LRESULT>(0L);
 
-  BrowserAccessibilityManagerWin* manager =
-      static_cast<BrowserAccessibilityManagerWin*>(
-          rwhi->GetRootBrowserAccessibilityManager());
-  if (!manager || !manager->GetRoot())
-    return static_cast<LRESULT>(0L);
+    BrowserAccessibilityManagerWin* manager =
+        static_cast<BrowserAccessibilityManagerWin*>(
+            rwhi->GetRootBrowserAccessibilityManager());
+    if (!manager || !manager->GetRoot())
+      return static_cast<LRESULT>(0L);
 
-  base::win::ScopedComPtr<IAccessible> root(
-      ToBrowserAccessibilityWin(manager->GetRoot())->GetCOM());
-  return LresultFromObject(IID_IAccessible, w_param,
-      static_cast<IAccessible*>(root.Detach()));
+    base::win::ScopedComPtr<IAccessible> root(
+        ToBrowserAccessibilityWin(manager->GetRoot())->GetCOM());
+    return LresultFromObject(IID_IAccessible, w_param,
+                             static_cast<IAccessible*>(root.Detach()));
+  }
+
+  if (static_cast<DWORD>(OBJID_CARET) == obj_id && host_->HasFocus()) {
+    DCHECK(ax_fake_caret_);
+    base::win::ScopedComPtr<IAccessible> fake_caret_accessible =
+        ax_fake_caret_->GetCaret();
+    return LresultFromObject(IID_IAccessible, w_param,
+                             fake_caret_accessible.Detach());
+  }
+
+  return static_cast<LRESULT>(0L);
 }
 
 // We send keyboard/mouse/touch messages to the parent window via SendMessage.
