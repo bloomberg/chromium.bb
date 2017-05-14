@@ -86,6 +86,9 @@ crbug.com/664850 virtual/display_list_2d_canvas/fast/canvas/OffscreenCanvas-comm
 crbug.com/664852 virtual/gpu/fast/canvas/canvas-createImageBitmap-webgl.html [ Pass Failure ]
 crbug.com/664852 virtual/gpu/fast/canvas/OffscreenCanvas-2d-drawImage.html [ Pass Failure ]
 
+crbug.com/722131 paint/invalidation/svg/image-animation-with-zoom.html [ Pass Failure ]
+crbug.com/722131 virtual/disable-spinvalidation/paint/invalidation/svg/image-animation-with-zoom.html [ Pass Failure ]
+
 ########## Bugs to fix ##########
 # This is a missing event and increasing the timeout or using run-after-layout-and-paint doesn't
 # seem to fix it.
