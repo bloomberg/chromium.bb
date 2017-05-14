@@ -10,7 +10,7 @@
 #include "device/screen_orientation/public/interfaces/screen_orientation.mojom.h"
 #include "device/sensors/public/interfaces/motion.mojom.h"
 #include "device/sensors/public/interfaces/orientation.mojom.h"
-#include "device/wake_lock/public/interfaces/wake_lock_context_provider.mojom.h"
+#include "device/wake_lock/public/interfaces/wake_lock_provider.mojom.h"
 #include "device/wake_lock/wake_lock_service_context.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/device/public/interfaces/battery_monitor.mojom.h"
@@ -102,9 +102,9 @@ class DeviceService : public service_manager::Service {
       const service_manager::BindSourceInfo& source_info,
       mojom::TimeZoneMonitorRequest request);
 
-  void BindWakeLockContextProviderRequest(
+  void BindWakeLockProviderRequest(
       const service_manager::BindSourceInfo& source_info,
-      mojom::WakeLockContextProviderRequest request);
+      mojom::WakeLockProviderRequest request);
 
   std::unique_ptr<PowerMonitorMessageBroadcaster>
       power_monitor_message_broadcaster_;

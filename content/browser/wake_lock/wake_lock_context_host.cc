@@ -7,7 +7,7 @@
 #include "base/atomic_sequence_num.h"
 #include "base/lazy_instance.h"
 #include "content/public/common/service_manager_connection.h"
-#include "device/wake_lock/public/interfaces/wake_lock_context_provider.mojom.h"
+#include "device/wake_lock/public/interfaces/wake_lock_provider.mojom.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/device/public/interfaces/constants.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -38,10 +38,10 @@ WakeLockContextHost::WakeLockContextHost(WebContents* web_contents)
     service_manager::Connector* connector =
         ServiceManagerConnection::GetForProcess()->GetConnector();
     DCHECK(connector);
-    device::mojom::WakeLockContextProviderPtr context_provider;
+    device::mojom::WakeLockProviderPtr wake_lock_provider;
     connector->BindInterface(device::mojom::kServiceName,
-                             mojo::MakeRequest(&context_provider));
-    context_provider->GetWakeLockContextForID(
+                             mojo::MakeRequest(&wake_lock_provider));
+    wake_lock_provider->GetWakeLockContextForID(
         id_, mojo::MakeRequest(&wake_lock_context_));
   }
 }

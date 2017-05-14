@@ -10,6 +10,8 @@
 
 namespace device {
 
+const int WakeLockServiceContext::WakeLockInvalidContextId = -1;
+
 WakeLockServiceContext::WakeLockServiceContext(
     int context_id,
     scoped_refptr<base::SingleThreadTaskRunner> file_task_runner,

@@ -8,7 +8,7 @@ this coupling, the Wake Lock usage model on Android is as follows:
 enables the Wake Lock implementation to map (embedder-specific) context IDs to
 NativeViews.
 (2) For a given embedder-specific context, a trusted client
-connects to the WakeLockContextProvider interface and gets a
+connects to the WakeLockProvider interface and gets a
 WakeLockContext instance that is associated with that context.
 (3) That trusted client then forwards requests to bind wake locks from
 untrusted clients that are made within that context, with the Wake Lock
@@ -17,3 +17,8 @@ NativeView associated with that context.
 
 On other platforms, the usage model is similar but the callback is not
 necessary/employed.
+
+If the client does not have any context available (e.g., is not within the
+context of a WebContents), it can get a WakeLock that doesn't associate to any
+context (by GetWakeLockWithoutContext() in WakeLockProvider). However, note that
+the resulting Wake Lock will not have any effect on Android.

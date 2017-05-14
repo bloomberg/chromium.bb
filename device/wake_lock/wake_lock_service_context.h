@@ -36,6 +36,8 @@ class WakeLockServiceContext : public mojom::WakeLockContext {
                    const std::string& description,
                    mojom::WakeLockServiceRequest request) override;
 
+  static const int WakeLockInvalidContextId;
+
  private:
   scoped_refptr<base::SingleThreadTaskRunner> file_task_runner_;
   int context_id_;
