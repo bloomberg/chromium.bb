@@ -17,9 +17,37 @@
 #include "services/resource_coordinator/public/interfaces/memory/constants.mojom.h"
 #include "services/resource_coordinator/public/interfaces/memory/memory_instrumentation.mojom.h"
 
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+#include "base/mac/mac_util.h"
+#endif
+
 namespace {
 
 memory_instrumentation::CoordinatorImpl* g_coordinator_impl;
+
+uint32_t CalculatePrivateFootprintKb(
+    base::trace_event::MemoryDumpCallbackResult::OSMemDump& os_dump) {
+#if defined(OS_LINUX) || defined(OS_ANDROID)
+  uint64_t rss_anon_bytes = os_dump.platform_private_footprint.rss_anon_bytes;
+  uint64_t vm_swap_bytes = os_dump.platform_private_footprint.vm_swap_bytes;
+  return (rss_anon_bytes + vm_swap_bytes) / 1024;
+#elif defined(OS_MACOSX)
+  // TODO(erikchen): This calculation is close, but not fully accurate. It
+  // overcounts by anonymous shared memory.
+  if (base::mac::IsAtLeastOS10_12()) {
+    uint64_t phys_footprint_bytes =
+        os_dump.platform_private_footprint.phys_footprint_bytes;
+    return phys_footprint_bytes / 1024;
+  } else {
+    uint64_t internal_bytes = os_dump.platform_private_footprint.internal_bytes;
+    uint64_t compressed_bytes =
+        os_dump.platform_private_footprint.compressed_bytes;
+    return (internal_bytes + compressed_bytes) / 1024;
+  }
+#else
+  return 0;
+#endif
+}
 
 }  // namespace
 
@@ -187,15 +215,49 @@ void CoordinatorImpl::FinalizeGlobalMemoryDumpIfAllManagersReplied() {
     return;
   }
 
-  // TODO(hjd,fmeawad): At this point the |process_memory_dumps| accumulated in
-  // queued_memory_dump_requests_.front() should be normalized (merge
-  // |extra_process_dump|, compute CMM) into a GlobalMemoryDumpPtr and passed
-  // below.
+  std::map<base::ProcessId, mojom::ProcessMemoryDumpPtr> finalized_pmds;
+  for (auto& result :
+       queued_memory_dump_requests_.front().process_memory_dumps) {
+    // TODO(fmeawad): Write into correct map entry instead of always
+    // to pid = 0.
+    mojom::ProcessMemoryDumpPtr& pmd = finalized_pmds[0];
+    if (!pmd)
+      pmd = mojom::ProcessMemoryDump::New();
+    pmd->chrome_dump = std::move(result->chrome_dump);
+
+    // TODO(hjd): We should have a better way to tell if os_dump is filled.
+    if (result->os_dump.resident_set_kb > 0) {
+      pmd->os_dump = std::move(result->os_dump);
+    }
+
+    for (auto& pair : result->extra_processes_dump) {
+      base::ProcessId pid = pair.first;
+      mojom::ProcessMemoryDumpPtr& pmd = finalized_pmds[pid];
+      if (!pmd)
+        pmd = mojom::ProcessMemoryDump::New();
+      pmd->os_dump = std::move(result->extra_processes_dump[pid]);
+    }
+  }
+
+  mojom::GlobalMemoryDumpPtr global_dump(mojom::GlobalMemoryDump::New());
+  for (auto& pair : finalized_pmds) {
+    // It's possible that the renderer has died but we still have an os_dump,
+    // because those were comptued from the browser proces before the renderer
+    // died. We should skip these.
+    // TODO(hjd): We should have a better way to tell if a chrome_dump is
+    // filled.
+    if (!pair.second->chrome_dump.malloc_total_kb)
+      continue;
+    base::ProcessId pid = pair.first;
+    mojom::ProcessMemoryDumpPtr pmd = std::move(finalized_pmds[pid]);
+    pmd->private_footprint = CalculatePrivateFootprintKb(pmd->os_dump);
+    global_dump->process_dumps.push_back(std::move(pmd));
+  }
 
   const auto& callback = queued_memory_dump_requests_.front().callback;
   const bool global_success = failed_memory_dump_count_ == 0;
   callback.Run(queued_memory_dump_requests_.front().args.dump_guid,
-               global_success, nullptr /* global_memory_dump */);
+               global_success, std::move(global_dump));
   queued_memory_dump_requests_.pop_front();
 
   // Schedule the next queued dump (if applicable).
