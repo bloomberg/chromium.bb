@@ -27,6 +27,7 @@
 #include "chromeos/dbus/image_burner_client.h"
 #include "chromeos/dbus/image_loader_client.h"
 #include "chromeos/dbus/lorgnette_manager_client.h"
+#include "chromeos/dbus/media_analytics_client.h"
 #include "chromeos/dbus/modem_messaging_client.h"
 #include "chromeos/dbus/permission_broker_client.h"
 #include "chromeos/dbus/power_manager_client.h"
@@ -186,6 +187,11 @@ ImageBurnerClient* DBusThreadManager::GetImageBurnerClient() {
 
 ImageLoaderClient* DBusThreadManager::GetImageLoaderClient() {
   return clients_browser_ ? clients_browser_->image_loader_client_.get()
+                          : nullptr;
+}
+
+MediaAnalyticsClient* DBusThreadManager::GetMediaAnalyticsClient() {
+  return clients_browser_ ? clients_browser_->media_analytics_client_.get()
                           : nullptr;
 }
 
@@ -377,6 +383,12 @@ void DBusThreadManagerSetter::SetImageBurnerClient(
 void DBusThreadManagerSetter::SetImageLoaderClient(
     std::unique_ptr<ImageLoaderClient> client) {
   DBusThreadManager::Get()->clients_browser_->image_loader_client_ =
+      std::move(client);
+}
+
+void DBusThreadManagerSetter::SetMediaAnalyticsClient(
+    std::unique_ptr<MediaAnalyticsClient> client) {
+  DBusThreadManager::Get()->clients_browser_->media_analytics_client_ =
       std::move(client);
 }
 
