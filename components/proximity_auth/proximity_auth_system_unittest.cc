@@ -301,6 +301,23 @@ TEST_F(ProximityAuthSystemTest, ToggleFocus_RegisteredAndUnregisteredUsers) {
       .Times(AtLeast(1));
 }
 
+TEST_F(ProximityAuthSystemTest, ToggleFocus_SameUserRefocused) {
+  RemoteDeviceLifeCycle* life_cycle = nullptr;
+  EXPECT_CALL(*unlock_manager_, SetRemoteDeviceLifeCycle(_))
+      .WillOnce(SaveArg<0>(&life_cycle));
+  FocusUser(kUser1);
+  EXPECT_EQ(kUser1, life_cycle->GetRemoteDevice().user_id);
+
+  // Focusing the user again should be idempotent. The screenlock UI may call
+  // focus on the same user multiple times.
+  // SetRemoteDeviceLifeCycle() is only expected to be called once.
+  FocusUser(kUser1);
+
+  // The RemoteDeviceLifeCycle should be nulled upon destruction.
+  EXPECT_CALL(*unlock_manager_, SetRemoteDeviceLifeCycle(nullptr))
+      .Times(AtLeast(1));
+}
+
 TEST_F(ProximityAuthSystemTest, RestartSystem_UnregisteredUserFocused) {
   FocusUser(kUser2);
 
