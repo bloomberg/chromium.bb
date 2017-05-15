@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "core/html/HTMLIFrameElement.h"
+#include "core/html/HTMLSelectElement.h"
 #include "core/paint/PaintPropertyTreeBuilderTest.h"
 #include "core/paint/PaintPropertyTreePrinter.h"
 
@@ -750,6 +751,22 @@ TEST_P(PaintPropertyTreeUpdateTest, Preserve3DChange) {
   GetDocument().View()->UpdateAllLifecyclePhases();
   EXPECT_EQ(transform, child->PaintProperties()->Transform());
   EXPECT_FALSE(transform->FlattensInheritedTransform());
+}
+
+TEST_P(PaintPropertyTreeUpdateTest, MenuListControlClipChange) {
+  SetBodyInnerHTML(
+      "<select id='select' style='white-space: normal'>"
+      "  <option></option>"
+      "  <option>bar</option>"
+      "</select>");
+
+  auto* select = GetLayoutObjectByElementId("select");
+  EXPECT_NE(nullptr, select->PaintProperties()->OverflowClip());
+
+  // Should not assert in FindPropertiesNeedingUpdate.
+  toHTMLSelectElement(select->GetNode())->setSelectedIndex(1);
+  GetDocument().View()->UpdateAllLifecyclePhases();
+  EXPECT_NE(nullptr, select->PaintProperties()->OverflowClip());
 }
 
 }  // namespace blink
