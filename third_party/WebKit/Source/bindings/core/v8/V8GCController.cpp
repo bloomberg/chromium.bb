@@ -441,6 +441,11 @@ void V8GCController::GcEpilogue(v8::Isolate* isolate,
       // precise GC to ensure that we collect all available garbage.
       current_thread_state->SchedulePreciseGC();
     }
+
+    // Schedules a precise GC for the next idle time period.
+    if (flags & v8::kGCCallbackScheduleIdleGarbageCollection) {
+      current_thread_state->ScheduleIdleGC();
+    }
   }
 
   TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"),
