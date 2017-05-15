@@ -17,6 +17,16 @@ import concurrent
 _active_subprocesses = None
 
 
+def _IsRelevantNmName(name):
+  # Skip lines like:
+  # 00000000 t $t
+  # 00000000 r $d
+  # 0000041b r .L.str.38
+  # 00000344 N
+  return name and not name.startswith('.L.str.') and not (
+      len(name) == 2 and name.startswith('$'))
+
+
 def CollectAliasesByAddress(elf_path, tool_prefix):
   """Runs nm on |elf_path| and returns a dict of address->[names]"""
   names_by_address = collections.defaultdict(list)
@@ -27,12 +37,16 @@ def CollectAliasesByAddress(elf_path, tool_prefix):
           elf_path]
   output = subprocess.check_output(args)
   for line in output.splitlines():
-    address_str, section, name = line.split(' ', 2)
+    space_idx = line.find(' ')
+    address_str = line[:space_idx]
+    section = line[space_idx + 1]
+    name = line[space_idx + 3:]
+
     # To verify that rodata does not have aliases:
     #   nm --no-sort --defined-only libchrome.so > nm.out
     #   grep -v '\$' nm.out | grep ' r ' | sort | cut -d' ' -f1 > addrs
     #   wc -l < addrs; uniq < addrs | wc -l
-    if section not in 'tT' or not name or name[0] == '$':
+    if section not in 'tT' or not _IsRelevantNmName(name):
       continue
 
     address = int(address_str, 16)
@@ -71,14 +85,9 @@ def _ParseOneObjectFileOutput(lines):
   for line in lines:
     if not line:
       break
-    sep = line.find(' ')  # Skip over address.
-    sep = line.find(' ', sep + 1)  # Skip over symbol type.
-    name = line[sep + 1:]
-    # Skip lines like:
-    # 00000000 t $t
-    # 00000000 r $d
-    # 0000041b r .L.str.38
-    if name[0] not in '$.':
+    space_idx = line.find(' ')  # Skip over address.
+    name = line[space_idx + 3:]
+    if _IsRelevantNmName(name):
       ret.append(name)
   return ret
 

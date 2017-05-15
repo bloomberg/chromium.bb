@@ -230,11 +230,11 @@ class Symbol(BaseSymbol):
     self.padding = 0
 
   def __repr__(self):
-    template = ('{}@{:x}(size_without_padding={},padding={},name={},'
+    template = ('{}@{:x}(size_without_padding={},padding={},full_name={},'
                 'object_path={},source_path={},flags={})')
     return template.format(
         self.section_name, self.address, self.size_without_padding,
-        self.padding, self.name, self.object_path, self.source_path,
+        self.padding, self.full_name, self.object_path, self.source_path,
         self.FlagsString())
 
   @property
@@ -289,8 +289,8 @@ class SymbolGroup(BaseSymbol):
     self.is_sorted = is_sorted
 
   def __repr__(self):
-    return 'Group(name=%s,count=%d,size=%d)' % (
-        self.name, len(self), self.size)
+    return 'Group(full_name=%s,count=%d,size=%d)' % (
+        self.full_name, len(self), self.size)
 
   def __iter__(self):
     return iter(self._symbols)

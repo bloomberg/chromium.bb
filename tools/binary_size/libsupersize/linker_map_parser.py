@@ -161,6 +161,8 @@ class MapFileParser(object):
               sym = models.Symbol(section_name, size, address=address,
                                   full_name=name, object_path=path)
               syms.append(sym)
+              if merge_symbol_start_address > 0:
+                merge_symbol_start_address += size
             else:
               # A normal symbol entry.
               subsection_name, address_str, size_str, path = (
