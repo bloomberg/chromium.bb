@@ -25,18 +25,18 @@ TEST(ContentSuggestionsItemTest, CellIsConfiguredWithoutImage) {
   GURL url = GURL("http://chromium.org");
   NSString* publisher = @"publisherName";
   base::Time publishTime = base::Time::Now();
-  id delegateMock = OCMProtocolMock(@protocol(ContentSuggestionsItemDelegate));
+  id delegateMock = OCMProtocolMock(@protocol(SuggestedContentDelegate));
   ContentSuggestionsItem* item =
       [[ContentSuggestionsItem alloc] initWithType:0
                                              title:title
                                           subtitle:subtitle
-                                          delegate:delegateMock
                                                url:url];
+  item.delegate = delegateMock;
   item.hasImage = YES;
   item.publisher = publisher;
   item.publishDate = publishTime;
   item.availableOffline = YES;
-  OCMExpect([delegateMock loadImageForSuggestionItem:item]);
+  OCMExpect([delegateMock loadImageForSuggestedItem:item]);
   ContentSuggestionsCell* cell = [[[item cellClass] alloc] init];
   ASSERT_EQ([ContentSuggestionsCell class], [cell class]);
   ASSERT_EQ(url, item.URL);
@@ -64,25 +64,24 @@ TEST(ContentSuggestionsItemTest, DontFetchImageIsImageIsBeingFetched) {
   NSString* title = @"testTitle";
   NSString* subtitle = @"testSubtitle";
   GURL url = GURL("http://chromium.org");
-  id niceDelegateMock =
-      OCMProtocolMock(@protocol(ContentSuggestionsItemDelegate));
+  id niceDelegateMock = OCMProtocolMock(@protocol(SuggestedContentDelegate));
   ContentSuggestionsItem* item =
       [[ContentSuggestionsItem alloc] initWithType:0
                                              title:title
                                           subtitle:subtitle
-                                          delegate:niceDelegateMock
                                                url:url];
+  item.delegate = niceDelegateMock;
   item.hasImage = YES;
   item.image = [[UIImage alloc] init];
 
-  OCMExpect([niceDelegateMock loadImageForSuggestionItem:item]);
+  OCMExpect([niceDelegateMock loadImageForSuggestedItem:item]);
   ContentSuggestionsCell* cell = [[[item cellClass] alloc] init];
   ASSERT_NE(nil, item.image);
   [item configureCell:cell];
   ASSERT_OCMOCK_VERIFY(niceDelegateMock);
 
   id strictDelegateMock =
-      OCMStrictProtocolMock(@protocol(ContentSuggestionsItemDelegate));
+      OCMStrictProtocolMock(@protocol(SuggestedContentDelegate));
   item.delegate = strictDelegateMock;
   id cellMock = OCMPartialMock(cell);
   OCMExpect([cellMock setContentImage:item.image]);
@@ -103,14 +102,13 @@ TEST(ContentSuggestionsItemTest, NoDelegateCallWhenHasNotImage) {
   NSString* subtitle = @"testSubtitle";
   GURL url = GURL("http://chromium.org");
   // Strict mock. Raise exception if the load method is called.
-  id delegateMock =
-      OCMStrictProtocolMock(@protocol(ContentSuggestionsItemDelegate));
+  id delegateMock = OCMStrictProtocolMock(@protocol(SuggestedContentDelegate));
   ContentSuggestionsItem* item =
       [[ContentSuggestionsItem alloc] initWithType:0
                                              title:title
                                           subtitle:subtitle
-                                          delegate:delegateMock
                                                url:url];
+  item.delegate = delegateMock;
   item.hasImage = NO;
   ContentSuggestionsCell* cell = [[[item cellClass] alloc] init];
 

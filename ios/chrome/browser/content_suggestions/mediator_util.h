@@ -11,15 +11,14 @@
 #include "components/ntp_snippets/content_suggestion.h"
 #include "components/ntp_snippets/status.h"
 #include "components/ntp_tiles/ntp_tile.h"
-#import "ios/chrome/browser/ui/content_suggestions/content_suggestion.h"
+#import "ios/chrome/browser/ui/content_suggestions/cells/suggested_content.h"
 #import "ios/chrome/browser/ui/content_suggestions/identifier/content_suggestions_section_information.h"
 
 namespace ntp_snippets {
-class ContentSuggestion;
 class Category;
-class CategoryInfo;
 }
 
+@class CollectionViewItem;
 @class ContentSuggestionsCategoryWrapper;
 
 // TODO(crbug.com/701275): Once base::BindBlock supports the move semantics,
@@ -32,21 +31,15 @@ void BindWrapper(
     ntp_snippets::Status status_code,
     std::vector<ntp_snippets::ContentSuggestion> suggestions);
 
-// Returns the Type for this |category|.
-ContentSuggestionType TypeForCategory(ntp_snippets::Category category);
-
 // Returns the section ID for this |category|.
 ContentSuggestionsSectionID SectionIDForCategory(
     ntp_snippets::Category category);
 
-// Returns the section layout corresponding to the category |layout|.
-ContentSuggestionsSectionLayout SectionLayoutForLayout(
-    ntp_snippets::ContentSuggestionsCardLayout layout);
-
-// Converts a ntp_snippets::ContentSuggestion to an Objective-C
-// ContentSuggestion.
-ContentSuggestion* ConvertContentSuggestion(
-    const ntp_snippets::ContentSuggestion& contentSuggestion);
+// Converts a ntp_snippets::ContentSuggestion to a CollectionViewItem.
+CollectionViewItem<SuggestedContent>* ConvertSuggestion(
+    const ntp_snippets::ContentSuggestion& contentSuggestion,
+    ContentSuggestionsSectionInformation* sectionInfo,
+    ntp_snippets::Category category);
 
 // Returns a SectionInformation for a |category|, filled with the
 // |categoryInfo|.
@@ -60,17 +53,16 @@ ntp_snippets::ContentSuggestion::ID SuggestionIDForSectionID(
     ContentSuggestionsCategoryWrapper* category,
     const std::string& id_in_category);
 
-// Creates and returns an empty suggestion.
-ContentSuggestion* EmptySuggestion();
-
 // Creates and returns a SectionInfo for the Most Visited section.
 ContentSuggestionsSectionInformation* MostVisitedSectionInformation();
 
 // Records the page impression of the ntp tiles.
 void RecordPageImpression(const std::vector<ntp_tiles::NTPTile>& mostVisited);
 
-// Converts a ntp_snippets::ContentSuggestion to an Objective-C
-// ContentSuggestion.
-ContentSuggestion* ConvertNTPTile(const ntp_tiles::NTPTile& tile);
+// Converts a ntp_snippets::ContentSuggestion to an adapted CollectionViewItem
+// with a |sectionInfo|.
+CollectionViewItem<SuggestedContent>* ConvertNTPTile(
+    const ntp_tiles::NTPTile& tile,
+    ContentSuggestionsSectionInformation* sectionInfo);
 
 #endif  // IOS_CHROME_BROWSER_CONTENT_SUGGESTIONS_MEDIATOR_UTIL_H_

@@ -8,11 +8,10 @@
 #import <UIKit/UIKit.h>
 
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_item.h"
-#import "ios/chrome/browser/ui/content_suggestions/identifier/content_suggestion_identifier.h"
+#import "ios/chrome/browser/ui/content_suggestions/cells/suggested_content.h"
 
 // Item displaying two text labels.
-@interface ContentSuggestionsTextItem
-    : CollectionViewItem<ContentSuggestionIdentification>
+@interface ContentSuggestionsTextItem : CollectionViewItem<SuggestedContent>
 
 @property(nonatomic, nullable, copy) NSString* text;
 @property(nonatomic, nullable, copy) NSString* detailText;

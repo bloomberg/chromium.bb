@@ -20,11 +20,4 @@
 
 @end
 
-// A protocol for an object having an ID.
-@protocol ContentSuggestionIdentification
-
-@property(nonatomic, strong) ContentSuggestionIdentifier* suggestionIdentifier;
-
-@end
-
 #endif  // IOS_CHROME_BROWSER_UI_CONTENT_SUGGESTIONS_IDENTIFIER_CONTENT_SUGGESTION_IDENTIFIER_H_

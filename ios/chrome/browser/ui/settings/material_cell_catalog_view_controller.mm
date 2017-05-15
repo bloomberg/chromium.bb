@@ -731,7 +731,6 @@ const CGFloat kCardIssuerNetworkIconDimension = 25.0;
           subtitle:@"Really, this is the best article I have ever seen, it "
                    @"is mandatory to read it! It describes how to write "
                    @"the best article."
-          delegate:nil
                url:GURL()];
   articleItem.publisher = @"Top Publisher.com";
   return articleItem;

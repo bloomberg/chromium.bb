@@ -15,10 +15,8 @@ typedef NS_ENUM(NSInteger, ContentSuggestionsSectionLayout) {
   ContentSuggestionsSectionLayoutCustom,
 };
 
-// This enum is used for ordering the sections and as ID for the section. Make
-// all sections in the same collection have different ID.
-// When adding a new kind of suggestions, add a new corresponding section. The
-// ordering is not persisted between launch, reordering is possible.
+// This enum is used for identifying the section. All section should have a
+// different ID.
 typedef NS_ENUM(NSInteger, ContentSuggestionsSectionID) {
   ContentSuggestionsSectionMostVisited = 0,
   ContentSuggestionsSectionArticles,

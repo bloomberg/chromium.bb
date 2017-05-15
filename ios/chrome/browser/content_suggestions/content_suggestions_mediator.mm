@@ -5,6 +5,7 @@
 #import "ios/chrome/browser/content_suggestions/content_suggestions_mediator.h"
 
 #include "base/mac/bind_objc_block.h"
+#include "base/mac/foundation_util.h"
 #include "base/memory/ptr_util.h"
 #include "base/optional.h"
 #include "components/favicon/core/large_icon_service.h"
@@ -17,15 +18,15 @@
 #import "ios/chrome/browser/content_suggestions/content_suggestions_service_bridge_observer.h"
 #import "ios/chrome/browser/content_suggestions/mediator_util.h"
 #include "ios/chrome/browser/ntp_tiles/most_visited_sites_observer_bridge.h"
-#import "ios/chrome/browser/ui/content_suggestions/content_suggestion.h"
+#import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_item.h"
+#import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_most_visited_item.h"
+#import "ios/chrome/browser/ui/content_suggestions/cells/suggested_content.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_commands.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_data_sink.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_image_fetcher.h"
 #import "ios/chrome/browser/ui/content_suggestions/identifier/content_suggestion_identifier.h"
 #import "ios/chrome/browser/ui/content_suggestions/identifier/content_suggestions_section_information.h"
 #import "ios/chrome/browser/ui/favicon/favicon_attributes_provider.h"
-#import "ios/chrome/browser/ui/reading_list/reading_list_collection_view_item.h"
-#import "ios/chrome/browser/ui/reading_list/reading_list_utils.h"
 #include "ui/gfx/image/image.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -34,8 +35,10 @@
 
 namespace {
 
+using CSCollectionViewItem = CollectionViewItem<SuggestedContent>;
+
 // Size of the favicon returned by the provider.
-const CGFloat kDefaultFaviconSize = 16;
+const CGFloat kDefaultFaviconSize = 48;
 // Maximum number of most visited tiles fetched.
 const NSInteger kMaxNumMostVisitedTiles = 8;
 
@@ -69,21 +72,6 @@ const NSInteger kMaxNumMostVisitedTiles = 8;
 // FaviconAttributesProvider to fetch the favicon for the suggestions.
 @property(nonatomic, nullable, strong)
     FaviconAttributesProvider* attributesProvider;
-
-// Converts the |suggestions| from |category| to ContentSuggestion and adds them
-// to the |contentArray|  if the category is available.
-- (void)addSuggestions:
-            (const std::vector<ntp_snippets::ContentSuggestion>&)suggestions
-          fromCategory:(ntp_snippets::Category&)category
-               toArray:(NSMutableArray<ContentSuggestion*>*)contentArray;
-
-// Adds the section information for |category| in
-// self.sectionInformationByCategory.
-- (void)addSectionInformationForCategory:(ntp_snippets::Category)category;
-
-// Returns a CategoryWrapper acting as a key for this section info.
-- (ContentSuggestionsCategoryWrapper*)categoryWrapperForSectionInfo:
-    (ContentSuggestionsSectionInformation*)sectionInfo;
 
 @end
 
@@ -138,22 +126,39 @@ initWithContentService:(ntp_snippets::ContentSuggestionsService*)contentService
 
 #pragma mark - ContentSuggestionsDataSource
 
-- (NSArray<ContentSuggestion*>*)allSuggestions {
-  NSMutableArray<ContentSuggestion*>* dataHolders = [NSMutableArray array];
+- (NSArray<ContentSuggestionsSectionInformation*>*)sectionsInfo {
+  NSMutableArray<ContentSuggestionsSectionInformation*>* sectionsInfo =
+      [NSMutableArray array];
 
-  [self addMostVisitedToArray:dataHolders];
+  if (!self.mostVisitedData.empty()) {
+    [sectionsInfo addObject:self.mostVisitedSectionInfo];
+  }
 
-  [self addContentSuggestionsToArray:dataHolders];
+  std::vector<ntp_snippets::Category> categories =
+      self.contentService->GetCategories();
 
-  return dataHolders;
+  for (auto& category : categories) {
+    ContentSuggestionsCategoryWrapper* categoryWrapper =
+        [ContentSuggestionsCategoryWrapper wrapperWithCategory:category];
+    if (!self.sectionInformationByCategory[categoryWrapper]) {
+      [self addSectionInformationForCategory:category];
+    }
+    [sectionsInfo addObject:self.sectionInformationByCategory[categoryWrapper]];
+  }
+
+  return sectionsInfo;
 }
 
-- (NSArray<ContentSuggestion*>*)suggestionsForSection:
+- (NSArray<CSCollectionViewItem*>*)itemsForSectionInfo:
     (ContentSuggestionsSectionInformation*)sectionInfo {
-  NSMutableArray* convertedSuggestions = [NSMutableArray array];
+  NSMutableArray<CSCollectionViewItem*>* convertedSuggestions =
+      [NSMutableArray array];
 
   if (sectionInfo == self.mostVisitedSectionInfo) {
-    [self addMostVisitedToArray:convertedSuggestions];
+    for (const ntp_tiles::NTPTile& tile : self.mostVisitedData) {
+      [convertedSuggestions
+          addObject:ConvertNTPTile(tile, self.mostVisitedSectionInfo)];
+    }
   } else {
     ntp_snippets::Category category =
         [[self categoryWrapperForSectionInfo:sectionInfo] category];
@@ -162,7 +167,7 @@ initWithContentService:(ntp_snippets::ContentSuggestionsService*)contentService
         self.contentService->GetSuggestionsForCategory(category);
     [self addSuggestions:suggestions
             fromCategory:category
-                 toArray:convertedSuggestions];
+             toItemArray:convertedSuggestions];
   }
 
   return convertedSuggestions;
@@ -177,14 +182,9 @@ initWithContentService:(ntp_snippets::ContentSuggestionsService*)contentService
                     fromSectionInfo:
                         (ContentSuggestionsSectionInformation*)sectionInfo
                            callback:(MoreSuggestionsFetched)callback {
-  if (![self isRelatedToContentSuggestionsService:sectionInfo])
+  if (![self isRelatedToContentSuggestionsService:sectionInfo]) {
+    callback(nil);
     return;
-
-  std::set<std::string> known_suggestion_ids;
-  for (ContentSuggestionIdentifier* identifier in knownSuggestions) {
-    if (identifier.sectionInfo != sectionInfo)
-      continue;
-    known_suggestion_ids.insert(identifier.IDInSection);
   }
 
   ContentSuggestionsCategoryWrapper* wrapper =
@@ -194,13 +194,17 @@ initWithContentService:(ntp_snippets::ContentSuggestionsService*)contentService
       self.contentService->GetCategoryInfo([wrapper category]);
 
   if (!categoryInfo) {
+    callback(nil);
     return;
   }
+
   switch (categoryInfo->additional_action()) {
     case ntp_snippets::ContentSuggestionsAdditionalAction::NONE:
+      callback(nil);
       return;
 
     case ntp_snippets::ContentSuggestionsAdditionalAction::VIEW_ALL:
+      callback(nil);
       if ([wrapper category].IsKnownCategory(
               ntp_snippets::KnownCategories::READING_LIST)) {
         [self.commandHandler openReadingList];
@@ -208,6 +212,13 @@ initWithContentService:(ntp_snippets::ContentSuggestionsService*)contentService
       break;
 
     case ntp_snippets::ContentSuggestionsAdditionalAction::FETCH: {
+      std::set<std::string> known_suggestion_ids;
+      for (ContentSuggestionIdentifier* identifier in knownSuggestions) {
+        if (identifier.sectionInfo != sectionInfo)
+          continue;
+        known_suggestion_ids.insert(identifier.IDInSection);
+      }
+
       __weak ContentSuggestionsMediator* weakSelf = self;
       ntp_snippets::FetchDoneCallback serviceCallback = base::Bind(
           &BindWrapper,
@@ -227,17 +238,40 @@ initWithContentService:(ntp_snippets::ContentSuggestionsService*)contentService
   }
 }
 
-- (void)fetchFaviconAttributesForURL:(const GURL&)URL
-                          completion:(void (^)(FaviconAttributes*))completion {
-  [self.attributesProvider fetchFaviconAttributesForURL:URL
+- (void)fetchFaviconAttributesForItem:(CSCollectionViewItem*)item
+                           completion:(void (^)(FaviconAttributes*))completion {
+  ContentSuggestionsSectionInformation* sectionInfo =
+      item.suggestionIdentifier.sectionInfo;
+  GURL url;
+  if (![self isRelatedToContentSuggestionsService:sectionInfo]) {
+    ContentSuggestionsMostVisitedItem* mostVisited =
+        base::mac::ObjCCast<ContentSuggestionsMostVisitedItem>(item);
+    url = mostVisited.URL;
+  } else {
+    ContentSuggestionsItem* suggestionItem =
+        base::mac::ObjCCast<ContentSuggestionsItem>(item);
+    url = suggestionItem.URL;
+  }
+  [self.attributesProvider fetchFaviconAttributesForURL:url
                                              completion:completion];
 }
 
-- (void)fetchFaviconImageForSuggestion:(ContentSuggestionIdentifier*)suggestion
-                            completion:(void (^)(UIImage*))completion {
-  if (!completion)
+- (void)fetchFaviconImageForItem:(CSCollectionViewItem*)item
+                      completion:(void (^)(UIImage*))completion {
+  ContentSuggestionsSectionInformation* sectionInfo =
+      item.suggestionIdentifier.sectionInfo;
+  if (![self isRelatedToContentSuggestionsService:sectionInfo]) {
     return;
-
+  }
+  ContentSuggestionsItem* suggestionItem =
+      base::mac::ObjCCast<ContentSuggestionsItem>(item);
+  ntp_snippets::Category category =
+      [[self categoryWrapperForSectionInfo:sectionInfo] category];
+  if (!category.IsKnownCategory(ntp_snippets::KnownCategories::ARTICLES)) {
+    // TODO(crbug.com/721266): remove this guard once the choice to download the
+    // favicon from the google server is done in the provider.
+    return;
+  }
   void (^imageCallback)(const gfx::Image&) = ^(const gfx::Image& image) {
     if (!image.IsEmpty()) {
       completion([image.ToUIImage() copy]);
@@ -246,9 +280,7 @@ initWithContentService:(ntp_snippets::ContentSuggestionsService*)contentService
 
   ntp_snippets::ContentSuggestion::ID identifier =
       ntp_snippets::ContentSuggestion::ID(
-          [[self categoryWrapperForSectionInfo:suggestion.sectionInfo]
-              category],
-          suggestion.IDInSection);
+          category, suggestionItem.suggestionIdentifier.IDInSection);
   self.contentService->FetchSuggestionFavicon(
       identifier, /* minimum_size_in_pixel = */ 1, kDefaultFaviconSize,
       base::BindBlockArc(imageCallback));
@@ -346,10 +378,12 @@ initWithContentService:(ntp_snippets::ContentSuggestionsService*)contentService
 
 #pragma mark - Private
 
+// Converts the |suggestions| from |category| to CSCollectionViewItem and adds
+// them to the |contentArray| if the category is available.
 - (void)addSuggestions:
             (const std::vector<ntp_snippets::ContentSuggestion>&)suggestions
           fromCategory:(ntp_snippets::Category&)category
-               toArray:(NSMutableArray<ContentSuggestion*>*)contentArray {
+           toItemArray:(NSMutableArray<CSCollectionViewItem*>*)itemArray {
   if (!ntp_snippets::IsCategoryStatusAvailable(
           self.contentService->GetCategoryStatus(category))) {
     return;
@@ -360,32 +394,18 @@ initWithContentService:(ntp_snippets::ContentSuggestionsService*)contentService
   if (!self.sectionInformationByCategory[categoryWrapper]) {
     [self addSectionInformationForCategory:category];
   }
-
+  ContentSuggestionsSectionInformation* sectionInfo =
+      self.sectionInformationByCategory[categoryWrapper];
   for (auto& contentSuggestion : suggestions) {
-    ContentSuggestion* suggestion = ConvertContentSuggestion(contentSuggestion);
+    CSCollectionViewItem* suggestion =
+        ConvertSuggestion(contentSuggestion, sectionInfo, category);
 
-    suggestion.type = TypeForCategory(category);
-
-    suggestion.suggestionIdentifier.sectionInfo =
-        self.sectionInformationByCategory[categoryWrapper];
-
-    if (category.IsKnownCategory(ntp_snippets::KnownCategories::READING_LIST)) {
-      suggestion.availableOffline =
-          contentSuggestion.reading_list_suggestion_extra()->distilled;
-    }
-
-    [contentArray addObject:suggestion];
-  }
-
-  if (suggestions.size() == 0) {
-    ContentSuggestion* suggestion = EmptySuggestion();
-    suggestion.suggestionIdentifier.sectionInfo =
-        self.sectionInformationByCategory[categoryWrapper];
-
-    [contentArray addObject:suggestion];
+    [itemArray addObject:suggestion];
   }
 }
 
+// Adds the section information for |category| in
+// self.sectionInformationByCategory.
 - (void)addSectionInformationForCategory:(ntp_snippets::Category)category {
   base::Optional<ntp_snippets::CategoryInfo> categoryInfo =
       self.contentService->GetCategoryInfo(category);
@@ -397,6 +417,7 @@ initWithContentService:(ntp_snippets::ContentSuggestionsService*)contentService
       wrapperWithCategory:category]] = sectionInfo;
 }
 
+// Returns a CategoryWrapper acting as a key for this section info.
 - (ContentSuggestionsCategoryWrapper*)categoryWrapperForSectionInfo:
     (ContentSuggestionsSectionInformation*)sectionInfo {
   return [[self.sectionInformationByCategory allKeysForObject:sectionInfo]
@@ -409,45 +430,15 @@ initWithContentService:(ntp_snippets::ContentSuggestionsService*)contentService
             (const std::vector<ntp_snippets::ContentSuggestion>&)suggestions
                  withStatusCode:(ntp_snippets::Status)statusCode
                        callback:(MoreSuggestionsFetched)callback {
+  NSMutableArray<CSCollectionViewItem*>* contentSuggestions = nil;
   if (statusCode.IsSuccess() && !suggestions.empty() && callback) {
-    NSMutableArray<ContentSuggestion*>* contentSuggestions =
-        [NSMutableArray array];
+    contentSuggestions = [NSMutableArray array];
     ntp_snippets::Category category = suggestions[0].id().category();
     [self addSuggestions:suggestions
             fromCategory:category
-                 toArray:contentSuggestions];
-    callback(contentSuggestions);
+             toItemArray:contentSuggestions];
   }
-}
-
-// Adds all the suggestions from the |contentService| to |suggestions|.
-- (void)addContentSuggestionsToArray:
-    (NSMutableArray<ContentSuggestion*>*)arrayToFill {
-  std::vector<ntp_snippets::Category> categories =
-      self.contentService->GetCategories();
-
-  for (auto& category : categories) {
-    const std::vector<ntp_snippets::ContentSuggestion>& suggestions =
-        self.contentService->GetSuggestionsForCategory(category);
-    [self addSuggestions:suggestions fromCategory:category toArray:arrayToFill];
-  }
-}
-
-// Adds all the suggestions for the |mostVisitedData| to |suggestions|.
-- (void)addMostVisitedToArray:(NSMutableArray<ContentSuggestion*>*)arrayToFill {
-  if (self.mostVisitedData.empty()) {
-    ContentSuggestion* suggestion = EmptySuggestion();
-    suggestion.suggestionIdentifier.sectionInfo = self.mostVisitedSectionInfo;
-    [arrayToFill addObject:suggestion];
-
-    return;
-  }
-
-  for (const ntp_tiles::NTPTile& tile : self.mostVisitedData) {
-    ContentSuggestion* suggestion = ConvertNTPTile(tile);
-    suggestion.suggestionIdentifier.sectionInfo = self.mostVisitedSectionInfo;
-    [arrayToFill addObject:suggestion];
-  }
+  callback(contentSuggestions);
 }
 
 // Returns whether the |sectionInfo| is associated with a category from the

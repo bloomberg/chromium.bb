@@ -12,6 +12,7 @@ source_set("cells") {
     "content_suggestions_most_visited_item.mm",
     "content_suggestions_text_item.h",
     "content_suggestions_text_item.mm",
+    "suggested_content.h",
   ]
   deps = [
     "//base",

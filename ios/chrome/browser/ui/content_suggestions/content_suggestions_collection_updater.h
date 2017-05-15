@@ -7,11 +7,22 @@
 
 #import <UIKit/UIKit.h>
 
-#import "ios/chrome/browser/ui/content_suggestions/content_suggestion.h"
-
 @class CollectionViewItem;
-@protocol ContentSuggestionsDataSource;
+@class ContentSuggestionsSectionInformation;
 @class ContentSuggestionsViewController;
+@protocol ContentSuggestionsDataSource;
+@protocol SuggestedContent;
+
+// Enum defining the type of a ContentSuggestions.
+typedef NS_ENUM(NSInteger, ContentSuggestionType) {
+  // Use this type to pass information about an empty section. Suggestion of
+  // this type are empty and should not be displayed. The informations to be
+  // displayed are contained in the SectionInfo.
+  ContentSuggestionTypeEmpty,
+  ContentSuggestionTypeArticle,
+  ContentSuggestionTypeReadingList,
+  ContentSuggestionTypeMostVisited,
+};
 
 // Updater for a CollectionViewController populating it with some items and
 // handling the items addition.
@@ -25,7 +36,7 @@
 
 // |collectionViewController| this Updater will update. Needs to be set before
 // adding items.
-@property(nonatomic, assign)
+@property(nonatomic, weak)
     ContentSuggestionsViewController* collectionViewController;
 
 // Returns whether the section should use the default, non-card style.
@@ -36,16 +47,18 @@
 
 // Adds the sections for the |suggestions| to the model and returns their
 // indices.
-- (NSIndexSet*)addSectionsForSuggestionsToModel:
-    (NSArray<ContentSuggestion*>*)suggestions;
+- (NSIndexSet*)addSectionsForSectionInfoToModel:
+    (NSArray<ContentSuggestionsSectionInformation*>*)sectionsInfo;
 
-// Adds the |suggestions| to the model and returns their index paths.
-// The caller must ensure the corresponding sections have been added to the
-// model.
-- (NSArray<NSIndexPath*>*)addSuggestionsToModel:
-    (NSArray<ContentSuggestion*>*)suggestions;
+// Adds the |suggestions| to the model in the section corresponding to
+// |sectionInfo| and returns their index paths. The caller must ensure the
+// corresponding section has been added to the model.
+- (NSArray<NSIndexPath*>*)
+addSuggestionsToModel:
+    (NSArray<CollectionViewItem<SuggestedContent>*>*)suggestions
+      withSectionInfo:(ContentSuggestionsSectionInformation*)sectionInfo;
 
-// Adds the empty item to this |section| and returns its index path. The updater
+// Adds an empty item to this |section| and returns its index path. The updater
 // does not do any check about the number of elements in the section.
 - (NSIndexPath*)addEmptyItemForSection:(NSInteger)section;
 
