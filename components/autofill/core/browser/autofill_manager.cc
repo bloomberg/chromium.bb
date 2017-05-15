@@ -1983,6 +1983,9 @@ void AutofillManager::ParseForms(const std::vector<FormData>& forms) {
   if (forms.empty())
     return;
 
+  // Setup the url for metrics that we will collect for this form.
+  form_interactions_ukm_logger_->OnFormsParsed(forms[0].origin);
+
   std::vector<FormStructure*> non_queryable_forms;
   std::vector<FormStructure*> queryable_forms;
   for (const FormData& form : forms) {
@@ -2011,8 +2014,6 @@ void AutofillManager::ParseForms(const std::vector<FormData>& forms) {
 
   if (!queryable_forms.empty() || !non_queryable_forms.empty()) {
     AutofillMetrics::LogUserHappinessMetric(AutofillMetrics::FORMS_LOADED);
-    // Setup the url for metrics that we will collect for this form.
-    form_interactions_ukm_logger_->OnFormsLoaded(forms[0].origin);
 
 #if defined(OS_IOS)
     // Log this from same location as AutofillMetrics::FORMS_LOADED to ensure

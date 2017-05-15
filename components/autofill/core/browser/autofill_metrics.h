@@ -47,7 +47,7 @@ extern const char kUKMSelectedMaskedServerCardEntryName[];
 
 // Each |UkmEntry|, except the first interaction with the form, has a metric for
 // time elapsed, in milliseconds, since we loaded the form.
-extern const char kUKMMillisecondsSinceFormLoadedMetricName[];
+extern const char kUKMMillisecondsSinceFormParsedMetricName[];
 
 // |FormEvent| for FORM_EVENT_*_SUGGESTION_FILLED in credit card forms include a
 // |CreditCard| |record_type()| to indicate if the suggestion was for a local
@@ -628,7 +628,7 @@ class AutofillMetrics {
 
     const GURL& url() const { return url_; }
 
-    void OnFormsLoaded(const GURL& url);
+    void OnFormsParsed(const GURL& url);
     void LogInteractedWithForm(bool is_for_credit_card,
                                size_t local_record_type_count,
                                size_t server_record_type_count);
@@ -645,13 +645,13 @@ class AutofillMetrics {
 
    private:
     bool CanLog() const;
-    int64_t MillisecondsSinceFormLoaded() const;
+    int64_t MillisecondsSinceFormParsed() const;
     void GetNewSourceID();
 
     ukm::UkmService* ukm_service_;  // Weak reference.
     int32_t source_id_ = -1;
     GURL url_;
-    base::TimeTicks form_loaded_timestamp_;
+    base::TimeTicks form_parsed_timestamp_;
   };
 
   // |upload_decision_metrics| is a bitmask of |CardUploadDecisionMetric|.

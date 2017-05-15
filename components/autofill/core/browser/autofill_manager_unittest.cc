@@ -6891,6 +6891,7 @@ TEST_F(AutofillManagerTest, FormWithLongOptionValuesIsAcceptable) {
 // Test that a sign-in form submission sends an upload with types matching the
 // fields.
 TEST_F(AutofillManagerTest, SignInFormSubmission_Upload) {
+  EnableUkmLogging();
   // Set up our form data (it's already filled out with user data).
   FormData form;
   form.origin = GURL("http://myform.com/form.html");
@@ -6911,6 +6912,8 @@ TEST_F(AutofillManagerTest, SignInFormSubmission_Upload) {
   types.clear();
   types.insert(PASSWORD);
   expected_types.push_back(types);
+
+  FormsSeen({form});
 
   // We will expect these types in the upload and no observed submission. (the
   // callback initiated by WaitForAsyncUploadProcess checks these expectations.)
