@@ -12,16 +12,16 @@
 // first member variable in test classes, so it is destroyed last, and the test
 // threads always exist from the perspective of other classes.
 //
-// By default, all of the created TestWebThreads and the task scheduler will
-// be backed by a single shared MessageLoop. If a test truly needs separate
-// threads, it can do so by passing the appropriate combination of option values
-// during the TestWebThreadBundle construction.
+// By default, all of the created TestWebThreads will be backed by a single
+// shared MessageLoop. If a test truly needs separate threads, it can do so by
+// passing the appropriate combination of option values during the
+// TestWebThreadBundle construction.
 //
-// To synchronously run tasks posted to task scheduler or to TestWebThreads
-// that use the shared MessageLoop, call RunLoop::Run/RunUntilIdle() on the
-// thread where the TestWebThreadBundle lives. The destructor of
-// TestWebThreadBundle runs remaining TestWebThreads tasks, remaining
-// blocking pool tasks, and remaining BLOCK_SHUTDOWN task scheduler tasks.
+// To synchronously run tasks posted to TestWebThreads that use the shared
+// MessageLoop, call RunLoop::Run/RunUntilIdle() on the thread where the
+// TestWebThreadBundle lives. The destructor of TestWebThreadBundle runs
+// remaining TestWebThreads tasks, remaining blocking pool tasks, and remaining
+// BLOCK_SHUTDOWN task scheduler tasks.
 //
 // Some tests using the IO thread expect a MessageLoopForIO. Passing
 // IO_MAINLOOP will use a MessageLoopForIO for the main MessageLoop.
@@ -35,7 +35,6 @@ namespace base {
 class MessageLoop;
 namespace test {
 class ScopedAsyncTaskScheduler;
-class ScopedTaskScheduler;
 }  // namespace test
 }  // namespace base
 
@@ -54,7 +53,6 @@ class TestWebThreadBundle {
     REAL_DB_THREAD = 1 << 1,
     REAL_FILE_THREAD = 1 << 2,
     REAL_IO_THREAD = 1 << 3,
-    REAL_TASK_SCHEDULER = 1 << 4,
   };
 
   TestWebThreadBundle();
@@ -68,7 +66,6 @@ class TestWebThreadBundle {
   std::unique_ptr<base::MessageLoop> message_loop_;
   std::unique_ptr<base::test::ScopedAsyncTaskScheduler>
       scoped_async_task_scheduler_;
-  std::unique_ptr<base::test::ScopedTaskScheduler> scoped_task_scheduler_;
   std::unique_ptr<TestWebThread> ui_thread_;
   std::unique_ptr<TestWebThread> db_thread_;
   std::unique_ptr<TestWebThread> file_thread_;
