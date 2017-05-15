@@ -63,7 +63,9 @@ bool FindBarHost::MaybeForwardKeyEventToWebpage(
   // input. Otherwise Up and Down arrow key strokes get eaten. "Nom Nom Nom".
   contents->ClearFocusedElement();
   NativeWebKeyboardEvent event(key_event);
-  contents->GetRenderViewHost()->GetWidget()->ForwardKeyboardEvent(event);
+  contents->GetRenderViewHost()
+      ->GetWidget()
+      ->ForwardKeyboardEventWithLatencyInfo(event, *key_event.latency());
   return true;
 }
 

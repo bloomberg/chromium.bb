@@ -589,6 +589,7 @@ TEST_F(RenderWidgetHostLatencyTrackerTest,
     auto wheel = SyntheticWebMouseWheelEventBuilder::Build(
         blink::WebMouseWheelEvent::kPhaseChanged);
     ui::LatencyInfo wheel_latency;
+    wheel_latency.set_source_event_type(ui::SourceEventType::WHEEL);
     AddFakeComponents(*tracker(), &wheel_latency);
     tracker()->OnInputEvent(wheel, &wheel_latency);
     tracker()->OnInputEventAck(wheel, &wheel_latency,
@@ -602,6 +603,7 @@ TEST_F(RenderWidgetHostLatencyTrackerTest,
     SyntheticWebTouchEvent touch;
     touch.PressPoint(0, 0);
     ui::LatencyInfo touch_latency;
+    touch_latency.set_source_event_type(ui::SourceEventType::TOUCH);
     AddFakeComponents(*tracker(), &touch_latency);
     tracker()->OnInputEvent(touch, &touch_latency);
     tracker()->OnInputEventAck(touch, &touch_latency,
@@ -629,6 +631,7 @@ TEST_F(RenderWidgetHostLatencyTrackerTest,
     auto key_event =
         SyntheticWebKeyboardEventBuilder::Build(blink::WebKeyboardEvent::kChar);
     ui::LatencyInfo key_latency;
+    key_latency.set_source_event_type(ui::SourceEventType::KEY_PRESS);
     AddFakeComponents(*tracker(), &key_latency);
     tracker()->OnInputEvent(key_event, &key_latency);
     tracker()->OnInputEventAck(key_event, &key_latency,
@@ -725,9 +728,11 @@ TEST_F(RenderWidgetHostLatencyTrackerTest, TouchBlockingAndQueueingTime) {
       event.PressPoint(1, 1);
 
       ui::LatencyInfo latency;
+      latency.set_source_event_type(ui::SourceEventType::TOUCH);
       tracker()->OnInputEvent(event, &latency);
 
       ui::LatencyInfo fake_latency;
+      fake_latency.set_source_event_type(ui::SourceEventType::TOUCH);
       fake_latency.AddLatencyNumberWithTimestamp(
           ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT,
           tracker()->latency_component_id(), 0,
@@ -760,6 +765,7 @@ TEST_F(RenderWidgetHostLatencyTrackerTest, TouchBlockingAndQueueingTime) {
     {
       // Touch move.
       ui::LatencyInfo latency;
+      latency.set_source_event_type(ui::SourceEventType::TOUCH);
       event.MovePoint(0, 20, 20);
       tracker()->OnInputEvent(event, &latency);
 
@@ -772,6 +778,7 @@ TEST_F(RenderWidgetHostLatencyTrackerTest, TouchBlockingAndQueueingTime) {
       EXPECT_EQ(2U, latency.latency_components().size());
 
       ui::LatencyInfo fake_latency;
+      fake_latency.set_source_event_type(ui::SourceEventType::TOUCH);
       fake_latency.AddLatencyNumberWithTimestamp(
           ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT,
           tracker()->latency_component_id(), 0,
@@ -801,6 +808,7 @@ TEST_F(RenderWidgetHostLatencyTrackerTest, TouchBlockingAndQueueingTime) {
     {
       // Touch end.
       ui::LatencyInfo latency;
+      latency.set_source_event_type(ui::SourceEventType::TOUCH);
       event.ReleasePoint(0);
       tracker()->OnInputEvent(event, &latency);
 
@@ -813,6 +821,7 @@ TEST_F(RenderWidgetHostLatencyTrackerTest, TouchBlockingAndQueueingTime) {
       EXPECT_EQ(2U, latency.latency_components().size());
 
       ui::LatencyInfo fake_latency;
+      fake_latency.set_source_event_type(ui::SourceEventType::TOUCH);
       fake_latency.AddLatencyNumberWithTimestamp(
           ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT,
           tracker()->latency_component_id(), 0,
@@ -899,6 +908,178 @@ TEST_F(RenderWidgetHostLatencyTrackerTest, TouchBlockingAndQueueingTime) {
                   touchend_timestamps_ms[2] - touchend_timestamps_ms[1], 1)));
 }
 
+TEST_F(RenderWidgetHostLatencyTrackerTest, KeyBlockingAndQueueingTime) {
+  // These numbers are sensitive to where the histogram buckets are.
+  int event_timestamps_ms[] = {11, 25, 35};
+
+  for (InputEventAckState blocking :
+       {INPUT_EVENT_ACK_STATE_NOT_CONSUMED, INPUT_EVENT_ACK_STATE_CONSUMED}) {
+    {
+      NativeWebKeyboardEvent event(blink::WebKeyboardEvent::kRawKeyDown,
+                                   blink::WebInputEvent::kNoModifiers,
+                                   base::TimeTicks::Now());
+      ui::LatencyInfo latency_info;
+      latency_info.set_source_event_type(ui::SourceEventType::KEY_PRESS);
+      tracker()->OnInputEvent(event, &latency_info);
+
+      ui::LatencyInfo fake_latency;
+      fake_latency.set_source_event_type(ui::SourceEventType::KEY_PRESS);
+      fake_latency.AddLatencyNumberWithTimestamp(
+          ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT,
+          tracker()->latency_component_id(), 0,
+          base::TimeTicks() +
+              base::TimeDelta::FromMilliseconds(event_timestamps_ms[0]),
+          1);
+
+      fake_latency.AddLatencyNumberWithTimestamp(
+          ui::INPUT_EVENT_LATENCY_RENDERER_MAIN_COMPONENT, 0, 0,
+          base::TimeTicks() +
+              base::TimeDelta::FromMilliseconds(event_timestamps_ms[1]),
+          1);
+
+      fake_latency.AddLatencyNumberWithTimestamp(
+          ui::INPUT_EVENT_LATENCY_ACK_RWH_COMPONENT, 0, 0,
+          base::TimeTicks() +
+              base::TimeDelta::FromMilliseconds(event_timestamps_ms[2]),
+          1);
+
+      // Call ComputeInputLatencyHistograms directly to avoid OnInputEventAck
+      // overwriting components.
+      tracker()->ComputeInputLatencyHistograms(
+          event.GetType(), tracker()->latency_component_id(), fake_latency,
+          blocking);
+
+      tracker()->OnInputEventAck(event, &latency_info, blocking);
+    }
+  }
+
+  EXPECT_THAT(
+      histogram_tester().GetAllSamples(
+          "Event.Latency.QueueingTime.KeyPressDefaultPrevented"),
+      ElementsAre(Bucket(event_timestamps_ms[1] - event_timestamps_ms[0], 1)));
+  EXPECT_THAT(
+      histogram_tester().GetAllSamples(
+          "Event.Latency.QueueingTime.KeyPressDefaultAllowed"),
+      ElementsAre(Bucket(event_timestamps_ms[1] - event_timestamps_ms[0], 1)));
+  EXPECT_THAT(
+      histogram_tester().GetAllSamples(
+          "Event.Latency.BlockingTime.KeyPressDefaultPrevented"),
+      ElementsAre(Bucket(event_timestamps_ms[2] - event_timestamps_ms[1], 1)));
+  EXPECT_THAT(
+      histogram_tester().GetAllSamples(
+          "Event.Latency.BlockingTime.KeyPressDefaultAllowed"),
+      ElementsAre(Bucket(event_timestamps_ms[2] - event_timestamps_ms[1], 1)));
+}
+
+TEST_F(RenderWidgetHostLatencyTrackerTest, KeyUILatency) {
+  // These numbers are sensitive to where the histogram buckets are.
+  int event_timestamps_microseconds[] = {100, 185};
+
+  NativeWebKeyboardEvent event(blink::WebKeyboardEvent::kChar,
+                               blink::WebInputEvent::kNoModifiers,
+                               base::TimeTicks::Now());
+  ui::LatencyInfo latency_info;
+  latency_info.set_source_event_type(ui::SourceEventType::KEY_PRESS);
+  latency_info.AddLatencyNumberWithTimestamp(
+      ui::INPUT_EVENT_LATENCY_UI_COMPONENT, 0, 0,
+      base::TimeTicks() +
+          base::TimeDelta::FromMicroseconds(event_timestamps_microseconds[0]),
+      1);
+
+  latency_info.AddLatencyNumberWithTimestamp(
+      ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT,
+      tracker()->latency_component_id(), 0,
+      base::TimeTicks() +
+          base::TimeDelta::FromMicroseconds(event_timestamps_microseconds[1]),
+      1);
+
+  tracker()->OnInputEvent(event, &latency_info);
+  tracker()->OnInputEventAck(event, &latency_info,
+                             InputEventAckState::INPUT_EVENT_ACK_STATE_UNKNOWN);
+  EXPECT_THAT(
+      histogram_tester().GetAllSamples("Event.Latency.Browser.KeyPressUI"),
+      ElementsAre(Bucket(
+          event_timestamps_microseconds[1] - event_timestamps_microseconds[0],
+          1)));
+}
+
+TEST_F(RenderWidgetHostLatencyTrackerTest, KeyAckedLatency) {
+  // These numbers are sensitive to where the histogram buckets are.
+  int event_timestamps_microseconds[] = {11, 24};
+
+  NativeWebKeyboardEvent event(blink::WebKeyboardEvent::kRawKeyDown,
+                               blink::WebInputEvent::kNoModifiers,
+                               base::TimeTicks::Now());
+  ui::LatencyInfo latency_info;
+  latency_info.set_source_event_type(ui::SourceEventType::KEY_PRESS);
+
+  latency_info.AddLatencyNumberWithTimestamp(
+      ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT,
+      tracker()->latency_component_id(), 0,
+      base::TimeTicks() +
+          base::TimeDelta::FromMicroseconds(event_timestamps_microseconds[0]),
+      1);
+
+  latency_info.AddLatencyNumberWithTimestamp(
+      ui::INPUT_EVENT_LATENCY_ACK_RWH_COMPONENT, 0, 0,
+      base::TimeTicks() +
+          base::TimeDelta::FromMicroseconds(event_timestamps_microseconds[1]),
+      1);
+
+  tracker()->OnInputEvent(event, &latency_info);
+  // Call ComputeInputLatencyHistograms directly to avoid OnInputEventAck
+  // overwriting components.
+  tracker()->ComputeInputLatencyHistograms(
+      event.GetType(), tracker()->latency_component_id(), latency_info,
+      InputEventAckState::INPUT_EVENT_ACK_STATE_UNKNOWN);
+
+  EXPECT_THAT(
+      histogram_tester().GetAllSamples("Event.Latency.Browser.KeyPressAcked"),
+      ElementsAre(Bucket(
+          event_timestamps_microseconds[1] - event_timestamps_microseconds[0],
+          1)));
+}
+
+TEST_F(RenderWidgetHostLatencyTrackerTest, KeyEndToEndLatency) {
+  // These numbers are sensitive to where the histogram buckets are.
+  int event_timestamps_microseconds[] = {11, 24};
+
+  ui::LatencyInfo latency_info;
+  latency_info.set_source_event_type(ui::SourceEventType::KEY_PRESS);
+  latency_info.AddLatencyNumberWithTimestamp(
+      ui::INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT, 0, 0,
+      base::TimeTicks() +
+          base::TimeDelta::FromMicroseconds(event_timestamps_microseconds[0]),
+      1);
+
+  latency_info.AddLatencyNumberWithTimestamp(
+      ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT,
+      tracker()->latency_component_id(), 0,
+      base::TimeTicks() +
+          base::TimeDelta::FromMicroseconds(event_timestamps_microseconds[0]),
+      1);
+
+  latency_info.AddLatencyNumberWithTimestamp(
+      ui::INPUT_EVENT_GPU_SWAP_BUFFER_COMPONENT, 0, 0,
+      base::TimeTicks() +
+          base::TimeDelta::FromMicroseconds(event_timestamps_microseconds[1]),
+      1);
+
+  latency_info.AddLatencyNumberWithTimestamp(
+      ui::INPUT_EVENT_LATENCY_TERMINATED_FRAME_SWAP_COMPONENT, 0, 0,
+      base::TimeTicks() +
+          base::TimeDelta::FromMicroseconds(event_timestamps_microseconds[1]),
+      1);
+
+  tracker()->OnGpuSwapBuffersCompleted(latency_info);
+
+  EXPECT_THAT(
+      histogram_tester().GetAllSamples("Event.Latency.EndToEnd.KeyPress"),
+      ElementsAre(Bucket(
+          event_timestamps_microseconds[1] - event_timestamps_microseconds[0],
+          1)));
+}
+
 // Event.Latency.(Queueing|Blocking)Time.* histograms shouldn't be reported for
 // multi-finger touch.
 TEST_F(RenderWidgetHostLatencyTrackerTest,
@@ -966,6 +1147,7 @@ TEST_F(RenderWidgetHostLatencyTrackerTest, WheelDuringMultiFingerTouch) {
   {
     // First touch start.
     ui::LatencyInfo latency;
+    latency.set_source_event_type(ui::SourceEventType::TOUCH);
     touch_event.PressPoint(1, 1);
     tracker()->OnInputEvent(touch_event, &latency);
     tracker()->OnInputEventAck(touch_event, &latency, ack_state);
@@ -974,6 +1156,7 @@ TEST_F(RenderWidgetHostLatencyTrackerTest, WheelDuringMultiFingerTouch) {
   {
     // Second touch start.
     ui::LatencyInfo latency;
+    latency.set_source_event_type(ui::SourceEventType::TOUCH);
     touch_event.PressPoint(1, 1);
     tracker()->OnInputEvent(touch_event, &latency);
     tracker()->OnInputEventAck(touch_event, &latency, ack_state);
@@ -982,6 +1165,7 @@ TEST_F(RenderWidgetHostLatencyTrackerTest, WheelDuringMultiFingerTouch) {
   {
     // Wheel event.
     ui::LatencyInfo latency;
+    latency.set_source_event_type(ui::SourceEventType::WHEEL);
     // These numbers are sensitive to where the histogram buckets are.
     int timestamps_ms[] = {11, 25, 35};
     auto wheel_event = SyntheticWebMouseWheelEventBuilder::Build(
@@ -989,6 +1173,7 @@ TEST_F(RenderWidgetHostLatencyTrackerTest, WheelDuringMultiFingerTouch) {
     tracker()->OnInputEvent(touch_event, &latency);
 
     ui::LatencyInfo fake_latency;
+    fake_latency.set_source_event_type(ui::SourceEventType::TOUCH);
     fake_latency.AddLatencyNumberWithTimestamp(
         ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT,
         tracker()->latency_component_id(), 0,

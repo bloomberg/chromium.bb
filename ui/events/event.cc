@@ -149,13 +149,18 @@ SourceEventType EventTypeToLatencySourceEventType(EventType type) {
     case ET_SCROLL_FLING_CANCEL:
       return SourceEventType::UNKNOWN;
 
+    case ui::ET_KEY_PRESSED:
+      return ui::SourceEventType::KEY_PRESS;
+
     case ET_MOUSE_PRESSED:
     case ET_MOUSE_DRAGGED:
     case ET_MOUSE_RELEASED:
     case ET_MOUSE_MOVED:
     case ET_MOUSE_ENTERED:
     case ET_MOUSE_EXITED:
-    case ET_KEY_PRESSED:
+    // We measure latency for key presses, not key releases. Most behavior is
+    // keyed off of presses, and release latency is higher than press latency as
+    // it's impacted by event handling of the press event.
     case ET_KEY_RELEASED:
     case ET_MOUSE_CAPTURE_CHANGED:
     case ET_DROP_TARGET_EVENT:
@@ -1141,6 +1146,11 @@ KeyEvent::KeyEvent(const base::NativeEvent& native_event, int event_flags)
       key_code_(KeyboardCodeFromNative(native_event)),
       code_(CodeFromNative(native_event)),
       is_char_(IsCharFromNative(native_event)) {
+  latency()->AddLatencyNumberWithTimestamp(
+      INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT, 0, 0,
+      base::TimeTicks::FromInternalValue(time_stamp().ToInternalValue()), 1);
+  latency()->AddLatencyNumber(INPUT_EVENT_LATENCY_UI_COMPONENT, 0, 0);
+
   if (IsRepeated(*this))
     set_flags(flags() | ui::EF_IS_REPEAT);
 

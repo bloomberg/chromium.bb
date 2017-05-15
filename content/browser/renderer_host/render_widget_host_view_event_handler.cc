@@ -284,7 +284,8 @@ void RenderWidgetHostViewEventHandler::OnKeyEvent(ui::KeyEvent* event) {
     SetKeyboardFocus();
     // We don't have to communicate with an input method here.
     NativeWebKeyboardEvent webkit_event(*event);
-    delegate_->ForwardKeyboardEvent(webkit_event, &mark_event_as_handled);
+    delegate_->ForwardKeyboardEventWithLatencyInfo(
+        webkit_event, *event->latency(), &mark_event_as_handled);
   }
   if (mark_event_as_handled)
     event->SetHandled();

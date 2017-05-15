@@ -1045,8 +1045,8 @@ void RenderWidgetHostImpl::ForwardMouseEvent(const WebMouseEvent& mouse_event) {
 }
 
 void RenderWidgetHostImpl::ForwardMouseEventWithLatencyInfo(
-      const blink::WebMouseEvent& mouse_event,
-      const ui::LatencyInfo& ui_latency) {
+    const blink::WebMouseEvent& mouse_event,
+    const ui::LatencyInfo& latency) {
   TRACE_EVENT2("input", "RenderWidgetHostImpl::ForwardMouseEvent", "x",
                mouse_event.PositionInWidget().x, "y",
                mouse_event.PositionInWidget().y);
@@ -1062,7 +1062,7 @@ void RenderWidgetHostImpl::ForwardMouseEventWithLatencyInfo(
   if (touch_emulator_ && touch_emulator_->HandleMouseEvent(mouse_event))
     return;
 
-  MouseEventWithLatencyInfo mouse_with_latency(mouse_event, ui_latency);
+  MouseEventWithLatencyInfo mouse_with_latency(mouse_event, latency);
   DispatchInputEventWithLatencyInfo(mouse_event, &mouse_with_latency.latency);
   input_router_->SendMouseEvent(mouse_with_latency);
 }
@@ -1074,8 +1074,8 @@ void RenderWidgetHostImpl::ForwardWheelEvent(
 }
 
 void RenderWidgetHostImpl::ForwardWheelEventWithLatencyInfo(
-      const blink::WebMouseWheelEvent& wheel_event,
-      const ui::LatencyInfo& ui_latency) {
+    const blink::WebMouseWheelEvent& wheel_event,
+    const ui::LatencyInfo& latency) {
   TRACE_EVENT2("input", "RenderWidgetHostImpl::ForwardWheelEvent", "dx",
                wheel_event.delta_x, "dy", wheel_event.delta_y);
 
@@ -1085,7 +1085,7 @@ void RenderWidgetHostImpl::ForwardWheelEventWithLatencyInfo(
   if (touch_emulator_ && touch_emulator_->HandleMouseWheelEvent(wheel_event))
     return;
 
-  MouseWheelEventWithLatencyInfo wheel_with_latency(wheel_event, ui_latency);
+  MouseWheelEventWithLatencyInfo wheel_with_latency(wheel_event, latency);
   DispatchInputEventWithLatencyInfo(wheel_event, &wheel_with_latency.latency);
   input_router_->SendWheelEvent(wheel_with_latency);
 }
@@ -1105,7 +1105,7 @@ void RenderWidgetHostImpl::ForwardGestureEvent(
 
 void RenderWidgetHostImpl::ForwardGestureEventWithLatencyInfo(
     const blink::WebGestureEvent& gesture_event,
-    const ui::LatencyInfo& ui_latency) {
+    const ui::LatencyInfo& latency) {
   TRACE_EVENT0("input", "RenderWidgetHostImpl::ForwardGestureEvent");
   // Early out if necessary, prior to performing latency logic.
   if (ShouldDropInputEvents())
@@ -1156,7 +1156,7 @@ void RenderWidgetHostImpl::ForwardGestureEventWithLatencyInfo(
   if (delegate_->PreHandleGestureEvent(gesture_event))
     return;
 
-  GestureEventWithLatencyInfo gesture_with_latency(gesture_event, ui_latency);
+  GestureEventWithLatencyInfo gesture_with_latency(gesture_event, latency);
   DispatchInputEventWithLatencyInfo(gesture_event,
                                     &gesture_with_latency.latency);
   input_router_->SendGestureEvent(gesture_with_latency);
@@ -1179,14 +1179,14 @@ void RenderWidgetHostImpl::ForwardEmulatedTouchEvent(
 }
 
 void RenderWidgetHostImpl::ForwardTouchEventWithLatencyInfo(
-      const blink::WebTouchEvent& touch_event,
-      const ui::LatencyInfo& ui_latency) {
+    const blink::WebTouchEvent& touch_event,
+    const ui::LatencyInfo& latency) {
   TRACE_EVENT0("input", "RenderWidgetHostImpl::ForwardTouchEvent");
 
   // Always forward TouchEvents for touch stream consistency. They will be
   // ignored if appropriate in FilterInputEvent().
 
-  TouchEventWithLatencyInfo touch_with_latency(touch_event, ui_latency);
+  TouchEventWithLatencyInfo touch_with_latency(touch_event, latency);
   if (touch_emulator_ &&
       touch_emulator_->HandleTouchEvent(touch_with_latency.event)) {
     if (view_) {
@@ -1202,11 +1202,24 @@ void RenderWidgetHostImpl::ForwardTouchEventWithLatencyInfo(
 
 void RenderWidgetHostImpl::ForwardKeyboardEvent(
     const NativeWebKeyboardEvent& key_event) {
-  ForwardKeyboardEventWithCommands(key_event, nullptr, nullptr);
+  ui::LatencyInfo latency_info;
+
+  if (key_event.GetType() == WebInputEvent::kRawKeyDown ||
+      key_event.GetType() == WebInputEvent::kChar) {
+    latency_info.set_source_event_type(ui::SourceEventType::KEY_PRESS);
+  }
+  ForwardKeyboardEventWithLatencyInfo(key_event, latency_info);
+}
+
+void RenderWidgetHostImpl::ForwardKeyboardEventWithLatencyInfo(
+    const NativeWebKeyboardEvent& key_event,
+    const ui::LatencyInfo& latency) {
+  ForwardKeyboardEventWithCommands(key_event, latency, nullptr, nullptr);
 }
 
 void RenderWidgetHostImpl::ForwardKeyboardEventWithCommands(
     const NativeWebKeyboardEvent& key_event,
+    const ui::LatencyInfo& latency,
     const std::vector<EditCommand>* commands,
     bool* update_event) {
   TRACE_EVENT0("input", "RenderWidgetHostImpl::ForwardKeyboardEvent");
@@ -1283,9 +1296,8 @@ void RenderWidgetHostImpl::ForwardKeyboardEventWithCommands(
 
   if (touch_emulator_ && touch_emulator_->HandleKeyboardEvent(key_event))
     return;
-  ui::LatencyInfo latency_info(ui::SourceEventType::OTHER);
   NativeWebKeyboardEventWithLatencyInfo key_event_with_latency(key_event,
-                                                               latency_info);
+                                                               latency);
   key_event_with_latency.event.is_browser_shortcut = is_shortcut;
   DispatchInputEventWithLatencyInfo(key_event, &key_event_with_latency.latency);
   // TODO(foolip): |InputRouter::SendKeyboardEvent()| may filter events, in

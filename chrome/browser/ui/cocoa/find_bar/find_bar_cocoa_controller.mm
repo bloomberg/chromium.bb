@@ -303,6 +303,8 @@ const int kMaxCharacters = 4000;
     // the list above.
     content::RenderViewHost* render_view_host =
         web_contents->GetRenderViewHost();
+
+    // TODO(tdresser): get the hardware timestamp from the NSEvent.
     render_view_host->GetWidget()->ForwardKeyboardEvent(
         NativeWebKeyboardEvent(event));
     return YES;

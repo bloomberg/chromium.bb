@@ -264,7 +264,8 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
       cc::SurfaceHittestDelegate* delegate,
       const gfx::Point& point,
       gfx::Point* transformed_point);
-  virtual void ProcessKeyboardEvent(const NativeWebKeyboardEvent& event) {}
+  virtual void ProcessKeyboardEvent(const NativeWebKeyboardEvent& event,
+                                    const ui::LatencyInfo& latency) {}
   virtual void ProcessMouseEvent(const blink::WebMouseEvent& event,
                                  const ui::LatencyInfo& latency) {}
   virtual void ProcessMouseWheelEvent(const blink::WebMouseWheelEvent& event,

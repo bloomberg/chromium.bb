@@ -639,7 +639,8 @@ class RenderWidgetHostTest : public testing::Test {
                                         GetNextSimulatedEventTimeSeconds());
     EditCommands commands;
     commands.emplace_back("name", "value");
-    host_->ForwardKeyboardEventWithCommands(native_event, &commands, nullptr);
+    host_->ForwardKeyboardEventWithCommands(native_event, ui::LatencyInfo(),
+                                            &commands, nullptr);
   }
 
   void SimulateMouseEvent(WebInputEvent::Type type) {

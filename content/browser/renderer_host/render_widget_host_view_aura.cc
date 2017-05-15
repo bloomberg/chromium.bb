@@ -1231,8 +1231,9 @@ void RenderWidgetHostViewAura::InsertChar(const ui::KeyEvent& event) {
   if (host_ && (event_handler_->accept_return_character() ||
                 event.GetCharacter() != ui::VKEY_RETURN)) {
     // Send a blink::WebInputEvent::Char event to |host_|.
-    ForwardKeyboardEvent(NativeWebKeyboardEvent(event, event.GetCharacter()),
-                         nullptr);
+    ForwardKeyboardEventWithLatencyInfo(
+        NativeWebKeyboardEvent(event, event.GetCharacter()), *event.latency(),
+        nullptr);
   }
 }
 
@@ -2236,8 +2237,9 @@ void RenderWidgetHostViewAura::DetachFromInputMethod() {
   }
 }
 
-void RenderWidgetHostViewAura::ForwardKeyboardEvent(
+void RenderWidgetHostViewAura::ForwardKeyboardEventWithLatencyInfo(
     const NativeWebKeyboardEvent& event,
+    const ui::LatencyInfo& latency,
     bool* update_event) {
   RenderWidgetHostImpl* target_host = host_;
 
@@ -2264,13 +2266,14 @@ void RenderWidgetHostViewAura::ForwardKeyboardEvent(
                                           it->argument()));
     }
 
-    target_host->ForwardKeyboardEventWithCommands(event, &edit_commands,
-                                                  update_event);
+    target_host->ForwardKeyboardEventWithCommands(event, latency,
+                                                  &edit_commands, update_event);
     return;
   }
 #endif
 
-  target_host->ForwardKeyboardEventWithCommands(event, nullptr, update_event);
+  target_host->ForwardKeyboardEventWithCommands(event, latency, nullptr,
+                                                update_event);
 }
 
 void RenderWidgetHostViewAura::CreateSelectionController() {

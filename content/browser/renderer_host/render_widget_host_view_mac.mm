@@ -2110,6 +2110,13 @@ void RenderWidgetHostViewMac::OnDisplayMetricsChanged(
   DCHECK(widgetHost);
 
   NativeWebKeyboardEvent event(theEvent);
+  ui::LatencyInfo latency_info;
+  if (event.GetType() == blink::WebInputEvent::kRawKeyDown ||
+      event.GetType() == blink::WebInputEvent::kChar) {
+    latency_info.set_source_event_type(ui::SourceEventType::KEY_PRESS);
+  }
+
+  latency_info.AddLatencyNumber(ui::INPUT_EVENT_LATENCY_UI_COMPONENT, 0, 0);
 
   // Force fullscreen windows to close on Escape so they won't keep the keyboard
   // grabbed or be stuck onscreen if the renderer is hanging.
@@ -2149,7 +2156,7 @@ void RenderWidgetHostViewMac::OnDisplayMetricsChanged(
 
   // We only handle key down events and just simply forward other events.
   if ([theEvent type] != NSKeyDown) {
-    widgetHost->ForwardKeyboardEvent(event);
+    widgetHost->ForwardKeyboardEventWithLatencyInfo(event, latency_info);
 
     // Possibly autohide the cursor.
     if ([self shouldAutohideCursorForEvent:theEvent])
@@ -2204,7 +2211,7 @@ void RenderWidgetHostViewMac::OnDisplayMetricsChanged(
     NativeWebKeyboardEvent fakeEvent = event;
     fakeEvent.windows_key_code = 0xE5;  // VKEY_PROCESSKEY
     fakeEvent.skip_in_browser = true;
-    widgetHost->ForwardKeyboardEvent(fakeEvent);
+    widgetHost->ForwardKeyboardEventWithLatencyInfo(fakeEvent, latency_info);
     // If this key event was handled by the input method, but
     // -doCommandBySelector: (invoked by the call to -interpretKeyEvents: above)
     // enqueued edit commands, then in order to let webkit handle them
@@ -2215,12 +2222,14 @@ void RenderWidgetHostViewMac::OnDisplayMetricsChanged(
     if (hasEditCommands_ && !hasMarkedText_)
       delayEventUntilAfterImeCompostion = YES;
   } else {
-    widgetHost->ForwardKeyboardEventWithCommands(event, &editCommands_);
+    widgetHost->ForwardKeyboardEventWithCommands(event, latency_info,
+                                                 &editCommands_);
   }
 
-  // Calling ForwardKeyboardEvent() could have destroyed the widget. When the
-  // widget was destroyed, |renderWidgetHostView_->render_widget_host_| will
-  // be set to NULL. So we check it here and return immediately if it's NULL.
+  // Calling ForwardKeyboardEventWithCommands() could have destroyed the
+  // widget. When the widget was destroyed,
+  // |renderWidgetHostView_->render_widget_host_| will be set to NULL. So we
+  // check it here and return immediately if it's NULL.
   if (!renderWidgetHostView_->render_widget_host_)
     return;
 
@@ -2279,16 +2288,18 @@ void RenderWidgetHostViewMac::OnDisplayMetricsChanged(
     NativeWebKeyboardEvent fakeEvent = event;
     fakeEvent.SetType(blink::WebInputEvent::kKeyUp);
     fakeEvent.skip_in_browser = true;
-    widgetHost->ForwardKeyboardEvent(fakeEvent);
+    widgetHost->ForwardKeyboardEventWithLatencyInfo(fakeEvent, latency_info);
     // Not checking |renderWidgetHostView_->render_widget_host_| here because
     // a key event with |skip_in_browser| == true won't be handled by browser,
     // thus it won't destroy the widget.
 
-    widgetHost->ForwardKeyboardEventWithCommands(event, &editCommands_);
+    widgetHost->ForwardKeyboardEventWithCommands(event, latency_info,
+                                                 &editCommands_);
 
-    // Calling ForwardKeyboardEvent() could have destroyed the widget. When the
-    // widget was destroyed, |renderWidgetHostView_->render_widget_host_| will
-    // be set to NULL. So we check it here and return immediately if it's NULL.
+    // Calling ForwardKeyboardEventWithCommands() could have destroyed the
+    // widget. When the widget was destroyed,
+    // |renderWidgetHostView_->render_widget_host_| will be set to NULL. So we
+    // check it here and return immediately if it's NULL.
     if (!renderWidgetHostView_->render_widget_host_)
       return;
   }
@@ -2303,7 +2314,7 @@ void RenderWidgetHostViewMac::OnDisplayMetricsChanged(
       event.text[0] = textToBeInserted_[0];
       event.text[1] = 0;
       event.skip_in_browser = true;
-      widgetHost->ForwardKeyboardEvent(event);
+      widgetHost->ForwardKeyboardEventWithLatencyInfo(event, latency_info);
     } else if ((!textInserted || delayEventUntilAfterImeCompostion) &&
                event.text[0] != '\0' &&
                (([theEvent modifierFlags] & kCtrlCmdKeyMask) ||
@@ -2313,7 +2324,7 @@ void RenderWidgetHostViewMac::OnDisplayMetricsChanged(
       // cases, unless the key event generated any other command.
       event.SetType(blink::WebInputEvent::kChar);
       event.skip_in_browser = true;
-      widgetHost->ForwardKeyboardEvent(event);
+      widgetHost->ForwardKeyboardEventWithLatencyInfo(event, latency_info);
     }
   }
 

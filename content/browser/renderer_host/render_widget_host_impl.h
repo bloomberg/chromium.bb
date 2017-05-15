@@ -345,23 +345,26 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // aura.
   void ForwardKeyboardEventWithCommands(
       const NativeWebKeyboardEvent& key_event,
+      const ui::LatencyInfo& latency,
       const std::vector<EditCommand>* commands,
       bool* update_event = nullptr);
 
   // Forwards the given message to the renderer. These are called by the view
   // when it has received a message.
+  void ForwardKeyboardEventWithLatencyInfo(
+      const NativeWebKeyboardEvent& key_event,
+      const ui::LatencyInfo& latency) override;
   void ForwardGestureEventWithLatencyInfo(
       const blink::WebGestureEvent& gesture_event,
-      const ui::LatencyInfo& ui_latency) override;
+      const ui::LatencyInfo& latency) override;
   virtual void ForwardTouchEventWithLatencyInfo(
       const blink::WebTouchEvent& touch_event,
-      const ui::LatencyInfo& ui_latency);  // Virtual for testing.
-  void ForwardMouseEventWithLatencyInfo(
-      const blink::WebMouseEvent& mouse_event,
-      const ui::LatencyInfo& ui_latency);
+      const ui::LatencyInfo& latency);  // Virtual for testing.
+  void ForwardMouseEventWithLatencyInfo(const blink::WebMouseEvent& mouse_event,
+                                        const ui::LatencyInfo& latency);
   virtual void ForwardWheelEventWithLatencyInfo(
       const blink::WebMouseWheelEvent& wheel_event,
-      const ui::LatencyInfo& ui_latency);  // Virtual for testing.
+      const ui::LatencyInfo& latency);  // Virtual for testing.
 
   // Enables/disables touch emulation using mouse event. See TouchEmulator.
   void SetTouchEventEmulationEnabled(
