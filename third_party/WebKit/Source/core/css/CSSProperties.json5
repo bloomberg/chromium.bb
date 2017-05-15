@@ -1993,7 +1993,6 @@
     },
     {
       name: "text-shadow",
-      api_class: "CSSPropertyAPIShadow",
       converter: "ConvertShadowList",
       inherited: true,
       interpolable: true,
@@ -3164,7 +3163,6 @@
     },
     {
       name: "-webkit-box-shadow",
-      api_class: "CSSPropertyAPIShadow",
       alias_for: "box-shadow",
     },
     {
