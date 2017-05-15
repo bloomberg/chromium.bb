@@ -59,7 +59,7 @@ void TestRepetitionCount(const char* dir,
   RefPtr<SharedBuffer> data = ReadFile(dir, file);
   ASSERT_TRUE(data.Get());
   decoder->SetData(data.Get(), true);
-  EXPECT_EQ(kAnimationLoopOnce,
+  EXPECT_EQ(kCAnimationLoopOnce,
             decoder->RepetitionCount());  // Default value before decode.
 
   for (size_t i = 0; i < decoder->FrameCount(); ++i) {
@@ -79,7 +79,7 @@ TEST(GIFImageDecoderTest, decodeTwoFrames) {
   RefPtr<SharedBuffer> data = ReadFile(kLayoutTestResourcesDir, "animated.gif");
   ASSERT_TRUE(data.Get());
   decoder->SetData(data.Get(), true);
-  EXPECT_EQ(kAnimationLoopOnce, decoder->RepetitionCount());
+  EXPECT_EQ(kCAnimationLoopOnce, decoder->RepetitionCount());
 
   ImageFrame* frame = decoder->FrameBufferAtIndex(0);
   uint32_t generation_id0 = frame->Bitmap().getGenerationID();
@@ -95,7 +95,7 @@ TEST(GIFImageDecoderTest, decodeTwoFrames) {
   EXPECT_TRUE(generation_id0 != generation_id1);
 
   EXPECT_EQ(2u, decoder->FrameCount());
-  EXPECT_EQ(kAnimationLoopInfinite, decoder->RepetitionCount());
+  EXPECT_EQ(kCAnimationLoopInfinite, decoder->RepetitionCount());
 }
 
 TEST(GIFImageDecoderTest, parseAndDecode) {
@@ -104,7 +104,7 @@ TEST(GIFImageDecoderTest, parseAndDecode) {
   RefPtr<SharedBuffer> data = ReadFile(kLayoutTestResourcesDir, "animated.gif");
   ASSERT_TRUE(data.Get());
   decoder->SetData(data.Get(), true);
-  EXPECT_EQ(kAnimationLoopOnce, decoder->RepetitionCount());
+  EXPECT_EQ(kCAnimationLoopOnce, decoder->RepetitionCount());
 
   // This call will parse the entire file.
   EXPECT_EQ(2u, decoder->FrameCount());
@@ -118,7 +118,7 @@ TEST(GIFImageDecoderTest, parseAndDecode) {
   EXPECT_EQ(ImageFrame::kFrameComplete, frame->GetStatus());
   EXPECT_EQ(16, frame->Bitmap().width());
   EXPECT_EQ(16, frame->Bitmap().height());
-  EXPECT_EQ(kAnimationLoopInfinite, decoder->RepetitionCount());
+  EXPECT_EQ(kCAnimationLoopInfinite, decoder->RepetitionCount());
 }
 
 TEST(GIFImageDecoderTest, parseByteByByte) {
@@ -142,13 +142,13 @@ TEST(GIFImageDecoderTest, parseByteByByte) {
 
   decoder->FrameBufferAtIndex(0);
   decoder->FrameBufferAtIndex(1);
-  EXPECT_EQ(kAnimationLoopInfinite, decoder->RepetitionCount());
+  EXPECT_EQ(kCAnimationLoopInfinite, decoder->RepetitionCount());
 }
 
 TEST(GIFImageDecoderTest, parseAndDecodeByteByByte) {
   TestByteByByteDecode(&CreateDecoder, kLayoutTestResourcesDir,
                        "animated-gif-with-offsets.gif", 5u,
-                       kAnimationLoopInfinite);
+                       kCAnimationLoopInfinite);
 }
 
 TEST(GIFImageDecoderTest, brokenSecondFrame) {
@@ -199,7 +199,7 @@ TEST(GIFImageDecoderTest, frameIsComplete) {
   EXPECT_FALSE(decoder->Failed());
   EXPECT_TRUE(decoder->FrameIsCompleteAtIndex(0));
   EXPECT_TRUE(decoder->FrameIsCompleteAtIndex(1));
-  EXPECT_EQ(kAnimationLoopInfinite, decoder->RepetitionCount());
+  EXPECT_EQ(kCAnimationLoopInfinite, decoder->RepetitionCount());
 }
 
 TEST(GIFImageDecoderTest, frameIsCompleteLoading) {
@@ -353,7 +353,7 @@ TEST(GIFImageDecoderTest, firstFrameHasGreaterSizeThanScreenSize) {
 
 TEST(GIFImageDecoderTest, verifyRepetitionCount) {
   TestRepetitionCount(kLayoutTestResourcesDir, "full2loop.gif", 2);
-  TestRepetitionCount(kDecodersTestingDir, "radient.gif", kAnimationNone);
+  TestRepetitionCount(kDecodersTestingDir, "radient.gif", kCAnimationNone);
 }
 
 TEST(GIFImageDecoderTest, bitmapAlphaType) {

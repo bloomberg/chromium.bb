@@ -80,7 +80,7 @@ BitmapImage::BitmapImage(ImageObserver* observer)
       size_available_(false),
       have_frame_count_(false),
       repetition_count_status_(kUnknown),
-      repetition_count_(kAnimationNone),
+      repetition_count_(kCAnimationNone),
       repetitions_complete_(0),
       desired_frame_start_time_(0),
       frame_count_(0) {}
@@ -98,7 +98,7 @@ BitmapImage::BitmapImage(const SkBitmap& bitmap, ImageObserver* observer)
       size_available_(true),
       have_frame_count_(true),
       repetition_count_status_(kUnknown),
-      repetition_count_(kAnimationNone),
+      repetition_count_(kCAnimationNone),
       repetitions_complete_(0),
       frame_count_(1) {
   // Since we don't have a decoder, we can't figure out the image orientation.
@@ -158,7 +158,7 @@ sk_sp<SkImage> BitmapImage::DecodeAndCacheFrame(size_t index) {
   frames_[index].orientation_ = source_.OrientationAtIndex(index);
   frames_[index].have_metadata_ = true;
   frames_[index].is_complete_ = source_.FrameIsCompleteAtIndex(index);
-  if (RepetitionCount(false) != kAnimationNone)
+  if (RepetitionCount(false) != kCAnimationNone)
     frames_[index].duration_ = source_.FrameDurationAtIndex(index);
   frames_[index].has_alpha_ = source_.FrameHasAlphaAtIndex(index);
   frames_[index].frame_bytes_ = source_.FrameBytesAtIndex(index);
@@ -441,7 +441,7 @@ int BitmapImage::RepetitionCount(bool image_known_to_be_complete) {
     // the count again once the whole image is decoded.
     repetition_count_ = source_.RepetitionCount();
     repetition_count_status_ =
-        (image_known_to_be_complete || repetition_count_ == kAnimationNone)
+        (image_known_to_be_complete || repetition_count_ == kCAnimationNone)
             ? kCertain
             : kUncertain;
   }
@@ -449,7 +449,7 @@ int BitmapImage::RepetitionCount(bool image_known_to_be_complete) {
 }
 
 bool BitmapImage::ShouldAnimate() {
-  bool animated = RepetitionCount(false) != kAnimationNone &&
+  bool animated = RepetitionCount(false) != kCAnimationNone &&
                   !animation_finished_ && GetImageObserver();
   if (animated && animation_policy_ == kImageAnimationPolicyNoAnimation)
     animated = false;
@@ -475,7 +475,7 @@ void BitmapImage::StartAnimation(CatchUpAnimation catch_up_if_necessary) {
   // in a GIF can potentially come after all the rest of the image data, so
   // wait on it.
   if (!all_data_received_ &&
-      (RepetitionCount(false) == kAnimationLoopOnce ||
+      (RepetitionCount(false) == kCAnimationLoopOnce ||
        animation_policy_ == kImageAnimationPolicyAnimateOnce) &&
       current_frame_ >= (FrameCount() - 1))
     return;
@@ -568,7 +568,7 @@ bool BitmapImage::MaybeAnimated() {
   if (FrameCount() > 1)
     return true;
 
-  return source_.RepetitionCount() != kAnimationNone;
+  return source_.RepetitionCount() != kCAnimationNone;
 }
 
 void BitmapImage::AdvanceTime(double delta_time_in_seconds) {
@@ -612,7 +612,7 @@ bool BitmapImage::InternalAdvanceAnimation(AnimationAdvancement advancement) {
     // now, so it should now be available.
     // We don't need to special-case cAnimationLoopOnce here because it is
     // 0 (see comments on its declaration in ImageAnimation.h).
-    if ((RepetitionCount(true) != kAnimationLoopInfinite &&
+    if ((RepetitionCount(true) != kCAnimationLoopInfinite &&
          repetitions_complete_ > repetition_count_) ||
         animation_policy_ == kImageAnimationPolicyAnimateOnce) {
       animation_finished_ = true;

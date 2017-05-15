@@ -183,7 +183,7 @@ class PLATFORM_EXPORT ImageDecoder {
   // correct size and returns its size.
   size_t FrameCount();
 
-  virtual int RepetitionCount() const { return kAnimationNone; }
+  virtual int RepetitionCount() const { return kCAnimationNone; }
 
   // Decodes as much of the requested frame as possible, and returns an
   // ImageDecoder-owned pointer.

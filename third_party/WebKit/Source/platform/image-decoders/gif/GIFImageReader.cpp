@@ -683,7 +683,7 @@ bool GIFImageReader::parseData(size_t dataPosition,
 
           // Zero loop count is infinite animation loop request.
           if (!m_loopCount)
-            m_loopCount = blink::kAnimationLoopInfinite;
+            m_loopCount = blink::kCAnimationLoopInfinite;
 
           GETN(1, GIFNetscapeExtensionBlock);
         } else if (netscapeExtension == 2) {
