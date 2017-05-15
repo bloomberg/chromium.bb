@@ -57,7 +57,8 @@ class CONTENT_EXPORT WebMediaPlayerMSCompositor
   // together with flag "--disable-rtc-smoothness-algorithm" determine whether
   // we enable algorithm or not.
   WebMediaPlayerMSCompositor(
-      const scoped_refptr<base::SingleThreadTaskRunner>& compositor_task_runner,
+      scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner,
+      scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
       const blink::WebMediaStream& web_stream,
       const base::WeakPtr<WebMediaPlayerMS>& player);
 
@@ -112,14 +113,15 @@ class CONTENT_EXPORT WebMediaPlayerMSCompositor
   void StartRenderingInternal();
   void StopRenderingInternal();
   void StopUsingProviderInternal();
+  void ReplaceCurrentFrameWithACopyInternal();
 
   void SetAlgorithmEnabledForTesting(bool algorithm_enabled);
 
   // Used for DCHECKs to ensure method calls executed in the correct thread.
   base::ThreadChecker thread_checker_;
-  base::ThreadChecker io_thread_checker_;
 
-  scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner_;
+  const scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner_;
+  const scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
   base::MessageLoop* main_message_loop_;
 
   base::WeakPtr<WebMediaPlayerMS> player_;

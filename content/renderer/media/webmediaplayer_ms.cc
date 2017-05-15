@@ -225,8 +225,8 @@ void WebMediaPlayerMS::Load(LoadType load_type,
   blink::WebMediaStream web_stream =
       GetWebMediaStreamFromWebMediaPlayerSource(source);
 
-  compositor_ = new WebMediaPlayerMSCompositor(compositor_task_runner_,
-                                               web_stream, AsWeakPtr());
+  compositor_ = new WebMediaPlayerMSCompositor(
+      compositor_task_runner_, io_task_runner_, web_stream, AsWeakPtr());
 
   SetNetworkState(WebMediaPlayer::kNetworkStateLoading);
   SetReadyState(WebMediaPlayer::kReadyStateHaveNothing);
