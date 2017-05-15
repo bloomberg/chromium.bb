@@ -58,9 +58,10 @@ enum SubresourceFilterAction {
   // A wildcard update. The current content settings API makes this a bit
   // difficult to see whether it is Block or Allow. This should not be a huge
   // problem because this can only be changed from the settings UI, which is
-  // relatively rare.
-  // TODO(crbug.com/706061): Fix this once content settings API becomes more
-  // flexible.
+  // relatively rare. See crbug.com/706061.
+  //
+  // DEPRECATED: The site settings page uses read-only-lists for exceptions, so
+  // users can't add arbitrary patterns.
   kActionContentSettingsWildcardUpdate,
 
   // The UI was suppressed due to "smart" logic which tries not to spam the UI
