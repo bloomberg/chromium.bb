@@ -964,8 +964,8 @@ bool ScriptLoader::IsScriptForEventSupported() const {
 
   // "If the script element has an event attribute and a for attribute, and
   //  the script's type is "classic", then run these substeps:"
-  // TODO(hiroshige): Check the script's type.
-  if (event_attribute.IsNull() || for_attribute.IsNull())
+  if (GetScriptType() != ScriptType::kClassic || event_attribute.IsNull() ||
+      for_attribute.IsNull())
     return true;
 
   // 3. "Strip leading and trailing ASCII whitespace from event and for."
