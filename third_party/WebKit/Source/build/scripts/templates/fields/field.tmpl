@@ -96,16 +96,14 @@ unsigned {{field.name}} : {{field.size}}; // {{field.type_name}}
 {% endfor %}
 {% endmacro %}
 
-{% macro fieldwise_diff(group, fields_to_diff) %}
-{% for subgroup in group.subgroups %}
-{% if subgroup.all_fields|select("in", fields_to_diff)|list|length > 0 -%}
-if ({{subgroup.member_name}}.Get() != other.{{subgroup.member_name}}.Get()) {
-{{fieldwise_diff(subgroup, fields_to_diff)|indent(2, true)}}
+{% macro fieldwise_diff(group_to_diff) %}
+{% for group in group_to_diff.subgroups %}
+if ({{group.group_name}}.Get() != other.{{group.group_name}}.Get()) {
+{{fieldwise_diff(group)|indent(2, true)}}
 }
-{% endif -%}
 {% endfor %}
-{% for field in group.fields|select("in", fields_to_diff) %}
-if ({{getter_expression(field)}} != other.{{getter_expression(field)}})
+{% for expression in group_to_diff.expressions %}
+if ({{expression}} != other.{{expression}})
   return true;
 {% endfor %}
 {% endmacro %}
