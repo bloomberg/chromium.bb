@@ -777,34 +777,6 @@ inline BackgroundEdgeOrigin CSSIdentifierValue::ConvertTo() const {
 }
 
 template <>
-inline CSSIdentifierValue::CSSIdentifierValue(EBoxSizing e)
-    : CSSValue(kIdentifierClass) {
-  switch (e) {
-    case EBoxSizing::kBorderBox:
-      value_id_ = CSSValueBorderBox;
-      break;
-    case EBoxSizing::kContentBox:
-      value_id_ = CSSValueContentBox;
-      break;
-  }
-}
-
-template <>
-inline EBoxSizing CSSIdentifierValue::ConvertTo() const {
-  switch (value_id_) {
-    case CSSValueBorderBox:
-      return EBoxSizing::kBorderBox;
-    case CSSValueContentBox:
-      return EBoxSizing::kContentBox;
-    default:
-      break;
-  }
-
-  NOTREACHED();
-  return EBoxSizing::kBorderBox;
-}
-
-template <>
 inline CSSIdentifierValue::CSSIdentifierValue(EBoxLines e)
     : CSSValue(kIdentifierClass) {
   switch (e) {

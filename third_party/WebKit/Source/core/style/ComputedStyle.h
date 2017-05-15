@@ -597,15 +597,6 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   }
   void SetBoxShadow(PassRefPtr<ShadowList>);
 
-  // box-sizing (aka -webkit-box-sizing)
-  static EBoxSizing InitialBoxSizing() { return EBoxSizing::kContentBox; }
-  EBoxSizing BoxSizing() const {
-    return static_cast<EBoxSizing>(box_data_->box_sizing_);
-  }
-  void SetBoxSizing(EBoxSizing s) {
-    SET_VAR(box_data_, box_sizing_, static_cast<unsigned>(s));
-  }
-
   // clip
   static LengthBox InitialClip() { return LengthBox(); }
   const LengthBox& Clip() const { return visual_data_->clip_; }

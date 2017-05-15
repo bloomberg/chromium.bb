@@ -876,7 +876,14 @@
       converter: "ConvertShadowList",
       interpolable: true,
     },
-    "box-sizing",
+    {
+      name: "box-sizing",
+      field_template: "keyword",
+      type_name: "EBoxSizing",
+      default_value: "content-box",
+      keywords: ["content-box", "border-box"],
+      field_group: "box",
+    },
     {
       name: "break-after",
       // Storage for this property also covers these legacy properties:

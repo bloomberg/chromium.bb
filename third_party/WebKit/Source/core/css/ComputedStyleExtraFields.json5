@@ -242,13 +242,5 @@
       field_group: "box",
       default_value: "EBoxDecorationBreak::kSlice",
     },
-    {
-      name: "BoxSizing",
-      field_template: "storage_only",
-      type_name: "EBoxSizing",
-      field_size: 1,
-      field_group: "box",
-      default_value: "EBoxSizing::kContentBox",
-    },
   ],
 }
