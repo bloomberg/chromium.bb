@@ -44,6 +44,7 @@
 #include "ui/base/ui_base_paths.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/display/display_switches.h"
+#include "ui/gfx/switches.h"
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_switches.h"
 
@@ -210,6 +211,18 @@ bool ShellMainDelegate::BasicStartupComplete(int* exit_code) {
     if (!command_line.HasSwitch(switches::kForceGpuRasterization) &&
         !command_line.HasSwitch(switches::kEnableGpuRasterization)) {
       command_line.AppendSwitch(switches::kDisableGpuRasterization);
+    }
+
+    // If the virtual test suite didn't specify a color space, then use the
+    // default layout test color space (GenericRGB for Mac and sRGB for all
+    // other platforms).
+    if (!command_line.HasSwitch(switches::kForceColorProfile)) {
+#if defined(OS_MACOSX)
+      command_line.AppendSwitchASCII(switches::kForceColorProfile,
+                                     "generic-rgb");
+#else
+      command_line.AppendSwitchASCII(switches::kForceColorProfile, "srgb");
+#endif
     }
 
     command_line.AppendSwitch(cc::switches::kDisallowNonExactResourceReuse);

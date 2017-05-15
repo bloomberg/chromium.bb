@@ -197,11 +197,6 @@ ContentRendererClient::CreateMediaStreamRendererFactory() {
   return nullptr;
 }
 
-std::unique_ptr<gfx::ICCProfile>
-ContentRendererClient::GetImageDecodeColorProfile() {
-  return nullptr;
-}
-
 bool ContentRendererClient::ShouldReportDetailedMessageForSource(
     const base::string16& source) const {
   return false;
