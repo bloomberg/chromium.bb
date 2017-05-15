@@ -65,6 +65,10 @@ class NFC final : public GarbageCollectedFinalized<NFC>,
   DECLARE_VIRTUAL_TRACE();
 
  private:
+  // Returns boolean indicating whether NFC is supported in this context. If
+  // not, |error_message| gives a message indicating why not.
+  bool IsSupportedInContext(ExecutionContext*, String& error_message);
+
   // Returns promise with DOMException if feature is not supported
   // or when context is not secure. Otherwise, returns empty promise.
   ScriptPromise RejectIfNotSupported(ScriptState*);
