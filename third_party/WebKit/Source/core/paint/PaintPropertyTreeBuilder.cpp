@@ -791,7 +791,7 @@ void PaintPropertyTreeBuilder::UpdateScrollbarPaintOffset(
   }
 }
 
-static bool NeedsOverflowScroll(const LayoutObject& object) {
+static bool NeedsOverflowClip(const LayoutObject& object) {
   return object.IsBox() && ToLayoutBox(object).ShouldClipOverflow();
 }
 
@@ -800,7 +800,7 @@ void PaintPropertyTreeBuilder::UpdateOverflowClip(
     PaintPropertyTreeBuilderFragmentContext& context,
     bool& force_subtree_update) {
   if (object.NeedsPaintPropertyUpdate() || force_subtree_update) {
-    if (NeedsOverflowScroll(object)) {
+    if (NeedsOverflowClip(object)) {
       const LayoutBox& box = ToLayoutBox(object);
       LayoutRect clip_rect;
       clip_rect =
@@ -1186,7 +1186,7 @@ void PaintPropertyTreeBuilder::UpdatePaintProperties(
       NeedsPaintOffsetTranslation(object) || NeedsTransform(object) ||
       NeedsEffect(object) || NeedsTransformForNonRootSVG(object) ||
       NeedsFilter(object) || NeedsCssClip(object) ||
-      NeedsScrollbarPaintOffset(object) || NeedsOverflowScroll(object) ||
+      NeedsScrollbarPaintOffset(object) || NeedsOverflowClip(object) ||
       NeedsPerspective(object) || NeedsSVGLocalToBorderBoxTransform(object) ||
       NeedsScrollTranslation(object) || NeedsCssClipFixedPosition(object);
 
