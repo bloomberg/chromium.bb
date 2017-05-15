@@ -153,16 +153,16 @@ console-format.html:7
 console-format.html:8 [p#p]
 globals[7]
     <p id="p">Tests that console logging dumps proper messages.</p>
-console-format.html:7 function () { return 1; }
-console-format.html:8 [function]
+console-format.html:7 ƒ () { return 1; }
+console-format.html:8 [ƒ]
 globals[8]
-function () { return 1; }
-console-format.html:7 function () {
+ƒ () { return 1; }
+console-format.html:7 ƒ () {
         return 2;
     }
-console-format.html:8 [function]
+console-format.html:8 [ƒ]
 globals[9]
-function () {
+ƒ () {
         return 2;
     }
 console-format.html:7 0.12
@@ -197,7 +197,7 @@ console-format.html:8 [id]
 globals[16]
     id="x"
 console-format.html:7 Object {}
-console-format.html:8 [Object]
+console-format.html:8 [{…}]
 globals[17]
 Object {}
 console-format.html:7 NaN
@@ -212,20 +212,20 @@ console-format.html:7 -Infinity
 console-format.html:8 [-Infinity]
 globals[20]
 -Infinity
-console-format.html:7 (10) ["test", "test2", undefined × 2, "test4", undefined × 5, foo: Object]
+console-format.html:7 (10) ["test", "test2", undefined × 2, "test4", undefined × 5, foo: {…}]
 console-format.html:8 [Array(10)]
 globals[21]
-(10) ["test", "test2", undefined × 2, "test4", undefined × 5, foo: Object]
+(10) ["test", "test2", undefined × 2, "test4", undefined × 5, foo: {…}]
 console-format.html:7 Object {}
-console-format.html:8 [Object]
+console-format.html:8 [{…}]
 globals[22]
 Object {}
-console-format.html:7 [function]
+console-format.html:7 [ƒ]
 console-format.html:8 [Array(1)]
 globals[23]
-[function]
+[ƒ]
 console-format.html:7 Object {bar: "bar"}
-console-format.html:8 [Object]
+console-format.html:8 [{…}]
 globals[24]
 Object {bar: "bar"}
 console-format.html:7 
@@ -233,31 +233,31 @@ console-format.html:7
 console-format.html:8 [svg#svg-node]
 globals[25]
     <svg id="svg-node"></svg>
-console-format.html:7 Object {enumerableProp: 4, __underscoreEnumerableProp__: 5, __underscoreNonEnumerableProp: 2, abc: 3, getFoo: function…}
-console-format.html:8 [Object]
+console-format.html:7 Object {enumerableProp: 4, __underscoreEnumerableProp__: 5, __underscoreNonEnumerableProp: 2, abc: 3, getFoo: ƒ…}
+console-format.html:8 [{…}]
 globals[26]
-Object {enumerableProp: 4, __underscoreEnumerableProp__: 5, __underscoreNonEnumerableProp: 2, abc: 3, getFoo: function…}
+Object {enumerableProp: 4, __underscoreEnumerableProp__: 5, __underscoreNonEnumerableProp: 2, abc: 3, getFoo: ƒ…}
 console-format.html:7 -0
 console-format.html:8 [-0]
 globals[27]
 -0
 console-format.html:7 Object {}
-console-format.html:8 [Object]
+console-format.html:8 [{…}]
 globals[28]
 Object {}
-console-format.html:7 function Object() { [native code] }
-console-format.html:8 [function]
+console-format.html:7 ƒ Object() { [native code] }
+console-format.html:8 [ƒ]
 globals[29]
-function Object() { [native code] }
-console-format.html:7 Object {__defineGetter__: function, __defineSetter__: function, hasOwnProperty: function, __lookupGetter__: function, __lookupSetter__: function…}
-console-format.html:8 [Object]
+ƒ Object() { [native code] }
+console-format.html:7 Object {__defineGetter__: ƒ, __defineSetter__: ƒ, hasOwnProperty: ƒ, __lookupGetter__: ƒ, __lookupSetter__: ƒ…}
+console-format.html:8 [{…}]
 globals[30]
-Object {__defineGetter__: function, __defineSetter__: function, hasOwnProperty: function, __lookupGetter__: function, __lookupSetter__: function…}
-console-format.html:7 function ( /**/ foo/**/, /*/**/bar,
+Object {__defineGetter__: ƒ, __defineSetter__: ƒ, hasOwnProperty: ƒ, __lookupGetter__: ƒ, __lookupSetter__: ƒ…}
+console-format.html:7 ƒ ( /**/ foo/**/, /*/**/bar,
     /**/baz) {}
-console-format.html:8 [function]
+console-format.html:8 [ƒ]
 globals[31]
-function ( /**/ foo/**/, /*/**/bar,
+ƒ ( /**/ foo/**/, /*/**/bar,
     /**/baz) {}
 console-format.html:7 Number {[[PrimitiveValue]]: 42}
 console-format.html:8 [Number]
@@ -396,22 +396,22 @@ console-format.html:8 [p#p]
     __proto__: Array(0)
 globals[7]
     <p id="p">Tests that console logging dumps proper messages.</p>
-console-format.html:7 function () { return 1; }
-console-format.html:8 [function]
-    0: function ()
+console-format.html:7 ƒ () { return 1; }
+console-format.html:8 [ƒ]
+    0: ƒ ()
     length: 1
     __proto__: Array(0)
 globals[8]
-function () { return 1; }
-console-format.html:7 function () {
+ƒ () { return 1; }
+console-format.html:7 ƒ () {
         return 2;
     }
-console-format.html:8 [function]
-    0: function ()
+console-format.html:8 [ƒ]
+    0: ƒ ()
     length: 1
     __proto__: Array(0)
 globals[9]
-function () {
+ƒ () {
         return 2;
     }
 console-format.html:7 0.12
@@ -468,16 +468,16 @@ globals[16]
     id="x"
 console-format.html:7 Object {}
     length: (...)
-    get length: function length()
+    get length: ƒ length()
     __proto__: Object
-console-format.html:8 [Object]
+console-format.html:8 [{…}]
     0: Object
     length: 1
     __proto__: Array(0)
 globals[17]
 Object {}
     length: (...)
-    get length: function length()
+    get length: ƒ length()
     __proto__: Object
 console-format.html:7 NaN
 console-format.html:8 [NaN]
@@ -500,7 +500,7 @@ console-format.html:8 [-Infinity]
     __proto__: Array(0)
 globals[20]
 -Infinity
-console-format.html:7 (10) ["test", "test2", undefined × 2, "test4", undefined × 5, foo: Object]
+console-format.html:7 (10) ["test", "test2", undefined × 2, "test4", undefined × 5, foo: {…}]
     0: "test"
     1: "test2"
     4: "test4"
@@ -512,7 +512,7 @@ console-format.html:8 [Array(10)]
     length: 1
     __proto__: Array(0)
 globals[21]
-(10) ["test", "test2", undefined × 2, "test4", undefined × 5, foo: Object]
+(10) ["test", "test2", undefined × 2, "test4", undefined × 5, foo: {…}]
     0: "test"
     1: "test2"
     4: "test4"
@@ -521,15 +521,15 @@ globals[21]
     __proto__: Array(0)
 console-format.html:7 Object {}
     __proto__: Object
-console-format.html:8 [Object]
+console-format.html:8 [{…}]
     0: Object
     length: 1
     __proto__: Array(0)
 globals[22]
 Object {}
     __proto__: Object
-console-format.html:7 [function]
-    0: function ()
+console-format.html:7 [ƒ]
+    0: ƒ ()
     length: 1
     __proto__: Array(0)
 console-format.html:8 [Array(1)]
@@ -537,14 +537,14 @@ console-format.html:8 [Array(1)]
     length: 1
     __proto__: Array(0)
 globals[23]
-[function]
-    0: function ()
+[ƒ]
+    0: ƒ ()
     length: 1
     __proto__: Array(0)
 console-format.html:7 Object {bar: "bar"}
     bar: "bar"
     __proto__: Object
-console-format.html:8 [Object]
+console-format.html:8 [{…}]
     0: Object
     length: 1
     __proto__: Array(0)
@@ -560,30 +560,30 @@ console-format.html:8 [svg#svg-node]
     __proto__: Array(0)
 globals[25]
     <svg id="svg-node"></svg>
-console-format.html:7 Object {enumerableProp: 4, __underscoreEnumerableProp__: 5, __underscoreNonEnumerableProp: 2, abc: 3, getFoo: function…}
+console-format.html:7 Object {enumerableProp: 4, __underscoreEnumerableProp__: 5, __underscoreNonEnumerableProp: 2, abc: 3, getFoo: ƒ…}
     enumerableProp: 4
     __underscoreEnumerableProp__: 5
     abc: 3
     bar: (...)
-    getFoo: function ()
+    getFoo: ƒ ()
     __underscoreNonEnumerableProp: 2
-    get bar: function ()
-    set bar: function (x)
+    get bar: ƒ ()
+    set bar: ƒ (x)
     __proto__: Object
-console-format.html:8 [Object]
+console-format.html:8 [{…}]
     0: Object
     length: 1
     __proto__: Array(0)
 globals[26]
-Object {enumerableProp: 4, __underscoreEnumerableProp__: 5, __underscoreNonEnumerableProp: 2, abc: 3, getFoo: function…}
+Object {enumerableProp: 4, __underscoreEnumerableProp__: 5, __underscoreNonEnumerableProp: 2, abc: 3, getFoo: ƒ…}
     enumerableProp: 4
     __underscoreEnumerableProp__: 5
     abc: 3
     bar: (...)
-    getFoo: function ()
+    getFoo: ƒ ()
     __underscoreNonEnumerableProp: 2
-    get bar: function ()
-    set bar: function (x)
+    get bar: ƒ ()
+    set bar: ƒ (x)
     __proto__: Object
 console-format.html:7 -0
 console-format.html:8 [-0]
@@ -594,61 +594,61 @@ globals[27]
 -0
 console-format.html:7 Object {}
     No Properties
-console-format.html:8 [Object]
+console-format.html:8 [{…}]
     0: Object
     length: 1
     __proto__: Array(0)
 globals[28]
 Object {}
     No Properties
-console-format.html:7 function Object() { [native code] }
-console-format.html:8 [function]
-    0: function Object()
+console-format.html:7 ƒ Object() { [native code] }
+console-format.html:8 [ƒ]
+    0: ƒ Object()
     length: 1
     __proto__: Array(0)
 globals[29]
-function Object() { [native code] }
-console-format.html:7 Object {__defineGetter__: function, __defineSetter__: function, hasOwnProperty: function, __lookupGetter__: function, __lookupSetter__: function…}
-    constructor: function Object()
-    hasOwnProperty: function hasOwnProperty()
-    isPrototypeOf: function isPrototypeOf()
-    propertyIsEnumerable: function propertyIsEnumerable()
-    toLocaleString: function toLocaleString()
-    toString: function toString()
-    valueOf: function valueOf()
-    __defineGetter__: function __defineGetter__()
-    __defineSetter__: function __defineSetter__()
-    __lookupGetter__: function __lookupGetter__()
-    __lookupSetter__: function __lookupSetter__()
-    get __proto__: function __proto__()
-    set __proto__: function __proto__()
-console-format.html:8 [Object]
+ƒ Object() { [native code] }
+console-format.html:7 Object {__defineGetter__: ƒ, __defineSetter__: ƒ, hasOwnProperty: ƒ, __lookupGetter__: ƒ, __lookupSetter__: ƒ…}
+    constructor: ƒ Object()
+    hasOwnProperty: ƒ hasOwnProperty()
+    isPrototypeOf: ƒ isPrototypeOf()
+    propertyIsEnumerable: ƒ propertyIsEnumerable()
+    toLocaleString: ƒ toLocaleString()
+    toString: ƒ toString()
+    valueOf: ƒ valueOf()
+    __defineGetter__: ƒ __defineGetter__()
+    __defineSetter__: ƒ __defineSetter__()
+    __lookupGetter__: ƒ __lookupGetter__()
+    __lookupSetter__: ƒ __lookupSetter__()
+    get __proto__: ƒ __proto__()
+    set __proto__: ƒ __proto__()
+console-format.html:8 [{…}]
     0: Object
     length: 1
     __proto__: Array(0)
 globals[30]
-Object {__defineGetter__: function, __defineSetter__: function, hasOwnProperty: function, __lookupGetter__: function, __lookupSetter__: function…}
-    constructor: function Object()
-    hasOwnProperty: function hasOwnProperty()
-    isPrototypeOf: function isPrototypeOf()
-    propertyIsEnumerable: function propertyIsEnumerable()
-    toLocaleString: function toLocaleString()
-    toString: function toString()
-    valueOf: function valueOf()
-    __defineGetter__: function __defineGetter__()
-    __defineSetter__: function __defineSetter__()
-    __lookupGetter__: function __lookupGetter__()
-    __lookupSetter__: function __lookupSetter__()
-    get __proto__: function __proto__()
-    set __proto__: function __proto__()
-console-format.html:7 function ( /**/ foo/**/, /*/**/bar,
+Object {__defineGetter__: ƒ, __defineSetter__: ƒ, hasOwnProperty: ƒ, __lookupGetter__: ƒ, __lookupSetter__: ƒ…}
+    constructor: ƒ Object()
+    hasOwnProperty: ƒ hasOwnProperty()
+    isPrototypeOf: ƒ isPrototypeOf()
+    propertyIsEnumerable: ƒ propertyIsEnumerable()
+    toLocaleString: ƒ toLocaleString()
+    toString: ƒ toString()
+    valueOf: ƒ valueOf()
+    __defineGetter__: ƒ __defineGetter__()
+    __defineSetter__: ƒ __defineSetter__()
+    __lookupGetter__: ƒ __lookupGetter__()
+    __lookupSetter__: ƒ __lookupSetter__()
+    get __proto__: ƒ __proto__()
+    set __proto__: ƒ __proto__()
+console-format.html:7 ƒ ( /**/ foo/**/, /*/**/bar,
     /**/baz) {}
-console-format.html:8 [function]
-    0: function ( /**/ foo/**/, /*/**/bar,     /**/baz)
+console-format.html:8 [ƒ]
+    0: ƒ ( /**/ foo/**/, /*/**/bar,     /**/baz)
     length: 1
     __proto__: Array(0)
 globals[31]
-function ( /**/ foo/**/, /*/**/bar,
+ƒ ( /**/ foo/**/, /*/**/bar,
     /**/baz) {}
 console-format.html:7 Number {[[PrimitiveValue]]: 42}
     __proto__: Number
