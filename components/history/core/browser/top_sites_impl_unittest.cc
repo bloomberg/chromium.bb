@@ -20,6 +20,7 @@
 #include "components/history/core/browser/history_constants.h"
 #include "components/history/core/browser/history_database_params.h"
 #include "components/history/core/browser/history_db_task.h"
+#include "components/history/core/browser/history_service.h"
 #include "components/history/core/browser/history_types.h"
 #include "components/history/core/browser/top_sites.h"
 #include "components/history/core/browser/top_sites_cache.h"
