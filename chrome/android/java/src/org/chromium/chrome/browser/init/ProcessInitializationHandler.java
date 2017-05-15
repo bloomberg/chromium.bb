@@ -223,6 +223,8 @@ public class ProcessInitializationHandler {
                 public void showPhotoPicker(
                         Context context, PhotoPickerListener listener, boolean allowMultiple) {
                     mDialog = new PhotoPickerDialog(context, listener, allowMultiple);
+                    mDialog.getWindow().getAttributes().windowAnimations =
+                            R.style.PhotoPickerDialogAnimation;
                     mDialog.show();
                 }
 
