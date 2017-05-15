@@ -69,6 +69,7 @@ void MediaRouteController::SetVolume(float volume) const {
 
 void MediaRouteController::OnMediaStatusUpdated(const MediaStatus& status) {
   DCHECK(is_valid_);
+  current_media_status_ = MediaStatus(status);
   for (Observer& observer : observers_)
     observer.OnMediaStatusUpdated(status);
 }

@@ -52,6 +52,9 @@ class MediaRouteController : public mojom::MediaStatusObserver,
       return controller_;
     }
 
+   protected:
+    scoped_refptr<MediaRouteController> controller_;
+
    private:
     friend class MediaRouteController;
 
@@ -61,8 +64,6 @@ class MediaRouteController : public mojom::MediaStatusObserver,
     // Called by InvalidateController() after the reference to the controller is
     // disposed. Overridden by subclasses to do custom cleanup.
     virtual void OnControllerInvalidated();
-
-    scoped_refptr<MediaRouteController> controller_;
 
     DISALLOW_COPY_AND_ASSIGN(Observer);
   };
@@ -96,6 +97,12 @@ class MediaRouteController : public mojom::MediaStatusObserver,
 
   MediaRoute::Id route_id() const { return route_id_; }
 
+  // Returns the latest media status that the controller has been notified with.
+  // Returns a nullopt if the controller hasn't been notified yet.
+  const base::Optional<MediaStatus>& current_media_status() const {
+    return current_media_status_;
+  }
+
  protected:
   ~MediaRouteController() override;
 
@@ -128,6 +135,9 @@ class MediaRouteController : public mojom::MediaStatusObserver,
 
   // This becomes false when the controller is invalidated.
   bool is_valid_ = true;
+
+  // The latest media status that the controller has been notified with.
+  base::Optional<MediaStatus> current_media_status_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaRouteController);
 };
