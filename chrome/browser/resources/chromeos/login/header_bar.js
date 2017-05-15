@@ -36,6 +36,13 @@ cr.define('login', function() {
     // Current UI state of the sign-in screen.
     signinUIState_: SIGNIN_UI_STATE.HIDDEN,
 
+    // Current lock screen apps activity state. This value affects visibility of
+    // tray buttons visible in the header bar - when lock screeen apps state is
+    // FOREGROUND, only the unlock button should be shown (when clicked, the
+    // button issues a request to move lock screen apps to background, in the
+    // state where account picker is visible).
+    lockScreenAppsState_: LOCK_SCREEN_APPS_STATE.NONE,
+
     // Whether to show kiosk apps menu.
     hasApps_: false,
 
@@ -62,6 +69,8 @@ cr.define('login', function() {
           this.handleSignoutClick_);
       $('cancel-multiple-sign-in-button').addEventListener('click',
           this.handleCancelMultipleSignInClick_);
+      $('unlock-user-button').addEventListener('click',
+          this.handleUnlockUserClick_);
       this.addSupervisedUserMenu.addEventListener('click',
           this.handleAddSupervisedUserClick_.bind(this));
       this.addSupervisedUserMenu.addEventListener('keydown',
@@ -226,6 +235,18 @@ cr.define('login', function() {
     },
 
     /**
+     * Unlock user button handler. Sends a request to Chrome to show user pods
+     * in foreground.
+     *
+     * @private
+     */
+    handleUnlockUserClick_: function(e) {
+      chrome.send('setLockScreenAppsState',
+                  [LOCK_SCREEN_APPS_STATE.BACKGROUND]);
+      e.preventDefault();
+    },
+
+    /**
      * If true then "Browse as Guest" button is shown.
      *
      * @type {boolean}
@@ -271,6 +292,16 @@ cr.define('login', function() {
     },
     set signinUIState(state) {
       this.signinUIState_ = state;
+      this.updateUI_();
+    },
+
+    /**
+     * Current activity state of lock screen app windows.
+     *
+     * @type {LOCK_SCREEN_APPS_STATE}
+     */
+    set lockScreenAppsState(state) {
+      this.lockScreenAppsState_ = state;
       this.updateUI_();
     },
 
@@ -332,9 +363,18 @@ cr.define('login', function() {
           (gaiaIsActive && $('gaia-signin').closable) ||
           (enrollmentIsActive && !$('oauth-enrollment').isAtTheBeginning()) ||
           (gaiaIsActive && !$('gaia-signin').isAtTheBeginning());
-      $('restart-header-bar-item').hidden = !this.showReboot_;
-      $('shutdown-header-bar-item').hidden = !this.showShutdown_;
-      $('sign-out-user-item').hidden = !isLockScreen;
+      $('restart-header-bar-item').hidden =
+          !this.showReboot_ ||
+          this.lockScreenAppsState_ == LOCK_SCREEN_APPS_STATE.FOREGROUND;
+      $('shutdown-header-bar-item').hidden =
+          !this.showShutdown_ ||
+          this.lockScreenAppsState_ == LOCK_SCREEN_APPS_STATE.FOREGROUND;
+      $('sign-out-user-item').hidden =
+          !isLockScreen ||
+          this.lockScreenAppsState_ == LOCK_SCREEN_APPS_STATE.FOREGROUND;
+      $('unlock-user-header-bar-item').hidden =
+          !isLockScreen ||
+          this.lockScreenAppsState_ != LOCK_SCREEN_APPS_STATE.FOREGROUND;
 
       $('add-user-header-bar-item').hidden = $('add-user-button').hidden;
       $('apps-header-bar-item').hidden = !this.hasApps_ ||
@@ -345,6 +385,13 @@ cr.define('login', function() {
         if (!$('apps-header-bar-item').hidden)
           $('show-apps-button').didShow();
       }
+
+      // Lock screen apps are generally shown maximized - update the header
+      // bar background opacity so the wallpaper is not visible behind it (
+      // since it won't be visible in the rest of UI).
+      this.classList.toggle(
+          'full-header-background',
+          this.lockScreenAppsState_ != LOCK_SCREEN_APPS_STATE.NONE);
     },
 
     /**

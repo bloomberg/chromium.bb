@@ -43,6 +43,7 @@ login.createScreen('AccountPickerScreen', 'account-picker', function() {
       'setPublicSessionDisplayName',
       'setPublicSessionLocales',
       'setPublicSessionKeyboardLayouts',
+      'setLockScreenAppsState',
     ],
 
     preferredWidth_: 0,
@@ -54,9 +55,14 @@ login.createScreen('AccountPickerScreen', 'account-picker', function() {
     // Whether this screen is currently being shown.
     showing_: false,
 
+    // Last reported lock screen app activity state.
+    lockScreenAppsState_: LOCK_SCREEN_APPS_STATE.NONE,
+
     /** @override */
     decorate: function() {
       login.PodRow.decorate($('pod-row'));
+      this.ownerDocument.addEventListener('click',
+          this.handleOwnerDocClick_.bind(this));
     },
 
     /** @override */
@@ -472,6 +478,45 @@ login.createScreen('AccountPickerScreen', 'account-picker', function() {
      */
     setPublicSessionKeyboardLayouts: function(userID, locale, list) {
       $('pod-row').setPublicSessionKeyboardLayouts(userID, locale, list);
-    }
+    },
+
+    /**
+     * Updates UI based on the provided lock screen apps state.
+     *
+     * @param {LOCK_SCREEN_APPS_STATE} state The current lock screen apps state.
+     */
+    setLockScreenAppsState: function(state) {
+      if (Oobe.getInstance().displayType != DISPLAY_TYPE.LOCK ||
+          state == this.lockScreenAppsState_) {
+        return;
+      }
+
+      this.lockScreenAppsState_ = state;
+      $('login-header-bar').lockScreenAppsState = state;
+      // When an lock screen app window is in background - i.e. visible behind
+      // the lock screen UI - dim the lock screen background, so it's more
+      // noticeable that the app widow in background is not actionable.
+      $('background').classList.toggle(
+          'dimmed-background', state == LOCK_SCREEN_APPS_STATE.BACKGROUND);
+    },
+
+    /**
+     * Handles clicks on the document which displays the account picker UI.
+     * If the click event target is outer container - i.e. background portion of
+     * UI with no other UI elements, and lock screen apps are in background, a
+     * request is issued to chrome to move lock screen apps to foreground.
+     * @param {Event} event The click event.
+     */
+    handleOwnerDocClick_: function(event) {
+      if (this.lockScreenAppsState_  != LOCK_SCREEN_APPS_STATE.BACKGROUND ||
+          event.target != $('outer-container')) {
+        return;
+      }
+      chrome.send('setLockScreenAppsState',
+                  [LOCK_SCREEN_APPS_STATE.FOREGROUND]);
+
+      event.preventDefault();
+      event.stopPropagation();
+    },
   };
 });

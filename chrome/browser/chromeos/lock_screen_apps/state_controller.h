@@ -58,6 +58,10 @@ class StateController : public ash::mojom::TrayActionClient {
   // to background, to ensure lock screen UI is visible.
   void MoveToBackground();
 
+  // If there are any lock screen action handler in background, moves their
+  // windows back to foreground (i.e. visible over lock screen UI).
+  void MoveToForeground();
+
   // Sets the current state - to be used in tests. Hopefully, when this class
   // has more logic implemented, this will not be needed.
   void SetLockScreenNoteStateForTesting(ash::mojom::TrayActionState state);

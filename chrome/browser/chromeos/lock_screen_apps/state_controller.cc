@@ -89,7 +89,15 @@ void StateController::RequestNewLockScreenNote() {
 }
 
 void StateController::MoveToBackground() {
+  if (GetLockScreenNoteState() != TrayActionState::kActive)
+    return;
   UpdateLockScreenNoteState(TrayActionState::kBackground);
+}
+
+void StateController::MoveToForeground() {
+  if (GetLockScreenNoteState() != TrayActionState::kBackground)
+    return;
+  UpdateLockScreenNoteState(TrayActionState::kActive);
 }
 
 void StateController::SetLockScreenNoteStateForTesting(
@@ -100,12 +108,6 @@ void StateController::SetLockScreenNoteStateForTesting(
 bool StateController::UpdateLockScreenNoteState(TrayActionState state) {
   const TrayActionState old_state = GetLockScreenNoteState();
   if (old_state == state)
-    return false;
-
-  // Action state can be moved to background only if the action is currently
-  // active.
-  if (state == TrayActionState::kBackground &&
-      old_state != TrayActionState::kActive)
     return false;
 
   lock_screen_note_state_ = state;
