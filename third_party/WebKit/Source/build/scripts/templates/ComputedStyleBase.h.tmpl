@@ -1,5 +1,5 @@
 {% from 'macros.tmpl' import license, print_if %}
-{% from 'fields/field.tmpl' import encode, getter_expression, declare_storage, fieldwise_compare %}
+{% from 'fields/field.tmpl' import encode, getter_expression, setter_expression, declare_storage, fieldwise_compare, fieldwise_copy, fieldwise_diff %}
 {% from 'fields/group.tmpl' import define_field_group_class %}
 {{license()}}
 
@@ -10,6 +10,7 @@
 #include "core/CoreExport.h"
 #include "core/style/DataRef.h"
 #include "core/style/StyleDifference.h"
+#include "platform/wtf/SizeAssertions.h"
 {% for path in include_paths %}
 #include "{{path}}"
 {% endfor %}
@@ -32,6 +33,16 @@
    } %}
 
 namespace blink {
+
+struct SameSizeAsComputedStyleBase {
+  {% if computed_style.subgroups is defined %}
+  void* dataRefs[{{computed_style.subgroups|length}}];
+  {% endif %}
+  {% for field in computed_style.fields|rejectattr("is_bit_field") %}
+  {{field.type_name}} {{field.name}};
+  {% endfor %}
+  unsigned m_bit_fields[{{computed_style.num_32_bit_words_for_bit_fields}}];
+};
 
 // The generated portion of ComputedStyle. For more info, see the header comment
 // in ComputedStyle.h.
@@ -81,19 +92,53 @@ class CORE_EXPORT ComputedStyleBase {
     kAtShadowBoundary,
     kNotAtShadowBoundary,
   };
-  void InheritFrom(const ComputedStyleBase& inheritParent,
-                   IsAtShadowBoundary isAtShadowBoundary = kNotAtShadowBoundary);
 
-  void CopyNonInheritedFromCached(const ComputedStyleBase& other);
-  bool DiffNeedsFullLayoutAndPaintInvalidation(
-      const ComputedStyleBase& other) const;
-  bool ScrollAnchorDisablingPropertyChanged(const ComputedStyleBase& other,
-                                            const StyleDifference&) const;
+  void InheritFrom(const ComputedStyleBase& other,
+                                      IsAtShadowBoundary isAtShadowBoundary) {
+    {{fieldwise_copy(computed_style, computed_style.all_fields
+        |selectattr("is_property")
+        |selectattr("is_inherited")
+        |list
+      )|indent(4)}}
+  }
+
+  void CopyNonInheritedFromCached(
+      const ComputedStyleBase& other) {
+    {{fieldwise_copy(computed_style, computed_style.all_fields
+        |rejectattr("has_custom_compare_and_copy")
+        |rejectattr("is_inherited")
+        |list
+      )|indent(4)}}
+  }
 
   // Copies the values of any independent inherited properties from the parent
   // style that are marked as inherited by this style.
   void PropagateIndependentInheritedProperties(
-      const ComputedStyleBase& parentStyle);
+      const ComputedStyleBase& parentStyle) {
+    {% for field in computed_style.all_fields if field.is_property and field.is_independent %}
+    if ({{field.is_inherited_method_name}}())
+      {{setter_expression(field)}} = parentStyle.{{getter_expression(field)}};
+    {% endfor %}
+  }
+
+  bool ScrollAnchorDisablingPropertyChanged(
+      const ComputedStyleBase& other,
+      const StyleDifference& diff) const {
+    {{fieldwise_diff(computed_style, computed_style.all_fields
+        |selectattr("property_name", "in", ["margin-top", "margin-left", "margin-right", "margin-bottom", "left", "right", "top", "bottom", "padding-top", "padding-left", "padding-right", "padding-bottom"])
+        |list
+      )|indent(4)}}
+    return false;
+  }
+
+  bool DiffNeedsFullLayoutAndPaintInvalidation(
+      const ComputedStyleBase& other) const {
+    {{fieldwise_diff(computed_style, computed_style.all_fields
+        |selectattr("property_name", "in", ["padding-top", "padding-left", "padding-right", "padding-bottom"])
+        |list
+      )|indent(4)}}
+    return false;
+  }
 
   // Fields.
   // TODO(sashab): Remove initialFoo() static methods and update callers to
@@ -149,6 +194,11 @@ class CORE_EXPORT ComputedStyleBase {
   {{declare_storage(field)}}
   {% endfor %}
 };
+
+// If this fails, the packing algorithm in make_computed_style_base.py has
+// failed to produce the optimal packed size. To fix, update the algorithm to
+// ensure that the buckets are placed so that each takes up at most 1 word.
+ASSERT_SIZE(ComputedStyleBase, SameSizeAsComputedStyleBase);
 
 } // namespace blink
 
