@@ -717,7 +717,7 @@ cr.define('certificate_manager_page', function() {
         // Some dialogs are opened after some async operation to fetch initial
         // data. Ensure that the underlying cr-dialog is actually opened before
         // returning.
-        return test_util.whenAttributeIs(dialog.$.dialog, 'open', true);
+        return test_util.whenAttributeIs(dialog.$.dialog, 'open', '');
       }
 
       test('OpensDialog_DeleteConfirmation', function() {

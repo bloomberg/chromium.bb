@@ -94,7 +94,7 @@ cr.define('settings_privacy_page', function() {
         // Ensure that the dialog is fully opened before returning from this
         // test, otherwise asynchronous code run in attached() can cause flaky
         // errors.
-        return test_util.whenAttributeIs(dialog.$.dialog, 'open', true);
+        return test_util.whenAttributeIs(dialog.$.dialog, 'open', '');
       });
     });
   }
