@@ -288,8 +288,8 @@ TEST_F('SettingsAutofillSectionBrowserTest', 'CreditCardTests', function() {
 
       // Wait for dialogs to open before finishing test.
       return Promise.all([
-        test_util.whenAttributeIs(newCreditCardDialog.$.dialog, 'open', true),
-        test_util.whenAttributeIs(oldCreditCardDialog.$.dialog, 'open', true),
+        test_util.whenAttributeIs(newCreditCardDialog.$.dialog, 'open', ''),
+        test_util.whenAttributeIs(oldCreditCardDialog.$.dialog, 'open', ''),
       ]);
     });
 
@@ -303,7 +303,7 @@ TEST_F('SettingsAutofillSectionBrowserTest', 'CreditCardTests', function() {
       var creditCardDialog = self.createCreditCardDialog_(creditCard);
 
       return test_util.whenAttributeIs(
-          creditCardDialog.$.dialog, 'open', true).then(function() {
+          creditCardDialog.$.dialog, 'open', '').then(function() {
         var now = new Date();
         var maxYear = now.getFullYear() + 9;
         var yearOptions = creditCardDialog.$.year.options;
@@ -328,7 +328,7 @@ TEST_F('SettingsAutofillSectionBrowserTest', 'CreditCardTests', function() {
       var creditCardDialog = self.createCreditCardDialog_(creditCard);
 
       return test_util.whenAttributeIs(
-          creditCardDialog.$.dialog, 'open', true).then(function() {
+          creditCardDialog.$.dialog, 'open', '').then(function() {
         var yearOptions = creditCardDialog.$.year.options;
 
         assertEquals(
@@ -354,7 +354,7 @@ TEST_F('SettingsAutofillSectionBrowserTest', 'CreditCardTests', function() {
       var creditCardDialog = self.createCreditCardDialog_(creditCard);
 
       return test_util.whenAttributeIs(
-          creditCardDialog.$.dialog, 'open', true).then(function() {
+          creditCardDialog.$.dialog, 'open', '').then(function() {
         var yearOptions = creditCardDialog.$.year.options;
 
         assertEquals(
@@ -379,7 +379,7 @@ TEST_F('SettingsAutofillSectionBrowserTest', 'CreditCardTests', function() {
       var creditCardDialog = self.createCreditCardDialog_(creditCard);
 
       return test_util.whenAttributeIs(
-          creditCardDialog.$.dialog, 'open', true).then(function() {
+          creditCardDialog.$.dialog, 'open', '').then(function() {
         assertTrue(creditCardDialog.$.saveButton.disabled);
       });
     });
@@ -390,7 +390,7 @@ TEST_F('SettingsAutofillSectionBrowserTest', 'CreditCardTests', function() {
       var creditCardDialog = self.createCreditCardDialog_(creditCard);
 
       return test_util.whenAttributeIs(
-          creditCardDialog.$.dialog, 'open', true).then(function() {
+          creditCardDialog.$.dialog, 'open', '').then(function() {
         // Not expired, but still can't be saved, because there's no name.
         assertTrue(creditCardDialog.$.expired.hidden);
         assertTrue(creditCardDialog.$.saveButton.disabled);
@@ -416,7 +416,7 @@ TEST_F('SettingsAutofillSectionBrowserTest', 'CreditCardTests', function() {
       var creditCardDialog = self.createCreditCardDialog_(creditCard);
 
       return test_util.whenAttributeIs(
-          creditCardDialog.$.dialog, 'open', true).then(function() {
+          creditCardDialog.$.dialog, 'open', '').then(function() {
         creditCardDialog.addEventListener('save-credit-card', function() {
           // Fail the test because the save event should not be called when
           // cancel is clicked.

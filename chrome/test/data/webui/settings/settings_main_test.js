@@ -257,7 +257,7 @@ cr.define('settings_main_page', function() {
               return assertPageVisibility('block', 'block');
             }).then(function() {
               var whenHidden = test_util.whenAttributeIs(
-                  advancedPage, 'hidden', true);
+                  advancedPage, 'hidden', '');
 
               var advancedToggle =
                   getToggleContainer().querySelector('#advancedToggle');
