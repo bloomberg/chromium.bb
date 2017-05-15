@@ -218,41 +218,42 @@ void DrmThread::MoveCursor(const gfx::AcceleratedWidget& widget,
 void DrmThread::CheckOverlayCapabilities(
     gfx::AcceleratedWidget widget,
     const std::vector<OverlayCheck_Params>& overlays,
-    const base::Callback<void(gfx::AcceleratedWidget,
-                              const std::vector<OverlayCheck_Params>&)>&
+    base::OnceCallback<void(gfx::AcceleratedWidget,
+                            const std::vector<OverlayCheck_Params>&)>
         callback) {
-  callback.Run(widget,
-               screen_manager_->GetWindow(widget)->TestPageFlip(overlays));
+  std::move(callback).Run(
+      widget, screen_manager_->GetWindow(widget)->TestPageFlip(overlays));
 }
 
 void DrmThread::RefreshNativeDisplays(
-    const base::Callback<void(const std::vector<DisplaySnapshot_Params>&)>&
+    base::OnceCallback<void(const std::vector<DisplaySnapshot_Params>&)>
         callback) {
-  callback.Run(display_manager_->GetDisplays());
+  std::move(callback).Run(display_manager_->GetDisplays());
 }
 
 void DrmThread::ConfigureNativeDisplay(
     int64_t id,
     const DisplayMode_Params& mode,
     const gfx::Point& origin,
-    const base::Callback<void(int64_t, bool)>& callback) {
-  callback.Run(id, display_manager_->ConfigureDisplay(id, mode, origin));
+    base::OnceCallback<void(int64_t, bool)> callback) {
+  std::move(callback).Run(id,
+                          display_manager_->ConfigureDisplay(id, mode, origin));
 }
 
 void DrmThread::DisableNativeDisplay(
     int64_t id,
-    const base::Callback<void(int64_t, bool)>& callback) {
-  callback.Run(id, display_manager_->DisableDisplay(id));
+    base::OnceCallback<void(int64_t, bool)> callback) {
+  std::move(callback).Run(id, display_manager_->DisableDisplay(id));
 }
 
-void DrmThread::TakeDisplayControl(const base::Callback<void(bool)>& callback) {
-  callback.Run(display_manager_->TakeDisplayControl());
+void DrmThread::TakeDisplayControl(base::OnceCallback<void(bool)> callback) {
+  std::move(callback).Run(display_manager_->TakeDisplayControl());
 }
 
 void DrmThread::RelinquishDisplayControl(
-    const base::Callback<void(bool)>& callback) {
+    base::OnceCallback<void(bool)> callback) {
   display_manager_->RelinquishDisplayControl();
-  callback.Run(true);
+  std::move(callback).Run(true);
 }
 
 void DrmThread::AddGraphicsDevice(const base::FilePath& path,
@@ -266,17 +267,17 @@ void DrmThread::RemoveGraphicsDevice(const base::FilePath& path) {
 
 void DrmThread::GetHDCPState(
     int64_t display_id,
-    const base::Callback<void(int64_t, bool, display::HDCPState)>& callback) {
+    base::OnceCallback<void(int64_t, bool, display::HDCPState)> callback) {
   display::HDCPState state = display::HDCP_STATE_UNDESIRED;
   bool success = display_manager_->GetHDCPState(display_id, &state);
-  callback.Run(display_id, success, state);
+  std::move(callback).Run(display_id, success, state);
 }
 
-void DrmThread::SetHDCPState(
-    int64_t display_id,
-    display::HDCPState state,
-    const base::Callback<void(int64_t, bool)>& callback) {
-  callback.Run(display_id, display_manager_->SetHDCPState(display_id, state));
+void DrmThread::SetHDCPState(int64_t display_id,
+                             display::HDCPState state,
+                             base::OnceCallback<void(int64_t, bool)> callback) {
+  std::move(callback).Run(display_id,
+                          display_manager_->SetHDCPState(display_id, state));
 }
 
 void DrmThread::SetColorCorrection(

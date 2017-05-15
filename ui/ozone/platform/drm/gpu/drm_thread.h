@@ -92,31 +92,29 @@ class DrmThread : public base::Thread, public ozone::mojom::DeviceCursor {
   void CheckOverlayCapabilities(
       gfx::AcceleratedWidget widget,
       const std::vector<OverlayCheck_Params>& overlays,
-      const base::Callback<void(gfx::AcceleratedWidget,
-                                const std::vector<OverlayCheck_Params>&)>&
+      base::OnceCallback<void(gfx::AcceleratedWidget,
+                              const std::vector<OverlayCheck_Params>&)>
           callback);
   void RefreshNativeDisplays(
-      const base::Callback<void(const std::vector<DisplaySnapshot_Params>&)>&
+      base::OnceCallback<void(const std::vector<DisplaySnapshot_Params>&)>
           callback);
-  void ConfigureNativeDisplay(
-      int64_t id,
-      const DisplayMode_Params& mode,
-      const gfx::Point& origin,
-      const base::Callback<void(int64_t, bool)>& callback);
-  void DisableNativeDisplay(
-      int64_t id,
-      const base::Callback<void(int64_t, bool)>& callback);
-  void TakeDisplayControl(const base::Callback<void(bool)>& callback);
-  void RelinquishDisplayControl(const base::Callback<void(bool)>& callback);
+  void ConfigureNativeDisplay(int64_t id,
+                              const DisplayMode_Params& mode,
+                              const gfx::Point& origin,
+                              base::OnceCallback<void(int64_t, bool)> callback);
+  void DisableNativeDisplay(int64_t id,
+                            base::OnceCallback<void(int64_t, bool)> callback);
+  void TakeDisplayControl(base::OnceCallback<void(bool)> callback);
+  void RelinquishDisplayControl(base::OnceCallback<void(bool)> callback);
   void AddGraphicsDevice(const base::FilePath& path,
                          const base::FileDescriptor& fd);
   void RemoveGraphicsDevice(const base::FilePath& path);
   void GetHDCPState(
       int64_t display_id,
-      const base::Callback<void(int64_t, bool, display::HDCPState)>& callback);
+      base::OnceCallback<void(int64_t, bool, display::HDCPState)> callback);
   void SetHDCPState(int64_t display_id,
                     display::HDCPState state,
-                    const base::Callback<void(int64_t, bool)>& callback);
+                    base::OnceCallback<void(int64_t, bool)> callback);
   void SetColorCorrection(
       int64_t display_id,
       const std::vector<display::GammaRampRGBEntry>& degamma_lut,

@@ -109,23 +109,26 @@ void DrmThreadMessageProxy::OnCheckOverlayCapabilities(
     const std::vector<OverlayCheck_Params>& overlays) {
   DCHECK(drm_thread_->IsRunning());
   auto callback =
-      base::Bind(&DrmThreadMessageProxy::OnCheckOverlayCapabilitiesCallback,
-                 weak_ptr_factory_.GetWeakPtr());
+      base::BindOnce(&DrmThreadMessageProxy::OnCheckOverlayCapabilitiesCallback,
+                     weak_ptr_factory_.GetWeakPtr());
+
+  auto safe_callback = CreateSafeOnceCallback(std::move(callback));
   drm_thread_->task_runner()->PostTask(
-      FROM_HERE, base::Bind(&DrmThread::CheckOverlayCapabilities,
-                            base::Unretained(drm_thread_), widget, overlays,
-                            CreateSafeCallback(callback)));
+      FROM_HERE, base::BindOnce(&DrmThread::CheckOverlayCapabilities,
+                                base::Unretained(drm_thread_), widget, overlays,
+                                std::move(safe_callback)));
 }
 
 void DrmThreadMessageProxy::OnRefreshNativeDisplays() {
   DCHECK(drm_thread_->IsRunning());
   auto callback =
-      base::Bind(&DrmThreadMessageProxy::OnRefreshNativeDisplaysCallback,
-                 weak_ptr_factory_.GetWeakPtr());
+      base::BindOnce(&DrmThreadMessageProxy::OnRefreshNativeDisplaysCallback,
+                     weak_ptr_factory_.GetWeakPtr());
+  auto safe_callback = CreateSafeOnceCallback(std::move(callback));
   drm_thread_->task_runner()->PostTask(
       FROM_HERE,
-      base::Bind(&DrmThread::RefreshNativeDisplays,
-                 base::Unretained(drm_thread_), CreateSafeCallback(callback)));
+      base::BindOnce(&DrmThread::RefreshNativeDisplays,
+                     base::Unretained(drm_thread_), std::move(safe_callback)));
 }
 
 void DrmThreadMessageProxy::OnConfigureNativeDisplay(
@@ -134,45 +137,49 @@ void DrmThreadMessageProxy::OnConfigureNativeDisplay(
     const gfx::Point& origin) {
   DCHECK(drm_thread_->IsRunning());
   auto callback =
-      base::Bind(&DrmThreadMessageProxy::OnConfigureNativeDisplayCallback,
-                 weak_ptr_factory_.GetWeakPtr());
+      base::BindOnce(&DrmThreadMessageProxy::OnConfigureNativeDisplayCallback,
+                     weak_ptr_factory_.GetWeakPtr());
+  auto safe_callback = CreateSafeOnceCallback(std::move(callback));
   drm_thread_->task_runner()->PostTask(
-      FROM_HERE, base::Bind(&DrmThread::ConfigureNativeDisplay,
-                            base::Unretained(drm_thread_), id, mode, origin,
-                            CreateSafeCallback(callback)));
+      FROM_HERE, base::BindOnce(&DrmThread::ConfigureNativeDisplay,
+                                base::Unretained(drm_thread_), id, mode, origin,
+                                std::move(safe_callback)));
 }
 
 void DrmThreadMessageProxy::OnDisableNativeDisplay(int64_t id) {
   DCHECK(drm_thread_->IsRunning());
   auto callback =
-      base::Bind(&DrmThreadMessageProxy::OnDisableNativeDisplayCallback,
-                 weak_ptr_factory_.GetWeakPtr());
+      base::BindOnce(&DrmThreadMessageProxy::OnDisableNativeDisplayCallback,
+                     weak_ptr_factory_.GetWeakPtr());
+  auto safe_callback = CreateSafeOnceCallback(std::move(callback));
   drm_thread_->task_runner()->PostTask(
-      FROM_HERE, base::Bind(&DrmThread::DisableNativeDisplay,
-                            base::Unretained(drm_thread_), id,
-                            CreateSafeCallback(callback)));
+      FROM_HERE, base::BindOnce(&DrmThread::DisableNativeDisplay,
+                                base::Unretained(drm_thread_), id,
+                                std::move(safe_callback)));
 }
 
 void DrmThreadMessageProxy::OnTakeDisplayControl() {
   DCHECK(drm_thread_->IsRunning());
   auto callback =
-      base::Bind(&DrmThreadMessageProxy::OnTakeDisplayControlCallback,
-                 weak_ptr_factory_.GetWeakPtr());
+      base::BindOnce(&DrmThreadMessageProxy::OnTakeDisplayControlCallback,
+                     weak_ptr_factory_.GetWeakPtr());
+  auto safe_callback = CreateSafeOnceCallback(std::move(callback));
   drm_thread_->task_runner()->PostTask(
       FROM_HERE,
-      base::Bind(&DrmThread::TakeDisplayControl, base::Unretained(drm_thread_),
-                 CreateSafeCallback(callback)));
+      base::BindOnce(&DrmThread::TakeDisplayControl,
+                     base::Unretained(drm_thread_), std::move(safe_callback)));
 }
 
 void DrmThreadMessageProxy::OnRelinquishDisplayControl() {
   DCHECK(drm_thread_->IsRunning());
   auto callback =
-      base::Bind(&DrmThreadMessageProxy::OnRelinquishDisplayControlCallback,
-                 weak_ptr_factory_.GetWeakPtr());
+      base::BindOnce(&DrmThreadMessageProxy::OnRelinquishDisplayControlCallback,
+                     weak_ptr_factory_.GetWeakPtr());
+  auto safe_callback = CreateSafeOnceCallback(std::move(callback));
   drm_thread_->task_runner()->PostTask(
       FROM_HERE,
-      base::Bind(&DrmThread::RelinquishDisplayControl,
-                 base::Unretained(drm_thread_), CreateSafeCallback(callback)));
+      base::BindOnce(&DrmThread::RelinquishDisplayControl,
+                     base::Unretained(drm_thread_), std::move(safe_callback)));
 }
 
 void DrmThreadMessageProxy::OnAddGraphicsDevice(
@@ -193,23 +200,25 @@ void DrmThreadMessageProxy::OnRemoveGraphicsDevice(const base::FilePath& path) {
 
 void DrmThreadMessageProxy::OnGetHDCPState(int64_t display_id) {
   DCHECK(drm_thread_->IsRunning());
-  auto callback = base::Bind(&DrmThreadMessageProxy::OnGetHDCPStateCallback,
-                             weak_ptr_factory_.GetWeakPtr());
+  auto callback = base::BindOnce(&DrmThreadMessageProxy::OnGetHDCPStateCallback,
+                                 weak_ptr_factory_.GetWeakPtr());
+  auto safe_callback = CreateSafeOnceCallback(std::move(callback));
   drm_thread_->task_runner()->PostTask(
       FROM_HERE,
-      base::Bind(&DrmThread::GetHDCPState, base::Unretained(drm_thread_),
-                 display_id, CreateSafeCallback(callback)));
+      base::BindOnce(&DrmThread::GetHDCPState, base::Unretained(drm_thread_),
+                     display_id, std::move(safe_callback)));
 }
 
 void DrmThreadMessageProxy::OnSetHDCPState(int64_t display_id,
                                            display::HDCPState state) {
   DCHECK(drm_thread_->IsRunning());
-  auto callback = base::Bind(&DrmThreadMessageProxy::OnSetHDCPStateCallback,
-                             weak_ptr_factory_.GetWeakPtr());
+  auto callback = base::BindOnce(&DrmThreadMessageProxy::OnSetHDCPStateCallback,
+                                 weak_ptr_factory_.GetWeakPtr());
+  auto safe_callback = CreateSafeOnceCallback(std::move(callback));
   drm_thread_->task_runner()->PostTask(
       FROM_HERE,
-      base::Bind(&DrmThread::SetHDCPState, base::Unretained(drm_thread_),
-                 display_id, state, CreateSafeCallback(callback)));
+      base::BindOnce(&DrmThread::SetHDCPState, base::Unretained(drm_thread_),
+                     display_id, state, std::move(safe_callback)));
 }
 
 void DrmThreadMessageProxy::OnSetColorCorrection(
