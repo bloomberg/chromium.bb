@@ -11,14 +11,14 @@
 #include <tuple>
 #include <utility>
 
-#include "base/json/json_writer.h"
 #include "base/lazy_instance.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/synchronization/lock.h"
-#include "base/values.h"
+#include "base/trace_event/trace_event_argument.h"
 #include "components/variations/variations_associated_data.h"
 
 namespace subresource_filter {
@@ -319,27 +319,25 @@ bool Configuration::operator!=(const Configuration& rhs) const {
   return !(*this == rhs);
 }
 
-std::ostream& operator<<(std::ostream& os, const Configuration& config) {
-  base::DictionaryValue dict;
-  dict.SetString("activation_scope",
-                 StreamToString(config.activation_conditions.activation_scope));
-  dict.SetString("activation_list",
-                 StreamToString(config.activation_conditions.activation_list));
-  dict.SetInteger("priority", config.activation_conditions.priority);
-  dict.SetString("activation_level",
-                 StreamToString(config.activation_options.activation_level));
-  dict.SetDouble("performance_measurement_rate",
-                 config.activation_options.performance_measurement_rate);
-  dict.SetBoolean("should_suppress_notifications",
-                  config.activation_options.should_suppress_notifications);
-  dict.SetBoolean("should_whitelist_site_on_reload",
-                  config.activation_options.should_whitelist_site_on_reload);
-  dict.SetString("ruleset_flavor",
-                 StreamToString(config.general_settings.ruleset_flavor));
-  std::string json;
-  base::JSONWriter::WriteWithOptions(
-      dict, base::JSONWriter::OPTIONS_PRETTY_PRINT, &json);
-  return os << json;
+std::unique_ptr<base::trace_event::TracedValue> Configuration::ToTracedValue()
+    const {
+  auto value = base::MakeUnique<base::trace_event::TracedValue>();
+  value->SetString("activation_scope",
+                   StreamToString(activation_conditions.activation_scope));
+  value->SetString("activation_list",
+                   StreamToString(activation_conditions.activation_list));
+  value->SetInteger("priority", activation_conditions.priority);
+  value->SetString("activation_level",
+                   StreamToString(activation_options.activation_level));
+  value->SetDouble("performance_measurement_rate",
+                   activation_options.performance_measurement_rate);
+  value->SetBoolean("should_suppress_notifications",
+                    activation_options.should_suppress_notifications);
+  value->SetBoolean("should_whitelist_site_on_reload",
+                    activation_options.should_whitelist_site_on_reload);
+  value->SetString("ruleset_flavor",
+                   StreamToString(general_settings.ruleset_flavor));
+  return value;
 }
 
 // ConfigurationList ----------------------------------------------------------

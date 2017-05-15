@@ -9,6 +9,8 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/rand_util.h"
 #include "base/time/time.h"
+#include "base/trace_event/trace_event.h"
+#include "base/trace_event/trace_event_argument.h"
 #include "components/subresource_filter/content/browser/content_activation_list_utils.h"
 #include "components/subresource_filter/content/browser/subresource_filter_client.h"
 #include "components/subresource_filter/core/browser/subresource_filter_features.h"
@@ -119,8 +121,17 @@ void ContentSubresourceFilterDriverFactory::
                          url, config.activation_conditions);
                    });
 
-  if (highest_priority_activated_config ==
-      config_list->configs_by_decreasing_priority().end()) {
+  bool has_activated_config =
+      highest_priority_activated_config !=
+      config_list->configs_by_decreasing_priority().end();
+  TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("loading"),
+               "ContentSubresourceFilterDriverFactory::"
+               "ComputeActivationForMainFrameNavigation",
+               "highest_priority_activated_config",
+               has_activated_config
+                   ? highest_priority_activated_config->ToTracedValue()
+                   : base::MakeUnique<base::trace_event::TracedValue>());
+  if (!has_activated_config) {
     activation_decision_ = ActivationDecision::ACTIVATION_CONDITIONS_NOT_MET;
     activation_options_ = Configuration::ActivationOptions();
     return;
@@ -205,6 +216,7 @@ void ContentSubresourceFilterDriverFactory::WillProcessResponse(
 
   // Only reset the activation decision reason if we would have activated.
   if (whitelisted && activation_decision_ == ActivationDecision::ACTIVATED) {
+    TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("loading"), "ActivationWhitelisted");
     activation_decision_ = ActivationDecision::URL_WHITELISTED;
     activation_options_ = Configuration::ActivationOptions();
   }

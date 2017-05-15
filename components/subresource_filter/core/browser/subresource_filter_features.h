@@ -5,7 +5,7 @@
 #ifndef COMPONENTS_SUBRESOURCE_FILTER_CORE_BROWSER_SUBRESOURCE_FILTER_FEATURES_H_
 #define COMPONENTS_SUBRESOURCE_FILTER_CORE_BROWSER_SUBRESOURCE_FILTER_FEATURES_H_
 
-#include <iosfwd>
+#include <memory>
 #include <vector>
 
 #include "base/feature_list.h"
@@ -15,6 +15,12 @@
 #include "components/subresource_filter/core/common/activation_level.h"
 #include "components/subresource_filter/core/common/activation_list.h"
 #include "components/subresource_filter/core/common/activation_scope.h"
+
+namespace base {
+namespace trace_event {
+class TracedValue;
+}  // namespace trace_event
+}  // namespace base
 
 namespace subresource_filter {
 
@@ -102,6 +108,8 @@ struct Configuration {
   bool operator==(const Configuration& rhs) const;
   bool operator!=(const Configuration& rhs) const;
 
+  std::unique_ptr<base::trace_event::TracedValue> ToTracedValue() const;
+
   // Factory methods for preset configurations.
   //
   // To add a new preset:
@@ -116,9 +124,6 @@ struct Configuration {
   ActivationOptions activation_options;
   GeneralSettings general_settings;
 };
-
-// For logging in tests.
-std::ostream& operator<<(std::ostream& os, const Configuration& config);
 
 // Thread-safe, ref-counted wrapper around an immutable list of configurations.
 class ConfigurationList : public base::RefCountedThreadSafe<ConfigurationList> {
