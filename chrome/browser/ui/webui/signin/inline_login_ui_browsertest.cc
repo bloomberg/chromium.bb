@@ -866,9 +866,10 @@ IN_PROC_BROWSER_TEST_F(InlineLoginUISafeIframeBrowserTest, NoWebUIInIframe) {
 }
 
 // Make sure that "success.html" can be loaded by chrome://chrome-signin.
-// http://crbug.com/709117
+// http://crbug.com/709117.
+// Flaky on Linux and Mac. http://crbug.com/722164.
 IN_PROC_BROWSER_TEST_F(InlineLoginUISafeIframeBrowserTest,
-                       LoadSuccessContinueURL) {
+                       DISABLED_LoadSuccessContinueURL) {
   ui_test_utils::NavigateToURL(browser(), GetSigninPromoURL());
   WaitUntilUIReady(browser());
 
