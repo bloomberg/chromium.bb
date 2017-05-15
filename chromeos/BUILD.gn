@@ -23,6 +23,7 @@ component("chromeos") {
     ":authpolicy_proto",
     ":biod_proto",
     ":cryptohome_proto",
+    ":media_perception_proto",
     ":power_manager_proto",
     "//base",
     "//base:i18n",
@@ -179,6 +180,8 @@ component("chromeos") {
     "dbus/fake_image_loader_client.h",
     "dbus/fake_lorgnette_manager_client.cc",
     "dbus/fake_lorgnette_manager_client.h",
+    "dbus/fake_media_analytics_client.cc",
+    "dbus/fake_media_analytics_client.h",
     "dbus/fake_modem_messaging_client.cc",
     "dbus/fake_modem_messaging_client.h",
     "dbus/fake_permission_broker_client.cc",
@@ -211,6 +214,8 @@ component("chromeos") {
     "dbus/image_loader_client.h",
     "dbus/lorgnette_manager_client.cc",
     "dbus/lorgnette_manager_client.h",
+    "dbus/media_analytics_client.cc",
+    "dbus/media_analytics_client.h",
     "dbus/modem_messaging_client.cc",
     "dbus/modem_messaging_client.h",
     "dbus/permission_broker_client.cc",
@@ -768,4 +773,12 @@ proto_library("biod_proto") {
   ]
 
   proto_out_dir = "chromeos/dbus/biod"
+}
+
+proto_library("media_perception_proto") {
+  sources = [
+    "dbus/proto/media_perception.proto",
+  ]
+
+  proto_out_dir = "chromeos/media_perception"
 }

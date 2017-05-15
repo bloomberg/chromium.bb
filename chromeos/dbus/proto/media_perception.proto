@@ -1,0 +1,122 @@
+syntax = "proto2";
+
+option optimize_for = LITE_RUNTIME;
+
+package mri;
+
+// The output of the media analytics process. Implicitly tied to the
+// MediaPerception dictionary defined in Chromium source at
+// src/extensions/common/api/media_perception_private.idl for the
+// Chromium mediaPerceptionPrivate API. This .proto needs to be compatible
+// with the version used in the binary checked into the Chromebox For
+// Meetings private overlay.
+//
+// This message is packaged by the graph runner when a PerceptionSample
+// or array of PerceptionSamples comes out of the graph.
+message MediaPerception {
+  // The timestamp attached when this data originated from the analysis process.
+  optional uint64 timestamp = 1;  // In milliseconds since Epoch.
+
+  // A single FramePerception message or array of perceptions (if reporting the
+  // results from multiple frames).
+  repeated FramePerception frame_perception = 2;
+}
+
+// Used to transmit a history of image frames and their associated annotations.
+// This is accumulated over time by the graph runner.
+message Diagnostics {
+  repeated PerceptionSample perception_sample = 1;
+}
+
+message State {
+  enum Status {
+    STATUS_UNSPECIFIED = 0;  // Unused required default value for Proto enums.
+    TIMEOUT = 1;             // Unable to reach media analysis process.
+    UNINITIALIZED = 2;  // Media analytics working on loading configuration.
+    STARTED = 3;        // Analysis process running but not recieving frames.
+    RUNNING = 4;        // Analysis process running and injesting frames.
+    SUSPENDED = 5;      // Media analytics process waiting to be started.
+  }
+
+  // Note: RUNNING and SUSPENDED are the only two states which should be sent to
+  // SetState.
+  optional Status status = 1;
+
+  // Device context so that the media analytics process can better select the
+  // right video device to open.
+  optional string device_context = 2;
+}
+
+// This is the output of the MediaPerceptionSinkCalculator.
+message PerceptionSample {
+  optional FramePerception frame_perception = 1;
+  // The image frame data associated with the frame perception.
+  optional ImageFrame image_frame = 2;
+}
+
+// This message stores the image frame along with the meta data.
+message ImageFrame {
+  enum Format {
+    FORMAT_UNSPECIFIED = 0;  // Unused required default value for Proto enums.
+    RGB = 1;                 // Raw rgb image.
+    PNG = 2;                 // PNG image.
+    JPEG = 3;                // JPEG image.
+  }
+  optional int32 width = 1;
+  optional int32 height = 2;
+  optional Format format = 3;
+  optional int32 data_length = 4;
+  optional bytes pixel_data = 5;
+}
+
+// The set of computer vision metadata for an image frame.
+message FramePerception {
+  optional uint64 frame_id = 1;
+
+  optional uint32 frame_width_in_px = 2;
+  optional uint32 frame_height_in_px = 3;
+
+  // The timestamp associated with the frame (when it enters the graph).
+  optional uint64 timestamp = 4;
+
+  // The list of entities detected for this frame.
+  repeated Entity entity = 5;
+}
+
+message Entity {
+  // A unique id associated with the detected entity, which can be used to track
+  // the entity over time.
+  optional uint32 id = 1;
+
+  enum EntityType {
+    UNSPECIFIED = 0;
+    FACE = 1;
+    PERSON = 2;
+  }
+
+  optional EntityType type = 2;
+
+  // Minimum box, which captures entire detected entity.
+  optional BoundingBox bounding_box = 3;
+
+  // A value for the quality of this detection.
+  optional float confidence = 4;
+}
+
+message BoundingBox {
+  // The points that define the corners of a bounding box.
+  optional Point top_left = 1;
+  optional Point bottom_right = 2;
+  // Indicates whether or not these coordinates are normalized to values between
+  // 0 and 1.
+  optional bool normalized = 3 [default = false];
+}
+
+message Point {
+  // x represents the horizontal distance from the top left corner of the image
+  // to the point.
+  optional float x = 1;
+  // y represents the vertical distance from the top left corner of the image to
+  // the point.
+  optional float y = 2;
+}
