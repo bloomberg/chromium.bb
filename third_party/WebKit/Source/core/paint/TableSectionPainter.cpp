@@ -277,8 +277,8 @@ void TableSectionPainter::PaintObject(const PaintInfo& paint_info,
       unsigned n_cols = layout_table_section_.NumCols(r);
       for (unsigned c = dirtied_columns.Start();
            c < n_cols && c < dirtied_columns.end(); c++) {
-        const auto& cell_struct = layout_table_section_.CellAt(r, c);
-        for (const auto* cell : cell_struct.cells) {
+        for (const auto* cell :
+             layout_table_section_.GridCellAt(r, c).Cells()) {
           if (overflowing_cells.Contains(cell))
             continue;
           if (cell->RowSpan() > 1 || cell->ColSpan() > 1) {

@@ -29,6 +29,7 @@
 #include "core/CoreExport.h"
 #include "core/layout/LayoutTable.h"
 #include "core/layout/LayoutTableBoxComponent.h"
+#include "core/layout/TableGridCell.h"
 #include "platform/wtf/Vector.h"
 
 namespace blink {
@@ -126,61 +127,6 @@ class CORE_EXPORT LayoutTableSection final : public LayoutTableBoxComponent {
 
   typedef Vector<LayoutTableCell*, 2> SpanningLayoutTableCells;
 
-  // CellStruct represents the cells that occupy an (N, M) position in the
-  // table grid.
-  struct CellStruct {
-    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
-
-   public:
-    // All the cells that fills this grid "slot".
-    // Due to colspan / rowpsan, it is possible to have overlapping cells
-    // (see class comment about an example).
-    // This Vector is sorted in DOM order.
-    Vector<LayoutTableCell*, 1> cells;
-    bool in_col_span;  // true for columns after the first in a colspan
-
-    CellStruct();
-    ~CellStruct();
-
-    // This is the cell in the grid "slot" that is on top of the others
-    // (aka the last cell in DOM order for this slot).
-    //
-    // Multiple grid slots can have the same primary cell if the cell spans
-    // into the grid slots. The slot having the smallest row index and
-    // smallest effective column index is the originating slot of the cell.
-    //
-    // The concept of a primary cell is dubious at most as it doesn't
-    // correspond to a DOM or rendering concept. Also callers should be
-    // careful about assumptions about it. For example, even though the
-    // primary cell is visibly the top most, it is not guaranteed to be
-    // the only one visible for this slot due to different visual
-    // overflow rectangles.
-    LayoutTableCell* PrimaryCell() {
-      return HasCells() ? cells[cells.size() - 1] : 0;
-    }
-
-    const LayoutTableCell* PrimaryCell() const {
-      return HasCells() ? cells[cells.size() - 1] : 0;
-    }
-
-    bool HasCells() const { return cells.size() > 0; }
-  };
-
-  // The index is effective column index.
-  typedef Vector<CellStruct> Row;
-
-  struct RowStruct {
-    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
-
-   public:
-    RowStruct() : row_layout_object(nullptr), baseline(-1) {}
-
-    Row row;
-    LayoutTableRow* row_layout_object;
-    int baseline;
-    Length logical_height;
-  };
-
   struct SpanningRowsHeight {
     STACK_ALLOCATED();
     WTF_MAKE_NONCOPYABLE(SpanningRowsHeight);
@@ -217,17 +163,18 @@ class CORE_EXPORT LayoutTableSection final : public LayoutTableBoxComponent {
   const LayoutTableCell* FirstRowCellAdjoiningTableStart() const;
   const LayoutTableCell* FirstRowCellAdjoiningTableEnd() const;
 
-  CellStruct& CellAt(unsigned row, unsigned effective_column) {
-    return grid_[row].row[effective_column];
+  TableGridCell& GridCellAt(unsigned row, unsigned effective_column) {
+    return grid_[row].grid_cells[effective_column];
   }
-  const CellStruct& CellAt(unsigned row, unsigned effective_column) const {
-    return grid_[row].row[effective_column];
+  const TableGridCell& GridCellAt(unsigned row,
+                                  unsigned effective_column) const {
+    return grid_[row].grid_cells[effective_column];
   }
   LayoutTableCell* PrimaryCellAt(unsigned row, unsigned effective_column) {
-    Row& row_vector = grid_[row].row;
-    if (effective_column >= row_vector.size())
+    auto& grid_cells = grid_[row].grid_cells;
+    if (effective_column >= grid_cells.size())
       return nullptr;
-    return row_vector[effective_column].PrimaryCell();
+    return grid_cells[effective_column].PrimaryCell();
   }
   const LayoutTableCell* PrimaryCellAt(unsigned row,
                                        unsigned effective_column) const {
@@ -244,15 +191,13 @@ class CORE_EXPORT LayoutTableSection final : public LayoutTableBoxComponent {
         row, effective_column);
   }
 
-  unsigned NumCols(unsigned row) const { return grid_[row].row.size(); }
+  unsigned NumCols(unsigned row) const { return grid_[row].grid_cells.size(); }
 
   // Returns null for cells with a rowspan that exceed the last row. Possibly
   // others.
-  LayoutTableRow* RowLayoutObjectAt(unsigned row) {
-    return grid_[row].row_layout_object;
-  }
+  LayoutTableRow* RowLayoutObjectAt(unsigned row) { return grid_[row].row; }
   const LayoutTableRow* RowLayoutObjectAt(unsigned row) const {
-    return grid_[row].row_layout_object;
+    return grid_[row].row;
   }
 
   void AppendEffectiveColumn(unsigned pos);
@@ -372,7 +317,7 @@ class CORE_EXPORT LayoutTableSection final : public LayoutTableBoxComponent {
   void WillBeRemovedFromTree() override;
 
   int BorderSpacingForRow(unsigned row) const {
-    return grid_[row].row_layout_object ? Table()->VBorderSpacing() : 0;
+    return grid_[row].row ? Table()->VBorderSpacing() : 0;
   }
 
   void EnsureRows(unsigned num_rows) {
@@ -382,7 +327,7 @@ class CORE_EXPORT LayoutTableSection final : public LayoutTableBoxComponent {
 
   void EnsureCols(unsigned row_index, unsigned num_cols) {
     if (num_cols > this->NumCols(row_index))
-      grid_[row_index].row.Grow(num_cols);
+      grid_[row_index].grid_cells.Grow(num_cols);
   }
 
   bool RowHasOnlySpanningCells(unsigned);
@@ -446,8 +391,22 @@ class CORE_EXPORT LayoutTableSection final : public LayoutTableBoxComponent {
 
   bool PaintedOutputOfObjectHasNoEffectRegardlessOfSize() const override;
 
-  // The representation of the rows and their cells (CellStruct).
-  Vector<RowStruct> grid_;
+  struct TableGridRow {
+    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
+
+   public:
+    inline void SetRowLogicalHeightToRowStyleLogicalHeight();
+    inline void UpdateLogicalHeightForCell(const LayoutTableCell*);
+
+    // The index is effective column index.
+    Vector<TableGridCell> grid_cells;
+    LayoutTableRow* row = nullptr;
+    int baseline = -1;
+    Length logical_height;
+  };
+
+  // The representation of the rows and their grid cells.
+  Vector<TableGridRow> grid_;
 
   // The logical offset of each row from the top of the section.
   //

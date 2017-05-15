@@ -222,6 +222,8 @@ blink_core_sources("layout") {
     "ScrollAnchor.h",
     "SubtreeLayoutScope.cpp",
     "SubtreeLayoutScope.h",
+    "TableGridCell.cpp",
+    "TableGridCell.h",
     "TableLayoutAlgorithm.h",
     "TableLayoutAlgorithmAuto.cpp",
     "TableLayoutAlgorithmAuto.h",
