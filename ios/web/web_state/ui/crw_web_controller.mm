@@ -849,9 +849,6 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 // Handles 'console' message.
 - (BOOL)handleConsoleMessage:(base::DictionaryValue*)message
                      context:(NSDictionary*)context;
-// Handles 'geolocationDialog.suppressed' message.
-- (BOOL)handleGeolocationDialogSuppressedMessage:(base::DictionaryValue*)message
-                                         context:(NSDictionary*)context;
 // Handles 'document.favicons' message.
 - (BOOL)handleDocumentFaviconsMessage:(base::DictionaryValue*)message
                               context:(NSDictionary*)context;
@@ -2388,8 +2385,6 @@ registerLoadRequestForURL:(const GURL&)requestURL
         @selector(handleAddPluginPlaceholdersMessage:context:);
     (*handlers)["chrome.send"] = @selector(handleChromeSendMessage:context:);
     (*handlers)["console"] = @selector(handleConsoleMessage:context:);
-    (*handlers)["geolocationDialog.suppressed"] =
-        @selector(handleGeolocationDialogSuppressedMessage:context:);
     (*handlers)["document.favicons"] =
         @selector(handleDocumentFaviconsMessage:context:);
     (*handlers)["document.submit"] =
@@ -2528,12 +2523,6 @@ registerLoadRequestForURL:(const GURL&)requestURL
   }
 
   DVLOG(0) << origin << " [" << method << "] " << consoleMessage;
-  return YES;
-}
-
-- (BOOL)handleGeolocationDialogSuppressedMessage:(base::DictionaryValue*)message
-                                         context:(NSDictionary*)context {
-  _webStateImpl->OnDialogSuppressed();
   return YES;
 }
 
