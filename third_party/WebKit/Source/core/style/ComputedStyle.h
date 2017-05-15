@@ -799,17 +799,6 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase<ComputedStyle>,
                    a);
   }
 
-  // -webkit-box-decoration-break
-  static EBoxDecorationBreak InitialBoxDecorationBreak() {
-    return EBoxDecorationBreak::kSlice;
-  }
-  EBoxDecorationBreak BoxDecorationBreak() const {
-    return static_cast<EBoxDecorationBreak>(box_data_->box_decoration_break_);
-  }
-  void SetBoxDecorationBreak(EBoxDecorationBreak b) {
-    SET_VAR(box_data_, box_decoration_break_, static_cast<unsigned>(b));
-  }
-
   // -webkit-box-lines
   static EBoxLines InitialBoxLines() { return SINGLE; }
   EBoxLines BoxLines() const {

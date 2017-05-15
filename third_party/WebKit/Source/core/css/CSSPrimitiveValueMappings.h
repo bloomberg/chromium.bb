@@ -711,34 +711,6 @@ inline EBoxAlignment CSSIdentifierValue::ConvertTo() const {
 }
 
 template <>
-inline CSSIdentifierValue::CSSIdentifierValue(EBoxDecorationBreak e)
-    : CSSValue(kIdentifierClass) {
-  switch (e) {
-    case EBoxDecorationBreak::kSlice:
-      value_id_ = CSSValueSlice;
-      break;
-    case EBoxDecorationBreak::kClone:
-      value_id_ = CSSValueClone;
-      break;
-  }
-}
-
-template <>
-inline EBoxDecorationBreak CSSIdentifierValue::ConvertTo() const {
-  switch (value_id_) {
-    case CSSValueSlice:
-      return EBoxDecorationBreak::kSlice;
-    case CSSValueClone:
-      return EBoxDecorationBreak::kClone;
-    default:
-      break;
-  }
-
-  NOTREACHED();
-  return EBoxDecorationBreak::kSlice;
-}
-
-template <>
 inline CSSIdentifierValue::CSSIdentifierValue(BackgroundEdgeOrigin e)
     : CSSValue(kIdentifierClass) {
   switch (e) {

@@ -234,13 +234,5 @@
       field_group: "box",
       default_value: "true",
     },
-    {
-      name: "BoxDecorationBreak",
-      field_template: "storage_only",
-      type_name: "EBoxDecorationBreak",
-      field_size: 1,
-      field_group: "box",
-      default_value: "EBoxDecorationBreak::kSlice",
-    },
   ],
 }
