@@ -39,6 +39,7 @@
 #include "net/base/net_errors.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_status_code.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_status.h"
@@ -481,9 +482,37 @@ void ExtensionDownloader::CreateManifestFetcher() {
                   ? kUpdateInteractivityForeground
                   : kUpdateInteractivityBackground);
 
+  net::NetworkTrafficAnnotationTag traffic_annotation =
+      net::DefineNetworkTrafficAnnotation("extension_manifest_fetcher", R"(
+        semantics {
+          sender: "Extension Downloader"
+          description:
+            "Fetches information about an extension manifest (using its "
+            "update_url, which is usually Chrome WebStore) in order to update "
+            "the extension."
+          trigger:
+            "An update timer indicates that it's time to update extensions, or "
+            "a user triggers an extension update flow."
+          data:
+            "The extension id, the user's chromium version, and a flag stating "
+            "if the request originated in the foreground or the background."
+          destination: WEBSITE
+        }
+        policy {
+          cookies_allowed: false
+          setting:
+            "This feature cannot be disabled. It is only enabled when the user "
+            "has installed extentions."
+          chrome_policy {
+            ExtensionInstallBlacklist {
+              policy_options {mode: MANDATORY}
+              ExtensionInstallBlacklist: '*'
+            }
+          }
+        })");
   manifest_fetcher_ =
       net::URLFetcher::Create(kManifestFetcherId, active_request->full_url(),
-                              net::URLFetcher::GET, this);
+                              net::URLFetcher::GET, this, traffic_annotation);
   manifest_fetcher_->SetRequestContext(request_context_.get());
   manifest_fetcher_->SetLoadFlags(net::LOAD_DO_NOT_SEND_COOKIES |
                                   net::LOAD_DO_NOT_SAVE_COOKIES |
@@ -780,8 +809,37 @@ void ExtensionDownloader::CacheInstallDone(
 
 void ExtensionDownloader::CreateExtensionFetcher() {
   const ExtensionFetch* fetch = extensions_queue_.active_request();
-  extension_fetcher_ = net::URLFetcher::Create(kExtensionFetcherId, fetch->url,
-                                               net::URLFetcher::GET, this);
+  net::NetworkTrafficAnnotationTag traffic_annotation =
+      net::DefineNetworkTrafficAnnotation("extension_crx_fetcher", R"(
+        semantics {
+          sender: "Extension Downloader"
+          description:
+            "Downloads an extension's crx file in order to update the "
+            "extension, using update_url from the extension's manifest which "
+            "is usually Chrome WebStore."
+          trigger:
+            "An update check indicates an extension update is available."
+          data:
+            "URL and required data to specify the extention to download. "
+            "OAuth2 token is also sent if connection is secure and to Google."
+          destination: WEBSITE
+        }
+        policy {
+          cookies_allowed: true
+          cookies_store: "user"
+          setting:
+            "This feature cannot be disabled. It is only enabled when the user "
+            "has installed extentions and it needs updating."
+          chrome_policy {
+            ExtensionInstallBlacklist {
+              policy_options {mode: MANDATORY}
+              ExtensionInstallBlacklist: '*'
+            }
+          }
+        })");
+  extension_fetcher_ =
+      net::URLFetcher::Create(kExtensionFetcherId, fetch->url,
+                              net::URLFetcher::GET, this, traffic_annotation);
   extension_fetcher_->SetRequestContext(request_context_.get());
   extension_fetcher_->SetAutomaticallyRetryOnNetworkChanges(3);
 
