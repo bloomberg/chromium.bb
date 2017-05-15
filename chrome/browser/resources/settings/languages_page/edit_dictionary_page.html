@@ -47,7 +47,7 @@
     </div>
     <div class="list-frame">
       <template is="dom-if" if="[[hasWords_(words_.length)]]">
-        <iron-list id="list" items="{{words_}}"
+        <iron-list id="list" items="[[words_]]"
             scroll-target="[[subpageScrollTarget]]">
           <template>
             <div class="list-item">
