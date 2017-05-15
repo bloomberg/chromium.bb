@@ -23,7 +23,7 @@ const CSSValue* CSSPropertyAPIShapeOutside::parseSingleValue(
   if (CSSValue* box_value = ConsumeShapeBox(range))
     list->Append(*box_value);
   if (CSSValue* shape_value =
-          CSSPropertyShapeUtils::ConsumeBasicShape(range, &context)) {
+          CSSPropertyShapeUtils::ConsumeBasicShape(range, context)) {
     list->Append(*shape_value);
     if (list->length() < 2) {
       if (CSSValue* box_value = ConsumeShapeBox(range))

@@ -18,7 +18,7 @@ const CSSValue* CSSPropertyAPIClipPath::parseSingleValue(
     return CSSPropertyParserHelpers::ConsumeIdent(range);
   if (CSSURIValue* url = CSSPropertyParserHelpers::ConsumeUrl(range, &context))
     return url;
-  return CSSPropertyShapeUtils::ConsumeBasicShape(range, &context);
+  return CSSPropertyShapeUtils::ConsumeBasicShape(range, context);
 }
 
 }  // namespace blink
