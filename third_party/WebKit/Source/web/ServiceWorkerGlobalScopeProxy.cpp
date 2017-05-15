@@ -34,7 +34,6 @@
 #include <utility>
 #include "bindings/core/v8/SourceLocation.h"
 #include "bindings/core/v8/WorkerOrWorkletScriptController.h"
-#include "core/dom/Document.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/dom/MessagePort.h"
 #include "core/inspector/ConsoleMessage.h"
@@ -87,9 +86,8 @@ namespace blink {
 
 ServiceWorkerGlobalScopeProxy* ServiceWorkerGlobalScopeProxy::Create(
     WebEmbeddedWorkerImpl& embedded_worker,
-    Document& document,
     WebServiceWorkerContextClient& client) {
-  return new ServiceWorkerGlobalScopeProxy(embedded_worker, document, client);
+  return new ServiceWorkerGlobalScopeProxy(embedded_worker, client);
 }
 
 ServiceWorkerGlobalScopeProxy::~ServiceWorkerGlobalScopeProxy() {
@@ -98,7 +96,6 @@ ServiceWorkerGlobalScopeProxy::~ServiceWorkerGlobalScopeProxy() {
 }
 
 DEFINE_TRACE(ServiceWorkerGlobalScopeProxy) {
-  visitor->Trace(document_);
   visitor->Trace(parent_frame_task_runners_);
 }
 
@@ -580,24 +577,19 @@ void ServiceWorkerGlobalScopeProxy::DidTerminateWorkerThread() {
 
 ServiceWorkerGlobalScopeProxy::ServiceWorkerGlobalScopeProxy(
     WebEmbeddedWorkerImpl& embedded_worker,
-    Document& document,
     WebServiceWorkerContextClient& client)
     : embedded_worker_(&embedded_worker),
-      document_(&document),
       client_(&client),
       worker_global_scope_(nullptr) {
   // ServiceWorker can sometimes run tasks that are initiated by/associated with
   // a document's frame but these documents can be from a different process. So
   // we intentionally populate the task runners with null document in order to
-  // use the thread's default task runner. Note that |m_document| should not be
-  // used as it's a dummy document for loading that doesn't represent the frame
-  // of any associated document.
+  // use the thread's default task runner.
   parent_frame_task_runners_ = ParentFrameTaskRunners::Create(nullptr);
 }
 
 void ServiceWorkerGlobalScopeProxy::Detach() {
   embedded_worker_ = nullptr;
-  document_ = nullptr;
   client_ = nullptr;
   worker_global_scope_ = nullptr;
 }
@@ -605,11 +597,6 @@ void ServiceWorkerGlobalScopeProxy::Detach() {
 WebServiceWorkerContextClient& ServiceWorkerGlobalScopeProxy::Client() const {
   DCHECK(client_);
   return *client_;
-}
-
-Document& ServiceWorkerGlobalScopeProxy::GetDocument() const {
-  DCHECK(document_);
-  return *document_;
 }
 
 ServiceWorkerGlobalScope* ServiceWorkerGlobalScopeProxy::WorkerGlobalScope()
