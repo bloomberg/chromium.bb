@@ -115,6 +115,7 @@ class CORE_EXPORT MouseEventManager final
   void UpdateSelectionForMouseDrag();
 
   void HandleMousePressEventUpdateStates(const WebMouseEvent&);
+  void HandleMouseReleaseEventUpdateStates();
 
   // Returns whether pan is handled and resets the state on release.
   bool HandleSvgPanIfNeeded(bool is_release_event);

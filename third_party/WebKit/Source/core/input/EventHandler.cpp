@@ -595,7 +595,6 @@ WebInputEventResult EventHandler::HandleMousePressEvent(
   if (event_handler_will_reset_capturing_mouse_events_node_)
     capturing_mouse_events_node_ = nullptr;
   mouse_event_manager_->HandleMousePressEventUpdateStates(mouse_event);
-  GetSelectionController().SetMouseDownMayStartSelect(false);
   if (!frame_->View())
     return WebInputEventResult::kNotHandled;
 
@@ -1005,9 +1004,8 @@ WebInputEventResult EventHandler::HandleMouseReleaseEvent(
 
   if (event_result == WebInputEventResult::kNotHandled)
     event_result = mouse_event_manager_->HandleMouseReleaseEvent(mev);
-  mouse_event_manager_->ClearDragHeuristicState();
 
-  mouse_event_manager_->InvalidateClick();
+  mouse_event_manager_->HandleMouseReleaseEventUpdateStates();
 
   return EventHandlingUtil::MergeEventResult(click_event_result, event_result);
 }
