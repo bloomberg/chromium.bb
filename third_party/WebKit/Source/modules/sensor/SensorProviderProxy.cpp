@@ -66,7 +66,7 @@ SensorProxy* SensorProviderProxy::GetSensorProxy(
     device::mojom::blink::SensorType type) {
   for (SensorProxy* sensor : sensor_proxies_) {
     // TODO(Mikhail) : Hash sensors by type for efficiency.
-    if (sensor->GetType() == type)
+    if (sensor->type() == type)
       return sensor;
   }
 

@@ -12,6 +12,7 @@
 #include "device/generic_sensor/public/interfaces/sensor_provider.mojom-blink.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "platform/Supplementable.h"
+#include "platform/Timer.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/Vector.h"
 
@@ -19,7 +20,6 @@ namespace blink {
 
 class SensorProviderProxy;
 class SensorReading;
-class SensorReadingUpdater;
 
 // This class wraps 'Sensor' mojo interface and used by multiple
 // JS sensor instances of the same type (within a single frame).
@@ -36,20 +36,14 @@ class SensorProxy final : public GarbageCollectedFinalized<SensorProxy>,
     // Has valid 'Sensor' binding, {add, remove}Configuration()
     // methods can be called.
     virtual void OnSensorInitialized() {}
-    // Platfrom sensor reading has changed.
-    virtual void OnSensorReadingChanged() {}
-    // Observer should send 'onchange' event if needed.
-    // The 'notifySensorChanged' calls are in sync with rAF.
-    // Currently, we decide whether to send 'onchange' event based on the
-    // time elapsed from the previous notification.
-    // TODO: Reconsider this after https://github.com/w3c/sensors/issues/152
-    // is resolved.
+    // Observer should update its cached reading and send 'onchange'
+    // event if needed.
     // |timestamp| Reference timestamp in seconds of the moment when
     // sensor reading was updated from the buffer.
     // Note: |timestamp| values are only used to calculate elapsed time
     // between shared buffer readings. These values *do not* correspond
     // to sensor reading timestamps which are obtained on platform side.
-    virtual void NotifySensorChanged(double timestamp) {}
+    virtual void OnSensorReadingChanged(double timestamp) {}
     // An error has occurred.
     virtual void OnSensorError(ExceptionCode,
                                const String& sanitized_message,
@@ -68,10 +62,6 @@ class SensorProxy final : public GarbageCollectedFinalized<SensorProxy>,
   bool IsInitializing() const { return state_ == kInitializing; }
   bool IsInitialized() const { return state_ == kInitialized; }
 
-  // Is watching new reading data (initialized, not suspended and has
-  // configurations added).
-  bool IsActive() const;
-
   void AddConfiguration(device::mojom::blink::SensorConfigurationPtr,
                         std::unique_ptr<Function<void(bool)>>);
 
@@ -80,21 +70,15 @@ class SensorProxy final : public GarbageCollectedFinalized<SensorProxy>,
   void Suspend();
   void Resume();
 
-  device::mojom::blink::SensorType GetType() const { return type_; }
-  device::mojom::blink::ReportingMode GetReportingMode() const { return mode_; }
+  device::mojom::blink::SensorType type() const { return type_; }
 
   // Note: the returned value is reset after updateSensorReading() call.
-  const device::SensorReading& Reading() const { return reading_; }
+  const device::SensorReading& reading() const { return reading_; }
 
   const device::mojom::blink::SensorConfiguration* DefaultConfig() const;
 
   const std::pair<double, double>& FrequencyLimits() const {
     return frequency_limits_;
-  }
-
-  Document* GetDocument() const;
-  const WTF::Vector<double>& FrequenciesUsed() const {
-    return frequencies_used_;
   }
 
   DECLARE_VIRTUAL_TRACE();
@@ -129,7 +113,11 @@ class SensorProxy final : public GarbageCollectedFinalized<SensorProxy>,
   void OnRemoveConfigurationCompleted(double frequency, bool result);
 
   bool TryReadFromBuffer(device::SensorReading& result);
-  void OnAnimationFrame(double timestamp);
+
+  void OnPollingTimer(TimerBase*);
+  // Starts polling timer if needed (continuous reporting, initialized, not
+  // suspended and has configurations added).
+  void UpdatePollingStatus();
 
   device::mojom::blink::SensorType type_;
   device::mojom::blink::ReportingMode mode_;
@@ -149,9 +137,8 @@ class SensorProxy final : public GarbageCollectedFinalized<SensorProxy>,
   device::SensorReading reading_;
   std::pair<double, double> frequency_limits_;
 
-  Member<SensorReadingUpdater> reading_updater_;
   WTF::Vector<double> frequencies_used_;
-  double last_raf_timestamp_;
+  TaskRunnerTimer<SensorProxy> polling_timer_;
 
   using ReadingBuffer = device::SensorReadingSharedBuffer;
   static_assert(
