@@ -1372,7 +1372,13 @@ class Port(object):
 
     def _apache_version(self):
         config = self._executive.run_command([self.path_to_apache(), '-v'])
-        return re.sub(r'(?:.|\n)*Server version: Apache/(\d+\.\d+)(?:.|\n)*', r'\1', config)
+        # Log version including patch level.
+        _log.debug('Found apache version %s', re.sub(
+            r'(?:.|\n)*Server version: Apache/(\d+\.\d+(?:\.\d+)?)(?:.|\n)*',
+            r'\1', config))
+        return re.sub(
+            r'(?:.|\n)*Server version: Apache/(\d+\.\d+)(?:.|\n)*',
+            r'\1', config)
 
     def _apache_config_file_name_for_platform(self):
         if self.host.platform.is_linux():
