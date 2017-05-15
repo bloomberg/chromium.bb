@@ -108,6 +108,7 @@
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_builder.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "net/url_request/url_request_context_storage.h"
 #include "net/url_request/url_request_job_factory_impl.h"
 #include "url/url_constants.h"
 
@@ -197,7 +198,6 @@ class SystemURLRequestContext : public net::URLRequestContext {
 #endif
   }
 
- private:
   ~SystemURLRequestContext() override {
     AssertNoURLRequests();
 #if defined(USE_NSS_CERTS)
@@ -208,6 +208,9 @@ class SystemURLRequestContext : public net::URLRequestContext {
     net::CertVerifyProcAndroid::ShutdownCertNetFetcher();
 #endif
   }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(SystemURLRequestContext);
 };
 
 std::unique_ptr<net::HostResolver> CreateGlobalHostResolver(
@@ -638,14 +641,6 @@ void IOThread::Init() {
   // For the ProxyScriptFetcher, we use a direct ProxyService.
   globals_->proxy_script_fetcher_proxy_service =
       net::ProxyService::CreateDirectWithNetLog(net_log_);
-  // In-memory cookie store.
-  globals_->system_cookie_store =
-      content::CreateCookieStore(content::CookieStoreConfig());
-  // In-memory channel ID store.
-  globals_->system_channel_id_service.reset(
-      new net::ChannelIDService(new net::DefaultChannelIDStore(NULL)));
-  globals_->system_cookie_store->SetChannelIDServiceID(
-      globals_->system_channel_id_service->GetUniqueID());
   globals_->dns_probe_service.reset(new chrome_browser_net::DnsProbeService());
   globals_->host_mapping_rules.reset(new net::HostMappingRules());
   params_.host_mapping_rules = globals_->host_mapping_rules.get();
@@ -675,13 +670,6 @@ void IOThread::Init() {
       command_line, is_quic_allowed_by_policy_,
       http_09_on_non_default_ports_enabled_, &params_);
 
-  TRACE_EVENT_BEGIN0("startup",
-                     "IOThread::Init:ProxyScriptFetcherRequestContext");
-  globals_->proxy_script_fetcher_context.reset(
-      ConstructProxyScriptFetcherContext(globals_, params_, net_log_));
-  TRACE_EVENT_END0("startup",
-                   "IOThread::Init:ProxyScriptFetcherRequestContext");
-
 #if defined(OS_MACOSX)
   // Start observing Keychain events. This needs to be done on the UI thread,
   // as Keychain services requires a CFRunLoop.
@@ -697,14 +685,7 @@ void IOThread::Init() {
   UMA_HISTOGRAM_BOOLEAN("Net.HasBrokenNEON", CRYPTO_has_broken_NEON());
 #endif
 
-  globals_->system_proxy_service = ProxyServiceFactory::CreateProxyService(
-      net_log_, globals_->proxy_script_fetcher_context.get(),
-      globals_->system_network_delegate.get(),
-      std::move(system_proxy_config_service_), command_line,
-      WpadQuickCheckEnabled(), PacHttpsUrlStrippingEnabled());
-
-  globals_->system_request_context.reset(
-      ConstructSystemRequestContext(globals_, params_, net_log_));
+  ConstructSystemRequestContext();
 }
 
 void IOThread::CleanUp() {
@@ -832,8 +813,9 @@ const net::HttpNetworkSession::Params& IOThread::NetworkSessionParams() const {
 void IOThread::DisableQuic() {
   params_.enable_quic = false;
 
-  if (globals_->system_http_network_session)
-    globals_->system_http_network_session->DisableQuic();
+  if (globals_->system_request_context_storage)
+    globals_->system_request_context_storage->http_network_session()
+        ->DisableQuic();
 
   if (globals_->proxy_script_fetcher_http_network_session)
     globals_->proxy_script_fetcher_http_network_session->DisableQuic();
@@ -875,58 +857,77 @@ bool IOThread::PacHttpsUrlStrippingEnabled() const {
   return pac_https_url_stripping_enabled_.GetValue();
 }
 
-// static
-net::URLRequestContext* IOThread::ConstructSystemRequestContext(
-    IOThread::Globals* globals,
-    const net::HttpNetworkSession::Params& params,
-    net::NetLog* net_log) {
-  net::URLRequestContext* context = new SystemURLRequestContext;
+void IOThread::ConstructSystemRequestContext() {
+  globals_->system_request_context =
+      base::MakeUnique<SystemURLRequestContext>();
+  net::URLRequestContext* context = globals_->system_request_context.get();
+  globals_->system_request_context_storage =
+      base::MakeUnique<net::URLRequestContextStorage>(context);
+  net::URLRequestContextStorage* context_storage =
+      globals_->system_request_context_storage.get();
 
   context->set_network_quality_estimator(
-      globals->network_quality_estimator.get());
-  context->set_enable_brotli(globals->enable_brotli);
+      globals_->network_quality_estimator.get());
+  context->set_enable_brotli(globals_->enable_brotli);
   context->set_name("system");
 
   context->set_http_user_agent_settings(
-      globals->http_user_agent_settings.get());
-  context->set_network_delegate(globals->system_network_delegate.get());
-  context->set_net_log(net_log);
-  context->set_host_resolver(globals->host_resolver.get());
-  context->set_proxy_service(globals->system_proxy_service.get());
-  context->set_ssl_config_service(globals->ssl_config_service.get());
+      globals_->http_user_agent_settings.get());
+  context->set_network_delegate(globals_->system_network_delegate.get());
+  context->set_net_log(net_log_);
+  context->set_host_resolver(globals_->host_resolver.get());
+
+  context->set_ssl_config_service(globals_->ssl_config_service.get());
   context->set_http_auth_handler_factory(
-      globals->http_auth_handler_factory.get());
+      globals_->http_auth_handler_factory.get());
 
-  context->set_cookie_store(globals->system_cookie_store.get());
-  context->set_channel_id_service(
-      globals->system_channel_id_service.get());
+  // In-memory cookie store.
+  context_storage->set_cookie_store(
+      content::CreateCookieStore(content::CookieStoreConfig()));
+  // In-memory channel ID store.
+  context_storage->set_channel_id_service(
+      base::MakeUnique<net::ChannelIDService>(
+          new net::DefaultChannelIDStore(nullptr)));
+  context->cookie_store()->SetChannelIDServiceID(
+      context->channel_id_service()->GetUniqueID());
+
   context->set_transport_security_state(
-      globals->transport_security_state.get());
+      globals_->transport_security_state.get());
 
-  context->set_http_server_properties(globals->http_server_properties.get());
+  context->set_http_server_properties(globals_->http_server_properties.get());
 
-  context->set_cert_verifier(globals->cert_verifier.get());
+  context->set_cert_verifier(globals_->cert_verifier.get());
   context->set_cert_transparency_verifier(
-      globals->cert_transparency_verifier.get());
-  context->set_ct_policy_enforcer(globals->ct_policy_enforcer.get());
+      globals_->cert_transparency_verifier.get());
+  context->set_ct_policy_enforcer(globals_->ct_policy_enforcer.get());
 
-  net::HttpNetworkSession::Params system_params(params);
+  TRACE_EVENT_BEGIN0("startup",
+                     "IOThread::Init:ProxyScriptFetcherRequestContext");
+  globals_->proxy_script_fetcher_context.reset(
+      ConstructProxyScriptFetcherContext(globals_, params_, net_log_));
+  TRACE_EVENT_END0("startup",
+                   "IOThread::Init:ProxyScriptFetcherRequestContext");
+
+  const base::CommandLine& command_line =
+      *base::CommandLine::ForCurrentProcess();
+  context_storage->set_proxy_service(ProxyServiceFactory::CreateProxyService(
+      net_log_, globals_->proxy_script_fetcher_context.get(),
+      globals_->system_network_delegate.get(),
+      std::move(system_proxy_config_service_), command_line,
+      WpadQuickCheckEnabled(), PacHttpsUrlStrippingEnabled()));
+
+  net::HttpNetworkSession::Params system_params(params_);
   net::URLRequestContextBuilder::SetHttpNetworkSessionComponents(
       context, &system_params);
 
-  globals->system_http_network_session.reset(
-      new net::HttpNetworkSession(system_params));
-  globals->system_http_transaction_factory.reset(
-      new net::HttpNetworkLayer(globals->system_http_network_session.get()));
+  context_storage->set_http_network_session(
+      base::MakeUnique<net::HttpNetworkSession>(system_params));
+  context_storage->set_http_transaction_factory(
+      base::MakeUnique<net::HttpNetworkLayer>(
+          context_storage->http_network_session()));
 
-  context->set_http_transaction_factory(
-      globals->system_http_transaction_factory.get());
-
-  globals->system_url_request_job_factory.reset(
-      new net::URLRequestJobFactoryImpl());
-  context->set_job_factory(globals->system_url_request_job_factory.get());
-
-  return context;
+  context_storage->set_job_factory(
+      base::MakeUnique<net::URLRequestJobFactoryImpl>());
 }
 
 // static
@@ -1045,9 +1046,9 @@ net::URLRequestContext* IOThread::ConstructProxyScriptFetcherContext(
   context->set_job_factory(
       globals->proxy_script_fetcher_url_request_job_factory.get());
 
-  context->set_cookie_store(globals->system_cookie_store.get());
+  context->set_cookie_store(globals->system_request_context->cookie_store());
   context->set_channel_id_service(
-      globals->system_channel_id_service.get());
+      globals->system_request_context->channel_id_service());
   context->set_network_delegate(globals->system_network_delegate.get());
   context->set_http_user_agent_settings(
       globals->http_user_agent_settings.get());

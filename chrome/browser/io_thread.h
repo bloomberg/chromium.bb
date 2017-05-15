@@ -77,8 +77,6 @@ class EventRouterForwarder;
 namespace net {
 class CTPolicyEnforcer;
 class CertVerifier;
-class ChannelIDService;
-class CookieStore;
 class CTLogVerifier;
 class HostMappingRules;
 class HostResolver;
@@ -95,6 +93,7 @@ class SSLConfigService;
 class TransportSecurityState;
 class URLRequestContext;
 class URLRequestContextGetter;
+class URLRequestContextStorage;
 class URLRequestJobFactory;
 
 namespace ct {
@@ -151,8 +150,6 @@ class IOThread : public content::BrowserThreadDelegate {
     std::unique_ptr<net::NetworkDelegate> system_network_delegate;
     std::unique_ptr<net::HostResolver> host_resolver;
     std::unique_ptr<net::CertVerifier> cert_verifier;
-    // The ChannelIDService must outlive the HttpTransactionFactory.
-    std::unique_ptr<net::ChannelIDService> system_channel_id_service;
     // This TransportSecurityState doesn't load or save any state. It's only
     // used to enforce pinning for system requests and will only use built-in
     // pins.
@@ -178,16 +175,10 @@ class IOThread : public content::BrowserThreadDelegate {
     // |proxy_script_fetcher_context| for the second context. It has a direct
     // ProxyService, since we always directly connect to fetch the PAC script.
     std::unique_ptr<net::URLRequestContext> proxy_script_fetcher_context;
-    std::unique_ptr<net::ProxyService> system_proxy_service;
-    std::unique_ptr<net::HttpNetworkSession> system_http_network_session;
-    std::unique_ptr<net::HttpTransactionFactory>
-        system_http_transaction_factory;
-    std::unique_ptr<net::URLRequestJobFactory> system_url_request_job_factory;
+    std::unique_ptr<net::URLRequestContextStorage>
+        system_request_context_storage;
     std::unique_ptr<net::URLRequestContext> system_request_context;
     SystemRequestContextLeakChecker system_request_context_leak_checker;
-    // |system_cookie_store| and |system_channel_id_service| are shared
-    // between |proxy_script_fetcher_context| and |system_request_context|.
-    std::unique_ptr<net::CookieStore> system_cookie_store;
 #if BUILDFLAG(ENABLE_EXTENSIONS)
     scoped_refptr<extensions::EventRouterForwarder>
         extension_event_router_forwarder;
@@ -302,10 +293,7 @@ class IOThread : public content::BrowserThreadDelegate {
     return NULL;
 #endif
   }
-  static net::URLRequestContext* ConstructSystemRequestContext(
-      IOThread::Globals* globals,
-      const net::HttpNetworkSession::Params& params,
-      net::NetLog* net_log);
+  void ConstructSystemRequestContext();
 
   // Parse command line flags and use components/network_session_configurator to
   // configure |params|.
