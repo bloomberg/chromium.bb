@@ -588,6 +588,12 @@ gfx::Vector2dF MathUtil::ComputeTransform2dScaleComponents(
   return gfx::Vector2dF(x_scale, y_scale);
 }
 
+float MathUtil::ComputeApproximateMaxScale(const gfx::Transform& transform) {
+  gfx::Vector3dF unit(1, 1, 0);
+  transform.TransformVector(&unit);
+  return std::max(std::abs(unit.x()), std::abs(unit.y()));
+}
+
 float MathUtil::SmallestAngleBetweenVectors(const gfx::Vector2dF& v1,
                                             const gfx::Vector2dF& v2) {
   double dot_product = gfx::DotProduct(v1, v2) / v1.Length() / v2.Length();
