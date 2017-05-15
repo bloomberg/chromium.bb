@@ -44,9 +44,10 @@ void WebSpeechRecognitionResult::Assign(const WebVector<WebString>& transcripts,
 
   HeapVector<Member<SpeechRecognitionAlternative>> alternatives(
       transcripts.size());
-  for (size_t i = 0; i < transcripts.size(); ++i)
+  for (size_t i = 0; i < transcripts.size(); ++i) {
     alternatives[i] =
         SpeechRecognitionAlternative::Create(transcripts[i], confidences[i]);
+  }
 
   private_ = SpeechRecognitionResult::Create(alternatives, final);
 }
