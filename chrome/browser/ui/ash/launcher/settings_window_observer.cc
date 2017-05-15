@@ -55,7 +55,8 @@ void SettingsWindowObserver::OnNewSettingsWindow(Browser* settings_browser) {
   // An app id for settings windows, also used to identify the shelf item.
   // Generated as crx_file::id_util::GenerateId("org.chromium.settings_ui")
   static constexpr char kSettingsId[] = "dhnmfjegnohoakobpikffnelcemaplkm";
-  window->SetProperty(ash::kShelfIDKey, new ash::ShelfID(kSettingsId));
+  const ash::ShelfID shelf_id(kSettingsId);
+  window->SetProperty(ash::kShelfIDKey, new std::string(shelf_id.Serialize()));
   window->SetProperty<int>(ash::kShelfItemTypeKey, ash::TYPE_DIALOG);
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   // The new gfx::ImageSkia instance is owned by the window itself.

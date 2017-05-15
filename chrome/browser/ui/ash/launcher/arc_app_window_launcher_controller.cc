@@ -418,8 +418,8 @@ void ArcAppWindowLauncherController::AttachControllerToWindowIfNeeded(
       base::MakeUnique<AppWindow>(task_id, info->app_shelf_id(), widget, this));
   RegisterApp(info);
   DCHECK(info->app_window()->controller());
-  window->SetProperty(ash::kShelfIDKey,
-                      new ash::ShelfID(info->app_window()->shelf_id()));
+  const ash::ShelfID shelf_id(info->app_window()->shelf_id());
+  window->SetProperty(ash::kShelfIDKey, new std::string(shelf_id.Serialize()));
   if (ash::Shell::Get()
           ->maximize_mode_controller()
           ->IsMaximizeModeWindowManagerEnabled()) {

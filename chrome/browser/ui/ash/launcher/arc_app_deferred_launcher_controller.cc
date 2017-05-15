@@ -214,7 +214,7 @@ void ArcAppDeferredLauncherController::RegisterDeferredLaunch(
       base::MakeUnique<ArcAppDeferredLauncherItemController>(
           shelf_app_id, event_flags, weak_ptr_factory_.GetWeakPtr());
   ArcAppDeferredLauncherItemController* item_controller = controller.get();
-  if (item == nullptr) {
+  if (!item) {
     owner_->CreateAppLauncherItem(std::move(controller), ash::STATUS_RUNNING);
   } else {
     owner_->shelf_model()->SetShelfItemDelegate(shelf_id,

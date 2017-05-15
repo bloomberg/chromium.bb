@@ -2167,14 +2167,13 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, MatchingShelfIDandActiveTab) {
   EXPECT_EQ(0, browser()->tab_strip_model()->active_index());
   EXPECT_EQ(2, model_->item_count());
 
-  ash::WmWindow* window =
-      ash::WmWindow::Get(browser()->window()->GetNativeWindow());
+  aura::Window* window = browser()->window()->GetNativeWindow();
 
   int browser_index = GetIndexOfShelfItemType(ash::TYPE_BROWSER_SHORTCUT);
   ash::ShelfID browser_id = model_->items()[browser_index].id;
-  ash::ShelfID* id = window->aura_window()->GetProperty(ash::kShelfIDKey);
-  ASSERT_NE(nullptr, id);
-  EXPECT_EQ(browser_id, *id);
+  ash::ShelfID id =
+      ash::ShelfID::Deserialize(window->GetProperty(ash::kShelfIDKey));
+  EXPECT_EQ(browser_id, id);
 
   ash::ShelfID app_id = CreateShortcut("app1");
   EXPECT_EQ(3, model_->item_count());
@@ -2183,16 +2182,14 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, MatchingShelfIDandActiveTab) {
   WmShelf::ActivateShelfItem(model_->ItemIndexByID(app_id));
   EXPECT_EQ(2, browser()->tab_strip_model()->count());
   EXPECT_EQ(1, browser()->tab_strip_model()->active_index());
-  id = window->aura_window()->GetProperty(ash::kShelfIDKey);
-  ASSERT_NE(nullptr, id);
-  EXPECT_EQ(app_id, *id);
+  id = ash::ShelfID::Deserialize(window->GetProperty(ash::kShelfIDKey));
+  EXPECT_EQ(app_id, id);
 
   // Activate the tab at index 0 (NTP) and expect a browser ShelfID.
   browser()->tab_strip_model()->ActivateTabAt(0, false);
   EXPECT_EQ(0, browser()->tab_strip_model()->active_index());
-  id = window->aura_window()->GetProperty(ash::kShelfIDKey);
-  ASSERT_NE(nullptr, id);
-  EXPECT_EQ(browser_id, *id);
+  id = ash::ShelfID::Deserialize(window->GetProperty(ash::kShelfIDKey));
+  EXPECT_EQ(browser_id, id);
 }
 
 IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, OverflowBubble) {

@@ -121,7 +121,7 @@ void ExtensionAppWindowLauncherController::RegisterApp(AppWindow* app_window) {
   const ash::ShelfID shelf_id = GetShelfId(app_window);
   DCHECK(!shelf_id.IsNull());
   aura::Window* window = app_window->GetNativeWindow();
-  window->SetProperty(ash::kShelfIDKey, new ash::ShelfID(shelf_id));
+  window->SetProperty(ash::kShelfIDKey, new std::string(shelf_id.Serialize()));
 
   // Windows created by IME extension should be treated the same way as the
   // virtual keyboard window, which does not register itself in launcher.
@@ -153,7 +153,7 @@ void ExtensionAppWindowLauncherController::RegisterApp(AppWindow* app_window) {
     controller->AddAppWindow(app_window);
 
     // Check for any existing pinned shelf item with a matching |shelf_id|.
-    if (owner()->GetItem(shelf_id) == nullptr) {
+    if (!owner()->GetItem(shelf_id)) {
       owner()->CreateAppLauncherItem(std::move(controller), status);
       // Restore any existing app icon and flag as set.
       if (app_window->HasCustomIcon() && !app_window->app_icon().IsEmpty()) {

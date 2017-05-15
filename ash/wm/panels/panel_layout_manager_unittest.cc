@@ -90,7 +90,8 @@ class PanelLayoutManagerTest : public test::AshTestBase {
     aura::Window* window = CreateTestWindowInShellWithDelegateAndType(
         delegate, ui::wm::WINDOW_TYPE_PANEL, 0, bounds);
     static int id = 0;
-    window->SetProperty(kShelfIDKey, new ShelfID(base::IntToString(id++)));
+    std::string shelf_id(ShelfID(base::IntToString(id++)).Serialize());
+    window->SetProperty(kShelfIDKey, new std::string(shelf_id));
     shelf_view_test()->RunMessageLoopUntilAnimationsDone();
     return window;
   }
@@ -219,9 +220,10 @@ class PanelLayoutManagerTest : public test::AshTestBase {
     test::ShelfViewTestAPI test_api(shelf_view);
     test_api.SetAnimationDuration(1);
     test_api.RunMessageLoopUntilAnimationsDone();
-    ShelfID* shelf_id = window->GetProperty(kShelfIDKey);
-    DCHECK(shelf_id);
-    int index = Shell::Get()->shelf_model()->ItemIndexByID(*shelf_id);
+    ShelfID shelf_id = ShelfID::Deserialize(window->GetProperty(kShelfIDKey));
+    DCHECK(!shelf_id.IsNull());
+    int index = Shell::Get()->shelf_model()->ItemIndexByID(shelf_id);
+    DCHECK_GE(index, 0);
     gfx::Rect bounds = test_api.GetButton(index)->GetBoundsInScreen();
 
     ui::test::EventGenerator& event_generator = GetEventGenerator();

@@ -19,6 +19,7 @@
 #include "ash/wm/window_state_aura.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm_window.h"
+#include "base/strings/string_number_conversions.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -33,16 +34,33 @@ namespace {
 // Returns the shelf item type, with special temporary behavior for Mash:
 // Mash provides a default shelf item type (TYPE_APP) for non-ignored windows.
 ShelfItemType GetShelfItemType(aura::Window* window) {
-  if (Shell::GetAshConfig() != Config::MASH ||
-      window->GetProperty(kShelfItemTypeKey) != TYPE_UNDEFINED) {
-    return static_cast<ShelfItemType>(window->GetProperty(kShelfItemTypeKey));
+  // TODO(msw): Remove Mash default ShelfItemType assignment. crbug.com/722496
+  if (Shell::GetAshConfig() == Config::MASH &&
+      window->GetProperty(kShelfItemTypeKey) == TYPE_UNDEFINED &&
+      !wm::GetWindowState(window)->ignored_by_shelf()) {
+    return TYPE_APP;
   }
-  return wm::GetWindowState(window)->ignored_by_shelf() ? TYPE_UNDEFINED
-                                                        : TYPE_APP;
+  return static_cast<ShelfItemType>(window->GetProperty(kShelfItemTypeKey));
+}
+
+// Returns the shelf id, with special temporary behavior for Mash:
+// Mash provides a default shelf ids for non-ignored windows.
+ShelfID GetShelfID(aura::Window* window) {
+  // TODO(msw): Remove Mash default ShelfID assignment. crbug.com/722496
+  if (Shell::GetAshConfig() == Config::MASH &&
+      !window->GetProperty(kShelfIDKey) &&
+      !wm::GetWindowState(window)->ignored_by_shelf()) {
+    static int id = 0;
+    const ash::ShelfID shelf_id(base::IntToString(id++));
+    window->SetProperty(kShelfIDKey, new std::string(shelf_id.Serialize()));
+    return shelf_id;
+  }
+  return ShelfID::Deserialize(window->GetProperty(kShelfIDKey));
 }
 
 // Update the ShelfItem from relevant window properties.
 void UpdateShelfItemForWindow(ShelfItem* item, aura::Window* window) {
+  item->id = GetShelfID(window);
   item->type = GetShelfItemType(window);
 
   item->status = STATUS_RUNNING;
@@ -50,9 +68,6 @@ void UpdateShelfItemForWindow(ShelfItem* item, aura::Window* window) {
     item->status = STATUS_ACTIVE;
   else if (window->GetProperty(aura::client::kDrawAttentionKey))
     item->status = STATUS_ATTENTION;
-
-  const ShelfID* shelf_id = window->GetProperty(kShelfIDKey);
-  item->id = shelf_id ? *shelf_id : ShelfID();
 
   // Prefer app icons over window icons, they're typically larger.
   gfx::ImageSkia* image = window->GetProperty(aura::client::kAppIconKey);
@@ -107,6 +122,19 @@ void ShelfWindowWatcher::UserWindowObserver::OnWindowPropertyChanged(
     aura::Window* window,
     const void* key,
     intptr_t old) {
+  // ShelfIDs should never change except when replacing Mash temporary defaults.
+  // TODO(msw): Remove Mash default ShelfID handling. crbug.com/722496
+  if (Shell::GetAshConfig() == Config::MASH && key == kShelfIDKey) {
+    ShelfID old_id = ShelfID::Deserialize(reinterpret_cast<std::string*>(old));
+    ShelfID new_id = ShelfID::Deserialize(window->GetProperty(kShelfIDKey));
+    if (old_id != new_id && !old_id.IsNull() && !new_id.IsNull()) {
+      // Id changing is not supported; remove the item and it will be re-added.
+      window_watcher_->user_windows_with_items_.erase(window);
+      const int index = window_watcher_->model_->ItemIndexByID(old_id);
+      window_watcher_->model_->RemoveItemAt(index);
+    }
+  }
+
   if (key == aura::client::kAppIconKey || key == aura::client::kWindowIconKey ||
       key == aura::client::kDrawAttentionKey || key == kPanelAttachedKey ||
       key == kShelfItemTypeKey || key == kShelfIDKey) {
@@ -159,6 +187,17 @@ void ShelfWindowWatcher::AddShelfItem(aura::Window* window) {
   user_windows_with_items_.insert(window);
   ShelfItem item;
   UpdateShelfItemForWindow(&item, window);
+
+  // ShelfWindowWatcher[ItemDelegate] doesn't support multiple windows per item,
+  // but this can happen in Mash (eg. when multiple browser windows are open).
+  // Assign a unique launch id in this case to avoid crashing on DCHECKs.
+  // TODO(msw): Remove Mash duplicate ShelfID handling. crbug.com/722496
+  if (Shell::GetAshConfig() == Config::MASH &&
+      model_->ItemIndexByID(item.id) > 0) {
+    static int id = 0;
+    item.id.launch_id = base::IntToString(id++);
+  }
+
   model_->SetShelfItemDelegate(item.id,
                                base::MakeUnique<ShelfWindowWatcherItemDelegate>(
                                    item.id, WmWindow::Get(window)));
@@ -168,10 +207,9 @@ void ShelfWindowWatcher::AddShelfItem(aura::Window* window) {
 
 void ShelfWindowWatcher::RemoveShelfItem(aura::Window* window) {
   user_windows_with_items_.erase(window);
-  ShelfID* shelf_id = window->GetProperty(kShelfIDKey);
-  DCHECK(shelf_id);
-  DCHECK(!shelf_id->IsNull());
-  int index = model_->ItemIndexByID(*shelf_id);
+  const ShelfID shelf_id = GetShelfID(window);
+  DCHECK(!shelf_id.IsNull());
+  const int index = model_->ItemIndexByID(shelf_id);
   DCHECK_GE(index, 0);
   model_->RemoveItemAt(index);
 }
@@ -181,8 +219,8 @@ void ShelfWindowWatcher::OnContainerWindowDestroying(aura::Window* container) {
 }
 
 int ShelfWindowWatcher::GetShelfItemIndexForWindow(aura::Window* window) const {
-  ShelfID* shelf_id = window->GetProperty(kShelfIDKey);
-  return shelf_id ? model_->ItemIndexByID(*shelf_id) : -1;
+  const ShelfID shelf_id = GetShelfID(window);
+  return shelf_id.IsNull() ? -1 : model_->ItemIndexByID(shelf_id);
 }
 
 void ShelfWindowWatcher::OnUserWindowAdded(aura::Window* window) {
@@ -207,7 +245,7 @@ void ShelfWindowWatcher::OnUserWindowDestroying(aura::Window* window) {
 
 void ShelfWindowWatcher::OnUserWindowPropertyChanged(aura::Window* window) {
   if (GetShelfItemType(window) == TYPE_UNDEFINED ||
-      !window->GetProperty(kShelfIDKey)) {
+      GetShelfID(window).IsNull()) {
     // Remove |window|'s ShelfItem if it was added by this ShelfWindowWatcher.
     if (user_windows_with_items_.count(window) > 0)
       RemoveShelfItem(window);

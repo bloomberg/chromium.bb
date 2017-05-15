@@ -6,9 +6,9 @@
 #define ASH_PUBLIC_CPP_WINDOW_PROPERTIES_H_
 
 #include <stdint.h>
+#include <string>
 
 #include "ash/public/cpp/ash_public_export.h"
-#include "ash/public/cpp/shelf_types.h"
 #include "ui/base/class_property.h"
 
 namespace aura {
@@ -31,7 +31,7 @@ ASH_PUBLIC_EXPORT extern const aura::WindowProperty<bool>* const
     kPanelAttachedKey;
 
 // A property key to store the id for a window's shelf item.
-ASH_PUBLIC_EXPORT extern const aura::WindowProperty<ShelfID*>* const
+ASH_PUBLIC_EXPORT extern const aura::WindowProperty<std::string*>* const
     kShelfIDKey;
 
 // A property key to store the type of a window's shelf item.
@@ -43,8 +43,8 @@ ASH_PUBLIC_EXPORT extern const aura::WindowProperty<int32_t>* const
 // will try to fullscreen the window and pin it on the top of the screen. If the
 // window manager failed to do it, the property will be restored to NONE. When
 // setting this property to NONE, the window manager will restore the window.
-ASH_PUBLIC_EXPORT extern const aura::WindowProperty<
-    ash::mojom::WindowPinType>* const kWindowPinTypeKey;
+ASH_PUBLIC_EXPORT extern const aura::WindowProperty<mojom::WindowPinType>* const
+    kWindowPinTypeKey;
 
 // Alphabetical sort.
 

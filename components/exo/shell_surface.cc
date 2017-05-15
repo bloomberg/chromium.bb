@@ -555,13 +555,14 @@ void ShellSurface::UpdateSystemModal() {
 void ShellSurface::SetApplicationId(aura::Window* window,
                                     const std::string& id) {
   TRACE_EVENT1("exo", "ShellSurface::SetApplicationId", "application_id", id);
-  window->SetProperty(ash::kShelfIDKey, new ash::ShelfID(id));
+  const ash::ShelfID shelf_id(id);
+  window->SetProperty(ash::kShelfIDKey, new std::string(shelf_id.Serialize()));
 }
 
 // static
 const std::string ShellSurface::GetApplicationId(aura::Window* window) {
-  ash::ShelfID* shelf_id = window->GetProperty(ash::kShelfIDKey);
-  return shelf_id ? shelf_id->app_id : std::string();
+  return ash::ShelfID::Deserialize(window->GetProperty(ash::kShelfIDKey))
+      .app_id;
 }
 
 void ShellSurface::SetApplicationId(const std::string& application_id) {

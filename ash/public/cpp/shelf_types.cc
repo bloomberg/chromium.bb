@@ -5,8 +5,16 @@
 #include "ash/public/cpp/shelf_types.h"
 
 #include "base/logging.h"
+#include "base/strings/string_split.h"
 
 namespace ash {
+
+namespace {
+
+// A delimiter used to serialize the ShelfID string pair as a single string.
+constexpr char kDelimiter[] = "|";
+
+}  // namespace
 
 bool IsValidShelfItemType(int64_t type) {
   return type == TYPE_APP_PANEL || type == TYPE_PINNED_APP ||
@@ -42,6 +50,22 @@ bool ShelfID::operator<(const ShelfID& other) const {
 
 bool ShelfID::IsNull() const {
   return app_id.empty() && launch_id.empty();
+}
+
+std::string ShelfID::Serialize() const {
+  DCHECK_EQ(std::string::npos, app_id.find(kDelimiter)) << "Invalid ShelfID";
+  DCHECK_EQ(std::string::npos, launch_id.find(kDelimiter)) << "Invalid ShelfID";
+  return app_id + kDelimiter + launch_id;
+}
+
+// static
+ShelfID ShelfID::Deserialize(const std::string* string) {
+  if (!string)
+    return ShelfID();
+  std::vector<std::string> components = base::SplitString(
+      *string, kDelimiter, base::KEEP_WHITESPACE, base::SPLIT_WANT_ALL);
+  DCHECK_EQ(2u, components.size()) << "ShelfID serialized incorrectly.";
+  return ShelfID(components[0], components[1]);
 }
 
 }  // namespace ash
