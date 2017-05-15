@@ -456,6 +456,12 @@ const FeatureEntry::Choice kDataSaverPromptChoices[] = {
      chromeos::switches::kDataSaverPromptDemoMode},
 };
 
+const FeatureEntry::Choice kUseMusChoices[] = {
+    {flags_ui::kGenericExperimentChoiceDefault, "", ""},
+    {flag_descriptions::kEnableMusDescription, switches::kMus, ""},
+    {flag_descriptions::kEnableMashDescription, switches::kMash, ""},
+};
+
 const FeatureEntry::Choice kUiShowCompositedLayerBordersChoices[] = {
     {flags_ui::kGenericExperimentChoiceDefault, "", ""},
     {flag_descriptions::kUiShowCompositedLayerBordersRenderPass,
@@ -1300,9 +1306,9 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(features::kRunAllFlashInAllowMode)},
 #endif  // ENABLE_PLUGINS
 #if defined(OS_CHROMEOS)
-    {"mash", flag_descriptions::kUseMashName,
-     flag_descriptions::kUseMashDescription, kOsCrOS,
-     SINGLE_VALUE_TYPE(switches::kMash)},
+    {"mus", flag_descriptions::kUseMusName,
+     flag_descriptions::kUseMusDescription, kOsCrOS,
+     MULTI_VALUE_TYPE(kUseMusChoices)},
     {"allow-touchpad-three-finger-click",
      flag_descriptions::kAllowTouchpadThreeFingerClickName,
      flag_descriptions::kAllowTouchpadThreeFingerClickDescription, kOsCrOS,
@@ -2991,8 +2997,8 @@ bool SkipConditionalFeatureEntry(const FeatureEntry& entry) {
 #endif  // OS_ANDROID
 
 #if defined(OS_CHROMEOS)
-  // Don't expose --mash outside of Canary or developer builds.
-  if (!strcmp("mash", entry.internal_name) &&
+  // Don't expose --mash/--mus outside of Canary or developer builds.
+  if (!strcmp("mus", entry.internal_name) &&
       channel != version_info::Channel::DEV &&
       channel != version_info::Channel::UNKNOWN) {
     return true;

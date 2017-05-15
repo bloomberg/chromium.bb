@@ -21769,6 +21769,7 @@ from previous Chrome versions.
   <int value="91938915" label="enable-suggestions-service"/>
   <int value="98134240" label="material-design-ink-drop-animation-speed"/>
   <int value="103932290" label="show-autofill-type-predictions"/>
+  <int value="106840653" label="mus"/>
   <int value="118991027" label="enable-accelerated-fixed-root-background"/>
   <int value="119185738"
       label="OmniboxUIExperimentMaxAutocompleteMatches:disabled"/>

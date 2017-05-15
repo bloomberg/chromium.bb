@@ -915,9 +915,15 @@ const char kReducedReferrerGranularityDescription[] =
 
 #if defined(OS_CHROMEOS)
 
-const char kUseMashName[] = "Mojo UI Service (mus).";
+const char kUseMusDescription[] = "Enable the Mojo UI service.";
 
-const char kUseMashDescription[] = "Enable mus, mash etc.";
+const char kUseMusName[] = "Mus";
+
+const char kEnableMashDescription[] =
+    "Mash (UI, Chrome and ash in separate services)";
+
+const char kEnableMusDescription[] =
+    "Mus (UI in separate service, Chrome and ash in same service)";
 
 const char kAllowTouchpadThreeFingerClickName[] = "Touchpad three-finger-click";
 

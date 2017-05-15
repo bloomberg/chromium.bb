@@ -482,8 +482,10 @@ extern const char kReducedReferrerGranularityDescription[];
 
 #if defined(OS_CHROMEOS)
 
-extern const char kUseMashName[];
-extern const char kUseMashDescription[];
+extern const char kUseMusDescription[];
+extern const char kUseMusName[];
+extern const char kEnableMashDescription[];
+extern const char kEnableMusDescription[];
 
 extern const char kAllowTouchpadThreeFingerClickName[];
 extern const char kAllowTouchpadThreeFingerClickDescription[];
