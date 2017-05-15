@@ -1144,7 +1144,13 @@ message CertificateBasedDeviceRegistrationData {
 // Gets an enrollment token to a managed Google Play account for using it with
 // Active Directory. Sent when a new user logs in with Active Directory and
 // opens Play Store for the first time.
-message ActiveDirectoryEnrollPlayUserRequest {}
+message ActiveDirectoryEnrollPlayUserRequest {
+  // A server-provider identifier for the previously established SAML session.
+  // If left empty and SAML authentication is required,
+  // ActiveDirectoryEnrollPlayUserResponse.saml_parameters.auth_redirect_url
+  // will contain initial Redirect required to start the SAML flow.
+  optional string auth_session_id = 1;
+}
 
 // The result when a new user logs in to Play Store with Active Directory.
 // 904 Arc Disabled HTTP error code is returned if the reason of the failure is
@@ -1159,6 +1165,17 @@ message ActiveDirectoryEnrollPlayUserResponse {
   // is opaque to the client and is only used in the ActiveDirectoryPlayActivity
   // requests.
   optional string user_id = 2;
+  // If SAML authentication is required, SAML flow parameters are specified in
+  // this proto and both enrollment_token and user_id fields are left unset.
+  optional SamlParametersProto saml_parameters = 3;
+}
+
+message SamlParametersProto {
+  // Initial Redirect URL to start the SAML flow.
+  optional string auth_redirect_url = 1;
+  // Auth Session ID which the client is supposed to use in the subsequent
+  // DMServer request (to be sent after SAML flow completes).
+  optional string auth_session_id = 2;
 }
 
 // Reports that a managed Google Play account is used. This makes the garbage
