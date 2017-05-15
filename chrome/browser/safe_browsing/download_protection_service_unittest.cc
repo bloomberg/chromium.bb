@@ -66,6 +66,7 @@ using ::testing::DoAll;
 using ::testing::ElementsAre;
 using ::testing::Invoke;
 using ::testing::Mock;
+using ::testing::NiceMock;
 using ::testing::NotNull;
 using ::testing::Return;
 using ::testing::ReturnRef;
@@ -192,6 +193,8 @@ class TestURLFetcherWatcher : public net::TestURLFetcherDelegateForTests {
   int fetcher_id_;
   RunLoop run_loop_;
 };
+
+using NiceMockDownloadItem = NiceMock<content::MockDownloadItem>;
 
 }  // namespace
 
@@ -406,7 +409,7 @@ class DownloadProtectionServiceTest : public testing::Test {
   }
 
   void PrepareBasicDownloadItem(
-      content::MockDownloadItem* item,
+      NiceMockDownloadItem* item,
       const std::vector<std::string> url_chain_items,
       const std::string& referrer_url,
       const base::FilePath::StringType& tmp_path_literal,
@@ -419,7 +422,7 @@ class DownloadProtectionServiceTest : public testing::Test {
   }
 
   void PrepareBasicDownloadItemWithFullPaths(
-      content::MockDownloadItem* item,
+      NiceMockDownloadItem* item,
       const std::vector<std::string> url_chain_items,
       const std::string& referrer_url,
       const base::FilePath& tmp_full_path,
@@ -427,17 +430,14 @@ class DownloadProtectionServiceTest : public testing::Test {
     url_chain_.clear();
     for (std::string item: url_chain_items)
       url_chain_.push_back(GURL(item));
+    if (url_chain_.empty())
+      url_chain_.push_back(GURL());
     referrer_ = GURL(referrer_url);
     tmp_path_ = tmp_full_path;
     final_path_ = final_full_path;
     hash_ = "hash";
 
-    if (url_chain_.size() > 0) {
-      EXPECT_CALL(*item, GetURL()).WillRepeatedly(ReturnRef(url_chain_.back()));
-    } else{
-      GURL empty_url;
-      EXPECT_CALL(*item, GetURL()).WillRepeatedly(ReturnRef(empty_url));
-    }
+    EXPECT_CALL(*item, GetURL()).WillRepeatedly(ReturnRef(url_chain_.back()));
     EXPECT_CALL(*item, GetFullPath()).WillRepeatedly(ReturnRef(tmp_path_));
     EXPECT_CALL(*item, GetTargetFilePath())
         .WillRepeatedly(ReturnRef(final_path_));
@@ -551,7 +551,8 @@ class DownloadProtectionServiceTest : public testing::Test {
   base::ScopedTempDir profile_dir_;
   std::unique_ptr<TestingProfile> profile_;
   // The following 5 fields are used by PrepareBasicDownloadItem() function to
-  // store attributes of the last download item.
+  // store attributes of the last download item. They can be modified
+  // afterwards and the *item will return the new values.
   std::vector<GURL> url_chain_;
   GURL referrer_;
   base::FilePath tmp_path_;
@@ -567,7 +568,7 @@ void DownloadProtectionServiceTest::CheckClientDownloadReportCorruptArchive(
       &factory, ClientDownloadResponse::SAFE, net::HTTP_OK,
       net::URLRequestStatus::SUCCESS);
 
-  content::MockDownloadItem item;
+  NiceMockDownloadItem item;
   if (type == ZIP) {
     PrepareBasicDownloadItem(&item, {"http://www.evil.com/a.zip"},  // url_chain
                              "http://www.google.com/",     // referrer
@@ -605,7 +606,7 @@ void DownloadProtectionServiceTest::CheckClientDownloadReportCorruptArchive(
 }
 
 TEST_F(DownloadProtectionServiceTest, CheckClientDownloadInvalidUrl) {
-  content::MockDownloadItem item;
+  NiceMockDownloadItem item;
   {
     PrepareBasicDownloadItem(&item,
                              std::vector<std::string>(),   // empty url_chain
@@ -638,7 +639,7 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadInvalidUrl) {
 }
 
 TEST_F(DownloadProtectionServiceTest, CheckClientDownloadNotABinary) {
-  content::MockDownloadItem item;
+  NiceMockDownloadItem item;
   PrepareBasicDownloadItem(
     &item,
     std::vector<std::string>(),   // empty url_chain
@@ -662,7 +663,7 @@ TEST_F(DownloadProtectionServiceTest,
       &factory, ClientDownloadResponse::DANGEROUS, net::HTTP_OK,
       net::URLRequestStatus::SUCCESS);
 
-  content::MockDownloadItem item;
+  NiceMockDownloadItem item;
   PrepareBasicDownloadItem(
     &item,
     std::vector<std::string>(),   // empty url_chain
@@ -758,7 +759,7 @@ TEST_F(DownloadProtectionServiceTest,
       &factory, ClientDownloadResponse::SAFE, net::HTTP_OK,
       net::URLRequestStatus::SUCCESS);
 
-  content::MockDownloadItem item;
+  NiceMockDownloadItem item;
   PrepareBasicDownloadItem(
     &item,
     std::vector<std::string>(),   // empty url_chain
@@ -908,20 +909,21 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadSampledFile) {
       &factory, ClientDownloadResponse::DANGEROUS, net::HTTP_OK,
       net::URLRequestStatus::SUCCESS);
 
-  content::MockDownloadItem item;
+  NiceMockDownloadItem item;
   PrepareBasicDownloadItem(
-    &item,
-    std::vector<std::string>(),   // empty url_chain
-    "http://www.google.com/",     // referrer
-    FILE_PATH_LITERAL("a.tmp"),   // tmp_path
-    FILE_PATH_LITERAL("a.foobar_unknown_ype"));  // final_path
+      &item,
+      // Add paths so we can check they are properly removed.
+      {"http://referrer.com/1/2", "http://referrer.com/3/4",
+       "http://download.com/path/a.foobar_unknown_type"},
+      "http://referrer.com/3/4",                    // Referrer
+      FILE_PATH_LITERAL("a.tmp"),                   // tmp_path
+      FILE_PATH_LITERAL("a.foobar_unknown_type"));  // final_path
   EXPECT_CALL(*binary_feature_extractor_.get(), CheckSignature(tmp_path_, _))
       .Times(1);
   EXPECT_CALL(*binary_feature_extractor_.get(),
               ExtractImageFeatures(
                   tmp_path_, BinaryFeatureExtractor::kDefaultOptions, _, _))
       .Times(1);
-  url_chain_.push_back(GURL("http://www.whitelist.com/a.foobar_unknown_type"));
 
   // Set ping sample rate to 1.00 so download_service_ will always send a
   // "light" ping for unknown types if allowed.
@@ -953,8 +955,8 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadSampledFile) {
     run_loop.Run();
     EXPECT_TRUE(IsResult(DownloadProtectionService::UNKNOWN));
     ASSERT_TRUE(HasClientDownloadRequest());
-    // Verify it's a "light" ping, check that URLs don't have paths, and
-    // and verify filename is just an extension.
+
+    // Verify it's a "light" ping, check that URLs don't have paths.
     auto* req = GetClientDownloadRequest();
     EXPECT_EQ(ClientDownloadRequest::SAMPLED_UNSUPPORTED_FILE,
               req->download_type());
@@ -964,7 +966,6 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadSampledFile) {
       EXPECT_EQ(GURL(resource.referrer()).GetOrigin().spec(),
                 resource.referrer());
     }
-    EXPECT_EQ('.', req->file_basename()[0]);
     ClearClientDownloadRequest();
   }
   {
@@ -1003,7 +1004,7 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadFetchFailed) {
       &factory, ClientDownloadResponse::SAFE, net::HTTP_INTERNAL_SERVER_ERROR,
       net::URLRequestStatus::FAILED);
 
-  content::MockDownloadItem item;
+  NiceMockDownloadItem item;
   PrepareBasicDownloadItem(
     &item,
     {"http://www.evil.com/a.exe"},  // url_chain
@@ -1032,7 +1033,7 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadSuccess) {
   PrepareResponse(&factory, ClientDownloadResponse::SAFE, net::HTTP_OK,
                   net::URLRequestStatus::SUCCESS);
 
-  content::MockDownloadItem item;
+  NiceMockDownloadItem item;
   PrepareBasicDownloadItem(&item, {"http://www.evil.com/a.exe"},  // url_chain
                            "http://www.google.com/",              // referrer
                            FILE_PATH_LITERAL("a.tmp"),            // tmp_path
@@ -1190,7 +1191,7 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadHTTPS) {
       &factory, ClientDownloadResponse::DANGEROUS, net::HTTP_OK,
       net::URLRequestStatus::SUCCESS);
 
-  content::MockDownloadItem item;
+  NiceMockDownloadItem item;
   PrepareBasicDownloadItem(&item,
                            {"http://www.evil.com/a.exe"},  // url_chain
                            "http://www.google.com/",       // referrer
@@ -1223,7 +1224,7 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadBlob) {
       &factory, ClientDownloadResponse::DANGEROUS, net::HTTP_OK,
       net::URLRequestStatus::SUCCESS);
 
-  content::MockDownloadItem item;
+  NiceMockDownloadItem item;
   PrepareBasicDownloadItem(
     &item,
     {"blob:http://www.evil.com/50b85f60-71e4-11e4-82f8-0800200c9a66"},
@@ -1257,7 +1258,7 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadData) {
       &factory, ClientDownloadResponse::DANGEROUS, net::HTTP_OK,
       net::URLRequestStatus::SUCCESS);
 
-  content::MockDownloadItem item;
+  NiceMockDownloadItem item;
   PrepareBasicDownloadItem(
     &item,
     {"data:text/html:base64,", "data:text/html:base64,blahblahblah",
@@ -1315,7 +1316,7 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadZip) {
       &factory, ClientDownloadResponse::SAFE, net::HTTP_OK,
       net::URLRequestStatus::SUCCESS);
 
-  content::MockDownloadItem item;
+  NiceMockDownloadItem item;
   PrepareBasicDownloadItem(
     &item,
     {"http://www.evil.com/a.zip"},  // url_chain
@@ -1447,7 +1448,7 @@ TEST_F(DownloadProtectionServiceTest,
 TEST_F(DownloadProtectionServiceTest, CheckClientDownloadValidateRequest) {
   net::TestURLFetcherFactory factory;
 
-  content::MockDownloadItem item;
+  NiceMockDownloadItem item;
   PrepareBasicDownloadItem(
     &item,
     {"http://www.google.com/",
@@ -1521,7 +1522,7 @@ TEST_F(DownloadProtectionServiceTest,
        CheckClientDownloadValidateRequestNoSignature) {
   net::TestURLFetcherFactory factory;
 
-  content::MockDownloadItem item;
+  NiceMockDownloadItem item;
   PrepareBasicDownloadItem(
     &item,
     {"http://www.google.com/",
@@ -1581,7 +1582,7 @@ TEST_F(DownloadProtectionServiceTest,
        CheckClientDownloadValidateRequestTabHistory) {
   net::TestURLFetcherFactory factory;
 
-  content::MockDownloadItem item;
+  NiceMockDownloadItem item;
   PrepareBasicDownloadItem(
     &item,
     {"http://www.google.com/",
@@ -1746,7 +1747,7 @@ TEST_F(DownloadProtectionServiceTest, TestCheckDownloadUrl) {
   GURL referrer("http://www.google.com/");
   std::string hash = "hash";
 
-  content::MockDownloadItem item;
+  NiceMockDownloadItem item;
   EXPECT_CALL(item, GetURL()).WillRepeatedly(ReturnRef(url_chain.back()));
   EXPECT_CALL(item, GetUrlChain()).WillRepeatedly(ReturnRef(url_chain));
   EXPECT_CALL(item, GetReferrerUrl()).WillRepeatedly(ReturnRef(referrer));
@@ -1810,7 +1811,7 @@ TEST_F(DownloadProtectionServiceTest, TestCheckDownloadUrl) {
 TEST_F(DownloadProtectionServiceTest, TestDownloadRequestTimeout) {
   net::TestURLFetcherFactory factory;
 
-  content::MockDownloadItem item;
+  NiceMockDownloadItem item;
   PrepareBasicDownloadItem(
     &item,
     {"http://www.evil.com/bla.exe"},  // url_chain
@@ -1843,7 +1844,7 @@ TEST_F(DownloadProtectionServiceTest, TestDownloadRequestTimeout) {
 
 TEST_F(DownloadProtectionServiceTest, TestDownloadItemDestroyed) {
   {
-    content::MockDownloadItem item;
+    NiceMockDownloadItem item;
     PrepareBasicDownloadItem(
       &item,
       {"http://www.evil.com/bla.exe"},  // url_chain
@@ -1875,8 +1876,7 @@ TEST_F(DownloadProtectionServiceTest, TestDownloadItemDestroyed) {
 TEST_F(DownloadProtectionServiceTest,
        TestDownloadItemDestroyedDuringWhitelistCheck) {
   net::TestURLFetcherFactory factory;
-  std::unique_ptr<content::MockDownloadItem> item(
-      new content::MockDownloadItem);
+  std::unique_ptr<NiceMockDownloadItem> item(new NiceMockDownloadItem);
   PrepareBasicDownloadItem(
     item.get(),
     {"http://www.evil.com/bla.exe"},  // url_chain
@@ -2030,7 +2030,7 @@ TEST_F(DownloadProtectionServiceTest, ShowDetailsForDownloadHasContext) {
 }
 
 TEST_F(DownloadProtectionServiceTest, GetAndSetDownloadPingToken) {
-  content::MockDownloadItem item;
+  NiceMockDownloadItem item;
   EXPECT_TRUE(DownloadProtectionService::GetDownloadPingToken(&item).empty());
   std::string token = "download_ping_token";
   DownloadProtectionService::SetDownloadPingToken(&item, token);
@@ -2296,7 +2296,7 @@ class DownloadProtectionServiceFlagTest : public DownloadProtectionServiceTest {
 };
 
 TEST_F(DownloadProtectionServiceFlagTest, CheckClientDownloadOverridenByFlag) {
-  content::MockDownloadItem item;
+  NiceMockDownloadItem item;
   PrepareBasicDownloadItem(
     &item,
     {"http://www.evil.com/a.exe"},  // url_chain
@@ -2327,7 +2327,7 @@ TEST_F(DownloadProtectionServiceFlagTest, CheckClientDownloadOverridenByFlag) {
 // blacklisted by hash.
 TEST_F(DownloadProtectionServiceFlagTest,
        CheckClientDownloadZipOverridenByFlag) {
-  content::MockDownloadItem item;
+  NiceMockDownloadItem item;
 
   PrepareBasicDownloadItemWithFullPaths(
       &item, {"http://www.evil.com/a.exe"},  // url_chain
