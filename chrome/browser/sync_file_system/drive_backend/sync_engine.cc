@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
@@ -191,19 +192,16 @@ void DidRegisterOrigin(const base::TimeTicks& start_time,
 std::unique_ptr<SyncEngine> SyncEngine::CreateForBrowserContext(
     content::BrowserContext* context,
     TaskLogger* task_logger) {
-  scoped_refptr<base::SequencedWorkerPool> worker_pool =
-      content::BrowserThread::GetBlockingPool();
-
   scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner =
       base::ThreadTaskRunnerHandle::Get();
   scoped_refptr<base::SequencedTaskRunner> worker_task_runner =
-      worker_pool->GetSequencedTaskRunnerWithShutdownBehavior(
-          worker_pool->GetSequenceToken(),
-          base::SequencedWorkerPool::SKIP_ON_SHUTDOWN);
+      base::CreateSequencedTaskRunnerWithTraits(
+          {base::MayBlock(), base::TaskPriority::BACKGROUND,
+           base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
   scoped_refptr<base::SequencedTaskRunner> drive_task_runner =
-      worker_pool->GetSequencedTaskRunnerWithShutdownBehavior(
-          worker_pool->GetSequenceToken(),
-          base::SequencedWorkerPool::SKIP_ON_SHUTDOWN);
+      base::CreateSequencedTaskRunnerWithTraits(
+          {base::MayBlock(), base::TaskPriority::BACKGROUND,
+           base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
 
   Profile* profile = Profile::FromBrowserContext(context);
   drive::DriveNotificationManager* notification_manager =
@@ -220,7 +218,8 @@ std::unique_ptr<SyncEngine> SyncEngine::CreateForBrowserContext(
 
   std::unique_ptr<drive_backend::SyncEngine> sync_engine(new SyncEngine(
       ui_task_runner.get(), worker_task_runner.get(), drive_task_runner.get(),
-      worker_pool.get(), GetSyncFileSystemDir(context->GetPath()), task_logger,
+      content::BrowserThread::GetBlockingPool(),
+      GetSyncFileSystemDir(context->GetPath()), task_logger,
       notification_manager, extension_service, signin_manager, token_service,
       request_context.get(), base::MakeUnique<DriveServiceFactory>(),
       nullptr /* env_override */));
