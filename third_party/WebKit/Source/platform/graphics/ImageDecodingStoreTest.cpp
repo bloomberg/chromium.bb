@@ -54,7 +54,7 @@ class ImageDecodingStoreTest : public ::testing::Test,
   ImageFrame::Status GetStatus() override { return ImageFrame::kFramePartial; }
 
   size_t FrameCount() override { return 1; }
-  int RepetitionCount() const override { return kCAnimationNone; }
+  int RepetitionCount() const override { return kAnimationNone; }
   float FrameDuration() const override { return 0; }
 
  protected:
