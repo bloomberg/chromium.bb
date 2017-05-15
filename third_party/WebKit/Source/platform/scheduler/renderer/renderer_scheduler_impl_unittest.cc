@@ -3826,6 +3826,32 @@ TEST_F(RendererSchedulerImplTest, UnresponsiveMainThread) {
       scheduler_->MainThreadSeemsUnresponsive(responsiveness_threshold()));
 }
 
+// As |responsiveness_threshold| == expected queueing time threshold == 0.2s,
+// for a task shorter than the length of the window (1s), the critical value of
+// the length of task x can be calculated by (x/2) * (x/1) = 0.2, in which x =
+// 0.6324.
+TEST_F(RendererSchedulerImplTest, UnresponsiveMainThreadAboveThreshold) {
+  EXPECT_FALSE(
+      scheduler_->MainThreadSeemsUnresponsive(responsiveness_threshold()));
+
+  AdvanceTimeWithTask(0.64);
+  EXPECT_TRUE(
+      scheduler_->MainThreadSeemsUnresponsive(responsiveness_threshold()));
+}
+
+// As |responsiveness_threshold| == expected queueing time threshold == 0.2s,
+// for a task shorter than the length of the window (1s), the critical value of
+// the length of task x can be calculated by (x/2) * (x/1) = 0.2, in which x =
+// 0.6324.
+TEST_F(RendererSchedulerImplTest, ResponsiveMainThreadBelowThreshold) {
+  EXPECT_FALSE(
+      scheduler_->MainThreadSeemsUnresponsive(responsiveness_threshold()));
+
+  AdvanceTimeWithTask(0.63);
+  EXPECT_FALSE(
+      scheduler_->MainThreadSeemsUnresponsive(responsiveness_threshold()));
+}
+
 TEST_F(RendererSchedulerImplTest, ResponsiveMainThreadDuringTask) {
   EXPECT_FALSE(
       scheduler_->MainThreadSeemsUnresponsive(responsiveness_threshold()));

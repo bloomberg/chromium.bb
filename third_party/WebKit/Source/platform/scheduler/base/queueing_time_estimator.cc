@@ -59,9 +59,12 @@ base::TimeDelta ExpectedQueueingTimeFromTask(base::TimeTicks task_start,
 
 QueueingTimeEstimator::QueueingTimeEstimator(
     QueueingTimeEstimator::Client* client,
-    base::TimeDelta window_duration)
-    : client_(client) {
+    base::TimeDelta window_duration,
+    int steps_per_window)
+    : client_(client), state_(steps_per_window) {
+  DCHECK(steps_per_window >= 1);
   state_.window_duration = window_duration;
+  state_.window_step_width = window_duration / steps_per_window;
 }
 
 QueueingTimeEstimator::QueueingTimeEstimator(const State& state)
@@ -81,6 +84,9 @@ void QueueingTimeEstimator::OnBeginNestedRunLoop() {
   state_.OnBeginNestedRunLoop();
 }
 
+QueueingTimeEstimator::State::State(int steps_per_window)
+    : step_queueing_times(steps_per_window) {}
+
 void QueueingTimeEstimator::State::OnTopLevelTaskStarted(
     base::TimeTicks task_start_time) {
   current_task_start_time = task_start_time;
@@ -94,10 +100,8 @@ void QueueingTimeEstimator::State::OnTopLevelTaskCompleted(
     current_task_start_time = base::TimeTicks();
     return;
   }
-
   if (window_start_time.is_null())
     window_start_time = current_task_start_time;
-
   if (task_end_time - current_task_start_time > kInvalidTaskThreshold) {
     // This task took too long, so we'll pretend it never happened. This could
     // be because the user's machine went to sleep during a task.
@@ -108,18 +112,20 @@ void QueueingTimeEstimator::State::OnTopLevelTaskCompleted(
   while (TimePastWindowEnd(task_end_time)) {
     if (!TimePastWindowEnd(current_task_start_time)) {
       // Include the current task in this window.
-      current_expected_queueing_time += ExpectedQueueingTimeFromTask(
+      step_expected_queueing_time += ExpectedQueueingTimeFromTask(
           current_task_start_time, task_end_time, window_start_time,
-          window_start_time + window_duration);
+          window_start_time + window_step_width);
     }
-    client->OnQueueingTimeForWindowEstimated(current_expected_queueing_time);
-    window_start_time += window_duration;
-    current_expected_queueing_time = base::TimeDelta();
+    step_queueing_times.Add(step_expected_queueing_time);
+    client->OnQueueingTimeForWindowEstimated(step_queueing_times.GetAverage(),
+                                             window_start_time);
+    window_start_time += window_step_width;
+    step_expected_queueing_time = base::TimeDelta();
   }
 
-  current_expected_queueing_time += ExpectedQueueingTimeFromTask(
+  step_expected_queueing_time += ExpectedQueueingTimeFromTask(
       current_task_start_time, task_end_time, window_start_time,
-      window_start_time + window_duration);
+      window_start_time + window_step_width);
 
   current_task_start_time = base::TimeTicks();
 }
@@ -129,7 +135,27 @@ void QueueingTimeEstimator::State::OnBeginNestedRunLoop() {
 }
 
 bool QueueingTimeEstimator::State::TimePastWindowEnd(base::TimeTicks time) {
-  return time > window_start_time + window_duration;
+  return time > window_start_time + window_step_width;
+}
+
+QueueingTimeEstimator::RunningAverage::RunningAverage(int size) {
+  circular_buffer_.resize(size);
+  index_ = 0;
+}
+
+int QueueingTimeEstimator::RunningAverage::GetStepsPerWindow() const {
+  return circular_buffer_.size();
+}
+
+void QueueingTimeEstimator::RunningAverage::Add(base::TimeDelta bin_value) {
+  running_sum_ -= circular_buffer_[index_];
+  circular_buffer_[index_] = bin_value;
+  running_sum_ += bin_value;
+  index_ = (index_ + 1) % circular_buffer_.size();
+}
+
+base::TimeDelta QueueingTimeEstimator::RunningAverage::GetAverage() const {
+  return running_sum_ / circular_buffer_.size();
 }
 
 // Keeps track of the queueing time.
@@ -137,7 +163,8 @@ class RecordQueueingTimeClient : public QueueingTimeEstimator::Client {
  public:
   // QueueingTimeEstimator::Client implementation:
   void OnQueueingTimeForWindowEstimated(
-      base::TimeDelta queueing_time) override {
+      base::TimeDelta queueing_time,
+      base::TimeTicks window_start_time) override {
     queueing_time_ = queueing_time;
   }
 
@@ -167,11 +194,26 @@ base::TimeDelta QueueingTimeEstimator::EstimateQueueingTimeIncludingCurrentTask(
   temporary_queueing_time_estimator_state.OnTopLevelTaskCompleted(
       &record_queueing_time_client, now);
 
-  // Report the max of the queueing time for the last full window, or the
-  // current partial window.
-  return std::max(
-      record_queueing_time_client.queueing_time(),
-      temporary_queueing_time_estimator_state.current_expected_queueing_time);
+  // Report the max of the queueing time for the last window, or the on-going
+  // window (tmp window in chart) which includes the current task.
+  //
+  //                                Estimate
+  //                                  |
+  //                                  v
+  // Actual Task     |-------------------------...
+  // Assumed Task    |----------------|
+  // Time       |---o---o---o---o---o---o-------->
+  //            0   1   2   3   4   5   6
+  //            | s | s | s | s | s | s |
+  //            |----last window----|
+  //                |----tmp window-----|
+  RunningAverage& temporary_step_queueing_times =
+      temporary_queueing_time_estimator_state.step_queueing_times;
+  temporary_step_queueing_times.Add(
+      temporary_queueing_time_estimator_state.step_expected_queueing_time);
+
+  return std::max(record_queueing_time_client.queueing_time(),
+                  temporary_step_queueing_times.GetAverage());
 }
 
 }  // namespace scheduler
