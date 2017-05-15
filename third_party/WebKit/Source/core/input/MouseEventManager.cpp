@@ -893,20 +893,27 @@ bool MouseEventManager::TryStartDrag(
 WebInputEventResult MouseEventManager::DispatchDragSrcEvent(
     const AtomicString& event_type,
     const WebMouseEvent& event) {
-  return DispatchDragEvent(event_type, GetDragState().drag_src_.Get(), event,
-                           GetDragState().drag_data_transfer_.Get());
+  return DispatchDragEvent(event_type, GetDragState().drag_src_.Get(), nullptr,
+                           event, GetDragState().drag_data_transfer_.Get());
 }
 
 WebInputEventResult MouseEventManager::DispatchDragEvent(
     const AtomicString& event_type,
     Node* drag_target,
+    Node* related_target,
     const WebMouseEvent& event,
     DataTransfer* data_transfer) {
   FrameView* view = frame_->View();
-
   // FIXME: We might want to dispatch a dragleave even if the view is gone.
   if (!view)
     return WebInputEventResult::kNotHandled;
+
+  // We should be setting relatedTarget correctly following the spec:
+  // https://html.spec.whatwg.org/multipage/interaction.html#dragevent
+  // At the same time this should prevent exposing a node from another document.
+  if (related_target &&
+      related_target->GetDocument() != drag_target->GetDocument())
+    related_target = nullptr;
 
   const bool cancelable = event_type != EventTypeNames::dragleave &&
                           event_type != EventTypeNames::dragend;
@@ -919,7 +926,8 @@ WebInputEventResult MouseEventManager::DispatchDragEvent(
       position.Y(), movement.X(), movement.Y(),
       static_cast<WebInputEvent::Modifiers>(event.GetModifiers()), 0,
       MouseEvent::WebInputEventModifiersToButtons(event.GetModifiers()),
-      nullptr, TimeTicks::FromSeconds(event.TimeStampSeconds()), data_transfer,
+      related_target, TimeTicks::FromSeconds(event.TimeStampSeconds()),
+      data_transfer,
       event.FromTouch() ? MouseEvent::kFromTouch
                         : MouseEvent::kRealOrIndistinguishable);
 

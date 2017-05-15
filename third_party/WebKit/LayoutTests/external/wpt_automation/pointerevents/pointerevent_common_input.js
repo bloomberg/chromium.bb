@@ -440,6 +440,34 @@ function penClickInTarget(targetSelector, targetFrame) {
   });
 }
 
+// Drag and drop actions
+function mouseDragAndDropInTargets(targetSelectorList) {
+  return new Promise(function(resolve, reject) {
+    if (window.eventSender) {
+      scrollPageIfNeeded(targetSelectorList[0], document);
+      var target = document.querySelector(targetSelectorList[0]);
+      var targetRect = target.getBoundingClientRect();
+      var xPosition = targetRect.left + boundaryOffset;
+      var yPosition = targetRect.top + boundaryOffset;
+      eventSender.mouseMoveTo(xPosition, yPosition);
+      eventSender.mouseDown();
+      eventSender.leapForward(100);
+      for (var i = 1; i < targetSelectorList.length; i++) {
+        scrollPageIfNeeded(targetSelectorList[i], document);
+        target = document.querySelector(targetSelectorList[i]);
+        targetRect = target.getBoundingClientRect();
+        xPosition = targetRect.left + boundaryOffset;
+        yPosition = targetRect.top + boundaryOffset;
+        eventSender.mouseMoveTo(xPosition, yPosition);
+      }
+      eventSender.mouseUp();
+      resolve();
+    } else {
+      reject();
+    }
+  });
+}
+
 // Keyboard inputs.
 function keyboardScroll(direction) {
   return new Promise(function(resolve, reject) {

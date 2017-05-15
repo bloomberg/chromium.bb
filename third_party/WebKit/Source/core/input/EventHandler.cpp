@@ -1071,7 +1071,8 @@ WebInputEventResult EventHandler::UpdateDragAndDrop(
         mouse_event_manager_->DispatchDragSrcEvent(EventTypeNames::drag, event);
       }
       event_result = mouse_event_manager_->DispatchDragEvent(
-          EventTypeNames::dragenter, new_target, event, data_transfer);
+          EventTypeNames::dragenter, new_target, drag_target_, event,
+          data_transfer);
     }
 
     if (TargetIsFrame(drag_target_.Get(), target_frame)) {
@@ -1079,8 +1080,9 @@ WebInputEventResult EventHandler::UpdateDragAndDrop(
         event_result = target_frame->GetEventHandler().UpdateDragAndDrop(
             event, data_transfer);
     } else if (drag_target_) {
-      mouse_event_manager_->DispatchDragEvent(
-          EventTypeNames::dragleave, drag_target_.Get(), event, data_transfer);
+      mouse_event_manager_->DispatchDragEvent(EventTypeNames::dragleave,
+                                              drag_target_.Get(), new_target,
+                                              event, data_transfer);
     }
 
     if (new_target) {
@@ -1106,7 +1108,7 @@ WebInputEventResult EventHandler::UpdateDragAndDrop(
         mouse_event_manager_->DispatchDragSrcEvent(EventTypeNames::drag, event);
       }
       event_result = mouse_event_manager_->DispatchDragEvent(
-          EventTypeNames::dragover, new_target, event, data_transfer);
+          EventTypeNames::dragover, new_target, nullptr, event, data_transfer);
       should_only_fire_drag_over_event_ = false;
     }
   }
@@ -1124,8 +1126,9 @@ void EventHandler::CancelDragAndDrop(const WebMouseEvent& event,
   } else if (drag_target_.Get()) {
     if (mouse_event_manager_->GetDragState().drag_src_)
       mouse_event_manager_->DispatchDragSrcEvent(EventTypeNames::drag, event);
-    mouse_event_manager_->DispatchDragEvent(
-        EventTypeNames::dragleave, drag_target_.Get(), event, data_transfer);
+    mouse_event_manager_->DispatchDragEvent(EventTypeNames::dragleave,
+                                            drag_target_.Get(), nullptr, event,
+                                            data_transfer);
   }
   ClearDragState();
 }
@@ -1141,7 +1144,8 @@ WebInputEventResult EventHandler::PerformDragAndDrop(
           event, data_transfer);
   } else if (drag_target_.Get()) {
     result = mouse_event_manager_->DispatchDragEvent(
-        EventTypeNames::drop, drag_target_.Get(), event, data_transfer);
+        EventTypeNames::drop, drag_target_.Get(), nullptr, event,
+        data_transfer);
   }
   ClearDragState();
   return result;
