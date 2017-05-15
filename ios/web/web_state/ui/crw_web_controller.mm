@@ -4743,8 +4743,10 @@ registerLoadRequestForURL:(const GURL&)requestURL
   }
 
   if (!navigationWasCommitted && ![_pendingNavigationInfo cancelled]) {
-    // A fast back/forward within the same origin does not call
+    // A fast back navigation caused by pushState does not call
     // |didCommitNavigation:|, so signal page change explicitly.
+    // TODO(crbug.com/659816): Because back-forward navigation is disabled for
+    // pages that used push/replace State API, this code will not be executed.
     DCHECK_EQ(_documentURL.GetOrigin(), webViewURL.GetOrigin());
     BOOL isSameDocumentNavigation =
         [self isKVOChangePotentialSameDocumentNavigationToURL:webViewURL];
@@ -4752,6 +4754,8 @@ registerLoadRequestForURL:(const GURL&)requestURL
     [self webPageChanged];
 
     // Same document navigation does not contain response headers.
+    // TODO(crbug.com/713836): Instead of creating a new context, find
+    // existing navigation context stored in |_navigationStates| and use it.
     std::unique_ptr<web::NavigationContextImpl> context =
         web::NavigationContextImpl::CreateNavigationContext(_webStateImpl,
                                                             webViewURL);
