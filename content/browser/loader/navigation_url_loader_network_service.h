@@ -6,7 +6,6 @@
 #define CONTENT_BROWSER_LOADER_NAVIGATION_URL_LOADER_NETWORK_SERVICE_H_
 
 #include "base/macros.h"
-#include "base/memory/weak_ptr.h"
 #include "content/browser/loader/navigation_url_loader.h"
 #include "content/common/content_export.h"
 #include "content/common/url_loader.mojom.h"
@@ -66,26 +65,14 @@ class NavigationURLLoaderNetworkService : public NavigationURLLoader,
   void OnComplete(
       const ResourceRequestCompletionStatus& completion_status) override;
 
-  // Initiates the request.
-  void StartURLRequest(mojom::URLLoaderFactoryPtrInfo url_loader_factory_info,
-                       std::unique_ptr<ResourceRequest> request);
-
  private:
-  void ConnectURLLoaderFactory(
-      std::unique_ptr<service_manager::Connector> connector);
-
-  mojom::URLLoaderFactory* GetURLLoaderFactory();
-
   NavigationURLLoaderDelegate* delegate_;
 
-  mojom::URLLoaderFactoryPtr url_loader_factory_;
   mojo::Binding<mojom::URLLoaderClient> binding_;
   std::unique_ptr<NavigationRequestInfo> request_info_;
   mojom::URLLoaderAssociatedPtr url_loader_associated_ptr_;
   scoped_refptr<ResourceResponse> response_;
   SSLStatus ssl_status_;
-
-  base::WeakPtrFactory<NavigationURLLoaderNetworkService> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(NavigationURLLoaderNetworkService);
 };
