@@ -9,15 +9,9 @@ function registerPaymentApp() {
         return navigator.serviceWorker.ready;
       })
     .then(registration => {
-        return registration.paymentManager.setManifest({
-            name: 'Payment App',
-            icon: 'payment-app-icon',
-            options: [{
-              name: 'Visa ****',
-              icon: 'payment-app-icon',
-              id: 'payment-app-id',
-              enabledMethods: ['visa']
-            }]
+        return registration.paymentManager.instruments.set('payment-app-id', {
+            name: 'Visa ****',
+            enabledMethods: ['visa']
           });
       })
     .then(result => {

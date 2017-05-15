@@ -146,24 +146,25 @@ TEST_F(PaymentAppProviderTest, GetAllManifestsTest) {
 }
 
 TEST_F(PaymentAppProviderTest, InvokePaymentAppTest) {
-  static const struct {
-    const char* scopeUrl;
-    const char* scriptUrl;
-  } kPaymentAppInfo[] = {
-      {"https://example.com/a", "https://example.com/a/script.js"},
-      {"https://example.com/b", "https://example.com/b/script.js"},
-      {"https://example.com/c", "https://example.com/c/script.js"}};
+  PaymentManager* manager1 = CreatePaymentManager(
+      GURL("https://hellopay.com/a"), GURL("https://hellopay.com/a/script.js"));
+  PaymentManager* manager2 = CreatePaymentManager(
+      GURL("https://bobpay.com/b"), GURL("https://bobpay.com/b/script.js"));
 
-  for (size_t i = 0; i < arraysize(kPaymentAppInfo); i++) {
-    CreatePaymentApp(GURL(kPaymentAppInfo[i].scopeUrl),
-                     GURL(kPaymentAppInfo[i].scriptUrl));
-  }
+  PaymentHandlerStatus status;
+  SetPaymentInstrument(manager1, "test_key1",
+                       payments::mojom::PaymentInstrument::New(),
+                       base::Bind(&SetPaymentInstrumentCallback, &status));
+  SetPaymentInstrument(manager2, "test_key2",
+                       payments::mojom::PaymentInstrument::New(),
+                       base::Bind(&SetPaymentInstrumentCallback, &status));
+  SetPaymentInstrument(manager2, "test_key3",
+                       payments::mojom::PaymentInstrument::New(),
+                       base::Bind(&SetPaymentInstrumentCallback, &status));
 
-  PaymentAppProvider::Manifests manifests;
-  bool called = false;
-  GetAllManifests(base::Bind(&GetAllManifestsCallback, &called, &manifests));
-  ASSERT_TRUE(called);
-  ASSERT_EQ(3U, manifests.size());
+  PaymentAppProvider::PaymentApps apps;
+  GetAllPaymentApps(base::Bind(&GetAllPaymentAppsCallback, &apps));
+  ASSERT_EQ(2U, apps.size());
 
   payments::mojom::PaymentAppRequestPtr app_request =
       payments::mojom::PaymentAppRequest::New();
@@ -171,13 +172,14 @@ TEST_F(PaymentAppProviderTest, InvokePaymentAppTest) {
   app_request->total = payments::mojom::PaymentItem::New();
   app_request->total->amount = payments::mojom::PaymentCurrencyAmount::New();
 
-  called = false;
-  InvokePaymentApp(manifests[1].first, std::move(app_request),
+  bool called = false;
+  InvokePaymentApp(apps[GURL("https://hellopay.com/")][0]->registration_id,
+                   std::move(app_request),
                    base::Bind(&InvokePaymentAppCallback, &called));
   ASSERT_TRUE(called);
 
-  EXPECT_EQ(manifests[1].first, last_sw_registration_id());
-  EXPECT_EQ(GURL(kPaymentAppInfo[1].scopeUrl), last_sw_scope_url());
+  EXPECT_EQ(apps[GURL("https://hellopay.com/")][0]->registration_id,
+            last_sw_registration_id());
 }
 
 TEST_F(PaymentAppProviderTest, GetAllPaymentAppsTest) {
