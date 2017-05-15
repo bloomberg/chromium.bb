@@ -1,0 +1,64 @@
+<html>
+<head>
+<script src="../inspector-test.js"></script>
+<script src="../resources-test.js"></script>
+<script src="../console-test.js"></script>
+<script src="../indexeddb/indexeddb-test.js"></script>
+<script>
+
+async function test()
+{
+
+    function createIndexedDB(callback) {
+        var mainFrameId = InspectorTest.resourceTreeModel.mainFrame.id;
+        var model = InspectorTest.mainTarget.model(Resources.IndexedDBModel);
+        InspectorTest.createDatabase(mainFrameId, 'Database1', () => {
+            var event = model.addEventListener(Resources.IndexedDBModel.Events.DatabaseAdded, () => {
+                Common.EventTarget.removeEventListeners([event]);
+                callback();
+            });
+            model.refreshDatabaseNames();
+        });
+    }
+
+    function dump(node, prefix)
+    {
+        for (var child of node.children()) {
+            InspectorTest.addResult(prefix + child.listItemElement.textContent);
+            dump(child, prefix + '  ');
+        }
+    }
+
+    function dumpCurrentState(label) {
+        var view = UI.panels.resources;
+        InspectorTest.addResult(label);
+        dump(view._sidebar._sidebarTree.rootElement(), '');
+        var path = [];
+        for (var selected = view._sidebar._sidebarTree.selectedTreeElement; selected; selected = selected.parent) {
+            if (selected.itemURL)
+                path.push(selected.itemURL);
+        }
+        InspectorTest.addResult('Selection: ' + JSON.stringify(path));
+        InspectorTest.addResult('Visible view is a cookie view: ' + (view.visibleView instanceof Resources.CookieItemsView));
+    }
+
+    function fireFrameNavigated() {
+        var rtm = InspectorTest.resourceTreeModel;
+        rtm.dispatchEventToListeners(SDK.ResourceTreeModel.Events.FrameNavigated, rtm.mainFrame);
+    }
+
+    await new Promise(createIndexedDB);
+    await InspectorTest.createWebSQLDatabase('database-for-test');
+    UI.viewManager.showView('resources');
+    UI.panels.resources._sidebar.cookieListTreeElement.firstChild().select(false, true);
+    dumpCurrentState('Initial state:');
+    await InspectorTest.reloadPagePromise();
+    dumpCurrentState('After navigation:');
+    InspectorTest.completeTest();
+}
+</script>
+</head>
+<body onload="runTest()">
+<p>Tests Application Panel response to a main frame navigation.</p>
+</body>
+</html>
