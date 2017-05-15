@@ -8,7 +8,9 @@ namespace remoting {
 
 FakeCanvas::FakeCanvas() : weak_factory_(this) {}
 
-FakeCanvas::~FakeCanvas() {}
+FakeCanvas::~FakeCanvas() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+}
 
 void FakeCanvas::Clear() {}
 

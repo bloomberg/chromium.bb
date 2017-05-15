@@ -40,6 +40,8 @@ ChromotingClient::ChromotingClient(
 }
 
 ChromotingClient::~ChromotingClient() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
   if (signal_strategy_)
       signal_strategy_->RemoveListener(this);
 }

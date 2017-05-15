@@ -35,7 +35,9 @@ const GLchar* a_position = "a_position";
 // integration. This will draw an expanding checkerboard pattern to the screen.
 GlDemoScreen::GlDemoScreen() : weak_factory_(this)  {}
 
-GlDemoScreen::~GlDemoScreen() {}
+GlDemoScreen::~GlDemoScreen() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+}
 
 void GlDemoScreen::SetCanvas(base::WeakPtr<Canvas> canvas) {
   canvas_ = canvas;

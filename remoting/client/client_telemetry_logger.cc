@@ -36,7 +36,9 @@ ClientTelemetryLogger::ClientTelemetryLogger(
     ChromotingEvent::Mode mode)
     : mode_(mode), log_writer_(log_writer) {}
 
-ClientTelemetryLogger::~ClientTelemetryLogger() {}
+ClientTelemetryLogger::~ClientTelemetryLogger() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+}
 
 void ClientTelemetryLogger::SetHostInfo(const std::string& host_version,
                                         ChromotingEvent::Os host_os,

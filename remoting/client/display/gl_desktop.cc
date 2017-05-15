@@ -59,7 +59,9 @@ struct GlDesktop::GlDesktopTextureContainer {
 
 GlDesktop::GlDesktop() : weak_factory_(this) {}
 
-GlDesktop::~GlDesktop() {}
+GlDesktop::~GlDesktop() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+}
 
 void GlDesktop::SetCanvas(base::WeakPtr<Canvas> canvas) {
   last_desktop_size_.set(0, 0);
