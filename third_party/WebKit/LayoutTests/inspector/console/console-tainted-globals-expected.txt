@@ -9,23 +9,23 @@ Running: dumpConsoleMessages
 testOverriddenArrayPushAndMathMax()
 (3) [1, 2, 3]
 testOverriddenConstructorName()
-Object {constructor: Object}
+Object {constructor: {…}}
 testThrowConstructorName()
 Object {}
 testOverriddenIsFinite()
-(2) ["arg1", "arg2", callee: function, Symbol(Symbol.iterator): function]
+(2) ["arg1", "arg2", callee: ƒ, Symbol(Symbol.iterator): ƒ]
 testOverriddenError()
 Object {result: "PASS"}
 restoreError()
 Object {result: "PASS"}
 testOverriddenToString(function func() {}, true)
-function #<Function>
+ƒ #<Function>
 testOverriddenToString(function func() {}, false)
-function #<Function>
+ƒ #<Function>
 testOverriddenToString(new Function, true)
-function #<Function>
+ƒ #<Function>
 testOverriddenToString(new Function, false)
-function #<Function>
+ƒ #<Function>
 testOverriddenToString(/^regex$/, true)
 #<RegExp>
 testOverriddenToString(/^regex$/, false)
@@ -35,11 +35,11 @@ testOverriddenToString(new Date, true)
 testOverriddenToString(new Date, false)
 #<Date>
 testOverriddenToString({}, true)
-Object {toString: function, valueOf: function}
+Object {toString: ƒ, valueOf: ƒ}
 testOverriddenToString({}, false)
-Object {toString: function, valueOf: function}
+Object {toString: ƒ, valueOf: ƒ}
 testOverriddenToString(new Number(1), true)
-Number {[[PrimitiveValue]]: 1, toString: function, valueOf: function}
+Number {[[PrimitiveValue]]: 1, toString: ƒ, valueOf: ƒ}
 testOverriddenToString(new Number(1), false)
-Number {[[PrimitiveValue]]: 1, toString: function, valueOf: function}
+Number {[[PrimitiveValue]]: 1, toString: ƒ, valueOf: ƒ}
 
