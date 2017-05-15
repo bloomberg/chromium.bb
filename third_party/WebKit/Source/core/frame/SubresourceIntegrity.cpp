@@ -381,7 +381,7 @@ SubresourceIntegrity::ParseIntegrityAttribute(
       continue;
     }
 
-    ASSERT(parse_result == kAlgorithmValid);
+    DCHECK_EQ(parse_result, kAlgorithmValid);
 
     if (!ParseDigest(position, current_integrity_end, digest)) {
       error = true;

@@ -22,7 +22,7 @@ DeprecatedScheduleStyleRecalcDuringLayout::
   // proper state. The style recalc will still have been schedule, however.
   if (was_in_perform_layout_ &&
       lifecycle_.GetState() != DocumentLifecycle::kInPerformLayout) {
-    ASSERT(lifecycle_.GetState() == DocumentLifecycle::kVisualUpdatePending);
+    DCHECK_EQ(lifecycle_.GetState(), DocumentLifecycle::kVisualUpdatePending);
     lifecycle_.AdvanceTo(DocumentLifecycle::kInPerformLayout);
   }
 }

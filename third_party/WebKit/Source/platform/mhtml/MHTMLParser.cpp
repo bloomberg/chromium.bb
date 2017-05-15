@@ -303,7 +303,7 @@ ArchiveResource* MHTMLParser::ParseNextPart(
       return nullptr;
     }
     end_of_part_reached = true;
-    DCHECK_EQ(next_chars.size(), 2UL);
+    DCHECK(next_chars.size() == 2);
     end_of_archive_reached = (next_chars[0] == '-' && next_chars[1] == '-');
     if (!end_of_archive_reached) {
       String line = line_reader_.NextChunkAsUTF8StringWithLatin1Fallback();

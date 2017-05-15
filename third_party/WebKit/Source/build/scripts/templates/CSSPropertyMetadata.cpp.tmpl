@@ -65,7 +65,7 @@ bool CSSPropertyMetadata::IsEnabledProperty(CSSPropertyID unresolvedProperty) {
 
   if (unresolvedProperty == CSSPropertyVariable)
     return true;
-  ASSERT(unresolvedProperty == CSSPropertyApplyAtRule);
+  DCHECK_EQ(unresolvedProperty, CSSPropertyApplyAtRule);
   return RuntimeEnabledFeatures::cssApplyAtRulesEnabled();
 }
 
