@@ -584,7 +584,9 @@ class CONTENT_EXPORT RenderThreadImpl
   void OnRendererHidden();
   void OnRendererVisible();
 
-  void RecordPurgeAndSuspendMemoryGrowthMetrics() const;
+  void RecordPurgeAndSuspendMemoryGrowthMetrics(
+      const char* suffix,
+      int foregrounded_count_when_purged);
 
   void ReleaseFreeMemory();
 
@@ -786,8 +788,8 @@ class CONTENT_EXPORT RenderThreadImpl
   mojom::RenderMessageFilterAssociatedPtr render_message_filter_;
 
   RendererMemoryMetrics purge_and_suspend_memory_metrics_;
-  base::CancelableClosure record_purge_suspend_growth_metric_closure_;
   bool needs_to_record_first_active_paint_;
+  int process_foregrounded_count_;
 
   int32_t client_id_;
 

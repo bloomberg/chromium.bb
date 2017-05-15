@@ -903,9 +903,7 @@ void RenderThreadImpl::Init(
       base::ThreadPriority::BACKGROUND);
 #endif
 
-  record_purge_suspend_growth_metric_closure_.Reset(
-      base::Bind(&RenderThreadImpl::RecordPurgeAndSuspendMemoryGrowthMetrics,
-                 base::Unretained(this)));
+  process_foregrounded_count_ = 0;
   needs_to_record_first_active_paint_ = false;
 
   base::MemoryCoordinatorClientRegistry::GetInstance()->Register(this);
@@ -1659,11 +1657,7 @@ void RenderThreadImpl::OnProcessBackgrounded(bool backgrounded) {
     needs_to_record_first_active_paint_ = false;
   } else {
     renderer_scheduler_->OnRendererForegrounded();
-
-    record_purge_suspend_growth_metric_closure_.Cancel();
-    record_purge_suspend_growth_metric_closure_.Reset(
-        base::Bind(&RenderThreadImpl::RecordPurgeAndSuspendMemoryGrowthMetrics,
-                   base::Unretained(this)));
+    process_foregrounded_count_++;
   }
 }
 
@@ -1684,15 +1678,23 @@ void RenderThreadImpl::OnProcessPurgeAndSuspend() {
 
   purge_and_suspend_memory_metrics_ = memory_metrics;
   // record how many memory usage increases after purged.
+  // Since RenderThreadImpl is kept alive while its render process is alive,
+  // it is possible to use base::Unretained(this) here.
   GetRendererScheduler()->DefaultTaskRunner()->PostDelayedTask(
-      FROM_HERE, record_purge_suspend_growth_metric_closure_.callback(),
-      base::TimeDelta::FromMinutes(5));
+      FROM_HERE,
+      base::Bind(&RenderThreadImpl::RecordPurgeAndSuspendMemoryGrowthMetrics,
+                 base::Unretained(this), "30min", process_foregrounded_count_),
+      base::TimeDelta::FromMinutes(30));
   GetRendererScheduler()->DefaultTaskRunner()->PostDelayedTask(
-      FROM_HERE, record_purge_suspend_growth_metric_closure_.callback(),
-      base::TimeDelta::FromMinutes(10));
+      FROM_HERE,
+      base::Bind(&RenderThreadImpl::RecordPurgeAndSuspendMemoryGrowthMetrics,
+                 base::Unretained(this), "60min", process_foregrounded_count_),
+      base::TimeDelta::FromMinutes(60));
   GetRendererScheduler()->DefaultTaskRunner()->PostDelayedTask(
-      FROM_HERE, record_purge_suspend_growth_metric_closure_.callback(),
-      base::TimeDelta::FromMinutes(15));
+      FROM_HERE,
+      base::Bind(&RenderThreadImpl::RecordPurgeAndSuspendMemoryGrowthMetrics,
+                 base::Unretained(this), "90min", process_foregrounded_count_),
+      base::TimeDelta::FromMinutes(90));
 }
 
 // TODO(tasak): Replace the following GetMallocUsage() with memory-infra
@@ -1794,39 +1796,53 @@ bool RenderThreadImpl::GetRendererMemoryMetrics(
        ? current.allocator - previous.allocator         \
        : 0)
 
-void RenderThreadImpl::RecordPurgeAndSuspendMemoryGrowthMetrics() const {
+#define UMA_HISTOGRAM_MEMORY_GROWTH_KB(basename, suffix, memory_usage) \
+  {                                                                    \
+    std::string histogram_name =                                       \
+        base::StringPrintf("%s.%s", basename, suffix);                 \
+    UMA_HISTOGRAM_MEMORY_KB(histogram_name, memory_usage);             \
+  }
+
+void RenderThreadImpl::RecordPurgeAndSuspendMemoryGrowthMetrics(
+    const char* suffix,
+    int foregrounded_count_when_purged) {
   // If this renderer is resumed, we should not update UMA.
   if (!RendererIsHidden())
+    return;
+  if (foregrounded_count_when_purged != process_foregrounded_count_)
     return;
 
   RendererMemoryMetrics memory_metrics;
   if (!GetRendererMemoryMetrics(&memory_metrics))
     return;
 
-  UMA_HISTOGRAM_MEMORY_KB(
-      "PurgeAndSuspend.Experimental.MemoryGrowth.PartitionAllocKB",
+  UMA_HISTOGRAM_MEMORY_GROWTH_KB(
+      "PurgeAndSuspend.Experimental.MemoryGrowth.PartitionAllocKB", suffix,
       GET_MEMORY_GROWTH(memory_metrics, purge_and_suspend_memory_metrics_,
                         partition_alloc_kb));
-  UMA_HISTOGRAM_MEMORY_KB(
-      "PurgeAndSuspend.Experimental.MemoryGrowth.BlinkGCKB",
+  UMA_HISTOGRAM_MEMORY_GROWTH_KB(
+      "PurgeAndSuspend.Experimental.MemoryGrowth.BlinkGCKB", suffix,
       GET_MEMORY_GROWTH(memory_metrics, purge_and_suspend_memory_metrics_,
                         blink_gc_kb));
-  UMA_HISTOGRAM_MEMORY_KB(
-      "PurgeAndSuspend.Experimental.MemoryGrowth.MallocKB",
+  UMA_HISTOGRAM_MEMORY_GROWTH_KB(
+      "PurgeAndSuspend.Experimental.MemoryGrowth.MallocKB", suffix,
       GET_MEMORY_GROWTH(memory_metrics, purge_and_suspend_memory_metrics_,
-                        malloc_mb) * 1024);
-  UMA_HISTOGRAM_MEMORY_KB(
-      "PurgeAndSuspend.Experimental.MemoryGrowth.DiscardableKB",
+                        malloc_mb) *
+          1024);
+  UMA_HISTOGRAM_MEMORY_GROWTH_KB(
+      "PurgeAndSuspend.Experimental.MemoryGrowth.DiscardableKB", suffix,
       GET_MEMORY_GROWTH(memory_metrics, purge_and_suspend_memory_metrics_,
                         discardable_kb));
-  UMA_HISTOGRAM_MEMORY_KB(
-      "PurgeAndSuspend.Experimental.MemoryGrowth.V8MainThreadIsolateKB",
+  UMA_HISTOGRAM_MEMORY_GROWTH_KB(
+      "PurgeAndSuspend.Experimental.MemoryGrowth.V8MainThreadIsolateKB", suffix,
       GET_MEMORY_GROWTH(memory_metrics, purge_and_suspend_memory_metrics_,
-                        v8_main_thread_isolate_mb) * 1024);
-  UMA_HISTOGRAM_MEMORY_KB(
-      "PurgeAndSuspend.Experimental.MemoryGrowth.TotalAllocatedKB",
+                        v8_main_thread_isolate_mb) *
+          1024);
+  UMA_HISTOGRAM_MEMORY_GROWTH_KB(
+      "PurgeAndSuspend.Experimental.MemoryGrowth.TotalAllocatedKB", suffix,
       GET_MEMORY_GROWTH(memory_metrics, purge_and_suspend_memory_metrics_,
-                        total_allocated_mb) * 1024);
+                        total_allocated_mb) *
+          1024);
 }
 
 scoped_refptr<gpu::GpuChannelHost> RenderThreadImpl::EstablishGpuChannelSync() {
