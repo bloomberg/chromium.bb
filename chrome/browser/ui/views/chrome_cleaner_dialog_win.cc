@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/views/chrome_cleaner_dialog.h"
+#include "chrome/browser/ui/views/chrome_cleaner_dialog_win.h"
 
 #include "base/strings/string16.h"
-#include "chrome/browser/safe_browsing/chrome_cleaner/chrome_cleaner_dialog_controller.h"
+#include "chrome/browser/safe_browsing/chrome_cleaner/chrome_cleaner_dialog_controller_win.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -104,7 +104,7 @@ base::string16 ChromeCleanerDialog::GetDialogButtonLabel(
 
 views::View* ChromeCleanerDialog::CreateExtraView() {
   return views::MdTextButton::CreateSecondaryUiButton(
-      this, controller_->GetAdvancedButtonLabel());
+      this, controller_->GetDetailsButtonLabel());
 }
 
 bool ChromeCleanerDialog::Accept() {
@@ -146,7 +146,7 @@ void ChromeCleanerDialog::ButtonPressed(views::Button* sender,
   // TODO(alito): Navigate to the webui version of the Chrome Cleaner UI when
   // that is implemented.
   if (controller_) {
-    controller_->AdvancedButtonClicked();
+    controller_->DetailsButtonClicked();
     controller_ = nullptr;
   }
   GetWidget()->Close();

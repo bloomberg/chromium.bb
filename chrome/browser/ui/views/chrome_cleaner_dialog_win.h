@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_VIEWS_CHROME_CLEANER_DIALOG_H_
-#define CHROME_BROWSER_UI_VIEWS_CHROME_CLEANER_DIALOG_H_
+#ifndef CHROME_BROWSER_UI_VIEWS_CHROME_CLEANER_DIALOG_WIN_H_
+#define CHROME_BROWSER_UI_VIEWS_CHROME_CLEANER_DIALOG_WIN_H_
 
 #include <memory>
 
@@ -67,4 +67,4 @@ class ChromeCleanerDialog : public views::DialogDelegateView,
   DISALLOW_COPY_AND_ASSIGN(ChromeCleanerDialog);
 };
 
-#endif  // CHROME_BROWSER_UI_VIEWS_CHROME_CLEANER_DIALOG_H_
+#endif  // CHROME_BROWSER_UI_VIEWS_CHROME_CLEANER_DIALOG_WIN_H_
