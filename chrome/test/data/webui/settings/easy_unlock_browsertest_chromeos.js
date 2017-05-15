@@ -20,12 +20,6 @@ SettingsEasyUnlockBrowserTest.prototype = {
   extraLibraries: PolymerTest.getLibraries(ROOT_PATH).concat([
     'test_browser_proxy.js',
   ]),
-
-  /** @override */
-  preLoad: function() {
-    SettingsPageBrowserTest.prototype.preLoad.call(this);
-    settingsHidePagesByDefaultForTest = true;
-  },
 };
 
 // Times out on debug builders and may time out on memory bots because

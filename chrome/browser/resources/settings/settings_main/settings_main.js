@@ -74,12 +74,7 @@ Polymer({
      * Dictionary defining page visibility.
      * @type {!GuestModePageVisibility}
      */
-    pageVisibility: {
-      type: Object,
-      value: function() {
-        return {};
-      },
-    },
+    pageVisibility: Object,
 
     showAndroidApps: Boolean,
   },
