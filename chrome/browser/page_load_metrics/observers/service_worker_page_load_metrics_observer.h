@@ -34,7 +34,7 @@ class ServiceWorkerPageLoadMetricsObserver
   void OnParseStart(
       const page_load_metrics::PageLoadTiming& timing,
       const page_load_metrics::PageLoadExtraInfo& extra_info) override;
-  void OnFirstContentfulPaint(
+  void OnFirstContentfulPaintInPage(
       const page_load_metrics::PageLoadTiming& timing,
       const page_load_metrics::PageLoadExtraInfo& extra_info) override;
   void OnDomContentLoadedEventStart(

@@ -21,7 +21,7 @@ PageLoadExtraInfo::PageLoadExtraInfo(
     UserInitiatedInfo page_end_user_initiated_info,
     const base::Optional<base::TimeDelta>& page_end_time,
     const PageLoadMetadata& main_frame_metadata,
-    const PageLoadMetadata& child_frame_metadata)
+    const PageLoadMetadata& subframe_metadata)
     : navigation_start(navigation_start),
       first_background_time(first_background_time),
       first_foreground_time(first_foreground_time),
@@ -34,7 +34,7 @@ PageLoadExtraInfo::PageLoadExtraInfo(
       page_end_user_initiated_info(page_end_user_initiated_info),
       page_end_time(page_end_time),
       main_frame_metadata(main_frame_metadata),
-      child_frame_metadata(child_frame_metadata) {}
+      subframe_metadata(subframe_metadata) {}
 
 PageLoadExtraInfo::PageLoadExtraInfo(const PageLoadExtraInfo& other) = default;
 

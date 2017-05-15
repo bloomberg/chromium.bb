@@ -43,8 +43,9 @@ class DelayNavigationPageLoadMetricsObserver
       const page_load_metrics::PageLoadExtraInfo& info) override;
   void OnNavigationDelayComplete(base::TimeDelta scheduled_delay,
                                  base::TimeDelta actual_delay) override;
-  void OnFirstPaint(const page_load_metrics::PageLoadTiming& timing,
-                    const page_load_metrics::PageLoadExtraInfo& info) override;
+  void OnFirstPaintInPage(
+      const page_load_metrics::PageLoadTiming& timing,
+      const page_load_metrics::PageLoadExtraInfo& info) override;
 
  private:
   bool delay_navigation_ = false;

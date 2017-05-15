@@ -70,9 +70,10 @@ ResourcePrefetchPredictorPageLoadMetricsObserver::OnHidden(
   return CONTINUE_OBSERVING;
 }
 
-void ResourcePrefetchPredictorPageLoadMetricsObserver::OnFirstContentfulPaint(
-    const page_load_metrics::PageLoadTiming& timing,
-    const page_load_metrics::PageLoadExtraInfo& extra_info) {
+void ResourcePrefetchPredictorPageLoadMetricsObserver::
+    OnFirstContentfulPaintInPage(
+        const page_load_metrics::PageLoadTiming& timing,
+        const page_load_metrics::PageLoadExtraInfo& extra_info) {
   predictors::NavigationID navigation_id(web_contents_);
 
   predictor_->RecordFirstContentfulPaint(
@@ -85,9 +86,10 @@ void ResourcePrefetchPredictorPageLoadMetricsObserver::OnFirstContentfulPaint(
   }
 }
 
-void ResourcePrefetchPredictorPageLoadMetricsObserver::OnFirstMeaningfulPaint(
-    const page_load_metrics::PageLoadTiming& timing,
-    const page_load_metrics::PageLoadExtraInfo& extra_info) {
+void ResourcePrefetchPredictorPageLoadMetricsObserver::
+    OnFirstMeaningfulPaintInMainFrameDocument(
+        const page_load_metrics::PageLoadTiming& timing,
+        const page_load_metrics::PageLoadExtraInfo& extra_info) {
   if (record_histograms_) {
     PAGE_LOAD_HISTOGRAM(
         internal::kHistogramResourcePrefetchPredictorFirstMeaningfulPaint,

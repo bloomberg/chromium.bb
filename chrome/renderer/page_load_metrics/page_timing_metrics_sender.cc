@@ -30,8 +30,7 @@ PageTimingMetricsSender::PageTimingMetricsSender(
       last_timing_(initial_timing),
       metadata_(PageLoadMetadata()) {
   if (!initial_timing.IsEmpty()) {
-    // Send an initial IPC relatively early to help track aborts.
-    EnsureSendTimer(kInitialTimerDelayMillis);
+    EnsureSendTimer();
   }
 }
 
@@ -49,7 +48,7 @@ void PageTimingMetricsSender::DidObserveLoadingBehavior(
   if (behavior & metadata_.behavior_flags)
     return;
   metadata_.behavior_flags |= behavior;
-  EnsureSendTimer(kTimerDelayMillis);
+  EnsureSendTimer();
 }
 
 void PageTimingMetricsSender::Send(const PageLoadTiming& timing) {
@@ -65,17 +64,23 @@ void PageTimingMetricsSender::Send(const PageLoadTiming& timing) {
   }
 
   last_timing_ = timing;
-  EnsureSendTimer(kTimerDelayMillis);
+  EnsureSendTimer();
 }
 
-void PageTimingMetricsSender::EnsureSendTimer(int delay) {
-  if (!timer_->IsRunning())
+void PageTimingMetricsSender::EnsureSendTimer() {
+  if (!timer_->IsRunning()) {
+    // Send the first IPC eagerly to make sure the receiving side knows we're
+    // sending metrics as soon as possible.
+    int delay_ms =
+        have_sent_ipc_ ? kTimerDelayMillis : kInitialTimerDelayMillis;
     timer_->Start(
-        FROM_HERE, base::TimeDelta::FromMilliseconds(delay),
+        FROM_HERE, base::TimeDelta::FromMilliseconds(delay_ms),
         base::Bind(&PageTimingMetricsSender::SendNow, base::Unretained(this)));
+  }
 }
 
 void PageTimingMetricsSender::SendNow() {
+  have_sent_ipc_ = true;
   ipc_sender_->Send(new PageLoadMetricsMsg_TimingUpdated(
       routing_id_, last_timing_, metadata_));
 }

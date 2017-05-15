@@ -40,7 +40,7 @@ void DelayNavigationPageLoadMetricsObserver::OnNavigationDelayComplete(
   actual_delay_ = actual_delay;
 }
 
-void DelayNavigationPageLoadMetricsObserver::OnFirstPaint(
+void DelayNavigationPageLoadMetricsObserver::OnFirstPaintInPage(
     const page_load_metrics::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& info) {
   if (!delay_navigation_)

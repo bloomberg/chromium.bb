@@ -73,14 +73,16 @@ class FromGWSPageLoadMetricsLogger {
       const page_load_metrics::PageLoadExtraInfo& extra_info);
   void OnLoadEventStart(const page_load_metrics::PageLoadTiming& timing,
                         const page_load_metrics::PageLoadExtraInfo& extra_info);
-  void OnFirstPaint(const page_load_metrics::PageLoadTiming& timing,
-                    const page_load_metrics::PageLoadExtraInfo& extra_info);
-  void OnFirstTextPaint(const page_load_metrics::PageLoadTiming& timing,
-                        const page_load_metrics::PageLoadExtraInfo& extra_info);
-  void OnFirstImagePaint(
+  void OnFirstPaintInPage(
       const page_load_metrics::PageLoadTiming& timing,
       const page_load_metrics::PageLoadExtraInfo& extra_info);
-  void OnFirstContentfulPaint(
+  void OnFirstTextPaintInPage(
+      const page_load_metrics::PageLoadTiming& timing,
+      const page_load_metrics::PageLoadExtraInfo& extra_info);
+  void OnFirstImagePaintInPage(
+      const page_load_metrics::PageLoadTiming& timing,
+      const page_load_metrics::PageLoadExtraInfo& extra_info);
+  void OnFirstContentfulPaintInPage(
       const page_load_metrics::PageLoadTiming& timing,
       const page_load_metrics::PageLoadExtraInfo& extra_info);
   void OnParseStart(const page_load_metrics::PageLoadTiming& timing,
@@ -160,16 +162,16 @@ class FromGWSPageLoadMetricsObserver
   void OnLoadEventStart(
       const page_load_metrics::PageLoadTiming& timing,
       const page_load_metrics::PageLoadExtraInfo& extra_info) override;
-  void OnFirstPaint(
+  void OnFirstPaintInPage(
       const page_load_metrics::PageLoadTiming& timing,
       const page_load_metrics::PageLoadExtraInfo& extra_info) override;
-  void OnFirstTextPaint(
+  void OnFirstTextPaintInPage(
       const page_load_metrics::PageLoadTiming& timing,
       const page_load_metrics::PageLoadExtraInfo& extra_info) override;
-  void OnFirstImagePaint(
+  void OnFirstImagePaintInPage(
       const page_load_metrics::PageLoadTiming& timing,
       const page_load_metrics::PageLoadExtraInfo& extra_info) override;
-  void OnFirstContentfulPaint(
+  void OnFirstContentfulPaintInPage(
       const page_load_metrics::PageLoadTiming& timing,
       const page_load_metrics::PageLoadExtraInfo& extra_info) override;
   void OnParseStart(

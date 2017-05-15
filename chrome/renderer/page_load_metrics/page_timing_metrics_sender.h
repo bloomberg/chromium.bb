@@ -39,7 +39,7 @@ class PageTimingMetricsSender {
   base::Timer* timer() const { return timer_.get(); }
 
  private:
-  void EnsureSendTimer(int delay);
+  void EnsureSendTimer();
   void SendNow();
 
   IPC::Sender* const ipc_sender_;
@@ -50,6 +50,8 @@ class PageTimingMetricsSender {
   // The the sender keep track of metadata as it comes in, because the sender is
   // scoped to a single committed load.
   PageLoadMetadata metadata_;
+
+  bool have_sent_ipc_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(PageTimingMetricsSender);
 };

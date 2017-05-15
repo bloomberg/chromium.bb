@@ -599,19 +599,15 @@ void MetricsWebContentsObserver::OnTimingUpdated(
   if (error)
     return;
 
-  if (render_frame_host->GetParent() != nullptr) {
-    // Child frames may send PageLoadMetadata updates, but not PageLoadTiming
-    // updates.
-    if (!timing.IsEmpty())
-      RecordInternalError(ERR_TIMING_IPC_FROM_SUBFRAME);
-    committed_load_->UpdateChildFrameMetadata(metadata);
-    return;
+  const bool is_main_frame = (render_frame_host->GetParent() == nullptr);
+  if (is_main_frame) {
+    committed_load_->UpdateTiming(timing, metadata);
+  } else {
+    committed_load_->UpdateSubFrameTiming(render_frame_host, timing, metadata);
   }
 
-  committed_load_->UpdateTiming(timing, metadata);
-
   for (auto& observer : testing_observers_)
-    observer.OnTimingUpdated(true /* is_main_frame */, timing, metadata);
+    observer.OnTimingUpdated(is_main_frame, timing, metadata);
 }
 
 bool MetricsWebContentsObserver::ShouldTrackNavigation(

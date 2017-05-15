@@ -43,7 +43,7 @@ NoStatePrefetchPageLoadMetricsObserver::OnCommit(
   return CONTINUE_OBSERVING;
 }
 
-void NoStatePrefetchPageLoadMetricsObserver::OnFirstContentfulPaint(
+void NoStatePrefetchPageLoadMetricsObserver::OnFirstContentfulPaintInPage(
     const page_load_metrics::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& extra_info) {
   DCHECK(timing.paint_timing.first_contentful_paint.has_value());

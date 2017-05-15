@@ -68,7 +68,7 @@ void ProtocolPageLoadMetricsObserver::OnParseStart(
   }
 }
 
-void ProtocolPageLoadMetricsObserver::OnFirstContentfulPaint(
+void ProtocolPageLoadMetricsObserver::OnFirstContentfulPaintInPage(
     const page_load_metrics::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& extra_info) {
   switch (connection_info_) {
@@ -126,7 +126,7 @@ void ProtocolPageLoadMetricsObserver::OnFirstContentfulPaint(
   }
 }
 
-void ProtocolPageLoadMetricsObserver::OnFirstMeaningfulPaint(
+void ProtocolPageLoadMetricsObserver::OnFirstMeaningfulPaintInMainFrameDocument(
     const page_load_metrics::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& extra_info) {
   switch (connection_info_) {

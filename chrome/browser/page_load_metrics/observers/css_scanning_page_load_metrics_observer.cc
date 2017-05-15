@@ -35,7 +35,7 @@ CssScanningMetricsObserver::OnHidden(
   return STOP_OBSERVING;
 }
 
-void CssScanningMetricsObserver::OnFirstContentfulPaint(
+void CssScanningMetricsObserver::OnFirstContentfulPaintInPage(
     const page_load_metrics::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& info) {
   if (!css_preload_found_)
@@ -48,7 +48,7 @@ void CssScanningMetricsObserver::OnFirstContentfulPaint(
           timing.parse_timing.parse_start.value());
 }
 
-void CssScanningMetricsObserver::OnFirstMeaningfulPaint(
+void CssScanningMetricsObserver::OnFirstMeaningfulPaintInMainFrameDocument(
     const page_load_metrics::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& info) {
   if (!css_preload_found_)

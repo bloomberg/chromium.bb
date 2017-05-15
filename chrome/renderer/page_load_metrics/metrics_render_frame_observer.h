@@ -51,7 +51,6 @@ class MetricsRenderFrameObserver : public content::RenderFrameObserver {
   virtual PageLoadTiming GetTiming() const;
   virtual std::unique_ptr<base::Timer> CreateTimer() const;
   virtual bool HasNoRenderFrame() const;
-  virtual bool IsMainFrame() const;
 
   DISALLOW_COPY_AND_ASSIGN(MetricsRenderFrameObserver);
 };

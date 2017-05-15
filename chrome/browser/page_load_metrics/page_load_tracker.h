@@ -26,6 +26,7 @@ class WebInputEvent;
 
 namespace content {
 class NavigationHandle;
+class RenderFrameHost;
 }  // namespace content
 
 namespace page_load_metrics {
@@ -152,8 +153,8 @@ enum InternalErrorLoadEvent {
   // No page load end time was recorded for this page load.
   ERR_NO_PAGE_LOAD_END_TIME,
 
-  // Received a timing update from a subframe.
-  ERR_TIMING_IPC_FROM_SUBFRAME,
+  // Received a timing update from a subframe (deprecated).
+  DEPRECATED_ERR_TIMING_IPC_FROM_SUBFRAME,
 
   // A timing IPC was sent from the renderer that contained timing data which
   // was inconsistent with our timing data for the currently committed load.
@@ -167,6 +168,10 @@ enum InternalErrorLoadEvent {
   // A timing IPC was sent from the renderer that contained invalid timing data
   // (e.g. out of order timings, or other issues).
   ERR_BAD_TIMING_IPC_INVALID_TIMING,
+
+  // We received a navigation start for a child frame that is before the
+  // navigation start of the main frame.
+  ERR_SUBFRAME_NAVIGATION_START_BEFORE_MAIN_FRAME,
 
   // Add values before this final count.
   ERR_LAST_ENTRY,
@@ -222,10 +227,14 @@ class PageLoadTracker {
   void UpdateTiming(const PageLoadTiming& timing,
                     const PageLoadMetadata& metadata);
 
+  void UpdateSubFrameTiming(content::RenderFrameHost* render_frame_host,
+                            const PageLoadTiming& new_timing,
+                            const PageLoadMetadata& new_metadata);
+
   // Update metadata for child frames. Updates for child frames arrive
   // separately from updates for the main frame, so aren't included in
   // UpdateTiming.
-  void UpdateChildFrameMetadata(const PageLoadMetadata& child_metadata);
+  void UpdateSubFrameMetadata(const PageLoadMetadata& subframe_metadata);
 
   void OnStartedResource(
       const ExtraRequestStartInfo& extra_request_started_info);
@@ -306,6 +315,8 @@ class PageLoadTracker {
                                  base::TimeDelta actual_delay);
 
  private:
+  using FrameTreeNodeId = int;
+
   // This function converts a TimeTicks value taken in the browser process
   // to navigation_start_ if:
   // - base::TimeTicks is not comparable across processes because the clock
@@ -325,6 +336,12 @@ class PageLoadTracker {
   void LogAbortChainHistograms(content::NavigationHandle* final_navigation);
 
   void MaybeUpdateURL(content::NavigationHandle* navigation_handle);
+
+  // Merge values from |new_paint_timing| into |merged_page_timing_|, offsetting
+  // any new timings by the |navigation_start_offset|.
+  void MergePaintTiming(base::TimeDelta navigation_start_offset,
+                        const page_load_metrics::PaintTiming& new_paint_timing,
+                        bool is_main_frame);
 
   UserInputTracker input_tracker_;
 
@@ -375,9 +392,13 @@ class PageLoadTracker {
   base::TimeTicks foreground_time_;
   bool started_in_foreground_;
 
-  PageLoadTiming timing_;
+  // PageLoadTiming for the currently tracked page. The fields in |paint_timing|
+  // are merged across all frames in the document. All other fields are for the
+  // main frame document.
+  PageLoadTiming merged_page_timing_;
+
   PageLoadMetadata main_frame_metadata_;
-  PageLoadMetadata child_frame_metadata_;
+  PageLoadMetadata subframe_metadata_;
 
   ui::PageTransition page_transition_;
 
@@ -402,6 +423,10 @@ class PageLoadTracker {
   PageLoadMetricsEmbedderInterface* const embedder_interface_;
 
   std::vector<std::unique_ptr<PageLoadMetricsObserver>> observers_;
+
+  // Navigation start offsets for the most recently committed document in each
+  // frame.
+  std::map<FrameTreeNodeId, base::TimeDelta> subframe_navigation_start_offset_;
 
   DISALLOW_COPY_AND_ASSIGN(PageLoadTracker);
 };

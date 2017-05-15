@@ -521,28 +521,28 @@ void FromGWSPageLoadMetricsObserver::OnLoadEventStart(
   logger_.OnLoadEventStart(timing, extra_info);
 }
 
-void FromGWSPageLoadMetricsObserver::OnFirstPaint(
+void FromGWSPageLoadMetricsObserver::OnFirstPaintInPage(
     const page_load_metrics::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& extra_info) {
-  logger_.OnFirstPaint(timing, extra_info);
+  logger_.OnFirstPaintInPage(timing, extra_info);
 }
 
-void FromGWSPageLoadMetricsObserver::OnFirstTextPaint(
+void FromGWSPageLoadMetricsObserver::OnFirstTextPaintInPage(
     const page_load_metrics::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& extra_info) {
-  logger_.OnFirstTextPaint(timing, extra_info);
+  logger_.OnFirstTextPaintInPage(timing, extra_info);
 }
 
-void FromGWSPageLoadMetricsObserver::OnFirstImagePaint(
+void FromGWSPageLoadMetricsObserver::OnFirstImagePaintInPage(
     const page_load_metrics::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& extra_info) {
-  logger_.OnFirstImagePaint(timing, extra_info);
+  logger_.OnFirstImagePaintInPage(timing, extra_info);
 }
 
-void FromGWSPageLoadMetricsObserver::OnFirstContentfulPaint(
+void FromGWSPageLoadMetricsObserver::OnFirstContentfulPaintInPage(
     const page_load_metrics::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& extra_info) {
-  logger_.OnFirstContentfulPaint(timing, extra_info);
+  logger_.OnFirstContentfulPaintInPage(timing, extra_info);
 }
 
 void FromGWSPageLoadMetricsObserver::OnParseStart(
@@ -692,7 +692,7 @@ void FromGWSPageLoadMetricsLogger::OnLoadEventStart(
   }
 }
 
-void FromGWSPageLoadMetricsLogger::OnFirstPaint(
+void FromGWSPageLoadMetricsLogger::OnFirstPaintInPage(
     const page_load_metrics::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& extra_info) {
   if (ShouldLogForegroundEventAfterCommit(timing.paint_timing.first_paint,
@@ -703,7 +703,7 @@ void FromGWSPageLoadMetricsLogger::OnFirstPaint(
   first_paint_triggered_ = true;
 }
 
-void FromGWSPageLoadMetricsLogger::OnFirstTextPaint(
+void FromGWSPageLoadMetricsLogger::OnFirstTextPaintInPage(
     const page_load_metrics::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& extra_info) {
   if (ShouldLogForegroundEventAfterCommit(timing.paint_timing.first_text_paint,
@@ -713,7 +713,7 @@ void FromGWSPageLoadMetricsLogger::OnFirstTextPaint(
   }
 }
 
-void FromGWSPageLoadMetricsLogger::OnFirstImagePaint(
+void FromGWSPageLoadMetricsLogger::OnFirstImagePaintInPage(
     const page_load_metrics::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& extra_info) {
   if (ShouldLogForegroundEventAfterCommit(timing.paint_timing.first_image_paint,
@@ -723,7 +723,7 @@ void FromGWSPageLoadMetricsLogger::OnFirstImagePaint(
   }
 }
 
-void FromGWSPageLoadMetricsLogger::OnFirstContentfulPaint(
+void FromGWSPageLoadMetricsLogger::OnFirstContentfulPaintInPage(
     const page_load_metrics::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& extra_info) {
   if (ShouldLogForegroundEventAfterCommit(

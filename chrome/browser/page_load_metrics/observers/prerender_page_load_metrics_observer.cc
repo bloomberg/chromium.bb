@@ -61,7 +61,7 @@ PrerenderPageLoadMetricsObserver::OnCommit(
   return CONTINUE_OBSERVING;
 }
 
-void PrerenderPageLoadMetricsObserver::OnFirstContentfulPaint(
+void PrerenderPageLoadMetricsObserver::OnFirstContentfulPaintInPage(
     const page_load_metrics::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& extra_info) {
   DCHECK(!start_ticks_.is_null());

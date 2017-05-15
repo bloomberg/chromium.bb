@@ -20,7 +20,7 @@ AndroidPageLoadMetricsObserver::AndroidPageLoadMetricsObserver(
     content::WebContents* web_contents)
     : web_contents_(web_contents) {}
 
-void AndroidPageLoadMetricsObserver::OnFirstContentfulPaint(
+void AndroidPageLoadMetricsObserver::OnFirstContentfulPaintInPage(
     const page_load_metrics::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& extra_info) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);

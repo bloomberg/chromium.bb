@@ -38,9 +38,7 @@ MetricsRenderFrameObserver::MetricsRenderFrameObserver(
 MetricsRenderFrameObserver::~MetricsRenderFrameObserver() {}
 
 void MetricsRenderFrameObserver::DidChangePerformanceTiming() {
-  // Only track timing metrics for main frames.
-  if (IsMainFrame())
-    SendMetrics();
+  SendMetrics();
 }
 
 void MetricsRenderFrameObserver::DidObserveLoadingBehavior(
@@ -72,14 +70,8 @@ void MetricsRenderFrameObserver::DidCommitProvisionalLoad(
   // non-null, we will send metrics for the current page at some later time, as
   // those metrics become available.
   if (ShouldSendMetrics()) {
-    PageLoadTiming timing;
-    if (IsMainFrame()) {
-      // Only populate PageLoadTiming for the main frame.
-      timing = GetTiming();
-      DCHECK(!timing.navigation_start.is_null());
-    }
-    page_timing_metrics_sender_.reset(
-        new PageTimingMetricsSender(this, routing_id(), CreateTimer(), timing));
+    page_timing_metrics_sender_ = base::MakeUnique<PageTimingMetricsSender>(
+        this, routing_id(), CreateTimer(), GetTiming());
   }
 }
 
@@ -183,10 +175,6 @@ bool MetricsRenderFrameObserver::HasNoRenderFrame() const {
 
 void MetricsRenderFrameObserver::OnDestruct() {
   delete this;
-}
-
-bool MetricsRenderFrameObserver::IsMainFrame() const {
-  return render_frame()->IsMainFrame();
 }
 
 }  // namespace page_load_metrics

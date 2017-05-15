@@ -94,7 +94,7 @@ void PreviewsPageLoadMetricsObserver::OnFirstLayout(
                       timing.document_timing.first_layout.value());
 }
 
-void PreviewsPageLoadMetricsObserver::OnFirstContentfulPaint(
+void PreviewsPageLoadMetricsObserver::OnFirstContentfulPaintInPage(
     const page_load_metrics::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& info) {
   if (!WasStartedInForegroundOptionalEventInForeground(

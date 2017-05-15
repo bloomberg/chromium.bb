@@ -39,7 +39,7 @@ class AMPPageLoadMetricsObserver
       const page_load_metrics::PageLoadExtraInfo& info) override;
   void OnFirstLayout(const page_load_metrics::PageLoadTiming& timing,
                      const page_load_metrics::PageLoadExtraInfo& info) override;
-  void OnFirstContentfulPaint(
+  void OnFirstContentfulPaintInPage(
       const page_load_metrics::PageLoadTiming& timing,
       const page_load_metrics::PageLoadExtraInfo& info) override;
   void OnParseStart(const page_load_metrics::PageLoadTiming& timing,

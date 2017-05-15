@@ -61,7 +61,7 @@ bool IsInboxSite(const GURL& url) {
 
 ServiceWorkerPageLoadMetricsObserver::ServiceWorkerPageLoadMetricsObserver() {}
 
-void ServiceWorkerPageLoadMetricsObserver::OnFirstContentfulPaint(
+void ServiceWorkerPageLoadMetricsObserver::OnFirstContentfulPaintInPage(
     const page_load_metrics::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& info) {
   if (!IsServiceWorkerControlled(info))
