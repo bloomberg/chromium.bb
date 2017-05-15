@@ -31,25 +31,6 @@ const int kNonTouchLargestIconSize = 192;
 // the apple touch icon for iPad.
 const int kTouchIconSize = 144;
 
-// Returns true if all of the icon URLs and icon types in |bitmap_results| are
-// identical and if they match |icon_url| and |icon_type|. Returns false if
-// |bitmap_results| is empty.
-bool DoUrlsAndIconsMatch(
-    const GURL& icon_url,
-    favicon_base::IconType icon_type,
-    const std::vector<favicon_base::FaviconRawBitmapResult>& bitmap_results) {
-  if (bitmap_results.empty())
-    return false;
-
-  for (const auto& bitmap_result : bitmap_results) {
-    if (icon_url != bitmap_result.icon_url ||
-        icon_type != bitmap_result.icon_type) {
-      return false;
-    }
-  }
-  return true;
-}
-
 // Return true if |bitmap_result| is expired.
 bool IsExpired(const favicon_base::FaviconRawBitmapResult& bitmap_result) {
   return bitmap_result.expired;
@@ -482,14 +463,11 @@ void FaviconHandler::OnFaviconDataForInitialURLFromFaviconService(
   redownload_icons_ = initial_history_result_expired_or_incomplete_ &&
                       !favicon_bitmap_results.empty();
 
-  if (has_valid_result && (!current_candidate() ||
-                           DoUrlsAndIconsMatch(current_candidate()->icon_url,
-                                               current_candidate()->icon_type,
-                                               favicon_bitmap_results))) {
-    // The db knows the favicon (although it may be out of date) and the entry
-    // doesn't have an icon. Set the favicon now, and if the favicon turns out
-    // to be expired (or the wrong url) we'll fetch later on. This way the
-    // user doesn't see a flash of the default favicon.
+  if (has_valid_result) {
+    // The db knows the favicon (although it may be out of date). Set the
+    // favicon now, and if the favicon turns out to be expired (or the wrong
+    // url) we'll fetch later on. This way the user doesn't see a flash of the
+    // default favicon.
     NotifyFaviconUpdated(favicon_bitmap_results);
   }
 
