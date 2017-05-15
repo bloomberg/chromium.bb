@@ -62,8 +62,10 @@ class CONTENT_EXPORT RenderWidgetHostViewEventHandler
     // to the renderer instead. |update_event| (if non-null) is set to indicate
     // whether ui::KeyEvent::SetHandled() should be called on the underlying
     // ui::KeyEvent.
-    virtual void ForwardKeyboardEvent(const NativeWebKeyboardEvent& event,
-                                      bool* update_event) = 0;
+    virtual void ForwardKeyboardEventWithLatencyInfo(
+        const NativeWebKeyboardEvent& event,
+        const ui::LatencyInfo& latency,
+        bool* update_event) = 0;
     // Returns whether the widget needs to grab mouse capture to work properly.
     virtual bool NeedsMouseCapture() = 0;
     virtual void SetTooltipsEnabled(bool enable) = 0;

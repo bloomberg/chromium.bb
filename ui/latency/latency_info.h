@@ -109,6 +109,7 @@ enum SourceEventType {
   UNKNOWN,
   WHEEL,
   TOUCH,
+  KEY_PRESS,
   OTHER,
   SOURCE_EVENT_TYPE_LAST = OTHER,
 };

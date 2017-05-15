@@ -29,7 +29,7 @@ class LatencyTracker {
       const LatencyInfo::LatencyComponent& end_component);
 
  private:
-  void ComputeTouchAndWheelScrollLatencyHistograms(
+  void ComputeEndToEndLatencyHistograms(
       const LatencyInfo::LatencyComponent& gpu_swap_begin_component,
       const LatencyInfo::LatencyComponent& gpu_swap_end_component,
       const LatencyInfo& latency);

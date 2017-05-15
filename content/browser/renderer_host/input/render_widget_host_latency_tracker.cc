@@ -31,7 +31,9 @@ std::string WebInputEventTypeToInputModalityString(WebInputEvent::Type type) {
   if (type == blink::WebInputEvent::kMouseWheel) {
     return "Wheel";
   } else if (WebInputEvent::IsKeyboardEventType(type)) {
-    return "Key";
+    // We should only be reporting latency for key presses.
+    DCHECK(type == WebInputEvent::kRawKeyDown || type == WebInputEvent::kChar);
+    return "KeyPress";
   } else if (WebInputEvent::IsMouseEventType(type)) {
     return "Mouse";
   } else if (WebInputEvent::IsTouchEventType(type)) {
@@ -102,8 +104,8 @@ void RenderWidgetHostLatencyTracker::ComputeInputLatencyHistograms(
   if (latency.coalesced())
     return;
 
-  if (type != blink::WebInputEvent::kMouseWheel &&
-      !WebInputEvent::IsTouchEventType(type)) {
+  if (latency.source_event_type() == ui::SourceEventType::UNKNOWN ||
+      latency.source_event_type() == ui::SourceEventType::OTHER) {
     return;
   }
 
@@ -124,23 +126,32 @@ void RenderWidgetHostLatencyTracker::ComputeInputLatencyHistograms(
     base::TimeDelta ui_delta =
         rwh_component.last_event_time - ui_component.first_event_time;
 
-    if (type == blink::WebInputEvent::kMouseWheel) {
+    if (latency.source_event_type() == ui::SourceEventType::WHEEL) {
       UMA_HISTOGRAM_CUSTOM_COUNTS("Event.Latency.Browser.WheelUI",
                                   ui_delta.InMicroseconds(), 1, 20000, 100);
-    } else {
-      DCHECK(WebInputEvent::IsTouchEventType(type));
+    } else if (latency.source_event_type() == ui::SourceEventType::TOUCH) {
       UMA_HISTOGRAM_CUSTOM_COUNTS("Event.Latency.Browser.TouchUI",
                                   ui_delta.InMicroseconds(), 1, 20000, 100);
+    } else if (latency.source_event_type() == ui::SourceEventType::KEY_PRESS) {
+      UMA_HISTOGRAM_CUSTOM_COUNTS("Event.Latency.Browser.KeyPressUI",
+                                  ui_delta.InMicroseconds(), 1, 20000, 50);
+    } else {
+      // We should only report these histograms for wheel, touch and keyboard.
+      NOTREACHED();
     }
   }
 
-  // Both tap and scroll gestures depend on the disposition of the touch start
-  // and the current touch. For touch start, touch_start_default_prevented_ ==
-  // (ack_result == INPUT_EVENT_ACK_STATE_CONSUMED).
+  // Touchscreen tap and scroll gestures depend on the disposition of the touch
+  // start and the current touch. For touch start,
+  // touch_start_default_prevented_ == (ack_result ==
+  // INPUT_EVENT_ACK_STATE_CONSUMED).
   bool action_prevented = touch_start_default_prevented_ ||
                           ack_result == INPUT_EVENT_ACK_STATE_CONSUMED;
 
   std::string event_name = WebInputEvent::GetName(type);
+
+  if (latency.source_event_type() == ui::KEY_PRESS)
+    event_name = "KeyPress";
 
   std::string default_action_status =
       action_prevented ? "DefaultPrevented" : "DefaultAllowed";
@@ -186,6 +197,11 @@ void RenderWidgetHostLatencyTracker::OnInputEvent(
         *static_cast<const WebTouchEvent*>(&event);
     DCHECK(touch_event.touches_length >= 1);
     active_multi_finger_gesture_ = touch_event.touches_length != 1;
+  }
+
+  if (latency->source_event_type() == ui::KEY_PRESS) {
+    DCHECK(event.GetType() == WebInputEvent::kChar ||
+           event.GetType() == WebInputEvent::kRawKeyDown);
   }
 
   if (latency->FindLatency(ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT,

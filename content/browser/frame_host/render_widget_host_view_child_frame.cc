@@ -475,8 +475,9 @@ cc::FrameSinkId RenderWidgetHostViewChildFrame::GetFrameSinkId() {
 }
 
 void RenderWidgetHostViewChildFrame::ProcessKeyboardEvent(
-    const NativeWebKeyboardEvent& event) {
-  host_->ForwardKeyboardEvent(event);
+    const NativeWebKeyboardEvent& event,
+    const ui::LatencyInfo& latency) {
+  host_->ForwardKeyboardEventWithLatencyInfo(event, latency);
 }
 
 void RenderWidgetHostViewChildFrame::ProcessMouseEvent(

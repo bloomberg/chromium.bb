@@ -123,7 +123,8 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
   bool LockMouse() override;
   void UnlockMouse() override;
   cc::FrameSinkId GetFrameSinkId() override;
-  void ProcessKeyboardEvent(const NativeWebKeyboardEvent& event) override;
+  void ProcessKeyboardEvent(const NativeWebKeyboardEvent& event,
+                            const ui::LatencyInfo& latency) override;
   void ProcessMouseEvent(const blink::WebMouseEvent& event,
                          const ui::LatencyInfo& latency) override;
   void ProcessMouseWheelEvent(const blink::WebMouseWheelEvent& event,

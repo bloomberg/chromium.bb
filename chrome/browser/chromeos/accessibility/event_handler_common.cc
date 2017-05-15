@@ -49,6 +49,7 @@ void ForwardKeyToExtension(const ui::KeyEvent& key_event,
   }
 
   const content::NativeWebKeyboardEvent web_event(key_event);
+  // Don't forward latency info, as these are getting forwarded to an extension.
   rvh->GetWidget()->ForwardKeyboardEvent(web_event);
 }
 }  // namespace chromeos

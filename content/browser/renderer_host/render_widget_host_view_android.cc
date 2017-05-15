@@ -1754,7 +1754,13 @@ void RenderWidgetHostViewAndroid::SendKeyEvent(
   if (!target_host)
     return;
 
-  target_host->ForwardKeyboardEvent(event);
+  ui::LatencyInfo latency_info;
+  if (event.GetType() == blink::WebInputEvent::kRawKeyDown ||
+      event.GetType() == blink::WebInputEvent::kChar) {
+    latency_info.set_source_event_type(ui::SourceEventType::KEY_PRESS);
+  }
+  latency_info.AddLatencyNumber(ui::INPUT_EVENT_LATENCY_UI_COMPONENT, 0, 0);
+  target_host->ForwardKeyboardEventWithLatencyInfo(event, latency_info);
 }
 
 void RenderWidgetHostViewAndroid::SendMouseEvent(

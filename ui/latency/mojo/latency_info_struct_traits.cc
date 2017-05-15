@@ -160,6 +160,8 @@ ui::mojom::SourceEventType UISourceEventTypeToMojo(ui::SourceEventType type) {
       return ui::mojom::SourceEventType::WHEEL;
     case ui::TOUCH:
       return ui::mojom::SourceEventType::TOUCH;
+    case ui::KEY_PRESS:
+      return ui::mojom::SourceEventType::KEY_PRESS;
     case ui::OTHER:
       return ui::mojom::SourceEventType::OTHER;
   }
@@ -175,6 +177,8 @@ ui::SourceEventType MojoSourceEventTypeToUI(ui::mojom::SourceEventType type) {
       return ui::WHEEL;
     case ui::mojom::SourceEventType::TOUCH:
       return ui::TOUCH;
+    case ui::mojom::SourceEventType::KEY_PRESS:
+      return ui::KEY_PRESS;
     case ui::mojom::SourceEventType::OTHER:
       return ui::OTHER;
   }
