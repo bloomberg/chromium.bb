@@ -342,6 +342,9 @@ CORE_EXPORT bool RendersInDifferentPosition(const Position&, const Position&);
 CORE_EXPORT Position SkipWhitespace(const Position&);
 CORE_EXPORT PositionInFlatTree SkipWhitespace(const PositionInFlatTree&);
 
+CORE_EXPORT Vector<IntRect> ComputeTextRects(const EphemeralRange&);
+CORE_EXPORT Vector<FloatQuad> ComputeTextQuads(const EphemeralRange&);
+
 }  // namespace blink
 
 #endif  // VisibleUnits_h

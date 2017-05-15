@@ -4105,4 +4105,52 @@ PositionInFlatTree SkipWhitespace(const PositionInFlatTree& position) {
   return SkipWhitespaceAlgorithm(position);
 }
 
+static void CollectAbsoluteBoundsForRange(unsigned start,
+                                          unsigned end,
+                                          const LayoutText& layout_text,
+                                          Vector<IntRect>& rects) {
+  layout_text.AbsoluteRectsForRange(rects, start, end);
+}
+
+static void CollectAbsoluteBoundsForRange(unsigned start,
+                                          unsigned end,
+                                          const LayoutText& layout_text,
+                                          Vector<FloatQuad>& quads) {
+  layout_text.AbsoluteQuadsForRange(quads, start, end);
+}
+
+template <typename RectType>
+static Vector<RectType> ComputeTextBounds(const EphemeralRange& range) {
+  const Position& start_position = range.StartPosition();
+  const Position& end_position = range.EndPosition();
+  Node* const start_container = start_position.ComputeContainerNode();
+  DCHECK(start_container);
+  Node* const end_container = end_position.ComputeContainerNode();
+  DCHECK(end_container);
+
+  Vector<RectType> result;
+  for (const Node& node : range.Nodes()) {
+    LayoutObject* const layout_object = node.GetLayoutObject();
+    if (!layout_object || !layout_object->IsText())
+      continue;
+    const LayoutText* layout_text = ToLayoutText(layout_object);
+    unsigned start_offset =
+        node == start_container ? start_position.OffsetInContainerNode() : 0;
+    unsigned end_offset = node == end_container
+                              ? end_position.OffsetInContainerNode()
+                              : std::numeric_limits<unsigned>::max();
+    CollectAbsoluteBoundsForRange(start_offset, end_offset, *layout_text,
+                                  result);
+  }
+  return result;
+}
+
+Vector<IntRect> ComputeTextRects(const EphemeralRange& range) {
+  return ComputeTextBounds<IntRect>(range);
+}
+
+Vector<FloatQuad> ComputeTextQuads(const EphemeralRange& range) {
+  return ComputeTextBounds<FloatQuad>(range);
+}
+
 }  // namespace blink
