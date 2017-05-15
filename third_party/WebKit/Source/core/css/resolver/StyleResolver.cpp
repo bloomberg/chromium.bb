@@ -566,8 +566,9 @@ PassRefPtr<ComputedStyle> StyleResolver::StyleForDocument(Document& document) {
   document_style->SetFontDescription(document_font_description);
   document_style->SetZIndex(0);
   document_style->SetIsStackingContext(true);
-  document_style->SetUserModify(document.InDesignMode() ? READ_WRITE
-                                                        : READ_ONLY);
+  document_style->SetUserModify(document.InDesignMode()
+                                    ? EUserModify::kReadWrite
+                                    : EUserModify::kReadOnly);
   // These are designed to match the user-agent stylesheet values for the
   // document element so that the common case doesn't need to create a new
   // ComputedStyle in Document::InheritHtmlAndBodyElementStyles.
@@ -1708,7 +1709,7 @@ StyleResolver::CacheSuccess StyleResolver::ApplyMatchedCache(
             *cached_matched_properties->parent_computed_style) &&
         !IsAtShadowBoundary(element) &&
         (!state.DistributedToInsertionPoint() ||
-         state.Style()->UserModify() == READ_ONLY)) {
+         state.Style()->UserModify() == EUserModify::kReadOnly)) {
       INCREMENT_STYLE_STATS_COUNTER(GetDocument().GetStyleEngine(),
                                     matched_property_cache_inherited_hit, 1);
 

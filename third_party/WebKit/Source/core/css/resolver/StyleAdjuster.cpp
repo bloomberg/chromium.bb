@@ -137,7 +137,7 @@ static bool LayoutParentStyleForcesZIndexToCreateStackingContext(
 }
 
 void StyleAdjuster::AdjustStyleForEditing(ComputedStyle& style) {
-  if (style.UserModify() != READ_WRITE_PLAINTEXT_ONLY)
+  if (style.UserModify() != EUserModify::kReadWritePlaintextOnly)
     return;
   // Collapsing whitespace is harmful in plain-text editing.
   if (style.WhiteSpace() == EWhiteSpace::kNormal)

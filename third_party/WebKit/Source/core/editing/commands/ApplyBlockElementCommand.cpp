@@ -315,7 +315,7 @@ void ApplyBlockElementCommand::RangeForParagraphSplittingTextNodesIfNeeded(
     }
 
     // If end is in the middle of a text node, split.
-    if (end_style->UserModify() != READ_ONLY &&
+    if (end_style->UserModify() != EUserModify::kReadOnly &&
         !end_style->CollapseWhiteSpace() && end.OffsetInContainerNode() &&
         end.OffsetInContainerNode() <
             end.ComputeContainerNode()->MaxCharacterOffset()) {

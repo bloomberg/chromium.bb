@@ -1393,7 +1393,7 @@ void LayoutObject::ShowLayoutTreeAndMark(const LayoutObject* marked_object1,
 
 bool LayoutObject::IsSelectable() const {
   return !IsInert() && !(Style()->UserSelect() == SELECT_NONE &&
-                         Style()->UserModify() == READ_ONLY);
+                         Style()->UserModify() == EUserModify::kReadOnly);
 }
 
 Color LayoutObject::SelectionBackgroundColor() const {

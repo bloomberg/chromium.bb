@@ -67,8 +67,9 @@ void LayoutTextControl::StyleDidChange(StyleDifference diff,
 
 static inline void UpdateUserModifyProperty(TextControlElement& node,
                                             ComputedStyle& style) {
-  style.SetUserModify(node.IsDisabledOrReadOnly() ? READ_ONLY
-                                                  : READ_WRITE_PLAINTEXT_ONLY);
+  style.SetUserModify(node.IsDisabledOrReadOnly()
+                          ? EUserModify::kReadOnly
+                          : EUserModify::kReadWritePlaintextOnly);
 }
 
 void LayoutTextControl::AdjustInnerEditorStyle(
