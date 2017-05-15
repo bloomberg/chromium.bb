@@ -13,7 +13,7 @@ namespace content {
 
 namespace {
 
-// A expected renderer size. These values come from the median of appropriate
+// An expected renderer size. These values come from the median of appropriate
 // UMA stats.
 #if defined(OS_ANDROID) || defined(OS_IOS)
 const int kDefaultExpectedRendererSizeMB = 40;
@@ -31,7 +31,7 @@ const int kDefaultNewRenderersBackToWarning = 3;
 const int kDefaultMonitoringIntervalSeconds = 1;
 const int kMonitoringIntervalBackgroundedSeconds = 120;
 
-void SetIntVariationParameter(const std::map<std::string, std::string> params,
+void SetIntVariationParameter(const std::map<std::string, std::string>& params,
                               const char* name,
                               int* target) {
   const auto& iter = params.find(name);
@@ -45,7 +45,7 @@ void SetIntVariationParameter(const std::map<std::string, std::string> params,
 }
 
 void SetSecondsVariationParameter(
-    const std::map<std::string, std::string> params,
+    const std::map<std::string, std::string>& params,
     const char* name,
     base::TimeDelta* target) {
   const auto& iter = params.find(name);
