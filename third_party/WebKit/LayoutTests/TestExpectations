@@ -1895,6 +1895,9 @@ crbug.com/613672 [ Mac ] virtual/scalefactor150/fast/events/synthetic-events/tap
 # We should send PointerLeave events for stylus devices.
 crbug.com/583413 external/wpt/pointerevents/pointerevent_pointerleave_pen-manual.html  [ Failure ]
 
+# Times out flakily.
+crbug.com/722212 fast/events/pointerevents/mouse-pointer-event-properties.html [ Timeout Pass ]
+
 # These testcases are incorrect, mark them as failing until they're fixed in the testsuite.
 # https://lists.w3.org/Archives/Public/www-style/2016Jan/0275.html
 # https://lists.w3.org/Archives/Public/www-style/2016Jan/0276.html
