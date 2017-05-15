@@ -1954,7 +1954,8 @@ void WebLocalFrameImpl::DidFinish() {
 }
 
 void WebLocalFrameImpl::SetCanHaveScrollbars(bool can_have_scrollbars) {
-  GetFrame()->View()->SetCanHaveScrollbars(can_have_scrollbars);
+  if (FrameView* view = GetFrameView())
+    view->SetCanHaveScrollbars(can_have_scrollbars);
 }
 
 void WebLocalFrameImpl::SetInputEventsTransformForEmulation(
