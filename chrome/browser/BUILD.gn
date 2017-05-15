@@ -1155,6 +1155,8 @@ split_static_library("browser") {
     "resource_delegate_mac.mm",
     "resources_util.cc",
     "resources_util.h",
+    "safe_browsing/chrome_cleaner/chrome_cleaner_controller_win.cc",
+    "safe_browsing/chrome_cleaner/chrome_cleaner_controller_win.h",
     "safe_browsing/chrome_cleaner/chrome_cleaner_fetcher_win.cc",
     "safe_browsing/chrome_cleaner/chrome_cleaner_fetcher_win.h",
     "safe_browsing/chrome_cleaner/reporter_runner_win.cc",

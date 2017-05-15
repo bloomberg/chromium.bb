@@ -3493,6 +3493,7 @@ test("unit_tests") {
       "../browser/profile_resetter/profile_resetter_unittest.cc",
       "../browser/profile_resetter/triggered_profile_resetter_win_unittest.cc",
       "../browser/renderer_context_menu/render_view_context_menu_unittest.cc",
+      "../browser/safe_browsing/chrome_cleaner/chrome_cleaner_controller_win_unittest.cc",
       "../browser/safe_browsing/chrome_cleaner/chrome_cleaner_fetcher_win_unittest.cc",
       "../browser/search/instant_service_unittest.cc",
       "../browser/search/instant_unittest_base.cc",
