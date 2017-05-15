@@ -64,6 +64,7 @@ class CORE_EXPORT MouseEventManager final
                                            const WebMouseEvent&);
   WebInputEventResult DispatchDragEvent(const AtomicString& event_type,
                                         Node* target,
+                                        Node* related_target,
                                         const WebMouseEvent&,
                                         DataTransfer*);
 
