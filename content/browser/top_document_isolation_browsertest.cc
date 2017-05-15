@@ -31,8 +31,12 @@ class TopDocumentIsolationTest : public ContentBrowserTest {
     return visualizer_.DepictFrameTree(node);
   }
 
-  void SetUpOnMainThread() override {
+  void SetUp() override {
     scoped_feature_list_.InitAndEnableFeature(features::kTopDocumentIsolation);
+    ContentBrowserTest::SetUp();
+  }
+
+  void SetUpOnMainThread() override {
     host_resolver()->AddRule("*", "127.0.0.1");
     SetupCrossSiteRedirector(embedded_test_server());
     ASSERT_TRUE(embedded_test_server()->Start());
