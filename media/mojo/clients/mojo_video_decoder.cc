@@ -36,11 +36,9 @@ MojoVideoDecoder::MojoVideoDecoder(
 
 MojoVideoDecoder::~MojoVideoDecoder() {
   DVLOG(1) << __func__;
-  Stop();
 }
 
 std::string MojoVideoDecoder::GetDisplayName() const {
-  // TODO(sandersd): Build the name including information from the remote end.
   return "MojoVideoDecoder";
 }
 
