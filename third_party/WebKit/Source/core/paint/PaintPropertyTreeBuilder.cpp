@@ -1205,6 +1205,11 @@ void PaintPropertyTreeBuilder::UpdatePaintProperties(
   }
 }
 
+static inline bool ObjectTypeMightNeedPaintProperties(
+    const LayoutObject& object) {
+  return object.IsBoxModelObject() || object.IsSVG();
+}
+
 void PaintPropertyTreeBuilder::UpdatePropertiesForSelf(
     const LayoutObject& object,
     PaintPropertyTreeBuilderContext& full_context) {
@@ -1216,7 +1221,11 @@ void PaintPropertyTreeBuilder::UpdatePropertiesForSelf(
     context = PaintPropertyTreeBuilderFragmentContext();
   }
 
-  UpdatePaintProperties(object, full_context);
+  bool object_type_might_need_paint_properties =
+      ObjectTypeMightNeedPaintProperties(object);
+
+  if (object_type_might_need_paint_properties)
+    UpdatePaintProperties(object, full_context);
 
   bool is_actually_needed = false;
 #if DCHECK_IS_ON()
@@ -1234,7 +1243,7 @@ void PaintPropertyTreeBuilder::UpdatePropertiesForSelf(
       object, full_context.force_subtree_update);
 #endif
 
-  if (object.IsBoxModelObject() || object.IsSVG()) {
+  if (object_type_might_need_paint_properties) {
     UpdateTransform(object, context, full_context.force_subtree_update);
     UpdateCssClip(object, context, full_context.force_subtree_update);
     if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
@@ -1253,7 +1262,7 @@ void PaintPropertyTreeBuilder::UpdatePropertiesForSelf(
 void PaintPropertyTreeBuilder::UpdatePropertiesForChildren(
     const LayoutObject& object,
     PaintPropertyTreeBuilderContext& context) {
-  if (!object.IsBoxModelObject() && !object.IsSVG())
+  if (!ObjectTypeMightNeedPaintProperties(object))
     return;
 
   for (auto& fragment_context : context.fragments) {
