@@ -77,12 +77,15 @@ class TestExporterTest(unittest.TestCase):
 
         self.assertEqual(test_exporter.wpt_github.calls, [
             'pr_with_position',
+            'pr_with_change_id',
             'create_pr',
             'add_label',
             'pr_with_position',
+            'pr_with_change_id',
             'create_pr',
             'add_label',
             'pr_with_position',
+            'pr_with_change_id',
             'create_pr',
             'add_label',
         ])
@@ -244,3 +247,31 @@ class TestExporterTest(unittest.TestCase):
             'update_pr',
         ])
         self.assertEqual(test_exporter.wpt_github.pull_requests_created, [])
+
+    def test_attempts_to_merge_landed_gerrit_cl(self):
+        host = MockHost()
+        host.executive = mock_git_commands({
+            'footers': 'decafbad',
+        })
+        test_exporter = TestExporter(host, 'gh-username', 'gh-token', gerrit_user=None,
+                                     gerrit_token=None, dry_run=False)
+        test_exporter.wpt_github = MockWPTGitHub(pull_requests=[
+            PullRequest(title='title1', number=1234,
+                        body='description\nWPT-Export-Revision: 9\nChange-Id: decafbad',
+                        state='open'),
+        ])
+        test_exporter.get_exportable_commits = lambda limit: [
+            ChromiumCommit(host, sha='c881563d734a86f7d9cd57ac509653a61c45c240'),
+        ]
+        test_exporter.gerrit = MockGerritAPI(host, 'gerrit-username', 'gerrit-token')
+        test_exporter.gerrit.query_exportable_open_cls = lambda: []
+        test_exporter.run()
+
+        self.assertEqual(test_exporter.wpt_github.calls, [
+            'pr_with_position',
+            'get_pr_branch',
+            'merge_pull_request',
+            'delete_remote_branch',
+        ])
+        self.assertEqual(test_exporter.wpt_github.pull_requests_created, [])
+        self.assertEqual(test_exporter.wpt_github.pull_requests_merged, [1234])

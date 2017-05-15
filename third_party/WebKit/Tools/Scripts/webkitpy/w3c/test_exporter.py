@@ -41,7 +41,7 @@ class TestExporter(object):
 
         exportable_commits = self.get_exportable_commits(limit=COMMIT_HISTORY_WINDOW)
         for exportable_commit in exportable_commits:
-            pull_request = self.wpt_github.pr_with_position(exportable_commit.position)
+            pull_request = self.corresponding_pull_request_for_commit(exportable_commit)
 
             if pull_request:
                 if pull_request.state == 'open':
@@ -73,7 +73,6 @@ class TestExporter(object):
             else:
                 _log.info('No in-flight PR found for CL. Creating...')
                 self.create_or_update_pull_request_from_cl(cl)
-
 
     def get_exportable_commits(self, limit):
         return exportable_commits_over_last_n_commits(limit, self.host, self.local_wpt)
@@ -230,3 +229,20 @@ class TestExporter(object):
             ))
 
         return response_data
+
+    def corresponding_pull_request_for_commit(self, exportable_commit):
+        """Search pull requests for one that corresponds to exportable_commit.
+
+        Returns the pull_request if found, else returns None.
+        """
+        # Check for PRs created by commits on master.
+        pull_request = self.wpt_github.pr_with_position(exportable_commit.position)
+        if pull_request:
+            return pull_request
+
+        # Check for PRs created by open Gerrit CLs.
+        change_id = exportable_commit.change_id()
+        if change_id:
+            return self.wpt_github.pr_with_change_id(change_id)
+
+        return None
