@@ -13,9 +13,8 @@
 #include "base/test/histogram_tester.h"
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
 
-#include "chrome/browser/browsing_data/chrome_browsing_data_remover_delegate.h"
-#include "chrome/browser/predictors/resource_prefetch_predictor.h"
-#include "chrome/browser/predictors/resource_prefetch_predictor_factory.h"
+#include "chrome/browser/predictors/loading_predictor.h"
+#include "chrome/browser/predictors/loading_predictor_factory.h"
 #include "chrome/browser/predictors/resource_prefetch_predictor_test_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -365,9 +364,9 @@ class ResourcePrefetchPredictorBrowserTest : public InProcessBrowserTest {
       ASSERT_TRUE(server->Start());
     }
 
-    predictor_ =
-        ResourcePrefetchPredictorFactory::GetForProfile(browser()->profile());
+    predictor_ = LoadingPredictorFactory::GetForProfile(browser()->profile());
     ASSERT_TRUE(predictor_);
+    resource_prefetch_predictor_ = predictor_->resource_prefetch_predictor();
     // URLs from the test server contain a port number.
     ResourcePrefetchPredictor::SetAllowPortInUrlsForTesting(true);
     EnsurePredictorInitialized();
@@ -429,7 +428,7 @@ class ResourcePrefetchPredictorBrowserTest : public InProcessBrowserTest {
         disposition == WindowOpenDisposition::CURRENT_TAB;
 
     LearningObserver observer(
-        predictor_, UpdateAndGetVisitCount(initial_url),
+        resource_prefetch_predictor_, UpdateAndGetVisitCount(initial_url),
         CreatePageRequestSummary(main_frame_url.spec(), initial_url.spec(),
                                  url_request_summaries),
         match_navigation_id, match_before_first_contentful_paint);
@@ -447,7 +446,8 @@ class ResourcePrefetchPredictorBrowserTest : public InProcessBrowserTest {
   }
 
   void NavigateToURLAndCheckPrefetching(const GURL& main_frame_url) {
-    PrefetchingObserver observer(predictor_, main_frame_url, true);
+    PrefetchingObserver observer(resource_prefetch_predictor_, main_frame_url,
+                                 true);
     ui_test_utils::NavigateToURL(browser(), main_frame_url);
     observer.Wait();
     for (auto& kv : resources_) {
@@ -457,8 +457,9 @@ class ResourcePrefetchPredictorBrowserTest : public InProcessBrowserTest {
   }
 
   void PrefetchURL(const GURL& main_frame_url) {
-    PrefetchingObserver observer(predictor_, main_frame_url, false);
-    predictor_->StartPrefetching(main_frame_url, PrefetchOrigin::EXTERNAL);
+    PrefetchingObserver observer(resource_prefetch_predictor_, main_frame_url,
+                                 false);
+    predictor_->PrepareForPageLoad(main_frame_url, HintOrigin::EXTERNAL);
     observer.Wait();
     for (auto& kv : resources_) {
       if (kv.second.is_observable)
@@ -467,7 +468,7 @@ class ResourcePrefetchPredictorBrowserTest : public InProcessBrowserTest {
   }
 
   void TryToPrefetchURL(const GURL& main_frame_url) {
-    predictor_->StartPrefetching(main_frame_url, PrefetchOrigin::EXTERNAL);
+    predictor_->PrepareForPageLoad(main_frame_url, HintOrigin::EXTERNAL);
   }
 
   ResourceSummary* AddResource(const GURL& resource_url,
@@ -588,15 +589,15 @@ class ResourcePrefetchPredictorBrowserTest : public InProcessBrowserTest {
   // ResourcePrefetchPredictor needs to be initialized before the navigation
   // happens otherwise this navigation will be ignored by predictor.
   void EnsurePredictorInitialized() {
-    if (predictor_->initialization_state_ ==
+    if (resource_prefetch_predictor_->initialization_state_ ==
         ResourcePrefetchPredictor::INITIALIZED) {
       return;
     }
 
-    InitializationObserver observer(predictor_);
-    if (predictor_->initialization_state_ ==
+    InitializationObserver observer(resource_prefetch_predictor_);
+    if (resource_prefetch_predictor_->initialization_state_ ==
         ResourcePrefetchPredictor::NOT_INITIALIZED) {
-      predictor_->StartInitialization();
+      resource_prefetch_predictor_->StartInitialization();
     }
     observer.Wait();
   }
@@ -726,7 +727,8 @@ class ResourcePrefetchPredictorBrowserTest : public InProcessBrowserTest {
     return ++visit_count_[main_frame_url];
   }
 
-  ResourcePrefetchPredictor* predictor_;
+  LoadingPredictor* predictor_;
+  ResourcePrefetchPredictor* resource_prefetch_predictor_;
   std::unique_ptr<net::EmbeddedTestServer> https_server_;
   std::map<GURL, ResourceSummary> resources_;
   std::map<GURL, RedirectEdge> redirects_;
@@ -734,7 +736,7 @@ class ResourcePrefetchPredictorBrowserTest : public InProcessBrowserTest {
   std::set<NavigationID> navigation_id_history_;
 };
 
-// Subclass to test PrefetchOrigin::NAVIGATION.
+// Subclass to test HintOrigin::NAVIGATION.
 class ResourcePrefetchPredictorPrefetchingBrowserTest
     : public ResourcePrefetchPredictorBrowserTest {
  protected:

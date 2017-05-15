@@ -4,8 +4,10 @@
 
 #include "chrome/browser/predictors/resource_prefetch_predictor_tab_helper.h"
 
-#include "chrome/browser/predictors/resource_prefetch_predictor.h"
-#include "chrome/browser/predictors/resource_prefetch_predictor_factory.h"
+#include <string>
+
+#include "chrome/browser/predictors/loading_predictor.h"
+#include "chrome/browser/predictors/loading_predictor_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -27,14 +29,15 @@ ResourcePrefetchPredictorTabHelper::~ResourcePrefetchPredictorTabHelper() {
 void ResourcePrefetchPredictorTabHelper::DocumentOnLoadCompletedInMainFrame() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  ResourcePrefetchPredictor* predictor =
-      ResourcePrefetchPredictorFactory::GetForProfile(
-          web_contents()->GetBrowserContext());
-  if (!predictor)
+  auto* loading_predictor = LoadingPredictorFactory::GetForProfile(
+      Profile::FromBrowserContext(web_contents()->GetBrowserContext()));
+  if (!loading_predictor)
     return;
 
+  auto* resource_prefetch_predictor =
+      loading_predictor->resource_prefetch_predictor();
   NavigationID navigation_id(web_contents());
-  predictor->RecordMainFrameLoadComplete(navigation_id);
+  resource_prefetch_predictor->RecordMainFrameLoadComplete(navigation_id);
 }
 
 void ResourcePrefetchPredictorTabHelper::DidLoadResourceFromMemoryCache(
@@ -43,10 +46,9 @@ void ResourcePrefetchPredictorTabHelper::DidLoadResourceFromMemoryCache(
     content::ResourceType resource_type) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  ResourcePrefetchPredictor* predictor =
-      ResourcePrefetchPredictorFactory::GetForProfile(
-          web_contents()->GetBrowserContext());
-  if (!predictor)
+  auto* loading_predictor = LoadingPredictorFactory::GetForProfile(
+      Profile::FromBrowserContext(web_contents()->GetBrowserContext()));
+  if (!loading_predictor)
     return;
 
   ResourcePrefetchPredictor::URLRequestSummary summary;
@@ -57,7 +59,9 @@ void ResourcePrefetchPredictorTabHelper::DidLoadResourceFromMemoryCache(
       ResourcePrefetchPredictor::GetResourceTypeFromMimeType(
           mime_type, resource_type);
   summary.was_cached = true;
-  predictor->RecordURLResponse(summary);
+  auto* resource_prefetch_predictor =
+      loading_predictor->resource_prefetch_predictor();
+  resource_prefetch_predictor->RecordURLResponse(summary);
 }
 
 }  // namespace predictors

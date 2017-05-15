@@ -41,8 +41,8 @@
 #include "chrome/browser/net/resource_prefetch_predictor_observer.h"
 #include "chrome/browser/policy/cloud/policy_header_service_factory.h"
 #include "chrome/browser/policy/policy_helpers.h"
-#include "chrome/browser/predictors/resource_prefetch_predictor.h"
-#include "chrome/browser/predictors/resource_prefetch_predictor_factory.h"
+#include "chrome/browser/predictors/loading_predictor.h"
+#include "chrome/browser/predictors/loading_predictor_factory.h"
 #include "chrome/browser/profiles/net_http_session_params_observer.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -388,11 +388,11 @@ void ProfileIOData::InitializeOnUIThread(Profile* profile) {
   params->cookie_monster_delegate = new ExtensionCookieMonsterDelegate(profile);
 #endif
 
-  if (predictors::ResourcePrefetchPredictor* predictor =
-          predictors::ResourcePrefetchPredictorFactory::GetForProfile(
-              profile)) {
+  if (auto* loading_predictor =
+          predictors::LoadingPredictorFactory::GetForProfile(profile)) {
     resource_prefetch_predictor_observer_.reset(
-        new chrome_browser_net::ResourcePrefetchPredictorObserver(predictor));
+        new chrome_browser_net::ResourcePrefetchPredictorObserver(
+            loading_predictor->resource_prefetch_predictor()));
   }
 
   ProtocolHandlerRegistry* protocol_handler_registry =

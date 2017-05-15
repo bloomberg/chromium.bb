@@ -11,8 +11,8 @@
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings.h"
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings_factory.h"
-#include "chrome/browser/predictors/resource_prefetch_predictor.h"
-#include "chrome/browser/predictors/resource_prefetch_predictor_factory.h"
+#include "chrome/browser/predictors/loading_predictor.h"
+#include "chrome/browser/predictors/loading_predictor_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
@@ -42,7 +42,7 @@ PrecacheManagerFactory::PrecacheManagerFactory()
   DependsOn(ProfileSyncServiceFactory::GetInstance());
   DependsOn(HistoryServiceFactory::GetInstance());
   DependsOn(DataReductionProxyChromeSettingsFactory::GetInstance());
-  DependsOn(predictors::ResourcePrefetchPredictorFactory::GetInstance());
+  DependsOn(predictors::LoadingPredictorFactory::GetInstance());
 }
 
 PrecacheManagerFactory::~PrecacheManagerFactory() {
@@ -54,6 +54,8 @@ KeyedService* PrecacheManagerFactory::BuildServiceInstanceFor(
       new PrecacheDatabase());
   base::FilePath db_path(browser_context->GetPath().Append(
       base::FilePath(FILE_PATH_LITERAL("PrecacheDatabase"))));
+  auto* loading_predictor = predictors::LoadingPredictorFactory::GetForProfile(
+      Profile::FromBrowserContext(browser_context));
   return new PrecacheManager(
       browser_context,
       ProfileSyncServiceFactory::GetSyncServiceForBrowserContext(
@@ -63,8 +65,8 @@ KeyedService* PrecacheManagerFactory::BuildServiceInstanceFor(
           ServiceAccessType::IMPLICIT_ACCESS),
       DataReductionProxyChromeSettingsFactory::GetForBrowserContext(
           browser_context),
-      predictors::ResourcePrefetchPredictorFactory::GetForProfile(
-          browser_context),
+      loading_predictor ? loading_predictor->resource_prefetch_predictor()
+                        : nullptr,
       db_path, std::move(precache_database));
 }
 

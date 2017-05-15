@@ -4,10 +4,14 @@
 
 #include "chrome/browser/page_load_metrics/observers/resource_prefetch_predictor_page_load_metrics_observer.h"
 
+#include <memory>
+
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_util.h"
+#include "chrome/browser/predictors/loading_predictor.h"
+#include "chrome/browser/predictors/loading_predictor_factory.h"
 #include "chrome/browser/predictors/resource_prefetch_predictor.h"
-#include "chrome/browser/predictors/resource_prefetch_predictor_factory.h"
+#include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/web_contents.h"
 
 namespace internal {
@@ -25,13 +29,12 @@ const char kHistogramResourcePrefetchPredictorFirstMeaningfulPaint[] =
 std::unique_ptr<ResourcePrefetchPredictorPageLoadMetricsObserver>
 ResourcePrefetchPredictorPageLoadMetricsObserver::CreateIfNeeded(
     content::WebContents* web_contents) {
-  predictors::ResourcePrefetchPredictor* predictor =
-      predictors::ResourcePrefetchPredictorFactory::GetForProfile(
-          web_contents->GetBrowserContext());
-  if (!predictor)
+  auto* loading_predictor = predictors::LoadingPredictorFactory::GetForProfile(
+      Profile::FromBrowserContext(web_contents->GetBrowserContext()));
+  if (!loading_predictor)
     return nullptr;
   return base::MakeUnique<ResourcePrefetchPredictorPageLoadMetricsObserver>(
-      predictor, web_contents);
+      loading_predictor->resource_prefetch_predictor(), web_contents);
 }
 
 ResourcePrefetchPredictorPageLoadMetricsObserver::

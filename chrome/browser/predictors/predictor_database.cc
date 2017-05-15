@@ -4,7 +4,7 @@
 
 #include "chrome/browser/predictors/predictor_database.h"
 
-#include <stdint.h>
+#include <cstdint>
 #include <memory>
 
 #include "base/bind.h"
@@ -13,6 +13,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "chrome/browser/predictors/autocomplete_action_predictor_table.h"
+#include "chrome/browser/predictors/loading_predictor_config.h"
 #include "chrome/browser/predictors/resource_prefetch_predictor.h"
 #include "chrome/browser/predictors/resource_prefetch_predictor_tables.h"
 #include "chrome/browser/profiles/profile.h"
@@ -74,9 +75,8 @@ PredictorDatabaseInternal::PredictorDatabaseInternal(Profile* profile)
   // This db does not use [meta] table, store mmap status data elsewhere.
   db_->set_mmap_alt_status();
 
-  ResourcePrefetchPredictorConfig config;
   is_resource_prefetch_predictor_enabled_ =
-      IsSpeculativeResourcePrefetchingEnabled(profile, &config);
+      IsSpeculativeResourcePrefetchingEnabled(profile, nullptr);
 }
 
 PredictorDatabaseInternal::~PredictorDatabaseInternal() {

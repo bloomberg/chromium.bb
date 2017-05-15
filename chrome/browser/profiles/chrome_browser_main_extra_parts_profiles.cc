@@ -44,8 +44,8 @@
 #include "chrome/browser/policy/profile_policy_connector_factory.h"
 #include "chrome/browser/policy/schema_registry_service_factory.h"
 #include "chrome/browser/predictors/autocomplete_action_predictor_factory.h"
+#include "chrome/browser/predictors/loading_predictor_factory.h"
 #include "chrome/browser/predictors/predictor_database_factory.h"
-#include "chrome/browser/predictors/resource_prefetch_predictor_factory.h"
 #include "chrome/browser/prerender/prerender_link_manager_factory.h"
 #include "chrome/browser/prerender/prerender_manager_factory.h"
 #include "chrome/browser/prerender/prerender_message_filter.h"
@@ -311,7 +311,7 @@ EnsureBrowserContextKeyedServiceFactoriesBuilt() {
   policy::UserCloudPolicyInvalidatorFactory::GetInstance();
   predictors::AutocompleteActionPredictorFactory::GetInstance();
   predictors::PredictorDatabaseFactory::GetInstance();
-  predictors::ResourcePrefetchPredictorFactory::GetInstance();
+  predictors::LoadingPredictorFactory::GetInstance();
   prerender::PrerenderLinkManagerFactory::GetInstance();
   prerender::PrerenderManagerFactory::GetInstance();
   prerender::PrerenderMessageFilter::EnsureShutdownNotifierFactoryBuilt();

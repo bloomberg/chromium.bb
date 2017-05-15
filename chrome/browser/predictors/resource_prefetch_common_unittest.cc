@@ -49,23 +49,22 @@ class ResourcePrefetchCommonTest : public testing::Test {
     profile_->GetPrefs()->SetInteger(prefs::kNetworkPredictionOptions, value);
   }
 
-  void TestIsPrefetchEnabledForOrigin(
-      const ResourcePrefetchPredictorConfig& config,
-      PrefetchOrigin origin) {
+  void TestIsPrefetchEnabledForOrigin(const LoadingPredictorConfig& config,
+                                      HintOrigin origin) {
     EXPECT_TRUE(config.IsLearningEnabled());
     EXPECT_TRUE(config.IsPrefetchingEnabledForOrigin(profile_.get(), origin));
   }
 
-  void TestIsPrefetchLearning(const ResourcePrefetchPredictorConfig& config) {
+  void TestIsPrefetchLearning(const LoadingPredictorConfig& config) {
     EXPECT_TRUE(config.IsLearningEnabled());
-    EXPECT_FALSE(config.IsPrefetchingEnabledForOrigin(
-        profile_.get(), PrefetchOrigin::EXTERNAL));
-    EXPECT_FALSE(config.IsPrefetchingEnabledForOrigin(
-        profile_.get(), PrefetchOrigin::NAVIGATION));
+    EXPECT_FALSE(config.IsPrefetchingEnabledForOrigin(profile_.get(),
+                                                      HintOrigin::EXTERNAL));
+    EXPECT_FALSE(config.IsPrefetchingEnabledForOrigin(profile_.get(),
+                                                      HintOrigin::NAVIGATION));
     EXPECT_GT(config.min_resource_hits_to_trigger_prefetch, 1U);
   }
 
-  void TestIsDefaultExtraConfig(const ResourcePrefetchPredictorConfig& config) {
+  void TestIsDefaultExtraConfig(const LoadingPredictorConfig& config) {
     EXPECT_FALSE(config.IsLowConfidenceForTest());
     EXPECT_FALSE(config.IsHighConfidenceForTest());
     EXPECT_FALSE(config.IsMoreResourcesEnabledForTest());
@@ -85,15 +84,15 @@ ResourcePrefetchCommonTest::ResourcePrefetchCommonTest()
     : profile_(new TestingProfile()) {}
 
 TEST_F(ResourcePrefetchCommonTest, IsDisabledByDefault) {
-  ResourcePrefetchPredictorConfig config;
+  LoadingPredictorConfig config;
   EXPECT_FALSE(
       IsSpeculativeResourcePrefetchingEnabled(profile_.get(), &config));
 
   EXPECT_FALSE(config.IsLearningEnabled());
   EXPECT_FALSE(config.IsPrefetchingEnabledForOrigin(profile_.get(),
-                                                    PrefetchOrigin::EXTERNAL));
-  EXPECT_FALSE(config.IsPrefetchingEnabledForOrigin(
-      profile_.get(), PrefetchOrigin::NAVIGATION));
+                                                    HintOrigin::EXTERNAL));
+  EXPECT_FALSE(config.IsPrefetchingEnabledForOrigin(profile_.get(),
+                                                    HintOrigin::NAVIGATION));
 
   TestIsDefaultExtraConfig(config);
 }
@@ -103,7 +102,7 @@ TEST_F(ResourcePrefetchCommonTest, EnableLearning) {
       "dummy-trial", {{kModeParamName, kLearningMode}},
       {kSpeculativeResourcePrefetchingFeatureName});
 
-  ResourcePrefetchPredictorConfig config;
+  LoadingPredictorConfig config;
   EXPECT_TRUE(IsSpeculativeResourcePrefetchingEnabled(profile_.get(), &config));
   TestIsPrefetchLearning(config);
   TestIsDefaultExtraConfig(config);
@@ -114,10 +113,10 @@ TEST_F(ResourcePrefetchCommonTest, EnablePrefetch) {
       "dummy-trial", {{kModeParamName, kPrefetchingMode}},
       {kSpeculativeResourcePrefetchingFeatureName});
 
-  ResourcePrefetchPredictorConfig config;
+  LoadingPredictorConfig config;
   EXPECT_TRUE(IsSpeculativeResourcePrefetchingEnabled(profile_.get(), &config));
-  TestIsPrefetchEnabledForOrigin(config, PrefetchOrigin::EXTERNAL);
-  TestIsPrefetchEnabledForOrigin(config, PrefetchOrigin::NAVIGATION);
+  TestIsPrefetchEnabledForOrigin(config, HintOrigin::EXTERNAL);
+  TestIsPrefetchEnabledForOrigin(config, HintOrigin::NAVIGATION);
   TestIsDefaultExtraConfig(config);
 }
 
@@ -126,11 +125,11 @@ TEST_F(ResourcePrefetchCommonTest, EnablePrefetchExternalOnly) {
       "dummy-trial", {{kModeParamName, kExternalPrefetchingMode}},
       {kSpeculativeResourcePrefetchingFeatureName});
 
-  ResourcePrefetchPredictorConfig config;
+  LoadingPredictorConfig config;
   EXPECT_TRUE(IsSpeculativeResourcePrefetchingEnabled(profile_.get(), &config));
-  TestIsPrefetchEnabledForOrigin(config, PrefetchOrigin::EXTERNAL);
-  EXPECT_FALSE(config.IsPrefetchingEnabledForOrigin(
-      profile_.get(), PrefetchOrigin::NAVIGATION));
+  TestIsPrefetchEnabledForOrigin(config, HintOrigin::EXTERNAL);
+  EXPECT_FALSE(config.IsPrefetchingEnabledForOrigin(profile_.get(),
+                                                    HintOrigin::NAVIGATION));
   TestIsDefaultExtraConfig(config);
 }
 
@@ -140,7 +139,7 @@ TEST_F(ResourcePrefetchCommonTest, EnableUrlLearning) {
       {{kModeParamName, kLearningMode}, {kEnableUrlLearningParamName, "true"}},
       {kSpeculativeResourcePrefetchingFeatureName});
 
-  ResourcePrefetchPredictorConfig config;
+  LoadingPredictorConfig config;
   EXPECT_TRUE(IsSpeculativeResourcePrefetchingEnabled(profile_.get(), &config));
   TestIsPrefetchLearning(config);
   EXPECT_TRUE(config.is_url_learning_enabled);
@@ -152,7 +151,7 @@ TEST_F(ResourcePrefetchCommonTest, EnableManifests) {
       {{kModeParamName, kLearningMode}, {kEnableManifestsParamName, "true"}},
       {kSpeculativeResourcePrefetchingFeatureName});
 
-  ResourcePrefetchPredictorConfig config;
+  LoadingPredictorConfig config;
   EXPECT_TRUE(IsSpeculativeResourcePrefetchingEnabled(profile_.get(), &config));
   TestIsPrefetchLearning(config);
   EXPECT_TRUE(config.is_manifests_enabled);
@@ -165,7 +164,7 @@ TEST_F(ResourcePrefetchCommonTest, EnableOriginLearning) {
        {kEnableOriginLearningParamName, "true"}},
       {kSpeculativeResourcePrefetchingFeatureName});
 
-  ResourcePrefetchPredictorConfig config;
+  LoadingPredictorConfig config;
   EXPECT_TRUE(IsSpeculativeResourcePrefetchingEnabled(profile_.get(), &config));
   TestIsPrefetchLearning(config);
   EXPECT_TRUE(config.is_origin_learning_enabled);
@@ -178,9 +177,9 @@ TEST_F(ResourcePrefetchCommonTest, RespectsNetworkSettings) {
       "dummy-trial", {{kModeParamName, kPrefetchingMode}},
       {kSpeculativeResourcePrefetchingFeatureName});
 
-  ResourcePrefetchPredictorConfig config;
+  LoadingPredictorConfig config;
   EXPECT_TRUE(IsSpeculativeResourcePrefetchingEnabled(profile_.get(), &config));
-  TestIsPrefetchEnabledForOrigin(config, PrefetchOrigin::EXTERNAL);
+  TestIsPrefetchEnabledForOrigin(config, HintOrigin::EXTERNAL);
   TestIsDefaultExtraConfig(config);
 
   // Set preference to WIFI_ONLY: prefetch when not on cellular.
@@ -188,7 +187,7 @@ TEST_F(ResourcePrefetchCommonTest, RespectsNetworkSettings) {
   {
     std::unique_ptr<NetworkChangeNotifier> mock(
         new MockNetworkChangeNotifierWIFI);
-    TestIsPrefetchEnabledForOrigin(config, PrefetchOrigin::EXTERNAL);
+    TestIsPrefetchEnabledForOrigin(config, HintOrigin::EXTERNAL);
   }
   {
     std::unique_ptr<NetworkChangeNotifier> mock(
