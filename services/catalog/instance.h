@@ -12,15 +12,13 @@
 #include "services/catalog/entry.h"
 #include "services/catalog/public/interfaces/catalog.mojom.h"
 #include "services/catalog/store.h"
-#include "services/service_manager/public/interfaces/resolver.mojom.h"
 
 namespace catalog {
 
 class EntryCache;
 class ManifestProvider;
 
-class Instance : public service_manager::mojom::Resolver,
-                 public mojom::Catalog {
+class Instance : public mojom::Catalog {
  public:
   // Neither |system_cache| nor |service_manifest_provider| is owned.
   // |service_manifest_provider| may be null
@@ -28,14 +26,11 @@ class Instance : public service_manager::mojom::Resolver,
            ManifestProvider* service_manifest_provider);
   ~Instance() override;
 
-  void BindResolver(service_manager::mojom::ResolverRequest request);
   void BindCatalog(mojom::CatalogRequest request);
 
- private:
-  // service_manager::mojom::Resolver:
-  void ResolveServiceName(const std::string& service_name,
-                          const ResolveServiceNameCallback& callback) override;
+  const Entry* Resolve(const std::string& service_name);
 
+ private:
   // mojom::Catalog:
   void GetEntries(const base::Optional<std::vector<std::string>>& names,
                   GetEntriesCallback callback) override;
@@ -43,7 +38,6 @@ class Instance : public service_manager::mojom::Resolver,
       const std::string& capability,
       GetEntriesProvidingCapabilityCallback callback) override;
 
-  mojo::BindingSet<service_manager::mojom::Resolver> resolver_bindings_;
   mojo::BindingSet<mojom::Catalog> catalog_bindings_;
 
   // A map of name -> Entry data structure for system-level packages (i.e. those

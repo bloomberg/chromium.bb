@@ -9,7 +9,6 @@ mojom("interfaces") {
     "connector.mojom",
     "interface_provider.mojom",
     "interface_provider_spec.mojom",
-    "resolver.mojom",
     "service.mojom",
     "service_control.mojom",
     "service_factory.mojom",

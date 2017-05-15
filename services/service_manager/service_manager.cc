@@ -23,6 +23,8 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
+#include "services/catalog/entry.h"
+#include "services/catalog/instance.h"
 #include "services/catalog/public/interfaces/constants.mojom.h"
 #include "services/service_manager/connect_util.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -159,11 +161,11 @@ class ServiceManager::Instance
  public:
   Instance(service_manager::ServiceManager* service_manager,
            const Identity& identity,
-           InterfaceProviderSpecMap interface_provider_specs)
+           const InterfaceProviderSpecMap& interface_provider_specs)
       : service_manager_(service_manager),
         id_(GenerateUniqueID()),
         identity_(identity),
-        interface_provider_specs_(std::move(interface_provider_specs)),
+        interface_provider_specs_(interface_provider_specs),
         allow_any_application_(GetConnectionSpec().requires.count("*") == 1),
         pid_receiver_binding_(this),
         control_binding_(this),
@@ -394,7 +396,7 @@ class ServiceManager::Instance
     params->set_interface_request_info(interface_name,
                                        std::move(interface_pipe));
     params->set_start_service_callback(callback);
-    service_manager_->Connect(std::move(params), weak_factory_.GetWeakPtr());
+    service_manager_->Connect(std::move(params));
   }
 
   void StartService(const Identity& in_target,
@@ -411,7 +413,7 @@ class ServiceManager::Instance
     params->set_source(identity_);
     params->set_target(target);
     params->set_start_service_callback(callback);
-    service_manager_->Connect(std::move(params), weak_factory_.GetWeakPtr());
+    service_manager_->Connect(std::move(params));
   }
 
   void StartServiceWithProcess(
@@ -436,7 +438,7 @@ class ServiceManager::Instance
     params->set_client_process_info(std::move(service),
                                     std::move(pid_receiver_request));
     params->set_start_service_callback(callback);
-    service_manager_->Connect(std::move(params), weak_factory_.GetWeakPtr());
+    service_manager_->Connect(std::move(params));
   }
 
   void Clone(mojom::ConnectorRequest request) override {
@@ -691,19 +693,18 @@ bool ServiceManager::TestAPI::HasRunningInstanceForName(
 ////////////////////////////////////////////////////////////////////////////////
 // ServiceManager, public:
 
-ServiceManager::ServiceManager(
-    std::unique_ptr<ServiceProcessLauncherFactory>
-        service_process_launcher_factory,
-    mojom::ServicePtr catalog)
-    : service_process_launcher_factory_(
+ServiceManager::ServiceManager(std::unique_ptr<ServiceProcessLauncherFactory>
+                                   service_process_launcher_factory,
+                               std::unique_ptr<base::Value> catalog_contents,
+                               catalog::ManifestProvider* manifest_provider)
+    : catalog_(std::move(catalog_contents), manifest_provider),
+      service_process_launcher_factory_(
           std::move(service_process_launcher_factory)),
       weak_ptr_factory_(this) {
   InterfaceProviderSpec spec;
   spec.provides[kCapability_ServiceManager].insert(
       "service_manager::mojom::ServiceManager");
   spec.requires["*"].insert("service_manager:service_factory");
-  spec.requires[catalog::mojom::kServiceName].insert(
-      "service_manager:resolver");
   InterfaceProviderSpecMap specs;
   specs[mojom::kServiceManager_ConnectorSpec] = std::move(spec);
 
@@ -716,8 +717,7 @@ ServiceManager::ServiceManager(
                                             mojo::MakeRequest(&service)));
   service_manager_instance_->StartWithService(std::move(service));
 
-  if (catalog)
-    InitCatalog(std::move(catalog));
+  InitCatalog(catalog_.TakeService());
 }
 
 ServiceManager::~ServiceManager() {
@@ -741,18 +741,126 @@ ServiceManager::~ServiceManager() {
   instances_.clear();
 }
 
-void ServiceManager::SetServiceOverrides(
-    std::unique_ptr<ServiceOverrides> overrides) {
-  service_overrides_ = std::move(overrides);
-}
-
 void ServiceManager::SetInstanceQuitCallback(
     base::Callback<void(const Identity&)> callback) {
   instance_quit_callback_ = std::move(callback);
 }
 
 void ServiceManager::Connect(std::unique_ptr<ConnectParams> params) {
-  Connect(std::move(params), nullptr);
+  TRACE_EVENT_INSTANT1("service_manager", "ServiceManager::Connect",
+                       TRACE_EVENT_SCOPE_THREAD, "original_name",
+                       params->target().name());
+  DCHECK(!params->target().name().empty());
+  DCHECK(base::IsValidGUID(params->target().user_id()));
+  DCHECK_NE(mojom::kInheritUserID, params->target().user_id());
+  DCHECK(!params->HasClientProcessInfo() ||
+         !identity_to_instance_.count(params->target()));
+
+  // Connect to an existing matching instance, if possible.
+  if (!params->HasClientProcessInfo() && ConnectToExistingInstance(&params))
+    return;
+
+  const catalog::Entry* entry =
+      catalog_.GetInstanceForUserId(params->target().user_id())
+          ->Resolve(params->target().name());
+  if (!entry) {
+    LOG(ERROR) << "Failed to resolve service name: " << params->target().name();
+    params->set_response_data(mojom::ConnectResult::INVALID_ARGUMENT,
+                              Identity());
+    return;
+  }
+
+  const std::string& instance_name = params->target().instance();
+  const InterfaceProviderSpecMap& interface_provider_specs =
+      entry->interface_provider_specs();
+
+  auto it = interface_provider_specs.find(mojom::kServiceManager_ConnectorSpec);
+  const InterfaceProviderSpec& connection_spec =
+      it != interface_provider_specs.end()
+          ? it->second
+          : GetPermissiveInterfaceProviderSpec();
+
+  const Identity original_target(params->target());
+  const std::string user_id =
+      HasCapability(connection_spec, kCapability_AllUsers)
+          ? base::GenerateGUID()
+          : params->target().user_id();
+  const Identity target(params->target().name(), user_id, instance_name);
+  params->set_target(target);
+
+  // Services that request "all_users" class from the Service Manager are
+  // allowed to field connection requests from any user. They also run with a
+  // synthetic user id generated here. The user id provided via Connect() is
+  // ignored. Additionally services with the "all_users" class are not tied to
+  // the lifetime of the service that started them, instead they are owned by
+  // the Service Manager.
+  Identity source_identity_for_creation;
+  if (HasCapability(connection_spec, kCapability_AllUsers)) {
+    singletons_.insert(target.name());
+    source_identity_for_creation = CreateServiceManagerIdentity();
+  } else {
+    source_identity_for_creation = params->source();
+  }
+
+  bool result_interface_provider_specs_empty = interface_provider_specs.empty();
+  Instance* instance = CreateInstance(source_identity_for_creation, target,
+                                      interface_provider_specs);
+
+  // Below are various paths through which a new Instance can be bound to a
+  // Service proxy.
+  if (params->HasClientProcessInfo()) {
+    // This branch should be reachable only via a call to RegisterService() . We
+    // start the instance but return early before we connect to it. Clients will
+    // call Connect() with the target identity subsequently.
+    instance->BindPIDReceiver(params->TakePIDReceiverRequest());
+    instance->StartWithService(params->TakeService());
+    return;
+  } else {
+    // The catalog was unable to read a manifest for this service. We can't do
+    // anything more.
+    if (result_interface_provider_specs_empty) {
+      LOG(ERROR)
+          << "Error: The catalog was unable to read a manifest for service \""
+          << entry->name() << "\".";
+      params->set_response_data(mojom::ConnectResult::ACCESS_DENIED,
+                                Identity());
+      return;
+    }
+
+    if (entry->parent()) {
+      // This service is provided by another service via a ServiceFactory.
+      const std::string* target_user_id = &target.user_id();
+      std::string factory_instance_name = instance_name;
+
+      // Use the original user ID so the existing embedder factory can
+      // be found and used to create the new service.
+      target_user_id = &original_target.user_id();
+      Identity packaged_service_target(target);
+      packaged_service_target.set_user_id(original_target.user_id());
+      instance->set_identity(packaged_service_target);
+
+      mojom::ServicePtr service;
+      Identity factory(entry->parent()->name(), *target_user_id,
+                       factory_instance_name);
+      CreateServiceWithFactory(factory, target.name(),
+                               mojo::MakeRequest(&service));
+      instance->StartWithService(std::move(service));
+    } else {
+      base::FilePath package_path = entry->path();
+      DCHECK(!package_path.empty());
+      if (!instance->StartWithFilePath(package_path)) {
+        OnInstanceError(instance);
+        params->set_response_data(mojom::ConnectResult::INVALID_ARGUMENT,
+                                  Identity());
+        return;
+      }
+    }
+  }
+
+  params->set_response_data(mojom::ConnectResult::SUCCEEDED,
+                            instance->identity());
+  if (params->HasInterfaceRequestInfo())
+    instance->CallOnBindInterface(&params);
 }
 
 void ServiceManager::StartService(const Identity& identity) {
@@ -764,7 +872,7 @@ void ServiceManager::StartService(const Identity& identity) {
     target_identity.set_user_id(mojom::kRootUserID);
   params->set_target(target_identity);
 
-  Connect(std::move(params), nullptr);
+  Connect(std::move(params));
 }
 
 void ServiceManager::RegisterService(
@@ -783,7 +891,7 @@ void ServiceManager::RegisterService(
   params->set_target(identity);
   params->set_client_process_info(
       std::move(service), std::move(pid_receiver_request));
-  Connect(std::move(params), nullptr);
+  Connect(std::move(params));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -795,8 +903,6 @@ void ServiceManager::InitCatalog(mojom::ServicePtr catalog) {
   InterfaceProviderSpec spec;
   spec.provides["app"].insert("filesystem::mojom::Directory");
   spec.provides["catalog:catalog"].insert("catalog::mojom::Catalog");
-  spec.provides["service_manager:resolver"].insert(
-      "service_manager::mojom::Resolver");
   spec.provides["control"].insert("catalog::mojom::CatalogControl");
   InterfaceProviderSpecMap specs;
   specs[mojom::kServiceManager_ConnectorSpec] = std::move(spec);
@@ -806,18 +912,6 @@ void ServiceManager::InitCatalog(mojom::ServicePtr catalog) {
                      std::move(specs));
   singletons_.insert(catalog::mojom::kServiceName);
   instance->StartWithService(std::move(catalog));
-}
-
-mojom::Resolver* ServiceManager::GetResolver(const Identity& identity) {
-  auto iter = identity_to_resolver_.find(identity);
-  if (iter != identity_to_resolver_.end())
-    return iter->second.get();
-
-  mojom::ResolverPtr resolver_ptr;
-  BindInterface(this, identity, CreateCatalogIdentity(), &resolver_ptr);
-  mojom::Resolver* resolver = resolver_ptr.get();
-  identity_to_resolver_[identity] = std::move(resolver_ptr);
-  return resolver;
 }
 
 void ServiceManager::OnInstanceError(Instance* instance) {
@@ -846,36 +940,6 @@ void ServiceManager::OnInstanceStopped(const Identity& identity) {
   });
   if (!instance_quit_callback_.is_null())
     instance_quit_callback_.Run(identity);
-}
-
-void ServiceManager::Connect(std::unique_ptr<ConnectParams> params,
-                             base::WeakPtr<Instance> source_instance) {
-  TRACE_EVENT_INSTANT1("service_manager", "ServiceManager::Connect",
-                       TRACE_EVENT_SCOPE_THREAD, "original_name",
-                       params->target().name());
-  DCHECK(!params->target().name().empty());
-  DCHECK(base::IsValidGUID(params->target().user_id()));
-  DCHECK_NE(mojom::kInheritUserID, params->target().user_id());
-  DCHECK(!params->HasClientProcessInfo() ||
-         !identity_to_instance_.count(params->target()));
-
-  // Connect to an existing matching instance, if possible.
-  if (!params->HasClientProcessInfo() && ConnectToExistingInstance(&params))
-    return;
-
-  // The catalog needs to see the source identity as that of the originating
-  // app so it loads the correct store. Since the catalog is itself run as root
-  // when this re-enters Connect() it'll be handled by
-  // ConnectToExistingInstance().
-  mojom::Resolver* resolver = GetResolver(Identity(
-      service_manager::mojom::kServiceName, params->target().user_id()));
-
-  std::string name = params->target().name();
-  resolver->ResolveServiceName(
-      name,
-      base::Bind(&service_manager::ServiceManager::OnGotResolvedName,
-                 weak_ptr_factory_.GetWeakPtr(), base::Passed(&params),
-                 !!source_instance, source_instance));
 }
 
 ServiceManager::Instance* ServiceManager::GetExistingInstance(
@@ -947,7 +1011,7 @@ bool ServiceManager::ConnectToExistingInstance(
 ServiceManager::Instance* ServiceManager::CreateInstance(
     const Identity& source,
     const Identity& target,
-    InterfaceProviderSpecMap specs) {
+    const InterfaceProviderSpecMap& specs) {
   CHECK(target.user_id() != mojom::kInheritUserID);
 
   auto instance = base::MakeUnique<Instance>(this, target, std::move(specs));
@@ -1011,131 +1075,6 @@ void ServiceManager::OnServiceFactoryLost(const Identity& which) {
   auto it = service_factories_.find(which);
   DCHECK(it != service_factories_.end());
   service_factories_.erase(it);
-}
-
-void ServiceManager::OnGotResolvedName(
-    std::unique_ptr<ConnectParams> params,
-    bool has_source_instance,
-    base::WeakPtr<Instance> source_instance,
-    mojom::ResolveResultPtr result,
-    const base::Optional<std::string>& parent_name) {
-  // If this request was originated by a specific Instance and that Instance is
-  // no longer around, we ignore this response.
-  if (has_source_instance && !source_instance)
-    return;
-
-  // If name resolution failed, we drop the connection.
-  if (!result) {
-    LOG(ERROR) << "Failed to resolve service name: " << params->target().name();
-    params->set_response_data(mojom::ConnectResult::INVALID_ARGUMENT,
-                              Identity());
-    return;
-  }
-
-  const std::string& instance_name = params->target().instance();
-
-  // |result->interface_provider_specs| can be empty when there is no manifest.
-  auto it = result->interface_provider_specs.find(
-      mojom::kServiceManager_ConnectorSpec);
-  const InterfaceProviderSpec& connection_spec =
-      it != result->interface_provider_specs.end()
-          ? it->second
-          : GetPermissiveInterfaceProviderSpec();
-
-  const Identity original_target(params->target());
-  const std::string user_id =
-      HasCapability(connection_spec, kCapability_AllUsers)
-          ? base::GenerateGUID() : params->target().user_id();
-  const Identity target(params->target().name(), user_id, instance_name);
-  params->set_target(target);
-
-  // It's possible that when this manifest request was issued, another one was
-  // already in-progress and completed by the time this one did, and so the
-  // requested application may already be running.
-  if (ConnectToExistingInstance(&params))
-    return;
-
-  // Services that request "all_users" class from the Service Manager are
-  // allowed to field connection requests from any user. They also run with a
-  // synthetic user id generated here. The user id provided via Connect() is
-  // ignored. Additionally services with the "all_users" class are not tied to
-  // the lifetime of the service that started them, instead they are owned by
-  // the Service Manager.
-  Identity source_identity_for_creation;
-  if (HasCapability(connection_spec, kCapability_AllUsers)) {
-    singletons_.insert(target.name());
-    source_identity_for_creation = CreateServiceManagerIdentity();
-  } else {
-    source_identity_for_creation = params->source();
-  }
-
-  bool result_interface_provider_specs_empty =
-      result->interface_provider_specs.empty();
-  Instance* instance =
-      CreateInstance(source_identity_for_creation, target,
-                     std::move(result->interface_provider_specs));
-
-  // Below are various paths through which a new Instance can be bound to a
-  // Service proxy.
-  if (params->HasClientProcessInfo()) {
-    // This branch should be reachable only via a call to RegisterService() . We
-    // start the instance but return early before we connect to it. Clients will
-    // call Connect() with the target identity subsequently.
-    instance->BindPIDReceiver(params->TakePIDReceiverRequest());
-    instance->StartWithService(params->TakeService());
-    return;
-  } else {
-    // The catalog was unable to read a manifest for this service. We can't do
-    // anything more.
-    // TODO(beng): There may be some cases where it's valid to have an empty
-    // spec, so we should probably include a return value in |result|.
-    if (result_interface_provider_specs_empty) {
-      LOG(ERROR)
-          << "Error: The catalog was unable to read a manifest for service \""
-          << result->name << "\".";
-      params->set_response_data(mojom::ConnectResult::ACCESS_DENIED,
-                                Identity());
-      return;
-    }
-
-    if (parent_name) {
-      // This service is provided by another service via a ServiceFactory.
-      const std::string* target_user_id = &target.user_id();
-      std::string factory_instance_name = instance_name;
-
-      // Use the original user ID so the existing embedder factory can
-      // be found and used to create the new service.
-      target_user_id = &original_target.user_id();
-      Identity packaged_service_target(target);
-      packaged_service_target.set_user_id(original_target.user_id());
-      instance->set_identity(packaged_service_target);
-
-      mojom::ServicePtr service;
-      Identity factory(*parent_name, *target_user_id, factory_instance_name);
-      CreateServiceWithFactory(factory, target.name(),
-                               mojo::MakeRequest(&service));
-      instance->StartWithService(std::move(service));
-    } else {
-      base::FilePath package_path;
-      if (!service_overrides_ || !service_overrides_->GetExecutablePathOverride(
-            target.name(), &package_path)) {
-        package_path = std::move(result->package_path);
-      }
-      DCHECK(!package_path.empty());
-
-      if (!instance->StartWithFilePath(package_path)) {
-        OnInstanceError(instance);
-        params->set_response_data(mojom::ConnectResult::INVALID_ARGUMENT,
-                                  Identity());
-        return;
-      }
-    }
-  }
-
-  params->set_response_data(mojom::ConnectResult::SUCCEEDED,
-                            instance->identity());
-  if (params->HasInterfaceRequestInfo())
-    instance->CallOnBindInterface(&params);
 }
 
 base::WeakPtr<ServiceManager> ServiceManager::GetWeakPtr() {

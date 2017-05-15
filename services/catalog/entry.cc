@@ -10,6 +10,7 @@
 #include "base/values.h"
 #include "services/catalog/public/cpp/manifest_parsing_util.h"
 #include "services/catalog/store.h"
+#include "services/service_manager/public/interfaces/interface_provider_spec.mojom.h"
 
 namespace catalog {
 namespace {
@@ -238,20 +239,6 @@ void Entry::AddRequiredFilePath(const std::string& name, base::FilePath path) {
 }  // catalog
 
 namespace mojo {
-
-// static
-service_manager::mojom::ResolveResultPtr
-TypeConverter<service_manager::mojom::ResolveResultPtr, const catalog::Entry*>
-    ::Convert(const catalog::Entry* input) {
-  service_manager::mojom::ResolveResultPtr result;
-  if (input) {
-    result = service_manager::mojom::ResolveResult::New();
-    result->name = input->name();
-    result->interface_provider_specs = input->interface_provider_specs();
-    result->package_path = input->path();
-  }
-  return result;
-}
 
 // static
 catalog::mojom::EntryPtr

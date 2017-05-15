@@ -120,8 +120,6 @@ class Catalog::ServiceImpl : public service_manager::Service {
         base::Bind(&Catalog::BindCatalogRequest, base::Unretained(catalog_)));
     registry_.AddInterface<filesystem::mojom::Directory>(
         base::Bind(&Catalog::BindDirectoryRequest, base::Unretained(catalog_)));
-    registry_.AddInterface<service_manager::mojom::Resolver>(
-        base::Bind(&Catalog::BindResolverRequest, base::Unretained(catalog_)));
   }
   ~ServiceImpl() override {}
 
@@ -181,11 +179,15 @@ void Catalog::LoadDefaultCatalogManifest(const base::FilePath& path) {
   catalog::Catalog::SetDefaultCatalogManifest(std::move(manifest_value));
 }
 
-void Catalog::BindResolverRequest(
-    const service_manager::BindSourceInfo& source_info,
-    service_manager::mojom::ResolverRequest request) {
-  Instance* instance = GetInstanceForUserId(source_info.identity.user_id());
-  instance->BindResolver(std::move(request));
+Instance* Catalog::GetInstanceForUserId(const std::string& user_id) {
+  auto it = instances_.find(user_id);
+  if (it != instances_.end())
+    return it->second.get();
+
+  auto result = instances_.insert(std::make_pair(
+      user_id,
+      base::MakeUnique<Instance>(&system_cache_, service_manifest_provider_)));
+  return result.first->second.get();
 }
 
 void Catalog::BindCatalogRequest(
@@ -208,17 +210,6 @@ void Catalog::BindDirectoryRequest(
           resources_path, scoped_refptr<filesystem::SharedTempDir>(),
           lock_table_),
       std::move(request));
-}
-
-Instance* Catalog::GetInstanceForUserId(const std::string& user_id) {
-  auto it = instances_.find(user_id);
-  if (it != instances_.end())
-    return it->second.get();
-
-  auto result = instances_.insert(std::make_pair(
-      user_id,
-      base::MakeUnique<Instance>(&system_cache_, service_manifest_provider_)));
-  return result.first->second.get();
 }
 
 }  // namespace catalog

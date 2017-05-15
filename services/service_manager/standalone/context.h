@@ -18,10 +18,6 @@ class SequencedWorkerPool;
 class Value;
 }
 
-namespace catalog {
-class Catalog;
-}
-
 namespace service_manager {
 
 class ServiceManager;
@@ -46,7 +42,6 @@ class Context {
 
   scoped_refptr<base::SequencedWorkerPool> blocking_pool_;
 
-  std::unique_ptr<catalog::Catalog> catalog_;
   std::unique_ptr<ServiceManager> service_manager_;
   base::Time main_entry_time_;
 
