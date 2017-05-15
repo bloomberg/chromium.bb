@@ -140,37 +140,24 @@ void V8ScriptValueDeserializer::Transfer() {
   v8::Local<v8::Context> context = script_state_->GetContext();
   v8::Local<v8::Object> creation_context = context->Global();
 
-  // Transfer array buffers.
-  if (auto* array_buffer_contents =
-          serialized_script_value_->GetArrayBufferContentsArray()) {
-    for (unsigned i = 0; i < array_buffer_contents->size(); i++) {
-      WTF::ArrayBufferContents& contents = array_buffer_contents->at(i);
-      if (contents.IsShared()) {
-        DOMSharedArrayBuffer* array_buffer =
-            DOMSharedArrayBuffer::Create(contents);
-        v8::Local<v8::Value> wrapper =
-            ToV8(array_buffer, creation_context, isolate);
-        DCHECK(wrapper->IsSharedArrayBuffer());
-        deserializer_.TransferSharedArrayBuffer(
-            i, v8::Local<v8::SharedArrayBuffer>::Cast(wrapper));
-      } else {
-        DOMArrayBuffer* array_buffer = DOMArrayBuffer::Create(contents);
-        v8::Local<v8::Value> wrapper =
-            ToV8(array_buffer, creation_context, isolate);
-        DCHECK(wrapper->IsArrayBuffer());
-        deserializer_.TransferArrayBuffer(
-            i, v8::Local<v8::ArrayBuffer>::Cast(wrapper));
-      }
-    }
-  }
+  // Receive the transfer, making the received objects available.
+  serialized_script_value_->ReceiveTransfer();
 
-  // Transfer image bitmaps.
-  if (auto* image_bitmap_contents =
-          serialized_script_value_->GetImageBitmapContentsArray()) {
-    transferred_image_bitmaps_.ReserveInitialCapacity(
-        image_bitmap_contents->size());
-    for (const auto& image : *image_bitmap_contents)
-      transferred_image_bitmaps_.push_back(ImageBitmap::Create(image));
+  // Transfer array buffers.
+  const auto& array_buffers = serialized_script_value_->ReceivedArrayBuffers();
+  for (unsigned i = 0; i < array_buffers.size(); i++) {
+    DOMArrayBufferBase* array_buffer = array_buffers.at(i);
+    v8::Local<v8::Value> wrapper =
+        ToV8(array_buffer, creation_context, isolate);
+    if (array_buffer->IsShared()) {
+      DCHECK(wrapper->IsSharedArrayBuffer());
+      deserializer_.TransferSharedArrayBuffer(
+          i, v8::Local<v8::SharedArrayBuffer>::Cast(wrapper));
+    } else {
+      DCHECK(wrapper->IsArrayBuffer());
+      deserializer_.TransferArrayBuffer(
+          i, v8::Local<v8::ArrayBuffer>::Cast(wrapper));
+    }
   }
 }
 
@@ -273,9 +260,11 @@ ScriptWrappable* V8ScriptValueDeserializer::ReadDOMObject(
     }
     case kImageBitmapTransferTag: {
       uint32_t index = 0;
-      if (!ReadUint32(&index) || index >= transferred_image_bitmaps_.size())
+      const auto& transferred_image_bitmaps =
+          serialized_script_value_->ReceivedImageBitmaps();
+      if (!ReadUint32(&index) || index >= transferred_image_bitmaps.size())
         return nullptr;
-      return transferred_image_bitmaps_[index].Get();
+      return transferred_image_bitmaps[index].Get();
     }
     case kImageDataTag: {
       uint32_t width = 0, height = 0, pixel_length = 0;

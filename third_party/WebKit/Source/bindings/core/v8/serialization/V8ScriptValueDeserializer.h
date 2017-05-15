@@ -83,9 +83,6 @@ class GC_PLUGIN_IGNORE("https://crbug.com/644725") CORE_EXPORT
   // Message ports which were transferred in.
   const MessagePortArray* transferred_message_ports_ = nullptr;
 
-  // ImageBitmaps which were transferred in.
-  HeapVector<Member<ImageBitmap>> transferred_image_bitmaps_;
-
   // Blob info for blobs stored by index.
   const WebBlobInfoArray* blob_info_array_ = nullptr;
 

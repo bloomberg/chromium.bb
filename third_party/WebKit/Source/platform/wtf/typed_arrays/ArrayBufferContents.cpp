@@ -26,10 +26,10 @@
 
 #include "platform/wtf/typed_arrays/ArrayBufferContents.h"
 
+#include <string.h>
 #include "base/allocator/partition_allocator/partition_alloc.h"
 #include "platform/wtf/Assertions.h"
 #include "platform/wtf/allocator/Partitions.h"
-#include <string.h>
 
 namespace WTF {
 

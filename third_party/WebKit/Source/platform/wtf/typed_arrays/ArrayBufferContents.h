@@ -68,8 +68,11 @@ class WTF_EXPORT ArrayBufferContents {
   ArrayBufferContents(DataHandle,
                       unsigned size_in_bytes,
                       SharingType is_shared);
+  ArrayBufferContents(ArrayBufferContents&&) = default;
 
   ~ArrayBufferContents();
+
+  ArrayBufferContents& operator=(ArrayBufferContents&&) = default;
 
   void Neuter();
 
