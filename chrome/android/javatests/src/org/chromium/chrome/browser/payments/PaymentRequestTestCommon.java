@@ -263,7 +263,7 @@ final class PaymentRequestTestCommon implements PaymentRequestObserverForTest,
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                mUI.getCardEditorView().findViewById(resourceId).performClick();
+                mUI.getCardEditorDialog().findViewById(resourceId).performClick();
             }
         });
         helper.waitForCallback(callCount);
@@ -275,7 +275,7 @@ final class PaymentRequestTestCommon implements PaymentRequestObserverForTest,
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                mUI.getEditorView().findViewById(resourceId).performClick();
+                mUI.getEditorDialog().findViewById(resourceId).performClick();
             }
         });
         helper.waitForCallback(callCount);
@@ -287,9 +287,9 @@ final class PaymentRequestTestCommon implements PaymentRequestObserverForTest,
         ThreadUtils.runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                mUI.getEditorView().dispatchKeyEvent(
+                mUI.getEditorDialog().dispatchKeyEvent(
                         new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_BACK));
-                mUI.getEditorView().dispatchKeyEvent(
+                mUI.getEditorDialog().dispatchKeyEvent(
                         new KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_BACK));
             }
         });
@@ -387,7 +387,7 @@ final class PaymentRequestTestCommon implements PaymentRequestObserverForTest,
     }
 
     protected View getCardEditorFocusedView() {
-        return mUI.getCardEditorView().getCurrentFocus();
+        return mUI.getCardEditorDialog().getCurrentFocus();
     }
 
     protected void clickOnShippingAddressSuggestionOptionAndWait(
@@ -468,7 +468,7 @@ final class PaymentRequestTestCommon implements PaymentRequestObserverForTest,
         return ThreadUtils.runOnUiThreadBlocking(new Callable<String>() {
             @Override
             public String call() {
-                return mUI.getCardEditorView()
+                return mUI.getCardEditorDialog()
                         .getDropdownFieldsForTest()
                         .get(dropdownIndex)
                         .getSelectedItem()
@@ -482,7 +482,7 @@ final class PaymentRequestTestCommon implements PaymentRequestObserverForTest,
         return ThreadUtils.runOnUiThreadBlocking(new Callable<String>() {
             @Override
             public String call() {
-                return mUI.getCardEditorView()
+                return mUI.getCardEditorDialog()
                         .getDropdownFieldsForTest()
                         .get(dropdownIndex)
                         .getItemAtPosition(itemPosition)
@@ -496,7 +496,7 @@ final class PaymentRequestTestCommon implements PaymentRequestObserverForTest,
         return ThreadUtils.runOnUiThreadBlocking(new Callable<Integer>() {
             @Override
             public Integer call() {
-                return mUI.getCardEditorView()
+                return mUI.getCardEditorDialog()
                         .getDropdownFieldsForTest()
                         .get(dropdownIndex)
                         .getCount();
@@ -514,7 +514,7 @@ final class PaymentRequestTestCommon implements PaymentRequestObserverForTest,
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                List<Spinner> fields = mUI.getCardEditorView().getDropdownFieldsForTest();
+                List<Spinner> fields = mUI.getCardEditorDialog().getDropdownFieldsForTest();
                 for (int i = 0; i < selections.length && i < fields.size(); i++) {
                     fields.get(i).setSelection(selections[i]);
                 }
@@ -529,7 +529,8 @@ final class PaymentRequestTestCommon implements PaymentRequestObserverForTest,
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                ((Spinner) mUI.getEditorView().findViewById(R.id.spinner)).setSelection(selection);
+                ((Spinner) mUI.getEditorDialog().findViewById(R.id.spinner))
+                        .setSelection(selection);
             }
         });
         helper.waitForCallback(callCount);
@@ -542,7 +543,7 @@ final class PaymentRequestTestCommon implements PaymentRequestObserverForTest,
             @Override
             public void run() {
                 ViewGroup contents =
-                        (ViewGroup) mUI.getCardEditorView().findViewById(R.id.contents);
+                        (ViewGroup) mUI.getCardEditorDialog().findViewById(R.id.contents);
                 Assert.assertNotNull(contents);
                 for (int i = 0, j = 0; i < contents.getChildCount() && j < values.length; i++) {
                     View view = contents.getChildAt(i);
@@ -561,7 +562,7 @@ final class PaymentRequestTestCommon implements PaymentRequestObserverForTest,
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                List<EditText> fields = mUI.getEditorView().getEditableTextFieldsForTest();
+                List<EditText> fields = mUI.getEditorDialog().getEditableTextFieldsForTest();
                 for (int i = 0; i < values.length; i++) {
                     fields.get(i).setText(values[i]);
                 }
@@ -576,7 +577,8 @@ final class PaymentRequestTestCommon implements PaymentRequestObserverForTest,
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                ((CheckBox) mUI.getCardEditorView().findViewById(resourceId)).setChecked(isChecked);
+                ((CheckBox) mUI.getCardEditorDialog().findViewById(resourceId))
+                        .setChecked(isChecked);
             }
         });
         helper.waitForCallback(callCount);

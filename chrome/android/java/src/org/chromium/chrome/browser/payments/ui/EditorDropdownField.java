@@ -59,8 +59,8 @@ class EditorDropdownField implements EditorFieldView {
 
         mLabel = (TextView) mLayout.findViewById(R.id.spinner_label);
         mLabel.setText(mFieldModel.isRequired()
-                ? mFieldModel.getLabel() + EditorView.REQUIRED_FIELD_INDICATOR
-                : mFieldModel.getLabel());
+                        ? mFieldModel.getLabel() + EditorDialog.REQUIRED_FIELD_INDICATOR
+                        : mFieldModel.getLabel());
 
         final List<DropdownKeyValue> dropdownKeyValues = mFieldModel.getDropdownKeyValues();
         mSelectedIndex = getDropdownIndex(dropdownKeyValues, mFieldModel.getValue());

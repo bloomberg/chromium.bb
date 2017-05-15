@@ -542,9 +542,9 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
         // Add the callback to change the label of shipping addresses depending on the focus.
         if (mRequestShipping) mUI.setShippingAddressSectionFocusChangedObserver(this);
 
-        mAddressEditor.setEditorView(mUI.getEditorView());
-        mCardEditor.setEditorView(mUI.getCardEditorView());
-        if (mContactEditor != null) mContactEditor.setEditorView(mUI.getEditorView());
+        mAddressEditor.setEditorDialog(mUI.getEditorDialog());
+        mCardEditor.setEditorDialog(mUI.getCardEditorDialog());
+        if (mContactEditor != null) mContactEditor.setEditorDialog(mUI.getEditorDialog());
     }
 
     private void createShippingSection(
