@@ -46,6 +46,7 @@ class UiSceneManager {
 
  private:
   void CreateSecurityWarnings();
+  void CreateSystemIndicators();
   void CreateContentQuad();
   void CreateBackground();
   void CreateUrlBar();
@@ -65,6 +66,8 @@ class UiSceneManager {
   UiElement* permanent_security_warning_ = nullptr;
   UiElement* transient_security_warning_ = nullptr;
   UiElement* main_content_ = nullptr;
+  UiElement* audio_input_indicator_ = nullptr;
+  UiElement* video_input_indicator_ = nullptr;
   UrlBar* url_bar_ = nullptr;
   LoadingIndicator* loading_indicator_ = nullptr;
 
