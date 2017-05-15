@@ -1333,13 +1333,6 @@ const FeatureEntry kFeatureEntries[] = {
         flag_descriptions::kDisplayColorCalibrationDescription, kOsCrOS,
         SINGLE_DISABLE_VALUE_TYPE(::switches::kDisableDisplayColorCalibration),
     },
-    {
-        "ash-disable-screen-orientation-lock",
-        flag_descriptions::kAshScreenOrientationLockName,
-        flag_descriptions::kAshScreenOrientationLockDescription, kOsCrOS,
-        SINGLE_DISABLE_VALUE_TYPE(
-            ash::switches::kAshDisableScreenOrientationLock),
-    },
     {"enable-tether", flag_descriptions::kTetherName,
      flag_descriptions::kTetherDescription, kOsCrOS,
      SINGLE_VALUE_TYPE(chromeos::switches::kEnableTether)},
@@ -1363,13 +1356,6 @@ const FeatureEntry kFeatureEntries[] = {
         "ash-debug-shortcuts", flag_descriptions::kDebugShortcutsName,
         flag_descriptions::kDebugShortcutsDescription, kOsAll,
         SINGLE_VALUE_TYPE(ash::switches::kAshDebugShortcuts),
-    },
-    {
-        "ash-disable-maximize-mode-window-backdrop",
-        flag_descriptions::kAshMaximizeModeWindowBackdropName,
-        flag_descriptions::kAshMaximizeModeWindowBackdropDescription, kOsCrOS,
-        SINGLE_DISABLE_VALUE_TYPE(
-            ash::switches::kAshDisableMaximizeModeWindowBackdrop),
     },
     {
         "ash-enable-mirrored-screen",

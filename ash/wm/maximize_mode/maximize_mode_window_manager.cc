@@ -310,12 +310,6 @@ bool MaximizeModeWindowManager::IsContainerWindow(aura::Window* window) {
 
 void MaximizeModeWindowManager::EnableBackdropBehindTopWindowOnEachDisplay(
     bool enable) {
-  // This function should be a no-op if backdrops have been disabled.
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kAshDisableMaximizeModeWindowBackdrop)) {
-    return;
-  }
-
   if (backdrops_hidden_)
     return;
 

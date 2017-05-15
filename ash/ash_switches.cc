@@ -30,14 +30,6 @@ const char kAshDebugShortcuts[] = "ash-debug-shortcuts";
 // Enable keyboard shortcuts used by developers only.
 const char kAshDeveloperShortcuts[] = "ash-dev-shortcuts";
 
-// Disables the window backdrops normally used in maximize mode (TouchView).
-const char kAshDisableMaximizeModeWindowBackdrop[] =
-    "ash-disable-maximize-mode-window-backdrop";
-
-// Disable the support for WebContents to lock the screen orientation.
-const char kAshDisableScreenOrientationLock[] =
-    "ash-disable-screen-orientation-lock";
-
 // Disable the Touch Exploration Mode. Touch Exploration Mode will no longer be
 // turned on automatically when spoken feedback is enabled when this flag is
 // set.

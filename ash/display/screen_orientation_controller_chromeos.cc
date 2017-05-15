@@ -215,10 +215,8 @@ void ScreenOrientationController::UnlockAll() {
 
 bool ScreenOrientationController::ScreenOrientationProviderSupported() const {
   return Shell::Get()
-             ->maximize_mode_controller()
-             ->IsMaximizeModeWindowManagerEnabled() &&
-         !base::CommandLine::ForCurrentProcess()->HasSwitch(
-             switches::kAshDisableScreenOrientationLock);
+      ->maximize_mode_controller()
+      ->IsMaximizeModeWindowManagerEnabled();
 }
 
 void ScreenOrientationController::ToggleUserRotationLock() {

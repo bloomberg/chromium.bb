@@ -18,7 +18,6 @@
 #include "ash/shell_port.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/fullscreen_window_finder.h"
-#include "ash/wm/maximize_mode/workspace_backdrop_delegate.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/wm_event.h"

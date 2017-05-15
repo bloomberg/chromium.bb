@@ -369,12 +369,6 @@ extern const char kAshShelfColorSchemeLightMuted[];
 extern const char kAshShelfColorSchemeNormalMuted[];
 extern const char kAshShelfColorSchemeDarkMuted[];
 
-extern const char kAshMaximizeModeWindowBackdropName[];
-extern const char kAshMaximizeModeWindowBackdropDescription[];
-
-extern const char kAshScreenOrientationLockName[];
-extern const char kAshScreenOrientationLockDescription[];
-
 extern const char kAshEnableMirroredScreenName[];
 extern const char kAshEnableMirroredScreenDescription[];
 
