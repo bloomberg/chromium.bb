@@ -5,7 +5,6 @@
 module mojom;
 
 import "media/capture/mojo/video_capture_types.mojom";
-import "url/mojo/origin.mojom";
 
 [Native]
 enum MediaDeviceType;
@@ -40,8 +39,7 @@ interface MediaDevicesDispatcherHost {
   // content/common/media/media_devices.h.
   EnumerateDevices(bool request_audio_input,
                    bool request_video_input,
-                   bool request_audio_output,
-                   url.mojom.Origin security_origin)
+                   bool request_audio_output)
                        => (array<array<MediaDeviceInfo>> enumeration);
   
   // Returns a list of video devices and their capabilities.
@@ -49,7 +47,7 @@ interface MediaDevicesDispatcherHost {
   // The result of this function is intended for the implementation details
   // of algorithms such as settings selection for getUserMedia.
   // Do not expose the data contained in result of this function to JavaScript.
-  GetVideoInputCapabilities(url.mojom.Origin security_origin)
+  GetVideoInputCapabilities()
       => (array<VideoInputDeviceCapabilities> video_input_device_capabilities);
 
   // Creates a subscription for device-change notifications for the calling
@@ -58,8 +56,7 @@ interface MediaDevicesDispatcherHost {
   // Requests to create a subscription with an ID that already exists for type
   // |type| are invalid and result in a renderer crash.
   SubscribeDeviceChangeNotifications(MediaDeviceType type,
-                                     uint32 subscription_id,
-                                     url.mojom.Origin security_origin);
+                                     uint32 subscription_id);
 
   // Removes a subscription to device-change notifications for the calling
   // frame. The caller is responsible for sending |subscription_id| values that

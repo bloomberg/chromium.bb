@@ -72,11 +72,11 @@ class MockMediaDevicesListener : public ::mojom::MediaDevicesListener {
 
 }  // namespace
 
-class MediaDevicesDispatcherHostTest : public testing::Test {
+class MediaDevicesDispatcherHostTest : public testing::TestWithParam<GURL> {
  public:
   MediaDevicesDispatcherHostTest()
       : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
-        origin_(GURL("https://test.com")) {
+        origin_(GetParam()) {
     // Make sure we use fake devices to avoid long delays.
     base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
         switches::kUseFakeDeviceForMediaStream,
@@ -91,6 +91,7 @@ class MediaDevicesDispatcherHostTest : public testing::Test {
     host_ = base::MakeUnique<MediaDevicesDispatcherHost>(
         kProcessId, kRenderId, browser_context_.GetMediaDeviceIDSalt(),
         media_stream_manager_.get());
+    host_->SetSecurityOriginForTesting(origin_);
   }
   ~MediaDevicesDispatcherHostTest() override { audio_manager_->Shutdown(); }
 
@@ -159,8 +160,8 @@ class MediaDevicesDispatcherHostTest : public testing::Test {
     base::RunLoop run_loop;
     host_->EnumerateDevices(
         enumerate_audio_input, enumerate_video_input, enumerate_audio_output,
-        origin_, base::Bind(&MediaDevicesDispatcherHostTest::DevicesEnumerated,
-                            base::Unretained(this), run_loop.QuitClosure()));
+        base::Bind(&MediaDevicesDispatcherHostTest::DevicesEnumerated,
+                   base::Unretained(this), run_loop.QuitClosure()));
     run_loop.Run();
 
     ASSERT_FALSE(enumerated_devices_.empty());
@@ -258,12 +259,9 @@ class MediaDevicesDispatcherHostTest : public testing::Test {
     host_->SetPermissionChecker(
         base::MakeUnique<MediaDevicesPermissionChecker>(has_permission));
     uint32_t subscription_id = 0u;
-    uint32_t unique_origin_subscription_id = 1u;
-    url::Origin origin(GURL("http://localhost"));
-    url::Origin unique_origin;
     for (size_t i = 0; i < NUM_MEDIA_DEVICE_TYPES; ++i) {
       MediaDeviceType type = static_cast<MediaDeviceType>(i);
-      host_->SubscribeDeviceChangeNotifications(type, subscription_id, origin);
+      host_->SubscribeDeviceChangeNotifications(type, subscription_id);
       MockMediaDevicesListener device_change_listener;
       host_->SetDeviceChangeListenerForTesting(
           device_change_listener.CreateInterfacePtrAndBind());
@@ -271,12 +269,6 @@ class MediaDevicesDispatcherHostTest : public testing::Test {
       EXPECT_CALL(device_change_listener,
                   OnDevicesChanged(type, subscription_id, testing::_))
           .WillRepeatedly(SaveArg<2>(&changed_devices));
-      // The subscription with unique origin is ignored, so it should not get
-      // notifications.
-      EXPECT_CALL(
-          device_change_listener,
-          OnDevicesChanged(type, unique_origin_subscription_id, testing::_))
-          .Times(0);
 
       // Simulate device-change notification
       MediaDeviceInfoArray updated_devices = {
@@ -309,94 +301,66 @@ class MediaDevicesDispatcherHostTest : public testing::Test {
   std::vector<MediaDeviceInfoArray> enumerated_devices_;
 };
 
-TEST_F(MediaDevicesDispatcherHostTest, EnumerateAudioInputDevices) {
+TEST_P(MediaDevicesDispatcherHostTest, EnumerateAudioInputDevices) {
   EnumerateDevicesAndWaitForResult(true, false, false);
   EXPECT_TRUE(DoesContainLabels(enumerated_devices_));
 }
 
-TEST_F(MediaDevicesDispatcherHostTest, EnumerateVideoInputDevices) {
+TEST_P(MediaDevicesDispatcherHostTest, EnumerateVideoInputDevices) {
   EnumerateDevicesAndWaitForResult(false, true, false);
   EXPECT_TRUE(DoesContainLabels(enumerated_devices_));
 }
 
-TEST_F(MediaDevicesDispatcherHostTest, EnumerateAudioOutputDevices) {
+TEST_P(MediaDevicesDispatcherHostTest, EnumerateAudioOutputDevices) {
   EnumerateDevicesAndWaitForResult(false, false, true);
   EXPECT_TRUE(DoesContainLabels(enumerated_devices_));
 }
 
-TEST_F(MediaDevicesDispatcherHostTest, EnumerateAllDevices) {
+TEST_P(MediaDevicesDispatcherHostTest, EnumerateAllDevices) {
   EnumerateDevicesAndWaitForResult(true, true, true);
   EXPECT_TRUE(DoesContainLabels(enumerated_devices_));
 }
 
-TEST_F(MediaDevicesDispatcherHostTest, EnumerateAudioInputDevicesNoAccess) {
+TEST_P(MediaDevicesDispatcherHostTest, EnumerateAudioInputDevicesNoAccess) {
   EnumerateDevicesAndWaitForResult(true, false, false, false);
   EXPECT_TRUE(DoesNotContainLabels(enumerated_devices_));
 }
 
-TEST_F(MediaDevicesDispatcherHostTest, EnumerateVideoInputDevicesNoAccess) {
+TEST_P(MediaDevicesDispatcherHostTest, EnumerateVideoInputDevicesNoAccess) {
   EnumerateDevicesAndWaitForResult(false, true, false, false);
   EXPECT_TRUE(DoesNotContainLabels(enumerated_devices_));
 }
 
-TEST_F(MediaDevicesDispatcherHostTest, EnumerateAudioOutputDevicesNoAccess) {
+TEST_P(MediaDevicesDispatcherHostTest, EnumerateAudioOutputDevicesNoAccess) {
   EnumerateDevicesAndWaitForResult(false, false, true, false);
   EXPECT_TRUE(DoesNotContainLabels(enumerated_devices_));
 }
 
-TEST_F(MediaDevicesDispatcherHostTest, EnumerateAllDevicesNoAccess) {
+TEST_P(MediaDevicesDispatcherHostTest, EnumerateAllDevicesNoAccess) {
   EnumerateDevicesAndWaitForResult(true, true, true, false);
   EXPECT_TRUE(DoesNotContainLabels(enumerated_devices_));
 }
 
-TEST_F(MediaDevicesDispatcherHostTest, SubscribeDeviceChange) {
+TEST_P(MediaDevicesDispatcherHostTest, SubscribeDeviceChange) {
   SubscribeAndWaitForResult(true);
 }
 
-TEST_F(MediaDevicesDispatcherHostTest, SubscribeDeviceChangeNoAccess) {
+TEST_P(MediaDevicesDispatcherHostTest, SubscribeDeviceChangeNoAccess) {
   SubscribeAndWaitForResult(false);
 }
 
-TEST_F(MediaDevicesDispatcherHostTest, EnumerateAllDevicesUniqueOrigin) {
-  EXPECT_CALL(*this, UniqueOriginCallback(testing::_)).Times(0);
-  host_->EnumerateDevices(
-      true, true, true, url::Origin(),
-      base::Bind(&MediaDevicesDispatcherHostTest::UniqueOriginCallback,
-                 base::Unretained(this)));
-  base::RunLoop().RunUntilIdle();
-
-  // Verify that the callback for a valid origin does get called.
-  base::RunLoop run_loop;
-  EXPECT_CALL(*this, ValidOriginCallback(testing::_))
-      .WillOnce(InvokeWithoutArgs([&run_loop]() { run_loop.Quit(); }));
-  host_->EnumerateDevices(
-      true, true, true, url::Origin(GURL("http://localhost")),
-      base::Bind(&MediaDevicesDispatcherHostTest::ValidOriginCallback,
-                 base::Unretained(this)));
-  run_loop.Run();
-}
-
-TEST_F(MediaDevicesDispatcherHostTest, GetVideoInputCapabilities) {
+TEST_P(MediaDevicesDispatcherHostTest, GetVideoInputCapabilities) {
   base::RunLoop run_loop;
   EXPECT_CALL(*this, MockVideoInputCapabilitiesCallback())
       .WillOnce(InvokeWithoutArgs([&run_loop]() { run_loop.Quit(); }));
   host_->GetVideoInputCapabilities(
-      origin_,
       base::Bind(
           &MediaDevicesDispatcherHostTest::VideoInputCapabilitiesCallback,
           base::Unretained(this)));
   run_loop.Run();
 }
 
-TEST_F(MediaDevicesDispatcherHostTest, GetVideoInputCapabilitiesUniqueOrigin) {
-  base::RunLoop run_loop;
-  EXPECT_CALL(*this, MockVideoInputCapabilitiesCallback())
-      .WillOnce(InvokeWithoutArgs([&run_loop]() { run_loop.Quit(); }));
-  host_->GetVideoInputCapabilities(
-      url::Origin(), base::Bind(&MediaDevicesDispatcherHostTest::
-                                    VideoInputCapabilitiesUniqueOriginCallback,
-                                base::Unretained(this)));
-  run_loop.Run();
-}
-
+INSTANTIATE_TEST_CASE_P(,
+                        MediaDevicesDispatcherHostTest,
+                        testing::Values(GURL(), GURL("https://test.com")));
 };  // namespace content

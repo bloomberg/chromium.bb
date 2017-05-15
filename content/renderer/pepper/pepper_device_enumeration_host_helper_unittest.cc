@@ -53,13 +53,11 @@ class TestDelegate : public PepperDeviceEnumerationHostHelper::Delegate,
   ~TestDelegate() override { CHECK(monitoring_callbacks_.empty()); }
 
   void EnumerateDevices(PP_DeviceType_Dev /* type */,
-                        const GURL& /* document_url */,
                         const DevicesCallback& callback) override {
     callback.Run(TestEnumerationData());
   }
 
   uint32_t StartMonitoringDevices(PP_DeviceType_Dev /* type */,
-                                  const GURL& /* document_url */,
                                   const DevicesCallback& callback) override {
     last_used_id_++;
     monitoring_callbacks_[last_used_id_] = callback;

@@ -414,7 +414,7 @@ void UserMediaClientImpl::MaybeProcessNextRequestInfo() {
     if (request_audio_input_devices) {
       GetMediaDevicesDispatcher()->EnumerateDevices(
           true /* audio_input */, false /* video_input */,
-          false /* audio_output */, current_request_info_->security_origin(),
+          false /* audio_output */,
           base::Bind(&UserMediaClientImpl::SelectAudioInputDevice,
                      weak_factory_.GetWeakPtr(),
                      current_request_info_->request()));
@@ -461,7 +461,6 @@ void UserMediaClientImpl::SetupVideoInput(
                           &video_controls);
   if (IsDeviceSource(video_controls.stream_source)) {
     GetMediaDevicesDispatcher()->GetVideoInputCapabilities(
-        current_request_info_->security_origin(),
         base::Bind(&UserMediaClientImpl::SelectVideoDeviceSettings,
                    weak_factory_.GetWeakPtr(), user_media_request));
   } else {
@@ -590,17 +589,8 @@ void UserMediaClientImpl::RequestMediaDevices(
     const blink::WebMediaDevicesRequest& media_devices_request) {
   UpdateWebRTCMethodCount(WEBKIT_GET_MEDIA_DEVICES);
   DCHECK(CalledOnValidThread());
-
-  // |media_devices_request| can't be mocked, so in tests it will be empty (the
-  // underlying pointer is null). In order to use this function in a test we
-  // need to check if it isNull.
-  url::Origin security_origin;
-  if (!media_devices_request.IsNull())
-    security_origin = media_devices_request.GetSecurityOrigin();
-
   GetMediaDevicesDispatcher()->EnumerateDevices(
       true /* audio input */, true /* video input */, true /* audio output */,
-      security_origin,
       base::Bind(&UserMediaClientImpl::FinalizeEnumerateDevices,
                  weak_factory_.GetWeakPtr(), media_devices_request));
 }
@@ -623,12 +613,9 @@ void UserMediaClientImpl::SetMediaDeviceChangeObserver(
     device_change_subscription_ids_.clear();
   } else {
     DCHECK(device_change_subscription_ids_.empty());
-    url::Origin security_origin =
-        media_device_change_observer_.GetSecurityOrigin();
     device_change_subscription_ids_ =
-        event_dispatcher->SubscribeDeviceChangeNotifications(
-            security_origin, base::Bind(&UserMediaClientImpl::DevicesChanged,
-                                        weak_factory_.GetWeakPtr()));
+        event_dispatcher->SubscribeDeviceChangeNotifications(base::Bind(
+            &UserMediaClientImpl::DevicesChanged, weak_factory_.GetWeakPtr()));
   }
 }
 

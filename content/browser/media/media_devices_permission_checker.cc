@@ -26,8 +26,7 @@ namespace {
 MediaDevicesManager::BoolDeviceTypes DoCheckPermissionsOnUIThread(
     MediaDevicesManager::BoolDeviceTypes requested_device_types,
     int render_process_id,
-    int render_frame_id,
-    const url::Origin& security_origin) {
+    int render_frame_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   RenderFrameHostImpl* frame_host =
       RenderFrameHostImpl::FromID(render_process_id, render_frame_id);
@@ -37,7 +36,7 @@ MediaDevicesManager::BoolDeviceTypes DoCheckPermissionsOnUIThread(
     return MediaDevicesManager::BoolDeviceTypes();
 
   RenderFrameHostDelegate* delegate = frame_host->delegate();
-  GURL origin = security_origin.GetURL();
+  GURL origin = frame_host->GetLastCommittedOrigin().GetURL();
 
   // Currently, the MEDIA_DEVICE_AUDIO_CAPTURE permission is used for
   // both audio input and output.
@@ -60,13 +59,12 @@ MediaDevicesManager::BoolDeviceTypes DoCheckPermissionsOnUIThread(
 
 bool CheckSinglePermissionOnUIThread(MediaDeviceType device_type,
                                      int render_process_id,
-                                     int render_frame_id,
-                                     const url::Origin& security_origin) {
+                                     int render_frame_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   MediaDevicesManager::BoolDeviceTypes requested;
   requested[device_type] = true;
   MediaDevicesManager::BoolDeviceTypes result = DoCheckPermissionsOnUIThread(
-      requested, render_process_id, render_frame_id, security_origin);
+      requested, render_process_id, render_frame_id);
   return result[device_type];
 }
 
@@ -86,20 +84,18 @@ MediaDevicesPermissionChecker::MediaDevicesPermissionChecker(
 bool MediaDevicesPermissionChecker::CheckPermissionOnUIThread(
     MediaDeviceType device_type,
     int render_process_id,
-    int render_frame_id,
-    const url::Origin& security_origin) const {
+    int render_frame_id) const {
   if (use_override_)
     return override_value_;
 
   return CheckSinglePermissionOnUIThread(device_type, render_process_id,
-                                         render_frame_id, security_origin);
+                                         render_frame_id);
 }
 
 void MediaDevicesPermissionChecker::CheckPermission(
     MediaDeviceType device_type,
     int render_process_id,
     int render_frame_id,
-    const url::Origin& security_origin,
     const base::Callback<void(bool)>& callback) const {
   if (use_override_) {
     callback.Run(override_value_);
@@ -109,7 +105,7 @@ void MediaDevicesPermissionChecker::CheckPermission(
   BrowserThread::PostTaskAndReplyWithResult(
       BrowserThread::UI, FROM_HERE,
       base::Bind(&CheckSinglePermissionOnUIThread, device_type,
-                 render_process_id, render_frame_id, security_origin),
+                 render_process_id, render_frame_id),
       callback);
 }
 
@@ -117,7 +113,6 @@ void MediaDevicesPermissionChecker::CheckPermissions(
     MediaDevicesManager::BoolDeviceTypes requested,
     int render_process_id,
     int render_frame_id,
-    const url::Origin& security_origin,
     const base::Callback<void(const MediaDevicesManager::BoolDeviceTypes&)>&
         callback) const {
   if (use_override_) {
@@ -130,7 +125,7 @@ void MediaDevicesPermissionChecker::CheckPermissions(
   BrowserThread::PostTaskAndReplyWithResult(
       BrowserThread::UI, FROM_HERE,
       base::Bind(&DoCheckPermissionsOnUIThread, requested, render_process_id,
-                 render_frame_id, security_origin),
+                 render_frame_id),
       callback);
 }
 

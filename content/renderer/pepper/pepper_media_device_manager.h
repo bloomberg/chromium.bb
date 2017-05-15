@@ -34,10 +34,8 @@ class PepperMediaDeviceManager
 
   // PepperDeviceEnumerationHostHelper::Delegate implementation:
   void EnumerateDevices(PP_DeviceType_Dev type,
-                        const GURL& document_url,
                         const DevicesCallback& callback) override;
   uint32_t StartMonitoringDevices(PP_DeviceType_Dev type,
-                                  const GURL& document_url,
                                   const DevicesCallback& callback) override;
   void StopMonitoringDevices(PP_DeviceType_Dev type,
                              uint32_t subscription_id) override;

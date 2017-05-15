@@ -15,15 +15,12 @@
 #include "content/common/content_export.h"
 #include "content/common/media/media_devices.mojom.h"
 #include "media/capture/video/video_capture_device_descriptor.h"
+#include "url/origin.h"
 
 using ::mojom::MediaDeviceType;
 
 namespace service_manager {
 struct BindSourceInfo;
-}
-
-namespace url {
-class Origin;
 }
 
 namespace content {
@@ -51,15 +48,11 @@ class CONTENT_EXPORT MediaDevicesDispatcherHost
   void EnumerateDevices(bool request_audio_input,
                         bool request_video_input,
                         bool request_audio_output,
-                        const url::Origin& security_origin,
                         EnumerateDevicesCallback client_callback) override;
   void GetVideoInputCapabilities(
-      const url::Origin& security_origin,
       GetVideoInputCapabilitiesCallback client_callback) override;
-  void SubscribeDeviceChangeNotifications(
-      MediaDeviceType type,
-      uint32_t subscription_id,
-      const url::Origin& security_origin) override;
+  void SubscribeDeviceChangeNotifications(MediaDeviceType type,
+                                          uint32_t subscription_id) override;
   void UnsubscribeDeviceChangeNotifications(MediaDeviceType type,
                                             uint32_t subscription_id) override;
 
@@ -73,39 +66,48 @@ class CONTENT_EXPORT MediaDevicesDispatcherHost
   void SetDeviceChangeListenerForTesting(
       ::mojom::MediaDevicesListenerPtr listener);
 
+  void SetSecurityOriginForTesting(const url::Origin& origin);
+
  private:
+  void CheckPermissionsForEnumerateDevices(
+      const MediaDevicesManager::BoolDeviceTypes& requested_types,
+      EnumerateDevicesCallback client_callback,
+      const url::Origin& security_origin);
+
   void DoEnumerateDevices(
       const MediaDevicesManager::BoolDeviceTypes& requested_types,
-      const url::Origin& security_origin,
       EnumerateDevicesCallback client_callback,
-      const MediaDevicesManager::BoolDeviceTypes& permissions);
+      const url::Origin& security_origin,
+      const MediaDevicesManager::BoolDeviceTypes& has_permissions);
 
   void DevicesEnumerated(
       const MediaDevicesManager::BoolDeviceTypes& requested_types,
-      const url::Origin& security_origin,
       EnumerateDevicesCallback client_callback,
+      const url::Origin& security_origin,
       const MediaDevicesManager::BoolDeviceTypes& has_permissions,
       const MediaDeviceEnumeration& enumeration);
 
-  void GotDefaultVideoInputDeviceID(
-      const url::Origin& security_origin,
+  void GetDefaultVideoInputDeviceID(
       GetVideoInputCapabilitiesCallback client_callback,
+      const url::Origin& security_origin);
+
+  void GotDefaultVideoInputDeviceID(
+      GetVideoInputCapabilitiesCallback client_callback,
+      const url::Origin& security_origin,
       const std::string& default_device_id);
 
   void FinalizeGetVideoInputCapabilities(
-      const url::Origin& security_origin,
       GetVideoInputCapabilitiesCallback client_callback,
+      const url::Origin& security_origin,
       const std::string& default_device_id,
       const media::VideoCaptureDeviceDescriptors& device_descriptors);
 
   // Returns the currently supported video formats for the given |device_id|.
   media::VideoCaptureFormats GetVideoInputFormats(const std::string& device_id);
 
-  struct SubscriptionInfo;
-  void NotifyDeviceChangeOnUIThread(
-      const std::vector<SubscriptionInfo>& subscriptions,
-      MediaDeviceType type,
-      const MediaDeviceInfoArray& device_infos);
+  void NotifyDeviceChangeOnUIThread(const std::vector<uint32_t>& subscriptions,
+                                    MediaDeviceType type,
+                                    const MediaDeviceInfoArray& device_infos);
 
   // The following const fields can be accessed on any thread.
   const int render_process_id_;
@@ -116,11 +118,11 @@ class CONTENT_EXPORT MediaDevicesDispatcherHost
   // The following fields can only be accessed on the IO thread.
   MediaStreamManager* media_stream_manager_;
   std::unique_ptr<MediaDevicesPermissionChecker> permission_checker_;
-  std::vector<SubscriptionInfo>
-      device_change_subscriptions_[NUM_MEDIA_DEVICE_TYPES];
+  std::vector<uint32_t> device_change_subscriptions_[NUM_MEDIA_DEVICE_TYPES];
 
   // This field can only be accessed on the UI thread.
   ::mojom::MediaDevicesListenerPtr device_change_listener_;
+  url::Origin security_origin_for_testing_;
 
   base::WeakPtrFactory<MediaDevicesDispatcherHost> weak_factory_;
 

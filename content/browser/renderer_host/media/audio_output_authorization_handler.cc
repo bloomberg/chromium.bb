@@ -125,7 +125,6 @@ void AudioOutputAuthorizationHandler::RequestDeviceAuthorization(
   // nondefault devices.
   permission_checker_->CheckPermission(
       MEDIA_DEVICE_TYPE_AUDIO_OUTPUT, render_process_id_, render_frame_id,
-      security_origin,
       base::Bind(&AudioOutputAuthorizationHandler::AccessChecked,
                  weak_factory_.GetWeakPtr(), std::move(cb), device_id,
                  security_origin));
