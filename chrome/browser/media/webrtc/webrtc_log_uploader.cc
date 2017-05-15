@@ -25,6 +25,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "net/base/load_flags.h"
 #include "net/base/mime_util.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/url_fetcher.h"
 #include "third_party/zlib/zlib.h"
 
@@ -447,8 +448,33 @@ void WebRtcLogUploader::UploadCompressedLog(
   content_type.append("; boundary=");
   content_type.append(kMultipartBoundary);
 
-  std::unique_ptr<net::URLFetcher> url_fetcher(net::URLFetcher::Create(
-      GURL(chrome::kUploadURL), net::URLFetcher::POST, this));
+  // Create traffic annotation tag.
+  net::NetworkTrafficAnnotationTag traffic_annotation =
+      net::DefineNetworkTrafficAnnotation("webrtc_log_upload", R"(
+        semantics {
+          sender: "Webrtc Log Uploader"
+          description: "Uploads WebRTC debug logs for Hangouts."
+          trigger:
+            "When a Hangouts extension or Hangouts services extension signals "
+            "to upload via the private WebRTC logging extension API."
+          data:
+            "WebRTC specific log entries, additional system information, and "
+            "RTP packet headers for incoming and outgoing WebRTC streams. "
+            "Audio or video data is never sent."
+          destination: GOOGLE_OWNED_SERVICE
+        }
+        policy {
+          cookies_allowed: false
+          setting:
+            "This feature can be disabled by unchecking 'Report additional "
+            "diagnostics to help improve Hangouts.' in Hangouts settings."
+          policy_exception_justification:
+            "Not implemented, it would be good to do so."
+        })");
+
+  std::unique_ptr<net::URLFetcher> url_fetcher(
+      net::URLFetcher::Create(GURL(chrome::kUploadURL), net::URLFetcher::POST,
+                              this, traffic_annotation));
   url_fetcher->SetUploadData(content_type, *post_data);
   url_fetcher->SetLoadFlags(net::LOAD_DO_NOT_SEND_COOKIES |
                             net::LOAD_DO_NOT_SAVE_COOKIES);
