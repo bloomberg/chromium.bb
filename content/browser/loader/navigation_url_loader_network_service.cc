@@ -18,6 +18,11 @@
 #include "content/browser/loader/navigation_resource_handler.h"
 #include "content/browser/loader/navigation_resource_throttle.h"
 #include "content/browser/loader/navigation_url_loader_delegate.h"
+#include "content/browser/resource_context_impl.h"
+#include "content/browser/service_worker/service_worker_navigation_handle.h"
+#include "content/browser/service_worker/service_worker_navigation_handle_core.h"
+#include "content/browser/service_worker/service_worker_request_handler.h"
+#include "content/browser/web_contents/web_contents_impl.h"
 #include "content/browser/webui/url_data_manager_backend.h"
 #include "content/browser/webui/web_ui_url_loader_factory.h"
 #include "content/public/browser/browser_thread.h"
@@ -39,37 +44,103 @@ namespace content {
 namespace {
 
 static base::LazyInstance<mojom::URLLoaderFactoryPtr>::Leaky
-    g_url_loader_factory = LAZY_INSTANCE_INITIALIZER;
+    g_url_loader_factory;
+#if DCHECK_IS_ON()
+static bool g_url_loader_factory_retrieved;
+#endif  // DCHECK_IS_ON()
 
-using CompleteNavigationStartCallback =
-    base::Callback<void(mojom::URLLoaderFactoryPtrInfo,
-                        std::unique_ptr<ResourceRequest>)>;
+WebContents* GetWebContentsFromFrameTreeNodeID(int frame_tree_node_id) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  FrameTreeNode* frame_tree_node =
+      FrameTreeNode::GloballyFindByID(frame_tree_node_id);
+  if (!frame_tree_node)
+    return nullptr;
 
-void PrepareNavigationOnIOThread(
+  return WebContentsImpl::FromFrameTreeNode(frame_tree_node);
+}
+
+void PrepareNavigationStartOnIO(
     std::unique_ptr<ResourceRequest> resource_request,
     ResourceContext* resource_context,
-    ResourceType resource_type,
+    ServiceWorkerNavigationHandleCore* service_worker_navigation_handle_core,
     AppCacheNavigationHandleCore* appcache_handle_core,
-    CompleteNavigationStartCallback complete_request) {
-  if (resource_request->request_body.get()) {
+    NavigationRequestInfo* request_info,
+    mojom::URLLoaderFactoryPtrInfo factory_from_ui,
+    const base::Callback<WebContents*(void)>& web_contents_getter,
+    mojom::URLLoaderAssociatedRequest url_loader_request,
+    mojom::URLLoaderClientPtr url_loader_client_to_pass,
+    std::unique_ptr<service_manager::Connector> connector) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  const ResourceType resource_type = request_info->is_main_frame
+                                         ? RESOURCE_TYPE_MAIN_FRAME
+                                         : RESOURCE_TYPE_SUB_FRAME;
+
+  if (resource_request->request_body) {
     AttachRequestBodyBlobDataHandles(resource_request->request_body.get(),
                                      resource_context);
   }
 
-  mojom::URLLoaderFactoryPtrInfo url_loader_factory_ptr_info;
+  mojom::URLLoaderFactoryPtr url_loader_factory_ptr;
+  if (service_worker_navigation_handle_core) {
+    RequestContextFrameType frame_type =
+        request_info->is_main_frame ? REQUEST_CONTEXT_FRAME_TYPE_TOP_LEVEL
+                                    : REQUEST_CONTEXT_FRAME_TYPE_NESTED;
 
-  if (appcache_handle_core) {
+    storage::BlobStorageContext* blob_storage_context = GetBlobStorageContext(
+        GetChromeBlobStorageContextForResourceContext(resource_context));
+    url_loader_factory_ptr =
+        ServiceWorkerRequestHandler::InitializeForNavigationNetworkService(
+            *resource_request, resource_context,
+            service_worker_navigation_handle_core, blob_storage_context,
+            request_info->begin_params.skip_service_worker, resource_type,
+            request_info->begin_params.request_context_type, frame_type,
+            request_info->are_ancestors_secure,
+            request_info->common_params.post_data, web_contents_getter);
+  }
+
+  // TODO(scottmg): We need to rework AppCache to have it return a
+  // URLLoaderFactoryPtr[Info] here. We should also try to have it return
+  // synchronously in as many cases as possible (especially when there's no
+  // AppCache) to simplify and speed the common case.
+  if (false /*appcache_handle_core*/) {
     AppCacheRequestHandler::InitializeForNavigationNetworkService(
         std::move(resource_request), resource_context, appcache_handle_core,
-        resource_type, complete_request);
+        resource_type,
+        base::Callback<void(
+            mojom::URLLoaderFactoryPtrInfo,
+            std::unique_ptr<ResourceRequest>)>() /* TODO(ananta) */);
     return;
   }
 
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::Bind(complete_request,
-                 base::Passed(std::move(url_loader_factory_ptr_info)),
-                 base::Passed(std::move(resource_request))));
+  // If we haven't gotten one from the above, then use the one the UI thread
+  // gave us, or otherwise fallback to the default.
+  mojom::URLLoaderFactory* factory;
+  if (url_loader_factory_ptr) {
+    factory = url_loader_factory_ptr.get();
+  } else {
+    if (factory_from_ui.is_valid()) {
+      url_loader_factory_ptr.Bind(std::move(factory_from_ui));
+      factory = url_loader_factory_ptr.get();
+    } else {
+      if (!g_url_loader_factory.Get()) {
+#if DCHECK_IS_ON()
+        DCHECK(!g_url_loader_factory_retrieved);
+#endif  // DCHECK_IS_ON()
+        connector->BindInterface(mojom::kNetworkServiceName,
+                                 &g_url_loader_factory.Get());
+#if DCHECK_IS_ON()
+        g_url_loader_factory_retrieved = true;
+#endif  // DCHECK_IS_ON()
+      }
+      factory = g_url_loader_factory.Get().get();
+    }
+  }
+
+  factory->CreateLoaderAndStart(
+      std::move(url_loader_request), 0 /* routing_id? */, 0 /* request_id? */,
+      mojom::kURLLoadOptionSendSSLInfo, *resource_request,
+      std::move(url_loader_client_to_pass));
 }
 
 }  // namespace
@@ -79,13 +150,12 @@ NavigationURLLoaderNetworkService::NavigationURLLoaderNetworkService(
     StoragePartition* storage_partition,
     std::unique_ptr<NavigationRequestInfo> request_info,
     std::unique_ptr<NavigationUIData> navigation_ui_data,
-    ServiceWorkerNavigationHandle* service_worker_handle,
+    ServiceWorkerNavigationHandle* service_worker_navigation_handle,
     AppCacheNavigationHandle* appcache_handle,
     NavigationURLLoaderDelegate* delegate)
     : delegate_(delegate),
       binding_(this),
-      request_info_(std::move(request_info)),
-      weak_factory_(this) {
+      request_info_(std::move(request_info)) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   TRACE_EVENT_ASYNC_BEGIN_WITH_TIMESTAMP1(
@@ -123,24 +193,38 @@ NavigationURLLoaderNetworkService::NavigationURLLoaderNetworkService(
 
   new_request->request_body = request_info_->common_params.post_data.get();
 
-  // AppCache or post data needs some handling on the IO thread.
-  // The request body may need blob handles to be added to it. This
-  // functionality has to be invoked on the IO thread.
-  if (/*appcache_handle || */ new_request->request_body.get()) {
-    ResourceType resource_type = request_info_->is_main_frame
-                                     ? RESOURCE_TYPE_MAIN_FRAME
-                                     : RESOURCE_TYPE_SUB_FRAME;
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
-        base::Bind(
-            &PrepareNavigationOnIOThread, base::Passed(std::move(new_request)),
-            resource_context, resource_type,
-            appcache_handle ? appcache_handle->core() : nullptr,
-            base::Bind(&NavigationURLLoaderNetworkService::StartURLRequest,
-                       weak_factory_.GetWeakPtr())));
-    return;
+  mojom::URLLoaderAssociatedRequest loader_associated_request =
+      mojo::MakeRequest(&url_loader_associated_ptr_);
+  mojom::URLLoaderClientPtr url_loader_client_ptr_to_pass;
+  binding_.Bind(mojo::MakeRequest(&url_loader_client_ptr_to_pass));
+
+  // Check if a web UI scheme wants to handle this request.
+  mojom::URLLoaderFactoryPtrInfo factory_ptr_info;
+
+  const auto& schemes = URLDataManagerBackend::GetWebUISchemes();
+  if (std::find(schemes.begin(), schemes.end(), new_request->url.scheme()) !=
+      schemes.end()) {
+    FrameTreeNode* frame_tree_node =
+        FrameTreeNode::GloballyFindByID(request_info_->frame_tree_node_id);
+    factory_ptr_info = GetWebUIURLLoader(frame_tree_node).PassInterface();
   }
-  StartURLRequest(mojom::URLLoaderFactoryPtrInfo(), std::move(new_request));
+
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::Bind(&PrepareNavigationStartOnIO,
+                 base::Passed(std::move(new_request)), resource_context,
+                 service_worker_navigation_handle
+                     ? service_worker_navigation_handle->core()
+                     : nullptr,
+                 appcache_handle ? appcache_handle->core() : nullptr,
+                 request_info_.get(), base::Passed(std::move(factory_ptr_info)),
+                 base::Bind(&GetWebContentsFromFrameTreeNodeID,
+                            request_info_->frame_tree_node_id),
+                 base::Passed(std::move(loader_associated_request)),
+                 base::Passed(std::move(url_loader_client_ptr_to_pass)),
+                 base::Passed(ServiceManagerConnection::GetForProcess()
+                                  ->GetConnector()
+                                  ->Clone())));
 }
 
 NavigationURLLoaderNetworkService::~NavigationURLLoaderNetworkService() {}
@@ -220,65 +304,6 @@ void NavigationURLLoaderNetworkService::OnComplete(
     delegate_->OnRequestFailed(completion_status.exists_in_cache,
                                completion_status.error_code);
   }
-}
-
-void NavigationURLLoaderNetworkService::StartURLRequest(
-    mojom::URLLoaderFactoryPtrInfo url_loader_factory_info,
-    std::unique_ptr<ResourceRequest> request) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-  // Bind the URLClient implementation to this object to pass to the URLLoader.
-  if (binding_.is_bound())
-    binding_.Unbind();
-
-  mojom::URLLoaderClientPtr url_loader_client_ptr_to_pass;
-  binding_.Bind(mojo::MakeRequest(&url_loader_client_ptr_to_pass));
-
-  mojom::URLLoaderFactory* factory = nullptr;
-  // This |factory_ptr| will be destroyed when it goes out of scope. Because
-  // |url_loader_associated_ptr_| is associated with it, it will be disconnected
-  // as well. That means NavigationURLLoaderNetworkService::FollowRedirect()
-  // won't work as expected, the |url_loader_associated_ptr_| will silently drop
-  // calls.
-  // This is fine for now since the only user of this is WebUI which doesn't
-  // need this, but we'll have to fix this when other consumers come up.
-  mojom::URLLoaderFactoryPtr factory_ptr;
-  const auto& schemes = URLDataManagerBackend::GetWebUISchemes();
-  if (std::find(schemes.begin(), schemes.end(), request->url.scheme()) !=
-      schemes.end()) {
-    FrameTreeNode* frame_tree_node =
-        FrameTreeNode::GloballyFindByID(request_info_->frame_tree_node_id);
-    factory_ptr = GetWebUIURLLoader(frame_tree_node);
-    factory = factory_ptr.get();
-  }
-
-  if (!factory) {
-    // If a URLLoaderFactory was provided, then we use that one, otherwise
-    // fall back to connecting directly to the network service.
-    if (url_loader_factory_info.is_valid()) {
-      url_loader_factory_.Bind(std::move(url_loader_factory_info));
-      factory = url_loader_factory_.get();
-    } else {
-      factory = GetURLLoaderFactory();
-    }
-  }
-
-  factory->CreateLoaderAndStart(mojo::MakeRequest(&url_loader_associated_ptr_),
-                                0 /* routing_id? */, 0 /* request_id? */,
-                                mojom::kURLLoadOptionSendSSLInfo, *request,
-                                std::move(url_loader_client_ptr_to_pass));
-}
-
-mojom::URLLoaderFactory*
-NavigationURLLoaderNetworkService::GetURLLoaderFactory() {
-  // TODO(yzshen): We will need the ability to customize the factory per frame
-  // e.g., for appcache or service worker.
-  if (!g_url_loader_factory.Get()) {
-    ServiceManagerConnection::GetForProcess()->GetConnector()->BindInterface(
-        mojom::kNetworkServiceName, &g_url_loader_factory.Get());
-  }
-
-  return g_url_loader_factory.Get().get();
 }
 
 }  // namespace content

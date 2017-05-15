@@ -15,6 +15,7 @@
 #include "content/common/content_export.h"
 #include "content/common/service_worker/service_worker_status_code.h"
 #include "content/common/service_worker/service_worker_types.h"
+#include "content/common/url_loader_factory.mojom.h"
 #include "content/public/common/request_context_frame_type.h"
 #include "content/public/common/request_context_type.h"
 #include "content/public/common/resource_type.h"
@@ -50,6 +51,22 @@ class CONTENT_EXPORT ServiceWorkerRequestHandler
   // by ServiceWorker.
   static void InitializeForNavigation(
       net::URLRequest* request,
+      ServiceWorkerNavigationHandleCore* navigation_handle_core,
+      storage::BlobStorageContext* blob_storage_context,
+      bool skip_service_worker,
+      ResourceType resource_type,
+      RequestContextType request_context_type,
+      RequestContextFrameType frame_type,
+      bool is_parent_frame_secure,
+      scoped_refptr<ResourceRequestBodyImpl> body,
+      const base::Callback<WebContents*(void)>& web_contents_getter);
+
+  // PlzNavigate and --enable-network-service.
+  // Same as InitializeForNavigation() but instead of attaching to a URLRequest,
+  // returns a URLLoaderFactoryPtrInfo if the request needs to be handled.
+  static mojom::URLLoaderFactoryPtr InitializeForNavigationNetworkService(
+      const ResourceRequest& resource_request,
+      ResourceContext* resource_context,
       ServiceWorkerNavigationHandleCore* navigation_handle_core,
       storage::BlobStorageContext* blob_storage_context,
       bool skip_service_worker,

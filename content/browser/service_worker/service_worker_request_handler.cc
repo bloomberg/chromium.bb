@@ -7,6 +7,7 @@
 #include <string>
 #include <utility>
 
+#include "base/command_line.h"
 #include "base/macros.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
@@ -20,6 +21,7 @@
 #include "content/public/browser/resource_context.h"
 #include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/child_process_host.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/common/origin_util.h"
 #include "ipc/ipc_message.h"
 #include "net/base/url_util.h"
@@ -129,6 +131,28 @@ void ServiceWorkerRequestHandler::InitializeForNavigation(
   // the navigation fails, it will be destroyed along with the
   // ServiceWorkerNavigationHandleCore.
   navigation_handle_core->DidPreCreateProviderHost(std::move(provider_host));
+}
+
+// PlzNavigate and --enable-network-service.
+// static
+mojom::URLLoaderFactoryPtr
+ServiceWorkerRequestHandler::InitializeForNavigationNetworkService(
+    const ResourceRequest& resource_request,
+    ResourceContext* resource_context,
+    ServiceWorkerNavigationHandleCore* navigation_handle_core,
+    storage::BlobStorageContext* blob_storage_context,
+    bool skip_service_worker,
+    ResourceType resource_type,
+    RequestContextType request_context_type,
+    RequestContextFrameType frame_type,
+    bool is_parent_frame_secure,
+    scoped_refptr<ResourceRequestBodyImpl> body,
+    const base::Callback<WebContents*(void)>& web_contents_getter) {
+  DCHECK(IsBrowserSideNavigationEnabled() &&
+         base::CommandLine::ForCurrentProcess()->HasSwitch(
+             switches::kEnableNetworkService));
+  // TODO(scottmg): Currently being implemented. See https://crbug.com/715640.
+  return mojom::URLLoaderFactoryPtr();
 }
 
 void ServiceWorkerRequestHandler::InitializeHandler(
