@@ -353,6 +353,16 @@ bool PositionTemplate<Strategy>::operator>=(
 }
 
 template <typename Strategy>
+bool PositionTemplate<Strategy>::IsEquivalent(
+    const PositionTemplate<Strategy>& other) const {
+  if (IsNull())
+    return other.IsNull();
+  if (anchor_type_ == other.anchor_type_)
+    return *this == other;
+  return ToOffsetInAnchor() == other.ToOffsetInAnchor();
+}
+
+template <typename Strategy>
 bool PositionTemplate<Strategy>::AtFirstEditingPositionForNode() const {
   if (IsNull())
     return true;
