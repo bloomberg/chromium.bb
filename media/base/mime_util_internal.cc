@@ -484,8 +484,6 @@ bool MimeUtil::IsCodecSupportedOnAndroid(
     // The following codecs are never supported.
     // ----------------------------------------------------------------------
     case INVALID_CODEC:
-    case AC3:
-    case EAC3:
     case THEORA:
       return false;
 
@@ -590,6 +588,14 @@ bool MimeUtil::IsCodecSupportedOnAndroid(
       // This function is only called on Android which doesn't support Dolby
       // Vision.
       return false;
+
+    case AC3:
+    case EAC3:
+#if BUILDFLAG(ENABLE_AC3_EAC3_AUDIO_DEMUXING)
+      return true;
+#else
+      return false;
+#endif
   }
 
   return false;

@@ -311,6 +311,23 @@ TypeConverter<scoped_refptr<media::AudioBuffer>, media::mojom::AudioBufferPtr>::
   if (input->end_of_stream)
     return media::AudioBuffer::CreateEOSBuffer();
 
+  if (input->frame_count <= 0 ||
+      static_cast<size_t>(input->sample_format) > media::kSampleFormatMax ||
+      static_cast<size_t>(input->channel_layout) > media::CHANNEL_LAYOUT_MAX ||
+      ChannelLayoutToChannelCount(input->channel_layout) !=
+          input->channel_count) {
+    LOG(ERROR) << "Receive an invalid audio buffer, replace it with EOS.";
+    return media::AudioBuffer::CreateEOSBuffer();
+  }
+
+  if (IsBitstream(input->sample_format)) {
+    uint8_t* data = input->data.data();
+    return media::AudioBuffer::CopyBitstreamFrom(
+        input->sample_format, input->channel_layout, input->channel_count,
+        input->sample_rate, input->frame_count, &data, input->data.size(),
+        input->timestamp);
+  }
+
   // Setup channel pointers.  AudioBuffer::CopyFrom() will only use the first
   // one in the case of interleaved data.
   std::vector<const uint8_t*> channel_ptrs(input->channel_count, nullptr);

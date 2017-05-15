@@ -12,6 +12,7 @@ import android.media.MediaCodecInfo.CodecCapabilities;
 import android.media.MediaCodecInfo.CodecProfileLevel;
 import android.media.MediaCodecInfo.VideoCapabilities;
 import android.media.MediaCodecList;
+import android.media.MediaFormat;
 import android.os.Build;
 
 import org.chromium.base.Log;
@@ -308,6 +309,8 @@ class MediaCodecUtil {
                     String decoderName = getDefaultCodecName(
                             mime, MediaCodecDirection.DECODER, requireSoftwareCodec);
                     result.mediaCodec = MediaCodec.createByCodecName(decoderName);
+                } else if (mime.equals(MediaFormat.MIMETYPE_AUDIO_RAW)) {
+                    result.mediaCodec = MediaCodec.createByCodecName("OMX.google.raw.decoder");
                 } else {
                     result.mediaCodec = MediaCodec.createDecoderByType(mime);
                 }
