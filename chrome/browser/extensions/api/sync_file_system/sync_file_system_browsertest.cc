@@ -8,6 +8,7 @@
 #include "base/json/json_reader.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
@@ -64,12 +65,8 @@ class SyncFileSystemTest : public extensions::PlatformAppBrowserTest,
   }
 
   scoped_refptr<base::SequencedTaskRunner> MakeSequencedTaskRunner() {
-    scoped_refptr<base::SequencedWorkerPool> worker_pool =
-        content::BrowserThread::GetBlockingPool();
-
-    return worker_pool->GetSequencedTaskRunnerWithShutdownBehavior(
-        worker_pool->GetSequenceToken(),
-        base::SequencedWorkerPool::SKIP_ON_SHUTDOWN);
+    return base::CreateSequencedTaskRunnerWithTraits(
+        {base::MayBlock(), base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
   }
 
   void SetUpOnMainThread() override {
