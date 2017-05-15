@@ -19,6 +19,8 @@ source_set("autofill") {
     "form_suggestion_view_client.h",
     "personal_data_manager_factory.cc",
     "personal_data_manager_factory.h",
+    "validation_rules_storage_factory.cc",
+    "validation_rules_storage_factory.h",
   ]
   deps = [
     "//base",
@@ -27,6 +29,7 @@ source_set("autofill") {
     "//components/autofill/ios/browser",
     "//components/keyed_service/core",
     "//components/keyed_service/ios",
+    "//components/prefs",
     "//components/signin/core/browser",
     "//ios/chrome/app/strings",
     "//ios/chrome/browser",
@@ -35,6 +38,7 @@ source_set("autofill") {
     "//ios/chrome/browser/signin",
     "//ios/chrome/browser/ui",
     "//ios/web",
+    "//third_party/libaddressinput",
     "//ui/base",
     "//url",
   ]
