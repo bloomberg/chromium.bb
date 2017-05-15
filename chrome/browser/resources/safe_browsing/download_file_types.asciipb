@@ -8,7 +8,7 @@
 ##
 ## Top level settings
 ##
-version_id: 10
+version_id: 11
 sampled_ping_probability: 0.01
 default_file_type {
   uma_value: 18
@@ -2058,13 +2058,16 @@ file_types {
 file_types {
   # Microsoft Windows Explorer Command.
   # See https://support.microsoft.com/kb/190355 for an example
+  #
+  # http://crbug.com/722524: Can trigger dangerous network requests just
+  # by being displayed in Windows Explorer.
   extension: "scf"
   uma_value: 49
   ping_setting: FULL_PING
   platform_settings {
     platform: PLATFORM_WINDOWS
-    danger_level: ALLOW_ON_USER_GESTURE
-    auto_open_hint: ALLOW_AUTO_OPEN
+    danger_level: DANGEROUS
+    auto_open_hint: DISALLOW_AUTO_OPEN
   }
 }
 file_types {
