@@ -28,6 +28,9 @@ liblouis_dev.toLowercase.restype = c_wchar
 def println(line=""):
     sys.stdout.write(("%s\n" % line))
 
+def printerrln(line=""):
+    sys.stderr.write(("%s\n" % line))
+
 def validate_chunks(chunked_text):
     return re.search(r"^([^)(|]+|\([^)(|][^)(|]+\))(\|?([^)(|]+|\([^)(|][^)(|]+\)))*$", chunked_text) != None
 

@@ -23,6 +23,9 @@ def main():
             rules.append(rule)
     for line in fileinput.FileInput(args.FILE, openhook=fileinput.hook_encoded("utf-8")):
         m = p.match(line)
+        if not m:
+            printerrln("%s: rule is not valid" % (line,))
+            exit(1)
         exit_if_not(m)
         add_or_delete, opcode, text, braille, _, _ = m.groups()
         if opcode:
@@ -36,9 +39,13 @@ def main():
                                     rules)
             rule = list(rule)
             if add_or_delete == '-':
-                exit_if_not(rule)
+                if not rule:
+                    printerrln("%s %s %s: rule can not be deleted because not in %s" % (opcode,text,braille,args.CONTRACTION_TABLE))
+                    exit(1)
             else:
-                exit_if_not(not rule)
+                if rule:
+                    printerrln("%s %s %s: rule can not be added because already in %s" % (opcode,text,braille,args.CONTRACTION_TABLE))
+                    exit(1)
                 rule = {"opcode": opcode, "text": text, "braille": braille, "comment": comment}
                 rules.append(rule)
     opcode_order = {"word": 1, "syllable*": 2, "nocross": 3, "always": 4, "begword": 5, "endword": 6}

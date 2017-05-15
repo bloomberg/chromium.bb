@@ -13,10 +13,20 @@ class Reader:
         row = next(self.reader)
         if not row or row[0].startswith("#"):
             return next(self)
+        if not len(row) == 3:
+            printerrln('expected 3 columns, got %s: %s' % (len(row),row))
+            exit(1)
+        if not row[0] == "":
+            printerrln("expected first column to be empty, got '%s'" % (row[0],))
+            exit(1)
         maybe_chunked_text, braille = row[1:3]
         maybe_chunked_text = to_lowercase(maybe_chunked_text)
         text, chunked_text = read_text(maybe_chunked_text)
         braille = braille if braille != "" else None
+        if braille != None:
+            if '0' in to_dot_pattern(braille).split('-'):
+                printerrln('invalid braille: %s' % (braille,))
+                exit(1)
         exit_if_not(not chunked_text or validate_chunks(chunked_text))
         return {'text': text,
                 'braille': braille,
