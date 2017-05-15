@@ -47,7 +47,15 @@ class CC_EXPORT CheckerImageTracker {
   // Returns the set of images to invalidate on the sync tree.
   const ImageIdFlatSet& TakeImagesToInvalidateOnSyncTree();
 
+  // Called when the sync tree is activated. Each call to
+  // TakeImagesToInvalidateOnSyncTree() must be followed by this when the
+  // invalidated sync tree is activated.
   void DidActivateSyncTree();
+
+  // Called to reset the tracker state on navigation. This will release all
+  // cached images. Setting |can_clear_decode_policy_tracking| will also result
+  // in re-checkering any images already decoded by the tracker.
+  void ClearTracker(bool can_clear_decode_policy_tracking);
 
  private:
   enum class DecodePolicy {
@@ -60,6 +68,22 @@ class CC_EXPORT CheckerImageTracker {
     SYNC_DECODED_ONCE,
     // The image has been permanently vetoed from being decoded async.
     SYNC_PERMANENT,
+  };
+
+  // Wrapper to unlock an image decode requested from the ImageController on
+  // destruction.
+  class ScopedDecodeHolder {
+   public:
+    ScopedDecodeHolder(ImageController* controller,
+                       ImageController::ImageDecodeRequestId request_id)
+        : controller_(controller), request_id_(request_id) {}
+    ~ScopedDecodeHolder() { controller_->UnlockImageDecode(request_id_); }
+
+   private:
+    ImageController* controller_;
+    ImageController::ImageDecodeRequestId request_id_;
+
+    DISALLOW_COPY_AND_ASSIGN(ScopedDecodeHolder);
   };
 
   void DidFinishImageDecode(ImageId image_id,
@@ -91,14 +115,11 @@ class CC_EXPORT CheckerImageTracker {
   sk_sp<const SkImage> outstanding_image_decode_;
 
   // A map of ImageId to its DecodePolicy.
-  // TODO(khushalsagar): Limit the size of this set.
-  // TODO(khushalsagar): Plumb navigation changes here to reset this. See
-  // crbug.com/693228.
   std::unordered_map<ImageId, DecodePolicy> image_async_decode_state_;
 
   // A map of image id to image decode request id for images to be unlocked.
-  std::unordered_map<ImageId, ImageController::ImageDecodeRequestId>
-      image_id_to_decode_request_id_;
+  std::unordered_map<ImageId, std::unique_ptr<ScopedDecodeHolder>>
+      image_id_to_decode_;
 
   base::WeakPtrFactory<CheckerImageTracker> weak_factory_;
 };

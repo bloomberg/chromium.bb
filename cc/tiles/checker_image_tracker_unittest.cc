@@ -48,10 +48,7 @@ class TestImageController : public ImageController {
       const ImageDecodedCallback& callback) override {
     ImageDecodeRequestId request_id = next_image_request_id_++;
 
-    // The tracker should request a decode only once.
-    EXPECT_EQ(decodes_requested_.count(image->uniqueID()), 0u);
     decodes_requested_.insert(image->uniqueID());
-
     locked_images_.insert(request_id);
 
     // Post the callback asynchronously to match the behaviour in
@@ -330,6 +327,62 @@ TEST_F(CheckerImageTrackerTest, CancelsScheduledDecodes) {
                 checkerable_image3.image()->uniqueID()),
             1U);
   EXPECT_EQ(image_controller_.num_of_locked_images(), 2);
+}
+
+TEST_F(CheckerImageTrackerTest, ClearsTracker) {
+  SetUpTracker(true);
+
+  DrawImage checkerable_image = CreateImage(ImageType::CHECKERABLE);
+  CheckerImageTracker::ImageDecodeQueue image_decode_queue =
+      BuildImageDecodeQueue({checkerable_image}, WhichTree::PENDING_TREE);
+  EXPECT_EQ(image_decode_queue.size(), 1U);
+  checker_image_tracker_->ScheduleImageDecodeQueue(
+      std::move(image_decode_queue));
+  base::RunLoop().RunUntilIdle();
+  checker_image_tracker_->TakeImagesToInvalidateOnSyncTree();
+
+  // The image is no longer checkered on the pending tree.
+  image_decode_queue =
+      BuildImageDecodeQueue({checkerable_image}, WhichTree::PENDING_TREE);
+  EXPECT_EQ(image_decode_queue.size(), 0U);
+  EXPECT_EQ(image_controller_.num_of_locked_images(), 1);
+
+  // Clear the tracker without clearing the async decode tracking. This should
+  // drop the decode but the image should not be checkered.
+  bool can_clear_decode_policy_tracking = false;
+  checker_image_tracker_->ClearTracker(can_clear_decode_policy_tracking);
+  EXPECT_EQ(image_controller_.num_of_locked_images(), 0);
+  image_decode_queue =
+      BuildImageDecodeQueue({checkerable_image}, WhichTree::PENDING_TREE);
+  EXPECT_EQ(image_decode_queue.size(), 0U);
+  checker_image_tracker_->DidActivateSyncTree();
+
+  // Now clear the decode tracking as well. The image will be re-checkered.
+  can_clear_decode_policy_tracking = true;
+  checker_image_tracker_->ClearTracker(can_clear_decode_policy_tracking);
+  image_decode_queue =
+      BuildImageDecodeQueue({checkerable_image}, WhichTree::PENDING_TREE);
+  image_decode_queue =
+      BuildImageDecodeQueue({checkerable_image}, WhichTree::PENDING_TREE);
+  EXPECT_EQ(image_decode_queue.size(), 1U);
+
+  // If an image had been decoded and tracker was cleared after it, we should
+  // continue checkering it.
+  DrawImage checkerable_image2 = CreateImage(ImageType::CHECKERABLE);
+  image_decode_queue =
+      BuildImageDecodeQueue({checkerable_image}, WhichTree::PENDING_TREE);
+  EXPECT_EQ(image_decode_queue.size(), 1U);
+  checker_image_tracker_->ScheduleImageDecodeQueue(
+      std::move(image_decode_queue));
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(image_controller_.num_of_locked_images(), 1);
+  can_clear_decode_policy_tracking = false;
+  checker_image_tracker_->ClearTracker(can_clear_decode_policy_tracking);
+  EXPECT_EQ(image_controller_.num_of_locked_images(), 0);
+  image_decode_queue =
+      BuildImageDecodeQueue({checkerable_image}, WhichTree::PENDING_TREE);
+  EXPECT_EQ(image_decode_queue.size(), 1U);
 }
 
 }  // namespace

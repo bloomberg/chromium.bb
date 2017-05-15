@@ -1288,6 +1288,14 @@ void LayerTreeHostImpl::UpdateTileManagerMemoryPolicy(
     // running work.
     if (image_decode_cache_)
       image_decode_cache_->SetShouldAggressivelyFreeResources(false);
+  } else {
+    // When the memory policy is set to zero, its important to release any
+    // decoded images cached by the tracker. But we can not re-checker any
+    // images that have been displayed since the resources, if held by the
+    // browser, may be re-used. Which is why its important to maintain the
+    // decode policy tracking.
+    bool can_clear_decode_policy_tracking = false;
+    tile_manager_.ClearCheckerImageTracking(can_clear_decode_policy_tracking);
   }
 
   DCHECK(resource_pool_);
@@ -2383,6 +2391,10 @@ LayerTreeHostImpl::TakeCompletedImageDecodeCallbacks() {
 }
 
 void LayerTreeHostImpl::ClearImageCacheOnNavigation() {
+  // It is safe to clear the decode policy tracking on navigations since it
+  // comes with an invalidation and the image ids are never re-used.
+  bool can_clear_decode_policy_tracking = true;
+  tile_manager_.ClearCheckerImageTracking(can_clear_decode_policy_tracking);
   if (image_decode_cache_)
     image_decode_cache_->ClearCache();
 }
