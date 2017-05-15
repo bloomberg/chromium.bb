@@ -47,6 +47,7 @@ const int kProcessId = 5;
 const int kRenderId = 6;
 const size_t kNumFakeVideoDevices = 3;
 const char kDefaultVideoDeviceID[] = "/dev/video2";
+const char kDefaultAudioDeviceID[] = "fake_audio_input_2";
 
 void PhysicalDevicesEnumerated(base::Closure quit_closure,
                                MediaDeviceEnumeration* out,
@@ -80,8 +81,10 @@ class MediaDevicesDispatcherHostTest : public testing::TestWithParam<GURL> {
     // Make sure we use fake devices to avoid long delays.
     base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
         switches::kUseFakeDeviceForMediaStream,
-        base::StringPrintf("device-count=%zu, video-input-default-id=%s",
-                           kNumFakeVideoDevices, kDefaultVideoDeviceID));
+        base::StringPrintf("device-count=%zu, video-input-default-id=%s, "
+                           "audio-input-default-id=%s",
+                           kNumFakeVideoDevices, kDefaultVideoDeviceID,
+                           kDefaultAudioDeviceID));
     audio_manager_.reset(new media::MockAudioManager(
         base::MakeUnique<media::TestAudioThread>()));
     audio_system_ = media::AudioSystemImpl::Create(audio_manager_.get());
@@ -117,6 +120,7 @@ class MediaDevicesDispatcherHostTest : public testing::TestWithParam<GURL> {
   MOCK_METHOD1(ValidOriginCallback,
                void(const std::vector<std::vector<MediaDeviceInfo>>&));
   MOCK_METHOD0(MockVideoInputCapabilitiesCallback, void());
+  MOCK_METHOD0(MockAudioInputCapabilitiesCallback, void());
 
   void VideoInputCapabilitiesCallback(
       std::vector<::mojom::VideoInputDeviceCapabilitiesPtr> capabilities) {
@@ -141,6 +145,20 @@ class MediaDevicesDispatcherHostTest : public testing::TestWithParam<GURL> {
       std::vector<::mojom::VideoInputDeviceCapabilitiesPtr> capabilities) {
     MockVideoInputCapabilitiesCallback();
     EXPECT_EQ(0U, capabilities.size());
+  }
+
+  void AudioInputCapabilitiesCallback(
+      std::vector<::mojom::AudioInputDeviceCapabilitiesPtr> capabilities) {
+    MockAudioInputCapabilitiesCallback();
+    // MediaDevicesManager always returns 3 fake audio input devices.
+    const size_t kNumExpectedEntries = 3;
+    EXPECT_EQ(kNumExpectedEntries, capabilities.size());
+    std::string expected_first_device_id =
+        GetHMACForMediaDeviceID(browser_context_.GetMediaDeviceIDSalt(),
+                                origin_, kDefaultAudioDeviceID);
+    EXPECT_EQ(expected_first_device_id, capabilities[0]->device_id);
+    for (const auto& capability : capabilities)
+      EXPECT_TRUE(capability->parameters.IsValid());
   }
 
  protected:
@@ -357,6 +375,16 @@ TEST_P(MediaDevicesDispatcherHostTest, GetVideoInputCapabilities) {
       base::Bind(
           &MediaDevicesDispatcherHostTest::VideoInputCapabilitiesCallback,
           base::Unretained(this)));
+  run_loop.Run();
+}
+
+TEST_P(MediaDevicesDispatcherHostTest, GetAudioInputCapabilities) {
+  base::RunLoop run_loop;
+  EXPECT_CALL(*this, MockAudioInputCapabilitiesCallback())
+      .WillOnce(InvokeWithoutArgs([&run_loop]() { run_loop.Quit(); }));
+  host_->GetAudioInputCapabilities(base::Bind(
+      &MediaDevicesDispatcherHostTest::AudioInputCapabilitiesCallback,
+      base::Unretained(this)));
   run_loop.Run();
 }
 

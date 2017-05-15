@@ -159,6 +159,11 @@ class MockMediaDevicesDispatcherHost
     std::move(client_callback).Run(std::move(result));
   }
 
+  void GetAudioInputCapabilities(
+      GetAudioInputCapabilitiesCallback client_callback) override {
+    NOTREACHED();
+  }
+
   MOCK_METHOD2(SubscribeDeviceChangeNotifications,
                void(MediaDeviceType type, uint32_t subscription_id));
   MOCK_METHOD2(UnsubscribeDeviceChangeNotifications,

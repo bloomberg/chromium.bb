@@ -21,6 +21,7 @@
 #include "content/public/browser/media_device_id.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/common/media_stream_request.h"
+#include "media/audio/audio_system.h"
 #include "media/base/video_facing.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
@@ -96,6 +97,25 @@ MediaDeviceInfoArray TranslateMediaDeviceInfoArray(
   }
 }
 
+std::vector<::mojom::AudioInputDeviceCapabilitiesPtr>
+ToVectorAudioInputDeviceCapabilitiesPtr(
+    const std::vector<::mojom::AudioInputDeviceCapabilities>&
+        capabilities_vector,
+    const url::Origin& security_origin,
+    const std::string& salt) {
+  std::vector<::mojom::AudioInputDeviceCapabilitiesPtr> result;
+  result.reserve(capabilities_vector.size());
+  for (auto& capabilities : capabilities_vector) {
+    ::mojom::AudioInputDeviceCapabilitiesPtr capabilities_ptr =
+        ::mojom::AudioInputDeviceCapabilities::New();
+    capabilities_ptr->device_id =
+        GetHMACForMediaDeviceID(salt, security_origin, capabilities.device_id);
+    capabilities_ptr->parameters = capabilities.parameters;
+    result.push_back(std::move(capabilities_ptr));
+  }
+  return result;
+}
+
 }  // namespace
 
 // static
@@ -124,6 +144,7 @@ MediaDevicesDispatcherHost::MediaDevicesDispatcherHost(
       group_id_salt_(BrowserContext::CreateRandomMediaDeviceIDSalt()),
       media_stream_manager_(media_stream_manager),
       permission_checker_(base::MakeUnique<MediaDevicesPermissionChecker>()),
+      num_pending_audio_input_parameters_(0),
       weak_factory_(this) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 }
@@ -180,6 +201,16 @@ void MediaDevicesDispatcherHost::GetVideoInputCapabilities(
       base::Bind(GetOrigin, render_process_id_, render_frame_id_,
                  security_origin_for_testing_),
       base::Bind(&MediaDevicesDispatcherHost::GetDefaultVideoInputDeviceID,
+                 weak_factory_.GetWeakPtr(), base::Passed(&client_callback)));
+}
+
+void MediaDevicesDispatcherHost::GetAudioInputCapabilities(
+    GetAudioInputCapabilitiesCallback client_callback) {
+  base::PostTaskAndReplyWithResult(
+      BrowserThread::GetTaskRunnerForThread(BrowserThread::UI).get(), FROM_HERE,
+      base::Bind(GetOrigin, render_process_id_, render_frame_id_,
+                 security_origin_for_testing_),
+      base::Bind(&MediaDevicesDispatcherHost::GetDefaultAudioInputDeviceID,
                  weak_factory_.GetWeakPtr(), base::Passed(&client_callback)));
 }
 
@@ -424,6 +455,103 @@ media::VideoCaptureFormats MediaDevicesDispatcherHost::GetVideoInputFormats(
   media_stream_manager_->video_capture_manager()->GetDeviceSupportedFormats(
       device_id, &formats);
   return formats;
+}
+
+struct MediaDevicesDispatcherHost::AudioInputCapabilitiesRequest {
+  url::Origin security_origin;
+  GetAudioInputCapabilitiesCallback client_callback;
+};
+
+void MediaDevicesDispatcherHost::GetDefaultAudioInputDeviceID(
+    GetAudioInputCapabilitiesCallback client_callback,
+    const url::Origin& security_origin) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  pending_audio_input_capabilities_requests_.push_back(
+      AudioInputCapabilitiesRequest{security_origin,
+                                    std::move(client_callback)});
+  if (pending_audio_input_capabilities_requests_.size() > 1U)
+    return;
+
+  DCHECK(current_audio_input_capabilities_.empty());
+  GetDefaultMediaDeviceID(
+      MEDIA_DEVICE_TYPE_AUDIO_INPUT, render_process_id_, render_frame_id_,
+      base::Bind(&MediaDevicesDispatcherHost::GotDefaultAudioInputDeviceID,
+                 weak_factory_.GetWeakPtr()));
+}
+
+void MediaDevicesDispatcherHost::GotDefaultAudioInputDeviceID(
+    const std::string& default_device_id) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_GT(pending_audio_input_capabilities_requests_.size(), 0U);
+  DCHECK(current_audio_input_capabilities_.empty());
+  MediaDevicesManager::BoolDeviceTypes devices_to_enumerate;
+  devices_to_enumerate[MEDIA_DEVICE_TYPE_AUDIO_INPUT] = true;
+  media_stream_manager_->media_devices_manager()->EnumerateDevices(
+      devices_to_enumerate,
+      base::Bind(&MediaDevicesDispatcherHost::GotAudioInputEnumeration,
+                 weak_factory_.GetWeakPtr(), default_device_id));
+}
+
+void MediaDevicesDispatcherHost::GotAudioInputEnumeration(
+    const std::string& default_device_id,
+    const MediaDeviceEnumeration& enumeration) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_GT(pending_audio_input_capabilities_requests_.size(), 0U);
+  DCHECK(current_audio_input_capabilities_.empty());
+  for (const auto& device_info : enumeration[MEDIA_DEVICE_TYPE_AUDIO_INPUT]) {
+    ::mojom::AudioInputDeviceCapabilities capabilities(
+        device_info.device_id, media::AudioParameters());
+    if (device_info.device_id == default_device_id)
+      current_audio_input_capabilities_.insert(
+          current_audio_input_capabilities_.begin(), std::move(capabilities));
+    else
+      current_audio_input_capabilities_.push_back(std::move(capabilities));
+  }
+  // No devices, no need to read audio parameters.
+  if (current_audio_input_capabilities_.empty()) {
+    FinalizeGetAudioInputCapabilities();
+    return;
+  }
+
+  num_pending_audio_input_parameters_ =
+      current_audio_input_capabilities_.size();
+  for (size_t i = 0; i < num_pending_audio_input_parameters_; ++i) {
+    media_stream_manager_->audio_system()->GetInputStreamParameters(
+        current_audio_input_capabilities_[i].device_id,
+        base::Bind(&MediaDevicesDispatcherHost::GotAudioInputParameters,
+                   weak_factory_.GetWeakPtr(), i));
+  }
+}
+
+void MediaDevicesDispatcherHost::GotAudioInputParameters(
+    size_t index,
+    const media::AudioParameters& parameters) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_GT(pending_audio_input_capabilities_requests_.size(), 0U);
+  DCHECK_GT(current_audio_input_capabilities_.size(), index);
+  DCHECK_GT(num_pending_audio_input_parameters_, 0U);
+
+  current_audio_input_capabilities_[index].parameters =
+      parameters.IsValid() ? parameters
+                           : media::AudioParameters::UnavailableDeviceParams();
+  if (--num_pending_audio_input_parameters_ == 0U)
+    FinalizeGetAudioInputCapabilities();
+}
+
+void MediaDevicesDispatcherHost::FinalizeGetAudioInputCapabilities() {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_GT(pending_audio_input_capabilities_requests_.size(), 0U);
+  DCHECK_EQ(0U, num_pending_audio_input_parameters_);
+
+  for (auto& request : pending_audio_input_capabilities_requests_) {
+    std::move(request.client_callback)
+        .Run(ToVectorAudioInputDeviceCapabilitiesPtr(
+            current_audio_input_capabilities_, request.security_origin,
+            device_id_salt_));
+  }
+
+  current_audio_input_capabilities_.clear();
+  pending_audio_input_capabilities_requests_.clear();
 }
 
 }  // namespace content

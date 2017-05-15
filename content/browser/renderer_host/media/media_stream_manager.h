@@ -105,6 +105,9 @@ class CONTENT_EXPORT MediaStreamManager
   // Used to access MediaDevicesManager.
   MediaDevicesManager* media_devices_manager();
 
+  // Used to access AudioSystem.
+  media::AudioSystem* audio_system();
+
   // AddVideoCaptureObserver() and RemoveAllVideoCaptureObservers() must be
   // called after InitializeDeviceManagersOnIOThread() and before
   // WillDestroyCurrentMessageLoop(). They can be called more than once and it's
