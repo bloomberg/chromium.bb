@@ -5,12 +5,14 @@
 #import "ios/clean/chrome/app/steps/root_coordinator+application_step.h"
 
 #include "base/memory/ptr_util.h"
-#import "base/supports_user_data.h"
+#include "base/supports_user_data.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/clean/chrome/app/application_state.h"
 #import "ios/shared/chrome/browser/ui/browser_list/browser.h"
 #import "ios/shared/chrome/browser/ui/browser_list/browser_list.h"
+#import "ios/shared/chrome/browser/ui/browser_list/browser_list_session_service.h"
+#import "ios/shared/chrome/browser/ui/browser_list/browser_list_session_service_factory.h"
 #import "ios/shared/chrome/browser/ui/coordinators/browser_coordinator+internal.h"
 #import "ios/web/public/navigation_manager.h"
 #include "ios/web/public/web_state/web_state.h"
@@ -49,16 +51,16 @@ const char kRootCoordinatorContainerKey[] = "root_coordinator";
   self.browser =
       BrowserList::FromBrowserState(state.browserState)->CreateNewBrowser();
 
-  // PLACEHOLDER: Create some open, empty web states.
-  WebStateList& webStateList = self.browser->web_state_list();
-  for (int i = 0; i < 7; i++) {
+  BrowserListSessionService* service =
+      BrowserListSessionServiceFactory::GetForBrowserState(state.browserState);
+
+  if (!service || !service->RestoreSession()) {
+    WebStateList& webStateList = self.browser->web_state_list();
     web::WebState::CreateParams webStateCreateParams(
         self.browser->browser_state());
-    std::unique_ptr<web::WebState> webState =
-        web::WebState::Create(webStateCreateParams);
-    webStateList.InsertWebState(0, std::move(webState));
+    webStateList.InsertWebState(0, web::WebState::Create(webStateCreateParams));
+    webStateList.ActivateWebStateAt(0);
   }
-  webStateList.ActivateWebStateAt(0);
 
   [self start];
 
