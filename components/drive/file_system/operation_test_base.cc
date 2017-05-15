@@ -4,7 +4,7 @@
 
 #include "components/drive/file_system/operation_test_base.h"
 
-#include "base/threading/sequenced_worker_pool.h"
+#include "base/task_scheduler/post_task.h"
 #include "components/drive/chromeos/change_list_loader.h"
 #include "components/drive/chromeos/fake_free_disk_space_getter.h"
 #include "components/drive/chromeos/file_cache.h"
@@ -16,7 +16,6 @@
 #include "components/drive/service/fake_drive_service.h"
 #include "components/drive/service/test_util.h"
 #include "components/prefs/testing_pref_service.h"
-#include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_utils.h"
 #include "google_apis/drive/test_util.h"
 
@@ -63,10 +62,8 @@ OperationTestBase::~OperationTestBase() {
 }
 
 void OperationTestBase::SetUp() {
-  scoped_refptr<base::SequencedWorkerPool> pool =
-      content::BrowserThread::GetBlockingPool();
   blocking_task_runner_ =
-      pool->GetSequencedTaskRunner(pool->GetSequenceToken());
+      base::CreateSequencedTaskRunnerWithTraits({base::MayBlock()});
 
   pref_service_.reset(new TestingPrefServiceSimple);
   test_util::RegisterDrivePrefs(pref_service_->registry());
