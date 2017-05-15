@@ -39,7 +39,7 @@ public class ChannelsUpdater {
                                   new NotificationManagerProxyImpl(
                                           (NotificationManager) ContextUtils.getApplicationContext()
                                                   .getSystemService(Context.NOTIFICATION_SERVICE)),
-                                  new ChannelDefinitions()),
+                                  ContextUtils.getApplicationContext().getResources()),
                           ChannelDefinitions.CHANNELS_VERSION);
     }
 

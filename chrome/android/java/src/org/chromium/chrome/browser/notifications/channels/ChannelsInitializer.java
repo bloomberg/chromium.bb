@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.notifications.channels;
 
+import android.content.res.Resources;
+
 import org.chromium.chrome.browser.notifications.NotificationManagerProxy;
 
 /**
@@ -11,20 +13,20 @@ import org.chromium.chrome.browser.notifications.NotificationManagerProxy;
  */
 public class ChannelsInitializer {
     private final NotificationManagerProxy mNotificationManager;
-    private final ChannelDefinitions mChannelDefinitions;
+    private final Resources mResources;
 
-    public ChannelsInitializer(NotificationManagerProxy notificationManagerProxy,
-            ChannelDefinitions channelDefinitions) {
+    public ChannelsInitializer(
+            NotificationManagerProxy notificationManagerProxy, Resources resources) {
         mNotificationManager = notificationManagerProxy;
-        mChannelDefinitions = channelDefinitions;
+        mResources = resources;
     }
 
     /**
      * Creates all the channels on the notification manager that we want to appear in our
      * channel settings from first launch onwards.
      */
-    public void initializeStartupChannels() {
-        for (String channelId : mChannelDefinitions.getStartupChannelIds()) {
+    void initializeStartupChannels() {
+        for (String channelId : ChannelDefinitions.getStartupChannelIds()) {
             ensureInitialized(channelId);
         }
     }
@@ -34,7 +36,7 @@ public class ChannelsInitializer {
      * It's safe to call this multiple times since deleting an already-deleted channel is a no-op.
      */
     void deleteLegacyChannels() {
-        for (String channelId : mChannelDefinitions.getLegacyChannelIds()) {
+        for (String channelId : ChannelDefinitions.getLegacyChannelIds()) {
             mNotificationManager.deleteNotificationChannel(channelId);
         }
     }
@@ -49,13 +51,14 @@ public class ChannelsInitializer {
      * @param channelId The ID of the channel to be initialized.
      */
     public void ensureInitialized(@ChannelDefinitions.ChannelId String channelId) {
-        ChannelDefinitions.Channel channel = mChannelDefinitions.getChannelFromId(channelId);
-        if (channel == null) {
+        ChannelDefinitions.PredefinedChannel predefinedChannel =
+                ChannelDefinitions.getChannelFromId(channelId);
+        if (predefinedChannel == null) {
             throw new IllegalStateException("Could not initialize channel: " + channelId);
         }
         // Channel group must be created before the channel.
         mNotificationManager.createNotificationChannelGroup(
-                mChannelDefinitions.getChannelGroupFromId(channel));
-        mNotificationManager.createNotificationChannel(channel);
+                ChannelDefinitions.getChannelGroupFromId(predefinedChannel));
+        mNotificationManager.createNotificationChannel(predefinedChannel.toChannel(mResources));
     }
 }

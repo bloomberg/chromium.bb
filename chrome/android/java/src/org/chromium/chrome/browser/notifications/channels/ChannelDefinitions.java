@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.notifications.channels;
 
 import android.annotation.TargetApi;
 import android.app.NotificationManager;
+import android.content.res.Resources;
 import android.os.Build;
 import android.support.annotation.StringDef;
 
@@ -61,27 +62,27 @@ public class ChannelDefinitions {
          * incremented every time an entry is modified, removed or added to this map.
          * If an entry is removed from here then it must be added to the LEGACY_CHANNEL_IDs array.
          */
-        static final Map<String, Channel> MAP;
+        static final Map<String, PredefinedChannel> MAP;
         static {
-            Map<String, Channel> map = new HashMap<>();
+            Map<String, PredefinedChannel> map = new HashMap<>();
             map.put(CHANNEL_ID_BROWSER,
-                    new Channel(CHANNEL_ID_BROWSER,
+                    new PredefinedChannel(CHANNEL_ID_BROWSER,
                             org.chromium.chrome.R.string.notification_category_browser,
                             NotificationManager.IMPORTANCE_LOW, CHANNEL_GROUP_ID_GENERAL));
             map.put(CHANNEL_ID_DOWNLOADS,
-                    new Channel(CHANNEL_ID_DOWNLOADS,
+                    new PredefinedChannel(CHANNEL_ID_DOWNLOADS,
                             org.chromium.chrome.R.string.notification_category_downloads,
                             NotificationManager.IMPORTANCE_LOW, CHANNEL_GROUP_ID_GENERAL));
             map.put(CHANNEL_ID_INCOGNITO,
-                    new Channel(CHANNEL_ID_INCOGNITO,
+                    new PredefinedChannel(CHANNEL_ID_INCOGNITO,
                             org.chromium.chrome.R.string.notification_category_incognito,
                             NotificationManager.IMPORTANCE_LOW, CHANNEL_GROUP_ID_GENERAL));
             map.put(CHANNEL_ID_MEDIA,
-                    new Channel(CHANNEL_ID_MEDIA,
+                    new PredefinedChannel(CHANNEL_ID_MEDIA,
                             org.chromium.chrome.R.string.notification_category_media,
                             NotificationManager.IMPORTANCE_LOW, CHANNEL_GROUP_ID_GENERAL));
             map.put(CHANNEL_ID_SITES,
-                    new Channel(CHANNEL_ID_SITES,
+                    new PredefinedChannel(CHANNEL_ID_SITES,
                             org.chromium.chrome.R.string.notification_category_sites,
                             NotificationManager.IMPORTANCE_DEFAULT, CHANNEL_GROUP_ID_GENERAL));
             MAP = Collections.unmodifiableMap(map);
@@ -110,7 +111,7 @@ public class ChannelDefinitions {
     /**
      * @return A set of channel ids of channels that should be initialized on startup.
      */
-    Set<String> getStartupChannelIds() {
+    static Set<String> getStartupChannelIds() {
         // CHANNELS_VERSION must be incremented if the set of channels returned here changes.
         return PredefinedChannels.MAP.keySet();
     }
@@ -119,35 +120,41 @@ public class ChannelDefinitions {
      * @return An array of old ChannelIds that may have been returned by
      * {@link #getStartupChannelIds} in the past, but are no longer in use.
      */
-    public String[] getLegacyChannelIds() {
+    static String[] getLegacyChannelIds() {
         return LEGACY_CHANNEL_IDS;
     }
 
-    ChannelGroup getChannelGroupFromId(Channel channel) {
+    static ChannelGroup getChannelGroupFromId(PredefinedChannel channel) {
         return PredefinedChannelGroups.MAP.get(channel.mGroupId);
     }
 
-    Channel getChannelFromId(@ChannelId String channelId) {
+    static PredefinedChannel getChannelFromId(@ChannelId String channelId) {
         return PredefinedChannels.MAP.get(channelId);
     }
 
     /**
-     * Helper class containing notification channel properties.
+     * Helper class for storing predefined channel properties while allowing the channel name to be
+     * lazily evaluated only when it is converted to an actual (Notification)Channel.
      */
-    public static class Channel {
+    static class PredefinedChannel {
         @ChannelId
-        public final String mId;
-        public final int mNameResId;
-        public final int mImportance;
+        private final String mId;
+        private final int mNameResId;
+        private final int mImportance;
         @ChannelGroupId
-        public final String mGroupId;
+        private final String mGroupId;
 
-        Channel(@ChannelId String id, int nameResId, int importance,
+        PredefinedChannel(@ChannelId String id, int nameResId, int importance,
                 @ChannelGroupId String groupId) {
             this.mId = id;
             this.mNameResId = nameResId;
             this.mImportance = importance;
             this.mGroupId = groupId;
+        }
+
+        Channel toChannel(Resources resources) {
+            String name = resources.getString(mNameResId);
+            return new Channel(mId, name, mImportance, mGroupId);
         }
     }
 
