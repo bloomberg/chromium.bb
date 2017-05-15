@@ -103,6 +103,7 @@ include_rules = [
   "+rlz/features",
   "+third_party/brotli",
   "+third_party/google_toolbox_for_mac",
+  "+third_party/libaddressinput",
   "+ui",
 
   # Those depend on //content; exclude them.
