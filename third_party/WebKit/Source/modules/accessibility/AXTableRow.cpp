@@ -75,7 +75,7 @@ AccessibilityRole AXTableRow::DetermineAccessibilityRole() {
 }
 
 bool AXTableRow::IsTableRow() const {
-  AXObject* table = ParentTable();
+  AXObjectImpl* table = ParentTable();
   if (!table || !table->IsAXTable())
     return false;
 
@@ -96,15 +96,15 @@ bool AXTableRow::ComputeAccessibilityIsIgnored(
   return false;
 }
 
-AXObject* AXTableRow::ParentTable() const {
-  AXObject* parent = ParentObjectUnignored();
+AXObjectImpl* AXTableRow::ParentTable() const {
+  AXObjectImpl* parent = ParentObjectUnignored();
   if (!parent || !parent->IsAXTable())
     return 0;
 
   return parent;
 }
 
-AXObject* AXTableRow::HeaderObject() {
+AXObjectImpl* AXTableRow::HeaderObject() {
   AXObjectVector headers;
   HeaderObjectsForRow(headers);
   if (!headers.size())

@@ -44,7 +44,7 @@
 
 namespace blink {
 
-class AXObject;
+class AXObjectImpl;
 class BeforeTextInsertedEvent;
 class Element;
 class Event;
@@ -124,7 +124,7 @@ class CORE_EXPORT InputTypeView : public GarbageCollectedMixin {
   virtual void ListAttributeTargetChanged();
   virtual void UpdateClearButtonVisibility();
   virtual void UpdatePlaceholderText();
-  virtual AXObject* PopupRootAXObject();
+  virtual AXObjectImpl* PopupRootAXObject();
   virtual void EnsureFallbackContent() {}
   virtual void EnsurePrimaryContent() {}
   virtual bool HasFallbackContent() const { return false; }

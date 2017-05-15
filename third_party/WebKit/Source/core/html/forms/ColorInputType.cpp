@@ -262,7 +262,7 @@ Vector<ColorSuggestion> ColorInputType::Suggestions() const {
   return suggestions;
 }
 
-AXObject* ColorInputType::PopupRootAXObject() {
+AXObjectImpl* ColorInputType::PopupRootAXObject() {
   return chooser_ ? chooser_->RootAXObject() : nullptr;
 }
 

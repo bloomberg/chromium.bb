@@ -45,8 +45,8 @@
 #include "core/html/HTMLElement.h"
 #include "core/layout/LayoutObject.h"
 #include "core/layout/LayoutPart.h"
-#include "modules/accessibility/AXObject.h"
 #include "modules/accessibility/AXObjectCacheImpl.h"
+#include "modules/accessibility/AXObjectImpl.h"
 #include "platform/wtf/PtrUtil.h"
 #include "public/platform/WebString.h"
 #include "public/web/WebAXObject.h"
@@ -128,7 +128,7 @@ bool WebNode::IsContentEditable() const {
 }
 
 bool WebNode::IsInsideFocusableElementOrARIAWidget() const {
-  return AXObject::IsInsideFocusableElementOrARIAWidget(
+  return AXObjectImpl::IsInsideFocusableElementOrARIAWidget(
       *this->ConstUnwrap<Node>());
 }
 

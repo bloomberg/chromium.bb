@@ -60,7 +60,7 @@ class MODULES_EXPORT AXTableCell : public AXLayoutObject {
   void SetARIAColIndexFromRow(int index) { aria_col_index_from_row_ = index; }
 
  protected:
-  virtual AXObject* ParentTable() const;
+  virtual AXObjectImpl* ParentTable() const;
   AccessibilityRole DetermineAccessibilityRole() final;
 
  private:

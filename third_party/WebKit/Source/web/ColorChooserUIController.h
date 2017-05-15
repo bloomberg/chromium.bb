@@ -58,7 +58,7 @@ class ColorChooserUIController
   // ColorChooser functions:
   void SetSelectedColor(const Color&) final;
   void EndChooser() override;
-  AXObject* RootAXObject() override;
+  AXObjectImpl* RootAXObject() override;
 
   // WebColorChooserClient functions:
   void DidChooseColor(const WebColor&) final;

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/accessibility/AXObject.h"
+#include "modules/accessibility/AXObjectImpl.h"
 
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
@@ -48,25 +48,25 @@ TEST_F(AXObjectTest, IsARIAWidget) {
   GetDocument().documentElement()->setInnerHTML(test_content);
   GetDocument().UpdateStyleAndLayout();
   Element* root(GetDocument().documentElement());
-  EXPECT_FALSE(AXObject::IsInsideFocusableElementOrARIAWidget(
+  EXPECT_FALSE(AXObjectImpl::IsInsideFocusableElementOrARIAWidget(
       *root->getElementById("plain")));
-  EXPECT_TRUE(AXObject::IsInsideFocusableElementOrARIAWidget(
+  EXPECT_TRUE(AXObjectImpl::IsInsideFocusableElementOrARIAWidget(
       *root->getElementById("button")));
-  EXPECT_TRUE(AXObject::IsInsideFocusableElementOrARIAWidget(
+  EXPECT_TRUE(AXObjectImpl::IsInsideFocusableElementOrARIAWidget(
       *root->getElementById("button-parent")));
-  EXPECT_TRUE(AXObject::IsInsideFocusableElementOrARIAWidget(
+  EXPECT_TRUE(AXObjectImpl::IsInsideFocusableElementOrARIAWidget(
       *root->getElementById("button-caps")));
-  EXPECT_TRUE(AXObject::IsInsideFocusableElementOrARIAWidget(
+  EXPECT_TRUE(AXObjectImpl::IsInsideFocusableElementOrARIAWidget(
       *root->getElementById("button-second")));
-  EXPECT_FALSE(AXObject::IsInsideFocusableElementOrARIAWidget(
+  EXPECT_FALSE(AXObjectImpl::IsInsideFocusableElementOrARIAWidget(
       *root->getElementById("aria-bogus")));
-  EXPECT_TRUE(AXObject::IsInsideFocusableElementOrARIAWidget(
+  EXPECT_TRUE(AXObjectImpl::IsInsideFocusableElementOrARIAWidget(
       *root->getElementById("aria-selected")));
-  EXPECT_TRUE(AXObject::IsInsideFocusableElementOrARIAWidget(
+  EXPECT_TRUE(AXObjectImpl::IsInsideFocusableElementOrARIAWidget(
       *root->getElementById("haspopup")));
-  EXPECT_TRUE(AXObject::IsInsideFocusableElementOrARIAWidget(
+  EXPECT_TRUE(AXObjectImpl::IsInsideFocusableElementOrARIAWidget(
       *root->getElementById("focusable")));
-  EXPECT_TRUE(AXObject::IsInsideFocusableElementOrARIAWidget(
+  EXPECT_TRUE(AXObjectImpl::IsInsideFocusableElementOrARIAWidget(
       *root->getElementById("focusable-parent")));
 }
 

@@ -4,6 +4,7 @@
 
 #include "modules/accessibility/InspectorAccessibilityAgent.h"
 
+#include <memory>
 #include "core/HTMLNames.h"
 #include "core/dom/AXObjectCache.h"
 #include "core/dom/DOMNodeIds.h"
@@ -15,10 +16,9 @@
 #include "core/inspector/InspectorDOMAgent.h"
 #include "core/inspector/InspectorStyleSheet.h"
 #include "core/page/Page.h"
-#include "modules/accessibility/AXObject.h"
 #include "modules/accessibility/AXObjectCacheImpl.h"
+#include "modules/accessibility/AXObjectImpl.h"
 #include "modules/accessibility/InspectorTypeBuilderHelper.h"
-#include <memory>
 
 namespace blink {
 
@@ -43,7 +43,7 @@ namespace {
 
 static const AXID kIDForInspectedNodeWithNoAXNode = 0;
 
-void FillLiveRegionProperties(AXObject& ax_object,
+void FillLiveRegionProperties(AXObjectImpl& ax_object,
                               protocol::Array<AXProperty>& properties) {
   if (!ax_object.LiveRegionRoot())
     return;
@@ -70,13 +70,13 @@ void FillLiveRegionProperties(AXObject& ax_object,
   }
 }
 
-void FillGlobalStates(AXObject& ax_object,
+void FillGlobalStates(AXObjectImpl& ax_object,
                       protocol::Array<AXProperty>& properties) {
   if (!ax_object.IsEnabled())
     properties.addItem(
         CreateProperty(AXGlobalStatesEnum::Disabled, CreateBooleanValue(true)));
 
-  if (const AXObject* hidden_root = ax_object.AriaHiddenRoot()) {
+  if (const AXObjectImpl* hidden_root = ax_object.AriaHiddenRoot()) {
     properties.addItem(
         CreateProperty(AXGlobalStatesEnum::Hidden, CreateBooleanValue(true)));
     properties.addItem(
@@ -163,7 +163,7 @@ bool RoleAllowsSelected(AccessibilityRole role) {
          role == kRowHeaderRole || role == kTreeItemRole;
 }
 
-void FillWidgetProperties(AXObject& ax_object,
+void FillWidgetProperties(AXObjectImpl& ax_object,
                           protocol::Array<AXProperty>& properties) {
   AccessibilityRole role = ax_object.RoleValue();
   String autocomplete = ax_object.AriaAutoComplete();
@@ -249,7 +249,7 @@ void FillWidgetProperties(AXObject& ax_object,
   }
 }
 
-void FillWidgetStates(AXObject& ax_object,
+void FillWidgetStates(AXObjectImpl& ax_object,
                       protocol::Array<AXProperty>& properties) {
   AccessibilityRole role = ax_object.RoleValue();
   if (RoleAllowsChecked(role)) {
@@ -330,9 +330,9 @@ std::unique_ptr<AXProperty> CreateRelatedNodeListProperty(
 
 std::unique_ptr<AXProperty> CreateRelatedNodeListProperty(
     const String& key,
-    AXObject::AXObjectVector& nodes,
+    AXObjectImpl::AXObjectVector& nodes,
     const QualifiedName& attr,
-    AXObject& ax_object) {
+    AXObjectImpl& ax_object) {
   std::unique_ptr<AXValue> node_list_value = CreateRelatedNodeListValue(nodes);
   const AtomicString& attr_value = ax_object.GetAttribute(attr);
   node_list_value->setValue(protocol::StringValue::create(attr_value));
@@ -343,14 +343,14 @@ class SparseAttributeAXPropertyAdapter
     : public GarbageCollected<SparseAttributeAXPropertyAdapter>,
       public AXSparseAttributeClient {
  public:
-  SparseAttributeAXPropertyAdapter(AXObject& ax_object,
+  SparseAttributeAXPropertyAdapter(AXObjectImpl& ax_object,
                                    protocol::Array<AXProperty>& properties)
       : ax_object_(&ax_object), properties_(properties) {}
 
   DEFINE_INLINE_TRACE() { visitor->Trace(ax_object_); }
 
  private:
-  Member<AXObject> ax_object_;
+  Member<AXObjectImpl> ax_object_;
   protocol::Array<AXProperty>& properties_;
 
   void AddBoolAttribute(AXBoolAttribute attribute, bool value) {
@@ -372,7 +372,7 @@ class SparseAttributeAXPropertyAdapter
     }
   }
 
-  void AddObjectAttribute(AXObjectAttribute attribute, AXObject& object) {
+  void AddObjectAttribute(AXObjectAttribute attribute, AXObjectImpl& object) {
     switch (attribute) {
       case AXObjectAttribute::kAriaActiveDescendant:
         properties_.addItem(
@@ -388,7 +388,7 @@ class SparseAttributeAXPropertyAdapter
   }
 
   void AddObjectVectorAttribute(AXObjectVectorAttribute attribute,
-                                HeapVector<Member<AXObject>>& objects) {
+                                HeapVector<Member<AXObjectImpl>>& objects) {
     switch (attribute) {
       case AXObjectVectorAttribute::kAriaControls:
         properties_.addItem(CreateRelatedNodeListProperty(
@@ -409,9 +409,9 @@ class SparseAttributeAXPropertyAdapter
   }
 };
 
-void FillRelationships(AXObject& ax_object,
+void FillRelationships(AXObjectImpl& ax_object,
                        protocol::Array<AXProperty>& properties) {
-  AXObject::AXObjectVector results;
+  AXObjectImpl::AXObjectVector results;
   ax_object.AriaDescribedbyElements(results);
   if (!results.IsEmpty())
     properties.addItem(CreateRelatedNodeListProperty(
@@ -427,12 +427,12 @@ void FillRelationships(AXObject& ax_object,
 }
 
 std::unique_ptr<AXValue> CreateRoleNameValue(AccessibilityRole role) {
-  AtomicString role_name = AXObject::RoleName(role);
+  AtomicString role_name = AXObjectImpl::RoleName(role);
   std::unique_ptr<AXValue> role_name_value;
   if (!role_name.IsNull()) {
     role_name_value = CreateValue(role_name, AXValueTypeEnum::Role);
   } else {
-    role_name_value = CreateValue(AXObject::InternalRoleName(role),
+    role_name_value = CreateValue(AXObjectImpl::InternalRoleName(role),
                                   AXValueTypeEnum::InternalRole);
   }
   return role_name_value;
@@ -467,7 +467,7 @@ Response InspectorAccessibilityAgent::getPartialAXTree(
       ScopedAXObjectCache::Create(document);
   AXObjectCacheImpl* cache = ToAXObjectCacheImpl(scoped_cache->Get());
 
-  AXObject* inspected_ax_object = cache->GetOrCreate(dom_node);
+  AXObjectImpl* inspected_ax_object = cache->GetOrCreate(dom_node);
   *nodes = protocol::Array<protocol::Accessibility::AXNode>::create();
   if (!inspected_ax_object || inspected_ax_object->AccessibilityIsIgnored()) {
     (*nodes)->addItem(BuildObjectForIgnoredNode(dom_node, inspected_ax_object,
@@ -483,7 +483,7 @@ Response InspectorAccessibilityAgent::getPartialAXTree(
   if (!inspected_ax_object)
     return Response::OK();
 
-  AXObject* parent = inspected_ax_object->ParentObjectUnignored();
+  AXObjectImpl* parent = inspected_ax_object->ParentObjectUnignored();
   if (!parent)
     return Response::OK();
 
@@ -494,11 +494,11 @@ Response InspectorAccessibilityAgent::getPartialAXTree(
 }
 
 void InspectorAccessibilityAgent::AddAncestors(
-    AXObject& first_ancestor,
-    AXObject* inspected_ax_object,
+    AXObjectImpl& first_ancestor,
+    AXObjectImpl* inspected_ax_object,
     std::unique_ptr<protocol::Array<AXNode>>& nodes,
     AXObjectCacheImpl& cache) const {
-  AXObject* ancestor = &first_ancestor;
+  AXObjectImpl* ancestor = &first_ancestor;
   while (ancestor) {
     nodes->addItem(BuildProtocolAXObject(*ancestor, inspected_ax_object, true,
                                          nodes, cache));
@@ -508,11 +508,11 @@ void InspectorAccessibilityAgent::AddAncestors(
 
 std::unique_ptr<AXNode> InspectorAccessibilityAgent::BuildObjectForIgnoredNode(
     Node* dom_node,
-    AXObject* ax_object,
+    AXObjectImpl* ax_object,
     bool fetch_relatives,
     std::unique_ptr<protocol::Array<AXNode>>& nodes,
     AXObjectCacheImpl& cache) const {
-  AXObject::IgnoredReasons ignored_reasons;
+  AXObjectImpl::IgnoredReasons ignored_reasons;
   AXID ax_id = kIDForInspectedNodeWithNoAXNode;
   if (ax_object && ax_object->IsAXLayoutObject())
     ax_id = ax_object->AxObjectID();
@@ -527,7 +527,7 @@ std::unique_ptr<AXNode> InspectorAccessibilityAgent::BuildObjectForIgnoredNode(
   if (ax_object && ax_object->IsAXLayoutObject()) {
     ax_object->ComputeAccessibilityIsIgnored(&ignored_reasons);
 
-    AXObject* parent_object = ax_object->ParentObjectUnignored();
+    AXObjectImpl* parent_object = ax_object->ParentObjectUnignored();
     if (parent_object && fetch_relatives)
       AddAncestors(*parent_object, ax_object, nodes, cache);
   } else if (dom_node && !dom_node->GetLayoutObject()) {
@@ -555,11 +555,11 @@ void InspectorAccessibilityAgent::PopulateDOMNodeAncestors(
     AXNode& node_object,
     std::unique_ptr<protocol::Array<AXNode>>& nodes,
     AXObjectCacheImpl& cache) const {
-  // Walk up parents until an AXObject can be found.
+  // Walk up parents until an AXObjectImpl can be found.
   Node* parent_node = inspected_dom_node.IsShadowRoot()
                           ? &ToShadowRoot(inspected_dom_node).host()
                           : FlatTreeTraversal::Parent(inspected_dom_node);
-  AXObject* parent_ax_object = cache.GetOrCreate(parent_node);
+  AXObjectImpl* parent_ax_object = cache.GetOrCreate(parent_node);
   while (parent_node && !parent_ax_object) {
     parent_node = parent_node->IsShadowRoot()
                       ? &ToShadowRoot(parent_node)->host()
@@ -584,14 +584,15 @@ void InspectorAccessibilityAgent::PopulateDOMNodeAncestors(
   parent_node_object->setChildIds(std::move(child_ids));
   nodes->addItem(std::move(parent_node_object));
 
-  AXObject* grandparent_ax_object = parent_ax_object->ParentObjectUnignored();
+  AXObjectImpl* grandparent_ax_object =
+      parent_ax_object->ParentObjectUnignored();
   if (grandparent_ax_object)
     AddAncestors(*grandparent_ax_object, nullptr, nodes, cache);
 }
 
 std::unique_ptr<AXNode> InspectorAccessibilityAgent::BuildProtocolAXObject(
-    AXObject& ax_object,
-    AXObject* inspected_ax_object,
+    AXObjectImpl& ax_object,
+    AXObjectImpl* inspected_ax_object,
     bool fetch_relatives,
     std::unique_ptr<protocol::Array<AXNode>>& nodes,
     AXObjectCacheImpl& cache) const {
@@ -614,7 +615,7 @@ std::unique_ptr<AXNode> InspectorAccessibilityAgent::BuildProtocolAXObject(
   SparseAttributeAXPropertyAdapter adapter(ax_object, *properties);
   ax_object.GetSparseAXAttributes(adapter);
 
-  AXObject::NameSources name_sources;
+  AXObjectImpl::NameSources name_sources;
   String computed_name = ax_object.GetName(&name_sources);
   if (!name_sources.IsEmpty()) {
     std::unique_ptr<AXValue> name =
@@ -647,18 +648,18 @@ std::unique_ptr<AXNode> InspectorAccessibilityAgent::BuildProtocolAXObject(
 }
 
 void InspectorAccessibilityAgent::FillCoreProperties(
-    AXObject& ax_object,
-    AXObject* inspected_ax_object,
+    AXObjectImpl& ax_object,
+    AXObjectImpl* inspected_ax_object,
     bool fetch_relatives,
     AXNode& node_object,
     std::unique_ptr<protocol::Array<AXNode>>& nodes,
     AXObjectCacheImpl& cache) const {
   AXNameFrom name_from;
-  AXObject::AXObjectVector name_objects;
+  AXObjectImpl::AXObjectVector name_objects;
   ax_object.GetName(name_from, &name_objects);
 
   AXDescriptionFrom description_from;
-  AXObject::AXObjectVector description_objects;
+  AXObjectImpl::AXObjectVector description_objects;
   String description =
       ax_object.Description(name_from, description_from, &description_objects);
   if (!description.IsEmpty()) {
@@ -684,12 +685,12 @@ void InspectorAccessibilityAgent::FillCoreProperties(
 }
 
 void InspectorAccessibilityAgent::PopulateRelatives(
-    AXObject& ax_object,
-    AXObject* inspected_ax_object,
+    AXObjectImpl& ax_object,
+    AXObjectImpl* inspected_ax_object,
     AXNode& node_object,
     std::unique_ptr<protocol::Array<AXNode>>& nodes,
     AXObjectCacheImpl& cache) const {
-  AXObject* parent_object = ax_object.ParentObject();
+  AXObjectImpl* parent_object = ax_object.ParentObject();
   if (parent_object && parent_object != inspected_ax_object) {
     // Use unignored parent unless parent is inspected ignored object.
     parent_object = ax_object.ParentObjectUnignored();
@@ -706,8 +707,8 @@ void InspectorAccessibilityAgent::PopulateRelatives(
 }
 
 void InspectorAccessibilityAgent::AddChildren(
-    AXObject& ax_object,
-    AXObject* inspected_ax_object,
+    AXObjectImpl& ax_object,
+    AXObjectImpl* inspected_ax_object,
     std::unique_ptr<protocol::Array<AXNodeId>>& child_ids,
     std::unique_ptr<protocol::Array<AXNode>>& nodes,
     AXObjectCacheImpl& cache) const {
@@ -717,9 +718,9 @@ void InspectorAccessibilityAgent::AddChildren(
     return;
   }
 
-  const AXObject::AXObjectVector& children = ax_object.Children();
+  const AXObjectImpl::AXObjectVector& children = ax_object.Children();
   for (unsigned i = 0; i < children.size(); i++) {
-    AXObject& child_ax_object = *children[i].Get();
+    AXObjectImpl& child_ax_object = *children[i].Get();
     child_ids->addItem(String::Number(child_ax_object.AxObjectID()));
     if (&child_ax_object == inspected_ax_object)
       continue;

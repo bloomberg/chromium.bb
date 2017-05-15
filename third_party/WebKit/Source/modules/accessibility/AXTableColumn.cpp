@@ -45,7 +45,7 @@ AXTableColumn* AXTableColumn::Create(AXObjectCacheImpl& ax_object_cache) {
   return new AXTableColumn(ax_object_cache);
 }
 
-void AXTableColumn::SetParent(AXObject* parent) {
+void AXTableColumn::SetParent(AXObjectImpl* parent) {
   AXMockObject::SetParent(parent);
 
   ClearChildren();
@@ -87,7 +87,7 @@ void AXTableColumn::HeaderObjectsForColumn(AXObjectVector& headers) {
       if (!layout_cell)
         continue;
 
-      AXObject* cell = AxObjectCache().GetOrCreate(layout_cell->GetNode());
+      AXObjectImpl* cell = AxObjectCache().GetOrCreate(layout_cell->GetNode());
       if (!cell || !cell->IsTableCell() || headers.Contains(cell))
         continue;
 
@@ -97,7 +97,7 @@ void AXTableColumn::HeaderObjectsForColumn(AXObjectVector& headers) {
   }
 }
 
-AXObject* AXTableColumn::HeaderObject() {
+AXObjectImpl* AXTableColumn::HeaderObject() {
   AXObjectVector headers;
   HeaderObjectsForColumn(headers);
   if (!headers.size())
