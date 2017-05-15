@@ -6,11 +6,20 @@ package org.chromium.chrome.browser.payments;
 
 import android.support.test.filters.MediumTest;
 
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
+import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.autofill.AutofillTestHelper;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.CreditCard;
+import org.chromium.chrome.browser.payments.PaymentRequestTestRule.MainActivityStartCallback;
+import org.chromium.chrome.test.ChromeActivityTestRule;
+import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
@@ -18,13 +27,15 @@ import java.util.concurrent.TimeoutException;
 /**
  * A payment integration test for a merchant that requires shipping address to calculate shipping.
  */
-public class PaymentRequestShippingAddressChangeTest extends PaymentRequestTestBase {
-    public PaymentRequestShippingAddressChangeTest() {
-        // This merchant requests the shipping address first before providing any shipping options.
-        // The result printed from this site is the shipping address change, not the Payment
-        // Response.
-        super("payment_request_shipping_address_change_test.html");
-    }
+@RunWith(ChromeJUnit4ClassRunner.class)
+@CommandLineFlags.Add({
+        ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
+        ChromeActivityTestRule.DISABLE_NETWORK_PREDICTION_FLAG,
+})
+public class PaymentRequestShippingAddressChangeTest implements MainActivityStartCallback {
+    @Rule
+    public PaymentRequestTestRule mPaymentRequestTestRule =
+            new PaymentRequestTestRule("payment_request_shipping_address_change_test.html", this);
 
     @Override
     public void onMainActivityStarted()
@@ -43,18 +54,22 @@ public class PaymentRequestShippingAddressChangeTest extends PaymentRequestTestB
      * Tests the format of the shipping address that is sent to the merchant when the user changes
      * the shipping address selection.
      */
+    @Test
     @MediumTest
     @Feature({"Payments"})
     public void testShippingAddressChangeFormat()
             throws InterruptedException, ExecutionException, TimeoutException {
         // Select a shipping address and cancel out.
-        triggerUIAndWait(getReadyForInput());
-        clickInShippingSummaryAndWait(R.id.payments_section, getReadyForInput());
-        clickOnShippingAddressSuggestionOptionAndWait(0, getReadyForInput());
-        clickAndWait(R.id.close_button, getDismissed());
+        mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyForInput());
+        mPaymentRequestTestRule.clickInShippingSummaryAndWait(
+                R.id.payments_section, mPaymentRequestTestRule.getReadyForInput());
+        mPaymentRequestTestRule.clickOnShippingAddressSuggestionOptionAndWait(
+                0, mPaymentRequestTestRule.getReadyForInput());
+        mPaymentRequestTestRule.clickAndWait(
+                R.id.close_button, mPaymentRequestTestRule.getDismissed());
 
         // The phone number should be formatted to the internation format.
-        expectResultContains(new String[] {"Jon Doe", "Google", "340 Main St", "CA", "Los Angeles",
-                "90291", "+16502530000", "US"});
+        mPaymentRequestTestRule.expectResultContains(new String[] {"Jon Doe", "Google",
+                "340 Main St", "CA", "Los Angeles", "90291", "+16502530000", "US"});
     }
 }

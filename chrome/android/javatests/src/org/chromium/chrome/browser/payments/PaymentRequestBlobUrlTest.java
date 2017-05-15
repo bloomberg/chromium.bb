@@ -6,27 +6,38 @@ package org.chromium.chrome.browser.payments;
 
 import android.support.test.filters.MediumTest;
 
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
+import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
+import org.chromium.chrome.browser.ChromeSwitches;
+import org.chromium.chrome.test.ChromeActivityTestRule;
+import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 
 /** Web payments test for blob URL.  */
-public class PaymentRequestBlobUrlTest extends PaymentRequestTestBase {
-    public PaymentRequestBlobUrlTest() {
-        super("payment_request_blob_url_test.html");
-    }
+@RunWith(ChromeJUnit4ClassRunner.class)
+@CommandLineFlags.Add({
+        ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
+        ChromeActivityTestRule.DISABLE_NETWORK_PREDICTION_FLAG,
+})
+public class PaymentRequestBlobUrlTest {
+    @Rule
+    public PaymentRequestTestRule mPaymentRequestTestRule =
+            new PaymentRequestTestRule("payment_request_blob_url_test.html");
 
-    @Override
-    public void onMainActivityStarted()
-            throws InterruptedException, ExecutionException, TimeoutException {}
-
+    @Test
     @MediumTest
     @Feature({"Payments"})
     public void test() throws InterruptedException, ExecutionException, TimeoutException {
-        openPageAndClickNode("buy");
-        assertWaitForPageScaleFactorMatch(2);
-        expectResultContains(new String[] {"SecurityError: Failed to construct 'PaymentRequest': "
-                + "Must be in a secure context"});
+        mPaymentRequestTestRule.openPageAndClickNode("buy");
+        mPaymentRequestTestRule.assertWaitForPageScaleFactorMatch(2);
+        mPaymentRequestTestRule.expectResultContains(
+                new String[] {"SecurityError: Failed to construct 'PaymentRequest': "
+                        + "Must be in a secure context"});
     }
 }

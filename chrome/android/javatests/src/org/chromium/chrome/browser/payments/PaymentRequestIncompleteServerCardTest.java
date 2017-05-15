@@ -7,11 +7,20 @@ package org.chromium.chrome.browser.payments;
 import android.content.DialogInterface;
 import android.support.test.filters.MediumTest;
 
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
+import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.autofill.AutofillTestHelper;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.CreditCard;
+import org.chromium.chrome.browser.payments.PaymentRequestTestRule.MainActivityStartCallback;
+import org.chromium.chrome.test.ChromeActivityTestRule;
+import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
@@ -19,12 +28,17 @@ import java.util.concurrent.TimeoutException;
 /**
  * A test for paying with an incomplete server card.
  */
-public class PaymentRequestIncompleteServerCardTest extends PaymentRequestTestBase {
-    private static final int FIRST_BILLING_ADDRESS = 0;
+@RunWith(ChromeJUnit4ClassRunner.class)
+@CommandLineFlags.Add({
+        ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
+        ChromeActivityTestRule.DISABLE_NETWORK_PREDICTION_FLAG,
+})
+public class PaymentRequestIncompleteServerCardTest implements MainActivityStartCallback {
+    @Rule
+    public PaymentRequestTestRule mPaymentRequestTestRule =
+            new PaymentRequestTestRule("payment_request_no_shipping_test.html", this);
 
-    public PaymentRequestIncompleteServerCardTest() {
-        super("payment_request_no_shipping_test.html");
-    }
+    private static final int FIRST_BILLING_ADDRESS = 0;
 
     @Override
     public void onMainActivityStarted()
@@ -39,19 +53,27 @@ public class PaymentRequestIncompleteServerCardTest extends PaymentRequestTestBa
     }
 
     /** Click [PAY] and dismiss the card unmask dialog. */
+    @Test
     @MediumTest
     @Feature({"Payments"})
-    public void testPayAndDontUnmask() throws InterruptedException, ExecutionException,
-            TimeoutException {
-        triggerUIAndWait(getReadyForInput());
-        clickInPaymentMethodAndWait(R.id.payments_section, getReadyForInput());
-        clickInPaymentMethodAndWait(R.id.payments_first_radio_button, getReadyToEdit());
-        setSpinnerSelectionsInCardEditorAndWait(
-                new int[] {FIRST_BILLING_ADDRESS}, getBillingAddressChangeProcessed());
-        clickInCardEditorAndWait(R.id.payments_edit_done_button, getReadyToPay());
-        clickAndWait(R.id.button_primary, getReadyForUnmaskInput());
-        clickCardUnmaskButtonAndWait(DialogInterface.BUTTON_NEGATIVE, getReadyToPay());
-        clickAndWait(R.id.button_secondary, getDismissed());
-        expectResultContains(new String[] {"Request cancelled"});
+    public void testPayAndDontUnmask()
+            throws InterruptedException, ExecutionException, TimeoutException {
+        mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyForInput());
+        mPaymentRequestTestRule.clickInPaymentMethodAndWait(
+                R.id.payments_section, mPaymentRequestTestRule.getReadyForInput());
+        mPaymentRequestTestRule.clickInPaymentMethodAndWait(
+                R.id.payments_first_radio_button, mPaymentRequestTestRule.getReadyToEdit());
+        mPaymentRequestTestRule.setSpinnerSelectionsInCardEditorAndWait(
+                new int[] {FIRST_BILLING_ADDRESS},
+                mPaymentRequestTestRule.getBillingAddressChangeProcessed());
+        mPaymentRequestTestRule.clickInCardEditorAndWait(
+                R.id.payments_edit_done_button, mPaymentRequestTestRule.getReadyToPay());
+        mPaymentRequestTestRule.clickAndWait(
+                R.id.button_primary, mPaymentRequestTestRule.getReadyForUnmaskInput());
+        mPaymentRequestTestRule.clickCardUnmaskButtonAndWait(
+                DialogInterface.BUTTON_NEGATIVE, mPaymentRequestTestRule.getReadyToPay());
+        mPaymentRequestTestRule.clickAndWait(
+                R.id.button_secondary, mPaymentRequestTestRule.getDismissed());
+        mPaymentRequestTestRule.expectResultContains(new String[] {"Request cancelled"});
     }
 }

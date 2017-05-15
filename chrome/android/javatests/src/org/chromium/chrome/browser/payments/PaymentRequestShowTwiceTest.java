@@ -6,12 +6,22 @@ package org.chromium.chrome.browser.payments;
 
 import android.support.test.filters.MediumTest;
 
+import org.junit.Assert;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
 import org.chromium.base.metrics.RecordHistogram;
+import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.autofill.AutofillTestHelper;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.CreditCard;
+import org.chromium.chrome.browser.payments.PaymentRequestTestRule.MainActivityStartCallback;
+import org.chromium.chrome.test.ChromeActivityTestRule;
+import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
@@ -19,10 +29,15 @@ import java.util.concurrent.TimeoutException;
 /**
  * A payment integration test for a merchant that calls show() twice.
  */
-public class PaymentRequestShowTwiceTest extends PaymentRequestTestBase {
-    public PaymentRequestShowTwiceTest() {
-        super("payment_request_show_twice_test.html");
-    }
+@RunWith(ChromeJUnit4ClassRunner.class)
+@CommandLineFlags.Add({
+        ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
+        ChromeActivityTestRule.DISABLE_NETWORK_PREDICTION_FLAG,
+})
+public class PaymentRequestShowTwiceTest implements MainActivityStartCallback {
+    @Rule
+    public PaymentRequestTestRule mPaymentRequestTestRule =
+            new PaymentRequestTestRule("payment_request_show_twice_test.html", this);
 
     @Override
     public void onMainActivityStarted()
@@ -36,22 +51,25 @@ public class PaymentRequestShowTwiceTest extends PaymentRequestTestBase {
                 billingAddressId, "" /* serverId */));
     }
 
+    @Test
     @MediumTest
     @Feature({"Payments"})
     public void testSecondShowRequestCancelled()
             throws InterruptedException, ExecutionException, TimeoutException {
-        triggerUIAndWait(getReadyToPay());
-        expectResultContains(new String[] {"Second request: AbortError: Request cancelled"});
+        mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyToPay());
+        mPaymentRequestTestRule.expectResultContains(
+                new String[] {"Second request: AbortError: Request cancelled"});
 
         // The web payments UI was not aborted.
-        assertOnlySpecificAbortMetricLogged(-1 /* none */);
+        mPaymentRequestTestRule.assertOnlySpecificAbortMetricLogged(-1 /* none */);
 
         // The UI was never shown due to another web payments UI already showing.
-        assertEquals(1,
+        Assert.assertEquals(1,
                 RecordHistogram.getHistogramValueCountForTesting(
                         "PaymentRequest.CheckoutFunnel.NoShow",
                         PaymentRequestMetrics.NO_SHOW_CONCURRENT_REQUESTS));
 
-        clickAndWait(R.id.close_button, getDismissed());
+        mPaymentRequestTestRule.clickAndWait(
+                R.id.close_button, mPaymentRequestTestRule.getDismissed());
     }
 }

@@ -7,14 +7,24 @@ package org.chromium.chrome.browser.payments;
 import android.content.DialogInterface;
 import android.support.test.filters.MediumTest;
 
+import org.junit.Assert;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.metrics.RecordHistogram;
+import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.FlakyTest;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.autofill.AutofillTestHelper;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.CreditCard;
+import org.chromium.chrome.browser.payments.PaymentRequestTestRule.MainActivityStartCallback;
+import org.chromium.chrome.test.ChromeActivityTestRule;
+import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
@@ -22,11 +32,15 @@ import java.util.concurrent.TimeoutException;
 /**
  * A payment integration test for a merchant that provides free shipping regardless of address.
  */
-public class PaymentRequestFreeShippingTest extends PaymentRequestTestBase {
-    public PaymentRequestFreeShippingTest() {
-        // This merchant provides free shipping worldwide.
-        super("payment_request_free_shipping_test.html");
-    }
+@RunWith(ChromeJUnit4ClassRunner.class)
+@CommandLineFlags.Add({
+        ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
+        ChromeActivityTestRule.DISABLE_NETWORK_PREDICTION_FLAG,
+})
+public class PaymentRequestFreeShippingTest implements MainActivityStartCallback {
+    @Rule
+    public PaymentRequestTestRule mPaymentRequestTestRule =
+            new PaymentRequestTestRule("payment_request_free_shipping_test.html", this);
 
     @Override
     public void onMainActivityStarted()
@@ -42,203 +56,243 @@ public class PaymentRequestFreeShippingTest extends PaymentRequestTestBase {
     }
 
     /** Submit the shipping address to the merchant when the user clicks "Pay." */
+    @Test
     @MediumTest
     @Feature({"Payments"})
     public void testPay() throws InterruptedException, ExecutionException, TimeoutException {
-        triggerUIAndWait(getReadyToPay());
-        clickAndWait(R.id.button_primary, getReadyForUnmaskInput());
-        setTextInCardUnmaskDialogAndWait(R.id.card_unmask_input, "123", getReadyToUnmask());
-        clickCardUnmaskButtonAndWait(DialogInterface.BUTTON_POSITIVE, getDismissed());
-        expectResultContains(new String[] {"Jon Doe", "4111111111111111", "12", "2050", "visa",
-                "123", "Google", "340 Main St", "CA", "Los Angeles", "90291", "US", "en",
-                "freeShippingOption"});
+        mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyToPay());
+        mPaymentRequestTestRule.clickAndWait(
+                R.id.button_primary, mPaymentRequestTestRule.getReadyForUnmaskInput());
+        mPaymentRequestTestRule.setTextInCardUnmaskDialogAndWait(
+                R.id.card_unmask_input, "123", mPaymentRequestTestRule.getReadyToUnmask());
+        mPaymentRequestTestRule.clickCardUnmaskButtonAndWait(
+                DialogInterface.BUTTON_POSITIVE, mPaymentRequestTestRule.getDismissed());
+        mPaymentRequestTestRule.expectResultContains(new String[] {"Jon Doe", "4111111111111111",
+                "12", "2050", "visa", "123", "Google", "340 Main St", "CA", "Los Angeles", "90291",
+                "US", "en", "freeShippingOption"});
     }
 
     /** Attempt to add an invalid address and cancel the transaction. */
+    @Test
     @MediumTest
     @FlakyTest(message = "crbug.com/673371")
     @Feature({"Payments"})
     public void testAddInvalidAddressAndCancel()
             throws InterruptedException, ExecutionException, TimeoutException {
-        triggerUIAndWait(getReadyToPay());
-        clickInShippingSummaryAndWait(R.id.payments_section, getReadyForInput());
-        clickInShippingAddressAndWait(R.id.payments_add_option_button, getReadyToEdit());
-        clickInEditorAndWait(R.id.payments_edit_done_button, getEditorValidationError());
-        clickInEditorAndWait(R.id.payments_edit_cancel_button, getReadyToPay());
-        clickAndWait(R.id.close_button, getDismissed());
-        expectResultContains(new String[] {"Request cancelled"});
+        mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyToPay());
+        mPaymentRequestTestRule.clickInShippingSummaryAndWait(
+                R.id.payments_section, mPaymentRequestTestRule.getReadyForInput());
+        mPaymentRequestTestRule.clickInShippingAddressAndWait(
+                R.id.payments_add_option_button, mPaymentRequestTestRule.getReadyToEdit());
+        mPaymentRequestTestRule.clickInEditorAndWait(
+                R.id.payments_edit_done_button, mPaymentRequestTestRule.getEditorValidationError());
+        mPaymentRequestTestRule.clickInEditorAndWait(
+                R.id.payments_edit_cancel_button, mPaymentRequestTestRule.getReadyToPay());
+        mPaymentRequestTestRule.clickAndWait(
+                R.id.close_button, mPaymentRequestTestRule.getDismissed());
+        mPaymentRequestTestRule.expectResultContains(new String[] {"Request cancelled"});
     }
 
     /** Add a valid address and complete the transaction. */
+    @Test
     @MediumTest
     @Feature({"Payments"})
     public void testAddAddressAndPay()
             throws InterruptedException, ExecutionException, TimeoutException {
-        triggerUIAndWait(getReadyToPay());
-        clickInShippingSummaryAndWait(R.id.payments_section, getReadyForInput());
-        clickInShippingAddressAndWait(R.id.payments_add_option_button, getReadyToEdit());
-        setTextInEditorAndWait(new String[] {"Bob", "Google", "1600 Amphitheatre Pkwy",
-                "Mountain View", "CA", "94043", "650-253-0000"},
-                getEditorTextUpdate());
-        clickInEditorAndWait(R.id.payments_edit_done_button, getReadyToPay());
-        clickAndWait(R.id.button_primary, getReadyForUnmaskInput());
-        setTextInCardUnmaskDialogAndWait(R.id.card_unmask_input, "123", getReadyToUnmask());
-        clickCardUnmaskButtonAndWait(DialogInterface.BUTTON_POSITIVE, getDismissed());
-        expectResultContains(new String[] {"Bob", "Google", "1600 Amphitheatre Pkwy",
-                "Mountain View", "CA", "94043", "+16502530000"});
+        mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyToPay());
+        mPaymentRequestTestRule.clickInShippingSummaryAndWait(
+                R.id.payments_section, mPaymentRequestTestRule.getReadyForInput());
+        mPaymentRequestTestRule.clickInShippingAddressAndWait(
+                R.id.payments_add_option_button, mPaymentRequestTestRule.getReadyToEdit());
+        mPaymentRequestTestRule.setTextInEditorAndWait(
+                new String[] {"Bob", "Google", "1600 Amphitheatre Pkwy", "Mountain View", "CA",
+                        "94043", "650-253-0000"},
+                mPaymentRequestTestRule.getEditorTextUpdate());
+        mPaymentRequestTestRule.clickInEditorAndWait(
+                R.id.payments_edit_done_button, mPaymentRequestTestRule.getReadyToPay());
+        mPaymentRequestTestRule.clickAndWait(
+                R.id.button_primary, mPaymentRequestTestRule.getReadyForUnmaskInput());
+        mPaymentRequestTestRule.setTextInCardUnmaskDialogAndWait(
+                R.id.card_unmask_input, "123", mPaymentRequestTestRule.getReadyToUnmask());
+        mPaymentRequestTestRule.clickCardUnmaskButtonAndWait(
+                DialogInterface.BUTTON_POSITIVE, mPaymentRequestTestRule.getDismissed());
+        mPaymentRequestTestRule.expectResultContains(new String[] {"Bob", "Google",
+                "1600 Amphitheatre Pkwy", "Mountain View", "CA", "94043", "+16502530000"});
     }
 
     /** Change the country in the spinner, add a valid address, and complete the transaction. */
+    @Test
     @MediumTest
     @Feature({"Payments"})
     public void testChangeCountryAddAddressAndPay()
             throws InterruptedException, ExecutionException, TimeoutException {
-        triggerUIAndWait(getReadyToPay());
-        clickInShippingSummaryAndWait(R.id.payments_section, getReadyForInput());
-        clickInShippingAddressAndWait(R.id.payments_add_option_button, getReadyToEdit());
-        setSpinnerSelectionInEditorAndWait(0 /* Afghanistan */, getReadyToEdit());
-        setTextInEditorAndWait(new String[] {"Alice", "Supreme Court", "Airport Road", "Kabul",
-                "1043", "650-253-0000"},
-                getEditorTextUpdate());
-        clickInEditorAndWait(R.id.payments_edit_done_button, getReadyToPay());
-        clickAndWait(R.id.button_primary, getReadyForUnmaskInput());
-        setTextInCardUnmaskDialogAndWait(R.id.card_unmask_input, "123", getReadyToUnmask());
-        clickCardUnmaskButtonAndWait(DialogInterface.BUTTON_POSITIVE, getDismissed());
-        expectResultContains(new String[] {
+        mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyToPay());
+        mPaymentRequestTestRule.clickInShippingSummaryAndWait(
+                R.id.payments_section, mPaymentRequestTestRule.getReadyForInput());
+        mPaymentRequestTestRule.clickInShippingAddressAndWait(
+                R.id.payments_add_option_button, mPaymentRequestTestRule.getReadyToEdit());
+        mPaymentRequestTestRule.setSpinnerSelectionInEditorAndWait(
+                0 /* Afghanistan */, mPaymentRequestTestRule.getReadyToEdit());
+        mPaymentRequestTestRule.setTextInEditorAndWait(
+                new String[] {
+                        "Alice", "Supreme Court", "Airport Road", "Kabul", "1043", "650-253-0000"},
+                mPaymentRequestTestRule.getEditorTextUpdate());
+        mPaymentRequestTestRule.clickInEditorAndWait(
+                R.id.payments_edit_done_button, mPaymentRequestTestRule.getReadyToPay());
+        mPaymentRequestTestRule.clickAndWait(
+                R.id.button_primary, mPaymentRequestTestRule.getReadyForUnmaskInput());
+        mPaymentRequestTestRule.setTextInCardUnmaskDialogAndWait(
+                R.id.card_unmask_input, "123", mPaymentRequestTestRule.getReadyToUnmask());
+        mPaymentRequestTestRule.clickCardUnmaskButtonAndWait(
+                DialogInterface.BUTTON_POSITIVE, mPaymentRequestTestRule.getDismissed());
+        mPaymentRequestTestRule.expectResultContains(new String[] {
                 "Alice", "Supreme Court", "Airport Road", "Kabul", "1043", "+16502530000"});
     }
 
     /** Quickly pressing on "add address" and then [X] should not crash. */
+    @Test
     @MediumTest
     @Feature({"Payments"})
     public void testQuickAddAddressAndCloseShouldNotCrash()
             throws InterruptedException, ExecutionException, TimeoutException {
-        triggerUIAndWait(getReadyToPay());
-        clickInShippingSummaryAndWait(R.id.payments_section, getReadyForInput());
+        mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyToPay());
+        mPaymentRequestTestRule.clickInShippingSummaryAndWait(
+                R.id.payments_section, mPaymentRequestTestRule.getReadyForInput());
 
         // Quickly press on "add address" and then [X].
-        int callCount = getReadyToEdit().getCallCount();
+        int callCount = mPaymentRequestTestRule.getReadyToEdit().getCallCount();
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                getPaymentRequestUI()
+                mPaymentRequestTestRule.getPaymentRequestUI()
                         .getShippingAddressSectionForTest()
                         .findViewById(R.id.payments_add_option_button)
                         .performClick();
-                getPaymentRequestUI()
+                mPaymentRequestTestRule.getPaymentRequestUI()
                         .getDialogForTest()
                         .findViewById(R.id.close_button)
                         .performClick();
             }
         });
-        getReadyToEdit().waitForCallback(callCount);
+        mPaymentRequestTestRule.getReadyToEdit().waitForCallback(callCount);
 
-        clickInEditorAndWait(R.id.payments_edit_cancel_button, getReadyToPay());
-        clickAndWait(R.id.close_button, getDismissed());
-        expectResultContains(new String[] {"Request cancelled"});
+        mPaymentRequestTestRule.clickInEditorAndWait(
+                R.id.payments_edit_cancel_button, mPaymentRequestTestRule.getReadyToPay());
+        mPaymentRequestTestRule.clickAndWait(
+                R.id.close_button, mPaymentRequestTestRule.getDismissed());
+        mPaymentRequestTestRule.expectResultContains(new String[] {"Request cancelled"});
     }
 
     /** Quickly pressing on [X] and then "add address" should not crash. */
+    @Test
     @MediumTest
     @Feature({"Payments"})
     public void testQuickCloseAndAddAddressShouldNotCrash()
             throws InterruptedException, ExecutionException, TimeoutException {
-        triggerUIAndWait(getReadyToPay());
-        clickInShippingSummaryAndWait(R.id.payments_section, getReadyForInput());
+        mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyToPay());
+        mPaymentRequestTestRule.clickInShippingSummaryAndWait(
+                R.id.payments_section, mPaymentRequestTestRule.getReadyForInput());
 
         // Quickly press on [X] and then "add address."
-        int callCount = getDismissed().getCallCount();
+        int callCount = mPaymentRequestTestRule.getDismissed().getCallCount();
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                getPaymentRequestUI()
+                mPaymentRequestTestRule.getPaymentRequestUI()
                         .getDialogForTest()
                         .findViewById(R.id.close_button)
                         .performClick();
-                getPaymentRequestUI()
+                mPaymentRequestTestRule.getPaymentRequestUI()
                         .getShippingAddressSectionForTest()
                         .findViewById(R.id.payments_add_option_button)
                         .performClick();
             }
         });
-        getDismissed().waitForCallback(callCount);
+        mPaymentRequestTestRule.getDismissed().waitForCallback(callCount);
 
-        expectResultContains(new String[] {"Request cancelled"});
+        mPaymentRequestTestRule.expectResultContains(new String[] {"Request cancelled"});
     }
 
     /** Quickly pressing on "add address" and then "cancel" should not crash. */
+    @Test
     @MediumTest
     @FlakyTest(message = "crbug.com/673371")
     @Feature({"Payments"})
     public void testQuickAddAddressAndCancelShouldNotCrash()
             throws InterruptedException, ExecutionException, TimeoutException {
-        triggerUIAndWait(getReadyToPay());
-        clickInShippingSummaryAndWait(R.id.payments_section, getReadyForInput());
+        mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyToPay());
+        mPaymentRequestTestRule.clickInShippingSummaryAndWait(
+                R.id.payments_section, mPaymentRequestTestRule.getReadyForInput());
 
         // Quickly press on "add address" and then "cancel."
-        int callCount = getReadyToEdit().getCallCount();
+        int callCount = mPaymentRequestTestRule.getReadyToEdit().getCallCount();
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                getPaymentRequestUI()
+                mPaymentRequestTestRule.getPaymentRequestUI()
                         .getShippingAddressSectionForTest()
                         .findViewById(R.id.payments_add_option_button)
                         .performClick();
-                getPaymentRequestUI()
+                mPaymentRequestTestRule.getPaymentRequestUI()
                         .getDialogForTest()
                         .findViewById(R.id.button_secondary)
                         .performClick();
             }
         });
-        getReadyToEdit().waitForCallback(callCount);
+        mPaymentRequestTestRule.getReadyToEdit().waitForCallback(callCount);
 
-        clickInEditorAndWait(R.id.payments_edit_cancel_button, getReadyToPay());
-        clickAndWait(R.id.close_button, getDismissed());
-        expectResultContains(new String[] {"Request cancelled"});
+        mPaymentRequestTestRule.clickInEditorAndWait(
+                R.id.payments_edit_cancel_button, mPaymentRequestTestRule.getReadyToPay());
+        mPaymentRequestTestRule.clickAndWait(
+                R.id.close_button, mPaymentRequestTestRule.getDismissed());
+        mPaymentRequestTestRule.expectResultContains(new String[] {"Request cancelled"});
     }
 
     /** Quickly pressing on "cancel" and then "add address" should not crash. */
+    @Test
     @MediumTest
     @Feature({"Payments"})
     public void testQuickCancelAndAddAddressShouldNotCrash()
             throws InterruptedException, ExecutionException, TimeoutException {
-        triggerUIAndWait(getReadyToPay());
-        clickInShippingSummaryAndWait(R.id.payments_section, getReadyForInput());
+        mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyToPay());
+        mPaymentRequestTestRule.clickInShippingSummaryAndWait(
+                R.id.payments_section, mPaymentRequestTestRule.getReadyForInput());
 
         // Quickly press on "cancel" and then "add address."
-        int callCount = getDismissed().getCallCount();
+        int callCount = mPaymentRequestTestRule.getDismissed().getCallCount();
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                getPaymentRequestUI()
+                mPaymentRequestTestRule.getPaymentRequestUI()
                         .getDialogForTest()
                         .findViewById(R.id.button_secondary)
                         .performClick();
-                getPaymentRequestUI()
+                mPaymentRequestTestRule.getPaymentRequestUI()
                         .getShippingAddressSectionForTest()
                         .findViewById(R.id.payments_add_option_button)
                         .performClick();
             }
         });
-        getDismissed().waitForCallback(callCount);
+        mPaymentRequestTestRule.getDismissed().waitForCallback(callCount);
 
-        expectResultContains(new String[] {"Request cancelled"});
+        mPaymentRequestTestRule.expectResultContains(new String[] {"Request cancelled"});
     }
 
     /**
      * Test that starting a payment request that requires only the shipping address results in the
      * appropriate metric being logged in the PaymentRequest.RequestedInformation histogram.
      */
+    @Test
     @MediumTest
     @Feature({"Payments"})
-    public void testRequestedInformationMetric() throws InterruptedException, ExecutionException,
-            TimeoutException {
+    public void testRequestedInformationMetric()
+            throws InterruptedException, ExecutionException, TimeoutException {
         // Start the Payment Request.
-        triggerUIAndWait(getReadyToPay());
+        mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyToPay());
 
         // Make sure that only the appropriate enum value was logged.
         for (int i = 0; i < PaymentRequestMetrics.REQUESTED_INFORMATION_MAX; ++i) {
-            assertEquals((i == PaymentRequestMetrics.REQUESTED_INFORMATION_SHIPPING ? 1 : 0),
+            Assert.assertEquals((i == PaymentRequestMetrics.REQUESTED_INFORMATION_SHIPPING ? 1 : 0),
                     RecordHistogram.getHistogramValueCountForTesting(
                             "PaymentRequest.RequestedInformation", i));
         }

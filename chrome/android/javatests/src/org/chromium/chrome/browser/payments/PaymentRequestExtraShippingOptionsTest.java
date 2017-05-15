@@ -7,11 +7,20 @@ package org.chromium.chrome.browser.payments;
 import android.content.DialogInterface;
 import android.support.test.filters.MediumTest;
 
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
+import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.autofill.AutofillTestHelper;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.CreditCard;
+import org.chromium.chrome.browser.payments.PaymentRequestTestRule.MainActivityStartCallback;
+import org.chromium.chrome.test.ChromeActivityTestRule;
+import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
@@ -20,11 +29,15 @@ import java.util.concurrent.TimeoutException;
  * A payment integration test for a merchant that provides shipping options, but does not request a
  * shipping address.
  */
-public class PaymentRequestExtraShippingOptionsTest extends PaymentRequestTestBase {
-    public PaymentRequestExtraShippingOptionsTest() {
-        // This merchant provides shipping options, but does not request a shipping address.
-        super("payment_request_extra_shipping_options_test.html");
-    }
+@RunWith(ChromeJUnit4ClassRunner.class)
+@CommandLineFlags.Add({
+        ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
+        ChromeActivityTestRule.DISABLE_NETWORK_PREDICTION_FLAG,
+})
+public class PaymentRequestExtraShippingOptionsTest implements MainActivityStartCallback {
+    @Rule
+    public PaymentRequestTestRule mPaymentRequestTestRule =
+            new PaymentRequestTestRule("payment_request_extra_shipping_options_test.html", this);
 
     @Override
     public void onMainActivityStarted()
@@ -42,14 +55,19 @@ public class PaymentRequestExtraShippingOptionsTest extends PaymentRequestTestBa
      * Submit the payment information without shipping address or shipping options to the merchant
      * when the user clicks "Pay."
      */
+    @Test
     @MediumTest
     @Feature({"Payments"})
     public void testPay() throws InterruptedException, ExecutionException, TimeoutException {
-        triggerUIAndWait(getReadyToPay());
-        clickAndWait(R.id.button_primary, getReadyForUnmaskInput());
-        setTextInCardUnmaskDialogAndWait(R.id.card_unmask_input, "123", getReadyToUnmask());
-        clickCardUnmaskButtonAndWait(DialogInterface.BUTTON_POSITIVE, getDismissed());
-        expectResultContains(new String[] {"Jon Doe", "4111111111111111", "12", "2050", "visa",
-                "123", "Google", "340 Main St", "CA", "Los Angeles", "90291", "US", "en"});
+        mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyToPay());
+        mPaymentRequestTestRule.clickAndWait(
+                R.id.button_primary, mPaymentRequestTestRule.getReadyForUnmaskInput());
+        mPaymentRequestTestRule.setTextInCardUnmaskDialogAndWait(
+                R.id.card_unmask_input, "123", mPaymentRequestTestRule.getReadyToUnmask());
+        mPaymentRequestTestRule.clickCardUnmaskButtonAndWait(
+                DialogInterface.BUTTON_POSITIVE, mPaymentRequestTestRule.getDismissed());
+        mPaymentRequestTestRule.expectResultContains(
+                new String[] {"Jon Doe", "4111111111111111", "12", "2050", "visa", "123", "Google",
+                        "340 Main St", "CA", "Los Angeles", "90291", "US", "en"});
     }
 }
