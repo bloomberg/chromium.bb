@@ -510,7 +510,16 @@
             ],
             "experiments": [
                 {
-                    "name": "Enabled",
+                    "name": "Enabled"
+                },
+                {
+                    "name": "EnabledWithSnackbarPromo",
+                    "params": {
+                        "snackbar_promo_data_savings_in_megabytes": "1024;100"
+                    }
+                },
+                {
+                    "name": "SnackbarPromoOnly",
                     "params": {
                         "snackbar_promo_data_savings_in_megabytes": "1024;100"
                     }
