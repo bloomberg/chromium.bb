@@ -15,10 +15,10 @@
 extern "C" {
 #endif  // __cplusplus
 
+#include "av1/common/seg_common.h"
 #if CONFIG_ACCOUNTING
 #include "av1/decoder/accounting.h"
 #endif
-#include "./av1/common/seg_common.h"
 
 typedef void (*aom_inspect_cb)(void *decoder, void *data);
 
