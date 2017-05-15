@@ -11,6 +11,7 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.components.offlinepages.DeletePageResult;
 import org.chromium.content_public.browser.WebContents;
 
 import java.util.ArrayList;
@@ -381,6 +382,29 @@ public class OfflinePageBridge {
     }
 
     /**
+     * Deletes offline pages based on the list of offline IDs. Calls the callback
+     * when operation is complete. Note that offline IDs are not intended to be saved across
+     * restarts of Chrome; they should be obtained by querying the model for the appropriate client
+     * ID.
+     *
+     * @param offlineIds A list of offline IDs of pages that will be deleted.
+     * @param callback A callback that will be called once operation is completed, called with the
+     *     DeletePageResult of the operation..
+     */
+    public void deletePagesByOfflineId(List<Long> offlineIdList, Callback<Integer> callback) {
+        if (offlineIdList == null) {
+            callback.onResult(Integer.valueOf(DeletePageResult.SUCCESS));
+            return;
+        }
+
+        long[] offlineIds = new long[offlineIdList.size()];
+        for (int i = 0; i < offlineIdList.size(); i++) {
+            offlineIds[i] = offlineIdList.get(i).longValue();
+        }
+        nativeDeletePagesByOfflineId(mNativeOfflinePageBridge, offlineIds, callback);
+    }
+
+    /**
      * Whether or not the underlying offline page model is loaded.
      */
     public boolean isOfflinePageModelLoaded() {
@@ -564,6 +588,7 @@ public class OfflinePageBridge {
     private native void nativeRegisterRecentTab(long nativeOfflinePageBridge, int tabId);
     private native void nativeWillCloseTab(long nativeOfflinePageBridge, WebContents webContents);
     private native void nativeUnregisterRecentTab(long nativeOfflinePageBridge, int tabId);
+
     @VisibleForTesting
     native void nativeGetRequestsInQueue(
             long nativeOfflinePageBridge, Callback<SavePageRequest[]> callback);
@@ -579,6 +604,10 @@ public class OfflinePageBridge {
     @VisibleForTesting
     native void nativeDeletePagesByClientId(long nativeOfflinePageBridge, String[] namespaces,
             String[] ids, Callback<Integer> callback);
+    @VisibleForTesting
+    native void nativeDeletePagesByOfflineId(
+            long nativeOfflinePageBridge, long[] offlineIds, Callback<Integer> callback);
+
     private native void nativeSelectPageForOnlineUrl(
             long nativeOfflinePageBridge, String onlineUrl, int tabId,
             Callback<OfflinePageItem> callback);

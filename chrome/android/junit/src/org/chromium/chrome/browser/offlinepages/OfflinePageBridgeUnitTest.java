@@ -16,7 +16,6 @@ import static org.mockito.Mockito.verify;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.MockitoAnnotations;
@@ -69,6 +68,9 @@ public class OfflinePageBridgeUnitTest {
 
     @Captor
     ArgumentCaptor<String[]> mIdsArgument;
+
+    @Captor
+    ArgumentCaptor<long[]> mOfflineIdsArgument;
 
     @Captor
     ArgumentCaptor<Callback<Integer>> mDeleteCallbackArgument;
@@ -225,6 +227,51 @@ public class OfflinePageBridgeUnitTest {
         verify(callback, times(1)).onResult(any(Integer.class));
     }
 
+    @Test
+    @Feature({"OfflinePages"})
+    public void testDeletePagesByOfflineIds_listOfOfflineIdsNull() {
+        // -1 means to check for null in the Answer.
+        final int itemCount = -1;
+
+        answerDeletePagesByOfflineIds(itemCount);
+        Callback<Integer> callback = createDeletePageCallback();
+        List<Long> list = null;
+
+        mBridge.deletePagesByOfflineId(list, callback);
+
+        verify(callback, times(1)).onResult(any(Integer.class));
+    }
+
+    @Test
+    @Feature({"OfflinePages"})
+    public void testDeletePagesByOfflineIds_listOfOfflineIdsEmpty() {
+        final int itemCount = 0;
+
+        answerDeletePagesByOfflineIds(itemCount);
+        Callback<Integer> callback = createDeletePageCallback();
+        List<Long> list = new ArrayList<>();
+
+        mBridge.deletePagesByOfflineId(list, callback);
+
+        verify(callback, times(1)).onResult(any(Integer.class));
+    }
+
+    @Test
+    @Feature({"OfflinePages"})
+    public void testDeletePagesByOfflineIds() {
+        final int itemCount = 2;
+
+        answerDeletePagesByOfflineIds(itemCount);
+        Callback<Integer> callback = createDeletePageCallback();
+        List<Long> list = new ArrayList<>();
+        list.add(Long.valueOf(1));
+        list.add(Long.valueOf(2));
+
+        mBridge.deletePagesByOfflineId(list, callback);
+
+        verify(callback, times(1)).onResult(any(Integer.class));
+    }
+
     /** Performs a proper cast from Object to a List<OfflinePageItem>. */
     private static List<OfflinePageItem> convertToListOfOfflinePages(Object o) {
         @SuppressWarnings("unchecked")
@@ -291,6 +338,27 @@ public class OfflinePageBridgeUnitTest {
         doAnswer(answer).when(mBridge).nativeGetPagesByClientId(anyLong(),
                 mResultArgument.capture(), mNamespacesArgument.capture(), mIdsArgument.capture(),
                 mCallbackArgument.capture());
+    }
+
+    private void answerDeletePagesByOfflineIds(final int itemCount) {
+        Answer<Void> answer = new Answer<Void>() {
+            @Override
+            public Void answer(InvocationOnMock invocation) {
+                long[] offlineIds = mOfflineIdsArgument.getValue();
+
+                if (itemCount < 0) {
+                    assertEquals(offlineIds, null);
+                } else {
+                    assertEquals(offlineIds.length, itemCount);
+                }
+                mDeleteCallbackArgument.getValue().onResult(Integer.valueOf(0));
+
+                return null;
+            }
+        };
+
+        doAnswer(answer).when(mBridge).nativeDeletePagesByOfflineId(
+                anyLong(), mOfflineIdsArgument.capture(), mDeleteCallbackArgument.capture());
     }
 
     private void answerDeletePagesByClientIds(final int itemCount) {
