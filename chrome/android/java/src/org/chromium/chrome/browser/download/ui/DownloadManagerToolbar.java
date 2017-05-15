@@ -85,7 +85,15 @@ public class DownloadManagerToolbar extends SelectableListToolbar<DownloadHistor
     }
 
     @Override
-    public void onManagerDestroyed() { }
+    protected void onDataChanged(int numItems) {
+        super.onDataChanged(numItems);
+        getMenu().findItem(R.id.info_menu_id).setVisible(numItems > 0);
+    }
+
+    @Override
+    public void onManagerDestroyed() {
+        mSpinner.setAdapter(null);
+    }
 
     @Override
     public void showSearchView() {

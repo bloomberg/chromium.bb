@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.download.ui;
 
+import android.graphics.drawable.Drawable;
 import android.support.annotation.LayoutRes;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -14,6 +15,7 @@ import android.widget.TextView;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.download.ui.DownloadManagerUi.DownloadUiObserver;
+import org.chromium.chrome.browser.widget.TintedDrawable;
 
 /** An adapter that allows selecting an item from a dropdown spinner. */
 class FilterAdapter
@@ -40,6 +42,11 @@ class FilterAdapter
         TextView labelView =
                 getTextViewFromResource(convertView, R.layout.download_manager_spinner_drop_down);
         labelView.setText(DownloadFilter.getStringIdForFilter(position));
+        int iconId = DownloadFilter.getDrawableForFilter(position);
+        Drawable iconDrawable = TintedDrawable.constructTintedDrawable(
+                mManagerUi.getActivity().getResources(), iconId, R.color.descriptive_text_color);
+        labelView.setCompoundDrawablesWithIntrinsicBounds(iconDrawable, null, null, null);
+
         return labelView;
     }
 

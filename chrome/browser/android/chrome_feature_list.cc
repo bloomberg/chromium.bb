@@ -59,6 +59,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kContextualSuggestionsCarousel,
     &kCustomContextMenu,
     &kCustomFeedbackUi,
+    &kDownloadHomeShowStorageInfo,
     &data_reduction_proxy::features::kDataReductionMainMenu,
     &data_reduction_proxy::features::kDataReductionSiteBreakdown,
     &kFullscreenActivity,
@@ -154,6 +155,9 @@ const base::Feature kCustomFeedbackUi{"CustomFeedbackUi",
 
 const base::Feature kDownloadAutoResumptionThrottling{
     "DownloadAutoResumptionThrottling", base::FEATURE_ENABLED_BY_DEFAULT};
+
+const base::Feature kDownloadHomeShowStorageInfo{
+    "DownloadHomeShowStorageInfo", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kFullscreenActivity{"FullscreenActivity",
                                         base::FEATURE_DISABLED_BY_DEFAULT};

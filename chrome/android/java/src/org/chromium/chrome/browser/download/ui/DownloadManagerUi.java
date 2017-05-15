@@ -8,6 +8,7 @@ import android.app.Activity;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.content.res.Resources;
+import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
 import android.support.graphics.drawable.VectorDrawableCompat;
 import android.support.v7.widget.RecyclerView;
@@ -31,6 +32,7 @@ import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.snackbar.Snackbar;
 import org.chromium.chrome.browser.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.snackbar.SnackbarManager.SnackbarController;
+import org.chromium.chrome.browser.widget.TintedDrawable;
 import org.chromium.chrome.browser.widget.selection.SelectableListLayout;
 import org.chromium.chrome.browser.widget.selection.SelectableListToolbar;
 import org.chromium.chrome.browser.widget.selection.SelectableListToolbar.SearchDelegate;
@@ -221,6 +223,7 @@ public class DownloadManagerUi implements OnMenuItemClickListener, SearchDelegat
         addObserver(mHistoryAdapter);
 
         mUndoDeletionSnackbarController = new UndoDeletionSnackbarController();
+        enableStorageInfoHeader(mHistoryAdapter.shouldShowStorageInfoHeader());
 
         mIsSeparateActivity = isSeparateActivity;
         if (!mIsSeparateActivity) mToolbar.removeCloseButton();
@@ -301,6 +304,9 @@ public class DownloadManagerUi implements OnMenuItemClickListener, SearchDelegat
             return true;
         } else if (item.getItemId() == R.id.selection_mode_share_menu_id) {
             shareSelectedItems();
+            return true;
+        } else if (item.getItemId() == R.id.info_menu_id) {
+            enableStorageInfoHeader(!mHistoryAdapter.shouldShowStorageInfoHeader());
             return true;
         } else if (item.getItemId() == R.id.search_menu_id) {
             // The header should be removed as soon as a search is started. It will be added back in
@@ -383,6 +389,16 @@ public class DownloadManagerUi implements OnMenuItemClickListener, SearchDelegat
         //                    startActivityForResult() and the selection would only be cleared after
         //                    receiving an OK response. See crbug.com/638916.
         mBackendProvider.getSelectionDelegate().clearSelection();
+    }
+
+    private void enableStorageInfoHeader(boolean show) {
+        mHistoryAdapter.setShowStorageInfoHeader(show);
+        MenuItem infoMenuItem = mToolbar.getMenu().findItem(R.id.info_menu_id);
+        Drawable iconDrawable = TintedDrawable.constructTintedDrawable(mActivity.getResources(),
+                R.drawable.btn_info,
+                show ? R.color.light_active_color : R.color.default_text_color);
+        infoMenuItem.setIcon(iconDrawable);
+        infoMenuItem.setTitle(show ? R.string.hide_info : R.string.show_info);
     }
 
     /**
