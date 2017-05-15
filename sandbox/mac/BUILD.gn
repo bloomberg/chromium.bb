@@ -27,7 +27,9 @@ component("sandbox") {
 
   defines = [ "SANDBOX_IMPLEMENTATION" ]
   libs = [ "bsm" ]
-
+  public_deps = [
+    "//sandbox:sandbox_export",
+  ]
   deps = [
     "//base",
   ]

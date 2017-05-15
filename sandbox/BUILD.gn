@@ -5,6 +5,14 @@
 import("//build/buildflag_header.gni")
 import("//sandbox/features.gni")
 
+# Several targets want to include this header file. We separate it out
+# here so multiple targets can depend on it.
+source_set("sandbox_export") {
+  sources = [
+    "sandbox_export.h",
+  ]
+}
+
 # Meta-target that forwards to the proper platform one.
 group("sandbox") {
   if (is_win) {
