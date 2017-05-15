@@ -61,6 +61,12 @@ Polymer({
     });
 
     this.updateFromStore();
+
+    if (this.isSelectedFolder_) {
+      this.async(function() {
+        this.scrollIntoViewIfNeeded();
+      });
+    }
   },
 
   /** @return {HTMLElement} */
