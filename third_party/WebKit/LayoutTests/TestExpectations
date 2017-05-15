@@ -3366,5 +3366,3 @@ crbug.com/718155 payments/payment-request-in-iframe-nested-not-allowed.html [ Fa
 # Layout Tests on Swarming (Windows) - https://crbug.com/717347
 crbug.com/719298 [ Win ] fast/dnd/dropEffect-for-effectAllowed.html [ Failure Pass Timeout ]
 crbug.com/719299 [ Win ] external/wpt/css/css-ui-3/outline-004.html [ Failure Pass Timeout ]
-
-crbug.com/719837 [ Debug ] inspector/sources/debugger/rethrow-error-from-bindings-crash.html [ Timeout ]
