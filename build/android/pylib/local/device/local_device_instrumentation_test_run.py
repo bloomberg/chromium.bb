@@ -578,6 +578,7 @@ class LocalDeviceInstrumentationTestRun(
           template = jinja2_env.get_template(_JINJA_TEMPLATE_FILENAME)
           # pylint: disable=no-member
           processed_template_output = template.render(
+              test_name=failure_filename,
               failure_link=failure_link,
               golden_link=golden_link,
               diff_link=diff_link)

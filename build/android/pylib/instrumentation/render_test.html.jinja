@@ -1,14 +1,30 @@
 <html>
+<head>
+  <title>{{ test_name }}</title>
+  <script>
+  function toggleZoom() {
+    for (const img of document.getElementsByTagName("img")) {
+      if (img.hasAttribute('style')) {
+        img.removeAttribute('style');
+      } else {
+        img.style.width = '100%';
+      }
+    }
+  }
+  </script>
+</head>
+<body>
   <table>
     <tr>
       <th>Failure</th>
       <th>Golden</th>
       <th>Diff</th>
     </tr>
-    <tr>
-      <td><img src="{{ failure_link }}" width="100%"/></td>
-      <td><img src="{{ golden_link }}" width="100%"/></td>
-      <td><img src="{{ diff_link }}" width="100%"/></td>
+    <tr onclick="toggleZoom()">
+      <td><img src="{{ failure_link }}" style="width: 100%" /></td>
+      <td><img src="{{ golden_link }}" style="width: 100%" /></td>
+      <td><img src="{{ diff_link }}" style="width: 100%" /></td>
     </tr>
   </table>
+</body>
 </html>
