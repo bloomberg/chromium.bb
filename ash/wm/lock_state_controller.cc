@@ -161,13 +161,9 @@ void LockStateController::RequestShutdown() {
 
   shutting_down_ = true;
 
-  Shell* shell = Shell::Get();
-  // TODO(derat): Remove these null checks once mash instantiates a
-  // CursorManager.
-  if (shell->cursor_manager()) {
-    shell->cursor_manager()->HideCursor();
-    shell->cursor_manager()->LockCursor();
-  }
+  ShellPort* port = ShellPort::Get();
+  port->HideCursor();
+  port->LockCursor();
 
   animator_->StartAnimation(
       SessionStateAnimator::ROOT_CONTAINER,

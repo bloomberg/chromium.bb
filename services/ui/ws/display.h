@@ -149,7 +149,8 @@ class Display : public PlatformDisplayDelegate,
   // |display_root| being destroyed.
   void RemoveWindowManagerDisplayRoot(WindowManagerDisplayRoot* display_root);
 
-  void UpdateNativeCursor(const ui::CursorData& cursor);
+  // Sets the native cursor to |cursor|.
+  void SetNativeCursor(const ui::CursorData& curosor);
 
   // mojom::WindowTreeHost:
   void SetSize(const gfx::Size& size) override;
@@ -166,6 +167,8 @@ class Display : public PlatformDisplayDelegate,
 
   using WindowManagerDisplayRootMap =
       std::map<UserId, WindowManagerDisplayRoot*>;
+
+  class CursorState;
 
   // Inits the necessary state once the display is ready.
   void InitWindowManagerDisplayRoots();
@@ -217,9 +220,6 @@ class Display : public PlatformDisplayDelegate,
   // In internal window mode this contains information about the display. In
   // external window mode this will be invalid.
   display::Display display_;
-
-  // The last cursor set. Used to track whether we need to change the cursor.
-  ui::CursorData last_cursor_;
 
   ServerWindowTracker activation_parents_;
 

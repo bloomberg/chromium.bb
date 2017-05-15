@@ -10,6 +10,7 @@
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/screenshot_delegate.h"
 #include "ash/shell.h"
+#include "ash/shell_port.h"
 #include "ash/wm/window_util.h"
 #include "base/memory/ptr_util.h"
 #include "ui/aura/client/capture_client.h"
@@ -198,10 +199,30 @@ class ScreenshotController::ScreenshotLayer : public ui::LayerOwner,
 class ScreenshotController::ScopedCursorSetter {
  public:
   ScopedCursorSetter(::wm::CursorManager* cursor_manager,
-                     gfx::NativeCursor cursor)
-      : cursor_manager_(nullptr) {
-    if (cursor_manager->IsCursorLocked())
+                     ui::CursorType cursor) {
+    if (cursor_manager)
+      InitializeWithCursorManager(cursor_manager, cursor);
+    else
+      InitializeWithShellPort(cursor);
+  }
+
+  ~ScopedCursorSetter() {
+    if (cursor_manager_) {
+      cursor_manager_->UnlockCursor();
+    } else if (already_locked_) {
+      // No action; we didn't lock the cursor because it was already locked.
+    } else {
+      ShellPort::Get()->UnlockCursor();
+    }
+  }
+
+ private:
+  void InitializeWithCursorManager(::wm::CursorManager* cursor_manager,
+                                   ui::CursorType cursor) {
+    if (cursor_manager->IsCursorLocked()) {
+      already_locked_ = true;
       return;
+    }
     gfx::NativeCursor original_cursor = cursor_manager->GetCursor();
     cursor_manager_ = cursor_manager;
     if (cursor == ui::CursorType::kNone) {
@@ -217,13 +238,30 @@ class ScreenshotController::ScopedCursorSetter {
     cursor_manager_->ShowCursor();
   }
 
-  ~ScopedCursorSetter() {
-    if (cursor_manager_)
-      cursor_manager_->UnlockCursor();
+  void InitializeWithShellPort(ui::CursorType cursor) {
+    // No cursor manager. We are in mus mode.
+    ShellPort* port = ShellPort::Get();
+    if (cursor == ui::CursorType::kNone) {
+      port->HideCursor();
+    } else {
+      port->SetGlobalOverrideCursor(ui::CursorData(cursor));
+      port->ShowCursor();
+    }
+    port->LockCursor();
+
+    // Set/ShowCursor does not make any effects at this point but it sets
+    // back to the original cursor when unlocked.
+    port->SetGlobalOverrideCursor(base::nullopt);
+    port->ShowCursor();
   }
 
- private:
-  ::wm::CursorManager* cursor_manager_;
+  // If the cursor is already locked, don't try to lock it again.
+  bool already_locked_ = false;
+
+  // If we were given a valid CursorManager, and the cursor wasn't locked, keep
+  // track of the CursorManager we sent a LockCursor() call to so we can unlock
+  // it in the destructor.
+  ::wm::CursorManager* cursor_manager_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(ScopedCursorSetter);
 };

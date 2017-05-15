@@ -2307,6 +2307,27 @@ void WindowTree::WmSetNonClientCursor(uint32_t window_id,
   window->SetNonClientCursor(std::move(cursor));
 }
 
+void WindowTree::WmLockCursor() {
+  DCHECK(window_manager_state_);
+  window_manager_state_->cursor_state().LockCursor();
+}
+
+void WindowTree::WmUnlockCursor() {
+  DCHECK(window_manager_state_);
+  window_manager_state_->cursor_state().UnlockCursor();
+}
+
+void WindowTree::WmSetCursorVisible(bool visible) {
+  DCHECK(window_manager_state_);
+  window_manager_state_->cursor_state().SetCursorVisible(visible);
+}
+
+void WindowTree::WmSetGlobalOverrideCursor(
+    base::Optional<ui::CursorData> cursor) {
+  DCHECK(window_manager_state_);
+  window_manager_state_->cursor_state().SetGlobalOverrideCursor(cursor);
+}
+
 void WindowTree::OnWmCreatedTopLevelWindow(uint32_t change_id,
                                            Id transport_window_id) {
   ServerWindow* window =

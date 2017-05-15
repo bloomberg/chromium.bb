@@ -1835,6 +1835,27 @@ void WindowTreeClient::SetExtendedHitArea(Window* window,
   }
 }
 
+void WindowTreeClient::LockCursor() {
+  if (window_manager_client_)
+    window_manager_client_->WmLockCursor();
+}
+
+void WindowTreeClient::UnlockCursor() {
+  if (window_manager_client_)
+    window_manager_client_->WmUnlockCursor();
+}
+
+void WindowTreeClient::SetCursorVisible(bool visible) {
+  if (window_manager_client_)
+    window_manager_client_->WmSetCursorVisible(visible);
+}
+
+void WindowTreeClient::SetGlobalOverrideCursor(
+    base::Optional<ui::CursorData> cursor) {
+  if (window_manager_client_)
+    window_manager_client_->WmSetGlobalOverrideCursor(std::move(cursor));
+}
+
 void WindowTreeClient::RequestClose(Window* window) {
   DCHECK(window);
   if (window_manager_client_)

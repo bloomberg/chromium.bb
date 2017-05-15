@@ -273,13 +273,25 @@ void ShellPortMash::SetDisplayWorkAreaInsets(WmWindow* window,
 }
 
 void ShellPortMash::LockCursor() {
-  // TODO: http://crbug.com/637853
-  NOTIMPLEMENTED();
+  window_manager_->window_manager_client()->LockCursor();
 }
 
 void ShellPortMash::UnlockCursor() {
-  // TODO: http://crbug.com/637853
-  NOTIMPLEMENTED();
+  window_manager_->window_manager_client()->UnlockCursor();
+}
+
+void ShellPortMash::ShowCursor() {
+  window_manager_->window_manager_client()->SetCursorVisible(true);
+}
+
+void ShellPortMash::HideCursor() {
+  window_manager_->window_manager_client()->SetCursorVisible(false);
+}
+
+void ShellPortMash::SetGlobalOverrideCursor(
+    base::Optional<ui::CursorData> cursor) {
+  window_manager_->window_manager_client()->SetGlobalOverrideCursor(
+      std::move(cursor));
 }
 
 bool ShellPortMash::IsMouseEventsEnabled() {

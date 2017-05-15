@@ -16,6 +16,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/timer/timer.h"
 #include "services/ui/public/interfaces/display_manager.mojom.h"
+#include "services/ui/ws/cursor_state.h"
 #include "services/ui/ws/event_dispatcher.h"
 #include "services/ui/ws/event_dispatcher_delegate.h"
 #include "services/ui/ws/server_window_observer.h"
@@ -89,6 +90,8 @@ class WindowManagerState : public EventDispatcherDelegate,
   // TODO(sky): EventDispatcher is really an implementation detail and should
   // not be exposed.
   EventDispatcher* event_dispatcher() { return &event_dispatcher_; }
+
+  CursorState& cursor_state() { return cursor_state_; }
 
   // Returns true if this is the WindowManager of the active user.
   bool IsActive() const;
@@ -294,6 +297,9 @@ class WindowManagerState : public EventDispatcherDelegate,
   // wants to. Once the client destroys the window WindowManagerDisplayRoots is
   // destroyed.
   WindowManagerDisplayRoots orphaned_window_manager_display_roots_;
+
+  // All state regarding what the current cursor is.
+  CursorState cursor_state_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowManagerState);
 };

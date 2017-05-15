@@ -69,6 +69,9 @@ class WindowManagerStateTest : public testing::Test {
   WindowServer* window_server() {
     return window_event_targeting_helper_.window_server();
   }
+  ui::CursorType cursor_type() const {
+    return window_event_targeting_helper_.cursor_type();
+  }
 
   void EmbedAt(WindowTree* tree,
                const ClientWindowId& embed_window_id,
@@ -641,8 +644,6 @@ TEST(WindowManagerStateShutdownTest, DestroyTreeBeforeDisplay) {
 
 TEST_F(WindowManagerStateTest, CursorResetOverNoTarget) {
   ASSERT_EQ(1u, window_server()->display_manager()->displays().size());
-  Display* display = *(window_server()->display_manager()->displays().begin());
-  DisplayTestApi display_test_api(display);
   const ClientWindowId child_window_id(11);
   window_tree()->NewWindow(child_window_id, ServerWindow::Properties());
   ServerWindow* child_window =
@@ -651,8 +652,7 @@ TEST_F(WindowManagerStateTest, CursorResetOverNoTarget) {
   child_window->SetVisible(true);
   child_window->SetBounds(gfx::Rect(0, 0, 20, 20));
   child_window->parent()->SetCursor(ui::CursorData(ui::CursorType::kCopy));
-  EXPECT_EQ(ui::CursorType::kCopy,
-            display_test_api.last_cursor().cursor_type());
+  EXPECT_EQ(ui::CursorType::kCopy, cursor_type());
   // Move the mouse outside the bounds of the child, so that the mouse is not
   // over any valid windows. Cursor should change to POINTER.
   ui::PointerEvent move(
@@ -662,8 +662,7 @@ TEST_F(WindowManagerStateTest, CursorResetOverNoTarget) {
   window_manager_state()->ProcessEvent(move, 0);
   // The event isn't over a valid target, which should trigger resetting the
   // cursor to POINTER.
-  EXPECT_EQ(ui::CursorType::kPointer,
-            display_test_api.last_cursor().cursor_type());
+  EXPECT_EQ(ui::CursorType::kPointer, cursor_type());
 }
 
 }  // namespace test

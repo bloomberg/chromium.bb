@@ -25,6 +25,7 @@
 #include "services/ui/ws/window_tree.h"
 #include "services/ui/ws/window_tree_binding.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/cursor/cursor.h"
 #include "ui/display/display.h"
 #include "ui/events/event.h"
 #include "ui/gfx/geometry/rect.h"
@@ -103,6 +104,7 @@ class DisplayTest : public testing::Test {
     return ws_test_helper_.window_server_delegate();
   }
   TestScreenManager& screen_manager() { return screen_manager_; }
+  const ui::CursorData& cursor() { return ws_test_helper_.cursor(); }
 
  protected:
   // testing::Test:

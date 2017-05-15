@@ -74,6 +74,9 @@ class ShellPortMash : public ShellPort, public WindowTreeHostManager::Observer {
                                 const gfx::Insets& insets) override;
   void LockCursor() override;
   void UnlockCursor() override;
+  void ShowCursor() override;
+  void HideCursor() override;
+  void SetGlobalOverrideCursor(base::Optional<ui::CursorData> cursor) override;
   bool IsMouseEventsEnabled() override;
   std::vector<WmWindow*> GetAllRootWindows() override;
   void RecordGestureAction(GestureActionType action) override;

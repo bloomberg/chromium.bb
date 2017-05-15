@@ -57,6 +57,15 @@ void TestWindowManagerClient::WmSetNonClientCursor(uint32_t window_id,
                                                    ui::CursorData cursor_data) {
 }
 
+void TestWindowManagerClient::WmLockCursor() {}
+
+void TestWindowManagerClient::WmUnlockCursor() {}
+
+void TestWindowManagerClient::WmSetCursorVisible(bool visible) {}
+
+void TestWindowManagerClient::WmSetGlobalOverrideCursor(
+    base::Optional<ui::CursorData> cursor) {}
+
 void TestWindowManagerClient::OnWmCreatedTopLevelWindow(
     uint32_t change_id,
     Id transport_window_id) {}

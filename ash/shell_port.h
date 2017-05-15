@@ -15,6 +15,8 @@
 #include "ash/metrics/user_metrics_action.h"
 #include "ash/wm/lock_state_observer.h"
 #include "base/observer_list.h"
+#include "base/optional.h"
+#include "ui/base/cursor/cursor_data.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/compositor/layer_type.h"
 #include "ui/wm/public/activation_change_observer.h"
@@ -134,6 +136,10 @@ class ASH_EXPORT ShellPort {
   // See aura::client::CursorClient for details on these.
   virtual void LockCursor() = 0;
   virtual void UnlockCursor() = 0;
+  virtual void ShowCursor() = 0;
+  virtual void HideCursor() = 0;
+  virtual void SetGlobalOverrideCursor(
+      base::Optional<ui::CursorData> cursor) = 0;
   virtual bool IsMouseEventsEnabled() = 0;
 
   virtual std::vector<WmWindow*> GetAllRootWindows() = 0;
