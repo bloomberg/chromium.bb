@@ -530,31 +530,31 @@ InspectorTest.navigatePromise = function(url)
     return promise;
 }
 
-InspectorTest.hardReloadPage = function(callback, scriptToEvaluateOnLoad, scriptPreprocessor)
+InspectorTest.hardReloadPage = function(callback, scriptToEvaluateOnLoad)
 {
-    InspectorTest._innerReloadPage(true, callback, scriptToEvaluateOnLoad, scriptPreprocessor);
+    InspectorTest._innerReloadPage(true, callback, scriptToEvaluateOnLoad);
 }
 
-InspectorTest.reloadPage = function(callback, scriptToEvaluateOnLoad, scriptPreprocessor)
+InspectorTest.reloadPage = function(callback, scriptToEvaluateOnLoad)
 {
-    InspectorTest._innerReloadPage(false, callback, scriptToEvaluateOnLoad, scriptPreprocessor);
+    InspectorTest._innerReloadPage(false, callback, scriptToEvaluateOnLoad);
 }
 
-InspectorTest.reloadPagePromise = function(scriptToEvaluateOnLoad, scriptPreprocessor)
+InspectorTest.reloadPagePromise = function(scriptToEvaluateOnLoad)
 {
     var fulfill;
     var promise = new Promise(x => fulfill = x);
-    InspectorTest.reloadPage(fulfill, scriptToEvaluateOnLoad, scriptPreprocessor);
+    InspectorTest.reloadPage(fulfill, scriptToEvaluateOnLoad);
     return promise;
 }
 
-InspectorTest._innerReloadPage = function(hardReload, callback, scriptToEvaluateOnLoad, scriptPreprocessor)
+InspectorTest._innerReloadPage = function(hardReload, callback, scriptToEvaluateOnLoad)
 {
     InspectorTest._pageLoadedCallback = InspectorTest.safeWrap(callback);
 
     if (UI.panels.network)
         UI.panels.network._networkLogView.reset();
-    InspectorTest.PageAgent.reload(hardReload, scriptToEvaluateOnLoad, scriptPreprocessor);
+    InspectorTest.resourceTreeModel.reloadPage(hardReload, scriptToEvaluateOnLoad);
 }
 
 InspectorTest.pageLoaded = function()
