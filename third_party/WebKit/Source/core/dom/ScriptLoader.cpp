@@ -371,8 +371,7 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
     is_external_script_ = true;
 
     // 21.4. "Parse src relative to the element's node document."
-    // TODO(hiroshige): Use CompleteURL(src) instead.
-    KURL url = element_document.CompleteURL(element_->SourceAttributeValue());
+    KURL url = element_document.CompleteURL(src);
 
     // 21.5. "If the previous step failed, queue a task to
     //        fire an event named error at the element, and abort these steps."
