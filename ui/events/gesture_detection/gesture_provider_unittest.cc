@@ -1036,6 +1036,40 @@ TEST_F(GestureProviderTest, SlopRegionCheckOnTwoFingerScroll) {
   EXPECT_EQ(5U, GetReceivedGestureCount());
 }
 
+// This test simulates cases like (crbug.com/704426) in which some of the events
+// are missing from the event stream.
+TEST_F(GestureProviderTest, SlopRegionCheckOnMissingSecondaryPointerDownEvent) {
+  EnableTwoFingerTap(kMaxTwoFingerTapSeparation, base::TimeDelta());
+  const float scaled_touch_slop = GetTouchSlop();
+
+  base::TimeTicks event_time = base::TimeTicks::Now();
+
+  MockMotionEvent event =
+      ObtainMotionEvent(event_time, MotionEvent::ACTION_DOWN, 0, 0);
+  EXPECT_TRUE(gesture_provider_->OnTouchEvent(event));
+
+  // Don't send ACTION_POINTER_DOWN event to the gesture_provider.
+  // This is for simulating the cases that the ACTION_POINTER_DOWN event is
+  // missing from the event sequence.
+  event = ObtainMotionEvent(event_time, MotionEvent::ACTION_POINTER_DOWN, 0, 0,
+                            kMaxTwoFingerTapSeparation / 2, 0);
+
+  event.MovePoint(1, 0, 3 * scaled_touch_slop);
+  EXPECT_TRUE(gesture_provider_->OnTouchEvent(event));
+
+  event.ReleasePointAtIndex(0);
+  EXPECT_TRUE(gesture_provider_->OnTouchEvent(event));
+
+  event.ReleasePoint();
+  EXPECT_TRUE(gesture_provider_->OnTouchEvent(event));
+
+  // No scroll happens since the source pointer down event for the moved
+  // pointer is not found. No two finger tap happens since one of the pointers
+  // moved beyond its slop region.
+  EXPECT_EQ(ET_GESTURE_TAP_DOWN, GetReceivedGesture(0).type());
+  EXPECT_EQ(1U, GetReceivedGestureCount());
+}
+
 TEST_F(GestureProviderTest, NoSlopRegionCheckOnThreeFingerScroll) {
   EnableTwoFingerTap(kMaxTwoFingerTapSeparation, base::TimeDelta());
   const float scaled_touch_slop = GetTouchSlop();

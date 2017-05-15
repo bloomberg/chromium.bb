@@ -692,8 +692,8 @@ class GestureProvider::GestureListenerImpl : public ScaleGestureListener,
       const int pointer_id = ev2.GetPointerId(i);
       const MotionEvent* source_pointer_down_event =
           gesture_detector_.GetSourcePointerDownEvent(
-              ev1, secondary_pointer_down, pointer_id);
-      DCHECK(source_pointer_down_event);
+              ev1, &secondary_pointer_down, pointer_id);
+
       if (!source_pointer_down_event)
         continue;
       int source_index =
