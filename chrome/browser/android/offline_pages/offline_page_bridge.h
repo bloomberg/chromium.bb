@@ -83,6 +83,13 @@ class OfflinePageBridge : public OfflinePageModel::Observer,
       const base::android::JavaParamRef<jobjectArray>& j_ids_array,
       const base::android::JavaParamRef<jobject>& j_callback_obj);
 
+  void GetPagesForNamespace(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj,
+      const base::android::JavaParamRef<jobject>& j_result_obj,
+      const base::android::JavaParamRef<jstring>& j_namespace,
+      const base::android::JavaParamRef<jobject>& j_callback_obj);
+
   void SelectPageForOnlineUrl(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,

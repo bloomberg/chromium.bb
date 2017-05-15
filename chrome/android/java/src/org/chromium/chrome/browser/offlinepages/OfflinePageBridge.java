@@ -192,6 +192,19 @@ public class OfflinePageBridge {
     }
 
     /**
+     * Gets the offline pages associated with the provided namespace.
+     *
+     * @param namespace The string form of the namespace to query.
+     * @return A list of {@link OfflinePageItem} matching the provided namespace, or an empty list
+     * if none exist.
+     */
+    public void getPagesForNamespace(
+            final String namespace, final Callback<List<OfflinePageItem>> callback) {
+        List<OfflinePageItem> result = new ArrayList<>();
+        nativeGetPagesForNamespace(mNativeOfflinePageBridge, result, namespace, callback);
+    }
+
+    /**
      * Gets all the URLs in the request queue.
      *
      * @return A list of {@link SavePageRequest} representing all the queued requests.
@@ -601,6 +614,9 @@ public class OfflinePageBridge {
     @VisibleForTesting
     native void nativeGetPagesByClientId(long nativeOfflinePageBridge, List<OfflinePageItem> result,
             String[] namespaces, String[] ids, Callback<List<OfflinePageItem>> callback);
+    native void nativeGetPagesForNamespace(long nativeOfflinePageBridge,
+            List<OfflinePageItem> result, String nameSpace,
+            Callback<List<OfflinePageItem>> callback);
     @VisibleForTesting
     native void nativeDeletePagesByClientId(long nativeOfflinePageBridge, String[] namespaces,
             String[] ids, Callback<Integer> callback);
