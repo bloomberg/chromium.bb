@@ -11,7 +11,9 @@ var TestCupsPrintersBrowserProxy = function() {
   settings.TestBrowserProxy.call(this, [
     'getCupsPrintersList',
     'getCupsPrinterManufacturersList',
-    'getCupsPrinterModelsList'
+    'getCupsPrinterModelsList',
+    'startDiscoveringPrinters',
+    'stopDiscoveringPrinters',
   ]);
 };
 
@@ -39,10 +41,20 @@ TestCupsPrintersBrowserProxy.prototype = {
     this.methodCalled('getCupsPrinterModelsList', manufacturer);
     return Promise.resolve(this.models);
   },
+
+  /** @override */
+  startDiscoveringPrinters: function() {
+    this.methodCalled('startDiscoveringPrinters');
+  },
+
+  /** @override */
+  stopDiscoveringPrinters: function() {
+    this.methodCalled('stopDiscoveringPrinters');
+  },
 };
 
 suite('CupsAddPrinterDialogTests', function() {
-  function fillDialog(addDialog) {
+  function fillAddManuallyDialog(addDialog) {
     var name = addDialog.$$('#printerNameInput');
     var address = addDialog.$$('#printerAddressInput');
 
@@ -82,22 +94,31 @@ suite('CupsAddPrinterDialogTests', function() {
   });
 
   /**
-   * Test that the manual add dialog is showing.
+   * Test that the discovery dialog is showing when a user initially asks
+   * to add a printer.
    */
-  test('ManualAddShowing', function() {
+  test('DiscoveryShowing', function() {
     assertFalse(!!dialog.$$('add-printer-manufacturer-model-dialog'));
     assertFalse(!!dialog.$$('add-printer-configuring-dialog'));
-    assertTrue(!!dialog.$$('add-printer-manually-dialog'));
+    assertFalse(!!dialog.$$('add-printer-manually-dialog'));
+    assertTrue(!!dialog.$$('add-printer-discovery-dialog'));
   });
 
   /**
    * Test that clicking on Add opens the model select page.
    */
   test('ValidAddOpensModelSelection', function() {
+    // Starts in discovery dialog, select add manually button.
+    var discoveryDialog = dialog.$$('add-printer-discovery-dialog');
+    assertTrue(!!discoveryDialog);
+    MockInteractions.tap(discoveryDialog.$$('.secondary-button'));
+    Polymer.dom.flush();
+
+    // Now we should be in the manually add dialog.
     var addDialog = dialog.$$('add-printer-manually-dialog');
     assertTrue(!!addDialog);
 
-    fillDialog(addDialog);
+    fillAddManuallyDialog(addDialog);
 
     MockInteractions.tap(addDialog.$$('.action-button'));
     Polymer.dom.flush();
@@ -111,9 +132,14 @@ suite('CupsAddPrinterDialogTests', function() {
    * Test that getModels isn't called with a blank query.
    */
   test('NoBlankQueries', function() {
+    var discoveryDialog = dialog.$$('add-printer-discovery-dialog');
+    assertTrue(!!discoveryDialog);
+    MockInteractions.tap(discoveryDialog.$$('.secondary-button'));
+    Polymer.dom.flush();
+
     var addDialog = dialog.$$('add-printer-manually-dialog');
     assertTrue(!!addDialog);
-    fillDialog(addDialog);
+    fillAddManuallyDialog(addDialog);
 
     cupsPrintersBrowserProxy.whenCalled('getCupsPrinterModelsList')
         .then(function(manufacturer) { assertGT(0, manufacturer.length); });

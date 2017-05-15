@@ -54,7 +54,6 @@ std::unique_ptr<base::DictionaryValue> GetPrinterInfo(const Printer& printer) {
   printer_info->SetString("printerDescription", printer.description());
   printer_info->SetString("printerManufacturer", printer.manufacturer());
   printer_info->SetString("printerModel", printer.model());
-
   // Get protocol, ip address and queue from the printer's URI.
   const std::string printer_uri = printer.uri();
   url::Parsed parsed;
@@ -69,11 +68,20 @@ std::unique_ptr<base::DictionaryValue> GetPrinterInfo(const Printer& printer) {
     host = std::string(printer_uri, parsed.host.begin, parsed.host.len);
   if (parsed.path.len > 0)
     path = std::string(printer_uri, parsed.path.begin, parsed.path.len);
-
-  printer_info->SetString("printerAddress", host);
+  if (base::ToLowerASCII(scheme) == "usb") {
+    // USB has URI path (and, maybe, query) components that aren't really
+    // associated with a queue -- the mapping between printing semantics and URI
+    // semantics breaks down a bit here.  From the user's point of view, the
+    // entire host/path/query block is the printer address for USB.
+    printer_info->SetString("printerAddress",
+                            printer_uri.substr(parsed.host.begin));
+  } else {
+    printer_info->SetString("printerAddress", host);
+    if (!path.empty()) {
+      printer_info->SetString("printerQueue", path.substr(1));
+    }
+  }
   printer_info->SetString("printerProtocol", base::ToLowerASCII(scheme));
-  if (!path.empty())
-    printer_info->SetString("printerQueue", path.substr(1));
 
   return printer_info;
 }
@@ -203,8 +211,10 @@ void CupsPrintersHandler::HandleAddCupsPrinter(const base::ListValue* args) {
 
   // printerPPDPath might be null for an auto-discovered printer.
   printer_dict->GetString("printerPPDPath", &printer_ppd_path);
-  std::string printer_uri =
-      printer_protocol + "://" + printer_address + "/" + printer_queue;
+  std::string printer_uri = printer_protocol + "://" + printer_address;
+  if (!printer_queue.empty()) {
+    printer_uri += "/" + printer_queue;
+  }
 
   std::unique_ptr<Printer> printer = base::MakeUnique<Printer>(printer_id);
   printer->set_display_name(printer_name);
