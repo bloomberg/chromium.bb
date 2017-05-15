@@ -127,17 +127,18 @@ void ProximityAuthSystem::OnScreenDidUnlock(
 }
 
 void ProximityAuthSystem::OnFocusedUserChanged(const AccountId& account_id) {
-  if (!account_id.is_valid())
-    return;
-
   // Update the current RemoteDeviceLifeCycle to the focused user.
-  if (remote_device_life_cycle_ &&
-      remote_device_life_cycle_->GetRemoteDevice().user_id !=
-          account_id.GetUserEmail()) {
-    PA_LOG(INFO) << "Focused user changed, destroying life cycle for "
-                 << account_id.Serialize() << ".";
-    unlock_manager_->SetRemoteDeviceLifeCycle(nullptr);
-    remote_device_life_cycle_.reset();
+  if (remote_device_life_cycle_) {
+    if (remote_device_life_cycle_->GetRemoteDevice().user_id !=
+        account_id.GetUserEmail()) {
+      PA_LOG(INFO) << "Focused user changed, destroying life cycle for "
+                   << account_id.Serialize() << ".";
+      unlock_manager_->SetRemoteDeviceLifeCycle(nullptr);
+      remote_device_life_cycle_.reset();
+    } else {
+      PA_LOG(INFO) << "Refocused on a user who is already focused.";
+      return;
+    }
   }
 
   if (remote_devices_map_.find(account_id) == remote_devices_map_.end() ||
