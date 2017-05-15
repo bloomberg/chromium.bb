@@ -116,7 +116,7 @@ interface Element : Node {
 
     // Typed OM
     // https://drafts.css-houdini.org/css-typed-om/#inline-stylepropertymap-objects
-    [RuntimeEnabled=CSSTypedOM] readonly attribute StylePropertyMap styleMap;
+    [RuntimeEnabled=CSSTypedOM, SameObject] readonly attribute StylePropertyMap styleMap;
 
     // Non-standard API
     [MeasureAs=ElementScrollIntoViewIfNeeded] void scrollIntoViewIfNeeded(optional boolean centerIfNeeded);
