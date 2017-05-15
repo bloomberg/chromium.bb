@@ -36,24 +36,24 @@ namespace views {
 ////////////////////////////////////////////////////////////////////////////////
 // WebDialogView, public:
 
-WebDialogView::WebDialogView(
-    content::BrowserContext* context,
-    WebDialogDelegate* delegate,
-    WebContentsHandler* handler)
-    : ClientView(NULL, NULL),
+WebDialogView::WebDialogView(content::BrowserContext* context,
+                             WebDialogDelegate* delegate,
+                             WebContentsHandler* handler)
+    : ClientView(nullptr, nullptr),
       WebDialogWebContentsDelegate(context, handler),
       delegate_(delegate),
-      web_view_(new views::WebView(context)),
-      is_attempting_close_dialog_(false),
-      before_unload_fired_(false),
-      closed_via_webui_(false),
-      close_contents_called_(false) {
+      web_view_(new views::WebView(context)) {
   web_view_->set_allow_accelerators(true);
   AddChildView(web_view_);
   set_contents_view(web_view_);
   SetLayoutManager(new views::FillLayout);
   // Pressing the ESC key will close the dialog.
   AddAccelerator(ui::Accelerator(ui::VKEY_ESCAPE, ui::EF_NONE));
+
+  if (delegate_) {
+    for (const auto& accelerator : delegate_->GetAccelerators())
+      AddAccelerator(accelerator);
+  }
 }
 
 WebDialogView::~WebDialogView() {
@@ -81,6 +81,9 @@ gfx::Size WebDialogView::GetMinimumSize() const {
 }
 
 bool WebDialogView::AcceleratorPressed(const ui::Accelerator& accelerator) {
+  if (delegate_ && delegate_->AcceleratorPressed(accelerator))
+    return true;
+
   // Pressing ESC closes the dialog.
   DCHECK_EQ(ui::VKEY_ESCAPE, accelerator.key_code());
   if (GetWidget())
@@ -234,7 +237,7 @@ void WebDialogView::OnDialogClosed(const std::string& json_retval) {
 
   if (delegate_) {
     delegate_->OnDialogClosed(json_retval);
-    delegate_ = NULL;  // We will not communicate further with the delegate.
+    delegate_ = nullptr;  // We will not communicate further with the delegate.
   }
 }
 
@@ -296,7 +299,7 @@ void WebDialogView::CloseContents(WebContents* source) {
 content::WebContents* WebDialogView::OpenURLFromTab(
     content::WebContents* source,
     const content::OpenURLParams& params) {
-  content::WebContents* new_contents = NULL;
+  content::WebContents* new_contents = nullptr;
   if (delegate_ &&
       delegate_->HandleOpenURLFromTab(source, params, &new_contents)) {
     return new_contents;
