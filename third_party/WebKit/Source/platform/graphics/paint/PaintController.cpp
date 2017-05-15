@@ -300,6 +300,16 @@ void PaintController::ProcessNewItem(DisplayItem& display_item) {
 
   if (RuntimeEnabledFeatures::paintUnderInvalidationCheckingEnabled())
     CheckUnderInvalidation();
+
+  if (!frame_first_paints_.back().first_painted && display_item.IsDrawing() &&
+      // Here we ignore all document-background paintings because we don't
+      // know if the background is default. ViewPainter should have called
+      // setFirstPainted() if this display item is for non-default
+      // background.
+      display_item.GetType() != DisplayItem::kDocumentBackground &&
+      display_item.DrawsContent()) {
+    SetFirstPainted();
+  }
 }
 
 DisplayItem& PaintController::MoveItemFromCurrentListToNewList(size_t index) {
@@ -589,21 +599,6 @@ void PaintController::CommitNewDisplayItems(
         item.Client().ClearIsJustCreated();
       if (item.SkippedCache())
         skipped_cache_clients.push_back(&item.Client());
-    }
-  }
-
-  if (!first_painted_) {
-    for (const auto& item : new_display_item_list_) {
-      if (item.IsDrawing() &&
-          // Here we ignore all document-background paintings because we don't
-          // know if the background is default. ViewPainter should have called
-          // setFirstPainted() if this display item is for non-default
-          // background.
-          item.GetType() != DisplayItem::kDocumentBackground &&
-          item.DrawsContent()) {
-        first_painted_ = true;
-        break;
-      }
     }
   }
 
@@ -982,6 +977,29 @@ void PaintController::ShowDebugDataInternal(bool show_paint_records) const {
           ->ToPrettyJSONString()
           .Utf8()
           .data());
+}
+
+void PaintController::SetFirstPainted() {
+  frame_first_paints_.back().first_painted = true;
+}
+
+void PaintController::SetTextPainted() {
+  frame_first_paints_.back().text_painted = true;
+}
+
+void PaintController::SetImagePainted() {
+  frame_first_paints_.back().image_painted = true;
+}
+
+void PaintController::BeginFrame(const void* frame) {
+  frame_first_paints_.push_back(FrameFirstPaint(frame));
+}
+
+FrameFirstPaint PaintController::EndFrame(const void* frame) {
+  FrameFirstPaint result = frame_first_paints_.back();
+  DCHECK(result.frame == frame);
+  frame_first_paints_.pop_back();
+  return result;
 }
 
 }  // namespace blink

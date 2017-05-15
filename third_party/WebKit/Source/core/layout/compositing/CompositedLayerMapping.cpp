@@ -53,6 +53,7 @@
 #include "core/page/scrolling/ScrollingCoordinator.h"
 #include "core/page/scrolling/StickyPositionScrollingConstraints.h"
 #include "core/page/scrolling/TopDocumentRootScrollerController.h"
+#include "core/paint/FramePaintTiming.h"
 #include "core/paint/ObjectPaintInvalidator.h"
 #include "core/paint/PaintInfo.h"
 #include "core/paint/PaintLayerPainter.h"
@@ -3290,6 +3291,8 @@ void CompositedLayerMapping::PaintContents(
     GraphicsContext& context,
     GraphicsLayerPaintingPhase graphics_layer_painting_phase,
     const IntRect& interest_rect) const {
+  FramePaintTiming frame_paint_timing(context, GetLayoutObject().GetFrame());
+
   // https://code.google.com/p/chromium/issues/detail?id=343772
   DisableCompositingQueryAsserts disabler;
   // Allow throttling to make sure no painting paths (e.g.,

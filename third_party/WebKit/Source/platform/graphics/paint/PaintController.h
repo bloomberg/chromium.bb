@@ -33,6 +33,22 @@ static const size_t kInitialDisplayItemListCapacityBytes = 512;
 
 template class RasterInvalidationTrackingMap<const PaintChunk>;
 
+// FrameFirstPaint stores first-paint, text or image painted for the
+// corresponding frame. They are never reset to false. First-paint is defined in
+// https://github.com/WICG/paint-timing. It excludes default background paint.
+struct FrameFirstPaint {
+  FrameFirstPaint(const void* frame)
+      : frame(frame),
+        first_painted(false),
+        text_painted(false),
+        image_painted(false) {}
+
+  const void* frame;
+  bool first_painted : 1;
+  bool text_painted : 1;
+  bool image_painted : 1;
+};
+
 // Responsible for processing display items as they are produced, and producing
 // a final paint artifact when complete. This class includes logic for caching,
 // cache invalidation, and merging.
@@ -161,12 +177,9 @@ class PLATFORM_EXPORT PaintController {
     subsequence_caching_disabled_ = disable;
   }
 
-  bool FirstPainted() const { return first_painted_; }
-  void SetFirstPainted() { first_painted_ = true; }
-  bool TextPainted() const { return text_painted_; }
-  void SetTextPainted() { text_painted_ = true; }
-  bool ImagePainted() const { return image_painted_; }
-  void SetImagePainted() { image_painted_ = true; }
+  void SetFirstPainted();
+  void SetTextPainted();
+  void SetImagePainted();
 
   // Returns displayItemList added using createAndAppend() since beginning or
   // the last commitNewDisplayItems(). Use with care.
@@ -213,14 +226,14 @@ class PLATFORM_EXPORT PaintController {
 
   bool LastDisplayItemIsSubsequenceEnd() const;
 
+  void BeginFrame(const void* frame);
+  FrameFirstPaint EndFrame(const void* frame);
+
  protected:
   PaintController()
       : new_display_item_list_(0),
         construction_disabled_(false),
         subsequence_caching_disabled_(false),
-        first_painted_(false),
-        text_painted_(false),
-        image_painted_(false),
         skipping_cache_count_(0),
         num_cached_new_items_(0),
         current_cached_subsequence_begin_index_in_new_list_(kNotFound),
@@ -235,6 +248,13 @@ class PLATFORM_EXPORT PaintController {
     ResetCurrentListIndices();
     SetTracksRasterInvalidations(
         RuntimeEnabledFeatures::paintUnderInvalidationCheckingEnabled());
+
+    // frame_first_paints_ should have one null frame since the beginning, so
+    // that PaintController is robust even if it paints outside of BeginFrame
+    // and EndFrame cycles. It will also enable us to combine the first paint
+    // data in this PaintController into another PaintController on which we
+    // replay the recorded results in the future.
+    frame_first_paints_.push_back(FrameFirstPaint(nullptr));
   }
 
  private:
@@ -344,13 +364,8 @@ class PLATFORM_EXPORT PaintController {
   // caching.
   bool subsequence_caching_disabled_;
 
-  // The following fields indicate that this PaintController has ever had
-  // first-paint, text or image painted. They are never reset to false.
-  // First-paint is defined in https://github.com/WICG/paint-timing. It excludes
-  // default background paint.
-  bool first_painted_;
-  bool text_painted_;
-  bool image_painted_;
+  // A stack recording current frames' first paints.
+  Vector<FrameFirstPaint> frame_first_paints_;
 
   int skipping_cache_count_;
 
