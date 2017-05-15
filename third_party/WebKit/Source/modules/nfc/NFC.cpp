@@ -579,6 +579,12 @@ NFC::NFC(LocalFrame* frame)
     : PageVisibilityObserver(frame->GetPage()),
       ContextLifecycleObserver(frame->GetDocument()),
       client_(this) {
+  String error_message;
+
+  // Only connect to NFC if we are in a context that supports it.
+  if (!IsSupportedInContext(GetExecutionContext(), error_message))
+    return;
+
   frame->GetInterfaceProvider()->GetInterface(mojo::MakeRequest(&nfc_));
   nfc_.set_connection_error_handler(ConvertToBaseCallback(
       WTF::Bind(&NFC::OnConnectionError, WrapWeakPersistent(this))));
@@ -790,22 +796,29 @@ void NFC::OnWatch(const WTF::Vector<uint32_t>& ids,
   }
 }
 
-ScriptPromise NFC::RejectIfNotSupported(ScriptState* script_state) {
-  String error_message;
-  ExecutionContext* context = ExecutionContext::From(script_state);
+bool NFC::IsSupportedInContext(ExecutionContext* context,
+                               String& error_message) {
   if (!context->IsSecureContext(error_message)) {
-    return ScriptPromise::RejectWithDOMException(
-        script_state, DOMException::Create(kSecurityError, error_message));
+    return false;
   }
 
   // https://w3c.github.io/web-nfc/#security-policies
   // WebNFC API must be only accessible from top level browsing context.
   if (!ToDocument(context)->domWindow()->GetFrame() ||
       !ToDocument(context)->GetFrame()->IsMainFrame()) {
+    error_message = "Must be in a top-level browsing context";
+    return false;
+  }
+
+  return true;
+}
+
+ScriptPromise NFC::RejectIfNotSupported(ScriptState* script_state) {
+  String error_message;
+  if (!IsSupportedInContext(ExecutionContext::From(script_state),
+                            error_message)) {
     return ScriptPromise::RejectWithDOMException(
-        script_state,
-        DOMException::Create(kSecurityError,
-                             "Must be in a top-level browsing context."));
+        script_state, DOMException::Create(kSecurityError, error_message));
   }
 
   if (!nfc_) {
