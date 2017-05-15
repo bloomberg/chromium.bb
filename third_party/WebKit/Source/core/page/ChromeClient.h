@@ -72,6 +72,8 @@ class KeyboardEvent;
 class LocalFrame;
 class Node;
 class Page;
+class PagePopup;
+class PagePopupClient;
 class PopupOpeningObserver;
 class RemoteFrame;
 class WebDragData;
@@ -281,6 +283,8 @@ class CORE_EXPORT ChromeClient : public PlatformChromeClient {
   // Checks if there is an opened popup, called by LayoutMenuList::showPopup().
   virtual bool HasOpenedPopup() const = 0;
   virtual PopupMenu* OpenPopupMenu(LocalFrame&, HTMLSelectElement&) = 0;
+  virtual PagePopup* OpenPagePopup(PagePopupClient*) = 0;
+  virtual void ClosePagePopup(PagePopup*) = 0;
   virtual DOMWindow* PagePopupWindowForTesting() const = 0;
 
   virtual void PostAccessibilityNotification(AXObjectImpl*,

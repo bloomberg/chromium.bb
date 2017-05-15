@@ -37,14 +37,14 @@
 
 namespace blink {
 
-class ChromeClientImpl;
+class ChromeClient;
 class DateTimeChooserClient;
 class PagePopup;
 
 class DateTimeChooserImpl final : public DateTimeChooser,
                                   public PagePopupClient {
  public:
-  static DateTimeChooserImpl* Create(ChromeClientImpl*,
+  static DateTimeChooserImpl* Create(ChromeClient*,
                                      DateTimeChooserClient*,
                                      const DateTimeChooserParameters&);
   ~DateTimeChooserImpl() override;
@@ -56,7 +56,7 @@ class DateTimeChooserImpl final : public DateTimeChooser,
   DECLARE_VIRTUAL_TRACE();
 
  private:
-  DateTimeChooserImpl(ChromeClientImpl*,
+  DateTimeChooserImpl(ChromeClient*,
                       DateTimeChooserClient*,
                       const DateTimeChooserParameters&);
   // PagePopupClient functions:
@@ -69,7 +69,7 @@ class DateTimeChooserImpl final : public DateTimeChooser,
   Element& OwnerElement() override;
   void DidClosePopup() override;
 
-  Member<ChromeClientImpl> chrome_client_;
+  Member<ChromeClient> chrome_client_;
   Member<DateTimeChooserClient> client_;
   PagePopup* popup_;
   DateTimeChooserParameters parameters_;

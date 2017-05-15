@@ -184,8 +184,8 @@ class WEB_EXPORT ChromeClientImpl final : public ChromeClient {
 
   bool HasOpenedPopup() const override;
   PopupMenu* OpenPopupMenu(LocalFrame&, HTMLSelectElement&) override;
-  PagePopup* OpenPagePopup(PagePopupClient*);
-  void ClosePagePopup(PagePopup*);
+  PagePopup* OpenPagePopup(PagePopupClient*) override;
+  void ClosePagePopup(PagePopup*) override;
   DOMWindow* PagePopupWindowForTesting() const override;
 
   bool ShouldOpenModalDialogDuringPageDismissal(
