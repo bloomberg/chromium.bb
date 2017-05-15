@@ -463,6 +463,11 @@ MediaDevicesManager* MediaStreamManager::media_devices_manager() {
   return media_devices_manager_.get();
 }
 
+media::AudioSystem* MediaStreamManager::audio_system() {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  return audio_system_;
+}
+
 void MediaStreamManager::AddVideoCaptureObserver(
     media::VideoCaptureObserver* capture_observer) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);

@@ -51,6 +51,8 @@ class CONTENT_EXPORT MediaDevicesDispatcherHost
                         EnumerateDevicesCallback client_callback) override;
   void GetVideoInputCapabilities(
       GetVideoInputCapabilitiesCallback client_callback) override;
+  void GetAudioInputCapabilities(
+      GetAudioInputCapabilitiesCallback client_callback) override;
   void SubscribeDeviceChangeNotifications(MediaDeviceType type,
                                           uint32_t subscription_id) override;
   void UnsubscribeDeviceChangeNotifications(MediaDeviceType type,
@@ -102,6 +104,20 @@ class CONTENT_EXPORT MediaDevicesDispatcherHost
       const std::string& default_device_id,
       const media::VideoCaptureDeviceDescriptors& device_descriptors);
 
+  void GetDefaultAudioInputDeviceID(
+      GetAudioInputCapabilitiesCallback client_callback,
+      const url::Origin& security_origin);
+
+  void GotDefaultAudioInputDeviceID(const std::string& default_device_id);
+
+  void GotAudioInputEnumeration(const std::string& default_device_id,
+                                const MediaDeviceEnumeration& enumeration);
+
+  void GotAudioInputParameters(size_t index,
+                               const media::AudioParameters& parameters);
+
+  void FinalizeGetAudioInputCapabilities();
+
   // Returns the currently supported video formats for the given |device_id|.
   media::VideoCaptureFormats GetVideoInputFormats(const std::string& device_id);
 
@@ -123,6 +139,14 @@ class CONTENT_EXPORT MediaDevicesDispatcherHost
   // This field can only be accessed on the UI thread.
   ::mojom::MediaDevicesListenerPtr device_change_listener_;
   url::Origin security_origin_for_testing_;
+
+  struct AudioInputCapabilitiesRequest;
+  // Queued requests for audio-input capabilities.
+  std::vector<AudioInputCapabilitiesRequest>
+      pending_audio_input_capabilities_requests_;
+  size_t num_pending_audio_input_parameters_;
+  std::vector<::mojom::AudioInputDeviceCapabilities>
+      current_audio_input_capabilities_;
 
   base::WeakPtrFactory<MediaDevicesDispatcherHost> weak_factory_;
 
