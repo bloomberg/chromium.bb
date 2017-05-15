@@ -21,6 +21,10 @@
 #include "ios/web/public/test/response_providers/response_provider.h"
 #include "url/gurl.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 namespace {
 
 const char kTestUrlNormalBrowsing[] = "http://choux/normal/browsing";
@@ -83,7 +87,7 @@ NSString* const kIncognitoCookieValue = @"rainbow";
        "  var name = eqPos > -1 ? cookie.substr(0, eqPos) : cookie;"
        "  document.cookie = name + '=;expires=Thu, 01 Jan 1970 00:00:00 GMT';"
        "}";
-  NSError* error = nil;
+  __unsafe_unretained NSError* error = nil;
   chrome_test_util::ExecuteJavaScript(clearCookieScript, &error);
   [super tearDown];
 }
