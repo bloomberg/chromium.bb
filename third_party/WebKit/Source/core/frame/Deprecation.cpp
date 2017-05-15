@@ -349,14 +349,11 @@ String Deprecation::DeprecationMessage(UseCounter::Feature feature) {
              "details.";
 
     case UseCounter::kCSSDeepCombinator:
-      return String::Format(
-          "/deep/ combinator is deprecated and will be a no-op in %s. See "
-          "https://www.chromestatus.com/features/4964279606312960 for more "
-          "details.",
-          milestoneString(M60));
-
-    case UseCounter::kCSSSelectorPseudoShadow:
-      return willBeRemoved("::shadow pseudo-element", M60, "6750456638341120");
+      return "/deep/ combinator is no longer supported in CSS dynamic profile. "
+             "It is now effectively no-op, acting as if it were a descendant "
+             "combinator. You should consider to remove it. See "
+             "https://www.chromestatus.com/features/4964279606312960 for more "
+             "details.";
 
     case UseCounter::kVREyeParametersOffset:
       return replacedBy("VREyeParameters.offset",
