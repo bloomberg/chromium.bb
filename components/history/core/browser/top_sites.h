@@ -25,8 +25,6 @@ class RefCountedMemory;
 
 namespace history {
 
-class TopSitesObserver;
-
 // PrepopulatedPage stores information for prepopulated page for the
 // initial run.
 struct PrepopulatedPage {
@@ -142,7 +140,7 @@ class TopSites : public RefcountedKeyedService {
 
   // Adds or updates a |url| for which we should force the capture of a
   // thumbnail next time it's visited. If there is already a non-forced URL
-  // matching this |url| this call has no effect. Indicate this URL was laste
+  // matching this |url| this call has no effect. Indicate this URL was last
   // forced at |time| so we can evict the older URLs when needed. Should be
   // called from the UI thread.
   virtual bool AddForcedURL(const GURL& url, const base::Time& time) = 0;

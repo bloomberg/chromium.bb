@@ -16,12 +16,11 @@
 #include "components/history/core/browser/url_utils.h"
 #include "url/gurl.h"
 
-class GURL;
-
 namespace history {
 
-// TopSiteCache caches thumbnails for visited pages. Retrieving thumbnails from
-// a given input URL is a two-stage process:
+// TopSitesCache caches the top sites and thumbnails for TopSites.
+//
+// Retrieving thumbnails from a given input URL is a two-stage process:
 //
 //   input URL --(map 1)--> canonical URL --(map 2)--> image.
 //
@@ -38,8 +37,6 @@ namespace history {
 //   ignoring "?query#ref".
 // For the latter two "URL prefix matches", we prefer the match that is closest
 // to input URL, w.r.t. path hierarchy.
-
-// TopSitesCache caches the top sites and thumbnails for TopSites.
 class TopSitesCache {
  public:
   TopSitesCache();

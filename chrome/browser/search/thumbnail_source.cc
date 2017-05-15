@@ -41,9 +41,9 @@ void ThumbnailSource::StartDataRequest(
   ExtractPageAndThumbnailUrls(path, &page_url, &fallback_thumbnail_url);
 
   scoped_refptr<base::RefCountedMemory> data;
-  if (page_url.is_valid() &&
-      thumbnail_service_->GetPageThumbnail(page_url, capture_thumbnails_,
-                                           &data)) {
+  if (page_url.is_valid() && thumbnail_service_->GetPageThumbnail(
+                                 page_url,
+                                 /*prefix_match=*/capture_thumbnails_, &data)) {
     // If a local thumbnail is available for the page's URL, provide it.
     callback.Run(data.get());
   } else if (fallback_thumbnail_url.is_valid()) {
