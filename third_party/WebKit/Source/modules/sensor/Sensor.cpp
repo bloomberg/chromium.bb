@@ -18,6 +18,13 @@ using namespace device::mojom::blink;
 
 namespace blink {
 
+namespace {
+
+constexpr double kMinWaitingInterval =
+    1 / device::mojom::blink::SensorConfiguration::kMaxAllowedFrequency;
+
+}  // namespace
+
 Sensor::Sensor(ExecutionContext* execution_context,
                const SensorOptions& sensor_options,
                ExceptionState& exception_state,
@@ -26,7 +33,8 @@ Sensor::Sensor(ExecutionContext* execution_context,
       sensor_options_(sensor_options),
       type_(type),
       state_(SensorState::kIdle),
-      last_update_timestamp_(0.0) {
+      last_update_timestamp_(0.0),
+      pending_reading_update_(false) {
   // Check secure context.
   String error_message;
   if (!execution_context->IsSecureContext(error_message)) {
@@ -89,7 +97,7 @@ DOMHighResTimeStamp Sensor::timestamp(ScriptState* script_state,
   is_null = false;
 
   return performance->MonotonicTimeToDOMHighResTimeStamp(
-      sensor_proxy_->Reading().timestamp);
+      sensor_proxy_->reading().timestamp);
 }
 
 DEFINE_TRACE(Sensor) {
@@ -133,7 +141,7 @@ double Sensor::ReadingValue(int index, bool& is_null) const {
 double Sensor::ReadingValueUnchecked(int index) const {
   DCHECK(sensor_proxy_);
   DCHECK(index >= 0 && index < device::SensorReading::kValuesCount);
-  return sensor_proxy_->Reading().values[index];
+  return sensor_proxy_->reading().values[index];
 }
 
 void Sensor::InitSensorProxyIfNeeded() {
@@ -162,16 +170,38 @@ void Sensor::OnSensorInitialized() {
   RequestAddConfiguration();
 }
 
-void Sensor::NotifySensorChanged(double timestamp) {
+void Sensor::OnSensorReadingChanged(double timestamp) {
   if (state_ != Sensor::SensorState::kActivated)
     return;
 
-  DCHECK_GT(configuration_->frequency, 0.0);
-  double period = 1 / configuration_->frequency;
+  // Return if reading update is already scheduled or the cached
+  // reading is up-to-date.
+  if (pending_reading_update_ ||
+      sensor_proxy_->reading().timestamp == reading_.timestamp)
+    return;
 
-  if (timestamp - last_update_timestamp_ >= period) {
-    last_update_timestamp_ = timestamp;
-    NotifySensorReadingChanged();
+  pending_reading_update_ = true;
+
+  double elapsedTime = timestamp - last_update_timestamp_;
+
+  DCHECK_GT(configuration_->frequency, 0.0);
+  double waitingTime = 1 / configuration_->frequency - elapsedTime;
+
+  // Negative or zero 'waitingTime' means that polling period has elapsed.
+  // We also avoid scheduling if the elapsed time is slightly behind the
+  // polling period.
+  auto sensor_reading_changed =
+      WTF::Bind(&Sensor::UpdateReading, WrapWeakPersistent(this));
+  if (waitingTime < kMinWaitingInterval) {
+    // Invoke JS callbacks in a different callchain to obviate
+    // possible modifications of SensorProxy::observers_ container
+    // while it is being iterated through.
+    TaskRunnerHelper::Get(TaskType::kSensor, GetExecutionContext())
+        ->PostTask(BLINK_FROM_HERE, std::move(sensor_reading_changed));
+  } else {
+    TaskRunnerHelper::Get(TaskType::kSensor, GetExecutionContext())
+        ->PostDelayedTask(BLINK_FROM_HERE, std::move(sensor_reading_changed),
+                          WTF::TimeDelta::FromSecondsD(waitingTime));
   }
 }
 
@@ -273,13 +303,11 @@ void Sensor::HandleError(ExceptionCode code,
   }
 }
 
-void Sensor::NotifySensorReadingChanged() {
-  DCHECK(sensor_proxy_);
-
-  if (sensor_proxy_->Reading().timestamp != stored_data_.timestamp) {
-    stored_data_ = sensor_proxy_->Reading();
-    DispatchEvent(Event::Create(EventTypeNames::change));
-  }
+void Sensor::UpdateReading() {
+  last_update_timestamp_ = WTF::MonotonicallyIncreasingTime();
+  reading_ = sensor_proxy_->reading();
+  pending_reading_update_ = false;
+  DispatchEvent(Event::Create(EventTypeNames::change));
 }
 
 void Sensor::NotifyOnActivate() {
@@ -295,7 +323,7 @@ bool Sensor::CanReturnReadings() const {
   if (!IsActivated())
     return false;
   DCHECK(sensor_proxy_);
-  return sensor_proxy_->Reading().timestamp != 0.0;
+  return sensor_proxy_->reading().timestamp != 0.0;
 }
 
 }  // namespace blink

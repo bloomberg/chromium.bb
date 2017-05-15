@@ -79,18 +79,18 @@ class Sensor : public EventTargetWithInlineData,
   bool CanReturnReadings() const;
   bool IsActivated() const { return state_ == SensorState::kActivated; }
 
+  // SensorProxy::Observer overrides.
+  void OnSensorInitialized() override;
+  void OnSensorReadingChanged(double timestamp) override;
+  void OnSensorError(ExceptionCode,
+                     const String& sanitized_message,
+                     const String& unsanitized_message) override;
+
  private:
   void InitSensorProxyIfNeeded();
 
   // ContextLifecycleObserver overrides.
   void ContextDestroyed(ExecutionContext*) override;
-
-  // SensorProxy::Observer overrides.
-  void OnSensorInitialized() override;
-  void NotifySensorChanged(double timestamp) override;
-  void OnSensorError(ExceptionCode,
-                     const String& sanitized_message,
-                     const String& unsanitized_message) override;
 
   void OnAddConfigurationRequestCompleted(bool);
 
@@ -104,7 +104,7 @@ class Sensor : public EventTargetWithInlineData,
                    const String& sanitized_message = String(),
                    const String& unsanitized_message = String());
 
-  void NotifySensorReadingChanged();
+  void UpdateReading();
   void NotifyOnActivate();
   void NotifyError(DOMException* error);
 
@@ -113,9 +113,10 @@ class Sensor : public EventTargetWithInlineData,
   device::mojom::blink::SensorType type_;
   SensorState state_;
   Member<SensorProxy> sensor_proxy_;
-  device::SensorReading stored_data_;
+  device::SensorReading reading_;
   SensorConfigurationPtr configuration_;
   double last_update_timestamp_;
+  bool pending_reading_update_;
 };
 
 }  // namespace blink
