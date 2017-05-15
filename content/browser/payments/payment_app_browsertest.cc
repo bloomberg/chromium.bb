@@ -19,10 +19,10 @@
 namespace content {
 namespace {
 
-void GetAllManifestsCallback(const base::Closure& done_callback,
-                             PaymentAppProvider::Manifests* out_manifests,
-                             PaymentAppProvider::Manifests manifests) {
-  *out_manifests = std::move(manifests);
+void GetAllPaymentAppsCallback(const base::Closure& done_callback,
+                               PaymentAppProvider::PaymentApps* out_apps,
+                               PaymentAppProvider::PaymentApps apps) {
+  *out_apps = std::move(apps);
   done_callback.Run();
 }
 
@@ -76,16 +76,18 @@ class PaymentAppBrowserTest : public ContentBrowserTest {
 
   std::vector<int64_t> GetAllPaymentAppIDs() {
     base::RunLoop run_loop;
-    PaymentAppProvider::Manifests manifests;
-    PaymentAppProvider::GetInstance()->GetAllManifests(
+    PaymentAppProvider::PaymentApps apps;
+    PaymentAppProvider::GetInstance()->GetAllPaymentApps(
         shell()->web_contents()->GetBrowserContext(),
-        base::Bind(&GetAllManifestsCallback, run_loop.QuitClosure(),
-                   &manifests));
+        base::BindOnce(&GetAllPaymentAppsCallback, run_loop.QuitClosure(),
+                       &apps));
     run_loop.Run();
 
     std::vector<int64_t> ids;
-    for (const auto& manifest : manifests) {
-      ids.push_back(manifest.first);
+    for (const auto& app_info : apps) {
+      for (const auto& instrument : app_info.second) {
+        ids.push_back(instrument->registration_id);
+      }
     }
 
     return ids;
