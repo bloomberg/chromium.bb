@@ -20,7 +20,7 @@ InspectedFrames::Iterator InspectedFrames::end() {
 }
 
 bool InspectedFrames::Contains(LocalFrame* frame) const {
-  return frame->InstrumentingAgents() == root_->InstrumentingAgents();
+  return frame->GetProbeSink() == root_->GetProbeSink();
 }
 
 LocalFrame* InspectedFrames::FrameWithSecurityOrigin(
@@ -45,7 +45,7 @@ InspectedFrames::Iterator& InspectedFrames::Iterator::operator++() {
     if (!frame->IsLocalFrame())
       continue;
     LocalFrame* local = ToLocalFrame(frame);
-    if (local->InstrumentingAgents() == root_->InstrumentingAgents()) {
+    if (local->GetProbeSink() == root_->GetProbeSink()) {
       current_ = local;
       break;
     }

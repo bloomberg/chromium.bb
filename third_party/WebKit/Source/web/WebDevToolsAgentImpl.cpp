@@ -253,8 +253,7 @@ WebDevToolsAgentImpl::WebDevToolsAgentImpl(
     bool include_view_agents)
     : client_(client),
       web_local_frame_impl_(web_local_frame_impl),
-      instrumenting_agents_(
-          web_local_frame_impl_->GetFrame()->InstrumentingAgents()),
+      probe_sink_(web_local_frame_impl_->GetFrame()->GetProbeSink()),
       resource_content_loader_(InspectorResourceContentLoader::Create(
           web_local_frame_impl_->GetFrame())),
       inspected_frames_(
@@ -270,7 +269,7 @@ WebDevToolsAgentImpl::WebDevToolsAgentImpl(
       layer_tree_id_(0) {
   DCHECK(IsMainThread());
   DCHECK(web_local_frame_impl_->GetFrame());
-  instrumenting_agents_->addInspectorTraceEvents(trace_events_agent_);
+  probe_sink_->addInspectorTraceEvents(trace_events_agent_);
 }
 
 WebDevToolsAgentImpl::~WebDevToolsAgentImpl() {
@@ -279,7 +278,7 @@ WebDevToolsAgentImpl::~WebDevToolsAgentImpl() {
 
 DEFINE_TRACE(WebDevToolsAgentImpl) {
   visitor->Trace(web_local_frame_impl_);
-  visitor->Trace(instrumenting_agents_);
+  visitor->Trace(probe_sink_);
   visitor->Trace(resource_content_loader_);
   visitor->Trace(inspected_frames_);
   visitor->Trace(resource_container_);
@@ -295,7 +294,7 @@ DEFINE_TRACE(WebDevToolsAgentImpl) {
 void WebDevToolsAgentImpl::WillBeDestroyed() {
   DCHECK(web_local_frame_impl_->GetFrame());
   DCHECK(inspected_frames_->Root()->View());
-  instrumenting_agents_->removeInspectorTraceEvents(trace_events_agent_);
+  probe_sink_->removeInspectorTraceEvents(trace_events_agent_);
   trace_events_agent_ = nullptr;
   if (session_)
     Detach(session_->SessionId());
@@ -312,7 +311,7 @@ void WebDevToolsAgentImpl::InitializeSession(int session_id,
   v8::Isolate* isolate = V8PerIsolateData::MainThreadIsolate();
 
   session_ = new InspectorSession(
-      this, instrumenting_agents_.Get(), session_id,
+      this, probe_sink_.Get(), session_id,
       main_thread_debugger->GetV8Inspector(),
       main_thread_debugger->ContextGroupId(inspected_frames_->Root()), state);
 

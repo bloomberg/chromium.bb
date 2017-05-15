@@ -65,7 +65,7 @@ PerformanceMonitor::PerformanceMonitor(LocalFrame* local_root)
     : local_root_(local_root) {
   std::fill(std::begin(thresholds_), std::end(thresholds_), 0);
   Platform::Current()->CurrentThread()->AddTaskTimeObserver(this);
-  local_root_->InstrumentingAgents()->addPerformanceMonitor(this);
+  local_root_->GetProbeSink()->addPerformanceMonitor(this);
 }
 
 PerformanceMonitor::~PerformanceMonitor() {
@@ -97,7 +97,7 @@ void PerformanceMonitor::Shutdown() {
   subscriptions_.clear();
   UpdateInstrumentation();
   Platform::Current()->CurrentThread()->RemoveTaskTimeObserver(this);
-  local_root_->InstrumentingAgents()->removePerformanceMonitor(this);
+  local_root_->GetProbeSink()->removePerformanceMonitor(this);
   local_root_ = nullptr;
 }
 

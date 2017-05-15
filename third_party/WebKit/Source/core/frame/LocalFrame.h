@@ -165,7 +165,7 @@ class CORE_EXPORT LocalFrame final : public Frame,
   // behavior for detached windows.
   bool IsCrossOriginSubframe() const;
 
-  CoreProbeSink* InstrumentingAgents() { return instrumenting_agents_.Get(); }
+  CoreProbeSink* GetProbeSink() { return probe_sink_.Get(); }
 
   // =========================================================================
   // All public functions below this point are candidates to move out of
@@ -284,7 +284,7 @@ class CORE_EXPORT LocalFrame final : public Frame,
 
   bool in_view_source_mode_;
 
-  Member<CoreProbeSink> instrumenting_agents_;
+  Member<CoreProbeSink> probe_sink_;
   Member<PerformanceMonitor> performance_monitor_;
 
   InterfaceProvider* const interface_provider_;
