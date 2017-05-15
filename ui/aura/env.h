@@ -114,6 +114,7 @@ class AURA_EXPORT Env : public ui::EventTarget,
 
  private:
   friend class test::EnvTestHelper;
+  friend class EventInjector;
   friend class MusMouseLocationUpdater;
   friend class Window;
   friend class WindowTreeHost;

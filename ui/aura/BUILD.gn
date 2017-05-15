@@ -62,6 +62,8 @@ component("aura") {
     "env_input_state_controller.cc",
     "env_input_state_controller.h",
     "env_observer.h",
+    "event_injector.cc",
+    "event_injector.h",
     "input_state_lookup.cc",
     "input_state_lookup.h",
     "input_state_lookup_win.cc",
