@@ -3,4 +3,4 @@
 # found in the LICENSE file.
 
 # vpython.
-infra/tools/luci/vpython/${platform}  git_revision:0d9aafc8115a09361c878329f301ea1e329c465b
+infra/tools/luci/vpython/${platform}  git_revision:00f5394a90dfa98e53e191d5a6b543bce70c295f
