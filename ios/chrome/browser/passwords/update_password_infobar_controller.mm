@@ -4,7 +4,7 @@
 
 #import "ios/chrome/browser/passwords/update_password_infobar_controller.h"
 
-#include "base/mac/objc_release_properties.h"
+#import "base/mac/objc_property_releaser.h"
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "ios/chrome/browser/infobars/confirm_infobar_controller+protected.h"
@@ -19,6 +19,8 @@ NSUInteger kAccountTag = 10;
 }
 
 @interface UpdatePasswordInfoBarController ()<SelectorCoordinatorDelegate> {
+  base::mac::ObjCPropertyReleaser
+      _propertyReleaser_UpdatePasswordInfoBarController;
   IOSChromeUpdatePasswordInfoBarDelegate* _delegate;
 }
 @property(nonatomic, retain) SelectorCoordinator* selectorCoordinator;
@@ -28,9 +30,13 @@ NSUInteger kAccountTag = 10;
 
 @synthesize selectorCoordinator = _selectorCoordinator;
 
-- (void)dealloc {
-  base::mac::ReleaseProperties(self);
-  [super dealloc];
+- (instancetype)initWithDelegate:(InfoBarViewDelegate*)delegate {
+  self = [super initWithDelegate:delegate];
+  if (self) {
+    _propertyReleaser_UpdatePasswordInfoBarController.Init(
+        self, [UpdatePasswordInfoBarController class]);
+  }
+  return self;
 }
 
 - (InfoBarView*)viewForDelegate:

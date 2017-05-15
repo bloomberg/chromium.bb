@@ -12,7 +12,7 @@
 #import "base/ios/weak_nsobject.h"
 #include "base/mac/bundle_locations.h"
 #include "base/mac/foundation_util.h"
-#include "base/mac/objc_release_properties.h"
+#include "base/mac/objc_property_releaser.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
@@ -183,6 +183,8 @@ const CGFloat kNewTabButtonBottomOffsetHighRes = 2.0;
   // The model index of the placeholder gap, if one exists.  This value is used
   // as the new model index of the dragged tab when it is dropped.
   NSUInteger _placeholderGapModelIndex;
+
+  base::mac::ObjCPropertyReleaser _propertyReleaser_TabStripController;
 }
 
 @property(nonatomic, readonly, retain) TabStripView* tabStripView;
@@ -324,6 +326,7 @@ const CGFloat kNewTabButtonBottomOffsetHighRes = 2.0;
 - (instancetype)initWithTabModel:(TabModel*)tabModel
                            style:(TabStrip::Style)style {
   if ((self = [super init])) {
+    _propertyReleaser_TabStripController.Init(self, [TabStripController class]);
     _tabArray.reset([[NSMutableArray alloc] initWithCapacity:10]);
     _closingTabs.reset([[NSMutableSet alloc] initWithCapacity:5]);
 
@@ -429,7 +432,6 @@ const CGFloat kNewTabButtonBottomOffsetHighRes = 2.0;
   [_tabStripView setDelegate:nil];
   [_tabStripView setLayoutDelegate:nil];
   [_tabModel removeObserver:self];
-  base::mac::ReleaseProperties(self);
   [super dealloc];
 }
 

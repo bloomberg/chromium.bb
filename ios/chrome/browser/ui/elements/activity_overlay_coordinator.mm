@@ -4,11 +4,13 @@
 
 #import "ios/chrome/browser/ui/elements/activity_overlay_coordinator.h"
 
-#include "base/mac/objc_release_properties.h"
+#import "base/mac/objc_property_releaser.h"
 #import "ios/chrome/browser/ui/elements/activity_overlay_view_controller.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 
-@interface ActivityOverlayCoordinator ()
+@interface ActivityOverlayCoordinator () {
+  base::mac::ObjCPropertyReleaser _propertyReleaser_ActivityOverlayCoordinator;
+}
 
 // View controller that displays an activity indicator.
 @property(nonatomic, retain) UIViewController* activityOverlayViewController;
@@ -18,9 +20,14 @@
 
 @synthesize activityOverlayViewController = _activityOverlayViewController;
 
-- (void)dealloc {
-  base::mac::ReleaseProperties(self);
-  [super dealloc];
+- (nullable instancetype)initWithBaseViewController:
+    (UIViewController*)viewController {
+  self = [super initWithBaseViewController:viewController];
+  if (self) {
+    _propertyReleaser_ActivityOverlayCoordinator.Init(
+        self, [ActivityOverlayCoordinator class]);
+  }
+  return self;
 }
 
 - (void)start {

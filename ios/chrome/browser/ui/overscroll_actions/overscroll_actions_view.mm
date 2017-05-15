@@ -7,7 +7,7 @@
 #import <QuartzCore/QuartzCore.h>
 
 #include "base/logging.h"
-#include "base/mac/objc_release_properties.h"
+#include "base/mac/objc_property_releaser.h"
 #include "base/mac/scoped_nsobject.h"
 #include "ios/chrome/browser/ui/rtl_geometry.h"
 #include "ios/chrome/browser/ui/uikit_ui_util.h"
@@ -134,6 +134,7 @@ enum class OverscrollViewState {
   // The array is built the first time the method -layersToCenterVertically is
   // called.
   base::scoped_nsobject<NSArray> _layersToCenterVertically;
+  base::mac::ObjCPropertyReleaser _propertyReleaser_OverscrollActionsView;
 }
 
 // Redefined to readwrite.
@@ -241,6 +242,8 @@ enum class OverscrollViewState {
 - (instancetype)initWithFrame:(CGRect)frame {
   self = [super initWithFrame:frame];
   if (self) {
+    _propertyReleaser_OverscrollActionsView.Init(self,
+                                                 [OverscrollActionsView class]);
     _deformationBehaviorEnabled = YES;
     self.autoresizingMask =
         UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
@@ -302,7 +305,6 @@ enum class OverscrollViewState {
 
 - (void)dealloc {
   [self.snapshotView removeFromSuperview];
-  base::mac::ReleaseProperties(self);
   [super dealloc];
 }
 
