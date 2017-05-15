@@ -1737,8 +1737,7 @@ void BrowserOptionsHandler::HandleAutoOpenButton(const base::ListValue* args) {
   base::RecordAction(UserMetricsAction("Options_ResetAutoOpenFiles"));
   DownloadManager* manager = BrowserContext::GetDownloadManager(
       web_ui()->GetWebContents()->GetBrowserContext());
-  if (manager)
-    DownloadPrefs::FromDownloadManager(manager)->ResetAutoOpen();
+  DownloadPrefs::FromDownloadManager(manager)->ResetAutoOpen();
 }
 
 void BrowserOptionsHandler::HandleDefaultFontSize(const base::ListValue* args) {
@@ -2186,8 +2185,7 @@ void BrowserOptionsHandler::SetupAutoOpenFileTypes() {
   // We show the button if the user has any auto-open file types registered.
   DownloadManager* manager = BrowserContext::GetDownloadManager(
       web_ui()->GetWebContents()->GetBrowserContext());
-  bool display = manager &&
-      DownloadPrefs::FromDownloadManager(manager)->IsAutoOpenUsed();
+  bool display = DownloadPrefs::FromDownloadManager(manager)->IsAutoOpenUsed();
   base::Value value(display);
   web_ui()->CallJavascriptFunctionUnsafe(
       "BrowserOptions.setAutoOpenFileTypesDisplayed", value);

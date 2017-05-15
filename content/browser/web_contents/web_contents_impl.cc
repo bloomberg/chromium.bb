@@ -3174,20 +3174,16 @@ void WebContentsImpl::SaveFrameWithHeaders(const GURL& url,
 
   StoragePartition* storage_partition = BrowserContext::GetStoragePartition(
       GetBrowserContext(), frame_host->GetSiteInstance());
-  DownloadManager* dlm =
-      BrowserContext::GetDownloadManager(GetBrowserContext());
-  if (!dlm)
-    return;
   int64_t post_id = -1;
   if (is_main_frame) {
     const NavigationEntry* entry = controller_.GetLastCommittedEntry();
     if (entry)
       post_id = entry->GetPostID();
   }
-  std::unique_ptr<DownloadUrlParameters> params(new DownloadUrlParameters(
+  auto params = base::MakeUnique<DownloadUrlParameters>(
       url, frame_host->GetProcess()->GetID(),
       frame_host->GetRenderViewHost()->GetRoutingID(),
-      frame_host->GetRoutingID(), storage_partition->GetURLRequestContext()));
+      frame_host->GetRoutingID(), storage_partition->GetURLRequestContext());
   params->set_referrer(referrer);
   params->set_post_id(post_id);
   if (post_id >= 0)
@@ -3206,7 +3202,8 @@ void WebContentsImpl::SaveFrameWithHeaders(const GURL& url,
       params->add_request_header(pair[0], pair[1]);
     }
   }
-  dlm->DownloadUrl(std::move(params));
+  BrowserContext::GetDownloadManager(GetBrowserContext())
+      ->DownloadUrl(std::move(params));
 }
 
 void WebContentsImpl::GenerateMHTML(

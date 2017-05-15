@@ -63,8 +63,6 @@ class DragDownloadFile::DragDownloadFileUI : public DownloadItem::Observer {
   void InitiateDownload(base::File file,
                         const base::FilePath& file_path) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
-    DownloadManager* download_manager =
-        BrowserContext::GetDownloadManager(web_contents_->GetBrowserContext());
 
     RecordDownloadSource(INITIATED_BY_DRAG_N_DROP);
     // TODO(https://crbug.com/614134) This should use the frame actually
@@ -78,7 +76,8 @@ class DragDownloadFile::DragDownloadFileUI : public DownloadItem::Observer {
                                     weak_ptr_factory_.GetWeakPtr()));
     params->set_file_path(file_path);
     params->set_file(std::move(file));  // Nulls file.
-    download_manager->DownloadUrl(std::move(params));
+    BrowserContext::GetDownloadManager(web_contents_->GetBrowserContext())
+        ->DownloadUrl(std::move(params));
   }
 
   void Cancel() {
