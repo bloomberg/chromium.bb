@@ -85,7 +85,7 @@ StyleRareInheritedData::StyleRareInheritedData()
       overflow_wrap_(ComputedStyle::InitialOverflowWrap()),
       line_break_(kLineBreakAuto),
       user_select_(ComputedStyle::InitialUserSelect()),
-      speak_(kSpeakNormal),
+      speak_(static_cast<unsigned>(ESpeak::kNormal)),
       hyphens_(kHyphensManual),
       text_emphasis_fill_(kTextEmphasisFillFilled),
       text_emphasis_mark_(kTextEmphasisMarkNone),

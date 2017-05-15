@@ -2161,22 +2161,22 @@ template <>
 inline CSSIdentifierValue::CSSIdentifierValue(ESpeak e)
     : CSSValue(kIdentifierClass) {
   switch (e) {
-    case kSpeakNone:
+    case ESpeak::kNone:
       value_id_ = CSSValueNone;
       break;
-    case kSpeakNormal:
+    case ESpeak::kNormal:
       value_id_ = CSSValueNormal;
       break;
-    case kSpeakSpellOut:
+    case ESpeak::kSpellOut:
       value_id_ = CSSValueSpellOut;
       break;
-    case kSpeakDigits:
+    case ESpeak::kDigits:
       value_id_ = CSSValueDigits;
       break;
-    case kSpeakLiteralPunctuation:
+    case ESpeak::kLiteralPunctuation:
       value_id_ = CSSValueLiteralPunctuation;
       break;
-    case kSpeakNoPunctuation:
+    case ESpeak::kNoPunctuation:
       value_id_ = CSSValueNoPunctuation;
       break;
   }
@@ -2214,23 +2214,23 @@ template <>
 inline ESpeak CSSIdentifierValue::ConvertTo() const {
   switch (value_id_) {
     case CSSValueNone:
-      return kSpeakNone;
+      return ESpeak::kNone;
     case CSSValueNormal:
-      return kSpeakNormal;
+      return ESpeak::kNormal;
     case CSSValueSpellOut:
-      return kSpeakSpellOut;
+      return ESpeak::kSpellOut;
     case CSSValueDigits:
-      return kSpeakDigits;
+      return ESpeak::kDigits;
     case CSSValueLiteralPunctuation:
-      return kSpeakLiteralPunctuation;
+      return ESpeak::kLiteralPunctuation;
     case CSSValueNoPunctuation:
-      return kSpeakNoPunctuation;
+      return ESpeak::kNoPunctuation;
     default:
       break;
   }
 
   NOTREACHED();
-  return kSpeakNormal;
+  return ESpeak::kNormal;
 }
 
 template <>
