@@ -221,9 +221,7 @@ static int tegra_bo_create(struct bo *bo, uint32_t width, uint32_t height, uint3
 
 	ret = drmIoctl(bo->drv->fd, DRM_IOCTL_TEGRA_GEM_CREATE, &gem_create);
 	if (ret) {
-		fprintf(stderr, "drv: DRM_IOCTL_TEGRA_GEM_CREATE failed "
-				"(size=%zu)\n",
-			size);
+		fprintf(stderr, "drv: DRM_IOCTL_TEGRA_GEM_CREATE failed (size=%zu)\n", size);
 		return ret;
 	}
 
