@@ -676,7 +676,7 @@ const char kImportantSitesInCbdDescription[] =
 
 #if defined(USE_ASH)
 
-const char kAshShelfColor[] = "Shelf color in Chrome OS system UI";
+const char kAshShelfColorName[] = "Shelf color in Chrome OS system UI";
 
 const char kAshShelfColorDescription[] =
     "Enables/disables the shelf color to be a derived from the wallpaper. The "
@@ -1451,9 +1451,6 @@ const char kDatasaverPromptDescription[] =
 
 const char kDatasaverPromptDemoMode[] = "Demo mode";
 
-const char kDisableUnifiedMediaPipelineDescription[] =
-    "Disables the unified (Android and desktop) media pipeline on Android.";
-
 const char kTrySupportedChannelLayoutsName[] =
     "Causes audio output streams to check if channel layouts other than the "
     "default hardware layout are available.";
@@ -1626,20 +1623,6 @@ const char kEnableGroupedHistoryName[] = "Group history by domain";
 const char kEnableGroupedHistoryDescription[] =
     "Group history by website domain (i.e. google.com) on "
     "chrome://history.";
-
-const char kSecurityChipDefault[] = "Default";
-
-const char kSecurityChipShowNonsecureOnly[] = "Show non-secure only";
-
-const char kSecurityChipShowAll[] = "Show all";
-
-const char kSecurityChipAnimationDefault[] = "Default";
-
-const char kSecurityChipAnimationNone[] = "No animation";
-
-const char kSecurityChipAnimationNonsecureOnly[] = "Animate non-secure only";
-
-const char kSecurityChipAnimationAll[] = "Animate all";
 
 const char kSaveasMenuLabelExperimentName[] =
     "Switch 'Save as' menu labels to 'Download'";
