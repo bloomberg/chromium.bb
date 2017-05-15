@@ -277,16 +277,13 @@ void PaymentRequestDialogView::ShowShippingAddressEditor(
 
 void PaymentRequestDialogView::ShowContactInfoEditor(
     BackNavigationType back_navigation_type,
-    base::OnceClosure on_edited,
-    base::OnceCallback<void(const autofill::AutofillProfile&)> on_added,
     autofill::AutofillProfile* profile) {
-  view_stack_->Push(
-      CreateViewAndInstallController(
-          base::MakeUnique<ContactInfoEditorViewController>(
-              request_->spec(), request_->state(), this, back_navigation_type,
-              std::move(on_edited), std::move(on_added), profile),
-          &controller_map_),
-      /* animate = */ true);
+  view_stack_->Push(CreateViewAndInstallController(
+                        base::MakeUnique<ContactInfoEditorViewController>(
+                            request_->spec(), request_->state(), this,
+                            back_navigation_type, profile),
+                        &controller_map_),
+                    /* animate = */ true);
   if (observer_for_testing_)
     observer_for_testing_->OnContactInfoEditorOpened();
 }

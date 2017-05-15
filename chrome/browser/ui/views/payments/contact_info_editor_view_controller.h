@@ -25,14 +25,11 @@ class ContactInfoEditorViewController : public EditorViewController {
   // Does not take ownership of the arguments, which should outlive this object.
   // Passing nullptr as |profile| indicates that we are editing a new profile;
   // other arguments should never be null.
-  ContactInfoEditorViewController(
-      PaymentRequestSpec* spec,
-      PaymentRequestState* state,
-      PaymentRequestDialogView* dialog,
-      BackNavigationType back_navigation_type,
-      base::OnceClosure on_edited,
-      base::OnceCallback<void(const autofill::AutofillProfile&)> on_added,
-      autofill::AutofillProfile* profile);
+  ContactInfoEditorViewController(PaymentRequestSpec* spec,
+                                  PaymentRequestState* state,
+                                  PaymentRequestDialogView* dialog,
+                                  BackNavigationType back_navigation_type,
+                                  autofill::AutofillProfile* profile);
   ~ContactInfoEditorViewController() override;
 
   // EditorViewController:
@@ -54,15 +51,10 @@ class ContactInfoEditorViewController : public EditorViewController {
   // Uses the values in the UI fields to populate the corresponding values in
   // |profile|.
   void PopulateProfile(autofill::AutofillProfile* profile);
+
   bool GetSheetId(DialogViewID* sheet_id) override;
 
   autofill::AutofillProfile* profile_to_edit_;
-
-  // Called when |profile_to_edit_| was successfully edited.
-  base::OnceClosure on_edited_;
-  // Called when a new profile was added. The const reference is short-lived,
-  // and the callee should make a copy.
-  base::OnceCallback<void(const autofill::AutofillProfile&)> on_added_;
 
   class ContactInfoValidationDelegate : public ValidationDelegate {
    public:

@@ -27,13 +27,9 @@ ContactInfoEditorViewController::ContactInfoEditorViewController(
     PaymentRequestState* state,
     PaymentRequestDialogView* dialog,
     BackNavigationType back_navigation_type,
-    base::OnceClosure on_edited,
-    base::OnceCallback<void(const autofill::AutofillProfile&)> on_added,
     autofill::AutofillProfile* profile)
     : EditorViewController(spec, state, dialog, back_navigation_type),
-      profile_to_edit_(profile),
-      on_edited_(std::move(on_edited)),
-      on_added_(std::move(on_added)) {}
+      profile_to_edit_(profile) {}
 
 ContactInfoEditorViewController::~ContactInfoEditorViewController() {}
 
@@ -80,15 +76,12 @@ bool ContactInfoEditorViewController::ValidateModelAndSave() {
     PopulateProfile(profile_to_edit_);
     state()->GetPersonalDataManager()->UpdateProfile(*profile_to_edit_);
     state()->profile_comparator()->Invalidate(*profile_to_edit_);
-    std::move(on_edited_).Run();
-    on_added_.Reset();
   } else {
     std::unique_ptr<autofill::AutofillProfile> profile =
         base::MakeUnique<autofill::AutofillProfile>();
     PopulateProfile(profile.get());
     state()->GetPersonalDataManager()->AddProfile(*profile);
-    std::move(on_added_).Run(*profile);
-    on_edited_.Reset();
+    // TODO(crbug.com/712224): Add to profile cache in state_.
   }
   return true;
 }
