@@ -12,7 +12,7 @@
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "components/certificate_reporting/error_report.h"
 #include "components/prefs/pref_service.h"
-#include "components/safe_browsing_db/safe_browsing_prefs.h"
+#include "components/safe_browsing/common/safe_browsing_prefs.h"
 #include "content/public/browser/browser_thread.h"
 
 namespace {

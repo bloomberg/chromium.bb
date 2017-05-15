@@ -4,8 +4,8 @@
 //
 // Safe Browsing preferences and some basic utility functions for using them.
 
-#ifndef COMPONENTS_SAFE_BROWSING_DB_SAFE_BROWSING_PREFS_H_
-#define COMPONENTS_SAFE_BROWSING_DB_SAFE_BROWSING_PREFS_H_
+#ifndef COMPONENTS_SAFE_BROWSING_COMMON_SAFE_BROWSING_PREFS_H_
+#define COMPONENTS_SAFE_BROWSING_COMMON_SAFE_BROWSING_PREFS_H_
 
 #include "base/feature_list.h"
 
@@ -148,4 +148,4 @@ void UpdatePrefsBeforeSecurityInterstitial(PrefService* prefs);
 
 }  // namespace safe_browsing
 
-#endif  // COMPONENTS_SAFE_BROWSING_DB_SAFE_BROWSING_PREFS_H_
+#endif  // COMPONENTS_SAFE_BROWSING_COMMON_SAFE_BROWSING_PREFS_H_
