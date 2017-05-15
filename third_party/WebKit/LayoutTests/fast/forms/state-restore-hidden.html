@@ -13,7 +13,7 @@
 </form>
 
 <script>
-description("Bug 77391 - Hidden form elements do not save their state prior to form submission");
+description("webkit.org/b/77391 - Hidden form elements do not save their state prior to form submission; crbug.com/651822 - Stop to save state for hidden type.");
 
 window.jsTestIsAsync = true;
 
@@ -30,7 +30,7 @@ function runTest() {
         setTimeout(function() {document.f.submit();}, 0);
     } else {
         // Second visit.
-        shouldBeEqualToString("document.f.hidden.value", "after");
+        shouldBeEqualToString("document.f.hidden.value", "before");
         successfullyParsed = true;
 
         finishJSTest();

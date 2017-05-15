@@ -107,7 +107,6 @@ HTMLInputElement::HTMLInputElement(Document& document, bool created_by_parser)
       has_non_empty_list_(false),
       state_restored_(false),
       parsing_in_progress_(created_by_parser),
-      value_attribute_was_updated_after_parsing_(false),
       can_receive_dropped_files_(false),
       should_reveal_password_(false),
       needs_to_update_view_value_(true),
@@ -722,7 +721,6 @@ void HTMLInputElement::ParseAttribute(
     }
     needs_to_update_view_value_ = true;
     SetNeedsValidityCheck();
-    value_attribute_was_updated_after_parsing_ = !parsing_in_progress_;
     input_type_->WarnIfValueIsInvalidAndElementIsVisible(value);
     input_type_->InRangeChanged();
     input_type_view_->ValueAttributeChanged();

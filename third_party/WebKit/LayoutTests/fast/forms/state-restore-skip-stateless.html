@@ -14,17 +14,14 @@
 <input name=name05 type=url>
 <input name=name06 type=email>
 <input name=name07 type=password>
-<!-- Don't test optional types.
-<input name=name08 type=datetime>
 <input name=name09 type=date>
 <input name=name10 type=month>
 <input name=name11 type=week>
 <input name=name12 type=time>
 <input name=name13 type=datetime-local>
--->
 <input name=name14 type=number>
 <input name=name15 type=range>
-<!-- <input name=name16 type=color> -->
+<input name=name16 type=color>
 <input name=name17 type=checkbox>
 <input name=name18 type=radio>
 <input name=name19 type=file>
@@ -44,9 +41,9 @@ console.log('Test if state of stateless form control types are not saved.');
 jsTestIsAsync = true;
 
 if (window.internals) {
-    var statefulTypes = ['hidden', 'text', 'tel', 'url', 'email', 'number', 'range', 'checkbox',
+    var statefulTypes = ['text', 'tel', 'url', 'email', 'number', 'range', 'checkbox',
                             'radio', 'file', 'select-one', 'select-multiple', 'textarea'];
-    var statelessTypes = ['fieldset', 'password', 'submit', 'reset', 'button', 'output'];
+    var statelessTypes = ['fieldset', 'hidden', 'password', 'submit', 'reset', 'button', 'output'];
 
     var states = internals.formControlStateOfHistoryItem();
     for (var i = 0; i < statefulTypes.length; ++i) {
