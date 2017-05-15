@@ -20,8 +20,7 @@ import org.junit.runners.BlockJUnit4ClassRunner;
 public class ChannelDefinitionsTest {
     @Test
     public void testNoOverlapBetweenStartupAndLegacyChannelIds() throws Exception {
-        ChannelDefinitions channelDefinitions = new ChannelDefinitions();
-        assertThat(channelDefinitions.getStartupChannelIds(),
-                everyItem(not(isIn(channelDefinitions.getLegacyChannelIds()))));
+        assertThat(ChannelDefinitions.getStartupChannelIds(),
+                everyItem(not(isIn(ChannelDefinitions.getLegacyChannelIds()))));
     }
 }

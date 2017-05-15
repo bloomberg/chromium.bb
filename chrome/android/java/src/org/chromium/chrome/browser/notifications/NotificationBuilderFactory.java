@@ -48,6 +48,6 @@ public class NotificationBuilderFactory {
         return new NotificationBuilderForO(context, channelId,
                 new ChannelsInitializer(new NotificationManagerProxyImpl(context.getSystemService(
                                                 NotificationManager.class)),
-                        new ChannelDefinitions()));
+                        context.getResources()));
     }
 }
