@@ -19,6 +19,7 @@ class Document;
 class ResourceFetcher;
 class SecurityOrigin;
 class WebTaskRunner;
+class WorkerGlobalScope;
 
 // An abstract interface for top-level loading context.
 // This should be accessed only from the thread where the loading
@@ -29,6 +30,7 @@ class CORE_EXPORT ThreadableLoadingContext
 
  public:
   static ThreadableLoadingContext* Create(Document&);
+  static ThreadableLoadingContext* Create(WorkerGlobalScope&);
 
   ThreadableLoadingContext() = default;
   virtual ~ThreadableLoadingContext() = default;

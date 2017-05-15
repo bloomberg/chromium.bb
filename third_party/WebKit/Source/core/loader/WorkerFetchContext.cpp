@@ -4,14 +4,18 @@
 
 #include "core/loader/WorkerFetchContext.h"
 
+#include "core/frame/Deprecation.h"
+#include "core/frame/UseCounter.h"
 #include "core/workers/WorkerClients.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include "platform/Supplementable.h"
 #include "platform/WebTaskRunner.h"
 #include "platform/exported/WrappedResourceRequest.h"
+#include "platform/loader/fetch/ResourceFetcher.h"
 #include "platform/scheduler/child/web_scheduler.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebThread.h"
+#include "public/platform/WebURLRequest.h"
 #include "public/platform/WebWorkerFetchContext.h"
 
 namespace blink {
@@ -64,17 +68,90 @@ WorkerFetchContext* WorkerFetchContext::Create(
     return nullptr;
   std::unique_ptr<WebWorkerFetchContext> web_context = holder->TakeContext();
   DCHECK(web_context);
-  return new WorkerFetchContext(std::move(web_context));
+  return new WorkerFetchContext(worker_global_scope, std::move(web_context));
 }
 
 WorkerFetchContext::WorkerFetchContext(
+    WorkerGlobalScope& worker_global_scope,
     std::unique_ptr<WebWorkerFetchContext> web_context)
-    : web_context_(std::move(web_context)) {
-  web_context_->InitializeOnWorkerThread(Platform::Current()
-                                             ->CurrentThread()
-                                             ->Scheduler()
-                                             ->LoadingTaskRunner()
-                                             ->ToSingleThreadTaskRunner());
+    : BaseFetchContext(&worker_global_scope),
+      worker_global_scope_(worker_global_scope),
+      web_context_(std::move(web_context)),
+      loading_task_runner_(Platform::Current()
+                               ->CurrentThread()
+                               ->Scheduler()
+                               ->LoadingTaskRunner()) {
+  web_context_->InitializeOnWorkerThread(
+      loading_task_runner_->ToSingleThreadTaskRunner());
+}
+
+ResourceFetcher* WorkerFetchContext::GetResourceFetcher() {
+  if (resource_fetcher_)
+    return resource_fetcher_;
+  resource_fetcher_ = ResourceFetcher::Create(this);
+  return resource_fetcher_;
+}
+
+ContentSettingsClient* WorkerFetchContext::GetContentSettingsClient() const {
+  // TODO(horo): Implement this.
+  return nullptr;
+}
+
+Settings* WorkerFetchContext::GetSettings() const {
+  // TODO(horo): Implement this.
+  return nullptr;
+}
+
+SubresourceFilter* WorkerFetchContext::GetSubresourceFilter() const {
+  // TODO(horo): Implement this.
+  return nullptr;
+}
+
+SecurityContext* WorkerFetchContext::GetParentSecurityContext() const {
+  // TODO(horo): Implement this.
+  return nullptr;
+}
+
+bool WorkerFetchContext::ShouldBlockRequestByInspector(
+    const ResourceRequest& resource_request) const {
+  // TODO(horo): Implement this.
+  return false;
+}
+
+void WorkerFetchContext::DispatchDidBlockRequest(
+    const ResourceRequest& resource_request,
+    const FetchInitiatorInfo& fetch_initiator_info,
+    ResourceRequestBlockedReason blocked_reason) const {
+  // TODO(horo): Implement this.
+}
+
+void WorkerFetchContext::ReportLocalLoadFailed(const KURL&) const {
+  // TODO(horo): Implement this.
+}
+
+bool WorkerFetchContext::ShouldBypassMainWorldCSP() const {
+  // TODO(horo): Implement this.
+  return false;
+}
+
+bool WorkerFetchContext::IsSVGImageChromeClient() const {
+  return false;
+}
+
+void WorkerFetchContext::CountUsage(UseCounter::Feature feature) const {
+  UseCounter::Count(worker_global_scope_, feature);
+}
+
+void WorkerFetchContext::CountDeprecation(UseCounter::Feature feature) const {
+  Deprecation::CountDeprecation(worker_global_scope_, feature);
+}
+
+bool WorkerFetchContext::ShouldBlockFetchByMixedContentCheck(
+    const ResourceRequest& resource_request,
+    const KURL& url,
+    SecurityViolationReportingPolicy reporting_policy) const {
+  // TODO(horo): Implement this.
+  return false;
 }
 
 std::unique_ptr<WebURLLoader> WorkerFetchContext::CreateURLLoader() {
@@ -87,8 +164,19 @@ bool WorkerFetchContext::IsControlledByServiceWorker() const {
 
 void WorkerFetchContext::PrepareRequest(ResourceRequest& request,
                                         RedirectType) {
+  request.OverrideLoadingIPCType(WebURLRequest::LoadingIPCType::kMojo);
   WrappedResourceRequest webreq(request);
   web_context_->WillSendRequest(webreq);
+}
+
+RefPtr<WebTaskRunner> WorkerFetchContext::LoadingTaskRunner() const {
+  return loading_task_runner_;
+}
+
+DEFINE_TRACE(WorkerFetchContext) {
+  visitor->Trace(worker_global_scope_);
+  visitor->Trace(resource_fetcher_);
+  BaseFetchContext::Trace(visitor);
 }
 
 void ProvideWorkerFetchContextToWorker(

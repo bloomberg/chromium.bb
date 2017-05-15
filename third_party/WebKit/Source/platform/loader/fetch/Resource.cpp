@@ -269,7 +269,12 @@ Resource::Resource(const ResourceRequest& request,
       integrity_disposition_(ResourceIntegrityDisposition::kNotChecked),
       options_(options),
       response_timestamp_(CurrentTime()),
-      cancel_timer_(Platform::Current()->MainThread()->GetWebTaskRunner(),
+      cancel_timer_(IsMainThread()
+                        ? Platform::Current()->MainThread()->GetWebTaskRunner()
+                        : Platform::Current()
+                              ->CurrentThread()
+                              ->Scheduler()
+                              ->LoadingTaskRunner(),
                     this,
                     &Resource::CancelTimerFired),
       resource_request_(request) {
@@ -278,7 +283,8 @@ Resource::Resource(const ResourceRequest& request,
   // Currently we support the metadata caching only for HTTP family.
   if (GetResourceRequest().Url().ProtocolIsInHTTPFamily())
     cache_handler_ = CachedMetadataHandlerImpl::Create(this);
-  MemoryCoordinator::Instance().RegisterClient(this);
+  if (IsMainThread())
+    MemoryCoordinator::Instance().RegisterClient(this);
 }
 
 Resource::~Resource() {
@@ -357,7 +363,7 @@ void Resource::FinishAsError(const ResourceError& error) {
   error_ = error;
   is_revalidating_ = false;
 
-  if (error_.IsCancellation() || !IsPreloaded())
+  if ((error_.IsCancellation() || !IsPreloaded()) && IsMainThread())
     GetMemoryCache()->Remove(this);
 
   if (!ErrorOccurred())
@@ -586,7 +592,7 @@ String Resource::ReasonNotDeletable() const {
     builder.AppendNumber(preload_count_);
     builder.Append(')');
   }
-  if (GetMemoryCache()->Contains(this)) {
+  if (IsMainThread() && GetMemoryCache()->Contains(this)) {
     if (!builder.IsEmpty())
       builder.Append(' ');
     builder.Append("in_memory_cache");
@@ -712,7 +718,8 @@ void Resource::DidRemoveClientOrObserver() {
     // operation."
     // We allow non-secure content to be reused in history, but we do not allow
     // secure content to be reused.
-    if (HasCacheControlNoStoreHeader() && Url().ProtocolIs("https"))
+    if (HasCacheControlNoStoreHeader() && Url().ProtocolIs("https") &&
+        IsMainThread())
       GetMemoryCache()->Remove(this);
   }
 }
@@ -735,7 +742,8 @@ void Resource::SetDecodedSize(size_t decoded_size) {
     return;
   size_t old_size = size();
   decoded_size_ = decoded_size;
-  GetMemoryCache()->Update(this, old_size, size());
+  if (IsMainThread())
+    GetMemoryCache()->Update(this, old_size, size());
 }
 
 void Resource::SetEncodedSize(size_t encoded_size) {
@@ -745,7 +753,8 @@ void Resource::SetEncodedSize(size_t encoded_size) {
   size_t old_size = size();
   encoded_size_ = encoded_size;
   encoded_size_memory_usage_ = encoded_size;
-  GetMemoryCache()->Update(this, old_size, size());
+  if (IsMainThread())
+    GetMemoryCache()->Update(this, old_size, size());
 }
 
 void Resource::FinishPendingClients() {

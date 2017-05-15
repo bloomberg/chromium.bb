@@ -150,16 +150,11 @@ CrossOriginAccessControl::AccessStatus CrossOriginAccessControl::CheckAccess(
     const ResourceResponse& response,
     StoredCredentials include_credentials,
     const SecurityOrigin* security_origin) {
-  DEFINE_THREAD_SAFE_STATIC_LOCAL(
-      AtomicString, allow_origin_header_name,
-      (new AtomicString("access-control-allow-origin")));
-  DEFINE_THREAD_SAFE_STATIC_LOCAL(
-      AtomicString, allow_credentials_header_name,
-      (new AtomicString("access-control-allow-credentials")));
-  DEFINE_THREAD_SAFE_STATIC_LOCAL(
-      AtomicString, allow_suborigin_header_name,
-      (new AtomicString("access-control-allow-suborigin")));
-
+  static const char allow_origin_header_name[] = "access-control-allow-origin";
+  static const char allow_credentials_header_name[] =
+      "access-control-allow-credentials";
+  static const char allow_suborigin_header_name[] =
+      "access-control-allow-suborigin";
   int status_code = response.HttpStatusCode();
   if (!status_code)
     return kInvalidResponse;
@@ -181,7 +176,7 @@ CrossOriginAccessControl::AccessStatus CrossOriginAccessControl::CheckAccess(
     }
   }
 
-  if (allow_origin_header_value == g_star_atom) {
+  if (allow_origin_header_value == "*") {
     // A wildcard Access-Control-Allow-Origin can not be used if credentials are
     // to be sent, even with Access-Control-Allow-Credentials set to true.
     if (include_credentials == kDoNotAllowStoredCredentials)

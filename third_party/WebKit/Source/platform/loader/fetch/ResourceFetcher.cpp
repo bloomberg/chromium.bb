@@ -604,7 +604,7 @@ Resource* ResourceFetcher::RequestResource(
     if (!resource && !is_data_url && archive_)
       return nullptr;
   }
-  if (!resource) {
+  if (!resource && IsMainThread()) {
     resource =
         GetMemoryCache()->ResourceForURL(params.Url(), GetCacheIdentifier());
   }
@@ -751,7 +751,8 @@ Resource* ResourceFetcher::CreateResourceForLoading(
     const String& charset,
     const ResourceFactory& factory) {
   const String cache_identifier = GetCacheIdentifier();
-  DCHECK(!GetMemoryCache()->ResourceForURL(params.GetResourceRequest().Url(),
+  DCHECK(!IsMainThread() ||
+         !GetMemoryCache()->ResourceForURL(params.GetResourceRequest().Url(),
                                            cache_identifier));
 
   RESOURCE_LOADING_DVLOG(1) << "Loading Resource for "
@@ -767,7 +768,7 @@ Resource* ResourceFetcher::CreateResourceForLoading(
 
   // - Don't add main resource to cache to prevent reuse.
   // - Don't add the resource if its body will not be stored.
-  if (factory.GetType() != Resource::kMainResource &&
+  if (IsMainThread() && factory.GetType() != Resource::kMainResource &&
       params.Options().data_buffering_policy != kDoNotBufferData) {
     GetMemoryCache()->Add(resource);
   }
@@ -1276,9 +1277,10 @@ bool ResourceFetcher::StartLoad(Resource* resource) {
         prohibit_add_remove_client_in_scope(resource);
     Resource::RevalidationStartForbiddenScope
         revalidation_start_forbidden_scope(resource);
-    ScriptForbiddenScope script_forbidden_scope;
+    ScriptForbiddenIfMainThreadScope script_forbidden_scope;
 
-    if (!Context().ShouldLoadNewResource(resource->GetType())) {
+    if (!Context().ShouldLoadNewResource(resource->GetType()) &&
+        IsMainThread()) {
       GetMemoryCache()->Remove(resource);
       return false;
     }

@@ -31,7 +31,6 @@
 #include "public/platform/WebURLRequest.h"
 
 #include <memory>
-#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/loader/fetch/ResourceRequest.h"
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/Noncopyable.h"
@@ -402,9 +401,7 @@ bool WebURLRequest::IsExternalRequest() const {
 }
 
 WebURLRequest::LoadingIPCType WebURLRequest::GetLoadingIPCType() const {
-  if (RuntimeEnabledFeatures::loadingWithMojoEnabled())
-    return WebURLRequest::LoadingIPCType::kMojo;
-  return WebURLRequest::LoadingIPCType::kChromeIPC;
+  return resource_request_->GetLoadingIPCType();
 }
 
 void WebURLRequest::SetNavigationStartTime(double navigation_start_seconds) {

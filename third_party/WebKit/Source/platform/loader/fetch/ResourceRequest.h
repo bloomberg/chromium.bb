@@ -299,6 +299,13 @@ class PLATFORM_EXPORT ResourceRequest final {
   bool IsExternalRequest() const { return is_external_request_; }
   void SetExternalRequestStateFromRequestorAddressSpace(WebAddressSpace);
 
+  void OverrideLoadingIPCType(WebURLRequest::LoadingIPCType loading_ipc_type) {
+    loading_ipc_type_ = loading_ipc_type;
+  }
+  WebURLRequest::LoadingIPCType GetLoadingIPCType() const {
+    return loading_ipc_type_;
+  }
+
   InputToLoadPerfMetricReportPolicy InputPerfMetricReportPolicy() const {
     return input_perf_metric_report_policy_;
   }
@@ -358,6 +365,7 @@ class PLATFORM_EXPORT ResourceRequest final {
   bool check_for_browser_side_navigation_;
   double ui_start_time_;
   bool is_external_request_;
+  WebURLRequest::LoadingIPCType loading_ipc_type_;
   bool is_same_document_navigation_;
   InputToLoadPerfMetricReportPolicy input_perf_metric_report_policy_;
 
@@ -410,6 +418,7 @@ struct CrossThreadResourceRequestData {
   bool check_for_browser_side_navigation_;
   double ui_start_time_;
   bool is_external_request_;
+  WebURLRequest::LoadingIPCType loading_ipc_type_;
   InputToLoadPerfMetricReportPolicy input_perf_metric_report_policy_;
   ResourceRequest::RedirectStatus redirect_status_;
 };
