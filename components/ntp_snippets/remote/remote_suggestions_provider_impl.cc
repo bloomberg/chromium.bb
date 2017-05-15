@@ -684,31 +684,12 @@ void RemoteSuggestionsProviderImpl::OnFetchMoreFinished(
       UpdateCategoryInfo(category, fetched_category.info);
   SanitizeReceivedSuggestions(existing_content->dismissed,
                               &fetched_category.suggestions);
-  // We compute the result now before modifying |fetched_category.suggestions|.
-  // However, we wait with notifying the caller until the end of the method when
-  // all state is updated.
   std::vector<ContentSuggestion> result =
       ConvertToContentSuggestions(category, fetched_category.suggestions);
-
-  // Fill up the newly fetched suggestions with existing ones, store them, and
-  // notify observers about new data.
-  while (fetched_category.suggestions.size() <
-             static_cast<size_t>(kMaxSuggestionCount) &&
-         !existing_content->suggestions.empty()) {
-    fetched_category.suggestions.emplace(
-        fetched_category.suggestions.begin(),
-        std::move(existing_content->suggestions.back()));
-    existing_content->suggestions.pop_back();
-  }
-  std::vector<std::string> to_dismiss =
-      *GetSuggestionIDVector(existing_content->suggestions);
-  for (const auto& id : to_dismiss) {
-    DismissSuggestionFromCategoryContent(existing_content, id);
-  }
-  DCHECK(existing_content->suggestions.empty());
-
-  IntegrateSuggestions(existing_content,
-                       std::move(fetched_category.suggestions));
+  // Store the additional suggestions into the archive to be able to fetch
+  // images and favicons for them. Note that ArchiveSuggestions clears
+  // |fetched_category.suggestions|.
+  ArchiveSuggestions(existing_content, &fetched_category.suggestions);
 
   // TODO(tschumann): We should properly honor the existing category state,
   // e.g. to make sure we don't serve results after the sign-out. Revisit this:
@@ -716,7 +697,6 @@ void RemoteSuggestionsProviderImpl::OnFetchMoreFinished(
   // status?
   UpdateCategoryStatus(category, CategoryStatus::AVAILABLE);
   fetching_callback.Run(Status::Success(), std::move(result));
-  NotifyNewSuggestions(category, *existing_content);
 }
 
 void RemoteSuggestionsProviderImpl::OnFetchFinished(
