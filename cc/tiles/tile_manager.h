@@ -152,6 +152,7 @@ class CC_EXPORT TileManager : CheckerImageTrackerClient {
 
   const ImageIdFlatSet& TakeImagesToInvalidateOnSyncTree();
   void DidActivateSyncTree();
+  void ClearCheckerImageTracking(bool can_clear_decode_policy_tracking);
 
   std::unique_ptr<base::trace_event::ConvertableToTraceFormat>
   BasicStateAsValue() const;

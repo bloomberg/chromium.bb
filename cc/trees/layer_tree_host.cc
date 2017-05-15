@@ -305,6 +305,12 @@ void LayerTreeHost::FinishCommitOnImplThread(
   if (needs_full_tree_sync_)
     TreeSynchronizer::SynchronizeTrees(root_layer(), sync_tree);
 
+  // Track the navigation state before pushing properties since it overwrites
+  // the |content_source_id_| on the sync tree.
+  bool did_navigate = content_source_id_ != sync_tree->content_source_id();
+  if (did_navigate)
+    host_impl->ClearImageCacheOnNavigation();
+
   PushPropertiesTo(sync_tree);
 
   sync_tree->PassSwapPromises(swap_promise_manager_.TakeSwapPromises());
@@ -317,11 +323,6 @@ void LayerTreeHost::FinishCommitOnImplThread(
   host_impl->SetViewportSize(device_viewport_size_);
   sync_tree->SetDeviceScaleFactor(device_scale_factor_);
   host_impl->SetDebugState(debug_state_);
-
-  if (did_navigate_) {
-    did_navigate_ = false;
-    host_impl->ClearImageCacheOnNavigation();
-  }
 
   sync_tree->set_ui_resource_request_queue(
       ui_resource_manager_->TakeUIResourcesRequests());
@@ -877,7 +878,6 @@ void LayerTreeHost::SetRootLayer(scoped_refptr<Layer> root_layer) {
   ResetGpuRasterizationTracking();
 
   SetNeedsFullTreeSync();
-  did_navigate_ = true;
 }
 
 void LayerTreeHost::RegisterViewportLayers(

@@ -1395,6 +1395,11 @@ void TileManager::DidActivateSyncTree() {
   checker_image_tracker_.DidActivateSyncTree();
 }
 
+void TileManager::ClearCheckerImageTracking(
+    bool can_clear_decode_policy_tracking) {
+  checker_image_tracker_.ClearTracker(can_clear_decode_policy_tracking);
+}
+
 void TileManager::NeedsInvalidationForCheckerImagedTiles() {
   client_->RequestImplSideInvalidation();
 }

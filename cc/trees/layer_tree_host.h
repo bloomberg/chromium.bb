@@ -623,8 +623,6 @@ class CC_EXPORT LayerTreeHost : public NON_EXPORTED_BASE(SurfaceReferenceOwner),
   std::vector<std::pair<sk_sp<const SkImage>, base::Callback<void(bool)>>>
       queued_image_decodes_;
 
-  bool did_navigate_ = false;
-
   DISALLOW_COPY_AND_ASSIGN(LayerTreeHost);
 };
 

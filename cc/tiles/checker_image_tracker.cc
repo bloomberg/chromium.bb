@@ -5,6 +5,7 @@
 #include "cc/tiles/checker_image_tracker.h"
 
 #include "base/bind.h"
+#include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
 #include "base/trace_event/trace_event.h"
 
@@ -30,11 +31,7 @@ CheckerImageTracker::CheckerImageTracker(ImageController* image_controller,
       enable_checker_imaging_(enable_checker_imaging),
       weak_factory_(this) {}
 
-CheckerImageTracker::~CheckerImageTracker() {
-  // Unlock all images pending decode requests.
-  for (auto it : image_id_to_decode_request_id_)
-    image_controller_->UnlockImageDecode(it.second);
-}
+CheckerImageTracker::~CheckerImageTracker() = default;
 
 void CheckerImageTracker::ScheduleImageDecodeQueue(
     ImageDecodeQueue image_decode_queue) {
@@ -63,13 +60,41 @@ const ImageIdFlatSet& CheckerImageTracker::TakeImagesToInvalidateOnSyncTree() {
 void CheckerImageTracker::DidActivateSyncTree() {
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("cc.debug"),
                "CheckerImageTracker::DidActivateSyncTree");
-  for (auto image_id : invalidated_images_on_current_sync_tree_) {
-    auto it = image_id_to_decode_request_id_.find(image_id);
-    image_controller_->UnlockImageDecode(it->second);
-    image_id_to_decode_request_id_.erase(it);
-  }
-
+  for (auto image_id : invalidated_images_on_current_sync_tree_)
+    image_id_to_decode_.erase(image_id);
   invalidated_images_on_current_sync_tree_.clear();
+}
+
+void CheckerImageTracker::ClearTracker(bool can_clear_decode_policy_tracking) {
+  // Unlock all images and tracking for images pending invalidation. The
+  // |images_invalidated_on_current_sync_tree_| will be cleared when the sync
+  // tree is activated.
+  //
+  // Note that we assume that any images with DecodePolicy::ASYNC, which may be
+  // checkered, are safe to stop tracking here and will either be re-checkered
+  // and invalidated when the decode completes or be invalidated externally.
+  // This is because the policy decision for checkering an image is based on
+  // inputs received from a PaintImage in the DisplayItemList. The policy chosen
+  // for a PaintImage should remain unchanged.
+  // If the external inputs for deciding the decode policy for an image change,
+  // they should be accompanied with an invalidation during paint.
+  image_id_to_decode_.clear();
+
+  if (can_clear_decode_policy_tracking) {
+    image_async_decode_state_.clear();
+  } else {
+    // If we can't clear the decode policy, we need to make sure we still
+    // re-decode and checker images that were pending invalidation.
+    for (auto image_id : images_pending_invalidation_) {
+      auto it = image_async_decode_state_.find(image_id);
+
+      DCHECK(it != image_async_decode_state_.end());
+      DCHECK_EQ(it->second, DecodePolicy::SYNC_DECODED_ONCE);
+
+      it->second = DecodePolicy::ASYNC;
+    }
+  }
+  images_pending_invalidation_.clear();
 }
 
 void CheckerImageTracker::DidFinishImageDecode(
@@ -83,11 +108,18 @@ void CheckerImageTracker::DidFinishImageDecode(
 
   DCHECK_NE(ImageController::ImageDecodeResult::DECODE_NOT_REQUIRED, result);
   DCHECK_EQ(outstanding_image_decode_->uniqueID(), image_id);
-
   outstanding_image_decode_ = nullptr;
-  image_async_decode_state_[image_id] = DecodePolicy::SYNC_DECODED_ONCE;
-  images_pending_invalidation_.insert(image_id);
 
+  // The async decode state may have been cleared if the tracker was cleared
+  // before this decode could be finished.
+  auto it = image_async_decode_state_.find(image_id);
+  if (it == image_async_decode_state_.end()) {
+    DCHECK_EQ(image_id_to_decode_.count(image_id), 0u);
+    return;
+  }
+
+  it->second = DecodePolicy::SYNC_DECODED_ONCE;
+  images_pending_invalidation_.insert(image_id);
   ScheduleNextImageDecode();
   client_->NeedsInvalidationForCheckerImagedTiles();
 }
@@ -164,14 +196,17 @@ void CheckerImageTracker::ScheduleNextImageDecode() {
   }
 
   ImageId image_id = outstanding_image_decode_->uniqueID();
-  DCHECK_EQ(image_id_to_decode_request_id_.count(image_id), 0u);
+  DCHECK_EQ(image_id_to_decode_.count(image_id), 0u);
   TRACE_EVENT_ASYNC_BEGIN0("cc", "CheckerImageTracker::DeferImageDecode",
                            image_id);
-  image_id_to_decode_request_id_[image_id] =
+  ImageController::ImageDecodeRequestId request_id =
       image_controller_->QueueImageDecode(
           outstanding_image_decode_,
           base::Bind(&CheckerImageTracker::DidFinishImageDecode,
                      weak_factory_.GetWeakPtr(), image_id));
+
+  image_id_to_decode_.emplace(image_id, base::MakeUnique<ScopedDecodeHolder>(
+                                            image_controller_, request_id));
 }
 
 }  // namespace cc
