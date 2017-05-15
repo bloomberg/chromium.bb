@@ -157,7 +157,11 @@ void MediaRouterUI::UIMediaRoutesObserver::OnRoutesUpdated(
 MediaRouterUI::UIMediaRouteControllerObserver::UIMediaRouteControllerObserver(
     MediaRouterUI* ui,
     scoped_refptr<MediaRouteController> controller)
-    : MediaRouteController::Observer(std::move(controller)), ui_(ui) {}
+    : MediaRouteController::Observer(std::move(controller)), ui_(ui) {
+  if (controller_->current_media_status())
+    OnMediaStatusUpdated(controller_->current_media_status().value());
+}
+
 MediaRouterUI::UIMediaRouteControllerObserver::
     ~UIMediaRouteControllerObserver() {}
 

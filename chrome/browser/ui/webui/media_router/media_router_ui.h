@@ -202,6 +202,7 @@ class MediaRouterUI : public ConstrainedWebDialogUI,
   FRIEND_TEST_ALL_PREFIXES(MediaRouterUITest, OpenAndCloseUIDetailsView);
   FRIEND_TEST_ALL_PREFIXES(MediaRouterUITest, SendMediaCommands);
   FRIEND_TEST_ALL_PREFIXES(MediaRouterUITest, SendMediaStatusUpdate);
+  FRIEND_TEST_ALL_PREFIXES(MediaRouterUITest, SendInitialMediaStatusUpdate);
 
   class UIIssuesObserver;
 

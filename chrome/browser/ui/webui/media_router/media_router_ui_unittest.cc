@@ -123,18 +123,22 @@ class MediaRouterUITest : public ChromeRenderViewHostTestHarness {
     return sink;
   }
 
+  scoped_refptr<MockMediaRouteController> CreateMediaRouteController(
+      const MediaRoute::Id& route_id) {
+    mojom::MediaControllerPtr mojo_media_controller;
+    mojo::MakeRequest(&mojo_media_controller);
+    return scoped_refptr<MockMediaRouteController>(new MockMediaRouteController(
+        route_id, std::move(mojo_media_controller), &mock_router_));
+  }
+
   // Notifies MediaRouterUI that a route details view has been opened. Expects
   // MediaRouterUI to request a MediaRouteController, and gives it a mock
   // controller. Returns a reference to the mock controller.
   scoped_refptr<MockMediaRouteController> OpenUIDetailsView(
       const MediaRoute::Id& route_id) {
+    auto controller = CreateMediaRouteController(route_id);
     MediaSource media_source("mediaSource");
     MediaRoute route(route_id, media_source, "sinkId", "", true, "", true);
-    mojom::MediaControllerPtr mojo_media_controller;
-    mojo::MakeRequest(&mojo_media_controller);
-    scoped_refptr<MockMediaRouteController> controller =
-        new MockMediaRouteController(route_id, std::move(mojo_media_controller),
-                                     &mock_router_);
 
     media_router_ui_->OnRoutesUpdated({route}, std::vector<MediaRoute::Id>());
     EXPECT_CALL(mock_router_, GetRouteController(route_id))
@@ -657,8 +661,26 @@ TEST_F(MediaRouterUITest, SendMediaStatusUpdate) {
   // update to the message handler.
   EXPECT_CALL(*message_handler_, UpdateMediaRouteStatus(status));
   controller->OnMediaStatusUpdated(status);
+}
 
-  EXPECT_TRUE(Mock::VerifyAndClearExpectations(&mock_router_));
+TEST_F(MediaRouterUITest, SendInitialMediaStatusUpdate) {
+  MediaStatus status;
+  status.title = "test title";
+  std::string route_id = "routeId";
+  auto controller = CreateMediaRouteController(route_id);
+  controller->OnMediaStatusUpdated(status);
+
+  CreateMediaRouterUI(profile());
+  MediaSource media_source("mediaSource");
+  MediaRoute route(route_id, media_source, "sinkId", "", true, "", true);
+  media_router_ui_->OnRoutesUpdated({route}, std::vector<MediaRoute::Id>());
+
+  // If the controller has already received a media status update, MediaRouterUI
+  // should be notified with it when it starts observing the controller.
+  EXPECT_CALL(mock_router_, GetRouteController(route_id))
+      .WillOnce(Return(controller));
+  EXPECT_CALL(*message_handler_, UpdateMediaRouteStatus(status));
+  media_router_ui_->OnMediaControllerUIAvailable(route_id);
 }
 
 }  // namespace media_router
