@@ -18,15 +18,15 @@ class GamepadEvent {
                double value,
                base::TimeTicks timestamp);
 
-  int device_id() { return device_id_; }
+  int device_id() const { return device_id_; }
 
-  GamepadEventType type() { return type_; }
+  GamepadEventType type() const { return type_; }
 
-  uint16_t code() { return code_; }
+  uint16_t code() const { return code_; }
 
-  double value() { return value_; }
+  double value() const { return value_; }
 
-  base::TimeTicks timestamp() { return timestamp_; }
+  base::TimeTicks timestamp() const { return timestamp_; }
 
  private:
   int device_id_;
