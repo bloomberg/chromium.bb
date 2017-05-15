@@ -100,7 +100,7 @@ bool ImageSource::GetHotSpot(IntPoint& hot_spot) const {
 }
 
 int ImageSource::RepetitionCount() {
-  return decoder_ ? decoder_->RepetitionCount() : kAnimationNone;
+  return decoder_ ? decoder_->RepetitionCount() : kCAnimationNone;
 }
 
 size_t ImageSource::FrameCount() const {

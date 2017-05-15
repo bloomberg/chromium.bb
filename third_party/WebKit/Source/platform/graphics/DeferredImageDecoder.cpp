@@ -85,7 +85,7 @@ std::unique_ptr<DeferredImageDecoder> DeferredImageDecoder::CreateForTesting(
 DeferredImageDecoder::DeferredImageDecoder(
     std::unique_ptr<ImageDecoder> actual_decoder)
     : actual_decoder_(std::move(actual_decoder)),
-      repetition_count_(kAnimationNone),
+      repetition_count_(kCAnimationNone),
       all_data_received_(false),
       can_yuv_decode_(false),
       has_hot_spot_(false) {}
@@ -266,7 +266,7 @@ void DeferredImageDecoder::ActivateLazyDecoding() {
   color_space_for_sk_images_ = actual_decoder_->ColorSpaceForSkImages();
 
   const bool is_single_frame =
-      actual_decoder_->RepetitionCount() == kAnimationNone ||
+      actual_decoder_->RepetitionCount() == kCAnimationNone ||
       (all_data_received_ && actual_decoder_->FrameCount() == 1u);
   const SkISize decoded_size =
       SkISize::Make(actual_decoder_->DecodedSize().Width(),
