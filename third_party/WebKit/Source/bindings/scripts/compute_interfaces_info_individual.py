@@ -172,7 +172,7 @@ class InterfaceInfoCollector(object):
             'full_paths': [],
             'include_paths': [],
         })
-        self.enumerations = set()
+        self.enumerations = {}
         self.union_types = set()
         self.typedefs = {}
         self.callback_functions = {}
@@ -182,6 +182,16 @@ class InterfaceInfoCollector(object):
         paths_dict = self.partial_interface_files[partial_interface_name]
         paths_dict['full_paths'].append(full_path)
         paths_dict['include_paths'].extend(include_paths)
+
+    def check_enum_consistency(self, enum):
+        existing_enum = self.enumerations.get(enum.name)
+        if not existing_enum:
+            return True
+        # TODO(bashi): Ideally we should not allow multiple enum declarations
+        # but we allow them to work around core/module separation.
+        if len(existing_enum.values) != len(enum.values):
+            return False
+        return all(value in existing_enum.values for value in enum.values)
 
     def collect_info(self, idl_filename):
         """Reads an idl file and collects information which is required by the
@@ -222,11 +232,11 @@ class InterfaceInfoCollector(object):
                 'full_path': os.path.realpath(idl_filename),
             }
         # Check enum duplication.
-        for enum_name in definitions.enumerations.keys():
-            for defined_enum in self.enumerations:
-                if defined_enum.name == enum_name:
-                    raise Exception('Enumeration %s has multiple definitions' % enum_name)
-        self.enumerations.update(definitions.enumerations.values())
+        for enum in definitions.enumerations.values():
+            if not self.check_enum_consistency(enum):
+                raise Exception('Enumeration "%s" is defined more than once '
+                                'with different valid values' % enum.name)
+        self.enumerations.update(definitions.enumerations)
 
         if definitions.interfaces:
             definition = next(definitions.interfaces.itervalues())
@@ -324,7 +334,7 @@ class InterfaceInfoCollector(object):
         return {
             'callback_functions': self.callback_functions,
             'enumerations': dict((enum.name, enum.values)
-                                 for enum in self.enumerations),
+                                 for enum in self.enumerations.values()),
             'typedefs': self.typedefs,
             'union_types': self.union_types,
         }
