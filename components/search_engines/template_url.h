@@ -238,20 +238,26 @@ class TemplateURLRef {
   const std::string& GetSearchTermKey(
       const SearchTermsData& search_terms_data) const;
 
-  // If this TemplateURLRef is valid and contains one search term
-  // in its path, this returns the length of the subpath before the search term,
-  // otherwise this returns std::string::npos.
-  size_t GetSearchTermPositionInPath(
-      const SearchTermsData& search_terms_data) const;
-
   // If this TemplateURLRef is valid and contains one search term,
   // this returns the location of the search term,
   // otherwise this returns url::Parsed::QUERY.
   url::Parsed::ComponentType GetSearchTermKeyLocation(
       const SearchTermsData& search_terms_data) const;
 
+  // If this TemplateURLRef is valid and contains one search term,
+  // this returns the fixed prefix before the search term,
+  // otherwise this returns an empty string.
+  const std::string& GetSearchTermValuePrefix(
+      const SearchTermsData& search_terms_data) const;
+
+  // If this TemplateURLRef is valid and contains one search term,
+  // this returns the fixed suffix after the search term,
+  // otherwise this returns an empty string.
+  const std::string& GetSearchTermValueSuffix(
+      const SearchTermsData& search_terms_data) const;
+
   // Converts the specified term in our owner's encoding to a base::string16.
-  base::string16 SearchTermToString16(const std::string& term) const;
+  base::string16 SearchTermToString16(const base::StringPiece& term) const;
 
   // Returns true if this TemplateURLRef has a replacement term of
   // {google:baseURL} or {google:baseSuggestURL}.
@@ -443,7 +449,6 @@ class TemplateURLRef {
   mutable std::string port_;
   mutable std::string path_;
   mutable std::string search_term_key_;
-  mutable size_t search_term_position_in_path_;
   mutable url::Parsed::ComponentType search_term_key_location_;
   mutable std::string search_term_value_prefix_;
   mutable std::string search_term_value_suffix_;
