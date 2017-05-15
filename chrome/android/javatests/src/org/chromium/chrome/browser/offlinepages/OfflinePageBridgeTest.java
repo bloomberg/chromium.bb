@@ -37,6 +37,7 @@ import java.util.Set;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 
 /** Unit tests for {@link OfflinePageBridge}. */
@@ -283,9 +284,50 @@ public class OfflinePageBridgeTest {
         Assert.assertEquals(requests[0].getUrl(), remaining[0].getUrl());
     }
 
-    private void savePage(final int expectedResult, final String expectedUrl)
+    @Test
+    @SmallTest
+    public void testDeletePagesByOfflineIds() throws Exception {
+        // Save 3 pages and record their offline IDs to delete later.
+        Set<String> pageUrls = new HashSet<>();
+        pageUrls.add(mTestPage);
+        pageUrls.add(mTestPage + "?foo=1");
+        pageUrls.add(mTestPage + "?foo=2");
+        int pagesToDeleteCount = pageUrls.size();
+        List<Long> offlineIdsToDelete = new ArrayList<>();
+        for (String url : pageUrls) {
+            mActivityTestRule.loadUrl(url);
+            offlineIdsToDelete.add(savePage(SavePageResult.SUCCESS, url));
+        }
+        Assert.assertEquals("The pages should exist now that we saved them.", pagesToDeleteCount,
+                checkPagesExistOffline(pageUrls).size());
+
+        // Save one more page but don't save the offline ID, this page should not be deleted.
+        Set<String> pageUrlsToSave = new HashSet<>();
+        String pageToSave = mTestPage + "?bar=1";
+        pageUrlsToSave.add(pageToSave);
+        int pagesToSaveCount = pageUrlsToSave.size();
+        for (String url : pageUrlsToSave) {
+            mActivityTestRule.loadUrl(url);
+            savePage(SavePageResult.SUCCESS, pageToSave);
+        }
+        Assert.assertEquals("The pages should exist now that we saved them.", pagesToSaveCount,
+                checkPagesExistOffline(pageUrlsToSave).size());
+
+        // Delete the first 3 pages.
+        deletePages(offlineIdsToDelete);
+        Assert.assertEquals(
+                "The page should cease to exist.", 0, checkPagesExistOffline(pageUrls).size());
+
+        // We should not have deleted the one we didn't ask to delete.
+        Assert.assertEquals("The page should not be deleted.", pagesToSaveCount,
+                checkPagesExistOffline(pageUrlsToSave).size());
+    }
+
+    // Returns offline ID.
+    private long savePage(final int expectedResult, final String expectedUrl)
             throws InterruptedException {
         final Semaphore semaphore = new Semaphore(0);
+        final AtomicLong result = new AtomicLong(-1);
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
@@ -306,9 +348,27 @@ public class OfflinePageBridgeTest {
                                         "Requested and returned URLs differ.", expectedUrl, url);
                                 Assert.assertEquals(
                                         "Save result incorrect.", expectedResult, savePageResult);
+                                result.set(offlineId);
                                 semaphore.release();
                             }
                         });
+            }
+        });
+        Assert.assertTrue(semaphore.tryAcquire(TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        return result.get();
+    }
+
+    private void deletePages(final List<Long> offlineIds) throws InterruptedException {
+        final Semaphore semaphore = new Semaphore(0);
+        ThreadUtils.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                mOfflinePageBridge.deletePagesByOfflineId(offlineIds, new Callback<Integer>() {
+                    @Override
+                    public void onResult(Integer deletePageResult) {
+                        semaphore.release();
+                    }
+                });
             }
         });
         Assert.assertTrue(semaphore.tryAcquire(TIMEOUT_MS, TimeUnit.MILLISECONDS));
