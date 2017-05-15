@@ -71,10 +71,10 @@ void av1_highbd_warp_affine_ssse3(const int32_t *mat, const uint16_t *ref,
       sx4 += alpha * (-4) + beta * (-4);
       sy4 += gamma * (-4) + delta * (-4);
 
-      sx4 = ROUND_POWER_OF_TWO_SIGNED(sx4, WARP_PARAM_REDUCE_BITS)
-            << WARP_PARAM_REDUCE_BITS;
-      sy4 = ROUND_POWER_OF_TWO_SIGNED(sy4, WARP_PARAM_REDUCE_BITS)
-            << WARP_PARAM_REDUCE_BITS;
+      sx4 = ROUND_POWER_OF_TWO_SIGNED(sx4, WARP_PARAM_REDUCE_BITS) *
+            (1 << WARP_PARAM_REDUCE_BITS);
+      sy4 = ROUND_POWER_OF_TWO_SIGNED(sy4, WARP_PARAM_REDUCE_BITS) *
+            (1 << WARP_PARAM_REDUCE_BITS);
 
       // Horizontal filter
       for (k = -7; k < AOMMIN(8, p_height - i); ++k) {
