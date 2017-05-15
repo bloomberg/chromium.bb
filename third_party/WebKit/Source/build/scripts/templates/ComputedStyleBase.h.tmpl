@@ -121,24 +121,12 @@ class CORE_EXPORT ComputedStyleBase {
     {% endfor %}
   }
 
-  bool ScrollAnchorDisablingPropertyChanged(
-      const ComputedStyleBase& other,
-      const StyleDifference& diff) const {
-    {{fieldwise_diff(computed_style, computed_style.all_fields
-        |selectattr("property_name", "in", ["margin-top", "margin-left", "margin-right", "margin-bottom", "left", "right", "top", "bottom", "padding-top", "padding-left", "padding-right", "padding-bottom"])
-        |list
-      )|indent(4)}}
+  {% for name, groups_to_diff in diff_functions_map.items() %}
+  bool {{name}}(const ComputedStyleBase& other) const {
+    {{fieldwise_diff(groups_to_diff)|indent(4)}}
     return false;
   }
-
-  bool DiffNeedsFullLayoutAndPaintInvalidation(
-      const ComputedStyleBase& other) const {
-    {{fieldwise_diff(computed_style, computed_style.all_fields
-        |selectattr("property_name", "in", ["padding-top", "padding-left", "padding-right", "padding-bottom"])
-        |list
-      )|indent(4)}}
-    return false;
-  }
+  {% endfor %}
 
   // Fields.
   // TODO(sashab): Remove initialFoo() static methods and update callers to

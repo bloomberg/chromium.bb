@@ -1,0 +1,25 @@
+{
+  // This file specifies the fields we want to diff in the various diff functions 
+  // in ComputedStyle.
+
+  parameters: {
+    // The name parameter represents the name of the function to be created.
+
+    // The fields that need to be diffed.
+    fields: {
+    },
+  },
+  data: [
+    {
+        name: "ScrollAnchorDisablingPropertyChanged",
+        fields: ["margin-top", "margin-left", "margin-right", "margin-bottom", 
+                  "left", "right", "top", "bottom", "padding-top", 
+                  "padding-left", "padding-right", "padding-bottom"]
+    },
+    {
+        name: "DiffNeedsFullLayoutAndPaintInvalidation",
+        fields: ["padding-top", "padding-left", "padding-right", 
+                "padding-bottom"]
+    }
+  ],
+}

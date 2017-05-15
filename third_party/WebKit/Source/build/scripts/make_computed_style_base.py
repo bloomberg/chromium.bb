@@ -74,6 +74,20 @@ class Group(object):
         self.all_fields = _flatten_list(subgroup.all_fields for subgroup in subgroups) + fields
 
 
+class DiffGroup(object):
+    """Represents a group of expressions and subgroups that need to be diffed
+    for a function in ComputedStyle.
+
+    Attributes:
+        subgroups: List of DiffGroup instances that are stored as subgroups under this group.
+        expressions: List of expression that are on this group that need to be diffed.
+    """
+    def __init__(self, group_name):
+        self.group_name = group_name
+        self.subgroups = []
+        self.expressions = []
+
+
 class Field(object):
     """
     The generated ComputedStyle object is made up of a series of Fields.
@@ -139,6 +153,10 @@ class Field(object):
         self.internal_setter_method_name = method_name(join_name(setter_method_name, 'Internal'))
         self.initial_method_name = initial_method_name
         self.resetter_method_name = method_name(join_name('Reset', name_for_methods))
+        if self.group_name:
+            self.getter_expression = self.group_member_name + '->' + class_member_name(self.name)
+        else:
+            self.getter_expression = class_member_name(self.name)
 
         # If the size of the field is not None, it means it is a bit field
         self.is_bit_field = self.size is not None
@@ -166,6 +184,24 @@ def _group_fields(fields):
     no_group = groups.pop(None)
     subgroups = [Group(group_name, [], _reorder_fields(fields)) for group_name, fields in groups.items()]
     return Group('', subgroups=subgroups, fields=_reorder_fields(no_group))
+
+
+def _create_diff_groups_map(diff_function_inputs, root_group):
+    diff_functions_map = {}
+    for entry in diff_function_inputs:
+        diff_functions_map[entry['name']] = _create_diff_groups(entry['fields'], root_group)
+    return diff_functions_map
+
+
+def _create_diff_groups(fields_to_diff, root_group):
+    diff_group = DiffGroup(root_group.member_name)
+    for subgroup in root_group.subgroups:
+        if any(field.property_name in fields_to_diff for field in subgroup.all_fields):
+            diff_group.subgroups.append(_create_diff_groups(fields_to_diff, subgroup))
+    for field in root_group.fields:
+        if field.property_name in fields_to_diff:
+            diff_group.expressions.append(field.getter_expression)
+    return diff_group
 
 
 def _create_enums(properties):
@@ -373,6 +409,9 @@ class ComputedStyleBaseWriter(make_style_builder.StyleBuilderWriter):
         # Organise fields into a tree structure where the root group
         # is ComputedStyleBase.
         self._root_group = _group_fields(all_fields)
+        self._diff_functions_map = _create_diff_groups_map(json5_generator.Json5File.load_from_files(
+            [json5_file_paths[2]]
+        ).name_dictionaries, self._root_group)
 
         self._include_paths = _get_include_paths(all_properties)
         self._outputs = {
@@ -387,6 +426,7 @@ class ComputedStyleBaseWriter(make_style_builder.StyleBuilderWriter):
             'enums': self._generated_enums,
             'include_paths': self._include_paths,
             'computed_style': self._root_group,
+            'diff_functions_map': self._diff_functions_map,
         }
 
     @template_expander.use_jinja('ComputedStyleBaseConstants.h.tmpl')

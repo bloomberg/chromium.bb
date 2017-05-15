@@ -568,7 +568,7 @@ bool ComputedStyle::ScrollAnchorDisablingPropertyChanged(
       return true;
   }
 
-  if (ComputedStyleBase::ScrollAnchorDisablingPropertyChanged(other, diff))
+  if (ComputedStyleBase::ScrollAnchorDisablingPropertyChanged(other))
     return true;
 
   if (diff.TransformChanged())
