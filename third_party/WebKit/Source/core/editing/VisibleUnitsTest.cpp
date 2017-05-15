@@ -293,6 +293,21 @@ TEST_F(VisibleUnitsTest, computeInlineBoxPositionBidiIsolate) {
             actual.inline_box);
 }
 
+// http://crbug.com/716093
+TEST_F(VisibleUnitsTest, ComputeInlineBoxPositionMixedEditable) {
+  SetBodyContent(
+      "<div contenteditable id=sample>abc<input contenteditable=false></div>");
+  Element* const sample = GetDocument().getElementById("sample");
+
+  const InlineBoxPosition& actual = ComputeInlineBoxPosition(
+      Position::LastPositionInNode(sample), TextAffinity::kDownstream);
+  // Should not be in infinite-loop
+  EXPECT_EQ(nullptr, actual.inline_box);
+  // TODO(editing-dev): We should return 0 for |InlineBoxPosition| when
+  // |inline_box| is null.
+  EXPECT_EQ(2, actual.offset_in_box);
+}
+
 TEST_F(VisibleUnitsTest, endOfDocument) {
   const char* body_content = "<a id=host><b id=one>1</b><b id=two>22</b></a>";
   const char* shadow_content =
