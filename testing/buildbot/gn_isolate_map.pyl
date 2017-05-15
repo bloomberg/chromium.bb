@@ -326,6 +326,10 @@
     "label": "//:chromiumos_preflight",
     "type": "additional_compile_target",
   },
+  "components_background_task_scheduler_junit_tests": {
+    "label": "//components/background_task_scheduler:components_background_task_scheduler_junit_tests",
+    "type": "junit_test",
+  },
   "components_browsertests": {
     "label": "//components:components_browsertests",
     "type": "windowed_test_launcher",
