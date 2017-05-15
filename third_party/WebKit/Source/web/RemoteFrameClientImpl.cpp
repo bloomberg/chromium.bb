@@ -7,6 +7,7 @@
 #include <memory>
 #include "core/events/KeyboardEvent.h"
 #include "core/events/MouseEvent.h"
+#include "core/events/WebInputEventConversion.h"
 #include "core/events/WheelEvent.h"
 #include "core/frame/RemoteFrame.h"
 #include "core/frame/RemoteFrameView.h"
@@ -19,7 +20,6 @@
 #include "platform/weborigin/SecurityPolicy.h"
 #include "platform/wtf/PtrUtil.h"
 #include "public/web/WebRemoteFrameClient.h"
-#include "web/WebInputEventConversion.h"
 #include "web/WebRemoteFrameImpl.h"
 
 namespace blink {

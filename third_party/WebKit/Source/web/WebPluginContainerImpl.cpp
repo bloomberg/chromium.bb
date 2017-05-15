@@ -49,6 +49,7 @@
 #include "core/events/ProgressEvent.h"
 #include "core/events/ResourceProgressEvent.h"
 #include "core/events/TouchEvent.h"
+#include "core/events/WebInputEventConversion.h"
 #include "core/events/WheelEvent.h"
 #include "core/exported/WebDataSourceImpl.h"
 #include "core/exported/WebViewBase.h"
@@ -104,7 +105,6 @@
 #include "public/web/WebPrintPresetOptions.h"
 #include "public/web/WebViewClient.h"
 #include "web/ChromeClientImpl.h"
-#include "web/WebInputEventConversion.h"
 
 namespace blink {
 
