@@ -20,7 +20,7 @@ public final class BackgroundTaskSchedulerFactory {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             return new BackgroundTaskSchedulerJobService();
         } else {
-            throw new RuntimeException("Not able to schedule through GCM yet.");
+            return new BackgroundTaskSchedulerGcmNetworkManager();
         }
     }
 

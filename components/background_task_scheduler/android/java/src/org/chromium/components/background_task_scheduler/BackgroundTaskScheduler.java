@@ -75,6 +75,7 @@ public class BackgroundTaskScheduler {
      */
     public boolean schedule(Context context, TaskInfo taskInfo) {
         ThreadUtils.assertOnUiThread();
+        BackgroundTaskSchedulerPrefs.addScheduledTask(taskInfo);
         return mSchedulerDelegate.schedule(context, taskInfo);
     }
 
@@ -86,6 +87,7 @@ public class BackgroundTaskScheduler {
      */
     public void cancel(Context context, int taskId) {
         ThreadUtils.assertOnUiThread();
+        BackgroundTaskSchedulerPrefs.removeScheduledTask(taskId);
         mSchedulerDelegate.cancel(context, taskId);
     }
 }
