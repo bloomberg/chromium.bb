@@ -72,6 +72,7 @@
 #include "net/proxy/proxy_config_service_fixed.h"
 #include "net/proxy/proxy_info.h"
 #include "net/proxy/proxy_resolver.h"
+#include "net/proxy/proxy_resolver_factory.h"
 #include "net/proxy/proxy_server.h"
 #include "net/proxy/proxy_service.h"
 #include "net/socket/client_socket_factory.h"
@@ -377,6 +378,20 @@ std::unique_ptr<HttpNetworkSession> CreateSessionWithThrottler(
 
   return session;
 }
+
+class FailingProxyResolverFactory : public ProxyResolverFactory {
+ public:
+  FailingProxyResolverFactory() : ProxyResolverFactory(false) {}
+
+  // ProxyResolverFactory override.
+  int CreateProxyResolver(
+      const scoped_refptr<ProxyResolverScriptData>& script_data,
+      std::unique_ptr<ProxyResolver>* result,
+      const CompletionCallback& callback,
+      std::unique_ptr<Request>* request) override {
+    return ERR_PAC_SCRIPT_FAILED;
+  }
+};
 
 }  // namespace
 
@@ -16869,6 +16884,75 @@ TEST_F(HttpNetworkTransactionTest, MatchContentEncoding3) {
 TEST_F(HttpNetworkTransactionTest, MatchContentEncoding4) {
   CheckContentEncodingMatching(&session_deps_, "identity;q=1, *;q=0", "gzip",
                                "www.foo.com/other", true);
+}
+
+TEST_F(HttpNetworkTransactionTest, ProxyResolutionFailsSync) {
+  ProxyConfig proxy_config;
+  proxy_config.set_pac_url(GURL("http://fooproxyurl"));
+  proxy_config.set_pac_mandatory(true);
+  MockAsyncProxyResolver resolver;
+  session_deps_.proxy_service.reset(new ProxyService(
+      base::MakeUnique<ProxyConfigServiceFixed>(proxy_config),
+      base::WrapUnique(new FailingProxyResolverFactory), nullptr));
+
+  HttpRequestInfo request;
+  request.method = "GET";
+  request.url = GURL("http://www.example.org/");
+
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+  HttpNetworkTransaction trans(DEFAULT_PRIORITY, session.get());
+
+  TestCompletionCallback callback;
+
+  int rv = trans.Start(&request, callback.callback(), NetLogWithSource());
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
+  EXPECT_THAT(callback.WaitForResult(),
+              IsError(ERR_MANDATORY_PROXY_CONFIGURATION_FAILED));
+}
+
+TEST_F(HttpNetworkTransactionTest, ProxyResolutionFailsAsync) {
+  ProxyConfig proxy_config;
+  proxy_config.set_pac_url(GURL("http://fooproxyurl"));
+  proxy_config.set_pac_mandatory(true);
+  MockAsyncProxyResolverFactory* proxy_resolver_factory =
+      new MockAsyncProxyResolverFactory(false);
+  MockAsyncProxyResolver resolver;
+  session_deps_.proxy_service.reset(
+      new ProxyService(base::MakeUnique<ProxyConfigServiceFixed>(proxy_config),
+                       base::WrapUnique(proxy_resolver_factory), nullptr));
+  HttpRequestInfo request;
+  request.method = "GET";
+  request.url = GURL("http://www.example.org/");
+
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+  HttpNetworkTransaction trans(DEFAULT_PRIORITY, session.get());
+
+  TestCompletionCallback callback;
+  int rv = trans.Start(&request, callback.callback(), NetLogWithSource());
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
+
+  proxy_resolver_factory->pending_requests()[0]->CompleteNowWithForwarder(
+      ERR_FAILED, &resolver);
+  EXPECT_THAT(callback.WaitForResult(),
+              IsError(ERR_MANDATORY_PROXY_CONFIGURATION_FAILED));
+}
+
+TEST_F(HttpNetworkTransactionTest, NoSupportedProxies) {
+  session_deps_.proxy_service =
+      ProxyService::CreateFixedFromPacResult("QUIC myproxy.org:443");
+  session_deps_.enable_quic = false;
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+
+  HttpRequestInfo request;
+  request.method = "GET";
+  request.url = GURL("http://www.example.org/");
+
+  TestCompletionCallback callback;
+  HttpNetworkTransaction trans(DEFAULT_PRIORITY, session.get());
+  int rv = trans.Start(&request, callback.callback(), NetLogWithSource());
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
+
+  EXPECT_THAT(callback.WaitForResult(), IsError(ERR_NO_SUPPORTED_PROXIES));
 }
 
 }  // namespace net
