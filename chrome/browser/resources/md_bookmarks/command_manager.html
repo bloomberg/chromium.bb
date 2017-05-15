@@ -3,29 +3,23 @@
 <link rel="import" href="chrome://resources/cr_elements/cr_lazy_render/cr_lazy_render.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-a11y-keys-behavior/iron-a11y-keys-behavior.html">
 <link rel="import" href="chrome://bookmarks/edit_dialog.html">
+<link rel="import" href="chrome://bookmarks/shared_style.html">
 <link rel="import" href="chrome://bookmarks/store_client.html">
 
 <dom-module id="bookmarks-command-manager">
   <template>
+    <style include="shared-style"></style>
     <dialog is="cr-action-menu" id="dropdown" on-mousedown="onMenuMousedown_">
-      <button class="dropdown-item"
-          command="edit"
-          hidden$="[[!canExecute('edit', menuIds_)]]"
-          on-tap="onCommandClick_">
-        [[getEditActionLabel_(menuIds_)]]
-      </button>
-      <button class="dropdown-item"
-          command="copy"
-          hidden$="[[!canExecute('copy', menuIds_)]]"
-          on-tap="onCommandClick_">
-        $i18n{menuCopyURL}
-      </button>
-      <button class="dropdown-item"
-          command="delete"
-          hidden$="[[!canExecute('delete', menuIds_)]]"
-          on-tap="onCommandClick_">
-        $i18n{menuDelete}
-      </button>
+      <template is="dom-repeat" items="[[menuCommands_]]" as="command">
+        <button class="dropdown-item"
+            command$="[[command]]"
+            hidden$="[[!isCommandVisible_(command, menuIds_)]]"
+            disabled$="[[!isCommandEnabled_(command, menuIds_)]]"
+            on-tap="onCommandClick_">
+          [[getCommandLabel_(command, menuIds_)]]
+        </button>
+        <hr hidden$="[[!showDividerAfter_(command)]]"></hr>
+      </template>
     </dialog>
     <template is="cr-lazy-render" id="editDialog">
       <bookmarks-edit-dialog></bookmarks-edit-dialog>
