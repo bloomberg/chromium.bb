@@ -9,7 +9,6 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/task_scheduler/post_task.h"
-#include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/thread_restrictions.h"
 #include "content/public/browser/browser_thread.h"
 #include "jni/WebRestrictionsClient_jni.h"
@@ -47,12 +46,9 @@ bool WebRestrictionsClient::Register(JNIEnv* env) {
 
 WebRestrictionsClient::WebRestrictionsClient()
     : initialized_(false), supports_request_(false) {
-  base::SequencedWorkerPool* worker_pool =
-      content::BrowserThread::GetBlockingPool();
-  background_task_runner_ =
-      worker_pool->GetSequencedTaskRunnerWithShutdownBehavior(
-          worker_pool->GetSequenceToken(),
-          base::SequencedWorkerPool::SKIP_ON_SHUTDOWN);
+  background_task_runner_ = base::CreateSequencedTaskRunnerWithTraits(
+      {base::MayBlock(), base::TaskPriority::BACKGROUND,
+       base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
 }
 
 WebRestrictionsClient::~WebRestrictionsClient() {
