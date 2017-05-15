@@ -8,7 +8,6 @@
 #include <stdint.h>
 
 #include <memory>
-#include <set>
 #include <string>
 #include <utility>
 #include <vector>
@@ -21,7 +20,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/strings/string16.h"
-#include "base/task_runner.h"
 #include "base/timer/timer.h"
 #include "build/build_config.h"
 #include "chrome/browser/memory/tab_manager_observer.h"
@@ -38,7 +36,6 @@ class TickClock;
 }
 
 namespace content {
-class RenderProcessHost;
 class WebContents;
 }
 
@@ -86,9 +83,6 @@ class TabManager : public TabStripModelObserver {
   // Returns the list of the stats for all renderers. Must be called on the UI
   // thread. The returned list is sorted by reversed importance.
   TabStatsList GetTabStats() const;
-
-  // Returns a sorted list of renderers, from most important to least important.
-  std::vector<content::RenderProcessHost*> GetOrderedRenderers() const;
 
   // Returns true if |contents| is currently discarded.
   bool IsTabDiscarded(content::WebContents* contents) const;
@@ -209,31 +203,6 @@ class TabManager : public TabStripModelObserver {
   void OnAutoDiscardableStateChange(content::WebContents* contents,
                                     bool is_auto_discardable);
 
-  // The time that a renderer is given to react to a memory pressure
-  // notification before another renderer is also notified. This prevents all
-  // renderers from receiving and acting upon notifications simultaneously,
-  // which can quickly overload a system. Exposed for unittesting.
-  // NOTE: This value needs to be big enough to allow a process to get over the
-  // hump in responding to memory pressure, so there aren't multiple processes
-  // fighting for CPU and worse, temporary memory, while trying to free things
-  // up. Similarly, it shouldn't be too large otherwise it will take too long
-  // for the entire system to respond. Ideally, there would be a callback from a
-  // child process indicating that the message has been handled. In the meantime
-  // this is chosen to be sufficient to allow a worst-case V8+Oilpan GC to run,
-  // with a little slop.
-  enum : int { kRendererNotificationDelayInSeconds = 2 };
-
-  using MemoryPressureLevel = base::MemoryPressureListener::MemoryPressureLevel;
-
-  // A callback that returns the current memory pressure level.
-  using MemoryPressureLevelCallback = base::Callback<MemoryPressureLevel()>;
-
-  // Callback that notifies a |renderer| of the memory pressure at a given
-  // |level|. Provides a testing seam.
-  using RendererNotificationCallback = base::Callback<
-      void(const content::RenderProcessHost* /* renderer */,
-           MemoryPressureLevel /* level */)>;
-
   static void PurgeMemoryAndDiscardTab();
 
   // Returns true if the |url| represents an internal Chrome web UI page that
@@ -326,10 +295,6 @@ class TabManager : public TabStripModelObserver {
   // for more details.
   base::TimeTicks NowTicks() const;
 
-  // Dispatches a memory pressure message to a single child process, and
-  // schedules another call to itself as long as memory pressure continues.
-  void DoChildProcessDispatch();
-
   // Implementation of DiscardTab. Returns null if no tab was discarded.
   // Otherwise returns the new web_contents of the discarded tab.
   content::WebContents* DiscardTabImpl();
@@ -387,30 +352,6 @@ class TabManager : public TabStripModelObserver {
   // this test clock. Otherwise it returns the system clock's value.
   base::TickClock* test_tick_clock_;
 
-  // The task runner used for child process notifications. Defaults to the
-  // thread task runner handle that is used by the memory pressure subsystem,
-  // but may be explicitly set for unittesting.
-  scoped_refptr<base::TaskRunner> task_runner_;
-
-  // Indicates that the system is currently experiencing memory pressure. Used
-  // to determine whether a new round of child-process memory pressure
-  // dispatches is starting, or whether an existing one is continuing.
-  bool under_memory_pressure_;
-
-  // The set of child renderers that have received memory pressure notifications
-  // during the current bout of memory pressure. This is emptied when all
-  // children have been notified (restarting another round of notification) and
-  // when a bout of memory pressure ends.
-  std::set<const content::RenderProcessHost*> notified_renderers_;
-
-  // The callback that returns the current memory pressure level. Defaults to
-  // querying base::MemoryPressureMonitor, but can be overridden for testing.
-  MemoryPressureLevelCallback get_current_pressure_level_;
-
-  // The callback to be invoked to notify renderers. Defaults to calling
-  // content::SendPressureNotification, but can be overridden for testing.
-  RendererNotificationCallback notify_renderer_process_;
-
   // Injected tab strip models. Allows this to be tested end-to-end without
   // requiring a full browser environment. If specified these tab strips will be
   // crawled as the authoritative source of tabs, otherwise the BrowserList and
@@ -424,7 +365,7 @@ class TabManager : public TabStripModelObserver {
   // List of observers that will receive notifications on state changes.
   base::ObserverList<TabManagerObserver> observers_;
 
-  // Weak pointer factory used for posting delayed tasks to task_runner_.
+  // Weak pointer factory used for posting delayed tasks.
   base::WeakPtrFactory<TabManager> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(TabManager);

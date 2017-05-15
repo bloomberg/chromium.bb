@@ -108,7 +108,6 @@ enum IPCMessageStart {
   AttachmentBrokerMsgStart,
   RenderProcessMsgStart,
   PageLoadMetricsMsgStart,
-  MemoryMsgStart,
   IPCTestMsgStart,
   ArcInstanceMsgStart,
   ArcInstanceHostMsgStart,

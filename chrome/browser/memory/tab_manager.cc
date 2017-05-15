@@ -26,7 +26,6 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/tick_clock.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
@@ -49,7 +48,6 @@
 #include "components/metrics/system_memory_stats_recorder.h"
 #include "components/variations/variations_associated_data.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/memory_pressure_controller.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
@@ -97,26 +95,6 @@ int FindWebContentsById(const TabStripModel* model,
   return -1;
 }
 
-// A wrapper around base::MemoryPressureMonitor::GetCurrentPressureLevel.
-// TODO(chrisha): Move this do the default implementation of a delegate.
-base::MemoryPressureListener::MemoryPressureLevel
-GetCurrentPressureLevel() {
-  auto* monitor = base::MemoryPressureMonitor::Get();
-  if (monitor)
-    return monitor->GetCurrentPressureLevel();
-  return base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_NONE;
-}
-
-// A wrapper to content::SendPressureNotification that doesn't have overloaded
-// type ambiguity. Makes use of Bind easier.
-// TODO(chrisha): Move this do the default implementation of a delegate.
-void NotifyRendererProcess(
-    const content::RenderProcessHost* render_process_host,
-    base::MemoryPressureListener::MemoryPressureLevel level) {
-  content::MemoryPressureController::SendPressureNotification(
-      render_process_host, level);
-}
-
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -133,17 +111,11 @@ TabManager::TabManager()
 #endif
       browser_tab_strip_tracker_(this, nullptr, nullptr),
       test_tick_clock_(nullptr),
-      under_memory_pressure_(false),
       weak_ptr_factory_(this) {
 #if defined(OS_CHROMEOS)
   delegate_.reset(new TabManagerDelegate(weak_ptr_factory_.GetWeakPtr()));
 #endif
   browser_tab_strip_tracker_.Init();
-
-  // Set up default callbacks. These may be overridden post-construction as
-  // testing seams.
-  get_current_pressure_level_ = base::Bind(&GetCurrentPressureLevel);
-  notify_renderer_process_ = base::Bind(&NotifyRendererProcess);
 }
 
 TabManager::~TabManager() {
@@ -262,43 +234,6 @@ TabStatsList TabManager::GetTabStats() const {
   std::sort(stats_list.begin(), stats_list.end(), CompareTabStats);
 
   return stats_list;
-}
-
-std::vector<content::RenderProcessHost*>
-TabManager::GetOrderedRenderers() const {
-  // Get the tab stats.
-  auto tab_stats = GetTabStats();
-
-  std::vector<content::RenderProcessHost*> sorted_renderers;
-  std::set<content::RenderProcessHost*> seen_renderers;
-  std::set<content::RenderProcessHost*> visible_renderers;
-  sorted_renderers.reserve(tab_stats.size());
-
-  // Convert the tab sort order to a process sort order. The process inherits
-  // the priority of its highest priority tab.
-  for (auto& tab : tab_stats) {
-    auto* renderer = tab.render_process_host;
-
-    // Skip renderers associated with visible tabs as handling memory pressure
-    // notifications in these processes can cause jank. This code works because
-    // visible tabs always come first in |tab_stats|.
-    if (tab.is_selected) {
-      visible_renderers.insert(renderer);
-      continue;
-    }
-    if (visible_renderers.count(renderer) > 0)
-      continue;
-
-    // Skip renderers that have already been encountered. This can occur when
-    // multiple tabs are folded into a single renderer process. In this case the
-    // process takes the priority of its highest priority contained tab.
-    if (!seen_renderers.insert(renderer).second)
-      continue;
-
-    sorted_renderers.push_back(renderer);
-  }
-
-  return sorted_renderers;
 }
 
 bool TabManager::IsTabDiscarded(content::WebContents* contents) const {
@@ -813,11 +748,6 @@ void TabManager::OnMemoryPressure(
   if (g_browser_process->IsShuttingDown())
     return;
 
-  // If no task runner has been set, then use the same one that the memory
-  // pressure subsystem uses.
-  if (!task_runner_.get())
-    task_runner_ = base::ThreadTaskRunnerHandle::Get();
-
   // Under critical pressure try to discard a tab.
   if (memory_pressure_level ==
       base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL) {
@@ -825,18 +755,6 @@ void TabManager::OnMemoryPressure(
   }
   // TODO(skuhne): If more memory pressure levels are introduced, consider
   // calling PurgeBrowserMemory() before CRITICAL is reached.
-
-  // If this is the beginning of a period of memory pressure then kick off
-  // notification of child processes.
-  // NOTE: This mechanism relies on having a MemoryPressureMonitor
-  // implementation that supports "CurrentPressureLevel". This is true on all
-  // platforms on which TabManager is used.
-#if !defined(OS_CHROMEOS)
-  // Running GC under memory pressure can cause thrashing. Disable it on
-  // ChromeOS until the thrashing is fixed. crbug.com/588172.
-  if (!under_memory_pressure_)
-    DoChildProcessDispatch();
-#endif
 }
 
 void TabManager::TabChangedAt(content::WebContents* contents,
@@ -916,66 +834,6 @@ TimeTicks TabManager::NowTicks() const {
     return TimeTicks::Now();
 
   return test_tick_clock_->NowTicks();
-}
-
-void TabManager::DoChildProcessDispatch() {
-  // If Chrome is shutting down, do not do anything.
-  if (g_browser_process->IsShuttingDown())
-    return;
-
-  if (!under_memory_pressure_)
-    under_memory_pressure_ = true;
-
-  // If the memory pressure condition has ended then stop dispatching messages.
-  auto level = get_current_pressure_level_.Run();
-  if (level == base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_NONE) {
-    under_memory_pressure_ = false;
-    notified_renderers_.clear();
-    return;
-  }
-
-  // Get a vector of active renderers, from highest to lowest priority.
-  auto renderers = GetOrderedRenderers();
-
-  // The following code requires at least one renderer to be present or it will
-  // busyloop. It's possible for no renderers to exist (we eliminate visible
-  // renderers to avoid janking them), so bail early if that's the case.
-  if (renderers.empty())
-    return;
-
-  // Notify a single renderer of memory pressure.
-  bool notified = false;
-  while (!notified) {
-    // Notify the lowest priority renderer that hasn't been notified yet.
-    for (auto rit = renderers.rbegin(); rit != renderers.rend(); ++rit) {
-      // If this renderer has already been notified then look at the next one.
-      if (!notified_renderers_.insert(*rit).second)
-        continue;
-
-      // Notify the renderer.
-      notify_renderer_process_.Run(*rit, level);
-      notified = true;
-      break;
-    }
-
-    // If all renderers were processed and none were notified, then all
-    // renderers have already been notified. Clear the list and start again.
-    if (!notified)
-      notified_renderers_.clear();
-
-    // This loop can only run at most twice. If it doesn't exit the first time
-    // through, by the second time through |notified_renderers_| will be empty.
-    // Since |renderers| is always non-empty, the first renderer encountered
-    // during the second pass will be notified.
-  }
-
-  // Schedule another notification. Use a weak pointer so this doesn't explode
-  // during tear down.
-  task_runner_->PostDelayedTask(
-      FROM_HERE,
-      base::BindOnce(&TabManager::DoChildProcessDispatch,
-                     weak_ptr_factory_.GetWeakPtr()),
-      base::TimeDelta::FromSeconds(kRendererNotificationDelayInSeconds));
 }
 
 // TODO(jamescook): This should consider tabs with references to other tabs,

@@ -7,28 +7,14 @@
 
 namespace memory {
 
-TabStats::TabStats()
-    : is_app(false),
-      is_internal_page(false),
-      is_media(false),
-      is_pinned(false),
-      is_selected(false),
-      is_discarded(false),
-      has_form_entry(false),
-      discard_count(0),
-      render_process_host(nullptr),
-      renderer_handle(0),
-      child_process_host_id(0),
-#if defined(OS_CHROMEOS)
-      oom_score(0),
-#endif
-      tab_contents_id(0),
-      is_auto_discardable(true) {
-}
+TabStats::TabStats() = default;
 
 TabStats::TabStats(const TabStats& other) = default;
 
-TabStats::~TabStats() {
-}
+TabStats::TabStats(TabStats&& other) noexcept = default;
+
+TabStats::~TabStats() {}
+
+TabStats& TabStats::operator=(const TabStats& other) = default;
 
 }  // namespace memory

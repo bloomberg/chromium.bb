@@ -41,7 +41,6 @@
 #include "content/child/child_resource_message_filter.h"
 #include "content/child/fileapi/file_system_dispatcher.h"
 #include "content/child/fileapi/webfilesystem_impl.h"
-#include "content/child/memory/child_memory_message_filter.h"
 #include "content/child/notifications/notification_dispatcher.h"
 #include "content/child/quota_dispatcher.h"
 #include "content/child/quota_message_filter.h"
@@ -496,7 +495,6 @@ void ChildThreadImpl::Init(const Options& options) {
     // whole process including renderers.
     channel_->AddFilter(new tracing::ChildTraceMessageFilter(
         ChildProcess::current()->io_task_runner()));
-    channel_->AddFilter(new ChildMemoryMessageFilter());
 
     if (service_manager_connection_) {
       std::string process_type_str =

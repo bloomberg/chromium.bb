@@ -228,7 +228,6 @@ source_set("common") {
     "media/peer_connection_tracker_messages.h",
     "media/surface_view_manager_messages_android.h",
     "media/video_capture.h",
-    "memory_messages.h",
     "message_port.cc",
     "message_port.h",
     "navigation_gesture.h",
