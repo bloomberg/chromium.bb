@@ -271,19 +271,24 @@ ShellBrowserMainParts* ShellContentBrowserClient::CreateShellBrowserMainParts(
 
 void ShellContentBrowserClient::AppendRendererSwitches(
     base::CommandLine* command_line) {
-  // TODO(jamescook): Should we check here if the process is in the extension
-  // service process map, or can we assume all renderers are extension
-  // renderers?
-  command_line->AppendSwitch(switches::kExtensionProcess);
+  static const char* const kSwitchNames[] = {
+      switches::kWhitelistedExtensionID,
+      // TODO(jamescook): Should we check here if the process is in the
+      // extension service process map, or can we assume all renderers are
+      // extension renderers?
+      switches::kExtensionProcess,
+  };
+  command_line->CopySwitchesFrom(*base::CommandLine::ForCurrentProcess(),
+                                 kSwitchNames, arraysize(kSwitchNames));
 
 #if !defined(DISABLE_NACL)
   // NOTE: app_shell does not support non-SFI mode, so it does not pass through
   // SFI switches either here or for the zygote process.
-  static const char* const kSwitchNames[] = {
-    ::switches::kEnableNaClDebug,
+  static const char* const kNaclSwitchNames[] = {
+      ::switches::kEnableNaClDebug,
   };
   command_line->CopySwitchesFrom(*base::CommandLine::ForCurrentProcess(),
-                                 kSwitchNames, arraysize(kSwitchNames));
+                                 kNaclSwitchNames, arraysize(kNaclSwitchNames));
 #endif  // !defined(DISABLE_NACL)
 }
 
