@@ -158,10 +158,9 @@ const URLPatternSet PermissionsData::policy_blocked_hosts() const {
 }
 
 const URLPatternSet& PermissionsData::PolicyBlockedHostsUnsafe() const {
-  DCHECK(!thread_checker_ || thread_checker_->CalledOnValidThread());
+  runtime_lock_.AssertAcquired();
   if (uses_default_policy_host_restrictions)
     return default_policy_blocked_hosts();
-  runtime_lock_.AssertAcquired();
   return policy_blocked_hosts_unsafe_;
 }
 
@@ -171,10 +170,9 @@ const URLPatternSet PermissionsData::policy_allowed_hosts() const {
 }
 
 const URLPatternSet& PermissionsData::PolicyAllowedHostsUnsafe() const {
-  DCHECK(!thread_checker_ || thread_checker_->CalledOnValidThread());
+  runtime_lock_.AssertAcquired();
   if (uses_default_policy_host_restrictions)
     return default_policy_allowed_hosts();
-  runtime_lock_.AssertAcquired();
   return policy_allowed_hosts_unsafe_;
 }
 
