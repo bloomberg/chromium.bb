@@ -12,6 +12,7 @@
 #include "base/location.h"
 #include "base/mac/foundation_util.h"
 #include "base/strings/sys_string_conversions.h"
+#include "base/task_scheduler/post_task.h"
 #include "components/prefs/pref_service.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "ios/chrome/browser/application_context.h"
@@ -23,7 +24,6 @@
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #import "ios/public/provider/chrome/browser/signin/chrome_identity.h"
 #include "ios/public/provider/chrome/browser/signin/chrome_identity_service.h"
-#include "ios/web/public/web_thread.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -143,8 +143,9 @@ void ChromeBrowserStateRemovalController::RemoveBrowserStatesIfNecessary() {
 
   if (is_removing_browser_states) {
     SetHasBrowserStateBeenRemoved(true);
-    web::WebThread::PostBlockingPoolTask(
-        FROM_HERE, base::Bind(&NukeBrowserStates, browser_states_to_nuke));
+    base::PostTaskWithTraits(
+        FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
+        base::BindOnce(&NukeBrowserStates, browser_states_to_nuke));
   }
 }
 
