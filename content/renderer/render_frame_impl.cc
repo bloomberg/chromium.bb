@@ -3218,8 +3218,6 @@ void RenderFrameImpl::FrameDetached(blink::WebLocalFrame* frame,
 
   for (auto& observer : observers_)
     observer.FrameDetached();
-  for (auto& observer : render_view_->observers())
-    observer.FrameDetached(frame);
 
   // Send a state update before the frame is detached.
   SendUpdateState();
@@ -3611,8 +3609,6 @@ void RenderFrameImpl::DidStartProvisionalLoad(blink::WebDataSource* data_source,
       navigation_state->common_params().navigation_start;
   DCHECK(!navigation_start.is_null());
 
-  for (auto& observer : render_view_->observers())
-    observer.DidStartProvisionalLoad(frame_);
   for (auto& observer : observers_)
     observer.DidStartProvisionalLoad(data_source);
 
@@ -3845,8 +3841,6 @@ void RenderFrameImpl::DidCreateNewDocument(blink::WebLocalFrame* frame) {
 
   for (auto& observer : observers_)
     observer.DidCreateNewDocument();
-  for (auto& observer : render_view_->observers())
-    observer.DidCreateNewDocument(frame);
 }
 
 void RenderFrameImpl::DidClearWindowObject() {
@@ -3895,8 +3889,6 @@ void RenderFrameImpl::DidCreateDocumentElement(blink::WebLocalFrame* frame) {
 
   for (auto& observer : observers_)
     observer.DidCreateDocumentElement();
-  for (auto& observer : render_view_->observers())
-    observer.DidCreateDocumentElement(frame);
 }
 
 void RenderFrameImpl::RunScriptsAtDocumentElementAvailable(
@@ -3943,8 +3935,6 @@ void RenderFrameImpl::DidFinishDocumentLoad() {
                "RenderFrameImpl::didFinishDocumentLoad", "id", routing_id_);
   Send(new FrameHostMsg_DidFinishDocumentLoad(routing_id_));
 
-  for (auto& observer : render_view_->observers())
-    observer.DidFinishDocumentLoad(frame_);
   for (auto& observer : observers_)
     observer.DidFinishDocumentLoad();
 
@@ -4025,9 +4015,6 @@ void RenderFrameImpl::DidFailLoad(const blink::WebURLError& error,
   // TODO(nasko): Move implementation here. No state needed.
   WebDataSource* ds = frame_->DataSource();
   DCHECK(ds);
-
-  for (auto& observer : render_view_->observers())
-    observer.DidFailLoad(frame_, error);
 
   const WebURLRequest& failed_request = ds->GetRequest();
   base::string16 error_description;
@@ -4856,11 +4843,6 @@ void RenderFrameImpl::OnStop() {
   frame_->StopLoading();
   if (!weak_this)
     return;
-
-  if (frame_ && !frame_->Parent()) {
-    for (auto& observer : render_view_->observers_)
-      observer.OnStop();
-  }
 
   for (auto& observer : observers_)
     observer.OnStop();
