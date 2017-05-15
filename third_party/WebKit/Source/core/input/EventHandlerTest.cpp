@@ -9,6 +9,7 @@
 #include "core/dom/Range.h"
 #include "core/editing/Editor.h"
 #include "core/editing/FrameSelection.h"
+#include "core/editing/SelectionController.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
@@ -117,6 +118,12 @@ TEST_F(EventHandlerTest, dragSelectionAfterScroll) {
   GetDocument().GetFrame()->GetEventHandler().HandleMousePressEvent(
       mouse_down_event);
 
+  ASSERT_TRUE(GetDocument()
+                  .GetFrame()
+                  ->GetEventHandler()
+                  .GetSelectionController()
+                  .MouseDownMayStartSelect());
+
   WebMouseEvent mouse_move_event(
       WebInputEvent::kMouseMove, WebFloatPoint(100, 50),
       WebFloatPoint(200, 250), WebPointerProperties::Button::kLeft, 1,
@@ -138,6 +145,12 @@ TEST_F(EventHandlerTest, dragSelectionAfterScroll) {
   mouse_up_event.SetFrameScale(1);
   GetDocument().GetFrame()->GetEventHandler().HandleMouseReleaseEvent(
       mouse_up_event);
+
+  ASSERT_FALSE(GetDocument()
+                   .GetFrame()
+                   ->GetEventHandler()
+                   .GetSelectionController()
+                   .MouseDownMayStartSelect());
 
   ASSERT_TRUE(
       Selection().ComputeVisibleSelectionInDOMTreeDeprecated().IsRange());

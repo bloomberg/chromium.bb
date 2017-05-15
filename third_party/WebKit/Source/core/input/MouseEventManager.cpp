@@ -505,6 +505,13 @@ bool MouseEventManager::SlideFocusOnShadowHostIfNecessary(
   return false;
 }
 
+void MouseEventManager::HandleMouseReleaseEventUpdateStates() {
+  ClearDragHeuristicState();
+  InvalidateClick();
+  frame_->GetEventHandler().GetSelectionController().SetMouseDownMayStartSelect(
+      false);
+}
+
 void MouseEventManager::HandleMousePressEventUpdateStates(
     const WebMouseEvent& mouse_event) {
   CancelFakeMouseMoveEvent();
@@ -522,6 +529,9 @@ void MouseEventManager::HandleMousePressEventUpdateStates(
   } else {
     InvalidateClick();
   }
+
+  frame_->GetEventHandler().GetSelectionController().SetMouseDownMayStartSelect(
+      false);
 }
 
 bool MouseEventManager::IsMousePositionUnknown() {
