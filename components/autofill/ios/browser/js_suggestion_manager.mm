@@ -80,8 +80,6 @@ NSString* JSONEscape(NSString* str) {
     // 2) There is a race when the page is changing due to which
     // JSSuggestionManager has not yet injected __gCrWeb.suggestion object
     // Handle this case gracefully.
-    // TODO(shreyasv): Figure out / narrow down further why this occurs.
-    // crbug.com/432217.
     // If a page has overridden Array.toString, the string returned may not
     // contain a ",", hence this is a defensive measure to early return.
     NSArray* components = [result componentsSeparatedByString:@","];
