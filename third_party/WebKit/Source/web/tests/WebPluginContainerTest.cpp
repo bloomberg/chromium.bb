@@ -451,8 +451,11 @@ class EventTestPlugin : public FakeWebPlugin {
   explicit EventTestPlugin(const WebPluginParams& params)
       : FakeWebPlugin(params), last_event_type_(WebInputEvent::kUndefined) {}
 
-  WebInputEventResult HandleInputEvent(const WebInputEvent& event,
-                                       WebCursorInfo&) override {
+  WebInputEventResult HandleInputEvent(
+      const WebCoalescedInputEvent& coalesced_event,
+      WebCursorInfo&) override {
+    const WebInputEvent& event = coalesced_event.Event();
+    coalesced_event_count_ = coalesced_event.CoalescedEventSize();
     last_event_type_ = event.GetType();
     if (WebInputEvent::IsMouseEventType(event.GetType()) ||
         event.GetType() == WebInputEvent::kMouseWheel) {
@@ -479,7 +482,10 @@ class EventTestPlugin : public FakeWebPlugin {
 
   void ClearLastEventType() { last_event_type_ = WebInputEvent::kUndefined; }
 
+  size_t GetCoalescedEventCount() { return coalesced_event_count_; }
+
  private:
+  size_t coalesced_event_count_;
   WebInputEvent::Type last_event_type_;
   IntPoint last_event_location_;
 };
@@ -606,6 +612,64 @@ TEST_F(WebPluginContainerTest, TouchEventScrolled) {
   web_view->HandleInputEvent(WebCoalescedInputEvent(event));
   RunPendingTasks();
 
+  EXPECT_EQ(WebInputEvent::kTouchStart, test_plugin->GetLastInputEventType());
+  EXPECT_EQ(rect.width / 2, test_plugin->GetLastEventLocation().X());
+  EXPECT_EQ(rect.height / 2, test_plugin->GetLastEventLocation().Y());
+}
+
+TEST_F(WebPluginContainerTest, TouchEventScrolledWithCoalescedTouches) {
+  RegisterMockedURL("plugin_scroll.html");
+  CustomPluginWebFrameClient<EventTestPlugin>
+      plugin_web_frame_client;  // Must outlive webViewHelper.
+  FrameTestHelpers::WebViewHelper web_view_helper;
+  WebView* web_view = web_view_helper.InitializeAndLoad(
+      base_url_ + "plugin_scroll.html", true, &plugin_web_frame_client);
+  DCHECK(web_view);
+  web_view->GetSettings()->SetPluginsEnabled(true);
+  web_view->Resize(WebSize(300, 300));
+  web_view->UpdateAllLifecyclePhases();
+  RunPendingTasks();
+  web_view->SmoothScroll(0, 200, 0);
+  web_view->UpdateAllLifecyclePhases();
+  RunPendingTasks();
+
+  WebElement plugin_container_one_element =
+      web_view->MainFrame()->GetDocument().GetElementById(
+          WebString::FromUTF8("scrolled-plugin"));
+  plugin_container_one_element.PluginContainer()->RequestTouchEventType(
+      WebPluginContainer::kTouchEventRequestTypeRaw);
+  WebPlugin* plugin = static_cast<WebPluginContainerImpl*>(
+                          plugin_container_one_element.PluginContainer())
+                          ->Plugin();
+  EventTestPlugin* test_plugin = static_cast<EventTestPlugin*>(plugin);
+
+  WebTouchEvent event(WebInputEvent::kTouchStart, WebInputEvent::kNoModifiers,
+                      WebInputEvent::kTimeStampForTesting);
+  WebRect rect = plugin_container_one_element.BoundsInViewport();
+  event.touches_length = 1;
+  event.touches[0].state = WebTouchPoint::kStatePressed;
+  event.touches[0].position =
+      WebFloatPoint(rect.x + rect.width / 2, rect.y + rect.height / 2);
+
+  WebCoalescedInputEvent coalesced_event(event);
+
+  WebTouchEvent c_event(WebInputEvent::kTouchMove, WebInputEvent::kNoModifiers,
+                        WebInputEvent::kTimeStampForTesting);
+  c_event.touches_length = 1;
+  c_event.touches[0].state = WebTouchPoint::kStatePressed;
+  c_event.touches[0].position =
+      WebFloatPoint(rect.x + rect.width / 2 + 1, rect.y + rect.height / 2 + 1);
+
+  coalesced_event.AddCoalescedEvent(c_event);
+  c_event.touches[0].position =
+      WebFloatPoint(rect.x + rect.width / 2 + 2, rect.y + rect.height / 2 + 2);
+  coalesced_event.AddCoalescedEvent(c_event);
+
+  web_view->HandleInputEvent(coalesced_event);
+  RunPendingTasks();
+
+  EXPECT_EQ(static_cast<const size_t>(3),
+            test_plugin->GetCoalescedEventCount());
   EXPECT_EQ(WebInputEvent::kTouchStart, test_plugin->GetLastInputEventType());
   EXPECT_EQ(rect.width / 2, test_plugin->GetLastEventLocation().X());
   EXPECT_EQ(rect.height / 2, test_plugin->GetLastEventLocation().Y());

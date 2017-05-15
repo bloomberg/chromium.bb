@@ -86,6 +86,7 @@
 #include "platform/wtf/Assertions.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebClipboard.h"
+#include "public/platform/WebCoalescedInputEvent.h"
 #include "public/platform/WebCompositorSupport.h"
 #include "public/platform/WebCursorInfo.h"
 #include "public/platform/WebDragData.h"
@@ -720,9 +721,9 @@ void WebPluginContainerImpl::HandleMouseEvent(MouseEvent* event) {
     FocusPlugin();
 
   WebCursorInfo cursor_info;
-  if (web_plugin_ &&
-      web_plugin_->HandleInputEvent(transformed_event, cursor_info) !=
-          WebInputEventResult::kNotHandled)
+  if (web_plugin_ && web_plugin_->HandleInputEvent(
+                         WebCoalescedInputEvent(transformed_event),
+                         cursor_info) != WebInputEventResult::kNotHandled)
     event->SetDefaultHandled();
 
   // A windowless plugin can change the cursor in response to a mouse move
@@ -781,7 +782,8 @@ void WebPluginContainerImpl::HandleWheelEvent(WheelEvent* event) {
   translated_event.SetPositionInWidget(local_point.X(), local_point.Y());
 
   WebCursorInfo cursor_info;
-  if (web_plugin_->HandleInputEvent(translated_event, cursor_info) !=
+  if (web_plugin_->HandleInputEvent(WebCoalescedInputEvent(translated_event),
+                                    cursor_info) !=
       WebInputEventResult::kNotHandled)
     event->SetDefaultHandled();
 }
@@ -818,9 +820,45 @@ void WebPluginContainerImpl::HandleKeyboardEvent(KeyboardEvent* event) {
     web_frame->Client()->HandleCurrentKeyboardEvent();
 
   WebCursorInfo cursor_info;
-  if (web_plugin_->HandleInputEvent(web_event, cursor_info) !=
+  if (web_plugin_->HandleInputEvent(WebCoalescedInputEvent(web_event),
+                                    cursor_info) !=
       WebInputEventResult::kNotHandled)
     event->SetDefaultHandled();
+}
+
+WebTouchEvent WebPluginContainerImpl::TransformTouchEvent(
+    const WebInputEvent& event) {
+  DCHECK(blink::WebInputEvent::IsTouchEventType(event.GetType()));
+  const WebTouchEvent* touch_event = static_cast<const WebTouchEvent*>(&event);
+  WebTouchEvent transformed_event = touch_event->FlattenTransform();
+
+  for (unsigned i = 0; i < transformed_event.touches_length; ++i) {
+    WebFloatPoint absolute_location = transformed_event.touches[i].position;
+
+    // Translate the root frame position to content coordinates.
+    if (parent_) {
+      absolute_location = parent_->RootFrameToContents(absolute_location);
+    }
+
+    IntPoint local_point =
+        RoundedIntPoint(element_->GetLayoutObject()->AbsoluteToLocal(
+            absolute_location, kUseTransforms));
+    transformed_event.touches[i].position.x = local_point.X();
+    transformed_event.touches[i].position.y = local_point.Y();
+  }
+  return transformed_event;
+}
+
+WebCoalescedInputEvent WebPluginContainerImpl::TransformCoalescedTouchEvent(
+    const WebCoalescedInputEvent& coalesced_event) {
+  WebCoalescedInputEvent transformed_event(
+      TransformTouchEvent(coalesced_event.Event()),
+      std::vector<const WebInputEvent*>());
+  for (size_t i = 0; i < coalesced_event.CoalescedEventSize(); ++i) {
+    transformed_event.AddCoalescedEvent(
+        TransformTouchEvent(coalesced_event.CoalescedEvent(i)));
+  }
+  return transformed_event;
 }
 
 void WebPluginContainerImpl::HandleTouchEvent(TouchEvent* event) {
@@ -834,23 +872,8 @@ void WebPluginContainerImpl::HandleTouchEvent(TouchEvent* event) {
       if (event->type() == EventTypeNames::touchstart)
         FocusPlugin();
 
-      WebTouchEvent transformed_event =
-          event->NativeEvent()->FlattenTransform();
-
-      for (unsigned i = 0; i < transformed_event.touches_length; ++i) {
-        WebFloatPoint absolute_location = transformed_event.touches[i].position;
-
-        // Translate the root frame position to content coordinates.
-        if (parent_) {
-          absolute_location = parent_->RootFrameToContents(absolute_location);
-        }
-
-        IntPoint local_point =
-            RoundedIntPoint(element_->GetLayoutObject()->AbsoluteToLocal(
-                absolute_location, kUseTransforms));
-        transformed_event.touches[i].position.x = local_point.X();
-        transformed_event.touches[i].position.y = local_point.Y();
-      }
+      WebCoalescedInputEvent transformed_event =
+          TransformCoalescedTouchEvent(*event->NativeEvent());
 
       WebCursorInfo cursor_info;
       if (web_plugin_->HandleInputEvent(transformed_event, cursor_info) !=
@@ -884,7 +907,8 @@ void WebPluginContainerImpl::HandleGestureEvent(GestureEvent* event) {
   translated_event.y = local_point.Y();
 
   WebCursorInfo cursor_info;
-  if (web_plugin_->HandleInputEvent(translated_event, cursor_info) !=
+  if (web_plugin_->HandleInputEvent(WebCoalescedInputEvent(translated_event),
+                                    cursor_info) !=
       WebInputEventResult::kNotHandled) {
     event->SetDefaultHandled();
     return;
@@ -900,7 +924,8 @@ void WebPluginContainerImpl::SynthesizeMouseEventIfPossible(TouchEvent* event) {
     return;
 
   WebCursorInfo cursor_info;
-  if (web_plugin_->HandleInputEvent(web_event, cursor_info) !=
+  if (web_plugin_->HandleInputEvent(WebCoalescedInputEvent(web_event),
+                                    cursor_info) !=
       WebInputEventResult::kNotHandled)
     event->SetDefaultHandled();
 }

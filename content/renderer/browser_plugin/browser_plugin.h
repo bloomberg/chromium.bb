@@ -95,7 +95,7 @@ class CONTENT_EXPORT BrowserPlugin :
   void UpdateFocus(bool focused, blink::WebFocusType focus_type) override;
   void UpdateVisibility(bool visible) override;
   blink::WebInputEventResult HandleInputEvent(
-      const blink::WebInputEvent& event,
+      const blink::WebCoalescedInputEvent& event,
       blink::WebCursorInfo& cursor_info) override;
   bool HandleDragStatusUpdate(blink::WebDragStatus drag_status,
                               const blink::WebDragData& drag_data,

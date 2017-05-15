@@ -33,6 +33,7 @@
 #include "core/events/TouchEventInit.h"
 #include "core/events/UIEventWithKeyState.h"
 #include "platform/graphics/TouchAction.h"
+#include "public/platform/WebCoalescedInputEvent.h"
 #include "public/platform/WebTouchEvent.h"
 
 namespace blink {
@@ -46,7 +47,7 @@ class CORE_EXPORT TouchEvent final : public UIEventWithKeyState {
   // We only initialize sourceCapabilities when we create TouchEvent from
   // EventHandler, null if it is from JavaScript.
   static TouchEvent* Create() { return new TouchEvent; }
-  static TouchEvent* Create(const WebTouchEvent& event,
+  static TouchEvent* Create(const WebCoalescedInputEvent& event,
                             TouchList* touches,
                             TouchList* target_touches,
                             TouchList* changed_touches,
@@ -84,13 +85,15 @@ class CORE_EXPORT TouchEvent final : public UIEventWithKeyState {
 
   EventDispatchMediator* CreateMediator() override;
 
-  const WebTouchEvent* NativeEvent() const { return native_event_.get(); }
+  const WebCoalescedInputEvent* NativeEvent() const {
+    return native_event_.get();
+  }
 
   DECLARE_VIRTUAL_TRACE();
 
  private:
   TouchEvent();
-  TouchEvent(const WebTouchEvent&,
+  TouchEvent(const WebCoalescedInputEvent&,
              TouchList* touches,
              TouchList* target_touches,
              TouchList* changed_touches,
@@ -110,7 +113,7 @@ class CORE_EXPORT TouchEvent final : public UIEventWithKeyState {
   // touchstart event is generated. It is used for UMA histograms.
   TouchAction current_touch_action_;
 
-  std::unique_ptr<WebTouchEvent> native_event_;
+  std::unique_ptr<WebCoalescedInputEvent> native_event_;
 };
 
 class TouchEventDispatchMediator final : public EventDispatchMediator {

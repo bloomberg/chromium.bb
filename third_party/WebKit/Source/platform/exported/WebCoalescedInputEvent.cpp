@@ -92,6 +92,11 @@ WebCoalescedInputEvent::WebCoalescedInputEvent(
     coalesced_events_.push_back(MakeWebScopedInputEvent(*coalesced_event));
 }
 
+WebCoalescedInputEvent::WebCoalescedInputEvent(
+    const WebCoalescedInputEvent& event)
+    : WebCoalescedInputEvent(event.Event(),
+                             event.GetCoalescedEventsPointers()) {}
+
 WebCoalescedInputEvent::WebScopedInputEvent
 WebCoalescedInputEvent::MakeWebScopedInputEvent(
     const blink::WebInputEvent& event) {

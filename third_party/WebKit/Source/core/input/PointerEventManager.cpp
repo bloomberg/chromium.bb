@@ -318,7 +318,8 @@ WebInputEventResult PointerEventManager::HandleTouchEvents(
 
   DispatchTouchPointerEvents(event, coalesced_events, touch_infos);
 
-  return touch_event_manager_->HandleTouchEvent(event, touch_infos);
+  return touch_event_manager_->HandleTouchEvent(event, coalesced_events,
+                                                touch_infos);
 }
 
 void PointerEventManager::ComputeTouchTargets(

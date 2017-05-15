@@ -43,8 +43,8 @@
 
 namespace blink {
 
+class WebCoalescedInputEvent;
 class WebDragData;
-class WebInputEvent;
 class WebPluginContainer;
 class WebURLResponse;
 struct WebCompositionUnderline;
@@ -117,7 +117,7 @@ class WebPlugin {
 
   virtual void UpdateVisibility(bool) = 0;
 
-  virtual WebInputEventResult HandleInputEvent(const WebInputEvent&,
+  virtual WebInputEventResult HandleInputEvent(const WebCoalescedInputEvent&,
                                                WebCursorInfo&) = 0;
 
   virtual bool HandleDragStatusUpdate(WebDragStatus,

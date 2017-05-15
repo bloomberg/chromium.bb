@@ -281,7 +281,16 @@ enum PP_InputEvent_Class {
    *
    * Request this input event class if you allow on-the-spot IME input.
    */
-  PP_INPUTEVENT_CLASS_IME = 1 << 4
+  PP_INPUTEVENT_CLASS_IME = 1 << 4,
+
+  /**
+  * Identifies coalesced touch input events.
+  *
+  * Touch events are coalesced for each frame. By default, the coalesced touch
+  * events will be dropped. Request this input event class if you intend to
+  * handle all the touch events.
+  */
+  PP_INPUTEVENT_CLASS_COALESCED_TOUCH = 1 << 5
 };
 
 /**
