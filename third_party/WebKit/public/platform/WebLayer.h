@@ -38,6 +38,7 @@
 #include "WebRect.h"
 #include "WebSize.h"
 #include "WebString.h"
+#include "WebTouchInfo.h"
 #include "WebVector.h"
 
 class SkMatrix44;
@@ -184,7 +185,7 @@ class WebLayer {
   virtual void SetNonFastScrollableRegion(const WebVector<WebRect>&) = 0;
   virtual WebVector<WebRect> NonFastScrollableRegion() const = 0;
 
-  virtual void SetTouchEventHandlerRegion(const WebVector<WebRect>&) = 0;
+  virtual void SetTouchEventHandlerRegion(const WebVector<WebTouchInfo>&) = 0;
   virtual WebVector<WebRect> TouchEventHandlerRegion() const = 0;
 
   virtual void SetIsContainerForFixedPositionLayers(bool) = 0;

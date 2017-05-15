@@ -798,10 +798,13 @@ void ScrollingCoordinator::SetTouchEventTargetRects(
 
   for (const auto& layer_rect : graphics_layer_rects) {
     const GraphicsLayer* graphics_layer = layer_rect.key;
-    WebVector<WebRect> web_rects(layer_rect.value.size());
-    for (size_t i = 0; i < layer_rect.value.size(); ++i)
-      web_rects[i] = EnclosingIntRect(layer_rect.value[i]);
-    graphics_layer->PlatformLayer()->SetTouchEventHandlerRegion(web_rects);
+    WebVector<WebTouchInfo> touch(layer_rect.value.size());
+    for (size_t i = 0; i < layer_rect.value.size(); ++i) {
+      touch[i].rect = EnclosingIntRect(layer_rect.value[i]);
+      // TODO(xidachen): route the real value here
+      touch[i].touch_action = TouchAction::kTouchActionNone;
+    }
+    graphics_layer->PlatformLayer()->SetTouchEventHandlerRegion(touch);
   }
 }
 
