@@ -462,8 +462,8 @@ void WebEmbeddedWorkerImpl::StartWorkerThread() {
 
   main_script_loader_.Clear();
 
-  worker_global_scope_proxy_ = ServiceWorkerGlobalScopeProxy::Create(
-      *this, *document, *worker_context_client_);
+  worker_global_scope_proxy_ =
+      ServiceWorkerGlobalScopeProxy::Create(*this, *worker_context_client_);
   loader_proxy_ = WorkerLoaderProxy::Create(this);
   worker_thread_ =
       ServiceWorkerThread::Create(loader_proxy_, *worker_global_scope_proxy_);

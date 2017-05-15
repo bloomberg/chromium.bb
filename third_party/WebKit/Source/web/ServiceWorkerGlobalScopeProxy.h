@@ -42,7 +42,6 @@
 
 namespace blink {
 
-class Document;
 class FetchEvent;
 class ParentFrameTaskRunners;
 class ServiceWorkerGlobalScope;
@@ -73,7 +72,6 @@ class ServiceWorkerGlobalScopeProxy final
 
  public:
   static ServiceWorkerGlobalScopeProxy* Create(WebEmbeddedWorkerImpl&,
-                                               Document&,
                                                WebServiceWorkerContextClient&);
   ~ServiceWorkerGlobalScopeProxy() override;
 
@@ -169,17 +167,14 @@ class ServiceWorkerGlobalScopeProxy final
 
  private:
   ServiceWorkerGlobalScopeProxy(WebEmbeddedWorkerImpl&,
-                                Document&,
                                 WebServiceWorkerContextClient&);
 
   WebServiceWorkerContextClient& Client() const;
-  Document& GetDocument() const;
   ServiceWorkerGlobalScope* WorkerGlobalScope() const;
 
   // Non-null until the WebEmbeddedWorkerImpl explicitly detach()es
   // as part of its finalization.
   WebEmbeddedWorkerImpl* embedded_worker_;
-  Member<Document> document_;
 
   Member<ParentFrameTaskRunners> parent_frame_task_runners_;
 
