@@ -66,7 +66,6 @@ class ShelfWidget::DelegateView : public views::WidgetDelegate,
   FocusCycler* focus_cycler_;
   // A black background layer that may be visible depending on a
   // ShelfBackgroundAnimator.
-  // TODO(bruthig): Remove opaque_background_ (see https://crbug.com/621551).
   ui::Layer opaque_background_;
   // A black foreground layer which is shown while transitioning between users.
   // Note: Since the back- and foreground layers have different functions they
