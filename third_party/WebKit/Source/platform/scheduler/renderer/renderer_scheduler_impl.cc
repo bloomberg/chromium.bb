@@ -50,6 +50,8 @@ constexpr base::TimeDelta kThreadLoadTrackerWaitingPeriodBeforeReporting =
 // We do not throttle anything while audio is played and shortly after that.
 constexpr base::TimeDelta kThrottlingDelayAfterAudioIsPlayed =
     base::TimeDelta::FromSeconds(5);
+constexpr base::TimeDelta kQueueingTimeWindowDuration =
+    base::TimeDelta::FromSeconds(1);
 
 void ReportForegroundRendererTaskLoad(base::TimeTicks time, double load) {
   if (!blink::RuntimeEnabledFeatures::timerThrottlingForBackgroundTabsEnabled())
@@ -100,7 +102,7 @@ RendererSchedulerImpl::RendererSchedulerImpl(
                      base::Unretained(this)),
           helper_.ControlTaskQueue()),
       seqlock_queueing_time_estimator_(
-          QueueingTimeEstimator(this, base::TimeDelta::FromSeconds(1))),
+          QueueingTimeEstimator(this, kQueueingTimeWindowDuration, 20)),
       main_thread_only_(this,
                         compositor_task_queue_,
                         helper_.scheduler_tqm_delegate().get(),
@@ -1694,7 +1696,6 @@ bool RendererSchedulerImpl::MainThreadSeemsUnresponsive(
   base::TimeDelta estimated_queueing_time;
 
   bool can_read = false;
-  QueueingTimeEstimator::State queueing_time_estimator_state;
 
   base::subtle::Atomic32 version;
   seqlock_queueing_time_estimator_.seqlock.TryRead(&can_read, &version);
@@ -1704,7 +1705,7 @@ bool RendererSchedulerImpl::MainThreadSeemsUnresponsive(
   if (!can_read)
     return GetCompositorThreadOnly().main_thread_seems_unresponsive;
 
-  queueing_time_estimator_state =
+  QueueingTimeEstimator::State queueing_time_estimator_state =
       seqlock_queueing_time_estimator_.data.GetState();
 
   // If we fail to determine if the main thread is busy, assume whether or not
@@ -1855,12 +1856,26 @@ void RendererSchedulerImpl::RemoveTaskTimeObserver(
 }
 
 void RendererSchedulerImpl::OnQueueingTimeForWindowEstimated(
-    base::TimeDelta queueing_time) {
+    base::TimeDelta queueing_time,
+    base::TimeTicks window_start_time) {
+  // RendererScheduler reports the queueing time once per window's duration.
+  //          |stepEQT|stepEQT|stepEQT|stepEQT|stepEQT|stepEQT|
+  // Report:  |-------window EQT------|
+  // Discard:         |-------window EQT------|
+  // Discard:                 |-------window EQT------|
+  // Report:                          |-------window EQT------|
+  if (window_start_time -
+          GetMainThreadOnly().uma_last_queueing_time_report_window_start_time <
+      kQueueingTimeWindowDuration) {
+    return;
+  }
   UMA_HISTOGRAM_TIMES("RendererScheduler.ExpectedTaskQueueingDuration",
                       queueing_time);
   TRACE_COUNTER1(TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"),
                  "estimated_queueing_time_for_window",
                  queueing_time.InMillisecondsF());
+  GetMainThreadOnly().uma_last_queueing_time_report_window_start_time =
+      window_start_time;
 }
 
 AutoAdvancingVirtualTimeDomain* RendererSchedulerImpl::GetVirtualTimeDomain() {

@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "platform/scheduler/base/queueing_time_estimator.h"
+#include "base/logging.h"
 #include "platform/scheduler/base/test_time_source.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -15,7 +16,8 @@ using QueueingTimeEstimatorTest = testing::Test;
 class TestQueueingTimeEstimatorClient : public QueueingTimeEstimator::Client {
  public:
   void OnQueueingTimeForWindowEstimated(
-      base::TimeDelta queueing_time) override {
+      base::TimeDelta queueing_time,
+      base::TimeTicks window_start_time) override {
     expected_queueing_times_.push_back(queueing_time);
   }
   const std::vector<base::TimeDelta>& expected_queueing_times() {
@@ -29,8 +31,9 @@ class TestQueueingTimeEstimatorClient : public QueueingTimeEstimator::Client {
 class QueueingTimeEstimatorForTest : public QueueingTimeEstimator {
  public:
   QueueingTimeEstimatorForTest(TestQueueingTimeEstimatorClient* client,
-                               base::TimeDelta window_duration)
-      : QueueingTimeEstimator(client, window_duration) {}
+                               base::TimeDelta window_duration,
+                               int steps_per_window)
+      : QueueingTimeEstimator(client, window_duration, steps_per_window) {}
 };
 
 // Three tasks of one second each, all within a 5 second window. Expected
@@ -41,7 +44,7 @@ TEST_F(QueueingTimeEstimatorTest, AllTasksWithinWindow) {
   base::TimeTicks time;
   TestQueueingTimeEstimatorClient client;
   QueueingTimeEstimatorForTest estimator(&client,
-                                         base::TimeDelta::FromSeconds(5));
+                                         base::TimeDelta::FromSeconds(5), 1);
   for (int i = 0; i < 3; ++i) {
     estimator.OnTopLevelTaskStarted(time);
     time += base::TimeDelta::FromMilliseconds(1000);
@@ -68,7 +71,7 @@ TEST_F(QueueingTimeEstimatorTest, AllTasksWithinWindow) {
 TEST_F(QueueingTimeEstimatorTest, MultiWindowTask) {
   TestQueueingTimeEstimatorClient client;
   QueueingTimeEstimatorForTest estimator(&client,
-                                         base::TimeDelta::FromSeconds(5));
+                                         base::TimeDelta::FromSeconds(5), 1);
   base::TimeTicks time;
   time += base::TimeDelta::FromMilliseconds(5000);
   estimator.OnTopLevelTaskStarted(time);
@@ -103,7 +106,7 @@ TEST_F(QueueingTimeEstimatorTest,
        EstimateQueueingTimeDuringSingleLongTaskIncompleteWindow) {
   TestQueueingTimeEstimatorClient client;
   QueueingTimeEstimatorForTest estimator(&client,
-                                         base::TimeDelta::FromSeconds(5));
+                                         base::TimeDelta::FromSeconds(5), 1);
   base::TimeTicks time;
   time += base::TimeDelta::FromMilliseconds(5000);
   estimator.OnTopLevelTaskStarted(time);
@@ -128,7 +131,7 @@ TEST_F(QueueingTimeEstimatorTest,
        EstimateQueueingTimeDuringSingleLongTaskExceedingWindow) {
   TestQueueingTimeEstimatorClient client;
   QueueingTimeEstimatorForTest estimator(&client,
-                                         base::TimeDelta::FromSeconds(5));
+                                         base::TimeDelta::FromSeconds(5), 1);
   base::TimeTicks time;
   time += base::TimeDelta::FromMilliseconds(5000);
   estimator.OnTopLevelTaskStarted(time);
@@ -144,13 +147,87 @@ TEST_F(QueueingTimeEstimatorTest,
 
   EXPECT_EQ(base::TimeDelta::FromMilliseconds(5500), estimated_queueing_time);
 }
+//                         Estimate
+//                           |
+//                           v
+// Task|------------------------------...
+// Time|---o---o---o---o---o---o-------->
+//     0   1   2   3   4   5   6
+//     | s | s | s | s | s |
+//     |--------win1-------|
+//         |--------win2-------|
+//
+// s: step window
+// win1: The last full window.
+// win2: The partial window.
+//
+// EQT(win1) = (0.5 + 5.5) / 2 * (5 / 5) = 3
+// EQT(win2) = (4.5 + 0) / 2 * (4.5 / 5) = 2.025
+// So EQT = max(EQT(win1), EQT(win2)) = 3
+TEST_F(QueueingTimeEstimatorTest,
+       SlidingWindowEstimateQueueingTimeFullWindowLargerThanPartial) {
+  TestQueueingTimeEstimatorClient client;
+  QueueingTimeEstimatorForTest estimator(&client,
+                                         base::TimeDelta::FromSeconds(5), 5);
+  base::TimeTicks time;
+  time += base::TimeDelta::FromMilliseconds(5000);
+  estimator.OnTopLevelTaskStarted(time);
+  estimator.OnTopLevelTaskCompleted(time);
+
+  base::TimeTicks start_time = time;
+  estimator.OnTopLevelTaskStarted(start_time);
+
+  time += base::TimeDelta::FromMilliseconds(5500);
+
+  base::TimeDelta estimated_queueing_time =
+      estimator.EstimateQueueingTimeIncludingCurrentTask(time);
+
+  EXPECT_EQ(base::TimeDelta::FromMilliseconds(3000), estimated_queueing_time);
+}
+//                        Estimate
+//                           |
+//                           v
+// Task                    |----------...
+// Time|---o---o---o---o---o---o-------->
+//     0   1   2   3   4   5   6
+//     | s | s | s | s | s |
+//     |--------win1-------|
+//         |--------win2-------|
+//
+// s: step window
+// win1: The last full window.
+// win2: The partial window.
+//
+// EQT(win1) = 0
+// EQT(win2) = (0 + 0.5) / 2 * (0.5 / 2) = 0.025
+// So EQT = max(EQT(win1), EQT(win2)) = 0.025
+TEST_F(QueueingTimeEstimatorTest,
+       SlidingWindowEstimateQueueingTimePartialWindowLargerThanFull) {
+  TestQueueingTimeEstimatorClient client;
+  QueueingTimeEstimatorForTest estimator(&client,
+                                         base::TimeDelta::FromSeconds(5), 5);
+  base::TimeTicks time;
+  time += base::TimeDelta::FromMilliseconds(5000);
+  estimator.OnTopLevelTaskStarted(time);
+  estimator.OnTopLevelTaskCompleted(time);
+
+  time += base::TimeDelta::FromMilliseconds(5000);
+  base::TimeTicks start_time = time;
+  estimator.OnTopLevelTaskStarted(start_time);
+  time += base::TimeDelta::FromMilliseconds(500);
+
+  base::TimeDelta estimated_queueing_time =
+      estimator.EstimateQueueingTimeIncludingCurrentTask(time);
+
+  EXPECT_EQ(base::TimeDelta::FromMilliseconds(25), estimated_queueing_time);
+}
 
 // Tasks containing nested run loops may be extremely long without
 // negatively impacting user experience. Ignore such tasks.
 TEST_F(QueueingTimeEstimatorTest, IgnoresTasksWithNestedMessageLoops) {
   TestQueueingTimeEstimatorClient client;
   QueueingTimeEstimatorForTest estimator(&client,
-                                         base::TimeDelta::FromSeconds(5));
+                                         base::TimeDelta::FromSeconds(5), 1);
   base::TimeTicks time;
   time += base::TimeDelta::FromMilliseconds(5000);
   estimator.OnTopLevelTaskStarted(time);
@@ -189,7 +266,7 @@ TEST_F(QueueingTimeEstimatorTest, IgnoresTasksWithNestedMessageLoops) {
 TEST_F(QueueingTimeEstimatorTest, IgnoreExtremelyLongTasks) {
   TestQueueingTimeEstimatorClient client;
   QueueingTimeEstimatorForTest estimator(&client,
-                                         base::TimeDelta::FromSeconds(5));
+                                         base::TimeDelta::FromSeconds(5), 1);
   // Start with a 1 second task.
   base::TimeTicks time;
   estimator.OnTopLevelTaskStarted(time);
@@ -221,6 +298,154 @@ TEST_F(QueueingTimeEstimatorTest, IgnoreExtremelyLongTasks) {
                                    base::TimeDelta::FromMilliseconds(0),
                                    base::TimeDelta::FromMilliseconds(0),
                                    base::TimeDelta::FromMilliseconds(100)));
+}
+
+// ^ Instantaneous queuing time
+// |
+// |
+// |   |\                                          .
+// |   |  \                                        .
+// |   |    \                                      .
+// |   |      \                                    .
+// |   |        \             |                    .
+// ------------------------------------------------> Time
+//     |s|s|s|s|s|
+//     |---win---|
+//       |---win---|
+//         |---win---|
+TEST_F(QueueingTimeEstimatorTest, SlidingWindowOverOneTask) {
+  TestQueueingTimeEstimatorClient client;
+  QueueingTimeEstimatorForTest estimator(&client,
+                                         base::TimeDelta::FromSeconds(5), 5);
+  base::TimeTicks time;
+  time += base::TimeDelta::FromMilliseconds(1000);
+
+  estimator.OnTopLevelTaskStarted(time);
+  time += base::TimeDelta::FromMilliseconds(5000);
+  estimator.OnTopLevelTaskCompleted(time);
+
+  time += base::TimeDelta::FromMilliseconds(6000);
+
+  estimator.OnTopLevelTaskStarted(time);
+  estimator.OnTopLevelTaskCompleted(time);
+
+  EXPECT_THAT(client.expected_queueing_times(),
+              testing::ElementsAre(base::TimeDelta::FromMilliseconds(900),
+                                   base::TimeDelta::FromMilliseconds(1600),
+                                   base::TimeDelta::FromMilliseconds(2100),
+                                   base::TimeDelta::FromMilliseconds(2400),
+                                   base::TimeDelta::FromMilliseconds(2500),
+                                   base::TimeDelta::FromMilliseconds(1600),
+                                   base::TimeDelta::FromMilliseconds(900),
+                                   base::TimeDelta::FromMilliseconds(400),
+                                   base::TimeDelta::FromMilliseconds(100),
+                                   base::TimeDelta::FromMilliseconds(0)));
+}
+
+// ^ Instantaneous queuing time
+// |
+// |
+// |   |\                                            .
+// |   | \                                           .
+// |   |  \                                          .
+// |   |   \  |\                                     .
+// |   |    \ | \           |                        .
+// ------------------------------------------------> Time
+//     |s|s|s|s|s|
+//     |---win---|
+//       |---win---|
+//         |---win---|
+TEST_F(QueueingTimeEstimatorTest, SlidingWindowOverTwoTasksWithinFirstWindow) {
+  TestQueueingTimeEstimatorClient client;
+  QueueingTimeEstimatorForTest estimator(&client,
+                                         base::TimeDelta::FromSeconds(5), 5);
+  base::TimeTicks time;
+  time += base::TimeDelta::FromMilliseconds(1000);
+
+  estimator.OnTopLevelTaskStarted(time);
+  time += base::TimeDelta::FromMilliseconds(2500);
+  estimator.OnTopLevelTaskCompleted(time);
+
+  time += base::TimeDelta::FromMilliseconds(500);
+
+  estimator.OnTopLevelTaskStarted(time);
+  time += base::TimeDelta::FromMilliseconds(1000);
+  estimator.OnTopLevelTaskCompleted(time);
+
+  time += base::TimeDelta::FromMilliseconds(6000);
+
+  estimator.OnTopLevelTaskStarted(time);
+  estimator.OnTopLevelTaskCompleted(time);
+
+  std::vector<base::TimeDelta> expected_durations = {
+      base::TimeDelta::FromMilliseconds(400),
+      base::TimeDelta::FromMilliseconds(600),
+      base::TimeDelta::FromMilliseconds(625),
+      base::TimeDelta::FromMilliseconds(725),
+      base::TimeDelta::FromMilliseconds(725),
+      base::TimeDelta::FromMilliseconds(325),
+      base::TimeDelta::FromMilliseconds(125),
+      base::TimeDelta::FromMilliseconds(100),
+      base::TimeDelta::FromMilliseconds(0)};
+  EXPECT_THAT(client.expected_queueing_times(),
+              testing::ElementsAreArray(expected_durations));
+}
+
+// ^ Instantaneous queuing time
+// |
+// |
+// |           |\                                 .
+// |           | \                                .
+// |           |  \                               .
+// |           |   \ |\                           .
+// |           |    \| \           |              .
+// ------------------------------------------------> Time
+//     |s|s|s|s|s|
+//     |---win---|
+//       |---win---|
+//         |---win---|
+TEST_F(QueueingTimeEstimatorTest,
+       SlidingWindowOverTwoTasksSpanningSeveralWindows) {
+  TestQueueingTimeEstimatorClient client;
+  QueueingTimeEstimatorForTest estimator(&client,
+                                         base::TimeDelta::FromSeconds(5), 5);
+  base::TimeTicks time;
+  time += base::TimeDelta::FromMilliseconds(1000);
+  estimator.OnTopLevelTaskStarted(time);
+  estimator.OnTopLevelTaskCompleted(time);
+
+  time += base::TimeDelta::FromMilliseconds(4000);
+
+  estimator.OnTopLevelTaskStarted(time);
+  time += base::TimeDelta::FromMilliseconds(2500);
+  estimator.OnTopLevelTaskCompleted(time);
+
+  estimator.OnTopLevelTaskStarted(time);
+  time += base::TimeDelta::FromMilliseconds(1000);
+  estimator.OnTopLevelTaskCompleted(time);
+
+  time += base::TimeDelta::FromMilliseconds(6000);
+
+  estimator.OnTopLevelTaskStarted(time);
+  estimator.OnTopLevelTaskCompleted(time);
+
+  std::vector<base::TimeDelta> expected_durations = {
+      base::TimeDelta::FromMilliseconds(0),
+      base::TimeDelta::FromMilliseconds(0),
+      base::TimeDelta::FromMilliseconds(0),
+      base::TimeDelta::FromMilliseconds(0),
+      base::TimeDelta::FromMilliseconds(400),
+      base::TimeDelta::FromMilliseconds(600),
+      base::TimeDelta::FromMilliseconds(700),
+      base::TimeDelta::FromMilliseconds(725),
+      base::TimeDelta::FromMilliseconds(725),
+      base::TimeDelta::FromMilliseconds(325),
+      base::TimeDelta::FromMilliseconds(125),
+      base::TimeDelta::FromMilliseconds(25),
+      base::TimeDelta::FromMilliseconds(0)};
+
+  EXPECT_THAT(client.expected_queueing_times(),
+              testing::ElementsAreArray(expected_durations));
 }
 
 }  // namespace scheduler

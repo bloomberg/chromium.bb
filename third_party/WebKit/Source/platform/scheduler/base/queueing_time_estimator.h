@@ -9,6 +9,8 @@
 #include "base/time/time.h"
 #include "platform/PlatformExport.h"
 
+#include <vector>
+
 namespace blink {
 namespace scheduler {
 
@@ -19,7 +21,8 @@ class PLATFORM_EXPORT QueueingTimeEstimator {
   class PLATFORM_EXPORT Client {
    public:
     virtual void OnQueueingTimeForWindowEstimated(
-        base::TimeDelta queueing_time) = 0;
+        base::TimeDelta queueing_time,
+        base::TimeTicks window_start_time) = 0;
     Client() {}
     virtual ~Client() {}
 
@@ -27,23 +30,71 @@ class PLATFORM_EXPORT QueueingTimeEstimator {
     DISALLOW_COPY_AND_ASSIGN(Client);
   };
 
+  class RunningAverage {
+   public:
+    explicit RunningAverage(int steps_per_window);
+    int GetStepsPerWindow() const;
+    void Add(base::TimeDelta bin_value);
+    base::TimeDelta GetAverage() const;
+
+   private:
+    int index_;
+    std::vector<base::TimeDelta> circular_buffer_;
+    base::TimeDelta running_sum_;
+  };
+
   class State {
    public:
+    explicit State(int steps_per_window);
     void OnTopLevelTaskStarted(base::TimeTicks task_start_time);
     void OnTopLevelTaskCompleted(Client* client, base::TimeTicks task_end_time);
     void OnBeginNestedRunLoop();
 
-    base::TimeDelta current_expected_queueing_time;
+    // |step_expected_queueing_time| is the expected queuing time of a
+    // smaller window of a step's width. By combining these step EQTs through a
+    // running average, we can get window EQTs of a bigger window.
+    //
+    // ^ Instantaneous queuing time
+    // |
+    // |
+    // |   |\                                           .
+    // |   | \            |\             |\             .
+    // |   |  \           | \       |\   | \            .
+    // |   |   \    |\    |  \      | \  |  \           .
+    // |   |    \   | \   |   \     |  \ |   \          .
+    // ------------------------------------------------> Time
+    //
+    // |stepEQT|stepEQT|stepEQT|stepEQT|stepEQT|stepEQT|
+    //
+    // |------windowEQT_1------|
+    //         |------windowEQT_2------|
+    //                 |------windowEQT_3------|
+    //
+    // In this case:
+    // |steps_per_window| = 3, because each window is the length of 3 steps.
+
+    base::TimeDelta step_expected_queueing_time;
+    // |window_duration| is the size of the sliding window.
     base::TimeDelta window_duration;
+    base::TimeDelta window_step_width;
+    // |steps_per_window| is the ratio of |window_duration| to the sliding
+    // window's step width. It is an integer since the window must be a integer
+    // multiple of the step's width. This parameter is used for deciding the
+    // sliding window's step width, and the number of bins of the circular
+    // buffer.
+    int steps_per_window;
     base::TimeTicks window_start_time;
     base::TimeTicks current_task_start_time;
+    RunningAverage step_queueing_times;
 
    private:
     bool TimePastWindowEnd(base::TimeTicks task_end_time);
     bool in_nested_message_loop_ = false;
   };
 
-  QueueingTimeEstimator(Client* client, base::TimeDelta window_duration);
+  QueueingTimeEstimator(Client* client,
+                        base::TimeDelta window_duration,
+                        int steps_per_window);
   explicit QueueingTimeEstimator(const State& state);
 
   void OnTopLevelTaskStarted(base::TimeTicks task_start_time);
