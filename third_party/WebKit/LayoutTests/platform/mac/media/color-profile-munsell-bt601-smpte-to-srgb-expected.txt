@@ -4,7 +4,7 @@ Color         Actual        Expected      dE
 Dark Skin     95,62,49      115,80,64     31
 Light Skin    181,132,111   195,151,130   30
 Blue Sky      76,103,138    94,123,156    32
-Foliage       70,90,50      88,108,65     30
+Foliage       71,90,50      88,108,65     29
 Blue Flower   111,108,161   130,129,177   33
 Bluish Green  85,178,155    100,190,171   25
 --------------------------------------------
@@ -37,5 +37,5 @@ SG Black 2x   36,36,36      48,48,48      21
 SG Black      24,24,24      31,31,31      12
 --------------------------------------------
 
-Result: total RMS color error: 26.26
+Result: total RMS color error: 26.22
 

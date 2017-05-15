@@ -632,13 +632,7 @@ void RenderViewImpl::Initialize(
       !command_line.HasSwitch(switches::kDisableThreadedScrolling));
   webview()->SetShowFPSCounter(
       command_line.HasSwitch(cc::switches::kShowFPSCounter));
-
-  if (std::unique_ptr<gfx::ICCProfile> overridden_color_profile =
-          GetContentClient()->renderer()->GetImageDecodeColorProfile()) {
-    webview()->SetDeviceColorProfile(*overridden_color_profile);
-  } else {
-    webview()->SetDeviceColorProfile(params.image_decode_color_space);
-  }
+  webview()->SetDeviceColorProfile(params.image_decode_color_space);
 
   ApplyWebPreferencesInternal(webkit_preferences_, webview(), compositor_deps_);
 

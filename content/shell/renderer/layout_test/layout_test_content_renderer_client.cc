@@ -254,21 +254,6 @@ LayoutTestContentRendererClient::CreateMediaStreamRendererFactory() {
 #endif
 }
 
-std::unique_ptr<gfx::ICCProfile>
-LayoutTestContentRendererClient::GetImageDecodeColorProfile() {
-  // TODO(ccameron): Make all platforms use the same color profile for layout
-  // tests.
-#if defined(OS_WIN)
-  return base::WrapUnique(new gfx::ICCProfile(
-      GetTestingICCProfile("sRGB")));
-#elif defined(OS_MACOSX)
-  return base::WrapUnique(new gfx::ICCProfile(
-      GetTestingICCProfile("genericRGB")));
-#else
-  return base::WrapUnique(new gfx::ICCProfile());
-#endif
-}
-
 void LayoutTestContentRendererClient::DidInitializeWorkerContextOnWorkerThread(
     v8::Local<v8::Context> context) {
   blink::WebTestingSupport::InjectInternalsObject(context);
