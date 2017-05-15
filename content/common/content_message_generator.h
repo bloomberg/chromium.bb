@@ -30,7 +30,6 @@
 #include "content/common/media/media_stream_track_metrics_host_messages.h"
 #include "content/common/media/midi_messages.h"
 #include "content/common/media/peer_connection_tracker_messages.h"
-#include "content/common/memory_messages.h"
 #include "content/common/page_messages.h"
 #include "content/common/platform_notification_messages.h"
 #include "content/common/quota_messages.h"

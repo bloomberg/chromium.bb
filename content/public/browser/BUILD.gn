@@ -149,8 +149,6 @@ source_set("browser_sources") {
     "media_session_observer.h",
     "memory_coordinator.h",
     "memory_coordinator_delegate.h",
-    "memory_pressure_controller.cc",
-    "memory_pressure_controller.h",
     "message_port_provider.h",
     "mhtml_extra_parts.h",
     "native_web_keyboard_event.h",
