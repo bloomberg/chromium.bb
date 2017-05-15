@@ -97,9 +97,11 @@ class ContentSuggestionsProvider {
 
   // Fetches more suggestions for the given category. The new suggestions
   // will not include any suggestion of the |known_suggestion_ids| sets.
-  // The given |callback| is called with these suggestions, along with all
-  // existing suggestions. It has to be invoked exactly once as the front-end
-  // might wait for its completion.
+  // As a result of this call, the provider:
+  //  - should call the |callback| with these additional suggestions (exactly
+  //  once as the front-end might wait for its completion);
+  //  - should *not* notify its Observer by OnNewSuggestions() with these
+  //  additional suggestions.
   virtual void Fetch(const Category& category,
                      const std::set<std::string>& known_suggestion_ids,
                      const FetchDoneCallback& callback) = 0;

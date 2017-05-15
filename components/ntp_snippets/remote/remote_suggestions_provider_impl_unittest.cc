@@ -1012,12 +1012,6 @@ TEST_F(RemoteSuggestionsProviderImplTest, LoadsAdditionalSuggestions) {
   image = FetchImage(service.get(), MakeArticleID("http://second"));
   EXPECT_FALSE(image.IsEmpty());
   EXPECT_EQ(1, image.Width());
-
-  // Verify that the observer received the update as well. We should see the
-  // newly-fetched items filled up with existing ones.
-  EXPECT_THAT(observer().SuggestionsForCategory(articles_category()),
-              ElementsAre(IdWithinCategoryEq("http://first"),
-                          IdWithinCategoryEq("http://second")));
 }
 
 // The tests TestMergingFetchedMoreSuggestionsFillup and
@@ -1025,14 +1019,14 @@ TEST_F(RemoteSuggestionsProviderImplTest, LoadsAdditionalSuggestions) {
 // story:
 // 1) fetch suggestions in NTP A
 // 2) fetch more suggestions in NTP A.
-// 3) open new NTP B: See the last 10 results visible in step 2).
-// 4) fetch more suggestions in NTP B. Make sure no results from step 1) which
-//    were superseded in step 2) get merged back in again.
+// 3) open new NTP B: See the first 10 results from step 1).
+// 4) fetch more suggestions in NTP B. Make sure the results are independent
+//    from step 2)
 // TODO(tschumann): Test step 4) on a higher level instead of peeking into the
 // internal 'dismissed' data. The proper check is to make sure we tell the
 // backend to exclude these suggestions.
 TEST_F(RemoteSuggestionsProviderImplTest,
-       TestMergingFetchedMoreSuggestionsFillup) {
+       FewMoreFetchedSuggestionsShouldNotInterfere) {
   auto service = MakeSuggestionsProvider(/*set_empty_response=*/false);
   LoadFromJSONString(service.get(),
                      GetTestJson({GetSuggestionWithUrl("http://id-1"),
@@ -1071,65 +1065,37 @@ TEST_F(RemoteSuggestionsProviderImplTest,
        "http://id-9", "http://id-10"},
       expect_receiving_two_new_suggestions);
 
-  // Verify that the observer received the update as well. We should see the
-  // newly-fetched items filled up with existing ones. The merging is done
-  // mimicking a scrolling behavior.
+  // Verify that the observer still has the old set.
   EXPECT_THAT(
       observer().SuggestionsForCategory(articles_category()),
       ElementsAre(
+          IdWithinCategoryEq("http://id-1"), IdWithinCategoryEq("http://id-2"),
           IdWithinCategoryEq("http://id-3"), IdWithinCategoryEq("http://id-4"),
           IdWithinCategoryEq("http://id-5"), IdWithinCategoryEq("http://id-6"),
           IdWithinCategoryEq("http://id-7"), IdWithinCategoryEq("http://id-8"),
-          IdWithinCategoryEq("http://id-9"), IdWithinCategoryEq("http://id-10"),
-          IdWithinCategoryEq("http://more-id-1"),
-          IdWithinCategoryEq("http://more-id-2")));
-  // Verify the superseded suggestions got marked as dismissed.
-  EXPECT_THAT(service->GetDismissedSuggestionsForTesting(articles_category()),
-              ElementsAre(IdEq("http://id-1"), IdEq("http://id-2")));
+          IdWithinCategoryEq("http://id-9"),
+          IdWithinCategoryEq("http://id-10")));
+
+  // No interference from previous Fetch more: we can receive two other ones.
+  expect_receiving_two_new_suggestions =
+      base::Bind([](Status status, std::vector<ContentSuggestion> suggestions) {
+        ASSERT_THAT(suggestions, SizeIs(2));
+        EXPECT_THAT(suggestions[0], IdWithinCategoryEq("http://more-id-3"));
+        EXPECT_THAT(suggestions[1], IdWithinCategoryEq("http://more-id-4"));
+      });
+  LoadMoreFromJSONString(
+      service.get(), articles_category(),
+      GetTestJson({GetSuggestionWithUrl("http://more-id-3"),
+                   GetSuggestionWithUrl("http://more-id-4")}),
+      /*known_ids=*/
+      {"http://id-1", "http://id-2", "http://id-3", "http://id-4",
+       "http://id-5", "http://id-6", "http://id-7", "http://id-8",
+       "http://id-9", "http://id-10"},
+      expect_receiving_two_new_suggestions);
 }
 
 TEST_F(RemoteSuggestionsProviderImplTest,
-       ClearHistoryShouldDeleteArchivedSuggestions) {
-  auto service = MakeSuggestionsProvider(/*set_empty_response=*/false);
-  // First get suggestions into the archived state which happens through
-  // subsequent fetches. Then we verify the entries are gone from the 'archived'
-  // state by trying to load their images (and we shouldn't even know the URLs
-  // anymore).
-  LoadFromJSONString(service.get(),
-                     GetTestJson({GetSuggestionWithUrl("http://id-1"),
-                                  GetSuggestionWithUrl("http://id-2")}));
-  LoadFromJSONString(service.get(),
-                     GetTestJson({GetSuggestionWithUrl("http://new-id-1"),
-                                  GetSuggestionWithUrl("http://new-id-2")}));
-  // Make sure images of both batches are available. This is to sanity check our
-  // assumptions for the test are right.
-  ServeImageCallback cb =
-      base::Bind(&ServeOneByOneImage, &service->GetImageFetcherForTesting());
-  EXPECT_CALL(*image_fetcher(), StartOrQueueNetworkRequest(_, _, _))
-      .Times(2)
-      .WillRepeatedly(WithArgs<0, 2>(Invoke(CreateFunctor(cb))));
-  image_decoder()->SetDecodedImage(gfx::test::CreateImage(1, 1));
-  gfx::Image image = FetchImage(service.get(), MakeArticleID("http://id-1"));
-  ASSERT_FALSE(image.IsEmpty());
-  ASSERT_EQ(1, image.Width());
-  image = FetchImage(service.get(), MakeArticleID("http://new-id-1"));
-  ASSERT_FALSE(image.IsEmpty());
-  ASSERT_EQ(1, image.Width());
-
-  service->ClearHistory(base::Time::UnixEpoch(), base::Time::Max(),
-                        base::Callback<bool(const GURL& url)>());
-
-  // Make sure images of both batches are gone.
-  // Verify we cannot resolve the image of the new suggestions.
-  image_decoder()->SetDecodedImage(gfx::test::CreateImage(1, 1));
-  EXPECT_TRUE(
-      FetchImage(service.get(), MakeArticleID("http://id-1")).IsEmpty());
-  EXPECT_TRUE(
-      FetchImage(service.get(), MakeArticleID("http://new-id-1")).IsEmpty());
-}
-
-TEST_F(RemoteSuggestionsProviderImplTest,
-       TestMergingFetchedMoreSuggestionsReplaceAll) {
+       TenMoreFetchedSuggestionsShouldNotInterfere) {
   auto service = MakeSuggestionsProvider(/*set_empty_response=*/false);
   LoadFromJSONString(service.get(),
                      GetTestJson({GetSuggestionWithUrl("http://id-1"),
@@ -1183,24 +1149,88 @@ TEST_F(RemoteSuggestionsProviderImplTest,
        "http://id-5", "http://id-6", "http://id-7", "http://id-8",
        "http://id-9", "http://id-10"},
       expect_receiving_ten_new_suggestions);
-  EXPECT_THAT(observer().SuggestionsForCategory(articles_category()),
-              ElementsAre(IdWithinCategoryEq("http://more-id-1"),
-                          IdWithinCategoryEq("http://more-id-2"),
-                          IdWithinCategoryEq("http://more-id-3"),
-                          IdWithinCategoryEq("http://more-id-4"),
-                          IdWithinCategoryEq("http://more-id-5"),
-                          IdWithinCategoryEq("http://more-id-6"),
-                          IdWithinCategoryEq("http://more-id-7"),
-                          IdWithinCategoryEq("http://more-id-8"),
-                          IdWithinCategoryEq("http://more-id-9"),
-                          IdWithinCategoryEq("http://more-id-10")));
-  // Verify the superseded suggestions got marked as dismissed.
   EXPECT_THAT(
-      service->GetDismissedSuggestionsForTesting(articles_category()),
-      ElementsAre(IdEq("http://id-1"), IdEq("http://id-2"), IdEq("http://id-3"),
-                  IdEq("http://id-4"), IdEq("http://id-5"), IdEq("http://id-6"),
-                  IdEq("http://id-7"), IdEq("http://id-8"), IdEq("http://id-9"),
-                  IdEq("http://id-10")));
+      observer().SuggestionsForCategory(articles_category()),
+      ElementsAre(
+          IdWithinCategoryEq("http://id-1"), IdWithinCategoryEq("http://id-2"),
+          IdWithinCategoryEq("http://id-3"), IdWithinCategoryEq("http://id-4"),
+          IdWithinCategoryEq("http://id-5"), IdWithinCategoryEq("http://id-6"),
+          IdWithinCategoryEq("http://id-7"), IdWithinCategoryEq("http://id-8"),
+          IdWithinCategoryEq("http://id-9"),
+          IdWithinCategoryEq("http://id-10")));
+
+  // This time, test receiving the same set.
+  expect_receiving_ten_new_suggestions =
+      base::Bind([](Status status, std::vector<ContentSuggestion> suggestions) {
+        EXPECT_THAT(suggestions,
+                    ElementsAre(IdWithinCategoryEq("http://more-id-1"),
+                                IdWithinCategoryEq("http://more-id-2"),
+                                IdWithinCategoryEq("http://more-id-3"),
+                                IdWithinCategoryEq("http://more-id-4"),
+                                IdWithinCategoryEq("http://more-id-5"),
+                                IdWithinCategoryEq("http://more-id-6"),
+                                IdWithinCategoryEq("http://more-id-7"),
+                                IdWithinCategoryEq("http://more-id-8"),
+                                IdWithinCategoryEq("http://more-id-9"),
+                                IdWithinCategoryEq("http://more-id-10")));
+      });
+  LoadMoreFromJSONString(
+      service.get(), articles_category(),
+      GetTestJson({GetSuggestionWithUrl("http://more-id-1"),
+                   GetSuggestionWithUrl("http://more-id-2"),
+                   GetSuggestionWithUrl("http://more-id-3"),
+                   GetSuggestionWithUrl("http://more-id-4"),
+                   GetSuggestionWithUrl("http://more-id-5"),
+                   GetSuggestionWithUrl("http://more-id-6"),
+                   GetSuggestionWithUrl("http://more-id-7"),
+                   GetSuggestionWithUrl("http://more-id-8"),
+                   GetSuggestionWithUrl("http://more-id-9"),
+                   GetSuggestionWithUrl("http://more-id-10")}),
+      /*known_ids=*/
+      {"http://id-1", "http://id-2", "http://id-3", "http://id-4",
+       "http://id-5", "http://id-6", "http://id-7", "http://id-8",
+       "http://id-9", "http://id-10"},
+      expect_receiving_ten_new_suggestions);
+}
+
+TEST_F(RemoteSuggestionsProviderImplTest,
+       ClearHistoryShouldDeleteArchivedSuggestions) {
+  auto service = MakeSuggestionsProvider(/*set_empty_response=*/false);
+  // First get suggestions into the archived state which happens through
+  // subsequent fetches. Then we verify the entries are gone from the 'archived'
+  // state by trying to load their images (and we shouldn't even know the URLs
+  // anymore).
+  LoadFromJSONString(service.get(),
+                     GetTestJson({GetSuggestionWithUrl("http://id-1"),
+                                  GetSuggestionWithUrl("http://id-2")}));
+  LoadFromJSONString(service.get(),
+                     GetTestJson({GetSuggestionWithUrl("http://new-id-1"),
+                                  GetSuggestionWithUrl("http://new-id-2")}));
+  // Make sure images of both batches are available. This is to sanity check our
+  // assumptions for the test are right.
+  ServeImageCallback cb =
+      base::Bind(&ServeOneByOneImage, &service->GetImageFetcherForTesting());
+  EXPECT_CALL(*image_fetcher(), StartOrQueueNetworkRequest(_, _, _))
+      .Times(2)
+      .WillRepeatedly(WithArgs<0, 2>(Invoke(CreateFunctor(cb))));
+  image_decoder()->SetDecodedImage(gfx::test::CreateImage(1, 1));
+  gfx::Image image = FetchImage(service.get(), MakeArticleID("http://id-1"));
+  ASSERT_FALSE(image.IsEmpty());
+  ASSERT_EQ(1, image.Width());
+  image = FetchImage(service.get(), MakeArticleID("http://new-id-1"));
+  ASSERT_FALSE(image.IsEmpty());
+  ASSERT_EQ(1, image.Width());
+
+  service->ClearHistory(base::Time::UnixEpoch(), base::Time::Max(),
+                        base::Callback<bool(const GURL& url)>());
+
+  // Make sure images of both batches are gone.
+  // Verify we cannot resolve the image of the new suggestions.
+  image_decoder()->SetDecodedImage(gfx::test::CreateImage(1, 1));
+  EXPECT_TRUE(
+      FetchImage(service.get(), MakeArticleID("http://id-1")).IsEmpty());
+  EXPECT_TRUE(
+      FetchImage(service.get(), MakeArticleID("http://new-id-1")).IsEmpty());
 }
 
 // TODO(tschumann): We don't have test making sure the RemoteSuggestionsFetcher
