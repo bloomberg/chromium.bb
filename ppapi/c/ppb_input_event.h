@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From ppb_input_event.idl modified Thu Sep  1 12:40:05 2016. */
+/* From ppb_input_event.idl modified Wed Apr 26 13:40:13 2017. */
 
 #ifndef PPAPI_C_PPB_INPUT_EVENT_H_
 #define PPAPI_C_PPB_INPUT_EVENT_H_
@@ -290,7 +290,15 @@ typedef enum {
    *
    * Request this input event class if you allow on-the-spot IME input.
    */
-  PP_INPUTEVENT_CLASS_IME = 1 << 4
+  PP_INPUTEVENT_CLASS_IME = 1 << 4,
+  /**
+   * Identifies coalesced touch input events.
+   *
+   * Touch events are coalesced for each frame. By default, the coalesced touch
+   * events will be dropped. Request this input event class if you intend to
+   * handle all the touch events.
+   */
+  PP_INPUTEVENT_CLASS_COALESCED_TOUCH = 1 << 5
 } PP_InputEvent_Class;
 PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_InputEvent_Class, 4);
 /**

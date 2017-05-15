@@ -72,6 +72,7 @@ struct PP_Point;
 class SkBitmap;
 
 namespace blink {
+class WebCoalescedInputEvent;
 class WebInputEvent;
 class WebLayer;
 class WebMouseEvent;
@@ -226,6 +227,8 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
                   bool full_frame,
                   std::unique_ptr<PluginInstanceThrottlerImpl> throttler);
   bool HandleDocumentLoad(const blink::WebURLResponse& response);
+  bool HandleCoalescedInputEvent(const blink::WebCoalescedInputEvent& event,
+                                 blink::WebCursorInfo* cursor_info);
   bool HandleInputEvent(const blink::WebInputEvent& event,
                         blink::WebCursorInfo* cursor_info);
   PP_Var GetInstanceObject(v8::Isolate* isolate);

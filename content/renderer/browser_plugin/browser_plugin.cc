@@ -29,6 +29,7 @@
 #include "content/renderer/drop_data_builder.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/sad_plugin.h"
+#include "third_party/WebKit/public/platform/WebCoalescedInputEvent.h"
 #include "third_party/WebKit/public/platform/WebGestureEvent.h"
 #include "third_party/WebKit/public/platform/WebInputEvent.h"
 #include "third_party/WebKit/public/platform/WebMouseWheelEvent.h"
@@ -440,8 +441,9 @@ void BrowserPlugin::UpdateVisibility(bool visible) {
 }
 
 blink::WebInputEventResult BrowserPlugin::HandleInputEvent(
-    const blink::WebInputEvent& event,
+    const blink::WebCoalescedInputEvent& coalesced_event,
     blink::WebCursorInfo& cursor_info) {
+  const blink::WebInputEvent& event = coalesced_event.Event();
   if (guest_crashed_ || !attached())
     return blink::WebInputEventResult::kNotHandled;
 

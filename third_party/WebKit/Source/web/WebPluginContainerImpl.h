@@ -39,6 +39,8 @@
 #include "platform/wtf/PassRefPtr.h"
 #include "platform/wtf/Vector.h"
 #include "platform/wtf/text/WTFString.h"
+#include "public/platform/WebCoalescedInputEvent.h"
+#include "public/platform/WebTouchEvent.h"
 #include "public/web/WebPluginContainer.h"
 #include "web/WebExport.h"
 
@@ -190,6 +192,10 @@ class WEB_EXPORT WebPluginContainerImpl final
       IntRect& unclipped_int_local_rect) const;
 
   WebPluginContainerImpl(HTMLPlugInElement*, WebPlugin*);
+
+  WebTouchEvent TransformTouchEvent(const WebInputEvent&);
+  WebCoalescedInputEvent TransformCoalescedTouchEvent(
+      const WebCoalescedInputEvent&);
 
   void HandleMouseEvent(MouseEvent*);
   void HandleDragEvent(MouseEvent*);

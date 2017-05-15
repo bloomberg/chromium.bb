@@ -35,8 +35,8 @@
 
 namespace blink {
 
+class WebCoalescedInputEvent;
 class WebDragData;
-class WebInputEvent;
 class WebPluginContainer;
 class WebURLResponse;
 struct WebPluginParams;
@@ -57,7 +57,7 @@ class FakeWebPlugin : public WebPlugin {
                       bool is_visible) override {}
   void UpdateFocus(bool, WebFocusType) override {}
   void UpdateVisibility(bool) override {}
-  WebInputEventResult HandleInputEvent(const WebInputEvent&,
+  WebInputEventResult HandleInputEvent(const WebCoalescedInputEvent&,
                                        WebCursorInfo&) override {
     return WebInputEventResult::kNotHandled;
   }

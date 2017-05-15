@@ -20,6 +20,7 @@
 #include "content/shell/test_runner/web_test_delegate.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "third_party/WebKit/public/platform/Platform.h"
+#include "third_party/WebKit/public/platform/WebCoalescedInputEvent.h"
 #include "third_party/WebKit/public/platform/WebCompositorSupport.h"
 #include "third_party/WebKit/public/platform/WebGestureEvent.h"
 #include "third_party/WebKit/public/platform/WebGraphicsContext3DProvider.h"
@@ -534,8 +535,9 @@ GLuint TestPlugin::LoadProgram(const std::string& vertex_source,
 }
 
 blink::WebInputEventResult TestPlugin::HandleInputEvent(
-    const blink::WebInputEvent& event,
+    const blink::WebCoalescedInputEvent& coalesced_event,
     blink::WebCursorInfo& info) {
+  const blink::WebInputEvent& event = coalesced_event.Event();
   const char* event_name = blink::WebInputEvent::GetName(event.GetType());
   if (!strcmp(event_name, "") || !strcmp(event_name, "Undefined"))
     event_name = "unknown";

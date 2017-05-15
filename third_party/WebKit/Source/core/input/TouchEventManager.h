@@ -10,6 +10,7 @@
 #include "platform/graphics/TouchAction.h"
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/HashMap.h"
+#include "platform/wtf/Vector.h"
 #include "public/platform/WebInputEventResult.h"
 #include "public/platform/WebTouchPoint.h"
 
@@ -57,6 +58,7 @@ class CORE_EXPORT TouchEventManager
   // cannot be const as this function might change some of the properties in
   // TouchInfo objects.
   WebInputEventResult HandleTouchEvent(const WebTouchEvent&,
+                                       const Vector<WebTouchEvent>&,
                                        HeapVector<TouchInfo>&);
 
   // Resets the internal state of this object.
@@ -70,6 +72,7 @@ class CORE_EXPORT TouchEventManager
   void SetAllPropertiesOfTouchInfos(HeapVector<TouchInfo>&);
 
   WebInputEventResult DispatchTouchEvents(const WebTouchEvent&,
+                                          const Vector<WebTouchEvent>&,
                                           const HeapVector<TouchInfo>&,
                                           bool all_touches_released);
 

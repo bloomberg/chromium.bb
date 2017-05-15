@@ -97,6 +97,7 @@
 #include "printing/features/features.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/WebKit/public/platform/URLConversion.h"
+#include "third_party/WebKit/public/platform/WebCoalescedInputEvent.h"
 #include "third_party/WebKit/public/platform/WebCursorInfo.h"
 #include "third_party/WebKit/public/platform/WebFloatRect.h"
 #include "third_party/WebKit/public/platform/WebInputEvent.h"
@@ -1113,6 +1114,22 @@ gfx::Rect PepperPluginInstanceImpl::GetCaretBounds() const {
   caret.Offset(view_data_.rect.point.x, view_data_.rect.point.y);
   ConvertDIPToViewport(&caret);
   return caret;
+}
+
+bool PepperPluginInstanceImpl::HandleCoalescedInputEvent(
+    const blink::WebCoalescedInputEvent& event,
+    WebCursorInfo* cursor_info) {
+  if (blink::WebInputEvent::IsTouchEventType(event.Event().GetType()) &&
+      ((filtered_input_event_mask_ & PP_INPUTEVENT_CLASS_COALESCED_TOUCH) ||
+       (input_event_mask_ & PP_INPUTEVENT_CLASS_COALESCED_TOUCH))) {
+    bool result = false;
+    for (size_t i = 0; i < event.CoalescedEventSize(); ++i) {
+      result |= HandleInputEvent(event.CoalescedEvent(i), cursor_info);
+    }
+    return result;
+  } else {
+    return HandleInputEvent(event.Event(), cursor_info);
+  }
 }
 
 bool PepperPluginInstanceImpl::HandleInputEvent(

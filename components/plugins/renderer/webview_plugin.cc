@@ -33,7 +33,6 @@ using blink::WebDragData;
 using blink::WebDragOperationsMask;
 using blink::WebFrameWidget;
 using blink::WebImage;
-using blink::WebInputEvent;
 using blink::WebLocalFrame;
 using blink::WebMouseEvent;
 using blink::WebPlugin;
@@ -205,19 +204,20 @@ void WebViewPlugin::UpdateFocus(bool focused, blink::WebFocusType focus_type) {
 }
 
 blink::WebInputEventResult WebViewPlugin::HandleInputEvent(
-    const WebInputEvent& event,
+    const blink::WebCoalescedInputEvent& coalesced_event,
     WebCursorInfo& cursor) {
+  const blink::WebInputEvent& event = coalesced_event.Event();
   // For tap events, don't handle them. They will be converted to
   // mouse events later and passed to here.
-  if (event.GetType() == WebInputEvent::kGestureTap)
+  if (event.GetType() == blink::WebInputEvent::kGestureTap)
     return blink::WebInputEventResult::kNotHandled;
 
   // For LongPress events we return false, since otherwise the context menu will
   // be suppressed. https://crbug.com/482842
-  if (event.GetType() == WebInputEvent::kGestureLongPress)
+  if (event.GetType() == blink::WebInputEvent::kGestureLongPress)
     return blink::WebInputEventResult::kNotHandled;
 
-  if (event.GetType() == WebInputEvent::kContextMenu) {
+  if (event.GetType() == blink::WebInputEvent::kContextMenu) {
     if (delegate_) {
       const WebMouseEvent& mouse_event =
           reinterpret_cast<const WebMouseEvent&>(event);

@@ -36,6 +36,7 @@
 #include "platform/Histogram.h"
 #include "platform/bindings/DOMWrapperWorld.h"
 #include "platform/bindings/ScriptState.h"
+#include "public/platform/WebCoalescedInputEvent.h"
 
 namespace blink {
 
@@ -196,13 +197,17 @@ void LogTouchTargetHistogram(EventTarget* event_target,
       static_cast<TouchTargetAndDispatchResultType>(result));
 }
 
+// Helper function to get WebTouchEvent from WebCoalescedInputEvent.
+const WebTouchEvent* GetWebTouchEvent(const WebCoalescedInputEvent& event) {
+  return static_cast<const WebTouchEvent*>(&event.Event());
+}
 }  // namespace
 
 TouchEvent::TouchEvent()
     : default_prevented_before_current_target_(false),
       current_touch_action_(TouchAction::kTouchActionAuto) {}
 
-TouchEvent::TouchEvent(const WebTouchEvent& event,
+TouchEvent::TouchEvent(const WebCoalescedInputEvent& event,
                        TouchList* touches,
                        TouchList* target_touches,
                        TouchList* changed_touches,
@@ -215,11 +220,11 @@ TouchEvent::TouchEvent(const WebTouchEvent& event,
     : UIEventWithKeyState(
           type,
           true,
-          event.IsCancelable(),
+          GetWebTouchEvent(event)->IsCancelable(),
           view,
           0,
-          static_cast<WebInputEvent::Modifiers>(event.GetModifiers()),
-          TimeTicks::FromSeconds(event.TimeStampSeconds()),
+          static_cast<WebInputEvent::Modifiers>(event.Event().GetModifiers()),
+          TimeTicks::FromSeconds(event.Event().TimeStampSeconds()),
           view ? view->GetInputDeviceCapabilities()->FiresTouchEvents(true)
                : nullptr),
       touches_(touches),
@@ -227,7 +232,8 @@ TouchEvent::TouchEvent(const WebTouchEvent& event,
       changed_touches_(changed_touches),
       default_prevented_before_current_target_(false),
       current_touch_action_(current_touch_action) {
-  native_event_.reset(new WebTouchEvent(event));
+  DCHECK(WebInputEvent::IsTouchEventType(event.Event().GetType()));
+  native_event_.reset(new WebCoalescedInputEvent(event));
 }
 
 TouchEvent::TouchEvent(const AtomicString& type,
@@ -267,7 +273,7 @@ void TouchEvent::preventDefault() {
         }
 
         if (native_event_ &&
-            native_event_->dispatch_type ==
+            GetWebTouchEvent(*native_event_)->dispatch_type ==
                 WebInputEvent::
                     kListenersForcedNonBlockingDueToMainThreadResponsiveness) {
           // Non blocking due to main thread responsiveness.
@@ -338,7 +344,7 @@ void TouchEvent::preventDefault() {
 bool TouchEvent::IsTouchStartOrFirstTouchMove() const {
   if (!native_event_)
     return false;
-  return native_event_->touch_start_or_first_touch_move;
+  return GetWebTouchEvent(*native_event_)->touch_start_or_first_touch_move;
 }
 
 void TouchEvent::DoneDispatchingEventAtCurrentTarget() {

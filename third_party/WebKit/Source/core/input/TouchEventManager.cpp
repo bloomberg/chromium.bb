@@ -19,6 +19,7 @@
 #include "platform/Histogram.h"
 #include "platform/wtf/CurrentTime.h"
 #include "platform/wtf/PtrUtil.h"
+#include "public/platform/WebCoalescedInputEvent.h"
 #include "public/platform/WebTouchEvent.h"
 
 namespace blink {
@@ -118,6 +119,7 @@ DEFINE_TRACE(TouchEventManager) {
 
 WebInputEventResult TouchEventManager::DispatchTouchEvents(
     const WebTouchEvent& event,
+    const Vector<WebTouchEvent>& coalesced_events,
     const HeapVector<TouchInfo>& touch_infos,
     bool all_touches_released) {
   // Build up the lists to use for the |touches|, |targetTouches| and
@@ -201,6 +203,13 @@ WebInputEventResult TouchEventManager::DispatchTouchEvents(
   }
 
   WebInputEventResult event_result = WebInputEventResult::kNotHandled;
+  // First we construct the webcoalescedinputevent contains all the coalesced
+  // touch event.
+  std::vector<const WebInputEvent*> coalesced_touches;
+  for (size_t i = 0; i < coalesced_events.size(); ++i) {
+    coalesced_touches.push_back(&coalesced_events[i]);
+  }
+  WebCoalescedInputEvent coalesced_event(event, coalesced_touches);
 
   // Now iterate through the |changedTouches| list and |m_targets| within it,
   // sending TouchEvents to the targets as required.
@@ -213,7 +222,7 @@ WebInputEventResult TouchEventManager::DispatchTouchEvents(
     for (const auto& event_target : changed_touches[state].targets_) {
       EventTarget* touch_event_target = event_target;
       TouchEvent* touch_event = TouchEvent::Create(
-          event, touches, touches_by_target.at(touch_event_target),
+          coalesced_event, touches, touches_by_target.at(touch_event_target),
           changed_touches[state].touches_.Get(), event_name,
           touch_event_target->ToNode()->GetDocument().domWindow(),
           current_touch_action_);
@@ -505,6 +514,7 @@ bool TouchEventManager::ReHitTestTouchPointsIfNeeded(
 
 WebInputEventResult TouchEventManager::HandleTouchEvent(
     const WebTouchEvent& event,
+    const Vector<WebTouchEvent>& coalesced_events,
     HeapVector<TouchInfo>& touch_infos) {
   if (!ReHitTestTouchPointsIfNeeded(event, touch_infos))
     return WebInputEventResult::kNotHandled;
@@ -517,7 +527,8 @@ WebInputEventResult TouchEventManager::HandleTouchEvent(
       all_touches_released = false;
   }
 
-  return DispatchTouchEvents(event, touch_infos, all_touches_released);
+  return DispatchTouchEvents(event, coalesced_events, touch_infos,
+                             all_touches_released);
 }
 
 bool TouchEventManager::IsAnyTouchActive() const {

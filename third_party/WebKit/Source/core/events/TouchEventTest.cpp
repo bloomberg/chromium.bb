@@ -64,8 +64,8 @@ class TouchEventTest : public testing::Test {
   TouchEvent* EventWithDispatchType(WebInputEvent::DispatchType dispatch_type) {
     WebTouchEvent web_touch_event(WebInputEvent::kTouchStart, 0, 0);
     web_touch_event.dispatch_type = dispatch_type;
-    return TouchEvent::Create(web_touch_event, nullptr, nullptr, nullptr,
-                              "touchstart", &Window(),
+    return TouchEvent::Create(WebCoalescedInputEvent(web_touch_event), nullptr,
+                              nullptr, nullptr, "touchstart", &Window(),
                               TouchAction::kTouchActionAuto);
   }
 

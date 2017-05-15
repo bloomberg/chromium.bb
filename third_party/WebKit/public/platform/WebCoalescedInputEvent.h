@@ -20,6 +20,8 @@ class BLINK_PLATFORM_EXPORT WebCoalescedInputEvent {
   explicit WebCoalescedInputEvent(const WebInputEvent&);
   WebCoalescedInputEvent(const WebInputEvent&,
                          const std::vector<const WebInputEvent*>&);
+  // Copy constructor to deep copy the event.
+  WebCoalescedInputEvent(const WebCoalescedInputEvent&);
 
   WebInputEvent* EventPointer();
   void AddCoalescedEvent(const blink::WebInputEvent&);
