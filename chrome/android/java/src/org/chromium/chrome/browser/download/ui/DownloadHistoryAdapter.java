@@ -11,10 +11,12 @@ import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
 
+import org.chromium.base.ContextUtils;
 import org.chromium.base.ObserverList;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.download.DownloadItem;
 import org.chromium.chrome.browser.download.DownloadSharedPreferenceHelper;
 import org.chromium.chrome.browser.download.DownloadUtils;
@@ -141,6 +143,9 @@ public class DownloadHistoryAdapter extends DateDividedAdapter
 
     private static final String EMPTY_QUERY = null;
 
+    private static final String PREF_SHOW_STORAGE_INFO_HEADER =
+            "download_home_show_storage_info_header";
+
     private final BackendItems mRegularDownloadItems = new BackendItemsImpl();
     private final BackendItems mIncognitoDownloadItems = new BackendItemsImpl();
     private final BackendItems mOfflinePageItems = new BackendItemsImpl();
@@ -161,6 +166,7 @@ public class DownloadHistoryAdapter extends DateDividedAdapter
     private String mSearchQuery = EMPTY_QUERY;
     private SpaceDisplay mSpaceDisplay;
     private boolean mIsSearching;
+    private boolean mShouldShowStorageInfoHeader;
 
     @Nullable // This may be null during tests.
     private UiConfig mUiConfig;
@@ -196,6 +202,9 @@ public class DownloadHistoryAdapter extends DateDividedAdapter
         initializeOfflinePageBridge();
 
         sDeletedFileTracker.incrementInstanceCount();
+        mShouldShowStorageInfoHeader = ContextUtils.getAppSharedPreferences().getBoolean(
+                PREF_SHOW_STORAGE_INFO_HEADER,
+                ChromeFeatureList.isEnabled(ChromeFeatureList.DOWNLOAD_HOME_SHOW_STORAGE_INFO));
     }
 
     /** Called when the user's regular or incognito download history has been loaded. */
@@ -531,6 +540,26 @@ public class DownloadHistoryAdapter extends DateDividedAdapter
         filter(mFilter);
     }
 
+    /** @return Whether the storage info header should be visible. */
+    boolean shouldShowStorageInfoHeader() {
+        return mShouldShowStorageInfoHeader;
+    }
+
+    /**
+     * Sets the visibility of the storage info header and saves user selection to shared preference.
+     * @param show Whether or not we should show the storage info header.
+     */
+    void setShowStorageInfoHeader(boolean show) {
+        mShouldShowStorageInfoHeader = show;
+        ContextUtils.getAppSharedPreferences()
+                .edit()
+                .putBoolean(PREF_SHOW_STORAGE_INFO_HEADER, mShouldShowStorageInfoHeader)
+                .apply();
+        RecordHistogram.recordBooleanHistogram(
+                "Android.DownloadManager.ShowStorageInfo", mShouldShowStorageInfoHeader);
+        filter(mFilter);
+    }
+
     private DownloadDelegate getDownloadDelegate() {
         return mBackendProvider.getDownloadDelegate();
     }
@@ -560,7 +589,10 @@ public class DownloadHistoryAdapter extends DateDividedAdapter
         }
 
         clear(false);
-        if (!filteredTimedItems.isEmpty() && !mIsSearching) addHeader();
+        if (!filteredTimedItems.isEmpty() && !mIsSearching && mShouldShowStorageInfoHeader) {
+            addHeader();
+        }
+
         loadItems(filteredTimedItems);
     }
 

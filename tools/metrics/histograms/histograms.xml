@@ -642,6 +642,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Android.DownloadManager.ShowStorageInfo" enum="BooleanVisible">
+  <owner>shaktisahu@chromium.org</owner>
+  <summary>
+    Recorded when the user clicks the info button on download home to toggle the
+    storage info. The state recorded is after the visibility is toggled.
+  </summary>
+</histogram>
+
 <histogram name="Android.DownloadManager.SpaceUsed" units="%">
   <owner>dfalcantara@chromium.org</owner>
   <owner>twellington@chromium.org</owner>

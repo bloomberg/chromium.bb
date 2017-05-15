@@ -8,6 +8,7 @@ import static org.chromium.chrome.browser.widget.DateDividedAdapter.TYPE_DATE;
 import static org.chromium.chrome.browser.widget.DateDividedAdapter.TYPE_HEADER;
 import static org.chromium.chrome.browser.widget.DateDividedAdapter.TYPE_NORMAL;
 
+import android.content.SharedPreferences.Editor;
 import android.support.test.filters.SmallTest;
 import android.support.v7.widget.RecyclerView;
 
@@ -17,6 +18,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.chromium.base.ContextUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.CallbackHelper;
@@ -70,6 +72,9 @@ public class DownloadHistoryAdapterTest {
      */
     private static final Integer HEADER = -1;
 
+    private static final String PREF_SHOW_STORAGE_INFO_HEADER =
+            "download_home_show_storage_info_header";
+
     private DownloadHistoryAdapter mAdapter;
     private Observer mObserver;
     private StubbedDownloadDelegate mDownloadDelegate;
@@ -82,6 +87,8 @@ public class DownloadHistoryAdapterTest {
         mBackendProvider = new StubbedProvider();
         mDownloadDelegate = mBackendProvider.getDownloadDelegate();
         mOfflineDelegate = mBackendProvider.getOfflinePageBridge();
+        Editor editor = ContextUtils.getAppSharedPreferences().edit();
+        editor.putBoolean(PREF_SHOW_STORAGE_INFO_HEADER, true).apply();
     }
 
     private void initializeAdapter(boolean showOffTheRecord) throws Exception {
@@ -156,6 +163,50 @@ public class DownloadHistoryAdapterTest {
         initializeAdapter(false);
         checkAdapterContents(HEADER, null, item1, null, item0);
         Assert.assertEquals(11, mAdapter.getTotalDownloadSize());
+    }
+
+    /** Storage header shouldn't show up if user has already turned it off. */
+    @Test
+    @SmallTest
+    public void testInitialize_SingleItemNoStorageHeader() throws Exception {
+        Editor editor = ContextUtils.getAppSharedPreferences().edit();
+        editor.putBoolean(PREF_SHOW_STORAGE_INFO_HEADER, false).apply();
+        DownloadItem item = StubbedProvider.createDownloadItem(0, "19840116 12:00");
+        mDownloadDelegate.regularItems.add(item);
+        initializeAdapter(false);
+        checkAdapterContents(null, item);
+        Assert.assertEquals(1, mAdapter.getTotalDownloadSize());
+    }
+
+    /** Toggle the info button. Storage header should turn off/on accordingly. */
+    @Test
+    @SmallTest
+    public void testToggleStorageHeader() throws Exception {
+        DownloadItem item0 = StubbedProvider.createDownloadItem(0, "19840116 12:00");
+        DownloadItem item1 = StubbedProvider.createDownloadItem(1, "19840116 12:01");
+        mDownloadDelegate.regularItems.add(item0);
+        mDownloadDelegate.regularItems.add(item1);
+        initializeAdapter(false);
+        checkAdapterContents(HEADER, null, item1, item0);
+        Assert.assertEquals(11, mAdapter.getTotalDownloadSize());
+
+        // Turn off info and check that header is gone.
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                mAdapter.setShowStorageInfoHeader(false);
+            }
+        });
+        checkAdapterContents(null, item1, item0);
+
+        // Turn on info and check that header is back again.
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                mAdapter.setShowStorageInfoHeader(true);
+            }
+        });
+        checkAdapterContents(HEADER, null, item1, item0);
     }
 
     /** Off the record downloads are ignored if the DownloadHistoryAdapter isn't watching them. */

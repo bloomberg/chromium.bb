@@ -209,6 +209,12 @@ CHAR-LIMIT guidelines:
       <message name="IDS_SEARCH" desc="The label for a search button.">
         Search
       </message>
+      <message name="IDS_SHOW_INFO" desc="The label for a info button to show info.">
+        Show Info
+      </message>
+      <message name="IDS_HIDE_INFO" desc="The label for a info button to hide info.">
+        Hide Info
+      </message>
       <message name="IDS_COPY_LINK" desc="The label for a menu item to copy a link. [CHAR-LIMIT=30]">
         Copy link
       </message>

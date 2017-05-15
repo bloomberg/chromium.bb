@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.download;
 
 import android.content.Intent;
+import android.content.SharedPreferences.Editor;
 import android.os.Handler;
 import android.os.Looper;
 import android.support.test.filters.MediumTest;
@@ -15,6 +16,7 @@ import android.view.View;
 import android.widget.Spinner;
 import android.widget.TextView;
 
+import org.chromium.base.ContextUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.BaseActivityInstrumentationTestCase;
 import org.chromium.base.test.util.CallbackHelper;
@@ -108,6 +110,9 @@ public class DownloadActivityTest extends BaseActivityInstrumentationTestCase<Do
         }
     }
 
+    private static final String PREF_SHOW_STORAGE_INFO_HEADER =
+            "download_home_show_storage_info_header";
+
     private StubbedProvider mStubbedProvider;
     private TestObserver mAdapterObserver;
     private DownloadManagerUi mUi;
@@ -123,6 +128,9 @@ public class DownloadActivityTest extends BaseActivityInstrumentationTestCase<Do
     @Override
     public void setUp() throws Exception {
         super.setUp();
+
+        Editor editor = ContextUtils.getAppSharedPreferences().edit();
+        editor.putBoolean(PREF_SHOW_STORAGE_INFO_HEADER, true).apply();
 
         mStubbedProvider = new StubbedProvider();
         DownloadManagerUi.setProviderForTests(mStubbedProvider);

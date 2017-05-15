@@ -8,6 +8,7 @@
     android:layout_height="wrap_content"
     android:background="?android:attr/selectableItemBackground"
     android:gravity="center_vertical"
+    android:drawablePadding="16dp"
     android:minWidth="176dp"
     android:minHeight="48dp"
     android:paddingStart="16dp"
