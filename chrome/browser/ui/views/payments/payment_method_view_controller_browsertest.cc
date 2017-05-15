@@ -114,4 +114,22 @@ IN_PROC_BROWSER_TEST_F(PaymentMethodViewControllerTest,
             request->state()->selected_instrument());
 }
 
+IN_PROC_BROWSER_TEST_F(PaymentMethodViewControllerTest, EditButtonOpensEditor) {
+  AddCreditCard(autofill::test::GetCreditCard());
+
+  InvokePaymentRequestUI();
+  OpenPaymentMethodScreen();
+
+  views::View* list_view = dialog_view()->GetViewByID(
+      static_cast<int>(DialogViewID::PAYMENT_METHOD_SHEET_LIST_VIEW));
+  EXPECT_TRUE(list_view);
+  EXPECT_EQ(1, list_view->child_count());
+
+  views::View* edit_button = list_view->child_at(0)->GetViewByID(
+      static_cast<int>(DialogViewID::EDIT_ITEM_BUTTON));
+
+  ResetEventObserver(DialogEvent::CREDIT_CARD_EDITOR_OPENED);
+  ClickOnDialogViewAndWait(edit_button);
+}
+
 }  // namespace payments

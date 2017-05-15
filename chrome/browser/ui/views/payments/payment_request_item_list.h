@@ -36,7 +36,8 @@ class PaymentRequestItemList {
     Item(PaymentRequestSpec* spec,
          PaymentRequestState* state,
          PaymentRequestItemList* list,
-         bool selected);
+         bool selected,
+         bool show_edit_button);
     ~Item() override;
 
     // Gets the view associated with this item. It's owned by this object so
@@ -89,6 +90,10 @@ class PaymentRequestItemList {
     // false. This will usually be to display an editor.
     virtual void PerformSelectionFallback() = 0;
 
+    // Called when the edit button is pressed. Subclasses should open the editor
+    // appropriate for the item they represent.
+    virtual void EditButtonPressed() = 0;
+
    private:
     // Creates and returns the view associated with this list item.
     std::unique_ptr<views::View> CreateItemView();
@@ -102,6 +107,7 @@ class PaymentRequestItemList {
     PaymentRequestItemList* list_;
     std::unique_ptr<views::ImageView> checkmark_;
     bool selected_;
+    bool show_edit_button_;
 
     DISALLOW_COPY_AND_ASSIGN(Item);
   };

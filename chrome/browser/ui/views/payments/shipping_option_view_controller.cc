@@ -23,7 +23,11 @@ class ShippingOptionItem : public PaymentRequestItemList::Item {
                      PaymentRequestItemList* parent_list,
                      PaymentRequestDialogView* dialog,
                      bool selected)
-      : PaymentRequestItemList::Item(spec, state, parent_list, selected),
+      : PaymentRequestItemList::Item(spec,
+                                     state,
+                                     parent_list,
+                                     selected,
+                                     /*show_edit_button=*/false),
         shipping_option_(shipping_option),
         dialog_(dialog) {}
   ~ShippingOptionItem() override {}
@@ -56,6 +60,11 @@ class ShippingOptionItem : public PaymentRequestItemList::Item {
 
   void PerformSelectionFallback() override {
     // Since CanBeSelected() is always true, this should never be called.
+    NOTREACHED();
+  }
+
+  void EditButtonPressed() override {
+    // This subclass doesn't display the edit button.
     NOTREACHED();
   }
 

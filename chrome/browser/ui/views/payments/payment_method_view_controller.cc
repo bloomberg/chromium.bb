@@ -59,12 +59,35 @@ class PaymentMethodListItem : public payments::PaymentRequestItemList::Item {
                         PaymentRequestItemList* list,
                         PaymentRequestDialogView* dialog,
                         bool selected)
-      : payments::PaymentRequestItemList::Item(spec, state, list, selected),
+      : payments::PaymentRequestItemList::Item(spec,
+                                               state,
+                                               list,
+                                               selected,
+                                               /*show_edit_button=*/true),
         instrument_(instrument),
         dialog_(dialog) {}
   ~PaymentMethodListItem() override {}
 
  private:
+  void ShowEditor() {
+    switch (instrument_->type()) {
+      case PaymentInstrument::Type::AUTOFILL:
+        // Since we are a list item, we only care about the on_edited callback.
+        dialog_->ShowCreditCardEditor(
+            BackNavigationType::kPaymentSheet,
+            static_cast<int>(PaymentMethodViewControllerTags::MAX_TAG),
+            /*on_edited=*/
+            base::BindOnce(&PaymentRequestState::SetSelectedInstrument,
+                           base::Unretained(state()), instrument_),
+            /*on_added=*/
+            base::OnceCallback<void(const autofill::CreditCard&)>(),
+            static_cast<AutofillPaymentInstrument*>(instrument_)
+                ->credit_card());
+        return;
+    }
+    NOTREACHED();
+  }
+
   // payments::PaymentRequestItemList::Item:
   std::unique_ptr<views::View> CreateExtraView() override {
     std::unique_ptr<views::ImageView> card_icon_view = CreateInstrumentIconView(
@@ -123,24 +146,9 @@ class PaymentMethodListItem : public payments::PaymentRequestItemList::Item {
     return instrument_->IsCompleteForPayment();
   }
 
-  void PerformSelectionFallback() override {
-    switch (instrument_->type()) {
-      case PaymentInstrument::Type::AUTOFILL:
-        // Since we are a list item, we only care about the on_edited callback.
-        dialog_->ShowCreditCardEditor(
-            BackNavigationType::kPaymentSheet,
-            static_cast<int>(PaymentMethodViewControllerTags::MAX_TAG),
-            /*on_edited=*/
-            base::BindOnce(&PaymentRequestState::SetSelectedInstrument,
-                           base::Unretained(state()), instrument_),
-            /*on_added=*/
-            base::OnceCallback<void(const autofill::CreditCard&)>(),
-            static_cast<AutofillPaymentInstrument*>(instrument_)
-                ->credit_card());
-        return;
-    }
-    NOTREACHED();
-  }
+  void PerformSelectionFallback() override { ShowEditor(); }
+
+  void EditButtonPressed() override { ShowEditor(); }
 
   PaymentInstrument* instrument_;
   PaymentRequestDialogView* dialog_;

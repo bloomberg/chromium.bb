@@ -8,7 +8,12 @@
 #include "chrome/browser/ui/views/payments/payment_request_row_view.h"
 #include "chrome/browser/ui/views/payments/payment_request_views_util.h"
 #include "components/payments/content/payment_request_state.h"
+#include "ui/gfx/color_utils.h"
 #include "ui/gfx/paint_vector_icon.h"
+#include "ui/vector_icons/vector_icons.h"
+#include "ui/views/controls/button/button.h"
+#include "ui/views/controls/button/image_button.h"
+#include "ui/views/controls/button/image_button_factory.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/grid_layout.h"
@@ -26,8 +31,13 @@ const SkColor kCheckmarkColor = 0xFF609265;
 PaymentRequestItemList::Item::Item(PaymentRequestSpec* spec,
                                    PaymentRequestState* state,
                                    PaymentRequestItemList* list,
-                                   bool selected)
-    : spec_(spec), state_(state), list_(list), selected_(selected) {}
+                                   bool selected,
+                                   bool show_edit_button)
+    : spec_(spec),
+      state_(state),
+      list_(list),
+      selected_(selected),
+      show_edit_button_(show_edit_button) {}
 
 PaymentRequestItemList::Item::~Item() {}
 
@@ -94,9 +104,24 @@ std::unique_ptr<views::View> PaymentRequestItemList::Item::CreateItemView() {
   columns->AddColumn(views::GridLayout::TRAILING, views::GridLayout::CENTER, 0,
                      views::GridLayout::USE_PREF, 0, 0);
 
-  // Add a column for the extra_view, which comes after the checkmark.
-  columns->AddColumn(views::GridLayout::TRAILING, views::GridLayout::CENTER, 0,
-                     views::GridLayout::USE_PREF, 0, 0);
+  // The space between the checkmark, extra view, and edit button.
+  constexpr int kExtraViewSpacing = 16;
+  std::unique_ptr<views::View> extra_view = CreateExtraView();
+  if (extra_view) {
+    columns->AddPaddingColumn(0, kExtraViewSpacing);
+    // Add a column for the extra_view, which comes after the checkmark.
+    columns->AddColumn(views::GridLayout::TRAILING, views::GridLayout::CENTER,
+                       0, views::GridLayout::USE_PREF, 0, 0);
+  }
+
+  constexpr int kEditIconSize = 16;
+  if (show_edit_button_) {
+    columns->AddPaddingColumn(0, kExtraViewSpacing);
+    // Add a column for the edit_button if it exists.
+    columns->AddColumn(views::GridLayout::TRAILING, views::GridLayout::CENTER,
+                       0, views::GridLayout::FIXED, kEditIconSize,
+                       kEditIconSize);
+  }
 
   layout->StartRow(0, 0);
   content->set_can_process_events_within_subtree(false);
@@ -105,16 +130,30 @@ std::unique_ptr<views::View> PaymentRequestItemList::Item::CreateItemView() {
   checkmark_ = CreateCheckmark(selected());
   layout->AddView(checkmark_.get());
 
-  std::unique_ptr<views::View> extra_view = CreateExtraView();
   if (extra_view)
     layout->AddView(extra_view.release());
+
+  if (show_edit_button_) {
+    views::ImageButton* edit_button = views::CreateVectorImageButton(this);
+    const SkColor icon_color =
+        color_utils::DeriveDefaultIconColor(SK_ColorBLACK);
+    edit_button->SetImage(
+        views::Button::STATE_NORMAL,
+        gfx::CreateVectorIcon(ui::kEditIcon, kEditIconSize, icon_color));
+    edit_button->set_ink_drop_base_color(icon_color);
+    edit_button->SetFocusBehavior(views::View::FocusBehavior::ALWAYS);
+    edit_button->set_id(static_cast<int>(DialogViewID::EDIT_ITEM_BUTTON));
+    layout->AddView(edit_button);
+  }
 
   return std::move(row);
 }
 
 void PaymentRequestItemList::Item::ButtonPressed(views::Button* sender,
                                                  const ui::Event& event) {
-  if (CanBeSelected()) {
+  if (sender->id() == static_cast<int>(DialogViewID::EDIT_ITEM_BUTTON)) {
+    EditButtonPressed();
+  } else if (CanBeSelected()) {
     list()->SelectItem(this);
   } else {
     PerformSelectionFallback();
