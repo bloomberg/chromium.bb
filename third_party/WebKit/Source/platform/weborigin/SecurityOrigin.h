@@ -202,7 +202,7 @@ class PLATFORM_EXPORT SecurityOrigin : public RefCounted<SecurityOrigin> {
   // Assigns a suborigin namespace to the SecurityOrigin. addSuborigin() must
   // only ever be called once per SecurityOrigin(). If it is called on a
   // SecurityOrigin that has already had a suborigin assigned, it will hit a
-  // RELEASE_ASSERT().
+  // CHECK().
   bool HasSuborigin() const { return !suborigin_.GetName().IsNull(); }
   const Suborigin* GetSuborigin() const { return &suborigin_; }
   void AddSuborigin(const Suborigin&);

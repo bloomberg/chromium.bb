@@ -166,7 +166,7 @@ void PannerHandler::Process(size_t frames_to_process) {
 void PannerHandler::ProcessSampleAccurateValues(AudioBus* destination,
                                                 const AudioBus* source,
                                                 size_t frames_to_process) {
-  RELEASE_ASSERT(frames_to_process <= AudioUtilities::kRenderQuantumFrames);
+  CHECK_LE(frames_to_process, AudioUtilities::kRenderQuantumFrames);
 
   // Get the sample accurate values from all of the AudioParams, including the
   // values from the AudioListener.

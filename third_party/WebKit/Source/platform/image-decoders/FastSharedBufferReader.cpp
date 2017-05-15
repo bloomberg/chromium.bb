@@ -54,7 +54,7 @@ void FastSharedBufferReader::ClearCache() {
 const char* FastSharedBufferReader::GetConsecutiveData(size_t data_position,
                                                        size_t length,
                                                        char* buffer) const {
-  RELEASE_ASSERT(data_position + length <= data_->size());
+  CHECK_LE(data_position + length, data_->size());
 
   // Use the cached segment if it can serve the request.
   if (data_position >= data_position_ &&

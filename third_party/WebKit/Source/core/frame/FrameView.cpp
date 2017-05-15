@@ -343,7 +343,7 @@ void FrameView::SetupRenderThrottling() {
 }
 
 void FrameView::Dispose() {
-  RELEASE_ASSERT(!IsInPerformLayout());
+  CHECK(!IsInPerformLayout());
 
   if (ScrollAnimatorBase* scroll_animator = ExistingScrollAnimator())
     scroll_animator->CancelAnimation();
@@ -815,7 +815,7 @@ void FrameView::UpdateAcceleratedCompositingSettings() {
 
 void FrameView::RecalcOverflowAfterStyleChange() {
   LayoutViewItem layout_view_item = this->GetLayoutViewItem();
-  RELEASE_ASSERT(!layout_view_item.IsNull());
+  CHECK(!layout_view_item.IsNull());
   if (!layout_view_item.NeedsOverflowRecalcAfterStyleChange())
     return;
 
@@ -1364,7 +1364,7 @@ void FrameView::DeprecatedInvalidateTree(
 
   Lifecycle().AdvanceTo(DocumentLifecycle::kInPaintInvalidation);
 
-  RELEASE_ASSERT(!GetLayoutViewItem().IsNull());
+  CHECK(!GetLayoutViewItem().IsNull());
   LayoutViewItem root_for_paint_invalidation = GetLayoutViewItem();
   DCHECK(!root_for_paint_invalidation.NeedsLayout());
 
@@ -1384,7 +1384,7 @@ void FrameView::DeprecatedInvalidateTree(
 
 void FrameView::InvalidatePaint(
     const PaintInvalidationState& paint_invalidation_state) {
-  RELEASE_ASSERT(!GetLayoutViewItem().IsNull());
+  CHECK(!GetLayoutViewItem().IsNull());
   if (!RuntimeEnabledFeatures::rootLayerScrollingEnabled())
     InvalidatePaintOfScrollControlsIfNeeded(paint_invalidation_state);
 }

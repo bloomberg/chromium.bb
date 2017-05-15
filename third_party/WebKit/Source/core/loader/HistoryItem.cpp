@@ -72,7 +72,7 @@ void HistoryItem::SetURL(const KURL& url) {
 }
 
 void HistoryItem::SetReferrer(const Referrer& referrer) {
-  // This should be a RELEASE_ASSERT.
+  // This should be a CHECK.
   referrer_ = SecurityPolicy::GenerateReferrer(referrer.referrer_policy, Url(),
                                                referrer.referrer);
 }

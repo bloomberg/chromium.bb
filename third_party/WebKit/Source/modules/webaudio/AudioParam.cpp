@@ -51,7 +51,7 @@ AudioParamHandler::AudioParamHandler(BaseAudioContext& context,
       max_value_(max_value) {
   // The destination MUST exist because we need the destination handler for the
   // AudioParam.
-  RELEASE_ASSERT(context.destination());
+  CHECK(context.destination());
 
   destination_handler_ = &context.destination()->GetAudioDestinationHandler();
   timeline_.SetSmoothedValue(default_value);

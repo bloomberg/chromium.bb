@@ -47,7 +47,7 @@ v8::Local<v8::Value> ScriptValue::V8Value() const {
   // Probably this could be:
   //   if (&script_state_->world() == &DOMWrapperWorld::current(isolate()))
   //       return v8::Local<v8::Value>();
-  // instead of triggering RELEASE_ASSERT.
+  // instead of triggering CHECK.
   CHECK_EQ(&script_state_->World(), &DOMWrapperWorld::Current(GetIsolate()));
   return value_->NewLocal(GetIsolate());
 }

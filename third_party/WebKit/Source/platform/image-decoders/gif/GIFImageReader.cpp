@@ -310,8 +310,7 @@ void GIFColorMap::buildTable(blink::FastSharedBufferReader* reader) {
   if (!m_isDefined || !m_table.IsEmpty())
     return;
 
-  RELEASE_ASSERT(m_position + m_colors * BYTES_PER_COLORMAP_ENTRY <=
-                 reader->size());
+  CHECK_LE(m_position + m_colors * BYTES_PER_COLORMAP_ENTRY, reader->size());
   DCHECK_LE(m_colors, MAX_COLORS);
   char buffer[MAX_COLORS * BYTES_PER_COLORMAP_ENTRY];
   const unsigned char* srcColormap =
