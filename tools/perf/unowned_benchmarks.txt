@@ -1,7 +1,4 @@
 blink_perf.blink_gc
-blink_style.key_mobile_sites
-blink_style.polymer
-blink_style.top_25
 blob_storage.blob_storage
 gpu_times.gpu_rasterization.key_mobile_sites_smooth
 gpu_times.gpu_rasterization.top_25_smooth
