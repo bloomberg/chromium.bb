@@ -52,14 +52,15 @@ class ProfileItem : public PaymentRequestItemList::Item {
               PaymentRequestSpec* spec,
               PaymentRequestState* state,
               PaymentRequestItemList* parent_list,
-              ProfileListViewController* parent_view,
+              ProfileListViewController* controller,
               PaymentRequestDialogView* dialog,
               bool selected)
       : payments::PaymentRequestItemList::Item(spec,
                                                state,
                                                parent_list,
-                                               selected),
-        parent_view_(parent_view),
+                                               selected,
+                                               /*show_edit_button=*/true),
+        controller_(controller),
         profile_(profile),
         dialog_(dialog) {}
   ~ProfileItem() override {}
@@ -69,32 +70,34 @@ class ProfileItem : public PaymentRequestItemList::Item {
   std::unique_ptr<views::View> CreateContentView() override {
     DCHECK(profile_);
 
-    return parent_view_->GetLabel(profile_);
+    return controller_->GetLabel(profile_);
   }
 
   void SelectedStateChanged() override {
     if (selected()) {
-      parent_view_->SelectProfile(profile_);
+      controller_->SelectProfile(profile_);
       dialog_->GoBack();
     }
   }
 
-  bool IsEnabled() override { return parent_view_->IsEnabled(profile_); }
+  bool IsEnabled() override { return controller_->IsEnabled(profile_); }
 
   bool CanBeSelected() override {
     // In order to be selectable, a profile entry needs to be enabled, and the
     // profile valid according to the controller. If either condition is false,
     // PerformSelectionFallback() is called.
-    return IsEnabled() && parent_view_->IsValidProfile(*profile_);
+    return IsEnabled() && controller_->IsValidProfile(*profile_);
   }
 
   void PerformSelectionFallback() override {
     // If enabled, the editor is opened to complete the invalid profile.
     if (IsEnabled())
-      parent_view_->ShowEditor(profile_);
+      controller_->ShowEditor(profile_);
   }
 
-  ProfileListViewController* parent_view_;
+  void EditButtonPressed() override { controller_->ShowEditor(profile_); }
+
+  ProfileListViewController* controller_;
   autofill::AutofillProfile* profile_;
   PaymentRequestDialogView* dialog_;
 

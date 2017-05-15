@@ -31,6 +31,7 @@ enum class DialogViewID : int {
   CVC_PROMPT_CONFIRM_BUTTON,
   ADD_BILLING_ADDRESS_BUTTON,
   SAVE_ADDRESS_BUTTON,
+  EDIT_ITEM_BUTTON,
 
   // The following are buttons that are displayed inline in the Payment Sheet
   // sections when no option is selected or available.
