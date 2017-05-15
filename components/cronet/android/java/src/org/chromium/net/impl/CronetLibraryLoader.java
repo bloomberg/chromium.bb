@@ -5,6 +5,7 @@
 package org.chromium.net.impl;
 
 import android.content.Context;
+import android.os.ConditionVariable;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Looper;
@@ -33,6 +34,9 @@ public class CronetLibraryLoader {
     private static volatile boolean sLibraryLoaded = false;
     // Has ensureInitThreadInitialized() completed?
     private static volatile boolean sInitThreadInitDone = false;
+    // Block calling native methods until this ConditionVariable opens to indicate loadLibrary()
+    // is completed and native methods have been registered.
+    private static final ConditionVariable sWaitForLibLoad = new ConditionVariable();
 
     /**
      * Ensure that native library is loaded and initialized. Can be called from
@@ -41,6 +45,17 @@ public class CronetLibraryLoader {
     public static void ensureInitialized(
             final Context applicationContext, final CronetEngineBuilderImpl builder) {
         synchronized (sLoadLock) {
+            if (!sInitThreadInitDone) {
+                if (!sInitThread.isAlive()) {
+                    sInitThread.start();
+                }
+                postToInitThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        ensureInitializedOnInitThread(applicationContext);
+                    }
+                });
+            }
             if (!sLibraryLoaded) {
                 ContextUtils.initApplicationContext(applicationContext);
                 if (builder.libraryLoader() != null) {
@@ -58,18 +73,7 @@ public class CronetLibraryLoader {
                 Log.i(TAG, "Cronet version: %s, arch: %s", implVersion,
                         System.getProperty("os.arch"));
                 sLibraryLoaded = true;
-            }
-
-            if (!sInitThreadInitDone) {
-                if (!sInitThread.isAlive()) {
-                    sInitThread.start();
-                }
-                postToInitThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        ensureInitializedOnInitThread(applicationContext);
-                    }
-                });
+                sWaitForLibLoad.open();
             }
         }
     }
@@ -87,7 +91,6 @@ public class CronetLibraryLoader {
      * init thread native MessageLoop is initialized.
      */
     static void ensureInitializedOnInitThread(Context context) {
-        assert sLibraryLoaded;
         assert onInitThread();
         if (sInitThreadInitDone) {
             return;
@@ -99,6 +102,9 @@ public class CronetLibraryLoader {
         // observers. Existing observers in the net stack do not
         // perform expensive work.
         NetworkChangeNotifier.registerToReceiveNotificationsAlways();
+        // Wait for loadLibrary() to complete so JNI is registered.
+        sWaitForLibLoad.block();
+        assert sLibraryLoaded;
         // registerToReceiveNotificationsAlways() is called before the native
         // NetworkChangeNotifierAndroid is created, so as to avoid receiving
         // the undesired initial network change observer notification, which
