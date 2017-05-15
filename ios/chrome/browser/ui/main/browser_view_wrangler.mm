@@ -4,7 +4,7 @@
 
 #import "ios/chrome/browser/ui/main/browser_view_wrangler.h"
 
-#include "base/mac/objc_property_releaser.h"
+#include "base/mac/objc_release_properties.h"
 #import "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
 #include "ios/chrome/browser/application_context.h"
@@ -27,8 +27,6 @@
 @interface BrowserViewWrangler ()<TabModelObserver> {
   ios::ChromeBrowserState* _browserState;
   __unsafe_unretained id<TabModelObserver> _tabModelObserver;
-
-  base::mac::ObjCPropertyReleaser _propertyReleaser_BrowserViewWrangler;
 }
 
 // Responsible for maintaining all state related to sharing to other devices.
@@ -68,8 +66,6 @@
 - (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState
                     tabModelObserver:(id<TabModelObserver>)tabModelObserver {
   if ((self = [super init])) {
-    _propertyReleaser_BrowserViewWrangler.Init(self,
-                                               [BrowserViewWrangler class]);
     _browserState = browserState;
     _tabModelObserver = tabModelObserver;
   }
@@ -101,6 +97,7 @@
   [_mainTabModel browserStateDestroyed];
   [_otrTabModel browserStateDestroyed];
 
+  base::mac::ReleaseProperties(self);
   [super dealloc];
 }
 

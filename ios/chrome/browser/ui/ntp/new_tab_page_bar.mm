@@ -8,7 +8,7 @@
 #include <cmath>
 
 #include "base/logging.h"
-#include "base/mac/objc_property_releaser.h"
+#include "base/mac/objc_release_properties.h"
 #include "base/mac/scoped_nsobject.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_utils_ios.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_bar_button.h"
@@ -66,8 +66,6 @@ const int kNumberOfTabsIncognito = 2;
   CGFloat buttonWidth_;
   // Percentage overlay sits over tab bar buttons.
   CGFloat overlayPercentage_;
-
-  base::mac::ObjCPropertyReleaser propertyReleaser_NewTabPageBar_;
 }
 
 @synthesize items = items_;
@@ -94,7 +92,6 @@ const int kNumberOfTabsIncognito = 2;
 }
 
 - (void)setup {
-  propertyReleaser_NewTabPageBar_.Init(self, [NewTabPageBar class]);
   self.selectedIndex = NSNotFound;
   canAnimate_ = NO;
   self.autoresizingMask =
@@ -131,6 +128,11 @@ const int kNumberOfTabsIncognito = 2;
   [self addSubview:shadow_];
 
   self.contentMode = UIViewContentModeRedraw;
+}
+
+- (void)dealloc {
+  base::mac::ReleaseProperties(self);
+  [super dealloc];
 }
 
 - (void)layoutSubviews {

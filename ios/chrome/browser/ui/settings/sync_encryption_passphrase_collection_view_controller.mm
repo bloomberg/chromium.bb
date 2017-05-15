@@ -8,7 +8,7 @@
 
 #include "base/i18n/time_formatting.h"
 #include "base/mac/foundation_util.h"
-#import "base/mac/objc_property_releaser.h"
+#import "base/mac/objc_release_properties.h"
 #import "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/browser_sync/profile_sync_service.h"
@@ -65,8 +65,6 @@ const CGFloat kSpinnerButtonPadding = 18;
   std::unique_ptr<SyncObserverBridge> syncObserver_;
   std::unique_ptr<OAuth2TokenServiceObserverBridge> tokenServiceObserver_;
   base::scoped_nsobject<UITextField> passphrase_;
-  base::mac::ObjCPropertyReleaser
-      propertyReleaser_SyncEncryptionPassphraseCollectionViewController_;
 }
 
 // Sets up the navigation bar's right button. The button will be enabled iff
@@ -142,12 +140,14 @@ const CGFloat kSpinnerButtonPadding = 18;
     tokenServiceObserver_.reset(new OAuth2TokenServiceObserverBridge(
         OAuth2TokenServiceFactory::GetForBrowserState(browserState_), self));
 
-    propertyReleaser_SyncEncryptionPassphraseCollectionViewController_.Init(
-        self, [SyncEncryptionPassphraseCollectionViewController class]);
-
     [self loadModel];
   }
   return self;
+}
+
+- (void)dealloc {
+  base::mac::ReleaseProperties(self);
+  [super dealloc];
 }
 
 - (UITextField*)passphrase {

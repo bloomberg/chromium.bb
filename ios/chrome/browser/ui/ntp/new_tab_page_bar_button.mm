@@ -5,7 +5,7 @@
 #import "ios/chrome/browser/ui/ntp/new_tab_page_bar_button.h"
 
 #include "base/logging.h"
-#include "base/mac/objc_property_releaser.h"
+#include "base/mac/objc_release_properties.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_bar_item.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
@@ -27,7 +27,6 @@ const int kButtonSelectedColor = 0x4285F4;
 
   UIImage* _image;
   NSString* _title;
-  base::mac::ObjCPropertyReleaser _propertyReleaser_NewTabPageBarButton;
 }
 
 @property(nonatomic, retain) UIColor* color;
@@ -62,8 +61,6 @@ const int kButtonSelectedColor = 0x4285F4;
   DCHECK(item.image);
   NewTabPageBarButton* button =
       [[self class] buttonWithType:UIButtonTypeCustom];
-  button->_propertyReleaser_NewTabPageBarButton.Init(
-      button, [NewTabPageBarButton class]);
 
   button.title = item.title;
   button.image =
@@ -83,6 +80,11 @@ const int kButtonSelectedColor = 0x4285F4;
   [button useIncognitoColorScheme:0];
   [button setContentToDisplay:new_tab_page_bar_button::ContentType::TEXT];
   return button;
+}
+
+- (void)dealloc {
+  base::mac::ReleaseProperties(self);
+  [super dealloc];
 }
 
 - (void)useIncognitoColorScheme:(CGFloat)percentage {

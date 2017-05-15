@@ -8,7 +8,7 @@
 #include "base/i18n/rtl.h"
 #include "base/ios/ios_util.h"
 #include "base/logging.h"
-#include "base/mac/objc_property_releaser.h"
+#include "base/mac/objc_release_properties.h"
 #include "base/strings/sys_string_conversions.h"
 #import "ios/chrome/browser/ui/colors/MDCPalette+CrAdditions.h"
 #import "ios/chrome/browser/ui/commands/UIKit+ChromeExecuteCommand.h"
@@ -72,8 +72,6 @@ const CGFloat kFaviconSize = 16.0;
   BOOL _collapsed;
 
   base::scoped_nsobject<MDCActivityIndicator> _activityIndicator;
-
-  base::mac::ObjCPropertyReleaser _propertyReleaser_TabView;
 }
 @end
 
@@ -115,7 +113,6 @@ const CGFloat kFaviconSize = 16.0;
 
 - (id)initWithEmptyView:(BOOL)emptyView selected:(BOOL)selected {
   if ((self = [super initWithFrame:CGRectZero])) {
-    _propertyReleaser_TabView.Init(self, [TabView class]);
     [self setOpaque:NO];
     [self createCommonViews];
     // -setSelected only calls -updateBackgroundImage if the selected state
@@ -128,6 +125,11 @@ const CGFloat kFaviconSize = 16.0;
       [self createButtonsAndLabel];
   }
   return self;
+}
+
+- (void)dealloc {
+  base::mac::ReleaseProperties(self);
+  [super dealloc];
 }
 
 - (void)setSelected:(BOOL)selected {

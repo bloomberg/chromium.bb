@@ -5,7 +5,7 @@
 #import "ios/chrome/browser/ui/tools_menu/tools_menu_view_item.h"
 
 #include "base/i18n/rtl.h"
-#include "base/mac/objc_property_releaser.h"
+#include "base/mac/objc_release_properties.h"
 #import "ios/third_party/material_roboto_font_loader_ios/src/src/MaterialRobotoFontLoader.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -16,9 +16,7 @@ const CGFloat kToolsMenuItemHorizontalMarginRTL = 25;
 static NSString* const kMenuItemCellID = @"MenuItemCellID";
 }
 
-@implementation ToolsMenuViewItem {
-  base::mac::ObjCPropertyReleaser _propertyReleaser_ToolsMenuViewItem;
-}
+@implementation ToolsMenuViewItem
 
 @synthesize accessibilityIdentifier = _accessibilityIdentifier;
 @synthesize active = _active;
@@ -29,11 +27,15 @@ static NSString* const kMenuItemCellID = @"MenuItemCellID";
 - (id)init {
   self = [super init];
   if (self) {
-    _propertyReleaser_ToolsMenuViewItem.Init(self, [ToolsMenuViewItem class]);
     _active = YES;
   }
 
   return self;
+}
+
+- (void)dealloc {
+  base::mac::ReleaseProperties(self);
+  [super dealloc];
 }
 
 + (NSString*)cellID {
@@ -58,9 +60,7 @@ static NSString* const kMenuItemCellID = @"MenuItemCellID";
 
 @end
 
-@implementation ToolsMenuViewCell {
-  base::mac::ObjCPropertyReleaser _propertyReleaser_ToolsMenuViewCell;
-}
+@implementation ToolsMenuViewCell
 
 @synthesize title = _title;
 @synthesize horizontalMargin = _horizontalMargin;
@@ -82,11 +82,15 @@ static NSString* const kMenuItemCellID = @"MenuItemCellID";
 }
 
 - (void)commonInitialization {
-  _propertyReleaser_ToolsMenuViewCell.Init(self, [ToolsMenuViewCell class]);
   _horizontalMargin = !base::i18n::IsRTL() ? kToolsMenuItemHorizontalMargin
                                            : kToolsMenuItemHorizontalMarginRTL;
   [self setBackgroundColor:[UIColor whiteColor]];
   [self setOpaque:YES];
+}
+
+- (void)dealloc {
+  base::mac::ReleaseProperties(self);
+  [super dealloc];
 }
 
 - (void)prepareForReuse {

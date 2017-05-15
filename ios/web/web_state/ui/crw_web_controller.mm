@@ -25,7 +25,7 @@
 #import "base/mac/bind_objc_block.h"
 #include "base/mac/bundle_locations.h"
 #include "base/mac/foundation_util.h"
-#import "base/mac/objc_property_releaser.h"
+#include "base/mac/objc_release_properties.h"
 #include "base/mac/scoped_cftyperef.h"
 #import "base/mac/scoped_nsobject.h"
 #include "base/memory/ptr_util.h"
@@ -216,10 +216,7 @@ NSError* WKWebViewErrorWithSource(NSError* error, WKWebViewErrorSource source) {
 // A container object for any navigation information that is only available
 // during pre-commit delegate callbacks, and thus must be held until the
 // navigation commits and the informatino can be used.
-@interface CRWWebControllerPendingNavigationInfo : NSObject {
-  base::mac::ObjCPropertyReleaser
-      _propertyReleaser_CRWWebControllerPendingNavigationInfo;
-}
+@interface CRWWebControllerPendingNavigationInfo : NSObject
 // The referrer for the page.
 @property(nonatomic, copy) NSString* referrer;
 // The MIME type for the page.
@@ -244,12 +241,16 @@ NSError* WKWebViewErrorWithSource(NSError* error, WKWebViewErrorSource source) {
 
 - (instancetype)init {
   if ((self = [super init])) {
-    _propertyReleaser_CRWWebControllerPendingNavigationInfo.Init(
-        self, [CRWWebControllerPendingNavigationInfo class]);
     _navigationType = WKNavigationTypeOther;
   }
   return self;
 }
+
+- (void)dealloc {
+  base::mac::ReleaseProperties(self);
+  [super dealloc];
+}
+
 @end
 
 @interface CRWWebController ()<CRWContextMenuDelegate,

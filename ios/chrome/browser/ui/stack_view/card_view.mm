@@ -26,7 +26,7 @@
 #include <algorithm>
 
 #import "base/mac/foundation_util.h"
-#import "base/mac/objc_property_releaser.h"
+#include "base/mac/objc_release_properties.h"
 #import "base/mac/scoped_nsobject.h"
 #include "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/ui/animation_util.h"
@@ -124,9 +124,7 @@ UIImage* ImageWithName(NSString* image_name, BOOL is_incognito) {
 
 @end
 
-@implementation CardTabView {
-  base::mac::ObjCPropertyReleaser _propertyReleaser_CardTabView;
-}
+@implementation CardTabView
 
 #pragma mark - Property Implementation
 
@@ -146,7 +144,6 @@ UIImage* ImageWithName(NSString* image_name, BOOL is_incognito) {
   if (!self)
     return self;
 
-  _propertyReleaser_CardTabView.Init(self, [CardTabView class]);
   _isIncognito = isIncognito;
 
   UIImage* image = ImageWithName(@"default_favicon", _isIncognito);
@@ -176,6 +173,11 @@ UIImage* ImageWithName(NSString* image_name, BOOL is_incognito) {
 - (instancetype)initWithCoder:(NSCoder*)aDecoder {
   NOTREACHED();
   return nil;
+}
+
+- (void)dealloc {
+  base::mac::ReleaseProperties(self);
+  [super dealloc];
 }
 
 - (void)setCloseButtonSide:(CardCloseButtonSide)closeButtonSide {

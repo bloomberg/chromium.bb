@@ -6,7 +6,7 @@
 
 #import <WebKit/WebKit.h>
 
-#import "base/mac/objc_property_releaser.h"
+#include "base/mac/objc_release_properties.h"
 #import "base/mac/scoped_nsobject.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -19,17 +19,13 @@
 @property(nonatomic) NSInteger port;
 @end
 
-@implementation WKSecurityOriginStub {
-  base::mac::ObjCPropertyReleaser _propertyReleaser;
-}
+@implementation WKSecurityOriginStub
 @synthesize protocol = _protocol;
 @synthesize host = _host;
 @synthesize port = _port;
-- (instancetype)init {
-  if (self = [super init]) {
-    _propertyReleaser.Init(self, [WKSecurityOriginStub class]);
-  }
-  return self;
+- (void)dealloc {
+  base::mac::ReleaseProperties(self);
+  [super dealloc];
 }
 @end
 

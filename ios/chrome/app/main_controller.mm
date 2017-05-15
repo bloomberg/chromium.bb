@@ -18,7 +18,7 @@
 #import "base/mac/bind_objc_block.h"
 #include "base/mac/bundle_locations.h"
 #include "base/mac/foundation_util.h"
-#include "base/mac/objc_property_releaser.h"
+#include "base/mac/objc_release_properties.h"
 #import "base/mac/scoped_nsobject.h"
 #include "base/macros.h"
 #include "base/path_service.h"
@@ -132,8 +132,8 @@
 #include "ios/public/provider/chrome/browser/signin/chrome_identity_service.h"
 #import "ios/public/provider/chrome/browser/user_feedback/user_feedback_provider.h"
 #import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
-#import "ios/third_party/material_roboto_font_loader_ios/src/src/MaterialRobotoFontLoader.h"
 #import "ios/third_party/material_roboto_font_loader_ios/src/src/MDCTypographyAdditions/MDFRobotoFontLoader+MDCTypographyAdditions.h"
+#import "ios/third_party/material_roboto_font_loader_ios/src/src/MaterialRobotoFontLoader.h"
 #include "ios/web/net/request_tracker_factory_impl.h"
 #include "ios/web/net/request_tracker_impl.h"
 #include "ios/web/net/web_http_protocol_handler_delegate.h"
@@ -330,8 +330,6 @@ enum class StackViewDismissalMode { NONE, NORMAL, INCOGNITO };
   // The class in charge of showing/hiding the memory debugger when the
   // appropriate pref changes.
   base::scoped_nsobject<MemoryDebuggerManager> _memoryDebuggerManager;
-
-  base::mac::ObjCPropertyReleaser _propertyReleaser_MainController;
 
   // Responsible for indexing chrome links (such as bookmarks, most likely...)
   // in system Spotlight index.
@@ -549,7 +547,6 @@ enum class StackViewDismissalMode { NONE, NORMAL, INCOGNITO };
 
 - (instancetype)init {
   if ((self = [super init])) {
-    _propertyReleaser_MainController.Init(self, [MainController class]);
     _startupTasks.reset([[StartupTasks alloc] init]);
   }
   return self;
@@ -560,6 +557,7 @@ enum class StackViewDismissalMode { NONE, NORMAL, INCOGNITO };
   net::HTTPProtocolHandlerDelegate::SetInstance(nullptr);
   net::RequestTracker::SetRequestTrackerFactory(nullptr);
   [NSObject cancelPreviousPerformRequestsWithTarget:self];
+  base::mac::ReleaseProperties(self);
   [super dealloc];
 }
 

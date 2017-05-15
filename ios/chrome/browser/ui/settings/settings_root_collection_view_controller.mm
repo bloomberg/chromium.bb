@@ -7,7 +7,7 @@
 #include "base/ios/ios_util.h"
 #include "base/logging.h"
 #import "base/mac/foundation_util.h"
-#import "base/mac/objc_property_releaser.h"
+#import "base/mac/objc_release_properties.h"
 #import "base/mac/scoped_nsobject.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/ui/commands/UIKit+ChromeExecuteCommand.h"
@@ -39,22 +39,15 @@ const CGFloat kActivityIndicatorDimensionIPhone = 56;
   SavedBarButtomItemPositionEnum savedBarButtonItemPosition_;
   base::scoped_nsobject<UIBarButtonItem> savedBarButtonItem_;
   base::scoped_nsobject<UIView> veil_;
-
-  base::mac::ObjCPropertyReleaser
-      propertyReleaser_SettingsRootCollectionViewController_;
 }
 
 @synthesize shouldHideDoneButton = shouldHideDoneButton_;
 @synthesize collectionViewAccessibilityIdentifier =
     collectionViewAccessibilityIdentifier_;
 
-- (instancetype)initWithStyle:(CollectionViewControllerStyle)style {
-  self = [super initWithStyle:style];
-  if (self) {
-    propertyReleaser_SettingsRootCollectionViewController_.Init(
-        self, [SettingsRootCollectionViewController class]);
-  }
-  return self;
+- (void)dealloc {
+  base::mac::ReleaseProperties(self);
+  [super dealloc];
 }
 
 - (void)viewDidLoad {
