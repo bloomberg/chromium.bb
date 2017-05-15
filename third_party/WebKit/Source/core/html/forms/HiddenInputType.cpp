@@ -58,18 +58,8 @@ const AtomicString& HiddenInputType::FormControlType() const {
   return InputTypeNames::hidden;
 }
 
-FormControlState HiddenInputType::SaveFormControlState() const {
-  // valueAttributeWasUpdatedAfterParsing() never be true for form
-  // controls create by createElement() or cloneNode(). It's ok for
-  // now because we restore values only to form controls created by
-  // parsing.
-  return GetElement().ValueAttributeWasUpdatedAfterParsing()
-             ? FormControlState(GetElement().value())
-             : FormControlState();
-}
-
-void HiddenInputType::RestoreFormControlState(const FormControlState& state) {
-  GetElement().setAttribute(valueAttr, AtomicString(state[0]));
+bool HiddenInputType::ShouldSaveAndRestoreFormControlState() const {
+  return false;
 }
 
 bool HiddenInputType::SupportsValidation() const {

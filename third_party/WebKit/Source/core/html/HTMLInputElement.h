@@ -232,9 +232,6 @@ class CORE_EXPORT HTMLInputElement : public TextControlElement {
   // Functions for InputType classes.
   void SetNonAttributeValue(const String&);
   void SetNonAttributeValueByUserEdit(const String&);
-  bool ValueAttributeWasUpdatedAfterParsing() const {
-    return value_attribute_was_updated_after_parsing_;
-  }
   void UpdateView();
   bool NeedsToUpdateViewValue() const { return needs_to_update_view_value_; }
   void SetInnerEditorValue(const String&) override;
@@ -418,7 +415,6 @@ class CORE_EXPORT HTMLInputElement : public TextControlElement {
   unsigned has_non_empty_list_ : 1;
   unsigned state_restored_ : 1;
   unsigned parsing_in_progress_ : 1;
-  unsigned value_attribute_was_updated_after_parsing_ : 1;
   unsigned can_receive_dropped_files_ : 1;
   unsigned should_reveal_password_ : 1;
   unsigned needs_to_update_view_value_ : 1;
