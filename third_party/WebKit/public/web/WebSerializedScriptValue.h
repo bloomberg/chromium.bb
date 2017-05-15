@@ -79,9 +79,10 @@ class WebSerializedScriptValue {
   BLINK_EXPORT v8::Local<v8::Value> Deserialize(v8::Isolate*);
 
 #if BLINK_IMPLEMENTATION
-  WebSerializedScriptValue(WTF::PassRefPtr<SerializedScriptValue>);
-  WebSerializedScriptValue& operator=(WTF::PassRefPtr<SerializedScriptValue>);
-  operator WTF::PassRefPtr<SerializedScriptValue>() const;
+  BLINK_EXPORT WebSerializedScriptValue(WTF::PassRefPtr<SerializedScriptValue>);
+  BLINK_EXPORT WebSerializedScriptValue& operator=(
+      WTF::PassRefPtr<SerializedScriptValue>);
+  BLINK_EXPORT operator WTF::PassRefPtr<SerializedScriptValue>() const;
 #endif
 
  private:

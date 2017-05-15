@@ -19,12 +19,13 @@ static WebSelectionBound GetWebSelectionBound(
 
   WebSelectionBound::Type type = WebSelectionBound::kCaret;
   if (selection.type == kRangeSelection) {
-    if (is_start)
+    if (is_start) {
       type = bound.is_text_direction_rtl ? WebSelectionBound::kSelectionRight
                                          : WebSelectionBound::kSelectionLeft;
-    else
+    } else {
       type = bound.is_text_direction_rtl ? WebSelectionBound::kSelectionLeft
                                          : WebSelectionBound::kSelectionRight;
+    }
   }
 
   WebSelectionBound result(type);

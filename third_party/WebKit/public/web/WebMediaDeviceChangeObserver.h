@@ -28,7 +28,7 @@ class WebMediaDeviceChangeObserver {
   BLINK_EXPORT WebSecurityOrigin GetSecurityOrigin() const;
 
 #if INSIDE_BLINK
-  explicit WebMediaDeviceChangeObserver(MediaDevices*);
+  BLINK_EXPORT explicit WebMediaDeviceChangeObserver(MediaDevices*);
 #endif
  private:
   void Assign(const WebMediaDeviceChangeObserver&);

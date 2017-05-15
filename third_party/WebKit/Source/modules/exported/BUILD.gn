@@ -9,6 +9,8 @@ blink_modules_sources("exported") {
     "WebDOMFileSystem.cpp",
     "WebDOMMediaStreamTrack.cpp",
     "WebDatabase.cpp",
+    "WebMediaDeviceChangeObserver.cpp",
+    "WebMediaStreamRegistry.cpp",
     "WebSpeechGrammar.cpp",
     "WebSpeechRecognitionHandle.cpp",
     "WebSpeechRecognitionResult.cpp",

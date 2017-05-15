@@ -55,10 +55,10 @@ class WebRange final {
   bool IsEmpty() const { return start_ == end_; }
 
 #if BLINK_IMPLEMENTATION
-  WebRange(const EphemeralRange&);
-  WebRange(const PlainTextRange&);
+  BLINK_EXPORT WebRange(const EphemeralRange&);
+  BLINK_EXPORT WebRange(const PlainTextRange&);
 
-  EphemeralRange CreateEphemeralRange(LocalFrame*) const;
+  BLINK_EXPORT EphemeralRange CreateEphemeralRange(LocalFrame*) const;
 #endif
 
  private:
