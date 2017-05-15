@@ -17,6 +17,8 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/scoped_observer.h"
+#include "chrome/browser/chromeos/lock_screen_apps/state_observer.h"
 #include "chrome/browser/chromeos/login/screens/error_screen.h"
 #include "chrome/browser/chromeos/login/signin_specifics.h"
 #include "chrome/browser/chromeos/login/ui/login_display.h"
@@ -39,9 +41,19 @@
 
 class AccountId;
 
+namespace ash {
+namespace mojom {
+enum class TrayActionState;
+}
+}
+
 namespace base {
 class DictionaryValue;
 class ListValue;
+}
+
+namespace lock_screen_apps {
+class StateController;
 }
 
 namespace chromeos {
@@ -225,6 +237,7 @@ class SigninScreenHandler
       public PowerManagerClient::Observer,
       public input_method::ImeKeyboard::Observer,
       public ash::mojom::TouchViewObserver,
+      public lock_screen_apps::StateObserver,
       public OobeUI::Observer {
  public:
   SigninScreenHandler(
@@ -342,6 +355,9 @@ class SigninScreenHandler
   // ash::mojom::TouchView:
   void OnTouchViewToggled(bool enabled) override;
 
+  // lock_screen_apps::StateObserver:
+  void OnLockScreenNoteStateChanged(ash::mojom::TrayActionState state) override;
+
   void UpdateAddButtonStatus();
 
   // Restore input focus to current user pod.
@@ -399,6 +415,7 @@ class SigninScreenHandler
   void HandleFirstIncorrectPasswordAttempt(const AccountId& account_id);
   void HandleMaxIncorrectPasswordAttempts(const AccountId& account_id);
   void HandleSendFeedbackAndResyncUserData();
+  void HandleSetLockScreenAppsState(const std::string& state);
 
   // Sends the list of |keyboard_layouts| available for the |locale| that is
   // currently selected for the public session identified by |user_id|.
@@ -533,6 +550,10 @@ class SigninScreenHandler
   std::unique_ptr<LoginFeedback> login_feedback_;
 
   std::unique_ptr<AccountId> focused_pod_account_id_;
+
+  ScopedObserver<lock_screen_apps::StateController,
+                 lock_screen_apps::StateObserver>
+      lock_screen_apps_observer_;
 
   base::WeakPtrFactory<SigninScreenHandler> weak_factory_;
 

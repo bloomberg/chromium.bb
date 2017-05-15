@@ -170,6 +170,11 @@ span.bold {
   opacity: 0;
 }
 
+.dimmed-background {
+  background-color: black;
+  opacity: 0.5;
+}
+
 .throbber {
   -webkit-margin-end: 0.5em;
   margin-top: 1px;

@@ -178,6 +178,36 @@ TEST_F(LockScreenAppStateTest, MoveToBackgroundFromActive) {
   EXPECT_EQ(TrayActionState::kBackground, tray_action()->observed_states()[0]);
 }
 
+TEST_F(LockScreenAppStateTest, MoveToForeground) {
+  state_controller()->SetLockScreenNoteStateForTesting(
+      TrayActionState::kBackground);
+
+  state_controller()->MoveToForeground();
+  state_controller()->FlushTrayActionForTesting();
+
+  EXPECT_EQ(TrayActionState::kActive,
+            state_controller()->GetLockScreenNoteState());
+
+  ASSERT_EQ(1u, observer()->observed_states().size());
+  EXPECT_EQ(TrayActionState::kActive, observer()->observed_states()[0]);
+  ASSERT_EQ(1u, tray_action()->observed_states().size());
+  EXPECT_EQ(TrayActionState::kActive, tray_action()->observed_states()[0]);
+}
+
+TEST_F(LockScreenAppStateTest, MoveToForegroundFromNonBackgroundState) {
+  state_controller()->SetLockScreenNoteStateForTesting(
+      TrayActionState::kAvailable);
+
+  state_controller()->MoveToForeground();
+  state_controller()->FlushTrayActionForTesting();
+
+  EXPECT_EQ(TrayActionState::kAvailable,
+            state_controller()->GetLockScreenNoteState());
+
+  EXPECT_EQ(0u, observer()->observed_states().size());
+  EXPECT_EQ(0u, tray_action()->observed_states().size());
+}
+
 TEST_F(LockScreenAppStateTest, HandleActionWhenNotAvaiable) {
   ASSERT_EQ(TrayActionState::kNotAvailable,
             state_controller()->GetLockScreenNoteState());
