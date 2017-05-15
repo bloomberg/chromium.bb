@@ -36,6 +36,7 @@
 #include "bindings/core/v8/ScriptController.h"
 #include "bindings/core/v8/V8BindingForCore.h"
 #include "core/CoreProbeSink.h"
+#include "core/events/WebInputEventConversion.h"
 #include "core/exported/WebViewBase.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
@@ -87,7 +88,6 @@
 #include "web/InspectorEmulationAgent.h"
 #include "web/InspectorOverlayAgent.h"
 #include "web/WebFrameWidgetImpl.h"
-#include "web/WebInputEventConversion.h"
 #include "web/WebLocalFrameImpl.h"
 #include "web/WebSettingsImpl.h"
 

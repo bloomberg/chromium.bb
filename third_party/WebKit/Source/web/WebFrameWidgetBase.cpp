@@ -5,6 +5,7 @@
 #include "web/WebFrameWidgetBase.h"
 
 #include "core/dom/DocumentUserGestureToken.h"
+#include "core/events/WebInputEventConversion.h"
 #include "core/exported/WebViewBase.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/VisualViewport.h"
@@ -17,10 +18,7 @@
 #include "core/page/Page.h"
 #include "core/page/PointerLockController.h"
 #include "platform/UserGestureIndicator.h"
-#include "public/web/WebAutofillClient.h"
-#include "public/web/WebDocument.h"
 #include "public/web/WebWidgetClient.h"
-#include "web/WebInputEventConversion.h"
 
 namespace blink {
 

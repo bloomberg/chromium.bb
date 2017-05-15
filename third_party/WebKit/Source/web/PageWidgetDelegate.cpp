@@ -30,6 +30,7 @@
 
 #include "web/PageWidgetDelegate.h"
 
+#include "core/events/WebInputEventConversion.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
 #include "core/input/EventHandler.h"
@@ -45,7 +46,6 @@
 #include "platform/transforms/AffineTransform.h"
 #include "platform/wtf/CurrentTime.h"
 #include "public/platform/WebInputEvent.h"
-#include "web/WebInputEventConversion.h"
 
 namespace blink {
 

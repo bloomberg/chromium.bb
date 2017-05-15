@@ -28,7 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "web/WebInputEventConversion.h"
+#include "core/events/WebInputEventConversion.h"
 
 #include "core/dom/Touch.h"
 #include "core/dom/TouchList.h"

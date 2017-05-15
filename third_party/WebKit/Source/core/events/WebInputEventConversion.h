@@ -32,13 +32,13 @@
 #define WebInputEventConversion_h
 
 #include <vector>
+#include "core/CoreExport.h"
 #include "platform/scroll/ScrollTypes.h"
 #include "platform/wtf/Compiler.h"
 #include "public/platform/WebInputEvent.h"
 #include "public/platform/WebKeyboardEvent.h"
 #include "public/platform/WebMouseWheelEvent.h"
 #include "public/platform/WebTouchEvent.h"
-#include "web/WebExport.h"
 
 namespace blink {
 
@@ -53,8 +53,7 @@ class WebKeyboardEvent;
 // These classes are used to convert from WebInputEvent subclasses to
 // corresponding WebCore events.
 
-
-class WEB_EXPORT WebMouseEventBuilder
+class CORE_EXPORT WebMouseEventBuilder
     : NON_EXPORTED_BASE(public WebMouseEvent) {
  public:
   // Converts a MouseEvent to a corresponding WebMouseEvent.
@@ -69,7 +68,7 @@ class WEB_EXPORT WebMouseEventBuilder
 // NOTE: For KeyboardEvent, this is only implemented for keydown,
 // keyup, and keypress. If the event mapping fails, the event type will be set
 // to Undefined.
-class WEB_EXPORT WebKeyboardEventBuilder
+class CORE_EXPORT WebKeyboardEventBuilder
     : NON_EXPORTED_BASE(public WebKeyboardEvent) {
  public:
   WebKeyboardEventBuilder(const KeyboardEvent&);
@@ -78,7 +77,7 @@ class WEB_EXPORT WebKeyboardEventBuilder
 // Converts a TouchEvent to a corresponding WebTouchEvent.
 // NOTE: WebTouchEvents have a cap on the number of WebTouchPoints. Any points
 // exceeding that cap will be dropped.
-class WEB_EXPORT WebTouchEventBuilder
+class CORE_EXPORT WebTouchEventBuilder
     : NON_EXPORTED_BASE(public WebTouchEvent) {
  public:
   WebTouchEventBuilder(const LayoutItem, const TouchEvent&);
@@ -86,21 +85,21 @@ class WEB_EXPORT WebTouchEventBuilder
 
 // Return a new transformed WebGestureEvent by applying the Widget's scale
 // and translation.
-WEB_EXPORT WebGestureEvent TransformWebGestureEvent(FrameView*,
-                                                    const WebGestureEvent&);
-WEB_EXPORT WebMouseEvent TransformWebMouseEvent(FrameView*,
-                                                const WebMouseEvent&);
+CORE_EXPORT WebGestureEvent TransformWebGestureEvent(FrameView*,
+                                                     const WebGestureEvent&);
+CORE_EXPORT WebMouseEvent TransformWebMouseEvent(FrameView*,
+                                                 const WebMouseEvent&);
 
-WEB_EXPORT WebMouseWheelEvent
+CORE_EXPORT WebMouseWheelEvent
 TransformWebMouseWheelEvent(FrameView*, const WebMouseWheelEvent&);
 
-WEB_EXPORT WebTouchEvent TransformWebTouchEvent(FrameView*,
-                                                const WebTouchEvent&);
+CORE_EXPORT WebTouchEvent TransformWebTouchEvent(FrameView*,
+                                                 const WebTouchEvent&);
 
-Vector<WebMouseEvent> WEB_EXPORT
+Vector<WebMouseEvent> CORE_EXPORT
 TransformWebMouseEventVector(FrameView*,
                              const std::vector<const WebInputEvent*>&);
-Vector<WebTouchEvent> WEB_EXPORT
+Vector<WebTouchEvent> CORE_EXPORT
 TransformWebTouchEventVector(FrameView*,
                              const std::vector<const WebInputEvent*>&);
 

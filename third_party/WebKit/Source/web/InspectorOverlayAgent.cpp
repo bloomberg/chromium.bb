@@ -38,6 +38,7 @@
 #include "core/dom/Node.h"
 #include "core/dom/StaticNodeList.h"
 #include "core/dom/TaskRunnerHelper.h"
+#include "core/events/WebInputEventConversion.h"
 #include "core/exported/WebViewBase.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
@@ -65,7 +66,6 @@
 #include "v8/include/v8.h"
 #include "web/ChromeClientImpl.h"
 #include "web/PageOverlay.h"
-#include "web/WebInputEventConversion.h"
 #include "web/WebLocalFrameImpl.h"
 
 namespace blink {

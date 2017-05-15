@@ -4,6 +4,7 @@
 
 #include "web/DevToolsEmulator.h"
 
+#include "core/events/WebInputEventConversion.h"
 #include "core/exported/WebViewBase.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/Settings.h"
@@ -20,7 +21,6 @@
 #include "platform/loader/fetch/MemoryCache.h"
 #include "platform/wtf/PtrUtil.h"
 #include "public/platform/WebLayerTreeView.h"
-#include "web/WebInputEventConversion.h"
 #include "web/WebLocalFrameImpl.h"
 #include "web/WebSettingsImpl.h"
 
