@@ -81,6 +81,11 @@ struct SameSizeAsComputedStyle : public RefCounted<SameSizeAsComputedStyle> {
   void* data_ref_svg_style;
 };
 
+// If this fails, the packing algorithm in make_computed_style_base.py has
+// failed to produce the optimal packed size. To fix, update the algorithm to
+// ensure that the buckets are placed so that each takes up at most 1 word.
+ASSERT_SIZE(ComputedStyleBase<ComputedStyle>, SameSizeAsComputedStyleBase);
+
 // If this assert fails, it means that size of ComputedStyle has changed. Please
 // check that you really *do* what to increase the size of ComputedStyle, then
 // update the SameSizeAsComputedStyle struct to match the updated storage of

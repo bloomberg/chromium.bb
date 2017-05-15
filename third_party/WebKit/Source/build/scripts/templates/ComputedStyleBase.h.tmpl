@@ -46,6 +46,13 @@ struct SameSizeAsComputedStyleBase {
 
 // The generated portion of ComputedStyle. For more info, see the header comment
 // in ComputedStyle.h.
+
+// ComputedStyleBase is a templated class to allow it to use functions
+// on ComputedStyle. This allows ComputedStyleBase to use hand written 
+// functions it would otherwise not know about.
+// It should only be templated with the ComputedStyle class and no other class
+// is allowed.
+template <class ComputedStyleFinal>
 class CORE_EXPORT ComputedStyleBase {
  public:
   inline bool IndependentInheritedEqual(const ComputedStyleBase& o) const {
@@ -122,7 +129,7 @@ class CORE_EXPORT ComputedStyleBase {
   }
 
   {% for name, groups_to_diff in diff_functions_map.items() %}
-  bool {{name}}(const ComputedStyleBase& other) const {
+  bool {{name}}(const ComputedStyleFinal& other) const {
     {{fieldwise_diff(groups_to_diff)|indent(4)}}
     return false;
   }
@@ -182,11 +189,6 @@ class CORE_EXPORT ComputedStyleBase {
   {{declare_storage(field)}}
   {% endfor %}
 };
-
-// If this fails, the packing algorithm in make_computed_style_base.py has
-// failed to produce the optimal packed size. To fix, update the algorithm to
-// ensure that the buckets are placed so that each takes up at most 1 word.
-ASSERT_SIZE(ComputedStyleBase, SameSizeAsComputedStyleBase);
 
 } // namespace blink
 

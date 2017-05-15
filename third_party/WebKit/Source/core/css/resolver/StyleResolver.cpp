@@ -695,8 +695,8 @@ PassRefPtr<ComputedStyle> StyleResolver::StyleForElement(
       RefPtr<ComputedStyle> style = ComputedStyle::Create();
       style->InheritFrom(*state.ParentStyle(),
                          IsAtShadowBoundary(element)
-                             ? ComputedStyleBase::kAtShadowBoundary
-                             : ComputedStyleBase::kNotAtShadowBoundary);
+                             ? ComputedStyle::kAtShadowBoundary
+                             : ComputedStyle::kNotAtShadowBoundary);
       state.SetStyle(std::move(style));
     } else {
       state.SetStyle(InitialStyleForElement());

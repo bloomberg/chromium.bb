@@ -150,7 +150,7 @@ typedef Vector<RefPtr<ComputedStyle>, 4> PseudoStyleCache;
 // be expanded to handle more and more types of properties. Eventually, all
 // methods will be on ComputedStyleBase (with custom methods defined in a class
 // such as ComputedStyleBase.cpp) and ComputedStyle will be removed.
-class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
+class CORE_EXPORT ComputedStyle : public ComputedStyleBase<ComputedStyle>,
                                   public RefCounted<ComputedStyle> {
   // Used by Web Animations CSS. Sets the color styles.
   friend class AnimatedStyleBuilder;
