@@ -42,7 +42,7 @@ bool IsWindowConsideredWindowManagerRoot(const Display* display,
 
   const WindowManagerDisplayRoot* display_root =
       display->GetActiveWindowManagerDisplayRoot();
-  return display_root && display_root->GetClientVisibileRoot() == window;
+  return display_root && display_root->GetClientVisibleRoot() == window;
 }
 
 }  // namespace

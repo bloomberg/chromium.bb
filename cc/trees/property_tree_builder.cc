@@ -1100,7 +1100,7 @@ void SetBackfaceVisibilityTransform(LayerType* layer,
         (Is3dSorted(layer) && is_at_boundary_of_3d_rendering_context);
     layer->SetUseLocalTransformForBackfaceVisibility(use_local_transform);
 
-    // A double-sided layer's backface can been shown when its visibile.
+    // A double-sided layer's backface can been shown when its visible.
     if (DoubleSided(layer))
       layer->SetShouldCheckBackfaceVisibility(false);
     // The backface of a layer that uses local transform for backface visibility

@@ -86,7 +86,7 @@ class ChromeDataUseAscriberService : public KeyedService {
   std::list<content::RenderFrameHost*> pending_frames_queue_;
 
   // WebContents visibility change events might arrive from the UI thread before
-  // |ascriber_| is set. Sucn pending main render frame visibile events are
+  // |ascriber_| is set. Sucn pending main render frame visible events are
   // maintained in this set and propagated immediately after |ascriber_| is set.
   std::unordered_set<content::RenderFrameHost*> pending_visible_main_frames_;
 

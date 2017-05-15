@@ -381,7 +381,7 @@ ServerWindow* WindowManagerState::GetWindowManagerRootForDisplayRoot(
     ServerWindow* window) {
   for (auto& display_root_ptr : window_manager_display_roots_) {
     if (display_root_ptr->root()->parent() == window)
-      return display_root_ptr->GetClientVisibileRoot();
+      return display_root_ptr->GetClientVisibleRoot();
   }
   NOTREACHED();
   return nullptr;
@@ -574,10 +574,10 @@ ServerWindow* WindowManagerState::GetFocusedWindowForEventDispatcher() {
   // When none of the windows have focus return the window manager's root.
   for (auto& display_root_ptr : window_manager_display_roots_) {
     if (display_root_ptr->display()->GetId() == event_processing_display_id_)
-      return display_root_ptr->GetClientVisibileRoot();
+      return display_root_ptr->GetClientVisibleRoot();
   }
   if (!window_manager_display_roots_.empty())
-    return (*window_manager_display_roots_.begin())->GetClientVisibileRoot();
+    return (*window_manager_display_roots_.begin())->GetClientVisibleRoot();
   return nullptr;
 }
 
@@ -695,7 +695,7 @@ ServerWindow* WindowManagerState::GetRootWindowContaining(
   gfx::Point origin =
       target_display_root->display()->GetDisplay().bounds().origin();
   *location -= origin.OffsetFromOrigin();
-  return target_display_root->GetClientVisibileRoot();
+  return target_display_root->GetClientVisibleRoot();
 }
 
 void WindowManagerState::OnEventTargetNotFound(const ui::Event& event) {

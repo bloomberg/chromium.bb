@@ -1114,7 +1114,7 @@ TEST_F(BookmarkModelTest, NodeVisibility) {
   EXPECT_TRUE(model_->mobile_node()->IsVisible());
 }
 
-TEST_F(BookmarkModelTest, MobileNodeVisibileWithChildren) {
+TEST_F(BookmarkModelTest, MobileNodeVisibleWithChildren) {
   const BookmarkNode* root = model_->mobile_node();
   const base::string16 title(ASCIIToUTF16("foo"));
   const GURL url("http://foo.com");

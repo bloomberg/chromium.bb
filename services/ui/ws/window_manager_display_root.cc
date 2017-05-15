@@ -41,7 +41,7 @@ WindowManagerDisplayRoot::WindowManagerDisplayRoot(Display* display)
 
 WindowManagerDisplayRoot::~WindowManagerDisplayRoot() {}
 
-const ServerWindow* WindowManagerDisplayRoot::GetClientVisibileRoot() const {
+const ServerWindow* WindowManagerDisplayRoot::GetClientVisibleRoot() const {
   if (window_manager_state_->window_tree()
           ->automatically_create_display_roots()) {
     return root_.get();

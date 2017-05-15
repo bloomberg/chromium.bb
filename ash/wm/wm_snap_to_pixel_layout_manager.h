@@ -30,7 +30,7 @@ class ASH_EXPORT WmSnapToPixelLayoutManager : public aura::LayoutManager {
   void OnWillRemoveWindowFromLayout(aura::Window* child) override;
   void OnWindowRemovedFromLayout(aura::Window* child) override;
   void OnChildWindowVisibilityChanged(aura::Window* child,
-                                      bool visibile) override;
+                                      bool visible) override;
   void SetChildBounds(aura::Window* child,
                       const gfx::Rect& requested_bounds) override;
 
