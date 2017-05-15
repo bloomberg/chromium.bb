@@ -1440,56 +1440,6 @@ Node* Range::PastLastNode() const {
   return EndPosition().NodeAsRangePastLastNode();
 }
 
-static void CollectAbsoluteBoundsForRange(unsigned start,
-                                          unsigned end,
-                                          const LayoutText& layout_text,
-                                          Vector<IntRect>& rects) {
-  layout_text.AbsoluteRectsForRange(rects, start, end);
-}
-
-static void CollectAbsoluteBoundsForRange(unsigned start,
-                                          unsigned end,
-                                          const LayoutText& layout_text,
-                                          Vector<FloatQuad>& quads) {
-  layout_text.AbsoluteQuadsForRange(quads, start, end);
-}
-
-template <typename RectType>
-static Vector<RectType> ComputeTextBounds(const EphemeralRange& range) {
-  const Position& start_position = range.StartPosition();
-  const Position& end_position = range.EndPosition();
-  Node* const start_container = start_position.ComputeContainerNode();
-  DCHECK(start_container);
-  Node* const end_container = end_position.ComputeContainerNode();
-  DCHECK(end_container);
-
-  Vector<RectType> result;
-  for (const Node& node : range.Nodes()) {
-    LayoutObject* const layoutObject = node.GetLayoutObject();
-    if (!layoutObject || !layoutObject->IsText())
-      continue;
-    const LayoutText* layout_text = ToLayoutText(layoutObject);
-    unsigned start_offset =
-        node == start_container ? start_position.OffsetInContainerNode() : 0;
-    unsigned end_offset = node == end_container
-                              ? end_position.OffsetInContainerNode()
-                              : std::numeric_limits<unsigned>::max();
-    CollectAbsoluteBoundsForRange(start_offset, end_offset, *layout_text,
-                                  result);
-  }
-  return result;
-}
-
-static Vector<IntRect> ComputeTextRects(const EphemeralRange& range) {
-  return ComputeTextBounds<IntRect>(range);
-}
-
-// TODO(tanvir.rizvi): We will replace Range::TextQuads with ComputeTextQuads
-// and get rid of Range::TextQuads.
-static Vector<FloatQuad> ComputeTextQuads(const EphemeralRange& range) {
-  return ComputeTextBounds<FloatQuad>(range);
-}
-
 IntRect Range::BoundingBox() const {
   IntRect result;
   const Vector<IntRect>& rects = ComputeTextRects(EphemeralRange(this));
@@ -1498,6 +1448,8 @@ IntRect Range::BoundingBox() const {
   return result;
 }
 
+// TODO(tanvir.rizvi): We will replace Range::TextQuads with
+// ComputeTextQuads(in VisibleUnits) and get rid of Range::TextQuads.
 void Range::TextQuads(Vector<FloatQuad>& quads) const {
   quads.AppendVector(ComputeTextQuads(EphemeralRange(this)));
 }
