@@ -25,17 +25,17 @@ static CSSValue* ConsumeShapeRadius(CSSParserTokenRange& args,
 
 static CSSBasicShapeCircleValue* ConsumeBasicShapeCircle(
     CSSParserTokenRange& args,
-    const CSSParserContext* context) {
+    const CSSParserContext& context) {
   // spec: https://drafts.csswg.org/css-shapes/#supported-basic-shapes
   // circle( [<shape-radius>]? [at <position>]? )
   CSSBasicShapeCircleValue* shape = CSSBasicShapeCircleValue::Create();
-  if (CSSValue* radius = ConsumeShapeRadius(args, context->Mode()))
+  if (CSSValue* radius = ConsumeShapeRadius(args, context.Mode()))
     shape->SetRadius(radius);
   if (ConsumeIdent<CSSValueAt>(args)) {
     CSSValue* center_x = nullptr;
     CSSValue* center_y = nullptr;
-    if (!ConsumePosition(args, context->Mode(), UnitlessQuirk::kForbid,
-                         center_x, center_y))
+    if (!ConsumePosition(args, context.Mode(), UnitlessQuirk::kForbid, center_x,
+                         center_y))
       return nullptr;
     shape->SetCenterX(center_x);
     shape->SetCenterY(center_y);
@@ -45,20 +45,20 @@ static CSSBasicShapeCircleValue* ConsumeBasicShapeCircle(
 
 static CSSBasicShapeEllipseValue* ConsumeBasicShapeEllipse(
     CSSParserTokenRange& args,
-    const CSSParserContext* context) {
+    const CSSParserContext& context) {
   // spec: https://drafts.csswg.org/css-shapes/#supported-basic-shapes
   // ellipse( [<shape-radius>{2}]? [at <position>]? )
   CSSBasicShapeEllipseValue* shape = CSSBasicShapeEllipseValue::Create();
-  if (CSSValue* radius_x = ConsumeShapeRadius(args, context->Mode())) {
+  if (CSSValue* radius_x = ConsumeShapeRadius(args, context.Mode())) {
     shape->SetRadiusX(radius_x);
-    if (CSSValue* radius_y = ConsumeShapeRadius(args, context->Mode()))
+    if (CSSValue* radius_y = ConsumeShapeRadius(args, context.Mode()))
       shape->SetRadiusY(radius_y);
   }
   if (ConsumeIdent<CSSValueAt>(args)) {
     CSSValue* center_x = nullptr;
     CSSValue* center_y = nullptr;
-    if (!ConsumePosition(args, context->Mode(), UnitlessQuirk::kForbid,
-                         center_x, center_y))
+    if (!ConsumePosition(args, context.Mode(), UnitlessQuirk::kForbid, center_x,
+                         center_y))
       return nullptr;
     shape->SetCenterX(center_x);
     shape->SetCenterY(center_y);
@@ -68,7 +68,7 @@ static CSSBasicShapeEllipseValue* ConsumeBasicShapeEllipse(
 
 static CSSBasicShapePolygonValue* ConsumeBasicShapePolygon(
     CSSParserTokenRange& args,
-    const CSSParserContext* context) {
+    const CSSParserContext& context) {
   CSSBasicShapePolygonValue* shape = CSSBasicShapePolygonValue::Create();
   if (IdentMatches<CSSValueEvenodd, CSSValueNonzero>(args.Peek().Id())) {
     shape->SetWindRule(args.ConsumeIncludingWhitespace().Id() == CSSValueEvenodd
@@ -80,11 +80,11 @@ static CSSBasicShapePolygonValue* ConsumeBasicShapePolygon(
 
   do {
     CSSPrimitiveValue* x_length =
-        ConsumeLengthOrPercent(args, context->Mode(), kValueRangeAll);
+        ConsumeLengthOrPercent(args, context.Mode(), kValueRangeAll);
     if (!x_length)
       return nullptr;
     CSSPrimitiveValue* y_length =
-        ConsumeLengthOrPercent(args, context->Mode(), kValueRangeAll);
+        ConsumeLengthOrPercent(args, context.Mode(), kValueRangeAll);
     if (!y_length)
       return nullptr;
     shape->AppendPoint(x_length, y_length);
@@ -94,20 +94,20 @@ static CSSBasicShapePolygonValue* ConsumeBasicShapePolygon(
 
 static CSSBasicShapeInsetValue* ConsumeBasicShapeInset(
     CSSParserTokenRange& args,
-    const CSSParserContext* context) {
+    const CSSParserContext& context) {
   CSSBasicShapeInsetValue* shape = CSSBasicShapeInsetValue::Create();
   CSSPrimitiveValue* top =
-      ConsumeLengthOrPercent(args, context->Mode(), kValueRangeAll);
+      ConsumeLengthOrPercent(args, context.Mode(), kValueRangeAll);
   if (!top)
     return nullptr;
   CSSPrimitiveValue* right =
-      ConsumeLengthOrPercent(args, context->Mode(), kValueRangeAll);
+      ConsumeLengthOrPercent(args, context.Mode(), kValueRangeAll);
   CSSPrimitiveValue* bottom = nullptr;
   CSSPrimitiveValue* left = nullptr;
   if (right) {
-    bottom = ConsumeLengthOrPercent(args, context->Mode(), kValueRangeAll);
+    bottom = ConsumeLengthOrPercent(args, context.Mode(), kValueRangeAll);
     if (bottom)
-      left = ConsumeLengthOrPercent(args, context->Mode(), kValueRangeAll);
+      left = ConsumeLengthOrPercent(args, context.Mode(), kValueRangeAll);
   }
   if (left)
     shape->UpdateShapeSize4Values(top, right, bottom, left);
@@ -122,7 +122,7 @@ static CSSBasicShapeInsetValue* ConsumeBasicShapeInset(
     CSSValue* horizontal_radii[4] = {0};
     CSSValue* vertical_radii[4] = {0};
     if (!CSSPropertyShapeUtils::ConsumeRadii(horizontal_radii, vertical_radii,
-                                             args, context->Mode(), false))
+                                             args, context.Mode(), false))
       return nullptr;
     shape->SetTopLeftRadius(
         CSSValuePair::Create(horizontal_radii[0], vertical_radii[0],
@@ -188,7 +188,7 @@ bool CSSPropertyShapeUtils::ConsumeRadii(CSSValue* horizontal_radii[4],
 
 CSSValue* CSSPropertyShapeUtils::ConsumeBasicShape(
     CSSParserTokenRange& range,
-    const CSSParserContext* context) {
+    const CSSParserContext& context) {
   CSSValue* shape = nullptr;
   if (range.Peek().GetType() != kFunctionToken)
     return nullptr;
