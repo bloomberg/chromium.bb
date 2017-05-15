@@ -392,6 +392,43 @@ TEST(LayerImplTest, SafeOpaqueBackgroundColor) {
   }
 }
 
+TEST(LayerImplTest, PerspectiveTransformHasReasonableScale) {
+  FakeImplTaskRunnerProvider task_runner_provider;
+  TestTaskGraphRunner task_graph_runner;
+  std::unique_ptr<CompositorFrameSink> compositor_frame_sink =
+      FakeCompositorFrameSink::Create3d();
+  LayerTreeSettings settings;
+  settings.layer_transforms_should_scale_layer_contents = true;
+  FakeLayerTreeHostImpl host_impl(settings, &task_runner_provider,
+                                  &task_graph_runner);
+  auto owned_layer = LayerImpl::Create(host_impl.active_tree(), 1);
+  LayerImpl* layer = owned_layer.get();
+  layer->set_contributes_to_drawn_render_surface(true);
+  host_impl.active_tree()->SetRootLayerForTesting(std::move(owned_layer));
+  host_impl.active_tree()->BuildLayerListAndPropertyTreesForTesting();
+
+  // Ensure that we are close to the maximum scale for the matrix.
+  {
+    gfx::Transform transform;
+    transform.Scale(10.2f, 15.1f);
+    transform.ApplyPerspectiveDepth(10);
+    layer->draw_properties().screen_space_transform = transform;
+
+    ASSERT_TRUE(layer->ScreenSpaceTransform().HasPerspective());
+    EXPECT_FLOAT_EQ(15.f, layer->GetIdealContentsScale());
+  }
+  // Ensure that we don't fall below the device scale factor.
+  {
+    gfx::Transform transform;
+    transform.Scale(0.1f, 0.2f);
+    transform.ApplyPerspectiveDepth(10);
+    layer->draw_properties().screen_space_transform = transform;
+
+    ASSERT_TRUE(layer->ScreenSpaceTransform().HasPerspective());
+    EXPECT_FLOAT_EQ(1.f, layer->GetIdealContentsScale());
+  }
+}
+
 class LayerImplScrollTest : public testing::Test {
  public:
   LayerImplScrollTest()

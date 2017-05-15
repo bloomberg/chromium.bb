@@ -954,8 +954,18 @@ float LayerImpl::GetIdealContentsScale() const {
     return default_scale;
   }
 
-  gfx::Vector2dF transform_scales = MathUtil::ComputeTransform2dScaleComponents(
-      ScreenSpaceTransform(), default_scale);
+  const auto& transform = ScreenSpaceTransform();
+  if (transform.HasPerspective()) {
+    float scale = MathUtil::ComputeApproximateMaxScale(transform);
+    // Since we're approximating the scale anyway, round it to the nearest
+    // integer to prevent jitter when animating the transform.
+    scale = std::round(scale);
+    // Don't let the scale fall below the default scale.
+    return std::max(scale, default_scale);
+  }
+
+  gfx::Vector2dF transform_scales =
+      MathUtil::ComputeTransform2dScaleComponents(transform, default_scale);
   return std::max(transform_scales.x(), transform_scales.y());
 }
 
