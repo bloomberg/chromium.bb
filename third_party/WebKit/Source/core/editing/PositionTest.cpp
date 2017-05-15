@@ -10,6 +10,33 @@ namespace blink {
 
 class PositionTest : public EditingTestBase {};
 
+TEST_F(PositionTest, IsEquivalent) {
+  SetBodyContent("<a id=sample>0<b>1</b>2</a>");
+
+  Element* sample = GetDocument().getElementById("sample");
+
+  EXPECT_TRUE(Position(sample, 0).IsEquivalent(Position(sample, 0)));
+
+  EXPECT_TRUE(
+      Position(sample, 0).IsEquivalent(Position::FirstPositionInNode(sample)));
+  EXPECT_TRUE(Position(sample, 0).IsEquivalent(
+      Position::BeforeNode(sample->firstChild())));
+  EXPECT_TRUE(Position(sample, 1).IsEquivalent(
+      Position::AfterNode(sample->firstChild())));
+  EXPECT_TRUE(Position(sample, 1).IsEquivalent(
+      Position::BeforeNode(sample->firstChild()->nextSibling())));
+  EXPECT_TRUE(Position(sample, 2).IsEquivalent(
+      Position::BeforeNode(sample->lastChild())));
+  EXPECT_TRUE(Position(sample, 3).IsEquivalent(
+      Position::AfterNode(sample->lastChild())));
+  EXPECT_TRUE(
+      Position(sample, 3).IsEquivalent(Position::LastPositionInNode(sample)));
+
+  EXPECT_FALSE(Position(sample, 0).IsEquivalent(Position(sample, 1)));
+  EXPECT_FALSE(
+      Position(sample, 0).IsEquivalent(Position::LastPositionInNode(sample)));
+}
+
 TEST_F(PositionTest, NodeAsRangeLastNodeNull) {
   EXPECT_EQ(nullptr, Position().NodeAsRangeLastNode());
   EXPECT_EQ(nullptr, PositionInFlatTree().NodeAsRangeLastNode());

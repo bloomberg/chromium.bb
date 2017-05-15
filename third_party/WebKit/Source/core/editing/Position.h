@@ -172,6 +172,8 @@ class CORE_TEMPLATE_CLASS_EXPORT PositionTemplate {
   bool operator>(const PositionTemplate<Strategy>&) const;
   bool operator>=(const PositionTemplate<Strategy>&) const;
 
+  bool IsEquivalent(const PositionTemplate<Strategy>&) const;
+
   // These can be either inside or just before/after the node, depending on
   // if the node is ignored by editing or not.
   // FIXME: These should go away. They only make sense for legacy positions.
