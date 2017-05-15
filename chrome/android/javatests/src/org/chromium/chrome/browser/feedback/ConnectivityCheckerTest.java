@@ -4,9 +4,17 @@
 
 package org.chromium.chrome.browser.feedback;
 
+import static org.chromium.chrome.browser.feedback.ConnectivityCheckerTestRule.TIMEOUT_MS;
+
 import android.support.test.filters.MediumTest;
 
+import org.junit.Assert;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.profiles.Profile;
 
@@ -17,7 +25,12 @@ import java.util.concurrent.atomic.AtomicInteger;
 /**
  * Tests for {@link ConnectivityChecker}.
  */
-public class ConnectivityCheckerTest extends ConnectivityCheckerTestBase {
+@RunWith(BaseJUnit4ClassRunner.class)
+public class ConnectivityCheckerTest {
+    @Rule
+    public ConnectivityCheckerTestRule mConnectivityCheckerTestRule =
+            new ConnectivityCheckerTestRule();
+
     private static class Callback implements ConnectivityChecker.ConnectivityCheckerCallback {
         private final Semaphore mSemaphore;
         private final AtomicInteger mResult = new AtomicInteger();
@@ -37,74 +50,96 @@ public class ConnectivityCheckerTest extends ConnectivityCheckerTestBase {
         }
     }
 
+    @Test
     @MediumTest
     @Feature({"Feedback"})
     public void testNoContentShouldWorkSystemStack() throws Exception {
-        executeTest(mGenerate204Url, ConnectivityCheckResult.CONNECTED, TIMEOUT_MS, true);
+        executeTest(mConnectivityCheckerTestRule.getGenerated204Url(),
+                ConnectivityCheckResult.CONNECTED, TIMEOUT_MS, true);
     }
 
+    @Test
     @MediumTest
     @Feature({"Feedback"})
     public void testNoContentShouldWorkChromeStack() throws Exception {
-        executeTest(mGenerate204Url, ConnectivityCheckResult.CONNECTED, TIMEOUT_MS, false);
+        executeTest(mConnectivityCheckerTestRule.getGenerated204Url(),
+                ConnectivityCheckResult.CONNECTED, TIMEOUT_MS, false);
     }
 
+    @Test
     @MediumTest
     @Feature({"Feedback"})
     public void testSlowNoContentShouldNotWorkSystemStack() throws Exception {
         // Force quick timeout. The server will wait TIMEOUT_MS, so this triggers well before.
-        executeTest(mGenerateSlowUrl, ConnectivityCheckResult.TIMEOUT, 100, true);
+        executeTest(mConnectivityCheckerTestRule.getGeneratedSlowUrl(),
+                ConnectivityCheckResult.TIMEOUT, 100, true);
     }
 
+    @Test
     @MediumTest
     @Feature({"Feedback"})
     public void testSlowNoContentShouldNotWorkChromeStack() throws Exception {
         // Force quick timeout. The server will wait TIMEOUT_MS, so this triggers well before.
-        executeTest(mGenerateSlowUrl, ConnectivityCheckResult.TIMEOUT, 100, false);
+        executeTest(mConnectivityCheckerTestRule.getGeneratedSlowUrl(),
+                ConnectivityCheckResult.TIMEOUT, 100, false);
     }
 
+    @Test
     @MediumTest
     @Feature({"Feedback"})
     public void testHttpOKShouldFailSystemStack() throws Exception {
-        executeTest(mGenerate200Url, ConnectivityCheckResult.NOT_CONNECTED, TIMEOUT_MS, true);
+        executeTest(mConnectivityCheckerTestRule.getGenerated200Url(),
+                ConnectivityCheckResult.NOT_CONNECTED, TIMEOUT_MS, true);
     }
 
+    @Test
     @MediumTest
     @Feature({"Feedback"})
     public void testHttpOKShouldFailChromeStack() throws Exception {
-        executeTest(mGenerate200Url, ConnectivityCheckResult.NOT_CONNECTED, TIMEOUT_MS, false);
+        executeTest(mConnectivityCheckerTestRule.getGenerated200Url(),
+                ConnectivityCheckResult.NOT_CONNECTED, TIMEOUT_MS, false);
     }
 
+    @Test
     @MediumTest
     @Feature({"Feedback"})
     public void testMovedTemporarilyShouldFailSystemStack() throws Exception {
-        executeTest(mGenerate302Url, ConnectivityCheckResult.NOT_CONNECTED, TIMEOUT_MS, true);
+        executeTest(mConnectivityCheckerTestRule.getGenerated302Url(),
+                ConnectivityCheckResult.NOT_CONNECTED, TIMEOUT_MS, true);
     }
 
+    @Test
     @MediumTest
     @Feature({"Feedback"})
     public void testMovedTemporarilyShouldFailChromeStack() throws Exception {
-        executeTest(mGenerate302Url, ConnectivityCheckResult.NOT_CONNECTED, TIMEOUT_MS, false);
+        executeTest(mConnectivityCheckerTestRule.getGenerated302Url(),
+                ConnectivityCheckResult.NOT_CONNECTED, TIMEOUT_MS, false);
     }
 
+    @Test
     @MediumTest
     @Feature({"Feedback"})
     public void testNotFoundShouldFailSystemStack() throws Exception {
-        executeTest(mGenerate404Url, ConnectivityCheckResult.NOT_CONNECTED, TIMEOUT_MS, true);
+        executeTest(mConnectivityCheckerTestRule.getGenerated404Url(),
+                ConnectivityCheckResult.NOT_CONNECTED, TIMEOUT_MS, true);
     }
 
+    @Test
     @MediumTest
     @Feature({"Feedback"})
     public void testNotFoundShouldFailChromeStack() throws Exception {
-        executeTest(mGenerate404Url, ConnectivityCheckResult.NOT_CONNECTED, TIMEOUT_MS, false);
+        executeTest(mConnectivityCheckerTestRule.getGenerated404Url(),
+                ConnectivityCheckResult.NOT_CONNECTED, TIMEOUT_MS, false);
     }
 
+    @Test
     @MediumTest
     @Feature({"Feedback"})
     public void testInvalidURLShouldFailSystemStack() throws Exception {
         executeTest("http:google.com:foo", ConnectivityCheckResult.ERROR, TIMEOUT_MS, true);
     }
 
+    @Test
     @MediumTest
     @Feature({"Feedback"})
     public void testInvalidURLShouldFailChromeStack() throws Exception {
@@ -128,8 +163,9 @@ public class ConnectivityCheckerTest extends ConnectivityCheckerTestBase {
             }
         });
 
-        assertTrue(semaphore.tryAcquire(TIMEOUT_MS, TimeUnit.MILLISECONDS));
-        assertEquals("URL: " + url + ", got " + callback.getResult() + ", want " + expectedResult,
+        Assert.assertTrue(semaphore.tryAcquire(TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        Assert.assertEquals(
+                "URL: " + url + ", got " + callback.getResult() + ", want " + expectedResult,
                 expectedResult, callback.getResult());
     }
 }
