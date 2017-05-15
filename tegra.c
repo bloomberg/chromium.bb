@@ -45,7 +45,7 @@ struct tegra_private_map_data {
 	void *untiled;
 };
 
-static const uint32_t supported_formats[] = { DRM_FORMAT_ARGB8888, DRM_FORMAT_XRGB8888 };
+static const uint32_t render_target_formats[] = { DRM_FORMAT_ARGB8888, DRM_FORMAT_XRGB8888 };
 
 static int compute_block_height_log2(int height)
 {
@@ -170,14 +170,14 @@ static int tegra_init(struct driver *drv)
 {
 	int ret;
 	struct format_metadata metadata;
-	uint64_t flags = BO_COMMON_USE_MASK;
+	uint64_t flags = BO_USE_RENDER_MASK;
 
 	metadata.tiling = NV_MEM_KIND_PITCH;
 	metadata.priority = 1;
 	metadata.modifier = DRM_FORMAT_MOD_NONE;
 
-	ret = drv_add_combinations(drv, supported_formats, ARRAY_SIZE(supported_formats), &metadata,
-				   flags);
+	ret = drv_add_combinations(drv, render_target_formats, ARRAY_SIZE(render_target_formats),
+				   &metadata, flags);
 	if (ret)
 		return ret;
 
@@ -191,8 +191,8 @@ static int tegra_init(struct driver *drv)
 	metadata.tiling = NV_MEM_KIND_C32_2CRA;
 	metadata.priority = 2;
 
-	ret = drv_add_combinations(drv, supported_formats, ARRAY_SIZE(supported_formats), &metadata,
-				   flags);
+	ret = drv_add_combinations(drv, render_target_formats, ARRAY_SIZE(render_target_formats),
+				   &metadata, flags);
 	if (ret)
 		return ret;
 

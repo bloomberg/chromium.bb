@@ -28,5 +28,5 @@ int drv_add_combinations(struct driver *drv, const uint32_t *formats, uint32_t n
 void drv_modify_combination(struct driver *drv, uint32_t format, struct format_metadata *metadata,
 			    uint64_t usage);
 struct kms_item *drv_query_kms(struct driver *drv, uint32_t *num_items);
-int drv_add_linear_combinations(struct driver *drv, const uint32_t *formats, uint32_t num_formats);
+int drv_modify_linear_combinations(struct driver *drv);
 #endif

@@ -20,14 +20,15 @@
 #define I915_CACHELINE_SIZE 64
 #define I915_CACHELINE_MASK (I915_CACHELINE_SIZE - 1)
 
-static const uint32_t tileable_formats[] = { DRM_FORMAT_ARGB1555, DRM_FORMAT_ABGR8888,
-					     DRM_FORMAT_ARGB8888, DRM_FORMAT_RGB565,
-					     DRM_FORMAT_XBGR8888, DRM_FORMAT_XRGB1555,
-					     DRM_FORMAT_XRGB8888, DRM_FORMAT_UYVY,
-					     DRM_FORMAT_YUYV };
+static const uint32_t render_target_formats[] = { DRM_FORMAT_ARGB1555, DRM_FORMAT_ABGR8888,
+						  DRM_FORMAT_ARGB8888, DRM_FORMAT_RGB565,
+						  DRM_FORMAT_XBGR8888, DRM_FORMAT_XRGB1555,
+						  DRM_FORMAT_XRGB8888 };
 
-static const uint32_t linear_only_formats[] = { DRM_FORMAT_GR88, DRM_FORMAT_R8, DRM_FORMAT_YVU420,
-						DRM_FORMAT_YVU420_ANDROID };
+static const uint32_t tileable_texture_source_formats[] = { DRM_FORMAT_GR88, DRM_FORMAT_R8,
+							    DRM_FORMAT_UYVY, DRM_FORMAT_YUYV };
+
+static const uint32_t texture_source_formats[] = { DRM_FORMAT_YVU420, DRM_FORMAT_YVU420_ANDROID };
 
 struct i915_device {
 	uint32_t gen;
@@ -79,42 +80,66 @@ static int i915_add_combinations(struct driver *drv)
 	uint32_t i, num_items;
 	struct kms_item *items;
 	struct format_metadata metadata;
-	uint64_t flags = BO_COMMON_USE_MASK;
+	uint64_t render_flags, texture_flags;
+
+	render_flags = BO_USE_RENDER_MASK;
+	texture_flags = BO_USE_TEXTURE_MASK;
 
 	metadata.tiling = I915_TILING_NONE;
 	metadata.priority = 1;
 	metadata.modifier = DRM_FORMAT_MOD_NONE;
 
-	ret = drv_add_combinations(drv, linear_only_formats, ARRAY_SIZE(linear_only_formats),
-				   &metadata, flags);
+	ret = drv_add_combinations(drv, render_target_formats, ARRAY_SIZE(render_target_formats),
+				   &metadata, render_flags);
 	if (ret)
 		return ret;
 
-	ret = drv_add_combinations(drv, tileable_formats, ARRAY_SIZE(tileable_formats), &metadata,
-				   flags);
+	ret = drv_add_combinations(drv, texture_source_formats, ARRAY_SIZE(texture_source_formats),
+				   &metadata, texture_flags);
+	if (ret)
+		return ret;
+
+	ret = drv_add_combinations(drv, tileable_texture_source_formats,
+				   ARRAY_SIZE(texture_source_formats), &metadata, texture_flags);
 	if (ret)
 		return ret;
 
 	drv_modify_combination(drv, DRM_FORMAT_XRGB8888, &metadata, BO_USE_CURSOR | BO_USE_SCANOUT);
 	drv_modify_combination(drv, DRM_FORMAT_ARGB8888, &metadata, BO_USE_CURSOR | BO_USE_SCANOUT);
 
-	flags &= ~BO_USE_SW_WRITE_OFTEN;
-	flags &= ~BO_USE_SW_READ_OFTEN;
-	flags &= ~BO_USE_LINEAR;
+	render_flags &= ~BO_USE_SW_WRITE_OFTEN;
+	render_flags &= ~BO_USE_SW_READ_OFTEN;
+	render_flags &= ~BO_USE_LINEAR;
+
+	texture_flags &= ~BO_USE_SW_WRITE_OFTEN;
+	texture_flags &= ~BO_USE_SW_READ_OFTEN;
+	texture_flags &= ~BO_USE_LINEAR;
 
 	metadata.tiling = I915_TILING_X;
 	metadata.priority = 2;
 
-	ret = drv_add_combinations(drv, tileable_formats, ARRAY_SIZE(tileable_formats), &metadata,
-				   flags);
+	ret = drv_add_combinations(drv, render_target_formats, ARRAY_SIZE(render_target_formats),
+				   &metadata, render_flags);
+	if (ret)
+		return ret;
+
+	ret = drv_add_combinations(drv, tileable_texture_source_formats,
+				   ARRAY_SIZE(tileable_texture_source_formats), &metadata,
+				   texture_flags);
 	if (ret)
 		return ret;
 
 	metadata.tiling = I915_TILING_Y;
 	metadata.priority = 3;
 
-	ret = drv_add_combinations(drv, tileable_formats, ARRAY_SIZE(tileable_formats), &metadata,
-				   flags);
+	ret = drv_add_combinations(drv, render_target_formats, ARRAY_SIZE(render_target_formats),
+				   &metadata, render_flags);
+	if (ret)
+		return ret;
+
+	ret = drv_add_combinations(drv, tileable_texture_source_formats,
+				   ARRAY_SIZE(tileable_texture_source_formats), &metadata,
+				   texture_flags);
 	if (ret)
 		return ret;
 

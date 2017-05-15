@@ -8,11 +8,17 @@
 #include "helpers.h"
 #include "util.h"
 
-static const uint32_t supported_formats[] = { DRM_FORMAT_ARGB8888, DRM_FORMAT_XRGB8888 };
+static const uint32_t render_target_formats[] = { DRM_FORMAT_ARGB8888, DRM_FORMAT_XRGB8888 };
 
 static int nouveau_init(struct driver *drv)
 {
-	return drv_add_linear_combinations(drv, supported_formats, ARRAY_SIZE(supported_formats));
+	int ret;
+	ret = drv_add_combinations(drv, render_target_formats, ARRAY_SIZE(render_target_formats),
+				   &LINEAR_METADATA, BO_USE_RENDER_MASK);
+	if (ret)
+		return ret;
+
+	return drv_modify_linear_combinations(drv);
 }
 
 struct backend backend_nouveau = {

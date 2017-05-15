@@ -11,14 +11,27 @@
 #define MESA_LLVMPIPE_TILE_ORDER 6
 #define MESA_LLVMPIPE_TILE_SIZE (1 << MESA_LLVMPIPE_TILE_ORDER)
 
-static const uint32_t supported_formats[] = { DRM_FORMAT_ABGR8888, DRM_FORMAT_ARGB8888,
-					      DRM_FORMAT_R8,       DRM_FORMAT_RGB565,
-					      DRM_FORMAT_XBGR8888, DRM_FORMAT_XRGB8888,
-					      DRM_FORMAT_YVU420,   DRM_FORMAT_YVU420_ANDROID };
+static const uint32_t render_target_formats[] = { DRM_FORMAT_ABGR8888, DRM_FORMAT_ARGB8888,
+						  DRM_FORMAT_RGB565, DRM_FORMAT_XBGR8888,
+						  DRM_FORMAT_XRGB8888 };
+
+static const uint32_t texture_source_formats[] = { DRM_FORMAT_R8, DRM_FORMAT_YVU420,
+						   DRM_FORMAT_YVU420_ANDROID };
 
 static int vgem_init(struct driver *drv)
 {
-	return drv_add_linear_combinations(drv, supported_formats, ARRAY_SIZE(supported_formats));
+	int ret;
+	ret = drv_add_combinations(drv, render_target_formats, ARRAY_SIZE(render_target_formats),
+				   &LINEAR_METADATA, BO_USE_RENDER_MASK);
+	if (ret)
+		return ret;
+
+	ret = drv_add_combinations(drv, texture_source_formats, ARRAY_SIZE(texture_source_formats),
+				   &LINEAR_METADATA, BO_USE_TEXTURE_MASK);
+	if (ret)
+		return ret;
+
+	return drv_modify_linear_combinations(drv);
 }
 
 static int vgem_bo_create(struct bo *bo, uint32_t width, uint32_t height, uint32_t format,

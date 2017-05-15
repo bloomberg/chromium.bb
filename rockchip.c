@@ -18,11 +18,12 @@
 #include "helpers.h"
 #include "util.h"
 
-static const uint32_t supported_formats[] = { DRM_FORMAT_ABGR8888,      DRM_FORMAT_ARGB8888,
-					      DRM_FORMAT_NV12,		DRM_FORMAT_R8,
-					      DRM_FORMAT_RGB565,	DRM_FORMAT_XBGR8888,
-					      DRM_FORMAT_XRGB8888,      DRM_FORMAT_YVU420,
-					      DRM_FORMAT_YVU420_ANDROID };
+static const uint32_t render_target_formats[] = { DRM_FORMAT_ABGR8888, DRM_FORMAT_ARGB8888,
+						  DRM_FORMAT_RGB565, DRM_FORMAT_XBGR8888,
+						  DRM_FORMAT_XRGB8888 };
+
+static const uint32_t texture_source_formats[] = { DRM_FORMAT_R8, DRM_FORMAT_NV12,
+						   DRM_FORMAT_YVU420, DRM_FORMAT_YVU420_ANDROID };
 
 static int afbc_bo_from_format(struct bo *bo, uint32_t width, uint32_t height, uint32_t format)
 {
@@ -71,7 +72,7 @@ static int afbc_bo_from_format(struct bo *bo, uint32_t width, uint32_t height, u
 static int rockchip_add_kms_item(struct driver *drv, const struct kms_item *item)
 {
 	int ret;
-	uint32_t i;
+	uint32_t i, j;
 	uint64_t flags;
 	struct combination *combo;
 	struct format_metadata metadata;
@@ -84,6 +85,11 @@ static int rockchip_add_kms_item(struct driver *drv, const struct kms_item *item
 				metadata.modifier = item->modifier;
 				metadata.tiling = 0;
 				metadata.priority = 2;
+
+				for (j = 0; j < ARRAY_SIZE(texture_source_formats); j++) {
+					if (item->format == texture_source_formats[j])
+						flags &= ~BO_USE_RENDERING;
+				}
 
 				ret = drv_add_combination(drv, item[i].format, &metadata, flags);
 				if (ret)
@@ -108,8 +114,13 @@ static int rockchip_init(struct driver *drv)
 	metadata.priority = 1;
 	metadata.modifier = DRM_FORMAT_MOD_NONE;
 
-	ret = drv_add_combinations(drv, supported_formats, ARRAY_SIZE(supported_formats), &metadata,
-				   BO_COMMON_USE_MASK);
+	ret = drv_add_combinations(drv, render_target_formats, ARRAY_SIZE(render_target_formats),
+				   &metadata, BO_USE_RENDER_MASK);
+	if (ret)
+		return ret;
+
+	ret = drv_add_combinations(drv, texture_source_formats, ARRAY_SIZE(texture_source_formats),
+				   &metadata, BO_USE_TEXTURE_MASK);
 	if (ret)
 		return ret;
 

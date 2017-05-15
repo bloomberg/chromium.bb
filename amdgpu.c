@@ -41,8 +41,8 @@ enum {
 };
 // clang-format on
 
-const static uint32_t supported_formats[] = { DRM_FORMAT_ARGB8888, DRM_FORMAT_XBGR8888,
-					      DRM_FORMAT_XRGB8888 };
+const static uint32_t render_target_formats[] = { DRM_FORMAT_ARGB8888, DRM_FORMAT_XBGR8888,
+						  DRM_FORMAT_XRGB8888 };
 
 static int amdgpu_set_metadata(int fd, uint32_t handle, struct amdgpu_bo_metadata *info)
 {
@@ -271,7 +271,7 @@ static int amdgpu_init(struct driver *drv)
 	int ret;
 	void *addrlib;
 	struct format_metadata metadata;
-	uint32_t flags = BO_COMMON_USE_MASK;
+	uint32_t flags = BO_USE_RENDER_MASK;
 
 	addrlib = amdgpu_addrlib_init(drv_get_fd(drv));
 	if (!addrlib)
@@ -283,8 +283,8 @@ static int amdgpu_init(struct driver *drv)
 	metadata.priority = 1;
 	metadata.modifier = DRM_FORMAT_MOD_NONE;
 
-	ret = drv_add_combinations(drv, supported_formats, ARRAY_SIZE(supported_formats), &metadata,
-				   flags);
+	ret = drv_add_combinations(drv, render_target_formats, ARRAY_SIZE(render_target_formats),
+				   &metadata, flags);
 	if (ret)
 		return ret;
 
@@ -296,8 +296,8 @@ static int amdgpu_init(struct driver *drv)
 	metadata.priority = 2;
 	metadata.modifier = DRM_FORMAT_MOD_NONE;
 
-	ret = drv_add_combinations(drv, supported_formats, ARRAY_SIZE(supported_formats), &metadata,
-				   flags);
+	ret = drv_add_combinations(drv, render_target_formats, ARRAY_SIZE(render_target_formats),
+				   &metadata, flags);
 	if (ret)
 		return ret;
 
@@ -308,8 +308,8 @@ static int amdgpu_init(struct driver *drv)
 	metadata.tiling = ADDR_DISPLAYABLE << 16 | ADDR_TM_2D_TILED_THIN1;
 	metadata.priority = 3;
 
-	ret = drv_add_combinations(drv, supported_formats, ARRAY_SIZE(supported_formats), &metadata,
-				   flags);
+	ret = drv_add_combinations(drv, render_target_formats, ARRAY_SIZE(render_target_formats),
+				   &metadata, flags);
 	if (ret)
 		return ret;
 
@@ -320,8 +320,8 @@ static int amdgpu_init(struct driver *drv)
 	metadata.tiling = ADDR_NON_DISPLAYABLE << 16 | ADDR_TM_2D_TILED_THIN1;
 	metadata.priority = 4;
 
-	ret = drv_add_combinations(drv, supported_formats, ARRAY_SIZE(supported_formats), &metadata,
-				   flags);
+	ret = drv_add_combinations(drv, render_target_formats, ARRAY_SIZE(render_target_formats),
+				   &metadata, flags);
 	if (ret)
 		return ret;
 

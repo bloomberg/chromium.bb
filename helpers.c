@@ -501,21 +501,12 @@ out:
 	return items;
 }
 
-int drv_add_linear_combinations(struct driver *drv, const uint32_t *formats, uint32_t num_formats)
+int drv_modify_linear_combinations(struct driver *drv)
 {
-	int ret;
 	uint32_t i, j, num_items;
 	struct kms_item *items;
 	struct combination *combo;
-	struct format_metadata metadata;
 
-	metadata.tiling = 0;
-	metadata.priority = 1;
-	metadata.modifier = DRM_FORMAT_MOD_NONE;
-
-	ret = drv_add_combinations(drv, formats, num_formats, &metadata, BO_COMMON_USE_MASK);
-	if (ret)
-		return ret;
 	/*
 	 * All current drivers can scanout linear XRGB8888/ARGB8888 as a primary
 	 * plane and as a cursor. Some drivers don't support
@@ -523,8 +514,10 @@ int drv_add_linear_combinations(struct driver *drv, const uint32_t *formats, uin
 	 * kernel disregards the alpha component of ARGB unless it's an overlay
 	 * plane.
 	 */
-	drv_modify_combination(drv, DRM_FORMAT_XRGB8888, &metadata, BO_USE_CURSOR | BO_USE_SCANOUT);
-	drv_modify_combination(drv, DRM_FORMAT_ARGB8888, &metadata, BO_USE_CURSOR | BO_USE_SCANOUT);
+	drv_modify_combination(drv, DRM_FORMAT_XRGB8888, &LINEAR_METADATA,
+			       BO_USE_CURSOR | BO_USE_SCANOUT);
+	drv_modify_combination(drv, DRM_FORMAT_ARGB8888, &LINEAR_METADATA,
+			       BO_USE_CURSOR | BO_USE_SCANOUT);
 
 	items = drv_query_kms(drv, &num_items);
 	if (!items || !num_items)

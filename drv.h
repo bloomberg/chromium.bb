@@ -49,10 +49,6 @@ extern "C" {
 #define DRM_FORMAT_FLEX_IMPLEMENTATION_DEFINED	fourcc_code('9', '9', '9', '8')
 #define DRM_FORMAT_FLEX_YCbCr_420_888		fourcc_code('9', '9', '9', '9')
 
-#define BO_COMMON_USE_MASK BO_USE_LINEAR | BO_USE_RENDERING | \
-			   BO_USE_SW_READ_OFTEN | BO_USE_SW_WRITE_OFTEN | \
-			   BO_USE_SW_READ_RARELY | BO_USE_SW_WRITE_RARELY | \
-			   BO_USE_TEXTURE
 // clang-format on
 struct driver;
 struct bo;
