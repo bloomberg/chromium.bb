@@ -47,7 +47,7 @@ void WebUserGestureToken::SetJavascriptPrompt() {
 }
 
 WebUserGestureToken::WebUserGestureToken(PassRefPtr<UserGestureToken> token) {
-  token_ = token;
+  token_ = std::move(token);
 }
 
 WebUserGestureToken::operator PassRefPtr<UserGestureToken>() const {

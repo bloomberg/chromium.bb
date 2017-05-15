@@ -58,10 +58,11 @@ const char* WebData::Data() const {
   return private_->Data();
 }
 
-WebData::WebData(PassRefPtr<SharedBuffer> buffer) : private_(buffer) {}
+WebData::WebData(PassRefPtr<SharedBuffer> buffer)
+    : private_(std::move(buffer)) {}
 
 WebData& WebData::operator=(PassRefPtr<SharedBuffer> buffer) {
-  private_ = buffer;
+  private_ = std::move(buffer);
   return *this;
 }
 

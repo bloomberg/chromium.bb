@@ -49,7 +49,7 @@ void WebHTTPLoadInfo::Assign(const WebHTTPLoadInfo& r) {
 }
 
 WebHTTPLoadInfo::WebHTTPLoadInfo(WTF::PassRefPtr<ResourceLoadInfo> value)
-    : private_(value) {}
+    : private_(std::move(value)) {}
 
 WebHTTPLoadInfo::operator WTF::PassRefPtr<ResourceLoadInfo>() const {
   return private_.Get();
