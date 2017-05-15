@@ -58,6 +58,54 @@ class TextInputClientMacHelper {
   DISALLOW_COPY_AND_ASSIGN(TextInputClientMacHelper);
 };
 
+// Class to detect incoming gesture event acks for scrolling tests.
+class InputEventAckWaiter
+    : public content::RenderWidgetHost::InputEventObserver {
+ public:
+  InputEventAckWaiter(blink::WebInputEvent::Type ack_type_waiting_for)
+      : message_loop_runner_(new content::MessageLoopRunner),
+        ack_type_waiting_for_(ack_type_waiting_for),
+        desired_ack_type_received_(false) {}
+  ~InputEventAckWaiter() override {}
+
+  void OnInputEventAck(const blink::WebInputEvent& event) override {
+    if (event.GetType() != ack_type_waiting_for_)
+      return;
+
+    // Ignore synthetic GestureScrollBegin/Ends.
+    if ((event.GetType() == blink::WebInputEvent::kGestureScrollBegin &&
+         static_cast<const blink::WebGestureEvent&>(event)
+             .data.scroll_begin.synthetic) ||
+        (event.GetType() == blink::WebInputEvent::kGestureScrollEnd &&
+         static_cast<const blink::WebGestureEvent&>(event)
+             .data.scroll_end.synthetic)) {
+      return;
+    }
+
+    desired_ack_type_received_ = true;
+    if (message_loop_runner_->loop_running())
+      message_loop_runner_->Quit();
+  }
+
+  void Wait() {
+    if (!desired_ack_type_received_) {
+      message_loop_runner_->Run();
+    }
+  }
+
+  void Reset() {
+    desired_ack_type_received_ = false;
+    message_loop_runner_ = new content::MessageLoopRunner;
+  }
+
+ private:
+  scoped_refptr<content::MessageLoopRunner> message_loop_runner_;
+  blink::WebInputEvent::Type ack_type_waiting_for_;
+  bool desired_ack_type_received_;
+
+  DISALLOW_COPY_AND_ASSIGN(InputEventAckWaiter);
+};
+
 }  // namespace
 
 // Site per process browser tests inside content which are specific to Mac OSX
@@ -117,4 +165,91 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessMacBrowserTest,
   EXPECT_EQ(word, helper.word());
   EXPECT_EQ("This", word);
 }
+
+// Ensure that the RWHVCF forwards wheel events with phase ending information.
+// RWHVCF may see wheel events with phase ending information that have deltas
+// of 0. These should not be dropped, otherwise MouseWheelEventQueue will not
+// be informed that the user's gesture has ended.
+// See crbug.com/628742
+IN_PROC_BROWSER_TEST_F(SitePerProcessMacBrowserTest,
+                       ForwardWheelEventsWithPhaseEndingInformation) {
+  GURL main_url(embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(b)"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+  ASSERT_EQ(1U, root->child_count());
+
+  FrameTreeNode* child_iframe_node = root->child_at(0);
+  RenderWidgetHost* child_rwh =
+      child_iframe_node->current_frame_host()->GetRenderWidgetHost();
+
+  std::unique_ptr<InputEventAckWaiter> gesture_scroll_begin_ack_observer =
+      base::MakeUnique<InputEventAckWaiter>(
+          blink::WebInputEvent::kGestureScrollBegin);
+  std::unique_ptr<InputEventAckWaiter> gesture_scroll_end_ack_observer =
+      base::MakeUnique<InputEventAckWaiter>(
+          blink::WebInputEvent::kGestureScrollEnd);
+  child_rwh->AddInputEventObserver(gesture_scroll_begin_ack_observer.get());
+  child_rwh->AddInputEventObserver(gesture_scroll_end_ack_observer.get());
+
+  RenderWidgetHostViewBase* child_rwhv =
+      static_cast<RenderWidgetHostViewBase*>(child_rwh->GetView());
+
+  blink::WebMouseWheelEvent scroll_event(
+      blink::WebInputEvent::kMouseWheel, blink::WebInputEvent::kNoModifiers,
+      blink::WebInputEvent::kTimeStampForTesting);
+  scroll_event.SetPositionInWidget(1, 1);
+  scroll_event.has_precise_scrolling_deltas = true;
+  scroll_event.delta_x = 0.0f;
+
+  // Have the RWHVCF process a sequence of touchpad scroll events that contain
+  // phase informaiton. We start scrolling normally, then we fling.
+  // We wait for GestureScrollBegin/Ends that result from these wheel events.
+  // If we don't see them, this test will time out indicating failure.
+
+  // Begin scrolling.
+  scroll_event.delta_y = -1.0f;
+  scroll_event.phase = blink::WebMouseWheelEvent::kPhaseBegan;
+  scroll_event.momentum_phase = blink::WebMouseWheelEvent::kPhaseNone;
+  child_rwhv->ProcessMouseWheelEvent(scroll_event, ui::LatencyInfo());
+  gesture_scroll_begin_ack_observer->Wait();
+
+  scroll_event.delta_y = -2.0f;
+  scroll_event.phase = blink::WebMouseWheelEvent::kPhaseChanged;
+  scroll_event.momentum_phase = blink::WebMouseWheelEvent::kPhaseNone;
+  child_rwhv->ProcessMouseWheelEvent(scroll_event, ui::LatencyInfo());
+
+  // End of non-momentum scrolling.
+  scroll_event.delta_y = 0.0f;
+  scroll_event.phase = blink::WebMouseWheelEvent::kPhaseEnded;
+  scroll_event.momentum_phase = blink::WebMouseWheelEvent::kPhaseNone;
+  child_rwhv->ProcessMouseWheelEvent(scroll_event, ui::LatencyInfo());
+  gesture_scroll_end_ack_observer->Wait();
+
+  gesture_scroll_begin_ack_observer->Reset();
+  gesture_scroll_end_ack_observer->Reset();
+
+  // We now go into a fling.
+  scroll_event.delta_y = -2.0f;
+  scroll_event.phase = blink::WebMouseWheelEvent::kPhaseNone;
+  scroll_event.momentum_phase = blink::WebMouseWheelEvent::kPhaseBegan;
+  child_rwhv->ProcessMouseWheelEvent(scroll_event, ui::LatencyInfo());
+  gesture_scroll_begin_ack_observer->Wait();
+
+  scroll_event.delta_y = -2.0f;
+  scroll_event.phase = blink::WebMouseWheelEvent::kPhaseNone;
+  scroll_event.momentum_phase = blink::WebMouseWheelEvent::kPhaseChanged;
+  child_rwhv->ProcessMouseWheelEvent(scroll_event, ui::LatencyInfo());
+
+  // End of fling momentum.
+  scroll_event.delta_y = 0.0f;
+  scroll_event.phase = blink::WebMouseWheelEvent::kPhaseNone;
+  scroll_event.momentum_phase = blink::WebMouseWheelEvent::kPhaseEnded;
+  child_rwhv->ProcessMouseWheelEvent(scroll_event, ui::LatencyInfo());
+  gesture_scroll_end_ack_observer->Wait();
+}
+
 }  // namespace content
