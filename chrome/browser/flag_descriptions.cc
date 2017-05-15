@@ -700,18 +700,6 @@ const char kAshShelfColorSchemeNormalMuted[] = "Normal & Muted";
 
 const char kAshShelfColorSchemeDarkMuted[] = "Dark & Muted";
 
-const char kAshMaximizeModeWindowBackdropName[] =
-    "Window backdrops in TouchView";
-
-const char kAshMaximizeModeWindowBackdropDescription[] =
-    "Show grey window backdrops used in TouchView (maximize mode) behind "
-    "windows which cannot be maximized.";
-
-const char kAshScreenOrientationLockName[] = "Screen Orientation locking";
-
-const char kAshScreenOrientationLockDescription[] =
-    "Allows javascript to lock the screen orienation.";
-
 const char kAshEnableMirroredScreenName[] = "Enable mirrored screen mode.";
 
 const char kAshEnableMirroredScreenDescription[] =
