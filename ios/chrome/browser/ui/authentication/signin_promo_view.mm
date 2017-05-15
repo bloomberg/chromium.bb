@@ -31,6 +31,78 @@ const CGFloat kButtonVerticalPadding = 6;
 const CGFloat kProfileImageFixedSize = 48;
 // Button height.
 const CGFloat kButtonHeight = 36;
+
+void RecordSigninUserActionForAccessPoint(
+    signin_metrics::AccessPoint access_point) {
+  switch (access_point) {
+    case signin_metrics::AccessPoint::ACCESS_POINT_BOOKMARK_MANAGER:
+      base::RecordAction(
+          base::UserMetricsAction("Signin_Signin_FromBookmarkManager"));
+      break;
+    case signin_metrics::AccessPoint::ACCESS_POINT_RECENT_TABS:
+      base::RecordAction(
+          base::UserMetricsAction("Signin_Signin_FromRecentTabs"));
+      break;
+    default:
+      NOTREACHED() << "Unexpected value for access point "
+                   << static_cast<int>(access_point);
+      break;
+  }
+}
+
+void RecordSigninDefaultUserActionForAccessPoint(
+    signin_metrics::AccessPoint access_point) {
+  switch (access_point) {
+    case signin_metrics::AccessPoint::ACCESS_POINT_BOOKMARK_MANAGER:
+      base::RecordAction(base::UserMetricsAction(
+          "Signin_SigninWithDefault_FromBookmarkManager"));
+      break;
+    case signin_metrics::AccessPoint::ACCESS_POINT_RECENT_TABS:
+      base::RecordAction(
+          base::UserMetricsAction("Signin_SigninWithDefault_FromRecentTabs"));
+      break;
+    default:
+      NOTREACHED() << "Unexpected value for access point "
+                   << static_cast<int>(access_point);
+      break;
+  }
+}
+
+void RecordSigninNotDefaultUserActionForAccessPoint(
+    signin_metrics::AccessPoint access_point) {
+  switch (access_point) {
+    case signin_metrics::AccessPoint::ACCESS_POINT_BOOKMARK_MANAGER:
+      base::RecordAction(base::UserMetricsAction(
+          "Signin_SigninNotDefault_FromBookmarkManager"));
+      break;
+    case signin_metrics::AccessPoint::ACCESS_POINT_RECENT_TABS:
+      base::RecordAction(
+          base::UserMetricsAction("Signin_SigninNotDefault_FromRecentTabs"));
+      break;
+    default:
+      NOTREACHED() << "Unexpected value for access point "
+                   << static_cast<int>(access_point);
+      break;
+  }
+}
+
+void RecordSigninNewAccountUserActionForAccessPoint(
+    signin_metrics::AccessPoint access_point) {
+  switch (access_point) {
+    case signin_metrics::AccessPoint::ACCESS_POINT_BOOKMARK_MANAGER:
+      base::RecordAction(base::UserMetricsAction(
+          "Signin_SigninNewAccount_FromBookmarkManager"));
+      break;
+    case signin_metrics::AccessPoint::ACCESS_POINT_RECENT_TABS:
+      base::RecordAction(
+          base::UserMetricsAction("Signin_SigninNewAccount_FromRecentTabs"));
+      break;
+    default:
+      NOTREACHED() << "Unexpected value for access point "
+                   << static_cast<int>(access_point);
+      break;
+  }
+}
 }
 
 @implementation SigninPromoView {
@@ -224,15 +296,17 @@ const CGFloat kButtonHeight = 36;
   if (!_shouldSendChromeCommand) {
     return;
   }
-  [self recordSigninUserActionForAccessPoint];
+  RecordSigninUserActionForAccessPoint(_accessPoint);
   ShowSigninCommand* command = nil;
   switch (_mode) {
     case SigninPromoViewModeColdState:
+      RecordSigninNewAccountUserActionForAccessPoint(_accessPoint);
       command = [[ShowSigninCommand alloc]
           initWithOperation:AUTHENTICATION_OPERATION_SIGNIN
                 accessPoint:_accessPoint];
       break;
     case SigninPromoViewModeWarmState:
+      RecordSigninDefaultUserActionForAccessPoint(_accessPoint);
       command = [[ShowSigninCommand alloc]
           initWithOperation:AUTHENTICATION_OPERATION_SIGNIN_PROMO_CONTINUE_AS
                 accessPoint:_accessPoint];
@@ -246,27 +320,12 @@ const CGFloat kButtonHeight = 36;
   if (!_shouldSendChromeCommand) {
     return;
   }
-  [self recordSigninUserActionForAccessPoint];
+  RecordSigninUserActionForAccessPoint(_accessPoint);
+  RecordSigninNotDefaultUserActionForAccessPoint(_accessPoint);
   ShowSigninCommand* command = [[ShowSigninCommand alloc]
       initWithOperation:AUTHENTICATION_OPERATION_SIGNIN
             accessPoint:_accessPoint];
   [self chromeExecuteCommand:command];
-}
-
-- (void)recordSigninUserActionForAccessPoint {
-  switch (_accessPoint) {
-    case signin_metrics::AccessPoint::ACCESS_POINT_BOOKMARK_MANAGER:
-      base::RecordAction(
-          base::UserMetricsAction("Signin_Signin_FromBookmarkManager"));
-      break;
-    case signin_metrics::AccessPoint::ACCESS_POINT_RECENT_TABS:
-      base::RecordAction(
-          base::UserMetricsAction("Signin_Signin_FromRecentTabs"));
-      break;
-    default:
-      NOTREACHED() << "Unexpected value for access point " << (int)_accessPoint;
-      break;
-  }
 }
 
 #pragma mark - NSObject(Accessibility)

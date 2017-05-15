@@ -1011,11 +1011,21 @@ void SigninObserverBridge::GoogleSignedOut(const std::string& account_id,
 }
 
 - (void)signinPromoPrimaryAction:(id)unused {
-  [self showSignInWithIdentity:_signinPromoViewMediator.get().defaultIdentity];
+  ChromeIdentity* identity = _signinPromoViewMediator.get().defaultIdentity;
+  if (identity) {
+    base::RecordAction(
+        base::UserMetricsAction("Signin_SigninWithDefault_FromSettings"));
+  } else {
+    base::RecordAction(
+        base::UserMetricsAction("Signin_SigninNewAccount_FromSettings"));
+  }
+  [self showSignInWithIdentity:identity];
 }
 
 - (void)signinPromoSecondaryAction:(id)unused {
   DCHECK(_signinPromoViewMediator.get().defaultIdentity);
+  base::RecordAction(
+      base::UserMetricsAction("Signin_SigninNotDefault_FromSettings"));
   [self showSignInWithIdentity:nil];
 }
 
