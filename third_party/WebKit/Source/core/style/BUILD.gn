@@ -10,6 +10,7 @@ blink_core_sources("rendering") {
   sources = [
     "AppliedTextDecoration.cpp",
     "AppliedTextDecoration.h",
+    "AppliedTextDecorationList.h",
     "BasicShapes.cpp",
     "BasicShapes.h",
     "BorderData.h",

@@ -28,6 +28,7 @@
 #include "core/CoreExport.h"
 #include "core/css/StyleAutoColor.h"
 #include "core/css/StyleColor.h"
+#include "core/style/AppliedTextDecorationList.h"
 #include "core/style/TextSizeAdjust.h"
 #include "platform/Length.h"
 #include "platform/graphics/Color.h"
@@ -40,14 +41,12 @@
 
 namespace blink {
 
-class AppliedTextDecoration;
 class CursorData;
 class QuotesData;
 class ShadowList;
 class StyleImage;
 class StyleInheritedVariables;
 
-typedef RefVector<AppliedTextDecoration> AppliedTextDecorationList;
 typedef HeapVector<CursorData> CursorList;
 
 // This struct is for rarely used inherited CSS3, CSS2, and WebKit-specific
