@@ -948,7 +948,7 @@ class DownloadProtectionService::CheckClientDownloadRequest
 
   // Prepares URLs to be put into a ping message. Currently this just shortens
   // data: URIs, other URLs are included verbatim. If this is a sampled binary,
-  // we'll send a lite-ping which strips all PII.
+  // we'll send a light-ping which strips PII from the URL.
   std::string SanitizeUrl(const GURL& url) const {
     if (type_ == ClientDownloadRequest::SAMPLED_UNSUPPORTED_FILE)
       return url.GetOrigin().spec();
@@ -1022,14 +1022,8 @@ class DownloadProtectionService::CheckClientDownloadRequest
     }
 
     request.set_user_initiated(item_->HasUserGesture());
-    if (type_ == ClientDownloadRequest::SAMPLED_UNSUPPORTED_FILE) {
-      request.set_file_basename(
-          base::FilePath(item_->GetTargetFilePath().Extension())
-              .AsUTF8Unsafe());
-    } else {
-      request.set_file_basename(
+    request.set_file_basename(
         item_->GetTargetFilePath().BaseName().AsUTF8Unsafe());
-    }
     request.set_download_type(type_);
 
     ReferrerChainData* referrer_chain_data =
