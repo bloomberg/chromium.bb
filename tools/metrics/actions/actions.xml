@@ -15074,6 +15074,58 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="Signin_SigninNewAccount_FromBookmarkManager">
+  <owner>jlebel@chromium.org</owner>
+  <description>
+    Recorded on sign in start from access point
+    signin_metrics::AccessPoint::ACCESS_POINT_BOOKMARK_MANAGER, with a new
+    account.
+  </description>
+</action>
+
+<action name="Signin_SigninNewAccount_FromRecentTabs">
+  <owner>jlebel@chromium.org</owner>
+  <description>
+    Recorded on sign in start from access point
+    signin_metrics::AccessPoint::ACCESS_POINT_RECENT_TABS, with a new account.
+  </description>
+</action>
+
+<action name="Signin_SigninNewAccount_FromSettings">
+  <owner>jlebel@chromium.org</owner>
+  <description>
+    Recorded on sign in start from access point
+    signin_metrics::AccessPoint::ACCESS_POINT_SETTINGS, with a new account.
+  </description>
+</action>
+
+<action name="Signin_SigninNoDefault_FromBookmarkManager">
+  <owner>jlebel@chromium.org</owner>
+  <description>
+    Recorded on sign in start from access point
+    signin_metrics::AccessPoint::ACCESS_POINT_BOOKMARK_MANAGER, using another
+    account than the default one.
+  </description>
+</action>
+
+<action name="Signin_SigninNoDefault_FromRecentTabs">
+  <owner>jlebel@chromium.org</owner>
+  <description>
+    Recorded on sign in start from access point
+    signin_metrics::AccessPoint::ACCESS_POINT_RECENT_TABS, using another account
+    than the default one.
+  </description>
+</action>
+
+<action name="Signin_SigninNoDefault_FromSettings">
+  <owner>jlebel@chromium.org</owner>
+  <description>
+    Recorded on sign in start from access point
+    signin_metrics::AccessPoint::ACCESS_POINT_SETTINGS, using another account
+    than the default one.
+  </description>
+</action>
+
 <action name="Signin_SigninPage_Loading">
   <owner>gogerald@chromium.org</owner>
   <description>Recorded when sign in page is loading.</description>
@@ -15082,6 +15134,33 @@ should be able to be added at any place in this file.
 <action name="Signin_SigninPage_Shown">
   <owner>gogerald@chromium.org</owner>
   <description>Recorded when sign in page is shown.</description>
+</action>
+
+<action name="Signin_SigninWithDefault_FromBookmarkManager">
+  <owner>jlebel@chromium.org</owner>
+  <description>
+    Recorded on sign in start from access point
+    signin_metrics::AccessPoint::ACCESS_POINT_BOOKMARK_MANAGER, using the
+    default account.
+  </description>
+</action>
+
+<action name="Signin_SigninWithDefault_FromRecentTabs">
+  <owner>jlebel@chromium.org</owner>
+  <description>
+    Recorded on sign in start from access point
+    signin_metrics::AccessPoint::ACCESS_POINT_RECENT_TABS, using the default
+    account.
+  </description>
+</action>
+
+<action name="Signin_SigninWithDefault_FromSettings">
+  <owner>jlebel@chromium.org</owner>
+  <description>
+    Recorded on sign in start from access point
+    signin_metrics::AccessPoint::ACCESS_POINT_SETTINGS, using the default
+    account.
+  </description>
 </action>
 
 <action name="Signin_Signin_FromAppsPageLink">
