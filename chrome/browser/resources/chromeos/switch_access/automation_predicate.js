@@ -47,7 +47,8 @@ AutomationPredicate.isGroup = function(node, scope) {
     return false;
 
   let interestingBranches = 0;
-  for (let child of node.children) {
+  let children = node.children || [];
+  for (let child of children) {
     if (AutomationPredicate.isInterestingSubtree(child))
       interestingBranches += 1;
     if (interestingBranches > 1)

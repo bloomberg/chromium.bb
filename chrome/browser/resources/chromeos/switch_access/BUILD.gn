@@ -60,6 +60,7 @@ js2gtest("switch_access_webuijs_tests") {
   extra_js_files = [
     "auto_scan_manager.js",
     "automation_predicate.js",
+    "test_support.js",
     "tree_walker.js",
   ]
   defines = [ "HAS_OUT_OF_PROC_TEST_RUNNER" ]
