@@ -94,16 +94,15 @@ void FFmpegAudioDecoder::Initialize(const AudioDecoderConfig& config,
   }
 
   FFmpegGlue::InitializeFFmpeg();
-  config_ = config;
 
-  // TODO(xhwang): Only set |config_| after we successfully configure the
-  // decoder. Make sure we clean up all member variables upon failure.
-  if (!ConfigureDecoder()) {
+  if (!ConfigureDecoder(config)) {
+    av_sample_format_ = 0;
     bound_init_cb.Run(false);
     return;
   }
 
   // Success!
+  config_ = config;
   output_cb_ = BindToCurrentLoop(output_cb);
   state_ = kNormal;
   bound_init_cb.Run(true);
@@ -135,7 +134,7 @@ void FFmpegAudioDecoder::Reset(const base::Closure& closure) {
 
   avcodec_flush_buffers(codec_context_.get());
   state_ = kNormal;
-  ResetTimestampState();
+  ResetTimestampState(config_);
   task_runner_->PostTask(FROM_HERE, closure);
 }
 
@@ -258,7 +257,7 @@ bool FFmpegAudioDecoder::FFmpegDecode(
                              config_.seek_preroll(), config_.codec_delay());
           config_changed = true;
           if (is_sample_rate_change)
-            ResetTimestampState();
+            ResetTimestampState(config_);
         } else {
           MEDIA_LOG(ERROR, media_log_)
               << "Unsupported midstream configuration change!"
@@ -313,22 +312,22 @@ void FFmpegAudioDecoder::ReleaseFFmpegResources() {
   av_frame_.reset();
 }
 
-bool FFmpegAudioDecoder::ConfigureDecoder() {
-  DCHECK(config_.IsValidConfig());
-  DCHECK(!config_.is_encrypted());
+bool FFmpegAudioDecoder::ConfigureDecoder(const AudioDecoderConfig& config) {
+  DCHECK(config.IsValidConfig());
+  DCHECK(!config.is_encrypted());
 
   // Release existing decoder resources if necessary.
   ReleaseFFmpegResources();
 
   // Initialize AVCodecContext structure.
   codec_context_.reset(avcodec_alloc_context3(NULL));
-  AudioDecoderConfigToAVCodecContext(config_, codec_context_.get());
+  AudioDecoderConfigToAVCodecContext(config, codec_context_.get());
 
   codec_context_->opaque = this;
   codec_context_->get_buffer2 = GetAudioBufferImpl;
   codec_context_->refcounted_frames = 1;
 
-  if (config_.codec() == kCodecOpus)
+  if (config.codec() == kCodecOpus)
     codec_context_->request_sample_fmt = AV_SAMPLE_FMT_FLT;
 
   AVCodec* codec = avcodec_find_decoder(codec_context_->codec_id);
@@ -345,10 +344,10 @@ bool FFmpegAudioDecoder::ConfigureDecoder() {
   av_sample_format_ = codec_context_->sample_fmt;
 
   if (codec_context_->channels !=
-      ChannelLayoutToChannelCount(config_.channel_layout())) {
+      ChannelLayoutToChannelCount(config.channel_layout())) {
     MEDIA_LOG(ERROR, media_log_)
         << "Audio configuration specified "
-        << ChannelLayoutToChannelCount(config_.channel_layout())
+        << ChannelLayoutToChannelCount(config.channel_layout())
         << " channels, but FFmpeg thinks the file contains "
         << codec_context_->channels << " channels";
     ReleaseFFmpegResources();
@@ -356,17 +355,17 @@ bool FFmpegAudioDecoder::ConfigureDecoder() {
     return false;
   }
 
-  ResetTimestampState();
+  ResetTimestampState(config);
   return true;
 }
 
-void FFmpegAudioDecoder::ResetTimestampState() {
+void FFmpegAudioDecoder::ResetTimestampState(const AudioDecoderConfig& config) {
   // Opus codec delay is handled by ffmpeg.
   const int codec_delay =
-      config_.codec() == kCodecOpus ? 0 : config_.codec_delay();
-  discard_helper_.reset(
-      new AudioDiscardHelper(config_.samples_per_second(), codec_delay,
-                             config_.codec() == kCodecVorbis));
+      config.codec() == kCodecOpus ? 0 : config.codec_delay();
+  discard_helper_.reset(new AudioDiscardHelper(config.samples_per_second(),
+                                               codec_delay,
+                                               config.codec() == kCodecVorbis));
   discard_helper_->Reset(codec_delay);
 }
 
