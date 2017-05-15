@@ -488,6 +488,10 @@ int DrawPathOp::CountSlowPaths() const {
   }
 }
 
+int DrawRecordOp::CountSlowPaths() const {
+  return record->numSlowPaths();
+}
+
 AnnotateOp::AnnotateOp(PaintCanvas::AnnotationType annotation_type,
                        const SkRect& rect,
                        sk_sp<SkData> data)

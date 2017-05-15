@@ -572,6 +572,7 @@ struct CC_PAINT_EXPORT DrawRecordOp final : PaintOp {
                      const SkMatrix& original_ctm);
   size_t AdditionalBytesUsed() const;
   bool HasDiscardableImages() const;
+  int CountSlowPaths() const;
 
   sk_sp<const PaintRecord> record;
 };
