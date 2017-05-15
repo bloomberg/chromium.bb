@@ -124,6 +124,31 @@ Frame* ToCoreFrame(WebFrame* frame) {
   return frame ? WebFrame::ToCoreFrame(*frame) : nullptr;
 }
 
+// Return the parent of |frame| as a LocalFrame, nullptr when there is no
+// parent or when the parent is a remote frame.
+LocalFrame* GetLocalParentFrame(WebLocalFrameImpl* frame) {
+  WebFrame* parent = frame->Parent();
+  if (!parent || !parent->IsWebLocalFrame())
+    return nullptr;
+
+  return ToWebLocalFrameImpl(parent)->GetFrame();
+}
+
+// Returns whether the |local_frame| has been loaded using an MHTMLArchive. When
+// it is the case, each subframe must use it for loading.
+bool IsLoadedAsMHTMLArchive(LocalFrame* local_frame) {
+  return local_frame && local_frame->GetDocument()->Fetcher()->Archive();
+}
+
+// Returns whether the |local_frame| is in a middle of a back/forward
+// navigation.
+bool IsBackForwardNavigationInProgress(LocalFrame* local_frame) {
+  return local_frame &&
+         IsBackForwardLoadType(
+             local_frame->Loader().GetDocumentLoader()->LoadType()) &&
+         !local_frame->GetDocument()->LoadEventFinished();
+}
+
 }  // namespace
 
 LocalFrameClientImpl::LocalFrameClientImpl(WebLocalFrameImpl* frame)
@@ -483,23 +508,6 @@ NavigationPolicy LocalFrameClientImpl::DecidePolicyForNavigation(
 
   WebDataSourceImpl* ds = WebDataSourceImpl::FromDocumentLoader(loader);
 
-  // Newly created child frames may need to be navigated to a history item
-  // during a back/forward navigation. This will only happen when the parent
-  // is a LocalFrame doing a back/forward navigation that has not completed.
-  // (If the load has completed and the parent later adds a frame with script,
-  // we do not want to use a history item for it.)
-  bool is_history_navigation_in_new_child_frame =
-      web_frame_->Parent() && web_frame_->Parent()->IsWebLocalFrame() &&
-      IsBackForwardLoadType(ToWebLocalFrameImpl(web_frame_->Parent())
-                                ->GetFrame()
-                                ->Loader()
-                                .GetDocumentLoader()
-                                ->LoadType()) &&
-      !ToWebLocalFrameImpl(web_frame_->Parent())
-           ->GetFrame()
-           ->GetDocument()
-           ->LoadEventFinished();
-
   WrappedResourceRequest wrapped_resource_request(request);
   WebFrameClient::NavigationPolicyInfo navigation_info(
       wrapped_resource_request);
@@ -507,8 +515,6 @@ NavigationPolicy LocalFrameClientImpl::DecidePolicyForNavigation(
   navigation_info.default_policy = static_cast<WebNavigationPolicy>(policy);
   navigation_info.extra_data = ds ? ds->GetExtraData() : nullptr;
   navigation_info.replaces_current_history_item = replaces_current_history_item;
-  navigation_info.is_history_navigation_in_new_child_frame =
-      is_history_navigation_in_new_child_frame;
   navigation_info.is_client_redirect = is_client_redirect;
   navigation_info.should_check_main_world_content_security_policy =
       should_check_main_world_content_security_policy ==
@@ -516,10 +522,25 @@ NavigationPolicy LocalFrameClientImpl::DecidePolicyForNavigation(
           ? kWebContentSecurityPolicyDispositionCheck
           : kWebContentSecurityPolicyDispositionDoNotCheck;
 
-  if (IsLoadedAsMHTMLArchive()) {
-    navigation_info.archive_status =
-        WebFrameClient::NavigationPolicyInfo::ArchiveStatus::Present;
-  }
+  // Can be null.
+  LocalFrame* local_parent_frame = GetLocalParentFrame(web_frame_);
+
+  // Newly created child frames may need to be navigated to a history item
+  // during a back/forward navigation. This will only happen when the parent
+  // is a LocalFrame doing a back/forward navigation that has not completed.
+  // (If the load has completed and the parent later adds a frame with script,
+  // we do not want to use a history item for it.)
+  navigation_info.is_history_navigation_in_new_child_frame =
+      IsBackForwardNavigationInProgress(local_parent_frame);
+
+  // TODO(nasko): How should this work with OOPIF?
+  // The MHTMLArchive is parsed as a whole, but can be constructed from frames
+  // in multiple processes. In that case, which process should parse it and how
+  // should the output be spread back across multiple processes?
+  navigation_info.archive_status =
+      IsLoadedAsMHTMLArchive(local_parent_frame)
+          ? WebFrameClient::NavigationPolicyInfo::ArchiveStatus::Present
+          : WebFrameClient::NavigationPolicyInfo::ArchiveStatus::Absent;
 
   // Caching could be disabled for requests initiated by DevTools.
   // TODO(ananta)
@@ -985,26 +1006,6 @@ bool LocalFrameClientImpl::ShouldUseClientLoFiForRequest(
 WebDevToolsAgentImpl* LocalFrameClientImpl::DevToolsAgent() {
   return WebLocalFrameImpl::FromFrame(web_frame_->GetFrame()->LocalFrameRoot())
       ->DevToolsAgentImpl();
-}
-
-bool LocalFrameClientImpl::IsLoadedAsMHTMLArchive() const {
-  WebFrame* parent_frame = web_frame_->Parent();
-  if (!parent_frame)
-    return false;
-
-  // TODO(nasko): How should this work with OOPIF?
-  // The MHTMLArchive is parsed as a whole, but can be constructed from frames
-  // in multiple processes. In that case, which process should parse it and how
-  // should the output be spread back across multiple processes?
-  if (!parent_frame->IsWebLocalFrame())
-    return false;
-
-  return ToWebLocalFrameImpl(parent_frame)
-      ->GetFrame()
-      ->Loader()
-      .GetDocumentLoader()
-      ->Fetcher()
-      ->Archive();
 }
 
 KURL LocalFrameClientImpl::OverrideFlashEmbedWithHTML(const KURL& url) {
