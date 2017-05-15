@@ -3018,7 +3018,10 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
     reviewers = sorted(change_desc.get_reviewers())
 
     # Add cc's from the CC_LIST and --cc flag (if any).
-    cc = self.GetCCList().split(',')
+    if not options.private:
+      cc = self.GetCCList().split(',')
+    else:
+      cc = []
     if options.cc:
       cc.extend(options.cc)
     cc = filter(None, [email.strip() for email in cc])
