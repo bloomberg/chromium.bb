@@ -165,14 +165,9 @@ int av1_get_palette_cache(const MODE_INFO *above_mi, const MODE_INFO *left_mi,
   int above_idx = plane * PALETTE_MAX_SIZE;
   int left_idx = plane * PALETTE_MAX_SIZE;
   int n = 0;
-#if CONFIG_HIGHBITDEPTH
   const uint16_t *above_colors =
       above_mi->mbmi.palette_mode_info.palette_colors;
   const uint16_t *left_colors = left_mi->mbmi.palette_mode_info.palette_colors;
-#else
-  const uint8_t *above_colors = above_mi->mbmi.palette_mode_info.palette_colors;
-  const uint8_t *left_colors = left_mi->mbmi.palette_mode_info.palette_colors;
-#endif  // CONFIG_HIGHBITDEPTH
   // Merge the sorted lists of base colors from above and left to get
   // combined sorted color cache.
   while (above_n > 0 && left_n > 0) {

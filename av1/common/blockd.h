@@ -266,12 +266,8 @@ typedef int8_t MV_REFERENCE_FRAME;
 typedef struct {
   // Number of base colors for Y (0) and UV (1)
   uint8_t palette_size[2];
-// Value of base colors for Y, U, and V
-#if CONFIG_HIGHBITDEPTH
+  // Value of base colors for Y, U, and V
   uint16_t palette_colors[3 * PALETTE_MAX_SIZE];
-#else
-  uint8_t palette_colors[3 * PALETTE_MAX_SIZE];
-#endif  // CONFIG_HIGHBITDEPTH
   // Only used by encoder to store the color index of the top left pixel.
   // TODO(huisu): move this to encoder
   uint8_t palette_first_color_idx[2];

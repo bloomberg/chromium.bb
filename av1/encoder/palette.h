@@ -48,8 +48,8 @@ int av1_count_colors_highbd(const uint8_t *src8, int stride, int rows, int cols,
 // Given a color cache and a set of base colors, find if each cache color is
 // present in the base colors, record the binary results in "cache_color_found".
 // Record the colors that are not in the color cache in "out_cache_colors".
-int av1_index_color_cache(uint16_t *color_cache, int n_cache,
-                          const void *colors, int n_colors,
+int av1_index_color_cache(const uint16_t *color_cache, int n_cache,
+                          const uint16_t *colors, int n_colors,
                           uint8_t *cache_color_found, int *out_cache_colors);
 
 // Return the number of bits used to transmit each v palette color delta;

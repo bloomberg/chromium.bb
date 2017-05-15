@@ -646,19 +646,11 @@ static int read_skip(AV1_COMMON *cm, const MACROBLOCKD *xd, int segment_id,
 
 #if CONFIG_PALETTE
 #if CONFIG_PALETTE_DELTA_ENCODING
-#if CONFIG_HIGHBITDEPTH
 static int uint16_compare(const void *a, const void *b) {
   const uint16_t va = *(const uint16_t *)a;
   const uint16_t vb = *(const uint16_t *)b;
   return va - vb;
 }
-#else
-static int uint8_compare(const void *a, const void *b) {
-  const uint8_t va = *(const uint8_t *)a;
-  const uint8_t vb = *(const uint8_t *)b;
-  return va - vb;
-}
-#endif  // CONFIG_HIGHBITDEPTH
 
 static void read_palette_colors_y(MACROBLOCKD *const xd, int bit_depth,
                                   PALETTE_MODE_INFO *const pmi, aom_reader *r) {
@@ -684,11 +676,7 @@ static void read_palette_colors_y(MACROBLOCKD *const xd, int bit_depth,
       }
     }
   }
-#if CONFIG_HIGHBITDEPTH
   qsort(pmi->palette_colors, n, sizeof(pmi->palette_colors[0]), uint16_compare);
-#else
-  qsort(pmi->palette_colors, n, sizeof(pmi->palette_colors[0]), uint8_compare);
-#endif  // CONFIG_HIGHBITDEPTH
 }
 
 static void read_palette_colors_uv(MACROBLOCKD *const xd, int bit_depth,
@@ -717,13 +705,8 @@ static void read_palette_colors_uv(MACROBLOCKD *const xd, int bit_depth,
       }
     }
   }
-#if CONFIG_HIGHBITDEPTH
   qsort(pmi->palette_colors + PALETTE_MAX_SIZE, n,
         sizeof(pmi->palette_colors[0]), uint16_compare);
-#else
-  qsort(pmi->palette_colors + PALETTE_MAX_SIZE, n,
-        sizeof(pmi->palette_colors[0]), uint8_compare);
-#endif  // CONFIG_HIGHBITDEPTH
 
   // V channel colors.
   if (aom_read_bit(r, ACCT_STR)) {  // Delta encoding.
