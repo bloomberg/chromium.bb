@@ -9,7 +9,6 @@
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_item.h"
 #import "ios/chrome/browser/ui/collection_view/collection_view_model.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_item.h"
-#import "ios/chrome/browser/ui/content_suggestions/content_suggestion.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_collection_updater.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_commands.h"
 #include "url/gurl.h"
@@ -17,6 +16,10 @@
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
+
+namespace {
+using CSCollectionViewItem = CollectionViewItem<SuggestedContent>;
+}
 
 @interface ContentSuggestionsViewController ()
 
@@ -81,21 +84,23 @@
       }];
 }
 
-- (void)addSuggestions:(NSArray<ContentSuggestion*>*)suggestions {
+- (void)addSuggestions:(NSArray<CSCollectionViewItem*>*)suggestions
+         toSectionInfo:(ContentSuggestionsSectionInformation*)sectionInfo {
   if (suggestions.count == 0) {
     return;
   }
 
   [self.collectionView performBatchUpdates:^{
-    NSIndexSet* addedSections =
-        [self.collectionUpdater addSectionsForSuggestionsToModel:suggestions];
+    NSIndexSet* addedSections = [self.collectionUpdater
+        addSectionsForSectionInfoToModel:@[ sectionInfo ]];
     [self.collectionView insertSections:addedSections];
   }
                                 completion:nil];
 
   [self.collectionView performBatchUpdates:^{
     NSArray<NSIndexPath*>* addedItems =
-        [self.collectionUpdater addSuggestionsToModel:suggestions];
+        [self.collectionUpdater addSuggestionsToModel:suggestions
+                                      withSectionInfo:sectionInfo];
     [self.collectionView insertItemsAtIndexPaths:addedItems];
   }
                                 completion:nil];

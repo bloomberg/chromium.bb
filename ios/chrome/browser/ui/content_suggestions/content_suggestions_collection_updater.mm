@@ -9,6 +9,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/time/time.h"
 #include "components/strings/grit/components_strings.h"
+#import "ios/chrome/browser/ui/collection_view/cells/collection_view_item+collection_view_controller.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_text_item.h"
 #import "ios/chrome/browser/ui/collection_view/collection_view_controller.h"
 #import "ios/chrome/browser/ui/collection_view/collection_view_model.h"
@@ -16,7 +17,7 @@
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_item.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_most_visited_item.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_text_item.h"
-#import "ios/chrome/browser/ui/content_suggestions/content_suggestion.h"
+#import "ios/chrome/browser/ui/content_suggestions/cells/suggested_content.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_data_sink.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_data_source.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_image_fetcher.h"
@@ -33,8 +34,7 @@
 
 namespace {
 
-using CSCollectionViewItem =
-    CollectionViewItem<ContentSuggestionIdentification>;
+using CSCollectionViewItem = CollectionViewItem<SuggestedContent>;
 using CSCollectionViewModel = CollectionViewModel<CSCollectionViewItem*>;
 
 // Enum defining the ItemType of this ContentSuggestionsCollectionUpdater.
@@ -45,8 +45,11 @@ typedef NS_ENUM(NSInteger, ItemType) {
   ItemTypeEmpty,
   ItemTypeReadingList,
   ItemTypeMostVisited,
+  ItemTypeUnknown,
 };
 
+// Enum defining the SectionIdentifier of this
+// ContentSuggestionsCollectionUpdater.
 typedef NS_ENUM(NSInteger, SectionIdentifier) {
   SectionIdentifierArticles = kSectionIdentifierEnumZero,
   SectionIdentifierReadingList,
@@ -54,20 +57,7 @@ typedef NS_ENUM(NSInteger, SectionIdentifier) {
   SectionIdentifierDefault,
 };
 
-// Update ContentSuggestionTypeForItemType if you update this function.
-ItemType ItemTypeForContentSuggestionType(ContentSuggestionType type) {
-  switch (type) {
-    case ContentSuggestionTypeArticle:
-      return ItemTypeArticle;
-    case ContentSuggestionTypeEmpty:
-      return ItemTypeEmpty;
-    case ContentSuggestionTypeReadingList:
-      return ItemTypeReadingList;
-    case ContentSuggestionTypeMostVisited:
-      return ItemTypeMostVisited;
-  }
-}
-
+// Returns the ContentSuggestionType associated with an ItemType |type|.
 ContentSuggestionType ContentSuggestionTypeForItemType(NSInteger type) {
   if (type == ItemTypeArticle)
     return ContentSuggestionTypeArticle;
@@ -84,15 +74,28 @@ ContentSuggestionType ContentSuggestionTypeForItemType(NSInteger type) {
 }
 
 // Returns the section identifier corresponding to the section |info|.
+ItemType ItemTypeForInfo(ContentSuggestionsSectionInformation* info) {
+  switch (info.sectionID) {
+    case ContentSuggestionsSectionArticles:
+      return ItemTypeArticle;
+    case ContentSuggestionsSectionReadingList:
+      return ItemTypeReadingList;
+    case ContentSuggestionsSectionMostVisited:
+      return ItemTypeMostVisited;
+
+    case ContentSuggestionsSectionUnknown:
+      return ItemTypeUnknown;
+  }
+}
+
+// Returns the section identifier corresponding to the section |info|.
 SectionIdentifier SectionIdentifierForInfo(
     ContentSuggestionsSectionInformation* info) {
   switch (info.sectionID) {
     case ContentSuggestionsSectionArticles:
       return SectionIdentifierArticles;
-
     case ContentSuggestionsSectionReadingList:
       return SectionIdentifierReadingList;
-
     case ContentSuggestionsSectionMostVisited:
       return SectionIdentifierMostVisited;
 
@@ -103,9 +106,8 @@ SectionIdentifier SectionIdentifierForInfo(
 
 }  // namespace
 
-@interface ContentSuggestionsCollectionUpdater ()<
-    ContentSuggestionsItemDelegate,
-    ContentSuggestionsDataSink>
+@interface ContentSuggestionsCollectionUpdater ()<ContentSuggestionsDataSink,
+                                                  SuggestedContentDelegate>
 
 @property(nonatomic, weak) id<ContentSuggestionsDataSource> dataSource;
 @property(nonatomic, strong)
@@ -157,7 +159,8 @@ SectionIdentifier SectionIdentifierForInfo(
   }
 
   [self.collectionViewController
-      addSuggestions:[self.dataSource suggestionsForSection:sectionInfo]];
+      addSuggestions:[self.dataSource itemsForSectionInfo:sectionInfo]
+       toSectionInfo:sectionInfo];
 }
 
 - (void)clearSuggestion:(ContentSuggestionIdentifier*)suggestionIdentifier {
@@ -193,9 +196,14 @@ SectionIdentifier SectionIdentifierForInfo(
 
   // The data is reset, add the new data directly in the model then reload the
   // collection.
-  NSArray<ContentSuggestion*>* suggestions = [self.dataSource allSuggestions];
-  [self addSectionsForSuggestionsToModel:suggestions];
-  [self addSuggestionsToModel:suggestions];
+  NSArray<ContentSuggestionsSectionInformation*>* sectionInfos =
+      [self.dataSource sectionsInfo];
+  [self addSectionsForSectionInfoToModel:sectionInfos];
+  for (ContentSuggestionsSectionInformation* sectionInfo in sectionInfos) {
+    [self
+        addSuggestionsToModel:[self.dataSource itemsForSectionInfo:sectionInfo]
+              withSectionInfo:sectionInfo];
+  }
   [self.collectionViewController.collectionView reloadData];
 }
 
@@ -230,135 +238,97 @@ SectionIdentifier SectionIdentifierForInfo(
   return ContentSuggestionTypeForItemType(item.type);
 }
 
-- (NSArray<NSIndexPath*>*)addSuggestionsToModel:
-    (NSArray<ContentSuggestion*>*)suggestions {
-  if (suggestions.count == 0) {
-    return [NSArray array];
-  }
+- (NSArray<NSIndexPath*>*)
+addSuggestionsToModel:(NSArray<CSCollectionViewItem*>*)suggestions
+      withSectionInfo:(ContentSuggestionsSectionInformation*)sectionInfo {
+  NSMutableArray<NSIndexPath*>* indexPaths = [NSMutableArray array];
 
   CSCollectionViewModel* model =
       self.collectionViewController.collectionViewModel;
-  NSMutableArray<NSIndexPath*>* indexPaths = [NSMutableArray array];
-  for (ContentSuggestion* suggestion in suggestions) {
-    ContentSuggestionsSectionInformation* sectionInfo =
-        suggestion.suggestionIdentifier.sectionInfo;
-    NSInteger sectionIdentifier = SectionIdentifierForInfo(sectionInfo);
+  NSInteger sectionIdentifier = SectionIdentifierForInfo(sectionInfo);
 
-    if (![model hasSectionForSectionIdentifier:sectionIdentifier])
-      continue;
-
-    NSInteger section = [model sectionForSectionIdentifier:sectionIdentifier];
-    NSIndexPath* indexPath = [NSIndexPath indexPathForItem:0 inSection:section];
-
-    if (suggestion.type != ContentSuggestionTypeEmpty &&
-        [model hasItemAtIndexPath:indexPath] &&
-        [model itemAtIndexPath:indexPath].type == ItemTypeEmpty) {
-      [self.collectionViewController dismissEntryAtIndexPath:indexPath];
+  if (suggestions.count == 0) {
+    if ([model hasSectionForSectionIdentifier:sectionIdentifier] &&
+        [model numberOfItemsInSection:[model sectionForSectionIdentifier:
+                                                 sectionIdentifier]] == 0) {
+      [indexPaths
+          addObject:[self
+                        addEmptyItemForSection:[model
+                                                   sectionForSectionIdentifier:
+                                                       sectionIdentifier]]];
     }
-
-    switch (suggestion.type) {
-      case ContentSuggestionTypeEmpty: {
-        if ([model hasSectionForSectionIdentifier:sectionIdentifier] &&
-            [model numberOfItemsInSection:[model sectionForSectionIdentifier:
-                                                     sectionIdentifier]] == 0) {
-          CSCollectionViewItem* item =
-              [self emptyItemForSectionInfo:sectionInfo];
-          NSIndexPath* addedIndexPath =
-              [self addItem:item toSectionWithIdentifier:sectionIdentifier];
-          [indexPaths addObject:addedIndexPath];
-        }
-        break;
-      }
-      case ContentSuggestionTypeArticle: {
-        ContentSuggestionsItem* articleItem =
-            [self suggestionItemForSuggestion:suggestion];
-
-        articleItem.hasImage = YES;
-
-        __weak ContentSuggestionsItem* weakItem = articleItem;
-        [self fetchFaviconForItem:articleItem
-                          withURL:articleItem.URL
-                         callback:^void(FaviconAttributes* attributes) {
-                           weakItem.attributes = attributes;
-                         }];
-
-        __weak ContentSuggestionsCollectionUpdater* weakSelf = self;
-        [self.dataSource
-            fetchFaviconImageForSuggestion:articleItem.suggestionIdentifier
-                                completion:^void(UIImage* favicon) {
-                                  ContentSuggestionsCollectionUpdater*
-                                      strongSelf = weakSelf;
-                                  ContentSuggestionsItem* strongItem = weakItem;
-                                  if (!strongItem || !strongSelf)
-                                    return;
-
-                                  strongItem.attributes = [FaviconAttributes
-                                      attributesWithImage:favicon];
-                                  [strongSelf.collectionViewController
-                                      reconfigureCellsForItems:@[ strongItem ]];
-                                }];
-
-        NSIndexPath* addedIndexPath = [self addItem:articleItem
-                            toSectionWithIdentifier:sectionIdentifier];
-        [indexPaths addObject:addedIndexPath];
-        break;
-      }
-      case ContentSuggestionTypeReadingList: {
-        ContentSuggestionsItem* readingListItem =
-            [self suggestionItemForSuggestion:suggestion];
-
-        __weak ContentSuggestionsItem* weakItem = readingListItem;
-        [self fetchFaviconForItem:readingListItem
-                          withURL:readingListItem.URL
-                         callback:^void(FaviconAttributes* attributes) {
-                           weakItem.attributes = attributes;
-                         }];
-
-        NSIndexPath* addedIndexPath = [self addItem:readingListItem
-                            toSectionWithIdentifier:sectionIdentifier];
-        [indexPaths addObject:addedIndexPath];
-        break;
-      }
-      case ContentSuggestionTypeMostVisited: {
-        ContentSuggestionsMostVisitedItem* mostVisitedItem =
-            [[ContentSuggestionsMostVisitedItem alloc]
-                initWithType:ItemTypeMostVisited];
-        mostVisitedItem.title = suggestion.title;
-        [model addItem:mostVisitedItem
-            toSectionWithIdentifier:SectionIdentifierMostVisited];
-        [indexPaths addObject:indexPath];
-        break;
-      }
-    }
+    return indexPaths;
   }
+
+  BOOL emptyItemRemoved = NO;
+  NSArray<CSCollectionViewItem*>* existingItems =
+      [model itemsInSectionWithIdentifier:sectionIdentifier];
+  if (existingItems.count > 0 && existingItems[0].type == ItemTypeEmpty) {
+    [model removeItemWithType:ItemTypeEmpty
+        fromSectionWithIdentifier:sectionIdentifier];
+    emptyItemRemoved = YES;
+  }
+
+  [suggestions enumerateObjectsUsingBlock:^(CSCollectionViewItem* item,
+                                            NSUInteger index, BOOL* stop) {
+    ItemType type = ItemTypeForInfo(sectionInfo);
+    item.type = type;
+    NSIndexPath* addedIndexPath =
+        [self addItem:item toSectionWithIdentifier:sectionIdentifier];
+    [self fetchFaviconForItem:item];
+    item.delegate = self;
+
+    if (!emptyItemRemoved || index > 0) {
+      [indexPaths addObject:addedIndexPath];
+    } else {
+      [self.collectionViewController.collectionViewLayout invalidateLayout];
+    }
+  }];
 
   return indexPaths;
 }
 
-- (NSIndexSet*)addSectionsForSuggestionsToModel:
-    (NSArray<ContentSuggestion*>*)suggestions {
-  NSMutableIndexSet* indexSet = [NSMutableIndexSet indexSet];
+- (NSIndexSet*)addSectionsForSectionInfoToModel:
+    (NSArray<ContentSuggestionsSectionInformation*>*)sectionsInfo {
+  NSMutableIndexSet* addedSectionIdentifiers = [NSMutableIndexSet indexSet];
+  NSArray<ContentSuggestionsSectionInformation*>* orderedSectionsInfo =
+      [self.dataSource sectionsInfo];
 
   CSCollectionViewModel* model =
       self.collectionViewController.collectionViewModel;
-  for (ContentSuggestion* suggestion in suggestions) {
-    ContentSuggestionsSectionInformation* sectionInfo =
-        suggestion.suggestionIdentifier.sectionInfo;
+  for (ContentSuggestionsSectionInformation* sectionInfo in sectionsInfo) {
     NSInteger sectionIdentifier = SectionIdentifierForInfo(sectionInfo);
 
     if ([model hasSectionForSectionIdentifier:sectionIdentifier] ||
-        (suggestion.type == ContentSuggestionTypeEmpty &&
-         !sectionInfo.showIfEmpty)) {
+        (!sectionInfo.showIfEmpty &&
+         [self.dataSource itemsForSectionInfo:sectionInfo].count == 0)) {
       continue;
     }
 
-    [model addSectionWithIdentifier:sectionIdentifier];
-    self.sectionInfoBySectionIdentifier[@(sectionIdentifier)] = sectionInfo;
-    [indexSet addIndex:[model sectionForSectionIdentifier:sectionIdentifier]];
+    NSUInteger sectionIndex = 0;
+    for (ContentSuggestionsSectionInformation* orderedSectionInfo in
+             orderedSectionsInfo) {
+      NSInteger orderedSectionIdentifier =
+          SectionIdentifierForInfo(orderedSectionInfo);
+      if ([model hasSectionForSectionIdentifier:orderedSectionIdentifier]) {
+        sectionIndex++;
+      }
+    }
+    [model insertSectionWithIdentifier:sectionIdentifier atIndex:sectionIndex];
 
-    [self addHeader:sectionInfo];
+    self.sectionInfoBySectionIdentifier[@(sectionIdentifier)] = sectionInfo;
+    [addedSectionIdentifiers addIndex:sectionIdentifier];
+
+    [self addHeaderIfNeeded:sectionInfo];
     [self addFooterIfNeeded:sectionInfo];
   }
+
+  NSMutableIndexSet* indexSet = [NSMutableIndexSet indexSet];
+  [addedSectionIdentifiers enumerateIndexesUsingBlock:^(
+                               NSUInteger sectionIdentifier,
+                               BOOL* _Nonnull stop) {
+    [indexSet addIndex:[model sectionForSectionIdentifier:sectionIdentifier]];
+  }];
   return indexSet;
 }
 
@@ -373,26 +343,26 @@ SectionIdentifier SectionIdentifierForInfo(
   return [self addItem:item toSectionWithIdentifier:sectionIdentifier];
 }
 
-#pragma mark - ContentSuggestionsItemDelegate
+#pragma mark - SuggestedContentDelegate
 
-- (void)loadImageForSuggestionItem:(ContentSuggestionsItem*)suggestionItem {
+- (void)loadImageForSuggestedItem:(CSCollectionViewItem*)suggestedItem {
   __weak ContentSuggestionsCollectionUpdater* weakSelf = self;
-  __weak ContentSuggestionsItem* weakArticle = suggestionItem;
+  __weak CSCollectionViewItem* weakItem = suggestedItem;
 
   void (^imageFetchedCallback)(UIImage*) = ^(UIImage* image) {
     ContentSuggestionsCollectionUpdater* strongSelf = weakSelf;
-    ContentSuggestionsItem* strongArticle = weakArticle;
-    if (!strongSelf || !strongArticle) {
+    CSCollectionViewItem* strongItem = weakItem;
+    if (!strongSelf || !strongItem) {
       return;
     }
 
-    strongArticle.image = image;
+    strongItem.image = image;
     [strongSelf.collectionViewController
-        reconfigureCellsForItems:@[ strongArticle ]];
+        reconfigureCellsForItems:@[ strongItem ]];
   };
 
   [self.dataSource.imageFetcher
-      fetchImageForSuggestion:suggestionItem.suggestionIdentifier
+      fetchImageForSuggestion:suggestedItem.suggestionIdentifier
                      callback:imageFetchedCallback];
 }
 
@@ -420,12 +390,14 @@ SectionIdentifier SectionIdentifierForInfo(
   }
 }
 
-// Adds the header corresponding to |sectionInfo| to the section.
-- (void)addHeader:(ContentSuggestionsSectionInformation*)sectionInfo {
+// Adds the header corresponding to |sectionInfo| to the section if there is
+// none present and the section info contains a title.
+- (void)addHeaderIfNeeded:(ContentSuggestionsSectionInformation*)sectionInfo {
   NSInteger sectionIdentifier = SectionIdentifierForInfo(sectionInfo);
 
   if (![self.collectionViewController.collectionViewModel
-          headerForSectionWithIdentifier:sectionIdentifier]) {
+          headerForSectionWithIdentifier:sectionIdentifier] &&
+      sectionInfo.title) {
     CollectionViewTextItem* header =
         [[CollectionViewTextItem alloc] initWithType:ItemTypeHeader];
     header.text = sectionInfo.title;
@@ -442,10 +414,57 @@ SectionIdentifier SectionIdentifierForInfo(
   self.sectionInfoBySectionIdentifier = [[NSMutableDictionary alloc] init];
 }
 
+// Fetches the favicon attributes for the |item|.
+- (void)fetchFaviconForItem:(CSCollectionViewItem*)item {
+  __weak ContentSuggestionsCollectionUpdater* weakSelf = self;
+  __weak CSCollectionViewItem* weakItem = item;
+
+  [self.dataSource
+      fetchFaviconAttributesForItem:item
+                         completion:^(FaviconAttributes* attributes) {
+                           ContentSuggestionsCollectionUpdater* strongSelf =
+                               weakSelf;
+                           CSCollectionViewItem* strongItem = weakItem;
+                           if (!strongSelf || !strongItem) {
+                             return;
+                           }
+
+                           strongItem.attributes = attributes;
+                           [strongSelf.collectionViewController
+                               reconfigureCellsForItems:@[ strongItem ]];
+
+                           [strongSelf fetchFaviconImageForItem:strongItem];
+                         }];
+}
+
+// Fetches the favicon image for the |item|.
+- (void)fetchFaviconImageForItem:(CSCollectionViewItem*)item {
+  __weak ContentSuggestionsCollectionUpdater* weakSelf = self;
+  __weak CSCollectionViewItem* weakItem = item;
+
+  [self.dataSource
+      fetchFaviconImageForItem:item
+                    completion:^(UIImage* image) {
+                      ContentSuggestionsCollectionUpdater* strongSelf =
+                          weakSelf;
+                      CSCollectionViewItem* strongItem = weakItem;
+                      if (!strongSelf || !strongItem || !image) {
+                        return;
+                      }
+
+                      strongItem.attributes =
+                          [FaviconAttributes attributesWithImage:image];
+                      [strongSelf.collectionViewController
+                          reconfigureCellsForItems:@[ strongItem ]];
+                    }];
+}
+
 // Runs the additional action for the section identified by |sectionInfo|.
 - (void)runAdditionalActionForSection:
     (ContentSuggestionsSectionInformation*)sectionInfo {
   SectionIdentifier sectionIdentifier = SectionIdentifierForInfo(sectionInfo);
+
+  // TODO(crbug.com/721229): Start spinner.
 
   NSMutableArray<ContentSuggestionIdentifier*>* knownSuggestionIdentifiers =
       [NSMutableArray array];
@@ -463,15 +482,23 @@ SectionIdentifier SectionIdentifierForInfo(
   [self.dataSource
       fetchMoreSuggestionsKnowing:knownSuggestionIdentifiers
                   fromSectionInfo:sectionInfo
-                         callback:^(NSArray<ContentSuggestion*>* suggestions) {
-                           [weakSelf moreSuggestionsFetched:suggestions];
+                         callback:^(
+                             NSArray<CSCollectionViewItem*>* suggestions) {
+                           [weakSelf moreSuggestionsFetched:suggestions
+                                              inSectionInfo:sectionInfo];
                          }];
 }
 
 // Adds the |suggestions| to the collection view. All the suggestions must have
 // the same sectionInfo.
-- (void)moreSuggestionsFetched:(NSArray<ContentSuggestion*>*)suggestions {
-  [self.collectionViewController addSuggestions:suggestions];
+- (void)moreSuggestionsFetched:(NSArray<CSCollectionViewItem*>*)suggestions
+                 inSectionInfo:
+                     (ContentSuggestionsSectionInformation*)sectionInfo {
+  if (suggestions) {
+    [self.collectionViewController addSuggestions:suggestions
+                                    toSectionInfo:sectionInfo];
+  }
+  // TODO(crbug.com/721229):Stop spinner.
 }
 
 // Returns a item to be displayed when the section identified by |sectionInfo|
@@ -484,52 +511,6 @@ SectionIdentifier SectionIdentifierForInfo(
   item.detailText = sectionInfo.emptyText;
 
   return item;
-}
-
-// Returns a suggestion item built with the |suggestion|.
-- (ContentSuggestionsItem*)suggestionItemForSuggestion:
-    (ContentSuggestion*)suggestion {
-  ContentSuggestionsItem* suggestionItem = [[ContentSuggestionsItem alloc]
-      initWithType:ItemTypeForContentSuggestionType(suggestion.type)
-             title:suggestion.title
-          subtitle:suggestion.text
-          delegate:self
-               url:suggestion.url];
-
-  suggestionItem.publisher = suggestion.publisher;
-  suggestionItem.publishDate = suggestion.publishDate;
-  suggestionItem.availableOffline = suggestion.availableOffline;
-
-  suggestionItem.suggestionIdentifier = suggestion.suggestionIdentifier;
-
-  return suggestionItem;
-}
-
-// Fetches the favicon associated with the |URL|, call the |callback| with the
-// attributes then reconfigure the |item|.
-- (void)fetchFaviconForItem:(CSCollectionViewItem*)item
-                    withURL:(const GURL&)URL
-                   callback:(void (^)(FaviconAttributes*))callback {
-  if (!callback)
-    return;
-
-  __weak ContentSuggestionsCollectionUpdater* weakSelf = self;
-  __weak CSCollectionViewItem* weakItem = item;
-  void (^completionBlock)(FaviconAttributes* attributes) =
-      ^(FaviconAttributes* attributes) {
-        CSCollectionViewItem* strongItem = weakItem;
-        ContentSuggestionsCollectionUpdater* strongSelf = weakSelf;
-        if (!strongSelf || !strongItem) {
-          return;
-        }
-
-        callback(attributes);
-
-        [strongSelf.collectionViewController
-            reconfigureCellsForItems:@[ strongItem ]];
-      };
-
-  [self.dataSource fetchFaviconAttributesForURL:URL completion:completionBlock];
 }
 
 // Adds |item| to |sectionIdentifier| section of the model of the

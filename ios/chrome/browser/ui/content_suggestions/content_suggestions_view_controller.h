@@ -9,10 +9,10 @@
 
 #import "ios/chrome/browser/ui/collection_view/collection_view_controller.h"
 
-@class ContentSuggestion;
+@class ContentSuggestionsSectionInformation;
 @protocol ContentSuggestionsCommands;
 @protocol ContentSuggestionsDataSource;
-@protocol ContentSuggestionIdentification;
+@protocol SuggestedContent;
 
 // CollectionViewController to display the suggestions items.
 @interface ContentSuggestionsViewController : CollectionViewController
@@ -29,15 +29,18 @@
     suggestionCommandHandler;
 // Override from superclass to have a more specific type.
 @property(nonatomic, readonly)
-    CollectionViewModel<CollectionViewItem<ContentSuggestionIdentification>*>*
+    CollectionViewModel<CollectionViewItem<SuggestedContent>*>*
         collectionViewModel;
 
 // Removes the entry at |indexPath|, from the collection and its model.
 - (void)dismissEntryAtIndexPath:(NSIndexPath*)indexPath;
 // Removes the |section|.
 - (void)dismissSection:(NSInteger)section;
-// Adds the |suggestions| to the collection and its model.
-- (void)addSuggestions:(NSArray<ContentSuggestion*>*)suggestions;
+// Adds the |suggestions| to the collection and its model in the section
+// corresponding to |sectionInfo|.
+- (void)addSuggestions:
+            (NSArray<CollectionViewItem<SuggestedContent>*>*)suggestions
+         toSectionInfo:(ContentSuggestionsSectionInformation*)sectionInfo;
 
 @end
 

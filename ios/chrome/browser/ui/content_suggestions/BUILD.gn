@@ -4,8 +4,6 @@
 
 source_set("content_suggestions") {
   sources = [
-    "content_suggestion.h",
-    "content_suggestion.mm",
     "content_suggestions_collection_updater.h",
     "content_suggestions_collection_updater.mm",
     "content_suggestions_collection_utils.h",
@@ -50,6 +48,7 @@ source_set("unit_tests") {
     "//base",
     "//ios/chrome/browser/ui",
     "//ios/chrome/browser/ui/collection_view",
+    "//ios/chrome/browser/ui/content_suggestions/cells",
     "//ios/chrome/browser/ui/content_suggestions/identifier",
     "//ios/chrome/test/base",
     "//testing/gtest",

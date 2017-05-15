@@ -5,7 +5,8 @@
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_collection_updater.h"
 
 #import "ios/chrome/browser/ui/collection_view/collection_view_model.h"
-#import "ios/chrome/browser/ui/content_suggestions/content_suggestion.h"
+#import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_text_item.h"
+#import "ios/chrome/browser/ui/content_suggestions/cells/suggested_content.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_view_controller.h"
 #import "ios/chrome/browser/ui/content_suggestions/identifier/content_suggestion_identifier.h"
 #import "ios/chrome/browser/ui/content_suggestions/identifier/content_suggestions_section_information.h"
@@ -28,13 +29,16 @@ TEST(ContentSuggestionsCollectionUpdaterTest, addEmptyItemToEmptySection) {
   OCMStub([mockCollection collectionViewModel]).andReturn(model);
   updater.collectionViewController = mockCollection;
 
-  ContentSuggestion* suggestion = [[ContentSuggestion alloc] init];
+  CollectionViewItem<SuggestedContent>* suggestion =
+      [[ContentSuggestionsTextItem alloc] initWithType:kItemTypeEnumZero];
   suggestion.suggestionIdentifier = [[ContentSuggestionIdentifier alloc] init];
   suggestion.suggestionIdentifier.sectionInfo =
       [[ContentSuggestionsSectionInformation alloc]
           initWithSectionID:ContentSuggestionsSectionArticles];
   suggestion.suggestionIdentifier.sectionInfo.showIfEmpty = YES;
-  [updater addSectionsForSuggestionsToModel:@[ suggestion ]];
+  [updater addSectionsForSectionInfoToModel:@[
+    suggestion.suggestionIdentifier.sectionInfo
+  ]];
   ASSERT_EQ(0, [model numberOfItemsInSection:0]);
 
   // Action.
@@ -54,14 +58,18 @@ TEST(ContentSuggestionsCollectionUpdaterTest, addEmptyItemToSection) {
   OCMStub([mockCollection collectionViewModel]).andReturn(model);
   updater.collectionViewController = mockCollection;
 
-  ContentSuggestion* suggestion = [[ContentSuggestion alloc] init];
+  CollectionViewItem<SuggestedContent>* suggestion =
+      [[ContentSuggestionsTextItem alloc] initWithType:kItemTypeEnumZero];
   suggestion.suggestionIdentifier = [[ContentSuggestionIdentifier alloc] init];
   suggestion.suggestionIdentifier.sectionInfo =
       [[ContentSuggestionsSectionInformation alloc]
           initWithSectionID:ContentSuggestionsSectionArticles];
   suggestion.suggestionIdentifier.sectionInfo.showIfEmpty = YES;
-  [updater addSectionsForSuggestionsToModel:@[ suggestion ]];
-  [updater addSuggestionsToModel:@[ suggestion ]];
+  [updater addSectionsForSectionInfoToModel:@[
+    suggestion.suggestionIdentifier.sectionInfo
+  ]];
+  [updater addSuggestionsToModel:@[ suggestion ]
+                 withSectionInfo:suggestion.suggestionIdentifier.sectionInfo];
   ASSERT_EQ(1, [model numberOfItemsInSection:0]);
 
   // Action.

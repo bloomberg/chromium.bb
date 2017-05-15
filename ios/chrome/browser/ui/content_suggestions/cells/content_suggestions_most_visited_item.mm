@@ -4,10 +4,12 @@
 
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_most_visited_item.h"
 
+#import "ios/chrome/browser/ui/content_suggestions/identifier/content_suggestion_identifier.h"
 #import "ios/chrome/browser/ui/favicon/favicon_attributes.h"
 #import "ios/chrome/browser/ui/favicon/favicon_view.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
+#include "url/gurl.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -30,6 +32,9 @@ const CGSize kCellSize = {73, 100};
 @synthesize suggestionIdentifier = _suggestionIdentifier;
 @synthesize attributes = _attributes;
 @synthesize title = _title;
+@synthesize URL = _URL;
+@synthesize delegate = _delegate;
+@synthesize image = _image;
 
 - (instancetype)initWithType:(NSInteger)type {
   self = [super initWithType:type];

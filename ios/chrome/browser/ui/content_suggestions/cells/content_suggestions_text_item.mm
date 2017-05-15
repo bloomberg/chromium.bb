@@ -5,6 +5,7 @@
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_text_item.h"
 
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_text_cell.h"
+#import "ios/chrome/browser/ui/content_suggestions/identifier/content_suggestion_identifier.h"
 #import "ios/third_party/material_components_ios/src/components/Palettes/src/MaterialPalettes.h"
 #import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
 
@@ -17,6 +18,9 @@
 @synthesize text = _text;
 @synthesize detailText = _detailText;
 @synthesize suggestionIdentifier = _suggestionIdentifier;
+@synthesize attributes = _attributes;
+@synthesize delegate = _delegate;
+@synthesize image = _image;
 
 - (instancetype)initWithType:(NSInteger)type {
   self = [super initWithType:type];

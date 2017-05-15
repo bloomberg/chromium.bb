@@ -6,21 +6,24 @@
 #define IOS_CHROME_BROWSER_UI_CONTENT_SUGGESTIONS_CELLS_CONTENT_SUGGESTIONS_MOST_VISITED_ITEM_H_
 
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_item.h"
-#import "ios/chrome/browser/ui/content_suggestions/identifier/content_suggestion_identifier.h"
+#import "ios/chrome/browser/ui/content_suggestions/cells/suggested_content.h"
 #import "ios/third_party/material_components_ios/src/components/CollectionCells/src/MaterialCollectionCells.h"
 
 @class FaviconAttributes;
 @class FaviconViewNew;
+class GURL;
 
 // Item containing a Most Visited suggestion.
 @interface ContentSuggestionsMostVisitedItem
-    : CollectionViewItem<ContentSuggestionIdentification>
+    : CollectionViewItem<SuggestedContent>
 
 // Attributes to configure the favicon view.
 @property(nonatomic, strong, nonnull) FaviconAttributes* attributes;
 
 // Text for the title and the accessibility label of the cell.
 @property(nonatomic, copy, nonnull) NSString* title;
+
+@property(nonatomic, assign) GURL URL;
 
 @end
 

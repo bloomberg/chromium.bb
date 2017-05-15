@@ -6,6 +6,7 @@
 
 #include "base/time/time.h"
 #import "ios/chrome/browser/ui/colors/MDCPalette+CrAdditions.h"
+#import "ios/chrome/browser/ui/content_suggestions/identifier/content_suggestion_identifier.h"
 #import "ios/chrome/browser/ui/favicon/favicon_attributes.h"
 #import "ios/chrome/browser/ui/favicon/favicon_view.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
@@ -74,7 +75,6 @@ const CGFloat kAnimationDuration = 0.3;
 - (instancetype)initWithType:(NSInteger)type
                        title:(NSString*)title
                     subtitle:(NSString*)subtitle
-                    delegate:(id<ContentSuggestionsItemDelegate>)delegate
                          url:(const GURL&)url {
   self = [super initWithType:type];
   if (self) {
@@ -82,7 +82,6 @@ const CGFloat kAnimationDuration = 0.3;
     _title = [title copy];
     _subtitle = [subtitle copy];
     _URL = url;
-    _delegate = delegate;
   }
   return self;
 }
@@ -92,7 +91,7 @@ const CGFloat kAnimationDuration = 0.3;
   if (self.hasImage && !self.imageFetched) {
     self.imageFetched = YES;
     // Fetch the image. During the fetch the cell's image should still be set.
-    [self.delegate loadImageForSuggestionItem:self];
+    [self.delegate loadImageForSuggestedItem:self];
   }
   [cell.faviconView configureWithAttributes:self.attributes];
   cell.titleLabel.text = self.title;
