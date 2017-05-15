@@ -2,17 +2,18 @@
 <script src="../../../resources/testharness.js"></script>
 <script src="../../../resources/testharnessreport.js"></script>
 <script src="../../../resources/bluetooth/bluetooth-helpers.js"></script>
+<script src="../../../resources/mojo-helpers.js"></script>
+<script src="../../../resources/bluetooth/web-bluetooth-test.js"></script>
 <script>
+'use strict';
 promise_test(() => {
-  // \u2764's UTF-8 respresentation is 3 bytes long.
-  // 83 chars * 3 bytes/char = 249 bytes
-  let unicode_name = '\u2764'.repeat(83);
-  return assert_promise_rejects_with_message(
-    requestDeviceWithKeyDown({filters: [{namePrefix: unicode_name}]}),
-    new DOMException(
-      'Failed to execute \'requestDevice\' on \'Bluetooth\': ' +
-      'A device name can\'t be longer than 248 bytes.',
-    'TypeError'));
-}, 'Unicode string with utf8 representation longer than 248 bytes in ' +
-   '\'namePrefix\' must throw NotFoundError.');
+  // \u00A1's UTF-8 respresentation is 2 bytes long.
+  // 124 chars * 2 bytes/char = 248 bytes
+  const DEVICE_NAME = '\u00A1'.repeat(124);
+
+  return setUpPreconnectedDevice({name: DEVICE_NAME})
+    .then(() => requestDeviceWithKeyDown(
+        { filters: [{namePrefix: DEVICE_NAME}]}))
+    .then(device => assert_equals(device.name, DEVICE_NAME));
+}, 'A unicode device namePrefix of 248 bytes is valid.');
 </script>
