@@ -32,9 +32,8 @@ class DEVICE_GAMEPAD_EXPORT GamepadMonitor
   void OnGamepadDisconnected(unsigned index, const Gamepad& gamepad) override;
 
   // mojom::GamepadMonitor implementation.
-  void GamepadStartPolling(
-      const GamepadStartPollingCallback& callback) override;
-  void GamepadStopPolling(const GamepadStopPollingCallback& callback) override;
+  void GamepadStartPolling(GamepadStartPollingCallback callback) override;
+  void GamepadStopPolling(GamepadStopPollingCallback callback) override;
   void SetObserver(mojom::GamepadObserverPtr gamepad_observer) override;
 
  private:

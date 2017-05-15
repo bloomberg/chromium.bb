@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <utility>
+
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "device/gamepad/public/cpp/gamepad.h"
@@ -175,9 +177,8 @@ class GamepadStructTraitsTest : public testing::Test,
  protected:
   GamepadStructTraitsTest() : binding_(this) {}
 
-  void PassGamepad(const Gamepad& send,
-                   const PassGamepadCallback& callback) override {
-    callback.Run(send);
+  void PassGamepad(const Gamepad& send, PassGamepadCallback callback) override {
+    std::move(callback).Run(send);
   }
 
   mojom::GamepadStructTraitsTestPtr GetGamepadStructTraitsTestProxy() {
