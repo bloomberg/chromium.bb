@@ -63,7 +63,12 @@ namespace {
 
 const char* kMDPName = "TestDumpProvider";
 const char* kWhitelistedMDPName = "WhitelistedTestDumpProvider";
-const char* const kTestMDPWhitelist[] = {kWhitelistedMDPName, nullptr};
+const char* kBackgroundButNotSummaryWhitelistedMDPName =
+    "BackgroundButNotSummaryWhitelistedTestDumpProvider";
+const char* const kTestMDPWhitelist[] = {
+    kWhitelistedMDPName, kBackgroundButNotSummaryWhitelistedMDPName, nullptr};
+const char* const kTestMDPWhitelistForSummary[] = {kWhitelistedMDPName,
+                                                   nullptr};
 
 void RegisterDumpProvider(
     MemoryDumpProvider* mdp,
@@ -1081,10 +1086,34 @@ TEST_F(MemoryDumpManagerTest, DumpOnBehalfOfOtherProcess) {
   ASSERT_EQ(events[0]->id, events[2]->id);
 }
 
+TEST_F(MemoryDumpManagerTest, SummaryOnlyWhitelisting) {
+  InitializeMemoryDumpManager(false /* is_coordinator */);
+  // Summary only MDPs are a subset of background MDPs.
+  SetDumpProviderWhitelistForTesting(kTestMDPWhitelist);
+  SetDumpProviderSummaryWhitelistForTesting(kTestMDPWhitelistForSummary);
+
+  // Standard provider with default options (create dump for current process).
+  MockMemoryDumpProvider summaryMdp;
+  RegisterDumpProvider(&summaryMdp, nullptr, kDefaultOptions,
+                       kWhitelistedMDPName);
+  MockMemoryDumpProvider backgroundMdp;
+  RegisterDumpProvider(&backgroundMdp, nullptr, kDefaultOptions,
+                       kBackgroundButNotSummaryWhitelistedMDPName);
+
+  EnableTracingWithLegacyCategories(MemoryDumpManager::kTraceCategory);
+  EXPECT_CALL(global_dump_handler_, RequestGlobalMemoryDump(_, _)).Times(1);
+  EXPECT_CALL(backgroundMdp, OnMemoryDump(_, _)).Times(0);
+  EXPECT_CALL(summaryMdp, OnMemoryDump(_, _)).Times(1);
+  RequestGlobalDumpAndWait(MemoryDumpType::SUMMARY_ONLY,
+                           MemoryDumpLevelOfDetail::BACKGROUND);
+  DisableTracing();
+}
+
 TEST_F(MemoryDumpManagerTest, SummaryOnlyDumpsArentAddedToTrace) {
   using trace_analyzer::Query;
 
   InitializeMemoryDumpManager(false /* is_coordinator */);
+  SetDumpProviderSummaryWhitelistForTesting(kTestMDPWhitelistForSummary);
   SetDumpProviderWhitelistForTesting(kTestMDPWhitelist);
 
   // Standard provider with default options (create dump for current process).
