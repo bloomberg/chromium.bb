@@ -947,19 +947,19 @@ template <>
 inline CSSIdentifierValue::CSSIdentifierValue(LineBreak e)
     : CSSValue(kIdentifierClass) {
   switch (e) {
-    case kLineBreakAuto:
+    case LineBreak::kAuto:
       value_id_ = CSSValueAuto;
       break;
-    case kLineBreakLoose:
+    case LineBreak::kLoose:
       value_id_ = CSSValueLoose;
       break;
-    case kLineBreakNormal:
+    case LineBreak::kNormal:
       value_id_ = CSSValueNormal;
       break;
-    case kLineBreakStrict:
+    case LineBreak::kStrict:
       value_id_ = CSSValueStrict;
       break;
-    case kLineBreakAfterWhiteSpace:
+    case LineBreak::kAfterWhiteSpace:
       value_id_ = CSSValueAfterWhiteSpace;
       break;
   }
@@ -969,21 +969,21 @@ template <>
 inline LineBreak CSSIdentifierValue::ConvertTo() const {
   switch (value_id_) {
     case CSSValueAuto:
-      return kLineBreakAuto;
+      return LineBreak::kAuto;
     case CSSValueLoose:
-      return kLineBreakLoose;
+      return LineBreak::kLoose;
     case CSSValueNormal:
-      return kLineBreakNormal;
+      return LineBreak::kNormal;
     case CSSValueStrict:
-      return kLineBreakStrict;
+      return LineBreak::kStrict;
     case CSSValueAfterWhiteSpace:
-      return kLineBreakAfterWhiteSpace;
+      return LineBreak::kAfterWhiteSpace;
     default:
       break;
   }
 
   NOTREACHED();
-  return kLineBreakAuto;
+  return LineBreak::kAuto;
 }
 
 template <>

@@ -1811,12 +1811,12 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase<ComputedStyle>,
   }
 
   // -webkit-line-break
-  static LineBreak InitialLineBreak() { return kLineBreakAuto; }
+  static LineBreak InitialLineBreak() { return LineBreak::kAuto; }
   LineBreak GetLineBreak() const {
     return static_cast<LineBreak>(rare_inherited_data_->line_break_);
   }
   void SetLineBreak(LineBreak b) {
-    SET_VAR(rare_inherited_data_, line_break_, b);
+    SET_VAR(rare_inherited_data_, line_break_, static_cast<unsigned>(b));
   }
 
   // Text emphasis properties.
@@ -3347,7 +3347,7 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase<ComputedStyle>,
   }
   bool BreakOnlyAfterWhiteSpace() const {
     return WhiteSpace() == EWhiteSpace::kPreWrap ||
-           GetLineBreak() == kLineBreakAfterWhiteSpace;
+           GetLineBreak() == LineBreak::kAfterWhiteSpace;
   }
 
   bool BreakWords() const {

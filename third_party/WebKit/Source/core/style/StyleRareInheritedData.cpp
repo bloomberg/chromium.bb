@@ -83,7 +83,7 @@ StyleRareInheritedData::StyleRareInheritedData()
       user_modify_(static_cast<unsigned>(EUserModify::kReadOnly)),
       word_break_(ComputedStyle::InitialWordBreak()),
       overflow_wrap_(ComputedStyle::InitialOverflowWrap()),
-      line_break_(kLineBreakAuto),
+      line_break_(static_cast<unsigned>(LineBreak::kAuto)),
       user_select_(ComputedStyle::InitialUserSelect()),
       speak_(static_cast<unsigned>(ESpeak::kNormal)),
       hyphens_(kHyphensManual),

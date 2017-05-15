@@ -1566,16 +1566,16 @@ void ComputedStyle::ClearResetDirectives() {
 AtomicString ComputedStyle::LocaleForLineBreakIterator() const {
   LineBreakIteratorMode mode = LineBreakIteratorMode::kDefault;
   switch (GetLineBreak()) {
-    case kLineBreakAuto:
-    case kLineBreakAfterWhiteSpace:
+    case LineBreak::kAuto:
+    case LineBreak::kAfterWhiteSpace:
       return Locale();
-    case kLineBreakNormal:
+    case LineBreak::kNormal:
       mode = LineBreakIteratorMode::kNormal;
       break;
-    case kLineBreakStrict:
+    case LineBreak::kStrict:
       mode = LineBreakIteratorMode::kStrict;
       break;
-    case kLineBreakLoose:
+    case LineBreak::kLoose:
       mode = LineBreakIteratorMode::kLoose;
       break;
   }
