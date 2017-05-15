@@ -127,9 +127,9 @@ web pages. Its main classes are:
 
 Mailing list: [headless-dev@chromium.org](https://groups.google.com/a/chromium.org/forum/#!forum/headless-dev)
 
-Bug tracker: [Proj=Headless](https://bugs.chromium.org/p/chromium/issues/list?can=2&q=Proj%3DHeadless)
+Bug tracker: [Internals>Headless](https://bugs.chromium.org/p/chromium/issues/list?can=2&q=component%3AInternals%3EHeadless)
 
-[File a new bug](https://bugs.chromium.org/p/chromium/issues/entry?labels=Proj-Headless)
+[File a new bug](https://bugs.chromium.org/p/chromium/issues/entry?components=Internals%3EHeadless) ([bit.ly/2pP6SBb](https://bit.ly/2pP6SBb))
 
 * [BeginFrame sequence numbers + acknowledgements](https://docs.google.com/document/d/1nxaunQ0cYWxhtS6Zzfwa99nae74F7gxanbuT5JRpI6Y/edit#)
 * [Deterministic page loading for Blink](https://docs.google.com/document/d/19s2g4fPP9p9qmMZvwPX8uDGbb-39rgR9k56B4B-ueG8/edit#)
