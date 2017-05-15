@@ -832,19 +832,6 @@ TEST_F(CanvasRenderingContext2DTest, OpaqueDisplayListFallsBackForText) {
   EXPECT_FALSE(surface_ptr->IsRecording());
 }
 
-TEST_F(CanvasRenderingContext2DTest,
-       NonOpaqueDisplayListDoesNotFallBackForText) {
-  CreateContext(kNonOpaque);
-  auto surface = WTF::MakeUnique<RecordingImageBufferSurface>(
-      IntSize(10, 10), RecordingImageBufferSurface::kAllowFallback, kNonOpaque);
-  auto* surface_ptr = surface.get();
-  CanvasElement().CreateImageBufferUsingSurfaceForTesting(std::move(surface));
-
-  Context2d()->fillText("Text", 0, 5);
-
-  EXPECT_TRUE(surface_ptr->IsRecording());
-}
-
 TEST_F(CanvasRenderingContext2DTest, ImageResourceLifetime) {
   NonThrowableExceptionState non_throwable_exception_state;
   Element* canvas_element =

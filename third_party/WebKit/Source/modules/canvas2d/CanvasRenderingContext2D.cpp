@@ -853,7 +853,7 @@ void CanvasRenderingContext2D::DrawTextInternal(
   // anti-aliasing, which is expected when !creationAttributes().alpha(), so we
   // need to fall out of display list mode when drawing text to an opaque
   // canvas. crbug.com/583809
-  if (!CreationAttributes().alpha() && !IsComposited()) {
+  if (!IsComposited()) {
     canvas()->DisableDeferral(
         kDisableDeferralReasonSubPixelTextAntiAliasingSupport);
   }
