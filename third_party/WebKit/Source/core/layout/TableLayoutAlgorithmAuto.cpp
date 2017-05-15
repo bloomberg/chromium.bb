@@ -57,10 +57,10 @@ void TableLayoutAlgorithmAuto::RecalcColumn(unsigned eff_col) {
       for (unsigned i = 0; i < num_rows; i++) {
         if (eff_col >= section->NumCols(i))
           continue;
-        LayoutTableSection::CellStruct current = section->CellAt(i, eff_col);
-        LayoutTableCell* cell = current.PrimaryCell();
+        auto& grid_cell = section->GridCellAt(i, eff_col);
+        LayoutTableCell* cell = grid_cell.PrimaryCell();
 
-        if (current.in_col_span || !cell)
+        if (grid_cell.InColSpan() || !cell)
           continue;
         column_layout.column_has_no_cells = false;
 

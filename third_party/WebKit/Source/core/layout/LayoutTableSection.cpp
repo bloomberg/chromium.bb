@@ -42,35 +42,33 @@ namespace blink {
 
 using namespace HTMLNames;
 
-static inline void SetRowLogicalHeightToRowStyleLogicalHeight(
-    LayoutTableSection::RowStruct& row) {
-  DCHECK(row.row_layout_object);
-  row.logical_height = row.row_layout_object->Style()->LogicalHeight();
+void LayoutTableSection::TableGridRow::
+    SetRowLogicalHeightToRowStyleLogicalHeight() {
+  DCHECK(row);
+  logical_height = row->StyleRef().LogicalHeight();
 }
 
-static inline void UpdateLogicalHeightForCell(
-    LayoutTableSection::RowStruct& row,
+void LayoutTableSection::TableGridRow::UpdateLogicalHeightForCell(
     const LayoutTableCell* cell) {
   // We ignore height settings on rowspan cells.
   if (cell->RowSpan() != 1)
     return;
 
-  Length logical_height = cell->Style()->LogicalHeight();
-  if (logical_height.IsPositive()) {
-    Length c_row_logical_height = row.logical_height;
-    switch (logical_height.GetType()) {
+  Length cell_logical_height = cell->StyleRef().LogicalHeight();
+  if (cell_logical_height.IsPositive()) {
+    switch (cell_logical_height.GetType()) {
       case kPercent:
         // TODO(alancutter): Make this work correctly for calc lengths.
-        if (!(c_row_logical_height.IsPercentOrCalc()) ||
-            (c_row_logical_height.IsPercent() &&
-             c_row_logical_height.Percent() < logical_height.Percent()))
-          row.logical_height = logical_height;
+        if (!(logical_height.IsPercentOrCalc()) ||
+            (logical_height.IsPercent() &&
+             logical_height.Percent() < cell_logical_height.Percent()))
+          logical_height = cell_logical_height;
         break;
       case kFixed:
-        if (c_row_logical_height.GetType() < kPercent ||
-            (c_row_logical_height.IsFixed() &&
-             c_row_logical_height.Value() < logical_height.Value()))
-          row.logical_height = logical_height;
+        if (logical_height.GetType() < kPercent ||
+            (logical_height.IsFixed() &&
+             logical_height.Value() < cell_logical_height.Value()))
+          logical_height = cell_logical_height;
         break;
       default:
         break;
@@ -87,10 +85,6 @@ void CellSpan::EnsureConsistency(const unsigned maximum_span_size) {
   CHECK_LE(end_, maximum_span_size);
   CHECK_LE(start_, end_);
 }
-
-LayoutTableSection::CellStruct::CellStruct() : in_col_span(false) {}
-
-LayoutTableSection::CellStruct::~CellStruct() {}
 
 LayoutTableSection::LayoutTableSection(Element* element)
     : LayoutTableBoxComponent(element),
@@ -193,11 +187,11 @@ void LayoutTableSection::AddChild(LayoutObject* child,
   EnsureRows(c_row_);
 
   LayoutTableRow* row = ToLayoutTableRow(child);
-  grid_[insertion_row].row_layout_object = row;
+  grid_[insertion_row].row = row;
   row->SetRowIndex(insertion_row);
 
   if (!before_child)
-    SetRowLogicalHeightToRowStyleLogicalHeight(grid_[insertion_row]);
+    grid_[insertion_row].SetRowLogicalHeightToRowStyleLogicalHeight();
 
   if (before_child && before_child->Parent() != this)
     before_child = SplitAnonymousBoxesAroundChild(before_child);
@@ -241,6 +235,7 @@ void LayoutTableSection::AddCell(LayoutTableCell* cell, LayoutTableRow* row) {
   if (NeedsCellRecalc())
     return;
 
+  DCHECK(cell);
   unsigned r_span = cell->RowSpan();
   unsigned c_span = cell->ColSpan();
   if (r_span > 1 || c_span > 1)
@@ -258,15 +253,15 @@ void LayoutTableSection::AddCell(LayoutTableCell* cell, LayoutTableRow* row) {
   // <TR><TD colspan="2">5
   // </TABLE>
   unsigned n_cols = NumCols(insertion_row);
-  while (c_col_ < n_cols && (CellAt(insertion_row, c_col_).HasCells() ||
-                             CellAt(insertion_row, c_col_).in_col_span))
+  while (c_col_ < n_cols && (GridCellAt(insertion_row, c_col_).HasCells() ||
+                             GridCellAt(insertion_row, c_col_).InColSpan()))
     c_col_++;
 
-  UpdateLogicalHeightForCell(grid_[insertion_row], cell);
+  grid_[insertion_row].UpdateLogicalHeightForCell(cell);
 
   EnsureRows(insertion_row + r_span);
 
-  grid_[insertion_row].row_layout_object = row;
+  grid_[insertion_row].row = row;
 
   unsigned col = c_col_;
   // tell the cell where it is
@@ -284,15 +279,14 @@ void LayoutTableSection::AddCell(LayoutTableCell* cell, LayoutTableRow* row) {
     }
     for (unsigned r = 0; r < r_span; r++) {
       EnsureCols(insertion_row + r, c_col_ + 1);
-      CellStruct& c = CellAt(insertion_row + r, c_col_);
-      DCHECK(cell);
-      c.cells.push_back(cell);
-      CheckThatVectorIsDOMOrdered(c.cells);
+      auto& grid_cell = GridCellAt(insertion_row + r, c_col_);
+      grid_cell.Cells().push_back(cell);
+      CheckThatVectorIsDOMOrdered(grid_cell.Cells());
       // If cells overlap then we take the special paint path for them.
-      if (c.cells.size() > 1)
+      if (grid_cell.Cells().size() > 1)
         has_multiple_cell_levels_ = true;
       if (in_col_span)
-        c.in_col_span = true;
+        grid_cell.SetInColSpan(true);
     }
     c_col_++;
     c_span -= current_span;
@@ -302,19 +296,15 @@ void LayoutTableSection::AddCell(LayoutTableCell* cell, LayoutTableRow* row) {
 }
 
 bool LayoutTableSection::RowHasOnlySpanningCells(unsigned row) {
-  unsigned total_cols = grid_[row].row.size();
-
-  if (!total_cols)
+  if (grid_[row].grid_cells.IsEmpty())
     return false;
 
-  for (unsigned col = 0; col < total_cols; col++) {
-    const CellStruct& row_span_cell = CellAt(row, col);
-
+  for (const auto& grid_cell : grid_[row].grid_cells) {
     // Empty cell is not a valid cell so it is not a rowspan cell.
-    if (row_span_cell.cells.IsEmpty())
+    if (!grid_cell.HasCells())
       return false;
 
-    if (row_span_cell.cells[0]->RowSpan() == 1)
+    if (grid_cell.Cells()[0]->RowSpan() == 1)
       return false;
   }
 
@@ -543,23 +533,12 @@ unsigned LayoutTableSection::CalcRowHeightHavingOnlySpanningCells(
     Vector<int>& rows_count_with_only_spanning_cells) {
   DCHECK(RowHasOnlySpanningCells(row));
 
-  unsigned total_cols = grid_[row].row.size();
-
-  if (!total_cols)
-    return 0;
-
   unsigned row_height = 0;
 
-  for (unsigned col = 0; col < total_cols; col++) {
-    const CellStruct& row_span_cell = CellAt(row, col);
-
-    if (!row_span_cell.cells.size())
-      continue;
-
-    LayoutTableCell* cell = row_span_cell.cells[0];
-
-    if (cell->RowSpan() < 2)
-      continue;
+  for (const auto& row_span_cell : grid_[row].grid_cells) {
+    DCHECK(row_span_cell.HasCells());
+    LayoutTableCell* cell = row_span_cell.Cells()[0];
+    DCHECK_GE(cell->RowSpan(), 2u);
 
     const unsigned cell_row_index = cell->RowIndex();
     const unsigned cell_row_span = cell->RowSpan();
@@ -838,8 +817,6 @@ int LayoutTableSection::CalcRowLogicalHeight() {
 
   DCHECK(!NeedsLayout());
 
-  LayoutTableCell* cell;
-
   // We may have to forcefully lay out cells here, in which case we need a
   // layout state.
   LayoutState state(*this);
@@ -858,8 +835,8 @@ int LayoutTableSection::CalcRowLogicalHeight() {
     grid_[r].baseline = -1;
     int baseline_descent = 0;
 
-    if (state.IsPaginated() && grid_[r].row_layout_object)
-      row_pos_[r] += grid_[r].row_layout_object->PaginationStrut().Ceil();
+    if (state.IsPaginated() && grid_[r].row)
+      row_pos_[r] += grid_[r].row->PaginationStrut().Ceil();
 
     if (grid_[r].logical_height.IsSpecified()) {
       // Our base size is the biggest logical height from our cells' styles
@@ -875,16 +852,10 @@ int LayoutTableSection::CalcRowLogicalHeight() {
       row_pos_[r + 1] = std::max(row_pos_[r], 0);
     }
 
-    Row& row = grid_[r].row;
-    unsigned total_cols = row.size();
-
-    for (unsigned c = 0; c < total_cols; c++) {
-      CellStruct& current = CellAt(r, c);
-      if (current.in_col_span)
+    for (auto& grid_cell : grid_[r].grid_cells) {
+      if (grid_cell.InColSpan())
         continue;
-      for (unsigned i = 0; i < current.cells.size(); i++) {
-        cell = current.cells[i];
-
+      for (auto* cell : grid_cell.Cells()) {
         // For row spanning cells, we only handle them for the first row they
         // span. This ensures we take their baseline into account.
         if (cell->RowIndex() != r)
@@ -924,12 +895,11 @@ int LayoutTableSection::CalcRowLogicalHeight() {
       }
     }
 
-    if (r < index_of_first_stretchable_row && grid_[r].row_layout_object) {
+    if (r < index_of_first_stretchable_row && grid_[r].row) {
       // We're not allowed to resize this row. Just scratch what we've
       // calculated so far, and use the height that we got during initial
       // layout instead.
-      row_pos_[r + 1] =
-          row_pos_[r] + grid_[r].row_layout_object->LogicalHeight().ToInt();
+      row_pos_[r + 1] = row_pos_[r] + grid_[r].row->LogicalHeight().ToInt();
     }
 
     // Add the border-spacing to our final position.
@@ -963,15 +933,15 @@ void LayoutTableSection::UpdateLayout() {
 
   SubtreeLayoutScope layouter(*this);
   for (unsigned r = 0; r < grid_.size(); ++r) {
-    Row& row = grid_[r].row;
-    unsigned cols = row.size();
+    auto& grid_cells = grid_[r].grid_cells;
+    unsigned cols = grid_cells.size();
     // First, propagate our table layout's information to the cells. This will
     // mark the row as needing layout if there was a column logical width
     // change.
     for (unsigned start_column = 0; start_column < cols; ++start_column) {
-      CellStruct& current = row[start_column];
-      LayoutTableCell* cell = current.PrimaryCell();
-      if (!cell || current.in_col_span)
+      auto& grid_cell = grid_cells[start_column];
+      LayoutTableCell* cell = grid_cell.PrimaryCell();
+      if (!cell || grid_cell.InColSpan())
         continue;
 
       unsigned end_col = start_column;
@@ -987,16 +957,16 @@ void LayoutTableSection::UpdateLayout() {
       cell->SetCellLogicalWidth(table_layout_logical_width, layouter);
     }
 
-    if (LayoutTableRow* row_layout_object = grid_[r].row_layout_object) {
+    if (LayoutTableRow* row = grid_[r].row) {
       if (state.IsPaginated())
-        row_layout_object->SetLogicalTop(row_logical_top);
-      if (!row_layout_object->NeedsLayout())
-        MarkChildForPaginationRelayoutIfNeeded(*row_layout_object, layouter);
-      row_layout_object->LayoutIfNeeded();
+        row->SetLogicalTop(row_logical_top);
+      if (!row->NeedsLayout())
+        MarkChildForPaginationRelayoutIfNeeded(*row, layouter);
+      row->LayoutIfNeeded();
       if (state.IsPaginated()) {
-        AdjustRowForPagination(*row_layout_object, layouter);
-        UpdateFragmentationInfoForChild(*row_layout_object);
-        row_logical_top = row_layout_object->LogicalBottom();
+        AdjustRowForPagination(*row, layouter);
+        UpdateFragmentationInfoForChild(*row);
+        row_logical_top = row->LogicalBottom();
         row_logical_top += LayoutUnit(Table()->VBorderSpacing());
       }
     }
@@ -1152,25 +1122,24 @@ void LayoutTableSection::LayoutRows() {
 
   // Set the rows' location and size.
   for (unsigned r = 0; r < total_rows; r++) {
-    LayoutTableRow* row_layout_object = grid_[r].row_layout_object;
-    if (row_layout_object) {
-      row_layout_object->SetLogicalLocation(LayoutPoint(0, row_pos_[r]));
-      row_layout_object->SetLogicalWidth(LogicalWidth());
+    if (LayoutTableRow* row = grid_[r].row) {
+      row->SetLogicalLocation(LayoutPoint(0, row_pos_[r]));
+      row->SetLogicalWidth(LogicalWidth());
       LayoutUnit row_logical_height(row_pos_[r + 1] - row_pos_[r] - vspacing);
       if (state.IsPaginated() && r + 1 < total_rows) {
         // If the next row has a pagination strut, we need to subtract it. It
         // should not be included in this row's height.
-        if (LayoutTableRow* next_row_object = grid_[r + 1].row_layout_object)
+        if (LayoutTableRow* next_row_object = grid_[r + 1].row)
           row_logical_height -= next_row_object->PaginationStrut();
       }
-      row_layout_object->SetLogicalHeight(row_logical_height);
-      row_layout_object->UpdateAfterLayout();
+      row->SetLogicalHeight(row_logical_height);
+      row->UpdateAfterLayout();
     }
   }
 
   // Vertically align and flex the cells in each row.
   for (unsigned r = 0; r < total_rows; r++) {
-    LayoutTableRow* row_layout_object = grid_[r].row_layout_object;
+    LayoutTableRow* row = grid_[r].row;
 
     unsigned n_cols = NumCols(r);
     for (unsigned c = 0; c < n_cols; c++) {
@@ -1182,9 +1151,9 @@ void LayoutTableSection::LayoutRows() {
       int row_logical_top;
       unsigned row_span = std::max(1U, cell->RowSpan());
       unsigned end_row_index = std::min(r + row_span, total_rows) - 1;
-      LayoutTableRow* last_row_object = grid_[end_row_index].row_layout_object;
-      if (last_row_object && row_layout_object) {
-        row_logical_top = row_layout_object->LogicalTop().ToInt();
+      LayoutTableRow* last_row_object = grid_[end_row_index].row;
+      if (last_row_object && row) {
+        row_logical_top = row->LogicalTop().ToInt();
         r_height = last_row_object->LogicalBottom().ToInt() - row_logical_top;
       } else {
         r_height = row_pos_[end_row_index + 1] - row_pos_[r] - vspacing;
@@ -1225,8 +1194,8 @@ void LayoutTableSection::LayoutRows() {
           cell->SetMayNeedPaintInvalidation();
       }
     }
-    if (row_layout_object)
-      row_layout_object->ComputeOverflow();
+    if (row)
+      row->ComputeOverflow();
   }
 
   DCHECK(!NeedsLayout());
@@ -1400,10 +1369,11 @@ int LayoutTableSection::CalcBlockDirectionOuterBorder(
   unsigned r = side == kBorderBefore ? 0 : grid_.size() - 1;
   unsigned n_cols = NumCols(r);
   for (unsigned c = 0; c < n_cols; c++) {
-    const CellStruct& current = CellAt(r, c);
-    if (current.in_col_span || !current.HasCells())
+    const auto& grid_cell = GridCellAt(r, c);
+    if (grid_cell.InColSpan() || !grid_cell.HasCells())
       continue;
-    const ComputedStyle& primary_cell_style = current.PrimaryCell()->StyleRef();
+    const ComputedStyle& primary_cell_style =
+        grid_cell.PrimaryCell()->StyleRef();
     // FIXME: Make this work with perpendicular and flipped cells.
     const BorderValue& cb = side == kBorderBefore
                                 ? primary_cell_style.BorderBefore()
@@ -1469,13 +1439,14 @@ int LayoutTableSection::CalcInlineDirectionOuterBorder(
   for (unsigned r = 0; r < grid_.size(); r++) {
     if (col_index >= NumCols(r))
       continue;
-    const CellStruct& current = CellAt(r, col_index);
-    if (!current.HasCells())
+    const auto& grid_cell = GridCellAt(r, col_index);
+    if (!grid_cell.HasCells())
       continue;
     // FIXME: Don't repeat for the same cell
-    const ComputedStyle& primary_cell_style = current.PrimaryCell()->StyleRef();
+    const ComputedStyle& primary_cell_style =
+        grid_cell.PrimaryCell()->StyleRef();
     const ComputedStyle& primary_cell_parent_style =
-        current.PrimaryCell()->Parent()->StyleRef();
+        grid_cell.PrimaryCell()->Parent()->StyleRef();
     // FIXME: Make this work with perpendicular and flipped cells.
     const BorderValue& cb = side == kBorderStart
                                 ? primary_cell_style.BorderStart()
@@ -1514,16 +1485,14 @@ int LayoutTableSection::FirstLineBoxBaseline() const {
   if (first_line_baseline >= 0)
     return first_line_baseline + row_pos_[0];
 
-  const Row& first_row = grid_[0].row;
-  for (size_t i = 0; i < first_row.size(); ++i) {
-    const CellStruct& cs = first_row.at(i);
-    const LayoutTableCell* cell = cs.PrimaryCell();
-    if (cell)
+  for (const auto& grid_cell : grid_[0].grid_cells) {
+    if (const auto* cell = grid_cell.PrimaryCell()) {
       first_line_baseline =
           std::max<int>(first_line_baseline,
                         (cell->LogicalTop() + cell->BorderBefore() +
                          cell->PaddingBefore() + cell->ContentLogicalHeight())
                             .ToInt());
+    }
   }
 
   return first_line_baseline;
@@ -1625,10 +1594,10 @@ CellSpan LayoutTableSection::DirtiedEffectiveColumns(
   unsigned smallest_column = covered_columns.Start();
   CellSpan covered_rows = SpannedRows(damage_rect);
   for (unsigned r = covered_rows.Start(); r < covered_rows.end(); ++r) {
-    const auto& row = grid_[r].row;
-    if (covered_columns.Start() < row.size()) {
+    const auto& grid_cells = grid_[r].grid_cells;
+    if (covered_columns.Start() < grid_cells.size()) {
       unsigned c = covered_columns.Start();
-      while (c && row[c].in_col_span)
+      while (c && grid_cells[c].InColSpan())
         --c;
       smallest_column = std::min(c, smallest_column);
       if (!smallest_column)
@@ -1716,9 +1685,9 @@ void LayoutTableSection::RecalcCells() {
     c_col_ = 0;
     EnsureRows(c_row_);
 
-    grid_[insertion_row].row_layout_object = row;
+    grid_[insertion_row].row = row;
     row->SetRowIndex(insertion_row);
-    SetRowLogicalHeightToRowStyleLogicalHeight(grid_[insertion_row]);
+    grid_[insertion_row].SetRowLogicalHeightToRowStyleLogicalHeight();
 
     for (LayoutTableCell* cell = row->FirstCell(); cell;
          cell = cell->NextCell())
@@ -1736,11 +1705,11 @@ void LayoutTableSection::RowLogicalHeightChanged(LayoutTableRow* row) {
     return;
 
   unsigned row_index = row->RowIndex();
-  SetRowLogicalHeightToRowStyleLogicalHeight(grid_[row_index]);
+  grid_[row_index].SetRowLogicalHeightToRowStyleLogicalHeight();
 
-  for (LayoutTableCell* cell = grid_[row_index].row_layout_object->FirstCell();
-       cell; cell = cell->NextCell())
-    UpdateLogicalHeightForCell(grid_[row_index], cell);
+  for (LayoutTableCell* cell = grid_[row_index].row->FirstCell(); cell;
+       cell = cell->NextCell())
+    grid_[row_index].UpdateLogicalHeightForCell(cell);
 }
 
 void LayoutTableSection::SetNeedsCellRecalc() {
@@ -1755,8 +1724,8 @@ unsigned LayoutTableSection::NumEffectiveColumns() const {
   for (unsigned r = 0; r < grid_.size(); ++r) {
     unsigned n_cols = NumCols(r);
     for (unsigned c = result; c < n_cols; ++c) {
-      const CellStruct& cell = CellAt(r, c);
-      if (cell.HasCells() || cell.in_col_span)
+      const auto& grid_cell = GridCellAt(r, c);
+      if (grid_cell.HasCells() || grid_cell.InColSpan())
         result = c;
     }
   }
@@ -1799,13 +1768,12 @@ const LayoutTableCell* LayoutTableSection::FirstRowCellAdjoiningTableEnd()
 LayoutTableCell* LayoutTableSection::OriginatingCellAt(
     unsigned row,
     unsigned effective_column) {
-  auto& row_vector = grid_[row].row;
-  if (effective_column >= row_vector.size())
+  if (effective_column >= NumCols(row))
     return nullptr;
-  auto& cell_struct = row_vector[effective_column];
-  if (cell_struct.in_col_span)
+  auto& grid_cell = GridCellAt(row, effective_column);
+  if (grid_cell.InColSpan())
     return nullptr;
-  if (auto* cell = cell_struct.PrimaryCell()) {
+  if (auto* cell = grid_cell.PrimaryCell()) {
     if (cell->RowIndex() == row)
       return cell;
   }
@@ -1815,8 +1783,8 @@ LayoutTableCell* LayoutTableSection::OriginatingCellAt(
 void LayoutTableSection::AppendEffectiveColumn(unsigned pos) {
   DCHECK(!needs_cell_recalc_);
 
-  for (unsigned row = 0; row < grid_.size(); ++row)
-    grid_[row].row.resize(pos + 1);
+  for (auto& row : grid_)
+    row.grid_cells.resize(pos + 1);
 }
 
 void LayoutTableSection::SplitEffectiveColumn(unsigned pos, unsigned first) {
@@ -1825,21 +1793,21 @@ void LayoutTableSection::SplitEffectiveColumn(unsigned pos, unsigned first) {
   if (c_col_ > pos)
     c_col_++;
   for (unsigned row = 0; row < grid_.size(); ++row) {
-    Row& r = grid_[row].row;
+    auto& grid_cells = grid_[row].grid_cells;
     EnsureCols(row, pos + 2);
-    r.insert(pos + 1, CellStruct());
-    if (r[pos].HasCells()) {
-      r[pos + 1].cells.AppendVector(r[pos].cells);
-      LayoutTableCell* cell = r[pos].PrimaryCell();
+    grid_cells.insert(pos + 1, TableGridCell());
+    if (grid_cells[pos].HasCells()) {
+      grid_cells[pos + 1].Cells().AppendVector(grid_cells[pos].Cells());
+      LayoutTableCell* cell = grid_cells[pos].PrimaryCell();
       DCHECK(cell);
-      DCHECK_GE(cell->ColSpan(), (r[pos].in_col_span ? 1u : 0));
-      unsigned colleft = cell->ColSpan() - r[pos].in_col_span;
+      DCHECK_GE(cell->ColSpan(), (grid_cells[pos].InColSpan() ? 1u : 0));
+      unsigned colleft = cell->ColSpan() - grid_cells[pos].InColSpan();
       if (first > colleft)
-        r[pos + 1].in_col_span = 0;
+        grid_cells[pos + 1].SetInColSpan(false);
       else
-        r[pos + 1].in_col_span = first + r[pos].in_col_span;
+        grid_cells[pos + 1].SetInColSpan(first || grid_cells[pos].InColSpan());
     } else {
-      r[pos + 1].in_col_span = 0;
+      grid_cells[pos + 1].SetInColSpan(false);
     }
   }
 }
@@ -1899,15 +1867,15 @@ bool LayoutTableSection::NodeAtPoint(
     unsigned n_cols = NumCols(hit_row);
     for (unsigned hit_column = column_span.Start();
          hit_column < n_cols && hit_column < column_span.end(); ++hit_column) {
-      CellStruct& current = CellAt(hit_row, hit_column);
+      auto& grid_cell = GridCellAt(hit_row, hit_column);
 
       // If the cell is empty, there's nothing to do
-      if (!current.HasCells())
+      if (!grid_cell.HasCells())
         continue;
 
-      for (unsigned i = current.cells.size(); i;) {
+      for (unsigned i = grid_cell.Cells().size(); i;) {
         --i;
-        LayoutTableCell* cell = current.cells[i];
+        LayoutTableCell* cell = grid_cell.Cells()[i];
         LayoutPoint cell_point =
             FlipForWritingModeForChild(cell, adjusted_location);
         if (static_cast<LayoutObject*>(cell)->NodeAtPoint(
@@ -2026,12 +1994,9 @@ int LayoutTableSection::LogicalHeightForRow(
   unsigned row_index = row_object.RowIndex();
   DCHECK_LT(row_index, grid_.size());
   int logical_height = 0;
-  const Row& row = grid_[row_index].row;
-  unsigned cols = row.size();
-  for (unsigned col_index = 0; col_index < cols; col_index++) {
-    const CellStruct& cell_struct = CellAt(row_index, col_index);
-    const LayoutTableCell* cell = cell_struct.PrimaryCell();
-    if (!cell || cell_struct.in_col_span)
+  for (auto& grid_cell : grid_[row_index].grid_cells) {
+    const LayoutTableCell* cell = grid_cell.PrimaryCell();
+    if (!cell || grid_cell.InColSpan())
       continue;
     unsigned row_span = cell->RowSpan();
     if (row_span == 1) {
@@ -2044,8 +2009,7 @@ int LayoutTableSection::LogicalHeightForRow(
         (row_span > 1 && row_index - row_index_for_cell == row_span - 1)) {
       // This is the last row of the rowspanned cell. Add extra height if
       // needed.
-      if (LayoutTableRow* first_row_for_cell =
-              grid_[row_index_for_cell].row_layout_object) {
+      if (LayoutTableRow* first_row_for_cell = grid_[row_index_for_cell].row) {
         int min_logical_height = cell->LogicalHeightForRowSizing();
         // Subtract space provided by previous rows.
         min_logical_height -= row_object.LogicalTop().ToInt() -
