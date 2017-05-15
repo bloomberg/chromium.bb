@@ -320,15 +320,25 @@ bool RenderViewHostImpl::CreateRenderView(
   params->min_size = GetWidget()->min_size_for_auto_resize();
   params->max_size = GetWidget()->max_size_for_auto_resize();
   params->page_zoom_level = delegate_->GetPendingPageZoomLevel();
-  params->image_decode_color_space = gfx::ICCProfile::FromBestMonitor();
 
+  bool force_srgb_image_decode_color_space = false;
   // Pretend that HDR displays are sRGB so that we do not have inconsistent
   // coloring.
   // TODO(ccameron): Disable this once color correct rasterization is functional
   // https://crbug.com/701942
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableHDR)) {
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableHDR))
+    force_srgb_image_decode_color_space = true;
+  // When color correct rendering is enabled, the image_decode_color_space
+  // parameter should not be used (and all users of it should be using sRGB).
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableColorCorrectRendering)) {
+    force_srgb_image_decode_color_space = true;
+  }
+  if (force_srgb_image_decode_color_space) {
     gfx::ColorSpace::CreateSRGB().GetICCProfile(
         &params->image_decode_color_space);
+  } else {
+    params->image_decode_color_space = gfx::ICCProfile::FromBestMonitor();
   }
 
   GetWidget()->GetResizeParams(&params->initial_size);
