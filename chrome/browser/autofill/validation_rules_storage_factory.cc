@@ -6,11 +6,9 @@
 
 #include "base/files/file_path.h"
 #include "base/path_service.h"
-#include "base/threading/sequenced_worker_pool.h"
 #include "chrome/common/chrome_paths.h"
 #include "components/prefs/json_pref_store.h"
 #include "components/prefs/pref_filter.h"
-#include "content/public/browser/browser_thread.h"
 #include "third_party/libaddressinput/chromium/chrome_storage_impl.h"
 
 namespace autofill {
@@ -30,15 +28,8 @@ ValidationRulesStorageFactory::ValidationRulesStorageFactory() {
   bool success = PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
   DCHECK(success);
 
-  base::FilePath cache =
-      user_data_dir.Append(FILE_PATH_LITERAL("Address Validation Rules"));
-
-  scoped_refptr<base::SequencedTaskRunner> task_runner =
-      JsonPrefStore::GetTaskRunnerForFile(
-          cache, content::BrowserThread::GetBlockingPool());
-
-  json_pref_store_ = new JsonPrefStore(cache, task_runner.get(),
-                                       std::unique_ptr<PrefFilter>());
+  json_pref_store_ = new JsonPrefStore(
+      user_data_dir.Append(FILE_PATH_LITERAL("Address Validation Rules")));
   json_pref_store_->ReadPrefsAsync(NULL);
 }
 
