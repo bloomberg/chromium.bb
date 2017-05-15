@@ -279,7 +279,7 @@ public class CustomTabsConnection {
                     // 1. Initializing the browser needs to be done once, and first.
                     // 2. Creating a spare renderer takes time, in other threads and processes, so
                     //    start it sooner rather than later. Can be done several times.
-                    // 3. Initializing the ResourcePrefetchPredictor is done once, and triggers
+                    // 3. Initializing the LoadingPredictor is done once, and triggers
                     //    work on other threads, start it early.
                     // 4. RequestThrottler first access has to be done only once.
 
@@ -295,7 +295,7 @@ public class CustomTabsConnection {
                     if (!initialized) {
                         // (3)
                         Profile profile = Profile.getLastUsedProfile();
-                        new ResourcePrefetchPredictor(profile).startInitialization();
+                        new LoadingPredictor(profile).startInitialization();
 
                         // (4)
                         // The throttling database uses shared preferences, that can cause a
@@ -981,7 +981,7 @@ public class CustomTabsConnection {
                     break;
                 case SpeculationParams.PREFETCH:
                     Profile profile = Profile.getLastUsedProfile();
-                    new ResourcePrefetchPredictor(profile).stopPrefetching(mSpeculation.url);
+                    new LoadingPredictor(profile).cancelPageLoadHint(mSpeculation.url);
                     break;
                 default:
                     return;
@@ -1005,7 +1005,7 @@ public class CustomTabsConnection {
         }
         switch (speculationMode) {
             case SpeculationParams.PREFETCH:
-                boolean didPrefetch = new ResourcePrefetchPredictor(profile).startPrefetching(url);
+                boolean didPrefetch = new LoadingPredictor(profile).prepareForPageLoad(url);
                 if (didPrefetch) mSpeculation = SpeculationParams.forPrefetch(session, url);
                 preconnect = !didPrefetch;
                 break;

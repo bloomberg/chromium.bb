@@ -136,7 +136,7 @@
 #include "chrome/browser/payments/android/chrome_payments_jni_registrar.h"
 #include "chrome/browser/permissions/permission_dialog_delegate.h"
 #include "chrome/browser/permissions/permission_update_infobar_delegate_android.h"
-#include "chrome/browser/predictors/resource_prefetch_predictor_android.h"
+#include "chrome/browser/predictors/loading_predictor_android.h"
 #include "chrome/browser/prerender/external_prerender_handler_android.h"
 #include "chrome/browser/profiles/profile_android.h"
 #include "chrome/browser/search_engines/template_url_service_android.h"
@@ -332,14 +332,12 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
     {"InstantAppsSettings", RegisterInstantAppsSettings},
     {"InvalidationServiceFactory",
      invalidation::InvalidationServiceFactoryAndroid::Register},
-    {"SimpleConfirmInfoBarBuilder", RegisterSimpleConfirmInfoBarBuilder},
-    {"ShortcutHelper", ShortcutHelper::RegisterShortcutHelper},
     {"JavascriptAppModalDialog",
      JavascriptAppModalDialogAndroid::RegisterJavascriptAppModalDialog},
     {"LargeIconBridge", LargeIconBridge::RegisterLargeIconBridge},
     {"LaunchMetrics", metrics::RegisterLaunchMetrics},
     {"LayerTitleCache", RegisterLayerTitleCache},
-    {"SpecialLocaleHandler", RegisterSpecialLocaleHandler},
+    {"LoadingPredictor", predictors::RegisterLoadingPredictor},
     {"LocationSettingsImpl", LocationSettingsImpl::Register},
     {"LogoBridge", RegisterLogoBridge},
     {"MediaDrmCredentialManager",
@@ -396,8 +394,6 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
     {"RemoteMediaPlayerBridge",
      remote_media::RemoteMediaPlayerBridge::RegisterRemoteMediaPlayerBridge},
     {"ResourceFactory", RegisterResourceFactory},
-    {"ResourcePrefetchPredictor",
-     predictors::RegisterResourcePrefetchPredictor},
     {"RevenueStats", chrome::android::RegisterRevenueStats},
     {"RlzPingHandler", chrome::android::RegisterRlzPingHandler},
     {"SafeBrowsing", safe_browsing::android::RegisterBrowserJNI},
@@ -408,10 +404,13 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
      SearchGeolocationDisclosureTabHelper::Register},
     {"ServiceWorkerPaymentAppBridge", RegisterServiceWorkerPaymentAppBridge},
     {"SessionTabHelper", RegisterSessionTabHelper},
+    {"ShortcutHelper", ShortcutHelper::RegisterShortcutHelper},
     {"SigninInvestigator", SigninInvestigatorAndroid::Register},
     {"SigninManager", SigninManagerAndroid::Register},
+    {"SimpleConfirmInfoBarBuilder", RegisterSimpleConfirmInfoBarBuilder},
     {"SingleTabModel", RegisterSingleTabModel},
     {"SiteEngagementService", SiteEngagementServiceAndroid::Register},
+    {"SpecialLocaleHandler", RegisterSpecialLocaleHandler},
 #if BUILDFLAG(ENABLE_SPELLCHECK)
     {"SpellCheckerSessionBridge", spellcheck::android::RegisterSpellcheckJni},
 #endif
