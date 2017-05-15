@@ -12,7 +12,7 @@
   data: [
     {
         name: "ScrollAnchorDisablingPropertyChanged",
-        fields: ["margin-top", "margin-left", "margin-right", "margin-bottom", 
+        fields: ["width", "min-width", "max-width", "height", "min-height", "max-height", "margin-top", "margin-left", "margin-right", "margin-bottom", 
                   "left", "right", "top", "bottom", "padding-top", 
                   "padding-left", "padding-right", "padding-bottom"]
     },
@@ -20,6 +20,10 @@
         name: "DiffNeedsFullLayoutAndPaintInvalidation",
         fields: ["padding-top", "padding-left", "padding-right", 
                 "padding-bottom"]
+    },
+    {
+        name: "DiffNeedsFullLayout",
+        fields: ["width", "min-width", "max-width", "height", "min-height", "max-height", "box-sizing"]
     }
   ],
 }
