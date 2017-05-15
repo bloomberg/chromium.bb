@@ -1007,38 +1007,6 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
                    lengths);
   }
 
-  // Width/height properties.
-
-  // width
-  static Length InitialWidth() { return Length(); }
-  const Length& Width() const { return box_data_->width_; }
-  void SetWidth(const Length& v) { SET_VAR(box_data_, width_, v); }
-
-  // height
-  static Length InitialHeight() { return Length(); }
-  const Length& Height() const { return box_data_->height_; }
-  void SetHeight(const Length& v) { SET_VAR(box_data_, height_, v); }
-
-  // max-width
-  static Length InitialMaxWidth() { return Length(kMaxSizeNone); }
-  const Length& MaxWidth() const { return box_data_->max_width_; }
-  void SetMaxWidth(const Length& v) { SET_VAR(box_data_, max_width_, v); }
-
-  // max-height
-  static Length InitialMaxHeight() { return Length(kMaxSizeNone); }
-  const Length& MaxHeight() const { return box_data_->max_height_; }
-  void SetMaxHeight(const Length& v) { SET_VAR(box_data_, max_height_, v); }
-
-  // min-width
-  static Length InitialMinWidth() { return Length(); }
-  const Length& MinWidth() const { return box_data_->min_width_; }
-  void SetMinWidth(const Length& v) { SET_VAR(box_data_, min_width_, v); }
-
-  // min-height
-  static Length InitialMinHeight() { return Length(); }
-  const Length& MinHeight() const { return box_data_->min_height_; }
-  void SetMinHeight(const Length& v) { SET_VAR(box_data_, min_height_, v); }
-
   // image-orientation
   static RespectImageOrientationEnum InitialRespectImageOrientation() {
     return kDoNotRespectImageOrientation;
