@@ -129,7 +129,7 @@ class CORE_EXPORT WorkerThread : public WebThread::TaskObserver {
   bool IsCurrentThread();
 
   WorkerLoaderProxy* GetWorkerLoaderProxy() const {
-    RELEASE_ASSERT(worker_loader_proxy_);
+    CHECK(worker_loader_proxy_);
     return worker_loader_proxy_.Get();
   }
 

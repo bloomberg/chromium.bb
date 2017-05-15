@@ -374,8 +374,8 @@ void SecurityOrigin::AddSuborigin(const Suborigin& suborigin) {
   // Changing suborigins midstream is bad. Very bad. It should not happen.
   // This is, in fact,  one of the very basic invariants that makes
   // suborigins an effective security tool.
-  RELEASE_ASSERT(suborigin_.GetName().IsNull() ||
-                 (suborigin_.GetName() == suborigin.GetName()));
+  CHECK(suborigin_.GetName().IsNull() ||
+        (suborigin_.GetName() == suborigin.GetName()));
   suborigin_.SetTo(suborigin);
 }
 

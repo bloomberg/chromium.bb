@@ -144,7 +144,7 @@ inline void LifecycleNotifier<T, Observer>::NotifyContextDestroyed() {
 
 template <typename T, typename Observer>
 inline void LifecycleNotifier<T, Observer>::AddObserver(Observer* observer) {
-  RELEASE_ASSERT(iteration_state_ & kAllowingAddition);
+  CHECK(iteration_state_ & kAllowingAddition);
   observers_.insert(observer);
 }
 
@@ -156,7 +156,7 @@ inline void LifecycleNotifier<T, Observer>::RemoveObserver(Observer* observer) {
     observers_.insert(observer);
     return;
   }
-  RELEASE_ASSERT(iteration_state_ & kAllowingRemoval);
+  CHECK(iteration_state_ & kAllowingRemoval);
   observers_.erase(observer);
 }
 

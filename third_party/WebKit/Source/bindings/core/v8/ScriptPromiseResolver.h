@@ -127,7 +127,7 @@ class CORE_EXPORT ScriptPromiseResolver
 
     ScriptState::Scope scope(script_state_.Get());
 
-    // Calling ToV8 in a ScriptForbiddenScope will trigger a RELEASE_ASSERT and
+    // Calling ToV8 in a ScriptForbiddenScope will trigger a CHECK and
     // cause a crash. ToV8 just invokes a constructor for wrapper creation,
     // which is safe (no author script can be run). Adding AllowUserAgentScript
     // directly inside createWrapper could cause a perf impact (calling
@@ -145,7 +145,7 @@ class CORE_EXPORT ScriptPromiseResolver
       KeepAliveWhilePending();
       return;
     }
-    // TODO(esprehn): This is a hack, instead we should RELEASE_ASSERT that
+    // TODO(esprehn): This is a hack, instead we should CHECK that
     // script is allowed, and v8 should be running the entry hooks below and
     // crashing if script is forbidden. We should then audit all users of
     // ScriptPromiseResolver and the related specs and switch to an async
