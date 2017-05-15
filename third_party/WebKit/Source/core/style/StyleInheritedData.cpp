@@ -34,18 +34,6 @@ StyleInheritedData::StyleInheritedData()
       visited_link_color_(ComputedStyle::InitialColor()),
       text_autosizing_multiplier_(1) {}
 
-StyleInheritedData::~StyleInheritedData() {}
-
-StyleInheritedData::StyleInheritedData(const StyleInheritedData& o)
-    : RefCounted<StyleInheritedData>(),
-      horizontal_border_spacing_(o.horizontal_border_spacing_),
-      vertical_border_spacing_(o.vertical_border_spacing_),
-      line_height_(o.line_height_),
-      font_(o.font_),
-      color_(o.color_),
-      visited_link_color_(o.visited_link_color_),
-      text_autosizing_multiplier_(o.text_autosizing_multiplier_) {}
-
 bool StyleInheritedData::operator==(const StyleInheritedData& o) const {
   return line_height_ == o.line_height_ && font_ == o.font_ &&
          color_ == o.color_ && visited_link_color_ == o.visited_link_color_ &&

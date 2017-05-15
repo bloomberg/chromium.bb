@@ -37,7 +37,8 @@ namespace blink {
 // TODO(sashab): Move this into a private class on ComputedStyle, and remove
 // all methods on it, merging them into copy/creation methods on ComputedStyle
 // instead. Keep the allocation logic, only allocating a new object if needed.
-class CORE_EXPORT StyleInheritedData : public RefCounted<StyleInheritedData> {
+class CORE_EXPORT StyleInheritedData
+    : public RefCountedCopyable<StyleInheritedData> {
  public:
   static PassRefPtr<StyleInheritedData> Create() {
     return AdoptRef(new StyleInheritedData);
@@ -45,7 +46,6 @@ class CORE_EXPORT StyleInheritedData : public RefCounted<StyleInheritedData> {
   PassRefPtr<StyleInheritedData> Copy() const {
     return AdoptRef(new StyleInheritedData(*this));
   }
-  ~StyleInheritedData();
 
   bool operator==(const StyleInheritedData&) const;
   bool operator!=(const StyleInheritedData& o) const { return !(*this == o); }
@@ -64,7 +64,7 @@ class CORE_EXPORT StyleInheritedData : public RefCounted<StyleInheritedData> {
 
  private:
   StyleInheritedData();
-  StyleInheritedData(const StyleInheritedData&);
+  StyleInheritedData(const StyleInheritedData&) = default;
 };
 
 }  // namespace blink
