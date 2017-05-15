@@ -66,7 +66,7 @@ void DownloadsHandler::SendAutoOpenDownloadsToJavascript() {
   content::DownloadManager* manager =
       content::BrowserContext::GetDownloadManager(profile_);
   bool auto_open_downloads =
-      manager && DownloadPrefs::FromDownloadManager(manager)->IsAutoOpenUsed();
+      DownloadPrefs::FromDownloadManager(manager)->IsAutoOpenUsed();
   CallJavascriptFunction("cr.webUIListenerCallback",
                          base::Value("auto-open-downloads-changed"),
                          base::Value(auto_open_downloads));
@@ -77,8 +77,7 @@ void DownloadsHandler::HandleResetAutoOpenFileTypes(
   base::RecordAction(UserMetricsAction("Options_ResetAutoOpenFiles"));
   content::DownloadManager* manager =
       content::BrowserContext::GetDownloadManager(profile_);
-  if (manager)
-    DownloadPrefs::FromDownloadManager(manager)->ResetAutoOpen();
+  DownloadPrefs::FromDownloadManager(manager)->ResetAutoOpen();
 }
 
 void DownloadsHandler::HandleSelectDownloadLocation(

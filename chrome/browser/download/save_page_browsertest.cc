@@ -360,12 +360,11 @@ class SavePageBrowserTest : public InProcessBrowserTest {
     // in all of these tests.  If it's already here, grab it; if not,
     // wait for it to show up.
     std::vector<DownloadItem*> items;
-    DownloadManager* manager(
-        BrowserContext::GetDownloadManager(browser->profile()));
+    DownloadManager* manager =
+        BrowserContext::GetDownloadManager(browser->profile());
     manager->GetAllDownloads(&items);
-    if (items.size() == 0u) {
+    if (items.empty())
       DownloadItemCreatedObserver(manager).WaitForDownloadItem(&items);
-    }
 
     EXPECT_EQ(1u, items.size());
     if (1u != items.size())
@@ -449,7 +448,7 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, SaveHTMLOnly) {
 
 IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, SaveHTMLOnlyCancel) {
   GURL url = NavigateToMockURL("a");
-  DownloadManager* manager(GetDownloadManager());
+  DownloadManager* manager = GetDownloadManager();
   std::vector<DownloadItem*> downloads;
   manager->GetAllDownloads(&downloads);
   ASSERT_EQ(0u, downloads.size());
@@ -511,7 +510,7 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, MAYBE_SaveHTMLOnlyTabDestroy) {
       content::DownloadItem::kInvalidId + 1);
   DownloadCoreServiceFactory::GetForBrowserContext(browser()->profile())
       ->SetDownloadManagerDelegateForTesting(std::move(delaying_delegate));
-  DownloadManager* manager(GetDownloadManager());
+  DownloadManager* manager = GetDownloadManager();
   std::vector<DownloadItem*> downloads;
   manager->GetAllDownloads(&downloads);
   ASSERT_EQ(0u, downloads.size());
@@ -657,7 +656,7 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, RemoveFromList) {
                  &full_file_name);
   ASSERT_FALSE(HasFailure());
 
-  DownloadManager* manager(GetDownloadManager());
+  DownloadManager* manager = GetDownloadManager();
   std::vector<DownloadItem*> downloads;
   manager->GetAllDownloads(&downloads);
   ASSERT_EQ(1UL, downloads.size());
