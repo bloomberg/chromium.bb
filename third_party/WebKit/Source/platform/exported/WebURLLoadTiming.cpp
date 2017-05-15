@@ -176,11 +176,11 @@ void WebURLLoadTiming::SetPushEnd(double end) {
 }
 
 WebURLLoadTiming::WebURLLoadTiming(PassRefPtr<ResourceLoadTiming> value)
-    : private_(value) {}
+    : private_(std::move(value)) {}
 
 WebURLLoadTiming& WebURLLoadTiming::operator=(
     PassRefPtr<ResourceLoadTiming> value) {
-  private_ = value;
+  private_ = std::move(value);
   return *this;
 }
 

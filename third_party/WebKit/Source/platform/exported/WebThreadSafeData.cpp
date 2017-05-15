@@ -60,7 +60,7 @@ const char* WebThreadSafeData::Data() const {
 }
 
 WebThreadSafeData::WebThreadSafeData(PassRefPtr<RawData> data)
-    : private_(data) {}
+    : private_(std::move(data)) {}
 
 WebThreadSafeData::WebThreadSafeData(const WebThreadSafeData& other) {
   private_ = other.private_;
@@ -73,7 +73,7 @@ WebThreadSafeData& WebThreadSafeData::operator=(
 }
 
 WebThreadSafeData& WebThreadSafeData::operator=(PassRefPtr<RawData> data) {
-  private_ = data;
+  private_ = std::move(data);
   return *this;
 }
 

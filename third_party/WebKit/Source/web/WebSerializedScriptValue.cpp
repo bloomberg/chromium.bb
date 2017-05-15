@@ -77,11 +77,11 @@ v8::Local<v8::Value> WebSerializedScriptValue::Deserialize(
 
 WebSerializedScriptValue::WebSerializedScriptValue(
     PassRefPtr<SerializedScriptValue> value)
-    : private_(value) {}
+    : private_(std::move(value)) {}
 
 WebSerializedScriptValue& WebSerializedScriptValue::operator=(
     PassRefPtr<SerializedScriptValue> value) {
-  private_ = value;
+  private_ = std::move(value);
   return *this;
 }
 
