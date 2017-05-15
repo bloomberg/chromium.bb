@@ -60,6 +60,21 @@ class AURA_EXPORT WindowManagerClient {
   virtual void SetExtendedHitArea(Window* window,
                                   const gfx::Insets& hit_area) = 0;
 
+  // Queues changes to the cursor instead of applying them instantly. Queued
+  // changes will be executed on UnlockCursor().
+  virtual void LockCursor() = 0;
+
+  // Executes queued changes.
+  virtual void UnlockCursor() = 0;
+
+  // Globally shows or hides the cursor.
+  virtual void SetCursorVisible(bool visible) = 0;
+
+  // Sets a cursor which is used instead of the per window cursors. Pass a
+  // nullopt in |cursor| to clear the override.
+  virtual void SetGlobalOverrideCursor(
+      base::Optional<ui::CursorData> cursor) = 0;
+
   // Requests the client embedded in |window| to close the window. Only
   // applicable to top-level windows. If a client is not embedded in |window|,
   // this does nothing.

@@ -128,6 +128,22 @@ void ShellPortClassic::UnlockCursor() {
   Shell::Get()->cursor_manager()->UnlockCursor();
 }
 
+void ShellPortClassic::ShowCursor() {
+  Shell::Get()->cursor_manager()->ShowCursor();
+}
+
+void ShellPortClassic::HideCursor() {
+  Shell::Get()->cursor_manager()->HideCursor();
+}
+
+void ShellPortClassic::SetGlobalOverrideCursor(
+    base::Optional<ui::CursorData> cursor) {
+  // This is part of a fat interface that is only implemented on the mash side;
+  // there isn't an equivalent operation in ::wm::CursorManager. We also can't
+  // just call into ShellPortMash because of library linking issues.
+  NOTREACHED();
+}
+
 bool ShellPortClassic::IsMouseEventsEnabled() {
   return Shell::Get()->cursor_manager()->IsMouseEventsEnabled();
 }

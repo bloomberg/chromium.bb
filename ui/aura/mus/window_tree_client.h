@@ -475,6 +475,10 @@ class AURA_EXPORT WindowTreeClient
   void RemoveActivationParent(Window* window) override;
   void ActivateNextWindow() override;
   void SetExtendedHitArea(Window* window, const gfx::Insets& hit_area) override;
+  void LockCursor() override;
+  void UnlockCursor() override;
+  void SetCursorVisible(bool visible) override;
+  void SetGlobalOverrideCursor(base::Optional<ui::CursorData> cursor) override;
   void RequestClose(Window* window) override;
   bool WaitForInitialDisplays() override;
   WindowTreeHostMusInitParams CreateInitParamsForNewDisplay() override;

@@ -299,6 +299,18 @@ interface WindowManagerClient {
   // Sets the cursor that the non-client areas of the window should use.
   WmSetNonClientCursor(uint32 window_id, CursorData cursor);
 
+  // Locks and unlocks the cursor globally. Used during window management tasks
+  // where the cursor shouldn't change.
+  WmLockCursor();
+  WmUnlockCursor();
+
+  // Shows and hides the cursor globally. Used during window management tasks.
+  WmSetCursorVisible(bool visible);
+
+  // Sets a global cursor which overrides per-window cursors. Pass null to
+  // clear.
+  WmSetGlobalOverrideCursor(CursorData? cursor);
+
   // Response from WmCreateTopLevelWindow() informing the client of the id for
   // the new window.
   OnWmCreatedTopLevelWindow(uint32 change_id, uint32 window_id);

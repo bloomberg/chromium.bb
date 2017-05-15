@@ -522,6 +522,11 @@ class WindowTree : public mojom::WindowTree,
   void WmSetFrameDecorationValues(
       mojom::FrameDecorationValuesPtr values) override;
   void WmSetNonClientCursor(uint32_t window_id, ui::CursorData cursor) override;
+  void WmLockCursor() override;
+  void WmUnlockCursor() override;
+  void WmSetCursorVisible(bool visible) override;
+  void WmSetGlobalOverrideCursor(
+      base::Optional<ui::CursorData> cursor) override;
   void OnWmCreatedTopLevelWindow(uint32_t change_id,
                                  Id transport_window_id) override;
   void OnAcceleratorAck(

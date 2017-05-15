@@ -23,6 +23,8 @@ static_library("lib") {
     "accessibility_manager.h",
     "cursor_location_manager.cc",
     "cursor_location_manager.h",
+    "cursor_state.cc",
+    "cursor_state.h",
     "default_access_policy.cc",
     "default_access_policy.h",
     "display.cc",
@@ -232,6 +234,7 @@ group("tests") {
 service_test("mus_ws_unittests") {
   sources = [
     "cursor_location_manager_unittest.cc",
+    "cursor_state_unittest.cc",
     "cursor_unittest.cc",
     "display_unittest.cc",
     "drag_controller_unittest.cc",

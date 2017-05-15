@@ -131,7 +131,9 @@ WindowManagerState::QueuedEvent::QueuedEvent() {}
 WindowManagerState::QueuedEvent::~QueuedEvent() {}
 
 WindowManagerState::WindowManagerState(WindowTree* window_tree)
-    : window_tree_(window_tree), event_dispatcher_(this) {
+    : window_tree_(window_tree),
+      event_dispatcher_(this),
+      cursor_state_(window_tree_->display_manager()) {
   frame_decoration_values_ = mojom::FrameDecorationValues::New();
   frame_decoration_values_->max_title_bar_button_width = 0u;
 
@@ -601,8 +603,7 @@ void WindowManagerState::ReleaseNativeCapture() {
 
 void WindowManagerState::UpdateNativeCursorFromDispatcher() {
   const ui::CursorData cursor = event_dispatcher_.GetCurrentMouseCursor();
-  for (Display* display : display_manager()->displays())
-    display->UpdateNativeCursor(cursor);
+  cursor_state_.SetCurrentWindowCursor(cursor);
 }
 
 void WindowManagerState::OnCaptureChanged(ServerWindow* new_capture,

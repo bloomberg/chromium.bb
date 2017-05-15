@@ -36,9 +36,7 @@
 namespace ui {
 namespace ws {
 
-Display::Display(WindowServer* window_server)
-    : window_server_(window_server),
-      last_cursor_(ui::CursorData(ui::CursorType::kNull)) {
+Display::Display(WindowServer* window_server) : window_server_(window_server) {
   window_server_->window_manager_window_tree_factory_set()->AddObserver(this);
   window_server_->user_id_tracker()->AddObserver(this);
 }
@@ -198,11 +196,8 @@ void Display::RemoveWindowManagerDisplayRoot(
   NOTREACHED();
 }
 
-void Display::UpdateNativeCursor(const ui::CursorData& cursor) {
-  if (!last_cursor_.IsSameAs(cursor)) {
-    platform_display_->SetCursor(cursor);
-    last_cursor_ = cursor;
-  }
+void Display::SetNativeCursor(const ui::CursorData& cursor) {
+  platform_display_->SetCursor(cursor);
 }
 
 void Display::SetSize(const gfx::Size& size) {

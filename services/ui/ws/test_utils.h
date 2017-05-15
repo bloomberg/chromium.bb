@@ -151,8 +151,6 @@ class DisplayTestApi {
 
   void OnEvent(ui::Event* event) { display_->OnEventFromSource(event); }
 
-  const ui::CursorData& last_cursor() const { return display_->last_cursor_; }
-
  private:
   Display* display_;
 
@@ -622,7 +620,7 @@ class WindowServerTestHelper {
   ~WindowServerTestHelper();
 
   WindowServer* window_server() { return window_server_.get(); }
-  ui::CursorData cursor() const { return cursor_; }
+  const ui::CursorData& cursor() const { return cursor_; }
 
   TestWindowServerDelegate* window_server_delegate() {
     return &window_server_delegate_;

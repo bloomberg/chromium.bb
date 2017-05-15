@@ -599,7 +599,7 @@ void WindowServer::UpdateNativeCursorFromMouseLocation(ServerWindow* window) {
     EventDispatcher* event_dispatcher =
         display_root->window_manager_state()->event_dispatcher();
     event_dispatcher->UpdateCursorProviderByLastKnownLocation();
-    display_root->display()->UpdateNativeCursor(
+    display_root->window_manager_state()->cursor_state().SetCurrentWindowCursor(
         event_dispatcher->GetCurrentMouseCursor());
   }
 }
@@ -616,7 +616,7 @@ void WindowServer::UpdateNativeCursorIfOver(ServerWindow* window) {
     return;
 
   event_dispatcher->UpdateNonClientAreaForCurrentWindow();
-  display_root->display()->UpdateNativeCursor(
+  display_root->window_manager_state()->cursor_state().SetCurrentWindowCursor(
       event_dispatcher->GetCurrentMouseCursor());
 }
 

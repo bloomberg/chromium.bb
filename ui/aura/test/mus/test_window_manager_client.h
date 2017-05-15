@@ -48,6 +48,11 @@ class TestWindowManagerClient : public ui::mojom::WindowManagerClient {
       ui::mojom::FrameDecorationValuesPtr values) override;
   void WmSetNonClientCursor(uint32_t window_id,
                             ui::CursorData cursor_data) override;
+  void WmLockCursor() override;
+  void WmUnlockCursor() override;
+  void WmSetCursorVisible(bool visible) override;
+  void WmSetGlobalOverrideCursor(
+      base::Optional<ui::CursorData> cursor) override;
   void OnWmCreatedTopLevelWindow(uint32_t change_id,
                                  Id transport_window_id) override;
   void OnAcceleratorAck(
