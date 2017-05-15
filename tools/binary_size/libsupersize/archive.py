@@ -324,8 +324,11 @@ def _AddSymbolAliases(raw_symbols, aliases_by_address):
       num_new_symbols += len(name_list) - 1
 
   if float(num_new_symbols) / len(raw_symbols) < .05:
+    # TODO(agrieve): Figure out if there's a way to get alias information from
+    # clang-compiled nm.
     logging.warning('Number of aliases is oddly low (%.0f%%). It should '
-                    'usually be around 25%%. Ensure --tool-prefix is correct.',
+                    'usually be around 25%%. Ensure --tool-prefix is correct. '
+                    'Ignore this if you compiled with clang.',
                     float(num_new_symbols) / len(raw_symbols) * 100)
 
   # Step 2: Create new symbols as siblings to each existing one.
@@ -404,8 +407,7 @@ def CreateMetadata(map_path, elf_path, apk_path, tool_prefix, output_directory):
   return metadata
 
 
-def CreateSizeInfo(map_path, elf_path, tool_prefix, output_directory,
-                   raw_only=False):
+def CreateSizeInfo(map_path, elf_path, tool_prefix, output_directory):
   """Creates a SizeInfo.
 
   Args:
@@ -415,7 +417,6 @@ def CreateSizeInfo(map_path, elf_path, tool_prefix, output_directory,
     tool_prefix: Prefix for c++filt & nm (required).
     output_directory: Build output directory. If None, source_paths and symbol
         alias information will not be recorded.
-    raw_only: Fill in just the information required for creating a .size file.
   """
   source_mapper = None
   if output_directory:
@@ -507,17 +508,13 @@ def CreateSizeInfo(map_path, elf_path, tool_prefix, output_directory,
 
   size_info = models.SizeInfo(section_sizes, raw_symbols)
 
-  # Name normalization not strictly required, but makes for smaller files.
-  if raw_only:
-    logging.info('Normalizing symbol names')
-    _NormalizeNames(size_info.raw_symbols)
-  else:
-    _PostProcessSizeInfo(size_info)
+  # When creating the .size file, name normalization is not strictly required,
+  # but makes for smaller files.
+  # Padding not required either, but it is useful to check for large padding and
+  # log a warning.
+  _PostProcessSizeInfo(size_info)
 
-  if logging.getLogger().isEnabledFor(logging.DEBUG):
-    # Padding is reported in size coverage logs.
-    if raw_only:
-      _CalculatePadding(size_info.raw_symbols)
+  if logging.getLogger().isEnabledFor(logging.INFO):
     for line in describe.DescribeSizeInfoCoverage(size_info):
       logging.info(line)
   logging.info('Recorded info for %d symbols', len(size_info.raw_symbols))
@@ -664,8 +661,7 @@ def Run(args, parser):
     apk_elf_result = concurrent.ForkAndCall(
         _ElfInfoFromApk, (apk_path, apk_so_path, tool_prefix))
 
-  size_info = CreateSizeInfo(
-      map_path, elf_path, tool_prefix, output_directory, raw_only=True)
+  size_info = CreateSizeInfo(map_path, elf_path, tool_prefix, output_directory)
 
   if metadata:
     size_info.metadata = metadata
