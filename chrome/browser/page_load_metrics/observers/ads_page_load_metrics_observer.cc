@@ -117,8 +117,6 @@ AdsPageLoadMetricsObserver::OnDidFinishSubFrameNavigation(
     UMA_HISTOGRAM_BOOLEAN(
         "PageLoad.Clients.Ads.Google.Navigations.NonAdFrameRenavigatedToAd",
         FrameIsAd(navigation_handle));
-  } else if (navigation_handle->IsParentMainFrame()) {
-    top_level_subframe_count_ += 1;
   }
 
   // Determine who the parent frame's ad ancestor is.
@@ -134,9 +132,6 @@ AdsPageLoadMetricsObserver::OnDidFinishSubFrameNavigation(
   }
 
   ad_frames_data_[frame_tree_node_id] = ad_data;
-
-  if (navigation_handle->IsParentMainFrame() && ad_data)
-    top_level_ad_frame_count_ += 1;
 
   ProcessOngoingNavigationResource(frame_tree_node_id);
   return CONTINUE_OBSERVING;
@@ -215,18 +210,15 @@ void AdsPageLoadMetricsObserver::RecordHistograms() {
   if (page_bytes_ == 0)
     return;
 
+  int non_zero_ad_frames = 0;
   size_t total_ad_frame_bytes = 0;
   size_t uncached_ad_frame_bytes = 0;
 
-  UMA_HISTOGRAM_COUNTS_1000(
-      "PageLoad.Clients.Ads.Google.FrameCounts.AnyParentFrame.AdFrames",
-      ad_frames_data_storage_.size());
-
-  // Don't post UMA for pages that don't have ads.
-  if (ad_frames_data_storage_.empty())
-    return;
-
   for (const AdFrameData& ad_frame_data : ad_frames_data_storage_) {
+    if (ad_frame_data.frame_bytes == 0)
+      continue;
+
+    non_zero_ad_frames += 1;
     total_ad_frame_bytes += ad_frame_data.frame_bytes;
     uncached_ad_frame_bytes += ad_frame_data.frame_bytes_uncached;
 
@@ -236,24 +228,18 @@ void AdsPageLoadMetricsObserver::RecordHistograms() {
     PAGE_BYTES_HISTOGRAM(
         "PageLoad.Clients.Ads.Google.Bytes.AdFrames.PerFrame.Network",
         ad_frame_data.frame_bytes_uncached);
-    if (ad_frame_data.frame_bytes > 0) {
-      UMA_HISTOGRAM_PERCENTAGE(
-          "PageLoad.Clients.Ads.Google.Bytes.AdFrames.PerFrame.PercentNetwork",
-          ad_frame_data.frame_bytes_uncached * 100 / ad_frame_data.frame_bytes);
-    }
+    UMA_HISTOGRAM_PERCENTAGE(
+        "PageLoad.Clients.Ads.Google.Bytes.AdFrames.PerFrame.PercentNetwork",
+        ad_frame_data.frame_bytes_uncached * 100 / ad_frame_data.frame_bytes);
   }
 
   UMA_HISTOGRAM_COUNTS_1000(
-      "PageLoad.Clients.Ads.Google.FrameCounts.MainFrameParent.TotalFrames",
-      top_level_subframe_count_);
-  UMA_HISTOGRAM_COUNTS_1000(
-      "PageLoad.Clients.Ads.Google.FrameCounts.MainFrameParent.AdFrames",
-      top_level_ad_frame_count_);
+      "PageLoad.Clients.Ads.Google.FrameCounts.AnyParentFrame.AdFrames",
+      non_zero_ad_frames);
 
-  DCHECK_LT(0, top_level_subframe_count_);  // Because ad frames isn't empty.
-  UMA_HISTOGRAM_PERCENTAGE(
-      "PageLoad.Clients.Ads.Google.FrameCounts.MainFrameParent.PercentAdFrames",
-      top_level_ad_frame_count_ * 100 / top_level_subframe_count_);
+  // Don't post UMA for pages that don't have ads.
+  if (non_zero_ad_frames == 0)
+    return;
 
   PAGE_BYTES_HISTOGRAM(
       "PageLoad.Clients.Ads.Google.Bytes.NonAdFrames.Aggregate.Total",

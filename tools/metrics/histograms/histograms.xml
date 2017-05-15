@@ -47426,7 +47426,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     units="Ad frames">
   <owner>jkarlin@chromium.org</owner>
   <summary>
-    The number of frames on the page identified as Google Ad Frames.
+    The number of frames on the page identified as Google Ad Frames that have
+    loaded more than 0 bytes of content.
 
     For pages with zero ad frames, the other PageLoad.Clients.Ads metrics are
     not recorded unless otherwise specified.
@@ -47438,6 +47439,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <histogram
     name="PageLoad.Clients.Ads.Google.FrameCounts.MainFrameParent.AdFrames"
     units="Frames">
+  <obsolete>
+    Deprecated In May 2017.
+  </obsolete>
   <owner>jkarlin@chromium.org</owner>
   <summary>
     The number of frames (with parent frame of main frame) that are on the page
@@ -47451,6 +47455,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <histogram
     name="PageLoad.Clients.Ads.Google.FrameCounts.MainFrameParent.PercentAdFrames"
     units="%">
+  <obsolete>
+    Deprecated In May 2017.
+  </obsolete>
   <owner>jkarlin@chromium.org</owner>
   <summary>
     The percentage of frames (with parent frame of main frame) on the page that
@@ -47465,6 +47472,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <histogram
     name="PageLoad.Clients.Ads.Google.FrameCounts.MainFrameParent.TotalFrames"
     units="Frames">
+  <obsolete>
+    Deprecated In May 2017.
+  </obsolete>
   <owner>jkarlin@chromium.org</owner>
   <summary>
     The number of frames (with parent frame of main frame) on the page.
