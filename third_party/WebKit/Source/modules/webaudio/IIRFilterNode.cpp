@@ -7,6 +7,7 @@
 #include "bindings/core/v8/ExceptionMessages.h"
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
+#include "core/inspector/ConsoleMessage.h"
 #include "modules/webaudio/AudioBasicProcessorHandler.h"
 #include "modules/webaudio/BaseAudioContext.h"
 #include "modules/webaudio/IIRFilterOptions.h"
@@ -14,6 +15,51 @@
 #include "platform/wtf/PtrUtil.h"
 
 namespace blink {
+
+// Determine if filter is stable based on the feedback coefficients.
+// We compute the reflection coefficients for the filter.  If, at any
+// point, the magnitude of the reflection coefficient is greater than
+// or equal to 1, the filter is declared unstable.
+//
+// Let A(z) be the feedback polynomial given by
+//   A[n](z) = 1 + a[1]/z + a[2]/z^2 + ... + a[n]/z^n
+//
+// The first reflection coefficient k[n] = a[n].  Then, recursively compute
+//
+//   A[n-1](z) = (A[n](z) - k[n]*A[n](1/z)/z^n)/(1-k[n]^2);
+//
+// stopping at A[1](z).  If at any point |k[n]| >= 1, the filter is
+// unstable.
+static bool IsFilterStable(const Vector<double>& feedback_coef) {
+  // Make a copy of the feedback coefficients
+  Vector<double> coef(feedback_coef);
+  int order = coef.size() - 1;
+
+  // If necessary, normalize filter coefficients so that constant term is 1.
+  if (coef[0] != 1) {
+    for (int m = 1; m <= order; ++m)
+      coef[m] /= coef[0];
+    coef[0] = 1;
+  }
+
+  // Begin recursion, using a work array to hold intermediate results.
+  Vector<double> work(order + 1);
+  for (int n = order; n >= 1; --n) {
+    double k = coef[n];
+
+    if (std::fabs(k) >= 1)
+      return false;
+
+    // Note that A[n](1/z)/z^n is basically the coefficients of A[n]
+    // in reverse order.
+    double factor = 1 - k * k;
+    for (int m = 0; m <= n; ++m)
+      work[m] = (coef[m] - k * coef[n - m]) / factor;
+    coef.swap(work);
+  }
+
+  return true;
+}
 
 IIRFilterNode::IIRFilterNode(BaseAudioContext& context,
                              const Vector<double>& feedforward_coef,
@@ -86,6 +132,20 @@ IIRFilterNode* IIRFilterNode::Create(BaseAudioContext& context,
         kInvalidStateError,
         "At least one feedforward coefficient must be non-zero.");
     return nullptr;
+  }
+
+  if (!IsFilterStable(feedback_coef)) {
+    StringBuilder message;
+    message.Append("Unstable IIRFilter with feedback coefficients: [");
+    message.AppendNumber(feedback_coef[0]);
+    for (size_t k = 1; k < feedback_coef.size(); ++k) {
+      message.Append(", ");
+      message.AppendNumber(feedback_coef[k]);
+    }
+    message.Append(']');
+
+    context.GetExecutionContext()->AddConsoleMessage(ConsoleMessage::Create(
+        kJSMessageSource, kWarningMessageLevel, message.ToString()));
   }
 
   return new IIRFilterNode(context, feedforward_coef, feedback_coef);
