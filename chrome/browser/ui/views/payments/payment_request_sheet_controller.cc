@@ -89,6 +89,12 @@ class SheetView : public views::View, public views::FocusTraversable {
     return views::View::AcceleratorPressed(accelerator);
   }
 
+  void ViewHierarchyChanged(
+      const ViewHierarchyChangedDetails& details) override {
+    if (!details.is_add && details.child == first_focusable_)
+      first_focusable_ = nullptr;
+  }
+
   views::View* first_focusable_;
   std::unique_ptr<views::FocusSearch> focus_search_;
   ui::Accelerator enter_key_accelerator_;
