@@ -123,10 +123,6 @@ enum EMarginCollapse {
 
 enum class EBoxDecorationBreak { kSlice, kClone };
 
-// Box attributes. Not inherited.
-
-enum class EBoxSizing : unsigned { kContentBox, kBorderBox };
-
 // Random visual rendering model attributes. Not inherited.
 
 enum class EVerticalAlign : unsigned {
