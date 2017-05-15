@@ -20,6 +20,10 @@
 
 #import "core/layout/LayoutThemeMac.h"
 
+#import <AvailabilityMacros.h>
+#import <Carbon/Carbon.h>
+#import <Cocoa/Cocoa.h>
+#import <math.h>
 #import "core/CSSValueKeywords.h"
 #import "core/HTMLNames.h"
 #import "core/fileapi/FileList.h"
@@ -29,6 +33,7 @@
 #import "core/style/ShadowList.h"
 #import "platform/LayoutTestSupport.h"
 #import "platform/PlatformResourceLoader.h"
+#import "platform/RuntimeEnabledFeatures.h"
 #import "platform/Theme.h"
 #import "platform/graphics/BitmapImage.h"
 #import "platform/mac/ColorMac.h"
@@ -37,10 +42,6 @@
 #import "platform/mac/WebCoreNSCellExtras.h"
 #import "platform/text/PlatformLocale.h"
 #import "platform/text/StringTruncator.h"
-#import <AvailabilityMacros.h>
-#import <Carbon/Carbon.h>
-#import <Cocoa/Cocoa.h>
-#import <math.h>
 
 // The methods in this file are specific to the Mac OS X platform.
 
@@ -128,6 +129,14 @@ bool FontSizeMatchesToControlSize(const ComputedStyle& style) {
   return false;
 }
 
+NSColor* ColorInColorSpace(NSColor* color) {
+  if (RuntimeEnabledFeatures::colorCorrectRenderingEnabled()) {
+    return [color colorUsingColorSpace:[NSColorSpace sRGBColorSpace]];
+  } else {
+    return [color colorUsingColorSpaceName:NSDeviceRGBColorSpace];
+  }
+}
+
 }  // namespace
 
 using namespace HTMLNames;
@@ -151,16 +160,14 @@ LayoutThemeMac::~LayoutThemeMac() {
 }
 
 Color LayoutThemeMac::PlatformActiveSelectionBackgroundColor() const {
-  NSColor* color = [[NSColor selectedTextBackgroundColor]
-      colorUsingColorSpaceName:NSDeviceRGBColorSpace];
+  NSColor* color = ColorInColorSpace([NSColor selectedTextBackgroundColor]);
   return Color(static_cast<int>(255.0 * [color redComponent]),
                static_cast<int>(255.0 * [color greenComponent]),
                static_cast<int>(255.0 * [color blueComponent]));
 }
 
 Color LayoutThemeMac::PlatformInactiveSelectionBackgroundColor() const {
-  NSColor* color = [[NSColor secondarySelectedControlColor]
-      colorUsingColorSpaceName:NSDeviceRGBColorSpace];
+  NSColor* color = ColorInColorSpace([NSColor secondarySelectedControlColor]);
   return Color(static_cast<int>(255.0 * [color redComponent]),
                static_cast<int>(255.0 * [color greenComponent]),
                static_cast<int>(255.0 * [color blueComponent]));
@@ -171,8 +178,7 @@ Color LayoutThemeMac::PlatformActiveSelectionForegroundColor() const {
 }
 
 Color LayoutThemeMac::PlatformActiveListBoxSelectionBackgroundColor() const {
-  NSColor* color = [[NSColor alternateSelectedControlColor]
-      colorUsingColorSpaceName:NSDeviceRGBColorSpace];
+  NSColor* color = ColorInColorSpace([NSColor alternateSelectedControlColor]);
   return Color(static_cast<int>(255.0 * [color redComponent]),
                static_cast<int>(255.0 * [color greenComponent]),
                static_cast<int>(255.0 * [color blueComponent]));
@@ -263,8 +269,7 @@ bool LayoutThemeMac::NeedsHackForTextControlWithFontFamily(
 }
 
 static RGBA32 ConvertNSColorToColor(NSColor* color) {
-  NSColor* color_in_color_space =
-      [color colorUsingColorSpaceName:NSDeviceRGBColorSpace];
+  NSColor* color_in_color_space = ColorInColorSpace(color);
   if (color_in_color_space) {
     static const double kScaleFactor = nextafter(256.0, 0.0);
     return MakeRGB(
@@ -274,12 +279,10 @@ static RGBA32 ConvertNSColorToColor(NSColor* color) {
   }
 
   // This conversion above can fail if the NSColor in question is an
-  // NSPatternColor
-  // (as many system colors are). These colors are actually a repeating pattern
-  // not just a solid color. To work around this we simply draw a 1x1 image of
-  // the color and use that pixel's color. It might be better to use an average
-  // of
-  // the colors in the pattern instead.
+  // NSPatternColor (as many system colors are). These colors are actually a
+  // repeating pattern not just a solid color. To work around this we simply
+  // draw a 1x1 image of the color and use that pixel's color. It might be
+  // better to use an average of the colors in the pattern instead.
   NSBitmapImageRep* offscreen_rep =
       [[NSBitmapImageRep alloc] initWithBitmapDataPlanes:nil
                                               pixelsWide:1
@@ -302,10 +305,13 @@ static RGBA32 ConvertNSColorToColor(NSColor* color) {
 
   NSUInteger pixel[4];
   [offscreen_rep getPixel:pixel atX:0 y:0];
-
   [offscreen_rep release];
-
-  return MakeRGB(pixel[0], pixel[1], pixel[2]);
+  // This recursive call will not recurse again, because the color space
+  // the second time around is NSDeviceRGBColorSpace.
+  return ConvertNSColorToColor([NSColor colorWithDeviceRed:pixel[0] / 255.
+                                                     green:pixel[1] / 255.
+                                                      blue:pixel[2] / 255.
+                                                     alpha:1.]);
 }
 
 static RGBA32 MenuBackgroundColor() {
@@ -332,10 +338,11 @@ static RGBA32 MenuBackgroundColor() {
 
   NSUInteger pixel[4];
   [offscreen_rep getPixel:pixel atX:0 y:0];
-
   [offscreen_rep release];
-
-  return MakeRGB(pixel[0], pixel[1], pixel[2]);
+  return ConvertNSColorToColor([NSColor colorWithDeviceRed:pixel[0] / 255.
+                                                     green:pixel[1] / 255.
+                                                      blue:pixel[2] / 255.
+                                                     alpha:1.]);
 }
 
 void LayoutThemeMac::PlatformColorsDidChange() {
