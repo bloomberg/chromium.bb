@@ -30,6 +30,7 @@
 #include "platform/heap/Heap.h"
 #include "platform/text/TabSize.h"
 #include "platform/text/TextDirection.h"
+#include "platform/text/TextJustify.h"
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/text/StringView.h"
 #include "platform/wtf/text/WTFString.h"
@@ -38,13 +39,6 @@
 #include <unicode/utf16.h>
 
 namespace blink {
-
-enum TextJustify {
-  kTextJustifyAuto = 0x0,
-  kTextJustifyNone = 0x1,
-  kTextJustifyInterWord = 0x2,
-  kTextJustifyDistribute = 0x3
-};
 
 class PLATFORM_EXPORT TextRun final {
   DISALLOW_NEW();
