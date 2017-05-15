@@ -269,14 +269,19 @@ Resource::Resource(const ResourceRequest& request,
       integrity_disposition_(ResourceIntegrityDisposition::kNotChecked),
       options_(options),
       response_timestamp_(CurrentTime()),
-      cancel_timer_(IsMainThread()
-                        ? Platform::Current()->MainThread()->GetWebTaskRunner()
-                        : Platform::Current()
-                              ->CurrentThread()
-                              ->Scheduler()
-                              ->LoadingTaskRunner(),
-                    this,
-                    &Resource::CancelTimerFired),
+      cancel_timer_(
+          // We use MainThread() for main-thread cases to avoid syscall cost
+          // when checking main_thread_->isCurrentThread() in currentThread().
+          IsMainThread() ? Platform::Current()
+                               ->MainThread()
+                               ->Scheduler()
+                               ->LoadingTaskRunner()
+                         : Platform::Current()
+                               ->CurrentThread()
+                               ->Scheduler()
+                               ->LoadingTaskRunner(),
+          this,
+          &Resource::CancelTimerFired),
       resource_request_(request) {
   InstanceCounters::IncrementCounter(InstanceCounters::kResourceCounter);
 
