@@ -165,10 +165,6 @@ class ThumbnailDatabase {
   // not NULL.
 
   // Returns true if there are icon mappings for the given page and icon types.
-  // If |required_icon_types| contains multiple icon types and there is more
-  // than one matched icon type in the database, icons of only a single type
-  // will be returned in the priority of TOUCH_PRECOMPOSED_ICON, TOUCH_ICON,
-  // and FAVICON.
   // The matched icon mappings are returned in the |mapping_data| parameter if
   // it is not NULL.
   bool GetIconMappingsForPageURL(const GURL& page_url,

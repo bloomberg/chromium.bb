@@ -663,9 +663,7 @@ class HistoryService : public syncer::SyncableService, public KeyedService {
   // |icon_types| is returned. The returned FaviconBitmapResults will have at
   // most one result for each entry in |desired_sizes|. If a favicon bitmap is
   // determined to be the best candidate for multiple |desired_sizes| there
-  // will be fewer results. If |icon_types| has several types, results for only
-  // a single type will be returned in the priority of TOUCH_PRECOMPOSED_ICON,
-  // TOUCH_ICON, and FAVICON.
+  // will be fewer results.
   base::CancelableTaskTracker::TaskId GetFaviconsForURL(
       const GURL& page_url,
       int icon_types,

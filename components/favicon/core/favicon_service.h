@@ -88,13 +88,9 @@ class FaviconService : public KeyedService {
 
   // Requests the favicon for the page at |page_url| with one of |icon_types|
   // and with |desired_size_in_pixel|. |icon_types| can be any combination of
-  // IconTypes. If favicon bitmaps for several IconTypes are available, the
-  // favicon bitmap is chosen in the priority of TOUCH_PRECOMPOSED_ICON,
-  // TOUCH_ICON and FAVICON. If there is no favicon bitmap of size
-  // |desired_size_in_pixel|, the favicon bitmap which best matches
-  // |desired_size_in_pixel| is resized. If |desired_size_in_pixel| is 0,
-  // the largest favicon bitmap is returned. Results with a higher priority
-  // IconType are preferred over an exact match of the favicon bitmap size.
+  // IconTypes. If there is no favicon bitmap of size |desired_size_in_pixel|,
+  // the favicon bitmap which best matches |desired_size_in_pixel| is resized.
+  // If |desired_size_in_pixel| is 0, the largest favicon bitmap is returned.
   virtual base::CancelableTaskTracker::TaskId GetRawFaviconForPageURL(
       const GURL& page_url,
       int icon_types,
