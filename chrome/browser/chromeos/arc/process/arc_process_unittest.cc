@@ -120,15 +120,6 @@ TEST(ArcProcess, TestIsImportant) {
   EXPECT_FALSE(ArcProcess(0, 0, "process", mojom::ProcessState::CACHED_EMPTY,
                           kIsNotFocused, 0)
                    .IsImportant());
-
-  // Exceptions: the function always returns true ignoring ProcessState for our
-  // HOME process.
-  EXPECT_TRUE(ArcProcess(0, 0, "org.chromium.arc.home",
-                         mojom::ProcessState::TOP, kIsNotFocused, 0)
-                  .IsImportant());
-  EXPECT_TRUE(ArcProcess(0, 0, "org.chromium.arc.home",
-                         mojom::ProcessState::HOME, kIsNotFocused, 0)
-                  .IsImportant());
 }
 
 TEST(ArcProcess, TestIsKernelKillable) {
@@ -196,15 +187,6 @@ TEST(ArcProcess, TestIsKernelKillable) {
   EXPECT_TRUE(ArcProcess(0, 0, "process", mojom::ProcessState::CACHED_EMPTY,
                          kIsNotFocused, 0)
                   .IsKernelKillable());
-
-  // Exceptions: the function always returns false ignoring ProcessState for our
-  // HOME process.
-  EXPECT_FALSE(ArcProcess(0, 0, "org.chromium.arc.home",
-                          mojom::ProcessState::TOP, kIsNotFocused, 0)
-                   .IsKernelKillable());
-  EXPECT_FALSE(ArcProcess(0, 0, "org.chromium.arc.home",
-                          mojom::ProcessState::HOME, kIsNotFocused, 0)
-                   .IsKernelKillable());
 }
 
 }  // namespace
