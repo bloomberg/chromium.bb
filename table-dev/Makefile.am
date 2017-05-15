@@ -46,7 +46,7 @@ dictionary : $(DICTIONARY)
 suggestions : $(CONTRACTIONS_TABLE) $(PATTERNS_TABLE)
 
 suggestions :
-	bash wrap_python.sh make_suggestions.py -d $(DICTIONARY) -t $(BASE_TABLE),$(CONTRACTIONS_TABLE),$(PATTERNS_TABLE) -x true >$(WORKING_FILE)
+	bash wrap_python.sh make_suggestions.py -d $(DICTIONARY) -t $(BASE_TABLE),$(CONTRACTIONS_TABLE),$(PATTERNS_TABLE) --auto-chunk true >$(WORKING_FILE)
 	$(EDITOR) $(WORKING_FILE)
 
 .INTERMEDIATE : $(WORKING_FILE)
