@@ -14,6 +14,7 @@
 #include "cc/paint/skia_paint_canvas.h"
 #include "content/renderer/media/webmediaplayer_ms.h"
 #include "content/renderer/render_thread_impl.h"
+#include "media/base/bind_to_current_loop.h"
 #include "media/base/media_switches.h"
 #include "media/base/video_frame.h"
 #include "media/base/video_util.h"
@@ -127,10 +128,12 @@ scoped_refptr<media::VideoFrame> CopyFrame(
 }  // anonymous namespace
 
 WebMediaPlayerMSCompositor::WebMediaPlayerMSCompositor(
-    const scoped_refptr<base::SingleThreadTaskRunner>& compositor_task_runner,
+    scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner,
+    scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
     const blink::WebMediaStream& web_stream,
     const base::WeakPtr<WebMediaPlayerMS>& player)
     : compositor_task_runner_(compositor_task_runner),
+      io_task_runner_(io_task_runner),
       player_(player),
       video_frame_provider_client_(nullptr),
       current_frame_used_by_compositor_(false),
@@ -139,7 +142,6 @@ WebMediaPlayerMSCompositor::WebMediaPlayerMSCompositor(
       dropped_frame_count_(0),
       stopped_(true) {
   main_message_loop_ = base::MessageLoop::current();
-  io_thread_checker_.DetachFromThread();
 
   blink::WebVector<blink::WebMediaStreamTrack> video_tracks;
   if (!web_stream.IsNull())
@@ -208,7 +210,7 @@ void WebMediaPlayerMSCompositor::SetVideoFrameProviderClient(
 
 void WebMediaPlayerMSCompositor::EnqueueFrame(
     scoped_refptr<media::VideoFrame> frame) {
-  DCHECK(io_thread_checker_.CalledOnValidThread());
+  DCHECK(io_task_runner_->BelongsToCurrentThread());
   base::AutoLock auto_lock(current_frame_lock_);
   ++total_frame_count_;
 
@@ -334,16 +336,13 @@ void WebMediaPlayerMSCompositor::StopRendering() {
 
 void WebMediaPlayerMSCompositor::ReplaceCurrentFrameWithACopy() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  base::AutoLock auto_lock(current_frame_lock_);
-  if (!current_frame_.get() || !player_)
-    return;
-
-  // Copy the frame so that rendering can show the last received frame.
-  // The original frame must not be referenced when the player is paused since
-  // there might be a finite number of available buffers. E.g, video that
-  // originates from a video camera.
-  current_frame_ =
-      CopyFrame(current_frame_, player_->GetSkCanvasVideoRenderer());
+  // Bounce this call off of IO thread to since there might still be frames
+  // passed on IO thread.
+  io_task_runner_->PostTask(
+      FROM_HERE,
+      media::BindToCurrentLoop(base::Bind(
+          &WebMediaPlayerMSCompositor::ReplaceCurrentFrameWithACopyInternal,
+          this)));
 }
 
 void WebMediaPlayerMSCompositor::StopUsingProvider() {
@@ -358,7 +357,7 @@ bool WebMediaPlayerMSCompositor::MapTimestampsToRenderTimeTicks(
     std::vector<base::TimeTicks>* wall_clock_times) {
   DCHECK(compositor_task_runner_->BelongsToCurrentThread() ||
          thread_checker_.CalledOnValidThread() ||
-         io_thread_checker_.CalledOnValidThread());
+         io_task_runner_->BelongsToCurrentThread());
   for (const base::TimeDelta& timestamp : timestamps) {
     DCHECK(timestamps_to_clock_times_.count(timestamp));
     wall_clock_times->push_back(timestamps_to_clock_times_[timestamp]);
@@ -447,6 +446,20 @@ void WebMediaPlayerMSCompositor::StopUsingProviderInternal() {
   if (video_frame_provider_client_)
     video_frame_provider_client_->StopUsingProvider();
   video_frame_provider_client_ = nullptr;
+}
+
+void WebMediaPlayerMSCompositor::ReplaceCurrentFrameWithACopyInternal() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  base::AutoLock auto_lock(current_frame_lock_);
+  if (!current_frame_.get() || !player_)
+    return;
+
+  // Copy the frame so that rendering can show the last received frame.
+  // The original frame must not be referenced when the player is paused since
+  // there might be a finite number of available buffers. E.g, video that
+  // originates from a video camera, HW decoded frames.
+  current_frame_ =
+      CopyFrame(current_frame_, player_->GetSkCanvasVideoRenderer());
 }
 
 void WebMediaPlayerMSCompositor::SetAlgorithmEnabledForTesting(
