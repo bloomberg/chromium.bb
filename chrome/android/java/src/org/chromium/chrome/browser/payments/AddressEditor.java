@@ -321,7 +321,7 @@ public class AddressEditor
             // language code is "ja-Latn" or "ja".
             addAddressFieldsToEditor(
                     mRecentlySelectedCountry, Locale.getDefault().getLanguage(), adminAreas);
-            // Notify EditorView that the fields in the model have changed. EditorView should
+            // Notify EditorDialog that the fields in the model have changed. EditorDialog should
             // re-read the model and update the UI accordingly.
             mHandler.post(mCountryChangeCallback);
         } else {
@@ -329,7 +329,7 @@ public class AddressEditor
             setAddressFieldValuesFromCache();
             addAddressFieldsToEditor(
                     mProfile.getCountryCode(), mProfile.getLanguageCode(), adminAreas);
-            mEditorView.show(mEditor);
+            mEditorDialog.show(mEditor);
         }
     }
 

@@ -778,7 +778,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/payments/ui/EditorLabelField.java",
   "java/src/org/chromium/chrome/browser/payments/ui/EditorModel.java",
   "java/src/org/chromium/chrome/browser/payments/ui/EditorTextField.java",
-  "java/src/org/chromium/chrome/browser/payments/ui/EditorView.java",
+  "java/src/org/chromium/chrome/browser/payments/ui/EditorDialog.java",
   "java/src/org/chromium/chrome/browser/payments/ui/LineItem.java",
   "java/src/org/chromium/chrome/browser/payments/ui/PaymentInformation.java",
   "java/src/org/chromium/chrome/browser/payments/ui/PaymentOption.java",

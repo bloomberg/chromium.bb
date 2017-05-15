@@ -59,14 +59,14 @@ import javax.annotation.Nullable;
  * The PaymentRequest editor dialog. Can be used for editing contact information, shipping address,
  * billing address, and credit cards.
  */
-public class EditorView extends AlwaysDismissedDialog implements OnClickListener,
-                                                                 DialogInterface.OnShowListener,
-                                                                 DialogInterface.OnDismissListener {
+public class EditorDialog
+        extends AlwaysDismissedDialog implements OnClickListener, DialogInterface.OnShowListener,
+                                                 DialogInterface.OnDismissListener {
     /** The indicator for input fields that are required. */
     public static final String REQUIRED_FIELD_INDICATOR = "*";
 
     /** Help page that the user is directed to when asking for help. */
-    private static final String HELP_URL = "https://support.google.com/chrome/answer/142893?hl=en";
+    private static final String HELP_URL = "https://support.google.com/chrome/answer/142893";
 
     /** Duration of the animation to show the UI to full height. */
     private static final int DIALOG_ENTER_ANIMATION_MS = 300;
@@ -85,24 +85,27 @@ public class EditorView extends AlwaysDismissedDialog implements OnClickListener
     private final InputFilter mCardNumberInputFilter;
     private final TextWatcher mCardNumberFormatter;
 
-    @Nullable private TextWatcher mPhoneFormatter;
+    @Nullable
+    private TextWatcher mPhoneFormatter;
     private View mLayout;
     private EditorModel mEditorModel;
     private Button mDoneButton;
     private ViewGroup mDataView;
     private View mFooter;
-    @Nullable private TextView mCardInput;
-    @Nullable private TextView mPhoneInput;
+    @Nullable
+    private TextView mCardInput;
+    @Nullable
+    private TextView mPhoneInput;
 
     private Animator mDialogInOutAnimator;
 
     /**
-     * Builds the editor view.
+     * Builds the editor dialog.
      *
      * @param activity        The activity on top of which the UI should be displayed.
      * @param observerForTest Optional event observer for testing.
      */
-    public EditorView(Activity activity, PaymentRequestObserverForTest observerForTest) {
+    public EditorDialog(Activity activity, PaymentRequestObserverForTest observerForTest) {
         super(activity, R.style.FullscreenWhite);
         // Sets transparent background for animating content view.
         getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
@@ -199,8 +202,9 @@ public class EditorView extends AlwaysDismissedDialog implements OnClickListener
 
         // Make it appear that the toolbar is floating by adding a shadow.
         FadingShadowView shadow = (FadingShadowView) mLayout.findViewById(R.id.shadow);
-        shadow.init(ApiCompatibilityUtils.getColor(mContext.getResources(),
-                R.color.toolbar_shadow_color), FadingShadow.POSITION_TOP);
+        shadow.init(ApiCompatibilityUtils.getColor(
+                            mContext.getResources(), R.color.toolbar_shadow_color),
+                FadingShadow.POSITION_TOP);
 
         // The top shadow is handled by the toolbar, so hide the one used in the field editor.
         FadingEdgeScrollView scrollView =

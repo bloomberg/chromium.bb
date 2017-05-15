@@ -425,7 +425,7 @@ public class CardEditor extends EditorBase<AutofillPaymentInstrument>
             }
         });
 
-        mEditorView.show(editor);
+        mEditorDialog.show(editor);
     }
 
     /**
@@ -825,7 +825,7 @@ public class CardEditor extends EditorBase<AutofillPaymentInstrument>
             mMonthField.setValue(Integer.toString(expirationMonth));
         }
 
-        mEditorView.update();
+        mEditorDialog.update();
         mIsScanning = false;
     }
 

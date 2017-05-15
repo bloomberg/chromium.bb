@@ -58,7 +58,7 @@ public class EditorTextField extends FrameLayout implements EditorFieldView, Vie
 
         // Build up the label.  Required fields are indicated by appending a '*'.
         CharSequence label = fieldModel.getLabel();
-        if (fieldModel.isRequired()) label = label + EditorView.REQUIRED_FIELD_INDICATOR;
+        if (fieldModel.isRequired()) label = label + EditorDialog.REQUIRED_FIELD_INDICATOR;
         mInputLayout.setHint(label);
 
         mInput = (AutoCompleteTextView) mInputLayout.findViewById(R.id.text_view);
