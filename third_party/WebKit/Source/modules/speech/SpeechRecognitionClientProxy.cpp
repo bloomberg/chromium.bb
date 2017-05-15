@@ -23,7 +23,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "web/SpeechRecognitionClientProxy.h"
+#include "modules/speech/SpeechRecognitionClientProxy.h"
 
 #include <memory>
 #include "core/dom/ExecutionContext.h"
@@ -120,15 +120,17 @@ void SpeechRecognitionClientProxy::DidReceiveResults(
 
   HeapVector<Member<SpeechRecognitionResult>> final_results_vector(
       new_final_results.size());
-  for (size_t i = 0; i < new_final_results.size(); ++i)
+  for (size_t i = 0; i < new_final_results.size(); ++i) {
     final_results_vector[i] =
         Member<SpeechRecognitionResult>(new_final_results[i]);
+  }
 
   HeapVector<Member<SpeechRecognitionResult>> interim_results_vector(
       current_interim_results.size());
-  for (size_t i = 0; i < current_interim_results.size(); ++i)
+  for (size_t i = 0; i < current_interim_results.size(); ++i) {
     interim_results_vector[i] =
         Member<SpeechRecognitionResult>(current_interim_results[i]);
+  }
 
   recognition->DidReceiveResults(final_results_vector, interim_results_vector);
 }

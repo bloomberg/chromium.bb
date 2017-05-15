@@ -27,6 +27,7 @@
 #define SpeechRecognitionClientProxy_h
 
 #include <memory>
+#include "modules/ModulesExport.h"
 #include "modules/speech/SpeechRecognitionClient.h"
 #include "platform/wtf/Compiler.h"
 #include "platform/wtf/text/WTFString.h"
@@ -38,8 +39,9 @@ class MediaStreamTrack;
 class WebSpeechRecognizer;
 class WebString;
 
-class SpeechRecognitionClientProxy final : public SpeechRecognitionClient,
-                                           public WebSpeechRecognizerClient {
+class MODULES_EXPORT SpeechRecognitionClientProxy final
+    : public NON_EXPORTED_BASE(SpeechRecognitionClient),
+      public WebSpeechRecognizerClient {
  public:
   ~SpeechRecognitionClientProxy() override;
 

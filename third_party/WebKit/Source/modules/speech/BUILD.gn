@@ -18,6 +18,8 @@ blink_modules_sources("speech") {
     "SpeechRecognitionAlternative.cpp",
     "SpeechRecognitionAlternative.h",
     "SpeechRecognitionClient.h",
+    "SpeechRecognitionClientProxy.cpp",
+    "SpeechRecognitionClientProxy.h",
     "SpeechRecognitionController.cpp",
     "SpeechRecognitionController.h",
     "SpeechRecognitionError.cpp",
