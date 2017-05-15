@@ -660,6 +660,8 @@ def AddReviewers(host, change, reviewers=None, ccs=None, notify=True,
   """Add reviewers to a change."""
   if not reviewers and not ccs:
     return None
+  if not change:
+    return None
   reviewers = frozenset(reviewers or [])
   ccs = frozenset(ccs or [])
   path = 'changes/%s/revisions/current/review' % change
