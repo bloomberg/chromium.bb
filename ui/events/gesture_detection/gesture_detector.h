@@ -104,7 +104,7 @@ class GESTURE_DETECTION_EXPORT GestureDetector {
   // current_down_event_ or secondary_pointer_down_event_.
   const MotionEvent* GetSourcePointerDownEvent(
       const MotionEvent& current_down_event,
-      const MotionEvent& secondary_pointer_down_event,
+      const MotionEvent* secondary_pointer_down_event,
       const int pointer_id);
 
  private:
