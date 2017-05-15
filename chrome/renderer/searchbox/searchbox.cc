@@ -63,10 +63,6 @@ const char* GetIconTypeUrlHost(SearchBox::ImageSourceType type) {
   switch (type) {
     case SearchBox::FAVICON:
       return "favicon";
-    case SearchBox::LARGE_ICON:
-      return "large-icon";
-    case SearchBox::FALLBACK_ICON:
-      return "fallback-icon";
     case SearchBox::THUMB:
       return "thumb";
     default:
@@ -84,14 +80,6 @@ int GetImagePathStartOfPageURL(SearchBox::ImageSourceType type,
     case SearchBox::FAVICON: {
       chrome::ParsedFaviconPath parsed;
       return chrome::ParseFaviconPath(path, &parsed) ? parsed.path_index : -1;
-    }
-    case SearchBox::LARGE_ICON: {
-      LargeIconUrlParser parser;
-      return parser.Parse(path) ? parser.path_index() : -1;
-    }
-    case SearchBox::FALLBACK_ICON: {
-      chrome::ParsedFallbackIconPath parser;
-      return parser.Parse(path) ? parser.path_index() : -1;
     }
     case SearchBox::THUMB: {
       return 0;
