@@ -1192,18 +1192,16 @@ void PaintPropertyTreeBuilder::UpdatePaintProperties(
 
   bool had_paint_properties = object.PaintProperties();
 
-  if (needs_paint_properties) {
+  if (needs_paint_properties && !had_paint_properties) {
     ObjectPaintProperties& paint_properties =
         object.GetMutableForPainting().EnsurePaintProperties();
-    if (!had_paint_properties &&
-        RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
+    if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
       paint_properties.SetCompositorElementId(
           CreateDomNodeBasedCompositorElementId(object));
     }
-  } else {
+  } else if (!needs_paint_properties && had_paint_properties) {
     object.GetMutableForPainting().ClearPaintProperties();
-    if (had_paint_properties)
-      full_context.force_subtree_update = true;
+    full_context.force_subtree_update = true;
   }
 }
 
