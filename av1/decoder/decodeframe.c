@@ -2778,25 +2778,12 @@ static void setup_render_size(AV1_COMMON *cm, struct aom_read_bit_buffer *rb) {
 
 #if CONFIG_FRAME_SUPERRES
 // TODO(afergs): make "struct aom_read_bit_buffer *const rb"?
-static void setup_superres_size(AV1_COMMON *const cm,
-                                struct aom_read_bit_buffer *rb, int *width,
-                                int *height) {
-  cm->superres_width = cm->width;
-  cm->superres_height = cm->height;
+static void setup_superres_scale(AV1_COMMON *const cm,
+                                 struct aom_read_bit_buffer *rb) {
   if (aom_rb_read_bit(rb)) {
     cm->superres_scale_numerator =
         (uint8_t)aom_rb_read_literal(rb, SUPERRES_SCALE_BITS);
     cm->superres_scale_numerator += SUPERRES_SCALE_NUMERATOR_MIN;
-    // Don't edit cm->width or cm->height directly, or the buffers won't get
-    // resized correctly
-    // TODO(afergs): Should the render resolution not be modified? It's the same
-    // by default (ie. when it isn't sent)...
-    // resize_context_buffers() will change cm->width to equal cm->render_width,
-    // then they'll be the same again
-    *width =
-        cm->width * cm->superres_scale_numerator / SUPERRES_SCALE_DENOMINATOR;
-    *height =
-        cm->height * cm->superres_scale_numerator / SUPERRES_SCALE_DENOMINATOR;
   } else {
     // 1:1 scaling - ie. no scaling, scale not provided
     cm->superres_scale_numerator = SUPERRES_SCALE_DENOMINATOR;
@@ -2849,11 +2836,8 @@ static void setup_frame_size(AV1_COMMON *cm, struct aom_read_bit_buffer *rb) {
   int width, height;
   BufferPool *const pool = cm->buffer_pool;
   av1_read_frame_size(rb, &width, &height);
-  setup_render_size(cm, rb);
-#if CONFIG_FRAME_SUPERRES
-  setup_superres_size(cm, rb, &width, &height);
-#endif  // CONFIG_FRAME_SUPERRES
   resize_context_buffers(cm, width, height);
+  setup_render_size(cm, rb);
 
   lock_buffer_pool(pool);
   if (aom_realloc_frame_buffer(
@@ -4301,6 +4285,9 @@ static size_t read_uncompressed_header(AV1Decoder *pbi,
   set_sb_size(cm, BLOCK_64X64);
 #endif  // CONFIG_EXT_PARTITION
 
+#if CONFIG_FRAME_SUPERRES
+  setup_superres_scale(cm, rb);
+#endif  // CONFIG_FRAME_SUPERRES
   setup_loopfilter(cm, rb);
 #if CONFIG_CDEF
   setup_cdef(cm, rb);

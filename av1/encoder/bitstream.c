@@ -4230,7 +4230,7 @@ static void write_superres_scale(const AV1_COMMON *const cm,
     aom_wb_write_bit(wb, 0);  // no scaling
   } else {
     aom_wb_write_bit(wb, 1);  // scaling, write scale factor
-    // TODO(afergs): write factor to the compressed header instead
+    // TODO(afergs): write factor to the compressed header instead?
     aom_wb_write_literal(
         wb, cm->superres_scale_numerator - SUPERRES_SCALE_NUMERATOR_MIN,
         SUPERRES_SCALE_BITS);
@@ -4240,27 +4240,10 @@ static void write_superres_scale(const AV1_COMMON *const cm,
 
 static void write_frame_size(const AV1_COMMON *cm,
                              struct aom_write_bit_buffer *wb) {
-#if CONFIG_FRAME_SUPERRES
-  // If SUPERRES scaling is happening, write the full resolution instead of the
-  // downscaled resolution. The decoder will reduce this resolution itself.
-  if (cm->superres_scale_numerator != SUPERRES_SCALE_DENOMINATOR) {
-    aom_wb_write_literal(wb, cm->superres_width - 1, 16);
-    aom_wb_write_literal(wb, cm->superres_height - 1, 16);
-  } else {
-#endif  // CONFIG_FRAME_SUPERRES
-    aom_wb_write_literal(wb, cm->width - 1, 16);
-    aom_wb_write_literal(wb, cm->height - 1, 16);
-#if CONFIG_FRAME_SUPERRES
-  }
-#endif  // CONFIG_FRAME_SUPERRES
+  aom_wb_write_literal(wb, cm->width - 1, 16);
+  aom_wb_write_literal(wb, cm->height - 1, 16);
 
-  // TODO(afergs): Also write something different to render_size?
-  //               When superres scales, they'll be almost guaranteed to be
-  //               different on the other side.
   write_render_size(cm, wb);
-#if CONFIG_FRAME_SUPERRES
-  write_superres_scale(cm, wb);
-#endif  // CONFIG_FRAME_SUPERRES
 }
 
 static void write_frame_size_with_refs(AV1_COMP *cpi,
@@ -4540,6 +4523,9 @@ static void write_uncompressed_header(AV1_COMP *cpi,
   assert(cm->sb_size == BLOCK_64X64);
 #endif  // CONFIG_EXT_PARTITION
 
+#if CONFIG_FRAME_SUPERRES
+  write_superres_scale(cm, wb);
+#endif  // CONFIG_FRAME_SUPERRES
   encode_loopfilter(cm, wb);
 #if CONFIG_CDEF
   encode_cdef(cm, wb);
