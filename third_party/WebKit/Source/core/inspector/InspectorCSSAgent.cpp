@@ -427,7 +427,7 @@ class InspectorCSSAgent::SetStyleSheetTextAction final
   }
 
   void Merge(Action* action) override {
-    ASSERT(action->MergeId() == MergeId());
+    DCHECK_EQ(action->MergeId(), MergeId());
 
     SetStyleSheetTextAction* other =
         static_cast<SetStyleSheetTextAction*>(action);
@@ -548,7 +548,7 @@ class InspectorCSSAgent::ModifyRuleAction final
   bool IsNoop() override { return old_text_ == new_text_; }
 
   void Merge(Action* action) override {
-    ASSERT(action->MergeId() == MergeId());
+    DCHECK_EQ(action->MergeId(), MergeId());
 
     ModifyRuleAction* other = static_cast<ModifyRuleAction*>(action);
     new_text_ = other->new_text_;
@@ -605,7 +605,7 @@ class InspectorCSSAgent::SetElementStyleAction final
   }
 
   void Merge(Action* action) override {
-    ASSERT(action->MergeId() == MergeId());
+    DCHECK_EQ(action->MergeId(), MergeId());
 
     SetElementStyleAction* other = static_cast<SetElementStyleAction*>(action);
     text_ = other->text_;

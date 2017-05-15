@@ -347,7 +347,7 @@ LocalDOMWindow* LocalDOMWindow::From(const ScriptState* script_state) {
 Document* LocalDOMWindow::InstallNewDocument(const String& mime_type,
                                              const DocumentInit& init,
                                              bool force_xhtml) {
-  ASSERT(init.GetFrame() == GetFrame());
+  DCHECK_EQ(init.GetFrame(), GetFrame());
 
   ClearDocument();
 

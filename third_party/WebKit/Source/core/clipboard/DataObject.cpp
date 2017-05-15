@@ -248,7 +248,7 @@ DataObjectItem* DataObject::FindStringItem(const String& type) const {
 }
 
 bool DataObject::InternalAddStringItem(DataObjectItem* item) {
-  ASSERT(item->Kind() == DataObjectItem::kStringKind);
+  DCHECK_EQ(item->Kind(), DataObjectItem::kStringKind);
   for (size_t i = 0; i < item_list_.size(); ++i) {
     if (item_list_[i]->Kind() == DataObjectItem::kStringKind &&
         item_list_[i]->GetType() == item->GetType())
@@ -260,7 +260,7 @@ bool DataObject::InternalAddStringItem(DataObjectItem* item) {
 }
 
 void DataObject::InternalAddFileItem(DataObjectItem* item) {
-  ASSERT(item->Kind() == DataObjectItem::kFileKind);
+  DCHECK_EQ(item->Kind(), DataObjectItem::kFileKind);
   item_list_.push_back(item);
 }
 

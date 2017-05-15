@@ -718,7 +718,7 @@ void FrameView::AdjustViewSize() {
   if (layout_view_item.IsNull())
     return;
 
-  ASSERT(frame_->View() == this);
+  DCHECK_EQ(frame_->View(), this);
 
   const IntRect rect = layout_view_item.DocumentRect();
   const IntSize& size = rect.Size();
@@ -1158,7 +1158,7 @@ void FrameView::ScheduleOrPerformPostLayoutTasks() {
 void FrameView::UpdateLayout() {
   // We should never layout a Document which is not in a LocalFrame.
   DCHECK(frame_);
-  DCHECK(frame_->View() == this);
+  DCHECK_EQ(frame_->View(), this);
   DCHECK(frame_->GetPage());
 
   ScriptForbiddenScope forbid_script;

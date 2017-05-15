@@ -106,7 +106,7 @@ MainThreadDebugger::MainThreadDebugger(v8::Isolate* isolate)
 
 MainThreadDebugger::~MainThreadDebugger() {
   MutexLocker locker(CreationMutex());
-  ASSERT(instance_ == this);
+  DCHECK_EQ(instance_, this);
   instance_ = nullptr;
 }
 
@@ -242,7 +242,7 @@ void MainThreadDebugger::runMessageLoopOnPause(int context_group_id) {
   // Do not pause in Context of detached frame.
   if (!paused_frame)
     return;
-  ASSERT(paused_frame == paused_frame->LocalFrameRoot());
+  DCHECK(paused_frame == paused_frame->LocalFrameRoot());
   paused_ = true;
 
   if (UserGestureToken* token = UserGestureIndicator::CurrentToken())

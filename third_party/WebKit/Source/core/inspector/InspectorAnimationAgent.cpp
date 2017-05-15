@@ -387,7 +387,7 @@ Response InspectorAnimationAgent::setTiming(const String& animation_id,
     // Refer to CSSAnimations::calculateTransitionUpdateForProperty() for the
     // structure of transitions.
     const KeyframeVector& frames = old_model->GetFrames();
-    ASSERT(frames.size() == 3);
+    DCHECK(frames.size() == 3);
     KeyframeVector new_frames;
     for (int i = 0; i < 3; i++)
       new_frames.push_back(ToTransitionKeyframe(frames[i]->Clone().Get()));

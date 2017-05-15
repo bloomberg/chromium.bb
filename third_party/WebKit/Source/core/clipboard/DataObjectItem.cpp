@@ -125,7 +125,7 @@ File* DataObjectItem::GetAsFile() const {
     return nullptr;
   }
 
-  ASSERT(source_ == kPasteboardSource);
+  DCHECK_EQ(source_, kPasteboardSource);
   if (GetType() == kMimeTypeImagePng) {
     WebBlobInfo blob_info = Platform::Current()->Clipboard()->ReadImage(
         WebClipboard::kBufferStandard);
@@ -141,12 +141,12 @@ File* DataObjectItem::GetAsFile() const {
 }
 
 String DataObjectItem::GetAsString() const {
-  ASSERT(kind_ == kStringKind);
+  DCHECK_EQ(kind_, kStringKind);
 
   if (source_ == kInternalSource)
     return data_;
 
-  ASSERT(source_ == kPasteboardSource);
+  DCHECK_EQ(source_, kPasteboardSource);
 
   WebClipboard::Buffer buffer = Pasteboard::GeneralPasteboard()->GetBuffer();
   String data;

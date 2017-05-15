@@ -101,7 +101,7 @@ void SQLiteDatabase::Close() {
   if (db_) {
     // FIXME: This is being called on the main thread during JS GC.
     // <rdar://problem/5739818>
-    // ASSERT(currentThread() == m_openingThread);
+    // DCHECK_EQ(currentThread(), m_openingThread);
     sqlite3* db = db_;
     {
       MutexLocker locker(database_closing_mutex_);
