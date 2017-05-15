@@ -2399,7 +2399,7 @@ void MenuController::RepostEventAndCancel(SubmenuView* source,
     } else {
       // We some times get an event after closing all the menus. Ignore it. Make
       // sure the menu is in fact not visible. If the menu is visible, then
-      // we're in a bad state where we think the menu isn't visibile but it is.
+      // we're in a bad state where we think the menu isn't visible but it is.
       DCHECK(!source->GetWidget()->IsVisible());
     }
 

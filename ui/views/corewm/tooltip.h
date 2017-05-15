@@ -39,7 +39,7 @@ class VIEWS_EXPORT Tooltip {
   // Hides the tooltip.
   virtual void Hide() = 0;
 
-  // Is the tooltip visibile?
+  // Is the tooltip visible?
   virtual bool IsVisible() = 0;
 };
 

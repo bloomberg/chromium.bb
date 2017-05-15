@@ -43,7 +43,7 @@ void WmSnapToPixelLayoutManager::OnWindowRemovedFromLayout(
 
 void WmSnapToPixelLayoutManager::OnChildWindowVisibilityChanged(
     aura::Window* child,
-    bool visibile) {}
+    bool visible) {}
 
 void WmSnapToPixelLayoutManager::SetChildBounds(
     aura::Window* child,

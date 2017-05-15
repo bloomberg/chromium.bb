@@ -64,7 +64,7 @@ class CursorTest : public testing::Test {
     //    ASSERT_EQ(1u, display_manager->displays().size());
     Display* display = *display_manager->displays().begin();
     return display->GetWindowManagerDisplayRootForUser(kTestId1)
-        ->GetClientVisibileRoot();
+        ->GetClientVisibleRoot();
   }
 
   // Create a 30x30 window where the outer 10 pixels is non-client.
