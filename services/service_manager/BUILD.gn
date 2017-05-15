@@ -31,19 +31,17 @@ source_set("service_manager") {
   ]
 
   deps = [
-    "//base",
     "//base/third_party/dynamic_annotations",
-    "//mojo/common",
+  ]
+
+  public_deps = [
+    "//base",
     "//mojo/public/cpp/bindings",
+    "//services/catalog:lib",
     "//services/catalog/public/interfaces:constants",
     "//services/service_manager/public/cpp",
     "//services/service_manager/public/interfaces",
     "//services/service_manager/runner/host:lib",
-  ]
-
-  public_deps = [
-    # ApplicationManager exposes and uses PackageManager types in its header.
-    "//services/catalog:lib",
   ]
 }
 

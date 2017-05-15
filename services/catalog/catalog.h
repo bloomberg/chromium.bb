@@ -17,7 +17,6 @@
 #include "services/catalog/entry_cache.h"
 #include "services/catalog/public/interfaces/catalog.mojom.h"
 #include "services/service_manager/public/cpp/service.h"
-#include "services/service_manager/public/interfaces/resolver.mojom.h"
 #include "services/service_manager/public/interfaces/service.mojom.h"
 
 namespace base {
@@ -61,19 +60,16 @@ class Catalog {
   // to be relative to the current executable's path.
   static void LoadDefaultCatalogManifest(const base::FilePath& path);
 
+  Instance* GetInstanceForUserId(const std::string& user_id);
+
  private:
   class ServiceImpl;
-
-  void BindResolverRequest(const service_manager::BindSourceInfo& source_info,
-                           service_manager::mojom::ResolverRequest request);
 
   void BindCatalogRequest(const service_manager::BindSourceInfo& source_info,
                           mojom::CatalogRequest request);
 
   void BindDirectoryRequest(const service_manager::BindSourceInfo& source_info,
                             filesystem::mojom::DirectoryRequest request);
-
-  Instance* GetInstanceForUserId(const std::string& user_id);
 
   service_manager::mojom::ServicePtr service_;
   std::unique_ptr<service_manager::ServiceContext> service_context_;

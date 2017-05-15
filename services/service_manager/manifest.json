@@ -30,7 +30,6 @@
       },
       "requires": {
         "*": [ "service_manager:service_factory" ],
-        "catalog": [ "service_manager:resolver" ],
         "tracing": [ "app" ]
       }
     }

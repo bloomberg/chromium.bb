@@ -13,7 +13,6 @@
 #include "base/macros.h"
 #include "services/catalog/public/interfaces/catalog.mojom.h"
 #include "services/service_manager/public/cpp/interface_provider_spec.h"
-#include "services/service_manager/public/interfaces/resolver.mojom.h"
 
 namespace base {
 class Value;
@@ -83,12 +82,6 @@ class Entry {
 }  // namespace catalog
 
 namespace mojo {
-template <>
-struct TypeConverter<service_manager::mojom::ResolveResultPtr,
-                     const catalog::Entry*> {
-  static service_manager::mojom::ResolveResultPtr Convert(
-      const catalog::Entry* input);
-};
 
 template<>
 struct TypeConverter<catalog::mojom::EntryPtr, catalog::Entry> {

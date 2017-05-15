@@ -35,11 +35,9 @@
 #include "content/public/common/service_names.mojom.h"
 #include "mojo/edk/embedder/embedder.h"
 #include "mojo/edk/embedder/incoming_broker_client_invitation.h"
-#include "services/catalog/catalog.h"
 #include "services/catalog/manifest_provider.h"
 #include "services/catalog/public/cpp/manifest_parsing_util.h"
 #include "services/catalog/public/interfaces/constants.mojom.h"
-#include "services/catalog/store.h"
 #include "services/data_decoder/public/interfaces/constants.mojom.h"
 #include "services/device/device_service.h"
 #include "services/device/public/interfaces/constants.mojom.h"
@@ -207,11 +205,9 @@ class ServiceManagerContext::InProcessServiceManagerContext
       std::unique_ptr<BuiltinManifestProvider> manifest_provider,
       service_manager::mojom::ServicePtrInfo packaged_services_service_info) {
     manifest_provider_ = std::move(manifest_provider);
-    catalog_ =
-        base::MakeUnique<catalog::Catalog>(nullptr, manifest_provider_.get());
     service_manager_ = base::MakeUnique<service_manager::ServiceManager>(
-        base::MakeUnique<NullServiceProcessLauncherFactory>(),
-        catalog_->TakeService());
+        base::MakeUnique<NullServiceProcessLauncherFactory>(), nullptr,
+        manifest_provider_.get());
 
     service_manager::mojom::ServicePtr packaged_services_service;
     packaged_services_service.Bind(std::move(packaged_services_service_info));
@@ -223,12 +219,10 @@ class ServiceManagerContext::InProcessServiceManagerContext
 
   void ShutDownOnIOThread() {
     service_manager_.reset();
-    catalog_.reset();
     manifest_provider_.reset();
   }
 
   std::unique_ptr<BuiltinManifestProvider> manifest_provider_;
-  std::unique_ptr<catalog::Catalog> catalog_;
   std::unique_ptr<service_manager::ServiceManager> service_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(InProcessServiceManagerContext);

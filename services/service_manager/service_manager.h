@@ -11,19 +11,24 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/values.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
+#include "services/catalog/catalog.h"
 #include "services/service_manager/connect_params.h"
 #include "services/service_manager/public/cpp/identity.h"
 #include "services/service_manager/public/cpp/interface_provider_spec.h"
 #include "services/service_manager/public/interfaces/connector.mojom.h"
 #include "services/service_manager/public/interfaces/interface_provider.mojom.h"
-#include "services/service_manager/public/interfaces/resolver.mojom.h"
 #include "services/service_manager/public/interfaces/service.mojom.h"
 #include "services/service_manager/public/interfaces/service_factory.mojom.h"
 #include "services/service_manager/public/interfaces/service_manager.mojom.h"
 #include "services/service_manager/runner/host/service_process_launcher.h"
 #include "services/service_manager/service_overrides.h"
+
+namespace catalog {
+class ManifestProvider;
+}
 
 namespace service_manager {
 
@@ -52,24 +57,22 @@ class ServiceManager {
   // |service_process_launcher_factory| is an instance of an object capable of
   // vending implementations of ServiceProcessLauncher, e.g. for out-of-process
   // execution.
+  //
+  // |catalog_contents|, if not null, will be used to prepoulate the service
+  // manager catalog with a fixed data set. |manifest_provider|, if not null,
+  // will be consulted for dynamic manifest resolution if a manifest is not
+  // found within the catalog; if used, |manifest_provider| is not owned and
+  // must outlive this ServiceManager.
   ServiceManager(std::unique_ptr<ServiceProcessLauncherFactory>
                      service_process_launcher_factory,
-                 mojom::ServicePtr catalog);
+                 std::unique_ptr<base::Value> catalog_contents,
+                 catalog::ManifestProvider* manifest_provider);
   ~ServiceManager();
-
-  // Sets overrides for service executable and package resolution. Must be
-  // called before any services are launched.
-  void SetServiceOverrides(std::unique_ptr<ServiceOverrides> overrides);
 
   // Provide a callback to be notified whenever an instance is destroyed.
   // Typically the creator of the Service Manager will use this to determine
   // when some set of services it created are destroyed, so it can shut down.
   void SetInstanceQuitCallback(base::Callback<void(const Identity&)> callback);
-
-  // Completes a connection between a source and target application as defined
-  // by |params|, exchanging InterfaceProviders between them. If no existing
-  // instance of the target application is running, one will be loaded.
-  void Connect(std::unique_ptr<ConnectParams> params);
 
   // Directly requests that the Service Manager start a new instance for
   // |identity| if one is not already running.
@@ -85,17 +88,16 @@ class ServiceManager {
                        mojom::ServicePtr service,
                        mojom::PIDReceiverRequest pid_receiver_request);
 
+  // Completes a connection between a source and target application as defined
+  // by |params|. If no existing instance of the target service is running, one
+  // will be loaded.
+  void Connect(std::unique_ptr<ConnectParams> params);
+
  private:
   class Instance;
   class ServiceImpl;
 
   void InitCatalog(mojom::ServicePtr catalog);
-
-  // Returns the resolver to use for the specified identity.
-  // NOTE: Resolvers are cached to ensure we service requests in order. If
-  // we use a separate Resolver for each request ordering is not
-  // guaranteed and can lead to random flake.
-  mojom::Resolver* GetResolver(const Identity& identity);
 
   // Called when |instance| encounters an error. Deletes |instance|.
   void OnInstanceError(Instance* instance);
@@ -106,16 +108,6 @@ class ServiceManager {
 
   // Called by an Instance as it's being destroyed.
   void OnInstanceStopped(const Identity& identity);
-
-  // Completes a connection between a source and target application as defined
-  // by |params|, exchanging InterfaceProviders between them. If no existing
-  // instance of the target application is running, one will be loaded.
-  //
-  // If |instance| is not null, the lifetime of the connection request is
-  // bounded by that of |instance|. The connection will be cancelled dropped if
-  // |instance| is destroyed.
-  void Connect(std::unique_ptr<ConnectParams> params,
-               base::WeakPtr<Instance> source_instance);
 
   // Returns a running instance matching |identity|. This might be an instance
   // running as a different user if one is available that services all users.
@@ -135,7 +127,7 @@ class ServiceManager {
 
   Instance* CreateInstance(const Identity& source,
                            const Identity& target,
-                           InterfaceProviderSpecMap specs);
+                           const InterfaceProviderSpecMap& specs);
 
   // Called from the instance implementing mojom::ServiceManager.
   void AddListener(mojom::ServiceManagerListenerPtr listener);
@@ -149,24 +141,13 @@ class ServiceManager {
       const Identity& service_factory_identity);
   void OnServiceFactoryLost(const Identity& which);
 
-  // Callback when remote Catalog resolves mojo:foo to mojo:bar.
-  // |params| are the params passed to Connect().
-  // |service| if provided is a ServicePtr which should be used to manage the
-  // new application instance. This may be null.
-  // |result| contains the result of the resolve operation.
-  void OnGotResolvedName(std::unique_ptr<ConnectParams> params,
-                         bool has_source_instance,
-                         base::WeakPtr<Instance> source_instance,
-                         mojom::ResolveResultPtr result,
-                         const base::Optional<std::string>& parent_name);
-
   base::WeakPtr<ServiceManager> GetWeakPtr();
-
-  std::unique_ptr<ServiceOverrides> service_overrides_;
 
   // Ownership of all Instances.
   using InstanceMap = std::map<Instance*, std::unique_ptr<Instance>>;
   InstanceMap instances_;
+
+  catalog::Catalog catalog_;
 
   // Maps service identities to reachable instances. Note that the Instance*
   // values here are NOT owned by this map.
@@ -181,7 +162,6 @@ class ServiceManager {
   std::set<std::string> singletons_;
 
   std::map<Identity, mojom::ServiceFactoryPtr> service_factories_;
-  std::map<Identity, mojom::ResolverPtr> identity_to_resolver_;
   mojo::InterfacePtrSet<mojom::ServiceManagerListener> listeners_;
   base::Callback<void(const Identity&)> instance_quit_callback_;
   std::unique_ptr<ServiceProcessLauncherFactory>

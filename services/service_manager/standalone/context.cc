@@ -88,10 +88,9 @@ Context::Context(
           base::MakeUnique<ServiceProcessLauncherFactoryImpl>(
               blocking_pool_.get(),
               service_process_launcher_delegate);
-  catalog_.reset(new catalog::Catalog(std::move(catalog_contents)));
   service_manager_.reset(
       new ServiceManager(std::move(service_process_launcher_factory),
-                         catalog_->TakeService()));
+                         std::move(catalog_contents), nullptr));
 }
 
 Context::~Context() { blocking_pool_->Shutdown(); }
