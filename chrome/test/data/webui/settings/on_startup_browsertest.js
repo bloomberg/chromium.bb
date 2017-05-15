@@ -36,12 +36,6 @@ OnStartupSettingsBrowserTest.prototype = {
     assertTrue(!!result);
     return result;
   },
-
-  /** @override */
-  preLoad: function() {
-    SettingsPageBrowserTest.prototype.preLoad.call(this);
-    settingsHidePagesByDefaultForTest = true;
-  },
 };
 
 TEST_F('OnStartupSettingsBrowserTest', 'uiTests', function() {

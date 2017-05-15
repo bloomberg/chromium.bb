@@ -21,9 +21,7 @@ Polymer({
      * Dictionary defining page visibility.
      * @type {!GuestModePageVisibility}
      */
-    pageVisibility: {
-      type: Object,
-    },
+    pageVisibility: Object,
   },
 
   listeners: {
