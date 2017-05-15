@@ -700,6 +700,11 @@ IN_PROC_BROWSER_TEST_P(ReporterRunnerTest, Failure) {
 }
 
 IN_PROC_BROWSER_TEST_P(ReporterRunnerTest, RunDaily) {
+  // When the kInBrowserCleanerUIFeature feature is enabled, the reporter should
+  // never run daily. Test that case separately.
+  if (in_browser_cleaner_ui_)
+    return;
+
   PrefService* local_state = g_browser_process->local_state();
   local_state->SetBoolean(prefs::kSwReporterPendingPrompt, true);
   SetDaysSinceLastTriggered(kDaysBetweenSuccessfulSwReporterRuns - 1);
@@ -726,6 +731,30 @@ IN_PROC_BROWSER_TEST_P(ReporterRunnerTest, RunDaily) {
   ExpectToRunAgain(days_left);
   ExpectReporterLaunches(days_left, 1, false);
   ExpectToRunAgain(kDaysBetweenSuccessfulSwReporterRuns);
+}
+
+IN_PROC_BROWSER_TEST_P(ReporterRunnerTest, InBrowserUINoRunDaily) {
+  // Ensure that the reporter always runs every
+  // kDaysBetweenSuccessfulSwReporterRuns days when kInBrowserCleanerUIFeature
+  // is enabled. The case when kInBrowserCleanerUIFeature is disabled is tested
+  // separately.
+  if (!in_browser_cleaner_ui_)
+    return;
+
+  // Users can have the pending prompt set to true when migrating to the new UI,
+  // but it should be disregarded and the reporter should only be run every
+  // kDaysBetweenSuccessfulSwReporterRuns days.
+  PrefService* local_state = g_browser_process->local_state();
+  local_state->SetBoolean(prefs::kSwReporterPendingPrompt, true);
+  SetDaysSinceLastTriggered(kDaysBetweenSuccessfulSwReporterRuns - 1);
+  ASSERT_GT(kDaysBetweenSuccessfulSwReporterRuns - 1,
+            kDaysBetweenSwReporterRunsForPendingPrompt);
+  RunReporter(chrome_cleaner::kSwReporterNothingFound);
+
+  // Pending prompt is set, but we should not run the reporter since it hasn't
+  // been kDaysBetweenSuccessfulSwReporterRuns days since the last run.
+  ExpectReporterLaunches(0, 0, false);
+  ExpectToRunAgain(1);
 }
 
 IN_PROC_BROWSER_TEST_P(ReporterRunnerTest, ParameterChange) {

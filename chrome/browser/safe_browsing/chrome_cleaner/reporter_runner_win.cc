@@ -973,11 +973,15 @@ class ReporterRunner : public chrome::BrowserListObserver {
     // Run a queue of reporters if none have been triggered in the last
     // |days_between_reporter_runs_| days, which depends if there is a pending
     // prompt to be added to Chrome's menu.
-    if (local_state->GetBoolean(prefs::kSwReporterPendingPrompt)) {
+    //
+    // There is no concept of a pending prompt if the kInBrowserCleanerUIFeature
+    // feature is enabled, so always use kDaysBetweenSuccessfulSwReporterRuns in
+    // that case.
+    days_between_reporter_runs_ = kDaysBetweenSuccessfulSwReporterRuns;
+    if (!base::FeatureList::IsEnabled(kInBrowserCleanerUIFeature) &&
+        local_state->GetBoolean(prefs::kSwReporterPendingPrompt)) {
       days_between_reporter_runs_ = kDaysBetweenSwReporterRunsForPendingPrompt;
       RecordReporterStepHistogram(SW_REPORTER_RAN_DAILY);
-    } else {
-      days_between_reporter_runs_ = kDaysBetweenSuccessfulSwReporterRuns;
     }
     const base::Time now = Now();
     const base::Time last_time_triggered = base::Time::FromInternalValue(
