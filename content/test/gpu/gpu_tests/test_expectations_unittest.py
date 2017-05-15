@@ -63,7 +63,8 @@ class SampleTestExpectations(test_expectations.TestExpectations):
     self.Fail('page8.html', ['mavericks'])
     self.Fail('page9.html', ['yosemite'])
     # Test browser conditions.
-    self.Fail('page10.html', ['android', 'android-webview-shell'], bug=456)
+    self.Fail('page10.html', ['android', 'android-webview-instrumentation'],
+              bug=456)
     # Test user defined conditions.
     self.Fail('page11.html', ['win', 'valid_condition_matched'])
     self.Fail('page12.html', ['win', 'valid_condition_unmatched'])
@@ -198,7 +199,7 @@ class TestExpectationsTest(unittest.TestCase):
     self.assertExpectationEquals('pass', url, StubPlatform('android'),
                                  browser_type='android-content-shell')
     self.assertExpectationEquals('fail', url, StubPlatform('android'),
-                                 browser_type='android-webview-shell')
+                                 browser_type='android-webview-instrumentation')
 
   # Tests with user-defined conditions.
   def testUserDefinedConditions(self):
@@ -258,7 +259,7 @@ class TestExpectationsTest(unittest.TestCase):
     self.assertExpectationEquals('fail', url, StubPlatform('Win', 'Vista'))
     url = 'http://test.com/page10.html'
     self.assertExpectationEquals('fail', url, StubPlatform('android'),
-                                 browser_type='Android-Webview-Shell')
+                                 browser_type='Android-Webview-Instrumentation')
 
   def testASANExpectations(self):
     url16 = 'page16.html'

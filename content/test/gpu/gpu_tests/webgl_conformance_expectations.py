@@ -505,21 +505,22 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     # tests in the suite, so skip them for now.
     self.Skip('conformance/textures/video/' +
         'tex-2d-rgb-rgb-unsigned_byte.html',
-        ['android', 'android-webview-shell'], bug=352645)
+        ['android', 'android-webview-instrumentation'], bug=352645)
     self.Skip('conformance/textures/video/' +
         'tex-2d-rgb-rgb-unsigned_short_5_6_5.html',
-        ['android', 'android-webview-shell'], bug=352645)
+        ['android', 'android-webview-instrumentation'], bug=352645)
     self.Skip('conformance/textures/video/' +
         'tex-2d-rgba-rgba-unsigned_byte.html',
-        ['android', 'android-webview-shell'], bug=352645)
+        ['android', 'android-webview-instrumentation'], bug=352645)
     self.Skip('conformance/textures/video/' +
         'tex-2d-rgba-rgba-unsigned_short_4_4_4_4.html',
-        ['android', 'android-webview-shell'], bug=352645)
+        ['android', 'android-webview-instrumentation'], bug=352645)
     self.Skip('conformance/textures/video/' +
         'tex-2d-rgba-rgba-unsigned_short_5_5_5_1.html',
-        ['android', 'android-webview-shell'], bug=352645)
+        ['android', 'android-webview-instrumentation'], bug=352645)
     self.Skip('conformance/textures/misc/texture-npot-video.html',
-        ['android', 'android-webview-shell', 'no_passthrough'], bug=352645)
+        ['android', 'android-webview-instrumentation', 'no_passthrough'],
+              bug=352645)
     # This crashes in Android WebView on the Nexus 6, preventing the
     # suite from running further. Rather than add multiple
     # suppressions, skip it until it's passing at least in content
@@ -625,7 +626,7 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     # down the WebView shell, causing the next test to fail and
     # subsequent tests to be aborted.
     self.Skip('conformance/more/functions/bindBufferBadArgs.html',
-        ['android', 'android-webview-shell',
+        ['android', 'android-webview-instrumentation',
          ('qualcomm', 'Adreno (TM) 420')], bug=499874)
     self.Fail('conformance/rendering/gl-scissor-test.html',
         ['android', ('qualcomm', 'Adreno (TM) 420')], bug=499555)

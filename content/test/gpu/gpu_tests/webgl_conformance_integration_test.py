@@ -288,7 +288,7 @@ class WebGLConformanceIntegrationTest(gpu_integration_test.GpuIntegrationTest):
       ])
     browser = browser_finder.FindBrowser(browser_options.finder_options)
     if (browser.target_os.startswith('android') and
-      browser.browser_type == 'android-webview-shell'):
+      browser.browser_type == 'android-webview-instrumentation'):
       # TODO(kbr): this is overly broad. We'd like to do this only on
       # Nexus 9. It'll go away shortly anyway. crbug.com/499928
       #

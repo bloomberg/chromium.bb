@@ -13,7 +13,7 @@ import urlparse
 #     android
 #
 # Browser types:
-#     android-webview-shell, android-content-shell, debug, release
+#     android-webview-instrumentation, android-content-shell, debug, release
 #
 # ASAN conditions:
 #     asan, no_asan
@@ -30,8 +30,8 @@ OS_CONDITIONS = ['win', 'mac', 'linux', 'chromeos', 'android'] + \
                 WIN_CONDITIONS + MAC_CONDITIONS
 
 BROWSER_TYPE_CONDITIONS = [
-    'android-webview-shell', 'android-content-shell', 'android-chromium',
-    'debug', 'release']
+    'android-webview-instrumentation', 'android-content-shell',
+    'android-chromium', 'debug', 'release']
 
 ASAN_CONDITIONS = ['asan', 'no_asan']
 
@@ -90,8 +90,8 @@ class Expectation(object):
       android
 
     Browser types:
-      android-webview-shell, android-content-shell, android-chromium,
-      debug, release
+      android-webview-instrumentation, android-content-shell,
+      android-chromium, debug, release
 
     Sample usage in SetExpectations in subclasses:
       self.Fail('gl-enable-vertex-attrib.html',
