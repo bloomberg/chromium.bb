@@ -148,7 +148,8 @@ class WindowSelectorTest : public test::AshTestBase {
     aura::Window* window = CreateTestWindowInShellWithDelegateAndType(
         nullptr, ui::wm::WINDOW_TYPE_PANEL, 0, bounds);
     static int id = 0;
-    window->SetProperty(kShelfIDKey, new ShelfID(base::IntToString(id++)));
+    std::string shelf_id(ShelfID(base::IntToString(id++)).Serialize());
+    window->SetProperty(kShelfIDKey, new std::string(shelf_id));
     window->SetProperty(aura::client::kTopViewInset, kHeaderHeight);
     shelf_view_test()->RunMessageLoopUntilAnimationsDone();
     return window;

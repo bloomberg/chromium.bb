@@ -53,6 +53,8 @@ void ChromeBrowserMainExtraPartsAsh::ServiceManagerConnectionStarted(
         ash::kPanelAttachedKey,
         ui::mojom::WindowManager::kPanelAttached_Property,
         aura::PropertyConverter::CreateAcceptAnyValueCallback());
+    converter->RegisterProperty(ash::kShelfIDKey,
+                                ui::mojom::WindowManager::kShelfID_Property);
     converter->RegisterProperty(
         ash::kShelfItemTypeKey,
         ui::mojom::WindowManager::kShelfItemType_Property,

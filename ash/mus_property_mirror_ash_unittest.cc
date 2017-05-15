@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "ash/public/cpp/shelf_types.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/test/ash_test_base.h"
 #include "base/strings/string16.h"

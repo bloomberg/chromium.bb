@@ -78,6 +78,7 @@ class AURA_EXPORT PropertyConverter {
   // Register a property to support conversion between mus and aura.
   // |validator| is a callback used to validate incoming values from
   // transport_data; if it returns false, the value is rejected.
+  // TODO(msw): Include type names in RegisterProperty function names.
   template <typename T>
   void RegisterProperty(
       const WindowProperty<T>* property,
@@ -93,7 +94,8 @@ class AURA_EXPORT PropertyConverter {
     transport_names_.insert(transport_name);
   }
 
-  // Specializations for properties to pointer types supporting mojo conversion.
+  // Register owned properties to support conversion between mus and aura.
+  // TODO(msw): Include type names in RegisterProperty function names.
   void RegisterProperty(const WindowProperty<gfx::ImageSkia*>* property,
                         const char* transport_name);
   void RegisterProperty(const WindowProperty<gfx::Rect*>* property,

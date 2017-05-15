@@ -130,7 +130,7 @@ interface WindowManager {
   // See ShadowElevation for details. Type: wm::ShadowElevation.
   const string kShadowElevation_Property = "prop:shadow-elevation";
 
-  // The shelf ID struct. Maps to ash::kShelfIDKey. Type: ash::ShelfID.
+  // The serialized shelf id. Maps to ash::kShelfIDKey. Type: mojom::String.
   const string kShelfID_Property = "prop:shelf-id";
 
   // The type of item to be shown on the shelf for this window. Type: int

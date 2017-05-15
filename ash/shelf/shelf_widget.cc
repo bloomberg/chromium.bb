@@ -296,24 +296,26 @@ void ShelfWidget::Shutdown() {
 }
 
 void ShelfWidget::UpdateIconPositionForPanel(WmWindow* panel) {
-  ShelfID* id = panel->aura_window()->GetProperty(kShelfIDKey);
-  if (!shelf_view_ || !id)
+  ShelfID id =
+      ShelfID::Deserialize(panel->aura_window()->GetProperty(kShelfIDKey));
+  if (!shelf_view_ || id.IsNull())
     return;
 
   WmWindow* shelf_window = WmWindow::Get(this->GetNativeWindow());
   shelf_view_->UpdatePanelIconPosition(
-      *id, shelf_window->ConvertRectFromScreen(panel->GetBoundsInScreen())
-               .CenterPoint());
+      id, shelf_window->ConvertRectFromScreen(panel->GetBoundsInScreen())
+              .CenterPoint());
 }
 
 gfx::Rect ShelfWidget::GetScreenBoundsOfItemIconForWindow(WmWindow* window) {
-  ShelfID* id = window->aura_window()->GetProperty(kShelfIDKey);
+  ShelfID id =
+      ShelfID::Deserialize(window->aura_window()->GetProperty(kShelfIDKey));
   // Window animations can be triggered during session restore before the shelf
   // view is created. In that case, return default empty bounds.
-  if (!shelf_view_ || !id)
+  if (!shelf_view_ || id.IsNull())
     return gfx::Rect();
 
-  gfx::Rect bounds(shelf_view_->GetIdealBoundsOfItemIcon(*id));
+  gfx::Rect bounds(shelf_view_->GetIdealBoundsOfItemIcon(id));
   gfx::Point screen_origin;
   views::View::ConvertPointToScreen(shelf_view_, &screen_origin);
   return gfx::Rect(screen_origin.x() + bounds.x(),

@@ -20,7 +20,6 @@ class ShelfItemDelegate;
 class ShelfModelObserver;
 
 // Model used for shelf items. Owns ShelfItemDelegates but does not create them.
-// TODO(msw): Remove id conversion functions; check for item presence as needed.
 class ASH_EXPORT ShelfModel {
  public:
   ShelfModel();

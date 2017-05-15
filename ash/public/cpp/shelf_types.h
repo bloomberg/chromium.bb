@@ -138,8 +138,8 @@ enum ShelfItemStatus {
 // As an example, a remote desktop client may want each remote application to
 // have its own icon.
 struct ASH_PUBLIC_EXPORT ShelfID {
-  ShelfID(const std::string& app_id = std::string(),
-          const std::string& launch_id = std::string());
+  explicit ShelfID(const std::string& app_id = std::string(),
+                   const std::string& launch_id = std::string());
   ~ShelfID();
 
   ShelfID(const ShelfID& other);
@@ -152,6 +152,12 @@ struct ASH_PUBLIC_EXPORT ShelfID {
   // Returns true if both the application id and launch id are empty.
   // This is often used to determine if the id is invalid.
   bool IsNull() const;
+
+  // Functions to [de]serialize ids as a string for window property usage, etc.
+  // Serialization appends ids with a delimeter that must not be used in ids.
+  // Deserialization returns an empty/null/default id for a null string input.
+  std::string Serialize() const;
+  static ShelfID Deserialize(const std::string* string);
 
   // The application id associated with a set of windows.
   std::string app_id;

@@ -106,7 +106,8 @@ task_manager::TaskManagerTableModel* TaskManagerView::Show(Browser* browser) {
   // An app id for task manager windows, also used to identify the shelf item.
   // Generated as crx_file::id_util::GenerateId("org.chromium.taskmanager")
   static constexpr char kTaskManagerId[] = "ijaigheoohcacdnplfbdimmcfldnnhdi";
-  window->SetProperty(ash::kShelfIDKey, new ash::ShelfID(kTaskManagerId));
+  const ash::ShelfID shelf_id(kTaskManagerId);
+  window->SetProperty(ash::kShelfIDKey, new std::string(shelf_id.Serialize()));
   window->SetProperty<int>(ash::kShelfItemTypeKey, ash::TYPE_DIALOG);
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   gfx::ImageSkia* icon = rb.GetImageSkiaNamed(IDR_ASH_SHELF_ICON_TASK_MANAGER);
