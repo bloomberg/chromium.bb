@@ -13,6 +13,7 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/sequenced_task_runner.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "components/cookie_config/cookie_store_util.h"
 #include "components/net_log/chrome_net_log.h"
@@ -86,11 +87,10 @@ void ChromeBrowserStateImplIOData::Handle::Init(
 
   io_data_->InitializeMetricsEnabledStateOnUIThread();
 
-  base::SequencedWorkerPool* pool = web::WebThread::GetBlockingPool();
   scoped_refptr<base::SequencedTaskRunner> db_task_runner =
-      pool->GetSequencedTaskRunnerWithShutdownBehavior(
-          pool->GetSequenceToken(),
-          base::SequencedWorkerPool::SKIP_ON_SHUTDOWN);
+      base::CreateSequencedTaskRunnerWithTraits(
+          {base::MayBlock(), base::TaskPriority::BACKGROUND,
+           base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
 }
 
 scoped_refptr<IOSChromeURLRequestContextGetter>
@@ -260,8 +260,8 @@ void ChromeBrowserStateImplIOData::InitializeInternal(
     scoped_refptr<net::SQLiteChannelIDStore> channel_id_db =
         new net::SQLiteChannelIDStore(
             lazy_params_->channel_id_path,
-            web::WebThread::GetBlockingPool()->GetSequencedTaskRunner(
-                web::WebThread::GetBlockingPool()->GetSequenceToken()));
+            base::CreateSequencedTaskRunnerWithTraits(
+                {base::MayBlock(), base::TaskPriority::BACKGROUND}));
     channel_id_service = new net::ChannelIDService(
         new net::DefaultChannelIDStore(channel_id_db.get()));
   }
