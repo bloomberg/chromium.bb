@@ -4,11 +4,15 @@
 
 #include "components/subresource_filter/core/browser/subresource_filter_features_test_support.h"
 
+#include <ostream>
 #include <utility>
 
+#include "base/json/json_writer.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/string_util.h"
+#include "base/trace_event/trace_event_argument.h"
+#include "base/values.h"
 
 namespace subresource_filter {
 namespace testing {
@@ -82,6 +86,16 @@ void ScopedSubresourceFilterFeatureToggle::ResetSubresourceFilterState(
 }
 
 ScopedSubresourceFilterFeatureToggle::~ScopedSubresourceFilterFeatureToggle() {}
+
+std::ostream& operator<<(std::ostream& os, const Configuration& config) {
+  std::unique_ptr<base::Value> value = config.ToTracedValue()->ToBaseValue();
+  base::DictionaryValue* dict;
+  value->GetAsDictionary(&dict);
+  std::string json;
+  base::JSONWriter::WriteWithOptions(
+      *dict, base::JSONWriter::OPTIONS_PRETTY_PRINT, &json);
+  return os << json;
+}
 
 }  // namespace testing
 }  // namespace subresource_filter

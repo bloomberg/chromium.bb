@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_SUBRESOURCE_FILTER_CORE_BROWSER_SUBRESOURCE_FILTER_FEATURES_TEST_SUPPORT_H_
 #define COMPONENTS_SUBRESOURCE_FILTER_CORE_BROWSER_SUBRESOURCE_FILTER_FEATURES_TEST_SUPPORT_H_
 
+#include <iosfwd>
 #include <memory>
 #include <string>
 
@@ -68,6 +69,9 @@ class ScopedSubresourceFilterFeatureToggle {
 
   DISALLOW_COPY_AND_ASSIGN(ScopedSubresourceFilterFeatureToggle);
 };
+
+// For logging in tests.
+std::ostream& operator<<(std::ostream& os, const Configuration& config);
 
 }  // namespace testing
 }  // namespace subresource_filter
