@@ -51,7 +51,7 @@
 
 namespace blink {
 
-class AXObject;
+class AXObjectImpl;
 class ColorChooser;
 class ColorChooserClient;
 class CompositorWorkerProxyClient;
@@ -283,7 +283,7 @@ class CORE_EXPORT ChromeClient : public PlatformChromeClient {
   virtual PopupMenu* OpenPopupMenu(LocalFrame&, HTMLSelectElement&) = 0;
   virtual DOMWindow* PagePopupWindowForTesting() const = 0;
 
-  virtual void PostAccessibilityNotification(AXObject*,
+  virtual void PostAccessibilityNotification(AXObjectImpl*,
                                              AXObjectCache::AXNotification) {}
   virtual String AcceptLanguages() = 0;
 

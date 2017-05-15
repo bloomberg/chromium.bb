@@ -55,8 +55,8 @@ bool AXARIAGridCell::IsAriaRowHeader() const {
   return EqualIgnoringASCIICase(role, "rowheader");
 }
 
-AXObject* AXARIAGridCell::ParentTable() const {
-  AXObject* parent = ParentObjectUnignored();
+AXObjectImpl* AXARIAGridCell::ParentTable() const {
+  AXObjectImpl* parent = ParentObjectUnignored();
   if (!parent)
     return 0;
 
@@ -74,7 +74,7 @@ AXObject* AXARIAGridCell::ParentTable() const {
 }
 
 void AXARIAGridCell::RowIndexRange(std::pair<unsigned, unsigned>& row_range) {
-  AXObject* parent = ParentObjectUnignored();
+  AXObjectImpl* parent = ParentObjectUnignored();
   if (!parent)
     return;
 
@@ -104,7 +104,7 @@ void AXARIAGridCell::RowIndexRange(std::pair<unsigned, unsigned>& row_range) {
 
 void AXARIAGridCell::ColumnIndexRange(
     std::pair<unsigned, unsigned>& column_range) {
-  AXObject* parent = ParentObjectUnignored();
+  AXObjectImpl* parent = ParentObjectUnignored();
   if (!parent)
     return;
 

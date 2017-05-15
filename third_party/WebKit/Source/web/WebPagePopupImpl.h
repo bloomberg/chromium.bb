@@ -103,7 +103,7 @@ class WebPagePopupImpl final : public WebPagePopup,
   bool IsViewportPointInWindow(int x, int y);
 
   // PagePopup function
-  AXObject* RootAXObject() override;
+  AXObjectImpl* RootAXObject() override;
   void SetWindowRect(const IntRect&) override;
 
   explicit WebPagePopupImpl(WebWidgetClient*);
