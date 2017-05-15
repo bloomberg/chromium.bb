@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
+#include "base/debug/dump_without_crashing.h"
 #include "base/files/file_util.h"
 #include "base/location.h"
 #include "base/logging.h"
@@ -119,6 +120,7 @@ void UserCloudPolicyStoreChromeOS::LoadImmediately() {
   if (response_type == RetrievePolicyResponseType::SESSION_DOES_NOT_EXIST) {
     LOG(ERROR)
         << "Session manager claims that session doesn't exist; signing out";
+    base::debug::DumpWithoutCrashing();
     chrome::AttemptUserExit();
     return;
   }
@@ -234,6 +236,7 @@ void UserCloudPolicyStoreChromeOS::OnPolicyRetrieved(
   if (response_type == RetrievePolicyResponseType::SESSION_DOES_NOT_EXIST) {
     LOG(ERROR)
         << "Session manager claims that session doesn't exist; signing out";
+    base::debug::DumpWithoutCrashing();
     chrome::AttemptUserExit();
     return;
   }
