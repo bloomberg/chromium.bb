@@ -223,13 +223,7 @@ enum EWordBreak {
 
 enum EOverflowWrap { kNormalOverflowWrap, kBreakOverflowWrap };
 
-enum LineBreak {
-  kLineBreakAuto,
-  kLineBreakLoose,
-  kLineBreakNormal,
-  kLineBreakStrict,
-  kLineBreakAfterWhiteSpace
-};
+enum class LineBreak { kAuto, kLoose, kNormal, kStrict, kAfterWhiteSpace };
 
 enum EResize { RESIZE_NONE, RESIZE_BOTH, RESIZE_HORIZONTAL, RESIZE_VERTICAL };
 
