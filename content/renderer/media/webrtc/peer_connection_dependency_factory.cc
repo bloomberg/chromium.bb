@@ -63,6 +63,7 @@
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/webrtc/api/audio_codecs/builtin_audio_decoder_factory.h"
+#include "third_party/webrtc/api/audio_codecs/builtin_audio_encoder_factory.h"
 #include "third_party/webrtc/api/mediaconstraintsinterface.h"
 #include "third_party/webrtc/api/videosourceproxy.h"
 #include "third_party/webrtc/base/ssladapter.h"
