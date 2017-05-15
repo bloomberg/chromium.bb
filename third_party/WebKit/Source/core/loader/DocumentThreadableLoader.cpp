@@ -393,7 +393,10 @@ void DocumentThreadableLoader::MakeCrossOriginAccessRequest(
     bool should_force_preflight = request.IsExternalRequest();
     if (!should_force_preflight)
       probe::shouldForceCORSPreflight(GetDocument(), &should_force_preflight);
+    // TODO(horo): Currently we don't support the CORS preflight cache on worker
+    // thread when off-main-thread-fetch is enabled. https://crbug.com/443374
     bool can_skip_preflight =
+        IsMainThread() &&
         CrossOriginPreflightResultCache::Shared().CanSkipPreflight(
             GetSecurityOrigin()->ToString(), cross_origin_request.Url(),
             EffectiveAllowCredentials(), cross_origin_request.HttpMethod(),
@@ -769,9 +772,13 @@ void DocumentThreadableLoader::HandlePreflightResponse(
     return;
   }
 
-  CrossOriginPreflightResultCache::Shared().AppendEntry(
-      GetSecurityOrigin()->ToString(), actual_request_.Url(),
-      std::move(preflight_result));
+  if (IsMainThread()) {
+    // TODO(horo): Currently we don't support the CORS preflight cache on worker
+    // thread when off-main-thread-fetch is enabled. https://crbug.com/443374
+    CrossOriginPreflightResultCache::Shared().AppendEntry(
+        GetSecurityOrigin()->ToString(), actual_request_.Url(),
+        std::move(preflight_result));
+  }
 }
 
 void DocumentThreadableLoader::ReportResponseReceived(
