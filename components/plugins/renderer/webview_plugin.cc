@@ -350,6 +350,14 @@ void WebViewPlugin::WebViewHelper::DidClearWindowObject() {
               plugin_->delegate_->GetV8Handle(isolate));
 }
 
+void WebViewPlugin::WebViewHelper::FrameDetached(blink::WebLocalFrame* frame,
+                                                 DetachType type) {
+  if (frame->FrameWidget())
+    frame->FrameWidget()->Close();
+
+  frame->Close();
+}
+
 void WebViewPlugin::OnZoomLevelChanged() {
   if (container_) {
     web_view()->SetZoomLevel(

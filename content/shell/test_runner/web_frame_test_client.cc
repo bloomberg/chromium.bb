@@ -33,6 +33,7 @@
 #include "third_party/WebKit/public/web/WebDataSource.h"
 #include "third_party/WebKit/public/web/WebElement.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
+#include "third_party/WebKit/public/web/WebFrameWidget.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebNavigationPolicy.h"
 #include "third_party/WebKit/public/web/WebPluginParams.h"
@@ -180,6 +181,17 @@ WebFrameTestClient::WebFrameTestClient(
 }
 
 WebFrameTestClient::~WebFrameTestClient() {}
+
+void WebFrameTestClient::FrameDetached(blink::WebLocalFrame* frame,
+                                       DetachType type) {
+  if (type == DetachType::kRemove && frame->Parent())
+    frame->Parent()->RemoveChild(frame);
+
+  if (frame->FrameWidget())
+    frame->FrameWidget()->Close();
+
+  frame->Close();
+}
 
 blink::WebColorChooser* WebFrameTestClient::CreateColorChooser(
     blink::WebColorChooserClient* client,
