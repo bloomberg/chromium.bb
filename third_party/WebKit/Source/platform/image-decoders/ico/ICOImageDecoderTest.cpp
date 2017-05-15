@@ -70,22 +70,22 @@ TEST(ICOImageDecoderTests, errorInPngInIco) {
 TEST(ICOImageDecoderTests, parseAndDecodeByteByByte) {
   TestByteByByteDecode(&CreateDecoder,
                        "/LayoutTests/images/resources/png-in-ico.ico", 1u,
-                       kCAnimationNone);
+                       kAnimationNone);
   TestByteByByteDecode(&CreateDecoder,
                        "/LayoutTests/images/resources/2entries.ico", 2u,
-                       kCAnimationNone);
+                       kAnimationNone);
   TestByteByByteDecode(&CreateDecoder,
                        "/LayoutTests/images/resources/greenbox-3frames.cur", 3u,
-                       kCAnimationNone);
+                       kAnimationNone);
   TestByteByByteDecode(
       &CreateDecoder,
       "/LayoutTests/images/resources/icon-without-and-bitmap.ico", 1u,
-      kCAnimationNone);
+      kAnimationNone);
   TestByteByByteDecode(&CreateDecoder, "/LayoutTests/images/resources/1bit.ico",
-                       1u, kCAnimationNone);
+                       1u, kAnimationNone);
   TestByteByByteDecode(&CreateDecoder,
                        "/LayoutTests/images/resources/bug653075.ico", 2u,
-                       kCAnimationNone);
+                       kAnimationNone);
 }
 
 }  // namespace blink
