@@ -64,10 +64,12 @@ public final class DefaultBrowserInfo {
      * worker task.
      */
     private static class DefaultInfo {
+        public boolean isChromeSystem;
         public boolean isChromeDefault;
         public boolean isDefaultSystem;
         public boolean hasDefault;
         public int browserCount;
+        public int systemCount;
     }
 
     /** A lock to synchronize background tasks to retrieve browser information. */
@@ -184,7 +186,13 @@ public final class DefaultBrowserInfo {
                     List<ResolveInfo> ris =
                             pm.queryIntentActivities(intent, PackageManager.MATCH_ALL);
                     for (ResolveInfo ri : ris) {
-                        uniquePackages.add(ri.activityInfo.applicationInfo.packageName);
+                        String packageName = ri.activityInfo.applicationInfo.packageName;
+                        if (!uniquePackages.add(packageName)) continue;
+
+                        if (isSystemPackage(ri)) {
+                            if (isSamePackage(context, ri)) info.isChromeSystem = true;
+                            info.systemCount++;
+                        }
                     }
 
                     info.browserCount = uniquePackages.size();
@@ -197,6 +205,8 @@ public final class DefaultBrowserInfo {
                     if (info == null) return;
 
                     RecordHistogram.recordCount100Histogram(
+                            getSystemBrowserCountUmaName(info), info.systemCount);
+                    RecordHistogram.recordCount100Histogram(
                             getDefaultBrowserCountUmaName(info), info.browserCount);
                     RecordHistogram.recordEnumeratedHistogram("Mobile.DefaultBrowser.State",
                             getDefaultBrowserUmaState(info), MobileDefaultBrowserState.BOUNDARY);
@@ -207,6 +217,11 @@ public final class DefaultBrowserInfo {
         } catch (RejectedExecutionException ex) {
             // Fail silently here since this is not a critical task.
         }
+    }
+
+    private static String getSystemBrowserCountUmaName(DefaultInfo info) {
+        if (info.isChromeSystem) return "Mobile.DefaultBrowser.SystemBrowserCount.ChromeSystem";
+        return "Mobile.DefaultBrowser.SystemBrowserCount.ChromeNotSystem";
     }
 
     private static String getDefaultBrowserCountUmaName(DefaultInfo info) {
