@@ -119,10 +119,6 @@ enum EMarginCollapse {
   kMarginCollapseDiscard
 };
 
-// Box decoration attributes. Not inherited.
-
-enum class EBoxDecorationBreak { kSlice, kClone };
-
 // Random visual rendering model attributes. Not inherited.
 
 enum class EVerticalAlign : unsigned {

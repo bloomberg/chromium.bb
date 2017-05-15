@@ -2183,7 +2183,13 @@
       name: "-webkit-box-align",
       type_name: "EBoxAlignment",
     },
-    "-webkit-box-decoration-break",
+    {
+      name: "-webkit-box-decoration-break",
+      field_template: "keyword",
+      field_group: "box",
+      keywords: ["slice", "clone"],
+      default_value: "slice",
+    },
     {
       name: "-webkit-box-direction",
       independent: true,
