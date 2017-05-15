@@ -7,11 +7,20 @@ package org.chromium.chrome.browser.payments;
 import android.content.DialogInterface;
 import android.support.test.filters.MediumTest;
 
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
+import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.autofill.AutofillTestHelper;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.CreditCard;
+import org.chromium.chrome.browser.payments.PaymentRequestTestRule.MainActivityStartCallback;
+import org.chromium.chrome.test.ChromeActivityTestRule;
+import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
@@ -19,10 +28,15 @@ import java.util.concurrent.TimeoutException;
 /**
  * A test for using a server card in payments UI.
  */
-public class PaymentRequestServerCardTest extends PaymentRequestTestBase {
-    public PaymentRequestServerCardTest() {
-        super("payment_request_no_shipping_test.html");
-    }
+@RunWith(ChromeJUnit4ClassRunner.class)
+@CommandLineFlags.Add({
+        ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
+        ChromeActivityTestRule.DISABLE_NETWORK_PREDICTION_FLAG,
+})
+public class PaymentRequestServerCardTest implements MainActivityStartCallback {
+    @Rule
+    public PaymentRequestTestRule mPaymentRequestTestRule =
+            new PaymentRequestTestRule("payment_request_no_shipping_test.html", this);
 
     @Override
     public void onMainActivityStarted()
@@ -38,14 +52,18 @@ public class PaymentRequestServerCardTest extends PaymentRequestTestBase {
     }
 
     /** Click [PAY] and dismiss the card unmask dialog. */
+    @Test
     @MediumTest
     @Feature({"Payments"})
-    public void testPayAndDontUnmask() throws InterruptedException, ExecutionException,
-            TimeoutException {
-        triggerUIAndWait(getReadyToPay());
-        clickAndWait(R.id.button_primary, getReadyForUnmaskInput());
-        clickCardUnmaskButtonAndWait(DialogInterface.BUTTON_NEGATIVE, getReadyToPay());
-        clickAndWait(R.id.close_button, getDismissed());
-        expectResultContains(new String[] {"Request cancelled"});
+    public void testPayAndDontUnmask()
+            throws InterruptedException, ExecutionException, TimeoutException {
+        mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyToPay());
+        mPaymentRequestTestRule.clickAndWait(
+                R.id.button_primary, mPaymentRequestTestRule.getReadyForUnmaskInput());
+        mPaymentRequestTestRule.clickCardUnmaskButtonAndWait(
+                DialogInterface.BUTTON_NEGATIVE, mPaymentRequestTestRule.getReadyToPay());
+        mPaymentRequestTestRule.clickAndWait(
+                R.id.close_button, mPaymentRequestTestRule.getDismissed());
+        mPaymentRequestTestRule.expectResultContains(new String[] {"Request cancelled"});
     }
 }

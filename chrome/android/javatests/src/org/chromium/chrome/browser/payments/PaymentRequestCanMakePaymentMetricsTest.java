@@ -4,15 +4,28 @@
 
 package org.chromium.chrome.browser.payments;
 
+import static org.chromium.chrome.browser.payments.PaymentRequestTestRule.HAVE_INSTRUMENTS;
+import static org.chromium.chrome.browser.payments.PaymentRequestTestRule.IMMEDIATE_RESPONSE;
+
 import android.content.DialogInterface;
 import android.support.test.filters.MediumTest;
 
+import org.junit.Assert;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.metrics.RecordHistogram;
+import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.autofill.AutofillTestHelper;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
+import org.chromium.chrome.browser.payments.PaymentRequestTestRule.MainActivityStartCallback;
+import org.chromium.chrome.test.ChromeActivityTestRule;
+import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
@@ -20,10 +33,15 @@ import java.util.concurrent.TimeoutException;
 /**
  * A payment integration test for the correct log of the CanMakePayment metrics.
  */
-public class PaymentRequestCanMakePaymentMetricsTest extends PaymentRequestTestBase {
-    public PaymentRequestCanMakePaymentMetricsTest() {
-        super("payment_request_can_make_payment_metrics_test.html");
-    }
+@RunWith(ChromeJUnit4ClassRunner.class)
+@CommandLineFlags.Add({
+        ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
+        ChromeActivityTestRule.DISABLE_NETWORK_PREDICTION_FLAG,
+})
+public class PaymentRequestCanMakePaymentMetricsTest implements MainActivityStartCallback {
+    @Rule
+    public PaymentRequestTestRule mPaymentRequestTestRule =
+            new PaymentRequestTestRule("payment_request_can_make_payment_metrics_test.html", this);
 
     @Override
     public void onMainActivityStarted()
@@ -39,39 +57,41 @@ public class PaymentRequestCanMakePaymentMetricsTest extends PaymentRequestTestB
      * calling it, receiving no as a response, still showing the Payment Request and the user aborts
      * the flow.
      */
+    @Test
     @MediumTest
     @Feature({"Payments"})
     public void testCannotMakePayment_Abort()
             throws InterruptedException, ExecutionException, TimeoutException {
         // Initiate a payment request.
-        triggerUIAndWait("queryShow", getReadyForInput());
+        mPaymentRequestTestRule.triggerUIAndWait(
+                "queryShow", mPaymentRequestTestRule.getReadyForInput());
 
         // Press the back button.
-        int callCount = getDismissed().getCallCount();
+        int callCount = mPaymentRequestTestRule.getDismissed().getCallCount();
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                getPaymentRequestUI().getDialogForTest().onBackPressed();
+                mPaymentRequestTestRule.getPaymentRequestUI().getDialogForTest().onBackPressed();
             }
         });
-        getDismissed().waitForCallback(callCount);
-        expectResultContains(new String[] {"Request cancelled"});
+        mPaymentRequestTestRule.getDismissed().waitForCallback(callCount);
+        mPaymentRequestTestRule.expectResultContains(new String[] {"Request cancelled"});
 
         // CanMakePayment was queried.
-        assertEquals(1,
+        Assert.assertEquals(1,
                 RecordHistogram.getHistogramValueCountForTesting(
                         "PaymentRequest.CanMakePayment.Usage",
                         JourneyLogger.CAN_MAKE_PAYMENT_USED));
 
         // The CanMakePayment effect on show should be recorded as being false and shown.
-        assertEquals(1,
+        Assert.assertEquals(1,
                 RecordHistogram.getHistogramValueCountForTesting(
                         "PaymentRequest.CanMakePayment.Used.EffectOnShow",
                         JourneyLogger.CMP_SHOW_DID_SHOW));
 
         // There should be a record for an abort when CanMakePayment is false but the PR is shown to
         // the user.
-        assertEquals(1,
+        Assert.assertEquals(1,
                 RecordHistogram.getHistogramValueCountForTesting(
                         "PaymentRequest.CanMakePayment.Used.FalseWithShowEffectOnCompletion",
                         JourneyLogger.COMPLETION_STATUS_USER_ABORTED));
@@ -82,40 +102,48 @@ public class PaymentRequestCanMakePaymentMetricsTest extends PaymentRequestTestB
      * calling it, receiving no as a response, still showing the Payment Request and the user
      * completes the flow.
      */
+    @Test
     @MediumTest
     @Feature({"Payments"})
     public void testCannotMakePayment_Complete()
             throws InterruptedException, ExecutionException, TimeoutException {
-        triggerUIAndWait("queryShow", getReadyForInput());
+        mPaymentRequestTestRule.triggerUIAndWait(
+                "queryShow", mPaymentRequestTestRule.getReadyForInput());
 
         // Add a new credit card.
-        clickInPaymentMethodAndWait(R.id.payments_section, getReadyToEdit());
-        setSpinnerSelectionsInCardEditorAndWait(
-                new int[] {11, 1, 0}, getBillingAddressChangeProcessed());
-        setTextInCardEditorAndWait(
-                new String[] {"4111111111111111", "Jon Doe"}, getEditorTextUpdate());
-        clickInCardEditorAndWait(R.id.payments_edit_done_button, getReadyToPay());
+        mPaymentRequestTestRule.clickInPaymentMethodAndWait(
+                R.id.payments_section, mPaymentRequestTestRule.getReadyToEdit());
+        mPaymentRequestTestRule.setSpinnerSelectionsInCardEditorAndWait(
+                new int[] {11, 1, 0}, mPaymentRequestTestRule.getBillingAddressChangeProcessed());
+        mPaymentRequestTestRule.setTextInCardEditorAndWait(
+                new String[] {"4111111111111111", "Jon Doe"},
+                mPaymentRequestTestRule.getEditorTextUpdate());
+        mPaymentRequestTestRule.clickInCardEditorAndWait(
+                R.id.payments_edit_done_button, mPaymentRequestTestRule.getReadyToPay());
 
         // Complete the transaction.
-        clickAndWait(R.id.button_primary, getReadyForUnmaskInput());
-        setTextInCardUnmaskDialogAndWait(R.id.card_unmask_input, "123", getReadyToUnmask());
-        clickCardUnmaskButtonAndWait(DialogInterface.BUTTON_POSITIVE, getDismissed());
+        mPaymentRequestTestRule.clickAndWait(
+                R.id.button_primary, mPaymentRequestTestRule.getReadyForUnmaskInput());
+        mPaymentRequestTestRule.setTextInCardUnmaskDialogAndWait(
+                R.id.card_unmask_input, "123", mPaymentRequestTestRule.getReadyToUnmask());
+        mPaymentRequestTestRule.clickCardUnmaskButtonAndWait(
+                DialogInterface.BUTTON_POSITIVE, mPaymentRequestTestRule.getDismissed());
 
         // CanMakePayment was queried.
-        assertEquals(1,
+        Assert.assertEquals(1,
                 RecordHistogram.getHistogramValueCountForTesting(
                         "PaymentRequest.CanMakePayment.Usage",
                         JourneyLogger.CAN_MAKE_PAYMENT_USED));
 
         // The CanMakePayment effect on show should be recorded as being false and shown.
-        assertEquals(1,
+        Assert.assertEquals(1,
                 RecordHistogram.getHistogramValueCountForTesting(
                         "PaymentRequest.CanMakePayment.Used.EffectOnShow",
                         JourneyLogger.CMP_SHOW_DID_SHOW));
 
         // There should be a record for a completion when CanMakePayment is false but the PR is
         // shown to the user.
-        assertEquals(1,
+        Assert.assertEquals(1,
                 RecordHistogram.getHistogramValueCountForTesting(
                         "PaymentRequest.CanMakePayment.Used.FalseWithShowEffectOnCompletion",
                         JourneyLogger.COMPLETION_STATUS_COMPLETED));
@@ -126,35 +154,37 @@ public class PaymentRequestCanMakePaymentMetricsTest extends PaymentRequestTestB
      * calling it, receiving yeas as a response, showing the Payment Request and the user aborts the
      * flow.
      */
+    @Test
     @MediumTest
     @Feature({"Payments"})
     public void testCanMakePayment_Abort()
             throws InterruptedException, ExecutionException, TimeoutException {
         // Install the app so CanMakePayment returns true.
-        installPaymentApp(HAVE_INSTRUMENTS, IMMEDIATE_RESPONSE);
+        mPaymentRequestTestRule.installPaymentApp(HAVE_INSTRUMENTS, IMMEDIATE_RESPONSE);
 
         // Initiate a payment request.
-        triggerUIAndWait("queryShow", getReadyForInput());
+        mPaymentRequestTestRule.triggerUIAndWait(
+                "queryShow", mPaymentRequestTestRule.getReadyForInput());
 
         // Press the back button.
-        int callCount = getDismissed().getCallCount();
+        int callCount = mPaymentRequestTestRule.getDismissed().getCallCount();
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                getPaymentRequestUI().getDialogForTest().onBackPressed();
+                mPaymentRequestTestRule.getPaymentRequestUI().getDialogForTest().onBackPressed();
             }
         });
-        getDismissed().waitForCallback(callCount);
-        expectResultContains(new String[] {"Request cancelled"});
+        mPaymentRequestTestRule.getDismissed().waitForCallback(callCount);
+        mPaymentRequestTestRule.expectResultContains(new String[] {"Request cancelled"});
 
         // CanMakePayment was queried.
-        assertEquals(1,
+        Assert.assertEquals(1,
                 RecordHistogram.getHistogramValueCountForTesting(
                         "PaymentRequest.CanMakePayment.Usage",
                         JourneyLogger.CAN_MAKE_PAYMENT_USED));
 
         // The CanMakePayment effect on show should be recorded as being false and shown.
-        assertEquals(1,
+        Assert.assertEquals(1,
                 RecordHistogram.getHistogramValueCountForTesting(
                         "PaymentRequest.CanMakePayment.Used.EffectOnShow",
                         JourneyLogger.CMP_SHOW_DID_SHOW
@@ -162,7 +192,7 @@ public class PaymentRequestCanMakePaymentMetricsTest extends PaymentRequestTestB
 
         // There should be a record for an abort when CanMakePayment is false but the PR is shown to
         // the user.
-        assertEquals(1,
+        Assert.assertEquals(1,
                 RecordHistogram.getHistogramValueCountForTesting(
                         "PaymentRequest.CanMakePayment.Used.TrueWithShowEffectOnCompletion",
                         JourneyLogger.COMPLETION_STATUS_USER_ABORTED));
@@ -173,25 +203,28 @@ public class PaymentRequestCanMakePaymentMetricsTest extends PaymentRequestTestB
      * calling it, receiving yeas as a response, showing the Payment Request and the user completes
      * the flow.
      */
+    @Test
     @MediumTest
     @Feature({"Payments"})
     public void testCanMakePayment_Complete()
             throws InterruptedException, ExecutionException, TimeoutException {
         // Install the app so CanMakePayment returns true.
-        installPaymentApp(HAVE_INSTRUMENTS, IMMEDIATE_RESPONSE);
+        mPaymentRequestTestRule.installPaymentApp(HAVE_INSTRUMENTS, IMMEDIATE_RESPONSE);
 
         // Initiate an complete a payment request.
-        triggerUIAndWait("queryShow", getReadyForInput());
-        clickAndWait(R.id.button_primary, getDismissed());
+        mPaymentRequestTestRule.triggerUIAndWait(
+                "queryShow", mPaymentRequestTestRule.getReadyForInput());
+        mPaymentRequestTestRule.clickAndWait(
+                R.id.button_primary, mPaymentRequestTestRule.getDismissed());
 
         // CanMakePayment was queried.
-        assertEquals(1,
+        Assert.assertEquals(1,
                 RecordHistogram.getHistogramValueCountForTesting(
                         "PaymentRequest.CanMakePayment.Usage",
                         JourneyLogger.CAN_MAKE_PAYMENT_USED));
 
         // The CanMakePayment effect on show should be recorded as being false and shown.
-        assertEquals(1,
+        Assert.assertEquals(1,
                 RecordHistogram.getHistogramValueCountForTesting(
                         "PaymentRequest.CanMakePayment.Used.EffectOnShow",
                         JourneyLogger.CMP_SHOW_DID_SHOW
@@ -199,7 +232,7 @@ public class PaymentRequestCanMakePaymentMetricsTest extends PaymentRequestTestB
 
         // There should be a record for an abort when CanMakePayment is false but the PR is shown to
         // the user.
-        assertEquals(1,
+        Assert.assertEquals(1,
                 RecordHistogram.getHistogramValueCountForTesting(
                         "PaymentRequest.CanMakePayment.Used.TrueWithShowEffectOnCompletion",
                         JourneyLogger.COMPLETION_STATUS_COMPLETED));
@@ -209,33 +242,35 @@ public class PaymentRequestCanMakePaymentMetricsTest extends PaymentRequestTestB
      * Tests that the CanMakePayment metrics are correctly logged for the case of a merchant
      * not calling it but still showing the Payment Request and the user aborts the flow.
      */
+    @Test
     @MediumTest
     @Feature({"Payments"})
     public void testNoQuery_Abort()
             throws InterruptedException, ExecutionException, TimeoutException {
         // Initiate a payment request.
-        triggerUIAndWait("noQueryShow", getReadyForInput());
+        mPaymentRequestTestRule.triggerUIAndWait(
+                "noQueryShow", mPaymentRequestTestRule.getReadyForInput());
 
         // Press the back button.
-        int callCount = getDismissed().getCallCount();
+        int callCount = mPaymentRequestTestRule.getDismissed().getCallCount();
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                getPaymentRequestUI().getDialogForTest().onBackPressed();
+                mPaymentRequestTestRule.getPaymentRequestUI().getDialogForTest().onBackPressed();
             }
         });
-        getDismissed().waitForCallback(callCount);
-        expectResultContains(new String[] {"Request cancelled"});
+        mPaymentRequestTestRule.getDismissed().waitForCallback(callCount);
+        mPaymentRequestTestRule.expectResultContains(new String[] {"Request cancelled"});
 
         // CanMakePayment was not queried.
-        assertEquals(1,
+        Assert.assertEquals(1,
                 RecordHistogram.getHistogramValueCountForTesting(
                         "PaymentRequest.CanMakePayment.Usage",
                         JourneyLogger.CAN_MAKE_PAYMENT_NOT_USED));
 
         // There should be a record for an abort when CanMakePayment is not called but the PR is
         // shown to the user.
-        assertEquals(1,
+        Assert.assertEquals(1,
                 RecordHistogram.getHistogramValueCountForTesting(
                         "PaymentRequest.CanMakePayment.NotUsed.WithShowEffectOnCompletion",
                         JourneyLogger.COMPLETION_STATUS_USER_ABORTED));
@@ -245,26 +280,29 @@ public class PaymentRequestCanMakePaymentMetricsTest extends PaymentRequestTestB
      * Tests that the CanMakePayment metrics are correctly logged for the case of a merchant
      * not calling it but still showing the Payment Request and the user completes the flow.
      */
+    @Test
     @MediumTest
     @Feature({"Payments"})
     public void testNoQuery_Completes()
             throws InterruptedException, ExecutionException, TimeoutException {
         // Install the app so the user can complete the Payment Request.
-        installPaymentApp(HAVE_INSTRUMENTS, IMMEDIATE_RESPONSE);
+        mPaymentRequestTestRule.installPaymentApp(HAVE_INSTRUMENTS, IMMEDIATE_RESPONSE);
 
         // Initiate a payment request.
-        triggerUIAndWait("noQueryShow", getReadyForInput());
-        clickAndWait(R.id.button_primary, getDismissed());
+        mPaymentRequestTestRule.triggerUIAndWait(
+                "noQueryShow", mPaymentRequestTestRule.getReadyForInput());
+        mPaymentRequestTestRule.clickAndWait(
+                R.id.button_primary, mPaymentRequestTestRule.getDismissed());
 
         // CanMakePayment was not queried.
-        assertEquals(1,
+        Assert.assertEquals(1,
                 RecordHistogram.getHistogramValueCountForTesting(
                         "PaymentRequest.CanMakePayment.Usage",
                         JourneyLogger.CAN_MAKE_PAYMENT_NOT_USED));
 
         // There should be a record for a completion when CanMakePayment is not called but the PR is
         // shown to the user.
-        assertEquals(1,
+        Assert.assertEquals(1,
                 RecordHistogram.getHistogramValueCountForTesting(
                         "PaymentRequest.CanMakePayment.NotUsed.WithShowEffectOnCompletion",
                         JourneyLogger.COMPLETION_STATUS_COMPLETED));

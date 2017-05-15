@@ -7,11 +7,21 @@ package org.chromium.chrome.browser.payments;
 import android.content.DialogInterface;
 import android.support.test.filters.MediumTest;
 
+import org.junit.Assert;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
+import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.autofill.AutofillTestHelper;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.CreditCard;
+import org.chromium.chrome.browser.payments.PaymentRequestTestRule.MainActivityStartCallback;
+import org.chromium.chrome.test.ChromeActivityTestRule;
+import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
@@ -20,11 +30,15 @@ import java.util.concurrent.TimeoutException;
  * A payment integration test to validate that the use stats of Autofill profiles and credit cards
  * updated when they are used to complete a Payment Request transaction.
  */
-public class PaymentRequestUseStatsTest extends PaymentRequestTestBase {
-    public PaymentRequestUseStatsTest() {
-        // This merchant provides free shipping worldwide.
-        super("payment_request_free_shipping_test.html");
-    }
+@RunWith(ChromeJUnit4ClassRunner.class)
+@CommandLineFlags.Add({
+        ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
+        ChromeActivityTestRule.DISABLE_NETWORK_PREDICTION_FLAG,
+})
+public class PaymentRequestUseStatsTest implements MainActivityStartCallback {
+    @Rule
+    public PaymentRequestTestRule mPaymentRequestTestRule =
+            new PaymentRequestTestRule("payment_request_free_shipping_test.html", this);
 
     AutofillTestHelper mHelper;
     String mBillingAddressId;
@@ -47,29 +61,36 @@ public class PaymentRequestUseStatsTest extends PaymentRequestTestBase {
     }
 
     /** Expect that using a profile and credit card to pay updates their usage stats. */
+    @Test
     @MediumTest
     @Feature({"Payments"})
-    public void testLogProfileAndCreditCardUse() throws InterruptedException, ExecutionException,
-            TimeoutException {
-        triggerUIAndWait(getReadyToPay());
+    public void testLogProfileAndCreditCardUse()
+            throws InterruptedException, ExecutionException, TimeoutException {
+        mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyToPay());
 
         // Get the current date value just before the start of the Payment Request.
         long timeBeforeRecord = mHelper.getCurrentDateForTesting();
 
         // Proceed with the payment.
-        clickAndWait(R.id.button_primary, getReadyForUnmaskInput());
-        setTextInCardUnmaskDialogAndWait(R.id.card_unmask_input, "123", getReadyToUnmask());
-        clickCardUnmaskButtonAndWait(DialogInterface.BUTTON_POSITIVE, getDismissed());
+        mPaymentRequestTestRule.clickAndWait(
+                R.id.button_primary, mPaymentRequestTestRule.getReadyForUnmaskInput());
+        mPaymentRequestTestRule.setTextInCardUnmaskDialogAndWait(
+                R.id.card_unmask_input, "123", mPaymentRequestTestRule.getReadyToUnmask());
+        mPaymentRequestTestRule.clickCardUnmaskButtonAndWait(
+                DialogInterface.BUTTON_POSITIVE, mPaymentRequestTestRule.getDismissed());
 
         // Get the current date value just after the end of the Payment Request.
         long timeAfterRecord = mHelper.getCurrentDateForTesting();
 
         // Make sure the use counts were incremented and the use dates were set to the current time.
-        assertEquals(21, mHelper.getProfileUseCountForTesting(mBillingAddressId));
-        assertTrue(timeBeforeRecord <= mHelper.getProfileUseDateForTesting(mBillingAddressId));
-        assertTrue(timeAfterRecord >= mHelper.getProfileUseDateForTesting(mBillingAddressId));
-        assertEquals(2, mHelper.getCreditCardUseCountForTesting(mCreditCardId));
-        assertTrue(timeBeforeRecord <= mHelper.getCreditCardUseDateForTesting(mCreditCardId));
-        assertTrue(timeAfterRecord >= mHelper.getCreditCardUseDateForTesting(mCreditCardId));
+        Assert.assertEquals(21, mHelper.getProfileUseCountForTesting(mBillingAddressId));
+        Assert.assertTrue(
+                timeBeforeRecord <= mHelper.getProfileUseDateForTesting(mBillingAddressId));
+        Assert.assertTrue(
+                timeAfterRecord >= mHelper.getProfileUseDateForTesting(mBillingAddressId));
+        Assert.assertEquals(2, mHelper.getCreditCardUseCountForTesting(mCreditCardId));
+        Assert.assertTrue(
+                timeBeforeRecord <= mHelper.getCreditCardUseDateForTesting(mCreditCardId));
+        Assert.assertTrue(timeAfterRecord >= mHelper.getCreditCardUseDateForTesting(mCreditCardId));
     }
 }

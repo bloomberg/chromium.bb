@@ -6,10 +6,20 @@ package org.chromium.chrome.browser.payments;
 
 import android.support.test.filters.MediumTest;
 
+import org.junit.Assert;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
+import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.autofill.AutofillTestHelper;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
+import org.chromium.chrome.browser.payments.PaymentRequestTestRule.MainActivityStartCallback;
+import org.chromium.chrome.test.ChromeActivityTestRule;
+import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 
 import java.util.ArrayList;
 import java.util.concurrent.ExecutionException;
@@ -19,7 +29,17 @@ import java.util.concurrent.TimeoutException;
  * A payment integration test for a merchant that requires shipping address to calculate shipping
  * and user that has 5 addresses stored in autofill settings.
  */
-public class PaymentRequestDynamicShippingMultipleAddressesTest extends PaymentRequestTestBase {
+@RunWith(ChromeJUnit4ClassRunner.class)
+@CommandLineFlags.Add({
+        ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
+        ChromeActivityTestRule.DISABLE_NETWORK_PREDICTION_FLAG,
+})
+public class PaymentRequestDynamicShippingMultipleAddressesTest
+        implements MainActivityStartCallback {
+    @Rule
+    public PaymentRequestTestRule mPaymentRequestTestRule =
+            new PaymentRequestTestRule("payment_request_dynamic_shipping_test.html", this);
+
     private static final AutofillProfile[] AUTOFILL_PROFILES = {
             // Incomplete profile (missing phone number)
             new AutofillProfile("" /* guid */, "https://www.example.com" /* origin */,
@@ -61,11 +81,6 @@ public class PaymentRequestDynamicShippingMultipleAddressesTest extends PaymentR
     private int[] mCountsToSet;
     private int[] mDatesToSet;
 
-    public PaymentRequestDynamicShippingMultipleAddressesTest() {
-        // This merchant requests the shipping address first before providing any shipping options.
-        super("payment_request_dynamic_shipping_test.html");
-    }
-
     @Override
     public void onMainActivityStarted()
             throws InterruptedException, ExecutionException, TimeoutException {
@@ -88,6 +103,7 @@ public class PaymentRequestDynamicShippingMultipleAddressesTest extends PaymentR
      * suggestions are shown. They should be ordered by frecency and complete addresses should be
      * suggested first.
      */
+    @Test
     @MediumTest
     @Feature({"Payments"})
     public void testShippingAddressSuggestionOrdering()
@@ -100,18 +116,24 @@ public class PaymentRequestDynamicShippingMultipleAddressesTest extends PaymentR
         mCountsToSet = new int[] {20, 15, 10, 5, 1};
         mDatesToSet = new int[] {5000, 5000, 5000, 5000, 1};
 
-        triggerUIAndWait(getReadyForInput());
-        clickInShippingSummaryAndWait(R.id.payments_section, getReadyForInput());
-        assertEquals(4, getNumberOfShippingAddressSuggestions());
-        assertTrue(getShippingAddressSuggestionLabel(0).contains("Lisa Simpson"));
-        assertTrue(getShippingAddressSuggestionLabel(1).contains("Maggie Simpson"));
-        assertTrue(getShippingAddressSuggestionLabel(2).contains("Bart Simpson"));
-        assertTrue(getShippingAddressSuggestionLabel(3).contains("Marge Simpson"));
+        mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyForInput());
+        mPaymentRequestTestRule.clickInShippingSummaryAndWait(
+                R.id.payments_section, mPaymentRequestTestRule.getReadyForInput());
+        Assert.assertEquals(4, mPaymentRequestTestRule.getNumberOfShippingAddressSuggestions());
+        Assert.assertTrue(mPaymentRequestTestRule.getShippingAddressSuggestionLabel(0).contains(
+                "Lisa Simpson"));
+        Assert.assertTrue(mPaymentRequestTestRule.getShippingAddressSuggestionLabel(1).contains(
+                "Maggie Simpson"));
+        Assert.assertTrue(mPaymentRequestTestRule.getShippingAddressSuggestionLabel(2).contains(
+                "Bart Simpson"));
+        Assert.assertTrue(mPaymentRequestTestRule.getShippingAddressSuggestionLabel(3).contains(
+                "Marge Simpson"));
     }
 
     /**
      * Make sure that a maximum of four profiles are shown to the user.
      */
+    @Test
     @MediumTest
     @Feature({"Payments"})
     public void testShippingAddressSuggestionLimit()
@@ -123,19 +145,25 @@ public class PaymentRequestDynamicShippingMultipleAddressesTest extends PaymentR
         mCountsToSet = new int[] {20, 15, 10, 5, 2, 1};
         mDatesToSet = new int[] {5000, 5000, 5000, 5000, 2, 1};
 
-        triggerUIAndWait(getReadyForInput());
-        clickInShippingSummaryAndWait(R.id.payments_section, getReadyForInput());
+        mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyForInput());
+        mPaymentRequestTestRule.clickInShippingSummaryAndWait(
+                R.id.payments_section, mPaymentRequestTestRule.getReadyForInput());
         // Only four profiles should be suggested to the user.
-        assertEquals(4, getNumberOfShippingAddressSuggestions());
-        assertTrue(getShippingAddressSuggestionLabel(0).contains("Lisa Simpson"));
-        assertTrue(getShippingAddressSuggestionLabel(1).contains("Maggie Simpson"));
-        assertTrue(getShippingAddressSuggestionLabel(2).contains("Bart Simpson"));
-        assertTrue(getShippingAddressSuggestionLabel(3).contains("Marge Simpson"));
+        Assert.assertEquals(4, mPaymentRequestTestRule.getNumberOfShippingAddressSuggestions());
+        Assert.assertTrue(mPaymentRequestTestRule.getShippingAddressSuggestionLabel(0).contains(
+                "Lisa Simpson"));
+        Assert.assertTrue(mPaymentRequestTestRule.getShippingAddressSuggestionLabel(1).contains(
+                "Maggie Simpson"));
+        Assert.assertTrue(mPaymentRequestTestRule.getShippingAddressSuggestionLabel(2).contains(
+                "Bart Simpson"));
+        Assert.assertTrue(mPaymentRequestTestRule.getShippingAddressSuggestionLabel(3).contains(
+                "Marge Simpson"));
     }
 
     /**
      * Make sure that only profiles with a street address are suggested to the user.
      */
+    @Test
     @MediumTest
     @Feature({"Payments"})
     public void testShippingAddressSuggestion_OnlyIncludeProfilesWithStreetAddress()
@@ -148,20 +176,25 @@ public class PaymentRequestDynamicShippingMultipleAddressesTest extends PaymentR
         mCountsToSet = new int[] {15, 10, 5, 1};
         mDatesToSet = new int[] {5000, 5000, 5000, 1};
 
-        triggerUIAndWait(getReadyForInput());
-        clickInShippingSummaryAndWait(R.id.payments_section, getReadyForInput());
+        mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyForInput());
+        mPaymentRequestTestRule.clickInShippingSummaryAndWait(
+                R.id.payments_section, mPaymentRequestTestRule.getReadyForInput());
         // Only 3 profiles should be suggested, the two complete ones and the incomplete one that
         // has a street address.
-        assertEquals(3, getNumberOfShippingAddressSuggestions());
-        assertTrue(getShippingAddressSuggestionLabel(0).contains("Lisa Simpson"));
-        assertTrue(getShippingAddressSuggestionLabel(1).contains("Maggie Simpson"));
-        assertTrue(getShippingAddressSuggestionLabel(2).contains("Bart Simpson"));
+        Assert.assertEquals(3, mPaymentRequestTestRule.getNumberOfShippingAddressSuggestions());
+        Assert.assertTrue(mPaymentRequestTestRule.getShippingAddressSuggestionLabel(0).contains(
+                "Lisa Simpson"));
+        Assert.assertTrue(mPaymentRequestTestRule.getShippingAddressSuggestionLabel(1).contains(
+                "Maggie Simpson"));
+        Assert.assertTrue(mPaymentRequestTestRule.getShippingAddressSuggestionLabel(2).contains(
+                "Bart Simpson"));
     }
 
     /**
      * Select a shipping address that the website refuses to accept, which should force the dialog
      * to show an error.
      */
+    @Test
     @MediumTest
     @Feature({"Payments"})
     public void testShippingAddresNotAcceptedByMerchant()
@@ -172,21 +205,25 @@ public class PaymentRequestDynamicShippingMultipleAddressesTest extends PaymentR
         mDatesToSet = new int[] {5000};
 
         // Click on the unacceptable shipping address.
-        triggerUIAndWait(getReadyForInput());
-        clickInShippingSummaryAndWait(R.id.payments_section, getReadyForInput());
-        assertTrue(getShippingAddressSuggestionLabel(0).contains(
+        mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyForInput());
+        mPaymentRequestTestRule.clickInShippingSummaryAndWait(
+                R.id.payments_section, mPaymentRequestTestRule.getReadyForInput());
+        Assert.assertTrue(mPaymentRequestTestRule.getShippingAddressSuggestionLabel(0).contains(
                 AUTOFILL_PROFILES[3].getFullName()));
-        clickOnShippingAddressSuggestionOptionAndWait(0, getSelectionChecked());
+        mPaymentRequestTestRule.clickOnShippingAddressSuggestionOptionAndWait(
+                0, mPaymentRequestTestRule.getSelectionChecked());
 
         // The string should reflect the error sent from the merchant.
-        CharSequence actualString = getShippingAddressOptionRowAtIndex(0).getLabelText();
-        assertEquals("We do not ship to this address", actualString);
+        CharSequence actualString =
+                mPaymentRequestTestRule.getShippingAddressOptionRowAtIndex(0).getLabelText();
+        Assert.assertEquals("We do not ship to this address", actualString);
     }
 
     /**
      * Make sure the information required message has been displayed for incomplete profile
      * correctly.
      */
+    @Test
     @MediumTest
     @Feature({"Payments"})
     public void testShippingAddressEditRequiredMessage()
@@ -197,13 +234,18 @@ public class PaymentRequestDynamicShippingMultipleAddressesTest extends PaymentR
         mCountsToSet = new int[] {15, 10, 5, 1};
         mDatesToSet = new int[] {5000, 5000, 5000, 1};
 
-        triggerUIAndWait(getReadyForInput());
-        clickInShippingSummaryAndWait(R.id.payments_section, getReadyForInput());
+        mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyForInput());
+        mPaymentRequestTestRule.clickInShippingSummaryAndWait(
+                R.id.payments_section, mPaymentRequestTestRule.getReadyForInput());
 
-        assertEquals(4, getNumberOfShippingAddressSuggestions());
-        assertTrue(getShippingAddressSuggestionLabel(0).contains("Phone number required"));
-        assertTrue(getShippingAddressSuggestionLabel(1).contains("Enter a valid address"));
-        assertTrue(getShippingAddressSuggestionLabel(2).contains("Name required"));
-        assertTrue(getShippingAddressSuggestionLabel(3).contains("More information required"));
+        Assert.assertEquals(4, mPaymentRequestTestRule.getNumberOfShippingAddressSuggestions());
+        Assert.assertTrue(mPaymentRequestTestRule.getShippingAddressSuggestionLabel(0).contains(
+                "Phone number required"));
+        Assert.assertTrue(mPaymentRequestTestRule.getShippingAddressSuggestionLabel(1).contains(
+                "Enter a valid address"));
+        Assert.assertTrue(mPaymentRequestTestRule.getShippingAddressSuggestionLabel(2).contains(
+                "Name required"));
+        Assert.assertTrue(mPaymentRequestTestRule.getShippingAddressSuggestionLabel(3).contains(
+                "More information required"));
     }
 }
