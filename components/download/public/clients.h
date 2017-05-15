@@ -16,11 +16,16 @@ namespace download {
 // download with the right client.
 enum class DownloadClient {
   // Represents an uninitialized DownloadClient variable.
-  DOWNLOAD_CLIENT_INVALID = 0,
+  INVALID = 0,
 
-  DOWNLOAD_CLIENT_OFFLINE_PAGE_PREFETCH = 1,
+  // Test client values.  Meant to be used by the testing framework and not
+  // production code.  Callers will be unable to access the DownloadService with
+  // these test APIs.
+  TEST = 1,
 
-  DOWNLOAD_CLIENT_BOUNDARY = 2,
+  OFFLINE_PAGE_PREFETCH = 2,
+
+  BOUNDARY = 3,
 };
 
 }  // namespace download

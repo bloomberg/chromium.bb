@@ -67,8 +67,8 @@ struct SchedulingParams {
   SchedulingParams(const SchedulingParams& other) = default;
   ~SchedulingParams() = default;
 
-  // Cancel the download after this delay.  Will cancel in-progress downloads.
-  base::TimeDelta cancel_after;
+  // Cancel the download after this time.  Will cancel in-progress downloads.
+  base::Time cancel_time;
 
   // The suggested priority.  Non-UI priorities may not be honored by the
   // DownloadService based on internal criteria and settings.
