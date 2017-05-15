@@ -4,6 +4,8 @@
 
 #include "chrome/browser/page_load_metrics/observers/resource_prefetch_predictor_page_load_metrics_observer.h"
 
+#include <memory>
+
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/page_load_metrics/observers/page_load_metrics_observer_test_harness.h"
 #include "chrome/browser/predictors/resource_prefetch_common.h"
@@ -17,7 +19,7 @@ using predictors::ResourcePrefetchPredictor;
 class MockResourcePrefetchPredictor : public ResourcePrefetchPredictor {
  public:
   MockResourcePrefetchPredictor(
-      const predictors::ResourcePrefetchPredictorConfig& config,
+      const predictors::LoadingPredictorConfig& config,
       Profile* profile)
       : ResourcePrefetchPredictor(config, profile) {}
 
@@ -31,8 +33,8 @@ class ResourcePrefetchPredictorPageLoadMetricsObserverTest
  protected:
   void SetUp() override {
     page_load_metrics::PageLoadMetricsObserverTestHarness::SetUp();
-    predictors::ResourcePrefetchPredictorConfig config;
-    config.mode = predictors::ResourcePrefetchPredictorConfig::LEARNING;
+    predictors::LoadingPredictorConfig config;
+    config.mode = predictors::LoadingPredictorConfig::LEARNING;
     predictor_ =
         base::MakeUnique<testing::StrictMock<MockResourcePrefetchPredictor>>(
             config, profile());

@@ -12,7 +12,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "chrome/browser/predictors/resource_prefetch_common.h"
+#include "chrome/browser/predictors/loading_predictor_config.h"
 #include "chrome/browser/predictors/resource_prefetcher.h"
 
 namespace net {
@@ -34,7 +34,7 @@ class ResourcePrefetcherManager
  public:
   // The |predictor| should be alive till ShutdownOnIOThread is called.
   ResourcePrefetcherManager(ResourcePrefetchPredictor* predictor,
-                            const ResourcePrefetchPredictorConfig& config,
+                            const LoadingPredictorConfig& config,
                             net::URLRequestContextGetter* getter);
 
   // UI thread.
@@ -67,7 +67,7 @@ class ResourcePrefetcherManager
   ~ResourcePrefetcherManager() override;
 
   ResourcePrefetchPredictor* predictor_;
-  const ResourcePrefetchPredictorConfig config_;
+  const LoadingPredictorConfig config_;
   net::URLRequestContextGetter* const context_getter_;
 
   std::map<std::string, std::unique_ptr<ResourcePrefetcher>> prefetcher_map_;

@@ -546,7 +546,7 @@ ResourcePrefetchPredictor::Prediction::~Prediction() = default;
 // ResourcePrefetchPredictor.
 
 ResourcePrefetchPredictor::ResourcePrefetchPredictor(
-    const ResourcePrefetchPredictorConfig& config,
+    const LoadingPredictorConfig& config,
     Profile* profile)
     : profile_(profile),
       observer_(nullptr),
@@ -669,7 +669,7 @@ void ResourcePrefetchPredictor::RecordFirstContentfulPaint(
 }
 
 void ResourcePrefetchPredictor::StartPrefetching(const GURL& url,
-                                                 PrefetchOrigin origin) {
+                                                 HintOrigin origin) {
   TRACE_EVENT1("browser", "ResourcePrefetchPredictor::StartPrefetching", "url",
                url.spec());
   // Save prefetch start time to report prefetching duration.
@@ -762,7 +762,7 @@ void ResourcePrefetchPredictor::OnMainFrameRequest(
   DCHECK_EQ(INITIALIZED, initialization_state_);
 
   const GURL& main_frame_url = request.navigation_id.main_frame_url;
-  StartPrefetching(main_frame_url, PrefetchOrigin::NAVIGATION);
+  StartPrefetching(main_frame_url, HintOrigin::NAVIGATION);
 
   CleanupAbandonedNavigations(request.navigation_id);
 

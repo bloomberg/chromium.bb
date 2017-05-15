@@ -230,7 +230,7 @@ class ResourcePrefetchPredictorTest : public testing::Test {
   }
 
   void ResetPredictor() {
-    ResourcePrefetchPredictorConfig config;
+    LoadingPredictorConfig config;
     config.max_urls_to_track = 3;
     config.max_hosts_to_track = 2;
     config.min_url_visit_count = 2;
@@ -242,7 +242,7 @@ class ResourcePrefetchPredictorTest : public testing::Test {
     config.is_manifests_enabled = true;
     config.is_origin_learning_enabled = true;
 
-    config.mode |= ResourcePrefetchPredictorConfig::LEARNING;
+    config.mode |= LoadingPredictorConfig::LEARNING;
     predictor_.reset(new ResourcePrefetchPredictor(config, profile_.get()));
     predictor_->set_mock_tables(mock_tables_);
   }
@@ -2098,7 +2098,7 @@ TEST_F(ResourcePrefetchPredictorTest, TestPrefetchingDurationHistogram) {
   // Prefetching duration for an url without resources in the database
   // shouldn't be recorded.
   const std::string main_frame_url = "http://google.com/?query=cats";
-  predictor_->StartPrefetching(GURL(main_frame_url), PrefetchOrigin::EXTERNAL);
+  predictor_->StartPrefetching(GURL(main_frame_url), HintOrigin::EXTERNAL);
   predictor_->StopPrefetching(GURL(main_frame_url));
   histogram_tester_->ExpectTotalCount(
       internal::kResourcePrefetchPredictorPrefetchingDurationHistogram, 0);
@@ -2111,7 +2111,7 @@ TEST_F(ResourcePrefetchPredictorTest, TestPrefetchingDurationHistogram) {
   predictor_->host_table_cache_->insert(
       std::make_pair(google.primary_key(), google));
 
-  predictor_->StartPrefetching(GURL(main_frame_url), PrefetchOrigin::EXTERNAL);
+  predictor_->StartPrefetching(GURL(main_frame_url), HintOrigin::EXTERNAL);
   predictor_->StopPrefetching(GURL(main_frame_url));
   histogram_tester_->ExpectTotalCount(
       internal::kResourcePrefetchPredictorPrefetchingDurationHistogram, 1);

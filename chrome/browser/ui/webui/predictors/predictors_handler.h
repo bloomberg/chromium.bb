@@ -16,7 +16,7 @@ class ListValue;
 
 namespace predictors {
 class AutocompleteActionPredictor;
-class ResourcePrefetchPredictor;
+class LoadingPredictor;
 }
 
 class Profile;
@@ -45,7 +45,7 @@ class PredictorsHandler : public content::WebUIMessageHandler {
       base::ListValue* db) const;
 
   predictors::AutocompleteActionPredictor* autocomplete_action_predictor_;
-  predictors::ResourcePrefetchPredictor* resource_prefetch_predictor_;
+  predictors::LoadingPredictor* loading_predictor_;
 
   DISALLOW_COPY_AND_ASSIGN(PredictorsHandler);
 };

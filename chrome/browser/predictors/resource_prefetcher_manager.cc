@@ -20,11 +20,9 @@ namespace predictors {
 
 ResourcePrefetcherManager::ResourcePrefetcherManager(
     ResourcePrefetchPredictor* predictor,
-    const ResourcePrefetchPredictorConfig& config,
+    const LoadingPredictorConfig& config,
     net::URLRequestContextGetter* context_getter)
-    : predictor_(predictor),
-      config_(config),
-      context_getter_(context_getter) {
+    : predictor_(predictor), config_(config), context_getter_(context_getter) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   CHECK(predictor_);
   CHECK(context_getter_);

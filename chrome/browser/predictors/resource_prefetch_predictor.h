@@ -19,6 +19,7 @@
 #include "base/scoped_observer.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "base/time/time.h"
+#include "chrome/browser/predictors/loading_predictor_config.h"
 #include "chrome/browser/predictors/resource_prefetch_common.h"
 #include "chrome/browser/predictors/resource_prefetch_predictor_tables.h"
 #include "chrome/browser/predictors/resource_prefetcher.h"
@@ -103,8 +104,7 @@ class ResourcePrefetcherManager;
 // recorded. Consider recording sub-frame responses independently or together
 // with main frame.
 class ResourcePrefetchPredictor
-    : public KeyedService,
-      public history::HistoryServiceObserver,
+    : public history::HistoryServiceObserver,
       public base::SupportsWeakPtr<ResourcePrefetchPredictor>,
       public precache::PrecacheManager::Delegate {
  public:
@@ -195,13 +195,14 @@ class ResourcePrefetchPredictor
     MAX
   };
 
-  ResourcePrefetchPredictor(const ResourcePrefetchPredictorConfig& config,
+  ResourcePrefetchPredictor(const LoadingPredictorConfig& config,
                             Profile* profile);
   ~ResourcePrefetchPredictor() override;
 
   // Starts initialization by posting a task to the DB thread to read the
   // predictor database.
   void StartInitialization();
+  void Shutdown();
 
   // Thread safe.
   static bool ShouldRecordRequest(net::URLRequest* request,
@@ -236,14 +237,6 @@ class ResourcePrefetchPredictor
       const NavigationID& navigation_id,
       const base::TimeTicks& first_contentful_paint);
 
-  // Starts prefetching if it is enabled for |origin| and prefetching data
-  // exists for the |main_frame_url| either at the URL or at the host level.
-  void StartPrefetching(const GURL& main_frame_url, PrefetchOrigin origin);
-
-  // Stops prefetching that may be in progress corresponding to
-  // |main_frame_url|.
-  void StopPrefetching(const GURL& main_frame_url);
-
   // Called when ResourcePrefetcher is finished, i.e. there is nothing pending
   // in flight.
   void OnPrefetchingFinished(
@@ -267,6 +260,15 @@ class ResourcePrefetchPredictor
   void SetObserverForTesting(TestObserver* observer);
 
  private:
+  // Starts prefetching if it is enabled for |origin| and prefetching data
+  // exists for the |main_frame_url| either at the URL or at the host level.
+  void StartPrefetching(const GURL& main_frame_url, HintOrigin origin);
+
+  // Stops prefetching that may be in progress corresponding to
+  // |main_frame_url|.
+  void StopPrefetching(const GURL& main_frame_url);
+
+  friend class LoadingPredictor;
   friend class ::PredictorsHandler;
   friend class ResourcePrefetchPredictorTest;
   friend class ResourcePrefetchPredictorBrowserTest;
@@ -336,9 +338,6 @@ class ResourcePrefetchPredictor
   static bool IsNoStore(const net::URLRequest& request);
 
   static void SetAllowPortInUrlsForTesting(bool state);
-
-  // KeyedService methods override.
-  void Shutdown() override;
 
   // Functions called on different network events pertaining to the loading of
   // main frame resource or sub resources.
@@ -476,7 +475,7 @@ class ResourcePrefetchPredictor
 
   Profile* const profile_;
   TestObserver* observer_;
-  ResourcePrefetchPredictorConfig const config_;
+  const LoadingPredictorConfig config_;
   InitializationState initialization_state_;
   scoped_refptr<ResourcePrefetchPredictorTables> tables_;
   scoped_refptr<ResourcePrefetcherManager> prefetch_manager_;

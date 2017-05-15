@@ -9,6 +9,7 @@
 
 #include "base/metrics/field_trial_params.h"
 #include "chrome/browser/net/prediction_options.h"
+#include "chrome/browser/predictors/loading_predictor_config.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
 #include "components/prefs/pref_service.h"
@@ -31,7 +32,7 @@ const base::Feature kSpeculativeResourcePrefetchingFeature =
     base::Feature(kSpeculativeResourcePrefetchingFeatureName,
                   base::FEATURE_DISABLED_BY_DEFAULT);
 
-namespace {
+namespace internal {
 
 bool IsPrefetchingEnabledInternal(Profile* profile, int mode, int mask) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
@@ -47,13 +48,10 @@ bool IsPrefetchingEnabledInternal(Profile* profile, int mode, int mask) {
   return true;
 }
 
-}  // namespace
+}  // namespace internal
 
-bool IsSpeculativeResourcePrefetchingEnabled(
-    Profile* profile,
-    ResourcePrefetchPredictorConfig* config) {
-  DCHECK(config);
-
+bool IsSpeculativeResourcePrefetchingEnabled(Profile* profile,
+                                             LoadingPredictorConfig* config) {
   // Disabled for of-the-record. Policy choice, not a technical limitation.
   if (!profile || profile->IsOffTheRecord())
     return false;
@@ -61,41 +59,49 @@ bool IsSpeculativeResourcePrefetchingEnabled(
   if (!base::FeatureList::IsEnabled(kSpeculativeResourcePrefetchingFeature))
     return false;
 
-  std::string enable_url_learning_value =
-      base::GetFieldTrialParamValueByFeature(
-          kSpeculativeResourcePrefetchingFeature, kEnableUrlLearningParamName);
-  if (enable_url_learning_value == "true")
-    config->is_url_learning_enabled = true;
+  if (config) {
+    std::string enable_url_learning_value =
+        base::GetFieldTrialParamValueByFeature(
+            kSpeculativeResourcePrefetchingFeature,
+            kEnableUrlLearningParamName);
+    if (enable_url_learning_value == "true")
+      config->is_url_learning_enabled = true;
 
-  std::string enable_manifests_value = base::GetFieldTrialParamValueByFeature(
-      kSpeculativeResourcePrefetchingFeature, kEnableManifestsParamName);
-  if (enable_manifests_value == "true")
-    config->is_manifests_enabled = true;
+    std::string enable_manifests_value = base::GetFieldTrialParamValueByFeature(
+        kSpeculativeResourcePrefetchingFeature, kEnableManifestsParamName);
+    if (enable_manifests_value == "true")
+      config->is_manifests_enabled = true;
 
-  bool enable_origin_learning = base::GetFieldTrialParamValueByFeature(
-                                    kSpeculativeResourcePrefetchingFeature,
-                                    kEnableOriginLearningParamName) == "true";
-  config->is_origin_learning_enabled = enable_origin_learning;
+    bool enable_origin_learning = base::GetFieldTrialParamValueByFeature(
+                                      kSpeculativeResourcePrefetchingFeature,
+                                      kEnableOriginLearningParamName) == "true";
+    config->is_origin_learning_enabled = enable_origin_learning;
 
-  // Ensure that a resource that was only seen once is never prefetched. This
-  // prevents the easy mistake of trying to prefetch an ephemeral url.
-  DCHECK_GT(config->min_resource_hits_to_trigger_prefetch, 1U);
-  if (config->min_resource_hits_to_trigger_prefetch < 2)
-    config->min_resource_hits_to_trigger_prefetch = 2;
+    // Ensure that a resource that was only seen once is never prefetched. This
+    // prevents the easy mistake of trying to prefetch an ephemeral url.
+    DCHECK_GT(config->min_resource_hits_to_trigger_prefetch, 1U);
+    if (config->min_resource_hits_to_trigger_prefetch < 2)
+      config->min_resource_hits_to_trigger_prefetch = 2;
+  }
 
   std::string mode_value = base::GetFieldTrialParamValueByFeature(
       kSpeculativeResourcePrefetchingFeature, kModeParamName);
   if (mode_value == kLearningMode) {
-    config->mode |= ResourcePrefetchPredictorConfig::LEARNING;
+    if (config)
+      config->mode |= LoadingPredictorConfig::LEARNING;
     return true;
   } else if (mode_value == kExternalPrefetchingMode) {
-    config->mode |= ResourcePrefetchPredictorConfig::LEARNING |
-                    ResourcePrefetchPredictorConfig::PREFETCHING_FOR_EXTERNAL;
+    if (config) {
+      config->mode |= LoadingPredictorConfig::LEARNING |
+                      LoadingPredictorConfig::PREFETCHING_FOR_EXTERNAL;
+    }
     return true;
   } else if (mode_value == kPrefetchingMode) {
-    config->mode |= ResourcePrefetchPredictorConfig::LEARNING |
-                    ResourcePrefetchPredictorConfig::PREFETCHING_FOR_EXTERNAL |
-                    ResourcePrefetchPredictorConfig::PREFETCHING_FOR_NAVIGATION;
+    if (config) {
+      config->mode |= LoadingPredictorConfig::LEARNING |
+                      LoadingPredictorConfig::PREFETCHING_FOR_EXTERNAL |
+                      LoadingPredictorConfig::PREFETCHING_FOR_NAVIGATION;
+    }
     return true;
   }
 
@@ -134,75 +140,6 @@ bool NavigationID::operator<(const NavigationID& rhs) const {
 bool NavigationID::operator==(const NavigationID& rhs) const {
   DCHECK(is_valid() && rhs.is_valid());
   return tab_id == rhs.tab_id && main_frame_url == rhs.main_frame_url;
-}
-
-ResourcePrefetchPredictorConfig::ResourcePrefetchPredictorConfig()
-    : mode(0),
-      max_navigation_lifetime_seconds(60),
-      max_urls_to_track(500),
-      max_hosts_to_track(200),
-      min_url_visit_count(2),
-      max_resources_per_entry(50),
-      max_origins_per_entry(50),
-      max_consecutive_misses(3),
-      max_redirect_consecutive_misses(5),
-      min_resource_confidence_to_trigger_prefetch(0.7f),
-      min_resource_hits_to_trigger_prefetch(2),
-      max_prefetches_inflight_per_navigation(5),
-      max_prefetches_inflight_per_host_per_navigation(3),
-      is_url_learning_enabled(false),
-      is_manifests_enabled(false),
-      is_origin_learning_enabled(false) {}
-
-ResourcePrefetchPredictorConfig::ResourcePrefetchPredictorConfig(
-    const ResourcePrefetchPredictorConfig& other) = default;
-
-ResourcePrefetchPredictorConfig::~ResourcePrefetchPredictorConfig() {
-}
-
-bool ResourcePrefetchPredictorConfig::IsLearningEnabled() const {
-  return (mode & LEARNING) > 0;
-}
-
-bool ResourcePrefetchPredictorConfig::IsPrefetchingEnabledForSomeOrigin(
-    Profile* profile) const {
-  int mask = PREFETCHING_FOR_NAVIGATION | PREFETCHING_FOR_EXTERNAL;
-  return IsPrefetchingEnabledInternal(profile, mode, mask);
-}
-
-bool ResourcePrefetchPredictorConfig::IsPrefetchingEnabledForOrigin(
-    Profile* profile,
-    PrefetchOrigin origin) const {
-  int mask = 0;
-  switch (origin) {
-    case PrefetchOrigin::NAVIGATION:
-      mask = PREFETCHING_FOR_NAVIGATION;
-      break;
-    case PrefetchOrigin::EXTERNAL:
-      mask = PREFETCHING_FOR_EXTERNAL;
-      break;
-  }
-  return IsPrefetchingEnabledInternal(profile, mode, mask);
-}
-
-bool ResourcePrefetchPredictorConfig::IsLowConfidenceForTest() const {
-  return min_url_visit_count == 1 &&
-      std::abs(min_resource_confidence_to_trigger_prefetch - 0.5f) < 1e-6 &&
-      min_resource_hits_to_trigger_prefetch == 1;
-}
-
-bool ResourcePrefetchPredictorConfig::IsHighConfidenceForTest() const {
-  return min_url_visit_count == 3 &&
-      std::abs(min_resource_confidence_to_trigger_prefetch - 0.9f) < 1e-6 &&
-      min_resource_hits_to_trigger_prefetch == 3;
-}
-
-bool ResourcePrefetchPredictorConfig::IsMoreResourcesEnabledForTest() const {
-  return max_resources_per_entry == 100;
-}
-
-bool ResourcePrefetchPredictorConfig::IsSmallDBEnabledForTest() const {
-  return max_urls_to_track == 200 && max_hosts_to_track == 100;
 }
 
 }  // namespace predictors

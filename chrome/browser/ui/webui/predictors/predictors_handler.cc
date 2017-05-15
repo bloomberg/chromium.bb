@@ -13,8 +13,8 @@
 #include "base/values.h"
 #include "chrome/browser/predictors/autocomplete_action_predictor.h"
 #include "chrome/browser/predictors/autocomplete_action_predictor_factory.h"
-#include "chrome/browser/predictors/resource_prefetch_predictor.h"
-#include "chrome/browser/predictors/resource_prefetch_predictor_factory.h"
+#include "chrome/browser/predictors/loading_predictor.h"
+#include "chrome/browser/predictors/loading_predictor_factory.h"
 #include "chrome/browser/predictors/resource_prefetch_predictor_tables.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/web_ui.h"
@@ -48,8 +48,8 @@ std::string ConvertResourceType(ResourceData::ResourceType type) {
 PredictorsHandler::PredictorsHandler(Profile* profile) {
   autocomplete_action_predictor_ =
       predictors::AutocompleteActionPredictorFactory::GetForProfile(profile);
-  resource_prefetch_predictor_ =
-      predictors::ResourcePrefetchPredictorFactory::GetForProfile(profile);
+  loading_predictor_ =
+      predictors::LoadingPredictorFactory::GetForProfile(profile);
 }
 
 PredictorsHandler::~PredictorsHandler() { }
@@ -92,20 +92,22 @@ void PredictorsHandler::RequestAutocompleteActionPredictorDb(
 
 void PredictorsHandler::RequestResourcePrefetchPredictorDb(
     const base::ListValue* args) {
-  const bool enabled = (resource_prefetch_predictor_ != NULL);
+  const bool enabled = (loading_predictor_ != nullptr);
   base::DictionaryValue dict;
   dict.SetBoolean("enabled", enabled);
 
   if (enabled) {
     // Url Database cache.
     auto db = base::MakeUnique<base::ListValue>();
+    auto* resource_prefetch_predictor =
+        loading_predictor_->resource_prefetch_predictor();
     AddPrefetchDataMapToListValue(
-        *resource_prefetch_predictor_->url_table_cache_, db.get());
+        *resource_prefetch_predictor->url_table_cache_, db.get());
     dict.Set("url_db", std::move(db));
 
     db = base::MakeUnique<base::ListValue>();
     AddPrefetchDataMapToListValue(
-        *resource_prefetch_predictor_->host_table_cache_, db.get());
+        *resource_prefetch_predictor->host_table_cache_, db.get());
     dict.Set("host_db", std::move(db));
   }
 
@@ -134,9 +136,11 @@ void PredictorsHandler::AddPrefetchDataMapToListValue(
           "score", ResourcePrefetchPredictorTables::ComputeResourceScore(r));
       resource->SetBoolean("before_first_contentful_paint",
                            r.before_first_contentful_paint());
+      auto* resource_prefetch_predictor =
+          loading_predictor_->resource_prefetch_predictor();
       resource->SetBoolean(
           "is_prefetchable",
-          resource_prefetch_predictor_->IsResourcePrefetchable(r));
+          resource_prefetch_predictor->IsResourcePrefetchable(r));
       resources->Append(std::move(resource));
     }
     main->Set("resources", std::move(resources));
