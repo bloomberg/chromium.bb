@@ -32,8 +32,8 @@ import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.parameter.ParameterizedTest;
 import org.chromium.content.browser.BindingManager;
+import org.chromium.content.browser.ChildProcessConnection;
 import org.chromium.content.browser.ChildProcessLauncher;
-import org.chromium.content.browser.ManagedChildProcessConnection;
 import org.chromium.content_public.common.ContentUrlConstants;
 import org.chromium.net.test.EmbeddedTestServer;
 import org.chromium.net.test.util.TestWebServer;
@@ -585,7 +585,7 @@ public class AwContentsTest extends AwTestBase {
         }
 
         @Override
-        public void addNewConnection(int pid, ManagedChildProcessConnection connection) {
+        public void addNewConnection(int pid, ChildProcessConnection connection) {
             mIsChildProcessCreated = true;
         }
 

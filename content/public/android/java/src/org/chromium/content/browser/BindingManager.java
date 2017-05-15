@@ -31,7 +31,7 @@ public interface BindingManager {
      * Registers a freshly started child process. This can be called on any thread.
      * @param pid handle of the service process
      */
-    void addNewConnection(int pid, ManagedChildProcessConnection connection);
+    void addNewConnection(int pid, ChildProcessConnection connection);
 
     /**
      * Called when the service visibility changes or is determined for the first time. On low-memory

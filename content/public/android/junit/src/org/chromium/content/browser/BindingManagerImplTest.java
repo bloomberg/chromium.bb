@@ -28,8 +28,7 @@ import org.chromium.testing.local.LocalRobolectricTestRunner;
 import java.util.ArrayList;
 
 /**
- * Unit tests for BindingManagerImpl. The tests run agains mock ChildProcessConnection
- * implementation, thus testing only the BindingManagerImpl itself.
+ * Unit tests for BindingManagerImpl and ChildProcessConnection.
  *
  * Default property of being low-end device is overriden, so that both low-end and high-end policies
  * are tested.
@@ -38,7 +37,7 @@ import java.util.ArrayList;
 @Config(manifest = Config.NONE)
 public class BindingManagerImplTest {
     private static class MockChildServiceConnection
-            implements BaseChildProcessConnection.ChildServiceConnection {
+            implements ChildProcessConnection.ChildServiceConnection {
         private boolean mBound;
 
         @Override
@@ -58,7 +57,7 @@ public class BindingManagerImplTest {
         }
     }
 
-    private static class TestChildProcessConnection extends ManagedChildProcessConnection {
+    private static class TestChildProcessConnection extends ChildProcessConnection {
         private final int mPid;
         private boolean mConnected;
 
@@ -87,8 +86,8 @@ public class BindingManagerImplTest {
 
         // We don't have a real service so we have to mock the connection status.
         @Override
-        public void start(StartCallback startCallback) {
-            super.start(startCallback);
+        public void start(boolean useStrongBinding, StartCallback startCallback) {
+            super.start(useStrongBinding, startCallback);
             mConnected = true;
         }
 
@@ -102,6 +101,17 @@ public class BindingManagerImplTest {
         public boolean isConnected() {
             return mConnected;
         }
+    }
+
+    // Creates a mocked ChildProcessConnection that is optionally added to a BindingManager.
+    private static ChildProcessConnection createTestChildProcessConnection(
+            int pid, BindingManager manager) {
+        ChildProcessConnection connection = new TestChildProcessConnection(pid);
+        connection.start(false /* useStrongBinding */, null /* startCallback */);
+        if (manager != null) {
+            manager.addNewConnection(pid, connection);
+        }
+        return connection;
     }
 
     /**
@@ -168,18 +178,16 @@ public class BindingManagerImplTest {
         BindingManagerImpl manager = mLowEndManager;
 
         // Add a connection to the manager.
-        TestChildProcessConnection firstConnection = new TestChildProcessConnection(1);
-        firstConnection.start(null /* startCallback */);
-        manager.addNewConnection(firstConnection.getPid(), firstConnection);
+        ChildProcessConnection firstConnection =
+                createTestChildProcessConnection(1 /* pid */, manager);
 
         // Bind a strong binding on the connection.
         manager.setPriority(firstConnection.getPid(), true /* foreground */, false /* boost */);
         Assert.assertTrue(firstConnection.isStrongBindingBound());
 
         // Add a new connection.
-        TestChildProcessConnection secondConnection = new TestChildProcessConnection(2);
-        secondConnection.start(null /* startCallback */);
-        manager.addNewConnection(secondConnection.getPid(), secondConnection);
+        ChildProcessConnection secondConnection =
+                createTestChildProcessConnection(2 /* pid */, manager);
 
         // Verify that the strong binding for the first connection wasn't dropped.
         Assert.assertTrue(firstConnection.isStrongBindingBound());
@@ -188,6 +196,7 @@ public class BindingManagerImplTest {
         // got used in foreground.
         manager.setPriority(secondConnection.getPid(), true /* foreground */, false /* boost */);
         Assert.assertFalse(firstConnection.isStrongBindingBound());
+        Assert.assertTrue(secondConnection.isStrongBindingBound());
     }
 
     /**
@@ -198,12 +207,11 @@ public class BindingManagerImplTest {
     @Feature({"ProcessManagement"})
     public void testStrongBindingRemovalOnLowEnd() throws Throwable {
         // This test applies only to the low-end manager.
-        final BindingManagerImpl manager = mLowEndManager;
+        BindingManagerImpl manager = mLowEndManager;
 
         // Add a connection to the manager.
-        final TestChildProcessConnection connection = new TestChildProcessConnection(1);
-        connection.start(null /* startCallback */);
-        manager.addNewConnection(connection.getPid(), connection);
+        ChildProcessConnection connection = createTestChildProcessConnection(1 /* pid */, manager);
+        Assert.assertTrue(connection.isInitialBindingBound());
         Assert.assertFalse(connection.isStrongBindingBound());
 
         // Add a strong binding.
@@ -223,12 +231,11 @@ public class BindingManagerImplTest {
     @Feature({"ProcessManagement"})
     public void testStrongBindingRemovalOnHighEnd() throws Throwable {
         // This test applies only to the high-end manager.
-        final BindingManagerImpl manager = mHighEndManager;
+        BindingManagerImpl manager = mHighEndManager;
 
         // Add a connection to the manager.
-        final TestChildProcessConnection connection = new TestChildProcessConnection(1);
-        connection.start(null /* startCallback */);
-        manager.addNewConnection(connection.getPid(), connection);
+        ChildProcessConnection connection = createTestChildProcessConnection(1 /* pid */, manager);
+        Assert.assertTrue(connection.isInitialBindingBound());
         Assert.assertFalse(connection.isStrongBindingBound());
 
         // Add a strong binding, verify that the initial binding is not removed.
@@ -254,12 +261,10 @@ public class BindingManagerImplTest {
     @Feature({"ProcessManagement"})
     public void testStrongBindingRemovalWithModerateBinding() throws Throwable {
         // This test applies only to the moderate-binding manager.
-        final BindingManagerImpl manager = mModerateBindingManager;
+        BindingManagerImpl manager = mModerateBindingManager;
 
         // Add a connection to the manager and start it.
-        final TestChildProcessConnection connection = new TestChildProcessConnection(1);
-        connection.start(null /* startCallback */);
-        manager.addNewConnection(connection.getPid(), connection);
+        ChildProcessConnection connection = createTestChildProcessConnection(1 /* pid */, manager);
 
         Assert.assertTrue(connection.isInitialBindingBound());
         Assert.assertFalse(connection.isStrongBindingBound());
@@ -285,33 +290,37 @@ public class BindingManagerImplTest {
 
     /**
      * This test corresponds to a process crash scenario: after a process dies and its connection is
-     * cleared, isOomProtectedOrWasWhenDied() may be called on the connection to decide if it was a
-     * crash or out-of-memory kill.
+     * cleared, isWaivedBoundOnlyOrWasWhenDied() may be called on the connection to decide if it was
+     * a crash or out-of-memory kill.
      */
     @Test
     @Feature({"ProcessManagement"})
-    public void testIsOomProtected() {
+    public void testIsWaivedBoundOnly() {
         // This test applies to low-end, high-end and moderate-binding policies.
         for (ManagerEntry managerEntry : mAllManagers) {
             BindingManagerImpl manager = managerEntry.mManager;
             String message = managerEntry.getErrorMessage();
 
             // Add a connection to the manager.
-            TestChildProcessConnection connection = new TestChildProcessConnection(1);
-            connection.start(null /* startCallback */);
-            manager.addNewConnection(connection.getPid(), connection);
+            ChildProcessConnection connection =
+                    createTestChildProcessConnection(1 /* pid */, manager);
 
-            // Initial binding is an oom binding.
-            Assert.assertTrue(message, connection.isOomProtectedOrWasWhenDied());
+            // Initial binding is a moderate binding.
+            Assert.assertFalse(message, connection.isWaivedBoundOnlyOrWasWhenDied());
 
-            // After initial binding is removed, the connection is no longer oom protected.
+            // After initial binding is removed, the connection is no longer waived bound only.
             manager.setPriority(connection.getPid(), false /* foreground */, false /* boost */);
             ShadowLooper.runUiThreadTasksIncludingDelayedTasks();
-            Assert.assertFalse(message, connection.isOomProtectedOrWasWhenDied());
+            if (managerEntry.mManager == mModerateBindingManager) {
+                // The moderate binding manager adds a moderate binding.
+                Assert.assertFalse(message, connection.isWaivedBoundOnlyOrWasWhenDied());
+            } else {
+                Assert.assertTrue(message, connection.isWaivedBoundOnlyOrWasWhenDied());
+            }
 
-            // Add a strong binding, restoring the oom protection.
+            // Add a strong binding.
             manager.setPriority(connection.getPid(), true /* foreground */, false /* boost */);
-            Assert.assertTrue(message, connection.isOomProtectedOrWasWhenDied());
+            Assert.assertFalse(message, connection.isWaivedBoundOnlyOrWasWhenDied());
 
             // Simulate a process crash - clear a connection in binding manager and remove the
             // bindings.
@@ -320,11 +329,11 @@ public class BindingManagerImplTest {
             Assert.assertTrue(manager.isConnectionCleared(connection.getPid()));
             connection.stop();
 
-            // Verify that the connection doesn't keep any oom bindings, but the manager reports the
-            // oom status as protected.
+            // Verify that manager reports the the connection was waived bound.
             Assert.assertFalse(message, connection.isInitialBindingBound());
+            Assert.assertFalse(message, connection.isModerateBindingBound());
             Assert.assertFalse(message, connection.isStrongBindingBound());
-            Assert.assertTrue(message, connection.isOomProtectedOrWasWhenDied());
+            Assert.assertFalse(message, connection.isWaivedBoundOnlyOrWasWhenDied());
         }
     }
 
@@ -347,25 +356,22 @@ public class BindingManagerImplTest {
             String message = managerEntry.getErrorMessage();
 
             // Add two connections, bind and release each.
-            TestChildProcessConnection firstConnection = new TestChildProcessConnection(1);
-            firstConnection.start(null /* startCallback */);
-            manager.addNewConnection(firstConnection.getPid(), firstConnection);
+            ChildProcessConnection firstConnection =
+                    createTestChildProcessConnection(1 /* pid */, manager);
             manager.setPriority(firstConnection.getPid(), true /* foreground */, false /* boost */);
             manager.setPriority(
                     firstConnection.getPid(), false /* foreground */, false /* boost */);
 
-            TestChildProcessConnection secondConnection = new TestChildProcessConnection(2);
-            secondConnection.start(null /* startCallback */);
-            manager.addNewConnection(secondConnection.getPid(), secondConnection);
+            ChildProcessConnection secondConnection =
+                    createTestChildProcessConnection(2 /* pid */, manager);
             manager.setPriority(
                     secondConnection.getPid(), true /* foreground */, false /* boost */);
             manager.setPriority(
                     secondConnection.getPid(), false /* foreground */, false /* boost */);
 
             // Add third connection, do not bind it.
-            TestChildProcessConnection thirdConnection = new TestChildProcessConnection(3);
-            thirdConnection.start(null /* startCallback */);
-            manager.addNewConnection(thirdConnection.getPid(), thirdConnection);
+            ChildProcessConnection thirdConnection =
+                    createTestChildProcessConnection(3 /* pid */, manager);
             manager.setPriority(
                     thirdConnection.getPid(), false /* foreground */, false /* boost */);
 
@@ -403,16 +409,14 @@ public class BindingManagerImplTest {
         // This test applies only to the moderate-binding manager.
         final BindingManagerImpl manager = mModerateBindingManager;
 
-        TestChildProcessConnection[] connections = new TestChildProcessConnection[3];
+        ChildProcessConnection[] connections = new ChildProcessConnection[3];
         for (int i = 0; i < connections.length; i++) {
-            connections[i] = new TestChildProcessConnection(i + 1);
-            connections[i].start(null /* startCallback */);
-            manager.addNewConnection(connections[i].getPid(), connections[i]);
+            connections[i] = createTestChildProcessConnection(i + 1 /* pid */, manager);
         }
 
         // Verify that each connection has a moderate binding after binding and releasing a strong
         // binding.
-        for (TestChildProcessConnection connection : connections) {
+        for (ChildProcessConnection connection : connections) {
             manager.setPriority(connection.getPid(), true /* foreground */, false /* boost */);
             manager.setPriority(connection.getPid(), false /* foreground */, false /* boost */);
             ShadowLooper.runUiThreadTasksIncludingDelayedTasks();
@@ -421,9 +425,8 @@ public class BindingManagerImplTest {
 
         // Exclude lastInForeground because it will be kept in foreground when onSentToBackground()
         // is called as |mLastInForeground|.
-        TestChildProcessConnection lastInForeground = new TestChildProcessConnection(0);
-        manager.addNewConnection(lastInForeground.getPid(), lastInForeground);
-        lastInForeground.start(null /* startCallback */);
+        ChildProcessConnection lastInForeground =
+                createTestChildProcessConnection(0 /* pid */, manager);
         manager.setPriority(lastInForeground.getPid(), true /* foreground */, false /* boost */);
         manager.setPriority(lastInForeground.getPid(), false /* foreground */, false /* boost */);
 
@@ -431,34 +434,34 @@ public class BindingManagerImplTest {
 
         // Verify that leaving the application for a short time doesn't clear the moderate bindings.
         manager.onSentToBackground();
-        for (TestChildProcessConnection connection : connections) {
+        for (ChildProcessConnection connection : connections) {
             Assert.assertTrue(connection.isModerateBindingBound());
         }
         Assert.assertTrue(lastInForeground.isStrongBindingBound());
         Assert.assertFalse(lastInForeground.isModerateBindingBound());
         manager.onBroughtToForeground();
         ShadowLooper.runUiThreadTasksIncludingDelayedTasks();
-        for (TestChildProcessConnection connection : connections) {
+        for (ChildProcessConnection connection : connections) {
             Assert.assertTrue(connection.isModerateBindingBound());
         }
 
         // Call onSentToBackground() and verify that all the moderate bindings drop after some
         // delay.
         manager.onSentToBackground();
-        for (TestChildProcessConnection connection : connections) {
+        for (ChildProcessConnection connection : connections) {
             Assert.assertTrue(connection.isModerateBindingBound());
         }
         Assert.assertTrue(lastInForeground.isStrongBindingBound());
         Assert.assertFalse(lastInForeground.isModerateBindingBound());
         ShadowLooper.runUiThreadTasksIncludingDelayedTasks();
-        for (TestChildProcessConnection connection : connections) {
+        for (ChildProcessConnection connection : connections) {
             Assert.assertFalse(connection.isModerateBindingBound());
         }
 
         // Call onBroughtToForeground() and verify that the previous moderate bindings aren't
         // recovered.
         manager.onBroughtToForeground();
-        for (TestChildProcessConnection connection : connections) {
+        for (ChildProcessConnection connection : connections) {
             Assert.assertFalse(connection.isModerateBindingBound());
         }
     }
@@ -472,16 +475,14 @@ public class BindingManagerImplTest {
         final Application app = mActivity.getApplication();
         final BindingManagerImpl manager = mModerateBindingManager;
 
-        TestChildProcessConnection[] connections = new TestChildProcessConnection[4];
+        ChildProcessConnection[] connections = new ChildProcessConnection[4];
         for (int i = 0; i < connections.length; i++) {
-            connections[i] = new TestChildProcessConnection(i + 1);
-            connections[i].start(null /* startCallback */);
-            manager.addNewConnection(connections[i].getPid(), connections[i]);
+            connections[i] = createTestChildProcessConnection(i + 1 /* pid */, manager);
         }
 
         // Verify that each connection has a moderate binding after binding and releasing a strong
         // binding.
-        for (TestChildProcessConnection connection : connections) {
+        for (ChildProcessConnection connection : connections) {
             manager.setPriority(connection.getPid(), true /* foreground */, false /* boost */);
             manager.setPriority(connection.getPid(), false /* foreground */, false /* boost */);
             ShadowLooper.runUiThreadTasksIncludingDelayedTasks();
@@ -490,7 +491,7 @@ public class BindingManagerImplTest {
 
         // Call onLowMemory() and verify that all the moderate bindings drop.
         app.onLowMemory();
-        for (TestChildProcessConnection connection : connections) {
+        for (ChildProcessConnection connection : connections) {
             Assert.assertFalse(connection.isModerateBindingBound());
         }
     }
@@ -512,18 +513,16 @@ public class BindingManagerImplTest {
         levelAndExpectedVictimCountList.add(
                 new Pair<Integer, Integer>(TRIM_MEMORY_RUNNING_CRITICAL, 4));
 
-        TestChildProcessConnection[] connections = new TestChildProcessConnection[4];
+        ChildProcessConnection[] connections = new ChildProcessConnection[4];
         for (int i = 0; i < connections.length; i++) {
-            connections[i] = new TestChildProcessConnection(i + 1);
-            connections[i].start(null /* startCallback */);
-            manager.addNewConnection(connections[i].getPid(), connections[i]);
+            connections[i] = createTestChildProcessConnection(i + 1 /* pid */, manager);
         }
 
         for (Pair<Integer, Integer> pair : levelAndExpectedVictimCountList) {
             String message = "Failed for the level=" + pair.first;
             // Verify that each connection has a moderate binding after binding and releasing a
             // strong binding.
-            for (TestChildProcessConnection connection : connections) {
+            for (ChildProcessConnection connection : connections) {
                 manager.setPriority(connection.getPid(), true /* foreground */, false /* boost */);
                 manager.setPriority(connection.getPid(), false /* foreground */, false /* boost */);
                 ShadowLooper.runUiThreadTasksIncludingDelayedTasks();
@@ -548,16 +547,14 @@ public class BindingManagerImplTest {
         // This test applies only to the moderate-binding manager.
         final BindingManagerImpl manager = mModerateBindingManager;
 
-        TestChildProcessConnection[] connections = new TestChildProcessConnection[4];
+        ChildProcessConnection[] connections = new ChildProcessConnection[4];
         for (int i = 0; i < connections.length; i++) {
-            connections[i] = new TestChildProcessConnection(i + 1);
-            connections[i].start(null /* startCallback */);
-            manager.addNewConnection(connections[i].getPid(), connections[i]);
+            connections[i] = createTestChildProcessConnection(i + 1 /* pid */, manager);
         }
 
         // Verify that each connection has a moderate binding after binding and releasing a strong
         // binding.
-        for (TestChildProcessConnection connection : connections) {
+        for (ChildProcessConnection connection : connections) {
             manager.setPriority(connection.getPid(), true /* foreground */, false /* boost */);
             manager.setPriority(connection.getPid(), false /* foreground */, false /* boost */);
             ShadowLooper.runUiThreadTasksIncludingDelayedTasks();
@@ -567,7 +564,7 @@ public class BindingManagerImplTest {
         // Call BindingManager.releaseAllModerateBindings() and verify that all the moderate
         // bindings drop.
         manager.releaseAllModerateBindings();
-        for (TestChildProcessConnection connection : connections) {
+        for (ChildProcessConnection connection : connections) {
             Assert.assertFalse(connection.isModerateBindingBound());
         }
     }
@@ -582,9 +579,7 @@ public class BindingManagerImplTest {
         BindingManagerImpl manager = BindingManagerImpl.createBindingManagerForTesting(false);
         manager.startModerateBindingManagement(mActivity, 4);
 
-        TestChildProcessConnection connection = new TestChildProcessConnection(0);
-        connection.start(null /* startCallback */);
-        manager.addNewConnection(connection.getPid(), connection);
+        ChildProcessConnection connection = createTestChildProcessConnection(0 /* pid */, manager);
         Assert.assertTrue(connection.isInitialBindingBound());
         Assert.assertFalse(connection.isModerateBindingBound());
 
@@ -603,9 +598,7 @@ public class BindingManagerImplTest {
         BindingManagerImpl manager = BindingManagerImpl.createBindingManagerForTesting(false);
         manager.startModerateBindingManagement(mActivity, 4);
 
-        TestChildProcessConnection connection = new TestChildProcessConnection(0);
-        connection.start(null /* startCallback */);
-        manager.addNewConnection(connection.getPid(), connection);
+        ChildProcessConnection connection = createTestChildProcessConnection(0 /* pid */, manager);
         Assert.assertTrue(connection.isInitialBindingBound());
         Assert.assertFalse(connection.isStrongBindingBound());
         Assert.assertFalse(connection.isModerateBindingBound());
@@ -626,9 +619,7 @@ public class BindingManagerImplTest {
         BindingManagerImpl manager = BindingManagerImpl.createBindingManagerForTesting(false);
         manager.startModerateBindingManagement(mActivity, 4);
 
-        TestChildProcessConnection connection = new TestChildProcessConnection(0);
-        connection.start(null /* startCallback */);
-        manager.addNewConnection(connection.getPid(), connection);
+        ChildProcessConnection connection = createTestChildProcessConnection(0, manager);
         manager.setPriority(connection.getPid(), false /* foreground */, false /* boost */);
         Assert.assertTrue(connection.isModerateBindingBound());
 
