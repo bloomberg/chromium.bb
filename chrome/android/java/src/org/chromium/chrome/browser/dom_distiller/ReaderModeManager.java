@@ -643,8 +643,8 @@ public class ReaderModeManager extends TabModelSelectorTabObserver
 
         boolean enabled = CommandLine.getInstance().hasSwitch(ChromeSwitches.ENABLE_DOM_DISTILLER)
                 && !CommandLine.getInstance().hasSwitch(
-                        ChromeSwitches.DISABLE_READER_MODE_BOTTOM_BAR)
-                && !DeviceFormFactor.isTablet(context)
+                           ChromeSwitches.DISABLE_READER_MODE_BOTTOM_BAR)
+                && !DeviceFormFactor.isTablet()
                 && DomDistillerTabUtils.isDistillerHeuristicsEnabled()
                 && !SysUtils.isLowEndDevice();
         return enabled;

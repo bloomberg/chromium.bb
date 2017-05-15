@@ -131,7 +131,7 @@ public class FeatureUtilities {
      */
     public static boolean isDocumentModeEligible(Context context) {
         return Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP
-                && !DeviceFormFactor.isTablet(context);
+                && !DeviceFormFactor.isTablet();
     }
 
     /**
@@ -239,10 +239,8 @@ public class FeatureUtilities {
      * Cache whether or not Chrome Home is enabled.
      */
     public static void cacheChromeHomeEnabled() {
-        Context context = ContextUtils.getApplicationContext();
-
         // Chrome Home doesn't work with tablets.
-        if (DeviceFormFactor.isTablet(context)) return;
+        if (DeviceFormFactor.isTablet()) return;
 
         boolean isChromeHomeEnabled = ChromeFeatureList.isEnabled(ChromeFeatureList.CHROME_HOME);
         ChromePreferenceManager manager = ChromePreferenceManager.getInstance();

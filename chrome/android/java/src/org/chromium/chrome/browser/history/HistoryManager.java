@@ -268,7 +268,7 @@ public class HistoryManager implements OnMenuItemClickListener, SignInStateObser
 
         // Determine component or class name.
         ComponentName component;
-        if (DeviceFormFactor.isTablet(mActivity)) {
+        if (DeviceFormFactor.isTablet()) {
             component = mActivity.getComponentName();
         } else {
             component = IntentUtils.safeGetParcelableExtra(

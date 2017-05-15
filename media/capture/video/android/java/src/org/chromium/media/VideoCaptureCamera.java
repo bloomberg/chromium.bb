@@ -5,7 +5,6 @@
 package org.chromium.media;
 
 import android.annotation.TargetApi;
-import android.content.Context;
 import android.graphics.ImageFormat;
 import android.graphics.Rect;
 import android.graphics.SurfaceTexture;
@@ -256,8 +255,8 @@ public class VideoCaptureCamera
         return formatList.toArray(new VideoCaptureFormat[formatList.size()]);
     }
 
-    VideoCaptureCamera(Context context, int id, long nativeVideoCaptureDeviceAndroid) {
-        super(context, id, nativeVideoCaptureDeviceAndroid);
+    VideoCaptureCamera(int id, long nativeVideoCaptureDeviceAndroid) {
+        super(id, nativeVideoCaptureDeviceAndroid);
     }
 
     @Override

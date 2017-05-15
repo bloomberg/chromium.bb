@@ -6,7 +6,6 @@
 
 #include <utility>
 
-#include "base/android/context_utils.h"
 #include "base/android/jni_string.h"
 #include "base/android/scoped_java_ref.h"
 #include "base/strings/string_number_conversions.h"
@@ -26,8 +25,7 @@ VideoCaptureDeviceFactoryAndroid::createVideoCaptureAndroid(
     int id,
     jlong nativeVideoCaptureDeviceAndroid) {
   return (Java_VideoCaptureFactory_createVideoCapture(
-      AttachCurrentThread(), base::android::GetApplicationContext(), id,
-      nativeVideoCaptureDeviceAndroid));
+      AttachCurrentThread(), id, nativeVideoCaptureDeviceAndroid));
 }
 
 std::unique_ptr<VideoCaptureDevice>
@@ -58,21 +56,19 @@ void VideoCaptureDeviceFactoryAndroid::GetDeviceDescriptors(
 
   JNIEnv* env = AttachCurrentThread();
 
-  const JavaRef<jobject>& context = base::android::GetApplicationContext();
-  const int num_cameras =
-      Java_VideoCaptureFactory_getNumberOfCameras(env, context);
+  const int num_cameras = Java_VideoCaptureFactory_getNumberOfCameras(env);
   DVLOG(1) << __func__ << ": num_cameras=" << num_cameras;
   if (num_cameras <= 0)
     return;
 
   for (int camera_id = num_cameras - 1; camera_id >= 0; --camera_id) {
     base::android::ScopedJavaLocalRef<jstring> device_name =
-        Java_VideoCaptureFactory_getDeviceName(env, camera_id, context);
+        Java_VideoCaptureFactory_getDeviceName(env, camera_id);
     if (device_name.obj() == NULL)
       continue;
 
     const int capture_api_type =
-        Java_VideoCaptureFactory_getCaptureApiType(env, camera_id, context);
+        Java_VideoCaptureFactory_getCaptureApiType(env, camera_id);
     const std::string display_name =
         base::android::ConvertJavaStringToUTF8(device_name);
     const std::string device_id = base::IntToString(camera_id);
@@ -98,8 +94,7 @@ void VideoCaptureDeviceFactoryAndroid::GetSupportedFormats(
     return;
   JNIEnv* env = AttachCurrentThread();
   base::android::ScopedJavaLocalRef<jobjectArray> collected_formats =
-      Java_VideoCaptureFactory_getDeviceSupportedFormats(
-          env, base::android::GetApplicationContext(), id);
+      Java_VideoCaptureFactory_getDeviceSupportedFormats(env, id);
   if (collected_formats.is_null())
     return;
 
@@ -142,7 +137,7 @@ bool VideoCaptureDeviceFactoryAndroid::IsLegacyOrDeprecatedDevice(
   if (!base::StringToInt(device_id, &id))
     return true;
   return (Java_VideoCaptureFactory_isLegacyOrDeprecatedDevice(
-      AttachCurrentThread(), base::android::GetApplicationContext(), id));
+      AttachCurrentThread(), id));
 }
 
 // static

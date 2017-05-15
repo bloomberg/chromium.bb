@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.device;
 
 import org.chromium.base.CommandLine;
-import org.chromium.base.ContextUtils;
 import org.chromium.base.SysUtils;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.util.AccessibilityUtil;
@@ -57,7 +56,7 @@ public class DeviceClassManager {
             mEnableToolbarSwipe = true;
         }
 
-        if (DeviceFormFactor.isTablet(ContextUtils.getApplicationContext())) {
+        if (DeviceFormFactor.isTablet()) {
             mEnableAccessibilityLayout = false;
         }
 

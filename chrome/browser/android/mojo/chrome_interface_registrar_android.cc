@@ -6,7 +6,6 @@
 
 #include <jni.h>
 
-#include "base/android/context_utils.h"
 #include "base/android/jni_android.h"
 #include "jni/ChromeInterfaceRegistrar_jni.h"
 

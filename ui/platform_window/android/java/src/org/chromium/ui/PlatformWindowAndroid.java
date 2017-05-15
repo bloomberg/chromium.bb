@@ -5,7 +5,6 @@
 package org.chromium.ui;
 
 import android.app.Activity;
-import android.content.Context;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.Surface;
@@ -15,6 +14,7 @@ import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputConnection;
 
+import org.chromium.base.ContextUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 
@@ -30,15 +30,14 @@ public class PlatformWindowAndroid extends SurfaceView {
 
     @CalledByNative
     public static PlatformWindowAndroid createForActivity(
-            Activity activity, long nativeViewport, long nativeImeController) {
-        PlatformWindowAndroid rv =
-                new PlatformWindowAndroid(activity, nativeViewport, nativeImeController);
-        activity.setContentView(rv);
+            long nativeViewport, long nativeImeController) {
+        PlatformWindowAndroid rv = new PlatformWindowAndroid(nativeViewport, nativeImeController);
+        ((Activity) ContextUtils.getApplicationContext()).setContentView(rv);
         return rv;
     }
 
-    public PlatformWindowAndroid(Context context, long nativeViewport, long nativeImeController) {
-        super(context);
+    private PlatformWindowAndroid(long nativeViewport, long nativeImeController) {
+        super(ContextUtils.getApplicationContext());
 
         setFocusable(true);
         setFocusableInTouchMode(true);
@@ -46,7 +45,8 @@ public class PlatformWindowAndroid extends SurfaceView {
         mNativeMojoViewport = nativeViewport;
         assert mNativeMojoViewport != 0;
 
-        final float density = context.getResources().getDisplayMetrics().density;
+        final float density =
+                ContextUtils.getApplicationContext().getResources().getDisplayMetrics().density;
 
         mSurfaceCallback = new SurfaceHolder.Callback() {
             @Override

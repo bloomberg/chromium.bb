@@ -27,6 +27,7 @@ import android.view.accessibility.AccessibilityManager;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Callback;
+import org.chromium.base.ContextUtils;
 import org.chromium.base.ObserverList;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
@@ -213,8 +214,8 @@ public class WindowAndroid {
     }
 
     @CalledByNative
-    private static long createForTesting(Context context) {
-        WindowAndroid windowAndroid = new WindowAndroid(context);
+    private static long createForTesting() {
+        WindowAndroid windowAndroid = new WindowAndroid(ContextUtils.getApplicationContext());
         // |windowAndroid.getNativePointer()| creates native WindowAndroid object
         // which stores a global ref to |windowAndroid|. Therefore |windowAndroid|
         // is not immediately eligible for gc.

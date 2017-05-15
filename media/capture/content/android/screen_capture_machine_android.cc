@@ -4,7 +4,6 @@
 
 #include "media/capture/content/android/screen_capture_machine_android.h"
 
-#include "base/android/context_utils.h"
 #include "base/android/jni_android.h"
 #include "base/android/scoped_java_ref.h"
 #include "jni/ScreenCapture_jni.h"
@@ -30,8 +29,7 @@ ScopedJavaLocalRef<jobject>
 ScreenCaptureMachineAndroid::createScreenCaptureMachineAndroid(
     jlong nativeScreenCaptureMachineAndroid) {
   return (Java_ScreenCapture_createScreenCaptureMachine(
-      AttachCurrentThread(), base::android::GetApplicationContext(),
-      nativeScreenCaptureMachineAndroid));
+      AttachCurrentThread(), nativeScreenCaptureMachineAndroid));
 }
 
 void ScreenCaptureMachineAndroid::OnRGBAFrameAvailable(JNIEnv* env,

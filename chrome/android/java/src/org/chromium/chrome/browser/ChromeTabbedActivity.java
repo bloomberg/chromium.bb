@@ -626,7 +626,7 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
             TraceEvent.begin("ChromeTabbedActivity.initializeUI");
 
             CompositorViewHolder compositorViewHolder = getCompositorViewHolder();
-            if (DeviceFormFactor.isTablet(this)) {
+            if (DeviceFormFactor.isTablet()) {
                 mLayoutManager = new LayoutManagerChromeTablet(compositorViewHolder);
             } else {
                 mLayoutManager = new LayoutManagerChromePhone(compositorViewHolder);
@@ -1223,7 +1223,7 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
 
     @Override
     protected int getToolbarLayoutId() {
-        if (DeviceFormFactor.isTablet(getApplicationContext())) return R.layout.toolbar_tablet;
+        if (DeviceFormFactor.isTablet()) return R.layout.toolbar_tablet;
 
         if (FeatureUtilities.isChromeHomeEnabled()) return R.layout.bottom_toolbar_phone;
         return R.layout.toolbar_phone;
@@ -1253,7 +1253,7 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
     @Override
     protected void initializeToolbar() {
         super.initializeToolbar();
-        if (DeviceFormFactor.isTablet(getApplicationContext())) {
+        if (DeviceFormFactor.isTablet()) {
             getToolbarManager().setShouldUpdateToolbarPrimaryColor(false);
         }
     }
@@ -1913,7 +1913,7 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
 
     @Override
     protected void setStatusBarColor(Tab tab, int color) {
-        if (DeviceFormFactor.isTablet(getApplicationContext())) return;
+        if (DeviceFormFactor.isTablet()) return;
         super.setStatusBarColor(tab, isInOverviewMode() ? Color.BLACK : color);
     }
 

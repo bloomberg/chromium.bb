@@ -52,7 +52,6 @@
 #include "services/shape_detection/public/interfaces/constants.mojom.h"
 
 #if defined(OS_ANDROID)
-#include "base/android/context_utils.h"
 #include "base/android/jni_android.h"
 #include "base/android/scoped_java_ref.h"
 #include "jni/ContentNfcDelegate_jni.h"

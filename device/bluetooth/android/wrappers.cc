@@ -4,7 +4,6 @@
 
 #include "device/bluetooth/android/wrappers.h"
 
-#include "base/android/context_utils.h"
 #include "base/android/jni_android.h"
 #include "jni/Wrappers_jni.h"
 
@@ -15,7 +14,7 @@ namespace device {
 
 ScopedJavaLocalRef<jobject> BluetoothAdapterWrapper_CreateWithDefaultAdapter() {
   return Java_BluetoothAdapterWrapper_createWithDefaultAdapter(
-      AttachCurrentThread(), base::android::GetApplicationContext());
+      AttachCurrentThread());
 }
 
 }  // namespace device

@@ -111,7 +111,7 @@ public class LocationProviderTest {
     }
 
     private void createLocationProviderAdapter() {
-        mLocationProviderAdapter = LocationProviderAdapter.create(mContext);
+        mLocationProviderAdapter = LocationProviderAdapter.create();
         assertNotNull("LocationProvider", mLocationProviderAdapter);
     }
 
@@ -132,7 +132,7 @@ public class LocationProviderTest {
     }
 
     private void setLocationProviderAndroid() {
-        LocationProviderAndroid locationProviderAndroid = new LocationProviderAndroid(mContext);
+        LocationProviderAndroid locationProviderAndroid = new LocationProviderAndroid();
 
         // Robolectric has a ShadowLocationManager class that mocks the behaviour of the real
         // class very closely. Use it here.

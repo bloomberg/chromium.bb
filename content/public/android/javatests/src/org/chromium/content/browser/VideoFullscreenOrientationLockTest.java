@@ -135,7 +135,7 @@ public class VideoFullscreenOrientationLockTest {
     @Feature({"VideoFullscreenOrientationLock"})
     public void testEnterExitFullscreenWithControlsButton() throws Exception {
         // TODO(johnme): Use RESTRICTION_TYPE_PHONE once crbug.com/673917 moves it out of chrome/.
-        if (DeviceFormFactor.isTablet(mActivityTestRule.getActivity())) {
+        if (DeviceFormFactor.isTablet()) {
             return;
         }
 
@@ -166,7 +166,7 @@ public class VideoFullscreenOrientationLockTest {
     @Feature({"VideoFullscreenOrientationLock"})
     public void testEnterExitFullscreenWithAPI() throws Exception {
         // TODO(johnme): Use RESTRICTION_TYPE_PHONE once crbug.com/673917 moves it out of chrome/.
-        if (DeviceFormFactor.isTablet(mActivityTestRule.getActivity())) {
+        if (DeviceFormFactor.isTablet()) {
             return;
         }
 
@@ -193,7 +193,7 @@ public class VideoFullscreenOrientationLockTest {
     @Feature({"VideoFullscreenOrientationLock"})
     public void testExitFullscreenByRemovingVideo() throws Exception {
         // TODO(johnme): Use RESTRICTION_TYPE_PHONE once crbug.com/673917 moves it out of chrome/.
-        if (DeviceFormFactor.isTablet(mActivityTestRule.getActivity())) {
+        if (DeviceFormFactor.isTablet()) {
             return;
         }
 
@@ -221,7 +221,7 @@ public class VideoFullscreenOrientationLockTest {
     @Feature({"VideoFullscreenOrientationLock"})
     public void testExitFullscreenWithNavigation() throws Exception {
         // TODO(johnme): Use RESTRICTION_TYPE_PHONE once crbug.com/673917 moves it out of chrome/.
-        if (DeviceFormFactor.isTablet(mActivityTestRule.getActivity())) {
+        if (DeviceFormFactor.isTablet()) {
             return;
         }
 

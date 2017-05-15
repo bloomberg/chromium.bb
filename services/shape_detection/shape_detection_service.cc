@@ -11,7 +11,6 @@
 #include "services/shape_detection/text_detection_impl.h"
 
 #if defined(OS_ANDROID)
-#include "base/android/context_utils.h"
 #include "base/android/jni_android.h"
 #include "jni/InterfaceRegistrar_jni.h"
 #endif
@@ -60,8 +59,7 @@ service_manager::InterfaceProvider* ShapeDetectionService::GetJavaInterfaces() {
     service_manager::mojom::InterfaceProviderPtr provider;
     Java_InterfaceRegistrar_createInterfaceRegistryForContext(
         base::android::AttachCurrentThread(),
-        mojo::MakeRequest(&provider).PassMessagePipe().release().value(),
-        base::android::GetApplicationContext());
+        mojo::MakeRequest(&provider).PassMessagePipe().release().value());
     java_interface_provider_ =
         base::MakeUnique<service_manager::InterfaceProvider>();
     java_interface_provider_->Bind(std::move(provider));

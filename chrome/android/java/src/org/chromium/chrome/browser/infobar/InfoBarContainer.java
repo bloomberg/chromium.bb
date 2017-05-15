@@ -189,8 +189,7 @@ public class InfoBarContainer extends SwipableOverlayView {
 
         FrameLayout.LayoutParams lp = new FrameLayout.LayoutParams(
                 LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT, Gravity.BOTTOM);
-        int topMarginDp = DeviceFormFactor.isTablet(context)
-                ? TOP_MARGIN_TABLET_DP : TOP_MARGIN_PHONE_DP;
+        int topMarginDp = DeviceFormFactor.isTablet() ? TOP_MARGIN_TABLET_DP : TOP_MARGIN_PHONE_DP;
         lp.topMargin = Math.round(topMarginDp * getResources().getDisplayMetrics().density);
         setLayoutParams(lp);
 

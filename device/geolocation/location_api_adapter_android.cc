@@ -4,7 +4,6 @@
 
 #include "device/geolocation/location_api_adapter_android.h"
 
-#include "base/android/context_utils.h"
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "base/bind.h"
@@ -54,8 +53,8 @@ bool LocationApiAdapterAndroid::Start(OnGeopositionCB on_geoposition_callback,
     on_geoposition_callback_ = on_geoposition_callback;
 
     DCHECK(java_location_provider_adapter_.is_null());
-    java_location_provider_adapter_.Reset(Java_LocationProviderAdapter_create(
-        env, base::android::GetApplicationContext()));
+    java_location_provider_adapter_.Reset(
+        Java_LocationProviderAdapter_create(env));
   }
 
   // At this point we should have all our pre-conditions ready, and they'd only

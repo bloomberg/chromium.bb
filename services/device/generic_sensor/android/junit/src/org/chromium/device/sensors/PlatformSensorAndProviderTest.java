@@ -126,7 +126,7 @@ public class PlatformSensorAndProviderTest {
     @Feature({"PlatformSensorProvider"})
     public void testNullSensorManager() {
         doReturn(null).when(mContext).getSystemService(Context.SENSOR_SERVICE);
-        PlatformSensorProvider provider = PlatformSensorProvider.create(mContext);
+        PlatformSensorProvider provider = PlatformSensorProvider.createForTest(mContext);
         PlatformSensor sensor = provider.createSensor(SensorType.AMBIENT_LIGHT);
         assertNull(sensor);
     }
@@ -137,7 +137,7 @@ public class PlatformSensorAndProviderTest {
     @Test
     @Feature({"PlatformSensorProvider"})
     public void testSensorNotSupported() {
-        PlatformSensorProvider provider = PlatformSensorProvider.create(mContext);
+        PlatformSensorProvider provider = PlatformSensorProvider.createForTest(mContext);
         PlatformSensor sensor = provider.createSensor(SensorType.AMBIENT_LIGHT);
         assertNull(sensor);
     }
@@ -148,7 +148,7 @@ public class PlatformSensorAndProviderTest {
     @Test
     @Feature({"PlatformSensorProvider"})
     public void testSensorTypeMappings() {
-        PlatformSensorProvider provider = PlatformSensorProvider.create(mContext);
+        PlatformSensorProvider provider = PlatformSensorProvider.createForTest(mContext);
         provider.createSensor(SensorType.AMBIENT_LIGHT);
         verify(mSensorManager).getSensorList(Sensor.TYPE_LIGHT);
         provider.createSensor(SensorType.ACCELEROMETER);
@@ -401,7 +401,7 @@ public class PlatformSensorAndProviderTest {
     private PlatformSensor createPlatformSensor(
             long minDelayUsec, int androidSensorType, int mojoSensorType, int reportingMode) {
         addMockSensor(minDelayUsec, androidSensorType, reportingMode);
-        PlatformSensorProvider provider = PlatformSensorProvider.create(mContext);
+        PlatformSensorProvider provider = PlatformSensorProvider.createForTest(mContext);
         return provider.createSensor(mojoSensorType);
     }
 

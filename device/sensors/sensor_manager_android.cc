@@ -6,7 +6,6 @@
 
 #include <string.h>
 
-#include "base/android/context_utils.h"
 #include "base/android/jni_android.h"
 #include "base/bind.h"
 #include "base/memory/singleton.h"
@@ -62,8 +61,7 @@ SensorManagerAndroid::SensorManagerAndroid()
       is_shutdown_(false) {
   DCHECK(thread_checker_.CalledOnValidThread());
   memset(received_motion_data_, 0, sizeof(received_motion_data_));
-  device_sensors_.Reset(Java_DeviceSensors_create(
-      AttachCurrentThread(), base::android::GetApplicationContext()));
+  device_sensors_.Reset(Java_DeviceSensors_create(AttachCurrentThread()));
 }
 
 SensorManagerAndroid::~SensorManagerAndroid() {}

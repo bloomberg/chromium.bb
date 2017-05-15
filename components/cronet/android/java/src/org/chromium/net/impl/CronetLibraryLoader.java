@@ -63,7 +63,6 @@ public class CronetLibraryLoader {
                 } else {
                     System.loadLibrary(LIBRARY_NAME);
                 }
-                ContextUtils.initApplicationContextForNative();
                 String implVersion = ImplVersion.getCronetVersion();
                 if (!implVersion.equals(nativeGetCronetVersion())) {
                     throw new RuntimeException(String.format("Expected Cronet version number %s, "

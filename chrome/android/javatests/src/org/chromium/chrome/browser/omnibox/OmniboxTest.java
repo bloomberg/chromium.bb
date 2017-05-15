@@ -334,7 +334,7 @@ public class OmniboxTest {
             throws ExecutionException, InterruptedException {
         // Default orientation for tablets is landscape. Default for phones is portrait.
         int requestedOrientation = 1;
-        if (DeviceFormFactor.isTablet(mActivityTestRule.getActivity())) {
+        if (DeviceFormFactor.isTablet()) {
             requestedOrientation = 0;
         }
         doTestAutoCompleteAndCorrectionForOrientation(requestedOrientation);
@@ -348,7 +348,7 @@ public class OmniboxTest {
             throws ExecutionException, InterruptedException {
         // Default orientation for tablets is landscape. Default for phones is portrait.
         int requestedOrientation = 0;
-        if (DeviceFormFactor.isTablet(mActivityTestRule.getActivity())) {
+        if (DeviceFormFactor.isTablet()) {
             requestedOrientation = 1;
         }
         doTestAutoCompleteAndCorrectionForOrientation(requestedOrientation);

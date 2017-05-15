@@ -31,7 +31,7 @@ public class HistoryManagerUtils {
         Context appContext = ContextUtils.getApplicationContext();
         if (activity.getBottomSheet() != null) {
             activity.getBottomSheetContentController().showContentAndOpenSheet(R.id.action_history);
-        } else if (DeviceFormFactor.isTablet(appContext)) {
+        } else if (DeviceFormFactor.isTablet()) {
             // History shows up as a tab on tablets.
             LoadUrlParams params = new LoadUrlParams(UrlConstants.NATIVE_HISTORY_URL);
             tab.loadUrl(params);

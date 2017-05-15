@@ -117,7 +117,7 @@ public class VideoFullscreenOrientationLockChromeTest {
     @Feature({"VideoFullscreenOrientationLock"})
     @RetryOnFailure // The final waitForContentsFullscreenState(false) is flaky - crbug.com/711005.
     public void testUnlockWithDownloadViewerActivity() throws Exception {
-        if (DeviceFormFactor.isTablet(InstrumentationRegistry.getInstrumentation().getContext())) {
+        if (DeviceFormFactor.isTablet()) {
             return;
         }
 

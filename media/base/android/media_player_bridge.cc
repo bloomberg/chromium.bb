@@ -6,7 +6,6 @@
 
 #include <utility>
 
-#include "base/android/context_utils.h"
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "base/android/scoped_java_ref.h"
@@ -178,12 +177,10 @@ void MediaPlayerBridge::SetDataSource(const std::string& url) {
     ScopedJavaLocalRef<jstring> j_url_string =
         ConvertUTF8ToJavaString(env, url);
 
-    const JavaRef<jobject>& j_context = base::android::GetApplicationContext();
-
     const std::string data_uri_prefix("data:");
     if (base::StartsWith(url, data_uri_prefix, base::CompareCase::SENSITIVE)) {
       if (!Java_MediaPlayerBridge_setDataUriDataSource(
-              env, j_media_player_bridge_, j_context, j_url_string)) {
+              env, j_media_player_bridge_, j_url_string)) {
         OnMediaError(MEDIA_ERROR_FORMAT);
       }
       return;
@@ -194,9 +191,9 @@ void MediaPlayerBridge::SetDataSource(const std::string& url) {
     ScopedJavaLocalRef<jstring> j_user_agent = ConvertUTF8ToJavaString(
         env, user_agent_);
 
-    if (!Java_MediaPlayerBridge_setDataSource(
-            env, j_media_player_bridge_, j_context, j_url_string, j_cookies,
-            j_user_agent, hide_url_log_)) {
+    if (!Java_MediaPlayerBridge_setDataSource(env, j_media_player_bridge_,
+                                              j_url_string, j_cookies,
+                                              j_user_agent, hide_url_log_)) {
       OnMediaError(MEDIA_ERROR_FORMAT);
       return;
     }

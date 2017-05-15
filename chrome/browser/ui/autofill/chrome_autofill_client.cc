@@ -47,7 +47,6 @@
 #include "ui/gfx/geometry/rect.h"
 
 #if defined(OS_ANDROID)
-#include "base/android/context_utils.h"
 #include "chrome/browser/android/preferences/preferences_launcher.h"
 #include "chrome/browser/android/signin/signin_promo_util_android.h"
 #include "chrome/browser/infobars/infobar_service.h"
