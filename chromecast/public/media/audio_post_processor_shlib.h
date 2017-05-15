@@ -63,6 +63,11 @@ class AudioPostProcessor {
   // It should only change when SetSampleRate is called.
   virtual int GetRingingTimeInFrames() = 0;
 
+  // Sends a message to the PostProcessor. Implementations are responsible
+  // for the format and parsing of messages.
+  // OEM's do not need to implement this method.
+  virtual void UpdateParameters(const std::string& message) {}
+
   virtual ~AudioPostProcessor() = default;
 };
 
