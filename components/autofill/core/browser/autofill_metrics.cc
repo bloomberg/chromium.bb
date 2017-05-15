@@ -25,8 +25,8 @@ const char kUKMCardUploadDecisionEntryName[] = "Autofill.CardUploadDecision";
 const char kUKMCardUploadDecisionMetricName[] = "UploadDecision";
 const char kUKMDeveloperEngagementEntryName[] = "Autofill.DeveloperEngagement";
 const char kUKMDeveloperEngagementMetricName[] = "DeveloperEngagement";
-const char kUKMMillisecondsSinceFormLoadedMetricName[] =
-    "MillisecondsSinceFormLoaded";
+const char kUKMMillisecondsSinceFormParsedMetricName[] =
+    "MillisecondsSinceFormParsed";
 const char kUKMInteractedWithFormEntryName[] = "Autofill.InteractedWithForm";
 const char kUKMIsForCreditCardMetricName[] = "IsForCreditCard";
 const char kUKMLocalRecordTypeCountMetricName[] = "LocalRecordTypeCount";
@@ -1033,13 +1033,13 @@ AutofillMetrics::FormInteractionsUkmLogger::FormInteractionsUkmLogger(
     ukm::UkmService* ukm_service)
     : ukm_service_(ukm_service) {}
 
-void AutofillMetrics::FormInteractionsUkmLogger::OnFormsLoaded(
+void AutofillMetrics::FormInteractionsUkmLogger::OnFormsParsed(
     const GURL& url) {
   if (!IsUkmLoggingEnabled() || ukm_service_ == nullptr)
     return;
 
   url_ = url;
-  form_loaded_timestamp_ = base::TimeTicks::Now();
+  form_parsed_timestamp_ = base::TimeTicks::Now();
 }
 
 void AutofillMetrics::FormInteractionsUkmLogger::LogInteractedWithForm(
@@ -1071,8 +1071,8 @@ void AutofillMetrics::FormInteractionsUkmLogger::LogSuggestionsShown() {
 
   std::unique_ptr<ukm::UkmEntryBuilder> builder = ukm_service_->GetEntryBuilder(
       source_id_, internal::kUKMSuggestionsShownEntryName);
-  builder->AddMetric(internal::kUKMMillisecondsSinceFormLoadedMetricName,
-                     MillisecondsSinceFormLoaded());
+  builder->AddMetric(internal::kUKMMillisecondsSinceFormParsedMetricName,
+                     MillisecondsSinceFormParsed());
 }
 
 void AutofillMetrics::FormInteractionsUkmLogger::LogSelectedMaskedServerCard() {
@@ -1084,8 +1084,8 @@ void AutofillMetrics::FormInteractionsUkmLogger::LogSelectedMaskedServerCard() {
 
   std::unique_ptr<ukm::UkmEntryBuilder> builder = ukm_service_->GetEntryBuilder(
       source_id_, internal::kUKMSelectedMaskedServerCardEntryName);
-  builder->AddMetric(internal::kUKMMillisecondsSinceFormLoadedMetricName,
-                     MillisecondsSinceFormLoaded());
+  builder->AddMetric(internal::kUKMMillisecondsSinceFormParsedMetricName,
+                     MillisecondsSinceFormParsed());
 }
 
 void AutofillMetrics::FormInteractionsUkmLogger::LogDidFillSuggestion(
@@ -1099,8 +1099,8 @@ void AutofillMetrics::FormInteractionsUkmLogger::LogDidFillSuggestion(
   std::unique_ptr<ukm::UkmEntryBuilder> builder = ukm_service_->GetEntryBuilder(
       source_id_, internal::kUKMSuggestionFilledEntryName);
   builder->AddMetric(internal::kUKMRecordTypeMetricName, record_type);
-  builder->AddMetric(internal::kUKMMillisecondsSinceFormLoadedMetricName,
-                     MillisecondsSinceFormLoaded());
+  builder->AddMetric(internal::kUKMMillisecondsSinceFormParsedMetricName,
+                     MillisecondsSinceFormParsed());
 }
 
 void AutofillMetrics::FormInteractionsUkmLogger::LogTextFieldDidChange(
@@ -1125,8 +1125,8 @@ void AutofillMetrics::FormInteractionsUkmLogger::LogTextFieldDidChange(
                      static_cast<int>(field.html_mode()));
   builder->AddMetric(internal::kUKMIsAutofilledMetricName, field.is_autofilled);
   builder->AddMetric(internal::kUKMIsEmptyMetricName, field.IsEmpty());
-  builder->AddMetric(internal::kUKMMillisecondsSinceFormLoadedMetricName,
-                     MillisecondsSinceFormLoaded());
+  builder->AddMetric(internal::kUKMMillisecondsSinceFormParsedMetricName,
+                     MillisecondsSinceFormParsed());
 }
 
 void AutofillMetrics::FormInteractionsUkmLogger::LogFormSubmitted(
@@ -1141,8 +1141,8 @@ void AutofillMetrics::FormInteractionsUkmLogger::LogFormSubmitted(
       source_id_, internal::kUKMFormSubmittedEntryName);
   builder->AddMetric(internal::kUKMAutofillFormSubmittedStateMetricName,
                      static_cast<int>(state));
-  builder->AddMetric(internal::kUKMMillisecondsSinceFormLoadedMetricName,
-                     MillisecondsSinceFormLoaded());
+  builder->AddMetric(internal::kUKMMillisecondsSinceFormParsedMetricName,
+                     MillisecondsSinceFormParsed());
 }
 
 void AutofillMetrics::FormInteractionsUkmLogger::UpdateSourceURL(
@@ -1157,10 +1157,10 @@ bool AutofillMetrics::FormInteractionsUkmLogger::CanLog() const {
 }
 
 int64_t
-AutofillMetrics::FormInteractionsUkmLogger::MillisecondsSinceFormLoaded()
+AutofillMetrics::FormInteractionsUkmLogger::MillisecondsSinceFormParsed()
     const {
-  DCHECK(!form_loaded_timestamp_.is_null());
-  return (base::TimeTicks::Now() - form_loaded_timestamp_).InMilliseconds();
+  DCHECK(!form_parsed_timestamp_.is_null());
+  return (base::TimeTicks::Now() - form_parsed_timestamp_).InMilliseconds();
 }
 
 void AutofillMetrics::FormInteractionsUkmLogger::GetNewSourceID() {

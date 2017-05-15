@@ -46,7 +46,7 @@ be describing additional metrics about the same event.
       none of the field were autofilled. See |AutofillFormSubmittedState|.
     </summary>
   </metric>
-  <metric name="MillisecondsSinceFormLoaded">
+  <metric name="MillisecondsSinceFormParsed">
     <summary>
       Time since form parse.
     </summary>
@@ -78,7 +78,7 @@ be describing additional metrics about the same event.
 
 <event name="Autofill.SuggestionsShown">
   <owner>csashi@google.com</owner>
-  <metric name="MillisecondsSinceFormLoaded">
+  <metric name="MillisecondsSinceFormParsed">
     <summary>
       Time since form parse.
     </summary>
@@ -87,7 +87,7 @@ be describing additional metrics about the same event.
 
 <event name="Autofill.SelectedMaskedServerCard">
   <owner>csashi@google.com</owner>
-  <metric name="MillisecondsSinceFormLoaded">
+  <metric name="MillisecondsSinceFormParsed">
     <summary>
       Time since form parse.
     </summary>
@@ -100,7 +100,7 @@ be describing additional metrics about the same event.
     Recorded when user selects a suggestion and we fill the form with that
     suggestion.
   </summary>
-  <metric name="MillisecondsSinceFormLoaded">
+  <metric name="MillisecondsSinceFormParsed">
     <summary>
       Time since form parse.
     </summary>
@@ -146,7 +146,7 @@ be describing additional metrics about the same event.
       True whether field was autofilled. See |AutofillField.is_autofilled|.
     </summary>
   </metric>
-  <metric name="MillisecondsSinceFormLoaded">
+  <metric name="MillisecondsSinceFormParsed">
     <summary>
       Time since form parse.
     </summary>
