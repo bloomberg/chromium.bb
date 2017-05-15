@@ -10,6 +10,7 @@ import mock
 import os
 
 from chromite.cbuildbot import repository
+from chromite.lib import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_build_lib_unittest
 from chromite.lib import cros_test_lib
@@ -167,7 +168,8 @@ class RunTests(cros_build_lib_unittest.RunCommandTestCase):
     """Test a minimal set of command line options."""
     self.PatchObject(osutils, 'SafeMakedirs', autospec=True)
     self.PatchObject(cros_build_lib, 'GetTargetChromiteApiVersion',
-                     autospec=True, return_value=(0, 4))
+                     autospec=True, return_value=(constants.REEXEC_API_MAJOR,
+                                                  constants.REEXEC_API_MINOR))
     mock_clean = self.PatchObject(cbuildbot_launch, 'CleanBuildroot',
                                   autospec=True)
     mock_checkout = self.PatchObject(cbuildbot_launch, 'InitialCheckout',
@@ -193,7 +195,8 @@ class RunTests(cros_build_lib_unittest.RunCommandTestCase):
     """Test a larger set of command line options."""
     self.PatchObject(osutils, 'SafeMakedirs', autospec=True)
     self.PatchObject(cros_build_lib, 'GetTargetChromiteApiVersion',
-                     autospec=True, return_value=(0, 4))
+                     autospec=True, return_value=(constants.REEXEC_API_MAJOR,
+                                                  constants.REEXEC_API_MINOR))
     mock_clean = self.PatchObject(cbuildbot_launch, 'CleanBuildroot',
                                   autospec=True)
     mock_checkout = self.PatchObject(cbuildbot_launch, 'InitialCheckout',
