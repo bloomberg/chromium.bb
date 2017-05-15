@@ -152,14 +152,6 @@ TEST_F(AdsPageLoadMetricsObserverTest, ResourceBeforeAdFrameCommits) {
   // 20KB total were loaded from network, one of which was in an ad frame.
   histogram_tester().ExpectUniqueSample(
       "PageLoad.Clients.Ads.Google.FrameCounts.AnyParentFrame.AdFrames", 1, 1);
-  histogram_tester().ExpectUniqueSample(
-      "PageLoad.Clients.Ads.Google.FrameCounts.MainFrameParent.TotalFrames", 1,
-      1);
-  histogram_tester().ExpectUniqueSample(
-      "PageLoad.Clients.Ads.Google.FrameCounts.MainFrameParent.AdFrames", 1, 1);
-  histogram_tester().ExpectUniqueSample(
-      "PageLoad.Clients.Ads.Google.FrameCounts.MainFrameParent.PercentAdFrames",
-      100, 1);
 
   // Individual Ad Frame Metrics
   histogram_tester().ExpectUniqueSample(
@@ -212,8 +204,8 @@ TEST_F(AdsPageLoadMetricsObserverTest, PageWithAdFrames) {
   RenderFrameHost* nested_ad_frame4 = CreateAndNavigateSubFrame(
       "https://tpc.googlesyndication.com/safeframe/2", "", ad_frame4);
 
-  // Create an addditional ad frame without content, it shouldn't be counted
-  // in some percentage calculations.
+  // Create an addditional ad frame without content. It shouldn't be counted
+  // as an ad frame.
   CreateAndNavigateSubFrame(kAdUrl, kNonAdName, main_frame);
 
   // 70KB total in page, 50 from ads, 40 from network, and 30 of those
@@ -237,7 +229,7 @@ TEST_F(AdsPageLoadMetricsObserverTest, PageWithAdFrames) {
   histogram_tester().ExpectBucketCount(
       "PageLoad.Clients.Ads.Google.Bytes.AdFrames.PerFrame.Network", 10, 3);
   histogram_tester().ExpectBucketCount(
-      "PageLoad.Clients.Ads.Google.Bytes.AdFrames.PerFrame.Network", 0, 2);
+      "PageLoad.Clients.Ads.Google.Bytes.AdFrames.PerFrame.Network", 0, 1);
   histogram_tester().ExpectBucketCount(
       "PageLoad.Clients.Ads.Google.Bytes.AdFrames.PerFrame.PercentNetwork", 0,
       1);
@@ -250,15 +242,7 @@ TEST_F(AdsPageLoadMetricsObserverTest, PageWithAdFrames) {
 
   // Counts
   histogram_tester().ExpectUniqueSample(
-      "PageLoad.Clients.Ads.Google.FrameCounts.AnyParentFrame.AdFrames", 5, 1);
-  histogram_tester().ExpectUniqueSample(
-      "PageLoad.Clients.Ads.Google.FrameCounts.MainFrameParent.TotalFrames", 6,
-      1);
-  histogram_tester().ExpectUniqueSample(
-      "PageLoad.Clients.Ads.Google.FrameCounts.MainFrameParent.AdFrames", 5, 1);
-  histogram_tester().ExpectUniqueSample(
-      "PageLoad.Clients.Ads.Google.FrameCounts.MainFrameParent.PercentAdFrames",
-      83, 1);
+      "PageLoad.Clients.Ads.Google.FrameCounts.AnyParentFrame.AdFrames", 4, 1);
 
   // Page percentages
   histogram_tester().ExpectUniqueSample(
@@ -349,14 +333,6 @@ TEST_F(AdsPageLoadMetricsObserverTest, PageWithAdFrameThatRenavigates) {
   // Counts
   histogram_tester().ExpectUniqueSample(
       "PageLoad.Clients.Ads.Google.FrameCounts.AnyParentFrame.AdFrames", 1, 1);
-  histogram_tester().ExpectUniqueSample(
-      "PageLoad.Clients.Ads.Google.FrameCounts.MainFrameParent.TotalFrames", 1,
-      1);
-  histogram_tester().ExpectUniqueSample(
-      "PageLoad.Clients.Ads.Google.FrameCounts.MainFrameParent.AdFrames", 1, 1);
-  histogram_tester().ExpectUniqueSample(
-      "PageLoad.Clients.Ads.Google.FrameCounts.MainFrameParent.PercentAdFrames",
-      100, 1);
 
   // Page percentages
   histogram_tester().ExpectUniqueSample(
@@ -419,14 +395,6 @@ TEST_F(AdsPageLoadMetricsObserverTest, PageWithNonAdFrameThatRenavigatesToAd) {
   // Counts
   histogram_tester().ExpectUniqueSample(
       "PageLoad.Clients.Ads.Google.FrameCounts.AnyParentFrame.AdFrames", 2, 1);
-  histogram_tester().ExpectUniqueSample(
-      "PageLoad.Clients.Ads.Google.FrameCounts.MainFrameParent.TotalFrames", 1,
-      1);
-  histogram_tester().ExpectUniqueSample(
-      "PageLoad.Clients.Ads.Google.FrameCounts.MainFrameParent.AdFrames", 1, 1);
-  histogram_tester().ExpectUniqueSample(
-      "PageLoad.Clients.Ads.Google.FrameCounts.MainFrameParent.PercentAdFrames",
-      100, 1);
 
   // Page percentages
   histogram_tester().ExpectUniqueSample(
@@ -560,14 +528,6 @@ TEST_F(AdsPageLoadMetricsObserverTest, TwoResourceLoadsBeforeCommit) {
   // Counts
   histogram_tester().ExpectUniqueSample(
       "PageLoad.Clients.Ads.Google.FrameCounts.AnyParentFrame.AdFrames", 1, 1);
-  histogram_tester().ExpectUniqueSample(
-      "PageLoad.Clients.Ads.Google.FrameCounts.MainFrameParent.TotalFrames", 1,
-      1);
-  histogram_tester().ExpectUniqueSample(
-      "PageLoad.Clients.Ads.Google.FrameCounts.MainFrameParent.AdFrames", 1, 1);
-  histogram_tester().ExpectUniqueSample(
-      "PageLoad.Clients.Ads.Google.FrameCounts.MainFrameParent.PercentAdFrames",
-      100, 1);
 
   // Page percentages
   histogram_tester().ExpectUniqueSample(
