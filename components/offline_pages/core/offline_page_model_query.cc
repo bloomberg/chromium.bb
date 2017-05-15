@@ -68,6 +68,12 @@ OfflinePageModelQueryBuilder::RequireRestrictedToOriginalTab(
   return *this;
 }
 
+OfflinePageModelQueryBuilder& OfflinePageModelQueryBuilder::RequireNamespace(
+    const std::string& name_space) {
+  name_space_ = base::MakeUnique<std::string>(name_space);
+  return *this;
+}
+
 std::unique_ptr<OfflinePageModelQuery> OfflinePageModelQueryBuilder::Build(
     ClientPolicyController* controller) {
   DCHECK(controller);
@@ -89,7 +95,15 @@ std::unique_ptr<OfflinePageModelQuery> OfflinePageModelQueryBuilder::Build(
   std::vector<std::string> allowed_namespaces;
   bool uses_namespace_restrictions = false;
 
-  for (auto& name_space : controller->GetAllNamespaces()) {
+  std::vector<std::string> namespaces;
+  if (name_space_) {
+    uses_namespace_restrictions = true;
+    namespaces.push_back(*name_space_);
+  } else {
+    namespaces = controller->GetAllNamespaces();
+  }
+
+  for (auto& name_space : namespaces) {
     // If any exclusion requirements exist, and the namespace matches one of
     // those excluded by policy, skip adding it to |allowed_namespaces|.
     if ((removed_on_cache_reset_ == Requirement::EXCLUDE_MATCHING &&

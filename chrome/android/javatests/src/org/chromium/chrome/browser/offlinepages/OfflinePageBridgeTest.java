@@ -323,9 +323,52 @@ public class OfflinePageBridgeTest {
                 checkPagesExistOffline(pageUrlsToSave).size());
     }
 
+    @Test
+    @SmallTest
+    public void testGetPagesForNamespace() throws Exception {
+        // Save 3 pages and record their offline IDs to delete later.
+        Set<Long> offlineIdsToFetch = new HashSet<>();
+        for (int i = 0; i < 3; i++) {
+            String url = mTestPage + "?foo=" + i;
+            mActivityTestRule.loadUrl(url);
+            offlineIdsToFetch.add(savePage(SavePageResult.SUCCESS, url));
+        }
+
+        // Save a page in a different namespace.
+        String urlToIgnore = mTestPage + "?bar=1";
+        mActivityTestRule.loadUrl(urlToIgnore);
+        long offlineIdToIgnore = savePage(SavePageResult.SUCCESS, urlToIgnore,
+                new ClientId(OfflinePageBridge.ASYNC_NAMESPACE, "-42"));
+
+        List<OfflinePageItem> pages = getPagesForNamespace(OfflinePageBridge.BOOKMARK_NAMESPACE);
+        Assert.assertEquals(
+                "The number of pages returned does not match the number of pages saved.",
+                offlineIdsToFetch.size(), pages.size());
+        for (OfflinePageItem page : pages) {
+            offlineIdsToFetch.remove(page.getOfflineId());
+        }
+        Assert.assertEquals(
+                "There were different pages saved than those returned by getPagesForNamespace.", 0,
+                offlineIdsToFetch.size());
+
+        // Check that the page in the other namespace still exists.
+        List<OfflinePageItem> asyncPages = getPagesForNamespace(OfflinePageBridge.ASYNC_NAMESPACE);
+        Assert.assertEquals("The page saved in an alternate namespace is no longer there.", 1,
+                asyncPages.size());
+        Assert.assertEquals(
+                "The offline ID of the page saved in an alternate namespace does not match.",
+                offlineIdToIgnore, asyncPages.get(0).getOfflineId());
+    }
+
     // Returns offline ID.
     private long savePage(final int expectedResult, final String expectedUrl)
             throws InterruptedException {
+        return savePage(expectedResult, expectedUrl, BOOKMARK_ID);
+    }
+
+    // Returns offline ID.
+    private long savePage(final int expectedResult, final String expectedUrl,
+            final ClientId clientId) throws InterruptedException {
         final Semaphore semaphore = new Semaphore(0);
         final AtomicLong result = new AtomicLong(-1);
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
@@ -339,8 +382,8 @@ public class OfflinePageBridgeTest {
                         mActivityTestRule.getActivity().getActivityTab().getWebContents());
 
                 mOfflinePageBridge.savePage(
-                        mActivityTestRule.getActivity().getActivityTab().getWebContents(),
-                        BOOKMARK_ID, new SavePageCallback() {
+                        mActivityTestRule.getActivity().getActivityTab().getWebContents(), clientId,
+                        new SavePageCallback() {
                             @Override
                             public void onSavePageDone(
                                     int savePageResult, String url, long offlineId) {
@@ -407,6 +450,27 @@ public class OfflinePageBridgeTest {
                         semaphore.release();
                     }
                 });
+            }
+        });
+        Assert.assertTrue(semaphore.tryAcquire(TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        return result;
+    }
+
+    private List<OfflinePageItem> getPagesForNamespace(final String namespace)
+            throws InterruptedException {
+        final List<OfflinePageItem> result = new ArrayList<OfflinePageItem>();
+        final Semaphore semaphore = new Semaphore(0);
+        ThreadUtils.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                mOfflinePageBridge.getPagesForNamespace(
+                        namespace, new Callback<List<OfflinePageItem>>() {
+                            @Override
+                            public void onResult(List<OfflinePageItem> pages) {
+                                result.addAll(pages);
+                                semaphore.release();
+                            }
+                        });
             }
         });
         Assert.assertTrue(semaphore.tryAcquire(TIMEOUT_MS, TimeUnit.MILLISECONDS));

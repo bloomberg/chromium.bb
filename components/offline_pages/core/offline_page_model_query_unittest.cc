@@ -437,4 +437,19 @@ TEST_F(OfflinePageModelQueryTest, IntersectNamespaces) {
   EXPECT_FALSE(query->Matches(recent_page()));
 }
 
+TEST_F(OfflinePageModelQueryTest, RequireNamespace) {
+  builder_.RequireNamespace(kDefaultNamespace);
+  std::unique_ptr<OfflinePageModelQuery> query = builder_.Build(&policy_);
+  auto restriction = query->GetRestrictedToNamespaces();
+  std::set<std::string> namespaces_allowed = restriction.second;
+  bool restricted_to_namespaces = restriction.first;
+  EXPECT_TRUE(restricted_to_namespaces);
+  EXPECT_EQ(1U, namespaces_allowed.size());
+  EXPECT_TRUE(namespaces_allowed.find(kDefaultNamespace) !=
+              namespaces_allowed.end());
+
+  EXPECT_TRUE(query->Matches(kTestItem1));
+  EXPECT_FALSE(query->Matches(test_namespace_page()));
+}
+
 }  // namespace offline_pages

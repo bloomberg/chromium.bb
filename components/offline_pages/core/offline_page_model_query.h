@@ -113,6 +113,9 @@ class OfflinePageModelQueryBuilder {
   OfflinePageModelQueryBuilder& RequireRestrictedToOriginalTab(
       Requirement original_tab);
 
+  // Only include results from a single namespace.
+  OfflinePageModelQueryBuilder& RequireNamespace(const std::string& name_space);
+
   // Builds the query using the namespace policies provided by |controller|
   // This resets the internal state.  |controller| should not be |nullptr|.
   std::unique_ptr<OfflinePageModelQuery> Build(
@@ -134,6 +137,8 @@ class OfflinePageModelQueryBuilder {
   Requirement supported_by_download_ = Requirement::UNSET;
   Requirement shown_as_recently_visited_site_ = Requirement::UNSET;
   Requirement restricted_to_original_tab_ = Requirement::UNSET;
+
+  std::unique_ptr<std::string> name_space_;
 
   DISALLOW_COPY_AND_ASSIGN(OfflinePageModelQueryBuilder);
 };
