@@ -242,17 +242,19 @@ void Predictor::PreconnectUrlAndSubresources(const GURL& url,
     const GURL& first_party_for_cookies) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI) ||
          BrowserThread::CurrentlyOn(BrowserThread::IO));
-  if (!PredictorEnabled() || !url.is_valid() ||
-      !url.has_host())
+  if (!PredictorEnabled())
     return;
   if (!CanPreresolveAndPreconnect())
     return;
-
+  const GURL canonicalized_url = CanonicalizeUrl(url);
+  if (!canonicalized_url.is_valid() || !canonicalized_url.has_host())
+    return;
   UrlInfo::ResolutionMotivation motivation(UrlInfo::EARLY_LOAD_MOTIVATED);
   const int kConnectionsNeeded = 1;
-  PreconnectUrl(CanonicalizeUrl(url), first_party_for_cookies, motivation,
+  PreconnectUrl(canonicalized_url, first_party_for_cookies, motivation,
                 kConnectionsNeeded, kAllowCredentialsOnPreconnectByDefault);
-  PredictFrameSubresources(url.GetWithEmptyPath(), first_party_for_cookies);
+  PredictFrameSubresources(canonicalized_url.GetWithEmptyPath(),
+                           first_party_for_cookies);
 }
 
 std::vector<GURL> Predictor::GetPredictedUrlListAtStartup(
@@ -725,6 +727,7 @@ void Predictor::PreconnectUrl(const GURL& url,
                               int count) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI) ||
          BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK(url.is_valid());
 
   if (BrowserThread::CurrentlyOn(BrowserThread::IO)) {
     PreconnectUrlOnIOThread(url, first_party_for_cookies, motivation,
