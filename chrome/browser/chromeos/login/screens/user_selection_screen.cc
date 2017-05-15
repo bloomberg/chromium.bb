@@ -200,6 +200,9 @@ class UserSelectionScreen::DircryptoMigrationChecker {
       bool needs_migration) {
     if (call_status != DBUS_METHOD_CALL_SUCCESS) {
       LOG(ERROR) << "Failed to call cryptohome NeedsDircryptoMigration.";
+      // Hide the banner to avoid confusion in http://crbug.com/721948.
+      // Cache is not updated so that cryptohome call will still be attempted.
+      UpdateUI(account_id, false);
       return;
     }
 
