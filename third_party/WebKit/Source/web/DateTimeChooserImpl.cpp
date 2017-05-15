@@ -34,17 +34,17 @@
 #include "core/frame/FrameView.h"
 #include "core/html/forms/DateTimeChooserClient.h"
 #include "core/layout/LayoutTheme.h"
+#include "core/page/ChromeClient.h"
 #include "core/page/PagePopup.h"
 #include "platform/DateComponents.h"
 #include "platform/Language.h"
 #include "platform/text/PlatformLocale.h"
 #include "public/platform/Platform.h"
-#include "web/ChromeClientImpl.h"
 
 namespace blink {
 
 DateTimeChooserImpl::DateTimeChooserImpl(
-    ChromeClientImpl* chrome_client,
+    ChromeClient* chrome_client,
     DateTimeChooserClient* client,
     const DateTimeChooserParameters& parameters)
     : chrome_client_(chrome_client),
@@ -59,7 +59,7 @@ DateTimeChooserImpl::DateTimeChooserImpl(
 }
 
 DateTimeChooserImpl* DateTimeChooserImpl::Create(
-    ChromeClientImpl* chrome_client,
+    ChromeClient* chrome_client,
     DateTimeChooserClient* client,
     const DateTimeChooserParameters& parameters) {
   return new DateTimeChooserImpl(chrome_client, client, parameters);
