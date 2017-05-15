@@ -1826,7 +1826,7 @@ WebInputEventResult EventHandler::SendContextMenuEventForKey(
       selection.ComputeVisibleSelectionInDOMTreeDeprecated().Start();
   VisualViewport& visual_viewport = frame_->GetPage()->GetVisualViewport();
 
-  if (!override_target_element && start.AnchorNode() &&
+  if (!override_target_element && start.AnchorNode() && !selection.IsHidden() &&
       (selection.ComputeVisibleSelectionInDOMTreeDeprecated()
            .RootEditableElement() ||
        selection.ComputeVisibleSelectionInDOMTreeDeprecated().IsRange())) {

@@ -1,0 +1,32 @@
+<!doctype html>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script>
+var contextForMenu;
+function catchContextMenu(event) {
+  contextForMenu = event.currentTarget.tagName;
+}
+</script>
+
+<input oncontextmenu="catchContextMenu(event);">
+<a href="www" oncontextmenu="catchContextMenu(event);">A link</a>
+
+<script>
+test(function() {
+  assert_exists(window, 'eventSender', 'This test requires eventSender.');
+
+  document.querySelector('INPUT').focus();
+  eventSender.keyDown('ContextMenu');
+  assert_equals(contextForMenu, 'INPUT',
+      'ContextMenu should use the focused input field as context.');
+
+  // Hide INPUT's context menu before we display A's context menu.
+  eventSender.keyDown('Escape');
+
+  document.querySelector('A').focus();
+  eventSender.keyDown('ContextMenu');
+  assert_equals(contextForMenu, 'A',
+      'ContextMenu should use the focused link as context.');
+
+}, 'ContextMenu should always follow focused element.');
+</script>
