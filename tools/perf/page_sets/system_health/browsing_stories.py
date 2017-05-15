@@ -199,6 +199,7 @@ class RedditMobileStory(_ArticleBrowsingStory):
   SUPPORTED_PLATFORMS = platforms.MOBILE_ONLY
 
 
+@decorators.Disabled('mac')  # crbug.com/722094
 class TwitterMobileStory(_ArticleBrowsingStory):
   NAME = 'browse:social:twitter'
   URL = 'https://www.twitter.com/nasa'
