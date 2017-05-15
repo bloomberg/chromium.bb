@@ -76,7 +76,7 @@ const char kHistogramDocWriteBlockLoadingBehavior[] =
 
 }  // namespace internal
 
-void DocumentWritePageLoadMetricsObserver::OnFirstContentfulPaint(
+void DocumentWritePageLoadMetricsObserver::OnFirstContentfulPaintInPage(
     const page_load_metrics::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& info) {
   if (info.main_frame_metadata.behavior_flags &
@@ -90,9 +90,10 @@ void DocumentWritePageLoadMetricsObserver::OnFirstContentfulPaint(
   }
 }
 
-void DocumentWritePageLoadMetricsObserver::OnFirstMeaningfulPaint(
-    const page_load_metrics::PageLoadTiming& timing,
-    const page_load_metrics::PageLoadExtraInfo& info) {
+void DocumentWritePageLoadMetricsObserver::
+    OnFirstMeaningfulPaintInMainFrameDocument(
+        const page_load_metrics::PageLoadTiming& timing,
+        const page_load_metrics::PageLoadExtraInfo& info) {
   if (info.main_frame_metadata.behavior_flags &
       blink::WebLoadingBehaviorFlag::
           kWebLoadingBehaviorDocumentWriteEvaluator) {

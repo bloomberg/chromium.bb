@@ -123,7 +123,7 @@ struct PageLoadExtraInfo {
       UserInitiatedInfo page_end_user_initiated_info,
       const base::Optional<base::TimeDelta>& page_end_time,
       const PageLoadMetadata& main_frame_metadata,
-      const PageLoadMetadata& child_frame_metadata);
+      const PageLoadMetadata& subframe_metadata);
 
   // Simplified version of the constructor, intended for use in tests.
   static PageLoadExtraInfo CreateForTesting(const GURL& url,
@@ -194,8 +194,8 @@ struct PageLoadExtraInfo {
   // renderer for the main frame.
   const PageLoadMetadata main_frame_metadata;
 
-  // PageLoadMetadata for child frames of the current page load.
-  const PageLoadMetadata child_frame_metadata;
+  // PageLoadMetadata for subframes of the current page load.
+  const PageLoadMetadata subframe_metadata;
 };
 
 // Container for various information about a completed request within a page
@@ -270,6 +270,8 @@ class PageLoadMetricsObserver {
     STOP_OBSERVING,
   };
 
+  using FrameTreeNodeId = int;
+
   virtual ~PageLoadMetricsObserver() {}
 
   // The page load started, with the given navigation handle.
@@ -335,6 +337,7 @@ class PageLoadMetricsObserver {
   // loading-dev@chromium.org if you intend to override this method.
   virtual void OnTimingUpdate(const PageLoadTiming& timing,
                               const PageLoadExtraInfo& extra_info) {}
+
   // OnUserInput is triggered when a new user input is passed in to
   // web_contents. Contains a TimeDelta from navigation start.
   virtual void OnUserInput(const blink::WebInputEvent& event) {}
@@ -348,23 +351,31 @@ class PageLoadMetricsObserver {
                                 const PageLoadExtraInfo& extra_info) {}
   virtual void OnFirstLayout(const PageLoadTiming& timing,
                              const PageLoadExtraInfo& extra_info) {}
-  virtual void OnFirstPaint(const PageLoadTiming& timing,
-                            const PageLoadExtraInfo& extra_info) {}
-  virtual void OnFirstTextPaint(const PageLoadTiming& timing,
-                                const PageLoadExtraInfo& extra_info) {}
-  virtual void OnFirstImagePaint(const PageLoadTiming& timing,
-                                 const PageLoadExtraInfo& extra_info) {}
-  virtual void OnFirstContentfulPaint(const PageLoadTiming& timing,
-                                      const PageLoadExtraInfo& extra_info) {}
-  virtual void OnFirstMeaningfulPaint(const PageLoadTiming& timing,
-                                      const PageLoadExtraInfo& extra_info) {}
   virtual void OnParseStart(const PageLoadTiming& timing,
                             const PageLoadExtraInfo& extra_info) {}
   virtual void OnParseStop(const PageLoadTiming& timing,
                            const PageLoadExtraInfo& extra_info) {}
 
+  // On*PaintInPage(...) are invoked when the first relevant paint in the page,
+  // across all frames, is observed.
+  virtual void OnFirstPaintInPage(const PageLoadTiming& timing,
+                                  const PageLoadExtraInfo& extra_info) {}
+  virtual void OnFirstTextPaintInPage(const PageLoadTiming& timing,
+                                      const PageLoadExtraInfo& extra_info) {}
+  virtual void OnFirstImagePaintInPage(const PageLoadTiming& timing,
+                                       const PageLoadExtraInfo& extra_info) {}
+  virtual void OnFirstContentfulPaintInPage(
+      const PageLoadTiming& timing,
+      const PageLoadExtraInfo& extra_info) {}
+
+  // Unlike other paint callbacks, OnFirstMeaningfulPaintInMainFrameDocument is
+  // tracked per document, and is reported for the main frame document only.
+  virtual void OnFirstMeaningfulPaintInMainFrameDocument(
+      const PageLoadTiming& timing,
+      const PageLoadExtraInfo& extra_info) {}
+
   // Invoked when there is a change in either the main_frame_metadata or the
-  // child_frame_metadata's loading behavior_flags.
+  // subframe_metadata's loading behavior_flags.
   virtual void OnLoadingBehaviorObserved(
       const page_load_metrics::PageLoadExtraInfo& extra_info) {}
 

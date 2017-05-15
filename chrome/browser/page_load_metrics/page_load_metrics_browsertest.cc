@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
 #include "base/test/histogram_tester.h"
@@ -28,9 +30,12 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
+#include "content/public/common/content_features.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/download_test_observer.h"
 #include "net/base/net_errors.h"
+#include "net/dns/mock_host_resolver.h"
 #include "net/http/failing_http_transaction_factory.h"
 #include "net/http/http_cache.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -185,6 +190,17 @@ class PageLoadMetricsWaiter
   TimingFieldBitSet observed_main_frame_fields_;
 };
 
+// Due to crbug/705315, paints in subframes are associated with the main frame,
+// unless the subframe is cross-origin and Chrome is running with out of process
+// cross-origin subframes. As a result, some tests wait for different behavior
+// to be observed depending on which mode we are in.  TODO(crbug/705315): remove
+// this method once the bug is addressed.
+static bool AreCrossOriginSubFramesOutOfProcess() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+             switches::kSitePerProcess) ||
+         base::FeatureList::IsEnabled(features::kTopDocumentIsolation);
+}
+
 using TimingField = PageLoadMetricsWaiter::TimingField;
 
 }  // namespace
@@ -201,6 +217,15 @@ class PageLoadMetricsBrowserTest : public InProcessBrowserTest {
   // sufficient.
   void NavigateToUntrackedUrl() {
     ui_test_utils::NavigateToURL(browser(), GURL(url::kAboutBlankURL));
+  }
+
+  // TODO(crbug/705315): remove this method once the bug is addressed.
+  void SetUpOnMainThread() override {
+    InProcessBrowserTest::SetUpOnMainThread();
+    host_resolver()->AddRule("a.com", "127.0.0.1");
+    host_resolver()->AddRule("b.com", "127.0.0.1");
+    host_resolver()->AddRule("c.com", "127.0.0.1");
+    content::SetupCrossSiteRedirector(embedded_test_server());
   }
 
   bool NoPageLoadMetricsRecorded() {
@@ -278,6 +303,109 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, NoPaintForEmptyDocument) {
   histogram_tester_.ExpectTotalCount(internal::kHistogramFirstPaint, 0);
   histogram_tester_.ExpectTotalCount(internal::kHistogramFirstContentfulPaint,
                                      0);
+}
+
+IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
+                       NoPaintForEmptyDocumentInChildFrame) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  // TODO(crbug/705315): remove the a.com domain once the bug is addressed.
+  GURL a_url(embedded_test_server()->GetURL(
+      "a.com", "/page_load_metrics/empty_iframe.html"));
+
+  auto waiter = CreatePageLoadMetricsWaiter();
+  waiter->AddMainFrameExpectation(TimingField::FIRST_LAYOUT);
+  waiter->AddMainFrameExpectation(TimingField::LOAD_EVENT);
+  waiter->AddSubFrameExpectation(TimingField::FIRST_LAYOUT);
+  waiter->AddSubFrameExpectation(TimingField::LOAD_EVENT);
+  ui_test_utils::NavigateToURL(browser(), a_url);
+  waiter->Wait();
+  EXPECT_FALSE(waiter->DidObserveInMainFrame(TimingField::FIRST_PAINT));
+
+  histogram_tester_.ExpectTotalCount(internal::kHistogramFirstLayout, 1);
+  histogram_tester_.ExpectTotalCount(internal::kHistogramLoad, 1);
+  histogram_tester_.ExpectTotalCount(internal::kHistogramFirstPaint, 0);
+  histogram_tester_.ExpectTotalCount(internal::kHistogramFirstContentfulPaint,
+                                     0);
+}
+
+IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, PaintInChildFrame) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  // TODO(crbug/705315): remove the a.com domain once the bug is addressed.
+  GURL a_url(embedded_test_server()->GetURL("a.com",
+                                            "/page_load_metrics/iframe.html"));
+  auto waiter = CreatePageLoadMetricsWaiter();
+  waiter->AddMainFrameExpectation(TimingField::FIRST_LAYOUT);
+  waiter->AddMainFrameExpectation(TimingField::LOAD_EVENT);
+  // TODO(crbug/705315): Once the bug is fixed, remove the else case and make
+  // the if case the default behavior.
+  if (AreCrossOriginSubFramesOutOfProcess()) {
+    waiter->AddSubFrameExpectation(TimingField::FIRST_PAINT);
+    waiter->AddSubFrameExpectation(TimingField::FIRST_CONTENTFUL_PAINT);
+  } else {
+    waiter->AddMainFrameExpectation(TimingField::FIRST_PAINT);
+    waiter->AddMainFrameExpectation(TimingField::FIRST_CONTENTFUL_PAINT);
+  }
+  ui_test_utils::NavigateToURL(browser(), a_url);
+  waiter->Wait();
+
+  histogram_tester_.ExpectTotalCount(internal::kHistogramFirstLayout, 1);
+  histogram_tester_.ExpectTotalCount(internal::kHistogramLoad, 1);
+  histogram_tester_.ExpectTotalCount(internal::kHistogramFirstPaint, 1);
+}
+
+IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, PaintInMultipleChildFrames) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  // TODO(crbug/705315): remove the a.com domain once the bug is addressed.
+  GURL a_url(embedded_test_server()->GetURL("a.com",
+                                            "/page_load_metrics/iframes.html"));
+
+  auto waiter = CreatePageLoadMetricsWaiter();
+  waiter->AddMainFrameExpectation(TimingField::FIRST_LAYOUT);
+  waiter->AddMainFrameExpectation(TimingField::LOAD_EVENT);
+  // TODO(crbug/705315): Once the bug is fixed, remove the else case and make
+  // the if case the default behavior.
+  if (AreCrossOriginSubFramesOutOfProcess()) {
+    waiter->AddSubFrameExpectation(TimingField::FIRST_PAINT);
+    waiter->AddSubFrameExpectation(TimingField::FIRST_CONTENTFUL_PAINT);
+  } else {
+    waiter->AddMainFrameExpectation(TimingField::FIRST_PAINT);
+    waiter->AddMainFrameExpectation(TimingField::FIRST_CONTENTFUL_PAINT);
+  }
+  ui_test_utils::NavigateToURL(browser(), a_url);
+  waiter->Wait();
+
+  histogram_tester_.ExpectTotalCount(internal::kHistogramFirstLayout, 1);
+  histogram_tester_.ExpectTotalCount(internal::kHistogramLoad, 1);
+  histogram_tester_.ExpectTotalCount(internal::kHistogramFirstPaint, 1);
+}
+
+IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, PaintInMainAndChildFrame) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  // TODO(crbug/705315): remove the a.com domain once the bug is addressed.
+  GURL a_url(embedded_test_server()->GetURL(
+      "a.com", "/page_load_metrics/main_frame_with_iframe.html"));
+
+  auto waiter = CreatePageLoadMetricsWaiter();
+  waiter->AddMainFrameExpectation(TimingField::FIRST_LAYOUT);
+  waiter->AddMainFrameExpectation(TimingField::LOAD_EVENT);
+  waiter->AddMainFrameExpectation(TimingField::FIRST_PAINT);
+  waiter->AddMainFrameExpectation(TimingField::FIRST_CONTENTFUL_PAINT);
+  // TODO(crbug/705315): Once the bug is fixed, make the if case the default
+  // behavior.
+  if (AreCrossOriginSubFramesOutOfProcess()) {
+    waiter->AddSubFrameExpectation(TimingField::FIRST_PAINT);
+    waiter->AddSubFrameExpectation(TimingField::FIRST_CONTENTFUL_PAINT);
+  }
+  ui_test_utils::NavigateToURL(browser(), a_url);
+  waiter->Wait();
+
+  histogram_tester_.ExpectTotalCount(internal::kHistogramFirstLayout, 1);
+  histogram_tester_.ExpectTotalCount(internal::kHistogramLoad, 1);
+  histogram_tester_.ExpectTotalCount(internal::kHistogramFirstPaint, 1);
 }
 
 IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, SameDocumentNavigation) {

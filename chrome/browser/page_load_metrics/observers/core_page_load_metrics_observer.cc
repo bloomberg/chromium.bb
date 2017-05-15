@@ -323,7 +323,7 @@ void CorePageLoadMetricsObserver::OnFirstLayout(
   }
 }
 
-void CorePageLoadMetricsObserver::OnFirstPaint(
+void CorePageLoadMetricsObserver::OnFirstPaintInPage(
     const page_load_metrics::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& info) {
   first_paint_ =
@@ -352,7 +352,7 @@ void CorePageLoadMetricsObserver::OnFirstPaint(
   }
 }
 
-void CorePageLoadMetricsObserver::OnFirstTextPaint(
+void CorePageLoadMetricsObserver::OnFirstTextPaintInPage(
     const page_load_metrics::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& info) {
   if (WasStartedInForegroundOptionalEventInForeground(
@@ -365,7 +365,7 @@ void CorePageLoadMetricsObserver::OnFirstTextPaint(
   }
 }
 
-void CorePageLoadMetricsObserver::OnFirstImagePaint(
+void CorePageLoadMetricsObserver::OnFirstImagePaintInPage(
     const page_load_metrics::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& info) {
   if (WasStartedInForegroundOptionalEventInForeground(
@@ -378,7 +378,7 @@ void CorePageLoadMetricsObserver::OnFirstImagePaint(
   }
 }
 
-void CorePageLoadMetricsObserver::OnFirstContentfulPaint(
+void CorePageLoadMetricsObserver::OnFirstContentfulPaintInPage(
     const page_load_metrics::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& info) {
   if (WasStartedInForegroundOptionalEventInForeground(
@@ -469,7 +469,7 @@ void CorePageLoadMetricsObserver::OnFirstContentfulPaint(
   }
 }
 
-void CorePageLoadMetricsObserver::OnFirstMeaningfulPaint(
+void CorePageLoadMetricsObserver::OnFirstMeaningfulPaintInMainFrameDocument(
     const page_load_metrics::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& info) {
   base::TimeTicks paint = info.navigation_start +

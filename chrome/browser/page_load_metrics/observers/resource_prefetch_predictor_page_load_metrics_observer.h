@@ -47,10 +47,10 @@ class ResourcePrefetchPredictorPageLoadMetricsObserver
   ObservePolicy OnHidden(
       const page_load_metrics::PageLoadTiming& timing,
       const page_load_metrics::PageLoadExtraInfo& extra_info) override;
-  void OnFirstContentfulPaint(
+  void OnFirstContentfulPaintInPage(
       const page_load_metrics::PageLoadTiming& timing,
       const page_load_metrics::PageLoadExtraInfo& extra_info) override;
-  void OnFirstMeaningfulPaint(
+  void OnFirstMeaningfulPaintInMainFrameDocument(
       const page_load_metrics::PageLoadTiming& timing,
       const page_load_metrics::PageLoadExtraInfo& extra_info) override;
 

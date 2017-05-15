@@ -12,12 +12,14 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
+#include "chrome/browser/page_load_metrics/browser_page_track_decider.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_embedder_interface.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_util.h"
 #include "chrome/browser/prerender/prerender_contents.h"
 #include "chrome/common/page_load_metrics/page_load_timing.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_handle.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/browser_side_navigation_policy.h"
@@ -277,6 +279,41 @@ internal::PageLoadTimingStatus IsValidPageLoadTiming(
   return internal::VALID;
 }
 
+// Updates *|inout_existing_value| with |optional_candidate_new_value|, if
+// either *|inout_existing_value| isn't set, or |optional_candidate_new_value| <
+// |inout_existing_value|.
+void MaybeUpdateTimeDelta(
+    base::Optional<base::TimeDelta>* inout_existing_value,
+    base::TimeDelta navigation_start_offset,
+    const base::Optional<base::TimeDelta>& optional_candidate_new_value) {
+  // If we don't get a new value, there's nothing to do
+  if (!optional_candidate_new_value)
+    return;
+
+  // optional_candidate_new_value is relative to navigation start in its
+  // frame. We need to adjust it to be relative to navigation start in the main
+  // frame, so offset it by navigation_start_offset.
+  base::TimeDelta candidate_new_value =
+      navigation_start_offset + optional_candidate_new_value.value();
+
+  if (*inout_existing_value) {
+    // If we have a new value, but it is after the existing value, then keep the
+    // existing value.
+    if (*inout_existing_value <= candidate_new_value)
+      return;
+
+    // We received a new timing event, but with a timestamp before the timestamp
+    // of a timing update we had received previously. We expect this to happen
+    // occasionally, as inter-frame updates can arrive out of order. Record a
+    // histogram to track how frequently it happens, along with the magnitude
+    // of the delta.
+    PAGE_LOAD_HISTOGRAM("PageLoad.Internal.OutOfOrderInterFrameTiming",
+                        inout_existing_value->value() - candidate_new_value);
+  }
+
+  *inout_existing_value = candidate_new_value;
+}
+
 void RecordAppBackgroundPageLoadCompleted(bool completed_after_background) {
   UMA_HISTOGRAM_BOOLEAN(internal::kPageLoadCompletedAfterAppBackground,
                         completed_after_background);
@@ -303,19 +340,19 @@ void DispatchObserverTimingCallbacks(PageLoadMetricsObserver* observer,
     observer->OnFirstLayout(new_timing, extra_info);
   if (new_timing.paint_timing.first_paint &&
       !last_timing.paint_timing.first_paint)
-    observer->OnFirstPaint(new_timing, extra_info);
+    observer->OnFirstPaintInPage(new_timing, extra_info);
   if (new_timing.paint_timing.first_text_paint &&
       !last_timing.paint_timing.first_text_paint)
-    observer->OnFirstTextPaint(new_timing, extra_info);
+    observer->OnFirstTextPaintInPage(new_timing, extra_info);
   if (new_timing.paint_timing.first_image_paint &&
       !last_timing.paint_timing.first_image_paint)
-    observer->OnFirstImagePaint(new_timing, extra_info);
+    observer->OnFirstImagePaintInPage(new_timing, extra_info);
   if (new_timing.paint_timing.first_contentful_paint &&
       !last_timing.paint_timing.first_contentful_paint)
-    observer->OnFirstContentfulPaint(new_timing, extra_info);
+    observer->OnFirstContentfulPaintInPage(new_timing, extra_info);
   if (new_timing.paint_timing.first_meaningful_paint &&
       !last_timing.paint_timing.first_meaningful_paint)
-    observer->OnFirstMeaningfulPaint(new_timing, extra_info);
+    observer->OnFirstMeaningfulPaintInMainFrameDocument(new_timing, extra_info);
   if (new_timing.parse_timing.parse_start &&
       !last_timing.parse_timing.parse_start)
     observer->OnParseStart(new_timing, extra_info);
@@ -390,7 +427,7 @@ PageLoadTracker::~PageLoadTracker() {
         page_end_reason_ != END_NEW_NAVIGATION) {
       LogAbortChainHistograms(nullptr);
     }
-  } else if (timing_.IsEmpty()) {
+  } else if (merged_page_timing_.IsEmpty()) {
     RecordInternalError(ERR_NO_IPCS_RECEIVED);
   }
 
@@ -399,7 +436,7 @@ PageLoadTracker::~PageLoadTracker() {
     if (failed_provisional_load_info_) {
       observer->OnFailedProvisionalLoad(*failed_provisional_load_info_, info);
     } else if (did_commit_) {
-      observer->OnComplete(timing_, info);
+      observer->OnComplete(merged_page_timing_, info);
     }
   }
 }
@@ -466,7 +503,7 @@ void PageLoadTracker::WebContentsHidden() {
     ClampBrowserTimestampIfInterProcessTimeTickSkew(&background_time_);
   }
   const PageLoadExtraInfo info = ComputePageLoadExtraInfo();
-  INVOKE_AND_PRUNE_OBSERVERS(observers_, OnHidden, timing_, info);
+  INVOKE_AND_PRUNE_OBSERVERS(observers_, OnHidden, merged_page_timing_, info);
 }
 
 void PageLoadTracker::WebContentsShown() {
@@ -518,6 +555,29 @@ void PageLoadTracker::DidFinishSubFrameNavigation(
     content::NavigationHandle* navigation_handle) {
   INVOKE_AND_PRUNE_OBSERVERS(observers_, OnDidFinishSubFrameNavigation,
                              navigation_handle);
+
+  if (!navigation_handle->HasCommitted())
+    return;
+
+  // We have a new committed navigation, so discard information about the
+  // previously committed navigation.
+  subframe_navigation_start_offset_.erase(
+      navigation_handle->GetFrameTreeNodeId());
+
+  BrowserPageTrackDecider decider(embedder_interface_,
+                                  navigation_handle->GetWebContents(),
+                                  navigation_handle);
+  if (!decider.ShouldTrack())
+    return;
+
+  if (navigation_start_ > navigation_handle->NavigationStart()) {
+    RecordInternalError(ERR_SUBFRAME_NAVIGATION_START_BEFORE_MAIN_FRAME);
+    return;
+  }
+  base::TimeDelta navigation_delta =
+      navigation_handle->NavigationStart() - navigation_start_;
+  subframe_navigation_start_offset_.insert(std::make_pair(
+      navigation_handle->GetFrameTreeNodeId(), navigation_delta));
 }
 
 void PageLoadTracker::FailedProvisionalLoad(
@@ -549,14 +609,15 @@ void PageLoadTracker::FlushMetricsOnAppEnterBackground() {
 
   const PageLoadExtraInfo info = ComputePageLoadExtraInfo();
   INVOKE_AND_PRUNE_OBSERVERS(observers_, FlushMetricsOnAppEnterBackground,
-                             timing_, info);
+                             merged_page_timing_, info);
 }
 
 void PageLoadTracker::NotifyClientRedirectTo(
     const PageLoadTracker& destination) {
-  if (timing_.paint_timing.first_paint) {
+  if (merged_page_timing_.paint_timing.first_paint) {
     base::TimeTicks first_paint_time =
-        navigation_start() + timing_.paint_timing.first_paint.value();
+        navigation_start() +
+        merged_page_timing_.paint_timing.first_paint.value();
     base::TimeDelta first_paint_to_navigation;
     if (destination.navigation_start() > first_paint_time)
       first_paint_to_navigation =
@@ -568,14 +629,64 @@ void PageLoadTracker::NotifyClientRedirectTo(
   }
 }
 
-void PageLoadTracker::UpdateChildFrameMetadata(
-    const PageLoadMetadata& child_metadata) {
-  // Merge the child loading behavior flags with any we've already observed,
-  // possibly from other child frames.
-  const int last_child_loading_behavior_flags =
-      child_frame_metadata_.behavior_flags;
-  child_frame_metadata_.behavior_flags |= child_metadata.behavior_flags;
-  if (last_child_loading_behavior_flags == child_frame_metadata_.behavior_flags)
+void PageLoadTracker::UpdateSubFrameTiming(
+    content::RenderFrameHost* render_frame_host,
+    const PageLoadTiming& new_timing,
+    const PageLoadMetadata& new_metadata) {
+  UpdateSubFrameMetadata(new_metadata);
+  const auto it = subframe_navigation_start_offset_.find(
+      render_frame_host->GetFrameTreeNodeId());
+  if (it == subframe_navigation_start_offset_.end()) {
+    // We received timing information for an untracked load. Ignore it.
+    return;
+  }
+
+  base::TimeDelta navigation_start_offset = it->second;
+  const PageLoadTiming last_timing = merged_page_timing_;
+  MergePaintTiming(navigation_start_offset, new_timing.paint_timing,
+                   false /* is_main_frame */);
+
+  if (last_timing == merged_page_timing_)
+    return;
+
+  const PageLoadExtraInfo info = ComputePageLoadExtraInfo();
+  for (const auto& observer : observers_) {
+    DispatchObserverTimingCallbacks(observer.get(), last_timing,
+                                    merged_page_timing_, main_frame_metadata_,
+                                    info);
+  }
+}
+
+void PageLoadTracker::MergePaintTiming(
+    base::TimeDelta navigation_start_offset,
+    const page_load_metrics::PaintTiming& new_paint_timing,
+    bool is_main_frame) {
+  MaybeUpdateTimeDelta(&merged_page_timing_.paint_timing.first_paint,
+                       navigation_start_offset, new_paint_timing.first_paint);
+  MaybeUpdateTimeDelta(&merged_page_timing_.paint_timing.first_text_paint,
+                       navigation_start_offset,
+                       new_paint_timing.first_text_paint);
+  MaybeUpdateTimeDelta(&merged_page_timing_.paint_timing.first_image_paint,
+                       navigation_start_offset,
+                       new_paint_timing.first_image_paint);
+  MaybeUpdateTimeDelta(&merged_page_timing_.paint_timing.first_contentful_paint,
+                       navigation_start_offset,
+                       new_paint_timing.first_contentful_paint);
+  if (is_main_frame) {
+    // first meaningful paint is only tracked in the main frame.
+    merged_page_timing_.paint_timing.first_meaningful_paint =
+        new_paint_timing.first_meaningful_paint;
+  }
+}
+
+void PageLoadTracker::UpdateSubFrameMetadata(
+    const PageLoadMetadata& subframe_metadata) {
+  // Merge the subframe loading behavior flags with any we've already observed,
+  // possibly from other subframes.
+  const int last_subframe_loading_behavior_flags =
+      subframe_metadata_.behavior_flags;
+  subframe_metadata_.behavior_flags |= subframe_metadata.behavior_flags;
+  if (last_subframe_loading_behavior_flags == subframe_metadata_.behavior_flags)
     return;
 
   PageLoadExtraInfo extra_info(ComputePageLoadExtraInfo());
@@ -591,8 +702,8 @@ void PageLoadTracker::UpdateTiming(const PageLoadTiming& new_timing,
   // that a navigation started at different times, so a new timing struct with a
   // different start time from an earlier struct is considered invalid.
   const bool valid_timing_descendent =
-      timing_.navigation_start.is_null() ||
-      timing_.navigation_start == new_timing.navigation_start;
+      merged_page_timing_.navigation_start.is_null() ||
+      merged_page_timing_.navigation_start == new_timing.navigation_start;
   if (!valid_timing_descendent) {
     RecordInternalError(ERR_BAD_TIMING_IPC_INVALID_TIMING_DESCENDENT);
     return;
@@ -622,15 +733,21 @@ void PageLoadTracker::UpdateTiming(const PageLoadTiming& new_timing,
   // Thus, we make a copy of timing here, update timing_ and
   // main_frame_metadata_, and then proceed to dispatch the observer timing
   // callbacks.
-  const PageLoadTiming last_timing = timing_;
-  timing_ = new_timing;
+  const PageLoadTiming last_timing = merged_page_timing_;
+
+  // Update the merged_page_timing_, making sure to merge the previously
+  // observed |paint_timing|, which is tracked across all frames in the page.
+  merged_page_timing_ = new_timing;
+  merged_page_timing_.paint_timing = last_timing.paint_timing;
+  MergePaintTiming(base::TimeDelta(), new_timing.paint_timing,
+                   true /* is_main_frame */);
 
   const PageLoadMetadata last_metadata = main_frame_metadata_;
   main_frame_metadata_ = new_metadata;
   const PageLoadExtraInfo info = ComputePageLoadExtraInfo();
   for (const auto& observer : observers_) {
-    DispatchObserverTimingCallbacks(observer.get(), last_timing, new_timing,
-                                    last_metadata, info);
+    DispatchObserverTimingCallbacks(observer.get(), last_timing,
+                                    merged_page_timing_, last_metadata, info);
   }
 }
 
@@ -717,7 +834,7 @@ PageLoadExtraInfo PageLoadTracker::ComputePageLoadExtraInfo() {
       navigation_start_, first_background_time, first_foreground_time,
       started_in_foreground_, user_initiated_info_, url(), start_url_,
       did_commit_, page_end_reason_, page_end_user_initiated_info_,
-      page_end_time, main_frame_metadata_, child_frame_metadata_);
+      page_end_time, main_frame_metadata_, subframe_metadata_);
 }
 
 bool PageLoadTracker::HasMatchingNavigationRequestID(

@@ -86,18 +86,19 @@ class DataReductionProxyMetricsObserver
       const page_load_metrics::PageLoadExtraInfo& info) override;
   void OnFirstLayout(const page_load_metrics::PageLoadTiming& timing,
                      const page_load_metrics::PageLoadExtraInfo& info) override;
-  void OnFirstPaint(const page_load_metrics::PageLoadTiming& timing,
-                    const page_load_metrics::PageLoadExtraInfo& info) override;
-  void OnFirstTextPaint(
+  void OnFirstPaintInPage(
       const page_load_metrics::PageLoadTiming& timing,
       const page_load_metrics::PageLoadExtraInfo& info) override;
-  void OnFirstImagePaint(
+  void OnFirstTextPaintInPage(
       const page_load_metrics::PageLoadTiming& timing,
       const page_load_metrics::PageLoadExtraInfo& info) override;
-  void OnFirstContentfulPaint(
+  void OnFirstImagePaintInPage(
       const page_load_metrics::PageLoadTiming& timing,
       const page_load_metrics::PageLoadExtraInfo& info) override;
-  void OnFirstMeaningfulPaint(
+  void OnFirstContentfulPaintInPage(
+      const page_load_metrics::PageLoadTiming& timing,
+      const page_load_metrics::PageLoadExtraInfo& info) override;
+  void OnFirstMeaningfulPaintInMainFrameDocument(
       const page_load_metrics::PageLoadTiming& timing,
       const page_load_metrics::PageLoadExtraInfo& info) override;
   void OnParseStart(const page_load_metrics::PageLoadTiming& timing,

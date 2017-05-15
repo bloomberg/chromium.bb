@@ -94,7 +94,7 @@ void AMPPageLoadMetricsObserver::OnFirstLayout(
                       timing.document_timing.first_layout.value());
 }
 
-void AMPPageLoadMetricsObserver::OnFirstContentfulPaint(
+void AMPPageLoadMetricsObserver::OnFirstContentfulPaintInPage(
     const page_load_metrics::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& info) {
   if (!WasStartedInForegroundOptionalEventInForeground(

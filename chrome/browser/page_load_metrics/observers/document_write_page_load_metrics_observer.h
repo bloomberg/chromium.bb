@@ -24,11 +24,11 @@ class DocumentWritePageLoadMetricsObserver
   DocumentWritePageLoadMetricsObserver() = default;
 
   // page_load_metrics::PageLoadMetricsObserver implementation:
-  void OnFirstContentfulPaint(
+  void OnFirstContentfulPaintInPage(
       const page_load_metrics::PageLoadTiming& timing,
       const page_load_metrics::PageLoadExtraInfo& extra_info) override;
 
-  void OnFirstMeaningfulPaint(
+  void OnFirstMeaningfulPaintInMainFrameDocument(
       const page_load_metrics::PageLoadTiming& timing,
       const page_load_metrics::PageLoadExtraInfo& extra_info) override;
 

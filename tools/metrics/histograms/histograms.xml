@@ -48254,6 +48254,17 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>Whether a navigation started in the foreground.</summary>
 </histogram>
 
+<histogram name="PageLoad.Internal.OutOfOrderInterFrameTiming" units="ms">
+  <owner>bmcquade@chromium.org</owner>
+  <summary>
+    The difference in magnitude between existing and updated timing, for
+    inter-frame timings that are received out of order. Page load metrics
+    observes timing updates in all frames on a page. It's possible for timings
+    in different frames to arrive out of order. This metric tracks how often
+    this happens, along with the magnitude of the difference.
+  </summary>
+</histogram>
+
 <histogram name="PageLoad.Internal.PageLoadCompleted.AfterAppBackground"
     enum="BooleanStartedCompleted">
   <owner>bmcquade@chromium.org</owner>

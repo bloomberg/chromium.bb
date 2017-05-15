@@ -354,7 +354,7 @@ void DataReductionProxyMetricsObserver::OnFirstLayout(
       internal::kHistogramFirstLayoutSuffix);
 }
 
-void DataReductionProxyMetricsObserver::OnFirstPaint(
+void DataReductionProxyMetricsObserver::OnFirstPaintInPage(
     const page_load_metrics::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& info) {
   RECORD_FOREGROUND_HISTOGRAMS_FOR_SUFFIX(info, data_,
@@ -362,7 +362,7 @@ void DataReductionProxyMetricsObserver::OnFirstPaint(
                                           internal::kHistogramFirstPaintSuffix);
 }
 
-void DataReductionProxyMetricsObserver::OnFirstTextPaint(
+void DataReductionProxyMetricsObserver::OnFirstTextPaintInPage(
     const page_load_metrics::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& info) {
   RECORD_FOREGROUND_HISTOGRAMS_FOR_SUFFIX(
@@ -370,7 +370,7 @@ void DataReductionProxyMetricsObserver::OnFirstTextPaint(
       internal::kHistogramFirstTextPaintSuffix);
 }
 
-void DataReductionProxyMetricsObserver::OnFirstImagePaint(
+void DataReductionProxyMetricsObserver::OnFirstImagePaintInPage(
     const page_load_metrics::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& info) {
   RECORD_FOREGROUND_HISTOGRAMS_FOR_SUFFIX(
@@ -378,7 +378,7 @@ void DataReductionProxyMetricsObserver::OnFirstImagePaint(
       internal::kHistogramFirstImagePaintSuffix);
 }
 
-void DataReductionProxyMetricsObserver::OnFirstContentfulPaint(
+void DataReductionProxyMetricsObserver::OnFirstContentfulPaintInPage(
     const page_load_metrics::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& info) {
   RECORD_FOREGROUND_HISTOGRAMS_FOR_SUFFIX(
@@ -386,9 +386,10 @@ void DataReductionProxyMetricsObserver::OnFirstContentfulPaint(
       internal::kHistogramFirstContentfulPaintSuffix);
 }
 
-void DataReductionProxyMetricsObserver::OnFirstMeaningfulPaint(
-    const page_load_metrics::PageLoadTiming& timing,
-    const page_load_metrics::PageLoadExtraInfo& info) {
+void DataReductionProxyMetricsObserver::
+    OnFirstMeaningfulPaintInMainFrameDocument(
+        const page_load_metrics::PageLoadTiming& timing,
+        const page_load_metrics::PageLoadExtraInfo& info) {
   RECORD_FOREGROUND_HISTOGRAMS_FOR_SUFFIX(
       info, data_, timing.paint_timing.first_meaningful_paint,
       internal::kHistogramFirstMeaningfulPaintSuffix);

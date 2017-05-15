@@ -212,7 +212,7 @@ void SubresourceFilterMetricsObserver::OnParseStop(
           .value());
 }
 
-void SubresourceFilterMetricsObserver::OnFirstContentfulPaint(
+void SubresourceFilterMetricsObserver::OnFirstContentfulPaintInPage(
     const page_load_metrics::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& info) {
   if (!subresource_filter_observed_)
@@ -230,9 +230,10 @@ void SubresourceFilterMetricsObserver::OnFirstContentfulPaint(
   }
 }
 
-void SubresourceFilterMetricsObserver::OnFirstMeaningfulPaint(
-    const page_load_metrics::PageLoadTiming& timing,
-    const page_load_metrics::PageLoadExtraInfo& info) {
+void SubresourceFilterMetricsObserver::
+    OnFirstMeaningfulPaintInMainFrameDocument(
+        const page_load_metrics::PageLoadTiming& timing,
+        const page_load_metrics::PageLoadExtraInfo& info) {
   if (!subresource_filter_observed_)
     return;
 

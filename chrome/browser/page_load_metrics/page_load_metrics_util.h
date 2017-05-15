@@ -126,7 +126,7 @@ base::Optional<base::TimeDelta> OptionalMin(
     const base::Optional<base::TimeDelta>& b);
 
 // Whether the given loading behavior was observed in any frame (either the main
-// frame or a child frame).
+// frame or a subframe).
 bool DidObserveLoadingBehaviorInAnyFrame(
     const page_load_metrics::PageLoadExtraInfo& info,
     blink::WebLoadingBehaviorFlag behavior);

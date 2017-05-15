@@ -3440,7 +3440,8 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, FirstContentfulPaintTimingSimple) {
       base::TimeDelta::FromMilliseconds(2654);
   page_load_metrics::PageLoadMetricsObserverTestHarness::
       PopulateRequiredTimingFields(&timing);
-  observer.OnFirstContentfulPaint(timing, GenericPageLoadExtraInfo(dest_url()));
+  observer.OnFirstContentfulPaintInPage(timing,
+                                        GenericPageLoadExtraInfo(dest_url()));
 
   histogram_tester().ExpectTotalCount(
       "Prerender.websame_PrefetchTTFCP.Warm.Cacheable.Visible", 1);
@@ -3481,7 +3482,8 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, FirstContentfulPaintTimingReuse) {
       base::TimeDelta::FromMilliseconds(2361);
   page_load_metrics::PageLoadMetricsObserverTestHarness::
       PopulateRequiredTimingFields(&timing);
-  observer.OnFirstContentfulPaint(timing, GenericPageLoadExtraInfo(dest_url()));
+  observer.OnFirstContentfulPaintInPage(timing,
+                                        GenericPageLoadExtraInfo(dest_url()));
 
   histogram_tester().ExpectTotalCount(
       "Prerender.websame_PrefetchTTFCP.Warm.Cacheable.Visible", 1);
@@ -3522,7 +3524,8 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
       base::TimeDelta::FromMilliseconds(2361);
   page_load_metrics::PageLoadMetricsObserverTestHarness::
       PopulateRequiredTimingFields(&timing);
-  observer.OnFirstContentfulPaint(timing, GenericPageLoadExtraInfo(dest_url()));
+  observer.OnFirstContentfulPaintInPage(timing,
+                                        GenericPageLoadExtraInfo(dest_url()));
 
   histogram_tester().ExpectTotalCount(
       "Prerender.websame_PrefetchTTFCP.Warm.Cacheable.Visible", 1);
@@ -3565,7 +3568,8 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
       base::TimeDelta::FromMilliseconds(2362);
   page_load_metrics::PageLoadMetricsObserverTestHarness::
       PopulateRequiredTimingFields(&timing);
-  observer.OnFirstContentfulPaint(timing, GenericPageLoadExtraInfo(dest_url()));
+  observer.OnFirstContentfulPaintInPage(timing,
+                                        GenericPageLoadExtraInfo(dest_url()));
 
   histogram_tester().ExpectTotalCount(
       "Prerender.none_PrefetchTTFCP.Warm.Cacheable.Visible", 0);
@@ -3615,7 +3619,8 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
       base::TimeDelta::FromMilliseconds(2654);
   page_load_metrics::PageLoadMetricsObserverTestHarness::
       PopulateRequiredTimingFields(&timing);
-  observer.OnFirstContentfulPaint(timing, GenericPageLoadExtraInfo(dest_url()));
+  observer.OnFirstContentfulPaintInPage(timing,
+                                        GenericPageLoadExtraInfo(dest_url()));
 
   histogram_tester().ExpectTotalCount(
       "Prerender.websame_PrefetchTTFCP.Warm.Cacheable.Visible", 1);
@@ -3646,7 +3651,8 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, FirstContentfulPaintHidden) {
       base::TimeDelta::FromMilliseconds(2654);
   page_load_metrics::PageLoadMetricsObserverTestHarness::
       PopulateRequiredTimingFields(&timing);
-  observer.OnFirstContentfulPaint(timing, GenericPageLoadExtraInfo(dest_url()));
+  observer.OnFirstContentfulPaintInPage(timing,
+                                        GenericPageLoadExtraInfo(dest_url()));
 
   histogram_tester().ExpectTotalCount(
       "Prerender.websame_PrefetchTTFCP.Warm.Cacheable.Hidden", 1);
@@ -3691,7 +3697,8 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
       base::TimeDelta::FromMilliseconds(2362);
   page_load_metrics::PageLoadMetricsObserverTestHarness::
       PopulateRequiredTimingFields(&timing);
-  observer.OnFirstContentfulPaint(timing, GenericPageLoadExtraInfo(dest_url()));
+  observer.OnFirstContentfulPaintInPage(timing,
+                                        GenericPageLoadExtraInfo(dest_url()));
 
   histogram_tester().ExpectTotalCount(
       "Prerender.none_PrefetchTTFCP.Warm.Cacheable.Hidden", 0);

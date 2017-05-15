@@ -60,7 +60,7 @@ OmniboxSuggestionUsedMetricsObserver::OnCommit(
              : STOP_OBSERVING;
 }
 
-void OmniboxSuggestionUsedMetricsObserver::OnFirstContentfulPaint(
+void OmniboxSuggestionUsedMetricsObserver::OnFirstContentfulPaintInPage(
     const page_load_metrics::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& info) {
   base::TimeDelta fcp = timing.paint_timing.first_contentful_paint.value();
@@ -95,9 +95,10 @@ void OmniboxSuggestionUsedMetricsObserver::OnFirstContentfulPaint(
   }
 }
 
-void OmniboxSuggestionUsedMetricsObserver::OnFirstMeaningfulPaint(
-    const page_load_metrics::PageLoadTiming& timing,
-    const page_load_metrics::PageLoadExtraInfo& info) {
+void OmniboxSuggestionUsedMetricsObserver::
+    OnFirstMeaningfulPaintInMainFrameDocument(
+        const page_load_metrics::PageLoadTiming& timing,
+        const page_load_metrics::PageLoadExtraInfo& info) {
   base::TimeDelta fmp = timing.paint_timing.first_meaningful_paint.value();
 
   if (info.started_in_foreground) {

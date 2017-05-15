@@ -74,10 +74,10 @@ class SubresourceFilterMetricsObserver
                             extra_request_complete_info) override;
   void OnParseStop(const page_load_metrics::PageLoadTiming& timing,
                    const page_load_metrics::PageLoadExtraInfo& info) override;
-  void OnFirstContentfulPaint(
+  void OnFirstContentfulPaintInPage(
       const page_load_metrics::PageLoadTiming& timing,
       const page_load_metrics::PageLoadExtraInfo& info) override;
-  void OnFirstMeaningfulPaint(
+  void OnFirstMeaningfulPaintInMainFrameDocument(
       const page_load_metrics::PageLoadTiming& timing,
       const page_load_metrics::PageLoadExtraInfo& info) override;
   void OnDomContentLoadedEventStart(

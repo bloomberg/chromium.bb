@@ -41,8 +41,6 @@ class TestMetricsRenderFrameObserver : public MetricsRenderFrameObserver {
     mock_timer_ = std::move(timer);
   }
 
-  void set_is_main_frame(bool is_main_frame) { is_main_frame_ = is_main_frame; }
-
   bool WasFakeTimingConsumed() const { return fake_timing_.IsEmpty(); }
 
   void ExpectPageLoadTiming(const PageLoadTiming& timing) {
@@ -68,13 +66,11 @@ class TestMetricsRenderFrameObserver : public MetricsRenderFrameObserver {
 
   bool ShouldSendMetrics() const override { return true; }
   bool HasNoRenderFrame() const override { return false; }
-  bool IsMainFrame() const override { return is_main_frame_; }
 
  private:
   FakePageTimingMetricsIPCSender fake_timing_ipc_sender_;
   mutable PageLoadTiming fake_timing_;
   mutable std::unique_ptr<base::Timer> mock_timer_;
-  bool is_main_frame_ = true;
 };
 
 typedef testing::Test MetricsRenderFrameObserverTest;
@@ -204,26 +200,6 @@ TEST_F(MetricsRenderFrameObserverTest, MultipleNavigations) {
 
   observer.DidChangePerformanceTiming();
   mock_timer2->Fire();
-}
-
-TEST_F(MetricsRenderFrameObserverTest, NoUpdatesFromChildFrames) {
-  base::Time nav_start = base::Time::FromDoubleT(10);
-
-  TestMetricsRenderFrameObserver observer;
-  base::MockTimer* mock_timer = new base::MockTimer(false, false);
-  observer.set_mock_timer(base::WrapUnique(mock_timer));
-  observer.set_is_main_frame(false);
-
-  PageLoadTiming timing;
-  timing.navigation_start = nav_start;
-  observer.SetFakePageLoadTiming(timing);
-  observer.DidCommitProvisionalLoad(true, false);
-  ASSERT_FALSE(observer.WasFakeTimingConsumed());
-  ASSERT_FALSE(mock_timer->IsRunning());
-
-  observer.DidChangePerformanceTiming();
-  ASSERT_FALSE(observer.WasFakeTimingConsumed());
-  ASSERT_FALSE(mock_timer->IsRunning());
 }
 
 }  // namespace page_load_metrics

@@ -20,10 +20,10 @@ class OmniboxSuggestionUsedMetricsObserver
       const page_load_metrics::PageLoadTiming& timing,
       const page_load_metrics::PageLoadExtraInfo& info) override;
   ObservePolicy OnCommit(content::NavigationHandle* navigation_handle) override;
-  void OnFirstContentfulPaint(
+  void OnFirstContentfulPaintInPage(
       const page_load_metrics::PageLoadTiming& timing,
       const page_load_metrics::PageLoadExtraInfo& info) override;
-  void OnFirstMeaningfulPaint(
+  void OnFirstMeaningfulPaintInMainFrameDocument(
       const page_load_metrics::PageLoadTiming& timing,
       const page_load_metrics::PageLoadExtraInfo& info) override;
 

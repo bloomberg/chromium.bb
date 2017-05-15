@@ -38,8 +38,6 @@ class AdsPageLoadMetricsObserver
                   const page_load_metrics::PageLoadExtraInfo& info) override;
 
  private:
-  using FrameTreeNodeId = int;
-
   struct AdFrameData {
     explicit AdFrameData(FrameTreeNodeId frame_tree_node_id);
     size_t frame_bytes;
