@@ -15,8 +15,7 @@ SchedulingParams::SchedulingParams()
 
 RequestParams::RequestParams() : method("GET") {}
 
-DownloadParams::DownloadParams()
-    : client(DownloadClient::DOWNLOAD_CLIENT_INVALID) {}
+DownloadParams::DownloadParams() : client(DownloadClient::INVALID) {}
 
 DownloadParams::DownloadParams(const DownloadParams& other) = default;
 

@@ -11,6 +11,7 @@ static_library("internal") {
   visibility = [
     ":*",
     "//components/download",
+    "//components/download/internal/test:test_support",
   ]
 
   sources = [
@@ -18,10 +19,18 @@ static_library("internal") {
     "config.h",
     "download_service_impl.cc",
     "download_service_impl.h",
+    "entry.cc",
+    "entry.h",
+    "model.h",
+    "model_impl.cc",
+    "model_impl.h",
+    "noop_store.cc",
+    "noop_store.h",
     "scheduler/battery_listener.cc",
     "scheduler/battery_listener.h",
     "scheduler/network_listener.cc",
     "scheduler/network_listener.h",
+    "store.h",
   ]
 
   deps = [
@@ -37,7 +46,7 @@ source_set("unit_tests") {
   visibility = [ "//components/download:unit_tests" ]
 
   sources = [
-    "download_service_impl_unittest.cc",
+    "model_impl_unittest.cc",
     "scheduler/battery_listener_unittest.cc",
     "scheduler/network_listener_unittest.cc",
   ]
@@ -45,6 +54,7 @@ source_set("unit_tests") {
   deps = [
     ":internal",
     "//base/test:test_support",
+    "//components/download/internal/test:test_support",
     "//testing/gmock",
     "//testing/gtest",
   ]
