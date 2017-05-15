@@ -58,7 +58,7 @@ class HWTestList(object):
         config_lib.CONFIG_TEMPLATE_RELEASE_BRANCH]
 
   def DefaultList(self, **kwargs):
-    """Returns a default list of HWTestConfig's for a build
+    """Returns a default list of HWTestConfigs for a build.
 
     Args:
       *kwargs: overrides for the configs
@@ -122,7 +122,12 @@ class HWTestList(object):
     return self.DefaultList(**kwargs)
 
   def AFDOList(self, **kwargs):
-    """Returns a default list of HWTestConfig's for a AFDO build.
+    """Returns a default list of HWTestConfigs for a AFDO build.
+
+    For more details on AFDO:
+    - https://gcc.gnu.org/wiki/AutoFDO
+    - https://sites.google.com/a/google.com/chromeos-toolchain-team-home2
+      -> 11. AFDO PROFILE-GUIDED OPTIMIZATIONS
 
     Args:
       *kwargs: overrides for the configs
@@ -134,7 +139,7 @@ class HWTestList(object):
     return [config_lib.HWTestConfig('perf_v2', **afdo_dict)]
 
   def DefaultListNonCanary(self, **kwargs):
-    """Return a default list of HWTestConfig's for a non-canary build.
+    """Return a default list of HWTestConfigs for a non-canary build.
 
     Optional arguments may be overridden in `kwargs`, except that
     the `blocking` setting cannot be provided.
@@ -143,7 +148,7 @@ class HWTestList(object):
             config_lib.HWTestConfig(constants.HWTEST_COMMIT_SUITE, **kwargs)]
 
   def DefaultListCQ(self, **kwargs):
-    """Return a default list of HWTestConfig's for a CQ build.
+    """Return a default list of HWTestConfigs for a CQ build.
 
     Optional arguments may be overridden in `kwargs`, except that
     the `blocking` setting cannot be provided.
@@ -157,11 +162,26 @@ class HWTestList(object):
     return self.DefaultListNonCanary(**default_dict)
 
   def DefaultListPFQ(self, **kwargs):
-    """Return a default list of HWTestConfig's for a PFQ build.
+    """Return a default list of HWTestConfigs for a PFQ build.
 
     Optional arguments may be overridden in `kwargs`, except that
     the `blocking` setting cannot be provided.
     """
+    default_dict = dict(pool=constants.HWTEST_PFQ_POOL, file_bugs=True,
+                        priority=constants.HWTEST_PFQ_PRIORITY,
+                        minimum_duts=4)
+    # Allows kwargs overrides to default_dict for pfq.
+    default_dict.update(kwargs)
+    return self.DefaultListNonCanary(**default_dict)
+
+  def DefaultListPFQInformational(self, **kwargs):
+    """Return a default list of HWTestConfigs for an inform. PFQ build.
+
+    Optional arguments may be overridden in `kwargs`, except that
+    the `blocking` setting cannot be provided.
+    """
+    # The informational PFQ does not honor to retry jobs. This reduces
+    # hwtest times and shows flakes clearer.
     default_dict = dict(pool=constants.HWTEST_PFQ_POOL, file_bugs=True,
                         priority=constants.HWTEST_PFQ_PRIORITY,
                         retry=False, max_retries=None, minimum_duts=4)
@@ -177,8 +197,7 @@ class HWTestList(object):
     list is a blocking sanity suite that verifies the build will not break dut.
     """
     sanity_dict = dict(pool=constants.HWTEST_MACH_POOL,
-                       file_bugs=True, priority=constants.HWTEST_PFQ_PRIORITY,
-                       retry=False, max_retries=None)
+                       file_bugs=True, priority=constants.HWTEST_PFQ_PRIORITY)
     sanity_dict.update(kwargs)
     sanity_dict.update(dict(num=1, minimum_duts=1, suite_min_duts=1,
                             blocking=True))
@@ -198,8 +217,7 @@ class HWTestList(object):
     """
     default_dict = dict(file_bugs=True,
                         timeout=config_lib.HWTestConfig.ASYNC_HW_TEST_TIMEOUT,
-                        priority=constants.HWTEST_PFQ_PRIORITY,
-                        retry=True, max_retries=None, minimum_duts=3)
+                        priority=constants.HWTEST_PFQ_PRIORITY, minimum_duts=3)
     # Allows kwargs overrides to default_dict for pfq.
     default_dict.update(kwargs)
 
@@ -220,8 +238,7 @@ class HWTestList(object):
     list is a blocking sanity suite that verifies the build will not break dut.
     """
     sanity_dict = dict(pool=constants.HWTEST_MACH_POOL,
-                       file_bugs=True, priority=constants.HWTEST_PFQ_PRIORITY,
-                       retry=False, max_retries=None)
+                       file_bugs=True, priority=constants.HWTEST_PFQ_PRIORITY)
     sanity_dict.update(kwargs)
     sanity_dict.update(dict(num=1, minimum_duts=1, suite_min_duts=1,
                             blocking=True))
@@ -2747,7 +2764,7 @@ def InformationalBuilders(site_config, boards_dict, ge_build_config):
       internal_board_configs,
       site_config.templates.chrome_pfq_informational,
       important=False,
-      hw_tests=hw_test_list.DefaultListPFQ(
+      hw_tests=hw_test_list.DefaultListPFQInformational(
           pool=constants.HWTEST_CONTINUOUS_POOL),
   )
   informational_boards = (
