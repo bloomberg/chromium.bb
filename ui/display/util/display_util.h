@@ -17,12 +17,6 @@ namespace display {
 DISPLAY_UTIL_EXPORT bool IsDisplaySizeBlackListed(
     const gfx::Size& physical_size);
 
-// Returns the desired device scale factor for the display with the given
-// physical_size and resoultion.
-DISPLAY_UTIL_EXPORT float GetScaleFactor(
-    const gfx::Size& physical_size_in_mm,
-    const gfx::Size& screen_size_in_pixels);
-
 // Returns 64-bit persistent ID for the specified manufacturer's ID and
 // product_code_hash, and the index of the output it is connected to.
 // |output_index| is used to distinguish the displays of the same type. For
