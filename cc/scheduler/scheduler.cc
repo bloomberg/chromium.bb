@@ -209,7 +209,8 @@ base::TimeTicks Scheduler::LastBeginImplFrameTime() {
 }
 
 void Scheduler::BeginMainFrameNotExpectedUntil(base::TimeTicks time) {
-  TRACE_EVENT1("cc", "Scheduler::BeginMainFrameNotExpectedUntil", "time", time);
+  TRACE_EVENT1("cc", "Scheduler::BeginMainFrameNotExpectedUntil",
+               "remaining_time", (time - Now()).InMillisecondsF());
   client_->ScheduledActionBeginMainFrameNotExpectedUntil(time);
 }
 
