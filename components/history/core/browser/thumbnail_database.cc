@@ -673,11 +673,6 @@ bool ThumbnailDatabase::GetIconMappingsForPageURL(
       if (!filtered_mapping_data)
         return result;
 
-      // Restrict icon type of subsequent matches to |m->icon_type|.
-      // |m->icon_type| is the largest IconType in |mapping_data| because
-      // |mapping_data| is sorted in descending order of IconType.
-      required_icon_types = m->icon_type;
-
       filtered_mapping_data->push_back(*m);
     }
   }

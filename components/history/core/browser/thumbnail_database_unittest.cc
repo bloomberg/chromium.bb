@@ -76,6 +76,19 @@ void VerifyTablesAndColumns(sql::Connection* db) {
   EXPECT_EQ(3u, sql::test::CountTableColumns(db, "icon_mapping"));
 }
 
+// Adds a favicon at |icon_url| with |icon_type| with default bitmap data and
+// maps |page_url| to |icon_url|.
+void AddAndMapFaviconSimple(ThumbnailDatabase* db,
+                            const GURL& page_url,
+                            const GURL& icon_url,
+                            favicon_base::IconType icon_type) {
+  scoped_refptr<base::RefCountedStaticMemory> data(
+      new base::RefCountedStaticMemory(kBlob1, sizeof(kBlob1)));
+  favicon_base::FaviconID favicon_id =
+      db->AddFavicon(icon_url, icon_type, data, base::Time::Now(), gfx::Size());
+  db->AddIconMapping(page_url, favicon_id);
+}
+
 void VerifyDatabaseEmpty(sql::Connection* db) {
   size_t rows = 0;
   EXPECT_TRUE(sql::test::CountTableRows(db, "favicons", &rows));
@@ -145,6 +158,14 @@ WARN_UNUSED_RESULT bool CheckPageHasIcon(
     return false;
   }
   return true;
+}
+
+bool CompareIconMappingIconUrl(const IconMapping& a, const IconMapping& b) {
+  return a.icon_url < b.icon_url;
+}
+
+void SortMappingsByIconUrl(std::vector<IconMapping>* mappings) {
+  std::sort(mappings->begin(), mappings->end(), &CompareIconMappingIconUrl);
 }
 
 }  // namespace
@@ -490,61 +511,31 @@ TEST_F(ThumbnailDatabaseTest, GetIconMappingsForPageURLForReturnOrder) {
   EXPECT_EQ(icon_url, icon_mappings.front().icon_url);
 }
 
-// Test result of GetIconMappingsForPageURL when an icon type is passed in.
-TEST_F(ThumbnailDatabaseTest, GetIconMappingsForPageURLWithIconType) {
+// Test that when multiple icon types are passed to GetIconMappingsForPageURL()
+// that the results are filtered according to the passed in types.
+TEST_F(ThumbnailDatabaseTest, GetIconMappingsForPageURLWithIconTypes) {
   ThumbnailDatabase db(NULL);
   ASSERT_EQ(sql::INIT_OK, db.Init(file_name_));
   db.BeginTransaction();
 
-  GURL url("http://google.com");
-  std::vector<unsigned char> data(kBlob1, kBlob1 + sizeof(kBlob1));
-  scoped_refptr<base::RefCountedBytes> favicon(new base::RefCountedBytes(data));
-  base::Time time = base::Time::Now();
+  const GURL kPageUrl("http://www.google.com");
+  AddAndMapFaviconSimple(&db, kPageUrl, kIconUrl1, favicon_base::FAVICON);
+  AddAndMapFaviconSimple(&db, kPageUrl, kIconUrl2, favicon_base::TOUCH_ICON);
+  AddAndMapFaviconSimple(&db, kPageUrl, kIconUrl3, favicon_base::TOUCH_ICON);
+  AddAndMapFaviconSimple(&db, kPageUrl, kIconUrl5,
+                         favicon_base::TOUCH_PRECOMPOSED_ICON);
 
-  favicon_base::FaviconID id1 =
-      db.AddFavicon(url, favicon_base::FAVICON, favicon, time, gfx::Size());
-  EXPECT_NE(0, db.AddIconMapping(url, id1));
-
-  favicon_base::FaviconID id2 =
-      db.AddFavicon(url, favicon_base::TOUCH_ICON, favicon, time, gfx::Size());
-  EXPECT_NE(0, db.AddIconMapping(url, id2));
-
-  favicon_base::FaviconID id3 =
-      db.AddFavicon(url, favicon_base::TOUCH_ICON, favicon, time, gfx::Size());
-  EXPECT_NE(0, db.AddIconMapping(url, id3));
-
-  // Only the mappings for favicons of type TOUCH_ICON should be returned as
-  // TOUCH_ICON is a larger icon type than FAVICON.
+  // Only the mappings for FAVICON and TOUCH_ICON should be returned.
   std::vector<IconMapping> icon_mappings;
   EXPECT_TRUE(db.GetIconMappingsForPageURL(
-      url,
-      favicon_base::FAVICON | favicon_base::TOUCH_ICON |
-          favicon_base::TOUCH_PRECOMPOSED_ICON,
+      kPageUrl, favicon_base::FAVICON | favicon_base::TOUCH_ICON,
       &icon_mappings));
+  SortMappingsByIconUrl(&icon_mappings);
 
-  EXPECT_EQ(2u, icon_mappings.size());
-  if (id2 == icon_mappings[0].icon_id) {
-    EXPECT_EQ(id3, icon_mappings[1].icon_id);
-  } else {
-    EXPECT_EQ(id3, icon_mappings[0].icon_id);
-    EXPECT_EQ(id2, icon_mappings[1].icon_id);
-  }
-
-  icon_mappings.clear();
-  EXPECT_TRUE(db.GetIconMappingsForPageURL(
-      url, favicon_base::TOUCH_ICON, &icon_mappings));
-  if (id2 == icon_mappings[0].icon_id) {
-    EXPECT_EQ(id3, icon_mappings[1].icon_id);
-  } else {
-    EXPECT_EQ(id3, icon_mappings[0].icon_id);
-    EXPECT_EQ(id2, icon_mappings[1].icon_id);
-  }
-
-  icon_mappings.clear();
-  EXPECT_TRUE(
-      db.GetIconMappingsForPageURL(url, favicon_base::FAVICON, &icon_mappings));
-  EXPECT_EQ(1u, icon_mappings.size());
-  EXPECT_EQ(id1, icon_mappings[0].icon_id);
+  ASSERT_EQ(3u, icon_mappings.size());
+  EXPECT_EQ(kIconUrl1, icon_mappings[0].icon_url);
+  EXPECT_EQ(kIconUrl3, icon_mappings[1].icon_url);
+  EXPECT_EQ(kIconUrl2, icon_mappings[2].icon_url);
 }
 
 TEST_F(ThumbnailDatabaseTest, HasMappingFor) {

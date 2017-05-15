@@ -2993,6 +2993,35 @@ TEST_F(HistoryBackendTest, GetFaviconsFromDBIconType) {
   EXPECT_EQ(icon_url2, bitmap_results_out[0].icon_url);
 }
 
+// Test that when GetFaviconsFromDB() is called with multiple icon types that
+// the best favicon bitmap is selected from among all of the icon types.
+TEST_F(HistoryBackendTest, GetFaviconsFromDBMultipleIconTypes) {
+  const GURL page_url("http://www.google.com/");
+  const GURL icon_url1("http://www.google.com/icon1.png");
+  const GURL icon_url2("http://www.google.com/icon2.png");
+
+  std::vector<favicon_base::FaviconRawBitmapData> favicon_bitmap_data;
+  backend_->SetFavicons(page_url, favicon_base::FAVICON, icon_url1,
+                        {CreateBitmap(SK_ColorBLUE, kSmallEdgeSize)});
+  backend_->SetFavicons(page_url, favicon_base::TOUCH_ICON, icon_url2,
+                        {CreateBitmap(SK_ColorBLUE, kLargeEdgeSize)});
+
+  struct TestCase {
+    int desired_edge_size;
+    GURL expected_icon_url;
+  } kTestCases[]{{kSmallEdgeSize, icon_url1}, {kLargeEdgeSize, icon_url2}};
+
+  for (const TestCase& test_case : kTestCases) {
+    std::vector<favicon_base::FaviconRawBitmapResult> bitmap_results_out;
+    backend_->GetFaviconsForURL(
+        page_url, favicon_base::FAVICON | favicon_base::TOUCH_ICON,
+        {test_case.desired_edge_size}, &bitmap_results_out);
+
+    ASSERT_EQ(1u, bitmap_results_out.size());
+    EXPECT_EQ(test_case.expected_icon_url, bitmap_results_out[0].icon_url);
+  }
+}
+
 // Test that GetFaviconsFromDB() correctly sets the expired flag for bitmap
 // reults.
 TEST_F(HistoryBackendTest, GetFaviconsFromDBExpired) {
