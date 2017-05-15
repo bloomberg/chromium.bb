@@ -31184,6 +31184,7 @@ from previous Chrome versions.
   <int value="1" label="Failed"/>
   <int value="2" label="No Answer"/>
   <int value="3" label="Received Answer"/>
+  <int value="4" label="Received Answer - Too Large"/>
 </enum>
 
 <enum name="SearchEngine" type="int">
