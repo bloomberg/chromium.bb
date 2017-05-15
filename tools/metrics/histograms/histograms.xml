@@ -30836,7 +30836,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
-<histogram name="Mobile.DefaultBrowser.BrowserCount">
+<histogram base="true" name="Mobile.DefaultBrowser.BrowserCount">
 <!-- Name completed by histogram_suffixes name="Mobile.DefaultBrowser.Type" -->
 
   <owner>dtrainor@chromium.org</owner>
@@ -30849,6 +30849,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     Android: Whether or not the device has a default browser and whether or not
     it is a system installed browser.
   </summary>
+</histogram>
+
+<histogram base="true" name="Mobile.DefaultBrowser.SystemBrowserCount">
+<!-- Name completed by histogram_suffixes
+    name="Mobile.DefaultBrowser.SystemDefaultBrowser.Type" -->
+
+  <owner>dtrainor@chromium.org</owner>
+  <summary>Android: The number of system installed browsers.</summary>
 </histogram>
 
 <histogram name="Mobile.SystemNotification.Blocked"
@@ -87247,6 +87255,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <suffix name="SuspendedToThrottled"/>
   <affected-histogram name="Memory.Coordinator.StateDuration"/>
   <affected-histogram name="Memory.Coordinator.TotalPrivate"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="Mobile.DefaultBrowser.SystemDefaultBrowser.Type"
+    separator=".">
+  <suffix name="ChromeSystem" label="Chrome is a system installed browser."/>
+  <suffix name="ChromeNotSystem"
+      label="Chrome is not a system installed browser."/>
+  <affected-histogram name="Mobile.DefaultBrowser.SystemBrowserCount"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="Mobile.DefaultBrowser.Type" separator=".">
