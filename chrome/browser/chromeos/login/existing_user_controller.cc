@@ -179,10 +179,29 @@ void RecordPasswordChangeFlow(LoginPasswordChangeFlow flow) {
                             LOGIN_PASSWORD_CHANGE_FLOW_COUNT);
 }
 
-bool ShouldForceDircrypto() {
-  return !base::CommandLine::ForCurrentProcess()->HasSwitch(
-             chromeos::switches::kDisableEncryptionMigration) &&
-         arc::IsArcAvailable();
+bool ShouldForceDircrypto(const AccountId& account_id) {
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          chromeos::switches::kDisableEncryptionMigration)) {
+    return false;
+  }
+  // If the device is not officially supported to run ARC, we don't need to
+  // force Ext4 dircrypto.
+  if (!arc::IsArcAvailable())
+    return false;
+
+  // In some login flows (e.g. when siging in supervised user), ARC can not
+  // start. For such cases, we don't need to force Ext4 dircrypto.
+  chromeos::UserFlow* user_flow =
+      chromeos::ChromeUserManager::Get()->GetUserFlow(account_id);
+  if (!user_flow || !user_flow->CanStartArc())
+    return false;
+
+  // When a user is signing in as a secondary user, we don't need to force Ext4
+  // dircrypto since the user can not run ARC.
+  if (UserAddingScreen::Get()->IsRunning())
+    return false;
+
+  return true;
 }
 
 }  // namespace
@@ -491,7 +510,8 @@ void ExistingUserController::PerformLogin(
     // sure that the user's cryptohome is encrypted in ext4 dircrypto to run the
     // latest Android runtime.
     UserContext new_user_context = user_context;
-    new_user_context.SetIsForcingDircrypto(ShouldForceDircrypto());
+    new_user_context.SetIsForcingDircrypto(
+        ShouldForceDircrypto(new_user_context.GetAccountId()));
     login_performer_->PerformLogin(new_user_context, auth_mode);
     RecordPasswordLoginEvent(new_user_context);
   }
