@@ -9,6 +9,7 @@
 #include "core/inspector/InspectorTraceEvents.h"
 #include "core/layout/LayoutView.h"
 #include "core/page/Page.h"
+#include "core/paint/FramePaintTiming.h"
 #include "core/paint/LayoutObjectDrawingRecorder.h"
 #include "core/paint/PaintInfo.h"
 #include "core/paint/PaintLayer.h"
@@ -147,6 +148,7 @@ void FramePainter::PaintContents(GraphicsContext& context,
   DCHECK(document->Lifecycle().GetState() >=
          DocumentLifecycle::kCompositingClean);
 
+  FramePaintTiming frame_paint_timing(context, &GetFrameView().GetFrame());
   TRACE_EVENT1("devtools.timeline,rail", "Paint", "data",
                InspectorPaintEvent::Data(layout_view, LayoutRect(rect), 0));
 

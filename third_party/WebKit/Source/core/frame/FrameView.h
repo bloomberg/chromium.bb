@@ -932,8 +932,6 @@ class CORE_EXPORT FrameView final
   void UpdateStyleAndLayoutIfNeededRecursiveInternal();
   void DeprecatedInvalidateTreeRecursiveInternal();
 
-  // TODO(wangxianzhu): Remove the parameter and use m_paintController for SPv2.
-  void NotifyPaint(const PaintController&) const;
   void PushPaintArtifactToCompositor(
       CompositorElementIdSet& composited_element_ids);
 
