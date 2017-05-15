@@ -449,7 +449,6 @@ blink_core_sources("css") {
     "properties/CSSPropertyAPIRotate.cpp",
     "properties/CSSPropertyAPIScale.cpp",
     "properties/CSSPropertyAPIScrollSnapCoordinate.cpp",
-    "properties/CSSPropertyAPIShadow.cpp",
     "properties/CSSPropertyAPIShapeImageThreshold.cpp",
     "properties/CSSPropertyAPIShapeMargin.cpp",
     "properties/CSSPropertyAPIShapeOutside.cpp",
