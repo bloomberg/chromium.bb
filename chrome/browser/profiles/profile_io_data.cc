@@ -23,7 +23,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/task_scheduler/post_task.h"
-#include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
@@ -495,9 +494,9 @@ void ProfileIOData::InitializeOnUIThread(Profile* profile) {
   // ShutdownOnUIThread to release these observers on the right thread.
   // Don't pass it in |profile_params_| to make sure it is correctly cleaned up,
   // in particular when this ProfileIOData isn't |initialized_| during deletion.
-  base::SequencedWorkerPool* pool = BrowserThread::GetBlockingPool();
   scoped_refptr<base::SequencedTaskRunner> background_task_runner =
-      pool->GetSequencedTaskRunner(pool->GetSequenceToken());
+      base::CreateSequencedTaskRunnerWithTraits(
+          {base::MayBlock(), base::TaskPriority::BACKGROUND});
   url_blacklist_manager_.reset(new policy::URLBlacklistManager(
       pref_service, background_task_runner, io_task_runner,
       base::Bind(policy::OverrideBlacklistForURL)));
@@ -1044,15 +1043,12 @@ void ProfileIOData::Init(
       std::move(network_delegate));
 
   transport_security_state_.reset(new net::TransportSecurityState());
-  base::SequencedWorkerPool* pool = BrowserThread::GetBlockingPool();
-  transport_security_persister_.reset(
-      new net::TransportSecurityPersister(
-          transport_security_state_.get(),
-          profile_params_->path,
-          pool->GetSequencedTaskRunnerWithShutdownBehavior(
-              pool->GetSequenceToken(),
-              base::SequencedWorkerPool::BLOCK_SHUTDOWN),
-          IsOffTheRecord()));
+  transport_security_persister_.reset(new net::TransportSecurityPersister(
+      transport_security_state_.get(), profile_params_->path,
+      base::CreateSequencedTaskRunnerWithTraits(
+          {base::MayBlock(), base::TaskPriority::BACKGROUND,
+           base::TaskShutdownBehavior::BLOCK_SHUTDOWN}),
+      IsOffTheRecord()));
 
   certificate_report_sender_.reset(
       new net::ReportSender(main_request_context_.get()));
