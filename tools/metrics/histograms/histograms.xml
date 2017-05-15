@@ -11931,6 +11931,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Dialog.Delegate.Creation" enum="BooleanCreated">
+  <obsolete>
+    Deprecated, use Dialog.DialogDelegate.Create.
+  </obsolete>
   <owner>pdyson@chromium.org</owner>
   <summary>
     Counts the number times dialog boxes are created using DialogDelegate.
@@ -85631,6 +85634,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram_suffixes>
 
 <histogram_suffixes name="DialogTypes" separator="." ordering="prefix">
+  <suffix name="DialogDelegate"
+      label="Counts dialog boxes created using DialogDelegate."/>
   <suffix name="DialogDelegateView"
       label="Counts dialog boxes created using DialogDelegateView. These are
              a subset of those created with DialogDelegate."/>

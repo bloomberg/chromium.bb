@@ -33,7 +33,7 @@ namespace views {
 // DialogDelegate:
 
 DialogDelegate::DialogDelegate() : supports_custom_frame_(true) {
-  UMA_HISTOGRAM_BOOLEAN("Dialog.Delegate.Creation", true);
+  UMA_HISTOGRAM_BOOLEAN("Dialog.DialogDelegate.Create", true);
 }
 
 DialogDelegate::~DialogDelegate() {}
