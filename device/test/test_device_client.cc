@@ -29,9 +29,8 @@ TestDeviceClient::~TestDeviceClient() {
 HidService* TestDeviceClient::GetHidService() {
 #if !defined(OS_ANDROID) && !defined(OS_IOS) && \
     !(defined(OS_LINUX) && !defined(USE_UDEV))
-  if (!hid_service_) {
-    hid_service_ = HidService::Create(blocking_task_runner_);
-  }
+  if (!hid_service_)
+    hid_service_ = HidService::Create();
 #endif
   return hid_service_.get();
 }

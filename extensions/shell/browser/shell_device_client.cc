@@ -42,11 +42,9 @@ device::UsbService* ShellDeviceClient::GetUsbService() {
 
 device::HidService* ShellDeviceClient::GetHidService() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (!hid_service_) {
-    hid_service_ = device::HidService::Create(
-        BrowserThread::GetTaskRunnerForThread(BrowserThread::FILE));
-  }
+  if (!hid_service_)
+    hid_service_ = device::HidService::Create();
   return hid_service_.get();
 }
 
-}
+}  // namespace extensions
