@@ -563,16 +563,6 @@ bool ComputedStyle::ScrollAnchorDisablingPropertyChanged(
   if (GetPosition() != other.GetPosition())
     return true;
 
-  if (box_data_.Get() != other.box_data_.Get()) {
-    if (box_data_->width_ != other.box_data_->width_ ||
-        box_data_->min_width_ != other.box_data_->min_width_ ||
-        box_data_->max_width_ != other.box_data_->max_width_ ||
-        box_data_->height_ != other.box_data_->height_ ||
-        box_data_->min_height_ != other.box_data_->min_height_ ||
-        box_data_->max_height_ != other.box_data_->max_height_)
-      return true;
-  }
-
   if (ComputedStyleBase::ScrollAnchorDisablingPropertyChanged(other))
     return true;
 
@@ -822,20 +812,12 @@ bool ComputedStyle::DiffNeedsFullLayoutAndPaintInvalidation(
 }
 
 bool ComputedStyle::DiffNeedsFullLayout(const ComputedStyle& other) const {
-  if (box_data_.Get() != other.box_data_.Get()) {
-    if (box_data_->width_ != other.box_data_->width_ ||
-        box_data_->min_width_ != other.box_data_->min_width_ ||
-        box_data_->max_width_ != other.box_data_->max_width_ ||
-        box_data_->height_ != other.box_data_->height_ ||
-        box_data_->min_height_ != other.box_data_->min_height_ ||
-        box_data_->max_height_ != other.box_data_->max_height_)
-      return true;
+  if (ComputedStyleBase::DiffNeedsFullLayout(other))
+    return true;
 
+  if (box_data_.Get() != other.box_data_.Get()) {
     if (box_data_->vertical_align_length_ !=
         other.box_data_->vertical_align_length_)
-      return true;
-
-    if (box_data_->box_sizing_ != other.box_data_->box_sizing_)
       return true;
   }
 
