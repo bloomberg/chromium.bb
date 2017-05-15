@@ -59,7 +59,7 @@ class AutocompleteResult {
   };
 
   // Max number of matches we'll show from the various providers.
-  static const size_t kMaxMatches;
+  static size_t GetMaxMatches();
 
   AutocompleteResult();
   ~AutocompleteResult();
@@ -77,7 +77,7 @@ class AutocompleteResult {
                      const ACMatches& matches);
 
   // Removes duplicates, puts the list in sorted order and culls to leave only
-  // the best kMaxMatches matches.  Sets the default match to the best match
+  // the best GetMaxMatches() matches.  Sets the default match to the best match
   // and updates the alternate nav URL.
   void SortAndCull(const AutocompleteInput& input,
                    TemplateURLService* template_url_service);

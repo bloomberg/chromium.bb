@@ -1045,11 +1045,11 @@ void SearchProvider::ConvertResultsToAutocompleteMatches() {
   // that set a legal default match if possible.  If Instant Extended is enabled
   // and we have server-provided (and thus hopefully more accurate) scores for
   // some suggestions, we allow more of those, until we reach
-  // AutocompleteResult::kMaxMatches total matches (that is, enough to fill the
-  // whole popup).
+  // AutocompleteResult::GetMaxMatches() total matches (that is, enough to fill
+  // the whole popup).
   //
   // We will always return any verbatim matches, no matter how we obtained their
-  // scores, unless we have already accepted AutocompleteResult::kMaxMatches
+  // scores, unless we have already accepted AutocompleteResult::GetMaxMatches()
   // higher-scoring matches under the conditions above.
   std::sort(matches.begin(), matches.end(), &AutocompleteMatch::MoreRelevant);
 
@@ -1073,7 +1073,7 @@ void SearchProvider::ConvertResultsToAutocompleteMatches() {
   size_t num_suggestions = 0;
   for (ACMatches::const_iterator i(matches.begin());
        (i != matches.end()) &&
-           (matches_.size() < AutocompleteResult::kMaxMatches);
+       (matches_.size() < AutocompleteResult::GetMaxMatches());
        ++i) {
     // SEARCH_OTHER_ENGINE is only used in the SearchProvider for the keyword
     // verbatim result, so this condition basically means "if this match is a

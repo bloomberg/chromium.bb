@@ -119,7 +119,7 @@ void OmniboxPopupContentsView::Init() {
   // This can't be done in the constructor as at that point we aren't
   // necessarily our final class yet, and we may have subclasses
   // overriding CreateResultView.
-  for (size_t i = 0; i < AutocompleteResult::kMaxMatches; ++i) {
+  for (size_t i = 0; i < AutocompleteResult::GetMaxMatches(); ++i) {
     OmniboxResultView* result_view = CreateResultView(i, font_list_);
     result_view->SetVisible(false);
     AddChildViewAt(result_view, static_cast<int>(i));
@@ -155,7 +155,7 @@ void OmniboxPopupContentsView::LayoutChildren() {
                       0);
 
   int top = contents_rect.y();
-  for (size_t i = 0; i < AutocompleteResult::kMaxMatches; ++i) {
+  for (size_t i = 0; i < AutocompleteResult::GetMaxMatches(); ++i) {
     View* v = child_at(i);
     if (v->visible()) {
       v->SetBounds(contents_rect.x(), top, contents_rect.width(),
@@ -223,7 +223,7 @@ void OmniboxPopupContentsView::UpdatePopupAppearance() {
     }
   }
 
-  for (size_t i = result_size; i < AutocompleteResult::kMaxMatches; ++i)
+  for (size_t i = result_size; i < AutocompleteResult::GetMaxMatches(); ++i)
     child_at(i)->SetVisible(false);
 
   // We want the popup to appear to overlay the bottom of the toolbar. So we

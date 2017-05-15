@@ -966,6 +966,30 @@ const FeatureEntry::Choice kEnableHeapProfilingChoices[] = {
      switches::kEnableHeapProfiling,
      switches::kEnableHeapProfilingTaskProfiler}};
 
+const FeatureEntry::FeatureParam kOmniboxUIMaxAutocompleteMatches4[] = {
+    {OmniboxFieldTrial::kUIMaxAutocompleteMatchesParam, "4"}};
+const FeatureEntry::FeatureParam kOmniboxUIMaxAutocompleteMatches6[] = {
+    {OmniboxFieldTrial::kUIMaxAutocompleteMatchesParam, "6"}};
+const FeatureEntry::FeatureParam kOmniboxUIMaxAutocompleteMatches8[] = {
+    {OmniboxFieldTrial::kUIMaxAutocompleteMatchesParam, "8"}};
+const FeatureEntry::FeatureParam kOmniboxUIMaxAutocompleteMatches10[] = {
+    {OmniboxFieldTrial::kUIMaxAutocompleteMatchesParam, "10"}};
+const FeatureEntry::FeatureParam kOmniboxUIMaxAutocompleteMatches12[] = {
+    {OmniboxFieldTrial::kUIMaxAutocompleteMatchesParam, "12"}};
+
+const FeatureEntry::FeatureVariation
+    kOmniboxUIMaxAutocompleteMatchesVariations[] = {
+        {"4 matches", kOmniboxUIMaxAutocompleteMatches4,
+         arraysize(kOmniboxUIMaxAutocompleteMatches4), nullptr},
+        {"6 matches", kOmniboxUIMaxAutocompleteMatches6,
+         arraysize(kOmniboxUIMaxAutocompleteMatches6), nullptr},
+        {"8 matches", kOmniboxUIMaxAutocompleteMatches8,
+         arraysize(kOmniboxUIMaxAutocompleteMatches8), nullptr},
+        {"10 matches", kOmniboxUIMaxAutocompleteMatches10,
+         arraysize(kOmniboxUIMaxAutocompleteMatches10), nullptr},
+        {"12 matches", kOmniboxUIMaxAutocompleteMatches12,
+         arraysize(kOmniboxUIMaxAutocompleteMatches12), nullptr}};
+
 const FeatureEntry::FeatureParam kOmniboxUIVerticalMargin4px[] = {
     {OmniboxFieldTrial::kUIVerticalMarginParam, "4"}};
 const FeatureEntry::FeatureParam kOmniboxUIVerticalMargin8px[] = {
@@ -2863,6 +2887,14 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kShowCertLinkOnPageInfoDescription, kOsDesktop,
      SINGLE_VALUE_TYPE(switches::kShowCertLink)},
 #endif
+
+    {"omnibox-ui-max-autocomplete-matches",
+     flag_descriptions::kOmniboxUIMaxAutocompleteMatchesName,
+     flag_descriptions::kOmniboxUIMaxAutocompleteMatchesDescription, kOsDesktop,
+     FEATURE_WITH_PARAMS_VALUE_TYPE(
+         omnibox::kUIExperimentMaxAutocompleteMatches,
+         kOmniboxUIMaxAutocompleteMatchesVariations,
+         "OmniboxUIMaxAutocompleteVariations")},
 
     {"omnibox-ui-vertical-margin",
      flag_descriptions::kOmniboxUIVerticalMarginName,

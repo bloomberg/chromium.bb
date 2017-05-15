@@ -32,6 +32,7 @@ extern const base::Feature kSearchProviderContextAllowHttpsUrls;
 extern const base::Feature kZeroSuggestRedirectToChrome;
 extern const base::Feature kZeroSuggestSwapTitleAndUrl;
 extern const base::Feature kDisplayTitleForCurrentUrl;
+extern const base::Feature kUIExperimentMaxAutocompleteMatches;
 extern const base::Feature kUIExperimentVerticalMargin;
 }
 
@@ -511,6 +512,7 @@ class OmniboxFieldTrial {
   static const char kZeroSuggestRedirectToChromeAdditionalFieldsParam[];
 
   // Parameter names used by UI experiments.
+  static const char kUIMaxAutocompleteMatchesParam[];
   static const char kUIVerticalMarginParam[];
 
   // The amount of time to wait before sending a new suggest request after the
