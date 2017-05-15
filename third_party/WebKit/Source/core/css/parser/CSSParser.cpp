@@ -4,6 +4,7 @@
 
 #include "core/css/parser/CSSParser.h"
 
+#include <memory>
 #include "core/css/CSSColorValue.h"
 #include "core/css/CSSKeyframeRule.h"
 #include "core/css/StyleColor.h"
@@ -17,7 +18,6 @@
 #include "core/css/parser/CSSTokenizer.h"
 #include "core/css/parser/CSSVariableParser.h"
 #include "core/layout/LayoutTheme.h"
-#include <memory>
 
 namespace blink {
 
@@ -48,11 +48,11 @@ CSSSelectorList CSSParser::ParseSelector(
 }
 
 CSSSelectorList CSSParser::ParsePageSelector(
-    const CSSParserContext* context,
+    const CSSParserContext& context,
     StyleSheetContents* style_sheet_contents,
     const String& selector) {
   CSSTokenizer tokenizer(selector);
-  return CSSParserImpl::ParsePageSelector(tokenizer.TokenRange(),
+  return CSSParserImpl::ParsePageSelector(context, tokenizer.TokenRange(),
                                           style_sheet_contents);
 }
 
