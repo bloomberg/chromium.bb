@@ -412,8 +412,22 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
     @Override
     public void init(PaymentRequestClient client, PaymentMethodData[] methodData,
             PaymentDetails details, PaymentOptions options) {
-        if (mClient != null || client == null) return;
+        if (mClient != null) {
+            recordAbortReasonHistogram(
+                    PaymentRequestMetrics.ABORT_REASON_INVALID_DATA_FROM_RENDERER);
+            disconnectFromClientWithDebugMessage("Renderer should never call init() twice");
+            return;
+        }
+
+        if (client == null) {
+            recordAbortReasonHistogram(
+                    PaymentRequestMetrics.ABORT_REASON_INVALID_DATA_FROM_RENDERER);
+            disconnectFromClientWithDebugMessage("Invalid mojo client");
+            return;
+        }
+
         mClient = client;
+        mMethodData = new HashMap<>();
 
         if (!OriginSecurityChecker.isOriginSecure(mWebContents.getLastCommittedUrl())) {
             recordAbortReasonHistogram(
@@ -447,13 +461,6 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
             // Don't show any UI. Resolve .canMakePayment() with "false". Reject .show() with
             // "NotSupportedError".
             onAllPaymentAppsCreated();
-            return;
-        }
-
-        if (mMethodData != null) {
-            recordAbortReasonHistogram(
-                    PaymentRequestMetrics.ABORT_REASON_INVALID_DATA_FROM_RENDERER);
-            disconnectFromClientWithDebugMessage("Renderer should never call init() twice");
             return;
         }
 
