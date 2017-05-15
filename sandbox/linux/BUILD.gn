@@ -240,6 +240,7 @@ component("seccomp_bpf") {
 
   public_deps = [
     ":sandbox_services_headers",
+    "//sandbox:sandbox_export",
   ]
   deps = [
     ":sandbox_services",
@@ -339,7 +340,9 @@ component("sandbox_services") {
 
   defines = [ "SANDBOX_IMPLEMENTATION" ]
 
-  public_deps = []
+  public_deps = [
+    "//sandbox:sandbox_export",
+  ]
   deps = [
     "//base",
   ]
@@ -418,7 +421,9 @@ if (compile_suid_client || is_nacl_nonsfi) {
       "suid/common/suid_unsafe_environment_variables.h",
     ]
     defines = [ "SANDBOX_IMPLEMENTATION" ]
-
+    public_deps = [
+      "//sandbox:sandbox_export",
+    ]
     deps = [
       ":sandbox_services",
       "//base",
