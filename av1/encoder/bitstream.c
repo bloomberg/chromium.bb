@@ -4399,14 +4399,14 @@ static void write_uncompressed_header(AV1_COMP *cpi,
     assert(cpi->common.ans_window_size_log2 < 24);
     aom_wb_write_literal(wb, cpi->common.ans_window_size_log2 - 8, 4);
 #endif  // CONFIG_ANS && ANS_MAX_SYMBOLS
-#if CONFIG_PALETTE
+#if CONFIG_PALETTE || CONFIG_INTRABC
     aom_wb_write_bit(wb, cm->allow_screen_content_tools);
-#endif  // CONFIG_PALETTE
+#endif  // CONFIG_PALETTE || CONFIG_INTRABC
   } else {
     if (!cm->show_frame) aom_wb_write_bit(wb, cm->intra_only);
-#if CONFIG_PALETTE
+#if CONFIG_PALETTE || CONFIG_INTRABC
     if (cm->intra_only) aom_wb_write_bit(wb, cm->allow_screen_content_tools);
-#endif  // CONFIG_PALETTE
+#endif  // CONFIG_PALETTE || CONFIG_INTRABC
     if (!cm->error_resilient_mode) {
       if (cm->intra_only) {
         aom_wb_write_bit(wb,
