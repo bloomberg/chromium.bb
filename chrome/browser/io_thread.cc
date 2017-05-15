@@ -203,6 +203,10 @@ class SystemURLRequestContext : public net::URLRequestContext {
 #if defined(USE_NSS_CERTS)
     net::SetURLRequestContextForNSSHttpIO(NULL);
 #endif
+
+#if defined(OS_ANDROID)
+    net::CertVerifyProcAndroid::ShutdownCertNetFetcher();
+#endif
   }
 };
 
@@ -396,6 +400,8 @@ IOThread::IOThread(
   pref_proxy_config_tracker_.reset(
       ProxyServiceFactory::CreatePrefProxyConfigTrackerOfLocalState(
           local_state));
+  system_proxy_config_service_ = ProxyServiceFactory::CreateProxyConfigService(
+      pref_proxy_config_tracker_.get());
   ChromeNetworkDelegate::InitializePrefsOnUIThread(
       &system_enable_referrers_,
       nullptr,
@@ -487,7 +493,8 @@ void IOThread::ChangedToOnTheRecord() {
 net::URLRequestContextGetter* IOThread::system_url_request_context_getter() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (!system_url_request_context_getter_.get()) {
-    InitSystemRequestContext();
+    system_url_request_context_getter_ =
+        new SystemURLRequestContextGetter(this);
   }
   return system_url_request_context_getter_.get();
 }
@@ -683,26 +690,21 @@ void IOThread::Init() {
                           base::Bind(&ObserveKeychainEvents));
 #endif
 
-  // InitSystemRequestContext turns right around and posts a task back
-  // to the IO thread, so we can't let it run until we know the IO
-  // thread has started.
-  //
-  // Note that since we are at BrowserThread::Init time, the UI thread
-  // is blocked waiting for the thread to start.  Therefore, posting
-  // this task to the main thread's message loop here is guaranteed to
-  // get it onto the message loop while the IOThread object still
-  // exists.  However, the message might not be processed on the UI
-  // thread until after IOThread is gone, so use a weak pointer.
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                          base::BindOnce(&IOThread::InitSystemRequestContext,
-                                         weak_factory_.GetWeakPtr()));
-
 #if defined(OS_ANDROID) && defined(ARCH_CPU_ARMEL)
   // Record how common CPUs with broken NEON units are. See
   // https://crbug.com/341598.
   crypto::EnsureOpenSSLInit();
   UMA_HISTOGRAM_BOOLEAN("Net.HasBrokenNEON", CRYPTO_has_broken_NEON());
 #endif
+
+  globals_->system_proxy_service = ProxyServiceFactory::CreateProxyService(
+      net_log_, globals_->proxy_script_fetcher_context.get(),
+      globals_->system_network_delegate.get(),
+      std::move(system_proxy_config_service_), command_line,
+      WpadQuickCheckEnabled(), PacHttpsUrlStrippingEnabled());
+
+  globals_->system_request_context.reset(
+      ConstructSystemRequestContext(globals_, params_, net_log_));
 }
 
 void IOThread::CleanUp() {
@@ -712,19 +714,19 @@ void IOThread::CleanUp() {
   net::ShutdownNSSHttpIO();
 #endif
 
-#if defined(OS_ANDROID)
-  net::CertVerifyProcAndroid::ShutdownCertNetFetcher();
-#endif
-
   system_url_request_context_getter_ = NULL;
 
   // Unlink the ct_tree_tracker_ from the global cert_transparency_verifier
   // and unregister it from new STH notifications so it will take no actions
   // on anything observed during CleanUp process.
-  globals()->cert_transparency_verifier->SetObserver(nullptr);
-  UnregisterSTHObserver(ct_tree_tracker_.get());
-
-  ct_tree_tracker_.reset();
+  //
+  // Null checks are just for tests that use TestingIOThreadState.
+  if (globals()->cert_transparency_verifier)
+    globals()->cert_transparency_verifier->SetObserver(nullptr);
+  if (ct_tree_tracker_.get()) {
+    UnregisterSTHObserver(ct_tree_tracker_.get());
+    ct_tree_tracker_.reset();
+  }
 
   // Release objects that the net::URLRequestContext could have been pointing
   // to.
@@ -851,41 +853,6 @@ void IOThread::ChangedToOnTheRecordOnIOThread() {
   // Clear the host cache to avoid showing entries from the OTR session
   // in about:net-internals.
   ClearHostCache(base::Callback<bool(const std::string&)>());
-}
-
-void IOThread::InitSystemRequestContext() {
-  if (system_url_request_context_getter_.get())
-    return;
-  // If we're in unit_tests, IOThread may not be run.
-  if (!BrowserThread::IsMessageLoopValid(BrowserThread::IO))
-    return;
-  system_proxy_config_service_ = ProxyServiceFactory::CreateProxyConfigService(
-      pref_proxy_config_tracker_.get());
-  system_url_request_context_getter_ =
-      new SystemURLRequestContextGetter(this);
-  // Safe to post an unretained this pointer, since IOThread is
-  // guaranteed to outlive the IO BrowserThread.
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      base::BindOnce(&IOThread::InitSystemRequestContextOnIOThread,
-                     base::Unretained(this)));
-}
-
-void IOThread::InitSystemRequestContextOnIOThread() {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  DCHECK(!globals_->system_proxy_service.get());
-  DCHECK(system_proxy_config_service_.get());
-
-  const base::CommandLine& command_line =
-      *base::CommandLine::ForCurrentProcess();
-  globals_->system_proxy_service = ProxyServiceFactory::CreateProxyService(
-      net_log_, globals_->proxy_script_fetcher_context.get(),
-      globals_->system_network_delegate.get(),
-      std::move(system_proxy_config_service_), command_line,
-      WpadQuickCheckEnabled(), PacHttpsUrlStrippingEnabled());
-
-  globals_->system_request_context.reset(
-      ConstructSystemRequestContext(globals_, params_, net_log_));
 }
 
 void IOThread::UpdateDnsClientEnabled() {

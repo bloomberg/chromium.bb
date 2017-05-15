@@ -37,7 +37,6 @@
 class PrefProxyConfigTracker;
 class PrefService;
 class PrefRegistrySimple;
-class SystemURLRequestContextGetter;
 
 #if defined(OS_ANDROID)
 namespace chrome {
@@ -53,6 +52,10 @@ class CommandLine;
 
 namespace certificate_transparency {
 class TreeStateTracker;
+}
+
+namespace chrome {
+class TestingIOThreadState;
 }
 
 namespace chrome_browser_net {
@@ -269,27 +272,14 @@ class IOThread : public content::BrowserThreadDelegate {
   bool PacHttpsUrlStrippingEnabled() const;
 
  private:
-  // Provide SystemURLRequestContextGetter with access to
-  // InitSystemRequestContext().
-  friend class SystemURLRequestContextGetter;
-
   friend class test::IOThreadPeer;
+  friend class chrome::TestingIOThreadState;
 
   // BrowserThreadDelegate implementation, runs on the IO thread.
   // This handles initialization and destruction of state that must
   // live on the IO thread.
   void Init() override;
   void CleanUp() override;
-
-  // Global state must be initialized on the IO thread, then this
-  // method must be invoked on the UI thread.
-  void InitSystemRequestContext();
-
-  // Lazy initialization of system request context for
-  // SystemURLRequestContextGetter. To be called on IO thread only
-  // after global state has been initialized on the IO thread, and
-  // SystemRequestContext state has been initialized on the UI thread.
-  void InitSystemRequestContextOnIOThread();
 
   void CreateDefaultAuthHandlerFactory();
 

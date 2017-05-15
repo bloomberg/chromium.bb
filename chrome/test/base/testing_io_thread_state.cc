@@ -96,8 +96,7 @@ void TestingIOThreadState::Initialize(const base::Closure& done) {
 void TestingIOThreadState::Shutdown(const base::Closure& done) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  delete io_thread_state_->globals();
-  io_thread_state_->SetGlobalsForTesting(NULL);
+  io_thread_state_->CleanUp();
   done.Run();
 }
 
