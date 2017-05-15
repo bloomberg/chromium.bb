@@ -57077,7 +57077,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     units="KB">
 <!-- Name completed by histogram_suffixes name="PurgeAndSuspendExperiment" -->
 
-  <owner>tasak@google.org</owner>
+  <owner>tasak@google.com</owner>
   <summary>
     The growth of the background renderer's memory usage after a background
     renderer is purged. This is recorded 5, 10 and 15 minutes after the purge.
@@ -90682,17 +90682,60 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram_suffixes>
 
 <histogram_suffixes name="PurgeAndSuspendExperiment" separator=".">
-  <suffix name="BlinkGCKB" label="Constrained to the BlinkGC allocator"/>
-  <suffix name="DiscardableKB" label="Constrained to discardable memory usage"/>
-  <suffix name="PartitionAllocKB"
-      label="Constrained to PartitionAlloc allocator"/>
-  <suffix name="MallocKB" label="Constrained to malloc memory usage"/>
-  <suffix name="TotalAllocatedKB"
-      label="Summed over the PartitionAlloc, malloc, discardable memory,
-             mainThreadIsolate() and BlinkGC allocators"/>
-  <suffix name="V8MainThreadIsolateKB"
-      label="Constrained to memory usage by mainThreadIsolate()"/>
+  <suffix name="BlinkGCKB">
+    <obsolete>
+      Derecated as of 05/2017. Replaced with BlinkGCKB.30min, 60min, and 90min
+      to investigate growth of BlinkGC memory usage more deeply.
+    </obsolete>
+  </suffix>
+  <suffix name="DiscardableKB">
+    <obsolete>
+      Derecated as of 05/2017. Replaced with DiscardableKB.30min, 60min, and
+      90min to investigate growth of discardable memory usage more deeply.
+    </obsolete>
+  </suffix>
+  <suffix name="PartitionAllocKB">
+    <obsolete>
+      Derecated as of 05/2017. Replaced with PartitionAllocKB.30min, 60min, and
+      90min to investigate growth of PartitionAlloc memory usage more deeply.
+    </obsolete>
+  </suffix>
+  <suffix name="MallocKB">
+    <obsolete>
+      Derecated as of 05/2017. Replaced with MallocKB.30min, 60min, and 90min to
+      investigate growth of malloc memory usage more deeply.
+    </obsolete>
+  </suffix>
+  <suffix name="TotalAllocatedKB">
+    <obsolete>
+      Derecated as of 05/2017. Replaced with TotalAllocatedKB.30min, 60min, and
+      90min to investigate growth of renderer total memory usage more deeply.
+    </obsolete>
+  </suffix>
+  <suffix name="V8MainThreadIsolateKB">
+    <obsolete>
+      Derecated as of 05/2017. Replaced with V8MainThreadIsolateKB.30min, 60min,
+      and 90min to investigate growth of v8 memory usage more deeply.
+    </obsolete>
+  </suffix>
   <affected-histogram name="PurgeAndSuspend.Experimental.MemoryGrowth"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="PurgeAndSuspendExperimentPerHalfHour" separator=".">
+  <suffix name="30min"
+      label="Constrained to each allocator 30min after purging"/>
+  <suffix name="60min"
+      label="Constrained to each allocator 60min after purging"/>
+  <suffix name="90min"
+      label="Constrained to each allocator 90min after purging"/>
+  <affected-histogram name="PurgeAndSuspend.Experimental.MemoryGrowth">
+    <with-suffix name="BlinkGCKB"/>
+    <with-suffix name="DiscardableKB"/>
+    <with-suffix name="MallocKB"/>
+    <with-suffix name="PartitionAllocKB"/>
+    <with-suffix name="TotalAllocatedKB"/>
+    <with-suffix name="V8MainThreadIsolateKB"/>
+  </affected-histogram>
 </histogram_suffixes>
 
 <histogram_suffixes name="QueryTimeSuffix" separator=".">
