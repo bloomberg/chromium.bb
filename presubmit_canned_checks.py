@@ -39,39 +39,13 @@ BLACKLIST_LINT_FILTERS = [
 
 ### Description checks
 
-def CheckChangeHasTestField(input_api, output_api):
-  """Requires that the changelist have a TEST= field."""
-  if input_api.change.TEST:
-    return []
-  else:
-    return [output_api.PresubmitNotifyResult(
-        'If this change requires manual test instructions to QA team, add '
-        'TEST=[instructions].')]
-
-
 def CheckChangeHasBugField(input_api, output_api):
-  """Requires that the changelist have a BUG= field."""
-  if input_api.change.BUG:
+  """Requires that the changelist have a Bug: field."""
+  if input_api.change.BugsFromDescription():
     return []
   else:
     return [output_api.PresubmitNotifyResult(
-        'If this change has an associated bug, add BUG=[bug number].')]
-
-
-def CheckChangeHasTestedField(input_api, output_api):
-  """Requires that the changelist have a TESTED= field."""
-  if input_api.change.TESTED:
-    return []
-  else:
-    return [output_api.PresubmitError('Changelist must have a TESTED= field.')]
-
-
-def CheckChangeHasQaField(input_api, output_api):
-  """Requires that the changelist have a QA= field."""
-  if input_api.change.QA:
-    return []
-  else:
-    return [output_api.PresubmitError('Changelist must have a QA= field.')]
+        'If this change has an associated bug, add Bug: [bug number].')]
 
 
 def CheckDoNotSubmitInDescription(input_api, output_api):
@@ -948,10 +922,8 @@ def _GetRietveldIssueProps(input_api, messages):
 def _ReviewersFromChange(change):
   """Return the reviewers specified in the |change|, if any."""
   reviewers = set()
-  if change.R:
-    reviewers.update(set([r.strip() for r in change.R.split(',')]))
-  if change.TBR:
-    reviewers.update(set([r.strip() for r in change.TBR.split(',')]))
+  reviewers.update(change.ReviewersFromDescription())
+  reviewers.update(change.TBRsFromDescription())
 
   # Drop reviewers that aren't specified in email address format.
   return set(reviewer for reviewer in reviewers if '@' in reviewer)

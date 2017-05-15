@@ -873,6 +873,30 @@ class Change(object):
       raise AttributeError(self, attr)
     return self.tags.get(attr)
 
+  # TODO(agable): Update these to also get "Git-Footer: Foo"-style footers.
+  def BugsFromDescription(self):
+    """Returns all bugs referenced in the commit description."""
+    return [b.strip() for b in self.tags.get('BUG', '').split(',') if b.strip()]
+
+  def ReviewersFromDescription(self):
+    """Returns all reviewers listed in the commit description."""
+    return [r.strip() for r in self.tags.get('R', '').split(',') if r.strip()]
+
+  def TBRsFromDescription(self):
+    """Returns all TBR reviewers listed in the commit description."""
+    return [r.strip() for r in self.tags.get('TBR', '').split(',') if r.strip()]
+
+  # TODO(agable): Delete these once we're sure they're unused.
+  @property
+  def BUG(self):
+    return ','.join(self.BugsFromDescription())
+  @property
+  def R(self):
+    return ','.join(self.ReviewersFromDescription())
+  @property
+  def TBR(self):
+    return ','.join(self.TBRsFromDescription())
+
   def AllFiles(self, root=None):
     """List all files under source control in the repo."""
     raise NotImplementedError()

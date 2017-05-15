@@ -40,9 +40,9 @@ class PresubmitTestsBase(SuperMoxTestBase):
   """Sets up and tears down the mocks but doesn't test anything as-is."""
   presubmit_text = """
 def CheckChangeOnUpload(input_api, output_api):
-  if input_api.change.ERROR:
+  if input_api.change.tags.get('ERROR'):
     return [output_api.PresubmitError("!!")]
-  if input_api.change.PROMPT_WARNING:
+  if input_api.change.tags.get('PROMPT_WARNING'):
     return [output_api.PresubmitPromptWarning("??")]
   else:
     return ()
@@ -304,7 +304,6 @@ class PresubmitUnittest(PresubmitTestsBase):
     description_lines = ('Hello there',
                          'this is a change',
                          'BUG=123',
-                         ' STORY =http://foo/  \t',
                          'and some more regular text  \t')
     unified_diff = [
         'diff --git binary_a.png binary_a.png',
@@ -430,9 +429,7 @@ class PresubmitUnittest(PresubmitTestsBase):
     self.failUnless(change.FullDescriptionText() ==
                     '\n'.join(description_lines))
 
-    self.failUnless(change.BUG == '123')
-    self.failUnless(change.STORY == 'http://foo/')
-    self.failUnless(change.BLEH == None)
+    self.failUnless(change.BugsFromDescription() == ['123'])
 
     self.failUnless(len(change.AffectedFiles()) == 7)
     self.failUnless(len(change.AffectedFiles()) == 7)
@@ -496,7 +493,7 @@ class PresubmitUnittest(PresubmitTestsBase):
   def testExecPresubmitScript(self):
     description_lines = ('Hello there',
                          'this is a change',
-                         'STORY=http://tracker/123')
+                         'BUG=123')
     files = [
       ['A', 'foo\\blat.cc'],
     ]
@@ -530,17 +527,8 @@ class PresubmitUnittest(PresubmitTestsBase):
 
     self.failIf(executer.ExecPresubmitScript(
       ('def CheckChangeOnUpload(input_api, output_api):\n'
-       '  if not input_api.change.STORY:\n'
+       '  if not input_api.change.BugsFromDescription():\n'
        '    return (output_api.PresubmitError("!!"))\n'
-       '  else:\n'
-       '    return ()'),
-      fake_presubmit
-    ))
-
-    self.failUnless(executer.ExecPresubmitScript(
-      ('def CheckChangeOnCommit(input_api, output_api):\n'
-       '  if not input_api.change.ERROR:\n'
-       '    return [output_api.PresubmitError("!!")]\n'
        '  else:\n'
        '    return ()'),
       fake_presubmit
@@ -741,10 +729,6 @@ def CheckChangeOnUpload(input_api, output_api):
     return [output_api.PresubmitError('Tag parsing failed. 1')]
   if input_api.change.tags['STORY'] != 'http://tracker.com/42':
     return [output_api.PresubmitError('Tag parsing failed. 2')]
-  if input_api.change.BUG != 'boo':
-    return [output_api.PresubmitError('Tag parsing failed. 6')]
-  if input_api.change.STORY != 'http://tracker.com/42':
-    return [output_api.PresubmitError('Tag parsing failed. 7')]
   try:
     y = False
     x = input_api.change.invalid
@@ -1588,6 +1572,8 @@ class ChangeUnittest(PresubmitTestsBase):
         'AllFiles', 'DescriptionText', 'FullDescriptionText',
         'LocalPaths', 'Name', 'OriginalOwnersFiles', 'RepositoryRoot',
         'RightHandSideLines', 'SetDescriptionText', 'TAG_LINE_RE',
+        'BUG', 'R', 'TBR', 'BugsFromDescription',
+        'ReviewersFromDescription', 'TBRsFromDescription',
         'author_email', 'issue', 'patchset', 'scm', 'tags',
     ]
     # If this test fails, you should add the relevant test.
@@ -1603,7 +1589,6 @@ class ChangeUnittest(PresubmitTestsBase):
     self.assertEquals('foo1', change.Name())
     self.assertEquals('foo2', change.DescriptionText())
     self.assertEquals('foo3', change.author_email)
-    self.assertEquals('ro', change.DRU)
     self.assertEquals(3, change.issue)
     self.assertEquals(5, change.patchset)
     self.assertEquals(self.fake_root_dir, change.RepositoryRoot())
@@ -1615,13 +1600,10 @@ class ChangeUnittest(PresubmitTestsBase):
         '', 'foo\nDRU=ro', self.fake_root_dir, [], 3, 5, '')
     self.assertEquals('foo', change.DescriptionText())
     self.assertEquals('foo\nDRU=ro', change.FullDescriptionText())
-    self.assertEquals('ro', change.DRU)
 
     change.SetDescriptionText('bar\nWHIZ=bang')
     self.assertEquals('bar', change.DescriptionText())
     self.assertEquals('bar\nWHIZ=bang', change.FullDescriptionText())
-    self.assertEquals('bang', change.WHIZ)
-    self.assertFalse(change.DRU)
 
 
 def CommHelper(input_api, cmd, ret=None, **kwargs):
@@ -1684,8 +1666,6 @@ class CannedChecksUnittest(PresubmitTestsBase):
       'CheckChangeHasOnlyOneEol', 'CheckChangeHasNoCR',
       'CheckChangeHasNoCrAndHasOnlyOneEol', 'CheckChangeHasNoTabs',
       'CheckChangeTodoHasOwner',
-      'CheckChangeHasQaField', 'CheckChangeHasTestedField',
-      'CheckChangeHasTestField',
       'CheckChangeLintsClean',
       'CheckChangeWasUploaded',
       'CheckDoNotSubmit',
@@ -1819,24 +1799,6 @@ class CannedChecksUnittest(PresubmitTestsBase):
                          'Bleh', '',
                          presubmit.OutputApi.PresubmitError,
                          True)
-
-  def testCannedCheckChangeHasTestField(self):
-    self.DescriptionTest(presubmit_canned_checks.CheckChangeHasTestField,
-                         'Foo\nTEST=did some stuff', 'Foo\n',
-                         presubmit.OutputApi.PresubmitNotifyResult,
-                         False)
-
-  def testCannedCheckChangeHasTestedField(self):
-    self.DescriptionTest(presubmit_canned_checks.CheckChangeHasTestedField,
-                         'Foo\nTESTED=did some stuff', 'Foo\n',
-                         presubmit.OutputApi.PresubmitError,
-                         False)
-
-  def testCannedCheckChangeHasQAField(self):
-    self.DescriptionTest(presubmit_canned_checks.CheckChangeHasQaField,
-                         'Foo\nQA=BSOD your machine', 'Foo\n',
-                         presubmit.OutputApi.PresubmitError,
-                         False)
 
   def testCannedCheckDoNotSubmitInDescription(self):
     self.DescriptionTest(presubmit_canned_checks.CheckDoNotSubmitInDescription,
@@ -2298,8 +2260,8 @@ class CannedChecksUnittest(PresubmitTestsBase):
     change = self.mox.CreateMock(presubmit.Change)
     change.issue = issue
     change.author_email = 'john@example.com'
-    change.R = ','.join(manually_specified_reviewers)
-    change.TBR = ''
+    change.ReviewersFromDescription = lambda: manually_specified_reviewers
+    change.TBRsFromDescription = lambda: []
     change.RepositoryRoot = lambda: None
     affected_file = self.mox.CreateMock(presubmit.GitAffectedFile)
     input_api = self.MockInputApi(change, False)
