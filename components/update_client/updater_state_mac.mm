@@ -30,8 +30,9 @@ base::scoped_nsobject<T> GetUpdaterSettingsValue(NSString* value_name) {
   CFStringRef app_id = CFSTR("com.google.Keystone.Agent");
   base::ScopedCFTypeRef<CFPropertyListRef> plist(
       CFPreferencesCopyAppValue(base::mac::NSToCFCast(value_name), app_id));
-  T* value = base::mac::ObjCCastStrict<T>(static_cast<id>(plist.get()));
-  return base::scoped_nsobject<T>(value);
+  return base::scoped_nsobject<T>(
+      base::mac::ObjCCastStrict<T>(static_cast<id>(plist.get())),
+      base::scoped_policy::RETAIN);
 }
 
 base::Time GetUpdaterSettingsTime(NSString* value_name) {
