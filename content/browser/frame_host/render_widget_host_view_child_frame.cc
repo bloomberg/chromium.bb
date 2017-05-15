@@ -488,7 +488,11 @@ void RenderWidgetHostViewChildFrame::ProcessMouseEvent(
 void RenderWidgetHostViewChildFrame::ProcessMouseWheelEvent(
     const blink::WebMouseWheelEvent& event,
     const ui::LatencyInfo& latency) {
-  if (event.delta_x != 0 || event.delta_y != 0)
+  if (event.delta_x != 0 || event.delta_y != 0 ||
+      event.phase == blink::WebMouseWheelEvent::kPhaseEnded ||
+      event.phase == blink::WebMouseWheelEvent::kPhaseCancelled ||
+      event.momentum_phase == blink::WebMouseWheelEvent::kPhaseEnded ||
+      event.momentum_phase == blink::WebMouseWheelEvent::kPhaseCancelled)
     host_->ForwardWheelEventWithLatencyInfo(event, latency);
 }
 
