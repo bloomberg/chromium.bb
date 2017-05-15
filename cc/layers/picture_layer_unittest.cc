@@ -308,7 +308,6 @@ TEST(PictureLayerTest, NonMonotonicSourceFrameNumber) {
 
   auto animation_host2 = AnimationHost::CreateForTesting(ThreadInstance::MAIN);
 
-  // TODO(sad): InitParams will be movable.
   LayerTreeHost::InitParams params2;
   params2.client = &host_client1;
   params2.settings = &settings;
