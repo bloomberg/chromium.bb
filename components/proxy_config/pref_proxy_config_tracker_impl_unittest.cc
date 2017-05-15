@@ -74,22 +74,22 @@ class MockObserver : public net::ProxyConfigService::Observer {
 
 class PrefProxyConfigTrackerImplTest : public testing::Test {
  protected:
-  PrefProxyConfigTrackerImplTest() {
+  PrefProxyConfigTrackerImplTest() {}
+
+  // Initializes the proxy config service. The delegate config service has the
+  // specified initial config availability.
+  void InitConfigService(net::ProxyConfigService::ConfigAvailability
+                             delegate_config_availability) {
     pref_service_.reset(new TestingPrefServiceSimple());
     PrefProxyConfigTrackerImpl::RegisterPrefs(pref_service_->registry());
     fixed_config_.set_pac_url(GURL(kFixedPacUrl));
     delegate_service_ =
-        new TestProxyConfigService(fixed_config_,
-                                   net::ProxyConfigService::CONFIG_VALID);
+        new TestProxyConfigService(fixed_config_, delegate_config_availability);
     proxy_config_tracker_.reset(new PrefProxyConfigTrackerImpl(
         pref_service_.get(), base::ThreadTaskRunnerHandle::Get()));
     proxy_config_service_ =
         proxy_config_tracker_->CreateTrackingProxyConfigService(
             std::unique_ptr<net::ProxyConfigService>(delegate_service_));
-    // SetProxyConfigServiceImpl triggers update of initial prefs proxy
-    // config by tracker to chrome proxy config service, so flush all pending
-    // tasks so that tests start fresh.
-    base::RunLoop().RunUntilIdle();
   }
 
   ~PrefProxyConfigTrackerImplTest() override {
@@ -104,12 +104,11 @@ class PrefProxyConfigTrackerImplTest : public testing::Test {
   TestProxyConfigService* delegate_service_; // weak
   std::unique_ptr<net::ProxyConfigService> proxy_config_service_;
   net::ProxyConfig fixed_config_;
-
- private:
   std::unique_ptr<PrefProxyConfigTrackerImpl> proxy_config_tracker_;
 };
 
 TEST_F(PrefProxyConfigTrackerImplTest, BaseConfiguration) {
+  InitConfigService(net::ProxyConfigService::CONFIG_VALID);
   net::ProxyConfig actual_config;
   EXPECT_EQ(net::ProxyConfigService::CONFIG_VALID,
             proxy_config_service_->GetLatestProxyConfig(&actual_config));
@@ -117,6 +116,7 @@ TEST_F(PrefProxyConfigTrackerImplTest, BaseConfiguration) {
 }
 
 TEST_F(PrefProxyConfigTrackerImplTest, DynamicPrefOverrides) {
+  InitConfigService(net::ProxyConfigService::CONFIG_VALID);
   pref_service_->SetManagedPref(proxy_config::prefs::kProxy,
                                 ProxyConfigDictionary::CreateFixedServers(
                                     "http://example.com:3128", std::string()));
@@ -149,6 +149,7 @@ MATCHER_P(ProxyConfigMatches, config, "") {
 }
 
 TEST_F(PrefProxyConfigTrackerImplTest, Observers) {
+  InitConfigService(net::ProxyConfigService::CONFIG_VALID);
   const net::ProxyConfigService::ConfigAvailability CONFIG_VALID =
       net::ProxyConfigService::CONFIG_VALID;
   MockObserver observer;
@@ -204,6 +205,7 @@ TEST_F(PrefProxyConfigTrackerImplTest, Observers) {
 }
 
 TEST_F(PrefProxyConfigTrackerImplTest, Fallback) {
+  InitConfigService(net::ProxyConfigService::CONFIG_VALID);
   const net::ProxyConfigService::ConfigAvailability CONFIG_VALID =
       net::ProxyConfigService::CONFIG_VALID;
   MockObserver observer;
@@ -257,6 +259,7 @@ TEST_F(PrefProxyConfigTrackerImplTest, Fallback) {
 }
 
 TEST_F(PrefProxyConfigTrackerImplTest, ExplicitSystemSettings) {
+  InitConfigService(net::ProxyConfigService::CONFIG_VALID);
   pref_service_->SetRecommendedPref(proxy_config::prefs::kProxy,
                                     ProxyConfigDictionary::CreateAutoDetect());
   pref_service_->SetUserPref(proxy_config::prefs::kProxy,
@@ -268,6 +271,36 @@ TEST_F(PrefProxyConfigTrackerImplTest, ExplicitSystemSettings) {
   EXPECT_EQ(net::ProxyConfigService::CONFIG_VALID,
             proxy_config_service_->GetLatestProxyConfig(&actual_config));
   EXPECT_EQ(GURL(kFixedPacUrl), actual_config.pac_url());
+}
+
+// Test the case where the delegate service gets a config only after the service
+// is created.
+TEST_F(PrefProxyConfigTrackerImplTest, DelegateConfigServiceGetsConfigLate) {
+  InitConfigService(net::ProxyConfigService::CONFIG_PENDING);
+
+  testing::StrictMock<MockObserver> observer;
+  proxy_config_service_->AddObserver(&observer);
+
+  net::ProxyConfig actual_config;
+  EXPECT_EQ(net::ProxyConfigService::CONFIG_PENDING,
+            proxy_config_service_->GetLatestProxyConfig(&actual_config));
+
+  // When the delegate service gets the config, the other service should update
+  // its observers.
+  EXPECT_CALL(observer,
+              OnProxyConfigChanged(ProxyConfigMatches(fixed_config_),
+                                   net::ProxyConfigService::CONFIG_VALID))
+      .Times(1);
+  delegate_service_->SetProxyConfig(fixed_config_,
+                                    net::ProxyConfigService::CONFIG_VALID);
+
+  // Since no prefs were set, should just use the delegated config service's
+  // settings.
+  EXPECT_EQ(net::ProxyConfigService::CONFIG_VALID,
+            proxy_config_service_->GetLatestProxyConfig(&actual_config));
+  EXPECT_EQ(GURL(kFixedPacUrl), actual_config.pac_url());
+
+  proxy_config_service_->RemoveObserver(&observer);
 }
 
 }  // namespace

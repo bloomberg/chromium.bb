@@ -36,10 +36,9 @@ class PrefRegistrySyncable;
 class ProxyConfigServiceImpl : public net::ProxyConfigService,
                                public net::ProxyConfigService::Observer {
  public:
-  // Takes ownership of the passed |base_service|.
-  // GetLatestProxyConfig returns ConfigAvailability::CONFIG_PENDING until
-  // UpdateProxyConfig has been called.
-  explicit ProxyConfigServiceImpl(net::ProxyConfigService* base_service);
+  ProxyConfigServiceImpl(std::unique_ptr<net::ProxyConfigService> base_service,
+                         ProxyPrefs::ConfigState initial_config_state,
+                         const net::ProxyConfig& initial_config);
   ~ProxyConfigServiceImpl() override;
 
   // ProxyConfigService implementation:
@@ -70,10 +69,6 @@ class ProxyConfigServiceImpl : public net::ProxyConfigService,
 
   // Configuration as defined by prefs.
   net::ProxyConfig pref_config_;
-
-  // Flag that indicates that a PrefProxyConfigTracker needs to inform us
-  // about a proxy configuration before we may return any configuration.
-  bool pref_config_read_pending_;
 
   // Indicates whether the base service registration is done.
   bool registered_observer_;

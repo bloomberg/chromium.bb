@@ -29,7 +29,7 @@ class PROXY_CONFIG_EXPORT PrefProxyConfigTracker {
   // before DetachFromPrefService was called. Takes ownership of the passed
   // |base_service|, which can be NULL. This |base_service| provides the proxy
   // settings of the OS (except of ChromeOS). This must be called on the
-  // UI thread.
+  // UI thread.  May only be called once on a PrefProxyConfigTracker.
   virtual std::unique_ptr<net::ProxyConfigService>
   CreateTrackingProxyConfigService(
       std::unique_ptr<net::ProxyConfigService> base_service) = 0;
