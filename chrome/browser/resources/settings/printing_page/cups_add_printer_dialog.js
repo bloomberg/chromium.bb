@@ -33,6 +33,25 @@ var AddPrinterDialogs = {
  */
 var kPrinterListFullHeight = 350;
 
+/**
+ * Return a reset CupsPrinterInfo object.
+ *  @return {!CupsPrinterInfo}
+ */
+function getEmptyPrinter_() {
+  return {
+    printerAddress: '',
+    printerDescription: '',
+    printerId: '',
+    printerManufacturer: '',
+    printerModel: '',
+    printerName: '',
+    printerPPDPath: '',
+    printerProtocol: 'ipp',
+    printerQueue: '',
+    printerStatus: '',
+  };
+}
+
 Polymer({
   is: 'add-printer-discovery-dialog',
 
@@ -99,6 +118,9 @@ Polymer({
   /** @private */
   switchToManualAddDialog_: function() {
     this.stopDiscoveringPrinters_();
+    // We're abandoning discovery in favor of manual specification, so
+    // drop the selection if one exists.
+    this.selectedPrinter = getEmptyPrinter_();
     this.$$('add-printer-dialog').close();
     this.fire('open-manually-add-printer-dialog');
   },
@@ -110,10 +132,16 @@ Polymer({
   },
 
   /** @private */
-  switchToConfiguringDialog_: function() {
+  switchToManufacturerDialog_: function() {
     this.stopDiscoveringPrinters_();
+    // If we're switching to the manufacturer/model dialog, clear the existing
+    // data we have about the PPD (if any), as we're dropping that in favor of
+    // user selections.
+    this.selectedPrinter.printerManufacturer = '';
+    this.selectedPrinter.printerModel = '';
+    this.selectedPrinter.printerPPDPath = '';
     this.$$('add-printer-dialog').close();
-    this.fire('open-configuring-printer-dialog');
+    this.fire('open-manufacturer-model-dialog');
   },
 });
 
@@ -125,20 +153,7 @@ Polymer({
     newPrinter: {
       type: Object,
       notify: true,
-      value: function() {
-        return {
-          printerAddress: '',
-          printerDescription: '',
-          printerId: '',
-          printerManufacturer: '',
-          printerModel: '',
-          printerName: '',
-          printerPPDPath: '',
-          printerProtocol: 'ipp',
-          printerQueue: '',
-          printerStatus: '',
-        };
-      },
+      value: getEmptyPrinter_
     },
   },
 
@@ -198,6 +213,9 @@ Polymer({
     modelList: {
       type: Array,
     },
+
+    /** @type {string} */
+    previousDialog: String,
 
     setupFailed: {
       type: Boolean,
@@ -265,9 +283,13 @@ Polymer({
   },
 
   /** @private */
-  switchToManualAddDialog_: function() {
+  switchToPreviousDialog_: function() {
     this.$$('add-printer-dialog').close();
-    this.fire('open-manually-add-printer-dialog');
+    if (this.previousDialog == AddPrinterDialogs.DISCOVERY) {
+      this.fire('open-discovery-printers-dialog');
+    } else if (this.previousDialog == AddPrinterDialogs.MANUALLY) {
+      this.fire('open-manually-add-printer-dialog');
+    }
   },
 
   /** @private */
@@ -334,11 +356,6 @@ Polymer({
 
   properties: {
     /** @type {!CupsPrinterInfo} */
-    selectedPrinter: {
-      type: Object,
-    },
-
-    /** @type {!CupsPrinterInfo} */
     newPrinter: {
       type: Object,
     },
@@ -351,8 +368,8 @@ Polymer({
 
     configuringDialogTitle: String,
 
-    /** @private {string} */
-    previousDialog_: String,
+    /** @type {string} */
+    previousDialog: String,
 
     /** @private {string} */
     currentDialog_: String,
@@ -386,8 +403,7 @@ Polymer({
   /** Opens the Add printer discovery dialog. */
   open: function() {
     this.resetData_();
-    this.switchDialog_(
-        '', AddPrinterDialogs.MANUALLY, 'showManuallyAddDialog_');
+    this.switchDialog_('', AddPrinterDialogs.DISCOVERY, 'showDiscoveryDialog_');
   },
 
   /**
@@ -395,30 +411,9 @@ Polymer({
    * @private
    */
   resetData_: function() {
-    if (this.selectedPrinter)
-      this.selectedPrinter = this.getEmptyPrinter_();
     if (this.newPrinter)
-      this.newPrinter = this.getEmptyPrinter_();
+      this.newPrinter = getEmptyPrinter_();
     this.setupFailed = false;
-  },
-
-  /**
-   * @return {!CupsPrinterInfo}
-   * @private
-   */
-  getEmptyPrinter_: function() {
-    return {
-      printerAddress: '',
-      printerDescription: '',
-      printerId: '',
-      printerManufacturer: '',
-      printerModel: '',
-      printerName: '',
-      printerPPDPath: '',
-      printerProtocol: 'ipp',
-      printerQueue: '',
-      printerStatus: '',
-    };
   },
 
   /** @private */
@@ -438,12 +433,12 @@ Polymer({
     this.switchDialog_(
         this.currentDialog_, AddPrinterDialogs.CONFIGURING,
         'showConfiguringDialog_');
-    if (this.previousDialog_ == AddPrinterDialogs.DISCOVERY) {
+    if (this.previousDialog == AddPrinterDialogs.DISCOVERY) {
       this.configuringDialogTitle =
           loadTimeData.getString('addPrintersNearbyTitle');
       settings.CupsPrintersBrowserProxyImpl.getInstance().addCupsPrinter(
-          this.selectedPrinter);
-    } else if (this.previousDialog_ == AddPrinterDialogs.MANUFACTURER) {
+          this.newPrinter);
+    } else if (this.previousDialog == AddPrinterDialogs.MANUFACTURER) {
       this.configuringDialogTitle =
           loadTimeData.getString('addPrintersManuallyTitle');
       settings.CupsPrintersBrowserProxyImpl.getInstance().addCupsPrinter(
@@ -459,12 +454,21 @@ Polymer({
 
   /** @private */
   configuringDialogClosed_: function() {
-    if (this.previousDialog_ == AddPrinterDialogs.MANUALLY) {
+    // If the configuring dialog is closed, we want to return whence we came.
+    //
+    // TODO(justincarlson) - This shouldn't need to be a conditional;
+    // clean up the way we switch dialogs so we don't have to supply
+    // redundant information and can just return to the previous
+    // dialog.
+    if (this.previousDialog == AddPrinterDialogs.DISCOVERY) {
       this.switchDialog_(
-          this.currentDialog_, this.previousDialog_, 'showManuallyAddDialog_');
-    } else if (this.previousDialog_ == AddPrinterDialogs.MANUFACTURER) {
+          this.currentDialog_, this.previousDialog, 'showDiscoveryDialog_');
+    } else if (this.previousDialog == AddPrinterDialogs.MANUALLY) {
       this.switchDialog_(
-          this.currentDialog_, this.previousDialog_, 'showManufacturerDialog_');
+          this.currentDialog_, this.previousDialog, 'showManuallyAddDialog_');
+    } else if (this.previousDialog == AddPrinterDialogs.MANUFACTURER) {
+      this.switchDialog_(
+          this.currentDialog_, this.previousDialog, 'showManufacturerDialog_');
     }
   },
 
@@ -477,7 +481,7 @@ Polymer({
    * @private
    */
   switchDialog_: function(fromDialog, toDialog, domIfBooleanName) {
-    this.previousDialog_ = fromDialog;
+    this.previousDialog = fromDialog;
     this.currentDialog_ = toDialog;
 
     this.set(domIfBooleanName, true);
@@ -490,20 +494,6 @@ Polymer({
   },
 
   /**
-   * @return {string} The name of the current printer in configuration.
-   * @private
-   */
-  getConfiguringPrinterName_: function() {
-    if (this.previousDialog_ == AddPrinterDialogs.DISCOVERY)
-      return this.selectedPrinter.printerName;
-    if (this.previousDialog_ == AddPrinterDialogs.MANUALLY ||
-        this.previousDialog_ == AddPrinterDialogs.MANUFACTURER) {
-      return this.newPrinter.printerName;
-    }
-    return '';
-  },
-
-  /**
    * @param {boolean} success
    * @param {string} printerName
    * @private
@@ -513,7 +503,7 @@ Polymer({
     if (success)
       return;
 
-    if (this.previousDialog_ == AddPrinterDialogs.MANUFACTURER) {
+    if (this.previousDialog == AddPrinterDialogs.MANUFACTURER) {
       this.setupFailed = true;
     }
   },
