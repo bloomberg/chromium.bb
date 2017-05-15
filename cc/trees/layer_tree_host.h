@@ -67,8 +67,6 @@ struct ScrollAndScaleSet;
 class CC_EXPORT LayerTreeHost : public NON_EXPORTED_BASE(SurfaceReferenceOwner),
                                 public NON_EXPORTED_BASE(MutatorHostClient) {
  public:
-  // TODO(sad): InitParams should be a movable type so that it can be
-  // std::move()d to the Create* functions.
   struct CC_EXPORT InitParams {
     LayerTreeHostClient* client = nullptr;
     TaskGraphRunner* task_graph_runner = nullptr;
