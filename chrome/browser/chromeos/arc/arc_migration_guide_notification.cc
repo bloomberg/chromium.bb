@@ -88,9 +88,17 @@ void ShowArcMigrationSuccessNotificationIfNeeded(Profile* profile) {
   if (pref_value != kFileSystemCompatible)
     return;
 
-  // If this is a newly created profile, the filesystem was compatible from
-  // the beginning, not because of migration. Skip showing the notification.
-  if (!profile->IsNewProfile()) {
+  if (profile->IsNewProfile()) {
+    // If this is a newly created profile, the filesystem was compatible from
+    // the beginning, not because of migration. Skip showing the notification.
+  } else if (!arc::IsArcAllowedForProfile(profile)) {
+    // TODO(kinaba; crbug.com/721631): the current message mentions ARC,
+    // which is inappropriate for users disallowed running ARC.
+
+    // Log a warning message because, for now, this should not basically happen
+    // except for some exceptional situation or due to some bug.
+    LOG(WARNING) << "Migration has happend for an ARC-disallowed user.";
+  } else {
     message_center::NotifierId notifier_id(
         message_center::NotifierId::SYSTEM_COMPONENT, kNotifierId);
     notifier_id.profile_id = account_id.GetUserEmail();
