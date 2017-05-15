@@ -25,6 +25,10 @@ void LoadingPredictor::CancelPageLoadHint(const GURL& url) {
   resource_prefetch_predictor_->StopPrefetching(url);
 }
 
+void LoadingPredictor::StartInitialization() {
+  resource_prefetch_predictor_->StartInitialization();
+}
+
 ResourcePrefetchPredictor* LoadingPredictor::resource_prefetch_predictor()
     const {
   return resource_prefetch_predictor_.get();

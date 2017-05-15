@@ -1,8 +1,8 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/predictors/resource_prefetch_predictor_android.h"
+#include "chrome/browser/predictors/loading_predictor_android.h"
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
@@ -12,7 +12,7 @@
 
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_android.h"
-#include "jni/ResourcePrefetchPredictor_jni.h"
+#include "jni/LoadingPredictor_jni.h"
 
 using base::android::JavaParamRef;
 using base::android::ScopedJavaLocalRef;
@@ -36,14 +36,14 @@ static jboolean StartInitialization(JNIEnv* env,
   auto* loading_predictor = LoadingPredictorFromProfileAndroid(j_profile);
   if (!loading_predictor)
     return false;
-  loading_predictor->resource_prefetch_predictor()->StartInitialization();
+  loading_predictor->StartInitialization();
   return true;
 }
 
-static jboolean StartPrefetching(JNIEnv* env,
-                                 const JavaParamRef<jclass>& clazz,
-                                 const JavaParamRef<jobject>& j_profile,
-                                 const JavaParamRef<jstring>& j_url) {
+static jboolean PrepareForPageLoad(JNIEnv* env,
+                                   const JavaParamRef<jclass>& clazz,
+                                   const JavaParamRef<jobject>& j_profile,
+                                   const JavaParamRef<jstring>& j_url) {
   auto* loading_predictor = LoadingPredictorFromProfileAndroid(j_profile);
   if (!loading_predictor)
     return false;
@@ -53,10 +53,10 @@ static jboolean StartPrefetching(JNIEnv* env,
   return true;
 }
 
-static jboolean StopPrefetching(JNIEnv* env,
-                                const JavaParamRef<jclass>& clazz,
-                                const JavaParamRef<jobject>& j_profile,
-                                const JavaParamRef<jstring>& j_url) {
+static jboolean CancelPageLoadHint(JNIEnv* env,
+                                   const JavaParamRef<jclass>& clazz,
+                                   const JavaParamRef<jobject>& j_profile,
+                                   const JavaParamRef<jstring>& j_url) {
   auto* loading_predictor = LoadingPredictorFromProfileAndroid(j_profile);
   if (!loading_predictor)
     return false;
@@ -66,7 +66,7 @@ static jboolean StopPrefetching(JNIEnv* env,
   return true;
 }
 
-bool RegisterResourcePrefetchPredictor(JNIEnv* env) {
+bool RegisterLoadingPredictor(JNIEnv* env) {
   return RegisterNativesImpl(env);
 }
 

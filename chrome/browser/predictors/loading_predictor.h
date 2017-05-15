@@ -39,6 +39,9 @@ class LoadingPredictor : public KeyedService,
   // Indicates that a page load hint is no longer active.
   void CancelPageLoadHint(const GURL& url);
 
+  // Starts initialization, will complete asynchronously.
+  void StartInitialization();
+
   // Don't use, internal only.
   ResourcePrefetchPredictor* resource_prefetch_predictor() const;
 
