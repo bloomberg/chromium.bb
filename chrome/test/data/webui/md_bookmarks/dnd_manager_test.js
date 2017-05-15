@@ -471,4 +471,24 @@ suite('drag and drop', function() {
         DropPosition.NONE, dndManager.calculateValidDropPositions_(dragTarget));
     assertDragStyle(dragTarget, DRAG_STYLE.NONE);
   });
+
+  test('drag item selects/deselects items', function() {
+    store.setReducersEnabled(true);
+
+    store.data.selection.items = new Set(['13', '15']);
+    store.notifyObservers();
+
+    // Dragging an item not in the selection selects the dragged item and
+    // deselects the previous selection.
+    var dragElement = getListItem('14');
+    dispatchDragEvent('dragstart', dragElement);
+    assertDeepEquals(['14'], normalizeSet(store.data.selection.items));
+    dispatchDragEvent('dragend', dragElement);
+
+    // Dragging a folder node deselects any selected items in the bookmark list.
+    dragElement = getFolderNode('15');
+    dispatchDragEvent('dragstart', dragElement);
+    assertDeepEquals([], normalizeSet(store.data.selection.items));
+    dispatchDragEvent('dragend', dragElement);
+  });
 });

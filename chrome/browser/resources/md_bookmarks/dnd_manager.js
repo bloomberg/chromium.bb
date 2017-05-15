@@ -371,7 +371,6 @@ cr.define('bookmarks', function() {
         parentId = assert(node.parentId);
         index = state.nodes[parentId].children.indexOf(node.id);
 
-        // TODO(calamity): Handle dropping to an empty bookmark list.
         if (position == DropPosition.BELOW)
           index++;
       }
@@ -403,14 +402,23 @@ cr.define('bookmarks', function() {
       if (!dragElement)
         return;
 
+      var store = bookmarks.Store.getInstance();
+      var dragId = dragElement.itemId;
+
       // Determine the selected bookmarks.
-      var state = bookmarks.Store.getInstance().data;
+      var state = store.data;
       var draggedNodes = Array.from(state.selection.items);
 
+      // Change selection to the dragged node if the node is not part of the
+      // existing selection.
       if (isBookmarkFolderNode(dragElement) ||
-          draggedNodes.indexOf(dragElement.itemId) == -1) {
-        // TODO(calamity): clear current selection.
-        draggedNodes = [dragElement.itemId];
+          draggedNodes.indexOf(dragId) == -1) {
+        store.dispatch(bookmarks.actions.deselectItems());
+        if (!isBookmarkFolderNode(dragElement)) {
+          store.dispatch(
+              bookmarks.actions.selectItem(dragId, true, false, state));
+        }
+        draggedNodes = [dragId];
       }
 
       e.preventDefault();
