@@ -2055,6 +2055,12 @@ static void
 weston_wm_handle_focus_in(struct weston_wm *wm, xcb_generic_event_t *event)
 {
 	xcb_focus_in_event_t *focus = (xcb_focus_in_event_t *) event;
+
+	/* Do not interfere with grabs */
+	if (focus->mode == XCB_NOTIFY_MODE_GRAB ||
+	    focus->mode == XCB_NOTIFY_MODE_UNGRAB)
+		return;
+
 	/* Do not let X clients change the focus behind the compositor's
 	 * back. Reset the focus to the old one if it changed. */
 	if (!wm->focus_window || focus->event != wm->focus_window->id)
