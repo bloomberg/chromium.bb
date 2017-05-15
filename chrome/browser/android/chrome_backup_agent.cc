@@ -74,7 +74,8 @@ static void SetBoolBackupPrefs(
     const base::android::JavaParamRef<jbooleanArray>& values) {
   std::vector<std::string> pref_names;
   base::android::AppendJavaStringArrayToStringVector(env, names, &pref_names);
-  jboolean* pref_values = env->GetBooleanArrayElements(values, nullptr);
+  std::vector<bool> pref_values;
+  JavaBooleanArrayToBoolVector(env, values, &pref_values);
   std::unordered_set<std::string> valid_prefs(
       std::begin(backed_up_preferences_), std::end(backed_up_preferences_));
 
