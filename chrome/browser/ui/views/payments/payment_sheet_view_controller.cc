@@ -526,12 +526,7 @@ void PaymentSheetViewController::ButtonPressed(
 
     case static_cast<int>(
         PaymentSheetViewControllerTags::ADD_CONTACT_INFO_BUTTON):
-      dialog()->ShowContactInfoEditor(
-          BackNavigationType::kPaymentSheet,
-          /*on_edited=*/base::OnceClosure(),  // This is always an add.
-          /*on_added=*/
-          base::BindOnce(&PaymentRequestState::AddAutofillContactProfile,
-                         base::Unretained(state()), /*selected=*/true));
+      dialog()->ShowContactInfoEditor(BackNavigationType::kPaymentSheet);
       break;
 
     case static_cast<int>(

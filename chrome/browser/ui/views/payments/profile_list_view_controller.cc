@@ -245,15 +245,7 @@ class ContactProfileViewController : public ProfileListViewController {
   }
 
   void ShowEditor(autofill::AutofillProfile* profile) override {
-    dialog()->ShowContactInfoEditor(
-        BackNavigationType::kPaymentSheet,
-        /*on_edited=*/
-        base::BindOnce(&PaymentRequestState::SetSelectedContactProfile,
-                       base::Unretained(state()), profile),
-        /*on_added=*/
-        base::BindOnce(&PaymentRequestState::AddAutofillContactProfile,
-                       base::Unretained(state()), /*selected=*/true),
-        profile);
+    dialog()->ShowContactInfoEditor(BackNavigationType::kPaymentSheet, profile);
   }
 
   autofill::AutofillProfile* GetSelectedProfile() override {
