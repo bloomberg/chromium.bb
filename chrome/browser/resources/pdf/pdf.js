@@ -245,6 +245,8 @@ function PDFViewer(browserApi) {
   document.addEventListener('keydown', this.handleKeyEvent_.bind(this));
   document.addEventListener('mousemove', this.handleMouseEvent_.bind(this));
   document.addEventListener('mouseout', this.handleMouseEvent_.bind(this));
+  document.addEventListener('contextmenu',
+      this.handleContextMenuEvent_.bind(this));
 
   var tabId = this.browserApi_.getStreamInfo().tabId;
   this.navigator_ = new Navigator(
@@ -408,6 +410,17 @@ PDFViewer.prototype = {
       this.toolbarManager_.handleMouseMove(e);
     else if (e.type == 'mouseout')
       this.toolbarManager_.hideToolbarsForMouseOut();
+  },
+
+  handleContextMenuEvent_: function(e) {
+    // Stop Chrome from popping up the context menu on long press. We need to
+    // make sure the start event did not have 2 touches because we don't want
+    // to block two finger tap opening the context menu. We check for
+    // firesTouchEvents in order to not block the context menu on right click.
+    if (e.sourceCapabilities.firesTouchEvents &&
+        !this.gestureDetector_.wasTwoFingerTouch()) {
+      e.preventDefault();
+    }
   },
 
   /**

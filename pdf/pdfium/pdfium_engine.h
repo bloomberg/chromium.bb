@@ -24,17 +24,13 @@
 #include "ppapi/cpp/completion_callback.h"
 #include "ppapi/cpp/dev/buffer_dev.h"
 #include "ppapi/cpp/image_data.h"
+#include "ppapi/cpp/input_event.h"
 #include "ppapi/cpp/point.h"
 #include "ppapi/cpp/var_array.h"
 #include "third_party/pdfium/public/fpdf_dataavail.h"
 #include "third_party/pdfium/public/fpdf_formfill.h"
 #include "third_party/pdfium/public/fpdf_progressive.h"
 #include "third_party/pdfium/public/fpdfview.h"
-
-namespace pp {
-class KeyboardInputEvent;
-class MouseInputEvent;
-}
 
 namespace chrome_pdf {
 
@@ -90,6 +86,7 @@ class PDFiumEngine : public PDFEngine,
   int GetVerticalScrollbarYPosition() override;
   void SetGrayscale(bool grayscale) override;
   void OnCallback(int id) override;
+  void OnTouchTimerCallback(int id) override;
   int GetCharCount(int page_index) override;
   pp::FloatRect GetCharBounds(int page_index, int char_index) override;
   uint32_t GetCharUnicode(int page_index, int char_index) override;
@@ -445,6 +442,10 @@ class PDFiumEngine : public PDFEngine,
 
   bool PageIndexInBounds(int index) const;
 
+  void ScheduleTouchTimer(const pp::TouchInputEvent& event);
+  void KillTouchTimer(int timer_id);
+  void HandleLongPress(const pp::TouchInputEvent& event);
+
   // FPDF_FORMFILLINFO callbacks.
   static void Form_Invalidate(FPDF_FORMFILLINFO* param,
                               FPDF_PAGE page,
@@ -678,8 +679,12 @@ class PDFiumEngine : public PDFEngine,
 
   // Used to manage timers that form fill API needs.  The pair holds the timer
   // period, in ms, and the callback function.
-  std::map<int, std::pair<int, TimerCallback>> timers_;
-  int next_timer_id_;
+  std::map<int, std::pair<int, TimerCallback>> formfill_timers_;
+  int next_formfill_timer_id_;
+
+  // Used to manage timers for touch long press.
+  std::map<int, pp::TouchInputEvent> touch_timers_;
+  int next_touch_timer_id_;
 
   // Holds the zero-based page index of the last page that the mouse clicked on.
   int last_page_mouse_down_;
