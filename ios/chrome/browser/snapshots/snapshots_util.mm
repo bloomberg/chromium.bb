@@ -13,7 +13,7 @@
 #include "base/macros.h"
 #include "base/path_service.h"
 #include "base/strings/stringprintf.h"
-#include "ios/web/public/web_thread.h"
+#include "base/task_scheduler/post_task.h"
 
 namespace {
 const char* kOrientationDescriptions[] = {
@@ -30,9 +30,10 @@ void ClearIOSSnapshots() {
   std::vector<base::FilePath> snapshotsPaths;
   GetSnapshotsPaths(&snapshotsPaths);
   for (base::FilePath snapshotPath : snapshotsPaths) {
-    web::WebThread::PostBlockingPoolTask(
-        FROM_HERE,
-        base::Bind(base::IgnoreResult(&base::DeleteFile), snapshotPath, false));
+    base::PostTaskWithTraits(
+        FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
+        base::BindOnce(base::IgnoreResult(&base::DeleteFile), snapshotPath,
+                       false));
   }
 }
 
