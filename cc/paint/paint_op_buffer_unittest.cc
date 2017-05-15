@@ -7,6 +7,7 @@
 #include "cc/test/skia_common.h"
 #include "cc/test/test_skcanvas.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/skia/include/effects/SkDashPathEffect.h"
 
 namespace {
 
@@ -473,6 +474,56 @@ TEST(PaintOpBufferTest, DiscardableImagesTracking_OpWithFlags) {
       image->makeShader(SkShader::kClamp_TileMode, SkShader::kClamp_TileMode));
   buffer.push<DrawRectOp>(SkRect::MakeWH(100, 100), flags);
   EXPECT_TRUE(buffer.HasDiscardableImages());
+}
+
+TEST(PaintOpBufferTest, SlowPaths) {
+  auto buffer = sk_make_sp<PaintOpBuffer>();
+  EXPECT_EQ(buffer->numSlowPaths(), 0);
+
+  // Op without slow paths
+  PaintFlags noop_flags;
+  SkRect rect = SkRect::MakeXYWH(2, 3, 4, 5);
+  buffer->push<SaveLayerOp>(&rect, &noop_flags);
+
+  // Line op with a slow path
+  PaintFlags line_effect_slow;
+  line_effect_slow.setStrokeWidth(1.f);
+  line_effect_slow.setStyle(PaintFlags::kStroke_Style);
+  line_effect_slow.setStrokeCap(PaintFlags::kRound_Cap);
+  SkScalar intervals[] = {1.f, 1.f};
+  line_effect_slow.setPathEffect(SkDashPathEffect::Make(intervals, 2, 0));
+
+  buffer->push<DrawLineOp>(1.f, 2.f, 3.f, 4.f, line_effect_slow);
+  EXPECT_EQ(buffer->numSlowPaths(), 1);
+
+  // Line effect special case that Skia handles specially.
+  PaintFlags line_effect = line_effect_slow;
+  line_effect.setStrokeCap(PaintFlags::kButt_Cap);
+  buffer->push<DrawLineOp>(1.f, 2.f, 3.f, 4.f, line_effect);
+  EXPECT_EQ(buffer->numSlowPaths(), 1);
+
+  // Antialiased convex path is not slow.
+  SkPath path;
+  path.addCircle(2, 2, 5);
+  EXPECT_TRUE(path.isConvex());
+  buffer->push<ClipPathOp>(path, SkClipOp::kIntersect, true);
+  EXPECT_EQ(buffer->numSlowPaths(), 1);
+
+  // Concave paths are slow only when antialiased.
+  SkPath concave = path;
+  concave.addCircle(3, 4, 2);
+  EXPECT_FALSE(concave.isConvex());
+  buffer->push<ClipPathOp>(concave, SkClipOp::kIntersect, true);
+  EXPECT_EQ(buffer->numSlowPaths(), 2);
+  buffer->push<ClipPathOp>(concave, SkClipOp::kIntersect, false);
+  EXPECT_EQ(buffer->numSlowPaths(), 2);
+
+  // Drawing a record with slow paths into another adds the same
+  // number of slow paths as the record.
+  auto buffer2 = sk_make_sp<PaintOpBuffer>();
+  EXPECT_EQ(buffer2->numSlowPaths(), 0);
+  buffer2->push<DrawRecordOp>(buffer);
+  EXPECT_EQ(buffer->numSlowPaths(), buffer2->numSlowPaths());
 }
 
 }  // namespace cc
