@@ -5,7 +5,7 @@
 #import "ios/chrome/browser/ui/ntp/new_tab_page_view.h"
 
 #include "base/logging.h"
-#include "base/mac/objc_release_properties.h"
+#include "base/mac/objc_property_releaser.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_bar.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_bar_item.h"
 #import "ios/chrome/browser/ui/rtl_geometry.h"
@@ -17,6 +17,8 @@
   // subviews already.
   __unsafe_unretained NewTabPageBar* tabBar_;     // weak
   __unsafe_unretained UIScrollView* scrollView_;  // weak
+
+  base::mac::ObjCPropertyReleaser propertyReleaser_NewTabPageView_;
 }
 
 @synthesize scrollView = scrollView_;
@@ -27,6 +29,7 @@
                     andTabBar:(NewTabPageBar*)tabBar {
   self = [super initWithFrame:frame];
   if (self) {
+    propertyReleaser_NewTabPageView_.Init(self, [NewTabPageView class]);
     [self addSubview:scrollView];
     [self addSubview:tabBar];
     scrollView_ = scrollView;
@@ -43,11 +46,6 @@
 - (instancetype)initWithCoder:(NSCoder*)aDecoder {
   NOTREACHED();
   return nil;
-}
-
-- (void)dealloc {
-  base::mac::ReleaseProperties(self);
-  [super dealloc];
 }
 
 - (void)setFrame:(CGRect)frame {

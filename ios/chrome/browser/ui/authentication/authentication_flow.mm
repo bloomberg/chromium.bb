@@ -6,7 +6,7 @@
 
 #include "base/ios/weak_nsobject.h"
 #include "base/logging.h"
-#include "base/mac/objc_release_properties.h"
+#include "base/mac/objc_property_releaser.h"
 #include "base/mac/scoped_block.h"
 #include "base/mac/scoped_nsobject.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
@@ -101,6 +101,8 @@ NSError* IdentityMissingError() {
   // is in progress to ensure it outlives any attempt to destroy it in
   // |_signInCompletion|.
   base::scoped_nsobject<AuthenticationFlow> _selfRetainer;
+
+  base::mac::ObjCPropertyReleaser _propertyReleaser_AuthenticationFlow;
 }
 
 @synthesize handlingError = _handlingError;
@@ -122,13 +124,9 @@ NSError* IdentityMissingError() {
     _postSignInAction = postSignInAction;
     _presentingViewController.reset([presentingViewController retain]);
     _state = BEGIN;
+    _propertyReleaser_AuthenticationFlow.Init(self, [AuthenticationFlow class]);
   }
   return self;
-}
-
-- (void)dealloc {
-  base::mac::ReleaseProperties(self);
-  [super dealloc];
 }
 
 - (void)startSignInWithCompletion:(CompletionCallback)completion {

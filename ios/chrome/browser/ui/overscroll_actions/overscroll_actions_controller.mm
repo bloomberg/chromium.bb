@@ -8,7 +8,7 @@
 
 #include <algorithm>
 #include "base/logging.h"
-#include "base/mac/objc_release_properties.h"
+#include "base/mac/objc_property_releaser.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/metrics/histogram_macros.h"
 #import "ios/chrome/browser/ui/browser_view_controller.h"
@@ -168,6 +168,7 @@ NSString* const kOverscrollActionsDidEnd = @"OverscrollActionsDidStop";
   // The scrollview driving the OverscrollActionsController when not using
   // the scrollview from the CRWWebControllerObserver.
   base::scoped_nsobject<UIScrollView> _scrollview;
+  base::mac::ObjCPropertyReleaser _propertyReleaser_OverscrollActionsController;
 }
 
 // The view displayed over the header view holding the actions.
@@ -245,6 +246,8 @@ NSString* const kOverscrollActionsDidEnd = @"OverscrollActionsDidStop";
 - (instancetype)initWithScrollView:(UIScrollView*)scrollView {
   self = [super init];
   if (self) {
+    _propertyReleaser_OverscrollActionsController.Init(
+        self, [OverscrollActionsController class]);
     _overscrollActionView =
         [[OverscrollActionsView alloc] initWithFrame:CGRectZero];
     _overscrollActionView.delegate = self;
@@ -277,7 +280,6 @@ NSString* const kOverscrollActionsDidEnd = @"OverscrollActionsDidStop";
 - (void)dealloc {
   self.overscrollActionView.delegate = nil;
   [self invalidate];
-  base::mac::ReleaseProperties(self);
   [super dealloc];
 }
 

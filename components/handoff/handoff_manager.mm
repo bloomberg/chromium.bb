@@ -5,7 +5,7 @@
 #include "components/handoff/handoff_manager.h"
 
 #include "base/logging.h"
-#include "base/mac/objc_release_properties.h"
+#include "base/mac/objc_property_releaser.h"
 #include "base/mac/scoped_nsobject.h"
 #include "net/base/mac/url_conversions.h"
 
@@ -34,6 +34,7 @@
 @end
 
 @implementation HandoffManager {
+  base::mac::ObjCPropertyReleaser _propertyReleaser_HandoffManager;
   GURL _activeURL;
   NSUserActivity* _userActivity;
   handoff::Origin _origin;
@@ -52,6 +53,7 @@
 - (instancetype)init {
   self = [super init];
   if (self) {
+    _propertyReleaser_HandoffManager.Init(self, [HandoffManager class]);
 #if defined(OS_MACOSX) && !defined(OS_IOS)
     _origin = handoff::ORIGIN_MAC;
 #elif defined(OS_IOS)
@@ -61,11 +63,6 @@
 #endif
   }
   return self;
-}
-
-- (void)dealloc {
-  base::mac::ReleaseProperties(self);
-  [super dealloc];
 }
 
 - (void)updateActiveURL:(const GURL&)url {

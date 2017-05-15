@@ -16,7 +16,7 @@
 #include "base/logging.h"
 #import "base/mac/bundle_locations.h"
 #import "base/mac/foundation_util.h"
-#include "base/mac/objc_release_properties.h"
+#import "base/mac/objc_property_releaser.h"
 #include "base/mac/scoped_block.h"
 #import "base/mac/scoped_nsobject.h"
 #include "base/metrics/histogram_macros.h"
@@ -489,6 +489,8 @@ NSString* const kDummyToolbarBackgroundViewAnimationKey =
   // |YES| if there is card set animation being processed. For testing only.
   // Save last touch point used by new tab animation.
   CGPoint _lastTapPoint;
+
+  base::mac::ObjCPropertyReleaser _propertyReleaserStackViewController;
 }
 
 @synthesize activeCardSet = _activeCardSet;
@@ -511,6 +513,8 @@ NSString* const kDummyToolbarBackgroundViewAnimationKey =
   DCHECK(activeCardSet == otrCardSet || activeCardSet == mainCardSet);
   self = [super initWithNibName:nil bundle:nil];
   if (self) {
+    _propertyReleaserStackViewController.Init(self,
+                                              [StackViewController class]);
     [self setUpWithMainCardSet:mainCardSet
                     otrCardSet:otrCardSet
                  activeCardSet:activeCardSet];
@@ -812,7 +816,6 @@ NSString* const kDummyToolbarBackgroundViewAnimationKey =
   [_mainCardSet setObserver:nil];
   [_otrCardSet setObserver:nil];
   [self cleanUpViewsAndNotifications];
-  base::mac::ReleaseProperties(self);
   [super dealloc];
 }
 
