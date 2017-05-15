@@ -53,6 +53,10 @@
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/geometry/size.h"
 
+#if defined(OS_ANDROID)
+#include "content/browser/android/nfc_host.h"
+#endif
+
 struct ViewHostMsg_DateTimeDialogValue_Params;
 
 namespace service_manager {
@@ -510,6 +514,9 @@ class CONTENT_EXPORT WebContentsImpl
   device::GeolocationServiceContext* GetGeolocationServiceContext() override;
   device::mojom::WakeLockContext* GetWakeLockContext() override;
   device::mojom::WakeLockService* GetRendererWakeLock() override;
+#if defined(OS_ANDROID)
+  void GetNFC(device::nfc::mojom::NFCRequest request) override;
+#endif
   void EnterFullscreenMode(const GURL& origin) override;
   void ExitFullscreenMode(bool will_cause_resize) override;
   bool ShouldRouteMessageEvent(
@@ -1515,6 +1522,10 @@ class CONTENT_EXPORT WebContentsImpl
   std::unique_ptr<WakeLockContextHost> wake_lock_context_host_;
 
   device::mojom::WakeLockServicePtr renderer_wake_lock_;
+
+#if defined(OS_ANDROID)
+  std::unique_ptr<NFCHost> nfc_host_;
+#endif
 
   std::unique_ptr<ScreenOrientationProvider> screen_orientation_provider_;
 

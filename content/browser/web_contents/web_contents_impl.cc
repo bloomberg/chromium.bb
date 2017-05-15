@@ -2651,6 +2651,14 @@ device::mojom::WakeLockService* WebContentsImpl::GetRendererWakeLock() {
   return renderer_wake_lock_.get();
 }
 
+#if defined(OS_ANDROID)
+void WebContentsImpl::GetNFC(device::nfc::mojom::NFCRequest request) {
+  if (!nfc_host_)
+    nfc_host_.reset(new NFCHost(this));
+  nfc_host_->GetNFC(std::move(request));
+}
+#endif
+
 void WebContentsImpl::OnShowValidationMessage(
     RenderViewHostImpl* source,
     const gfx::Rect& anchor_in_root_view,
@@ -4341,10 +4349,6 @@ void WebContentsImpl::RenderFrameCreated(RenderFrameHost* render_frame_host) {
     render_frame_host->Send(
         new FrameMsg_EnableViewSourceMode(render_frame_host->GetRoutingID()));
   }
-#if defined(OS_ANDROID)
-  render_frame_host->GetInterfaceRegistry()->AddInterface(
-      GetJavaInterfaces()->CreateInterfaceFactory<device::nfc::mojom::NFC>());
-#endif
 }
 
 void WebContentsImpl::RenderFrameDeleted(RenderFrameHost* render_frame_host) {

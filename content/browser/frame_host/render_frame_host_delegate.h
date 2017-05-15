@@ -29,6 +29,7 @@
 
 #if defined(OS_ANDROID)
 #include "base/android/scoped_java_ref.h"
+#include "device/nfc/nfc.mojom.h"
 #endif
 
 class GURL;
@@ -193,6 +194,11 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
 
   // Gets the WakeLockService that serves wake lock requests from the renderer.
   virtual device::mojom::WakeLockService* GetRendererWakeLock();
+
+#if defined(OS_ANDROID)
+  // Gets an NFC implementation within the context of this delegate.
+  virtual void GetNFC(device::nfc::mojom::NFCRequest request);
+#endif
 
   // Notification that the frame wants to go into fullscreen mode.
   // |origin| represents the origin of the frame that requests fullscreen.

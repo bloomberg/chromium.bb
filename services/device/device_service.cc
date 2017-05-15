@@ -27,6 +27,7 @@
 #if defined(OS_ANDROID)
 #include "base/android/context_utils.h"
 #include "base/android/jni_android.h"
+#include "device/nfc/nfc_provider.mojom.h"
 #include "jni/InterfaceRegistrar_jni.h"
 #include "services/device/android/register_jni.h"
 #include "services/device/screen_orientation/screen_orientation_listener_android.h"
@@ -42,15 +43,16 @@ namespace device {
 std::unique_ptr<service_manager::Service> CreateDeviceService(
     scoped_refptr<base::SingleThreadTaskRunner> file_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
-    const WakeLockContextCallback& wake_lock_context_callback) {
+    const WakeLockContextCallback& wake_lock_context_callback,
+    const base::android::JavaRef<jobject>& java_nfc_delegate) {
   if (!EnsureJniRegistered()) {
     DLOG(ERROR) << "Failed to register JNI for Device Service";
     return nullptr;
   }
 
-  return base::MakeUnique<DeviceService>(std::move(file_task_runner),
-                                         std::move(io_task_runner),
-                                         wake_lock_context_callback);
+  return base::MakeUnique<DeviceService>(
+      std::move(file_task_runner), std::move(io_task_runner),
+      wake_lock_context_callback, java_nfc_delegate);
 }
 #else
 std::unique_ptr<service_manager::Service> CreateDeviceService(
@@ -65,11 +67,14 @@ std::unique_ptr<service_manager::Service> CreateDeviceService(
 DeviceService::DeviceService(
     scoped_refptr<base::SingleThreadTaskRunner> file_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
-    const WakeLockContextCallback& wake_lock_context_callback)
-    : java_interface_provider_initialized_(false),
-      file_task_runner_(std::move(file_task_runner)),
+    const WakeLockContextCallback& wake_lock_context_callback,
+    const base::android::JavaRef<jobject>& java_nfc_delegate)
+    : file_task_runner_(std::move(file_task_runner)),
       io_task_runner_(std::move(io_task_runner)),
-      wake_lock_context_callback_(wake_lock_context_callback) {}
+      wake_lock_context_callback_(wake_lock_context_callback),
+      java_interface_provider_initialized_(false) {
+  java_nfc_delegate_.Reset(java_nfc_delegate);
+}
 #else
 DeviceService::DeviceService(
     scoped_refptr<base::SingleThreadTaskRunner> file_task_runner,
@@ -113,10 +118,15 @@ void DeviceService::OnStart() {
                              ->CreateInterfaceFactory<mojom::BatteryMonitor>());
   registry_.AddInterface(
       GetJavaInterfaceProvider()
+          ->CreateInterfaceFactory<nfc::mojom::NFCProvider>());
+  registry_.AddInterface(
+      GetJavaInterfaceProvider()
           ->CreateInterfaceFactory<mojom::VibrationManager>());
 #else
   registry_.AddInterface<mojom::BatteryMonitor>(base::Bind(
       &DeviceService::BindBatteryMonitorRequest, base::Unretained(this)));
+  registry_.AddInterface<nfc::mojom::NFCProvider>(base::Bind(
+      &DeviceService::BindNFCProviderRequest, base::Unretained(this)));
   registry_.AddInterface<mojom::VibrationManager>(base::Bind(
       &DeviceService::BindVibrationManagerRequest, base::Unretained(this)));
 #endif
@@ -135,6 +145,13 @@ void DeviceService::BindBatteryMonitorRequest(
     const service_manager::BindSourceInfo& source_info,
     mojom::BatteryMonitorRequest request) {
   BatteryMonitorImpl::Create(std::move(request));
+}
+
+void DeviceService::BindNFCProviderRequest(
+    const service_manager::BindSourceInfo& source_info,
+    nfc::mojom::NFCProviderRequest request) {
+  LOG(ERROR) << "NFC is only supported on Android";
+  NOTREACHED();
 }
 
 void DeviceService::BindVibrationManagerRequest(
@@ -257,7 +274,7 @@ service_manager::InterfaceProvider* DeviceService::GetJavaInterfaceProvider() {
     JNIEnv* env = base::android::AttachCurrentThread();
     Java_InterfaceRegistrar_createInterfaceRegistryForContext(
         env, mojo::MakeRequest(&provider).PassMessagePipe().release().value(),
-        base::android::GetApplicationContext());
+        base::android::GetApplicationContext(), java_nfc_delegate_);
     java_interface_provider_.Bind(std::move(provider));
 
     java_interface_provider_initialized_ = true;

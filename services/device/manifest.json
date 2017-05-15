@@ -7,6 +7,7 @@
         "device:battery_monitor": [ "device::mojom::BatteryMonitor" ],
         "device:fingerprint": [ "device::mojom::Fingerprint" ],
         "device:generic_sensor": [ "device::mojom::SensorProvider" ],
+        "device:nfc": [ "device::nfc::mojom::NFCProvider" ],
         "device:power_monitor": [ "device::mojom::PowerMonitor" ],
         "device:screen_orientation": [ "device::mojom::ScreenOrientationListener" ],
         "device:sensors": [
