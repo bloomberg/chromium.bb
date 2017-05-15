@@ -22,7 +22,7 @@
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
-#include "base/threading/sequenced_worker_pool.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/about_handler/about_protocol_handler.h"
 #include "components/content_settings/core/browser/content_settings_provider.h"
@@ -356,11 +356,11 @@ void ChromeBrowserStateIOData::Init(
       std::move(profile_params_->proxy_config_service),
       true /* quick_check_enabled */);
   transport_security_state_.reset(new net::TransportSecurityState());
-  base::SequencedWorkerPool* pool = web::WebThread::GetBlockingPool();
   transport_security_persister_.reset(new net::TransportSecurityPersister(
       transport_security_state_.get(), profile_params_->path,
-      pool->GetSequencedTaskRunnerWithShutdownBehavior(
-          pool->GetSequenceToken(), base::SequencedWorkerPool::BLOCK_SHUTDOWN),
+      base::CreateSequencedTaskRunnerWithTraits(
+          {base::MayBlock(), base::TaskPriority::BACKGROUND,
+           base::TaskShutdownBehavior::BLOCK_SHUTDOWN}),
       IsOffTheRecord()));
 
   certificate_report_sender_ =
@@ -400,8 +400,9 @@ ChromeBrowserStateIOData::SetUpJobFactoryDefaults(
   bool set_protocol = job_factory->SetProtocolHandler(
       url::kFileScheme,
       base::MakeUnique<net::FileProtocolHandler>(
-          web::WebThread::GetBlockingPool()->GetTaskRunnerWithShutdownBehavior(
-              base::SequencedWorkerPool::SKIP_ON_SHUTDOWN)));
+          base::CreateTaskRunnerWithTraits(
+              {base::MayBlock(), base::TaskPriority::BACKGROUND,
+               base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})));
   DCHECK(set_protocol);
 
   set_protocol = job_factory->SetProtocolHandler(
