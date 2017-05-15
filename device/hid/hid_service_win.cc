@@ -22,6 +22,7 @@
 #include "base/sequenced_task_runner.h"
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "components/device_event_log/device_event_log.h"
 #include "device/hid/hid_connection_win.h"
@@ -30,10 +31,10 @@
 
 namespace device {
 
-HidServiceWin::HidServiceWin(
-    scoped_refptr<base::SequencedTaskRunner> blocking_task_runner)
+HidServiceWin::HidServiceWin()
     : task_runner_(base::SequencedTaskRunnerHandle::Get()),
-      blocking_task_runner_(std::move(blocking_task_runner)),
+      blocking_task_runner_(
+          base::CreateSequencedTaskRunnerWithTraits(kBlockingTaskTraits)),
       device_observer_(this),
       weak_factory_(this) {
   DeviceMonitorWin* device_monitor =
@@ -66,9 +67,8 @@ void HidServiceWin::Connect(const HidDeviceId& device_id,
   }
 
   task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(callback, make_scoped_refptr(
-          new HidConnectionWin(device_info, std::move(file)))));
+      FROM_HERE, base::Bind(callback, base::MakeShared<HidConnectionWin>(
+                                          device_info, std::move(file))));
 }
 
 // static

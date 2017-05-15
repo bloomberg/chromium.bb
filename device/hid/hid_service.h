@@ -51,10 +51,8 @@ class HidService {
       base::MayBlock(), base::TaskPriority::USER_VISIBLE,
       base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN};
 
-  // This function should be called on a thread with a MessageLoopForUI and be
-  // passed the task runner for a thread with a MessageLoopForIO.
-  static std::unique_ptr<HidService> Create(
-      scoped_refptr<base::SingleThreadTaskRunner> file_task_runner);
+  // This function should be called on a thread with a MessageLoopForUI.
+  static std::unique_ptr<HidService> Create();
 
   virtual ~HidService();
 
