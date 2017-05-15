@@ -33,6 +33,18 @@ bool IsFullscreenAppListEnabled() {
   return base::FeatureList::IsEnabled(kEnableFullscreenAppList);
 }
 
+int APP_LIST_EXPORT AnswerCardMaxWidth() {
+  static const int max_width = base::GetFieldTrialParamByFeatureAsInt(
+      kEnableAnswerCard, "CardMaxWidth", 640);
+  return max_width;
+}
+
+int APP_LIST_EXPORT AnswerCardMaxHeight() {
+  static const int max_height = base::GetFieldTrialParamByFeatureAsInt(
+      kEnableAnswerCard, "CardMaxHeight", 288);
+  return max_height;
+}
+
 std::string AnswerServerUrl() {
   return base::GetFieldTrialParamValueByFeature(kEnableAnswerCard, "ServerUrl");
 }

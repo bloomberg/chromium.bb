@@ -33,7 +33,8 @@ enum class SearchAnswerRequestResult {
   REQUEST_RESULT_REQUEST_FAILED = 1,
   REQUEST_RESULT_NO_ANSWER = 2,
   REQUEST_RESULT_RECEIVED_ANSWER = 3,
-  REQUEST_RESULT_MAX = 4
+  REQUEST_RESULT_RECEIVED_ANSWER_TOO_LARGE = 4,
+  REQUEST_RESULT_MAX = 5
 };
 
 void RecordRequestResult(SearchAnswerRequestResult request_result) {
@@ -71,6 +72,11 @@ class SearchAnswerWebView : public views::WebView {
   DISALLOW_COPY_AND_ASSIGN(SearchAnswerWebView);
 };
 
+bool IsCardSizeOk(const gfx::Size& size) {
+  return size.width() <= features::AnswerCardMaxWidth() &&
+         size.height() <= features::AnswerCardMaxHeight();
+}
+
 }  // namespace
 
 SearchAnswerWebContentsDelegate::SearchAnswerWebContentsDelegate(
@@ -102,6 +108,7 @@ SearchAnswerWebContentsDelegate::SearchAnswerWebContentsDelegate(
 }
 
 SearchAnswerWebContentsDelegate::~SearchAnswerWebContentsDelegate() {
+  RecordReceivedAnswerFinalResult();
   model_->RemoveObserver(this);
 }
 
@@ -113,11 +120,13 @@ void SearchAnswerWebContentsDelegate::Update() {
   if (!answer_server_url_.is_valid())
     return;
 
+  RecordReceivedAnswerFinalResult();
   // Reset the state.
   received_answer_ = false;
   model_->SetSearchAnswerAvailable(false);
   current_request_url_ = GURL();
   server_request_start_time_ = answer_loaded_time_ = base::TimeTicks();
+  is_card_size_ok_ = false;
 
   if (model_->search_box()->is_voice_query()) {
     // No need to send a server request and show a card because launcher
@@ -155,6 +164,10 @@ void SearchAnswerWebContentsDelegate::Update() {
 void SearchAnswerWebContentsDelegate::UpdatePreferredSize(
     content::WebContents* web_contents,
     const gfx::Size& pref_size) {
+  is_card_size_ok_ =
+      IsCardSizeOk(pref_size) || features::IsAnswerCardDarkRunEnabled();
+  model_->SetSearchAnswerAvailable(is_card_size_ok_ && received_answer_ &&
+                                   !web_contents_->IsLoading());
   if (!features::IsAnswerCardDarkRunEnabled())
     web_view_->SetPreferredSize(pref_size);
   if (!answer_loaded_time_.is_null()) {
@@ -230,15 +243,14 @@ void SearchAnswerWebContentsDelegate::DidFinishNavigation(
   received_answer_ = true;
   UMA_HISTOGRAM_TIMES("SearchAnswer.NavigationTime",
                       base::TimeTicks::Now() - server_request_start_time_);
-  RecordRequestResult(
-      SearchAnswerRequestResult::REQUEST_RESULT_RECEIVED_ANSWER);
 }
 
 void SearchAnswerWebContentsDelegate::DidStopLoading() {
   if (!received_answer_)
     return;
 
-  model_->SetSearchAnswerAvailable(true);
+  if (is_card_size_ok_)
+    model_->SetSearchAnswerAvailable(true);
   answer_loaded_time_ = base::TimeTicks::Now();
   UMA_HISTOGRAM_TIMES("SearchAnswer.LoadingTime",
                       answer_loaded_time_ - server_request_start_time_);
@@ -253,6 +265,21 @@ void SearchAnswerWebContentsDelegate::DidGetUserInteraction(
 void SearchAnswerWebContentsDelegate::OnSearchEngineIsGoogleChanged(
     bool is_google) {
   Update();
+}
+
+void SearchAnswerWebContentsDelegate::RecordReceivedAnswerFinalResult() {
+  // Recording whether a server response with an answer contains a card of a
+  // fitting size, or a too large one. Cannot do this in DidStopLoading() or
+  // UpdatePreferredSize() because this may be followed by a resizing with
+  // different dimensions, so this method gets called when card's life ends.
+  if (!received_answer_)
+    return;
+
+  RecordRequestResult(
+      is_card_size_ok_
+          ? SearchAnswerRequestResult::REQUEST_RESULT_RECEIVED_ANSWER
+          : SearchAnswerRequestResult::
+                REQUEST_RESULT_RECEIVED_ANSWER_TOO_LARGE);
 }
 
 }  // namespace app_list
