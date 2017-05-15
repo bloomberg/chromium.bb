@@ -136,10 +136,16 @@ class PaymentRequestDialogView : public views::DialogDelegateView,
       base::OnceCallback<void(const autofill::AutofillProfile&)> on_added,
       autofill::AutofillProfile* profile);
   // |profile| is the profile to be edited, or nullptr for adding a profile.
+  // |on_edited| is called when |profile| was successfully edited, and
+  // |on_added| is called when a new profile was added (the reference is
+  // short-lived; callee should make a copy of the profile object).
   // |back_navigation_type| identifies the type of navigation to execute once
   // the editor has completed successfully.
-  void ShowContactInfoEditor(BackNavigationType back_navigation_type,
-                             autofill::AutofillProfile* profile = nullptr);
+  void ShowContactInfoEditor(
+      BackNavigationType back_navigation_type,
+      base::OnceClosure on_edited,
+      base::OnceCallback<void(const autofill::AutofillProfile&)> on_added,
+      autofill::AutofillProfile* profile = nullptr);
   void EditorViewUpdated();
 
   void ShowCvcUnmaskPrompt(
