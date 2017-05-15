@@ -179,6 +179,10 @@
     {
       'target_name': 'system_api-chaps-protos',
       'type': 'static_library',
+      # system_api-chaps-protos' is used by a shared_library
+      # object, so we need to build it with '-fPIC' instead of '-fPIE'.
+      'cflags!': ['-fPIE'],
+      'cflags': ['-fPIC'],
       'standalone_static_library': 1,
       'dependencies': [
         'system_api-chaps-protos-gen',
