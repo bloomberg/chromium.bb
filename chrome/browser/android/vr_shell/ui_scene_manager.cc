@@ -7,12 +7,14 @@
 #include "base/callback.h"
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/android/vr_shell/textures/ui_texture.h"
+#include "chrome/browser/android/vr_shell/ui_elements/audio_capture_indicator.h"
 #include "chrome/browser/android/vr_shell/ui_elements/close_button.h"
 #include "chrome/browser/android/vr_shell/ui_elements/loading_indicator.h"
 #include "chrome/browser/android/vr_shell/ui_elements/permanent_security_warning.h"
 #include "chrome/browser/android/vr_shell/ui_elements/transient_security_warning.h"
 #include "chrome/browser/android/vr_shell/ui_elements/ui_element.h"
 #include "chrome/browser/android/vr_shell/ui_elements/url_bar.h"
+#include "chrome/browser/android/vr_shell/ui_elements/video_capture_indicator.h"
 #include "chrome/browser/android/vr_shell/ui_scene.h"
 #include "chrome/browser/android/vr_shell/vr_browser_interface.h"
 #include "chrome/browser/android/vr_shell/vr_shell.h"
@@ -65,6 +67,7 @@ UiSceneManager::UiSceneManager(VrBrowserInterface* browser,
   CreateBackground();
   CreateContentQuad();
   CreateSecurityWarnings();
+  CreateSystemIndicators();
   CreateUrlBar();
   if (in_cct_)
     CreateCloseButton();
@@ -104,6 +107,28 @@ void UiSceneManager::CreateSecurityWarnings() {
   element->set_hit_testable(false);
   element->set_lock_to_fov(true);
   transient_security_warning_ = element.get();
+  scene_->AddUiElement(std::move(element));
+}
+
+void UiSceneManager::CreateSystemIndicators() {
+  std::unique_ptr<UiElement> element;
+
+  // TODO(acondor): Make constants for sizes and positions once the UX for the
+  // indicators is defined.
+  element = base::MakeUnique<AudioCaptureIndicator>(256);
+  element->set_id(AllocateId());
+  element->set_translation({-0.3, 0.8, -1.9});
+  element->set_size({0.4, 0, 1});
+  element->set_visible(false);
+  audio_input_indicator_ = element.get();
+  scene_->AddUiElement(std::move(element));
+
+  element = base::MakeUnique<VideoCaptureIndicator>(256);
+  element->set_id(AllocateId());
+  element->set_translation({0.3, 0.8, -1.9});
+  element->set_size({0.4, 0, 1});
+  element->set_visible(false);
+  video_input_indicator_ = element.get();
   scene_->AddUiElement(std::move(element));
 }
 

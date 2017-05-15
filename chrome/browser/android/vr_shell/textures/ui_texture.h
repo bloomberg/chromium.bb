@@ -8,6 +8,7 @@
 #include <memory>
 #include <vector>
 
+#include "base/macros.h"
 #include "base/strings/string16.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/geometry/rect.h"
@@ -71,6 +72,8 @@ class UiTexture {
  private:
   int draw_flags_ = 0;
   bool dirty_ = false;
+
+  DISALLOW_COPY_AND_ASSIGN(UiTexture);
 };
 
 }  // namespace vr_shell

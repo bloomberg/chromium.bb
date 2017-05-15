@@ -8,6 +8,7 @@
 #include <memory>
 #include <vector>
 
+#include "base/macros.h"
 #include "chrome/browser/android/vr_shell/textures/ui_texture.h"
 #include "url/gurl.h"
 
@@ -41,6 +42,8 @@ class UrlBarTexture : public UiTexture {
   GURL gurl_;
   GURL last_drawn_gurl_;
   std::vector<std::unique_ptr<gfx::RenderText>> gurl_render_texts_;
+
+  DISALLOW_COPY_AND_ASSIGN(UrlBarTexture);
 };
 
 }  // namespace vr_shell
