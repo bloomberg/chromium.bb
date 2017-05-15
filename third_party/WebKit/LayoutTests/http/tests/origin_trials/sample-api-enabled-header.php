@@ -16,5 +16,6 @@ header("Origin-Trial: AlCoOPbezqtrGMzSzbLQC4c+oPqO6yuioemcBPjgcXajF8jtmZr4B8tJRP
 
 // The trial is enabled by the token above in header.
 expect_success();
+expect_success_bindings();
 
 </script>
