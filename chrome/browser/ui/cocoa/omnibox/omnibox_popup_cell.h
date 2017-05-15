@@ -68,8 +68,8 @@ class OmniboxPopupViewMac;
 
 + (CGFloat)getContentAreaWidth:(NSRect)cellFrame;
 
-@end
++ (CGFloat)getContentTextHeight;
 
-const CGFloat kContentLineHeight = 25.0;
+@end
 
 #endif  // CHROME_BROWSER_UI_COCOA_OMNIBOX_OMNIBOX_POPUP_CELL_H_
