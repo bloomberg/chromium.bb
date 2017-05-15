@@ -50,9 +50,9 @@ gfx::NativeWindow ShowWebDialog(gfx::NativeView parent,
 }
 
 #if defined(USE_ASH)
-void ShowWebDialogInContainer(int container_id,
-                              content::BrowserContext* context,
-                              ui::WebDialogDelegate* delegate) {
+gfx::NativeWindow ShowWebDialogInContainer(int container_id,
+                                           content::BrowserContext* context,
+                                           ui::WebDialogDelegate* delegate) {
   DCHECK(container_id != ash::kShellWindowId_Invalid);
   views::WebDialogView* view =
       new views::WebDialogView(context, delegate, new ChromeWebContentsHandler);
@@ -66,7 +66,7 @@ void ShowWebDialogInContainer(int container_id,
     params.parent = ash::Shell::GetContainer(ash::Shell::GetPrimaryRootWindow(),
                                              container_id);
   }
-  ShowWebDialogWidget(params, view);
+  return ShowWebDialogWidget(params, view);
 }
 #endif  // defined(USE_ASH)
 

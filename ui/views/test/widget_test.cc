@@ -186,10 +186,17 @@ WidgetClosingObserver::~WidgetClosingObserver() {
     widget_->RemoveObserver(this);
 }
 
+void WidgetClosingObserver::Wait() {
+  if (widget_)
+    run_loop_.Run();
+}
+
 void WidgetClosingObserver::OnWidgetClosing(Widget* widget) {
   DCHECK_EQ(widget_, widget);
   widget_->RemoveObserver(this);
   widget_ = nullptr;
+  if (run_loop_.running())
+    run_loop_.Quit();
 }
 
 }  // namespace test

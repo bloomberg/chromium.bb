@@ -4,6 +4,8 @@
 
 #include "ui/web_dialogs/web_dialog_delegate.h"
 
+#include "ui/base/accelerators/accelerator.h"
+
 namespace ui {
 
 std::string WebDialogDelegate::GetDialogName() const {
@@ -50,6 +52,14 @@ bool WebDialogDelegate::HandleAddNewContents(
 
 bool WebDialogDelegate::HandleShouldCreateWebContents() {
   return true;
+}
+
+std::vector<Accelerator> WebDialogDelegate::GetAccelerators() {
+  return std::vector<Accelerator>();
+}
+
+bool WebDialogDelegate::AcceleratorPressed(const Accelerator& accelerator) {
+  return false;
 }
 
 }  // namespace ui

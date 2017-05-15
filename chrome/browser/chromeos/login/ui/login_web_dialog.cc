@@ -36,6 +36,12 @@ const double kMinimumHeightRatio = 0.25;
 base::LazyInstance<std::deque<WebContents*>>::DestructorAtExit
     g_web_contents_stack = LAZY_INSTANCE_INITIALIZER;
 
+// Returns the accelerator which is mapped as hangup button on Chrome OS CFM
+// remote controller to close the dialog.
+ui::Accelerator GetCloseAccelerator() {
+  return ui::Accelerator(ui::VKEY_BROWSER_BACK, ui::EF_SHIFT_DOWN);
+}
+
 }  // namespace
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -53,8 +59,7 @@ LoginWebDialog::LoginWebDialog(content::BrowserContext* browser_context,
       parent_window_(parent_window),
       delegate_(delegate),
       title_(title),
-      url_(url),
-      is_open_(false) {
+      url_(url) {
   gfx::Rect screen_bounds(CalculateScreenBounds(gfx::Size()));
   width_ = static_cast<int>(kDefaultWidthRatio * screen_bounds.width());
   height_ = static_cast<int>(kDefaultHeightRatio * screen_bounds.height());
@@ -63,13 +68,14 @@ LoginWebDialog::LoginWebDialog(content::BrowserContext* browser_context,
 LoginWebDialog::~LoginWebDialog() {}
 
 void LoginWebDialog::Show() {
+  dialog_window_ = nullptr;
   if (parent_window_) {
-    chrome::ShowWebDialog(parent_window_, browser_context_, this);
+    dialog_window_ =
+        chrome::ShowWebDialog(parent_window_, browser_context_, this);
   } else {
-    chrome::ShowWebDialogInContainer(
+    dialog_window_ = chrome::ShowWebDialogInContainer(
         SystemTrayClient::GetDialogParentContainerId(), browser_context_, this);
   }
-  is_open_ = true;
 }
 
 void LoginWebDialog::SetDialogSize(int width, int height) {
@@ -128,7 +134,7 @@ void LoginWebDialog::OnDialogShown(content::WebUI* webui,
 }
 
 void LoginWebDialog::OnDialogClosed(const std::string& json_retval) {
-  is_open_ = false;
+  dialog_window_ = nullptr;
   if (delegate_)
     delegate_->OnDialogClosed();
   delete this;
@@ -167,6 +173,22 @@ bool LoginWebDialog::HandleOpenURLFromTab(WebContents* source,
 }
 
 bool LoginWebDialog::HandleShouldCreateWebContents() {
+  return false;
+}
+
+std::vector<ui::Accelerator> LoginWebDialog::GetAccelerators() {
+  return {GetCloseAccelerator()};
+}
+
+bool LoginWebDialog::AcceleratorPressed(const ui::Accelerator& accelerator) {
+  if (!dialog_window_)
+    return false;
+
+  if (GetCloseAccelerator() == accelerator) {
+    views::Widget::GetWidgetForNativeWindow(dialog_window_)->Close();
+    return true;
+  }
+
   return false;
 }
 

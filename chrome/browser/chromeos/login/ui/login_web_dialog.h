@@ -53,6 +53,12 @@ class LoginWebDialog : public ui::WebDialogDelegate {
 
   static content::WebContents* GetCurrentWebContents();
 
+  // Returns |dialog_window_| instance for test, can be NULL if dialog is not
+  // shown or closed.
+  gfx::NativeWindow get_dialog_window_for_test() const {
+    return dialog_window_;
+  }
+
  protected:
   // ui::WebDialogDelegate implementation.
   ui::ModalType GetDialogModalType() const override;
@@ -75,16 +81,18 @@ class LoginWebDialog : public ui::WebDialogDelegate {
                             const content::OpenURLParams& params,
                             content::WebContents** out_new_contents) override;
   bool HandleShouldCreateWebContents() override;
+  std::vector<ui::Accelerator> GetAccelerators() override;
+  bool AcceleratorPressed(const ui::Accelerator& accelerator) override;
 
  private:
   content::BrowserContext* const browser_context_;
   gfx::NativeWindow parent_window_;
+  gfx::NativeWindow dialog_window_;
   // Notifications receiver.
   Delegate* const delegate_;
 
   base::string16 title_;
   const GURL url_;
-  bool is_open_;
 
   // Dialog display size.
   int width_;

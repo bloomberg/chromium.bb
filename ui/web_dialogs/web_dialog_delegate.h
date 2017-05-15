@@ -31,6 +31,7 @@ class Size;
 }
 
 namespace ui {
+class Accelerator;
 
 // Implement this class to receive notifications.
 class WEB_DIALOGS_EXPORT WebDialogDelegate {
@@ -136,6 +137,12 @@ class WEB_DIALOGS_EXPORT WebDialogDelegate {
 
   // Stores the dialog bounds.
   virtual void StoreDialogSize(const gfx::Size& dialog_size) {}
+
+  // Returns the accelerators handled by the delegate.
+  virtual std::vector<Accelerator> GetAccelerators();
+
+  // Returns true if |accelerator| is processed, otherwise false.
+  virtual bool AcceleratorPressed(const Accelerator& accelerator);
 
   virtual ~WebDialogDelegate() {}
 };

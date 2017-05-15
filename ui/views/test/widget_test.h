@@ -184,6 +184,10 @@ class WidgetClosingObserver : public WidgetObserver {
   explicit WidgetClosingObserver(Widget* widget);
   ~WidgetClosingObserver() override;
 
+  // Returns immediately when |widget_| becomes NULL, otherwise a RunLoop is
+  // used until widget closing event is received.
+  void Wait();
+
   bool widget_closed() const { return !widget_; }
 
  private:
@@ -191,6 +195,7 @@ class WidgetClosingObserver : public WidgetObserver {
   void OnWidgetClosing(Widget* widget) override;
 
   Widget* widget_;
+  base::RunLoop run_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(WidgetClosingObserver);
 };
