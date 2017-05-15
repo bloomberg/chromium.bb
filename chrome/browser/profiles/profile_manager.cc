@@ -1205,12 +1205,6 @@ void ProfileManager::DoFinalInitForServices(Profile* profile,
   TRACE_EVENT0("browser", "ProfileManager::DoFinalInitForServices");
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-  // Ensure that the HostContentSettingsMap has been created before the
-  // ExtensionSystem is initialized otherwise the ExtensionSystem will be
-  // registered twice
-  HostContentSettingsMap* content_settings_map =
-    HostContentSettingsMapFactory::GetForProfile(profile);
-
   bool extensions_enabled = !go_off_the_record;
 #if defined(OS_CHROMEOS)
   if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
@@ -1221,15 +1215,7 @@ void ProfileManager::DoFinalInitForServices(Profile* profile,
 #endif
   extensions::ExtensionSystem::Get(profile)->InitForRegularProfile(
       extensions_enabled);
-  // During tests, when |profile| is an instance of TestingProfile,
-  // ExtensionSystem might not create an ExtensionService.
-  // This block is duplicated in the HostContentSettingsMapFactory
-  // ::BuildServiceInstanceFor method, it should be called once when both the
-  // HostContentSettingsMap and the extension_service are set up.
-  if (extensions::ExtensionSystem::Get(profile)->extension_service()) {
-    extensions::ExtensionSystem::Get(profile)->extension_service()->
-        RegisterContentSettings(content_settings_map);
-  }
+
   // Set the block extensions bit on the ExtensionService. There likely are no
   // blockable extensions to block.
   ProfileAttributesEntry* entry;

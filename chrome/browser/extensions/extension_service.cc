@@ -2046,21 +2046,27 @@ const Extension* ExtensionService::GetPendingExtensionUpdate(
 }
 
 void ExtensionService::RegisterContentSettings(
-    HostContentSettingsMap* host_content_settings_map) {
+    HostContentSettingsMap* host_content_settings_map,
+    Profile* profile) {
+  // Most extension services key off of the original profile.
+  Profile* original_profile = profile->GetOriginalProfile();
+
   TRACE_EVENT0("browser,startup", "ExtensionService::RegisterContentSettings");
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   host_content_settings_map->RegisterProvider(
       HostContentSettingsMap::INTERNAL_EXTENSION_PROVIDER,
       std::unique_ptr<content_settings::ObservableProvider>(
-          new content_settings::InternalExtensionProvider(profile_)));
+          new content_settings::InternalExtensionProvider(original_profile)));
 
   host_content_settings_map->RegisterProvider(
       HostContentSettingsMap::CUSTOM_EXTENSION_PROVIDER,
       std::unique_ptr<content_settings::ObservableProvider>(
           new content_settings::CustomExtensionProvider(
-              extensions::ContentSettingsService::Get(profile_)
+              extensions::ContentSettingsService::Get(original_profile)
                   ->content_settings_store(),
-              profile_->GetOriginalProfile() != profile_)));
+              // TODO(mmenke):  CustomExtensionProvider expects this to be true
+              // for incognito profiles.
+              false)));
 }
 
 void ExtensionService::TrackTerminatedExtension(

@@ -93,12 +93,9 @@ scoped_refptr<RefcountedKeyedService>
   }
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-  ExtensionService *ext_service =
-      extensions::ExtensionSystem::Get(profile)->extension_service();
-  // This may be null in testing or when the extenion_service hasn't been
-  // initialized, in which case it will be registered then.
-  if (ext_service)
-    ext_service->RegisterContentSettings(settings_map.get());
+  // These must be registered before before the HostSettings are passed over to
+  // the IOThread.  Simplest to do this on construction.
+  ExtensionService::RegisterContentSettings(settings_map.get(), profile);
 #endif // BUILDFLAG(ENABLE_EXTENSIONS)
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
   SupervisedUserSettingsService* supervised_service =
