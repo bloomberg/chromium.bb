@@ -17,8 +17,6 @@
 namespace {
 
 const auto FAVICON = SearchBox::FAVICON;
-const auto LARGE_ICON = SearchBox::LARGE_ICON;
-const auto FALLBACK_ICON = SearchBox::FALLBACK_ICON;
 const auto THUMB = SearchBox::THUMB;
 
 const char* kUrlString1 = "http://www.google.com";
@@ -155,14 +153,6 @@ TEST(SearchBoxUtilTest, ParseIconRestrictedUrlFaviconSuccess) {
     {FAVICON, "chrome-search://favicon/1/2", "", 1, 2},
     {FAVICON, "chrome-search://favicon/size/16@2x/3/4", "size/16@2x/", 3, 4},
     {FAVICON, "chrome-search://favicon/iconurl/9/10", "iconurl/", 9, 10},
-    {LARGE_ICON, "chrome-search://large-icon/96/1/2", "96/", 1, 2},
-    {LARGE_ICON, "chrome-search://large-icon/1/3/4", "1/", 3, 4},
-    // Size restriction is *not* enforced during parsing, but later.
-    {LARGE_ICON, "chrome-search://large-icon/1000000/5/6", "1000000/", 5, 6},
-    {FALLBACK_ICON, "chrome-search://fallback-icon/,,,,/1/2", ",,,,/", 1, 2},
-    {FALLBACK_ICON, "chrome-search://fallback-icon/1,,,,/3/4", "1,,,,/", 3, 4},
-    {FALLBACK_ICON, "chrome-search://fallback-icon/64,fff,black,0.4,0.6/5/6",
-         "64,fff,black,0.4,0.6/", 5, 6},
     {THUMB, "chrome-search://thumb/1/2", "", 1, 2},
   };
   for (size_t i = 0; i < arraysize(test_cases); ++i) {
@@ -191,25 +181,6 @@ TEST(SearchBoxUtilTest, ParseIconRestrictedUrlFailure) {
     {FAVICON, "chrome-search://favicon/size/3/4"},
     {FAVICON, "chrome-search://favicon/largest/http://www.google.com"},
     {FAVICON, "chrome-search://favicon/size/16@2x/-1/10"},
-    {LARGE_ICON, "chrome-search://large-icon/"},
-    {LARGE_ICON, "chrome-search://large-icon/3"},
-    {LARGE_ICON, "chrome-search://large-icon/3/4"},
-    {LARGE_ICON, "chrome-search://large-icon/-1/3/4"},
-    {LARGE_ICON, "chrome-search://large-icon/0/3/4"},
-    {LARGE_ICON, "chrome-search://large-icon/64/http://www.google.com"},
-    {LARGE_ICON, "chrome-search://large-icon/bad-size/3/4"},
-    {FALLBACK_ICON, "chrome-search://fallback-icon/"},
-    {FALLBACK_ICON, "chrome-search://fallback-icon/3"},
-    {FALLBACK_ICON, "chrome-search://fallback-icon/3/4"},
-    {FALLBACK_ICON, "chrome-search://fallback-icon//3/4"},
-    {FALLBACK_ICON, "chrome-search://fallback-icon/,,/3/4"},
-    {FALLBACK_ICON, "chrome-search://fallback-icon/bad-spec/3/4"},
-    {FALLBACK_ICON, "chrome-search://fallback-icon/-1,,,,/3/4"},
-    {FALLBACK_ICON, "chrome-search://fallback-icon/,junk,,,/3/4"},
-    // This case is a bit stringent. Since we always render fallback icons,
-    // search privider can't use this to probe user history. We'll consider
-    // relaxing the check if the need arises.
-    {FALLBACK_ICON, "chrome-search://fallback-icon/,,,,/http://www.google.com"},
     {THUMB, "chrome-search://thumb"},
     {THUMB, "chrome-search://thumb/"},
     {THUMB, "chrome-search://thumb/123"},
@@ -250,14 +221,6 @@ TEST(SearchBoxUtilTest, TranslateIconRestrictedUrlSuccess) {
     {FAVICON, "chrome-search://favicon/size/16@2x/http://www.google.com",
         "chrome-search://favicon/"},
     // Other types of icons.
-    {LARGE_ICON, "chrome-search://large-icon/64/137/2",
-        std::string("chrome-search://large-icon/64/") + kUrlString2},
-    {LARGE_ICON, "chrome-search://large-icon/1/137/1",
-        std::string("chrome-search://large-icon/1/") + kUrlString1},
-    {FALLBACK_ICON, "chrome-search://fallback-icon/,,,,/137/3",
-        std::string("chrome-search://fallback-icon/,,,,/") + kUrlString3},
-    {FALLBACK_ICON, "chrome-search://fallback-icon/64,fff,,,1/137/1",
-        std::string("chrome-search://fallback-icon/64,fff,,,1/") + kUrlString1},
     {THUMB, "chrome-search://thumb/137/3",
         std::string("chrome-search://thumb/") + kUrlString3},
   };
@@ -281,33 +244,12 @@ TEST(SearchBoxUtilTest, TranslateIconRestrictedUrlFailure) {
     const char* transient_url_str;
   } test_cases[] = {
     // Empty.
-    {LARGE_ICON, "chrome-search://large-icon/"},
-    {FALLBACK_ICON, "chrome-search://fallback-icon/"},
     {THUMB, "chrome-search://thumb/"},
     // Bad view_id.
-    {LARGE_ICON, "chrome-search://large-icon/64/314/2"},
-    {LARGE_ICON, "chrome-search://large-icon/1/314/1"},
-    {FALLBACK_ICON, "chrome-search://fallback-icon/,,,,/314/3"},
-    {FALLBACK_ICON, "chrome-search://fallback-icon/64,fff,,,1/314/1"},
     {THUMB, "chrome-search://thumb/314/1"},
     // Missing rid.
-    {LARGE_ICON, "chrome-search://large-icon/64/137/"},
-    {LARGE_ICON, "chrome-search://large-icon/64/137/blah"},
-    {FALLBACK_ICON, "chrome-search://fallback-icon/,,,,/137/"},
     {THUMB, "chrome-search://thumb/314/"},
-    // Bad params.
-    {LARGE_ICON, "chrome-search://large-icon/137/2"},
-    {LARGE_ICON, "chrome-search://large-icon//137/2"},
-    {LARGE_ICON, "chrome-search://large-icon/96"},
-    {LARGE_ICON, "chrome-search://large-icon/-1/137/2"},
-    {LARGE_ICON, "chrome-search://large-icon/blah/137/2"},
-    {FALLBACK_ICON, "chrome-search://fallback-icon/137/3"},
-    {FALLBACK_ICON, "chrome-search://fallback-icon//137/3"},
-    {FALLBACK_ICON, "chrome-search://fallback-icon/-64,fff,,,1/137/3"},
-    {FALLBACK_ICON, "chrome-search://fallback-icon/springfront/137/3"},
     // Use Page URL.
-    {LARGE_ICON, "chrome-search://large-icon/96/http://www.google.com"},
-    {FALLBACK_ICON, "chrome-search://fallback-icon/,,,,/http://www.google.com"},
     {THUMB, "chrome-search://thumb/http://www.google.com"},
   };
 

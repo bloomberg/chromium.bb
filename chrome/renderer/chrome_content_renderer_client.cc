@@ -1215,10 +1215,6 @@ bool ChromeContentRendererClient::WillSendRequest(
     SearchBox::ImageSourceType type = SearchBox::NONE;
     if (gurl.host_piece() == chrome::kChromeUIFaviconHost)
       type = SearchBox::FAVICON;
-    else if (gurl.host_piece() == chrome::kChromeUILargeIconHost)
-      type = SearchBox::LARGE_ICON;
-    else if (gurl.host_piece() == chrome::kChromeUIFallbackIconHost)
-      type = SearchBox::FALLBACK_ICON;
     else if (gurl.host_piece() == chrome::kChromeUIThumbnailHost)
       type = SearchBox::THUMB;
 

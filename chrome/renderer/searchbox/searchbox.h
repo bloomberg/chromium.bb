@@ -30,8 +30,6 @@ class SearchBox : public content::RenderFrameObserver,
   enum ImageSourceType {
     NONE = -1,
     FAVICON,
-    LARGE_ICON,
-    FALLBACK_ICON,
     THUMB
   };
 
@@ -77,17 +75,10 @@ class SearchBox : public content::RenderFrameObserver,
   // |transient_url|. If |transient_url| is valid, |url| with a translated URL
   // and returns true.  Otherwise it depends on |type|:
   // - FAVICON: Returns true and renders an URL to display the default favicon.
-  // - LARGE_ICON and FALLBACK_ICON: Returns false.
   //
   // For |type| == FAVICON, valid forms of |transient_url|:
   //    chrome-search://favicon/<view_id>/<restricted_id>
   //    chrome-search://favicon/<favicon_parameters>/<view_id>/<restricted_id>
-  //
-  // For |type| == LARGE_ICON, valid form of |transient_url|:
-  //    chrome-search://large-icon/<size>/<view_id>/<restricted_id>
-  //
-  // For |type| == FALLBACK_ICON, valid form of |transient_url|:
-  //    chrome-search://fallback-icon/<icon specs>/<view_id>/<restricted_id>
   //
   // For |type| == THUMB, valid form of |transient_url|:
   //    chrome-search://thumb/<render_view_id>/<most_visited_item_id>
