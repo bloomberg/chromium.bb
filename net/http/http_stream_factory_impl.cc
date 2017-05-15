@@ -194,6 +194,8 @@ HttpStreamRequest* HttpStreamFactoryImpl::RequestStreamInternal(
 void HttpStreamFactoryImpl::PreconnectStreams(
     int num_streams,
     const HttpRequestInfo& request_info) {
+  DCHECK(request_info.url.is_valid());
+
   AddJobControllerCountToHistograms();
 
   SSLConfig server_ssl_config;

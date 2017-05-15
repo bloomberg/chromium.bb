@@ -321,6 +321,7 @@ class CrossSitePredictorObserver
       chrome_browser_net::UrlInfo::ResolutionMotivation motivation,
       int count) override {
     base::AutoLock lock(lock_);
+    preconnect_url_attempts_.insert(original_url);
     if (original_url == cross_site_host_) {
       cross_site_preconnected_ = std::max(cross_site_preconnected_, count);
     } else if (original_url == source_host_) {
@@ -412,6 +413,11 @@ class CrossSitePredictorObserver
     return HasHostBeenLookedUpLocked(url);
   }
 
+  bool HasHostAttemptedToPreconnect(const GURL& url) {
+    base::AutoLock lock(lock_);
+    return base::ContainsKey(preconnect_url_attempts_, url);
+  }
+
   void CheckForWaitingLoop() {
     lock_.AssertAcquired();
     if (waiting_on_dns_.is_empty())
@@ -466,6 +472,7 @@ class CrossSitePredictorObserver
   int cross_site_preconnected_;
   int same_site_preconnected_;
 
+  std::set<GURL> preconnect_url_attempts_;
   std::set<GURL> successful_dns_lookups_;
   std::set<GURL> unsuccessful_dns_lookups_;
   base::RunLoop* dns_run_loop_;
@@ -874,6 +881,18 @@ IN_PROC_BROWSER_TEST_F(PredictorBrowserTest, SimplePreconnectFour) {
       UrlInfo::ResolutionMotivation::EARLY_LOAD_MOTIVATED,
       false /* allow credentials */, 4);
   connection_listener_->WaitForAcceptedConnectionsOnUI(4u);
+}
+
+// Regression test for crbug.com/721981.
+IN_PROC_BROWSER_TEST_F(PredictorBrowserTest, PreconnectNonHttpScheme) {
+  GURL url("chrome-native://dummyurl");
+  predictor()->PreconnectUrlAndSubresources(url, GURL());
+  base::RunLoop().RunUntilIdle();
+  // Since |url| is non-HTTP(s) scheme, Predictor will canonicalize it to an
+  // empty url. Make sure that there is no attempt to preconnect |url| or an
+  // empty url.
+  EXPECT_FALSE(observer()->HasHostAttemptedToPreconnect(url));
+  EXPECT_FALSE(observer()->HasHostAttemptedToPreconnect(GURL()));
 }
 
 // Test the html test harness used to initiate cross site fetches. These
