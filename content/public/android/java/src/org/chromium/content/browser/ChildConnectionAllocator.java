@@ -26,11 +26,26 @@ import java.util.Queue;
 public class ChildConnectionAllocator {
     private static final String TAG = "ChildConnAllocator";
 
-    // The factory used to create BaseChildProcessConnection instances.
-    private final BaseChildProcessConnection.Factory mConnectionFactory;
+    /** Factory interface. Used by tests to specialize created connections. */
+    @VisibleForTesting
+    protected interface ConnectionFactory {
+        ChildProcessConnection createConnection(ChildSpawnData spawnData,
+                ChildProcessConnection.DeathCallback deathCallback,
+                Bundle childProcessCommonParameters, String serviceClassName);
+    }
+
+    /** Default implementation of the ConnectionFactory that creates actual connections. */
+    private static class ConnectionFactoryImpl implements ConnectionFactory {
+        public ChildProcessConnection createConnection(ChildSpawnData spawnData,
+                ChildProcessConnection.DeathCallback deathCallback,
+                Bundle childProcessCommonParameters, String serviceClassName) {
+            return new ChildProcessConnection(spawnData.getContext(), deathCallback,
+                    serviceClassName, childProcessCommonParameters, spawnData.getCreationParams());
+        }
+    }
 
     // Connections to services. Indices of the array correspond to the service numbers.
-    private final BaseChildProcessConnection[] mChildProcessConnections;
+    private final ChildProcessConnection[] mChildProcessConnections;
 
     private final String mServiceClassName;
 
@@ -41,12 +56,13 @@ public class ChildConnectionAllocator {
     // dequeue the pending spawn data from the same allocator as the connection.
     private final Queue<ChildSpawnData> mPendingSpawnQueue = new LinkedList<>();
 
+    private ConnectionFactory mConnectionFactory = new ConnectionFactoryImpl();
+
     /**
      * Factory method that retrieves the service name and number of service from the
      * AndroidManifest.xml.
      */
-    public static ChildConnectionAllocator create(Context context,
-            BaseChildProcessConnection.Factory connectionFactory, String packageName,
+    public static ChildConnectionAllocator create(Context context, String packageName,
             String serviceClassNameManifestKey, String numChildServicesManifestKey) {
         String serviceClassName = null;
         int numServices = -1;
@@ -76,8 +92,7 @@ public class ChildConnectionAllocator {
             throw new RuntimeException("Illegal meta data value: the child service doesn't exist");
         }
 
-        return new ChildConnectionAllocator(
-                connectionFactory, packageName, serviceClassName, numServices);
+        return new ChildConnectionAllocator(packageName, serviceClassName, numServices);
     }
 
     // TODO(jcivelli): remove this method once crbug.com/693484 has been addressed.
@@ -106,17 +121,14 @@ public class ChildConnectionAllocator {
      */
     @VisibleForTesting
     public static ChildConnectionAllocator createForTest(
-            BaseChildProcessConnection.Factory connectionFactory, String packageName,
-            String serviceClassName, int serviceCount) {
-        return new ChildConnectionAllocator(
-                connectionFactory, packageName, serviceClassName, serviceCount);
+            String packageName, String serviceClassName, int serviceCount) {
+        return new ChildConnectionAllocator(packageName, serviceClassName, serviceCount);
     }
 
-    private ChildConnectionAllocator(BaseChildProcessConnection.Factory connectionFactory,
+    private ChildConnectionAllocator(
             String packageName, String serviceClassName, int numChildServices) {
-        mConnectionFactory = connectionFactory;
         mServiceClassName = serviceClassName;
-        mChildProcessConnections = new BaseChildProcessConnection[numChildServices];
+        mChildProcessConnections = new ChildProcessConnection[numChildServices];
         mFreeConnectionIndices = new ArrayList<Integer>(numChildServices);
         for (int i = 0; i < numChildServices; i++) {
             mFreeConnectionIndices.add(i);
@@ -124,9 +136,9 @@ public class ChildConnectionAllocator {
     }
 
     // Allocates or enqueues. If there are no free slots, returns null and enqueues the spawn data.
-    public BaseChildProcessConnection allocate(ChildSpawnData spawnData,
-            BaseChildProcessConnection.DeathCallback deathCallback,
-            Bundle childProcessCommonParameters, boolean queueIfNoSlotAvailable) {
+    public ChildProcessConnection allocate(ChildSpawnData spawnData,
+            ChildProcessConnection.DeathCallback deathCallback, Bundle childProcessCommonParameters,
+            boolean queueIfNoSlotAvailable) {
         assert LauncherThread.runningOnLauncherThread();
         if (mFreeConnectionIndices.isEmpty()) {
             Log.d(TAG, "Ran out of services to allocate.");
@@ -138,15 +150,14 @@ public class ChildConnectionAllocator {
         int slot = mFreeConnectionIndices.remove(0);
         assert mChildProcessConnections[slot] == null;
         String serviceClassName = mServiceClassName + slot;
-        mChildProcessConnections[slot] =
-                mConnectionFactory.create(spawnData.getContext(), deathCallback, serviceClassName,
-                        childProcessCommonParameters, spawnData.getCreationParams());
+        mChildProcessConnections[slot] = mConnectionFactory.createConnection(
+                spawnData, deathCallback, childProcessCommonParameters, serviceClassName);
         Log.d(TAG, "Allocator allocated a connection, name: %s, slot: %d", mServiceClassName, slot);
         return mChildProcessConnections[slot];
     }
 
     // Also return the first ChildSpawnData in the pending queue, if any.
-    public ChildSpawnData free(BaseChildProcessConnection connection) {
+    public ChildSpawnData free(ChildProcessConnection connection) {
         assert LauncherThread.runningOnLauncherThread();
         // mChildProcessConnections is relatively short (20 items at max at this point).
         // We are better of iterating than caching in a map.
@@ -172,6 +183,11 @@ public class ChildConnectionAllocator {
         return mChildProcessConnections.length;
     }
 
+    @VisibleForTesting
+    void setConnectionFactoryForTesting(ConnectionFactory connectionFactory) {
+        mConnectionFactory = connectionFactory;
+    }
+
     /** @return the count of connections managed by the allocator */
     @VisibleForTesting
     int allocatedConnectionsCountForTesting() {
@@ -180,7 +196,7 @@ public class ChildConnectionAllocator {
     }
 
     @VisibleForTesting
-    BaseChildProcessConnection[] connectionArrayForTesting() {
+    ChildProcessConnection[] connectionArrayForTesting() {
         return mChildProcessConnections;
     }
 

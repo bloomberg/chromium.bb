@@ -9,7 +9,7 @@ import android.content.Context;
 import org.chromium.base.process_launcher.ChildProcessCreationParams;
 import org.chromium.base.process_launcher.FileDescriptorInfo;
 import org.chromium.base.process_launcher.IChildProcessService;
-import org.chromium.content.browser.BaseChildProcessConnection;
+import org.chromium.content.browser.ChildProcessConnection;
 import org.chromium.content.browser.ChildProcessLauncher;
 import org.chromium.content.browser.LauncherThread;
 
@@ -55,12 +55,12 @@ public final class ChildProcessLauncherTestUtils {
         }
     }
 
-    public static BaseChildProcessConnection startInternalForTesting(final Context context,
+    public static ChildProcessConnection startInternalForTesting(final Context context,
             final String[] commandLine, final FileDescriptorInfo[] filesToMap,
             final ChildProcessCreationParams params) {
-        return runOnLauncherAndGetResult(new Callable<BaseChildProcessConnection>() {
+        return runOnLauncherAndGetResult(new Callable<ChildProcessConnection>() {
             @Override
-            public BaseChildProcessConnection call() {
+            public ChildProcessConnection call() {
                 return ChildProcessLauncher.startInternal(context, commandLine, filesToMap,
                         null /* launchCallback */, null /* childProcessCallback */,
                         true /* inSandbox */, false /* alwaysInForeground */, params);
@@ -69,7 +69,7 @@ public final class ChildProcessLauncherTestUtils {
     }
 
     // Retrieves the PID of the passed in connection on the launcher thread as to not assert.
-    public static int getConnectionPid(final BaseChildProcessConnection connection) {
+    public static int getConnectionPid(final ChildProcessConnection connection) {
         return runOnLauncherAndGetResult(new Callable<Integer>() {
             @Override
             public Integer call() {
@@ -80,7 +80,7 @@ public final class ChildProcessLauncherTestUtils {
 
     // Retrieves the service number of the passed in connection from its service name, or -1 if the
     // service number could not be determined.
-    public static int getConnectionServiceNumber(final BaseChildProcessConnection connection) {
+    public static int getConnectionServiceNumber(final ChildProcessConnection connection) {
         String serviceName = getConnectionServiceName(connection);
         // The service name ends up with the service number.
         StringBuilder numberString = new StringBuilder();
@@ -100,7 +100,7 @@ public final class ChildProcessLauncherTestUtils {
 
     // Retrieves the service number of the passed in connection on the launcher thread as to not
     // assert.
-    public static String getConnectionServiceName(final BaseChildProcessConnection connection) {
+    public static String getConnectionServiceName(final ChildProcessConnection connection) {
         return runOnLauncherAndGetResult(new Callable<String>() {
             @Override
             public String call() {
@@ -111,7 +111,7 @@ public final class ChildProcessLauncherTestUtils {
 
     // Retrieves the service of the passed in connection on the launcher thread as to not assert.
     public static IChildProcessService getConnectionService(
-            final BaseChildProcessConnection connection) {
+            final ChildProcessConnection connection) {
         return runOnLauncherAndGetResult(new Callable<IChildProcessService>() {
             @Override
             public IChildProcessService call() {

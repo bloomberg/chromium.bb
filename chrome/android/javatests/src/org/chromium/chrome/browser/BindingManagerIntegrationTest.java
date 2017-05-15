@@ -34,8 +34,8 @@ import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.ChromeRestriction;
 import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.content.browser.BindingManager;
+import org.chromium.content.browser.ChildProcessConnection;
 import org.chromium.content.browser.ChildProcessLauncher;
-import org.chromium.content.browser.ManagedChildProcessConnection;
 import org.chromium.content.browser.test.ChildProcessAllocatorSettings;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
@@ -113,7 +113,7 @@ public class BindingManagerIntegrationTest {
         }
 
         @Override
-        public void addNewConnection(int pid, ManagedChildProcessConnection connection) {
+        public void addNewConnection(int pid, ChildProcessConnection connection) {
             synchronized (mVisibilityCallsMap) {
                 mVisibilityCallsMap.put(pid, "");
             }

@@ -177,12 +177,12 @@ class BindingManagerImpl implements BindingManager {
     private ModerateBindingPool mModerateBindingPool;
 
     /**
-     * Wraps ManagedChildProcessConnection keeping track of additional information needed to manage
-     * the bindings of the connection. It goes away when the connection goes away.
+     * Wraps ChildProcessConnection keeping track of additional information needed to manage the
+     * bindings of the connection. It goes away when the connection goes away.
      */
     private class ManagedConnection {
         // The connection to the service.
-        private final ManagedChildProcessConnection mConnection;
+        private final ChildProcessConnection mConnection;
 
         // True iff there is a strong binding kept on the service because it is working in
         // foreground.
@@ -234,7 +234,7 @@ class BindingManagerImpl implements BindingManager {
          * binding.
          * @param connection The ChildProcessConnection to add to the moderate binding pool.
          */
-        private void addConnectionToModerateBindingPool(ManagedChildProcessConnection connection) {
+        private void addConnectionToModerateBindingPool(ChildProcessConnection connection) {
             if (mModerateBindingPool != null && !connection.isStrongBindingBound()) {
                 mModerateBindingPool.addConnection(ManagedConnection.this);
             }
@@ -260,7 +260,7 @@ class BindingManagerImpl implements BindingManager {
             mConnection.dropOomBindings();
         }
 
-        ManagedConnection(ManagedChildProcessConnection connection) {
+        ManagedConnection(ChildProcessConnection connection) {
             mConnection = connection;
         }
 
@@ -345,7 +345,7 @@ class BindingManagerImpl implements BindingManager {
     }
 
     @Override
-    public void addNewConnection(int pid, ManagedChildProcessConnection connection) {
+    public void addNewConnection(int pid, ChildProcessConnection connection) {
         assert LauncherThread.runningOnLauncherThread();
         // This will reset the previous entry for the pid in the unlikely event of the OS
         // reusing renderer pids.

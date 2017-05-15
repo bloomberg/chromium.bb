@@ -30,7 +30,7 @@ class ChildProcessLauncherHelper {
 
     // Note native pointer is only guaranteed live until nativeOnChildProcessStarted.
     private long mNativeChildProcessLauncherHelper;
-    private BaseChildProcessConnection mChildProcessConnection;
+    private ChildProcessConnection mChildProcessConnection;
 
     @CalledByNative
     private static FileDescriptorInfo makeFdInfo(
@@ -66,7 +66,7 @@ class ChildProcessLauncherHelper {
         ChildProcessLauncher.start(ContextUtils.getApplicationContext(), paramId, commandLine,
                 filesToBeMapped, new ChildProcessLauncher.LaunchCallback() {
                     @Override
-                    public void onChildProcessStarted(BaseChildProcessConnection connection) {
+                    public void onChildProcessStarted(ChildProcessConnection connection) {
                         mChildProcessConnection = connection;
                         if (mNativeChildProcessLauncherHelper != 0) {
                             nativeOnChildProcessStarted(
@@ -91,15 +91,10 @@ class ChildProcessLauncherHelper {
             return false;
         }
 
-        if (mChildProcessConnection instanceof ImportantChildProcessConnection) {
-            // The connection was bound as BIND_IMPORTANT. This should prevent it from being killed
-            // when the app is on the foreground (that's our best guess, but there is no absolute
-            // guarantee).
-            return ChildProcessLauncher.isApplicationInForeground();
-        }
-
-        return ((ManagedChildProcessConnection) mChildProcessConnection)
-                .isOomProtectedOrWasWhenDied();
+        // We consider the process to be child protected if it has a strong or moderate binding and
+        // the app is in the foreground.
+        return ChildProcessLauncher.isApplicationInForeground()
+                && !mChildProcessConnection.isWaivedBoundOnlyOrWasWhenDied();
     }
 
     @CalledByNative

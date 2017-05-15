@@ -37,18 +37,38 @@ public class ChildProcessLauncherIntegrationTest {
     public final ContentShellActivityTestRule mActivityTestRule =
             new ContentShellActivityTestRule();
 
-    private static class TestManagedChildProcessConnection extends ManagedChildProcessConnection {
+    private static class TestChildProcessConnectionFactory
+            implements ChildConnectionAllocator.ConnectionFactory {
+        private final List<TestChildProcessConnection> mConnections = new ArrayList<>();
+
+        @Override
+        public ChildProcessConnection createConnection(ChildSpawnData spawnData,
+                ChildProcessConnection.DeathCallback deathCallback,
+                Bundle childProcessCommonParameters, String serviceClassName) {
+            TestChildProcessConnection connection = new TestChildProcessConnection(
+                    spawnData.getContext(), deathCallback, serviceClassName,
+                    childProcessCommonParameters, spawnData.getCreationParams());
+            mConnections.add(connection);
+            return connection;
+        }
+
+        public List<TestChildProcessConnection> getConnections() {
+            return mConnections;
+        }
+    }
+
+    private static class TestChildProcessConnection extends ChildProcessConnection {
         private RuntimeException mRemovedBothInitialAndStrongBinding;
 
-        public TestManagedChildProcessConnection(Context context,
-                BaseChildProcessConnection.DeathCallback deathCallback, String serviceClassName,
+        public TestChildProcessConnection(Context context,
+                ChildProcessConnection.DeathCallback deathCallback, String serviceClassName,
                 Bundle childProcessCommonParameters, ChildProcessCreationParams creationParams) {
             super(context, deathCallback, serviceClassName, childProcessCommonParameters,
                     creationParams);
         }
 
         @Override
-        public void unbind() {
+        protected void unbind() {
             super.unbind();
             if (mRemovedBothInitialAndStrongBinding == null) {
                 mRemovedBothInitialAndStrongBinding = new RuntimeException("unbind");
@@ -86,31 +106,11 @@ public class ChildProcessLauncherIntegrationTest {
         }
     }
 
-    private static class TestChildProcessConnectionFactory
-            implements BaseChildProcessConnection.Factory {
-        private final List<TestManagedChildProcessConnection> mConnections = new ArrayList<>();
-
-        @Override
-        public BaseChildProcessConnection create(Context context,
-                BaseChildProcessConnection.DeathCallback deathCallback, String serviceClassName,
-                Bundle childProcessCommonParameters, ChildProcessCreationParams creationParams) {
-            TestManagedChildProcessConnection connection =
-                    new TestManagedChildProcessConnection(context, deathCallback, serviceClassName,
-                            childProcessCommonParameters, creationParams);
-            mConnections.add(connection);
-            return connection;
-        }
-
-        public List<TestManagedChildProcessConnection> getConnections() {
-            return mConnections;
-        }
-    }
-
     @Test
     @MediumTest
     public void testCrossDomainNavigationDoNotLoseImportance() throws Throwable {
         final TestChildProcessConnectionFactory factory = new TestChildProcessConnectionFactory();
-        final List<TestManagedChildProcessConnection> connections = factory.getConnections();
+        final List<TestChildProcessConnection> connections = factory.getConnections();
         ChildProcessLauncher.setSandboxServicesSettingsForTesting(factory,
                 10 /* arbitrary number, only realy need 2 */, null /* use default service name */);
 
