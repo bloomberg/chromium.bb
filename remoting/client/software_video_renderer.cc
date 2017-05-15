@@ -57,6 +57,8 @@ SoftwareVideoRenderer::SoftwareVideoRenderer(
 }
 
 SoftwareVideoRenderer::~SoftwareVideoRenderer() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
   if (decoder_)
     decode_task_runner_->DeleteSoon(FROM_HERE, decoder_.release());
 }

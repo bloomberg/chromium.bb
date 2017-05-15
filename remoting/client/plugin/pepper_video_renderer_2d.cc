@@ -58,7 +58,9 @@ PepperVideoRenderer2D::PepperVideoRenderer2D()
       callback_factory_(this),
       weak_factory_(this) {}
 
-PepperVideoRenderer2D::~PepperVideoRenderer2D() {}
+PepperVideoRenderer2D::~PepperVideoRenderer2D() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+}
 
 void PepperVideoRenderer2D::SetPepperContext(
     pp::Instance* instance,

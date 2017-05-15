@@ -33,7 +33,9 @@ GlRenderer::GlRenderer() :
   thread_checker_.DetachFromThread();
 }
 
-GlRenderer::~GlRenderer() {}
+GlRenderer::~GlRenderer() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+}
 
 void GlRenderer::SetDelegate(base::WeakPtr<GlRendererDelegate> delegate) {
   DCHECK(!delegate_);

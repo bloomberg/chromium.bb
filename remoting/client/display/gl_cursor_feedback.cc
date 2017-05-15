@@ -45,7 +45,9 @@ namespace remoting {
 
 GlCursorFeedback::GlCursorFeedback() : weak_factory_(this) {}
 
-GlCursorFeedback::~GlCursorFeedback() {}
+GlCursorFeedback::~GlCursorFeedback() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+}
 
 void GlCursorFeedback::SetCanvas(base::WeakPtr<Canvas> canvas) {
   if (!canvas) {

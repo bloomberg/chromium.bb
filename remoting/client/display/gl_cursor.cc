@@ -20,7 +20,9 @@ const int kDefaultCursorDataSize = 32 * 32 * GlRenderLayer::kBytesPerPixel;
 
 GlCursor::GlCursor() : weak_factory_(this) {}
 
-GlCursor::~GlCursor() {}
+GlCursor::~GlCursor() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+}
 
 void GlCursor::SetCursorShape(const protocol::CursorShapeInfo& cursor_shape) {
   int data_size = cursor_shape.width() * cursor_shape.height() *
