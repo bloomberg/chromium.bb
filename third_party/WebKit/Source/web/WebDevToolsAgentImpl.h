@@ -148,7 +148,7 @@ class WebDevToolsAgentImpl final
   WebDevToolsAgentClient* client_;
   Member<WebLocalFrameImpl> web_local_frame_impl_;
 
-  Member<CoreProbeSink> instrumenting_agents_;
+  Member<CoreProbeSink> probe_sink_;
   Member<InspectorResourceContentLoader> resource_content_loader_;
   Member<InspectedFrames> inspected_frames_;
   Member<InspectorResourceContainer> resource_container_;

@@ -56,9 +56,7 @@ class WorkerInspectorController final
   ~WorkerInspectorController() override;
   DECLARE_TRACE();
 
-  CoreProbeSink* InstrumentingAgents() const {
-    return instrumenting_agents_.Get();
-  }
+  CoreProbeSink* GetProbeSink() const { return probe_sink_.Get(); }
 
   void ConnectFrontend();
   void DisconnectFrontend();
@@ -81,7 +79,7 @@ class WorkerInspectorController final
 
   WorkerThreadDebugger* debugger_;
   WorkerThread* thread_;
-  Member<CoreProbeSink> instrumenting_agents_;
+  Member<CoreProbeSink> probe_sink_;
   Member<InspectorSession> session_;
 };
 

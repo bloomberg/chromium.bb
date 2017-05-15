@@ -66,7 +66,7 @@ class CORE_EXPORT AsyncTask {
 
 // Called from generated instrumentation code.
 inline CoreProbeSink* ToCoreProbeSink(LocalFrame* frame) {
-  return frame ? frame->InstrumentingAgents() : nullptr;
+  return frame ? frame->GetProbeSink() : nullptr;
 }
 
 inline CoreProbeSink* ToCoreProbeSink(Document& document) {

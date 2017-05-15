@@ -359,7 +359,7 @@ LocalFrame::~LocalFrame() {
 }
 
 DEFINE_TRACE(LocalFrame) {
-  visitor->Trace(instrumenting_agents_);
+  visitor->Trace(probe_sink_);
   visitor->Trace(performance_monitor_);
   visitor->Trace(loader_);
   visitor->Trace(navigation_scheduler_);
@@ -903,10 +903,10 @@ inline LocalFrame::LocalFrame(LocalFrameClient* client,
       interface_provider_(interface_provider),
       interface_registry_(interface_registry) {
   if (IsLocalRoot()) {
-    instrumenting_agents_ = new CoreProbeSink();
+    probe_sink_ = new CoreProbeSink();
     performance_monitor_ = new PerformanceMonitor(this);
   } else {
-    instrumenting_agents_ = LocalFrameRoot().instrumenting_agents_;
+    probe_sink_ = LocalFrameRoot().probe_sink_;
     performance_monitor_ = LocalFrameRoot().performance_monitor_;
   }
 }

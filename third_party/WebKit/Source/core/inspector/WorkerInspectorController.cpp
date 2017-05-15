@@ -53,10 +53,8 @@ WorkerInspectorController* WorkerInspectorController::Create(
 WorkerInspectorController::WorkerInspectorController(
     WorkerThread* thread,
     WorkerThreadDebugger* debugger)
-    : debugger_(debugger),
-      thread_(thread),
-      instrumenting_agents_(new CoreProbeSink()) {
-  instrumenting_agents_->addInspectorTraceEvents(new InspectorTraceEvents());
+    : debugger_(debugger), thread_(thread), probe_sink_(new CoreProbeSink()) {
+  probe_sink_->addInspectorTraceEvents(new InspectorTraceEvents());
 }
 
 WorkerInspectorController::~WorkerInspectorController() {
@@ -69,7 +67,7 @@ void WorkerInspectorController::ConnectFrontend() {
 
   // sessionId will be overwritten by WebDevToolsAgent::sendProtocolNotification
   // call.
-  session_ = new InspectorSession(this, instrumenting_agents_.Get(), 0,
+  session_ = new InspectorSession(this, probe_sink_.Get(), 0,
                                   debugger_->GetV8Inspector(),
                                   debugger_->ContextGroupId(thread_), nullptr);
   session_->Append(
@@ -121,7 +119,7 @@ void WorkerInspectorController::DidProcessTask() {
 }
 
 DEFINE_TRACE(WorkerInspectorController) {
-  visitor->Trace(instrumenting_agents_);
+  visitor->Trace(probe_sink_);
   visitor->Trace(session_);
 }
 
