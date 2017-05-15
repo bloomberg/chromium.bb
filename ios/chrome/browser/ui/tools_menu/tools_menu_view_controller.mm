@@ -9,7 +9,7 @@
 #include "base/ios/ios_util.h"
 #import "base/ios/weak_nsobject.h"
 #include "base/logging.h"
-#include "base/mac/objc_property_releaser.h"
+#include "base/mac/objc_release_properties.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/metrics/field_trial.h"
 #include "components/strings/grit/components_strings.h"
@@ -105,7 +105,6 @@ NS_INLINE void AnimateInViews(NSArray* views,
 @interface ToolsMenuViewController ()<UICollectionViewDelegateFlowLayout,
                                       UICollectionViewDataSource,
                                       ReadingListMenuNotificationDelegate> {
-  base::mac::ObjCPropertyReleaser _propertyReleaser_ToolsMenuViewController;
   BOOL _waitForInk;
   // Weak pointer to ReadingListMenuNotifier, used to set the starting values
   // for the reading list badge.
@@ -336,9 +335,12 @@ NS_INLINE void AnimateInViews(NSArray* views,
 }
 
 - (void)commonInitialization {
-  _propertyReleaser_ToolsMenuViewController.Init(
-      self, [ToolsMenuViewController class]);
   _readingListMenuNotifier.reset();
+}
+
+- (void)dealloc {
+  base::mac::ReleaseProperties(self);
+  [super dealloc];
 }
 
 - (void)loadView {

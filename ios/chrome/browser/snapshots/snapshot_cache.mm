@@ -13,7 +13,7 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/mac/bind_objc_block.h"
-#include "base/mac/objc_property_releaser.h"
+#include "base/mac/objc_release_properties.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
@@ -157,8 +157,6 @@ void ConvertAndSaveGreyImage(
   // be requested to be saved to disk when the application is backgrounded.
   base::scoped_nsobject<NSString> backgroundingImageSessionId_;
   base::scoped_nsobject<UIImage> backgroundingColorImage_;
-
-  base::mac::ObjCPropertyReleaser propertyReleaser_SnapshotCache_;
 }
 
 @synthesize pinnedIDs = pinnedIDs_;
@@ -171,8 +169,6 @@ void ConvertAndSaveGreyImage(
 - (id)init {
   if ((self = [super init])) {
     DCHECK_CURRENTLY_ON(web::WebThread::UI);
-    propertyReleaser_SnapshotCache_.Init(self, [SnapshotCache class]);
-
     if ([self usesLRUCache]) {
       lruCache_.reset(
           [[LRUCache alloc] initWithCacheSize:kLRUCacheMaxCapacity]);
@@ -212,6 +208,7 @@ void ConvertAndSaveGreyImage(
       removeObserver:self
                 name:UIApplicationDidBecomeActiveNotification
               object:nil];
+  base::mac::ReleaseProperties(self);
   [super dealloc];
 }
 

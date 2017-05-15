@@ -11,7 +11,7 @@
 #import "base/ios/weak_nsobject.h"
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"
-#import "base/mac/objc_property_releaser.h"
+#import "base/mac/objc_release_properties.h"
 #import "base/mac/scoped_nsobject.h"
 #include "base/memory/ptr_util.h"
 #include "base/numerics/safe_conversions.h"
@@ -162,9 +162,6 @@ void SavePasswordsConsumer::OnGetPasswordStoreResults(
   // Module containing the reauthentication mechanism for viewing and copying
   // passwords.
   base::scoped_nsobject<ReauthenticationModule> reauthenticationModule_;
-
-  base::mac::ObjCPropertyReleaser
-      propertyReleaser_SavePasswordsCollectionViewController_;
 }
 // Kick off async request to get logins from password store.
 - (void)getLoginsFromPasswordStore;
@@ -194,15 +191,13 @@ void SavePasswordsConsumer::OnGetPasswordStoreResults(
     [self getLoginsFromPasswordStore];
     [self updateEditButton];
     [self loadModel];
-
-    propertyReleaser_SavePasswordsCollectionViewController_.Init(
-        self, [SavePasswordsCollectionViewController class]);
   }
   return self;
 }
 
 - (void)dealloc {
   [passwordManagerEnabled_ setObserver:nil];
+  base::mac::ReleaseProperties(self);
   [super dealloc];
 }
 

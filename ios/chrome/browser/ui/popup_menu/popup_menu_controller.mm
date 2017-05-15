@@ -7,7 +7,7 @@
 #import "base/ios/weak_nsobject.h"
 #include "base/logging.h"
 #include "base/mac/bundle_locations.h"
-#include "base/mac/objc_property_releaser.h"
+#include "base/mac/objc_release_properties.h"
 #import "ios/chrome/browser/ui/animation_util.h"
 #import "ios/chrome/browser/ui/popup_menu/popup_menu_view.h"
 #include "ios/chrome/browser/ui/rtl_geometry.h"
@@ -55,7 +55,6 @@ static CGPoint AnimateInIntermediaryPoint(CGPoint source, CGPoint destination) {
 }  // anonymous namespace
 
 @interface PopupMenuController ()<PopupMenuViewDelegate> {
-  base::mac::ObjCPropertyReleaser propertyReleaser_PopupMenuController_;
   CGPoint sourceAnimationPoint_;
 }
 @end
@@ -85,9 +84,6 @@ static CGPoint AnimateInIntermediaryPoint(CGPoint source, CGPoint destination) {
   DCHECK(parent);
   self = [super init];
   if (self) {
-    propertyReleaser_PopupMenuController_.Init(self,
-                                               [PopupMenuController class]);
-
     popupContainer_ = [[PopupMenuView alloc]
         initWithFrame:CGRectMake(0, 0, kPopupContainerWidth,
                                  kPopupContainerHeight)];
@@ -176,6 +172,7 @@ static CGPoint AnimateInIntermediaryPoint(CGPoint source, CGPoint destination) {
   [popupContainer_ removeFromSuperview];
   [backgroundButton_ removeFromSuperview];
   [containerView_ removeFromSuperview];
+  base::mac::ReleaseProperties(self);
   [super dealloc];
 }
 

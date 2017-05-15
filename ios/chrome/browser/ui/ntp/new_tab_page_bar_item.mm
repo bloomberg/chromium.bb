@@ -4,7 +4,7 @@
 
 #import "ios/chrome/browser/ui/ntp/new_tab_page_bar_item.h"
 
-#include "base/mac/objc_property_releaser.h"
+#include "base/mac/objc_release_properties.h"
 
 @implementation NewTabPageBarItem {
   // Title of the button.
@@ -15,7 +15,6 @@
   UIImage* image_;
   // New tab page view.
   __unsafe_unretained UIView* view_;  // weak
-  base::mac::ObjCPropertyReleaser propertyReleaser_NewTabPageBarItem_;
 }
 
 @synthesize title = title_;
@@ -35,12 +34,9 @@
   return item;
 }
 
-- (id)init {
-  self = [super init];
-  if (self) {
-    propertyReleaser_NewTabPageBarItem_.Init(self, [NewTabPageBarItem class]);
-  }
-  return self;
+- (void)dealloc {
+  base::mac::ReleaseProperties(self);
+  [super dealloc];
 }
 
 @end

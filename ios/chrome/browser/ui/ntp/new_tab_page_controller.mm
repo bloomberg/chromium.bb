@@ -8,7 +8,7 @@
 
 #import "base/ios/weak_nsobject.h"
 #include "base/logging.h"
-#include "base/mac/objc_property_releaser.h"
+#include "base/mac/objc_release_properties.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
 #include "components/prefs/pref_service.h"
@@ -131,8 +131,6 @@ enum {
   base::WeakNSProtocol<id<WebToolbarDelegate>> webToolbarDelegate_;
 
   base::scoped_nsobject<TabModel> tabModel_;
-
-  base::mac::ObjCPropertyReleaser propertyReleaser_NewTabPageController_;
 }
 
 // Load and bring panel into view.
@@ -198,8 +196,6 @@ enum {
   self = [super initWithNibName:nil url:url];
   if (self) {
     DCHECK(browserState);
-    propertyReleaser_NewTabPageController_.Init(self,
-                                                [NewTabPageController class]);
     browserState_ = browserState;
     loader_ = loader;
     newTabPageObserver_ = ntpObserver;
@@ -317,6 +313,7 @@ enum {
   [bookmarkController_ setDelegate:nil];
   [openTabsController_ setDelegate:nil];
   [[NSNotificationCenter defaultCenter] removeObserver:self];
+  base::mac::ReleaseProperties(self);
   [super dealloc];
 }
 

@@ -9,7 +9,6 @@
 
 #include <memory>
 
-#include "base/mac/objc_property_releaser.h"
 #import "base/mac/scoped_nsobject.h"
 #include "base/time/time.h"
 #import "chrome/browser/ui/cocoa/has_weak_browser_pointer.h"
@@ -132,8 +131,6 @@ class ZoomLevelObserver;
 
   MenuTrackedRootView* toolbarActionsOverflowItem_;
   BrowserActionsContainerView* overflowActionsContainerView_;
-
-  base::mac::ObjCPropertyReleaser propertyReleaser_;
 }
 
 @property(retain, nonatomic) IBOutlet MenuTrackedRootView* editItem;
