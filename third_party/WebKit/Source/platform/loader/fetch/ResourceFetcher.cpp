@@ -589,9 +589,8 @@ Resource* ResourceFetcher::RequestResource(
 
   // An URL with the "cid" scheme can only be handled by an MHTML Archive.
   // Abort the request when there is none.
-  if (resource_request.Url().ProtocolIs(kContentIdScheme) && !archive_) {
+  if (!archive_ && resource_request.Url().ProtocolIs(kContentIdScheme))
     return nullptr;
-  }
 
   bool is_data_url = resource_request.Url().ProtocolIsData();
   bool is_static_data = is_data_url || substitute_data.IsValid() || archive_;
