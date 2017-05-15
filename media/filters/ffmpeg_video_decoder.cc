@@ -240,18 +240,15 @@ void FFmpegVideoDecoder::Initialize(const VideoDecoderConfig& config,
   }
 
   FFmpegGlue::InitializeFFmpeg();
-  config_ = config;
 
-  // TODO(xhwang): Only set |config_| after we successfully configure the
-  // decoder.
-  if (!ConfigureDecoder(low_delay)) {
+  if (!ConfigureDecoder(config, low_delay)) {
     bound_init_cb.Run(false);
     return;
   }
 
-  output_cb_ = output_cb;
-
   // Success!
+  config_ = config;
+  output_cb_ = output_cb;
   state_ = kNormal;
   bound_init_cb.Run(true);
 }
@@ -407,18 +404,19 @@ void FFmpegVideoDecoder::ReleaseFFmpegResources() {
   av_frame_.reset();
 }
 
-bool FFmpegVideoDecoder::ConfigureDecoder(bool low_delay) {
-  DCHECK(config_.IsValidConfig());
-  DCHECK(!config_.is_encrypted());
+bool FFmpegVideoDecoder::ConfigureDecoder(const VideoDecoderConfig& config,
+                                          bool low_delay) {
+  DCHECK(config.IsValidConfig());
+  DCHECK(!config.is_encrypted());
 
   // Release existing decoder resources if necessary.
   ReleaseFFmpegResources();
 
   // Initialize AVCodecContext structure.
   codec_context_.reset(avcodec_alloc_context3(NULL));
-  VideoDecoderConfigToAVCodecContext(config_, codec_context_.get());
+  VideoDecoderConfigToAVCodecContext(config, codec_context_.get());
 
-  codec_context_->thread_count = GetThreadCount(config_);
+  codec_context_->thread_count = GetThreadCount(config);
   codec_context_->thread_type =
       FF_THREAD_SLICE | (low_delay ? 0 : FF_THREAD_FRAME);
   codec_context_->opaque = this;

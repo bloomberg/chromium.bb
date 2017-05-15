@@ -91,12 +91,12 @@ class MEDIA_EXPORT FFmpegAudioDecoder : public AudioDecoder {
 
   // Handles (re-)initializing the decoder with a (new) config.
   // Returns true if initialization was successful.
-  bool ConfigureDecoder();
+  bool ConfigureDecoder(const AudioDecoderConfig& config);
 
   // Releases resources associated with |codec_context_| and |av_frame_|
   // and resets them to NULL.
   void ReleaseFFmpegResources();
-  void ResetTimestampState();
+  void ResetTimestampState(const AudioDecoderConfig& config);
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
