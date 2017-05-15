@@ -101,8 +101,8 @@ class WebPerformance {
   BLINK_EXPORT double UpdateStyleDurationBeforeFCP() const;
 
 #if BLINK_IMPLEMENTATION
-  WebPerformance(Performance*);
-  WebPerformance& operator=(Performance*);
+  BLINK_EXPORT WebPerformance(Performance*);
+  BLINK_EXPORT WebPerformance& operator=(Performance*);
 #endif
 
  private:

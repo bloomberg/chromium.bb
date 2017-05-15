@@ -50,7 +50,7 @@ struct WebScriptSource {
       : code(code), url(url), start_line(start_line) {}
 
 #if BLINK_IMPLEMENTATION
-  operator ScriptSourceCode() const;
+  BLINK_EXPORT operator ScriptSourceCode() const;
 #endif
 };
 
