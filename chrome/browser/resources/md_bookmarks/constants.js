@@ -23,6 +23,9 @@ var Command = {
   EDIT: 'edit',
   COPY: 'copy',
   DELETE: 'delete',
+  OPEN_NEW_TAB: 'open-new-tab',
+  OPEN_NEW_WINDOW: 'open-new-window',
+  OPEN_INCOGNITO: 'open-incognito',
 };
 
 /** @const */

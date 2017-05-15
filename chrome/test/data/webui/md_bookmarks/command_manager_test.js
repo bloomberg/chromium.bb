@@ -32,12 +32,20 @@ suite('<bookmarks-command-manager>', function() {
                 createFolder(
                     '11',
                     [
-                      createItem('111'),
+                      createItem('111', {url: 'http://111/'}),
                     ]),
-                createFolder('12', []),
-                createItem('13'),
+                createFolder(
+                    '12',
+                    [
+                      createItem('121', {url: 'http://121/'}),
+                    ]),
+                createItem('13', {url: 'http://13/'}),
               ]),
-          createFolder('2', [])),
+          createFolder(
+              '2',
+              [
+                createFolder('21', []),
+              ]))
     });
     bookmarks.Store.instance_ = store;
 
@@ -50,6 +58,8 @@ suite('<bookmarks-command-manager>', function() {
       realHandle(command, itemIds);
     };
     replaceBody(commandManager);
+
+    Polymer.dom.flush();
   });
 
   test('can only copy single URL items', function() {
@@ -129,5 +139,50 @@ suite('<bookmarks-command-manager>', function() {
     commandManager.handle(Command.DELETE, parentAndChildren);
 
     assertDeepEquals(['1', '2'], lastDelete);
+  });
+
+  test('expandUrls_ expands one level of URLs', function() {
+    var urls = commandManager.expandUrls_(new Set(['1']));
+    assertDeepEquals(['http://13/'], urls);
+
+    urls = commandManager.expandUrls_(new Set(['11', '12', '13']));
+    assertDeepEquals(['http://111/', 'http://121/', 'http://13/'], urls);
+  });
+
+  test('shift-enter opens URLs in new window', function() {
+    store.data.selection.items = new Set(['12', '13']);
+    store.notifyObservers();
+
+    var lastCreate;
+    chrome.windows.create = function(createConfig) {
+      lastCreate = createConfig;
+    };
+
+    MockInteractions.pressAndReleaseKeyOn(document, 13, 'shift', 'Enter');
+    assertLastCommand(Command.OPEN_NEW_WINDOW, ['12', '13']);
+    assertDeepEquals(['http://121/', 'http://13/'], lastCreate.url);
+    assertFalse(lastCreate.incognito);
+  });
+
+  test('cannot execute "Open in New Tab" on folders with no items', function() {
+    var items = new Set(['2']);
+    assertFalse(commandManager.canExecute(Command.OPEN_NEW_TAB, items));
+
+    store.data.selection.items = items;
+
+    commandManager.openCommandMenuAtPosition(0, 0);
+    var commandItem = {};
+    commandManager.root.querySelectorAll('.dropdown-item').forEach(element => {
+      commandItem[element.getAttribute('command')] = element;
+    });
+
+    assertTrue(commandItem[Command.OPEN_NEW_TAB].disabled);
+    assertFalse(commandItem[Command.OPEN_NEW_TAB].hidden);
+
+    assertTrue(commandItem[Command.OPEN_NEW_WINDOW].disabled);
+    assertFalse(commandItem[Command.OPEN_NEW_WINDOW].hidden);
+
+    assertTrue(commandItem[Command.OPEN_INCOGNITO].disabled);
+    assertFalse(commandItem[Command.OPEN_INCOGNITO].hidden);
   });
 });

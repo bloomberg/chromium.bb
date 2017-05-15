@@ -10,6 +10,22 @@ Polymer({
   ],
 
   properties: {
+    /** @private {!Array<Command>} */
+    menuCommands_: {
+      type: Array,
+      value: function() {
+        return [
+          Command.EDIT,
+          Command.COPY,
+          Command.DELETE,
+          // <hr>
+          Command.OPEN_NEW_TAB,
+          Command.OPEN_NEW_WINDOW,
+          Command.OPEN_INCOGNITO,
+        ];
+      },
+    },
+
     /** @type {Set<string>} */
     menuIds_: Object,
   },
@@ -28,6 +44,9 @@ Polymer({
     this.shortcuts_[Command.EDIT] = cr.isMac ? 'enter' : 'f2';
     this.shortcuts_[Command.COPY] = cr.isMac ? 'meta+c' : 'ctrl+c';
     this.shortcuts_[Command.DELETE] = cr.isMac ? 'delete backspace' : 'delete';
+    this.shortcuts_[Command.OPEN_NEW_TAB] =
+        cr.isMac ? 'meta+enter' : 'ctrl+enter';
+    this.shortcuts_[Command.OPEN_NEW_WINDOW] = 'shift+enter';
   },
 
   detached: function() {
@@ -65,11 +84,25 @@ Polymer({
   // Command handlers:
 
   /**
+   * Determine if the |command| can be executed with the given |itemIds|.
+   * Commands which appear in the context menu should be implemented separately
+   * using `isCommandVisible_` and `isCommandEnabled_`.
    * @param {Command} command
    * @param {!Set<string>} itemIds
    * @return {boolean}
    */
   canExecute: function(command, itemIds) {
+    return this.isCommandVisible_(command, itemIds) &&
+        this.isCommandEnabled_(command, itemIds);
+  },
+
+  /**
+   * @param {Command} command
+   * @param {!Set<string>} itemIds
+   * @return {boolean} True if the command should be visible in the context
+   *     menu.
+   */
+  isCommandVisible_: function(command, itemIds) {
     switch (command) {
       case Command.EDIT:
         return itemIds.size == 1;
@@ -79,9 +112,29 @@ Polymer({
               return !!node.url;
             });
       case Command.DELETE:
+      case Command.OPEN_NEW_TAB:
+      case Command.OPEN_NEW_WINDOW:
+      case Command.OPEN_INCOGNITO:
         return itemIds.size > 0;
       default:
         return false;
+    }
+  },
+
+  /**
+   * @param {Command} command
+   * @param {!Set<string>} itemIds
+   * @return {boolean} True if the command should be clickable in the context
+   *     menu.
+   */
+  isCommandEnabled_: function(command, itemIds) {
+    switch (command) {
+      case Command.OPEN_NEW_TAB:
+      case Command.OPEN_NEW_WINDOW:
+      case Command.OPEN_INCOGNITO:
+        return this.expandUrls_(itemIds).length > 0;
+      default:
+        return true;
     }
   },
 
@@ -107,6 +160,11 @@ Polymer({
             Array.from(this.minimizeDeletionSet_(itemIds)), function() {
               // TODO(jiaxi): Add toast later.
             });
+        break;
+      case Command.OPEN_NEW_TAB:
+      case Command.OPEN_NEW_WINDOW:
+      case Command.OPEN_INCOGNITO:
+        this.openUrls_(this.expandUrls_(itemIds), command);
         break;
     }
   },
@@ -135,6 +193,58 @@ Polymer({
       minimizedSet.add(itemId);
     });
     return minimizedSet;
+  },
+
+  /**
+   * @param {!Array<string>} urls
+   * @param {Command} command
+   * @private
+   */
+  openUrls_: function(urls, command) {
+    assert(
+        command == Command.OPEN_NEW_TAB || command == Command.OPEN_NEW_WINDOW ||
+        command == Command.OPEN_INCOGNITO);
+
+    if (urls.length == 0)
+      return;
+
+    var incognito = command == Command.OPEN_INCOGNITO;
+    if (command == Command.OPEN_NEW_WINDOW || incognito) {
+      chrome.windows.create({url: urls, incognito: incognito});
+    } else {
+      urls.forEach(function(url) {
+        chrome.tabs.create({url: url, active: false});
+      });
+    }
+  },
+
+  /**
+   * Returns all URLs in the given set of nodes and their immediate children.
+   * Note that these will be ordered by insertion order into the |itemIds| set,
+   * and that it is possible to duplicate a URL by passing in both the parent ID
+   * and child ID.
+   * @param {!Set<string>} itemIds
+   * @return {!Array<string>}
+   * @private
+   */
+  expandUrls_: function(itemIds) {
+    var urls = [];
+    var nodes = this.getState().nodes;
+
+    itemIds.forEach(function(id) {
+      var node = nodes[id];
+      if (node.url) {
+        urls.push(node.url);
+      } else {
+        node.children.forEach(function(childId) {
+          var childNode = nodes[childId];
+          if (childNode.url)
+            urls.push(childNode.url);
+        });
+      }
+    });
+
+    return urls;
   },
 
   /**
@@ -207,14 +317,52 @@ Polymer({
     this.$.dropdown.close();
   },
 
-  /** @private */
-  getEditActionLabel_: function() {
-    if (this.menuIds_.size > 1)
-      return;
+  /**
+   * @param {Command} command
+   * @return {string}
+   * @private
+   */
+  getCommandLabel_: function(command) {
+    var multipleNodes = this.menuIds_.size > 1 ||
+        this.containsMatchingNode_(this.menuIds_, function(node) {
+          return !node.url;
+        });
+    var label;
+    switch (command) {
+      case Command.EDIT:
+        if (this.menuIds_.size > 1)
+          return '';
 
-    var id = Array.from(this.menuIds_)[0];
-    var itemUrl = this.getState().nodes[id].url;
-    var label = itemUrl ? 'menuEdit' : 'menuRename';
-    return loadTimeData.getString(label);
+        var id = Array.from(this.menuIds_)[0];
+        var itemUrl = this.getState().nodes[id].url;
+        label = itemUrl ? 'menuEdit' : 'menuRename';
+        break;
+      case Command.COPY:
+        label = 'menuCopyURL';
+        break;
+      case Command.DELETE:
+        label = 'menuDelete';
+        break;
+      case Command.OPEN_NEW_TAB:
+        label = multipleNodes ? 'menuOpenAllNewTab' : 'menuOpenNewTab';
+        break;
+      case Command.OPEN_NEW_WINDOW:
+        label = multipleNodes ? 'menuOpenAllNewWindow' : 'menuOpenNewWindow';
+        break;
+      case Command.OPEN_INCOGNITO:
+        label = multipleNodes ? 'menuOpenAllIncognito' : 'menuOpenIncognito';
+        break;
+    }
+
+    return loadTimeData.getString(assert(label));
+  },
+
+  /**
+   * @param {Command} command
+   * @return {boolean}
+   * @private
+   */
+  showDividerAfter_: function(command) {
+    return command == Command.DELETE;
   },
 });

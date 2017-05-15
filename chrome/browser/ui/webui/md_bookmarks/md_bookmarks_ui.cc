@@ -61,6 +61,19 @@ content::WebUIDataSource* CreateMdBookmarksUIHTMLSource(Profile* profile) {
   AddLocalizedString(source, "menuEdit", IDS_EDIT);
   AddLocalizedString(source, "menuExport", IDS_MD_BOOKMARK_MANAGER_MENU_EXPORT);
   AddLocalizedString(source, "menuImport", IDS_MD_BOOKMARK_MANAGER_MENU_IMPORT);
+  // TODO(tsergeant): These are not the exact strings specified by UI. Reconcile
+  // the differences between these strings and the work in crbug.com/708815.
+  AddLocalizedString(source, "menuOpenAllNewTab", IDS_BOOKMARK_BAR_OPEN_ALL);
+  AddLocalizedString(source, "menuOpenAllNewWindow",
+                     IDS_BOOKMARK_BAR_OPEN_ALL_NEW_WINDOW);
+  AddLocalizedString(source, "menuOpenAllIncognito",
+                     IDS_BOOKMARK_BAR_OPEN_ALL_INCOGNITO);
+  AddLocalizedString(source, "menuOpenNewTab",
+                     IDS_BOOKMARK_BAR_OPEN_IN_NEW_TAB);
+  AddLocalizedString(source, "menuOpenNewWindow",
+                     IDS_BOOKMARK_BAR_OPEN_IN_NEW_WINDOW);
+  AddLocalizedString(source, "menuOpenIncognito",
+                     IDS_BOOKMARK_BAR_OPEN_INCOGNITO);
   AddLocalizedString(source, "menuRename", IDS_MD_BOOKMARK_MANAGER_MENU_RENAME);
   AddLocalizedString(source, "menuSort", IDS_MD_BOOKMARK_MANAGER_MENU_SORT);
   AddLocalizedString(source, "noSearchResults",

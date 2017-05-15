@@ -807,8 +807,14 @@
     "dependencies": ["permission:webview"],
     "contexts": ["blessed_extension"]
   },
-  "windows": {
+  "windows": [{
     "dependencies": ["api:tabs"],
     "contexts": ["blessed_extension"]
-  }
+  }, {
+    "channel": "stable",
+    "contexts": ["webui"],
+    "matches": [
+      "chrome://bookmarks/*"
+    ]
+  }]
 }
