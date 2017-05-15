@@ -47,7 +47,14 @@ class CORE_EXPORT StyleInheritedData
     return AdoptRef(new StyleInheritedData(*this));
   }
 
-  bool operator==(const StyleInheritedData&) const;
+  bool operator==(const StyleInheritedData& other) const {
+    return line_height_ == other.line_height_ && font_ == other.font_ &&
+           color_ == other.color_ &&
+           visited_link_color_ == other.visited_link_color_ &&
+           horizontal_border_spacing_ == other.horizontal_border_spacing_ &&
+           text_autosizing_multiplier_ == other.text_autosizing_multiplier_ &&
+           vertical_border_spacing_ == other.vertical_border_spacing_;
+  }
   bool operator!=(const StyleInheritedData& o) const { return !(*this == o); }
 
   short horizontal_border_spacing_;
@@ -63,7 +70,14 @@ class CORE_EXPORT StyleInheritedData
   float text_autosizing_multiplier_;
 
  private:
-  StyleInheritedData();
+  StyleInheritedData()
+      : horizontal_border_spacing_(0),
+        vertical_border_spacing_(0),
+        line_height_(Length(-100.0, kPercent)),
+        color_(Color::kBlack),
+        visited_link_color_(Color::kBlack),
+        text_autosizing_multiplier_(1) {}
+
   StyleInheritedData(const StyleInheritedData&) = default;
 };
 
