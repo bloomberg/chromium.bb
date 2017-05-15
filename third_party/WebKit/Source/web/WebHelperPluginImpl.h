@@ -41,7 +41,7 @@
 namespace blink {
 
 class HTMLObjectElement;
-class WebLocalFrameImpl;
+class WebLocalFrameBase;
 class WebPluginContainerImpl;
 
 // Utility class to host helper plugins for media. Internally, it creates a
@@ -61,7 +61,7 @@ class WebHelperPluginImpl final : public WebHelperPlugin {
 
   WebHelperPluginImpl();
 
-  bool Initialize(const String& plugin_type, WebLocalFrameImpl*);
+  bool Initialize(const String& plugin_type, WebLocalFrameBase*);
   void ReallyDestroy(TimerBase*);
 
   Timer<WebHelperPluginImpl> destruction_timer_;

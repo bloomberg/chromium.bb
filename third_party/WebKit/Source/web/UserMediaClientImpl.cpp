@@ -36,7 +36,6 @@
 #include "public/web/WebMediaDevicesRequest.h"
 #include "public/web/WebUserMediaClient.h"
 #include "public/web/WebUserMediaRequest.h"
-#include "web/WebLocalFrameImpl.h"
 
 namespace blink {
 

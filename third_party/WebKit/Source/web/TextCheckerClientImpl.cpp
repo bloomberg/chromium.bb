@@ -4,14 +4,14 @@
 
 #include "web/TextCheckerClientImpl.h"
 #include "core/exported/WebViewBase.h"
+#include "core/frame/WebLocalFrameBase.h"
 #include "public/web/WebTextCheckClient.h"
 #include "public/web/WebTextCheckingResult.h"
-#include "web/WebLocalFrameImpl.h"
 #include "web/WebTextCheckingCompletionImpl.h"
 
 namespace blink {
 
-TextCheckerClientImpl::TextCheckerClientImpl(WebLocalFrameImpl* web_local_frame)
+TextCheckerClientImpl::TextCheckerClientImpl(WebLocalFrameBase* web_local_frame)
     : web_local_frame_(web_local_frame) {}
 
 DEFINE_TRACE(TextCheckerClientImpl) {

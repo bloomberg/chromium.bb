@@ -10,7 +10,7 @@
 
 namespace blink {
 
-class WebLocalFrameImpl;
+class WebLocalFrameBase;
 class WebTextCheckClient;
 
 // TODO(xiaochengh): Rename TextCheckerClientImpl to SpellCheckerClientImpl.
@@ -18,7 +18,7 @@ class TextCheckerClientImpl final
     : public GarbageCollected<TextCheckerClientImpl>,
       public TextCheckerClient {
  public:
-  explicit TextCheckerClientImpl(WebLocalFrameImpl*);
+  explicit TextCheckerClientImpl(WebLocalFrameBase*);
 
   void CheckSpellingOfString(const String&,
                              int* misspelling_location,
@@ -31,7 +31,7 @@ class TextCheckerClientImpl final
  private:
   WebTextCheckClient* GetWebTextCheckClient() const;
 
-  Member<WebLocalFrameImpl> web_local_frame_;
+  Member<WebLocalFrameBase> web_local_frame_;
 
   DISALLOW_COPY_AND_ASSIGN(TextCheckerClientImpl);
 };

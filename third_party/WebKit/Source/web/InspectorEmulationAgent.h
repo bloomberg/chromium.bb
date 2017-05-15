@@ -10,7 +10,7 @@
 
 namespace blink {
 
-class WebLocalFrameImpl;
+class WebLocalFrameBase;
 class WebViewBase;
 
 namespace protocol {
@@ -31,7 +31,7 @@ class InspectorEmulationAgent final
     virtual void SetCPUThrottlingRate(double rate) {}
   };
 
-  static InspectorEmulationAgent* Create(WebLocalFrameImpl*, Client*);
+  static InspectorEmulationAgent* Create(WebLocalFrameBase*, Client*);
   ~InspectorEmulationAgent() override;
 
   // protocol::Dispatcher::EmulationCommandHandler implementation.
@@ -58,11 +58,11 @@ class InspectorEmulationAgent final
   DECLARE_VIRTUAL_TRACE();
 
  private:
-  InspectorEmulationAgent(WebLocalFrameImpl*, Client*);
+  InspectorEmulationAgent(WebLocalFrameBase*, Client*);
   WebViewBase* GetWebViewBase();
   void VirtualTimeBudgetExpired();
 
-  Member<WebLocalFrameImpl> web_local_frame_impl_;
+  Member<WebLocalFrameBase> web_local_frame_;
   Client* client_;
 };
 
