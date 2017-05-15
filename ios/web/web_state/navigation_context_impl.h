@@ -42,6 +42,10 @@ class NavigationContextImpl : public NavigationContext {
   void SetResponseHeaders(
       const scoped_refptr<net::HttpResponseHeaders>& response_headers);
 
+  // Optional unique id of the navigation item associated with this navigaiton.
+  int GetNavigationItemUniqueID() const;
+  void SetNavigationItemUniqueID(int unique_id);
+
  private:
   NavigationContextImpl(
       WebState* web_state,
@@ -55,6 +59,7 @@ class NavigationContextImpl : public NavigationContext {
   bool is_same_document_ = false;
   bool is_error_page_ = false;
   scoped_refptr<net::HttpResponseHeaders> response_headers_;
+  int navigation_item_unique_id_ = -1;
 
   DISALLOW_COPY_AND_ASSIGN(NavigationContextImpl);
 };

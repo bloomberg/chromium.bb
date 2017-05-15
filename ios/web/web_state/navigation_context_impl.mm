@@ -65,6 +65,14 @@ void NavigationContextImpl::SetResponseHeaders(
   response_headers_ = response_headers;
 }
 
+int NavigationContextImpl::GetNavigationItemUniqueID() const {
+  return navigation_item_unique_id_;
+}
+
+void NavigationContextImpl::SetNavigationItemUniqueID(int unique_id) {
+  navigation_item_unique_id_ = unique_id;
+}
+
 NavigationContextImpl::NavigationContextImpl(
     WebState* web_state,
     const GURL& url,

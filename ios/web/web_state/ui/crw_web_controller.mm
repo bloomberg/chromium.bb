@@ -1529,6 +1529,14 @@ registerLoadRequestForURL:(const GURL&)requestURL
   std::unique_ptr<web::NavigationContextImpl> context =
       web::NavigationContextImpl::CreateNavigationContext(_webStateImpl,
                                                           requestURL);
+
+  web::NavigationItem* item = self.navigationManagerImpl->GetPendingItem();
+  // TODO(crbug.com/676129): AddPendingItem does not always create a pending
+  // item. Remove this workaround once the bug is fixed.
+  if (!item) {
+    item = self.navigationManagerImpl->GetLastCommittedItem();
+  }
+  context->SetNavigationItemUniqueID(item->GetUniqueID());
   _webStateImpl->SetIsLoading(true);
   // TODO(crbug.com/713836): pass context to |OnProvisionalNavigationStarted|.
   _webStateImpl->OnProvisionalNavigationStarted(requestURL);
@@ -4541,16 +4549,17 @@ registerLoadRequestForURL:(const GURL&)requestURL
     [self webPageChanged];
   } else {
     // WKWebView has more than one in progress navigation, and committed
-    // navigation was not the latest. It is critical to keep last committed
-    // URL the same as actual document URL, so try guessing which navigation
-    // item should be set to current.
-    // TODO(crbug.com/712269):
+    // navigation was not the latest. Change last committed item to one that
+    // corresponds to committed navigation.
+    web::NavigationContextImpl* context =
+        [_navigationStates contextForNavigation:navigation];
     for (int i = 0; i < self.navigationManagerImpl->GetItemCount(); i++) {
-      web::NavigationItem* item = self.navigationManagerImpl->GetItemAtIndex(i);
-      if (item->GetURL() == _documentURL) {
+      if (self.navigationManagerImpl->GetItemAtIndex(i)->GetUniqueID() ==
+          context->GetNavigationItemUniqueID()) {
         // Do not discard pending entry, because another pending navigation is
         // still in progress and will commit or fail soon.
         [self.sessionController goToItemAtIndex:i discardNonCommittedItems:NO];
+        break;
       }
     }
   }
