@@ -125,6 +125,10 @@ void LayoutMenuList::AdjustInnerStyle() {
     inner_style.SetDirection(option_style_->Direction());
     inner_style.SetUnicodeBidi(option_style_->GetUnicodeBidi());
   }
+
+  // LayoutMenuList::ControlClipRect() depends on inner_block_->ContentsSize().
+  if (RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled())
+    SetNeedsPaintPropertyUpdate();
 }
 
 HTMLSelectElement* LayoutMenuList::SelectElement() const {
@@ -138,6 +142,10 @@ void LayoutMenuList::AddChild(LayoutObject* new_child,
 
   if (AXObjectCache* cache = GetDocument().ExistingAXObjectCache())
     cache->ChildrenChanged(this);
+
+  // LayoutMenuList::ControlClipRect() depends on inner_block_->ContentsSize().
+  if (RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled())
+    SetNeedsPaintPropertyUpdate();
 }
 
 void LayoutMenuList::RemoveChild(LayoutObject* old_child) {

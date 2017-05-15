@@ -309,7 +309,6 @@ void PrePaintTreeWalk::Walk(const LayoutObject& object,
   UpdateAuxiliaryObjectProperties(object, context);
 
   if (context.tree_builder_context) {
-    DCHECK(context.tree_builder_context);
     property_tree_builder_.UpdatePropertiesForSelf(
         object, *context.tree_builder_context);
   }
