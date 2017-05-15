@@ -16062,6 +16062,229 @@
             "chrome_internal"
         ]
     },
+    "novato-chrome-pfq": {
+        "_template": "chrome_pfq",
+        "boards": [
+            "novato"
+        ],
+        "buildslave_type": "baremetal",
+        "important": false,
+        "manifest": "official.xml",
+        "vm_tests": [
+            "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}"
+        ]
+    },
+    "novato-chromium-pfq": {
+        "_template": "chromium_pfq",
+        "boards": [
+            "novato"
+        ],
+        "buildslave_type": "baremetal",
+        "important": false,
+        "useflags": [
+            "-chrome_internal"
+        ],
+        "vm_tests": [
+            "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}"
+        ]
+    },
+    "novato-compile-only-pre-cq": {
+        "_template": "compile_only_pre_cq",
+        "boards": [
+            "novato"
+        ],
+        "buildslave_type": "baremetal",
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "overlays": "both",
+        "useflags": [
+            "chrome_internal"
+        ],
+        "vm_tests": [
+            "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}"
+        ]
+    },
+    "novato-full": {
+        "_template": "full",
+        "boards": [
+            "novato"
+        ],
+        "buildslave_type": "baremetal",
+        "prebuilts": "public",
+        "useflags": [
+            "-chrome_internal"
+        ],
+        "vm_tests": [
+            "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}"
+        ]
+    },
+    "novato-no-vmtest-pre-cq": {
+        "_template": "no_vmtest_pre_cq",
+        "boards": [
+            "novato"
+        ],
+        "buildslave_type": "baremetal",
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "overlays": "both",
+        "useflags": [
+            "chrome_internal"
+        ],
+        "vm_tests": [
+            "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}"
+        ]
+    },
+    "novato-paladin": {
+        "_template": "paladin",
+        "boards": [
+            "novato"
+        ],
+        "buildslave_type": "baremetal",
+        "description": "Commit Queue (internal)",
+        "important": false,
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "overlays": "both",
+        "prebuilts": "private",
+        "useflags": [
+            "chrome_internal"
+        ],
+        "vm_tests_override": null
+    },
+    "novato-payloads": {
+        "_template": "payloads",
+        "boards": [
+            "novato"
+        ]
+    },
+    "novato-pre-cq": {
+        "_template": "pre_cq",
+        "boards": [
+            "novato"
+        ],
+        "buildslave_type": "baremetal",
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "overlays": "both",
+        "useflags": [
+            "chrome_internal"
+        ]
+    },
+    "novato-release": {
+        "_template": "release",
+        "boards": [
+            "novato"
+        ],
+        "buildslave_type": "baremetal",
+        "vm_tests": [
+            "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}"
+        ],
+        "vm_tests_override": null
+    },
+    "novato-release-afdo": {
+        "_template": "release_afdo_generate",
+        "boards": [
+            "novato"
+        ],
+        "buildslave_type": "baremetal",
+        "child_configs": [
+            {
+                "_template": "release_afdo_generate",
+                "boards": [
+                    "novato"
+                ],
+                "grouped": true,
+                "name": "novato-release-afdo-generate",
+                "vm_tests": [
+                    "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}"
+                ],
+                "vm_tests_override": null
+            },
+            {
+                "_template": "release_afdo_use",
+                "boards": [
+                    "novato"
+                ],
+                "grouped": true,
+                "name": "novato-release-afdo-use",
+                "vm_tests": [
+                    "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}"
+                ],
+                "vm_tests_override": null
+            }
+        ],
+        "vm_tests": [
+            "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}"
+        ],
+        "vm_tests_override": null
+    },
+    "novato-release-afdo-generate": {
+        "_template": "release_afdo_generate",
+        "boards": [
+            "novato"
+        ],
+        "buildslave_type": "baremetal",
+        "vm_tests": [
+            "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}"
+        ],
+        "vm_tests_override": null
+    },
+    "novato-release-afdo-use": {
+        "_template": "release_afdo_use",
+        "boards": [
+            "novato"
+        ],
+        "buildslave_type": "baremetal",
+        "vm_tests": [
+            "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}"
+        ],
+        "vm_tests_override": null
+    },
+    "novato-tot-chrome-pfq-informational": {
+        "_template": "chrome_pfq_informational",
+        "boards": [
+            "novato"
+        ],
+        "buildslave_type": "baremetal",
+        "manifest": "official.xml",
+        "vm_tests": [
+            "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}"
+        ]
+    },
+    "novato-tot-chromium-pfq-informational": {
+        "_template": "chromium_pfq_informational",
+        "boards": [
+            "novato"
+        ],
+        "buildslave_type": "baremetal",
+        "useflags": [
+            "-chrome_internal"
+        ],
+        "vm_tests": [
+            "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}"
+        ]
+    },
+    "novato-unittest-stress": {
+        "_template": "unittest_stress",
+        "boards": [
+            "novato"
+        ],
+        "buildslave_type": "baremetal",
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "overlays": "both",
+        "useflags": [
+            "chrome_internal"
+        ],
+        "vm_tests": [
+            "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}"
+        ]
+    },
     "nyan-chrome-pfq": {
         "_template": "chrome_pfq",
         "active_waterfall": "chromeos",

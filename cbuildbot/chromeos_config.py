@@ -526,6 +526,7 @@ _x86_internal_release_boards = frozenset([
     'nasher',
     'newbie',
     'ninja',
+    'novato',
     'orco',
     'panther',
     'parrot',
@@ -616,6 +617,7 @@ _cheets_x86_boards = _cheets_boards | frozenset([
     'lulu',
     'nasher',
     'newbie',
+    'novato',
     'poppy',
     'pyro',
     'reef',
@@ -686,6 +688,7 @@ _cheets_vmtest_boards = frozenset([
     'betty',
     'cyan',
     'newbie',
+    'novato',
 ])
 
 # List of boards that run VMTests but only the smoke tests, not the AU tests
@@ -695,6 +698,7 @@ _smoke_only_vmtest_boards = frozenset([
     'betty',
     'cyan',
     'newbie',
+    'novato',
 ])
 
 # This is a list of configs that should be included on the main waterfall, but
