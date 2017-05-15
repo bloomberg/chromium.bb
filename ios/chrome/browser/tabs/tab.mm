@@ -633,10 +633,15 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
 }
 
 - (NSString*)tabId {
+  if (!self.webState) {
+    // Tab can outlive WebState, in which case Tab is not valid anymore and
+    // tabId should be nil.
+    return nil;
+  }
+
   if (tabId_)
     return tabId_;
 
-  DCHECK(self.webState);
   web::SerializableUserDataManager* userDataManager =
       web::SerializableUserDataManager::FromWebState(self.webState);
   NSString* tabId = base::mac::ObjCCast<NSString>(
