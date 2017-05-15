@@ -99,11 +99,14 @@ public class DownloadManagerDelegate {
                 Class[] args = {String.class, String.class, boolean.class, String.class,
                         String.class, long.class, boolean.class, Uri.class, Uri.class};
                 Method method = c.getMethod("addCompletedDownload", args);
-                // OriginalUri has to be null or non-empty, and cannot be file scheme.
+                // OriginalUri has to be null or non-empty http(s) scheme.
                 Uri originalUri = TextUtils.isEmpty(originalUrl) ? null : Uri.parse(originalUrl);
-                if (originalUri != null && UrlConstants.FILE_SCHEME.equals(
-                        originalUri.normalizeScheme().getScheme())) {
-                    originalUri = null;
+                if (originalUri != null) {
+                    String scheme = originalUri.normalizeScheme().getScheme();
+                    if (scheme == null || (!scheme.equals(UrlConstants.HTTPS_SCHEME)
+                            && !scheme.equals(UrlConstants.HTTP_SCHEME))) {
+                        originalUri = null;
+                    }
                 }
                 Uri refererUri = TextUtils.isEmpty(referer) ? null : Uri.parse(referer);
                 downloadId = (Long) method.invoke(manager, fileName, description, true, mimeType,
