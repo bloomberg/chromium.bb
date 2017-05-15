@@ -259,20 +259,25 @@ void IDNSpoofChecker::SetAllowedUnicodeSet(UErrorCode* status) {
 #error "Update aspirational_scripts per Unicode 10.0"
 #endif
 
-  // U+0338 is included in the recommended set, while U+05F4 and U+2027 are in
-  // the inclusion set. However, they are blacklisted as a part of Mozilla's
-  // IDN blacklist (http://kb.mozillazine.org/Network.IDN.blacklist_chars).
-  // U+2010 is in the inclusion set, but we drop it because it can be confused
-  // with an ASCII U+002D (Hyphen-Minus).
-  // U+0338 and U+2027 are dropped; the former can look like a slash when
-  // rendered with a broken font, and the latter can be confused with U+30FB
-  // (Katakana Middle Dot). U+05F4 (Hebrew Punctuation Gershayim) is kept,
-  // even though it can look like a double quotation mark. Using it in Hebrew
-  // should be safe. When used with a non-Hebrew script, it'd be filtered by
-  // other checks in place.
-  allowed_set.remove(0x338u);   // Combining Long Solidus Overlay
-  allowed_set.remove(0x2010u);  // Hyphen
-  allowed_set.remove(0x2027u);  // Hyphenation Point
+  // The sections below refer to Mozilla's IDN blacklist:
+  // http://kb.mozillazine.org/Network.IDN.blacklist_chars
+  //
+  // U+0338 (Combining Long Solidus Overlay) is included in the recommended set,
+  // but is blacklisted by Mozilla. It is dropped because it can look like a
+  // slash when rendered with a broken font.
+  allowed_set.remove(0x338u);
+  // U+05F4 (Hebrew Punctuation Gershayim) is in the inclusion set, but is
+  // blacklisted by Mozilla. We keep it, even though it can look like a double
+  // quotation mark. Using it in Hebrew should be safe. When used with a
+  // non-Hebrew script, it'd be filtered by other checks in place.
+  //
+  // U+2010 (Hyphen) is in the inclusion set, but we drop it because it can be
+  // confused with an ASCII U+002D (Hyphen-Minus).
+  allowed_set.remove(0x2010u);
+  // U+2027 (Hyphenation Point) is in the inclusion set, but is blacklisted by
+  // Mozilla. It is dropped, as it can be confused with U+30FB (Katakana Middle
+  // Dot).
+  allowed_set.remove(0x2027u);
 
 #if defined(OS_MACOSX)
   // The following characters are reported as present in the default macOS

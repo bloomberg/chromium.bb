@@ -27,8 +27,14 @@ using base::ASCIIToUTF16;
 const size_t kNpos = base::string16::npos;
 
 struct IDNTestCase {
+  // The IDNA/Punycode version of the domain (plain ASCII).
   const char* const input;
+  // The equivalent Unicode version of the domain. Even if we expect the domain
+  // to be displayed in Punycode, this should still contain the Unicode
+  // equivalent (see |unicode_allowed|).
   const wchar_t* unicode_output;
+  // Whether we expect the domain to be displayed decoded as a Unicode string
+  // (true) or in its Punycode form (false).
   const bool unicode_allowed;
 };
 
