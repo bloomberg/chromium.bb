@@ -359,7 +359,7 @@ static void flip_col(uint8_t **dest, int *stride, int rows) {
 
 static void iidtx16(__m256i *in) {
   mm256_transpose_16x16(in, in);
-  txfm_scaling16_avx2(Sqrt2, in);
+  txfm_scaling16_avx2((int16_t)Sqrt2, in);
 }
 #endif
 
