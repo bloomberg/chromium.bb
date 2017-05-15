@@ -273,31 +273,31 @@ void SerializedScriptValue::ToWireBytes(Vector<char>& result) const {
   }
 }
 
-std::unique_ptr<SerializedScriptValue::ImageBitmapContentsArray>
+SerializedScriptValue::ImageBitmapContentsArray
 SerializedScriptValue::TransferImageBitmapContents(
     v8::Isolate* isolate,
     const ImageBitmapArray& image_bitmaps,
     ExceptionState& exception_state) {
+  ImageBitmapContentsArray contents;
+
   if (!image_bitmaps.size())
-    return nullptr;
+    return contents;
 
   for (size_t i = 0; i < image_bitmaps.size(); ++i) {
     if (image_bitmaps[i]->IsNeutered()) {
       exception_state.ThrowDOMException(
           kDataCloneError, "ImageBitmap at index " + String::Number(i) +
                                " is already detached.");
-      return nullptr;
+      return contents;
     }
   }
 
-  std::unique_ptr<ImageBitmapContentsArray> contents =
-      WTF::WrapUnique(new ImageBitmapContentsArray);
   HeapHashSet<Member<ImageBitmap>> visited;
   for (size_t i = 0; i < image_bitmaps.size(); ++i) {
     if (visited.Contains(image_bitmaps[i]))
       continue;
     visited.insert(image_bitmaps[i]);
-    contents->push_back(image_bitmaps[i]->Transfer());
+    contents.push_back(image_bitmaps[i]->Transfer());
   }
   return contents;
 }
@@ -306,9 +306,8 @@ void SerializedScriptValue::TransferImageBitmaps(
     v8::Isolate* isolate,
     const ImageBitmapArray& image_bitmaps,
     ExceptionState& exception_state) {
-  std::unique_ptr<ImageBitmapContentsArray> contents =
+  image_bitmap_contents_array_ =
       TransferImageBitmapContents(isolate, image_bitmaps, exception_state);
-  image_bitmap_contents_array_ = std::move(contents);
 }
 
 void SerializedScriptValue::TransferOffscreenCanvas(
@@ -463,13 +462,15 @@ ArrayBufferArray SerializedScriptValue::ExtractNonSharedArrayBuffers(
   return result;
 }
 
-std::unique_ptr<SerializedScriptValue::ArrayBufferContentsArray>
+SerializedScriptValue::ArrayBufferContentsArray
 SerializedScriptValue::TransferArrayBufferContents(
     v8::Isolate* isolate,
     const ArrayBufferArray& array_buffers,
     ExceptionState& exception_state) {
+  ArrayBufferContentsArray contents;
+
   if (!array_buffers.size())
-    return nullptr;
+    return ArrayBufferContentsArray();
 
   for (auto it = array_buffers.begin(); it != array_buffers.end(); ++it) {
     DOMArrayBufferBase* array_buffer = *it;
@@ -478,13 +479,11 @@ SerializedScriptValue::TransferArrayBufferContents(
       exception_state.ThrowDOMException(
           kDataCloneError, "ArrayBuffer at index " + String::Number(index) +
                                " is already neutered.");
-      return nullptr;
+      return ArrayBufferContentsArray();
     }
   }
 
-  std::unique_ptr<ArrayBufferContentsArray> contents =
-      WTF::WrapUnique(new ArrayBufferContentsArray(array_buffers.size()));
-
+  contents.Grow(array_buffers.size());
   HeapHashSet<Member<DOMArrayBufferBase>> visited;
   for (auto it = array_buffers.begin(); it != array_buffers.end(); ++it) {
     DOMArrayBufferBase* array_buffer_base = *it;
@@ -496,22 +495,22 @@ SerializedScriptValue::TransferArrayBufferContents(
     if (array_buffer_base->IsShared()) {
       DOMSharedArrayBuffer* shared_array_buffer =
           static_cast<DOMSharedArrayBuffer*>(array_buffer_base);
-      if (!shared_array_buffer->ShareContentsWith(contents->at(index))) {
+      if (!shared_array_buffer->ShareContentsWith(contents.at(index))) {
         exception_state.ThrowDOMException(kDataCloneError,
                                           "SharedArrayBuffer at index " +
                                               String::Number(index) +
                                               " could not be transferred.");
-        return nullptr;
+        return ArrayBufferContentsArray();
       }
     } else {
       DOMArrayBuffer* array_buffer =
           static_cast<DOMArrayBuffer*>(array_buffer_base);
 
-      if (!array_buffer->Transfer(isolate, contents->at(index))) {
+      if (!array_buffer->Transfer(isolate, contents.at(index))) {
         exception_state.ThrowDOMException(
             kDataCloneError, "ArrayBuffer at index " + String::Number(index) +
                                  " could not be transferred.");
-        return nullptr;
+        return ArrayBufferContentsArray();
       }
     }
   }
@@ -528,9 +527,8 @@ void SerializedScriptValue::
 
   // TODO: if other transferables start accounting for their external
   // allocations with V8, extend this with corresponding cases.
-  if (array_buffer_contents_array_ &&
-      !transferables_need_external_allocation_registration_) {
-    for (auto& buffer : *array_buffer_contents_array_)
+  if (!transferables_need_external_allocation_registration_) {
+    for (auto& buffer : array_buffer_contents_array_)
       buffer.UnregisterExternalAllocationWithCurrentContext();
     transferables_need_external_allocation_registration_ = true;
   }
@@ -547,11 +545,36 @@ void SerializedScriptValue::RegisterMemoryAllocatedWithCurrentScriptContext() {
 
   // Only (re)register allocation cost for transferables if this
   // SerializedScriptValue has explicitly unregistered them before.
-  if (array_buffer_contents_array_ &&
-      transferables_need_external_allocation_registration_) {
-    for (auto& buffer : *array_buffer_contents_array_)
+  if (transferables_need_external_allocation_registration_) {
+    for (auto& buffer : array_buffer_contents_array_)
       buffer.RegisterExternalAllocationWithCurrentContext();
   }
+}
+
+void SerializedScriptValue::ReceiveTransfer() {
+  if (received_)
+    return;
+  received_.emplace();
+
+  received_->array_buffers.Grow(array_buffer_contents_array_.size());
+  std::transform(array_buffer_contents_array_.begin(),
+                 array_buffer_contents_array_.end(),
+                 received_->array_buffers.begin(),
+                 [](WTF::ArrayBufferContents& contents) -> DOMArrayBufferBase* {
+                   if (contents.IsShared())
+                     return DOMSharedArrayBuffer::Create(contents);
+                   return DOMArrayBuffer::Create(contents);
+                 });
+  array_buffer_contents_array_.clear();
+
+  received_->image_bitmaps.Grow(image_bitmap_contents_array_.size());
+  std::transform(image_bitmap_contents_array_.begin(),
+                 image_bitmap_contents_array_.end(),
+                 received_->image_bitmaps.begin(),
+                 [](RefPtr<StaticBitmapImage>& contents) {
+                   return ImageBitmap::Create(std::move(contents));
+                 });
+  image_bitmap_contents_array_.clear();
 }
 
 }  // namespace blink

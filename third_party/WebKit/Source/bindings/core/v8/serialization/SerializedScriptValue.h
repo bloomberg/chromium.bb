@@ -39,6 +39,7 @@
 #include "core/CoreExport.h"
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/HashMap.h"
+#include "platform/wtf/Optional.h"
 #include "platform/wtf/ThreadSafeRefCounted.h"
 #include "platform/wtf/allocator/Partitions.h"
 #include "platform/wtf/text/StringView.h"
@@ -175,12 +176,12 @@ class CORE_EXPORT SerializedScriptValue
   // Helper function which pulls ArrayBufferContents out of an ArrayBufferArray
   // and neuters the ArrayBufferArray.  Returns nullptr if there is an
   // exception.
-  static std::unique_ptr<ArrayBufferContentsArray> TransferArrayBufferContents(
+  static ArrayBufferContentsArray TransferArrayBufferContents(
       v8::Isolate*,
       const ArrayBufferArray&,
       ExceptionState&);
 
-  static std::unique_ptr<ImageBitmapContentsArray> TransferImageBitmapContents(
+  static ImageBitmapContentsArray TransferImageBitmapContents(
       v8::Isolate*,
       const ImageBitmapArray&,
       ExceptionState&);
@@ -203,15 +204,18 @@ class CORE_EXPORT SerializedScriptValue
   const uint8_t* Data() const { return data_buffer_.get(); }
   size_t DataLengthInBytes() const { return data_buffer_size_; }
 
-  BlobDataHandleMap& BlobDataHandles() { return blob_data_handles_; }
-  ArrayBufferContentsArray* GetArrayBufferContentsArray() {
-    return array_buffer_contents_array_.get();
+  // These are only accessible once we have "received" the transferred data on
+  // the new thread or context.
+  void ReceiveTransfer();
+  const HeapVector<Member<DOMArrayBufferBase>>& ReceivedArrayBuffers() const {
+    return received_->array_buffers;
   }
-  ImageBitmapContentsArray* GetImageBitmapContentsArray() {
-    return image_bitmap_contents_array_.get();
+  const HeapVector<Member<ImageBitmap>>& ReceivedImageBitmaps() const {
+    return received_->image_bitmaps;
   }
 
   TransferredWasmModulesArray& WasmModules() { return wasm_modules_; }
+  BlobDataHandleMap& BlobDataHandles() { return blob_data_handles_; }
 
  private:
   friend class ScriptValueSerializer;
@@ -243,11 +247,24 @@ class CORE_EXPORT SerializedScriptValue
   DataBufferPtr data_buffer_;
   size_t data_buffer_size_ = 0;
 
-  std::unique_ptr<ArrayBufferContentsArray> array_buffer_contents_array_;
-  std::unique_ptr<ImageBitmapContentsArray> image_bitmap_contents_array_;
-  TransferredWasmModulesArray wasm_modules_;
+  // These two have one-use transferred contents, and are stored in
+  // ReceivedObjects thereafter.
+  ArrayBufferContentsArray array_buffer_contents_array_;
+  ImageBitmapContentsArray image_bitmap_contents_array_;
 
+  // These do not have one-use transferred contents, like the above.
+  TransferredWasmModulesArray wasm_modules_;
   BlobDataHandleMap blob_data_handles_;
+
+  // These replace their corresponding ordinary members, once set.
+  // Once the SerializedScriptValue is being deserialized, real objects will be
+  // materialized here, but only the contents should exist when moving between
+  // threads, frames, etc.
+  struct ReceivedObjects {
+    PersistentHeapVector<Member<DOMArrayBufferBase>> array_buffers;
+    PersistentHeapVector<Member<ImageBitmap>> image_bitmaps;
+  };
+  Optional<ReceivedObjects> received_;
 
   bool has_registered_external_allocation_;
   bool transferables_need_external_allocation_registration_;
