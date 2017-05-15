@@ -11,6 +11,7 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
 
+import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
@@ -28,13 +29,10 @@ public class LocationProviderAndroid
         implements LocationListener, LocationProviderFactory.LocationProvider {
     private static final String TAG = "cr_LocationProvider";
 
-    private Context mContext;
     private LocationManager mLocationManager;
     private boolean mIsRunning;
 
-    LocationProviderAndroid(Context context) {
-        mContext = context;
-    }
+    LocationProviderAndroid() {}
 
     @Override
     public void start(boolean enableHighAccuracy) {
@@ -81,7 +79,8 @@ public class LocationProviderAndroid
 
     private void createLocationManagerIfNeeded() {
         if (mLocationManager != null) return;
-        mLocationManager = (LocationManager) mContext.getSystemService(Context.LOCATION_SERVICE);
+        mLocationManager = (LocationManager) ContextUtils.getApplicationContext().getSystemService(
+                Context.LOCATION_SERVICE);
         if (mLocationManager == null) {
             Log.e(TAG, "Could not get location manager.");
         }

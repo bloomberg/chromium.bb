@@ -24,6 +24,7 @@ import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.ParcelUuid;
 
+import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.CalledByNative;
@@ -110,7 +111,7 @@ class Wrappers {
          * permissions.
          */
         @CalledByNative("BluetoothAdapterWrapper")
-        public static BluetoothAdapterWrapper createWithDefaultAdapter(Context context) {
+        public static BluetoothAdapterWrapper createWithDefaultAdapter() {
             final boolean hasMinAPI = Build.VERSION.SDK_INT >= Build.VERSION_CODES.M;
             if (!hasMinAPI) {
                 Log.i(TAG, "BluetoothAdapterWrapper.create failed: SDK version (%d) too low.",
@@ -119,9 +120,11 @@ class Wrappers {
             }
 
             final boolean hasPermissions =
-                    context.checkCallingOrSelfPermission(Manifest.permission.BLUETOOTH)
+                    ContextUtils.getApplicationContext().checkCallingOrSelfPermission(
+                            Manifest.permission.BLUETOOTH)
                             == PackageManager.PERMISSION_GRANTED
-                    && context.checkCallingOrSelfPermission(Manifest.permission.BLUETOOTH_ADMIN)
+                    && ContextUtils.getApplicationContext().checkCallingOrSelfPermission(
+                               Manifest.permission.BLUETOOTH_ADMIN)
                             == PackageManager.PERMISSION_GRANTED;
             if (!hasPermissions) {
                 Log.w(TAG, "BluetoothAdapterWrapper.create failed: Lacking Bluetooth permissions.");
@@ -131,7 +134,7 @@ class Wrappers {
             // Only Low Energy currently supported, see BluetoothAdapterAndroid class note.
             final boolean hasLowEnergyFeature =
                     Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2
-                    && context.getPackageManager().hasSystemFeature(
+                    && ContextUtils.getApplicationContext().getPackageManager().hasSystemFeature(
                                PackageManager.FEATURE_BLUETOOTH_LE);
             if (!hasLowEnergyFeature) {
                 Log.i(TAG, "BluetoothAdapterWrapper.create failed: No Low Energy support.");
@@ -143,7 +146,7 @@ class Wrappers {
                 Log.i(TAG, "BluetoothAdapterWrapper.create failed: Default adapter not found.");
                 return null;
             } else {
-                return new BluetoothAdapterWrapper(adapter, context);
+                return new BluetoothAdapterWrapper(adapter, ContextUtils.getApplicationContext());
             }
         }
 

@@ -214,7 +214,7 @@ public class CompositorViewHolder extends FrameLayout
             }
         };
 
-        mEnableCompositorTabStrip = DeviceFormFactor.isTablet(getContext());
+        mEnableCompositorTabStrip = DeviceFormFactor.isTablet();
 
         addOnLayoutChangeListener(new OnLayoutChangeListener() {
             @Override
@@ -514,7 +514,7 @@ public class CompositorViewHolder extends FrameLayout
         if (mLayoutManager != null) {
             mLayoutManager.onUpdate();
 
-            if (!DeviceFormFactor.isTablet(getContext()) && mControlContainer != null) {
+            if (!DeviceFormFactor.isTablet() && mControlContainer != null) {
                 if (mProgressBarDrawingInfo == null) mProgressBarDrawingInfo = new DrawingInfo();
                 mControlContainer.getProgressBarDrawingInfo(mProgressBarDrawingInfo);
             } else {

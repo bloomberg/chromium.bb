@@ -438,7 +438,7 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
 
     @Override
     public void onCreateActionMode(ActionMode mode, Menu menu) {
-        mode.setTitle(DeviceFormFactor.isTablet(mContext)
+        mode.setTitle(DeviceFormFactor.isTablet()
                         ? mContext.getString(R.string.actionbar_textselection_title)
                         : null);
         mode.setSubtitle(null);

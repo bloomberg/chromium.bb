@@ -238,8 +238,7 @@ public class TranslateInfoBar extends InfoBar implements SubPanelListener {
 
     private boolean needsAlwaysPanel() {
         return (getInfoBarType() == TranslateInfoBar.AFTER_TRANSLATE_INFOBAR
-                && mOptions.alwaysTranslateLanguageState()
-                && !DeviceFormFactor.isTablet(getContext()));
+                && mOptions.alwaysTranslateLanguageState() && !DeviceFormFactor.isTablet());
     }
 
     /**

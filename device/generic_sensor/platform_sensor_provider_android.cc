@@ -4,7 +4,6 @@
 
 #include "device/generic_sensor/platform_sensor_provider_android.h"
 
-#include "base/android/context_utils.h"
 #include "base/android/scoped_java_ref.h"
 #include "base/memory/singleton.h"
 #include "device/generic_sensor/platform_sensor_android.h"
@@ -24,8 +23,7 @@ PlatformSensorProviderAndroid* PlatformSensorProviderAndroid::GetInstance() {
 
 PlatformSensorProviderAndroid::PlatformSensorProviderAndroid() {
   JNIEnv* env = AttachCurrentThread();
-  j_object_.Reset(Java_PlatformSensorProvider_create(
-      env, base::android::GetApplicationContext()));
+  j_object_.Reset(Java_PlatformSensorProvider_create(env));
 }
 
 PlatformSensorProviderAndroid::~PlatformSensorProviderAndroid() = default;

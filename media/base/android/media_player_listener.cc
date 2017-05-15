@@ -33,12 +33,11 @@ MediaPlayerListener::MediaPlayerListener(
 MediaPlayerListener::~MediaPlayerListener() {}
 
 void MediaPlayerListener::CreateMediaPlayerListener(
-    const JavaRef<jobject>& context,
     const JavaRef<jobject>& media_player) {
   JNIEnv* env = AttachCurrentThread();
   if (j_media_player_listener_.is_null()) {
     j_media_player_listener_.Reset(Java_MediaPlayerListener_create(
-        env, reinterpret_cast<intptr_t>(this), context, media_player));
+        env, reinterpret_cast<intptr_t>(this), media_player));
   }
 }
 

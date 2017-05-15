@@ -1635,7 +1635,7 @@ public class ContentViewCore
         for (int i = 0; i < items.length; i++) {
             popupItems.add(new SelectPopupItem(items[i], enabled[i]));
         }
-        if (DeviceFormFactor.isTablet(mContext) && !multiple && !isTouchExplorationEnabled()) {
+        if (DeviceFormFactor.isTablet() && !multiple && !isTouchExplorationEnabled()) {
             mSelectPopup = new SelectPopupDropdown(
                     this, anchorView, popupItems, selectedIndices, rightAligned);
         } else {

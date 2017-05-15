@@ -6,7 +6,6 @@
 
 #include "base/android/base_jni_onload.h"
 #include "base/android/base_jni_registrar.h"
-#include "base/android/context_utils.h"
 #include "base/android/jni_android.h"
 #include "base/android/jni_registrar.h"
 #include "base/android/library_loader/library_loader_hooks.h"
@@ -23,7 +22,6 @@
 namespace {
 
 const base::android::RegistrationMethod kCronetTestsRegisteredMethods[] = {
-    {"ContextUtils", base::android::RegisterContextUtils},
     {"MockCertVerifier", cronet::RegisterMockCertVerifier},
     {"MockUrlRequestJobFactory", cronet::RegisterMockUrlRequestJobFactory},
     {"NativeTestServer", cronet::RegisterNativeTestServer},

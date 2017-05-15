@@ -4,7 +4,6 @@
 
 #include "services/device/time_zone_monitor/time_zone_monitor_android.h"
 
-#include "base/android/context_utils.h"
 #include "base/android/jni_android.h"
 #include "jni/TimeZoneMonitor_jni.h"
 
@@ -15,7 +14,6 @@ namespace device {
 TimeZoneMonitorAndroid::TimeZoneMonitorAndroid() : TimeZoneMonitor() {
   impl_.Reset(
       Java_TimeZoneMonitor_getInstance(base::android::AttachCurrentThread(),
-                                       base::android::GetApplicationContext(),
                                        reinterpret_cast<intptr_t>(this)));
 }
 

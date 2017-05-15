@@ -27,6 +27,7 @@ import android.util.Size;
 import android.util.SparseIntArray;
 import android.view.Surface;
 
+import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.annotations.JNINamespace;
 
@@ -226,7 +227,7 @@ public class VideoCaptureCamera2 extends VideoCapture {
         }
     };
 
-    // Inner Runnable to restart capture, must be run on |mContext| looper.
+    // Inner Runnable to restart capture, must be run on application context looper.
     private final Runnable mRestartCapture = new Runnable() {
         @Override
         public void run() {
@@ -281,9 +282,10 @@ public class VideoCaptureCamera2 extends VideoCapture {
     private boolean mTorch;
 
     // Service function to grab CameraCharacteristics and handle exceptions.
-    private static CameraCharacteristics getCameraCharacteristics(Context appContext, int id) {
+    private static CameraCharacteristics getCameraCharacteristics(int id) {
         final CameraManager manager =
-                (CameraManager) appContext.getSystemService(Context.CAMERA_SERVICE);
+                (CameraManager) ContextUtils.getApplicationContext().getSystemService(
+                        Context.CAMERA_SERVICE);
         try {
             return manager.getCameraCharacteristics(Integer.toString(id));
         } catch (CameraAccessException ex) {
@@ -382,8 +384,7 @@ public class VideoCaptureCamera2 extends VideoCapture {
 
             // We need to configure by hand the exposure time when AE mode is off.  Set it to the
             // middle of the allowed range. Further tuning will be done via |mIso|.
-            final CameraCharacteristics cameraCharacteristics =
-                    getCameraCharacteristics(mContext, mId);
+            final CameraCharacteristics cameraCharacteristics = getCameraCharacteristics(mId);
             Range<Long> range = cameraCharacteristics.get(
                     CameraCharacteristics.SENSOR_INFO_EXPOSURE_TIME_RANGE);
             requestBuilder.set(CaptureRequest.SENSOR_EXPOSURE_TIME,
@@ -504,17 +505,17 @@ public class VideoCaptureCamera2 extends VideoCapture {
         return matchedTemperature;
     }
 
-    static boolean isLegacyDevice(Context appContext, int id) {
-        final CameraCharacteristics cameraCharacteristics =
-                getCameraCharacteristics(appContext, id);
+    static boolean isLegacyDevice(int id) {
+        final CameraCharacteristics cameraCharacteristics = getCameraCharacteristics(id);
         return cameraCharacteristics != null
                 && cameraCharacteristics.get(CameraCharacteristics.INFO_SUPPORTED_HARDWARE_LEVEL)
                 == CameraMetadata.INFO_SUPPORTED_HARDWARE_LEVEL_LEGACY;
     }
 
-    static int getNumberOfCameras(Context appContext) {
+    static int getNumberOfCameras() {
         final CameraManager manager =
-                (CameraManager) appContext.getSystemService(Context.CAMERA_SERVICE);
+                (CameraManager) ContextUtils.getApplicationContext().getSystemService(
+                        Context.CAMERA_SERVICE);
         try {
             return manager.getCameraIdList().length;
         } catch (CameraAccessException | SecurityException ex) {
@@ -524,9 +525,8 @@ public class VideoCaptureCamera2 extends VideoCapture {
         }
     }
 
-    static int getCaptureApiType(int id, Context appContext) {
-        final CameraCharacteristics cameraCharacteristics =
-                getCameraCharacteristics(appContext, id);
+    static int getCaptureApiType(int id) {
+        final CameraCharacteristics cameraCharacteristics = getCameraCharacteristics(id);
         if (cameraCharacteristics == null) {
             return VideoCaptureApi.UNKNOWN;
         }
@@ -545,18 +545,16 @@ public class VideoCaptureCamera2 extends VideoCapture {
         }
     }
 
-    static String getName(int id, Context appContext) {
-        final CameraCharacteristics cameraCharacteristics =
-                getCameraCharacteristics(appContext, id);
+    static String getName(int id) {
+        final CameraCharacteristics cameraCharacteristics = getCameraCharacteristics(id);
         if (cameraCharacteristics == null) return null;
         final int facing = cameraCharacteristics.get(CameraCharacteristics.LENS_FACING);
         return "camera2 " + id + ", facing "
                 + ((facing == CameraCharacteristics.LENS_FACING_FRONT) ? "front" : "back");
     }
 
-    static VideoCaptureFormat[] getDeviceSupportedFormats(Context appContext, int id) {
-        final CameraCharacteristics cameraCharacteristics =
-                getCameraCharacteristics(appContext, id);
+    static VideoCaptureFormat[] getDeviceSupportedFormats(int id) {
+        final CameraCharacteristics cameraCharacteristics = getCameraCharacteristics(id);
         if (cameraCharacteristics == null) return null;
 
         final int[] capabilities =
@@ -597,9 +595,9 @@ public class VideoCaptureCamera2 extends VideoCapture {
         return formatList.toArray(new VideoCaptureFormat[formatList.size()]);
     }
 
-    VideoCaptureCamera2(Context context, int id, long nativeVideoCaptureDeviceAndroid) {
-        super(context, id, nativeVideoCaptureDeviceAndroid);
-        final CameraCharacteristics cameraCharacteristics = getCameraCharacteristics(context, id);
+    VideoCaptureCamera2(int id, long nativeVideoCaptureDeviceAndroid) {
+        super(id, nativeVideoCaptureDeviceAndroid);
+        final CameraCharacteristics cameraCharacteristics = getCameraCharacteristics(id);
         mMaxZoom =
                 cameraCharacteristics.get(CameraCharacteristics.SCALER_AVAILABLE_MAX_DIGITAL_ZOOM);
     }
@@ -613,7 +611,7 @@ public class VideoCaptureCamera2 extends VideoCapture {
                 return false;
             }
         }
-        final CameraCharacteristics cameraCharacteristics = getCameraCharacteristics(mContext, mId);
+        final CameraCharacteristics cameraCharacteristics = getCameraCharacteristics(mId);
         final StreamConfigurationMap streamMap =
                 cameraCharacteristics.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP);
 
@@ -665,12 +663,13 @@ public class VideoCaptureCamera2 extends VideoCapture {
         Log.d(TAG, "startCapture");
         changeCameraStateAndNotify(CameraState.OPENING);
         final CameraManager manager =
-                (CameraManager) mContext.getSystemService(Context.CAMERA_SERVICE);
+                (CameraManager) ContextUtils.getApplicationContext().getSystemService(
+                        Context.CAMERA_SERVICE);
 
         if (!mUseBackgroundThreadForTesting) {
-            mMainHandler = new Handler(mContext.getMainLooper());
+            mMainHandler = new Handler(ContextUtils.getApplicationContext().getMainLooper());
         } else {
-            // Usually we deliver frames on |mContext|s thread, but unit tests
+            // Usually we deliver frames on application context thread, but unit tests
             // occupy its Looper; deliver frames on a background thread instead.
             HandlerThread thread = new HandlerThread("CameraPicture");
             thread.start();
@@ -724,7 +723,7 @@ public class VideoCaptureCamera2 extends VideoCapture {
 
     @Override
     public PhotoCapabilities getPhotoCapabilities() {
-        final CameraCharacteristics cameraCharacteristics = getCameraCharacteristics(mContext, mId);
+        final CameraCharacteristics cameraCharacteristics = getCameraCharacteristics(mId);
         PhotoCapabilities.Builder builder = new PhotoCapabilities.Builder();
 
         int minIso = 0;
@@ -919,7 +918,7 @@ public class VideoCaptureCamera2 extends VideoCapture {
             double exposureCompensation, int whiteBalanceMode, double iso,
             boolean hasRedEyeReduction, boolean redEyeReduction, int fillLightMode,
             boolean hasTorch, boolean torch, double colorTemperature) {
-        final CameraCharacteristics cameraCharacteristics = getCameraCharacteristics(mContext, mId);
+        final CameraCharacteristics cameraCharacteristics = getCameraCharacteristics(mId);
         final Rect canvas =
                 cameraCharacteristics.get(CameraCharacteristics.SENSOR_INFO_ACTIVE_ARRAY_SIZE);
 
@@ -992,7 +991,8 @@ public class VideoCaptureCamera2 extends VideoCapture {
         if (fillLightMode != AndroidFillLightMode.NOT_SET) mFillLightMode = fillLightMode;
         if (hasTorch) mTorch = torch;
 
-        final Handler mainHandler = new Handler(mContext.getMainLooper());
+        final Handler mainHandler =
+                new Handler(ContextUtils.getApplicationContext().getMainLooper());
         mainHandler.removeCallbacks(mRestartCapture);
         mainHandler.post(mRestartCapture);
     }
@@ -1002,7 +1002,7 @@ public class VideoCaptureCamera2 extends VideoCapture {
         Log.d(TAG, "takePhoto");
         if (mCameraDevice == null || mCameraState != CameraState.STARTED) return false;
 
-        final CameraCharacteristics cameraCharacteristics = getCameraCharacteristics(mContext, mId);
+        final CameraCharacteristics cameraCharacteristics = getCameraCharacteristics(mId);
         final StreamConfigurationMap streamMap =
                 cameraCharacteristics.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP);
         final Size[] supportedSizes = streamMap.getOutputSizes(ImageFormat.JPEG);

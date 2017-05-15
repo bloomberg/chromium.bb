@@ -25,7 +25,6 @@
 #include "ui/gfx/native_widget_types.h"
 
 #if defined(OS_ANDROID)
-#include "base/android/context_utils.h"
 #include "base/android/jni_android.h"
 #include "device/nfc/nfc_provider.mojom.h"
 #include "jni/InterfaceRegistrar_jni.h"
@@ -274,7 +273,7 @@ service_manager::InterfaceProvider* DeviceService::GetJavaInterfaceProvider() {
     JNIEnv* env = base::android::AttachCurrentThread();
     Java_InterfaceRegistrar_createInterfaceRegistryForContext(
         env, mojo::MakeRequest(&provider).PassMessagePipe().release().value(),
-        base::android::GetApplicationContext(), java_nfc_delegate_);
+        java_nfc_delegate_);
     java_interface_provider_.Bind(std::move(provider));
 
     java_interface_provider_initialized_ = true;

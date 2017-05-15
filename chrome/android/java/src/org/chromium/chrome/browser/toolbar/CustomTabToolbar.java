@@ -467,7 +467,7 @@ public class CustomTabToolbar extends ToolbarLayout implements LocationBar,
 
         mSecurityIconType = securityLevel;
 
-        boolean isSmallDevice = !DeviceFormFactor.isTablet(getContext());
+        boolean isSmallDevice = !DeviceFormFactor.isTablet();
         boolean isOfflinePage =
                 getCurrentTab() != null && OfflinePageUtils.isOfflinePage(getCurrentTab());
 

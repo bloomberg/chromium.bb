@@ -5,7 +5,6 @@
 #include "media/audio/android/audio_manager_android.h"
 
 #include "base/android/build_info.h"
-#include "base/android/context_utils.h"
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "base/android/scoped_java_ref.h"
@@ -354,7 +353,6 @@ jobject AudioManagerAndroid::GetJavaAudioManager() {
     DVLOG(2) << "Creating Java part of the audio manager";
     j_audio_manager_.Reset(Java_AudioManagerAndroid_createAudioManagerAndroid(
         base::android::AttachCurrentThread(),
-        base::android::GetApplicationContext(),
         reinterpret_cast<intptr_t>(this)));
 
     // Prepare the list of audio devices and register receivers for device

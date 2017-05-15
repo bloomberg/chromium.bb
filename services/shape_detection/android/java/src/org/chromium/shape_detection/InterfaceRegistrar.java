@@ -4,8 +4,7 @@
 
 package org.chromium.shape_detection;
 
-import android.content.Context;
-
+import org.chromium.base.ContextUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.mojo.system.impl.CoreImpl;
@@ -17,16 +16,17 @@ import org.chromium.shape_detection.mojom.TextDetection;
 @JNINamespace("shape_detection")
 class InterfaceRegistrar {
     @CalledByNative
-    static void createInterfaceRegistryForContext(int nativeHandle, Context applicationContext) {
+    static void createInterfaceRegistryForContext(int nativeHandle) {
         // Note: The bindings code manages the lifetime of this object, so it
         // is not necessary to hold on to a reference to it explicitly.
+        // TODO(wnwen): Move references to getApplicationContext lower.
         InterfaceRegistry registry = InterfaceRegistry.create(
                 CoreImpl.getInstance().acquireNativeHandle(nativeHandle).toMessagePipeHandle());
-        registry.addInterface(
-                BarcodeDetection.MANAGER, new BarcodeDetectionImpl.Factory(applicationContext));
+        registry.addInterface(BarcodeDetection.MANAGER,
+                new BarcodeDetectionImpl.Factory(ContextUtils.getApplicationContext()));
         registry.addInterface(FaceDetectionProvider.MANAGER,
-                new FaceDetectionProviderImpl.Factory(applicationContext));
-        registry.addInterface(
-                TextDetection.MANAGER, new TextDetectionImpl.Factory(applicationContext));
+                new FaceDetectionProviderImpl.Factory(ContextUtils.getApplicationContext()));
+        registry.addInterface(TextDetection.MANAGER,
+                new TextDetectionImpl.Factory(ContextUtils.getApplicationContext()));
     }
 }

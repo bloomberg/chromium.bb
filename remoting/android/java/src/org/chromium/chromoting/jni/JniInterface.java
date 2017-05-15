@@ -46,7 +46,6 @@ public class JniInterface {
             Log.w(TAG, "Couldn't load " + LIBRARY_NAME + ", trying " + LIBRARY_NAME + ".cr");
             System.loadLibrary(LIBRARY_NAME + ".cr");
         }
-        ContextUtils.initApplicationContextForNative();
         nativeLoadNative();
     }
 

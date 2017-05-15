@@ -12,10 +12,8 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-
 import android.os.Build;
 import android.os.ParcelUuid;
-
 import android.test.mock.MockContext;
 
 import org.chromium.base.Log;
@@ -647,9 +645,10 @@ class Fakes {
         @CalledByNative("FakeBluetoothGattCharacteristic")
         private static void valueRead(ChromeBluetoothRemoteGattCharacteristic chromeCharacteristic,
                 int status, byte[] value) {
-            if (chromeCharacteristic == null && sRememberedCharacteristic == null)
+            if (chromeCharacteristic == null && sRememberedCharacteristic == null) {
                 throw new IllegalArgumentException(
                         "rememberCharacteristic wasn't called previously.");
+            }
 
             FakeBluetoothGattCharacteristic fakeCharacteristic = (chromeCharacteristic == null)
                     ? sRememberedCharacteristic
@@ -664,9 +663,10 @@ class Fakes {
         @CalledByNative("FakeBluetoothGattCharacteristic")
         private static void valueWrite(
                 ChromeBluetoothRemoteGattCharacteristic chromeCharacteristic, int status) {
-            if (chromeCharacteristic == null && sRememberedCharacteristic == null)
+            if (chromeCharacteristic == null && sRememberedCharacteristic == null) {
                 throw new IllegalArgumentException(
                         "rememberCharacteristic wasn't called previously.");
+            }
 
             FakeBluetoothGattCharacteristic fakeCharacteristic = (chromeCharacteristic == null)
                     ? sRememberedCharacteristic
@@ -784,8 +784,9 @@ class Fakes {
         @CalledByNative("FakeBluetoothGattDescriptor")
         private static void valueRead(
                 ChromeBluetoothRemoteGattDescriptor chromeDescriptor, int status, byte[] value) {
-            if (chromeDescriptor == null && sRememberedDescriptor == null)
+            if (chromeDescriptor == null && sRememberedDescriptor == null) {
                 throw new IllegalArgumentException("rememberDescriptor wasn't called previously.");
+            }
 
             FakeBluetoothGattDescriptor fakeDescriptor = (chromeDescriptor == null)
                     ? sRememberedDescriptor
@@ -800,8 +801,9 @@ class Fakes {
         @CalledByNative("FakeBluetoothGattDescriptor")
         private static void valueWrite(
                 ChromeBluetoothRemoteGattDescriptor chromeDescriptor, int status) {
-            if (chromeDescriptor == null && sRememberedDescriptor == null)
+            if (chromeDescriptor == null && sRememberedDescriptor == null) {
                 throw new IllegalArgumentException("rememberDescriptor wasn't called previously.");
+            }
 
             FakeBluetoothGattDescriptor fakeDescriptor = (chromeDescriptor == null)
                     ? sRememberedDescriptor

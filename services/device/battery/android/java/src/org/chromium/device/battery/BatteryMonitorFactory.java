@@ -44,7 +44,7 @@ public class BatteryMonitorFactory implements InterfaceFactory<BatteryMonitor> {
 
     public BatteryMonitorFactory(Context applicationContext) {
         assert applicationContext != null;
-        mManager = new BatteryStatusManager(applicationContext, mCallback);
+        mManager = new BatteryStatusManager(mCallback);
     }
 
     @Override

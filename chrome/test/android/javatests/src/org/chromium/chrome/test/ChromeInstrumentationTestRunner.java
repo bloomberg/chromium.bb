@@ -117,11 +117,11 @@ public class ChromeInstrumentationTestRunner extends BaseChromiumInstrumentation
         @Override
         protected boolean restrictionApplies(String restriction) {
             if (TextUtils.equals(restriction, ChromeRestriction.RESTRICTION_TYPE_PHONE)
-                    && DeviceFormFactor.isTablet(getTargetContext())) {
+                    && DeviceFormFactor.isTablet()) {
                 return true;
             }
             if (TextUtils.equals(restriction, ChromeRestriction.RESTRICTION_TYPE_TABLET)
-                    && !DeviceFormFactor.isTablet(getTargetContext())) {
+                    && !DeviceFormFactor.isTablet()) {
                 return true;
             }
             if (TextUtils.equals(
@@ -191,12 +191,10 @@ public class ChromeInstrumentationTestRunner extends BaseChromiumInstrumentation
 
         @Override
         protected boolean deviceTypeApplies(String type) {
-            if (TextUtils.equals(type, ChromeDisableIf.PHONE)
-                    && !DeviceFormFactor.isTablet(mTargetContext)) {
+            if (TextUtils.equals(type, ChromeDisableIf.PHONE) && !DeviceFormFactor.isTablet()) {
                 return true;
             }
-            if (TextUtils.equals(type, ChromeDisableIf.TABLET)
-                    && DeviceFormFactor.isTablet(mTargetContext)) {
+            if (TextUtils.equals(type, ChromeDisableIf.TABLET) && DeviceFormFactor.isTablet()) {
                 return true;
             }
             if (TextUtils.equals(type, ChromeDisableIf.LARGETABLET)

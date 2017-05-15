@@ -662,8 +662,8 @@ public class LocationBarLayout extends FrameLayout
         mNavigationButton = (ImageView) findViewById(R.id.navigation_button);
         assert mNavigationButton != null : "Missing navigation type view.";
 
-        mNavigationButtonType = DeviceFormFactor.isTablet(context)
-                ? NavigationButtonType.PAGE : NavigationButtonType.EMPTY;
+        mNavigationButtonType = DeviceFormFactor.isTablet() ? NavigationButtonType.PAGE
+                                                            : NavigationButtonType.EMPTY;
 
         mSecurityButton = (TintedImageButton) findViewById(R.id.security_button);
         mSecurityIconResource = 0;
@@ -902,7 +902,7 @@ public class LocationBarLayout extends FrameLayout
     @LocationBarButtonType private int getLocationBarButtonToShow() {
         boolean isOffline =
                 getCurrentTab() != null && OfflinePageUtils.isOfflinePage(getCurrentTab());
-        boolean isTablet = DeviceFormFactor.isTablet(getContext());
+        boolean isTablet = DeviceFormFactor.isTablet();
 
         // The navigation icon type is only applicable on tablets.  While smaller form factors do
         // not have an icon visible to the user when the URL is focused, BUTTON_TYPE_NONE is not
@@ -1255,7 +1255,7 @@ public class LocationBarLayout extends FrameLayout
 
     // Updates the navigation button based on the URL string
     private void updateNavigationButton() {
-        boolean isTablet = DeviceFormFactor.isTablet(getContext());
+        boolean isTablet = DeviceFormFactor.isTablet();
         NavigationButtonType type = NavigationButtonType.EMPTY;
         if (isTablet && !mSuggestionItems.isEmpty()) {
             // If there are suggestions showing, show the icon for the default suggestion.
@@ -1347,7 +1347,7 @@ public class LocationBarLayout extends FrameLayout
      */
     @Override
     public void updateSecurityIcon(int securityLevel) {
-        boolean isSmallDevice = !DeviceFormFactor.isTablet(getContext());
+        boolean isSmallDevice = !DeviceFormFactor.isTablet();
         boolean isOfflinePage =
                 getCurrentTab() != null && OfflinePageUtils.isOfflinePage(getCurrentTab());
         int id = getSecurityIconResource(securityLevel, isSmallDevice, isOfflinePage);
@@ -1403,7 +1403,7 @@ public class LocationBarLayout extends FrameLayout
      * @param buttonType The type of navigation button to be shown.
      */
     private void setNavigationButtonType(NavigationButtonType buttonType) {
-        if (!DeviceFormFactor.isTablet(getContext())) return;
+        if (!DeviceFormFactor.isTablet()) return;
         switch (buttonType) {
             case PAGE:
                 Drawable page = ApiCompatibilityUtils.getDrawable(
@@ -2504,6 +2504,6 @@ public class LocationBarLayout extends FrameLayout
 
     @Override
     public boolean mustQueryUrlBarLocationForSuggestions() {
-        return DeviceFormFactor.isTablet(getContext());
+        return DeviceFormFactor.isTablet();
     }
 }

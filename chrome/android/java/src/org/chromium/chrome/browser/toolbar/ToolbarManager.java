@@ -445,7 +445,7 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
                 if (visible) RecordUserAction.record("MobileActionBarShown");
                 ActionBar actionBar = mActionBarDelegate.getSupportActionBar();
                 if (!visible && actionBar != null) actionBar.hide();
-                if (DeviceFormFactor.isTablet(activity)) {
+                if (DeviceFormFactor.isTablet()) {
                     if (visible) {
                         mActionModeController.startShowAnimation();
                     } else {
@@ -514,8 +514,7 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
                 }
 
                 // TODO(shaktisahu): Find out if the download menu button is enabled (crbug/712438).
-                if (!(activity instanceof ChromeTabbedActivity)
-                        || DeviceFormFactor.isTablet(mToolbar.getContext())
+                if (!(activity instanceof ChromeTabbedActivity) || DeviceFormFactor.isTablet()
                         || activity.isInOverviewMode()
                         || !DownloadUtils.isAllowedToDownloadPage(tab)) {
                     return;
@@ -552,8 +551,7 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
             }
 
             private void handleIPHForErrorPageShown(Tab tab) {
-                if (!(activity instanceof ChromeTabbedActivity)
-                        || DeviceFormFactor.isTablet(mToolbar.getContext())) {
+                if (!(activity instanceof ChromeTabbedActivity) || DeviceFormFactor.isTablet()) {
                     return;
                 }
 
@@ -1326,7 +1324,7 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
         }
 
         Context context = mToolbar.getContext();
-        return DeviceFormFactor.isTablet(context)
+        return DeviceFormFactor.isTablet()
                 && context.getResources().getConfiguration().keyboard
                 == Configuration.KEYBOARD_QWERTY;
     }

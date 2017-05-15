@@ -545,7 +545,7 @@ public class ItemChooserDialog {
         });
 
         Window window = mDialog.getWindow();
-        if (!DeviceFormFactor.isTablet(mActivity)) {
+        if (!DeviceFormFactor.isTablet()) {
             // On smaller screens, make the dialog fill the width of the screen,
             // and appear at the top.
             window.setBackgroundDrawable(new ColorDrawable(Color.WHITE));

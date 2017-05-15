@@ -7,7 +7,6 @@
 #include <string>
 #include <vector>
 
-#include "base/android/context_utils.h"
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/sequenced_task_runner.h"
@@ -30,8 +29,7 @@ UsbServiceAndroid::UsbServiceAndroid()
     : UsbService(nullptr), weak_factory_(this) {
   JNIEnv* env = AttachCurrentThread();
   j_object_.Reset(
-      Java_ChromeUsbService_create(env, base::android::GetApplicationContext(),
-                                   reinterpret_cast<jlong>(this)));
+      Java_ChromeUsbService_create(env, reinterpret_cast<jlong>(this)));
   ScopedJavaLocalRef<jobjectArray> devices =
       Java_ChromeUsbService_getDevices(env, j_object_);
   jsize length = env->GetArrayLength(devices.obj());

@@ -2174,7 +2174,7 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
      * is in Android N multi-window mode.
      */
     protected void recordMultiWindowModeScreenWidth() {
-        if (!DeviceFormFactor.isTablet(this)) return;
+        if (!DeviceFormFactor.isTablet()) return;
 
         RecordHistogram.recordBooleanHistogram(
                 "Android.MultiWindowMode.IsTabletScreenWidthBelow600",

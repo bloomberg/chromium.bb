@@ -11,6 +11,7 @@ import android.os.Build;
 import android.os.Handler;
 import android.os.HandlerThread;
 
+import org.chromium.base.ContextUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.device.mojom.SensorType;
@@ -110,8 +111,6 @@ class PlatformSensorProvider {
 
     /**
      * Constructor.
-     *
-     * @param context application context.
      */
     protected PlatformSensorProvider(Context context) {
         mSensorManager = (SensorManager) context.getSystemService(Context.SENSOR_SERVICE);
@@ -120,12 +119,20 @@ class PlatformSensorProvider {
     /**
      * Creates PlatformSensorProvider instance.
      *
-     * @param context application context.
+     * @return PlatformSensorProvider new PlatformSensorProvider instance.
+     */
+    protected static PlatformSensorProvider createForTest(Context context) {
+        return new PlatformSensorProvider(context);
+    }
+
+    /**
+     * Creates PlatformSensorProvider instance.
+     *
      * @return PlatformSensorProvider new PlatformSensorProvider instance.
      */
     @CalledByNative
-    protected static PlatformSensorProvider create(Context context) {
-        return new PlatformSensorProvider(context);
+    protected static PlatformSensorProvider create() {
+        return new PlatformSensorProvider(ContextUtils.getApplicationContext());
     }
 
     /**

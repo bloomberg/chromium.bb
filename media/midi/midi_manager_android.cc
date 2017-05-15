@@ -5,7 +5,6 @@
 #include "media/midi/midi_manager_android.h"
 
 #include "base/android/build_info.h"
-#include "base/android/context_utils.h"
 #include "base/feature_list.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial_params.h"
@@ -71,8 +70,7 @@ void MidiManagerAndroid::StartInitialization() {
   JNIEnv* env = base::android::AttachCurrentThread();
 
   uintptr_t pointer = reinterpret_cast<uintptr_t>(this);
-  raw_manager_.Reset(Java_MidiManagerAndroid_create(
-      env, base::android::GetApplicationContext(), pointer));
+  raw_manager_.Reset(Java_MidiManagerAndroid_create(env, pointer));
 
   {
     base::AutoLock auto_lock(scheduler_lock_);

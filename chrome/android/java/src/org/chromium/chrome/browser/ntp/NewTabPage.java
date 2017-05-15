@@ -406,7 +406,7 @@ public class NewTabPage
     }
 
     private boolean isInSingleUrlBarMode(Context context) {
-        if (DeviceFormFactor.isTablet(context)) return false;
+        if (DeviceFormFactor.isTablet()) return false;
         if (FeatureUtilities.isChromeHomeEnabled()) return false;
         return mSearchProviderHasLogo;
     }

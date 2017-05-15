@@ -4,8 +4,7 @@
 
 package org.chromium.device.geolocation;
 
-import android.content.Context;
-
+import org.chromium.base.ContextUtils;
 import org.chromium.base.VisibleForTesting;
 
 /**
@@ -48,14 +47,15 @@ public class LocationProviderFactory {
         sUseGmsCoreLocationProvider = true;
     }
 
-    public static LocationProvider create(Context context) {
+    public static LocationProvider create() {
         if (sProviderImpl != null) return sProviderImpl;
 
         if (sUseGmsCoreLocationProvider
-                && LocationProviderGmsCore.isGooglePlayServicesAvailable(context)) {
-            sProviderImpl = new LocationProviderGmsCore(context);
+                && LocationProviderGmsCore.isGooglePlayServicesAvailable(
+                           ContextUtils.getApplicationContext())) {
+            sProviderImpl = new LocationProviderGmsCore(ContextUtils.getApplicationContext());
         } else {
-            sProviderImpl = new LocationProviderAndroid(context);
+            sProviderImpl = new LocationProviderAndroid();
         }
         return sProviderImpl;
     }

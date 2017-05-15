@@ -86,7 +86,7 @@ public class BookmarkTest extends ChromeActivityTestCaseBase<ChromeActivity> {
     }
 
     private void openBookmarkManager() throws InterruptedException {
-        if (DeviceFormFactor.isTablet(getActivity())) {
+        if (DeviceFormFactor.isTablet()) {
             loadUrl(UrlConstants.BOOKMARKS_URL);
             mItemsContainer = (RecyclerView) getActivity().findViewById(R.id.recycler_view);
         } else {

@@ -4,7 +4,6 @@
 
 #include "device/generic_sensor/platform_sensor_android.h"
 
-#include "base/android/context_utils.h"
 #include "base/bind.h"
 #include "jni/PlatformSensor_jni.h"
 

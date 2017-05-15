@@ -4,7 +4,6 @@
 
 package org.chromium.device.geolocation;
 
-import android.content.Context;
 import android.location.Location;
 
 import org.chromium.base.Log;
@@ -31,13 +30,13 @@ public class LocationProviderAdapter {
     // Delegate handling the real work in the main thread.
     private LocationProviderFactory.LocationProvider mImpl;
 
-    private LocationProviderAdapter(Context context) {
-        mImpl = LocationProviderFactory.create(context);
+    private LocationProviderAdapter() {
+        mImpl = LocationProviderFactory.create();
     }
 
     @CalledByNative
-    public static LocationProviderAdapter create(Context context) {
-        return new LocationProviderAdapter(context);
+    public static LocationProviderAdapter create() {
+        return new LocationProviderAdapter();
     }
 
     /**

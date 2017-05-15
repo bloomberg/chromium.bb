@@ -13,6 +13,7 @@ import android.os.Handler;
 import android.os.HandlerThread;
 
 import org.chromium.base.CollectionUtil;
+import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
@@ -37,9 +38,6 @@ class DeviceSensors implements SensorEventListener {
     // These fields are lazily initialized by getHandler().
     private Thread mThread;
     private Handler mHandler;
-
-    // A reference to the application context in order to acquire the SensorService.
-    private final Context mAppContext;
 
     // The lock to access the mHandler.
     private final Object mHandlerLock = new Object();
@@ -88,9 +86,7 @@ class DeviceSensors implements SensorEventListener {
     boolean mDeviceOrientationAbsoluteIsActive;
     boolean mOrientationNotAvailable;
 
-    protected DeviceSensors(Context context) {
-        mAppContext = context.getApplicationContext();
-
+    protected DeviceSensors() {
         mOrientationSensorSets = CollectionUtil.newArrayList(DEVICE_ORIENTATION_SENSORS_A,
                 DEVICE_ORIENTATION_SENSORS_B, DEVICE_ORIENTATION_SENSORS_C);
     }
@@ -423,7 +419,8 @@ class DeviceSensors implements SensorEventListener {
 
         ThreadUtils.assertOnUiThread();
         SensorManager sensorManager =
-                (SensorManager) mAppContext.getSystemService(Context.SENSOR_SERVICE);
+                (SensorManager) ContextUtils.getApplicationContext().getSystemService(
+                        Context.SENSOR_SERVICE);
 
         if (sensorManager != null) {
             mSensorManagerProxy = new SensorManagerProxyImpl(sensorManager);
@@ -565,8 +562,8 @@ class DeviceSensors implements SensorEventListener {
     }
 
     @CalledByNative
-    static DeviceSensors create(Context appContext) {
-        return new DeviceSensors(appContext);
+    static DeviceSensors create() {
+        return new DeviceSensors();
     }
 
     /**
