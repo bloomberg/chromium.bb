@@ -64,6 +64,20 @@ class MEDIA_EXPORT AudioBuffer
       const base::TimeDelta timestamp,
       scoped_refptr<AudioBufferMemoryPool> pool = nullptr);
 
+  // Create an AudioBuffer for compressed bitstream. Its channel data is copied
+  // from |data|, and the size is |data_size|. |data| must not be null and
+  // |frame_count| must be >= 0.
+  static scoped_refptr<AudioBuffer> CopyBitstreamFrom(
+      SampleFormat sample_format,
+      ChannelLayout channel_layout,
+      int channel_count,
+      int sample_rate,
+      int frame_count,
+      const uint8_t* const* data,
+      const size_t data_size,
+      const base::TimeDelta timestamp,
+      scoped_refptr<AudioBufferMemoryPool> pool = nullptr);
+
   // Create an AudioBuffer with |frame_count| frames. Buffer is allocated, but
   // not initialized. Timestamp and duration are set to kNoTimestamp. For
   // optimal efficiency when many buffers are being created, a
@@ -74,6 +88,17 @@ class MEDIA_EXPORT AudioBuffer
       int channel_count,
       int sample_rate,
       int frame_count,
+      scoped_refptr<AudioBufferMemoryPool> pool = nullptr);
+
+  // Create an AudioBuffer for compressed bitstream. Buffer is allocated, but
+  // not initialized. Timestamp and duration are set to kNoTimestamp.
+  static scoped_refptr<AudioBuffer> CreateBitstreamBuffer(
+      SampleFormat sample_format,
+      ChannelLayout channel_layout,
+      int channel_count,
+      int sample_rate,
+      int frame_count,
+      size_t data_size,
       scoped_refptr<AudioBufferMemoryPool> pool = nullptr);
 
   // Create an empty AudioBuffer with |frame_count| frames.
@@ -118,6 +143,9 @@ class MEDIA_EXPORT AudioBuffer
   // Trim an AudioBuffer by removing |end - start| frames from [|start|, |end|).
   // Even if |start| is zero, timestamp() is not adjusted, only duration().
   void TrimRange(int start, int end);
+
+  // Return true if the buffer contains compressed bitstream.
+  bool IsBitstreamFormat();
 
   // Return the number of channels.
   int channel_count() const { return channel_count_; }
@@ -168,6 +196,7 @@ class MEDIA_EXPORT AudioBuffer
               int frame_count,
               bool create_buffer,
               const uint8_t* const* data,
+              const size_t data_size,
               const base::TimeDelta timestamp,
               scoped_refptr<AudioBufferMemoryPool> pool);
 

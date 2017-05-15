@@ -49,6 +49,7 @@ AudioBuffer::AudioBuffer(SampleFormat sample_format,
                          int frame_count,
                          bool create_buffer,
                          const uint8_t* const* data,
+                         const size_t data_size,
                          const base::TimeDelta timestamp,
                          scoped_refptr<AudioBufferMemoryPool> pool)
     : sample_format_(sample_format),
@@ -61,7 +62,7 @@ AudioBuffer::AudioBuffer(SampleFormat sample_format,
       duration_(end_of_stream_
                     ? base::TimeDelta()
                     : CalculateDuration(adjusted_frame_count_, sample_rate_)),
-      data_size_(0),
+      data_size_(data_size),
       pool_(std::move(pool)) {
   CHECK_GE(channel_count_, 0);
   CHECK_LE(channel_count_, limits::kMaxChannels);
@@ -78,6 +79,7 @@ AudioBuffer::AudioBuffer(SampleFormat sample_format,
 
   int data_size_per_channel = frame_count * bytes_per_channel;
   if (IsPlanar(sample_format)) {
+    DCHECK(!IsBitstreamFormat()) << sample_format_;
     // Planar data, so need to allocate buffer for each channel.
     // Determine per channel data size, taking into account alignment.
     int block_size_per_channel =
@@ -108,7 +110,10 @@ AudioBuffer::AudioBuffer(SampleFormat sample_format,
   DCHECK(IsInterleaved(sample_format)) << sample_format_;
   // Allocate our own buffer and copy the supplied data into it. Buffer must
   // contain the data for all channels.
-  data_size_ = data_size_per_channel * channel_count_;
+  if (!IsBitstreamFormat())
+    data_size_ = data_size_per_channel * channel_count_;
+  else
+    DCHECK(data_size_ > 0);
 
   if (pool_) {
     data_ = pool_->CreateBuffer(data_size_);
@@ -143,7 +148,26 @@ scoped_refptr<AudioBuffer> AudioBuffer::CopyFrom(
   CHECK(data[0]);
   return make_scoped_refptr(
       new AudioBuffer(sample_format, channel_layout, channel_count, sample_rate,
-                      frame_count, true, data, timestamp, std::move(pool)));
+                      frame_count, true, data, 0, timestamp, std::move(pool)));
+}
+
+// static
+scoped_refptr<AudioBuffer> AudioBuffer::CopyBitstreamFrom(
+    SampleFormat sample_format,
+    ChannelLayout channel_layout,
+    int channel_count,
+    int sample_rate,
+    int frame_count,
+    const uint8_t* const* data,
+    const size_t data_size,
+    const base::TimeDelta timestamp,
+    scoped_refptr<AudioBufferMemoryPool> pool) {
+  // If you hit this CHECK you likely have a bug in a demuxer. Go fix it.
+  CHECK_GT(frame_count, 0);  // Otherwise looks like an EOF buffer.
+  CHECK(data[0]);
+  return make_scoped_refptr(new AudioBuffer(
+      sample_format, channel_layout, channel_count, sample_rate, frame_count,
+      true, data, data_size, timestamp, std::move(pool)));
 }
 
 // static
@@ -157,7 +181,22 @@ scoped_refptr<AudioBuffer> AudioBuffer::CreateBuffer(
   CHECK_GT(frame_count, 0);  // Otherwise looks like an EOF buffer.
   return make_scoped_refptr(new AudioBuffer(
       sample_format, channel_layout, channel_count, sample_rate, frame_count,
-      true, nullptr, kNoTimestamp, std::move(pool)));
+      true, nullptr, 0, kNoTimestamp, std::move(pool)));
+}
+
+// static
+scoped_refptr<AudioBuffer> AudioBuffer::CreateBitstreamBuffer(
+    SampleFormat sample_format,
+    ChannelLayout channel_layout,
+    int channel_count,
+    int sample_rate,
+    int frame_count,
+    size_t data_size,
+    scoped_refptr<AudioBufferMemoryPool> pool) {
+  CHECK_GT(frame_count, 0);  // Otherwise looks like an EOF buffer.
+  return make_scoped_refptr(new AudioBuffer(
+      sample_format, channel_layout, channel_count, sample_rate, frame_count,
+      true, nullptr, data_size, kNoTimestamp, std::move(pool)));
 }
 
 // static
@@ -171,14 +210,14 @@ scoped_refptr<AudioBuffer> AudioBuffer::CreateEmptyBuffer(
   // Since data == nullptr, format doesn't matter.
   return make_scoped_refptr(new AudioBuffer(
       kSampleFormatF32, channel_layout, channel_count, sample_rate, frame_count,
-      false, nullptr, timestamp, nullptr));
+      false, nullptr, 0, timestamp, nullptr));
 }
 
 // static
 scoped_refptr<AudioBuffer> AudioBuffer::CreateEOSBuffer() {
   return make_scoped_refptr(new AudioBuffer(kUnknownSampleFormat,
                                             CHANNEL_LAYOUT_NONE, 0, 0, 0, false,
-                                            nullptr, kNoTimestamp, nullptr));
+                                            nullptr, 0, kNoTimestamp, nullptr));
 }
 
 // Convert int16_t values in the range [INT16_MIN, INT16_MAX] to [-1.0, 1.0].
@@ -205,6 +244,12 @@ void AudioBuffer::ReadFrames(int frames_to_copy,
   DCHECK(!end_of_stream());
   DCHECK_EQ(dest->channels(), channel_count_);
   DCHECK_LE(source_frame_offset + frames_to_copy, adjusted_frame_count_);
+
+  if (IsBitstreamFormat()) {
+    // TODO(tsunghung): Implement it along with AudioBus changes.
+    NOTREACHED() << "Invalid sample format!";
+  }
+
   DCHECK_LE(dest_frame_offset + frames_to_copy, dest->frames());
 
   if (!data_) {
@@ -270,12 +315,22 @@ void AudioBuffer::TrimStart(int frames_to_trim) {
   CHECK_GE(frames_to_trim, 0);
   CHECK_LE(frames_to_trim, adjusted_frame_count_);
 
+  if (IsBitstreamFormat()) {
+    LOG(ERROR) << "Not allowed to trim an audio bitstream buffer.";
+    return;
+  }
+
   TrimRange(0, frames_to_trim);
 }
 
 void AudioBuffer::TrimEnd(int frames_to_trim) {
   CHECK_GE(frames_to_trim, 0);
   CHECK_LE(frames_to_trim, adjusted_frame_count_);
+
+  if (IsBitstreamFormat()) {
+    LOG(ERROR) << "Not allowed to trim an audio bitstream buffer.";
+    return;
+  }
 
   // Adjust the number of frames and duration for this buffer.
   adjusted_frame_count_ -= frames_to_trim;
@@ -285,6 +340,11 @@ void AudioBuffer::TrimEnd(int frames_to_trim) {
 void AudioBuffer::TrimRange(int start, int end) {
   CHECK_GE(start, 0);
   CHECK_LE(end, adjusted_frame_count_);
+
+  if (IsBitstreamFormat()) {
+    LOG(ERROR) << "Not allowed to trim an audio bitstream buffer.";
+    return;
+  }
 
   const int frames_to_trim = end - start;
   CHECK_GE(frames_to_trim, 0);
@@ -327,6 +387,10 @@ void AudioBuffer::TrimRange(int start, int end) {
 
   // Trim the leftover data off the end of the buffer and update duration.
   TrimEnd(frames_to_trim);
+}
+
+bool AudioBuffer::IsBitstreamFormat() {
+  return IsBitstream(sample_format_);
 }
 
 }  // namespace media

@@ -41,6 +41,7 @@ const char kOpusMimeType[] = "audio/opus";
 const char kVorbisMimeType[] = "audio/vorbis";
 const char kAc3MimeType[] = "audio/ac3";
 const char kEac3MimeType[] = "audio/eac3";
+const char kBitstreamAudioMimeType[] = "audio/raw";
 const char kAvcMimeType[] = "video/avc";
 const char kHevcMimeType[] = "video/hevc";
 const char kVp8MimeType[] = "video/x-vnd.on2.vp8";
@@ -98,6 +99,9 @@ static bool IsEncoderSupportedByDevice(const std::string& android_mime_type) {
 
 // static
 std::string MediaCodecUtil::CodecToAndroidMimeType(AudioCodec codec) {
+  if (IsPassthroughAudioFormat(codec))
+    return kBitstreamAudioMimeType;
+
   switch (codec) {
     case kCodecMP3:
       return kMp3MimeType;
@@ -357,6 +361,11 @@ bool MediaCodecUtil::IsSurfaceViewOutputSupported() {
 bool MediaCodecUtil::IsSetOutputSurfaceSupported() {
   JNIEnv* env = AttachCurrentThread();
   return Java_MediaCodecUtil_isSetOutputSurfaceSupported(env);
+}
+
+// static
+bool MediaCodecUtil::IsPassthroughAudioFormat(AudioCodec codec) {
+  return codec == kCodecAC3 || codec == kCodecEAC3;
 }
 
 // static

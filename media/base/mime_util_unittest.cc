@@ -124,6 +124,14 @@ static bool HasDolbyVisionSupport() {
   return false;
 }
 
+static bool HasEac3Support() {
+#if BUILDFLAG(ENABLE_AC3_EAC3_AUDIO_DEMUXING)
+  return true;
+#else
+  return false;
+#endif
+}
+
 TEST(MimeUtilTest, CommonMediaMimeType) {
   EXPECT_TRUE(IsSupportedMediaMimeType("audio/webm"));
   EXPECT_TRUE(IsSupportedMediaMimeType("video/webm"));
@@ -274,8 +282,6 @@ TEST(IsCodecSupportedOnAndroidTest, EncryptedCodecBehavior) {
         switch (codec) {
           // These codecs are never supported by the Android platform.
           case MimeUtil::INVALID_CODEC:
-          case MimeUtil::AC3:
-          case MimeUtil::EAC3:
           case MimeUtil::MPEG2_AAC:
           case MimeUtil::THEORA:
             EXPECT_FALSE(result);
@@ -312,6 +318,11 @@ TEST(IsCodecSupportedOnAndroidTest, EncryptedCodecBehavior) {
           case MimeUtil::DOLBY_VISION:
             EXPECT_EQ(HasDolbyVisionSupport(), result);
             break;
+
+          case MimeUtil::AC3:
+          case MimeUtil::EAC3:
+            EXPECT_EQ(HasEac3Support(), result);
+            break;
         }
       });
 }
@@ -329,8 +340,6 @@ TEST(IsCodecSupportedOnAndroidTest, ClearCodecBehavior) {
         switch (codec) {
           // These codecs are never supported by the Android platform.
           case MimeUtil::INVALID_CODEC:
-          case MimeUtil::AC3:
-          case MimeUtil::EAC3:
           case MimeUtil::THEORA:
             EXPECT_FALSE(result);
             break;
@@ -356,6 +365,11 @@ TEST(IsCodecSupportedOnAndroidTest, ClearCodecBehavior) {
 
           case MimeUtil::DOLBY_VISION:
             EXPECT_EQ(HasDolbyVisionSupport(), result);
+            break;
+
+          case MimeUtil::AC3:
+          case MimeUtil::EAC3:
+            EXPECT_EQ(HasEac3Support(), result);
             break;
         }
       });

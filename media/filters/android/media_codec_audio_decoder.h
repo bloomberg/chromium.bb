@@ -168,6 +168,12 @@ class MEDIA_EXPORT MediaCodecAudioDecoder : public AudioDecoder,
   // Cached decoder config.
   AudioDecoderConfig config_;
 
+  // Indication to use passthrough decoder or not.
+  bool is_passthrough_;
+
+  // The audio sample format of the audio decoder output.
+  SampleFormat sample_format_;
+
   // Actual channel count that comes from decoder may be different than config.
   int channel_count_;
   ChannelLayout channel_layout_;

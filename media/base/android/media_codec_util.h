@@ -84,6 +84,10 @@ class MEDIA_EXPORT MediaCodecUtil {
   // Indicates if MediaCodec.setOutputSurface() works on this device.
   static bool IsSetOutputSurfaceSupported();
 
+  // Return true if the compressed audio |codec| will pass through the media
+  // pipelines without decompression.
+  static bool IsPassthroughAudioFormat(AudioCodec codec);
+
   // Indicates if the decoder is known to fail when flushed. (b/8125974,
   // b/8347958)
   // When true, the client should work around the issue by releasing the
