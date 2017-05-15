@@ -31,9 +31,9 @@ group("safe_browsing_db_shared") {
     ":database_manager",
     ":hit_report",
     ":prefix_set",
-    ":safe_browsing_prefs",
     ":safebrowsing_proto",
     ":util",
+    "//components/safe_browsing/common:safe_browsing_prefs",
   ]
 }
 
@@ -82,8 +82,8 @@ static_library("hit_report") {
     ":util",
   ]
   deps = [
-    ":safe_browsing_prefs",
     "//components/metrics",
+    "//components/safe_browsing/common:safe_browsing_prefs",
     "//url",
   ]
 }
@@ -152,17 +152,6 @@ static_library("safe_browsing_api_handler_util") {
   ]
 }
 
-static_library("safe_browsing_prefs") {
-  sources = [
-    "safe_browsing_prefs.cc",
-    "safe_browsing_prefs.h",
-  ]
-  deps = [
-    "//base:base",
-    "//components/prefs",
-  ]
-}
-
 static_library("test_database_manager") {
   sources = [
     "test_database_manager.cc",
@@ -181,8 +170,8 @@ static_library("util") {
     "util.h",
   ]
   public_deps = [
-    ":safe_browsing_prefs",
     ":v4_protocol_manager_util",
+    "//components/safe_browsing/common:safe_browsing_prefs",
   ]
   deps = [
     "//base",
@@ -325,12 +314,12 @@ static_library("v4_update_protocol_manager") {
     "v4_update_protocol_manager.h",
   ]
   deps = [
-    ":safe_browsing_prefs",
     ":safebrowsing_proto",
     ":util",
     ":v4_protocol_manager_util",
     "//base",
     "//components/data_use_measurement/core",
+    "//components/safe_browsing/common:safe_browsing_prefs",
     "//net",
     "//url",
   ]
@@ -413,7 +402,6 @@ source_set("unit_tests") {
   sources = [
     "database_manager_unittest.cc",
     "prefix_set_unittest.cc",
-    "safe_browsing_prefs_unittest.cc",
     "util_unittest.cc",
     "v4_database_unittest.cc",
     "v4_get_hash_protocol_manager_unittest.cc",
@@ -426,7 +414,6 @@ source_set("unit_tests") {
   deps = [
     ":database_manager",
     ":prefix_set",
-    ":safe_browsing_prefs",
     ":safebrowsing_proto",
     ":test_database_manager",
     ":util",
@@ -441,6 +428,7 @@ source_set("unit_tests") {
     ":v4_update_protocol_manager",
     "//base",
     "//components/prefs:test_support",
+    "//components/safe_browsing/common:safe_browsing_prefs",
     "//content/test:test_support",
     "//crypto",
     "//net",

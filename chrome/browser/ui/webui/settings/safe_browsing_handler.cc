@@ -8,7 +8,7 @@
 #include "base/bind_helpers.h"
 #include "base/values.h"
 #include "components/prefs/pref_service.h"
-#include "components/safe_browsing_db/safe_browsing_prefs.h"
+#include "components/safe_browsing/common/safe_browsing_prefs.h"
 #include "content/public/browser/web_ui.h"
 
 namespace settings {

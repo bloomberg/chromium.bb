@@ -17,7 +17,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "components/certificate_reporting/error_report.h"
 #include "components/prefs/pref_service.h"
-#include "components/safe_browsing_db/safe_browsing_prefs.h"
+#include "components/safe_browsing/common/safe_browsing_prefs.h"
 #include "components/variations/variations_associated_data.h"
 #include "net/url_request/report_sender.h"
 #include "net/url_request/url_request_context.h"
