@@ -873,18 +873,25 @@ class Change(object):
       raise AttributeError(self, attr)
     return self.tags.get(attr)
 
-  # TODO(agable): Update these to also get "Git-Footer: Foo"-style footers.
   def BugsFromDescription(self):
     """Returns all bugs referenced in the commit description."""
-    return [b.strip() for b in self.tags.get('BUG', '').split(',') if b.strip()]
+    tags = [b.strip() for b in self.tags.get('BUG', '').split(',') if b.strip()]
+    footers = git_footers.parse_footers(self._full_description).get('Bug', [])
+    return sorted(set(tags + footers))
 
   def ReviewersFromDescription(self):
     """Returns all reviewers listed in the commit description."""
-    return [r.strip() for r in self.tags.get('R', '').split(',') if r.strip()]
+    # We don't support a "R:" git-footer for reviewers; that is in metadata.
+    tags = [r.strip() for r in self.tags.get('R', '').split(',') if r.strip()]
+    return sorted(set(tags))
 
   def TBRsFromDescription(self):
     """Returns all TBR reviewers listed in the commit description."""
-    return [r.strip() for r in self.tags.get('TBR', '').split(',') if r.strip()]
+    tags = [r.strip() for r in self.tags.get('TBR', '').split(',') if r.strip()]
+    # TODO(agable): Remove support for 'Tbr:' when TBRs are programmatically
+    # determined by self-CR+1s.
+    footers = git_footers.parse_footers(self._full_description).get('Tbr', [])
+    return sorted(set(tags + footers))
 
   # TODO(agable): Delete these once we're sure they're unused.
   @property

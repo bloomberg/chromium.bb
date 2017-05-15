@@ -1605,6 +1605,27 @@ class ChangeUnittest(PresubmitTestsBase):
     self.assertEquals('bar', change.DescriptionText())
     self.assertEquals('bar\nWHIZ=bang', change.FullDescriptionText())
 
+  def testBugsFromDescription(self):
+    change = presubmit.Change(
+        '', 'foo\nBUG=2,1\n\nChange-Id: asdf\nBug: 3',
+        self.fake_root_dir, [], 0, 0, '')
+    self.assertEquals(['1', '2', '3'], change.BugsFromDescription())
+    self.assertEquals('1,2,3', change.BUG)
+
+  def testReviewersFromDescription(self):
+    change = presubmit.Change(
+        '', 'foo\nR=foo,bar\n\nChange-Id: asdf\nR: baz',
+        self.fake_root_dir, [], 0, 0, '')
+    self.assertEquals(['bar', 'foo'], change.ReviewersFromDescription())
+    self.assertEquals('bar,foo', change.R)
+
+  def testTBRsFromDescription(self):
+    change = presubmit.Change(
+        '', 'foo\nTBR=foo,bar\n\nChange-Id: asdf\nTBR: baz',
+        self.fake_root_dir, [], 0, 0, '')
+    self.assertEquals(['bar', 'baz', 'foo'], change.TBRsFromDescription())
+    self.assertEquals('bar,baz,foo', change.TBR)
+
 
 def CommHelper(input_api, cmd, ret=None, **kwargs):
   ret = ret or (('', None), 0)
