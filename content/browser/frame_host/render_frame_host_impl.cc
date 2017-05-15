@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/containers/hash_tables.h"
+#include "base/feature_list.h"
 #include "base/lazy_instance.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
@@ -2688,6 +2689,13 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
       base::Bind(&RenderFrameHostImpl::BindWakeLockServiceRequest,
                  base::Unretained(this)));
 
+#if defined(OS_ANDROID)
+  if (base::FeatureList::IsEnabled(features::kWebNfc)) {
+    GetInterfaceRegistry()->AddInterface<device::nfc::mojom::NFC>(base::Bind(
+        &RenderFrameHostImpl::BindNFCRequest, base::Unretained(this)));
+  }
+#endif
+
   if (!permission_service_context_)
     permission_service_context_.reset(new PermissionServiceContext(this));
 
@@ -3742,6 +3750,15 @@ void RenderFrameHostImpl::BindWakeLockServiceRequest(
   if (renderer_wake_lock)
     renderer_wake_lock->AddClient(std::move(request));
 }
+
+#if defined(OS_ANDROID)
+void RenderFrameHostImpl::BindNFCRequest(
+    const service_manager::BindSourceInfo& source_info,
+    device::nfc::mojom::NFCRequest request) {
+  if (delegate_)
+    delegate_->GetNFC(std::move(request));
+}
+#endif
 
 void RenderFrameHostImpl::GetInterface(
     const std::string& interface_name,

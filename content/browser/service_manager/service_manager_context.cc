@@ -51,6 +51,13 @@
 #include "services/service_manager/service_manager.h"
 #include "services/shape_detection/public/interfaces/constants.mojom.h"
 
+#if defined(OS_ANDROID)
+#include "base/android/context_utils.h"
+#include "base/android/jni_android.h"
+#include "base/android/scoped_java_ref.h"
+#include "jni/ContentNfcDelegate_jni.h"
+#endif
+
 namespace content {
 
 namespace {
@@ -291,13 +298,19 @@ ServiceManagerContext::ServiceManagerContext() {
 
   ServiceInfo device_info;
 #if defined(OS_ANDROID)
-  // See the comments on wake_lock_context_host.h for details on this
-  // callback.
+  JNIEnv* env = base::android::AttachCurrentThread();
+  base::android::ScopedJavaGlobalRef<jobject> java_nfc_delegate;
+  java_nfc_delegate.Reset(Java_ContentNfcDelegate_create(env));
+  DCHECK(!java_nfc_delegate.is_null());
+
+  // See the comments on wake_lock_context_host.h and ContentNfcDelegate.java
+  // respectively for comments on those parameters.
   device_info.factory =
       base::Bind(&device::CreateDeviceService,
                  BrowserThread::GetTaskRunnerForThread(BrowserThread::FILE),
                  BrowserThread::GetTaskRunnerForThread(BrowserThread::IO),
-                 base::Bind(&WakeLockContextHost::GetNativeViewForContext));
+                 base::Bind(&WakeLockContextHost::GetNativeViewForContext),
+                 std::move(java_nfc_delegate));
 #else
   device_info.factory =
       base::Bind(&device::CreateDeviceService,

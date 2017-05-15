@@ -59,7 +59,7 @@
         "content_renderer": [ "browser" ],
         "content_utility": [ "browser" ],
         "data_decoder": [ "image_decoder" ],
-        "device": [ "device:wake_lock" ],
+        "device": [ "device:nfc", "device:wake_lock" ],
         "file": [ "file:filesystem", "file:leveldb" ],
         "media": [ "media:media" ],
         "network": [

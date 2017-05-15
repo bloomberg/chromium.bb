@@ -58,6 +58,10 @@
 #include "ui/base/mojo/window_open_disposition.mojom.h"
 #include "ui/base/page_transition_types.h"
 
+#if defined(OS_ANDROID)
+#include "device/nfc/nfc.mojom.h"
+#endif
+
 class GURL;
 struct AccessibilityHostMsg_EventParams;
 struct AccessibilityHostMsg_FindInPageResultParams;
@@ -916,6 +920,11 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void BindWakeLockServiceRequest(
       const service_manager::BindSourceInfo& source_info,
       device::mojom::WakeLockServiceRequest request);
+
+#if defined(OS_ANDROID)
+  void BindNFCRequest(const service_manager::BindSourceInfo& source_info,
+                      device::nfc::mojom::NFCRequest request);
+#endif
 
   // service_manager::mojom::InterfaceProvider:
   void GetInterface(const std::string& interface_name,

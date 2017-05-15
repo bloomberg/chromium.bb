@@ -12,7 +12,6 @@ import org.chromium.content.browser.androidoverlay.AndroidOverlayProviderImpl;
 import org.chromium.content_public.browser.InterfaceRegistrar;
 import org.chromium.content_public.browser.RenderFrameHost;
 import org.chromium.content_public.browser.WebContents;
-import org.chromium.device.nfc.mojom.Nfc;
 import org.chromium.media.mojom.AndroidOverlayProvider;
 import org.chromium.mojo.system.impl.CoreImpl;
 import org.chromium.services.service_manager.InterfaceRegistry;
@@ -54,8 +53,6 @@ class InterfaceRegistrarImpl {
         if (sHasRegisteredRegistrars) return;
         sHasRegisteredRegistrars = true;
         InterfaceRegistrar.Registry.addContextRegistrar(new ContentContextInterfaceRegistrar());
-        InterfaceRegistrar.Registry.addWebContentsRegistrar(
-                new ContentWebContentsInterfaceRegistrar());
     }
 
     private static class ContentContextInterfaceRegistrar implements InterfaceRegistrar<Context> {
@@ -65,16 +62,6 @@ class InterfaceRegistrarImpl {
             registry.addInterface(AndroidOverlayProvider.MANAGER,
                     new AndroidOverlayProviderImpl.Factory(applicationContext));
             // TODO(avayvod): Register the PresentationService implementation here.
-        }
-    }
-
-    private static class ContentWebContentsInterfaceRegistrar
-            implements InterfaceRegistrar<WebContents> {
-        @Override
-        public void registerInterfaces(InterfaceRegistry registry, final WebContents webContents) {
-            if (ContentFeatureList.isEnabled(ContentFeatureList.WEB_NFC)) {
-                registry.addInterface(Nfc.MANAGER, new NfcFactory(webContents));
-            }
         }
     }
 }

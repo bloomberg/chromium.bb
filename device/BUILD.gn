@@ -306,6 +306,7 @@ if (is_android) {
       "//device/geolocation:geolocation_java_test_support",
       "//device/nfc:mojo_bindings_java",
       "//device/nfc/android:java",
+      "//device/nfc/public/java:nfc_java",
       "//mojo/public/java:bindings_java",
       "//third_party/android_tools:android_support_annotations_java",
     ]

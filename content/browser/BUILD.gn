@@ -1896,6 +1896,8 @@ source_set("browser") {
       "android/java/jni_helper.h",
       "android/load_url_params.cc",
       "android/load_url_params.h",
+      "android/nfc_host.cc",
+      "android/nfc_host.h",
       "android/overscroll_controller_android.cc",
       "android/overscroll_controller_android.h",
       "android/render_widget_host_connector.cc",

@@ -21,6 +21,7 @@ import android.os.Handler;
 import android.os.Process;
 import android.util.SparseArray;
 
+import org.chromium.base.Callback;
 import org.chromium.base.Log;
 import org.chromium.device.nfc.mojom.Nfc;
 import org.chromium.device.nfc.mojom.NfcClient;
@@ -39,12 +40,14 @@ import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Android implementation of the NFC mojo service defined in
- * device/nfc/nfc.mojom.
+/** Android implementation of the NFC mojo service defined in device/nfc/nfc.mojom.
  */
 public class NfcImpl implements Nfc {
     private static final String TAG = "NfcImpl";
+
+    private final int mHostId;
+
+    private final NfcDelegate mDelegate;
 
     /**
      * Used to get instance of NFC adapter, @see android.nfc.NfcManager
@@ -114,10 +117,20 @@ public class NfcImpl implements Nfc {
      */
     private Runnable mPushTimeoutRunnable;
 
-    public NfcImpl(Context context) {
+    public NfcImpl(Context context, int hostId, NfcDelegate delegate) {
+        mHostId = hostId;
+        mDelegate = delegate;
         int permission =
                 context.checkPermission(Manifest.permission.NFC, Process.myPid(), Process.myUid());
         mHasPermission = permission == PackageManager.PERMISSION_GRANTED;
+        Callback<Activity> onActivityUpdatedCallback = new Callback<Activity>() {
+            @Override
+            public void onResult(Activity activity) {
+                setActivity(activity);
+            }
+        };
+
+        mDelegate.trackActivityForHost(mHostId, onActivityUpdatedCallback);
 
         if (!mHasPermission || Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT) {
             Log.w(TAG, "NFC operations are not permitted.");
@@ -293,6 +306,7 @@ public class NfcImpl implements Nfc {
 
     @Override
     public void close() {
+        mDelegate.stopTrackingActivityForHost(mHostId);
         disableReaderMode();
     }
 

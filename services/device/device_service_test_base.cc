@@ -51,7 +51,7 @@ class ServiceTestClient : public service_manager::test::ServiceTestClient,
       device_service_context_.reset(new service_manager::ServiceContext(
           CreateDeviceService(file_thread_.task_runner(),
                               io_thread_.task_runner(),
-                              wake_lock_context_callback_),
+                              wake_lock_context_callback_, nullptr),
           std::move(request)));
 #else
       device_service_context_.reset(new service_manager::ServiceContext(

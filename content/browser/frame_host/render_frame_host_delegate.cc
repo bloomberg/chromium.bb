@@ -81,6 +81,10 @@ device::mojom::WakeLockService* RenderFrameHostDelegate::GetRendererWakeLock() {
   return nullptr;
 }
 
+#if defined(OS_ANDROID)
+void RenderFrameHostDelegate::GetNFC(device::nfc::mojom::NFCRequest request) {}
+#endif
+
 bool RenderFrameHostDelegate::ShouldRouteMessageEvent(
     RenderFrameHost* target_rfh,
     SiteInstance* source_site_instance) const {

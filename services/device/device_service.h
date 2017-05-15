@@ -7,6 +7,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "device/generic_sensor/public/interfaces/sensor_provider.mojom.h"
+#include "device/nfc/nfc_provider.mojom.h"
 #include "device/screen_orientation/public/interfaces/screen_orientation.mojom.h"
 #include "device/sensors/public/interfaces/motion.mojom.h"
 #include "device/sensors/public/interfaces/orientation.mojom.h"
@@ -22,6 +23,10 @@
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "services/service_manager/public/cpp/service.h"
 
+#if defined(OS_ANDROID)
+#include "base/android/scoped_java_ref.h"
+#endif
+
 namespace base {
 class SingleThreadTaskRunner;
 }
@@ -32,10 +37,14 @@ class PowerMonitorMessageBroadcaster;
 class TimeZoneMonitor;
 
 #if defined(OS_ANDROID)
+// NOTE: See the comments on the definitions of |WakeLockContextCallback|
+// and NFCDelegate.java to understand the semantics and usage of these
+// parameters.
 std::unique_ptr<service_manager::Service> CreateDeviceService(
     scoped_refptr<base::SingleThreadTaskRunner> file_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
-    const WakeLockContextCallback& wake_lock_context_callback);
+    const WakeLockContextCallback& wake_lock_context_callback,
+    const base::android::JavaRef<jobject>& java_nfc_delegate);
 #else
 std::unique_ptr<service_manager::Service> CreateDeviceService(
     scoped_refptr<base::SingleThreadTaskRunner> file_task_runner,
@@ -47,7 +56,8 @@ class DeviceService : public service_manager::Service {
 #if defined(OS_ANDROID)
   DeviceService(scoped_refptr<base::SingleThreadTaskRunner> file_task_runner,
                 scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
-                const WakeLockContextCallback& wake_lock_context_callback);
+                const WakeLockContextCallback& wake_lock_context_callback,
+                const base::android::JavaRef<jobject>& java_nfc_delegate);
 #else
   DeviceService(scoped_refptr<base::SingleThreadTaskRunner> file_task_runner,
                 scoped_refptr<base::SingleThreadTaskRunner> io_task_runner);
@@ -81,6 +91,9 @@ class DeviceService : public service_manager::Service {
   void BindBatteryMonitorRequest(
       const service_manager::BindSourceInfo& source_info,
       mojom::BatteryMonitorRequest request);
+  void BindNFCProviderRequest(
+      const service_manager::BindSourceInfo& source_info,
+      nfc::mojom::NFCProviderRequest request);
   void BindVibrationManagerRequest(
       const service_manager::BindSourceInfo& source_info,
       mojom::VibrationManagerRequest request);
@@ -109,6 +122,11 @@ class DeviceService : public service_manager::Service {
   std::unique_ptr<PowerMonitorMessageBroadcaster>
       power_monitor_message_broadcaster_;
   std::unique_ptr<TimeZoneMonitor> time_zone_monitor_;
+  scoped_refptr<base::SingleThreadTaskRunner> file_task_runner_;
+  scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
+
+  WakeLockContextCallback wake_lock_context_callback_;
+
 #if defined(OS_ANDROID)
   // Binds |java_interface_provider_| to an interface registry that exposes
   // factories for the interfaces that are provided via Java on Android.
@@ -118,12 +136,9 @@ class DeviceService : public service_manager::Service {
   service_manager::InterfaceProvider java_interface_provider_;
 
   bool java_interface_provider_initialized_;
+
+  base::android::ScopedJavaGlobalRef<jobject> java_nfc_delegate_;
 #endif
-
-  scoped_refptr<base::SingleThreadTaskRunner> file_task_runner_;
-  scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
-
-  WakeLockContextCallback wake_lock_context_callback_;
 
   service_manager::BinderRegistry registry_;
 
