@@ -137,7 +137,6 @@ component("web") {
     "WebFormElementObserverImpl.cpp",
     "WebFormElementObserverImpl.h",
     "WebFrame.cpp",
-    "WebFrameClient.cpp",
     "WebFrameContentDumper.cpp",
     "WebFrameSerializer.cpp",
     "WebFrameSerializerImpl.cpp",

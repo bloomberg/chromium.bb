@@ -82,6 +82,8 @@ class WebLocalFrame : public WebFrame {
       WebRemoteFrame*,
       WebSandboxFlags);
 
+  // TODO(dcheng): Add a CreateChild() method.
+
   // Returns the WebFrame associated with the current V8 context. This
   // function can return 0 if the context is associated with a Document that
   // is not currently being displayed in a Frame.

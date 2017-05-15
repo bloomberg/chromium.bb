@@ -212,7 +212,7 @@ class BLINK_EXPORT WebFrameClient {
   // associated with this frame. If the DetachType is Remove, the frame should
   // also be removed from the frame tree; otherwise, if the DetachType is
   // Swap, the frame is being replaced in-place by WebFrame::swap().
-  virtual void FrameDetached(WebLocalFrame*, DetachType);
+  virtual void FrameDetached(WebLocalFrame*, DetachType) {}
 
   // This frame has become focused.
   virtual void FrameFocused() {}

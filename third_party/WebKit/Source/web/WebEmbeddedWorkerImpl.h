@@ -84,6 +84,7 @@ class WebEmbeddedWorkerImpl final : public WebEmbeddedWorker,
   void LoadShadowPage();
 
   // WebFrameClient overrides.
+  void FrameDetached(WebLocalFrame*, DetachType) override;
   void DidFinishDocumentLoad() override;
 
   // WebDevToolsAgentClient overrides.
