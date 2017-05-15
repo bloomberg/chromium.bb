@@ -136,6 +136,8 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattCharacteristicMac
   std::unordered_map<std::string,
                      std::unique_ptr<BluetoothRemoteGattDescriptorMac>>
       gatt_descriptor_macs_;
+
+  base::WeakPtrFactory<BluetoothRemoteGattCharacteristicMac> weak_ptr_factory_;
 };
 
 // Stream operator for logging.

@@ -72,7 +72,8 @@ BluetoothRemoteGattCharacteristicMac::BluetoothRemoteGattCharacteristicMac(
     : is_discovery_complete_(false),
       discovery_pending_count_(0),
       gatt_service_(gatt_service),
-      cb_characteristic_(cb_characteristic, base::scoped_policy::RETAIN) {
+      cb_characteristic_(cb_characteristic, base::scoped_policy::RETAIN),
+      weak_ptr_factory_(this) {
   uuid_ = BluetoothAdapterMac::BluetoothUUIDWithCBUUID(
       [cb_characteristic_.get() UUID]);
   identifier_ = base::SysNSStringToUTF8(
@@ -207,7 +208,7 @@ void BluetoothRemoteGattCharacteristicMac::WriteRemoteCharacteristic(
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::Bind(&BluetoothRemoteGattCharacteristicMac::DidWriteValue,
-                   base::Unretained(this), nil));
+                   weak_ptr_factory_.GetWeakPtr(), nil));
   }
 }
 

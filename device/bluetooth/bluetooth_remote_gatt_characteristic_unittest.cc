@@ -2413,6 +2413,31 @@ TEST_F(BluetoothRemoteGattCharacteristicTest, WriteDuringDisconnect) {
 }
 #endif  // defined(OS_ANDROID)
 
+#if defined(OS_MACOSX)
+// Tests that writing without response during a disconnect results in an error.
+// Only applies to macOS whose events arrive all on the UI thread. See other
+// *DuringDisconnect tests for Android and Windows whose events arrive on a
+// different thread.
+TEST_F(BluetoothRemoteGattCharacteristicTest,
+       WriteWithoutResponseDuringDisconnect) {
+  if (!PlatformSupportsLowEnergy()) {
+    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
+    return;
+  }
+  ASSERT_NO_FATAL_FAILURE(FakeCharacteristicBoilerplate(
+      BluetoothRemoteGattCharacteristic::PROPERTY_WRITE_WITHOUT_RESPONSE));
+
+  characteristic1_->WriteRemoteCharacteristic(
+      std::vector<uint8_t>(), GetCallback(Call::NOT_EXPECTED),
+      GetGattErrorCallback(Call::EXPECTED));
+  SimulateGattDisconnection(device_);
+
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(BluetoothRemoteGattService::GATT_ERROR_FAILED,
+            last_gatt_error_code_);
+}
+#endif  // defined(OS_MACOSX)
+
 #if defined(OS_ANDROID)
 // Tests that start notifications requests after a device disconnects but before
 // the disconnect task runs result in an error.
