@@ -42,7 +42,6 @@
 #include "public/web/WebViewClient.h"
 #include "web/WebDevToolsAgentImpl.h"
 #include "web/WebFrameWidgetImpl.h"
-#include "web/WebLocalFrameImpl.h"
 
 namespace blink {
 

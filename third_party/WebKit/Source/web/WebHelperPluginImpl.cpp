@@ -31,10 +31,10 @@
 #include "web/WebHelperPluginImpl.h"
 
 #include "core/frame/LocalFrameClient.h"
+#include "core/frame/WebLocalFrameBase.h"
 #include "core/html/HTMLObjectElement.h"
 #include "core/loader/FrameLoader.h"
 #include "public/web/WebPlugin.h"
-#include "web/WebLocalFrameImpl.h"
 #include "web/WebPluginContainerImpl.h"
 
 namespace blink {
@@ -45,7 +45,7 @@ WebHelperPlugin* WebHelperPlugin::Create(const WebString& plugin_type,
                                          WebLocalFrame* frame) {
   WebHelperPluginUniquePtr plugin(new WebHelperPluginImpl());
   if (!ToWebHelperPluginImpl(plugin.get())
-           ->Initialize(plugin_type, ToWebLocalFrameImpl(frame)))
+           ->Initialize(plugin_type, ToWebLocalFrameBase(frame)))
     return 0;
   return plugin.release();
 }
@@ -54,7 +54,7 @@ WebHelperPluginImpl::WebHelperPluginImpl()
     : destruction_timer_(this, &WebHelperPluginImpl::ReallyDestroy) {}
 
 bool WebHelperPluginImpl::Initialize(const String& plugin_type,
-                                     WebLocalFrameImpl* frame) {
+                                     WebLocalFrameBase* frame) {
   DCHECK(!object_element_ && !plugin_container_);
   if (!frame->GetFrame()->Loader().Client())
     return false;

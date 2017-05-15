@@ -37,7 +37,6 @@
 #include "platform/weborigin/SecurityOrigin.h"
 #include "public/platform/WebSecurityOrigin.h"
 #include "public/web/WebKit.h"
-#include "web/WebLocalFrameImpl.h"
 
 namespace blink {
 

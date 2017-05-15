@@ -7,6 +7,7 @@
 #include "core/exported/WebViewBase.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/Settings.h"
+#include "core/frame/WebLocalFrameBase.h"
 #include "core/inspector/protocol/DOM.h"
 #include "core/page/Page.h"
 #include "platform/geometry/DoubleRect.h"
@@ -16,7 +17,6 @@
 #include "public/platform/WebFloatPoint.h"
 #include "public/platform/WebThread.h"
 #include "web/DevToolsEmulator.h"
-#include "web/WebLocalFrameImpl.h"
 
 namespace blink {
 
@@ -36,20 +36,20 @@ static const char kDefaultBackgroundColorOverrideRGBA[] =
 }
 
 InspectorEmulationAgent* InspectorEmulationAgent::Create(
-    WebLocalFrameImpl* web_local_frame_impl,
+    WebLocalFrameBase* web_local_frame_impl,
     Client* client) {
   return new InspectorEmulationAgent(web_local_frame_impl, client);
 }
 
 InspectorEmulationAgent::InspectorEmulationAgent(
-    WebLocalFrameImpl* web_local_frame_impl,
+    WebLocalFrameBase* web_local_frame_impl,
     Client* client)
-    : web_local_frame_impl_(web_local_frame_impl), client_(client) {}
+    : web_local_frame_(web_local_frame_impl), client_(client) {}
 
 InspectorEmulationAgent::~InspectorEmulationAgent() {}
 
 WebViewBase* InspectorEmulationAgent::GetWebViewBase() {
-  return web_local_frame_impl_->ViewImpl();
+  return web_local_frame_->ViewImpl();
 }
 
 void InspectorEmulationAgent::Restore() {
@@ -156,22 +156,22 @@ Response InspectorEmulationAgent::setCPUThrottlingRate(double throttling_rate) {
 Response InspectorEmulationAgent::setVirtualTimePolicy(const String& policy,
                                                        Maybe<int> budget) {
   if (protocol::Emulation::VirtualTimePolicyEnum::Advance == policy) {
-    web_local_frame_impl_->View()->Scheduler()->SetVirtualTimePolicy(
+    web_local_frame_->View()->Scheduler()->SetVirtualTimePolicy(
         WebViewScheduler::VirtualTimePolicy::ADVANCE);
   } else if (protocol::Emulation::VirtualTimePolicyEnum::Pause == policy) {
-    web_local_frame_impl_->View()->Scheduler()->SetVirtualTimePolicy(
+    web_local_frame_->View()->Scheduler()->SetVirtualTimePolicy(
         WebViewScheduler::VirtualTimePolicy::PAUSE);
   } else if (protocol::Emulation::VirtualTimePolicyEnum::
                  PauseIfNetworkFetchesPending == policy) {
-    web_local_frame_impl_->View()->Scheduler()->SetVirtualTimePolicy(
+    web_local_frame_->View()->Scheduler()->SetVirtualTimePolicy(
         WebViewScheduler::VirtualTimePolicy::DETERMINISTIC_LOADING);
   }
-  web_local_frame_impl_->View()->Scheduler()->EnableVirtualTime();
+  web_local_frame_->View()->Scheduler()->EnableVirtualTime();
 
   if (budget.isJust()) {
     base::TimeDelta budget_amount =
         base::TimeDelta::FromMilliseconds(budget.fromJust());
-    web_local_frame_impl_->View()->Scheduler()->GrantVirtualTimeBudget(
+    web_local_frame_->View()->Scheduler()->GrantVirtualTimeBudget(
         budget_amount,
         WTF::Bind(&InspectorEmulationAgent::VirtualTimeBudgetExpired,
                   WrapWeakPersistent(this)));
@@ -180,7 +180,7 @@ Response InspectorEmulationAgent::setVirtualTimePolicy(const String& policy,
 }
 
 void InspectorEmulationAgent::VirtualTimeBudgetExpired() {
-  web_local_frame_impl_->View()->Scheduler()->SetVirtualTimePolicy(
+  web_local_frame_->View()->Scheduler()->SetVirtualTimePolicy(
       WebViewScheduler::VirtualTimePolicy::PAUSE);
   GetFrontend()->virtualTimeBudgetExpired();
 }
@@ -205,7 +205,7 @@ Response InspectorEmulationAgent::setDefaultBackgroundColorOverride(
 }
 
 DEFINE_TRACE(InspectorEmulationAgent) {
-  visitor->Trace(web_local_frame_impl_);
+  visitor->Trace(web_local_frame_);
   InspectorBaseAgent::Trace(visitor);
 }
 

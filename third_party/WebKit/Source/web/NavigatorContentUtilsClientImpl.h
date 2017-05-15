@@ -11,12 +11,12 @@
 
 namespace blink {
 
-class WebLocalFrameImpl;
+class WebLocalFrameBase;
 
 class NavigatorContentUtilsClientImpl final
     : public NavigatorContentUtilsClient {
  public:
-  static NavigatorContentUtilsClientImpl* Create(WebLocalFrameImpl*);
+  static NavigatorContentUtilsClientImpl* Create(WebLocalFrameBase*);
   ~NavigatorContentUtilsClientImpl() override {}
 
   void RegisterProtocolHandler(const String& scheme,
@@ -29,9 +29,9 @@ class NavigatorContentUtilsClientImpl final
   DECLARE_VIRTUAL_TRACE();
 
  private:
-  explicit NavigatorContentUtilsClientImpl(WebLocalFrameImpl*);
+  explicit NavigatorContentUtilsClientImpl(WebLocalFrameBase*);
 
-  Member<WebLocalFrameImpl> web_frame_;
+  Member<WebLocalFrameBase> web_frame_;
 };
 
 }  // namespace blink

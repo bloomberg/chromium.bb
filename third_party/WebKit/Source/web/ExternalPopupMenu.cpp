@@ -35,6 +35,7 @@
 #include "core/exported/WebViewBase.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
+#include "core/frame/WebLocalFrameBase.h"
 #include "core/html/HTMLOptionElement.h"
 #include "core/html/HTMLSelectElement.h"
 #include "core/layout/LayoutBox.h"
@@ -52,7 +53,6 @@
 #include "public/web/WebMenuItemInfo.h"
 #include "public/web/WebPopupMenuInfo.h"
 #include "public/web/WebView.h"
-#include "web/WebLocalFrameImpl.h"
 
 namespace blink {
 
@@ -88,8 +88,8 @@ bool ExternalPopupMenu::ShowInternal() {
   GetPopupMenuInfo(info, *owner_element_);
   if (info.items.empty())
     return false;
-  WebLocalFrameImpl* webframe =
-      WebLocalFrameImpl::FromFrame(local_frame_.Get());
+  WebLocalFrameBase* webframe =
+      WebLocalFrameBase::FromFrame(local_frame_.Get());
   web_external_popup_menu_ =
       webframe->Client()->CreateExternalPopupMenu(info, this);
   if (web_external_popup_menu_) {

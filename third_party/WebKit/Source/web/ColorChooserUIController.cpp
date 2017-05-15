@@ -25,6 +25,7 @@
 
 #include "web/ColorChooserUIController.h"
 
+#include "core/frame/WebLocalFrameBase.h"
 #include "core/html/forms/ColorChooserClient.h"
 #include "platform/graphics/Color.h"
 #include "platform/wtf/PtrUtil.h"
@@ -32,7 +33,6 @@
 #include "public/web/WebColorChooser.h"
 #include "public/web/WebColorSuggestion.h"
 #include "public/web/WebFrameClient.h"
-#include "web/WebLocalFrameImpl.h"
 
 namespace blink {
 
@@ -83,7 +83,7 @@ void ColorChooserUIController::DidEndChooser() {
 
 void ColorChooserUIController::OpenColorChooser() {
   DCHECK(!chooser_);
-  WebLocalFrameImpl* frame = WebLocalFrameImpl::FromFrame(frame_);
+  WebLocalFrameBase* frame = WebLocalFrameBase::FromFrame(frame_);
   WebFrameClient* web_frame_client = frame->Client();
   if (!web_frame_client)
     return;

@@ -33,12 +33,12 @@
 #include "core/dom/Document.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/dom/TaskRunnerHelper.h"
+#include "core/frame/WebLocalFrameBase.h"
 #include "modules/quota/DeprecatedStorageQuotaCallbacksImpl.h"
 #include "modules/quota/StorageErrorCallback.h"
 #include "modules/quota/StorageQuotaCallback.h"
 #include "public/platform/WebStorageQuotaType.h"
 #include "public/web/WebFrameClient.h"
-#include "web/WebLocalFrameImpl.h"
 
 namespace blink {
 
@@ -58,8 +58,8 @@ void StorageQuotaClientImpl::RequestQuota(
       << "Quota requests are not supported in workers";
 
   Document* document = ToDocument(execution_context);
-  WebLocalFrameImpl* web_frame =
-      WebLocalFrameImpl::FromFrame(document->GetFrame());
+  WebLocalFrameBase* web_frame =
+      WebLocalFrameBase::FromFrame(document->GetFrame());
   StorageQuotaCallbacks* callbacks =
       DeprecatedStorageQuotaCallbacksImpl::Create(success_callback,
                                                   error_callback);
