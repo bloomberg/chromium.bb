@@ -418,19 +418,28 @@ class Database(object):
     dirs_remaining = set(self._enclosing_dir_with_owners(f) for f in files)
     all_possible_owners = self.all_possible_owners(dirs_remaining, author)
     suggested_owners = set()
-    if len(all_possible_owners) == 0:
-      return suggested_owners
-    while dirs_remaining:
+    while dirs_remaining and all_possible_owners:
       owner = self.lowest_cost_owner(all_possible_owners, dirs_remaining)
       suggested_owners.add(owner)
       dirs_to_remove = set(el[0] for el in all_possible_owners[owner])
       dirs_remaining -= dirs_to_remove
+      # Now that we've used `owner` and covered all their dirs, remove them
+      # from consideration.
+      del all_possible_owners[owner]
+      for o, dirs in all_possible_owners.items():
+        new_dirs = [(d, dist) for (d, dist) in dirs if d not in dirs_to_remove]
+        if not new_dirs:
+          del all_possible_owners[o]
+        else:
+          all_possible_owners[o] = new_dirs
     return suggested_owners
 
   def all_possible_owners(self, dirs, author):
-    """Returns a list of (potential owner, distance-from-dir) tuples; a
-    distance of 1 is the lowest/closest possible distance (which makes the
-    subsequent math easier)."""
+    """Returns a dict of {potential owner: (dir, distance)} mappings.
+
+    A distance of 1 is the lowest/closest possible distance (which makes the
+    subsequent math easier).
+    """
     all_possible_owners = {}
     for current_dir in dirs:
       dirname = current_dir
