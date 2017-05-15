@@ -49,7 +49,6 @@ class CONTENT_EXPORT PepperDeviceEnumerationHostHelper {
 
     // Enumerates devices of the specified type.
     virtual void EnumerateDevices(PP_DeviceType_Dev type,
-                                  const GURL& document_url,
                                   const DevicesCallback& callback) = 0;
 
     // Starts monitoring devices of the specified |type|. Returns a
@@ -58,7 +57,6 @@ class CONTENT_EXPORT PepperDeviceEnumerationHostHelper {
     // when device changes of the specified |type| occur.
     virtual uint32_t StartMonitoringDevices(
         PP_DeviceType_Dev type,
-        const GURL& document_url,
         const DevicesCallback& callback) = 0;
 
     // Stops monitoring devices of the specified |type|. The
@@ -106,7 +104,6 @@ class CONTENT_EXPORT PepperDeviceEnumerationHostHelper {
   base::WeakPtr<Delegate> delegate_;
 
   PP_DeviceType_Dev device_type_;
-  GURL document_url_;
 
   std::unique_ptr<ScopedEnumerationRequest> enumerate_;
   std::unique_ptr<ScopedMonitoringRequest> monitor_;

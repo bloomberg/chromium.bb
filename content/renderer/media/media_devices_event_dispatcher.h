@@ -19,10 +19,6 @@
 #include "content/public/renderer/render_frame_observer.h"
 #include "content/public/renderer/render_frame_observer_tracker.h"
 
-namespace url {
-class Origin;
-}
-
 namespace content {
 
 // This class implements the logic for managing media device-change
@@ -52,7 +48,6 @@ class CONTENT_EXPORT MediaDevicesEventDispatcher
   // subscription.
   SubscriptionId SubscribeDeviceChangeNotifications(
       MediaDeviceType type,
-      const url::Origin& security_origin,
       const DevicesChangedCallback& callback);
 
   // Cancels a subscription identified with |subscription_id| to device-change
@@ -66,7 +61,6 @@ class CONTENT_EXPORT MediaDevicesEventDispatcher
   // Returns a list of subscription IDs that can be used to cancel the
   // subscriptions.
   SubscriptionIdList SubscribeDeviceChangeNotifications(
-      const url::Origin& security_origin,
       const DevicesChangedCallback& callback);
 
   // Cancels subscriptions identified by |subscription_ids| to device-change

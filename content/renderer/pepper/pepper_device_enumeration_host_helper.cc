@@ -32,11 +32,14 @@ class PepperDeviceEnumerationHostHelper::ScopedEnumerationRequest
   ScopedEnumerationRequest(PepperDeviceEnumerationHostHelper* owner,
                            const Delegate::DevicesCallback& callback)
       : callback_(callback), requested_(false), sync_call_(false) {
-    if (!owner->document_url_.is_valid())
+    if (!owner->delegate_) {
+      // If no delegate, return an empty list of devices.
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
+          FROM_HERE,
+          base::Bind(&ScopedEnumerationRequest::EnumerateDevicesCallbackBody,
+                     AsWeakPtr(), std::vector<ppapi::DeviceRefData>()));
       return;
-
-    if (!owner->delegate_)
-      return;
+    }
 
     requested_ = true;
 
@@ -48,7 +51,7 @@ class PepperDeviceEnumerationHostHelper::ScopedEnumerationRequest
     // asynchronously.
     sync_call_ = true;
     owner->delegate_->EnumerateDevices(
-        owner->device_type_, owner->document_url_,
+        owner->device_type_,
         base::Bind(&ScopedEnumerationRequest::EnumerateDevicesCallbackBody,
                    AsWeakPtr()));
     sync_call_ = false;
@@ -90,18 +93,16 @@ class PepperDeviceEnumerationHostHelper::ScopedMonitoringRequest
         requested_(false),
         subscription_id_(0) {
     DCHECK(owner_);
-    if (!owner_->document_url_.is_valid())
+    if (!owner->delegate_) {
       return;
-
-    if (!owner->delegate_)
-      return;
+    }
 
     requested_ = true;
 
     // |callback| is never called synchronously by StartMonitoringDevices(),
     // so it is OK to pass it directly, even if |callback| destroys |this|.
     subscription_id_ = owner_->delegate_->StartMonitoringDevices(
-        owner_->device_type_, owner_->document_url_, callback);
+        owner_->device_type_, callback);
   }
 
   ~ScopedMonitoringRequest() {
@@ -129,8 +130,7 @@ PepperDeviceEnumerationHostHelper::PepperDeviceEnumerationHostHelper(
     const GURL& document_url)
     : resource_host_(resource_host),
       delegate_(delegate),
-      device_type_(device_type),
-      document_url_(document_url) {}
+      device_type_(device_type) {}
 
 PepperDeviceEnumerationHostHelper::~PepperDeviceEnumerationHostHelper() {}
 

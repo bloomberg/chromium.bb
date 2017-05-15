@@ -41,6 +41,17 @@ struct {
 // Frame rates for sources with no support for capability enumeration.
 const int kFallbackVideoFrameRates[] = {30, 60};
 
+url::Origin GetOrigin(int process_id,
+                      int frame_id,
+                      const url::Origin& origin_for_testing) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  if (!origin_for_testing.unique())
+    return origin_for_testing;
+
+  RenderFrameHost* frame_host = RenderFrameHost::FromID(process_id, frame_id);
+  return frame_host ? frame_host->GetLastCommittedOrigin() : url::Origin();
+}
+
 MediaDeviceInfo TranslateDeviceInfo(bool has_permission,
                                     const std::string& device_id_salt,
                                     const std::string& group_id_salt,
@@ -86,11 +97,6 @@ MediaDeviceInfoArray TranslateMediaDeviceInfoArray(
 }
 
 }  // namespace
-
-struct MediaDevicesDispatcherHost::SubscriptionInfo {
-  uint32_t subscription_id;
-  url::Origin security_origin;
-};
 
 // static
 void MediaDevicesDispatcherHost::Create(
@@ -142,7 +148,6 @@ void MediaDevicesDispatcherHost::EnumerateDevices(
     bool request_audio_input,
     bool request_video_input,
     bool request_audio_output,
-    const url::Origin& security_origin,
     EnumerateDevicesCallback client_callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
@@ -152,78 +157,40 @@ void MediaDevicesDispatcherHost::EnumerateDevices(
     return;
   }
 
-  // Ignore requests from unique origins, but do not crash the renderer.
-  if (security_origin.unique())
-    return;
-
-  if (!MediaStreamManager::IsOriginAllowed(render_process_id_,
-                                           security_origin)) {
-    bad_message::ReceivedBadMessage(render_process_id_,
-                                    bad_message::MDDH_UNAUTHORIZED_ORIGIN);
-    return;
-  }
-
   MediaDevicesManager::BoolDeviceTypes devices_to_enumerate;
   devices_to_enumerate[MEDIA_DEVICE_TYPE_AUDIO_INPUT] = request_audio_input;
   devices_to_enumerate[MEDIA_DEVICE_TYPE_VIDEO_INPUT] = request_video_input;
   devices_to_enumerate[MEDIA_DEVICE_TYPE_AUDIO_OUTPUT] = request_audio_output;
 
-  permission_checker_->CheckPermissions(
-      devices_to_enumerate, render_process_id_, render_frame_id_,
-      security_origin,
-      base::Bind(&MediaDevicesDispatcherHost::DoEnumerateDevices,
-                 weak_factory_.GetWeakPtr(), devices_to_enumerate,
-                 security_origin, base::Passed(&client_callback)));
+  base::PostTaskAndReplyWithResult(
+      BrowserThread::GetTaskRunnerForThread(BrowserThread::UI).get(), FROM_HERE,
+      base::Bind(GetOrigin, render_process_id_, render_frame_id_,
+                 security_origin_for_testing_),
+      base::Bind(
+          &MediaDevicesDispatcherHost::CheckPermissionsForEnumerateDevices,
+          weak_factory_.GetWeakPtr(), devices_to_enumerate,
+          base::Passed(&client_callback)));
 }
 
 void MediaDevicesDispatcherHost::GetVideoInputCapabilities(
-    const url::Origin& security_origin,
     GetVideoInputCapabilitiesCallback client_callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  // Return no capabilities for unique origins, but do not crash the renderer.
-  if (security_origin.unique()) {
-    std::move(client_callback)
-        .Run(std::vector<::mojom::VideoInputDeviceCapabilitiesPtr>());
-    return;
-  }
-
-  if (!MediaStreamManager::IsOriginAllowed(render_process_id_,
-                                           security_origin)) {
-    bad_message::ReceivedBadMessage(render_process_id_,
-                                    bad_message::MDDH_UNAUTHORIZED_ORIGIN);
-    return;
-  }
-
-  GetDefaultMediaDeviceID(
-      MEDIA_DEVICE_TYPE_VIDEO_INPUT, render_process_id_, render_frame_id_,
-      base::Bind(&MediaDevicesDispatcherHost::GotDefaultVideoInputDeviceID,
-                 weak_factory_.GetWeakPtr(), security_origin,
-                 base::Passed(&client_callback)));
+  base::PostTaskAndReplyWithResult(
+      BrowserThread::GetTaskRunnerForThread(BrowserThread::UI).get(), FROM_HERE,
+      base::Bind(GetOrigin, render_process_id_, render_frame_id_,
+                 security_origin_for_testing_),
+      base::Bind(&MediaDevicesDispatcherHost::GetDefaultVideoInputDeviceID,
+                 weak_factory_.GetWeakPtr(), base::Passed(&client_callback)));
 }
 
 void MediaDevicesDispatcherHost::SubscribeDeviceChangeNotifications(
     MediaDeviceType type,
-    uint32_t subscription_id,
-    const url::Origin& security_origin) {
+    uint32_t subscription_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(IsValidMediaDeviceType(type));
-  // Ignore requests from unique origins, but do not crash the renderer.
-  if (security_origin.unique())
-    return;
-
-  if (!MediaStreamManager::IsOriginAllowed(render_process_id_,
-                                           security_origin)) {
-    bad_message::ReceivedBadMessage(render_process_id_,
-                                    bad_message::MDDH_UNAUTHORIZED_ORIGIN);
-    return;
-  }
-
-  auto it = std::find_if(device_change_subscriptions_[type].begin(),
-                         device_change_subscriptions_[type].end(),
-                         [subscription_id](const SubscriptionInfo& info) {
-                           return info.subscription_id == subscription_id;
-                         });
-
+  auto it =
+      std::find(device_change_subscriptions_[type].begin(),
+                device_change_subscriptions_[type].end(), subscription_id);
   if (it != device_change_subscriptions_[type].end()) {
     bad_message::ReceivedBadMessage(
         render_process_id_, bad_message::MDDH_INVALID_SUBSCRIPTION_REQUEST);
@@ -235,8 +202,7 @@ void MediaDevicesDispatcherHost::SubscribeDeviceChangeNotifications(
         ->SubscribeDeviceChangeNotifications(type, this);
   }
 
-  device_change_subscriptions_[type].push_back(
-      SubscriptionInfo{subscription_id, security_origin});
+  device_change_subscriptions_[type].push_back(subscription_id);
 }
 
 void MediaDevicesDispatcherHost::UnsubscribeDeviceChangeNotifications(
@@ -244,12 +210,9 @@ void MediaDevicesDispatcherHost::UnsubscribeDeviceChangeNotifications(
     uint32_t subscription_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(IsValidMediaDeviceType(type));
-  auto it = std::find_if(device_change_subscriptions_[type].begin(),
-                         device_change_subscriptions_[type].end(),
-                         [subscription_id](const SubscriptionInfo& info) {
-                           return info.subscription_id == subscription_id;
-                         });
-
+  auto it =
+      std::find(device_change_subscriptions_[type].begin(),
+                device_change_subscriptions_[type].end(), subscription_id);
   // Ignore invalid unsubscription requests.
   if (it == device_change_subscriptions_[type].end())
     return;
@@ -266,21 +229,23 @@ void MediaDevicesDispatcherHost::OnDevicesChanged(
     const MediaDeviceInfoArray& device_infos) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(IsValidMediaDeviceType(type));
+  std::vector<uint32_t> subscriptions = device_change_subscriptions_[type];
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(&MediaDevicesDispatcherHost::NotifyDeviceChangeOnUIThread,
-                 weak_factory_.GetWeakPtr(), device_change_subscriptions_[type],
-                 type, device_infos));
+      base::BindOnce(&MediaDevicesDispatcherHost::NotifyDeviceChangeOnUIThread,
+                     weak_factory_.GetWeakPtr(), std::move(subscriptions), type,
+                     device_infos));
 }
 
 void MediaDevicesDispatcherHost::NotifyDeviceChangeOnUIThread(
-    const std::vector<SubscriptionInfo>& subscriptions,
+    const std::vector<uint32_t>& subscriptions,
     MediaDeviceType type,
     const MediaDeviceInfoArray& device_infos) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(IsValidMediaDeviceType(type));
 
   ::mojom::MediaDevicesListenerPtr media_devices_listener;
+  url::Origin security_origin;
   if (device_change_listener_) {
     media_devices_listener = std::move(device_change_listener_);
   } else {
@@ -293,17 +258,18 @@ void MediaDevicesDispatcherHost::NotifyDeviceChangeOnUIThread(
         mojo::MakeRequest(&media_devices_listener));
     if (!media_devices_listener)
       return;
+
+    security_origin = render_frame_host->GetLastCommittedOrigin();
   }
 
-  for (const auto& subscription : subscriptions) {
+  for (uint32_t subscription_id : subscriptions) {
     bool has_permission = permission_checker_->CheckPermissionOnUIThread(
-        type, render_process_id_, render_frame_id_,
-        subscription.security_origin);
+        type, render_process_id_, render_frame_id_);
     media_devices_listener->OnDevicesChanged(
-        type, subscription.subscription_id,
-        TranslateMediaDeviceInfoArray(
-            has_permission, device_id_salt_, group_id_salt_,
-            subscription.security_origin, device_infos));
+        type, subscription_id,
+        TranslateMediaDeviceInfoArray(has_permission, device_id_salt_,
+                                      group_id_salt_, security_origin,
+                                      device_infos));
   }
 }
 
@@ -320,23 +286,42 @@ void MediaDevicesDispatcherHost::SetDeviceChangeListenerForTesting(
   device_change_listener_ = std::move(listener);
 }
 
+void MediaDevicesDispatcherHost::SetSecurityOriginForTesting(
+    const url::Origin& origin) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  security_origin_for_testing_ = origin;
+}
+
+void MediaDevicesDispatcherHost::CheckPermissionsForEnumerateDevices(
+    const MediaDevicesManager::BoolDeviceTypes& requested_types,
+    EnumerateDevicesCallback client_callback,
+    const url::Origin& security_origin) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  permission_checker_->CheckPermissions(
+      requested_types, render_process_id_, render_frame_id_,
+      base::Bind(&MediaDevicesDispatcherHost::DoEnumerateDevices,
+                 weak_factory_.GetWeakPtr(), requested_types,
+                 base::Passed(&client_callback), security_origin));
+}
+
 void MediaDevicesDispatcherHost::DoEnumerateDevices(
     const MediaDevicesManager::BoolDeviceTypes& requested_types,
-    const url::Origin& security_origin,
     EnumerateDevicesCallback client_callback,
+    const url::Origin& security_origin,
     const MediaDevicesManager::BoolDeviceTypes& has_permissions) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   media_stream_manager_->media_devices_manager()->EnumerateDevices(
       requested_types,
       base::Bind(&MediaDevicesDispatcherHost::DevicesEnumerated,
-                 weak_factory_.GetWeakPtr(), requested_types, security_origin,
-                 base::Passed(&client_callback), has_permissions));
+                 weak_factory_.GetWeakPtr(), requested_types,
+                 base::Passed(&client_callback), security_origin,
+                 has_permissions));
 }
 
 void MediaDevicesDispatcherHost::DevicesEnumerated(
     const MediaDevicesManager::BoolDeviceTypes& requested_types,
-    const url::Origin& security_origin,
     EnumerateDevicesCallback client_callback,
+    const url::Origin& security_origin,
     const MediaDevicesManager::BoolDeviceTypes& has_permissions,
     const MediaDeviceEnumeration& enumeration) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -354,21 +339,31 @@ void MediaDevicesDispatcherHost::DevicesEnumerated(
   std::move(client_callback).Run(result);
 }
 
-void MediaDevicesDispatcherHost::GotDefaultVideoInputDeviceID(
-    const url::Origin& security_origin,
+void MediaDevicesDispatcherHost::GetDefaultVideoInputDeviceID(
     GetVideoInputCapabilitiesCallback client_callback,
+    const url::Origin& security_origin) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  GetDefaultMediaDeviceID(
+      MEDIA_DEVICE_TYPE_VIDEO_INPUT, render_process_id_, render_frame_id_,
+      base::Bind(&MediaDevicesDispatcherHost::GotDefaultVideoInputDeviceID,
+                 weak_factory_.GetWeakPtr(), base::Passed(&client_callback),
+                 security_origin));
+}
+
+void MediaDevicesDispatcherHost::GotDefaultVideoInputDeviceID(
+    GetVideoInputCapabilitiesCallback client_callback,
+    const url::Origin& security_origin,
     const std::string& default_device_id) {
-  MediaDevicesManager::BoolDeviceTypes devices_to_enumerate;
-  devices_to_enumerate[MEDIA_DEVICE_TYPE_VIDEO_INPUT] = true;
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   media_stream_manager_->video_capture_manager()->EnumerateDevices(
       base::Bind(&MediaDevicesDispatcherHost::FinalizeGetVideoInputCapabilities,
-                 weak_factory_.GetWeakPtr(), security_origin,
-                 base::Passed(&client_callback), default_device_id));
+                 weak_factory_.GetWeakPtr(), base::Passed(&client_callback),
+                 security_origin, default_device_id));
 }
 
 void MediaDevicesDispatcherHost::FinalizeGetVideoInputCapabilities(
-    const url::Origin& security_origin,
     GetVideoInputCapabilitiesCallback client_callback,
+    const url::Origin& security_origin,
     const std::string& default_device_id,
     const media::VideoCaptureDeviceDescriptors& device_descriptors) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);

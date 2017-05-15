@@ -81,7 +81,6 @@ PepperMediaDeviceManager::~PepperMediaDeviceManager() {
 
 void PepperMediaDeviceManager::EnumerateDevices(
     PP_DeviceType_Dev type,
-    const GURL& document_url,
     const DevicesCallback& callback) {
 #if BUILDFLAG(ENABLE_WEBRTC)
   bool request_audio_input = type == PP_DEVICETYPE_DEV_AUDIOCAPTURE;
@@ -90,7 +89,6 @@ void PepperMediaDeviceManager::EnumerateDevices(
   CHECK(request_audio_input || request_video_input || request_audio_output);
   GetMediaDevicesDispatcher()->EnumerateDevices(
       request_audio_input, request_video_input, request_audio_output,
-      url::Origin(document_url.GetOrigin()),
       base::Bind(&PepperMediaDeviceManager::DevicesEnumerated, AsWeakPtr(),
                  callback, ToMediaDeviceType(type)));
 #else
@@ -103,13 +101,12 @@ void PepperMediaDeviceManager::EnumerateDevices(
 
 uint32_t PepperMediaDeviceManager::StartMonitoringDevices(
     PP_DeviceType_Dev type,
-    const GURL& document_url,
     const DevicesCallback& callback) {
 #if BUILDFLAG(ENABLE_WEBRTC)
   base::WeakPtr<MediaDevicesEventDispatcher> event_dispatcher =
       MediaDevicesEventDispatcher::GetForRenderFrame(render_frame());
   return event_dispatcher->SubscribeDeviceChangeNotifications(
-      ToMediaDeviceType(type), url::Origin(document_url.GetOrigin()),
+      ToMediaDeviceType(type),
       base::Bind(&PepperMediaDeviceManager::DevicesChanged, AsWeakPtr(),
                  callback));
 #else

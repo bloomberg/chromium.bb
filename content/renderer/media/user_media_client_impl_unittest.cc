@@ -117,7 +117,6 @@ class MockMediaDevicesDispatcherHost
   void EnumerateDevices(bool request_audio_input,
                         bool request_video_input,
                         bool request_audio_output,
-                        const url::Origin& security_origin,
                         EnumerateDevicesCallback callback) override {
     std::vector<std::vector<MediaDeviceInfo>> result(NUM_MEDIA_DEVICE_TYPES);
     if (request_audio_input) {
@@ -140,7 +139,6 @@ class MockMediaDevicesDispatcherHost
   }
 
   void GetVideoInputCapabilities(
-      const url::Origin& security_origin,
       GetVideoInputCapabilitiesCallback client_callback) override {
     ::mojom::VideoInputDeviceCapabilitiesPtr device =
         ::mojom::VideoInputDeviceCapabilities::New();
@@ -161,10 +159,8 @@ class MockMediaDevicesDispatcherHost
     std::move(client_callback).Run(std::move(result));
   }
 
-  MOCK_METHOD3(SubscribeDeviceChangeNotifications,
-               void(MediaDeviceType type,
-                    uint32_t subscription_id,
-                    const url::Origin& security_origin));
+  MOCK_METHOD2(SubscribeDeviceChangeNotifications,
+               void(MediaDeviceType type, uint32_t subscription_id));
   MOCK_METHOD2(UnsubscribeDeviceChangeNotifications,
                void(MediaDeviceType type, uint32_t subscription_id));
 };
@@ -781,15 +777,13 @@ TEST_F(UserMediaClientImplTest, RenderToAssociatedSinkConstraint) {
 }
 
 TEST_F(UserMediaClientImplTest, ObserveMediaDeviceChanges) {
+  EXPECT_CALL(media_devices_dispatcher_, SubscribeDeviceChangeNotifications(
+                                             MEDIA_DEVICE_TYPE_AUDIO_INPUT, _));
+  EXPECT_CALL(media_devices_dispatcher_, SubscribeDeviceChangeNotifications(
+                                             MEDIA_DEVICE_TYPE_VIDEO_INPUT, _));
   EXPECT_CALL(
       media_devices_dispatcher_,
-      SubscribeDeviceChangeNotifications(MEDIA_DEVICE_TYPE_AUDIO_INPUT, _, _));
-  EXPECT_CALL(
-      media_devices_dispatcher_,
-      SubscribeDeviceChangeNotifications(MEDIA_DEVICE_TYPE_VIDEO_INPUT, _, _));
-  EXPECT_CALL(
-      media_devices_dispatcher_,
-      SubscribeDeviceChangeNotifications(MEDIA_DEVICE_TYPE_AUDIO_OUTPUT, _, _));
+      SubscribeDeviceChangeNotifications(MEDIA_DEVICE_TYPE_AUDIO_OUTPUT, _));
   user_media_client_impl_->SetMediaDeviceChangeObserver(
       blink::WebMediaDeviceChangeObserver(true));
   base::RunLoop().RunUntilIdle();
