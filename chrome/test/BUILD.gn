@@ -1627,6 +1627,7 @@ test("browser_tests") {
       "../browser/ui/toolbar/mock_component_toolbar_actions_factory.cc",
       "../browser/ui/toolbar/mock_component_toolbar_actions_factory.h",
       "../browser/ui/update_chrome_dialog_browsertest.cc",
+      "../browser/ui/views/chrome_cleaner_dialog_browsertest_win.cc",
       "../browser/ui/views/hung_renderer_view_browsertest.cc",
       "../browser/ui/webui/bidi_checker_web_ui_test.cc",
       "../browser/ui/webui/bidi_checker_web_ui_test.h",
@@ -2424,7 +2425,6 @@ test("browser_tests") {
     if (is_win) {
       sources += [
         "../browser/extensions/api/networking_private/networking_private_credentials_getter_browsertest.cc",
-        "../browser/ui/views/chrome_cleaner_dialog_browsertest.cc",
         "../browser/ui/views/settings_reset_prompt_dialog_browsertest.cc",
       ]
     }

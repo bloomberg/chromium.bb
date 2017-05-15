@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/views/chrome_cleaner_dialog.h"
+#include "chrome/browser/ui/views/chrome_cleaner_dialog_win.h"
 
 #include "base/macros.h"
-#include "chrome/browser/safe_browsing/chrome_cleaner/chrome_cleaner_dialog_controller.h"
+#include "chrome/browser/safe_browsing/chrome_cleaner/chrome_cleaner_dialog_controller_win.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/test/test_browser_dialog.h"
