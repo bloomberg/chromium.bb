@@ -1589,6 +1589,9 @@ extern const char kAutoplayPolicyUserGestureRequired[];
 extern const char kOmniboxDisplayTitleForCurrentUrlName[];
 extern const char kOmniboxDisplayTitleForCurrentUrlDescription[];
 
+extern const char kOmniboxUIMaxAutocompleteMatchesName[];
+extern const char kOmniboxUIMaxAutocompleteMatchesDescription[];
+
 extern const char kOmniboxUIVerticalMarginName[];
 extern const char kOmniboxUIVerticalMarginDescription[];
 

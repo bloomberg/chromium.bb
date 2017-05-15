@@ -81,6 +81,11 @@ const base::Feature kZeroSuggestSwapTitleAndUrl{
 const base::Feature kDisplayTitleForCurrentUrl{
     "OmniboxDisplayTitleForCurrentUrl", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Feature used for the max autocomplete matches UI experiment.
+const base::Feature kUIExperimentMaxAutocompleteMatches{
+    "OmniboxUIExperimentMaxAutocompleteMatches",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Feature used for the vertical margin UI experiment.
 const base::Feature kUIExperimentVerticalMargin{
     "OmniboxUIExperimentVerticalMargin", base::FEATURE_DISABLED_BY_DEFAULT};
@@ -761,6 +766,8 @@ const char
     OmniboxFieldTrial::kZeroSuggestRedirectToChromeAdditionalFieldsParam[] =
         "ZeroSuggestRedirectToChromeAdditionalFields";
 
+const char OmniboxFieldTrial::kUIMaxAutocompleteMatchesParam[] =
+    "UIMaxAutocompleteMatches";
 const char OmniboxFieldTrial::kUIVerticalMarginParam[] = "UIVerticalMargin";
 
 // static
