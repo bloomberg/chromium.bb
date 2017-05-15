@@ -13,6 +13,7 @@
 #include "base/mac/foundation_util.h"
 #include "base/mac/objc_release_properties.h"
 #include "base/mac/scoped_nsobject.h"
+#include "base/metrics/field_trial_params.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
@@ -21,6 +22,7 @@
 #include "chrome/browser/ui/cocoa/omnibox/omnibox_view_mac.h"
 #import "chrome/browser/ui/cocoa/themed_window.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/omnibox/browser/omnibox_popup_model.h"
 #include "components/omnibox/browser/suggestion_answer.h"
 #include "skia/ext/skia_utils_mac.h"
@@ -31,14 +33,21 @@
 
 namespace {
 
-// How far to offset text.
-const CGFloat kVerticalTextPadding = 3.0;
+// Extra padding beyond the vertical text padding.
+constexpr CGFloat kMaterialExtraVerticalImagePadding = 2.0;
 
-const CGFloat kMaterialVerticalImagePadding = 5.0;
+constexpr CGFloat kMaterialTextStartOffset = 27.0;
 
-const CGFloat kMaterialTextStartOffset = 27.0;
+constexpr CGFloat kMaterialImageXOffset = 6.0;
 
-const CGFloat kMaterialImageXOffset = 6.0;
+// Returns the margin that should appear at the top and bottom of the result.
+CGFloat GetVerticalMargin() {
+  constexpr CGFloat kDefaultVerticalMargin = 3.0;
+
+  return base::GetFieldTrialParamByFeatureAsInt(
+      omnibox::kUIExperimentVerticalMargin,
+      OmniboxFieldTrial::kUIVerticalMarginParam, kDefaultVerticalMargin);
+}
 
 // Flips the given |rect| in context of the given |frame|.
 NSRect FlipIfRTL(NSRect rect, NSRect frame) {
@@ -478,7 +487,8 @@ NSAttributedString* CreateClassifiedAttributedString(
       isDarkTheme ? [cellData incognitoImage] : [cellData image];
   imageRect.size = [theImage size];
   imageRect.origin.x += kMaterialImageXOffset + [tableView contentLeftPadding];
-  imageRect.origin.y += kMaterialVerticalImagePadding;
+  imageRect.origin.y +=
+      GetVerticalMargin() + kMaterialExtraVerticalImagePadding;
   [theImage drawInRect:FlipIfRTL(imageRect, cellFrame)
               fromRect:NSZeroRect
              operation:NSCompositeSourceOver
@@ -488,7 +498,7 @@ NSAttributedString* CreateClassifiedAttributedString(
 
   NSPoint origin =
       NSMakePoint(kMaterialTextStartOffset + [tableView contentLeftPadding],
-                  kVerticalTextPadding);
+                  GetVerticalMargin());
   if ([cellData matchType] == AutocompleteMatchType::SEARCH_SUGGEST_TAIL) {
     // Tail suggestions are rendered with a prefix (usually ellipsis), which
     // appear vertically stacked.
@@ -505,9 +515,9 @@ NSAttributedString* CreateClassifiedAttributedString(
 
   if (descriptionMaxWidth > 0) {
     if ([cellData isAnswer]) {
-      origin =
-          NSMakePoint(kMaterialTextStartOffset + [tableView contentLeftPadding],
-                      kContentLineHeight - kVerticalTextPadding);
+      origin = NSMakePoint(
+          kMaterialTextStartOffset + [tableView contentLeftPadding],
+          [OmniboxPopupCell getContentTextHeight] - GetVerticalMargin());
       CGFloat imageSize = [tableView answerLineHeight];
       NSRect imageRect =
           NSMakeRect(NSMinX(cellFrame) + origin.x, NSMinY(cellFrame) + origin.y,
@@ -519,7 +529,7 @@ NSAttributedString* CreateClassifiedAttributedString(
                           respectFlipped:YES
                                    hints:nil];
       if ([cellData answerImage]) {
-        origin.x += imageSize + kMaterialVerticalImagePadding;
+        origin.x += imageSize + kMaterialImageXOffset;
 
         // Have to nudge the baseline down 1pt in Material Design for the text
         // that follows, so that it's the same as the bottom of the image.
@@ -681,6 +691,11 @@ NSAttributedString* CreateClassifiedAttributedString(
 
 + (CGFloat)getContentAreaWidth:(NSRect)cellFrame {
   return NSWidth(cellFrame) - kMaterialTextStartOffset;
+}
+
++ (CGFloat)getContentTextHeight {
+  constexpr CGFloat kDefaultTextHeight = 19;
+  return kDefaultTextHeight + 2 * GetVerticalMargin();
 }
 
 @end

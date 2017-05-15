@@ -106,7 +106,7 @@ const NSInteger kMiddleButtonNumber = 2;
 }
 
 - (CGFloat)tableView:(NSTableView*)tableView heightOfRow:(NSInteger)row {
-  CGFloat height = kContentLineHeight;
+  CGFloat height = [OmniboxPopupCell getContentTextHeight];
   if ([[array_ objectAtIndex:row] isAnswer]) {
     OmniboxPopupMatrix* matrix =
         base::mac::ObjCCastStrict<OmniboxPopupMatrix>(tableView);
