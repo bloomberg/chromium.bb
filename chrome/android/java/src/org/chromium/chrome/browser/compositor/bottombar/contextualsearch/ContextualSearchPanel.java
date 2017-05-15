@@ -533,6 +533,16 @@ public class ContextualSearchPanel extends OverlayPanel {
         return super.getPanelState();
     }
 
+    @Override
+    public void requestPanelShow(StateChangeReason reason) {
+        // If a re-tap is causing the panel to show when already shown, the superclass may ignore
+        // that, but we want to be sure to capture search metrics for each tap.
+        if (isShowing() && getPanelState() == PanelState.PEEKED) {
+            peekPanel(reason);
+        }
+        super.requestPanelShow(reason);
+    }
+
     /**
      * Gets whether a touch on the content view has been done yet or not.
      */
