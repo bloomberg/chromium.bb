@@ -205,7 +205,7 @@ TEST_F(WindowLocationTest, WindowLocationReplaceUnresolvable) {
 #if TARGET_IPHONE_SIMULATOR
 #define MAYBE_WindowLocationReload WindowLocationReload
 #else
-#define MAYBE_WindowLocationReload FLAKY_WindowLocationReload
+#define MAYBE_WindowLocationReload DISABLED_WindowLocationReload
 #endif
 // TODO(crbug.com/721465): Enable this test on device.
 TEST_F(WindowLocationTest, MAYBE_WindowLocationReload) {
