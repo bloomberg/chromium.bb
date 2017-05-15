@@ -481,6 +481,14 @@ bool LevelDBDatabase::OnMemoryDump(
       "leveldb/index_db/0x%" PRIXPTR, reinterpret_cast<uintptr_t>(db_.get())));
   dump->AddScalar(base::trace_event::MemoryAllocatorDump::kNameSize,
                   base::trace_event::MemoryAllocatorDump::kUnitsBytes, size);
+
+  // Dumps in BACKGROUND mode cannot have strings or edges in order to minimize
+  // trace size and instrumentation overhead.
+  if (args.level_of_detail ==
+      base::trace_event::MemoryDumpLevelOfDetail::BACKGROUND) {
+    return true;
+  }
+
   dump->AddString("file_name", "", file_name_for_tracing);
 
   // Memory is allocated from system allocator (malloc).
