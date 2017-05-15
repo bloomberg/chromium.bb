@@ -193,7 +193,7 @@ enum class ETextSecurity { kNone, kDisc, kCircle, kSquare };
 
 // CSS3 User Modify Properties
 
-enum EUserModify { READ_ONLY, READ_WRITE, READ_WRITE_PLAINTEXT_ONLY };
+enum class EUserModify { kReadOnly, kReadWrite, kReadWritePlaintextOnly };
 
 // CSS3 User Drag Values
 

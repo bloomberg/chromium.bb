@@ -332,11 +332,11 @@ static bool HasEditableLevel(const Node& node, EditableLevel editable_level) {
     if ((ancestor.IsHTMLElement() || ancestor.IsDocumentNode()) &&
         ancestor.GetLayoutObject()) {
       switch (ancestor.GetLayoutObject()->Style()->UserModify()) {
-        case READ_ONLY:
+        case EUserModify::kReadOnly:
           return false;
-        case READ_WRITE:
+        case EUserModify::kReadWrite:
           return true;
-        case READ_WRITE_PLAINTEXT_ONLY:
+        case EUserModify::kReadWritePlaintextOnly:
           return editable_level != kRichlyEditable;
       }
       NOTREACHED();
@@ -985,7 +985,7 @@ EUserSelect UsedValueOfUserSelect(const Node& node) {
     return SELECT_NONE;
 
   const ComputedStyle* style = node.GetLayoutObject()->Style();
-  if (style->UserModify() != READ_ONLY)
+  if (style->UserModify() != EUserModify::kReadOnly)
     return SELECT_TEXT;
 
   return style->UserSelect();

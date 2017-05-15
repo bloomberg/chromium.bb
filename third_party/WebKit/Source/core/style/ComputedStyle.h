@@ -1946,12 +1946,12 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase<ComputedStyle>,
   }
 
   // -webkit-user-modify
-  static EUserModify InitialUserModify() { return READ_ONLY; }
+  static EUserModify InitialUserModify() { return EUserModify::kReadOnly; }
   EUserModify UserModify() const {
     return static_cast<EUserModify>(rare_inherited_data_->user_modify_);
   }
   void SetUserModify(EUserModify u) {
-    SET_VAR(rare_inherited_data_, user_modify_, u);
+    SET_VAR(rare_inherited_data_, user_modify_, static_cast<unsigned>(u));
   }
 
   // -webkit-user-select

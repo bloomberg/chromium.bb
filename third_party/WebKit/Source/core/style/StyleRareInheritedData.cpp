@@ -80,7 +80,7 @@ StyleRareInheritedData::StyleRareInheritedData()
       visited_link_caret_color_is_auto_(true),
       text_security_(
           static_cast<unsigned>(ComputedStyle::InitialTextSecurity())),
-      user_modify_(READ_ONLY),
+      user_modify_(static_cast<unsigned>(EUserModify::kReadOnly)),
       word_break_(ComputedStyle::InitialWordBreak()),
       overflow_wrap_(ComputedStyle::InitialOverflowWrap()),
       line_break_(kLineBreakAuto),

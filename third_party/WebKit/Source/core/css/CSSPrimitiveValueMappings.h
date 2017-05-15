@@ -1389,13 +1389,13 @@ template <>
 inline CSSIdentifierValue::CSSIdentifierValue(EUserModify e)
     : CSSValue(kIdentifierClass) {
   switch (e) {
-    case READ_ONLY:
+    case EUserModify::kReadOnly:
       value_id_ = CSSValueReadOnly;
       break;
-    case READ_WRITE:
+    case EUserModify::kReadWrite:
       value_id_ = CSSValueReadWrite;
       break;
-    case READ_WRITE_PLAINTEXT_ONLY:
+    case EUserModify::kReadWritePlaintextOnly:
       value_id_ = CSSValueReadWritePlaintextOnly;
       break;
   }
@@ -1405,17 +1405,17 @@ template <>
 inline EUserModify CSSIdentifierValue::ConvertTo() const {
   switch (value_id_) {
     case CSSValueReadOnly:
-      return READ_ONLY;
+      return EUserModify::kReadOnly;
     case CSSValueReadWrite:
-      return READ_WRITE;
+      return EUserModify::kReadWrite;
     case CSSValueReadWritePlaintextOnly:
-      return READ_WRITE_PLAINTEXT_ONLY;
+      return EUserModify::kReadWritePlaintextOnly;
     default:
       break;
   }
 
   NOTREACHED();
-  return READ_ONLY;
+  return EUserModify::kReadOnly;
 }
 
 template <>

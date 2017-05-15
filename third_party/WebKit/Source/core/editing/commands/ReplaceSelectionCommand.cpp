@@ -1027,10 +1027,10 @@ void ReplaceSelectionCommand::DoApply(EditingState* editing_state) {
                .AnchorNode()
                ->GetLayoutObject()
                ->Style()
-               ->UserModify() == READ_WRITE_PLAINTEXT_ONLY) &&
+               ->UserModify() == EUserModify::kReadWritePlaintextOnly) &&
       (selection.end().AnchorNode()->GetLayoutObject() &&
        selection.end().AnchorNode()->GetLayoutObject()->Style()->UserModify() ==
-           READ_WRITE_PLAINTEXT_ONLY))
+           EUserModify::kReadWritePlaintextOnly))
     match_style_ = false;
 
   if (match_style_) {
