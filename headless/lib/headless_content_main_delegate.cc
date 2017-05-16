@@ -32,7 +32,7 @@
 #include "headless/embedded_resource_pak.h"
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_MACOSX) || defined(OS_WIN)
 #include "components/crash/content/app/crashpad.h"
 #endif
 
@@ -179,8 +179,13 @@ void HeadlessContentMainDelegate::InitCrashReporter(
   if (process_type != switches::kZygoteProcess)
     breakpad::InitCrashReporter(process_type);
 #elif defined(OS_MACOSX)
-  const bool browser_process = process_type.empty();
-  crash_reporter::InitializeCrashpad(browser_process, process_type);
+  crash_reporter::InitializeCrashpad(process_type.empty(), process_type);
+// Avoid adding this dependency in Windows Chrome component build, since it 
+// chrashpad is already enabled.
+// TODO(dvallet): Ideally we would also want to avoid this for component build.
+#elif defined(OS_WIN) && !defined(CHROME_MULTIPLE_DLL)
+  crash_reporter::InitializeCrashpadWithEmbeddedHandler(process_type.empty(),
+                                                        process_type);
 #endif  // defined(HEADLESS_USE_BREAKPAD)
 }
 
