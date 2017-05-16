@@ -220,15 +220,6 @@ template("test") {
       test_suite = _output_name
       test_type = "gtest"
     }
-
-    # TODO(GYP_GONE): Delete this after we've converted everything to GN.
-    # The _run targets exist only for compatibility w/ GYP.
-    group("${target_name}_apk_run") {
-      testonly = true
-      deps = [
-        ":${invoker.target_name}",
-      ]
-    }
   } else if (is_ios) {
     import("//build/config/ios/ios_sdk.gni")
     import("//build/config/ios/rules.gni")
