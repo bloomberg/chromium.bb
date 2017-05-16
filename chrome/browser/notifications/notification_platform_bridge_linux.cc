@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <memory>
 #include <set>
+#include <sstream>
 #include <unordered_map>
 #include <unordered_set>
 #include <utility>
@@ -36,6 +37,8 @@
 #include "dbus/bus.h"
 #include "dbus/message.h"
 #include "dbus/object_proxy.h"
+#include "net/base/escape.h"
+#include "skia/ext/image_operations.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/image/image_skia.h"
 
@@ -71,6 +74,10 @@ const char kCapabilitySound[] = "sound";
 const char kDefaultButtonId[] = "default";
 const char kSettingsButtonId[] = "settings";
 
+// Max image size; specified in the FDO notification specification.
+const int kMaxImageWidth = 200;
+const int kMaxImageHeight = 100;
+
 // The values in this enumeration correspond to those of the
 // Linux.NotificationPlatformBridge.InitializationStatus histogram, so
 // the ordering should not be changed.  New error codes should be
@@ -83,6 +90,10 @@ enum class ConnectionInitializationStatusCode {
   INCOMPATIBLE_SPEC_VERSION = 4,
   NUM_ITEMS
 };
+
+int ClampInt(int value, int low, int hi) {
+  return std::max(std::min(value, hi), low);
+}
 
 base::string16 CreateNotificationTitle(const Notification& notification) {
   base::string16 title;
@@ -119,6 +130,28 @@ int NotificationPriorityToFdoUrgency(int priority) {
     case message_center::DEFAULT_PRIORITY:
       return NORMAL;
   }
+}
+
+// Constrain |image|'s size to |kMaxImageWidth|x|kMaxImageHeight|. If
+// the image does not need to be resized, or the image is empty,
+// returns |image| directly.
+gfx::Image ResizeImageToFdoMaxSize(const gfx::Image& image) {
+  if (image.IsEmpty())
+    return image;
+  int width = image.Width();
+  int height = image.Height();
+  if (width <= kMaxImageWidth && height <= kMaxImageHeight) {
+    return image;
+  }
+  const SkBitmap* image_bitmap = image.ToSkBitmap();
+  double scale = std::min(static_cast<double>(kMaxImageWidth) / width,
+                          static_cast<double>(kMaxImageHeight) / height);
+  width = ClampInt(scale * width, 1, kMaxImageWidth);
+  height = ClampInt(scale * height, 1, kMaxImageHeight);
+  return gfx::Image(
+      gfx::ImageSkia::CreateFrom1xBitmap(skia::ImageOperations::Resize(
+          *image_bitmap, skia::ImageOperations::RESIZE_LANCZOS3, width,
+          height)));
 }
 
 // Runs once the profile has been loaded in order to perform a given
@@ -235,7 +268,9 @@ class NotificationPlatformBridgeLinuxImpl
     // non-thread-safe reference counts) to the task runner thread.
     auto notification_copy = base::MakeUnique<Notification>(notification);
     notification_copy->set_icon(DeepCopyImage(notification_copy->icon()));
-    notification_copy->set_image(gfx::Image());
+    notification_copy->set_image(body_images_supported_.value()
+                                     ? DeepCopyImage(notification_copy->image())
+                                     : gfx::Image());
     notification_copy->set_small_image(gfx::Image());
     for (size_t i = 0; i < notification_copy->buttons().size(); i++)
       notification_copy->SetButtonIcon(i, gfx::Image());
@@ -337,6 +372,11 @@ class NotificationPlatformBridgeLinuxImpl
     CleanUp();
   }
 
+  void SetBodyImagesSupported(bool body_images_supported) {
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+    body_images_supported_ = body_images_supported;
+  }
+
   void PostTaskToUiThread(base::OnceClosure closure) const {
     DCHECK(task_runner_->RunsTasksOnCurrentThread());
     bool success = content::BrowserThread::PostTask(
@@ -386,6 +426,9 @@ class NotificationPlatformBridgeLinuxImpl
         capabilities_.insert(capability);
     }
     RecordMetricsForCapabilities();
+    PostTaskToUiThread(base::BindOnce(
+        &NotificationPlatformBridgeLinuxImpl::SetBodyImagesSupported, this,
+        base::ContainsKey(capabilities_, kCapabilityBodyImages)));
 
     dbus::MethodCall get_server_information_call(kFreedesktopNotificationsName,
                                                  kMethodGetServerInformation);
@@ -472,32 +515,47 @@ class NotificationPlatformBridgeLinuxImpl
     writer.AppendString(
         base::UTF16ToUTF8(CreateNotificationTitle(*notification)));
 
-    std::string body;
+    std::ostringstream body;
     if (base::ContainsKey(capabilities_, kCapabilityBody)) {
-      body = base::UTF16ToUTF8(notification->message());
       const bool body_markup =
           base::ContainsKey(capabilities_, kCapabilityBodyMarkup);
+      std::string message = base::UTF16ToUTF8(notification->message());
       if (body_markup) {
-        base::ReplaceSubstringsAfterOffset(&body, 0, "&", "&amp;");
-        base::ReplaceSubstringsAfterOffset(&body, 0, "<", "&lt;");
-        base::ReplaceSubstringsAfterOffset(&body, 0, ">", "&gt;");
+        base::ReplaceSubstringsAfterOffset(&message, 0, "&", "&amp;");
+        base::ReplaceSubstringsAfterOffset(&message, 0, "<", "&lt;");
+        base::ReplaceSubstringsAfterOffset(&message, 0, ">", "&gt;");
       }
+      body << message;
+
       if (notification->type() == message_center::NOTIFICATION_TYPE_MULTIPLE) {
         for (const auto& item : notification->items()) {
-          if (!body.empty())
-            body += "\n";
+          if (body.tellp())
+            body << "\n";
           const std::string title = base::UTF16ToUTF8(item.title);
           const std::string message = base::UTF16ToUTF8(item.message);
           // TODO(peter): Figure out the right way to internationalize
           // this for RTL languages.
           if (body_markup)
-            body += "<b>" + title + "</b> " + message;
+            body << "<b>" << title << "</b> " << message;
           else
-            body += title + " - " + message;
+            body << title << " - " << message;
+        }
+      } else if (notification->type() ==
+                     message_center::NOTIFICATION_TYPE_IMAGE &&
+                 base::ContainsKey(capabilities_, kCapabilityBodyImages)) {
+        std::unique_ptr<ResourceFile> image_file = WriteDataToTmpFile(
+            ResizeImageToFdoMaxSize(notification->image()).As1xPNGBytes());
+        if (image_file) {
+          if (body.tellp())
+            body << "\n";
+          body << "<img src=\""
+               << net::EscapePath(image_file->file_path().value())
+               << "\" alt=\"\"/>";
+          data->resource_files.push_back(std::move(image_file));
         }
       }
     }
-    writer.AppendString(body);
+    writer.AppendString(body.str());
 
     // Even-indexed elements in this vector are action IDs passed back to
     // us in OnActionInvoked().  Odd-indexed ones contain the button text.
@@ -782,6 +840,10 @@ class NotificationPlatformBridgeLinuxImpl
   // SetReadyCallback().
   base::Optional<bool> connected_;
   std::vector<NotificationBridgeReadyCallback> on_connected_callbacks_;
+
+  // Notification servers very rarely have the 'body-images'
+  // capability, so try to avoid an image copy if possible.
+  base::Optional<bool> body_images_supported_;
 
   //////////////////////////////////////////////////////////////////////////////
   // Members used only on the task runner thread.
