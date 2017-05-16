@@ -805,9 +805,10 @@ void Shell::Init(const ShellInitParams& init_params) {
 
   // Can be null in tests.
   if (config == Config::MASH && shell_delegate_->GetShellConnector()) {
+    auto pref_registry = base::MakeShared<PrefRegistrySimple>();
+    Shell::RegisterPrefs(pref_registry.get());
     prefs::ConnectToPrefService(
-        shell_delegate_->GetShellConnector(),
-        make_scoped_refptr(new PrefRegistrySimple()),
+        shell_delegate_->GetShellConnector(), std::move(pref_registry),
         std::vector<PrefValueStore::PrefStoreType>(),
         base::Bind(&Shell::OnPrefServiceInitialized, base::Unretained(this)),
         prefs::mojom::kForwarderServiceName);
