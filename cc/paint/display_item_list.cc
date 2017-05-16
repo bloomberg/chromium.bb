@@ -196,8 +196,7 @@ void DisplayItemList::Raster(SkCanvas* canvas,
   if (!GetCanvasClipBounds(canvas, &canvas_playback_rect))
     return;
 
-  std::vector<size_t> indices;
-  rtree_.Search(canvas_playback_rect, &indices);
+  std::vector<size_t> indices = rtree_.Search(canvas_playback_rect);
   for (size_t i = 0; i < indices.size(); ++i) {
     // We use a callback during solid color analysis on the compositor thread to
     // break out early. Since we're handling a sequence of pictures via rtree

@@ -40,6 +40,16 @@ class CC_BASE_EXPORT RTree {
   RTree();
   ~RTree();
 
+  // Constructs the rtree from a given container of gfx::Rects. Queries using
+  // Search will then return indices into this container.
+  template <typename Container>
+  void Build(const Container& items) {
+    Build(items, [](const gfx::Rect& bounds) { return bounds; });
+  }
+
+  // Build helper that takes a container and a function used to get gfx::Rect
+  // from each item. That is, "bounds_getter(items[i]);" should return a
+  // gfx::Rect representing the bounds of items[i] for each i.
   template <typename Container, typename Functor>
   void Build(const Container& items, const Functor& bounds_getter) {
     DCHECK_EQ(0u, num_data_elements_);
@@ -86,13 +96,11 @@ class CC_BASE_EXPORT RTree {
               static_cast<size_t>(kMinChildren));
   }
 
-  template <typename Container>
-  void Build(const Container& items) {
-    Build(items, [](const gfx::Rect& bounds) { return bounds; });
-  }
+  // Given a query rect, returns sorted indices of elements that were used to
+  // construct this rtree.
+  std::vector<size_t> Search(const gfx::Rect& query) const;
 
-  void Search(const gfx::Rect& query, std::vector<size_t>* results) const;
-
+  // Returns the total bounds of all items in this rtree.
   gfx::Rect GetBounds() const;
 
  private:

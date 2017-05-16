@@ -37,9 +37,7 @@ void DiscardableImageMap::GetDiscardableImagesInRect(
     float contents_scale,
     const gfx::ColorSpace& target_color_space,
     std::vector<DrawImage>* images) const {
-  std::vector<size_t> indices;
-  images_rtree_.Search(rect, &indices);
-  for (size_t index : indices) {
+  for (size_t index : images_rtree_.Search(rect)) {
     images->push_back(all_images_[index]
                           .first.ApplyScale(contents_scale)
                           .ApplyTargetColorSpace(target_color_space));
