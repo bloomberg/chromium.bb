@@ -3,6 +3,6 @@
 # found in the LICENSE file.
 
 declare_args() {
-  # Set to false to turn off DCHECKs. Disabled by default in official builds.
-  dcheck_always_on = !is_official_build
+  # Set to true to enable dcheck in Release builds.
+  dcheck_always_on = false
 }
