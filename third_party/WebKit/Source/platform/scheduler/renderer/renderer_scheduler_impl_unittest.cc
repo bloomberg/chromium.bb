@@ -3216,6 +3216,31 @@ TEST_F(RendererSchedulerImplTest,
   EXPECT_EQ(0u, web_view_scheduler.Interventions().size());
 }
 
+TEST_F(RendererSchedulerImplTest, BlockedTimerNotification_WHEEL) {
+  // Make sure we report warnings about blocked tasks for wheel events. Simulate
+  // a potentially blocking wheel gesture that turns into a compositor scroll.
+  WebViewSchedulerImplForTest web_view_scheduler(scheduler_.get());
+
+  scheduler_->SetHasVisibleRenderWidgetWithTouchHandler(true);
+  DoMainFrame();
+  SimulateExpensiveTasks(timer_task_runner_);
+  scheduler_->DidHandleInputEventOnCompositorThread(
+      FakeInputEvent(blink::WebInputEvent::kMouseWheel),
+      RendererScheduler::InputEventState::EVENT_FORWARDED_TO_MAIN_THREAD);
+  SimulateCompositorGestureStart(TouchEventPolicy::DONT_SEND_TOUCH_START);
+
+  EXPECT_EQ(UseCase::COMPOSITOR_GESTURE,
+            ForceUpdatePolicyAndGetCurrentUseCase());
+  ForceTouchStartToBeExpectedSoon();
+
+  std::vector<std::string> run_order;
+  PostTestTasks(&run_order, "T1 T2");
+  RunUntilIdle();
+
+  EXPECT_EQ(0u, run_order.size());
+  EXPECT_EQ(1u, web_view_scheduler.Interventions().size());
+}
+
 namespace {
 void SlowCountingTask(size_t* count,
                       base::SimpleTestTickClock* clock,

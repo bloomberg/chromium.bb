@@ -236,7 +236,7 @@ RendererSchedulerImpl::AnyThread::AnyThread()
       begin_main_frame_on_critical_path(false),
       last_gesture_was_compositor_driven(false),
       default_gesture_prevented(true),
-      have_seen_touchstart(false),
+      have_seen_a_potentially_blocking_gesture(false),
       waiting_for_meaningful_paint(false),
       have_seen_input_since_navigation(false) {}
 
@@ -735,7 +735,7 @@ void RendererSchedulerImpl::UpdateForInputEventOnCompositorThread(
       // |last_gesture_was_compositor_driven| to the default. We don't know
       // yet where the gesture will run.
       GetAnyThread().last_gesture_was_compositor_driven = false;
-      GetAnyThread().have_seen_touchstart = true;
+      GetAnyThread().have_seen_a_potentially_blocking_gesture = true;
       // Assume the default gesture is prevented until we see evidence
       // otherwise.
       GetAnyThread().default_gesture_prevented = true;
@@ -793,6 +793,7 @@ void RendererSchedulerImpl::UpdateForInputEventOnCompositorThread(
       GetAnyThread().last_gesture_was_compositor_driven =
           input_event_state == InputEventState::EVENT_CONSUMED_BY_COMPOSITOR;
       GetAnyThread().awaiting_touch_start_response = false;
+      GetAnyThread().have_seen_a_potentially_blocking_gesture = true;
       // If the event was sent to the main thread, assume the default gesture is
       // prevented until we see evidence otherwise.
       GetAnyThread().default_gesture_prevented =
@@ -948,6 +949,8 @@ void RendererSchedulerImpl::UpdatePolicyLocked(UpdateType update_type) {
   GetMainThreadOnly().current_use_case = use_case;
 
   base::TimeDelta touchstart_expected_flag_valid_for_duration;
+  // TODO(skyostil): Consider handlers for all types of blocking gestures (e.g.,
+  // mouse wheel) instead of just touchstart.
   bool touchstart_expected_soon = false;
   if (GetMainThreadOnly().has_visible_render_widget_with_touch_handler) {
     touchstart_expected_soon = GetAnyThread().user_model.IsGestureExpectedSoon(
@@ -1668,7 +1671,7 @@ void RendererSchedulerImpl::ResetForNavigationLocked() {
   helper_.CheckOnValidThread();
   any_thread_lock_.AssertAcquired();
   GetAnyThread().user_model.Reset(helper_.scheduler_tqm_delegate()->NowTicks());
-  GetAnyThread().have_seen_touchstart = false;
+  GetAnyThread().have_seen_a_potentially_blocking_gesture = false;
   GetAnyThread().waiting_for_meaningful_paint = true;
   GetAnyThread().have_seen_input_since_navigation = false;
   GetMainThreadOnly().loading_task_cost_estimator.Clear();
@@ -1797,7 +1800,7 @@ void RendererSchedulerImpl::OnTriedToExecuteBlockedTask(
            .have_reported_blocking_intervention_since_navigation) {
     {
       base::AutoLock lock(any_thread_lock_);
-      if (!GetAnyThread().have_seen_touchstart)
+      if (!GetAnyThread().have_seen_a_potentially_blocking_gesture)
         return;
     }
     GetMainThreadOnly().have_reported_blocking_intervention_since_navigation =
