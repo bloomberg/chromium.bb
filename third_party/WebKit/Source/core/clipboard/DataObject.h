@@ -55,6 +55,13 @@ class CORE_EXPORT DataObject : public GarbageCollectedFinalized<DataObject>,
   USING_GARBAGE_COLLECTED_MIXIN(DataObject);
 
  public:
+  struct CORE_EXPORT Observer : public GarbageCollectedMixin {
+    // Called whenever |item_list_| is modified. Note it can be called multiple
+    // times for a single mutation. For example, DataObject::SetData() calls
+    // both ClearData() and Add(), each of which can call this method.
+    virtual void OnItemListChanged() = 0;
+  };
+
   static DataObject* CreateFromPasteboard(PasteMode);
   static DataObject* CreateFromString(const String&);
   static DataObject* Create();
@@ -111,6 +118,10 @@ class CORE_EXPORT DataObject : public GarbageCollectedFinalized<DataObject>,
   int GetModifiers() const { return modifiers_; }
   void SetModifiers(int modifiers) { modifiers_ = modifiers; }
 
+  // Adds an observer (and retains a reference to it) that is notified
+  // whenever the underlying item_list_ changes.
+  void AddObserver(Observer*);
+
   DECLARE_TRACE();
 
   WebDragData ToWebDragData();
@@ -122,7 +133,10 @@ class CORE_EXPORT DataObject : public GarbageCollectedFinalized<DataObject>,
   bool InternalAddStringItem(DataObjectItem*);
   void InternalAddFileItem(DataObjectItem*);
 
+  void NotifyItemListChanged() const;
+
   HeapVector<Member<DataObjectItem>> item_list_;
+  HeapHashSet<Member<Observer>> observers_;
 
   // State of Shift/Ctrl/Alt/Meta keys and Left/Right/Middle mouse buttons
   int modifiers_;
