@@ -105,6 +105,7 @@ class Context : public base::RefCountedThreadSafe<Context>,
   bool is_destroyed_;
   gpu::GpuPreferences gpu_preferences_;
   const gpu::GpuDriverBugWorkarounds gpu_driver_bug_workarounds_;
+  std::unique_ptr<gpu::TransferBufferManager> transfer_buffer_manager_;
   std::unique_ptr<gpu::CommandBufferService> command_buffer_;
   std::unique_ptr<gpu::gles2::GLES2CmdHelper> gles2_cmd_helper_;
   std::unique_ptr<gpu::gles2::GLES2Decoder> decoder_;

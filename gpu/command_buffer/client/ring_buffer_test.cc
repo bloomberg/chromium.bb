@@ -12,6 +12,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "gpu/command_buffer/client/cmd_buffer_helper.h"
@@ -71,11 +72,7 @@ class BaseRingBufferTest : public testing::Test {
         .WillRepeatedly(DoAll(Invoke(this, &BaseRingBufferTest::SetToken),
                               Return(error::kNoError)));
 
-    {
-      TransferBufferManager* manager = new TransferBufferManager(nullptr);
-      transfer_buffer_manager_ = manager;
-      EXPECT_TRUE(manager->Initialize());
-    }
+    transfer_buffer_manager_ = base::MakeUnique<TransferBufferManager>(nullptr);
     command_buffer_.reset(
         new CommandBufferService(transfer_buffer_manager_.get()));
 
@@ -95,7 +92,7 @@ class BaseRingBufferTest : public testing::Test {
   int32_t GetToken() { return command_buffer_->GetLastState().token; }
 
   std::unique_ptr<AsyncAPIMock> api_mock_;
-  scoped_refptr<TransferBufferManagerInterface> transfer_buffer_manager_;
+  std::unique_ptr<TransferBufferManager> transfer_buffer_manager_;
   std::unique_ptr<CommandBufferService> command_buffer_;
   std::unique_ptr<CommandExecutor> executor_;
   std::unique_ptr<CommandBufferHelper> helper_;

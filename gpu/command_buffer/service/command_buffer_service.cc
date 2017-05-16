@@ -40,7 +40,7 @@ class MemoryBufferBacking : public BufferBacking {
 }  // anonymous namespace
 
 CommandBufferService::CommandBufferService(
-    TransferBufferManagerInterface* transfer_buffer_manager)
+    TransferBufferManager* transfer_buffer_manager)
     : ring_buffer_id_(-1),
       shared_state_(nullptr),
       num_entries_(0),

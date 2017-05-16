@@ -11,6 +11,7 @@
 #include <string>
 
 #include "base/command_line.h"
+#include "base/memory/ptr_util.h"
 #include "gpu/command_buffer/service/buffer_manager.h"
 #include "gpu/command_buffer/service/framebuffer_manager.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder_passthrough.h"
@@ -110,12 +111,11 @@ ContextGroup::ContextGroup(
       passthrough_resources_(new PassthroughResources),
       progress_reporter_(progress_reporter),
       gpu_feature_info_(gpu_feature_info) {
-  {
-    DCHECK(feature_info_);
-    if (!mailbox_manager_.get())
-      mailbox_manager_ = new MailboxManagerImpl;
-    transfer_buffer_manager_ = new TransferBufferManager(memory_tracker_.get());
-  }
+  DCHECK(feature_info_);
+  if (!mailbox_manager_.get())
+    mailbox_manager_ = new MailboxManagerImpl;
+  transfer_buffer_manager_ =
+      base::MakeUnique<TransferBufferManager>(memory_tracker_.get());
 }
 
 bool ContextGroup::Initialize(GLES2Decoder* decoder,
@@ -147,8 +147,6 @@ bool ContextGroup::Initialize(GLES2Decoder* decoder,
                 << "initialization failed.";
     return false;
   }
-
-  transfer_buffer_manager_->Initialize();
 
   const GLint kMinRenderbufferSize = 512;  // GL says 1 pixel!
   GLint max_renderbuffer_size = 0;

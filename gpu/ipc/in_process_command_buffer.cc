@@ -290,10 +290,7 @@ bool InProcessCommandBuffer::InitializeOnGpuThread(
   CheckSequencedThread();
   gpu_thread_weak_ptr_ = gpu_thread_weak_ptr_factory_.GetWeakPtr();
 
-  TransferBufferManager* manager = new TransferBufferManager(nullptr);
-  transfer_buffer_manager_ = manager;
-  manager->Initialize();
-
+  transfer_buffer_manager_ = base::MakeUnique<TransferBufferManager>(nullptr);
   std::unique_ptr<CommandBufferService> command_buffer(
       new CommandBufferService(transfer_buffer_manager_.get()));
   command_buffer->SetPutOffsetChangeCallback(base::Bind(

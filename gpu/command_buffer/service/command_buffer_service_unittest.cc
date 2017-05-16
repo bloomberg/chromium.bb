@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/memory/ptr_util.h"
 #include "base/threading/thread.h"
 #include "gpu/command_buffer/common/cmd_buffer_common.h"
 #include "gpu/command_buffer/service/command_buffer_service.h"
@@ -28,11 +29,7 @@ namespace gpu {
 class CommandBufferServiceTest : public testing::Test {
  protected:
   void SetUp() override {
-    {
-      TransferBufferManager* manager = new TransferBufferManager(nullptr);
-      transfer_buffer_manager_ = manager;
-      EXPECT_TRUE(manager->Initialize());
-    }
+    transfer_buffer_manager_ = base::MakeUnique<TransferBufferManager>(nullptr);
     command_buffer_.reset(
         new CommandBufferService(transfer_buffer_manager_.get()));
   }
@@ -54,7 +51,7 @@ class CommandBufferServiceTest : public testing::Test {
     return true;
   }
 
-  scoped_refptr<TransferBufferManagerInterface> transfer_buffer_manager_;
+  std::unique_ptr<TransferBufferManager> transfer_buffer_manager_;
   std::unique_ptr<CommandBufferService> command_buffer_;
 };
 
