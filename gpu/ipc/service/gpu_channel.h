@@ -115,10 +115,6 @@ class GPU_EXPORT GpuChannel : public IPC::Listener, public FilteredSender {
 
   GpuWatchdogThread* watchdog() const { return watchdog_; }
 
-  const scoped_refptr<GpuChannelMessageFilter>& filter() const {
-    return filter_;
-  }
-
   const scoped_refptr<gles2::MailboxManager>& mailbox_manager() const {
     return mailbox_manager_;
   }
@@ -192,6 +188,8 @@ class GPU_EXPORT GpuChannel : public IPC::Listener, public FilteredSender {
   // processed as soon as possible because the client is blocked until they
   // are completed.
   void HandleOutOfOrderMessage(const IPC::Message& msg);
+
+  void HandleMessageForTesting(const IPC::Message& msg);
 
 #if defined(OS_ANDROID)
   const GpuCommandBufferStub* GetOneStub() const;
@@ -282,181 +280,6 @@ class GPU_EXPORT GpuChannel : public IPC::Listener, public FilteredSender {
   base::WeakPtrFactory<GpuChannel> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuChannel);
-};
-
-// This filter does the following:
-// - handles the Nop message used for verifying sync tokens on the IO thread
-// - forwards messages to child message filters
-// - posts control and out of order messages to the main thread
-// - forwards other messages to the message queue or the scheduler
-class GPU_EXPORT GpuChannelMessageFilter : public IPC::MessageFilter {
- public:
-  GpuChannelMessageFilter(
-      GpuChannel* gpu_channel,
-      Scheduler* scheduler,
-      scoped_refptr<GpuChannelMessageQueue> message_queue,
-      scoped_refptr<base::SingleThreadTaskRunner> main_task_runner);
-
-  // Methods called on main thread.
-  void Destroy();
-
-  // Called when scheduler is enabled.
-  void AddRoute(int32_t route_id, SequenceId sequence_id);
-  void RemoveRoute(int32_t route_id);
-
-  // Methods called on IO thread.
-  // IPC::MessageFilter implementation.
-  void OnFilterAdded(IPC::Channel* channel) override;
-  void OnFilterRemoved() override;
-  void OnChannelConnected(int32_t peer_pid) override;
-  void OnChannelError() override;
-  void OnChannelClosing() override;
-  bool OnMessageReceived(const IPC::Message& message) override;
-
-  void AddChannelFilter(scoped_refptr<IPC::MessageFilter> filter);
-  void RemoveChannelFilter(scoped_refptr<IPC::MessageFilter> filter);
-
-  bool Send(IPC::Message* message);
-
- private:
-  ~GpuChannelMessageFilter() override;
-
-  bool MessageErrorHandler(const IPC::Message& message, const char* error_msg);
-
-  IPC::Channel* ipc_channel_ = nullptr;
-  base::ProcessId peer_pid_ = base::kNullProcessId;
-  std::vector<scoped_refptr<IPC::MessageFilter>> channel_filters_;
-
-  GpuChannel* gpu_channel_ = nullptr;
-  // Map of route id to scheduler sequence id.
-  base::flat_map<int32_t, SequenceId> route_sequences_;
-  mutable base::Lock gpu_channel_lock_;
-
-  Scheduler* scheduler_;
-  scoped_refptr<GpuChannelMessageQueue> message_queue_;
-  scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
-
-  DISALLOW_COPY_AND_ASSIGN(GpuChannelMessageFilter);
-};
-
-struct GpuChannelMessage {
-  IPC::Message message;
-  uint32_t order_number;
-  base::TimeTicks time_received;
-
-  GpuChannelMessage(const IPC::Message& msg,
-                    uint32_t order_num,
-                    base::TimeTicks ts)
-      : message(msg), order_number(order_num), time_received(ts) {}
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(GpuChannelMessage);
-};
-
-// This message queue counts and timestamps each message forwarded to the
-// channel so that we can preempt other channels if a message takes too long to
-// process. To guarantee fairness, we must wait a minimum amount of time before
-// preempting and we limit the amount of time that we can preempt in one shot
-// (see constants above).
-class GpuChannelMessageQueue
-    : public base::RefCountedThreadSafe<GpuChannelMessageQueue> {
- public:
-  GpuChannelMessageQueue(
-      GpuChannel* channel,
-      scoped_refptr<SyncPointOrderData> sync_point_order_data,
-      scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
-      scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
-      scoped_refptr<PreemptionFlag> preempting_flag,
-      scoped_refptr<PreemptionFlag> preempted_flag);
-
-  void Destroy();
-
-  SequenceId sequence_id() const {
-    return sync_point_order_data_->sequence_id();
-  }
-
-  bool IsScheduled() const;
-  void SetScheduled(bool scheduled);
-
-  // Should be called before a message begins to be processed. Returns false if
-  // there are no messages to process.
-  const GpuChannelMessage* BeginMessageProcessing();
-  // Should be called if a message began processing but did not finish.
-  void PauseMessageProcessing();
-  // Should be called if a message is completely processed. Returns true if
-  // there are more messages to process.
-  void FinishMessageProcessing();
-
-  void PushBackMessage(const IPC::Message& message);
-
- private:
-  enum PreemptionState {
-    // Either there's no other channel to preempt, there are no messages
-    // pending processing, or we just finished preempting and have to wait
-    // before preempting again.
-    IDLE,
-    // We are waiting kPreemptWaitTimeMs before checking if we should preempt.
-    WAITING,
-    // We can preempt whenever any IPC processing takes more than
-    // kPreemptWaitTimeMs.
-    CHECKING,
-    // We are currently preempting (i.e. no stub is descheduled).
-    PREEMPTING,
-    // We would like to preempt, but some stub is descheduled.
-    WOULD_PREEMPT_DESCHEDULED,
-  };
-
-  friend class base::RefCountedThreadSafe<GpuChannelMessageQueue>;
-
-  ~GpuChannelMessageQueue();
-
-  void PostHandleMessageOnQueue();
-
-  void UpdatePreemptionState();
-  void UpdatePreemptionStateHelper();
-
-  void UpdateStateIdle();
-  void UpdateStateWaiting();
-  void UpdateStateChecking();
-  void UpdateStatePreempting();
-  void UpdateStateWouldPreemptDescheduled();
-
-  void TransitionToIdle();
-  void TransitionToWaiting();
-  void TransitionToChecking();
-  void TransitionToPreempting();
-  void TransitionToWouldPreemptDescheduled();
-
-  bool ShouldTransitionToIdle() const;
-
-  // These can be accessed from both IO and main threads and are protected by
-  // |channel_lock_|.
-  bool scheduled_ = true;
-  GpuChannel* channel_ = nullptr;  // set to nullptr on Destroy
-  std::deque<std::unique_ptr<GpuChannelMessage>> channel_messages_;
-  bool handle_message_post_task_pending_ = false;
-  mutable base::Lock channel_lock_;
-
-  // The following are accessed on the IO thread only.
-  // No lock is necessary for preemption state because it's only accessed on the
-  // IO thread.
-  PreemptionState preemption_state_ = IDLE;
-  // Maximum amount of time that we can spend in PREEMPTING.
-  // It is reset when we transition to IDLE.
-  base::TimeDelta max_preemption_time_;
-  // This timer is used and runs tasks on the IO thread.
-  std::unique_ptr<base::OneShotTimer> timer_;
-  base::ThreadChecker io_thread_checker_;
-
-  // Keeps track of sync point related state such as message order numbers.
-  scoped_refptr<SyncPointOrderData> sync_point_order_data_;
-
-  scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
-  scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
-  scoped_refptr<PreemptionFlag> preempting_flag_;
-  scoped_refptr<PreemptionFlag> preempted_flag_;
-
-  DISALLOW_COPY_AND_ASSIGN(GpuChannelMessageQueue);
 };
 
 }  // namespace gpu

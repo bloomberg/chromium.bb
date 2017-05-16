@@ -127,7 +127,7 @@ void GpuChannelTestCommon::HandleMessage(GpuChannel* channel,
   msg->set_unblock(false);
 
   // Message filter gets message first on IO thread.
-  channel->filter()->OnMessageReceived(*msg);
+  channel->HandleMessageForTesting(*msg);
 
   // Run the HandleMessage task posted to the main thread.
   task_runner()->RunPendingTasks();
