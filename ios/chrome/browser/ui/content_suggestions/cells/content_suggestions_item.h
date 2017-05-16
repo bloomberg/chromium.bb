@@ -7,15 +7,12 @@
 
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_item.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/suggested_content.h"
-#import "ios/third_party/material_components_ios/src/components/CollectionCells/src/MaterialCollectionCells.h"
 
 namespace base {
 class Time;
 }
 
-@class ContentSuggestionsItem;
 @class FaviconAttributes;
-@class FaviconViewNew;
 class GURL;
 
 // Item for an article in the suggestions.
@@ -38,30 +35,6 @@ class GURL;
 @property(nonatomic, assign) BOOL hasImage;
 // Whether the suggestion is available offline. If YES, an icon is displayed.
 @property(nonatomic, assign) BOOL availableOffline;
-
-@end
-
-// Corresponding cell for an article in the suggestions.
-@interface ContentSuggestionsCell : MDCCollectionViewCell
-
-@property(nonatomic, readonly, strong) UILabel* titleLabel;
-// View for displaying the favicon.
-@property(nonatomic, readonly, strong) FaviconViewNew* faviconView;
-// Whether the image should be displayed.
-@property(nonatomic, assign) BOOL displayImage;
-
-// Sets an |image| to illustrate the article, replacing the "no image" icon.
-- (void)setContentImage:(UIImage*)image;
-
-// Sets the publisher |name| and |date| and add an icon to signal the offline
-// availability if |availableOffline| is YES.
-- (void)setAdditionalInformationWithPublisherName:(NSString*)publisherName
-                                             date:(base::Time)publishDate
-                              offlineAvailability:(BOOL)availableOffline;
-
-// Setst the subtitle text. If |subtitle| is nil, the space taken by the
-// subtitle is removed.
-- (void)setSubtitleText:(NSString*)subtitle;
 
 @end
 

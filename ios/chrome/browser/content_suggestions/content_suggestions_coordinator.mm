@@ -4,6 +4,7 @@
 
 #import "ios/chrome/browser/content_suggestions/content_suggestions_coordinator.h"
 
+#include "base/mac/foundation_util.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
@@ -123,10 +124,13 @@
                                commandWithTag:IDC_SHOW_READING_LIST]];
 }
 
-- (void)openURL:(const GURL&)URL {
+- (void)openPageForItem:(CollectionViewItem*)item {
   // TODO(crbug.com/691979): Add metrics.
 
-  [self.URLLoader loadURL:URL
+  ContentSuggestionsItem* suggestionItem =
+      base::mac::ObjCCastStrict<ContentSuggestionsItem>(item);
+
+  [self.URLLoader loadURL:suggestionItem.URL
                  referrer:web::Referrer()
                transition:ui::PAGE_TRANSITION_AUTO_BOOKMARK
         rendererInitiated:NO];
@@ -134,9 +138,11 @@
   [self stop];
 }
 
-- (void)displayContextMenuForArticle:(ContentSuggestionsItem*)articleItem
+- (void)displayContextMenuForArticle:(CollectionViewItem*)item
                              atPoint:(CGPoint)touchLocation
                          atIndexPath:(NSIndexPath*)indexPath {
+  ContentSuggestionsItem* articleItem =
+      base::mac::ObjCCastStrict<ContentSuggestionsItem>(item);
   self.alertCoordinator = [[ActionSheetCoordinator alloc]
       initWithBaseViewController:self.navigationController
                            title:nil

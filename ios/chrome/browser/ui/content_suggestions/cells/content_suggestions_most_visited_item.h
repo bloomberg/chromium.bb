@@ -7,10 +7,8 @@
 
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_item.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/suggested_content.h"
-#import "ios/third_party/material_components_ios/src/components/CollectionCells/src/MaterialCollectionCells.h"
 
 @class FaviconAttributes;
-@class FaviconViewNew;
 class GURL;
 
 // Item containing a Most Visited suggestion.
@@ -24,21 +22,6 @@ class GURL;
 @property(nonatomic, copy, nonnull) NSString* title;
 
 @property(nonatomic, assign) GURL URL;
-
-@end
-
-// Associated cell to display a Most Visited tile based on the suggestion.
-// It displays the favicon for this Most Visited suggestion and its title.
-@interface ContentSuggestionsMostVisitedCell : MDCCollectionViewCell
-
-// FaviconView displaying the favicon.
-@property(nonatomic, strong, readonly, nonnull) FaviconViewNew* faviconView;
-
-// Title of the Most Visited.
-@property(nonatomic, strong, readonly, nonnull) UILabel* titleLabel;
-
-// Size for a Most Visited tile.
-+ (CGSize)defaultSize;
 
 @end
 
