@@ -398,9 +398,7 @@ void HTMLTextAreaElement::SetValueCommon(
   normalized_value.Replace('\r', '\n');
 
   // Return early because we don't want to trigger other side effects when the
-  // value isn't changing. This is interoperable though the specification
-  // doesn't define so.
-  // https://github.com/whatwg/html/issues/2412
+  // value isn't changing. This is interoperable.
   if (normalized_value == value())
     return;
 
