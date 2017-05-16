@@ -21,7 +21,7 @@
 #include "ash/test/status_area_widget_test_helper.h"
 #include "ash/test/test_system_tray_delegate.h"
 #include "ash/wm/window_state.h"
-#include "ash/wm_window.h"
+#include "ash/wm/window_state_aura.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -352,8 +352,7 @@ TEST_F(WebNotificationTrayTest, PopupAndFullscreen) {
   // Put |widget| into fullscreen without forcing the shelf to hide. Currently,
   // this is used by immersive fullscreen and forces the shelf to be auto
   // hidden.
-  WmWindow::Get(widget->GetNativeWindow())
-      ->GetWindowState()
+  wm::GetWindowState(widget->GetNativeWindow())
       ->set_hide_shelf_when_fullscreen(false);
   widget->SetFullscreen(true);
   RunAllPendingInMessageLoop();

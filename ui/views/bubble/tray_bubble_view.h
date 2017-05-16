@@ -63,6 +63,9 @@ class VIEWS_EXPORT TrayBubbleView : public BubbleDialogDelegateView,
 
     // Called before Widget::Init() on |bubble_widget|. Allows |params| to be
     // modified.
+    // TODO(jamescook): Eliminate this method. It was introduced to let mash set
+    // the widget container back when mash could not use aura::Window. Now the
+    // anchor view should be sufficient.
     virtual void OnBeforeBubbleWidgetInit(Widget* anchor_widget,
                                           Widget* bubble_widget,
                                           Widget::InitParams* params) const = 0;
