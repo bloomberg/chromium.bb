@@ -386,6 +386,22 @@ class PortTest(unittest.TestCase):
         port.host.platform.os_name = 'win'
         self.assertFalse(port.http_server_supports_ipv6())
 
+    def test_http_server_requires_http_protocol_options_unsafe(self):
+        port = self.make_port(executive=MockExecutive(stderr=(
+            "Invalid command 'INTENTIONAL_SYNTAX_ERROR', perhaps misspelled or"
+            " defined by a module not included in the server configuration\n")))
+        port.path_to_apache = lambda: '/usr/sbin/httpd'
+        self.assertTrue(
+            port.http_server_requires_http_protocol_options_unsafe())
+
+    def test_http_server_doesnt_require_http_protocol_options_unsafe(self):
+        port = self.make_port(executive=MockExecutive(stderr=(
+            "Invalid command 'HttpProtocolOptions', perhaps misspelled or"
+            " defined by a module not included in the server configuration\n")))
+        port.path_to_apache = lambda: '/usr/sbin/httpd'
+        self.assertFalse(
+            port.http_server_requires_http_protocol_options_unsafe())
+
     def test_check_httpd_success(self):
         port = self.make_port(executive=MockExecutive())
         port.path_to_apache = lambda: '/usr/sbin/httpd'
