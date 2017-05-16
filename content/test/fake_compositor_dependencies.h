@@ -6,6 +6,7 @@
 #define CONTENT_TEST_FAKE_COMPOSITOR_DEPENDENCIES_H_
 
 #include "base/macros.h"
+#include "base/single_thread_task_runner.h"
 #include "cc/output/buffer_to_texture_target_map.h"
 #include "cc/test/test_task_graph_runner.h"
 #include "content/renderer/gpu/compositor_dependencies.h"

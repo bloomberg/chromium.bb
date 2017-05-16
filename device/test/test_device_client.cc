@@ -4,6 +4,7 @@
 
 #include "device/test/test_device_client.h"
 
+#include "base/single_thread_task_runner.h"
 #include "build/build_config.h"
 
 // This file unconditionally includes these headers despite conditionally

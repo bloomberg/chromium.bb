@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/sequenced_task_runner.h"
 #include "base/task_scheduler/post_task.h"
 #include "build/build_config.h"
 #include "chrome/browser/profiles/incognito_helpers.h"

@@ -6,6 +6,7 @@
 #define SERVICES_UI_GPU_GPU_SERVICE_H_
 
 #include "base/callback.h"
+#include "base/single_thread_task_runner.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "base/threading/non_thread_safe.h"

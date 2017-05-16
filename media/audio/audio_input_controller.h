@@ -13,6 +13,7 @@
 
 #include "base/files/file.h"
 #include "base/memory/weak_ptr.h"
+#include "base/single_thread_task_runner.h"
 #include "media/audio/audio_debug_file_writer.h"
 #include "media/audio/audio_io.h"
 #include "media/audio/audio_manager_base.h"

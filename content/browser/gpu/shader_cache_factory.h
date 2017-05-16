@@ -5,6 +5,7 @@
 #ifndef CONTENT_BROWSER_GPU_SHADER_CACHE_FACTORY_H_
 #define CONTENT_BROWSER_GPU_SHADER_CACHE_FACTORY_H_
 
+#include "base/single_thread_task_runner.h"
 #include "content/common/content_export.h"
 #include "gpu/ipc/host/shader_disk_cache.h"
 

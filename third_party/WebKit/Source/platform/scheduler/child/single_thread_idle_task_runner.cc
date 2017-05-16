@@ -5,6 +5,7 @@
 #include "public/platform/scheduler/child/single_thread_idle_task_runner.h"
 
 #include "base/location.h"
+#include "base/single_thread_task_runner.h"
 #include "base/trace_event/blame_context.h"
 #include "base/trace_event/trace_event.h"
 

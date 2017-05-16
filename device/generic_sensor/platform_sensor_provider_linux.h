@@ -7,6 +7,7 @@
 
 #include "device/generic_sensor/platform_sensor_provider.h"
 
+#include "base/single_thread_task_runner.h"
 #include "device/generic_sensor/generic_sensor_export.h"
 #include "device/generic_sensor/linux/sensor_device_manager.h"
 

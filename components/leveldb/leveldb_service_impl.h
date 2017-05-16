@@ -6,6 +6,7 @@
 #define COMPONENTS_LEVELDB_LEVELDB_SERVICE_IMPL_H_
 
 #include "base/memory/ref_counted.h"
+#include "base/single_thread_task_runner.h"
 #include "components/leveldb/leveldb_mojo_proxy.h"
 #include "components/leveldb/public/interfaces/leveldb.mojom.h"
 #include "mojo/public/cpp/bindings/binding_set.h"

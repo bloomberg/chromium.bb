@@ -9,6 +9,7 @@
 #include <memory>
 
 #include "base/json/json_string_value_serializer.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "components/invalidation/impl/unacked_invalidation_set_test_util.h"
 #include "components/invalidation/public/object_id_invalidation_map.h"

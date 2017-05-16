@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 
+#include "base/single_thread_task_runner.h"
 #include "base/threading/thread_checker.h"
 #include "device/generic_sensor/generic_sensor_export.h"
 #include "device/generic_sensor/platform_sensor.h"

@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/macros.h"
+#include "base/sequenced_task_runner.h"
 #include "build/build_config.h"
 #include "chrome/browser/profiles/off_the_record_profile_io_data.h"
 #include "chrome/browser/profiles/profile.h"

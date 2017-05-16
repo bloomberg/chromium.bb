@@ -11,6 +11,7 @@
 #include <string>
 #include <vector>
 
+#include "base/sequenced_task_runner.h"
 #include "components/drive/chromeos/file_system_interface.h"
 
 namespace base {

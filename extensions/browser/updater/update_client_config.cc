@@ -4,6 +4,7 @@
 
 #include "extensions/browser/updater/update_client_config.h"
 
+#include "base/sequenced_task_runner.h"
 #include "base/task_scheduler/post_task.h"
 
 namespace extensions {

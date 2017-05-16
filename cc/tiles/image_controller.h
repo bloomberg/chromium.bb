@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/sequenced_task_runner.h"
 #include "base/threading/simple_thread.h"
 #include "cc/base/unique_notifier.h"
 #include "cc/cc_export.h"

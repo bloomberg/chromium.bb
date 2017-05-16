@@ -4,6 +4,7 @@
 
 #include "components/signin/core/browser/signin_cookie_changed_subscription.h"
 
+#include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "net/cookies/cookie_store.h"
 #include "net/url_request/url_request_context.h"

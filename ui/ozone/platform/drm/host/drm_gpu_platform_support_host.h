@@ -9,6 +9,7 @@
 
 #include "base/callback.h"
 #include "base/observer_list.h"
+#include "base/single_thread_task_runner.h"
 #include "ui/display/types/display_constants.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/ozone/common/gpu/ozone_gpu_message_params.h"

@@ -5,6 +5,7 @@
 #include "content/shell/browser/layout_test/layout_test_content_browser_client.h"
 
 #include "base/memory/ptr_util.h"
+#include "base/single_thread_task_runner.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"

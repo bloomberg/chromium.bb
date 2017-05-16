@@ -6,6 +6,7 @@
 #define DEVICE_WAKE_LOCK_WAKE_LOCK_PROVIDER_H_
 
 #include "base/sequenced_task_runner.h"
+#include "base/single_thread_task_runner.h"
 #include "device/wake_lock/public/interfaces/wake_lock_context.mojom.h"
 #include "device/wake_lock/public/interfaces/wake_lock_provider.mojom.h"
 #include "device/wake_lock/wake_lock_service_context.h"

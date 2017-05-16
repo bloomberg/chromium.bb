@@ -17,6 +17,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/process/process.h"
+#include "base/single_thread_task_runner.h"
 #include "base/synchronization/lock.h"
 #include "gpu/config/gpu_info.h"
 #include "gpu/gpu_export.h"

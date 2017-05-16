@@ -16,6 +16,7 @@
 #include "base/files/file_util.h"
 #include "base/id_map.h"
 #include "base/memory/ptr_util.h"
+#include "base/sequenced_task_runner.h"
 #include "base/sha1.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"

@@ -10,6 +10,7 @@
 
 #include "base/memory/shared_memory.h"
 #include "base/observer_list.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string16.h"
 #include "build/build_config.h"
 #include "cc/test/test_shared_bitmap_manager.h"

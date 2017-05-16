@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/single_thread_task_runner.h"
 #include "components/password_manager/core/browser/password_store_default.h"
 
 class PasswordWebDataService;

@@ -6,6 +6,7 @@
 #define GPU_IPC_GPU_IN_PROCESS_THREAD_SERVICE_H_
 
 #include "base/compiler_specific.h"
+#include "base/single_thread_task_runner.h"
 #include "gpu/command_buffer/service/mailbox_manager.h"
 #include "gpu/gpu_export.h"
 #include "gpu/ipc/in_process_command_buffer.h"

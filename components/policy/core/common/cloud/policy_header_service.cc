@@ -7,6 +7,7 @@
 #include "base/base64.h"
 #include "base/json/json_writer.h"
 #include "base/memory/ptr_util.h"
+#include "base/sequenced_task_runner.h"
 #include "base/values.h"
 #include "components/policy/core/common/cloud/cloud_policy_store.h"
 #include "components/policy/core/common/cloud/policy_header_io_helper.h"

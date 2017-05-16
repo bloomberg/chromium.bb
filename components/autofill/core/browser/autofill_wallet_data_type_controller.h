@@ -6,6 +6,7 @@
 #define COMPONENTS_AUTOFILL_CORE_BROWSER_AUTOFILL_WALLET_DATA_TYPE_CONTROLLER_H_
 
 #include "base/macros.h"
+#include "base/single_thread_task_runner.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/sync/driver/async_directory_type_controller.h"
 

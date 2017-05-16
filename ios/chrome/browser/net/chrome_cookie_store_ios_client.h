@@ -6,6 +6,7 @@
 #define IOS_CHROME_BROWSER_NET_CHROME_COOKIE_STORE_IOS_CLIENT_H_
 
 #include "base/macros.h"
+#include "base/sequenced_task_runner.h"
 #include "base/threading/thread_checker.h"
 #include "ios/net/cookies/cookie_store_ios_client.h"
 

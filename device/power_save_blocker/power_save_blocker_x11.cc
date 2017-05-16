@@ -27,6 +27,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/singleton.h"
 #include "base/nix/xdg_util.h"
+#include "base/single_thread_task_runner.h"
 #include "base/synchronization/lock.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"

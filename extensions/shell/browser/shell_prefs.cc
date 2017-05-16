@@ -4,6 +4,7 @@
 
 #include "extensions/shell/browser/shell_prefs.h"
 
+#include "base/sequenced_task_runner.h"
 #include "build/build_config.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/json_pref_store.h"

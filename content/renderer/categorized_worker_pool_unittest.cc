@@ -2,11 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "content/renderer/categorized_worker_pool.h"
+#include "base/sequenced_task_runner.h"
 #include "base/test/sequenced_task_runner_test_template.h"
 #include "base/test/task_runner_test_template.h"
 #include "base/threading/simple_thread.h"
 #include "cc/test/task_graph_runner_test_template.h"
-#include "content/renderer/categorized_worker_pool.h"
 
 namespace base {
 namespace {

@@ -11,6 +11,7 @@
 
 #include "base/macros.h"
 #include "base/memory/linked_ptr.h"
+#include "base/sequenced_task_runner.h"
 #include "dbus/object_path.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_export.h"

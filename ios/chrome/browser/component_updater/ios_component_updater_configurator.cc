@@ -7,6 +7,7 @@
 #include <string>
 #include <vector>
 
+#include "base/sequenced_task_runner.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/version.h"
 #include "components/component_updater/configurator_impl.h"
