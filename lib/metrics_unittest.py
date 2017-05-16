@@ -16,6 +16,11 @@ from chromite.lib import parallel
 from chromite.lib import ts_mon_config
 
 
+class FakeException(Exception):
+  """FakeException to raise during tests."""
+  pass
+
+
 class TestIndirectMetrics(cros_test_lib.MockTestCase):
   """Tests the behavior of _Indirect metrics."""
 
@@ -164,6 +169,53 @@ class TestSecondsTimer(cros_test_lib.MockTestCase):
 
     self._mockMetric.add.assert_called_with(mock.ANY, fields={'foo': 'bar'})
 
+class TestSuccessCounter(cros_test_lib.MockTestCase):
+  """Tests the behavior of SecondsTimer."""
+
+  def setUp(self):
+    self._mockMetric = mock.MagicMock()
+    self.PatchObject(metrics, 'Counter',
+                     return_value=self._mockMetric)
+
+  def testContextManager(self):
+    """Test that timing context manager emits a metric."""
+    with metrics.SuccessCounter('fooname'):
+      pass
+    self._mockMetric.increment.assert_called_with(
+        fields={'success': True})
+    self.assertEqual(self._mockMetric.increment.call_count, 1)
+
+  def testContextManagerFailed(self):
+    """Test that we fail when an exception is raised."""
+    with self.assertRaises(FakeException):
+      with metrics.SuccessCounter('fooname'):
+        raise FakeException
+
+    self._mockMetric.increment.assert_called_with(
+        fields={'success': False})
+
+  def testContextManagerWithUpdate(self):
+    """Tests that context manager with a field update emits metric."""
+    with metrics.SuccessCounter('fooname', fields={'foo': 'bar'}) as c:
+      c['foo'] = 'qux'
+    self._mockMetric.increment.assert_called_with(
+        fields={'foo': 'qux', 'success': True})
+
+  def testContextManagerWithoutUpdate(self):
+    """Tests that the default value for fields is used when not updated."""
+    # pylint: disable=unused-variable
+    with metrics.SuccessCounter('fooname', fields={'foo': 'bar'}) as c:
+      pass
+    self._mockMetric.increment.assert_called_with(
+        fields={'foo': 'bar', 'success': True})
+
+  def testContextManagerIgnoresInvalidField(self):
+    """Test that we ignore fields that are set with no default."""
+    with metrics.SuccessCounter('fooname', fields={'foo': 'bar'}) as c:
+      c['qux'] = 'qwert'
+
+    self._mockMetric.increment.assert_called_with(
+        fields={'foo': 'bar', 'success': True})
 
 class ClientException(Exception):
   """An exception that client of the metrics module raises."""

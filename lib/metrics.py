@@ -307,6 +307,23 @@ def SecondsTimerDecorator(name, fields=None):
   return decorator
 
 
+@contextlib.contextmanager
+def SuccessCounter(name, fields=None):
+  """Create a counter that tracks if something succeeds."""
+  c = Counter(name)
+  f = fields or {}
+  f = f.copy()
+  keys = f.keys()
+  success = False
+  try:
+    yield f
+    success = True
+  finally:
+    f = {k: f[k] for k in keys}
+    f['success'] = success
+    c.increment(fields=f)
+
+
 class RuntimeBreakdownTimer(object):
   """Record the time of an operation and the breakdown into sub-steps.
 
