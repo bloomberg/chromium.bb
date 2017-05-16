@@ -40,7 +40,7 @@ using chrome_intelligence::RankerModel;
 using chrome_intelligence::RankerModelProto;
 using chrome_intelligence::TranslateRankerModel;
 
-const double kTranslationOfferThreshold = 0.5;
+const double kTranslationOfferDefaultThreshold = 0.5;
 
 const char kTranslateRankerModelFileName[] = "Translate Ranker Model";
 const char kUmaPrefix[] = "Translate.Ranker";
@@ -221,7 +221,6 @@ bool TranslateRankerImpl::ShouldOfferTranslation(
   if (model_loader_)
     model_loader_->NotifyOfRankerActivity();
 
-  // If we don't have a model, request one and return the default.
   if (model_ == nullptr) {
     translate_event->set_ranker_response(
         metrics::TranslateEventProto::NOT_QUERIED);
@@ -239,13 +238,7 @@ bool TranslateRankerImpl::ShouldOfferTranslation(
       translate_prefs, src_lang, dst_lang,
       TranslateDownloadManager::GetInstance()->application_locale());
 
-  double score = CalculateScore(features);
-
-  DVLOG(2) << "TranslateRankerImpl::ShouldOfferTranslation: "
-           << "Score = " << score << ", Features=[" << features << "]";
-
-  bool result = (score >= kTranslationOfferThreshold);
-
+  bool result = GetModelDecision(features);
   UMA_HISTOGRAM_BOOLEAN("Translate.Ranker.QueryResult", result);
 
   translate_event->set_ranker_response(
@@ -259,7 +252,7 @@ bool TranslateRankerImpl::ShouldOfferTranslation(
   return result;
 }
 
-double TranslateRankerImpl::CalculateScore(
+bool TranslateRankerImpl::GetModelDecision(
     const TranslateRankerFeatures& features) {
   DCHECK(sequence_checker_.CalledOnValidSequence());
   SCOPED_UMA_HISTOGRAM_TIMER("Translate.Ranker.Timer.CalculateScore");
@@ -279,7 +272,17 @@ double TranslateRankerImpl::CalculateScore(
       ScoreComponent(logit.country_weight(), features.country) +
       ScoreComponent(logit.locale_weight(), features.app_locale);
 
-  return Sigmoid(dot_product + logit.bias());
+  double score = Sigmoid(dot_product + logit.bias());
+
+  DVLOG(2) << "TranslateRankerImpl::GetModelDecision: "
+           << "Score = " << score << ", Features=[" << features << "]";
+
+  float decision_threshold = kTranslationOfferDefaultThreshold;
+  if (logit.threshold() > 0) {
+    decision_threshold = logit.threshold();
+  }
+
+  return score >= decision_threshold;
 }
 
 void TranslateRankerImpl::FlushTranslateEvents(

@@ -54,8 +54,8 @@ class TranslateRankerImplTest : public ::testing::Test {
   void InitFeatures(const std::initializer_list<base::Feature>& enabled,
                     const std::initializer_list<base::Feature>& disabled);
 
-  // Returns a TranslateRankerImpl object with |bias| for testing.
-  std::unique_ptr<TranslateRankerImpl> GetRankerForTest(float bias);
+  // Returns a TranslateRankerImpl object with |threshold| for testing.
+  std::unique_ptr<TranslateRankerImpl> GetRankerForTest(float threshold);
 
   // Implements the same sigmoid function used by TranslateRankerImpl.
   static double Sigmoid(double x);
@@ -150,13 +150,16 @@ void TranslateRankerImplTest::InitFeatures(
 }
 
 std::unique_ptr<TranslateRankerImpl> TranslateRankerImplTest::GetRankerForTest(
-    float bias) {
+    float threshold) {
   auto model = base::MakeUnique<chrome_intelligence::RankerModel>();
   model->mutable_proto()->mutable_translate()->set_version(kModelVersion);
   auto* details = model->mutable_proto()
                       ->mutable_translate()
                       ->mutable_logistic_regression_model();
-  details->set_bias(bias);
+  if (threshold > 0.0) {
+    details->set_threshold(threshold);
+  }
+  details->set_bias(0.5f);
   details->set_accept_ratio_weight(0.02f);
   details->set_decline_ratio_weight(0.03f);
   details->set_accept_count_weight(0.13f);
@@ -224,25 +227,33 @@ TEST_F(TranslateRankerImplTest, ModelLoaderQueryNotEnabled) {
   EXPECT_FALSE(ranker->CheckModelLoaderForTesting());
 }
 
-TEST_F(TranslateRankerImplTest, CalculateScore) {
+TEST_F(TranslateRankerImplTest, GetModelDecision) {
   InitFeatures({kTranslateRankerEnforcement}, {});
-  auto ranker = GetRankerForTest(0.01f);
   // Calculate the score using: a 50:50 accept/decline ratio; the one-hot
   // values for the src lang, dest lang, locale and counry; and, the bias.
-  double expected = Sigmoid(50.0 * 0.13f +   // accept count * weight
-                            50.0 * -0.14f +  // decline count * weight
-                            0.0 * 0.00f +    // ignore count * (default) weight
-                            0.5 * 0.02f +    // accept ratio * weight
-                            0.5 * 0.03f +    // decline ratio * weight
-                            0.0 * 0.00f +    // ignore ratio * (default) weight
-                            1.0 * 0.04f +  // one-hot src-language "en" * weight
-                            1.0 * 0.00f +  // one-hot dst-language "fr" * weight
-                            1.0 * 0.07f +  // one-hot country "de" * weight
-                            1.0 * 0.12f +  // one-hot locale "zh-CN" * weight
-                            0.01f);        // bias
+  double expected_score =
+      Sigmoid(50.0 * 0.13f +   // accept count * weight
+              50.0 * -0.14f +  // decline count * weight
+              0.0 * 0.00f +    // ignore count * (default) weight
+              0.5 * 0.02f +    // accept ratio * weight
+              0.5 * 0.03f +    // decline ratio * weight
+              0.0 * 0.00f +    // ignore ratio * (default) weight
+              1.0 * 0.04f +    // one-hot src-language "en" * weight
+              1.0 * 0.00f +    // one-hot dst-language "fr" * weight
+              1.0 * 0.07f +    // one-hot country "de" * weight
+              1.0 * 0.12f +    // one-hot locale "zh-CN" * weight
+              0.5f);           // bias
   TranslateRankerFeatures features(50, 50, 0, "en", "fr", "de", "zh-CN");
 
-  EXPECT_NEAR(expected, ranker->CalculateScore(features), 0.000001);
+  const float epsilon = 0.001f;
+  auto ranker = GetRankerForTest(expected_score + epsilon);
+  EXPECT_FALSE(ranker->GetModelDecision(features));
+
+  ranker = GetRankerForTest(expected_score - epsilon);
+  EXPECT_TRUE(ranker->GetModelDecision(features));
+
+  ranker = GetRankerForTest(0.0);
+  EXPECT_EQ(expected_score >= 0.5, ranker->GetModelDecision(features));
 }
 
 TEST_F(TranslateRankerImplTest, ShouldOfferTranslation_AllEnabled) {
@@ -251,16 +262,16 @@ TEST_F(TranslateRankerImplTest, ShouldOfferTranslation_AllEnabled) {
                {});
   metrics::TranslateEventProto tep;
 
-  // With a bias of -0.5 en->fr is not over the threshold.
-  EXPECT_FALSE(GetRankerForTest(-0.5f)->ShouldOfferTranslation(
+  // With a threshold of 0.99, en->fr is not over the threshold.
+  EXPECT_FALSE(GetRankerForTest(0.99f)->ShouldOfferTranslation(
       *translate_prefs_, "en", "fr", &tep));
   EXPECT_NE(0U, tep.ranker_request_timestamp_sec());
   EXPECT_EQ(kModelVersion, tep.ranker_version());
   EXPECT_EQ(metrics::TranslateEventProto::DONT_SHOW, tep.ranker_response());
 
-  // With a bias of 0.25 en-fr is over the threshold.
+  // With a threshold of 0.01, en-fr is over the threshold.
   tep.Clear();
-  EXPECT_TRUE(GetRankerForTest(0.25f)->ShouldOfferTranslation(
+  EXPECT_TRUE(GetRankerForTest(0.01f)->ShouldOfferTranslation(
       *translate_prefs_, "en", "fr", &tep));
   EXPECT_EQ(metrics::TranslateEventProto::SHOW, tep.ranker_response());
 }
@@ -270,8 +281,8 @@ TEST_F(TranslateRankerImplTest, ShouldOfferTranslation_AllDisabled) {
   metrics::TranslateEventProto tep;
   // If query and other flags are turned off, returns true and do not query the
   // ranker.
-  EXPECT_TRUE(GetRankerForTest(-0.5f)->ShouldOfferTranslation(
-      *translate_prefs_, "en", "fr", &tep));
+  EXPECT_TRUE(GetRankerForTest(0.5f)->ShouldOfferTranslation(*translate_prefs_,
+                                                             "en", "fr", &tep));
   EXPECT_NE(0U, tep.ranker_request_timestamp_sec());
   EXPECT_EQ(kModelVersion, tep.ranker_version());
   EXPECT_EQ(metrics::TranslateEventProto::NOT_QUERIED, tep.ranker_response());
@@ -283,7 +294,7 @@ TEST_F(TranslateRankerImplTest, ShouldOfferTranslation_QueryOnly) {
   metrics::TranslateEventProto tep;
   // If enforcement is turned off, returns true even if the decision
   // is not to show.
-  EXPECT_TRUE(GetRankerForTest(-0.5f)->ShouldOfferTranslation(
+  EXPECT_TRUE(GetRankerForTest(0.99f)->ShouldOfferTranslation(
       *translate_prefs_, "en", "fr", &tep));
   EXPECT_NE(0U, tep.ranker_request_timestamp_sec());
   EXPECT_EQ(kModelVersion, tep.ranker_version());
@@ -296,7 +307,7 @@ TEST_F(TranslateRankerImplTest, ShouldOfferTranslation_EnforcementOnly) {
   metrics::TranslateEventProto tep;
   // If either enforcement or decision override are turned on, returns the
   // ranker decision.
-  EXPECT_FALSE(GetRankerForTest(-0.5f)->ShouldOfferTranslation(
+  EXPECT_FALSE(GetRankerForTest(0.99f)->ShouldOfferTranslation(
       *translate_prefs_, "en", "fr", &tep));
   EXPECT_NE(0U, tep.ranker_request_timestamp_sec());
   EXPECT_EQ(kModelVersion, tep.ranker_version());
@@ -309,7 +320,7 @@ TEST_F(TranslateRankerImplTest, ShouldOfferTranslation_OverrideOnly) {
   metrics::TranslateEventProto tep;
   // If either enforcement or decision override are turned on, returns the
   // ranker decision.
-  EXPECT_FALSE(GetRankerForTest(-0.5f)->ShouldOfferTranslation(
+  EXPECT_FALSE(GetRankerForTest(0.99f)->ShouldOfferTranslation(
       *translate_prefs_, "en", "fr", &tep));
   EXPECT_NE(0U, tep.ranker_request_timestamp_sec());
   EXPECT_EQ(kModelVersion, tep.ranker_version());

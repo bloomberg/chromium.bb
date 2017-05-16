@@ -119,8 +119,9 @@ class TranslateRankerImpl : public TranslateRanker {
   void OnModelAvailable(
       std::unique_ptr<chrome_intelligence::RankerModel> model);
 
-  // Calculate the score given to |features| by the |model|.
-  double CalculateScore(const TranslateRankerFeatures& features);
+  // Get the model decision on whether we should show the translate
+  // UI or not given |features|.
+  bool GetModelDecision(const TranslateRankerFeatures& features);
 
   // Check if the ModelLoader has been initialized. Used to test ModelLoader
   // logic.
