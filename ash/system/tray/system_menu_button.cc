@@ -15,7 +15,6 @@
 #include "ui/views/animation/ink_drop_impl.h"
 #include "ui/views/animation/ink_drop_mask.h"
 #include "ui/views/animation/square_ink_drop_ripple.h"
-#include "ui/views/border.h"
 #include "ui/views/painter.h"
 
 namespace ash {
@@ -32,10 +31,7 @@ SystemMenuButton::SystemMenuButton(views::ButtonListener* listener,
   SetImage(views::Button::STATE_NORMAL, &normal_icon);
   SetImage(views::Button::STATE_DISABLED, &disabled_icon);
 
-  const int horizontal_padding = (kMenuButtonSize - normal_icon.width()) / 2;
-  const int vertical_padding = (kMenuButtonSize - normal_icon.height()) / 2;
-  SetBorder(views::CreateEmptyBorder(vertical_padding, horizontal_padding,
-                                     vertical_padding, horizontal_padding));
+  set_preferred_size(gfx::Size(kMenuButtonSize, kMenuButtonSize));
 
   SetTooltipText(l10n_util::GetStringUTF16(accessible_name_id));
 

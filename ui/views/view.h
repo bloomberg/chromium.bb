@@ -273,7 +273,16 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   virtual int GetBaseline() const;
 
   // Get the size the View would like to be, if enough space were available.
+  // First checks |preferred_size_|, then |layout_manager_|, then
+  // CalculatePreferredSize().
+  // TODO(estade): migrate existing GetPreferredSize() overrides to
+  // CalculatePreferredSize() and make this function non-virtual.
   virtual gfx::Size GetPreferredSize() const;
+
+  // Sets the size that this View will request during layout. The actual size
+  // may differ. It should rarely be necessary to set this; usually the right
+  // approach is controlling the parent's layout via a LayoutManager.
+  void set_preferred_size(const gfx::Size& size) { preferred_size_ = size; }
 
   // Convenience method that sizes this view to its preferred size.
   void SizeToPreferredSize();
@@ -1055,6 +1064,10 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
 
   // Size and disposition ------------------------------------------------------
 
+  // Calculates the natural size for the View, to be taken into consideration
+  // when the parent is performing layout.
+  virtual gfx::Size CalculatePreferredSize() const;
+
   // Override to be notified when the bounds of the view have changed.
   virtual void OnBoundsChanged(const gfx::Rect& previous_bounds);
 
@@ -1571,6 +1584,8 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   bool can_process_events_within_subtree_;
 
   // Size and disposition ------------------------------------------------------
+
+  base::Optional<gfx::Size> preferred_size_;
 
   // This View's bounds in the parent coordinate system.
   gfx::Rect bounds_;

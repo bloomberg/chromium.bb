@@ -97,7 +97,7 @@ class PublicAccountUserDetails : public views::View,
   // Calculate a preferred size that ensures the label text and the following
   // link do not wrap over more than three lines in total for aesthetic reasons
   // if possible.
-  void CalculatePreferredSize();
+  void DeterminePreferredSize();
 
   base::string16 text_;
   views::Link* learn_more_;
@@ -136,7 +136,7 @@ PublicAccountUserDetails::PublicAccountUserDetails() : learn_more_(nullptr) {
   learn_more_->set_listener(this);
   AddChildView(learn_more_);
 
-  CalculatePreferredSize();
+  DeterminePreferredSize();
 }
 
 PublicAccountUserDetails::~PublicAccountUserDetails() {}
@@ -231,7 +231,7 @@ void PublicAccountUserDetails::LinkClicked(views::Link* source,
   Shell::Get()->system_tray_controller()->ShowPublicAccountInfo();
 }
 
-void PublicAccountUserDetails::CalculatePreferredSize() {
+void PublicAccountUserDetails::DeterminePreferredSize() {
   const gfx::FontList font_list;
   const gfx::Size link_size = learn_more_->GetPreferredSize();
   const int space_width =
