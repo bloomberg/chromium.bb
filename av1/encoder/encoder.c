@@ -5993,8 +5993,7 @@ int av1_set_internal_size(AV1_COMP *cpi, AOM_SCALING horiz_mode,
   return 0;
 }
 
-int av1_set_size_literal(AV1_COMP *cpi, unsigned int width,
-                         unsigned int height) {
+int av1_set_size_literal(AV1_COMP *cpi, int width, int height) {
   AV1_COMMON *cm = &cpi->common;
 #if CONFIG_HIGHBITDEPTH
   check_initial_width(cpi, cm->use_highbitdepth, 1, 1);
@@ -6002,21 +6001,20 @@ int av1_set_size_literal(AV1_COMP *cpi, unsigned int width,
   check_initial_width(cpi, 1, 1);
 #endif  // CONFIG_HIGHBITDEPTH
 
-  if (width) {
-    cm->width = width;
-    if (cm->width > cpi->initial_width) {
-      cm->width = cpi->initial_width;
-      printf("Warning: Desired width too large, changed to %d\n", cm->width);
-    }
+  if (width <= 0 || height <= 0) return 1;
+
+  cm->width = width;
+  if (cm->width > cpi->initial_width) {
+    cm->width = cpi->initial_width;
+    printf("Warning: Desired width too large, changed to %d\n", cm->width);
   }
 
-  if (height) {
-    cm->height = height;
-    if (cm->height > cpi->initial_height) {
-      cm->height = cpi->initial_height;
-      printf("Warning: Desired height too large, changed to %d\n", cm->height);
-    }
+  cm->height = height;
+  if (cm->height > cpi->initial_height) {
+    cm->height = cpi->initial_height;
+    printf("Warning: Desired height too large, changed to %d\n", cm->height);
   }
+
   assert(cm->width <= cpi->initial_width);
   assert(cm->height <= cpi->initial_height);
 

@@ -714,8 +714,8 @@ int av1_get_active_map(AV1_COMP *cpi, unsigned char *map, int rows, int cols);
 int av1_set_internal_size(AV1_COMP *cpi, AOM_SCALING horiz_mode,
                           AOM_SCALING vert_mode);
 
-int av1_set_size_literal(AV1_COMP *cpi, unsigned int width,
-                         unsigned int height);
+// Returns 1 if the assigned width or height was <= 0.
+int av1_set_size_literal(AV1_COMP *cpi, int width, int height);
 
 int av1_get_quantizer(struct AV1_COMP *cpi);
 
