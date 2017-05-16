@@ -49,19 +49,19 @@ void ChromeBrowserMainExtraPartsAsh::ServiceManagerConnectionStarted(
     aura::WindowTreeClientDelegate* delegate = mus_client;
     aura::PropertyConverter* converter = delegate->GetPropertyConverter();
 
-    converter->RegisterProperty(
+    converter->RegisterPrimitiveProperty(
         ash::kPanelAttachedKey,
         ui::mojom::WindowManager::kPanelAttached_Property,
         aura::PropertyConverter::CreateAcceptAnyValueCallback());
-    converter->RegisterProperty(ash::kShelfIDKey,
-                                ui::mojom::WindowManager::kShelfID_Property);
-    converter->RegisterProperty(
+    converter->RegisterPrimitiveProperty(
         ash::kShelfItemTypeKey,
         ui::mojom::WindowManager::kShelfItemType_Property,
         base::Bind(&ash::IsValidShelfItemType));
-    converter->RegisterProperty(ash::kWindowPinTypeKey,
-                                ash::mojom::kWindowPinType_Property,
-                                base::Bind(&ash::IsValidWindowPinType));
+    converter->RegisterPrimitiveProperty(
+        ash::kWindowPinTypeKey, ash::mojom::kWindowPinType_Property,
+        base::Bind(&ash::IsValidWindowPinType));
+    converter->RegisterStringProperty(
+        ash::kShelfIDKey, ui::mojom::WindowManager::kShelfID_Property);
 
     mus_client->SetMusPropertyMirror(
         base::MakeUnique<ash::MusPropertyMirrorAsh>());
