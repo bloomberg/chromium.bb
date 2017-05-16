@@ -63,7 +63,7 @@ const v8::FunctionCallbackInfo<v8::Value>& info
   V8PrivateProperty::Symbol propertySymbol =
       V8PrivateProperty::GetSymbol(info.GetIsolate(),
           "{{cpp_class}}#{{attribute.name.capitalize()}}");
-  if (!impl->{{attribute.cached_attribute_validation_method}}()) {
+  if (!static_cast<const {{cpp_class}}*>(impl)->{{attribute.cached_attribute_validation_method}}()) {
     v8::Local<v8::Value> v8Value = propertySymbol.GetOrUndefined(holder);
     if (!v8Value->IsUndefined()) {
       V8SetReturnValue(info, v8Value);

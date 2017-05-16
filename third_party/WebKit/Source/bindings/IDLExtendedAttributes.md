@@ -1225,9 +1225,9 @@ These extended attributes are rarely used, generally only in one or two places. 
 
 ### [CachedAttribute] _(a)_
 
-Summary: For performance optimization, `[CachedAttribute]` indicates that a wrapped object should be cached on a DOM object. Rarely used (only by IndexDB).
+Summary: For performance optimization, `[CachedAttribute]` indicates that a wrapped object should be cached on a DOM object. Rarely used.
 
-Usage: `[CachedAttribute]` can be specified on attributes, and takes a required value, generally called is*Dirty (esp. isValueDirty):
+Usage: `[CachedAttribute]` can be specified on attributes, and takes a required value, generally called is*Dirty (e.g. isValueDirty):
 
 ```webidl
 interface HTMLFoo {
@@ -1270,7 +1270,7 @@ In case where `HTMLFoo::serializedValue()`, the deserialization or the operation
 You should cache attributes if and only if it is really important for performance. Not only does caching increase the DOM object size, but also it increases the overhead of "cache-miss"ed getters. In addition, setters always need to invalidate the cache.
 ***
 
-`[CachedAttribute]` takes a required parameter which the name of a method to call on the implementation object. The method should take void and return bool. Before the cached attribute is used, the method will be called. If the method returns true the cached value is not used, which will result in the accessor being called again. This allows the implementation to both gain the performance benefit of caching (when the conversion to a script value can be done lazily) while allowing the value to be updated. The typical use pattern is:
+`[CachedAttribute]` takes a required parameter which the name of a method to call on the implementation object. The method should be const, take void and return bool. Before the cached attribute is used, the method will be called. If the method returns true the cached value is not used, which will result in the accessor being called again. This allows the implementation to both gain the performance benefit of caching (when the conversion to a script value can be done lazily) while allowing the value to be updated. The typical use pattern is:
 
 ```c++
 // Called internally to update value
@@ -1281,7 +1281,7 @@ void Object::setValue(Type data)
 }
 
 // Called by generated binding code
-bool Object::isAttributeDirty()
+bool Object::isAttributeDirty() const
 {
     return m_attributeDirty;
 }

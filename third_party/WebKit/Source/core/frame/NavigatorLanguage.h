@@ -16,11 +16,11 @@ class CORE_EXPORT NavigatorLanguage {
 
   AtomicString language();
   virtual Vector<String> languages() = 0;
-  bool hasLanguagesChanged();
+  bool hasLanguagesChanged() const;
   void SetLanguagesChanged();
 
- private:
-  bool languages_changed_;
+ protected:
+  bool languages_changed_ = true;
 };
 
 }  // namespace blink

@@ -15,7 +15,6 @@
 #include "bindings/core/v8/V8DOMConfiguration.h"
 #include "bindings/core/v8/V8Location.h"
 #include "core/animation/DocumentAnimation.h"
-#include "core/css/DocumentFontFaceSet.h"
 #include "core/dom/DocumentFullscreen.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/svg/SVGDocumentExtensions.h"
