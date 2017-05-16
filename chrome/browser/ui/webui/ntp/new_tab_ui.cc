@@ -13,7 +13,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/webui/metrics_handler.h"
 #include "chrome/browser/ui/webui/ntp/app_launcher_handler.h"
 #include "chrome/browser/ui/webui/ntp/core_app_launcher_handler.h"
 #include "chrome/browser/ui/webui/ntp/ntp_resource_cache.h"
@@ -27,12 +26,8 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
-#include "extensions/browser/extension_system.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
-
-using content::BrowserThread;
-using content::WebUIController;
 
 namespace {
 
@@ -53,32 +48,17 @@ const char* GetHtmlTextDirection(const base::string16& text) {
 ///////////////////////////////////////////////////////////////////////////////
 // NewTabUI
 
-NewTabUI::NewTabUI(content::WebUI* web_ui)
-    : WebUIController(web_ui) {
+NewTabUI::NewTabUI(content::WebUI* web_ui) : content::WebUIController(web_ui) {
   web_ui->OverrideTitle(l10n_util::GetStringUTF16(IDS_NEW_TAB_TITLE));
 
   Profile* profile = GetProfile();
-  if (!profile->IsOffTheRecord()) {
-    web_ui->AddMessageHandler(base::MakeUnique<MetricsHandler>());
-    web_ui->AddMessageHandler(base::MakeUnique<CoreAppLauncherHandler>());
-
-    ExtensionService* service =
-        extensions::ExtensionSystem::Get(profile)->extension_service();
-    // We might not have an ExtensionService (on ChromeOS when not logged in
-    // for example).
-    if (service) {
-      web_ui->AddMessageHandler(base::MakeUnique<AppLauncherHandler>(service));
-    }
-  }
 
   if (!profile->IsGuestSession())
     web_ui->AddMessageHandler(base::MakeUnique<ThemeHandler>());
 
-  std::unique_ptr<NewTabHTMLSource> html_source(
-      new NewTabHTMLSource(profile->GetOriginalProfile()));
-
-  // content::URLDataSource assumes the ownership of the html_source.
-  content::URLDataSource::Add(profile, html_source.release());
+  // content::URLDataSource assumes the ownership of the html source.
+  content::URLDataSource::Add(
+      profile, new NewTabHTMLSource(profile->GetOriginalProfile()));
 
   pref_change_registrar_.Init(profile->GetPrefs());
   pref_change_registrar_.Add(bookmarks::prefs::kShowBookmarkBar,
@@ -179,7 +159,7 @@ void NewTabUI::NewTabHTMLSource::StartDataRequest(
     const std::string& path,
     const content::ResourceRequestInfo::WebContentsGetter& wc_getter,
     const content::URLDataSource::GotDataCallback& callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   if (!path.empty() && path[0] != '#') {
     // A path under new-tab was requested; it's likely a bad relative
