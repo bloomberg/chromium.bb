@@ -24,8 +24,12 @@ class UrlBar : public TexturedElement {
 
   void OnHoverEnter(const gfx::PointF& position) override;
   void OnHoverLeave() override;
-  void OnBeginFrame(const base::TimeTicks& begin_frame_time) override;
+  void OnMove(const gfx::PointF& position) override;
+  void OnButtonDown(const gfx::PointF& position) override;
   void OnButtonUp(const gfx::PointF& position) override;
+  bool HitTest(const gfx::PointF& point) const override;
+
+  void OnBeginFrame(const base::TimeTicks& begin_frame_time) override;
   void SetEnabled(bool enabled) override;
 
   void SetURL(const GURL& gurl);
@@ -35,9 +39,12 @@ class UrlBar : public TexturedElement {
  private:
   void UpdateTexture() override;
   UiTexture* GetTexture() const override;
+  void OnStateUpdated(const gfx::PointF& position);
+
   std::unique_ptr<UrlBarTexture> texture_;
   base::Callback<void()> back_button_callback_;
   bool enabled_ = false;
+  bool down_ = false;
   base::TimeTicks last_begin_frame_time_;
   base::TimeTicks last_update_time_;
 

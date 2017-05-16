@@ -31,12 +31,22 @@ static constexpr float kPermanentWarningWidth = 0.224f;
 static constexpr float kTransientWarningHeight = 0.160;
 static constexpr float kTransientWarningWidth = 0.512;
 
-static constexpr float kContentWidth = 2.4;
-static constexpr float kContentHeight = 1.6;
 static constexpr float kContentDistance = 2.5;
-static constexpr float kContentVerticalOffset = -0.26;
+static constexpr float kContentWidth = 0.96 * kContentDistance;
+static constexpr float kContentHeight = 0.64 * kContentDistance;
+static constexpr float kContentVerticalOffset = -0.1 * kContentDistance;
 static constexpr float kBackplaneSize = 1000.0;
 static constexpr float kBackgroundDistanceMultiplier = 1.414;
+
+static constexpr float kUrlBarDistance = 2.4;
+static constexpr float kUrlBarWidth = 0.672 * kUrlBarDistance;
+static constexpr float kUrlBarHeight = 0.088 * kUrlBarDistance;
+static constexpr float kUrlBarVerticalOffset = -0.516 * kUrlBarDistance;
+
+static constexpr float kLoadingIndicatorWidth = 0.24 * kUrlBarDistance;
+static constexpr float kLoadingIndicatorHeight = 0.008 * kUrlBarDistance;
+static constexpr float kLoadingIndicatorOffset =
+    -0.016 * kUrlBarDistance - kLoadingIndicatorHeight / 2;
 
 static constexpr float kFullscreenWidth = 2.88;
 static constexpr float kFullscreenHeight = 1.62;
@@ -215,8 +225,8 @@ void UiSceneManager::CreateUrlBar() {
   // TODO(cjgrant): Incorporate final size and position.
   auto url_bar = base::MakeUnique<UrlBar>(512);
   url_bar->set_id(AllocateId());
-  url_bar->set_translation({0, -0.9, -1.8});
-  url_bar->set_size({0.9, 0, 1});
+  url_bar->set_translation({0, kUrlBarVerticalOffset, -kUrlBarDistance});
+  url_bar->set_size({kUrlBarWidth, kUrlBarHeight, 1});
   url_bar->SetBackButtonCallback(
       base::Bind(&UiSceneManager::OnBackButtonClicked, base::Unretained(this)));
   url_bar_ = url_bar.get();
@@ -225,8 +235,10 @@ void UiSceneManager::CreateUrlBar() {
 
   auto indicator = base::MakeUnique<LoadingIndicator>(256);
   indicator->set_id(AllocateId());
-  indicator->set_translation({0, -0.8, -1.8});
-  indicator->set_size({0.4, 0, 1});
+  indicator->set_translation({0, 0, kLoadingIndicatorOffset});
+  indicator->set_size({kLoadingIndicatorWidth, kLoadingIndicatorHeight, 1});
+  indicator->set_parent_id(url_bar_->id());
+  indicator->set_y_anchoring(YAnchoring::YTOP);
   loading_indicator_ = indicator.get();
   control_elements_.push_back(indicator.get());
   scene_->AddUiElement(std::move(indicator));
