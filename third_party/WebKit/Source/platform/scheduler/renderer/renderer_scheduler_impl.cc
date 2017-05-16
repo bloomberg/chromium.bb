@@ -8,6 +8,7 @@
 #include "base/debug/stack_trace.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/histogram.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
@@ -52,6 +53,9 @@ constexpr base::TimeDelta kThrottlingDelayAfterAudioIsPlayed =
     base::TimeDelta::FromSeconds(5);
 constexpr base::TimeDelta kQueueingTimeWindowDuration =
     base::TimeDelta::FromSeconds(1);
+// Maximal bound on task duration for reporting.
+constexpr base::TimeDelta kMaxTaskDurationForReporting =
+    base::TimeDelta::FromMinutes(1);
 
 void ReportForegroundRendererTaskLoad(base::TimeTicks time, double load) {
   if (!blink::RuntimeEnabledFeatures::timerThrottlingForBackgroundTabsEnabled())
@@ -214,7 +218,13 @@ RendererSchedulerImpl::MainThreadOnly::MainThreadOnly(
       use_virtual_time(false),
       is_audio_playing(false),
       rail_mode_observer(nullptr),
-      wake_up_budget_pool(nullptr) {
+      wake_up_budget_pool(nullptr),
+      task_duration_per_queue_type_histogram(base::Histogram::FactoryGet(
+          "RendererScheduler.TaskDurationPerQueueType",
+          1,
+          static_cast<int>(TaskQueue::QueueType::COUNT),
+          static_cast<int>(TaskQueue::QueueType::COUNT) + 1,
+          base::HistogramBase::kUmaTargetedHistogramFlag)) {
   foreground_main_thread_load_tracker.Resume(now);
 }
 
@@ -1830,13 +1840,42 @@ void RendererSchedulerImpl::DidProcessTask(TaskQueue* task_queue,
       start_time_ticks, end_time_ticks);
   GetMainThreadOnly().background_main_thread_load_tracker.RecordTaskTime(
       start_time_ticks, end_time_ticks);
+
   // TODO(altimin): Per-page metrics should also be considered.
-  UMA_HISTOGRAM_CUSTOM_COUNTS(
-      "RendererScheduler.TaskTime",
-      (end_time_ticks - start_time_ticks).InMicroseconds(), 1, 1000000, 50);
+  RecordTaskMetrics(task_queue->GetQueueType(),
+                    end_time_ticks - start_time_ticks);
+}
+
+void RendererSchedulerImpl::RecordTaskMetrics(TaskQueue::QueueType queue_type,
+                                              base::TimeDelta duration) {
+  UMA_HISTOGRAM_CUSTOM_COUNTS("RendererScheduler.TaskTime",
+                              duration.InMicroseconds(), 1, 1000 * 1000, 50);
+
+  // TODO(altimin): See whether this metric is still useful after
+  // adding RendererScheduler.TaskDurationPerQueueType.
   UMA_HISTOGRAM_ENUMERATION("RendererScheduler.NumberOfTasksPerQueueType",
-                            static_cast<int>(task_queue->GetQueueType()),
+                            static_cast<int>(queue_type),
                             static_cast<int>(TaskQueue::QueueType::COUNT));
+
+  RecordTaskDurationPerQueueType(queue_type, duration);
+}
+
+void RendererSchedulerImpl::RecordTaskDurationPerQueueType(
+    TaskQueue::QueueType queue_type,
+    base::TimeDelta duration) {
+  duration = std::min(duration, kMaxTaskDurationForReporting);
+
+  // Report only whole milliseconds to avoid overflow.
+  base::TimeDelta& unreported_duration =
+      GetMainThreadOnly()
+          .unreported_task_duration[static_cast<int>(queue_type)];
+  unreported_duration += duration;
+  int64_t milliseconds = unreported_duration.InMilliseconds();
+  if (milliseconds > 0) {
+    unreported_duration -= base::TimeDelta::FromMilliseconds(milliseconds);
+    GetMainThreadOnly().task_duration_per_queue_type_histogram->AddCount(
+        static_cast<int>(queue_type), static_cast<int>(milliseconds));
+  }
 }
 
 void RendererSchedulerImpl::OnBeginNestedRunLoop() {
