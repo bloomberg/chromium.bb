@@ -446,8 +446,8 @@ void InstalledLoader::RecordExtensionsMetrics() {
         // Count extension event pages with no registered events. Either the
         // event page is badly designed, or there may be a bug where the event
         // page failed to start after an update (crbug.com/469361).
-        if (EventRouter::Get(extension_service_->profile())->
-                GetRegisteredEvents(extension->id()).size() == 0) {
+        if (!EventRouter::Get(extension_service_->profile())
+                 ->HasRegisteredEvents(extension->id())) {
           ++eventless_event_pages_count;
           VLOG(1) << "Event page without registered event listeners: "
                   << extension->id() << " " << extension->name();

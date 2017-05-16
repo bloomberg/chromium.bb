@@ -163,12 +163,6 @@ class EventRouter : public KeyedService,
   virtual bool ExtensionHasEventListener(const std::string& extension_id,
                                          const std::string& event_name);
 
-  // Return or set the list of events for which the given extension has
-  // registered.
-  std::set<std::string> GetRegisteredEvents(const std::string& extension_id);
-  void SetRegisteredEvents(const std::string& extension_id,
-                           const std::set<std::string>& events);
-
   // Broadcasts an event to every listener registered for that event.
   virtual void BroadcastEvent(std::unique_ptr<Event> event);
 
@@ -186,6 +180,16 @@ class EventRouter : public KeyedService,
   // Record the Event Ack from the renderer. (One less event in-flight.)
   void OnEventAck(content::BrowserContext* context,
                   const std::string& extension_id);
+
+  // Returns whether or not the given extension has any registered events.
+  bool HasRegisteredEvents(const ExtensionId& extension_id) const {
+    return !GetRegisteredEvents(extension_id).empty();
+  }
+
+  // Clears registered events for testing purposes.
+  void ClearRegisteredEventsForTest(const ExtensionId& extension_id) {
+    SetRegisteredEvents(extension_id, std::set<std::string>());
+  }
 
   // Reports UMA for an event dispatched to |extension| with histogram value
   // |histogram_value|. Must be called on the UI thread.
@@ -215,6 +219,13 @@ class EventRouter : public KeyedService,
       base::ListValue* event_args,
       UserGestureState user_gesture,
       const extensions::EventFilteringInfo& info);
+
+  // Returns or sets the list of events for which the given extension has
+  // registered.
+  std::set<std::string> GetRegisteredEvents(
+      const std::string& extension_id) const;
+  void SetRegisteredEvents(const std::string& extension_id,
+                           const std::set<std::string>& events);
 
   void Observe(int type,
                const content::NotificationSource& source,
