@@ -513,7 +513,7 @@ class PLATFORM_EXPORT RendererSchedulerImpl
     bool begin_main_frame_on_critical_path;
     bool last_gesture_was_compositor_driven;
     bool default_gesture_prevented;
-    bool have_seen_touchstart;
+    bool have_seen_a_potentially_blocking_gesture;
     bool waiting_for_meaningful_paint;
     bool have_seen_input_since_navigation;
   };
