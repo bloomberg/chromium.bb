@@ -954,7 +954,7 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
 
         if (details.modifiers != null) {
             for (PaymentDetailsModifier modifier : details.modifiers) {
-                getOrCreateCurrencyFormatter(modifier.total.amount);
+                if (modifier.total != null) getOrCreateCurrencyFormatter(modifier.total.amount);
                 for (PaymentItem displayItem : modifier.additionalDisplayItems) {
                     getOrCreateCurrencyFormatter(displayItem.amount);
                 }
