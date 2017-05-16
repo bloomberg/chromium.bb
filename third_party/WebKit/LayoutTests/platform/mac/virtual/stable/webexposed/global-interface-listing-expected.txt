@@ -4127,6 +4127,7 @@ interface PromiseRejectionEvent : Event
     getter reason
     method constructor
 interface PushManager
+    static getter supportedContentEncodings
     attribute @@toStringTag
     method constructor
     method getSubscription

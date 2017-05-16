@@ -1,0 +1,26 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Push API: Verifies the supported content encodings in PushManager.</title>
+    <script src="../resources/testharness.js"></script>
+    <script src="../resources/testharnessreport.js"></script>
+    <script src="../serviceworker/resources/test-helpers.js"></script>
+  </head>
+  <body>
+    <script>
+      // Tests that the expected Content-Encoding values are indicated by the
+      // PushManager.supportedContentEncodings property.
+      test(function() {
+        assert_own_property(window, 'PushManager', 'PushManager needs to be exposed as a global.');
+        assert_own_property(PushManager, 'supportedContentEncodings');
+
+        assert_equals(PushManager.supportedContentEncodings, PushManager.supportedContentEncodings);
+        assert_true(Array.isArray(PushManager.supportedContentEncodings));
+
+        // TODO(crbug.com/679789): The `aes128gcm` Content-Encoding must be supported as well.
+        assert_equals(PushManager.supportedContentEncodings.length, 1);
+        assert_equals(PushManager.supportedContentEncodings[0], 'aesgcm');
+      });
+    </script>
+  </body>
+</html>

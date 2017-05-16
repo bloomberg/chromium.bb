@@ -26,6 +26,10 @@ class MODULES_EXPORT PushManager final : public GarbageCollected<PushManager>,
     return new PushManager(registration);
   }
 
+  // Web-exposed property:
+  static Vector<String> supportedContentEncodings();
+
+  // Web-exposed methods:
   ScriptPromise subscribe(ScriptState*,
                           const PushSubscriptionOptionsInit&,
                           ExceptionState&);

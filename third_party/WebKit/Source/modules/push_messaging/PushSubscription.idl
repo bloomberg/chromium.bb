@@ -10,7 +10,7 @@ enum PushEncryptionKeyName {
 };
 
 [
-    Exposed=(Window,ServiceWorker),
+    Exposed=(Window,Worker),
     RuntimeEnabled=PushMessaging,
 ] interface PushSubscription {
     readonly attribute USVString endpoint;

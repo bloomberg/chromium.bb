@@ -5,7 +5,7 @@
 // https://w3c.github.io/push-api/#idl-def-PushSubscriptionOptions
 
 [
-    Exposed=(Window,ServiceWorker),
+    Exposed=(Window,Worker),
     RuntimeEnabled=PushMessaging,
 ] interface PushSubscriptionOptions {
     readonly attribute boolean userVisibleOnly;

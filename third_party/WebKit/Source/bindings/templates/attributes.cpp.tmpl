@@ -20,7 +20,7 @@ const v8::FunctionCallbackInfo<v8::Value>& info
     return; // Return silently because of [LenientThis].
   {% endif %}
 
-  {% if not attribute.is_static %}
+  {% if not attribute.is_static or attribute.is_save_same_object %}
   v8::Local<v8::Object> holder = info.Holder();
   {% endif %}
 

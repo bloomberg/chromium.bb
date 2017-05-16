@@ -42,6 +42,11 @@ PushManager::PushManager(ServiceWorkerRegistration* registration)
   DCHECK(registration);
 }
 
+// static
+Vector<String> PushManager::supportedContentEncodings() {
+  return Vector<String>({"aesgcm"});
+}
+
 ScriptPromise PushManager::subscribe(ScriptState* script_state,
                                      const PushSubscriptionOptionsInit& options,
                                      ExceptionState& exception_state) {

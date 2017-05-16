@@ -61,6 +61,7 @@ class ScriptWrappable;
   X(SameObject, NotificationData)                     \
   X(SameObject, NotificationVibrate)                  \
   X(SameObject, PerformanceLongTaskTimingAttribution) \
+  X(SameObject, PushManagerSupportedContentEncodings) \
   SCRIPT_PROMISE_PROPERTIES(X, Promise)               \
   SCRIPT_PROMISE_PROPERTIES(X, Resolver)
 
