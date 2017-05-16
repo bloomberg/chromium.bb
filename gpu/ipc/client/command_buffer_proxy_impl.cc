@@ -371,6 +371,7 @@ gpu::CommandBuffer::State CommandBufferProxyImpl::WaitForTokenInRange(
 }
 
 gpu::CommandBuffer::State CommandBufferProxyImpl::WaitForGetOffsetInRange(
+    uint32_t set_get_buffer_count,
     int32_t start,
     int32_t end) {
   CheckLock();
@@ -386,14 +387,16 @@ gpu::CommandBuffer::State CommandBufferProxyImpl::WaitForGetOffsetInRange(
     return last_state_;
   }
   TryUpdateState();
-  if (!InRange(start, end, last_state_.get_offset) &&
+  if (((set_get_buffer_count != last_state_.set_get_buffer_count) ||
+       !InRange(start, end, last_state_.get_offset)) &&
       last_state_.error == gpu::error::kNoError) {
     gpu::CommandBuffer::State state;
-    if (Send(new GpuCommandBufferMsg_WaitForGetOffsetInRange(route_id_, start,
-                                                             end, &state)))
+    if (Send(new GpuCommandBufferMsg_WaitForGetOffsetInRange(
+            route_id_, set_get_buffer_count, start, end, &state)))
       SetStateFromSyncReply(state);
   }
-  if (!InRange(start, end, last_state_.get_offset) &&
+  if (((set_get_buffer_count != last_state_.set_get_buffer_count) ||
+       !InRange(start, end, last_state_.get_offset)) &&
       last_state_.error == gpu::error::kNoError) {
     LOG(ERROR) << "GPU state invalid after WaitForGetOffsetInRange.";
     OnGpuSyncReplyError();

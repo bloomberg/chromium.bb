@@ -48,8 +48,10 @@ class PPB_Graphics3D_Impl : public ppapi::PPB_Graphics3D_Shared,
   PP_Bool Flush(int32_t put_offset) override;
   gpu::CommandBuffer::State WaitForTokenInRange(int32_t start,
                                                 int32_t end) override;
-  gpu::CommandBuffer::State WaitForGetOffsetInRange(int32_t start,
-                                                    int32_t end) override;
+  gpu::CommandBuffer::State WaitForGetOffsetInRange(
+      uint32_t set_get_buffer_count,
+      int32_t start,
+      int32_t end) override;
   void EnsureWorkVisible() override;
   void TakeFrontBuffer() override;
   void ReturnFrontBuffer(const gpu::Mailbox& mailbox,

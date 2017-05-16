@@ -301,6 +301,8 @@ class GPU_EXPORT CommandBufferHelper
   int32_t last_put_sent_;
   int32_t cached_last_token_read_;
   int32_t cached_get_offset_;
+  uint32_t set_get_buffer_count_;
+  bool service_on_old_buffer_;
 
 #if defined(CMD_HELPER_PERIODIC_FLUSH_CHECK)
   int commands_issued_;

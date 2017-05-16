@@ -156,14 +156,15 @@ class GPU_EXPORT GpuCommandBufferStub
   bool MakeCurrent();
 
   // Message handlers:
-  void OnSetGetBuffer(int32_t shm_id, IPC::Message* reply_message);
+  void OnSetGetBuffer(int32_t shm_id);
   void OnTakeFrontBuffer(const Mailbox& mailbox);
   void OnReturnFrontBuffer(const Mailbox& mailbox, bool is_lost);
   void OnGetState(IPC::Message* reply_message);
   void OnWaitForTokenInRange(int32_t start,
                              int32_t end,
                              IPC::Message* reply_message);
-  void OnWaitForGetOffsetInRange(int32_t start,
+  void OnWaitForGetOffsetInRange(uint32_t set_get_buffer_count,
+                                 int32_t start,
                                  int32_t end,
                                  IPC::Message* reply_message);
   void OnAsyncFlush(int32_t put_offset,
@@ -254,6 +255,7 @@ class GPU_EXPORT GpuCommandBufferStub
 
   std::unique_ptr<WaitForCommandState> wait_for_token_;
   std::unique_ptr<WaitForCommandState> wait_for_get_offset_;
+  uint32_t wait_set_get_buffer_count_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuCommandBufferStub);
 };

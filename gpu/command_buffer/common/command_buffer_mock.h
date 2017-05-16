@@ -26,7 +26,10 @@ class MockCommandBuffer : public CommandBufferServiceBase {
   MOCK_METHOD1(Flush, void(int32_t put_offset));
   MOCK_METHOD1(OrderingBarrier, void(int32_t put_offset));
   MOCK_METHOD2(WaitForTokenInRange, State(int32_t start, int32_t end));
-  MOCK_METHOD2(WaitForGetOffsetInRange, State(int32_t start, int32_t end));
+  MOCK_METHOD3(WaitForGetOffsetInRange,
+               State(uint32_t set_get_buffer_count,
+                     int32_t start,
+                     int32_t end));
   MOCK_METHOD1(SetGetBuffer, void(int32_t transfer_buffer_id));
   MOCK_METHOD1(SetGetOffset, void(int32_t get_offset));
   MOCK_METHOD1(SetReleaseCount, void(uint64_t release_count));

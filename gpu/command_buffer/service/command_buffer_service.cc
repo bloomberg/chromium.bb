@@ -50,6 +50,7 @@ CommandBufferService::CommandBufferService(
       token_(0),
       release_count_(0),
       generation_(0),
+      set_get_buffer_count_(0),
       error_(error::kNoError),
       context_lost_reason_(error::kUnknown) {}
 
@@ -63,6 +64,7 @@ CommandBufferService::State CommandBufferService::GetLastState() {
   state.error = error_;
   state.context_lost_reason = context_lost_reason_;
   state.generation = ++generation_;
+  state.set_get_buffer_count = set_get_buffer_count_;
 
   return state;
 }
@@ -81,9 +83,12 @@ CommandBuffer::State CommandBufferService::WaitForTokenInRange(int32_t start,
 }
 
 CommandBuffer::State CommandBufferService::WaitForGetOffsetInRange(
+    uint32_t set_get_buffer_count,
     int32_t start,
     int32_t end) {
-  DCHECK(error_ != error::kNoError || InRange(start, end, get_offset_));
+  DCHECK(error_ != error::kNoError ||
+         (InRange(start, end, get_offset_) &&
+          (set_get_buffer_count == set_get_buffer_count_)));
   return GetLastState();
 }
 
@@ -114,6 +119,7 @@ void CommandBufferService::SetGetBuffer(int32_t transfer_buffer_id) {
   num_entries_ = size / sizeof(CommandBufferEntry);
   put_offset_ = 0;
   SetGetOffset(0);
+  ++set_get_buffer_count_;
   if (!get_buffer_change_callback_.is_null()) {
     get_buffer_change_callback_.Run(ring_buffer_id_);
   }

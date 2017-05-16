@@ -254,7 +254,8 @@ GpuCommandBufferStub::GpuCommandBufferStub(
       waiting_for_sync_point_(false),
       previous_processed_num_(0),
       active_url_(init_params.active_url),
-      active_url_hash_(base::Hash(active_url_.possibly_invalid_spec())) {}
+      active_url_hash_(base::Hash(active_url_.possibly_invalid_spec())),
+      wait_set_get_buffer_count_(0) {}
 
 GpuCommandBufferStub::~GpuCommandBufferStub() {
   Destroy();
@@ -292,8 +293,7 @@ bool GpuCommandBufferStub::OnMessageReceived(const IPC::Message& message) {
   // here. This is so the reply can be delayed if the scheduler is unscheduled.
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(GpuCommandBufferStub, message)
-    IPC_MESSAGE_HANDLER_DELAY_REPLY(GpuCommandBufferMsg_SetGetBuffer,
-                                    OnSetGetBuffer);
+    IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_SetGetBuffer, OnSetGetBuffer);
     IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_TakeFrontBuffer, OnTakeFrontBuffer);
     IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_ReturnFrontBuffer,
                         OnReturnFrontBuffer);
@@ -865,12 +865,10 @@ void GpuCommandBufferStub::OnCreateStreamTexture(uint32_t texture_id,
 #endif
 }
 
-void GpuCommandBufferStub::OnSetGetBuffer(int32_t shm_id,
-                                          IPC::Message* reply_message) {
+void GpuCommandBufferStub::OnSetGetBuffer(int32_t shm_id) {
   TRACE_EVENT0("gpu", "GpuCommandBufferStub::OnSetGetBuffer");
   if (command_buffer_)
     command_buffer_->SetGetBuffer(shm_id);
-  Send(reply_message);
 }
 
 void GpuCommandBufferStub::OnTakeFrontBuffer(const Mailbox& mailbox) {
@@ -922,6 +920,7 @@ void GpuCommandBufferStub::OnWaitForTokenInRange(int32_t start,
 }
 
 void GpuCommandBufferStub::OnWaitForGetOffsetInRange(
+    uint32_t set_get_buffer_count,
     int32_t start,
     int32_t end,
     IPC::Message* reply_message) {
@@ -934,6 +933,7 @@ void GpuCommandBufferStub::OnWaitForGetOffsetInRange(
   }
   wait_for_get_offset_ =
       base::MakeUnique<WaitForCommandState>(start, end, reply_message);
+  wait_set_get_buffer_count_ = set_get_buffer_count;
   CheckCompleteWaits();
 }
 
@@ -951,8 +951,10 @@ void GpuCommandBufferStub::CheckCompleteWaits() {
       wait_for_token_.reset();
     }
     if (wait_for_get_offset_ &&
-        (CommandBuffer::InRange(wait_for_get_offset_->start,
-                                wait_for_get_offset_->end, state.get_offset) ||
+        (((wait_set_get_buffer_count_ == state.set_get_buffer_count) &&
+          CommandBuffer::InRange(wait_for_get_offset_->start,
+                                 wait_for_get_offset_->end,
+                                 state.get_offset)) ||
          state.error != error::kNoError)) {
       ReportState();
       GpuCommandBufferMsg_WaitForGetOffsetInRange::WriteReplyParams(

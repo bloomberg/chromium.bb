@@ -5,6 +5,7 @@
 // Multiply-included message file, hence no include guard here.
 
 #include "gpu/command_buffer/common/capabilities.h"
+#include "gpu/command_buffer/common/command_buffer.h"
 #include "gpu/command_buffer/common/constants.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
 #include "gpu/gpu_export.h"
@@ -17,6 +18,8 @@
 #define IPC_MESSAGE_EXPORT GPU_EXPORT
 
 IPC_ENUM_TRAITS_MAX_VALUE(gpu::error::Error, gpu::error::kErrorLast)
+IPC_ENUM_TRAITS_MAX_VALUE(gpu::error::ContextLostReason,
+                          gpu::error::kContextLostReasonLast)
 IPC_ENUM_TRAITS_MIN_MAX_VALUE(
     gpu::CommandBufferNamespace,
     gpu::CommandBufferNamespace::INVALID,
@@ -135,6 +138,16 @@ IPC_STRUCT_TRAITS_BEGIN(gpu::Capabilities)
 
   IPC_STRUCT_TRAITS_MEMBER(major_version)
   IPC_STRUCT_TRAITS_MEMBER(minor_version)
+IPC_STRUCT_TRAITS_END()
+
+IPC_STRUCT_TRAITS_BEGIN(gpu::CommandBuffer::State)
+  IPC_STRUCT_TRAITS_MEMBER(get_offset)
+  IPC_STRUCT_TRAITS_MEMBER(token)
+  IPC_STRUCT_TRAITS_MEMBER(release_count)
+  IPC_STRUCT_TRAITS_MEMBER(error)
+  IPC_STRUCT_TRAITS_MEMBER(context_lost_reason)
+  IPC_STRUCT_TRAITS_MEMBER(generation)
+  IPC_STRUCT_TRAITS_MEMBER(set_get_buffer_count)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(gpu::gles2::ContextCreationAttribHelper)

@@ -35,7 +35,9 @@ class MockCommandBufferBase : public CommandBufferServiceBase {
 
   State GetLastState() override;
   State WaitForTokenInRange(int32_t start, int32_t end) override;
-  State WaitForGetOffsetInRange(int32_t start, int32_t end) override;
+  State WaitForGetOffsetInRange(uint32_t set_get_buffer_count,
+                                int32_t start,
+                                int32_t end) override;
   void SetGetBuffer(int transfer_buffer_id) override;
   void SetGetOffset(int32_t get_offset) override;
   void SetReleaseCount(uint64_t release_count) override;

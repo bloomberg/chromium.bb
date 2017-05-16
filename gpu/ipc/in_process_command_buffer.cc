@@ -643,11 +643,13 @@ CommandBuffer::State InProcessCommandBuffer::WaitForTokenInRange(int32_t start,
 }
 
 CommandBuffer::State InProcessCommandBuffer::WaitForGetOffsetInRange(
+    uint32_t set_get_buffer_count,
     int32_t start,
     int32_t end) {
   CheckSequencedThread();
   State last_state = GetLastState();
-  while (!InRange(start, end, last_state.get_offset) &&
+  while (((set_get_buffer_count != last_state.set_get_buffer_count) ||
+          !InRange(start, end, last_state.get_offset)) &&
          last_state.error == gpu::error::kNoError) {
     flush_event_.Wait();
     last_state = GetLastState();

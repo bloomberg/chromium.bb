@@ -113,9 +113,11 @@ gpu::CommandBuffer::State PPB_Graphics3D_Impl::WaitForTokenInRange(
 }
 
 gpu::CommandBuffer::State PPB_Graphics3D_Impl::WaitForGetOffsetInRange(
+    uint32_t set_get_buffer_count,
     int32_t start,
     int32_t end) {
-  return GetCommandBuffer()->WaitForGetOffsetInRange(start, end);
+  return GetCommandBuffer()->WaitForGetOffsetInRange(set_get_buffer_count,
+                                                     start, end);
 }
 
 void PPB_Graphics3D_Impl::EnsureWorkVisible() {

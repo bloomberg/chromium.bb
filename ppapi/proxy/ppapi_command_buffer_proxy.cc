@@ -87,19 +87,22 @@ gpu::CommandBuffer::State PpapiCommandBufferProxy::WaitForTokenInRange(
 }
 
 gpu::CommandBuffer::State PpapiCommandBufferProxy::WaitForGetOffsetInRange(
+    uint32_t set_get_buffer_count,
     int32_t start,
     int32_t end) {
   TryUpdateState();
-  if (!InRange(start, end, last_state_.get_offset) &&
+  if (((set_get_buffer_count != last_state_.set_get_buffer_count) ||
+       !InRange(start, end, last_state_.get_offset)) &&
       last_state_.error == gpu::error::kNoError) {
     bool success = false;
     gpu::CommandBuffer::State state;
     if (Send(new PpapiHostMsg_PPBGraphics3D_WaitForGetOffsetInRange(
-            ppapi::API_ID_PPB_GRAPHICS_3D, resource_, start, end, &state,
-            &success)))
+            ppapi::API_ID_PPB_GRAPHICS_3D, resource_, set_get_buffer_count,
+            start, end, &state, &success)))
       UpdateState(state, success);
   }
-  DCHECK(InRange(start, end, last_state_.get_offset) ||
+  DCHECK(((set_get_buffer_count == last_state_.set_get_buffer_count) &&
+          InRange(start, end, last_state_.get_offset)) ||
          last_state_.error != gpu::error::kNoError);
   return last_state_;
 }

@@ -38,40 +38,6 @@ namespace IPC {
 
 namespace IPC {
 
-void ParamTraits<gpu::CommandBuffer::State>::GetSize(base::PickleSizer* s,
-                                                     const param_type& p) {
-  GetParamSize(s, p.get_offset);
-  GetParamSize(s, p.token);
-  GetParamSize(s, p.error);
-  GetParamSize(s, p.generation);
-}
-
-void ParamTraits<gpu::CommandBuffer::State>::Write(base::Pickle* m,
-                                                   const param_type& p) {
-  WriteParam(m, p.get_offset);
-  WriteParam(m, p.token);
-  WriteParam(m, p.error);
-  WriteParam(m, p.generation);
-}
-
-bool ParamTraits<gpu::CommandBuffer::State>::Read(const base::Pickle* m,
-                                                  base::PickleIterator* iter,
-                                                  param_type* p) {
-  if (ReadParam(m, iter, &p->get_offset) &&
-      ReadParam(m, iter, &p->token) &&
-      ReadParam(m, iter, &p->error) &&
-      ReadParam(m, iter, &p->generation)) {
-    return true;
-  } else {
-    return false;
-  }
-}
-
-void ParamTraits<gpu::CommandBuffer::State> ::Log(const param_type& p,
-                                                  std::string* l) {
-  l->append("<CommandBuffer::State>");
-}
-
 void ParamTraits<gpu::SyncToken>::GetSize(base::PickleSizer* s,
                                           const param_type& p) {
   DCHECK(!p.HasData() || p.verified_flush());

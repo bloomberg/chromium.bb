@@ -35,6 +35,8 @@ CommandBufferHelper::CommandBufferHelper(CommandBuffer* command_buffer)
       last_put_sent_(0),
       cached_last_token_read_(0),
       cached_get_offset_(0),
+      set_get_buffer_count_(0),
+      service_on_old_buffer_(false),
 #if defined(CMD_HELPER_PERIODIC_FLUSH_CHECK)
       commands_issued_(0),
 #endif
@@ -117,12 +119,15 @@ bool CommandBufferHelper::AllocateRingBuffer() {
   ring_buffer_ = buffer;
   ring_buffer_id_ = id;
   command_buffer_->SetGetBuffer(id);
+  ++set_get_buffer_count_;
   entries_ = static_cast<CommandBufferEntry*>(ring_buffer_->memory());
   total_entry_count_ = ring_buffer_size_ / sizeof(CommandBufferEntry);
   // Call to SetGetBuffer(id) above resets get and put offsets to 0.
   // No need to query it through IPC.
   put_ = 0;
+  last_put_sent_ = 0;
   cached_get_offset_ = 0;
+  service_on_old_buffer_ = true;
   CalcImmediateEntries(0);
   return true;
 }
@@ -153,7 +158,12 @@ CommandBufferHelper::~CommandBufferHelper() {
 }
 
 void CommandBufferHelper::UpdateCachedState(const CommandBuffer::State& state) {
-  cached_get_offset_ = state.get_offset;
+  // If the service hasn't seen the current get buffer yet (i.e. hasn't
+  // processed the latest SetGetBuffer), it's as if it hadn't processed anything
+  // in it, i.e. get == 0.
+  service_on_old_buffer_ =
+      (state.set_get_buffer_count != set_get_buffer_count_);
+  cached_get_offset_ = service_on_old_buffer_ ? 0 : state.get_offset;
   cached_last_token_read_ = state.token;
   context_lost_ = error::IsError(state.error);
 }
@@ -164,8 +174,8 @@ bool CommandBufferHelper::WaitForGetOffsetInRange(int32_t start, int32_t end) {
   if (!usable()) {
     return false;
   }
-  CommandBuffer::State last_state =
-      command_buffer_->WaitForGetOffsetInRange(start, end);
+  CommandBuffer::State last_state = command_buffer_->WaitForGetOffsetInRange(
+      set_get_buffer_count_, start, end);
   UpdateCachedState(last_state);
   return !context_lost_;
 }
@@ -214,12 +224,13 @@ bool CommandBufferHelper::Finish() {
     return false;
   }
   // If there is no work just exit.
-  if (put_ == cached_get_offset_) {
+  if (put_ == cached_get_offset_ && !service_on_old_buffer_) {
     return true;
   }
   DCHECK(HaveRingBuffer() ||
          error::IsError(command_buffer_->GetLastState().error));
-  Flush();
+  if (last_put_sent_ != put_)
+    Flush();
   if (!WaitForGetOffsetInRange(put_, put_))
     return false;
   DCHECK_EQ(cached_get_offset_, put_);
