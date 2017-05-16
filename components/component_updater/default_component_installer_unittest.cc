@@ -10,9 +10,10 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
-#include "base/test/sequenced_worker_pool_owner.h"
+#include "base/task_scheduler/post_task.h"
+#include "base/test/scoped_task_environment.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/version.h"
 #include "components/component_updater/component_updater_service.h"
 #include "components/component_updater/component_updater_service_internal.h"
@@ -136,13 +137,9 @@ class DefaultComponentInstallerTest : public testing::Test {
   void RunThreads();
 
  private:
-  static const int kNumWorkerThreads_ = 2;
-
-  base::MessageLoopForUI message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   base::RunLoop runloop_;
   base::Closure quit_closure_;
-
-  std::unique_ptr<base::SequencedWorkerPoolOwner> worker_pool_;
 
   scoped_refptr<TestConfigurator> config_;
   scoped_refptr<MockUpdateClient> update_client_;
@@ -150,14 +147,13 @@ class DefaultComponentInstallerTest : public testing::Test {
 };
 
 DefaultComponentInstallerTest::DefaultComponentInstallerTest()
-    : worker_pool_(
-          new base::SequencedWorkerPoolOwner(kNumWorkerThreads_, "test")) {
+    : scoped_task_environment_(
+          base::test::ScopedTaskEnvironment::MainThreadType::UI) {
   quit_closure_ = runloop_.QuitClosure();
 
-  auto pool = worker_pool_->pool();
   config_ = new TestConfigurator(
-      pool->GetSequencedTaskRunner(pool->GetSequenceToken()),
-      message_loop_.task_runner());
+      base::CreateSequencedTaskRunnerWithTraits({base::MayBlock()}),
+      base::ThreadTaskRunnerHandle::Get());
 
   update_client_ = new MockUpdateClient();
   EXPECT_CALL(update_client(), AddObserver(_)).Times(1);
