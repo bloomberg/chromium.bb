@@ -11,6 +11,7 @@
 
 #include "base/memory/weak_ptr.h"
 #include "base/win/scoped_comptr.h"
+#include "gpu/config/gpu_driver_bug_workarounds.h"
 #include "gpu/gpu_export.h"
 #include "gpu/ipc/service/child_window_win.h"
 #include "gpu/ipc/service/image_transport_surface_delegate.h"
@@ -74,6 +75,8 @@ class GPU_EXPORT DirectCompositionSurfaceWin : public gl::GLSurfaceEGL {
   base::win::ScopedComPtr<IDXGISwapChain1> GetLayerSwapChainForTesting(
       size_t index) const;
 
+  const GpuDriverBugWorkarounds& workarounds() const { return workarounds_; }
+
  protected:
   ~DirectCompositionSurfaceWin() override;
 
@@ -86,6 +89,8 @@ class GPU_EXPORT DirectCompositionSurfaceWin : public gl::GLSurfaceEGL {
   void ReleaseDrawTexture(bool will_discard);
 
   ChildWindowWin child_window_;
+
+  GpuDriverBugWorkarounds workarounds_;
 
   HWND window_ = nullptr;
   // This is a placeholder surface used when not rendering to the
