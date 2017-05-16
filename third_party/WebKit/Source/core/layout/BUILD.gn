@@ -352,6 +352,8 @@ blink_core_sources("layout") {
     "ng/inline/ng_inline_break_token.h",
     "ng/inline/ng_inline_item.cc",
     "ng/inline/ng_inline_item.h",
+    "ng/inline/ng_inline_item_result.cc",
+    "ng/inline/ng_inline_item_result.h",
     "ng/inline/ng_inline_items_builder.cc",
     "ng/inline/ng_inline_items_builder.h",
     "ng/inline/ng_inline_layout_algorithm.cc",

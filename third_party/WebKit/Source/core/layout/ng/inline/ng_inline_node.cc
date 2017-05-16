@@ -16,6 +16,7 @@
 #include "core/layout/ng/inline/ng_inline_items_builder.h"
 #include "core/layout/ng/inline/ng_inline_layout_algorithm.h"
 #include "core/layout/ng/inline/ng_line_box_fragment.h"
+#include "core/layout/ng/inline/ng_line_breaker.h"
 #include "core/layout/ng/inline/ng_physical_line_box_fragment.h"
 #include "core/layout/ng/inline/ng_physical_text_fragment.h"
 #include "core/layout/ng/inline/ng_text_fragment.h"
@@ -204,22 +205,69 @@ RefPtr<NGLayoutResult> NGInlineNode::Layout(NGConstraintSpace* constraint_space,
   return result;
 }
 
+enum class ContentSizeMode { Max, Sum };
+
+static LayoutUnit ComputeContentSize(NGInlineNode* node,
+                                     ContentSizeMode mode,
+                                     LayoutUnit available_inline_size,
+                                     NGConstraintSpaceBuilder* space_builder,
+                                     NGWritingMode writing_mode) {
+  space_builder->SetAvailableSize({available_inline_size, NGSizeIndefinite});
+  RefPtr<NGConstraintSpace> space =
+      space_builder->ToConstraintSpace(writing_mode);
+  NGLineBreaker line_breaker(node, space.Get());
+  NGInlineLayoutAlgorithm algorithm(node, space.Get());
+  NGInlineItemResults item_results;
+  LayoutUnit result;
+  while (true) {
+    line_breaker.NextLine(&item_results, &algorithm);
+    if (item_results.IsEmpty())
+      break;
+    LayoutUnit inline_size;
+    for (const NGInlineItemResult item_result : item_results)
+      inline_size += item_result.inline_size;
+    if (mode == ContentSizeMode::Max) {
+      result = std::max(inline_size, result);
+    } else {
+      result += inline_size;
+    }
+    item_results.clear();
+  }
+  return result;
+}
+
 MinMaxContentSize NGInlineNode::ComputeMinMaxContentSize() {
   if (!IsPrepareLayoutFinished())
     PrepareLayout();
 
+  // Run line breaking with 0 and indefinite available width.
+
+  // TODO(kojii): There are several ways to make this more efficient and faster
+  // than runnning two line breaking.
+
   // Compute the max of inline sizes of all line boxes with 0 available inline
-  // size. This gives the min-content, the width where lines wrap at every break
-  // opportunity.
-  NGWritingMode writing_mode =
-      FromPlatformWritingMode(Style().GetWritingMode());
-  RefPtr<NGConstraintSpace> constraint_space =
-      NGConstraintSpaceBuilder(writing_mode)
-          .SetTextDirection(Style().Direction())
-          .SetAvailableSize({LayoutUnit(), NGSizeIndefinite})
-          .ToConstraintSpace(writing_mode);
-  NGInlineLayoutAlgorithm algorithm(this, constraint_space.Get());
-  return algorithm.ComputeMinMaxContentSizeByLayout();
+  // size. This gives the min-content, the width where lines wrap at every
+  // break opportunity.
+  const ComputedStyle& style = Style();
+  NGWritingMode writing_mode = FromPlatformWritingMode(style.GetWritingMode());
+  NGConstraintSpaceBuilder space_builder(writing_mode);
+  space_builder.SetTextDirection(style.Direction());
+  space_builder.SetAvailableSize({LayoutUnit(), NGSizeIndefinite});
+  RefPtr<NGConstraintSpace> space =
+      space_builder.ToConstraintSpace(writing_mode);
+  MinMaxContentSize sizes;
+  sizes.min_content = ComputeContentSize(
+      this, ContentSizeMode::Max, LayoutUnit(), &space_builder, writing_mode);
+
+  // Compute the sum of inline sizes of all inline boxes with no line breaks.
+  // TODO(kojii): NGConstraintSpaceBuilder does not allow NGSizeIndefinite
+  // inline available size. We can allow it, or make this more efficient
+  // without using NGLineBreaker.
+  sizes.max_content =
+      ComputeContentSize(this, ContentSizeMode::Sum, LayoutUnit::Max(),
+                         &space_builder, writing_mode);
+
+  return sizes;
 }
 
 NGLayoutInputNode* NGInlineNode::NextSibling() {
