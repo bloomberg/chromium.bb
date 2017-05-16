@@ -15,7 +15,7 @@ namespace {
 
 static constexpr SkColor kBackground = 0xCCAAAAAA;
 static constexpr SkColor kForeground = 0xCC444444;
-static constexpr float kWidth = 0.268;
+static constexpr float kWidth = 0.24;
 static constexpr float kHeight = 0.008;
 
 }  // namespace

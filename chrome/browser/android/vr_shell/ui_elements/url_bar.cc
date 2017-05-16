@@ -35,19 +35,33 @@ UiTexture* UrlBar::GetTexture() const {
 }
 
 void UrlBar::OnHoverEnter(const gfx::PointF& position) {
-  if (!texture_->SetDrawFlags(UrlBarTexture::FLAG_HOVER))
-    return;
-  UpdateTexture();
+  OnStateUpdated(position);
 }
 
 void UrlBar::OnHoverLeave() {
-  if (!texture_->SetDrawFlags(0))
-    return;
-  UpdateTexture();
+  OnStateUpdated(gfx::PointF(std::numeric_limits<float>::max(),
+                             std::numeric_limits<float>::max()));
+}
+
+void UrlBar::OnMove(const gfx::PointF& position) {
+  OnStateUpdated(position);
+}
+
+void UrlBar::OnButtonDown(const gfx::PointF& position) {
+  if (texture_->HitsBackButton(position))
+    down_ = true;
+  OnStateUpdated(position);
 }
 
 void UrlBar::OnButtonUp(const gfx::PointF& position) {
-  back_button_callback_.Run();
+  down_ = false;
+  OnStateUpdated(position);
+  if (texture_->HitsBackButton(position))
+    back_button_callback_.Run();
+}
+
+bool UrlBar::HitTest(const gfx::PointF& position) const {
+  return texture_->HitsUrlBar(position) || texture_->HitsBackButton(position);
 }
 
 void UrlBar::OnBeginFrame(const base::TimeTicks& begin_frame_time) {
@@ -74,6 +88,17 @@ void UrlBar::SetSecurityLevel(int level) {
 
 void UrlBar::SetBackButtonCallback(const base::Callback<void()>& callback) {
   back_button_callback_ = callback;
+}
+
+void UrlBar::OnStateUpdated(const gfx::PointF& position) {
+  bool hitting = texture_->HitsBackButton(position);
+  bool down = hitting ? down_ : false;
+
+  int flags = hitting ? UrlBarTexture::FLAG_BACK_HOVER : 0;
+  flags |= down ? UrlBarTexture::FLAG_BACK_DOWN : 0;
+  if (!texture_->SetDrawFlags(flags))
+    return;
+  UpdateTexture();
 }
 
 }  // namespace vr_shell

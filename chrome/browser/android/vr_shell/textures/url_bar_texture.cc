@@ -10,7 +10,9 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/font_list.h"
+#include "ui/gfx/geometry/point_f.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/render_text.h"
 #include "ui/gfx/vector_icon_types.h"
@@ -20,10 +22,12 @@ namespace vr_shell {
 
 namespace {
 
-static constexpr SkColor kBackground = 0xCCAAAAAA;
-static constexpr SkColor kBackgroundHover = 0xCCDDDDDD;
-static constexpr SkColor kForeground = 0xCC444444;
-static constexpr SkColor kSeparatorColor = 0x51000000;
+// TODO(mthiesse): These values are all wrong. The UX spec is unclear.
+static constexpr SkColor kBackground = 0x66D6D6D6;
+static constexpr SkColor kBackgroundHover = 0x6EF0F0F0;
+static constexpr SkColor kBackgroundDown = 0x76F6F6F6;
+static constexpr SkColor kForeground = 0xFF333333;
+static constexpr SkColor kSeparatorColor = 0x33000000;
 
 static constexpr SkColor kInfoOutlineIconColor = 0xFF5A5A5A;
 static constexpr SkColor kLockIconColor = 0xFF0B8043;
@@ -74,6 +78,10 @@ SkColor getSecurityIconColor(int level) {
   }
 }
 
+gfx::PointF percentToMeters(const gfx::PointF& percent) {
+  return gfx::PointF(percent.x() * kWidth, percent.y() * kHeight);
+}
+
 }  // namespace
 
 UrlBarTexture::UrlBarTexture() : security_level_(SecurityLevel::DANGEROUS) {}
@@ -96,6 +104,30 @@ float UrlBarTexture::ToPixels(float meters) const {
   return meters * size_.width() / kWidth;
 }
 
+bool UrlBarTexture::HitsBackButton(const gfx::PointF& position) const {
+  const gfx::PointF& meters = percentToMeters(position);
+  gfx::RectF rect(gfx::PointF(0, 0), gfx::SizeF(kBackButtonWidth, kHeight));
+  return rect.Contains(meters) && !HitsTransparentRegion(meters, true);
+}
+
+bool UrlBarTexture::HitsUrlBar(const gfx::PointF& position) const {
+  const gfx::PointF& meters = percentToMeters(position);
+  gfx::RectF rect(gfx::PointF(kBackButtonWidth, 0),
+                  gfx::SizeF(kWidth - kBackButtonWidth, kHeight));
+  return rect.Contains(meters) && !HitsTransparentRegion(meters, false);
+}
+
+bool UrlBarTexture::HitsTransparentRegion(const gfx::PointF& meters,
+                                          bool left) const {
+  const float radius = kHeight / 2.0f;
+  gfx::PointF circle_center(left ? radius : kWidth - radius, radius);
+  if (!left && meters.x() < circle_center.x())
+    return false;
+  if (left && meters.x() > circle_center.x())
+    return false;
+  return (meters - circle_center).LengthSquared() > radius * radius;
+}
+
 void UrlBarTexture::Draw(SkCanvas* canvas, const gfx::Size& texture_size) {
   size_.set_height(texture_size.height());
   size_.set_width(texture_size.width());
@@ -112,9 +144,11 @@ void UrlBarTexture::Draw(SkCanvas* canvas, const gfx::Size& texture_size) {
   SkVector rounded_corner = {kHeight / 2, kHeight / 2};
   SkVector left_corners[4] = {rounded_corner, {0, 0}, {0, 0}, rounded_corner};
   round_rect.setRectRadii({0, 0, kHeight, kHeight}, left_corners);
+  SkColor color =
+      (GetDrawFlags() & FLAG_BACK_HOVER) ? kBackgroundHover : kBackground;
+  color = (GetDrawFlags() & FLAG_BACK_DOWN) ? kBackgroundDown : color;
   SkPaint paint;
-  paint.setColor((GetDrawFlags() & FLAG_HOVER) ? kBackgroundHover
-                                               : kBackground);
+  paint.setColor(color);
   canvas->drawRRect(round_rect, paint);
 
   // URL area.

@@ -13,6 +13,7 @@
 #include "url/gurl.h"
 
 namespace gfx {
+class PointF;
 class RenderText;
 }  // namespace gfx
 
@@ -21,7 +22,8 @@ namespace vr_shell {
 class UrlBarTexture : public UiTexture {
  public:
   enum DrawFlags {
-    FLAG_HOVER = 1 << 0,
+    FLAG_BACK_HOVER = 1 << 0,
+    FLAG_BACK_DOWN = 1 << 1,
   };
 
   UrlBarTexture();
@@ -33,9 +35,13 @@ class UrlBarTexture : public UiTexture {
   void SetURL(const GURL& gurl);
   void SetSecurityLevel(int level);
 
+  bool HitsBackButton(const gfx::PointF& position) const;
+  bool HitsUrlBar(const gfx::PointF& position) const;
+
  private:
   void Draw(SkCanvas* canvas, const gfx::Size& texture_size) override;
   float ToPixels(float meters) const;
+  bool HitsTransparentRegion(const gfx::PointF& meters, bool left) const;
 
   gfx::SizeF size_;
   int security_level_;
