@@ -187,8 +187,14 @@ bool ImageDecoder::FrameHasAlphaAtIndex(size_t index) const {
 }
 
 bool ImageDecoder::FrameIsCompleteAtIndex(size_t index) const {
-  return (index < frame_buffer_cache_.size()) &&
-         (frame_buffer_cache_[index].GetStatus() == ImageFrame::kFrameComplete);
+  // Animated images override this method to return the status based on the data
+  // received for the queried frame.
+  return IsAllDataReceived();
+}
+
+bool ImageDecoder::FrameIsDecodedAtIndex(size_t index) const {
+  return index < frame_buffer_cache_.size() &&
+         frame_buffer_cache_[index].GetStatus() == ImageFrame::kFrameComplete;
 }
 
 size_t ImageDecoder::FrameBytesAtIndex(size_t index) const {

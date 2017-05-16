@@ -195,6 +195,9 @@ class PLATFORM_EXPORT ImageDecoder {
   // Whether or not the frame is fully received.
   virtual bool FrameIsCompleteAtIndex(size_t) const;
 
+  // Returns true if a cached complete decode is available.
+  bool FrameIsDecodedAtIndex(size_t) const;
+
   // Duration for displaying a frame in milliseconds. This method is only used
   // by animated images.
   virtual float FrameDurationAtIndex(size_t) const { return 0; }
