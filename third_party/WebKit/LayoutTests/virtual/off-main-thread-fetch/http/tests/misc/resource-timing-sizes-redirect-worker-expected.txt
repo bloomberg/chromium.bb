@@ -1,0 +1,4 @@
+This is a testharness.js-based test.
+FAIL PerformanceResourceTiming sizes Fetch with redirect test assert_equals: seenCount expected 5 but got 0
+Harness: the test ran to completion.
+
