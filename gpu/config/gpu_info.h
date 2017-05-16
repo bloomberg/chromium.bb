@@ -143,6 +143,9 @@ struct GPU_EXPORT GPUInfo {
   // Secondary GPUs, for example, the integrated GPU in a dual GPU machine.
   std::vector<GPUDevice> secondary_gpus;
 
+  // The currently active gpu.
+  const GPUDevice& active_gpu() const;
+
   // The vendor of the graphics driver currently installed.
   std::string driver_vendor;
 

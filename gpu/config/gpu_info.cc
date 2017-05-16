@@ -93,6 +93,17 @@ GPUInfo::GPUInfo(const GPUInfo& other) = default;
 
 GPUInfo::~GPUInfo() { }
 
+const GPUInfo::GPUDevice& GPUInfo::active_gpu() const {
+  if (gpu.active)
+    return gpu;
+  for (const GPUDevice& secondary_gpu : secondary_gpus) {
+    if (secondary_gpu.active)
+      return secondary_gpu;
+  }
+  DLOG(ERROR) << "No active GPU found, returning primary GPU.";
+  return gpu;
+}
+
 void GPUInfo::EnumerateFields(Enumerator* enumerator) const {
   struct GPUInfoKnownFields {
     base::TimeDelta initialization_time;

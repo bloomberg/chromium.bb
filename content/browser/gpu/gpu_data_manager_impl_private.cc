@@ -260,8 +260,8 @@ void DisplayReconfigCallback(CGDirectDisplayID display,
   if (flags & kCGDisplayAddFlag) {
     gpu::GPUInfo gpu_info;
     if (gpu::CollectBasicGraphicsInfo(&gpu_info) == gpu::kCollectInfoSuccess) {
-      gpu_changed = manager->UpdateActiveGpu(gpu_info.gpu.vendor_id,
-                                             gpu_info.gpu.device_id);
+      gpu_changed = manager->UpdateActiveGpu(gpu_info.active_gpu().vendor_id,
+                                             gpu_info.active_gpu().device_id);
     }
   }
 
