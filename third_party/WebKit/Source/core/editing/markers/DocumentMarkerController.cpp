@@ -37,8 +37,9 @@
 #include "core/editing/markers/CompositionMarkerListImpl.h"
 #include "core/editing/markers/DocumentMarkerListEditor.h"
 #include "core/editing/markers/GenericDocumentMarkerListImpl.h"
+#include "core/editing/markers/GrammarMarkerListImpl.h"
 #include "core/editing/markers/RenderedDocumentMarker.h"
-#include "core/editing/markers/SpellCheckMarkerListImpl.h"
+#include "core/editing/markers/SpellingMarkerListImpl.h"
 #include "core/frame/FrameView.h"
 #include "core/layout/LayoutObject.h"
 
@@ -72,10 +73,11 @@ DocumentMarkerList* CreateListForType(DocumentMarker::MarkerType type) {
     case DocumentMarker::kComposition:
       return new CompositionMarkerListImpl();
     case DocumentMarker::kSpelling:
+      return new SpellingMarkerListImpl();
     case DocumentMarker::kGrammar:
-      return new SpellCheckMarkerListImpl();
+      return new GrammarMarkerListImpl();
     default:
-      return new GenericDocumentMarkerListImpl();
+      return new GenericDocumentMarkerListImpl(type);
   }
 }
 

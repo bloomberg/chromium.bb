@@ -6,11 +6,11 @@
 #define DocumentMarkerList_h
 
 #include "core/CoreExport.h"
+#include "core/editing/markers/DocumentMarker.h"
 #include "platform/heap/Handle.h"
 
 namespace blink {
 
-class DocumentMarker;
 class RenderedDocumentMarker;
 
 // This is an interface implemented by classes that DocumentMarkerController
@@ -22,6 +22,9 @@ class CORE_EXPORT DocumentMarkerList
     : public GarbageCollectedFinalized<DocumentMarkerList> {
  public:
   virtual ~DocumentMarkerList();
+
+  // Returns the single marker type supported by the list implementation.
+  virtual DocumentMarker::MarkerType MarkerType() const = 0;
 
   virtual bool IsEmpty() const = 0;
 

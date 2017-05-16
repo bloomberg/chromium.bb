@@ -5,25 +5,36 @@
 #include "core/editing/markers/SpellCheckMarkerListImpl.h"
 
 #include "core/editing/markers/RenderedDocumentMarker.h"
+#include "core/editing/markers/SpellingMarkerListImpl.h"
 #include "platform/heap/Handle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
 
-class SpellCheckMarkerListImplTest : public ::testing::Test {
+// This test class tests functionality implemented by SpellingMarkerListImpl and
+// also functionality implemented by its parent class SpellCheckMarkerListImpl.
+
+class SpellingMarkerListImplTest : public ::testing::Test {
  protected:
-  SpellCheckMarkerListImplTest()
-      : marker_list_(new SpellCheckMarkerListImpl()) {}
+  SpellingMarkerListImplTest() : marker_list_(new SpellingMarkerListImpl()) {}
 
   DocumentMarker* CreateMarker(unsigned start_offset, unsigned end_offset) {
     return new DocumentMarker(DocumentMarker::kSpelling, start_offset,
                               end_offset, g_empty_string);
   }
 
-  Persistent<SpellCheckMarkerListImpl> marker_list_;
+  Persistent<SpellingMarkerListImpl> marker_list_;
 };
 
-TEST_F(SpellCheckMarkerListImplTest, AddSorting) {
+// Test cases for functionality implemented by SpellingMarkerListImpl.
+
+TEST_F(SpellingMarkerListImplTest, MarkerType) {
+  EXPECT_EQ(DocumentMarker::kSpelling, marker_list_->MarkerType());
+}
+
+// Test cases for functionality implemented by SpellCheckMarkerListImpl
+
+TEST_F(SpellingMarkerListImplTest, AddSorting) {
   // Insert some markers in an arbitrary order and verify that the list stays
   // sorted
   marker_list_->Add(CreateMarker(80, 85));
@@ -70,7 +81,7 @@ TEST_F(SpellCheckMarkerListImplTest, AddSorting) {
   EXPECT_EQ(95u, marker_list_->GetMarkers()[9]->EndOffset());
 }
 
-TEST_F(SpellCheckMarkerListImplTest, AddIntoEmptyList) {
+TEST_F(SpellingMarkerListImplTest, AddIntoEmptyList) {
   marker_list_->Add(CreateMarker(5, 10));
 
   EXPECT_EQ(1u, marker_list_->GetMarkers().size());
@@ -79,7 +90,7 @@ TEST_F(SpellCheckMarkerListImplTest, AddIntoEmptyList) {
   EXPECT_EQ(10u, marker_list_->GetMarkers()[0]->EndOffset());
 }
 
-TEST_F(SpellCheckMarkerListImplTest, AddMarkerNonMerging) {
+TEST_F(SpellingMarkerListImplTest, AddMarkerNonMerging) {
   marker_list_->Add(CreateMarker(5, 10));
   marker_list_->Add(CreateMarker(15, 20));
 
@@ -92,7 +103,7 @@ TEST_F(SpellCheckMarkerListImplTest, AddMarkerNonMerging) {
   EXPECT_EQ(20u, marker_list_->GetMarkers()[1]->EndOffset());
 }
 
-TEST_F(SpellCheckMarkerListImplTest, AddMarkerMergingLater) {
+TEST_F(SpellingMarkerListImplTest, AddMarkerMergingLater) {
   marker_list_->Add(CreateMarker(5, 10));
   marker_list_->Add(CreateMarker(0, 5));
 
@@ -102,7 +113,7 @@ TEST_F(SpellCheckMarkerListImplTest, AddMarkerMergingLater) {
   EXPECT_EQ(10u, marker_list_->GetMarkers()[0]->EndOffset());
 }
 
-TEST_F(SpellCheckMarkerListImplTest, AddMarkerMergingEarlier) {
+TEST_F(SpellingMarkerListImplTest, AddMarkerMergingEarlier) {
   marker_list_->Add(CreateMarker(0, 5));
   marker_list_->Add(CreateMarker(5, 10));
 
@@ -112,7 +123,7 @@ TEST_F(SpellCheckMarkerListImplTest, AddMarkerMergingEarlier) {
   EXPECT_EQ(10u, marker_list_->GetMarkers()[0]->EndOffset());
 }
 
-TEST_F(SpellCheckMarkerListImplTest, AddMarkerMergingEarlierAndLater) {
+TEST_F(SpellingMarkerListImplTest, AddMarkerMergingEarlierAndLater) {
   marker_list_->Add(CreateMarker(0, 5));
   marker_list_->Add(CreateMarker(10, 15));
   marker_list_->Add(CreateMarker(5, 10));
@@ -123,7 +134,7 @@ TEST_F(SpellCheckMarkerListImplTest, AddMarkerMergingEarlierAndLater) {
   EXPECT_EQ(15u, marker_list_->GetMarkers()[0]->EndOffset());
 }
 
-TEST_F(SpellCheckMarkerListImplTest, RemoveMarkersUnderWords) {
+TEST_F(SpellingMarkerListImplTest, RemoveMarkersUnderWords) {
   // wor
   marker_list_->Add(CreateMarker(0, 3));
 

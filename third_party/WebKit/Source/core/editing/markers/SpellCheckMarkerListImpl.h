@@ -9,13 +9,13 @@
 
 namespace blink {
 
-// Implementation of DocumentMarkerList for Spelling/Grammar markers.
-// Markers with touching endpoints are merged on insert. Markers are kept sorted
-// by start offset in order to be able to do this efficiently.
+// Nearly-complete implementation of DocumentMarkerList for Spelling or Grammar
+// markers (subclassed by SpellingMarkerListImpl and GrammarMarkerListImpl to
+// implement the MarkerType() method). Markers with touching endpoints are
+// merged on insert. Markers are kept sorted by start offset in order to be able
+// to do this efficiently.
 class CORE_EXPORT SpellCheckMarkerListImpl : public DocumentMarkerList {
  public:
-  SpellCheckMarkerListImpl() = default;
-
   // DocumentMarkerList implementations
   bool IsEmpty() const final;
 
@@ -33,6 +33,9 @@ class CORE_EXPORT SpellCheckMarkerListImpl : public DocumentMarkerList {
                     unsigned new_length) final;
 
   DECLARE_VIRTUAL_TRACE();
+
+ protected:
+  SpellCheckMarkerListImpl() = default;
 
  private:
   HeapVector<Member<RenderedDocumentMarker>> markers_;

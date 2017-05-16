@@ -20,6 +20,8 @@ class CORE_EXPORT CompositionMarkerListImpl final : public DocumentMarkerList {
   CompositionMarkerListImpl() = default;
 
   // DocumentMarkerList implementations
+  DocumentMarker::MarkerType MarkerType() const final;
+
   bool IsEmpty() const final;
 
   void Add(DocumentMarker*) final;
