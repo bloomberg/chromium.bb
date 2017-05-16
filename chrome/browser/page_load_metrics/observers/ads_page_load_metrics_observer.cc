@@ -56,6 +56,11 @@ bool FrameIsAd(content::NavigationHandle* navigation_handle) {
                           base::CompareCase::SENSITIVE);
 }
 
+void RecordParentExistsForSubFrame(bool parent_exists) {
+  UMA_HISTOGRAM_BOOLEAN("PageLoad.Clients.Ads.Google.ParentExistsForSubFrame",
+                        parent_exists);
+}
+
 }  // namespace
 
 AdsPageLoadMetricsObserver::AdFrameData::AdFrameData(
@@ -122,7 +127,15 @@ AdsPageLoadMetricsObserver::OnDidFinishSubFrameNavigation(
   // Determine who the parent frame's ad ancestor is.
   const auto& parent_id_and_data =
       ad_frames_data_.find(parent_frame_host->GetFrameTreeNodeId());
-  DCHECK(parent_id_and_data != ad_frames_data_.end());
+  if (parent_id_and_data == ad_frames_data_.end()) {
+    // We don't know who the parent for this frame is. One possibility is that
+    // it's a frame from a previous navigation.
+    RecordParentExistsForSubFrame(false /* parent_exists */);
+
+    return CONTINUE_OBSERVING;
+  }
+  RecordParentExistsForSubFrame(true /* parent_exists */);
+
   AdFrameData* ad_data = parent_id_and_data->second;
 
   if (!ad_data && FrameIsAd(navigation_handle)) {
@@ -173,20 +186,30 @@ void AdsPageLoadMetricsObserver::ProcessLoadedResource(
   const auto& id_and_data =
       ad_frames_data_.find(extra_request_info.frame_tree_node_id);
   if (id_and_data == ad_frames_data_.end()) {
-    // This resource is for a frame that hasn't ever finished a navigation. We
-    // expect it to be the frame's main resource but don't have enough
-    // confidence in that to dcheck it. For example, there might be races
-    // between doc.written resources and navigation failure.
-    // TODO(jkarlin): Add UMA to measure how often we see multiple resources
-    // for a frame before navigation finishes.
-    ongoing_navigation_resources_.emplace(
-        std::piecewise_construct,
-        std::forward_as_tuple(extra_request_info.frame_tree_node_id),
-        std::forward_as_tuple(
-            extra_request_info.url, extra_request_info.frame_tree_node_id,
-            extra_request_info.was_cached, extra_request_info.raw_body_bytes,
-            extra_request_info.original_network_content_length, nullptr,
-            extra_request_info.resource_type));
+    if (extra_request_info.resource_type == content::RESOURCE_TYPE_MAIN_FRAME ||
+        extra_request_info.resource_type == content::RESOURCE_TYPE_SUB_FRAME) {
+      // This resource request is the primary resource load for a frame that
+      // hasn't yet finished navigating. Hang onto the request info and replay
+      // it once the frame finishes navigating.
+      ongoing_navigation_resources_.emplace(
+          std::piecewise_construct,
+          std::forward_as_tuple(extra_request_info.frame_tree_node_id),
+          std::forward_as_tuple(
+              extra_request_info.url, extra_request_info.frame_tree_node_id,
+              extra_request_info.was_cached, extra_request_info.raw_body_bytes,
+              extra_request_info.original_network_content_length, nullptr,
+              extra_request_info.resource_type));
+    } else {
+      // This is unexpected, it could be:
+      // 1. a resource from a previous navigation that started its resource
+      //    load after this page started navigation.
+      // 2. possibly a resource from a document.written frame whose frame
+      //    failure message has yet to arrive. (uncertain of this)
+    }
+    UMA_HISTOGRAM_ENUMERATION(
+        "PageLoad.Clients.Ads.Google.ResourceTypeWhenNoFrameFound",
+        extra_request_info.resource_type, content::RESOURCE_TYPE_LAST_TYPE);
+
     return;
   }
 

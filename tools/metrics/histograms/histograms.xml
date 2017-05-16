@@ -47671,6 +47671,24 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="PageLoad.Clients.Ads.Google.ParentExistsForSubFrame"
+    enum="ParentFrameKnown">
+  <owner>jkarlin@chromium.org</owner>
+  <summary>
+    Records whether or not a parent frame is found for a subframe that finishes
+    navigating.
+  </summary>
+</histogram>
+
+<histogram name="PageLoad.Clients.Ads.Google.ResourceTypeWhenNoFrameFound"
+    enum="ContentResourceType2">
+  <owner>jkarlin@chromium.org</owner>
+  <summary>
+    Records the content::ResourceType when a resource finishes loading but the
+    ads metrics aren't aware of a committed frame for the resource.
+  </summary>
+</histogram>
+
 <histogram
     name="PageLoad.Clients.DataReductionProxy.Experimental.Bytes.Network.CompressionRatio"
     units="%">

@@ -157,7 +157,7 @@ void PageLoadMetricsObserverTestHarness::SimulateLoadedResource(
     const ExtraRequestCompleteInfo& info) {
   observer_->OnRequestComplete(
       info.url, info.frame_tree_node_id, content::GlobalRequestID(),
-      content::RESOURCE_TYPE_SCRIPT, info.was_cached,
+      info.resource_type, info.was_cached,
       info.data_reduction_proxy_data
           ? info.data_reduction_proxy_data->DeepCopy()
           : nullptr,
