@@ -18,6 +18,7 @@
 #include "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/task_runner_util.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/threading/thread_restrictions.h"
 #include "ios/chrome/browser/experimental_flags.h"
 #import "ios/chrome/browser/snapshots/lru_cache.h"
@@ -574,9 +575,10 @@ void ConvertAndSaveGreyImage(
     }
   }
 
-  web::WebThread::PostBlockingPoolTask(
-      FROM_HERE, base::Bind(&ConvertAndSaveGreyImage, colorImagePath,
-                            greyImagePath, backgroundingColorImage_));
+  base::PostTaskWithTraits(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
+      base::BindOnce(&ConvertAndSaveGreyImage, colorImagePath, greyImagePath,
+                     backgroundingColorImage_));
 }
 
 @end
