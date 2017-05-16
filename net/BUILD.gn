@@ -41,7 +41,7 @@ enable_built_in_dns = !is_ios && !is_proto_quic
 # in addition to use_openssl_certs or use_nss_certs, in that case byte certs
 # are used internally but OpenSSL or NSS are used for certificate verification.
 # TODO(mattm): crbug.com/671420: Implement and enable this for all platforms.
-use_byte_certs = is_mac || is_android || is_nacl
+use_byte_certs = is_mac || is_android || is_nacl || is_ios
 
 buildflag_header("features") {
   header = "net_features.h"
@@ -605,6 +605,8 @@ component("net") {
       "cert/x509_util_android.h",
       "cert/x509_util_ios.cc",
       "cert/x509_util_ios.h",
+      "cert/x509_util_ios_and_mac.cc",
+      "cert/x509_util_ios_and_mac.h",
       "cert/x509_util_mac.cc",
       "cert/x509_util_mac.h",
       "cert/x509_util_nss.cc",
@@ -1893,6 +1895,8 @@ component("net") {
         "base/network_interfaces_mac.h",
         "base/platform_mime_util_mac.mm",
         "cert/test_root_certs_mac.cc",
+        "cert/x509_util_ios_and_mac.cc",
+        "cert/x509_util_ios_and_mac.h",
         "proxy/proxy_resolver_mac.cc",
         "proxy/proxy_resolver_mac.h",
         "proxy/proxy_server_mac.cc",
@@ -4319,6 +4323,7 @@ test("net_unittests") {
     "cert/test_root_certs_unittest.cc",
     "cert/x509_cert_types_unittest.cc",
     "cert/x509_certificate_unittest.cc",
+    "cert/x509_util_ios_and_mac_unittest.cc",
     "cert/x509_util_unittest.cc",
     "cert_net/cert_net_fetcher_impl_unittest.cc",
     "cert_net/nss_ocsp_unittest.cc",
@@ -4905,6 +4910,7 @@ test("net_unittests") {
     "url_request/url_request_unittest.cc",
     "url_request/view_cache_helper_unittest.cc",
   ]
+  net_unfiltered_sources = []
 
   configs += [
     "//build/config:precompiled_headers",
@@ -5206,6 +5212,7 @@ test("net_unittests") {
       "socket/unix_domain_client_socket_posix_unittest.cc",
       "socket/unix_domain_server_socket_posix_unittest.cc",
     ]
+    net_unfiltered_sources += [ "cert/x509_util_ios_and_mac_unittest.cc" ]
 
     bundle_deps = [ ":net_unittests_bundle_data" ]
   }
@@ -5295,6 +5302,11 @@ test("net_unittests") {
   if (host_toolchain == current_toolchain) {
     deps += [ "//net/tools/transport_security_state_generator:transport_security_state_generator_test_sources" ]
   }
+
+  # Add back some sources that were otherwise filtered out.
+  set_sources_assignment_filter([])
+  sources += net_unfiltered_sources
+  set_sources_assignment_filter(sources_assignment_filter)
 }
 
 # !is_android && !is_win && !is_mac

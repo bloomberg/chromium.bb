@@ -12,6 +12,7 @@
 #import "base/mac/scoped_nsobject.h"
 #include "content/public/browser/web_contents.h"
 #include "net/cert/x509_certificate.h"
+#include "net/cert/x509_util_ios_and_mac.h"
 #include "net/cert/x509_util_mac.h"
 
 namespace {

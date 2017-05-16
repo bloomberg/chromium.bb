@@ -12,6 +12,7 @@
 #include "ios/web/public/web_thread.h"
 #import "ios/web/web_state/wk_web_view_security_util.h"
 #include "net/cert/x509_certificate.h"
+#include "net/cert/x509_util_ios_and_mac.h"
 #include "net/test/cert_test_util.h"
 #include "net/test/test_data_directory.h"
 
@@ -36,20 +37,15 @@ class CRWCertVerificationControllerTest : public web::WebTest {
         net::ImportCertFromFile(net::GetTestCertsDirectory(), kCertFileName);
     ASSERT_TRUE(cert_);
 
-    NSArray* chain = GetChain(cert_);
-    valid_trust_ = web::CreateServerTrustFromChain(chain, kHostName);
+    base::ScopedCFTypeRef<CFMutableArrayRef> chain(
+        net::x509_util::CreateSecCertificateArrayForX509Certificate(
+            cert_.get()));
+    ASSERT_TRUE(chain);
+    valid_trust_ = web::CreateServerTrustFromChain(
+        static_cast<NSArray*>(chain.get()), kHostName);
     web::EnsureFutureTrustEvaluationSucceeds(valid_trust_.get());
-    invalid_trust_ = web::CreateServerTrustFromChain(chain, kHostName);
-  }
-
-  // Returns NSArray of SecCertificateRef objects for the given |cert|.
-  NSArray* GetChain(const scoped_refptr<net::X509Certificate>& cert) const {
-    NSMutableArray* result = [NSMutableArray
-        arrayWithObject:static_cast<id>(cert->os_cert_handle())];
-    for (SecCertificateRef intermediate : cert->GetIntermediateCertificates()) {
-      [result addObject:static_cast<id>(intermediate)];
-    }
-    return result;
+    invalid_trust_ = web::CreateServerTrustFromChain(
+        static_cast<NSArray*>(chain.get()), kHostName);
   }
 
   // Synchronously returns result of

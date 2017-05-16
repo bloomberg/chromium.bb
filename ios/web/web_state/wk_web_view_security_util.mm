@@ -7,6 +7,7 @@
 #include "base/mac/scoped_cftyperef.h"
 #include "base/strings/sys_string_conversions.h"
 #include "net/cert/x509_certificate.h"
+#include "net/cert/x509_util_ios.h"
 #include "net/ssl/ssl_info.h"
 
 namespace web {
@@ -47,11 +48,11 @@ namespace web {
 scoped_refptr<net::X509Certificate> CreateCertFromChain(NSArray* certs) {
   if (certs.count == 0)
     return nullptr;
-  net::X509Certificate::OSCertHandles intermediates;
+  std::vector<SecCertificateRef> intermediates;
   for (NSUInteger i = 1; i < certs.count; i++) {
     intermediates.push_back(reinterpret_cast<SecCertificateRef>(certs[i]));
   }
-  return net::X509Certificate::CreateFromHandle(
+  return net::x509_util::CreateX509CertificateFromSecCertificate(
       reinterpret_cast<SecCertificateRef>(certs[0]), intermediates);
 }
 
@@ -65,11 +66,11 @@ scoped_refptr<net::X509Certificate> CreateCertFromTrust(SecTrustRef trust) {
     return nullptr;
   }
 
-  net::X509Certificate::OSCertHandles intermediates;
+  std::vector<SecCertificateRef> intermediates;
   for (CFIndex i = 1; i < cert_count; i++) {
     intermediates.push_back(SecTrustGetCertificateAtIndex(trust, i));
   }
-  return net::X509Certificate::CreateFromHandle(
+  return net::x509_util::CreateX509CertificateFromSecCertificate(
       SecTrustGetCertificateAtIndex(trust, 0), intermediates);
 }
 

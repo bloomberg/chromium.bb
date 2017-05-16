@@ -100,6 +100,7 @@
 #import "ios/web/webui/mojo_facade.h"
 #import "net/base/mac/url_conversions.h"
 #include "net/base/net_errors.h"
+#include "net/cert/x509_util_ios.h"
 #include "net/ssl/ssl_info.h"
 #include "ui/base/page_transition_types.h"
 #include "url/gurl.h"
@@ -3196,9 +3197,9 @@ registerLoadRequestForURL:(const GURL&)requestURL
     // |didFailProvisionalNavigation:| will differ (it is the server-supplied
     // chain), thus if intermediates were considered, the keys would mismatch.
     scoped_refptr<net::X509Certificate> leafCert =
-        net::X509Certificate::CreateFromHandle(
+        net::x509_util::CreateX509CertificateFromSecCertificate(
             SecTrustGetCertificateAtIndex(trust, 0),
-            net::X509Certificate::OSCertHandles());
+            std::vector<SecCertificateRef>());
     if (leafCert) {
       BOOL is_recoverable =
           policy == web::CERT_ACCEPT_POLICY_RECOVERABLE_ERROR_UNDECIDED_BY_USER;

@@ -13,6 +13,7 @@
 #include "ios/web/public/ssl_status.h"
 #include "ios/web/public/test/web_test.h"
 #import "ios/web/web_state/wk_web_view_security_util.h"
+#include "net/cert/x509_util_ios_and_mac.h"
 #include "net/test/cert_test_util.h"
 #include "net/test/test_data_directory.h"
 #include "third_party/ocmock/OCMock/OCMock.h"
@@ -92,8 +93,12 @@ class CRWSSLStatusUpdaterTest : public web::WebTest {
     scoped_refptr<net::X509Certificate> cert =
         net::ImportCertFromFile(net::GetTestCertsDirectory(), kCertFileName);
     ASSERT_TRUE(cert);
-    NSArray* chain = @[ static_cast<id>(cert->os_cert_handle()) ];
-    trust_ = CreateServerTrustFromChain(chain, kHostName);
+    base::ScopedCFTypeRef<CFMutableArrayRef> chain(
+        net::x509_util::CreateSecCertificateArrayForX509Certificate(
+            cert.get()));
+    ASSERT_TRUE(chain);
+    trust_ = CreateServerTrustFromChain(static_cast<NSArray*>(chain.get()),
+                                        kHostName);
   }
 
   void TearDown() override {
