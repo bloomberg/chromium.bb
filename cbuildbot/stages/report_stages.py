@@ -37,6 +37,7 @@ from chromite.lib import results_lib
 from chromite.lib import retry_stats
 from chromite.lib import toolchain
 from chromite.lib import triage_lib
+from chromite.scripts import upload_goma_info
 
 
 site_config = config_lib.GetConfig()
@@ -994,6 +995,13 @@ class ReportStage(generic_stages.BuilderStage,
     results_lib.Results.Report(
         sys.stdout, current_version=(self._run.attrs.release_tag or ''))
 
+    # Upload goma log if used. Currently BuildPackage uses this.
+    # TODO(hidehiko): Report another log set, when SimpleChrome starts to use
+    # goma on bots, too.
+    goma_tmp_dir = self._run.attrs.metadata.GetValueWithDefault('goma_tmp_dir')
+    if goma_tmp_dir:
+      upload_goma_info.GomaLogUploader(
+          goma_log_dir=os.path.join(goma_tmp_dir, 'log_dir')).Upload()
 
     if db:
       status_for_db = final_status

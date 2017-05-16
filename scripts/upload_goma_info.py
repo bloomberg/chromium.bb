@@ -89,9 +89,9 @@ class GomaLogUploader(object):
   # for details.
   _LATEST = object()
 
-  def __init__(self, dry_run=False):
+  def __init__(self, goma_log_dir=None, dry_run=False):
     self._gs_context = gs.GSContext(dry_run=dry_run)
-    self._goma_log_dir = _GetGomaLogDirectory()
+    self._goma_log_dir = goma_log_dir or _GetGomaLogDirectory()
     logging.info('Goma log directory is: %s', self._goma_log_dir)
 
   def _GetGlogInfoFileList(self, pattern, start_timestamp):

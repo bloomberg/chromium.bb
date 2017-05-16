@@ -8,6 +8,7 @@ from __future__ import print_function
 
 import glob
 import os
+import tempfile
 
 from chromite.cbuildbot import cbuildbot_run
 from chromite.cbuildbot import chroot_lib
@@ -462,13 +463,26 @@ class BuildPackagesStage(generic_stages.BoardSpecificBuilderStage,
       self._portage_extra_env['GOMA_SERVICE_ACCOUNT_JSON_FILE'] = (
           '/creds/service_accounts/service-account-goma-client.json')
 
-    # Propagate buildbot related names to chroot, which will be used
-    # to annotate goma logs on uploading.
-    for name in ('BUILDERNAME', 'MASTERNAME', 'SLAVENAME', 'CLOBBER'):
-      key = 'BUILDBOT_' + name
-      value = os.environ.get(key)
-      if value is not None:
-        self._portage_extra_env[key] = value
+    # Create GOMA_TMP_DIR (goma compiler_proxy's working directory), and its
+    # log directory. In report phase, logs will be uploaded to Cloud Storage,
+    # so pass the path via metadata.
+    chroot_tmp = path_util.FromChrootPath('/tmp')
+
+    # Create unique directory by mkdtemp. Expect this directory is removed
+    # in next run's clean up phase.
+    goma_tmp_dir = tempfile.mkdtemp(prefix='goma_tmp_dir.', dir=chroot_tmp)
+    self._run.attrs.metadata.UpdateWithDict({'goma_tmp_dir': goma_tmp_dir})
+
+    # Pass the path via GOMA_TMP_DIR env var so that compiler_proxy started
+    # in chroot uses it as working directory.
+    self._portage_extra_env['GOMA_TMP_DIR'] = path_util.ToChrootPath(
+        goma_tmp_dir)
+
+    # Set GLOG_log_dir, which goma programs use as their log directory.
+    goma_log_dir = os.path.join(goma_tmp_dir, 'log_dir')
+    os.mkdir(goma_log_dir)
+    self._portage_extra_env['GLOG_log_dir'] = path_util.ToChrootPath(
+        goma_log_dir)
 
     return chroot_args
 
