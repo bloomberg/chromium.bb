@@ -1016,22 +1016,6 @@ def GeneralTemplates(site_config, ge_build_config):
   )
 
   site_config.AddTemplate(
-      'pfq',
-      build_type=constants.PFQ_TYPE,
-      build_timeout=20 * 60,
-      important=True,
-      uprev=True,
-      overlays=constants.PUBLIC_OVERLAYS,
-      manifest_version=True,
-      trybot_list=True,
-      doc='http://www.chromium.org/chromium-os/build/builder-overview#'
-          'TOC-Chrome-PFQ',
-      vm_tests=[config_lib.VMTestConfig(constants.SMOKE_SUITE_TEST_TYPE),
-                config_lib.VMTestConfig(constants.SIMPLE_AU_TEST_TYPE)],
-      vm_tests_override=TRADITIONAL_VM_TESTS_SUPPORTED,
-  )
-
-  site_config.AddTemplate(
       'paladin',
       hw_tests_override=hw_test_list.DefaultListNonCanary(
           num=constants.HWTEST_TRYBOT_NUM, pool=constants.HWTEST_TRYBOT_POOL,
@@ -1322,19 +1306,27 @@ def GeneralTemplates(site_config, ge_build_config):
       useflags=append_useflags(['-cros-debug']),
   )
 
-  # Because branch directories may be shared amongst builders on multiple
-  # branches, they must delete the chroot every time they run.
-  # They also potentially need to build [new] Chrome.
   site_config.AddTemplate(
       'pre_flight_branch',
       site_config.templates.internal,
       site_config.templates.official_chrome,
-      site_config.templates.pfq,
+      build_type=constants.PFQ_TYPE,
+      build_timeout=20 * 60,
+      important=True,
+      manifest_version=True,
+      branch=True,
+      master=True,
+      slave_configs=[],
+      vm_tests=[],
+      vm_tests_override=TRADITIONAL_VM_TESTS_SUPPORTED,
+      hw_tests=[],
+      hw_tests_override=[],
+      uprev=True,
       overlays=constants.BOTH_OVERLAYS,
       prebuilts=constants.PRIVATE,
-      branch=True,
       trybot_list=False,
-      sync_chrome=True,
+      doc='http://www.chromium.org/chromium-os/build/builder-overview#'
+          'TOC-Chrome-PFQ',
       active_waterfall=constants.WATERFALL_RELEASE)
 
   site_config.AddTemplate(
@@ -3571,22 +3563,35 @@ def SpecialtyBuilders(site_config, boards_dict, ge_build_config):
       description='Create images used to power access points in WiFi lab.',
   )
 
+  # *-pre-flight-branch builders are in chromeos_release waterfall.
   site_config.Add(
-      'samus-pre-flight-branch',
+      'samus-chrome-pre-flight-branch',
       site_config.templates.pre_flight_branch,
-      master=True,
-      slave_configs=[],
-      push_overlays=constants.BOTH_OVERLAYS,
       boards=['samus'],
+      afdo_generate=True,
+      afdo_update_ebuild=True,
+      sync_chrome=True,
+      chrome_rev=constants.CHROME_REV_STICKY,
+      hw_tests=[hw_test_list.AFDORecordTest()],
+      useflags=append_useflags(['-transparent_hugepage', '-debug_fission']),
+  )
+
+  site_config.Add(
+      'cyan-android-mnc-pre-flight-branch',
+      site_config.templates.pre_flight_branch,
+      boards=['cyan'],
       android_rev=constants.ANDROID_REV_LATEST,
       android_package='android-container',
       android_import_branch='git_mnc-dr-arc-dev',
-      afdo_generate=True,
-      afdo_update_ebuild=True,
-      chrome_rev=constants.CHROME_REV_STICKY,
-      vm_tests=[],
-      hw_tests=[hw_test_list.AFDORecordTest()],
-      useflags=append_useflags(['-transparent_hugepage', '-debug_fission']),
+  )
+
+  site_config.Add(
+      'reef-android-nyc-pre-flight-branch',
+      site_config.templates.pre_flight_branch,
+      boards=['reef'],
+      android_rev=constants.ANDROID_REV_LATEST,
+      android_package='android-container-nyc',
+      android_import_branch='git_nyc-mr1-arc',
   )
 
   # This is an example factory branch configuration.

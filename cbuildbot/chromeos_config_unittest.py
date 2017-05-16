@@ -522,7 +522,7 @@ class CBuildBotTest(ChromeosConfigTestBase):
                         (config.name, config.build_type))
         # We have multiple masters for Android PFQ.
         self.assertTrue(config.build_type not in found_types or
-                        config.build_type == 'android',
+                        config.build_type in ('pfq', 'android'),
                         'Duplicate master configs of build type %s' %
                         config.build_type)
         found_types.add(config.build_type)

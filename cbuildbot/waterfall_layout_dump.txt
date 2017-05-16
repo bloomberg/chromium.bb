@@ -227,7 +227,9 @@ zako-release (gce_beefy)
 config-updater (gce_wimpy)
 
 == chromeos_release ==
-samus-pre-flight-branch (gce_beefy)
+cyan-android-mnc-pre-flight-branch (gce_beefy)
+reef-android-nyc-pre-flight-branch (gce_beefy)
+samus-chrome-pre-flight-branch (gce_beefy)
 
 == chromiumos ==
 amd64-generic-asan (baremetal)
