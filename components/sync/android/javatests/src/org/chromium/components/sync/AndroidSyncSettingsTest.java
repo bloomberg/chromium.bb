@@ -16,6 +16,7 @@ import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.components.signin.AccountManagerHelper;
+import org.chromium.components.signin.ChromeSigninController;
 import org.chromium.components.signin.test.util.AccountHolder;
 import org.chromium.components.signin.test.util.FakeAccountManagerDelegate;
 import org.chromium.components.sync.AndroidSyncSettings.AndroidSyncSettingsObserver;
@@ -101,13 +102,14 @@ public class AndroidSyncSettingsTest extends InstrumentationTestCase {
 
     @Override
     protected void setUp() throws Exception {
-        mSyncContentResolverDelegate = new CountingMockSyncContentResolverDelegate();
         mContext = getInstrumentation().getTargetContext();
         setupTestAccounts(mContext);
 
+        mSyncContentResolverDelegate = new CountingMockSyncContentResolverDelegate();
         AndroidSyncSettings.overrideForTests(mContext, mSyncContentResolverDelegate);
         mAuthority = AndroidSyncSettings.getContractAuthority(mContext);
         final CallbackHelper callbackHelper = new CallbackHelper();
+        assertFalse(ChromeSigninController.get().isSignedIn());
         AndroidSyncSettings.updateAccount(mContext, mAccount, new Callback<Boolean>() {
             @Override
             public void onResult(Boolean result) {
