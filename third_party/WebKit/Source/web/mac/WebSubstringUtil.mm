@@ -44,6 +44,7 @@
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/VisualViewport.h"
+#include "core/frame/WebFrameWidgetBase.h"
 #include "core/html/HTMLElement.h"
 #include "core/layout/HitTestResult.h"
 #include "core/layout/LayoutObject.h"
@@ -56,7 +57,6 @@
 #include "public/web/WebHitTestResult.h"
 #include "public/web/WebLocalFrame.h"
 #include "public/web/WebRange.h"
-#include "web/WebFrameWidgetBase.h"
 #include "web/WebLocalFrameImpl.h"
 
 using namespace blink;

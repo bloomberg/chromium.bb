@@ -6,6 +6,7 @@
 #define WebLocalFrameBase_h
 
 #include "core/CoreExport.h"
+#include "core/frame/WebFrameWidgetBase.h"
 #include "public/web/WebLocalFrame.h"
 
 namespace blink {
@@ -48,6 +49,7 @@ class WebLocalFrameBase : public GarbageCollectedFinalized<WebLocalFrameBase>,
                                    FrameOwner*,
                                    const AtomicString& name) = 0;
   virtual TextFinder& EnsureTextFinder() = 0;
+  virtual WebFrameWidgetBase* FrameWidget() const = 0;
   virtual void SetFrameWidget(WebFrameWidgetBase*) = 0;
   virtual WebDevToolsAgentImpl* DevToolsAgentImpl() const = 0;
 

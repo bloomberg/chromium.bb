@@ -34,6 +34,7 @@
 #include "core/editing/VisiblePosition.h"
 #include "core/frame/ContentSettingsClient.h"
 #include "core/frame/LocalFrame.h"
+#include "core/frame/WebFrameWidgetBase.h"
 #include "core/frame/WebLocalFrameBase.h"
 #include "platform/geometry/FloatRect.h"
 #include "platform/heap/SelfKeepAlive.h"
@@ -44,7 +45,6 @@
 #include "web/LocalFrameClientImpl.h"
 #include "web/UserMediaClientImpl.h"
 #include "web/WebExport.h"
-#include "web/WebFrameWidgetBase.h"
 #include "web/WebInputMethodControllerImpl.h"
 
 #include <memory>
