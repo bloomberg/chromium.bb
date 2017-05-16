@@ -70,6 +70,11 @@ const base::Feature kPasswordFieldOnFocusPinging{
 const base::Feature kProtectedPasswordEntryPinging{
     "ProtectedPasswordEntryPinging", base::FEATURE_DISABLED_BY_DEFAULT};
 
+const char kPasswordOnFocusRequestOutcomeHistogramName[] =
+    "PasswordProtection.RequestOutcome.PasswordFieldOnFocus";
+const char kPasswordEntryRequestOutcomeHistogramName[] =
+    "PasswordProtection.RequestOutcome.ProtectedPasswordEntry";
+
 PasswordProtectionService::PasswordProtectionService(
     const scoped_refptr<SafeBrowsingDatabaseManager>& database_manager,
     scoped_refptr<net::URLRequestContextGetter> request_context_getter,
@@ -272,13 +277,16 @@ void PasswordProtectionService::StartRequest(
   requests_.insert(std::move(request));
 }
 
-void PasswordProtectionService::MaybeStartLowReputationRequest(
+void PasswordProtectionService::MaybeStartPasswordFieldOnFocusRequest(
     const GURL& main_frame_url,
     const GURL& password_form_action,
     const GURL& password_form_frame_url) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (!IsPingingEnabled(kPasswordFieldOnFocusPinging))
+  RequestOutcome request_outcome;
+  if (!IsPingingEnabled(kPasswordFieldOnFocusPinging, &request_outcome)) {
+    RecordPingingDisabledReason(kPasswordFieldOnFocusPinging, request_outcome);
     return;
+  }
 
   // Skip URLs that we can't get a reliable reputation for.
   if (!main_frame_url.is_valid() || !main_frame_url.SchemeIsHTTPOrHTTPS()) {
@@ -538,6 +546,24 @@ PasswordProtectionService::CreateDictionaryFromVerdict(
   DCHECK_EQ(base::Value::Type::BINARY, binary_value->type());
   result->Set(kVerdictProto, std::move(binary_value));
   return result;
+}
+
+void PasswordProtectionService::RecordPingingDisabledReason(
+    const base::Feature& feature,
+    RequestOutcome reason) {
+  DCHECK(feature.name == kProtectedPasswordEntryPinging.name ||
+         feature.name == kPasswordFieldOnFocusPinging.name);
+
+  bool is_password_entry_ping =
+      feature.name == kProtectedPasswordEntryPinging.name;
+
+  if (is_password_entry_ping) {
+    UMA_HISTOGRAM_ENUMERATION(kPasswordEntryRequestOutcomeHistogramName, reason,
+                              MAX_OUTCOME);
+  } else {
+    UMA_HISTOGRAM_ENUMERATION(kPasswordOnFocusRequestOutcomeHistogramName,
+                              reason, MAX_OUTCOME);
+  }
 }
 
 }  // namespace safe_browsing

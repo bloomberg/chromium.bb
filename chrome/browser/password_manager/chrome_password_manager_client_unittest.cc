@@ -83,9 +83,9 @@ class MockPasswordProtectionService
                     safe_browsing::LoginReputationClientRequest::Frame*));
   MOCK_METHOD0(IsExtendedReporting, bool());
   MOCK_METHOD0(IsIncognito, bool());
-  MOCK_METHOD1(IsPingingEnabled, bool(const base::Feature&));
+  MOCK_METHOD2(IsPingingEnabled, bool(const base::Feature&, RequestOutcome*));
   MOCK_METHOD0(IsHistorySyncEnabled, bool());
-  MOCK_METHOD3(MaybeStartLowReputationRequest,
+  MOCK_METHOD3(MaybeStartPasswordFieldOnFocusRequest,
                void(const GURL&, const GURL&, const GURL&));
 
  private:
@@ -610,14 +610,14 @@ TEST_F(ChromePasswordManagerClientTest, CanShowBubbleOnURL) {
 
 #if defined(SAFE_BROWSING_DB_LOCAL)
 TEST_F(ChromePasswordManagerClientTest,
-       VerifyMaybeStartLowReputationRequestCalled) {
+       VerifyMaybeStartPasswordFieldOnFocusRequestCalled) {
   std::unique_ptr<WebContents> test_web_contents(
       content::WebContentsTester::CreateTestWebContents(
           web_contents()->GetBrowserContext(), nullptr));
   std::unique_ptr<MockChromePasswordManagerClient> client(
       new MockChromePasswordManagerClient(test_web_contents.get()));
   EXPECT_CALL(*client->password_protection_service(),
-              MaybeStartLowReputationRequest(_, _, _))
+              MaybeStartPasswordFieldOnFocusRequest(_, _, _))
       .Times(1);
   client->CheckSafeBrowsingReputation(GURL("http://foo.com/submit"),
                                       GURL("http://foo.com/iframe.html"));

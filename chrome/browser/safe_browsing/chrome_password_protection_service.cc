@@ -23,9 +23,11 @@ using content::BrowserThread;
 namespace safe_browsing {
 
 namespace {
+
 // The number of user gestures we trace back for login event attribution.
 const int kPasswordEventAttributionUserGestureLimit = 2;
-}
+
+}  // namespace
 
 ChromePasswordProtectionService::ChromePasswordProtectionService(
     SafeBrowsingService* sb_service,
@@ -78,15 +80,21 @@ bool ChromePasswordProtectionService::IsIncognito() {
 }
 
 bool ChromePasswordProtectionService::IsPingingEnabled(
-    const base::Feature& feature) {
+    const base::Feature& feature,
+    RequestOutcome* reason) {
+  DCHECK(feature.name == kProtectedPasswordEntryPinging.name ||
+         feature.name == kPasswordFieldOnFocusPinging.name);
   if (!base::FeatureList::IsEnabled(feature)) {
+    *reason = DISABLED_DUE_TO_FEATURE_DISABLED;
     return false;
   }
 
   bool allowed_incognito =
       base::GetFieldTrialParamByFeatureAsBool(feature, "incognito", false);
-  if (IsIncognito() && !allowed_incognito)
+  if (IsIncognito() && !allowed_incognito) {
+    *reason = DISABLED_DUE_TO_INCOGNITO;
     return false;
+  }
 
   bool allowed_all_population =
       base::GetFieldTrialParamByFeatureAsBool(feature, "all_population", false);
@@ -101,6 +109,8 @@ bool ChromePasswordProtectionService::IsPingingEnabled(
         base::GetFieldTrialParamByFeatureAsBool(feature, "history_sync", false);
     if (IsHistorySyncEnabled() && allowed_history_sync)
       return true;
+
+    *reason = DISABLED_DUE_TO_USER_POPULATION;
   }
 
   return allowed_all_population;

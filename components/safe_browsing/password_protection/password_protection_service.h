@@ -35,6 +35,8 @@ class PasswordProtectionRequest;
 
 extern const base::Feature kPasswordFieldOnFocusPinging;
 extern const base::Feature kProtectedPasswordEntryPinging;
+extern const char kPasswordOnFocusRequestOutcomeHistogramName[];
+extern const char kPasswordEntryRequestOutcomeHistogramName[];
 
 // Manage password protection pings and verdicts. There is one instance of this
 // class per profile. Therefore, every PasswordProtectionService instance is
@@ -42,6 +44,25 @@ extern const base::Feature kProtectedPasswordEntryPinging;
 // HostContentSettingsMap instance.
 class PasswordProtectionService : public history::HistoryServiceObserver {
  public:
+  // The outcome of the request. These values are used for UMA.
+  // DO NOT CHANGE THE ORDERING OF THESE VALUES.
+  enum RequestOutcome {
+    UNKNOWN = 0,
+    SUCCEEDED = 1,
+    CANCELED = 2,
+    TIMEDOUT = 3,
+    MATCHED_WHITELIST = 4,
+    RESPONSE_ALREADY_CACHED = 5,
+    DEPRECATED_NO_EXTENDED_REPORTING = 6,
+    DISABLED_DUE_TO_INCOGNITO = 7,
+    REQUEST_MALFORMED = 8,
+    FETCH_FAILED = 9,
+    RESPONSE_MALFORMED = 10,
+    SERVICE_DESTROYED = 11,
+    DISABLED_DUE_TO_FEATURE_DISABLED = 12,
+    DISABLED_DUE_TO_USER_POPULATION = 13,
+    MAX_OUTCOME
+  };
   PasswordProtectionService(
       const scoped_refptr<SafeBrowsingDatabaseManager>& database_manager,
       scoped_refptr<net::URLRequestContextGetter> request_context_getter,
@@ -82,7 +103,7 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
                     const GURL& password_form_frame_url,
                     LoginReputationClientRequest::TriggerType type);
 
-  virtual void MaybeStartLowReputationRequest(
+  virtual void MaybeStartPasswordFieldOnFocusRequest(
       const GURL& main_frame_url,
       const GURL& password_form_action,
       const GURL& password_form_frame_url);
@@ -131,7 +152,8 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
 
   virtual bool IsIncognito() = 0;
 
-  virtual bool IsPingingEnabled(const base::Feature& feature) = 0;
+  virtual bool IsPingingEnabled(const base::Feature& feature,
+                                RequestOutcome* reason) = 0;
 
   virtual bool IsHistorySyncEnabled() = 0;
 
@@ -192,6 +214,8 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
       const LoginReputationClientResponse* verdict,
       const base::Time& receive_time);
 
+  static void RecordPingingDisabledReason(const base::Feature& feature,
+                                          RequestOutcome reason);
   // Number of verdict stored for this profile.
   int stored_verdict_count_;
 

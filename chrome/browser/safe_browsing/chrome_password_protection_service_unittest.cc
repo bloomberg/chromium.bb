@@ -74,8 +74,12 @@ class ChromePasswordProtectionServiceTest : public testing::Test {
 TEST_F(ChromePasswordProtectionServiceTest,
        VerifyFinchControlForLowReputationPingSBEROnlyNoIncognito) {
   MockChromePasswordProtectionService service;
+  PasswordProtectionService::RequestOutcome reason;
+
   // By default kPasswordFieldOnFocusPinging feature is disabled.
-  EXPECT_FALSE(service.IsPingingEnabled(kPasswordFieldOnFocusPinging));
+  EXPECT_FALSE(service.IsPingingEnabled(kPasswordFieldOnFocusPinging, &reason));
+  EXPECT_EQ(PasswordProtectionService::DISABLED_DUE_TO_FEATURE_DISABLED,
+            reason);
 
   // Enables kPasswordFieldOnFocusPinging feature.
   scoped_feature_list_.InitAndEnableFeature(kPasswordFieldOnFocusPinging);
@@ -93,29 +97,42 @@ TEST_F(ChromePasswordProtectionServiceTest,
       CreateParameters(false, false, true, false);
   SetFeatureParams(kPasswordFieldOnFocusPinging, "SBEROnlyNoIncognito",
                    sber_and_no_incognito);
+
   service.ConfigService(false /*incognito*/, false /*SBER*/, false /*sync*/);
-  EXPECT_FALSE(service.IsPingingEnabled(kPasswordFieldOnFocusPinging));
+  EXPECT_FALSE(service.IsPingingEnabled(kPasswordFieldOnFocusPinging, &reason));
+  EXPECT_EQ(PasswordProtectionService::DISABLED_DUE_TO_USER_POPULATION, reason);
+
   service.ConfigService(false /*incognito*/, false /*SBER*/, true /*sync*/);
-  EXPECT_FALSE(service.IsPingingEnabled(kPasswordFieldOnFocusPinging));
+  EXPECT_FALSE(service.IsPingingEnabled(kPasswordFieldOnFocusPinging, &reason));
+  EXPECT_EQ(PasswordProtectionService::DISABLED_DUE_TO_USER_POPULATION, reason);
+
   service.ConfigService(false /*incognito*/, true /*SBER*/, false /*sync*/);
-  EXPECT_TRUE(service.IsPingingEnabled(kPasswordFieldOnFocusPinging));
+  EXPECT_TRUE(service.IsPingingEnabled(kPasswordFieldOnFocusPinging, &reason));
+
   service.ConfigService(false /*incognito*/, true /*SBER*/, true /*sync*/);
-  EXPECT_TRUE(service.IsPingingEnabled(kPasswordFieldOnFocusPinging));
+  EXPECT_TRUE(service.IsPingingEnabled(kPasswordFieldOnFocusPinging, &reason));
+
   service.ConfigService(true /*incognito*/, false /*SBER*/, false /*sync*/);
-  EXPECT_FALSE(service.IsPingingEnabled(kPasswordFieldOnFocusPinging));
+  EXPECT_FALSE(service.IsPingingEnabled(kPasswordFieldOnFocusPinging, &reason));
+  EXPECT_EQ(PasswordProtectionService::DISABLED_DUE_TO_INCOGNITO, reason);
+
   service.ConfigService(true /*incognito*/, false /*SBER*/, true /*sync*/);
-  EXPECT_FALSE(service.IsPingingEnabled(kPasswordFieldOnFocusPinging));
+  EXPECT_FALSE(service.IsPingingEnabled(kPasswordFieldOnFocusPinging, &reason));
+  EXPECT_EQ(PasswordProtectionService::DISABLED_DUE_TO_INCOGNITO, reason);
+
   service.ConfigService(true /*incognito*/, true /*SBER*/, false /*sync*/);
-  EXPECT_FALSE(service.IsPingingEnabled(kPasswordFieldOnFocusPinging));
+  EXPECT_FALSE(service.IsPingingEnabled(kPasswordFieldOnFocusPinging, &reason));
+  EXPECT_EQ(PasswordProtectionService::DISABLED_DUE_TO_INCOGNITO, reason);
+
   service.ConfigService(true /*incognito*/, true /*SBER*/, true /*sync*/);
-  EXPECT_FALSE(service.IsPingingEnabled(kPasswordFieldOnFocusPinging));
+  EXPECT_FALSE(service.IsPingingEnabled(kPasswordFieldOnFocusPinging, &reason));
+  EXPECT_EQ(PasswordProtectionService::DISABLED_DUE_TO_INCOGNITO, reason);
 }
 
 TEST_F(ChromePasswordProtectionServiceTest,
        VerifyFinchControlForLowReputationPingSBERAndHistorySyncNoIncognito) {
   MockChromePasswordProtectionService service;
-  // By default kPasswordFieldOnFocusPinging feature is disabled.
-  EXPECT_FALSE(service.IsPingingEnabled(kPasswordFieldOnFocusPinging));
+  PasswordProtectionService::RequestOutcome reason;
 
   // Enables kPasswordFieldOnFocusPinging feature.
   scoped_feature_list_.InitAndEnableFeature(kPasswordFieldOnFocusPinging);
@@ -134,28 +151,39 @@ TEST_F(ChromePasswordProtectionServiceTest,
   SetFeatureParams(kPasswordFieldOnFocusPinging,
                    "SBERAndHistorySyncNoIncognito", sber_and_sync_no_incognito);
   service.ConfigService(false /*incognito*/, false /*SBER*/, false /*sync*/);
-  EXPECT_FALSE(service.IsPingingEnabled(kPasswordFieldOnFocusPinging));
+  EXPECT_FALSE(service.IsPingingEnabled(kPasswordFieldOnFocusPinging, &reason));
+  EXPECT_EQ(PasswordProtectionService::DISABLED_DUE_TO_USER_POPULATION, reason);
+
   service.ConfigService(false /*incognito*/, false /*SBER*/, true /*sync*/);
-  EXPECT_TRUE(service.IsPingingEnabled(kPasswordFieldOnFocusPinging));
+  EXPECT_TRUE(service.IsPingingEnabled(kPasswordFieldOnFocusPinging, &reason));
+
   service.ConfigService(false /*incognito*/, true /*SBER*/, false /*sync*/);
-  EXPECT_TRUE(service.IsPingingEnabled(kPasswordFieldOnFocusPinging));
+  EXPECT_TRUE(service.IsPingingEnabled(kPasswordFieldOnFocusPinging, &reason));
+
   service.ConfigService(false /*incognito*/, true /*SBER*/, true /*sync*/);
-  EXPECT_TRUE(service.IsPingingEnabled(kPasswordFieldOnFocusPinging));
+  EXPECT_TRUE(service.IsPingingEnabled(kPasswordFieldOnFocusPinging, &reason));
+
   service.ConfigService(true /*incognito*/, false /*SBER*/, false /*sync*/);
-  EXPECT_FALSE(service.IsPingingEnabled(kPasswordFieldOnFocusPinging));
+  EXPECT_FALSE(service.IsPingingEnabled(kPasswordFieldOnFocusPinging, &reason));
+  EXPECT_EQ(PasswordProtectionService::DISABLED_DUE_TO_INCOGNITO, reason);
+
   service.ConfigService(true /*incognito*/, false /*SBER*/, true /*sync*/);
-  EXPECT_FALSE(service.IsPingingEnabled(kPasswordFieldOnFocusPinging));
+  EXPECT_FALSE(service.IsPingingEnabled(kPasswordFieldOnFocusPinging, &reason));
+  EXPECT_EQ(PasswordProtectionService::DISABLED_DUE_TO_INCOGNITO, reason);
+
   service.ConfigService(true /*incognito*/, true /*SBER*/, false /*sync*/);
-  EXPECT_FALSE(service.IsPingingEnabled(kPasswordFieldOnFocusPinging));
+  EXPECT_FALSE(service.IsPingingEnabled(kPasswordFieldOnFocusPinging, &reason));
+  EXPECT_EQ(PasswordProtectionService::DISABLED_DUE_TO_INCOGNITO, reason);
+
   service.ConfigService(true /*incognito*/, true /*SBER*/, true /*sync*/);
-  EXPECT_FALSE(service.IsPingingEnabled(kPasswordFieldOnFocusPinging));
+  EXPECT_FALSE(service.IsPingingEnabled(kPasswordFieldOnFocusPinging, &reason));
+  EXPECT_EQ(PasswordProtectionService::DISABLED_DUE_TO_INCOGNITO, reason);
 }
 
 TEST_F(ChromePasswordProtectionServiceTest,
        VerifyFinchControlForLowReputationPingAllButNoIncognito) {
   MockChromePasswordProtectionService service;
-  // By default kPasswordFieldOnFocusPinging feature is disabled.
-  EXPECT_FALSE(service.IsPingingEnabled(kPasswordFieldOnFocusPinging));
+  PasswordProtectionService::RequestOutcome reason;
 
   // Enables kPasswordFieldOnFocusPinging feature.
   scoped_feature_list_.InitAndEnableFeature(kPasswordFieldOnFocusPinging);
@@ -172,28 +200,38 @@ TEST_F(ChromePasswordProtectionServiceTest,
   SetFeatureParams(kPasswordFieldOnFocusPinging, "AllButNoIncognito",
                    all_users);
   service.ConfigService(false /*incognito*/, false /*SBER*/, false /*sync*/);
-  EXPECT_TRUE(service.IsPingingEnabled(kPasswordFieldOnFocusPinging));
+  EXPECT_TRUE(service.IsPingingEnabled(kPasswordFieldOnFocusPinging, &reason));
+
   service.ConfigService(false /*incognito*/, false /*SBER*/, true /*sync*/);
-  EXPECT_TRUE(service.IsPingingEnabled(kPasswordFieldOnFocusPinging));
+  EXPECT_TRUE(service.IsPingingEnabled(kPasswordFieldOnFocusPinging, &reason));
+
   service.ConfigService(false /*incognito*/, true /*SBER*/, false /*sync*/);
-  EXPECT_TRUE(service.IsPingingEnabled(kPasswordFieldOnFocusPinging));
+  EXPECT_TRUE(service.IsPingingEnabled(kPasswordFieldOnFocusPinging, &reason));
+
   service.ConfigService(false /*incognito*/, true /*SBER*/, true /*sync*/);
-  EXPECT_TRUE(service.IsPingingEnabled(kPasswordFieldOnFocusPinging));
+  EXPECT_TRUE(service.IsPingingEnabled(kPasswordFieldOnFocusPinging, &reason));
+
   service.ConfigService(true /*incognito*/, false /*SBER*/, false /*sync*/);
-  EXPECT_FALSE(service.IsPingingEnabled(kPasswordFieldOnFocusPinging));
+  EXPECT_FALSE(service.IsPingingEnabled(kPasswordFieldOnFocusPinging, &reason));
+  EXPECT_EQ(PasswordProtectionService::DISABLED_DUE_TO_INCOGNITO, reason);
+
   service.ConfigService(true /*incognito*/, false /*SBER*/, true /*sync*/);
-  EXPECT_FALSE(service.IsPingingEnabled(kPasswordFieldOnFocusPinging));
+  EXPECT_FALSE(service.IsPingingEnabled(kPasswordFieldOnFocusPinging, &reason));
+  EXPECT_EQ(PasswordProtectionService::DISABLED_DUE_TO_INCOGNITO, reason);
+
   service.ConfigService(true /*incognito*/, true /*SBER*/, false /*sync*/);
-  EXPECT_FALSE(service.IsPingingEnabled(kPasswordFieldOnFocusPinging));
+  EXPECT_FALSE(service.IsPingingEnabled(kPasswordFieldOnFocusPinging, &reason));
+  EXPECT_EQ(PasswordProtectionService::DISABLED_DUE_TO_INCOGNITO, reason);
+
   service.ConfigService(true /*incognito*/, true /*SBER*/, true /*sync*/);
-  EXPECT_FALSE(service.IsPingingEnabled(kPasswordFieldOnFocusPinging));
+  EXPECT_FALSE(service.IsPingingEnabled(kPasswordFieldOnFocusPinging, &reason));
+  EXPECT_EQ(PasswordProtectionService::DISABLED_DUE_TO_INCOGNITO, reason);
 }
 
 TEST_F(ChromePasswordProtectionServiceTest,
        VerifyFinchControlForLowReputationPingAll) {
   MockChromePasswordProtectionService service;
-  // By default kPasswordFieldOnFocusPinging feature is disabled.
-  EXPECT_FALSE(service.IsPingingEnabled(kPasswordFieldOnFocusPinging));
+  PasswordProtectionService::RequestOutcome reason;
 
   // Enables kPasswordFieldOnFocusPinging feature.
   scoped_feature_list_.InitAndEnableFeature(kPasswordFieldOnFocusPinging);
@@ -209,21 +247,21 @@ TEST_F(ChromePasswordProtectionServiceTest,
   Parameters all_users = CreateParameters(true, true, true, true);
   SetFeatureParams(kPasswordFieldOnFocusPinging, "All", all_users);
   service.ConfigService(false /*incognito*/, false /*SBER*/, false /*sync*/);
-  EXPECT_TRUE(service.IsPingingEnabled(kPasswordFieldOnFocusPinging));
+  EXPECT_TRUE(service.IsPingingEnabled(kPasswordFieldOnFocusPinging, &reason));
   service.ConfigService(false /*incognito*/, false /*SBER*/, true /*sync*/);
-  EXPECT_TRUE(service.IsPingingEnabled(kPasswordFieldOnFocusPinging));
+  EXPECT_TRUE(service.IsPingingEnabled(kPasswordFieldOnFocusPinging, &reason));
   service.ConfigService(false /*incognito*/, true /*SBER*/, false /*sync*/);
-  EXPECT_TRUE(service.IsPingingEnabled(kPasswordFieldOnFocusPinging));
+  EXPECT_TRUE(service.IsPingingEnabled(kPasswordFieldOnFocusPinging, &reason));
   service.ConfigService(false /*incognito*/, true /*SBER*/, true /*sync*/);
-  EXPECT_TRUE(service.IsPingingEnabled(kPasswordFieldOnFocusPinging));
+  EXPECT_TRUE(service.IsPingingEnabled(kPasswordFieldOnFocusPinging, &reason));
   service.ConfigService(true /*incognito*/, false /*SBER*/, false /*sync*/);
-  EXPECT_TRUE(service.IsPingingEnabled(kPasswordFieldOnFocusPinging));
+  EXPECT_TRUE(service.IsPingingEnabled(kPasswordFieldOnFocusPinging, &reason));
   service.ConfigService(true /*incognito*/, false /*SBER*/, true /*sync*/);
-  EXPECT_TRUE(service.IsPingingEnabled(kPasswordFieldOnFocusPinging));
+  EXPECT_TRUE(service.IsPingingEnabled(kPasswordFieldOnFocusPinging, &reason));
   service.ConfigService(true /*incognito*/, true /*SBER*/, false /*sync*/);
-  EXPECT_TRUE(service.IsPingingEnabled(kPasswordFieldOnFocusPinging));
+  EXPECT_TRUE(service.IsPingingEnabled(kPasswordFieldOnFocusPinging, &reason));
   service.ConfigService(true /*incognito*/, true /*SBER*/, true /*sync*/);
-  EXPECT_TRUE(service.IsPingingEnabled(kPasswordFieldOnFocusPinging));
+  EXPECT_TRUE(service.IsPingingEnabled(kPasswordFieldOnFocusPinging, &reason));
 }
 
 }  // namespace safe_browsing

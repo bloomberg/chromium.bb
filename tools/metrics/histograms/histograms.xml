@@ -50186,6 +50186,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="PasswordProtection.PasswordReuseEventVerdict"
     enum="PasswordProtectionVerdict">
+  <obsolete>
+    Deprecated since May 12 2017. Replaced by
+    PasswordProtection.Verdict.ProtectedPasswordEntry.
+  </obsolete>
   <owner>jialiul@chromium.org</owner>
   <owner>nparker@chromium.org</owner>
   <summary>
@@ -50202,7 +50206,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
-<histogram name="PasswordProtection.RequestOutcome"
+<histogram base="true" name="PasswordProtection.RequestOutcome"
     enum="PasswordProtectionRequestOutcome">
   <owner>jialiul@chromium.org</owner>
   <owner>nparker@chromium.org</owner>
@@ -50215,10 +50219,24 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="PasswordProtection.UnfamiliarLoginPageVerdict"
     enum="PasswordProtectionVerdict">
+  <obsolete>
+    Deprecated since May 12 2017. Replaced by
+    PasswordProtection.Verdict.PasswordFieldOnFocus.
+  </obsolete>
   <owner>jialiul@chromium.org</owner>
   <owner>nparker@chromium.org</owner>
   <summary>
     Verdict types returned by Safe Browsing server for unfamiliar login pages.
+  </summary>
+</histogram>
+
+<histogram name="PasswordProtection.Verdict" enum="PasswordProtectionVerdict">
+  <owner>jialiul@chromium.org</owner>
+  <owner>nparker@chromium.org</owner>
+  <summary>
+    Verdict types returned by Safe Browsing server for a password protection
+    request. Request can be triggered when user focuses on a password field or
+    enters a protected password.
   </summary>
 </histogram>
 
@@ -90230,6 +90248,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
       name="PasswordManager.SavePasswordPromptDisappearedQuickly"/>
   <affected-histogram name="PasswordManager.SavePasswordPromptDisplayed"/>
   <affected-histogram name="PasswordManager.SavePasswordPromptResponse"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="PasswordProtectionTrigger">
+  <suffix name="PasswordFieldOnFocus"
+      label="Password protection triggered by password field on focus event."/>
+  <suffix name="ProtectedPasswordEntry"
+      label="Password protection triggered by password reuse event."/>
+  <affected-histogram name="PasswordProtection.RequestOutcome"/>
+  <affected-histogram name="PasswordProtection.Verdict"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="PasswordReuseSourceRealm" separator=".">

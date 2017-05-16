@@ -60,7 +60,7 @@ void PasswordProtectionRequest::OnWhitelistCheckDone(
     const bool* match_whitelist) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (*match_whitelist)
-    Finish(RequestOutcome::MATCHED_WHITELIST, nullptr);
+    Finish(PasswordProtectionService::MATCHED_WHITELIST, nullptr);
   else
     CheckCachedVerdicts();
 }
@@ -68,7 +68,7 @@ void PasswordProtectionRequest::OnWhitelistCheckDone(
 void PasswordProtectionRequest::CheckCachedVerdicts() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (!password_protection_service_) {
-    Finish(RequestOutcome::SERVICE_DESTROYED, nullptr);
+    Finish(PasswordProtectionService::SERVICE_DESTROYED, nullptr);
     return;
   }
 
@@ -77,7 +77,8 @@ void PasswordProtectionRequest::CheckCachedVerdicts() {
   auto verdict = password_protection_service_->GetCachedVerdict(
       main_frame_url_, cached_response.get());
   if (verdict != LoginReputationClientResponse::VERDICT_TYPE_UNSPECIFIED)
-    Finish(RequestOutcome::RESPONSE_ALREADY_CACHED, std::move(cached_response));
+    Finish(PasswordProtectionService::RESPONSE_ALREADY_CACHED,
+           std::move(cached_response));
   else
     SendRequest();
 }
@@ -120,7 +121,7 @@ void PasswordProtectionRequest::SendRequest() {
 
   std::string serialized_request;
   if (!request_proto_->SerializeToString(&serialized_request)) {
-    Finish(RequestOutcome::REQUEST_MALFORMED, nullptr);
+    Finish(PasswordProtectionService::REQUEST_MALFORMED, nullptr);
     return;
   }
 
@@ -166,7 +167,7 @@ void PasswordProtectionRequest::OnURLFetchComplete(
       is_success ? response_code : status.error());
 
   if (!is_success || net::HTTP_OK != response_code) {
-    Finish(RequestOutcome::FETCH_FAILED, nullptr);
+    Finish(PasswordProtectionService::FETCH_FAILED, nullptr);
     return;
   }
 
@@ -179,31 +180,36 @@ void PasswordProtectionRequest::OnURLFetchComplete(
   UMA_HISTOGRAM_TIMES("PasswordProtection.RequestNetworkDuration",
                       base::TimeTicks::Now() - request_start_time_);
   if (response->ParseFromString(response_body))
-    Finish(RequestOutcome::SUCCEEDED, std::move(response));
+    Finish(PasswordProtectionService::SUCCEEDED, std::move(response));
   else
-    Finish(RequestOutcome::RESPONSE_MALFORMED, nullptr);
+    Finish(PasswordProtectionService::RESPONSE_MALFORMED, nullptr);
 }
 
 void PasswordProtectionRequest::Finish(
-    RequestOutcome outcome,
+    PasswordProtectionService::RequestOutcome outcome,
     std::unique_ptr<LoginReputationClientResponse> response) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   tracker_.TryCancelAll();
 
-  UMA_HISTOGRAM_ENUMERATION("PasswordProtection.RequestOutcome", outcome,
-                            RequestOutcome::MAX_OUTCOME);
+  if (request_type_ == LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE) {
+    UMA_HISTOGRAM_ENUMERATION(kPasswordOnFocusRequestOutcomeHistogramName,
+                              outcome, PasswordProtectionService::MAX_OUTCOME);
+  } else {
+    UMA_HISTOGRAM_ENUMERATION(kPasswordEntryRequestOutcomeHistogramName,
+                              outcome, PasswordProtectionService::MAX_OUTCOME);
+  }
 
   if (response) {
     switch (request_type_) {
       case LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE:
         UMA_HISTOGRAM_ENUMERATION(
-            "PasswordProtection.UnfamiliarLoginPageVerdict",
+            "PasswordProtection.Verdict.PasswordFieldOnFocus",
             response->verdict_type(),
             LoginReputationClientResponse_VerdictType_VerdictType_MAX + 1);
         break;
       case LoginReputationClientRequest::PASSWORD_REUSE_EVENT:
         UMA_HISTOGRAM_ENUMERATION(
-            "PasswordProtection.PasswordReuseEventVerdict",
+            "PasswordProtection.Verdict.ProtectedPasswordEntry",
             response->verdict_type(),
             LoginReputationClientResponse_VerdictType_VerdictType_MAX + 1);
         break;
@@ -220,7 +226,9 @@ void PasswordProtectionRequest::Cancel(bool timed_out) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   fetcher_.reset();
 
-  Finish(timed_out ? TIMEDOUT : CANCELED, nullptr);
+  Finish(timed_out ? PasswordProtectionService::TIMEDOUT
+                   : PasswordProtectionService::CANCELED,
+         nullptr);
 }
 
 }  // namespace safe_browsing

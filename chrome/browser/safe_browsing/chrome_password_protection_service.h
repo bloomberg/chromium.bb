@@ -36,9 +36,11 @@ class ChromePasswordProtectionService : public PasswordProtectionService {
   bool IsIncognito() override;
 
   // Checks if Finch config allows sending pings to Safe Browsing Server.
+  // If not, indicated its reason by modifying |reason|.
   // |feature| should be either kLowReputationPinging or
   // kProtectedPasswordEntryPinging.
-  bool IsPingingEnabled(const base::Feature& feature) override;
+  bool IsPingingEnabled(const base::Feature& feature,
+                        RequestOutcome* reason) override;
 
   // If user enabled history syncing.
   bool IsHistorySyncEnabled() override;

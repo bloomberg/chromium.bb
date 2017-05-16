@@ -418,8 +418,8 @@ void ChromePasswordManagerClient::CheckSafeBrowsingReputation(
   safe_browsing::PasswordProtectionService* pps =
       GetPasswordProtectionService();
   if (pps) {
-    pps->MaybeStartLowReputationRequest(GetMainFrameURL(), form_action,
-                                        frame_url);
+    pps->MaybeStartPasswordFieldOnFocusRequest(GetMainFrameURL(), form_action,
+                                               frame_url);
   }
 }
 #endif
