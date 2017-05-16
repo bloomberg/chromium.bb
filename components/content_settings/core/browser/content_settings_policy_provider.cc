@@ -336,6 +336,13 @@ void PolicyProvider::ReadManagedDefaultSettings() {
 
 void PolicyProvider::UpdateManagedDefaultSetting(
     const PrefsForManagedDefaultMapEntry& entry) {
+  // Not all managed default types are registered on every platform. If they're
+  // not registered, don't update them.
+  const ContentSettingsInfo* info =
+      ContentSettingsRegistry::GetInstance()->Get(entry.content_type);
+  if (!info)
+    return;
+
   // If a pref to manage a default-content-setting was not set (NOTICE:
   // "HasPrefPath" returns false if no value was set for a registered pref) then
   // the default value of the preference is used. The default value of a
@@ -357,9 +364,7 @@ void PolicyProvider::UpdateManagedDefaultSetting(
     value_map_.DeleteValue(ContentSettingsPattern::Wildcard(),
                            ContentSettingsPattern::Wildcard(),
                            entry.content_type, std::string());
-  } else if (ContentSettingsRegistry::GetInstance()
-                 ->Get(entry.content_type)
-                 ->IsSettingValid(IntToContentSetting(setting))) {
+  } else if (info->IsSettingValid(IntToContentSetting(setting))) {
     // Don't set a timestamp for policy settings.
     value_map_.SetValue(ContentSettingsPattern::Wildcard(),
                         ContentSettingsPattern::Wildcard(), entry.content_type,
