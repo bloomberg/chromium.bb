@@ -659,8 +659,10 @@ static void update_b_sep_sym(double **Mc, double **Hc, double *a, double *b) {
 
 static int wiener_decompose_sep_sym(double *M, double *H, double *a,
                                     double *b) {
-  static const double init_filt[WIENER_WIN] = {
-    0.035623, -0.127154, 0.211436, 0.760190, 0.211436, -0.127154, 0.035623,
+  static const int init_filt[WIENER_WIN] = {
+    WIENER_FILT_TAP0_MIDV, WIENER_FILT_TAP1_MIDV, WIENER_FILT_TAP2_MIDV,
+    WIENER_FILT_TAP3_MIDV, WIENER_FILT_TAP2_MIDV, WIENER_FILT_TAP1_MIDV,
+    WIENER_FILT_TAP0_MIDV,
   };
   int i, j, iter;
   double *Hc[WIENER_WIN2];
@@ -672,8 +674,9 @@ static int wiener_decompose_sep_sym(double *M, double *H, double *a,
           H + i * WIENER_WIN * WIENER_WIN2 + j * WIENER_WIN;
     }
   }
-  memcpy(a, init_filt, sizeof(*a) * WIENER_WIN);
-  memcpy(b, init_filt, sizeof(*b) * WIENER_WIN);
+  for (i = 0; i < WIENER_WIN; i++) {
+    a[i] = b[i] = (double)init_filt[i] / WIENER_FILT_STEP;
+  }
 
   iter = 1;
   while (iter < NUM_WIENER_ITERS) {
@@ -778,7 +781,7 @@ static int count_wiener_bits(WienerInfo *wiener_info,
 #define USE_WIENER_REFINEMENT_SEARCH 1
 static int64_t finer_tile_search_wiener(const YV12_BUFFER_CONFIG *src,
                                         AV1_COMP *cpi, RestorationInfo *rsi,
-                                        int plane, int tile_idx,
+                                        int start_step, int plane, int tile_idx,
                                         int partial_frame,
                                         YV12_BUFFER_CONFIG *dst_frame) {
   int64_t err = try_restoration_tile(src, cpi, rsi, 1 << plane, partial_frame,
@@ -790,66 +793,92 @@ static int64_t finer_tile_search_wiener(const YV12_BUFFER_CONFIG *src,
   int tap_max[] = { WIENER_FILT_TAP0_MAXV, WIENER_FILT_TAP1_MAXV,
                     WIENER_FILT_TAP2_MAXV };
   // printf("err  pre = %"PRId64"\n", err);
-  for (int p = 0; p < WIENER_HALFWIN; ++p) {
-    if (rsi[plane].wiener_info[tile_idx].hfilter[p] != tap_min[p]) {
-      rsi[plane].wiener_info[tile_idx].hfilter[p] -= 1;
-      rsi[plane].wiener_info[tile_idx].hfilter[WIENER_WIN - p - 1] -= 1;
-      rsi[plane].wiener_info[tile_idx].hfilter[WIENER_HALFWIN] += 2;
-      err2 = try_restoration_tile(src, cpi, rsi, 1 << plane, partial_frame,
-                                  tile_idx, 0, 0, dst_frame);
-      if (err2 > err) {
-        rsi[plane].wiener_info[tile_idx].hfilter[p] += 1;
-        rsi[plane].wiener_info[tile_idx].hfilter[WIENER_WIN - p - 1] += 1;
-        rsi[plane].wiener_info[tile_idx].hfilter[WIENER_HALFWIN] -= 2;
-      } else {
-        err = err2;
-        continue;
-      }
+  for (int s = start_step; s >= 1; s >>= 1) {
+    for (int p = 0; p < WIENER_HALFWIN; ++p) {
+      int skip = 0;
+      do {
+        if (rsi[plane].wiener_info[tile_idx].hfilter[p] - s >= tap_min[p]) {
+          rsi[plane].wiener_info[tile_idx].hfilter[p] -= s;
+          rsi[plane].wiener_info[tile_idx].hfilter[WIENER_WIN - p - 1] -= s;
+          rsi[plane].wiener_info[tile_idx].hfilter[WIENER_HALFWIN] += 2 * s;
+          err2 = try_restoration_tile(src, cpi, rsi, 1 << plane, partial_frame,
+                                      tile_idx, 0, 0, dst_frame);
+          if (err2 > err) {
+            rsi[plane].wiener_info[tile_idx].hfilter[p] += s;
+            rsi[plane].wiener_info[tile_idx].hfilter[WIENER_WIN - p - 1] += s;
+            rsi[plane].wiener_info[tile_idx].hfilter[WIENER_HALFWIN] -= 2 * s;
+          } else {
+            err = err2;
+            skip = 1;
+            // At the highest step size continue moving in the same direction
+            if (s == start_step) continue;
+          }
+        }
+        break;
+      } while (1);
+      if (skip) break;
+      do {
+        if (rsi[plane].wiener_info[tile_idx].hfilter[p] + s <= tap_max[p]) {
+          rsi[plane].wiener_info[tile_idx].hfilter[p] += s;
+          rsi[plane].wiener_info[tile_idx].hfilter[WIENER_WIN - p - 1] += s;
+          rsi[plane].wiener_info[tile_idx].hfilter[WIENER_HALFWIN] -= 2 * s;
+          err2 = try_restoration_tile(src, cpi, rsi, 1 << plane, partial_frame,
+                                      tile_idx, 0, 0, dst_frame);
+          if (err2 > err) {
+            rsi[plane].wiener_info[tile_idx].hfilter[p] -= s;
+            rsi[plane].wiener_info[tile_idx].hfilter[WIENER_WIN - p - 1] -= s;
+            rsi[plane].wiener_info[tile_idx].hfilter[WIENER_HALFWIN] += 2 * s;
+          } else {
+            err = err2;
+            // At the highest step size continue moving in the same direction
+            if (s == start_step) continue;
+          }
+        }
+        break;
+      } while (1);
     }
-    if (rsi[plane].wiener_info[tile_idx].hfilter[p] != tap_max[p]) {
-      rsi[plane].wiener_info[tile_idx].hfilter[p] += 1;
-      rsi[plane].wiener_info[tile_idx].hfilter[WIENER_WIN - p - 1] += 1;
-      rsi[plane].wiener_info[tile_idx].hfilter[WIENER_HALFWIN] -= 2;
-      err2 = try_restoration_tile(src, cpi, rsi, 1 << plane, partial_frame,
-                                  tile_idx, 0, 0, dst_frame);
-      if (err2 > err) {
-        rsi[plane].wiener_info[tile_idx].hfilter[p] -= 1;
-        rsi[plane].wiener_info[tile_idx].hfilter[WIENER_WIN - p - 1] -= 1;
-        rsi[plane].wiener_info[tile_idx].hfilter[WIENER_HALFWIN] += 2;
-      } else {
-        err = err2;
-      }
-    }
-  }
-  for (int p = 0; p < WIENER_HALFWIN; ++p) {
-    if (rsi[plane].wiener_info[tile_idx].vfilter[p] != tap_min[p]) {
-      rsi[plane].wiener_info[tile_idx].vfilter[p] -= 1;
-      rsi[plane].wiener_info[tile_idx].vfilter[WIENER_WIN - p - 1] -= 1;
-      rsi[plane].wiener_info[tile_idx].vfilter[WIENER_HALFWIN] += 2;
-      err2 = try_restoration_tile(src, cpi, rsi, 1 << plane, partial_frame,
-                                  tile_idx, 0, 0, dst_frame);
-      if (err2 > err) {
-        rsi[plane].wiener_info[tile_idx].vfilter[p] += 1;
-        rsi[plane].wiener_info[tile_idx].vfilter[WIENER_WIN - p - 1] += 1;
-        rsi[plane].wiener_info[tile_idx].vfilter[WIENER_HALFWIN] -= 2;
-      } else {
-        err = err2;
-        continue;
-      }
-    }
-    if (rsi[plane].wiener_info[tile_idx].vfilter[p] != tap_max[p]) {
-      rsi[plane].wiener_info[tile_idx].vfilter[p] += 1;
-      rsi[plane].wiener_info[tile_idx].vfilter[WIENER_WIN - p - 1] += 1;
-      rsi[plane].wiener_info[tile_idx].vfilter[WIENER_HALFWIN] -= 2;
-      err2 = try_restoration_tile(src, cpi, rsi, 1 << plane, partial_frame,
-                                  tile_idx, 0, 0, dst_frame);
-      if (err2 > err) {
-        rsi[plane].wiener_info[tile_idx].vfilter[p] -= 1;
-        rsi[plane].wiener_info[tile_idx].vfilter[WIENER_WIN - p - 1] -= 1;
-        rsi[plane].wiener_info[tile_idx].vfilter[WIENER_HALFWIN] += 2;
-      } else {
-        err = err2;
-      }
+    for (int p = 0; p < WIENER_HALFWIN; ++p) {
+      int skip = 0;
+      do {
+        if (rsi[plane].wiener_info[tile_idx].vfilter[p] - s >= tap_min[p]) {
+          rsi[plane].wiener_info[tile_idx].vfilter[p] -= s;
+          rsi[plane].wiener_info[tile_idx].vfilter[WIENER_WIN - p - 1] -= s;
+          rsi[plane].wiener_info[tile_idx].vfilter[WIENER_HALFWIN] += 2 * s;
+          err2 = try_restoration_tile(src, cpi, rsi, 1 << plane, partial_frame,
+                                      tile_idx, 0, 0, dst_frame);
+          if (err2 > err) {
+            rsi[plane].wiener_info[tile_idx].vfilter[p] += s;
+            rsi[plane].wiener_info[tile_idx].vfilter[WIENER_WIN - p - 1] += s;
+            rsi[plane].wiener_info[tile_idx].vfilter[WIENER_HALFWIN] -= 2 * s;
+          } else {
+            err = err2;
+            skip = 1;
+            // At the highest step size continue moving in the same direction
+            if (s == start_step) continue;
+          }
+        }
+        break;
+      } while (1);
+      if (skip) break;
+      do {
+        if (rsi[plane].wiener_info[tile_idx].vfilter[p] + s <= tap_max[p]) {
+          rsi[plane].wiener_info[tile_idx].vfilter[p] += s;
+          rsi[plane].wiener_info[tile_idx].vfilter[WIENER_WIN - p - 1] += s;
+          rsi[plane].wiener_info[tile_idx].vfilter[WIENER_HALFWIN] -= 2 * s;
+          err2 = try_restoration_tile(src, cpi, rsi, 1 << plane, partial_frame,
+                                      tile_idx, 0, 0, dst_frame);
+          if (err2 > err) {
+            rsi[plane].wiener_info[tile_idx].vfilter[p] -= s;
+            rsi[plane].wiener_info[tile_idx].vfilter[WIENER_WIN - p - 1] -= s;
+            rsi[plane].wiener_info[tile_idx].vfilter[WIENER_HALFWIN] += 2 * s;
+          } else {
+            err = err2;
+            // At the highest step size continue moving in the same direction
+            if (s == start_step) continue;
+          }
+        }
+        break;
+      } while (1);
     }
   }
 // printf("err post = %"PRId64"\n", err);
@@ -968,7 +997,7 @@ static double search_wiener_uv(const YV12_BUFFER_CONFIG *src, AV1_COMP *cpi,
     aom_clear_system_state();
 
     rsi[plane].restoration_type[tile_idx] = RESTORE_WIENER;
-    err = finer_tile_search_wiener(src, cpi, rsi, plane, tile_idx,
+    err = finer_tile_search_wiener(src, cpi, rsi, 4, plane, tile_idx,
                                    partial_frame, dst_frame);
     bits =
         count_wiener_bits(&rsi[plane].wiener_info[tile_idx], &ref_wiener_info)
@@ -1111,7 +1140,7 @@ static double search_wiener(const YV12_BUFFER_CONFIG *src, AV1_COMP *cpi,
     aom_clear_system_state();
 
     rsi->restoration_type[tile_idx] = RESTORE_WIENER;
-    err = finer_tile_search_wiener(src, cpi, rsi, 0, tile_idx, partial_frame,
+    err = finer_tile_search_wiener(src, cpi, rsi, 4, 0, tile_idx, partial_frame,
                                    dst_frame);
     bits = count_wiener_bits(&rsi->wiener_info[tile_idx], &ref_wiener_info)
            << AV1_PROB_COST_SHIFT;

@@ -88,6 +88,10 @@ extern "C" {
 #define WIENER_FILT_TAP0_MIDV (3)
 #define WIENER_FILT_TAP1_MIDV (-7)
 #define WIENER_FILT_TAP2_MIDV (15)
+#define WIENER_FILT_TAP3_MIDV                           \
+  (WIENER_FILT_STEP -                                   \
+   2 * (WIENER_FILT_TAP0_MIDV + WIENER_FILT_TAP1_MIDV + \
+        WIENER_FILT_TAP2_MIDV))
 
 #define WIENER_FILT_TAP0_BITS 4
 #define WIENER_FILT_TAP1_BITS 5
