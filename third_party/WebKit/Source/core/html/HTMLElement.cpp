@@ -52,6 +52,7 @@
 #include "core/events/KeyboardEvent.h"
 #include "core/frame/Settings.h"
 #include "core/frame/UseCounter.h"
+#include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/html/HTMLBRElement.h"
 #include "core/html/HTMLDimension.h"
 #include "core/html/HTMLFormElement.h"
@@ -908,6 +909,24 @@ void HTMLElement::AdjustDirectionalityIfNeededAfterChildrenChanged(
       return;
     }
   }
+}
+
+Node::InsertionNotificationRequest HTMLElement::InsertedInto(
+    ContainerNode* insertion_point) {
+  // Process the superclass first to ensure that `InActiveDocument()` is
+  // updated.
+  Element::InsertedInto(insertion_point);
+
+  if (hasAttribute(nonceAttr) && getAttribute(nonceAttr) != g_empty_atom) {
+    setNonce(getAttribute(nonceAttr));
+    if (RuntimeEnabledFeatures::hideNonceContentAttributeEnabled() &&
+        InActiveDocument() &&
+        GetDocument().GetContentSecurityPolicy()->HasHeaderDeliveredPolicy()) {
+      setAttribute(nonceAttr, g_empty_atom);
+    }
+  }
+
+  return kInsertionDone;
 }
 
 void HTMLElement::AddHTMLLengthToStyle(MutableStylePropertySet* style,

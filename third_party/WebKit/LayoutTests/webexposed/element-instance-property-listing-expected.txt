@@ -107,6 +107,7 @@ namespace http://www.w3.org/1999/xhtml
     property nodeName
     property nodeType
     property nodeValue
+    property nonce
     property normalize
     property offsetHeight
     property offsetLeft
@@ -840,7 +841,6 @@ html element script
     property htmlFor
     property integrity
     property noModule
-    property nonce
     property src
     property text
     property type
@@ -1212,6 +1212,7 @@ namespace http://www.w3.org/2000/svg
     property nodeName
     property nodeType
     property nodeValue
+    property nonce
     property normalize
     property offsetHeight
     property offsetLeft
@@ -1438,7 +1439,6 @@ svg element script
     property htmlFor
     property integrity
     property noModule
-    property nonce
     property src
     property text
     property type

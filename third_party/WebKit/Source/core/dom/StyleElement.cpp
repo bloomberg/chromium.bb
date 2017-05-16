@@ -141,8 +141,7 @@ StyleElement::ProcessingResult StyleElement::CreateSheet(Element& element,
       ShouldBypassMainWorldCSP(element) ||
       csp->AllowStyleWithHash(text,
                               ContentSecurityPolicy::InlineType::kBlock) ||
-      csp->AllowInlineStyle(&element, document.Url(),
-                            element.FastGetAttribute(HTMLNames::nonceAttr),
+      csp->AllowInlineStyle(&element, document.Url(), element.nonce(),
                             start_position_.line_, text);
 
   // Clearing the current sheet may remove the cache entry so create the new

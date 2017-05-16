@@ -206,6 +206,12 @@ class CORE_EXPORT Element : public ContainerNode {
   //   https://dom.spec.whatwg.org/#concept-element-attributes-get-by-name
   AtomicString LowercaseIfNecessary(const AtomicString&) const;
 
+  // NoncedElement implementation: this is only used by HTMLElement and
+  // SVGElement, but putting the implementation here allows us to use
+  // ElementRareData to hold the data.
+  const AtomicString& nonce() const;
+  void setNonce(const AtomicString&);
+
   // Call this to get the value of the id attribute for style resolution
   // purposes.  The value will already be lowercased if the document is in
   // compatibility mode, so this function is not suitable for non-style uses.

@@ -38,7 +38,7 @@ class MockScriptElementBase
   MOCK_CONST_METHOD0(HasSourceAttribute, bool());
   MOCK_CONST_METHOD0(IsConnected, bool());
   MOCK_CONST_METHOD0(HasChildren, bool());
-  MOCK_CONST_METHOD0(IsNonceableElement, bool());
+  MOCK_CONST_METHOD0(GetNonceForElement, const AtomicString&());
   MOCK_CONST_METHOD0(InitiatorName, AtomicString());
   MOCK_METHOD3(AllowInlineScriptForCSP,
                bool(const AtomicString&,

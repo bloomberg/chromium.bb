@@ -2312,6 +2312,7 @@ interface HTMLElement : Element
     getter inputMode
     getter isContentEditable
     getter lang
+    getter nonce
     getter offsetHeight
     getter offsetLeft
     getter offsetParent
@@ -2410,6 +2411,7 @@ interface HTMLElement : Element
     setter innerText
     setter inputMode
     setter lang
+    setter nonce
     setter onabort
     setter onauxclick
     setter onblur
@@ -3226,7 +3228,6 @@ interface HTMLScriptElement : HTMLElement
     getter htmlFor
     getter integrity
     getter noModule
-    getter nonce
     getter src
     getter text
     getter type
@@ -3239,7 +3240,6 @@ interface HTMLScriptElement : HTMLElement
     setter htmlFor
     setter integrity
     setter noModule
-    setter nonce
     setter src
     setter text
     setter type
@@ -5414,6 +5414,7 @@ interface SVGElement : Element
     attribute @@toStringTag
     getter className
     getter dataset
+    getter nonce
     getter onabort
     getter onauxclick
     getter onblur
@@ -5495,6 +5496,7 @@ interface SVGElement : Element
     method blur
     method constructor
     method focus
+    setter nonce
     setter onabort
     setter onauxclick
     setter onblur

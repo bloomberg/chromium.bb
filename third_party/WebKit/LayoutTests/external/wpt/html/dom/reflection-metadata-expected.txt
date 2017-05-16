@@ -222,23 +222,21 @@ FAIL link.as: IDL set to "xslt\0" assert_equals: IDL get expected "" but got "xs
 FAIL link.as: IDL set to "slt" assert_equals: IDL get expected "" but got "slt"
 FAIL link.as: IDL set to "XSLT" assert_equals: IDL get expected "xslt" but got "XSLT"
 PASS link.media: 32 tests
-FAIL link.nonce: typeof IDL attribute assert_equals: expected "string" but got "undefined"
-FAIL link.nonce: IDL get with DOM attribute unset assert_equals: expected (string) "" but got (undefined) undefined
-FAIL link.nonce: setAttribute() to "" assert_equals: IDL get expected (string) "" but got (undefined) undefined
-FAIL link.nonce: setAttribute() to " \0\x01\x02\x03\x04\x05\x06\x07 \b\t\n\v\f\r\x0e\x0f \x10\x11\x12\x13\x14\x15\x16\x17 \x18\x19\x1a\x1b\x1c\x1d\x1e\x1f  foo " assert_equals: IDL get expected (string) " \0\x01\x02\x03\x04\x05\x06\x07 \b\t\n\v\f\r\x0e\x0f \x10\x11\x12\x13\x14\x15\x16\x17 \x18\x19\x1a\x1b\x1c\x1d\x1e\x1f  foo " but got (undefined) undefined
-FAIL link.nonce: setAttribute() to undefined assert_equals: IDL get expected (string) "undefined" but got (undefined) undefined
-FAIL link.nonce: setAttribute() to 7 assert_equals: IDL get expected (string) "7" but got (undefined) undefined
-FAIL link.nonce: setAttribute() to 1.5 assert_equals: IDL get expected (string) "1.5" but got (undefined) undefined
-FAIL link.nonce: setAttribute() to true assert_equals: IDL get expected (string) "true" but got (undefined) undefined
-FAIL link.nonce: setAttribute() to false assert_equals: IDL get expected (string) "false" but got (undefined) undefined
-FAIL link.nonce: setAttribute() to object "[object Object]" assert_equals: IDL get expected (string) "[object Object]" but got (undefined) undefined
-FAIL link.nonce: setAttribute() to NaN assert_equals: IDL get expected (string) "NaN" but got (undefined) undefined
-FAIL link.nonce: setAttribute() to Infinity assert_equals: IDL get expected (string) "Infinity" but got (undefined) undefined
-FAIL link.nonce: setAttribute() to -Infinity assert_equals: IDL get expected (string) "-Infinity" but got (undefined) undefined
-FAIL link.nonce: setAttribute() to "\0" assert_equals: IDL get expected (string) "\0" but got (undefined) undefined
-FAIL link.nonce: setAttribute() to null assert_equals: IDL get expected (string) "null" but got (undefined) undefined
-FAIL link.nonce: setAttribute() to object "test-toString" assert_equals: IDL get expected (string) "test-toString" but got (undefined) undefined
-FAIL link.nonce: setAttribute() to object "test-valueOf" assert_equals: IDL get expected (string) "test-valueOf" but got (undefined) undefined
+PASS link.nonce: 3 tests
+FAIL link.nonce: setAttribute() to " \0\x01\x02\x03\x04\x05\x06\x07 \b\t\n\v\f\r\x0e\x0f \x10\x11\x12\x13\x14\x15\x16\x17 \x18\x19\x1a\x1b\x1c\x1d\x1e\x1f  foo " assert_equals: IDL get expected " \0\x01\x02\x03\x04\x05\x06\x07 \b\t\n\v\f\r\x0e\x0f \x10\x11\x12\x13\x14\x15\x16\x17 \x18\x19\x1a\x1b\x1c\x1d\x1e\x1f  foo " but got ""
+FAIL link.nonce: setAttribute() to undefined assert_equals: IDL get expected "undefined" but got ""
+FAIL link.nonce: setAttribute() to 7 assert_equals: IDL get expected "7" but got ""
+FAIL link.nonce: setAttribute() to 1.5 assert_equals: IDL get expected "1.5" but got ""
+FAIL link.nonce: setAttribute() to true assert_equals: IDL get expected "true" but got ""
+FAIL link.nonce: setAttribute() to false assert_equals: IDL get expected "false" but got ""
+FAIL link.nonce: setAttribute() to object "[object Object]" assert_equals: IDL get expected "[object Object]" but got ""
+FAIL link.nonce: setAttribute() to NaN assert_equals: IDL get expected "NaN" but got ""
+FAIL link.nonce: setAttribute() to Infinity assert_equals: IDL get expected "Infinity" but got ""
+FAIL link.nonce: setAttribute() to -Infinity assert_equals: IDL get expected "-Infinity" but got ""
+FAIL link.nonce: setAttribute() to "\0" assert_equals: IDL get expected "\0" but got ""
+FAIL link.nonce: setAttribute() to null assert_equals: IDL get expected "null" but got ""
+FAIL link.nonce: setAttribute() to object "test-toString" assert_equals: IDL get expected "test-toString" but got ""
+FAIL link.nonce: setAttribute() to object "test-valueOf" assert_equals: IDL get expected "test-valueOf" but got ""
 FAIL link.nonce: IDL set to "" assert_equals: getAttribute() expected "" but got "test-valueOf"
 FAIL link.nonce: IDL set to " \0\x01\x02\x03\x04\x05\x06\x07 \b\t\n\v\f\r\x0e\x0f \x10\x11\x12\x13\x14\x15\x16\x17 \x18\x19\x1a\x1b\x1c\x1d\x1e\x1f  foo " assert_equals: getAttribute() expected " \0\x01\x02\x03\x04\x05\x06\x07 \b\t\n\v\f\r\x0e\x0f \x10\x11\x12\x13\x14\x15\x16\x17 \x18\x19\x1a\x1b\x1c\x1d\x1e\x1f  foo " but got "test-valueOf"
 FAIL link.nonce: IDL set to undefined assert_equals: getAttribute() expected "undefined" but got "test-valueOf"
@@ -253,7 +251,7 @@ FAIL link.nonce: IDL set to -Infinity assert_equals: getAttribute() expected "-I
 FAIL link.nonce: IDL set to "\0" assert_equals: getAttribute() expected "\0" but got "test-valueOf"
 FAIL link.nonce: IDL set to null assert_equals: getAttribute() expected "null" but got "test-valueOf"
 FAIL link.nonce: IDL set to object "test-toString" assert_equals: getAttribute() expected "test-toString" but got "test-valueOf"
-FAIL link.nonce: IDL set to object "test-valueOf" assert_equals: IDL get expected (string) "test-valueOf" but got (object) object "test-valueOf"
+PASS link.nonce: IDL set to object "test-valueOf" 
 PASS link.integrity: 32 tests
 PASS link.hreflang: 32 tests
 PASS link.type: 32 tests

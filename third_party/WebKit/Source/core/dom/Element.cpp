@@ -430,6 +430,14 @@ AtomicString Element::LowercaseIfNecessary(const AtomicString& name) const {
                                                            : name;
 }
 
+const AtomicString& Element::nonce() const {
+  return HasRareData() ? GetElementRareData()->GetNonce() : g_empty_atom;
+}
+
+void Element::setNonce(const AtomicString& nonce) {
+  EnsureElementRareData().SetNonce(nonce);
+}
+
 void Element::scrollIntoView(bool align_to_top) {
   GetDocument().EnsurePaintLocationDataValidForNode(this);
 
@@ -3993,6 +4001,9 @@ void Element::CloneAttributesFromElement(const Element& other) {
     AttributeChangedFromParserOrByCloning(
         attr.GetName(), attr.Value(), AttributeModificationReason::kByCloning);
   }
+
+  if (other.nonce() != g_null_atom)
+    setNonce(other.nonce());
 }
 
 void Element::CloneDataFromElement(const Element& other) {

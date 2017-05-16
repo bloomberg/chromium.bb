@@ -51,14 +51,6 @@ void SVGScriptElement::ParseAttribute(
         EventTypeNames::error,
         CreateAttributeEventListener(this, params.name, params.new_value,
                                      EventParameterName()));
-  } else if (params.name == HTMLNames::nonceAttr) {
-    if (params.new_value == ContentSecurityPolicy::GetNonceReplacementString())
-      return;
-    setNonce(params.new_value);
-    if (RuntimeEnabledFeatures::hideNonceContentAttributeEnabled()) {
-      setAttribute(HTMLNames::nonceAttr,
-                   ContentSecurityPolicy::GetNonceReplacementString());
-    }
   } else {
     SVGElement::ParseAttribute(params);
   }
@@ -138,8 +130,9 @@ bool SVGScriptElement::HasChildren() const {
   return Node::hasChildren();
 }
 
-bool SVGScriptElement::IsNonceableElement() const {
-  return ContentSecurityPolicy::IsNonceableElement(this);
+const AtomicString& SVGScriptElement::GetNonceForElement() const {
+  return ContentSecurityPolicy::IsNonceableElement(this) ? nonce()
+                                                         : g_null_atom;
 }
 
 bool SVGScriptElement::AllowInlineScriptForCSP(

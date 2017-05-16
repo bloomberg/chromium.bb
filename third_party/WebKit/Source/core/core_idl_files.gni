@@ -468,6 +468,7 @@ core_dependency_idl_files =
                     "dom/DocumentOrShadowRoot.idl",
                     "dom/ElementFullscreen.idl",
                     "dom/GlobalEventHandlers.idl",
+                    "dom/NoncedElement.idl",
                     "dom/NonDocumentTypeChildNode.idl",
                     "dom/NonElementParentNode.idl",
                     "dom/ParentNode.idl",

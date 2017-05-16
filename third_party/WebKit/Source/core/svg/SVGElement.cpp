@@ -40,6 +40,7 @@
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/events/Event.h"
 #include "core/frame/Settings.h"
+#include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/html/HTMLElement.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "core/layout/LayoutObject.h"
@@ -407,6 +408,16 @@ Node::InsertionNotificationRequest SVGElement::InsertedInto(
   Element::InsertedInto(root_parent);
   UpdateRelativeLengthsInformation();
   BuildPendingResourcesIfNeeded();
+
+  if (hasAttribute(nonceAttr) && getAttribute(nonceAttr) != g_empty_atom) {
+    setNonce(getAttribute(nonceAttr));
+    if (RuntimeEnabledFeatures::hideNonceContentAttributeEnabled() &&
+        InActiveDocument() &&
+        GetDocument().GetContentSecurityPolicy()->HasHeaderDeliveredPolicy()) {
+      setAttribute(nonceAttr, g_empty_atom);
+    }
+  }
+
   return kInsertionDone;
 }
 

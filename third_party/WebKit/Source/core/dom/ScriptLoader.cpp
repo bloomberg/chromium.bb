@@ -340,9 +340,7 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
   // 17. "If the script element has a nonce attribute,
   //      then let cryptographic nonce be that attribute's value.
   //      Otherwise, let cryptographic nonce be the empty string."
-  String nonce;
-  if (element_->IsNonceableElement())
-    nonce = element_->nonce();
+  String nonce = element_->GetNonceForElement();
 
   // 18. is handled below.
 
@@ -828,8 +826,7 @@ bool ScriptLoader::DoExecuteScript(const Script* script) {
         csp->AllowScriptWithHash(script->InlineSourceTextForCSP(),
                                  ContentSecurityPolicy::InlineType::kBlock);
 
-    AtomicString nonce =
-        element_->IsNonceableElement() ? element_->nonce() : g_null_atom;
+    AtomicString nonce = element_->GetNonceForElement();
     if (!should_bypass_main_world_csp &&
         !element_->AllowInlineScriptForCSP(nonce, start_line_number_,
                                            script->InlineSourceTextForCSP())) {
