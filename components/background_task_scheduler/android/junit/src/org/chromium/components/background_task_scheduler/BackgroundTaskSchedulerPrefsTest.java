@@ -96,4 +96,14 @@ public class BackgroundTaskSchedulerPrefsTest {
         assertTrue("TASK_2 class name in scheduled tasks.",
                 scheduledTasks.contains(TASK_2.getBackgroundTaskClass().getName()));
     }
+
+    @Test
+    @Feature("BackgroundTaskScheduler")
+    public void testRemoveAllTasks() {
+        BackgroundTaskSchedulerPrefs.addScheduledTask(TASK_1);
+        BackgroundTaskSchedulerPrefs.addScheduledTask(TASK_2);
+        BackgroundTaskSchedulerPrefs.removeAllTasks();
+        assertTrue("We are expecting a all tasks to be gone.",
+                BackgroundTaskSchedulerPrefs.getScheduledTasks().isEmpty());
+    }
 }
