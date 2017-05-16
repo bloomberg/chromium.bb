@@ -1317,6 +1317,30 @@ TEST_F(LayerTreeHostCommonTest, TransformAboveRootLayer) {
   }
 }
 
+TEST_F(LayerTreeHostCommonTest, RenderSurfaceForNonAxisAlignedClipping) {
+  LayerImpl* root = root_layer_for_testing();
+  LayerImpl* rotated_and_transparent = AddChildToRoot<LayerImpl>();
+  LayerImpl* clips_subtree = AddChild<LayerImpl>(rotated_and_transparent);
+  LayerImpl* draws_content = AddChild<LayerImpl>(clips_subtree);
+
+  root->SetBounds(gfx::Size(10, 10));
+  rotated_and_transparent->SetBounds(gfx::Size(10, 10));
+  rotated_and_transparent->test_properties()->opacity = 0.5f;
+  gfx::Transform rotate;
+  rotate.Rotate(2);
+  rotated_and_transparent->test_properties()->transform = rotate;
+  clips_subtree->SetBounds(gfx::Size(10, 10));
+  clips_subtree->SetMasksToBounds(true);
+  draws_content->SetBounds(gfx::Size(10, 10));
+  draws_content->SetDrawsContent(true);
+
+  ExecuteCalculateDrawProperties(root);
+  EffectTree& effect_tree =
+      root->layer_tree_impl()->property_trees()->effect_tree;
+  EffectNode* node = effect_tree.Node(clips_subtree->effect_tree_index());
+  EXPECT_TRUE(node->has_render_surface);
+}
+
 TEST_F(LayerTreeHostCommonTest,
        RenderSurfaceListForRenderSurfaceWithClippedLayer) {
   LayerImpl* root = root_layer_for_testing();
