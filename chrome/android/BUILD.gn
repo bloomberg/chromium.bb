@@ -541,7 +541,7 @@ if (enable_vr) {
       "javatests/src/org/chromium/chrome/browser/vr_shell/MockVrDaydreamApi.java",
       "javatests/src/org/chromium/chrome/browser/vr_shell/VrShellTest.java",
       "javatests/src/org/chromium/chrome/browser/vr_shell/VrShellNavigationTest.java",
-      "javatests/src/org/chromium/chrome/browser/vr_shell/VrTestBase.java",
+      "javatests/src/org/chromium/chrome/browser/vr_shell/VrTestRule.java",
       "javatests/src/org/chromium/chrome/browser/vr_shell/VrUtils.java",
       "javatests/src/org/chromium/chrome/browser/vr_shell/WebVrTest.java",
     ]
@@ -556,10 +556,12 @@ if (enable_vr) {
       "//content/public/android:content_java",
       "//content/public/test/android:content_java_test_support",
       "//third_party/android_protobuf:protobuf_nano_javalib",
+      "//third_party/android_support_test_runner:rules_java",
       "//third_party/android_support_test_runner:runner_java",
       "//third_party/android_tools:android_support_v7_appcompat_java",
       "//third_party/gvr-android-sdk:controller_test_api_java",
       "//third_party/gvr-android-sdk:gvr_common_java",
+      "//third_party/junit",
       "//ui/android:ui_java",
     ]
 
