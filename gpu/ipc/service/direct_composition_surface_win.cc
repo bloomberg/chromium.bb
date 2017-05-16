@@ -17,6 +17,7 @@
 #include "base/trace_event/trace_event.h"
 #include "base/win/scoped_handle.h"
 #include "base/win/windows_version.h"
+#include "gpu/command_buffer/service/feature_info.h"
 #include "gpu/ipc/service/gpu_channel_manager.h"
 #include "gpu/ipc/service/gpu_channel_manager_delegate.h"
 #include "gpu/ipc/service/switches.h"
@@ -105,6 +106,8 @@ class PresentationHistory {
   DISALLOW_COPY_AND_ASSIGN(PresentationHistory);
 };
 
+gfx::Size g_overlay_monitor_size;
+
 // This is the raw support info, which shouldn't depend on field trial state.
 bool HardwareSupportsOverlays() {
   if (!gl::GLSurfaceEGL::IsDirectCompositionSupported())
@@ -157,6 +160,11 @@ bool HardwareSupportsOverlays() {
     // efficient.
     if (flags & (DXGI_OVERLAY_SUPPORT_FLAG_SCALING |
                  DXGI_OVERLAY_SUPPORT_FLAG_DIRECT)) {
+      DXGI_OUTPUT_DESC monitor_desc = {};
+      if (FAILED(output3->GetDesc(&monitor_desc)))
+        continue;
+      g_overlay_monitor_size =
+          gfx::Rect(monitor_desc.DesktopCoordinates).size();
       return true;
     }
   }
@@ -194,6 +202,10 @@ class DCLayerTree {
   }
   base::win::ScopedComPtr<IDXGISwapChain1> GetLayerSwapChainForTesting(
       size_t index) const;
+
+  const GpuDriverBugWorkarounds& workarounds() const {
+    return surface_->workarounds();
+  }
 
  private:
   class SwapChainPresenter;
@@ -628,6 +640,33 @@ void DCLayerTree::SwapChainPresenter::PresentToSwapChain(
     CHECK(SUCCEEDED(hr));
   }
 
+  if (surface_->workarounds().disable_larger_than_screen_overlays) {
+    // Because of the rounding when converting between pixels and DIPs, a
+    // fullscreen video can become slightly larger than the monitor - e.g. on
+    // a 3000x2000 monitor with a scale factor of 1.75 a 1920x1079 video can
+    // become 3002x1689.
+    // On older Intel drivers, swapchains that are bigger than the monitor
+    // won't be put into overlays, which will hurt power usage a lot. On those
+    // systems, the scaling can be adjusted very slightly so that it's less
+    // than the monitor size. This should be close to imperceptible.
+    // TODO(jbauman): Remove when http://crbug.com/668278 is fixed.
+    const int kOversizeMargin = 3;
+
+    if ((bounds_rect.x() >= 0) &&
+        (bounds_rect.width() > g_overlay_monitor_size.width()) &&
+        (bounds_rect.width() <=
+         g_overlay_monitor_size.width() + kOversizeMargin)) {
+      bounds_rect.set_width(g_overlay_monitor_size.width());
+    }
+
+    if ((bounds_rect.y() >= 0) &&
+        (bounds_rect.height() > g_overlay_monitor_size.height()) &&
+        (bounds_rect.height() <=
+         g_overlay_monitor_size.height() + kOversizeMargin)) {
+      bounds_rect.set_height(g_overlay_monitor_size.height());
+    }
+  }
+
   swap_chain_scale_x_ = bounds_rect.width() * 1.0f / swap_chain_size.width();
   swap_chain_scale_y_ = bounds_rect.height() * 1.0f / swap_chain_size.height();
 
@@ -948,6 +987,7 @@ DirectCompositionSurfaceWin::DirectCompositionSurfaceWin(
     HWND parent_window)
     : gl::GLSurfaceEGL(),
       child_window_(delegate, parent_window),
+      workarounds_(delegate->GetFeatureInfo()->workarounds()),
       vsync_provider_(std::move(vsync_provider)) {}
 
 DirectCompositionSurfaceWin::~DirectCompositionSurfaceWin() {

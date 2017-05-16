@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "gpu/ipc/service/direct_composition_surface_win.h"
+
 #include "base/memory/ref_counted_memory.h"
 #include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
@@ -11,6 +12,7 @@
 #include "base/win/scoped_gdi_object.h"
 #include "base/win/scoped_hdc.h"
 #include "base/win/scoped_select_object.h"
+#include "gpu/command_buffer/service/feature_info.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/win/hidden_window.h"
 #include "ui/gfx/buffer_format_util.h"
@@ -42,6 +44,9 @@ class TestImageTransportSurfaceDelegate
     : public ImageTransportSurfaceDelegate,
       public base::SupportsWeakPtr<TestImageTransportSurfaceDelegate> {
  public:
+  TestImageTransportSurfaceDelegate()
+      : feature_info_(new gpu::gles2::FeatureInfo()) {}
+
   ~TestImageTransportSurfaceDelegate() override {}
 
   // ImageTransportSurfaceDelegate implementation.
@@ -52,12 +57,17 @@ class TestImageTransportSurfaceDelegate
       ::SetParent(child_window, parent_window);
   }
   void DidSwapBuffersComplete(SwapBuffersCompleteParams params) override {}
-  const gles2::FeatureInfo* GetFeatureInfo() const override { return nullptr; }
+  const gles2::FeatureInfo* GetFeatureInfo() const override {
+    return feature_info_.get();
+  }
   void SetLatencyInfoCallback(const LatencyInfoCallback& callback) override {}
   void UpdateVSyncParameters(base::TimeTicks timebase,
                              base::TimeDelta interval) override {}
   void AddFilter(IPC::MessageFilter* message_filter) override {}
   int32_t GetRouteID() const override { return 0; }
+
+ private:
+  scoped_refptr<gpu::gles2::FeatureInfo> feature_info_;
 };
 
 class TestPlatformDelegate : public ui::PlatformWindowDelegate {
