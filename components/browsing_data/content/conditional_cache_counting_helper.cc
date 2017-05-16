@@ -74,7 +74,7 @@ void ConditionalCacheCountingHelper::Finished() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!is_finished_);
   is_finished_ = true;
-  result_callback_.Run(calculation_result_, is_upper_limit_);
+  result_callback_.Run(is_upper_limit_, calculation_result_);
   base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, this);
 }
 

@@ -330,7 +330,7 @@ void StorageManagerHandler::UpdateBrowsingDataSize() {
                  weak_ptr_factory_.GetWeakPtr(), true));
 }
 
-void StorageManagerHandler::OnGetCacheSize(int64_t size, bool is_upper_limit) {
+void StorageManagerHandler::OnGetCacheSize(bool is_upper_limit, int64_t size) {
   DCHECK(!is_upper_limit);
   OnGetBrowsingDataSize(false, size);
 }

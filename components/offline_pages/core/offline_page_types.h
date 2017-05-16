@@ -77,6 +77,7 @@ typedef base::Callback<void(const OfflinePageItem*)>
 typedef base::Callback<void(const MultipleOfflinePageItemResult&)>
     MultipleOfflinePageItemCallback;
 typedef base::Callback<bool(const GURL&)> UrlPredicate;
+typedef base::Callback<void(int64_t)> SizeInBytesCallback;
 }  // namespace offline_pages
 
 #endif  // COMPONENTS_OFFLINE_PAGES_CORE_OFFLINE_PAGE_TYPES_H_
