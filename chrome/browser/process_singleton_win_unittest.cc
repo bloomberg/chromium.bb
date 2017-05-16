@@ -20,6 +20,7 @@
 #include "base/process/process_handle.h"
 #include "base/strings/string16.h"
 #include "base/strings/stringprintf.h"
+#include "base/test/histogram_tester.h"
 #include "base/test/multiprocess_test.h"
 #include "base/win/scoped_handle.h"
 #include "base/win/wrapped_window_proc.h"
@@ -235,6 +236,10 @@ class ProcessSingletonTest : public base::MultiProcessTest {
   ProcessSingleton* test_singleton() const { return test_singleton_.get(); }
   bool should_kill_called() const { return should_kill_called_; }
 
+  const base::HistogramTester& histogram_tester() const {
+    return histogram_tester_;
+  }
+
  private:
   bool MockShouldKillRemoteProcess(bool allow_kill) {
     should_kill_called_ = true;
@@ -253,6 +258,7 @@ class ProcessSingletonTest : public base::MultiProcessTest {
 
   base::TimeDelta old_notification_timeout_;
   bool should_kill_called_;
+  base::HistogramTester histogram_tester_;
 
   DISALLOW_COPY_AND_ASSIGN(ProcessSingletonTest);
 };
@@ -275,6 +281,19 @@ TEST_F(ProcessSingletonTest, KillsHungBrowserWithNoWindows) {
   // not have visible window.
   EXPECT_FALSE(should_kill_called());
 
+  histogram_tester().ExpectUniqueSample(
+      "Chrome.ProcessSingleton.RemoteProcessInteractionResult",
+      ProcessSingleton::TERMINATE_SUCCEEDED, 1u);
+  histogram_tester().ExpectTotalCount(
+      "Chrome.ProcessSingleton.TerminateProcessTime", 1u);
+  histogram_tester().ExpectUniqueSample(
+      "Chrome.ProcessSingleton.ProcessTerminateErrorCode.Windows", 0, 1u);
+  histogram_tester().ExpectUniqueSample(
+      "Chrome.ProcessSingleton.TerminationWaitErrorCode.Windows", 0, 1u);
+  histogram_tester().ExpectUniqueSample(
+      "Chrome.ProcessSingleton.RemoteHungProcessTerminateReason",
+      ProcessSingleton::NO_VISIBLE_WINDOW_FOUND, 1u);
+
   // Verify that the hung browser has been terminated with the
   // RESULT_CODE_HUNG exit code.
   int exit_code = 0;
@@ -295,6 +314,9 @@ TEST_F(ProcessSingletonTest, DoesntKillWithoutUserPermission) {
   // The should-kill callback should have been called, as the "browser" has a
   // visible window.
   EXPECT_TRUE(should_kill_called());
+
+  histogram_tester().ExpectTotalCount(
+      "Chrome.ProcessSingleton.RemoteProcessInteractionResult", 0);
 
   // Make sure the process hasn't been killed.
   int exit_code = 0;
@@ -317,6 +339,19 @@ TEST_F(ProcessSingletonTest, KillWithUserPermission) {
   // The should-kill callback should have been called, as the "browser" has a
   // visible window.
   EXPECT_TRUE(should_kill_called());
+
+  histogram_tester().ExpectUniqueSample(
+      "Chrome.ProcessSingleton.RemoteProcessInteractionResult",
+      ProcessSingleton::TERMINATE_SUCCEEDED, 1u);
+  histogram_tester().ExpectTotalCount(
+      "Chrome.ProcessSingleton.TerminateProcessTime", 1u);
+  histogram_tester().ExpectUniqueSample(
+      "Chrome.ProcessSingleton.ProcessTerminateErrorCode.Windows", 0, 1u);
+  histogram_tester().ExpectUniqueSample(
+      "Chrome.ProcessSingleton.TerminationWaitErrorCode.Windows", 0, 1u);
+  histogram_tester().ExpectUniqueSample(
+      "Chrome.ProcessSingleton.RemoteHungProcessTerminateReason",
+      ProcessSingleton::USER_ACCEPTED_TERMINATION, 1u);
 
   // Verify that the hung browser has been terminated with the
   // RESULT_CODE_HUNG exit code.

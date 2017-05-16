@@ -29775,6 +29775,14 @@ from previous Chrome versions.
   <int value="1" label="Increment"/>
 </enum>
 
+<enum name="RemoteHungProcessTerminateReason" type="int">
+  <int value="1" label="Terminate accepted by user"/>
+  <int value="2" label="No visible windows found"/>
+  <int value="3" label="Retry attempts to notify remote process exceeded"/>
+  <int value="4" label="Failed to write message to socket"/>
+  <int value="5" label="Failed to read ACK message from socket"/>
+</enum>
+
 <enum name="RemotePlaybackDeviceType" type="int">
   <int value="0" label="Cast Generic Media Player"/>
   <int value="1" label="Cast YouTube Player"/>
@@ -29789,6 +29797,25 @@ from previous Chrome versions.
   <int value="4" label="The response code indicated failure"/>
   <int value="5" label="IO exception while fetching the url"/>
   <int value="6" label="Unknown media type"/>
+</enum>
+
+<enum name="RemoteProcessInteractionResult" type="int">
+  <int value="0" label="Terminate succeeded"/>
+  <int value="1" label="Terminate failed"/>
+  <int value="2" label="Remote process not found"/>
+  <int value="3" label="Terminate wait timeout"/>
+  <int value="4" label="Error occured during remote process notification"/>
+  <int value="5" label="Not enough permissions to terminate"/>
+  <int value="6" label="Remote process is shutting down"/>
+  <int value="7" label="User accepted profile unlock"/>
+  <int value="8"
+      label="User accepted profile unlock prior to remote process kill"/>
+  <int value="9" label="Remote process is the same browser instance"/>
+  <int value="10"
+      label="Found the same browser instance prior to remote process kill"/>
+  <int value="11" label="Failed to extract pid from lock file path"/>
+  <int value="12" label="Invalid lock file"/>
+  <int value="13" label="Orphaned lock file"/>
 </enum>
 
 <enum name="RemotingStartTrigger" type="int">

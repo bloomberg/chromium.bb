@@ -111,7 +111,6 @@ const int kTimeoutInSeconds = 20;
 // Number of retries to notify the browser. 20 retries over 20 seconds = 1 try
 // per second.
 const int kRetryAttempts = 20;
-static bool g_disable_prompt;
 const char kStartToken[] = "START";
 const char kACKToken[] = "ACK";
 const char kShutdownToken[] = "SHUTDOWN";
@@ -120,6 +119,9 @@ const int kMaxMessageLength = 32 * 1024;
 const int kMaxACKMessageLength = arraysize(kShutdownToken) - 1;
 
 const char kLockDelimiter = '-';
+
+bool g_disable_prompt = false;
+bool g_skip_is_chrome_process_check = false;
 
 // Set the close-on-exec bit on a file descriptor.
 // Returns 0 on success, -1 on failure.
@@ -338,8 +340,9 @@ bool DisplayProfileInUseError(const base::FilePath& lock_path,
 bool IsChromeProcess(pid_t pid) {
   base::FilePath other_chrome_path(base::GetProcessExecutablePath(pid));
   return (!other_chrome_path.empty() &&
-          other_chrome_path.BaseName() ==
-          base::FilePath(chrome::kBrowserProcessExecutableName));
+          (g_skip_is_chrome_process_check ||
+           other_chrome_path.BaseName() ==
+               base::FilePath(chrome::kBrowserProcessExecutableName)));
 }
 
 // A helper class to hold onto a socket.
@@ -463,6 +466,20 @@ bool ReplaceOldSingletonLock(const base::FilePath& symlink_content,
   return SymlinkPath(symlink_content, lock_path);
 }
 #endif  // defined(OS_MACOSX)
+
+void SendRemoteProcessInteractionResultHistogram(
+    ProcessSingleton::RemoteProcessInteractionResult result) {
+  UMA_HISTOGRAM_ENUMERATION(
+      "Chrome.ProcessSingleton.RemoteProcessInteractionResult", result,
+      ProcessSingleton::REMOTE_PROCESS_INTERACTION_RESULT_COUNT);
+}
+
+void SendRemoteHungProcessTerminateReasonHistogram(
+    ProcessSingleton::RemoteHungProcessTerminateReason reason) {
+  UMA_HISTOGRAM_ENUMERATION(
+      "Chrome.ProcessSingleton.RemoteHungProcessTerminateReason", reason,
+      ProcessSingleton::REMOTE_HUNG_PROCESS_TERMINATE_REASON_COUNT);
+}
 
 }  // namespace
 
@@ -776,6 +793,7 @@ ProcessSingleton::NotifyResult ProcessSingleton::NotifyOtherProcessWithTimeout(
     if (hostname.empty()) {
       // Invalid lockfile.
       UnlinkPath(lock_path_);
+      SendRemoteProcessInteractionResultHistogram(INVALID_LOCK_FILE);
       return PROCESS_NONE;
     }
 
@@ -784,6 +802,7 @@ ProcessSingleton::NotifyResult ProcessSingleton::NotifyOtherProcessWithTimeout(
       // the profile, try to continue; otherwise quit.
       if (DisplayProfileInUseError(lock_path_, hostname, pid)) {
         UnlinkPath(lock_path_);
+        SendRemoteProcessInteractionResultHistogram(PROFILE_UNLOCKED);
         return PROCESS_NONE;
       }
       return PROFILE_IN_USE;
@@ -792,6 +811,7 @@ ProcessSingleton::NotifyResult ProcessSingleton::NotifyOtherProcessWithTimeout(
     if (!IsChromeProcess(pid)) {
       // Orphaned lockfile (no process with pid, or non-chrome process.)
       UnlinkPath(lock_path_);
+      SendRemoteProcessInteractionResultHistogram(ORPHANED_LOCK_FILE);
       return PROCESS_NONE;
     }
 
@@ -799,6 +819,7 @@ ProcessSingleton::NotifyResult ProcessSingleton::NotifyOtherProcessWithTimeout(
       // Orphaned lockfile (pid is part of same chrome instance we are, even
       // though we haven't tried to create a lockfile yet).
       UnlinkPath(lock_path_);
+      SendRemoteProcessInteractionResultHistogram(SAME_BROWSER_INSTANCE);
       return PROCESS_NONE;
     }
 
@@ -806,6 +827,7 @@ ProcessSingleton::NotifyResult ProcessSingleton::NotifyOtherProcessWithTimeout(
       // Retries failed.  Kill the unresponsive chrome process and continue.
       if (!kill_unresponsive || !KillProcessByLockPath())
         return PROFILE_IN_USE;
+      SendRemoteHungProcessTerminateReasonHistogram(NOTIFY_ATTEMPTS_EXCEEDED);
       return PROCESS_NONE;
     }
 
@@ -841,6 +863,7 @@ ProcessSingleton::NotifyResult ProcessSingleton::NotifyOtherProcessWithTimeout(
     // Try to kill the other process, because it might have been dead.
     if (!kill_unresponsive || !KillProcessByLockPath())
       return PROFILE_IN_USE;
+    SendRemoteHungProcessTerminateReasonHistogram(SOCKET_WRITE_FAILED);
     return PROCESS_NONE;
   }
 
@@ -856,12 +879,14 @@ ProcessSingleton::NotifyResult ProcessSingleton::NotifyOtherProcessWithTimeout(
   if (len <= 0) {
     if (!kill_unresponsive || !KillProcessByLockPath())
       return PROFILE_IN_USE;
+    SendRemoteHungProcessTerminateReasonHistogram(SOCKET_READ_FAILED);
     return PROCESS_NONE;
   }
 
   buf[len] = '\0';
   if (strncmp(buf, kShutdownToken, arraysize(kShutdownToken) - 1) == 0) {
     // The other process is shutting down, it's safe to start a new process.
+    SendRemoteProcessInteractionResultHistogram(REMOTE_PROCESS_SHUTTING_DOWN);
     return PROCESS_NONE;
   } else if (strncmp(buf, kACKToken, arraysize(kACKToken) - 1) == 0) {
 #if defined(TOOLKIT_VIEWS) && defined(OS_LINUX) && !defined(OS_CHROMEOS)
@@ -943,6 +968,10 @@ void ProcessSingleton::OverrideKillCallbackForTesting(
 
 void ProcessSingleton::DisablePromptForTesting() {
   g_disable_prompt = true;
+}
+
+void ProcessSingleton::SkipIsChromeProcessCheckForTesting(bool skip) {
+  g_skip_is_chrome_process_check = skip;
 }
 
 bool ProcessSingleton::Create() {
@@ -1057,17 +1086,25 @@ bool ProcessSingleton::KillProcessByLockPath() {
   ParseLockPath(lock_path_, &hostname, &pid);
 
   if (!hostname.empty() && hostname != net::GetHostName()) {
-    return DisplayProfileInUseError(lock_path_, hostname, pid);
+    bool res = DisplayProfileInUseError(lock_path_, hostname, pid);
+    if (res)
+      SendRemoteProcessInteractionResultHistogram(PROFILE_UNLOCKED_BEFORE_KILL);
+    return res;
   }
   UnlinkPath(lock_path_);
 
-  if (IsSameChromeInstance(pid))
+  if (IsSameChromeInstance(pid)) {
+    SendRemoteProcessInteractionResultHistogram(
+        SAME_BROWSER_INSTANCE_BEFORE_KILL);
     return true;
+  }
 
   if (pid > 0) {
     kill_callback_.Run(pid);
     return true;
   }
+
+  SendRemoteProcessInteractionResultHistogram(FAILED_TO_EXTRACT_PID);
 
   LOG(ERROR) << "Failed to extract pid from path: " << lock_path_.value();
   return true;
@@ -1080,4 +1117,24 @@ void ProcessSingleton::KillProcess(int pid) {
   // progress of shutting down and finishes before we try to kill it).
   DCHECK(rv == 0 || errno == ESRCH) << "Error killing process: "
                                     << base::safe_strerror(errno);
+
+  int error_code = (rv == 0) ? 0 : errno;
+  UMA_HISTOGRAM_SPARSE_SLOWLY(
+      "Chrome.ProcessSingleton.TerminateProcessErrorCode.Posix", error_code);
+
+  RemoteProcessInteractionResult action = TERMINATE_SUCCEEDED;
+  if (rv != 0) {
+    switch (error_code) {
+      case ESRCH:
+        action = REMOTE_PROCESS_NOT_FOUND;
+        break;
+      case EPERM:
+        action = TERMINATE_NOT_ENOUGH_PERMISSIONS;
+        break;
+      default:
+        action = TERMINATE_FAILED;
+        break;
+    }
+  }
+  SendRemoteProcessInteractionResultHistogram(action);
 }

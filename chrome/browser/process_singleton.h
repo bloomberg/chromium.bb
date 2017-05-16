@@ -49,6 +49,42 @@ class CommandLine;
 
 class ProcessSingleton : public base::NonThreadSafe {
  public:
+  // Used to send the reason of remote hang process termination as histogram.
+  enum RemoteHungProcessTerminateReason {
+#if defined(OS_WIN)
+    USER_ACCEPTED_TERMINATION = 1,
+    NO_VISIBLE_WINDOW_FOUND = 2,
+#elif defined(OS_POSIX)
+    NOTIFY_ATTEMPTS_EXCEEDED = 3,
+    SOCKET_WRITE_FAILED = 4,
+    SOCKET_READ_FAILED = 5,
+#endif
+    REMOTE_HUNG_PROCESS_TERMINATE_REASON_COUNT
+  };
+
+  // Used to send the result of interaction with remote process as histograms in
+  // case when remote process influences on start.
+  enum RemoteProcessInteractionResult {
+    TERMINATE_SUCCEEDED = 0,
+    TERMINATE_FAILED = 1,
+    REMOTE_PROCESS_NOT_FOUND = 2,
+#if defined(OS_WIN)
+    TERMINATE_WAIT_TIMEOUT = 3,
+    RUNNING_PROCESS_NOTIFY_ERROR = 4,
+#elif defined(OS_POSIX)
+    TERMINATE_NOT_ENOUGH_PERMISSIONS = 5,
+    REMOTE_PROCESS_SHUTTING_DOWN = 6,
+    PROFILE_UNLOCKED = 7,
+    PROFILE_UNLOCKED_BEFORE_KILL = 8,
+    SAME_BROWSER_INSTANCE = 9,
+    SAME_BROWSER_INSTANCE_BEFORE_KILL = 10,
+    FAILED_TO_EXTRACT_PID = 11,
+    INVALID_LOCK_FILE = 12,
+    ORPHANED_LOCK_FILE = 13,
+#endif
+    REMOTE_PROCESS_INTERACTION_RESULT_COUNT
+  };
+
   // Logged as histograms, do not modify these values.
   enum NotifyResult {
     PROCESS_NONE = 0,
@@ -95,6 +131,7 @@ class ProcessSingleton : public base::NonThreadSafe {
 
 #if defined(OS_POSIX) && !defined(OS_ANDROID)
   static void DisablePromptForTesting();
+  static void SkipIsChromeProcessCheckForTesting(bool skip);
 #endif
 #if defined(OS_WIN)
   // Called to query whether to kill a hung browser process that has visible

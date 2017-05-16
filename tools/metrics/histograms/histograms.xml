@@ -7093,6 +7093,61 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Chrome.ProcessSingleton.RemoteHungProcessTerminateReason"
+    enum="RemoteHungProcessTerminateReason">
+  <owner>aseren@yandex-team.ru</owner>
+  <owner>gab@chromium.org</owner>
+  <summary>The reason of remote hang processes termination.</summary>
+</histogram>
+
+<histogram name="Chrome.ProcessSingleton.RemoteProcessInteractionResult"
+    enum="RemoteProcessInteractionResult">
+  <owner>aseren@yandex-team.ru</owner>
+  <owner>gab@chromium.org</owner>
+  <summary>
+    Used to send the result of interaction with remote process as histograms in
+    case when remote process influences on start.
+  </summary>
+</histogram>
+
+<histogram name="Chrome.ProcessSingleton.TerminateProcessErrorCode.Posix"
+    enum="OSAgnosticErrno">
+  <owner>aseren@yandex-team.ru</owner>
+  <owner>gab@chromium.org</owner>
+  <summary>
+    The error code of remote process termination on Posix in case when remote
+    process hung.
+  </summary>
+</histogram>
+
+<histogram name="Chrome.ProcessSingleton.TerminateProcessErrorCode.Windows"
+    enum="WinGetLastError">
+  <owner>aseren@yandex-team.ru</owner>
+  <owner>gab@chromium.org</owner>
+  <summary>
+    The error code of remote process termination on Windows in case when remote
+    process hung.
+  </summary>
+</histogram>
+
+<histogram name="Chrome.ProcessSingleton.TerminateProcessTime" units="ms">
+  <owner>aseren@yandex-team.ru</owner>
+  <owner>gab@chromium.org</owner>
+  <summary>
+    Time it takes from TerminateProcess call to the moment when we stop waiting
+    for remote process switches to signal state.
+  </summary>
+</histogram>
+
+<histogram name="Chrome.ProcessSingleton.TerminationWaitErrorCode.Windows"
+    enum="WinGetLastError">
+  <owner>aseren@yandex-team.ru</owner>
+  <owner>gab@chromium.org</owner>
+  <summary>
+    The error code of wating for remote process termination on Windows.
+  </summary>
+</histogram>
+
 <histogram name="Chrome.ProcessSingleton.TimeToCreate" units="ms">
   <owner>gab@chromium.org</owner>
   <summary>
