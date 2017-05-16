@@ -672,7 +672,9 @@ def apply_gerrit_ref(gerrit_repo, gerrit_ref, root, gerrit_reset,
         ok = False
         git('checkout', '-b', temp_branch_name, cwd=root)
         try:
-          git('rebase', base_rev, cwd=root, tries=1)
+          git('-c', 'user.name=chrome-bot',
+              '-c', 'user.email=chrome-bot@chromium.org',
+              'rebase', base_rev, cwd=root, tries=1)
         except SubprocessFailed:
           # Abort the rebase since there were failures.
           git('rebase', '--abort', cwd=root)
