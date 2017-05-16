@@ -6,7 +6,7 @@ Symbol: FlagsString, IsBss, IsGeneratedByToolchain, IsGroup, address, aliases, e
 
 SymbolGroup (extends Symbol): Clustered, CountUniqueSymbols, Filter, GroupedBy, GroupedByName, GroupedByPath, GroupedBySectionName, Inverted, IterLeafSymbols, IterUniqueSymbols, Sorted, SortedByAddress, SortedByCount, SortedByName, WhereAddressInRange, WhereFullNameMatches, WhereGeneratedByToolchain, WhereHasAnyAttribution, WhereHasPath, WhereInSection, WhereIsTemplate, WhereMatches, WhereNameMatches, WhereObjectPathMatches, WherePathMatches, WherePssBiggerThan, WhereSizeBiggerThan, WhereSourceIsGenerated, WhereSourcePathMatches, WhereTemplateNameMatches, is_sorted
 
-SymbolDiff (extends SymbolGroup): IsAdded, IsRemoved, IsSimilar, WhereNotUnchanged, added_count, changed_count, removed_count, unchanged_count
+SymbolDiff (extends SymbolGroup): DiffStatus, IsAdded, IsChanged, IsRemoved, IsUnchanged, WhereNotUnchanged, added_count, changed_count, removed_count, unchanged_count
 
 canned_queries: CategorizeByChromeComponent, CategorizeGenerated, TemplatesByName
 

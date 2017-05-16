@@ -77,9 +77,7 @@ class BaseDiff(object):
 
 
 class NativeDiff(BaseDiff):
-  _RE_SUMMARY = re.compile(
-      r'.*(Section Sizes .*? object files added, \d+ removed).*',
-      flags=re.DOTALL)
+  _RE_SUMMARY = re.compile(r'Section Sizes .*?\n\n.*?(?=\n\n)', flags=re.DOTALL)
   _RE_SUMMARY_STAT = re.compile(
       r'Section Sizes \(Total=(?P<value>\d+) (?P<units>\w+)\)')
   _SUMMARY_STAT_NAME = 'Native Library Delta'
@@ -102,7 +100,7 @@ class NativeDiff(BaseDiff):
     return self._diff.splitlines()
 
   def Summary(self):
-    return NativeDiff._RE_SUMMARY.match(self._diff).group(1)
+    return NativeDiff._RE_SUMMARY.search(self._diff).group()
 
   def ProduceDiff(self, before_dir, after_dir):
     before_size = os.path.join(before_dir, self._size_name)

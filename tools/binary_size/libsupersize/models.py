@@ -59,6 +59,11 @@ FLAG_REL = 8
 FLAG_REL_LOCAL = 16
 FLAG_GENERATED_SOURCE = 32
 
+DIFF_STATUS_UNCHANGED = 0
+DIFF_STATUS_CHANGED = 1
+DIFF_STATUS_ADDED = 2
+DIFF_STATUS_REMOVED = 3
+
 
 class SizeInfo(object):
   """Represents all size information for a single binary.
@@ -299,7 +304,7 @@ class SymbolGroup(BaseSymbol):
     return len(self._symbols)
 
   def __eq__(self, other):
-    return self._symbols == other._symbols
+    return isinstance(other, SymbolGroup) and self._symbols == other._symbols
 
   def __getitem__(self, key):
     """|key| can be an index or an address.
@@ -649,11 +654,15 @@ class SymbolDiff(SymbolGroup):
   __slots__ = (
       '_added_ids',
       '_removed_ids',
+      '_diff_status',
+      '_changed_count',
   )
 
   def __init__(self, added, removed, similar):
     self._added_ids = set(id(s) for s in added)
     self._removed_ids = set(id(s) for s in removed)
+    self._diff_status = DIFF_STATUS_CHANGED
+    self._changed_count = None
     symbols = []
     symbols.extend(added)
     symbols.extend(removed)
@@ -668,38 +677,28 @@ class SymbolDiff(SymbolGroup):
   def _CreateTransformed(self, symbols, filtered_symbols=None, full_name=None,
                          template_name=None, name=None, section_name=None,
                          is_sorted=None):
-    # Printing sorts, so short-circuit the same symbols case.
-    if len(symbols) == len(self._symbols):
-      new_added_ids = self._added_ids
-      new_removed_ids = self._removed_ids
-    else:
-      old_added_ids = self._added_ids
-      old_removed_ids = self._removed_ids
-
-      def get_status(sym):
-        obj_id = id(sym)
-        if obj_id in old_added_ids:
-          return 0
-        if obj_id in old_removed_ids:
-          return 1
-        if sym.IsGroup():
-          first_status = get_status(sym[0])
-          if all(get_status(s) == first_status for s in sym[1:]):
-            return first_status
-        return 2
-
-      new_added_ids = set()
-      new_removed_ids = set()
+    new_added_ids = set()
+    new_removed_ids = set()
+    group_diff_status = DIFF_STATUS_UNCHANGED
+    changed_count = 0
+    if symbols:
+      group_diff_status = self.DiffStatus(symbols[0])
       for sym in symbols:
-        status = get_status(sym)
-        if status == 0:
+        status = self.DiffStatus(sym)
+        if status != group_diff_status:
+          group_diff_status = DIFF_STATUS_CHANGED
+        if status == DIFF_STATUS_ADDED:
           new_added_ids.add(id(sym))
-        elif status == 1:
+        elif status == DIFF_STATUS_REMOVED:
           new_removed_ids.add(id(sym))
+        elif status == DIFF_STATUS_CHANGED:
+          changed_count += 1
 
     ret = SymbolDiff.__new__(SymbolDiff)
     ret._added_ids = new_added_ids
     ret._removed_ids = new_removed_ids
+    ret._diff_status = group_diff_status
+    ret._changed_count = changed_count
     super(SymbolDiff, ret).__init__(
         symbols, filtered_symbols=filtered_symbols, full_name=full_name,
         template_name=template_name, name=name, section_name=section_name,
@@ -716,25 +715,42 @@ class SymbolDiff(SymbolGroup):
 
   @property
   def changed_count(self):
-    not_changed = self.unchanged_count + self.added_count + self.removed_count
-    return len(self) - not_changed
+    if self._changed_count is None:
+      self._changed_count = sum(1 for s in self if self.IsChanged(s))
+    return self._changed_count
 
   @property
   def unchanged_count(self):
-    return sum(1 for s in self if self.IsSimilar(s) and s.size == 0)
+    return (len(self) - self.changed_count - self.added_count -
+            self.removed_count)
+
+  def DiffStatus(self, sym):
+    # Groups store their own status, computed during _CreateTransformed().
+    if sym.IsGroup():
+      return sym._diff_status
+    sym_id = id(sym)
+    if sym_id in self._added_ids:
+      return DIFF_STATUS_ADDED
+    if sym_id in self._removed_ids:
+      return DIFF_STATUS_REMOVED
+    # 0 --> unchanged
+    # 1 --> changed
+    return int(sym.size != 0)
+
+  def IsUnchanged(self, sym):
+    return self.DiffStatus(sym) == DIFF_STATUS_UNCHANGED
+
+  def IsChanged(self, sym):
+    return self.DiffStatus(sym) == DIFF_STATUS_CHANGED
 
   def IsAdded(self, sym):
-    return id(sym) in self._added_ids
-
-  def IsSimilar(self, sym):
-    key = id(sym)
-    return key not in self._added_ids and key not in self._removed_ids
+    return self.DiffStatus(sym) == DIFF_STATUS_ADDED
 
   def IsRemoved(self, sym):
-    return id(sym) in self._removed_ids
+    return self.DiffStatus(sym) == DIFF_STATUS_REMOVED
 
   def WhereNotUnchanged(self):
-    return self.Filter(lambda s: not self.IsSimilar(s) or s.size)
+    return self.Filter(lambda s: not self.IsUnchanged(s))
 
 
 def _ExtractPrefixBeforeSeparator(string, separator, count):
