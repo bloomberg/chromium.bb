@@ -163,10 +163,11 @@ static INLINE void mm256_transpose_16x16(const __m256i *in, __m256i *out) {
   out[15] = _mm256_permute2x128_si256(tr0_7, tr0_f, 0x31);
 }
 
-static INLINE __m256i butter_fly(__m256i a0, __m256i a1, const __m256i cospi) {
+static INLINE __m256i butter_fly(const __m256i *a0, const __m256i *a1,
+                                 const __m256i *cospi) {
   const __m256i dct_rounding = _mm256_set1_epi32(DCT_CONST_ROUNDING);
-  __m256i y0 = _mm256_madd_epi16(a0, cospi);
-  __m256i y1 = _mm256_madd_epi16(a1, cospi);
+  __m256i y0 = _mm256_madd_epi16(*a0, *cospi);
+  __m256i y1 = _mm256_madd_epi16(*a1, *cospi);
 
   y0 = _mm256_add_epi32(y0, dct_rounding);
   y1 = _mm256_add_epi32(y1, dct_rounding);

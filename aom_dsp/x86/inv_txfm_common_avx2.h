@@ -71,8 +71,8 @@ static INLINE void unpack_butter_fly(const __m256i *a0, const __m256i *a1,
   __m256i x0, x1;
   x0 = _mm256_unpacklo_epi16(*a0, *a1);
   x1 = _mm256_unpackhi_epi16(*a0, *a1);
-  *b0 = butter_fly(x0, x1, *c0);
-  *b1 = butter_fly(x0, x1, *c1);
+  *b0 = butter_fly(&x0, &x1, c0);
+  *b1 = butter_fly(&x0, &x1, c1);
 }
 
 void av1_idct16_avx2(__m256i *in);
