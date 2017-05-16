@@ -18,11 +18,11 @@
 #include "base/memory/ref_counted.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
+#include "base/task_scheduler/post_task.h"
 #include "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/ui/alert_coordinator/alert_coordinator.h"
 #import "ios/chrome/browser/ui/alert_coordinator/loading_alert_coordinator.h"
 #include "ios/chrome/grit/ios_strings.h"
-#include "ios/web/public/web_thread.h"
 #import "net/base/mac/url_conversions.h"
 #include "net/http/http_response_headers.h"
 #include "net/url_request/url_fetcher.h"
@@ -145,8 +145,9 @@ class PrintPDFFetcherDelegate : public URLFetcherDelegate {
     // be removed since PDFs will no longer need to be downloaded to print,
     // and |printingItem| will no longer be used.
     if (!base::ios::IsRunningOnIOS10OrLater() && isPDF) {
-      web::WebThread::PostBlockingPoolTask(
-          FROM_HERE, base::BindBlockArc(^{
+      base::PostTaskWithTraits(
+          FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
+          base::BindBlockArc(^{
             NSFileManager* manager = [NSFileManager defaultManager];
             NSString* tempDir = NSTemporaryDirectory();
             NSError* tempDirError = nil;
