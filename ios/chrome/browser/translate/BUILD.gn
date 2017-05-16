@@ -79,6 +79,7 @@ source_set("unit_tests") {
 # those checks as this in not thread-safe. See http://crbug.com/709131 for more
 # details.
 source_set("external_url_eg_tests") {
+  configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
   sources = [
     "translate_egtest.mm",
