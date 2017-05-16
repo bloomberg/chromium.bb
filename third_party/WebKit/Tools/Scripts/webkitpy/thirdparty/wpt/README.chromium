@@ -35,13 +35,6 @@ checkout.sh
 Running this script without arguments will remove the existing checkout
 (thirdparty/wpt/wpt) and perform a fresh one. See "Rolling in WPT" for more.
 
-WPTHeads
-========
-List of git commit-ish for the WPT repositories. File format is as follows:
-First line: HEAD position for web-platform-tests.
-Rest of lines: parent directory, submodule name, HEAD position for submodule.
-The submodule checkout is performed in order when running ./checkout.sh.
-
 WPTWhiteList
 ============
 The explicit list of files being kept, everything else not on this list is
@@ -84,13 +77,13 @@ index 5b571c0..223a18b 100644
 --- a/third_party/WebKit/Tools/Scripts/webkitpy/thirdparty/wpt/wpt/tools/sslutils/openssl.py
 +++ b/third_party/WebKit/Tools/Scripts/webkitpy/thirdparty/wpt/wpt/tools/sslutils/openssl.py
 @@ -207,7 +207,7 @@ class OpenSSLEnvironment(object):
- 
+
      def __init__(self, logger, openssl_binary="openssl", base_path=None,
                   password="web-platform-tests", force_regenerate=False,
 -                 duration=30, base_conf_path=None):
 +                 duration=3000, base_conf_path=None):
          """SSL environment that creates a local CA and host certificate using OpenSSL.
- 
+
          By default this will look in base_path for existing certificates that are still
 
 3. Run third_party/WebKit/Tools/Scripts/run-blink-wptserve
