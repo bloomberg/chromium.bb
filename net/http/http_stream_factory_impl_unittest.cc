@@ -157,7 +157,7 @@ class MockWebSocketHandshakeStream : public WebSocketHandshakeStreamBase {
 // HttpStreamFactoryImpl subclass that can wait until a preconnect is complete.
 class MockHttpStreamFactoryImplForPreconnect : public HttpStreamFactoryImpl {
  public:
-  MockHttpStreamFactoryImplForPreconnect(HttpNetworkSession* session)
+  explicit MockHttpStreamFactoryImplForPreconnect(HttpNetworkSession* session)
       : HttpStreamFactoryImpl(session, false),
         preconnect_done_(false),
         waiting_for_preconnect_(false) {}
@@ -247,7 +247,8 @@ class StreamRequestWaiter : public HttpStreamRequest::Delegate {
   void OnHttpsProxyTunnelResponse(const HttpResponseInfo& response_info,
                                   const SSLConfig& used_ssl_config,
                                   const ProxyInfo& used_proxy_info,
-                                  HttpStream* stream) override {}
+                                  std::unique_ptr<HttpStream> stream) override {
+  }
 
   void OnQuicBroken() override {}
 
@@ -2221,7 +2222,7 @@ class HttpStreamFactoryBidirectionalQuicTest
         AlternativeServiceInfo(alternative_service, expiration));
     http_server_properties_.SetAlternativeServices(
         url::SchemeHostPort(default_url_), alternative_service_info_vector);
-  };
+  }
 
   test::QuicTestPacketMaker& client_packet_maker() {
     return client_packet_maker_;

@@ -4,7 +4,6 @@
 
 #include "net/http/http_stream_factory_impl_job_controller.h"
 
-#include <memory>
 #include <string>
 #include <utility>
 
@@ -352,7 +351,7 @@ void HttpStreamFactoryImpl::JobController::OnHttpsProxyTunnelResponse(
     const HttpResponseInfo& response_info,
     const SSLConfig& used_ssl_config,
     const ProxyInfo& used_proxy_info,
-    HttpStream* stream) {
+    std::unique_ptr<HttpStream> stream) {
   MaybeResumeMainJob(job, base::TimeDelta());
 
   if (IsJobOrphaned(job)) {
@@ -366,7 +365,7 @@ void HttpStreamFactoryImpl::JobController::OnHttpsProxyTunnelResponse(
   if (!request_)
     return;
   request_->OnHttpsProxyTunnelResponse(response_info, used_ssl_config,
-                                       used_proxy_info, stream);
+                                       used_proxy_info, std::move(stream));
 }
 
 void HttpStreamFactoryImpl::JobController::OnNeedsClientAuth(

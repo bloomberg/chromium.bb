@@ -509,11 +509,11 @@ void HttpStreamFactoryImpl::Job::OnNeedsClientAuthCallback(
 
 void HttpStreamFactoryImpl::Job::OnHttpsProxyTunnelResponseCallback(
     const HttpResponseInfo& response_info,
-    HttpStream* stream) {
+    std::unique_ptr<HttpStream> stream) {
   DCHECK_NE(job_type_, PRECONNECT);
 
   delegate_->OnHttpsProxyTunnelResponse(this, response_info, server_ssl_config_,
-                                        proxy_info_, stream);
+                                        proxy_info_, std::move(stream));
   // |this| may be deleted after this call.
 }
 
@@ -615,10 +615,12 @@ void HttpStreamFactoryImpl::Job::RunLoop(int result) {
       ProxyClientSocket* proxy_socket =
           static_cast<ProxyClientSocket*>(connection_->socket());
       base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE, base::Bind(&Job::OnHttpsProxyTunnelResponseCallback,
-                                ptr_factory_.GetWeakPtr(),
-                                *proxy_socket->GetConnectResponseInfo(),
-                                proxy_socket->CreateConnectResponseStream()));
+          FROM_HERE,
+          base::Bind(
+              &Job::OnHttpsProxyTunnelResponseCallback,
+              ptr_factory_.GetWeakPtr(),
+              *proxy_socket->GetConnectResponseInfo(),
+              base::Passed(proxy_socket->CreateConnectResponseStream())));
       return;
     }
 

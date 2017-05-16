@@ -6,6 +6,7 @@
 #define NET_HTTP_HTTP_STREAM_FACTORY_H_
 
 #include <list>
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
@@ -154,7 +155,7 @@ class NET_EXPORT_PRIVATE HttpStreamRequest {
         const HttpResponseInfo& response_info,
         const SSLConfig& used_ssl_config,
         const ProxyInfo& used_proxy_info,
-        HttpStream* stream) = 0;
+        std::unique_ptr<HttpStream> stream) = 0;
 
     // Called when finding all QUIC alternative services are marked broken for
     // the origin in this request which advertises supporting QUIC.

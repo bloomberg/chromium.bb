@@ -5,6 +5,8 @@
 #ifndef NET_HTTP_HTTP_STREAM_FACTORY_TEST_UTIL_H_
 #define NET_HTTP_HTTP_STREAM_FACTORY_TEST_UTIL_H_
 
+#include <memory>
+
 #include "base/memory/ptr_util.h"
 #include "net/http/http_stream.h"
 #include "net/http/http_stream_factory.h"
@@ -78,11 +80,12 @@ class MockHttpStreamRequestDelegate : public HttpStreamRequest::Delegate {
                void(const SSLConfig& used_ssl_config,
                     SSLCertRequestInfo* cert_info));
 
-  MOCK_METHOD4(OnHttpsProxyTunnelResponse,
-               void(const HttpResponseInfo& response_info,
-                    const SSLConfig& used_ssl_config,
-                    const ProxyInfo& used_proxy_info,
-                    HttpStream* stream));
+  // std::unique_ptr is not copyable and therefore cannot be mocked.
+  void OnHttpsProxyTunnelResponse(const HttpResponseInfo& response_info,
+                                  const SSLConfig& used_ssl_config,
+                                  const ProxyInfo& used_proxy_info,
+                                  std::unique_ptr<HttpStream> stream) override {
+  }
 
   MOCK_METHOD0(OnQuicBroken, void());
 

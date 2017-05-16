@@ -5,6 +5,8 @@
 #ifndef NET_HTTP_HTTP_STREAM_FACTORY_IMPL_JOB_CONTROLLER_H_
 #define NET_HTTP_HTTP_STREAM_FACTORY_IMPL_JOB_CONTROLLER_H_
 
+#include <memory>
+
 #include "net/base/host_port_pair.h"
 #include "net/base/privacy_mode.h"
 #include "net/http/http_stream_factory_impl_job.h"
@@ -102,7 +104,7 @@ class HttpStreamFactoryImpl::JobController
                                   const HttpResponseInfo& response_info,
                                   const SSLConfig& used_ssl_config,
                                   const ProxyInfo& used_proxy_info,
-                                  HttpStream* stream) override;
+                                  std::unique_ptr<HttpStream> stream) override;
 
   // Invoked when |job| raises failure for SSL Client Auth.
   void OnNeedsClientAuth(Job* job,
