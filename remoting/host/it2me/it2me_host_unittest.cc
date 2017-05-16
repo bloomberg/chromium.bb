@@ -27,6 +27,10 @@
 #include "remoting/signaling/fake_signal_strategy.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+#if defined(OS_LINUX)
+#include "base/linux_util.h"
+#endif  // defined(OS_LINUX)
+
 namespace remoting {
 
 namespace {
@@ -182,6 +186,11 @@ It2MeHostTest::It2MeHostTest() : weak_factory_(this) {}
 It2MeHostTest::~It2MeHostTest() {}
 
 void It2MeHostTest::SetUp() {
+#if defined(OS_LINUX)
+  // Need to prime the host OS version value for linux to prevent IO on the
+  // network thread. base::GetLinuxDistro() caches the result.
+  base::GetLinuxDistro();
+#endif
   message_loop_.reset(new base::MessageLoop());
   run_loop_.reset(new base::RunLoop());
 

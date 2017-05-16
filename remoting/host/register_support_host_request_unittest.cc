@@ -12,10 +12,12 @@
 #include "base/observer_list.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/stringize_macros.h"
 #include "base/test/mock_callback.h"
 #include "remoting/base/constants.h"
 #include "remoting/base/rsa_key_pair.h"
 #include "remoting/base/test_rsa_key_pair.h"
+#include "remoting/host/host_details.h"
 #include "remoting/signaling/iq_sender.h"
 #include "remoting/signaling/mock_signal_strategy.h"
 #include "remoting/signaling/signaling_address.h"
@@ -115,6 +117,18 @@ TEST_F(RegisterSupportHostRequestTest, Send) {
   int64_t now = static_cast<int64_t>(base::Time::Now().ToDoubleT());
   EXPECT_LE(start_time, time);
   EXPECT_GE(now, time);
+
+  XmlElement* host_version = stanza->FirstElement()->FirstNamed(
+      QName(kChromotingXmlNamespace, "host-version"));
+  EXPECT_EQ(STRINGIZE(VERSION), host_version->BodyText());
+
+  XmlElement* host_os_name = stanza->FirstElement()->FirstNamed(
+      QName(kChromotingXmlNamespace, "host-os-name"));
+  EXPECT_EQ(GetHostOperatingSystemName(), host_os_name->BodyText());
+
+  XmlElement* host_os_version = stanza->FirstElement()->FirstNamed(
+      QName(kChromotingXmlNamespace, "host-os-version"));
+  EXPECT_EQ(GetHostOperatingSystemVersion(), host_os_version->BodyText());
 
   scoped_refptr<RsaKeyPair> key_pair = RsaKeyPair::FromString(kTestRsaKeyPair);
   ASSERT_TRUE(key_pair.get());
