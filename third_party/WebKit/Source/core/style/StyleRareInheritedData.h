@@ -28,8 +28,15 @@
 #include "core/CoreExport.h"
 #include "core/css/StyleAutoColor.h"
 #include "core/css/StyleColor.h"
+#include "core/style/AppliedTextDecoration.h"
 #include "core/style/AppliedTextDecorationList.h"
+#include "core/style/CursorData.h"
 #include "core/style/CursorList.h"
+#include "core/style/QuotesData.h"
+#include "core/style/ShadowData.h"
+#include "core/style/ShadowList.h"
+#include "core/style/StyleImage.h"
+#include "core/style/StyleInheritedVariables.h"
 #include "core/style/TextSizeAdjust.h"
 #include "platform/Length.h"
 #include "platform/graphics/Color.h"
@@ -54,7 +61,7 @@ class StyleInheritedVariables;
 // all methods on it, merging them into copy/creation methods on ComputedStyle
 // instead. Keep the allocation logic, only allocating a new object if needed.
 class CORE_EXPORT StyleRareInheritedData
-    : public RefCounted<StyleRareInheritedData> {
+    : public RefCountedCopyable<StyleRareInheritedData> {
  public:
   static PassRefPtr<StyleRareInheritedData> Create() {
     return AdoptRef(new StyleRareInheritedData);
@@ -62,7 +69,6 @@ class CORE_EXPORT StyleRareInheritedData
   PassRefPtr<StyleRareInheritedData> Copy() const {
     return AdoptRef(new StyleRareInheritedData(*this));
   }
-  ~StyleRareInheritedData();
 
   bool operator==(const StyleRareInheritedData&) const;
   bool operator!=(const StyleRareInheritedData& o) const {
@@ -164,7 +170,7 @@ class CORE_EXPORT StyleRareInheritedData
 
  private:
   StyleRareInheritedData();
-  StyleRareInheritedData(const StyleRareInheritedData&);
+  StyleRareInheritedData(const StyleRareInheritedData&) = default;
 };
 
 }  // namespace blink
