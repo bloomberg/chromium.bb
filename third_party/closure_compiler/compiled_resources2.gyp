@@ -16,6 +16,7 @@
       'dependencies': [
         '<(DEPTH)/chrome/browser/resources/bookmark_manager/js/compiled_resources2.gyp:*',
         '<(DEPTH)/chrome/browser/resources/chromeos/braille_ime/compiled_resources2.gyp:*',
+        '<(DEPTH)/chrome/browser/resources/chromeos/compiled_resources2.gyp:*',
         '<(DEPTH)/chrome/browser/resources/chromeos/login/compiled_resources2.gyp:*',
         '<(DEPTH)/chrome/browser/resources/chromeos/network_ui/compiled_resources2.gyp:*',
         '<(DEPTH)/chrome/browser/resources/chromeos/quick_unlock/compiled_resources2.gyp:*',
@@ -23,6 +24,7 @@
         '<(DEPTH)/chrome/browser/resources/chromeos/switch_access/compiled_resources2.gyp:*',
         '<(DEPTH)/chrome/browser/resources/cleanup_tool/compiled_resources2.gyp:*',
         '<(DEPTH)/chrome/browser/resources/extensions/compiled_resources2.gyp:*',
+        '<(DEPTH)/chrome/browser/resources/help/compiled_resources2.gyp:*',
         '<(DEPTH)/chrome/browser/resources/md_bookmarks/compiled_resources2.gyp:*',
         '<(DEPTH)/chrome/browser/resources/md_downloads/compiled_resources2.gyp:*',
         '<(DEPTH)/chrome/browser/resources/md_extensions/compiled_resources2.gyp:*',
@@ -32,6 +34,7 @@
         '<(DEPTH)/chrome/browser/resources/media_router/compiled_resources2.gyp:*',
         '<(DEPTH)/chrome/browser/resources/ntp4/compiled_resources2.gyp:*',
         '<(DEPTH)/chrome/browser/resources/offline_pages/compiled_resources2.gyp:*',
+        '<(DEPTH)/chrome/browser/resources/options/compiled_resources2.gyp:*',
         '<(DEPTH)/chrome/browser/resources/settings/compiled_resources2.gyp:*',
         '<(DEPTH)/chrome/browser/resources/print_preview/compiled_resources2.gyp:*',
         '<(DEPTH)/chrome/browser/resources/uber/compiled_resources2.gyp:*',
