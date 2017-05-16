@@ -14,7 +14,7 @@ function validateTransformWithSingleScale(transform, x, y, z, cssText) {
   var components = [...transform.values()];
   assert_equals(components.length, 1);
   assert_equals(components[0].constructor.name, CSSScale.name);
-  assert_equals(components[0].cssText, cssText);
+  assert_equals(components[0].toString(), cssText);
 
   assert_approx_equals(components[0].x, x, EPSILON);
   assert_approx_equals(components[0].y, y, EPSILON);

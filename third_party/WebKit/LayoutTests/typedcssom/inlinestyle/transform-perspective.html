@@ -35,7 +35,7 @@ test(function() {
     var components = [...result.values()];
     assert_equals(components.length, 1);
     assert_equals(components[0].constructor.name, CSSPerspective.name);
-    assert_equals(components[0].cssText, cssText);
+    assert_equals(components[0].toString(), cssText);
   }
 }, "Perspective read from a StyleMap is correct");
 

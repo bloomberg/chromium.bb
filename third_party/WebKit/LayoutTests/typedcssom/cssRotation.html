@@ -57,9 +57,9 @@ test(function() {
 
 test(function() {
   for (var i = 0; i < values.length; ++i) {
-    assert_equals(values[i].input.cssText, values[i].cssText);
+    assert_equals(values[i].input.toString(), values[i].cssText);
   }
-}, "Test that cssText values for CSSRotation is correct.");
+}, "Test that toString values for CSSRotation is correct.");
 
 test(function() {
   for (var i = 0; i < values.length; ++i) {
