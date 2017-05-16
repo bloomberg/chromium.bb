@@ -56,26 +56,28 @@ public class AccountSigninView extends FrameLayout implements ProfileDownloader.
         /**
          * The user canceled account selection.
          */
-        public void onAccountSelectionCanceled();
+        void onAccountSelectionCanceled();
 
         /**
          * The user wants to make a new account.
          */
-        public void onNewAccount();
+        void onNewAccount();
 
         /**
          * The user completed the View and selected an account.
          * @param accountName The name of the account
+         * @param isDefaultAccount Whether selected account is a default one (first of all accounts)
          * @param settingsClicked If true, user requested to see their sync settings, if false
          *                        they just clicked Done.
          */
-        public void onAccountSelected(String accountName, boolean settingsClicked);
+        void onAccountSelected(
+                String accountName, boolean isDefaultAccount, boolean settingsClicked);
 
         /**
          * Failed to set the forced account because it wasn't found.
          * @param forcedAccountName The name of the forced-sign-in account
          */
-        public void onFailedToSetForcedAccount(String forcedAccountName);
+        void onFailedToSetForcedAccount(String forcedAccountName);
     }
 
     // TODO(peconn): Investigate expanding the Delegate to simplify the Listener implementations.
@@ -425,7 +427,8 @@ public class AccountSigninView extends FrameLayout implements ProfileDownloader.
         NoUnderlineClickableSpan settingsSpan = new NoUnderlineClickableSpan() {
             @Override
             public void onClick(View widget) {
-                mListener.onAccountSelected(getSelectedAccountName(), true);
+                mListener.onAccountSelected(
+                        getSelectedAccountName(), isDefaultAccountSelected(), true);
                 RecordUserAction.record("Signin_Signin_WithAdvancedSyncSettings");
             }
         };
@@ -542,7 +545,8 @@ public class AccountSigninView extends FrameLayout implements ProfileDownloader.
         mPositiveButton.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                mListener.onAccountSelected(getSelectedAccountName(), false);
+                mListener.onAccountSelected(
+                        getSelectedAccountName(), isDefaultAccountSelected(), false);
                 RecordUserAction.record("Signin_Signin_WithDefaultSyncSettings");
             }
         });
@@ -605,5 +609,9 @@ public class AccountSigninView extends FrameLayout implements ProfileDownloader.
 
     private String getSelectedAccountName() {
         return mAccountNames.get(mSigninChooseView.getSelectedAccountPosition());
+    }
+
+    private boolean isDefaultAccountSelected() {
+        return mSigninChooseView.getSelectedAccountPosition() == 0;
     }
 }

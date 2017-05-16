@@ -149,10 +149,10 @@ public class AccountSigninActivity extends AppCompatActivity
     }
 
     @Override
-    public void onAccountSelected(final String accountName, final boolean settingsClicked) {
+    public void onAccountSelected(
+            final String accountName, boolean isDefaultAccount, final boolean settingsClicked) {
         final Context context = this;
-        SigninManager.get(this).signIn(accountName, this, new SignInCallback(){
-
+        SigninManager.get(this).signIn(accountName, this, new SignInCallback() {
             @Override
             public void onSignInComplete() {
                 if (settingsClicked) {
