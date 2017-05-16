@@ -436,6 +436,45 @@ IN_PROC_BROWSER_TEST_F(SupervisedUserTest, GoBackOnDontProceed) {
   EXPECT_EQ(0, web_contents->GetController().GetCurrentEntryIndex());
 }
 
+IN_PROC_BROWSER_TEST_F(SupervisedUserTest, ClosingBlockedTabDoesNotCrash) {
+  // We start out at the initial navigation.
+  WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_EQ(0, web_contents->GetController().GetCurrentEntryIndex());
+
+  GURL test_url("http://www.example.com/simple.html");
+  ui_test_utils::NavigateToURL(browser(), test_url);
+
+  ASSERT_FALSE(ShownPageIsInterstitial(web_contents));
+
+  // Set the host as blocked and wait for the interstitial to appear.
+  auto dict = base::MakeUnique<base::DictionaryValue>();
+  dict->SetBooleanWithoutPathExpansion(test_url.host(), false);
+  SupervisedUserSettingsService* supervised_user_settings_service =
+      SupervisedUserSettingsServiceFactory::GetForProfile(browser()->profile());
+  auto message_loop_runner = base::MakeShared<content::MessageLoopRunner>();
+  InterstitialPageObserver interstitial_observer(
+      web_contents, message_loop_runner->QuitClosure());
+  supervised_user_settings_service->SetLocalSetting(
+      supervised_users::kContentPackManualBehaviorHosts, std::move(dict));
+
+  const SupervisedUserURLFilter* filter =
+      supervised_user_service_->GetURLFilter();
+  ASSERT_EQ(SupervisedUserURLFilter::BLOCK,
+            filter->GetFilteringBehaviorForURL(test_url));
+
+  message_loop_runner->Run();
+
+  InterstitialPage* interstitial_page = web_contents->GetInterstitialPage();
+  ASSERT_TRUE(interstitial_page);
+
+  // Verify that there is no crash when closing the blocked tab
+  // (https://crbug.com/719708).
+  browser()->tab_strip_model()->CloseWebContentsAt(
+      0, TabStripModel::CLOSE_USER_GESTURE);
+  content::RunAllPendingInMessageLoop();
+}
+
 IN_PROC_BROWSER_TEST_F(SupervisedUserTest, BlockThenUnblock) {
   GURL test_url("http://www.example.com/simple.html");
   ui_test_utils::NavigateToURL(browser(), test_url);
