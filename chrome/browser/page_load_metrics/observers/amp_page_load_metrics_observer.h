@@ -26,6 +26,15 @@ struct PageLoadTiming;
 class AMPPageLoadMetricsObserver
     : public page_load_metrics::PageLoadMetricsObserver {
  public:
+  enum class AMPViewType {
+    NONE,
+    AMP_CACHE,
+    GOOGLE_SEARCH_AMP_VIEWER,
+    GOOGLE_NEWS_AMP_VIEWER,
+  };
+
+  static AMPViewType GetAMPViewType(const GURL& url);
+
   AMPPageLoadMetricsObserver();
   ~AMPPageLoadMetricsObserver() override;
 
@@ -46,6 +55,8 @@ class AMPPageLoadMetricsObserver
                     const page_load_metrics::PageLoadExtraInfo& info) override;
 
  private:
+  AMPViewType view_type_ = AMPViewType::NONE;
+
   DISALLOW_COPY_AND_ASSIGN(AMPPageLoadMetricsObserver);
 };
 

@@ -89591,6 +89591,28 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
       name="PageLoad.ParseTiming.NavigationToParseStart.LoadType.ForwardBackNavigation"/>
 </histogram_suffixes>
 
+<histogram_suffixes name="PageLoadMetricsClientsAmp" separator="."
+    ordering="prefix">
+  <suffix name="Clients.AMP"
+      label="AMP page load. Same page navigations are not tracked."/>
+  <suffix name="Clients.AMP.AmpCache"
+      label="AMP page load from the AMP cache CDN."/>
+  <suffix name="Clients.AMP.GoogleSearch"
+      label="AMP page load in the Google Search AMP viewer. Same page
+             navigations are not tracked."/>
+  <suffix name="Clients.AMP.GoogleNews"
+      label="AMP page load in the Google News AMP viewer. Same page
+             navigations are not tracked."/>
+  <affected-histogram
+      name="PageLoad.DocumentTiming.NavigationToDOMContentLoadedEventFired"/>
+  <affected-histogram name="PageLoad.DocumentTiming.NavigationToFirstLayout"/>
+  <affected-histogram
+      name="PageLoad.DocumentTiming.NavigationToLoadEventFired"/>
+  <affected-histogram
+      name="PageLoad.PaintTiming.NavigationToFirstContentfulPaint"/>
+  <affected-histogram name="PageLoad.ParseTiming.NavigationToParseStart"/>
+</histogram_suffixes>
+
 <histogram_suffixes name="PageLoadMetricsClientsAmpCachePages" separator="."
     ordering="prefix">
   <obsolete>
@@ -89611,6 +89633,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram_suffixes name="PageLoadMetricsClientsAmpCachePages2" separator="."
     ordering="prefix">
+  <obsolete>
+    Deprecated in favor of PageLoad.Clients.AMP.*.
+  </obsolete>
   <suffix name="Clients.AMPCache2"
       label="PageLoadMetrics that are a result of a navigations to an AMP
              cache page. Same page navigations are not tracked."/>

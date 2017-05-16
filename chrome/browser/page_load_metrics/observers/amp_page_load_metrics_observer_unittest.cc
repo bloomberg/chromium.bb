@@ -40,37 +40,50 @@ class AMPPageLoadMetricsObserverTest
     NavigateAndCommit(GURL("http://otherurl.com"));
   }
 
-  void ValidateHistograms(bool expect_histograms) {
+  void ValidateHistograms(bool expect_histograms, const char* view_type) {
     ValidateHistogramsFor(
-        "PageLoad.Clients.AMPCache2.DocumentTiming."
+        "PageLoad.Clients.AMP.DocumentTiming."
         "NavigationToDOMContentLoadedEventFired",
-        timing_.document_timing.dom_content_loaded_event_start,
+        view_type, timing_.document_timing.dom_content_loaded_event_start,
         expect_histograms);
     ValidateHistogramsFor(
-        "PageLoad.Clients.AMPCache2.DocumentTiming.NavigationToFirstLayout",
-        timing_.document_timing.first_layout, expect_histograms);
+        "PageLoad.Clients.AMP.DocumentTiming.NavigationToFirstLayout",
+        view_type, timing_.document_timing.first_layout, expect_histograms);
     ValidateHistogramsFor(
-        "PageLoad.Clients.AMPCache2.DocumentTiming."
+        "PageLoad.Clients.AMP.DocumentTiming."
         "NavigationToLoadEventFired",
-        timing_.document_timing.load_event_start, expect_histograms);
+        view_type, timing_.document_timing.load_event_start, expect_histograms);
     ValidateHistogramsFor(
-        "PageLoad.Clients.AMPCache2.PaintTiming."
+        "PageLoad.Clients.AMP.PaintTiming."
         "NavigationToFirstContentfulPaint",
-        timing_.paint_timing.first_contentful_paint, expect_histograms);
+        view_type, timing_.paint_timing.first_contentful_paint,
+        expect_histograms);
     ValidateHistogramsFor(
-        "PageLoad.Clients.AMPCache2.ParseTiming.NavigationToParseStart",
+        "PageLoad.Clients.AMP.ParseTiming.NavigationToParseStart", view_type,
         timing_.parse_timing.parse_start, expect_histograms);
   }
 
-  void ValidateHistogramsFor(const std::string& histogram_,
+  void ValidateHistogramsFor(const std::string& histogram,
+                             const char* view_type,
                              const base::Optional<base::TimeDelta>& event,
                              bool expect_histograms) {
-    histogram_tester().ExpectTotalCount(histogram_, expect_histograms ? 1 : 0);
+    const size_t kTypeOffset = strlen("PageLoad.Clients.AMP.");
+    std::string view_type_histogram = histogram;
+    view_type_histogram.insert(kTypeOffset, view_type);
+    histogram_tester().ExpectTotalCount(histogram, expect_histograms ? 1 : 0);
+    histogram_tester().ExpectTotalCount(view_type_histogram,
+                                        expect_histograms ? 1 : 0);
     if (!expect_histograms)
       return;
     histogram_tester().ExpectUniqueSample(
-        histogram_, static_cast<base::HistogramBase::Sample>(
-                        event.value().InMilliseconds()),
+        histogram,
+        static_cast<base::HistogramBase::Sample>(
+            event.value().InMilliseconds()),
+        1);
+    histogram_tester().ExpectUniqueSample(
+        view_type_histogram,
+        static_cast<base::HistogramBase::Sample>(
+            event.value().InMilliseconds()),
         1);
   }
 
@@ -85,20 +98,54 @@ class AMPPageLoadMetricsObserverTest
   DISALLOW_COPY_AND_ASSIGN(AMPPageLoadMetricsObserverTest);
 };
 
+TEST_F(AMPPageLoadMetricsObserverTest, AMPViewType) {
+  using AMPViewType = AMPPageLoadMetricsObserver::AMPViewType;
+
+  struct {
+    AMPViewType expected_type;
+    const char* url;
+  } test_cases[] = {
+      {AMPViewType::NONE, "https://google.com/"},
+      {AMPViewType::NONE, "https://google.com/amp/foo"},
+      {AMPViewType::NONE, "https://google.com/news/amp?foo"},
+      {AMPViewType::NONE, "https://example.com/"},
+      {AMPViewType::NONE, "https://example.com/amp/foo"},
+      {AMPViewType::NONE, "https://example.com/news/amp?foo"},
+      {AMPViewType::NONE, "https://www.google.com/"},
+      {AMPViewType::NONE, "https://news.google.com/"},
+      {AMPViewType::AMP_CACHE, "https://cdn.ampproject.org/foo"},
+      {AMPViewType::AMP_CACHE, "https://site.cdn.ampproject.org/foo"},
+      {AMPViewType::GOOGLE_SEARCH_AMP_VIEWER, "https://www.google.com/amp/foo"},
+      {AMPViewType::GOOGLE_NEWS_AMP_VIEWER,
+       "https://news.google.com/news/amp?foo"},
+  };
+  for (const auto& test : test_cases) {
+    EXPECT_EQ(test.expected_type,
+              AMPPageLoadMetricsObserver::GetAMPViewType(GURL(test.url)))
+        << "For URL: " << test.url;
+  }
+}
+
 TEST_F(AMPPageLoadMetricsObserverTest, AMPCachePage) {
   ResetTest();
   RunTest(GURL("https://cdn.ampproject.org/page"));
-  ValidateHistograms(true);
+  ValidateHistograms(true, "AmpCache.");
 }
 
-TEST_F(AMPPageLoadMetricsObserverTest, GoogleAMPCachePage) {
+TEST_F(AMPPageLoadMetricsObserverTest, GoogleSearchAMPCachePage) {
   ResetTest();
   RunTest(GURL("https://www.google.com/amp/page"));
-  ValidateHistograms(true);
+  ValidateHistograms(true, "GoogleSearch.");
+}
+
+TEST_F(AMPPageLoadMetricsObserverTest, GoogleNewsAMPCachePage) {
+  ResetTest();
+  RunTest(GURL("https://news.google.com/news/amp?page"));
+  ValidateHistograms(true, "GoogleNews.");
 }
 
 TEST_F(AMPPageLoadMetricsObserverTest, NonAMPPage) {
   ResetTest();
   RunTest(GURL("https://www.google.com/not-amp/page"));
-  ValidateHistograms(false);
+  ValidateHistograms(false, "");
 }
