@@ -7,6 +7,7 @@
 
 #include "base/scoped_observer.h"
 
+#include "base/single_thread_task_runner.h"
 #include "device/base/device_monitor_linux.h"
 #include "device/generic_sensor/generic_sensor_export.h"
 #include "device/generic_sensor/public/interfaces/sensor.mojom.h"

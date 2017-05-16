@@ -8,6 +8,7 @@
 #include "base/json/json_reader.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
+#include "base/sequenced_task_runner.h"
 #include "base/task_scheduler/post_task.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/thread_task_runner_handle.h"

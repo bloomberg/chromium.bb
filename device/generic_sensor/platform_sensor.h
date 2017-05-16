@@ -12,6 +12,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
+#include "base/single_thread_task_runner.h"
 #include "device/generic_sensor/generic_sensor_export.h"
 #include "device/generic_sensor/public/cpp/sensor_reading.h"
 #include "device/generic_sensor/public/interfaces/sensor.mojom.h"

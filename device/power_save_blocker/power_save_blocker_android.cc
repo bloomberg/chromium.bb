@@ -9,6 +9,7 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/sequenced_task_runner.h"
 #include "jni/PowerSaveBlocker_jni.h"
 #include "ui/android/view_android.h"
 

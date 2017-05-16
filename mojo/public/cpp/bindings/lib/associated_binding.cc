@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "mojo/public/cpp/bindings/associated_binding.h"
+#include "base/single_thread_task_runner.h"
 
 namespace mojo {
 

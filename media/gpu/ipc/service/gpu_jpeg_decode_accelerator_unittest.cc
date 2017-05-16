@@ -5,6 +5,7 @@
 #include "media/gpu/ipc/service/gpu_jpeg_decode_accelerator.h"
 #include "base/bind.h"
 #include "base/run_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread.h"
 #include "gpu/ipc/service/gpu_channel.h"

@@ -10,6 +10,7 @@
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
+#include "base/sequenced_task_runner.h"
 #include "components/keyed_service/ios/browser_state_keyed_service_factory.h"
 #include "components/keyed_service/ios/refcounted_browser_state_keyed_service_factory.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"

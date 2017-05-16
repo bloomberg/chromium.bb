@@ -23,6 +23,7 @@
 #include "base/metrics/histogram_snapshot_manager.h"
 #include "base/metrics/user_metrics.h"
 #include "base/observer_list.h"
+#include "base/single_thread_task_runner.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
 #include "build/build_config.h"

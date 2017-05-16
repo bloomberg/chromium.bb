@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/files/file_path.h"
+#include "base/single_thread_task_runner.h"
 #include "base/test/null_task_runner.h"
 #include "content/public/browser/permission_manager.h"
 #include "content/public/test/mock_resource_context.h"

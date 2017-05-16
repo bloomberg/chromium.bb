@@ -6,6 +6,7 @@
 
 #include "base/callback.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/os_crypt/os_crypt_mocker.h"
 #include "components/password_manager/core/browser/login_database.h"

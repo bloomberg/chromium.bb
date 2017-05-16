@@ -8,6 +8,7 @@
 
 #include <string>
 
+#include "base/single_thread_task_runner.h"
 #include "base/task_scheduler/post_task.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"

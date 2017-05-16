@@ -4,6 +4,7 @@
 
 #include "device/generic_sensor/platform_sensor_linux.h"
 
+#include "base/single_thread_task_runner.h"
 #include "device/generic_sensor/linux/sensor_data_linux.h"
 #include "device/generic_sensor/platform_sensor_reader_linux.h"
 

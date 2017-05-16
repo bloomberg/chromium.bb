@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/macros.h"
+#include "base/single_thread_task_runner.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"

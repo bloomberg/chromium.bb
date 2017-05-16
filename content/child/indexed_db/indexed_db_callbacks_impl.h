@@ -5,6 +5,7 @@
 #ifndef CONTENT_CHILD_INDEXED_DB_INDEXED_DB_CALLBACKS_IMPL_H_
 #define CONTENT_CHILD_INDEXED_DB_INDEXED_DB_CALLBACKS_IMPL_H_
 
+#include "base/single_thread_task_runner.h"
 #include "content/common/indexed_db/indexed_db.mojom.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
 

@@ -18,6 +18,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/path_service.h"
+#include "base/sequenced_task_runner.h"
 #include "base/sha1.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/sys_info.h"

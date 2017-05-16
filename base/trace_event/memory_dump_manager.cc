@@ -21,6 +21,7 @@
 #include "base/debug/thread_heap_usage_tracker.h"
 #include "base/memory/ptr_util.h"
 #include "base/optional.h"
+#include "base/sequenced_task_runner.h"
 #include "base/strings/pattern.h"
 #include "base/strings/string_piece.h"
 #include "base/threading/thread.h"

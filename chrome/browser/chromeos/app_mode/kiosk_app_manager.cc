@@ -16,6 +16,7 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/path_service.h"
+#include "base/sequenced_task_runner.h"
 #include "base/strings/stringprintf.h"
 #include "base/sys_info.h"
 #include "base/task_scheduler/post_task.h"

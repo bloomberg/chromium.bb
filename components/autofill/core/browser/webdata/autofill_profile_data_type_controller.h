@@ -9,6 +9,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/scoped_observer.h"
+#include "base/single_thread_task_runner.h"
 #include "components/autofill/core/browser/personal_data_manager_observer.h"
 #include "components/sync/driver/async_directory_type_controller.h"
 

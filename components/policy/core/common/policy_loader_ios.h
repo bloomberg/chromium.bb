@@ -8,6 +8,7 @@
 #include "base/mac/scoped_nsobject.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/sequenced_task_runner.h"
 #include "base/time/time.h"
 #include "components/policy/core/common/async_policy_loader.h"
 #include "components/policy/policy_export.h"

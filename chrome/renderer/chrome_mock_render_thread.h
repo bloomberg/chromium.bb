@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/macros.h"
+#include "base/single_thread_task_runner.h"
 #include "content/public/test/mock_render_thread.h"
 
 // Extends content::MockRenderThread to know about extension messages.

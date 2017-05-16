@@ -6,6 +6,7 @@
 #define DEVICE_GENERIC_SENSOR_SENSOR_PROVIDER_IMPL_H_
 
 #include "base/macros.h"
+#include "base/single_thread_task_runner.h"
 #include "device/generic_sensor/generic_sensor_export.h"
 #include "device/generic_sensor/public/interfaces/sensor_provider.mojom.h"
 

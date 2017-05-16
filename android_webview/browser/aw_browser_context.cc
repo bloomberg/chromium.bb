@@ -19,6 +19,7 @@
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/path_service.h"
+#include "base/single_thread_task_runner.h"
 #include "base/task_scheduler/post_task.h"
 #include "components/autofill/core/common/autofill_pref_names.h"
 #include "components/metrics/metrics_service.h"

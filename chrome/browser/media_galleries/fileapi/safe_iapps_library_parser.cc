@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/single_thread_task_runner.h"
 #include "build/build_config.h"
 #include "chrome/browser/media_galleries/fileapi/media_file_system_backend.h"
 #include "chrome/common/chrome_utility_messages.h"

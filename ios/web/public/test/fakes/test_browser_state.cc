@@ -5,6 +5,7 @@
 #include "ios/web/public/test/fakes/test_browser_state.h"
 
 #include "base/files/file_path.h"
+#include "base/single_thread_task_runner.h"
 #include "ios/web/public/web_thread.h"
 #include "ios/web/test/test_url_constants.h"
 #include "ios/web/webui/url_data_manager_ios_backend.h"

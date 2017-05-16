@@ -10,6 +10,7 @@
 #include <set>
 
 #include "base/memory/ref_counted.h"
+#include "base/single_thread_task_runner.h"
 #include "content/common/content_export.h"
 #include "content/common/indexed_db/indexed_db.mojom.h"
 #include "content/common/indexed_db/indexed_db_constants.h"

@@ -7,6 +7,7 @@
 #include "base/callback_helpers.h"
 #include "base/location.h"
 #include "base/macros.h"
+#include "base/sequenced_task_runner.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "content/browser/byte_stream.h"
 #include "content/browser/download/download_create_info.h"

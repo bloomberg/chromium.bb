@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "base/single_thread_task_runner.h"
 #include "content/common/content_export.h"
 #include "content/renderer/media/android/stream_texture_factory.h"
 #include "gpu/command_buffer/common/mailbox.h"

@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_PASSWORD_MANAGER_SIMPLE_PASSWORD_STORE_MAC_H_
 
 #include "base/macros.h"
+#include "base/single_thread_task_runner.h"
 #include "components/password_manager/core/browser/password_store_default.h"
 
 class PrefService;

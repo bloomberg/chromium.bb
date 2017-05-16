@@ -14,6 +14,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
+#include "base/sequenced_task_runner.h"
 #include "base/test/sequenced_worker_pool_owner.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"

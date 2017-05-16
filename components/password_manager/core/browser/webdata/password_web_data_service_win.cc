@@ -5,6 +5,7 @@
 #include "components/password_manager/core/browser/webdata/password_web_data_service_win.h"
 
 #include "base/bind.h"
+#include "base/single_thread_task_runner.h"
 #include "components/os_crypt/ie7_password_win.h"
 #include "components/password_manager/core/browser/webdata/logins_table.h"
 #include "components/webdata/common/web_database_service.h"

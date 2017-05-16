@@ -14,6 +14,7 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/run_loop.h"
+#include "base/sequenced_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/safe_browsing/csd.pb.h"

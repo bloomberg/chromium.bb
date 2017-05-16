@@ -26,6 +26,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/path_service.h"
 #include "base/process/process_handle.h"
+#include "base/sequenced_task_runner.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"

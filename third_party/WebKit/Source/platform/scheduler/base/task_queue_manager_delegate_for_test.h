@@ -9,6 +9,7 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "base/single_thread_task_runner.h"
 #include "base/time/tick_clock.h"
 #include "platform/scheduler/base/task_queue_manager_delegate.h"
 

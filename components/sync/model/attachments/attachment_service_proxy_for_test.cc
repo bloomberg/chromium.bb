@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/message_loop/message_loop.h"
+#include "base/sequenced_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/sync/model/attachments/attachment_service.h"
 

@@ -4,6 +4,7 @@
 
 #include "media/gpu/ipc/service/media_gpu_channel.h"
 
+#include "base/single_thread_task_runner.h"
 #include "base/unguessable_token.h"
 #include "gpu/ipc/service/gpu_channel.h"
 #include "ipc/message_filter.h"

@@ -8,6 +8,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/power_monitor/power_monitor_device_source.h"
+#include "base/single_thread_task_runner.h"
 #include "components/viz/frame_sinks/mojo_frame_sink_manager.h"
 #include "gpu/command_buffer/common/activity_flags.h"
 #include "gpu/ipc/common/gpu_memory_buffer_support.h"

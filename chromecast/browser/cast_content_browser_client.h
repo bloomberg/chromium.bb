@@ -12,6 +12,7 @@
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
+#include "base/single_thread_task_runner.h"
 #include "build/build_config.h"
 #include "build/buildflag.h"
 #include "chromecast/chromecast_features.h"

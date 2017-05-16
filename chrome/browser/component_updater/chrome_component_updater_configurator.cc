@@ -7,6 +7,7 @@
 #include <string>
 #include <vector>
 
+#include "base/sequenced_task_runner.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/task_scheduler/post_task.h"
 #include "base/version.h"

@@ -7,6 +7,7 @@
 
 #include "base/bind.h"
 #include "base/macros.h"
+#include "base/single_thread_task_runner.h"
 #include "media/audio/audio_input_controller.h"
 #include "media/base/audio_parameters.h"
 

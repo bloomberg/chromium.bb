@@ -11,6 +11,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/single_thread_task_runner.h"
 #include "base/time/time.h"
 #include "content/renderer/media/media_stream_video_track.h"
 #include "media/base/video_frame.h"

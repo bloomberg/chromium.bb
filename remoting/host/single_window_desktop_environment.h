@@ -6,6 +6,7 @@
 #define REMOTING_HOST_SINGLE_WINDOW_DESKTOP_ENVIRONMENT_H_
 
 #include "base/macros.h"
+#include "base/single_thread_task_runner.h"
 #include "remoting/host/basic_desktop_environment.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_capture_types.h"
 

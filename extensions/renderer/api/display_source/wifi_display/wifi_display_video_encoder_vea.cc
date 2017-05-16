@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/single_thread_task_runner.h"
 #include "base/task_runner_util.h"
 #include "content/public/renderer/video_encode_accelerator.h"
 #include "media/base/bind_to_current_loop.h"

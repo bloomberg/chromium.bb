@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/memory/shared_memory.h"
+#include "base/single_thread_task_runner.h"
 #include "extensions/renderer/api/display_source/wifi_display/wifi_display_media_encoder.h"
 #include "media/base/video_frame.h"
 #include "media/video/video_encode_accelerator.h"

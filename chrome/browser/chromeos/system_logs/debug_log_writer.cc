@@ -15,6 +15,7 @@
 #include "base/files/file_util.h"
 #include "base/process/kill.h"
 #include "base/process/launch.h"
+#include "base/sequenced_task_runner.h"
 #include "base/task_scheduler/post_task.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/common/logging_chrome.h"

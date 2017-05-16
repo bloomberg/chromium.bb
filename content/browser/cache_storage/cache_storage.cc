@@ -19,6 +19,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/numerics/safe_conversions.h"
+#include "base/sequenced_task_runner.h"
 #include "base/sha1.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
