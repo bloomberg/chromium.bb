@@ -5,10 +5,10 @@
 #ifndef WebViewFrameWidget_h
 #define WebViewFrameWidget_h
 
+#include "core/frame/WebFrameWidgetBase.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/Noncopyable.h"
 #include "platform/wtf/RefPtr.h"
-#include "web/WebFrameWidgetBase.h"
 #include "web/WebInputMethodControllerImpl.h"
 #include "web/WebLocalFrameImpl.h"
 

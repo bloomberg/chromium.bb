@@ -5,6 +5,7 @@
 #ifndef WebFrameWidgetBase_h
 #define WebFrameWidgetBase_h
 
+#include "core/CoreExport.h"
 #include "core/clipboard/DataObject.h"
 #include "platform/UserGestureIndicator.h"
 #include "platform/wtf/Assertions.h"
@@ -24,7 +25,8 @@ class WebViewBase;
 class HitTestResult;
 struct WebPoint;
 
-class WebFrameWidgetBase : public WebFrameWidget {
+class CORE_EXPORT WebFrameWidgetBase
+    : public NON_EXPORTED_BASE(WebFrameWidget) {
  public:
   virtual bool ForSubframe() const = 0;
   virtual void ScheduleAnimation() = 0;
