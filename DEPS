@@ -1153,6 +1153,21 @@ hooks = [
   },
 ]
 
+hooks_os = {
+  'fuchsia': [
+    {
+      'name': 'fuchsia_sdk',
+      'pattern': '.',
+      'action': [
+        'python',
+        'src/build/fuchsia/update_sdk.py',
+        '3886a632c4a472fa7ef9eab35b45b63359e387fa',
+      ],
+    },
+  ],
+  # TODO(scottmg|thakis): Move the Android-only hooks from above here.
+}
+
 recursedeps = [
   # buildtools provides clang_format, libc++, and libc++abi
   'src/buildtools',
