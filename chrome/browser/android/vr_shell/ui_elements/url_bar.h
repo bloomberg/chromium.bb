@@ -22,10 +22,10 @@ class UrlBar : public TexturedElement {
   explicit UrlBar(int preferred_width);
   ~UrlBar() override;
 
-  void OnHoverEnter(gfx::PointF position) override;
+  void OnHoverEnter(const gfx::PointF& position) override;
   void OnHoverLeave() override;
   void OnBeginFrame(const base::TimeTicks& begin_frame_time) override;
-  void OnButtonUp(gfx::PointF position) override;
+  void OnButtonUp(const gfx::PointF& position) override;
   void SetEnabled(bool enabled) override;
 
   void SetURL(const GURL& gurl);

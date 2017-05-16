@@ -34,7 +34,7 @@ UiTexture* UrlBar::GetTexture() const {
   return texture_.get();
 }
 
-void UrlBar::OnHoverEnter(gfx::PointF position) {
+void UrlBar::OnHoverEnter(const gfx::PointF& position) {
   if (!texture_->SetDrawFlags(UrlBarTexture::FLAG_HOVER))
     return;
   UpdateTexture();
@@ -46,7 +46,7 @@ void UrlBar::OnHoverLeave() {
   UpdateTexture();
 }
 
-void UrlBar::OnButtonUp(gfx::PointF position) {
+void UrlBar::OnButtonUp(const gfx::PointF& position) {
   back_button_callback_.Run();
 }
 

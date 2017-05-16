@@ -86,6 +86,10 @@ static constexpr unsigned kPoseRingBufferSize = 8;
 // controller movement as a gesture.
 static constexpr float kMinAppButtonGestureAngleRad = 0.25;
 
+static constexpr gfx::PointF kInvalidTargetPoint =
+    gfx::PointF(std::numeric_limits<float>::max(),
+                std::numeric_limits<float>::max());
+
 // Generate a quaternion representing the rotation from the negative Z axis
 // (0, 0, -1) to a specified vector. This is an optimized version of a more
 // general vector-to-vector calculation.
@@ -539,7 +543,7 @@ void VrShellGl::HandleControllerInput(const gfx::Vector3dF& head_direction) {
 
   if (ShouldDrawWebVr())
     return;
-  gfx::PointF target_local_point;
+  gfx::PointF target_local_point(kInvalidTargetPoint);
   gfx::Vector3dF eye_to_target;
   reticle_render_target_ = nullptr;
   GetVisualTargetElement(controller_direction, eye_to_target, target_point_,
@@ -549,9 +553,12 @@ void VrShellGl::HandleControllerInput(const gfx::Vector3dF& head_direction) {
   if (input_locked_element_) {
     gfx::Point3F plane_intersection_point;
     float distance_to_plane;
-    GetTargetLocalPoint(eye_to_target, *input_locked_element_,
-                        2 * scene_->GetBackgroundDistance(), target_local_point,
-                        plane_intersection_point, distance_to_plane);
+    if (!GetTargetLocalPoint(eye_to_target, *input_locked_element_,
+                             2 * scene_->GetBackgroundDistance(),
+                             target_local_point, plane_intersection_point,
+                             distance_to_plane)) {
+      target_local_point = kInvalidTargetPoint;
+    }
     target_element = input_locked_element_;
   } else if (!in_scroll_ && !in_click_) {
     target_element = reticle_render_target_;
@@ -561,12 +568,8 @@ void VrShellGl::HandleControllerInput(const gfx::Vector3dF& head_direction) {
   // Content is treated specially to accomodate scrolling, flings, etc.
   gfx::Point local_point_pixels;
   if (target_element && (target_element->fill() == Fill::CONTENT)) {
-    gfx::RectF pixel_rect(0, 0, content_tex_css_width_,
-                          content_tex_css_height_);
-    local_point_pixels.set_x(pixel_rect.x() +
-                             pixel_rect.width() * target_local_point.x());
-    local_point_pixels.set_y(pixel_rect.y() +
-                             pixel_rect.height() * target_local_point.y());
+    local_point_pixels.set_x(content_tex_css_width_ * target_local_point.x());
+    local_point_pixels.set_y(content_tex_css_height_ * target_local_point.y());
   }
   std::unique_ptr<GestureList> gesture_list_ptr = controller_->DetectGestures();
   GestureList& gesture_list = *gesture_list_ptr;
@@ -744,9 +747,11 @@ bool VrShellGl::SendButtonUp(UiElement* target,
     return false;
   if (!controller_->ButtonUpHappened(gvr::kControllerButtonClick))
     return false;
+  in_click_ = false;
+  if (!input_locked_element_)
+    return true;
   DCHECK(input_locked_element_ == target);
   input_locked_element_ = nullptr;
-  in_click_ = false;
   // We don't support down/up for content yet.
   if (target->fill() == Fill::CONTENT)
     return false;
@@ -819,9 +824,7 @@ void VrShellGl::GetVisualTargetElement(
                              closest_element_distance, local_point,
                              plane_intersection_point, distance_to_plane))
       continue;
-
-    if (local_point.x() < 0.0f || local_point.x() >= 1.0f ||
-        local_point.y() < 0.0f || local_point.y() >= 1.0f)
+    if (!element->HitTest(local_point))
       continue;
 
     closest_element_distance = distance_to_plane;

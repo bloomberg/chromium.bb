@@ -116,15 +116,15 @@ void UiElement::Render(VrShellRenderer* renderer,
 
 void UiElement::Initialize() {}
 
-void UiElement::OnHoverEnter(gfx::PointF position) {}
+void UiElement::OnHoverEnter(const gfx::PointF& position) {}
 
 void UiElement::OnHoverLeave() {}
 
-void UiElement::OnMove(gfx::PointF position) {}
+void UiElement::OnMove(const gfx::PointF& position) {}
 
-void UiElement::OnButtonDown(gfx::PointF position) {}
+void UiElement::OnButtonDown(const gfx::PointF& position) {}
 
-void UiElement::OnButtonUp(gfx::PointF position) {}
+void UiElement::OnButtonUp(const gfx::PointF& position) {}
 
 void UiElement::OnBeginFrame(const base::TimeTicks& begin_frame_time) {}
 
@@ -224,6 +224,11 @@ bool UiElement::IsHitTestable() const {
 
 void UiElement::SetEnabled(bool enabled) {
   visible_ = enabled;
+}
+
+bool UiElement::HitTest(const gfx::PointF& point) const {
+  return point.x() >= 0.0f && point.x() <= 1.0f && point.y() >= 0.0f &&
+         point.y() <= 1.0f;
 }
 
 }  // namespace vr_shell
