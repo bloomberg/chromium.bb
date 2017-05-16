@@ -75534,6 +75534,22 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Thumbnails.CopyFromSurfaceTime" units="ms">
+  <owner>treib@chromium.org</owner>
+  <summary>
+    While taking a screenshot of the current tab for use as a thumbnail on the
+    New Tab page, the time it took to copy the tab's contents into a bitmap.
+  </summary>
+</histogram>
+
+<histogram name="Thumbnails.ProcessBitmapTime" units="ms">
+  <owner>treib@chromium.org</owner>
+  <summary>
+    While taking a screenshot of the current tab for use as a thumbnail on the
+    New Tab page, the time it took to post-process the captured bitmap.
+  </summary>
+</histogram>
+
 <histogram name="TileManager.ExceededMemoryBudget" enum="TileMemoryBudget">
   <owner>reveman@chromium.org</owner>
   <owner>vmpstr@chromium.org</owner>
