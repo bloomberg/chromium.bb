@@ -12,7 +12,6 @@
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
-#include "ash/system/tray/fixed_sized_image_view.h"
 #include "ash/system/tray/hover_highlight_view.h"
 #include "ash/system/tray/size_range_layout.h"
 #include "ash/system/tray/tray_constants.h"
@@ -234,13 +233,15 @@ views::Label* TrayPopupUtils::CreateDefaultLabel() {
 }
 
 views::ImageView* TrayPopupUtils::CreateMainImageView() {
-  return new FixedSizedImageView(kTrayPopupItemMinStartWidth,
-                                 kTrayPopupItemMinHeight);
+  auto* image = new views::ImageView;
+  image->set_preferred_size(
+      gfx::Size(kTrayPopupItemMinStartWidth, kTrayPopupItemMinHeight));
+  return image;
 }
 
 views::ImageView* TrayPopupUtils::CreateMoreImageView() {
-  views::ImageView* image =
-      new FixedSizedImageView(kMenuIconSize, kMenuIconSize);
+  auto* image = new views::ImageView;
+  image->set_preferred_size(gfx::Size(gfx::Size(kMenuIconSize, kMenuIconSize)));
   image->EnableCanvasFlippingForRTLUI(true);
   image->SetImage(
       gfx::CreateVectorIcon(kSystemMenuArrowRightIcon, kMenuIconColor));

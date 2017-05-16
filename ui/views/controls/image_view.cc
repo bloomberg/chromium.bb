@@ -77,12 +77,6 @@ void ImageView::ResetImageSize() {
   image_size_set_ = false;
 }
 
-gfx::Size ImageView::GetPreferredSize() const {
-  gfx::Size size = GetImageSize();
-  size.Enlarge(GetInsets().width(), GetInsets().height());
-  return size;
-}
-
 bool ImageView::IsImageEqual(const gfx::ImageSkia& img) const {
   // Even though we copy ImageSkia in SetImage() the backing store
   // (ImageSkiaStorage) is not copied and may have changed since the last call
@@ -178,6 +172,12 @@ bool ImageView::GetTooltipText(const gfx::Point& p,
 
   *tooltip = GetTooltipText();
   return true;
+}
+
+gfx::Size ImageView::CalculatePreferredSize() const {
+  gfx::Size size = GetImageSize();
+  size.Enlarge(GetInsets().width(), GetInsets().height());
+  return size;
 }
 
 void ImageView::OnPaintImage(gfx::Canvas* canvas) {

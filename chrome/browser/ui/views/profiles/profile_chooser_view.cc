@@ -273,20 +273,6 @@ class BackgroundColorHoverButton : public views::LabelButton {
   DISALLOW_COPY_AND_ASSIGN(BackgroundColorHoverButton);
 };
 
-// SizedContainer -------------------------------------------------
-
-// A simple container view that takes an explicit preferred size.
-class SizedContainer : public views::View {
- public:
-  explicit SizedContainer(const gfx::Size& preferred_size)
-      : preferred_size_(preferred_size) {}
-
-  gfx::Size GetPreferredSize() const override { return preferred_size_; }
-
- private:
-  gfx::Size preferred_size_;
-};
-
 // A view to host the GAIA webview overlapped with a back button.  This class
 // is needed to reparent the back button inside a native view so that on
 // windows, user input can be be properly routed to the button.
@@ -1275,8 +1261,9 @@ views::View* ProfileChooserView::CreateSyncErrorViewIfNeeded() {
     // already initialized.
     DCHECK(button_out);
     // Adds a padding row between error title/content and the button.
-    SizedContainer* padding =
-        new SizedContainer(gfx::Size(0, views::kRelatedControlVerticalSpacing));
+    auto* padding = new views::View;
+    padding->set_preferred_size(
+        gfx::Size(0, views::kRelatedControlVerticalSpacing));
     vertical_view->AddChildView(padding);
 
     *button_out = views::MdTextButton::CreateSecondaryUiBlueButton(

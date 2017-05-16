@@ -422,9 +422,11 @@ gfx::Rect View::GetBoundsInScreen() const {
 }
 
 gfx::Size View::GetPreferredSize() const {
+  if (preferred_size_)
+    return *preferred_size_;
   if (layout_manager_.get())
     return layout_manager_->GetPreferredSize(this);
-  return gfx::Size();
+  return CalculatePreferredSize();
 }
 
 int View::GetBaseline() const {
@@ -1476,6 +1478,10 @@ bool View::HasObserver(const ViewObserver* observer) const {
 // View, protected:
 
 // Size and disposition --------------------------------------------------------
+
+gfx::Size View::CalculatePreferredSize() const {
+  return gfx::Size();
+}
 
 void View::OnBoundsChanged(const gfx::Rect& previous_bounds) {
 }
