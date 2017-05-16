@@ -117,6 +117,7 @@ public class AccountManagementFragment extends PreferenceFragment
     private ArrayList<Preference> mAccountsListPreferences = new ArrayList<Preference>();
 
     private Profile mProfile;
+    private String mSignedInAccountName;
 
     @Override
     public void onCreate(Bundle savedState) {
@@ -198,8 +199,8 @@ public class AccountManagementFragment extends PreferenceFragment
 
         if (getPreferenceScreen() != null) getPreferenceScreen().removeAll();
 
-        ChromeSigninController signInController = ChromeSigninController.get();
-        if (!signInController.isSignedIn()) {
+        mSignedInAccountName = ChromeSigninController.get().getSignedInAccountName();
+        if (mSignedInAccountName == null) {
             // The AccountManagementFragment can only be shown when the user is signed in. If the
             // user is signed out, exit the fragment.
             getActivity().finish();
@@ -208,12 +209,11 @@ public class AccountManagementFragment extends PreferenceFragment
 
         addPreferencesFromResource(R.xml.account_management_preferences);
 
-        String signedInAccountName = ChromeSigninController.get().getSignedInAccountName();
-        String fullName = getCachedUserName(signedInAccountName);
+        String fullName = getCachedUserName(mSignedInAccountName);
         if (TextUtils.isEmpty(fullName)) {
             fullName = ProfileDownloader.getCachedFullName(Profile.getLastUsedProfile());
         }
-        if (TextUtils.isEmpty(fullName)) fullName = signedInAccountName;
+        if (TextUtils.isEmpty(fullName)) fullName = mSignedInAccountName;
 
         getActivity().setTitle(fullName);
 
@@ -246,7 +246,7 @@ public class AccountManagementFragment extends PreferenceFragment
                 public boolean onPreferenceClick(Preference preference) {
                     if (!isVisible() || !isResumed()) return false;
 
-                    if (ChromeSigninController.get().isSignedIn()
+                    if (mSignedInAccountName != null
                             && getSignOutAllowedPreferenceValue(getActivity())) {
                         AccountManagementScreenHelper.logEvent(
                                 ProfileAccountManagementMetrics.TOGGLE_SIGNOUT,
@@ -282,7 +282,6 @@ public class AccountManagementFragment extends PreferenceFragment
 
     private void configureSyncSettings() {
         final Preferences preferences = (Preferences) getActivity();
-        final Account account = ChromeSigninController.get().getSignedInUser();
         findPreference(PREF_SYNC_SETTINGS)
                 .setOnPreferenceClickListener(new OnPreferenceClickListener() {
                     @Override
@@ -292,7 +291,8 @@ public class AccountManagementFragment extends PreferenceFragment
                         if (ProfileSyncService.get() == null) return true;
 
                         Bundle args = new Bundle();
-                        args.putString(SyncCustomizationFragment.ARGUMENT_ACCOUNT, account.name);
+                        args.putString(
+                                SyncCustomizationFragment.ARGUMENT_ACCOUNT, mSignedInAccountName);
                         preferences.startFragment(SyncCustomizationFragment.class.getName(), args);
 
                         return true;
@@ -310,7 +310,7 @@ public class AccountManagementFragment extends PreferenceFragment
             public boolean onPreferenceClick(Preference preference) {
                 Activity activity = getActivity();
                 AppHooks.get().createGoogleActivityController().openWebAndAppActivitySettings(
-                        activity, ChromeSigninController.get().getSignedInAccountName());
+                        activity, mSignedInAccountName);
                 RecordUserAction.record("Signin_AccountSettings_GoogleActivityControlsClicked");
                 return true;
             }
