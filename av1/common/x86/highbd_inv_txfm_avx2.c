@@ -13,7 +13,7 @@
 
 #include "./av1_rtcd.h"
 #include "./aom_config.h"
-#include "av1/common/av1_inv_txfm2d_cfg.h"
+#include "av1/common/av1_inv_txfm1d_cfg.h"
 
 // Note:
 //  Total 32x4 registers to represent 32x32 block coefficients.
@@ -601,18 +601,20 @@ static void idct32_avx2(__m256i *in, __m256i *out, int bit) {
 void av1_inv_txfm2d_add_32x32_avx2(const int32_t *coeff, uint16_t *output,
                                    int stride, int tx_type, int bd) {
   __m256i in[128], out[128];
-  const TXFM_2D_CFG *cfg = NULL;
+  const TXFM_1D_CFG *row_cfg = NULL;
+  const TXFM_1D_CFG *col_cfg = NULL;
 
   switch (tx_type) {
     case DCT_DCT:
-      cfg = &inv_txfm_2d_cfg_dct_dct_32;
+      row_cfg = &inv_txfm_1d_row_cfg_dct_32;
+      col_cfg = &inv_txfm_1d_col_cfg_dct_32;
       load_buffer_32x32(coeff, in);
       transpose_32x32(in, out);
-      idct32_avx2(out, in, cfg->cos_bit_row[2]);
-      round_shift_32x32(in, -cfg->shift[0]);
+      idct32_avx2(out, in, row_cfg->cos_bit[2]);
+      round_shift_32x32(in, -row_cfg->shift[0]);
       transpose_32x32(in, out);
-      idct32_avx2(out, in, cfg->cos_bit_col[2]);
-      write_buffer_32x32(in, output, stride, 0, 0, -cfg->shift[1], bd);
+      idct32_avx2(out, in, col_cfg->cos_bit[2]);
+      write_buffer_32x32(in, output, stride, 0, 0, -row_cfg->shift[1], bd);
       break;
     default: assert(0);
   }

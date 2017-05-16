@@ -15,7 +15,7 @@
 #include "./av1_rtcd.h"
 #include "aom_dsp/inv_txfm.h"
 #include "aom_ports/mem.h"
-#include "av1/common/av1_inv_txfm2d_cfg.h"
+#include "av1/common/av1_inv_txfm1d_cfg.h"
 #include "av1/common/blockd.h"
 #include "av1/common/enums.h"
 #include "av1/common/idct.h"
@@ -85,8 +85,7 @@ static void idct64_col_c(const tran_low_t *input, tran_low_t *output) {
   int32_t in[64], out[64];
   int i;
   for (i = 0; i < 64; ++i) in[i] = (int32_t)input[i];
-  av1_idct64_new(in, out, inv_cos_bit_col_dct_dct_64,
-                 inv_stage_range_col_dct_dct_64);
+  av1_idct64_new(in, out, inv_cos_bit_col_dct_64, inv_stage_range_col_dct_64);
   for (i = 0; i < 64; ++i) output[i] = (tran_low_t)out[i];
 }
 
@@ -94,8 +93,7 @@ static void idct64_row_c(const tran_low_t *input, tran_low_t *output) {
   int32_t in[64], out[64];
   int i;
   for (i = 0; i < 64; ++i) in[i] = (int32_t)input[i];
-  av1_idct64_new(in, out, inv_cos_bit_row_dct_dct_64,
-                 inv_stage_range_row_dct_dct_64);
+  av1_idct64_new(in, out, inv_cos_bit_row_dct_64, inv_stage_range_row_dct_64);
   for (i = 0; i < 64; ++i) output[i] = (tran_low_t)out[i];
 }
 
@@ -196,8 +194,7 @@ static void highbd_idct64_col_c(const tran_low_t *input, tran_low_t *output,
   int i;
   (void)bd;
   for (i = 0; i < 64; ++i) in[i] = (int32_t)input[i];
-  av1_idct64_new(in, out, inv_cos_bit_col_dct_dct_64,
-                 inv_stage_range_col_dct_dct_64);
+  av1_idct64_new(in, out, inv_cos_bit_col_dct_64, inv_stage_range_col_dct_64);
   for (i = 0; i < 64; ++i) output[i] = (tran_low_t)out[i];
 }
 
@@ -207,8 +204,7 @@ static void highbd_idct64_row_c(const tran_low_t *input, tran_low_t *output,
   int i;
   (void)bd;
   for (i = 0; i < 64; ++i) in[i] = (int32_t)input[i];
-  av1_idct64_new(in, out, inv_cos_bit_row_dct_dct_64,
-                 inv_stage_range_row_dct_dct_64);
+  av1_idct64_new(in, out, inv_cos_bit_row_dct_64, inv_stage_range_row_dct_64);
   for (i = 0; i < 64; ++i) output[i] = (tran_low_t)out[i];
 }
 #endif  // CONFIG_TX64X64

@@ -13,7 +13,7 @@
 
 #include "./av1_rtcd.h"
 #include "./aom_config.h"
-#include "av1/common/av1_fwd_txfm2d_cfg.h"
+#include "av1/common/av1_fwd_txfm1d_cfg.h"
 #include "av1/common/av1_txfm.h"
 #include "av1/common/x86/highbd_txfm_utility_sse4.h"
 #include "aom_dsp/txfm_common.h"
@@ -209,71 +209,81 @@ static void fadst4x4_sse4_1(__m128i *in, int bit) {
 void av1_fwd_txfm2d_4x4_sse4_1(const int16_t *input, int32_t *coeff,
                                int input_stride, int tx_type, int bd) {
   __m128i in[4];
-  const TXFM_2D_CFG *cfg = NULL;
+  const TXFM_1D_CFG *row_cfg = NULL;
+  const TXFM_1D_CFG *col_cfg = NULL;
 
   switch (tx_type) {
     case DCT_DCT:
-      cfg = &fwd_txfm_2d_cfg_dct_dct_4;
-      load_buffer_4x4(input, in, input_stride, 0, 0, cfg->shift[0]);
-      fdct4x4_sse4_1(in, cfg->cos_bit_col[2]);
-      fdct4x4_sse4_1(in, cfg->cos_bit_row[2]);
+      row_cfg = &fwd_txfm_1d_row_cfg_dct_4;
+      col_cfg = &fwd_txfm_1d_col_cfg_dct_4;
+      load_buffer_4x4(input, in, input_stride, 0, 0, row_cfg->shift[0]);
+      fdct4x4_sse4_1(in, col_cfg->cos_bit[2]);
+      fdct4x4_sse4_1(in, row_cfg->cos_bit[2]);
       write_buffer_4x4(in, coeff);
       break;
     case ADST_DCT:
-      cfg = &fwd_txfm_2d_cfg_adst_dct_4;
-      load_buffer_4x4(input, in, input_stride, 0, 0, cfg->shift[0]);
-      fadst4x4_sse4_1(in, cfg->cos_bit_col[2]);
-      fdct4x4_sse4_1(in, cfg->cos_bit_row[2]);
+      row_cfg = &fwd_txfm_1d_row_cfg_dct_4;
+      col_cfg = &fwd_txfm_1d_col_cfg_adst_4;
+      load_buffer_4x4(input, in, input_stride, 0, 0, row_cfg->shift[0]);
+      fadst4x4_sse4_1(in, col_cfg->cos_bit[2]);
+      fdct4x4_sse4_1(in, row_cfg->cos_bit[2]);
       write_buffer_4x4(in, coeff);
       break;
     case DCT_ADST:
-      cfg = &fwd_txfm_2d_cfg_dct_adst_4;
-      load_buffer_4x4(input, in, input_stride, 0, 0, cfg->shift[0]);
-      fdct4x4_sse4_1(in, cfg->cos_bit_col[2]);
-      fadst4x4_sse4_1(in, cfg->cos_bit_row[2]);
+      row_cfg = &fwd_txfm_1d_row_cfg_adst_4;
+      col_cfg = &fwd_txfm_1d_col_cfg_dct_4;
+      load_buffer_4x4(input, in, input_stride, 0, 0, row_cfg->shift[0]);
+      fdct4x4_sse4_1(in, col_cfg->cos_bit[2]);
+      fadst4x4_sse4_1(in, row_cfg->cos_bit[2]);
       write_buffer_4x4(in, coeff);
       break;
     case ADST_ADST:
-      cfg = &fwd_txfm_2d_cfg_adst_adst_4;
-      load_buffer_4x4(input, in, input_stride, 0, 0, cfg->shift[0]);
-      fadst4x4_sse4_1(in, cfg->cos_bit_col[2]);
-      fadst4x4_sse4_1(in, cfg->cos_bit_row[2]);
+      row_cfg = &fwd_txfm_1d_row_cfg_adst_4;
+      col_cfg = &fwd_txfm_1d_col_cfg_adst_4;
+      load_buffer_4x4(input, in, input_stride, 0, 0, row_cfg->shift[0]);
+      fadst4x4_sse4_1(in, col_cfg->cos_bit[2]);
+      fadst4x4_sse4_1(in, row_cfg->cos_bit[2]);
       write_buffer_4x4(in, coeff);
       break;
 #if CONFIG_EXT_TX
     case FLIPADST_DCT:
-      cfg = &fwd_txfm_2d_cfg_adst_dct_4;
-      load_buffer_4x4(input, in, input_stride, 1, 0, cfg->shift[0]);
-      fadst4x4_sse4_1(in, cfg->cos_bit_col[2]);
-      fdct4x4_sse4_1(in, cfg->cos_bit_row[2]);
+      row_cfg = &fwd_txfm_1d_row_cfg_dct_4;
+      col_cfg = &fwd_txfm_1d_col_cfg_adst_4;
+      load_buffer_4x4(input, in, input_stride, 1, 0, row_cfg->shift[0]);
+      fadst4x4_sse4_1(in, col_cfg->cos_bit[2]);
+      fdct4x4_sse4_1(in, row_cfg->cos_bit[2]);
       write_buffer_4x4(in, coeff);
       break;
     case DCT_FLIPADST:
-      cfg = &fwd_txfm_2d_cfg_dct_adst_4;
-      load_buffer_4x4(input, in, input_stride, 0, 1, cfg->shift[0]);
-      fdct4x4_sse4_1(in, cfg->cos_bit_col[2]);
-      fadst4x4_sse4_1(in, cfg->cos_bit_row[2]);
+      row_cfg = &fwd_txfm_1d_row_cfg_adst_4;
+      col_cfg = &fwd_txfm_1d_col_cfg_dct_4;
+      load_buffer_4x4(input, in, input_stride, 0, 1, row_cfg->shift[0]);
+      fdct4x4_sse4_1(in, col_cfg->cos_bit[2]);
+      fadst4x4_sse4_1(in, row_cfg->cos_bit[2]);
       write_buffer_4x4(in, coeff);
       break;
     case FLIPADST_FLIPADST:
-      cfg = &fwd_txfm_2d_cfg_adst_adst_4;
-      load_buffer_4x4(input, in, input_stride, 1, 1, cfg->shift[0]);
-      fadst4x4_sse4_1(in, cfg->cos_bit_col[2]);
-      fadst4x4_sse4_1(in, cfg->cos_bit_row[2]);
+      row_cfg = &fwd_txfm_1d_row_cfg_adst_4;
+      col_cfg = &fwd_txfm_1d_col_cfg_adst_4;
+      load_buffer_4x4(input, in, input_stride, 1, 1, row_cfg->shift[0]);
+      fadst4x4_sse4_1(in, col_cfg->cos_bit[2]);
+      fadst4x4_sse4_1(in, row_cfg->cos_bit[2]);
       write_buffer_4x4(in, coeff);
       break;
     case ADST_FLIPADST:
-      cfg = &fwd_txfm_2d_cfg_adst_adst_4;
-      load_buffer_4x4(input, in, input_stride, 0, 1, cfg->shift[0]);
-      fadst4x4_sse4_1(in, cfg->cos_bit_col[2]);
-      fadst4x4_sse4_1(in, cfg->cos_bit_row[2]);
+      row_cfg = &fwd_txfm_1d_row_cfg_adst_4;
+      col_cfg = &fwd_txfm_1d_col_cfg_adst_4;
+      load_buffer_4x4(input, in, input_stride, 0, 1, row_cfg->shift[0]);
+      fadst4x4_sse4_1(in, col_cfg->cos_bit[2]);
+      fadst4x4_sse4_1(in, row_cfg->cos_bit[2]);
       write_buffer_4x4(in, coeff);
       break;
     case FLIPADST_ADST:
-      cfg = &fwd_txfm_2d_cfg_adst_adst_4;
-      load_buffer_4x4(input, in, input_stride, 1, 0, cfg->shift[0]);
-      fadst4x4_sse4_1(in, cfg->cos_bit_col[2]);
-      fadst4x4_sse4_1(in, cfg->cos_bit_row[2]);
+      row_cfg = &fwd_txfm_1d_row_cfg_adst_4;
+      col_cfg = &fwd_txfm_1d_col_cfg_adst_4;
+      load_buffer_4x4(input, in, input_stride, 1, 0, row_cfg->shift[0]);
+      fadst4x4_sse4_1(in, col_cfg->cos_bit[2]);
+      fadst4x4_sse4_1(in, row_cfg->cos_bit[2]);
       write_buffer_4x4(in, coeff);
       break;
 #endif
@@ -930,97 +940,107 @@ static void fadst8x8_sse4_1(__m128i *in, __m128i *out, int bit) {
 void av1_fwd_txfm2d_8x8_sse4_1(const int16_t *input, int32_t *coeff, int stride,
                                int tx_type, int bd) {
   __m128i in[16], out[16];
-  const TXFM_2D_CFG *cfg = NULL;
+  const TXFM_1D_CFG *row_cfg = NULL;
+  const TXFM_1D_CFG *col_cfg = NULL;
 
   switch (tx_type) {
     case DCT_DCT:
-      cfg = &fwd_txfm_2d_cfg_dct_dct_8;
-      load_buffer_8x8(input, in, stride, 0, 0, cfg->shift[0]);
-      fdct8x8_sse4_1(in, out, cfg->cos_bit_col[2]);
-      col_txfm_8x8_rounding(out, -cfg->shift[1]);
+      row_cfg = &fwd_txfm_1d_row_cfg_dct_8;
+      col_cfg = &fwd_txfm_1d_col_cfg_dct_8;
+      load_buffer_8x8(input, in, stride, 0, 0, row_cfg->shift[0]);
+      fdct8x8_sse4_1(in, out, col_cfg->cos_bit[2]);
+      col_txfm_8x8_rounding(out, -row_cfg->shift[1]);
       transpose_8x8(out, in);
-      fdct8x8_sse4_1(in, out, cfg->cos_bit_row[2]);
+      fdct8x8_sse4_1(in, out, row_cfg->cos_bit[2]);
       transpose_8x8(out, in);
       write_buffer_8x8(in, coeff);
       break;
     case ADST_DCT:
-      cfg = &fwd_txfm_2d_cfg_adst_dct_8;
-      load_buffer_8x8(input, in, stride, 0, 0, cfg->shift[0]);
-      fadst8x8_sse4_1(in, out, cfg->cos_bit_col[2]);
-      col_txfm_8x8_rounding(out, -cfg->shift[1]);
+      row_cfg = &fwd_txfm_1d_row_cfg_dct_8;
+      col_cfg = &fwd_txfm_1d_col_cfg_adst_8;
+      load_buffer_8x8(input, in, stride, 0, 0, row_cfg->shift[0]);
+      fadst8x8_sse4_1(in, out, col_cfg->cos_bit[2]);
+      col_txfm_8x8_rounding(out, -row_cfg->shift[1]);
       transpose_8x8(out, in);
-      fdct8x8_sse4_1(in, out, cfg->cos_bit_row[2]);
+      fdct8x8_sse4_1(in, out, row_cfg->cos_bit[2]);
       transpose_8x8(out, in);
       write_buffer_8x8(in, coeff);
       break;
     case DCT_ADST:
-      cfg = &fwd_txfm_2d_cfg_dct_adst_8;
-      load_buffer_8x8(input, in, stride, 0, 0, cfg->shift[0]);
-      fdct8x8_sse4_1(in, out, cfg->cos_bit_col[2]);
-      col_txfm_8x8_rounding(out, -cfg->shift[1]);
+      row_cfg = &fwd_txfm_1d_row_cfg_adst_8;
+      col_cfg = &fwd_txfm_1d_col_cfg_dct_8;
+      load_buffer_8x8(input, in, stride, 0, 0, row_cfg->shift[0]);
+      fdct8x8_sse4_1(in, out, col_cfg->cos_bit[2]);
+      col_txfm_8x8_rounding(out, -row_cfg->shift[1]);
       transpose_8x8(out, in);
-      fadst8x8_sse4_1(in, out, cfg->cos_bit_row[2]);
+      fadst8x8_sse4_1(in, out, row_cfg->cos_bit[2]);
       transpose_8x8(out, in);
       write_buffer_8x8(in, coeff);
       break;
     case ADST_ADST:
-      cfg = &fwd_txfm_2d_cfg_adst_adst_8;
-      load_buffer_8x8(input, in, stride, 0, 0, cfg->shift[0]);
-      fadst8x8_sse4_1(in, out, cfg->cos_bit_col[2]);
-      col_txfm_8x8_rounding(out, -cfg->shift[1]);
+      row_cfg = &fwd_txfm_1d_row_cfg_adst_8;
+      col_cfg = &fwd_txfm_1d_col_cfg_adst_8;
+      load_buffer_8x8(input, in, stride, 0, 0, row_cfg->shift[0]);
+      fadst8x8_sse4_1(in, out, col_cfg->cos_bit[2]);
+      col_txfm_8x8_rounding(out, -row_cfg->shift[1]);
       transpose_8x8(out, in);
-      fadst8x8_sse4_1(in, out, cfg->cos_bit_row[2]);
+      fadst8x8_sse4_1(in, out, row_cfg->cos_bit[2]);
       transpose_8x8(out, in);
       write_buffer_8x8(in, coeff);
       break;
 #if CONFIG_EXT_TX
     case FLIPADST_DCT:
-      cfg = &fwd_txfm_2d_cfg_adst_dct_8;
-      load_buffer_8x8(input, in, stride, 1, 0, cfg->shift[0]);
-      fadst8x8_sse4_1(in, out, cfg->cos_bit_col[2]);
-      col_txfm_8x8_rounding(out, -cfg->shift[1]);
+      row_cfg = &fwd_txfm_1d_row_cfg_dct_8;
+      col_cfg = &fwd_txfm_1d_col_cfg_adst_8;
+      load_buffer_8x8(input, in, stride, 1, 0, row_cfg->shift[0]);
+      fadst8x8_sse4_1(in, out, col_cfg->cos_bit[2]);
+      col_txfm_8x8_rounding(out, -row_cfg->shift[1]);
       transpose_8x8(out, in);
-      fdct8x8_sse4_1(in, out, cfg->cos_bit_row[2]);
+      fdct8x8_sse4_1(in, out, row_cfg->cos_bit[2]);
       transpose_8x8(out, in);
       write_buffer_8x8(in, coeff);
       break;
     case DCT_FLIPADST:
-      cfg = &fwd_txfm_2d_cfg_dct_adst_8;
-      load_buffer_8x8(input, in, stride, 0, 1, cfg->shift[0]);
-      fdct8x8_sse4_1(in, out, cfg->cos_bit_col[2]);
-      col_txfm_8x8_rounding(out, -cfg->shift[1]);
+      row_cfg = &fwd_txfm_1d_row_cfg_adst_8;
+      col_cfg = &fwd_txfm_1d_col_cfg_dct_8;
+      load_buffer_8x8(input, in, stride, 0, 1, row_cfg->shift[0]);
+      fdct8x8_sse4_1(in, out, col_cfg->cos_bit[2]);
+      col_txfm_8x8_rounding(out, -row_cfg->shift[1]);
       transpose_8x8(out, in);
-      fadst8x8_sse4_1(in, out, cfg->cos_bit_row[2]);
+      fadst8x8_sse4_1(in, out, row_cfg->cos_bit[2]);
       transpose_8x8(out, in);
       write_buffer_8x8(in, coeff);
       break;
     case FLIPADST_FLIPADST:
-      cfg = &fwd_txfm_2d_cfg_adst_adst_8;
-      load_buffer_8x8(input, in, stride, 1, 1, cfg->shift[0]);
-      fadst8x8_sse4_1(in, out, cfg->cos_bit_col[2]);
-      col_txfm_8x8_rounding(out, -cfg->shift[1]);
+      row_cfg = &fwd_txfm_1d_row_cfg_adst_8;
+      col_cfg = &fwd_txfm_1d_col_cfg_adst_8;
+      load_buffer_8x8(input, in, stride, 1, 1, row_cfg->shift[0]);
+      fadst8x8_sse4_1(in, out, col_cfg->cos_bit[2]);
+      col_txfm_8x8_rounding(out, -row_cfg->shift[1]);
       transpose_8x8(out, in);
-      fadst8x8_sse4_1(in, out, cfg->cos_bit_row[2]);
+      fadst8x8_sse4_1(in, out, row_cfg->cos_bit[2]);
       transpose_8x8(out, in);
       write_buffer_8x8(in, coeff);
       break;
     case ADST_FLIPADST:
-      cfg = &fwd_txfm_2d_cfg_adst_adst_8;
-      load_buffer_8x8(input, in, stride, 0, 1, cfg->shift[0]);
-      fadst8x8_sse4_1(in, out, cfg->cos_bit_col[2]);
-      col_txfm_8x8_rounding(out, -cfg->shift[1]);
+      row_cfg = &fwd_txfm_1d_row_cfg_adst_8;
+      col_cfg = &fwd_txfm_1d_col_cfg_adst_8;
+      load_buffer_8x8(input, in, stride, 0, 1, row_cfg->shift[0]);
+      fadst8x8_sse4_1(in, out, col_cfg->cos_bit[2]);
+      col_txfm_8x8_rounding(out, -row_cfg->shift[1]);
       transpose_8x8(out, in);
-      fadst8x8_sse4_1(in, out, cfg->cos_bit_row[2]);
+      fadst8x8_sse4_1(in, out, row_cfg->cos_bit[2]);
       transpose_8x8(out, in);
       write_buffer_8x8(in, coeff);
       break;
     case FLIPADST_ADST:
-      cfg = &fwd_txfm_2d_cfg_adst_adst_8;
-      load_buffer_8x8(input, in, stride, 1, 0, cfg->shift[0]);
-      fadst8x8_sse4_1(in, out, cfg->cos_bit_col[2]);
-      col_txfm_8x8_rounding(out, -cfg->shift[1]);
+      row_cfg = &fwd_txfm_1d_row_cfg_adst_8;
+      col_cfg = &fwd_txfm_1d_col_cfg_adst_8;
+      load_buffer_8x8(input, in, stride, 1, 0, row_cfg->shift[0]);
+      fadst8x8_sse4_1(in, out, col_cfg->cos_bit[2]);
+      col_txfm_8x8_rounding(out, -row_cfg->shift[1]);
       transpose_8x8(out, in);
-      fadst8x8_sse4_1(in, out, cfg->cos_bit_row[2]);
+      fadst8x8_sse4_1(in, out, row_cfg->cos_bit[2]);
       transpose_8x8(out, in);
       write_buffer_8x8(in, coeff);
       break;
@@ -1794,97 +1814,107 @@ static void write_buffer_16x16(const __m128i *in, tran_low_t *output) {
 void av1_fwd_txfm2d_16x16_sse4_1(const int16_t *input, int32_t *coeff,
                                  int stride, int tx_type, int bd) {
   __m128i in[64], out[64];
-  const TXFM_2D_CFG *cfg = NULL;
+  const TXFM_1D_CFG *row_cfg = NULL;
+  const TXFM_1D_CFG *col_cfg = NULL;
 
   switch (tx_type) {
     case DCT_DCT:
-      cfg = &fwd_txfm_2d_cfg_dct_dct_16;
-      load_buffer_16x16(input, in, stride, 0, 0, cfg->shift[0]);
-      fdct16x16_sse4_1(in, out, cfg->cos_bit_col[0]);
-      col_txfm_16x16_rounding(out, -cfg->shift[1]);
+      row_cfg = &fwd_txfm_1d_row_cfg_dct_16;
+      col_cfg = &fwd_txfm_1d_col_cfg_dct_16;
+      load_buffer_16x16(input, in, stride, 0, 0, row_cfg->shift[0]);
+      fdct16x16_sse4_1(in, out, col_cfg->cos_bit[0]);
+      col_txfm_16x16_rounding(out, -row_cfg->shift[1]);
       transpose_16x16(out, in);
-      fdct16x16_sse4_1(in, out, cfg->cos_bit_row[0]);
+      fdct16x16_sse4_1(in, out, row_cfg->cos_bit[0]);
       transpose_16x16(out, in);
       write_buffer_16x16(in, coeff);
       break;
     case ADST_DCT:
-      cfg = &fwd_txfm_2d_cfg_adst_dct_16;
-      load_buffer_16x16(input, in, stride, 0, 0, cfg->shift[0]);
-      fadst16x16_sse4_1(in, out, cfg->cos_bit_col[0]);
-      col_txfm_16x16_rounding(out, -cfg->shift[1]);
+      row_cfg = &fwd_txfm_1d_row_cfg_dct_16;
+      col_cfg = &fwd_txfm_1d_col_cfg_adst_16;
+      load_buffer_16x16(input, in, stride, 0, 0, row_cfg->shift[0]);
+      fadst16x16_sse4_1(in, out, col_cfg->cos_bit[0]);
+      col_txfm_16x16_rounding(out, -row_cfg->shift[1]);
       transpose_16x16(out, in);
-      fdct16x16_sse4_1(in, out, cfg->cos_bit_row[0]);
+      fdct16x16_sse4_1(in, out, row_cfg->cos_bit[0]);
       transpose_16x16(out, in);
       write_buffer_16x16(in, coeff);
       break;
     case DCT_ADST:
-      cfg = &fwd_txfm_2d_cfg_dct_adst_16;
-      load_buffer_16x16(input, in, stride, 0, 0, cfg->shift[0]);
-      fdct16x16_sse4_1(in, out, cfg->cos_bit_col[0]);
-      col_txfm_16x16_rounding(out, -cfg->shift[1]);
+      row_cfg = &fwd_txfm_1d_row_cfg_adst_16;
+      col_cfg = &fwd_txfm_1d_col_cfg_dct_16;
+      load_buffer_16x16(input, in, stride, 0, 0, row_cfg->shift[0]);
+      fdct16x16_sse4_1(in, out, col_cfg->cos_bit[0]);
+      col_txfm_16x16_rounding(out, -row_cfg->shift[1]);
       transpose_16x16(out, in);
-      fadst16x16_sse4_1(in, out, cfg->cos_bit_row[0]);
+      fadst16x16_sse4_1(in, out, row_cfg->cos_bit[0]);
       transpose_16x16(out, in);
       write_buffer_16x16(in, coeff);
       break;
     case ADST_ADST:
-      cfg = &fwd_txfm_2d_cfg_adst_adst_16;
-      load_buffer_16x16(input, in, stride, 0, 0, cfg->shift[0]);
-      fadst16x16_sse4_1(in, out, cfg->cos_bit_col[0]);
-      col_txfm_16x16_rounding(out, -cfg->shift[1]);
+      row_cfg = &fwd_txfm_1d_row_cfg_adst_16;
+      col_cfg = &fwd_txfm_1d_col_cfg_adst_16;
+      load_buffer_16x16(input, in, stride, 0, 0, row_cfg->shift[0]);
+      fadst16x16_sse4_1(in, out, col_cfg->cos_bit[0]);
+      col_txfm_16x16_rounding(out, -row_cfg->shift[1]);
       transpose_16x16(out, in);
-      fadst16x16_sse4_1(in, out, cfg->cos_bit_row[0]);
+      fadst16x16_sse4_1(in, out, row_cfg->cos_bit[0]);
       transpose_16x16(out, in);
       write_buffer_16x16(in, coeff);
       break;
 #if CONFIG_EXT_TX
     case FLIPADST_DCT:
-      cfg = &fwd_txfm_2d_cfg_adst_dct_16;
-      load_buffer_16x16(input, in, stride, 1, 0, cfg->shift[0]);
-      fadst16x16_sse4_1(in, out, cfg->cos_bit_col[0]);
-      col_txfm_16x16_rounding(out, -cfg->shift[1]);
+      row_cfg = &fwd_txfm_1d_row_cfg_dct_16;
+      col_cfg = &fwd_txfm_1d_col_cfg_adst_16;
+      load_buffer_16x16(input, in, stride, 1, 0, row_cfg->shift[0]);
+      fadst16x16_sse4_1(in, out, col_cfg->cos_bit[0]);
+      col_txfm_16x16_rounding(out, -row_cfg->shift[1]);
       transpose_16x16(out, in);
-      fdct16x16_sse4_1(in, out, cfg->cos_bit_row[0]);
+      fdct16x16_sse4_1(in, out, row_cfg->cos_bit[0]);
       transpose_16x16(out, in);
       write_buffer_16x16(in, coeff);
       break;
     case DCT_FLIPADST:
-      cfg = &fwd_txfm_2d_cfg_dct_adst_16;
-      load_buffer_16x16(input, in, stride, 0, 1, cfg->shift[0]);
-      fdct16x16_sse4_1(in, out, cfg->cos_bit_col[0]);
-      col_txfm_16x16_rounding(out, -cfg->shift[1]);
+      row_cfg = &fwd_txfm_1d_row_cfg_adst_16;
+      col_cfg = &fwd_txfm_1d_col_cfg_dct_16;
+      load_buffer_16x16(input, in, stride, 0, 1, row_cfg->shift[0]);
+      fdct16x16_sse4_1(in, out, col_cfg->cos_bit[0]);
+      col_txfm_16x16_rounding(out, -row_cfg->shift[1]);
       transpose_16x16(out, in);
-      fadst16x16_sse4_1(in, out, cfg->cos_bit_row[0]);
+      fadst16x16_sse4_1(in, out, row_cfg->cos_bit[0]);
       transpose_16x16(out, in);
       write_buffer_16x16(in, coeff);
       break;
     case FLIPADST_FLIPADST:
-      cfg = &fwd_txfm_2d_cfg_adst_adst_16;
-      load_buffer_16x16(input, in, stride, 1, 1, cfg->shift[0]);
-      fadst16x16_sse4_1(in, out, cfg->cos_bit_col[0]);
-      col_txfm_16x16_rounding(out, -cfg->shift[1]);
+      row_cfg = &fwd_txfm_1d_row_cfg_adst_16;
+      col_cfg = &fwd_txfm_1d_col_cfg_adst_16;
+      load_buffer_16x16(input, in, stride, 1, 1, row_cfg->shift[0]);
+      fadst16x16_sse4_1(in, out, col_cfg->cos_bit[0]);
+      col_txfm_16x16_rounding(out, -row_cfg->shift[1]);
       transpose_16x16(out, in);
-      fadst16x16_sse4_1(in, out, cfg->cos_bit_row[0]);
+      fadst16x16_sse4_1(in, out, row_cfg->cos_bit[0]);
       transpose_16x16(out, in);
       write_buffer_16x16(in, coeff);
       break;
     case ADST_FLIPADST:
-      cfg = &fwd_txfm_2d_cfg_adst_adst_16;
-      load_buffer_16x16(input, in, stride, 0, 1, cfg->shift[0]);
-      fadst16x16_sse4_1(in, out, cfg->cos_bit_col[0]);
-      col_txfm_16x16_rounding(out, -cfg->shift[1]);
+      row_cfg = &fwd_txfm_1d_row_cfg_adst_16;
+      col_cfg = &fwd_txfm_1d_col_cfg_adst_16;
+      load_buffer_16x16(input, in, stride, 0, 1, row_cfg->shift[0]);
+      fadst16x16_sse4_1(in, out, col_cfg->cos_bit[0]);
+      col_txfm_16x16_rounding(out, -row_cfg->shift[1]);
       transpose_16x16(out, in);
-      fadst16x16_sse4_1(in, out, cfg->cos_bit_row[0]);
+      fadst16x16_sse4_1(in, out, row_cfg->cos_bit[0]);
       transpose_16x16(out, in);
       write_buffer_16x16(in, coeff);
       break;
     case FLIPADST_ADST:
-      cfg = &fwd_txfm_2d_cfg_adst_adst_16;
-      load_buffer_16x16(input, in, stride, 1, 0, cfg->shift[0]);
-      fadst16x16_sse4_1(in, out, cfg->cos_bit_col[0]);
-      col_txfm_16x16_rounding(out, -cfg->shift[1]);
+      row_cfg = &fwd_txfm_1d_row_cfg_adst_16;
+      col_cfg = &fwd_txfm_1d_col_cfg_adst_16;
+      load_buffer_16x16(input, in, stride, 1, 0, row_cfg->shift[0]);
+      fadst16x16_sse4_1(in, out, col_cfg->cos_bit[0]);
+      col_txfm_16x16_rounding(out, -row_cfg->shift[1]);
       transpose_16x16(out, in);
-      fadst16x16_sse4_1(in, out, cfg->cos_bit_row[0]);
+      fadst16x16_sse4_1(in, out, row_cfg->cos_bit[0]);
       transpose_16x16(out, in);
       write_buffer_16x16(in, coeff);
       break;

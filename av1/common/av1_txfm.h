@@ -145,24 +145,21 @@ typedef enum TXFM_TYPE {
   TXFM_TYPE_ADST32,
 } TXFM_TYPE;
 
-typedef struct TXFM_2D_CFG {
+typedef struct TXFM_1D_CFG {
   const int txfm_size;
-  const int stage_num_col;
-  const int stage_num_row;
+  const int stage_num;
 
   const int8_t *shift;
-  const int8_t *stage_range_col;
-  const int8_t *stage_range_row;
-  const int8_t *cos_bit_col;
-  const int8_t *cos_bit_row;
-  const TXFM_TYPE txfm_type_col;
-  const TXFM_TYPE txfm_type_row;
-} TXFM_2D_CFG;
+  const int8_t *stage_range;
+  const int8_t *cos_bit;
+  const TXFM_TYPE txfm_type;
+} TXFM_1D_CFG;
 
 typedef struct TXFM_2D_FLIP_CFG {
   int ud_flip;  // flip upside down
   int lr_flip;  // flip left to right
-  const TXFM_2D_CFG *cfg;
+  const TXFM_1D_CFG *col_cfg;
+  const TXFM_1D_CFG *row_cfg;
 } TXFM_2D_FLIP_CFG;
 
 static INLINE void set_flip_cfg(int tx_type, TXFM_2D_FLIP_CFG *cfg) {
@@ -176,24 +173,18 @@ static INLINE void set_flip_cfg(int tx_type, TXFM_2D_FLIP_CFG *cfg) {
       break;
 #if CONFIG_EXT_TX
     case FLIPADST_DCT:
+    case FLIPADST_ADST:
       cfg->ud_flip = 1;
       cfg->lr_flip = 0;
       break;
     case DCT_FLIPADST:
+    case ADST_FLIPADST:
       cfg->ud_flip = 0;
       cfg->lr_flip = 1;
       break;
     case FLIPADST_FLIPADST:
       cfg->ud_flip = 1;
       cfg->lr_flip = 1;
-      break;
-    case ADST_FLIPADST:
-      cfg->ud_flip = 0;
-      cfg->lr_flip = 1;
-      break;
-    case FLIPADST_ADST:
-      cfg->ud_flip = 1;
-      cfg->lr_flip = 0;
       break;
 #endif  // CONFIG_EXT_TX
     default:

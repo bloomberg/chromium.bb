@@ -418,22 +418,6 @@ static INLINE int write_uniform_cost(int n, int v) {
 #define FAST_EXT_TX_CORR_MARGIN 0.5
 #define FAST_EXT_TX_EDST_MARGIN 0.3
 
-static const TX_TYPE_1D vtx_tab[TX_TYPES] = {
-  DCT_1D,      ADST_1D, DCT_1D,      ADST_1D,
-#if CONFIG_EXT_TX
-  FLIPADST_1D, DCT_1D,  FLIPADST_1D, ADST_1D, FLIPADST_1D, IDTX_1D,
-  DCT_1D,      IDTX_1D, ADST_1D,     IDTX_1D, FLIPADST_1D, IDTX_1D,
-#endif  // CONFIG_EXT_TX
-};
-
-static const TX_TYPE_1D htx_tab[TX_TYPES] = {
-  DCT_1D,  DCT_1D,      ADST_1D,     ADST_1D,
-#if CONFIG_EXT_TX
-  DCT_1D,  FLIPADST_1D, FLIPADST_1D, FLIPADST_1D, ADST_1D, IDTX_1D,
-  IDTX_1D, DCT_1D,      IDTX_1D,     ADST_1D,     IDTX_1D, FLIPADST_1D,
-#endif  // CONFIG_EXT_TX
-};
-
 #if CONFIG_DAALA_DIST
 static int od_compute_var_4x4(od_coeff *x, int stride) {
   int sum;
