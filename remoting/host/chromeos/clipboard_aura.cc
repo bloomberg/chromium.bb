@@ -30,6 +30,7 @@ ClipboardAura::ClipboardAura()
 }
 
 ClipboardAura::~ClipboardAura() {
+  DCHECK(thread_checker_.CalledOnValidThread());
 }
 
 void ClipboardAura::Start(

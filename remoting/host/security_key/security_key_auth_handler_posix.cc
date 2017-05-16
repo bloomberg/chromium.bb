@@ -152,6 +152,7 @@ SecurityKeyAuthHandlerPosix::SecurityKeyAuthHandlerPosix(
       weak_factory_(this) {}
 
 SecurityKeyAuthHandlerPosix::~SecurityKeyAuthHandlerPosix() {
+  DCHECK(thread_checker_.CalledOnValidThread());
   if (file_task_runner_) {
     // Attempt to clean up the socket before being destroyed.
     file_task_runner_->PostTask(

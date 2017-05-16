@@ -63,6 +63,7 @@ SecurityKeyIpcServerImpl::SecurityKeyIpcServerImpl(
 }
 
 SecurityKeyIpcServerImpl::~SecurityKeyIpcServerImpl() {
+  DCHECK(thread_checker_.CalledOnValidThread());
   CloseChannel();
 }
 

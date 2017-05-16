@@ -32,7 +32,9 @@ MouseShapePump::MouseShapePump(
       base::Bind(&MouseShapePump::Capture, base::Unretained(this)));
 }
 
-MouseShapePump::~MouseShapePump() {}
+MouseShapePump::~MouseShapePump() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+}
 
 void MouseShapePump::Capture() {
   DCHECK(thread_checker_.CalledOnValidThread());

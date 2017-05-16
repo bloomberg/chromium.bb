@@ -75,7 +75,9 @@ SecurityKeyExtensionSession::SecurityKeyExtensionSession(
       file_task_runner);
 }
 
-SecurityKeyExtensionSession::~SecurityKeyExtensionSession() {}
+SecurityKeyExtensionSession::~SecurityKeyExtensionSession() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+}
 
 // Returns true if the |message| is a Security Key ExtensionMessage.
 // This is done so the host does not pass |message| to other HostExtensions.

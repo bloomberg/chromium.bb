@@ -26,7 +26,9 @@ SecurityKeyIpcClient::SecurityKeyIpcClient()
     : named_channel_handle_(remoting::GetSecurityKeyIpcChannel()),
       weak_factory_(this) {}
 
-SecurityKeyIpcClient::~SecurityKeyIpcClient() {}
+SecurityKeyIpcClient::~SecurityKeyIpcClient() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+}
 
 bool SecurityKeyIpcClient::CheckForSecurityKeyIpcServerChannel() {
   DCHECK(thread_checker_.CalledOnValidThread());

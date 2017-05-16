@@ -85,6 +85,7 @@ HeartbeatSender::HeartbeatSender(
 }
 
 HeartbeatSender::~HeartbeatSender() {
+  DCHECK(thread_checker_.CalledOnValidThread());
   signal_strategy_->RemoveListener(this);
 }
 

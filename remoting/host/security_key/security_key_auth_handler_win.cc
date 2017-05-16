@@ -127,7 +127,9 @@ SecurityKeyAuthHandlerWin::SecurityKeyAuthHandlerWin(
   DCHECK(client_session_details_);
 }
 
-SecurityKeyAuthHandlerWin::~SecurityKeyAuthHandlerWin() {}
+SecurityKeyAuthHandlerWin::~SecurityKeyAuthHandlerWin() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+}
 
 void SecurityKeyAuthHandlerWin::CreateSecurityKeyConnection() {
   DCHECK(thread_checker_.CalledOnValidThread());
