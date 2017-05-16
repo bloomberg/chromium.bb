@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/webui/ntp/ntp_user_data_logger.h"
+#include "chrome/browser/ui/search/ntp_user_data_logger.h"
 
 #include <algorithm>
 #include <string>
@@ -56,7 +56,7 @@ NTPUserDataLogger::~NTPUserDataLogger() {}
 
 // static
 NTPUserDataLogger* NTPUserDataLogger::GetOrCreateFromWebContents(
-      content::WebContents* content) {
+    content::WebContents* content) {
   DCHECK(search::IsInstantNTP(content));
 
   // Calling CreateForWebContents when an instance is already attached has no

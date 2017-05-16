@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_WEBUI_NTP_NTP_USER_DATA_LOGGER_H_
-#define CHROME_BROWSER_UI_WEBUI_NTP_NTP_USER_DATA_LOGGER_H_
+#ifndef CHROME_BROWSER_UI_SEARCH_NTP_USER_DATA_LOGGER_H_
+#define CHROME_BROWSER_UI_SEARCH_NTP_USER_DATA_LOGGER_H_
 
 #include <stddef.h>
 
@@ -108,4 +108,4 @@ class NTPUserDataLogger
   DISALLOW_COPY_AND_ASSIGN(NTPUserDataLogger);
 };
 
-#endif  // CHROME_BROWSER_UI_WEBUI_NTP_NTP_USER_DATA_LOGGER_H_
+#endif  // CHROME_BROWSER_UI_SEARCH_NTP_USER_DATA_LOGGER_H_
