@@ -48,6 +48,7 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/test_data_directory.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
+#include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -705,6 +706,114 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
   EXPECT_EQ(xhr_count,
             GetWebRequestCountFromBackgroundPage(extension, profile()));
   EXPECT_EQ(BLOCKED_ACTION_WEB_REQUEST, runner->GetBlockedActions(extension));
+}
+
+// Verify that requests to clientsX.google.com are protected properly.
+// First test requests from a standard renderer and a webui renderer.
+// Then test a request from the browser process.
+IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
+                       WebRequestClientsGoogleComProtection) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  int port = embedded_test_server()->port();
+
+  // Load an extension that registers a listener for webRequest events, and
+  // wait 'til it's initialized.
+  ExtensionTestMessageListener listener("ready", false);
+  const Extension* extension = LoadExtension(
+      test_data_dir_.AppendASCII("webrequest_clients_google_com"));
+  ASSERT_TRUE(extension) << message_;
+  EXPECT_TRUE(listener.WaitUntilSatisfied());
+
+  // Perform requests to https://client1.google.com from renderer processes.
+
+  struct TestCase {
+    const char* main_frame_url;
+    bool request_to_clients1_google_com_visible;
+  } testcases[] = {
+      {"http://www.example.com", true}, {"chrome://settings", false},
+  };
+
+  // Expected number of requests to clients1.google.com observed so far.
+  int expected_requests_observed = 0;
+  EXPECT_EQ(expected_requests_observed,
+            GetWebRequestCountFromBackgroundPage(extension, profile()));
+
+  for (const auto& testcase : testcases) {
+    SCOPED_TRACE(testcase.main_frame_url);
+
+    GURL url;
+    if (base::StartsWith(testcase.main_frame_url, "chrome://",
+                         base::CompareCase::INSENSITIVE_ASCII)) {
+      url = GURL(testcase.main_frame_url);
+    } else {
+      url = GURL(base::StringPrintf("%s:%d/simple.html",
+                                    testcase.main_frame_url, port));
+    }
+
+    chrome::NavigateParams params(browser(), url, ui::PAGE_TRANSITION_TYPED);
+    ui_test_utils::NavigateToURL(&params);
+
+    EXPECT_EQ(expected_requests_observed,
+              GetWebRequestCountFromBackgroundPage(extension, profile()));
+
+    content::WebContents* web_contents =
+        browser()->tab_strip_model()->GetActiveWebContents();
+    ASSERT_TRUE(web_contents);
+
+    const char kRequest[] =
+        "var xhr = new XMLHttpRequest();\n"
+        "xhr.open('GET', 'https://clients1.google.com');\n"
+        "xhr.onload = () => {window.domAutomationController.send(true);};\n"
+        "xhr.onerror = () => {window.domAutomationController.send(false);};\n"
+        "xhr.send();\n";
+
+    bool success = false;
+    EXPECT_TRUE(ExecuteScriptAndExtractBool(web_contents->GetMainFrame(),
+                                            kRequest, &success));
+    // Requests always fail due to cross origin nature.
+    EXPECT_FALSE(success);
+
+    if (testcase.request_to_clients1_google_com_visible)
+      ++expected_requests_observed;
+
+    EXPECT_EQ(expected_requests_observed,
+              GetWebRequestCountFromBackgroundPage(extension, profile()));
+  }
+
+  // Perform request to https://client1.google.com from browser process.
+
+  class TestURLFetcherDelegate : public net::URLFetcherDelegate {
+   public:
+    explicit TestURLFetcherDelegate(const base::Closure& quit_loop_func)
+        : quit_loop_func_(quit_loop_func) {}
+    ~TestURLFetcherDelegate() override {}
+
+    void OnURLFetchComplete(const net::URLFetcher* source) override {
+      EXPECT_EQ(net::HTTP_OK, source->GetResponseCode());
+      quit_loop_func_.Run();
+    }
+
+   private:
+    base::Closure quit_loop_func_;
+  };
+  base::RunLoop run_loop;
+  TestURLFetcherDelegate delegate(run_loop.QuitClosure());
+
+  net::URLFetcherImplFactory url_fetcher_impl_factory;
+  net::FakeURLFetcherFactory url_fetcher_factory(&url_fetcher_impl_factory);
+  url_fetcher_factory.SetFakeResponse(GURL("https://client1.google.com"),
+                                      "hello my friend", net::HTTP_OK,
+                                      net::URLRequestStatus::SUCCESS);
+  std::unique_ptr<net::URLFetcher> fetcher =
+      url_fetcher_factory.CreateURLFetcher(1,
+                                           GURL("https://client1.google.com"),
+                                           net::URLFetcher::GET, &delegate);
+  fetcher->Start();
+  run_loop.Run();
+
+  // This request should not be observed by the extension.
+  EXPECT_EQ(expected_requests_observed,
+            GetWebRequestCountFromBackgroundPage(extension, profile()));
 }
 
 // Test that the webRequest events are dispatched for the WebSocket handshake
