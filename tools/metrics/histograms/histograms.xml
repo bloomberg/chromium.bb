@@ -70364,6 +70364,11 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Stability.Android.PendingMinidumpsOnStartup" units="minidumps">
+  <obsolete>
+    Deprecated in M60. Roughly 50% of Chrome startups that had *any* pending
+    minidumps had at least one pending minidump without any logcat output. About
+    5% had multiple minidumps without any logcat output.
+  </obsolete>
   <owner>isherman@chromium.org</owner>
   <summary>
     The number of un-uploaded minidumps present in the Android Crash Reports
@@ -70376,6 +70381,11 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Stability.Android.PendingMinidumpsOnStartup.SansLogcat"
     units="minidumps">
+  <obsolete>
+    Deprecated in M60. Roughly 50% of Chrome startups that had *any* pending
+    minidumps had at least one pending minidump without any logcat output. About
+    5% had multiple minidumps without any logcat output.
+  </obsolete>
   <owner>isherman@chromium.org</owner>
   <summary>
     The number of un-uploaded minidumps present in the Android Crash Reports

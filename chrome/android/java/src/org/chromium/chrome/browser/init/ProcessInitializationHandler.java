@@ -506,19 +506,6 @@ public class ProcessInitializationHandler {
                 // Finally, uploading any pending crash reports.
                 File[] minidumps = crashFileManager.getAllMinidumpFiles(
                         MinidumpUploadService.MAX_TRIES_ALLOWED);
-                int numMinidumpsSansLogcat = 0;
-                for (File minidump : minidumps) {
-                    if (CrashFileManager.isMinidumpMIMEFirstTry(minidump.getName())) {
-                        ++numMinidumpsSansLogcat;
-                    }
-                }
-                // TODO(isherman): These two histograms are intended to be temporary, and can
-                // probably be removed around the M60 timeframe: http://crbug.com/699785
-                RecordHistogram.recordSparseSlowlyHistogram(
-                        "Stability.Android.PendingMinidumpsOnStartup", minidumps.length);
-                RecordHistogram.recordSparseSlowlyHistogram(
-                        "Stability.Android.PendingMinidumpsOnStartup.SansLogcat",
-                        numMinidumpsSansLogcat);
                 if (minidumps.length == 0) return;
 
                 Log.i(TAG, "Attempting to upload %d accumulated crash dumps.", minidumps.length);
