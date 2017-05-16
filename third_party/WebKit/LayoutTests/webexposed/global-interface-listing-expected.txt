@@ -739,10 +739,10 @@ interface CSSSupportsRule : CSSConditionRule
     method constructor
 interface CSSTransformComponent
     attribute @@toStringTag
-    getter cssText
     method asMatrix
     method constructor
     method is2D
+    method toString
 interface CSSTransformValue : CSSStyleValue
     attribute @@toStringTag
     getter length

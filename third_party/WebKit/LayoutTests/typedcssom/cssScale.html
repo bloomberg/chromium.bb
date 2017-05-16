@@ -37,9 +37,9 @@ test(function() {
 
 test(function() {
   for (var i = 0; i < values.length; ++i) {
-    assert_equals(values[i].input.cssText, values[i].cssText);
+    assert_equals(values[i].input.toString(), values[i].cssText);
   }
-}, "Test that the cssText for CSSScale is correct.");
+}, "Test that the toString for CSSScale is correct.");
 
 test(function() {
   assert_throws(null, () => { new CSSScale(); });

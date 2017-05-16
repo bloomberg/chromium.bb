@@ -79,9 +79,9 @@ test(function() {
 
 test(function() {
   for (var i = 0; i < values.length; ++i) {
-    assert_equals(values[i].input.cssText, expectedCssString(values[i]));
+    assert_equals(values[i].input.toString(), expectedCssString(values[i]));
   }
-}, "Test that cssText values for CSSTranslation is correct.");
+}, "Test that toString values for CSSTranslation is correct.");
 
 test(function() {
   assert_throws(null, function() { new CSSTranslation(simpleLength, simpleLength, simplePercent); });

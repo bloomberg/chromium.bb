@@ -52,9 +52,9 @@ test(function() {
 
 test(function() {
   for (var i = 0; i < values.length; ++i) {
-    assert_equals(values[i].input.cssText, values[i].cssText);
+    assert_equals(values[i].input.toString(), values[i].cssText);
   }
-}, "Test that the cssText for CSSMatrixComponent is correct.");
+}, "Test that the toString for CSSMatrixComponent is correct.");
 
 test(function() {
   assert_throws(null, function() { new CSSMatrixComponent(); });
@@ -73,7 +73,7 @@ test(function() {
       assert_equals(inputAsMatrix[attribute], values[i].input[attribute]);
     }
     assert_equals(inputAsMatrix.is2D(), values[i].input.is2D());
-    assert_equals(inputAsMatrix.cssText, values[i].input.cssText);
+    assert_equals(inputAsMatrix.toString(), values[i].input.toString());
   }
 }, "Test that asMatrix has all the same properties as the original CSSMatrixComponent.");
 

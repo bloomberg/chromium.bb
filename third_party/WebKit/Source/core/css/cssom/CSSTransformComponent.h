@@ -50,7 +50,7 @@ class CORE_EXPORT CSSTransformComponent
 
   bool is2D() const { return Is2DComponentType(GetType()); }
 
-  String cssText() const { return ToCSSValue()->CssText(); }
+  String toString() const { return ToCSSValue()->CssText(); }
 
   virtual CSSFunctionValue* ToCSSValue() const = 0;
   virtual CSSMatrixComponent* asMatrix() const = 0;

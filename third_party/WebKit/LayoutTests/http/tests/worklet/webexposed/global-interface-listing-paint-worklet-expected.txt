@@ -110,10 +110,10 @@ CONSOLE MESSAGE: line 138:     static method parse
 CONSOLE MESSAGE: line 138:     getter cssText
 CONSOLE MESSAGE: line 138:     method constructor
 CONSOLE MESSAGE: line 138: interface CSSTransformComponent
-CONSOLE MESSAGE: line 138:     getter cssText
 CONSOLE MESSAGE: line 138:     method asMatrix
 CONSOLE MESSAGE: line 138:     method constructor
 CONSOLE MESSAGE: line 138:     method is2D
+CONSOLE MESSAGE: line 138:     method toString
 CONSOLE MESSAGE: line 138: interface CSSTransformValue : CSSStyleValue
 CONSOLE MESSAGE: line 138:     getter length
 CONSOLE MESSAGE: line 138:     method constructor
