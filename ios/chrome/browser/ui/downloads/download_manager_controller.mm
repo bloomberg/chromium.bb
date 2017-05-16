@@ -11,6 +11,7 @@
 #include "base/files/file_util.h"
 #include "base/location.h"
 #include "base/mac/bind_objc_block.h"
+#include "base/task_scheduler/post_task.h"
 
 #include "base/memory/ref_counted.h"
 #include "base/metrics/histogram_macros.h"
@@ -616,9 +617,11 @@ class DownloadContentDelegate : public URLFetcherDelegate {
     // will be cleaned up during dealloc, but a local copy will be retained by
     // the block and won't be deleted until the block completes.
     base::FilePath downloadPathCopy = _downloadFilePath;
-    web::WebThread::PostBlockingPoolTask(FROM_HERE, base::BindBlockArc(^{
-                                           DeleteFile(downloadPathCopy, false);
-                                         }));
+    base::PostTaskWithTraits(FROM_HERE,
+                             {base::MayBlock(), base::TaskPriority::BACKGROUND},
+                             base::BindBlockArc(^{
+                               DeleteFile(downloadPathCopy, false);
+                             }));
   }
   if (_recordDownloadResultHistogram) {
     UMA_HISTOGRAM_ENUMERATION(kUMADownloadFileResult, DOWNLOAD_OTHER,
@@ -1272,7 +1275,8 @@ class DownloadContentDelegate : public URLFetcherDelegate {
       web::WebThread::GetBlockingPool()->GetSequenceToken();
   _fetcher->SaveResponseToFileAtPath(
       _downloadFilePath,
-      web::WebThread::GetBlockingPool()->GetSequencedTaskRunner(sequenceToken));
+      base::CreateSequencedTaskRunnerWithTraits(
+          {base::MayBlock(), base::TaskPriority::BACKGROUND}));
   [[NetworkActivityIndicatorManager sharedInstance]
       startNetworkTaskForGroup:[self getNetworkActivityKey]];
   _fetcher->Start();
@@ -1604,8 +1608,9 @@ class DownloadContentDelegate : public URLFetcherDelegate {
 }
 
 + (void)clearDownloadsDirectory {
-  web::WebThread::PostBlockingPoolTask(
-      FROM_HERE, base::BindBlockArc(^{
+  base::PostTaskWithTraits(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
+      base::BindBlockArc(^{
         base::FilePath downloadsDirectory;
         if (![DownloadManagerController
                 fetchDownloadsDirectoryFilePath:&downloadsDirectory]) {
