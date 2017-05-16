@@ -2083,6 +2083,7 @@ void LayerTreeHostImpl::PushScrollbarOpacitiesFromActiveToPending() {
 void LayerTreeHostImpl::ActivateSyncTree() {
   if (pending_tree_) {
     TRACE_EVENT_ASYNC_END0("cc", "PendingTree:waiting", pending_tree_.get());
+    active_tree_->lifecycle().AdvanceTo(LayerTreeLifecycle::kBeginningSync);
 
     DCHECK(pending_tree_duration_timer_);
     // Reset will call the destructor and log the timer histogram.
@@ -2098,24 +2099,20 @@ void LayerTreeHostImpl::ActivateSyncTree() {
                                          active_tree_.get());
     }
 
-    // Property trees may store damage status. We preserve the active tree
-    // damage status by pushing the damage status from active tree property
-    // trees to pending tree property trees or by moving it onto the layers.
-    if (active_tree_->property_trees()->changed) {
-      if (pending_tree_->property_trees()->sequence_number ==
-          active_tree_->property_trees()->sequence_number)
-        active_tree_->property_trees()->PushChangeTrackingTo(
-            pending_tree_->property_trees());
-      else
-        active_tree_->MoveChangeTrackingToLayers();
-    }
-    TreeSynchronizer::PushLayerProperties(pending_tree(), active_tree());
-
     PushScrollbarOpacitiesFromActiveToPending();
+    pending_tree_->PushPropertyTreesTo(active_tree_.get());
+    active_tree_->lifecycle().AdvanceTo(
+        LayerTreeLifecycle::kSyncedPropertyTrees);
+
+    TreeSynchronizer::PushLayerProperties(pending_tree(), active_tree());
+    active_tree_->lifecycle().AdvanceTo(
+        LayerTreeLifecycle::kSyncedLayerProperties);
 
     pending_tree_->PushPropertiesTo(active_tree_.get());
     if (!pending_tree_->LayerListIsEmpty())
       pending_tree_->property_trees()->ResetAllChangeTracking();
+
+    active_tree_->lifecycle().AdvanceTo(LayerTreeLifecycle::kNotSyncing);
 
     // Now that we've synced everything from the pending tree to the active
     // tree, rename the pending tree the recycle tree so we can reuse it on the

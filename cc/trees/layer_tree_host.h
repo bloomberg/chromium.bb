@@ -359,7 +359,9 @@ class CC_EXPORT LayerTreeHost : public NON_EXPORTED_BASE(SurfaceReferenceOwner),
 
   void SetPropertyTreesNeedRebuild();
 
-  void PushPropertiesTo(LayerTreeImpl* tree_impl);
+  void PushPropertyTreesTo(LayerTreeImpl* tree_impl);
+  void PushLayerTreePropertiesTo(LayerTreeImpl* tree_impl);
+  void PushLayerTreeHostPropertiesTo(LayerTreeHostImpl* host_impl);
 
   MutatorHost* mutator_host() const { return mutator_host_; }
 

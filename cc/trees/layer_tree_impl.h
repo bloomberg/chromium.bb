@@ -54,6 +54,35 @@ typedef std::vector<UIResourceRequest> UIResourceRequestQueue;
 typedef SyncedProperty<AdditionGroup<float>> SyncedBrowserControls;
 typedef SyncedProperty<AdditionGroup<gfx::Vector2dF>> SyncedElasticOverscroll;
 
+class LayerTreeLifecycle {
+ public:
+  enum LifecycleState {
+    kNotSyncing,
+
+    // The following states are the steps performed when syncing properties to
+    // this tree (see: LayerTreeHost::FinishCommitOnImplThread or
+    // LayerTreeHostImpl::ActivateSyncTree).
+    kBeginningSync,
+    kSyncedPropertyTrees,
+    kSyncedLayerProperties,
+    kLastSyncState = kSyncedLayerProperties,
+
+    // TODO(pdr): Add states to cover more than just the synchronization steps.
+  };
+
+  void AdvanceTo(LifecycleState);
+
+  bool AllowsPropertyTreeAccess() const {
+    return state_ == kNotSyncing || state_ >= kSyncedPropertyTrees;
+  }
+  bool AllowsLayerPropertyAccess() const {
+    return state_ == kNotSyncing || state_ >= kSyncedLayerProperties;
+  }
+
+ private:
+  LifecycleState state_ = kNotSyncing;
+};
+
 class CC_EXPORT LayerTreeImpl {
  public:
   // This is the number of times a fixed point has to be hit continuously by a
@@ -130,8 +159,14 @@ class CC_EXPORT LayerTreeImpl {
   std::unique_ptr<OwnedLayerImplList> DetachLayers();
 
   void SetPropertyTrees(PropertyTrees* property_trees);
-  PropertyTrees* property_trees() { return &property_trees_; }
+  PropertyTrees* property_trees() {
+    // TODO(pdr): We should enable this DCHECK because it will catch uses of
+    // stale property trees, but it currently fails too many existing tests.
+    // DCHECK(lifecycle().AllowsPropertyTreeAccess());
+    return &property_trees_;
+  }
 
+  void PushPropertyTreesTo(LayerTreeImpl* tree_impl);
   void PushPropertiesTo(LayerTreeImpl* tree_impl);
 
   void MoveChangeTrackingToLayers();
@@ -467,6 +502,8 @@ class CC_EXPORT LayerTreeImpl {
 
   void InvalidateRegionForImages(const ImageIdFlatSet& images_to_invalidate);
 
+  LayerTreeLifecycle& lifecycle() { return lifecycle_; }
+
  protected:
   float ClampPageScaleFactorToLimits(float page_scale_factor) const;
   void PushPageScaleFactorAndLimits(const float* page_scale_factor,
@@ -580,6 +617,10 @@ class CC_EXPORT LayerTreeImpl {
   scoped_refptr<SyncedBrowserControls> top_controls_shown_ratio_;
 
   std::unique_ptr<PendingPageScaleAnimation> pending_page_scale_animation_;
+
+  // Tracks the lifecycle which is used for enforcing dependencies between
+  // lifecycle states. See: |LayerTreeLifecycle|.
+  LayerTreeLifecycle lifecycle_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(LayerTreeImpl);

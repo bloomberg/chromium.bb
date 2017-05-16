@@ -51,6 +51,21 @@
 
 namespace cc {
 
+void LayerTreeLifecycle::AdvanceTo(LifecycleState next_state) {
+  switch (next_state) {
+    case (kNotSyncing):
+      DCHECK_EQ(state_, kLastSyncState);
+      break;
+    case (kBeginningSync):
+    case (kSyncedPropertyTrees):
+    case (kSyncedLayerProperties):
+      // Only allow tree synchronization states to be transitioned in order.
+      DCHECK_EQ(state_ + 1, next_state);
+      break;
+  }
+  state_ = next_state;
+}
+
 LayerTreeImpl::LayerTreeImpl(
     LayerTreeHostImpl* layer_tree_host_impl,
     scoped_refptr<SyncedProperty<ScaleGroup>> page_scale_factor,
@@ -162,6 +177,7 @@ bool LayerTreeImpl::IsViewportLayerId(int id) const {
 
 void LayerTreeImpl::DidUpdateScrollOffset(int layer_id) {
   DidUpdateScrollState(layer_id);
+  DCHECK(lifecycle().AllowsPropertyTreeAccess());
   TransformTree& transform_tree = property_trees()->transform_tree;
   ScrollTree& scroll_tree = property_trees()->scroll_tree;
   int transform_id = TransformTree::kInvalidNodeId;
@@ -198,6 +214,10 @@ void LayerTreeImpl::DidUpdateScrollOffset(int layer_id) {
 void LayerTreeImpl::DidUpdateScrollState(int layer_id) {
   if (!IsActiveTree())
     return;
+
+  // The scroll_clip_layer Layer properties should be up-to-date.
+  // TODO(pdr): This DCHECK fails on existing tests but should be enabled.
+  // DCHECK(lifecycle().AllowsLayerPropertyAccess());
 
   if (layer_id == Layer::INVALID_ID)
     return;
@@ -382,9 +402,17 @@ void LayerTreeImpl::SetPropertyTrees(PropertyTrees* property_trees) {
   property_trees_.transform_tree.set_source_to_parent_updates_allowed(false);
 }
 
-void LayerTreeImpl::PushPropertiesTo(LayerTreeImpl* target_tree) {
-  // The request queue should have been processed and does not require a push.
-  DCHECK_EQ(ui_resource_request_queue_.size(), 0u);
+void LayerTreeImpl::PushPropertyTreesTo(LayerTreeImpl* target_tree) {
+  // Property trees may store damage status. We preserve the active tree
+  // damage status by pushing the damage status from active tree property
+  // trees to pending tree property trees or by moving it onto the layers.
+  if (target_tree->property_trees()->changed) {
+    if (property_trees()->sequence_number ==
+        target_tree->property_trees()->sequence_number)
+      target_tree->property_trees()->PushChangeTrackingTo(property_trees());
+    else
+      target_tree->MoveChangeTrackingToLayers();
+  }
 
   // To maintain the current scrolling node we need to use element ids which
   // are stable across the property tree update in SetPropertyTrees.
@@ -400,6 +428,11 @@ void LayerTreeImpl::PushPropertiesTo(LayerTreeImpl* target_tree) {
     scrolling_node = scroll_tree.FindNodeFromElementId(scrolling_element_id);
   }
   target_tree->SetCurrentlyScrollingNode(scrolling_node);
+}
+
+void LayerTreeImpl::PushPropertiesTo(LayerTreeImpl* target_tree) {
+  // The request queue should have been processed and does not require a push.
+  DCHECK_EQ(ui_resource_request_queue_.size(), 0u);
 
   target_tree->property_trees()->scroll_tree.PushScrollUpdatesFromPendingTree(
       &property_trees_, target_tree);
@@ -763,6 +796,7 @@ void LayerTreeImpl::UpdatePropertyTreeScrollingAndAnimationFromMainThread(
 
 void LayerTreeImpl::SetPageScaleOnActiveTree(float active_page_scale) {
   DCHECK(IsActiveTree());
+  DCHECK(lifecycle().AllowsPropertyTreeAccess());
   if (page_scale_factor()->SetCurrent(
           ClampPageScaleFactorToLimits(active_page_scale))) {
     DidUpdatePageScale();
@@ -813,6 +847,7 @@ void LayerTreeImpl::PushPageScaleFactorAndLimits(const float* page_scale_factor,
   if (changed_page_scale)
     DidUpdatePageScale();
 
+  DCHECK(lifecycle().AllowsPropertyTreeAccess());
   if (page_scale_factor) {
     if (PageScaleLayer()) {
       draw_property_utils::UpdatePageScaleFactor(
@@ -989,6 +1024,11 @@ void LayerTreeImpl::ClearViewportLayers() {
 }
 
 void LayerTreeImpl::UpdateViewportLayerTypes() {
+  // The scroll_clip_layer Layer properties should be up-to-date.
+  // TODO(pdr): Enable this DCHECK by not calling this function unnecessarily
+  // from LayerImpl::SetScrollClipLayer.
+  // DCHECK(lifecycle().AllowsLayerPropertyAccess());
+
   if (auto* inner_scroll = LayerById(inner_viewport_scroll_layer_id_)) {
     inner_scroll->SetViewportLayerType(INNER_VIEWPORT_SCROLL);
     if (auto* inner_container = inner_scroll->scroll_clip_layer())
