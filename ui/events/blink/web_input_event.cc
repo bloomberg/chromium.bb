@@ -418,7 +418,7 @@ blink::WebMouseEvent MakeWebMouseEventFromUiEvent(const MouseEvent& event) {
 
   blink::WebMouseEvent webkit_event(
       type, EventFlagsToWebEventModifiers(event.flags()),
-      EventTimeStampToSeconds(event.time_stamp()));
+      EventTimeStampToSeconds(event.time_stamp()), event.pointer_details().id);
   webkit_event.button = blink::WebMouseEvent::Button::kNoButton;
   int button_flags = event.flags();
   if (event.type() == ET_MOUSE_PRESSED || event.type() == ET_MOUSE_RELEASED) {

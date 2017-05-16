@@ -47,6 +47,7 @@ class Event;
 class MouseWheelEvent;
 
 using ScopedEvent = std::unique_ptr<Event>;
+using PointerId = int32_t;
 
 class EVENTS_EXPORT Event {
  public:
@@ -412,9 +413,9 @@ struct EVENTS_EXPORT PointerDetails {
  public:
   PointerDetails();
   explicit PointerDetails(EventPointerType pointer_type,
-                          int pointer_id = kUnknownPointerId);
+                          PointerId pointer_id = kUnknownPointerId);
   PointerDetails(EventPointerType pointer_type,
-                 int pointer_id,
+                 PointerId pointer_id,
                  float radius_x,
                  float radius_y,
                  float force,
@@ -424,7 +425,7 @@ struct EVENTS_EXPORT PointerDetails {
                  int twist = 0);
   PointerDetails(EventPointerType pointer_type,
                  const gfx::Vector2d& pointer_offset,
-                 int pointer_id = kUnknownPointerId);
+                 PointerId pointer_id = kUnknownPointerId);
   PointerDetails(const PointerDetails& other);
 
   bool operator==(const PointerDetails& other) const {
@@ -439,7 +440,7 @@ struct EVENTS_EXPORT PointerDetails {
 
   // A value for pointer id which means it needs to be initialized for all
   // pointer types.
-  static const int kUnknownPointerId;
+  static const PointerId kUnknownPointerId;
 
   // The type of pointer device.
   EventPointerType pointer_type = EventPointerType::POINTER_TYPE_UNKNOWN;
@@ -471,7 +472,7 @@ struct EVENTS_EXPORT PointerDetails {
   int twist = 0;
 
   // An identifier that uniquely identifies a pointer during its lifetime.
-  int id = 0;
+  PointerId id = 0;
 
   // Only used by mouse wheel events. The amount to scroll. This is in multiples
   // of kWheelDelta.
@@ -481,7 +482,7 @@ struct EVENTS_EXPORT PointerDetails {
 
 class EVENTS_EXPORT MouseEvent : public LocatedEvent {
  public:
-  static const int32_t kMousePointerId;
+  static const PointerId kMousePointerId;
 
   explicit MouseEvent(const base::NativeEvent& native_event);
 

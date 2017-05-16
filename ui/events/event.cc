@@ -508,7 +508,8 @@ void LocatedEvent::UpdateForRootTransform(
 
 PointerDetails::PointerDetails() {}
 
-PointerDetails::PointerDetails(EventPointerType pointer_type, int pointer_id)
+PointerDetails::PointerDetails(EventPointerType pointer_type,
+                               PointerId pointer_id)
     : PointerDetails(pointer_type,
                      pointer_id,
                      /* radius_x */ 0.0f,
@@ -516,7 +517,7 @@ PointerDetails::PointerDetails(EventPointerType pointer_type, int pointer_id)
                      /* force */ std::numeric_limits<float>::quiet_NaN()) {}
 
 PointerDetails::PointerDetails(EventPointerType pointer_type,
-                               int pointer_id,
+                               PointerId pointer_id,
                                float radius_x,
                                float radius_y,
                                float force,
@@ -544,7 +545,7 @@ PointerDetails::PointerDetails(EventPointerType pointer_type,
 
 PointerDetails::PointerDetails(EventPointerType pointer_type,
                                const gfx::Vector2d& pointer_offset,
-                               int pointer_id)
+                               PointerId pointer_id)
     : PointerDetails(pointer_type, pointer_id) {
   offset = pointer_offset;
 }
@@ -561,7 +562,7 @@ PointerDetails::PointerDetails(const PointerDetails& other)
       id(other.id),
       offset(other.offset) {}
 
-const int PointerDetails::kUnknownPointerId = -1;
+const PointerId PointerDetails::kUnknownPointerId = -1;
 
 ////////////////////////////////////////////////////////////////////////////////
 // MouseEvent
@@ -762,7 +763,8 @@ void MouseEvent::SetClickCount(int click_count) {
   set_flags(f);
 }
 
-const int MouseEvent::kMousePointerId = std::numeric_limits<int32_t>::max();
+const PointerId MouseEvent::kMousePointerId =
+    std::numeric_limits<PointerId>::max();
 
 ////////////////////////////////////////////////////////////////////////////////
 // MouseWheelEvent

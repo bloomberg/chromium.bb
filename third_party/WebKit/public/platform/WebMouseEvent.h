@@ -21,6 +21,8 @@ class WebGestureEvent;
 //   on. crbug.com/456625
 class WebMouseEvent : public WebInputEvent, public WebPointerProperties {
  public:
+  static constexpr PointerId kMousePointerId = std::numeric_limits<int>::max();
+
   int click_count;
 
   WebMouseEvent(Type type_param,
@@ -29,12 +31,13 @@ class WebMouseEvent : public WebInputEvent, public WebPointerProperties {
                 int global_x_param,
                 int global_y_param,
                 int modifiers_param,
-                double time_stamp_seconds_param)
+                double time_stamp_seconds_param,
+                PointerId id_param = kMousePointerId)
       : WebInputEvent(sizeof(WebMouseEvent),
                       type_param,
                       modifiers_param,
                       time_stamp_seconds_param),
-        WebPointerProperties(),
+        WebPointerProperties(id_param),
         position_in_widget_(x_param, y_param),
         position_in_screen_(global_x_param, global_y_param) {}
 
@@ -44,12 +47,13 @@ class WebMouseEvent : public WebInputEvent, public WebPointerProperties {
                 Button button_param,
                 int click_count_param,
                 int modifiers_param,
-                double time_stamp_seconds_param)
+                double time_stamp_seconds_param,
+                PointerId id_param = kMousePointerId)
       : WebInputEvent(sizeof(WebMouseEvent),
                       type_param,
                       modifiers_param,
                       time_stamp_seconds_param),
-        WebPointerProperties(button_param, PointerType::kMouse),
+        WebPointerProperties(id_param, button_param, PointerType::kMouse),
         click_count(click_count_param),
         position_in_widget_(floor(position.x), floor(position.y)),
         position_in_screen_(floor(global_position.x),
@@ -57,13 +61,15 @@ class WebMouseEvent : public WebInputEvent, public WebPointerProperties {
 
   WebMouseEvent(Type type_param,
                 int modifiers_param,
-                double time_stamp_seconds_param)
+                double time_stamp_seconds_param,
+                PointerId id_param = kMousePointerId)
       : WebMouseEvent(sizeof(WebMouseEvent),
                       type_param,
                       modifiers_param,
-                      time_stamp_seconds_param) {}
+                      time_stamp_seconds_param,
+                      id_param) {}
 
-  WebMouseEvent() : WebMouseEvent(sizeof(WebMouseEvent)) {}
+  WebMouseEvent() : WebMouseEvent(sizeof(WebMouseEvent), kMousePointerId) {}
 
   bool FromTouch() const {
     return (GetModifiers() & kIsCompatibilityEventForTouch) != 0;
@@ -75,7 +81,8 @@ class WebMouseEvent : public WebInputEvent, public WebPointerProperties {
                                       Button button_param,
                                       int click_count_param,
                                       int modifiers_param,
-                                      double time_stamp_seconds_param);
+                                      double time_stamp_seconds_param,
+                                      PointerId id_param = kMousePointerId);
 
   BLINK_PLATFORM_EXPORT WebFloatPoint MovementInRootFrame() const;
   BLINK_PLATFORM_EXPORT WebFloatPoint PositionInRootFrame() const;
@@ -96,15 +103,16 @@ class WebMouseEvent : public WebInputEvent, public WebPointerProperties {
   }
 
  protected:
-  explicit WebMouseEvent(unsigned size_param)
-      : WebInputEvent(size_param), WebPointerProperties() {}
+  WebMouseEvent(unsigned size_param, PointerId id_param)
+      : WebInputEvent(size_param), WebPointerProperties(id_param) {}
 
   WebMouseEvent(unsigned size_param,
                 Type type,
                 int modifiers,
-                double time_stamp_seconds)
+                double time_stamp_seconds,
+                PointerId id_param)
       : WebInputEvent(size_param, type, modifiers, time_stamp_seconds),
-        WebPointerProperties() {}
+        WebPointerProperties(id_param) {}
 
   void FlattenTransformSelf();
 
