@@ -16,8 +16,8 @@ namespace content {
 class WebContents;
 }
 
-// InstantTab is used to exchange messages with a page that implements the
-// Instant/Embedded Search API (http://dev.chromium.org/embeddedsearch).
+// InstantTab is instantiated by InstantController for the current tab if it
+// is a New Tab page.
 class InstantTab : public content::WebContentsObserver {
  public:
   // InstantTab calls its delegate in response to messages received from the

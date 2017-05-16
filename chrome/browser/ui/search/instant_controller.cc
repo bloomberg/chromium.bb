@@ -9,7 +9,6 @@
 
 #include "base/location.h"
 #include "base/strings/stringprintf.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/instant_service.h"
 #include "chrome/browser/search/instant_service_factory.h"
@@ -27,11 +26,9 @@ bool IsContentsFrom(const InstantTab* page,
 }  // namespace
 
 InstantController::InstantController(BrowserInstantController* browser)
-    : browser_(browser) {
-}
+    : browser_(browser) {}
 
-InstantController::~InstantController() {
-}
+InstantController::~InstantController() = default;
 
 void InstantController::SearchModeChanged(const SearchMode& old_mode,
                                           const SearchMode& new_mode) {
@@ -67,9 +64,12 @@ void InstantController::InstantTabAboutToNavigateMainFrame(
     const GURL& url) {
   DCHECK(IsContentsFrom(instant_tab_.get(), contents));
 
-  // The Instant tab navigated.  Send it the data it needs to display
-  // properly.
-  // TODO(treib): Doesn't seem to be necessary. crbug.com/627747
+  // The Instant tab navigated (which means it had instant support both before
+  // and after the navigation). This may cause it to be assigned to a new
+  // renderer process, which doesn't have the most visited/theme data yet, so
+  // send it now.
+  // TODO(treib): This seems unnecessarily convoluted and fragile. Can't we just
+  // send this when the Instant process is created?
   UpdateInfoForInstantTab();
 }
 

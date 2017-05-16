@@ -13,10 +13,13 @@ struct SearchMode {
     // The default state means anything but the following states.
     MODE_DEFAULT,
 
-    // On the NTP page and the NTP is ready to be displayed.
+    // On the NTP, and the user has *not* typed anything into the Omnibox.
     MODE_NTP,
 
     // The Omnibox is modified in some way, either on the NTP or not.
+    // TODO(treib): Get rid of this. It's only used to detect the "input in
+    // progress" state for the NTP, which should be done in a less roundabout
+    // way. crbug.com/627747
     MODE_SEARCH_SUGGESTIONS,
   };
 

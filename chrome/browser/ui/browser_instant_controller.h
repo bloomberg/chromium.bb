@@ -52,11 +52,6 @@ class BrowserInstantController : public SearchModelObserver,
   void DefaultSearchProviderChanged(
       bool google_base_url_domain_changed) override;
 
-  // Replaces the contents at tab |index| with |new_contents| and deletes the
-  // existing contents.
-  void ReplaceWebContentsAt(int index,
-                            std::unique_ptr<content::WebContents> new_contents);
-
   Browser* const browser_;
 
   InstantController instant_;

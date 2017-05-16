@@ -15,7 +15,6 @@ class SearchModelObserver;
 enum InstantSupportState {
   INSTANT_SUPPORT_NO,
   INSTANT_SUPPORT_YES,
-  INSTANT_SUPPORT_UNKNOWN,
 };
 
 // An observable model for UI components that care about search model state
