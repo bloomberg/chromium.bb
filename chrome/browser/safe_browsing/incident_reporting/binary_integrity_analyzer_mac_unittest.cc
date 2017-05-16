@@ -74,11 +74,11 @@ TEST_F(BinaryIntegrityAnalyzerMacTest, GetCriticalPathsAndRequirements) {
   std::vector<PathAndRequirement> paths_and_requirements_expected;
 
   std::string expected_req =
-      "anchor apple generic and certificate 1[field.1.2.840.113635.100.6.2.6] "
-      "exists and certificate leaf[field.1.2.840.113635.100.6.1.13] exists and "
-      "certificate leaf[subject.OU]=\"EQHXZ8M8AV\" and "
-      "(identifier=\"com.google.Chrome\" or "
-      "identifier=\"com.google.Chrome.canary\")";
+      "(identifier \"com.google.Chrome\" or "
+      "identifier \"com.google.Chrome.beta\" or "
+      "identifier \"com.google.Chrome.dev\" or "
+      "identifier \"com.google.Chrome.canary\") "
+      "and certificate leaf = H\"c9a99324ca3fcb23dbcc36bd5fd4f9753305130a\")";
   paths_and_requirements_expected.push_back(
       PathAndRequirement(base::mac::OuterBundlePath(), expected_req));
 
