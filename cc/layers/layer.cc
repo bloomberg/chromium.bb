@@ -1176,6 +1176,10 @@ void Layer::PushPropertiesTo(LayerImpl* layer) {
   layer->set_user_scrollable_vertical(inputs_.user_scrollable_vertical);
   layer->SetMutableProperties(inputs_.mutable_properties);
 
+  // The property trees must be safe to access because they will be used below
+  // to call |SetScrollOffsetClobberActiveValue|.
+  DCHECK(layer->layer_tree_impl()->lifecycle().AllowsPropertyTreeAccess());
+
   // When a scroll offset animation is interrupted the new scroll position on
   // the pending tree will clobber any impl-side scrolling occuring on the
   // active tree. To do so, avoid scrolling the pending tree along with it

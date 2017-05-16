@@ -290,6 +290,7 @@ void LayerTreeHost::FinishCommitOnImplThread(
   }
 
   LayerTreeImpl* sync_tree = host_impl->sync_tree();
+  sync_tree->lifecycle().AdvanceTo(LayerTreeLifecycle::kBeginningSync);
 
   if (next_commit_forces_redraw_) {
     sync_tree->ForceRedrawNextActivation();
@@ -311,29 +312,31 @@ void LayerTreeHost::FinishCommitOnImplThread(
   if (did_navigate)
     host_impl->ClearImageCacheOnNavigation();
 
-  PushPropertiesTo(sync_tree);
-
-  sync_tree->PassSwapPromises(swap_promise_manager_.TakeSwapPromises());
-
-  host_impl->SetHasGpuRasterizationTrigger(has_gpu_rasterization_trigger_);
-  host_impl->SetContentIsSuitableForGpuRasterization(
-      content_is_suitable_for_gpu_rasterization_);
-  RecordGpuRasterizationHistogram(host_impl);
-
-  host_impl->SetViewportSize(device_viewport_size_);
-  sync_tree->SetDeviceScaleFactor(device_scale_factor_);
-  host_impl->SetDebugState(debug_state_);
-
-  sync_tree->set_ui_resource_request_queue(
-      ui_resource_manager_->TakeUIResourcesRequests());
-
   {
     TRACE_EVENT0("cc", "LayerTreeHostInProcess::PushProperties");
 
+    PushPropertyTreesTo(sync_tree);
+    sync_tree->lifecycle().AdvanceTo(LayerTreeLifecycle::kSyncedPropertyTrees);
+
     TreeSynchronizer::PushLayerProperties(this, sync_tree);
+    sync_tree->lifecycle().AdvanceTo(
+        LayerTreeLifecycle::kSyncedLayerProperties);
+
+    PushLayerTreePropertiesTo(sync_tree);
+    PushLayerTreeHostPropertiesTo(host_impl);
+
+    sync_tree->PassSwapPromises(swap_promise_manager_.TakeSwapPromises());
+
+    // TODO(pdr): Move this into PushPropertyTreesTo or introduce a lifecycle
+    // state for it.
+    sync_tree->SetDeviceScaleFactor(device_scale_factor_);
+
+    sync_tree->set_ui_resource_request_queue(
+        ui_resource_manager_->TakeUIResourcesRequests());
 
     // This must happen after synchronizing property trees and after pushing
     // properties, which updates the clobber_active_value flag.
+    // TODO(pdr): Enforce this comment with DCHECKS and a lifecycle state.
     sync_tree->property_trees()->scroll_tree.PushScrollUpdatesFromMainThread(
         property_trees(), sync_tree);
 
@@ -342,6 +345,7 @@ void LayerTreeHost::FinishCommitOnImplThread(
     // host pushes properties as animation host push properties can change
     // Animation::InEffect and we want the old InEffect value for updating
     // property tree scrolling and animation.
+    // TODO(pdr): Enforce this comment with DCHECKS and a lifecycle state.
     bool is_impl_side_update = false;
     sync_tree->UpdatePropertyTreeScrollingAndAnimationFromMainThread(
         is_impl_side_update);
@@ -349,6 +353,8 @@ void LayerTreeHost::FinishCommitOnImplThread(
     TRACE_EVENT0("cc", "LayerTreeHostInProcess::AnimationHost::PushProperties");
     DCHECK(host_impl->mutator_host());
     mutator_host_->PushPropertiesTo(host_impl->mutator_host());
+
+    sync_tree->lifecycle().AdvanceTo(LayerTreeLifecycle::kNotSyncing);
   }
 
   // Transfer image decode requests to the impl thread.
@@ -358,6 +364,23 @@ void LayerTreeHost::FinishCommitOnImplThread(
 
   micro_benchmark_controller_.ScheduleImplBenchmarks(host_impl);
   property_trees_.ResetAllChangeTracking();
+}
+
+void LayerTreeHost::PushPropertyTreesTo(LayerTreeImpl* tree_impl) {
+  bool property_trees_changed_on_active_tree =
+      tree_impl->IsActiveTree() && tree_impl->property_trees()->changed;
+  // Property trees may store damage status. We preserve the sync tree damage
+  // status by pushing the damage status from sync tree property trees to main
+  // thread property trees or by moving it onto the layers.
+  if (root_layer_ && property_trees_changed_on_active_tree) {
+    if (property_trees_.sequence_number ==
+        tree_impl->property_trees()->sequence_number)
+      tree_impl->property_trees()->PushChangeTrackingTo(&property_trees_);
+    else
+      tree_impl->MoveChangeTrackingToLayers();
+  }
+
+  tree_impl->SetPropertyTrees(&property_trees_);
 }
 
 void LayerTreeHost::WillCommit() {
@@ -1122,7 +1145,7 @@ void LayerTreeHost::SetPropertyTreesNeedRebuild() {
   SetNeedsUpdateLayers();
 }
 
-void LayerTreeHost::PushPropertiesTo(LayerTreeImpl* tree_impl) {
+void LayerTreeHost::PushLayerTreePropertiesTo(LayerTreeImpl* tree_impl) {
   tree_impl->set_needs_full_tree_sync(needs_full_tree_sync_);
   needs_full_tree_sync_ = false;
 
@@ -1160,21 +1183,6 @@ void LayerTreeHost::PushPropertiesTo(LayerTreeImpl* tree_impl) {
 
   tree_impl->RegisterSelection(selection_);
 
-  bool property_trees_changed_on_active_tree =
-      tree_impl->IsActiveTree() && tree_impl->property_trees()->changed;
-  // Property trees may store damage status. We preserve the sync tree damage
-  // status by pushing the damage status from sync tree property trees to main
-  // thread property trees or by moving it onto the layers.
-  if (root_layer_ && property_trees_changed_on_active_tree) {
-    if (property_trees_.sequence_number ==
-        tree_impl->property_trees()->sequence_number)
-      tree_impl->property_trees()->PushChangeTrackingTo(&property_trees_);
-    else
-      tree_impl->MoveChangeTrackingToLayers();
-  }
-  // Setting property trees must happen before pushing the page scale.
-  tree_impl->SetPropertyTrees(&property_trees_);
-
   tree_impl->PushPageScaleFromMainThread(
       page_scale_factor_, min_page_scale_factor_, max_page_scale_factor_);
 
@@ -1203,6 +1211,17 @@ void LayerTreeHost::PushPropertiesTo(LayerTreeImpl* tree_impl) {
   DCHECK(!tree_impl->ViewportSizeInvalid());
 
   tree_impl->set_has_ever_been_drawn(false);
+}
+
+void LayerTreeHost::PushLayerTreeHostPropertiesTo(
+    LayerTreeHostImpl* host_impl) {
+  host_impl->SetHasGpuRasterizationTrigger(has_gpu_rasterization_trigger_);
+  host_impl->SetContentIsSuitableForGpuRasterization(
+      content_is_suitable_for_gpu_rasterization_);
+  RecordGpuRasterizationHistogram(host_impl);
+
+  host_impl->SetViewportSize(device_viewport_size_);
+  host_impl->SetDebugState(debug_state_);
 }
 
 Layer* LayerTreeHost::LayerByElementId(ElementId element_id) const {
