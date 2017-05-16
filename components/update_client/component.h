@@ -24,14 +24,10 @@
 #include "components/update_client/update_response.h"
 #include "url/gurl.h"
 
-namespace base {
-class SingleThreadTaskRunner;
-}
 
 namespace update_client {
 
 struct CrxUpdateItem;
-class ComponentUnpacker;
 struct UpdateContext;
 
 // Describes a CRX component managed by the UpdateEngine. Each |Component| is
@@ -319,14 +315,6 @@ class Component {
     void DoHandle() override;
 
     void InstallComplete(int error_category, int error_code, int extra_code1);
-
-    // Posts replies back to the main thread.
-    scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
-
-    // Unpacks one CRX.
-    scoped_refptr<ComponentUnpacker> unpacker_;
-
-    base::FilePath unpack_path_;
 
     DISALLOW_COPY_AND_ASSIGN(StateUpdating);
   };
