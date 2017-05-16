@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.ntp.snippets;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.media.ThumbnailUtils;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.MediumTest;
 import android.util.TypedValue;
@@ -148,10 +149,12 @@ public class ArticleSnippetsTest {
                 1466614774, // Publish timestamp
                 10f, // Score
                 1466634774); // Fetch timestamp
-
-        Bitmap thumbnail =
-                BitmapFactory.decodeResource(mActivityTestRule.getActivity().getResources(),
-                        R.drawable.signin_promo_illustration);
+        Bitmap bitmap = BitmapFactory.decodeResource(mActivityTestRule.getActivity().getResources(),
+                R.drawable.signin_promo_illustration);
+        int thumbnailSize = mActivityTestRule.getActivity().getResources().getDimensionPixelSize(
+                R.dimen.snippets_thumbnail_size);
+        Bitmap thumbnail = ThumbnailUtils.extractThumbnail(
+                bitmap, thumbnailSize, thumbnailSize, ThumbnailUtils.OPTIONS_RECYCLE_INPUT);
         shortSnippet.setThumbnailBitmap(mUiDelegate.getReferencePool().put(thumbnail));
 
         SnippetArticle longSnippet = new SnippetArticle(fullCategory, "id2",
