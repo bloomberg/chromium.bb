@@ -35,7 +35,7 @@ class ConditionalCacheCountingHelperBrowserTest : public InProcessBrowserTest {
 
   void TearDownOnMainThread() override { cache_util_.reset(); }
 
-  void CountCallback(int64_t size, bool is_upper_limit) {
+  void CountCallback(bool is_upper_limit, int64_t size) {
     // Negative values represent an unexpected error.
     DCHECK(size >= 0 || size == net::ERR_ABORTED);
     DCHECK_CURRENTLY_ON(BrowserThread::UI);

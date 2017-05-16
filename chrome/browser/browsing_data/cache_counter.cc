@@ -9,6 +9,10 @@
 #include "content/public/browser/browser_thread.h"
 #include "net/base/net_errors.h"
 
+#if defined(OS_ANDROID)
+#include "chrome/browser/android/offline_pages/offline_page_utils.h"
+#endif  // OS_ANDROID
+
 CacheCounter::CacheResult::CacheResult(const CacheCounter* source,
                                        int64_t cache_size,
                                        bool is_upper_limit)
@@ -32,8 +36,11 @@ const char* CacheCounter::GetPrefName() const {
 }
 
 void CacheCounter::Count() {
-  // Cancel existing requests.
+  // Cancel existing requests and reset states.
   weak_ptr_factory_.InvalidateWeakPtrs();
+  calculated_size_ = 0;
+  is_upper_limit_ = false;
+  pending_sources_ = 1;
   base::WeakPtr<browsing_data::ConditionalCacheCountingHelper> counter =
       browsing_data::ConditionalCacheCountingHelper::CreateForRange(
           content::BrowserContext::GetDefaultStoragePartition(profile_),
@@ -41,14 +48,30 @@ void CacheCounter::Count() {
           ->CountAndDestroySelfWhenFinished(
               base::Bind(&CacheCounter::OnCacheSizeCalculated,
                          weak_ptr_factory_.GetWeakPtr()));
+#if defined(OS_ANDROID)
+  if (offline_pages::OfflinePageUtils::GetCachedOfflinePageSizeBetween(
+          profile_,
+          base::Bind(&CacheCounter::OnCacheSizeCalculated,
+                     weak_ptr_factory_.GetWeakPtr(),
+                     false /* is_upper_limit */),
+          GetPeriodStart(), base::Time::Max())) {
+    pending_sources_++;
+  }
+#endif  // OS_ANDROID
 }
 
-void CacheCounter::OnCacheSizeCalculated(int64_t result_bytes,
-                                         bool is_upper_limit) {
+void CacheCounter::OnCacheSizeCalculated(bool is_upper_limit,
+                                         int64_t cache_bytes) {
   // A value less than 0 means a net error code.
-  if (result_bytes < 0)
+  if (cache_bytes < 0)
     return;
-  auto result =
-      base::MakeUnique<CacheResult>(this, result_bytes, is_upper_limit);
-  ReportResult(std::move(result));
+
+  pending_sources_--;
+  calculated_size_ += cache_bytes;
+  is_upper_limit_ |= is_upper_limit;
+  if (pending_sources_ == 0) {
+    auto result =
+        base::MakeUnique<CacheResult>(this, calculated_size_, is_upper_limit_);
+    ReportResult(std::move(result));
+  }
 }

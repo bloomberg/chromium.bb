@@ -42,15 +42,16 @@ class CacheCounter : public browsing_data::BrowsingDataCounter {
 
  private:
   void Count() override;
-  void OnCacheSizeCalculated(int64_t bytes, bool is_upper_limit);
+  void OnCacheSizeCalculated(bool is_upper_limit, int64_t cache_bytes);
   void FetchEstimate(
       base::WeakPtr<browsing_data::ConditionalCacheCountingHelper>);
 
   Profile* profile_;
-  bool pending_;
+  int64_t calculated_size_;
+  bool is_upper_limit_;
+  int pending_sources_;
 
   base::WeakPtrFactory<CacheCounter> weak_ptr_factory_;
-
 };
 
 #endif  // CHROME_BROWSER_BROWSING_DATA_CACHE_COUNTER_H_

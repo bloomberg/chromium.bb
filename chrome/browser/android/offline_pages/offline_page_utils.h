@@ -9,7 +9,12 @@
 
 #include "base/callback.h"
 #include "components/offline_pages/core/offline_page_model.h"
+#include "components/offline_pages/core/offline_page_types.h"
 #include "url/gurl.h"
+
+namespace base {
+class Time;
+}
 
 namespace content {
 class BrowserContext;
@@ -114,6 +119,16 @@ class OfflinePageUtils {
   // of download resource.
   static bool CanDownloadAsOfflinePage(const GURL& url,
                                        const std::string& contents_mime_type);
+
+  // Get total size of cache offline pages for a given time range. Returns false
+  // when an OfflinePageModel cannot be acquired using the |browser_context|, or
+  // the time range is invalid (|begin_time| > |end_time|). Also returning false
+  // means no callback should be expected.
+  static bool GetCachedOfflinePageSizeBetween(
+      content::BrowserContext* browser_context,
+      const SizeInBytesCallback& callback,
+      const base::Time& begin_time,
+      const base::Time& end_time);
 };
 
 }  // namespace offline_pages
