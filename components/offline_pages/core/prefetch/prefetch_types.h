@@ -59,6 +59,46 @@ struct RenderPageInfo {
   base::Time render_time;
 };
 
+// List of states a prefetch item can be at during its progress through the
+// prefetching process. They follow somewhat the order below, but some states
+// might be skipped.
+enum class PrefetchItemState {
+  // New request just received from the client.
+  NEW_REQUEST,
+  // The item has been included in a GeneratePageBundle RPC requesting the
+  // creation of an archive for its URL.
+  SENT_GENERATE_PAGE_BUNDLE,
+  // The archive was not immediately available (cached) upon the request and
+  // is now waiting for a GCM message notifying of its archiving operation
+  // completion.
+  AWAITING_GCM,
+  // The GCM message notifying of the archiving operation completion was
+  // received for this item.
+  RECEIVED_GCM,
+  // A GetOperation RPC was sent for this item to query for the final results
+  // of its archiving request.
+  SENT_GET_OPERATION,
+  // Information was received about a successfully created archive for this
+  // item that can now be downloaded.
+  RECEIVED_BUNDLE,
+  // This item's archive is currently being downloaded.
+  DOWNLOADING,
+  // Item has finished processing, successfully or otherwise, and is waiting to
+  // be processed for stats reporting to UMA.
+  FINISHED,
+  // UMA stats have been reported and the item is being kept just long enough
+  // to confirm that the same URL is not being repeatedly requested by its
+  // client.
+  ZOMBIE,
+};
+
+// Error codes used to identify the reason why a prefetch item has finished
+// processing.
+enum class PrefetchItemErrorCode {
+  SUCCESS,
+  EXPIRED,
+};
+
 }  // namespace offline_pages
 
 #endif  // COMPONENTS_OFFLINE_PAGES_CORE_PREFETCH_PREFETCH_TYPES_H_
