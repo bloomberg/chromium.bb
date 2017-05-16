@@ -78,8 +78,7 @@ FetchParameters LinkRequestBuilder::Build(bool low_priority) const {
   FetchParameters params(resource_request, owner_->localName(), charset_);
   if (low_priority)
     params.SetDefer(FetchParameters::kLazyLoad);
-  params.SetContentSecurityPolicyNonce(
-      owner_->FastGetAttribute(HTMLNames::nonceAttr));
+  params.SetContentSecurityPolicyNonce(owner_->nonce());
   return params;
 }
 

@@ -63,3 +63,4 @@ interface HTMLElement : Element {
 };
 
 HTMLElement implements GlobalEventHandlers;
+HTMLElement implements NoncedElement;

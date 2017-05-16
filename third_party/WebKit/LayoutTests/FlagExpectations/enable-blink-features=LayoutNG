@@ -17119,7 +17119,6 @@ crbug.com/591099 http/tests/security/contentSecurityPolicy/multiple-enforce-poli
 crbug.com/591099 http/tests/security/contentSecurityPolicy/multiple-report-policies.php [ Crash Failure ]
 crbug.com/591099 http/tests/security/contentSecurityPolicy/nonces/scriptnonce-blocked.html [ Failure ]
 crbug.com/591099 http/tests/security/contentSecurityPolicy/nonces/scriptnonce-invalidnonce.html [ Failure ]
-crbug.com/591099 http/tests/security/contentSecurityPolicy/nonces/script-nonces-hidden.php [ Crash ]
 crbug.com/591099 http/tests/security/contentSecurityPolicy/no-policy.html [ Failure ]
 crbug.com/591099 http/tests/security/contentSecurityPolicy/object-src-does-not-affect-child.html [ Failure ]
 crbug.com/591099 http/tests/security/contentSecurityPolicy/object-src-no-url-allowed.html [ Failure Pass ]

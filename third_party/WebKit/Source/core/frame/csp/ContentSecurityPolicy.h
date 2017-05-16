@@ -412,7 +412,6 @@ class CORE_EXPORT ContentSecurityPolicy
       SchemeRegistry::PolicyAreas = SchemeRegistry::kPolicyAreaAll);
 
   static bool IsNonceableElement(const Element*);
-  static const char* GetNonceReplacementString() { return "[Replaced]"; }
 
   // This method checks whether the request should be allowed for an
   // experimental EmbeddingCSP feature
@@ -430,6 +429,8 @@ class CORE_EXPORT ContentSecurityPolicy
   bool Subsumes(const ContentSecurityPolicy&) const;
 
   Document* GetDocument() const;
+
+  bool HasHeaderDeliveredPolicy() const { return header_delivered_; }
 
  private:
   FRIEND_TEST_ALL_PREFIXES(ContentSecurityPolicyTest, NonceInline);
@@ -466,6 +467,7 @@ class CORE_EXPORT ContentSecurityPolicy
   bool override_inline_style_allowed_;
   CSPDirectiveListVector policies_;
   ConsoleMessageVector console_messages_;
+  bool header_delivered_{false};
 
   HashSet<unsigned, AlreadyHashed> violation_reports_sent_;
 

@@ -94,9 +94,8 @@ bool CheckHeaderTypeMatches(
 }  // namespace
 
 bool ContentSecurityPolicy::IsNonceableElement(const Element* element) {
-  if (RuntimeEnabledFeatures::hideNonceContentAttributeEnabled() &&
-      isHTMLScriptElement(element)) {
-    if (toHTMLScriptElement(element)->nonce().IsNull())
+  if (RuntimeEnabledFeatures::hideNonceContentAttributeEnabled()) {
+    if (element->nonce().IsNull())
       return false;
   } else if (!element->FastHasAttribute(HTMLNames::nonceAttr)) {
     return false;
@@ -318,6 +317,9 @@ void ContentSecurityPolicy::AddPolicyFromHeaderValue(
     ReportReportOnlyInMeta(header);
     return;
   }
+
+  if (source == kContentSecurityPolicyHeaderSourceHTTP)
+    header_delivered_ = true;
 
   Vector<UChar> characters;
   header.AppendTo(characters);

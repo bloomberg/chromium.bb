@@ -152,6 +152,8 @@ class CORE_EXPORT HTMLElement : public Element {
   void ChildrenChanged(const ChildrenChange&) override;
   void CalculateAndAdjustDirectionality();
 
+  InsertionNotificationRequest InsertedInto(ContainerNode*) override;
+
  private:
   String DebugNodeName() const final;
   String nodeName() const final;

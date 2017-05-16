@@ -193,6 +193,9 @@ class ElementRareData : public NodeRareData {
   }
   ResizeObserverDataMap& EnsureResizeObserverData();
 
+  const AtomicString& GetNonce() const { return nonce_; }
+  void SetNonce(const AtomicString& nonce) { nonce_ = nonce; }
+
   DECLARE_TRACE_AFTER_DISPATCH();
   DECLARE_TRACE_WRAPPERS_AFTER_DISPATCH();
 
@@ -202,6 +205,7 @@ class ElementRareData : public NodeRareData {
 
   LayoutSize minimum_size_for_resizing_;
   ScrollOffset saved_layer_scroll_offset_;
+  AtomicString nonce_;
 
   Member<DatasetDOMStringMap> dataset_;
   Member<ElementShadow> shadow_;

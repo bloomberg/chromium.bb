@@ -36,10 +36,6 @@ interface HTMLScriptElement : HTMLElement {
     [CEReactions, Reflect] attribute DOMString event;
     [CEReactions, Reflect=for] attribute DOMString htmlFor;
 
-    // Content Security Policy
-    // https://w3c.github.io/webappsec/specs/content-security-policy/#script-src-the-nonce-attribute
-    [CEReactions, RuntimeEnabled=ExperimentalContentSecurityPolicyFeatures] attribute DOMString nonce;
-
     // Subresource Integrity
     // https://w3c.github.io/webappsec-subresource-integrity/#HTMLScriptElement
     [Reflect] attribute DOMString integrity;

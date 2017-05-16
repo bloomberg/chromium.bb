@@ -91,7 +91,7 @@ class CORE_EXPORT HTMLScriptElement final : public HTMLElement,
   bool HasSourceAttribute() const override;
   bool IsConnected() const override;
   bool HasChildren() const override;
-  bool IsNonceableElement() const override;
+  const AtomicString& GetNonceForElement() const override;
   bool AllowInlineScriptForCSP(const AtomicString& nonce,
                                const WTF::OrdinalNumber&,
                                const String& script_content) override;
