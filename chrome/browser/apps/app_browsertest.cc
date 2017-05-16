@@ -1037,7 +1037,7 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest,
 
   // Clear the registered events to ensure they are updated.
   extensions::EventRouter::Get(browser()->profile())
-      ->SetRegisteredEvents(extension->id(), std::set<std::string>());
+      ->ClearRegisteredEventsForTest(extension->id());
 
   DictionaryPrefUpdate update(extension_prefs->pref_service(),
                               extensions::pref_names::kExtensions);

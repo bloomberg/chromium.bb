@@ -324,7 +324,7 @@ bool EventRouter::ExtensionHasEventListener(const std::string& extension_id,
 }
 
 std::set<std::string> EventRouter::GetRegisteredEvents(
-    const std::string& extension_id) {
+    const std::string& extension_id) const {
   std::set<std::string> events;
   const ListValue* events_value = NULL;
 
@@ -340,36 +340,6 @@ std::set<std::string> EventRouter::GetRegisteredEvents(
       events.insert(event);
   }
   return events;
-}
-
-void EventRouter::SetRegisteredEvents(const std::string& extension_id,
-                                      const std::set<std::string>& events) {
-  auto events_value = base::MakeUnique<base::ListValue>();
-  for (std::set<std::string>::const_iterator iter = events.begin();
-       iter != events.end(); ++iter) {
-    events_value->AppendString(*iter);
-  }
-  extension_prefs_->UpdateExtensionPref(extension_id, kRegisteredEvents,
-                                        std::move(events_value));
-}
-
-void EventRouter::AddFilterToEvent(const std::string& event_name,
-                                   const std::string& extension_id,
-                                   const DictionaryValue* filter) {
-  ExtensionPrefs::ScopedDictionaryUpdate update(
-      extension_prefs_, extension_id, kFilteredEvents);
-  DictionaryValue* filtered_events = update.Get();
-  if (!filtered_events)
-    filtered_events = update.Create();
-
-  ListValue* filter_list = nullptr;
-  if (!filtered_events->GetListWithoutPathExpansion(event_name, &filter_list)) {
-    filter_list = new ListValue;
-    filtered_events->SetWithoutPathExpansion(event_name,
-                                             base::WrapUnique(filter_list));
-  }
-
-  filter_list->Append(filter->CreateDeepCopy());
 }
 
 void EventRouter::RemoveFilterFromEvent(const std::string& event_name,
@@ -751,6 +721,36 @@ void EventRouter::DispatchPendingEvent(const linked_ptr<Event>& event,
                            host->render_process_host(), event, nullptr,
                            true /* did_enqueue */);
   }
+}
+
+void EventRouter::SetRegisteredEvents(const std::string& extension_id,
+                                      const std::set<std::string>& events) {
+  auto events_value = base::MakeUnique<base::ListValue>();
+  for (std::set<std::string>::const_iterator iter = events.begin();
+       iter != events.end(); ++iter) {
+    events_value->AppendString(*iter);
+  }
+  extension_prefs_->UpdateExtensionPref(extension_id, kRegisteredEvents,
+                                        std::move(events_value));
+}
+
+void EventRouter::AddFilterToEvent(const std::string& event_name,
+                                   const std::string& extension_id,
+                                   const DictionaryValue* filter) {
+  ExtensionPrefs::ScopedDictionaryUpdate update(extension_prefs_, extension_id,
+                                                kFilteredEvents);
+  DictionaryValue* filtered_events = update.Get();
+  if (!filtered_events)
+    filtered_events = update.Create();
+
+  ListValue* filter_list = nullptr;
+  if (!filtered_events->GetListWithoutPathExpansion(event_name, &filter_list)) {
+    filter_list = new ListValue;
+    filtered_events->SetWithoutPathExpansion(event_name,
+                                             base::WrapUnique(filter_list));
+  }
+
+  filter_list->Append(filter->CreateDeepCopy());
 }
 
 void EventRouter::Observe(int type,
