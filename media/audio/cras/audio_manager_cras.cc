@@ -92,7 +92,7 @@ std::string MicPositions() {
 // virtual device name for them.
 void ProcessVirtualDeviceName(AudioDeviceNames* device_names,
                               const chromeos::AudioDeviceList& device_list) {
-  DCHECK_EQ(2, device_list.size());
+  DCHECK_EQ(2U, device_list.size());
   if (device_list[0].type == chromeos::AUDIO_TYPE_LINEOUT ||
       device_list[1].type == chromeos::AUDIO_TYPE_LINEOUT) {
     device_names->emplace_back(kHeadphoneLineOutVirtualDevice,
