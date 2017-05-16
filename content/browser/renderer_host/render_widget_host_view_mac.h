@@ -487,6 +487,13 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   // Get the focused view that should be used for retrieving the text selection.
   RenderWidgetHostViewBase* GetFocusedViewForTextSelection();
 
+  // Returns the RenderWidgetHostDelegate corresponding to the currently focused
+  // RenderWidgetHost. It is different from |render_widget_host_->delegate()|
+  // when there are focused inner WebContentses on the page. Also, this method
+  // can return nullptr; for instance when |render_widget_host_| becomes nullptr
+  // in the destruction path of the WebContentsImpl.
+  RenderWidgetHostDelegate* GetFocusedRenderWidgetHostDelegate();
+
  private:
   friend class RenderWidgetHostViewMacTest;
 

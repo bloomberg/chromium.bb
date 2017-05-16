@@ -729,6 +729,13 @@ RenderWidgetHostViewBase*
                                           : nullptr;
 }
 
+RenderWidgetHostDelegate*
+RenderWidgetHostViewMac::GetFocusedRenderWidgetHostDelegate() {
+  if (auto* focused_widget = GetFocusedWidget())
+    return focused_widget->delegate();
+  return render_widget_host_->delegate();
+}
+
 void RenderWidgetHostViewMac::UpdateBackingStoreProperties() {
   if (!render_widget_host_)
     return;
@@ -3361,17 +3368,17 @@ extern NSString *NSTextInputReplacementRangeAttributeName;
 }
 
 - (void)cut:(id)sender {
-  content::RenderWidgetHostDelegate* render_widget_host_delegate =
-      renderWidgetHostView_->render_widget_host_->delegate();
-  if (render_widget_host_delegate)
-    render_widget_host_delegate->Cut();
+  if (auto* delegate =
+          renderWidgetHostView_->GetFocusedRenderWidgetHostDelegate()) {
+    delegate->Cut();
+  }
 }
 
 - (void)copy:(id)sender {
-  content::RenderWidgetHostDelegate* render_widget_host_delegate =
-      renderWidgetHostView_->render_widget_host_->delegate();
-  if (render_widget_host_delegate)
-    render_widget_host_delegate->Copy();
+  if (auto* delegate =
+          renderWidgetHostView_->GetFocusedRenderWidgetHostDelegate()) {
+    delegate->Copy();
+  }
 }
 
 - (void)copyToFindPboard:(id)sender {
@@ -3381,10 +3388,10 @@ extern NSString *NSTextInputReplacementRangeAttributeName;
 }
 
 - (void)paste:(id)sender {
-  content::RenderWidgetHostDelegate* render_widget_host_delegate =
-      renderWidgetHostView_->render_widget_host_->delegate();
-  if (render_widget_host_delegate)
-    render_widget_host_delegate->Paste();
+  if (auto* delegate =
+          renderWidgetHostView_->GetFocusedRenderWidgetHostDelegate()) {
+    delegate->Paste();
+  }
 }
 
 - (void)pasteAndMatchStyle:(id)sender {
@@ -3401,10 +3408,10 @@ extern NSString *NSTextInputReplacementRangeAttributeName;
   // menu handler, neither is true.
   // Explicitly call SelectAll() here to make sure the renderer returns
   // selection results.
-  content::RenderWidgetHostDelegate* render_widget_host_delegate =
-      renderWidgetHostView_->render_widget_host_->delegate();
-  if (render_widget_host_delegate)
-    render_widget_host_delegate->SelectAll();
+  if (auto* delegate =
+          renderWidgetHostView_->GetFocusedRenderWidgetHostDelegate()) {
+    delegate->SelectAll();
+  }
 }
 
 - (void)startSpeaking:(id)sender {
