@@ -19,7 +19,6 @@
 #include "chrome/common/search/search_types.h"
 
 class BrowserInstantController;
-class GURL;
 class InstantService;
 
 namespace content {
@@ -29,7 +28,7 @@ class WebContents;
 // InstantController drives Chrome Instant, i.e., the browser implementation of
 // the Embedded Search API (see http://dev.chromium.org/embeddedsearch).
 //
-// In extended mode, InstantController maintains and coordinates an InstantTab.
+// InstantController maintains and coordinates an InstantTab.
 // An InstantTab instance points to the currently active tab, if it supports the
 // Embedded Search API. InstantTab is backed by a WebContents and it does not
 // own that WebContents.
@@ -61,19 +60,6 @@ class InstantController : public InstantTab::Delegate {
   friend class InstantExtendedManualTest;
   friend class InstantTestBase;
 
-  FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest, ExtendedModeIsOn);
-  FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest, MostVisited);
-  FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest, ProcessIsolation);
-  FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest, UnrelatedSiteInstance);
-  FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest, OnDefaultSearchProviderChanged);
-  FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest,
-                           AcceptingURLSearchDoesNotNavigate);
-  FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest, AcceptingJSSearchDoesNotRunJS);
-  FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest,
-                           ReloadSearchAfterBackReloadsCorrectQuery);
-  FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest, KeyboardTogglesVoiceSearch);
-  FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest, HomeButtonAffectsMargin);
-  FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest, SearchReusesInstantTab);
   FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest,
                            SearchDoesntReuseInstantTabWithoutSupport);
   FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest,

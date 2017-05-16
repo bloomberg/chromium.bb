@@ -91,7 +91,7 @@ void SearchModelTest::TearDown() {
 
 TEST_F(SearchModelTest, UpdateSearchModelInstantSupport) {
   mock_observer.VerifyNotificationCount(0);
-  EXPECT_TRUE(model->instant_support() == INSTANT_SUPPORT_UNKNOWN);
+  EXPECT_TRUE(model->instant_support() == INSTANT_SUPPORT_NO);
   SearchModel::State expected_old_state = model->state();
   SearchModel::State expected_new_state(model->state());
   expected_new_state.instant_support = INSTANT_SUPPORT_YES;
@@ -136,7 +136,7 @@ TEST_F(SearchModelTest, UpdateSearchModelMode) {
 
 TEST_F(SearchModelTest, UpdateSearchModelState) {
   SearchModel::State expected_new_state(model->state());
-  expected_new_state.instant_support = INSTANT_SUPPORT_NO;
+  expected_new_state.instant_support = INSTANT_SUPPORT_YES;
   EXPECT_FALSE(model->state() == expected_new_state);
   model->SetState(expected_new_state);
   mock_observer.VerifyNotificationCount(1);
