@@ -560,8 +560,11 @@ CSSStyleSheet* StyleEngine::CreateSheet(Element& element,
 
   DCHECK(style_sheet);
   if (!element.IsInShadowTree()) {
-    style_sheet->SetTitle(element.title());
-    SetPreferredStylesheetSetNameIfNotSet(element.title());
+    String title = element.title();
+    if (!title.IsEmpty()) {
+      style_sheet->SetTitle(title);
+      SetPreferredStylesheetSetNameIfNotSet(title);
+    }
   }
   return style_sheet;
 }
@@ -924,6 +927,7 @@ void StyleEngine::SetStatsEnabled(bool enabled) {
 }
 
 void StyleEngine::SetPreferredStylesheetSetNameIfNotSet(const String& name) {
+  DCHECK(!name.IsEmpty());
   if (!preferred_stylesheet_set_name_.IsEmpty())
     return;
   preferred_stylesheet_set_name_ = name;
@@ -946,7 +950,8 @@ void StyleEngine::SetSelectedStylesheetSetName(const String& name) {
 }
 
 void StyleEngine::SetHttpDefaultStyle(const String& content) {
-  SetPreferredStylesheetSetNameIfNotSet(content);
+  if (!content.IsEmpty())
+    SetPreferredStylesheetSetNameIfNotSet(content);
 }
 
 void StyleEngine::EnsureUAStyleForFullscreen() {
