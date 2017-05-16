@@ -20670,11 +20670,17 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Extensions.StartupDelay" units="ms">
+  <obsolete>
+    This has not been recorded since at least mid-2013.
+  </obsolete>
   <owner>asargent@chromium.org</owner>
   <summary>The time one extension delays network requests at startup.</summary>
 </histogram>
 
 <histogram name="Extensions.StartupDelay_Total" units="ms">
+  <obsolete>
+    This has not been recorded since at least mid-2013.
+  </obsolete>
   <owner>rdevlin.cronin@chromium.org</owner>
   <summary>
     The total time extensions delay network requests at startup.
