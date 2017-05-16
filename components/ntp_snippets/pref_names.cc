@@ -13,17 +13,24 @@ const char kRemoteSuggestionCategories[] = "ntp_snippets.remote_categories";
 
 const char kSnippetLastFetchAttempt[] = "ntp_snippets.last_fetch_attempt";
 
-const char kSnippetSoftFetchingIntervalWifi[] =
-    "ntp_snippets.soft_fetching_interval_wifi";
-
-const char kSnippetSoftFetchingIntervalFallback[] =
-    "ntp_snippets.soft_fetching_interval_fallback";
-
+// For backwards compatibility, we do not rename the "fetching_" prefs (should
+// be "persistent_fetching_").
 const char kSnippetPersistentFetchingIntervalWifi[] =
     "ntp_snippets.fetching_interval_wifi";
-
 const char kSnippetPersistentFetchingIntervalFallback[] =
     "ntp_snippets.fetching_interval_fallback";
+
+const char kSnippetStartupFetchingIntervalWifi[] =
+    "ntp_snippets.startup_fetching_interval_wifi";
+const char kSnippetStartupFetchingIntervalFallback[] =
+    "ntp_snippets.startup_fetching_interval_fallback";
+
+// For backwards compatibility, we do not rename the "soft_fetching_" prefs
+// (should be "shown_fetching_").
+const char kSnippetShownFetchingIntervalWifi[] =
+    "ntp_snippets.soft_fetching_interval_wifi";
+const char kSnippetShownFetchingIntervalFallback[] =
+    "ntp_snippets.soft_fetching_interval_fallback";
 
 const char kSnippetFetcherRequestCount[] =
     "ntp.request_throttler.suggestion_fetcher.count";

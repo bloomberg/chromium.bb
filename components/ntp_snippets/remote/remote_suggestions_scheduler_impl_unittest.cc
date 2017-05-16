@@ -489,8 +489,8 @@ TEST_F(RemoteSuggestionsSchedulerImplTest,
   // Make the first soft fetch successful.
   scheduler()->OnBrowserForegrounded();
   signal_fetch_done.Run(Status::Success());
-  // Open NTP again after 4hrs.
-  test_clock()->Advance(base::TimeDelta::FromHours(4));
+  // Open NTP again after 9hrs.
+  test_clock()->Advance(base::TimeDelta::FromHours(9));
   scheduler()->OnBrowserForegrounded();
 }
 
@@ -603,7 +603,7 @@ TEST_F(RemoteSuggestionsSchedulerImplTest,
 }
 
 TEST_F(RemoteSuggestionsSchedulerImplTest,
-       ReschedulesWhenSoftWifiParamChanges) {
+       ReschedulesWhenShownWifiParamChanges) {
   EXPECT_CALL(*persistent_scheduler(), Schedule(_, _)).Times(2);
   ActivateProvider();
 
@@ -617,7 +617,7 @@ TEST_F(RemoteSuggestionsSchedulerImplTest,
 }
 
 TEST_F(RemoteSuggestionsSchedulerImplTest,
-       ReschedulesWhenSoftFallbackParamChanges) {
+       ReschedulesWhenShownFallbackParamChanges) {
   EXPECT_CALL(*persistent_scheduler(), Schedule(_, _)).Times(2);
   ActivateProvider();
 
@@ -630,12 +630,40 @@ TEST_F(RemoteSuggestionsSchedulerImplTest,
   ActivateProvider();
 }
 
-TEST_F(RemoteSuggestionsSchedulerImplTest, FetchIntervalForSoftTriggerOnWifi) {
+TEST_F(RemoteSuggestionsSchedulerImplTest,
+       ReschedulesWhenStartupWifiParamChanges) {
+  EXPECT_CALL(*persistent_scheduler(), Schedule(_, _)).Times(2);
+  ActivateProvider();
+
+  // UserClassifier defaults to UserClass::ACTIVE_NTP_USER if PrefService is
+  // null. Change the on usage interval for this class.
+  SetVariationParameter("startup_fetching_interval_hours-wifi-active_ntp_user",
+                        "1.5");
+
+  // Schedule() should get called for the second time after params have changed.
+  ActivateProvider();
+}
+
+TEST_F(RemoteSuggestionsSchedulerImplTest,
+       ReschedulesWhenStartupFallbackParamChanges) {
+  EXPECT_CALL(*persistent_scheduler(), Schedule(_, _)).Times(2);
+  ActivateProvider();
+
+  // UserClassifier defaults to UserClass::ACTIVE_NTP_USER if PrefService is
+  // null. Change the fallback interval for this class.
+  SetVariationParameter(
+      "startup_fetching_interval_hours-fallback-active_ntp_user", "1.5");
+
+  // Schedule() should get called for the second time after params have changed.
+  ActivateProvider();
+}
+
+TEST_F(RemoteSuggestionsSchedulerImplTest, FetchIntervalForShownTriggerOnWifi) {
   // Pretend we are on WiFi (already done in ctor, we make it explicit here).
   EXPECT_CALL(*persistent_scheduler(), IsOnUnmeteredConnection())
       .WillRepeatedly(Return(true));
   // UserClassifier defaults to UserClass::ACTIVE_NTP_USER which uses a 3h time
-  // interval by default for soft background fetches on WiFi.
+  // interval by default for shown trigger on WiFi.
 
   // Initial scheduling after being enabled.
   EXPECT_CALL(*persistent_scheduler(), Schedule(_, _));
@@ -661,12 +689,12 @@ TEST_F(RemoteSuggestionsSchedulerImplTest, FetchIntervalForSoftTriggerOnWifi) {
 }
 
 TEST_F(RemoteSuggestionsSchedulerImplTest,
-       OverrideFetchIntervalForSoftTriggerOnWifi) {
+       OverrideFetchIntervalForShownTriggerOnWifi) {
   // Pretend we are on WiFi (already done in ctor, we make it explicit here).
   EXPECT_CALL(*persistent_scheduler(), IsOnUnmeteredConnection())
       .WillRepeatedly(Return(true));
   // UserClassifier defaults to UserClass::ACTIVE_NTP_USER if PrefService is
-  // null. Change the on usage interval for this class from 2h to 30min.
+  // null. Change the interval for this class from 4h to 30min.
   SetVariationParameter("soft_fetching_interval_hours-wifi-active_ntp_user",
                         "0.5");
 
@@ -694,12 +722,12 @@ TEST_F(RemoteSuggestionsSchedulerImplTest,
 }
 
 TEST_F(RemoteSuggestionsSchedulerImplTest,
-       FetchIntervalForSoftTriggerOnFallback) {
+       FetchIntervalForShownTriggerOnFallback) {
   // Pretend we are not on wifi -> fallback connection.
   EXPECT_CALL(*persistent_scheduler(), IsOnUnmeteredConnection())
       .WillRepeatedly(Return(false));
   // UserClassifier defaults to UserClass::ACTIVE_NTP_USER which uses a 6h time
-  // interval by default for soft background fetches not on WiFi.
+  // interval by default for shown trigger not on WiFi.
 
   // Initial scheduling after being enabled.
   EXPECT_CALL(*persistent_scheduler(), Schedule(_, _));
@@ -725,12 +753,12 @@ TEST_F(RemoteSuggestionsSchedulerImplTest,
 }
 
 TEST_F(RemoteSuggestionsSchedulerImplTest,
-       OverrideFetchIntervalForSoftTriggerOnFallback) {
+       OverrideFetchIntervalForShownTriggerOnFallback) {
   // Pretend we are not on wifi -> fallback connection.
   EXPECT_CALL(*persistent_scheduler(), IsOnUnmeteredConnection())
       .WillRepeatedly(Return(false));
   // UserClassifier defaults to UserClass::ACTIVE_NTP_USER if PrefService is
-  // null. Change the on usage interval for this class from 4h to 30min.
+  // null. Change the interval for this class from 4h to 30min.
   SetVariationParameter("soft_fetching_interval_hours-fallback-active_ntp_user",
                         "0.5");
 
