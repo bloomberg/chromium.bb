@@ -87,7 +87,6 @@ CrSettingsSliderTest.prototype = {
 };
 
 TEST_F('CrSettingsSliderTest', 'All', function() {
-  settings_slider.registerTests();
   mocha.run();
 });
 
