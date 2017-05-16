@@ -242,15 +242,17 @@ def SecondsTimer(name, fields=None):
   f = dict(f)
   keys = f.keys()
   t0 = datetime.datetime.now()
-  yield f
-  dt = (datetime.datetime.now() - t0).total_seconds()
-  # Filter out keys that were not part of the initial key set. This is to avoid
-  # inconsistent fields.
-  # TODO(akeshet): Doing this filtering isn't super efficient. Would be better
-  # to implement some key-restricted subclass or wrapper around dict, and just
-  # yield that above rather than yielding a regular dict.
-  f = {k: f[k] for k in keys}
-  m.add(dt, fields=f)
+  try:
+    yield f
+  finally:
+    dt = (datetime.datetime.now() - t0).total_seconds()
+    # Filter out keys that were not part of the initial key set. This is to
+    # avoid inconsistent fields.
+    # TODO(akeshet): Doing this filtering isn't super efficient. Would be better
+    # to implement some key-restricted subclass or wrapper around dict, and just
+    # yield that above rather than yielding a regular dict.
+    f = {k: f[k] for k in keys}
+    m.add(dt, fields=f)
 
 
 def SecondsTimerDecorator(name, fields=None):

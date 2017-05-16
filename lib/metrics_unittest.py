@@ -156,6 +156,15 @@ class TestSecondsTimer(cros_test_lib.MockTestCase):
       c['qux'] = 'qwert'
     self._mockMetric.add.assert_called_with(mock.ANY, fields={'foo': 'bar'})
 
+  def testContextManagerWithException(self):
+    """Tests that we emit metrics if the timed method raised something."""
+    with self.assertRaises(AssertionError):
+      with metrics.SecondsTimer('fooname', fields={'foo': 'bar'}):
+        assert False
+
+    self._mockMetric.add.assert_called_with(mock.ANY, fields={'foo': 'bar'})
+
+
 class ClientException(Exception):
   """An exception that client of the metrics module raises."""
 
