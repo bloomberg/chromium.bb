@@ -16,9 +16,7 @@
 
 namespace device {
 
-TestDeviceClient::TestDeviceClient(
-    scoped_refptr<base::SingleThreadTaskRunner> blocking_task_runner)
-    : blocking_task_runner_(blocking_task_runner) {}
+TestDeviceClient::TestDeviceClient() = default;
 
 TestDeviceClient::~TestDeviceClient() {
   if (hid_service_)
@@ -38,9 +36,8 @@ HidService* TestDeviceClient::GetHidService() {
 
 UsbService* TestDeviceClient::GetUsbService() {
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
-  if (!usb_service_) {
-    usb_service_ = UsbService::Create(blocking_task_runner_);
-  }
+  if (!usb_service_)
+    usb_service_ = UsbService::Create();
 #endif
   return usb_service_.get();
 }

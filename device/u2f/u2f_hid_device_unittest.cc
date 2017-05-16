@@ -6,10 +6,8 @@
 
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
-#include "base/test/test_io_thread.h"
-#include "base/threading/thread_task_runner_handle.h"
+#include "base/test/scoped_task_environment.h"
 #include "device/base/mock_device_client.h"
 #include "device/hid/hid_connection.h"
 #include "device/hid/hid_device_filter.h"
@@ -165,17 +163,13 @@ class TestDeviceCallback {
 
 class U2fHidDeviceTest : public testing::Test {
  public:
-  void SetUp() override {
-    message_loop_.reset(new base::MessageLoopForUI());
-    io_thread_.reset(new base::TestIOThread(base::TestIOThread::kAutoStart));
-    device_client_.reset(
-        new device::TestDeviceClient(io_thread_->task_runner()));
-  }
+  U2fHidDeviceTest()
+      : scoped_task_environment_(
+            base::test::ScopedTaskEnvironment::MainThreadType::UI) {}
 
- protected:
-  std::unique_ptr<base::MessageLoopForUI> message_loop_;
-  std::unique_ptr<base::TestIOThread> io_thread_;
-  std::unique_ptr<device::TestDeviceClient> device_client_;
+ private:
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  TestDeviceClient device_client_;
 };
 
 TEST_F(U2fHidDeviceTest, TestHidDeviceVersion) {

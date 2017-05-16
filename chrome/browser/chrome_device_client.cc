@@ -31,10 +31,8 @@ void ChromeDeviceClient::Shutdown() {
 
 device::UsbService* ChromeDeviceClient::GetUsbService() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (!usb_service_) {
-    usb_service_ = device::UsbService::Create(
-        BrowserThread::GetTaskRunnerForThread(BrowserThread::FILE));
-  }
+  if (!usb_service_)
+    usb_service_ = device::UsbService::Create();
   return usb_service_.get();
 }
 
