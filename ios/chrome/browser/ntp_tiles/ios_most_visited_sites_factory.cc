@@ -5,7 +5,7 @@
 #include "ios/chrome/browser/ntp_tiles/ios_most_visited_sites_factory.h"
 
 #include "base/memory/ptr_util.h"
-#include "base/threading/sequenced_worker_pool.h"
+#include "base/task_scheduler/post_task.h"
 #include "components/history/core/browser/top_sites.h"
 #include "components/image_fetcher/core/image_fetcher_impl.h"
 #include "components/image_fetcher/ios/ios_image_decoder_impl.h"
@@ -18,16 +18,14 @@
 #include "ios/chrome/browser/history/top_sites_factory.h"
 #include "ios/chrome/browser/ntp_tiles/ios_popular_sites_factory.h"
 #include "ios/chrome/browser/suggestions/suggestions_service_factory.h"
-#include "ios/web/public/web_thread.h"
 
 std::unique_ptr<ntp_tiles::MostVisitedSites>
 IOSMostVisitedSitesFactory::NewForBrowserState(
     ios::ChromeBrowserState* browser_state) {
   scoped_refptr<base::SequencedTaskRunner> task_runner =
-      web::WebThread::GetBlockingPool()
-          ->GetSequencedTaskRunnerWithShutdownBehavior(
-              base::SequencedWorkerPool::GetSequenceToken(),
-              base::SequencedWorkerPool::CONTINUE_ON_SHUTDOWN);
+      base::CreateSequencedTaskRunnerWithTraits(
+          {base::MayBlock(), base::TaskPriority::BACKGROUND,
+           base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN});
   return base::MakeUnique<ntp_tiles::MostVisitedSites>(
       browser_state->GetPrefs(),
       ios::TopSitesFactory::GetForBrowserState(browser_state),

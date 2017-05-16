@@ -5,7 +5,6 @@
 #include <memory>
 
 #include "base/memory/ptr_util.h"
-#include "base/message_loop/message_loop.h"
 #include "components/search_engines/template_url_service.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #include "ios/chrome/browser/search_engines/template_url_service_factory.h"
@@ -16,7 +15,8 @@
 #include "ios/chrome/browser/web_state_list/web_state_list.h"
 #include "ios/chrome/test/block_cleanup_test.h"
 #include "ios/chrome/test/ios_chrome_scoped_testing_local_state.h"
-#include "ios/web/public/test/test_web_thread.h"
+#include "ios/web/public/test/test_web_thread_bundle.h"
+#include "ios/web/public/web_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
@@ -29,9 +29,7 @@ namespace {
 
 class GoogleLandingViewControllerTest : public BlockCleanupTest {
  public:
-  GoogleLandingViewControllerTest()
-      : ui_thread_(web::WebThread::UI, &message_loop_),
-        io_thread_(web::WebThread::IO, &message_loop_) {}
+  GoogleLandingViewControllerTest() = default;
 
  protected:
   void SetUp() override {
@@ -67,9 +65,7 @@ class GoogleLandingViewControllerTest : public BlockCleanupTest {
 
   void TearDown() override { [mediator_ shutdown]; }
 
-  base::MessageLoopForUI message_loop_;
-  web::TestWebThread ui_thread_;
-  web::TestWebThread io_thread_;
+  web::TestWebThreadBundle test_web_thread_bundle_;
   IOSChromeScopedTestingLocalState local_state_;
   std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;
   FakeWebStateListDelegate webStateListDelegate_;
