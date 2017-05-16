@@ -39,6 +39,11 @@ class TranslateCompactInfoBar
   // Check whether we should automatically trigger "Always Translate".
   bool ShouldAutoAlwaysTranslate();
 
+  // Check whether we should automatically trigger "Never Translate Language".
+  jboolean ShouldAutoNeverTranslate(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj);
+
   // ContentTranslateDriver::Observer implementation.
   void OnPageTranslated(const std::string& original_lang,
                         const std::string& translated_lang,
@@ -54,6 +59,13 @@ class TranslateCompactInfoBar
 
   translate::TranslateInfoBarDelegate* GetDelegate();
   translate::ContentTranslateDriver* translate_driver_;
+
+  // If number of consecutive translations is equal to this number, infobar will
+  // automatically trigger "Always Translate".
+  const int kAcceptCountThreshold = 5;
+  // If number of consecutive denied is equal to this number, infobar will
+  // automatically trigger "Never Translate Language".
+  const int kDeniedCountThreshold = 7;
 
   DISALLOW_COPY_AND_ASSIGN(TranslateCompactInfoBar);
 };

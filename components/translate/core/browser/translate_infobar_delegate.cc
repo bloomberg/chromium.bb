@@ -45,11 +45,6 @@ const int kNeverTranslateMinCount = 2;
 const int kAlwaysTranslateMinCount = 3;
 const int kNeverTranslateMinCount = 3;
 #endif
-
-// For Compact UI, if number of consecutive translations is equal to this
-// number, infobar will automatically trigger "Always Translate".
-const int kAcceptCountThreshold = 5;
-
 }  // namespace
 
 const base::Feature kTranslateCompactUI{"TranslateCompactUI",
@@ -302,10 +297,12 @@ void TranslateInfoBarDelegate::ShowNeverTranslateInfobar() {
 }
 #endif
 
-bool TranslateInfoBarDelegate::ShouldAutoAlwaysTranslate() {
-  return (IsCompactUIEnabled() &&
-          prefs_->GetTranslationAcceptedCount(original_language_code()) ==
-              kAcceptCountThreshold);
+int TranslateInfoBarDelegate::GetTranslationAcceptedCount() {
+  return prefs_->GetTranslationAcceptedCount(original_language_code());
+}
+
+int TranslateInfoBarDelegate::GetTranslationDeniedCount() {
+  return prefs_->GetTranslationDeniedCount(original_language_code());
 }
 
 // static
