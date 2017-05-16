@@ -90,16 +90,6 @@ bool NewTabUI::IsNewTab(const GURL& url) {
 }
 
 // static
-bool NewTabUI::ShouldShowApps() {
-// Ash shows apps in app list thus should not show apps page in NTP4.
-#if defined(USE_ASH)
-  return false;
-#else
-  return true;
-#endif
-}
-
-// static
 void NewTabUI::SetUrlTitleAndDirection(base::DictionaryValue* dictionary,
                                        const base::string16& title,
                                        const GURL& gurl) {

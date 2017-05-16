@@ -5,13 +5,11 @@
 #include "chrome/browser/ui/webui/ntp/ntp_resource_cache.h"
 
 #include <string>
-#include <vector>
 
 #include "base/feature_list.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "build/build_config.h"
@@ -19,21 +17,15 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/search/search.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
-#include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
-#include "chrome/browser/ui/app_list/app_list_util.h"
 #include "chrome/browser/ui/apps/app_info_dialog.h"
 #include "chrome/browser/ui/bookmarks/bookmark_bar_constants.h"
-#include "chrome/browser/ui/sync/sync_promo_ui.h"
 #include "chrome/browser/ui/webui/app_launcher_login_handler.h"
 #include "chrome/browser/ui/webui/ntp/app_launcher_handler.h"
-#include "chrome/browser/ui/webui/ntp/new_tab_ui.h"
 #include "chrome/common/chrome_features.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/features.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
@@ -43,7 +35,6 @@
 #include "chrome/grit/locale_settings.h"
 #include "chrome/grit/theme_resources.h"
 #include "components/bookmarks/common/bookmark_pref_names.h"
-#include "components/browser_sync/profile_sync_service.h"
 #include "components/google/core/browser/google_util.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/signin_manager.h"
@@ -65,7 +56,6 @@
 #if defined(OS_CHROMEOS)
 #include "ash/strings/grit/ash_strings.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
-#include "chromeos/chromeos_switches.h"
 #endif
 
 #if defined(OS_MACOSX)
@@ -142,12 +132,19 @@ std::string GetNewTabBackgroundTilingCSS(
   return ThemeProperties::TilingToString(repeat_mode);
 }
 
+bool ShouldShowApps() {
+// Ash shows apps in app list thus should not show apps page in NTP4.
+#if defined(USE_ASH)
+  return false;
+#else
+  return true;
+#endif
+}
+
 }  // namespace
 
 NTPResourceCache::NTPResourceCache(Profile* profile)
-    : profile_(profile), is_swipe_tracking_from_scroll_events_enabled_(false),
-      should_show_apps_page_(NewTabUI::ShouldShowApps()),
-      should_show_other_devices_menu_(true) {
+    : profile_(profile), is_swipe_tracking_from_scroll_events_enabled_(false) {
   registrar_.Add(this, chrome::NOTIFICATION_BROWSER_THEME_CHANGED,
                  content::Source<ThemeService>(
                      ThemeServiceFactory::GetForProfile(profile)));
@@ -178,7 +175,7 @@ NTPResourceCache::NTPResourceCache(Profile* profile)
 
 NTPResourceCache::~NTPResourceCache() {}
 
-bool NTPResourceCache::NewTabCacheNeedsRefresh() {
+bool NTPResourceCache::NewTabHTMLNeedsRefresh() {
 #if defined(OS_MACOSX)
   // Invalidate if the current value is different from the cached value.
   bool is_enabled = platform_util::IsSwipeTrackingFromScrollEventsEnabled();
@@ -187,11 +184,6 @@ bool NTPResourceCache::NewTabCacheNeedsRefresh() {
     return true;
   }
 #endif
-  bool should_show_apps_page = NewTabUI::ShouldShowApps();
-  if (should_show_apps_page != should_show_apps_page_) {
-    should_show_apps_page_ = should_show_apps_page;
-    return true;
-  }
   return false;
 }
 
@@ -216,18 +208,20 @@ base::RefCountedMemory* NTPResourceCache::GetNewTabHTML(WindowType win_type) {
     if (!new_tab_guest_html_)
       CreateNewTabGuestHTML();
     return new_tab_guest_html_.get();
-  } else if (win_type == INCOGNITO) {
+  }
+
+  if (win_type == INCOGNITO) {
     if (!new_tab_incognito_html_)
       CreateNewTabIncognitoHTML();
     return new_tab_incognito_html_.get();
-  } else {
-    // Refresh the cached HTML if necessary.
-    // NOTE: NewTabCacheNeedsRefresh() must be called every time the new tab
-    // HTML is fetched, because it needs to initialize cached values.
-    if (NewTabCacheNeedsRefresh() || !new_tab_html_)
-      CreateNewTabHTML();
-    return new_tab_html_.get();
   }
+
+  // Refresh the cached HTML if necessary.
+  // NOTE: NewTabHTMLNeedsRefresh() must be called every time the new tab
+  // HTML is fetched, because it needs to initialize cached values.
+  if (NewTabHTMLNeedsRefresh() || !new_tab_html_)
+    CreateNewTabHTML();
+  return new_tab_html_.get();
 }
 
 base::RefCountedMemory* NTPResourceCache::GetNewTabCSS(WindowType win_type) {
@@ -401,8 +395,7 @@ void NTPResourceCache::CreateNewTabHTML() {
   load_time_data.SetString(
       "bookmarkbarattached",
       prefs->GetBoolean(bookmarks::prefs::kShowBookmarkBar) ? "true" : "false");
-  load_time_data.SetBoolean("showAppLauncherPromo",
-      ShouldShowAppLauncherPromo());
+  load_time_data.SetBoolean("showAppLauncherPromo", false);
   load_time_data.SetString("title",
       l10n_util::GetStringUTF16(IDS_NEW_TAB_TITLE));
   load_time_data.SetString("webStoreTitle",
@@ -462,7 +455,7 @@ void NTPResourceCache::CreateNewTabHTML() {
   load_time_data.SetBoolean("isSwipeTrackingFromScrollEventsEnabled",
                             is_swipe_tracking_from_scroll_events_enabled_);
 
-  load_time_data.SetBoolean("showApps", should_show_apps_page_);
+  load_time_data.SetBoolean("showApps", ShouldShowApps());
   load_time_data.SetBoolean("showWebStoreIcon",
                             !prefs->GetBoolean(prefs::kHideWebStoreIcon));
 

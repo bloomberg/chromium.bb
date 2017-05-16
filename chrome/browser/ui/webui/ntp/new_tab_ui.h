@@ -35,9 +35,6 @@ class NewTabUI : public content::WebUIController {
   // search::NavEntryIsInstantNTP too!
   static bool IsNewTab(const GURL& url);
 
-  // Returns whether or not to show apps pages.
-  static bool ShouldShowApps();
-
   // TODO(dbeam): why are these static |Set*()| methods on NewTabUI?
 
   // Adds "url", "title", and "direction" keys on incoming dictionary, setting
