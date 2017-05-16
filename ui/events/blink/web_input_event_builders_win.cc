@@ -167,7 +167,6 @@ WebMouseEvent WebMouseEventBuilder::Build(
   WebMouseEvent result(type, modifiers, time_stamp);
   result.pointer_type = pointer_type;
   result.button = button;
-  result.id = ui::MouseEvent::kMousePointerId;
 
   // set position fields:
   result.SetPositionInWidget(static_cast<short>(LOWORD(lparam)),

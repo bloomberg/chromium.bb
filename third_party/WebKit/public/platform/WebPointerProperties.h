@@ -10,6 +10,8 @@
 
 namespace blink {
 
+using PointerId = int32_t;
+
 // This class encapsulates the properties that are common between mouse and
 // pointer events and touch points as we transition towards the unified pointer
 // event model.
@@ -46,8 +48,8 @@ class WebPointerProperties {
     kLastEntry = kTouch  // Must be the last entry in the list
   };
 
-  WebPointerProperties()
-      : id(0),
+  explicit WebPointerProperties(PointerId id_param)
+      : id(id_param),
         force(std::numeric_limits<float>::quiet_NaN()),
         tilt_x(0),
         tilt_y(0),
@@ -58,8 +60,10 @@ class WebPointerProperties {
         movement_x(0),
         movement_y(0) {}
 
-  WebPointerProperties(Button button_param, PointerType pointer_type_param)
-      : id(0),
+  WebPointerProperties(PointerId id_param,
+                       Button button_param,
+                       PointerType pointer_type_param)
+      : id(id_param),
         force(std::numeric_limits<float>::quiet_NaN()),
         tilt_x(0),
         tilt_y(0),
@@ -70,7 +74,7 @@ class WebPointerProperties {
         movement_x(0),
         movement_y(0) {}
 
-  int id;
+  PointerId id;
 
   // The valid range is [0,1], with NaN meaning pressure is not supported by
   // the input device.

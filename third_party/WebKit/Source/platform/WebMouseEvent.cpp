@@ -13,9 +13,11 @@ WebMouseEvent::WebMouseEvent(WebInputEvent::Type type,
                              Button button_param,
                              int click_count_param,
                              int modifiers,
-                             double time_stamp_seconds)
+                             double time_stamp_seconds,
+                             PointerId id_param)
     : WebInputEvent(sizeof(WebMouseEvent), type, modifiers, time_stamp_seconds),
-      WebPointerProperties(button_param,
+      WebPointerProperties(id_param,
+                           button_param,
                            WebPointerProperties::PointerType::kMouse),
       click_count(click_count_param),
       position_in_widget_(gesture_event.x, gesture_event.y),

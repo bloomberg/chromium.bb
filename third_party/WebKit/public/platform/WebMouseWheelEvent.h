@@ -57,7 +57,8 @@ class WebMouseWheelEvent : public WebMouseEvent {
       : WebMouseEvent(sizeof(WebMouseWheelEvent),
                       type,
                       modifiers,
-                      time_stamp_seconds),
+                      time_stamp_seconds,
+                      kMousePointerId),
         delta_x(0.0f),
         delta_y(0.0f),
         wheel_ticks_x(0.0f),
@@ -73,7 +74,7 @@ class WebMouseWheelEvent : public WebMouseEvent {
         dispatch_type(kBlocking) {}
 
   WebMouseWheelEvent()
-      : WebMouseEvent(sizeof(WebMouseWheelEvent)),
+      : WebMouseEvent(sizeof(WebMouseWheelEvent), kMousePointerId),
         delta_x(0.0f),
         delta_y(0.0f),
         wheel_ticks_x(0.0f),

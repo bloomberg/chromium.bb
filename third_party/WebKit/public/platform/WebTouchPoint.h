@@ -42,7 +42,7 @@ namespace blink {
 class WebTouchPoint : public WebPointerProperties {
  public:
   WebTouchPoint()
-      : WebPointerProperties(),
+      : WebPointerProperties(0),
         state(kStateUndefined),
         radius_x(0),
         radius_y(0),
