@@ -14,6 +14,7 @@ using ConnectionTypeObserver =
 using ConnectionType = net::NetworkChangeNotifier::ConnectionType;
 
 namespace download {
+namespace {
 
 // NetworkChangeNotifier that can change network type in tests.
 class TestNetworkChangeNotifier : public net::NetworkChangeNotifier {
@@ -94,4 +95,5 @@ TEST_F(NetworkListenerTest, NotifyObserverNetworkChange) {
   ChangeNetworkType(ConnectionType::CONNECTION_ETHERNET);
 }
 
+}  // namespace
 }  // namespace download
