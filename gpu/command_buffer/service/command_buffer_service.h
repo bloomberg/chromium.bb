@@ -59,7 +59,9 @@ class GPU_EXPORT CommandBufferService : public CommandBufferServiceBase {
   void Flush(int32_t put_offset) override;
   void OrderingBarrier(int32_t put_offset) override;
   State WaitForTokenInRange(int32_t start, int32_t end) override;
-  State WaitForGetOffsetInRange(int32_t start, int32_t end) override;
+  State WaitForGetOffsetInRange(uint32_t set_get_buffer_count,
+                                int32_t start,
+                                int32_t end) override;
   void SetGetBuffer(int32_t transfer_buffer_id) override;
   scoped_refptr<Buffer> CreateTransferBuffer(size_t size, int32_t* id) override;
   void DestroyTransferBuffer(int32_t id) override;
@@ -114,6 +116,7 @@ class GPU_EXPORT CommandBufferService : public CommandBufferServiceBase {
   int32_t token_;
   uint64_t release_count_;
   uint32_t generation_;
+  uint64_t set_get_buffer_count_;
   error::Error error_;
   error::ContextLostReason context_lost_reason_;
 

@@ -55,8 +55,10 @@ class PPAPI_PROXY_EXPORT Graphics3D : public PPB_Graphics3D_Shared {
   PP_Bool DestroyTransferBuffer(int32_t id) override;
   gpu::CommandBuffer::State WaitForTokenInRange(int32_t start,
                                                 int32_t end) override;
-  gpu::CommandBuffer::State WaitForGetOffsetInRange(int32_t start,
-                                                    int32_t end) override;
+  gpu::CommandBuffer::State WaitForGetOffsetInRange(
+      uint32_t set_get_buffer_count,
+      int32_t start,
+      int32_t end) override;
   void EnsureWorkVisible() override;
   void TakeFrontBuffer() override;
 
@@ -102,6 +104,7 @@ class PPB_Graphics3D_Proxy : public InterfaceProxy {
                                 gpu::CommandBuffer::State* state,
                                 bool* success);
   void OnMsgWaitForGetOffsetInRange(const HostResource& context,
+                                    uint32_t set_get_buffer_count,
                                     int32_t start,
                                     int32_t end,
                                     gpu::CommandBuffer::State* state,

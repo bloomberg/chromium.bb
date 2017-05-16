@@ -25,8 +25,8 @@ class GPU_EXPORT CommandBuffer {
           release_count(0),
           error(error::kNoError),
           context_lost_reason(error::kUnknown),
-          generation(0) {
-    }
+          generation(0),
+          set_get_buffer_count(0) {}
 
     // The offset (in entries) from which the reader is reading.
     int32_t get_offset;
@@ -52,6 +52,10 @@ class GPU_EXPORT CommandBuffer {
     // time a new state is retrieved from the command processor, so that
     // consistency can be kept even if IPC messages are processed out-of-order.
     uint32_t generation;
+
+    // Number of times SetGetBuffer was called. This allows the client to verify
+    // that |get| corresponds (or not) to the last buffer it set.
+    uint32_t set_get_buffer_count;
   };
 
   struct ConsoleMessage {
@@ -95,11 +99,15 @@ class GPU_EXPORT CommandBuffer {
   virtual State WaitForTokenInRange(int32_t start, int32_t end) = 0;
 
   // The writer calls this to wait until the current get offset is within a
-  // specific range, inclusive. Can return early if an error is generated.
-  virtual State WaitForGetOffsetInRange(int32_t start, int32_t end) = 0;
+  // specific range, inclusive, after SetGetBuffer was called exactly
+  // set_get_buffer_count times. Can return early if an error is generated.
+  virtual State WaitForGetOffsetInRange(uint32_t set_get_buffer_count,
+                                        int32_t start,
+                                        int32_t end) = 0;
 
   // Sets the buffer commands are read from.
-  // Also resets the get and put offsets to 0.
+  // Also resets the get and put offsets to 0, and increments
+  // set_get_buffer_count.
   virtual void SetGetBuffer(int32_t transfer_buffer_id) = 0;
 
   // Create a transfer buffer of the given size. Returns its ID or -1 on

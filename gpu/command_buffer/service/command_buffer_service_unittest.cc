@@ -126,8 +126,12 @@ TEST_F(CommandBufferServiceTest, SetGetBuffer) {
   EXPECT_CALL(*change_callback, GetBufferChanged(ring_buffer_id))
       .WillOnce(Return(true));
 
+  uint32_t set_get_buffer_count =
+      command_buffer_->GetLastState().set_get_buffer_count;
   command_buffer_->SetGetBuffer(ring_buffer_id);
   EXPECT_EQ(0, GetGetOffset());
+  EXPECT_EQ(set_get_buffer_count + 1,
+            command_buffer_->GetLastState().set_get_buffer_count);
 }
 
 TEST_F(CommandBufferServiceTest, DefaultTokenIsZero) {

@@ -42,14 +42,19 @@ CommandBuffer::State MockCommandBufferBase::WaitForTokenInRange(int32_t start,
 }
 
 CommandBuffer::State MockCommandBufferBase::WaitForGetOffsetInRange(
+    uint32_t set_get_buffer_count,
     int32_t start,
     int32_t end) {
-  state_.get_offset = put_offset_;
-  OnFlush();
+  EXPECT_EQ(set_get_buffer_count, state_.set_get_buffer_count);
+  if (state_.get_offset != put_offset_) {
+    state_.get_offset = put_offset_;
+    OnFlush();
+  }
   return state_;
 }
 
 void MockCommandBufferBase::SetGetBuffer(int transfer_buffer_id) {
+  ++state_.set_get_buffer_count;
   ring_buffer_buffer_ = GetTransferBuffer(transfer_buffer_id);
   ring_buffer_ =
       static_cast<CommandBufferEntry*>(ring_buffer_buffer_->memory());

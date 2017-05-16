@@ -51,8 +51,10 @@ class PPAPI_THUNK_EXPORT PPB_Graphics3D_API {
   virtual PP_Bool Flush(int32_t put_offset) = 0;
   virtual gpu::CommandBuffer::State WaitForTokenInRange(int32_t start,
                                                         int32_t end) = 0;
-  virtual gpu::CommandBuffer::State WaitForGetOffsetInRange(int32_t start,
-                                                            int32_t end) = 0;
+  virtual gpu::CommandBuffer::State WaitForGetOffsetInRange(
+      uint32_t set_get_buffer_count,
+      int32_t start,
+      int32_t end) = 0;
 
   // GLESChromiumTextureMapping.
   virtual void* MapTexSubImage2DCHROMIUM(GLenum target,
