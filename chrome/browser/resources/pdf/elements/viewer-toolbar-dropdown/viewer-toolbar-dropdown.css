@@ -12,17 +12,19 @@
    * Default is aligned with the right of the toolbar buttons.
    * TODO(tsergeant): Change the layout of the dropdown so this is not required.
    */
-  right: var(--viewer-toolbar-dropdown-right-distance, 36px);
+  right: var(--viewer-toolbar-dropdown-right-distance, 28px);
 }
 
 :host-context([dir=rtl]) #container {
-  left: var(--viewer-toolbar-dropdown-right-distance, 36px);
+  left: var(--viewer-toolbar-dropdown-right-distance, 28px);
   right: auto;
 }
 
-paper-material {
+#dropdown {
+  @apply(--shadow-elevation-2dp);
   background-color: rgb(256, 256, 256);
   border-radius: 4px;
+  color: var(--primary-text-color);
   overflow-y: hidden;
   padding-bottom: 2px;
   width: 260px;
@@ -51,8 +53,7 @@ paper-material {
 
 h1 {
   border-bottom: 1px solid rgb(219, 219, 219);
-  color: rgb(33, 33, 33);
-  font-size: 77.8%;
+  font-size: 107.6%;
   font-weight: 500;
   margin: 0;
   padding: 14px 28px;
