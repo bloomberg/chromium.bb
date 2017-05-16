@@ -269,11 +269,6 @@ bool WebApkInstaller::Register(JNIEnv* env) {
   return RegisterNativesImpl(env);
 }
 
-bool WebApkInstaller::CanInstallWebApks() {
-  return ChromeWebApkHost::GetGooglePlayInstallState() ==
-         GooglePlayInstallState::SUPPORTED;
-}
-
 void WebApkInstaller::InstallOrUpdateWebApk(const std::string& package_name,
                                             int version,
                                             const std::string& token) {
@@ -409,11 +404,6 @@ void WebApkInstaller::OnURLFetchComplete(const net::URLFetcher* source) {
 
   if (token.empty() || response->package_name().empty()) {
     LOG(WARNING) << "WebAPK server returned incomplete proto.";
-    OnResult(WebApkInstallResult::FAILURE);
-    return;
-  }
-
-  if (!CanInstallWebApks()) {
     OnResult(WebApkInstallResult::FAILURE);
     return;
   }
