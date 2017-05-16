@@ -92,6 +92,19 @@ def _NormalizeNames(raw_symbols):
       symbol.name = symbol.full_name
       continue
 
+    # Remove [clone] suffix, and set flag accordingly.
+    # Search from left-to-right, as multiple [clone]s can exist.
+    # Example name suffixes:
+    #     [clone .part.322]  # GCC
+    #     [clone .isra.322]  # GCC
+    #     [clone .constprop.1064]  # GCC
+    #     [clone .11064]  # clang
+    # http://unix.stackexchange.com/questions/223013/function-symbol-gets-part-suffix-after-compilation
+    idx = symbol.full_name.find(' [clone ')
+    if idx != -1:
+      symbol.full_name = symbol.full_name[:idx]
+      symbol.flags |= models.FLAG_CLONE
+
     # E.g.: vtable for FOO
     idx = symbol.full_name.find(' for ', 0, 30)
     if idx != -1:
@@ -164,7 +177,6 @@ def _SourcePathForObjectPath(object_path, source_mapper):
 
 def _ExtractSourcePaths(raw_symbols, source_mapper):
   """Fills in the |source_path| attribute."""
-  logging.debug('Parsed %d .ninja files.', source_mapper.parsed_file_count)
   for symbol in raw_symbols:
     object_path = symbol.object_path
     if object_path and not symbol.source_path:
@@ -425,6 +437,7 @@ def CreateSizeInfo(map_path, elf_path, tool_prefix, output_directory):
     logging.info('Parsing ninja files.')
     source_mapper, elf_object_paths = ninja_parser.Parse(
         output_directory, elf_path)
+    logging.debug('Parsed %d .ninja files.', source_mapper.parsed_file_count)
     assert not elf_path or elf_object_paths, (
         'Failed to find link command in ninja files for ' +
         os.path.relpath(elf_path, output_directory))

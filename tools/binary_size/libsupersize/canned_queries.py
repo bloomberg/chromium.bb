@@ -144,4 +144,4 @@ class CannedQueries(object):
     """Lists C++ templates grouped by name."""
     symbols = self._SymbolsArg(symbols)
     # TODO(agrieve): Might be nice to recursively GroupedByName() on these.
-    return symbols.WhereIsTemplate().GroupedByName(depth).Clustered().Sorted()
+    return symbols.WhereIsTemplate().GroupedByName(depth).Sorted()
