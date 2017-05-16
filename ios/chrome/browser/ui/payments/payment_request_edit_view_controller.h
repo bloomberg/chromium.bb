@@ -10,6 +10,7 @@
 
 #import "ios/chrome/browser/ui/autofill/autofill_ui_type.h"
 #import "ios/chrome/browser/ui/collection_view/collection_view_controller.h"
+#import "ios/chrome/browser/ui/payments/payment_request_edit_consumer.h"
 #import "ios/chrome/browser/ui/payments/payment_request_edit_view_controller_data_source.h"
 
 extern NSString* const kWarningMessageAccessibilityID;
@@ -42,7 +43,8 @@ extern NSString* const kWarningMessageAccessibilityID;
 // features sections for every EditorField supplied to the initializer. Each
 // section has a text field as well as an error message item which is visible
 // when the value of its respective text field is invalid.
-@interface PaymentRequestEditViewController : CollectionViewController
+@interface PaymentRequestEditViewController
+    : CollectionViewController<PaymentRequestEditConsumer>
 
 // The data source for this view controller.
 @property(nonatomic, weak) id<PaymentRequestEditViewControllerDataSource>
