@@ -101,7 +101,7 @@ void RasterSource::PlaybackToCanvas(SkCanvas* input_canvas,
 
   if (settings.skip_images) {
     SkipImageCanvas canvas(raster_canvas);
-    RasterCommon(&canvas, nullptr);
+    RasterCommon(&canvas);
   } else if (settings.use_image_hijack_canvas) {
     const SkImageInfo& info = raster_canvas->imageInfo();
     ImageHijackCanvas canvas(info.width(), info.height(), image_decode_cache_,
@@ -115,9 +115,9 @@ void RasterSource::PlaybackToCanvas(SkCanvas* input_canvas,
     canvas.setMatrix(raster_canvas->getTotalMatrix());
     canvas.addCanvas(raster_canvas);
 
-    RasterCommon(&canvas, nullptr);
+    RasterCommon(&canvas);
   } else {
-    RasterCommon(raster_canvas, nullptr);
+    RasterCommon(raster_canvas);
   }
 }
 
@@ -225,7 +225,7 @@ sk_sp<SkPicture> RasterSource::GetFlattenedPicture() {
   SkCanvas* canvas = recorder.beginRecording(size_.width(), size_.height());
   if (!size_.IsEmpty()) {
     PrepareForPlaybackToCanvas(canvas);
-    RasterCommon(canvas, nullptr);
+    RasterCommon(canvas);
   }
 
   return recorder.finishRecordingAsPicture();

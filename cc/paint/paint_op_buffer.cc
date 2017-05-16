@@ -264,7 +264,7 @@ void DrawDisplayItemListOp::Raster(const PaintOp* base_op,
                                    SkCanvas* canvas,
                                    const SkMatrix& original_ctm) {
   auto* op = static_cast<const DrawDisplayItemListOp*>(base_op);
-  op->list->Raster(canvas, nullptr);
+  op->list->Raster(canvas);
 }
 
 void DrawDRRectOp::RasterWithFlags(const PaintOpWithFlags* base_op,

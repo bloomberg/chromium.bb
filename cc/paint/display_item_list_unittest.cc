@@ -732,7 +732,7 @@ TEST(DisplayItemListTest, SaveDrawRestore) {
   list->Finalize();
 
   SaveCountingCanvas canvas;
-  list->Raster(&canvas, nullptr);
+  list->Raster(&canvas);
 
   EXPECT_EQ(0, canvas.save_count_);
   EXPECT_EQ(0, canvas.restore_count_);
@@ -761,7 +761,7 @@ TEST(DisplayItemListTest, SaveRestoreNoops) {
   list->Finalize();
 
   SaveCountingCanvas canvas;
-  list->Raster(&canvas, nullptr);
+  list->Raster(&canvas);
 
   EXPECT_EQ(0, canvas.save_count_);
   EXPECT_EQ(0, canvas.restore_count_);
@@ -782,7 +782,7 @@ TEST(DisplayItemListTest, SaveDrawRestoreFail_BadSaveFlags) {
   list->Finalize();
 
   SaveCountingCanvas canvas;
-  list->Raster(&canvas, nullptr);
+  list->Raster(&canvas);
 
   EXPECT_EQ(1, canvas.save_count_);
   EXPECT_EQ(1, canvas.restore_count_);
@@ -816,7 +816,7 @@ TEST(DisplayItemListTest, SaveDrawRestoreFail_TooManyOps) {
   list->Finalize();
 
   SaveCountingCanvas canvas;
-  list->Raster(&canvas, nullptr);
+  list->Raster(&canvas);
 
   EXPECT_EQ(1, canvas.save_count_);
   EXPECT_EQ(1, canvas.restore_count_);

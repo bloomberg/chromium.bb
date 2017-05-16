@@ -42,13 +42,8 @@ class CC_PAINT_EXPORT DisplayItemList
  public:
   DisplayItemList();
 
-  // TODO(trchen): Deprecated. Apply clip and scale on the canvas instead.
   void Raster(SkCanvas* canvas,
-              SkPicture::AbortCallback* callback,
-              const gfx::Rect& canvas_target_playback_rect,
-              float contents_scale) const;
-
-  void Raster(SkCanvas* canvas, SkPicture::AbortCallback* callback) const;
+              SkPicture::AbortCallback* callback = nullptr) const;
 
   // Because processing happens in these CreateAndAppend functions, all the set
   // up for the item should be done via the args, which is why the return type
