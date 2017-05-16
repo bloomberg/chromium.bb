@@ -10,7 +10,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "ui/aura/window.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
@@ -20,6 +19,7 @@
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/layout/box_layout.h"
+#include "ui/views/style/typography.h"
 
 namespace views {
 namespace {
@@ -158,10 +158,9 @@ Button* TouchSelectionMenuRunnerViews::Menu::CreateButton(
     int tag) {
   base::string16 label =
       gfx::RemoveAcceleratorChar(title, '&', nullptr, nullptr);
-  LabelButton* button = new LabelButton(this, label);
+  LabelButton* button = new LabelButton(this, label, style::CONTEXT_TOUCH_MENU);
   button->SetMinSize(gfx::Size(kMenuButtonMinWidth, kMenuButtonMinHeight));
   button->SetFocusForPlatform();
-  button->AdjustFontSize(ui::ResourceBundle::kSmallFontDelta);
   button->SetHorizontalAlignment(gfx::ALIGN_CENTER);
   button->set_tag(tag);
   return button;

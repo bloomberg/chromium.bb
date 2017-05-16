@@ -16,6 +16,10 @@ const gfx::FontList& LegacyTypographyProvider::GetFont(int text_context,
   gfx::Font::Weight font_weight;
   GetDefaultFont(text_context, text_style, &size_delta, &font_weight);
 
+#if defined(USE_ASH)
+  ash::ApplyAshFontStyles(text_context, text_style, &size_delta, &font_weight);
+#endif
+
   switch (text_context) {
     case CONTEXT_HEADLINE:
       size_delta = kHeadlineDelta;

@@ -31,6 +31,14 @@ class VIEWS_EXPORT TypographyProvider {
   // Gets the line spacing, or 0 if it should be provided by gfx::FontList.
   virtual int GetLineHeight(int context, int style) const = 0;
 
+  // The system may indicate a "bold" UI font is preferred (e.g. by selecting
+  // the "Bold" checkbox in Windows under "Change only the text size" in
+  // Control Panel). In this case, a user's gfx::Weight::NORMAL font will
+  // already be bold, and requesting a MEDIUM font will result in a font that is
+  // less bold. So this method returns NORMAL, if the NORMAL font is at least as
+  // bold as |weight|.
+  static gfx::Font::Weight WeightNotLighterThanNormal(gfx::Font::Weight weight);
+
  protected:
   TypographyProvider() = default;
 
@@ -52,10 +60,10 @@ class VIEWS_EXPORT DefaultTypographyProvider : public TypographyProvider {
   // Sets the |size_delta| and |font_weight| that the the default GetFont()
   // implementation uses. Always sets values, even for styles it doesn't know
   // about.
-  void GetDefaultFont(int context,
-                      int style,
-                      int* size_delta,
-                      gfx::Font::Weight* font_weight) const;
+  static void GetDefaultFont(int context,
+                             int style,
+                             int* size_delta,
+                             gfx::Font::Weight* font_weight);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DefaultTypographyProvider);

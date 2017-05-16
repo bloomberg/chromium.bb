@@ -4,6 +4,7 @@
 
 #include "ash/system/session/logout_button_tray.h"
 
+#include "ash/public/cpp/ash_typography.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shelf/wm_shelf.h"
 #include "ash/shell.h"
@@ -26,14 +27,15 @@ namespace ash {
 LogoutButtonTray::LogoutButtonTray(WmShelf* wm_shelf)
     : wm_shelf_(wm_shelf),
       container_(new TrayContainer(wm_shelf)),
-      button_(views::MdTextButton::Create(this, base::string16())),
+      button_(views::MdTextButton::Create(this,
+                                          base::string16(),
+                                          CONTEXT_LAUNCHER_BUTTON)),
       show_logout_button_in_tray_(false) {
   SetLayoutManager(new views::FillLayout);
   AddChildView(container_);
 
   button_->SetProminent(true);
   button_->SetBgColorOverride(gfx::kGoogleRed700);
-  button_->AdjustFontSize(kTrayTextFontSizeIncrease);
 
   container_->AddChildView(button_);
   Shell::Get()->system_tray_notifier()->AddLogoutButtonObserver(this);

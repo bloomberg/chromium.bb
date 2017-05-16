@@ -8,6 +8,10 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/platform_font.h"
 
+#if defined(USE_ASH)
+#include "ash/public/cpp/ash_typography.h"
+#endif
+
 const gfx::FontList& HarmonyTypographyProvider::GetFont(int text_context,
                                                         int text_style) const {
   // "Target" font size constants from the Harmony spec.
@@ -24,9 +28,14 @@ const gfx::FontList& HarmonyTypographyProvider::GetFont(int text_context,
 
   int size_delta = kDefaultSize - gfx::PlatformFont::kDefaultBaseFontSize;
   gfx::Font::Weight font_weight = gfx::Font::Weight::NORMAL;
+
+#if defined(USE_ASH)
+  ash::ApplyAshFontStyles(text_context, text_style, &size_delta, &font_weight);
+#endif
+
   switch (text_context) {
-    case CONTEXT_HEADLINE:
-      size_delta = kHeadlineSize - gfx::PlatformFont::kDefaultBaseFontSize;
+    case views::style::CONTEXT_BUTTON_MD:
+      font_weight = WeightNotLighterThanNormal(kButtonFontWeight);
       break;
     case views::style::CONTEXT_DIALOG_TITLE:
       size_delta = kTitleSize - gfx::PlatformFont::kDefaultBaseFontSize;
@@ -34,14 +43,15 @@ const gfx::FontList& HarmonyTypographyProvider::GetFont(int text_context,
     case CONTEXT_BODY_TEXT_LARGE:
       size_delta = kBodyTextLargeSize - gfx::PlatformFont::kDefaultBaseFontSize;
       break;
-    case views::style::CONTEXT_BUTTON:
-      font_weight = kButtonFontWeight;
+    case CONTEXT_HEADLINE:
+      size_delta = kHeadlineSize - gfx::PlatformFont::kDefaultBaseFontSize;
       break;
     default:
       break;
   }
 
   // Ignore |text_style| since it only affects color in the Harmony spec.
+
   return ui::ResourceBundle::GetSharedInstance().GetFontListWithDelta(
       size_delta, gfx::Font::NORMAL, font_weight);
 }
@@ -107,14 +117,15 @@ int HarmonyTypographyProvider::GetLineHeight(int text_context,
       kBodyTextSmallPlatformHeight + kBodyHeight;
 
   switch (text_context) {
-    case CONTEXT_HEADLINE:
-      return headline_height;
+    case views::style::CONTEXT_BUTTON:
+    case views::style::CONTEXT_BUTTON_MD:
+      return kButtonAbsoluteHeight;
     case views::style::CONTEXT_DIALOG_TITLE:
       return title_height;
     case CONTEXT_BODY_TEXT_LARGE:
       return body_large_height;
-    case views::style::CONTEXT_BUTTON:
-      return kButtonAbsoluteHeight;
+    case CONTEXT_HEADLINE:
+      return headline_height;
     default:
       return default_height;
   }

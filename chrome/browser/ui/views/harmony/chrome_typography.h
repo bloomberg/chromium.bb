@@ -9,9 +9,19 @@
 #include "ui/views/style/typography.h"
 #include "ui/views/style/typography_provider.h"
 
+#if defined(USE_ASH)
+#include "ash/public/cpp/ash_typography.h"
+#endif
+
 enum ChromeTextContext {
+#if defined(USE_ASH)
+  CHROME_TEXT_CONTEXT_START = ash::ASH_TEXT_CONTEXT_END,
+#else
+  CHROME_TEXT_CONTEXT_START = views::style::VIEWS_TEXT_CONTEXT_END,
+#endif
+
   // Headline text. Usually 20pt. Never multi-line.
-  CONTEXT_HEADLINE = views::style::VIEWS_TEXT_CONTEXT_END,
+  CONTEXT_HEADLINE = CHROME_TEXT_CONTEXT_START,
 
   // "Body 1". Usually 13pt.
   CONTEXT_BODY_TEXT_LARGE,
@@ -26,8 +36,10 @@ enum ChromeTextContext {
 };
 
 enum ChromeTextStyle {
+  CHROME_TEXT_STYLE_START = views::style::VIEWS_TEXT_STYLE_END,
+
   // Secondary text. May be lighter than views::style::PRIMARY.
-  STYLE_SECONDARY = views::style::VIEWS_TEXT_STYLE_END,
+  STYLE_SECONDARY = CHROME_TEXT_STYLE_START,
 
   // "Hint" text, usually a line that gives context to something more important.
   STYLE_HINT,

@@ -9,6 +9,7 @@
 
 #include "base/optional.h"
 #include "ui/views/controls/button/label_button.h"
+#include "ui/views/style/typography.h"
 
 namespace views {
 
@@ -22,7 +23,8 @@ class VIEWS_EXPORT MdTextButton : public LabelButton {
   static LabelButton* CreateSecondaryUiBlueButton(ButtonListener* listener,
                                                   const base::string16& text);
   static MdTextButton* Create(ButtonListener* listener,
-                              const base::string16& text);
+                              const base::string16& text,
+                              int button_context = style::CONTEXT_BUTTON_MD);
 
   ~MdTextButton() override;
 
@@ -46,16 +48,11 @@ class VIEWS_EXPORT MdTextButton : public LabelButton {
   SkColor GetInkDropBaseColor() const override;
   void SetEnabledTextColors(SkColor color) override;
   void SetText(const base::string16& text) override;
-  void AdjustFontSize(int size_delta) override;
   void UpdateStyleToIndicateDefaultStatus() override;
   void StateChanged(ButtonState old_state) override;
 
- protected:
-  // LabelButton:
-  void SetFontList(const gfx::FontList& font_list) override;
-
  private:
-  explicit MdTextButton(ButtonListener* listener);
+  MdTextButton(ButtonListener* listener, int button_context);
 
   void UpdatePadding();
   void UpdateColors();

@@ -86,7 +86,7 @@ AvatarButton::AvatarButton(views::ButtonListener* listener,
   // is larger than this, it will be shrunk to match it.
   // TODO(noms): Calculate this constant algorithmically from the button's size.
   const int kDisplayFontHeight = 16;
-  SetFontList(
+  label()->SetFontList(
       label()->font_list().DeriveWithHeightUpperBound(kDisplayFontHeight));
 
 #if defined(OS_WIN)

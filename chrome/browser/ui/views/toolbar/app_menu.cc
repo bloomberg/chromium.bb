@@ -257,7 +257,7 @@ class InMenuButton : public LabelButton {
     set_background(in_menu_background_);
     SetBorder(
         views::CreateEmptyBorder(0, kHorizontalPadding, 0, kHorizontalPadding));
-    SetFontList(MenuConfig::instance().font_list);
+    label()->SetFontList(MenuConfig::instance().font_list);
   }
 
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override {

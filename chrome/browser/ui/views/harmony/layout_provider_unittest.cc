@@ -279,6 +279,8 @@ TEST(LayoutProviderTest, TypographyLineHeight) {
   // buttons have flexibility to configure their own spacing.
   EXPECT_EQ(0,
             views::style::GetLineHeight(views::style::CONTEXT_BUTTON, kStyle));
+  EXPECT_EQ(
+      0, views::style::GetLineHeight(views::style::CONTEXT_BUTTON_MD, kStyle));
 }
 
 // Ensure that line heights reported in a default bot configuration match the

@@ -31,61 +31,23 @@
 #include "ui/views/style/platform_style.h"
 #include "ui/views/window/dialog_delegate.h"
 
-namespace {
-
-gfx::Font::Weight GetValueBolderThan(gfx::Font::Weight weight) {
-  if (weight < gfx::Font::Weight::BOLD)
-    return gfx::Font::Weight::BOLD;
-  switch (weight) {
-    case gfx::Font::Weight::BOLD:
-      return gfx::Font::Weight::EXTRA_BOLD;
-    case gfx::Font::Weight::EXTRA_BOLD:
-    case gfx::Font::Weight::BLACK:
-      return gfx::Font::Weight::BLACK;
-    default:
-      NOTREACHED();
-  }
-  return gfx::Font::Weight::INVALID;
-}
-
-const gfx::FontList& GetDefaultNormalFontList() {
-  static base::LazyInstance<gfx::FontList>::Leaky font_list =
-      LAZY_INSTANCE_INITIALIZER;
-  return font_list.Get();
-}
-
-const gfx::FontList& GetDefaultBoldFontList() {
-  if (!views::PlatformStyle::kDefaultLabelButtonHasBoldFont)
-    return GetDefaultNormalFontList();
-
-  static base::LazyInstance<gfx::FontList>::Leaky font_list =
-      LAZY_INSTANCE_INITIALIZER;
-
-  static const gfx::Font::Weight default_bold_weight =
-      font_list.Get().GetFontWeight();
-
-  font_list.Get() = font_list.Get().DeriveWithWeight(
-      GetValueBolderThan(default_bold_weight));
-  DCHECK_GE(font_list.Get().GetFontWeight(), gfx::Font::Weight::BOLD);
-
-  return font_list.Get();
-}
-
-}  // namespace
-
 namespace views {
 
 // static
 const int LabelButton::kHoverAnimationDurationMs = 170;
 const char LabelButton::kViewClassName[] = "LabelButton";
 
-LabelButton::LabelButton(ButtonListener* listener, const base::string16& text)
+LabelButton::LabelButton(ButtonListener* listener,
+                         const base::string16& text,
+                         int button_context)
     : CustomButton(listener),
       image_(new ImageView()),
-      label_(new Label()),
+      label_(new Label(text, button_context, style::STYLE_PRIMARY)),
       ink_drop_container_(new InkDropContainerView()),
-      cached_normal_font_list_(GetDefaultNormalFontList()),
-      cached_bold_font_list_(GetDefaultBoldFontList()),
+      cached_normal_font_list_(
+          style::GetFont(button_context, style::STYLE_PRIMARY)),
+      cached_default_button_font_list_(
+          style::GetFont(button_context, style::STYLE_DIALOG_BUTTON_DEFAULT)),
       button_state_images_(),
       button_state_colors_(),
       explicitly_set_colors_(),
@@ -107,7 +69,6 @@ LabelButton::LabelButton(ButtonListener* listener, const base::string16& text)
   image_->set_can_process_events_within_subtree(false);
 
   AddChildView(label_);
-  label_->SetFontList(cached_normal_font_list_);
   label_->SetAutoColorReadabilityEnabled(false);
   label_->SetHorizontalAlignment(gfx::ALIGN_TO_HEAD);
 
@@ -157,11 +118,6 @@ void LabelButton::SetTextShadows(const gfx::ShadowValues& shadows) {
 
 void LabelButton::SetTextSubpixelRenderingEnabled(bool enabled) {
   label_->SetSubpixelRenderingEnabled(enabled);
-}
-
-void LabelButton::AdjustFontSize(int font_size_delta) {
-  LabelButton::SetFontList(
-      label()->font_list().DeriveWithSizeDelta(font_size_delta));
 }
 
 void LabelButton::SetElideBehavior(gfx::ElideBehavior elide_behavior) {
@@ -241,7 +197,7 @@ gfx::Size LabelButton::GetPreferredSize() const {
     // Some text appears wider when rendered normally than when rendered bold.
     // Accommodate the widest, as buttons may show bold and shouldn't resize.
     const int current_width = label.GetPreferredSize().width();
-    label.SetFontList(cached_bold_font_list_);
+    label.SetFontList(cached_default_button_font_list_);
     if (label.GetPreferredSize().width() < current_width)
       label.SetFontList(label_->font_list());
   }
@@ -376,19 +332,6 @@ void LabelButton::SetBorder(std::unique_ptr<Border> border) {
 
 gfx::Rect LabelButton::GetChildAreaBounds() {
   return GetLocalBounds();
-}
-
-void LabelButton::SetFontList(const gfx::FontList& font_list) {
-  cached_normal_font_list_ = font_list;
-  if (PlatformStyle::kDefaultLabelButtonHasBoldFont) {
-    cached_bold_font_list_ = font_list.DeriveWithWeight(
-        GetValueBolderThan(font_list.GetFontWeight()));
-    if (is_default_) {
-      label_->SetFontList(cached_bold_font_list_);
-      return;
-    }
-  }
-  label_->SetFontList(cached_normal_font_list_);
 }
 
 bool LabelButton::ShouldUseFloodFillInkDrop() const {
@@ -526,9 +469,17 @@ void LabelButton::ResetColorsFromNativeTheme() {
 }
 
 void LabelButton::UpdateStyleToIndicateDefaultStatus() {
+  // Check that a subclass hasn't replaced the Label font. These buttons may
+  // never be given default status.
+  DCHECK_EQ(cached_normal_font_list_.GetFontSize(),
+            label()->font_list().GetFontSize());
   const bool bold =
       PlatformStyle::kDefaultLabelButtonHasBoldFont && is_default_;
-  label_->SetFontList(bold ? cached_bold_font_list_ : cached_normal_font_list_);
+  // TODO(tapted): This should use style::GetFont(), but this part can just be
+  // deleted when default buttons no longer go bold. Colors will need updating
+  // still.
+  label_->SetFontList(bold ? cached_default_button_font_list_
+                           : cached_normal_font_list_);
   InvalidateLayout();
   ResetLabelEnabledColor();
 }

@@ -24,8 +24,15 @@ enum TextContext {
   // "CONTEXT_" represent the actual TextContexts: the rest are markers.
   VIEWS_TEXT_CONTEXT_START = 0,
 
+  // Text that appears on a button control. Usually 12pt. This includes controls
+  // with button-like behavior, such as Checkbox.
+  CONTEXT_BUTTON = VIEWS_TEXT_CONTEXT_START,
+
+  // Text that appears on an MD-styled dialog button control. Usually 12pt.
+  CONTEXT_BUTTON_MD,
+
   // A title for a dialog window. Usually 15pt. Multi-line OK.
-  CONTEXT_DIALOG_TITLE = VIEWS_TEXT_CONTEXT_START,
+  CONTEXT_DIALOG_TITLE,
 
   // Text to label a control, usually next to it. "Body 2". Usually 12pt.
   CONTEXT_LABEL,
@@ -33,8 +40,8 @@ enum TextContext {
   // An editable text field. Usually matches CONTROL_LABEL.
   CONTEXT_TEXTFIELD,
 
-  // Text that appears on a button control. Usually 12pt.
-  CONTEXT_BUTTON,
+  // Text for the menu items that appear in the touch-selection context menu.
+  CONTEXT_TOUCH_MENU,
 
   // Embedders must start TextContext enum values from this value.
   VIEWS_TEXT_CONTEXT_END,
@@ -54,6 +61,9 @@ enum TextStyle {
   // Primary text: solid black, normal weight. Converts to DISABLED in some
   // contexts (e.g. BUTTON_TEXT, FIELD).
   STYLE_PRIMARY = VIEWS_TEXT_STYLE_START,
+
+  // Style for the default button on a dialog.
+  STYLE_DIALOG_BUTTON_DEFAULT,
 
   // Disabled "greyed out" text.
   STYLE_DISABLED,
