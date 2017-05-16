@@ -32,6 +32,7 @@ namespace base {
 namespace trace_event {
 class ConvertableToTraceFormat;
 }
+class HistogramBase;
 }
 
 namespace blink {
@@ -406,6 +407,12 @@ class PLATFORM_EXPORT RendererSchedulerImpl
 
   void AddQueueToWakeUpBudgetPool(TaskQueue* queue);
 
+  void RecordTaskMetrics(TaskQueue::QueueType queue_type,
+                         base::TimeDelta duration);
+
+  void RecordTaskDurationPerQueueType(TaskQueue::QueueType queue_type,
+                                      base::TimeDelta duration);
+
   SchedulerHelper helper_;
   IdleHelper idle_helper_;
   IdleCanceledDelayedTaskSweeper idle_canceled_delayed_task_sweeper_;
@@ -488,6 +495,10 @@ class PLATFORM_EXPORT RendererSchedulerImpl
     std::set<WebViewSchedulerImpl*> web_view_schedulers;  // Not owned.
     RAILModeObserver* rail_mode_observer;                 // Not owned.
     WakeUpBudgetPool* wake_up_budget_pool;                // Not owned.
+    std::array<base::TimeDelta,
+               static_cast<size_t>(TaskQueue::QueueType::COUNT)>
+        unreported_task_duration;
+    base::HistogramBase* task_duration_per_queue_type_histogram;
   };
 
   struct AnyThread {

@@ -59007,8 +59007,21 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>altimin@chromium.org,alexclarke@chromium.org</owner>
   <summary>
     The number of completed renderer tasks split per task queue type. Used to
-    monitor usage of each type of task queues. Reported each time when task is
+    monitor usage of each type of task queue. Reported each time when task is
     completed.
+  </summary>
+</histogram>
+
+<histogram name="RendererScheduler.TaskDurationPerQueueType"
+    enum="RendererSchedulerTaskQueueType" units="ms">
+  <owner>altimin@chromium.org,alexclarke@chromium.org</owner>
+  <summary>
+    Total duration of renderer tasks split per task queue type. Used to monitor
+    usage of each type of task queues. Reported each time when task is completed
+    and current accumulated duration is longer than 1ms.
+
+    This metric is susceptible to problematic outliers and should be analyzed
+    with custom scripts accounting for that rather than from a dashboard.
   </summary>
 </histogram>
 
