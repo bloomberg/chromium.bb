@@ -674,6 +674,7 @@ CQ_CONFIG_SECTION_GENERAL = 'GENERAL'
 CQ_CONFIG_IGNORED_STAGES = 'ignored-stages'
 CQ_CONFIG_SUBMIT_IN_PRE_CQ = 'submit-in-pre-cq'
 CQ_CONFIG_SUBSYSTEM = 'subsystem'
+CQ_CONFIG_UNION_PRE_CQ_SUB_CONFIGS = 'union-pre-cq-sub-configs'
 
 # The COMMIT-QUEUE.ini and commit message option that overrides pre-cq configs
 # to test with.

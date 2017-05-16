@@ -1251,6 +1251,60 @@ pre-cq-configs: link-pre-cq
     self.sync_stage._ProcessOldPatchPreCQRuns(db, change, action_history)
     mock_cancel.assert_called_once_with(db, c2)
 
+  def testGetPreCQConfigsFromOptionsNotUnioned(self):
+    """Test _GetPreCQConfigsFromOptions for not unioned Pre-CQ config."""
+    change = MockPatch()
+    self.PatchObject(cq_config.CQConfigParser, '__init__', return_value=None)
+
+    self.PatchObject(cq_config.CQConfigParser, 'GetUnionPreCQSubConfigsFlag',
+                     return_value=False)
+    self.PatchObject(cq_config.CQConfigParser, 'GetPreCQConfigs',
+                     return_value={'default', 'binhost-pre-cq', 'lumpy-pre-cq'})
+    pre_cqs = self.sync_stage._GetPreCQConfigsFromOptions(change)
+    expected_pre_cq = set(constants.PRE_CQ_DEFAULT_CONFIGS +
+                          ['binhost-pre-cq', 'lumpy-pre-cq'])
+    self.assertItemsEqual(pre_cqs, expected_pre_cq)
+
+    pre_cqs = self.sync_stage._GetPreCQConfigsFromOptions(
+        change, union_pre_cq_limit=2)
+    self.assertItemsEqual(pre_cqs, expected_pre_cq)
+
+  def testGetPreCQConfigsFromOptionsUnioned(self):
+    """Test _GetPreCQConfigsFromOptions for unioned Pre-CQ config."""
+    change = MockPatch()
+    self.PatchObject(cq_config.CQConfigParser, '__init__', return_value=None)
+
+    self.PatchObject(cq_config.CQConfigParser, 'GetUnionPreCQSubConfigsFlag',
+                     return_value=True)
+    self.PatchObject(cq_config.CQConfigParser, 'GetUnionedPreCQConfigs',
+                     return_value={'default', 'binhost-pre-cq', 'lumpy-pre-cq'})
+    pre_cqs = self.sync_stage._GetPreCQConfigsFromOptions(change)
+
+    expected_pre_cq = set(constants.PRE_CQ_DEFAULT_CONFIGS +
+                          ['binhost-pre-cq', 'lumpy-pre-cq'])
+    self.assertItemsEqual(pre_cqs, expected_pre_cq)
+
+    self.assertRaises(sync_stages.ExceedUnionPreCQLimitException,
+                      self.sync_stage._GetPreCQConfigsFromOptions,
+                      change, union_pre_cq_limit=2)
+
+  def testConfiguredVerificationsForChange(self):
+    """Test ConfiguredVerificationsForChange."""
+    change = MockPatch()
+    self.PatchObject(cros_patch, 'GetOptionLinesFromCommitMessage')
+    pre_cq_configs = ['pre-cq-%s' % x for x in range(0, 30)]
+    pre_cq_configs.sort(reverse=True)
+    exceed_exception = sync_stages.ExceedUnionPreCQLimitException(
+        pre_cq_configs, 20)
+    self.PatchObject(sync_stages.PreCQLauncherStage,
+                     '_GetPreCQConfigsFromOptions',
+                     side_effect=exceed_exception)
+    result = self.sync_stage._ConfiguredVerificationsForChange(change)
+
+    self.assertItemsEqual(
+        result, pre_cq_configs[sync_stages.DEFAULT_UNION_PRE_CQ_LIMIT:])
+
+
 class MasterSlaveLKGMSyncTest(generic_stages_unittest.StageTestCase):
   """Unit tests for MasterSlaveLKGMSyncStage"""
 

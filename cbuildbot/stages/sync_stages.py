@@ -8,6 +8,7 @@ from __future__ import print_function
 
 import collections
 import contextlib
+import copy
 import datetime
 import itertools
 import os
@@ -74,6 +75,27 @@ PRECQ_EXPIRY_MSG = (
     'In order to protect the CQ from picking up stale changes, the pre-cq '
     'status for changes are cleared after a generous timeout. This change '
     'will be re-tested by the pre-cq before the CQ picks it up.')
+
+
+# Default limit for the size of Pre-CQ configs to test for unioned options
+# TODO(nxia): make this configurable in the COMMIT-QUEUE.ini
+DEFAULT_UNION_PRE_CQ_LIMIT = 15
+
+
+class ExceedUnionPreCQLimitException(Exception):
+  """Exception raised when unioned Pre-CQ config size exceeds the limit."""
+
+  def __init__(self, pre_cq_configs, limit, message=''):
+    """Initialize a ExceedUnionPreCQLimitException.
+
+    Args:
+      pre_cq_configs: A list Pre-CQ configs (strings) which exceed the limit.
+      limit: The limit for the size of the Pre-CQ configs.
+      message: An error message (optional).
+    """
+    Exception.__init__(self, message)
+    self.pre_cq_configs = pre_cq_configs
+    self.limit = limit
 
 
 class PatchChangesStage(generic_stages.BuilderStage):
@@ -1227,6 +1249,34 @@ class PreCQLauncherStage(SyncStage):
     )
     logging.PrintBuildbotLink(' | '.join(items), patch.url)
 
+  def _GetPreCQConfigsFromOptions(self, change, union_pre_cq_limit=None):
+    """Get Pre-CQ configs from CQ config options.
+
+    If union-pre-cq-sub-configs flag is True in the default config file, get
+    unioned Pre-CQ configs from the sub configs; else, get Pre-CQ configs from
+    the default config file.
+
+    Args:
+      change: The instance of cros_patch.GerritPatch to get Pre-CQ configs.
+      union_pre_cq_limit: The limit size for unioned Pre-CQ configs if provided.
+        Default to None.
+
+    Returns:
+      A set of valid Pre-CQ configs (strings) or None.
+    """
+    cq_config_parser = cq_config.CQConfigParser(self._build_root, change)
+    pre_cq_configs = None
+    if cq_config_parser.GetUnionPreCQSubConfigsFlag():
+      pre_cq_configs = self._ParsePreCQsFromOption(
+          cq_config_parser.GetUnionedPreCQConfigs())
+      if (union_pre_cq_limit is not None and pre_cq_configs and
+          len(pre_cq_configs) > union_pre_cq_limit):
+        raise ExceedUnionPreCQLimitException(pre_cq_configs, union_pre_cq_limit)
+
+      return pre_cq_configs
+    else:
+      return self._ParsePreCQsFromOption(cq_config_parser.GetPreCQConfigs())
+
   def _ConfiguredVerificationsForChange(self, change):
     """Determine which configs to test |change| with.
 
@@ -1249,11 +1299,20 @@ class PreCQLauncherStage(SyncStage):
     if lines is not None:
       configs_to_test = self._ParsePreCQsFromOption(lines)
 
-    cq_config_parser = cq_config.CQConfigParser(self._build_root, change)
-    configs_from_option = self._ParsePreCQsFromOption(
-        cq_config_parser.GetPreCQConfigs())
+    configs_from_options = None
+    try:
+      configs_from_options = self._GetPreCQConfigsFromOptions(
+          change, union_pre_cq_limit=DEFAULT_UNION_PRE_CQ_LIMIT)
+    except ExceedUnionPreCQLimitException as e:
+      pre_cq_configs = copy.copy(e.pre_cq_configs)
+      pre_cq_configs.sort()
+      configs_from_options = pre_cq_configs[:DEFAULT_UNION_PRE_CQ_LIMIT]
+      logging.info('Unioned Pre-CQs %s for change %s exceed the limit %d. '
+                   'Will launch the following Pre-CQ configs: %s',
+                   e.pre_cq_configs, change.PatchLink(),
+                   DEFAULT_UNION_PRE_CQ_LIMIT, configs_from_options)
 
-    configs_to_test = configs_to_test or configs_from_option
+    configs_to_test = configs_to_test or configs_from_options
     return set(configs_to_test or constants.PRE_CQ_DEFAULT_CONFIGS)
 
   def VerificationsForChange(self, change):

@@ -46,7 +46,7 @@ class CQConfigParser(object):
     self._common_config_file = self.GetCommonConfigFileForChange(
         build_root, change)
 
-  def GetOption(self, section, option, forgiven=True):
+  def GetOption(self, section, option, forgiven=True, config_path=None):
     """Get |option| from |section| for self.change.
 
     Args:
@@ -54,6 +54,8 @@ class CQConfigParser(object):
       option: Option name (string).
       forgiven: Option boolean indicating whether a malformed config can be
         forgiven. Default to True.
+      config_path: The path to the config to get the option value. When
+        config_path is None, use self._common_config_file as the default config.
 
     Returns:
       The value of the option (string) or None.
@@ -63,13 +65,14 @@ class CQConfigParser(object):
       False.
     """
     result = None
-    if self._common_config_file is not None:
+    config_path = config_path or self._common_config_file
+    if config_path is not None:
       try:
         result = self._GetOptionFromConfigFile(
-            self._common_config_file, section, option)
+            config_path, section, option)
       except ConfigParser.Error as e:
         error = MalformedCQConfigException(
-            self.change, self._common_config_file, e)
+            self.change, config_path, e)
         logging.error('Malformed CQ config: %s', error)
         if not forgiven:
           raise error
@@ -113,6 +116,97 @@ class CQConfigParser(object):
     result = self.GetOption(constants.CQ_CONFIG_SECTION_GENERAL,
                             constants.CQ_CONFIG_SUBSYSTEM)
     return result.split() if result else []
+
+  def GetConfigFlag(self, section, option):
+    """Get config flag.
+
+    Args:
+      section: Section header name (string).
+      option: Option name (string).
+
+    Returns:
+      A boolean value of the config flag.
+    """
+    result = self.GetOption(section, option)
+    return bool(result and result.lower() == 'yes')
+
+  def GetUnionPreCQSubConfigsFlag(self):
+    """Whether to union Pre-CQ configs of the config files from sub dirs.
+
+    Returns:
+      A boolean indicating whether to union Pre-CQ from sub dir configs.
+    """
+    return self.GetConfigFlag(
+        constants.CQ_CONFIG_SECTION_GENERAL,
+        constants.CQ_CONFIG_UNION_PRE_CQ_SUB_CONFIGS)
+
+  def GetUnionedOptionsFromSubConfigs(self, section, option):
+    """Get unioned options from sub dir configs for change.
+
+    This method looks for the config file for each diff file in the change,
+    gets the option from each config file and returns the set of found options.
+
+    Args:
+      section: The section header (string) of the option.
+      option: The option name (string) to get.
+
+    Returns:
+      A set of options (strings) from sub-dir configs.
+    """
+    checkout = self.GetCheckout(self.build_root, self.change)
+    if checkout:
+      checkout_path = checkout.GetPath(absolute=True)
+      affected_paths = [os.path.join(checkout_path, path)
+                        for path in self.change.GetDiffStatus(checkout_path)]
+
+      config_paths = set()
+      for affected_path in affected_paths:
+        config_path = self._GetConfigFileForAffectedPath(
+            affected_path, checkout_path)
+
+        if config_path:
+          config_paths.add(config_path)
+
+      union_options = set()
+      for config_path in config_paths:
+        result = self.GetOption(section, option, config_path=config_path)
+
+        if result:
+          union_options.add(result)
+
+      return union_options
+
+  def GetUnionedPreCQConfigs(self):
+    """Get Pre-CQ configs from unioned options of sub configs.
+
+    Returns:
+      A list of Pre-CQ configs (strings).
+    """
+    unioned_pre_cq_config_options = self.GetUnionedOptionsFromSubConfigs(
+        constants.CQ_CONFIG_SECTION_GENERAL,
+        constants.CQ_CONFIG_PRE_CQ_CONFIGS)
+
+    pre_cq_configs = set()
+    for option in unioned_pre_cq_config_options:
+      if option:
+        pre_cq_configs.update(option.split())
+
+    return pre_cq_configs
+
+  @classmethod
+  def GetCheckout(cls, build_root, change):
+    """Get the ProjectCheckout associated with change.
+
+    Args:
+      build_root: The path to the build root.
+      change: An instance of cros_patch.GerritPatch.
+
+    Returns:
+      A ProjectCheckout instance of |change| or None (See more details in
+      patch.GitRepoPatch.GetCheckout)
+    """
+    manifest = git.ManifestCheckout.Cached(build_root)
+    return change.GetCheckout(manifest)
 
   @classmethod
   def _GetOptionFromConfigFile(cls, config_path, section, option):
@@ -167,8 +261,7 @@ class CQConfigParser(object):
       found within the project checkout, return a config file path in the root
       of the checkout.
     """
-    manifest = git.ManifestCheckout.Cached(build_root)
-    checkout = change.GetCheckout(manifest)
+    checkout = cls.GetCheckout(build_root, change)
     if checkout:
       checkout_path = checkout.GetPath(absolute=True)
       current_dir = cls._GetCommonAffectedSubdir(change, checkout_path)
@@ -178,3 +271,35 @@ class CQConfigParser(object):
           return config_file
         assert current_dir not in ('/', '')
         current_dir = os.path.dirname(current_dir)
+
+  @classmethod
+  def _GetConfigFileForAffectedPath(cls, affected_path, checkout_path):
+    """Get config file for the affected path starting from the base dir.
+
+    If the checkout_path is '/project_root', the changed file is located at
+    '/project_root/dir_1/dir_2/file', and there're config files located at
+    '/porject_root/config.ini' and at '/project_root/dir_1/config.ini'. This
+    method looks for the config file starting from '/project_root/dir_1/dir_2/'
+    to the parent dirs till the checkout_path '/project_root', returns the path
+    to the config file once it's found. In this case,
+    '/project_root/dir_1/config.ini' will be returned.
+
+    Args:
+      affected_path: The path to the affected(changed) file.
+      checkout_path: The path to the project checkout.
+
+    Returns:
+      The path to the config. The returned path will be within |checkout_path|.
+      If no config file was found, a config file path in the root of the
+      checkout will be returned, in which case the file is not guaranteed to
+      exist.
+    """
+    current_path = affected_path
+
+    while not checkout_path.startswith(current_path):
+      current_path = os.path.dirname(current_path)
+      config_file = os.path.join(current_path, constants.CQ_CONFIG_FILENAME)
+      if os.path.isfile(config_file):
+        return config_file
+
+    return os.path.join(current_path, constants.CQ_CONFIG_FILENAME)
