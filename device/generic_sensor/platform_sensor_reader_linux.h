@@ -52,7 +52,7 @@ class SensorReader {
 
   // In builds with DCHECK enabled checks that methods of this
   // and derived classes are called on a right thread.
-  base::ThreadChecker thread_checker_;
+  THREAD_CHECKER(thread_checker_);
 
   // A sensor that this reader is owned by and notifies about errors and
   // readings to.

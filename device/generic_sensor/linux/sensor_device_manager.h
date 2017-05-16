@@ -68,7 +68,8 @@ class DEVICE_GENERIC_SENSOR_EXPORT SensorDeviceManager
   // initial enumeration.
   SensorDeviceMap sensors_by_node_;
 
-  base::ThreadChecker thread_checker_;
+  THREAD_CHECKER(thread_checker_);
+
   ScopedObserver<DeviceMonitorLinux, DeviceMonitorLinux::Observer> observer_;
 
   Delegate* delegate_;

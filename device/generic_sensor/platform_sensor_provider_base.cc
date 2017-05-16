@@ -20,12 +20,15 @@ const uint64_t kSharedBufferSizeInBytes =
 }  // namespace
 
 PlatformSensorProviderBase::PlatformSensorProviderBase() = default;
-PlatformSensorProviderBase::~PlatformSensorProviderBase() = default;
+
+PlatformSensorProviderBase::~PlatformSensorProviderBase() {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+}
 
 void PlatformSensorProviderBase::CreateSensor(
     mojom::SensorType type,
     const CreateSensorCallback& callback) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   if (!CreateSharedBufferIfNeeded()) {
     callback.Run(nullptr);
@@ -53,7 +56,7 @@ void PlatformSensorProviderBase::CreateSensor(
 
 scoped_refptr<PlatformSensor> PlatformSensorProviderBase::GetSensor(
     mojom::SensorType type) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   auto it = sensor_map_.find(type);
   if (it != sensor_map_.end())
@@ -62,7 +65,7 @@ scoped_refptr<PlatformSensor> PlatformSensorProviderBase::GetSensor(
 }
 
 bool PlatformSensorProviderBase::CreateSharedBufferIfNeeded() {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (shared_buffer_handle_.is_valid())
     return true;
 
@@ -72,7 +75,7 @@ bool PlatformSensorProviderBase::CreateSharedBufferIfNeeded() {
 }
 
 void PlatformSensorProviderBase::RemoveSensor(mojom::SensorType type) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(ContainsKey(sensor_map_, type));
   sensor_map_.erase(type);
 
@@ -84,21 +87,21 @@ void PlatformSensorProviderBase::RemoveSensor(mojom::SensorType type) {
 
 mojo::ScopedSharedBufferHandle
 PlatformSensorProviderBase::CloneSharedBufferHandle() {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   CreateSharedBufferIfNeeded();
   return shared_buffer_handle_->Clone(
       mojo::SharedBufferHandle::AccessMode::READ_ONLY);
 }
 
 bool PlatformSensorProviderBase::HasSensors() const {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   return !sensor_map_.empty();
 }
 
 void PlatformSensorProviderBase::NotifySensorCreated(
     mojom::SensorType type,
     scoped_refptr<PlatformSensor> sensor) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(!ContainsKey(sensor_map_, type));
   DCHECK(ContainsKey(requests_map_, type));
 

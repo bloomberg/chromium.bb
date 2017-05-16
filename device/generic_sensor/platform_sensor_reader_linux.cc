@@ -64,26 +64,26 @@ PollingSensorReader::PollingSensorReader(
       apply_scaling_func_(sensor_device->apply_scaling_func) {}
 
 PollingSensorReader::~PollingSensorReader() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 }
 
 void PollingSensorReader::StartFetchingData(
     const PlatformSensorConfiguration& configuration) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (is_reading_active_)
     StopFetchingData();
   InitializeTimer(configuration);
 }
 
 void PollingSensorReader::StopFetchingData() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   is_reading_active_ = false;
   timer_.Stop();
 }
 
 void PollingSensorReader::InitializeTimer(
     const PlatformSensorConfiguration& configuration) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(!is_reading_active_);
   timer_.Start(FROM_HERE, base::TimeDelta::FromMicroseconds(
                               base::Time::kMicrosecondsPerSecond /
@@ -93,7 +93,7 @@ void PollingSensorReader::InitializeTimer(
 }
 
 void PollingSensorReader::PollForData() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   SensorReading readings;
   DCHECK_LE(sensor_file_paths_.size(), arraysize(readings.values));
@@ -143,15 +143,15 @@ SensorReader::SensorReader(
     : sensor_(sensor),
       task_runner_(std::move(task_runner)),
       is_reading_active_(false) {
-  thread_checker_.DetachFromThread();
+  DETACH_FROM_THREAD(thread_checker_);
 }
 
 SensorReader::~SensorReader() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 }
 
 void SensorReader::NotifyReadError() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (is_reading_active_) {
     task_runner_->PostTask(
         FROM_HERE,

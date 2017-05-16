@@ -23,15 +23,15 @@ SensorDeviceManager::SensorDeviceManager()
     : observer_(this),
       delegate_(nullptr),
       task_runner_(base::ThreadTaskRunnerHandle::Get()) {
-  thread_checker_.DetachFromThread();
+  DETACH_FROM_THREAD(thread_checker_);
 }
 
 SensorDeviceManager::~SensorDeviceManager() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 }
 
 void SensorDeviceManager::Start(Delegate* delegate) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   base::ThreadRestrictions::AssertIOAllowed();
   DCHECK(!delegate_);
 

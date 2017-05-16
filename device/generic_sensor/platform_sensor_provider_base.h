@@ -7,7 +7,7 @@
 
 #include "base/macros.h"
 
-#include "base/threading/non_thread_safe.h"
+#include "base/threading/thread_checker.h"
 #include "device/generic_sensor/generic_sensor_export.h"
 #include "device/generic_sensor/platform_sensor.h"
 
@@ -15,8 +15,7 @@ namespace device {
 
 // Base class that defines factory methods for PlatformSensor creation.
 // Its implementations must be accessed via GetInstance() method.
-class DEVICE_GENERIC_SENSOR_EXPORT PlatformSensorProviderBase
-    : public base::NonThreadSafe {
+class DEVICE_GENERIC_SENSOR_EXPORT PlatformSensorProviderBase {
  public:
   using CreateSensorCallback =
       base::Callback<void(scoped_refptr<PlatformSensor>)>;
@@ -60,6 +59,8 @@ class DEVICE_GENERIC_SENSOR_EXPORT PlatformSensorProviderBase
 
   mojo::ScopedSharedBufferMapping MapSharedBufferForType(
       mojom::SensorType type);
+
+  THREAD_CHECKER(thread_checker_);
 
  private:
   friend class PlatformSensor;  // To call RemoveSensor();

@@ -31,7 +31,7 @@ void PlatformSensorProviderWin::CreateSensorInternal(
     mojom::SensorType type,
     mojo::ScopedSharedBufferMapping mapping,
     const CreateSensorCallback& callback) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (!StartSensorThread()) {
     callback.Run(nullptr);
     return;
@@ -81,7 +81,7 @@ void PlatformSensorProviderWin::SensorReaderCreated(
     mojo::ScopedSharedBufferMapping mapping,
     const CreateSensorCallback& callback,
     std::unique_ptr<PlatformSensorReaderWin> sensor_reader) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (!sensor_reader) {
     callback.Run(nullptr);
     if (!HasSensors())

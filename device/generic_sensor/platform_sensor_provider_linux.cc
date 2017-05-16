@@ -63,7 +63,7 @@ void PlatformSensorProviderLinux::SensorDeviceFound(
     mojo::ScopedSharedBufferMapping mapping,
     const PlatformSensorProviderBase::CreateSensorCallback& callback,
     const SensorInfoLinux* sensor_device) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(sensor_device);
 
   if (!StartPollingThread()) {
@@ -79,13 +79,13 @@ void PlatformSensorProviderLinux::SensorDeviceFound(
 
 void PlatformSensorProviderLinux::SetFileTaskRunner(
     scoped_refptr<base::SingleThreadTaskRunner> file_task_runner) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (!file_task_runner_)
     file_task_runner_ = file_task_runner;
 }
 
 void PlatformSensorProviderLinux::AllSensorsRemoved() {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(file_task_runner_);
   Shutdown();
   // When there are no sensors left, the polling thread must be stopped.
@@ -115,7 +115,7 @@ void PlatformSensorProviderLinux::StopPollingThread() {
 }
 
 void PlatformSensorProviderLinux::Shutdown() {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   const bool did_post_task = file_task_runner_->DeleteSoon(
       FROM_HERE, sensor_device_manager_.release());
   DCHECK(did_post_task);
@@ -126,7 +126,7 @@ void PlatformSensorProviderLinux::Shutdown() {
 
 SensorInfoLinux* PlatformSensorProviderLinux::GetSensorDevice(
     mojom::SensorType type) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   auto sensor = sensor_devices_by_type_.find(type);
   if (sensor == sensor_devices_by_type_.end())
     return nullptr;
@@ -134,26 +134,26 @@ SensorInfoLinux* PlatformSensorProviderLinux::GetSensorDevice(
 }
 
 void PlatformSensorProviderLinux::GetAllSensorDevices() {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   // TODO(maksims): implement this method once we have discovery API.
   NOTIMPLEMENTED();
 }
 
 void PlatformSensorProviderLinux::SetSensorDeviceManagerForTesting(
     std::unique_ptr<SensorDeviceManager> sensor_device_manager) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   Shutdown();
   sensor_device_manager_ = std::move(sensor_device_manager);
 }
 
 void PlatformSensorProviderLinux::SetFileTaskRunnerForTesting(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   file_task_runner_ = std::move(task_runner);
 }
 
 void PlatformSensorProviderLinux::ProcessStoredRequests() {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   std::vector<mojom::SensorType> request_types = GetPendingRequestTypes();
   if (request_types.empty())
     return;
@@ -170,7 +170,7 @@ void PlatformSensorProviderLinux::ProcessStoredRequests() {
 void PlatformSensorProviderLinux::CreateSensorAndNotify(
     mojom::SensorType type,
     SensorInfoLinux* sensor_device) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   scoped_refptr<PlatformSensorLinux> sensor;
   mojo::ScopedSharedBufferMapping mapping = MapSharedBufferForType(type);
   if (sensor_device && mapping && StartPollingThread()) {
@@ -182,7 +182,7 @@ void PlatformSensorProviderLinux::CreateSensorAndNotify(
 }
 
 void PlatformSensorProviderLinux::OnSensorNodesEnumerated() {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(!sensor_nodes_enumerated_);
   sensor_nodes_enumerated_ = true;
   ProcessStoredRequests();
@@ -191,7 +191,7 @@ void PlatformSensorProviderLinux::OnSensorNodesEnumerated() {
 void PlatformSensorProviderLinux::OnDeviceAdded(
     mojom::SensorType type,
     std::unique_ptr<SensorInfoLinux> sensor_device) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   // At the moment, we support only one device per type.
   if (base::ContainsKey(sensor_devices_by_type_, type)) {
     DVLOG(1) << "Sensor ignored. Type " << type
@@ -204,7 +204,7 @@ void PlatformSensorProviderLinux::OnDeviceAdded(
 void PlatformSensorProviderLinux::OnDeviceRemoved(
     mojom::SensorType type,
     const std::string& device_node) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   auto it = sensor_devices_by_type_.find(type);
   if (it != sensor_devices_by_type_.end() &&
       it->second->device_node == device_node)
