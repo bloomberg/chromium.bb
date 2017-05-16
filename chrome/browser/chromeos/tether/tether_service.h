@@ -65,8 +65,12 @@ class TetherService : public KeyedService,
   // Callback when the controlling pref changes.
   void OnPrefsChanged();
 
+  virtual void UpdateTetherTechnologyState();
+
  private:
   friend class TetherServiceTest;
+
+  chromeos::NetworkStateHandler::TechnologyState GetTetherTechnologyState();
 
   void OnBluetoothAdapterFetched(
       scoped_refptr<device::BluetoothAdapter> adapter);
@@ -87,9 +91,6 @@ class TetherService : public KeyedService,
 
   // Whether Tether is enabled.
   bool IsEnabledbyPreference() const;
-
-  void UpdateTetherTechnologyState();
-  chromeos::NetworkStateHandler::TechnologyState GetTetherTechnologyState();
 
   // Whether the service has been shut down.
   bool shut_down_ = false;

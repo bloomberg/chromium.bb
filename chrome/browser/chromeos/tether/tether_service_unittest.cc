@@ -43,6 +43,27 @@ class MockCryptAuthDeviceManager : public cryptauth::CryptAuthDeviceManager {
                      std::vector<cryptauth::ExternalDeviceInfo>());
 };
 
+class TestTetherService : public TetherService {
+ public:
+  TestTetherService(Profile* profile,
+                    cryptauth::CryptAuthService* cryptauth_service,
+                    chromeos::NetworkStateHandler* network_state_handler)
+      : TetherService(profile, cryptauth_service, network_state_handler) {}
+
+  int updated_technology_state_count() {
+    return updated_technology_state_count_;
+  }
+
+ protected:
+  void UpdateTetherTechnologyState() override {
+    updated_technology_state_count_++;
+    TetherService::UpdateTetherTechnologyState();
+  }
+
+ private:
+  int updated_technology_state_count_ = 0;
+};
+
 }  // namespace
 
 class TetherServiceTest : public chromeos::NetworkStateTest {
@@ -97,8 +118,8 @@ class TetherServiceTest : public chromeos::NetworkStateTest {
 
   void CreateTetherService() {
     tether_service_ = base::WrapUnique(
-        new TetherService(profile_.get(), fake_cryptauth_service_.get(),
-                          network_state_handler()));
+        new TestTetherService(profile_.get(), fake_cryptauth_service_.get(),
+                              network_state_handler()));
   }
 
   void ShutdownTetherService() {
@@ -122,7 +143,7 @@ class TetherServiceTest : public chromeos::NetworkStateTest {
       mock_cryptauth_device_manager_;
   std::unique_ptr<cryptauth::FakeCryptAuthService> fake_cryptauth_service_;
   scoped_refptr<device::MockBluetoothAdapter> mock_adapter_;
-  std::unique_ptr<TetherService> tether_service_;
+  std::unique_ptr<TestTetherService> tether_service_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TetherServiceTest);
@@ -206,4 +227,26 @@ TEST_F(TetherServiceTest, TestEnabled) {
                 chromeos::NetworkTypePattern::Tether()));
   EXPECT_TRUE(
       profile_->GetPrefs()->GetBoolean(prefs::kInstantTetheringEnabled));
+}
+
+// Test against a past defect that made TetherService and NetworkStateHandler
+// repeatly update technology state after the other did so. TetherService should
+// only update technology state if NetworkStateHandler has provided a different
+// state than the user preference.
+TEST_F(TetherServiceTest, TestEnabledMultipleChanges) {
+  CreateTetherService();
+
+  EXPECT_EQ(0, tether_service_->updated_technology_state_count());
+
+  SetTetherTechnologyStateEnabled(false);
+  SetTetherTechnologyStateEnabled(false);
+  SetTetherTechnologyStateEnabled(false);
+
+  EXPECT_EQ(1, tether_service_->updated_technology_state_count());
+
+  SetTetherTechnologyStateEnabled(true);
+  SetTetherTechnologyStateEnabled(true);
+  SetTetherTechnologyStateEnabled(true);
+
+  EXPECT_EQ(2, tether_service_->updated_technology_state_count());
 }
