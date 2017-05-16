@@ -15,7 +15,6 @@
 <translation id="1023220960495960452">Átírás (vanakkam → வணக்கம்)</translation>
 <translation id="1026822031284433028">Kép betöltése</translation>
 <translation id="1029317248976101138">Nagyítás</translation>
-<translation id="1030173864176315846">Sikeresen nyomtatott <ph name="PAGE_NUMBER" /> oldalt a(z) <ph name="PRINTER_NAME" /> segítségével</translation>
 <translation id="1031362278801463162">Előnézet betöltése</translation>
 <translation id="103279545524624934">Szabadítson fel tárhelyet az Android-alkalmazások elindításához.</translation>
 <translation id="1033780634303702874">Hozzáférés a soros eszközökhöz</translation>
@@ -149,7 +148,6 @@
     <ph name="BR" />
     Kérjük, hogy a következő képernyőn küldjön visszajelzést: visszajelzésével segítséget nyújt a probléma kijavításához.</translation>
 <translation id="121783623783282548">A jelszavak nem egyeznek.</translation>
-<translation id="1218323606465324064"><ph name="PAGE_NUMBER" /> oldal nyomtatása a(z) <ph name="PRINTER_NAME" /> segítségével</translation>
 <translation id="122082903575839559">Tanúsítvány aláírási algoritmusa</translation>
 <translation id="1221024147024329929">PKCS #1 MD2 RSA titkosítással</translation>
 <translation id="1221825588892235038">Csak a kijelölt</translation>
@@ -509,6 +507,7 @@
 <translation id="1699395855685456105">Hardver ellenőrzése:</translation>
 <translation id="1700199471143028312">Rendszergazdája nem engedélyezi felügyelt felhasználók létrehozását.</translation>
 <translation id="1701062906490865540">Személy eltávolítása</translation>
+<translation id="1701364987952948449">Böngészés vendégként</translation>
 <translation id="1706586824377653884">A rendszergazda által hozzáadva</translation>
 <translation id="1706625117072057435">Nagyítási/kicsinyítési szintek</translation>
 <translation id="1707463636381878959">A hálózat megosztása más felhasználókkal</translation>
@@ -754,7 +753,6 @@
 <translation id="2114224913786726438">Modulok (<ph name="TOTAL_COUNT" />) - Nincs észlelt konfliktus</translation>
 <translation id="2114326799768592691">&amp;Keret újratöltése</translation>
 <translation id="2115103655317273167">Küldés telefonra</translation>
-<translation id="2115291620696624944">Hiba <ph name="PAGE_NUMBER" /> oldal nyomtatása közben a(z) <ph name="PRINTER_NAME" /> segítségével</translation>
 <translation id="2115926821277323019">Érvényes URL-nek kell lennie</translation>
 <translation id="2115946962706216358">Nem sikerült a gépet a domainhez csatlakoztatni. Ennek az lehet az oka, hogy elérte a fiókhoz tartozó maximálisan engedélyezett csatlakoztatott gépek számát a szerveren.</translation>
 <translation id="2116673936380190819">elmúlt óra</translation>
@@ -873,7 +871,6 @@ Miután létrehozott egy új felügyelt felhasználót, bármikor és bármilyen
 <translation id="2255317897038918278">Microsoft - időbélyegzés</translation>
 <translation id="225614027745146050">Üdvözöljük</translation>
 <translation id="225692081236532131">Aktiválás állapota</translation>
-<translation id="2260567344816042527">A Google Chrome mobiladatot fog használni, ha nincs kapcsolat másik hálózattal.</translation>
 <translation id="2262477216570151239">Ismétlés előtti késleltetés</translation>
 <translation id="226269835214688456">Ha kikapcsolja a Smart Lock Chromebookhoz funkciót, akkor a jövőben nem tudja feloldani Chrome-eszközeit a telefonja használatával, hanem be kell írnia jelszavát.</translation>
 <translation id="2263189956353037928">Kijelentkezés, majd ismételt bejelentkezés</translation>
@@ -895,6 +892,7 @@ Miután létrehozott egy új felügyelt felhasználót, bármikor és bármilyen
 <translation id="2282146716419988068">GPU-folyamat</translation>
 <translation id="2282155092769082568">URL automatikus konfigurációja:</translation>
 <translation id="2283117145434822734">F6</translation>
+<translation id="2286841657746966508">Számlázási cím</translation>
 <translation id="2286950485307333924">Most már bejelentkezett a Chrome-ba</translation>
 <translation id="2287590536030307392">Az összes vezeték nélküli hálózat kikapcsolása.</translation>
 <translation id="2288735659267887385">Kisegítő beállítások</translation>
@@ -1635,6 +1633,7 @@ Innen: <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3315158641124845231"><ph name="PRODUCT_NAME" /> elrejtése</translation>
 <translation id="3317459757438853210">Kétoldalas</translation>
 <translation id="3319048459796106952">Új &amp;inkognitóablak</translation>
+<translation id="3320021301628644560">Számlázási cím hozzáadása</translation>
 <translation id="3320859581025497771">adathordozó</translation>
 <translation id="3323447499041942178">Szövegmező</translation>
 <translation id="3324301154597925148">Erre a keresési oldalra számított?</translation>
@@ -1833,7 +1832,6 @@ Innen: <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3618849550573277856">A(z) „<ph name="LOOKUP_STRING" />” keresése</translation>
 <translation id="3620292326130836921">Mindenről készült biztonsági másolat!</translation>
 <translation id="3623574769078102674">A felügyelt felhasználó felettese <ph name="MANAGER_EMAIL" /> lesz.</translation>
-<translation id="3624814222765772771">Az akkumulátor töltöttségi szintje túl alacsony a frissítéshez (<ph name="PROGRESS_PERCENT" />%)</translation>
 <translation id="3625870480639975468">Nagyítás alaphelyzetbe állítása</translation>
 <translation id="3626281679859535460">Fényerő</translation>
 <translation id="3627052133907344175">A bővítmény a(z) „<ph name="IMPORT_NAME" />” legalább „<ph name="IMPORT_VERSION" />” verzióját igényli, ám csak a(z) „<ph name="INSTALLED_VERSION" />” verzió van telepítve.</translation>
@@ -3029,7 +3027,6 @@ Egyes webhelyek például válaszolhatnak rá úgy, hogy olyan hirdetéseket jel
 <translation id="5454166040603940656"><ph name="PROVIDER" /> szolgáltatóval</translation>
 <translation id="5457113250005438886">Érvénytelen</translation>
 <translation id="5457459357461771897">Fotók, zeneszámok és más médiatartalmak olvasása és törlése a számítógépről</translation>
-<translation id="5457599981699367932">Böngészés vendégként</translation>
 <translation id="5463275305984126951"><ph name="LOCATION" /> indexe</translation>
 <translation id="5463856536939868464">Rejtett könyvjelzőket tartalmazó menü</translation>
 <translation id="5464632865477611176">Futtatás most</translation>
@@ -3487,7 +3484,6 @@ Győződjön meg arról, hogy nem ad ki bizalmas adatokat.</translation>
 <translation id="6181431612547969857">Letöltés letiltva</translation>
 <translation id="6185132558746749656">Eszközhely</translation>
 <translation id="6185696379715117369">Lapozás felfelé</translation>
-<translation id="618807527697571179">Nem sikerült észlelni nyomtatója modelljét. Válasszon gyártót és modellt a listából.</translation>
 <translation id="6188939051578398125">Adjon meg neveket vagy címeket.</translation>
 <translation id="6189412234224385711">Megnyitás a következővel: <ph name="EXTENSION_NAME" /></translation>
 <translation id="6196640612572343990">Harmadik féltől származó cookie-k letiltása</translation>
@@ -3725,6 +3721,7 @@ Győződjön meg arról, hogy nem ad ki bizalmas adatokat.</translation>
 <translation id="6509136331261459454">Más felhasználók kezelése...</translation>
 <translation id="6509207748479174212">Médiaengedély</translation>
 <translation id="6510568984200103950">Kevesebb beállítás</translation>
+<translation id="6513247462497316522">A Google Chrome mobil-adatforgalmat fog használni, ha nem kapcsolódik másik hálózathoz.</translation>
 <translation id="6514565641373682518">Ez az oldal letiltotta az egérmutatóját.</translation>
 <translation id="6518014396551869914">Ké&amp;p másolása</translation>
 <translation id="651942933739530207">Szeretné, ha a(z) <ph name="APP_NAME" /> megosztaná az Ön képernyőjét és a hangkimenetét?</translation>

@@ -27,7 +27,6 @@
 Чтобы использовать эту функцию, необходимо включить Bluetooth и доступ к геоданным.</translation>
 <translation id="124678866338384709">Закрыть вкладку</translation>
 <translation id="1258753120186372309">Дудл Google: <ph name="DOODLE_DESCRIPTION" /></translation>
-<translation id="1265597927250775944">Удаление истории и подсказок в адресной строке.</translation>
 <translation id="1272079795634619415">Остановить</translation>
 <translation id="1283039547216852943">Нажмите, чтобы развернуть</translation>
 <translation id="1285320974508926690">Никогда не переводить этот сайт</translation>
@@ -263,7 +262,6 @@
 <translation id="3859306556332390985">Перемотать вперед</translation>
 <translation id="3894427358181296146">Добавление папки</translation>
 <translation id="3895926599014793903">Принудительно изменять масштаб</translation>
-<translation id="3915590178385207649">Удаление истории на всех устройствах, где выполнен вход в аккаунт. Другие действия в вашем аккаунте Google можно просмотреть на странице <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="3917783807003067648">Доступ к геоданным запрещен</translation>
 <translation id="3927692899758076493">Без засечек</translation>
 <translation id="3928666092801078803">Объединить данные</translation>
@@ -609,7 +607,6 @@
 <translation id="7423098979219808738">Всегда спрашивать</translation>
 <translation id="7437998757836447326">Выход из Chrome</translation>
 <translation id="7445411102860286510">Разрешить сайтам автоматически воспроизводить видео без звука (рекомендуется)</translation>
-<translation id="7449574997654022410">Удаление истории и подсказок в адресной строке. Другие действия в вашем аккаунте Google можно просмотреть на странице <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="7464701184726199289">Синхронизированные данные будут удалены со всех устройств. Настройки сайтов не изменятся, поэтому данные о вашей работе в Интернете сохранятся. <ph name="BEGIN_LINK" />Подробнее…<ph name="END_LINK" /></translation>
 <translation id="7473891865547856676">Пропустить</translation>
 <translation id="7475192538862203634">Если эта проблема возникает часто, узнайте, <ph name="BEGIN_LINK" />как ее решить<ph name="END_LINK" />.</translation>

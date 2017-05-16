@@ -27,7 +27,6 @@
 Heu de tenir activats el Bluetooth i la ubicació per poder utilitzar el Web físic.</translation>
 <translation id="124678866338384709">Tanca la pestanya actual</translation>
 <translation id="1258753120186372309">Doodle de Google: <ph name="DOODLE_DESCRIPTION" /></translation>
-<translation id="1265597927250775944">Esborra l'historial i els suggeriments de la barra d'adreces.</translation>
 <translation id="1272079795634619415">Atura</translation>
 <translation id="1283039547216852943">Toca per desplegar</translation>
 <translation id="1285320974508926690">No tradueixis mai aquest lloc</translation>
@@ -113,14 +112,14 @@ Heu de tenir activats el Bluetooth i la ubicació per poder utilitzar el Web fí
 <translation id="2100273922101894616">Inici de sessió automàtic</translation>
 <translation id="2111511281910874386">Vés a la pàgina</translation>
 <translation id="2126426811489709554">Amb tecnologia de Chrome</translation>
-<translation id="2131665479022868825">Dades desades: <ph name="DATA" /></translation>
+<translation id="2131665479022868825">Dades estalviades: <ph name="DATA" /></translation>
 <translation id="213279576345780926">Pestanya <ph name="TAB_TITLE" /> tancada</translation>
 <translation id="2139186145475833000">Afegeix a pantalla d'inici</translation>
 <translation id="2146738493024040262">Obre l'aplicació instantània</translation>
 <translation id="2148716181193084225">Avui</translation>
 <translation id="2154710561487035718">Copia l'URL</translation>
 <translation id="2156074688469523661">Llocs restants (<ph name="NUMBER_OF_SITES" />)</translation>
-<translation id="219985413780390209">Protegeix-me a mi i el meu dispositiu de llocs perillosos</translation>
+<translation id="219985413780390209">Protegeix-me a mi i al meu dispositiu de llocs perillosos</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" />, aplicació web. <ph name="APP_URL" /></translation>
 <translation id="2246961355222023276">Dades utilitzades:</translation>
 <translation id="2268044343513325586">Restringeix</translation>
@@ -171,7 +170,7 @@ Heu de tenir activats el Bluetooth i la ubicació per poder utilitzar el Web fí
 <translation id="2842985007712546952">Carpeta principal</translation>
 <translation id="2870560284913253234">Lloc</translation>
 <translation id="2874939134665556319">Pista anterior</translation>
-<translation id="2888126860611144412">Quant a Chrome </translation>
+<translation id="2888126860611144412">Sobre Chrome</translation>
 <translation id="2891154217021530873">Atura la càrrega de la pàgina</translation>
 <translation id="2900528713135656174">Crea un esdeveniment</translation>
 <translation id="2902702728133930130">S'ha produït un error inesperat amb Chrome durant l'arrencada.</translation>
@@ -224,7 +223,7 @@ Heu de tenir activats el Bluetooth i la ubicació per poder utilitzar el Web fí
 <translation id="3435896845095436175">Activa</translation>
 <translation id="3443221991560634068">Torna a carregar la pàgina actual</translation>
 <translation id="3452612588551937789">Inicieu la sessió amb el compte de Google per tenir les adreces d'interès, l'historial, les contrasenyes i altres opcions de configuració en tots els dispositius.</translation>
-<translation id="3487093336331957349">Suggeriments sobre la cerca i el lloc</translation>
+<translation id="3487093336331957349">Suggeriments de cerques i llocs</translation>
 <translation id="3492207499832628349">Pestanya d'incògnit nova</translation>
 <translation id="3493531032208478708"><ph name="BEGIN_LINK" />Més informació<ph name="END_LINK" /> sobre el contingut suggerit</translation>
 <translation id="3518985090088779359">Accepta i continua</translation>
@@ -263,7 +262,6 @@ Per ajustar el terme de la cerca, manteniu-lo premut per seleccionar-lo. Per def
 <translation id="3859306556332390985">Avança</translation>
 <translation id="3894427358181296146">Afegiu una carpeta</translation>
 <translation id="3895926599014793903">Força l'activació del zoom</translation>
-<translation id="3915590178385207649">Esborra l'historial de tots els dispositius en què tinguis iniciada la sessió. Pots consultar altres activitats del teu compte de Google a <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="3917783807003067648">La ubicació està bloquejada</translation>
 <translation id="3927692899758076493">Sans Serif</translation>
 <translation id="3928666092801078803">Combina les meves dades</translation>
@@ -609,7 +607,6 @@ Per exemple, és possible que alguns llocs web responguin a aquesta sol·licitud
 <translation id="7423098979219808738">Pregunta-m'ho abans</translation>
 <translation id="7437998757836447326">Tancar la sessió de Chrome</translation>
 <translation id="7445411102860286510">Permet que els llocs reprodueixin automàticament vídeos silenciats (opció recomanada)</translation>
-<translation id="7449574997654022410">Esborra l'historial i els suggeriments de la barra d'adreces. Consulta altres activitats del teu compte de Google a <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="7464701184726199289">S'esborraran les dades sincronitzades de tots els dispositius. La configuració desada del lloc no se suprimirà i és possible que reflecteixi els vostres hàbits de navegació. <ph name="BEGIN_LINK" />Més informació<ph name="END_LINK" /></translation>
 <translation id="7473891865547856676">No, gràcies</translation>
 <translation id="7475192538862203634">Si això passa sovint, proveu aquests <ph name="BEGIN_LINK" />suggeriments<ph name="END_LINK" />.</translation>

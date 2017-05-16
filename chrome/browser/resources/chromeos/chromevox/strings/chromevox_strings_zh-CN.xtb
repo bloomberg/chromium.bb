@@ -190,7 +190,7 @@
 <translation id="2972205263822847197">提示</translation>
 <translation id="2998131015536248178">上一个字符</translation>
 <translation id="2999559350546931576">调低音高</translation>
-<translation id="2999945368667127852">不存在下一个媒体小部件。</translation>
+<translation id="2999945368667127852">不存在下一个媒体微件。</translation>
 <translation id="3012414509011670858">不存在上一章节。</translation>
 <translation id="3014130421870723208">@编辑 8 点式盲文</translation>
 <translation id="3030432017085518523">菜单项单选按钮</translation>
@@ -713,7 +713,7 @@
 <translation id="7604451927827590395">hdng</translation>
 <translation id="7609342235116740824">读出当前页面的网址</translation>
 <translation id="7609363189280667021">切换盲文字幕</translation>
-<translation id="762020119231868829">暂停目前正在播放的所有媒体小部件</translation>
+<translation id="762020119231868829">暂停目前正在播放的所有媒体微件</translation>
 <translation id="7625690649919402823">下一个表格</translation>
 <translation id="7628927569678398026"><ph name="LOCALE" /> (<ph name="VARIANT" />)，等级：<ph name="GRADE" /></translation>
 <translation id="7641134354185483015">不存在上一个3级标题。</translation>
@@ -842,7 +842,7 @@
 <translation id="9082874451376019682">不存在上一个滑块。</translation>
 <translation id="9089864840575085222">循环输入回显</translation>
 <translation id="9105227991373418255">剪切 $1。</translation>
-<translation id="9107530006868467849">不存在上一个媒体小部件。</translation>
+<translation id="9107530006868467849">不存在上一个媒体微件。</translation>
 <translation id="9108370397979208512">数学</translation>
 <translation id="9108589040018540527">scbr</translation>
 <translation id="911476240645808512">{COUNT,plural, =1{1个百分号}other{#个百分号}}</translation>

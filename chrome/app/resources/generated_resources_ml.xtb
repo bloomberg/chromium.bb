@@ -15,7 +15,6 @@
 <translation id="1023220960495960452">ലിപ്യന്തരണം (vanakkam → வணக்கம்)</translation>
 <translation id="1026822031284433028">ചിത്രം ലോഡുചെയ്യുക</translation>
 <translation id="1029317248976101138">സൂം ചെയ്യുക</translation>
-<translation id="1030173864176315846"><ph name="PRINTER_NAME" /> പ്രിന്ററിൽ <ph name="PAGE_NUMBER" /> പേജുകൾ അച്ചടിച്ചു</translation>
 <translation id="1031362278801463162">പ്രിവ്യൂ ലോഡുചെയ്യുന്നു...</translation>
 <translation id="103279545524624934">Android ആപ്‌സ് ആരംഭിക്കുന്നതിന്, ഡിസ്‌ക് ഇടം സൃഷ്‌ടിക്കുക.</translation>
 <translation id="1033780634303702874">നിങ്ങളുടെ സീരിയൽ ഉപകരണങ്ങൾ ആക്‌സസ്സുചെയ്യുക</translation>
@@ -149,7 +148,6 @@
     <ph name="BR" />
     അടുത്ത സ്‌ക്രീനിൽ, ഫീഡ്‌ബാക്ക് അയച്ച് പ്രശ്‌നം പരിഹരിക്കാൻ ഞങ്ങളെ സഹായിക്കുക.</translation>
 <translation id="121783623783282548">പാസ്‌വേഡുകൾ പൊരുത്തപ്പെടുന്നില്ല.</translation>
-<translation id="1218323606465324064"><ph name="PRINTER_NAME" /> പ്രിന്ററിൽ ഇപ്പോൾ <ph name="PAGE_NUMBER" /> പേജുകൾ അച്ചടിക്കുന്നു</translation>
 <translation id="122082903575839559">സര്‍‌ട്ടിഫിക്കറ്റ് സിഗ്‌നേച്ചര്‍‌ അല്‍‌ഗോരിതം</translation>
 <translation id="1221024147024329929">RSA എന്‍‌ക്രിപ്‌ഷനോടുകൂടിയ PKCS #1 MD2</translation>
 <translation id="1221825588892235038">തിരഞ്ഞെടുത്തവ മാത്രം</translation>
@@ -507,6 +505,7 @@
 <translation id="1699395855685456105">ഹാര്‍ഡ്‍വെയര്‍ അവലോകനം:</translation>
 <translation id="1700199471143028312">സൂപ്പർവൈസുചെയ്‌ത ഉപയോക്താക്കളെ സൃഷ്‌ടിക്കാൻ അഡ്‌മിനിസ്‌ട്രേറ്റർ നിങ്ങളെ അനുവദിക്കുന്നില്ല.</translation>
 <translation id="1701062906490865540">ഈ ഉപയോക്താവിനെ നീക്കംചെയ്യുക</translation>
+<translation id="1701364987952948449">അതിഥിയായി ബ്രൗസുചെയ്യുക</translation>
 <translation id="1706586824377653884">നിങ്ങളുടെ അഡ്‌മിനിസ്‌ട്രേറ്റർ ചേർത്തത്</translation>
 <translation id="1706625117072057435">സൂം നിലകൾ</translation>
 <translation id="1707463636381878959">മറ്റ് ഉപയോക്താക്കളുമായി ഈ നെറ്റ്‌വര്‍ക്ക് പങ്കിടുക</translation>
@@ -751,7 +750,6 @@
 <translation id="2114224913786726438">മൊഡ്യൂളുകള്‍ (<ph name="TOTAL_COUNT" />) - പൊരുത്തക്കേടുകളൊന്നും കണ്ടെത്തിയില്ല</translation>
 <translation id="2114326799768592691">റീലോഡും ഫ്രെയിമും</translation>
 <translation id="2115103655317273167">ഫോണിലേക്ക് അയയ്‌ക്കുക</translation>
-<translation id="2115291620696624944"><ph name="PRINTER_NAME" /> പ്രിന്ററിൽ <ph name="PAGE_NUMBER" /> പേജുകൾ അച്ചടിക്കുന്നതിൽ പിശക്</translation>
 <translation id="2115926821277323019">സാധുവായ URL ആയിരിക്കണം</translation>
 <translation id="2115946962706216358">മെഷീനിനെ ഡൊമെയ്‌നിലേക്ക് ചേർക്കാനായില്ല. ഇത്, സെർവറിലെ നിങ്ങളുടെ അക്കൗണ്ടിൽ ചേർക്കാനാവുന്ന മെഷീനുകളുടെ പരമാവധി എണ്ണം കവിയുന്നതിനാലായിരിക്കാം.</translation>
 <translation id="2116673936380190819">കഴിഞ്ഞ മണിക്കൂര്‍</translation>
@@ -870,7 +868,6 @@
 <translation id="2255317897038918278">Microsoft Time Stamping</translation>
 <translation id="225614027745146050">സ്വാഗതം</translation>
 <translation id="225692081236532131">സജീവമാക്കല്‍ സ്റ്റാറ്റസ്</translation>
-<translation id="2260567344816042527">നിങ്ങൾ മറ്റൊരു നെറ്റ്‌വർക്കിൽ കണക്റ്റുചെയ്‌തിട്ടില്ലെങ്കിൽ Google Chrome സെല്ലുലാർ ഡാറ്റ ഉപയോഗിക്കും.</translation>
 <translation id="2262477216570151239">ആവർത്തിക്കുന്നതിന് മുമ്പുള്ള സമയം</translation>
 <translation id="226269835214688456">Chrome-നുള്ള Smart Lock ഓഫാക്കിയെങ്കിൽ, ഫോൺ ഉപയോഗിച്ച് നിങ്ങളുടെ Chrome ഉപകരണങ്ങൾ അൺലോക്കുചെയ്യേണ്ടതില്ല. പാസ്‌വേഡ് ടൈപ്പുചെയ്യേണ്ടതുണ്ട്.</translation>
 <translation id="2263189956353037928">സൈൻ ഔട്ട് ചെ‌യ്‌ത് വീണ്ടും സൈൻ ഇൻ ചെയ്യുക</translation>
@@ -892,6 +889,7 @@
 <translation id="2282146716419988068">GPU പ്രോസസ്സ്</translation>
 <translation id="2282155092769082568">സ്വയമേവ കോൺഫിഗറേഷൻ URL:</translation>
 <translation id="2283117145434822734">F6</translation>
+<translation id="2286841657746966508">ബില്ലിംഗ് വിലാസം</translation>
 <translation id="2286950485307333924">നിങ്ങൾ ഇപ്പോൾ Chrome-ൽ സൈൻ ഇൻ ചെയ്‌തു</translation>
 <translation id="2287590536030307392">എല്ലാ വയർലെസ്സ് കണക്ഷനുകളും ഓഫുചെയ്യുക</translation>
 <translation id="2288735659267887385">ഉപയോഗസഹായി ക്രമീകരണങ്ങൾ</translation>
@@ -1630,6 +1628,7 @@
 <translation id="3315158641124845231"><ph name="PRODUCT_NAME" /> മറയ്‌ക്കുക</translation>
 <translation id="3317459757438853210">രണ്ട്-വശങ്ങളുള്ള</translation>
 <translation id="3319048459796106952">പുതിയ &amp;അദൃശ്യ വിന്‍ഡോ</translation>
+<translation id="3320021301628644560">ബില്ലിംഗ് വിലാസം ചേർക്കുക</translation>
 <translation id="3320859581025497771">നിങ്ങളുടെ കാരിയര്‍ </translation>
 <translation id="3323447499041942178">പാഠബോക്‌സ്</translation>
 <translation id="3324301154597925148">നിങ്ങൾ പ്രതീക്ഷിച്ച തിരയൽ പേജ് ഇതാണോ?</translation>
@@ -1828,7 +1827,6 @@
 <translation id="3618849550573277856">“<ph name="LOOKUP_STRING" />” തിരയുക</translation>
 <translation id="3620292326130836921">എല്ലാം ബാക്കപ്പുചെയ്‌തു!</translation>
 <translation id="3623574769078102674">സൂപ്പർവൈസ് ചെയ്‌ത ഈ ഉപയോക്താവിനെ <ph name="MANAGER_EMAIL" /> നിയന്ത്രിക്കും.</translation>
-<translation id="3624814222765772771">ബാറ്ററി ചാർജ്, സിസ്‌റ്റം അപ്‌ഡേറ്റ് ചെയ്യുന്നതിനാവശ്യമായതിലും വളരെ കുറവാണ് (<ph name="PROGRESS_PERCENT" />%)</translation>
 <translation id="3625870480639975468">സൂം പുനഃസജ്ജമാക്കുക</translation>
 <translation id="3626281679859535460">മിഴിവ്</translation>
 <translation id="3627052133907344175">വിപുലീകരണത്തിന് "<ph name="IMPORT_VERSION" />" എന്ന പതിപ്പെങ്കിലുമുള്ള "<ph name="IMPORT_NAME" />" ആവശ്യമാണെങ്കിലും "<ph name="INSTALLED_VERSION" />" പതിപ്പ് മാത്രം ഇൻസ്‌റ്റാളുചെയ്‌തിരിക്കുന്നു.</translation>
@@ -2219,7 +2217,7 @@
 <translation id="4240069395079660403"><ph name="PRODUCT_NAME" /> ഈ ഭാഷയില്‍ പ്രദര്‍ശിപ്പിക്കാന്‍ കഴിയില്ല</translation>
 <translation id="4240511609794012987">പങ്കിട്ട മെമ്മറി</translation>
 <translation id="4242577469625748426">ഉപകരണത്തിൽ നയ ക്രമീകരണങ്ങൾ ഇൻസ്റ്റാളുചെയ്യുന്നതിൽ പരാജയപ്പെട്ടു: <ph name="VALIDATION_ERROR" />.</translation>
-<translation id="4244238649050961491">കൂടുതൽ സ്‌റ്റൈലസ് ആപ്‌സുകൾ കാണുക</translation>
+<translation id="4244238649050961491">കൂടുതൽ സ്‌റ്റൈലസ് ആപ്പുകൾ കാണുക</translation>
 <translation id="424546999567421758">ഉയർന്ന ഡിസ്‌ക് ഉപയോഗം കണ്ടെത്തി</translation>
 <translation id="424726838611654458">എപ്പോഴും Adobe Reader-ൽ തുറക്കുക</translation>
 <translation id="4249248555939881673">നെറ്റ്‌വർക്ക് കണക്ഷനുവേണ്ടി കാത്തിരിക്കുന്നു...</translation>
@@ -3020,7 +3018,6 @@
 <translation id="5454166040603940656"><ph name="PROVIDER" /> എന്നതിനൊപ്പം</translation>
 <translation id="5457113250005438886">അസാധുവാണ്</translation>
 <translation id="5457459357461771897">നിങ്ങളുടെ കമ്പ്യൂട്ടറിൽ നിന്ന് ഫോട്ടോകളും സംഗീതവും മറ്റ് മീഡിയയും റീഡുചെയ്യുക, ഇല്ലാതാക്കുക</translation>
-<translation id="5457599981699367932">അതിഥിയായി ബ്രൌസുചെയ്യുക</translation>
 <translation id="5463275305984126951"><ph name="LOCATION" /> ന്റെ സൂചിക</translation>
 <translation id="5463856536939868464">മെനുവില്‍‌ മറച്ച ബുക്ക്‍മാര്‍‌ക്കുകള്‍‌ അടങ്ങിയിരിക്കുന്നു</translation>
 <translation id="5464632865477611176">ഈ സമയം പ്രവര്‍ത്തിപ്പിക്കുക</translation>
@@ -3113,7 +3110,7 @@
 <translation id="558563010977877295">ഒരു നിർദ്ദിഷ്‌ട പേജോ ഒരു കൂട്ടം പേജുകളോ തുറക്കുക</translation>
 <translation id="5585912436068747822">ഫോർമാറ്റുചെയ്യൽ പരാജയപ്പെട്ടു</translation>
 <translation id="5588033542900357244">(<ph name="RATING_COUNT" />)</translation>
-<translation id="558918721941304263">ആപ്‌സുകൾ ലോഡുചെയ്യുന്നു...</translation>
+<translation id="558918721941304263">ആപ്പുകൾ ലോഡുചെയ്യുന്നു...</translation>
 <translation id="5592595402373377407">ഇതുവരെയും മതിയായ ഡാറ്റ ലഭ്യമല്ല.</translation>
 <translation id="5595485650161345191">വിലാസം എഡിറ്റുചെയ്യുക</translation>
 <translation id="5601503069213153581">PIN</translation>
@@ -3356,7 +3353,7 @@
 <translation id="5979421442488174909">&amp; <ph name="LANGUAGE" /> ലേക്ക് വിവർത്തനം ചെയ്യുക</translation>
 <translation id="5982621672636444458">അടുക്കൽ ഓപ്‌ഷനുകൾ</translation>
 <translation id="5984222099446776634">സമീപകാലത്ത് സന്ദർശിച്ചത്</translation>
-<translation id="5989712527536636369"><ph name="BEGIN_PARAGRAPH1" />ബാറ്ററി നില, ആപ്‌സുകൾ എത്രതവണ ഉപയോഗിക്കുന്നുവെന്നത്, നെറ്റ്‌വർക്ക് കണക്ഷനുകളുടെ (Wi-Fi, Bluetooth എന്നിവ പോലുള്ള) നിലവാരവും ദൈർഘ്യവും, കാര്യങ്ങൾ ശരിയായി പ്രവർത്തിക്കാത്തപ്പോഴുള്ള ക്രാഷ് റിപ്പോർട്ടുകൾ എന്നിവപോലുള്ള നിങ്ങളുടെ ഉപകരണത്തെക്കുറിച്ചും അത് ഉപയോഗിക്കുന്ന വിധത്തെക്കുറിച്ചുമുള്ള പൊതുവായ വിവരങ്ങളാണിത്. ഇത് എല്ലാവർക്കുമായി Google-ന്റെ ഉൽപ്പന്നങ്ങളും സേവനങ്ങളും മെച്ചപ്പെടുത്താൻ ഉപയോഗിക്കും. Android ഡെവലപ്പർമാർ പോലുള്ള പങ്കാളികൾക്ക് അവരുടെ ആപ്‌സുകളും ഉൽപ്പന്നങ്ങളും മികച്ചതാക്കുന്നതിനും സമാഹരിച്ച ചില വിവരങ്ങൾ സഹായിക്കും.<ph name="END_PARAGRAPH1" />
+<translation id="5989712527536636369"><ph name="BEGIN_PARAGRAPH1" />ബാറ്ററി നില, ആപ്പുകൾ എത്രതവണ ഉപയോഗിക്കുന്നുവെന്നത്, നെറ്റ്‌വർക്ക് കണക്ഷനുകളുടെ (Wi-Fi, Bluetooth എന്നിവ പോലുള്ള) നിലവാരവും ദൈർഘ്യവും, കാര്യങ്ങൾ ശരിയായി പ്രവർത്തിക്കാത്തപ്പോഴുള്ള ക്രാഷ് റിപ്പോർട്ടുകൾ എന്നിവപോലുള്ള നിങ്ങളുടെ ഉപകരണത്തെക്കുറിച്ചും അത് ഉപയോഗിക്കുന്ന വിധത്തെക്കുറിച്ചുമുള്ള പൊതുവായ വിവരങ്ങളാണിത്. ഇത് എല്ലാവർക്കുമായി Google-ന്റെ ഉൽപ്പന്നങ്ങളും സേവനങ്ങളും മെച്ചപ്പെടുത്താൻ ഉപയോഗിക്കും. Android ഡെവലപ്പർമാർ പോലുള്ള പങ്കാളികൾക്ക് അവരുടെ ആപ്‌സുകളും ഉൽപ്പന്നങ്ങളും മികച്ചതാക്കുന്നതിനും സമാഹരിച്ച ചില വിവരങ്ങൾ സഹായിക്കും.<ph name="END_PARAGRAPH1" />
     <ph name="BEGIN_PARAGRAPH2" />നിങ്ങൾക്കിത് എപ്പോൾ വേണമെങ്കിലും Android ആപ്‌സ് ക്രമീകരണത്തിൽ ഓണാക്കാനോ ഓഫാക്കാനോ കഴിയും. സിസ്‌റ്റം അപ്‌ഡേറ്റുകളും സുരക്ഷയും പോലുള്ള അടിസ്ഥാന സേവനങ്ങൾ ലഭ്യമാക്കുന്നതിനാവശ്യമായ വിവരങ്ങൾ അയയ്‌ക്കാനുള്ള ഉപകരണത്തിന്റെ കഴിവിനെ ഇത് ബാധിക്കില്ല.<ph name="END_PARAGRAPH2" /></translation>
 <translation id="5991049340509704927">മാഗ്‌നിഫൈ ചെയ്യുക</translation>
 <translation id="5993332328670040093">നിങ്ങളുടെ ഡാറ്റ ഉപയോഗം ഇനി കണക്കാക്കുന്നതല്ല.</translation>
@@ -3473,7 +3470,6 @@
 <translation id="6181431612547969857">ഡൗൺലോഡ് തടഞ്ഞു</translation>
 <translation id="6185132558746749656">ഉപകരണ ലൊക്കേഷൻ</translation>
 <translation id="6185696379715117369">Page up</translation>
-<translation id="618807527697571179">നിങ്ങളുടെ പ്രിന്റർ മോഡൽ കണ്ടെത്താനായില്ല. ലിസ്റ്റിൽ നിന്ന് ഒരു നിർമ്മാതാവിനെയും മോഡലിനെയും തിരഞ്ഞെടുക്കുക.</translation>
 <translation id="6188939051578398125">നാമങ്ങളും വിലാസങ്ങളും നല്‍കുക.</translation>
 <translation id="6189412234224385711"><ph name="EXTENSION_NAME" /> ഉപയോഗിച്ച് തുറക്കുക</translation>
 <translation id="6196640612572343990">മൂന്നാം കക്ഷി കുക്കികള്‍ ബ്ലോക്കുചെയ്യുക</translation>
@@ -3549,7 +3545,7 @@
 <translation id="6295158916970320988">എല്ലാ സൈറ്റുകളും</translation>
 <translation id="6295855836753816081">സംരക്ഷിക്കുന്നു...</translation>
 <translation id="629730747756840877">അക്കൗണ്ട്</translation>
-<translation id="6298962879096096191">Android ആപ്‌സുകൾ ഇൻസ്‌റ്റാൾ ചെയ്യാൻ Google Play ഉപയോഗിക്കുക</translation>
+<translation id="6298962879096096191">Android ആപ്പുകൾ ഇൻസ്‌റ്റാൾ ചെയ്യാൻ Google Play ഉപയോഗിക്കുക</translation>
 <translation id="630065524203833229">&amp;പുറത്തുപോകുക</translation>
 <translation id="6305012486838822927">ലാവോ കീബോർഡ്</translation>
 <translation id="6305607932814307878">ആഗോള നയം:</translation>
@@ -3710,6 +3706,8 @@
 <translation id="6509136331261459454">മറ്റ് ഉപയോക്താക്കളെ നിയന്ത്രിക്കുക...</translation>
 <translation id="6509207748479174212">മീഡിയ ലൈസൻസ്</translation>
 <translation id="6510568984200103950">കുറച്ച് ക്രമീകരണങ്ങൾ</translation>
+<translation id="6513247462497316522">നിങ്ങൾ മറ്റ് നെറ്റ്‌വെർക്കിലേക്ക് ബന്ധിക്കപ്പെട്ടിട്ടില്ലെങ്കിൽ 
+Google Chrome മൊബൈൽ ഡാറ്റ ഉപയോഗിക്കും.</translation>
 <translation id="6514565641373682518">ഈ പേജ് നിങ്ങളുടെ മൗസ് കഴ്‌സർ അപ്രാപ്‌തമാക്കി.</translation>
 <translation id="6518014396551869914">ഇമേജ് പകര്‍ത്തൂ&amp;</translation>
 <translation id="651942933739530207">നിങ്ങളുടെ <ph name="APP_NAME" /> സ്ക്രീനും ഓഡിയോ ഔട്ട്‌പുട്ടും പങ്കിടണോ?</translation>

@@ -45,7 +45,6 @@
 <translation id="7003844668372540529">Hindi kilalang produkto na <ph name="PRODUCT_ID" /> mula sa <ph name="VENDOR_NAME" /></translation>
 <translation id="7217838517480956708">Kinakailangan ng administrator ng machine na ito na ma-install ang <ph name="EXTENSION_NAME" />. Hindi ito maaaring alisin o baguhin.</translation>
 <translation id="7581279002575751816">Hindi sinusuportahan ang mga NPAPI na plugin.</translation>
-<translation id="7809034755304591547">Ang <ph name="EXTENSION_NAME" /> (ID ng extension "<ph name="EXTENSION_ID" />") ay na-block ng administrator.</translation>
 <translation id="7972881773422714442">Mga Opsyon: <ph name="EXTENSIONOPTIONS_TAG_NAME" /></translation>
 <translation id="8035920974645200807">Nakaharap sa user</translation>
 <translation id="8047248493720652249">Nabigong pangalanan ng extension na ito ang download na "<ph name="ATTEMPTED_FILENAME" />" dahil nakatukoy ang isa pang extension (<ph name="EXTENSION_NAME" />) ng ibang filename na "<ph name="ACTUAL_FILENAME" />".</translation>

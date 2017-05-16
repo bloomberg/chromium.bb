@@ -15,7 +15,6 @@
 <translation id="1023220960495960452">लिप्यंतरण (vanakkam → வணக்கம்)</translation>
 <translation id="1026822031284433028">चित्र लोड करें</translation>
 <translation id="1029317248976101138">ज़ूम</translation>
-<translation id="1030173864176315846"><ph name="PRINTER_NAME" /> में सफलतापूर्वक <ph name="PAGE_NUMBER" /> पृष्ठों को प्रिंट किया गया</translation>
 <translation id="1031362278801463162">पूर्वावलोकन लोड हो रहा है</translation>
 <translation id="103279545524624934">Android ऐप्लिकेशन लॉन्च करने के लिए डिस्क में जगह खाली करें.</translation>
 <translation id="1033780634303702874">अपने सीरियल डिवाइस को एक्सेस करें</translation>
@@ -149,7 +148,6 @@
     <ph name="BR" />
     अगली स्क्रीन पर, समस्या को ठीक करने में सहायता के लिए कृपया फ़ीडबैक भेजें.</translation>
 <translation id="121783623783282548">पासवर्ड मेल नहीं खाते.</translation>
-<translation id="1218323606465324064"><ph name="PRINTER_NAME" /> में अब <ph name="PAGE_NUMBER" /> पृष्ठों को प्रिंट किया जा रहा है</translation>
 <translation id="122082903575839559">प्रमाणपत्र हस्ताक्षर कलन विधि</translation>
 <translation id="1221024147024329929">RSA सुरक्षित तरीका के साथ PKCS #1 MD2</translation>
 <translation id="1221825588892235038">केवल चयन</translation>
@@ -509,6 +507,7 @@
 <translation id="1699395855685456105">हार्डवेयर पुनरीक्षण:</translation>
 <translation id="1700199471143028312">आपका व्यवस्थापक आपको पर्यवेक्षित उपयोगकर्ता बनाने की अनुमति नहीं देता.</translation>
 <translation id="1701062906490865540">इस व्यक्ति को निकालें</translation>
+<translation id="1701364987952948449">अतिथि के रूप में ब्राउज़ करें</translation>
 <translation id="1706586824377653884">आपके व्यवस्थापक ने जोड़ा</translation>
 <translation id="1706625117072057435">ज़ूम स्तर</translation>
 <translation id="1707463636381878959">इस नेटवर्क को अन्य उपयोगकर्ताओं के साथ साझा करें</translation>
@@ -754,7 +753,6 @@
 <translation id="2114224913786726438">मॉड्यूल (<ph name="TOTAL_COUNT" />) - कोई विरोध नहीं मिले</translation>
 <translation id="2114326799768592691">&amp;फ़्रेम पुन: लोड करें</translation>
 <translation id="2115103655317273167">फ़ोन पर भेजें</translation>
-<translation id="2115291620696624944"><ph name="PRINTER_NAME" /> में <ph name="PAGE_NUMBER" /> पृष्ठों को प्रिंट करने में गड़बड़ी हुई</translation>
 <translation id="2115926821277323019">एक मान्य URL होना चाहिए</translation>
 <translation id="2115946962706216358">मशीन को डोमेन में शामिल नहीं किया जा सका. यह शायद सर्वर पर आपके खाते के लिए शामिल की जाने वाली मशीनों की अधिकतम स्वीकृत संख्या को पार करने के कारण हुआ.</translation>
 <translation id="2116673936380190819">पिछले घंटे</translation>
@@ -873,7 +871,6 @@
 <translation id="2255317897038918278">Microsoft Time Stamping</translation>
 <translation id="225614027745146050">आपका स्वागत है</translation>
 <translation id="225692081236532131">सक्रियण की स्थिति</translation>
-<translation id="2260567344816042527">यदि आप कि‍सी अन्‍य नेटवर्क से कनेक्‍ट नहीं हैं, तो Google Chrome सेल्युलर डेटा का उपयोग करेगा.</translation>
 <translation id="2262477216570151239">दोहराने से पहले विलंब</translation>
 <translation id="226269835214688456">यदि आप Chromebook के लिए Smart Lock को बंद कर देते हैं, तो आप अपने फ़ोन का उपयोग करके अपने Chrome डिवाइस अनलाॅक नहीं कर सकेंगे. आपको अपना पासवर्ड लिखना होगा.</translation>
 <translation id="2263189956353037928">साइन आउट करें और वापस प्रवेश करें</translation>
@@ -895,6 +892,7 @@
 <translation id="2282146716419988068">GPU प्रक्रिया</translation>
 <translation id="2282155092769082568">स्‍वतः कॉन्‍फ़िगरेशन URL:</translation>
 <translation id="2283117145434822734">F6</translation>
+<translation id="2286841657746966508">बिलिंग पता</translation>
 <translation id="2286950485307333924">अब आपने Chrome में प्रवेश कर लिया है</translation>
 <translation id="2287590536030307392">सभी वायरलेस कनेक्‍शन बंद करें.</translation>
 <translation id="2288735659267887385">एक्सेस-योग्यता सेटिंग</translation>
@@ -1634,6 +1632,7 @@
 <translation id="3315158641124845231">छुपाएं<ph name="PRODUCT_NAME" /></translation>
 <translation id="3317459757438853210">दोतरफा</translation>
 <translation id="3319048459796106952">नई &amp;गुप्त विंडो</translation>
+<translation id="3320021301628644560">बिलिंग पता जोड़ें</translation>
 <translation id="3320859581025497771">आपका कैरियर</translation>
 <translation id="3323447499041942178">टेक्स्ट बॉक्‍स</translation>
 <translation id="3324301154597925148">क्या यह वही खोज पेज है जिसकी आप अपेक्षा कर रहे थे?</translation>
@@ -1832,7 +1831,6 @@
 <translation id="3618849550573277856">“<ph name="LOOKUP_STRING" />” को खोजें</translation>
 <translation id="3620292326130836921">सभी का बैक अप लिया गया!</translation>
 <translation id="3623574769078102674">यह निगरानी में रखा गया उपयोगकर्ता <ph name="MANAGER_EMAIL" /> द्वारा प्रबंधित किया जाएगा.</translation>
-<translation id="3624814222765772771">अपडेट करने के लिए बैटरी बहुत कम है (<ph name="PROGRESS_PERCENT" />%)</translation>
 <translation id="3625870480639975468">ज़ूम रीसेट करें</translation>
 <translation id="3626281679859535460">स्क्रीन की रोशनी</translation>
 <translation id="3627052133907344175">एक्‍सटेंशन के लिए "<ph name="IMPORT_NAME" />" को न्‍यूनतम "<ph name="IMPORT_VERSION" />" वर्ज़न का होना चाहिए, लेकिन केवल "<ph name="INSTALLED_VERSION" />" वर्ज़न ही इंस्‍टॉल किया गया है.</translation>
@@ -3028,7 +3026,6 @@
 <translation id="5454166040603940656"><ph name="PROVIDER" /> के साथ</translation>
 <translation id="5457113250005438886">अमान्य</translation>
 <translation id="5457459357461771897">अपने कंप्यूटर से फ़ोटो, संगीत और अन्य मीडिया पढ़ें और हटाएं</translation>
-<translation id="5457599981699367932">अतिथि के रूप में ब्राउज़ करें</translation>
 <translation id="5463275305984126951"><ph name="LOCATION" /> का इंडेक्स</translation>
 <translation id="5463856536939868464">मेनू में छुपे बुकमार्क हैं</translation>
 <translation id="5464632865477611176">इस बार चलाएं</translation>
@@ -3485,7 +3482,6 @@
 <translation id="6181431612547969857">डाउनलोड अवरोधित किया गया</translation>
 <translation id="6185132558746749656">डिवाइस स्थान</translation>
 <translation id="6185696379715117369">Page up</translation>
-<translation id="618807527697571179">आपके प्रिंटर मॉडल का पता नहीं लगाया जा सका. सूची में से निर्माता और मॉडल चुनें.</translation>
 <translation id="6188939051578398125">नाम और पते दर्ज करें</translation>
 <translation id="6189412234224385711"><ph name="EXTENSION_NAME" /> से खोलें</translation>
 <translation id="6196640612572343990">तृतीय पक्ष कुकी ब्लॉक करें</translation>
@@ -3723,6 +3719,7 @@
 <translation id="6509136331261459454">अन्य उपयोगकर्ताओं को प्रबंधित करें...</translation>
 <translation id="6509207748479174212">मीडिया लाइसेंस</translation>
 <translation id="6510568984200103950">कम सेटिंग</translation>
+<translation id="6513247462497316522">यदि आप कि‍सी अन्‍य नेटवर्क से कनेक्‍ट न हों तो Google Chrome मोबाइल डेटा का उपयोग करेगा.</translation>
 <translation id="6514565641373682518">इस पेज ने आपका माउस कर्सर अक्षम कर दिया है.</translation>
 <translation id="6518014396551869914">चित्र की प्र&amp;तिलिपि बनाएं</translation>
 <translation id="651942933739530207">क्या आप चाहते हैं कि <ph name="APP_NAME" /> आपकी स्क्रीन और ऑडियो आउटपुट साझा करे?</translation>

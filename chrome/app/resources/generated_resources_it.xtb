@@ -15,7 +15,6 @@
 <translation id="1023220960495960452">Traslitterazione (vanakkam → வணக்கம்)</translation>
 <translation id="1026822031284433028">Carica immagine</translation>
 <translation id="1029317248976101138">Dimensioni dei caratteri</translation>
-<translation id="1030173864176315846"><ph name="PAGE_NUMBER" /> pagine stampate con <ph name="PRINTER_NAME" /></translation>
 <translation id="1031362278801463162">Caricamento anteprima in corso</translation>
 <translation id="103279545524624934">Libera spazio sul disco per avviare le app Android.</translation>
 <translation id="1033780634303702874">Accesso ai dispositivi seriali</translation>
@@ -149,7 +148,6 @@
     <ph name="BR" />
     Nella seguente schermata, invia un feedback per aiutarci a risolvere il problema.</translation>
 <translation id="121783623783282548">Le password non coincidono.</translation>
-<translation id="1218323606465324064">Stampa in corso di <ph name="PAGE_NUMBER" /> pagine con <ph name="PRINTER_NAME" /></translation>
 <translation id="122082903575839559">Algoritmo di firma certificato</translation>
 <translation id="1221024147024329929">PKCS #1 MD2 con crittografia RSA</translation>
 <translation id="1221825588892235038">Solo selezione</translation>
@@ -509,6 +507,7 @@ Tieni presente che il Bluetooth verrà attivato per tutti i dispositivi compatib
 <translation id="1699395855685456105">Revisione hardware:</translation>
 <translation id="1700199471143028312">L'amministratore non consente di creare utenti supervisionati.</translation>
 <translation id="1701062906490865540">Rimuovi questa persona</translation>
+<translation id="1701364987952948449">Naviga come ospite</translation>
 <translation id="1706586824377653884">Aggiunta dall'amministratore</translation>
 <translation id="1706625117072057435">Livelli di zoom</translation>
 <translation id="1707463636381878959">Condividi questa rete con altri utenti</translation>
@@ -754,7 +753,6 @@ Tieni presente che il Bluetooth verrà attivato per tutti i dispositivi compatib
 <translation id="2114224913786726438">Moduli (<ph name="TOTAL_COUNT" />). Nessun conflitto rilevato</translation>
 <translation id="2114326799768592691">Ricarica &amp;frame</translation>
 <translation id="2115103655317273167">Invia al telefono</translation>
-<translation id="2115291620696624944">Errore durante la stampa di <ph name="PAGE_NUMBER" /> pagine con <ph name="PRINTER_NAME" /></translation>
 <translation id="2115926821277323019">Specificare un URL valido</translation>
 <translation id="2115946962706216358">Aggiunta della macchina al dominio non riuscita. Ciò potrebbe essere dovuto al superamento del numero massimo di aggiunte delle macchine consentito per il tuo account sul server.</translation>
 <translation id="2116673936380190819">ultima ora</translation>
@@ -873,7 +871,6 @@ Dopo avere creato un nuovo utente supervisionato, puoi gestirne le impostazioni 
 <translation id="2255317897038918278">Timestamp Microsoft</translation>
 <translation id="225614027745146050">Benvenuto</translation>
 <translation id="225692081236532131">Stato attivazione</translation>
-<translation id="2260567344816042527">Google Chrome utilizzerà la rete dati quando non sarai connesso a un'altra rete.</translation>
 <translation id="2262477216570151239">Ritardo prima della ripetizione</translation>
 <translation id="226269835214688456">Se disattivi Smart Lock per Chromebook, non puoi sbloccare i tuoi dispositivi Chrome utilizzando il telefono. Dovrai digitare la password.</translation>
 <translation id="2263189956353037928">Esci e accedi nuovamente</translation>
@@ -895,6 +892,7 @@ Dopo avere creato un nuovo utente supervisionato, puoi gestirne le impostazioni 
 <translation id="2282146716419988068">Processo GPU</translation>
 <translation id="2282155092769082568">URL di configurazione automatica:</translation>
 <translation id="2283117145434822734">F6</translation>
+<translation id="2286841657746966508">Indirizzo di fatturazione</translation>
 <translation id="2286950485307333924">Hai eseguito l'accesso a Chrome</translation>
 <translation id="2287590536030307392">Disattiva tutte le connessioni wireless.</translation>
 <translation id="2288735659267887385">Impostazioni di accessibilità</translation>
@@ -1631,6 +1629,7 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="3315158641124845231">Nascondi <ph name="PRODUCT_NAME" /></translation>
 <translation id="3317459757438853210">Fronte retro</translation>
 <translation id="3319048459796106952">Nuova f&amp;inestra di navigazione in incognito</translation>
+<translation id="3320021301628644560">Aggiungi l'indirizzo di fatturazione</translation>
 <translation id="3320859581025497771">il tuo operatore</translation>
 <translation id="3323447499041942178">Casella di testo</translation>
 <translation id="3324301154597925148">È la pagina di ricerca prevista?</translation>
@@ -1829,7 +1828,6 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="3618849550573277856">Cerca "<ph name="LOOKUP_STRING" />"</translation>
 <translation id="3620292326130836921">Backup di tutti i contenuti completato.</translation>
 <translation id="3623574769078102674">Questo utente supervisionato verrà gestito da <ph name="MANAGER_EMAIL" />.</translation>
-<translation id="3624814222765772771">Livello della batteria troppo basso per eseguire l'aggiornamento (<ph name="PROGRESS_PERCENT" />%)</translation>
 <translation id="3625870480639975468">Reimposta lo zoom</translation>
 <translation id="3626281679859535460">Luminosità</translation>
 <translation id="3627052133907344175">L'estensione richiede "<ph name="IMPORT_NAME" />" con la versione minima "<ph name="IMPORT_VERSION" />", ma è installata soltanto la versione "<ph name="INSTALLED_VERSION" />".</translation>
@@ -3022,7 +3020,6 @@ Premi un tasto qualsiasi per continuare a esplorare.</translation>
 <translation id="5454166040603940656">con <ph name="PROVIDER" /></translation>
 <translation id="5457113250005438886">Non validi</translation>
 <translation id="5457459357461771897">Lettura ed eliminazione di foto, musica e altri contenuti multimediali del computer</translation>
-<translation id="5457599981699367932">Esplora come ospite</translation>
 <translation id="5463275305984126951">Indice di <ph name="LOCATION" /></translation>
 <translation id="5463856536939868464">Menu contenente i Preferiti nascosti</translation>
 <translation id="5464632865477611176">Eseguilo questa volta</translation>
@@ -3479,7 +3476,6 @@ Premi un tasto qualsiasi per continuare a esplorare.</translation>
 <translation id="6181431612547969857">Download bloccato</translation>
 <translation id="6185132558746749656">Posizione del dispositivo</translation>
 <translation id="6185696379715117369">Pagina su</translation>
-<translation id="618807527697571179">Impossibile rilevare il modello della stampante. Seleziona un produttore e un modello dall'elenco.</translation>
 <translation id="6188939051578398125">Inserisci nomi o indirizzi.</translation>
 <translation id="6189412234224385711">Apri con l'estensione <ph name="EXTENSION_NAME" /></translation>
 <translation id="6196640612572343990">Blocca cookie di terze parti</translation>
@@ -3717,6 +3713,7 @@ Premi un tasto qualsiasi per continuare a esplorare.</translation>
 <translation id="6509136331261459454">Gestisci altri utenti...</translation>
 <translation id="6509207748479174212">Licenza multimediale</translation>
 <translation id="6510568984200103950">Meno impostazioni</translation>
+<translation id="6513247462497316522">Google Chrome utilizzerà i dati mobili se non sei connesso a un'altra rete.</translation>
 <translation id="6514565641373682518">Questa pagina ha disattivato il puntatore del mouse.</translation>
 <translation id="6518014396551869914">Cop&amp;ia immagine</translation>
 <translation id="651942933739530207">Vuoi consentire a <ph name="APP_NAME" /> di condividere il tuo schermo e l'uscita audio?</translation>

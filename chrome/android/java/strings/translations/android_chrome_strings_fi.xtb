@@ -27,7 +27,6 @@
 Bluetooothin ja sijaintipalvelun on oltava päällä, jotta Fyysistä webiä voidaan käyttää.</translation>
 <translation id="124678866338384709">Sulje nykyinen välilehti</translation>
 <translation id="1258753120186372309">Google-piirros: <ph name="DOODLE_DESCRIPTION" /></translation>
-<translation id="1265597927250775944">Tyhjentää historian ja osoitepalkin ehdotukset.</translation>
 <translation id="1272079795634619415">Pysäytä</translation>
 <translation id="1283039547216852943">Laajenna napauttamalla.</translation>
 <translation id="1285320974508926690">Älä käännä tätä sivustoa</translation>
@@ -263,7 +262,6 @@ Muokkaa hakutermiä valitsemalla se pitkällä painalluksella. Tarkenna hakua li
 <translation id="3859306556332390985">Kelaa eteenpäin</translation>
 <translation id="3894427358181296146">Lisää kansio</translation>
 <translation id="3895926599014793903">Ota zoomaus käyttöön</translation>
-<translation id="3915590178385207649">Tyhjentää kaikkien sisäänkirjautuneiden laitteiden historian. Voit tarkastella muuta Google-tilisi toimintaa osoitteessa <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="3917783807003067648">Sijainnin käyttö on estetty.</translation>
 <translation id="3927692899758076493">Sans Serif</translation>
 <translation id="3928666092801078803">Yhdistä tiedot</translation>
@@ -609,7 +607,6 @@ Jotkin verkkosivustot voivat vastata tähän pyyntöön esimerkiksi näyttämäl
 <translation id="7423098979219808738">Kysy ensin</translation>
 <translation id="7437998757836447326">Uloskirjautuminen Chromesta</translation>
 <translation id="7445411102860286510">Salli sivustoille mykistettyjen videoiden automaattinen toisto (suositus)</translation>
-<translation id="7449574997654022410">Tyhjentää historian ja osoitepalkin ehdotukset. Voit tarkastella muuta Google-tilisi toimintaa osoitteessa <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="7464701184726199289">Synkronoidut tiedot poistetaan kaikilta laitteilta. Tallennettuja sivustoasetuksia ei poisteta, ja ne saattavat sisältää tietoa selaustavoistasi. <ph name="BEGIN_LINK" />Lisätietoja<ph name="END_LINK" /></translation>
 <translation id="7473891865547856676">Ei kiitos</translation>
 <translation id="7475192538862203634">Jos näet tämän ilmoituksen usein, kokeile näitä <ph name="BEGIN_LINK" />ehdotuksia<ph name="END_LINK" />.</translation>

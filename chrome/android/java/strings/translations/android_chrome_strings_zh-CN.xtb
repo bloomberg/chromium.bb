@@ -27,7 +27,6 @@
 您必须开启蓝牙和位置信息功能才能使用实物网。</translation>
 <translation id="124678866338384709">关闭当前标签页</translation>
 <translation id="1258753120186372309">Google 涂鸦：<ph name="DOODLE_DESCRIPTION" /></translation>
-<translation id="1265597927250775944">清除历史记录和地址栏建议。</translation>
 <translation id="1272079795634619415">停止</translation>
 <translation id="1283039547216852943">点按即可展开</translation>
 <translation id="1285320974508926690">一律不翻译此网站</translation>
@@ -263,7 +262,6 @@
 <translation id="3859306556332390985">前进</translation>
 <translation id="3894427358181296146">添加文件夹</translation>
 <translation id="3895926599014793903">强制启用缩放功能</translation>
-<translation id="3915590178385207649">清除所有已登录设备上的历史记录。您可以前往 <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> 查看您 Google 帐号中的其他活动记录。</translation>
 <translation id="3917783807003067648">禁止访问位置信息</translation>
 <translation id="3927692899758076493">Sans Serif</translation>
 <translation id="3928666092801078803">合并我的数据</translation>
@@ -609,7 +607,6 @@
 <translation id="7423098979219808738">先询问</translation>
 <translation id="7437998757836447326">退出 Chrome</translation>
 <translation id="7445411102860286510">允许网站自动播放静音的视频（推荐）</translation>
-<translation id="7449574997654022410">清除历史记录和地址栏建议。您可以前往 <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> 查看您 Google 帐号中的其他活动记录。</translation>
 <translation id="7464701184726199289">这将清除所有设备上的已同步数据。已保存的网站设置将不会遭到删除，并且可能会反映您的浏览习惯。<ph name="BEGIN_LINK" />了解详情<ph name="END_LINK" /></translation>
 <translation id="7473891865547856676">不，谢谢</translation>
 <translation id="7475192538862203634">如果您频繁遇到此问题，请尝试按这些<ph name="BEGIN_LINK" />建议<ph name="END_LINK" />操作。</translation>

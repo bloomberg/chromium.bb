@@ -27,7 +27,6 @@
 피지컬 웹을 사용하려면 블루투스와 위치를 사용하도록 설정해야 합니다.</translation>
 <translation id="124678866338384709">현재 탭 닫기</translation>
 <translation id="1258753120186372309">Google 기념일 로고: <ph name="DOODLE_DESCRIPTION" /></translation>
-<translation id="1265597927250775944">방문 기록 및 검색주소창 추천 검색어를 삭제합니다.</translation>
 <translation id="1272079795634619415">중지</translation>
 <translation id="1283039547216852943">탭하여 펼치기</translation>
 <translation id="1285320974508926690">이 사이트 번역 안함</translation>
@@ -263,7 +262,6 @@
 <translation id="3859306556332390985">앞으로 탐색</translation>
 <translation id="3894427358181296146">폴더 추가</translation>
 <translation id="3895926599014793903">확대/축소 강제 사용</translation>
-<translation id="3915590178385207649">로그인되어 있는 모든 기기에서 방문 기록을 삭제합니다. Google 계정의 다른 활동은 <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />에서 확인할 수 있습니다.</translation>
 <translation id="3917783807003067648">위치가 차단됨</translation>
 <translation id="3927692899758076493">Sans Serif</translation>
 <translation id="3928666092801078803">내 데이터 결합하기</translation>
@@ -609,7 +607,6 @@
 <translation id="7423098979219808738">우선 확인</translation>
 <translation id="7437998757836447326">Chrome에서 로그아웃</translation>
 <translation id="7445411102860286510">사이트에서 음소거된 동영상을 자동재생하도록 허용(권장)</translation>
-<translation id="7449574997654022410">방문 기록 및 검색주소창 추천 검색어를 삭제합니다. Google 계정의 다른 활동은 <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />에서 확인할 수 있습니다.</translation>
 <translation id="7464701184726199289">모든 기기에서 동기화된 데이터가 삭제됩니다. 저장된 사이트 설정은 삭제되지 않으며 인터넷 사용 습관이 반영될 수 있습니다. <ph name="BEGIN_LINK" />자세히 알아보기<ph name="END_LINK" /></translation>
 <translation id="7473891865547856676">건너뛰기</translation>
 <translation id="7475192538862203634">이 메시지가 자주 표시된다면 다음 <ph name="BEGIN_LINK" />권장사항<ph name="END_LINK" />을 시도해 보세요.</translation>

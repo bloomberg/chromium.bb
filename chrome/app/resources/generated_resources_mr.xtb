@@ -15,7 +15,6 @@
 <translation id="1023220960495960452">लिप्यंतरण (vanakkam → வணக்கம்)</translation>
 <translation id="1026822031284433028">प्रतिमा लोड करा</translation>
 <translation id="1029317248976101138">झूम करा</translation>
-<translation id="1030173864176315846"><ph name="PRINTER_NAME" /> वर <ph name="PAGE_NUMBER" /> पृष्ठे यशस्वीरित्या मुद्रित केले</translation>
 <translation id="1031362278801463162">पूर्वावलोकन लोड करत आहे</translation>
 <translation id="103279545524624934">Android अॅप्स लाँच करण्यासाठी डिस्क स्थान मोकळे करा.</translation>
 <translation id="1033780634303702874">आपल्या अनुक्रमिक डिव्हाइसेसवर प्रवेश करा</translation>
@@ -149,7 +148,6 @@
     <ph name="BR" />
     पुढील स्क्रीनवर, कृपया समस्येचे निराकरण करण्यात आम्हाला मदत करण्यासाठी अभिप्राय पाठवा.</translation>
 <translation id="121783623783282548">संकेतशब्द जुळत नाहीत.</translation>
-<translation id="1218323606465324064">आता <ph name="PRINTER_NAME" /> वर <ph name="PAGE_NUMBER" /> पृष्ठे मुद्रित करत आहेत</translation>
 <translation id="122082903575839559">प्रमाणपत्र स्वाक्षरी अल्गोरिदम</translation>
 <translation id="1221024147024329929">PKCS #1 RSA कूटबद्धीकरणासह MD2</translation>
 <translation id="1221825588892235038">केवळ निवड</translation>
@@ -508,6 +506,7 @@
 <translation id="1699395855685456105">हार्डवेअर पुनरावृत्ती:</translation>
 <translation id="1700199471143028312">आपला प्रशासक आपल्याला पर्यवेक्षी वापरकर्ते तयार करण्याची अनुमती देत नाही.</translation>
 <translation id="1701062906490865540">या व्यक्तीस काढा</translation>
+<translation id="1701364987952948449">अतिथी म्हणून ब्राउझ करा</translation>
 <translation id="1706586824377653884">आपल्या प्रशासकाने जोडले</translation>
 <translation id="1706625117072057435">झूम स्तर</translation>
 <translation id="1707463636381878959">अन्य वापरकर्त्यांसह हा नेटवर्क सामायिक करा</translation>
@@ -752,7 +751,6 @@
 <translation id="2114224913786726438">मॉड्यूल (<ph name="TOTAL_COUNT" />) - कोणताही विरोध आढळला नाही </translation>
 <translation id="2114326799768592691">रीलोड आणि फ्रेम करा</translation>
 <translation id="2115103655317273167">फोन वर पाठवा</translation>
-<translation id="2115291620696624944"><ph name="PRINTER_NAME" /> वर <ph name="PAGE_NUMBER" /> पृष्ठे मुद्रित करण्यात त्रुटी</translation>
 <translation id="2115926821277323019">वैध URL आसणे आवश्यक</translation>
 <translation id="2115946962706216358">डोमेनशी मशीन जोडण्‍यात अयशस्वी झाले. हे कदाचित सर्व्हर वरील आपल्या खात्यास जोडण्यासाठी अनुमती असलेल्या मशीनींच्या कमाल संख्येस ओलांडल्यामुळे असू शकते.</translation>
 <translation id="2116673936380190819">गेल्या तासात</translation>
@@ -870,7 +868,6 @@
 <translation id="2255317897038918278">Microsoft Time Stamping</translation>
 <translation id="225614027745146050">सुस्वागतम</translation>
 <translation id="225692081236532131">सक्रियन स्थिती</translation>
-<translation id="2260567344816042527">आपण दुसर्‍या नेटवर्कशी कनेक्ट न केल्यास Google Chrome मोबाईल डेटा वापरेल.</translation>
 <translation id="2262477216570151239">पुनरावृत्तीपूर्वी विलंब</translation>
 <translation id="226269835214688456">आपण Chromebook साठी Smart Lock बंद केल्यास, आपण आपला फोन वापरून आपले Chrome डिव्हाइसेस अनलॉक करण्यात सक्षम असणार नाही. आपल्याला आपला संकेतशब्द टाइप करण्याची आवश्यकता असेल.</translation>
 <translation id="2263189956353037928">साइन आउट करून परत साइन इन करा</translation>
@@ -892,6 +889,7 @@
 <translation id="2282146716419988068">GPU प्रक्रिया</translation>
 <translation id="2282155092769082568">स्वयंकॉन्फिगरेशन URL:</translation>
 <translation id="2283117145434822734">F6</translation>
+<translation id="2286841657746966508">बिलिंग पत्ता</translation>
 <translation id="2286950485307333924">आपण आता Chrome वर साइन इन केले आहे</translation>
 <translation id="2287590536030307392">सर्व वायरलेस कनेक्शन बंद करा.</translation>
 <translation id="2288735659267887385">प्रवेशयोग्यता सेटिंग्ज</translation>
@@ -1626,6 +1624,7 @@
 <translation id="3315158641124845231"><ph name="PRODUCT_NAME" /> लपवा</translation>
 <translation id="3317459757438853210">दोन्ही बाजूंनी</translation>
 <translation id="3319048459796106952">नवीन &amp;गुप्त विंडो</translation>
+<translation id="3320021301628644560">बिलिंग पत्ता जोडा</translation>
 <translation id="3320859581025497771">आपले कॅरियर</translation>
 <translation id="3323447499041942178">मजकूर बॉक्स</translation>
 <translation id="3324301154597925148">आपण अपेक्षा करत होता हे तेच शोध पृष्ठ आहे?</translation>
@@ -1824,7 +1823,6 @@
 <translation id="3618849550573277856">“<ph name="LOOKUP_STRING" />” पहा</translation>
 <translation id="3620292326130836921">सर्व बॅकअप घेतला!</translation>
 <translation id="3623574769078102674">हा पर्यवेक्षी वापरकर्ता <ph name="MANAGER_EMAIL" /> द्वारे व्यवस्थापित केला जाईल.</translation>
-<translation id="3624814222765772771">अपडेटसाठी (<ph name="PROGRESS_PERCENT" />%) बॅटरी खूप कमी आहे</translation>
 <translation id="3625870480639975468">झूम रीसेट करा</translation>
 <translation id="3626281679859535460">ब्राइटनेस</translation>
 <translation id="3627052133907344175">"<ph name="IMPORT_VERSION" />" किमान आवृत्तीसह विस्तारास "<ph name="IMPORT_NAME" />" आवश्यक आहे, परंतु केवळ "<ph name="INSTALLED_VERSION" />" आवृत्ती स्थापित केली आहे.</translation>
@@ -3016,7 +3014,6 @@
 <translation id="5454166040603940656"><ph name="PROVIDER" /> सह</translation>
 <translation id="5457113250005438886">अवैध</translation>
 <translation id="5457459357461771897">आपल्या संगणकावरील फोटो, संगीत आणि अन्य मीडिया वाचा आणि हटवा</translation>
-<translation id="5457599981699367932">अतिथी म्हणून ब्राउझ करा</translation>
 <translation id="5463275305984126951"><ph name="LOCATION" /> ची अनुक्रमणिका</translation>
 <translation id="5463856536939868464">मेनूमध्ये लपलेले बुकमार्क आहेत</translation>
 <translation id="5464632865477611176">यावेळी चालवा</translation>
@@ -3469,7 +3466,6 @@
 <translation id="6181431612547969857">डाउनलोड अवरोधित केले</translation>
 <translation id="6185132558746749656">डिव्‍हाइस स्‍थान</translation>
 <translation id="6185696379715117369">पृष्ठ वर</translation>
-<translation id="618807527697571179">आपला प्रिंटर मॉडेल शोधणे शक्य झाले नाही. सूचीमधून एक निर्माता आणि मॉडेल निवडा.</translation>
 <translation id="6188939051578398125">नावे किंवा पत्ते प्रविष्ट करा.</translation>
 <translation id="6189412234224385711"><ph name="EXTENSION_NAME" /> मध्ये उघडा</translation>
 <translation id="6196640612572343990">तृतीय-पक्ष कुकीज अवरोधित करा</translation>
@@ -3707,6 +3703,7 @@
 <translation id="6509136331261459454">इतर वापरकर्ते व्यवस्थापित करा...</translation>
 <translation id="6509207748479174212">मीडिया परवाना</translation>
 <translation id="6510568984200103950">अगदी थोड्या सेटिंग्ज</translation>
+<translation id="6513247462497316522">आपण इतर नेटवर्कशी कनेक्टेड नसल्यास Google Chrome मोबाइल डेटाचा वापर करेल.</translation>
 <translation id="6514565641373682518">या पृष्‍ठाने आपला माऊस कर्सर अक्षम केला आहे.</translation>
 <translation id="6518014396551869914">प्रतिमा कॉ&amp;पी करा</translation>
 <translation id="651942933739530207">आपण <ph name="APP_NAME" /> नी आपली स्क्रीन आणि ऑडिओ इनपुट सामायिक करावी असे इच्छिता?</translation>

@@ -27,7 +27,6 @@
 Zur Verwendung von Physical Web müssen Bluetooth und der Standortdienst aktiviert sein.</translation>
 <translation id="124678866338384709">Aktuellen Tab schließen</translation>
 <translation id="1258753120186372309">Google-Doodle: <ph name="DOODLE_DESCRIPTION" /></translation>
-<translation id="1265597927250775944">Der Verlauf und die Vervollständigungen in der Adressleiste werden gelöscht.</translation>
 <translation id="1272079795634619415">Stopp</translation>
 <translation id="1283039547216852943">Zum Maximieren tippen</translation>
 <translation id="1285320974508926690">Diese Website nie übersetzen</translation>
@@ -263,7 +262,6 @@ Zur Anpassung des Suchbegriffs drücken Sie einige Sekunden lang auf den entspre
 <translation id="3859306556332390985">Nach vorne navigieren</translation>
 <translation id="3894427358181296146">Ordner hinzufügen</translation>
 <translation id="3895926599014793903">Zoom zwingend aktivieren</translation>
-<translation id="3915590178385207649">Der Verlauf auf allen angemeldeten Geräten wird gelöscht. Andere Aktivitäten Ihres Google-Kontos sehen Sie unter <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="3917783807003067648">Standort blockiert</translation>
 <translation id="3927692899758076493">Serifenlose Schrift</translation>
 <translation id="3928666092801078803">Daten zusammenführen</translation>
@@ -609,7 +607,6 @@ Einige Websites schalten möglicherweise Werbeanzeigen, deren Auswahl nicht dara
 <translation id="7423098979219808738">Zuerst fragen</translation>
 <translation id="7437998757836447326">Von Chrome abmelden</translation>
 <translation id="7445411102860286510">Automatische Wiedergabe stummgeschalteter Videos auf Websites zulassen (empfohlen)</translation>
-<translation id="7449574997654022410">Der Verlauf und die Vervollständigungen in der Adressleiste werden gelöscht. Andere Aktivitäten Ihres Google-Kontos sehen Sie unter <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="7464701184726199289">Dadurch werden synchronisierte Daten von allen Geräten gelöscht. Gespeicherte Website-Einstellungen werden nicht gelöscht und können möglicherweise Ihre Surfgewohnheiten wiedergeben. <ph name="BEGIN_LINK" />Weitere Informationen<ph name="END_LINK" /></translation>
 <translation id="7473891865547856676">Nein danke</translation>
 <translation id="7475192538862203634">Sollten Sie diese Meldung häufiger erhalten, sehen Sie sich unsere <ph name="BEGIN_LINK" />Empfehlungen<ph name="END_LINK" /> an.</translation>

@@ -615,38 +615,6 @@
 <translation id="316778957754360075">Deze instelling wordt niet meer gebruikt sinds <ph name="PRODUCT_NAME" /> versie 29. De aanbevolen manier om verzamelingen van extensies/apps die door de organisatie worden gehost in te stellen, is het opnemen van de site die de CRX-pakketten in ExtensionInstallSources host en het plaatsen van rechtstreekse downloadlinks naar de pakketten op een webpagina. Je kunt voor die webpagina een startprogramma maken met het beleid ExtensionInstallForcelist.</translation>
 <translation id="3185009703220253572">sinds versie <ph name="SINCE_VERSION" /></translation>
 <translation id="3187220842205194486">Android-apps hebben geen toegang tot zakelijke sleutels. Dit beleid is niet van invloed op deze apps.</translation>
-<translation id="318812033927804102">Hiermee worden extensiebeheerinstellingen voor <ph name="PRODUCT_NAME" /> geconfigureerd.
-
-          Met dit beleid worden meerdere instellingen beheerd, inclusief instellingen die worden beheerd door bestaande aan extensies gerelateerde beleidsregels. Dit beleid overschrijft alle oudere beleidsregels als beide zijn ingesteld.
-
-          Dit beleid koppelt een extensie-ID of update-URL aan de configuratie. Bij een extensie-ID wordt de configuratie uitsluitend op de opgegeven extensie toegepast. Er kan een standaardconfiguratie worden ingesteld voor de speciale ID '*'. Deze wordt vervolgens toegepast op alle extensies die geen aangepaste configuratie hebben ingesteld in dit beleid. Bij een update-URL wordt de configuratie toegepast op alle extensies met de exacte update-URL in het manifest van deze extensie, zoals beschreven in <ph name="LINK_TO_EXTENSION_DOC1" />.
-
-          De configuratie voor elke extensie (of extensies met dezelfde update-URL) is een woordenboek dat de onderstaande velden kan bevatten.
-
-          'installation_mode': is gekoppeld aan een tekenreeks die de installatiemodus voor de extensie aangeeft. De geldige tekenreeksen zijn:
-          * 'allowed': stelt de extensie in staat door de gebruiker te worden geïnstalleerd. Dit is het standaardgedrag.
-          * 'blocked': blokkeert de installatie van de extensie.
-          * 'force_installed': de extensie wordt automatisch geïnstalleerd en kan niet door de gebruiker worden verwijderd.
-          * 'normal_installed': de extensie wordt automatisch geïnstalleerd, maar kan door de gebruiker worden uitgeschakeld.
-
-          De 'installation_mode' kan ook worden geconfigureerd voor meerdere extensies, waaronder de extensie '*' (als standaardinstellingen) en extensies met dezelfde update-URL. Alleen de waarden 'allowed' en 'blocked' kunnen in dit geval worden gebruikt.
-
-          Als de modus is ingesteld op 'force_installed' of 'normal_installed', moet er ook een 'update_url' worden geconfigureerd. Let op: De in dit beleid ingestelde update-URL wordt alleen gebruikt voor de aanvankelijke installatie. Volgende updates van de extensie gebruiken de update-URL die in het manifest van de update-URL is opgenomen. De update-URL moet naar een XML-document met een updatemanifest verwijzen, zoals hierboven genoemd.
-
-          'blocked_permissions': is gekoppeld aan een lijst van tekenreeksen die de geblokkeerde API-rechten voor de extensie aangeven. De namen van de rechten zijn hetzelfde als de tekenreeksen voor rechten die zijn opgenomen in het manifest van de extensie, zoals beschreven in <ph name="LINK_TO_EXTENSION_DOC3" />. Deze instelling kan ook worden geconfigureerd voor de extensie '*'. Als er rechten zijn vereist voor de extensie die op de blokkeerlijst staan, kan deze niet worden geladen. Als deze geblokkeerde rechten als optionele vereiste bevat, wordt deze als gebruikelijk behandeld, maar wordt de aanvraag van conflicterende rechten automatisch afgewezen tijdens de uitvoering.
-
-          'allowed_permissions': vergelijkbaar met 'blocked_permissions', maar in dit geval worden sommige rechten expliciet toegestaan die wellicht zijn geblokkeerd via lijsten met globaal geblokkeerde rechten. Deze instelling kan daarom niet worden geconfigureerd voor de extensie '*'. Let op: Deze instelling geeft niet automatisch goedgekeurde rechten af aan extensies.
-
-          'minimum_version_required': is gekoppeld aan een versiereeks. De opmaak van de versiereeks is hetzelfde als de opmaak in het manifest van de extensie, zoals beschreven in <ph name="LINK_TO_EXTENSION_DOC4" />. Een extensie met een versie die ouder is dan de opgegeven minimumversie wordt uitgeschakeld. Dit is ook van toepassing op automatisch geïnstalleerde extensies.
-
-          De volgende instellingen kunnen alleen worden gebruikt voor de standaardconfiguratie '*':
-
-          'install_sources': elk item in deze lijst is een patroon van een extensie (zie https://developer.chrome.com/extensions/match_patterns). Gebruikers kunnen gemakkelijk items installeren vanaf elke URL die overeenkomt met een item in deze lijst. De locatie van het *.crx-bestand en de pagina waar de download wordt gestart (dat wil zeggen, de verwijzing), moeten beide zijn toegestaan op basis van deze patronen.
-
-          'allowed_types': met deze instelling worden de toegestane typen extensies/apps die in <ph name="PRODUCT_NAME" /> kunnen worden geïnstalleerd op een witte lijst gezet. De waarde is een lijst met tekenreeksen waarbij elke tekenreeks een van de volgende moet zijn: 'extension', 'theme', 'user_script', 'hosted_app', 'legacy_packaged_app', 'platform_app'. Raadpleeg de documentatie over <ph name="PRODUCT_NAME" />-extensies voor meer informatie over deze typen.
-
-          Dit beleid is nog niet klaar voor gebruik. Gebruik dit beleid niet.
-          </translation>
 <translation id="3201273385265130876">Hiermee kun je de proxyserver specificeren die door <ph name="PRODUCT_NAME" /> wordt gebruikt en wordt voorkomen dat gebruikers proxyinstellingen kunnen aanpassen.
 
           Als je ervoor kiest nooit een proxyserver te gebruiken en altijd rechtstreeks verbinding te maken, worden alle andere opties genegeerd.

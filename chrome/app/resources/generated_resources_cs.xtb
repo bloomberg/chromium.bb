@@ -15,7 +15,6 @@
 <translation id="1023220960495960452">Přepis (vanakkam → வணக்கம்)</translation>
 <translation id="1026822031284433028">Načíst obrázek</translation>
 <translation id="1029317248976101138">Lupa</translation>
-<translation id="1030173864176315846">Na tiskárně <ph name="PRINTER_NAME" /> byl úspěšně vytisknut tento počet stránek: <ph name="PAGE_NUMBER" /></translation>
 <translation id="1031362278801463162">Načítání náhledu</translation>
 <translation id="103279545524624934">Chcete-li spouštět aplikace pro Android, uvolněte místo na disku.</translation>
 <translation id="1033780634303702874">Přistupovat k zařízením připojeným pomocí sériového portu</translation>
@@ -149,7 +148,6 @@ Profil bude třeba znovu nastavit.<ph name="BR" />
 <ph name="BR" />
 Na následující obrazovce prosím zadejte zpětnou vazbu, která nám problém pomůže vyřešit.</translation>
 <translation id="121783623783282548">Hesla se neshodují.</translation>
-<translation id="1218323606465324064">Probíhá tisk <ph name="PAGE_NUMBER" /> stránek na tiskárně <ph name="PRINTER_NAME" /></translation>
 <translation id="122082903575839559">Algoritmus podpisu certifikátu</translation>
 <translation id="1221024147024329929">Šifrování PKCS #1 MD2 s RSA</translation>
 <translation id="1221825588892235038">Pouze výběr</translation>
@@ -510,6 +508,7 @@ Na následující obrazovce prosím zadejte zpětnou vazbu, která nám problém
 <translation id="1699395855685456105">Revize hardwaru:</translation>
 <translation id="1700199471143028312">Váš administrátor vám vytváření dozorovaných uživatelů nepovolil.</translation>
 <translation id="1701062906490865540">Odebrat tohoto uživatele</translation>
+<translation id="1701364987952948449">Prohlížet jako host</translation>
 <translation id="1706586824377653884">Přidáno administrátorem</translation>
 <translation id="1706625117072057435">Úrovně přiblížení</translation>
 <translation id="1707463636381878959">Sdílet tuto síť s ostatními uživateli</translation>
@@ -755,7 +754,6 @@ Na následující obrazovce prosím zadejte zpětnou vazbu, která nám problém
 <translation id="2114224913786726438">Moduly (<ph name="TOTAL_COUNT" />) – žádné zjištěné konflikty</translation>
 <translation id="2114326799768592691">Znovu načíst &amp;rámec</translation>
 <translation id="2115103655317273167">Odeslat na telefon</translation>
-<translation id="2115291620696624944">Při tisku <ph name="PAGE_NUMBER" /> stránek na tiskárně <ph name="PRINTER_NAME" /> došlo k chybě</translation>
 <translation id="2115926821277323019">Musí být platná adresa URL</translation>
 <translation id="2115946962706216358">Přidání počítače do domény se nezdařilo. Může to být způsobeno překročením maximálního počtu povolených přidání počítačů pro váš účet na serveru.</translation>
 <translation id="2116673936380190819">z uplynulé hodiny</translation>
@@ -874,7 +872,6 @@ Po vytvoření nového dozorovaného uživatele můžete jeho nastavení spravov
 <translation id="2255317897038918278">Časové razítko standardu Microsoft</translation>
 <translation id="225614027745146050">Vítejte</translation>
 <translation id="225692081236532131">Stav aktivace</translation>
-<translation id="2260567344816042527">Pokud nejste připojeni k jiné síti, Google Chrome použije mobilní data.</translation>
 <translation id="2262477216570151239">Prodleva před opakováním</translation>
 <translation id="226269835214688456">Pokud Smart Lock pro Chromebook vypnete, nebudete svá zařízení Chrome moci odemknout telefonem. Budete muset zadat heslo.</translation>
 <translation id="2263189956353037928">Odhlásit se a znovu se přihlásit</translation>
@@ -896,6 +893,7 @@ Po vytvoření nového dozorovaného uživatele můžete jeho nastavení spravov
 <translation id="2282146716419988068">Proces GPU</translation>
 <translation id="2282155092769082568">Adresa URL automatické konfigurace:</translation>
 <translation id="2283117145434822734">F6</translation>
+<translation id="2286841657746966508">Fakturační adresa</translation>
 <translation id="2286950485307333924">Nyní jste do Chromu přihlášeni</translation>
 <translation id="2287590536030307392">Vypne všechna bezdrátová připojení.</translation>
 <translation id="2288735659267887385">Nastavení přístupnosti</translation>
@@ -1633,6 +1631,7 @@ Pokud nezměníte výchozí nastavení, uživatel <ph name="USER_DISPLAY_NAME" /
 <translation id="3315158641124845231">Skrýt <ph name="PRODUCT_NAME" /></translation>
 <translation id="3317459757438853210">Oboustranně</translation>
 <translation id="3319048459796106952">Nové &amp;anonymní okno</translation>
+<translation id="3320021301628644560">Přidání fakturační adresy</translation>
 <translation id="3320859581025497771">svého operátora</translation>
 <translation id="3323447499041942178">Textové pole</translation>
 <translation id="3324301154597925148">Je toto stránka vyhledávání, kterou jste očekávali?</translation>
@@ -1831,7 +1830,6 @@ Pokud nezměníte výchozí nastavení, uživatel <ph name="USER_DISPLAY_NAME" /
 <translation id="3618849550573277856">Vyhledat „<ph name="LOOKUP_STRING" />“</translation>
 <translation id="3620292326130836921">Vše je zálohováno</translation>
 <translation id="3623574769078102674">Tento dozorovaný uživatel bude spravován uživatelem <ph name="MANAGER_EMAIL" />.</translation>
-<translation id="3624814222765772771">Aktualizaci nelze zahájit z důvodu slabé baterie (<ph name="PROGRESS_PERCENT" /> %)</translation>
 <translation id="3625870480639975468">Resetovat lupu</translation>
 <translation id="3626281679859535460">Jas</translation>
 <translation id="3627052133907344175">Rozšíření vyžaduje rozhraní <ph name="IMPORT_NAME" /> s minimální verzí <ph name="IMPORT_VERSION" />, máte však nainstalovanou pouze verzi <ph name="INSTALLED_VERSION" />.</translation>
@@ -3023,7 +3021,6 @@ Chcete-li pokračovat v práci, stiskněte libovolnou klávesu.</translation>
 <translation id="5454166040603940656">(<ph name="PROVIDER" />)</translation>
 <translation id="5457113250005438886">Neplatné</translation>
 <translation id="5457459357461771897">Číst a mazat fotografie, hudbu a další média z počítače</translation>
-<translation id="5457599981699367932">Použít jako host</translation>
 <translation id="5463275305984126951">Index <ph name="LOCATION" /></translation>
 <translation id="5463856536939868464">Nabídka obsahující skryté záložky</translation>
 <translation id="5464632865477611176">Tentokrát spustit</translation>
@@ -3480,7 +3477,6 @@ Chcete-li pokračovat v práci, stiskněte libovolnou klávesu.</translation>
 <translation id="6181431612547969857">Stahování zablokováno</translation>
 <translation id="6185132558746749656">Poloha zařízení</translation>
 <translation id="6185696379715117369">O stránku nahoru</translation>
-<translation id="618807527697571179">Nepodařilo se zjistit model tiskárny. Vyberte výrobce a model ze seznamu.</translation>
 <translation id="6188939051578398125">Zadejte jména nebo adresy.</translation>
 <translation id="6189412234224385711">Otevřít pomocí rozšíření <ph name="EXTENSION_NAME" /></translation>
 <translation id="6196640612572343990">Blokovat soubory cookie třetích stran</translation>
@@ -3718,6 +3714,7 @@ Chcete-li pokračovat v práci, stiskněte libovolnou klávesu.</translation>
 <translation id="6509136331261459454">Správa dalších uživatelů...</translation>
 <translation id="6509207748479174212">Mediální licence</translation>
 <translation id="6510568984200103950">Méně nastavení</translation>
+<translation id="6513247462497316522">Pokud nebudete připojeni k jiné síti, použije prohlížeč Google Chrome mobilní data.</translation>
 <translation id="6514565641373682518">Tato stránka deaktivovala ukazatel myši.</translation>
 <translation id="6518014396551869914">Kopírovat o&amp;brázek</translation>
 <translation id="651942933739530207">Chcete, aby aplikace <ph name="APP_NAME" /> sdílela vaši obrazovku a zvukový výstup?</translation>

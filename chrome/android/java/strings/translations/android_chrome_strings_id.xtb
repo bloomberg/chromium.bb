@@ -27,7 +27,6 @@
 Anda harus mengaktifkan Bluetooth dan Lokasi agar dapat menggunakan Web Fisik.</translation>
 <translation id="124678866338384709">Menutup tab aktif</translation>
 <translation id="1258753120186372309">Google doodle: <ph name="DOODLE_DESCRIPTION" /></translation>
-<translation id="1265597927250775944">Menghapus saran kolom URL dan riwayat.</translation>
 <translation id="1272079795634619415">Berhenti</translation>
 <translation id="1283039547216852943">Tap untuk meluaskan</translation>
 <translation id="1285320974508926690">Jangan pernah terjemahkan situs ini</translation>
@@ -53,7 +52,7 @@ Anda harus mengaktifkan Bluetooth dan Lokasi agar dapat menggunakan Web Fisik.</
 <translation id="1416550906796893042">Versi aplikasi</translation>
 <translation id="1423209968422390786">Akses lokasi <ph name="BEGIN_LINK" />dinonaktifkan untuk perangkat ini<ph name="END_LINK" />.</translation>
 <translation id="1430915738399379752">Cetak</translation>
-<translation id="1445680696957526815">Komponen Chrome tidak kompatibel dengan satu sama lain. Chrome mungkin ditingkatkan versinya, coba lagi dalam beberapa menit. Jika masalah terus berlanjut, coba copot pemasangan dan instal ulang.</translation>
+<translation id="1445680696957526815">Komponen Chrome tidak kompatibel dengan satu sama lain. Chrome mungkin ditingkatkan versinya, coba lagi dalam beberapa menit. Jika masalah terus berlanjut, coba uninstal dan instal ulang.</translation>
 <translation id="1446450296470737166">Izinkan kontrol penuh perangkat MIDI</translation>
 <translation id="145097072038377568">Dinonaktifkan di Setelan Android</translation>
 <translation id="1455941322673536744">IsiOtomatis dan pembayaran</translation>
@@ -263,7 +262,6 @@ Untuk menyesuaikan istilah penelusuran, tekan lama untuk memilih. Untuk menyarin
 <translation id="3859306556332390985">Cari maju</translation>
 <translation id="3894427358181296146">Tambah folder</translation>
 <translation id="3895926599014793903">Memaksa pengaktifan zoom</translation>
-<translation id="3915590178385207649">Menghapus riwayat dari semua perangkat yang digunakan login. Lihat aktivitas lain dari Akun Google Anda di <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="3917783807003067648">Lokasi diblokir</translation>
 <translation id="3927692899758076493">Sans Serif</translation>
 <translation id="3928666092801078803">Gabungkan data saya</translation>
@@ -463,7 +461,7 @@ Namun demikian, bukan berarti Anda sama sekali tidak terlihat. Menggunakan mode 
 <translation id="583891442612896534">Chrome tidak dapat menjangkau server Google untuk mengompresi data. Penyimpanan data Anda mungkin dibatasi.</translation>
 <translation id="5858741533101922242">Chrome tidak dapat mengaktifkan adaptor Bluetooth</translation>
 <translation id="5860033963881614850">Nonaktif</translation>
-<translation id="5869522115854928033">Sandi yang disimpan</translation>
+<translation id="5869522115854928033">Sandi tersimpan</translation>
 <translation id="5902828464777634901">Semua data lokal yang disimpan oleh situs web ini, termasuk cookie, akan dihapus.</translation>
 <translation id="5911030830365207728">Google Terjemahan</translation>
 <translation id="5916664084637901428">Aktif</translation>
@@ -553,7 +551,7 @@ Misalnya, beberapa situs web mungkin menanggapi permintaan ini dengan menayangka
 <translation id="6738867403308150051">Mendownload…</translation>
 <translation id="6762156594045689028">Untuk mengubah setelan ini, <ph name="BEGIN_LINK" />setel ulang sinkronisasi<ph name="END_LINK" /></translation>
 <translation id="6764789522080107716">Tidak dapat membuka file</translation>
-<translation id="6770414673596662518">Sistem Penjelajahan Aman Chrome juga dapat digunakan untuk mendeteksi laman berbahaya dan melindungi Anda dari phishing, perangkat lunak perusak, dan download berbahaya.</translation>
+<translation id="6770414673596662518">Sistem Penjelajahan Aman Chrome juga dapat digunakan untuk mendeteksi laman berbahaya dan melindungi Anda dari phishing, software perusak, dan download berbahaya.</translation>
 <translation id="6790428901817661496">Putar</translation>
 <translation id="679325081238418596">Dapatkan bookmark, riwayat, sandi, dan setelan lainnya di semua perangkat Anda</translation>
 <translation id="6820607729870073286">Anda tidak memiliki setelan situs web yang tersimpan.</translation>
@@ -609,7 +607,6 @@ Misalnya, beberapa situs web mungkin menanggapi permintaan ini dengan menayangka
 <translation id="7423098979219808738">Tanyakan terlebih dahulu</translation>
 <translation id="7437998757836447326">Keluar dari Chrome</translation>
 <translation id="7445411102860286510">Izinkan situs untuk otomatis memutar video yang dibisukan (disarankan)</translation>
-<translation id="7449574997654022410">Menghapus saran kolom URL dan riwayat. Lihat aktivitas lain dari Akun Google Anda di <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="7464701184726199289">Tindakan ini akan menghapus data yang disinkronkan dari semua perangkat. Setelan situs yang disimpan tidak akan dihapus dan dapat mencerminkan kebiasaan penjelajahan Anda. <ph name="BEGIN_LINK" />Pelajari lebih lanjut<ph name="END_LINK" /></translation>
 <translation id="7473891865547856676">Lain Kali</translation>
 <translation id="7475192538862203634">Jika masalah ini sering terjadi, coba <ph name="BEGIN_LINK" />saran<ph name="END_LINK" /> berikut.</translation>

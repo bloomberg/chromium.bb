@@ -568,38 +568,6 @@ Questa norma viene rispettata soltanto se viene attivata la norma "DefaultSearch
 <translation id="316778957754360075">Questa impostazione non è più supportata a partire dalla versione 29 di <ph name="PRODUCT_NAME" />. Il metodo consigliato per la configurazione di raccolte di estensioni/app ospitate dall'organizzazione consiste nell'includere il sito che ospita i pacchetti CRX in ExtensionInstallSources e inserire link di download diretti per i pacchetti in una pagina web. È possibile creare una funzione Avvio applicazioni per la pagina web utilizzando la norma ExtensionInstallForcelist.</translation>
 <translation id="3185009703220253572">a partire dalla versione <ph name="SINCE_VERSION" /></translation>
 <translation id="3187220842205194486">Le app Android non possono accedere alle chiavi aziendali. Questa norma non influisce su di esse.</translation>
-<translation id="318812033927804102">Consente di configurare impostazioni di gestione delle estensioni per <ph name="PRODUCT_NAME" />.
-
-          Questa norma consente di controllare diverse impostazioni, incluse quelle controllate da norme esistenti correlate alle estensioni. Questa norma sostituisce tutte le norme precedenti se vengono impostate entrambe.
-
-          Questa norma consente di mappare un ID estensione o un URL di aggiornamento alla relativa configurazione. Con un ID estensione, la configurazione viene applicata solo all'estensione specificata. È possibile impostare una configurazione predefinita per l'ID speciale "*", che verrà applicato a tutte le estensioni per cui non è impostata una configurazione personalizzata in questa norma. Con un URL di aggiornamento, la configurazione verrà applicata a tutte le estensioni con l'esatto URL di aggiornamento indicato nel file manifest dell'estensione, come descritto all'indirizzo <ph name="LINK_TO_EXTENSION_DOC1" />.
-
-          La configurazione per ogni estensione (o per estensioni con lo stesso URL di aggiornamento) è un altro dizionario che può contenere i campi documentati di seguito.
-
-          "installation_mode": corrisponde a una stringa indicante la modalità di installazione per l'estensione. Le stringhe valide sono:
-          * "allowed": consente l'installazione dell'estensione da parte dell'utente. È il comportamento predefinito.
-          * "blocked": blocca l'installazione dell'estensione.
-          * "force_installed": l'estensione viene installata automaticamente e non può essere rimossa dall'utente.
-          * "normal_installed": l'estensione viene installata automaticamente, ma può essere disattivata dall'utente.
-
-          Il campo "installation_mode" può anche essere configurato per più estensioni, compresa l'estensione "*" (come impostazione predefinita) e le estensioni con lo stesso URL di aggiornamento. In questo caso possono essere utilizzati solo i valori "allowed" e "blocked".
-
-          Se la modalità è impostata su "force_installed" o "normal_installed" è necessario configurare anche un campo "update_url". L'URL di aggiornamento impostato in questa norma viene utilizzato solo per l'installazione iniziale. Per i successivi aggiornamenti dell'estensione verrà utilizzato l'URL di aggiornamento indicato nel file manifest del'estensione. L'URL di aggiornamento dovrebbe rimandare a un documento XML Manifest di aggiornamento come descritto in precedenza.
-
-          "blocked_permissions": corrisponde a un elenco di stringhe indicanti le autorizzazioni API per l'estensione. I nomi delle autorizzazioni corrispondono alle stringhe di autorizzazione indicate nel file manifest dell'estensione, come descritto all'indirizzo <ph name="LINK_TO_EXTENSION_DOC3" />. Questa impostazione può essere configurata anche per l'estensione "*". Se per l'estensione è necessaria un'autorizzazione che è presente nell'elenco di quelle bloccate, non potrà essere caricata. Se contiene un'autorizzazione bloccata come requisito opzionale, verrà trattata normalmente, ma la richiesta di autorizzazioni in conflitto verrà declinata automaticamente in fase di runtime.
-
-          "allowed_permissions": simile a "blocked_permissions", ma, al contrario, consente esplicitamente alcune autorizzazioni che potrebbero essere bloccate da un elenco di autorizzazioni bloccate globale e quindi non possono essere configurate per l'estensione "*". Questa impostazione non assegna automaticamente le autorizzazioni concesse alle estensioni.
-
-          "minimum_version_required": corrisponde a una stringa della versione. Il formato della stringa della versione corrisponde a quello utilizzato nel file manifest delle estensioni, come descritto all'indirizzo <ph name="LINK_TO_EXTENSION_DOC4" />. Un'estensione con una versione precedente rispetto alla versione minima specificata viene disattivata. Ciò vale anche per le estensioni con installazione imposta.
-
-          Le seguenti impostazioni possono essere utilizzate solo per la configurazione "*":
-
-          "install_sources": ogni voce presente in questo elenco è uno schema di corrispondenza in stile di estensione (vedere https://developer.chrome.com/extensions/match_patterns). Gli utenti potranno installare facilmente elementi dagli URL corrispondenti a una voce nell'elenco. Questi schemi devono consentire sia la posizione del file *.crx sia la pagina da cui viene avviato il download (il referrer).
-
-          "allowed_types": con questa impostazione vengono autorizzati i tipi consentiti di estensioni/applicazioni che possono essere installati in <ph name="PRODUCT_NAME" />.  Il valore è un elenco di stringhe, tra le seguenti: "extension", "theme", "user_script", "hosted_app", "legacy_packaged_app" e "platform_app". Leggere la documentazione sulle estensioni di <ph name="PRODUCT_NAME" />, per ulteriori informazioni su questi tipi.
-
-          Questa norma non è ancora pronta per essere utilizzata, pertanto non deve essere utilizzata.
-          </translation>
 <translation id="3201273385265130876">Consente di specificare il server proxy utilizzato da <ph name="PRODUCT_NAME" /> e impedisce agli utenti di modificare le impostazioni proxy.
 
           Se l'utente sceglie di non utilizzare mai un server proxy e connettersi sempre direttamente, tutte le altre opzioni vengono ignorate.

@@ -585,38 +585,6 @@ Kaikki luettelon kohteet ovat tunnuksia, joiden perusteella erotetaan laitteesee
 <translation id="316778957754360075">Tämä asetus on poistettu käytöstä tuotteen <ph name="PRODUCT_NAME" /> versiosta 29 lähtien. Suositeltu tapa määrittää organisaation isännöimiä laajennuksia tai sovelluskokoelmia on sisällyttää CRX-paketteja sisältävä sivusto ExtensionInstallSources-luetteloon ja lisätä suorat latauslinkit paketteihin verkkosivulle. Kyseisen verkkosivun käynnistysohjelma voidaan luoda ExtensionInstallForcelist-käytännön avulla.</translation>
 <translation id="3185009703220253572">versiosta <ph name="SINCE_VERSION" /> alkaen</translation>
 <translation id="3187220842205194486">Android-sovellukset eivät voi käyttää yritysavaimia. Tällä käytännöllä ei ole vaikutusta niihin.</translation>
-<translation id="318812033927804102">Määrittää laajennusten hallinta-asetukset, joita <ph name="PRODUCT_NAME" /> käyttää.
-
-          Tämä käytäntö vaikuttaa moniin asetuksiin, jotka voivat olla esimerkiksi olemassa olevien laajennuksia koskevien käytäntöjen alaisia. Tämä käytäntö korvaa mahdollisesti käytössä olevat vanhat käytännöt.
-
-          Tämä käytäntö käyttää laajennustunnusta tai päivityksen URL-osoitetta. Laajennustunnusta käytettäessä määritys koskee vain tunnusta vastaavaa laajennusta. Oletusarvoinen määritys voidaan asettaa käyttämällä tunnuksena tähteä (*). Se koskee kaikkia laajennuksia, joille ei ole asetettu muokattua määritystä tässä käytännössä. Päivityksen URL-osoitetta käytettäessä määritys koskee kaikkia laajennuksia, jotka käyttävät täsmälleen laajennuksen luettelossa määriteltyä päivityksen URL-osoitetta. Katso <ph name="LINK_TO_EXTENSION_DOC1" />.
-
-          Yksittäisen laajennuksen (tai kaikkien samaa päivityksen URL-osoitetta käyttävien laajennusten) määritys on uusi hakemisto, joka voi sisältää alla kuvattuja kenttiä.
-
-          installation_mode: Laajennuksen asennustapaa vastaava merkkijono. Kelvolliset arvot:
-          * allowed: Antaa käyttäjän asentaa laajennuksen. Tämä on oletusasetus.
-          * blocked: Estää laajennuksen asentamisen.
-          * force_installed: Laajennus asennetaan automaattisesti, eikä käyttäjä voi poistaa sitä.
-          * normal_installed: Laajennus asennetaan automaattisesti, mutta käyttäjä voi poistaa sen käytöstä.
-
-          Kenttä installation_mode voidaan määrittää koskemaan myös useita laajennuksia. Se voi määrittää minkä tahansa laajennuksen (*) oletusasetukset tai koskea kaikkia laajennuksia, joilla on sama päivityksen URL-osoite. Tässä tapauksessa käytettävissä ovat vain arvot allowed ja blocked.
-
-          Jos asennustapa on force_installed tai normal_installed, myös kenttä update_url täytyy määrittää. Huom. Tässä käytännössä asetettua päivityksen URL-osoitetta käytetään vain ensimmäiseen asennukseen. Laajennuksen myöhempiin päivityksiin käytetään laajennuksen luettelossa ilmoitettua päivitysosoitetta. Päivityksen URL-osoitteen tulee johtaa XML-muotoiseen päivitysluetteloon yllä mainitulla tavalla.
-
-          blocked_permissions: Luettelo merkkijonoista, jotka vastaavat laajennuksen estettyjä sovellusliittymäkäyttöoikeuksia. Käyttöoikeuksien nimet merkitään laajennuksen luettelossa kuvatussa muodossa. Katso <ph name="LINK_TO_EXTENSION_DOC3" />. Tämä asetus voidaan määrittää myös mille tahansa laajennukselle (*). Jos laajennus tarvitsee käyttöoikeutta, jonka käyttö on estetty, sen ei anneta latautua. Jos estetty käyttöoikeus on laajennuksen valinnainen toiminto, laajennus käynnistyy normaalisti, mutta estettyjen käyttöoikeuksien pyynnöt hylätään automaattisesti käytön aikana.
-
-          allowed_permissions: Muistuttaa kenttää blocked_permissions. Tässä määritellään sallitut käyttöoikeudet, joiden käytön yleinen estolista saattaisi muuten estää. Tätä asetusta ei voi määrittää mille tahansa laajennukselle (*). Huom. Tämä asetus ei anna laajennuksille käyttöoikeuksia automaattisesti.
-
-          minimum_version_required: Versiota vastaava merkkijono. Versio merkitään laajennuksen luettelossa kuvatussa muodossa. Katso <ph name="LINK_TO_EXTENSION_DOC4" />. Jos laajennuksen versio on vanhempi kuin määritetty vähimmäisversio, se poistetaan käytöstä. Tämä koskee myös pakotettuja (force_installed) laajennuksia.
-
-          Seuraavat asetukset ovat käytettävissä vain oletusarvoisen määrityksen (*) kanssa:
-
-          install_sources: Jokainen tämän listan kohteista on laajennuksiin liittyvä kohdistusmalli (katso https://developer.chrome.com/extensions/match_patterns). Käyttäjät voivat asentaa laajennuksia helposti tämän listan kohteita vastaavista URL-osoitteista. Mallien täytyy sallia pääsy sekä CRX-tiedostoon että sivulle, jolla lataus aloitetaan (viittaussivu).
-
-          allowed_types: Tämä asetus määrittää laajennus- ja sovellustyypit, joiden asennuksen <ph name="PRODUCT_NAME" /> sallii. Sen arvo on lista merkkijonoista. Mahdolliset arvot: extension, theme, user_script, hosted_app, legacy_packaged_app, platform_app. Lisätietoja näistä tyypeistä on dokumentaatiossa liittyen laajennuksiin, joita <ph name="PRODUCT_NAME" /> käyttää.
-
-          Tämä käytäntö ei ole vielä käyttövalmis, joten sitä ei tule käyttää.
-          </translation>
 <translation id="3201273385265130876">Voit määrittää välityspalvelimen, jota <ph name="PRODUCT_NAME" /> käyttää, ja estää käyttäjiä muokkaamasta välityspalvelinasetuksia.
 
           Jos välityspalvelimia ei koskaan käytetä ja yhteys muodostetaan aina suoraan, kaikki muut asetukset ohitetaan.

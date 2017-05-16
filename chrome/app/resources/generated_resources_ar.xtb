@@ -15,7 +15,6 @@
 <translation id="1023220960495960452">‏التحويل الصوتي (فاناكام ← வணக்கம்)</translation>
 <translation id="1026822031284433028">تحميل صورة</translation>
 <translation id="1029317248976101138">تكبير/تصغير</translation>
-<translation id="1030173864176315846">تم بنجاح طباعة <ph name="PAGE_NUMBER" /> من الصفحات على <ph name="PRINTER_NAME" /></translation>
 <translation id="1031362278801463162">تحميل المعاينة</translation>
 <translation id="103279545524624934">‏احرص على تفريغ مساحة على القرص لتشغيل تطبيقات Android.</translation>
 <translation id="1033780634303702874">الوصول إلى الأجهزة التسلسلية</translation>
@@ -149,7 +148,6 @@
     <ph name="BR" />
     في الشاشة التالية، يُرجى إرسال تعليقات لمساعدتنا في حل هذه المشكلة.</translation>
 <translation id="121783623783282548">كلمتا المرور غير متطابقتين.</translation>
-<translation id="1218323606465324064">يتم الآن طباعة <ph name="PAGE_NUMBER" /> من الصفحات على <ph name="PRINTER_NAME" /></translation>
 <translation id="122082903575839559">خوارزمية التوقيع على الشهادة</translation>
 <translation id="1221024147024329929">‏PKCS #1 MD2 مع تشفير RSA</translation>
 <translation id="1221825588892235038">التحديد فقط</translation>
@@ -510,6 +508,7 @@
 <translation id="1699395855685456105">مراجعة الأجهزة:</translation>
 <translation id="1700199471143028312">لا يسمح المشرف بإنشاء مستخدمين تحت الإشراف.</translation>
 <translation id="1701062906490865540">إزالة هذا الشخص</translation>
+<translation id="1701364987952948449">التصفح كزائر</translation>
 <translation id="1706586824377653884">تمت الإضافة من قبل المشرف</translation>
 <translation id="1706625117072057435">مستويات التكبير/التصغير</translation>
 <translation id="1707463636381878959">مشاركة هذه الشبكة مع مستخدمين آخرين</translation>
@@ -755,7 +754,6 @@
 <translation id="2114224913786726438">الوحدات (<ph name="TOTAL_COUNT" />) - لم يتم اكتشاف أية تعارضات</translation>
 <translation id="2114326799768592691">إعادة تحميل الإطار</translation>
 <translation id="2115103655317273167">إرسال إلى هاتف</translation>
-<translation id="2115291620696624944">حدث خطأ أثناء طباعة <ph name="PAGE_NUMBER" /> من الصفحات على <ph name="PRINTER_NAME" /></translation>
 <translation id="2115926821277323019">‏يجب أن يكون عنوان URL صالحًا</translation>
 <translation id="2115946962706216358">تعذّر انضمام الجهاز إلى النطاق. وقد يرجع السبب في ذلك إلى تجاوز الحد الأقصى لعمليات انضمام الأجهزة المسموح بها لحسابك على الخادم.</translation>
 <translation id="2116673936380190819">الساعة الماضية</translation>
@@ -874,7 +872,6 @@
 <translation id="2255317897038918278">‏الطابع الزمني لـ Microsoft</translation>
 <translation id="225614027745146050">مرحبًا</translation>
 <translation id="225692081236532131">حالة التنشيط</translation>
-<translation id="2260567344816042527">‏سوف يستخدم Google Chrome بيانات شبكة الجوَال إذا كنت غير متصل بشبكة أخرى.</translation>
 <translation id="2262477216570151239">تأخير قبل التكرار</translation>
 <translation id="226269835214688456">‏إذا قمت بإيقاف تشغيل Smart Lock في Chromebook، فلن تكون قادرًا على إلغاء قفل أجهزة Chrome باستخدام هاتفك. وستحتاج إلى كتابة كلمة المرور.</translation>
 <translation id="2263189956353037928">الخروج وإعادة تسجيل الدخول</translation>
@@ -896,6 +893,7 @@
 <translation id="2282146716419988068">‏معالجة وحدة معالجة الرسومات (GPU)</translation>
 <translation id="2282155092769082568">‏عنوان URL للتهيئة التلقائية:</translation>
 <translation id="2283117145434822734">F6</translation>
+<translation id="2286841657746966508">عنوان الفاتورة</translation>
 <translation id="2286950485307333924">‏تم تسجيل دخولك الآن إلى Chrome</translation>
 <translation id="2287590536030307392">إيقاف جميع الاتصالات اللاسلكية.</translation>
 <translation id="2288735659267887385">إعدادات إمكانية الوصول</translation>
@@ -1632,6 +1630,7 @@
 <translation id="3315158641124845231">إخفاء <ph name="PRODUCT_NAME" /></translation>
 <translation id="3317459757438853210">طباعة على الجانبين</translation>
 <translation id="3319048459796106952">نافذة &amp; جديدة للتصفح المتخفي</translation>
+<translation id="3320021301628644560">إضافة عنوان إرسال الفواتير</translation>
 <translation id="3320859581025497771">شركة الاتصالات</translation>
 <translation id="3323447499041942178">مربع نص</translation>
 <translation id="3324301154597925148">هل هذه هي صفحة البحث التي كنت تتوقع ظهورها؟</translation>
@@ -1830,7 +1829,6 @@
 <translation id="3618849550573277856">البحث عن "<ph name="LOOKUP_STRING" />"</translation>
 <translation id="3620292326130836921">تم نسخ جميع العناصر احتياطيًا</translation>
 <translation id="3623574769078102674">هذا المستخدم الذي يخضع للإشراف ستتم إدارته عن طريق <ph name="MANAGER_EMAIL" />.</translation>
-<translation id="3624814222765772771">مستوى البطارية ضعيف جدًا لإجراء التحديث (<ph name="PROGRESS_PERCENT" />%)</translation>
 <translation id="3625870480639975468">إعادة تعيين التكبير/التصغير</translation>
 <translation id="3626281679859535460">السطوع</translation>
 <translation id="3627052133907344175">تتطلب الإضافة "<ph name="IMPORT_NAME" />" مع إصدار أدنى "<ph name="IMPORT_VERSION" />"، ولكن لا يتم تثبيت سوى "<ph name="INSTALLED_VERSION" />".</translation>
@@ -3023,7 +3021,6 @@
 <translation id="5454166040603940656">مع <ph name="PROVIDER" /></translation>
 <translation id="5457113250005438886">غير صالحة</translation>
 <translation id="5457459357461771897">التعرّف على الصور، والموسيقى، والوسائط الأخرى من الكمبيوتر وحذفها</translation>
-<translation id="5457599981699367932">تصفَّح كزائر</translation>
 <translation id="5463275305984126951">فهرس المجلد <ph name="LOCATION" /></translation>
 <translation id="5463856536939868464">قائمة تحتوي على إشارات مخفية</translation>
 <translation id="5464632865477611176">التشغيل في هذه المرة</translation>
@@ -3481,7 +3478,6 @@
 <translation id="6181431612547969857">تم حظر التنزيل</translation>
 <translation id="6185132558746749656">موقع الجهاز</translation>
 <translation id="6185696379715117369">صفحة لأعلى</translation>
-<translation id="618807527697571179">تعذَّر اكتشاف طراز طابعتك. حدِّد الشركة المصنّعة والطراز من القائمة.</translation>
 <translation id="6188939051578398125">أدخل أسماء أو عناوين.</translation>
 <translation id="6189412234224385711">فتح باستخدام <ph name="EXTENSION_NAME" /></translation>
 <translation id="6196640612572343990">حظر ملفات تعريف الارتباط للجهات الخارجية</translation>
@@ -3719,6 +3715,7 @@
 <translation id="6509136331261459454">إدارة المستخدمين الآخرين...</translation>
 <translation id="6509207748479174212">ترخيص الوسائط</translation>
 <translation id="6510568984200103950">إعدادات أقل</translation>
+<translation id="6513247462497316522">‏سيستخدم Google Chrome بيانات الجوال إذا لم تكن متصلاً بشبكة أخرى.</translation>
 <translation id="6514565641373682518">عطّلت هذه الصفحة مؤشر الماوس.</translation>
 <translation id="6518014396551869914">نس&amp;خ الصورة</translation>
 <translation id="651942933739530207">هل تريد أن يشارك <ph name="APP_NAME" /> شاشتك وإخراج الصوت؟</translation>

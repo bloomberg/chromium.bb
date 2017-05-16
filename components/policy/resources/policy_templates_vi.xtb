@@ -608,38 +608,6 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="316778957754360075">Cài đặt này đã bị xóa kể từ phiên bản <ph name="PRODUCT_NAME" /> 29. Phương thức được đề xuất để thiết lập bộ sưu tập tiện ích/ứng dụng được tổ chức lưu trữ là đưa trang web lưu trữ gói CRX vào ExtensionInstallSources và đặt liên kết tải xuống trực tiếp vào trong các gói trên trang web. Có thể tạo trình chạy cho trang web đó bằng chính sách ExtensionInstallForcelist.</translation>
 <translation id="3185009703220253572">kể từ phiên bản <ph name="SINCE_VERSION" /></translation>
 <translation id="3187220842205194486">Các ứng dụng Android không thể truy cập vào khóa công ty. Chính sách này không ảnh hưởng đến các ứng dụng đó.</translation>
-<translation id="318812033927804102">Định cấu hình cài đặt quản lý tiện ích đối với <ph name="PRODUCT_NAME" />.
-
-          Chính sách này kiểm soát nhiều cài đặt, bao gồm cài đặt do bất kỳ chính sách nào liên quan đến tiện ích hiện có kiểm soát. Chính sách này sẽ ghi đè bất kỳ chính sách cũ nào nếu cả hai được đặt.
-
-          Chính sách này ánh xạ ID tiện ích hoặc URL cập nhật sang cấu hình của nó. Với ID tiện ích, cấu hình sẽ chỉ được áp dụng cho tiện ích đã chỉ định. Bạn có thể đặt cấu hình mặc định cho ID đặc biệt "*", điều này sẽ áp dụng cho tất cả các tiện ích chưa đặt cấu hình tùy chỉnh trong chính sách này. Với URL cập nhật, cấu hình sẽ được áp dụng cho tất cả tiện ích có URL cập nhật chính xác đã nêu trong tệp kê khai của tiện ích này, như được mô tả tại <ph name="LINK_TO_EXTENSION_DOC1" />.
-
-          Cấu hình cho mỗi tiện ích (hoặc tiện ích có cùng URL cập nhật) là từ điển khác có thể chứa các trường được nêu dưới đây.
-
-          "installation_mode": ánh xạ sang chuỗi cho biết chế độ cài đặt đối với tiện ích. Các chuỗi hợp lệ là:
-          * "allowed": cho phép người dùng cài đặt tiện ích. Đây là thao tác mặc định.
-          * "blocked": chặn cài đặt tiện ích.
-          * "force_installed": tiện ích tự động được cài đặt và người dùng không thể xóa.
-          * "normal_installed": tiện ích tự động được cài đặt nhưng người dùng có thể tắt.
-
-          Bạn cũng có thể định cấu hình "installation_mode" cho nhiều tiện ích, bao gồm cả tiện ích "*" (là cài đặt mặc định) và các tiện ích có cùng URL cập nhật. Bạn chỉ có thể sử dụng các giá trị "allowed" và "blocked" trong trường hợp này.
-
-          Nếu chế độ được đặt thành "force_installed" hoặc "normal_installed" thì bạn cũng phải định cấu hình "update_url". Xin lưu ý rằng URL cập nhật được đặt trong chính sách này chỉ dùng cho cài đặt ban đầu; các lần cập nhật tiện ích tiếp theo được chỉ ra trong tệp kê khai của tiện ích. URL cập nhật phải trỏ tới tài liệu XML tệp kê khai cập nhật như được đề cập ở trên.
-
-          "blocked_permissions": ánh xạ sang danh sách các chuỗi cho biết quyền API đã chặn đối với tiện ích. Tên các quyền giống với các chuỗi quyền được khai báo trong tệp kê khai của tiện ích như được mô tả tại <ph name="LINK_TO_EXTENSION_DOC3" />. Bạn cũng có thể định cấu hình cài đặt này cho tiện ích "*". Nếu tiện ích yêu cầu quyền trên danh sách chặn thì quyền đó sẽ không được phép tải. Nếu tiện ích chứa một quyền bị chặn như yêu cầu tùy chọn, quyền đó sẽ được xử lý theo cách thông thường nhưng yêu cầu quyền xung đột sẽ tự động bị từ chối vào thời gian chạy.
-
-          "allowed_permissions": tương tự như "blocked_permissions", nhưng thay vào đó cho phép rõ ràng một số quyền có thể bị chặn theo danh sách quyền bị chặn chung. Do đó, bạn không thể định cấu hình cho tiện ích "*". Xin lưu ý rằng cài đặt này không tự động cung cấp quyền đã cấp cho tiện ích.
-
-          "minimum_version_required": ánh xạ sang chuỗi phiên bản. Định dạng của chuỗi phiên bản tương tự như định dạng được sử dụng trong tệp kê khai của tiện ích, như được mô tả tại <ph name="LINK_TO_EXTENSION_DOC4" />. Tiện ích có phiên bản cũ hơn phiên bản tối thiểu đã chỉ định sẽ bị tắt. Điều này cũng áp dụng cho tiện ích được cài đặt bắt buộc.
-
-          Bạn chỉ có thể sử dụng các cài đặt sau cho cấu hình "*" mặc định:
-
-          "install_sources": Mỗi mục trong danh sách này là mẫu khớp với kiểu của tiện ích (hãy xem https://developer.chrome.com/extensions/match_patterns). Người dùng sẽ có thể dễ dàng cài đặt mục từ URL bất kỳ khớp với mục trong danh sách này. Cả vị trí của tệp *.crx và trang nơi quá trình tải xuống được bắt đầu (ví dụ:  liên kết giới thiệu) phải được các mẫu này cho phép.
-
-          "allowed_types": Cài đặt này đưa vào danh sách trắng các loại tiện ích/ứng dụng có thể được cài đặt trong <ph name="PRODUCT_NAME" />.  Giá trị là một danh sách chuỗi, mỗi chuỗi phải là một trong số các loại sau: "extension", "theme", "user_script", "hosted_app", "legacy_packaged_app", "platform_app". Hãy xem tài liệu về tiện ích <ph name="PRODUCT_NAME" /> để biết thêm thông tin về các loại này.
-
-          Chính sách này chưa sẵn sàng để sử dụng, vui lòng không sử dụng chính sách đó.
-          </translation>
 <translation id="3201273385265130876">Cho phép bạn chỉ định máy chủ proxy được <ph name="PRODUCT_NAME" /> sử dụng và không cho người dùng thay đổi cài đặt proxy.
 
           Nếu bạn cho không bao giờ sử dụng máy chủ proxy và luôn kết nối trực tiếp, tất cả các tùy chọn khác đều được bỏ qua.

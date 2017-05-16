@@ -27,7 +27,6 @@
 Debes activar la ubicación y el Bluetooth para utilizar la Web física.</translation>
 <translation id="124678866338384709">Cierra la pestaña actual</translation>
 <translation id="1258753120186372309">Doodle de Google: <ph name="DOODLE_DESCRIPTION" /></translation>
-<translation id="1265597927250775944">Borra las sugerencias de la barra de direcciones y el historial.</translation>
 <translation id="1272079795634619415">Interrumpir</translation>
 <translation id="1283039547216852943">Toca para ampliar</translation>
 <translation id="1285320974508926690">No traducir nunca este sitio</translation>
@@ -263,7 +262,6 @@ Para ajustar el término de búsqueda, mantén pulsado el texto para seleccionar
 <translation id="3859306556332390985">Buscar hacia delante</translation>
 <translation id="3894427358181296146">Añadir carpeta</translation>
 <translation id="3895926599014793903">Forzar zoom</translation>
-<translation id="3915590178385207649">Borra el historial de todos los dispositivos en los que has iniciado sesión. Consulta otra actividad de tu cuenta de Google en la página <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="3917783807003067648">La ubicación está bloqueada</translation>
 <translation id="3927692899758076493">Sans Serif</translation>
 <translation id="3928666092801078803">Combinar mis datos</translation>
@@ -609,7 +607,6 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mostrándote anu
 <translation id="7423098979219808738">Preguntar antes</translation>
 <translation id="7437998757836447326">Cerrar sesión en Chrome</translation>
 <translation id="7445411102860286510">Permite que los sitios web reproduzcan automáticamente los vídeos silenciados (recomendado)</translation>
-<translation id="7449574997654022410">Borra las sugerencias de la barra de direcciones y el historial. Consulta otra actividad de tu cuenta de Google en la página <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="7464701184726199289">Se borrarán los datos sincronizados de todos los dispositivos. No se eliminará la configuración guardada de los sitios web, lo cual puede reflejar tus hábitos de navegación. <ph name="BEGIN_LINK" />Más información<ph name="END_LINK" /></translation>
 <translation id="7473891865547856676">No, gracias</translation>
 <translation id="7475192538862203634">Si este mensaje aparece con frecuencia, prueba estas <ph name="BEGIN_LINK" />sugerencias<ph name="END_LINK" />.</translation>

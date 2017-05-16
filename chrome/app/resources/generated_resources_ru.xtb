@@ -15,7 +15,6 @@
 <translation id="1023220960495960452">Транслитерация (vanakkam → வணக்கம்)</translation>
 <translation id="1026822031284433028">Загрузить изображение</translation>
 <translation id="1029317248976101138">Масштаб</translation>
-<translation id="1030173864176315846">Печать <ph name="PAGE_NUMBER" /> стр. на принтере <ph name="PRINTER_NAME" /> выполнена успешно</translation>
 <translation id="1031362278801463162">Загрузка данных для предварительного просмотра</translation>
 <translation id="103279545524624934">Чтобы запускать Android-приложения, освободите пространство на диске.</translation>
 <translation id="1033780634303702874">Доступ к последовательным устройствам</translation>
@@ -149,7 +148,6 @@
     <ph name="BR" />
     Оставьте отзыв на следующем экране, чтобы помочь нам исправить ошибку.</translation>
 <translation id="121783623783282548">Пароли не совпадают.</translation>
-<translation id="1218323606465324064">Печать <ph name="PAGE_NUMBER" /> стр. на принтере <ph name="PRINTER_NAME" />…</translation>
 <translation id="122082903575839559">Алгоритм подписи сертификатов</translation>
 <translation id="1221024147024329929">PKCS #1 MD2 с шифрованием RSA</translation>
 <translation id="1221825588892235038">Только выбранные</translation>
@@ -508,6 +506,7 @@
 <translation id="1699395855685456105">Версия оборудования:</translation>
 <translation id="1700199471143028312">Администратор запретил вам создавать контролируемые профили.</translation>
 <translation id="1701062906490865540">Удалить пользователя</translation>
+<translation id="1701364987952948449">Войти в гостевой режим</translation>
 <translation id="1706586824377653884">Добавлено администратором</translation>
 <translation id="1706625117072057435">Масштабирование</translation>
 <translation id="1707463636381878959">Разрешить другим пользователям доступ к этой сети</translation>
@@ -753,7 +752,6 @@
 <translation id="2114224913786726438">Модули (<ph name="TOTAL_COUNT" />) – Конфликтов не обнаружено</translation>
 <translation id="2114326799768592691">Перезагрузить &amp;фрейм</translation>
 <translation id="2115103655317273167">Отправить на телефон</translation>
-<translation id="2115291620696624944">Не удалось распечатать <ph name="PAGE_NUMBER" /> стр. на принтере <ph name="PRINTER_NAME" /></translation>
 <translation id="2115926821277323019">Должен являться действительным URL-адресом</translation>
 <translation id="2115946962706216358">Не удалось подключить компьютер к домену. Возможно, для вашего аккаунта на сервере превышено допустимое число соединений.</translation>
 <translation id="2116673936380190819">за прошедший час</translation>
@@ -872,7 +870,6 @@
 <translation id="2255317897038918278">Штамп времени Microsoft</translation>
 <translation id="225614027745146050">Добро пожаловать!</translation>
 <translation id="225692081236532131">Статус активации</translation>
-<translation id="2260567344816042527">Google Chrome будет использовать для передачи данных мобильную сеть, если нет другого интернет-соединения.</translation>
 <translation id="2262477216570151239">Задержка перед повторным вводом</translation>
 <translation id="226269835214688456">Если вы отключите Smart Lock для Chromebook, то не сможете разблокировать устройства Chrome с помощью телефона и вам потребуется вводить пароль.</translation>
 <translation id="2263189956353037928">Выйти и снова войти</translation>
@@ -894,6 +891,7 @@
 <translation id="2282146716419988068">Процесс GPU</translation>
 <translation id="2282155092769082568">URL автоматической настройки:</translation>
 <translation id="2283117145434822734">F6</translation>
+<translation id="2286841657746966508">Платежный адрес</translation>
 <translation id="2286950485307333924">Вы вошли в Chrome</translation>
 <translation id="2287590536030307392">Отключить все беспроводные подключения.</translation>
 <translation id="2288735659267887385">Специальные возможности</translation>
@@ -1635,6 +1633,7 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="3315158641124845231">Скрыть <ph name="PRODUCT_NAME" /></translation>
 <translation id="3317459757438853210">Двусторонняя печать</translation>
 <translation id="3319048459796106952">Новое окно в режиме &amp;инкогнито</translation>
+<translation id="3320021301628644560">Добавьте платежный адрес</translation>
 <translation id="3320859581025497771">ваш оператор</translation>
 <translation id="3323447499041942178">Текстовое поле</translation>
 <translation id="3324301154597925148">Другая поисковая система?</translation>
@@ -1833,7 +1832,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="3618849550573277856">Найти "<ph name="LOOKUP_STRING" />"</translation>
 <translation id="3620292326130836921">Данные сохранены!</translation>
 <translation id="3623574769078102674">Менеджер этого контролируемого профиля: <ph name="MANAGER_EMAIL" />.</translation>
-<translation id="3624814222765772771">Слишком низкий заряд батареи (<ph name="PROGRESS_PERCENT" />%). Обновление невозможно.</translation>
 <translation id="3625870480639975468">Исходный масштаб</translation>
 <translation id="3626281679859535460">Яркость</translation>
 <translation id="3627052133907344175">Для расширения требуется <ph name="IMPORT_NAME" /> с версией не ниже <ph name="IMPORT_VERSION" />. Сейчас установлена версия <ph name="INSTALLED_VERSION" />.</translation>
@@ -3030,7 +3028,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="5454166040603940656">с помощью <ph name="PROVIDER" /></translation>
 <translation id="5457113250005438886">Недопустимые данные</translation>
 <translation id="5457459357461771897">Доступ к фотографиям, музыке и другим медиафайлам на вашем компьютере, а также их удаление</translation>
-<translation id="5457599981699367932">Войти в гостевой режим</translation>
 <translation id="5463275305984126951">Содержание <ph name="LOCATION" /></translation>
 <translation id="5463856536939868464">Меню со скрытыми закладками</translation>
 <translation id="5464632865477611176">Запустить один раз</translation>
@@ -3487,7 +3484,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="6181431612547969857">Скачивание запрещено</translation>
 <translation id="6185132558746749656">Местоположение устройства</translation>
 <translation id="6185696379715117369">На страницу вверх</translation>
-<translation id="618807527697571179">Не удалось распознать принтер. Выберите производителя и модель принтера из списка.</translation>
 <translation id="6188939051578398125">Введите имена или адреса.</translation>
 <translation id="6189412234224385711">Открыть с помощью расширения "<ph name="EXTENSION_NAME" />"</translation>
 <translation id="6196640612572343990">Блокировать сторонние файлы cookie</translation>
@@ -3725,6 +3721,7 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="6509136331261459454">Управление аккаунтами</translation>
 <translation id="6509207748479174212">Лицензии</translation>
 <translation id="6510568984200103950">Скрыть</translation>
+<translation id="6513247462497316522">При отсутствии подключения к другой сети Google Chrome будет использовать мобильную сеть передачи данных.</translation>
 <translation id="6514565641373682518">Эта страница скрыла курсор.</translation>
 <translation id="6518014396551869914">Коп&amp;ировать картинку</translation>
 <translation id="651942933739530207">Предоставить приложению "<ph name="APP_NAME" />" доступ к вашему экрану и звуку?</translation>

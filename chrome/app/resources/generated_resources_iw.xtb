@@ -15,7 +15,6 @@
 <translation id="1023220960495960452">‏תעתוק (vanakkam → வணக்கம்)</translation>
 <translation id="1026822031284433028">טען תמונה</translation>
 <translation id="1029317248976101138">התקרב</translation>
-<translation id="1030173864176315846"><ph name="PAGE_NUMBER" /> עמודים הודפסו בהצלחה ב-<ph name="PRINTER_NAME" /></translation>
 <translation id="1031362278801463162">טוען תצוגה מקדימה</translation>
 <translation id="103279545524624934">‏עליך לפנות שטח אחסון כדי להפעיל אפליקציות Android.</translation>
 <translation id="1033780634303702874">גישה להתקנים הסיריאליים שלך</translation>
@@ -149,7 +148,6 @@
     <ph name="BR" />
     במסך הבא, שלח אלינו משוב כדי לעזור לנו לתקן את הבעיה.</translation>
 <translation id="121783623783282548">הסיסמאות אינן תואמות.</translation>
-<translation id="1218323606465324064">מדפיס עכשיו <ph name="PAGE_NUMBER" /> עמודים ב-<ph name="PRINTER_NAME" /></translation>
 <translation id="122082903575839559">אלגוריתם חתימה של אישור </translation>
 <translation id="1221024147024329929">‏PKCS #1 MD2 עם הצפנת RSA</translation>
 <translation id="1221825588892235038">בחירה בלבד</translation>
@@ -505,6 +503,7 @@
 <translation id="1699395855685456105">בקרת חומרה:</translation>
 <translation id="1700199471143028312">אין לך הרשאה ממנהל המערכת שלך ליצור משתמשים בפיקוח.</translation>
 <translation id="1701062906490865540">הסר משתמש זה</translation>
+<translation id="1701364987952948449">גלוש כאורח</translation>
 <translation id="1706586824377653884">נוסף על ידי מנהל המערכת שלך</translation>
 <translation id="1706625117072057435">רמות מרחק מתצוגה</translation>
 <translation id="1707463636381878959">שתף רשת זו עם משתמשים אחרים</translation>
@@ -750,7 +749,6 @@
 <translation id="2114224913786726438">מודולים (<ph name="TOTAL_COUNT" />) - לא נמצאו התנגשויות</translation>
 <translation id="2114326799768592691">טען מחדש את ה&amp;מסגרת</translation>
 <translation id="2115103655317273167">שלח לטלפון</translation>
-<translation id="2115291620696624944">אירעה שגיאה בהדפסה של <ph name="PAGE_NUMBER" /> עמודים ב-<ph name="PRINTER_NAME" /></translation>
 <translation id="2115926821277323019">חייבת להיות כתובת אתר חוקית</translation>
 <translation id="2115946962706216358">צירוף המכשיר לדומיין נכשל. ייתכן שהסיבה לכך היא חריגה בחשבונך ממספר הצירופים המותרים של המכשיר בשרת.</translation>
 <translation id="2116673936380190819">מהשעה האחרונה</translation>
@@ -869,7 +867,6 @@
 <translation id="2255317897038918278">‏הטבעת חותמת זמן של Microsoft</translation>
 <translation id="225614027745146050">ברוכים הבאים</translation>
 <translation id="225692081236532131">סטטוס הפעלה</translation>
-<translation id="2260567344816042527">‏Google Chrome ישתמש בנתונים סלולריים אם אינך מחובר לרשת אחרת.</translation>
 <translation id="2262477216570151239">השהייה לפני חזרה</translation>
 <translation id="226269835214688456">‏אם תשבית את Smart Lock for Chromebook, לא תוכל לבטל את נעילת מכשירי ה-Chrome שלך באמצעות הטלפון, ותצטרך להקליד את הסיסמה.</translation>
 <translation id="2263189956353037928">עליך לצאת ולהיכנס שוב</translation>
@@ -891,6 +888,7 @@
 <translation id="2282146716419988068">‏תהליך GPU</translation>
 <translation id="2282155092769082568">כתובת אתר של תצורה אוטומטית:</translation>
 <translation id="2283117145434822734">F6</translation>
+<translation id="2286841657746966508">כתובת לחיוב</translation>
 <translation id="2286950485307333924">‏אתה מחובר כעת ל-Chrome</translation>
 <translation id="2287590536030307392">כבה את כל החיבורים האלחוטיים.</translation>
 <translation id="2288735659267887385">הגדרות של נגישות</translation>
@@ -1629,6 +1627,7 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="3315158641124845231">הסתר את <ph name="PRODUCT_NAME" /></translation>
 <translation id="3317459757438853210">דו-צדדי</translation>
 <translation id="3319048459796106952">חלון 'גלישה בסתר' חדש</translation>
+<translation id="3320021301628644560">הוספה של כתובת לחיוב</translation>
 <translation id="3320859581025497771">הספק שלך</translation>
 <translation id="3323447499041942178">תיבת טקסט</translation>
 <translation id="3324301154597925148">האם זהו דף החיפוש שציפית לראות?</translation>
@@ -1827,7 +1826,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="3618849550573277856">חפש “<ph name="LOOKUP_STRING" />”</translation>
 <translation id="3620292326130836921">הכל מגובה!</translation>
 <translation id="3623574769078102674">משתמש בפיקוח זה ינוהל על ידי <ph name="MANAGER_EMAIL" />.</translation>
-<translation id="3624814222765772771">הסוללה חלשה מדי להתקנת העדכון (%<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="3625870480639975468">אפס מרחק מתצוגה</translation>
 <translation id="3626281679859535460">בהירות</translation>
 <translation id="3627052133907344175">כדי להשתמש בתוסף יש צורך ב-"<ph name="IMPORT_NAME" />" בגרסה "<ph name="IMPORT_VERSION" />" לכל הפחות, אך רק גרסה "<ph name="INSTALLED_VERSION" />" מותקנת.</translation>
@@ -3025,7 +3023,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="5454166040603940656">עם <ph name="PROVIDER" /></translation>
 <translation id="5457113250005438886">לא חוקי</translation>
 <translation id="5457459357461771897">קריאה ומחיקה של קובצי תמונות, מוזיקה ומדיה מסוגים נוספים מהמחשב שלך</translation>
-<translation id="5457599981699367932">גלוש כאורח</translation>
 <translation id="5463275305984126951">אינדקס של <ph name="LOCATION" /></translation>
 <translation id="5463856536939868464">התפריט מכיל סימניות נסתרות</translation>
 <translation id="5464632865477611176">הפעל באופן חד פעמי</translation>
@@ -3482,7 +3479,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="6181431612547969857">ההורדה נחסמה</translation>
 <translation id="6185132558746749656">מיקום מכשיר</translation>
 <translation id="6185696379715117369">Page up</translation>
-<translation id="618807527697571179">לא ניתן לזהות את דגם המדפסת שלך. בחר יצרן ודגם מתוך הרשימה.</translation>
 <translation id="6188939051578398125">הזן שמות או כתובות.</translation>
 <translation id="6189412234224385711">פתח באמצעות <ph name="EXTENSION_NAME" /></translation>
 <translation id="6196640612572343990">‏חסום קובצי Cookie של צד שלישי</translation>
@@ -3720,6 +3716,7 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="6509136331261459454">ניהול משתמשים אחרים...</translation>
 <translation id="6509207748479174212">רישיון מדיה</translation>
 <translation id="6510568984200103950">פחות אפשרויות הגדרה</translation>
+<translation id="6513247462497316522">‏Google Chrome ישתמש בנתונים לנייד אם אתה לא מחובר לרשת אחרת.</translation>
 <translation id="6514565641373682518">דף זה השבית את סמן העכבר שלך.</translation>
 <translation id="6518014396551869914">הע&amp;תק תמונה</translation>
 <translation id="651942933739530207">האם ברצונך ש-<ph name="APP_NAME" /> ישתף את המסך ואת פלט האודיו שלך?</translation>

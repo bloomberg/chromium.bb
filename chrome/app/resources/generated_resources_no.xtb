@@ -15,7 +15,6 @@
 <translation id="1023220960495960452">Translitterasjon (vanakkam → வணக்கம்)</translation>
 <translation id="1026822031284433028">Last inn bildet</translation>
 <translation id="1029317248976101138">Zoom</translation>
-<translation id="1030173864176315846">Skrev ut <ph name="PAGE_NUMBER" /> sider på <ph name="PRINTER_NAME" /></translation>
 <translation id="1031362278801463162">Laster inn forhåndsvisning</translation>
 <translation id="103279545524624934">Frigjør lagringsplass for å starte Android-apper.</translation>
 <translation id="1033780634303702874">bruke de seriekoblede enhetene dine</translation>
@@ -149,7 +148,6 @@
     <ph name="BR" />
     Gå til neste skjermbilde, og send tilbakemelding for å hjelpe oss med å løse problemet.</translation>
 <translation id="121783623783282548">Passordene stemmer ikke overens.</translation>
-<translation id="1218323606465324064">Skriver ut <ph name="PAGE_NUMBER" /> sider på <ph name="PRINTER_NAME" /></translation>
 <translation id="122082903575839559">Signaturalgoritme for sertifikat</translation>
 <translation id="1221024147024329929">PKCS #1 MD2 med RSA-kryptering</translation>
 <translation id="1221825588892235038">Bare utvalg</translation>
@@ -182,7 +180,7 @@
 <translation id="1272079795634619415">Stopp</translation>
 <translation id="1272978324304772054">Denne brukerkontoen tilhører ikke domenet som enheten er registrert for. Hvis du vil registrere deg for et annet domene, må du først gå gjennom enhetsgjenoppretting.</translation>
 <translation id="1274977772557788323">Lagringsinnstillinger for Adobe Flash Player</translation>
-<translation id="1274997165432133392">Informasjonskapsler og andre nettsteddata</translation>
+<translation id="1274997165432133392">Informasjonskapsler og andre nettstedsdata</translation>
 <translation id="1275718070701477396">Valgt</translation>
 <translation id="127668050356036882">Lukk alle vinduene dine</translation>
 <translation id="1277908057200820621">Se enhetslisten</translation>
@@ -506,6 +504,7 @@
 <translation id="1699395855685456105">Maskinvareversjon:</translation>
 <translation id="1700199471143028312">Administratoren tillater deg ikke å opprette administrerte brukere.</translation>
 <translation id="1701062906490865540">Fjern denne personen</translation>
+<translation id="1701364987952948449">Surf som gjest</translation>
 <translation id="1706586824377653884">Lagt til av administratoren din</translation>
 <translation id="1706625117072057435">Zoomnivåer</translation>
 <translation id="1707463636381878959">Del dette nettverket med andre brukere</translation>
@@ -751,7 +750,6 @@
 <translation id="2114224913786726438">Moduler (<ph name="TOTAL_COUNT" />) – Fant ingen konflikter</translation>
 <translation id="2114326799768592691">Last inn &amp;rammen på nytt</translation>
 <translation id="2115103655317273167">Send til telefon</translation>
-<translation id="2115291620696624944">Feil ved utskrift av <ph name="PAGE_NUMBER" /> sider på <ph name="PRINTER_NAME" /></translation>
 <translation id="2115926821277323019">Må være en gyldig nettadresse</translation>
 <translation id="2115946962706216358">Kunne ikke knytte maskinen til domenet. Årsaken kan være at det maksimale antallet tillate tilknyttede maskiner for kontoen din på tjeneren er overskredet.</translation>
 <translation id="2116673936380190819">den siste timen</translation>
@@ -870,7 +868,6 @@ Når du har opprettet en ny administrert bruker, kan du når som helst – og fr
 <translation id="2255317897038918278">Microsoft tidsangivelse</translation>
 <translation id="225614027745146050">Velkommen</translation>
 <translation id="225692081236532131">Aktiveringsstatus</translation>
-<translation id="2260567344816042527">Google Chrome bruker mobildata hvis du ikke er koblet til noe annet nettverk.</translation>
 <translation id="2262477216570151239">Forsinkelse før gjentakelse</translation>
 <translation id="226269835214688456">Hvis du slår av Smart Lock for Chromebook, kan du ikke låse opp Chrome-enhetene dine ved hjelp av telefonen. Du må da skrive inn passordet.</translation>
 <translation id="2263189956353037928">Logg av og på</translation>
@@ -892,6 +889,7 @@ Når du har opprettet en ny administrert bruker, kan du når som helst – og fr
 <translation id="2282146716419988068">GPU-prosess</translation>
 <translation id="2282155092769082568">Nettadresse for automatisk konfigurering:</translation>
 <translation id="2283117145434822734">F6</translation>
+<translation id="2286841657746966508">Faktureringsadresse</translation>
 <translation id="2286950485307333924">Nå er du logget på Chrome</translation>
 <translation id="2287590536030307392">Slå av alle trådløse tilkoblinger.</translation>
 <translation id="2288735659267887385">Innstillinger for tilgjengelighet</translation>
@@ -1629,6 +1627,7 @@ Fra <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3315158641124845231">Skjul <ph name="PRODUCT_NAME" /></translation>
 <translation id="3317459757438853210">Tosidig</translation>
 <translation id="3319048459796106952">Nytt &amp;inkognitovindu</translation>
+<translation id="3320021301628644560">Legg til faktureringsadresse</translation>
 <translation id="3320859581025497771">din operatør</translation>
 <translation id="3323447499041942178">Tekstboks</translation>
 <translation id="3324301154597925148">Er dette søkesiden du forventet?</translation>
@@ -1827,7 +1826,6 @@ Fra <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3618849550573277856">Slå opp «<ph name="LOOKUP_STRING" />»</translation>
 <translation id="3620292326130836921">Alt er sikkerhetskopiert!</translation>
 <translation id="3623574769078102674">Denne administrerte brukeren blir administrert av <ph name="MANAGER_EMAIL" />.</translation>
-<translation id="3624814222765772771">Det er for lite batteri igjen til å starte oppdateringen (<ph name="PROGRESS_PERCENT" /> %)</translation>
 <translation id="3625870480639975468">Tilbakestill zoom</translation>
 <translation id="3626281679859535460">Lysstyrke</translation>
 <translation id="3627052133907344175">Utvidelsen krever «<ph name="IMPORT_NAME" />» med «<ph name="IMPORT_VERSION" />» som minimumsversjon, men bare versjon «<ph name="INSTALLED_VERSION" />» er installert for øyeblikket.</translation>
@@ -1959,7 +1957,7 @@ Fra <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3809280248639369696">Marsboer</translation>
 <translation id="3810973564298564668">Administrer</translation>
 <translation id="3811494700605067549">1 fil er valgt</translation>
-<translation id="381202950560906753">Legg til et til</translation>
+<translation id="381202950560906753">Legg til ett til</translation>
 <translation id="3812034401428455285"><ph name="UWS_NAME" /> og <ph name="UWS_NAME" /></translation>
 <translation id="3812525830114410218">Ugyldig sertifikat</translation>
 <translation id="3813296892522778813">Gå til <ph name="BEGIN_LINK_CHROMIUM" />brukerstøtten for Google Chrome<ph name="END_LINK_CHROMIUM" /> hvis du ikke finner det du ser etter</translation>
@@ -3019,7 +3017,6 @@ Trykk på en tast for å fortsette økten.</translation>
 <translation id="5454166040603940656">med <ph name="PROVIDER" /></translation>
 <translation id="5457113250005438886">Ugyldig</translation>
 <translation id="5457459357461771897">lese og slette bilder, musikk og andre medier fra datamaskinen din</translation>
-<translation id="5457599981699367932">Surf som gjest</translation>
 <translation id="5463275305984126951">Indeks for <ph name="LOCATION" /></translation>
 <translation id="5463856536939868464">Meny med skjulte bokmerker</translation>
 <translation id="5464632865477611176">Kjør denne gangen</translation>
@@ -3476,7 +3473,6 @@ Trykk på en tast for å fortsette økten.</translation>
 <translation id="6181431612547969857">Nedlastingen ble blokkert</translation>
 <translation id="6185132558746749656">Enhetsposisjon</translation>
 <translation id="6185696379715117369">Opp én side</translation>
-<translation id="618807527697571179">Fant ikke skrivermodellen din. Velg en produsent og modell fra listen.</translation>
 <translation id="6188939051578398125">Angi navn eller adresser.</translation>
 <translation id="6189412234224385711">Åpne med <ph name="EXTENSION_NAME" /></translation>
 <translation id="6196640612572343990">Blokkér informasjonskapsler fra tredjeparter</translation>
@@ -3713,6 +3709,7 @@ Trykk på en tast for å fortsette økten.</translation>
 <translation id="6509136331261459454">Administrer andre brukere</translation>
 <translation id="6509207748479174212">Medielisens</translation>
 <translation id="6510568984200103950">Færre innstillinger</translation>
+<translation id="6513247462497316522">Google Chrome bruker mobile data hvis du ikke er koblet til et annet nettverk.</translation>
 <translation id="6514565641373682518">Denne siden har deaktivert markøren din.</translation>
 <translation id="6518014396551869914">&amp;Kopier bilde</translation>
 <translation id="651942933739530207">Vil du at <ph name="APP_NAME" /> skal dele skjerm- og lydutdataene dine?</translation>

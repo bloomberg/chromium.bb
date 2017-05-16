@@ -42,7 +42,7 @@
 <translation id="2389622953163669926">{NUM_DOWNLOAD,plural, =1{Download sedang berlangsung. Ingin membatalkan download dan keluar dari Chromium?}other{# download sedang berlangsung. Ingin membatalkan download dan keluar dari Chromium?}}</translation>
 <translation id="2396765026452590966">Ekstensi "<ph name="EXTENSION_NAME" />" telah mengubah apa yang ditampilkan oleh laman saat Anda memulai Chromium.</translation>
 <translation id="2483889755041906834">Di Chromium</translation>
-<translation id="2485422356828889247">Copot pemasangan</translation>
+<translation id="2485422356828889247">Uninstal</translation>
 <translation id="2486653164587200256">Chromium mungkin tidak berfungsi dengan semestinya karena sudah tidak didukung di Windows XP atau Windows Vista.</translation>
 <translation id="2527042973354814951">Muat ulang Chromium untuk mengaktifkan <ph name="PLUGIN_NAME" /></translation>
 <translation id="2535480412977113886">Chromium OS tidak dapat menyinkronkan data karena detail ID masuk Anda belum diperbarui.</translation>
@@ -155,7 +155,7 @@
 <translation id="6077017812234345835">Tindakan ini akan menghapus setidaknya <ph name="TOTAL_COUNT" /> item dari perangkat ini secara permanen. Untuk mengambil data Anda nanti, masuk ke Chromium sebagai $2.</translation>
 <translation id="608189560609172163">Chromium tidak dapat menyinkronkan data Anda karena kesalahan saat masuk.</translation>
 <translation id="6129621093834146363"><ph name="FILE_NAME" /> berbahaya, sehingga Chromium memblokirnya.</translation>
-<translation id="6212496753309875659">Komputer ini sudah memiliki Chromium versi yang lebih anyar. Jika perangkat lunak tidak bekerja, copot Chromium dan coba lagi.</translation>
+<translation id="6212496753309875659">Komputer ini sudah memiliki versi Chromium yang lebih baru. Jika software tidak bekerja, harap coba uninstal Chromium, lalu cobalah kembali.</translation>
 <translation id="6248213926982192922">Jadikan Chromium browser default</translation>
 <translation id="6295779123002464101"><ph name="FILE_NAME" /> mungkin berbahaya, sehingga Chromium memblokirnya.</translation>
 <translation id="6309712487085796862">Chromium menggunakan kamera Anda.</translation>
@@ -163,10 +163,10 @@
 <translation id="6334986366598267305">Kini, menggunakan Chromium dengan Akun Google Anda dan di komputer bersama jadi lebih mudah.</translation>
 <translation id="6373523479360886564">Anda yakin ingin mencopot pemasangan Chromium?</translation>
 <translation id="6394232988457703198">Mulai ulang Chromium sekarang.</translation>
-<translation id="6403826409255603130">Chromium adalah browser web yang menjalankan laman web dan aplikasi dengan kecepatan kilat. Browser ini cepat, stabil, dan mudah digunakan. Jelajahi web lebih aman dengan perlindungan dari perangkat lunak perusak dan phishing yang tertanam di dalam Chromium.</translation>
+<translation id="6403826409255603130">Chromium adalah browser web yang menjalankan laman web dan aplikasi dengan kecepatan kilat. Browser ini cepat, stabil, dan mudah digunakan. Jelajahi web lebih aman dengan perlindungan dari software perusak dan phishing yang tertanam di dalam Chromium.</translation>
 <translation id="6475912303565314141">Juga mengontrol laman apa yang ditampilkan saat Anda memulai Chromium.</translation>
 <translation id="6485906693002546646">Anda menggunakan <ph name="PROFILE_EMAIL" /> untuk menyinkronkan barang-barang Chromium. Untuk memperbarui preferensi sinkronisasi atau menggunakan Chromium tanpa akun Google, kunjungi <ph name="SETTINGS_LINK" />.</translation>
-<translation id="6510925080656968729">Copot Pemasangan Chromium</translation>
+<translation id="6510925080656968729">Uninstal Chromium</translation>
 <translation id="6526111688217511984">Chromium memerlukan akses penyimpanan untuk mendownload file.</translation>
 <translation id="6584627348340620412">Versi Chromium 32-bit berikutnya sudah tidak mendukung sistem Linux ini, tingkatkan versi ke Chromium 64-bit.</translation>
 <translation id="6593914713218535185">Chromium mungkin tidak berfungsi dengan semestinya karena sudah tidak didukung di sistem Linux ini.</translation>
@@ -221,7 +221,7 @@ Lihat email Anda di <ph name="ACCOUNT_EMAIL" /> untuk petunjuk lebih lanjut.</tr
 <translation id="7641113255207688324">Chromium bukan browser default Anda.</translation>
 <translation id="7729447699958282447">Chromium tidak dapat menyinkronkan data Anda karena Sinkronisasi tidak tersedia untuk domain Anda.</translation>
 <translation id="7745317241717453663">Tindakan ini akan menghapus data browsing dari perangkat. Untuk mengambil data nanti, login ke Chromium sebagai <ph name="USER_EMAIL" />.</translation>
-<translation id="7747138024166251722">Pemasang tidak dapat membuat direktori sementara. Periksa kapasitas kosong pada disk dan izin untuk memasang perangkat lunak.</translation>
+<translation id="7747138024166251722">Pemasang tidak dapat membuat direktori sementara. Periksa kapasitas kosong pada disk dan izin untuk memasang software.</translation>
 <translation id="7937630085815544518">Anda telah masuk ke Chromium sebagai <ph name="USER_EMAIL_ADDRESS" />. Gunakan akun yang sama untuk masuk kembali.</translation>
 <translation id="795025003224538582">Jangan memulai ulang</translation>
 <translation id="7962572577636132072">Chromium otomatis diperbarui sehingga Anda selalu memiliki versi terbaru.</translation>
@@ -253,9 +253,9 @@ Lihat email Anda di <ph name="ACCOUNT_EMAIL" /> untuk petunjuk lebih lanjut.</tr
 <translation id="8862326446509486874">Anda tidak memiliki hak yang diperlukan untuk pemasangan tingkat sistem. Coba jalankan lagi pemasang saat masuk sebagai Administrator.</translation>
 <translation id="8897323336392112261">Juga mengontrol laman apa yang ditampilkan saat Anda memulai Chromium atau mengeklik tombol Beranda.</translation>
 <translation id="8907580949721785412">Chromium mencoba menampilkan sandi. Ketik sandi Windows untuk mengizinkannya.</translation>
-<translation id="894903460958736500">Perangkat lunak yang berjalan di komputer Anda tidak kompatibel dengan Chromium.</translation>
+<translation id="894903460958736500">Software yang berjalan di komputer Anda tidak kompatibel dengan Chromium.</translation>
 <translation id="8968921422458636175">Chromium akan menyimpan sandi ini dengan <ph name="SAVED_PASSWORD_LINK" />. Anda tidak perlu mengingatnya.</translation>
-<translation id="8974095189086268230">OS Chromium terwujud karena <ph name="BEGIN_LINK_CROS_OSS" />perangkat lunak sumber terbuka<ph name="END_LINK_CROS_OSS" /> tambahan.</translation>
+<translation id="8974095189086268230">OS Chromium terwujud karena <ph name="BEGIN_LINK_CROS_OSS" />software sumber terbuka<ph name="END_LINK_CROS_OSS" /> tambahan.</translation>
 <translation id="8985587603644336029">Sebelumnya ada seseorang yang masuk ke Chromium di komputer ini sebagai <ph name="ACCOUNT_EMAIL_LAST" />. Jika itu bukan akun Anda, buatlah pengguna Chromium baru untuk menjaga informasi Anda tetap terpisah.
 
 Tetap masuk akan menggabungkan informasi Chromium seperti bookmark, riwayat, dan setelan lain ke <ph name="ACCOUNT_EMAIL_NEW" />.</translation>

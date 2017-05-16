@@ -14,6 +14,7 @@
 <translation id="1752946267035950200">{MINUTES,plural, =1{un minut}few{# minute}other{# de minute}}</translation>
 <translation id="1761785978543082658"><ph name="QUANTITY" /> B</translation>
 <translation id="1801827354178857021">Punct</translation>
+<translation id="1803208670097017349">{MONTHS,plural, =1{1 lună}few{# luni}other{# de luni}}</translation>
 <translation id="1809410197924942083"><ph name="QUANTITY" /> MB/s</translation>
 <translation id="1830179671306812954">{HOURS,plural, =1{O oră și  }few{# ore și  }other{# de ore și  }}</translation>
 <translation id="1842960171412779397">selectează</translation>
@@ -33,6 +34,7 @@
 <translation id="2666092431469916601">Sus</translation>
 <translation id="2743387203779672305">Copiați în clipboard</translation>
 <translation id="2803313416453193357">Deschideți dosarul</translation>
+<translation id="2824719307700604149">{YEARS,plural, =1{Acum 1 an}few{Acum # ani}other{Acum # de ani}}</translation>
 <translation id="2931838996092594335">dă clic</translation>
 <translation id="2983818520079887040">Setări...</translation>
 <translation id="3036649622769666520">Deschide fișierele</translation>
@@ -54,8 +56,10 @@
 <translation id="3990502903496589789">Marginea dreaptă</translation>
 <translation id="4202807286478387388">accesează</translation>
 <translation id="4250229828105606438">Captură de ecran</translation>
+<translation id="4266252015790371705">{MONTHS,plural, =1{Acum 1 lună}few{Acum # luni}other{Acum # de luni}}</translation>
 <translation id="4320177379694898372">Fără conexiune la internet</translation>
 <translation id="4588090240171750605">Derulează spre dreapta</translation>
+<translation id="4788285488841504513">{MONTHS,plural, =1{1 lună rămasă}few{# luni rămase}other{# de luni rămase}}</translation>
 <translation id="4820616160060340806">Command+<ph name="KEY_COMBO_NAME" /></translation>
 <translation id="4968171027979920686">{SECONDS,plural, =1{o secundă}few{# secunde}other{# de secunde}}</translation>
 <translation id="4971687151119236543">Melodia anterioară din conținutul media</translation>
@@ -98,6 +102,7 @@
 <translation id="6863590663815976734">{HOURS,plural, =1{O oră rămasă}few{# ore rămase}other{# de ore rămase}}</translation>
 <translation id="688711909580084195">Pagină web fără titlu</translation>
 <translation id="6907759265145635167"><ph name="QUANTITY" /> PB/s</translation>
+<translation id="6917971086528278418">{YEARS,plural, =1{1 an rămas}few{# ani rămași}other{# de ani rămași}}</translation>
 <translation id="6918245111648057970">Permiteți notificări de la următoarele servicii pentru fiecare utilizator:</translation>
 <translation id="6945221475159498467">Selectează</translation>
 <translation id="6965382102122355670">OK</translation>
@@ -124,6 +129,7 @@
 <translation id="8245914219290430011">Tab</translation>
 <translation id="8328145009876646418">Marginea stângă</translation>
 <translation id="8331626408530291785">Derulează în sus</translation>
+<translation id="8352146631962686268">{YEARS,plural, =1{1 an}few{# ani}other{# de ani}}</translation>
 <translation id="8371695176452482769">Rostește acum</translation>
 <translation id="838869780401515933">bifează</translation>
 <translation id="8392688371657486010">Nu ai notificări</translation>

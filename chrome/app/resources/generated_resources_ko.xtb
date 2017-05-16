@@ -15,7 +15,6 @@
 <translation id="1023220960495960452">음역(vanakkam → வணக்கம்)</translation>
 <translation id="1026822031284433028">이미지 로드</translation>
 <translation id="1029317248976101138">확대</translation>
-<translation id="1030173864176315846"><ph name="PRINTER_NAME" />에서 <ph name="PAGE_NUMBER" />페이지 인쇄함</translation>
 <translation id="1031362278801463162">미리보기 로드 중</translation>
 <translation id="103279545524624934">Android 앱을 실행하려면 디스크 저장 공간을 확보하세요.</translation>
 <translation id="1033780634303702874">직렬 기기에 액세스</translation>
@@ -149,7 +148,6 @@
     <ph name="BR" />
     다음 화면에서 Google이 문제를 해결할 수 있도록 의견을 보내주시기 바랍니다.</translation>
 <translation id="121783623783282548">비밀번호가 일치하지 않습니다.</translation>
-<translation id="1218323606465324064"><ph name="PRINTER_NAME" />에서 <ph name="PAGE_NUMBER" />페이지 인쇄 중</translation>
 <translation id="122082903575839559">인증서 서명 알고리즘</translation>
 <translation id="1221024147024329929">PKCS #1 MD2(RSA 암호화 사용)</translation>
 <translation id="1221825588892235038">선택 영역만</translation>
@@ -510,6 +508,7 @@
 <translation id="1699395855685456105">하드웨어 개정:</translation>
 <translation id="1700199471143028312">관리자가 관리 대상 사용자를 생성하는 것을 허용하지 않습니다.</translation>
 <translation id="1701062906490865540">이 사용자 삭제</translation>
+<translation id="1701364987952948449">손님으로 로그인</translation>
 <translation id="1706586824377653884">관리자가 추가함</translation>
 <translation id="1706625117072057435">확대/축소 수준</translation>
 <translation id="1707463636381878959">다른 사용자와 네트워크 공유</translation>
@@ -755,7 +754,6 @@
 <translation id="2114224913786726438">모듈(<ph name="TOTAL_COUNT" />개) -감지된 충돌 없음</translation>
 <translation id="2114326799768592691">프레임 새로고침(&amp;F)</translation>
 <translation id="2115103655317273167">휴대전화로 보내기</translation>
-<translation id="2115291620696624944"><ph name="PRINTER_NAME" />에서 <ph name="PAGE_NUMBER" />페이지를 인쇄하는 중에 오류 발생함</translation>
 <translation id="2115926821277323019">유효한 URL이어야 함</translation>
 <translation id="2115946962706216358">컴퓨터가 도메인에 가입하지 못했습니다. 이는 서버의 계정에 가입하도록 허용된 최대 컴퓨터 수를 초과했기 때문일 수도 있습니다.</translation>
 <translation id="2116673936380190819">지난 1시간</translation>
@@ -875,7 +873,6 @@
 <translation id="2255317897038918278">Microsoft Time Stamping</translation>
 <translation id="225614027745146050">환영합니다.</translation>
 <translation id="225692081236532131">활성화 상태</translation>
-<translation id="2260567344816042527">다른 네트워크에 연결되지 않은 경우 Chrome에서 모바일 데이터를 사용합니다.</translation>
 <translation id="2262477216570151239">반복 전 지연</translation>
 <translation id="226269835214688456">Chromebook용 Smart Lock을 사용 중지하면 휴대전화를 사용하여 Chrome 기기를 잠금 해제할 수 없으며 비밀번호를 입력해야 합니다.</translation>
 <translation id="2263189956353037928">로그아웃하고 다시 로그인</translation>
@@ -897,6 +894,7 @@
 <translation id="2282146716419988068">GPU 프로세스</translation>
 <translation id="2282155092769082568">자동설정 URL:</translation>
 <translation id="2283117145434822734">F6</translation>
+<translation id="2286841657746966508">결제주소</translation>
 <translation id="2286950485307333924">이제 Chrome에 로그인되었습니다.</translation>
 <translation id="2287590536030307392">모든 무선 연결을 사용하지 않습니다.</translation>
 <translation id="2288735659267887385">접근성 설정</translation>
@@ -1636,6 +1634,7 @@
 <translation id="3315158641124845231"><ph name="PRODUCT_NAME" /> 숨기기</translation>
 <translation id="3317459757438853210">양면</translation>
 <translation id="3319048459796106952">새 시크릿 창(&amp;I)</translation>
+<translation id="3320021301628644560">청구지 주소 추가</translation>
 <translation id="3320859581025497771">네트워크 사업자</translation>
 <translation id="3323447499041942178">입력란</translation>
 <translation id="3324301154597925148">설정한 검색 페이지가 맞습니까?</translation>
@@ -1834,7 +1833,6 @@
 <translation id="3618849550573277856">'<ph name="LOOKUP_STRING" />' 찾기</translation>
 <translation id="3620292326130836921">백업되지 않은 파일이 없습니다.</translation>
 <translation id="3623574769078102674">이 관리 대상 사용자는 <ph name="MANAGER_EMAIL" />에서 관리합니다.</translation>
-<translation id="3624814222765772771">배터리 잔량이 부족하여 업데이트(<ph name="PROGRESS_PERCENT" />%)할 수 없음</translation>
 <translation id="3625870480639975468">확대/축소 재설정</translation>
 <translation id="3626281679859535460">밝기</translation>
 <translation id="3627052133907344175">확장 프로그램은 최소 버전 "<ph name="IMPORT_VERSION" />"의 "<ph name="IMPORT_NAME" />"을(를) 요구하지만 "<ph name="INSTALLED_VERSION" />" 버전만 설치되었습니다.</translation>
@@ -3030,7 +3028,6 @@
 <translation id="5454166040603940656">제공업체: <ph name="PROVIDER" /></translation>
 <translation id="5457113250005438886">잘못된 데이터</translation>
 <translation id="5457459357461771897">컴퓨터에서 사진, 음악, 기타 미디어 조회 및 삭제</translation>
-<translation id="5457599981699367932">게스트로 로그인</translation>
 <translation id="5463275305984126951"><ph name="LOCATION" />의 색인</translation>
 <translation id="5463856536939868464">숨은 북마크를 포함하는 메뉴</translation>
 <translation id="5464632865477611176">이번만 실행</translation>
@@ -3487,7 +3484,6 @@
 <translation id="6181431612547969857">다운로드 차단됨</translation>
 <translation id="6185132558746749656">기기 위치</translation>
 <translation id="6185696379715117369">페이지 위로</translation>
-<translation id="618807527697571179">프린터 모델을 찾을 수 없습니다. 목록에서 제조업체와 모델을 선택하세요.</translation>
 <translation id="6188939051578398125">이름이나 주소를 입력하세요.</translation>
 <translation id="6189412234224385711"><ph name="EXTENSION_NAME" />(으)로 열기</translation>
 <translation id="6196640612572343990">타사 쿠키 차단</translation>
@@ -3725,6 +3721,7 @@
 <translation id="6509136331261459454">다른 사용자 관리...</translation>
 <translation id="6509207748479174212">미디어 라이선스</translation>
 <translation id="6510568984200103950">간단한 설정</translation>
+<translation id="6513247462497316522">다른 네트워크에 연결되어 있지 않을 경우 Chrome은 모바일 데이터를 사용합니다.</translation>
 <translation id="6514565641373682518">이 페이지에서 마우스 커서를 사용 중지했습니다.</translation>
 <translation id="6518014396551869914">이미지 복사(&amp;Y)</translation>
 <translation id="651942933739530207"><ph name="APP_NAME" />에서 화면 및 오디오 출력을 공유하도록 하시겠습니까?</translation>

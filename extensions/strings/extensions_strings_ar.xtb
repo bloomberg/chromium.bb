@@ -45,7 +45,6 @@
 <translation id="7003844668372540529">المنتج غير معروف <ph name="PRODUCT_ID" /> من <ph name="VENDOR_NAME" /></translation>
 <translation id="7217838517480956708">يطلب مشرف هذا الجهاز تثبيت <ph name="EXTENSION_NAME" />. لا يمكن إزالتها أو تعديلها.</translation>
 <translation id="7581279002575751816">‏المكونات الإضافية لـ NPAPI غير متوافقة.</translation>
-<translation id="7809034755304591547">تم حظر <ph name="EXTENSION_NAME" /> (معرف الإضافة "<ph name="EXTENSION_ID" />") من قِبل المشرف.</translation>
 <translation id="7972881773422714442">الخيارات: <ph name="EXTENSIONOPTIONS_TAG_NAME" /></translation>
 <translation id="8035920974645200807">الكاميرا الأمامية للمستخدم</translation>
 <translation id="8047248493720652249">أخفقت هذه الإضافة في تسمية التنزيل "<ph name="ATTEMPTED_FILENAME" />" نظرًا لأن هناك إضافة أخرى (<ph name="EXTENSION_NAME" />) قد حددت اسم ملف آخر "<ph name="ACTUAL_FILENAME" />".</translation>

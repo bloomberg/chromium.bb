@@ -15,7 +15,6 @@
 <translation id="1023220960495960452">Pengalihan huruf (vanakkam → வணக்கம்)</translation>
 <translation id="1026822031284433028">Muatkan Imej</translation>
 <translation id="1029317248976101138">Zum</translation>
-<translation id="1030173864176315846">Berjaya mencetak <ph name="PAGE_NUMBER" /> halaman pada <ph name="PRINTER_NAME" /></translation>
 <translation id="1031362278801463162">Memuatkan pratonton</translation>
 <translation id="103279545524624934">Kosongkan ruang cakera untuk melancarkan apl Android.</translation>
 <translation id="1033780634303702874">Akses peranti bersiri anda</translation>
@@ -149,7 +148,6 @@
     <ph name="BR" />
     Pada skrin berikutnya, sila hantar maklum balas untuk membantu kami menyelesaikan isu ini.</translation>
 <translation id="121783623783282548">Kata laluan tidak sepadan.</translation>
-<translation id="1218323606465324064">Sekarang mencetak <ph name="PAGE_NUMBER" /> halaman pada <ph name="PRINTER_NAME" /></translation>
 <translation id="122082903575839559">Algoritma Tandatangan Sijil</translation>
 <translation id="1221024147024329929">PKCS #1 MD2 Dengan Penyulitan RSA</translation>
 <translation id="1221825588892235038">Pemilihan sahaja</translation>
@@ -509,6 +507,7 @@
 <translation id="1699395855685456105">Semakan perkakasan:</translation>
 <translation id="1700199471143028312">Pentadbir anda tidak membenarkan anda membuat pengguna di bawah seliaan.</translation>
 <translation id="1701062906490865540">Alih keluar orang ini</translation>
+<translation id="1701364987952948449">Semak imbas sebagai tetamu</translation>
 <translation id="1706586824377653884">Ditambahkan oleh pentadbir anda</translation>
 <translation id="1706625117072057435">Tahap zum</translation>
 <translation id="1707463636381878959">Kongsi rangkaian ini dengan pengguna lain</translation>
@@ -754,7 +753,6 @@
 <translation id="2114224913786726438">Modul (<ph name="TOTAL_COUNT" />) - Tiada percanggahan dikesan</translation>
 <translation id="2114326799768592691">Muat Semula &amp;Bingkai</translation>
 <translation id="2115103655317273167">Hantar ke telefon</translation>
-<translation id="2115291620696624944">Ralat mencetak <ph name="PAGE_NUMBER" /> halaman pada <ph name="PRINTER_NAME" /></translation>
 <translation id="2115926821277323019">Mestilah URL yang sah</translation>
 <translation id="2115946962706216358">Gagal menghubungkan mesin kepada domain. Hal ini mungkin berlaku kerana anda telah melebihi bilangan maksimum hubungan mesin yang dibenarkan untuk akaun anda pada pelayan.</translation>
 <translation id="2116673936380190819">jam yang lalu</translation>
@@ -873,7 +871,6 @@ Selepas anda membuat pengguna di bawah seliaan yang baharu, anda boleh mengurus 
 <translation id="2255317897038918278">Pengecopan Waktu Microsoft</translation>
 <translation id="225614027745146050">Selamat datang</translation>
 <translation id="225692081236532131">Status pengaktifan</translation>
-<translation id="2260567344816042527">Google Chrome akan menggunakan data selular jika anda tidak bersambung ke rangkaian lain.</translation>
 <translation id="2262477216570151239">Lengah sebelum mengulang</translation>
 <translation id="226269835214688456">Jika anda matikan Smart Lock untuk Chromebook, anda tidak dapat membuka kunci peranti Chrome menggunakan telefon lagi. Anda perlu menaip kata laluan anda.</translation>
 <translation id="2263189956353037928">Log keluar &amp; log masuk semula</translation>
@@ -895,6 +892,7 @@ Selepas anda membuat pengguna di bawah seliaan yang baharu, anda boleh mengurus 
 <translation id="2282146716419988068">Proses GPU</translation>
 <translation id="2282155092769082568">URL autokonfigurasi:</translation>
 <translation id="2283117145434822734">F6</translation>
+<translation id="2286841657746966508">Alamat pengebilan</translation>
 <translation id="2286950485307333924">Anda kini dilog masuk ke Chrome</translation>
 <translation id="2287590536030307392">Matikan semua sambungan wayarles.</translation>
 <translation id="2288735659267887385">Tetapan kebolehaksesan</translation>
@@ -1635,6 +1633,7 @@ Daripada <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3315158641124845231">Sembunyikan <ph name="PRODUCT_NAME" /></translation>
 <translation id="3317459757438853210">Dua sisi</translation>
 <translation id="3319048459796106952">Tetingkap &amp;inkognito baharu</translation>
+<translation id="3320021301628644560">Tambahkan alamat pengebilan</translation>
 <translation id="3320859581025497771">pembawa anda</translation>
 <translation id="3323447499041942178">Kotak teks</translation>
 <translation id="3324301154597925148">Adakah Ini Halaman Carian Yang Anda Jangkakan?</translation>
@@ -1833,7 +1832,6 @@ Daripada <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3618849550573277856">Cari “<ph name="LOOKUP_STRING" />”</translation>
 <translation id="3620292326130836921">Semua disandarkan!</translation>
 <translation id="3623574769078102674">Pengguna diselia ini akan diuruskan oleh <ph name="MANAGER_EMAIL" />.</translation>
-<translation id="3624814222765772771">Bateri terlalu lemah untuk mengemas kini (<ph name="PROGRESS_PERCENT" />%)</translation>
 <translation id="3625870480639975468">Tetapkan semula zum</translation>
 <translation id="3626281679859535460">Kecerahan</translation>
 <translation id="3627052133907344175">Sambungan memerlukan "<ph name="IMPORT_NAME" />" dengan versi minimum "<ph name="IMPORT_VERSION" />", tetapi hanya versi "<ph name="INSTALLED_VERSION" />" yang ada dipasang.</translation>
@@ -3030,7 +3028,6 @@ Tekan sebarang kekunci untuk terus meneroka.</translation>
 <translation id="5454166040603940656">dengan <ph name="PROVIDER" /></translation>
 <translation id="5457113250005438886">Tidak sah</translation>
 <translation id="5457459357461771897">Baca dan padam foto, muzik dan media lain daripada komputer anda</translation>
-<translation id="5457599981699367932">Semak Imbas sebagai Tetamu</translation>
 <translation id="5463275305984126951">Indeks bagi <ph name="LOCATION" /></translation>
 <translation id="5463856536939868464">Menu mengandungi penanda halaman tersembunyi</translation>
 <translation id="5464632865477611176">Jalankan pada masa ini</translation>
@@ -3487,7 +3484,6 @@ Tekan sebarang kekunci untuk terus meneroka.</translation>
 <translation id="6181431612547969857">Muat turun disekat</translation>
 <translation id="6185132558746749656">Lokasi Peranti</translation>
 <translation id="6185696379715117369">Halaman atas</translation>
-<translation id="618807527697571179">Tidak dapat mengesan model pencetak anda. Pilih pengeluar dan model daripada senarai.</translation>
 <translation id="6188939051578398125">Masukkan nama atau alamat.</translation>
 <translation id="6189412234224385711">Buka dengan <ph name="EXTENSION_NAME" /></translation>
 <translation id="6196640612572343990">Sekat kuki pihak ketiga</translation>
@@ -3725,6 +3721,7 @@ Tekan sebarang kekunci untuk terus meneroka.</translation>
 <translation id="6509136331261459454">Urus pengguna lain...</translation>
 <translation id="6509207748479174212">Lesen media</translation>
 <translation id="6510568984200103950">Kurang tetapan</translation>
+<translation id="6513247462497316522">Google Chrome akan menggunakan data mudah alih jika anda tidak disambungkan kepada rangkaian lain.</translation>
 <translation id="6514565641373682518">Halaman ini telah melumpuhkan kursor tetikus anda.</translation>
 <translation id="6518014396551869914">Sal&amp;in imej</translation>
 <translation id="651942933739530207">Adakah anda mahu <ph name="APP_NAME" /> berkongsi skrin dan output audio anda?</translation>

@@ -584,38 +584,6 @@
 <translation id="316778957754360075">Ez a házirend többé nincs jelen a <ph name="PRODUCT_NAME" /> 29-es verziójától kezdve. A szervezet által tárolt bővítmény- és alkalmazásgyűjtemények beállításához azt javasoljuk, hogy a CRX-csomagokat tartalmazó webhelyet vegye fel az ExtensionInstallSources házirendbe, és helyezzen el a csomagokra mutató közvetlen letöltési linkeket egy weboldalon. A weboldalhoz az ExtensionInstallForcelist házirend használatával lehet indítót létrehozni.</translation>
 <translation id="3185009703220253572">a(z) <ph name="SINCE_VERSION" /> verzió óta</translation>
 <translation id="3187220842205194486">Az androidos alkalmazások nem szerezhetnek hozzáférést a vállalati kulcsokhoz. A házirend nem vonatkozik rájuk.</translation>
-<translation id="318812033927804102">A <ph name="PRODUCT_NAME" /> bővítménykezelő beállításait konfigurálja.
-
-          Ez a házirend több beállítást is kezel, így például a bővítményekkel kapcsolatban esetleg meglévő házirendek által kezelt beállításokat. A házirend felülírja a régi házirendet, ha mindkettő be van állítva.
-
-          A házirend a bővítményazonosítót vagy frissítési URL-t társítja annak konfigurációjához. A bővítményazonosító esetében a rendszer a konfigurációt kizárólag a meghatározott bővítményre alkalmazza. A „*” speciális azonosítóra alapértelmezett konfiguráció állítható be, amely az összes olyan bővítményre vonatkozik majd, amelynél nincs egyéni konfiguráció beállítva a házirendben. A frissítési URL esetében a rendszer a konfigurációt az összes bővítményre alkalmazni fogja, amelynek pontosan az a frissítési URL-je, mint ami ennek a bővítménynek a jegyzékfájljában szerepel, az itt leírt módon: <ph name="LINK_TO_EXTENSION_DOC1" />.
-
-          Mindegyik bővítménynek (vagy az ugyanazzal a frissítési URL-lel rendelkező bővítményeknek) egy másik könyvtár a konfigurációja, amely az alább ismertetett mezőket tartalmazhatja.
-
-          „installation_mode”: a bővítmény telepítési módját jelző karakterláncra irányít át. Az érvényes karakterláncok a következők:
-          * „allowed”: engedélyezi, hogy a bővítményt a felhasználó telepítse. Ez az alapértelmezett viselkedés.
-          * „blocked”: letiltja a bővítmény telepítését.
-          * „force_installed”: a bővítményt a rendszer automatikusan telepíti, a felhasználó nem tudja eltávolítani.
-          * „normal_installed”: a bővítményt a rendszer automatikusan telepíti, de a felhasználó le tudja tiltani.
-
-          Az „installation_mode” szintén beállítható több bővítményhez, így például a „*” bővítményhez (alapértelmezett beállításként) és a megegyező frissítési URL-lel rendelkező bővítményekhez. Ebben az esetben kizárólag az „allowed” és a „blocked” érték használható.
-
-          Ha a mód beállítása „force_installed" vagy „normal_installed”, „update_url” értéket is be kell állítani. Fontos, hogy az ebben a házirendben beállított frissítési URL-t a rendszer csak az első telepítéshez használja; a bővítmény azt követő frissítéséhez a rendszer a bővítmény jegyzékében szereplő frissítési URL-t használja. A frissítési URL-nek a korábban említett frissítési jegyzékfájl XML-dokumentumra kell mutatnia.
-
-          „blocked_permissions": A bővítményre vonatkozó letiltott API-engedélyeket jelző karakterláncok listájára irányít át. Az engedélyek nevei megegyeznek az itt: <ph name="LINK_TO_EXTENSION_DOC3" /> ismertetett bővítményjegyzékfájlban meghatározott engedély-karakterláncokkal. A beállítás megadható a „*” bővítményre is. Ha a bővítmény a tiltólistán szereplő engedélyt igényel, a rendszer nem engedi annak betöltését. Ha valamely letiltott engedélyt nem kötelező követelményként tartalmaz, a rendszer a megszokott módon kezeli azt, az ütköző engedélyek kérését azonban automatikusan, a futási idő alatt elutasítja.
-
-          „allowed_permissions”: Hasonló, mint a „blocked_permissions”, azonban kifejezetten engedélyez néhány olyan engedélyt, amelyeket a letiltott engedélyek globális listája esetleg letilthat, így ezért nem állítható be a „*” bővítményhez. Fontos, hogy ez a beállítás nem ad automatikusan biztosított engedélyeket a bővítményeknek.
-
-          „minimum_version_required”: Verzió-karakterlánchoz társít. A verzió-karakterlánc formátuma megegyezik a bővítmény-jegyzékfájlban alkalmazottéval, lásd itt: <ph name="LINK_TO_EXTENSION_DOC4" />. A rendszer letiltja a megadott legkisebb verziószámúnál régebbi verziójú bővítményeket. Ez a kényszerítetten telepített bővítményekre is vonatkozik.
-
-          A következő beállítások kizárólag csak az alapértelmezett „*” konfiguráció esetében használhatók:
-
-          „install_sources": A listában szereplő összes elem bővítmény jellegű egyezési minta (lásd: https://developer.chrome.com/extensions/match_patterns). A felhasználók a listában szereplő bármelyik elemmel egyező URL-ről a könnyű módszerrel telepíthetnek elemeket. A mintáknak a *.crx fájl helye mellett azt az oldalt is engedélyezniük kell, ahonnan a letöltés megkezdődik (azaz a hivatkozó oldalt).
-
-          „allowed_types": Ez a beállítás a bővítmények/alkalmazások azon megengedett típusait teszi engedélyezőlistára, amelyek telepíthetők a <ph name="PRODUCT_NAME" /> termékben.  Az érték karakterláncok listája, és mindegyik karakterláncnak a következők valamelyikének kell lennie: „extension”, „theme”, „user_script”, „hosted_app”, „legacy_packaged_app”, „platform_app”. Az ilyen típusokkal kapcsolatos további tájékoztatásért tekintse át a <ph name="PRODUCT_NAME" /> bővítményeinek dokumentációját.
-
-          Ez a házirend még nem áll készen a használatra – kérjük, ne használja.
-          </translation>
 <translation id="3201273385265130876">Lehetővé teszi a(z) <ph name="PRODUCT_NAME" /> által használt proxyszerver meghatározását, és megakadályozza, hogy a felhasználók megváltoztassák a proxybeállításokat.
 
           Ha úgy dönt, hogy soha nem használ proxyszervert, és mindig közvetlenül kapcsolódik, a rendszer az összes többi beállítást figyelmen kívül hagyja.

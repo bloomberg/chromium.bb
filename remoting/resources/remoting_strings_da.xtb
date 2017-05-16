@@ -215,7 +215,7 @@ Fjernskrivebord</translation>
 <translation id="6441316101718669559">Skrivebordsintegration understøttes ikke på denne platform. Du kan fortsat bruge denne applikation, men brugeroplevelsen vil være forringet.</translation>
 <translation id="652218476070540101">Pinkoden for denne computer opdateres…</translation>
 <translation id="6527303717912515753">Del</translation>
-<translation id="6541219117979389420">Logfiler for applikationer kan indeholde private oplysninger, bl.a. din identitet (e-mailadresse) og navne og egenskaber for filer og mapper i Google Drev.</translation>
+<translation id="6541219117979389420">Logfiler for applikationer kan indeholde private oplysninger, bl.a. din identitet (mailadresse) og navne og egenskaber for filer og mapper i Google Drev.</translation>
 <translation id="6542902059648396432">Rapportér et problem…</translation>
 <translation id="6550675742724504774">Valgmuligheder</translation>
 <translation id="6570205395680337606">Nulstil applikationen. Du vil miste alt arbejde, der ikke er gemt.</translation>
@@ -272,7 +272,7 @@ Fjernskrivebord</translation>
 <translation id="8116630183974937060">Der opstod en netværksfejl. Kontrollér, at din enhed er online, og prøv igen.</translation>
 <translation id="8178433417677596899">Skærmdeling med funktionen bruger-til-bruger – perfekt til ekstern teknisk support.</translation>
 <translation id="8187079423890319756">Copyright 2013 Udviklerne af Chromium. Alle rettigheder forbeholdes.</translation>
-<translation id="8196755618196986400">Din e-mailadresse medtages i din feedback, så vi kan kontakte dig i tilfælde af, at vi har brug for yderligere oplysninger.</translation>
+<translation id="8196755618196986400">Din mailadresse medtages i din feedback, så vi kan kontakte dig i tilfælde af, at vi har brug for yderligere oplysninger.</translation>
 <translation id="8244400547700556338">Få flere oplysninger.</translation>
 <translation id="8261506727792406068">Slet</translation>
 <translation id="8355326866731426344">Denne adgangskode udløber om <ph name="TIMEOUT" /></translation>

@@ -27,7 +27,6 @@
 Морате да укључите Bluetooth и Локацију да бисте користили Интернет око нас.</translation>
 <translation id="124678866338384709">Затварање актуелне картице</translation>
 <translation id="1258753120186372309">Google дудл логотип: <ph name="DOODLE_DESCRIPTION" /></translation>
-<translation id="1265597927250775944">Брише историју и предлоге у траци за адресу.</translation>
 <translation id="1272079795634619415">Заустави</translation>
 <translation id="1283039547216852943">Додирните да бисте проширили</translation>
 <translation id="1285320974508926690">Никад не преводи овај сајт</translation>
@@ -263,7 +262,6 @@
 <translation id="3859306556332390985">Премотај унапред</translation>
 <translation id="3894427358181296146">Додајте директоријум</translation>
 <translation id="3895926599014793903">Принудно омогући зумирање</translation>
-<translation id="3915590178385207649">Брише историју на свим уређајима на којима сте пријављени. Прегледајте друге активности на Google налогу на <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="3917783807003067648">Локација је блокирана</translation>
 <translation id="3927692899758076493">Sans Serif</translation>
 <translation id="3928666092801078803">Комбинуј податке</translation>
@@ -609,7 +607,6 @@
 <translation id="7423098979219808738">Прво питај</translation>
 <translation id="7437998757836447326">Одјављивање из Chrome-а</translation>
 <translation id="7445411102860286510">Дозволи сајтовима да аутоматски пуштају видео снимке са искљученим звуком (препоручено)</translation>
-<translation id="7449574997654022410">Брише историју и предлоге у траци за адресу. Прегледајте друге активности на Google налогу на <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="7464701184726199289">Ово ће обрисати синхронизоване податке са свих уређаја. Нећемо избрисати сачувана подешавања сајтова и она могу да одражавају ваше навике при прегледању. <ph name="BEGIN_LINK" />Сазнајте више<ph name="END_LINK" /></translation>
 <translation id="7473891865547856676">Не, хвала</translation>
 <translation id="7475192538862203634">Ако вам се ово често приказује, испробајте ове <ph name="BEGIN_LINK" />предлоге<ph name="END_LINK" />.</translation>

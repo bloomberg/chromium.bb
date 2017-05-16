@@ -45,7 +45,6 @@
 <translation id="7003844668372540529">Nieznany produkt <ph name="PRODUCT_ID" /> firmy <ph name="VENDOR_NAME" /></translation>
 <translation id="7217838517480956708">Administrator tego komputera wymaga zainstalowanego rozszerzenia <ph name="EXTENSION_NAME" />. Nie można go usunąć ani modyfikować.</translation>
 <translation id="7581279002575751816">Wtyczki NPAPI nie są obsługiwane.</translation>
-<translation id="7809034755304591547"><ph name="EXTENSION_NAME" /> (ID rozszerzenia „<ph name="EXTENSION_ID" />”) jest zablokowane przez administratora.</translation>
 <translation id="7972881773422714442">Opcje: <ph name="EXTENSIONOPTIONS_TAG_NAME" /></translation>
 <translation id="8035920974645200807">Przedni</translation>
 <translation id="8047248493720652249">Rozszerzenie nie może odczytać nazwy pobieranego pliku „<ph name="ATTEMPTED_FILENAME" />”, ponieważ inne rozszerzenie (<ph name="EXTENSION_NAME" />) odczytało odmienną jego nazwę „<ph name="ACTUAL_FILENAME" />”.</translation>

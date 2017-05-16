@@ -27,7 +27,6 @@
 フィジカル ウェブを使用するには、Bluetooth と現在地機能をオンにする必要があります。</translation>
 <translation id="124678866338384709">現在のタブを閉じる</translation>
 <translation id="1258753120186372309">Google Doodle: <ph name="DOODLE_DESCRIPTION" /></translation>
-<translation id="1265597927250775944">履歴とアドレスバーの候補を削除します。</translation>
 <translation id="1272079795634619415">中止</translation>
 <translation id="1283039547216852943">タップして展開</translation>
 <translation id="1285320974508926690">このサイトは翻訳しない</translation>
@@ -263,7 +262,6 @@
 <translation id="3859306556332390985">前方にシーク再生</translation>
 <translation id="3894427358181296146">フォルダの追加</translation>
 <translation id="3895926599014793903">強制的にズームを有効にする</translation>
-<translation id="3915590178385207649">ログイン中のすべての端末から履歴を削除します。その他のアクティビティは Google アカウント（<ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />）で確認できます。</translation>
 <translation id="3917783807003067648">位置情報はブロック</translation>
 <translation id="3927692899758076493">Sans Serif</translation>
 <translation id="3928666092801078803">データを統合する</translation>
@@ -609,7 +607,6 @@
 <translation id="7423098979219808738">最初に確認する</translation>
 <translation id="7437998757836447326">Chromeからログアウト</translation>
 <translation id="7445411102860286510">ミュートされた動画の自動再生をサイトに許可する（推奨）</translation>
-<translation id="7449574997654022410">履歴とアドレスバーの候補を削除します。その他のアクティビティは Google アカウント（<ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />）で確認できます。</translation>
 <translation id="7464701184726199289">すべての端末から同期データを消去します。保存済みのサイト設定は削除されず、普段の閲覧行動を反映した設定などが残る場合があります。<ph name="BEGIN_LINK" />詳細<ph name="END_LINK" /></translation>
 <translation id="7473891865547856676">スキップ</translation>
 <translation id="7475192538862203634">このメッセージが繰り返し表示される場合は、こちらの<ph name="BEGIN_LINK" />ヒント<ph name="END_LINK" />をお試しください。</translation>

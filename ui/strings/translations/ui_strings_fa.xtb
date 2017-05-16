@@ -14,6 +14,7 @@
 <translation id="1752946267035950200">{MINUTES,plural, =1{۱ دقیقه}one{# دقیقه}other{# دقیقه}}</translation>
 <translation id="1761785978543082658"><ph name="QUANTITY" /> بایت</translation>
 <translation id="1801827354178857021">دوره زمانی</translation>
+<translation id="1803208670097017349">{MONTHS,plural, =1{۱ ماه}one{# ماه}other{# ماه}}</translation>
 <translation id="1809410197924942083"><ph name="QUANTITY" /> مگابایت/ثانیه</translation>
 <translation id="1830179671306812954">{HOURS,plural, =1{۱ ساعت و }one{# ساعت و }other{# ساعت و }}</translation>
 <translation id="1842960171412779397">انتخاب</translation>
@@ -33,6 +34,7 @@
 <translation id="2666092431469916601">بالا</translation>
 <translation id="2743387203779672305">کپی در بریده‌دان</translation>
 <translation id="2803313416453193357">بازکردن پوشه</translation>
+<translation id="2824719307700604149">{YEARS,plural, =1{۱ سال قبل}one{# سال قبل}other{# سال قبل}}</translation>
 <translation id="2931838996092594335">کلیک کنید</translation>
 <translation id="2983818520079887040">تنظیمات...</translation>
 <translation id="3036649622769666520">باز کردن فایل‌ها</translation>
@@ -54,8 +56,10 @@
 <translation id="3990502903496589789">حاشیه راست</translation>
 <translation id="4202807286478387388">پرش</translation>
 <translation id="4250229828105606438">عکس صفحه‌نمایش</translation>
+<translation id="4266252015790371705">{MONTHS,plural, =1{۱ ماه قبل}one{# ماه قبل}other{# ماه قبل}}</translation>
 <translation id="4320177379694898372">اتصال اینترنتی ندارید</translation>
 <translation id="4588090240171750605">پیمایش به راست</translation>
+<translation id="4788285488841504513">{MONTHS,plural, =1{۱ ماه باقی مانده است}one{# ماه باقی مانده است}other{# ماه باقی مانده است}}</translation>
 <translation id="4820616160060340806">فرمان+<ph name="KEY_COMBO_NAME" /></translation>
 <translation id="4968171027979920686">{SECONDS,plural, =1{۱ ثانیه}one{# ثانیه}other{# ثانیه}}</translation>
 <translation id="4971687151119236543">آهنگ قبلی رسانه</translation>
@@ -98,6 +102,7 @@
 <translation id="6863590663815976734">{HOURS,plural, =1{۱ ساعت باقی مانده است}one{# ساعت باقی مانده است}other{# ساعت باقی مانده است}}</translation>
 <translation id="688711909580084195">صفحهٔ وب بدون عنوان</translation>
 <translation id="6907759265145635167"><ph name="QUANTITY" /> پتابایت/ثانیه</translation>
+<translation id="6917971086528278418">{YEARS,plural, =1{۱ سال باقی مانده است}one{#سال باقی مانده است}other{#سال باقی مانده است}}</translation>
 <translation id="6918245111648057970">دریافت اعلان از موارد زیر برای هر کاربر مجاز است:</translation>
 <translation id="6945221475159498467">انتخاب</translation>
 <translation id="6965382102122355670">قبول</translation>
@@ -124,6 +129,7 @@
 <translation id="8245914219290430011">Tab</translation>
 <translation id="8328145009876646418">حاشیه چپ</translation>
 <translation id="8331626408530291785">پیمایش به بالا</translation>
+<translation id="8352146631962686268">{YEARS,plural, =1{۱ سال}one{# سال}other{# سال}}</translation>
 <translation id="8371695176452482769">اکنون صحبت کنید</translation>
 <translation id="838869780401515933">علامت‌گذاری</translation>
 <translation id="8392688371657486010">اعلانی ندارید</translation>

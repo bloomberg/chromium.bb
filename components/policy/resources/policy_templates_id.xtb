@@ -20,7 +20,7 @@
 
       Kebijakan ini memengaruhi pengguna yang domainnya cocok dengan domain pendaftaran perangkat saja. Untuk pengguna lainnya, cookie yang ditetapkan oleh IdP akan ditransfer ke profil pengguna selama proses masuk pertamanya hanya di perangkat.</translation>
 <translation id="1040446814317236570">Aktifkan penyembunyian URL PAC (untuk https://)</translation>
-<translation id="1044878202534415707">Melaporkan statistik perangkat keras, seperti penggunaan CPU/RAM.
+<translation id="1044878202534415707">Melaporkan statistik hardware, seperti penggunaan CPU/RAM.
 
       Jika kebijakan ini disetel ke False, statistik tidak akan dilaporkan.
       Jika disetel ke True atau tidak disetel, statistik akan dilaporkan.</translation>
@@ -86,7 +86,7 @@
 <translation id="1359553908012294236">Jika kebijakan ini disetel ke True atau tidak dikonfigurasi, <ph name="PRODUCT_NAME" /> akan mengaktifkan proses masuk tamu. Proses masuk tamu adalah profil <ph name="PRODUCT_NAME" /> dengan semua jendela dalam mode penyamaran.
 
       Jika kebijakan ini disetel ke False, <ph name="PRODUCT_NAME" /> tidak akan mengizinkan profil tamu dimulai.</translation>
-<translation id="1363275621236827384">Mengaktifkan kueri ke Quirks Server untuk profil perangkat keras</translation>
+<translation id="1363275621236827384">Mengaktifkan kueri ke Quirks Server untuk profil hardware</translation>
 <translation id="1397855852561539316">URL saran penyedia penelusuran default</translation>
 <translation id="1398889361882383850">Memungkinkan Anda untuk menyetel apakah situs web diizinkan untuk menjalankan plugin secara otomatis. Plugin yang berjalan secara otomatis dapat diizinkan untuk semua situs web atau ditolak untuk semua situs web.
 
@@ -495,7 +495,7 @@
 
       Jika Anda menonaktifkan setelan ini, Penjelajahan Aman tidak akan pernah aktif.
 
-      Jika Anda mengaktifkan atau menonaktifkan setelan ini, pengguna tidak dapat mengubah atau menimpa setelan "Aktifkan perlindungan phishing dan perangkat lunak perusak" di <ph name="PRODUCT_NAME" />.
+      Jika Anda mengaktifkan atau menonaktifkan setelan ini, pengguna tidak dapat mengubah atau menimpa setelan "Aktifkan perlindungan phishing dan software perusak" di <ph name="PRODUCT_NAME" />.
 
       Jika kebijakan ini tidak disetel, kebijakan akan diaktifkan namun pengguna dapat mengubahnya.</translation>
 <translation id="2787173078141616821">Informasi laporan tentang status Android</translation>
@@ -585,38 +585,6 @@
 <translation id="316778957754360075">Setelan ini tidak lagi digunakan sejak <ph name="PRODUCT_NAME" /> versi 29. Cara yang disarankan untuk menyiapkan koleksi aplikasi/ekstensi yang dihosting organisasi adalah dengan menyertakan situs yang menghosting paket CRX di ExtensionInstallSources dan meletakkan tautan download langsung di paket dalam laman web. Peluncur untuk laman web tersebut dapat dibuat menggunakan kebijakan ExtensionInstallForcelist.</translation>
 <translation id="3185009703220253572">sejak versi <ph name="SINCE_VERSION" /></translation>
 <translation id="3187220842205194486">Aplikasi Android tidak bisa mendapat akses ke kunci perusahaan. Kebijakan ini tidak memengaruhinya.</translation>
-<translation id="318812033927804102">Mengonfigurasi setelan pengelolaan ekstensi untuk <ph name="PRODUCT_NAME" />.
-
-          Kebijakan ini mengontrol beberapa setelan, termasuk setelan yang dikontrol oleh kebijakan terkait ekstensi yang sudah ada mana pun. Kebijakan ini akan menggantikan kebijakan lawas apa pun jika keduanya disetel.
-
-          Kebijakan ini memetakan ID ekstensi atau URL pembaruan ke konfigurasinya. Dengan ID ekstensi, konfigurasi akan diterapkan ke ekstensi yang ditentukan saja. Konfigurasi default dapat disetel untuk ID khusus "*", yang akan diterapkan untuk semua ekstensi yang tidak memiliki konfigurasi khusus yang disetel dalam kebijakan ini. Dengan URL pembaruan, konfigurasi akan diterapkan ke semua ekstensi dengan URL pembaruan akurat yang dinyatakan dalam manifes ekstensi ini, seperti yang dijelaskan dalam <ph name="LINK_TO_EXTENSION_DOC1" />.
-
-          Konfigurasi untuk setiap ekstensi (atau ekstensi dengan URL pembaruan yang sama) adalah kamus lain yang dapat berisi bidang yang didokumentasikan di bawah.
-
-          "installation_mode": memetakan ke string yang menunjukkan mode pemasangan untuk ekstensi. String yang valid adalah:
-          * "allowed": memungkinkan pemasangan ekstensi oleh pengguna. Ini adalah perilaku defaultnya.
-          * "blocked": memblokir pemasangan ekstensi.
-          * "force_installed": ekstensi otomatis terpasang dan tidak dapat dihapus oleh pengguna.
-          * "normal_installed": ekstensi otomatis terpasang namun dapat dinonaktifkan oleh pengguna.
-
-          "installation_mode" juga dapat dikonfigurasikan untuk beberapa ekstensi, termasuk ekstensi "*" (sebagai setelan default) dan ekstensi dengan URL pembaruan yang sama. Dalam kasus ini. hanya nilai "allowed" dan "blocked" yang dapat digunakan.
-
-          Jika mode disetel ke "force_installed" atau "normal_installed", "update_url" juga harus dikonfigurasikan. Perhatikan bahwa URL pembaruan yang disetel dalam kebijakan ini hanya digunakan untuk pemasangan awal; pembaruan ekstensi selanjutnya akan menggunakan URL pembaruan yang ditunjukkan dalam manifes ekstensi. URL pembaruan seharusnya mengarah ke dokumen XML Manifes Pembaruan seperti yang dijelaskan di atas.
-
-          "blocked_permissions": memetakan ke daftar string yang menunjukkan izin API yang diblokir untuk ekstensi. Nama izin sama dengan string izin yang dinyatakan dalam manifes ekstensi seperti yang dijelaskan dalam <ph name="LINK_TO_EXTENSION_DOC3" />. Setelan ini juga dapat dikonfigurasikan untuk ekstensi "*". Jika ekstensi mewajibkan izin yang ada dalam daftar diblokir, ekstensi tidak akan diizinkan untuk dimuat. Jika ekstensi berisi izin yang diblokir sebagai persyaratan opsional, ekstensi akan ditangani dengan cara normal, namun permintaan izin yang menimbulkan bentrok akan ditolak secara otomatis saat waktu proses.
-
-          "allowed_permissions": mirip dengan "blocked_permissions", namun mengizinkan beberapa izin secara eksplisit yang mungkin diblokir oleh daftar global untuk izin yang diblokir, sehingga tidak dapat dikonfigurasi untuk ekstensi "*". Perhatikan bahwa setelan ini tidak memberikan izin yang dijamin ke ekstensi secara otomatis.
-
-          "minimum_version_required": memetakan ke string versi. Format string versi sama dengan format yang digunakan dalam manifes ekstensi, seperti yang dijelaskan dalam <ph name="LINK_TO_EXTENSION_DOC4" />. Ekstensi dengan versi yang lebih lawas dari versi minimum yang ditetapkan akan dinonaktifkan. Hal ini juga berlaku untuk ekstensi force-installed.
-
-          Setelan berikut hanya dapat digunakan untuk konfigurasi "*" default:
-
-          "install_sources": Setiap item dalam daftar ini adalah pola pencocokan gaya-ekstensi (lihat https://developer.chrome.com/extensions/match_patterns). Pengguna akan dapat memasang item dengan mudah dari URL apa pun yang cocok dengan item di dalam daftar ini. Lokasi file *.crx dan laman tempat download dimulai (misalnya perujuk) harus diizinkan oleh pola ini.
-
-          "allowed_types": Setelan ini memasukkan jenis ekstensi/aplikasi yang diizinkan yang dapat dipasang di <ph name="PRODUCT_NAME" /> ke daftar putih.  Nilainya adalah daftar string, yang masing-masing terdiri dari: "extension", "theme", "user_script", "hosted_app", "legacy_packaged_app", atau "platform_app". Lihat <ph name="PRODUCT_NAME" /> dokumentasi ekstensi untuk informasi selengkapnya tentang jenis ini.
-
-          Kebijakan ini belum siap untuk digunakan. Harap tidak menggunakannya.
-          </translation>
 <translation id="3201273385265130876">Memungkinkan Anda menentukan server proxy yang digunakan oleh <ph name="PRODUCT_NAME" /> dan mencegah pengguna mengubah setelan roxy.
 
           Jika Anda memilih untuk tidak pernah menggunakan server proxy dan selalu tersambung secara langsung, semua opsi lainnya akan diabaikan.
@@ -1317,7 +1285,7 @@
 <translation id="6036523166753287175">Mengaktifkan firewall traversal dari host akses jarak jauh</translation>
 <translation id="6070667616071269965">Tata letak keyboard layar login perangkat</translation>
 <translation id="6074963268421707432">Jangan izinkan situs apa pun menampilkan pemberitahuan desktop</translation>
-<translation id="6076099373507468537">Menjelaskan daftar perangkat USB yang diizinkan untuk dilepas dari driver kernelnya, agar dapat langsung digunakan melalui API chrome.usb dalam aplikasi web. Entri berupa pasangan Pengenal Vendor USB dan Pengenal Produk untuk mengidentifikasi perangkat keras tertentu.
+<translation id="6076099373507468537">Menjelaskan daftar perangkat USB yang diizinkan untuk dilepas dari driver kernelnya, agar dapat langsung digunakan melalui API chrome.usb dalam aplikasi web. Entri berupa pasangan Pengenal Vendor USB dan Pengenal Produk untuk mengidentifikasi hardware tertentu.
 
       Jika kebijakan ini tidak dikonfigurasi, daftar perangkat USB yang dapat dilepas akan kosong.</translation>
 <translation id="6093156968240188330">Memungkinkan pengguna jarak jauh untuk berinteraksi dengan jendela yang berada jauh di sesi bantuan jarak jauh</translation>
@@ -1457,7 +1425,7 @@
 
       Jika kebijakan ini tidak disetel, prediksi jaringan akan diaktifkan namun pengguna dapat mengubahnya.</translation>
 <translation id="6658245400435704251">Menentukan jumlah waktu (dalam detik) sebuah perangkat dapat menunda download pembaruannya secara acak dari saat pembaruan tersebut pertama kali didorong ke server. Perangkat dapat menunggu dengan sebagian dari waktu ini dari segi prediksi waktu penyelesaian tugas dan sisa waktunya dari segi jumlah pemeriksaan pembaruan. Dalam keadaan apa pun, penyebaran dibatasi dengan jumlah waktu yang konstan sehingga perangkat tidak akan terus menunggu download pembaruan selamanya.</translation>
-<translation id="6689792153960219308">Melaporkan status perangkat keras</translation>
+<translation id="6689792153960219308">Melaporkan status hardware</translation>
 <translation id="6693751878507293182">Jika Anda menyetel setelan ini untuk mengaktifkan penelusuran otomatis, pemasangan plugin yang hilang akan dinonaktifkan dalam <ph name="PRODUCT_NAME" />. Menyetel opsi ini menjadi nonaktif atau membiarkannya tidak disetel akan mengaktifkan pencari plugin.</translation>
 <translation id="6699880231565102694">Mengaktifkan autentikasi dua faktor untuk hosting akses jarak jauh</translation>
 <translation id="6766216162565713893">Izinkan situs meminta pengguna memberikan akses ke perangkat Bluetooth di sekitar</translation>
@@ -1843,7 +1811,7 @@
           Saat kebijakan ini tidak disetel, panjang waktu default akan digunakan.
 
           Nilai kebijakan ini harus ditentukan dalam milidetik. Nilai dijepit menjadi lebih sedikit dari penundaan waktu menganggur.</translation>
-<translation id="8140204717286305802">Laporkan daftar antarmuka jaringan dengan alamat perangkat keras dan jenisnya ke server.
+<translation id="8140204717286305802">Laporkan daftar antarmuka jaringan dengan alamat hardware dan jenisnya ke server.
 
       Jika kebijakan disetel ke false, daftar antarmuka tidak akan dilaporkan.</translation>
 <translation id="8141795997560411818">Kebijakan ini tidak mencegah pengguna menggunakan aplikasi Google Drive Android. Jika ingin mencegah akses ke Google Drive, sebaiknya Anda tidak mengizinkan pemasangan aplikasi Google Drive Android.</translation>
@@ -1972,15 +1940,15 @@
 <translation id="8549772397068118889">Memperingatkan saat mengunjungi situs di luar paket konten</translation>
 <translation id="855339549837475534">Chromium dan Google Chrome mendukung rangkaian kebijakan
       yang sama. Harap diperhatikan bahwa dokumen ini dapat berisi kebijakan yang
-      ditargetkan untuk versi perangkat lunak yang belum dirilis (entri 'Didukung di'
+      ditargetkan untuk versi software yang belum dirilis (entri 'Didukung di'
       merujuk ke versi yang belum dirilis) dan oleh karena itu, kebijakan semacam ini dapat
       berubah atau dihapus tanpa pemberitahuan sebelumnya.
 
       Kebijakan ini hanya khusus ditujukan untuk mengonfigurasi contoh
       internal <ph name="PRODUCT_NAME" /> ke
       organisasi Anda. Bila kebijakan ini digunakan di luar organisasi (misalnya
-      dalam program yang didistribusikan secara publik) akan dianggap sebagai perangkat lunak perusak dan mungkin
-      akan diberi label sebagai perangkat lunak perusak oleh Google dan vendor antivirus.
+      dalam program yang didistribusikan secara publik) akan dianggap sebagai software perusak dan mungkin
+      akan diberi label sebagai software perusak oleh Google dan vendor antivirus.
 
       Setelan ini tidak perlu dikonfigurasi secara manual!  Template
       yang mudah digunakan untuk Windows, Mac, dan Linux dapat didownload dari <ph name="POLICY_TEMPLATE_DOWNLOAD_URL" />.
@@ -1993,7 +1961,7 @@
 <translation id="8614804915612153606">Nonaktifkan Pembaruan Otomatis</translation>
 <translation id="8631434304112909927">sampai versi <ph name="UNTIL_VERSION" /></translation>
 <translation id="863319402127182273">Untuk aplikasi Android, kebijakan ini hanya memengaruhi kamera bawaan. Jika kebijakan ini disetel ke true, kamera akan dinonaktifkan untuk semua aplikasi Android, tanpa pengecualian.</translation>
-<translation id="8649763579836720255">Perangkat Chrome OS dapat menggunakan atestasi jarak jauh (Akses Terverifikasi) untuk mendapatkan sertifikat yang diberikan oleh Chrome OS CA yang menyatakan bahwa perangkat tersebut memenuhi syarat untuk memutar konten yang dilindungi. Proses ini mencakup pengiriman informasi dukungan perangkat keras ke Chrome OS CA yang mengidentifikasi perangkat tersebut secara unik.
+<translation id="8649763579836720255">Perangkat Chrome OS dapat menggunakan atestasi jarak jauh (Akses Terverifikasi) untuk mendapatkan sertifikat yang diberikan oleh Chrome OS CA yang menyatakan bahwa perangkat tersebut memenuhi syarat untuk memutar konten yang dilindungi. Proses ini mencakup pengiriman informasi dukungan hardware ke Chrome OS CA yang mengidentifikasi perangkat tersebut secara unik.
 
           Jika disetel ke false, perangkat tidak akan menggunakan atestasi perlindungan konten jarak jauh dan tidak dapat memutar konten yang dilindungi.
 

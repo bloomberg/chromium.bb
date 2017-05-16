@@ -15,7 +15,6 @@
 <translation id="1023220960495960452">Транслитерација (vanakkam → வணக்கம்)</translation>
 <translation id="1026822031284433028">Учитај слику</translation>
 <translation id="1029317248976101138">Зумирај</translation>
-<translation id="1030173864176315846">Странице (<ph name="PAGE_NUMBER" />) су одштампане на штампачу <ph name="PRINTER_NAME" /></translation>
 <translation id="1031362278801463162">Учитавање прегледа</translation>
 <translation id="103279545524624934">Ослободите простор на диску да бисте покренули Android апликације.</translation>
 <translation id="1033780634303702874">Приступ серијским уређајима</translation>
@@ -149,7 +148,6 @@
     <ph name="BR" />
     На следећем екрану пошаљите повратне информације које ће нам помоћи да решимо проблем.</translation>
 <translation id="121783623783282548">Лозинке се не подударају.</translation>
-<translation id="1218323606465324064">Странице (<ph name="PAGE_NUMBER" />) се тренутно штампају на штампачу <ph name="PRINTER_NAME" /></translation>
 <translation id="122082903575839559">Алгоритам потписа сертификата</translation>
 <translation id="1221024147024329929">PKCS #1 MD2 са RSA шифровањем</translation>
 <translation id="1221825588892235038">Само изабрани садржај</translation>
@@ -507,6 +505,7 @@
 <translation id="1699395855685456105">Ревизија хардвера:</translation>
 <translation id="1700199471143028312">Администратор вам не дозвољава да направите кориснике под надзором.</translation>
 <translation id="1701062906490865540">Уклони ову особу</translation>
+<translation id="1701364987952948449">Прегледај као гост</translation>
 <translation id="1706586824377653884">Додао администратор</translation>
 <translation id="1706625117072057435">Нивои зумирања</translation>
 <translation id="1707463636381878959">Дели ову мрежу са другим корисницима</translation>
@@ -752,7 +751,6 @@
 <translation id="2114224913786726438">Модули (<ph name="TOTAL_COUNT" />) – Није откривено ниједно сукобљавање</translation>
 <translation id="2114326799768592691">Поново учитај &amp;оквир</translation>
 <translation id="2115103655317273167">Пошаљи на телефон</translation>
-<translation id="2115291620696624944">Грешка при штампању страница (<ph name="PAGE_NUMBER" />) на штампачу <ph name="PRINTER_NAME" /></translation>
 <translation id="2115926821277323019">Мора да буде важећа URL адреса</translation>
 <translation id="2115946962706216358">Придруживање уређаја домену није успело. Можда сте премашили максималан број дозвољених придруживања уређаја за налог на серверу.</translation>
 <translation id="2116673936380190819">прошли сат</translation>
@@ -872,7 +870,6 @@
 <translation id="2255317897038918278">Microsoft означавање времена</translation>
 <translation id="225614027745146050">Добро дошли</translation>
 <translation id="225692081236532131">Статус активације</translation>
-<translation id="2260567344816042527">Google Chrome ће користити податке за мобилне уређаје ако нисте повезани на другу мрежу.</translation>
 <translation id="2262477216570151239">Одлагање пре понављања</translation>
 <translation id="226269835214688456">Ако искључите Smart Lock за Chromebook, нећете моћи да откључавате Chrome уређаје помоћу телефона. Мораћете да уносите лозинку.</translation>
 <translation id="2263189956353037928">Одјави ме и поново ме пријави</translation>
@@ -894,6 +891,7 @@
 <translation id="2282146716419988068">GPU процес</translation>
 <translation id="2282155092769082568">URL за аутоматску конфигурацију:</translation>
 <translation id="2283117145434822734">F6</translation>
+<translation id="2286841657746966508">Адреса за наплату</translation>
 <translation id="2286950485307333924">Сада сте пријављени у Chrome</translation>
 <translation id="2287590536030307392">Искључите све бежичне везе.</translation>
 <translation id="2288735659267887385">Подешавања приступачности</translation>
@@ -1632,6 +1630,7 @@
 <translation id="3315158641124845231">Сакриј <ph name="PRODUCT_NAME" /></translation>
 <translation id="3317459757438853210">Обострано</translation>
 <translation id="3319048459796106952">Нови &amp;прозор „Без архивирања“</translation>
+<translation id="3320021301628644560">Додајте адресу за обрачун</translation>
 <translation id="3320859581025497771">ваш мобилни оператер</translation>
 <translation id="3323447499041942178">Оквир за текст</translation>
 <translation id="3324301154597925148">Је ли ово страница претраге коју сте очекивали?</translation>
@@ -1830,7 +1829,6 @@
 <translation id="3618849550573277856">Потражи „<ph name="LOOKUP_STRING" />“</translation>
 <translation id="3620292326130836921">Направљене су резервне копије свих датотека!</translation>
 <translation id="3623574769078102674">Овим корисником под надзором ће управљати <ph name="MANAGER_EMAIL" />.</translation>
-<translation id="3624814222765772771">Ниво напуњености батерије је пренизак за ажурирање (<ph name="PROGRESS_PERCENT" />%)</translation>
 <translation id="3625870480639975468">Враћање зума на почетне вредности</translation>
 <translation id="3626281679859535460">Осветљеност</translation>
 <translation id="3627052133907344175">Додатак захтева „<ph name="IMPORT_NAME" />“ чија је најстарија верзија „<ph name="IMPORT_VERSION" />“, али инсталирана је само верзија „<ph name="INSTALLED_VERSION" />“.</translation>
@@ -3027,7 +3025,6 @@
 <translation id="5454166040603940656">са добављачем <ph name="PROVIDER" /></translation>
 <translation id="5457113250005438886">Неважеће</translation>
 <translation id="5457459357461771897">Читање слика, музике и других медија са рачунара и брисање тих медија</translation>
-<translation id="5457599981699367932">Прегледајте као гост</translation>
 <translation id="5463275305984126951">Индекс локације <ph name="LOCATION" /></translation>
 <translation id="5463856536939868464">Мени са скривеним обележивачима</translation>
 <translation id="5464632865477611176">Покрени овај пут</translation>
@@ -3486,7 +3483,6 @@
 <translation id="6181431612547969857">Преузимање је блокирано</translation>
 <translation id="6185132558746749656">Локација уређаја</translation>
 <translation id="6185696379715117369">Страница нагоре</translation>
-<translation id="618807527697571179">Нисмо успели да откријемо модел штампача. Изаберите произвођача и модел са листе.</translation>
 <translation id="6188939051578398125">Унесите имена или адресе.</translation>
 <translation id="6189412234224385711">Отвори помоћу додатка <ph name="EXTENSION_NAME" /></translation>
 <translation id="6196640612572343990">Блокирај колачиће треће стране</translation>
@@ -3723,6 +3719,7 @@
 <translation id="6509136331261459454">Управљај другим корисницима...</translation>
 <translation id="6509207748479174212">Лиценца за медије</translation>
 <translation id="6510568984200103950">Мање подешавања</translation>
+<translation id="6513247462497316522">Google Chrome ће користити мобилне податке ако нисте повезани са другом мрежом.</translation>
 <translation id="6514565641373682518">Ова страница је онемогућила курсор.</translation>
 <translation id="6518014396551869914">Коп&amp;ирај слику</translation>
 <translation id="651942933739530207">Да ли желите да <ph name="APP_NAME" /> дели екран и аудио излаз?</translation>

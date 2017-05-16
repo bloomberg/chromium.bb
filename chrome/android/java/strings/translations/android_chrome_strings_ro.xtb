@@ -27,7 +27,6 @@
 Pentru a folosi Webul material, trebuie să activezi Bluetooth și Locația.</translation>
 <translation id="124678866338384709">Închide fila actuală</translation>
 <translation id="1258753120186372309">Doodle Google: <ph name="DOODLE_DESCRIPTION" /></translation>
-<translation id="1265597927250775944">Șterge istoricul și sugestiile din bara de adrese.</translation>
 <translation id="1272079795634619415">Oprește</translation>
 <translation id="1283039547216852943">Atinge pentru a extinde</translation>
 <translation id="1285320974508926690">Nu traduce niciodată acest site</translation>
@@ -263,7 +262,6 @@ Pentru a ajusta termenii căutării, apasă lung pentru a selecta. Pentru a rafi
 <translation id="3859306556332390985">Derulează înainte</translation>
 <translation id="3894427358181296146">Adaugă un dosar</translation>
 <translation id="3895926599014793903">Forțează activarea zoomului</translation>
-<translation id="3915590178385207649">Șterge istoricul de pe toate dispozitivele conectate. Vezi alte activități din Contul Google la <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="3917783807003067648">Accesul la locație este blocat</translation>
 <translation id="3927692899758076493">Sans Serif</translation>
 <translation id="3928666092801078803">Combină datele</translation>
@@ -609,7 +607,6 @@ De exemplu, unele site-uri pot răspunde la această solicitare afișând anunț
 <translation id="7423098979219808738">Mai întâi întreabă</translation>
 <translation id="7437998757836447326">Deconectează-te de la Chrome</translation>
 <translation id="7445411102860286510">Permite site-urilor să redea automat videoclipuri cu sunetul dezactivat (recomandat)</translation>
-<translation id="7449574997654022410">Șterge istoricul și sugestiile din bara de adrese. Vezi alte activități din Contul Google la <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="7464701184726199289">Astfel, datele sincronizate vor fi șterse de pe toate dispozitivele. Setările salvate pentru site-uri nu vor fi șterse și pot reflecta obiceiurile de navigare. <ph name="BEGIN_LINK" />Află mai multe<ph name="END_LINK" /></translation>
 <translation id="7473891865547856676">Nu, mulțumesc</translation>
 <translation id="7475192538862203634">Dacă acest mesaj apare frecvent, încearcă următoarele <ph name="BEGIN_LINK" />sugestii<ph name="END_LINK" />.</translation>

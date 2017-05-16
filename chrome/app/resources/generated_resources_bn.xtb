@@ -15,7 +15,6 @@
 <translation id="1023220960495960452">লিপ্যন্তরকরণ (vanakkam → வணக்கம்)</translation>
 <translation id="1026822031284433028">চিত্র লোড করুন</translation>
 <translation id="1029317248976101138">জুম</translation>
-<translation id="1030173864176315846"><ph name="PAGE_NUMBER" /> পৃষ্ঠা সফলভাবে <ph name="PRINTER_NAME" /> এ মুদ্রিত হয়েছে</translation>
 <translation id="1031362278801463162">পূর্বরূপ লোড হচ্ছে</translation>
 <translation id="103279545524624934">Android অ্যাপ্লিকেশান লঞ্চ করার জন্য ডিস্কে জায়গা খালি করুন।</translation>
 <translation id="1033780634303702874">আপনার সিরিয়াল ডিভাইসগুলি অ্যাক্সেস করুন</translation>
@@ -149,7 +148,6 @@
     <ph name="BR" />
     পরবর্তী স্ক্রীনে, আমাদেরকে সমস্যাটি সমাধানে সাহায্য করতে দয়া করে প্রতিক্রিয়া পাঠান।</translation>
 <translation id="121783623783282548">পাসওয়ার্ডগুলি মেলে না৷</translation>
-<translation id="1218323606465324064">এখন <ph name="PAGE_NUMBER" /> পৃষ্ঠা <ph name="PRINTER_NAME" /> এ মুদ্রিত হচ্ছে</translation>
 <translation id="122082903575839559">শংসাপত্র স্বাক্ষর অ্যালগরিদম</translation>
 <translation id="1221024147024329929">RSA এনক্রিপশানের সাথে PKCS #1 MD2</translation>
 <translation id="1221825588892235038">শুধুমাত্র নির্বাচন</translation>
@@ -509,6 +507,7 @@
 <translation id="1699395855685456105">হার্ডওয়্যার  পুনর্বিবেচনাসমূহ:</translation>
 <translation id="1700199471143028312">আপনার প্রশাসক তত্বাবধানে থাকা ব্যবহারকারী তৈরি করার অনুমতি দেয় না।</translation>
 <translation id="1701062906490865540">এই ব্যক্তিকে সরান</translation>
+<translation id="1701364987952948449">অতিথি হিসাবে ব্রাউজ করুন</translation>
 <translation id="1706586824377653884">আপনার প্রশাসক দ্বারা যোগ করা হয়েছে</translation>
 <translation id="1706625117072057435">জুম স্তরগুলি</translation>
 <translation id="1707463636381878959">অন্য ব্যবহারকারীদের সাথে এই নেটওয়ার্ক শেয়ার করুন</translation>
@@ -753,7 +752,6 @@
 <translation id="2114224913786726438">(<ph name="TOTAL_COUNT" />) মডিউলগুলি - কোনও  বিবাদ সনাক্ত হয়নি</translation>
 <translation id="2114326799768592691">পুনরায় লোড করার &amp;ফ্রেম</translation>
 <translation id="2115103655317273167">ফোনে পাঠান</translation>
-<translation id="2115291620696624944"><ph name="PAGE_NUMBER" /> পৃষ্ঠা <ph name="PRINTER_NAME" /> এ মৃদ্রণ করার সময় ত্রুটি</translation>
 <translation id="2115926821277323019">একটি কার্যকর URL হওয়া আবশ্যক</translation>
 <translation id="2115946962706216358">ডোমেনে মেশিন যোগ করতে ব্যর্থ হয়েছে। সার্ভারে আপনার অ্যাকাউন্টের জন্য সর্বোচ্চ সংখ্যক অনুমোদিত মেশিন যোগ করার সীমা ছাড়িয়ে যাওয়ার কারণে এমনটি হতে পারে।</translation>
 <translation id="2116673936380190819">বিগত ঘণ্টা</translation>
@@ -871,7 +869,6 @@
 <translation id="2255317897038918278">Microsoft Time Stamping</translation>
 <translation id="225614027745146050">স্বাগতম</translation>
 <translation id="225692081236532131">সক্রিয়করণ স্থিতি</translation>
-<translation id="2260567344816042527">আপনি অন্য নেটওয়ার্কের সাথে সংযুক্ত না থাকলে Google Chrome সেলুলার ডেটা ব্যবহার করবে।</translation>
 <translation id="2262477216570151239">পুনরাবৃত্তির আগের বিলম্ব</translation>
 <translation id="226269835214688456">আপনি Chromebook এর জন্য Smart Lock বন্ধ করলে, আপনি আপনার ফোন ব্যবহার করে Chrome ডিভিইসগুলি আনলক করতে পারবেন না। আপনাকে আপনার পাসওয়ার্ড লিখতে হবে।</translation>
 <translation id="2263189956353037928">বেরিয়ে আসুন এবং আবার প্রবেশ করুন</translation>
@@ -893,6 +890,7 @@
 <translation id="2282146716419988068">GPU প্রক্রিয়া</translation>
 <translation id="2282155092769082568">স্বতঃকনফিগারেশান URL:</translation>
 <translation id="2283117145434822734">F6</translation>
+<translation id="2286841657746966508">বিলিং ঠিকানা</translation>
 <translation id="2286950485307333924">আপনি এখন Chrome এ প্রবেশ করেছেন</translation>
 <translation id="2287590536030307392">সব বেতার সংযোগ বন্ধ করুন৷</translation>
 <translation id="2288735659267887385">অ্যাক্সেসযোগ্যতার সেটিংস</translation>
@@ -1627,6 +1625,7 @@
 <translation id="3315158641124845231"><ph name="PRODUCT_NAME" /> লুকান</translation>
 <translation id="3317459757438853210">দ্বি-পার্শ্বযুক্ত</translation>
 <translation id="3319048459796106952">নতুন &amp;ছদ্মবেশ উইন্ডো</translation>
+<translation id="3320021301628644560">বিলিংয়ের ঠিকানা যোগ করুন</translation>
 <translation id="3320859581025497771">আপনার ক্যারিয়ার</translation>
 <translation id="3323447499041942178">পাঠ্য  বাক্স</translation>
 <translation id="3324301154597925148">আপনি কি এই পৃষ্ঠাটিকে অনুসন্ধান পৃষ্টা হিসেবে আশা করছিলেন?</translation>
@@ -1825,7 +1824,6 @@
 <translation id="3618849550573277856">“<ph name="LOOKUP_STRING" />” খুঁজে দেখুন</translation>
 <translation id="3620292326130836921">সব ব্যাকআপ নেওয়া হয়ে গেছে!</translation>
 <translation id="3623574769078102674">তত্ত্বাবধানে থাকা এই ব্যবহারকারী <ph name="MANAGER_EMAIL" /> এর দ্বারা পরিচালিত হবে৷</translation>
-<translation id="3624814222765772771">চার্জ খুব কম (<ph name="PROGRESS_PERCENT" />%), আপডেট করা যাবে না</translation>
 <translation id="3625870480639975468">জুম পুনরায় সেট করুন</translation>
 <translation id="3626281679859535460">উজ্জ্বলতা</translation>
 <translation id="3627052133907344175">এক্সটেনশানের ন্যূনতম "<ph name="IMPORT_VERSION" />" সংস্করণের "<ph name="IMPORT_NAME" />" প্রয়োজন, কিন্তু কেবল "<ph name="INSTALLED_VERSION" />" সংস্করণ ইন্সটল করা আছে।</translation>
@@ -3014,7 +3012,6 @@
 <translation id="5454166040603940656"><ph name="PROVIDER" /> সহ</translation>
 <translation id="5457113250005438886">অবৈধ</translation>
 <translation id="5457459357461771897">আপনার কম্পিউটার থেকে ফটো, সঙ্গীত ও অন্যান্য মিডিয়া পড়ুন এবং মুছুন</translation>
-<translation id="5457599981699367932">অতিথি হিসাবে ব্রাউজ করুন</translation>
 <translation id="5463275305984126951"><ph name="LOCATION" />-এর সূচী</translation>
 <translation id="5463856536939868464">গোপন বুকমার্কগুলি সমন্বিত মেনু</translation>
 <translation id="5464632865477611176">এখন চালান</translation>
@@ -3469,7 +3466,6 @@
 <translation id="6181431612547969857">ডাউনলোড অবরুদ্ধ রয়েছে</translation>
 <translation id="6185132558746749656">ডিভাইসের অবস্থান</translation>
 <translation id="6185696379715117369">পৃষ্ঠায় উপরের দিকে যান</translation>
-<translation id="618807527697571179">আপনার প্রিন্টার মডেল সনাক্ত করা যায়নি। তালিকা থেকে একটি প্রস্তুতকারক এবং মডেল নির্বাচন করুন।</translation>
 <translation id="6188939051578398125">নাম বা ঠিকানা লিখুন৷</translation>
 <translation id="6189412234224385711"><ph name="EXTENSION_NAME" /> এর মাধ্যমে খুলুন</translation>
 <translation id="6196640612572343990">তৃতীয় পক্ষের কুকিজ অবরুদ্ধ করুন</translation>
@@ -3705,6 +3701,7 @@
 <translation id="6509136331261459454">অন্যান্য ব্যবহারকারীদের পরিচালনা করুন...</translation>
 <translation id="6509207748479174212">মিডিয়া লাইসেন্স</translation>
 <translation id="6510568984200103950">অপেক্ষাকৃত কম সেটিংস</translation>
+<translation id="6513247462497316522">যদি আপনি অন্য নেটওয়ার্কের সাথে সংযুক্ত না থাকেন তাহলে Google Chrome মোবাইল ডেটা ব্যবহার করবে৷</translation>
 <translation id="6514565641373682518">এই পৃষ্ঠাটি আপনার মাউস কার্সরকে অক্ষম করেছে৷</translation>
 <translation id="6518014396551869914">ছবি অনুলি&amp;পি করুন</translation>
 <translation id="651942933739530207">আপনার স্ক্রীন এবং অডিও আউটপুট শেয়ার করতে আপনি কি <ph name="APP_NAME" /> চান?</translation>

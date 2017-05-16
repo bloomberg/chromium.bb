@@ -585,38 +585,6 @@
 <translation id="316778957754360075">To se pravilo ne upotrebljava od verzije 29 sustava <ph name="PRODUCT_NAME" />. Preporučuje se da se pri postavljanju zbirki proširenja ili aplikacija koje hostira određena organizacija web-lokacija koja hostira CRX pakete uključi u pravilo ExtensionInstallSources te da se u pakete na web-stanici postave izravne veze za preuzimanje. Pokretač za tu web-stranicu može se izraditi pomoću pravila ExtensionInstallForcelist.</translation>
 <translation id="3185009703220253572">od verzije <ph name="SINCE_VERSION" /></translation>
 <translation id="3187220842205194486">Android aplikacije ne mogu dobiti pristup korporacijskim ključevima. To pravilo nema utjecaja na njih.</translation>
-<translation id="318812033927804102">Konfigurira postavke upravljanja proširenjima za <ph name="PRODUCT_NAME" />.
-
-          Ovo pravilo kontrolira više postavki, uključujući postavke kojima upravljaju postojeća pravila za proširenja. To će pravilo nadjačati sva naslijeđena pravila ako su postavljena.
-
-          To pravilo mapira ID proširenja ili URL ažuriranja na svoju konfiguraciju. S ID-jem proširenja konfiguracija će se primijeniti samo na određeno proširenje. Zadana konfiguracija može se postaviti za posebni ID "*", tako da se primjenjuje na sva proširenja za koje u tom pravilu nije postavljena prilagođena konfiguracija. S URL-om ažuriranja konfiguracija će se primijeniti na sva proširenja s istim URL-om ažuriranja  navedenom u manifestu proširenja kako je opisano u dokumentu <ph name="LINK_TO_EXTENSION_DOC1" />.
-
-          Konfiguracija za svako proširenje (ili proširenja s istim URL-om ažuriranja) drugi je rječnik koje može sadržavati polja navedena u nastavku.
-
-          "installation_mode": mapira na niz koji pokazuje način instalacije za proširenje. Važeći su nizovi sljedeći:
-          * "allowed": korisniku se dopušta instaliranje proširenja. To je zadano ponašanje.
-          * "blocked": blokira instaliranje proširenja.
-          * "force_installed": proširenje se instalira automatski i korisnik ga ne može ukloniti.
-          * "normal_installed": proširenje se instalira automatski, ali ga korisnik može onemogućiti.
-
-          Postavka "installation_mode" može se konfigurirati i za više proširenja, uključujući proširenje "*" (kao zadane postavke) i proširenja s istim URL-om ažuriranja. U tom se slučaju mogu koristiti samo vrijednosti "allowed" i "blocked".
-
-          Ako se način postavi na "force_installed" ili "normal_installed", mora se konfigurirati i "update_url". URL ažuriranja u tom pravilu upotrebljava se samo za prvo instaliranje, dok će se za daljnja ažuriranja proširenja upotrebljavati URL ažuriranja naveden u manifestu proširenja. URL ažuriranja treba usmjeravati na XML dokument manifesta ažuriranja kako je prethodno navedeno.
-
-          "blocked_permissions": mapira na popis nizova koji naznačuje blokirana dopuštenja API-ja za proširenje. Nazivi dopuštenja isti su kao i nizovi dopuštenja navedeni u manifestu proširenja kako je opisano u dokumentu <ph name="LINK_TO_EXTENSION_DOC3" />. Ta se postavka može konfigurirati i za proširenje "*". Ako proširenje zahtijeva dopuštenje koje je na popisu blokiranih, proširenje se neće smjeti učitati. Ako sadrži blokirano dopuštenje kao neobavezni zahtjev, njime će rukovati na uobičajeni način, ali će se zahtjevi za sukobljena dopuštenja automatski odbiti za vrijeme izvođenja.
-
-          "allowed_permissions": sličan je način kao i "blocked_permissions", jedino što izričito dopušta neka dopuštenja koje možda blokira globalni popis blokiranih dopuštenja, pa se zato ne mogu konfigurirati za proširenje "*". Ta postavka proširenjima ne daje automatski odobrena dopuštenja.
-
-          "minimum_version_required": mapira na niz verzije. Format niza verzije jednak je onome u manifestu proširenja kako je opisano u dokumentu <ph name="LINK_TO_EXTENSION_DOC4" />. Proširenje s verzijom koja je starija od navedene minimalne verzije neće biti omogućeno. To vrijedi i za prisilno instalirana proširenja.
-
-          Sljedeće se postavke mogu koristiti samo za zadanu "*" konfiguraciju:
-
-          "install_sources": svaka stavka na tom popisu podudaran je uzorak stila proširenja (pogledajte https://developer.chrome.com/extensions/match_patterns). Korisnici će moći jednostavno instalirati stavke s bilo kojeg URL-a koji se podudara sa stavkom na popisu. Ti uzorci moraju dopuštati lokaciju *.crx datoteke i stranicu s koje je preuzimanje pokrenuto (tj., preporuku).
-
-          "allowed_types": ova postavka stavlja na popis dopuštenih dopuštene vrste proširenja/aplikacija koje se mogu instalirati u <ph name="PRODUCT_NAME" />. Vrijednost je popis nizova, od kojih svaki treba biti jedan od sljedećih: "extension", "theme", "user_script", "hosted_app", "legacy_packaged_app", "platform_app". Više informacija o tim vrstama potražite u dokumentaciji o proširenjima preglednika <ph name="PRODUCT_NAME" />.
-
-          To pravilo još nije spremno za upotrebu i zato ga nemojte upotrebljavati.
-          </translation>
 <translation id="3201273385265130876">Omogućuje vam da odredite proxy poslužitelj kojim se koristi <ph name="PRODUCT_NAME" /> i onemogućuje korisnicima da mijenjaju postavke proxyja.
 
           Ako odaberete da se proxy poslužitelj nikad ne upotrebljava i da se veza uvijek uspostavlja izravno, sve se ostale opcije zanemaruju.

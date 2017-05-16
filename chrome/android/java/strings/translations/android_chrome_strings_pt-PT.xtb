@@ -27,7 +27,6 @@
 Tem de ter a Localização e o Bluetooth ativados para poder utilizar a Web física.</translation>
 <translation id="124678866338384709">Fechar o separador atual</translation>
 <translation id="1258753120186372309">Doodle da Google: <ph name="DOODLE_DESCRIPTION" /></translation>
-<translation id="1265597927250775944">Limpa o histórico e as sugestões da barra de endereço.</translation>
 <translation id="1272079795634619415">Parar</translation>
 <translation id="1283039547216852943">Toque para expandir</translation>
 <translation id="1285320974508926690">Nunca traduzir este site</translation>
@@ -263,7 +262,6 @@ Para ajustar o termo de pesquisa, prima continuamente para selecionar. Para refi
 <translation id="3859306556332390985">Procurar para a frente</translation>
 <translation id="3894427358181296146">Adicionar pasta</translation>
 <translation id="3895926599014793903">Forçar ativação do zoom</translation>
-<translation id="3915590178385207649">Limpa o histórico de todos os dispositivos com sessão iniciada. Veja outra atividade da sua Conta Google em <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="3917783807003067648">A localização está bloqueada</translation>
 <translation id="3927692899758076493">Sans Serif</translation>
 <translation id="3928666092801078803">Combinar os meus dados</translation>
@@ -609,7 +607,6 @@ Por exemplo, alguns Websites podem responder a este pedido ao mostrar-lhe anúnc
 <translation id="7423098979219808738">Perguntar primeiro</translation>
 <translation id="7437998757836447326">Terminar sessão no Chrome</translation>
 <translation id="7445411102860286510">Permitir que os sites reproduzam automaticamente vídeos com o som desativado (recomendado)</translation>
-<translation id="7449574997654022410">Limpa o histórico e as sugestões da barra de endereços. Veja outra atividade da sua Conta Google em <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="7464701184726199289">Esta ação limpa os dados sincronizados de todos os dispositivos. As definições de sites guardadas não são eliminadas e podem refletir os seus hábitos de navegação. <ph name="BEGIN_LINK" />Saiba mais<ph name="END_LINK" /></translation>
 <translation id="7473891865547856676">Não, obrigado</translation>
 <translation id="7475192538862203634">Se vê isto com frequência, experimente estas <ph name="BEGIN_LINK" />sugestões<ph name="END_LINK" />.</translation>

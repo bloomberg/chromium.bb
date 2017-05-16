@@ -14,6 +14,7 @@
 <translation id="1752946267035950200">{MINUTES,plural, =1{1분}other{#분}}</translation>
 <translation id="1761785978543082658"><ph name="QUANTITY" />B</translation>
 <translation id="1801827354178857021">기간</translation>
+<translation id="1803208670097017349">{MONTHS,plural, =1{1개월}other{#개월}}</translation>
 <translation id="1809410197924942083"><ph name="QUANTITY" />MB/초</translation>
 <translation id="1830179671306812954">{HOURS,plural, =1{1시간 }other{#시간 }}</translation>
 <translation id="1842960171412779397">선택</translation>
@@ -33,6 +34,7 @@
 <translation id="2666092431469916601">맨 위</translation>
 <translation id="2743387203779672305">클립보드로 복사</translation>
 <translation id="2803313416453193357">폴더 열기</translation>
+<translation id="2824719307700604149">{YEARS,plural, =1{1년 전}other{#년 전}}</translation>
 <translation id="2931838996092594335">클릭</translation>
 <translation id="2983818520079887040">설정...</translation>
 <translation id="3036649622769666520">파일 열기</translation>
@@ -54,8 +56,10 @@
 <translation id="3990502903496589789">오른쪽 모서리</translation>
 <translation id="4202807286478387388">건너뛰기</translation>
 <translation id="4250229828105606438">캡처화면</translation>
+<translation id="4266252015790371705">{MONTHS,plural, =1{1개월 전}other{#개월 전}}</translation>
 <translation id="4320177379694898372">인터넷에 연결되지 않음</translation>
 <translation id="4588090240171750605">오른쪽 스크롤</translation>
+<translation id="4788285488841504513">{MONTHS,plural, =1{1개월 남음}other{#개월 남음}}</translation>
 <translation id="4820616160060340806">Command+<ph name="KEY_COMBO_NAME" /></translation>
 <translation id="4968171027979920686">{SECONDS,plural, =1{1초}other{#초}}</translation>
 <translation id="4971687151119236543">미디어 이전 트랙</translation>
@@ -98,6 +102,7 @@
 <translation id="6863590663815976734">{HOURS,plural, =1{1시간 남음}other{#시간 남음}}</translation>
 <translation id="688711909580084195">제목 없는 웹페이지</translation>
 <translation id="6907759265145635167"><ph name="QUANTITY" />PB/s</translation>
+<translation id="6917971086528278418">{YEARS,plural, =1{1년 남음}other{#년 남음}}</translation>
 <translation id="6918245111648057970">사용자별로 다음 알림 허용:</translation>
 <translation id="6945221475159498467">선택</translation>
 <translation id="6965382102122355670">확인</translation>
@@ -124,6 +129,7 @@
 <translation id="8245914219290430011">탭</translation>
 <translation id="8328145009876646418">왼쪽 모서리</translation>
 <translation id="8331626408530291785">위로 스크롤</translation>
+<translation id="8352146631962686268">{YEARS,plural, =1{1년}other{#년}}</translation>
 <translation id="8371695176452482769">말하세요</translation>
 <translation id="838869780401515933">선택</translation>
 <translation id="8392688371657486010">알림이 없습니다.</translation>

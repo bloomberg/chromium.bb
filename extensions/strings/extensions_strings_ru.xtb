@@ -45,7 +45,6 @@
 <translation id="7003844668372540529">Неизвестный продукт <ph name="PRODUCT_ID" /> от <ph name="VENDOR_NAME" /></translation>
 <translation id="7217838517480956708">Удаление и изменение расширения <ph name="EXTENSION_NAME" /> на этом компьютере запрещено администратором.</translation>
 <translation id="7581279002575751816">Плагины NPAPI не поддерживаются.</translation>
-<translation id="7809034755304591547">Расширение <ph name="EXTENSION_NAME" /> (идентификатор: <ph name="EXTENSION_ID" />) заблокировано администратором.</translation>
 <translation id="7972881773422714442">Options: <ph name="EXTENSIONOPTIONS_TAG_NAME" /></translation>
 <translation id="8035920974645200807">Фронтальная</translation>
 <translation id="8047248493720652249">Данному расширению не удалось присвоить скачанному файлу имя "<ph name="ATTEMPTED_FILENAME" />", поскольку другое расширение (<ph name="EXTENSION_NAME" />) уже присвоило ему другое имя: "<ph name="ACTUAL_FILENAME" />".</translation>

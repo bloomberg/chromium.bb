@@ -15,7 +15,6 @@
 <translation id="1023220960495960452">Транслітерація (vanakkam → வணக்கம்)</translation>
 <translation id="1026822031284433028">Завантажити зображення</translation>
 <translation id="1029317248976101138">Збільшити</translation>
-<translation id="1030173864176315846">На принтері "<ph name="PRINTER_NAME" />" надруковано стільки сторінок: <ph name="PAGE_NUMBER" /></translation>
 <translation id="1031362278801463162">Завантаження попереднього перегляду</translation>
 <translation id="103279545524624934">Щоб запускати додатки Android, звільніть місце на диску.</translation>
 <translation id="1033780634303702874">Отримувати доступ до серійних пристроїв</translation>
@@ -149,7 +148,6 @@
     <ph name="BR" />
     На наступному екрані надішліть відгук, щоб допомогти нам вирішити цю проблему.</translation>
 <translation id="121783623783282548">Паролі не збігаються.</translation>
-<translation id="1218323606465324064">На принтері "<ph name="PRINTER_NAME" />" зараз друкується стільки сторінок: <ph name="PAGE_NUMBER" /></translation>
 <translation id="122082903575839559">Алгоритм підпису сертифіката</translation>
 <translation id="1221024147024329929">PKCS #1 MD2 із шифруванням RSA</translation>
 <translation id="1221825588892235038">Лише виділений фрагмент</translation>
@@ -509,6 +507,7 @@
 <translation id="1699395855685456105">Модифікація апаратного забезпечення:</translation>
 <translation id="1700199471143028312">Ваш адміністратор не дозволяє створювати контрольованих користувачів.</translation>
 <translation id="1701062906490865540">Видалити цього користувача</translation>
+<translation id="1701364987952948449">Перегляд у режимі "Гість"</translation>
 <translation id="1706586824377653884">Додано адміністратором</translation>
 <translation id="1706625117072057435">Рівні масштабування</translation>
 <translation id="1707463636381878959">Надавати іншим користувачам доступ до цієї мережі</translation>
@@ -754,7 +753,6 @@
 <translation id="2114224913786726438">Модулі (<ph name="TOTAL_COUNT" />) – конфліктів не виявлено</translation>
 <translation id="2114326799768592691">Перезавантажити фрейм</translation>
 <translation id="2115103655317273167">Надіслати на телефон</translation>
-<translation id="2115291620696624944">На принтері "<ph name="PRINTER_NAME" />" не вдалося надрукувати стільки сторінок: <ph name="PAGE_NUMBER" /></translation>
 <translation id="2115926821277323019">Має бути дійсною URL-адресою</translation>
 <translation id="2115946962706216358">Не вдалося приєднати пристрій до домену. Можливо, ви перевищили максимальну кількість дозволених приєднань пристроїв для свого облікового запису на сервері.</translation>
 <translation id="2116673936380190819">останню годину</translation>
@@ -873,7 +871,6 @@
 <translation id="2255317897038918278">Встановлення позначки часу Microsoft</translation>
 <translation id="225614027745146050">Вітаємо!</translation>
 <translation id="225692081236532131">Статус активації</translation>
-<translation id="2260567344816042527">Google Chrome використовуватиме мобільний Інтернет, якщо пристрій не під’єднано до іншої мережі.</translation>
 <translation id="2262477216570151239">Затримка перед повтором</translation>
 <translation id="226269835214688456">Якщо вимкнути Smart Lock для Chromebook, ви не зможете розблоковувати пристрої Chrome за допомогою телефона. Потрібно буде вводити пароль.</translation>
 <translation id="2263189956353037928">Вийти з облікового запису та ввійти в нього знову</translation>
@@ -895,6 +892,7 @@
 <translation id="2282146716419988068">Процес GPU</translation>
 <translation id="2282155092769082568">URL-адреса автоконфігурації:</translation>
 <translation id="2283117145434822734">F6</translation>
+<translation id="2286841657746966508">Розрахункова адреса</translation>
 <translation id="2286950485307333924">Ви ввійшли в Chrome</translation>
 <translation id="2287590536030307392">Вимкнути всі бездротові з’єднання.</translation>
 <translation id="2288735659267887385">Налаштування спеціальних можливостей</translation>
@@ -1634,6 +1632,7 @@
 <translation id="3315158641124845231">Сховати <ph name="PRODUCT_NAME" /></translation>
 <translation id="3317459757438853210">Двосторонній</translation>
 <translation id="3319048459796106952">Нове &amp;анонімне вікно</translation>
+<translation id="3320021301628644560">Додати платіжну адресу</translation>
 <translation id="3320859581025497771">ваш оператор</translation>
 <translation id="3323447499041942178">Текстове поле</translation>
 <translation id="3324301154597925148">Це сторінка пошуку, яку ви очікували?</translation>
@@ -1832,7 +1831,6 @@
 <translation id="3618849550573277856">Шукати "<ph name="LOOKUP_STRING" />"</translation>
 <translation id="3620292326130836921">Усі файли імпортовано!</translation>
 <translation id="3623574769078102674">Цим контрольованим користувачем буде керувати користувач <ph name="MANAGER_EMAIL" />.</translation>
-<translation id="3624814222765772771">Акумулятор недостатньо заряджений, щоб оновити дані (<ph name="PROGRESS_PERCENT" />%)</translation>
 <translation id="3625870480639975468">Скинути масштабування</translation>
 <translation id="3626281679859535460">Яскравість</translation>
 <translation id="3627052133907344175">Для розширення потрібний "<ph name="IMPORT_NAME" />" з мінімальною версією "<ph name="IMPORT_VERSION" />", але встановлено лише версію "<ph name="INSTALLED_VERSION" />".</translation>
@@ -3029,7 +3027,6 @@
 <translation id="5454166040603940656">за допомогою <ph name="PROVIDER" /></translation>
 <translation id="5457113250005438886">Недійсні дані</translation>
 <translation id="5457459357461771897">Читати й видаляти фотографії, музику та інші медіафайли на комп’ютері</translation>
-<translation id="5457599981699367932">Переглядати в режимі гостя</translation>
 <translation id="5463275305984126951">Індекс <ph name="LOCATION" /></translation>
 <translation id="5463856536939868464">Меню, яке містить сховані закладки</translation>
 <translation id="5464632865477611176">Запустити цього разу</translation>
@@ -3486,7 +3483,6 @@
 <translation id="6181431612547969857">Завантаження заблоковано</translation>
 <translation id="6185132558746749656">Місцезнаходження пристрою</translation>
 <translation id="6185696379715117369">Сторінка вгору</translation>
-<translation id="618807527697571179">Не вдається визначити модель принтера. Виберіть виробника та модель зі списку.</translation>
 <translation id="6188939051578398125">Введіть імена чи адреси.</translation>
 <translation id="6189412234224385711">Відкрити за допомогою розширення "<ph name="EXTENSION_NAME" />"</translation>
 <translation id="6196640612572343990">Блокувати сторонні файли cookie</translation>
@@ -3724,6 +3720,7 @@
 <translation id="6509136331261459454">Керувати іншими користувачами...</translation>
 <translation id="6509207748479174212">Ліцензія на медіафайли</translation>
 <translation id="6510568984200103950">Менше налаштувань</translation>
+<translation id="6513247462497316522">Google Chrome використовуватиме мобільне передавання даних, якщо ви не підключені до іншої мережі.</translation>
 <translation id="6514565641373682518">Ця сторінка вимкнула курсор миші.</translation>
 <translation id="6518014396551869914">Копіюват&amp;и зображення</translation>
 <translation id="651942933739530207">Надати програмі <ph name="APP_NAME" /> доступ до вашого екрана й аудіовиходу?</translation>

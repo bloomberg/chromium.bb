@@ -612,38 +612,6 @@
 <translation id="316778957754360075">See seade on alates rakenduse <ph name="PRODUCT_NAME" /> versioonist 29 kasutusest kõrvaldatud. Organisatsiooni majutatud laienduse-/rakendusekogude seadistamiseks on soovitatav kaasata sait, mis hostib üksuses ExtensionInstallSources CRX-pakette ja paneb pakettide allalaadimise otselingid veebilehele. Selle veebilehe käivitaja saab luua reegliga ExtensionInstallForcelist.</translation>
 <translation id="3185009703220253572">alates versioonist <ph name="SINCE_VERSION" /></translation>
 <translation id="3187220842205194486">Androidi rakendused ei pääse juurde ettevõttevõtmetele. See reegel neid ei mõjuta.</translation>
-<translation id="318812033927804102">Seadistab brauseri <ph name="PRODUCT_NAME" /> laienduste halduse seaded.
-
-          See reegel juhib mitut seadet, sealhulgas mis tahes olemasoleva laiendustega seotud reegli seadeid. Reegel alistab pärandreeglid, kui mõlemad on määratud.
-
-          Reegel vastendab laienduse ID või värskenduse URL-i seadistusega. Laienduse ID puhul rakendatakse seadistus vaid määratud laiendusele. Saate määrata spetsiaalsele ID-le „*” vaikeseadistuse, mis kehtib kõikide laienduste puhul, millele ei ole reeglis määratud kohandatud seadistust. Värskenduse URL-i puhul rakendatakse seadistus kõikidele laiendustele, mille manifestis on märgitud täpselt see värskenduse URL, nagu kirjeldatud jaotises <ph name="LINK_TO_EXTENSION_DOC1" />.
-
-          Iga laienduse – või mitme sama värskenduse URL-iga laienduse – seadistus on eraldi sõnastik, mis võib hõlmata allmärgitud välju.
-
-          „installation_mode”: vastendab stringi, mis näitab laienduse installimise režiimi. Lubatud on järgmised stringid.
-          * „allowed”: lubab kasutajal laienduse installida. See on vaikekäitumine.
-          * „blocked”: blokeerib laienduse installimise.
-          * „force_installed”: laiendus installitakse automaatselt ja kasutaja ei saa seda eemaldada.
-          * „normal_installed”: laiendus installitakse automaatselt, ent kasutaja saab selle keelata.
-
-          Atribuudi „installation_mode” võib seadistada ka mitme laienduse jaoks (sh vaikeseadena laienduse „*” jaoks) ning sama värskenduse URL-iga laienduste jaoks. Sel juhul saab kasutada vaid väärtusi „allowed” ja „blocked”.
-
-          Kui režiim on seatud väärtusele „force_installed” või „normal_installed”, tuleb seadistada ka atribuut „update_url”. Pange tähele, et selles reeglis määratud värskenduse URL-i kasutatakse vaid esmase installimise puhul ja laienduse edasisel värskendamisel kasutatakse laienduse manifestis märgitud värskenduse URL-i. Värskenduse URL peab viitama XML-vormingus värskendusmanifestile, nagu ülal mainitud.
-
-          „blocked_permissions”: vastendab stringide loendi, mis viitab laienduse blokeeritud API lubadele. Lubade nimed on samad mis laienduse manifestis märgitud lubade stringidel, nagu jaotises <ph name="LINK_TO_EXTENSION_DOC3" /> kirjeldatud. Seade saab seadistada ka laiendusele „*”. Kui laiendus vajab blokeeritud loendisse kantud luba, keelatakse selle laadimine. Kui see sisaldab valikulise nõudena blokeeritud luba, käsitletakse seda tavapärasel moel, kuid vastuoluliste lubade taotlused lükatakse käitusajal automaatselt tagasi.
-
-          „allowed_permissions”: sarnaneb atribuudiga „blocked_permissions”, kuid lubab selgesõnaliselt teatud load, mis võivad olla globaalse blokeeritud lubade loendis blokeeritud. Seetõttu ei saa seda kasutada laienduse „*” puhul. Pange tähele, et seade ei anna laiendustele lube automaatselt.
-
-          „minimum_version_required”: vastendab versioonistringi. Versioonistringi vorming kattub laienduse manifestis kasutatavaga, nagu jaotises <ph name="LINK_TO_EXTENSION_DOC4" /> kirjeldatud. Laiendused, mille versioon on määratud miinimumversioonist vanem, keelatakse. See kehtib ka sundinstallitud laienduste puhul.
-
-          Järgmisi seadeid saab kasutada vaid vaikeseadistuse „*” puhul.
-
-          „install_sources”: iga loendis olev üksus on laiendusstiilis vastendusmuster (vt https://developer.chrome.com/extensions/match_patterns). Kasutajad saavad hõlpsasti installida üksusi mis tahes URL-ilt, mis kattub loendis oleva üksusega. Mustrid peavad lubama nii CRX-faili asukoha kui ka lehe, kust allalaadimine algab (st viitaja).
-
-          „allowed_types”: see seade kannab lubatud üksuste loendisse kõik laienduste/rakenduste lubatud tüübid, mida saab installida brauseris <ph name="PRODUCT_NAME" />. Väärtus on stringide loend ja iga stringi tüüp peab olema üks järgmistest. „extension”, „theme”, „user_script”, „hosted_app”, „legacy_packaged_app”, „platform_app”. Vaadake tüüpide kohta lisateavet brauseri <ph name="PRODUCT_NAME" /> laienduste dokumentidest.
-
-          See reegel ei ole veel kasutamiseks valmis, ärge kasutage seda.
-          </translation>
 <translation id="3201273385265130876">Võimaldab määrata rakenduse <ph name="PRODUCT_NAME" /> kasutatava puhverserveri ega lase kasutajatel puhverserveri seadeid muuta.
 
           Kui valite seade, mille puhul ei kasutata kunagi puhverserverit ja ühendus luuakse alati otse, eiratakse kõiki muid valikuid.

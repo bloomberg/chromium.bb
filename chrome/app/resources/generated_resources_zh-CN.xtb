@@ -15,7 +15,6 @@
 <translation id="1023220960495960452">音译(vanakkam → வணக்கம்)</translation>
 <translation id="1026822031284433028">加载图片</translation>
 <translation id="1029317248976101138">缩放</translation>
-<translation id="1030173864176315846">已通过“<ph name="PRINTER_NAME" />”成功打印了 <ph name="PAGE_NUMBER" /> 个页面</translation>
 <translation id="1031362278801463162">正在加载预览</translation>
 <translation id="103279545524624934">请释放磁盘空间以启动 Android 应用。</translation>
 <translation id="1033780634303702874">访问您的串行设备</translation>
@@ -149,7 +148,6 @@
     <ph name="BR" />
     请在随即显示的屏幕上发送反馈，以协助我们解决此问题。</translation>
 <translation id="121783623783282548">密码不匹配。</translation>
-<translation id="1218323606465324064">正在通过“<ph name="PRINTER_NAME" />”打印 <ph name="PAGE_NUMBER" /> 个页面</translation>
 <translation id="122082903575839559">证书签名算法</translation>
 <translation id="1221024147024329929">PKCS #1，带有 RSA 加密的 MD2</translation>
 <translation id="1221825588892235038">仅限选定内容</translation>
@@ -506,6 +504,7 @@
 <translation id="1699395855685456105">硬件版本：</translation>
 <translation id="1700199471143028312">您的管理员禁止您创建受监管用户。</translation>
 <translation id="1701062906490865540">移除此用户</translation>
+<translation id="1701364987952948449">以访客身份浏览</translation>
 <translation id="1706586824377653884">此图标是由管理员添加的</translation>
 <translation id="1706625117072057435">缩放级别</translation>
 <translation id="1707463636381878959">与其他用户共享此网络</translation>
@@ -751,7 +750,6 @@
 <translation id="2114224913786726438">模块数 (<ph name="TOTAL_COUNT" />) - 未检测到冲突</translation>
 <translation id="2114326799768592691">重新加载框架(&amp;F)</translation>
 <translation id="2115103655317273167">发送至手机</translation>
-<translation id="2115291620696624944">通过“<ph name="PRINTER_NAME" />”打印 <ph name="PAGE_NUMBER" /> 个页面时出错</translation>
 <translation id="2115926821277323019">必须是有效网址</translation>
 <translation id="2115946962706216358">未能将此机器加入该网域。这可能是因为您的帐号在该服务器上添加机器的次数已超过所允许的上限。</translation>
 <translation id="2116673936380190819">过去一小时</translation>
@@ -870,7 +868,6 @@
 <translation id="2255317897038918278">Microsoft 时间戳</translation>
 <translation id="225614027745146050">欢迎</translation>
 <translation id="225692081236532131">激活状态</translation>
-<translation id="2260567344816042527">如果您未连接到其他网络，Google Chrome 将使用移动数据网络。</translation>
 <translation id="2262477216570151239">重复前的延迟时间</translation>
 <translation id="226269835214688456">如果您关闭了 Smart Lock（Chromebook 版），将不能使用配对手机为 Chrome 设备解锁。在这种情况下，您需要输入密码才能解锁。</translation>
 <translation id="2263189956353037928">退出并重新登录</translation>
@@ -892,6 +889,7 @@
 <translation id="2282146716419988068">GPU 进程</translation>
 <translation id="2282155092769082568">自动配置网址：</translation>
 <translation id="2283117145434822734">F6</translation>
+<translation id="2286841657746966508">帐单邮寄地址</translation>
 <translation id="2286950485307333924">现在您已登录到Chrome</translation>
 <translation id="2287590536030307392">停用所有无线连接。</translation>
 <translation id="2288735659267887385">无障碍设置</translation>
@@ -1628,6 +1626,7 @@
 <translation id="3315158641124845231">隐藏<ph name="PRODUCT_NAME" /></translation>
 <translation id="3317459757438853210">双面</translation>
 <translation id="3319048459796106952">打开新的隐身窗口(&amp;I)</translation>
+<translation id="3320021301628644560">添加账单邮寄地址</translation>
 <translation id="3320859581025497771">您的运营商</translation>
 <translation id="3323447499041942178">文本框</translation>
 <translation id="3324301154597925148">这是您想要的搜索页面吗？</translation>
@@ -1826,7 +1825,6 @@
 <translation id="3618849550573277856">查询“<ph name="LOOKUP_STRING" />”</translation>
 <translation id="3620292326130836921">所有文件都已备份！</translation>
 <translation id="3623574769078102674">此受监管用户将由 <ph name="MANAGER_EMAIL" /> 管理。</translation>
-<translation id="3624814222765772771">电量太低 (<ph name="PROGRESS_PERCENT" />%)，无法更新</translation>
 <translation id="3625870480639975468">重置缩放</translation>
 <translation id="3626281679859535460">亮度</translation>
 <translation id="3627052133907344175">扩展程序要求“<ph name="IMPORT_NAME" />”的版本不低于 <ph name="IMPORT_VERSION" />，但目前安装的版本只是 <ph name="INSTALLED_VERSION" />。</translation>
@@ -3011,7 +3009,6 @@
 <translation id="5454166040603940656">提供方：<ph name="PROVIDER" /></translation>
 <translation id="5457113250005438886">无效</translation>
 <translation id="5457459357461771897">读取和删除您计算机上的照片、音乐和其他媒体</translation>
-<translation id="5457599981699367932">以访客身份浏览</translation>
 <translation id="5463275305984126951"><ph name="LOCATION" /> 的索引</translation>
 <translation id="5463856536939868464">包含隐藏书签的菜单</translation>
 <translation id="5464632865477611176">运行一次</translation>
@@ -3468,7 +3465,6 @@
 <translation id="6181431612547969857">下载已被阻止</translation>
 <translation id="6185132558746749656">设备位置</translation>
 <translation id="6185696379715117369">向上翻页</translation>
-<translation id="618807527697571179">检测不到您的打印机型号，请从列表中选择制造商和型号。</translation>
 <translation id="6188939051578398125">输入姓名或地址。</translation>
 <translation id="6189412234224385711">使用“<ph name="EXTENSION_NAME" />”打开</translation>
 <translation id="6196640612572343990">阻止第三方 Cookie</translation>
@@ -3705,6 +3701,7 @@
 <translation id="6509136331261459454">管理其他用户...</translation>
 <translation id="6509207748479174212">媒体许可</translation>
 <translation id="6510568984200103950">隐藏部分设置</translation>
+<translation id="6513247462497316522">如果您没有连接到其他网络，则 Google Chrome 会使用移动数据网络。</translation>
 <translation id="6514565641373682518">此网页已隐藏鼠标指针。</translation>
 <translation id="6518014396551869914">复制图片(&amp;Y)</translation>
 <translation id="651942933739530207">您是否想让 <ph name="APP_NAME" /> 共享您的屏幕和音频输出？</translation>

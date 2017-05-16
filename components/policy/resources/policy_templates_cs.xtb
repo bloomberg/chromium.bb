@@ -595,38 +595,6 @@ Pokud toto nastavení zakážete nebo ponecháte bez nastavení, stránky ověř
 <translation id="316778957754360075">V prohlížečích <ph name="PRODUCT_NAME" /> verze 29 a novějších bylo toto nastavení zrušeno. Doporučený způsob, jak nastavit sbírky rozšíření nebo aplikací hostovaných organizací, je zahrnout web hostující balíčky CRX do seznamu ExtensionInstallSources a na webovou stránku umístit přímé odkazy pro stažení balíčků. Spouštěč pro danou webovou stránku lze vytvořit pomocí zásady ExtensionInstallForcelist.</translation>
 <translation id="3185009703220253572">od verze <ph name="SINCE_VERSION" /></translation>
 <translation id="3187220842205194486">Aplikace Android k podnikovým klíčům nemají přístup. Tato zásada na ně nemá vliv.</translation>
-<translation id="318812033927804102">Konfiguruje nastavení správy rozšíření prohlížeče <ph name="PRODUCT_NAME" />.
-
-Tato zásada řídí několik nastavení, včetně těch, která jsou konfigurována všemi existujícími zásadami pro rozšíření. Pokud je tato zásada nastavena, přepíše všechny starší nastavené zásady.
-
-Tato zásada mapuje konfiguraci na ID rozšíření nebo adresu URL. Pokud je definováno ID rozšíření, bude konfigurace použita pouze na konkrétní rozšíření. Pro zvláštní ID „*“ lze nastavit výchozí konfiguraci. Ta bude použita na všechna rozšíření, která nemají v této zásadě nastavenu vlastní konfiguraci. Pokud je definována adresa URL pro aktualizaci, bude konfigurace použita na všechna rozšíření, která mají v manifestu uvedenou přesně tuto adresu URL pro aktualizaci (viz <ph name="LINK_TO_EXTENSION_DOC1" />).
-
-Konfigurace pro jednotlivá rozšíření (nebo rozšíření se stejnou adresou URL pro aktualizaci) představuje další slovník, který může obsahovat níže popsaná pole.
-
-installation_mode: mapuje se na řetězec udávající režim instalace rozšíření. Platné řetězce:
-* allowed: umožňuje, aby bylo rozšíření nainstalováno uživatelem. Toto chování je výchozí.
-* blocked: blokuje instalaci rozšíření.
-* force_installed: rozšíření je instalováno automaticky a uživatel ho nemůže odstranit.
-* normal_installed: rozšíření je instalováno automaticky, ale uživatel ho může deaktivovat.
-
-Pole installation_mode může být nakonfigurováno i pro několik rozšíření najednou, a to včetně rozšíření s ID „*“ (jako výchozí nastavení) a rozšíření se stejnou adresou URL pro aktualizaci. V takovém případě lze použít jenom hodnoty allowed a blocked.
-
-Pokud je pole installation_mode nastaveno na hodnotu force_installed nebo normal_installed, pak je třeba nakonfigurovat také pole update_url. Adresa URL pro aktualizaci nastavená v této zásadě slouží pouze k počáteční instalaci. Další aktualizace rozšíření budou používat adresu URL pro aktualizaci uvedenou v manifestu rozšíření. Adresa URL pro aktualizaci by měla odkazovat dokument XML manifestu aktualizace (viz výše).
-
-blocked_permissions: mapuje se na seznam řetězců, které definují blokovaná oprávnění rozhraní API daného rozšíření. Názvy oprávnění jsou stejné jako řetězce oprávnění deklarované v manifestu rozšíření (viz <ph name="LINK_TO_EXTENSION_DOC3" />). Tato řešení lze konfigurovat také pro rozšíření s ID „*“. Pokud rozšíření vyžaduje oprávnění, které se nachází na seznamu blokovaných položek, nebude se moci načíst. Pokud je blokované oprávnění vyžadováno volitelně, rozšíření bude spuštěno normálním způsobem, ale žádost o konfliktní oprávnění bude automaticky zamítnuta za běhu.
-
-allowed_permissions: toto pole je podobné jako pole blocked_permissions, ale na rozdíl od něj explicitně povoluje některá oprávnění, která by mohla být blokována seznamem globálně blokovaných oprávnění. Toto pole proto nelze nakonfigurovat pro rozšíření s ID „*“. Upozorňujeme, že toto nastavení neposkytuje rozšířením udělená oprávnění automaticky.
-
-minimum_version_required: mapuje se na řetězec verze. Formát řetězce verze je stejný jako ten v manifestu rozšíření (viz <ph name="LINK_TO_EXTENSION_DOC4" />). Rozšíření nižší verze, než je stanovená minimální verze, bude deaktivováno. Toto nastavení se vztahuje i na rozšíření, jejichž instalace byla vynucena.
-
-Následující nastavení lze použít pouze pro výchozí konfiguraci rozšíření s ID „*“:
-
-install sources: každá položka v tomto seznamu představuje vzor odpovídající typu rozšíření (viz https://developer.chrome.com/extensions/match_patterns). Uživatelé budou moci jednoduše instalovat položky z jakékoli adresy, která odpovídá položce v tomto seznamu. V těchto vzorech musí být povoleno umístění souboru *.crx i stránka, ze které bude zahájeno stahování (tj. zdroj odkazu).
-
-allowed_types: toto nastavení vytvoří seznam povolených rozšíření nebo aplikací, které lze nainstalovat do prohlížeče <ph name="PRODUCT_NAME" />. Hodnota představuje seznam řetězců. Musí se jednat o řetězce z následujícího výčtu: extension, theme, user_script, hosted_app, legacy_packaged_app, platform_app. Další informace o těchto typech naleznete v dokumentaci k rozšířením <ph name="PRODUCT_NAME" />.
-
-Tato zásada zatím není připravena k použití. Nepoužívejte ji prosím.
-          </translation>
 <translation id="3201273385265130876">Umožňuje zadat proxy server, který bude prohlížeč <ph name="PRODUCT_NAME" /> používat, a brání uživatelům ve změně nastavení proxy serveru.
 
           Pokud zvolíte, že proxy server nikdy používat nechcete a chcete se vždy připojovat přímo, všechny další možnosti budou ignorovány. 

@@ -27,7 +27,6 @@
 Увімкніть Bluetooth і службу локації, щоб користуватися сервісом "Інтернет навколо нас".</translation>
 <translation id="124678866338384709">Закрити поточну вкладку</translation>
 <translation id="1258753120186372309">Дудл Google: <ph name="DOODLE_DESCRIPTION" /></translation>
-<translation id="1265597927250775944">Очищує історію та пропозиції в адресному рядку.</translation>
 <translation id="1272079795634619415">Зупинити</translation>
 <translation id="1283039547216852943">Торкніться, щоб розгорнути</translation>
 <translation id="1285320974508926690">Ніколи не перекладати цей сайт</translation>
@@ -263,7 +262,6 @@
 <translation id="3859306556332390985">Далі</translation>
 <translation id="3894427358181296146">Додати папку</translation>
 <translation id="3895926599014793903">Примусово ввімкнути масштабування</translation>
-<translation id="3915590178385207649">Очищує історію всіх пристроїв, на яких ви ввійшли в обліковий запис. Перегляньте іншу активність у вашому обліковому записі Google на сторінці <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="3917783807003067648">Доступ до геоданих заблоковано</translation>
 <translation id="3927692899758076493">Sans Serif</translation>
 <translation id="3928666092801078803">Об’єднати мої дані</translation>
@@ -609,7 +607,6 @@
 <translation id="7423098979219808738">Спершу запитувати</translation>
 <translation id="7437998757836447326">Вихід із Chrome</translation>
 <translation id="7445411102860286510">Дозволити сайтам автоматично відтворювати відео з вимкненим звуком (рекомендується)</translation>
-<translation id="7449574997654022410">Очищує історію та пропозиції в адресному рядку. Перегляньте іншу активність у вашому обліковому записі Google на сторінці <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="7464701184726199289">Синхронізовані дані буде видалено з усіх пристроїв. Збережені налаштування, які можуть стосуватися ваших зацікавлень в Інтернеті, не буде видалено. <ph name="BEGIN_LINK" />Докладніше<ph name="END_LINK" /></translation>
 <translation id="7473891865547856676">Ні, дякую</translation>
 <translation id="7475192538862203634">Якщо ви часто бачите таку сторінку, скористайтеся цими <ph name="BEGIN_LINK" />пропозиціями<ph name="END_LINK" />.</translation>

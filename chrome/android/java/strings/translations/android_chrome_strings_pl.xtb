@@ -27,7 +27,6 @@
 Aby korzystać z internetu rzeczy, musisz włączyć Bluetooth i Lokalizację.</translation>
 <translation id="124678866338384709">Zamknij bieżącą kartę</translation>
 <translation id="1258753120186372309">Doodle Google: <ph name="DOODLE_DESCRIPTION" /></translation>
-<translation id="1265597927250775944">Usuwa historię i podpowiedzi z paska adresu.</translation>
 <translation id="1272079795634619415">Zatrzymaj</translation>
 <translation id="1283039547216852943">Kliknij, by rozwinąć</translation>
 <translation id="1285320974508926690">Nigdy nie tłumacz tej witryny</translation>
@@ -263,7 +262,6 @@ Aby dostosować wyszukiwane hasło, naciśnij je i przytrzymaj, by je zaznaczyć
 <translation id="3859306556332390985">Przewiń do przodu</translation>
 <translation id="3894427358181296146">Dodaj folder</translation>
 <translation id="3895926599014793903">Wymuś powiększenie</translation>
-<translation id="3915590178385207649">Usuwa historię ze wszystkich urządzeń, na których jesteś zalogowany. Pozostałą aktywność pochodzącą z Twojego konta Google możesz przeglądać na <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="3917783807003067648">Lokalizacja jest zablokowana</translation>
 <translation id="3927692899758076493">Bezszeryfowa</translation>
 <translation id="3928666092801078803">Połącz moje dane</translation>
@@ -609,7 +607,6 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="7423098979219808738">Najpierw zapytaj</translation>
 <translation id="7437998757836447326">Wyloguj się z Chrome</translation>
 <translation id="7445411102860286510">Zezwalaj witrynom na automatyczne odtwarzanie wyciszonych filmów (zalecane)</translation>
-<translation id="7449574997654022410">Usuwa historię i podpowiedzi z paska adresu. Pozostałą aktywność pochodzącą z Twojego konta Google możesz przeglądać na <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="7464701184726199289">Spowoduje to usunięcie zsynchronizowanych danych ze wszystkich urządzeń. Zapisane ustawienia witryn nie zostaną usunięte i mogą zawierać informacje o Twoim korzystaniu z przeglądarki. <ph name="BEGIN_LINK" />Więcej informacji<ph name="END_LINK" /></translation>
 <translation id="7473891865547856676">Nie, dziękuję</translation>
 <translation id="7475192538862203634">Jeśli często widzisz ten komunikat, przeczytaj te <ph name="BEGIN_LINK" />wskazówki<ph name="END_LINK" />.</translation>
@@ -780,7 +777,7 @@ Aby otrzymać nowe licencje, połącz się z internetem i odtwórz pobrane treś
 <translation id="9187199695613236444">Wersja na urządzenia mobilne</translation>
 <translation id="9188680907066685419">Wyloguj się z konta zarządzanego</translation>
 <translation id="9206873250291191720">A</translation>
-<translation id="9216841883364897953">Tabela użycia danych</translation>
+<translation id="9216841883364897953">Szczegóły użycia danych</translation>
 <translation id="9219103736887031265">Grafika</translation>
 <translation id="932327136139879170">Strona główna</translation>
 <translation id="932599481871055447">Zapisuj dane i szybciej przeglądaj strony</translation>

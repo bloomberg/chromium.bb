@@ -27,7 +27,6 @@
 Du må ha slått på Bluetooth og Posisjon for å bruke det fysiske nettet.</translation>
 <translation id="124678866338384709">Lukk den aktive fanen</translation>
 <translation id="1258753120186372309">Google-doodle: <ph name="DOODLE_DESCRIPTION" /></translation>
-<translation id="1265597927250775944">Tømmer loggen og fjerner forslagene i adressefeltet.</translation>
 <translation id="1272079795634619415">Stopp</translation>
 <translation id="1283039547216852943">Trykk for å vise</translation>
 <translation id="1285320974508926690">Oversett aldri dette nettstedet</translation>
@@ -263,7 +262,6 @@ Hvis du vil endre søkeordet, kan du trykke på det og holde for å merke det. H
 <translation id="3859306556332390985">Spol fremover</translation>
 <translation id="3894427358181296146">Legg til en mappe</translation>
 <translation id="3895926599014793903">Tving zoom på</translation>
-<translation id="3915590178385207649">Tømmer loggen på alle påloggede enheter. Se annen aktivitet fra Google-kontoen din på <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="3917783807003067648">Posisjonen er blokkert</translation>
 <translation id="3927692899758076493">Sans Serif</translation>
 <translation id="3928666092801078803">Kombiner dataene mine</translation>
@@ -609,7 +607,6 @@ Noen nettsteder kan for eksempel svare på denne forespørselen ved å vise deg 
 <translation id="7423098979219808738">Spør først.</translation>
 <translation id="7437998757836447326">Logg av Chrome</translation>
 <translation id="7445411102860286510">Gi nettsteder tillatelse til automatisk avspilling av videoer med kuttet lyd (anbefales)</translation>
-<translation id="7449574997654022410">Tømmer loggen og fjerner forslagene i adressefeltet. Se annen aktivitet fra Google-kontoen din på <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="7464701184726199289">Dette sletter synkroniserte data fra alle enheter. Lagrede nettstedsinnstillinger slettes ikke og kan gjenspeile nettleserbruken din. <ph name="BEGIN_LINK" />Finn ut mer<ph name="END_LINK" /></translation>
 <translation id="7473891865547856676">Nei takk</translation>
 <translation id="7475192538862203634">Hvis du ser dette ofte, kan du prøve disse <ph name="BEGIN_LINK" />forslagene<ph name="END_LINK" />.</translation>
