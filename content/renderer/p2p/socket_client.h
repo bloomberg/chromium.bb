@@ -26,20 +26,6 @@ class P2PSocketClientDelegate;
 // called on the same thread.
 class P2PSocketClient : public base::RefCountedThreadSafe<P2PSocketClient> {
  public:
-  // Create a new P2PSocketClient() of the specified |type| and connected to
-  // the specified |address|. |address| matters only when |type| is set to
-  // P2P_SOCKET_TCP_CLIENT. The methods on the returned socket may only be
-  // called on the same thread that created it.
-  static scoped_refptr<P2PSocketClient> Create(
-      P2PSocketType type,
-      const net::IPEndPoint& local_address,
-      uint16_t min_port,
-      uint16_t max_port,
-      const net::IPEndPoint& remote_address,
-      P2PSocketClientDelegate* delegate);
-
-  P2PSocketClient() {}
-
   // Send the |data| to the |address| using Differentiated Services Code Point
   // |dscp|. Return value is the unique packet_id for this packet.
   virtual uint64_t Send(const net::IPEndPoint& address,
@@ -55,6 +41,7 @@ class P2PSocketClient : public base::RefCountedThreadSafe<P2PSocketClient> {
   virtual void SetDelegate(P2PSocketClientDelegate* delegate) = 0;
 
  protected:
+  P2PSocketClient() {}
   virtual ~P2PSocketClient() {}
 
  private:
