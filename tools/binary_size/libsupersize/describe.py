@@ -37,6 +37,8 @@ def _FormatPss(pss):
   ret = str(round(pss, 1))
   if ret.endswith('.0'):
     ret = ret[:-2]
+    if ret == '0' and pss:
+      ret = '~0'
   return ret
 
 
@@ -162,7 +164,9 @@ class Describer(object):
         data_size += s.pss
       elif s.section == 'b':
         bss_size += s.pss
-      unique_paths.add(s.object_path)
+      # Ignore paths like foo/{shared}/2
+      if '{' not in s.object_path:
+        unique_paths.add(s.object_path)
     header_desc = [
         'Showing {:,} symbols ({:,} unique) with total pss: {} bytes'.format(
             len(group), group.CountUniqueSymbols(), int(total_size)),
@@ -170,7 +174,7 @@ class Describer(object):
             _PrettySize(int(code_size)), _PrettySize(int(ro_size)),
             _PrettySize(int(data_size)), _PrettySize(int(bss_size)),
             _PrettySize(int(total_size))),
-        'Number of object files: {}'.format(len(unique_paths)),
+        'Number of unique paths: {}'.format(len(unique_paths)),
         '',
         'Index, Running Total, Section@Address, PSS',
         '-' * 60

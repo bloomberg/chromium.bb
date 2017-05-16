@@ -11,7 +11,7 @@ SymbolDiff (extends SymbolGroup): IsAdded, IsRemoved, IsSimilar, WhereNotUnchang
 canned_queries: CategorizeByChromeComponent, CategorizeGenerated, TemplatesByName
 
 Functions: Diff(), Disassemble(), ExpandRegex(), Print(), ShowExamples()
-Variables: canned_queries, size_info
+Variables: canned_queries, printed, size_info
 ********************************************************************************
 # Show pydoc for main types:
 import models
@@ -25,9 +25,9 @@ text_syms = size_info.symbols.WhereInSection("t")
 by_path = text_syms.GroupedByPath(depth=2)
 Print(by_path.WherePssBiggerThan(1024))
 
-# Show all non-vtable generated symbols
-generated_syms = size_info.symbols.WhereGeneratedByToolchain()
-Print(generated_syms.WhereNameMatches(r"vtable").Inverted().Sorted())
+# Show all generated symbols, then show only non-vtable ones
+Print(size_info.symbols.WhereGeneratedByToolchain())
+Print(printed[-1].WhereNameMatches(r"vtable").Inverted().Sorted())
 
 # Show all symbols that have "print" in their name or path, except
 # those within components/.
@@ -66,7 +66,7 @@ Section Sizes (Total=41.8mb (43785380 bytes)):
 
 Showing 49 symbols (46 unique) with total pss: 43785380 bytes
 .text=34.2mb     .rodata=5.65mb     .data*=1.87mb     .bss=512kb      total=41.8mb
-Number of object files: 10
+Number of unique paths: 9
 
 Index, Running Total, Section@Address, PSS
 ------------------------------------------------------------
@@ -111,7 +111,7 @@ Index, Running Total, Section@Address, PSS
 19)  37866121 (86.5%) r@0x284d600  3425    {no path}
              ** merge constants
 20)  37866124 (86.5%) r@0x284e364  3       {no path}
-             ** symbol gap 2
+             ** symbol gap 0
 21)  37866132 (86.5%) r@0x284e364  8       base/page_allocator.cc
 22)  37866176 (86.5%) r@0x284e370  44      base/page_allocator.cc
              Name
@@ -124,7 +124,7 @@ Index, Running Total, Section@Address, PSS
 26)  38542252 (88.0%) r@0x28f3480  4       third_party/paint.cc
              blink::CSSValueKeywordsHash::findValueImpl::value_word_list
 27)  41828364 (95.5%) r@0x2c158e4  3286112 {no path}
-             ** symbol gap 3 (end of section)
+             ** symbol gap 1 (end of section)
 28)  41828420 (95.5%) d@0x2c176f0  56      third_party/icu/ucnv_ext.c
              ChromeMainDelegate [vtable]
 29)  41828444 (95.5%) d@0x2c17728  24      third_party/icu/ucnv_ext.c
@@ -142,7 +142,7 @@ Index, Running Total, Section@Address, PSS
 35)  42618480 (97.3%) d@0x2cd8550  12      base/page_allocator.cc
              kMethodsAnimationFrameTimeHistogram
 36)  43683612 (99.8%) d@0x2ddc608  1065132 {no path}
-             ** symbol gap 3 (end of section)
+             ** symbol gap 0 (end of section)
 37)  43683616 (99.8%) d@0x2de7000  4       base/page_allocator.cc
              google::protobuf::internal::pLinuxKernelCmpxchg
 38)  43683620 (99.8%) d@0x2de7004  4       third_party/container.c
@@ -154,7 +154,7 @@ Index, Running Total, Section@Address, PSS
 41)  43683780 (99.8%) d@0x2de70a4  4       third_party/container.c
              base::android::g_library_version_number
 42)  43785380 (100.0%) d@0x2dffd88  101600  {no path}
-             ** symbol gap 3 (end of section)
+             ** symbol gap 0 (end of section)
 43)  43785380 (100.0%) b@0x0        262144  third_party/fft_float.cc
              ff_cos_131072
 44)  43785380 (100.0%) b@0x0        131072  third_party/fft_fixed.cc

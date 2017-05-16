@@ -43,7 +43,7 @@ Other section sizes:
 
 Showing 41 symbols (41 unique) with total pss: 82 bytes
 .text=82 bytes   .rodata=0 bytes    .data*=0 bytes    .bss=-36 bytes  total=82 bytes
-Number of object files: 9
+Number of unique paths: 9
 
 Index, Running Total, Section@Address, PSS
 ------------------------------------------------------------
@@ -67,10 +67,10 @@ Index, Running Total, Section@Address, PSS
                flags={}  name=** merge strings
 = 6)         82 (100.0%) d@0x2ddc608  pss=0  padding=0  size_without_padding=0
                source_path= 	object_path=
-               flags={}  name=** symbol gap 3 (end of section)
+               flags={}  name=** symbol gap 0 (end of section)
 = 7)         82 (100.0%) d@0x2dffd88  pss=0  padding=0  size_without_padding=0
                source_path= 	object_path=
-               flags={}  name=** symbol gap 3 (end of section)
+               flags={}  name=** symbol gap 0 (end of section)
 = 8)         82 (100.0%) t@Group      pss=0  padding=0  size_without_padding=0  count=3
                source_path= 	object_path=
                flags={}  name=** symbol gaps

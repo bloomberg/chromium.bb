@@ -1,7 +1,7 @@
 GroupedByName()
 Showing 45 symbols (45 unique) with total pss: 43785380 bytes
 .text=34.2mb     .rodata=5.65mb     .data*=1.87mb     .bss=512kb      total=41.8mb
-Number of object files: 10
+Number of unique paths: 9
 
 Index, Running Total, Section@Address, PSS
 ------------------------------------------------------------
@@ -14,19 +14,19 @@ Index, Running Total, Section@Address, PSS
 6)        294 (0.0%)  *@Group      70      extFromUUseMapping (count=2)
 7)        294 (0.0%)  *@Group      0       ff_cos_131072_fixed (count=1)
 8)    2638263 (6.0%)  *@Group      2637969 ** merge strings (count=2)
-9)    2638275 (6.0%)  *@Group      12      kMethodsAnimationFrameTimeHistogram (count=1)
-10)   2638331 (6.0%)  *@Group      56      ChromeMainDelegate [vtable] (count=1)
-11)   2638359 (6.0%)  *@Group      28      blink::ContiguousContainerBase::ContiguousContainerBase (count=1)
-12)   2638367 (6.0%)  *@Group      8       kSystemClassPrefixes (count=1)
-13)   7091211 (16.2%) *@Group      4452844 ** symbol gap 3 (end of section) (count=3)
-14)   7091235 (16.2%) *@Group      24      blink::ContiguousContainerBase::shrinkToFit (count=1)
-15)   7160359 (16.4%) *@Group      69124   foo_bar (count=1)
-16)   7160359 (16.4%) *@Group      0       SaveHistogram::atomic_histogram_pointer (count=1)
-17)   7160453 (16.4%) *@Group      94      blink::PaintChunker::releasePaintChunks [clone .part.1] (count=1)
-18)   7160457 (16.4%) *@Group      4       base::android::g_renderer_histogram_code (count=1)
-19)   7160460 (16.4%) *@Group      3       ** symbol gap 2 (count=1)
-20)   7164500 (16.4%) *@Group      4040    ** symbol gap 1 (count=1)
-21)   7170218 (16.4%) *@Group      5718    ** symbol gap 0 (count=1)
+9)    3804995 (8.7%)  *@Group      1166732 ** symbol gap 0 (end of section) (count=2)
+10)   3805007 (8.7%)  *@Group      12      kMethodsAnimationFrameTimeHistogram (count=1)
+11)   7091119 (16.2%) *@Group      3286112 ** symbol gap 1 (end of section) (count=1)
+12)   7091175 (16.2%) *@Group      56      ChromeMainDelegate [vtable] (count=1)
+13)   7091203 (16.2%) *@Group      28      blink::ContiguousContainerBase::ContiguousContainerBase (count=1)
+14)   7091211 (16.2%) *@Group      8       kSystemClassPrefixes (count=1)
+15)   7091235 (16.2%) *@Group      24      blink::ContiguousContainerBase::shrinkToFit (count=1)
+16)   7160359 (16.4%) *@Group      69124   foo_bar (count=1)
+17)   7160359 (16.4%) *@Group      0       SaveHistogram::atomic_histogram_pointer (count=1)
+18)   7160453 (16.4%) *@Group      94      blink::PaintChunker::releasePaintChunks [clone .part.1] (count=1)
+19)   7160457 (16.4%) *@Group      4       base::android::g_renderer_histogram_code (count=1)
+20)   7164497 (16.4%) *@Group      4040    ** symbol gap 1 (count=1)
+21)   7170218 (16.4%) *@Group      5721    ** symbol gap 0 (count=2)
 22)   7170218 (16.4%) *@Group      0       g_AnimationFrameTimeHistogram_clazz (count=1)
 23)   7170222 (16.4%) *@Group      4       google::protobuf::internal::pLinuxKernelCmpxchg (count=1)
 24)   7170246 (16.4%) *@Group      24      mojo::MessageReceiver [vtable] (count=1)
@@ -53,7 +53,7 @@ Index, Running Total, Section@Address, PSS
 GroupedByName(depth=1)
 Showing 36 symbols (36 unique) with total pss: 43785380 bytes
 .text=34.2mb     .rodata=5.65mb     .data*=1.87mb     .bss=512kb      total=41.8mb
-Number of object files: 10
+Number of unique paths: 9
 
 Index, Running Total, Section@Address, PSS
 ------------------------------------------------------------
@@ -66,18 +66,18 @@ Index, Running Total, Section@Address, PSS
 6)        146 (0.0%)  *@Group      0       SaveHistogram (count=1)
 7)        300 (0.0%)  *@Group      154     blink (count=5)
 8)    2638269 (6.0%)  *@Group      2637969 ** merge strings (count=2)
-9)    2638281 (6.0%)  *@Group      12      kMethodsAnimationFrameTimeHistogram (count=1)
-10)   2638305 (6.0%)  *@Group      24      mojo (count=1)
-11)   2638361 (6.0%)  *@Group      56      ChromeMainDelegate [vtable] (count=1)
-12)   2638369 (6.0%)  *@Group      8       kSystemClassPrefixes (count=1)
-13)   7091213 (16.2%) *@Group      4452844 ** symbol gap 3 (end of section) (count=3)
-14)   7091213 (16.2%) *@Group      0       ff_cos_131072 (count=1)
-15)   7881173 (18.0%) *@Group      789960  chrome (count=3)
-16)   7950297 (18.2%) *@Group      69124   foo_bar (count=1)
-17)   7950297 (18.2%) *@Group      0       g_AnimationFrameTimeHistogram_clazz (count=1)
-18)   7950300 (18.2%) *@Group      3       ** symbol gap 2 (count=1)
-19)   7954340 (18.2%) *@Group      4040    ** symbol gap 1 (count=1)
-20)   7960058 (18.2%) *@Group      5718    ** symbol gap 0 (count=1)
+9)    3805001 (8.7%)  *@Group      1166732 ** symbol gap 0 (end of section) (count=2)
+10)   3805013 (8.7%)  *@Group      12      kMethodsAnimationFrameTimeHistogram (count=1)
+11)   7091125 (16.2%) *@Group      3286112 ** symbol gap 1 (end of section) (count=1)
+12)   7091149 (16.2%) *@Group      24      mojo (count=1)
+13)   7091205 (16.2%) *@Group      56      ChromeMainDelegate [vtable] (count=1)
+14)   7091213 (16.2%) *@Group      8       kSystemClassPrefixes (count=1)
+15)   7091213 (16.2%) *@Group      0       ff_cos_131072 (count=1)
+16)   7881173 (18.0%) *@Group      789960  chrome (count=3)
+17)   7950297 (18.2%) *@Group      69124   foo_bar (count=1)
+18)   7950297 (18.2%) *@Group      0       g_AnimationFrameTimeHistogram_clazz (count=1)
+19)   7954337 (18.2%) *@Group      4040    ** symbol gap 1 (count=1)
+20)   7960058 (18.2%) *@Group      5721    ** symbol gap 0 (count=2)
 21)   7960102 (18.2%) *@Group      44      Name (count=1)
 22)   7960126 (18.2%) *@Group      24      BazAlias (count=1)
 23)  43781128 (100.0%) *@Group      35821002 ** symbol gap 2 (end of section) (count=1)
@@ -96,7 +96,7 @@ Index, Running Total, Section@Address, PSS
 GroupedByName(depth=-1)
 Showing 39 symbols (39 unique) with total pss: 43785380 bytes
 .text=34.2mb     .rodata=5.65mb     .data*=1.87mb     .bss=512kb      total=41.8mb
-Number of object files: 10
+Number of unique paths: 9
 
 Index, Running Total, Section@Address, PSS
 ------------------------------------------------------------
@@ -108,23 +108,23 @@ Index, Running Total, Section@Address, PSS
 5)        138 (0.0%)  *@Group      0       SaveHistogram (count=1)
 6)        170 (0.0%)  *@Group      32      chrome::mojom::FilePatcher (count=1)
 7)    2638139 (6.0%)  *@Group      2637969 ** merge strings (count=2)
-8)    2638139 (6.0%)  *@Group      0       ff_cos_131072_fixed (count=1)
-9)    2638151 (6.0%)  *@Group      12      kMethodsAnimationFrameTimeHistogram (count=1)
-10)   2638175 (6.0%)  *@Group      24      mojo (count=1)
-11)   2638231 (6.0%)  *@Group      56      ChromeMainDelegate [vtable] (count=1)
-12)   2638239 (6.0%)  *@Group      8       kSystemClassPrefixes (count=1)
-13)   7091083 (16.2%) *@Group      4452844 ** symbol gap 3 (end of section) (count=3)
+8)    3804871 (8.7%)  *@Group      1166732 ** symbol gap 0 (end of section) (count=2)
+9)    3804883 (8.7%)  *@Group      12      kMethodsAnimationFrameTimeHistogram (count=1)
+10)   7090995 (16.2%) *@Group      3286112 ** symbol gap 1 (end of section) (count=1)
+11)   7091019 (16.2%) *@Group      24      mojo (count=1)
+12)   7091075 (16.2%) *@Group      56      ChromeMainDelegate [vtable] (count=1)
+13)   7091083 (16.2%) *@Group      8       kSystemClassPrefixes (count=1)
 14)   7091083 (16.2%) *@Group      0       ff_cos_131072 (count=1)
 15)   7160207 (16.4%) *@Group      69124   foo_bar (count=1)
 16)   7160207 (16.4%) *@Group      0       g_AnimationFrameTimeHistogram_clazz (count=1)
-17)   7160210 (16.4%) *@Group      3       ** symbol gap 2 (count=1)
-18)   7164250 (16.4%) *@Group      4040    ** symbol gap 1 (count=1)
-19)   7169968 (16.4%) *@Group      5718    ** symbol gap 0 (count=1)
-20)   7169972 (16.4%) *@Group      4       blink::CSSValueKeywordsHash::findValueImpl (count=1)
-21)   7170016 (16.4%) *@Group      44      Name (count=1)
-22)   7170176 (16.4%) *@Group      160     base::android (count=3)
-23)   7170200 (16.4%) *@Group      24      BazAlias (count=1)
-24)  42991202 (98.2%) *@Group      35821002 ** symbol gap 2 (end of section) (count=1)
+17)   7164247 (16.4%) *@Group      4040    ** symbol gap 1 (count=1)
+18)   7169968 (16.4%) *@Group      5721    ** symbol gap 0 (count=2)
+19)   7169972 (16.4%) *@Group      4       blink::CSSValueKeywordsHash::findValueImpl (count=1)
+20)   7170016 (16.4%) *@Group      44      Name (count=1)
+21)   7170176 (16.4%) *@Group      160     base::android (count=3)
+22)   7170200 (16.4%) *@Group      24      BazAlias (count=1)
+23)  42991202 (98.2%) *@Group      35821002 ** symbol gap 2 (end of section) (count=1)
+24)  42991202 (98.2%) *@Group      0       ff_cos_131072_fixed (count=1)
 25)  42991202 (98.2%) *@Group      0       g_chrome_content_browser_client (count=1)
 26)  42991258 (98.2%) *@Group      56      blink::ContiguousContainerBase (count=3)
 27)  42991352 (98.2%) *@Group      94      blink::PaintChunker (count=1)
@@ -142,7 +142,7 @@ Index, Running Total, Section@Address, PSS
 GroupedByName(depth=1, min_count=2)
 Showing 36 symbols (35 unique) with total pss: 43785380 bytes
 .text=34.2mb     .rodata=5.65mb     .data*=1.87mb     .bss=512kb      total=41.8mb
-Number of object files: 10
+Number of unique paths: 9
 
 Index, Running Total, Section@Address, PSS
 ------------------------------------------------------------
@@ -163,30 +163,30 @@ Index, Running Total, Section@Address, PSS
              blink (count=5)
 8)    2638269 (6.0%)  *@Group      2637969 {no path}
              ** merge strings (count=2)
-9)    2638281 (6.0%)  d@0x2cd8550  12      base/page_allocator.cc
+9)    3805001 (8.7%)  *@Group      1166732 {no path}
+             ** symbol gap 0 (end of section) (count=2)
+10)   3805013 (8.7%)  d@0x2cd8550  12      base/page_allocator.cc
              kMethodsAnimationFrameTimeHistogram
-10)   2638305 (6.0%)  d@0x2cd8538  24      base/page_allocator.cc
+11)   7091125 (16.2%) r@0x2c158e4  3286112 {no path}
+             ** symbol gap 1 (end of section)
+12)   7091149 (16.2%) d@0x2cd8538  24      base/page_allocator.cc
              mojo::MessageReceiver [vtable]
-11)   2638361 (6.0%)  d@0x2c176f0  56      third_party/icu/ucnv_ext.c
+13)   7091205 (16.2%) d@0x2c176f0  56      third_party/icu/ucnv_ext.c
              ChromeMainDelegate [vtable]
-12)   2638369 (6.0%)  d@0x2cd84f0  8       third_party/gvr-android-sdk/libgvr_shim_static_arm.a/libport_android_jni.a_jni_utils.o
+14)   7091213 (16.2%) d@0x2cd84f0  8       third_party/gvr-android-sdk/libgvr_shim_static_arm.a/libport_android_jni.a_jni_utils.o
              kSystemClassPrefixes
-13)   7091213 (16.2%) *@Group      4452844 {no path}
-             ** symbol gap 3 (end of section) (count=3)
-14)   7091213 (16.2%) b@0x0        262144  third_party/fft_float.cc
+15)   7091213 (16.2%) b@0x0        262144  third_party/fft_float.cc
              ff_cos_131072
-15)   7881173 (18.0%) *@Group      789960  {no path}
+16)   7881173 (18.0%) *@Group      789960  {no path}
              chrome (count=3)
-16)   7950297 (18.2%) t@0x28f1e0   69124   third_party/icu/ucnv_ext.c
+17)   7950297 (18.2%) t@0x28f1e0   69124   third_party/icu/ucnv_ext.c
              foo_bar
-17)   7950297 (18.2%) b@0x2dffe84  4       third_party/icu/ucnv_ext.c
+18)   7950297 (18.2%) b@0x2dffe84  4       third_party/icu/ucnv_ext.c
              g_AnimationFrameTimeHistogram_clazz
-18)   7950300 (18.2%) r@0x284e364  3       {no path}
-             ** symbol gap 2
-19)   7954340 (18.2%) t@0x2a1000   4040    {no path}
+19)   7954337 (18.2%) t@0x2a1000   4040    {no path}
              ** symbol gap 1
-20)   7960058 (18.2%) t@0x28f000   5718    {no path}
-             ** symbol gap 0
+20)   7960058 (18.2%) *@Group      5721    {no path}
+             ** symbol gap 0 (count=2)
 21)   7960102 (18.2%) r@0x284e370  44      base/page_allocator.cc
              Name
 22)   7960126 (18.2%) t@0x2a0000   24      third_party/icu/ucnv_ext.c
