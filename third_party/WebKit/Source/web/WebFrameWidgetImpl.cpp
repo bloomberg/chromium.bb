@@ -594,10 +594,6 @@ bool WebFrameWidgetImpl::SelectionBounds(WebRect& anchor,
   if (!local_frame)
     return false;
 
-  FrameSelection& selection = local_frame->Selection();
-  if (selection.ComputeVisibleSelectionInDOMTreeDeprecated().IsNone())
-    return false;
-
   // TODO(editing-dev): The use of updateStyleAndLayoutIgnorePendingStylesheets
   // needs to be audited.  See http://crbug.com/590369 for more details.
   local_frame->GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
@@ -605,7 +601,11 @@ bool WebFrameWidgetImpl::SelectionBounds(WebRect& anchor,
   DocumentLifecycle::DisallowTransitionScope disallow_transition(
       local_frame->GetDocument()->Lifecycle());
 
-  if (selection.ComputeVisibleSelectionInDOMTreeDeprecated().IsCaret()) {
+  FrameSelection& selection = local_frame->Selection();
+  if (selection.ComputeVisibleSelectionInDOMTree().IsNone())
+    return false;
+
+  if (selection.ComputeVisibleSelectionInDOMTree().IsCaret()) {
     anchor = focus = selection.AbsoluteCaretBounds();
   } else {
     const EphemeralRange selected_range =
