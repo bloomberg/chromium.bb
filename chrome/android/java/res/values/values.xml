@@ -41,6 +41,7 @@
     <!-- Help and Feedback
          These constants should be in sync with the context names on go/mobilehelprecs.
          If the context ID cannot be found, the default help page will be shown to the user.-->
+    <string name="help_context_autofill">android_autofill_ota</string>
     <string name="help_context_new_tab">mobile_new_tab</string>
     <string name="help_context_search_results">mobile_search_results</string>
     <string name="help_context_webpage">mobile_webpage</string>
