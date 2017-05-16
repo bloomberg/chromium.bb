@@ -26,6 +26,7 @@
 
 #include <memory>
 #include "core/CoreExport.h"
+#include "core/clipboard/DataObject.h"
 #include "core/clipboard/DataTransferAccessPolicy.h"
 #include "core/loader/resource/ImageResourceContent.h"
 #include "core/page/DragActions.h"
@@ -36,7 +37,6 @@
 
 namespace blink {
 
-class DataObject;
 class DataTransferItemList;
 class DragImage;
 class Element;
@@ -52,7 +52,9 @@ class Node;
 // http://dev.w3.org/2006/webapi/clipops/clipops.html
 class CORE_EXPORT DataTransfer final
     : public GarbageCollectedFinalized<DataTransfer>,
-      public ScriptWrappable {
+      public ScriptWrappable,
+      public DataObject::Observer {
+  USING_GARBAGE_COLLECTED_MIXIN(DataTransfer);
   DEFINE_WRAPPERTYPEINFO();
 
  public:
@@ -87,8 +89,10 @@ class CORE_EXPORT DataTransfer final
   String getData(const String& type) const;
   void setData(const String& type, const String& data);
 
-  // extensions beyond IE's API
-  Vector<String> types() const;
+  // Used by the bindings code to determine whether to call types() again.
+  bool hasDataStoreItemListChanged() const;
+
+  Vector<String> types();
   FileList* files() const;
 
   IntPoint DragLocation() const { return drag_loc_; }
@@ -138,6 +142,9 @@ class CORE_EXPORT DataTransfer final
   bool HasFileOfType(const String&) const;
   bool HasStringOfType(const String&) const;
 
+  // DataObject::Observer override.
+  void OnItemListChanged() override;
+
   // Instead of using this member directly, prefer to use the can*() methods
   // above.
   DataTransferAccessPolicy policy_;
@@ -145,6 +152,8 @@ class CORE_EXPORT DataTransfer final
   String effect_allowed_;
   DataTransferType transfer_type_;
   Member<DataObject> data_object_;
+
+  bool data_store_item_list_changed_;
 
   IntPoint drag_loc_;
   Member<ImageResourceContent> drag_image_;

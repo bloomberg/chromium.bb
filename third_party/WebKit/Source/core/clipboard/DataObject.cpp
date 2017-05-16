@@ -90,10 +90,14 @@ void DataObject::DeleteItem(unsigned long index) {
   if (index >= length())
     return;
   item_list_.erase(index);
+  NotifyItemListChanged();
 }
 
 void DataObject::ClearAll() {
+  if (item_list_.IsEmpty())
+    return;
   item_list_.clear();
+  NotifyItemListChanged();
 }
 
 DataObjectItem* DataObject::Add(const String& data, const String& type) {
@@ -128,6 +132,7 @@ void DataObject::ClearData(const String& type) {
         item_list_[i]->GetType() == type) {
       // Per the spec, type must be unique among all items of kind 'string'.
       item_list_.erase(i);
+      NotifyItemListChanged();
       return;
     }
   }
@@ -256,16 +261,29 @@ bool DataObject::InternalAddStringItem(DataObjectItem* item) {
   }
 
   item_list_.push_back(item);
+  NotifyItemListChanged();
   return true;
 }
 
 void DataObject::InternalAddFileItem(DataObjectItem* item) {
   DCHECK_EQ(item->Kind(), DataObjectItem::kFileKind);
   item_list_.push_back(item);
+  NotifyItemListChanged();
+}
+
+void DataObject::AddObserver(Observer* observer) {
+  DCHECK(!observers_.Contains(observer));
+  observers_.insert(observer);
+}
+
+void DataObject::NotifyItemListChanged() const {
+  for (const auto& observer : observers_)
+    observer->OnItemListChanged();
 }
 
 DEFINE_TRACE(DataObject) {
   visitor->Trace(item_list_);
+  visitor->Trace(observers_);
   Supplementable<DataObject>::Trace(visitor);
 }
 

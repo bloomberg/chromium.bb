@@ -192,12 +192,19 @@ void DataTransfer::setData(const String& type, const String& data) {
   data_object_->SetData(NormalizeType(type), data);
 }
 
-// extensions beyond IE's API
-Vector<String> DataTransfer::types() const {
-  Vector<String> types;
-  if (!CanReadTypes())
-    return types;
+bool DataTransfer::hasDataStoreItemListChanged() const {
+  return data_store_item_list_changed_ || !CanReadTypes();
+}
 
+void DataTransfer::OnItemListChanged() {
+  data_store_item_list_changed_ = true;
+}
+
+Vector<String> DataTransfer::types() {
+  if (!CanReadTypes())
+    return Vector<String>();
+
+  data_store_item_list_changed_ = false;
   return data_object_->Types();
 }
 
@@ -429,7 +436,10 @@ DataTransfer::DataTransfer(DataTransferType type,
       drop_effect_("uninitialized"),
       effect_allowed_("uninitialized"),
       transfer_type_(type),
-      data_object_(data_object) {}
+      data_object_(data_object),
+      data_store_item_list_changed_(true) {
+  data_object_->AddObserver(this);
+}
 
 void DataTransfer::setDragImage(ImageResourceContent* image,
                                 Node* node,
@@ -461,7 +471,7 @@ bool DataTransfer::HasStringOfType(const String& type) const {
   if (!CanReadTypes())
     return false;
 
-  return types().Contains(type);
+  return data_object_->Types().Contains(type);
 }
 
 DragOperation ConvertDropZoneOperationToDragOperation(
