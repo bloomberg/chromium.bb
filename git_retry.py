@@ -122,7 +122,15 @@ def main(args):
   # If we're using the Infra Git wrapper, do nothing here.
   # https://chromium.googlesource.com/infra/infra/+/master/go/src/infra/tools/git
   if 'INFRA_GIT_WRAPPER' in os.environ:
-    return subprocess.call([GIT_EXE] + args)
+    # Remove Git's execution path from PATH so that our call-through re-invokes
+    # the Git wrapper.
+    # See crbug.com/721450
+    env = os.environ.copy()
+    git_exec = subprocess.check_output([GIT_EXE, '--exec-path']).strip()
+    env['PATH'] = os.pathsep.join([
+      elem for elem in env.get('PATH', '').split(os.pathsep)
+      if elem != git_exec])
+    return subprocess.call([GIT_EXE] + args, env=env)
 
   parser = optparse.OptionParser()
   parser.disable_interspersed_args()
