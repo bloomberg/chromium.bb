@@ -195,9 +195,7 @@ class StartPageService::StartPageWebContentsDelegate
   bool PreHandleGestureEvent(content::WebContents* /*source*/,
                              const blink::WebGestureEvent& event) override {
     // Disable pinch zooming on the start page web contents.
-    return event.GetType() == blink::WebGestureEvent::kGesturePinchBegin ||
-           event.GetType() == blink::WebGestureEvent::kGesturePinchUpdate ||
-           event.GetType() == blink::WebGestureEvent::kGesturePinchEnd;
+    return blink::WebInputEvent::IsPinchGestureEventType(event.GetType());
   }
 
 

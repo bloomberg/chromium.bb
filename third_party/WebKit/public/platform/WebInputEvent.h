@@ -130,8 +130,10 @@ class WebInputEvent {
     kGestureFlingCancel,
     // Pinch is two fingers moving closer or farther apart.
     kGesturePinchBegin,
+    kGesturePinchTypeFirst = kGesturePinchBegin,
     kGesturePinchEnd,
     kGesturePinchUpdate,
+    kGesturePinchTypeLast = kGesturePinchUpdate,
 
     // The following types are variations and subevents of single-taps.
     //
@@ -279,22 +281,22 @@ class WebInputEvent {
   static constexpr double kTimeStampForTesting = 123.0;
 
   // Returns true if the WebInputEvent |type| is a mouse event.
-  static bool IsMouseEventType(int type) {
+  static bool IsMouseEventType(WebInputEvent::Type type) {
     return kMouseTypeFirst <= type && type <= kMouseTypeLast;
   }
 
   // Returns true if the WebInputEvent |type| is a keyboard event.
-  static bool IsKeyboardEventType(int type) {
+  static bool IsKeyboardEventType(WebInputEvent::Type type) {
     return kKeyboardTypeFirst <= type && type <= kKeyboardTypeLast;
   }
 
   // Returns true if the WebInputEvent |type| is a touch event.
-  static bool IsTouchEventType(int type) {
+  static bool IsTouchEventType(WebInputEvent::Type type) {
     return kTouchTypeFirst <= type && type <= kTouchTypeLast;
   }
 
   // Returns true if the WebInputEvent is a gesture event.
-  static bool IsGestureEventType(int type) {
+  static bool IsGestureEventType(WebInputEvent::Type type) {
     return kGestureTypeFirst <= type && type <= kGestureTypeLast;
   }
 
@@ -308,6 +310,11 @@ class WebInputEvent {
     if (IsKeyboardEventType(type_))
       return IsKeyboardEventType(other.type_);
     return type_ == other.type_;
+  }
+
+  // Returns true if the WebInputEvent |type| is a pinch gesture event.
+  static bool IsPinchGestureEventType(WebInputEvent::Type type) {
+    return kGesturePinchTypeFirst <= type && type <= kGesturePinchTypeLast;
   }
 
   static const char* GetName(WebInputEvent::Type type) {
@@ -402,7 +409,7 @@ class WebInputEvent {
 #endif
   }
 
-  WebInputEvent(unsigned size_param) {
+  explicit WebInputEvent(unsigned size_param) {
     // TODO(dtapuska): Remove this memset when we remove the chrome IPC of this
     // struct.
     memset(this, 0, size_param);
