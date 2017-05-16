@@ -8,24 +8,22 @@
 #include "chrome/browser/ui/search/search_tab_helper.h"
 
 SearchDelegate::SearchDelegate(SearchModel* browser_search_model)
-    : browser_model_(browser_search_model),
-      tab_model_() {
-}
+    : browser_model_(browser_search_model), tab_model_(nullptr) {}
 
 SearchDelegate::~SearchDelegate() {
   DCHECK(!tab_model_) << "All tabs should have been deactivated or closed.";
 }
 
-void SearchDelegate::ModelChanged(const SearchModel::State& old_state,
-                                  const SearchModel::State& new_state) {
-  browser_model_->SetState(new_state);
+void SearchDelegate::ModelChanged(const SearchMode& old_mode,
+                                  const SearchMode& new_mode) {
+  browser_model_->SetMode(new_mode);
 }
 
 void SearchDelegate::OnTabActivated(content::WebContents* web_contents) {
   if (tab_model_)
     tab_model_->RemoveObserver(this);
   tab_model_ = SearchTabHelper::FromWebContents(web_contents)->model();
-  browser_model_->SetState(tab_model_->state());
+  browser_model_->SetMode(tab_model_->mode());
   tab_model_->AddObserver(this);
 }
 

@@ -286,8 +286,6 @@ void SearchTabHelper::DidFinishLoad(content::RenderFrameHost* render_frame_host,
   if (!render_frame_host->GetParent()) {
     if (search::IsInstantNTP(web_contents_))
       RecordNewTabLoadTime(web_contents_);
-
-    InstantSupportChanged(InInstantProcess(profile(), web_contents_));
   }
 }
 
@@ -300,8 +298,6 @@ void SearchTabHelper::NavigationEntryCommitted(
     return;
 
   UpdateMode(/*update_origin=*/true);
-
-  InstantSupportChanged(InInstantProcess(profile(), web_contents_));
 
   if (InInstantProcess(profile(), web_contents_))
     ipc_router_.OnNavigationEntryCommitted();
@@ -446,16 +442,6 @@ void SearchTabHelper::OnChromeIdentityCheck(const base::string16& identity) {
 
 void SearchTabHelper::OnHistorySyncCheck() {
   ipc_router_.SendHistorySyncCheckResult(IsHistorySyncEnabled(profile()));
-}
-
-void SearchTabHelper::InstantSupportChanged(bool instant_support) {
-  if (!is_search_enabled_)
-    return;
-
-  InstantSupportState new_state = instant_support ? INSTANT_SUPPORT_YES :
-      INSTANT_SUPPORT_NO;
-
-  model_.SetInstantSupportState(new_state);
 }
 
 void SearchTabHelper::UpdateMode(bool update_origin) {

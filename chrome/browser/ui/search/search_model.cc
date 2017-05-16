@@ -7,64 +7,23 @@
 #include "chrome/browser/ui/search/search_model_observer.h"
 #include "components/search/search.h"
 
-SearchModel::State::State() : instant_support(INSTANT_SUPPORT_NO) {}
+SearchModel::SearchModel() = default;
 
-SearchModel::State::State(const SearchMode& mode,
-                          InstantSupportState instant_support)
-    : mode(mode), instant_support(instant_support) {}
-
-bool SearchModel::State::operator==(const State& rhs) const {
-  return mode == rhs.mode && instant_support == rhs.instant_support;
-}
-
-SearchModel::SearchModel() {
-}
-
-SearchModel::~SearchModel() {
-}
-
-void SearchModel::SetState(const State& new_state) {
-  DCHECK(search::IsInstantExtendedAPIEnabled())
-      << "Please do not try to set the SearchModel mode without first "
-      << "checking if Search is enabled.";
-
-  if (state_ == new_state)
-    return;
-
-  const State old_state = state_;
-  state_ = new_state;
-
-  for (SearchModelObserver& observer : observers_)
-    observer.ModelChanged(old_state, state_);
-}
+SearchModel::~SearchModel() = default;
 
 void SearchModel::SetMode(const SearchMode& new_mode) {
   DCHECK(search::IsInstantExtendedAPIEnabled())
       << "Please do not try to set the SearchModel mode without first "
       << "checking if Search is enabled.";
 
-  if (state_.mode == new_mode)
+  if (mode_ == new_mode)
     return;
 
-  const State old_state = state_;
-  state_.mode = new_mode;
+  const SearchMode old_mode = mode_;
+  mode_ = new_mode;
 
   for (SearchModelObserver& observer : observers_)
-    observer.ModelChanged(old_state, state_);
-}
-
-void SearchModel::SetInstantSupportState(InstantSupportState instant_support) {
-  DCHECK(search::IsInstantExtendedAPIEnabled())
-      << "Please do not try to set the SearchModel state without first "
-      << "checking if Search is enabled.";
-
-  if (state_.instant_support == instant_support)
-    return;
-
-  const State old_state = state_;
-  state_.instant_support = instant_support;
-  for (SearchModelObserver& observer : observers_)
-    observer.ModelChanged(old_state, state_);
+    observer.ModelChanged(old_mode, mode_);
 }
 
 void SearchModel::AddObserver(SearchModelObserver* observer) {

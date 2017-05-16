@@ -150,20 +150,15 @@ void BrowserInstantController::TabDeactivated(content::WebContents* contents) {
     prerenderer->Cancel();
 }
 
-void BrowserInstantController::ModelChanged(
-    const SearchModel::State& old_state,
-    const SearchModel::State& new_state) {
-  if (old_state.mode != new_state.mode) {
-    const SearchMode& new_mode = new_state.mode;
+void BrowserInstantController::ModelChanged(const SearchMode& old_mode,
+                                            const SearchMode& new_mode) {
+  // Record some actions corresponding to the mode change. Note that to get
+  // the full story, it's necessary to look at other UMA actions as well,
+  // such as tab switches.
+  if (new_mode.is_ntp())
+    base::RecordAction(base::UserMetricsAction("InstantExtended.ShowNTP"));
 
-    // Record some actions corresponding to the mode change. Note that to get
-    // the full story, it's necessary to look at other UMA actions as well,
-    // such as tab switches.
-    if (new_mode.is_ntp())
-      base::RecordAction(base::UserMetricsAction("InstantExtended.ShowNTP"));
-
-    instant_.SearchModeChanged(old_state.mode, new_mode);
-  }
+  instant_.SearchModeChanged(old_mode, new_mode);
 }
 
 void BrowserInstantController::DefaultSearchProviderChanged(
