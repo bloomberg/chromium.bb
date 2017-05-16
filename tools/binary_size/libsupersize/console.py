@@ -110,14 +110,17 @@ class _Session(object):
     For convenience, |obj| will be appended to the global "printed" list.
 
     Args:
-      obj: The object to be printed. Defaults to size_infos[-1].
+      obj: The object to be printed. Defaults to size_infos[-1]. Also accepts an
+          index into the |printed| array for showing previous results.
       verbose: Show more detailed output.
       recursive: Print children of nested SymbolGroups.
       use_pager: Pipe output through `less`. Ignored when |obj| is a Symbol.
           default is to automatically pipe when output is long.
       to_file: Rather than print to stdio, write to the given file.
     """
-    if not self._printed_variables or self._printed_variables[-1] != obj:
+    if isinstance(obj, int):
+      obj = self._printed_variables[obj]
+    elif not self._printed_variables or self._printed_variables[-1] != obj:
       self._printed_variables.append(obj)
     obj = obj if obj is not None else self._size_infos[-1]
     lines = describe.GenerateLines(obj, verbose=verbose, recursive=recursive)

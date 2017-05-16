@@ -404,6 +404,11 @@ class SymbolGroup(BaseSymbol):
   def IsGroup(self):
     return True
 
+  def SetName(self, full_name, template_name=None, name=None):
+    self.full_name = full_name
+    self.template_name = full_name if template_name is None else template_name
+    self.name = full_name if name is None else name
+
   def IterUniqueSymbols(self):
     """Yields all symbols, but only one from each alias group."""
     seen_aliases_lists = set()
