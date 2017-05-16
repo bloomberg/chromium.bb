@@ -615,8 +615,7 @@ void Component::StateUpdatingDiff::InstallComplete(int error_category,
 }
 
 Component::StateUpdating::StateUpdating(Component* component)
-    : State(component, ComponentState::kUpdating),
-      main_task_runner_(base::ThreadTaskRunnerHandle::Get()) {}
+    : State(component, ComponentState::kUpdating) {}
 
 Component::StateUpdating::~StateUpdating() {
   DCHECK(thread_checker_.CalledOnValidThread());
