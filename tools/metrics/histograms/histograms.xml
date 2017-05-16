@@ -84299,8 +84299,6 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram_suffixes name="BrowserMemoryAllocator2" separator=".">
   <suffix name="Resident" label="Only counting resident memory."/>
-  <suffix name="PrivateMemoryFootprint"
-      label="Only counting private resident + swapped/compressed memory."/>
   <suffix name="Malloc" label="Constrained to malloc allocator."/>
   <affected-histogram name="Memory.Experimental.Browser2"/>
 </histogram_suffixes>
@@ -86290,8 +86288,6 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram_suffixes name="GpuMemoryAllocator2" separator=".">
   <suffix name="Resident" label="Only counting resident memory."/>
-  <suffix name="PrivateMemoryFootprint"
-      label="Only counting private resident + swapped/compressed memory."/>
   <suffix name="Malloc" label="Constrained to malloc allocator."/>
   <affected-histogram name="Memory.Experimental.Gpu2"/>
 </histogram_suffixes>
@@ -91077,8 +91073,6 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram_suffixes name="RendererMemoryAllocator2" separator=".">
   <suffix name="Resident" label="Only counting resident memory."/>
-  <suffix name="PrivateMemoryFootprint"
-      label="Only counting private resident + swapped/compressed memory."/>
   <suffix name="Malloc" label="Constrained to malloc allocator."/>
   <suffix name="PartitionAlloc" label="Constrained to partition allocator."/>
   <suffix name="BlinkGC" label="Constrained to blink GC allocator."/>

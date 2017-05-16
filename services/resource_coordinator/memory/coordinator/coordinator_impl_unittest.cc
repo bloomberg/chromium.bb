@@ -17,21 +17,12 @@
 
 namespace memory_instrumentation {
 
-class CoordinatorImplFake : public CoordinatorImpl {
- public:
-  CoordinatorImplFake() : CoordinatorImpl(false, nullptr) {}
-  ~CoordinatorImplFake() override {}
-  service_manager::Identity GetDispatchContext() const override {
-    return service_manager::Identity();
-  }
-};
-
 class CoordinatorImplTest : public testing::Test {
  public:
   CoordinatorImplTest() {}
   void SetUp() override {
     dump_response_args_ = {0U, false};
-    coordinator_.reset(new CoordinatorImplFake);
+    coordinator_.reset(new CoordinatorImpl(false));
   }
 
   void TearDown() override { coordinator_.reset(); }
