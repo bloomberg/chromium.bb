@@ -1026,21 +1026,19 @@ TEST(PNGTests, VerifyFrameCompleteBehavior) {
     decoder->SetData(full_data.Get(), true);
 
     // With full data, parsing the size still does not mark a frame as
-    // complete.
+    // complete for animated images.
     EXPECT_TRUE(decoder->IsSizeAvailable());
-    EXPECT_FALSE(decoder->FrameIsCompleteAtIndex(0));
+    if (rec.expected_frame_count > 1)
+      EXPECT_FALSE(decoder->FrameIsCompleteAtIndex(0));
+    else
+      EXPECT_TRUE(decoder->FrameIsCompleteAtIndex(0));
 
     const auto frame_count = decoder->FrameCount();
     ASSERT_EQ(rec.expected_frame_count, frame_count);
 
-    if (frame_count > 1u) {
-      // After parsing (the full file), all frames are complete.
-      for (size_t i = 0; i < frame_count; ++i)
-        EXPECT_TRUE(decoder->FrameIsCompleteAtIndex(i));
-    } else {
-      // A single frame image is not reported complete until decoding.
-      EXPECT_FALSE(decoder->FrameIsCompleteAtIndex(0));
-    }
+    // After parsing (the full file), all frames are complete.
+    for (size_t i = 0; i < frame_count; ++i)
+      EXPECT_TRUE(decoder->FrameIsCompleteAtIndex(i));
 
     frame = decoder->FrameBufferAtIndex(0);
     ASSERT_TRUE(frame);

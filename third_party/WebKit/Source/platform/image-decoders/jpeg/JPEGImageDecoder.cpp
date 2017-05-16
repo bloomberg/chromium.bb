@@ -992,7 +992,7 @@ inline bool IsComplete(const JPEGImageDecoder* decoder, bool only_size) {
   if (decoder->HasImagePlanes() && !only_size)
     return true;
 
-  return decoder->FrameIsCompleteAtIndex(0);
+  return decoder->FrameIsDecodedAtIndex(0);
 }
 
 void JPEGImageDecoder::Decode(bool only_size) {
