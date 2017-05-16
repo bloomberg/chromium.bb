@@ -10,7 +10,6 @@
 #import "ios/chrome/browser/ui/autofill/autofill_ui_type.h"
 #import "ios/chrome/browser/ui/autofill/cells/autofill_edit_item.h"
 #import "ios/chrome/browser/ui/collection_view/cells/MDCCollectionViewCell+Chrome.h"
-#import "ios/chrome/browser/ui/collection_view/cells/collection_view_detail_item.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_item+collection_view_controller.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_switch_item.h"
 #import "ios/chrome/browser/ui/collection_view/collection_view_model.h"
@@ -32,17 +31,11 @@ NSString* const kCreditCardEditCollectionViewId =
     @"kCreditCardEditCollectionViewId";
 
 typedef NS_ENUM(NSInteger, SectionIdentifier) {
-  SectionIdentifierAcceptedMethods = kSectionIdentifierEnumStart,
-  SectionIdentifierCardSummary,
-  SectionIdentifierBillingAddress,
-  SectionIdentifierSaveCard,
+  SectionIdentifierSaveCard = kSectionIdentifierEnumStart,
 };
 
 typedef NS_ENUM(NSInteger, ItemType) {
-  ItemTypeAcceptedMethods = kItemTypeEnumStart,
-  ItemTypeCardSummary,
-  ItemTypeBillingAddress,
-  ItemTypeSaveCard,
+  ItemTypeSaveCard = kItemTypeEnumStart,
 };
 
 }  // namespace
@@ -60,7 +53,6 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 @synthesize delegate = _delegate;
 @synthesize dataSource = _dataSource;
-@synthesize billingAddressGUID = _billingAddressGUID;
 
 #pragma mark - Initialization
 
@@ -100,30 +92,15 @@ typedef NS_ENUM(NSInteger, ItemType) {
   return self;
 }
 
+- (void)setDelegate:(id<CreditCardEditViewControllerDelegate>)delegate {
+  [super setDelegate:delegate];
+  _delegate = delegate;
+}
+
 - (void)setDataSource:(id<CreditCardEditViewControllerDataSource>)dataSource {
   [super setDataSource:dataSource];
   _dataSource = dataSource;
   _fields = [dataSource editorFields];
-}
-
-- (BOOL)validateForm {
-  if (![super validateForm])
-    return NO;
-
-  // TODO(crbug.com/602666): Uncomment the following when billing address
-  // selection UI is ready.
-  // Validate the billing address GUID.
-  //  NSString* errorMessage =
-  //      !_billingAddressGUID ? l10n_util::GetNSString(
-  //                             IDS_PAYMENTS_FIELD_REQUIRED_VALIDATION_MESSAGE)
-  //                           : nil;
-  //  [self addOrRemoveErrorMessage:errorMessage
-  //        inSectionWithIdentifier:SectionIdentifierBillingAddress];
-  //  if (errorMessage) {
-  //    return NO;
-  //  }
-
-  return YES;
 }
 
 #pragma mark - PaymentRequestEditViewControllerActions methods
@@ -138,7 +115,6 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
   [_delegate creditCardEditViewController:self
                    didFinishEditingFields:_fields
-                         billingAddressID:_billingAddressGUID
                            saveCreditCard:_saveCreditCard];
 }
 
@@ -148,64 +124,23 @@ typedef NS_ENUM(NSInteger, ItemType) {
   [super loadModel];
 
   // If editing a credit card, set the card type icon (e.g. "Visa").
-  if (_dataSource.state == CreditCardEditViewControllerStateEdit) {
+  if (_dataSource.state == EditViewControllerStateEdit) {
     for (EditorField* field in _fields) {
-      AutofillEditItem* item = field.item;
       if (field.autofillUIType == AutofillUITypeCreditCardNumber) {
+        AutofillEditItem* item =
+            base::mac::ObjCCastStrict<AutofillEditItem>(field.item);
         item.cardTypeIcon =
-            [_dataSource cardTypeIconFromCardNumber:field.value];
+            [_dataSource cardTypeIconFromCardNumber:item.textFieldValue];
       }
     }
-  }
-}
-
-- (void)loadHeaderItems {
-  [super loadHeaderItems];
-  CollectionViewModel* model = self.collectionViewModel;
-
-  // Server card summary section.
-  CollectionViewItem* serverCardSummaryItem =
-      [_dataSource serverCardSummaryItem];
-  if (serverCardSummaryItem) {
-    [model addSectionWithIdentifier:SectionIdentifierCardSummary];
-    serverCardSummaryItem.type = ItemTypeCardSummary;
-    [model addItem:serverCardSummaryItem
-        toSectionWithIdentifier:SectionIdentifierCardSummary];
-  }
-
-  // Accepted payment methods section.
-  CollectionViewItem* acceptedMethodsItem =
-      [_dataSource acceptedPaymentMethodsItem];
-  if (acceptedMethodsItem) {
-    [model addSectionWithIdentifier:SectionIdentifierAcceptedMethods];
-    acceptedMethodsItem.type = ItemTypeAcceptedMethods;
-    [model addItem:acceptedMethodsItem
-        toSectionWithIdentifier:SectionIdentifierAcceptedMethods];
   }
 }
 
 - (void)loadFooterItems {
   CollectionViewModel* model = self.collectionViewModel;
 
-  // Billing Address section.
-  [model addSectionWithIdentifier:SectionIdentifierBillingAddress];
-  CollectionViewDetailItem* billingAddressItem =
-      [[CollectionViewDetailItem alloc] initWithType:ItemTypeBillingAddress];
-  billingAddressItem.text = [NSString
-      stringWithFormat:@"%@*",
-                       l10n_util::GetNSString(IDS_PAYMENTS_BILLING_ADDRESS)];
-  billingAddressItem.accessoryType =
-      MDCCollectionViewCellAccessoryDisclosureIndicator;
-  [model addItem:billingAddressItem
-      toSectionWithIdentifier:SectionIdentifierBillingAddress];
-
-  if (_billingAddressGUID) {
-    billingAddressItem.detailText =
-        [_dataSource billingAddressLabelForProfileWithGUID:_billingAddressGUID];
-  }
-
   // "Save card" section. Visible only when creating a card.
-  if (_dataSource.state == CreditCardEditViewControllerStateCreate) {
+  if (_dataSource.state == EditViewControllerStateCreate) {
     [model addSectionWithIdentifier:SectionIdentifierSaveCard];
     CollectionViewSwitchItem* saveCardItem =
         [[CollectionViewSwitchItem alloc] initWithType:ItemTypeSaveCard];
@@ -259,16 +194,6 @@ typedef NS_ENUM(NSInteger, ItemType) {
       [self.collectionViewModel itemAtIndexPath:indexPath];
 
   switch (item.type) {
-    case ItemTypeBillingAddress: {
-      CollectionViewDetailCell* billingCell =
-          base::mac::ObjCCastStrict<CollectionViewDetailCell>(cell);
-      billingCell.textLabel.font = [MDCTypography body2Font];
-      billingCell.textLabel.textColor = [[MDCPalette greyPalette] tint900];
-      billingCell.detailTextLabel.font = [MDCTypography body1Font];
-      billingCell.detailTextLabel.textColor =
-          [[MDCPalette cr_bluePalette] tint600];
-      break;
-    }
     case ItemTypeSaveCard: {
       CollectionViewSwitchCell* switchCell =
           base::mac::ObjCCastStrict<CollectionViewSwitchCell>(cell);
@@ -284,28 +209,6 @@ typedef NS_ENUM(NSInteger, ItemType) {
   return cell;
 }
 
-#pragma mark UICollectionViewDelegate
-
-- (void)collectionView:(UICollectionView*)collectionView
-    didSelectItemAtIndexPath:(NSIndexPath*)indexPath {
-  [super collectionView:collectionView didSelectItemAtIndexPath:indexPath];
-
-  CollectionViewItem* item =
-      [self.collectionViewModel itemAtIndexPath:indexPath];
-  switch (item.type) {
-    case ItemTypeAcceptedMethods:
-    case ItemTypeCardSummary:
-    case ItemTypeSaveCard:
-      break;
-    case ItemTypeBillingAddress: {
-      // TODO(crbug.com/602666): Display a list of billing addresses.
-      break;
-    }
-    default:
-      break;
-  }
-}
-
 #pragma mark MDCCollectionViewStylingDelegate
 
 - (CGFloat)collectionView:(UICollectionView*)collectionView
@@ -313,10 +216,6 @@ typedef NS_ENUM(NSInteger, ItemType) {
   CollectionViewItem* item =
       [self.collectionViewModel itemAtIndexPath:indexPath];
   switch (item.type) {
-    case ItemTypeBillingAddress:
-      return MDCCellDefaultOneLineHeight;
-    case ItemTypeAcceptedMethods:
-    case ItemTypeCardSummary:
     case ItemTypeSaveCard:
       return [MDCCollectionViewCell
           cr_preferredHeightForWidth:CGRectGetWidth(collectionView.bounds)
@@ -331,25 +230,11 @@ typedef NS_ENUM(NSInteger, ItemType) {
     hidesInkViewAtIndexPath:(NSIndexPath*)indexPath {
   NSInteger type = [self.collectionViewModel itemTypeForIndexPath:indexPath];
   switch (type) {
-    case ItemTypeAcceptedMethods:
-    case ItemTypeCardSummary:
     case ItemTypeSaveCard:
       return YES;
     default:
       return [super collectionView:collectionView
            hidesInkViewAtIndexPath:indexPath];
-  }
-}
-
-- (BOOL)collectionView:(UICollectionView*)collectionView
-    shouldHideItemBackgroundAtIndexPath:(NSIndexPath*)indexPath {
-  NSInteger type = [self.collectionViewModel itemTypeForIndexPath:indexPath];
-  switch (type) {
-    case ItemTypeAcceptedMethods:
-      return YES;
-    default:
-      return [super collectionView:collectionView
-          shouldHideItemBackgroundAtIndexPath:indexPath];
   }
 }
 

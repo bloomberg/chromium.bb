@@ -38,8 +38,7 @@
           selected:rows[rows.count - 1]];
   [_pickerViewController setTitle:@"Select a country"];
   [_pickerViewController
-      setDelegate:reinterpret_cast<
-                      id<PaymentRequestPickerViewControllerDelegate>>(
+      setDelegate:static_cast<id<PaymentRequestPickerViewControllerDelegate>>(
                       self.alerter)];
 
   [self.baseViewController pushViewController:_pickerViewController

@@ -22,10 +22,6 @@ const NSInteger kItemTypeEnumStart = kItemTypeEnumZero + 100;
 // value on the field. Returns YES if all the fields are validated successfully.
 - (BOOL)validateForm;
 
-// Called before the editor field items are added to the the collection view
-// model. Subclasses override this method to add items before the editor fields.
-- (void)loadHeaderItems;
-
 // Called after the editor field items have been added to the the collection
 // view model. Subclasses override this method to add items after the editor
 // fields.
@@ -34,11 +30,6 @@ const NSInteger kItemTypeEnumStart = kItemTypeEnumZero + 100;
 // Returns the index path for the cell associated with the currently focused
 // text field.
 - (NSIndexPath*)indexPathForCurrentTextField;
-
-// Adds an error message item in the section |sectionIdentifier| if
-// |errorMessage| is non-empty. Otherwise removes such an item if one exists.
-- (void)addOrRemoveErrorMessage:(NSString*)errorMessage
-        inSectionWithIdentifier:(NSInteger)sectionIdentifier;
 
 @end
 

@@ -11,13 +11,13 @@
 @class CreditCardEditViewController;
 
 // Delegate protocol for CreditCardEditViewController.
-@protocol CreditCardEditViewControllerDelegate<NSObject>
+@protocol CreditCardEditViewControllerDelegate<
+    PaymentRequestEditViewControllerDelegate>
 
 // Notifies the delegate that the user has finished editing the credit card
 // editor fields.
 - (void)creditCardEditViewController:(CreditCardEditViewController*)controller
               didFinishEditingFields:(NSArray<EditorField*>*)fields
-                    billingAddressID:(NSString*)billingAddressID
                       saveCreditCard:(BOOL)saveCard;
 
 // Notifies the delegate that the user has chosen to discard entries in the
@@ -40,9 +40,6 @@
 // The data source for this view controller.
 @property(nonatomic, weak) id<CreditCardEditViewControllerDataSource>
     dataSource;
-
-// The billing address GUID of the card being editted, if any.
-@property(nonatomic, copy) NSString* billingAddressGUID;
 
 - (instancetype)init NS_DESIGNATED_INITIALIZER;
 
