@@ -1582,6 +1582,7 @@ class CORE_EXPORT UseCounter {
     kFontShapingNotDefGlyphObserved = 1973,
     kPostMessageOutgoingWouldBeBlockedByConnectSrc = 1974,
     kPostMessageIncomingWouldBeBlockedByConnectSrc = 1975,
+    kPaymentRequestNetworkNameInSupportedMethods = 1976,
 
     // Add new features immediately above this line. Don't change assigned
     // numbers of any item, and don't reuse removed slots.
