@@ -40,14 +40,14 @@ The photo-specific options and settings are associated to `theImageCapturer` or
 `theTrack` depending on whether a given capability/setting has an immediately
 recognisable effect on `theTrack`, in other words if it's "live" or not. For
 example, changing the zoom level is instantly reflected on the `theTrack`,
-while connecting the Red Eye Reduction, if available, is not.
+while enabling red eye reduction, if available, is not.
 
-| Object                   |type                 | retrieved by...                         |
+| Object                   |Type                 | Example                                 |
 |:------------------------ |:------------------- | ---------------------------------------:|
 |[`PhotoCapabilities`]     |non-live capabilities|`theImageCapturer.getPhotoCapabilities()`|
 |[`MediaTrackCapabilities`]|live capabilities    |`theTrack.getCapabilities()`             |
 |                          |                     |                                         |
-|[`PhotoSettings`]         |non-live settings    |                                         |
+|[`PhotoSettings`]         |non-live settings    |`theImageCapturer.takePhoto(photoSettings)`|
 |[`MediaTrackSettings`]    |live settings        |`theTrack.getSettings()`                 |
 
 [`PhotoCapabilities`]: https://w3c.github.io/mediacapture-image/##photocapabilities-section
@@ -123,7 +123,7 @@ of modifying it can only be seen after taking a picture.
 
 ## Testing
 
-Sensors layout tests are located in [LayoutTests/imagecapture],
+Image Capture layout tests are located in [LayoutTests/imagecapture],
 [LayoutTests/fast/imagecapture] and [LayoutTests/external/mediacapture-image].
 
 [LayoutTests/imagecapture]: https://chromium.googlesource.com/chromium/src/+/master/third_party/WebKit/LayoutTests/imagecapture
