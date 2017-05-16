@@ -2196,7 +2196,6 @@ crbug.com/487344 [ Win ] virtual/disable-spinvalidation/compositing/video/video-
 crbug.com/487344 fast/hidpi/video-controls-in-hidpi.html [ Failure ]
 crbug.com/487344 fast/layers/video-layer.html [ Failure ]
 crbug.com/487344 media/audio-controls-rendering.html [ Failure ]
-crbug.com/487344 media/audio-repaint.html [ Failure ]
 crbug.com/487344 media/controls-after-reload.html [ Failure ]
 crbug.com/487344 media/controls-focus-ring.html [ Failure ]
 crbug.com/487344 media/controls-layout-direction.html [ Failure ]
@@ -3320,6 +3319,8 @@ crbug.com/720511 [ Linux ] virtual/off-main-thread-fetch/http/tests/misc/non-utf
 # Sheriff failures 2017-05-16
 crbug.com/722849 [ Win ] inspector/animation/animation-transition-setTiming-crash.html [ Failure Pass ]
 crbug.com/722212 fast/events/pointerevents/mouse-pointer-event-properties.html [ Failure Timeout Pass ]
+# Crashes on win
+crbug.com/722943 media/audio-repaint.html [ Skip ]
 
 # Tests to be run only under virtual/experimental-canvas-features/
 crbug.com/682753 fast/canvas-experimental [ Skip ]
