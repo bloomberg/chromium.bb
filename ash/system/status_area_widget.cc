@@ -201,8 +201,8 @@ void StatusAreaWidget::AddSystemTray() {
 
 void StatusAreaWidget::AddWebNotificationTray() {
   DCHECK(system_tray_);
-  web_notification_tray_ = new WebNotificationTray(
-      wm_shelf_, WmWindow::Get(this->GetNativeWindow()), system_tray_);
+  web_notification_tray_ =
+      new WebNotificationTray(wm_shelf_, GetNativeWindow(), system_tray_);
   status_area_widget_delegate_->AddTray(web_notification_tray_);
 }
 

@@ -20,7 +20,6 @@
 #include "ash/system/tray/tray_container.h"
 #include "ash/system/tray/tray_utils.h"
 #include "ash/system/web_notification/ash_popup_alignment_delegate.h"
-#include "ash/wm_window.h"
 #include "base/auto_reset.h"
 #include "base/i18n/number_formatting.h"
 #include "base/i18n/rtl.h"
@@ -267,7 +266,7 @@ class WebNotificationLabel : public WebNotificationItem {
 };
 
 WebNotificationTray::WebNotificationTray(WmShelf* shelf,
-                                         WmWindow* status_area_window,
+                                         aura::Window* status_area_window,
                                          SystemTray* system_tray)
     : TrayBackgroundView(shelf),
       status_area_window_(status_area_window),
@@ -294,10 +293,9 @@ WebNotificationTray::WebNotificationTray(WmShelf* shelf,
   popup_collection_.reset(new message_center::MessagePopupCollection(
       message_center(), message_center_tray_.get(),
       popup_alignment_delegate_.get()));
-  const display::Display& display =
-      status_area_window_->GetDisplayNearestWindow();
-  popup_alignment_delegate_->StartObserving(display::Screen::GetScreen(),
-                                            display);
+  display::Screen* screen = display::Screen::GetScreen();
+  popup_alignment_delegate_->StartObserving(
+      screen, screen->GetDisplayNearestWindow(status_area_window_));
   OnMessageCenterTrayChanged();
 
   tray_container()->SetMargin(kTrayMainAxisInset, kTrayCrossAxisInset);
@@ -338,11 +336,8 @@ bool WebNotificationTray::ShowMessageCenterInternal(bool show_settings) {
   // For vertical shelf alignments, anchor to the WebNotificationTray, but for
   // horizontal (i.e. bottom) shelves, anchor to the system tray.
   TrayBackgroundView* anchor_tray = this;
-  if (shelf()->IsHorizontalAlignment()) {
-    anchor_tray = WmShelf::ForWindow(status_area_window_)
-                      ->GetStatusAreaWidget()
-                      ->system_tray();
-  }
+  if (shelf()->IsHorizontalAlignment())
+    anchor_tray = system_tray_;
 
   message_center_bubble_.reset(new WebNotificationBubbleWrapper(
       this, anchor_tray, message_center_bubble));
@@ -463,8 +458,7 @@ void WebNotificationTray::OnBeforeBubbleWidgetInit(
     views::Widget* bubble_widget,
     views::Widget::InitParams* params) const {
   // Place the bubble in the same root window as |anchor_widget|.
-  WmWindow::Get(anchor_widget->GetNativeWindow())
-      ->GetRootWindowController()
+  RootWindowController::ForWindow(anchor_widget->GetNativeWindow())
       ->ConfigureWidgetInitParamsForContainer(
           bubble_widget, kShellWindowId_SettingBubbleContainer, params);
 }
