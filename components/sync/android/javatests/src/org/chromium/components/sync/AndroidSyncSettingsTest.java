@@ -13,7 +13,6 @@ import android.test.InstrumentationTestCase;
 import org.chromium.base.Callback;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CallbackHelper;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.components.signin.AccountManagerHelper;
 import org.chromium.components.signin.ChromeSigninController;
@@ -104,20 +103,13 @@ public class AndroidSyncSettingsTest extends InstrumentationTestCase {
     protected void setUp() throws Exception {
         mContext = getInstrumentation().getTargetContext();
         setupTestAccounts(mContext);
+        // Set signed in account to mAccount before initializing AndroidSyncSettings to let
+        // AndroidSyncSettings establish correct assumptions.
+        ChromeSigninController.get().setSignedInAccountName(mAccount.name);
 
         mSyncContentResolverDelegate = new CountingMockSyncContentResolverDelegate();
         AndroidSyncSettings.overrideForTests(mContext, mSyncContentResolverDelegate);
         mAuthority = AndroidSyncSettings.getContractAuthority(mContext);
-        final CallbackHelper callbackHelper = new CallbackHelper();
-        assertFalse(ChromeSigninController.get().isSignedIn());
-        AndroidSyncSettings.updateAccount(mContext, mAccount, new Callback<Boolean>() {
-            @Override
-            public void onResult(Boolean result) {
-                assertTrue(result);
-                callbackHelper.notifyCalled();
-            }
-        });
-        callbackHelper.waitForCallback(0);
         assertEquals(1, mSyncContentResolverDelegate.getIsSyncable(mAccount, mAuthority));
 
         mSyncSettingsObserver = new MockSyncSettingsObserver();
@@ -165,9 +157,8 @@ public class AndroidSyncSettingsTest extends InstrumentationTestCase {
         });
     }
 
-    // @SmallTest
-    // @Feature({"Sync"})
-    @DisabledTest(message = "crbug.com/717960")
+    @SmallTest
+    @Feature({"Sync"})
     public void testAccountInitialization() throws InterruptedException, TimeoutException {
         // mAccount was set to be syncable and not have periodic syncs.
         assertEquals(1, mSyncContentResolverDelegate.mSetIsSyncableCalls.get());
@@ -177,7 +168,6 @@ public class AndroidSyncSettingsTest extends InstrumentationTestCase {
         AndroidSyncSettings.updateAccount(mContext, null, new Callback<Boolean>() {
             @Override
             public void onResult(Boolean result) {
-                assertTrue(result);
                 callbackHelper.notifyCalled();
             }
         });
