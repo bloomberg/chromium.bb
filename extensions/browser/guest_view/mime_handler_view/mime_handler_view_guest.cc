@@ -6,11 +6,8 @@
 
 #include <utility>
 
-#include "base/strings/stringprintf.h"
 #include "components/guest_view/common/guest_view_constants.h"
-#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/host_zoom_map.h"
-#include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/render_widget_host_view.h"
@@ -26,11 +23,8 @@
 #include "extensions/browser/guest_view/mime_handler_view/mime_handler_view_guest_delegate.h"
 #include "extensions/browser/process_manager.h"
 #include "extensions/common/constants.h"
-#include "extensions/common/extension_messages.h"
 #include "extensions/common/guest_view/extensions_guest_view_messages.h"
 #include "extensions/strings/grit/extensions_strings.h"
-#include "ipc/ipc_message_macros.h"
-#include "net/base/url_util.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "third_party/WebKit/public/platform/WebGestureEvent.h"
 
@@ -138,13 +132,14 @@ int MimeHandlerViewGuest::GetTaskPrefix() const {
 void MimeHandlerViewGuest::CreateWebContents(
     const base::DictionaryValue& create_params,
     const WebContentsCreatedCallback& callback) {
-  create_params.GetString(mime_handler_view::kViewId, &view_id_);
-  if (view_id_.empty()) {
+  std::string view_id;
+  create_params.GetString(mime_handler_view::kViewId, &view_id);
+  if (view_id.empty()) {
     callback.Run(nullptr);
     return;
   }
   stream_ =
-      MimeHandlerStreamManager::Get(browser_context())->ReleaseStream(view_id_);
+      MimeHandlerStreamManager::Get(browser_context())->ReleaseStream(view_id);
   if (!stream_) {
     callback.Run(nullptr);
     return;
@@ -232,10 +227,7 @@ void MimeHandlerViewGuest::NavigationStateChanged(
 
 bool MimeHandlerViewGuest::HandleContextMenu(
     const content::ContextMenuParams& params) {
-  if (delegate_)
-    return delegate_->HandleContextMenu(web_contents(), params);
-
-  return false;
+  return delegate_ && delegate_->HandleContextMenu(web_contents(), params);
 }
 
 bool MimeHandlerViewGuest::PreHandleGestureEvent(
@@ -280,8 +272,9 @@ bool MimeHandlerViewGuest::SaveFrame(const GURL& url,
 void MimeHandlerViewGuest::OnRenderFrameHostDeleted(int process_id,
                                                     int routing_id) {
   if (process_id == embedder_frame_process_id_ &&
-      routing_id == embedder_frame_routing_id_)
-    Destroy(true);
+      routing_id == embedder_frame_routing_id_) {
+    Destroy(/*also_delete=*/true);
+  }
 }
 
 void MimeHandlerViewGuest::DocumentOnLoadCompletedInMainFrame() {
@@ -295,12 +288,6 @@ void MimeHandlerViewGuest::DocumentOnLoadCompletedInMainFrame() {
     rwh->Send(new ExtensionsGuestViewMsg_MimeHandlerViewGuestOnLoadCompleted(
         element_instance_id()));
   }
-}
-
-base::WeakPtr<StreamContainer> MimeHandlerViewGuest::GetStream() const {
-  if (!stream_)
-    return base::WeakPtr<StreamContainer>();
-  return stream_->GetWeakPtr();
 }
 
 }  // namespace extensions
