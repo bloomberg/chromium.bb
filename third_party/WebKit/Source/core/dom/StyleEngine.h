@@ -115,7 +115,9 @@ class CORE_EXPORT StyleEngine final
   void InjectAuthorSheet(StyleSheetContents* author_sheet);
   CSSStyleSheet& EnsureInspectorStyleSheet();
   RuleSet* WatchedSelectorsRuleSet() {
-    return global_rule_set_.WatchedSelectorsRuleSet();
+    DCHECK(IsMaster());
+    DCHECK(global_rule_set_);
+    return global_rule_set_->WatchedSelectorsRuleSet();
   }
   bool HasStyleSheets() const {
     return GetDocumentStyleSheetCollection().HasStyleSheets();
@@ -200,7 +202,9 @@ class CORE_EXPORT StyleEngine final
   bool MediaQueryAffectedByViewportChange();
   bool MediaQueryAffectedByDeviceChange();
   bool HasViewportDependentMediaQueries() const {
-    return !global_rule_set_.GetRuleFeatureSet()
+    DCHECK(IsMaster());
+    DCHECK(global_rule_set_);
+    return !global_rule_set_->GetRuleFeatureSet()
                 .ViewportDependentMediaQueryResults()
                 .IsEmpty();
   }
@@ -296,7 +300,9 @@ class CORE_EXPORT StyleEngine final
 
   void MediaQueryAffectingValueChanged(UnorderedTreeScopeSet&);
   const RuleFeatureSet& GetRuleFeatureSet() const {
-    return global_rule_set_.GetRuleFeatureSet();
+    DCHECK(IsMaster());
+    DCHECK(global_rule_set_);
+    return global_rule_set_->GetRuleFeatureSet();
   }
 
   void CreateResolver();
@@ -332,7 +338,8 @@ class CORE_EXPORT StyleEngine final
   void UpdateActiveStyleSheets();
   void UpdateGlobalRuleSet() {
     DCHECK(!NeedsActiveStyleSheetUpdate());
-    global_rule_set_.Update(GetDocument());
+    if (global_rule_set_)
+      global_rule_set_->Update(GetDocument());
   }
   const MediaQueryEvaluator& EnsureMediaQueryEvaluator();
 
@@ -370,14 +377,13 @@ class CORE_EXPORT StyleEngine final
   String preferred_stylesheet_set_name_;
   String selected_stylesheet_set_name_;
 
-  CSSGlobalRuleSet global_rule_set_;
-
   bool uses_rem_units_ = false;
   bool ignore_pending_stylesheets_ = false;
 
   Member<StyleResolver> resolver_;
   Member<ViewportStyleResolver> viewport_resolver_;
   Member<MediaQueryEvaluator> media_query_evaluator_;
+  Member<CSSGlobalRuleSet> global_rule_set_;
   StyleInvalidator style_invalidator_;
 
   Member<CSSFontSelector> font_selector_;

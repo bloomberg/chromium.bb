@@ -78,6 +78,8 @@ StyleEngine::StyleEngine(Document& document)
   }
   if (document.IsInMainFrame())
     viewport_resolver_ = ViewportStyleResolver::Create(document);
+  if (IsMaster())
+    global_rule_set_ = CSSGlobalRuleSet::Create();
 }
 
 StyleEngine::~StyleEngine() {}
@@ -252,7 +254,9 @@ void StyleEngine::MediaQueriesChangedInScope(TreeScope& tree_scope) {
 }
 
 void StyleEngine::WatchedSelectorsChanged() {
-  global_rule_set_.InitWatchedSelectorsRuleSet(GetDocument());
+  DCHECK(IsMaster());
+  DCHECK(global_rule_set_);
+  global_rule_set_->InitWatchedSelectorsRuleSet(GetDocument());
   // TODO(rune@opera.com): Should be able to use RuleSetInvalidation here.
   GetDocument().SetNeedsStyleRecalc(
       kSubtreeStyleChange, StyleChangeReasonForTracing::Create(
@@ -357,7 +361,8 @@ void StyleEngine::UpdateViewport() {
 
 bool StyleEngine::NeedsActiveStyleUpdate() const {
   return (viewport_resolver_ && viewport_resolver_->NeedsUpdate()) ||
-         NeedsActiveStyleSheetUpdate() || global_rule_set_.IsDirty();
+         NeedsActiveStyleSheetUpdate() ||
+         (global_rule_set_ && global_rule_set_->IsDirty());
 }
 
 void StyleEngine::UpdateActiveStyle() {
@@ -409,7 +414,7 @@ void StyleEngine::ResetAuthorStyle(TreeScope& tree_scope) {
   if (!scoped_resolver)
     return;
 
-  global_rule_set_.MarkDirty();
+  global_rule_set_->MarkDirty();
   if (tree_scope.RootNode().IsDocumentNode()) {
     scoped_resolver->ResetAuthorStyle();
     return;
@@ -459,7 +464,9 @@ void StyleEngine::ClearResolvers() {
 
 void StyleEngine::DidDetach() {
   ClearResolvers();
-  global_rule_set_.Dispose();
+  if (global_rule_set_)
+    global_rule_set_->Dispose();
+  global_rule_set_ = nullptr;
   tree_boundary_crossing_scopes_.Clear();
   dirty_tree_scopes_.clear();
   active_tree_scopes_.clear();
@@ -955,23 +962,29 @@ void StyleEngine::SetHttpDefaultStyle(const String& content) {
 }
 
 void StyleEngine::EnsureUAStyleForFullscreen() {
-  if (global_rule_set_.HasFullscreenUAStyle())
+  DCHECK(IsMaster());
+  DCHECK(global_rule_set_);
+  if (global_rule_set_->HasFullscreenUAStyle())
     return;
   CSSDefaultStyleSheets::Instance().EnsureDefaultStyleSheetForFullscreen();
-  global_rule_set_.MarkDirty();
+  global_rule_set_->MarkDirty();
   UpdateActiveStyle();
 }
 
 void StyleEngine::EnsureUAStyleForElement(const Element& element) {
+  DCHECK(IsMaster());
+  DCHECK(global_rule_set_);
   if (CSSDefaultStyleSheets::Instance().EnsureDefaultStyleSheetsForElement(
           element)) {
-    global_rule_set_.MarkDirty();
+    global_rule_set_->MarkDirty();
     UpdateActiveStyle();
   }
 }
 
 bool StyleEngine::HasRulesForId(const AtomicString& id) const {
-  return global_rule_set_.GetRuleFeatureSet().HasSelectorForId(id);
+  DCHECK(IsMaster());
+  DCHECK(global_rule_set_);
+  return global_rule_set_->GetRuleFeatureSet().HasSelectorForId(id);
 }
 
 void StyleEngine::InitialViewportChanged() {
@@ -1016,11 +1029,13 @@ void StyleEngine::HtmlImportAddedOrRemoved() {
 
 PassRefPtr<ComputedStyle> StyleEngine::FindSharedStyle(
     const ElementResolveContext& element_resolve_context) {
+  DCHECK(IsMaster());
   DCHECK(resolver_);
+  DCHECK(global_rule_set_);
   return SharedStyleFinder(
-             element_resolve_context, global_rule_set_.GetRuleFeatureSet(),
-             global_rule_set_.SiblingRuleSet(),
-             global_rule_set_.UncommonAttributeRuleSet(), *resolver_)
+             element_resolve_context, global_rule_set_->GetRuleFeatureSet(),
+             global_rule_set_->SiblingRuleSet(),
+             global_rule_set_->UncommonAttributeRuleSet(), *resolver_)
       .FindSharedStyle();
 }
 namespace {
@@ -1051,6 +1066,8 @@ void StyleEngine::ApplyRuleSetChanges(
     TreeScope& tree_scope,
     const ActiveStyleSheetVector& old_style_sheets,
     const ActiveStyleSheetVector& new_style_sheets) {
+  DCHECK(IsMaster());
+  DCHECK(global_rule_set_);
   HeapHashSet<Member<RuleSet>> changed_rule_sets;
 
   ScopedStyleResolver* scoped_resolver = tree_scope.GetScopedStyleResolver();
@@ -1063,7 +1080,7 @@ void StyleEngine::ApplyRuleSetChanges(
     return;
 
   // With rules added or removed, we need to re-aggregate rule meta data.
-  global_rule_set_.MarkDirty();
+  global_rule_set_->MarkDirty();
 
   unsigned changed_rule_flags = GetRuleSetFlags(changed_rule_sets);
   bool fonts_changed = tree_scope.RootNode().IsDocumentNode() &&
@@ -1137,9 +1154,11 @@ const MediaQueryEvaluator& StyleEngine::EnsureMediaQueryEvaluator() {
 }
 
 bool StyleEngine::MediaQueryAffectedByViewportChange() {
+  DCHECK(IsMaster());
+  DCHECK(global_rule_set_);
   const MediaQueryEvaluator& evaluator = EnsureMediaQueryEvaluator();
-  const auto& results =
-      global_rule_set_.GetRuleFeatureSet().ViewportDependentMediaQueryResults();
+  const auto& results = global_rule_set_->GetRuleFeatureSet()
+                            .ViewportDependentMediaQueryResults();
   for (unsigned i = 0; i < results.size(); ++i) {
     if (evaluator.Eval(results[i].Expression()) != results[i].Result())
       return true;
@@ -1148,9 +1167,11 @@ bool StyleEngine::MediaQueryAffectedByViewportChange() {
 }
 
 bool StyleEngine::MediaQueryAffectedByDeviceChange() {
+  DCHECK(IsMaster());
+  DCHECK(global_rule_set_);
   const MediaQueryEvaluator& evaluator = EnsureMediaQueryEvaluator();
   const auto& results =
-      global_rule_set_.GetRuleFeatureSet().DeviceDependentMediaQueryResults();
+      global_rule_set_->GetRuleFeatureSet().DeviceDependentMediaQueryResults();
   for (unsigned i = 0; i < results.size(); ++i) {
     if (evaluator.Eval(results[i].Expression()) != results[i].Result())
       return true;
@@ -1167,10 +1188,10 @@ DEFINE_TRACE(StyleEngine) {
   visitor->Trace(dirty_tree_scopes_);
   visitor->Trace(active_tree_scopes_);
   visitor->Trace(tree_boundary_crossing_scopes_);
-  visitor->Trace(global_rule_set_);
   visitor->Trace(resolver_);
   visitor->Trace(viewport_resolver_);
   visitor->Trace(media_query_evaluator_);
+  visitor->Trace(global_rule_set_);
   visitor->Trace(style_invalidator_);
   visitor->Trace(font_selector_);
   visitor->Trace(text_to_sheet_cache_);
