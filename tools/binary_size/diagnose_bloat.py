@@ -233,7 +233,9 @@ class _BuildHelper(object):
 
   @property
   def size_name(self):
-    return os.path.splitext(os.path.basename(self.main_lib_path))[0] + '.size'
+    if self.IsLinux():
+      return os.path.basename(self.main_lib_path) + '.size'
+    return self.apk_name + '.size'
 
   def _SetDefaults(self):
     has_goma_dir = os.path.exists(os.path.join(os.path.expanduser('~'), 'goma'))
@@ -759,8 +761,10 @@ def main():
       parser.error('--subrepo doesn\'t work with --cloud')
 
   subrepo = args.subrepo or _SRC_ROOT
-  _EnsureDirectoryClean(subrepo)
-  _SetRestoreFunc(subrepo)
+  if not build.IsCloud():
+    _EnsureDirectoryClean(subrepo)
+    _SetRestoreFunc(subrepo)
+
   if build.IsLinux():
     _VerifyUserAccepts('Linux diffs have known deficiencies (crbug/717550).')
 
