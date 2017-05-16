@@ -20,19 +20,6 @@ class PasswordsCounter : public browsing_data::BrowsingDataCounter,
                          public password_manager::PasswordStore::Observer,
                          public syncer::SyncServiceObserver {
  public:
-  class PasswordResult : public FinishedResult {
-   public:
-    PasswordResult(const PasswordsCounter* source,
-                   ResultInt value,
-                   bool password_sync_enabled);
-    ~PasswordResult() override;
-
-    bool password_sync_enabled() const { return password_sync_enabled_; }
-
-   private:
-    bool password_sync_enabled_;
-  };
-
   explicit PasswordsCounter(
       scoped_refptr<password_manager::PasswordStore> store,
       syncer::SyncService* sync_service);
