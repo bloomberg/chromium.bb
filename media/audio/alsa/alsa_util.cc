@@ -54,9 +54,9 @@ static std::string DeviceNameToControlName(const std::string& device_name) {
     // deviceName: "front:CARD=Intel,DEV=0", controlName: "hw:CARD=Intel".
     // deviceName: "default:CARD=Intel", controlName: "CARD=Intel".
     size_t pos2 = device_name.find(',');
-    control_name = (pos2 == std::string::npos) ?
-        device_name.substr(pos1) :
-        kMixerPrefix + device_name.substr(pos1, pos2 - pos1);
+    control_name = (pos2 == std::string::npos)
+                       ? device_name.substr(pos1 + 1)
+                       : kMixerPrefix + device_name.substr(pos1, pos2 - pos1);
   }
 
   return control_name;
