@@ -6,6 +6,8 @@
 #   4. Tests that are too slow in Debug and so we only want to skip them in Debug.
 #   5. Tests that crash due to resource limitations on some platforms or in Debug.
 #   6. Tests that fail due to Debug rendering variations from Release behavior.
+# Further documentation:
+# https://chromium.googlesource.com/chromium/src/+/master/docs/testing/layout_test_expectations.md
 
 # FIXME: Remove the WontFix keyword and have that be implied. That way, people won't abuse
 # WontFix outside of this file.
