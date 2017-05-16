@@ -3251,9 +3251,9 @@ crbug.com/711493 external/wpt/XMLHttpRequest/send-authentication-prompt-2-manual
 # Sheriff failures 2017-02-03
 crbug.com/688515 fast/spatial-navigation/snav-div-overflow-scrol-hidden.html [ Pass Failure ]
 
-crbug.com/719535 virtual/gpu-rasterization/images/color-profile-background-image-cross-fade-png.html [ NeedsManualRebaseline ]
-crbug.com/719535 virtual/gpu-rasterization/images/color-profile-background-image-cross-fade.html [ NeedsManualRebaseline ]
-crbug.com/719535 virtual/gpu-rasterization/images/color-profile-mask-image-svg.html [ NeedsManualRebaseline ]
+crbug.com/719535 virtual/gpu-rasterization/images/color-profile-background-image-cross-fade-png.html [ NeedsRebaseline ]
+crbug.com/719535 virtual/gpu-rasterization/images/color-profile-background-image-cross-fade.html [ NeedsRebaseline ]
+crbug.com/719535 virtual/gpu-rasterization/images/color-profile-mask-image-svg.html [ NeedsRebaseline ]
 
 crbug.com/716320 external/wpt/html/infrastructure/safe-passing-of-structured-data/shared-array-buffers/broadcastchannel-success-and-failure.html [ Timeout ]
 crbug.com/716320 external/wpt/html/infrastructure/safe-passing-of-structured-data/shared-array-buffers/broadcastchannel-success.html [ Timeout ]
