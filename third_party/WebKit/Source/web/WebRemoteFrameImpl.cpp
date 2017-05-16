@@ -333,15 +333,7 @@ WebLocalFrame* WebRemoteFrameImpl::CreateLocalChild(
   RemoteFrameOwner* owner =
       RemoteFrameOwner::Create(static_cast<SandboxFlags>(sandbox_flags),
                                container_policy, frame_owner_properties);
-  // FIXME: currently this calls LocalFrame::init() on the created LocalFrame,
-  // which may result in the browser observing two navigations to about:blank
-  // (one from the initial frame creation, and one from swapping it into the
-  // remote process).  FrameLoader might need a special initialization function
-  // for this case to avoid that duplicate navigation.
   child->InitializeCoreFrame(*GetFrame()->GetPage(), owner, name);
-  // Partially related with the above FIXME--the init() call may trigger JS
-  // dispatch. However,
-  // if the parent is remote, it should never be detached synchronously...
   DCHECK(child->GetFrame());
   return child;
 }
