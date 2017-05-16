@@ -33,6 +33,10 @@
 #include "net/base/url_util.h"
 #include "ui/base/l10n/l10n_util.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 namespace {
 
 // Some text in English language.
@@ -288,8 +292,9 @@ using translate::LanguageDetectionController;
   [super setUp];
   // Creates a LanguageDetectionController::Callback. The callback is deleted in
   // tearDown.
-  LanguageDetectionController::Callback copyDetailsCallback = base::BindBlock(
-      ^(const LanguageDetectionController::DetectionDetails& details) {
+  LanguageDetectionController::Callback copyDetailsCallback =
+      base::BindBlockArc(^(
+          const LanguageDetectionController::DetectionDetails& details) {
         _language_detection_details.reset(
             new LanguageDetectionController::DetectionDetails(details));
       });
@@ -730,9 +735,9 @@ using translate::LanguageDetectionController;
       chrome_test_util::GetCurrentWebState());
   translate::IOSTranslateDriver* driver =
       static_cast<translate::IOSTranslateDriver*>(client->GetTranslateDriver());
-  base::scoped_nsobject<MockTranslateScriptManager> jsTranslateManager(
+  MockTranslateScriptManager* jsTranslateManager =
       [[MockTranslateScriptManager alloc]
-          initWithWebState:chrome_test_util::GetCurrentWebState()]);
+          initWithWebState:chrome_test_util::GetCurrentWebState()];
   driver->translate_controller()->SetJsTranslateManagerForTesting(
       jsTranslateManager);
 
@@ -756,7 +761,7 @@ using translate::LanguageDetectionController;
   GREYAssert(testing::WaitUntilConditionOrTimeout(
                  testing::kWaitForJSCompletionTimeout,
                  ^{
-                   return jsTranslateManager.get().translateStatusChecked;
+                   return jsTranslateManager.translateStatusChecked;
                  }),
              @"Did not receive all translate status callbacks");
 
