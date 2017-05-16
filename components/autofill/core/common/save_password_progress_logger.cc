@@ -423,6 +423,8 @@ std::string SavePasswordProgressLogger::GetStringFromID(
       return "Show generation popup";
     case STRING_GENERATION_RENDERER_GENERATED_PASSWORD_ACCEPTED:
       return "Generated password accepted";
+    case STRING_SUCCESSFUL_SUBMISSION_INDICATOR_EVENT:
+      return "Successful submission indicator event";
     case SavePasswordProgressLogger::STRING_INVALID:
       return "INVALID";
       // Intentionally no default: clause here -- all IDs need to get covered.
