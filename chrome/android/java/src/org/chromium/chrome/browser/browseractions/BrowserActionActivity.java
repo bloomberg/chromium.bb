@@ -123,6 +123,6 @@ public class BrowserActionActivity extends AsyncInitializationActivity {
      * Callback when Browser Actions menu dialog is shown.
      */
     private void onMenuShown() {
-        startNativeInitialization();
+        startDelayedNativeInitialization();
     }
 }

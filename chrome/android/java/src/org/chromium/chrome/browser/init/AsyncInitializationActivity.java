@@ -16,6 +16,7 @@ import android.os.Handler;
 import android.os.SystemClock;
 import android.provider.Settings;
 import android.provider.Settings.SettingNotFoundException;
+import android.support.annotation.CallSuper;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.view.Display;
@@ -76,6 +77,9 @@ public abstract class AsyncInitializationActivity extends AppCompatActivity impl
     // first |onResume| call.
     private boolean mFirstResumePending = true;
 
+    private boolean mStartupDelayed;
+    private boolean mFirstDrawComplete;
+
     public AsyncInitializationActivity() {
         mHandler = new Handler();
     }
@@ -127,20 +131,19 @@ public abstract class AsyncInitializationActivity extends AppCompatActivity impl
 
     @Override
     public final void setContentViewAndLoadLibrary() {
-        // Unless it was called before (due to delaying all browser startup on purpose),
-        // {@link #setContentView} inflates the decorView and the basic UI hierarchy as stubs.
-        // This is done here before kicking long running I/O because inflation accesses resource
-        // files (XML, etc) even if we are inflating views defined by the framework. If this
-        // operation gets blocked because other long running I/O are running, we delay onCreate(),
-        // onStart() and first draw consequently.
+        // Unless it was called before, {@link #setContentView} inflates the decorView and the basic
+        // UI hierarchy as stubs. This is done here before kicking long running I/O because
+        // inflation accesses resource files (XML, etc) even if we are inflating views defined by
+        // the framework. If this operation gets blocked because other long running I/O are running,
+        // we delay onCreate(), onStart() and first draw consequently.
 
-        if (!shouldDelayBrowserStartup()) {
-            setContentView();
-            if (mLaunchBehindWorkaround != null) mLaunchBehindWorkaround.onSetContentView();
+        setContentView();
+        if (mLaunchBehindWorkaround != null) mLaunchBehindWorkaround.onSetContentView();
+
+        if (!mStartupDelayed) {
+            // Kick off long running IO tasks that can be done in parallel.
+            mNativeInitializationController.startBackgroundTasks(shouldAllocateChildConnection());
         }
-
-        // Kick off long running IO tasks that can be done in parallel.
-        mNativeInitializationController.startBackgroundTasks(shouldAllocateChildConnection());
     }
 
     /** Controls the parameter of {@link NativeInitializationController#startBackgroundTasks()}.*/
@@ -149,6 +152,7 @@ public abstract class AsyncInitializationActivity extends AppCompatActivity impl
         return true;
     }
 
+    @CallSuper
     @Override
     public void postInflationStartup() {
         final View firstDrawView = getViewToBeDrawnBeforeInitializingNative();
@@ -158,7 +162,10 @@ public abstract class AsyncInitializationActivity extends AppCompatActivity impl
             @Override
             public boolean onPreDraw() {
                 firstDrawView.getViewTreeObserver().removeOnPreDrawListener(this);
-                onFirstDrawComplete();
+                mFirstDrawComplete = true;
+                if (!mStartupDelayed) {
+                    onFirstDrawComplete();
+                }
                 return true;
             }
         };
@@ -261,13 +268,8 @@ public abstract class AsyncInitializationActivity extends AppCompatActivity impl
             getWindowAndroid().restoreInstanceState(getSavedInstanceState());
         }
 
-        if (shouldDelayBrowserStartup()) {
-            // Even if the browser startup is being delayed, the UI still has to be inflated.
-            setContentView();
-            if (mLaunchBehindWorkaround != null) mLaunchBehindWorkaround.onSetContentView();
-        } else {
-            ChromeBrowserInitializer.getInstance(this).handlePreNativeStartup(this);
-        }
+        mStartupDelayed = shouldDelayBrowserStartup();
+        ChromeBrowserInitializer.getInstance(this).handlePreNativeStartup(this);
     }
 
     private void abortLaunch() {
@@ -278,9 +280,14 @@ public abstract class AsyncInitializationActivity extends AppCompatActivity impl
     /**
      * Call to begin loading the library, if it was delayed.
      */
-    protected void startNativeInitialization() {
-        assert shouldDelayBrowserStartup();
-        ChromeBrowserInitializer.getInstance(this).handlePreNativeStartup(this);
+    protected void startDelayedNativeInitialization() {
+        assert mStartupDelayed;
+        mStartupDelayed = false;
+
+        // Kick off long running IO tasks that can be done in parallel.
+        mNativeInitializationController.startBackgroundTasks(shouldAllocateChildConnection());
+
+        if (mFirstDrawComplete) onFirstDrawComplete();
     }
 
     /**
@@ -430,8 +437,10 @@ public abstract class AsyncInitializationActivity extends AppCompatActivity impl
         if (mWindowAndroid != null) mWindowAndroid.onContextMenuClosed();
     }
 
-    @Override
-    public final void onFirstDrawComplete() {
+    private void onFirstDrawComplete() {
+        assert mFirstDrawComplete;
+        assert !mStartupDelayed;
+
         mHandler.post(new Runnable() {
             @Override
             public void run() {
