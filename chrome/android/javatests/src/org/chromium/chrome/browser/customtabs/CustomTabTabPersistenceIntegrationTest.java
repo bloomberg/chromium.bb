@@ -4,10 +4,20 @@
 
 package org.chromium.chrome.browser.customtabs;
 
+import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.MediumTest;
 
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
+import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.TabState;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.test.ChromeActivityTestRule;
+import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.common.ContentUrlConstants;
@@ -18,28 +28,39 @@ import java.util.Locale;
 /**
  * Integration testing for the CustomTab Tab persistence logic.
  */
-public class CustomTabTabPersistenceIntegrationTest extends CustomTabActivityTestBase {
+@RunWith(ChromeJUnit4ClassRunner.class)
+@CommandLineFlags.Add({
+        ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
+        ChromeActivityTestRule.DISABLE_NETWORK_PREDICTION_FLAG,
+})
+public class CustomTabTabPersistenceIntegrationTest {
+    @Rule
+    public CustomTabActivityTestRule mCustomTabActivityTestRule = new CustomTabActivityTestRule();
 
-    @Override
-    public void startMainActivity() throws InterruptedException {
-        super.startMainActivity();
-        startCustomTabActivityWithIntent(CustomTabsTestUtils.createMinimalCustomTabIntent(
-                getInstrumentation().getTargetContext(),
-                ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL));
+    @Before
+    public void setUp() throws InterruptedException {
+        mCustomTabActivityTestRule.startCustomTabActivityWithIntent(
+                CustomTabsTestUtils.createMinimalCustomTabIntent(
+                        InstrumentationRegistry.getInstrumentation().getTargetContext(),
+                        ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL));
     }
 
+    @Test
     @MediumTest
     public void testTabFilesDeletedOnClose() {
-        Tab tab = getActivity().getActivityTab();
+        Tab tab = mCustomTabActivityTestRule.getActivity().getActivityTab();
         String expectedTabFileName = TabState.getTabStateFilename(tab.getId(), false);
-        String expectedMetadataFileName =
-                getActivity().getTabPersistencePolicyForTest().getStateFileName();
+        String expectedMetadataFileName = mCustomTabActivityTestRule.getActivity()
+                                                  .getTabPersistencePolicyForTest()
+                                                  .getStateFileName();
 
-        File stateDir = getActivity().getTabPersistencePolicyForTest().getOrCreateStateDirectory();
+        File stateDir = mCustomTabActivityTestRule.getActivity()
+                                .getTabPersistencePolicyForTest()
+                                .getOrCreateStateDirectory();
         waitForFileExistState(true, expectedTabFileName, stateDir);
         waitForFileExistState(true, expectedMetadataFileName, stateDir);
 
-        getActivity().finishAndClose(false);
+        mCustomTabActivityTestRule.getActivity().finishAndClose(false);
 
         waitForFileExistState(false, expectedTabFileName, stateDir);
         waitForFileExistState(false, expectedMetadataFileName, stateDir);
