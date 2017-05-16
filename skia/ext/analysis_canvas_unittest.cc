@@ -2,13 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "skia/ext/analysis_canvas.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "skia/ext/analysis_canvas.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/skia/include/core/SkPath.h"
 #include "third_party/skia/include/core/SkPicture.h"
 #include "third_party/skia/include/core/SkPictureRecorder.h"
-#include "third_party/skia/include/core/SkRefCnt.h"
+#include "third_party/skia/include/core/SkRRect.h"
+#include "third_party/skia/include/core/SkRegion.h"
 #include "third_party/skia/include/core/SkShader.h"
 #include "third_party/skia/include/effects/SkOffsetImageFilter.h"
 
