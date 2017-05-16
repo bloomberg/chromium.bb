@@ -2191,7 +2191,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'monroe',
       'nyan_big',
       'nyan_kitty',
-      'oak',
       'panther',
       'parrot',
       'peach_pit',
@@ -2231,6 +2230,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'tatl',
       'whirlwind',
       'wooten',
+      'oak'
   ])
 
   _paladin_active = _paladin_important_boards | _paladin_experimental_boards
