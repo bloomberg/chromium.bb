@@ -52,18 +52,22 @@ void cfl_dc_pred(MACROBLOCKD *xd, BLOCK_SIZE plane_bsize, TX_SIZE tx_size) {
   int sum_u = 0;
   int sum_v = 0;
 
-  // Match behavior of build_intra_predictors (reconintra.c) at superblock
-  // boundaries:
-  //
-  // 127 127 127 .. 127 127 127 127 127 127
-  // 129  A   B  ..  Y   Z
-  // 129  C   D  ..  W   X
-  // 129  E   F  ..  U   V
-  // 129  G   H  ..  S   T   T   T   T   T
-  // ..
+// Match behavior of build_intra_predictors (reconintra.c) at superblock
+// boundaries:
+//
+// 127 127 127 .. 127 127 127 127 127 127
+// 129  A   B  ..  Y   Z
+// 129  C   D  ..  W   X
+// 129  E   F  ..  U   V
+// 129  G   H  ..  S   T   T   T   T   T
+// ..
 
-  // TODO(ltrudeau) replace this with DC_PRED assembly
+#if CONFIG_CHROMA_SUB8X8
+  if (xd->chroma_up_available && xd->mb_to_right_edge >= 0) {
+#else
   if (xd->up_available && xd->mb_to_right_edge >= 0) {
+#endif
+    // TODO(ltrudeau) replace this with DC_PRED assembly
     for (int i = 0; i < block_width; i++) {
       sum_u += dst_u[-dst_u_stride + i];
       sum_v += dst_v[-dst_v_stride + i];
@@ -73,7 +77,11 @@ void cfl_dc_pred(MACROBLOCKD *xd, BLOCK_SIZE plane_bsize, TX_SIZE tx_size) {
     sum_v = block_width * 127;
   }
 
+#if CONFIG_CHROMA_SUB8X8
+  if (xd->chroma_left_available && xd->mb_to_bottom_edge >= 0) {
+#else
   if (xd->left_available && xd->mb_to_bottom_edge >= 0) {
+#endif
     for (int i = 0; i < block_height; i++) {
       sum_u += dst_u[i * dst_u_stride - 1];
       sum_v += dst_v[i * dst_v_stride - 1];
