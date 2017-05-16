@@ -10,7 +10,7 @@
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/path_service.h"
-#include "base/threading/sequenced_worker_pool.h"
+#include "base/task_scheduler/post_task.h"
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/fileapi/browser_file_system_helper.h"
@@ -360,10 +360,9 @@ void MediaResourceGetterImpl::ExtractMediaMetadata(
     const std::string& url, const std::string& cookies,
     const std::string& user_agent, const ExtractMediaMetadataCB& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  base::SequencedWorkerPool* pool = content::BrowserThread::GetBlockingPool();
-  pool->PostWorkerTask(
-      FROM_HERE,
-      base::Bind(&GetMediaMetadata, url, cookies, user_agent, callback));
+  base::PostTaskWithTraits(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
+      base::BindOnce(&GetMediaMetadata, url, cookies, user_agent, callback));
 }
 
 void MediaResourceGetterImpl::ExtractMediaMetadata(
@@ -372,10 +371,9 @@ void MediaResourceGetterImpl::ExtractMediaMetadata(
     const int64_t size,
     const ExtractMediaMetadataCB& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  base::SequencedWorkerPool* pool = content::BrowserThread::GetBlockingPool();
-  pool->PostWorkerTask(
-      FROM_HERE,
-      base::Bind(&GetMediaMetadataFromFd, fd, offset, size, callback));
+  base::PostTaskWithTraits(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
+      base::BindOnce(&GetMediaMetadataFromFd, fd, offset, size, callback));
 }
 
 }  // namespace content
