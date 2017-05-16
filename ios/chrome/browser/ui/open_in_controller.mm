@@ -8,10 +8,10 @@
 #include "base/location.h"
 #include "base/logging.h"
 #import "base/mac/bind_objc_block.h"
+#include "base/task_scheduler/post_task.h"
 
 #include "base/sequenced_task_runner.h"
 #include "base/strings/sys_string_conversions.h"
-#include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/thread_restrictions.h"
 #include "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/ui/alert_coordinator/alert_coordinator.h"
@@ -216,9 +216,8 @@ class OpenInControllerBridge
         initWithTarget:self
                 action:@selector(handleTapFrom:)];
     [tapRecognizer_ setDelegate:self];
-    base::SequencedWorkerPool* pool = web::WebThread::GetBlockingPool();
-    sequencedTaskRunner_ =
-        pool->GetSequencedTaskRunner(pool->GetSequenceToken());
+    sequencedTaskRunner_ = base::CreateSequencedTaskRunnerWithTraits(
+        {base::MayBlock(), base::TaskPriority::BACKGROUND});
     isOpenInMenuDisplayed_ = NO;
   }
   return self;
