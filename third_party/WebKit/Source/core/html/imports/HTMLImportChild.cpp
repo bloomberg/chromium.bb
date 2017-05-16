@@ -78,7 +78,7 @@ void HTMLImportChild::DidFinish() {
 
 void HTMLImportChild::DidFinishLoading() {
   StateWillChange();
-  if (GetDocument() && GetDocument()->StyleSheets().length() > 0)
+  if (GetDocument() && GetDocument()->GetStyleEngine().HasStyleSheets())
     UseCounter::Count(Root()->GetDocument(),
                       UseCounter::kHTMLImportsHasStyleSheets);
   V0CustomElement::DidFinishLoadingImport(*(Root()->GetDocument()));
