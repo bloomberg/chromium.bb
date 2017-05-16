@@ -44,27 +44,28 @@ AudioOutputDelegateImpl::ControllerEventHandler::ControllerEventHandler(
 void AudioOutputDelegateImpl::ControllerEventHandler::OnControllerCreated() {
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&AudioOutputDelegateImpl::SendCreatedNotification, delegate_));
+      base::BindOnce(&AudioOutputDelegateImpl::SendCreatedNotification,
+                     delegate_));
 }
 
 void AudioOutputDelegateImpl::ControllerEventHandler::OnControllerPlaying() {
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&AudioOutputDelegateImpl::UpdatePlayingState, delegate_,
-                 true));
+      base::BindOnce(&AudioOutputDelegateImpl::UpdatePlayingState, delegate_,
+                     true));
 }
 
 void AudioOutputDelegateImpl::ControllerEventHandler::OnControllerPaused() {
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&AudioOutputDelegateImpl::UpdatePlayingState, delegate_,
-                 false));
+      base::BindOnce(&AudioOutputDelegateImpl::UpdatePlayingState, delegate_,
+                     false));
 }
 
 void AudioOutputDelegateImpl::ControllerEventHandler::OnControllerError() {
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&AudioOutputDelegateImpl::OnError, delegate_));
+      base::BindOnce(&AudioOutputDelegateImpl::OnError, delegate_));
 }
 
 AudioOutputDelegateImpl::AudioOutputDelegateImpl(
@@ -118,7 +119,7 @@ AudioOutputDelegateImpl::~AudioOutputDelegateImpl() {
   // we can delete |controller_event_handler_| and |reader_|. By giving the
   // closure ownership of these, we keep them alive until |controller_| is
   // closed. |mirroring_manager_| is a lazy instance, so passing it is safe.
-  controller_->Close(base::Bind(
+  controller_->Close(base::BindOnce(
       [](AudioMirroringManager* mirroring_manager,
          std::unique_ptr<ControllerEventHandler> event_handler,
          std::unique_ptr<AudioSyncReader> reader,
@@ -181,8 +182,9 @@ void AudioOutputDelegateImpl::UpdatePlayingState(bool playing) {
     // guarantee for when the controller is destroyed.
     AudioStreamMonitor::StartMonitoringStream(
         render_process_id_, render_frame_id_, stream_id_,
-        base::Bind(&media::AudioOutputController::ReadCurrentPowerAndClip,
-                   controller_));
+        base::BindRepeating(
+            &media::AudioOutputController::ReadCurrentPowerAndClip,
+            controller_));
   } else {
     AudioStreamMonitor::StopMonitoringStream(render_process_id_,
                                              render_frame_id_, stream_id_);

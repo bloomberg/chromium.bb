@@ -36,12 +36,11 @@ class CONTENT_EXPORT AudioOutputAuthorizationHandler {
   // also has the default audio parameters for the device, and the id for the
   // device, which is needed to open a stream for the device. This id is not
   // hashed, so it must be hashed before sending it to the renderer.
-  // TODO(maxmorin): Change to OnceCallback once base:: code is ready for it.
   using AuthorizationCompletedCallback =
-      base::Callback<void(media::OutputDeviceStatus status,
-                          bool should_send_id,
-                          const media::AudioParameters& params,
-                          const std::string& raw_device_id)>;
+      base::OnceCallback<void(media::OutputDeviceStatus status,
+                              bool should_send_id,
+                              const media::AudioParameters& params,
+                              const std::string& raw_device_id)>;
 
   AudioOutputAuthorizationHandler(media::AudioSystem* audio_system,
                                   MediaStreamManager* media_stream_manager,

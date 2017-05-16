@@ -99,7 +99,7 @@ class AudioOutputAuthorizationHandlerTest : public testing::Test {
     std::string id;
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        base::Bind(
+        base::BindOnce(
             &AudioOutputAuthorizationHandlerTest::GetRawNondefaultIdOnIOThread,
             base::Unretained(this), base::Unretained(&id)));
     SyncWithAllThreads();
@@ -112,8 +112,9 @@ class AudioOutputAuthorizationHandlerTest : public testing::Test {
     CHECK(!task_runner->BelongsToCurrentThread());
     base::WaitableEvent e = {base::WaitableEvent::ResetPolicy::MANUAL,
                              base::WaitableEvent::InitialState::NOT_SIGNALED};
-    task_runner->PostTask(FROM_HERE, base::Bind(&base::WaitableEvent::Signal,
-                                                base::Unretained(&e)));
+    task_runner->PostTask(
+        FROM_HERE,
+        base::BindOnce(&base::WaitableEvent::Signal, base::Unretained(&e)));
     e.Wait();
   }
 
@@ -158,9 +159,10 @@ TEST_F(AudioOutputAuthorizationHandlerTest, AuthorizeDefaultDevice_Ok) {
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      (base::Bind(&AudioOutputAuthorizationHandler::RequestDeviceAuthorization,
-                  base::Unretained(handler.get()), kRenderFrameId, 0,
-                  kDefaultDeviceId, SecurityOrigin(), listener.Get())));
+      base::BindOnce(
+          &AudioOutputAuthorizationHandler::RequestDeviceAuthorization,
+          base::Unretained(handler.get()), kRenderFrameId, 0, kDefaultDeviceId,
+          SecurityOrigin(), listener.Get()));
 
   SyncWithAllThreads();
   BrowserThread::DeleteSoon(BrowserThread::IO, FROM_HERE, handler.release());
@@ -179,9 +181,10 @@ TEST_F(AudioOutputAuthorizationHandlerTest,
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      (base::Bind(&AudioOutputAuthorizationHandler::RequestDeviceAuthorization,
-                  base::Unretained(handler.get()), kRenderFrameId, 0,
-                  kEmptyDeviceId, SecurityOrigin(), listener.Get())));
+      base::BindOnce(
+          &AudioOutputAuthorizationHandler::RequestDeviceAuthorization,
+          base::Unretained(handler.get()), kRenderFrameId, 0, kEmptyDeviceId,
+          SecurityOrigin(), listener.Get()));
 
   SyncWithAllThreads();
   BrowserThread::DeleteSoon(BrowserThread::IO, FROM_HERE, handler.release());
@@ -200,7 +203,7 @@ TEST_F(AudioOutputAuthorizationHandlerTest,
           GetAudioSystem(), GetMediaStreamManager(), kRenderProcessId, kSalt);
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(
+      base::BindOnce(
           &AudioOutputAuthorizationHandler::OverridePermissionsForTesting,
           base::Unretained(handler.get()), false));
   SyncWithAllThreads();
@@ -211,9 +214,10 @@ TEST_F(AudioOutputAuthorizationHandlerTest,
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      (base::Bind(&AudioOutputAuthorizationHandler::RequestDeviceAuthorization,
-                  base::Unretained(handler.get()), kRenderFrameId, 0, hashed_id,
-                  SecurityOrigin(), listener.Get())));
+      base::BindOnce(
+          &AudioOutputAuthorizationHandler::RequestDeviceAuthorization,
+          base::Unretained(handler.get()), kRenderFrameId, 0, hashed_id,
+          SecurityOrigin(), listener.Get()));
 
   SyncWithAllThreads();
   BrowserThread::DeleteSoon(BrowserThread::IO, FROM_HERE, handler.release());
@@ -231,7 +235,7 @@ TEST_F(AudioOutputAuthorizationHandlerTest,
           GetAudioSystem(), GetMediaStreamManager(), kRenderProcessId, kSalt);
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(
+      base::BindOnce(
           &AudioOutputAuthorizationHandler::OverridePermissionsForTesting,
           base::Unretained(handler.get()), true));
 
@@ -241,9 +245,10 @@ TEST_F(AudioOutputAuthorizationHandlerTest,
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      (base::Bind(&AudioOutputAuthorizationHandler::RequestDeviceAuthorization,
-                  base::Unretained(handler.get()), kRenderFrameId, 0, hashed_id,
-                  SecurityOrigin(), listener.Get())));
+      base::BindOnce(
+          &AudioOutputAuthorizationHandler::RequestDeviceAuthorization,
+          base::Unretained(handler.get()), kRenderFrameId, 0, hashed_id,
+          SecurityOrigin(), listener.Get()));
 
   SyncWithAllThreads();
   BrowserThread::DeleteSoon(BrowserThread::IO, FROM_HERE, handler.release());
@@ -267,9 +272,10 @@ TEST_F(AudioOutputAuthorizationHandlerTest, AuthorizeInvalidDeviceId_NotFound) {
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      (base::Bind(&AudioOutputAuthorizationHandler::RequestDeviceAuthorization,
-                  base::Unretained(handler.get()), kRenderFrameId, 0,
-                  kInvalidDeviceId, SecurityOrigin(), listener.Get())));
+      base::BindOnce(
+          &AudioOutputAuthorizationHandler::RequestDeviceAuthorization,
+          base::Unretained(handler.get()), kRenderFrameId, 0, kInvalidDeviceId,
+          SecurityOrigin(), listener.Get()));
 
   SyncWithAllThreads();
   // It is possible to request an invalid device id from JS APIs,
@@ -301,9 +307,10 @@ TEST_F(AudioOutputAuthorizationHandlerTest,
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      (base::Bind(&AudioOutputAuthorizationHandler::RequestDeviceAuthorization,
-                  base::Unretained(handler.get()), kRenderFrameId, 0, hashed_id,
-                  BadSecurityOrigin(), listener.Get())));
+      base::BindOnce(
+          &AudioOutputAuthorizationHandler::RequestDeviceAuthorization,
+          base::Unretained(handler.get()), kRenderFrameId, 0, hashed_id,
+          BadSecurityOrigin(), listener.Get()));
 
   SyncWithAllThreads();
   EXPECT_EQ(RPH->bad_msg_count(), 1);
@@ -326,9 +333,10 @@ TEST_F(AudioOutputAuthorizationHandlerTest,
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      (base::Bind(&AudioOutputAuthorizationHandler::RequestDeviceAuthorization,
-                  base::Unretained(handler.get()), kRenderFrameId, kSessionId,
-                  std::string(), BadSecurityOrigin(), listener.Get())));
+      base::BindOnce(
+          &AudioOutputAuthorizationHandler::RequestDeviceAuthorization,
+          base::Unretained(handler.get()), kRenderFrameId, kSessionId,
+          std::string(), BadSecurityOrigin(), listener.Get()));
 
   SyncWithAllThreads();
   BrowserThread::DeleteSoon(BrowserThread::IO, FROM_HERE, handler.release());

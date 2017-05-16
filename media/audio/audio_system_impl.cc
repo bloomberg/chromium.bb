@@ -4,6 +4,10 @@
 
 #include "media/audio/audio_system_impl.h"
 
+#include <memory>
+#include <string>
+#include <utility>
+
 #include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/task_runner_util.h"
@@ -44,8 +48,8 @@ void AudioSystemImpl::GetInputStreamParameters(
   }
   base::PostTaskAndReplyWithResult(
       GetTaskRunner(), FROM_HERE,
-      base::Bind(&AudioSystemImpl::GetInputParametersOnDeviceThread,
-                 base::Unretained(audio_manager_), device_id),
+      base::BindOnce(&AudioSystemImpl::GetInputParametersOnDeviceThread,
+                     base::Unretained(audio_manager_), device_id),
       std::move(on_params_cb));
 }
 
@@ -61,8 +65,8 @@ void AudioSystemImpl::GetOutputStreamParameters(
   }
   base::PostTaskAndReplyWithResult(
       GetTaskRunner(), FROM_HERE,
-      base::Bind(&AudioSystemImpl::GetOutputParametersOnDeviceThread,
-                 base::Unretained(audio_manager_), device_id),
+      base::BindOnce(&AudioSystemImpl::GetOutputParametersOnDeviceThread,
+                     base::Unretained(audio_manager_), device_id),
       std::move(on_params_cb));
 }
 
@@ -75,8 +79,8 @@ void AudioSystemImpl::HasInputDevices(OnBoolCallback on_has_devices_cb) const {
   }
   base::PostTaskAndReplyWithResult(
       GetTaskRunner(), FROM_HERE,
-      base::Bind(&AudioManager::HasAudioInputDevices,
-                 base::Unretained(audio_manager_)),
+      base::BindOnce(&AudioManager::HasAudioInputDevices,
+                     base::Unretained(audio_manager_)),
       std::move(on_has_devices_cb));
 }
 
@@ -89,8 +93,8 @@ void AudioSystemImpl::HasOutputDevices(OnBoolCallback on_has_devices_cb) const {
   }
   base::PostTaskAndReplyWithResult(
       GetTaskRunner(), FROM_HERE,
-      base::Bind(&AudioManager::HasAudioOutputDevices,
-                 base::Unretained(audio_manager_)),
+      base::BindOnce(&AudioManager::HasAudioOutputDevices,
+                     base::Unretained(audio_manager_)),
       std::move(on_has_devices_cb));
 }
 
@@ -108,8 +112,8 @@ void AudioSystemImpl::GetDeviceDescriptions(
 
   base::PostTaskAndReplyWithResult(
       GetTaskRunner(), FROM_HERE,
-      base::Bind(&AudioSystemImpl::GetDeviceDescriptionsOnDeviceThread,
-                 base::Unretained(audio_manager_), for_input),
+      base::BindOnce(&AudioSystemImpl::GetDeviceDescriptionsOnDeviceThread,
+                     base::Unretained(audio_manager_), for_input),
       std::move(on_descriptions_cb));
 }
 
@@ -125,8 +129,8 @@ void AudioSystemImpl::GetAssociatedOutputDeviceID(
   }
   base::PostTaskAndReplyWithResult(
       GetTaskRunner(), FROM_HERE,
-      base::Bind(&AudioManager::GetAssociatedOutputDeviceID,
-                 base::Unretained(audio_manager_), input_device_id),
+      base::BindOnce(&AudioManager::GetAssociatedOutputDeviceID,
+                     base::Unretained(audio_manager_), input_device_id),
       std::move(on_device_id_cb));
 }
 
@@ -204,13 +208,13 @@ void AudioSystemImpl::GetInputDeviceInfoOnDeviceThread(
   const std::string associated_output_device_id =
       audio_manager->GetAssociatedOutputDeviceID(input_device_id);
 
-  on_input_device_info_cb.Run(
-      GetInputParametersOnDeviceThread(audio_manager, input_device_id),
-      associated_output_device_id.empty()
-          ? AudioParameters()
-          : GetOutputParametersOnDeviceThread(audio_manager,
-                                              associated_output_device_id),
-      associated_output_device_id);
+  std::move(on_input_device_info_cb)
+      .Run(GetInputParametersOnDeviceThread(audio_manager, input_device_id),
+           associated_output_device_id.empty()
+               ? AudioParameters()
+               : GetOutputParametersOnDeviceThread(audio_manager,
+                                                   associated_output_device_id),
+           associated_output_device_id);
 }
 
 }  // namespace media

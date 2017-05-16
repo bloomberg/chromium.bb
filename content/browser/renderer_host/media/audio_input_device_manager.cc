@@ -78,11 +78,11 @@ int AudioInputDeviceManager::Open(const MediaStreamDevice& device) {
           switches::kUseFakeDeviceForMediaStream)) {
     audio_system_->GetAssociatedOutputDeviceID(
         device.id,
-        base::Bind(&AudioInputDeviceManager::OpenedOnIOThread,
-                   base::Unretained(this), session_id, device,
-                   base::TimeTicks::Now(),
-                   media::AudioParameters::UnavailableDeviceParams(),
-                   media::AudioParameters::UnavailableDeviceParams()));
+        base::BindOnce(&AudioInputDeviceManager::OpenedOnIOThread,
+                       base::Unretained(this), session_id, device,
+                       base::TimeTicks::Now(),
+                       media::AudioParameters::UnavailableDeviceParams(),
+                       media::AudioParameters::UnavailableDeviceParams()));
   } else {
     // TODO(tommi): As is, we hit this code path when device.type is
     // MEDIA_TAB_AUDIO_CAPTURE and the device id is not a device that
@@ -96,9 +96,9 @@ int AudioInputDeviceManager::Open(const MediaStreamDevice& device) {
     // devices.
 
     audio_system_->GetInputDeviceInfo(
-        device.id, base::Bind(&AudioInputDeviceManager::OpenedOnIOThread,
-                              base::Unretained(this), session_id, device,
-                              base::TimeTicks::Now()));
+        device.id, base::BindOnce(&AudioInputDeviceManager::OpenedOnIOThread,
+                                  base::Unretained(this), session_id, device,
+                                  base::TimeTicks::Now()));
   }
 
   return session_id;

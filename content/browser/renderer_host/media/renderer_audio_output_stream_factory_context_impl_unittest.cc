@@ -82,8 +82,8 @@ void SyncWith(scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
   CHECK(!task_runner->BelongsToCurrentThread());
   base::WaitableEvent e = {base::WaitableEvent::ResetPolicy::MANUAL,
                            base::WaitableEvent::InitialState::NOT_SIGNALED};
-  task_runner->PostTask(FROM_HERE, base::Bind(&base::WaitableEvent::Signal,
-                                              base::Unretained(&e)));
+  task_runner->PostTask(FROM_HERE, base::BindOnce(&base::WaitableEvent::Signal,
+                                                  base::Unretained(&e)));
   e.Wait();
 }
 
@@ -343,10 +343,9 @@ TEST_F(RendererAudioOutputStreamFactoryIntegrationTest, StreamIntegrationTest) {
   AudioOutputStreamFactoryPtr factory_ptr;
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&RendererAudioOutputStreamFactoryIntegrationTest::
-                     CreateAndBindFactory,
-                 base::Unretained(this),
-                 base::Passed(mojo::MakeRequest(&factory_ptr))));
+      base::BindOnce(&RendererAudioOutputStreamFactoryIntegrationTest::
+                         CreateAndBindFactory,
+                     base::Unretained(this), mojo::MakeRequest(&factory_ptr)));
 
   AudioOutputStreamProviderPtr provider_ptr;
   base::RunLoop loop;
@@ -355,9 +354,9 @@ TEST_F(RendererAudioOutputStreamFactoryIntegrationTest, StreamIntegrationTest) {
   std::string id;
   factory_ptr->RequestDeviceAuthorization(
       mojo::MakeRequest(&provider_ptr), kNoSessionId, "default",
-      base::Bind(&AuthCallback, base::Passed(loop.QuitWhenIdleClosure()),
-                 base::Unretained(&status), base::Unretained(&params),
-                 base::Unretained(&id)));
+      base::BindOnce(&AuthCallback, loop.QuitWhenIdleClosure(),
+                     base::Unretained(&status), base::Unretained(&params),
+                     base::Unretained(&id)));
   loop.Run();
   ASSERT_EQ(status, media::OUTPUT_DEVICE_STATUS_OK);
   ASSERT_EQ(GetTestAudioParameters().AsHumanReadableString(),

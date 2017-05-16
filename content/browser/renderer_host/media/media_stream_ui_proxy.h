@@ -22,12 +22,12 @@ class RenderFrameHostDelegate;
 // be created, used and destroyed on IO thread.
 class CONTENT_EXPORT MediaStreamUIProxy {
  public:
-  typedef base::Callback<
-      void(const MediaStreamDevices& devices,
-           content::MediaStreamRequestResult result)>
-        ResponseCallback;
+  using ResponseCallback =
+      base::OnceCallback<void(const MediaStreamDevices& devices,
+                              content::MediaStreamRequestResult result)>;
 
-  typedef base::Callback<void(gfx::NativeViewId window_id)> WindowIdCallback;
+  using WindowIdCallback =
+      base::OnceCallback<void(gfx::NativeViewId window_id)>;
 
   static std::unique_ptr<MediaStreamUIProxy> Create();
   static std::unique_ptr<MediaStreamUIProxy> CreateForTests(
@@ -40,15 +40,15 @@ class CONTENT_EXPORT MediaStreamUIProxy {
   // |response_callback| is called when the WebContentsDelegate approves or
   // denies request.
   virtual void RequestAccess(std::unique_ptr<MediaStreamRequest> request,
-                             const ResponseCallback& response_callback);
+                             ResponseCallback response_callback);
 
   // Notifies the UI that the MediaStream has been started. Must be called after
   // access has been approved using RequestAccess(). |stop_callback| is be
   // called on the IO thread after the user has requests the stream to be
   // stopped. |window_id_callback| is called on the IO thread with the platform-
   // dependent window ID of the UI.
-  virtual void OnStarted(const base::Closure& stop_callback,
-                         const WindowIdCallback& window_id_callback);
+  virtual void OnStarted(base::OnceClosure stop_callback,
+                         WindowIdCallback window_id_callback);
 
   void SetRenderFrameHostDelegateForTests(RenderFrameHostDelegate* delegate);
 
@@ -64,14 +64,13 @@ class CONTENT_EXPORT MediaStreamUIProxy {
       const MediaStreamDevices& devices,
       content::MediaStreamRequestResult result);
   void ProcessStopRequestFromUI();
-  void OnWindowId(const WindowIdCallback& window_id_callback,
+  void OnWindowId(WindowIdCallback window_id_callback,
                   gfx::NativeViewId* window_id);
-  void OnCheckedAccess(const base::Callback<void(bool)>& callback,
-                       bool have_access);
+  void OnCheckedAccess(base::Callback<void(bool)> callback, bool have_access);
 
   std::unique_ptr<Core, content::BrowserThread::DeleteOnUIThread> core_;
   ResponseCallback response_callback_;
-  base::Closure stop_callback_;
+  base::OnceClosure stop_callback_;
 
   base::WeakPtrFactory<MediaStreamUIProxy> weak_factory_;
 
@@ -80,7 +79,7 @@ class CONTENT_EXPORT MediaStreamUIProxy {
 
 class CONTENT_EXPORT FakeMediaStreamUIProxy : public MediaStreamUIProxy {
  public:
-  explicit FakeMediaStreamUIProxy();
+  FakeMediaStreamUIProxy();
   ~FakeMediaStreamUIProxy() override;
 
   void SetAvailableDevices(const MediaStreamDevices& devices);
@@ -89,9 +88,9 @@ class CONTENT_EXPORT FakeMediaStreamUIProxy : public MediaStreamUIProxy {
 
   // MediaStreamUIProxy overrides.
   void RequestAccess(std::unique_ptr<MediaStreamRequest> request,
-                     const ResponseCallback& response_callback) override;
-  void OnStarted(const base::Closure& stop_callback,
-                 const WindowIdCallback& window_id_callback) override;
+                     ResponseCallback response_callback) override;
+  void OnStarted(base::OnceClosure stop_callback,
+                 WindowIdCallback window_id_callback) override;
 
  private:
   // This is used for RequestAccess().

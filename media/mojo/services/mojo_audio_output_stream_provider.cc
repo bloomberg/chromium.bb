@@ -14,9 +14,11 @@ MojoAudioOutputStreamProvider::MojoAudioOutputStreamProvider(
     DeleterCallback deleter_callback)
     : binding_(this, std::move(request)),
       create_delegate_callback_(std::move(create_delegate_callback)),
-      deleter_callback_(base::Bind(std::move(deleter_callback), this)) {
+      deleter_callback_(std::move(deleter_callback)) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  binding_.set_connection_error_handler(deleter_callback_);
+  // Unretained is safe since |this| owns |binding_|.
+  binding_.set_connection_error_handler(base::Bind(
+      &MojoAudioOutputStreamProvider::OnError, base::Unretained(this)));
   DCHECK(create_delegate_callback_);
   DCHECK(deleter_callback_);
 }
@@ -33,14 +35,22 @@ void MojoAudioOutputStreamProvider::Acquire(
   if (audio_output_) {
     LOG(ERROR) << "Output acquired twice.";
     binding_.Unbind();
-    deleter_callback_.Run();  // deletes |this|.
+    std::move(deleter_callback_).Run(this);  // deletes |this|.
     return;
   }
 
+  // Unretained is safe since |this| owns |audio_output_|.
   audio_output_.emplace(
       std::move(stream_request),
       base::BindOnce(std::move(create_delegate_callback_), params),
-      std::move(callback), deleter_callback_);
+      std::move(callback),
+      base::BindOnce(&MojoAudioOutputStreamProvider::OnError,
+                     base::Unretained(this)));
+}
+
+void MojoAudioOutputStreamProvider::OnError() {
+  // Deletes |this|:
+  std::move(deleter_callback_).Run(this);
 }
 
 }  // namespace media
