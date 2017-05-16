@@ -6,7 +6,7 @@
 
 #include <memory>
 
-#include "base/threading/sequenced_worker_pool.h"
+#include "base/task_scheduler/post_task.h"
 #include "build/build_config.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
@@ -62,12 +62,10 @@ KeyedService* GCMProfileServiceFactory::BuildServiceInstanceFor(
   Profile* profile = Profile::FromBrowserContext(context);
   DCHECK(!profile->IsOffTheRecord());
 
-  base::SequencedWorkerPool* worker_pool =
-      content::BrowserThread::GetBlockingPool();
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner(
-      worker_pool->GetSequencedTaskRunnerWithShutdownBehavior(
-          worker_pool->GetSequenceToken(),
-          base::SequencedWorkerPool::SKIP_ON_SHUTDOWN));
+      base::CreateSequencedTaskRunnerWithTraits(
+          {base::MayBlock(), base::TaskPriority::BACKGROUND,
+           base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN}));
 #if defined(OS_ANDROID)
   return new GCMProfileService(profile->GetPath(), blocking_task_runner);
 #else
