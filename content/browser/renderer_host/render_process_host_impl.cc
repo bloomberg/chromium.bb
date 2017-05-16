@@ -136,6 +136,7 @@
 #include "content/common/content_switches_internal.h"
 #include "content/common/frame_messages.h"
 #include "content/common/in_process_child_thread_params.h"
+#include "content/common/network_service.mojom.h"
 #include "content/common/render_process_messages.h"
 #include "content/common/resource_messages.h"
 #include "content/common/service_manager/child_connection.h"
@@ -1413,6 +1414,14 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
       ->AddInterface(base::Bind(&RenderProcessHostImpl::BindRouteProvider,
                                 base::Unretained(this)));
 
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableNetworkService)) {
+    AddUIThreadInterface(
+        registry.get(),
+        base::Bind(&RenderProcessHostImpl::CreateURLLoaderFactory,
+                   base::Unretained(this)));
+  }
+
   ServiceManagerConnection* service_manager_connection =
       BrowserContext::GetServiceManagerConnectionFor(browser_context_);
   std::unique_ptr<ConnectionFilterImpl> connection_filter(
@@ -1484,6 +1493,18 @@ void RenderProcessHostImpl::CreateStoragePartitionService(
           switches::kMojoLocalStorage)) {
     storage_partition_impl_->Bind(std::move(request));
   }
+}
+
+void RenderProcessHostImpl::CreateURLLoaderFactory(
+    const service_manager::BindSourceInfo& source_info,
+    mojom::URLLoaderFactoryRequest request) {
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableNetworkService)) {
+    NOTREACHED();
+    return;
+  }
+  storage_partition_impl_->network_context()->CreateURLLoaderFactory(
+      std::move(request), id_);
 }
 
 int RenderProcessHostImpl::GetNextRoutingID() {

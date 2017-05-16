@@ -17,7 +17,8 @@ class NetworkContext;
 class NetworkServiceURLLoaderFactoryImpl : public mojom::URLLoaderFactory {
  public:
   // NOTE: |context| must outlive this instance.
-  explicit NetworkServiceURLLoaderFactoryImpl(NetworkContext* context);
+  NetworkServiceURLLoaderFactoryImpl(NetworkContext* context,
+                                     uint32_t process_id);
 
   ~NetworkServiceURLLoaderFactoryImpl() override;
 
@@ -36,6 +37,7 @@ class NetworkServiceURLLoaderFactoryImpl : public mojom::URLLoaderFactory {
  private:
   // Not owned.
   NetworkContext* context_;
+  int process_id_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkServiceURLLoaderFactoryImpl);
 };

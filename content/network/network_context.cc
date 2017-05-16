@@ -7,13 +7,13 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
+#include "content/network/cache_url_loader.h"
+#include "content/network/network_service_url_loader_factory_impl.h"
 #include "content/network/url_loader_impl.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
 #include "net/dns/host_resolver.h"
 #include "net/dns/mapped_host_resolver.h"
-#include "net/log/net_log_util.h"
-#include "net/log/write_to_file_net_log_observer.h"
 #include "net/proxy/proxy_config.h"
 #include "net/proxy/proxy_config_service_fixed.h"
 #include "net/url_request/url_request_context.h"
@@ -84,46 +84,12 @@ std::unique_ptr<net::URLRequestContext> MakeURLRequestContext() {
 
 }  // namespace
 
-class NetworkContext::MojoNetLog : public net::NetLog {
- public:
-  MojoNetLog() {
-    const base::CommandLine* command_line =
-        base::CommandLine::ForCurrentProcess();
-    if (!command_line->HasSwitch(switches::kLogNetLog))
-      return;
-    base::FilePath log_path =
-        command_line->GetSwitchValuePath(switches::kLogNetLog);
-    base::ScopedFILE file;
-#if defined(OS_WIN)
-    file.reset(_wfopen(log_path.value().c_str(), L"w"));
-#elif defined(OS_POSIX)
-    file.reset(fopen(log_path.value().c_str(), "w"));
-#endif
-    if (!file) {
-      LOG(ERROR) << "Could not open file " << log_path.value()
-                 << " for net logging";
-    } else {
-      write_to_file_observer_.reset(new net::WriteToFileNetLogObserver());
-      write_to_file_observer_->set_capture_mode(
-          net::NetLogCaptureMode::IncludeCookiesAndCredentials());
-      write_to_file_observer_->StartObserving(this, std::move(file), nullptr,
-                                              nullptr);
-    }
-  }
-  ~MojoNetLog() override {
-    if (write_to_file_observer_)
-      write_to_file_observer_->StopObserving(nullptr);
-  }
-
- private:
-  std::unique_ptr<net::WriteToFileNetLogObserver> write_to_file_observer_;
-  DISALLOW_COPY_AND_ASSIGN(MojoNetLog);
-};
-
-NetworkContext::NetworkContext()
-    : net_log_(new MojoNetLog),
-      url_request_context_(MakeURLRequestContext()),
-      in_shutdown_(false) {}
+NetworkContext::NetworkContext(mojom::NetworkContextRequest request,
+                               mojom::NetworkContextParamsPtr params)
+    : url_request_context_(MakeURLRequestContext()),
+      in_shutdown_(false),
+      params_(std::move(params)),
+      binding_(this, std::move(request)) {}
 
 NetworkContext::~NetworkContext() {
   in_shutdown_ = true;
@@ -133,6 +99,10 @@ NetworkContext::~NetworkContext() {
   // so iterate over a copy.
   for (auto* url_loader : url_loaders_)
     url_loader->Cleanup();
+}
+
+std::unique_ptr<NetworkContext> NetworkContext::CreateForTesting() {
+  return base::WrapUnique(new NetworkContext);
 }
 
 void NetworkContext::RegisterURLLoader(URLLoaderImpl* url_loader) {
@@ -146,5 +116,23 @@ void NetworkContext::DeregisterURLLoader(URLLoaderImpl* url_loader) {
     DCHECK(removed_count);
   }
 }
+
+void NetworkContext::CreateURLLoaderFactory(
+    mojom::URLLoaderFactoryRequest request,
+    uint32_t process_id) {
+  loader_factory_bindings_.AddBinding(
+      base::MakeUnique<NetworkServiceURLLoaderFactoryImpl>(this, process_id),
+      std::move(request));
+}
+
+void NetworkContext::HandleViewCacheRequest(const GURL& url,
+                                            mojom::URLLoaderClientPtr client) {
+  StartCacheURLLoader(url, url_request_context_.get(), std::move(client));
+}
+
+NetworkContext::NetworkContext()
+    : url_request_context_(MakeURLRequestContext()),
+      in_shutdown_(false),
+      binding_(this) {}
 
 }  // namespace content

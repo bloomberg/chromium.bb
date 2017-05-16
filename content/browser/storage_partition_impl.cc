@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/location.h"
 #include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
@@ -29,6 +30,9 @@
 #include "content/public/browser/local_storage_usage_info.h"
 #include "content/public/browser/session_storage_usage_info.h"
 #include "content/public/common/content_client.h"
+#include "content/public/common/content_switches.h"
+#include "content/public/common/service_manager_connection.h"
+#include "content/public/common/service_names.mojom.h"
 #include "net/base/completion_callback.h"
 #include "net/base/net_errors.h"
 #include "net/cookies/canonical_cookie.h"
@@ -36,6 +40,7 @@
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "ppapi/features/features.h"
+#include "services/service_manager/public/cpp/connector.h"
 #include "storage/browser/database/database_tracker.h"
 #include "storage/browser/quota/quota_manager.h"
 
@@ -505,6 +510,27 @@ std::unique_ptr<StoragePartitionImpl> StoragePartitionImpl::Create(
   partition->broadcast_channel_provider_ = new BroadcastChannelProvider();
 
   partition->bluetooth_allowed_devices_map_ = new BluetoothAllowedDevicesMap();
+
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableNetworkService)) {
+    mojom::NetworkServicePtr network_service;
+    ServiceManagerConnection::GetForProcess()->GetConnector()->BindInterface(
+        mojom::kNetworkServiceName, &network_service);
+    mojom::NetworkContextParamsPtr context_params =
+        mojom::NetworkContextParams::New();
+    // TODO: fill this
+    // context_params->cache_dir =
+    // context_params->cookie_path =
+    network_service->CreateNetworkContext(
+        MakeRequest(&partition->network_context_), std::move(context_params));
+
+    partition->url_loader_factory_getter_ = new URLLoaderFactoryGetter();
+    mojom::URLLoaderFactoryPtr network_factory;
+    partition->network_context_->CreateURLLoaderFactory(
+        MakeRequest(&network_factory), 0);
+    partition->url_loader_factory_getter_->Initialize(
+        std::move(network_factory));
+  }
 
   return partition;
 }

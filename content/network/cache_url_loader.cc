@@ -18,7 +18,7 @@ namespace {
 
 class CacheURLLoader {
  public:
-  CacheURLLoader(const ResourceRequest& request,
+  CacheURLLoader(const GURL& url,
                  net::URLRequestContext* request_context,
                  mojom::URLLoaderClientPtr client)
       : client_(std::move(client)) {
@@ -30,7 +30,7 @@ class CacheURLLoader {
     client_->OnReceiveResponse(resource_response, base::nullopt, nullptr);
 
     std::string cache_key =
-        request.url.spec().substr(strlen(kChromeUINetworkViewCacheURL));
+        url.spec().substr(strlen(kChromeUINetworkViewCacheURL));
 
     int rv;
     if (cache_key.empty()) {
@@ -72,10 +72,10 @@ class CacheURLLoader {
 };
 }
 
-void StartCacheURLLoader(const ResourceRequest& request,
+void StartCacheURLLoader(const GURL& url,
                          net::URLRequestContext* request_context,
                          mojom::URLLoaderClientPtr client) {
-  new CacheURLLoader(request, request_context, std::move(client));
+  new CacheURLLoader(url, request_context, std::move(client));
 }
 
 }  // namespace content

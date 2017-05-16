@@ -313,7 +313,7 @@ RendererBlinkPlatformImpl::CreateURLLoader() {
             switches::kEnableNetworkService);
     if (network_service_enabled) {
       mojom::URLLoaderFactoryPtr factory_ptr;
-      connector_->BindInterface(mojom::kNetworkServiceName, &factory_ptr);
+      connector_->BindInterface(mojom::kBrowserServiceName, &factory_ptr);
       url_loader_factory_ = std::move(factory_ptr);
     } else {
       mojom::URLLoaderFactoryAssociatedPtr factory_ptr;

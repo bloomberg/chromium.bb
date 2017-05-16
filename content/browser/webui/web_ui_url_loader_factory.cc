@@ -17,6 +17,7 @@
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/histogram_internals_url_loader.h"
 #include "content/browser/resource_context_impl.h"
+#include "content/browser/storage_partition_impl.h"
 #include "content/browser/webui/network_error_url_loader.h"
 #include "content/browser/webui/url_data_manager_backend.h"
 #include "content/browser/webui/url_data_source_impl.h"
@@ -25,11 +26,8 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/service_manager_connection.h"
-#include "content/public/common/service_names.mojom.h"
 #include "content/public/common/url_constants.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
-#include "services/service_manager/public/cpp/connector.h"
 #include "third_party/zlib/google/compression_utils.h"
 #include "ui/base/template_expressions.h"
 
@@ -211,8 +209,8 @@ class WebUIURLLoaderFactory : public mojom::URLLoaderFactory,
  public:
   WebUIURLLoaderFactory(FrameTreeNode* ftn)
       : frame_tree_node_id_(ftn->frame_tree_node_id()),
-        browser_context_(
-            ftn->current_frame_host()->GetProcess()->GetBrowserContext()) {
+        storage_partition_(static_cast<StoragePartitionImpl*>(
+            ftn->current_frame_host()->GetProcess()->GetStoragePartition())) {
     ftn->AddObserver(this);
   }
 
@@ -231,20 +229,18 @@ class WebUIURLLoaderFactory : public mojom::URLLoaderFactory,
                             mojom::URLLoaderClientPtr client) override {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     if (request.url.host_piece() == kChromeUINetworkViewCacheHost) {
-      mojom::NetworkServicePtr network_service;
-      ServiceManagerConnection::GetForProcess()->GetConnector()->BindInterface(
-          mojom::kNetworkServiceName, &network_service);
-      network_service->HandleViewCacheRequest(request, std::move(client));
+      storage_partition_->network_context()->HandleViewCacheRequest(
+          request.url, std::move(client));
       return;
     }
 
     if (request.url.host_piece() == kChromeUIBlobInternalsHost) {
       BrowserThread::PostTask(
           BrowserThread::IO, FROM_HERE,
-          base::BindOnce(
-              &StartBlobInternalsURLLoader, request, client.PassInterface(),
-              base::Unretained(
-                  ChromeBlobStorageContext::GetFor(browser_context_))));
+          base::BindOnce(&StartBlobInternalsURLLoader, request,
+                         client.PassInterface(),
+                         base::Unretained(ChromeBlobStorageContext::GetFor(
+                             storage_partition_->browser_context()))));
       return;
     }
 
@@ -261,9 +257,10 @@ class WebUIURLLoaderFactory : public mojom::URLLoaderFactory,
 
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        base::BindOnce(&StartURLLoader, request, frame_tree_node_id_,
-                       client.PassInterface(),
-                       browser_context_->GetResourceContext()));
+        base::BindOnce(
+            &StartURLLoader, request, frame_tree_node_id_,
+            client.PassInterface(),
+            storage_partition_->browser_context()->GetResourceContext()));
   }
 
   void SyncLoad(int32_t routing_id,
@@ -280,7 +277,7 @@ class WebUIURLLoaderFactory : public mojom::URLLoaderFactory,
 
  private:
   int frame_tree_node_id_;
-  BrowserContext* browser_context_;
+  StoragePartitionImpl* storage_partition_;
   mojo::BindingSet<mojom::URLLoaderFactory> loader_factory_bindings_;
 
   DISALLOW_COPY_AND_ASSIGN(WebUIURLLoaderFactory);

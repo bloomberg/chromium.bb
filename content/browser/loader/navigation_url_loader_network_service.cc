@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/lazy_instance.h"
 #include "base/memory/ptr_util.h"
 #include "base/trace_event/trace_event.h"
 #include "content/browser/appcache/appcache_navigation_handle.h"
@@ -22,9 +21,12 @@
 #include "content/browser/service_worker/service_worker_navigation_handle.h"
 #include "content/browser/service_worker/service_worker_navigation_handle_core.h"
 #include "content/browser/service_worker/service_worker_request_handler.h"
+#include "content/browser/storage_partition_impl.h"
+#include "content/browser/url_loader_factory_getter.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/browser/webui/url_data_manager_backend.h"
 #include "content/browser/webui/web_ui_url_loader_factory.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/global_request_id.h"
 #include "content/public/browser/navigation_data.h"
@@ -32,22 +34,13 @@
 #include "content/public/browser/ssl_status.h"
 #include "content/public/browser/stream_handle.h"
 #include "content/public/common/referrer.h"
-#include "content/public/common/service_manager_connection.h"
-#include "content/public/common/service_names.mojom.h"
 #include "content/public/common/url_constants.h"
 #include "net/base/load_flags.h"
 #include "net/url_request/url_request_context.h"
-#include "services/service_manager/public/cpp/connector.h"
 
 namespace content {
 
 namespace {
-
-static base::LazyInstance<mojom::URLLoaderFactoryPtr>::Leaky
-    g_url_loader_factory;
-#if DCHECK_IS_ON()
-static bool g_url_loader_factory_retrieved;
-#endif  // DCHECK_IS_ON()
 
 WebContents* GetWebContentsFromFrameTreeNodeID(int frame_tree_node_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -66,6 +59,7 @@ void PrepareNavigationStartOnIO(
     AppCacheNavigationHandleCore* appcache_handle_core,
     NavigationRequestInfo* request_info,
     mojom::URLLoaderFactoryPtrInfo factory_from_ui,
+    scoped_refptr<URLLoaderFactoryGetter> url_loader_factory_getter,
     const base::Callback<WebContents*(void)>& web_contents_getter,
     mojom::URLLoaderAssociatedRequest url_loader_request,
     mojom::URLLoaderClientPtr url_loader_client_to_pass,
@@ -123,17 +117,7 @@ void PrepareNavigationStartOnIO(
       url_loader_factory_ptr.Bind(std::move(factory_from_ui));
       factory = url_loader_factory_ptr.get();
     } else {
-      if (!g_url_loader_factory.Get()) {
-#if DCHECK_IS_ON()
-        DCHECK(!g_url_loader_factory_retrieved);
-#endif  // DCHECK_IS_ON()
-        connector->BindInterface(mojom::kNetworkServiceName,
-                                 &g_url_loader_factory.Get());
-#if DCHECK_IS_ON()
-        g_url_loader_factory_retrieved = true;
-#endif  // DCHECK_IS_ON()
-      }
-      factory = g_url_loader_factory.Get().get();
+      factory = url_loader_factory_getter->GetNetworkFactory()->get();
     }
   }
 
@@ -218,6 +202,8 @@ NavigationURLLoaderNetworkService::NavigationURLLoaderNetworkService(
                      : nullptr,
                  appcache_handle ? appcache_handle->core() : nullptr,
                  request_info_.get(), base::Passed(std::move(factory_ptr_info)),
+                 static_cast<StoragePartitionImpl*>(storage_partition)
+                     ->url_loader_factory_getter(),
                  base::Bind(&GetWebContentsFromFrameTreeNodeID,
                             request_info_->frame_tree_node_id),
                  base::Passed(std::move(loader_associated_request)),
@@ -228,11 +214,6 @@ NavigationURLLoaderNetworkService::NavigationURLLoaderNetworkService(
 }
 
 NavigationURLLoaderNetworkService::~NavigationURLLoaderNetworkService() {}
-
-void NavigationURLLoaderNetworkService::OverrideURLLoaderFactoryForTesting(
-    mojom::URLLoaderFactoryPtr url_loader_factory) {
-  g_url_loader_factory.Get() = std::move(url_loader_factory);
-}
 
 void NavigationURLLoaderNetworkService::FollowRedirect() {
   url_loader_associated_ptr_->FollowRedirect();

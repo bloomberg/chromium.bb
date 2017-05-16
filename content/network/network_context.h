@@ -12,6 +12,10 @@
 
 #include "base/macros.h"
 #include "content/common/content_export.h"
+#include "content/common/network_service.mojom.h"
+#include "content/common/url_loader_factory.mojom.h"
+#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/strong_binding_set.h"
 
 namespace net {
 class URLRequestContext;
@@ -20,10 +24,13 @@ class URLRequestContext;
 namespace content {
 class URLLoaderImpl;
 
-class CONTENT_EXPORT NetworkContext {
+class NetworkContext : public mojom::NetworkContext {
  public:
-  NetworkContext();
-  ~NetworkContext();
+  NetworkContext(mojom::NetworkContextRequest request,
+                 mojom::NetworkContextParamsPtr params);
+  ~NetworkContext() override;
+
+  CONTENT_EXPORT static std::unique_ptr<NetworkContext> CreateForTesting();
 
   net::URLRequestContext* url_request_context() {
     return url_request_context_.get();
@@ -34,11 +41,20 @@ class CONTENT_EXPORT NetworkContext {
   void RegisterURLLoader(URLLoaderImpl* url_loader);
   void DeregisterURLLoader(URLLoaderImpl* url_loader);
 
+  // mojom::NetworkContext implementation:
+  void CreateURLLoaderFactory(mojom::URLLoaderFactoryRequest request,
+                              uint32_t process_id) override;
+  void HandleViewCacheRequest(const GURL& url,
+                              mojom::URLLoaderClientPtr client) override;
+
  private:
-  class MojoNetLog;
-  std::unique_ptr<MojoNetLog> net_log_;
+  NetworkContext();
 
   std::unique_ptr<net::URLRequestContext> url_request_context_;
+
+  // Put it below |url_request_context_| so that it outlives all the
+  // NetworkServiceURLLoaderFactoryImpl instances.
+  mojo::StrongBindingSet<mojom::URLLoaderFactory> loader_factory_bindings_;
 
   // URLLoaderImpls register themselves with the NetworkContext so that they can
   // be cleaned up when the NetworkContext goes away. This is needed as
@@ -49,6 +65,10 @@ class CONTENT_EXPORT NetworkContext {
   // Set when entering the destructor, in order to avoid manipulations of the
   // |url_loaders_| (as a url_loader might delete itself in Cleanup()).
   bool in_shutdown_;
+
+  mojom::NetworkContextParamsPtr params_;
+
+  mojo::Binding<mojom::NetworkContext> binding_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkContext);
 };
