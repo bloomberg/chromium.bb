@@ -424,7 +424,7 @@ GridTrackSizingAlgorithmStrategy::ExtentForBaselineAlignment(
       grid->IsOrthogonalChild(child) ? kGridRowAxis : kGridColumnAxis;
   if (!grid->IsBaselineAlignmentForChild(child, baseline_axis) ||
       !grid->IsBaselineContextComputed(baseline_axis))
-    return WTF::kNullopt;
+    return WTF::nullopt;
 
   auto& group = grid->GetBaselineGroupForChild(child, baseline_axis);
   return group.MaxAscent() + group.MaxDescent();
@@ -1234,7 +1234,7 @@ void GridTrackSizingAlgorithm::ComputeGridContainerIntrinsicSizes() {
     max_content_size_ += track.GrowthLimit();
     // The growth limit caps must be cleared now in order to properly sort
     // tracks by growth potential on an eventual "Maximize Tracks".
-    track.SetGrowthLimitCap(WTF::kNullopt);
+    track.SetGrowthLimitCap(WTF::nullopt);
   }
 }
 
@@ -1471,8 +1471,8 @@ void GridTrackSizingAlgorithm::Reset() {
   rows_.Shrink(0);
   content_sized_tracks_index_.Shrink(0);
   flexible_sized_tracks_index_.Shrink(0);
-  SetAvailableSpace(kForRows, WTF::kNullopt);
-  SetAvailableSpace(kForColumns, WTF::kNullopt);
+  SetAvailableSpace(kForRows, WTF::nullopt);
+  SetAvailableSpace(kForColumns, WTF::nullopt);
 }
 
 #if DCHECK_IS_ON()

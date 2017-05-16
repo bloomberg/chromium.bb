@@ -110,7 +110,7 @@ bool DocumentMarkerListEditor::ShiftMarkers(MarkerList* list,
     RenderedDocumentMarker& marker = **it;
     Optional<DocumentMarker::MarkerOffsets> result =
         marker.ComputeOffsetsAfterShift(offset, old_length, new_length);
-    if (result == WTF::kNullopt) {
+    if (result == WTF::nullopt) {
       list->erase(it - list->begin());
       --it;
       did_shift_marker = true;

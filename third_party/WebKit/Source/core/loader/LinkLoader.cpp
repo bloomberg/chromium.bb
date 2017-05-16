@@ -229,7 +229,7 @@ WTF::Optional<Resource::Type> LinkLoader::GetResourceTypeFromAsAttribute(
   } else if (as.IsEmpty()) {
     return Resource::kRaw;
   }
-  return WTF::kNullopt;
+  return WTF::nullopt;
 }
 
 Resource* LinkLoader::LinkPreloadedResourceForTesting() {
@@ -335,7 +335,7 @@ static Resource* PreloadIfNeeded(const LinkRelAttribute& rel_attribute,
     UseCounter::Count(document, UseCounter::kLinkHeaderPreload);
   Optional<Resource::Type> resource_type =
       LinkLoader::GetResourceTypeFromAsAttribute(as);
-  if (resource_type == WTF::kNullopt) {
+  if (resource_type == WTF::nullopt) {
     document.AddConsoleMessage(ConsoleMessage::Create(
         kOtherMessageSource, kWarningMessageLevel,
         String("<link rel=preload> must have a valid `as` value")));

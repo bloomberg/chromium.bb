@@ -203,7 +203,7 @@ struct TypeConverter<WTF::Optional<WTF::Vector<uint8_t>>, blink::ScriptValue> {
       return mojo::ConvertTo<WTF::Vector<uint8_t>>(
           blink::V8ArrayBuffer::toImpl(value.As<v8::Object>()));
 
-    return WTF::kNullopt;
+    return WTF::nullopt;
   }
 };
 

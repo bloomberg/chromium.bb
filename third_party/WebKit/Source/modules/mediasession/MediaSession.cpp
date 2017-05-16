@@ -70,7 +70,7 @@ WTF::Optional<MediaSessionAction> ActionNameToMojomAction(
     return MediaSessionAction::SEEK_FORWARD;
 
   NOTREACHED();
-  return WTF::kNullopt;
+  return WTF::nullopt;
 }
 
 const AtomicString& MediaSessionPlaybackStateToString(

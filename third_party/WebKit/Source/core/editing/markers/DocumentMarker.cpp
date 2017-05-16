@@ -216,7 +216,7 @@ DocumentMarker::ComputeOffsetsAfterShift(unsigned offset,
   }
 
   if (result.start_offset >= result.end_offset)
-    return WTF::kNullopt;
+    return WTF::nullopt;
 
   return result;
 }
