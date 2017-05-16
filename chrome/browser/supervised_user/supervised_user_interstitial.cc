@@ -314,6 +314,11 @@ bool SupervisedUserInterstitial::ShouldProceed() {
 }
 
 void SupervisedUserInterstitial::MoveAwayFromCurrentPage() {
+  // No need to do anything if the WebContents is in the process of being
+  // destroyed anyway.
+  if (web_contents_->IsBeingDestroyed())
+    return;
+
   // If the interstitial was shown during a page load and there is no history
   // entry to go back to, attempt to close the tab.
   if (initial_page_load_) {
