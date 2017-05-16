@@ -280,8 +280,6 @@ LocalFrame* LocalFrame::Create(LocalFrameClient* client,
 }
 
 void LocalFrame::Init() {
-  // Initialization code needs to run first as the call to m_loader.init() can
-  // actually lead to this object being freed!
   DCHECK(!GetInitializationVector().IsEmpty());
   for (auto& initilization_callback : GetInitializationVector()) {
     initilization_callback(this);

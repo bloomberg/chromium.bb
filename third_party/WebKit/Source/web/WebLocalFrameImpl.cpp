@@ -1573,26 +1573,23 @@ WebLocalFrameImpl* WebLocalFrameImpl::CreateProvisional(
   // When a core Frame is created with no owner, it attempts to set itself as
   // the main frame of the Page. However, this is a provisional frame, and may
   // disappear, so Page::m_mainFrame can't be updated just yet.
-  FrameOwner* temp_owner = DummyFrameOwner::Create();
-  // TODO(dcheng): This block is very similar to initializeCoreFrame. Try to
-  // reuse it here.
-  LocalFrame* frame = LocalFrame::Create(
-      web_frame->local_frame_client_impl_.Get(), *old_frame->GetPage(),
-      temp_owner, interface_provider, interface_registry);
-  frame->Tree().SetName(
-      ToWebRemoteFrameImpl(old_web_frame)->GetFrame()->Tree().GetName());
-  web_frame->SetCoreFrame(frame);
+  // Note 2: Becuase the dummy owner is still the owner when the initial empty
+  // document is created, the initial empty document will not inherit the
+  // correct sandbox flags. However, since the provisional frame is inivisible
+  // to the rest of the page, the initial document is also invisible and
+  // unscriptable. Once the provisional frame gets properly attached and is
+  // observable, it will have the real FrameOwner, and any subsequent real
+  // documents will correctly inherit sandbox flags from the owner.
+  web_frame->InitializeCoreFrame(*old_frame->GetPage(),
+                                 DummyFrameOwner::Create(),
+                                 old_frame->Tree().GetName());
 
-  frame->SetOwner(old_frame->Owner());
-
-  if (frame->Owner() && frame->Owner()->IsRemote())
-    ToRemoteFrameOwner(frame->Owner())
+  LocalFrame* new_frame = web_frame->GetFrame();
+  new_frame->SetOwner(old_frame->Owner());
+  if (new_frame->Owner() && new_frame->Owner()->IsRemote()) {
+    ToRemoteFrameOwner(new_frame->Owner())
         ->SetSandboxFlags(static_cast<SandboxFlags>(flags));
-
-  // We must call init() after m_frame is assigned because it is referenced
-  // during init(). Note that this may dispatch JS events; the frame may be
-  // detached after init() returns.
-  frame->Init();
+  }
   return web_frame;
 }
 
@@ -1657,27 +1654,22 @@ void WebLocalFrameImpl::InitializeCoreFrame(Page& page,
                                             const AtomicString& name) {
   SetCoreFrame(LocalFrame::Create(local_frame_client_impl_.Get(), page, owner,
                                   interface_provider_, interface_registry_));
-  GetFrame()->Tree().SetName(name);
-  // We must call init() after m_frame is assigned because it is referenced
-  // during init(). Note that this may dispatch JS events; the frame may be
-  // detached after init() returns.
-  GetFrame()->Init();
-  if (GetFrame()) {
-    if (GetFrame()
-            ->Loader()
-            .StateMachine()
-            ->IsDisplayingInitialEmptyDocument() &&
-        !Parent() && !Opener() &&
-        GetFrame()->GetSettings()->GetShouldReuseGlobalForUnownedMainFrame()) {
-      GetFrame()->GetDocument()->GetSecurityOrigin()->GrantUniversalAccess();
-    }
+  frame_->Tree().SetName(name);
+  // We must call init() after frame_ is assigned because it is referenced
+  // during init().
+  frame_->Init();
+  CHECK(frame_);
+  CHECK(frame_->Loader().StateMachine()->IsDisplayingInitialEmptyDocument());
+  if (!Parent() && !Opener() &&
+      frame_->GetSettings()->GetShouldReuseGlobalForUnownedMainFrame()) {
+    frame_->GetDocument()->GetSecurityOrigin()->GrantUniversalAccess();
+  }
 
-    if (!owner) {
-      // This trace event is needed to detect the main frame of the
-      // renderer in telemetry metrics. See crbug.com/692112#c11.
-      TRACE_EVENT_INSTANT1("loading", "markAsMainFrame",
-                           TRACE_EVENT_SCOPE_THREAD, "frame", GetFrame());
-    }
+  if (!owner) {
+    // This trace event is needed to detect the main frame of the
+    // renderer in telemetry metrics. See crbug.com/692112#c11.
+    TRACE_EVENT_INSTANT1("loading", "markAsMainFrame", TRACE_EVENT_SCOPE_THREAD,
+                         "frame", frame_);
   }
 }
 
@@ -1713,10 +1705,7 @@ LocalFrame* WebLocalFrameImpl::CreateChildFrame(
 
   webframe_child->InitializeCoreFrame(*GetFrame()->GetPage(), owner_element,
                                       name);
-  // Initializing the core frame may cause the new child to be detached, since
-  // it may dispatch a load event in the parent.
-  if (!webframe_child->Parent())
-    return nullptr;
+  DCHECK(webframe_child->Parent());
 
   FrameLoadRequest new_request = request;
   FrameLoadType child_load_type = kFrameLoadTypeStandard;

@@ -260,6 +260,7 @@ DEFINE_TRACE(FrameLoader) {
 }
 
 void FrameLoader::Init() {
+  ScriptForbiddenScope forbid_scripts;
   ResourceRequest initial_request(KURL(kParsedURLString, g_empty_string));
   initial_request.SetRequestContext(WebURLRequest::kRequestContextInternal);
   initial_request.SetFrameType(frame_->IsMainFrame()
@@ -272,14 +273,10 @@ void FrameLoader::Init() {
   frame_->GetDocument()->CancelParsing();
   state_machine_.AdvanceTo(
       FrameLoaderStateMachine::kDisplayingInitialEmptyDocument);
-  // Suppress finish notifications for inital empty documents, since they don't
+  // Suppress finish notifications for initial empty documents, since they don't
   // generate start notifications.
-  if (document_loader_)
-    document_loader_->SetSentDidFinishLoad();
-  // Self-suspend if created in an already suspended Page. Note that both
-  // startLoadingMainResource() and cancelParsing() may have already detached
-  // the frame, since they both fire JS events.
-  if (frame_->GetPage() && frame_->GetPage()->Suspended())
+  document_loader_->SetSentDidFinishLoad();
+  if (frame_->GetPage()->Suspended())
     SetDefersLoading(true);
   TakeObjectSnapshot();
 }
