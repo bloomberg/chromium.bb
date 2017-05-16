@@ -251,8 +251,8 @@ def get_waterfall_config():
        'android_devices': '1',
        'pool': 'Chrome-perf',
        'device_ids': [
-           'build15-b1--device1', 'build15-b1--device2', 'build73-15--device3',
-           'build15-b1--device4', 'build15-b1--device5', 'build73-15--device6',
+           'build15-b1--device1', 'build15-b1--device2', 'build15-b1--device3',
+           'build15-b1--device4', 'build15-b1--device5', 'build15-b1--device6',
            'build15-b1--device7',
            'build16-b1--device1', 'build16-b1--device2', 'build16-b1--device3',
            'build16-b1--device4', 'build16-b1--device5', 'build16-b1--device6',
