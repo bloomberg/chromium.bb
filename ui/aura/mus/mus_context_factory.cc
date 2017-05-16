@@ -62,8 +62,15 @@ void MusContextFactory::CreateCompositorFrameSink(
 
 scoped_refptr<cc::ContextProvider>
 MusContextFactory::SharedMainThreadContextProvider() {
-  // NOTIMPLEMENTED();
-  return nullptr;
+  if (!shared_main_thread_context_provider_) {
+    scoped_refptr<gpu::GpuChannelHost> gpu_channel =
+        gpu_->EstablishGpuChannelSync();
+    shared_main_thread_context_provider_ =
+        gpu_->CreateContextProvider(std::move(gpu_channel));
+    if (!shared_main_thread_context_provider_->BindToCurrentThread())
+      shared_main_thread_context_provider_ = nullptr;
+  }
+  return shared_main_thread_context_provider_;
 }
 
 void MusContextFactory::RemoveCompositor(ui::Compositor* compositor) {
