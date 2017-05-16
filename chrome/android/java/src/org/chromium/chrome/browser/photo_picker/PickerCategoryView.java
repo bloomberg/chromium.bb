@@ -10,11 +10,10 @@ import android.graphics.Bitmap;
 import android.graphics.Rect;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.Toolbar.OnMenuItemClickListener;
 import android.util.LruCache;
 import android.view.LayoutInflater;
-import android.view.MenuItem;
 import android.view.View;
+import android.widget.Button;
 import android.widget.RelativeLayout;
 
 import org.chromium.chrome.R;
@@ -31,7 +30,7 @@ import java.util.List;
  */
 public class PickerCategoryView extends RelativeLayout
         implements FileEnumWorkerTask.FilesEnumeratedCallback, RecyclerView.RecyclerListener,
-                   DecoderServiceHost.ServiceReadyCallback, OnMenuItemClickListener {
+                   DecoderServiceHost.ServiceReadyCallback, View.OnClickListener {
     private static final int KILOBYTE = 1024;
 
     // The dialog that owns us.
@@ -117,9 +116,13 @@ public class PickerCategoryView extends RelativeLayout
 
         mPickerAdapter = new PickerAdapter(this);
         mRecyclerView = mSelectableListLayout.initializeRecyclerView(mPickerAdapter);
-        mSelectableListLayout.initializeToolbar(R.layout.photo_picker_toolbar, mSelectionDelegate,
-                R.string.photo_picker_select_images, null, R.id.photo_picker_normal_menu_group,
-                R.id.photo_picker_selection_mode_menu_group, R.color.default_primary_color, this);
+        PhotoPickerToolbar toolbar = (PhotoPickerToolbar) mSelectableListLayout.initializeToolbar(
+                R.layout.photo_picker_toolbar, mSelectionDelegate,
+                R.string.photo_picker_select_images, null, 0, 0, R.color.default_primary_color,
+                null);
+        toolbar.setNavigationOnClickListener(this);
+        Button doneButton = (Button) toolbar.findViewById(R.id.done);
+        doneButton.setOnClickListener(this);
 
         Rect appRect = new Rect();
         ((Activity) context).getWindow().getDecorView().getWindowVisibleDisplayFrame(appRect);
@@ -194,20 +197,17 @@ public class PickerCategoryView extends RelativeLayout
         }
     }
 
-    // OnMenuItemClickListener:
+    // OnClickListener:
 
     @Override
-    public boolean onMenuItemClick(MenuItem item) {
-        if (item.getItemId() == R.id.close_menu_id) {
-            mListener.onPickerUserAction(PhotoPickerListener.Action.CANCEL, null);
-            mDialog.dismiss();
-            return true;
-        } else if (item.getItemId() == R.id.selection_mode_done_menu_id) {
+    public void onClick(View view) {
+        if (view.getId() == R.id.done) {
             notifyPhotosSelected();
-            mDialog.dismiss();
-            return true;
+        } else {
+            mListener.onPickerUserAction(PhotoPickerListener.Action.CANCEL, null);
         }
-        return false;
+
+        mDialog.dismiss();
     }
 
     /**
