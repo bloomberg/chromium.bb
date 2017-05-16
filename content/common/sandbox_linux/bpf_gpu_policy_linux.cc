@@ -337,7 +337,6 @@ void GpuProcessPolicy::InitGpuBrokerProcess(
     sandbox::bpf_dsl::Policy* (*broker_sandboxer_allocator)(void),
     const std::vector<BrokerFilePermission>& permissions_extra) {
   static const char kDriRcPath[] = "/etc/drirc";
-  static const char kDriCard0Path[] = "/dev/dri/card0";
   static const char kDriCardBasePath[] = "/dev/dri/card";
 
   static const char kNvidiaCtlPath[] = "/dev/nvidiactl";
@@ -350,15 +349,14 @@ void GpuProcessPolicy::InitGpuBrokerProcess(
 
   // All GPU process policies need these files brokered out.
   std::vector<BrokerFilePermission> permissions;
-  permissions.push_back(BrokerFilePermission::ReadWrite(kDriCard0Path));
   permissions.push_back(BrokerFilePermission::ReadOnly(kDriRcPath));
 
   if (!IsChromeOS()) {
     // For shared memory.
     permissions.push_back(
         BrokerFilePermission::ReadWriteCreateUnlinkRecursive(kDevShm));
-    // For multi-card DRI setups. NOTE: /dev/dri/card0 was already added above.
-    for (int i = 1; i <= 9; ++i) {
+    // For DRI cards.
+    for (int i = 0; i <= 9; ++i) {
       permissions.push_back(BrokerFilePermission::ReadWrite(
           base::StringPrintf("%s%d", kDriCardBasePath, i)));
     }
