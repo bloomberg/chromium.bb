@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/files/file_util.h"
 #include "base/i18n/number_formatting.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
@@ -21,6 +22,8 @@
 #include "dbus/mock_object_proxy.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/re2/src/re2/re2.h"
+#include "ui/gfx/image/image_skia.h"
 
 using testing::_;
 using testing::Return;
@@ -46,6 +49,11 @@ class NotificationBuilder {
                       new MockNotificationDelegate(id)) {}
 
   Notification GetResult() { return notification_; }
+
+  NotificationBuilder& SetImage(const gfx::Image& image) {
+    notification_.set_image(image);
+    return *this;
+  }
 
   NotificationBuilder& SetItems(
       const std::vector<message_center::NotificationItem>& items) {
@@ -82,6 +90,17 @@ struct NotificationRequest {
   std::string body;
   int32_t expire_timeout = 0;
 };
+
+const SkBitmap CreateBitmap(int width, int height) {
+  SkBitmap bitmap;
+  bitmap.allocN32Pixels(width, height);
+  bitmap.eraseARGB(255, 0, 255, 0);
+  return bitmap;
+}
+
+gfx::ImageSkia CreateImageSkia(int width, int height) {
+  return gfx::ImageSkia::CreateFrom1xBitmap(CreateBitmap(width, height));
+}
 
 NotificationRequest ParseRequest(dbus::MethodCall* method_call) {
   // The "Notify" message must have type (susssasa{sv}i).
@@ -199,7 +218,8 @@ class NotificationPlatformBridgeLinuxTest : public testing::Test {
 
     EXPECT_CALL(*mock_notification_proxy_.get(),
                 MockCallMethodAndBlock(Calls("GetCapabilities"), _))
-        .WillOnce(OnGetCapabilities(std::vector<std::string>{"body"}));
+        .WillOnce(
+            OnGetCapabilities(std::vector<std::string>{"body", "body-images"}));
 
     EXPECT_CALL(*mock_notification_proxy_.get(),
                 MockCallMethodAndBlock(Calls("GetServerInformation"), _))
@@ -229,6 +249,7 @@ class NotificationPlatformBridgeLinuxTest : public testing::Test {
   void CreateNotificationBridgeLinux() {
     notification_bridge_linux_ =
         base::WrapUnique(new NotificationPlatformBridgeLinux(mock_bus_));
+    content::RunAllBlockingPoolTasksUntilIdle();
   }
 
   content::TestBrowserThreadBundle thread_bundle_;
@@ -328,4 +349,44 @@ TEST_F(NotificationPlatformBridgeLinuxTest, NotificationTimeouts) {
   notification_bridge_linux_->Display(
       NotificationCommon::PERSISTENT, "", "", false,
       NotificationBuilder("2").SetNeverTimeout(true).GetResult());
+}
+
+TEST_F(NotificationPlatformBridgeLinuxTest, NotificationImages) {
+  const int kMaxImageWidth = 200;
+  const int kMaxImageHeight = 100;
+
+  const int original_width = kMaxImageWidth * 2;
+  const int original_height = kMaxImageHeight;
+  const int expected_width = kMaxImageWidth;
+  const int expected_height = kMaxImageHeight / 2;
+
+  gfx::Image original_image =
+      gfx::Image(CreateImageSkia(original_width, original_height));
+
+  EXPECT_CALL(*mock_notification_proxy_.get(),
+              MockCallMethodAndBlock(Calls("Notify"), _))
+      .WillOnce(OnNotify(
+          [=](const NotificationRequest& request) {
+            std::string file_name;
+            EXPECT_TRUE(RE2::FullMatch(
+                request.body, "\\<img src=\\\"(.+)\\\" alt=\\\".*\\\"/\\>",
+                &file_name));
+            std::string file_contents;
+            EXPECT_TRUE(base::ReadFileToString(base::FilePath(file_name),
+                                               &file_contents));
+            gfx::Image image = gfx::Image::CreateFrom1xPNGBytes(
+                reinterpret_cast<const unsigned char*>(file_contents.c_str()),
+                file_contents.size());
+            EXPECT_EQ(expected_width, image.Width());
+            EXPECT_EQ(expected_height, image.Height());
+          },
+          1));
+
+  CreateNotificationBridgeLinux();
+  notification_bridge_linux_->Display(
+      NotificationCommon::PERSISTENT, "", "", false,
+      NotificationBuilder("")
+          .SetType(message_center::NOTIFICATION_TYPE_IMAGE)
+          .SetImage(original_image)
+          .GetResult());
 }
