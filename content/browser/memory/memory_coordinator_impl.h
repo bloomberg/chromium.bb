@@ -10,7 +10,6 @@
 #include "base/memory/memory_coordinator_client.h"
 #include "base/memory/memory_coordinator_proxy.h"
 #include "base/memory/memory_pressure_monitor.h"
-#include "base/memory/singleton.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/non_thread_safe.h"
 #include "base/time/tick_clock.h"
@@ -31,7 +30,6 @@ class MemoryCoordinatorHandleImpl;
 class MemoryCoordinatorImplTest;
 class MemoryMonitor;
 class RenderProcessHost;
-struct MemoryCoordinatorSingletonTraits;
 
 using MemoryState = base::MemoryState;
 
@@ -204,7 +202,6 @@ class CONTENT_EXPORT MemoryCoordinatorImpl : public base::MemoryCoordinator,
   FRIEND_TEST_ALL_PREFIXES(MemoryCoordinatorImplTest, OnWarningCondition);
   FRIEND_TEST_ALL_PREFIXES(MemoryCoordinatorImplTest, OnCriticalCondition);
 
-  friend struct MemoryCoordinatorSingletonTraits;
   friend class MemoryCoordinatorHandleImpl;
 
   // Called when ChildMemoryCoordinator calls AddChild().
