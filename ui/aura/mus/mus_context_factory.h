@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "cc/output/context_provider.h"
 #include "cc/output/renderer_settings.h"
 #include "cc/surfaces/surface_manager.h"
 #include "services/ui/public/cpp/raster_thread_helper.h"
@@ -57,6 +58,8 @@ class AURA_EXPORT MusContextFactory : public ui::ContextFactory {
   ui::RasterThreadHelper raster_thread_helper_;
   ui::Gpu* gpu_;
   const cc::RendererSettings renderer_settings_;
+  scoped_refptr<cc::ContextProvider> shared_main_thread_context_provider_;
+
   base::WeakPtrFactory<MusContextFactory> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(MusContextFactory);
