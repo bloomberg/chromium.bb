@@ -543,8 +543,6 @@ PrefsUtil::SetPrefResult PrefsUtil::SetPref(const std::string& pref_name,
   if (!pref)
     return PREF_NOT_FOUND;
 
-  DCHECK_EQ(pref->GetType(), value->GetType());
-
   switch (pref->GetType()) {
     case base::Value::Type::BOOLEAN:
     case base::Value::Type::DOUBLE:
