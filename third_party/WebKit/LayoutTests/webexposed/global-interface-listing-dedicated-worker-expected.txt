@@ -817,6 +817,26 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     getter promise
 [Worker]     getter reason
 [Worker]     method constructor
+[Worker] interface PushManager
+[Worker]     static getter supportedContentEncodings
+[Worker]     attribute @@toStringTag
+[Worker]     method constructor
+[Worker]     method getSubscription
+[Worker]     method permissionState
+[Worker]     method subscribe
+[Worker] interface PushSubscription
+[Worker]     attribute @@toStringTag
+[Worker]     getter endpoint
+[Worker]     getter options
+[Worker]     method constructor
+[Worker]     method getKey
+[Worker]     method toJSON
+[Worker]     method unsubscribe
+[Worker] interface PushSubscriptionOptions
+[Worker]     attribute @@toStringTag
+[Worker]     getter applicationServerKey
+[Worker]     getter userVisibleOnly
+[Worker]     method constructor
 [Worker] interface ReadableStream
 [Worker]     getter locked
 [Worker]     method cancel

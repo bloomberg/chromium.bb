@@ -4181,6 +4181,41 @@ static void saveSameObjectAttributeAttributeGetter(const v8::FunctionCallbackInf
   privateSameObject.Set(holder, info.GetReturnValue().Get());
 }
 
+static void staticSaveSameObjectAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  v8::Local<v8::Object> holder = info.Holder();
+
+  // [SaveSameObject]
+  // If you see a compile error that
+  //   V8PrivateProperty::GetSameObjectTestObjectStaticSaveSameObjectAttribute
+  // is not defined, then you need to register your attribute at
+  // V8_PRIVATE_PROPERTY_FOR_EACH defined in V8PrivateProperty.h as
+  //   X(SameObject, TestObjectStaticSaveSameObjectAttribute)
+  auto privateSameObject = V8PrivateProperty::GetSameObjectTestObjectStaticSaveSameObjectAttribute(info.GetIsolate());
+  {
+    v8::Local<v8::Value> v8Value = privateSameObject.GetOrEmpty(holder);
+    if (!v8Value.IsEmpty()) {
+      V8SetReturnValue(info, v8Value);
+      return;
+    }
+  }
+
+  TestInterfaceImplementation* cppValue(WTF::GetPtr(TestObject::staticSaveSameObjectAttribute()));
+
+  // Keep the wrapper object for the return value alive as long as |this|
+  // object is alive in order to save creation time of the wrapper object.
+  if (cppValue && DOMDataStore::SetReturnValue(info.GetReturnValue(), cppValue))
+    return;
+  v8::Local<v8::Value> v8Value(ToV8(cppValue, holder, info.GetIsolate()));
+  V8PrivateProperty::GetSymbol(
+      info.GetIsolate(), "KeepAlive#TestObject#staticSaveSameObjectAttribute")
+      .Set(holder, v8Value);
+
+  V8SetReturnValue(info, v8Value);
+
+  // [SaveSameObject]
+  privateSameObject.Set(holder, info.GetReturnValue().Get());
+}
+
 static void unscopableLongAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8::Local<v8::Object> holder = info.Holder();
 
@@ -11026,6 +11061,10 @@ void V8TestObject::saveSameObjectAttributeAttributeGetterCallback(const v8::Func
   TestObjectV8Internal::saveSameObjectAttributeAttributeGetter(info);
 }
 
+void V8TestObject::staticSaveSameObjectAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  TestObjectV8Internal::staticSaveSameObjectAttributeAttributeGetter(info);
+}
+
 void V8TestObject::unscopableLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestObjectV8Internal::unscopableLongAttributeAttributeGetter(info);
 }
@@ -12635,6 +12674,9 @@ static const V8DOMConfiguration::AccessorConfiguration V8TestObjectAccessors[] =
     ,
 
       { "saveSameObjectAttribute", V8TestObject::saveSameObjectAttributeAttributeGetterCallback, nullptr, nullptr, nullptr, static_cast<v8::PropertyAttribute>(v8::ReadOnly), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kAllWorlds }
+    ,
+
+      { "staticSaveSameObjectAttribute", V8TestObject::staticSaveSameObjectAttributeAttributeGetterCallback, nullptr, nullptr, nullptr, static_cast<v8::PropertyAttribute>(v8::ReadOnly), V8DOMConfiguration::kOnInterface, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kAllWorlds }
     ,
 
       { "unscopableLongAttribute", V8TestObject::unscopableLongAttributeAttributeGetterCallback, V8TestObject::unscopableLongAttributeAttributeSetterCallback, nullptr, nullptr, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kAllWorlds }

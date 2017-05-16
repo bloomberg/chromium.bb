@@ -17,6 +17,8 @@
       test(function() {
           assert_own_property(self, 'PushManager', 'PushManager needs to be exposed as a global.');
 
+          assert_own_property(PushManager, 'supportedContentEncodings');
+
           assert_own_property(PushManager.prototype, 'subscribe');
           assert_own_property(PushManager.prototype, 'getSubscription');
           assert_own_property(PushManager.prototype, 'permissionState');

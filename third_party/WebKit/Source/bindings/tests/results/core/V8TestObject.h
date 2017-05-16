@@ -363,6 +363,7 @@ class V8TestObject {
   CORE_EXPORT static void measuredLongAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>&);
   CORE_EXPORT static void sameObjectAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>&);
   CORE_EXPORT static void saveSameObjectAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>&);
+  CORE_EXPORT static void staticSaveSameObjectAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>&);
   CORE_EXPORT static void unscopableLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>&);
   CORE_EXPORT static void unscopableLongAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>&);
   CORE_EXPORT static void unscopableOriginTrialEnabledLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>&);

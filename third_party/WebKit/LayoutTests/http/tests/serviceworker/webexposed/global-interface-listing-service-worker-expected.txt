@@ -800,6 +800,7 @@ interface PushEvent : ExtendableEvent
     getter data
     method constructor
 interface PushManager
+    static getter supportedContentEncodings
     method constructor
     method getSubscription
     method permissionState

@@ -16,6 +16,8 @@ test(function() {
     assert_own_property(self, 'PushManager', 'PushManager needs to be exposed as a global.');
     assert_idl_attribute(registration, 'pushManager', 'PushManager needs to be exposed on the registration.');
 
+    assert_own_property(PushManager, 'supportedContentEncodings');
+
     assert_inherits(registration.pushManager, 'subscribe');
     assert_inherits(registration.pushManager, 'getSubscription');
     assert_inherits(registration.pushManager, 'permissionState');
