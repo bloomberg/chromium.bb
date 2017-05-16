@@ -110,7 +110,7 @@ class CORE_EXPORT AXObjectCache
   // changed.
   virtual void TextChanged(LayoutObject*) = 0;
   // Called when a node has just been attached, so we can make sure we have the
-  // right subclass of AXObject.
+  // right subclass of AXObjectImpl.
   virtual void UpdateCacheAfterNodeIsAttached(Node*) = 0;
 
   virtual void HandleAttributeChanged(const QualifiedName& attr_name,

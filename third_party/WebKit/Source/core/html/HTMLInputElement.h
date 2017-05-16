@@ -33,7 +33,7 @@
 
 namespace blink {
 
-class AXObject;
+class AXObjectImpl;
 class DragData;
 class ExceptionState;
 class FileList;
@@ -279,7 +279,7 @@ class CORE_EXPORT HTMLInputElement : public TextControlElement {
 
   void SetShouldRevealPassword(bool value);
   bool ShouldRevealPassword() const { return should_reveal_password_; }
-  AXObject* PopupRootAXObject();
+  AXObjectImpl* PopupRootAXObject();
   void DidNotifySubtreeInsertionsToDocument() override;
 
   virtual void EnsureFallbackContent();

@@ -635,7 +635,7 @@ TextDirection MultipleFieldsTemporalInputTypeView::ComputedTextDirection() {
                                           : TextDirection::kLtr;
 }
 
-AXObject* MultipleFieldsTemporalInputTypeView::PopupRootAXObject() {
+AXObjectImpl* MultipleFieldsTemporalInputTypeView::PopupRootAXObject() {
   if (PickerIndicatorElement* picker = GetPickerIndicatorElement())
     return picker->PopupRootAXObject();
   return nullptr;

@@ -49,7 +49,7 @@ class AXSlider : public AXLayoutObject {
 
  private:
   HTMLInputElement* GetElement() const;
-  AXObject* ElementAccessibilityHitTest(const IntPoint&) const final;
+  AXObjectImpl* ElementAccessibilityHitTest(const IntPoint&) const final;
 
   AccessibilityRole DetermineAccessibilityRole() final;
   bool IsSlider() const final { return true; }

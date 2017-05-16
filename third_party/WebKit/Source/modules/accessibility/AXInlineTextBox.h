@@ -30,14 +30,14 @@
 #define AXInlineTextBox_h
 
 #include "core/layout/line/AbstractInlineTextBox.h"
-#include "modules/accessibility/AXObject.h"
+#include "modules/accessibility/AXObjectImpl.h"
 
 namespace blink {
 
 class Node;
 class AXObjectCacheImpl;
 
-class AXInlineTextBox final : public AXObject {
+class AXInlineTextBox final : public AXObjectImpl {
   WTF_MAKE_NONCOPYABLE(AXInlineTextBox);
 
  private:
@@ -56,17 +56,17 @@ class AXInlineTextBox final : public AXObject {
  public:
   AccessibilityRole RoleValue() const override { return kInlineTextBoxRole; }
   String GetName(AXNameFrom&,
-                 AXObject::AXObjectVector* name_objects) const override;
+                 AXObjectImpl::AXObjectVector* name_objects) const override;
   void TextCharacterOffsets(Vector<int>&) const override;
   void GetWordBoundaries(Vector<AXRange>&) const override;
-  void GetRelativeBounds(AXObject** out_container,
+  void GetRelativeBounds(AXObjectImpl** out_container,
                          FloatRect& out_bounds_in_container,
                          SkMatrix44& out_container_transform) const override;
-  AXObject* ComputeParent() const override;
+  AXObjectImpl* ComputeParent() const override;
   AccessibilityTextDirection GetTextDirection() const override;
   Node* GetNode() const override { return inline_text_box_->GetNode(); }
-  AXObject* NextOnLine() const override;
-  AXObject* PreviousOnLine() const override;
+  AXObjectImpl* NextOnLine() const override;
+  AXObjectImpl* PreviousOnLine() const override;
 
  private:
   RefPtr<AbstractInlineTextBox> inline_text_box_;
