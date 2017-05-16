@@ -51,6 +51,10 @@ suite('cr-dialog', function() {
       clickedCounter++;
     });
 
+    // Enter key on the action button should only fire the click handler once.
+    MockInteractions.tap(actionButton, 'keypress', 13, undefined, 'Enter');
+    assertEquals(1, clickedCounter);
+
     // Enter keys on other buttons should be ignored.
     clickedCounter = 0;
     var otherButton = document.body.querySelector('#other-button');
@@ -58,9 +62,9 @@ suite('cr-dialog', function() {
     pressEnter(otherButton);
     assertEquals(0, clickedCounter);
 
-    // Enter key on the action button should only fire the click handler once.
-    MockInteractions.tap(actionButton, 'keypress', 13, undefined, 'Enter');
-    assertEquals(1, clickedCounter);
+    // Enter keys on the close icon in the top-right corner should be ignored.
+    pressEnter(dialog.getCloseButton());
+    assertEquals(0, clickedCounter);
   });
 
   test('enter keys find the first non-hidden non-disabled button', function() {

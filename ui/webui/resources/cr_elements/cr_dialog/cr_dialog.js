@@ -142,6 +142,16 @@ Polymer({
     HTMLDialogElement.prototype.close.call(this, 'success');
   },
 
+  /**
+   * @private
+   * @param {Event} e
+   */
+  onCloseKeypress_: function(e) {
+    // Because the dialog may have a default Enter key handler, prevent
+    // keypress events from bubbling up from this element.
+    e.stopPropagation();
+  },
+
   /** @return {!PaperIconButtonElement} */
   getCloseButton: function() {
     return this.$.close;
