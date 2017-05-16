@@ -77,7 +77,7 @@ class MODULES_EXPORT MediaControlsImpl final : public HTMLDivElement,
   void RemovedFrom(ContainerNode*) override;
 
   // MediaControls implementation.
-  void Show() override;
+  void MaybeShow() override;
   void Hide() override;
   void Reset() override;
   void OnControlsListUpdated() override;

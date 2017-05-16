@@ -572,12 +572,14 @@ LayoutObject* MediaControlsImpl::ContainerLayoutObject() {
   return GetLayoutObject();
 }
 
-void MediaControlsImpl::Show() {
-  MakeOpaque();
+void MediaControlsImpl::MaybeShow() {
   panel_->SetIsWanted(true);
   panel_->SetIsDisplayed(true);
   if (overlay_play_button_)
     overlay_play_button_->UpdateDisplayType();
+  // Only make the controls visible if they won't get hidden by OnTimeUpdate.
+  if (MediaElement().paused() || !ShouldHideMediaControls())
+    MakeOpaque();
 }
 
 void MediaControlsImpl::Hide() {
@@ -911,8 +913,8 @@ void MediaControlsImpl::OnFocusIn() {
   if (!MediaElement().ShouldShowControls())
     return;
 
-  Show();
   ResetHideMediaControlsTimer();
+  MaybeShow();
 }
 
 void MediaControlsImpl::OnTimeUpdate() {
