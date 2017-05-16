@@ -44,15 +44,14 @@ void UsbService::Observer::OnDeviceRemovedCleanup(
 void UsbService::Observer::WillDestroyUsbService() {}
 
 // static
-std::unique_ptr<UsbService> UsbService::Create(
-    scoped_refptr<base::SequencedTaskRunner> blocking_task_runner) {
+std::unique_ptr<UsbService> UsbService::Create() {
 #if defined(OS_ANDROID)
   return base::WrapUnique(new UsbServiceAndroid());
 #elif defined(USE_UDEV)
   return base::WrapUnique(new UsbServiceLinux());
 #elif defined(OS_WIN)
   if (base::FeatureList::IsEnabled(kNewUsbBackend))
-    return base::WrapUnique(new UsbServiceWin(blocking_task_runner));
+    return base::WrapUnique(new UsbServiceWin());
   else
     return base::WrapUnique(new UsbServiceImpl());
 #elif defined(OS_MACOSX)

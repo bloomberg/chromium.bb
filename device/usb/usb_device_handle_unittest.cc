@@ -29,8 +29,7 @@ class UsbDeviceHandleTest : public ::testing::Test {
   UsbDeviceHandleTest()
       : io_thread_(base::TestIOThread::kAutoStart),
         scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::UI),
-        device_client_(io_thread_.task_runner()) {}
+            base::test::ScopedTaskEnvironment::MainThreadType::UI) {}
 
  protected:
   base::TestIOThread io_thread_;

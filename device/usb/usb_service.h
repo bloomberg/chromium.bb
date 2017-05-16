@@ -49,10 +49,8 @@ class UsbService : public base::NonThreadSafe {
     virtual void WillDestroyUsbService();
   };
 
-  // The file task runner reference is used for blocking I/O operations.
   // Returns nullptr when initialization fails.
-  static std::unique_ptr<UsbService> Create(
-      scoped_refptr<base::SequencedTaskRunner> blocking_task_runner);
+  static std::unique_ptr<UsbService> Create();
 
   // Creates a SequencedTaskRunner appropriate for blocking I/O operations.
   static scoped_refptr<base::SequencedTaskRunner> CreateBlockingTaskRunner();

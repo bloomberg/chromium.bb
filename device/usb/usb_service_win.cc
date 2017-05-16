@@ -170,12 +170,12 @@ bool GetHubDevicePath(const std::string& instance_id,
 
 }  // namespace
 
-class UsbServiceWin::BlockingThreadHelper {
+class UsbServiceWin::BlockingTaskHelper {
  public:
-  explicit BlockingThreadHelper(base::WeakPtr<UsbServiceWin> service)
+  explicit BlockingTaskHelper(base::WeakPtr<UsbServiceWin> service)
       : service_task_runner_(base::ThreadTaskRunnerHandle::Get()),
         service_(service) {}
-  ~BlockingThreadHelper() {}
+  ~BlockingTaskHelper() {}
 
   void EnumerateDevices() {
     ScopedDevInfo dev_info(
@@ -276,9 +276,8 @@ class UsbServiceWin::BlockingThreadHelper {
   base::WeakPtr<UsbServiceWin> service_;
 };
 
-UsbServiceWin::UsbServiceWin(
-    scoped_refptr<base::SequencedTaskRunner> blocking_task_runner)
-    : UsbService(blocking_task_runner),
+UsbServiceWin::UsbServiceWin()
+    : UsbService(CreateBlockingTaskRunner()),
       device_observer_(this),
       weak_factory_(this) {
   DeviceMonitorWin* device_monitor =
@@ -286,13 +285,20 @@ UsbServiceWin::UsbServiceWin(
   if (device_monitor)
     device_observer_.Add(device_monitor);
 
-  helper_ = new BlockingThreadHelper(weak_factory_.GetWeakPtr());
-  blocking_task_runner->PostTask(
-      FROM_HERE, base::Bind(&BlockingThreadHelper::EnumerateDevices,
-                            base::Unretained(helper_)));
+  helper_ = base::MakeUnique<BlockingTaskHelper>(weak_factory_.GetWeakPtr());
+  blocking_task_runner()->PostTask(
+      FROM_HERE, base::Bind(&BlockingTaskHelper::EnumerateDevices,
+                            base::Unretained(helper_.get())));
 }
 
-UsbServiceWin::~UsbServiceWin() {}
+UsbServiceWin::~UsbServiceWin() {
+  DCHECK(!helper_);
+}
+
+void UsbServiceWin::Shutdown() {
+  blocking_task_runner()->DeleteSoon(FROM_HERE, helper_.release());
+  UsbService::Shutdown();
+}
 
 void UsbServiceWin::GetDevices(const GetDevicesCallback& callback) {
   DCHECK(CalledOnValidThread());
@@ -305,8 +311,8 @@ void UsbServiceWin::GetDevices(const GetDevicesCallback& callback) {
 void UsbServiceWin::OnDeviceAdded(const GUID& class_guid,
                                   const std::string& device_path) {
   blocking_task_runner()->PostTask(
-      FROM_HERE, base::Bind(&BlockingThreadHelper::EnumerateDevicePath,
-                            base::Unretained(helper_), device_path));
+      FROM_HERE, base::Bind(&BlockingTaskHelper::EnumerateDevicePath,
+                            base::Unretained(helper_.get()), device_path));
 }
 
 void UsbServiceWin::OnDeviceRemoved(const GUID& class_guid,

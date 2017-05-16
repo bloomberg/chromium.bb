@@ -27,11 +27,8 @@ class UsbServiceTest : public ::testing::Test {
   UsbServiceTest()
       : scoped_task_environment_(
             base::test::ScopedTaskEnvironment::MainThreadType::UI),
-        io_thread_(base::TestIOThread::kAutoStart) {}
-
-  void SetUp() override {
-    device_client_.reset(new TestDeviceClient(io_thread_.task_runner()));
-  }
+        io_thread_(base::TestIOThread::kAutoStart),
+        device_client_(new TestDeviceClient()) {}
 
  protected:
   base::test::ScopedTaskEnvironment scoped_task_environment_;

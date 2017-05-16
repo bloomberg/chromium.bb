@@ -4,12 +4,7 @@
 
 #include <memory>
 
-#include "base/memory/ref_counted.h"
 #include "device/base/device_client.h"
-
-namespace base {
-class SingleThreadTaskRunner;
-}
 
 namespace device {
 
@@ -18,7 +13,7 @@ class UsbService;
 
 class TestDeviceClient : public DeviceClient {
  public:
-  TestDeviceClient(scoped_refptr<base::SingleThreadTaskRunner> task_runner);
+  TestDeviceClient();
 
   // Must be destroyed when tasks can still be posted to |task_runner|.
   ~TestDeviceClient() override;
@@ -29,7 +24,6 @@ class TestDeviceClient : public DeviceClient {
  private:
   std::unique_ptr<HidService> hid_service_;
   std::unique_ptr<UsbService> usb_service_;
-  scoped_refptr<base::SingleThreadTaskRunner> blocking_task_runner_;
 };
 
 }  // namespace device

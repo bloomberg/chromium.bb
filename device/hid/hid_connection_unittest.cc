@@ -12,10 +12,10 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/scoped_observer.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/test/test_io_thread.h"
 #include "device/hid/hid_service.h"
 #include "device/test/test_device_client.h"
@@ -149,18 +149,20 @@ class TestIoCallback {
 }  // namespace
 
 class HidConnectionTest : public testing::Test {
+ public:
+  HidConnectionTest()
+      : scoped_task_environment_(
+            base::test::ScopedTaskEnvironment::MainThreadType::UI),
+        io_thread_(base::TestIOThread::kAutoStart) {}
+
  protected:
   void SetUp() override {
     if (!UsbTestGadget::IsTestEnabled()) return;
 
-    message_loop_.reset(new base::MessageLoopForUI());
-    io_thread_.reset(new base::TestIOThread(base::TestIOThread::kAutoStart));
-    device_client_.reset(new TestDeviceClient(io_thread_->task_runner()));
-
     service_ = DeviceClient::Get()->GetHidService();
     ASSERT_TRUE(service_);
 
-    test_gadget_ = UsbTestGadget::Claim(io_thread_->task_runner());
+    test_gadget_ = UsbTestGadget::Claim(io_thread_.task_runner());
     ASSERT_TRUE(test_gadget_);
     ASSERT_TRUE(test_gadget_->SetType(UsbTestGadget::HID_ECHO));
 
@@ -170,9 +172,9 @@ class HidConnectionTest : public testing::Test {
     ASSERT_NE(device_id_, kInvalidHidDeviceId);
   }
 
-  std::unique_ptr<base::MessageLoopForUI> message_loop_;
-  std::unique_ptr<base::TestIOThread> io_thread_;
-  std::unique_ptr<TestDeviceClient> device_client_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::TestIOThread io_thread_;
+  TestDeviceClient device_client_;
   HidService* service_;
   std::unique_ptr<UsbTestGadget> test_gadget_;
   HidDeviceId device_id_;
