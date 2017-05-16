@@ -44,6 +44,7 @@ X11CharacterInjector::X11CharacterInjector(
 }
 
 X11CharacterInjector::~X11CharacterInjector() {
+  DCHECK(thread_checker_.CalledOnValidThread());
   // Clear all used key mappings.
   for (const KeyInfo& info : available_keycodes_) {
     if (!info.expire_at.is_null()) {

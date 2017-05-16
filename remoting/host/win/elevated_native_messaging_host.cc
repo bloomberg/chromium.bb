@@ -32,7 +32,9 @@ ElevatedNativeMessagingHost::ElevatedNativeMessagingHost(
       host_process_timeout_(host_timeout),
       client_(client) {}
 
-ElevatedNativeMessagingHost::~ElevatedNativeMessagingHost() {}
+ElevatedNativeMessagingHost::~ElevatedNativeMessagingHost() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+}
 
 void ElevatedNativeMessagingHost::OnMessage(
     std::unique_ptr<base::Value> message) {

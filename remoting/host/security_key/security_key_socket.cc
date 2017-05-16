@@ -35,7 +35,9 @@ SecurityKeySocket::SecurityKeySocket(std::unique_ptr<net::StreamSocket> socket,
   timer_->Start(FROM_HERE, timeout, timeout_callback);
 }
 
-SecurityKeySocket::~SecurityKeySocket() {}
+SecurityKeySocket::~SecurityKeySocket() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+}
 
 bool SecurityKeySocket::GetAndClearRequestData(std::string* data_out) {
   DCHECK(thread_checker_.CalledOnValidThread());

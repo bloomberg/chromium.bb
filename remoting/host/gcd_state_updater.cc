@@ -44,6 +44,7 @@ GcdStateUpdater::GcdStateUpdater(
 }
 
 GcdStateUpdater::~GcdStateUpdater() {
+  DCHECK(thread_checker_.CalledOnValidThread());
   signal_strategy_->RemoveListener(this);
 }
 

@@ -98,7 +98,9 @@ CertDbContentWatcher::CertDbContentWatcher(
   thread_checker_.DetachFromThread();
 }
 
-CertDbContentWatcher::~CertDbContentWatcher() {}
+CertDbContentWatcher::~CertDbContentWatcher() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+}
 
 void CertDbContentWatcher::StartWatching() {
   DCHECK(!cert_watch_path_.empty());
