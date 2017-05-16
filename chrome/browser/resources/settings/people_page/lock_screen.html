@@ -68,18 +68,12 @@
               <paper-radio-button name="password" class="list-item underbar">
                 <div class="start">
                   $i18n{lockScreenPasswordOnly}
-                  <div class="secondary">
-                    $i18n{lockScreenHighSecurity}
-                  </div>
                 </div>
               </paper-radio-button>
               <paper-radio-button name="pin+password"
                   class="list-item underbar">
                 <div id="pinPasswordDiv" class="start">
                   $i18n{lockScreenPinOrPassword}
-                  <div class="secondary">
-                    $i18n{lockScreenMediumSecurity}
-                  </div>
                 </div>
                 <template is="dom-if"
                     if="[[showConfigurePinButton_(selectedUnlockType)]]">
