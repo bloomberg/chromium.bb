@@ -1511,7 +1511,7 @@
       name: "offset-path",
       api_class: true,
       api_methods: ["parseSingleValue"],
-      converter: "ConvertPathOrNone",
+      converter: "ConvertOffsetPath",
     },
     {
       name: "offset-position",

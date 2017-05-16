@@ -3437,8 +3437,8 @@ const CSSValue* ComputedStyleCSSValueMapping::Get(
       return ValueForPosition(style.OffsetPosition(), style);
 
     case CSSPropertyOffsetPath:
-      if (const StylePath* style_motion_path = style.OffsetPath())
-        return style_motion_path->ComputedCSSValue();
+      if (const BasicShape* style_motion_path = style.OffsetPath())
+        return ValueForBasicShape(style, style_motion_path);
       return CSSIdentifierValue::Create(CSSValueNone);
 
     case CSSPropertyOffsetDistance:

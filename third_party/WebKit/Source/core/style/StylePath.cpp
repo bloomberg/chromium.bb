@@ -54,8 +54,22 @@ CSSValue* StylePath::ComputedCSSValue() const {
   return CSSPathValue::Create(const_cast<StylePath*>(this));
 }
 
-bool StylePath::operator==(const StylePath& other) const {
+bool StylePath::operator==(const BasicShape& o) const {
+  if (!IsSameType(o))
+    return false;
+  const StylePath& other = ToStylePath(o);
   return *byte_stream_ == *other.byte_stream_;
+}
+
+void StylePath::GetPath(Path&, const FloatRect&) {
+  // Callers should use GetPath() overload, which avoids making a copy.
+  NOTREACHED();
+}
+
+PassRefPtr<BasicShape> StylePath::Blend(const BasicShape*, double) const {
+  // TODO(ericwilligers): Implement animation for offset-path.
+  NOTREACHED();
+  return nullptr;
 }
 
 }  // namespace blink

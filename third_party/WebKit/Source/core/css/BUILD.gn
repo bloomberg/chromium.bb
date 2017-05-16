@@ -122,6 +122,8 @@ blink_core_sources("css") {
     "CSSPropertySourceData.h",
     "CSSQuadValue.cpp",
     "CSSQuadValue.h",
+    "CSSRayValue.cpp",
+    "CSSRayValue.h",
     "CSSReflectValue.cpp",
     "CSSReflectValue.h",
     "CSSReflectionDirection.h",

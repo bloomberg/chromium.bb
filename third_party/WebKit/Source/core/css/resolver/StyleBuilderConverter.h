@@ -196,6 +196,8 @@ class StyleBuilderConverter {
       const CSSValue&);
   static PassRefPtr<StylePath> ConvertPathOrNone(StyleResolverState&,
                                                  const CSSValue&);
+  static PassRefPtr<BasicShape> ConvertOffsetPath(StyleResolverState&,
+                                                  const CSSValue&);
   static StyleOffsetRotation ConvertOffsetRotate(const CSSValue&);
   template <CSSValueID cssValueFor0, CSSValueID cssValueFor100>
   static Length ConvertPositionLength(StyleResolverState&, const CSSValue&);

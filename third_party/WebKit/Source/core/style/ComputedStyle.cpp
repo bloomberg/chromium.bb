@@ -1331,7 +1331,11 @@ void ComputedStyle::ApplyMotionPathTransform(
   }
   const LengthPoint& position = OffsetPosition();
   const LengthPoint& anchor = OffsetAnchor();
-  const StylePath& motion_path = *motion_data.path_;
+  if (motion_data.path_->GetType() == BasicShape::kStyleRayType) {
+    // TODO(ericwilligers): crbug.com/641245 Support ray paths.
+    return;
+  }
+  const StylePath& motion_path = ToStylePath(*motion_data.path_);
   float path_length = motion_path.length();
   float distance = FloatValueForLength(motion_data.distance_, path_length);
   float computed_distance;
@@ -2320,7 +2324,7 @@ void ComputedStyle::SetMarginEnd(const Length& margin) {
   }
 }
 
-void ComputedStyle::SetOffsetPath(PassRefPtr<StylePath> path) {
+void ComputedStyle::SetOffsetPath(PassRefPtr<BasicShape> path) {
   rare_non_inherited_data_.Access()->transform_.Access()->motion_.path_ =
       std::move(path);
 }

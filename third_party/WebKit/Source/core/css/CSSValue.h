@@ -113,6 +113,7 @@ class CORE_EXPORT CSSValue : public GarbageCollectedFinalized<CSSValue> {
   }
   bool IsPathValue() const { return class_type_ == kPathClass; }
   bool IsQuadValue() const { return class_type_ == kQuadClass; }
+  bool IsRayValue() const { return class_type_ == kRayClass; }
   bool IsRadialGradientValue() const {
     return class_type_ == kRadialGradientClass;
   }
@@ -223,6 +224,7 @@ class CORE_EXPORT CSSValue : public GarbageCollectedFinalized<CSSValue> {
     kUnicodeRangeClass,
     kGridTemplateAreasClass,
     kPathClass,
+    kRayClass,
     kVariableReferenceClass,
     kCustomPropertyDeclarationClass,
     kPendingSubstitutionValueClass,
