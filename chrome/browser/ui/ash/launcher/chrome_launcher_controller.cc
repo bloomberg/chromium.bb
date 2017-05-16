@@ -960,16 +960,8 @@ void ChromeLauncherController::UpdateAppLaunchersFromPref() {
   // pin, move existing pin to current position specified by |index| or create
   // the new pin at that position.
   for (const auto& pref_shelf_id : pinned_apps) {
-    // Filter out apps that may be mapped wrongly.
-    // TODO(khmel):  b/31703859 is to refactore shelf mapping.
-    const std::string app_id = pref_shelf_id.app_id;
-    const std::string shelf_app_id =
-        ArcAppWindowLauncherController::GetShelfAppIdFromArcAppId(app_id);
-    if (shelf_app_id != app_id)
-      continue;
-
     // Update apps icon if applicable.
-    OnAppUpdated(profile(), app_id);
+    OnAppUpdated(profile(), pref_shelf_id.app_id);
 
     // Find existing pin or app from the right of current |index|.
     int app_index = index;
@@ -990,7 +982,7 @@ void ChromeLauncherController::UpdateAppLaunchersFromPref() {
       DCHECK_EQ(model_->ItemIndexByID(item.id), index);
     } else {
       // This is fresh pin. Create new one.
-      DCHECK_NE(app_id, kChromeAppId);
+      DCHECK_NE(pref_shelf_id.app_id, kChromeAppId);
       CreateAppShortcutLauncherItem(pref_shelf_id, index);
     }
     ++index;
@@ -1289,15 +1281,12 @@ void ChromeLauncherController::ShelfItemAdded(int index) {
   if (ItemTypeIsPinned(item) && should_sync_pin_changes_)
     SyncPinPosition(item.id);
 
-  // TODO(khmel): Fix this Arc application id mapping. See http://b/31703859
-  const std::string shelf_app_id =
-      ArcAppWindowLauncherController::GetShelfAppIdFromArcAppId(item.id.app_id);
-
   // Fetch and update the icon for the app's item.
-  AppIconLoader* app_icon_loader = GetAppIconLoaderForApp(shelf_app_id);
+  const std::string& app_id = item.id.app_id;
+  AppIconLoader* app_icon_loader = GetAppIconLoaderForApp(app_id);
   if (app_icon_loader) {
-    app_icon_loader->FetchImage(shelf_app_id);
-    app_icon_loader->UpdateImage(shelf_app_id);
+    app_icon_loader->FetchImage(app_id);
+    app_icon_loader->UpdateImage(app_id);
   }
 
   // Update the item with any missing Chrome-specific info.
@@ -1309,10 +1298,9 @@ void ChromeLauncherController::ShelfItemAdded(int index) {
     }
     if (item.title.empty()) {
       needs_update = true;
-      item.title =
-          LauncherControllerHelper::GetAppTitle(profile(), shelf_app_id);
+      item.title = LauncherControllerHelper::GetAppTitle(profile(), app_id);
     }
-    ash::ShelfItemStatus status = GetAppState(shelf_app_id);
+    ash::ShelfItemStatus status = GetAppState(app_id);
     if (status != item.status && status != ash::STATUS_CLOSED) {
       needs_update = true;
       item.status = status;
@@ -1324,28 +1312,20 @@ void ChromeLauncherController::ShelfItemAdded(int index) {
   // Construct a ShelfItemDelegate for the item if one does not yet exist.
   if (!model_->GetShelfItemDelegate(item.id)) {
     model_->SetShelfItemDelegate(
-        item.id, AppShortcutLauncherItemController::Create(
-                     ash::ShelfID(shelf_app_id, item.id.launch_id)));
+        item.id, AppShortcutLauncherItemController::Create(item.id));
   }
 }
 
 void ChromeLauncherController::ShelfItemRemoved(
     int index,
     const ash::ShelfItem& old_item) {
-  // TODO(khmel): Fix this Arc application id mapping. See http://b/31703859
-  const std::string shelf_app_id =
-      ArcAppWindowLauncherController::GetShelfAppIdFromArcAppId(
-          old_item.id.app_id);
-
   // Remove the pin position from preferences as needed.
-  if (ItemTypeIsPinned(old_item) && should_sync_pin_changes_) {
-    ash::ShelfID shelf_id(shelf_app_id, old_item.id.launch_id);
-    RemovePinPosition(profile(), shelf_id);
-  }
+  if (ItemTypeIsPinned(old_item) && should_sync_pin_changes_)
+    RemovePinPosition(profile(), old_item.id);
 
-  AppIconLoader* app_icon_loader = GetAppIconLoaderForApp(shelf_app_id);
+  AppIconLoader* app_icon_loader = GetAppIconLoaderForApp(old_item.id.app_id);
   if (app_icon_loader)
-    app_icon_loader->ClearImage(shelf_app_id);
+    app_icon_loader->ClearImage(old_item.id.app_id);
 }
 
 void ChromeLauncherController::ShelfItemMoved(int start_index,
@@ -1365,17 +1345,10 @@ void ChromeLauncherController::ShelfItemChanged(
 
   const ash::ShelfItem& item = model_->items()[index];
   // Add or remove the pin position from preferences as needed.
-  if (!ItemTypeIsPinned(old_item) && ItemTypeIsPinned(item)) {
+  if (!ItemTypeIsPinned(old_item) && ItemTypeIsPinned(item))
     SyncPinPosition(item.id);
-  } else if (ItemTypeIsPinned(old_item) && !ItemTypeIsPinned(item)) {
-    // TODO(khmel): Fix this Arc application id mapping. See http://b/31703859
-    const std::string shelf_app_id =
-        ArcAppWindowLauncherController::GetShelfAppIdFromArcAppId(
-            old_item.id.app_id);
-
-    ash::ShelfID shelf_id(shelf_app_id, old_item.id.launch_id);
-    RemovePinPosition(profile(), shelf_id);
-  }
+  else if (ItemTypeIsPinned(old_item) && !ItemTypeIsPinned(item))
+    RemovePinPosition(profile(), old_item.id);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

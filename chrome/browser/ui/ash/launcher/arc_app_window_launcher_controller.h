@@ -36,12 +36,6 @@ class ArcAppWindowLauncherController : public AppWindowLauncherController,
   explicit ArcAppWindowLauncherController(ChromeLauncherController* owner);
   ~ArcAppWindowLauncherController() override;
 
-  // Returns shelf app id. Play Store app is mapped to ARC platform host app.
-  static std::string GetShelfAppIdFromArcAppId(const std::string& arc_app_id);
-
-  // Returns ARC app id. ARC platform host app is mapped to Play Store app.
-  static std::string GetArcAppIdFromShelfAppId(const std::string& shelf_app_id);
-
   // Returns ARC task id for the window.
   static int GetWindowTaskId(aura::Window* window);
 

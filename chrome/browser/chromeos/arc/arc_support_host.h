@@ -70,7 +70,6 @@ class ArcSupportHost : public arc::ArcSupportMessageHost::Observer,
     virtual void OnSendFeedbackClicked() {}
   };
 
-  static const char kHostAppId[];
   static const char kStorageId[];
 
   using RequestOpenAppCallback = base::Callback<void(Profile* profile)>;

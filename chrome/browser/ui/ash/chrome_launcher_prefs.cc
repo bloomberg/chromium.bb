@@ -15,11 +15,11 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/app_mode/app_mode_utils.h"
-#include "chrome/browser/chromeos/arc/arc_support_host.h"
 #include "chrome/browser/prefs/pref_service_syncable_util.h"
 #include "chrome/browser/ui/app_list/app_list_syncable_service.h"
 #include "chrome/browser/ui/app_list/app_list_syncable_service_factory.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
+#include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ui/ash/launcher/launcher_controller_helper.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/pref_names.h"
@@ -44,7 +44,7 @@ std::unique_ptr<base::DictionaryValue> CreateAppDict(
 // App ID of default pinned apps.
 const char* kDefaultPinnedApps[] = {
     extension_misc::kGmailAppId, extension_misc::kGoogleDocAppId,
-    extension_misc::kYoutubeAppId, ArcSupportHost::kHostAppId};
+    extension_misc::kYoutubeAppId, arc::kPlayStoreAppId};
 
 std::unique_ptr<base::ListValue> CreateDefaultPinnedAppsList() {
   std::unique_ptr<base::ListValue> apps(new base::ListValue);
@@ -673,15 +673,13 @@ std::vector<ash::ShelfID> GetPinnedAppsFromPrefs(
     app_service->SetPinPosition(extension_misc::kChromeAppId, front_position);
   }
 
-  if (helper->IsValidIDForCurrentUser(ArcSupportHost::kHostAppId)) {
-    if (!app_service->GetSyncItem(ArcSupportHost::kHostAppId)) {
-      const syncer::StringOrdinal arc_host_position =
-          GetLastPinPosition(helper->profile());
-      pin_infos.insert(pin_infos.begin(),
-                       PinInfo(ArcSupportHost::kHostAppId, arc_host_position));
-      app_service->SetPinPosition(ArcSupportHost::kHostAppId,
-                                  arc_host_position);
-    }
+  if (helper->IsValidIDForCurrentUser(arc::kPlayStoreAppId) &&
+      !app_service->GetSyncItem(arc::kPlayStoreAppId)) {
+    const syncer::StringOrdinal arc_host_position =
+        GetLastPinPosition(helper->profile());
+    pin_infos.insert(pin_infos.begin(),
+                     PinInfo(arc::kPlayStoreAppId, arc_host_position));
+    app_service->SetPinPosition(arc::kPlayStoreAppId, arc_host_position);
   }
 
   // Convert to ShelfID array.

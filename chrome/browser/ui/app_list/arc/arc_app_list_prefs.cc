@@ -209,6 +209,24 @@ base::FilePath ToIconPath(const base::FilePath& app_path,
   }
 }
 
+// Play Store app id was changed in the app launcher and now is unified with
+// shelf id. This renames legacy app info entry to the new id. This entry is in
+// local prefs and renaming won't affect other user's devices.
+// TODO(khmel): Remove this after few releases http://crbug.com/722675.
+void UpdatePlayStoreDictionary(PrefService* service) {
+  DictionaryPrefUpdate update(service, prefs::kArcApps);
+  base::DictionaryValue* dict = update.Get();
+  std::unique_ptr<base::Value> play_store_dictionary;
+  if (!dict->Remove(arc::kLegacyPlayStoreAppId, &play_store_dictionary))
+    return;
+  if (!dict->HasKey(arc::kPlayStoreAppId)) {
+    DCHECK_EQ(play_store_dictionary->type(), base::Value::Type::DICTIONARY);
+    dict->SetWithoutPathExpansion(arc::kPlayStoreAppId,
+                                  std::move(play_store_dictionary));
+    VLOG(1) << "Play Store dictionary was updated from the legacy entry";
+  }
+}
+
 }  // namespace
 
 // static
@@ -234,8 +252,14 @@ ArcAppListPrefs* ArcAppListPrefs::Get(content::BrowserContext* context) {
 // static
 std::string ArcAppListPrefs::GetAppId(const std::string& package_name,
                                       const std::string& activity) {
-  std::string input = package_name + "#" + activity;
-  return crx_file::id_util::GenerateId(input);
+  if (package_name == arc::kPlayStorePackage &&
+      activity == arc::kPlayStoreActivity) {
+    return arc::kPlayStoreAppId;
+  }
+  const std::string input = package_name + "#" + activity;
+  const std::string app_id = crx_file::id_util::GenerateId(input);
+  DCHECK_NE(app_id, arc::kLegacyPlayStoreAppId);
+  return app_id;
 }
 
 ArcAppListPrefs::ArcAppListPrefs(
@@ -258,6 +282,7 @@ ArcAppListPrefs::ArcAppListPrefs(
     return;
 
   DCHECK(arc::IsArcAllowedForProfile(profile));
+  UpdatePlayStoreDictionary(prefs_);
 
   const std::vector<std::string> existing_app_ids = GetAppIds();
   tracked_apps_.insert(existing_app_ids.begin(), existing_app_ids.end());
@@ -508,6 +533,7 @@ std::vector<std::string> ArcAppListPrefs::GetAppIdsNoArcEnabledCheck() const {
 
 std::unique_ptr<ArcAppListPrefs::AppInfo> ArcAppListPrefs::GetApp(
     const std::string& app_id) const {
+  DCHECK_NE(app_id, arc::kLegacyPlayStoreAppId);
   // Information for default app is available before ARC enabled.
   if ((!IsArcAlive() || !IsArcAndroidEnabledForProfile(profile_)) &&
       !default_apps_.HasApp(app_id))
@@ -565,6 +591,7 @@ std::unique_ptr<ArcAppListPrefs::AppInfo> ArcAppListPrefs::GetApp(
 }
 
 bool ArcAppListPrefs::IsRegistered(const std::string& app_id) const {
+  DCHECK_NE(app_id, arc::kLegacyPlayStoreAppId);
   if ((!IsArcAlive() || !IsArcAndroidEnabledForProfile(profile_)) &&
       !default_apps_.HasApp(app_id))
     return false;

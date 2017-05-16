@@ -10,7 +10,6 @@
 
 #include "ash/wm/window_util.h"
 #include "base/memory/ptr_util.h"
-#include "chrome/browser/chromeos/arc/arc_support_host.h"
 #include "chrome/browser/extensions/launch_util.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ui/ash/launcher/arc_playstore_shortcut_launcher_item_controller.h"
@@ -64,10 +63,8 @@ bool CanBrowserBeUsedForDirectActivation(Browser* browser,
 // static
 std::unique_ptr<AppShortcutLauncherItemController>
 AppShortcutLauncherItemController::Create(const ash::ShelfID& shelf_id) {
-  if (shelf_id.app_id == ArcSupportHost::kHostAppId ||
-      shelf_id.app_id == arc::kPlayStoreAppId) {
+  if (shelf_id.app_id == arc::kPlayStoreAppId)
     return base::MakeUnique<ArcPlaystoreShortcutLauncherItemController>();
-  }
   return base::WrapUnique<AppShortcutLauncherItemController>(
       new AppShortcutLauncherItemController(shelf_id));
 }

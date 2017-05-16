@@ -12,10 +12,10 @@
 #include "chrome/browser/chromeos/arc/arc_auth_notification.h"
 #include "chrome/browser/chromeos/arc/arc_optin_uma.h"
 #include "chrome/browser/chromeos/arc/arc_session_manager.h"
-#include "chrome/browser/chromeos/arc/arc_support_host.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/prefs/pref_service_syncable_util.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/chromeos_switches.h"
 #include "components/arc/arc_util.h"
@@ -97,7 +97,7 @@ void ArcPlayStoreEnabledPreferenceHandler::OnPreferenceChanged() {
                               ? ash::Shell::Get()->shelf_model()
                               : nullptr;
       if (shelf_model)
-        shelf_model->UnpinAppWithID(ArcSupportHost::kHostAppId);
+        shelf_model->UnpinAppWithID(kPlayStoreAppId);
     }
   }
 
