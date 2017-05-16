@@ -49,15 +49,21 @@ def method_is_visible(method, interface_is_partial):
     return method['visible'] and 'overload_index' not in method
 
 
-def conditionally_exposed(method):
+def is_origin_trial_enabled(method):
+    return bool(method['origin_trial_feature_name'])
+
+
+def is_conditionally_enabled(method):
     exposed = method['overloads']['exposed_test_all'] if 'overloads' in method else method['exposed_test']
     secure_context = method['overloads']['secure_context_test_all'] if 'overloads' in method else method['secure_context_test']
     return exposed or secure_context
 
 
-def filter_conditionally_exposed(methods, interface_is_partial):
+def filter_conditionally_enabled(methods, interface_is_partial):
     return [method for method in methods if (
-        method_is_visible(method, interface_is_partial) and conditionally_exposed(method))]
+        method_is_visible(method, interface_is_partial) and
+        is_conditionally_enabled(method) and
+        not is_origin_trial_enabled(method))]
 
 
 def custom_registration(method):
@@ -68,8 +74,8 @@ def custom_registration(method):
         return True
     if 'overloads' in method:
         return (method['overloads']['runtime_determined_lengths'] or
-                (method['overloads']['runtime_enabled_all'] and not conditionally_exposed(method)))
-    return method['runtime_enabled_feature_name'] and not conditionally_exposed(method)
+                (method['overloads']['runtime_enabled_all'] and not is_conditionally_enabled(method)))
+    return method['runtime_enabled_feature_name'] and not is_conditionally_enabled(method)
 
 
 def filter_custom_registration(methods, interface_is_partial):
@@ -80,14 +86,13 @@ def filter_custom_registration(methods, interface_is_partial):
 def filter_method_configuration(methods, interface_is_partial):
     return [method for method in methods if
             method_is_visible(method, interface_is_partial) and
-            not method['origin_trial_feature_name'] and
-            not conditionally_exposed(method) and
+            not is_origin_trial_enabled(method) and
+            not is_conditionally_enabled(method) and
             not custom_registration(method)]
 
 
 def method_filters():
-    return {'conditionally_exposed': filter_conditionally_exposed,
-            'custom_registration': filter_custom_registration,
+    return {'custom_registration': filter_custom_registration,
             'has_method_configuration': filter_method_configuration}
 
 

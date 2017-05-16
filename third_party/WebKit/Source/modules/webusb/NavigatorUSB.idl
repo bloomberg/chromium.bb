@@ -4,9 +4,6 @@
 
 // https://wicg.github.io/webusb/#enumeration
 
-// The [SecureContext] and [OriginTrialEnabled] extended attributes don't mix.
-// Once this is out of origin trial and the secure context logic is removed from
-// ConditionalFeaturesForModules.cpp add [SecureContext] here.
 partial interface Navigator {
-    [OriginTrialEnabled=WebUSB] readonly attribute USB usb;
+    [SecureContext, OriginTrialEnabled=WebUSB] readonly attribute USB usb;
 };

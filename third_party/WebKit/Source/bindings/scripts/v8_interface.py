@@ -121,7 +121,6 @@ def origin_trial_features(interface, constants, attributes, methods):
     origin_trial_attributes = member_filter(attributes)
     origin_trial_methods = member_filter([method for method in methods
                                           if v8_methods.method_is_visible(method, interface.is_partial) and
-                                          not v8_methods.conditionally_exposed(method) and
                                           not v8_methods.custom_registration(method)])
 
     feature_names = set([member[KEY] for member in origin_trial_constants + origin_trial_attributes + origin_trial_methods])
@@ -135,7 +134,10 @@ def origin_trial_features(interface, constants, attributes, methods):
                 for name in feature_names]
     for feature in features:
         members = feature['constants'] + feature['attributes'] + feature['methods']
-        feature['needs_instance'] = reduce(or_, (member.get('on_instance', False) for member in members))
+        feature['needs_instance'] = any(member.get('on_instance', False) for member in members)
+        # TODO(chasej): Need to handle method overloads? e.g.
+        # (method['overloads']['secure_context_test_all'] if 'overloads' in method else method['secure_context_test'])
+        feature['needs_secure_context'] = any(member.get('secure_context_test', False) for member in members)
 
     if features:
         includes.add('platform/bindings/ScriptState.h')
@@ -351,14 +353,24 @@ def interface_context(interface, interfaces):
 
     # Attributes
     attributes = attributes_context(interface, interfaces)
+
     context.update({
         'attributes': attributes,
         # Elements in attributes are broken in following members.
         'accessors': v8_attributes.filter_accessors(attributes),
         'data_attributes': v8_attributes.filter_data_attributes(attributes),
         'lazy_data_attributes': v8_attributes.filter_lazy_data_attributes(attributes),
-        'origin_trial_attributes': v8_attributes.filter_origin_trial_enabled(attributes),
         'runtime_enabled_attributes': v8_attributes.filter_runtime_enabled(attributes),
+    })
+
+    # Conditionally enabled attributes
+    conditional_enabled_attributes = v8_attributes.filter_conditionally_enabled(attributes)
+    has_conditional_attributes_on_prototype = any(  # pylint: disable=invalid-name
+        attribute['on_prototype'] for attribute in conditional_enabled_attributes)
+    context.update({
+        'has_conditional_attributes_on_prototype':
+            has_conditional_attributes_on_prototype,
+        'conditionally_enabled_attributes': conditional_enabled_attributes,
     })
 
     # Methods
@@ -368,6 +380,7 @@ def interface_context(interface, interfaces):
             for method in methods),
         'iterator_method': iterator_method,
         'methods': methods,
+        'conditionally_enabled_methods': v8_methods.filter_conditionally_enabled(methods, interface.is_partial),
     })
 
     # Window.idl in Blink has indexed properties, but the spec says Window
@@ -383,17 +396,9 @@ def interface_context(interface, interfaces):
     })
 
     # Conditionally enabled members
-    has_conditional_attributes_on_prototype = any(  # pylint: disable=invalid-name
-        (attribute['exposed_test'] or attribute['secure_context_test']) and attribute['on_prototype']
-        for attribute in attributes)
-    context.update({
-        'has_conditional_attributes_on_prototype':
-            has_conditional_attributes_on_prototype,
-    })
-
     prepare_prototype_and_interface_object_func = None  # pylint: disable=invalid-name
     if (unscopables or has_conditional_attributes_on_prototype or
-            v8_methods.filter_conditionally_exposed(methods, interface.is_partial)):
+            context['conditionally_enabled_methods']):
         prepare_prototype_and_interface_object_func = '%s::preparePrototypeAndInterfaceObject' % v8_class_name_or_partial  # pylint: disable=invalid-name
 
     context.update({

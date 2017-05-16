@@ -148,23 +148,18 @@ expect_always_bindings = (insecure_context, opt_description_suffix) => {
     }, 'Constant should exist on interface and return value, regardless of trial' + description_suffix);
 
   if (insecure_context) {
-    // TODO(crbug.com/695123): Uncomment test when fixed so [SecureContext] and
-    //   [OriginTrialEnabled] extended attributes work correctly together.
-    /*
     test(() => {
         expect_member_fails('secureUnconditionalAttribute');
       }, 'Secure attribute should not exist, regardless of trial' + description_suffix);
-    */
+
     test(() => {
         expect_member_fails('secureStaticUnconditionalAttribute');
       }, 'Secure static attribute should not exist, regardless of trial' + description_suffix);
-    // TODO(crbug.com/695123): Uncomment test when fixed so [SecureContext] and
-    //   [OriginTrialEnabled] extended attributes work correctly together.
-    /*
+
     test(() => {
         expect_member_fails('secureUnconditionalMethod');
       }, 'Secure method should not exist, regardless of trial' + description_suffix);
-    */
+
     test(() => {
         expect_member_fails('secureStaticUnconditionalMethod');
       }, 'Secure static method should not exist, regardless of trial' + description_suffix);
