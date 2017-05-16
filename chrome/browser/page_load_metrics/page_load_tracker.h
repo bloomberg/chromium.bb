@@ -343,6 +343,8 @@ class PageLoadTracker {
                         const page_load_metrics::PaintTiming& new_paint_timing,
                         bool is_main_frame);
 
+  void DispatchTimingUpdates();
+
   UserInputTracker input_tracker_;
 
   // Whether we stopped tracking this navigation after it was initiated. We may
@@ -396,8 +398,11 @@ class PageLoadTracker {
   // are merged across all frames in the document. All other fields are for the
   // main frame document.
   PageLoadTiming merged_page_timing_;
+  PageLoadTiming last_dispatched_merged_page_timing_;
 
   PageLoadMetadata main_frame_metadata_;
+  PageLoadMetadata last_dispatched_main_frame_metadata_;
+
   PageLoadMetadata subframe_metadata_;
 
   ui::PageTransition page_transition_;
