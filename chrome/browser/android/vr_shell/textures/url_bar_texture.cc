@@ -23,8 +23,11 @@ namespace {
 static constexpr SkColor kBackground = 0xCCAAAAAA;
 static constexpr SkColor kBackgroundHover = 0xCCDDDDDD;
 static constexpr SkColor kForeground = 0xCC444444;
-static constexpr SkColor kSeparatorColor =
-    SkColorSetARGBMacro(256 * 0.2, 0, 0, 0);
+static constexpr SkColor kSeparatorColor = 0x51000000;
+
+static constexpr SkColor kInfoOutlineIconColor = 0xFF5A5A5A;
+static constexpr SkColor kLockIconColor = 0xFF0B8043;
+static constexpr SkColor kWarningIconColor = 0xFFC73821;
 
 static constexpr float kWidth = 0.672;
 static constexpr float kHeight = 0.088;
@@ -52,6 +55,22 @@ const struct gfx::VectorIcon& getSecurityIcon(int level) {
     case SecurityLevel::DANGEROUS:
     default:
       return ui::kWarningIcon;
+  }
+}
+
+SkColor getSecurityIconColor(int level) {
+  switch (level) {
+    case SecurityLevel::NONE:
+    case SecurityLevel::HTTP_SHOW_WARNING:
+    case SecurityLevel::SECURITY_WARNING:
+      return kInfoOutlineIconColor;
+    case SecurityLevel::SECURE:
+    case SecurityLevel::EV_SECURE:
+      return kLockIconColor;
+    case SecurityLevel::SECURE_WITH_POLICY_INSTALLED_CERT:
+    case SecurityLevel::DANGEROUS:
+    default:
+      return kWarningIconColor;
   }
 }
 
@@ -126,11 +145,12 @@ void UrlBarTexture::Draw(SkCanvas* canvas, const gfx::Size& texture_size) {
         kBackButtonWidth + kSeparatorWidth + kSecurityFieldWidth / 2,
         kHeight / 2);
     canvas->translate(-kSecurityIconHeight / 2, -kSecurityIconHeight / 2);
-    const gfx::VectorIcon& security_icon = getSecurityIcon(security_level_);
-    icon_default_height = GetDefaultSizeOfVectorIcon(security_icon);
+    const gfx::VectorIcon& icon = getSecurityIcon(security_level_);
+    icon_default_height = GetDefaultSizeOfVectorIcon(icon);
     icon_scale = kSecurityIconHeight / icon_default_height;
+    SkColor icon_color = getSecurityIconColor(security_level_);
     canvas->scale(icon_scale, icon_scale);
-    PaintVectorIcon(&gfx_canvas, security_icon, kForeground);
+    PaintVectorIcon(&gfx_canvas, icon, icon_color);
     canvas->restore();
   }
 
