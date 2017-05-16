@@ -17,6 +17,7 @@
 #import "ios/chrome/browser/ui/payments/cells/accepted_payment_methods_item.h"
 #import "ios/chrome/browser/ui/payments/cells/payment_method_item.h"
 #import "ios/chrome/browser/ui/payments/cells/payments_selector_edit_item.h"
+#import "ios/chrome/browser/ui/payments/payment_request_edit_consumer.h"
 #import "ios/chrome/browser/ui/payments/payment_request_editor_field.h"
 #include "ios/web/public/payments/payment_request.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -28,11 +29,14 @@
 @interface TestCreditCardEditViewControllerMediator
     : NSObject<CreditCardEditViewControllerDataSource>
 
+@property(nonatomic, weak) id<PaymentRequestEditConsumer> consumer;
+
 @end
 
 @implementation TestCreditCardEditViewControllerMediator
 
 @synthesize state = _state;
+@synthesize consumer = _consumer;
 
 - (CollectionViewItem*)headerItem {
   return [[PaymentMethodItem alloc] init];
@@ -42,8 +46,9 @@
   return NO;
 }
 
-- (NSArray<EditorField*>*)editorFields {
-  return @[
+- (void)setConsumer:(id<PaymentRequestEditConsumer>)consumer {
+  _consumer = consumer;
+  [self.consumer setEditorFields:@[
     [[EditorField alloc] initWithAutofillUIType:AutofillUITypeCreditCardNumber
                                       fieldType:EditorFieldTypeTextField
                                           label:@"Credit Card Number"
@@ -71,7 +76,7 @@
                          label:@"Billing Address"
                          value:@"12345"
                       required:YES],
-  ];
+  ]];
 }
 
 - (UIImage*)cardTypeIconFromCardNumber:(NSString*)cardNumber {
@@ -84,10 +89,10 @@ class PaymentRequestCreditCardEditViewControllerTest
     : public CollectionViewControllerTest {
  protected:
   CollectionViewController* InstantiateController() override {
-    mediator_ = [[TestCreditCardEditViewControllerMediator alloc] init];
-
     CreditCardEditViewController* viewController =
         [[CreditCardEditViewController alloc] init];
+    mediator_ = [[TestCreditCardEditViewControllerMediator alloc] init];
+    [mediator_ setConsumer:viewController];
     [viewController setDataSource:mediator_];
     return viewController;
   }

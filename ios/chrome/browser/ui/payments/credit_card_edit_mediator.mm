@@ -18,6 +18,7 @@
 #import "ios/chrome/browser/ui/autofill/autofill_ui_type_util.h"
 #import "ios/chrome/browser/ui/payments/cells/accepted_payment_methods_item.h"
 #import "ios/chrome/browser/ui/payments/cells/payment_method_item.h"
+#import "ios/chrome/browser/ui/payments/payment_request_edit_consumer.h"
 #import "ios/chrome/browser/ui/payments/payment_request_editor_field.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -46,17 +47,14 @@ const CGFloat kCardIssuerNetworkIconDimension = 20.0;
 // and should outlive it.
 @property(nonatomic, assign) autofill::CreditCard* creditCard;
 
-// The list of field definitions for the editor.
-@property(nonatomic, strong) NSArray<EditorField*>* editorFields;
-
 @end
 
 @implementation CreditCardEditViewControllerMediator
 
 @synthesize state = _state;
+@synthesize consumer = _consumer;
 @synthesize paymentRequest = _paymentRequest;
 @synthesize creditCard = _creditCard;
-@synthesize editorFields = _editorFields;
 
 - (instancetype)initWithPaymentRequest:(PaymentRequest*)paymentRequest
                             creditCard:(autofill::CreditCard*)creditCard {
@@ -64,12 +62,20 @@ const CGFloat kCardIssuerNetworkIconDimension = 20.0;
   if (self) {
     _paymentRequest = paymentRequest;
     _creditCard = creditCard;
-    _editorFields = [self createEditorFields];
     _state = _creditCard ? EditViewControllerStateEdit
                          : EditViewControllerStateCreate;
   }
   return self;
 }
+
+#pragma mark - Setters
+
+- (void)setConsumer:(id<PaymentRequestEditConsumer>)consumer {
+  _consumer = consumer;
+  [self.consumer setEditorFields:[self createEditorFields]];
+}
+
+#pragma mark - CreditCardEditViewControllerDataSource
 
 - (CollectionViewItem*)headerItem {
   if (_creditCard && !autofill::IsCreditCardLocal(*_creditCard)) {
@@ -131,10 +137,6 @@ const CGFloat kCardIssuerNetworkIconDimension = 20.0;
   CGFloat dimension = kCardIssuerNetworkIconDimension;
   return ResizeImage(NativeImage(resourceID), CGSizeMake(dimension, dimension),
                      ProjectionMode::kAspectFillNoClipping);
-}
-
-- (NSArray<EditorField*>*)editorFields {
-  return _editorFields;
 }
 
 #pragma mark - Helper methods

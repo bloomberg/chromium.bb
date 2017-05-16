@@ -41,11 +41,12 @@ typedef NS_ENUM(NSInteger, ItemType) {
 }  // namespace
 
 @interface CreditCardEditViewController () {
-  NSArray<EditorField*>* _fields;
-
   // Indicates whether the credit card being created should be saved locally.
   BOOL _saveCreditCard;
 }
+
+// The list of field definitions for the editor.
+@property(nonatomic, strong) NSArray<EditorField*>* fields;
 
 @end
 
@@ -53,6 +54,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 @synthesize delegate = _delegate;
 @synthesize dataSource = _dataSource;
+@synthesize fields = _fields;
 
 #pragma mark - Initialization
 
@@ -100,7 +102,6 @@ typedef NS_ENUM(NSInteger, ItemType) {
 - (void)setDataSource:(id<CreditCardEditViewControllerDataSource>)dataSource {
   [super setDataSource:dataSource];
   _dataSource = dataSource;
-  _fields = [dataSource editorFields];
 }
 
 #pragma mark - PaymentRequestEditViewControllerActions methods

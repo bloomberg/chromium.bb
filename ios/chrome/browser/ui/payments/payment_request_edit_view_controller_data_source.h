@@ -30,9 +30,6 @@ typedef NS_ENUM(NSInteger, EditViewControllerState) {
 // Returns whether the header item should hide its background.
 - (BOOL)shouldHideBackgroundForHeaderItem;
 
-// Returns the list of field definitions for the editor.
-- (NSArray<EditorField*>*)editorFields;
-
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_PAYMENTS_PAYMENT_REQUEST_EDIT_VIEW_CONTROLLER_DATA_SOURCE_H_

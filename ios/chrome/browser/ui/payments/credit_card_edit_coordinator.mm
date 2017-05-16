@@ -54,6 +54,7 @@ using ::AutofillTypeFromAutofillUIType;
   _mediator = [[CreditCardEditViewControllerMediator alloc]
       initWithPaymentRequest:_paymentRequest
                   creditCard:_creditCard];
+  [_mediator setConsumer:_viewController];
   [_viewController setDataSource:_mediator];
   [_viewController loadModel];
 

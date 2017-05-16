@@ -71,13 +71,14 @@ typedef NS_ENUM(NSInteger, ItemType) {
 @interface PaymentRequestEditViewController ()<
     AutofillEditAccessoryDelegate,
     UITextFieldDelegate> {
-  NSArray<EditorField*>* _fields;
-
   // The currently focused cell. May be nil.
   __weak AutofillEditCell* _currentEditingCell;
 
   AutofillEditAccessoryView* _accessoryView;
 }
+
+// The list of field definitions for the editor.
+@property(nonatomic, strong) NSArray<EditorField*>* fields;
 
 // Returns the indexPath for the same row as that of |indexPath| in a section
 // with the given offset relative to that of |indexPath|. May return nil.
@@ -105,6 +106,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 @synthesize dataSource = _dataSource;
 @synthesize delegate = _delegate;
 @synthesize validatorDelegate = _validatorDelegate;
+@synthesize fields = _fields;
 
 - (instancetype)initWithStyle:(CollectionViewControllerStyle)style {
   self = [super initWithStyle:style];
@@ -112,12 +114,6 @@ typedef NS_ENUM(NSInteger, ItemType) {
     _accessoryView = [[AutofillEditAccessoryView alloc] initWithDelegate:self];
   }
   return self;
-}
-
-- (void)setDataSource:
-    (id<PaymentRequestEditViewControllerDataSource>)dataSource {
-  _dataSource = dataSource;
-  _fields = [dataSource editorFields];
 }
 
 - (void)viewDidAppear:(BOOL)animated {
@@ -152,7 +148,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
   // Iterate over the fields and add the respective sections and items.
   int sectionIdentifier = static_cast<int>(SectionIdentifierFirstField);
-  for (EditorField* field in _fields) {
+  for (EditorField* field in self.fields) {
     [model addSectionWithIdentifier:sectionIdentifier];
     switch (field.fieldType) {
       case EditorFieldTypeTextField: {
@@ -202,6 +198,12 @@ typedef NS_ENUM(NSInteger, ItemType) {
   self.styler.cellStyle = MDCCollectionViewCellStyleCard;
   self.styler.separatorInset =
       UIEdgeInsetsMake(0, kSeparatorEdgeInset, 0, kSeparatorEdgeInset);
+}
+
+#pragma mark - PaymentRequestEditConsumer
+
+- (void)setEditorFields:(NSArray<EditorField*>*)fields {
+  self.fields = fields;
 }
 
 #pragma mark - UITextFieldDelegate
@@ -329,9 +331,10 @@ typedef NS_ENUM(NSInteger, ItemType) {
   if ([self.collectionViewModel
           hasSectionForSectionIdentifier:SectionIdentifierHeader])
     index--;
-  DCHECK(index >= 0 && index < static_cast<NSInteger>(_fields.count));
-  [_delegate paymentRequestEditViewController:self
-                               didSelectField:[_fields objectAtIndex:index]];
+  DCHECK(index >= 0 && index < static_cast<NSInteger>(self.fields.count));
+  [_delegate
+      paymentRequestEditViewController:self
+                        didSelectField:[self.fields objectAtIndex:index]];
 }
 
 #pragma mark MDCCollectionViewStylingDelegate
@@ -470,7 +473,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 @implementation PaymentRequestEditViewController (Internal)
 
 - (BOOL)validateForm {
-  for (EditorField* field in _fields) {
+  for (EditorField* field in self.fields) {
     switch (field.fieldType) {
       case EditorFieldTypeTextField: {
         AutofillEditItem* item =

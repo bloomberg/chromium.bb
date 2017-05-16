@@ -92,6 +92,7 @@ source_set("payments_ui") {
     "payment_items_display_view_controller.mm",
     "payment_items_display_view_controller_actions.h",
     "payment_items_display_view_controller_data_source.h",
+    "payment_request_edit_consumer.h",
     "payment_request_edit_view_controller+internal.h",
     "payment_request_edit_view_controller.h",
     "payment_request_edit_view_controller.mm",

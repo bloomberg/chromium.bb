@@ -23,23 +23,21 @@ NSString* const kAddressEditCollectionViewAccessibilityID =
 
 @interface AddressEditViewController ()
 
+// The list of field definitions for the editor.
 @property(nonatomic, weak) NSArray<EditorField*>* fields;
 
 @end
 
 @implementation AddressEditViewController
 
-@synthesize fields = _fields;
 @synthesize delegate = _delegate;
-@synthesize dataSource = _dataSource;
+@synthesize fields = _fields;
 
 #pragma mark - Initialization
 
 - (instancetype)init {
   self = [super initWithStyle:CollectionViewControllerStyleAppBar];
   if (self) {
-    _fields = [_dataSource editorFields];
-
     // Set up leading (cancel) button.
     UIBarButtonItem* cancelButton = [[UIBarButtonItem alloc]
         initWithTitle:l10n_util::GetNSString(IDS_CANCEL)

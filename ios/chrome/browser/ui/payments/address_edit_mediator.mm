@@ -6,6 +6,7 @@
 
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "ios/chrome/browser/payments/payment_request.h"
+#import "ios/chrome/browser/ui/payments/payment_request_edit_consumer.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -22,17 +23,14 @@
 // should outlive it.
 @property(nonatomic, assign) autofill::AutofillProfile* address;
 
-// The list of field definitions for the editor.
-@property(nonatomic, strong) NSArray<EditorField*>* fields;
-
 @end
 
 @implementation AddressEditMediator
 
 @synthesize state = _state;
+@synthesize consumer = _consumer;
 @synthesize paymentRequest = _paymentRequest;
 @synthesize address = _address;
-@synthesize fields = _fields;
 
 - (instancetype)initWithPaymentRequest:(PaymentRequest*)paymentRequest
                                address:(autofill::AutofillProfile*)address {
@@ -40,12 +38,20 @@
   if (self) {
     _paymentRequest = paymentRequest;
     _address = address;
-    _fields = [self createEditorFields];
     _state =
         _address ? EditViewControllerStateEdit : EditViewControllerStateCreate;
   }
   return self;
 }
+
+#pragma mark - Setters
+
+- (void)setConsumer:(id<PaymentRequestEditConsumer>)consumer {
+  _consumer = consumer;
+  [self.consumer setEditorFields:[self createEditorFields]];
+}
+
+#pragma mark - CreditCardEditViewControllerDataSource
 
 - (CollectionViewItem*)headerItem {
   return nil;
@@ -53,10 +59,6 @@
 
 - (BOOL)shouldHideBackgroundForHeaderItem {
   return NO;
-}
-
-- (NSArray<EditorField*>*)editorFields {
-  return self.fields;
 }
 
 #pragma mark - Helper methods

@@ -48,6 +48,7 @@
       [[PaymentRequestEditViewController alloc]
           initWithStyle:CollectionViewControllerStyleAppBar];
   [self.paymentRequestEditViewController setTitle:@"Add info"];
+  [self.paymentRequestEditViewController setEditorFields:[self editorFields]];
   [self.paymentRequestEditViewController setDataSource:self];
   [self.paymentRequestEditViewController
       setDelegate:static_cast<id<PaymentRequestEditViewControllerDelegate>>(
@@ -59,7 +60,7 @@
                 animated:YES];
 }
 
-#pragma mark - PaymentRequestEditViewControllerDataSource
+#pragma mark - Helper methods
 
 - (NSArray<EditorField*>*)editorFields {
   EditorField* name =
@@ -90,6 +91,8 @@
 
   return @[ name, country, address, postalCode ];
 }
+
+#pragma mark - PaymentRequestEditViewControllerDataSource
 
 - (CollectionViewItem*)headerItem {
   return nil;
