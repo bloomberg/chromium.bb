@@ -129,6 +129,7 @@ class MESSAGE_CENTER_EXPORT Notification {
   // Can be empty if the notification is requested by an extension or
   // Chrome app.
   const GURL& origin_url() const { return origin_url_; }
+  void set_origin_url(const GURL& origin_url) { origin_url_ = origin_url; }
 
   // A display string for the source of the notification.
   const base::string16& display_source() const { return display_source_; }

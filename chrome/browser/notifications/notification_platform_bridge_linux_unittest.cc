@@ -61,8 +61,18 @@ class NotificationBuilder {
     return *this;
   }
 
+  NotificationBuilder& SetMessage(const base::string16& message) {
+    notification_.set_message(message);
+    return *this;
+  }
+
   NotificationBuilder& SetNeverTimeout(bool never_timeout) {
     notification_.set_never_timeout(never_timeout);
+    return *this;
+  }
+
+  NotificationBuilder& SetOriginUrl(const GURL& origin_url) {
+    notification_.set_origin_url(origin_url);
     return *this;
   }
 
@@ -218,8 +228,8 @@ class NotificationPlatformBridgeLinuxTest : public testing::Test {
 
     EXPECT_CALL(*mock_notification_proxy_.get(),
                 MockCallMethodAndBlock(Calls("GetCapabilities"), _))
-        .WillOnce(
-            OnGetCapabilities(std::vector<std::string>{"body", "body-images"}));
+        .WillOnce(OnGetCapabilities(std::vector<std::string>{
+            "body", "body-hyperlinks", "body-images", "body-markup"}));
 
     EXPECT_CALL(*mock_notification_proxy_.get(),
                 MockCallMethodAndBlock(Calls("GetServerInformation"), _))
@@ -311,7 +321,7 @@ TEST_F(NotificationPlatformBridgeLinuxTest, NotificationListItemsInBody) {
               MockCallMethodAndBlock(Calls("Notify"), _))
       .WillOnce(OnNotify(
           [](const NotificationRequest& request) {
-            EXPECT_EQ("abc - 123\ndef - 456", request.body);
+            EXPECT_EQ("<b>abc</b> 123\n<b>def</b> 456", request.body);
           },
           1));
 
@@ -388,5 +398,26 @@ TEST_F(NotificationPlatformBridgeLinuxTest, NotificationImages) {
       NotificationBuilder("")
           .SetType(message_center::NOTIFICATION_TYPE_IMAGE)
           .SetImage(original_image)
+          .GetResult());
+}
+
+TEST_F(NotificationPlatformBridgeLinuxTest, NotificationAttribution) {
+  EXPECT_CALL(*mock_notification_proxy_.get(),
+              MockCallMethodAndBlock(Calls("Notify"), _))
+      .WillOnce(OnNotify(
+          [](const NotificationRequest& request) {
+            EXPECT_EQ(
+                "<a href=\"https%3A//google.com/"
+                "search%3Fq=test&ie=UTF8\">google.com</a>\nBody text",
+                request.body);
+          },
+          1));
+
+  CreateNotificationBridgeLinux();
+  notification_bridge_linux_->Display(
+      NotificationCommon::PERSISTENT, "", "", false,
+      NotificationBuilder("")
+          .SetMessage(base::ASCIIToUTF16("Body text"))
+          .SetOriginUrl(GURL("https://google.com/search?q=test&ie=UTF8"))
           .GetResult());
 }

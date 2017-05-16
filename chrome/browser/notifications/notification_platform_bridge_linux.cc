@@ -32,6 +32,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/shell_integration_linux.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/url_formatter/elide_url.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "dbus/bus.h"
@@ -136,6 +137,7 @@ int NotificationPriorityToFdoUrgency(int priority) {
 // the image does not need to be resized, or the image is empty,
 // returns |image| directly.
 gfx::Image ResizeImageToFdoMaxSize(const gfx::Image& image) {
+  DCHECK(!content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   if (image.IsEmpty())
     return image;
   int width = image.Width();
@@ -519,12 +521,32 @@ class NotificationPlatformBridgeLinuxImpl
     if (base::ContainsKey(capabilities_, kCapabilityBody)) {
       const bool body_markup =
           base::ContainsKey(capabilities_, kCapabilityBodyMarkup);
-      std::string message = base::UTF16ToUTF8(notification->message());
-      if (body_markup) {
-        base::ReplaceSubstringsAfterOffset(&message, 0, "&", "&amp;");
-        base::ReplaceSubstringsAfterOffset(&message, 0, "<", "&lt;");
-        base::ReplaceSubstringsAfterOffset(&message, 0, ">", "&gt;");
+
+      if (notification->UseOriginAsContextMessage()) {
+        std::string url_display_text = net::EscapeForHTML(
+            base::UTF16ToUTF8(url_formatter::FormatUrlForSecurityDisplay(
+                notification->origin_url(),
+                url_formatter::SchemeDisplay::OMIT_HTTP_AND_HTTPS)));
+        if (base::ContainsKey(capabilities_, kCapabilityBodyHyperlinks)) {
+          body << "<a href=\""
+               << net::EscapePath(notification->origin_url().spec()) << "\">"
+               << url_display_text << "</a>";
+        } else {
+          body << url_display_text;
+        }
+      } else if (!notification->context_message().empty()) {
+        std::string context =
+            base::UTF16ToUTF8(notification->context_message());
+        if (body_markup)
+          context = net::EscapeForHTML(context);
+        body << context;
       }
+
+      std::string message = base::UTF16ToUTF8(notification->message());
+      if (body_markup)
+        message = net::EscapeForHTML(message);
+      if (body.tellp())
+        body << "\n";
       body << message;
 
       if (notification->type() == message_center::NOTIFICATION_TYPE_MULTIPLE) {
