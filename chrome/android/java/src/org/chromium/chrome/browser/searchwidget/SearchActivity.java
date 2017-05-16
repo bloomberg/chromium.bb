@@ -136,7 +136,7 @@ public class SearchActivity extends AsyncInitializationActivity
             mHandler.post(new Runnable() {
                 @Override
                 public void run() {
-                    startNativeInitialization();
+                    startDelayedNativeInitialization();
                 }
             });
         }
@@ -273,8 +273,8 @@ public class SearchActivity extends AsyncInitializationActivity
 
     @Override
     @VisibleForTesting
-    public final void startNativeInitialization() {
-        super.startNativeInitialization();
+    public final void startDelayedNativeInitialization() {
+        super.startDelayedNativeInitialization();
     }
 
     private static SearchActivityDelegate getActivityDelegate() {

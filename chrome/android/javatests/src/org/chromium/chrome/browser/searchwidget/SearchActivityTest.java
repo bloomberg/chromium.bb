@@ -195,7 +195,7 @@ public class SearchActivityTest {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                searchActivity.startNativeInitialization();
+                searchActivity.startDelayedNativeInitialization();
             }
         });
 
@@ -246,7 +246,7 @@ public class SearchActivityTest {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                searchActivity.startNativeInitialization();
+                searchActivity.startDelayedNativeInitialization();
             }
         });
 
