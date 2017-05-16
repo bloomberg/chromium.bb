@@ -59,7 +59,7 @@ Section t: has 100.0% of 35900712 bytes accounted for from 18 symbols. 0 bytes a
 
 Showing 44 symbols (43 unique) with total pss: 43785380 bytes
 .text=34.2mb     .rodata=5.65mb     .data*=1.87mb     .bss=512kb      total=41.8mb
-Number of object files: 10
+Number of unique paths: 9
 
 Index, Running Total, Section@Address, PSS
 ------------------------------------------------------------
@@ -151,10 +151,10 @@ Index, Running Total, Section@Address, PSS
              flags={}  name=** symbol gaps
 > 0)          3 (0.0%)  r@0x284e364  pss=3  padding=3  size_without_padding=0
                source_path= 	object_path=
-               flags={}  name=** symbol gap 2
+               flags={}  name=** symbol gap 0
 > 1)    3286115 (100.0%) r@0x2c158e4  pss=3286112  padding=3286112  size_without_padding=0
                source_path= 	object_path=
-               flags={}  name=** symbol gap 3 (end of section)
+               flags={}  name=** symbol gap 1 (end of section)
 18)  41828229 (95.5%) r@0x284e364  pss=8  padding=0  size_without_padding=8
              source_path=base/page_allocator.cc 	object_path=base/base/page_allocator.o
 19)  41828273 (95.5%) r@0x284e370  pss=44  padding=4  size_without_padding=40
@@ -196,7 +196,7 @@ Index, Running Total, Section@Address, PSS
              flags={}  name=kMethodsAnimationFrameTimeHistogram
 31)  43683612 (99.8%) d@0x2ddc608  pss=1065132  padding=1065132  size_without_padding=0
              source_path= 	object_path=
-             flags={}  name=** symbol gap 3 (end of section)
+             flags={}  name=** symbol gap 0 (end of section)
 32)  43683616 (99.8%) d@0x2de7000  pss=4  padding=0  size_without_padding=4
              source_path=base/page_allocator.cc 	object_path=base/base/page_allocator.o
              flags={}  name=google::protobuf::internal::pLinuxKernelCmpxchg
@@ -214,7 +214,7 @@ Index, Running Total, Section@Address, PSS
              flags={anon,rel.loc}  name=base::android::g_library_version_number
 37)  43785380 (100.0%) d@0x2dffd88  pss=101600  padding=101600  size_without_padding=0
              source_path= 	object_path=
-             flags={}  name=** symbol gap 3 (end of section)
+             flags={}  name=** symbol gap 0 (end of section)
 38)  43785380 (100.0%) b@0x0        pss=262144  padding=0  size_without_padding=262144
              source_path=third_party/fft_float.cc 	object_path=third_party/ffmpeg/libffmpeg_internal.a/fft_float.o
              flags={}  name=ff_cos_131072

@@ -67,6 +67,7 @@ class _Session(object):
   _readline_initialized = False
 
   def __init__(self, size_infos, size_paths, lazy_paths):
+    self._printed_variables = []
     self._variables = {
         'Print': self._PrintFunc,
         'Diff': self._DiffFunc,
@@ -74,6 +75,7 @@ class _Session(object):
         'ExpandRegex': match_util.ExpandRegexIdentifierPlaceholder,
         'ShowExamples': self._ShowExamplesFunc,
         'canned_queries': canned_queries.CannedQueries(size_infos),
+        'printed': self._printed_variables,
     }
     self._lazy_paths = lazy_paths
     self._size_infos = size_infos
@@ -109,6 +111,8 @@ class _Session(object):
                  to_file=None):
     """Prints out the given Symbol / SymbolGroup / SymbolDiff / SizeInfo.
 
+    For convenience, |obj| will be appended to the global "printed" list.
+
     Args:
       obj: The object to be printed. Defaults to size_infos[-1].
       verbose: Show more detailed output.
@@ -117,6 +121,8 @@ class _Session(object):
           default is to automatically pipe when output is long.
       to_file: Rather than print to stdio, write to the given file.
     """
+    if not self._printed_variables or self._printed_variables[-1] != obj:
+      self._printed_variables.append(obj)
     obj = obj if obj is not None else self._size_infos[-1]
     lines = describe.GenerateLines(obj, verbose=verbose, recursive=recursive)
     _WriteToStream(lines, use_pager=use_pager, to_file=to_file)
@@ -196,6 +202,7 @@ class _Session(object):
       elf_path: Path to the executable containing the symbol. Required only
           when auto-detection fails.
     """
+    assert not symbol.IsGroup()
     assert symbol.address and symbol.section_name == '.text'
 
     tool_prefix = self._lazy_paths.tool_prefix
@@ -247,9 +254,9 @@ class _Session(object):
         'by_path = text_syms.GroupedByPath(depth=2)',
         'Print(by_path.WherePssBiggerThan(1024))',
         '',
-        '# Show all non-vtable generated symbols',
-        'generated_syms = size_info.symbols.WhereGeneratedByToolchain()',
-        'Print(generated_syms.WhereNameMatches(r"vtable").Inverted().Sorted())',
+        '# Show all generated symbols, then show only non-vtable ones',
+        'Print(size_info.symbols.WhereGeneratedByToolchain())',
+        'Print(printed[-1].WhereNameMatches(r"vtable").Inverted().Sorted())',
         '',
         '# Show all symbols that have "print" in their name or path, except',
         '# those within components/.',
