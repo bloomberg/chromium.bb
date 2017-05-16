@@ -219,11 +219,11 @@ class WebSocketStreamRequestImpl : public WebSocketStreamRequest {
 
   std::unique_ptr<WebSocketStream::ConnectDelegate> connect_delegate_;
 
-  // This is owned by the caller of CreateBaseStream() or
-  // CreateSpdyStream() of WebsocketHandshakeStreamCreateHelper. Both the
-  // stream and this object will be destroyed during the destruction of the
-  // URLRequest object associated with the handshake. This is only guaranteed
-  // to be a valid pointer if the handshake succeeded.
+  // This is owned by the caller of
+  // WebsocketHandshakeStreamCreateHelper::CreateBaseStream().  Both the stream
+  // and this object will be destroyed during the destruction of the URLRequest
+  // object associated with the handshake. This is only guaranteed to be a valid
+  // pointer if the handshake succeeded.
   WebSocketHandshakeStreamBase* handshake_stream_;
 
   // The failure message supplied by WebSocketBasicHandshakeStream, if any.

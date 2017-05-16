@@ -23,7 +23,6 @@
 namespace net {
 
 class ClientSocketHandle;
-class SpdySession;
 
 // WebSocketHandshakeStreamBase is the base class of
 // WebSocketBasicHandshakeStream.  net/http code uses this interface to handle
@@ -50,11 +49,6 @@ class NET_EXPORT WebSocketHandshakeStreamBase : public HttpStream {
     virtual WebSocketHandshakeStreamBase* CreateBasicStream(
         std::unique_ptr<ClientSocketHandle> connection,
         bool using_proxy) = 0;
-
-    // Create a WebSocketSpdyHandshakeStream (unimplemented as of October 2013)
-    virtual WebSocketHandshakeStreamBase* CreateSpdyStream(
-        const base::WeakPtr<SpdySession>& session,
-        bool use_relative_url) = 0;
   };
 
   // This has to have an inline implementation so that the net/url_request/

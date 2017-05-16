@@ -623,11 +623,6 @@ class FakeWebSocketHandshakeStreamCreateHelper
       bool using_proxy) override {
     return NULL;
   }
-  WebSocketHandshakeStreamBase* CreateSpdyStream(
-      const base::WeakPtr<SpdySession>& session,
-      bool use_relative_url) override {
-    return NULL;
-  }
 };
 
 // Returns true if |entry| is not one of the log types paid attention to in this

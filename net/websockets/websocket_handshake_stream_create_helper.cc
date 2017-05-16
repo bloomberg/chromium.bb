@@ -10,7 +10,6 @@
 #include "base/logging.h"
 #include "base/memory/weak_ptr.h"
 #include "net/socket/client_socket_handle.h"
-#include "net/spdy/chromium/spdy_session.h"
 #include "net/websockets/websocket_basic_handshake_stream.h"
 
 namespace net {
@@ -43,15 +42,6 @@ WebSocketHandshakeStreamCreateHelper::CreateBasicStream(
   OnBasicStreamCreated(stream);
   request_->OnHandshakeStreamCreated(stream);
   return stream;
-}
-
-// TODO(ricea): Create a WebSocketSpdyHandshakeStream. crbug.com/323852
-WebSocketHandshakeStreamBase*
-WebSocketHandshakeStreamCreateHelper::CreateSpdyStream(
-    const base::WeakPtr<SpdySession>& session,
-    bool use_relative_url) {
-  NOTREACHED() << "Not implemented";
-  return NULL;
 }
 
 void WebSocketHandshakeStreamCreateHelper::OnBasicStreamCreated(

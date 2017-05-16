@@ -1102,10 +1102,6 @@ class MockCreateHelper : public WebSocketHandshakeStreamBase::CreateHelper {
 
   MOCK_METHOD0(CreateBasicStreamMock,
                WebSocketHandshakeStreamBase*());
-
-  MOCK_METHOD2(CreateSpdyStream,
-               WebSocketHandshakeStreamBase*(const base::WeakPtr<SpdySession>&,
-                                             bool));
 };
 
 #if BUILDFLAG(ENABLE_WEBSOCKETS)
