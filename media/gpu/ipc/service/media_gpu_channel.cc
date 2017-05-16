@@ -14,25 +14,6 @@
 
 namespace media {
 
-namespace {
-
-void SendCreateJpegDecoderResult(
-    std::unique_ptr<IPC::Message> reply_message,
-    scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
-    base::WeakPtr<gpu::GpuChannel> channel,
-    scoped_refptr<gpu::GpuChannelMessageFilter> filter,
-    bool result) {
-  GpuChannelMsg_CreateJpegDecoder::WriteReplyParams(reply_message.get(),
-                                                    result);
-  if (io_task_runner->BelongsToCurrentThread()) {
-    filter->Send(reply_message.release());
-  } else if (channel) {
-    channel->Send(reply_message.release());
-  }
-}
-
-}  // namespace
-
 class MediaGpuChannelDispatchHelper {
  public:
   MediaGpuChannelDispatchHelper(MediaGpuChannel* channel, int32_t routing_id)
@@ -65,7 +46,8 @@ class MediaGpuChannelFilter : public IPC::MessageFilter {
       : channel_token_(channel_token) {}
 
   void OnFilterAdded(IPC::Channel* channel) override { channel_ = channel; }
-  bool Send(IPC::Message* msg) { return channel_->Send(msg); }
+
+  void OnFilterRemoved() override { channel_ = nullptr; }
 
   bool OnMessageReceived(const IPC::Message& msg) override {
     bool handled = true;
@@ -83,6 +65,12 @@ class MediaGpuChannelFilter : public IPC::MessageFilter {
     Send(reply_message);
   }
 
+  bool Send(IPC::Message* msg) {
+    if (channel_)
+      return channel_->Send(msg);
+    return false;
+  }
+
  private:
   ~MediaGpuChannelFilter() override {}
 
@@ -94,8 +82,10 @@ MediaGpuChannel::MediaGpuChannel(
     gpu::GpuChannel* channel,
     const base::UnguessableToken& channel_token,
     const AndroidOverlayMojoFactoryCB& overlay_factory_cb)
-    : channel_(channel), overlay_factory_cb_(overlay_factory_cb) {
-  channel_->AddFilter(new MediaGpuChannelFilter(channel_token));
+    : channel_(channel),
+      filter_(new MediaGpuChannelFilter(channel_token)),
+      overlay_factory_cb_(overlay_factory_cb) {
+  channel_->AddFilter(filter_.get());
 }
 
 MediaGpuChannel::~MediaGpuChannel() {}
@@ -121,6 +111,25 @@ bool MediaGpuChannel::OnMessageReceived(const IPC::Message& message) {
   return handled;
 }
 
+namespace {
+
+void SendCreateJpegDecoderResult(
+    std::unique_ptr<IPC::Message> reply_message,
+    scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
+    base::WeakPtr<IPC::Sender> channel,
+    scoped_refptr<MediaGpuChannelFilter> filter,
+    bool result) {
+  GpuChannelMsg_CreateJpegDecoder::WriteReplyParams(reply_message.get(),
+                                                    result);
+  if (io_task_runner->BelongsToCurrentThread()) {
+    filter->Send(reply_message.release());
+  } else if (channel) {
+    channel->Send(reply_message.release());
+  }
+}
+
+}  // namespace
+
 void MediaGpuChannel::OnCreateJpegDecoder(int32_t route_id,
                                           IPC::Message* reply_msg) {
   std::unique_ptr<IPC::Message> msg(reply_msg);
@@ -133,9 +142,9 @@ void MediaGpuChannel::OnCreateJpegDecoder(int32_t route_id,
         new GpuJpegDecodeAccelerator(channel_, channel_->io_task_runner()));
   }
   jpeg_decoder_->AddClient(
-      route_id, base::Bind(&SendCreateJpegDecoderResult, base::Passed(&msg),
-                           channel_->io_task_runner(), channel_->AsWeakPtr(),
-                           channel_->filter()));
+      route_id,
+      base::Bind(&SendCreateJpegDecoderResult, base::Passed(&msg),
+                 channel_->io_task_runner(), channel_->AsWeakPtr(), filter_));
 }
 
 void MediaGpuChannel::OnCreateVideoDecoder(
