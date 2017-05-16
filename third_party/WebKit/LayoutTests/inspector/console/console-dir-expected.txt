@@ -38,7 +38,7 @@ console-dir.html:19 ƒ anonymous()
     caller: null
     length: 0
     name: ""
-    prototype: Object
+    prototype: {constructor: ƒ}
     __proto__: ƒ ()
     [[FunctionLocation]]: console-dir.html:19
     [[Scopes]]: Scopes[1]
@@ -47,7 +47,7 @@ console-dir.html:23 inner
 console-dir.html:26 Object
     No Properties
 console-dir.html:27 Object
-    foo: Object
+    foo: 
         No Properties
     __proto__: Object
 console-dir.html:29 ƒ __proto__()
@@ -71,7 +71,7 @@ console-dir.html:39 Event
     defaultPrevented: false
     eventPhase: 0
     isTrusted: false
-    path: Array(0)
+    path: []
     returnValue: true
     srcElement: null
     target: null

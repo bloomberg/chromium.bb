@@ -12,7 +12,7 @@ properties-special.html:11 ƒ anonymous(a,b)
     caller: null
     length: 2
     name: ""
-    prototype: Object
+    prototype: {constructor: ƒ}
     __proto__: ƒ ()
     [[FunctionLocation]]: properties-special.html:11
     [[Scopes]]: Scopes[1]
@@ -30,7 +30,7 @@ properties-special.html:13 ƒ* anonymous()
     caller: (...)
     length: 0
     name: ""
-    prototype: Generator
+    prototype: Generator {}
     __proto__: GeneratorFunction
     [[FunctionLocation]]: properties-special.html:13
     [[IsGenerator]]: true

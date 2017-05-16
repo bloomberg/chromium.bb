@@ -18,7 +18,7 @@ temp11
 temp12
 (6) [1, 2, NaN, -0, null, undefined]
 temp13
-Object {foo: "bar"}
+{foo: "bar"}
 temp14
 (4) [1, 2, 3, 4, callee: ƒ, Symbol(Symbol.iterator): ƒ]
 temp15

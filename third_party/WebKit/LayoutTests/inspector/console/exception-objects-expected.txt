@@ -22,12 +22,12 @@ throwError @ foo.js:4
 (anonymous) @ VM:1
 setTimeout(throwObject, 0); undefined
 undefined
-foo.js:9 Uncaught Object {a: 42}
+foo.js:9 Uncaught {a: 42}
 throwObject @ foo.js:9
 setTimeout (async)
 (anonymous) @ VM:1
 throwObject();
-foo.js:9 Uncaught Object {a: 42}
+foo.js:9 Uncaught {a: 42}
 throwObject @ foo.js:9
 (anonymous) @ VM:1
 setTimeout(throwNumber, 0); undefined
@@ -56,13 +56,13 @@ rejectWithError @ foo.js:19
 (anonymous) @ VM:1
 setTimeout(rejectWithObject, 0); undefined
 undefined
-foo.js:24 Uncaught (in promise) Object {b: 42}
+foo.js:24 Uncaught (in promise) {b: 42}
 rejectWithObject @ foo.js:24
 setTimeout (async)
 (anonymous) @ VM:1
 rejectWithObject();
 undefined
-foo.js:24 Uncaught (in promise) Object {b: 42}
+foo.js:24 Uncaught (in promise) {b: 42}
 rejectWithObject @ foo.js:24
 (anonymous) @ VM:1
 

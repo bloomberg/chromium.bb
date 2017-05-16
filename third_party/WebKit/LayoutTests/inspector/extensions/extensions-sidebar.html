@@ -136,6 +136,9 @@ function extension_testElementsSidebarSetExpression(nextTest)
         function expression()
         {
             document.body.testProperty = 'foo';
+            function Foo() {};
+            var fooInstance = new Foo();
+            fooInstance.bar = 1;
             return {
                 f0: 'expression',
                 f1: undefined,
@@ -145,7 +148,7 @@ function extension_testElementsSidebarSetExpression(nextTest)
                 f5: ["aa", "bb", "cc"],
                 f6: { f60: 42, f61: "foo", f62: [] },
                 f7: 42,
-                f8: window.location,
+                f8: fooInstance,
                 f9: document.body.children,
                 f10: function() {},
                 f11: $0.testProperty
@@ -169,6 +172,9 @@ function extension_testSourcesSidebarSetExpression(nextTest)
     function onSidebarExpanded(sidebar) {
         function expression()
         {
+            function Foo() {};
+            var fooInstance = new Foo();
+            fooInstance.bar = 1;
             return {
                 f0: 'expression',
                 f1: undefined,
@@ -178,7 +184,7 @@ function extension_testSourcesSidebarSetExpression(nextTest)
                 f5: ["aa", "bb", "cc"],
                 f6: { f60: 42, f61: "foo", f62: [] },
                 f7: 42,
-                f8: window.location,
+                f8: fooInstance,
                 f9: document.body.children,
                 f10: function() {},
             };

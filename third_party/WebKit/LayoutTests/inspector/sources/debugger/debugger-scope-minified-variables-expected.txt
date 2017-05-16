@@ -7,8 +7,8 @@ Scope variables sidebar pane:
 Catch
     error: "boom!"
 Local
-    longMap: Map(1)
-    longObject: Object
+    longMap: Map(1) {100 => "hello"}
+    longObject: {}
     parameter1: 100
     parameter2: "hello"
     this: Window

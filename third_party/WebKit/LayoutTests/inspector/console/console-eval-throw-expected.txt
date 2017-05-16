@@ -18,7 +18,7 @@ VM:1 Uncaught asdf
 
 Running: testThrowObject
 throw {a:42}
-VM:1 Uncaught Object {a: 42}
+VM:1 Uncaught {a: 42}
 (anonymous) @ VM:1
 
 Running: testThrowError

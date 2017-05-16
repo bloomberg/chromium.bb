@@ -28,7 +28,7 @@ console-functions.html:25 ƒ simple()
     caller: null
     length: 0
     name: "simple"
-    prototype: Object
+    prototype: {constructor: ƒ}
     __proto__: ƒ ()
     [[FunctionLocation]]: console-functions.html:10
     [[Scopes]]: Scopes[1]
@@ -47,7 +47,7 @@ console-functions.html:25 ƒ* genSimple()
     caller: (...)
     length: 0
     name: "genSimple"
-    prototype: Generator
+    prototype: Generator {}
     __proto__: GeneratorFunction
     [[FunctionLocation]]: console-functions.html:12
     [[IsGenerator]]: true
@@ -58,7 +58,7 @@ console-functions.html:25 ƒ anonymous()
     caller: null
     length: 0
     name: ""
-    prototype: Object
+    prototype: {constructor: ƒ}
     __proto__: ƒ ()
     [[FunctionLocation]]: console-functions.html:13
     [[Scopes]]: Scopes[1]
@@ -68,7 +68,7 @@ console-functions.html:25 ƒ anonymous(x, y)
     caller: null
     length: 2
     name: ""
-    prototype: Object
+    prototype: {constructor: ƒ}
     __proto__: ƒ ()
     [[FunctionLocation]]: console-functions.html:14
     [[Scopes]]: Scopes[1]
@@ -78,7 +78,7 @@ console-functions.html:25 ƒ namedArgs(x)
     caller: null
     length: 1
     name: "namedArgs"
-    prototype: Object
+    prototype: {constructor: ƒ}
     __proto__: ƒ ()
     [[FunctionLocation]]: console-functions.html:15
     [[Scopes]]: Scopes[1]
@@ -88,7 +88,7 @@ console-functions.html:25 ƒ namedArgs2(x, y)
     caller: null
     length: 2
     name: "namedArgs2"
-    prototype: Object
+    prototype: {constructor: ƒ}
     __proto__: ƒ ()
     [[FunctionLocation]]: console-functions.html:16
     [[Scopes]]: Scopes[1]
@@ -98,7 +98,7 @@ console-functions.html:25 ƒ anonymous({})
     caller: null
     length: 1
     name: ""
-    prototype: Object
+    prototype: {constructor: ƒ}
     __proto__: ƒ ()
     [[FunctionLocation]]: console-functions.html:17
     [[Scopes]]: Scopes[1]
@@ -108,7 +108,7 @@ console-functions.html:25 ƒ* whitespace(  x  )
     caller: (...)
     length: 1
     name: "whitespace"
-    prototype: Generator
+    prototype: Generator {}
     __proto__: GeneratorFunction
     [[FunctionLocation]]: console-functions.html:18
     [[IsGenerator]]: true

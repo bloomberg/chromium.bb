@@ -6,7 +6,7 @@ Script execution paused.
 
 Scope variables sidebar pane:
 Local
-    this: Foo
+    this: Foo {}
 Closure (Foo.bar)
 WindowGlobal
     <section collapsed>

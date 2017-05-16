@@ -196,10 +196,10 @@ console-format.html:7
 console-format.html:8 [id]
 globals[16]
     id="x"
-console-format.html:7 Object {}
+console-format.html:7 {}
 console-format.html:8 [{…}]
 globals[17]
-Object {}
+{}
 console-format.html:7 NaN
 console-format.html:8 [NaN]
 globals[18]
@@ -216,43 +216,43 @@ console-format.html:7 (10) ["test", "test2", undefined × 2, "test4", undefined 
 console-format.html:8 [Array(10)]
 globals[21]
 (10) ["test", "test2", undefined × 2, "test4", undefined × 5, foo: {…}]
-console-format.html:7 Object {}
+console-format.html:7 {}
 console-format.html:8 [{…}]
 globals[22]
-Object {}
+{}
 console-format.html:7 [ƒ]
 console-format.html:8 [Array(1)]
 globals[23]
 [ƒ]
-console-format.html:7 Object {bar: "bar"}
+console-format.html:7 {bar: "bar"}
 console-format.html:8 [{…}]
 globals[24]
-Object {bar: "bar"}
+{bar: "bar"}
 console-format.html:7 
     <svg id="svg-node"></svg>
 console-format.html:8 [svg#svg-node]
 globals[25]
     <svg id="svg-node"></svg>
-console-format.html:7 Object {enumerableProp: 4, __underscoreEnumerableProp__: 5, __underscoreNonEnumerableProp: 2, abc: 3, getFoo: ƒ…}
+console-format.html:7 {enumerableProp: 4, __underscoreEnumerableProp__: 5, __underscoreNonEnumerableProp: 2, abc: 3, getFoo: ƒ…}
 console-format.html:8 [{…}]
 globals[26]
-Object {enumerableProp: 4, __underscoreEnumerableProp__: 5, __underscoreNonEnumerableProp: 2, abc: 3, getFoo: ƒ…}
+{enumerableProp: 4, __underscoreEnumerableProp__: 5, __underscoreNonEnumerableProp: 2, abc: 3, getFoo: ƒ…}
 console-format.html:7 -0
 console-format.html:8 [-0]
 globals[27]
 -0
-console-format.html:7 Object {}
+console-format.html:7 {}
 console-format.html:8 [{…}]
 globals[28]
-Object {}
+{}
 console-format.html:7 ƒ Object() { [native code] }
 console-format.html:8 [ƒ]
 globals[29]
 ƒ Object() { [native code] }
-console-format.html:7 Object {__defineGetter__: ƒ, __defineSetter__: ƒ, hasOwnProperty: ƒ, __lookupGetter__: ƒ, __lookupSetter__: ƒ…}
+console-format.html:7 {__defineGetter__: ƒ, __defineSetter__: ƒ, hasOwnProperty: ƒ, __lookupGetter__: ƒ, __lookupSetter__: ƒ…}
 console-format.html:8 [{…}]
 globals[30]
-Object {__defineGetter__: ƒ, __defineSetter__: ƒ, hasOwnProperty: ƒ, __lookupGetter__: ƒ, __lookupSetter__: ƒ…}
+{__defineGetter__: ƒ, __defineSetter__: ƒ, hasOwnProperty: ƒ, __lookupGetter__: ƒ, __lookupSetter__: ƒ…}
 console-format.html:7 ƒ ( /**/ foo/**/, /*/**/bar,
     /**/baz) {}
 console-format.html:8 [ƒ]
@@ -308,21 +308,21 @@ console-format.html:22 Array(10)
     0: "test"
     1: "test2"
     4: "test4"
-    foo: Object
+    foo: {}
     length: 10
     __proto__: Array(0)
 console-format.html:23 Array(10)
     0: "test"
     1: "test2"
     4: "test4"
-    foo: Object
+    foo: {}
     length: 10
     __proto__: Array(0)
 console-format.html:24 Array(10)
     0: "test"
     1: "test2"
     4: "test4"
-    foo: Object
+    foo: {}
     length: 10
     __proto__: Array(0)
 console-format.html:25 Test for zero "0" in formatter
@@ -334,14 +334,14 @@ console-format.html:30 %%% self-escape5 dummy
 console-format.html:31 %dummy self-escape6
 console-format.html:7 /^url\(\s*(?:(?:"(?:[^\\\"]|(?:\\[\da-f]{1,6}\s?|\.))*"|'(?:[^\\\']|(?:\\[\da-f]{1,6}\s?|\.))*')|(?:[!#$%&*-~\w]|(?:\\[\da-f]{1,6}\s?|\.))*)\s*\)/i
 console-format.html:8 [/^url\(\s*(?:(?:"(?:[^\\\"]|(?:\\[\da-f]{1,6}\s?|\…?:[!#$%&*-~\w]|(?:\\[\da-f]{1,6}\s?|\.))*)\s*\)/i]
-    0: /^url\(\s*(?:(?:"(?:[^\\\"]|(?:\\[\da-f]{1,6}\s?|\.))*"|'(?:[^\\\']|(?:\\[\da-f]{1,6}\s?|\.))*')|(?:[!#$%&*-~\w]|(?:\\[\da-f]{1,6}\s?|\.))*)\s*\)/i
+    0: /^url\(\s*(?:(?:"(?:[^\\\"]|(?:\\[\da-f]{1,6}\s?|\.))*"|'(?:[^\\\']|(?:\\[\da-f]{1,6}\s?|\.))*')|(?:[!#$%&*-~\w]|(?:\\[\da-f]{1,6}\s?|\.))*)\s*\)/i {lastIndex: 0}
     length: 1
     __proto__: Array(0)
 globals[0]
 /^url\(\s*(?:(?:"(?:[^\\\"]|(?:\\[\da-f]{1,6}\s?|\.))*"|'(?:[^\\\']|(?:\\[\da-f]{1,6}\s?|\.))*')|(?:[!#$%&*-~\w]|(?:\\[\da-f]{1,6}\s?|\.))*)\s*\)/i
 console-format.html:7 /foo\\bar\sbaz/i
 console-format.html:8 [/foo\\bar\sbaz/i]
-    0: /foo\\bar\sbaz/i
+    0: /foo\\bar\sbaz/i {lastIndex: 0}
     length: 1
     __proto__: Array(0)
 globals[1]
@@ -466,16 +466,16 @@ console-format.html:8 [id]
     __proto__: Array(0)
 globals[16]
     id="x"
-console-format.html:7 Object {}
+console-format.html:7 {}
     length: (...)
     get length: ƒ length()
     __proto__: Object
 console-format.html:8 [{…}]
-    0: Object
+    0: {}
     length: 1
     __proto__: Array(0)
 globals[17]
-Object {}
+{}
     length: (...)
     get length: ƒ length()
     __proto__: Object
@@ -504,11 +504,11 @@ console-format.html:7 (10) ["test", "test2", undefined × 2, "test4", undefined 
     0: "test"
     1: "test2"
     4: "test4"
-    foo: Object
+    foo: {}
     length: 10
     __proto__: Array(0)
 console-format.html:8 [Array(10)]
-    0: Array(10)
+    0: (10) ["test", "test2", undefined × 2, "test4", undefined × 5, foo: {…}]
     length: 1
     __proto__: Array(0)
 globals[21]
@@ -516,24 +516,24 @@ globals[21]
     0: "test"
     1: "test2"
     4: "test4"
-    foo: Object
+    foo: {}
     length: 10
     __proto__: Array(0)
-console-format.html:7 Object {}
+console-format.html:7 {}
     __proto__: Object
 console-format.html:8 [{…}]
-    0: Object
+    0: {}
     length: 1
     __proto__: Array(0)
 globals[22]
-Object {}
+{}
     __proto__: Object
 console-format.html:7 [ƒ]
     0: ƒ ()
     length: 1
     __proto__: Array(0)
 console-format.html:8 [Array(1)]
-    0: Array(1)
+    0: [ƒ]
     length: 1
     __proto__: Array(0)
 globals[23]
@@ -541,15 +541,15 @@ globals[23]
     0: ƒ ()
     length: 1
     __proto__: Array(0)
-console-format.html:7 Object {bar: "bar"}
+console-format.html:7 {bar: "bar"}
     bar: "bar"
     __proto__: Object
 console-format.html:8 [{…}]
-    0: Object
+    0: {bar: "bar"}
     length: 1
     __proto__: Array(0)
 globals[24]
-Object {bar: "bar"}
+{bar: "bar"}
     bar: "bar"
     __proto__: Object
 console-format.html:7 
@@ -560,7 +560,7 @@ console-format.html:8 [svg#svg-node]
     __proto__: Array(0)
 globals[25]
     <svg id="svg-node"></svg>
-console-format.html:7 Object {enumerableProp: 4, __underscoreEnumerableProp__: 5, __underscoreNonEnumerableProp: 2, abc: 3, getFoo: ƒ…}
+console-format.html:7 {enumerableProp: 4, __underscoreEnumerableProp__: 5, __underscoreNonEnumerableProp: 2, abc: 3, getFoo: ƒ…}
     enumerableProp: 4
     __underscoreEnumerableProp__: 5
     abc: 3
@@ -571,11 +571,11 @@ console-format.html:7 Object {enumerableProp: 4, __underscoreEnumerableProp__: 5
     set bar: ƒ (x)
     __proto__: Object
 console-format.html:8 [{…}]
-    0: Object
+    0: {enumerableProp: 4, __underscoreEnumerableProp__: 5, __underscoreNonEnumerableProp: 2, abc: 3, getFoo: ƒ…}
     length: 1
     __proto__: Array(0)
 globals[26]
-Object {enumerableProp: 4, __underscoreEnumerableProp__: 5, __underscoreNonEnumerableProp: 2, abc: 3, getFoo: ƒ…}
+{enumerableProp: 4, __underscoreEnumerableProp__: 5, __underscoreNonEnumerableProp: 2, abc: 3, getFoo: ƒ…}
     enumerableProp: 4
     __underscoreEnumerableProp__: 5
     abc: 3
@@ -592,14 +592,14 @@ console-format.html:8 [-0]
     __proto__: Array(0)
 globals[27]
 -0
-console-format.html:7 Object {}
+console-format.html:7 {}
     No Properties
 console-format.html:8 [{…}]
-    0: Object
+    0: {}
     length: 1
     __proto__: Array(0)
 globals[28]
-Object {}
+{}
     No Properties
 console-format.html:7 ƒ Object() { [native code] }
 console-format.html:8 [ƒ]
@@ -608,7 +608,7 @@ console-format.html:8 [ƒ]
     __proto__: Array(0)
 globals[29]
 ƒ Object() { [native code] }
-console-format.html:7 Object {__defineGetter__: ƒ, __defineSetter__: ƒ, hasOwnProperty: ƒ, __lookupGetter__: ƒ, __lookupSetter__: ƒ…}
+console-format.html:7 {__defineGetter__: ƒ, __defineSetter__: ƒ, hasOwnProperty: ƒ, __lookupGetter__: ƒ, __lookupSetter__: ƒ…}
     constructor: ƒ Object()
     hasOwnProperty: ƒ hasOwnProperty()
     isPrototypeOf: ƒ isPrototypeOf()
@@ -623,11 +623,11 @@ console-format.html:7 Object {__defineGetter__: ƒ, __defineSetter__: ƒ, hasOwn
     get __proto__: ƒ __proto__()
     set __proto__: ƒ __proto__()
 console-format.html:8 [{…}]
-    0: Object
+    0: {__defineGetter__: ƒ, __defineSetter__: ƒ, hasOwnProperty: ƒ, __lookupGetter__: ƒ, __lookupSetter__: ƒ…}
     length: 1
     __proto__: Array(0)
 globals[30]
-Object {__defineGetter__: ƒ, __defineSetter__: ƒ, hasOwnProperty: ƒ, __lookupGetter__: ƒ, __lookupSetter__: ƒ…}
+{__defineGetter__: ƒ, __defineSetter__: ƒ, hasOwnProperty: ƒ, __lookupGetter__: ƒ, __lookupSetter__: ƒ…}
     constructor: ƒ Object()
     hasOwnProperty: ƒ hasOwnProperty()
     isPrototypeOf: ƒ isPrototypeOf()
@@ -654,7 +654,7 @@ console-format.html:7 Number {[[PrimitiveValue]]: 42}
     __proto__: Number
     [[PrimitiveValue]]: 42
 console-format.html:8 [Number]
-    0: Number
+    0: Number {[[PrimitiveValue]]: 42}
     length: 1
     __proto__: Array(0)
 globals[32]
@@ -669,7 +669,7 @@ console-format.html:7 String {0: "a", 1: "b", 2: "c", length: 3, [[PrimitiveValu
     __proto__: String
     [[PrimitiveValue]]: "abc"
 console-format.html:8 [String]
-    0: String
+    0: String {0: "a", 1: "b", 2: "c", length: 3, [[PrimitiveValue]]: "abc"}
     length: 1
     __proto__: Array(0)
 globals[33]
@@ -691,7 +691,7 @@ console-format.html:7 Uint16Array(3) [1, 2, 3]
     Symbol(Symbol.toStringTag): (...)
     __proto__: TypedArray
 console-format.html:8 [Uint16Array(3)]
-    0: Uint16Array(3)
+    0: Uint16Array(3) [1, 2, 3]
     length: 1
     __proto__: Array(0)
 globals[34]
@@ -714,7 +714,7 @@ globals[35]
 #text
 console-format.html:7 DOMException: Failed to execute 'removeChild' on 'Node': The node to be removed is not a child of this node.
 console-format.html:8 [DOMException: Failed to execute 'removeChild' on 'Node': The node to be removed is not a child of th…]
-    0: DOMException: Failed to execute 'removeChild' on 'Node': The node to be removed is not a child of this node.
+    0: DOMException: Failed to execute 'removeChild' on 'Node': The node to be removed is not a child of this node. {stack: "", code: 8, name: "NotFoundError", message: "Failed to execute 'removeChild' on 'Node': The node to be removed is not a child of this node."}
     length: 1
     __proto__: Array(0)
 globals[36]
@@ -728,7 +728,7 @@ console-format.html:7 Uint8Array [3]
     Symbol(Symbol.toStringTag): (...)
     __proto__: TypedArray
 console-format.html:8 [Uint8Array(1)]
-    0: Uint8Array(1)
+    0: Uint8Array [3]
     length: 1
     __proto__: Array(0)
 globals[37]
@@ -748,7 +748,7 @@ console-format.html:7 Uint8Array(400) [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     foo: "bar"
     __proto__: TypedArray
 console-format.html:8 [Uint8Array(400)]
-    0: Uint8Array(400)
+    0: Uint8Array(400) [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0…]
     length: 1
     __proto__: Array(0)
 globals[38]
@@ -766,7 +766,7 @@ console-format.html:7 Uint8Array(400000000) [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     [300000000 … 399999999]
     __proto__: TypedArray
 console-format.html:8 [Uint8Array(400000000)]
-    0: Uint8Array(400000000)
+    0: Uint8Array(400000000) [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0…]
     length: 1
     __proto__: Array(0)
 globals[39]
@@ -779,7 +779,7 @@ Uint8Array(400000000) [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
 console-format.html:7 namespace.longSubNamespace.x.className {}
     __proto__: Object
 console-format.html:8 [n…e.l…e.x.className]
-    0: namespace.longSubNamespace.x.className
+    0: namespace.longSubNamespace.x.className {}
     length: 1
     __proto__: Array(0)
 globals[40]
@@ -791,7 +791,7 @@ console-format.html:7 (200) [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
     length: 200
     __proto__: Array(0)
 console-format.html:8 [Array(200)]
-    0: Array(200)
+    0: (200) [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1…]
     length: 1
     __proto__: Array(0)
 globals[41]
@@ -805,7 +805,7 @@ console-format.html:7 ["test"]
     length: 1
     __proto__: Array(0)
 console-format.html:8 [Array(1)]
-    0: Array(1)
+    0: ["test"]
     length: 1
     __proto__: Array(0)
 globals[42]
