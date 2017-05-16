@@ -3545,7 +3545,6 @@ test("unit_tests") {
       "../browser/ui/passwords/manage_passwords_view_utils_desktop_unittest.cc",
       "../browser/ui/passwords/password_dialog_controller_impl_unittest.cc",
       "../browser/ui/search/instant_search_prerenderer_unittest.cc",
-      "../browser/ui/search/instant_tab_unittest.cc",
       "../browser/ui/search/ntp_user_data_logger_unittest.cc",
       "../browser/ui/search/search_delegate_unittest.cc",
       "../browser/ui/search/search_ipc_router_policy_unittest.cc",

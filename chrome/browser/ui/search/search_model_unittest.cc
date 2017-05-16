@@ -19,11 +19,11 @@ class MockSearchModelObserver : public SearchModelObserver {
   MockSearchModelObserver();
   ~MockSearchModelObserver() override;
 
-  void ModelChanged(const SearchModel::State& old_state,
-                    const SearchModel::State& new_state) override;
+  void ModelChanged(const SearchMode& old_mode,
+                    const SearchMode& new_mode) override;
 
-  void VerifySearchModelStates(const SearchModel::State& expected_old_state,
-                               const SearchModel::State& expected_new_state);
+  void VerifySearchModelStates(const SearchMode& expected_old_mode,
+                               const SearchMode& expected_new_mode);
 
   void VerifyNotificationCount(int expected_count);
 
@@ -31,8 +31,8 @@ class MockSearchModelObserver : public SearchModelObserver {
   // How many times we've seen search model changed notifications.
   int modelchanged_notification_count_;
 
-  SearchModel::State actual_old_state_;
-  SearchModel::State actual_new_state_;
+  SearchMode actual_old_mode_;
+  SearchMode actual_new_mode_;
 
   DISALLOW_COPY_AND_ASSIGN(MockSearchModelObserver);
 };
@@ -44,19 +44,18 @@ MockSearchModelObserver::MockSearchModelObserver()
 MockSearchModelObserver::~MockSearchModelObserver() {
 }
 
-void MockSearchModelObserver::ModelChanged(
-    const SearchModel::State& old_state,
-    const SearchModel::State& new_state) {
-  actual_old_state_ = old_state;
-  actual_new_state_ = new_state;
+void MockSearchModelObserver::ModelChanged(const SearchMode& old_mode,
+                                           const SearchMode& new_mode) {
+  actual_old_mode_ = old_mode;
+  actual_new_mode_ = new_mode;
   modelchanged_notification_count_++;
 }
 
 void MockSearchModelObserver::VerifySearchModelStates(
-    const SearchModel::State& expected_old_state,
-    const SearchModel::State& expected_new_state) {
-  EXPECT_TRUE(actual_old_state_ == expected_old_state);
-  EXPECT_TRUE(actual_new_state_ == expected_new_state);
+    const SearchMode& expected_old_mode,
+    const SearchMode& expected_new_mode) {
+  EXPECT_TRUE(actual_old_mode_ == expected_old_mode);
+  EXPECT_TRUE(actual_new_mode_ == expected_new_mode);
 }
 
 void MockSearchModelObserver::VerifyNotificationCount(int expected_count) {
@@ -89,56 +88,20 @@ void SearchModelTest::TearDown() {
   ChromeRenderViewHostTestHarness::TearDown();
 }
 
-TEST_F(SearchModelTest, UpdateSearchModelInstantSupport) {
-  mock_observer.VerifyNotificationCount(0);
-  EXPECT_TRUE(model->instant_support() == INSTANT_SUPPORT_NO);
-  SearchModel::State expected_old_state = model->state();
-  SearchModel::State expected_new_state(model->state());
-  expected_new_state.instant_support = INSTANT_SUPPORT_YES;
-
-  model->SetInstantSupportState(INSTANT_SUPPORT_YES);
-  mock_observer.VerifySearchModelStates(expected_old_state, expected_new_state);
-  mock_observer.VerifyNotificationCount(1);
-  EXPECT_TRUE(model->instant_support() == INSTANT_SUPPORT_YES);
-
-  expected_old_state = expected_new_state;
-  expected_new_state.instant_support = INSTANT_SUPPORT_NO;
-  model->SetInstantSupportState(INSTANT_SUPPORT_NO);
-  mock_observer.VerifySearchModelStates(expected_old_state, expected_new_state);
-  mock_observer.VerifyNotificationCount(2);
-
-  // Notify the observer only if the search model state is changed.
-  model->SetInstantSupportState(INSTANT_SUPPORT_NO);
-  EXPECT_TRUE(model->state() == expected_new_state);
-  EXPECT_TRUE(model->instant_support() == INSTANT_SUPPORT_NO);
-  mock_observer.VerifyNotificationCount(2);
-}
-
 TEST_F(SearchModelTest, UpdateSearchModelMode) {
   mock_observer.VerifyNotificationCount(0);
   SearchMode search_mode(SearchMode::MODE_NTP, SearchMode::ORIGIN_NTP);
-  SearchModel::State expected_old_state = model->state();
-  SearchModel::State expected_new_state(model->state());
-  expected_new_state.mode = search_mode;
-
+  SearchMode expected_old_mode = model->mode();
+  SearchMode expected_new_mode = search_mode;
   model->SetMode(search_mode);
-  mock_observer.VerifySearchModelStates(expected_old_state, expected_new_state);
+  mock_observer.VerifySearchModelStates(expected_old_mode, expected_new_mode);
   mock_observer.VerifyNotificationCount(1);
 
   search_mode.mode = SearchMode::MODE_SEARCH_SUGGESTIONS;
-  expected_old_state = expected_new_state;
-  expected_new_state.mode = search_mode;
+  expected_old_mode = expected_new_mode;
+  expected_new_mode = search_mode;
   model->SetMode(search_mode);
-  mock_observer.VerifySearchModelStates(expected_old_state, expected_new_state);
+  mock_observer.VerifySearchModelStates(expected_old_mode, expected_new_mode);
   mock_observer.VerifyNotificationCount(2);
-  EXPECT_TRUE(model->state() == expected_new_state);
-}
-
-TEST_F(SearchModelTest, UpdateSearchModelState) {
-  SearchModel::State expected_new_state(model->state());
-  expected_new_state.instant_support = INSTANT_SUPPORT_YES;
-  EXPECT_FALSE(model->state() == expected_new_state);
-  model->SetState(expected_new_state);
-  mock_observer.VerifyNotificationCount(1);
-  EXPECT_TRUE(model->state() == expected_new_state);
+  EXPECT_TRUE(model->mode() == expected_new_mode);
 }

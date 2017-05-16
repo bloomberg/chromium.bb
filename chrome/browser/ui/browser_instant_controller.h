@@ -45,8 +45,8 @@ class BrowserInstantController : public SearchModelObserver,
 
  private:
   // SearchModelObserver:
-  void ModelChanged(const SearchModel::State& old_state,
-                    const SearchModel::State& new_state) override;
+  void ModelChanged(const SearchMode& old_mode,
+                    const SearchMode& new_mode) override;
 
   // InstantServiceObserver:
   void DefaultSearchProviderChanged(
