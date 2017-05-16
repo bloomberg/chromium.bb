@@ -100,6 +100,8 @@ class CORE_EXPORT Modulator : public GarbageCollectedFinalized<Modulator>,
   static KURL ResolveModuleSpecifier(const String& module_request,
                                      const KURL& base_url);
 
+  virtual bool HasValidContext() = 0;
+
   virtual ScriptModule CompileModule(const String& script,
                                      const String& url_str,
                                      AccessControlStatus) = 0;

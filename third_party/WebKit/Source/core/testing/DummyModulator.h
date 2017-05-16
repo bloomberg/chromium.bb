@@ -50,6 +50,7 @@ class DummyModulator : public Modulator {
   void FetchNewSingleModule(const ModuleScriptFetchRequest&,
                             ModuleGraphLevel,
                             ModuleScriptLoaderClient*) override;
+  bool HasValidContext() override;
   ScriptModule CompileModule(const String& script,
                              const String& url_str,
                              AccessControlStatus) override;
