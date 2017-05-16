@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #import "base/mac/bind_objc_block.h"
+#include "base/task_scheduler/post_task.h"
 #include "components/sessions/core/tab_restore_service.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/sessions/ios_chrome_tab_restore_service_factory.h"
@@ -71,8 +72,9 @@ void ExternalFileRemover::RemoveFiles(bool all_files,
   if (callback_wrapper.is_null()) {
     callback_wrapper = base::Bind(&base::DoNothing);
   }
-  web::WebThread::PostBlockingPoolTaskAndReply(
-      FROM_HERE, base::BindBlockArc(^{
+  base::PostTaskWithTraitsAndReply(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
+      base::BindBlockArc(^{
         [ExternalFileController removeFilesExcluding:referencedFiles
                                            olderThan:ageInDays];
       }),
