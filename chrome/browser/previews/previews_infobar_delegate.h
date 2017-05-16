@@ -8,6 +8,7 @@
 #include "base/callback.h"
 #include "base/strings/string16.h"
 #include "components/infobars/core/confirm_infobar_delegate.h"
+#include "components/previews/core/previews_experiments.h"
 
 namespace content {
 class WebContents;
@@ -19,16 +20,6 @@ class WebContents;
 // infobar.
 class PreviewsInfoBarDelegate : public ConfirmInfoBarDelegate {
  public:
-  // The type of the infobar. It controls the strings and what UMA data is
-  // recorded for the infobar.
-  // TODO(ryansturm): Combine PreviewsInfoBarType with previews::PreviewsType.
-  // crbug.com/704335
-  enum PreviewsInfoBarType {
-    LOFI,       // Image placeholders (both server and client implementations).
-    LITE_PAGE,  // Server-side page rewrite.
-    OFFLINE,    // Offline copy of the page.
-  };
-
   typedef base::Callback<void(bool opt_out)> OnDismissPreviewsInfobarCallback;
 
   // Actions on the previews infobar. This enum must remain synchronized with
@@ -49,7 +40,7 @@ class PreviewsInfoBarDelegate : public ConfirmInfoBarDelegate {
   // to InfoBarService.
   static void Create(
       content::WebContents* web_contents,
-      PreviewsInfoBarType infobar_type,
+      previews::PreviewsType previews_type,
       bool is_data_saver_user,
       const OnDismissPreviewsInfobarCallback& on_dismiss_callback);
 
@@ -62,7 +53,7 @@ class PreviewsInfoBarDelegate : public ConfirmInfoBarDelegate {
  private:
   PreviewsInfoBarDelegate(
       content::WebContents* web_contents,
-      PreviewsInfoBarType infobar_type,
+      previews::PreviewsType previews_type,
       bool is_data_saver_user,
       const OnDismissPreviewsInfobarCallback& on_dismiss_callback);
 
@@ -74,7 +65,7 @@ class PreviewsInfoBarDelegate : public ConfirmInfoBarDelegate {
   int GetButtons() const override;
   bool LinkClicked(WindowOpenDisposition disposition) override;
 
-  PreviewsInfoBarType infobar_type_;
+  previews::PreviewsType previews_type_;
   mutable PreviewsInfoBarAction infobar_dismissed_action_;
 
   const base::string16 message_text_;

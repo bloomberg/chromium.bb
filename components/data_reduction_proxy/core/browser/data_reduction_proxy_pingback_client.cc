@@ -111,6 +111,11 @@ void AddDataToPageloadMetrics(const DataReductionProxyData& request_data,
     request->set_previews_type(PageloadMetrics_PreviewsType_NONE);
   }
 
+  // Only report opt out information if a server preview was shown (otherwise,
+  // report opt out unknown). Similarly, if app background (Android) caused this
+  // report to be sent before the page load is terminated, do not report opt out
+  // information as the user could reload the original preview after this report
+  // is sent.
   if (!was_preview_shown || timing.app_background_occurred) {
     request->set_previews_opt_out(PageloadMetrics_PreviewsOptOut_UNKNOWN);
     return;
