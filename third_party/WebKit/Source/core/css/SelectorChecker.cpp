@@ -66,8 +66,10 @@ namespace blink {
 using namespace HTMLNames;
 
 static bool IsFrameFocused(const Element& element) {
-  return element.GetDocument().GetFrame() &&
-         element.GetDocument().GetFrame()->Selection().IsFocusedAndActive();
+  return element.GetDocument().GetFrame() && element.GetDocument()
+                                                 .GetFrame()
+                                                 ->Selection()
+                                                 .FrameIsFocusedAndActive();
 }
 
 static bool MatchesSpatialNavigationFocusPseudoClass(const Element& element) {

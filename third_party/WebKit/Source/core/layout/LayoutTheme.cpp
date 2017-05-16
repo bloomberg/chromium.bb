@@ -522,7 +522,7 @@ bool LayoutTheme::IsFocused(const LayoutObject& o) {
   LocalFrame* frame = document.GetFrame();
   return node == document.FocusedElement() && node->IsFocused() &&
          node->ShouldHaveFocusAppearance() && frame &&
-         frame->Selection().IsFocusedAndActive();
+         frame->Selection().FrameIsFocusedAndActive();
 }
 
 bool LayoutTheme::IsPressed(const LayoutObject& o) {

@@ -2672,7 +2672,7 @@ void WebViewImpl::SetFocusedFrame(WebFrame* frame) {
     // Clears the focused frame if any.
     Frame* focused_frame = FocusedCoreFrame();
     if (focused_frame && focused_frame->IsLocalFrame())
-      ToLocalFrame(focused_frame)->Selection().SetFocused(false);
+      ToLocalFrame(focused_frame)->Selection().SetFrameIsFocused(false);
     return;
   }
   LocalFrame* core_frame = ToWebLocalFrameImpl(frame)->GetFrame();

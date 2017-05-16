@@ -204,10 +204,9 @@ class CORE_EXPORT FrameSelection final
 
   // Focus
   bool SelectionHasFocus() const;
-  // TODO(hugoh): Rename the following 3 methods to:
-  void SetFocused(bool);                       // SetFrameIsFocused(),
-  bool IsFocused() const { return focused_; }  // FrameIsFocused(),
-  bool IsFocusedAndActive() const;             // FrameIsFocusedAndActive().
+  void SetFrameIsFocused(bool);
+  bool FrameIsFocused() const { return focused_; }
+  bool FrameIsFocusedAndActive() const;
   void PageActivationChanged();
 
   void SetUseSecureKeyboardEntryWhenActive(bool);

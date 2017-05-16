@@ -749,7 +749,7 @@ void FrameSelection::NotifyEventHandlerForSelectionChange() {
 }
 
 void FrameSelection::FocusedOrActiveStateChanged() {
-  bool active_and_focused = IsFocusedAndActive();
+  bool active_and_focused = FrameIsFocusedAndActive();
 
   // Trigger style invalidation from the focused element. Even though
   // the focused element hasn't changed, the evaluation of focus pseudo
@@ -788,7 +788,7 @@ void FrameSelection::PageActivationChanged() {
 }
 
 void FrameSelection::UpdateSecureKeyboardEntryIfActive() {
-  if (!IsFocusedAndActive())
+  if (!FrameIsFocusedAndActive())
     return;
   SetUseSecureKeyboardEntry(use_secure_keyboard_entry_when_active_);
 }
@@ -808,7 +808,7 @@ void FrameSelection::SetUseSecureKeyboardEntry(bool enable) {
     DisableSecureTextInput();
 }
 
-void FrameSelection::SetFocused(bool flag) {
+void FrameSelection::SetFrameIsFocused(bool flag) {
   if (focused_ == flag)
     return;
   focused_ = flag;
@@ -816,7 +816,7 @@ void FrameSelection::SetFocused(bool flag) {
   FocusedOrActiveStateChanged();
 }
 
-bool FrameSelection::IsFocusedAndActive() const {
+bool FrameSelection::FrameIsFocusedAndActive() const {
   return focused_ && frame_->GetPage() &&
          frame_->GetPage()->GetFocusController().IsActive();
 }
@@ -860,7 +860,8 @@ static bool IsFrameElement(const Node* n) {
 }
 
 void FrameSelection::SetFocusedNodeIfNeeded() {
-  if (ComputeVisibleSelectionInDOMTreeDeprecated().IsNone() || !IsFocused())
+  if (ComputeVisibleSelectionInDOMTreeDeprecated().IsNone() ||
+      !FrameIsFocused())
     return;
 
   if (Element* target =

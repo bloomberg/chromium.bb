@@ -754,12 +754,12 @@ void FocusController::SetFocusedFrame(Frame* frame, bool notify_embedder) {
   // Now that the frame is updated, fire events and update the selection focused
   // states of both frames.
   if (old_frame && old_frame->View()) {
-    old_frame->Selection().SetFocused(false);
+    old_frame->Selection().SetFrameIsFocused(false);
     old_frame->DomWindow()->DispatchEvent(Event::Create(EventTypeNames::blur));
   }
 
   if (new_frame && new_frame->View() && IsFocused()) {
-    new_frame->Selection().SetFocused(true);
+    new_frame->Selection().SetFrameIsFocused(true);
     new_frame->DomWindow()->DispatchEvent(Event::Create(EventTypeNames::focus));
   }
 
@@ -869,7 +869,7 @@ void FocusController::SetFocused(bool focused) {
   // m_focusedFrame might be changed by blur/focus event handlers.
   if (focused_frame_ && focused_frame_->IsLocalFrame() &&
       ToLocalFrame(focused_frame_.Get())->View()) {
-    ToLocalFrame(focused_frame_.Get())->Selection().SetFocused(focused);
+    ToLocalFrame(focused_frame_.Get())->Selection().SetFrameIsFocused(focused);
     DispatchEventsOnWindowAndFocusedElement(
         ToLocalFrame(focused_frame_.Get())->GetDocument(), focused);
   }

@@ -35,7 +35,7 @@ void ImagePainter::PaintAreaElementFocusRing(const PaintInfo& paint_info,
   Document& document = layout_image_.GetDocument();
 
   if (paint_info.IsPrinting() ||
-      !document.GetFrame()->Selection().IsFocusedAndActive())
+      !document.GetFrame()->Selection().FrameIsFocusedAndActive())
     return;
 
   Element* focused_element = document.FocusedElement();

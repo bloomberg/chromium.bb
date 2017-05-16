@@ -1403,7 +1403,7 @@ Color LayoutObject::SelectionBackgroundColor() const {
   if (RefPtr<ComputedStyle> pseudo_style = GetUncachedSelectionStyle())
     return ResolveColor(*pseudo_style, CSSPropertyBackgroundColor)
         .BlendWithWhite();
-  return GetFrame()->Selection().IsFocusedAndActive()
+  return GetFrame()->Selection().FrameIsFocusedAndActive()
              ? LayoutTheme::GetTheme().ActiveSelectionBackgroundColor()
              : LayoutTheme::GetTheme().InactiveSelectionBackgroundColor();
 }
@@ -1420,7 +1420,7 @@ Color LayoutObject::SelectionColor(
     return ResolveColor(*pseudo_style, color_property);
   if (!LayoutTheme::GetTheme().SupportsSelectionForegroundColors())
     return ResolveColor(color_property);
-  return GetFrame()->Selection().IsFocusedAndActive()
+  return GetFrame()->Selection().FrameIsFocusedAndActive()
              ? LayoutTheme::GetTheme().ActiveSelectionForegroundColor()
              : LayoutTheme::GetTheme().InactiveSelectionForegroundColor();
 }
