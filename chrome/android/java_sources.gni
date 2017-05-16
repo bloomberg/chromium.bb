@@ -1526,6 +1526,7 @@ chrome_test_java_sources = [
   "javatests/src/org/chromium/chrome/browser/payments/PaymentRequestIncompleteServerCardTest.java",
   "javatests/src/org/chromium/chrome/browser/payments/PaymentRequestJourneyLoggerTest.java",
   "javatests/src/org/chromium/chrome/browser/payments/PaymentRequestMetricsUnitTest.java",
+  "javatests/src/org/chromium/chrome/browser/payments/PaymentRequestModifierTest.java",
   "javatests/src/org/chromium/chrome/browser/payments/PaymentRequestMultipleContactDetailsTest.java",
   "javatests/src/org/chromium/chrome/browser/payments/PaymentRequestMetricsTest.java",
   "javatests/src/org/chromium/chrome/browser/payments/PaymentRequestNameAndFreeShippingTest.java",
