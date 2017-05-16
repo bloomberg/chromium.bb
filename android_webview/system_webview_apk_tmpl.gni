@@ -30,7 +30,9 @@ template("system_webview_apk_tmpl") {
     }
     aapt_locale_whitelist = locales
 
-    if (!is_java_debug) {
+    if (is_java_debug) {
+      enable_multidex = true
+    } else {
       proguard_enabled = true
       if (!defined(proguard_configs)) {
         proguard_configs = []
