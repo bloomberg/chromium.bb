@@ -11,13 +11,16 @@ option optimize_for = LITE_RUNTIME;
 package chrome_intelligence;
 
 // Defines a Chrome Ranker Translate Model.
-// Next tag: 12
+// Next tag: 13
 message TranslateRankerModel {
   // A number that identifies the version of this model.
   optional uint32 version = 1;
 
   // Defines the weights and bias of a Logistic Regression Model.
   message LogisticRegressionModel {
+    // Decision threshold. If not defined, use 0.5.
+    optional float threshold = 12;
+
     optional float bias = 1;
 
     optional float accept_ratio_weight = 2;
