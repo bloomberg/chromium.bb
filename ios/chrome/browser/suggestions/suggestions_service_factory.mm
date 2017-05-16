@@ -10,6 +10,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/singleton.h"
 #include "base/sequenced_task_runner.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "components/browser_sync/profile_sync_service.h"
 #include "components/image_fetcher/core/image_fetcher.h"
@@ -67,11 +68,9 @@ SuggestionsServiceFactory::~SuggestionsServiceFactory() {
 std::unique_ptr<KeyedService>
 SuggestionsServiceFactory::BuildServiceInstanceFor(
     web::BrowserState* context) const {
-  base::SequencedWorkerPool* sequenced_worker_pool =
-      web::WebThread::GetBlockingPool();
   scoped_refptr<base::SequencedTaskRunner> background_task_runner =
-      sequenced_worker_pool->GetSequencedTaskRunner(
-          sequenced_worker_pool->GetSequenceToken());
+      base::CreateSequencedTaskRunnerWithTraits(
+          {base::MayBlock(), base::TaskPriority::BACKGROUND});
 
   ios::ChromeBrowserState* browser_state =
       ios::ChromeBrowserState::FromBrowserState(context);
@@ -93,7 +92,8 @@ SuggestionsServiceFactory::BuildServiceInstanceFor(
 
   std::unique_ptr<image_fetcher::ImageFetcher> image_fetcher =
       base::MakeUnique<image_fetcher::ImageFetcherImpl>(
-          image_fetcher::CreateIOSImageDecoder(sequenced_worker_pool),
+          image_fetcher::CreateIOSImageDecoder(
+              web::WebThread::GetBlockingPool()),
           browser_state->GetRequestContext());
 
   std::unique_ptr<ImageManager> thumbnail_manager(new ImageManager(
