@@ -16,6 +16,7 @@
 #import "ios/chrome/browser/ui/collection_view/collection_view_model.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_collection_view_controller.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_collection_view_item.h"
+#import "ios/chrome/browser/ui/reading_list/reading_list_mediator.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_utils.h"
 #import "ios/chrome/browser/ui/url_loader.h"
 #include "ios/web/public/referrer.h"
@@ -98,6 +99,8 @@ class ReadingListCoordinatorTest : public web::WebTestWithWebState {
 
     reading_list_model_.reset(new ReadingListModelImpl(
         nullptr, nullptr, base::MakeUnique<base::DefaultClock>()));
+    mediator_.reset(
+        [[ReadingListMediator alloc] initWithModel:reading_list_model_.get()]);
     large_icon_service_.reset(new favicon::LargeIconService(
         &mock_favicon_service_, base::ThreadTaskRunnerHandle::Get(),
         /*image_fetcher=*/nullptr));
@@ -121,14 +124,14 @@ class ReadingListCoordinatorTest : public web::WebTestWithWebState {
   ReadingListCollectionViewController*
   GetAReadingListCollectionViewController() {
     return [[[ReadingListCollectionViewController alloc]
-                     initWithModel:reading_list_model_.get()
-                  largeIconService:large_icon_service_.get()
-        readingListDownloadService:nil
-                           toolbar:nil] autorelease];
+        initWithDataSource:mediator_
+          largeIconService:large_icon_service_.get()
+                   toolbar:nil] autorelease];
   }
 
  private:
   base::scoped_nsobject<ReadingListCoordinator> coordinator_;
+  base::scoped_nsobject<ReadingListMediator> mediator_;
   std::unique_ptr<ReadingListModelImpl> reading_list_model_;
   base::scoped_nsobject<UrlLoaderStub> loader_mock_;
   testing::StrictMock<favicon::MockFaviconService> mock_favicon_service_;

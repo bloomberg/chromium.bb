@@ -16,6 +16,7 @@
 #include "ios/chrome/browser/reading_list/reading_list_model_factory.h"
 #import "ios/chrome/browser/ui/alert_coordinator/action_sheet_coordinator.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_collection_view_item.h"
+#import "ios/chrome/browser/ui/reading_list/reading_list_mediator.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_toolbar.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_view_controller.h"
 #import "ios/chrome/browser/ui/url_loader.h"
@@ -55,6 +56,7 @@ enum UMAContextMenuAction {
 // Used to load the Reading List pages.
 @property(nonatomic, weak) id<UrlLoader> URLLoader;
 @property(nonatomic, strong) ReadingListViewController* containerViewController;
+@property(nonatomic, strong) ReadingListMediator* mediator;
 @property(nonatomic, strong) AlertCoordinator* alertCoordinator;
 
 @end
@@ -65,6 +67,7 @@ enum UMAContextMenuAction {
 @synthesize containerViewController = _containerViewController;
 @synthesize URLLoader = _URLLoader;
 @synthesize browserState = _browserState;
+@synthesize mediator = _mediator;
 
 - (instancetype)initWithBaseViewController:(UIViewController*)viewController
                               browserState:
@@ -87,17 +90,14 @@ enum UMAContextMenuAction {
             self.browserState);
     favicon::LargeIconService* largeIconService =
         IOSChromeLargeIconServiceFactory::GetForBrowserState(self.browserState);
-    ReadingListDownloadService* readingListDownloadService =
-        ReadingListDownloadServiceFactory::GetInstance()->GetForBrowserState(
-            self.browserState);
 
+    self.mediator = [[ReadingListMediator alloc] initWithModel:model];
     ReadingListToolbar* toolbar = [[ReadingListToolbar alloc] init];
     ReadingListCollectionViewController* collectionViewController =
         [[ReadingListCollectionViewController alloc]
-                         initWithModel:model
-                      largeIconService:largeIconService
-            readingListDownloadService:readingListDownloadService
-                               toolbar:toolbar];
+            initWithDataSource:self.mediator
+              largeIconService:largeIconService
+                       toolbar:toolbar];
     collectionViewController.delegate = self;
 
     self.containerViewController = [[ReadingListViewController alloc]
@@ -138,8 +138,8 @@ enum UMAContextMenuAction {
   }
 
   const ReadingListEntry* entry =
-      readingListCollectionViewController.readingListModel->GetEntryByURL(
-          readingListItem.url);
+      [readingListCollectionViewController.dataSource
+          entryWithURL:readingListItem.url];
 
   if (!entry) {
     [readingListCollectionViewController reloadData];
@@ -232,8 +232,8 @@ readingListCollectionViewController:
                            openItem:
                                (ReadingListCollectionViewItem*)readingListItem {
   const ReadingListEntry* entry =
-      readingListCollectionViewController.readingListModel->GetEntryByURL(
-          readingListItem.url);
+      [readingListCollectionViewController.dataSource
+          entryWithURL:readingListItem.url];
 
   if (!entry) {
     [readingListCollectionViewController reloadData];
@@ -263,8 +263,8 @@ readingListCollectionViewController:
 
   UMA_HISTOGRAM_BOOLEAN("ReadingList.OfflineVersionDisplayed", true);
   const GURL updateURL = entryURL;
-  readingListCollectionViewController.readingListModel->SetReadStatus(updateURL,
-                                                                      true);
+  [readingListCollectionViewController.dataSource setReadStatus:YES
+                                                         forURL:updateURL];
 }
 
 - (void)readingListCollectionViewController:

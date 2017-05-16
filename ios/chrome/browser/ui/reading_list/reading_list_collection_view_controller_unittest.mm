@@ -23,6 +23,7 @@
 #include "ios/chrome/browser/favicon/ios_chrome_large_icon_service_factory.h"
 #import "ios/chrome/browser/ui/collection_view/collection_view_model.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_collection_view_item.h"
+#import "ios/chrome/browser/ui/reading_list/reading_list_mediator.h"
 #include "ios/web/public/test/test_web_thread_bundle.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -42,14 +43,13 @@ class ReadingListCollectionViewControllerTest : public testing::Test {
 
   testing::StrictMock<favicon::MockFaviconService> mock_favicon_service_;
   std::unique_ptr<ReadingListModelImpl> reading_list_model_;
+  base::scoped_nsobject<ReadingListMediator> mediator_;
   std::unique_ptr<favicon::LargeIconService> large_icon_service_;
 
   base::scoped_nsobject<ReadingListCollectionViewController>
       reading_list_view_controller_;
   id mock_delegate_;
 
-  // TODO(crbug.com/625617) When offline url can be opened, use a mock for the
-  // readinglistdownloadservice.
   void SetUp() override {
     testing::Test::SetUp();
 
@@ -59,15 +59,16 @@ class ReadingListCollectionViewControllerTest : public testing::Test {
 
     reading_list_model_.reset(new ReadingListModelImpl(
         nullptr, nullptr, base::MakeUnique<base::DefaultClock>()));
+    mediator_.reset(
+        [[ReadingListMediator alloc] initWithModel:reading_list_model_.get()]);
     large_icon_service_.reset(new favicon::LargeIconService(
         &mock_favicon_service_, base::ThreadTaskRunnerHandle::Get(),
         /*image_fetcher=*/nullptr));
     reading_list_view_controller_.reset(
         [[ReadingListCollectionViewController alloc]
-                         initWithModel:reading_list_model_.get()
-                      largeIconService:large_icon_service_.get()
-            readingListDownloadService:nil
-                               toolbar:nil]);
+            initWithDataSource:mediator_
+              largeIconService:large_icon_service_.get()
+                       toolbar:nil]);
 
     mock_delegate_ = [OCMockObject
         niceMockForProtocol:@protocol(

@@ -18,7 +18,7 @@ class LargeIconService;
 class GURL;
 @class ReadingListCollectionViewController;
 @class ReadingListCollectionViewItem;
-class ReadingListDownloadService;
+@protocol ReadingListDataSource;
 class ReadingListModel;
 @class TabModel;
 
@@ -75,11 +75,9 @@ readingListCollectionViewController:
 @interface ReadingListCollectionViewController
     : CollectionViewController<ReadingListToolbarActions>
 
-- (instancetype)initWithModel:(ReadingListModel*)model
-              largeIconService:(favicon::LargeIconService*)largeIconService
-    readingListDownloadService:
-        (ReadingListDownloadService*)readingListDownloadService
-                       toolbar:(ReadingListToolbar*)toolbar
+- (instancetype)initWithDataSource:(id<ReadingListDataSource>)dataSource
+                  largeIconService:(favicon::LargeIconService*)largeIconService
+                           toolbar:(ReadingListToolbar*)toolbar
     NS_DESIGNATED_INITIALIZER;
 - (instancetype)initWithStyle:(CollectionViewControllerStyle)style
     NS_UNAVAILABLE;
@@ -88,11 +86,10 @@ readingListCollectionViewController:
     delegate;
 @property(nonatomic, weak) id<ReadingListCollectionViewControllerAudience>
     audience;
+@property(nonatomic, weak) id<ReadingListDataSource> dataSource;
 
-@property(nonatomic, readonly) ReadingListModel* readingListModel;
-@property(nonatomic, readonly) favicon::LargeIconService* largeIconService;
-@property(nonatomic, readonly)
-    ReadingListDownloadService* readingListDownloadService;
+@property(nonatomic, assign, readonly)
+    favicon::LargeIconService* largeIconService;
 
 // Prepares this view controller to be dismissed.
 - (void)willBeDismissed;

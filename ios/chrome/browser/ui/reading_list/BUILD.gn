@@ -2,32 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-bundle_data("resources") {
-  sources = [
-    "resources/distillation_fail.png",
-    "resources/distillation_fail@2x.png",
-    "resources/distillation_fail@3x.png",
-    "resources/distillation_success.png",
-    "resources/distillation_success@2x.png",
-    "resources/distillation_success@3x.png",
-    "resources/reading_list_empty_state.png",
-    "resources/reading_list_empty_state@2x.png",
-    "resources/reading_list_empty_state@3x.png",
-    "resources/reading_list_share_icon.png",
-    "resources/reading_list_share_icon@2x.png",
-    "resources/reading_list_share_icon@3x.png",
-    "resources/reading_list_side_swipe.png",
-    "resources/reading_list_side_swipe@2x.png",
-    "resources/reading_list_side_swipe@3x.png",
-    "resources/reading_list_toolbar_icon.png",
-    "resources/reading_list_toolbar_icon@2x.png",
-    "resources/reading_list_toolbar_icon@3x.png",
-  ]
-  outputs = [
-    "{{bundle_resources_dir}}/{{source_file_part}}",
-  ]
-}
-
 source_set("reading_list") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
@@ -42,8 +16,12 @@ source_set("reading_list") {
     "reading_list_collection_view_item_accessibility_delegate.h",
     "reading_list_coordinator.h",
     "reading_list_coordinator.mm",
+    "reading_list_data_sink.h",
+    "reading_list_data_source.h",
     "reading_list_empty_collection_background.h",
     "reading_list_empty_collection_background.mm",
+    "reading_list_mediator.h",
+    "reading_list_mediator.mm",
     "reading_list_menu_notification_delegate.h",
     "reading_list_menu_notifier.h",
     "reading_list_menu_notifier.mm",
@@ -157,5 +135,31 @@ source_set("eg_tests") {
   libs = [
     "UIKit.framework",
     "XCTest.framework",
+  ]
+}
+
+bundle_data("resources") {
+  sources = [
+    "resources/distillation_fail.png",
+    "resources/distillation_fail@2x.png",
+    "resources/distillation_fail@3x.png",
+    "resources/distillation_success.png",
+    "resources/distillation_success@2x.png",
+    "resources/distillation_success@3x.png",
+    "resources/reading_list_empty_state.png",
+    "resources/reading_list_empty_state@2x.png",
+    "resources/reading_list_empty_state@3x.png",
+    "resources/reading_list_share_icon.png",
+    "resources/reading_list_share_icon@2x.png",
+    "resources/reading_list_share_icon@3x.png",
+    "resources/reading_list_side_swipe.png",
+    "resources/reading_list_side_swipe@2x.png",
+    "resources/reading_list_side_swipe@3x.png",
+    "resources/reading_list_toolbar_icon.png",
+    "resources/reading_list_toolbar_icon@2x.png",
+    "resources/reading_list_toolbar_icon@3x.png",
+  ]
+  outputs = [
+    "{{bundle_resources_dir}}/{{source_file_part}}",
   ]
 }
