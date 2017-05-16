@@ -49,6 +49,7 @@ class CORE_EXPORT TreeScopeStyleSheetCollection : public StyleSheetCollection {
   bool HasStyleSheetCandidateNodes() const {
     return !style_sheet_candidate_nodes_.IsEmpty();
   }
+  bool HasStyleSheets() const;
 
   bool MediaQueryAffectingValueChanged();
 

@@ -284,6 +284,7 @@ test("webkit_unit_tests") {
     "tests/FrameTestHelpers.h",
     "tests/FrameThrottlingTest.cpp",
     "tests/HTMLDocumentParserLoadingTest.cpp",
+    "tests/HTMLImportSheetsTest.cpp",
     "tests/ImeOnFocusTest.cpp",
     "tests/IntersectionObserverTest.cpp",
     "tests/KeyboardTest.cpp",

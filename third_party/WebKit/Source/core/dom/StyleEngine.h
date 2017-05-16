@@ -117,6 +117,9 @@ class CORE_EXPORT StyleEngine final
   RuleSet* WatchedSelectorsRuleSet() {
     return global_rule_set_.WatchedSelectorsRuleSet();
   }
+  bool HasStyleSheets() const {
+    return GetDocumentStyleSheetCollection().HasStyleSheets();
+  }
 
   RuleSet* RuleSetForSheet(CSSStyleSheet&);
   void MediaQueryAffectingValueChanged();
