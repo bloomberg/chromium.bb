@@ -293,9 +293,16 @@ Polymer({
   /**
    * Sends the newly created custom sync passphrase to the browser.
    * @private
+   * @param {Event} e
    */
-  onSaveNewPassphraseTap_: function() {
+  onSaveNewPassphraseTap_: function(e) {
     assert(this.creatingNewPassphrase_);
+
+    // Ignore events on irrevelant elements or with irrelevant keys.
+    if (e.target.tagName != 'PAPER-BUTTON' && e.target.tagName != 'PAPER-INPUT')
+      return;
+    if (e.type == 'keypress' && e.key != 'Enter')
+      return;
 
     // If a new password has been entered but it is invalid, do not send the
     // sync state to the API.
@@ -313,8 +320,12 @@ Polymer({
   /**
    * Sends the user-entered existing password to re-enable sync.
    * @private
+   * @param {Event} e
    */
-  onSubmitExistingPassphraseTap_: function() {
+  onSubmitExistingPassphraseTap_: function(e) {
+    if (e.type == 'keypress' && e.key != 'Enter')
+      return;
+
     assert(!this.creatingNewPassphrase_);
 
     this.syncPrefs.setNewPassphrase = false;
