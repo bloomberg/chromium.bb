@@ -6,7 +6,6 @@
 
 #import <UIKit/UIKit.h>
 
-#include "base/critical_closure.h"
 #include "base/files/file_path.h"
 #include "base/format_macros.h"
 #include "base/location.h"
@@ -16,14 +15,13 @@
 #include "base/memory/ref_counted.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/sys_string_conversions.h"
-#include "base/threading/sequenced_worker_pool.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/threading/thread_restrictions.h"
 #import "ios/chrome/browser/sessions/session_ios.h"
 #import "ios/chrome/browser/sessions/session_window_ios.h"
 #import "ios/web/public/crw_navigation_item_storage.h"
 #import "ios/web/public/crw_session_certificate_policy_cache_storage.h"
 #import "ios/web/public/crw_session_storage.h"
-#include "ios/web/public/web_thread.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -82,9 +80,10 @@ NSString* const kRootObjectKey = @"root";  // Key for the root object.
 #pragma mark - NSObject overrides
 
 - (instancetype)init {
-  base::SequencedWorkerPool* pool = web::WebThread::GetBlockingPool();
   scoped_refptr<base::SequencedTaskRunner> taskRunner =
-      pool->GetSequencedTaskRunner(pool->GetSequenceToken());
+      base::CreateSequencedTaskRunnerWithTraits(
+          {base::MayBlock(), base::TaskPriority::BACKGROUND,
+           base::TaskShutdownBehavior::BLOCK_SHUTDOWN});
   return [self initWithTaskRunner:taskRunner];
 }
 
@@ -200,10 +199,10 @@ NSString* const kRootObjectKey = @"root";  // Key for the root object.
 
   @try {
     NSData* sessionData = [NSKeyedArchiver archivedDataWithRootObject:session];
-    _taskRunner->PostTask(
-        FROM_HERE, base::MakeCriticalClosure(base::BindBlockArc(^{
-          [self performSaveSessionData:sessionData sessionPath:sessionPath];
-        })));
+    _taskRunner->PostTask(FROM_HERE, base::BindBlockArc(^{
+                            [self performSaveSessionData:sessionData
+                                             sessionPath:sessionPath];
+                          }));
   } @catch (NSException* exception) {
     NOTREACHED() << "Error serializing session for path: "
                  << base::SysNSStringToUTF8(sessionPath) << ": "
