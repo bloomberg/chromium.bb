@@ -12,7 +12,6 @@ Has category: Network
 Has category: Panel
 Has category: Settings
 Has category: Sources
-Has category: UI
 
 Switching to console panel
 Current panel: console
