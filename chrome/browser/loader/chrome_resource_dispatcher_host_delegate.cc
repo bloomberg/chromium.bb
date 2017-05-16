@@ -101,9 +101,9 @@
 
 #if defined(OS_ANDROID)
 #include "chrome/browser/android/download/intercept_download_resource_throttle.h"
-#include "chrome/browser/android/offline_pages/background_loader_offliner.h"
 #include "chrome/browser/android/offline_pages/downloads/resource_throttle.h"
 #include "chrome/browser/loader/data_reduction_proxy_resource_throttle_android.h"
+#include "chrome/browser/offline_pages/background_loader_offliner.h"
 #include "components/navigation_interception/intercept_navigation_delegate.h"
 #endif
 

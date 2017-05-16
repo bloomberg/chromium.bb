@@ -2128,8 +2128,6 @@ split_static_library("browser") {
 
   if (enable_offline_pages) {
     sources += [
-      "android/offline_pages/background_loader_offliner.cc",
-      "android/offline_pages/background_loader_offliner.h",
       "android/offline_pages/background_scheduler_bridge.cc",
       "android/offline_pages/background_scheduler_bridge.h",
       "android/offline_pages/downloads/offline_page_download_bridge.cc",
@@ -2172,6 +2170,8 @@ split_static_library("browser") {
       "android/offline_pages/recent_tab_helper.h",
       "android/offline_pages/request_coordinator_factory.cc",
       "android/offline_pages/request_coordinator_factory.h",
+      "offline_pages/background_loader_offliner.cc",
+      "offline_pages/background_loader_offliner.h",
     ]
     deps += [
       "//components/offline_pages/content",
