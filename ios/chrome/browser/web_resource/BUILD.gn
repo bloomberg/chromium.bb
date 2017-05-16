@@ -22,6 +22,7 @@ source_set("unit_tests") {
   deps = [
     ":web_resource",
     "//base",
+    "//base/test:test_support",
     "//ios/web",
     "//testing/gtest",
   ]

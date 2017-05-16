@@ -9,10 +9,9 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
-#include "base/threading/sequenced_worker_pool.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/values.h"
 #include "ios/web/public/web_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -52,11 +51,10 @@ class WebResourceUtilTest : public testing::Test {
     EXPECT_FALSE(success_called_);
     EXPECT_FALSE(error_called_);
 
-    web::WebThread::GetBlockingPool()->FlushForTesting();
-    base::RunLoop().RunUntilIdle();
+    scoped_task_environment_.RunUntilIdle();
   }
 
-  base::MessageLoop loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   std::string error_;
   std::unique_ptr<base::Value> value_;
   bool error_called_;
