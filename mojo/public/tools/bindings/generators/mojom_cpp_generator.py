@@ -381,21 +381,21 @@ class Generator(generator.Generator):
     return self._GetJinjaExports()
 
   def GenerateFiles(self, args):
+    self.module.Stylize(generator.Stylizer())
+
     if self.generate_non_variant_code:
       self.Write(self._GenerateModuleSharedHeader(),
-                 self.MatchMojomFilePath("%s-shared.h" % self.module.name))
-      self.Write(
-          self._GenerateModuleSharedInternalHeader(),
-          self.MatchMojomFilePath("%s-shared-internal.h" % self.module.name))
+                 "%s-shared.h" % self.module.path)
+      self.Write(self._GenerateModuleSharedInternalHeader(),
+                 "%s-shared-internal.h" % self.module.path)
       self.Write(self._GenerateModuleSharedSource(),
-                 self.MatchMojomFilePath("%s-shared.cc" % self.module.name))
+                 "%s-shared.cc" % self.module.path)
     else:
       suffix = "-%s" % self.variant if self.variant else ""
       self.Write(self._GenerateModuleHeader(),
-                 self.MatchMojomFilePath("%s%s.h" % (self.module.name, suffix)))
-      self.Write(
-          self._GenerateModuleSource(),
-          self.MatchMojomFilePath("%s%s.cc" % (self.module.name, suffix)))
+                 "%s%s.h" % (self.module.path, suffix))
+      self.Write(self._GenerateModuleSource(),
+                 "%s%s.cc" % (self.module.path, suffix))
 
   def _ConstantValue(self, constant):
     return self._ExpressionToText(constant.value, kind=constant.kind)

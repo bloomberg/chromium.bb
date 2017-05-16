@@ -10,20 +10,20 @@ representation of a mojom file. When called it's assumed that all imports have
 already been parsed and converted to ASTs before.
 """
 
-import copy
+import os
 import re
 
 import module as mojom
 from mojom.parse import ast
 
 def _DuplicateName(values):
-  """Returns the 'name' of the first entry in |values| whose 'name' has already
-     been encountered. If there are no duplicates, returns None."""
+  """Returns the 'mojom_name' of the first entry in |values| whose 'mojom_name'
+  has already been encountered. If there are no duplicates, returns None."""
   names = set()
   for value in values:
-    if value.name in names:
-      return value.name
-    names.add(value.name)
+    if value.mojom_name in names:
+      return value.mojom_name
+    names.add(value.mojom_name)
   return None
 
 def _ElemsOfType(elems, elem_type, scope):
@@ -121,36 +121,36 @@ def _LookupKind(kinds, spec, scope):
   |scope| is a tuple that looks like (namespace, struct/interface), referring
   to the location where the type is referenced."""
   if spec.startswith('x:'):
-    name = spec[2:]
+    mojom_name = spec[2:]
     for i in xrange(len(scope), -1, -1):
       test_spec = 'x:'
       if i > 0:
         test_spec += '.'.join(scope[:i]) + '.'
-      test_spec += name
+      test_spec += mojom_name
       kind = kinds.get(test_spec)
       if kind:
         return kind
 
   return kinds.get(spec)
 
-def _LookupValue(values, name, scope, kind):
+def _LookupValue(values, mojom_name, scope, kind):
   """Like LookupKind, but for constant values."""
   # If the type is an enum, the value can be specified as a qualified name, in
   # which case the form EnumName.ENUM_VALUE must be used. We use the presence
   # of a '.' in the requested name to identify this. Otherwise, we prepend the
   # enum name.
-  if isinstance(kind, mojom.Enum) and '.' not in name:
-    name = '%s.%s' % (kind.spec.split(':', 1)[1], name)
+  if isinstance(kind, mojom.Enum) and '.' not in mojom_name:
+    mojom_name = '%s.%s' % (kind.spec.split(':', 1)[1], mojom_name)
   for i in reversed(xrange(len(scope) + 1)):
     test_spec = '.'.join(scope[:i])
     if test_spec:
       test_spec += '.'
-    test_spec += name
+    test_spec += mojom_name
     value = values.get(test_spec)
     if value:
       return value
 
-  return values.get(name)
+  return values.get(mojom_name)
 
 def _FixupExpression(module, value, scope, kind):
   """Translates an IDENTIFIER into a built-in value or structured NamedValue
@@ -246,9 +246,9 @@ def _Struct(module, parsed_struct):
     {mojom.Struct} AST struct.
   """
   struct = mojom.Struct(module=module)
-  struct.name = parsed_struct.name
+  struct.mojom_name = parsed_struct.mojom_name
   struct.native_only = parsed_struct.body is None
-  struct.spec = 'x:' + module.namespace + '.' + struct.name
+  struct.spec = 'x:' + module.mojom_namespace + '.' + struct.mojom_name
   module.kinds[struct.spec] = struct
   if struct.native_only:
     struct.enums = []
@@ -257,13 +257,13 @@ def _Struct(module, parsed_struct):
   else:
     struct.enums = map(
         lambda enum: _Enum(module, enum, struct),
-        _ElemsOfType(parsed_struct.body, ast.Enum, parsed_struct.name))
+        _ElemsOfType(parsed_struct.body, ast.Enum, parsed_struct.mojom_name))
     struct.constants = map(
         lambda constant: _Constant(module, constant, struct),
-        _ElemsOfType(parsed_struct.body, ast.Const, parsed_struct.name))
+        _ElemsOfType(parsed_struct.body, ast.Const, parsed_struct.mojom_name))
     # Stash fields parsed_struct here temporarily.
     struct.fields_data = _ElemsOfType(
-        parsed_struct.body, ast.StructField, parsed_struct.name)
+        parsed_struct.body, ast.StructField, parsed_struct.mojom_name)
   struct.attributes = _AttributeListToDict(parsed_struct.attribute_list)
 
   # Enforce that a [Native] attribute is set to make native-only struct
@@ -285,12 +285,12 @@ def _Union(module, parsed_union):
     {mojom.Union} AST union.
   """
   union = mojom.Union(module=module)
-  union.name = parsed_union.name
-  union.spec = 'x:' + module.namespace + '.' + union.name
+  union.mojom_name = parsed_union.mojom_name
+  union.spec = 'x:' + module.mojom_namespace + '.' + union.mojom_name
   module.kinds[union.spec] = union
   # Stash fields parsed_union here temporarily.
   union.fields_data = _ElemsOfType(
-      parsed_union.body, ast.UnionField, parsed_union.name)
+      parsed_union.body, ast.UnionField, parsed_union.mojom_name)
   union.attributes = _AttributeListToDict(parsed_union.attribute_list)
   return union
 
@@ -305,14 +305,14 @@ def _StructField(module, parsed_field, struct):
     {mojom.StructField} AST struct field.
   """
   field = mojom.StructField()
-  field.name = parsed_field.name
+  field.mojom_name = parsed_field.mojom_name
   field.kind = _Kind(
       module.kinds, _MapKind(parsed_field.typename),
-      (module.namespace, struct.name))
+      (module.mojom_namespace, struct.mojom_name))
   field.ordinal = parsed_field.ordinal.value if parsed_field.ordinal else None
   field.default = _FixupExpression(
-      module, parsed_field.default_value, (module.namespace, struct.name),
-      field.kind)
+      module, parsed_field.default_value,
+      (module.mojom_namespace, struct.mojom_name), field.kind)
   field.attributes = _AttributeListToDict(parsed_field.attribute_list)
   return field
 
@@ -327,13 +327,13 @@ def _UnionField(module, parsed_field, union):
     {mojom.UnionField} AST union.
   """
   field = mojom.UnionField()
-  field.name = parsed_field.name
+  field.mojom_name = parsed_field.mojom_name
   field.kind = _Kind(
       module.kinds, _MapKind(parsed_field.typename),
-      (module.namespace, union.name))
+      (module.mojom_namespace, union.mojom_name))
   field.ordinal = parsed_field.ordinal.value if parsed_field.ordinal else None
   field.default = _FixupExpression(
-      module, None, (module.namespace, union.name), field.kind)
+      module, None, (module.mojom_namespace, union.mojom_name), field.kind)
   field.attributes = _AttributeListToDict(parsed_field.attribute_list)
   return field
 
@@ -348,10 +348,10 @@ def _Parameter(module, parsed_param, interface):
     {mojom.Parameter} AST parameter.
   """
   parameter = mojom.Parameter()
-  parameter.name = parsed_param.name
+  parameter.mojom_name = parsed_param.mojom_name
   parameter.kind = _Kind(
       module.kinds, _MapKind(parsed_param.typename),
-      (module.namespace, interface.name))
+      (module.mojom_namespace, interface.mojom_name))
   parameter.ordinal = (
       parsed_param.ordinal.value if parsed_param.ordinal else None)
   parameter.default = None  # TODO(tibell): We never have these. Remove field?
@@ -369,7 +369,7 @@ def _Method(module, parsed_method, interface):
     {mojom.Method} AST method.
   """
   method = mojom.Method(
-      interface, parsed_method.name,
+      interface, parsed_method.mojom_name,
       ordinal=parsed_method.ordinal.value if parsed_method.ordinal else None)
   method.parameters = map(
       lambda parameter: _Parameter(module, parameter, interface),
@@ -399,18 +399,18 @@ def _Interface(module, parsed_iface):
     {mojom.Interface} AST interface.
   """
   interface = mojom.Interface(module=module)
-  interface.name = parsed_iface.name
-  interface.spec = 'x:' + module.namespace + '.' + interface.name
+  interface.mojom_name = parsed_iface.mojom_name
+  interface.spec = 'x:' + module.mojom_namespace + '.' + interface.mojom_name
   module.kinds[interface.spec] = interface
   interface.enums = map(
       lambda enum: _Enum(module, enum, interface),
-      _ElemsOfType(parsed_iface.body, ast.Enum, parsed_iface.name))
+      _ElemsOfType(parsed_iface.body, ast.Enum, parsed_iface.mojom_name))
   interface.constants = map(
       lambda constant: _Constant(module, constant, interface),
-      _ElemsOfType(parsed_iface.body, ast.Const, parsed_iface.name))
+      _ElemsOfType(parsed_iface.body, ast.Const, parsed_iface.mojom_name))
   # Stash methods parsed_iface here temporarily.
   interface.methods_data = _ElemsOfType(
-      parsed_iface.body, ast.Method, parsed_iface.name)
+      parsed_iface.body, ast.Method, parsed_iface.mojom_name)
   interface.attributes = _AttributeListToDict(parsed_iface.attribute_list)
   return interface
 
@@ -426,17 +426,18 @@ def _EnumField(module, enum, parsed_field, parent_kind):
     {mojom.EnumField} AST enum field.
   """
   field = mojom.EnumField()
-  field.name = parsed_field.name
+  field.mojom_name = parsed_field.mojom_name
   # TODO(mpcomplete): FixupExpression should be done in the second pass,
   # so constants and enums can refer to each other.
   # TODO(mpcomplete): But then, what if constants are initialized to an enum? Or
   # vice versa?
   if parent_kind:
     field.value = _FixupExpression(
-        module, parsed_field.value, (module.namespace, parent_kind.name), enum)
+        module, parsed_field.value,
+        (module.mojom_namespace, parent_kind.mojom_name), enum)
   else:
     field.value = _FixupExpression(
-        module, parsed_field.value, (module.namespace, ), enum)
+        module, parsed_field.value, (module.mojom_namespace, ), enum)
   field.attributes = _AttributeListToDict(parsed_field.attribute_list)
   value = mojom.EnumValue(module, enum, field)
   module.values[value.GetSpec()] = value
@@ -448,7 +449,7 @@ def _ResolveNumericEnumValues(enum_fields):
   values to EnumField.numeric_value.
   """
 
-  # map of <name> -> integral value
+  # map of <mojom_name> -> integral value
   resolved_enum_values = {}
   prev_value = -1
   for field in enum_fields:
@@ -462,11 +463,11 @@ def _ResolveNumericEnumValues(enum_fields):
 
     # Reference to a previous enum value (e.g: INIT = BEGIN).
     elif type(field.value) is mojom.EnumValue:
-      prev_value = resolved_enum_values[field.value.name]
+      prev_value = resolved_enum_values[field.value.mojom_name]
     else:
       raise Exception("Unresolved enum value.")
 
-    resolved_enum_values[field.name] = prev_value
+    resolved_enum_values[field.mojom_name] = prev_value
     field.numeric_value = prev_value
 
 def _Enum(module, parsed_enum, parent_kind):
@@ -479,12 +480,12 @@ def _Enum(module, parsed_enum, parent_kind):
     {mojom.Enum} AST enum.
   """
   enum = mojom.Enum(module=module)
-  enum.name = parsed_enum.name
+  enum.mojom_name = parsed_enum.mojom_name
   enum.native_only = parsed_enum.enum_value_list is None
-  name = enum.name
+  mojom_name = enum.mojom_name
   if parent_kind:
-    name = parent_kind.name + '.' + name
-  enum.spec = 'x:%s.%s' % (module.namespace, name)
+    mojom_name = parent_kind.mojom_name + '.' + mojom_name
+  enum.spec = 'x:%s.%s' % (module.mojom_namespace, mojom_name)
   enum.parent_kind = parent_kind
   enum.attributes = _AttributeListToDict(parsed_enum.attribute_list)
   if enum.native_only:
@@ -516,11 +517,11 @@ def _Constant(module, parsed_const, parent_kind):
     {mojom.Constant} AST constant.
   """
   constant = mojom.Constant()
-  constant.name = parsed_const.name
+  constant.mojom_name = parsed_const.mojom_name
   if parent_kind:
-    scope = (module.namespace, parent_kind.name)
+    scope = (module.mojom_namespace, parent_kind.mojom_name)
   else:
-    scope = (module.namespace, )
+    scope = (module.mojom_namespace, )
   # TODO(mpcomplete): maybe we should only support POD kinds.
   constant.kind = _Kind(module.kinds, _MapKind(parsed_const.typename), scope)
   constant.parent_kind = parent_kind
@@ -530,26 +531,25 @@ def _Constant(module, parsed_const, parent_kind):
   module.values[value.GetSpec()] = value
   return constant
 
-def _Module(tree, name, imports):
+def _Module(tree, path, imports):
   """
   Args:
     tree: {ast.Mojom} The parse tree.
-    name: {str} The mojom filename, excluding the path.
+    path: {str} The path to the mojom file.
     imports: {Dict[str, mojom.Module]} Mapping from filenames, as they appear in
         the import list, to already processed modules. Used to process imports.
 
   Returns:
     {mojom.Module} An AST for the mojom.
   """
-  module = mojom.Module()
+  module = mojom.Module(path=path)
   module.kinds = {}
   for kind in mojom.PRIMITIVES:
     module.kinds[kind.spec] = kind
 
   module.values = {}
 
-  module.name = name
-  module.namespace = tree.module.name[1] if tree.module else ''
+  module.mojom_namespace = tree.module.mojom_namespace[1] if tree.module else ''
   # Imports must come first, because they add to module.kinds which is used
   # by by the others.
   module.imports = [
@@ -561,22 +561,23 @@ def _Module(tree, name, imports):
     module.attributes = dict((attribute.key, attribute.value)
                              for attribute in tree.module.attribute_list)
 
+  filename = os.path.basename(path)
   # First pass collects kinds.
   module.enums = map(
       lambda enum: _Enum(module, enum, None),
-      _ElemsOfType(tree.definition_list, ast.Enum, name))
+      _ElemsOfType(tree.definition_list, ast.Enum, filename))
   module.structs = map(
       lambda struct: _Struct(module, struct),
-      _ElemsOfType(tree.definition_list, ast.Struct, name))
+      _ElemsOfType(tree.definition_list, ast.Struct, filename))
   module.unions = map(
       lambda union: _Union(module, union),
-      _ElemsOfType(tree.definition_list, ast.Union, name))
+      _ElemsOfType(tree.definition_list, ast.Union, filename))
   module.interfaces = map(
       lambda interface: _Interface(module, interface),
-      _ElemsOfType(tree.definition_list, ast.Interface, name))
+      _ElemsOfType(tree.definition_list, ast.Interface, filename))
   module.constants = map(
       lambda constant: _Constant(module, constant, None),
-      _ElemsOfType(tree.definition_list, ast.Const, name))
+      _ElemsOfType(tree.definition_list, ast.Const, filename))
 
   # Second pass expands fields and methods. This allows fields and parameters
   # to refer to kinds defined anywhere in the mojom.
@@ -595,17 +596,17 @@ def _Module(tree, name, imports):
 
   return module
 
-def OrderedModule(tree, name, imports):
+def OrderedModule(tree, path, imports):
   """Convert parse tree to AST module.
 
   Args:
     tree: {ast.Mojom} The parse tree.
-    name: {str} The mojom filename, excluding the path.
+    path: {str} The path to the mojom file.
     imports: {Dict[str, mojom.Module]} Mapping from filenames, as they appear in
         the import list, to already processed modules. Used to process imports.
 
   Returns:
     {mojom.Module} An AST for the mojom.
   """
-  module = _Module(tree, name, imports)
+  module = _Module(tree, path, imports)
   return module

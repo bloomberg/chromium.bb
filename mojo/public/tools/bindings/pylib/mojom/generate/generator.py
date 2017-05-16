@@ -32,6 +32,43 @@ def ToCamel(identifier, lower_initial=False, dilimiter='_'):
   return result
 
 
+class Stylizer(object):
+  """Stylizers specify naming rules to map mojom names to names in generated
+  code. For example, if you would like method_name in mojom to be mapped to
+  MethodName in the generated code, you need to define a subclass of Stylizer
+  and override StylizeMethod to do the conversion."""
+
+  def StylizeConstant(self, mojom_name):
+    return mojom_name
+
+  def StylizeField(self, mojom_name):
+    return mojom_name
+
+  def StylizeStruct(self, mojom_name):
+    return mojom_name
+
+  def StylizeUnion(self, mojom_name):
+    return mojom_name
+
+  def StylizeParameter(self, mojom_name):
+    return mojom_name
+
+  def StylizeMethod(self, mojom_name):
+    return mojom_name
+
+  def StylizeInterface(self, mojom_name):
+    return mojom_name
+
+  def StylizeEnumField(self, mojom_name):
+    return mojom_name
+
+  def StylizeEnum(self, mojom_name):
+    return mojom_name
+
+  def StylizeModule(self, mojom_namespace):
+    return mojom_namespace
+
+
 def WriteFile(contents, full_path):
   # Make sure the containing directory exists.
   full_dir = os.path.dirname(full_path)
@@ -85,20 +122,22 @@ def AddComputedData(module):
 
   def _GetStructFromMethod(method):
     """Converts a method's parameters into the fields of a struct."""
-    params_class = "%s_%s_Params" % (method.interface.name, method.name)
+    params_class = "%s_%s_Params" % (method.interface.mojom_name,
+                                     method.mojom_name)
     struct = mojom.Struct(params_class, module=method.interface.module)
     for param in method.parameters:
-      struct.AddField(param.name, param.kind, param.ordinal,
+      struct.AddField(param.mojom_name, param.kind, param.ordinal,
                       attributes=param.attributes)
     _AddStructComputedData(False, struct)
     return struct
 
   def _GetResponseStructFromMethod(method):
     """Converts a method's response_parameters into the fields of a struct."""
-    params_class = "%s_%s_ResponseParams" % (method.interface.name, method.name)
+    params_class = "%s_%s_ResponseParams" % (method.interface.mojom_name,
+                                             method.mojom_name)
     struct = mojom.Struct(params_class, module=method.interface.module)
     for param in method.response_parameters:
-      struct.AddField(param.name, param.kind, param.ordinal,
+      struct.AddField(param.mojom_name, param.kind, param.ordinal,
                       attributes=param.attributes)
     _AddStructComputedData(False, struct)
     return struct
@@ -129,11 +168,6 @@ class Generator(object):
     self.export_attribute = export_attribute
     self.export_header = export_header
     self.generate_non_variant_code = generate_non_variant_code
-
-  # Prepend the filename with a directory that matches the directory of the
-  # original .mojom file, relative to the import root.
-  def MatchMojomFilePath(self, filename):
-    return os.path.join(os.path.dirname(self.module.path), filename)
 
   def Write(self, contents, filename):
     if self.output_dir is None:
