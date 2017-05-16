@@ -117,8 +117,9 @@ void IconLabelBubbleView::Layout() {
   // the label has zero size it doesn't actually matter what we compute its X
   // value to be, since it won't be visible.
   const int label_x = image_->bounds().right() + GetInternalSpacing();
-  const int label_width = std::max(
-      0, width() - label_x - bubble_trailing_padding - kSpaceBesideSeparator);
+  const int label_width =
+      std::max(0, width() - label_x - bubble_trailing_padding -
+                      kSpaceBesideSeparator - GetSeparatorLayoutWidth());
   label_->SetBounds(label_x, 0, label_width, height());
 }
 
@@ -168,14 +169,9 @@ gfx::Size IconLabelBubbleView::GetSizeForLabelWidth(int label_width) const {
   // is necessary to animate |total_width| even when the background is hidden
   // as long as the animation is still shrinking.
   if (ShouldShowLabel() || shrinking) {
-    // On scale factors < 2, we reserve 1 DIP for the 1 px separator.  For
-    // higher scale factors, we simply take the separator px out of the
-    // kSpaceBesideSeparator region before the separator, as that results in a
-    // width closer to the desired gap than if we added a whole DIP for the
-    // separator px.  (For scale 2, the two methods have equal error: 1 px.)
-    const int separator_width = (GetScaleFactor() >= 2) ? 0 : 1;
     const int post_label_width =
-        (kSpaceBesideSeparator + separator_width + GetPostSeparatorPadding());
+        (kSpaceBesideSeparator + GetSeparatorLayoutWidth() +
+         GetPostSeparatorPadding());
 
     // |multiplier| grows from zero to one, stays equal to one and then shrinks
     // to zero again. The view width should correspondingly grow from zero to
@@ -196,6 +192,15 @@ int IconLabelBubbleView::GetInternalSpacing() const {
   return image_->GetPreferredSize().IsEmpty()
              ? 0
              : GetLayoutConstant(LOCATION_BAR_ELEMENT_PADDING);
+}
+
+int IconLabelBubbleView::GetSeparatorLayoutWidth() const {
+  // On scale factors < 2, we reserve 1 DIP for the 1 px separator.  For
+  // higher scale factors, we simply take the separator px out of the
+  // kSpaceBesideSeparator region before the separator, as that results in a
+  // width closer to the desired gap than if we added a whole DIP for the
+  // separator px.  (For scale 2, the two methods have equal error: 1 px.)
+  return (GetScaleFactor() >= 2) ? 0 : 1;
 }
 
 int IconLabelBubbleView::GetPostSeparatorPadding() const {

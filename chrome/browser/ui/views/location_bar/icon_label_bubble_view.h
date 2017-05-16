@@ -99,6 +99,9 @@ class IconLabelBubbleView : public views::InkDropHostView {
   // Spacing between the image and the label.
   int GetInternalSpacing() const;
 
+  // Returns the amount of space reserved for the separator in DIP.
+  int GetSeparatorLayoutWidth() const;
+
   // Padding after the separator.
   int GetPostSeparatorPadding() const;
 
