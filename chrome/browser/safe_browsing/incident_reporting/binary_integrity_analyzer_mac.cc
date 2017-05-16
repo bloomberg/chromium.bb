@@ -16,9 +16,6 @@
 #include "chrome/browser/safe_browsing/signature_evaluator_mac.h"
 #include "components/safe_browsing/csd.pb.h"
 
-#define DEVELOPER_ID_APPLICATION_OID "field.1.2.840.113635.100.6.1.13"
-#define DEVELOPER_ID_INTERMEDIATE_OID "field.1.2.840.113635.100.6.2.6"
-
 namespace safe_browsing {
 
 namespace {
@@ -53,11 +50,12 @@ std::vector<PathAndRequirement> GetCriticalPathsAndRequirements() {
   // with Google's team identifier, and the com.Google.Chrome[.canary]
   // identifier.
   std::string requirement =
-      "anchor apple generic and certificate 1[" DEVELOPER_ID_INTERMEDIATE_OID
-      "] exists and certificate leaf[" DEVELOPER_ID_APPLICATION_OID
-      "] exists and certificate leaf[subject.OU]=\"EQHXZ8M8AV\" and "
-      "(identifier=\"com.google.Chrome\" or "
-      "identifier=\"com.google.Chrome.canary\")";
+      "(identifier \"com.google.Chrome\" or "
+      "identifier \"com.google.Chrome.beta\" or "
+      "identifier \"com.google.Chrome.dev\" or "
+      "identifier \"com.google.Chrome.canary\") "
+      "and certificate leaf = H\"c9a99324ca3fcb23dbcc36bd5fd4f9753305130a\")";
+
   critical_binaries.push_back(
       PathAndRequirement(base::mac::OuterBundlePath(), requirement));
   // TODO(kerrnel): eventually add Adobe Flash Player to this list.
