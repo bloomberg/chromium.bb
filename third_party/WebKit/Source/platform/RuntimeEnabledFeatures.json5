@@ -757,7 +757,7 @@
     },
     {
       name: "PerformancePaintTiming",
-      status: "test",
+      status: "experimental",
     },
     {
       name: "PermissionDelegation",
