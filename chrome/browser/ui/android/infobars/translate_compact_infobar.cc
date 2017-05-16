@@ -68,8 +68,7 @@ void TranslateCompactInfoBar::ProcessButton(int action) {
   translate::TranslateInfoBarDelegate* delegate = GetDelegate();
   if (action == InfoBarAndroid::ACTION_TRANSLATE) {
     delegate->Translate();
-    if (!delegate->ShouldAlwaysTranslate() &&
-        delegate->ShouldAutoAlwaysTranslate()) {
+    if (!delegate->ShouldAlwaysTranslate() && ShouldAutoAlwaysTranslate()) {
       JNIEnv* env = base::android::AttachCurrentThread();
       Java_TranslateCompactInfoBar_setAutoAlwaysTranslate(env,
                                                           GetJavaInfoBar());
@@ -150,7 +149,14 @@ void TranslateCompactInfoBar::OnPageTranslated(
 
 bool TranslateCompactInfoBar::ShouldAutoAlwaysTranslate() {
   translate::TranslateInfoBarDelegate* delegate = GetDelegate();
-  return delegate->ShouldAutoAlwaysTranslate();
+  return (delegate->GetTranslationAcceptedCount() == kAcceptCountThreshold);
+}
+
+jboolean TranslateCompactInfoBar::ShouldAutoNeverTranslate(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& obj) {
+  translate::TranslateInfoBarDelegate* delegate = GetDelegate();
+  return (delegate->GetTranslationDeniedCount() == kDeniedCountThreshold);
 }
 
 translate::TranslateInfoBarDelegate* TranslateCompactInfoBar::GetDelegate() {

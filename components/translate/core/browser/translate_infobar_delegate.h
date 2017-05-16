@@ -152,6 +152,9 @@ class TranslateInfoBarDelegate : public infobars::InfoBarDelegate {
   void AlwaysTranslatePageLanguage();
   void NeverTranslatePageLanguage();
 
+  int GetTranslationAcceptedCount();
+  int GetTranslationDeniedCount();
+
   // The following methods are called by the infobar that displays the status
   // while translating and also the one displaying the error message.
   base::string16 GetMessageInfoBarText();
@@ -166,10 +169,6 @@ class TranslateInfoBarDelegate : public infobars::InfoBarDelegate {
   // for example.
   bool ShouldShowNeverTranslateShortcut();
   bool ShouldShowAlwaysTranslateShortcut();
-
-  // Called by translate compact infobar.  This check whether we should
-  // automatically trigger "Always Translate".
-  bool ShouldAutoAlwaysTranslate();
 
 #if defined(OS_IOS)
   // Shows the Infobar offering to never translate the language or the site.
@@ -237,6 +236,7 @@ class TranslateInfoBarDelegate : public infobars::InfoBarDelegate {
   // Whether the translation was triggered via a menu click vs automatically
   // (due to language detection, preferences...)
   bool triggered_from_menu_;
+
   DISALLOW_COPY_AND_ASSIGN(TranslateInfoBarDelegate);
 };
 
