@@ -312,30 +312,11 @@ highbd_sadMxNx4D(4, 4)
 
 #if CONFIG_AV1 && CONFIG_EXT_INTER
             static INLINE
-    unsigned int masked_sad(const uint8_t *a, int a_stride, const uint8_t *b,
-                            int b_stride, const uint8_t *m, int m_stride,
-                            int width, int height) {
-  int y, x;
-  unsigned int sad = 0;
-
-  for (y = 0; y < height; y++) {
-    for (x = 0; x < width; x++) sad += m[x] * abs(a[x] - b[x]);
-
-    a += a_stride;
-    b += b_stride;
-    m += m_stride;
-  }
-  sad = (sad + 31) >> 6;
-
-  return sad;
-}
-
-static INLINE unsigned int masked_compound_sad(const uint8_t *src,
-                                               int src_stride, const uint8_t *a,
-                                               int a_stride, const uint8_t *b,
-                                               int b_stride, const uint8_t *m,
-                                               int m_stride, int width,
-                                               int height) {
+    unsigned int masked_compound_sad(const uint8_t *src, int src_stride,
+                                     const uint8_t *a, int a_stride,
+                                     const uint8_t *b, int b_stride,
+                                     const uint8_t *m, int m_stride, int width,
+                                     int height) {
   int y, x;
   unsigned int sad = 0;
 
@@ -356,12 +337,6 @@ static INLINE unsigned int masked_compound_sad(const uint8_t *src,
 }
 
 #define MASKSADMxN(m, n)                                                      \
-  unsigned int aom_masked_sad##m##x##n##_c(                                   \
-      const uint8_t *src, int src_stride, const uint8_t *ref, int ref_stride, \
-      const uint8_t *msk, int msk_stride) {                                   \
-    return masked_sad(src, src_stride, ref, ref_stride, msk, msk_stride, m,   \
-                      n);                                                     \
-  }                                                                           \
   unsigned int aom_masked_compound_sad##m##x##n##_c(                          \
       const uint8_t *src, int src_stride, const uint8_t *ref, int ref_stride, \
       const uint8_t *second_pred, const uint8_t *msk, int msk_stride,         \
@@ -397,31 +372,11 @@ MASKSADMxN(4, 4)
 
 #if CONFIG_HIGHBITDEPTH
                     static INLINE
-    unsigned int highbd_masked_sad(const uint8_t *a8, int a_stride,
-                                   const uint8_t *b8, int b_stride,
-                                   const uint8_t *m, int m_stride, int width,
-                                   int height) {
-  int y, x;
-  unsigned int sad = 0;
-  const uint16_t *a = CONVERT_TO_SHORTPTR(a8);
-  const uint16_t *b = CONVERT_TO_SHORTPTR(b8);
-
-  for (y = 0; y < height; y++) {
-    for (x = 0; x < width; x++) sad += m[x] * abs(a[x] - b[x]);
-
-    a += a_stride;
-    b += b_stride;
-    m += m_stride;
-  }
-  sad = (sad + 31) >> 6;
-
-  return sad;
-}
-
-static INLINE unsigned int highbd_masked_compound_sad(
-    const uint8_t *src8, int src_stride, const uint8_t *a8, int a_stride,
-    const uint8_t *b8, int b_stride, const uint8_t *m, int m_stride, int width,
-    int height) {
+    unsigned int highbd_masked_compound_sad(const uint8_t *src8, int src_stride,
+                                            const uint8_t *a8, int a_stride,
+                                            const uint8_t *b8, int b_stride,
+                                            const uint8_t *m, int m_stride,
+                                            int width, int height) {
   int y, x;
   unsigned int sad = 0;
   const uint16_t *src = CONVERT_TO_SHORTPTR(src8);
@@ -445,12 +400,6 @@ static INLINE unsigned int highbd_masked_compound_sad(
 }
 
 #define HIGHBD_MASKSADMXN(m, n)                                               \
-  unsigned int aom_highbd_masked_sad##m##x##n##_c(                            \
-      const uint8_t *src, int src_stride, const uint8_t *ref, int ref_stride, \
-      const uint8_t *msk, int msk_stride) {                                   \
-    return highbd_masked_sad(src, src_stride, ref, ref_stride, msk,           \
-                             msk_stride, m, n);                               \
-  }                                                                           \
   unsigned int aom_highbd_masked_compound_sad##m##x##n##_c(                   \
       const uint8_t *src8, int src_stride, const uint8_t *ref8,               \
       int ref_stride, const uint8_t *second_pred8, const uint8_t *msk,        \

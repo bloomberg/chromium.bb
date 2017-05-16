@@ -1171,32 +1171,9 @@ MAKE_BFP_SAD8_WRAPPER(aom_highbd_sad4x4x8)
 MAKE_BFP_SAD4D_WRAPPER(aom_highbd_sad4x4x4d)
 
 #if CONFIG_EXT_INTER
-#define HIGHBD_MBFP(BT, MSDF, MVF, MSVF, MCSDF, MCVF, MCSVF) \
-  cpi->fn_ptr[BT].msdf = MSDF;                               \
-  cpi->fn_ptr[BT].mvf = MVF;                                 \
-  cpi->fn_ptr[BT].msvf = MSVF;                               \
-  cpi->fn_ptr[BT].mcsdf = MCSDF;                             \
-  cpi->fn_ptr[BT].mcvf = MCVF;                               \
+#define HIGHBD_MBFP(BT, MCSDF, MCSVF) \
+  cpi->fn_ptr[BT].mcsdf = MCSDF;      \
   cpi->fn_ptr[BT].mcsvf = MCSVF;
-
-#define MAKE_MBFP_SAD_WRAPPER(fnname)                                          \
-  static unsigned int fnname##_bits8(                                          \
-      const uint8_t *src_ptr, int source_stride, const uint8_t *ref_ptr,       \
-      int ref_stride, const uint8_t *m, int m_stride) {                        \
-    return fnname(src_ptr, source_stride, ref_ptr, ref_stride, m, m_stride);   \
-  }                                                                            \
-  static unsigned int fnname##_bits10(                                         \
-      const uint8_t *src_ptr, int source_stride, const uint8_t *ref_ptr,       \
-      int ref_stride, const uint8_t *m, int m_stride) {                        \
-    return fnname(src_ptr, source_stride, ref_ptr, ref_stride, m, m_stride) >> \
-           2;                                                                  \
-  }                                                                            \
-  static unsigned int fnname##_bits12(                                         \
-      const uint8_t *src_ptr, int source_stride, const uint8_t *ref_ptr,       \
-      int ref_stride, const uint8_t *m, int m_stride) {                        \
-    return fnname(src_ptr, source_stride, ref_ptr, ref_stride, m, m_stride) >> \
-           4;                                                                  \
-  }
 
 #define MAKE_MBFP_COMPOUND_SAD_WRAPPER(fnname)                           \
   static unsigned int fnname##_bits8(                                    \
@@ -1224,26 +1201,10 @@ MAKE_BFP_SAD4D_WRAPPER(aom_highbd_sad4x4x4d)
   }
 
 #if CONFIG_EXT_PARTITION
-MAKE_MBFP_SAD_WRAPPER(aom_highbd_masked_sad128x128)
-MAKE_MBFP_SAD_WRAPPER(aom_highbd_masked_sad128x64)
-MAKE_MBFP_SAD_WRAPPER(aom_highbd_masked_sad64x128)
 MAKE_MBFP_COMPOUND_SAD_WRAPPER(aom_highbd_masked_compound_sad128x128)
 MAKE_MBFP_COMPOUND_SAD_WRAPPER(aom_highbd_masked_compound_sad128x64)
 MAKE_MBFP_COMPOUND_SAD_WRAPPER(aom_highbd_masked_compound_sad64x128)
 #endif  // CONFIG_EXT_PARTITION
-MAKE_MBFP_SAD_WRAPPER(aom_highbd_masked_sad64x64)
-MAKE_MBFP_SAD_WRAPPER(aom_highbd_masked_sad64x32)
-MAKE_MBFP_SAD_WRAPPER(aom_highbd_masked_sad32x64)
-MAKE_MBFP_SAD_WRAPPER(aom_highbd_masked_sad32x32)
-MAKE_MBFP_SAD_WRAPPER(aom_highbd_masked_sad32x16)
-MAKE_MBFP_SAD_WRAPPER(aom_highbd_masked_sad16x32)
-MAKE_MBFP_SAD_WRAPPER(aom_highbd_masked_sad16x16)
-MAKE_MBFP_SAD_WRAPPER(aom_highbd_masked_sad16x8)
-MAKE_MBFP_SAD_WRAPPER(aom_highbd_masked_sad8x16)
-MAKE_MBFP_SAD_WRAPPER(aom_highbd_masked_sad8x8)
-MAKE_MBFP_SAD_WRAPPER(aom_highbd_masked_sad8x4)
-MAKE_MBFP_SAD_WRAPPER(aom_highbd_masked_sad4x8)
-MAKE_MBFP_SAD_WRAPPER(aom_highbd_masked_sad4x4)
 MAKE_MBFP_COMPOUND_SAD_WRAPPER(aom_highbd_masked_compound_sad64x64)
 MAKE_MBFP_COMPOUND_SAD_WRAPPER(aom_highbd_masked_compound_sad64x32)
 MAKE_MBFP_COMPOUND_SAD_WRAPPER(aom_highbd_masked_compound_sad32x64)
@@ -1421,102 +1382,38 @@ static void highbd_set_var_fns(AV1_COMP *const cpi) {
 
 #if CONFIG_EXT_INTER
 #if CONFIG_EXT_PARTITION
-        HIGHBD_MBFP(BLOCK_128X128, aom_highbd_masked_sad128x128_bits8,
-                    aom_highbd_masked_variance128x128,
-                    aom_highbd_masked_sub_pixel_variance128x128,
-                    aom_highbd_masked_compound_sad128x128_bits8,
-                    aom_highbd_masked_compound_variance128x128,
+        HIGHBD_MBFP(BLOCK_128X128, aom_highbd_masked_compound_sad128x128_bits8,
                     aom_highbd_masked_compound_sub_pixel_variance128x128)
-        HIGHBD_MBFP(BLOCK_128X64, aom_highbd_masked_sad128x64_bits8,
-                    aom_highbd_masked_variance128x64,
-                    aom_highbd_masked_sub_pixel_variance128x64,
-                    aom_highbd_masked_compound_sad128x64_bits8,
-                    aom_highbd_masked_compound_variance128x64,
+        HIGHBD_MBFP(BLOCK_128X64, aom_highbd_masked_compound_sad128x64_bits8,
                     aom_highbd_masked_compound_sub_pixel_variance128x64)
-        HIGHBD_MBFP(BLOCK_64X128, aom_highbd_masked_sad64x128_bits8,
-                    aom_highbd_masked_variance64x128,
-                    aom_highbd_masked_sub_pixel_variance64x128,
-                    aom_highbd_masked_compound_sad64x128_bits8,
-                    aom_highbd_masked_compound_variance64x128,
+        HIGHBD_MBFP(BLOCK_64X128, aom_highbd_masked_compound_sad64x128_bits8,
                     aom_highbd_masked_compound_sub_pixel_variance64x128)
 #endif  // CONFIG_EXT_PARTITION
-        HIGHBD_MBFP(BLOCK_64X64, aom_highbd_masked_sad64x64_bits8,
-                    aom_highbd_masked_variance64x64,
-                    aom_highbd_masked_sub_pixel_variance64x64,
-                    aom_highbd_masked_compound_sad64x64_bits8,
-                    aom_highbd_masked_compound_variance64x64,
+        HIGHBD_MBFP(BLOCK_64X64, aom_highbd_masked_compound_sad64x64_bits8,
                     aom_highbd_masked_compound_sub_pixel_variance64x64)
-        HIGHBD_MBFP(BLOCK_64X32, aom_highbd_masked_sad64x32_bits8,
-                    aom_highbd_masked_variance64x32,
-                    aom_highbd_masked_sub_pixel_variance64x32,
-                    aom_highbd_masked_compound_sad64x32_bits8,
-                    aom_highbd_masked_compound_variance64x32,
+        HIGHBD_MBFP(BLOCK_64X32, aom_highbd_masked_compound_sad64x32_bits8,
                     aom_highbd_masked_compound_sub_pixel_variance64x32)
-        HIGHBD_MBFP(BLOCK_32X64, aom_highbd_masked_sad32x64_bits8,
-                    aom_highbd_masked_variance32x64,
-                    aom_highbd_masked_sub_pixel_variance32x64,
-                    aom_highbd_masked_compound_sad32x64_bits8,
-                    aom_highbd_masked_compound_variance32x64,
+        HIGHBD_MBFP(BLOCK_32X64, aom_highbd_masked_compound_sad32x64_bits8,
                     aom_highbd_masked_compound_sub_pixel_variance32x64)
-        HIGHBD_MBFP(BLOCK_32X32, aom_highbd_masked_sad32x32_bits8,
-                    aom_highbd_masked_variance32x32,
-                    aom_highbd_masked_sub_pixel_variance32x32,
-                    aom_highbd_masked_compound_sad32x32_bits8,
-                    aom_highbd_masked_compound_variance32x32,
+        HIGHBD_MBFP(BLOCK_32X32, aom_highbd_masked_compound_sad32x32_bits8,
                     aom_highbd_masked_compound_sub_pixel_variance32x32)
-        HIGHBD_MBFP(BLOCK_32X16, aom_highbd_masked_sad32x16_bits8,
-                    aom_highbd_masked_variance32x16,
-                    aom_highbd_masked_sub_pixel_variance32x16,
-                    aom_highbd_masked_compound_sad32x16_bits8,
-                    aom_highbd_masked_compound_variance32x16,
+        HIGHBD_MBFP(BLOCK_32X16, aom_highbd_masked_compound_sad32x16_bits8,
                     aom_highbd_masked_compound_sub_pixel_variance32x16)
-        HIGHBD_MBFP(BLOCK_16X32, aom_highbd_masked_sad16x32_bits8,
-                    aom_highbd_masked_variance16x32,
-                    aom_highbd_masked_sub_pixel_variance16x32,
-                    aom_highbd_masked_compound_sad16x32_bits8,
-                    aom_highbd_masked_compound_variance16x32,
+        HIGHBD_MBFP(BLOCK_16X32, aom_highbd_masked_compound_sad16x32_bits8,
                     aom_highbd_masked_compound_sub_pixel_variance16x32)
-        HIGHBD_MBFP(BLOCK_16X16, aom_highbd_masked_sad16x16_bits8,
-                    aom_highbd_masked_variance16x16,
-                    aom_highbd_masked_sub_pixel_variance16x16,
-                    aom_highbd_masked_compound_sad16x16_bits8,
-                    aom_highbd_masked_compound_variance16x16,
+        HIGHBD_MBFP(BLOCK_16X16, aom_highbd_masked_compound_sad16x16_bits8,
                     aom_highbd_masked_compound_sub_pixel_variance16x16)
-        HIGHBD_MBFP(BLOCK_8X16, aom_highbd_masked_sad8x16_bits8,
-                    aom_highbd_masked_variance8x16,
-                    aom_highbd_masked_sub_pixel_variance8x16,
-                    aom_highbd_masked_compound_sad8x16_bits8,
-                    aom_highbd_masked_compound_variance8x16,
+        HIGHBD_MBFP(BLOCK_8X16, aom_highbd_masked_compound_sad8x16_bits8,
                     aom_highbd_masked_compound_sub_pixel_variance8x16)
-        HIGHBD_MBFP(BLOCK_16X8, aom_highbd_masked_sad16x8_bits8,
-                    aom_highbd_masked_variance16x8,
-                    aom_highbd_masked_sub_pixel_variance16x8,
-                    aom_highbd_masked_compound_sad16x8_bits8,
-                    aom_highbd_masked_compound_variance16x8,
+        HIGHBD_MBFP(BLOCK_16X8, aom_highbd_masked_compound_sad16x8_bits8,
                     aom_highbd_masked_compound_sub_pixel_variance16x8)
-        HIGHBD_MBFP(BLOCK_8X8, aom_highbd_masked_sad8x8_bits8,
-                    aom_highbd_masked_variance8x8,
-                    aom_highbd_masked_sub_pixel_variance8x8,
-                    aom_highbd_masked_compound_sad8x8_bits8,
-                    aom_highbd_masked_compound_variance8x8,
+        HIGHBD_MBFP(BLOCK_8X8, aom_highbd_masked_compound_sad8x8_bits8,
                     aom_highbd_masked_compound_sub_pixel_variance8x8)
-        HIGHBD_MBFP(BLOCK_4X8, aom_highbd_masked_sad4x8_bits8,
-                    aom_highbd_masked_variance4x8,
-                    aom_highbd_masked_sub_pixel_variance4x8,
-                    aom_highbd_masked_compound_sad4x8_bits8,
-                    aom_highbd_masked_compound_variance4x8,
+        HIGHBD_MBFP(BLOCK_4X8, aom_highbd_masked_compound_sad4x8_bits8,
                     aom_highbd_masked_compound_sub_pixel_variance4x8)
-        HIGHBD_MBFP(BLOCK_8X4, aom_highbd_masked_sad8x4_bits8,
-                    aom_highbd_masked_variance8x4,
-                    aom_highbd_masked_sub_pixel_variance8x4,
-                    aom_highbd_masked_compound_sad8x4_bits8,
-                    aom_highbd_masked_compound_variance8x4,
+        HIGHBD_MBFP(BLOCK_8X4, aom_highbd_masked_compound_sad8x4_bits8,
                     aom_highbd_masked_compound_sub_pixel_variance8x4)
-        HIGHBD_MBFP(BLOCK_4X4, aom_highbd_masked_sad4x4_bits8,
-                    aom_highbd_masked_variance4x4,
-                    aom_highbd_masked_sub_pixel_variance4x4,
-                    aom_highbd_masked_compound_sad4x4_bits8,
-                    aom_highbd_masked_compound_variance4x4,
+        HIGHBD_MBFP(BLOCK_4X4, aom_highbd_masked_compound_sad4x4_bits8,
                     aom_highbd_masked_compound_sub_pixel_variance4x4)
 #endif  // CONFIG_EXT_INTER
 #if CONFIG_MOTION_VAR
@@ -1692,102 +1589,38 @@ static void highbd_set_var_fns(AV1_COMP *const cpi) {
 
 #if CONFIG_EXT_INTER
 #if CONFIG_EXT_PARTITION
-        HIGHBD_MBFP(BLOCK_128X128, aom_highbd_masked_sad128x128_bits10,
-                    aom_highbd_10_masked_variance128x128,
-                    aom_highbd_10_masked_sub_pixel_variance128x128,
-                    aom_highbd_masked_compound_sad128x128_bits10,
-                    aom_highbd_10_masked_compound_variance128x128,
+        HIGHBD_MBFP(BLOCK_128X128, aom_highbd_masked_compound_sad128x128_bits10,
                     aom_highbd_10_masked_compound_sub_pixel_variance128x128)
-        HIGHBD_MBFP(BLOCK_128X64, aom_highbd_masked_sad128x64_bits10,
-                    aom_highbd_10_masked_variance128x64,
-                    aom_highbd_10_masked_sub_pixel_variance128x64,
-                    aom_highbd_masked_compound_sad128x64_bits10,
-                    aom_highbd_10_masked_compound_variance128x64,
+        HIGHBD_MBFP(BLOCK_128X64, aom_highbd_masked_compound_sad128x64_bits10,
                     aom_highbd_10_masked_compound_sub_pixel_variance128x64)
-        HIGHBD_MBFP(BLOCK_64X128, aom_highbd_masked_sad64x128_bits10,
-                    aom_highbd_10_masked_variance64x128,
-                    aom_highbd_10_masked_sub_pixel_variance64x128,
-                    aom_highbd_masked_compound_sad64x128_bits10,
-                    aom_highbd_10_masked_compound_variance64x128,
+        HIGHBD_MBFP(BLOCK_64X128, aom_highbd_masked_compound_sad64x128_bits10,
                     aom_highbd_10_masked_compound_sub_pixel_variance64x128)
 #endif  // CONFIG_EXT_PARTITION
-        HIGHBD_MBFP(BLOCK_64X64, aom_highbd_masked_sad64x64_bits10,
-                    aom_highbd_10_masked_variance64x64,
-                    aom_highbd_10_masked_sub_pixel_variance64x64,
-                    aom_highbd_masked_compound_sad64x64_bits10,
-                    aom_highbd_10_masked_compound_variance64x64,
+        HIGHBD_MBFP(BLOCK_64X64, aom_highbd_masked_compound_sad64x64_bits10,
                     aom_highbd_10_masked_compound_sub_pixel_variance64x64)
-        HIGHBD_MBFP(BLOCK_64X32, aom_highbd_masked_sad64x32_bits10,
-                    aom_highbd_10_masked_variance64x32,
-                    aom_highbd_10_masked_sub_pixel_variance64x32,
-                    aom_highbd_masked_compound_sad64x32_bits10,
-                    aom_highbd_10_masked_compound_variance64x32,
+        HIGHBD_MBFP(BLOCK_64X32, aom_highbd_masked_compound_sad64x32_bits10,
                     aom_highbd_10_masked_compound_sub_pixel_variance64x32)
-        HIGHBD_MBFP(BLOCK_32X64, aom_highbd_masked_sad32x64_bits10,
-                    aom_highbd_10_masked_variance32x64,
-                    aom_highbd_10_masked_sub_pixel_variance32x64,
-                    aom_highbd_masked_compound_sad32x64_bits10,
-                    aom_highbd_10_masked_compound_variance32x64,
+        HIGHBD_MBFP(BLOCK_32X64, aom_highbd_masked_compound_sad32x64_bits10,
                     aom_highbd_10_masked_compound_sub_pixel_variance32x64)
-        HIGHBD_MBFP(BLOCK_32X32, aom_highbd_masked_sad32x32_bits10,
-                    aom_highbd_10_masked_variance32x32,
-                    aom_highbd_10_masked_sub_pixel_variance32x32,
-                    aom_highbd_masked_compound_sad32x32_bits10,
-                    aom_highbd_10_masked_compound_variance32x32,
+        HIGHBD_MBFP(BLOCK_32X32, aom_highbd_masked_compound_sad32x32_bits10,
                     aom_highbd_10_masked_compound_sub_pixel_variance32x32)
-        HIGHBD_MBFP(BLOCK_32X16, aom_highbd_masked_sad32x16_bits10,
-                    aom_highbd_10_masked_variance32x16,
-                    aom_highbd_10_masked_sub_pixel_variance32x16,
-                    aom_highbd_masked_compound_sad32x16_bits10,
-                    aom_highbd_10_masked_compound_variance32x16,
+        HIGHBD_MBFP(BLOCK_32X16, aom_highbd_masked_compound_sad32x16_bits10,
                     aom_highbd_10_masked_compound_sub_pixel_variance32x16)
-        HIGHBD_MBFP(BLOCK_16X32, aom_highbd_masked_sad16x32_bits10,
-                    aom_highbd_10_masked_variance16x32,
-                    aom_highbd_10_masked_sub_pixel_variance16x32,
-                    aom_highbd_masked_compound_sad16x32_bits10,
-                    aom_highbd_10_masked_compound_variance16x32,
+        HIGHBD_MBFP(BLOCK_16X32, aom_highbd_masked_compound_sad16x32_bits10,
                     aom_highbd_10_masked_compound_sub_pixel_variance16x32)
-        HIGHBD_MBFP(BLOCK_16X16, aom_highbd_masked_sad16x16_bits10,
-                    aom_highbd_10_masked_variance16x16,
-                    aom_highbd_10_masked_sub_pixel_variance16x16,
-                    aom_highbd_masked_compound_sad16x16_bits10,
-                    aom_highbd_10_masked_compound_variance16x16,
+        HIGHBD_MBFP(BLOCK_16X16, aom_highbd_masked_compound_sad16x16_bits10,
                     aom_highbd_10_masked_compound_sub_pixel_variance16x16)
-        HIGHBD_MBFP(BLOCK_8X16, aom_highbd_masked_sad8x16_bits10,
-                    aom_highbd_10_masked_variance8x16,
-                    aom_highbd_10_masked_sub_pixel_variance8x16,
-                    aom_highbd_masked_compound_sad8x16_bits10,
-                    aom_highbd_10_masked_compound_variance8x16,
+        HIGHBD_MBFP(BLOCK_8X16, aom_highbd_masked_compound_sad8x16_bits10,
                     aom_highbd_10_masked_compound_sub_pixel_variance8x16)
-        HIGHBD_MBFP(BLOCK_16X8, aom_highbd_masked_sad16x8_bits10,
-                    aom_highbd_10_masked_variance16x8,
-                    aom_highbd_10_masked_sub_pixel_variance16x8,
-                    aom_highbd_masked_compound_sad16x8_bits10,
-                    aom_highbd_10_masked_compound_variance16x8,
+        HIGHBD_MBFP(BLOCK_16X8, aom_highbd_masked_compound_sad16x8_bits10,
                     aom_highbd_10_masked_compound_sub_pixel_variance16x8)
-        HIGHBD_MBFP(BLOCK_8X8, aom_highbd_masked_sad8x8_bits10,
-                    aom_highbd_10_masked_variance8x8,
-                    aom_highbd_10_masked_sub_pixel_variance8x8,
-                    aom_highbd_masked_compound_sad8x8_bits10,
-                    aom_highbd_10_masked_compound_variance8x8,
+        HIGHBD_MBFP(BLOCK_8X8, aom_highbd_masked_compound_sad8x8_bits10,
                     aom_highbd_10_masked_compound_sub_pixel_variance8x8)
-        HIGHBD_MBFP(BLOCK_4X8, aom_highbd_masked_sad4x8_bits10,
-                    aom_highbd_10_masked_variance4x8,
-                    aom_highbd_10_masked_sub_pixel_variance4x8,
-                    aom_highbd_masked_compound_sad4x8_bits10,
-                    aom_highbd_10_masked_compound_variance4x8,
+        HIGHBD_MBFP(BLOCK_4X8, aom_highbd_masked_compound_sad4x8_bits10,
                     aom_highbd_10_masked_compound_sub_pixel_variance4x8)
-        HIGHBD_MBFP(BLOCK_8X4, aom_highbd_masked_sad8x4_bits10,
-                    aom_highbd_10_masked_variance8x4,
-                    aom_highbd_10_masked_sub_pixel_variance8x4,
-                    aom_highbd_masked_compound_sad8x4_bits10,
-                    aom_highbd_10_masked_compound_variance8x4,
+        HIGHBD_MBFP(BLOCK_8X4, aom_highbd_masked_compound_sad8x4_bits10,
                     aom_highbd_10_masked_compound_sub_pixel_variance8x4)
-        HIGHBD_MBFP(BLOCK_4X4, aom_highbd_masked_sad4x4_bits10,
-                    aom_highbd_10_masked_variance4x4,
-                    aom_highbd_10_masked_sub_pixel_variance4x4,
-                    aom_highbd_masked_compound_sad4x4_bits10,
-                    aom_highbd_10_masked_compound_variance4x4,
+        HIGHBD_MBFP(BLOCK_4X4, aom_highbd_masked_compound_sad4x4_bits10,
                     aom_highbd_10_masked_compound_sub_pixel_variance4x4)
 #endif  // CONFIG_EXT_INTER
 #if CONFIG_MOTION_VAR
@@ -1963,102 +1796,38 @@ static void highbd_set_var_fns(AV1_COMP *const cpi) {
 
 #if CONFIG_EXT_INTER
 #if CONFIG_EXT_PARTITION
-        HIGHBD_MBFP(BLOCK_128X128, aom_highbd_masked_sad128x128_bits12,
-                    aom_highbd_12_masked_variance128x128,
-                    aom_highbd_12_masked_sub_pixel_variance128x128,
-                    aom_highbd_masked_compound_sad128x128_bits12,
-                    aom_highbd_12_masked_compound_variance128x128,
+        HIGHBD_MBFP(BLOCK_128X128, aom_highbd_masked_compound_sad128x128_bits12,
                     aom_highbd_12_masked_compound_sub_pixel_variance128x128)
-        HIGHBD_MBFP(BLOCK_128X64, aom_highbd_masked_sad128x64_bits12,
-                    aom_highbd_12_masked_variance128x64,
-                    aom_highbd_12_masked_sub_pixel_variance128x64,
-                    aom_highbd_masked_compound_sad128x64_bits12,
-                    aom_highbd_12_masked_compound_variance128x64,
+        HIGHBD_MBFP(BLOCK_128X64, aom_highbd_masked_compound_sad128x64_bits12,
                     aom_highbd_12_masked_compound_sub_pixel_variance128x64)
-        HIGHBD_MBFP(BLOCK_64X128, aom_highbd_masked_sad64x128_bits12,
-                    aom_highbd_12_masked_variance64x128,
-                    aom_highbd_12_masked_sub_pixel_variance64x128,
-                    aom_highbd_masked_compound_sad64x128_bits12,
-                    aom_highbd_12_masked_compound_variance64x128,
+        HIGHBD_MBFP(BLOCK_64X128, aom_highbd_masked_compound_sad64x128_bits12,
                     aom_highbd_12_masked_compound_sub_pixel_variance64x128)
 #endif  // CONFIG_EXT_PARTITION
-        HIGHBD_MBFP(BLOCK_64X64, aom_highbd_masked_sad64x64_bits12,
-                    aom_highbd_12_masked_variance64x64,
-                    aom_highbd_12_masked_sub_pixel_variance64x64,
-                    aom_highbd_masked_compound_sad64x64_bits12,
-                    aom_highbd_12_masked_compound_variance64x64,
+        HIGHBD_MBFP(BLOCK_64X64, aom_highbd_masked_compound_sad64x64_bits12,
                     aom_highbd_12_masked_compound_sub_pixel_variance64x64)
-        HIGHBD_MBFP(BLOCK_64X32, aom_highbd_masked_sad64x32_bits12,
-                    aom_highbd_12_masked_variance64x32,
-                    aom_highbd_12_masked_sub_pixel_variance64x32,
-                    aom_highbd_masked_compound_sad64x32_bits12,
-                    aom_highbd_12_masked_compound_variance64x32,
+        HIGHBD_MBFP(BLOCK_64X32, aom_highbd_masked_compound_sad64x32_bits12,
                     aom_highbd_12_masked_compound_sub_pixel_variance64x32)
-        HIGHBD_MBFP(BLOCK_32X64, aom_highbd_masked_sad32x64_bits12,
-                    aom_highbd_12_masked_variance32x64,
-                    aom_highbd_12_masked_sub_pixel_variance32x64,
-                    aom_highbd_masked_compound_sad32x64_bits12,
-                    aom_highbd_12_masked_compound_variance32x64,
+        HIGHBD_MBFP(BLOCK_32X64, aom_highbd_masked_compound_sad32x64_bits12,
                     aom_highbd_12_masked_compound_sub_pixel_variance32x64)
-        HIGHBD_MBFP(BLOCK_32X32, aom_highbd_masked_sad32x32_bits12,
-                    aom_highbd_12_masked_variance32x32,
-                    aom_highbd_12_masked_sub_pixel_variance32x32,
-                    aom_highbd_masked_compound_sad32x32_bits12,
-                    aom_highbd_12_masked_compound_variance32x32,
+        HIGHBD_MBFP(BLOCK_32X32, aom_highbd_masked_compound_sad32x32_bits12,
                     aom_highbd_12_masked_compound_sub_pixel_variance32x32)
-        HIGHBD_MBFP(BLOCK_32X16, aom_highbd_masked_sad32x16_bits12,
-                    aom_highbd_12_masked_variance32x16,
-                    aom_highbd_12_masked_sub_pixel_variance32x16,
-                    aom_highbd_masked_compound_sad32x16_bits12,
-                    aom_highbd_12_masked_compound_variance32x16,
+        HIGHBD_MBFP(BLOCK_32X16, aom_highbd_masked_compound_sad32x16_bits12,
                     aom_highbd_12_masked_compound_sub_pixel_variance32x16)
-        HIGHBD_MBFP(BLOCK_16X32, aom_highbd_masked_sad16x32_bits12,
-                    aom_highbd_12_masked_variance16x32,
-                    aom_highbd_12_masked_sub_pixel_variance16x32,
-                    aom_highbd_masked_compound_sad16x32_bits12,
-                    aom_highbd_12_masked_compound_variance16x32,
+        HIGHBD_MBFP(BLOCK_16X32, aom_highbd_masked_compound_sad16x32_bits12,
                     aom_highbd_12_masked_compound_sub_pixel_variance16x32)
-        HIGHBD_MBFP(BLOCK_16X16, aom_highbd_masked_sad16x16_bits12,
-                    aom_highbd_12_masked_variance16x16,
-                    aom_highbd_12_masked_sub_pixel_variance16x16,
-                    aom_highbd_masked_compound_sad16x16_bits12,
-                    aom_highbd_12_masked_compound_variance16x16,
+        HIGHBD_MBFP(BLOCK_16X16, aom_highbd_masked_compound_sad16x16_bits12,
                     aom_highbd_12_masked_compound_sub_pixel_variance16x16)
-        HIGHBD_MBFP(BLOCK_8X16, aom_highbd_masked_sad8x16_bits12,
-                    aom_highbd_12_masked_variance8x16,
-                    aom_highbd_12_masked_sub_pixel_variance8x16,
-                    aom_highbd_masked_compound_sad8x16_bits12,
-                    aom_highbd_12_masked_compound_variance8x16,
+        HIGHBD_MBFP(BLOCK_8X16, aom_highbd_masked_compound_sad8x16_bits12,
                     aom_highbd_12_masked_compound_sub_pixel_variance8x16)
-        HIGHBD_MBFP(BLOCK_16X8, aom_highbd_masked_sad16x8_bits12,
-                    aom_highbd_12_masked_variance16x8,
-                    aom_highbd_12_masked_sub_pixel_variance16x8,
-                    aom_highbd_masked_compound_sad16x8_bits12,
-                    aom_highbd_12_masked_compound_variance16x8,
+        HIGHBD_MBFP(BLOCK_16X8, aom_highbd_masked_compound_sad16x8_bits12,
                     aom_highbd_12_masked_compound_sub_pixel_variance16x8)
-        HIGHBD_MBFP(BLOCK_8X8, aom_highbd_masked_sad8x8_bits12,
-                    aom_highbd_12_masked_variance8x8,
-                    aom_highbd_12_masked_sub_pixel_variance8x8,
-                    aom_highbd_masked_compound_sad8x8_bits12,
-                    aom_highbd_12_masked_compound_variance8x8,
+        HIGHBD_MBFP(BLOCK_8X8, aom_highbd_masked_compound_sad8x8_bits12,
                     aom_highbd_12_masked_compound_sub_pixel_variance8x8)
-        HIGHBD_MBFP(BLOCK_4X8, aom_highbd_masked_sad4x8_bits12,
-                    aom_highbd_12_masked_variance4x8,
-                    aom_highbd_12_masked_sub_pixel_variance4x8,
-                    aom_highbd_masked_compound_sad4x8_bits12,
-                    aom_highbd_12_masked_compound_variance4x8,
+        HIGHBD_MBFP(BLOCK_4X8, aom_highbd_masked_compound_sad4x8_bits12,
                     aom_highbd_12_masked_compound_sub_pixel_variance4x8)
-        HIGHBD_MBFP(BLOCK_8X4, aom_highbd_masked_sad8x4_bits12,
-                    aom_highbd_12_masked_variance8x4,
-                    aom_highbd_12_masked_sub_pixel_variance8x4,
-                    aom_highbd_masked_compound_sad8x4_bits12,
-                    aom_highbd_12_masked_compound_variance8x4,
+        HIGHBD_MBFP(BLOCK_8X4, aom_highbd_masked_compound_sad8x4_bits12,
                     aom_highbd_12_masked_compound_sub_pixel_variance8x4)
-        HIGHBD_MBFP(BLOCK_4X4, aom_highbd_masked_sad4x4_bits12,
-                    aom_highbd_12_masked_variance4x4,
-                    aom_highbd_12_masked_sub_pixel_variance4x4,
-                    aom_highbd_masked_compound_sad4x4_bits12,
-                    aom_highbd_12_masked_compound_variance4x4,
+        HIGHBD_MBFP(BLOCK_4X4, aom_highbd_masked_compound_sad4x4_bits12,
                     aom_highbd_12_masked_compound_sub_pixel_variance4x4)
 #endif  // CONFIG_EXT_INTER
 
@@ -2642,79 +2411,43 @@ AV1_COMP *av1_create_compressor(AV1EncoderConfig *oxcf,
 #endif  // CONFIG_MOTION_VAR
 
 #if CONFIG_EXT_INTER
-#define MBFP(BT, MSDF, MVF, MSVF, MCSDF, MCVF, MCSVF) \
-  cpi->fn_ptr[BT].msdf = MSDF;                        \
-  cpi->fn_ptr[BT].mvf = MVF;                          \
-  cpi->fn_ptr[BT].msvf = MSVF;                        \
-  cpi->fn_ptr[BT].mcsdf = MCSDF;                      \
-  cpi->fn_ptr[BT].mcvf = MCVF;                        \
+#define MBFP(BT, MCSDF, MCSVF)   \
+  cpi->fn_ptr[BT].mcsdf = MCSDF; \
   cpi->fn_ptr[BT].mcsvf = MCSVF;
 
 #if CONFIG_EXT_PARTITION
-  MBFP(BLOCK_128X128, aom_masked_sad128x128, aom_masked_variance128x128,
-       aom_masked_sub_pixel_variance128x128, aom_masked_compound_sad128x128,
-       aom_masked_compound_variance128x128,
+  MBFP(BLOCK_128X128, aom_masked_compound_sad128x128,
        aom_masked_compound_sub_pixel_variance128x128)
-  MBFP(BLOCK_128X64, aom_masked_sad128x64, aom_masked_variance128x64,
-       aom_masked_sub_pixel_variance128x64, aom_masked_compound_sad128x64,
-       aom_masked_compound_variance128x64,
+  MBFP(BLOCK_128X64, aom_masked_compound_sad128x64,
        aom_masked_compound_sub_pixel_variance128x64)
-  MBFP(BLOCK_64X128, aom_masked_sad64x128, aom_masked_variance64x128,
-       aom_masked_sub_pixel_variance64x128, aom_masked_compound_sad64x128,
-       aom_masked_compound_variance64x128,
+  MBFP(BLOCK_64X128, aom_masked_compound_sad64x128,
        aom_masked_compound_sub_pixel_variance64x128)
 #endif  // CONFIG_EXT_PARTITION
-  MBFP(BLOCK_64X64, aom_masked_sad64x64, aom_masked_variance64x64,
-       aom_masked_sub_pixel_variance64x64, aom_masked_compound_sad64x64,
-       aom_masked_compound_variance64x64,
+  MBFP(BLOCK_64X64, aom_masked_compound_sad64x64,
        aom_masked_compound_sub_pixel_variance64x64)
-  MBFP(BLOCK_64X32, aom_masked_sad64x32, aom_masked_variance64x32,
-       aom_masked_sub_pixel_variance64x32, aom_masked_compound_sad64x32,
-       aom_masked_compound_variance64x32,
+  MBFP(BLOCK_64X32, aom_masked_compound_sad64x32,
        aom_masked_compound_sub_pixel_variance64x32)
-  MBFP(BLOCK_32X64, aom_masked_sad32x64, aom_masked_variance32x64,
-       aom_masked_sub_pixel_variance32x64, aom_masked_compound_sad32x64,
-       aom_masked_compound_variance32x64,
+  MBFP(BLOCK_32X64, aom_masked_compound_sad32x64,
        aom_masked_compound_sub_pixel_variance32x64)
-  MBFP(BLOCK_32X32, aom_masked_sad32x32, aom_masked_variance32x32,
-       aom_masked_sub_pixel_variance32x32, aom_masked_compound_sad32x32,
-       aom_masked_compound_variance32x32,
+  MBFP(BLOCK_32X32, aom_masked_compound_sad32x32,
        aom_masked_compound_sub_pixel_variance32x32)
-  MBFP(BLOCK_32X16, aom_masked_sad32x16, aom_masked_variance32x16,
-       aom_masked_sub_pixel_variance32x16, aom_masked_compound_sad32x16,
-       aom_masked_compound_variance32x16,
+  MBFP(BLOCK_32X16, aom_masked_compound_sad32x16,
        aom_masked_compound_sub_pixel_variance32x16)
-  MBFP(BLOCK_16X32, aom_masked_sad16x32, aom_masked_variance16x32,
-       aom_masked_sub_pixel_variance16x32, aom_masked_compound_sad16x32,
-       aom_masked_compound_variance16x32,
+  MBFP(BLOCK_16X32, aom_masked_compound_sad16x32,
        aom_masked_compound_sub_pixel_variance16x32)
-  MBFP(BLOCK_16X16, aom_masked_sad16x16, aom_masked_variance16x16,
-       aom_masked_sub_pixel_variance16x16, aom_masked_compound_sad16x16,
-       aom_masked_compound_variance16x16,
+  MBFP(BLOCK_16X16, aom_masked_compound_sad16x16,
        aom_masked_compound_sub_pixel_variance16x16)
-  MBFP(BLOCK_16X8, aom_masked_sad16x8, aom_masked_variance16x8,
-       aom_masked_sub_pixel_variance16x8, aom_masked_compound_sad16x8,
-       aom_masked_compound_variance16x8,
+  MBFP(BLOCK_16X8, aom_masked_compound_sad16x8,
        aom_masked_compound_sub_pixel_variance16x8)
-  MBFP(BLOCK_8X16, aom_masked_sad8x16, aom_masked_variance8x16,
-       aom_masked_sub_pixel_variance8x16, aom_masked_compound_sad8x16,
-       aom_masked_compound_variance8x16,
+  MBFP(BLOCK_8X16, aom_masked_compound_sad8x16,
        aom_masked_compound_sub_pixel_variance8x16)
-  MBFP(BLOCK_8X8, aom_masked_sad8x8, aom_masked_variance8x8,
-       aom_masked_sub_pixel_variance8x8, aom_masked_compound_sad8x8,
-       aom_masked_compound_variance8x8,
+  MBFP(BLOCK_8X8, aom_masked_compound_sad8x8,
        aom_masked_compound_sub_pixel_variance8x8)
-  MBFP(BLOCK_4X8, aom_masked_sad4x8, aom_masked_variance4x8,
-       aom_masked_sub_pixel_variance4x8, aom_masked_compound_sad4x8,
-       aom_masked_compound_variance4x8,
+  MBFP(BLOCK_4X8, aom_masked_compound_sad4x8,
        aom_masked_compound_sub_pixel_variance4x8)
-  MBFP(BLOCK_8X4, aom_masked_sad8x4, aom_masked_variance8x4,
-       aom_masked_sub_pixel_variance8x4, aom_masked_compound_sad8x4,
-       aom_masked_compound_variance8x4,
+  MBFP(BLOCK_8X4, aom_masked_compound_sad8x4,
        aom_masked_compound_sub_pixel_variance8x4)
-  MBFP(BLOCK_4X4, aom_masked_sad4x4, aom_masked_variance4x4,
-       aom_masked_sub_pixel_variance4x4, aom_masked_compound_sad4x4,
-       aom_masked_compound_variance4x4,
+  MBFP(BLOCK_4X4, aom_masked_compound_sad4x4,
        aom_masked_compound_sub_pixel_variance4x4)
 #endif  // CONFIG_EXT_INTER
 

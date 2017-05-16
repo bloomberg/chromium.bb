@@ -317,11 +317,6 @@ if (CONFIG_AV1_ENCODER)
         "${AOM_ROOT}/aom_dsp/x86/variance_sse2.c"
         "${AOM_ROOT}/aom_dsp/x86/sum_squares_sse2.c")
 
-    set(AOM_DSP_ENCODER_INTRIN_SSSE3
-        ${AOM_DSP_ENCODER_INTRIN_SSSE3}
-        "${AOM_ROOT}/aom_dsp/x86/masked_sad_intrin_ssse3.c"
-        "${AOM_ROOT}/aom_dsp/x86/masked_variance_intrin_ssse3.c")
-
     set(AOM_DSP_ENCODER_ASM_SSSE3_X86_64
         ${AOM_DSP_ENCODER_ASM_SSSE3_X86_64}
         "${AOM_ROOT}/aom_dsp/x86/avg_ssse3_x86_64.asm"
