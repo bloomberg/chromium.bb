@@ -59,7 +59,7 @@ const CGFloat kCloseButtonSize = 24;
 
     _signinPromoView.backgroundColor = [UIColor whiteColor];
     _signinPromoView.textLabel.text =
-        l10n_util::GetNSString(IDS_IOS_SIGNIN_PROMO_SETTINGS);
+        l10n_util::GetNSString(IDS_IOS_SIGNIN_PROMO_BOOKMARKS);
   }
   return self;
 }
