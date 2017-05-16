@@ -20,6 +20,7 @@
 #include "core/events/Event.h"
 #include "core/events/EventQueue.h"
 #include "core/frame/FrameOwner.h"
+#include "core/frame/UseCounter.h"
 #include "core/html/HTMLIFrameElement.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "core/inspector/ConsoleTypes.h"
@@ -128,6 +129,20 @@ struct TypeConverter<PaymentOptionsPtr, blink::PaymentOptions> {
 
 namespace blink {
 namespace {
+
+using ::payments::mojom::blink::BasicCardNetwork;
+
+const struct {
+  const BasicCardNetwork code;
+  const char* const name;
+} kBasicCardNetworks[] = {{BasicCardNetwork::AMEX, "amex"},
+                          {BasicCardNetwork::DINERS, "diners"},
+                          {BasicCardNetwork::DISCOVER, "discover"},
+                          {BasicCardNetwork::JCB, "jcb"},
+                          {BasicCardNetwork::MASTERCARD, "mastercard"},
+                          {BasicCardNetwork::MIR, "mir"},
+                          {BasicCardNetwork::UNIONPAY, "unionpay"},
+                          {BasicCardNetwork::VISA, "visa"}};
 
 // If the website does not call complete() 60 seconds after show() has been
 // resolved, then behave as if the website called complete("fail").
@@ -350,20 +365,6 @@ void SetBasicCardMethodData(const ScriptValue& input,
     return;
 
   if (basic_card.hasSupportedNetworks()) {
-    using ::payments::mojom::blink::BasicCardNetwork;
-
-    const struct {
-      const BasicCardNetwork code;
-      const char* const name;
-    } kBasicCardNetworks[] = {{BasicCardNetwork::AMEX, "amex"},
-                              {BasicCardNetwork::DINERS, "diners"},
-                              {BasicCardNetwork::DISCOVER, "discover"},
-                              {BasicCardNetwork::JCB, "jcb"},
-                              {BasicCardNetwork::MASTERCARD, "mastercard"},
-                              {BasicCardNetwork::MIR, "mir"},
-                              {BasicCardNetwork::UNIONPAY, "unionpay"},
-                              {BasicCardNetwork::VISA, "visa"}};
-
     for (const String& network : basic_card.supportedNetworks()) {
       for (size_t i = 0; i < arraysize(kBasicCardNetworks); ++i) {
         if (network == kBasicCardNetworks[i].name) {
@@ -434,6 +435,15 @@ void StringifyAndParseMethodSpecificData(
     SetBasicCardMethodData(input, output, execution_context, exception_state);
     if (exception_state.HadException())
       exception_state.ClearException();
+  }
+
+  for (size_t i = 0; i < arraysize(kBasicCardNetworks); ++i) {
+    if (supported_methods.Contains(kBasicCardNetworks[i].name)) {
+      UseCounter::Count(
+          &execution_context,
+          UseCounter::kPaymentRequestNetworkNameInSupportedMethods);
+      break;
+    }
   }
 }
 
