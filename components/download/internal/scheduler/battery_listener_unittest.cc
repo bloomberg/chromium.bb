@@ -11,6 +11,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace download {
+namespace {
 
 using BatteryRequirements = SchedulingParams::BatteryRequirements;
 
@@ -69,4 +70,5 @@ TEST_F(BatteryListenerTest, NotifyObservers) {
   listener_->Stop();
 };
 
+}  // namespace
 }  // namespace download
