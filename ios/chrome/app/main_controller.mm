@@ -23,6 +23,7 @@
 #include "base/macros.h"
 #include "base/path_service.h"
 #include "base/strings/sys_string_conversions.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/time/time.h"
 #include "components/component_updater/component_updater_service.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
@@ -132,8 +133,8 @@
 #include "ios/public/provider/chrome/browser/signin/chrome_identity_service.h"
 #import "ios/public/provider/chrome/browser/user_feedback/user_feedback_provider.h"
 #import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
-#import "ios/third_party/material_roboto_font_loader_ios/src/src/MaterialRobotoFontLoader.h"
 #import "ios/third_party/material_roboto_font_loader_ios/src/src/MDCTypographyAdditions/MDFRobotoFontLoader+MDCTypographyAdditions.h"
+#import "ios/third_party/material_roboto_font_loader_ios/src/src/MaterialRobotoFontLoader.h"
 #include "ios/web/net/request_tracker_factory_impl.h"
 #include "ios/web/net/request_tracker_impl.h"
 #include "ios/web/net/web_http_protocol_handler_delegate.h"
@@ -1161,8 +1162,9 @@ enum class StackViewDismissalMode { NONE, NORMAL, INCOGNITO };
 }
 
 - (void)startFreeMemoryMonitoring {
-  web::WebThread::PostBlockingPoolTask(
-      FROM_HERE, base::Bind(&ios_internal::AsynchronousFreeMemoryMonitor));
+  base::PostTaskWithTraits(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
+      base::BindOnce(&ios_internal::AsynchronousFreeMemoryMonitor));
 }
 
 - (void)scheduleLowPriorityStartupTasks {
