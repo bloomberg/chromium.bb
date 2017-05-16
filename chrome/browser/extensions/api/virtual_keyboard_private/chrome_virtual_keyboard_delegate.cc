@@ -111,8 +111,7 @@ bool ChromeVirtualKeyboardDelegate::InsertText(const base::string16& text) {
 
 bool ChromeVirtualKeyboardDelegate::OnKeyboardLoaded() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  keyboard::MarkKeyboardLoadFinished();
-  base::UserMetricsAction("VirtualKeyboardLoaded");
+  base::RecordAction(base::UserMetricsAction("VirtualKeyboardLoaded"));
   return true;
 }
 
