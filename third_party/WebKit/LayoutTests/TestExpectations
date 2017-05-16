@@ -117,10 +117,6 @@ crbug.com/709009 virtual/gpu/fast/canvas/getPutImageDataPairTest.html [ Timeout 
 crbug.com/713049 images/color-profile-reflection.html [ Failure Pass ]
 crbug.com/713049 virtual/gpu-rasterization/images/color-profile-reflection.html [ Failure Pass ]
 
-# Fails when run in isolation. Passes when run as part of the directory
-# depending on test order.
-crbug.com/713419 virtual/gpu/fast/canvas/painting-on-bad-canvas.html [ Crash Pass ]
-
 crbug.com/717389 [ Linux Debug ] virtual/gpu/fast/canvas/canvas-clip-rule.html [ Crash ]
 crbug.com/717389 [ Linux Debug ] virtual/gpu/fast/canvas/canvas-path-context-clip.html [ Crash ]
 crbug.com/717389 [ Win7 Debug ] virtual/gpu/fast/canvas/canvas-clip-rule.html [ Timeout ]
@@ -1269,13 +1265,11 @@ crbug.com/521858 [ Win7 ] http/tests/security/media-element-audio-source-node-sa
 crbug.com/521858 [ Win7 ] virtual/mojo-loading/http/tests/security/media-element-audio-source-node-same-origin.html [ Failure Pass ]
 crbug.com/521853 [ Win ] http/tests/inspector/search/sources-search-scope.html [ Failure Pass ]
 crbug.com/521853 [ Win ] virtual/mojo-loading/http/tests/inspector/search/sources-search-scope.html [ Failure Pass ]
-crbug.com/520174 fast/events/message-port-start-and-close-different-microtask.html [ Failure Pass ]
 crbug.com/652536 fast/events/mouse-cursor-change-after-image-load.html [ Failure Pass ]
 crbug.com/520188 [ Win ] http/tests/local/fileapi/file-last-modified-after-delete.html [ Failure Pass ]
 crbug.com/520188 [ Win ] virtual/mojo-loading/http/tests/local/fileapi/file-last-modified-after-delete.html [ Failure Pass ]
 crbug.com/520611 [ Debug ] fast/filesystem/workers/file-writer-events-shared-worker.html [ Failure Pass ]
 crbug.com/520194 http/tests/xmlhttprequest/timeout/xmlhttprequest-timeout-worker-overridesexpires.html [ Failure Pass ]
-crbug.com/520194 virtual/mojo-loading/http/tests/xmlhttprequest/timeout/xmlhttprequest-timeout-worker-overridesexpires.html [ Failure Pass ]
 
 crbug.com/410974 fast/scroll-behavior/scroll-customization/scrollstate-basic.html [ Pass Failure ]
 crbug.com/410974 fast/scroll-behavior/scroll-customization/scrollstate-consume-deltas.html [ Pass Failure ]
@@ -1314,7 +1308,6 @@ crbug.com/248938 virtual/threaded/animations/animation-iteration-event-destroy-r
 crbug.com/446385 [ Win7 Debug ] http/tests/xmlhttprequest/xmlhttprequest-json-response-overflow.html [ Crash Pass Timeout ]
 crbug.com/446385 [ Win7 Debug ] virtual/mojo-loading/http/tests/xmlhttprequest/xmlhttprequest-json-response-overflow.html [ Crash Pass Timeout ]
 crbug.com/248938 virtual/threaded/animations/dynamic-stylesheet-loading.html [ Pass Failure Timeout ]
-crbug.com/638693 virtual/threaded/animations/display-inline-style-adjust.html [ Pass Crash Failure ]
 crbug.com/421283 html/marquee/marquee-scrollamount.html [ Pass Failure ]
 
 # TODO(oshima): Mac Android are currently not supported.
@@ -1398,9 +1391,6 @@ crbug.com/542660 fast/css/absolute-inline-alignment-2.html [ Failure ]
 # Ref tests that needs investigation.
 crbug.com/404597 [ Mac ] fast/css3-text/css3-text-justify/text-justify-crash.html [ Failure ]
 crbug.com/404597 fast/forms/long-text-in-input.html [ Failure ]
-
-# Ref test needs updating due to new font metrics.
-crbug.com/404597 [ Win ] fast/selectors/007a.html [ Pass Failure ]
 
 # Web Components related tests (Shadow DOM, Custom Elements) failures.
 crbug.com/505364 external/wpt/shadow-dom/untriaged/styles/test-003.html [ Failure ]
@@ -1841,10 +1831,6 @@ crbug.com/472330 fast/writing-mode/box-shadow-vertical-rl.html [ Failure ]
 
 crbug.com/700795 [ Mac ] inspector/animation/animation-transition-setTiming-crash.html [ Timeout Pass ]
 
-# Flaky on Win10 and Win7
-crbug.com/619539 [ Win ] http/tests/workers/terminate-during-sync-operation-file.html [ Pass Timeout ]
-crbug.com/619539 [ Win ] virtual/mojo-loading/http/tests/workers/terminate-during-sync-operation-file.html [ Pass Timeout ]
-
 # These are the failing tests because Chrome hasn't implemented according to the spec.
 crbug.com/645988 external/wpt/uievents/order-of-events/focus-events/focus-manual.html [ Failure ]
 
@@ -2137,8 +2123,6 @@ crbug.com/567419 inspector/elements/styles-2/metrics-box-sizing.html [ Skip ]
 
 crbug.com/457273 [ Mac ] http/tests/websocket/close.html [ Pass Timeout ]
 crbug.com/457273 [ Mac ] virtual/mojo-loading/http/tests/websocket/close.html [ Pass Timeout ]
-
-crbug.com/596752 virtual/threaded/inspector/tracing/decode-resize.html [ Pass Failure ]
 
 crbug.com/524646 [ Mac10.10 ] fast/dom/shadow/shadowdom-for-button.html [ Failure ]
 
@@ -2917,15 +2901,7 @@ crbug.com/658997 external/wpt/service-workers/service-worker/client-navigate.htt
 crbug.com/658997 external/wpt/service-workers/service-worker/clients-get-cross-origin.https.html [ Skip ]
 crbug.com/658997 external/wpt/service-workers/service-worker/clients-matchall-client-types.https.html [ Skip ]
 crbug.com/658997 external/wpt/service-workers/service-worker/fetch-canvas-tainting-cache.https.html [ Skip ]
-crbug.com/658997 external/wpt/service-workers/service-worker/fetch-canvas-tainting.https.html [ Pass Timeout ]
-crbug.com/658997 external/wpt/service-workers/service-worker/fetch-cors-xhr.https.html [ Pass Timeout ]
-crbug.com/658997 external/wpt/service-workers/service-worker/fetch-csp.https.html [ Pass Timeout ]
-crbug.com/658997 external/wpt/service-workers/service-worker/fetch-event-async-respond-with.https.html [ Pass Timeout ]
-crbug.com/658997 external/wpt/service-workers/service-worker/fetch-event-respond-with-stops-propagation.https.html [ Pass Timeout ]
-crbug.com/658997 external/wpt/service-workers/service-worker/fetch-request-css-base-url.https.html [ Pass Timeout ]
 crbug.com/658997 external/wpt/service-workers/service-worker/fetch-request-xhr.https.html [ Failure Timeout ]
-crbug.com/658997 external/wpt/service-workers/service-worker/fetch-response-xhr.https.html [ Pass Timeout ]
-crbug.com/658997 external/wpt/service-workers/service-worker/getregistrations.https.html [ Pass Timeout ]
 crbug.com/658997 external/wpt/service-workers/service-worker/invalid-blobtype.https.html [ Skip ]
 crbug.com/658997 external/wpt/service-workers/service-worker/invalid-header.https.html [ Skip ]
 crbug.com/658997 external/wpt/service-workers/service-worker/referer.https.html [ Skip ]
@@ -3171,7 +3147,6 @@ crbug.com/664819 http/tests/security/isolatedWorld/bypass-main-world-csp-for-inl
 crbug.com/664819 http/tests/security/isolatedWorld/bypass-main-world-csp-for-xhr.html [ Pass Failure ]
 crbug.com/664819 http/tests/security/isolatedWorld/bypass-main-world-csp-iframes.html [ Pass Failure ]
 crbug.com/664819 http/tests/security/isolatedWorld/events.html [ Pass Failure ]
-crbug.com/664839 http/tests/security/link-crossorigin-preload-no-cors.html [ Pass Failure ]
 crbug.com/663876 virtual/mojo-loading/http/tests/loading/doc-write-sync-third-party-script-block-effectively-2g.html [ Pass Failure ]
 crbug.com/664819 virtual/mojo-loading/http/tests/security/isolatedWorld/bypass-main-world-csp-for-inline-style.html [ Pass Failure ]
 crbug.com/664819 virtual/mojo-loading/http/tests/security/isolatedWorld/bypass-main-world-csp-for-xhr.html [ Pass Failure ]
@@ -3224,7 +3199,6 @@ crbug.com/678346 [ Win7 Debug ] storage/indexeddb/structured-clone.html [ Pass T
 
 crbug.com/678487 http/tests/inspector/resource-tree/resource-tree-reload.html [ Failure Timeout Pass ]
 crbug.com/678487 virtual/mojo-loading/http/tests/inspector/resource-tree/resource-tree-reload.html [ Failure Timeout Pass ]
-crbug.com/678489 virtual/mojo-loading/http/tests/inspector/tracing/timeline-script-parse.html [ Timeout Pass ]
 crbug.com/678492 http/tests/misc/webtiming-ssl.php [ Failure Pass ]
 crbug.com/678492 virtual/mojo-loading/http/tests/misc/webtiming-ssl.php [ Failure Pass ]
 crbug.com/678493 http/tests/permissions/chromium/test-request-window.html [ Timeout Pass ]
@@ -3329,14 +3303,6 @@ crbug.com/720511 [ Linux ] virtual/mojo-loading/http/tests/security/document-dom
 # Tests to be run only under virtual/experimental-canvas-features/
 crbug.com/682753 fast/canvas-experimental [ Skip ]
 
-crbug.com/713050 tables/mozilla/bugs/bug113424.html [ Failure Pass ]
-
-crbug.com/708934 fast/backgrounds/background-image-relative-url-in-iframe.html [ Failure Pass ]
-
-crbug.com/713509 crypto/subtle/worker-subtle-crypto-concurrent.html [ Pass Timeout ]
-
-crbug.com/713685 [ Linux ] fast/workers/termination-early.html [ Crash Pass ]
-
 crbug.com/715405 virtual/mojo-loading/http/tests/inspector/network/waterfall-images.html [ Skip ]
 crbug.com/714166 http/tests/inspector/network/waterfall-images.html [ Skip ]
 
@@ -3365,5 +3331,4 @@ crbug.com/718155 payments/payment-request-in-iframe.html [ Failure ]
 crbug.com/718155 payments/payment-request-in-iframe-nested-not-allowed.html [ Failure ]
 
 # Layout Tests on Swarming (Windows) - https://crbug.com/717347
-crbug.com/719298 [ Win ] fast/dnd/dropEffect-for-effectAllowed.html [ Failure Pass Timeout ]
 crbug.com/719299 [ Win ] external/wpt/css/css-ui-3/outline-004.html [ Failure Pass Timeout ]
