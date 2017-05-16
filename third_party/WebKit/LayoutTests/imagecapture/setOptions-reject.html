@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="../resources/mojo-helpers.js"></script>
+<script src="resources/mock-imagecapture.js"></script>
+<body>
+<canvas id='canvas' width=10 height=10/>
+</body>
+<script>
+
+var canvas = document.getElementById('canvas');
+var context = canvas.getContext("2d");
+context.fillStyle = "red";
+context.fillRect(0, 0, 10, 10);
+
+// This test verifies that ImageCapture.setOptions() rejects if any passed
+// option is unsupported or outside its allowed range.
+var makePromiseTest = function(getOption) {
+  promise_test(function(t) {
+    var theMock = null;
+    var theCapturer = null;
+    return mockImageCaptureReady
+      .then(mock => {
+        theMock = mock;
+        theMock.capabilities().red_eye_reduction = 0;
+
+        var stream = canvas.captureStream();
+        return new ImageCapture(stream.getVideoTracks()[0]);
+      },
+      error => {
+        assert_unreached("Error creating MockImageCapture: " + error);
+      })
+      .then(capturer => {
+        theCapturer = capturer;
+        return capturer.getPhotoCapabilities();
+      })
+      .then(c => {
+        const options = getOption(theMock.capabilities());
+        return promise_rejects(t, "NotSupportedError",
+                               theCapturer.setOptions(options));
+      });
+  });
+};
+
+const optionsGenerators = [
+  capabilities => ({ redEyeReduction: true }),
+  capabilities => ({ imageHeight: capabilities.height.max + 1 }),
+  capabilities => ({ imageHeight: capabilities.height.min - 1 }),
+  capabilities => ({ imageWidth: capabilities.width.max + 1 }),
+  capabilities => ({ imageWidth: capabilities.width.min - 1 }),
+  capabilities => ({ fillLightMode: "off" }),
+];
+
+for (key in optionsGenerators) {
+  generate_tests(
+      makePromiseTest,
+      [[ 'ImageCapture.setOptions(options) rejects with bad options, #' + key,
+         optionsGenerators[key] ]]);
+}
+
+</script>

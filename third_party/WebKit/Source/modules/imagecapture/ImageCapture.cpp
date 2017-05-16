@@ -164,19 +164,51 @@ ScriptPromise ImageCapture::setOptions(ScriptState* script_state,
   auto settings = media::mojom::blink::PhotoSettings::New();
 
   settings->has_height = photo_settings.hasImageHeight();
-  if (settings->has_height)
-    settings->height = photo_settings.imageHeight();
+  if (settings->has_height) {
+    const double height = photo_settings.imageHeight();
+    if (photo_capabilities_ &&
+        (height < photo_capabilities_->imageHeight()->min() ||
+         height > photo_capabilities_->imageHeight()->max())) {
+      resolver->Reject(DOMException::Create(
+          kNotSupportedError, "imageHeight setting out of range"));
+      return promise;
+    }
+    settings->height = height;
+  }
   settings->has_width = photo_settings.hasImageWidth();
-  if (settings->has_width)
-    settings->width = photo_settings.imageWidth();
+  if (settings->has_width) {
+    const double width = photo_settings.imageWidth();
+    if (photo_capabilities_ &&
+        (width < photo_capabilities_->imageWidth()->min() ||
+         width > photo_capabilities_->imageWidth()->max())) {
+      resolver->Reject(DOMException::Create(kNotSupportedError,
+                                            "imageWidth setting out of range"));
+      return promise;
+    }
+    settings->width = width;
+  }
 
   settings->has_red_eye_reduction = photo_settings.hasRedEyeReduction();
-  if (settings->has_red_eye_reduction)
+  if (settings->has_red_eye_reduction) {
+    if (photo_capabilities_ &&
+        !photo_capabilities_->IsRedEyeReductionControllable()) {
+      resolver->Reject(DOMException::Create(
+          kNotSupportedError, "redEyeReduction is not controllable."));
+      return promise;
+    }
     settings->red_eye_reduction = photo_settings.redEyeReduction();
+  }
+
   settings->has_fill_light_mode = photo_settings.hasFillLightMode();
   if (settings->has_fill_light_mode) {
-    settings->fill_light_mode =
-        ParseFillLightMode(photo_settings.fillLightMode());
+    const String fill_light_mode = photo_settings.fillLightMode();
+    if (photo_capabilities_ && photo_capabilities_->fillLightMode().Find(
+                                   fill_light_mode) == kNotFound) {
+      resolver->Reject(DOMException::Create(kNotSupportedError,
+                                            "Unsupported fillLightMode"));
+      return promise;
+    }
+    settings->fill_light_mode = ParseFillLightMode(fill_light_mode);
   }
 
   service_->SetOptions(
@@ -288,30 +320,48 @@ void ImageCapture::SetMediaTrackConstraints(
   }
 
   auto settings = media::mojom::blink::PhotoSettings::New();
+  MediaTrackConstraintSet temp_constraints = current_constraints_;
 
   // TODO(mcasas): support other Mode types beyond simple string i.e. the
   // equivalents of "sequence<DOMString>"" or "ConstrainDOMStringParameters".
   settings->has_white_balance_mode = constraints.hasWhiteBalanceMode() &&
                                      constraints.whiteBalanceMode().isString();
   if (settings->has_white_balance_mode) {
-    current_constraints_.setWhiteBalanceMode(constraints.whiteBalanceMode());
-    settings->white_balance_mode =
-        ParseMeteringMode(constraints.whiteBalanceMode().getAsString());
+    const auto white_balance_mode =
+        constraints.whiteBalanceMode().getAsString();
+    if (capabilities_.whiteBalanceMode().Find(white_balance_mode) ==
+        kNotFound) {
+      resolver->Reject(DOMException::Create(kNotSupportedError,
+                                            "Unsupported whiteBalanceMode."));
+      return;
+    }
+    temp_constraints.setWhiteBalanceMode(constraints.whiteBalanceMode());
+    settings->white_balance_mode = ParseMeteringMode(white_balance_mode);
   }
   settings->has_exposure_mode =
       constraints.hasExposureMode() && constraints.exposureMode().isString();
   if (settings->has_exposure_mode) {
-    current_constraints_.setExposureMode(constraints.exposureMode());
-    settings->exposure_mode =
-        ParseMeteringMode(constraints.exposureMode().getAsString());
+    const auto exposure_mode = constraints.exposureMode().getAsString();
+    if (capabilities_.exposureMode().Find(exposure_mode) == kNotFound) {
+      resolver->Reject(DOMException::Create(kNotSupportedError,
+                                            "Unsupported exposureMode."));
+      return;
+    }
+    temp_constraints.setExposureMode(constraints.exposureMode());
+    settings->exposure_mode = ParseMeteringMode(exposure_mode);
   }
 
   settings->has_focus_mode =
       constraints.hasFocusMode() && constraints.focusMode().isString();
   if (settings->has_focus_mode) {
-    current_constraints_.setFocusMode(constraints.focusMode());
-    settings->focus_mode =
-        ParseMeteringMode(constraints.focusMode().getAsString());
+    const auto focus_mode = constraints.focusMode().getAsString();
+    if (capabilities_.focusMode().Find(focus_mode) == kNotFound) {
+      resolver->Reject(
+          DOMException::Create(kNotSupportedError, "Unsupported focusMode."));
+      return;
+    }
+    temp_constraints.setFocusMode(constraints.focusMode());
+    settings->focus_mode = ParseMeteringMode(focus_mode);
   }
 
   // TODO(mcasas): support ConstrainPoint2DParameters.
@@ -324,7 +374,7 @@ void ImageCapture::SetMediaTrackConstraints(
       mojo_point->y = point.y();
       settings->points_of_interest.push_back(std::move(mojo_point));
     }
-    current_constraints_.setPointsOfInterest(constraints.pointsOfInterest());
+    temp_constraints.setPointsOfInterest(constraints.pointsOfInterest());
   }
 
   // TODO(mcasas): support ConstrainDoubleRange where applicable.
@@ -332,61 +382,124 @@ void ImageCapture::SetMediaTrackConstraints(
       constraints.hasExposureCompensation() &&
       constraints.exposureCompensation().isDouble();
   if (settings->has_exposure_compensation) {
-    current_constraints_.setExposureCompensation(
-        constraints.exposureCompensation());
-    settings->exposure_compensation =
+    const auto exposure_compensation =
         constraints.exposureCompensation().getAsDouble();
+    if (exposure_compensation < capabilities_.exposureCompensation()->min() ||
+        exposure_compensation > capabilities_.exposureCompensation()->max()) {
+      resolver->Reject(DOMException::Create(
+          kNotSupportedError, "exposureCompensation setting out of range"));
+      return;
+    }
+    temp_constraints.setExposureCompensation(
+        constraints.exposureCompensation());
+    settings->exposure_compensation = exposure_compensation;
   }
   settings->has_color_temperature = constraints.hasColorTemperature() &&
                                     constraints.colorTemperature().isDouble();
   if (settings->has_color_temperature) {
-    current_constraints_.setColorTemperature(constraints.colorTemperature());
-    settings->color_temperature = constraints.colorTemperature().getAsDouble();
+    const auto color_temperature = constraints.colorTemperature().getAsDouble();
+    if (color_temperature < capabilities_.colorTemperature()->min() ||
+        color_temperature > capabilities_.colorTemperature()->max()) {
+      resolver->Reject(DOMException::Create(
+          kNotSupportedError, "colorTemperature setting out of range"));
+      return;
+    }
+    temp_constraints.setColorTemperature(constraints.colorTemperature());
+    settings->color_temperature = color_temperature;
   }
   settings->has_iso = constraints.hasIso() && constraints.iso().isDouble();
   if (settings->has_iso) {
-    current_constraints_.setIso(constraints.iso());
-    settings->iso = constraints.iso().getAsDouble();
+    const auto iso = constraints.iso().getAsDouble();
+    if (iso < capabilities_.iso()->min() || iso > capabilities_.iso()->max()) {
+      resolver->Reject(
+          DOMException::Create(kNotSupportedError, "iso setting out of range"));
+      return;
+    }
+    temp_constraints.setIso(constraints.iso());
+    settings->iso = iso;
   }
 
   settings->has_brightness =
       constraints.hasBrightness() && constraints.brightness().isDouble();
   if (settings->has_brightness) {
-    current_constraints_.setBrightness(constraints.brightness());
-    settings->brightness = constraints.brightness().getAsDouble();
+    const auto brightness = constraints.brightness().getAsDouble();
+    if (brightness < capabilities_.brightness()->min() ||
+        brightness > capabilities_.brightness()->max()) {
+      resolver->Reject(DOMException::Create(kNotSupportedError,
+                                            "brightness setting out of range"));
+      return;
+    }
+    temp_constraints.setBrightness(constraints.brightness());
+    settings->brightness = brightness;
   }
   settings->has_contrast =
       constraints.hasContrast() && constraints.contrast().isDouble();
   if (settings->has_contrast) {
-    current_constraints_.setContrast(constraints.contrast());
-    settings->contrast = constraints.contrast().getAsDouble();
+    const auto contrast = constraints.contrast().getAsDouble();
+    if (contrast < capabilities_.contrast()->min() ||
+        contrast > capabilities_.contrast()->max()) {
+      resolver->Reject(DOMException::Create(kNotSupportedError,
+                                            "contrast setting out of range"));
+      return;
+    }
+    temp_constraints.setContrast(constraints.contrast());
+    settings->contrast = contrast;
   }
   settings->has_saturation =
       constraints.hasSaturation() && constraints.saturation().isDouble();
   if (settings->has_saturation) {
-    current_constraints_.setSaturation(constraints.saturation());
-    settings->saturation = constraints.saturation().getAsDouble();
+    const auto saturation = constraints.saturation().getAsDouble();
+    if (saturation < capabilities_.saturation()->min() ||
+        saturation > capabilities_.saturation()->max()) {
+      resolver->Reject(DOMException::Create(kNotSupportedError,
+                                            "saturation setting out of range"));
+      return;
+    }
+    temp_constraints.setSaturation(constraints.saturation());
+    settings->saturation = saturation;
   }
   settings->has_sharpness =
       constraints.hasSharpness() && constraints.sharpness().isDouble();
   if (settings->has_sharpness) {
-    current_constraints_.setSharpness(constraints.sharpness());
-    settings->sharpness = constraints.sharpness().getAsDouble();
+    const auto sharpness = constraints.sharpness().getAsDouble();
+    if (sharpness < capabilities_.sharpness()->min() ||
+        sharpness > capabilities_.sharpness()->max()) {
+      resolver->Reject(DOMException::Create(kNotSupportedError,
+                                            "sharpness setting out of range"));
+      return;
+    }
+    temp_constraints.setSharpness(constraints.sharpness());
+    settings->sharpness = sharpness;
   }
 
   settings->has_zoom = constraints.hasZoom() && constraints.zoom().isDouble();
   if (settings->has_zoom) {
-    current_constraints_.setZoom(constraints.zoom());
-    settings->zoom = constraints.zoom().getAsDouble();
+    const auto zoom = constraints.zoom().getAsDouble();
+    if (zoom < capabilities_.zoom()->min() ||
+        zoom > capabilities_.zoom()->max()) {
+      resolver->Reject(DOMException::Create(kNotSupportedError,
+                                            "zoom setting out of range"));
+      return;
+    }
+    temp_constraints.setZoom(constraints.zoom());
+    settings->zoom = zoom;
   }
 
   // TODO(mcasas): support ConstrainBooleanParameters where applicable.
   settings->has_torch =
       constraints.hasTorch() && constraints.torch().isBoolean();
   if (settings->has_torch) {
-    current_constraints_.setTorch(constraints.torch());
-    settings->torch = constraints.torch().getAsBoolean();
+    const auto torch = constraints.torch().getAsBoolean();
+    if (torch && !capabilities_.torch()) {
+      resolver->Reject(
+          DOMException::Create(kNotSupportedError, "torch not supported"));
+      return;
+    }
+    temp_constraints.setTorch(constraints.torch());
+    settings->torch = torch;
   }
+
+  current_constraints_ = temp_constraints;
 
   service_->SetOptions(
       stream_track_->Component()->Source()->Id(), std::move(settings),
@@ -500,21 +613,21 @@ void ImageCapture::OnMojoPhotoCapabilities(
     return;
   }
 
-  PhotoCapabilities* caps = PhotoCapabilities::Create();
-  caps->SetRedEyeReduction(capabilities->red_eye_reduction);
+  photo_capabilities_ = PhotoCapabilities::Create();
+  photo_capabilities_->SetRedEyeReduction(capabilities->red_eye_reduction);
   // TODO(mcasas): Remove the explicit MediaSettingsRange::create() when
   // mojo::StructTraits supports garbage-collected mappings,
   // https://crbug.com/700180.
   if (capabilities->height->min != 0 || capabilities->height->max != 0) {
-    caps->SetImageHeight(
+    photo_capabilities_->SetImageHeight(
         MediaSettingsRange::Create(std::move(capabilities->height)));
   }
   if (capabilities->width->min != 0 || capabilities->width->max != 0) {
-    caps->SetImageWidth(
+    photo_capabilities_->SetImageWidth(
         MediaSettingsRange::Create(std::move(capabilities->width)));
   }
   if (!capabilities->fill_light_mode.IsEmpty())
-    caps->SetFillLightMode(capabilities->fill_light_mode);
+    photo_capabilities_->SetFillLightMode(capabilities->fill_light_mode);
 
   // Update the local track capabilities cache.
   UpdateMediaTrackCapabilities(std::move(capabilities));
@@ -527,7 +640,7 @@ void ImageCapture::OnMojoPhotoCapabilities(
     return;
   }
 
-  resolver->Resolve(caps);
+  resolver->Resolve(photo_capabilities_);
   service_requests_.erase(resolver);
 }
 
@@ -678,6 +791,7 @@ DEFINE_TRACE(ImageCapture) {
   visitor->Trace(capabilities_);
   visitor->Trace(settings_);
   visitor->Trace(current_constraints_);
+  visitor->Trace(photo_capabilities_);
   visitor->Trace(service_requests_);
   EventTargetWithInlineData::Trace(visitor);
   ContextLifecycleObserver::Trace(visitor);

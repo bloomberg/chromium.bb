@@ -45,6 +45,11 @@ String PhotoCapabilities::redEyeReduction() const {
   return "";
 }
 
+bool PhotoCapabilities::IsRedEyeReductionControllable() const {
+  return red_eye_reduction_ ==
+         media::mojom::blink::RedEyeReduction::CONTROLLABLE;
+}
+
 DEFINE_TRACE(PhotoCapabilities) {
   visitor->Trace(image_height_);
   visitor->Trace(image_width_);

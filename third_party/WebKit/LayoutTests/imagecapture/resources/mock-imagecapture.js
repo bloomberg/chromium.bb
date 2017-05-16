@@ -25,7 +25,10 @@ let mockImageCaptureReady = define(
             imageCapture.MeteringMode.CONTINUOUS
           ],
           current_exposure_mode: imageCapture.MeteringMode.SINGLE_SHOT,
-          supported_focus_modes: [imageCapture.MeteringMode.MANUAL],
+          supported_focus_modes: [
+            imageCapture.MeteringMode.MANUAL,
+            imageCapture.MeteringMode.SINGLE_SHOT
+          ],
           current_focus_mode: imageCapture.MeteringMode.MANUAL,
           points_of_interest: [{x: 0.4, y: 0.6}],
 
