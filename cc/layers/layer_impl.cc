@@ -280,9 +280,6 @@ void LayerImpl::SetScrollClipLayer(int scroll_clip_layer_id) {
   layer_tree_impl()->UnregisterScrollLayer(this);
   scroll_clip_layer_id_ = scroll_clip_layer_id;
   layer_tree_impl()->RegisterScrollLayer(this);
-
-  // Ensure our viewport layer type is updated.
-  layer_tree_impl()->UpdateViewportLayerTypes();
 }
 
 LayerImpl* LayerImpl::scroll_clip_layer() const {

@@ -221,9 +221,6 @@ class CC_EXPORT LayerTreeImpl {
                                 int inner_viewport_scroll_layer_id,
                                 int outer_viewport_scroll_layer_id);
   void ClearViewportLayers();
-  // Sets the viewport layer types. This depends on the viewport layers from
-  // SetViewportLayersFromIds and the viewport layer's scroll_clip_layer_ids.
-  void UpdateViewportLayerTypes();
   LayerImpl* OverscrollElasticityLayer() {
     return LayerById(overscroll_elasticity_layer_id_);
   }

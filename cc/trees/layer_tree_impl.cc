@@ -1015,20 +1015,8 @@ void LayerTreeImpl::SetViewportLayersFromIds(
   inner_viewport_scroll_layer_id_ = inner_viewport_scroll_layer_id;
   outer_viewport_scroll_layer_id_ = outer_viewport_scroll_layer_id;
 
-  UpdateViewportLayerTypes();
-}
-
-void LayerTreeImpl::ClearViewportLayers() {
-  SetViewportLayersFromIds(Layer::INVALID_ID, Layer::INVALID_ID,
-                           Layer::INVALID_ID, Layer::INVALID_ID);
-}
-
-void LayerTreeImpl::UpdateViewportLayerTypes() {
   // The scroll_clip_layer Layer properties should be up-to-date.
-  // TODO(pdr): Enable this DCHECK by not calling this function unnecessarily
-  // from LayerImpl::SetScrollClipLayer.
-  // DCHECK(lifecycle().AllowsLayerPropertyAccess());
-
+  DCHECK(lifecycle().AllowsLayerPropertyAccess());
   if (auto* inner_scroll = LayerById(inner_viewport_scroll_layer_id_)) {
     inner_scroll->SetViewportLayerType(INNER_VIEWPORT_SCROLL);
     if (auto* inner_container = inner_scroll->scroll_clip_layer())
@@ -1039,6 +1027,11 @@ void LayerTreeImpl::UpdateViewportLayerTypes() {
     if (auto* outer_container = outer_scroll->scroll_clip_layer())
       outer_container->SetViewportLayerType(OUTER_VIEWPORT_CONTAINER);
   }
+}
+
+void LayerTreeImpl::ClearViewportLayers() {
+  SetViewportLayersFromIds(Layer::INVALID_ID, Layer::INVALID_ID,
+                           Layer::INVALID_ID, Layer::INVALID_ID);
 }
 
 // For unit tests, we use the layer's id as its element id.
