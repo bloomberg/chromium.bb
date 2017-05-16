@@ -9,6 +9,14 @@
 
 namespace blink {
 
+GenericDocumentMarkerListImpl::GenericDocumentMarkerListImpl(
+    DocumentMarker::MarkerType marker_type)
+    : marker_type_(marker_type) {}
+
+DocumentMarker::MarkerType GenericDocumentMarkerListImpl::MarkerType() const {
+  return marker_type_;
+}
+
 bool GenericDocumentMarkerListImpl::IsEmpty() const {
   return markers_.IsEmpty();
 }

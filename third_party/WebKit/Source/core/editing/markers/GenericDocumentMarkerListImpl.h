@@ -16,9 +16,11 @@ class RenderedDocumentMarker;
 // specialized implementations for every MarkerType.
 class GenericDocumentMarkerListImpl final : public DocumentMarkerList {
  public:
-  GenericDocumentMarkerListImpl() = default;
+  GenericDocumentMarkerListImpl(DocumentMarker::MarkerType);
 
   // DocumentMarkerList implementations
+  DocumentMarker::MarkerType MarkerType() const final;
+
   bool IsEmpty() const final;
 
   void Add(DocumentMarker*) final;
@@ -37,6 +39,7 @@ class GenericDocumentMarkerListImpl final : public DocumentMarkerList {
   DECLARE_TRACE();
 
  private:
+  const DocumentMarker::MarkerType marker_type_;
   HeapVector<Member<RenderedDocumentMarker>> markers_;
 
   DISALLOW_COPY_AND_ASSIGN(GenericDocumentMarkerListImpl);

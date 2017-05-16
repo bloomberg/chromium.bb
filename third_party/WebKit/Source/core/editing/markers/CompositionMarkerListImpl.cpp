@@ -9,6 +9,10 @@
 
 namespace blink {
 
+DocumentMarker::MarkerType CompositionMarkerListImpl::MarkerType() const {
+  return DocumentMarker::kComposition;
+}
+
 bool CompositionMarkerListImpl::IsEmpty() const {
   return markers_.IsEmpty();
 }
