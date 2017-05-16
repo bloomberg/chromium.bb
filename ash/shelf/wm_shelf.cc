@@ -50,11 +50,11 @@ class WmShelf::AutoHideEventHandler : public ui::EventHandler {
   // Overridden from ui::EventHandler:
   void OnMouseEvent(ui::MouseEvent* event) override {
     shelf_layout_manager_->UpdateAutoHideForMouseEvent(
-        event, WmWindow::Get(static_cast<aura::Window*>(event->target())));
+        event, static_cast<aura::Window*>(event->target()));
   }
   void OnGestureEvent(ui::GestureEvent* event) override {
     shelf_layout_manager_->UpdateAutoHideForGestureEvent(
-        event, WmWindow::Get(static_cast<aura::Window*>(event->target())));
+        event, static_cast<aura::Window*>(event->target()));
   }
 
  private:
