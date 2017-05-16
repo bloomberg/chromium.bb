@@ -44,10 +44,10 @@ sk_sp<PaintRecord> CreateRecording(const sk_sp<SkImage>& discardable_image,
   PaintRecorder recorder;
   PaintCanvas* canvas =
       recorder.beginRecording(visible_rect.width(), visible_rect.height());
-  canvas->drawImage(
-      PaintImage(discardable_image, PaintImage::AnimationType::STATIC,
-                 PaintImage::CompletionState::DONE),
-      0, 0, nullptr);
+  canvas->drawImage(PaintImage(PaintImage::GetNextId(), discardable_image,
+                               PaintImage::AnimationType::STATIC,
+                               PaintImage::CompletionState::DONE),
+                    0, 0, nullptr);
   sk_sp<PaintRecord> record = recorder.finishRecordingAsPicture();
   return record;
 }
@@ -676,7 +676,8 @@ TEST_F(DiscardableImageMapTest, GathersDiscardableImagesFromNestedOps) {
   sk_sp<SkImage> discardable_image =
       CreateDiscardableImage(gfx::Size(100, 100));
   internal_record->push<DrawImageOp>(
-      PaintImage(discardable_image, PaintImage::AnimationType::STATIC,
+      PaintImage(PaintImage::GetNextId(), discardable_image,
+                 PaintImage::AnimationType::STATIC,
                  PaintImage::CompletionState::DONE),
       0.f, 0.f, nullptr);
 
@@ -684,7 +685,8 @@ TEST_F(DiscardableImageMapTest, GathersDiscardableImagesFromNestedOps) {
   sk_sp<SkImage> discardable_image2 =
       CreateDiscardableImage(gfx::Size(100, 100));
   list_record->push<DrawImageOp>(
-      PaintImage(discardable_image2, PaintImage::AnimationType::STATIC,
+      PaintImage(PaintImage::GetNextId(), discardable_image2,
+                 PaintImage::AnimationType::STATIC,
                  PaintImage::CompletionState::DONE),
       100.f, 100.f, nullptr);
   scoped_refptr<DisplayItemList> display_list = new DisplayItemList;

@@ -111,7 +111,8 @@ TEST_P(LayerTreeHostMasksPixelTest, ImageMaskOfLayer) {
       client.PaintContentsToDisplayList(
           ContentLayerClient::PAINTING_BEHAVIOR_NORMAL);
   mask_display_list->Raster(canvas);
-  mask->SetImage(PaintImage(surface->makeImageSnapshot()));
+  mask->SetImage(
+      PaintImage(PaintImage::GetNextId(), surface->makeImageSnapshot()));
 
   scoped_refptr<SolidColorLayer> green = CreateSolidColorLayerWithBorder(
       gfx::Rect(25, 25, 50, 50), kCSSGreen, 1, SK_ColorBLACK);
