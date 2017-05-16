@@ -44,6 +44,10 @@
         width: 180px;
       }
 
+      :host([has-error]) #pinInput {
+        --paper-input-container-focus-color: var(--paper-red-500);
+      }
+
       #root {
         direction: ltr;
         display: flex;
@@ -182,6 +186,7 @@
               hidden="[[!showPinInput_]]">
           </paper-input>
         </div>
+        <content select="[problem]"></content>
         <div class="separator" hidden="[[showPinInput_]]"></div>
         <div class="row keyboard">
           <paper-button class="digit-button" on-tap="onNumberTap_" value="1"
