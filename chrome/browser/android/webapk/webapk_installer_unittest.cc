@@ -65,15 +65,11 @@ class TestWebApkInstaller : public WebApkInstaller {
   TestWebApkInstaller(content::BrowserContext* browser_context,
                       const ShortcutInfo& shortcut_info,
                       const SkBitmap& primary_icon,
-                      const SkBitmap& badge_icon,
-                      bool can_install_webapks)
+                      const SkBitmap& badge_icon)
       : WebApkInstaller(browser_context,
                         shortcut_info,
                         primary_icon,
-                        badge_icon),
-        can_install_webapks_(can_install_webapks) {}
-
-  bool CanInstallWebApks() override { return can_install_webapks_; }
+                        badge_icon) {}
 
   void InstallOrUpdateWebApk(const std::string& package_name,
                              int version,
@@ -89,10 +85,6 @@ class TestWebApkInstaller : public WebApkInstaller {
   }
 
  private:
-  // Whether the Google Play Services can be used and the install delegate is
-  // available.
-  bool can_install_webapks_;
-
   DISALLOW_COPY_AND_ASSIGN(TestWebApkInstaller);
 };
 
@@ -104,14 +96,9 @@ class WebApkInstallerRunner {
                         const GURL& best_badge_icon_url)
       : browser_context_(browser_context),
         best_primary_icon_url_(best_primary_icon_url),
-        best_badge_icon_url_(best_badge_icon_url),
-        can_install_webapks_(true) {}
+        best_badge_icon_url_(best_badge_icon_url) {}
 
   ~WebApkInstallerRunner() {}
-
-  void SetCanInstallWebApks(bool can_install_webapks) {
-    can_install_webapks_ = can_install_webapks;
-  }
 
   void RunInstallWebApk() {
     WebApkInstaller::InstallAsyncForTesting(
@@ -141,8 +128,8 @@ class WebApkInstallerRunner {
     info.best_badge_icon_url = best_badge_icon_url_;
 
     // WebApkInstaller owns itself.
-    WebApkInstaller* installer = new TestWebApkInstaller(
-        browser_context_, info, SkBitmap(), SkBitmap(), can_install_webapks_);
+    WebApkInstaller* installer =
+        new TestWebApkInstaller(browser_context_, info, SkBitmap(), SkBitmap());
     installer->SetTimeoutMs(100);
     return installer;
   }
@@ -174,9 +161,6 @@ class WebApkInstallerRunner {
 
   // The result of the installation process.
   WebApkInstallResult result_;
-
-  // Whether the device supports installation of WebApks.
-  bool can_install_webapks_;
 
   DISALLOW_COPY_AND_ASSIGN(WebApkInstallerRunner);
 };
@@ -217,8 +201,8 @@ class BuildProtoRunner {
     info.best_badge_icon_url = best_badge_icon_url;
 
     // WebApkInstaller owns itself.
-    WebApkInstaller* installer = new TestWebApkInstaller(
-        browser_context_, info, SkBitmap(), SkBitmap(), false);
+    WebApkInstaller* installer =
+        new TestWebApkInstaller(browser_context_, info, SkBitmap(), SkBitmap());
     installer->BuildWebApkProtoInBackgroundForTesting(
         base::Bind(&BuildProtoRunner::OnBuiltWebApkProto,
                    base::Unretained(this)),
@@ -544,11 +528,4 @@ TEST_F(WebApkInstallerTest, BuildWebApkProtoPrimaryIconAndBadgeIconSameUrl) {
               testing::ElementsAre(webapk::Image::PRIMARY_ICON,
                                    webapk::Image::BADGE_ICON));
   EXPECT_TRUE(icons[1].has_image_data());
-}
-
-TEST_F(WebApkInstallerTest, FailsWhenInstallDisabled) {
-  std::unique_ptr<WebApkInstallerRunner> runner = CreateWebApkInstallerRunner();
-  runner->SetCanInstallWebApks(false);
-  runner->RunInstallWebApk();
-  EXPECT_EQ(WebApkInstallResult::FAILURE, runner->result());
 }

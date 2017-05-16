@@ -103,9 +103,6 @@ class WebApkInstaller : public net::URLFetcherDelegate {
                   const SkBitmap& primary_icon,
                   const SkBitmap& badge_icon);
 
-  // Returns whether the device supports installing WebAPKs.
-  virtual bool CanInstallWebApks();
-
   // Called when the package name of the WebAPK is available and the install
   // or update request should be issued.
   virtual void InstallOrUpdateWebApk(const std::string& package_name,
