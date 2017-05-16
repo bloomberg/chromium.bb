@@ -9,9 +9,9 @@
 #include "base/location.h"
 #include "base/task_runner.h"
 #include "base/task_runner_util.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
-#include "ios/web/public/web_thread.h"
 
 namespace web_resource {
 
@@ -65,11 +65,11 @@ void StartParseJSONAsync(
     const std::string& data,
     const WebResourceService::SuccessCallback& success_callback,
     const WebResourceService::ErrorCallback& error_callback) {
-  web::WebThread::PostBlockingPoolTask(
-      FROM_HERE,
-      base::Bind(&ParseJSONOnBackgroundThread,
-                 base::RetainedRef(base::ThreadTaskRunnerHandle::Get()), data,
-                 success_callback, error_callback));
+  base::PostTaskWithTraits(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
+      base::BindOnce(&ParseJSONOnBackgroundThread,
+                     base::RetainedRef(base::ThreadTaskRunnerHandle::Get()),
+                     data, success_callback, error_callback));
 }
 
 }  // namespace
