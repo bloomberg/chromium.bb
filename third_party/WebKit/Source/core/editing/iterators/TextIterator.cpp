@@ -342,12 +342,8 @@ void TextIteratorAlgorithm<Strategy>::Advance() {
     return;
   }
 
-  if (!text_box_ && remaining_text_box_) {
-    text_box_ = remaining_text_box_;
-    remaining_text_box_ = 0;
-    first_letter_text_ = nullptr;
-    offset_ = 0;
-  }
+  if (ShouldProceedToRemainingText())
+    ProceedToRemainingText();
   // handle remembered text box
   if (text_box_) {
     HandleTextBox();
@@ -562,6 +558,18 @@ static bool HasVisibleTextNode(LayoutText* layout_object) {
 }
 
 template <typename Strategy>
+bool TextIteratorAlgorithm<Strategy>::ShouldHandleFirstLetter(
+    const LayoutText& layout_text) const {
+  if (handled_first_letter_)
+    return false;
+  if (!layout_text.IsTextFragment())
+    return false;
+  // TODO(xiaochengh): Handle the case where :first-letter has multiple chars,
+  // and eliminate the hack with first_letter/remaining_text_start_offset_.
+  return !offset_;
+}
+
+template <typename Strategy>
 bool TextIteratorAlgorithm<Strategy>::HandleTextNode() {
   if (ExcludesAutofilledValue()) {
     TextControlElement* control = EnclosingTextControl(node_);
@@ -579,20 +587,19 @@ bool TextIteratorAlgorithm<Strategy>::HandleTextNode() {
 
   // handle pre-formatted text
   if (!layout_object->Style()->CollapseWhiteSpace()) {
-    int run_start = offset_;
     if (last_text_node_ended_with_collapsed_space_ &&
         HasVisibleTextNode(layout_object)) {
       if (behavior_.CollapseTrailingSpace()) {
-        if (run_start > 0 && str[run_start - 1] == ' ') {
-          SpliceBuffer(kSpaceCharacter, text_node, 0, run_start, run_start);
+        if (offset_ > 0 && str[offset_ - 1] == ' ') {
+          SpliceBuffer(kSpaceCharacter, text_node, 0, offset_, offset_);
           return false;
         }
       } else {
-        SpliceBuffer(kSpaceCharacter, text_node, 0, run_start, run_start);
+        SpliceBuffer(kSpaceCharacter, text_node, 0, offset_, offset_);
         return false;
       }
     }
-    if (!handled_first_letter_ && layout_object->IsTextFragment() && !offset_) {
+    if (ShouldHandleFirstLetter(*layout_object)) {
       HandleTextNodeFirstLetter(ToLayoutTextFragment(layout_object));
       if (first_letter_text_) {
         String first_letter = first_letter_text_->GetText();
@@ -606,9 +613,10 @@ bool TextIteratorAlgorithm<Strategy>::HandleTextNode() {
     if (layout_object->Style()->Visibility() != EVisibility::kVisible &&
         !IgnoresStyleVisibility())
       return false;
-    int str_length = str.length();
-    int end = (text_node == end_container_) ? end_offset_ : INT_MAX;
-    int run_end = std::min(str_length, end);
+    const unsigned run_start = offset_;
+    const unsigned str_length = str.length();
+    const unsigned end = (text_node == end_container_) ? end_offset_ : INT_MAX;
+    const unsigned run_end = std::min(str_length, end);
 
     if (run_start >= run_end)
       return true;
@@ -620,8 +628,8 @@ bool TextIteratorAlgorithm<Strategy>::HandleTextNode() {
   if (layout_object->FirstTextBox())
     text_box_ = layout_object->FirstTextBox();
 
-  bool should_handle_first_letter =
-      !handled_first_letter_ && layout_object->IsTextFragment() && !offset_;
+  const bool should_handle_first_letter =
+      ShouldHandleFirstLetter(*layout_object);
   if (should_handle_first_letter)
     HandleTextNodeFirstLetter(ToLayoutTextFragment(layout_object));
 
@@ -696,22 +704,22 @@ void TextIteratorAlgorithm<Strategy>::HandleTextBox() {
     text_box_ = nullptr;
   } else {
     String str = layout_object->GetText();
-    unsigned start = offset_;
-    unsigned end = (node_ == end_container_)
-                       ? static_cast<unsigned>(end_offset_)
-                       : INT_MAX;
+    const unsigned start = offset_;
+    const unsigned end = (node_ == end_container_)
+                             ? static_cast<unsigned>(end_offset_)
+                             : INT_MAX;
     while (text_box_) {
-      unsigned text_box_start = text_box_->Start();
-      unsigned run_start = std::max(text_box_start, start);
+      const unsigned text_box_start = text_box_->Start();
+      const unsigned run_start = std::max(text_box_start, start);
 
       // Check for collapsed space at the start of this run.
       InlineTextBox* first_text_box =
           layout_object->ContainsReversedText()
               ? (sorted_text_boxes_.IsEmpty() ? 0 : sorted_text_boxes_[0])
               : layout_object->FirstTextBox();
-      bool need_space = last_text_node_ended_with_collapsed_space_ ||
-                        (text_box_ == first_text_box &&
-                         text_box_start == run_start && run_start > 0);
+      const bool need_space = last_text_node_ended_with_collapsed_space_ ||
+                              (text_box_ == first_text_box &&
+                               text_box_start == run_start && run_start > 0);
       if (need_space &&
           !layout_object->Style()->IsCollapsibleWhiteSpace(
               text_state_.LastCharacter()) &&
@@ -727,8 +735,8 @@ void TextIteratorAlgorithm<Strategy>::HandleTextBox() {
         }
         return;
       }
-      unsigned text_box_end = text_box_start + text_box_->Len();
-      unsigned run_end = std::min(text_box_end, end);
+      const unsigned text_box_end = text_box_start + text_box_->Len();
+      const unsigned run_end = std::min(text_box_end, end);
 
       // Determine what the next text box will be, but don't advance yet
       InlineTextBox* next_text_box = nullptr;
@@ -795,7 +803,7 @@ void TextIteratorAlgorithm<Strategy>::HandleTextBox() {
         }
 
         // Advance and return
-        unsigned next_run_start =
+        const unsigned next_run_start =
             next_text_box ? next_text_box->Start() : str.length();
         if (next_run_start > run_end)
           last_text_node_ended_with_collapsed_space_ =
@@ -813,13 +821,27 @@ void TextIteratorAlgorithm<Strategy>::HandleTextBox() {
     }
   }
 
-  if (!text_box_ && remaining_text_box_) {
-    text_box_ = remaining_text_box_;
-    remaining_text_box_ = 0;
-    first_letter_text_ = nullptr;
-    offset_ = 0;
+  if (ShouldProceedToRemainingText()) {
+    ProceedToRemainingText();
     HandleTextBox();
   }
+}
+
+template <typename Strategy>
+bool TextIteratorAlgorithm<Strategy>::ShouldProceedToRemainingText() const {
+  // TODO(xiaochengh): Handle the case where the iterator should stop in
+  // :first-letter.
+  return !text_box_ && remaining_text_box_;
+}
+
+template <typename Strategy>
+void TextIteratorAlgorithm<Strategy>::ProceedToRemainingText() {
+  text_box_ = remaining_text_box_;
+  remaining_text_box_ = 0;
+  first_letter_text_ = nullptr;
+  // TODO(xiaochengh): |offset_| should be set to the starting offset of the
+  // remaining text;
+  offset_ = 0;
 }
 
 template <typename Strategy>

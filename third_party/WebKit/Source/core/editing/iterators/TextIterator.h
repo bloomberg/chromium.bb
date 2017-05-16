@@ -139,6 +139,9 @@ class CORE_TEMPLATE_CLASS_EXPORT TextIteratorAlgorithm {
   bool HandleNonTextNode();
   void HandleTextBox();
   void HandleTextNodeFirstLetter(LayoutTextFragment*);
+  bool ShouldHandleFirstLetter(const LayoutText&) const;
+  bool ShouldProceedToRemainingText() const;
+  void ProceedToRemainingText();
   // Helper function during initialization. Returns true if the start position
   // is in a text node with first-letter, in which case it also sets up related
   // parameters. Returns false otherwise.
