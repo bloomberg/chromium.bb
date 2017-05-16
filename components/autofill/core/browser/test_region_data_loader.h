@@ -10,7 +10,7 @@
 #include <vector>
 
 #include "base/callback.h"
-#include "components/autofill/core/browser/region_combobox_model.h"
+#include "components/autofill/core/browser/region_data_loader.h"
 
 namespace autofill {
 
