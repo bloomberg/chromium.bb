@@ -149,6 +149,20 @@ bool ShouldCheckNeedDircryptoMigration() {
          arc::IsArcAvailable();
 }
 
+// Returns true if the user can run ARC based on the user type.
+bool IsUserAllowedForARC(const AccountId& account_id) {
+  if (!user_manager::UserManager::IsInitialized())
+    return false;
+
+  const user_manager::User* user =
+      user_manager::UserManager::Get()->FindUser(account_id);
+  if (!user)
+    return false;
+
+  return user->HasGaiaAccount() || (user->IsActiveDirectoryUser() &&
+                                    arc::IsArcAllowedForActiveDirectoryUsers());
+}
+
 }  // namespace
 
 // Helper class to call cryptohome to check whether a user needs dircrypto
@@ -166,6 +180,12 @@ class UserSelectionScreen::DircryptoMigrationChecker {
     auto it = needs_dircrypto_migration_cache_.find(account_id);
     if (it != needs_dircrypto_migration_cache_.end()) {
       UpdateUI(account_id, it->second);
+      return;
+    }
+
+    // No banner if the user is not allowed for ARC.
+    if (!IsUserAllowedForARC(account_id)) {
+      UpdateUI(account_id, false);
       return;
     }
 
