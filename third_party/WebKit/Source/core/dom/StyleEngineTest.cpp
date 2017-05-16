@@ -551,4 +551,21 @@ TEST_F(StyleEngineTest, NoScheduledRuleSetInvalidationsOnNewShadow) {
   EXPECT_FALSE(GetDocument().NeedsStyleInvalidation());
 }
 
+TEST_F(StyleEngineTest, EmptyHttpEquivDefaultStyle) {
+  GetDocument().body()->setInnerHTML(
+      "<style>div { color:pink }</style><div id=container></div>");
+  GetDocument().View()->UpdateAllLifecyclePhases();
+
+  EXPECT_FALSE(GetStyleEngine().NeedsActiveStyleUpdate());
+
+  Element* container = GetDocument().getElementById("container");
+  ASSERT_TRUE(container);
+  container->setInnerHTML("<meta http-equiv='default-style' content=''>");
+  EXPECT_FALSE(GetStyleEngine().NeedsActiveStyleUpdate());
+
+  container->setInnerHTML(
+      "<meta http-equiv='default-style' content='preferred'>");
+  EXPECT_TRUE(GetStyleEngine().NeedsActiveStyleUpdate());
+}
+
 }  // namespace blink
