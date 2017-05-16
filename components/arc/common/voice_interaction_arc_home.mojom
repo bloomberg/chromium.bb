@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
-// Next MinVersion: 1
+// Next MinVersion: 2
 
 module arc.mojom;
 
@@ -50,12 +50,16 @@ struct VoiceInteractionStructure {
 };
 
 // Handles voice interaction queries from Android.
-// Next method ID: 1
+// Next method ID: 3
 interface VoiceInteractionArcHomeHost {
   // Returns view hierarchy of current window represented as
   // VoiceInteractionStructure. Returns empty if the request
   // fails.
   GetVoiceInteractionStructure@1() => (VoiceInteractionStructure? structure);
+
+  // Notifies VoiceInteractionArcHomeHost that voice interaction OOBE setup
+  // is done.
+  [MinVersion=1] OnVoiceInteractionOobeSetupComplete@2();
 };
 
 // Connects with ArcHome.
