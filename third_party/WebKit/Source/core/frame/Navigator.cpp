@@ -75,6 +75,7 @@ bool Navigator::cookieEnabled() const {
 
 Vector<String> Navigator::languages() {
   Vector<String> languages;
+  languages_changed_ = false;
 
   if (!GetFrame() || !GetFrame()->GetPage()) {
     languages.push_back(DefaultLanguage());

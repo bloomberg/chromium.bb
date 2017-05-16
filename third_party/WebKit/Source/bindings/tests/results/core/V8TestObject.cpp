@@ -2002,7 +2002,7 @@ static void cachedAttributeAnyAttributeAttributeGetter(const v8::FunctionCallbac
   V8PrivateProperty::Symbol propertySymbol =
       V8PrivateProperty::GetSymbol(info.GetIsolate(),
           "TestObject#Cachedattributeanyattribute");
-  if (!impl->isValueDirty()) {
+  if (!static_cast<const TestObject*>(impl)->isValueDirty()) {
     v8::Local<v8::Value> v8Value = propertySymbol.GetOrUndefined(holder);
     if (!v8Value->IsUndefined()) {
       V8SetReturnValue(info, v8Value);
@@ -2049,7 +2049,7 @@ static void cachedArrayAttributeAttributeGetter(const v8::FunctionCallbackInfo<v
   V8PrivateProperty::Symbol propertySymbol =
       V8PrivateProperty::GetSymbol(info.GetIsolate(),
           "TestObject#Cachedarrayattribute");
-  if (!impl->isArrayDirty()) {
+  if (!static_cast<const TestObject*>(impl)->isArrayDirty()) {
     v8::Local<v8::Value> v8Value = propertySymbol.GetOrUndefined(holder);
     if (!v8Value->IsUndefined()) {
       V8SetReturnValue(info, v8Value);
@@ -2100,7 +2100,7 @@ static void cachedStringOrNoneAttributeAttributeGetter(const v8::FunctionCallbac
   V8PrivateProperty::Symbol propertySymbol =
       V8PrivateProperty::GetSymbol(info.GetIsolate(),
           "TestObject#Cachedstringornoneattribute");
-  if (!impl->isStringDirty()) {
+  if (!static_cast<const TestObject*>(impl)->isStringDirty()) {
     v8::Local<v8::Value> v8Value = propertySymbol.GetOrUndefined(holder);
     if (!v8Value->IsUndefined()) {
       V8SetReturnValue(info, v8Value);
@@ -3110,7 +3110,7 @@ static void cachedAttributeRaisesExceptionGetterAnyAttributeAttributeGetter(cons
   V8PrivateProperty::Symbol propertySymbol =
       V8PrivateProperty::GetSymbol(info.GetIsolate(),
           "TestObject#Cachedattributeraisesexceptiongetteranyattribute");
-  if (!impl->isValueDirty()) {
+  if (!static_cast<const TestObject*>(impl)->isValueDirty()) {
     v8::Local<v8::Value> v8Value = propertySymbol.GetOrUndefined(holder);
     if (!v8Value->IsUndefined()) {
       V8SetReturnValue(info, v8Value);
