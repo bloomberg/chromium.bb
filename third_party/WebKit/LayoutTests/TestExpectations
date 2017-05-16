@@ -1885,9 +1885,6 @@ crbug.com/613672 [ Mac ] virtual/scalefactor150/fast/events/synthetic-events/tap
 # We should send PointerLeave events for stylus devices.
 crbug.com/583413 external/wpt/pointerevents/pointerevent_pointerleave_pen-manual.html  [ Failure ]
 
-# Times out flakily.
-crbug.com/722212 fast/events/pointerevents/mouse-pointer-event-properties.html [ Timeout Pass ]
-
 # These testcases are incorrect, mark them as failing until they're fixed in the testsuite.
 # https://lists.w3.org/Archives/Public/www-style/2016Jan/0275.html
 # https://lists.w3.org/Archives/Public/www-style/2016Jan/0276.html
@@ -3323,6 +3320,10 @@ crbug.com/720511 [ Linux ] virtual/mojo-loading/http/tests/security/contentSecur
 crbug.com/720511 [ Linux ] virtual/mojo-loading/http/tests/security/contentSecurityPolicy/source-list-parsing-04.html [ Failure Pass Timeout ]
 crbug.com/720511 [ Linux ] virtual/mojo-loading/http/tests/security/document-domain-canonicalizes.html [ Failure Pass Timeout ]
 crbug.com/720511 [ Linux ] virtual/off-main-thread-fetch/http/tests/misc/non-utf8-header-name.php [ Skip ]
+
+# Sheriff failures 2017-05-16
+crbug.com/722849 [ Win ] inspector/animation/animation-transition-setTiming-crash.html [ Failure Pass ]
+crbug.com/722212 fast/events/pointerevents/mouse-pointer-event-properties.html [ Failure Timeout Pass ]
 
 # Tests to be run only under virtual/experimental-canvas-features/
 crbug.com/682753 fast/canvas-experimental [ Skip ]
