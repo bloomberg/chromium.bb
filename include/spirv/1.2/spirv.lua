@@ -41,8 +41,8 @@
 
 spv = {
     MagicNumber = 0x07230203,
-    Version = 0x00010000,
-    Revision = 11,
+    Version = 0x00010200,
+    Revision = 1,
     OpCodeMask = 0xffff,
     WordCountShift = 16,
 
@@ -109,6 +109,13 @@ spv = {
         OutputTriangleStrip = 29,
         VecTypeHint = 30,
         ContractionOff = 31,
+        Initializer = 33,
+        Finalizer = 34,
+        SubgroupSize = 35,
+        SubgroupsPerWorkgroup = 36,
+        SubgroupsPerWorkgroupId = 37,
+        LocalSizeId = 38,
+        LocalSizeHintId = 39,
     },
 
     StorageClass = {
@@ -349,6 +356,9 @@ spv = {
         NoContraction = 42,
         InputAttachmentIndex = 43,
         Alignment = 44,
+        MaxByteOffset = 45,
+        AlignmentId = 46,
+        MaxByteOffsetId = 47,
         OverrideCoverageNV = 5248,
         PassthroughNV = 5250,
         ViewportRelativeNV = 5252,
@@ -428,12 +438,16 @@ spv = {
     LoopControlShift = {
         Unroll = 0,
         DontUnroll = 1,
+        DependencyInfinite = 2,
+        DependencyLength = 3,
     },
 
     LoopControlMask = {
         MaskNone = 0,
         Unroll = 0x00000001,
         DontUnroll = 0x00000002,
+        DependencyInfinite = 0x00000004,
+        DependencyLength = 0x00000008,
     },
 
     FunctionControlShift = {
@@ -577,6 +591,9 @@ spv = {
         StorageImageReadWithoutFormat = 55,
         StorageImageWriteWithoutFormat = 56,
         MultiViewport = 57,
+        SubgroupDispatch = 58,
+        NamedBarrier = 59,
+        PipeStorage = 60,
         SubgroupBallotKHR = 4423,
         DrawParameters = 4427,
         SubgroupVoteKHR = 4431,
@@ -893,6 +910,18 @@ spv = {
         OpAtomicFlagTestAndSet = 318,
         OpAtomicFlagClear = 319,
         OpImageSparseRead = 320,
+        OpSizeOf = 321,
+        OpTypePipeStorage = 322,
+        OpConstantPipeStorage = 323,
+        OpCreatePipeFromPipeStorage = 324,
+        OpGetKernelLocalSizeForSubgroupCount = 325,
+        OpGetKernelMaxNumSubgroups = 326,
+        OpTypeNamedBarrier = 327,
+        OpNamedBarrierInitialize = 328,
+        OpMemoryNamedBarrier = 329,
+        OpModuleProcessed = 330,
+        OpExecutionModeId = 331,
+        OpDecorateId = 332,
         OpSubgroupBallotKHR = 4421,
         OpSubgroupFirstInvocationKHR = 4422,
         OpSubgroupAllKHR = 4428,

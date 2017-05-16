@@ -41,8 +41,8 @@
 
 spv = {
     'MagicNumber' : 0x07230203,
-    'Version' : 0x00010100,
-    'Revision' : 7,
+    'Version' : 0x00010200,
+    'Revision' : 1,
     'OpCodeMask' : 0xffff,
     'WordCountShift' : 16,
 
@@ -113,6 +113,9 @@ spv = {
         'Finalizer' : 34,
         'SubgroupSize' : 35,
         'SubgroupsPerWorkgroup' : 36,
+        'SubgroupsPerWorkgroupId' : 37,
+        'LocalSizeId' : 38,
+        'LocalSizeHintId' : 39,
     },
 
     'StorageClass' : {
@@ -354,6 +357,8 @@ spv = {
         'InputAttachmentIndex' : 43,
         'Alignment' : 44,
         'MaxByteOffset' : 45,
+        'AlignmentId' : 46,
+        'MaxByteOffsetId' : 47,
         'OverrideCoverageNV' : 5248,
         'PassthroughNV' : 5250,
         'ViewportRelativeNV' : 5252,
@@ -915,6 +920,8 @@ spv = {
         'OpNamedBarrierInitialize' : 328,
         'OpMemoryNamedBarrier' : 329,
         'OpModuleProcessed' : 330,
+        'OpExecutionModeId' : 331,
+        'OpDecorateId' : 332,
         'OpSubgroupBallotKHR' : 4421,
         'OpSubgroupFirstInvocationKHR' : 4422,
         'OpSubgroupAllKHR' : 4428,

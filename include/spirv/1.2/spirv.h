@@ -50,12 +50,12 @@
 
 typedef unsigned int SpvId;
 
-#define SPV_VERSION 0x10100
-#define SPV_REVISION 7
+#define SPV_VERSION 0x10200
+#define SPV_REVISION 1
 
 static const unsigned int SpvMagicNumber = 0x07230203;
-static const unsigned int SpvVersion = 0x00010100;
-static const unsigned int SpvRevision = 7;
+static const unsigned int SpvVersion = 0x00010200;
+static const unsigned int SpvRevision = 1;
 static const unsigned int SpvOpCodeMask = 0xffff;
 static const unsigned int SpvWordCountShift = 16;
 
@@ -130,6 +130,9 @@ typedef enum SpvExecutionMode_ {
     SpvExecutionModeFinalizer = 34,
     SpvExecutionModeSubgroupSize = 35,
     SpvExecutionModeSubgroupsPerWorkgroup = 36,
+    SpvExecutionModeSubgroupsPerWorkgroupId = 37,
+    SpvExecutionModeLocalSizeId = 38,
+    SpvExecutionModeLocalSizeHintId = 39,
     SpvExecutionModeMax = 0x7fffffff,
 } SpvExecutionMode;
 
@@ -385,6 +388,8 @@ typedef enum SpvDecoration_ {
     SpvDecorationInputAttachmentIndex = 43,
     SpvDecorationAlignment = 44,
     SpvDecorationMaxByteOffset = 45,
+    SpvDecorationAlignmentId = 46,
+    SpvDecorationMaxByteOffsetId = 47,
     SpvDecorationOverrideCoverageNV = 5248,
     SpvDecorationPassthroughNV = 5250,
     SpvDecorationViewportRelativeNV = 5252,
@@ -958,6 +963,8 @@ typedef enum SpvOp_ {
     SpvOpNamedBarrierInitialize = 328,
     SpvOpMemoryNamedBarrier = 329,
     SpvOpModuleProcessed = 330,
+    SpvOpExecutionModeId = 331,
+    SpvOpDecorateId = 332,
     SpvOpSubgroupBallotKHR = 4421,
     SpvOpSubgroupFirstInvocationKHR = 4422,
     SpvOpSubgroupAllKHR = 4428,
