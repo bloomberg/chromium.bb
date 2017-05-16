@@ -50,7 +50,7 @@ void DrawDisplayList(unsigned char* buffer,
   bitmap.installPixels(info, buffer, info.minRowBytes());
   SkCanvas canvas(bitmap);
   canvas.clipRect(gfx::RectToSkRect(layer_rect));
-  list->Raster(&canvas, NULL, layer_rect, 1.0f);
+  list->Raster(&canvas);
 }
 
 bool AreDisplayListDrawingResultsSame(const gfx::Rect& layer_rect,

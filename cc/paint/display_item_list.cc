@@ -163,24 +163,6 @@ DisplayItemList::DisplayItemList()
 
 DisplayItemList::~DisplayItemList() = default;
 
-void DisplayItemList::Raster(SkCanvas* canvas,
-                             SkPicture::AbortCallback* callback,
-                             const gfx::Rect& canvas_target_playback_rect,
-                             float contents_scale) const {
-  canvas->save();
-  if (!canvas_target_playback_rect.IsEmpty()) {
-    // canvas_target_playback_rect is specified in device space. We can't
-    // use clipRect because canvas CTM will be applied on it. Use clipRegion
-    // instead because it ignores canvas CTM.
-    SkRegion device_clip;
-    device_clip.setRect(gfx::RectToSkIRect(canvas_target_playback_rect));
-    canvas->clipRegion(device_clip);
-  }
-  canvas->scale(contents_scale, contents_scale);
-  Raster(canvas, callback);
-  canvas->restore();
-}
-
 // Atttempts to merge a CompositingDisplayItem and DrawingDisplayItem
 // into a single "draw with alpha".  This function returns true if
 // it was successful.  If false, then the caller is responsible for
@@ -513,7 +495,7 @@ DisplayItemList::CreateTracedValue(bool include_items) const {
     SkCanvas* canvas = recorder.beginRecording(bounds.width(), bounds.height());
     canvas->translate(-bounds.x(), -bounds.y());
     canvas->clipRect(gfx::RectToSkRect(bounds));
-    Raster(canvas, nullptr, gfx::Rect(), 1.f);
+    Raster(canvas);
     sk_sp<SkPicture> picture = recorder.finishRecordingAsPicture();
 
     std::string b64_picture;

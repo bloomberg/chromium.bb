@@ -234,7 +234,7 @@ void SkiaPaintCanvas::drawTextBlob(sk_sp<SkTextBlob> blob,
 
 void SkiaPaintCanvas::drawDisplayItemList(
     scoped_refptr<DisplayItemList> display_item_list) {
-  display_item_list->Raster(canvas_, nullptr);
+  display_item_list->Raster(canvas_);
 }
 
 void SkiaPaintCanvas::drawPicture(sk_sp<const PaintRecord> record) {
