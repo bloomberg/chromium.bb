@@ -2394,11 +2394,11 @@ bool WebViewImpl::SelectionBounds(WebRect& anchor, WebRect& focus) const {
   DocumentLifecycle::DisallowTransitionScope disallow_transition(
       local_frame->GetDocument()->Lifecycle());
 
-  if (selection.ComputeVisibleSelectionInDOMTreeDeprecated().IsCaret()) {
+  if (selection.ComputeVisibleSelectionInDOMTree().IsCaret()) {
     anchor = focus = selection.AbsoluteCaretBounds();
   } else {
     const EphemeralRange selected_range =
-        selection.ComputeVisibleSelectionInDOMTreeDeprecated()
+        selection.ComputeVisibleSelectionInDOMTree()
             .ToNormalizedEphemeralRange();
     if (selected_range.IsNull())
       return false;
@@ -2411,7 +2411,7 @@ bool WebViewImpl::SelectionBounds(WebRect& anchor, WebRect& focus) const {
   anchor = local_frame->View()->ContentsToViewport(anchor);
   focus = local_frame->View()->ContentsToViewport(focus);
 
-  if (!selection.ComputeVisibleSelectionInDOMTreeDeprecated().IsBaseFirst())
+  if (!selection.ComputeVisibleSelectionInDOMTree().IsBaseFirst())
     std::swap(anchor, focus);
   return true;
 }
