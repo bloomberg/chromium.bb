@@ -3687,7 +3687,7 @@ void HTMLMediaElement::UpdateControlsVisibility() {
   GetMediaControls()->Reset();
 
   if (ShouldShowControls(RecordMetricsBehavior::kDoRecord))
-    GetMediaControls()->Show();
+    GetMediaControls()->MaybeShow();
   else
     GetMediaControls()->Hide();
 }

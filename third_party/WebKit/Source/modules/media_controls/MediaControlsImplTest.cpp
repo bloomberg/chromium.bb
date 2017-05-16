@@ -259,7 +259,7 @@ TEST_F(MediaControlsImplTest, HideAndShow) {
   ASSERT_TRUE(IsElementVisible(*panel));
   MediaControls().Hide();
   ASSERT_FALSE(IsElementVisible(*panel));
-  MediaControls().Show();
+  MediaControls().MaybeShow();
   ASSERT_TRUE(IsElementVisible(*panel));
 }
 
@@ -398,7 +398,7 @@ TEST_F(MediaControlsImplTest, KeepControlsVisibleIfOverflowListVisible) {
   MediaControls().MediaElement().Play();
   testing::RunPendingTasks();
 
-  MediaControls().Show();
+  MediaControls().MaybeShow();
   MediaControls().ToggleOverflowMenu();
   EXPECT_TRUE(IsElementVisible(*overflow_list));
 

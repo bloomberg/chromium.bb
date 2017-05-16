@@ -35,8 +35,11 @@ class CORE_EXPORT MediaControls : public GarbageCollectedMixin {
 
   HTMLMediaElement& MediaElement() const;
 
-  virtual void Show() = 0;
+  // Enables showing of the controls - only shows if appropriate.
+  virtual void MaybeShow() = 0;
+  // Disables showing of the controls - immediately hides.
   virtual void Hide() = 0;
+
   virtual void Reset() = 0;
 
   // Notify the media controls that the controlsList attribute has changed.
