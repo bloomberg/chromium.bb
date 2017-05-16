@@ -70,7 +70,7 @@ class CommandBufferServiceBase;
 class GpuMemoryBufferManager;
 class CommandExecutor;
 class ImageFactory;
-class TransferBufferManagerInterface;
+class TransferBufferManager;
 
 // This class provides a thread-safe interface to the global GPU service (for
 // example GPU thread) when being run in single process mode.
@@ -279,7 +279,7 @@ class GPU_EXPORT InProcessCommandBuffer : public CommandBuffer,
   bool waiting_for_sync_point_ = false;
 
   scoped_refptr<base::SingleThreadTaskRunner> origin_task_runner_;
-  scoped_refptr<TransferBufferManagerInterface> transfer_buffer_manager_;
+  std::unique_ptr<TransferBufferManager> transfer_buffer_manager_;
   std::unique_ptr<CommandExecutor> executor_;
   std::unique_ptr<gles2::GLES2Decoder> decoder_;
   scoped_refptr<gl::GLContext> context_;

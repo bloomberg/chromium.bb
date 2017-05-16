@@ -25,12 +25,17 @@ using ::base::SharedMemory;
 
 namespace gpu {
 
-TransferBufferManagerInterface::~TransferBufferManagerInterface() {
-}
-
 TransferBufferManager::TransferBufferManager(
     gles2::MemoryTracker* memory_tracker)
-    : shared_memory_bytes_allocated_(0), memory_tracker_(memory_tracker) {}
+    : shared_memory_bytes_allocated_(0), memory_tracker_(memory_tracker) {
+  // When created from InProcessCommandBuffer, we won't have a |memory_tracker_|
+  // so don't register a dump provider.
+  if (memory_tracker_) {
+    base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
+        this, "gpu::TransferBufferManager",
+        base::ThreadTaskRunnerHandle::Get());
+  }
+}
 
 TransferBufferManager::~TransferBufferManager() {
   while (!registered_buffers_.empty()) {
@@ -45,17 +50,6 @@ TransferBufferManager::~TransferBufferManager() {
 
   base::trace_event::MemoryDumpManager::GetInstance()->UnregisterDumpProvider(
       this);
-}
-
-bool TransferBufferManager::Initialize() {
-  // When created from InProcessCommandBuffer, we won't have a |memory_tracker_|
-  // so don't register a dump provider.
-  if (memory_tracker_) {
-    base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
-        this, "gpu::TransferBufferManager",
-        base::ThreadTaskRunnerHandle::Get());
-  }
-  return true;
 }
 
 bool TransferBufferManager::RegisterTransferBuffer(

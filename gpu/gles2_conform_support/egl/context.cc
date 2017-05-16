@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
+#include "base/memory/ptr_util.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
 #include "gpu/command_buffer/client/gles2_lib.h"
 #include "gpu/command_buffer/client/shared_memory_limits.h"
@@ -249,12 +250,11 @@ void Context::ApplyContextReleased() {
 }
 
 bool Context::CreateService(gl::GLSurface* gl_surface) {
-  scoped_refptr<gpu::TransferBufferManager> transfer_buffer_manager(
-      new gpu::TransferBufferManager(nullptr));
-  transfer_buffer_manager->Initialize();
+  transfer_buffer_manager_ =
+      base::MakeUnique<gpu::TransferBufferManager>(nullptr);
 
   std::unique_ptr<gpu::CommandBufferService> command_buffer(
-      new gpu::CommandBufferService(transfer_buffer_manager.get()));
+      new gpu::CommandBufferService(transfer_buffer_manager_.get()));
 
   scoped_refptr<gpu::gles2::FeatureInfo> feature_info(
       new gpu::gles2::FeatureInfo(gpu_driver_bug_workarounds_));

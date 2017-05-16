@@ -17,7 +17,7 @@
 
 namespace gpu {
 
-class TransferBufferManagerInterface;
+class TransferBufferManager;
 
 class GPU_EXPORT CommandBufferServiceBase : public CommandBuffer {
  public:
@@ -51,8 +51,7 @@ class GPU_EXPORT CommandBufferServiceBase : public CommandBuffer {
 class GPU_EXPORT CommandBufferService : public CommandBufferServiceBase {
  public:
   typedef base::Callback<bool(int32_t)> GetBufferChangedCallback;
-  explicit CommandBufferService(
-      TransferBufferManagerInterface* transfer_buffer_manager);
+  explicit CommandBufferService(TransferBufferManager* transfer_buffer_manager);
   ~CommandBufferService() override;
 
   // CommandBuffer implementation:
@@ -111,7 +110,7 @@ class GPU_EXPORT CommandBufferService : public CommandBufferServiceBase {
   base::Closure put_offset_change_callback_;
   GetBufferChangedCallback get_buffer_change_callback_;
   base::Closure parse_error_callback_;
-  scoped_refptr<TransferBufferManagerInterface> transfer_buffer_manager_;
+  TransferBufferManager* transfer_buffer_manager_;
   int32_t token_;
   uint64_t release_count_;
   uint32_t generation_;

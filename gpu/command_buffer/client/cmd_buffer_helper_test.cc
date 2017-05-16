@@ -43,7 +43,7 @@ const int32_t kUnusedCommandId = 5;  // we use 0 and 2 currently.
 class CommandBufferServiceLocked : public CommandBufferService {
  public:
   explicit CommandBufferServiceLocked(
-      TransferBufferManagerInterface* transfer_buffer_manager)
+      TransferBufferManager* transfer_buffer_manager)
       : CommandBufferService(transfer_buffer_manager),
         flush_locked_(false),
         last_flush_(-1),
@@ -101,11 +101,7 @@ class CommandBufferHelperTest : public testing::Test {
     EXPECT_CALL(*api_mock_, DoCommand(cmd::kNoop, _, _))
         .WillRepeatedly(Return(error::kNoError));
 
-    {
-      TransferBufferManager* manager = new TransferBufferManager(nullptr);
-      transfer_buffer_manager_ = manager;
-      EXPECT_TRUE(manager->Initialize());
-    }
+    transfer_buffer_manager_ = base::MakeUnique<TransferBufferManager>(nullptr);
     command_buffer_.reset(
         new CommandBufferServiceLocked(transfer_buffer_manager_.get()));
 
@@ -261,7 +257,7 @@ class CommandBufferHelperTest : public testing::Test {
   CommandBufferOffset get_helper_put() { return helper_->put_; }
 
   std::unique_ptr<AsyncAPIMock> api_mock_;
-  scoped_refptr<TransferBufferManagerInterface> transfer_buffer_manager_;
+  std::unique_ptr<TransferBufferManager> transfer_buffer_manager_;
   std::unique_ptr<CommandBufferServiceLocked> command_buffer_;
   std::unique_ptr<CommandExecutor> executor_;
   std::unique_ptr<CommandBufferHelper> helper_;

@@ -8,6 +8,7 @@
 
 #include <memory>
 
+#include "base/memory/ptr_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -20,12 +21,10 @@ const static size_t kBufferSize = 1024;
 class TransferBufferManagerTest : public testing::Test {
  protected:
   void SetUp() override {
-    TransferBufferManager* manager = new TransferBufferManager(nullptr);
-    transfer_buffer_manager_ = manager;
-    ASSERT_TRUE(manager->Initialize());
+    transfer_buffer_manager_ = base::MakeUnique<TransferBufferManager>(nullptr);
   }
 
-  scoped_refptr<TransferBufferManagerInterface> transfer_buffer_manager_;
+  std::unique_ptr<TransferBufferManager> transfer_buffer_manager_;
 };
 
 TEST_F(TransferBufferManagerTest, ZeroHandleMapsToNull) {
