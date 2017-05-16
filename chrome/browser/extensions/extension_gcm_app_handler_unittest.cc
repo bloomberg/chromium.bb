@@ -21,7 +21,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
-#include "base/threading/sequenced_worker_pool.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -202,12 +202,9 @@ class ExtensionGCMAppHandlerTest : public testing::Test {
     scoped_refptr<base::SequencedTaskRunner> io_thread =
         content::BrowserThread::GetTaskRunnerForThread(
             content::BrowserThread::IO);
-    base::SequencedWorkerPool* worker_pool =
-        content::BrowserThread::GetBlockingPool();
     scoped_refptr<base::SequencedTaskRunner> blocking_task_runner(
-        worker_pool->GetSequencedTaskRunnerWithShutdownBehavior(
-            worker_pool->GetSequenceToken(),
-            base::SequencedWorkerPool::SKIP_ON_SHUTDOWN));
+        base::CreateSequencedTaskRunnerWithTraits(
+            {base::MayBlock(), base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN}));
     return base::MakeUnique<gcm::GCMProfileService>(
         profile->GetPrefs(), profile->GetPath(), profile->GetRequestContext(),
         chrome::GetChannel(),
