@@ -832,11 +832,6 @@ IN_PROC_BROWSER_TEST_P(WebViewFocusInteractiveTest, Focus_BlurEvent) {
 
 // Tests that guests receive edit commands and respond appropriately.
 IN_PROC_BROWSER_TEST_P(WebViewInteractiveTest, EditCommands) {
-#if defined(OS_MACOSX)
-  // TODO(ekaramad): This test is failing under OOPIF in MAC.
-  if (GetParam())
-    return;
-#endif
   LoadAndLaunchPlatformApp("web_view/edit_commands", "connected");
 
   ASSERT_TRUE(ui_test_utils::ShowAndFocusNativeWindow(
