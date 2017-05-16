@@ -18,21 +18,25 @@ extern const char kRemoteSuggestionCategories[];
 
 // The pref name for the last time when a background fetch was attempted.
 extern const char kSnippetLastFetchAttempt[];
-// The pref name for the currently applied minimal interval between two
-// successive soft background fetches that react to user activity (such as
-// opening Chrome) when there is a WiFi connectivity.
-extern const char kSnippetSoftFetchingIntervalWifi[];
-// The pref name for the currently applied minimal interval between two
-// successive soft background fetches that react to user activity (such as
-// opening Chrome) when there is no WiFi connectivity.
-extern const char kSnippetSoftFetchingIntervalFallback[];
 
-// The pref name for the currently-scheduled background fetching interval when
-// there is WiFi connectivity.
+// Pref names for minimal intervals between two successive background fetches.
+//
+// The prefs store *currently applied* minimal intervals. For each trigger type
+// there are two intervals stored in prefs:
+//  - "Wifi" for situations with Wifi / unmetered network connectivity, and
+//  - "Fallback" for situations with only non-Wifi / metered network.
+// We check "meteredness" of the current network only on platforms that support
+// that, notably Android; we use WiFi as the proxy of being unmetered elsewhere.
+//
+// Intervals for trigger type 1: wake-up of the persistent scheduler.
 extern const char kSnippetPersistentFetchingIntervalWifi[];
-// The pref name for the currently-scheduled background fetching interval when
-// there is no WiFi connectivity.
 extern const char kSnippetPersistentFetchingIntervalFallback[];
+// Intervals for trigger type 2: browser started-up (both cold and warm start).
+extern const char kSnippetStartupFetchingIntervalWifi[];
+extern const char kSnippetStartupFetchingIntervalFallback[];
+// Intervals for trigger type 3: suggestions shown to the user.
+extern const char kSnippetShownFetchingIntervalWifi[];
+extern const char kSnippetShownFetchingIntervalFallback[];
 
 // The pref name for today's count of RemoteSuggestionsFetcher requests, so far.
 extern const char kSnippetFetcherRequestCount[];

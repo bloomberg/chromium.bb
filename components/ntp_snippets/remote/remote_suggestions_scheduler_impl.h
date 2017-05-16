@@ -71,8 +71,10 @@ class RemoteSuggestionsSchedulerImpl : public RemoteSuggestionsScheduler {
 
     base::TimeDelta interval_persistent_wifi;
     base::TimeDelta interval_persistent_fallback;
-    base::TimeDelta interval_soft_wifi;
-    base::TimeDelta interval_soft_fallback;
+    base::TimeDelta interval_startup_wifi;
+    base::TimeDelta interval_startup_fallback;
+    base::TimeDelta interval_shown_wifi;
+    base::TimeDelta interval_shown_fallback;
   };
 
   enum class TriggerType;
@@ -91,9 +93,10 @@ class RemoteSuggestionsSchedulerImpl : public RemoteSuggestionsScheduler {
   // timing is appropriate for another fetch.
   void RefetchInTheBackgroundIfAppropriate(TriggerType trigger);
 
-  // Checks whether it is time to perform a soft background fetch, according to
-  // |schedule|.
-  bool ShouldRefetchInTheBackgroundNow(base::Time last_fetch_attempt_time);
+  // Checks whether it is time to perform a soft background fetch for |trigger|,
+  // according to |schedule|.
+  bool ShouldRefetchInTheBackgroundNow(base::Time last_fetch_attempt_time,
+                                       TriggerType trigger);
 
   // Returns whether background fetching (for the given |trigger|) is disabled.
   bool BackgroundFetchesDisabled(TriggerType trigger) const;
