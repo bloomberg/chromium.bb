@@ -12,7 +12,9 @@
 #import "ios/chrome/browser/ui/autofill/cells/autofill_edit_item.h"
 #import "ios/chrome/browser/ui/collection_view/cells/MDCCollectionViewCell+Chrome.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_footer_item.h"
+#import "ios/chrome/browser/ui/collection_view/cells/collection_view_item+collection_view_controller.h"
 #import "ios/chrome/browser/ui/colors/MDCPalette+CrAdditions.h"
+#import "ios/chrome/browser/ui/payments/cells/payments_selector_edit_item.h"
 #import "ios/chrome/browser/ui/payments/cells/payments_text_item.h"
 #import "ios/chrome/browser/ui/payments/payment_request_edit_view_controller+internal.h"
 #import "ios/chrome/browser/ui/payments/payment_request_editor_field.h"
@@ -30,8 +32,8 @@ NSString* const kWarningMessageAccessibilityID =
 
 namespace {
 
-NSString* const kPaymentRequestEditCollectionViewID =
-    @"kPaymentRequestEditCollectionViewID";
+NSString* const kPaymentRequestEditCollectionViewAccessibilityID =
+    @"kPaymentRequestEditCollectionViewAccessibilityID";
 
 const CGFloat kSeparatorEdgeInset = 14;
 
@@ -51,21 +53,23 @@ AutofillEditCell* AutofillEditCellForTextField(UITextField* textField) {
 }
 
 typedef NS_ENUM(NSInteger, SectionIdentifier) {
-  SectionIdentifierFooter = kSectionIdentifierEnumZero,
-  SectionIdentifierFirstTextField,
+  SectionIdentifierHeader = kSectionIdentifierEnumZero,
+  SectionIdentifierFooter,
+  SectionIdentifierFirstField,  // Must be the last section identifier.
 };
 
 typedef NS_ENUM(NSInteger, ItemType) {
-  ItemTypeFooter = kItemTypeEnumZero,
-  ItemTypeTextField,     // This is a repeated item type.
-  ItemTypeErrorMessage,  // This is a repeated item type.
+  ItemTypeHeader = kItemTypeEnumZero,
+  ItemTypeFooter,
+  ItemTypeTextField,      // This is a repeated item type.
+  ItemTypeSelectorField,  // This is a repeated item type.
+  ItemTypeErrorMessage,   // This is a repeated item type.
 };
 
 }  // namespace
 
 @interface PaymentRequestEditViewController ()<
     AutofillEditAccessoryDelegate,
-    PaymentRequestEditViewControllerValidator,
     UITextFieldDelegate> {
   NSArray<EditorField*>* _fields;
 
@@ -89,19 +93,22 @@ typedef NS_ENUM(NSInteger, ItemType) {
 // field.
 - (void)updateAccessoryViewButtonsStates;
 
+// Adds an error message item in the section |sectionIdentifier| if
+// |errorMessage| is non-empty. Otherwise removes such an item if one exists.
+- (void)addOrRemoveErrorMessage:(NSString*)errorMessage
+        inSectionWithIdentifier:(NSInteger)sectionIdentifier;
+
 @end
 
 @implementation PaymentRequestEditViewController
 
 @synthesize dataSource = _dataSource;
+@synthesize delegate = _delegate;
 @synthesize validatorDelegate = _validatorDelegate;
 
 - (instancetype)initWithStyle:(CollectionViewControllerStyle)style {
   self = [super initWithStyle:style];
   if (self) {
-    // Set self as the validator delegate.
-    _validatorDelegate = self;
-
     _accessoryView = [[AutofillEditAccessoryView alloc] initWithDelegate:self];
   }
   return self;
@@ -136,22 +143,48 @@ typedef NS_ENUM(NSInteger, ItemType) {
   [super loadModel];
   CollectionViewModel* model = self.collectionViewModel;
 
-  [self loadHeaderItems];
+  CollectionViewItem* headerItem = [_dataSource headerItem];
+  if (headerItem) {
+    [headerItem setType:ItemTypeHeader];
+    [model addSectionWithIdentifier:SectionIdentifierHeader];
+    [model addItem:headerItem toSectionWithIdentifier:SectionIdentifierHeader];
+  }
 
   // Iterate over the fields and add the respective sections and items.
-  int sectionIdentifier = static_cast<int>(SectionIdentifierFirstTextField);
+  int sectionIdentifier = static_cast<int>(SectionIdentifierFirstField);
   for (EditorField* field in _fields) {
     [model addSectionWithIdentifier:sectionIdentifier];
-    AutofillEditItem* item =
-        [[AutofillEditItem alloc] initWithType:ItemTypeTextField];
-    item.textFieldName = field.label;
-    item.textFieldEnabled = YES;
-    item.textFieldValue = field.value;
-    item.required = field.isRequired;
-    item.autofillUIType = field.autofillUIType;
-    [model addItem:item
-        toSectionWithIdentifier:static_cast<NSInteger>(sectionIdentifier)];
-    field.item = item;
+    switch (field.fieldType) {
+      case EditorFieldTypeTextField: {
+        AutofillEditItem* item =
+            [[AutofillEditItem alloc] initWithType:ItemTypeTextField];
+        item.textFieldName = field.label;
+        item.textFieldEnabled = YES;
+        item.textFieldValue = field.value;
+        item.required = field.isRequired;
+        item.autofillUIType = field.autofillUIType;
+        [model addItem:item
+            toSectionWithIdentifier:static_cast<NSInteger>(sectionIdentifier)];
+        field.item = item;
+        break;
+      }
+      case EditorFieldTypeSelector: {
+        PaymentsSelectorEditItem* item = [[PaymentsSelectorEditItem alloc]
+            initWithType:ItemTypeSelectorField];
+        item.name = field.label;
+        item.value = field.displayValue;
+        item.required = field.isRequired;
+        item.autofillUIType = field.autofillUIType;
+        item.accessoryType = MDCCollectionViewCellAccessoryDisclosureIndicator;
+        [model addItem:item
+            toSectionWithIdentifier:static_cast<NSInteger>(sectionIdentifier)];
+        field.item = item;
+        break;
+      }
+      default:
+        NOTREACHED();
+    }
+
     field.sectionIdentifier = static_cast<NSInteger>(sectionIdentifier);
     ++sectionIdentifier;
   }
@@ -163,7 +196,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   [super viewDidLoad];
 
   self.collectionView.accessibilityIdentifier =
-      kPaymentRequestEditCollectionViewID;
+      kPaymentRequestEditCollectionViewAccessibilityID;
 
   // Customize collection view settings.
   self.styler.cellStyle = MDCCollectionViewCellStyleCard;
@@ -189,11 +222,16 @@ typedef NS_ENUM(NSInteger, ItemType) {
   AutofillEditItem* item = base::mac::ObjCCastStrict<AutofillEditItem>(
       [model itemAtIndexPath:indexPath]);
 
+  // Create a dummy EditorField for validation only.
+  EditorField* fieldForValidation =
+      [[EditorField alloc] initWithAutofillUIType:item.autofillUIType
+                                        fieldType:EditorFieldTypeTextField
+                                            label:nil
+                                            value:textField.text
+                                         required:item.required];
   NSString* errorMessage =
       [_validatorDelegate paymentRequestEditViewController:self
-                                             validateValue:textField.text
-                                            autofillUIType:item.autofillUIType
-                                                  required:item.required];
+                                             validateField:fieldForValidation];
   NSInteger sectionIdentifier =
       [model sectionIdentifierForSection:[indexPath section]];
   [self addOrRemoveErrorMessage:errorMessage
@@ -278,6 +316,24 @@ typedef NS_ENUM(NSInteger, ItemType) {
   return cell;
 }
 
+#pragma mark UICollectionViewDelegate
+
+- (void)collectionView:(UICollectionView*)collectionView
+    didSelectItemAtIndexPath:(NSIndexPath*)indexPath {
+  [super collectionView:collectionView didSelectItemAtIndexPath:indexPath];
+
+  // Every field has its own section. Find out which field is selected using
+  // the section of |indexPath|. Adjust the index if a header section is
+  // present before the editor fields.
+  NSInteger index = indexPath.section;
+  if ([self.collectionViewModel
+          hasSectionForSectionIdentifier:SectionIdentifierHeader])
+    index--;
+  DCHECK(index >= 0 && index < static_cast<NSInteger>(_fields.count));
+  [_delegate paymentRequestEditViewController:self
+                               didSelectField:[_fields objectAtIndex:index]];
+}
+
 #pragma mark MDCCollectionViewStylingDelegate
 
 - (CGFloat)collectionView:(UICollectionView*)collectionView
@@ -285,12 +341,15 @@ typedef NS_ENUM(NSInteger, ItemType) {
   CollectionViewItem* item =
       [self.collectionViewModel itemAtIndexPath:indexPath];
   switch (item.type) {
+    case ItemTypeHeader:
+    case ItemTypeFooter:
     case ItemTypeTextField:
     case ItemTypeErrorMessage:
-    case ItemTypeFooter:
       return [MDCCollectionViewCell
           cr_preferredHeightForWidth:CGRectGetWidth(collectionView.bounds)
                              forItem:item];
+    case ItemTypeSelectorField:
+      return MDCCellDefaultOneLineHeight;
     default:
       NOTREACHED();
       return MDCCellDefaultOneLineHeight;
@@ -301,8 +360,9 @@ typedef NS_ENUM(NSInteger, ItemType) {
     hidesInkViewAtIndexPath:(NSIndexPath*)indexPath {
   NSInteger type = [self.collectionViewModel itemTypeForIndexPath:indexPath];
   switch (type) {
-    case ItemTypeErrorMessage:
+    case ItemTypeHeader:
     case ItemTypeFooter:
+    case ItemTypeErrorMessage:
       return YES;
     default:
       return NO;
@@ -313,25 +373,13 @@ typedef NS_ENUM(NSInteger, ItemType) {
     shouldHideItemBackgroundAtIndexPath:(NSIndexPath*)indexPath {
   NSInteger type = [self.collectionViewModel itemTypeForIndexPath:indexPath];
   switch (type) {
+    case ItemTypeHeader:
+      return [_dataSource shouldHideBackgroundForHeaderItem];
     case ItemTypeFooter:
       return YES;
     default:
       return NO;
   }
-}
-
-#pragma mark - PaymentRequestEditViewControllerValidator
-
-- (NSString*)paymentRequestEditViewController:
-                 (PaymentRequestEditViewController*)controller
-                                validateValue:(NSString*)value
-                               autofillUIType:(AutofillUIType)autofillUIType
-                                     required:(BOOL)required {
-  if (required && !value.length) {
-    return l10n_util::GetNSString(
-        IDS_PAYMENTS_FIELD_REQUIRED_VALIDATION_MESSAGE);
-  }
-  return nil;
 }
 
 #pragma mark - Helper methods
@@ -354,12 +402,14 @@ typedef NS_ENUM(NSInteger, ItemType) {
   DCHECK(currentCellPath);
   NSIndexPath* nextCellPath =
       [self indexPathWithSectionOffset:offset fromPath:currentCellPath];
-  if (nextCellPath) {
+  while (nextCellPath) {
     id nextCell = [collectionView cellForItemAtIndexPath:nextCellPath];
     if ([nextCell isKindOfClass:[AutofillEditCell class]]) {
       return base::mac::ObjCCastStrict<AutofillEditCell>(
           [collectionView cellForItemAtIndexPath:nextCellPath]);
     }
+    nextCellPath =
+        [self indexPathWithSectionOffset:offset fromPath:nextCellPath];
   }
   return nil;
 }
@@ -370,60 +420,6 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
   AutofillEditCell* nextCell = [self nextTextFieldWithOffset:1];
   [[_accessoryView nextButton] setEnabled:nextCell != nil];
-}
-
-#pragma mark - Keyboard handling
-
-- (void)keyboardDidShow {
-  [self.collectionView
-      scrollToItemAtIndexPath:[self.collectionView
-                                  indexPathForCell:_currentEditingCell]
-             atScrollPosition:UICollectionViewScrollPositionCenteredVertically
-                     animated:YES];
-}
-
-@end
-
-@implementation PaymentRequestEditViewController (Internal)
-
-- (BOOL)validateForm {
-  for (EditorField* field in _fields) {
-    AutofillEditItem* item = field.item;
-
-    NSString* errorMessage = [_validatorDelegate
-        paymentRequestEditViewController:self
-                           validateValue:item.textFieldValue
-                          autofillUIType:field.autofillUIType
-                                required:field.isRequired];
-    [self addOrRemoveErrorMessage:errorMessage
-          inSectionWithIdentifier:field.sectionIdentifier];
-    if (errorMessage.length)
-      return NO;
-
-    field.value = item.textFieldValue;
-  }
-  return YES;
-}
-
-- (void)loadHeaderItems {
-}
-
-- (void)loadFooterItems {
-  CollectionViewModel* model = self.collectionViewModel;
-
-  [model addSectionWithIdentifier:SectionIdentifierFooter];
-  CollectionViewFooterItem* footerItem =
-      [[CollectionViewFooterItem alloc] initWithType:ItemTypeFooter];
-  footerItem.text = l10n_util::GetNSString(IDS_PAYMENTS_REQUIRED_FIELD_MESSAGE);
-  [model addItem:footerItem toSectionWithIdentifier:SectionIdentifierFooter];
-}
-
-- (NSIndexPath*)indexPathForCurrentTextField {
-  DCHECK(_currentEditingCell);
-  NSIndexPath* indexPath =
-      [[self collectionView] indexPathForCell:_currentEditingCell];
-  DCHECK(indexPath);
-  return indexPath;
 }
 
 - (void)addOrRemoveErrorMessage:(NSString*)errorMessage
@@ -457,6 +453,67 @@ typedef NS_ENUM(NSInteger, ItemType) {
                                        sectionIdentifier:sectionIdentifier];
     [self.collectionView insertItemsAtIndexPaths:@[ indexPath ]];
   }
+}
+
+#pragma mark - Keyboard handling
+
+- (void)keyboardDidShow {
+  [self.collectionView
+      scrollToItemAtIndexPath:[self.collectionView
+                                  indexPathForCell:_currentEditingCell]
+             atScrollPosition:UICollectionViewScrollPositionCenteredVertically
+                     animated:YES];
+}
+
+@end
+
+@implementation PaymentRequestEditViewController (Internal)
+
+- (BOOL)validateForm {
+  for (EditorField* field in _fields) {
+    switch (field.fieldType) {
+      case EditorFieldTypeTextField: {
+        AutofillEditItem* item =
+            base::mac::ObjCCastStrict<AutofillEditItem>(field.item);
+        // Update the EditorField with the value of the text field.
+        field.value = item.textFieldValue;
+        break;
+      }
+      case EditorFieldTypeSelector: {
+        // No need to update the EditorField. It should already be up-to-date.
+        break;
+      }
+      default:
+        NOTREACHED();
+    }
+
+    NSString* errorMessage =
+        [_validatorDelegate paymentRequestEditViewController:self
+                                               validateField:field];
+    [self addOrRemoveErrorMessage:errorMessage
+          inSectionWithIdentifier:field.sectionIdentifier];
+    if (errorMessage.length)
+      return NO;
+  }
+  return YES;
+}
+
+- (void)loadFooterItems {
+  CollectionViewModel* model = self.collectionViewModel;
+
+  [model addSectionWithIdentifier:SectionIdentifierFooter];
+  CollectionViewFooterItem* footerItem =
+      [[CollectionViewFooterItem alloc] initWithType:ItemTypeFooter];
+  footerItem.text = l10n_util::GetNSString(IDS_PAYMENTS_REQUIRED_FIELD_MESSAGE);
+  [model addItem:footerItem toSectionWithIdentifier:SectionIdentifierFooter];
+}
+
+- (NSIndexPath*)indexPathForCurrentTextField {
+  DCHECK(_currentEditingCell);
+  NSIndexPath* indexPath =
+      [[self collectionView] indexPathForCell:_currentEditingCell];
+  DCHECK(indexPath);
+  return indexPath;
 }
 
 @end

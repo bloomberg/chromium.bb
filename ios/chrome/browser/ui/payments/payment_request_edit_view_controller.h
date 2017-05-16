@@ -14,19 +14,27 @@
 
 extern NSString* const kWarningMessageAccessibilityID;
 
+@class EditorField;
 @class PaymentRequestEditViewController;
+
+// Delegate protocol for PaymentRequestEditViewController.
+@protocol PaymentRequestEditViewControllerDelegate<NSObject>
+
+// Notifies the delegate that the user has selected |field|.
+- (void)paymentRequestEditViewController:
+            (PaymentRequestEditViewController*)controller
+                          didSelectField:(EditorField*)field;
+
+@end
 
 // Validator protocol for PaymentRequestEditViewController.
 @protocol PaymentRequestEditViewControllerValidator<NSObject>
 
-// Returns the validation error string for |value| which has the type
-// |autofillUIType|. |required| indicates whether this is a required field.
-// Returns nil if there are no validation errors.
+// Returns the validation error string for |field|. Returns nil if there are no
+// validation errors.
 - (NSString*)paymentRequestEditViewController:
                  (PaymentRequestEditViewController*)controller
-                                validateValue:(NSString*)value
-                               autofillUIType:(AutofillUIType)autofillUIType
-                                     required:(BOOL)required;
+                                validateField:(EditorField*)field;
 
 @end
 
@@ -39,6 +47,10 @@ extern NSString* const kWarningMessageAccessibilityID;
 // The data source for this view controller.
 @property(nonatomic, weak) id<PaymentRequestEditViewControllerDataSource>
     dataSource;
+
+// The delegate to be notified when the user selects an editor field.
+@property(nonatomic, weak) id<PaymentRequestEditViewControllerDelegate>
+    delegate;
 
 // The delegate to be called for validating the fields. By default, the
 // controller is the validator.

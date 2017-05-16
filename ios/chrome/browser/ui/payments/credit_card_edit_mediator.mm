@@ -65,32 +65,29 @@ const CGFloat kCardIssuerNetworkIconDimension = 20.0;
     _paymentRequest = paymentRequest;
     _creditCard = creditCard;
     _editorFields = [self createEditorFields];
+    _state = _creditCard ? EditViewControllerStateEdit
+                         : EditViewControllerStateCreate;
   }
   return self;
 }
 
-- (CollectionViewItem*)serverCardSummaryItem {
-  // Return nil if creating or editing a local card.
-  if (!_creditCard || autofill::IsCreditCardLocal(*_creditCard))
-    return nil;
+- (CollectionViewItem*)headerItem {
+  if (_creditCard && !autofill::IsCreditCardLocal(*_creditCard)) {
+    // Return an item that identifies the server card being edited.
+    PaymentMethodItem* cardSummaryItem = [[PaymentMethodItem alloc] init];
+    cardSummaryItem.methodID =
+        base::SysUTF16ToNSString(_creditCard->NetworkAndLastFourDigits());
+    cardSummaryItem.methodDetail = base::SysUTF16ToNSString(
+        _creditCard->GetRawInfo(autofill::CREDIT_CARD_NAME_FULL));
+    const int issuerNetworkIconID =
+        autofill::data_util::GetPaymentRequestData(_creditCard->network())
+            .icon_resource_id;
+    cardSummaryItem.methodTypeIcon = NativeImage(issuerNetworkIconID);
+    return cardSummaryItem;
+  }
 
-  PaymentMethodItem* cardSummaryItem = [[PaymentMethodItem alloc] init];
-  cardSummaryItem.methodID =
-      base::SysUTF16ToNSString(_creditCard->NetworkAndLastFourDigits());
-  cardSummaryItem.methodDetail = base::SysUTF16ToNSString(
-      _creditCard->GetRawInfo(autofill::CREDIT_CARD_NAME_FULL));
-  const int issuerNetworkIconID =
-      autofill::data_util::GetPaymentRequestData(_creditCard->network())
-          .icon_resource_id;
-  cardSummaryItem.methodTypeIcon = NativeImage(issuerNetworkIconID);
-  return cardSummaryItem;
-}
-
-- (CollectionViewItem*)acceptedPaymentMethodsItem {
-  // Return nil if a server card is being edited.
-  if (_creditCard && !autofill::IsCreditCardLocal(*_creditCard))
-    return nil;
-
+  // Otherwise, return an item that displays a list of payment method type icons
+  // for the accepted payment methods.
   NSMutableArray* issuerNetworkIcons = [NSMutableArray array];
   for (const auto& supportedNetwork :
        _paymentRequest->supported_card_networks()) {
@@ -116,14 +113,9 @@ const CGFloat kCardIssuerNetworkIconDimension = 20.0;
   return acceptedMethodsItem;
 }
 
-- (NSString*)billingAddressLabelForProfileWithGUID:(NSString*)profileGUID {
-  DCHECK(profileGUID);
-  autofill::AutofillProfile* profile =
-      autofill::PersonalDataManager::GetProfileFromProfilesByGUID(
-          base::SysNSStringToUTF8(profileGUID),
-          _paymentRequest->billing_profiles());
-  DCHECK(profile);
-  return GetBillingAddressLabelFromAutofillProfile(*profile);
+- (BOOL)shouldHideBackgroundForHeaderItem {
+  // YES if the header item displays the accepted payment method type icons.
+  return !_creditCard || autofill::IsCreditCardLocal(*_creditCard);
 }
 
 - (UIImage*)cardTypeIconFromCardNumber:(NSString*)cardNumber {
@@ -147,10 +139,39 @@ const CGFloat kCardIssuerNetworkIconDimension = 20.0;
 
 #pragma mark - Helper methods
 
+// Returns the billing address label from an autofill profile with the given
+// guid. Returns nil if the profile does not have an address.
+- (NSString*)billingAddressLabelForProfileWithGUID:(NSString*)profileGUID {
+  DCHECK(profileGUID);
+  autofill::AutofillProfile* profile =
+      autofill::PersonalDataManager::GetProfileFromProfilesByGUID(
+          base::SysNSStringToUTF8(profileGUID),
+          _paymentRequest->billing_profiles());
+  DCHECK(profile);
+  return GetBillingAddressLabelFromAutofillProfile(*profile);
+}
+
 - (NSArray<EditorField*>*)createEditorFields {
-  // Server credit cards are not editable.
+  NSString* billingAddressGUID =
+      _creditCard && !_creditCard->billing_address_id().empty()
+          ? base::SysUTF8ToNSString(_creditCard->billing_address_id())
+          : nil;
+  NSString* billingAddressLabel =
+      billingAddressGUID
+          ? [self billingAddressLabelForProfileWithGUID:billingAddressGUID]
+          : nil;
+  EditorField* billingAddressEditorField = [[EditorField alloc]
+      initWithAutofillUIType:AutofillUITypeCreditCardBillingAddress
+                   fieldType:EditorFieldTypeSelector
+                       label:l10n_util::GetNSString(
+                                 IDS_PAYMENTS_BILLING_ADDRESS)
+                       value:billingAddressGUID
+                    required:YES];
+  [billingAddressEditorField setDisplayValue:billingAddressLabel];
+
+  // For server cards, only the billing address can be edited.
   if (_creditCard && !autofill::IsCreditCardLocal(*_creditCard))
-    return @[];
+    return @[ billingAddressEditorField ];
 
   NSString* creditCardNumber =
       _creditCard ? base::SysUTF16ToNSString(_creditCard->number()) : nil;
@@ -171,32 +192,40 @@ const CGFloat kCardIssuerNetworkIconDimension = 20.0;
           ? [NSString stringWithFormat:@"%04d", _creditCard->expiration_year()]
           : nil;
 
-  return @[
+  NSMutableArray* editorFields = [[NSMutableArray alloc] init];
+  [editorFields addObjectsFromArray:@[
     [[EditorField alloc]
         initWithAutofillUIType:AutofillUITypeFromAutofillType(
                                    autofill::CREDIT_CARD_NUMBER)
+                     fieldType:EditorFieldTypeTextField
                          label:l10n_util::GetNSString(IDS_PAYMENTS_CARD_NUMBER)
                          value:creditCardNumber
                       required:YES],
     [[EditorField alloc]
         initWithAutofillUIType:AutofillUITypeFromAutofillType(
                                    autofill::CREDIT_CARD_NAME_FULL)
+                     fieldType:EditorFieldTypeTextField
                          label:l10n_util::GetNSString(IDS_PAYMENTS_NAME_ON_CARD)
                          value:creditCardName
                       required:YES],
     [[EditorField alloc]
         initWithAutofillUIType:AutofillUITypeFromAutofillType(
                                    autofill::CREDIT_CARD_EXP_MONTH)
+                     fieldType:EditorFieldTypeTextField
                          label:l10n_util::GetNSString(IDS_PAYMENTS_EXP_MONTH)
                          value:creditCardExpMonth
                       required:YES],
     [[EditorField alloc]
         initWithAutofillUIType:AutofillUITypeFromAutofillType(
                                    autofill::CREDIT_CARD_EXP_4_DIGIT_YEAR)
+                     fieldType:EditorFieldTypeTextField
                          label:l10n_util::GetNSString(IDS_PAYMENTS_EXP_YEAR)
                          value:creditCardExpYear
                       required:YES]
-  ];
+  ]];
+  // The billing address field goes at the end.
+  [editorFields addObject:billingAddressEditorField];
+  return editorFields;
 }
 
 @end

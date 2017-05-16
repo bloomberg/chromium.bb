@@ -49,20 +49,12 @@ using ::AutofillTypeFromAutofillUIType;
                         ? l10n_util::GetNSString(IDS_PAYMENTS_EDIT_CARD)
                         : l10n_util::GetNSString(IDS_PAYMENTS_ADD_CARD_LABEL);
   [_viewController setTitle:title];
-  if (_creditCard && !_creditCard->billing_address_id().empty())
-    [_viewController
-        setBillingAddressGUID:base::SysUTF8ToNSString(
-                                  _creditCard->billing_address_id())];
   [_viewController setDelegate:self];
   [_viewController setValidatorDelegate:self];
-
   _mediator = [[CreditCardEditViewControllerMediator alloc]
       initWithPaymentRequest:_paymentRequest
                   creditCard:_creditCard];
-  [_mediator setState:_creditCard ? CreditCardEditViewControllerStateEdit
-                                  : CreditCardEditViewControllerStateCreate];
   [_viewController setDataSource:_mediator];
-
   [_viewController loadModel];
 
   DCHECK(self.baseViewController.navigationController);
@@ -80,25 +72,26 @@ using ::AutofillTypeFromAutofillUIType;
 
 - (NSString*)paymentRequestEditViewController:
                  (PaymentRequestEditViewController*)controller
-                                validateValue:(NSString*)value
-                               autofillUIType:(AutofillUIType)autofillUIType
-                                     required:(BOOL)required {
-  if (value.length) {
+                                validateField:(EditorField*)field {
+  if (field.value.length) {
     base::string16 errorMessage;
-    base::string16 valueString = base::SysNSStringToUTF16(value);
-    if (autofillUIType == AutofillUITypeCreditCardNumber) {
+    base::string16 valueString = base::SysNSStringToUTF16(field.value);
+    if (field.autofillUIType == AutofillUITypeCreditCardNumber) {
       std::set<std::string> supportedCardNetworks(
           _paymentRequest->supported_card_networks().begin(),
           _paymentRequest->supported_card_networks().end());
       autofill::IsValidCreditCardNumberForBasicCardNetworks(
           valueString, supportedCardNetworks, &errorMessage);
+    } else if (field.autofillUIType == AutofillUITypeCreditCardBillingAddress) {
+      // TODO(crbug.com/602666): More validation?
+      return nil;
     } else {
-      autofill::IsValidForType(valueString,
-                               AutofillTypeFromAutofillUIType(autofillUIType),
-                               &errorMessage);
+      autofill::IsValidForType(
+          valueString, AutofillTypeFromAutofillUIType(field.autofillUIType),
+          &errorMessage);
     }
     return !errorMessage.empty() ? base::SysUTF16ToNSString(errorMessage) : nil;
-  } else if (required) {
+  } else if (field.isRequired) {
     return l10n_util::GetNSString(
         IDS_PAYMENTS_FIELD_REQUIRED_VALIDATION_MESSAGE);
   }
@@ -107,9 +100,16 @@ using ::AutofillTypeFromAutofillUIType;
 
 #pragma mark - CreditCardEditViewControllerDelegate
 
+- (void)paymentRequestEditViewController:
+            (PaymentRequestEditViewController*)controller
+                          didSelectField:(EditorField*)field {
+  if (field.autofillUIType == AutofillUITypeCreditCardBillingAddress) {
+    // TODO(crbug.com/602666): Display a list of billing addresses.
+  }
+}
+
 - (void)creditCardEditViewController:(CreditCardEditViewController*)controller
               didFinishEditingFields:(NSArray<EditorField*>*)fields
-                    billingAddressID:(NSString*)billingAddressID
                       saveCreditCard:(BOOL)saveCreditCard {
   // Create an empty credit card. If a credit card is being edited, copy over
   // the information.
@@ -118,11 +118,14 @@ using ::AutofillTypeFromAutofillUIType;
     creditCard = *_creditCard;
 
   for (EditorField* field in fields) {
-    creditCard.SetRawInfo(AutofillTypeFromAutofillUIType(field.autofillUIType),
-                          base::SysNSStringToUTF16(field.value));
+    if (field.autofillUIType == AutofillUITypeCreditCardBillingAddress) {
+      creditCard.set_billing_address_id(base::SysNSStringToUTF8(field.value));
+    } else {
+      creditCard.SetRawInfo(
+          AutofillTypeFromAutofillUIType(field.autofillUIType),
+          base::SysNSStringToUTF16(field.value));
+    }
   }
-
-  creditCard.set_billing_address_id(base::SysNSStringToUTF8(billingAddressID));
 
   if (!_creditCard) {
     if (saveCreditCard) {

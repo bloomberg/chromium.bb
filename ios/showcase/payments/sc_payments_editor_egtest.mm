@@ -64,6 +64,19 @@ void AssertTextFieldWithAccessibilityIDIsFirstResponder(
       [textField accessibilityIdentifier]);
 }
 
+// Returns the GREYMatcher for the UIAlertView's message displayed for a call
+// that notifies the delegate of selection of a field.
+id<GREYMatcher> UIAlertViewMessageForDelegateCallWithArgument(
+    NSString* argument) {
+  return grey_allOf(
+      grey_text([NSString
+          stringWithFormat:@"paymentRequestEditViewController:"
+                           @"kPaymentRequestEditCollectionViewAccessibilityID "
+                           @"didSelectField:%@",
+                           argument]),
+      grey_sufficientlyVisible(), nil);
+}
+
 }  // namespace
 
 // Tests for the payment request editor view controller.
@@ -82,12 +95,18 @@ void AssertTextFieldWithAccessibilityIDIsFirstResponder(
   [super tearDown];
 }
 
-// Tests if expected labels and textfields exist and have the expected values.
-- (void)testVerifyLabelsAndTextFields {
+// Tests if expected labels and fields exist and have the expected values.
+- (void)testVerifyLabelsAndFields {
   [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(@"Name*")]
       assertWithMatcher:grey_notNil()];
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Name_textField")]
       assertWithMatcher:grey_text(@"John Doe")];
+
+  [[EarlGrey
+      selectElementWithMatcher:grey_allOf(grey_accessibilityLabel(@"Country*"),
+                                          grey_accessibilityValue(@"Canada"),
+                                          nil)]
+      assertWithMatcher:grey_notNil()];
 
   [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(@"Address*")]
       assertWithMatcher:grey_notNil()];
@@ -100,6 +119,24 @@ void AssertTextFieldWithAccessibilityIDIsFirstResponder(
   [[EarlGrey
       selectElementWithMatcher:grey_accessibilityID(@"Postal Code_textField")]
       assertWithMatcher:grey_text(@"")];
+}
+
+// Tests if tapping the selector field notifies the delegate.
+- (void)testVerifyTappingSelectorFieldNotifiesDelegate {
+  // Tap the selector field.
+  [[EarlGrey
+      selectElementWithMatcher:grey_allOf(grey_accessibilityLabel(@"Country*"),
+                                          grey_accessibilityValue(@"Canada"),
+                                          nil)] performAction:grey_tap()];
+
+  // Confirm the delegate is informed.
+  [[EarlGrey
+      selectElementWithMatcher:UIAlertViewMessageForDelegateCallWithArgument(
+                                   @"Label: Country, Value: CAN")]
+      assertWithMatcher:grey_notNil()];
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(
+                                          @"protocol_alerter_done")]
+      performAction:grey_tap()];
 }
 
 // Tests whether tapping the input accessory view's close button dismisses the
@@ -170,8 +207,7 @@ void AssertTextFieldWithAccessibilityIDIsFirstResponder(
   // required.
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
                                           kWarningMessageAccessibilityID)]
-      assertWithMatcher:grey_accessibilityLabel(l10n_util::GetNSString(
-                            IDS_PAYMENTS_FIELD_REQUIRED_VALIDATION_MESSAGE))];
+      assertWithMatcher:grey_accessibilityLabel(@"Field is required")];
 
   // Assert the postal code textfield is focused.
   AssertTextFieldWithAccessibilityIDIsFirstResponder(@"Postal Code_textField");

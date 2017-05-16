@@ -8,9 +8,27 @@
 #import <Foundation/Foundation.h>
 
 @class EditorField;
+@class CollectionViewItem;
+
+// The possible states the view controller can be in.
+typedef NS_ENUM(NSInteger, EditViewControllerState) {
+  // The view controller is used for creating.
+  EditViewControllerStateCreate,
+  // The view controller is used to editing.
+  EditViewControllerStateEdit,
+};
 
 // Data source protocol for PaymentRequestEditViewController.
 @protocol PaymentRequestEditViewControllerDataSource<NSObject>
+
+// The current state of the view controller.
+@property(nonatomic, assign) EditViewControllerState state;
+
+// Returns the header item. May be nil.
+- (CollectionViewItem*)headerItem;
+
+// Returns whether the header item should hide its background.
+- (BOOL)shouldHideBackgroundForHeaderItem;
 
 // Returns the list of field definitions for the editor.
 - (NSArray<EditorField*>*)editorFields;

@@ -61,8 +61,7 @@
   [self.selectorViewController setDataSource:self];
   [self.selectorViewController loadModel];
   [self.selectorViewController
-      setDelegate:reinterpret_cast<
-                      id<PaymentRequestSelectorViewControllerDelegate>>(
+      setDelegate:static_cast<id<PaymentRequestSelectorViewControllerDelegate>>(
                       self.alerter)];
   [self.baseViewController pushViewController:self.selectorViewController
                                      animated:YES];

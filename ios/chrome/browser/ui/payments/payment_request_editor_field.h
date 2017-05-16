@@ -9,7 +9,13 @@
 
 #import "ios/chrome/browser/ui/autofill/autofill_ui_type.h"
 
-@class AutofillEditItem;
+@class CollectionViewItem;
+
+// Type of the editor field. i.e., text field or selector field.
+typedef NS_ENUM(NSInteger, EditorFieldType) {
+  EditorFieldTypeTextField,
+  EditorFieldTypeSelector,
+};
 
 // Field definition for an editor field. Used for building the UI and
 // validation.
@@ -17,18 +23,24 @@
 
 // Autofill type for the field.
 @property(nonatomic, assign) AutofillUIType autofillUIType;
+// Type of the field.
+@property(nonatomic, assign) EditorFieldType fieldType;
 // Label for the field.
 @property(nonatomic, copy) NSString* label;
 // Value of the field. May be nil.
 @property(nonatomic, copy) NSString* value;
+// Optional display value. Used in selector editor fields where |value| is not
+// meant for display purposes.
+@property(nonatomic, copy) NSString* displayValue;
 // Whether the field is required.
 @property(nonatomic, getter=isRequired) BOOL required;
-// The associated AutofillEditItem instance. May be nil.
-@property(nonatomic, strong) AutofillEditItem* item;
+// The associated CollectionViewItem instance. May be nil.
+@property(nonatomic, strong) CollectionViewItem* item;
 // The section identifier for the associated AutofillEditItem.
 @property(nonatomic, assign) NSInteger sectionIdentifier;
 
 - (instancetype)initWithAutofillUIType:(AutofillUIType)autofillUIType
+                             fieldType:(EditorFieldType)fieldType
                                  label:(NSString*)label
                                  value:(NSString*)value
                               required:(BOOL)required;

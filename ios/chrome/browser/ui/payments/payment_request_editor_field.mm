@@ -11,24 +11,32 @@
 @implementation EditorField
 
 @synthesize autofillUIType = _autofillUIType;
+@synthesize fieldType = _fieldType;
 @synthesize label = _label;
 @synthesize value = _value;
+@synthesize displayValue = _displayValue;
 @synthesize required = _required;
 @synthesize item = _item;
 @synthesize sectionIdentifier = _sectionIdentifier;
 
 - (instancetype)initWithAutofillUIType:(AutofillUIType)autofillUIType
+                             fieldType:(EditorFieldType)fieldType
                                  label:(NSString*)label
                                  value:(NSString*)value
                               required:(BOOL)required {
   self = [super init];
   if (self) {
     _autofillUIType = autofillUIType;
+    _fieldType = fieldType;
     _label = label;
     _value = value;
     _required = required;
   }
   return self;
+}
+
+- (NSString*)description {
+  return [NSString stringWithFormat:@"Label: %@, Value: %@", _label, _value];
 }
 
 @end

@@ -63,22 +63,32 @@ MATCHER_P5(CreditCardMatches,
 NSArray<EditorField*>* GetEditorFields() {
   return @[
     [[EditorField alloc] initWithAutofillUIType:AutofillUITypeCreditCardNumber
+                                      fieldType:EditorFieldTypeTextField
                                           label:@"Credit Card Number"
                                           value:@"4111111111111111" /* Visa */
                                        required:YES],
     [[EditorField alloc]
         initWithAutofillUIType:AutofillUITypeCreditCardHolderFullName
+                     fieldType:EditorFieldTypeTextField
                          label:@"Cardholder Name"
                          value:@"John Doe"
                       required:YES],
     [[EditorField alloc] initWithAutofillUIType:AutofillUITypeCreditCardExpMonth
+                                      fieldType:EditorFieldTypeTextField
                                           label:@"Expiration Month"
                                           value:@"12"
                                        required:YES],
     [[EditorField alloc] initWithAutofillUIType:AutofillUITypeCreditCardExpYear
+                                      fieldType:EditorFieldTypeTextField
                                           label:@"Expiration Year"
                                           value:@"2090"
                                        required:YES],
+    [[EditorField alloc]
+        initWithAutofillUIType:AutofillUITypeCreditCardBillingAddress
+                     fieldType:EditorFieldTypeSelector
+                         label:@"Billing Address"
+                         value:@"12345"
+                      required:YES],
   ];
 }
 
@@ -170,7 +180,6 @@ TEST_F(PaymentRequestCreditCardEditCoordinatorTest, DidFinishCreatingWithSave) {
           navigation_controller.visibleViewController);
   [coordinator creditCardEditViewController:view_controller
                      didFinishEditingFields:GetEditorFields()
-                           billingAddressID:@"12345"
                              saveCreditCard:YES];
 
   EXPECT_OCMOCK_VERIFY(delegate);
@@ -221,7 +230,6 @@ TEST_F(PaymentRequestCreditCardEditCoordinatorTest, DidFinishCreatingNoSave) {
           navigation_controller.visibleViewController);
   [coordinator creditCardEditViewController:view_controller
                      didFinishEditingFields:GetEditorFields()
-                           billingAddressID:@"12345"
                              saveCreditCard:NO];
 
   EXPECT_OCMOCK_VERIFY(delegate);
@@ -272,7 +280,6 @@ TEST_F(PaymentRequestCreditCardEditCoordinatorTest, DidFinishEditing) {
           navigation_controller.visibleViewController);
   [coordinator creditCardEditViewController:view_controller
                      didFinishEditingFields:GetEditorFields()
-                           billingAddressID:@"12345"
                              saveCreditCard:YES];
 
   EXPECT_OCMOCK_VERIFY(delegate);
