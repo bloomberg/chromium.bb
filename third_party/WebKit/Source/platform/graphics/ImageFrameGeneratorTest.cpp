@@ -89,7 +89,7 @@ class ImageFrameGeneratorTest : public ::testing::Test,
 
   size_t FrameCount() override { return frame_count_; }
   int RepetitionCount() const override {
-    return frame_count_ == 1 ? kCAnimationNone : kCAnimationLoopOnce;
+    return frame_count_ == 1 ? kAnimationNone : kAnimationLoopOnce;
   }
   float FrameDuration() const override { return 0; }
 
