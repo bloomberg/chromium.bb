@@ -263,10 +263,13 @@
       },
       'codesearch-gen-chromium-chromiumos': {
         'chromeos': 'codesearch_gen_chromium_chromiumos_bot',
-        'linux': 'codesearch_gen_chromium_linux_bot',
+        'linux': 'codesearch_gen_linux_bot',
       },
       'codesearch-gen-chromium-linux': {
-        'linux': 'codesearch_gen_chromium_linux_bot',
+        'linux': 'codesearch_gen_linux_bot',
+      },
+      'codesearch-gen-webrtc-linux': {
+        'linux': 'codesearch_gen_linux_bot',
       },
     },
 
@@ -1161,7 +1164,7 @@
       'goma', 'clang', 'shared', 'debug', 'minimal_symbols', 'x64', 'chromeos', 'ozone',
     ],
 
-    'codesearch_gen_chromium_linux_bot': [
+    'codesearch_gen_linux_bot': [
       'goma', 'clang', 'shared', 'debug', 'minimal_symbols', 'x64',
     ],
 
