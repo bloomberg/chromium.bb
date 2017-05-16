@@ -108,6 +108,7 @@ void PageInfoPopupAndroid::SetPermissionInfo(
 
   // On Android, we only want to display a subset of the available options in a
   // particular order, but only if their value is different from the default.
+  // This order comes from https://crbug.com/610358.
   std::vector<ContentSettingsType> permissions_to_display;
   permissions_to_display.push_back(CONTENT_SETTINGS_TYPE_GEOLOCATION);
   permissions_to_display.push_back(CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA);
@@ -116,26 +117,19 @@ void PageInfoPopupAndroid::SetPermissionInfo(
   permissions_to_display.push_back(CONTENT_SETTINGS_TYPE_IMAGES);
   permissions_to_display.push_back(CONTENT_SETTINGS_TYPE_JAVASCRIPT);
   permissions_to_display.push_back(CONTENT_SETTINGS_TYPE_POPUPS);
-  permissions_to_display.push_back(CONTENT_SETTINGS_TYPE_AUTOPLAY);
   permissions_to_display.push_back(CONTENT_SETTINGS_TYPE_SUBRESOURCE_FILTER);
+  permissions_to_display.push_back(CONTENT_SETTINGS_TYPE_AUTOPLAY);
 
   std::map<ContentSettingsType, ContentSetting>
       user_specified_settings_to_display;
 
   for (const auto& permission : permission_info_list) {
     if (base::ContainsValue(permissions_to_display, permission.type)) {
-      if (permission.setting != CONTENT_SETTING_DEFAULT) {
+      base::Optional<ContentSetting> setting_to_display =
+          GetSettingToDisplay(permission);
+      if (setting_to_display) {
         user_specified_settings_to_display[permission.type] =
-            permission.setting;
-      } else if (permission.type == CONTENT_SETTINGS_TYPE_GEOLOCATION) {
-        if (search_geolocation_service_ &&
-            search_geolocation_service_->UseDSEGeolocationSetting(
-                url::Origin(url_))) {
-          user_specified_settings_to_display[permission.type] =
-              search_geolocation_service_->GetDSEGeolocationSetting()
-                  ? CONTENT_SETTING_ALLOW
-                  : CONTENT_SETTING_BLOCK;
-        }
+            *setting_to_display;
       }
     }
   }
@@ -163,6 +157,32 @@ void PageInfoPopupAndroid::SetPermissionInfo(
   }
 
   Java_PageInfoPopup_updatePermissionDisplay(env, popup_jobject_);
+}
+
+base::Optional<ContentSetting> PageInfoPopupAndroid::GetSettingToDisplay(
+    const PermissionInfo& permission) {
+  // All permissions should be displayed if they are non-default.
+  if (permission.setting != CONTENT_SETTING_DEFAULT)
+    return permission.setting;
+
+  // Handle exceptions for permissions which need to be displayed even if they
+  // are set to the default.
+  if (permission.type == CONTENT_SETTINGS_TYPE_GEOLOCATION) {
+    if (search_geolocation_service_ &&
+        search_geolocation_service_->UseDSEGeolocationSetting(
+            url::Origin(url_))) {
+      return search_geolocation_service_->GetDSEGeolocationSetting()
+                 ? CONTENT_SETTING_ALLOW
+                 : CONTENT_SETTING_BLOCK;
+    }
+  } else if (permission.type == CONTENT_SETTINGS_TYPE_SUBRESOURCE_FILTER) {
+    // The subresource filter permission should always display the default
+    // setting if it is showing up in Page Info. Logic for whether the
+    // setting should show up in Page Info is in ShouldShowPermission in
+    // page_info.cc.
+    return permission.default_setting;
+  }
+  return base::Optional<ContentSetting>();
 }
 
 // static
