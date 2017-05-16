@@ -100,8 +100,9 @@ class ASH_EXPORT ShelfLayoutManager
 
   // Updates the auto-hide state for certain events.
   // TODO(mash): Add similar event handling support for mash.
-  void UpdateAutoHideForMouseEvent(ui::MouseEvent* event, WmWindow* target);
-  void UpdateAutoHideForGestureEvent(ui::GestureEvent* event, WmWindow* target);
+  void UpdateAutoHideForMouseEvent(ui::MouseEvent* event, aura::Window* target);
+  void UpdateAutoHideForGestureEvent(ui::GestureEvent* event,
+                                     aura::Window* target);
 
   ShelfVisibilityState visibility_state() const {
     return state_.visibility_state;
@@ -270,7 +271,7 @@ class ASH_EXPORT ShelfLayoutManager
       ShelfVisibilityState visibility_state) const;
 
   // Returns true if |window| is a descendant of the shelf.
-  bool IsShelfWindow(WmWindow* window);
+  bool IsShelfWindow(aura::Window* window);
 
   int GetWorkAreaInsets(const State& state, int size) const;
 
