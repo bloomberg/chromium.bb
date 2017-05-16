@@ -87,6 +87,12 @@ void MinimizeButtonMetrics::OnHWNDActivated() {
   // correct.
 }
 
+void MinimizeButtonMetrics::OnDpiChanged() {
+  // This ensures that the next time GetMinimizeButtonOffsetX() is called, it
+  // will be recalculated, given the new scale factor.
+  cached_minimize_button_x_delta_ = 0;
+}
+
 // This function attempts to calculate the odd and varying difference
 // between the results of DwmGetWindowAttribute with the
 // DWMWA_CAPTION_BUTTON_BOUNDS flag and the information from the
