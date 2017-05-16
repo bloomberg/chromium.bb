@@ -504,6 +504,13 @@
         "v8.browsing_desktop_classic"
       ]
     },
+    "build15-b1--device3": {
+      "benchmarks": [
+        "page_cycler_v2.intl_ja_zh",
+        "power.typical_10_mobile_reload",
+        "v8.runtimestats.browsing_mobile_classic"
+      ]
+    },
     "build15-b1--device4": {
       "benchmarks": [
         "blink_perf.blink_gc",
@@ -517,6 +524,17 @@
         "system_health.common_desktop",
         "v8.browsing_mobile",
         "v8.browsing_mobile_turbo"
+      ]
+    },
+    "build15-b1--device6": {
+      "benchmarks": [
+        "blink_style.polymer",
+        "memory.desktop",
+        "power.typical_10_mobile",
+        "smoothness.gpu_rasterization_and_decoding.image_decoding_cases",
+        "smoothness.tough_animation_cases",
+        "startup.warm.blank_page",
+        "thread_times.key_mobile_sites_smooth"
       ]
     },
     "build15-b1--device7": {
@@ -713,24 +731,6 @@
         "v8.runtime_stats.top_25",
         "v8.runtimestats.browsing_desktop",
         "v8.runtimestats.browsing_desktop_classic"
-      ]
-    },
-    "build73-15--device3": {
-      "benchmarks": [
-        "page_cycler_v2.intl_ja_zh",
-        "power.typical_10_mobile_reload",
-        "v8.runtimestats.browsing_mobile_classic"
-      ]
-    },
-    "build73-15--device6": {
-      "benchmarks": [
-        "blink_style.polymer",
-        "memory.desktop",
-        "power.typical_10_mobile",
-        "smoothness.gpu_rasterization_and_decoding.image_decoding_cases",
-        "smoothness.tough_animation_cases",
-        "startup.warm.blank_page",
-        "thread_times.key_mobile_sites_smooth"
       ]
     }
   },
