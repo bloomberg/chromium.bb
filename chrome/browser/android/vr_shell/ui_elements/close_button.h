@@ -22,17 +22,18 @@ class CloseButton : public TexturedElement {
   ~CloseButton() override;
 
   void OnHoverLeave() override;
-  void OnHoverEnter(gfx::PointF position) override;
-  void OnButtonDown(gfx::PointF position) override;
-  void OnButtonUp(gfx::PointF position) override;
+  void OnHoverEnter(const gfx::PointF& position) override;
+  void OnMove(const gfx::PointF& position) override;
+  void OnButtonDown(const gfx::PointF& position) override;
+  void OnButtonUp(const gfx::PointF& position) override;
+  bool HitTest(const gfx::PointF& point) const override;
 
  private:
   UiTexture* GetTexture() const override;
-  void OnStateUpdated();
+  void OnStateUpdated(const gfx::PointF& position);
 
   std::unique_ptr<CloseButtonTexture> texture_;
   bool down_ = false;
-  bool hover_ = false;
   base::Callback<void()> click_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(CloseButton);

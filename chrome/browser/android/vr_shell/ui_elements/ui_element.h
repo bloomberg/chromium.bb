@@ -110,11 +110,19 @@ class UiElement : public WorldRectangle {
   virtual void Initialize();
 
   // Controller interaction methods.
-  virtual void OnHoverEnter(gfx::PointF position);
+  virtual void OnHoverEnter(const gfx::PointF& position);
   virtual void OnHoverLeave();
-  virtual void OnMove(gfx::PointF position);
-  virtual void OnButtonDown(gfx::PointF position);
-  virtual void OnButtonUp(gfx::PointF position);
+  virtual void OnMove(const gfx::PointF& position);
+  virtual void OnButtonDown(const gfx::PointF& position);
+  virtual void OnButtonUp(const gfx::PointF& position);
+  // Whether the point (relative to the origin of the element), should be
+  // considered on the element. All elements are considered rectangular by
+  // default though elements may override this function to handle arbitrary
+  // shapes. Points within the rectangular area are mapped from 0:1 as follows,
+  // though will extend outside this range when outside of the element:
+  // [(0.0, 0.0), (1.0, 0.0)
+  //  (1.0, 0.0), (1.0, 1.0)]
+  virtual bool HitTest(const gfx::PointF& point) const;
 
   int id() const { return id_; }
   void set_id(int id) { id_ = id; }

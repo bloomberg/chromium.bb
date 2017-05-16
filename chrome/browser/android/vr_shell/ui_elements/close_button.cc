@@ -16,38 +16,45 @@ CloseButton::CloseButton(base::Callback<void()> click_handler)
 
 CloseButton::~CloseButton() = default;
 
-void CloseButton::OnHoverEnter(gfx::PointF position) {
-  hover_ = true;
-  OnStateUpdated();
+void CloseButton::OnHoverEnter(const gfx::PointF& position) {
+  OnStateUpdated(position);
 }
 
 void CloseButton::OnHoverLeave() {
-  hover_ = false;
-  OnStateUpdated();
+  OnStateUpdated(gfx::PointF(std::numeric_limits<float>::max(),
+                             std::numeric_limits<float>::max()));
 }
 
-void CloseButton::OnButtonDown(gfx::PointF position) {
+void CloseButton::OnMove(const gfx::PointF& position) {
+  OnStateUpdated(position);
+}
+
+void CloseButton::OnButtonDown(const gfx::PointF& position) {
   down_ = true;
-  OnStateUpdated();
+  OnStateUpdated(position);
 }
 
-void CloseButton::OnButtonUp(gfx::PointF position) {
+void CloseButton::OnButtonUp(const gfx::PointF& position) {
   down_ = false;
-  OnStateUpdated();
-  if (position.x() < 0 || position.x() > 1.0f)
-    return;
-  if (position.y() < 0 || position.y() > 1.0f)
-    return;
-  click_handler_.Run();
+  OnStateUpdated(position);
+  if (HitTest(position))
+    click_handler_.Run();
+}
+
+bool CloseButton::HitTest(const gfx::PointF& point) const {
+  return (point - gfx::PointF(0.5, 0.5)).LengthSquared() < 0.25;
 }
 
 UiTexture* CloseButton::GetTexture() const {
   return texture_.get();
 }
 
-void CloseButton::OnStateUpdated() {
-  int flags = hover_ ? CloseButtonTexture::FLAG_HOVER : 0;
-  flags |= (down_ && hover_) ? CloseButtonTexture::FLAG_DOWN : 0;
+void CloseButton::OnStateUpdated(const gfx::PointF& position) {
+  bool hitting = HitTest(position);
+  bool down = hitting ? down_ : false;
+
+  int flags = hitting ? CloseButtonTexture::FLAG_HOVER : 0;
+  flags |= down ? CloseButtonTexture::FLAG_DOWN : 0;
   if (!texture_->SetDrawFlags(flags))
     return;
   UpdateTexture();
