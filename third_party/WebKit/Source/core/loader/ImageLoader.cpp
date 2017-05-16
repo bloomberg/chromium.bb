@@ -177,6 +177,7 @@ void ImageLoader::Dispose() {
   if (image_) {
     image_->RemoveObserver(this);
     image_ = nullptr;
+    delay_until_image_notify_finished_ = nullptr;
   }
 }
 
@@ -293,7 +294,7 @@ inline void ImageLoader::EnqueueImageLoadingMicroTask(
   pending_task_ = task->CreateWeakPtr();
   Microtask::EnqueueMicrotask(
       WTF::Bind(&Task::Run, WTF::Passed(std::move(task))));
-  load_delay_counter_ =
+  delay_until_do_update_from_element_ =
       IncrementLoadEventDelayCount::Create(element_->GetDocument());
 }
 
@@ -301,6 +302,7 @@ void ImageLoader::UpdateImageState(ImageResourceContent* new_image) {
   image_ = new_image;
   has_pending_load_event_ = new_image;
   image_complete_ = !new_image;
+  delay_until_image_notify_finished_ = nullptr;
 }
 
 void ImageLoader::DoUpdateFromElement(BypassMainWorldBehavior bypass_behavior,
@@ -318,7 +320,7 @@ void ImageLoader::DoUpdateFromElement(BypassMainWorldBehavior bypass_behavior,
   pending_task_.reset();
   // Make sure to only decrement the count when we exit this function
   std::unique_ptr<IncrementLoadEventDelayCount> load_delay_counter;
-  load_delay_counter.swap(load_delay_counter_);
+  load_delay_counter.swap(delay_until_do_update_from_element_);
 
   Document& document = element_->GetDocument();
   if (!document.IsActive())
@@ -469,6 +471,7 @@ void ImageLoader::UpdateFromElement(UpdateFromElementBehavior update_behavior,
       image->RemoveObserver(this);
     }
     image_ = nullptr;
+    delay_until_image_notify_finished_ = nullptr;
   }
 
   // Don't load images for inactive documents. We don't want to slow down the
@@ -511,6 +514,20 @@ bool ImageLoader::ShouldLoadImmediately(const KURL& url) const {
   return (isHTMLObjectElement(element_) || isHTMLEmbedElement(element_));
 }
 
+void ImageLoader::ImageChanged(ImageResourceContent* content, const IntRect*) {
+  DCHECK_EQ(content, image_.Get());
+  if (image_complete_ || !content->IsLoading() ||
+      delay_until_image_notify_finished_)
+    return;
+
+  Document& document = element_->GetDocument();
+  if (!document.IsActive())
+    return;
+
+  delay_until_image_notify_finished_ =
+      IncrementLoadEventDelayCount::Create(document);
+}
+
 void ImageLoader::ImageNotifyFinished(ImageResourceContent* resource) {
   RESOURCE_LOADING_DVLOG(1)
       << "ImageLoader::imageNotifyFinished " << this
@@ -530,6 +547,7 @@ void ImageLoader::ImageNotifyFinished(ImageResourceContent* resource) {
     CHECK(!image_complete_);
 
   image_complete_ = true;
+  delay_until_image_notify_finished_ = nullptr;
 
   // Update ImageAnimationPolicy for image_.
   if (image_)
@@ -695,8 +713,14 @@ void ImageLoader::DispatchPendingErrorEvents() {
 }
 
 void ImageLoader::ElementDidMoveToNewDocument() {
-  if (load_delay_counter_)
-    load_delay_counter_->DocumentChanged(element_->GetDocument());
+  if (delay_until_do_update_from_element_) {
+    delay_until_do_update_from_element_->DocumentChanged(
+        element_->GetDocument());
+  }
+  if (delay_until_image_notify_finished_) {
+    delay_until_image_notify_finished_->DocumentChanged(
+        element_->GetDocument());
+  }
   ClearFailedLoadURL();
   ClearImage();
 }

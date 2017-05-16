@@ -59,6 +59,7 @@ class BitmapImageTest : public ::testing::Test {
     }
     bool ShouldPauseAnimation(const Image*) override { return false; }
     void AnimationAdvanced(const Image*) override {}
+    void AsyncLoadCompleted(const Image*) override { NOTREACHED(); }
 
     virtual void ChangedInRect(const Image*, const IntRect&) {}
 

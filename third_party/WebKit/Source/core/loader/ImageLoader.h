@@ -126,6 +126,7 @@ class CORE_EXPORT ImageLoader : public GarbageCollectedFinalized<ImageLoader>,
   bool GetImageAnimationPolicy(ImageAnimationPolicy&) final;
 
  protected:
+  void ImageChanged(ImageResourceContent*, const IntRect*) override;
   void ImageNotifyFinished(ImageResourceContent*) override;
 
  private:
@@ -186,7 +187,26 @@ class CORE_EXPORT ImageLoader : public GarbageCollectedFinalized<ImageLoader>,
   Timer<ImageLoader> deref_element_timer_;
   AtomicString failed_load_url_;
   WeakPtr<Task> pending_task_;  // owned by Microtask
-  std::unique_ptr<IncrementLoadEventDelayCount> load_delay_counter_;
+  std::unique_ptr<IncrementLoadEventDelayCount>
+      delay_until_do_update_from_element_;
+
+  // Delaying load event: the timeline should be:
+  // (0) ImageResource::Fetch() is called.
+  // (1) ResourceFetcher::StartLoad(): Resource loading is actually started.
+  // (2) ResourceLoader::DidFinishLoading() etc:
+  //         Resource loading is finished, but SVG document load might be
+  //         incomplete because of asynchronously loaded subresources.
+  // (3) ImageNotifyFinished(): Image is completely loaded.
+  // and we delay Document load event from (1) to (3):
+  // - |ResourceFetcher::loaders_| delays Document load event from (1) to (2).
+  // - |delay_until_image_notify_finished_| delays Document load event from
+  //   the first ImageChanged() (at some time between (1) and (2)) until (3).
+  // Ideally, we might want to delay Document load event from (1) to (3),
+  // but currently we piggyback on ImageChanged() because adding a callback
+  // hook at (1) might complicate the code.
+  std::unique_ptr<IncrementLoadEventDelayCount>
+      delay_until_image_notify_finished_;
+
   bool has_pending_load_event_ : 1;
   bool has_pending_error_event_ : 1;
   bool image_complete_ : 1;

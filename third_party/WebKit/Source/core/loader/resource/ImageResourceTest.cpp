@@ -161,6 +161,15 @@ String GetTestFilePath() {
   return testing::WebTestDataPath("cancelTest.html");
 }
 
+constexpr char kSvgImageWithSubresource[] =
+    "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"198\" height=\"100\">"
+    "<style>"
+    "  <![CDATA[@font-face{font-family:\"test\"; "
+    "    src:url('data:font/ttf;base64,invalidFontData');}]]>"
+    "</style>"
+    "<text x=\"50\" y=\"50\" font-family=\"test\" font-size=\"16\">Fox</text>"
+    "</svg>";
+
 void ReceiveResponse(ImageResource* image_resource,
                      const KURL& url,
                      const AtomicString& mime_type,
@@ -771,6 +780,51 @@ TEST(ImageResourceTest, SVGImage) {
   EXPECT_EQ(1, observer->ImageChangedCount());
   EXPECT_TRUE(observer->ImageNotifyFinishedCalled());
   EXPECT_FALSE(image_resource->GetContent()->GetImage()->IsBitmapImage());
+}
+
+TEST(ImageResourceTest, SVGImageWithSubresource) {
+  KURL url(kParsedURLString, "http://127.0.0.1:8000/foo");
+  ImageResource* image_resource = ImageResource::Create(ResourceRequest(url));
+  std::unique_ptr<MockImageResourceObserver> observer =
+      MockImageResourceObserver::Create(image_resource->GetContent());
+
+  ReceiveResponse(image_resource, url, "image/svg+xml",
+                  kSvgImageWithSubresource, strlen(kSvgImageWithSubresource));
+
+  EXPECT_FALSE(image_resource->ErrorOccurred());
+  ASSERT_TRUE(image_resource->GetContent()->HasImage());
+  EXPECT_FALSE(image_resource->GetContent()->GetImage()->IsNull());
+  EXPECT_FALSE(image_resource->GetContent()->GetImage()->IsBitmapImage());
+
+  // At this point, image is (mostly) available but the loading is not yet
+  // finished because of SVG's subresources, and thus ImageChanged() or
+  // ImageNotifyFinished() are not called.
+  EXPECT_EQ(ResourceStatus::kPending,
+            image_resource->GetContent()->GetContentStatus());
+  EXPECT_EQ(1, observer->ImageChangedCount());
+  EXPECT_FALSE(observer->ImageNotifyFinishedCalled());
+  EXPECT_EQ(198, image_resource->GetContent()->GetImage()->width());
+  EXPECT_EQ(100, image_resource->GetContent()->GetImage()->height());
+
+  // A new client added here shouldn't notified of finish.
+  std::unique_ptr<MockImageResourceObserver> observer2 =
+      MockImageResourceObserver::Create(image_resource->GetContent());
+  EXPECT_EQ(1, observer2->ImageChangedCount());
+  EXPECT_FALSE(observer2->ImageNotifyFinishedCalled());
+
+  // After asynchronous tasks are executed, the loading of SVG document is
+  // completed and ImageNotifyFinished() is called.
+  testing::RunPendingTasks();
+  EXPECT_EQ(ResourceStatus::kCached,
+            image_resource->GetContent()->GetContentStatus());
+  EXPECT_EQ(2, observer->ImageChangedCount());
+  EXPECT_TRUE(observer->ImageNotifyFinishedCalled());
+  EXPECT_EQ(2, observer2->ImageChangedCount());
+  EXPECT_TRUE(observer2->ImageNotifyFinishedCalled());
+  EXPECT_EQ(198, image_resource->GetContent()->GetImage()->width());
+  EXPECT_EQ(100, image_resource->GetContent()->GetImage()->height());
+
+  GetMemoryCache()->EvictResources();
 }
 
 TEST(ImageResourceTest, SuccessfulRevalidationJpeg) {

@@ -55,6 +55,8 @@ class SVGImageTest : public ::testing::Test {
 
     void ChangedInRect(const Image*, const IntRect&) override {}
 
+    void AsyncLoadCompleted(const blink::Image*) override {}
+
     DEFINE_INLINE_VIRTUAL_TRACE() { ImageObserver::Trace(visitor); }
 
    private:

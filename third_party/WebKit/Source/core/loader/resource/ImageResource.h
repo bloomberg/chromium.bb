@@ -80,6 +80,7 @@ class CORE_EXPORT ImageResource final
   void AllClientsAndObserversRemoved() override;
 
   bool CanReuse(const FetchParameters&) const override;
+  bool CanUseCacheValidator() const override;
 
   PassRefPtr<const SharedBuffer> ResourceBuffer() const override;
   void NotifyStartLoad() override;

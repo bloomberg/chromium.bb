@@ -65,12 +65,39 @@
 
 namespace blink {
 
+// SVGImageLocalFrameClient is used to wait until SVG document's load event
+// in the case where there are subresources asynchronously loaded.
+//
+// Reference cycle: SVGImage -(Persistent)-> Page -(Member)-> Frame -(Member)->
+// FrameClient == SVGImageLocalFrameClient -(raw)-> SVGImage.
+class SVGImage::SVGImageLocalFrameClient : public EmptyLocalFrameClient {
+ public:
+  SVGImageLocalFrameClient(SVGImage* image) : image_(image) {}
+
+  void ClearImage() { image_ = nullptr; }
+
+ private:
+  void DispatchDidHandleOnloadEvents() override {
+    // The SVGImage was destructed before SVG load completion.
+    if (!image_)
+      return;
+
+    image_->LoadCompleted();
+  }
+
+  // Cleared manually by SVGImage's destructor when |image_| is destructed.
+  SVGImage* image_;
+};
+
 SVGImage::SVGImage(ImageObserver* observer)
     : Image(observer),
       paint_controller_(PaintController::Create()),
       has_pending_timeline_rewind_(false) {}
 
 SVGImage::~SVGImage() {
+  if (frame_client_)
+    frame_client_->ClearImage();
+
   if (page_) {
     // Store m_page in a local variable, clearing m_page, so that
     // SVGImageChromeClient knows we're destructed.
@@ -605,6 +632,25 @@ void SVGImage::UpdateUseCounters(const Document& document) const {
   }
 }
 
+void SVGImage::LoadCompleted() {
+  switch (load_state_) {
+    case kInDataChanged:
+      load_state_ = kLoadCompleted;
+      break;
+
+    case kWaitingForAsyncLoadCompletion:
+      load_state_ = kLoadCompleted;
+      if (GetImageObserver())
+        GetImageObserver()->AsyncLoadCompleted(this);
+      break;
+
+    case kDataChangedNotStarted:
+    case kLoadCompleted:
+      CHECK(false);
+      break;
+  }
+}
+
 Image::SizeAvailability SVGImage::DataChanged(bool all_data_received) {
   TRACE_EVENT0("blink", "SVGImage::dataChanged");
 
@@ -612,60 +658,64 @@ Image::SizeAvailability SVGImage::DataChanged(bool all_data_received) {
   if (!Data()->size())
     return kSizeAvailable;
 
-  if (all_data_received) {
-    // SVGImage will fire events (and the default C++ handlers run) but doesn't
-    // actually allow script to run so it's fine to call into it. We allow this
-    // since it means an SVG data url can synchronously load like other image
-    // types.
-    EventDispatchForbiddenScope::AllowUserAgentEvents allow_user_agent_events;
+  if (!all_data_received)
+    return page_ ? kSizeAvailable : kSizeUnavailable;
 
-    DEFINE_STATIC_LOCAL(LocalFrameClient, dummy_local_frame_client,
-                        (EmptyLocalFrameClient::Create()));
+  CHECK(!page_);
 
-    CHECK(!page_);
+  // SVGImage will fire events (and the default C++ handlers run) but doesn't
+  // actually allow script to run so it's fine to call into it. We allow this
+  // since it means an SVG data url can synchronously load like other image
+  // types.
+  EventDispatchForbiddenScope::AllowUserAgentEvents allow_user_agent_events;
 
-    Page::PageClients page_clients;
-    FillWithEmptyClients(page_clients);
-    chrome_client_ = SVGImageChromeClient::Create(this);
-    page_clients.chrome_client = chrome_client_.Get();
+  CHECK_EQ(load_state_, kDataChangedNotStarted);
+  load_state_ = kInDataChanged;
 
-    // FIXME: If this SVG ends up loading itself, we might leak the world.
-    // The Cache code does not know about ImageResources holding Frames and
-    // won't know to break the cycle.
-    // This will become an issue when SVGImage will be able to load other
-    // SVGImage objects, but we're safe now, because SVGImage can only be
-    // loaded by a top-level document.
-    Page* page;
-    {
-      TRACE_EVENT0("blink", "SVGImage::dataChanged::createPage");
-      page = Page::Create(page_clients);
-      page->GetSettings().SetScriptEnabled(false);
-      page->GetSettings().SetPluginsEnabled(false);
-      page->GetSettings().SetAcceleratedCompositingEnabled(false);
+  Page::PageClients page_clients;
+  FillWithEmptyClients(page_clients);
+  chrome_client_ = SVGImageChromeClient::Create(this);
+  page_clients.chrome_client = chrome_client_.Get();
 
-      // Because this page is detached, it can't get default font settings
-      // from the embedder. Copy over font settings so we have sensible
-      // defaults. These settings are fixed and will not update if changed.
-      if (!Page::OrdinaryPages().IsEmpty()) {
-        Settings& default_settings =
-            (*Page::OrdinaryPages().begin())->GetSettings();
-        page->GetSettings().GetGenericFontFamilySettings() =
-            default_settings.GetGenericFontFamilySettings();
-        page->GetSettings().SetMinimumFontSize(
-            default_settings.GetMinimumFontSize());
-        page->GetSettings().SetMinimumLogicalFontSize(
-            default_settings.GetMinimumLogicalFontSize());
-        page->GetSettings().SetDefaultFontSize(
-            default_settings.GetDefaultFontSize());
-        page->GetSettings().SetDefaultFixedFontSize(
-            default_settings.GetDefaultFixedFontSize());
-      }
+  // FIXME: If this SVG ends up loading itself, we might leak the world.
+  // The Cache code does not know about ImageResources holding Frames and
+  // won't know to break the cycle.
+  // This will become an issue when SVGImage will be able to load other
+  // SVGImage objects, but we're safe now, because SVGImage can only be
+  // loaded by a top-level document.
+  Page* page;
+  {
+    TRACE_EVENT0("blink", "SVGImage::dataChanged::createPage");
+    page = Page::Create(page_clients);
+    page->GetSettings().SetScriptEnabled(false);
+    page->GetSettings().SetPluginsEnabled(false);
+    page->GetSettings().SetAcceleratedCompositingEnabled(false);
+
+    // Because this page is detached, it can't get default font settings
+    // from the embedder. Copy over font settings so we have sensible
+    // defaults. These settings are fixed and will not update if changed.
+    if (!Page::OrdinaryPages().IsEmpty()) {
+      Settings& default_settings =
+          (*Page::OrdinaryPages().begin())->GetSettings();
+      page->GetSettings().GetGenericFontFamilySettings() =
+          default_settings.GetGenericFontFamilySettings();
+      page->GetSettings().SetMinimumFontSize(
+          default_settings.GetMinimumFontSize());
+      page->GetSettings().SetMinimumLogicalFontSize(
+          default_settings.GetMinimumLogicalFontSize());
+      page->GetSettings().SetDefaultFontSize(
+          default_settings.GetDefaultFontSize());
+      page->GetSettings().SetDefaultFixedFontSize(
+          default_settings.GetDefaultFixedFontSize());
+    }
     }
 
     LocalFrame* frame = nullptr;
     {
       TRACE_EVENT0("blink", "SVGImage::dataChanged::createFrame");
-      frame = LocalFrame::Create(&dummy_local_frame_client, *page, 0);
+      DCHECK(!frame_client_);
+      frame_client_ = new SVGImageLocalFrameClient(this);
+      frame = LocalFrame::Create(frame_client_, *page, 0);
       frame->SetView(FrameView::Create(*frame));
       frame->Init();
     }
@@ -691,9 +741,24 @@ Image::SizeAvailability SVGImage::DataChanged(bool all_data_received) {
     // Set the concrete object size before a container size is available.
     intrinsic_size_ = RoundedIntSize(ConcreteObjectSize(FloatSize(
         LayoutReplaced::kDefaultWidth, LayoutReplaced::kDefaultHeight)));
+
+    DCHECK(page_);
+    switch (load_state_) {
+      case kInDataChanged:
+        load_state_ = kWaitingForAsyncLoadCompletion;
+        return kSizeAvailableAndLoadingAsynchronously;
+
+      case kLoadCompleted:
+        return kSizeAvailable;
+
+      case kDataChangedNotStarted:
+      case kWaitingForAsyncLoadCompletion:
+        CHECK(false);
+        break;
   }
 
-  return page_ ? kSizeAvailable : kSizeUnavailable;
+  NOTREACHED();
+  return kSizeAvailable;
 }
 
 String SVGImage::FilenameExtension() const {
