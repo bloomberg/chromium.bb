@@ -1,0 +1,9 @@
+include_rules = [
+  # This folder should not depend on specific platform implementations.
+  # This restriction helps in moving files here since historically offline_pages
+  # were android-only and thus accumulated many unnecessary dependencies on
+  # Android.
+  # TODO(dimich): replace these with "-" version soon.
+  "!base/android",
+  "!chrome/browser/android",
+]

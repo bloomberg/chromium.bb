@@ -9,6 +9,7 @@ import("//build/config/features.gni")
 import("//build/config/ui.gni")
 import("//chrome/common/features.gni")
 import("//chrome/chrome_repack_locales.gni")
+import("//components/offline_pages/features/features.gni")
 import("//components/os_crypt/features.gni")
 import("//components/spellcheck/spellcheck_build_features.gni")
 import("//extensions/features/features.gni")
@@ -121,7 +122,6 @@ static_library("test_support") {
     "//components/infobars/core",
     "//components/metrics:test_support",
     "//components/network_time:network_time_test_support",
-    "//components/offline_pages/core:test_support",
     "//components/omnibox/browser:test_support",
     "//components/password_manager/core/browser:test_support",
     "//components/prefs:test_support",
@@ -190,6 +190,10 @@ static_library("test_support") {
       "//chrome/common/extensions/api",
       "//extensions:test_support",
     ]
+  }
+
+  if (enable_offline_pages) {
+    public_deps += [ "//components/offline_pages/core:test_support" ]
   }
 
   if (is_linux) {
@@ -3411,10 +3415,8 @@ test("unit_tests") {
     data += [ "$root_out_dir/Chromium Framework.framework/" ]
   }
 
-  if (is_android) {
+  if (enable_offline_pages) {
     sources += [
-      # Offline pages are currently only on Android.
-      "../browser/android/offline_pages/background_loader_offliner_unittest.cc",
       "../browser/android/offline_pages/offline_page_mhtml_archiver_unittest.cc",
       "../browser/android/offline_pages/offline_page_request_job_unittest.cc",
       "../browser/android/offline_pages/offline_page_utils_unittest.cc",
@@ -3426,6 +3428,17 @@ test("unit_tests") {
       "../browser/android/offline_pages/test_offline_page_model_builder.h",
       "../browser/android/offline_pages/test_request_coordinator_builder.cc",
       "../browser/android/offline_pages/test_request_coordinator_builder.h",
+      "../browser/offline_pages/background_loader_offliner_unittest.cc",
+    ]
+    deps += [
+      "//components/offline_pages/content/background_loader:test_support",
+      "//components/offline_pages/core:test_support",
+      "//components/offline_pages/core/background:test_support",
+    ]
+  }
+
+  if (is_android) {
+    sources += [
       "../browser/android/search_geolocation/search_geolocation_service_unittest.cc",
       "../browser/autofill/autofill_credit_card_filling_infobar_delegate_mobile_unittest.cc",
       "../browser/autofill/autofill_save_card_infobar_delegate_mobile_unittest.cc",
@@ -3438,9 +3451,6 @@ test("unit_tests") {
       ":unit_tests_java",
       "//components/gcm_driver/instance_id/android:instance_id_driver_java",
       "//components/gcm_driver/instance_id/android:instance_id_driver_test_support_java",
-      "//components/offline_pages/content/background_loader:test_support",
-      "//components/offline_pages/core:test_support",
-      "//components/offline_pages/core/background:test_support",
       "//v8:v8_external_startup_data_assets",
     ]
 
