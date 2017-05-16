@@ -40,24 +40,6 @@ class PasswordProtectionRequest : public base::RefCountedThreadSafe<
                                       content::BrowserThread::DeleteOnUIThread>,
                                   public net::URLFetcherDelegate {
  public:
-  // The outcome of the request. These values are used for UMA.
-  // DO NOT CHANGE THE ORDERING OF THESE VALUES.
-  enum RequestOutcome {
-    UNKNOWN = 0,
-    SUCCEEDED = 1,
-    CANCELED = 2,
-    TIMEDOUT = 3,
-    MATCHED_WHITELIST = 4,
-    RESPONSE_ALREADY_CACHED = 5,
-    DEPRECATED_NO_EXTENDED_REPORTING = 6,
-    DEPRECATED_INCOGNITO = 7,
-    REQUEST_MALFORMED = 8,
-    FETCH_FAILED = 9,
-    RESPONSE_MALFORMED = 10,
-    SERVICE_DESTROYED = 11,
-    MAX_OUTCOME
-  };
-
   PasswordProtectionRequest(const GURL& main_frame_url,
                             const GURL& password_form_action,
                             const GURL& password_form_frame_url,
@@ -115,7 +97,7 @@ class PasswordProtectionRequest : public base::RefCountedThreadSafe<
   void StartTimeout();
 
   // |this| will be destroyed after calling this function.
-  void Finish(RequestOutcome outcome,
+  void Finish(PasswordProtectionService::RequestOutcome outcome,
               std::unique_ptr<LoginReputationClientResponse> response);
 
   // Main frame URL of the login form.
