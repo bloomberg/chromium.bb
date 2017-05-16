@@ -4,8 +4,8 @@
 
 #include "net/http/bidirectional_stream.h"
 
-#include <memory>
 #include <string>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/location.h"
@@ -392,7 +392,7 @@ void BidirectionalStream::OnHttpsProxyTunnelResponse(
     const HttpResponseInfo& response_info,
     const SSLConfig& used_ssl_config,
     const ProxyInfo& used_proxy_info,
-    HttpStream* stream) {
+    std::unique_ptr<HttpStream> stream) {
   DCHECK(stream_request_);
 
   NotifyFailed(ERR_HTTPS_PROXY_TUNNEL_RESPONSE);

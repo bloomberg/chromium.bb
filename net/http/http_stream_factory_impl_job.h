@@ -84,7 +84,7 @@ class HttpStreamFactoryImpl::Job {
         const HttpResponseInfo& response_info,
         const SSLConfig& used_ssl_config,
         const ProxyInfo& used_proxy_info,
-        HttpStream* stream) = 0;
+        std::unique_ptr<HttpStream> stream) = 0;
 
     // Invoked when |job| raises failure for SSL Client Auth.
     virtual void OnNeedsClientAuth(Job* job,
@@ -295,7 +295,7 @@ class HttpStreamFactoryImpl::Job {
                                 HttpAuthController* auth_controller);
   void OnNeedsClientAuthCallback(SSLCertRequestInfo* cert_info);
   void OnHttpsProxyTunnelResponseCallback(const HttpResponseInfo& response_info,
-                                          HttpStream* stream);
+                                          std::unique_ptr<HttpStream> stream);
   void OnPreconnectsComplete();
 
   void OnIOComplete(int result);

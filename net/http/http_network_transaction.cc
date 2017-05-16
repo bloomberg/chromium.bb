@@ -4,7 +4,6 @@
 
 #include "net/http/http_network_transaction.h"
 
-#include <memory>
 #include <set>
 #include <utility>
 #include <vector>
@@ -561,7 +560,7 @@ void HttpNetworkTransaction::OnHttpsProxyTunnelResponse(
     const HttpResponseInfo& response_info,
     const SSLConfig& used_ssl_config,
     const ProxyInfo& used_proxy_info,
-    HttpStream* stream) {
+    std::unique_ptr<HttpStream> stream) {
   DCHECK_EQ(STATE_CREATE_STREAM_COMPLETE, next_state_);
 
   CopyConnectionAttemptsFromStreamRequest();
@@ -574,7 +573,7 @@ void HttpNetworkTransaction::OnHttpsProxyTunnelResponse(
     total_received_bytes_ += stream_->GetTotalReceivedBytes();
     total_sent_bytes_ += stream_->GetTotalSentBytes();
   }
-  stream_.reset(stream);
+  stream_ = std::move(stream);
   stream_request_.reset();  // we're done with the stream request
   OnIOComplete(ERR_HTTPS_PROXY_TUNNEL_RESPONSE);
 }
