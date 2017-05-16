@@ -513,6 +513,8 @@ class Generator(generator.Generator):
     if self.variant:
       raise Exception("Variants not supported in Java bindings.")
 
+    self.module.Stylize(generator.Stylizer())
+
     parser = argparse.ArgumentParser()
     parser.add_argument('--java_output_directory', dest='java_output_directory')
     args = parser.parse_args(unparsed_args)
@@ -520,7 +522,7 @@ class Generator(generator.Generator):
 
     # Generate the java files in a temporary directory and place a single
     # srcjar in the output directory.
-    basename = self.MatchMojomFilePath("%s.srcjar" % self.module.name)
+    basename = "%s.srcjar" % self.module.path
     zip_filename = os.path.join(self.output_dir, basename)
     with TempDir() as temp_java_root:
       self.output_dir = os.path.join(temp_java_root, package_path)

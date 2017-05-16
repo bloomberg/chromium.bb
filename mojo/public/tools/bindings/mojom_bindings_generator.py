@@ -175,7 +175,7 @@ class MojomProcessor(object):
       return self._processed_files[rel_filename.path]
     tree = self._parsed_files[rel_filename.path]
 
-    dirname, name = os.path.split(rel_filename.path)
+    dirname = os.path.dirname(rel_filename.path)
 
     # Process all our imports first and collect the module object for each.
     # We use these to generate proper type info.
@@ -187,16 +187,14 @@ class MojomProcessor(object):
       imports[parsed_imp.import_filename] = self._GenerateModule(
           args, remaining_args, generator_modules, rel_import_file)
 
-    module = translate.OrderedModule(tree, name, imports)
+    # Set the module path as relative to the source root.
+    # Normalize to unix-style path here to keep the generators simpler.
+    module_path = rel_filename.relative_path().replace('\\', '/')
+
+    module = translate.OrderedModule(tree, module_path, imports)
 
     if args.scrambled_message_id_salt:
       ScrambleMethodOrdinals(module.interfaces, args.scrambled_message_id_salt)
-
-    # Set the path as relative to the source root.
-    module.path = rel_filename.relative_path()
-
-    # Normalize to unix-style path here to keep the generators simpler.
-    module.path = module.path.replace('\\', '/')
 
     if self._should_generate(rel_filename.path):
       AddComputedData(module)

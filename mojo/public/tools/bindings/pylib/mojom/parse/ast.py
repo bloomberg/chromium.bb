@@ -84,10 +84,10 @@ class Definition(NodeBase):
   enum values, consts, structs, struct fields, interfaces). (This does not
   include parameter definitions.) This class is meant to be subclassed."""
 
-  def __init__(self, name, **kwargs):
-    assert isinstance(name, str)
+  def __init__(self, mojom_name, **kwargs):
+    assert isinstance(mojom_name, str)
     NodeBase.__init__(self, **kwargs)
-    self.name = name
+    self.mojom_name = mojom_name
 
 
 ################################################################################
@@ -117,13 +117,13 @@ class AttributeList(NodeListBase):
 class Const(Definition):
   """Represents a const definition."""
 
-  def __init__(self, name, typename, value, **kwargs):
+  def __init__(self, mojom_name, typename, value, **kwargs):
     # The typename is currently passed through as a string.
     assert isinstance(typename, str)
     # The value is either a literal (currently passed through as a string) or a
     # "wrapped identifier".
     assert isinstance(value, str) or isinstance(value, tuple)
-    super(Const, self).__init__(name, **kwargs)
+    super(Const, self).__init__(mojom_name, **kwargs)
     self.typename = typename
     self.value = value
 
@@ -136,10 +136,10 @@ class Const(Definition):
 class Enum(Definition):
   """Represents an enum definition."""
 
-  def __init__(self, name, attribute_list, enum_value_list, **kwargs):
+  def __init__(self, mojom_name, attribute_list, enum_value_list, **kwargs):
     assert attribute_list is None or isinstance(attribute_list, AttributeList)
     assert enum_value_list is None or isinstance(enum_value_list, EnumValueList)
-    super(Enum, self).__init__(name, **kwargs)
+    super(Enum, self).__init__(mojom_name, **kwargs)
     self.attribute_list = attribute_list
     self.enum_value_list = enum_value_list
 
@@ -152,12 +152,12 @@ class Enum(Definition):
 class EnumValue(Definition):
   """Represents a definition of an enum value."""
 
-  def __init__(self, name, attribute_list, value, **kwargs):
+  def __init__(self, mojom_name, attribute_list, value, **kwargs):
     # The optional value is either an int (which is current a string) or a
     # "wrapped identifier".
     assert attribute_list is None or isinstance(attribute_list, AttributeList)
     assert value is None or isinstance(value, (str, tuple))
-    super(EnumValue, self).__init__(name, **kwargs)
+    super(EnumValue, self).__init__(mojom_name, **kwargs)
     self.attribute_list = attribute_list
     self.value = value
 
@@ -196,10 +196,10 @@ class ImportList(NodeListBase):
 class Interface(Definition):
   """Represents an interface definition."""
 
-  def __init__(self, name, attribute_list, body, **kwargs):
+  def __init__(self, mojom_name, attribute_list, body, **kwargs):
     assert attribute_list is None or isinstance(attribute_list, AttributeList)
     assert isinstance(body, InterfaceBody)
-    super(Interface, self).__init__(name, **kwargs)
+    super(Interface, self).__init__(mojom_name, **kwargs)
     self.attribute_list = attribute_list
     self.body = body
 
@@ -212,14 +212,14 @@ class Interface(Definition):
 class Method(Definition):
   """Represents a method definition."""
 
-  def __init__(self, name, attribute_list, ordinal, parameter_list,
+  def __init__(self, mojom_name, attribute_list, ordinal, parameter_list,
                response_parameter_list, **kwargs):
     assert attribute_list is None or isinstance(attribute_list, AttributeList)
     assert ordinal is None or isinstance(ordinal, Ordinal)
     assert isinstance(parameter_list, ParameterList)
     assert response_parameter_list is None or \
            isinstance(response_parameter_list, ParameterList)
-    super(Method, self).__init__(name, **kwargs)
+    super(Method, self).__init__(mojom_name, **kwargs)
     self.attribute_list = attribute_list
     self.ordinal = ordinal
     self.parameter_list = parameter_list
@@ -243,17 +243,17 @@ class InterfaceBody(NodeListBase):
 class Module(NodeBase):
   """Represents a module statement."""
 
-  def __init__(self, name, attribute_list, **kwargs):
-    # |name| is either none or a "wrapped identifier".
-    assert name is None or isinstance(name, tuple)
+  def __init__(self, mojom_namespace, attribute_list, **kwargs):
+    # |mojom_namespace| is either none or a "wrapped identifier".
+    assert mojom_namespace is None or isinstance(mojom_namespace, tuple)
     assert attribute_list is None or isinstance(attribute_list, AttributeList)
     super(Module, self).__init__(**kwargs)
-    self.name = name
+    self.mojom_namespace = mojom_namespace
     self.attribute_list = attribute_list
 
   def __eq__(self, other):
     return super(Module, self).__eq__(other) and \
-           self.name == other.name and \
+           self.mojom_namespace == other.mojom_namespace and \
            self.attribute_list == other.attribute_list
 
 
@@ -296,20 +296,20 @@ class Ordinal(NodeBase):
 class Parameter(NodeBase):
   """Represents a method request or response parameter."""
 
-  def __init__(self, name, attribute_list, ordinal, typename, **kwargs):
-    assert isinstance(name, str)
+  def __init__(self, mojom_name, attribute_list, ordinal, typename, **kwargs):
+    assert isinstance(mojom_name, str)
     assert attribute_list is None or isinstance(attribute_list, AttributeList)
     assert ordinal is None or isinstance(ordinal, Ordinal)
     assert isinstance(typename, str)
     super(Parameter, self).__init__(**kwargs)
-    self.name = name
+    self.mojom_name = mojom_name
     self.attribute_list = attribute_list
     self.ordinal = ordinal
     self.typename = typename
 
   def __eq__(self, other):
     return super(Parameter, self).__eq__(other) and \
-           self.name == other.name and \
+           self.mojom_name == other.mojom_name and \
            self.attribute_list == other.attribute_list and \
            self.ordinal == other.ordinal and \
            self.typename == other.typename
@@ -324,10 +324,10 @@ class ParameterList(NodeListBase):
 class Struct(Definition):
   """Represents a struct definition."""
 
-  def __init__(self, name, attribute_list, body, **kwargs):
+  def __init__(self, mojom_name, attribute_list, body, **kwargs):
     assert attribute_list is None or isinstance(attribute_list, AttributeList)
     assert isinstance(body, StructBody) or body is None
-    super(Struct, self).__init__(name, **kwargs)
+    super(Struct, self).__init__(mojom_name, **kwargs)
     self.attribute_list = attribute_list
     self.body = body
 
@@ -340,16 +340,16 @@ class Struct(Definition):
 class StructField(Definition):
   """Represents a struct field definition."""
 
-  def __init__(self, name, attribute_list, ordinal, typename, default_value,
-               **kwargs):
-    assert isinstance(name, str)
+  def __init__(self, mojom_name, attribute_list, ordinal, typename,
+               default_value, **kwargs):
+    assert isinstance(mojom_name, str)
     assert attribute_list is None or isinstance(attribute_list, AttributeList)
     assert ordinal is None or isinstance(ordinal, Ordinal)
     assert isinstance(typename, str)
     # The optional default value is currently either a value as a string or a
     # "wrapped identifier".
     assert default_value is None or isinstance(default_value, (str, tuple))
-    super(StructField, self).__init__(name, **kwargs)
+    super(StructField, self).__init__(mojom_name, **kwargs)
     self.attribute_list = attribute_list
     self.ordinal = ordinal
     self.typename = typename
@@ -373,10 +373,10 @@ class StructBody(NodeListBase):
 class Union(Definition):
   """Represents a union definition."""
 
-  def __init__(self, name, attribute_list, body, **kwargs):
+  def __init__(self, mojom_name, attribute_list, body, **kwargs):
     assert attribute_list is None or isinstance(attribute_list, AttributeList)
     assert isinstance(body, UnionBody)
-    super(Union, self).__init__(name, **kwargs)
+    super(Union, self).__init__(mojom_name, **kwargs)
     self.attribute_list = attribute_list
     self.body = body
 
@@ -388,12 +388,12 @@ class Union(Definition):
 
 class UnionField(Definition):
 
-  def __init__(self, name, attribute_list, ordinal, typename, **kwargs):
-    assert isinstance(name, str)
+  def __init__(self, mojom_name, attribute_list, ordinal, typename, **kwargs):
+    assert isinstance(mojom_name, str)
     assert attribute_list is None or isinstance(attribute_list, AttributeList)
     assert ordinal is None or isinstance(ordinal, Ordinal)
     assert isinstance(typename, str)
-    super(UnionField, self).__init__(name, **kwargs)
+    super(UnionField, self).__init__(mojom_name, **kwargs)
     self.attribute_list = attribute_list
     self.ordinal = ordinal
     self.typename = typename

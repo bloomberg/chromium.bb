@@ -157,16 +157,18 @@ class Generator(generator.Generator):
     if self.variant:
       raise Exception("Variants not supported in JavaScript bindings.")
 
+    # TODO(yzshen): Add a JavaScriptStylizer.
+    self.module.Stylize(generator.Stylizer())
+
     # TODO(yzshen): Remove this method once the old JS bindings go away.
     self._SetUniqueNameForImports()
 
-    self.Write(self._GenerateAMDModule(),
-        self.MatchMojomFilePath("%s.js" % self.module.name))
+    self.Write(self._GenerateAMDModule(), "%s.js" % self.module.path)
 
   def _SetUniqueNameForImports(self):
     used_names = set()
     for each_import in self.module.imports:
-      simple_name = each_import.name.split(".")[0]
+      simple_name = os.path.basename(each_import.path).split(".")[0]
 
       # Since each import is assigned a variable in JS, they need to have unique
       # names.
