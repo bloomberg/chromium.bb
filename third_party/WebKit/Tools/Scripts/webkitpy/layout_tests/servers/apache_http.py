@@ -99,6 +99,9 @@ class ApacheHTTP(server_base.ServerBase):
                                                                               self._port_obj.host.environ.get('USER', '')),
                           '-k', 'start']
 
+        if self._port_obj.http_server_requires_http_protocol_options_unsafe():
+            start_cmd += ['-c', 'HttpProtocolOptions Unsafe']
+
         enable_ipv6 = self._port_obj.http_server_supports_ipv6()
         # Perform part of the checks Apache's APR does when trying to listen to
         # a specific host/port. This allows us to avoid trying to listen to

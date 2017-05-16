@@ -1161,6 +1161,22 @@ class Port(object):
             self._wpt_server.stop()
             self._wpt_server = None
 
+    def http_server_requires_http_protocol_options_unsafe(self):
+        httpd_path = self.path_to_apache()
+        intentional_syntax_error = 'INTENTIONAL_SYNTAX_ERROR'
+        cmd = [httpd_path,
+               '-C', 'HttpProtocolOptions Unsafe',
+               '-C', intentional_syntax_error]
+        env = self.setup_environ_for_server()
+
+        def error_handler(err):
+            pass
+        output = self._executive.run_command(cmd, env=env,
+                                             error_handler=error_handler)
+        # If apache complains about the intentional error, it apparently
+        # accepted the HttpProtocolOptions directive, and we should add it.
+        return intentional_syntax_error in output
+
     def http_server_supports_ipv6(self):
         # Apache < 2.4 on win32 does not support IPv6.
         return not self.host.platform.is_win()
