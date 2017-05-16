@@ -220,11 +220,8 @@ void LayoutSelection::SetSelection(
                          block_paint_invalidation_mode);
 
   // Now clear the selection.
-  SelectedObjectMap::iterator old_objects_end =
-      old_selected_map.object_map.end();
-  for (SelectedObjectMap::iterator i = old_selected_map.object_map.begin();
-       i != old_objects_end; ++i)
-    i->key->SetSelectionStateIfNeeded(SelectionNone);
+  for (auto layout_object : old_selected_map.object_map.Keys())
+    layout_object->SetSelectionStateIfNeeded(SelectionNone);
 
   // set selection start and end
   selection_start_ = start;
@@ -261,11 +258,10 @@ void LayoutSelection::SetSelection(
       CollectSelectedMap(start, end, end_pos, kPaintInvalidationNewXOROld);
 
   // Have any of the old selected objects changed compared to the new selection?
-  for (SelectedObjectMap::iterator i = old_selected_map.object_map.begin();
-       i != old_objects_end; ++i) {
-    LayoutObject* obj = i->key;
+  for (const auto& pair : old_selected_map.object_map) {
+    LayoutObject* obj = pair.key;
     SelectionState new_selection_state = obj->GetSelectionState();
-    SelectionState old_selection_state = i->value;
+    SelectionState old_selection_state = pair.value;
     if (new_selection_state != old_selection_state ||
         (selection_start_ == obj && old_start_pos != selection_start_pos_) ||
         (selection_end_ == obj && old_end_pos != selection_end_pos_)) {
@@ -276,19 +272,14 @@ void LayoutSelection::SetSelection(
 
   // Any new objects that remain were not found in the old objects dict, and so
   // they need to be updated.
-  SelectedObjectMap::iterator new_objects_end =
-      new_selected_map.object_map.end();
-  for (SelectedObjectMap::iterator i = new_selected_map.object_map.begin();
-       i != new_objects_end; ++i)
-    i->key->SetShouldInvalidateSelection();
+  for (auto layout_object : new_selected_map.object_map.Keys())
+    layout_object->SetShouldInvalidateSelection();
 
   // Have any of the old blocks changed?
-  SelectedBlockMap::iterator old_blocks_end = old_selected_map.block_map.end();
-  for (SelectedBlockMap::iterator i = old_selected_map.block_map.begin();
-       i != old_blocks_end; ++i) {
-    LayoutBlock* block = i->key;
+  for (const auto& pair : old_selected_map.block_map) {
+    LayoutBlock* block = pair.key;
     SelectionState new_selection_state = block->GetSelectionState();
-    SelectionState old_selection_state = i->value;
+    SelectionState old_selection_state = pair.value;
     if (new_selection_state != old_selection_state) {
       block->SetShouldInvalidateSelection();
       new_selected_map.block_map.erase(block);
@@ -297,10 +288,8 @@ void LayoutSelection::SetSelection(
 
   // Any new blocks that remain were not found in the old blocks dict, and so
   // they need to be updated.
-  SelectedBlockMap::iterator new_blocks_end = new_selected_map.block_map.end();
-  for (SelectedBlockMap::iterator i = new_selected_map.block_map.begin();
-       i != new_blocks_end; ++i)
-    i->key->SetShouldInvalidateSelection();
+  for (auto layout_object : new_selected_map.block_map.Keys())
+    layout_object->SetShouldInvalidateSelection();
 }
 
 std::pair<int, int> LayoutSelection::SelectionStartEnd() {
