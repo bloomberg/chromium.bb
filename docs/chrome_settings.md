@@ -109,19 +109,18 @@ An example of the form a checkbox should take in html:
 <label class="checkbox">
   <input id="clear-cookies-on-exit"
        pref="profile.clear_site_data_on_exit" type="checkbox">
-  <span i18n-content="clearCookiesOnExit"></span>
+  <span>$i18n{clearCookiesOnExit}</span>
 </label>
 ```
 
 Of note:
 
 *   the `checkbox` class allows us to style all checkboxes the same via CSS
-*   the class and ID are in dash-form * the i18n-content value is in camelCase
+*   the class and ID are in dash-form * the $i18n{} value is in camelCase
 *   the pref attribute matches that which is defined in
     `chrome/common/pref_names.cc` and allows the prefs framework to
     automatically keep it in sync with the value in C++
-*   the `i18n-content` value matches the string we defined in the WebUI handler.
-    The `textContent` of the `span` will automatically be set to the associated
-    text.
+*   the `$i18n{}` value matches the string we defined in the WebUI handler.
+    The `$i18n{}` will automatically be set to the associated text.
 
 In this example, no additional JS or CSS are needed.
