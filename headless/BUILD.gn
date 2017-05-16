@@ -401,14 +401,13 @@ component("headless") {
   configs += [ ":headless_implementation" ]
 }
 
-# Headless renderer is a convenience library that includes headless classes
-# that depend on the renderer. These are not added in case of a component build
-# since in that case they are already included in the headless component.
-static_library("headless_renderer") {
-  deps = [
-    ":headless",
-  ]
-  if (!is_component_build) {
+# Headless renderer is a convenience library for non component builds that
+# includes headless classes that depend on the renderer.
+if (!is_component_build) {
+  static_library("headless_renderer") {
+    deps = [
+      ":headless",
+    ]
     sources = [
       "lib/browser/headless_web_contents_impl.cc",
       "lib/browser/headless_web_contents_impl.h",
@@ -422,6 +421,14 @@ static_library("headless_renderer") {
       deps += [ "//components/printing/renderer" ]
     }
     configs += [ ":headless_implementation" ]
+  }
+} else {
+  # For component builds all dependencies are already included in the headless
+  # component.
+  group("headless_renderer") {
+    deps = [
+      ":headless",
+    ]
   }
 }
 
@@ -446,22 +453,15 @@ test("headless_unittests") {
     "public/util/testing/fake_managed_dispatch_url_request_job.h",
   ]
 
-  if (is_component_build) {
-    deps = [
-      ":headless",
-    ]
-  } else {
+  if (!is_component_build) {
     sources += [
       "lib/browser/headless_content_browser_client.cc",
       "lib/browser/headless_content_browser_client.h",
     ]
-
-    deps = [
-      ":headless_renderer",
-    ]
   }
 
-  deps += [
+  deps = [
+    ":headless_renderer",
     "//base/test:run_all_unittests",
     "//base/test:test_support",
     "//components/crash/content/browser",
@@ -529,22 +529,15 @@ test("headless_browsertests") {
 
   defines = [ "HAS_OUT_OF_PROC_TEST_RUNNER" ]
 
-  if (is_component_build) {
-    deps = [
-      ":headless",
-    ]
-  } else {
+  if (!is_component_build) {
     sources += [
       "lib/browser/headless_content_browser_client.cc",
       "lib/browser/headless_content_browser_client.h",
     ]
-
-    deps = [
-      ":headless_renderer",
-    ]
   }
 
-  deps += [
+  deps = [
+    ":headless_renderer",
     "//base",
     "//components/crash/content/browser",
     "//components/security_state/content",
@@ -651,17 +644,8 @@ static_library("headless_shell_lib") {
     "public/headless_shell.h",
   ]
 
-  if (is_component_build) {
-    deps = [
-      ":headless",
-    ]
-  } else {
-    deps = [
-      ":headless_renderer",
-    ]
-  }
-
-  deps += [
+  deps = [
+    ":headless_renderer",
     "//components/crash/content/browser",
     "//components/security_state/content",
     "//content/public/app:both",
