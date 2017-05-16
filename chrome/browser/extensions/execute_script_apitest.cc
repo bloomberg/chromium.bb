@@ -135,7 +135,8 @@ IN_PROC_BROWSER_TEST_P(DestructiveScriptTest, MicrotaskRemoval) {
 }
 
 // Removes the frame at the frame's first scheduled macrotask.
-IN_PROC_BROWSER_TEST_P(DestructiveScriptTest, MacrotaskRemoval) {
+// Test is flaky. crbug.com/722703
+IN_PROC_BROWSER_TEST_P(DestructiveScriptTest, DISABLED_MacrotaskRemoval) {
   ASSERT_TRUE(RunSubtest("macrotask")) << message_;
 }
 
