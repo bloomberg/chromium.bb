@@ -34,17 +34,17 @@ namespace blink {
 // animated GIF should be cycled.  If the loop count is absent, the animation
 // cycles once; if it is 0, the animation cycles infinitely; otherwise the
 // animation plays n + 1 cycles (where n is the specified loop count).  If the
-// GIF decoder defaults to kCAnimationLoopOnce in the absence of any loop count
-// and translates an explicit "0" loop count to kCAnimationLoopInfinite, then we
+// GIF decoder defaults to kAnimationLoopOnce in the absence of any loop count
+// and translates an explicit "0" loop count to kAnimationLoopInfinite, then we
 // get a couple of nice side effects:
-//   * By making kCAnimationLoopOnce be 0, we allow the animation cycling code
-//     in BitmapImage.cpp to avoid special-casing it, and simply treat all
+//   * By making kAnimationLoopOnce be 0, we allow the animation cycling code in
+//     BitmapImage.cpp to avoid special-casing it, and simply treat all
 //     non-negative loop counts identically.
 //   * By making the other two constants negative, we avoid conflicts with any
 //     real loop count values.
-const int kCAnimationLoopOnce = 0;
-const int kCAnimationLoopInfinite = -1;
-const int kCAnimationNone = -2;
+const int kAnimationLoopOnce = 0;
+const int kAnimationLoopInfinite = -1;
+const int kAnimationNone = -2;
 
 }  // namespace blink
 

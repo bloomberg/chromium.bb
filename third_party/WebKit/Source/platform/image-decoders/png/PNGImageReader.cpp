@@ -535,7 +535,7 @@ bool PNGImageReader::ParseSize(const FastSharedBufferReader& reader) {
       if (ignore_animation_)
         is_animated_ = false;
       if (!is_animated_ || 1 == reported_frame_count_)
-        decoder_->SetRepetitionCount(kCAnimationNone);
+        decoder_->SetRepetitionCount(kAnimationNone);
       if (!decoder_->SetSize(width_, height_))
         return false;
       decoder_->SetColorSpace();

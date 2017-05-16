@@ -36,7 +36,7 @@ GIFImageDecoder::GIFImageDecoder(AlphaOption alpha_option,
                                  const ColorBehavior& color_behavior,
                                  size_t max_decoded_bytes)
     : ImageDecoder(alpha_option, color_behavior, max_decoded_bytes),
-      repetition_count_(kCAnimationLoopOnce) {}
+      repetition_count_(kAnimationLoopOnce) {}
 
 GIFImageDecoder::~GIFImageDecoder() {}
 
@@ -71,9 +71,9 @@ int GIFImageDecoder::RepetitionCount() const {
   // later in the stream. It is also possible that no frames are in the
   // stream. In these cases we should just loop once.
   if (IsAllDataReceived() && ParseCompleted() && reader_->imagesCount() == 1)
-    repetition_count_ = kCAnimationNone;
+    repetition_count_ = kAnimationNone;
   else if (Failed() || (reader_ && (!reader_->imagesCount())))
-    repetition_count_ = kCAnimationLoopOnce;
+    repetition_count_ = kAnimationLoopOnce;
   else if (reader_ && reader_->loopCount() != cLoopCountNotSeen)
     repetition_count_ = reader_->loopCount();
   return repetition_count_;

@@ -112,7 +112,7 @@ class DeferredImageDecoderTest : public ::testing::Test,
     bitmap_.allocPixels(SkImageInfo::MakeN32Premul(100, 100));
     canvas_ = base::MakeUnique<cc::SkiaPaintCanvas>(bitmap_);
     decode_request_count_ = 0;
-    repetition_count_ = kCAnimationNone;
+    repetition_count_ = kAnimationNone;
     status_ = ImageFrame::kFrameComplete;
     frame_duration_ = 0;
     decoded_size_ = actual_decoder_->Size();
