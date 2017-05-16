@@ -1,7 +1,11 @@
 # Extension and App Types
 
 Generally, browser extensions cut across websites and web apps, while apps
-provide more isolated functionality.
+provide more isolated functionality. Read on for specifics.
+
+**This is a technical discussion of extension types for Chromium developers.**
+Extension developers should refer to http://developer.chrome.com/ for
+documentation, usage guidelines and examples.
 
 [TOC]
 
@@ -46,11 +50,11 @@ initialize a UI in response to Chrome's `chrome.app.runtime.onLaunched` event.
 Some apps don't show a window but work in the background instead. Platform apps
 can connect to more device types than browser extensions have access to.
 
-Platform apps are deprecated on non-Chrome OS platforms.
-
 A platform app can be identified by the presence of an `app.background` key
 in the manifest, which provides the script that runs when the app is
 launched.
+
+*Platform apps are deprecated on non-Chrome OS platforms.*
 
 ### Packaged app (legacy)
 
@@ -63,6 +67,8 @@ A packaged app can be identified by the presence of an
 `app.launch.local_url` key in `manifest.json`, which identifies the resource
 in the .crx that's loaded when the app is launched.
 
+*Packaged apps are deprecated everywhere.*
+
 ### Hosted app
 
 A [hosted app](https://developer.chrome.com/webstore/hosted_apps) is mostly
@@ -72,9 +78,16 @@ allowing the associated URL to bypass the normal Chrome permission prompts for
 HTML5 features. Other than metadata in the manifest and an icon, none of a
 hosted app's resources come from the extension system.
 
+A hosted app can declare a BackgroundContents, which outlives the browser and
+can be scripted from all tabs running the hosted app. Specifying
+`allow_js_access: false` is preferred, to allow multiple instances of the hosted
+app to run in different processes.
+
 A hosted app can be identified by the presence of an `app.launch.web_url` key in
 `manifest.json`, which provides http/https URL that is loaded when the app is
 launched.
+
+*Hosted apps are deprecated on non-Chrome OS platforms.*
 
 ### Bookmark app
 
