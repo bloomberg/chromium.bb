@@ -3,7 +3,7 @@
 <translationbundle lang="pl">
 <translation id="1008557486741366299">Nie teraz</translation>
 <translation id="1015730422737071372">Podaj dodatkowe informacje</translation>
-<translation id="1021110881106174305">Zaakceptowane karty</translation>
+<translation id="1021110881106174305">Akceptowane karty</translation>
 <translation id="1032854598605920125">Obróć w prawo</translation>
 <translation id="1038842779957582377">nieznana nazwa</translation>
 <translation id="1050038467049342496">Zamknij inne aplikacje</translation>
@@ -93,7 +93,7 @@
 <translation id="173080396488393970">Ten typ karty nie jest obsługiwany</translation>
 <translation id="1734864079702812349">Amex</translation>
 <translation id="1734878702283171397">Skontaktuj się z administratorem systemu.</translation>
-<translation id="1740951997222943430">Wpisz prawidłowy miesiąc ważności</translation>
+<translation id="1740951997222943430">Wpisz miesiąc w prawidłowym formacie</translation>
 <translation id="1745358365027406341">Pobierz stronę później</translation>
 <translation id="17513872634828108">Otwarte karty</translation>
 <translation id="1753706481035618306">Numer strony</translation>
@@ -145,7 +145,7 @@
 <translation id="2181821976797666341">Zasady</translation>
 <translation id="2184405333245229118">{COUNT,plural, =1{1 adres}few{# adresy}many{# adresów}other{# adresu}}</translation>
 <translation id="2187317261103489799">Wykrywaj (domyślnie)</translation>
-<translation id="2202020181578195191">Wpisz prawidłowy rok ważności</translation>
+<translation id="2202020181578195191">Wpisz rok w prawidłowym formacie</translation>
 <translation id="2212735316055980242">Nie znaleziono zasady</translation>
 <translation id="2213606439339815911">Pobieram wpisy...</translation>
 <translation id="2230458221926704099">Napraw połączenie, używając <ph name="BEGIN_LINK" />aplikacji diagnostycznej<ph name="END_LINK" /></translation>
@@ -232,7 +232,7 @@
 <translation id="2972581237482394796">&amp;Ponów</translation>
 <translation id="2985306909656435243">Jeśli włączysz tę opcję, Chromium zapisze kopię Twojej karty na tym urządzeniu, by umożliwić Ci szybsze wypełnianie formularzy.</translation>
 <translation id="2985398929374701810">Wpisz prawidłowy adres</translation>
-<translation id="2986368408720340940">Ta metoda odbioru jest niedostępna .Wybierz inną.</translation>
+<translation id="2986368408720340940">Ta metoda odbioru jest niedostępna. Wybierz inną.</translation>
 <translation id="2991174974383378012">Udostępnianie stronom internetowym</translation>
 <translation id="3005723025932146533">Pokaż zapisaną kopię</translation>
 <translation id="3008447029300691911">Wpisz kod CVC karty <ph name="CREDIT_CARD" />. Po potwierdzeniu szczegółowe dane karty zostaną udostępnione tej stronie.</translation>
@@ -564,7 +564,7 @@
 <translation id="6008256403891681546">JCB</translation>
 <translation id="6016158022840135739">{COUNT,plural, =1{Strona 1}few{Strona #}many{Strona #}other{Strona #}}</translation>
 <translation id="6017514345406065928">Zielony</translation>
-<translation id="6027201098523975773">Wpisz nazwę</translation>
+<translation id="6027201098523975773">Wpisz imię i nazwisko</translation>
 <translation id="6040143037577758943">Zamknij</translation>
 <translation id="6042308850641462728">Więcej</translation>
 <translation id="6060685159320643512">Ostrożnie, na tych eksperymentach można się sparzyć</translation>
@@ -653,6 +653,7 @@
 <translation id="6895330447102777224">Karta została potwierdzona</translation>
 <translation id="6897140037006041989">Klient</translation>
 <translation id="6915804003454593391">Użytkownik:</translation>
+<translation id="6945221475159498467">Wybierz</translation>
 <translation id="6948701128805548767">Aby zobaczyć metody odbioru oraz wymagania, wybierz adres</translation>
 <translation id="6957887021205513506">Certyfikat serwera wydaje się sfałszowany.</translation>
 <translation id="6965382102122355670">OK</translation>

@@ -27,7 +27,6 @@
 É necessário que o Bluetooth e o Local estejam ativados para usar a Web física.</translation>
 <translation id="124678866338384709">Fechar a guia atual</translation>
 <translation id="1258753120186372309">Doodle do Google: <ph name="DOODLE_DESCRIPTION" /></translation>
-<translation id="1265597927250775944">Limpa o histórico e as sugestões da barra de endereço.</translation>
 <translation id="1272079795634619415">Parar</translation>
 <translation id="1283039547216852943">Toque para expandir</translation>
 <translation id="1285320974508926690">Nunca traduzir este site</translation>
@@ -262,7 +261,6 @@ Para selecionar o termo que quer pesquisar, toque no termo e mantenha-o pression
 <translation id="3859306556332390985">Avançar</translation>
 <translation id="3894427358181296146">Adicionar pasta</translation>
 <translation id="3895926599014793903">Forçar zoom</translation>
-<translation id="3915590178385207649">Limpa o histórico de todos os dispositivos nos quais você fez login. Veja outras atividades da sua Conta do Google em <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="3917783807003067648">O local está bloqueado</translation>
 <translation id="3927692899758076493">Sans Serif</translation>
 <translation id="3928666092801078803">Combinar meus dados</translation>
@@ -607,7 +605,6 @@ Por exemplo, alguns websites podem reagir a esse pedido mostrando anúncios que 
 <translation id="7423098979219808738">Perguntar primeiro</translation>
 <translation id="7437998757836447326">Sair do Google Chrome</translation>
 <translation id="7445411102860286510">Permite que os sites reproduzam automaticamente vídeos silenciados (recomendado)</translation>
-<translation id="7449574997654022410">Limpa o histórico e as sugestões da barra de endereço. Veja outras atividades da sua Conta do Google em <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="7464701184726199289">Isso limpa os dados sincronizados de todos os dispositivos. As configurações salvas em sites não são excluídas e podem refletir seus hábitos de navegação. <ph name="BEGIN_LINK" />Saiba mais<ph name="END_LINK" /></translation>
 <translation id="7473891865547856676">Não, obrigado</translation>
 <translation id="7475192538862203634">Se estiver vendo isso com frequência, tente estas <ph name="BEGIN_LINK" />sugestões<ph name="END_LINK" />.</translation>

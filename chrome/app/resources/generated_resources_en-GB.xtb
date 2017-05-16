@@ -15,7 +15,6 @@
 <translation id="1023220960495960452">Transliteration (vanakkam → வணக்கம்)</translation>
 <translation id="1026822031284433028">Load Image</translation>
 <translation id="1029317248976101138">Zoom</translation>
-<translation id="1030173864176315846">Successfully printed <ph name="PAGE_NUMBER" /> pages to <ph name="PRINTER_NAME" /></translation>
 <translation id="1031362278801463162">Loading preview</translation>
 <translation id="103279545524624934">Free up disk space to launch Android apps.</translation>
 <translation id="1033780634303702874">Access your serial devices</translation>
@@ -149,7 +148,6 @@
     <ph name="BR" />
     On the next screen, please send feedback to help us fix the issue.</translation>
 <translation id="121783623783282548">Passwords do not match.</translation>
-<translation id="1218323606465324064">Now printing <ph name="PAGE_NUMBER" /> pages to <ph name="PRINTER_NAME" /></translation>
 <translation id="122082903575839559">Certificate Signature Algorithm</translation>
 <translation id="1221024147024329929">PKCS #1 MD2 With RSA Encryption</translation>
 <translation id="1221825588892235038">Selection only</translation>
@@ -510,6 +508,7 @@
 <translation id="1699395855685456105">Hardware revision:</translation>
 <translation id="1700199471143028312">Your administrator doesn’t allow you to create supervised users.</translation>
 <translation id="1701062906490865540">Remove this person</translation>
+<translation id="1701364987952948449">Browse as a guest</translation>
 <translation id="1706586824377653884">Added by your administrator</translation>
 <translation id="1706625117072057435">Zoom levels</translation>
 <translation id="1707463636381878959">Share this network with other users</translation>
@@ -755,7 +754,6 @@
 <translation id="2114224913786726438">Modules (<ph name="TOTAL_COUNT" />) - No conflicts detected</translation>
 <translation id="2114326799768592691">Reload &amp;Frame</translation>
 <translation id="2115103655317273167">Send to phone</translation>
-<translation id="2115291620696624944">Error printing <ph name="PAGE_NUMBER" /> pages to <ph name="PRINTER_NAME" /></translation>
 <translation id="2115926821277323019">Must be a valid URL</translation>
 <translation id="2115946962706216358">Failed to join the machine to the domain. This might be due to exceeding the maximum number of allowed machine joins for your account on the server.</translation>
 <translation id="2116673936380190819">the past hour</translation>
@@ -875,7 +873,6 @@ After you create a new supervised user, you can manage their settings at any tim
 <translation id="2255317897038918278">Microsoft Time Stamping</translation>
 <translation id="225614027745146050">Welcome</translation>
 <translation id="225692081236532131">Activation status</translation>
-<translation id="2260567344816042527">Google Chrome will use mobile data if you're not connected to another network.</translation>
 <translation id="2262477216570151239">Delay before repeat</translation>
 <translation id="226269835214688456">If you turn off Smart Lock for Chromebook, you won’t be able to unlock your Chrome devices using your phone. You'll need to type your password.</translation>
 <translation id="2263189956353037928">Sign out &amp; sign back in</translation>
@@ -897,6 +894,7 @@ After you create a new supervised user, you can manage their settings at any tim
 <translation id="2282146716419988068">GPU Process</translation>
 <translation id="2282155092769082568">Auto-configuration URL:</translation>
 <translation id="2283117145434822734">F6</translation>
+<translation id="2286841657746966508">Billing address</translation>
 <translation id="2286950485307333924">You're now signed in to Chrome</translation>
 <translation id="2287590536030307392">Turn off all wireless connections.</translation>
 <translation id="2288735659267887385">Accessibility settings</translation>
@@ -1635,6 +1633,7 @@ From <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3315158641124845231">Hide <ph name="PRODUCT_NAME" /></translation>
 <translation id="3317459757438853210">Two-sided</translation>
 <translation id="3319048459796106952">New &amp;incognito window</translation>
+<translation id="3320021301628644560">Add billing address</translation>
 <translation id="3320859581025497771">your operator</translation>
 <translation id="3323447499041942178">Text box</translation>
 <translation id="3324301154597925148">Is This the Search Page That You Were Expecting?</translation>
@@ -1833,7 +1832,6 @@ From <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3618849550573277856">Look Up “<ph name="LOOKUP_STRING" />”</translation>
 <translation id="3620292326130836921">All backed up!</translation>
 <translation id="3623574769078102674">This supervised user will be managed by <ph name="MANAGER_EMAIL" />.</translation>
-<translation id="3624814222765772771">Battery too low for update (<ph name="PROGRESS_PERCENT" />%)</translation>
 <translation id="3625870480639975468">Reset zoom</translation>
 <translation id="3626281679859535460">Brightness</translation>
 <translation id="3627052133907344175">Extension requires "<ph name="IMPORT_NAME" />" with a minimum version "<ph name="IMPORT_VERSION" />", but only version "<ph name="INSTALLED_VERSION" />" is installed.</translation>
@@ -3030,7 +3028,6 @@ Press any key to continue exploring.</translation>
 <translation id="5454166040603940656">with <ph name="PROVIDER" /></translation>
 <translation id="5457113250005438886">Invalid</translation>
 <translation id="5457459357461771897">Read and delete photos, music and other media from your computer</translation>
-<translation id="5457599981699367932">Browse as Guest</translation>
 <translation id="5463275305984126951">Index of <ph name="LOCATION" /></translation>
 <translation id="5463856536939868464">Menu containing hidden bookmarks</translation>
 <translation id="5464632865477611176">Run this time</translation>
@@ -3487,7 +3484,6 @@ Press any key to continue exploring.</translation>
 <translation id="6181431612547969857">Download blocked</translation>
 <translation id="6185132558746749656">Device Location</translation>
 <translation id="6185696379715117369">Page up</translation>
-<translation id="618807527697571179">Could not detect your printer model. Select a manufacturer and model from the list.</translation>
 <translation id="6188939051578398125">Enter names or addresses.</translation>
 <translation id="6189412234224385711">Open with <ph name="EXTENSION_NAME" /></translation>
 <translation id="6196640612572343990">Block third-party cookies</translation>
@@ -3725,6 +3721,7 @@ Press any key to continue exploring.</translation>
 <translation id="6509136331261459454">Manage other users...</translation>
 <translation id="6509207748479174212">Media licence</translation>
 <translation id="6510568984200103950">Fewer settings</translation>
+<translation id="6513247462497316522">Google Chrome will use mobile data if you're not connected to another network.</translation>
 <translation id="6514565641373682518">This page has disabled your mouse cursor.</translation>
 <translation id="6518014396551869914">Cop&amp;y image</translation>
 <translation id="651942933739530207">Do you want <ph name="APP_NAME" /> to share your screen and audio output?</translation>

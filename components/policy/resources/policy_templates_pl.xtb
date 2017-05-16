@@ -584,38 +584,6 @@
 <translation id="316778957754360075">To ustawienie zostało wycofane w <ph name="PRODUCT_NAME" /> w wersji 29. Zalecany sposób konfigurowania kolekcji rozszerzeń lub aplikacji udostępnianych przez organizację polega na tym, że witrynę z pakietami CRX umieszcza się w zasadzie ExtensionInstallSources, a na stronie internetowej udostępnia się bezpośrednie linki do pakietów do pobrania. Program uruchamiający tę stronę internetową można utworzyć, korzystając z zasady ExtensionInstallForcelist.</translation>
 <translation id="3185009703220253572">od wersji <ph name="SINCE_VERSION" /></translation>
 <translation id="3187220842205194486">Aplikacje na Androida nie mają dostępu do kluczy firmowych. Ta zasada nie ma na nie żadnego wpływu.</translation>
-<translation id="318812033927804102">Konfiguruje ustawienia zarządzania rozszerzeniami w <ph name="PRODUCT_NAME" />.
-
-          Ta zasada zarządza wieloma ustawieniami, w tym ustawieniami objętymi istniejącymi zasadami dotyczącymi rozszerzeń. Zastępuje wszelkie poprzednie zasady, jeśli są skonfigurowane.
-
-          Zasada mapuje identyfikator rozszerzenia lub adres URL aktualizacji w jego konfiguracji. Identyfikator rozszerzenia pozwala stosować daną konfigurację tylko do wskazanego rozszerzenia. W konfiguracji domyślnej występuje identyfikator „*” i konfiguracja ta jest stosowana w przypadku wszystkich rozszerzeń, dla których zasada nie określa konfiguracji niestandardowych. W przypadku adresu URL aktualizowania konfiguracja jest stosowana do wszystkich rozszerzeń, w których pliku manifestu podany jest dany adres URL rozszerzenia (więcej informacji znajdziesz w artykule <ph name="LINK_TO_EXTENSION_DOC1" />).
-
-          Konfiguracje dla poszczególnych rozszerzeń (lub rozszerzeń z tym samym adresem URL aktualizowania) stanowią kolejny słownik, który może zawierać te pola:
-
-          „installation_mode”: mapuje ciąg wskazujący tryb instalowania rozszerzenia. Poprawne ciągi to:
-          * „allowed”: pozwala na instalowanie rozszerzenia przez użytkownika. Jest to działanie domyślne.
-          * „blocked”: blokuje możliwość instalowania rozszerzenia przez użytkownika.
-          * „force_installed”: rozszerzenie jest instalowane automatycznie, a użytkownik nie może go usunąć.
-          * „normal_installed”: rozszerzenie jest instalowane automatycznie, ale użytkownik może je wyłączyć.
-
-          Ustawienie „installation_mode” można skonfigurować również dla wielu rozszerzeń, w tym dla rozszerzenia „*” (jako ustawienia domyślne) oraz rozszerzeń z tym samym adresem URL aktualizacji. W takim przypadku dostępne są tylko wartości „allowed” i „blocked”.
-
-          Jeśli wybierzesz tryb „force_installed” lub „normal_installed”, musisz skonfigurować również „update_url”. Pamiętaj, że adres URL aktualizowania ustawiony w tej zasadzie jest stosowany tylko przy instalacji początkowej, a kolejne aktualizacje rozszerzenia wykorzystują adres URL podany w pliku manifestu. Adres URL aktualizacji powinien wskazywać na plik XML z dokumentem manifestu aktualizacji, jak wyżej.
-
-          „blocked_permissions”: mapuje listę ciągów wskazujących zablokowane uprawnienia API w przypadku danego rozszerzenia. Nazwy uprawnień są identyczne z nazwami ciągów uprawnień podanych w pliku manifestu rozszerzenia (więcej informacji znajdziesz w artykule <ph name="LINK_TO_EXTENSION_DOC3" />). To ustawienie można również skonfigurować dla rozszerzenia „*”. Załadowanie rozszerzenia wymagającego uprawnień, które znajdują się na czarnej liście, nie będzie możliwe. Jeśli zablokowane uprawnienia stanowią wymaganie opcjonalne, rozszerzenie będzie traktowane normalnie, ale żądanie uprawnień powodujących konflikt zostanie odrzucone przy uruchomieniu.
-
-          „allowed_permissions”: działa podobnie jak „blocked_permissions”, ale odnosi się do konkretnych uprawnień z listy zablokowanych, więc nie można skonfigurować rozszerzenia „*”. Pamiętaj, że to ustawienie nie powoduje automatycznego przyznawania uprawnień rozszerzeniom.
-
-          „minimum_version_required”: mapuje ciąg wersji. Format ciągu wersji jest taki sam jak w pliku manifestu rozszerzenia (więcej informacji znajdziesz w artykule <ph name="LINK_TO_EXTENSION_DOC4" />). Rozszerzenie w wersji starszej niż podana wersja minimalna jest wyłączane. Zasada wpływa też na rozszerzenia i aplikacje, których instalacja jest wymuszana.
-
-          Tych ustawień możesz użyć tylko w przypadku domyślnej konfiguracji „*”:
-
-         „install_sources”: każda pozycja na liście to wzorzec dopasowania rozszerzenia (więcej informacji znajdziesz na https://developer.chrome.com/extensions/match_patterns). Użytkownicy mogą łatwo instalować elementy z każdego adresu URL, który pasuje do pozycji na liście. Wzorce muszą zezwalać na dostęp zarówno do lokalizacji pliku *.crx, jak i strony, na której rozpoczyna się pobieranie (strony odsyłającej).
-
-          „allowed_types”: tworzy białą listę typów rozszerzeń lub aplikacji, których instalacja jest dozwolona w <ph name="PRODUCT_NAME" />. Wartość jest listą ciągów znaków z tego zestawu: „extension”, „theme”, „user_script”, „hosted_app”, „legacy_packaged_app”, „platform_app”. Więcej informacji o tych typach znajdziesz w dokumentacji rozszerzeń <ph name="PRODUCT_NAME" />.
-
-          Ta zasada nie jest jeszcze gotowa i nie można jej używać.
-          </translation>
 <translation id="3201273385265130876">Umożliwia wskazanie serwera proxy używanego przez <ph name="PRODUCT_NAME" /> i uniemożliwia użytkownikom zmianę ustawień serwera proxy.
 
           Jeśli wybierzesz nieużywanie serwera proxy i łączenie się zawsze bezpośrednio, wszystkie inne opcje będą ignorowane.
@@ -666,7 +634,7 @@
 <translation id="3297010562646015826">Umożliwia kończenie procesów w Menedżerze zadań</translation>
 <translation id="3307746730474515290">Określa typy aplikacji lub rozszerzeń, których instalowanie jest dozwolone, i ogranicza dostęp w czasie działania.
 
-          To ustawienie zawiera białą listę dozwolonych trybów rozszerzeń/aplikacji, które można instalować w <ph name="PRODUCT_NAME" />, oraz hostów, z którymi mogą się one komunikować. Wartością jest lista ciągów znaków. Powinny to być ciągi znaków z tego zbioru: „extension”, „theme”, „user_script”, „hosted_app”, „legacy_packaged_app”, „platform_app”. Więcej informacji o tych typach znajdziesz w dokumentacji na temat rozszerzeń do <ph name="PRODUCT_NAME" />.
+          To ustawienie zawiera listę dozwolonych typów rozszerzeń/aplikacji, które można instalować w <ph name="PRODUCT_NAME" />, oraz hostów, z którymi mogą się one komunikować. Wartością jest lista ciągów znaków. Powinny to być ciągi znaków z tego zbioru: „extension”, „theme”, „user_script”, „hosted_app”, „legacy_packaged_app”, „platform_app”. Więcej informacji o elementach tego typu znajdziesz w dokumentacji na temat rozszerzeń do <ph name="PRODUCT_NAME" />.
 
           Uwaga: ta zasada wpływa też na rozszerzenia i aplikacje, których instalację wymusza zasada ExtensionInstallForcelist.
 

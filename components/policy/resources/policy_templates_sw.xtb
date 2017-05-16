@@ -600,38 +600,6 @@ Kama sera hii haitawekwa, hii itawashwa lakini mtumiaji ataweza kuibadilisha.</t
 <translation id="316778957754360075">Mpangilio huu hautumiki kutoka toleo la 29 la<ph name="PRODUCT_NAME" />. Njia iliyopendekezwa ya kuanzisha kiendelezi cha shirika kilichopangishwa/makusanyo ya programu ni pamoja na kujumuisha tovuti inayopangisha CRX katika ExtensionInstallSources na kuweka viungo vya kupakua vifungu hivyo moja kwa moja kwenye ukurasa wa wavuti. Kizinduzi cha ukurasa huo wa wavuti kinaweza kuundwa kutumia sera ya ExtensionInstallForcelist.</translation>
 <translation id="3185009703220253572">kuanzia toleo la <ph name="SINCE_VERSION" /></translation>
 <translation id="3187220842205194486">Programu za Android haziwezi kufikia vitufe vya shirika. Sera hii haiviathiri.</translation>
-<translation id="318812033927804102">Husanidi mipangilio ya kudhibiti kiendelezi cha <ph name="PRODUCT_NAME" />.
-
-          Sera hii inadhibiti mipangilio mingi, ikiwa ni pamoja na mipangilio inayodhibitiwa na sera zozote zilizopo zinazohusu viendelezi. Sera hii itabatilisha sera zozote za zilizopitwa na wakati kama zote zimewekwa.
-
-          Sera hii huweka Kitambulisho cha kiendelezi au URL ya sasisho kwenye usanidi wake. Ukiwa na Kitambulisho cha kiendelezi, usanidi utatumika kwenye kiendelezi kilichobainishwa pekee. Usanidi chaguo-msingi unaweza kuwekwa kwa Kitambulisho "*" cha pekee, ambacho kitatumika kwenye viendelezi vyote ambavyo havijawekwa usanidi wa kawaida katika sera hii. Ukiwa na URL ya sasisho, usanidi utawekwa kwenye viendelezi vyote kwa kutumia URL iliyoelezwa katika faili ya maelezo ya kiendelezi hiki, kama ilivyoelezwa katika <ph name="LINK_TO_EXTENSION_DOC1" />.
-
-          Usanidi wa kila kiendelezi (au viendelezi vyenye URL sawa) ni kamusi nyingine iliyo na sehemu zilizoonyeshwa hapa.
-
-          "installation_mode": huweka kwenye mfuatano kuonyesha hali ya kusakinisha kiendelezi. Mifuatano sahihi:
-          * "allowed": huruhusu kiendelezi kisakinishwe na mtumiaji. Hii ndiyo tabia chaguo-msingi.
-          * "blocked": huzuia kusakinisha viendelezi.
-          * "force_installed": kiendelezi husakinishwa kiotomatiki na hakiwezi kuondolewa na mtumiaji.
-          * "normal_installed": kiendelezi husakinishwa lakini kinaweza kuzimwa na mtumiaji.
-
-          "installation_mode" inaweza pia kusanidiwa vile vile kwa viendelezi vingi, ikiwa ni pamoja na "*" kiendelezi (kama mifuatano chaguo-msingi) na viendelezi vyenye URL sawa ya sasisho. Ni thamani "zilizoruhusiwa" na "zilizozuiwa" pekee ndizo zinazoweza kutumiwa katika hali hii.
-
-         Hali ikiwekwa kuwa "force_installed" au "normal_installed" basi lazima "update_url" isanidiwe pia. Kumbuka kwamba URL ya sasisho inatumika kwa usakinishi wa awali pekee; sasisho za viendelezi zinazofuta zitatumia URL ya sasisho iliyoonyeshwa katika faili ya maelezo ya kiendelezi. Lazima URL ya sasisho ionyeshe hati Faili ya Maelezo ya XML ya Sasisho kama ilivyotajwa hapo juu.
-
-          "blocked_permissions": huweka kwenye orodha ya mifuatano inayoonyesha ruhusa za API zilizozuiwa kwa kiendelezi. Majina ya ruhusa ni sawa na mifutano ya ruhusa iliyotajwa katika faili ya maelezo ya kiendelezi kama ilivyoelezwa kwenye <ph name="LINK_TO_EXTENSION_DOC3" />. Mipangilio hii pia inaweza kusanidiwa kwa "*" kiendelezi. Ikiwa kiendelezi kinahitaji ruhusa iliyo kwenye orodha ambayo haijaidhinishwa, hakitaruhusiwa kupakia. Ikiwa kina ruhusa iliyozuiwa kama hitaji la hiari, kitashughulikiwa kwa njia ya kawaida, lakini ombi la ruhusa zinazokinzana litakataliwa kiotomatiki wakati wa kutekeleza.
-
-          "allowed_permissions": sawa na "blocked_permissions", lakini badala ya kukubali baadhi ya ruhusa amabazo zinaweza kuzuiwa na orodha ya ulimwengu ya ruhusa zilizozuiwa, kwa hivyo haiwezi kusanidiwa kwa kiendelezi cha "*". Kumbuka kwamba mipangilio hii haitoi ruhusa za viendelezi kiotomatiki.
-
-          "minimum_version_required": huweka kwenye mfuatano wa toleo. Muundo wa toleo la mfuatano wa toleo ni sawa na ule unaotumika katika faili ya maelezo ya kiendelezi, kama ilivyoelezwa katika <ph name="LINK_TO_EXTENSION_DOC4" />. Kiendelezi chenye toleo la zamani kuliko toleo la chini lililobainishwa kitazimwa. Hii inatumika vilevile kwenye viendelezi vya kusakinisha kwa lazima pia.
-
-          Mipangilio ifuatayo inaweza kutumika kwa usanidi chaguo-msingi "*" pekee:
-
-          "install_sources": Kila kipengee katika orodha hii ni ruwaza inayolingana na mtindo wa kiendelezi (angalia https://developer.chrome.com/extensions/match_patterns). Watumiaji wataweza kusakinisha vipengee kwa urahisi kutoka kwenye URL yoyote inayolingana na kipengee katika orodha hii. Eneo la faili ya *.crx na ukurasa ambapo kipakuliwa kilianzishiwa (yaani kielekezi) lazima vikubaliwe na ruwaza hizi.
-
-          "allowed_types": Mipangilio hii inadhinisha aina zinazoruhusiwa za kiendelezi/programu ambazo zinaweza kusakinishwa katika <ph name="PRODUCT_NAME" />.  Thamani ni orodha ya mifuatano, ambayo kila moja inapaswa kuwa mojawapo ya zifuatazo: "extension", "theme", "user_script", "hosted_app", "legacy_packaged_app", "platform_app". Angalia hati ya viendelezi vya <ph name="PRODUCT_NAME" /> kwa maelezo zaidi kuhusu aina hizi.
-
-          Sera hii bado haipo tayari kutumiwa, tafadhali usiitumie.
-          </translation>
 <translation id="3201273385265130876">Hukuruhusu kubainisha seva mbadala inayotumiwa na <ph name="PRODUCT_NAME" /> na huzuia watumiaji kubadilisha mipangilio ya seva mbadala.
 
           Ukichagua kutotumia seva mbadala kamwe na kuunganisha moja kwa moja kila wakati, chaguo nyingine zote zitapuuzwa.

@@ -566,38 +566,6 @@
 <translation id="316778957754360075">此设置从 <ph name="PRODUCT_NAME" />版本 29 起开始弃用。我们建议您将托管 CRX 软件包的网站包含在 ExtensionInstallSources 中，然后将上述软件包的直接下载链接放在某网页上，从而建立一个由企业托管的扩展程序/应用包。相关网页的启动器可使用 ExtensionInstallForcelist 政策创建。</translation>
 <translation id="3185009703220253572">从版本 <ph name="SINCE_VERSION" /> 开始</translation>
 <translation id="3187220842205194486">Android 应用无法获得对企业密钥的访问权限。此政策对这些应用没有任何影响。</translation>
-<translation id="318812033927804102">为 <ph name="PRODUCT_NAME" /> 配置扩展程序管理设置。
-
-          此政策用于控制多个设置，其中包括由任何现有的扩展程序相关政策控制的设置。此政策将覆盖所有旧版政策（如果同时设置了此政策和旧版政策）。
-
-          此政策可将扩展程序 ID 或更新网址与其配置相对应。如果有对应的扩展程序 ID，配置将只应用于指定的扩展程序。您可以为特殊 ID“*”设置默认配置，该配置将应用于在此政策中未设置自定义配置的所有扩展程序。如果有对应的更新网址，配置将应用于更新网址与此扩展程序的清单中注明的更新网址完全一致的所有扩展程序（如 <ph name="LINK_TO_EXTENSION_DOC1" /> 中所述）。
-
-          每个扩展程序（或具有相同更新网址的扩展程序）的配置都是一个单独的字典条目，其中可以包含下述字段。
-
-          installation_mode：对应于指示扩展程序安装模式的字符串。有效字符串为：
-          * allowed：允许用户安装相应扩展程序。这是默认行为。
-          * blocked：禁止安装相应扩展程序。
-          * force_installed：自动安装相应扩展程序，并且用户无法将其移除。
-          * normal_installed：自动安装相应扩展程序，但用户可以将其停用。
-
-           您还可以针对多个扩展程序配置“installation_mode”，其中包括“*”扩展程序（为默认设置）和具有相同更新网址的扩展程序。在这种情况下，只能使用“allowed”和“blocked”这两个值。
-
-          如果此模式设为“force_installed”或“normal_installed”，您还必须要配置“update_url”。请注意，此政策中设置的更新网址仅用于初次安装，扩展程序的后续更新将使用在扩展程序的清单中指定的更新网址。更新网址应指向更新清单 XML 文档（如上文所述）。
-
-          blocked_permissions：对应于一系列字符串，这些字符串用于指示扩展程序被屏蔽的 API 权限。权限名称与扩展程序的清单中声明的权限字符串相同（如 <ph name="LINK_TO_EXTENSION_DOC3" /> 中所述）。您还可以针对“*”扩展程序配置此设置。如果扩展程序请求获得黑名单中的权限，将被禁止加载。如果扩展程序包含被屏蔽的权限（作为可选要求），系统将按正常方式对其进行处理，但如果扩展程序请求冲突的权限，系统将在运行时自动拒绝该请求。
-
-          allowed_permissions：与“blocked_permissions”类似，但该设置明确允许某些可能通过全局屏蔽权限列表屏蔽的权限，因此您无法针对“*”扩展程序配置此设置。请注意，此设置不会自动将允许的权限授予扩展程序。
-
-          minimum_version_required：对应于版本字符串。版本字符串的格式与扩展程序清单中使用的格式相同（如 <ph name="LINK_TO_EXTENSION_DOC4" /> 中所述）。系统将停用版本低于指定最低版本的扩展程序。此设置还适用于强制安装的扩展程序。
-
-          以下设置仅适用于默认的“*”配置：
-
-          install_sources：此列表中的每一项都是一种扩展程序样式的匹配模式（请访问 https://developer.chrome.com/extensions/match_patterns）。只要扩展程序的网址出现在此列表中，用户就能够轻松安装该扩展程序。*.crx 文件的位置和下载来源网页（即引荐来源网址）都必须用这些模式来授权。
-
-          allowed_types：通过此设置，您可以将允许在 <ph name="PRODUCT_NAME" /> 中安装的扩展程序/应用的类型列入白名单。此设置的值是一系列字符串，受支持的字符串为：“extension”、“theme”、“user_script”、“hosted_app”、“legacy_packaged_app”、“platform_app”。如需关于这些类型的更多信息，请参见 <ph name="PRODUCT_NAME" /> 扩展程序文档。
-
-          此政策尚无法使用，因此请勿使用此政策。
-          </translation>
 <translation id="3201273385265130876">可让您指定 <ph name="PRODUCT_NAME" /> 使用的代理服务器，并禁止用户更改代理设置。
 
           如果您选择永不使用代理服务器，并且一律直接连接，系统将会忽略所有其他选项。

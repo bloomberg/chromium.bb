@@ -618,38 +618,6 @@
 <translation id="316778957754360075">Den här inställningen finns inte med i version 29 av <ph name="PRODUCT_NAME" /> och senare. Det rekommenderade sättet att konfigurera tillägg/appsamlingar som värdlagras hos företaget är att ta med platsen där CRX-paketen finns på listan ExtensionInstallSources och infoga direkta nedladdningslänkar till paketen på en webbsida. Det går att skapa ett startprogram för den aktuella webbsidan med hjälp av principen ExtensionInstallForcelist.</translation>
 <translation id="3185009703220253572">sedan version <ph name="SINCE_VERSION" /></translation>
 <translation id="3187220842205194486">Android-appar kan inte ges tillgång till företagsnycklar. Den här principen gäller inte dem.</translation>
-<translation id="318812033927804102">Konfigurerar inställningar för tilläggshantering för <ph name="PRODUCT_NAME" />.
-
-          Policyn styr flera inställningar, bland annat inställningar som styrs av befintliga tilläggsrelaterade policyer. Policyn åsidosätter alla äldre policyer om båda är angivna.
-
-          Policyn mappar ett tilläggs-id eller en uppdateringsadress till dess konfiguration. Med ett tilläggs-id tillämpas konfigurationen endast på det angivna tillägget. En standardkonfiguration kan anges för det särskilda id:t *, som tillämpas på alla tillägg som inte har en anpassad konfiguration i den här policyn. Med en uppdateringsadress tillämpas konfigurationen på alla tillägg med den exakta uppdateringsadressen som angetts i manifestet för tillägget, så som beskrivs på <ph name="LINK_TO_EXTENSION_DOC1" />.
-
-          Konfigurationen för varje tillägg (eller tillägg med samma uppdateringsadress) är en annan ordlista som kan innehålla fälten nedan.
-
-          ”installation_mode”: mappar till en sträng som anger installationsläget för tillägget. De giltiga strängarna är:
-          * ”allowed”: tillåter att användaren installerar tillägget. Detta är standardbeteendet.
-          * ”blocked”: blockerar installationen av tillägget.
-          * ”force_installed”: tillägget installeras automatiskt och kan inte tas bort av användaren.
-          * ”normal_installed”: tillägget installeras automatiskt, men kan inte inaktiveras av användaren.
-
-          ”installation_mode” kan även konfigureras för flera tillägg, bland annat tillägget * (som standardinställningar) och tillägg med samma uppdateringsadress. Endast värdena ”allowed” och ”blocked” kan användas i detta fall.
-
-          Om läget är inställt på ”force_installed” eller ”normal_installed” måste även en ”update_url” konfigureras. Tänk på att uppdateringsadressen som anges i den här policyn endast används för den första installationen. Vid senare uppdateringar av tillägget används uppdateringsadressen som anges i tilläggets manifest. Uppdateringsadressen ska peka på ett Update Manifest-dokument i XML-format så som nämnts ovan.
-
-          ”blocked_permissions”: mappar till en lista med strängar som anger de blockerade API-behörigheterna för tillägget. Namnen på behörigheterna är desamma som behörighetssträngarna som deklarerats i manifestet för tillägget som beskrivs på <ph name="LINK_TO_EXTENSION_DOC3" />. Inställningen kan även konfigureras för tillägget *. Om tillägget kräver en behörighet som finns med på blockeringslistan läses den inte in. Om det innehåller en blockerad behörighet som inte är obligatoriskt hanteras det som vanligt, men begäran om motstridiga behörigheter nekas automatiskt vid körning.
-
-          ”allowed_permissions”: liknar ”blocked_permissions”, men tillåter uttryckligen vissa behörigheter som kan vara blockerade av en global lista över blockerade behörigheter och kan därmed inte konfigureras för tillägget *. Tänk på att den här inställningen inte automatiskt tilldelar tilläggen beviljade behörigheter.
-
-          ”minimum_version_required”: mappar till en versionssträng. Formatet för versionssträngen är detsamma som det som används i tilläggets manifest, som beskrivs på <ph name="LINK_TO_EXTENSION_DOC4" />. Ett tillägg med en version som är äldre än den angivna lägsta versionen kommer att inaktiveras. Detta gäller även för tillägg som måste installeras.
-
-          Följande inställningar kan endast användas för standardkonfigurationen *:
-
-          ”install_sources”: Varje objekt i listan motsvarar en matchning i form av ett tillägg (mer information finns på https://developer.chrome.com/extensions/match_patterns). Användarna kan enkelt installera objekt från alla webbadresser som matchar ett objekt i listan. Både platsen för *.crx-filen och sidan där nedladdningen påbörjades (dvs. hänvisningsadressen) måste tillåtas av dessa mönster.
-
-          ”allowed_types”: Den här inställningen godkänner de tillåtna typerna med tillägg/appar som kan installeras i <ph name="PRODUCT_NAME" />.  Värdet är en lista med strängar som alla ska vara något av följande: ”extension”, ”theme”, ”user_script”, ”hosted_app”, ”legacy_packaged_app”, ”platform_app”. Mer information om dessa typer finns i dokumentationen för tillägget <ph name="PRODUCT_NAME" />.
-
-          Policyn är inte klar för användning än, så använd den inte.
-          </translation>
 <translation id="3201273385265130876">Innebär att du kan ange vilken proxyserver som ska användas av <ph name="PRODUCT_NAME" /> och förhindrar att användarna ändrar proxyinställningarna.
 
           Om du väljer att aldrig använda en proxyserver och alltid ansluta direkt ignoreras alla andra alternativ.

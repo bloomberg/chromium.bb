@@ -27,7 +27,6 @@
 Функциите за Bluetooth и местоположението трябва да са включени, за да използвате Физическата мрежа.</translation>
 <translation id="124678866338384709">Затваряне на текущия раздел</translation>
 <translation id="1258753120186372309">Драскулка на Google: <ph name="DOODLE_DESCRIPTION" /></translation>
-<translation id="1265597927250775944">Изчиства историята и предложенията в адресната лента.</translation>
 <translation id="1272079795634619415">Стоп</translation>
 <translation id="1283039547216852943">Докоснете за разгъване</translation>
 <translation id="1285320974508926690">Този сайт да не се превежда никога</translation>
@@ -263,7 +262,6 @@
 <translation id="3859306556332390985">Придвижване напред</translation>
 <translation id="3894427358181296146">Добавяне на папка</translation>
 <translation id="3895926599014793903">Принудително активиране на промяната на мащаба</translation>
-<translation id="3915590178385207649">Изчиства историята от всички устройства, на които сте влезли в профила си в Google. Прегледайте останалата си активност в него на адрес <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="3917783807003067648">Местоположението е блокирано</translation>
 <translation id="3927692899758076493">Безсерифен</translation>
 <translation id="3928666092801078803">Комбиниране на данните ми</translation>
@@ -609,7 +607,6 @@
 <translation id="7423098979219808738">Първо ще се извежда запитване</translation>
 <translation id="7437998757836447326">Изход от Chrome</translation>
 <translation id="7445411102860286510">Разрешаване на сайтовете автоматично да възпроизвеждат видеоклипове със заглушен звук (препоръчително)</translation>
-<translation id="7449574997654022410">Изчиства историята и предложенията в адресната лента. Прегледайте останалата активност в профила си в Google на адрес <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="7464701184726199289">Синхронизираните данни ще се изчистят от всички устройства. Запазените настройки за сайтове няма да бъдат изтрити и може да отразяват навиците ви при сърфиране. <ph name="BEGIN_LINK" />Научете повече<ph name="END_LINK" /></translation>
 <translation id="7473891865547856676">Не, благодаря</translation>
 <translation id="7475192538862203634">Ако виждате това често, изпробвайте тези <ph name="BEGIN_LINK" />предложения<ph name="END_LINK" />.</translation>

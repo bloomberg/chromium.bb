@@ -14,6 +14,7 @@
 <translation id="1752946267035950200">{MINUTES,plural, =1{1 minuto}other{# minutos}}</translation>
 <translation id="1761785978543082658"><ph name="QUANTITY" /> B</translation>
 <translation id="1801827354178857021">Periodo</translation>
+<translation id="1803208670097017349">{MONTHS,plural, =1{1 mes}other{# meses}}</translation>
 <translation id="1809410197924942083"><ph name="QUANTITY" /> MB/s</translation>
 <translation id="1830179671306812954">{HOURS,plural, =1{1 hora y }other{# horas y }}</translation>
 <translation id="1842960171412779397">seleccionar</translation>
@@ -33,6 +34,7 @@
 <translation id="2666092431469916601">Superior</translation>
 <translation id="2743387203779672305">Copiar al portapapeles</translation>
 <translation id="2803313416453193357">Abrir carpeta</translation>
+<translation id="2824719307700604149">{YEARS,plural, =1{Hace 1 año}other{Hace # años}}</translation>
 <translation id="2931838996092594335">hacer clic</translation>
 <translation id="2983818520079887040">Configuración...</translation>
 <translation id="3036649622769666520">Abrir archivos</translation>
@@ -54,8 +56,10 @@
 <translation id="3990502903496589789">Borde derecho</translation>
 <translation id="4202807286478387388">saltar</translation>
 <translation id="4250229828105606438">Captura de pantalla</translation>
+<translation id="4266252015790371705">{MONTHS,plural, =1{Hace 1 mes}other{Hace # meses}}</translation>
 <translation id="4320177379694898372">No hay conexión a Internet</translation>
 <translation id="4588090240171750605">Desplazar a la derecha</translation>
+<translation id="4788285488841504513">{MONTHS,plural, =1{Queda 1 mes}other{Quedan # meses}}</translation>
 <translation id="4820616160060340806">Comando+<ph name="KEY_COMBO_NAME" /></translation>
 <translation id="4968171027979920686">{SECONDS,plural, =1{1 segundo}other{# segundos}}</translation>
 <translation id="4971687151119236543">Pista anterior multimedia</translation>
@@ -98,6 +102,7 @@
 <translation id="6863590663815976734">{HOURS,plural, =1{Queda 1 hora}other{Quedan # horas}}</translation>
 <translation id="688711909580084195">Página web sin título</translation>
 <translation id="6907759265145635167"><ph name="QUANTITY" /> PB/s</translation>
+<translation id="6917971086528278418">{YEARS,plural, =1{Queda 1 año}other{Quedan # años}}</translation>
 <translation id="6918245111648057970">Permitir que cada usuario reciba notificaciones de:</translation>
 <translation id="6945221475159498467">Seleccionar</translation>
 <translation id="6965382102122355670">Aceptar</translation>
@@ -124,6 +129,7 @@
 <translation id="8245914219290430011">Tabulador</translation>
 <translation id="8328145009876646418">Borde izquierdo</translation>
 <translation id="8331626408530291785">Desplazar hacia arriba</translation>
+<translation id="8352146631962686268">{YEARS,plural, =1{1 año}other{# años}}</translation>
 <translation id="8371695176452482769">Habla ahora</translation>
 <translation id="838869780401515933">marcar</translation>
 <translation id="8392688371657486010">No tienes notificaciones</translation>

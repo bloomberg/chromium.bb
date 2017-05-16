@@ -15,7 +15,6 @@
 <translation id="1023220960495960452">การทับศัพท์ (vanakkam → வணக்கம்)</translation>
 <translation id="1026822031284433028">โหลดภาพ</translation>
 <translation id="1029317248976101138">ซูม</translation>
-<translation id="1030173864176315846">พิมพ์ <ph name="PAGE_NUMBER" /> หน้าไปยัง <ph name="PRINTER_NAME" /> สำเร็จแล้ว</translation>
 <translation id="1031362278801463162">กำลังโหลดหน้าตัวอย่าง</translation>
 <translation id="103279545524624934">เพิ่มพื้นที่ว่างในดิสก์เพื่อเปิดแอป Android</translation>
 <translation id="1033780634303702874">เข้าถึงอุปกรณ์ซีเรียล</translation>
@@ -149,7 +148,6 @@
     <ph name="BR" />
     บนหน้าจอถัดไป โปรดส่งความคิดเห็นมาที่เราเพื่อช่วยแก้ไขปัญหานี้</translation>
 <translation id="121783623783282548">รหัสผ่านของคุณไม่ตรงกัน</translation>
-<translation id="1218323606465324064">กำลังพิมพ์ <ph name="PAGE_NUMBER" /> หน้าไปยัง <ph name="PRINTER_NAME" /></translation>
 <translation id="122082903575839559">อัลกอริธึมลายเซ็นใบรับรอง </translation>
 <translation id="1221024147024329929">PKCS #1 MD2 พร้อมการเข้ารหัส RSA</translation>
 <translation id="1221825588892235038">เนื้อหาที่เลือกเท่านั้น</translation>
@@ -509,6 +507,7 @@
 <translation id="1699395855685456105">การแก้ไขฮาร์ดแวร์:</translation>
 <translation id="1700199471143028312">ผู้ดูแลระบบของคุณไม่อนุญาตให้คุณสร้างผู้ใช้ภายใต้การดูแล</translation>
 <translation id="1701062906490865540">นำบุคคลนี้ออก</translation>
+<translation id="1701364987952948449">ท่องเว็บในฐานะผู้มาเยือน</translation>
 <translation id="1706586824377653884">เพิ่มโดยผู้ดูแลระบบ</translation>
 <translation id="1706625117072057435">ระดับการซูม</translation>
 <translation id="1707463636381878959">แชร์เครือข่ายนี้กับผู้ใช้อื่น</translation>
@@ -754,7 +753,6 @@
 <translation id="2114224913786726438">โมดูล (<ph name="TOTAL_COUNT" />) - ไม่พบความขัดแย้ง</translation>
 <translation id="2114326799768592691">โหลดเ&amp;ฟรมซ้ำ</translation>
 <translation id="2115103655317273167">ส่งไปที่โทรศัพท์</translation>
-<translation id="2115291620696624944">ข้อผิดพลาดในการพิมพ์ <ph name="PAGE_NUMBER" /> หน้าไปยัง <ph name="PRINTER_NAME" /></translation>
 <translation id="2115926821277323019">ต้องเป็น URL ที่ถูกต้อง</translation>
 <translation id="2115946962706216358">ไม่สามารถนำเครื่องเข้าร่วมโดเมน อาจเป็นเพราะบัญชีของคุณมีเครื่องที่เข้าร่วมเกินจำนวนที่กำหนดไว้ในเซิร์ฟเวอร์แล้ว</translation>
 <translation id="2116673936380190819">ชั่วโมงที่ผ่านมา</translation>
@@ -873,7 +871,6 @@
 <translation id="2255317897038918278">การระบุเวลาของ Microsoft</translation>
 <translation id="225614027745146050">ยินดีต้อนรับ</translation>
 <translation id="225692081236532131">สถานะการเปิดใช้งาน</translation>
-<translation id="2260567344816042527">Google Chrome จะใช้ข้อมูลเครือข่ายมือถือ หากคุณไม่ได้เชื่อมต่อเครือข่ายอื่น</translation>
 <translation id="2262477216570151239">หน่วงเวลาก่อนพิมพ์ซ้ำ</translation>
 <translation id="226269835214688456">หากคุณปิด Smart Lock สำหรับ Chromebook คุณจะไม่สามารถปลดล็อกอุปกรณ์ Chrome โดยใช้โทรศัพท์ได้ คุณจะต้องพิมพ์รหัสผ่าน</translation>
 <translation id="2263189956353037928">ออกจากระบบและลงชื่อเข้าใช้ใหม่</translation>
@@ -895,6 +892,7 @@
 <translation id="2282146716419988068">การประมวลผลของ GPU</translation>
 <translation id="2282155092769082568">URL การกำหนดค่าอัตโนมัติ:</translation>
 <translation id="2283117145434822734">F6</translation>
+<translation id="2286841657746966508">ที่อยู่สำหรับเรียกเก็บเงิน</translation>
 <translation id="2286950485307333924">คุณได้ลงชื่อเข้าใช้ Chrome แล้ว</translation>
 <translation id="2287590536030307392">ปิดการเชื่อมต่อไร้สายทั้งหมด</translation>
 <translation id="2288735659267887385">การตั้งค่าการเข้าถึง</translation>
@@ -1634,6 +1632,7 @@
 <translation id="3315158641124845231">ซ่อน <ph name="PRODUCT_NAME" /></translation>
 <translation id="3317459757438853210">สองด้าน</translation>
 <translation id="3319048459796106952">หน้าต่างใหม่และไม่ระบุตัวตน</translation>
+<translation id="3320021301628644560">เพิ่มที่อยู่สำหรับการเรียกเก็บเงิน</translation>
 <translation id="3320859581025497771">ผู้ให้บริการของคุณ</translation>
 <translation id="3323447499041942178">ช่องข้อความ</translation>
 <translation id="3324301154597925148">นี่คือหน้าการค้นหาที่คุณต้องการใช่ไหม</translation>
@@ -1832,7 +1831,6 @@
 <translation id="3618849550573277856">ค้นหา “<ph name="LOOKUP_STRING" />”</translation>
 <translation id="3620292326130836921">สำรองข้อมูลทั้งหมดแล้ว!</translation>
 <translation id="3623574769078102674">ผู้ใช้ภายใต้การดูแลนี้จะถูกจัดการโดย <ph name="MANAGER_EMAIL" /></translation>
-<translation id="3624814222765772771">แบตเตอรี่เหลือน้อยเกินไปสำหรับอัปเดต (<ph name="PROGRESS_PERCENT" />%)</translation>
 <translation id="3625870480639975468">รีเซ็ตการซูม</translation>
 <translation id="3626281679859535460">ความสว่าง</translation>
 <translation id="3627052133907344175">ส่วนขยายต้องใช้ "<ph name="IMPORT_NAME" />" เวอร์ชัน "<ph name="IMPORT_VERSION" />" เป็นอย่างน้อย แต่ที่ติดตั้งอยู่เป็นเวอร์ชัน "<ph name="INSTALLED_VERSION" />"</translation>
@@ -3029,7 +3027,6 @@
 <translation id="5454166040603940656">กับ <ph name="PROVIDER" /></translation>
 <translation id="5457113250005438886">ไม่ถูกต้อง</translation>
 <translation id="5457459357461771897">อ่านและลบรูปภาพ เพลง และสื่ออื่นๆ จากคอมพิวเตอร์ของคุณ</translation>
-<translation id="5457599981699367932">ท่องเว็บในฐานะผู้มาเยือน</translation>
 <translation id="5463275305984126951">ดัชนีของ <ph name="LOCATION" /></translation>
 <translation id="5463856536939868464">เมนูมีบุ๊กมาร์กซ่อนอยู่</translation>
 <translation id="5464632865477611176">เรียกใช้ตอนนี้</translation>
@@ -3486,7 +3483,6 @@
 <translation id="6181431612547969857">การดาวน์โหลดถูกบล็อก</translation>
 <translation id="6185132558746749656">ตำแหน่งของอุปกรณ์</translation>
 <translation id="6185696379715117369">เลื่อนหน้าขึ้น</translation>
-<translation id="618807527697571179">ไม่พบรุ่นของเครื่องพิมพ์ เลือกผู้ผลิตและรุ่นจากรายการ</translation>
 <translation id="6188939051578398125">ป้อนชื่อหรือที่อยู่</translation>
 <translation id="6189412234224385711">เปิดด้วย <ph name="EXTENSION_NAME" /></translation>
 <translation id="6196640612572343990">บล็อกคุกกี้ของบุคคลที่สาม</translation>
@@ -3724,6 +3720,7 @@
 <translation id="6509136331261459454">จัดการผู้ใช้อื่นๆ...</translation>
 <translation id="6509207748479174212">ใบอนุญาตสื่อ</translation>
 <translation id="6510568984200103950">การตั้งค่าน้อยลง</translation>
+<translation id="6513247462497316522">Google Chrome จะใช้ข้อมูลมือถือหากคุณไม่ได้เชื่อมต่อกับเครือข่ายอื่น</translation>
 <translation id="6514565641373682518">หน้าเว็บนี้ได้ปิดใช้งานเคอร์เซอร์เมาส์แล้ว</translation>
 <translation id="6518014396551869914">&amp;คัดลอกรูปภาพ</translation>
 <translation id="651942933739530207">คุณต้องการให้ <ph name="APP_NAME" /> แชร์หน้าจอและเอาต์พุตเสียงของคุณไหม</translation>

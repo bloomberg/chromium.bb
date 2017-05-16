@@ -589,38 +589,6 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
 <translation id="316778957754360075">Denne indstilling er blevet trukket tilbage fra og med <ph name="PRODUCT_NAME" /> version 29. Den anbefalede metode til konfiguration af organisationshostede udvidelse-/app-samlinger er at medtage det website, der hoster CRX-pakkerne, i ExtensionInstallSources og placere direkte downloadlinks til pakkerne på en webside. Du kan oprette en applikationsliste for denne webside vha. politikken ExtensionInstallForcelist.</translation>
 <translation id="3185009703220253572">siden version <ph name="SINCE_VERSION" /></translation>
 <translation id="3187220842205194486">Android-apps kan ikke få adgang til virksomhedsnøgler. De påvirkes ikke af denne politik.</translation>
-<translation id="318812033927804102">Konfigurerer indstillinger for administration af udvidelser for <ph name="PRODUCT_NAME" />.
-
-          Denne politik styrer flere indstillinger, inklusive indstillinger, der styres af eksisterende politikker, der vedrører udvidelser. Denne politik tilsidesætter eventuelle ældre politikker, hvis begge er indstillet.
-
-          Denne politik knytter et udvidelses-id eller en opdateringswebadresse til dens konfiguration. Ved hjælp af et udvidelses-id bliver konfigurationen udelukkende anvendt til den angivne udvidelse. Der kan indstilles en standardkonfiguration for det særlige id "*", som anvendes til alle udvidelser, for hvilke der ikke er indstillet en standardkonfiguration i denne politik. Ved hjælp af en opdateringswebadresse anvendes konfigurationen til alle udvidelser, hvor den nøjagtige opdateringswebadresse er angivet i manifestfilen for denne udvidelse som beskrevet i <ph name="LINK_TO_EXTENSION_DOC1" />.
-
-          Konfigurationen for hver udvidelse (eller udvidelser med samme opdateringswebadresse) er en anden ordbog, der kan indeholde de felter, der er dokumenteret nedenfor.
-
-          "installation_mode": tilknytter en streng, der angiver installationstilstanden for udvidelsen. De gyldige strenge er:
-          * "allowed": tillader, at udvidelsen installeres af brugeren. Dette er standardadfærd.
-          * "blocked": blokerer for installation af udvidelsen.
-          * "force_installed": udvidelsen installeres automatisk og kan ikke fjernes af brugeren.
-          * "normal_installed": udvidelsen installeres automatisk, men kan deaktiveres af brugeren.
-
-          "installation_mode" kan også konfigureres for flere udvidelser, bl.a. udvidelsen "*" (som standardindstillinger), og for udvidelser med samme opdateringswebadresse. Det er kun værdierne "allowed" og "blocked" values, der kan bruges i dette tilfælde.
-
-          Hvis denne tilstand er indstillet til "force_installed" eller "normal_installed", skal der også konfigureres en "update_url". Bemærk, at opdateringswebadressen, der er indstillet i denne politik, kun bruges til den første installation. Efterfølgende opdateringer af udvidelsen bruger den opdateringswebadresse, der er angivet i udvidelsens manifestfil. Som nævnt ovenfor skal opdateringswebadressen pege på et Update Manifest XML-dokument.
-
-          "blocked_permissions": tilknytter en liste over strenge, der angiver de blokerede API-tilladelser for udvidelsen. Navnene på tilladelserne er de samme som de tilladelsesstrenge, der er angivet i udvidelsens manifestfil som beskrevet i <ph name="LINK_TO_EXTENSION_DOC3" />. Denne indstilling kan også konfigureres for udvidelsen "*". Hvis udvidelsen kræver en tilladelse, der er på blokeringslisten, tillades det ikke, at den indlæses. Hvis den indeholder en blokeret tilladelse som valgfrit krav, håndteres den på normal vis, men anmodning om modstridende tilladelser afvises automatisk på udløsningstidspunktet.
-
-          "allowed_permissions": svarer til "blocked_permissions", men tillader i stedet udtrykkeligt nogle tilladelser, som kan være blokeret af den globalt blokerede liste over tilladelser, og som dermed ikke kan konfigureres for udvidelsen "*". Bemærk, at denne indstilling ikke automatisk giver tildelte tilladelser til udvidelser.
-
-          "minimum_version_required": tilknytter en versionsstreng. Formatet for versionsstrengen er det samme som det, der bruges i udvidelsesmanifestfilen, som beskrevet i <ph name="LINK_TO_EXTENSION_DOC4" />. En udvidelse med en version, der er ældre end den angivne minimumsversion, deaktiveres. Dette gælder også for udvidelser med tvungen installation.
-
-          Følgende indstillinger kan kun bruges til standardkonfigurationen "*":
-
-          "install_sources": Hvert emne på listen har et matchmønster, der minder om en udvidelse (se https://developer.chrome.com/extensions/match_patterns). Brugerne vil være i stand til nemt at installere elementer fra enhver webadresse, der matcher et element på denne liste. Både placeringen af *.crx-filen og siden, hvor downloadet er startet fra (dvs. henvisningswebadressen), skal tillades af disse mønstre.
-
-          "allowed_types": Denne indstilling hvidlister de tilladte typer af udvidelser/apps, der kan installeres på <ph name="PRODUCT_NAME" />. Værdien er en liste over strenge, hvor hver af disse skal være en af følgende: "extension", "theme", "user_script", "hosted_app", "legacy_packaged_app", "platform_app". Se udvidelsesdokumentationen for <ph name="PRODUCT_NAME" /> for at få flere oplysninger om disse typer.
-
-          Denne politik er endnu ikke klar til brug og må derfor ikke bruges.
-          </translation>
 <translation id="3201273385265130876">Giver dig mulighed for at angive den proxyserver, som anvendes af <ph name="PRODUCT_NAME" />, og forhindrer brugerne i at ændre proxyindstillingerne.
 
           Hvis du vælger aldrig at bruge en proxyserver og altid oprette forbindelse direkte, ignoreres alle andre valgmuligheder.

@@ -68,7 +68,7 @@ En iniciar la sessió, sigui amb l'usuari que sigui, es combinarà amb <ph name=
 <translation id="2799223571221894425">Reinicia</translation>
 <translation id="2847461019998147611">Mostra Google Chrome en aquest idioma</translation>
 <translation id="2871893339301912279">Teniu la sessió iniciada a Chrome.</translation>
-<translation id="2888126860611144412">Quant a Chrome </translation>
+<translation id="2888126860611144412">Sobre Chrome</translation>
 <translation id="3037838751736561277">Google Chrome està en mode de segon pla.</translation>
 <translation id="3047079729301751317">Si desconnecteu <ph name="USERNAME" /> s'esborraran l'historial, les adreces d'interès, la configuració i totes les dades de Chrome que hi hagi desades en aquest dispositiu. Les dades emmagatzemades al compte de Google no s'esborraran, i es poden gestionar des del <ph name="GOOGLE_DASHBOARD_LINK" />Tauler de Google<ph name="END_GOOGLE_DASHBOARD_LINK" />.</translation>
 <translation id="3065168410429928842">Pestanya de Chrome</translation>
@@ -264,7 +264,7 @@ Per obtenir més instruccions, consulteu el correu electrònic a <ph name="ACCOU
 <translation id="873133009373065397">Google Chrome no pot determinar ni definir el navegador predeterminat</translation>
 <translation id="8796108026289707191">Reinicieu Google Chrome ara.</translation>
 <translation id="8823341990149967727">Chrome no està actualitzat</translation>
-<translation id="884296878221830158">També controla la pàgina que es mostra quan inicieu Chrome o quan feu clic al botó d'inici.</translation>
+<translation id="884296878221830158">També controla la pàgina que es mostra quan inicieu Chrome o quan feu clic al botó Pàgina d'inici.</translation>
 <translation id="8851136666856101339">principal</translation>
 <translation id="8862326446509486874">No disposeu dels drets necessaris per instal·lar aplicacions al sistema. Proveu de tornar a executar l'instal·lador com a administrador.</translation>
 <translation id="8914504000324227558">Torna a iniciar Chrome</translation>

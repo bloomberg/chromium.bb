@@ -15,7 +15,6 @@
 <translation id="1023220960495960452">ಲಿಪ್ಯಂತರಣ (vanakkam → வணக்கம்)</translation>
 <translation id="1026822031284433028">ಚಿತ್ರ ಲೋಡ್ ಮಾಡು</translation>
 <translation id="1029317248976101138">ಝೂಮ್</translation>
-<translation id="1030173864176315846"><ph name="PRINTER_NAME" /> ನಲ್ಲಿ <ph name="PAGE_NUMBER" /> ಪುಟಗಳನ್ನು ಯಶಸ್ವಿಯಾಗಿ ಮುದ್ರಿಸಲಾಗಿದೆ</translation>
 <translation id="1031362278801463162">ಪೂರ್ವವೀಕ್ಷಣೆ ಲೋಡ್ ಆಗುತ್ತಿದೆ</translation>
 <translation id="103279545524624934">Android ಅಪ್ಲಿಕೇಶನ್‌ಗಳನ್ನು ಪ್ರಾರಂಭಿಸಲು ಡಿಸ್ಕ್ ಸ್ಥಳಾವಕಾಶ ಮುಕ್ತಗೊಳಿಸಿ.</translation>
 <translation id="1033780634303702874">ನಿಮ್ಮ ಸರಣಿ ಸಾಧನಗಳನ್ನು ಪ್ರವೇಶಿಸಿ</translation>
@@ -149,7 +148,6 @@
      <ph name="BR" />
      ಮುಂದಿನ ಪರದೆಯಲ್ಲಿ, ಸಮಸ್ಯೆಯನ್ನು ಬಗೆಹರಿಸುವುದಕ್ಕೆ ಸಹಾಯ ಮಾಡಲು ದಯವಿಟ್ಟು ಪ್ರತಿಕ್ರಿಯೆಯನ್ನು ಕಳುಹಿಸಿ.</translation>
 <translation id="121783623783282548">ಪಾಸ್‌ವರ್ಡ್‌ಗಳು ಹೊಂದುತ್ತಿಲ್ಲ.</translation>
-<translation id="1218323606465324064"><ph name="PRINTER_NAME" /> ನಲ್ಲಿ <ph name="PAGE_NUMBER" /> ಪುಟಗಳನ್ನು ಈಗ ಮುದ್ರಿಸಲಾಗುತ್ತಿದೆ</translation>
 <translation id="122082903575839559">ಪ್ರಮಾಣಪತ್ರ ಸಹಿ ಅಲ್ಗಾರಿದಮ್</translation>
 <translation id="1221024147024329929">RSA ಎನ್‌ಕ್ರಿಪ್ಶನ್‌ನೊಂದಿಗೆ PKCS #1 MD2</translation>
 <translation id="1221825588892235038">ಆಯ್ಕೆ ಮಾತ್ರ</translation>
@@ -510,6 +508,7 @@
 <translation id="1699395855685456105">ಹಾರ್ಡ್‌ವೇರ್ ಪರಿಷ್ಕರಣೆ:</translation>
 <translation id="1700199471143028312">ನಿಮ್ಮ ನಿರ್ವಾಹಕರು ಮೇಲ್ವಿಚಾರಣೆಯ ಬಳಕೆದಾರರನ್ನು ರಚಿಸಲು ನಿಮಗೆ ಅನುಮತಿಸುವುದಿಲ್ಲ.</translation>
 <translation id="1701062906490865540">ಈ ವ್ಯಕ್ತಿಯನ್ನು ತೆಗೆದುಹಾಕು</translation>
+<translation id="1701364987952948449">ಅತಿಥಿಯಂತೆ ಬ್ರೌಸ್ ಮಾಡಿ</translation>
 <translation id="1706586824377653884">ನಿಮ್ಮ ನಿರ್ವಾಹಕರ ಮೂಲಕ ಸೇರಿಸಲಾಗಿದೆ</translation>
 <translation id="1706625117072057435">ಝೂಮ್ ಹಂತಗಳು</translation>
 <translation id="1707463636381878959">ಇತರೆ ಬಳಕೆದಾರರೊಂದಿಗೆ ಈ ನೆಟ್‌ವರ್ಕ್ ಅನ್ನು ಹಂಚಿಕೊಳ್ಳಿ</translation>
@@ -754,7 +753,6 @@
 <translation id="2114224913786726438">ಮಾಡ್ಯೂಲ್‌ಗಳು  (<ph name="TOTAL_COUNT" />) - ಯಾವುದೇ ಘರ್ಷಣೆಯನ್ನು ಪತ್ತೆಹಚ್ಚಿಲ್ಲ</translation>
 <translation id="2114326799768592691">ರೀಲೋಡ್ &amp;ಫ್ರೇಮ್</translation>
 <translation id="2115103655317273167">ಫೋನ್‌ಗೆ ಕಳುಹಿಸಿ</translation>
-<translation id="2115291620696624944"><ph name="PRINTER_NAME" /> ನಲ್ಲಿ <ph name="PAGE_NUMBER" /> ಪುಟಗಳನ್ನು ಮುದ್ರಿಸುವಲ್ಲಿ ದೋಷ</translation>
 <translation id="2115926821277323019">URL ಅನ್ನು ಲಭ್ಯಗೊಳಿಸಿ</translation>
 <translation id="2115946962706216358">ಡೊಮೇನ್‌ಗೆ ಯಂತ್ರವನ್ನು ಸೇರಿಸಲು ವಿಫಲವಾಗಿದೆ. ಸರ್ವರ್‌ನಲ್ಲಿ ನಿಮ್ಮ ಖಾತೆಗೆ ಅನುಮತಿಸಿದ ಗರಿಷ್ಠ ಸಂಖ್ಯೆಯ ಯಂತ್ರದ ಸೇರ್ಪಡೆಗಳು ಮೀರಿರುವುದರ ಕಾರಣವಾಗಿರಬಹುದು.</translation>
 <translation id="2116673936380190819">ಹಿಂದಿನ 1 ಗಂಟೆಯಿಂದ</translation>
@@ -872,7 +870,6 @@
 <translation id="2255317897038918278">Microsoft Time Stamping</translation>
 <translation id="225614027745146050">ಸ್ವಾಗತ</translation>
 <translation id="225692081236532131">ಸಕ್ರಿಯ ಸ್ಥಿತಿ</translation>
-<translation id="2260567344816042527">ನೀವು ಮತ್ತೊಂದು ನೆಟ್‌ವರ್ಕ್‌ಗೆ ಸಂಪರ್ಕ ಹೊಂದಿರದಿದ್ದರೆ Google Chrome ಸೆಲ್ಯುಲಾರ್ ಡೇಟಾವನ್ನು ಬಳಸುತ್ತದೆ.</translation>
 <translation id="2262477216570151239">ಪುನರಾವರ್ತನೆಗೆ ಮೊದಲು ವಿಳಂಬ</translation>
 <translation id="226269835214688456">Chromebook ಗೆ Smart Lock ಅನ್ನು ನೀವು ಆಫ್ ಮಾಡಿದರೆ, ನಿಮ್ಮ ಫೋನ್ ಬಳಸಿಕೊಂಡು ನಿಮ್ಮ Chrome ಸಾಧನಗಳನ್ನು ನಿಮಗೆ ಅನ್‌ಲಾಕ್ ಮಾಡಲು ಸಾಧ್ಯವಾಗುವುದಿಲ್ಲ. ನೀವು ನಿಮ್ಮ ಪಾಸ್‌ವರ್ಡ್ ಟೈಪ್ ಮಾಡಬೇಕಾಗಿರುತ್ತದೆ.</translation>
 <translation id="2263189956353037928">ಸೈನ್ ಔಟ್ ಮಾಡಿ ಮತ್ತು ಮರಳಿ ಸೈನ್ ಇನ್ ಮಾಡಿ</translation>
@@ -894,6 +891,7 @@
 <translation id="2282146716419988068">GPU ಪ್ರಕ್ರಿಯೆ</translation>
 <translation id="2282155092769082568">ಸ್ವಯಂ ಕಾನ್ಫಿಗರೇಶನ್ URL:</translation>
 <translation id="2283117145434822734">F6</translation>
+<translation id="2286841657746966508">ಬಿಲ್ಲಿಂಗ್ ವಿಳಾಸ</translation>
 <translation id="2286950485307333924">ನೀವು ಇದೀಗ Chrome ಗೆ ಸೈನ್‌ ಇನ್‌ ಆಗಿರುವಿರಿ</translation>
 <translation id="2287590536030307392">ಎಲ್ಲಾ ವೈರ್‌ಲೆಸ್ ಸಂಪರ್ಕಗಳನ್ನು ಆಫ್ ಮಾಡಿ. </translation>
 <translation id="2288735659267887385">ಪ್ರವೇಶಿಸುವಿಕೆ ಸೆಟ್ಟಿಂಗ್‌ಗಳು</translation>
@@ -1631,6 +1629,7 @@
 <translation id="3315158641124845231"><ph name="PRODUCT_NAME" /> ಅನ್ನು ಮರೆಮಾಡಿ</translation>
 <translation id="3317459757438853210">ಎರಡು-ಕಡೆಗಳಿಂದ</translation>
 <translation id="3319048459796106952">ಹೊಸ &amp;ಅಜ್ಞಾತ ವಿಂಡೋ</translation>
+<translation id="3320021301628644560">ಬಿಲ್ಲಿಂಗ್ ವಿಳಾಸವನ್ನು ಸೇರಿಸಿ</translation>
 <translation id="3320859581025497771">ನಿಮ್ಮ ಕ್ಯಾರಿಯರ್</translation>
 <translation id="3323447499041942178">ಪಠ್ಯ ಪೆಟ್ಟಿಗೆ</translation>
 <translation id="3324301154597925148">ಇದು ನೀವು ನಿರೀಕ್ಷಿಸುತ್ತಿರುವ ಹುಡುಕಾಟ ಪುಟವೇ?</translation>
@@ -1829,7 +1828,6 @@
 <translation id="3618849550573277856">“<ph name="LOOKUP_STRING" />” ನೋಡಿ</translation>
 <translation id="3620292326130836921">ಎಲ್ಲವನ್ನೂ ಬ್ಯಾಕಪ್ ಮಾಡಲಾಗಿದೆ!</translation>
 <translation id="3623574769078102674">ಈ ಮೇಲ್ವಿಚಾರಣೆ ಬಳಕೆದಾರರನ್ನು <ph name="MANAGER_EMAIL" /> ಮೂಲಕ ನಿರ್ವಹಿಸಲಾಗುತ್ತದೆ.</translation>
-<translation id="3624814222765772771">ಅಪ್‌ಡೇಟ್ ಮಾಡಲು ಬ್ಯಾಟರಿ ತುಂಬಾ ಕಡಿಮೆ ಇದೆ (<ph name="PROGRESS_PERCENT" />%)</translation>
 <translation id="3625870480639975468">ಝೂಮ್ ಅನ್ನು ಮರುಹೊಂದಿಸು</translation>
 <translation id="3626281679859535460">ಪ್ರಕಾಶಮಾನ</translation>
 <translation id="3627052133907344175">ವಿಸ್ತರಣೆಗೆ "<ph name="IMPORT_VERSION" />" ಕನಿಷ್ಠ ಆವೃತ್ತಿಯೊಂದಿಗೆ "<ph name="IMPORT_NAME" />" ಅಗತ್ಯವಿದೆ, ಆದರೆ "<ph name="INSTALLED_VERSION" />" ಆವೃತ್ತಿಯನ್ನು ಮಾತ್ರ ಸ್ಥಾಪಿಸಲಾಗಿದೆ.</translation>
@@ -3028,7 +3026,6 @@
 <translation id="5454166040603940656"><ph name="PROVIDER" /> ಜೊತೆಗೆ</translation>
 <translation id="5457113250005438886">ಅಮಾನ್ಯ</translation>
 <translation id="5457459357461771897">ನಿಮ್ಮ ಕಂಪ್ಯೂಟರ್‌ನಿಂದ ಫೋಟೋಗಳು, ಸಂಗೀತ, ಮತ್ತು ಇತರ ಮಾಧ್ಯಮವನ್ನು ಓದಿರಿ ಮತ್ತು ಅಳಿಸಿ</translation>
-<translation id="5457599981699367932">ಅತಿಥಿಯಾಗಿ ಬ್ರೌಸ್ ಮಾಡಿ</translation>
 <translation id="5463275305984126951"><ph name="LOCATION" /> ನ ಸೂಚಿಕೆ</translation>
 <translation id="5463856536939868464">ಮರೆಮಾಡಿದ ಬುಕ್‌ಮಾರ್ಕ್‌ಗಳನ್ನು ಹೊಂದಿರುವ ಮೆನು</translation>
 <translation id="5464632865477611176">ಈ ಸಮಯದಲ್ಲಿ ಚಾಲನೆ ನೀಡಿ</translation>
@@ -3481,7 +3478,6 @@
 <translation id="6181431612547969857">ಡೌನ್‌ಲೋಡ್‌ ನಿರ್ಬಂಧಿಸಲಾಗಿದೆ</translation>
 <translation id="6185132558746749656">ಸಾಧನದ ಸ್ಥಳ</translation>
 <translation id="6185696379715117369">Page up</translation>
-<translation id="618807527697571179">ನಿಮ್ಮ ಪ್ರಿಂಟರ್ ಮಾದರಿಯನ್ನು ಪತ್ತೆಹಚ್ಚಲಾಗಲಿಲ್ಲ. ಪಟ್ಟಿಯಿಂದ ತಯಾರಕರು ಮತ್ತು ಮಾದರಿಯನ್ನು ಆಯ್ಕೆಮಾಡಿ.</translation>
 <translation id="6188939051578398125">ಹೆಸರುಗಳನ್ನು ಅಥವಾ ವಿಳಾಸಗಳನ್ನು ನಮೂದಿಸಿ.</translation>
 <translation id="6189412234224385711"><ph name="EXTENSION_NAME" /> ಮೂಲಕ ತೆರೆಯಿರಿ</translation>
 <translation id="6196640612572343990">ಥರ್ಡ್ ಪಾರ್ಟಿ ಕುಕೀಗಳನ್ನು ನಿರ್ಬಂಧಿಸಿ</translation>
@@ -3717,6 +3713,7 @@
 <translation id="6509136331261459454">ಇತರೆ ಬಳಕೆದಾರರನ್ನು ನಿರ್ವಹಿಸಿ...</translation>
 <translation id="6509207748479174212">ಮಾಧ್ಯಮ ಪರವಾನಗಿ</translation>
 <translation id="6510568984200103950">ಕೆಲವು ಸೆಟ್ಟಿಂಗ್‌ಗಳು</translation>
+<translation id="6513247462497316522">ನೀವು ಇನ್ನೊಂದು ನೆಟ್‌ವರ್ಕ್ ಸಂಪರ್ಕವನ್ನು ಹೊಂದಿರದಿದ್ದರೆ Google Chrome ಮೊಬೈಲ್ ಡೇಟಾವನ್ನು ಬಳಸುತ್ತದೆ.</translation>
 <translation id="6514565641373682518">ಈ ಪುಟವು ನಿಮ್ಮ ಮೌಸ್ ಕರ್ಸರ್ ಅನ್ನು ನಿಷ್ಕ್ರಿಯಗೊಳಿದೆ.</translation>
 <translation id="6518014396551869914">ಇಮೇಜ್ ಅನ್ನು ನಕ&amp;ಲಿಸಿ</translation>
 <translation id="651942933739530207">ನಿಮ್ಮ ಪರದೆ ಮತ್ತು ಆಡಿಯೋ ಔಟ್‌ಪುಟ್‌ ಅನ್ನು <ph name="APP_NAME" /> ಹಂಚಿಕೊಳ್ಳಲು ಬಯಸುತ್ತೀರಾ?</translation>

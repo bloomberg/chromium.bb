@@ -32,7 +32,7 @@
 <translation id="1967743265616885482">Aynı isme sahip bir modülün Chromium'la çakıştığı bilinmektedir.</translation>
 <translation id="2008474315282236005">Bu işlem 1 öğeyi bu cihazdan silecektir. Verilerinizi daha sonra geri almak için Chromium'da <ph name="USER_EMAIL" /> hesabıyla oturum açın.</translation>
 <translation id="2061399003623151192">{NUM_ITEMS,plural, =1{Bu işlem en az $1 öğeyi bu cihazdan kalıcı olarak silecektir. Verilerinizi daha sonra geri almak için Chromium'da $2 olarak oturum açın.}other{Bu işlem en az $1 öğeyi bu cihazdan kalıcı olarak silecektir. Verilerinizi daha sonra geri almak için Chromium'da $2 olarak oturum açın.}}</translation>
-<translation id="2077129598763517140">Kullanılabilir olduğunda donanım ivmesini kullan</translation>
+<translation id="2077129598763517140">Kullanılabilir olduğunda donanım hızlandırmayı kullan</translation>
 <translation id="2119636228670142020">&amp;Chromium OS hakkında</translation>
 <translation id="2158734852934720349">Chromium OS açık kaynak lisansları</translation>
 <translation id="2241627712206172106">Bir bilgisayarı paylaşıyorsanız arkadaşlarınız ve aileniz ayrı olarak göz atabilir ve Chromium'u tam olarak istedikleri şekilde ayarlayabilir.</translation>

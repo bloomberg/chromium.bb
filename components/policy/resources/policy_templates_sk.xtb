@@ -609,38 +609,6 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
 <translation id="316778957754360075">Toto nastavenie sa prestalo používať v prehliadači <ph name="PRODUCT_NAME" /> verzie 29. Odporúčaným spôsobom na nastavenie zbierok rozšírení/aplikácií hostených organizáciou je zahrnúť stránky hostiace balíky CRX do zoznamu ExtensionInstallSources a vložiť na webovú stránku priame odkazy na balíky. Spúšťač pre danú webovú stránku je možné vytvoriť pomocou pravidla ExtensionInstallForcelist.</translation>
 <translation id="3185009703220253572">od verzie <ph name="SINCE_VERSION" /></translation>
 <translation id="3187220842205194486">Aplikácie pre Android nemajú prístup k podnikovým kľúčom. Toto pravidlo nemá na ne žiaden vplyv.</translation>
-<translation id="318812033927804102">Konfiguruje nastavenia správy pre prehliadač <ph name="PRODUCT_NAME" />.
-
-          Toto pravidlo ovláda viaceré nastavenia, ako aj nastavenia ovládané existujúcimi pravidlami týkajúcimi sa rozšírení. Ak nastavíte obe, toto pravidlo prepíše všetky staré pravidlá.
-
-          Toto pravidlo namapuje identifikátor rozšírenia alebo webovú adresu aktualizácie na svoju konfiguráciu. Keď bude mať k dispozícii identifikátor rozšírenia, konfigurácia sa použije iba pre ním určené rozšírenie. Pre špeciálny identifikátor „*“ môžete nastaviť predvolenú konfiguráciu, ktorá sa použije pre všetky rozšírenia, pre ktoré ste v rámci tohto pravidla nenastavili vlastnú konfiguráciu. Keď bude mať k dispozícii webovú adresu aktualizácie, konfigurácia sa použije pre všetky rozšírenia s presnou webovou adresou aktualizácie stanovenou v manifeste tohto rozšírenia tak, ako je to uvedené na adrese <ph name="LINK_TO_EXTENSION_DOC1" />.
-
-          Konfigurácia pre jednotlivé rozšírenia (alebo rozšírenia s rovnakou webovou adresou aktualizácie) je ďalší slovník, ktorý môže obsahovať polia uvedené nižšie.
-
-          „installation_mode“: spustí mapovanie na reťazec označujúci režim inštalácie daného rozšírenia. Medzi platné reťazce patria:
-          * „allowed“: umožňuje používateľovi nainštalovať rozšírenie. Ide o predvolené správanie.
-          * „blocked“: zablokuje inštaláciu rozšírenia.
-          * "force_installed": rozšírenie sa automaticky nainštaluje a používateľ ho nebude môcť odstrániť.
-          * "normal_installed": rozšírenie sa automaticky nainštaluje, ale používateľ ho bude môcť zakázať.
-
-          Režim „installation_mode“ môžete nakonfigurovať aj pre viacero rozšírení, ako aj pre rozšírenie „*“ (ako predvolené nastavenie) a rozšírenia s rovnakou webovou adresou aktualizácie. V tomto prípade môžete použiť iba hodnoty „allowed“ a „blocked“.
-
-         Ak režim nastavíte na hodnotu „force_installed“ alebo „normal_installed“, musíte nakonfigurovať aj hodnotu „update_url“. Upozorňujeme, že webová adresa aktualizácie nastavená v rámci tohto pravidla sa použije iba pri prvej inštalácii. Následné aktualizácie rozšírenia budú používať webovú adresu aktualizácie uvedenú v manifeste daného rozšírenia. Webová adresa aktualizácie by mala odkazovať na dokument XML manifestu aktualizácie tak, ako je to uvedené vyššie.
-
-          "blocked_permissions": spustí mapovanie na zoznam reťazcov označujúci blokované povolenia rozhrania API pre dané rozšírenie. Názvy povolení sú rovnaké ako reťazce povolení uvedené v manifeste daného rozšírenia tak, ako je to uvedené na adrese <ph name="LINK_TO_EXTENSION_DOC3" />. Toto nastavenie môžete nakonfigurovať aj pre rozšírenie „*“. Ak rozšírenie vyžaduje povolenie, ktoré sa nachádza v zozname blokovaných položiek, toto povolenie sa nenačíta. Ak ako nepovinnú požiadavku obsahuje blokované povolenie, bude spracované bežným spôsobom. Ak však vyžiada povolenia, ktoré sú v konflikte, budú automaticky zakázané pri spustení.
-
-          „allowed_permissions“: je rovnaké nastavenie ako „blocked_permissions“, ale na rozdiel od neho explicitne povolí niektoré povolenia, ktoré môžu byť blokované globálnym zoznamom blokovaných povolení, a preto ho nie je možné nakonfigurovať pre rozšírenie „*“. Uvedomte si, že toto nastavenie neudeľuje rozšíreniam povolenia automaticky.
-
-          "minimum_version_required": spustí mapovanie na reťazec verzie. Formát reťazca verzie je rovnaký ako ten, ktorý bol použitý v manifeste daného rozšírenia tak, ako je to uvedené na adrese <ph name="LINK_TO_EXTENSION_DOC4" />. Rozšírenia so staršou verziou ako stanovená minimálna verzia budú zakázané. Platí to aj pre rozšírenia, ktorých inštalácia bola vynútená.
-
-          Nasledujúce nastavenie môžete použiť iba pre predvolenú konfiguráciu „*“:
-
-          „install_sources“: všetky položky v tomto zozname sú vzory zodpovedajúce typu rozšírenia (ďalšie informácie si môžete prečítať na adrese https://developer.chrome.com/extensions/match_patterns). Používatelia budú môcť poľahky inštalovať položky z ľubovoľnej webovej adresy, ktorá sa bude zhodovať s položkou v tomto zozname. Pomocou týchto vzorov musíte povoliť umiestnenie súboru *.crx a stránku, na ktorej sa spustí sťahovanie (t. j. sprostredkovateľa).
-
-          „allowed_types“: toto nastavenie pridá na bielu listinu povolené typy rozšírenia/aplikácií, ktoré je možné nainštalovať v prehliadači <ph name="PRODUCT_NAME" />. Táto hodnota je zoznam reťazcov, z ktorých každý by mal byť jeden z nasledujúcich: „extension“, „theme“, „user_script“, „hosted_app“, „legacy_packaged_app“, „platform_app“. Ďalšie informácie o týchto typoch si môžete prečítať v dokumentácii k rozšíreniam prehliadača <ph name="PRODUCT_NAME" />.
-
-          Toto pravidlo ešte nie je pripravené na používanie, preto ho radšej nepoužívajte.
-          </translation>
 <translation id="3201273385265130876">Umožňuje špecifikovať proxy server, ktorý bude <ph name="PRODUCT_NAME" /> používať. Zabraňuje používateľom zmeniť nastavenia proxy servera.
 
           Ak sa rozhodnete proxy server nikdy nepoužívať a vždy sa pripájať ručne, všetky ostatné možnosti budú ignorované.

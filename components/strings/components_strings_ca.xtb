@@ -304,7 +304,7 @@
 <translation id="3447661539832366887">El propietari d'aquest dispositiu ha desactivat el joc de dinosaures.</translation>
 <translation id="3450660100078934250">Mastercard</translation>
 <translation id="3452404311384756672">Obtén l'interval:</translation>
-<translation id="3462200631372590220">Amaga la informació avançada</translation>
+<translation id="3462200631372590220">Amaga la configuració avançada</translation>
 <translation id="3467763166455606212">El nom del titular de la targeta és obligatori</translation>
 <translation id="3478058380795961209">Mes de caducitat</translation>
 <translation id="3479539252931486093">Heu trobat el lloc bloquejat de manera inesperada? <ph name="BEGIN_LINK" />Informeu-nos-en<ph name="END_LINK" /></translation>
@@ -653,6 +653,7 @@
 <translation id="6895330447102777224">La teva targeta s'ha confirmat</translation>
 <translation id="6897140037006041989">Agent d'usuari</translation>
 <translation id="6915804003454593391">Usuari:</translation>
+<translation id="6945221475159498467">Selecciona</translation>
 <translation id="6948701128805548767">Per veure els mètodes i els requisits de recollida, selecciona una adreça</translation>
 <translation id="6957887021205513506">Sembla que el certificat del servidor és una falsificació.</translation>
 <translation id="6965382102122355670">D'acord</translation>

@@ -15,7 +15,6 @@
 <translation id="1023220960495960452">Translitterering (vanakkam → வணக்கம்)</translation>
 <translation id="1026822031284433028">Läs in bild</translation>
 <translation id="1029317248976101138">Zooma in</translation>
-<translation id="1030173864176315846"><ph name="PAGE_NUMBER" /> sidor har skrivits ut på <ph name="PRINTER_NAME" /></translation>
 <translation id="1031362278801463162">Läser in förhandsgranskning</translation>
 <translation id="103279545524624934">Frigör diskutrymme om du vill starta Android-appar.</translation>
 <translation id="1033780634303702874">Få åtkomst till dina seriella enheter</translation>
@@ -149,7 +148,6 @@
     <ph name="BR" />
     Välj Skicka feedback på nästa skärm så att vi kan försöka åtgärda problemet.</translation>
 <translation id="121783623783282548">Lösenorden matchar inte.</translation>
-<translation id="1218323606465324064"><ph name="PAGE_NUMBER" /> sidor skrivs ut på <ph name="PRINTER_NAME" /></translation>
 <translation id="122082903575839559">Certifikatets signaturalgoritm</translation>
 <translation id="1221024147024329929">PKCS #1 MD2 med RSA-kryptering</translation>
 <translation id="1221825588892235038">Endast markering</translation>
@@ -508,6 +506,7 @@
 <translation id="1699395855685456105">Revision för maskinvara:</translation>
 <translation id="1700199471143028312">Administratören tillåter inte att du skapar kontrollerade användare.</translation>
 <translation id="1701062906490865540">Ta bort personen</translation>
+<translation id="1701364987952948449">Använd som gäst</translation>
 <translation id="1706586824377653884">Lades till av administratören</translation>
 <translation id="1706625117072057435">Zoomnivåer</translation>
 <translation id="1707463636381878959">Dela nätverket med andra användare</translation>
@@ -753,7 +752,6 @@
 <translation id="2114224913786726438">Moduler (<ph name="TOTAL_COUNT" />) – inga konflikter har påträffats</translation>
 <translation id="2114326799768592691">Läs in &amp;ram igen</translation>
 <translation id="2115103655317273167">Skicka till mobilen</translation>
-<translation id="2115291620696624944">Ett fel uppstod när <ph name="PAGE_NUMBER" /> sidor skulle skrivas ut på <ph name="PRINTER_NAME" /></translation>
 <translation id="2115926821277323019">Måste vara en giltig webbadress</translation>
 <translation id="2115946962706216358">Det gick inte att ansluta datorn till domänen. Detta kan bero på att det maximala antalet datorer som får anslutas på servern har överskridits för ditt konto.</translation>
 <translation id="2116673936380190819">senaste timmen</translation>
@@ -873,7 +871,6 @@ När du har skapat en ny kontrollerad användare kan du hantera inställningarna
 <translation id="2255317897038918278">Microsofts tidsstämpling</translation>
 <translation id="225614027745146050">Välkommen</translation>
 <translation id="225692081236532131">Aktiveringsstatus</translation>
-<translation id="2260567344816042527">Mobildata kommer att användas med Google Chrome om du inte är ansluten till något annat nätverk.</translation>
 <translation id="2262477216570151239">Fördröjning före upprepning</translation>
 <translation id="226269835214688456">Om du inaktiverar Smart Lock för Chrome kan du inte låsa upp dina Chrome-enheter med mobilen. Du måste ange ditt lösenord.</translation>
 <translation id="2263189956353037928">Logga ut och logga in igen</translation>
@@ -895,6 +892,7 @@ När du har skapat en ny kontrollerad användare kan du hantera inställningarna
 <translation id="2282146716419988068">GPU-bearbetning</translation>
 <translation id="2282155092769082568">Webbadress för automatisk konfiguration:</translation>
 <translation id="2283117145434822734">F6</translation>
+<translation id="2286841657746966508">Faktureringsadress</translation>
 <translation id="2286950485307333924">Du är nu inloggad i Chrome</translation>
 <translation id="2287590536030307392">Inaktivera alla trådlösa anslutningar.</translation>
 <translation id="2288735659267887385">Inställningar för tillgänglighet</translation>
@@ -1634,6 +1632,7 @@ Från <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3315158641124845231">Dölj <ph name="PRODUCT_NAME" /></translation>
 <translation id="3317459757438853210">Dubbelsidig</translation>
 <translation id="3319048459796106952">Nytt &amp;inkognitofönster</translation>
+<translation id="3320021301628644560">Lägg till faktureringsadress</translation>
 <translation id="3320859581025497771">din operatör</translation>
 <translation id="3323447499041942178">Textruta</translation>
 <translation id="3324301154597925148">Är det här den söksida du väntade dig?</translation>
@@ -1832,7 +1831,6 @@ Från <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3618849550573277856">Sök efter ”<ph name="LOOKUP_STRING" />”</translation>
 <translation id="3620292326130836921">Allt har säkerhetskopierats!</translation>
 <translation id="3623574769078102674">Denna övervakade användare kommer att hanteras av <ph name="MANAGER_EMAIL" />.</translation>
-<translation id="3624814222765772771">Batterinivån är för låg (<ph name="PROGRESS_PERCENT" /> %) för uppdateringen.</translation>
 <translation id="3625870480639975468">Återställ zoom</translation>
 <translation id="3626281679859535460">Ljusstyrka</translation>
 <translation id="3627052133907344175">Tillägget kräver <ph name="IMPORT_NAME" /> med minst version <ph name="IMPORT_VERSION" />, men endast version <ph name="INSTALLED_VERSION" /> är installerad.</translation>
@@ -3029,7 +3027,6 @@ Tryck på någon tangent om du vill fortsätta utforska.</translation>
 <translation id="5454166040603940656">med <ph name="PROVIDER" /></translation>
 <translation id="5457113250005438886">Ogiltigt</translation>
 <translation id="5457459357461771897">Läsa och ta bort foton, musik och andra media från datorn</translation>
-<translation id="5457599981699367932">Använd som gäst</translation>
 <translation id="5463275305984126951">Index till <ph name="LOCATION" /></translation>
 <translation id="5463856536939868464">Menyn innehåller dolda bokmärken</translation>
 <translation id="5464632865477611176">Kör den här gången</translation>
@@ -3486,7 +3483,6 @@ Tryck på någon tangent om du vill fortsätta utforska.</translation>
 <translation id="6181431612547969857">Nedladdningen blockerades</translation>
 <translation id="6185132558746749656">Enhetsplats</translation>
 <translation id="6185696379715117369">Uppåt en sida</translation>
-<translation id="618807527697571179">Det gick inte identifiera skrivarens modell. Välj en tillverkare och modell i listan.</translation>
 <translation id="6188939051578398125">Ange namn eller adresser.</translation>
 <translation id="6189412234224385711">Öppna med <ph name="EXTENSION_NAME" /></translation>
 <translation id="6196640612572343990">Blockera cookies från tredje part</translation>
@@ -3724,6 +3720,7 @@ Tryck på någon tangent om du vill fortsätta utforska.</translation>
 <translation id="6509136331261459454">Hantera andra användare ...</translation>
 <translation id="6509207748479174212">Medielicens</translation>
 <translation id="6510568984200103950">Färre inställningar</translation>
+<translation id="6513247462497316522">Google Chrome kommer att använda mobila data om du inte är ansluten till ett annat nätverk.</translation>
 <translation id="6514565641373682518">Muspekaren har inaktiverats av sidan.</translation>
 <translation id="6518014396551869914">Kopiera &amp;bild</translation>
 <translation id="651942933739530207">Vill du att <ph name="APP_NAME" /> ska dela din skärm och dina ljud?</translation>

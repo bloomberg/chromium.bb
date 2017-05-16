@@ -15,7 +15,6 @@
 <translation id="1023220960495960452">Transliteração (vanakkam → வணக்கம்)</translation>
 <translation id="1026822031284433028">Carregar imagem</translation>
 <translation id="1029317248976101138">Zoom</translation>
-<translation id="1030173864176315846">Foram imprimidas <ph name="PAGE_NUMBER" /> páginas com sucesso em <ph name="PRINTER_NAME" /></translation>
 <translation id="1031362278801463162">A carregar a pré-visualização</translation>
 <translation id="103279545524624934">Liberte espaço em disco para iniciar as aplicações Android.</translation>
 <translation id="1033780634303702874">Aceder aos dispositivos de série</translation>
@@ -149,7 +148,6 @@
     <ph name="BR" />
     No ecrã seguinte, envie os seus comentários para nos ajudar a resolver o problema.</translation>
 <translation id="121783623783282548">As palavras-passe não correspondem.</translation>
-<translation id="1218323606465324064">A imprimir agora <ph name="PAGE_NUMBER" /> páginas em <ph name="PRINTER_NAME" />…</translation>
 <translation id="122082903575839559">Algoritmo de assinatura do certificado</translation>
 <translation id="1221024147024329929">PKCS #1 MD2 Com encriptação RSA</translation>
 <translation id="1221825588892235038">Apenas a seleção</translation>
@@ -510,6 +508,7 @@
 <translation id="1699395855685456105">Revisão do hardware:</translation>
 <translation id="1700199471143028312">O administrador não lhe permite criar utilizadores supervisionados.</translation>
 <translation id="1701062906490865540">Remover esta pessoa</translation>
+<translation id="1701364987952948449">Navegar como convidado</translation>
 <translation id="1706586824377653884">Adicionado pelo administrador</translation>
 <translation id="1706625117072057435">Níveis de zoom</translation>
 <translation id="1707463636381878959">Partilhar esta rede com outros utilizadores</translation>
@@ -755,7 +754,6 @@
 <translation id="2114224913786726438">Módulos (<ph name="TOTAL_COUNT" />) – Nenhum conflito detectado</translation>
 <translation id="2114326799768592691">Atualizar &amp;frame</translation>
 <translation id="2115103655317273167">Enviar para telemóvel</translation>
-<translation id="2115291620696624944">Erro ao imprimir <ph name="PAGE_NUMBER" /> páginas em <ph name="PRINTER_NAME" /></translation>
 <translation id="2115926821277323019">Tem de ser um URL válido</translation>
 <translation id="2115946962706216358">Falha ao associar o computador ao domínio. Isto pode ter ocorrido por ter excedido o número máximo de associações de computadores permitidas para a sua conta no servidor.</translation>
 <translation id="2116673936380190819">hora anterior</translation>
@@ -874,7 +872,6 @@ Depois de criar um novo utilizador supervisionado, pode gerir as respetivas defi
 <translation id="2255317897038918278">Carimbo de data/hora da Microsoft</translation>
 <translation id="225614027745146050">Bem-vindo</translation>
 <translation id="225692081236532131">Estado da ativação</translation>
-<translation id="2260567344816042527">O Google Chrome utiliza os dados móveis se não estiver ligado a outra rede.</translation>
 <translation id="2262477216570151239">Atraso antes da repetição</translation>
 <translation id="226269835214688456">Se desativar o Smart Lock para Chromebook, não pode utilizar o seu telemóvel para desbloquear os seus dispositivos Chrome. Tem de introduzir a palavra-passe.</translation>
 <translation id="2263189956353037928">Terminar sessão e voltar a iniciar sessão</translation>
@@ -896,6 +893,7 @@ Depois de criar um novo utilizador supervisionado, pode gerir as respetivas defi
 <translation id="2282146716419988068">Processo GPU</translation>
 <translation id="2282155092769082568">URL de configuração automática:</translation>
 <translation id="2283117145434822734">F6</translation>
+<translation id="2286841657746966508">Endereço de facturação</translation>
 <translation id="2286950485307333924">Tem agora sessão iniciada no Chrome</translation>
 <translation id="2287590536030307392">Desligar todas as ligações sem fios.</translation>
 <translation id="2288735659267887385">Definições de acessibilidade</translation>
@@ -1636,6 +1634,7 @@ De <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3315158641124845231">Ocultar o <ph name="PRODUCT_NAME" /></translation>
 <translation id="3317459757438853210">Frente e verso</translation>
 <translation id="3319048459796106952">&amp;Nova janela sem registo</translation>
+<translation id="3320021301628644560">Adicionar endereço de faturação</translation>
 <translation id="3320859581025497771">a sua operadora</translation>
 <translation id="3323447499041942178">Caixa de texto</translation>
 <translation id="3324301154597925148">É Esta a Página de Pesquisa de Que Estava à Espera?</translation>
@@ -1834,7 +1833,6 @@ De <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3618849550573277856">Procurar "<ph name="LOOKUP_STRING" />"</translation>
 <translation id="3620292326130836921">Foi feita uma cópia de segurança de todos os ficheiros!</translation>
 <translation id="3623574769078102674">Este utilizador supervisionado será gerido por <ph name="MANAGER_EMAIL" />.</translation>
-<translation id="3624814222765772771">Bateria demasiado fraca para atualizar (<ph name="PROGRESS_PERCENT" />%)</translation>
 <translation id="3625870480639975468">Repor zoom</translation>
 <translation id="3626281679859535460">Brilho</translation>
 <translation id="3627052133907344175">A extensão requer "<ph name="IMPORT_NAME" />" com a versão mínima "<ph name="IMPORT_VERSION" />", mas apenas está instalada a versão "<ph name="INSTALLED_VERSION" />".</translation>
@@ -3031,7 +3029,6 @@ Prima qualquer tecla para continuar a explorar.</translation>
 <translation id="5454166040603940656">com <ph name="PROVIDER" /></translation>
 <translation id="5457113250005438886">Inválido</translation>
 <translation id="5457459357461771897">Ler e eliminar fotografias, música e outros elementos multimédia a partir do computador</translation>
-<translation id="5457599981699367932">Navegar como convidado</translation>
 <translation id="5463275305984126951">Índice de <ph name="LOCATION" /></translation>
 <translation id="5463856536939868464">Menu com marcadores ocultos</translation>
 <translation id="5464632865477611176">Executar desta vez</translation>
@@ -3489,7 +3486,6 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="6181431612547969857">Transferência bloqueada</translation>
 <translation id="6185132558746749656">Localização do dispositivo</translation>
 <translation id="6185696379715117369">Página para cima</translation>
-<translation id="618807527697571179">Não foi possível detetar o modelo da impressora. Selecione um fabricante e um modelo na lista.</translation>
 <translation id="6188939051578398125">Introduza nomes ou endereços.</translation>
 <translation id="6189412234224385711">Abrir com <ph name="EXTENSION_NAME" /></translation>
 <translation id="6196640612572343990">Bloquear cookies de terceiros</translation>
@@ -3727,6 +3723,7 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="6509136331261459454">Gerir outros utilizadores...</translation>
 <translation id="6509207748479174212">Licença de multimédia</translation>
 <translation id="6510568984200103950">Menos definições</translation>
+<translation id="6513247462497316522">O Google Chrome irá utilizar dados móveis se não estiver ligado a outra rede.</translation>
 <translation id="6514565641373682518">Esta página desativou o cursor do rato.</translation>
 <translation id="6518014396551869914">Cop&amp;iar imagem</translation>
 <translation id="651942933739530207">Pretende que a aplicação <ph name="APP_NAME" /> partilhe o seu ecrã e saída de áudio?</translation>

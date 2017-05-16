@@ -613,38 +613,6 @@
 <translation id="316778957754360075">Hindi na ginagamit ang setting na ito simula sa <ph name="PRODUCT_NAME" /> bersyon 29. Ang inirerekumendang paraan upang mag-set up ng mga koleksyon ng extension/app na hino-host ng samahan ay ang pagsama sa pag-host sa site sa mga CRX package sa ExtensionInstallSources at paglagay ng direktang link sa pag-download sa mga package sa isang web page.Maaaring gawin ang isang launcher para sa web page na iyon gamit ang patakaran na ExtensionInstallForcelist.</translation>
 <translation id="3185009703220253572">mula pa noong bersyon <ph name="SINCE_VERSION" /></translation>
 <translation id="3187220842205194486">Hindi maaaring kumuha ng access ang mga Android app sa mga pangkorporasyong key. Walang epekto ang mga ito sa patakarang ito.</translation>
-<translation id="318812033927804102">Kino-configure ang mga setting ng pamamahala ng extension para sa <ph name="PRODUCT_NAME" />.
-
-          Maraming setting ang kinokontrol ng patakarang ito, kabilang ang mga setting na kinokontrol ng anumang dati nang patakarang nauugnay sa extension. Io-override ng patakarang ito ang anumang mga dati nang patakaran kung parehong nakatakda.
-
-          Minamapa ng patakarang ito ang isang extension ID o isang update URL sa configuration nito. Sa isang extension ID, ilalapat ang configuration sa tinukoy na extension lang. Maaaring matakda ng default na configuration para sa espesyal na ID na "*", na malalapat sa lahat ng extension na walang nakatakdang custom na configuration sa patakarang ito. Sa isang update URL, ilalapat ang configuration sa lahat ng extension nang nakasaad ang eksaktong update URL sa manifest ng extension na ito, tulad ng nakalarawan sa <ph name="LINK_TO_EXTENSION_DOC1" />.
-
-          Ang configuration para sa bawat extension (o mga extension na may parehong update URL) ay isa pang diksyunaryo na maaaring maglaman ng mga field na nakadokumento sa ibaba.
-
-          "installation_mode": minamapa sa isang string na nagsasaad ng installation mode para sa extension. Ang mga wastong string ay:
-          * "allowed": pinapayagan ang extension na ma-install ng user. Ito ang default na gawi.
-          * "blocked": bina-block ang pag-install ng extension.
-          * "force_installed": awtomatikong ini-install ang extension at hindi maaalis ng user.
-          * "normal_installed": awtomatikong ini-install ang extension ngunit maaaring ma-disable ng user.
-
-          Maaari ring ma-configure ang "installation_mode" para rin sa maraming extension, kabilang ang extension na "*" (bilang mga default na setting) at mga extension na may parehong URL. Tanging ang mga value na "allowed" at "blocked" ang magagamit sa kasong ito.
-
-          Kung nakatakda ang mode sa "force_installed" o "normal_installed," dapat na ma-configure din ang isang "update_url." Tandaan na ang update URL na nakatakda sa patakarang ito ay ginagamit lang para sa paunang pag-install; gagamitin ng mga kasunod na update ng extension ang update URL na nakasaad sa manifest ng extension. Dapat na tumuro ang update URL sa isang dokumento ng Update Manifest XML tulad ng nabanggit sa itaas.
-
-          "blocked_permissions": minamapa sa isang listahan ng mga string na nagsasaad sa mga na-block na pahintulot sa API para sa extension. Ang mga pangalan ng mga pahintulot ay pareho sa mga string ng pahintulot na nakasaad sa manifest ng extension tulad ng nakalarawan sa <ph name="LINK_TO_EXTENSION_DOC3" />. Maaari ring ma-configure ang setting na ito para sa extension na "*". Kung kailangan ng extension ng pahintulot na nasa blocklist, hindi ito papayagang mag-load. Kung naglalaman ito ng naka-block na pahintulot bilang opsyonal na kinakailangan, pangangasiwaan ito sa normal na paraan, ngunit ang paghiling ng mga nagsasalungat na pahintulot ay awtomatikong tatangihan sa runtime.
-
-          "allowed_permissions": kapareho ng "blocked_permissions", ngunit sa halip, tahasang pinapayagan ang ilang pahintulot na maaaring ma-block ng global na listahan ng naka-block ang pahintulot, kung saan hindi mako-configure para sa extension na "*". Tandaan na hindi awtomatikong nagbibigay ang setting na ito ng mga pahintulot sa mga extension.
-
-          "minimum_version_required": minamapa sa isang string ng bersyon. Ang format ng string ng bersyon ay pareho sa ginamit sa manifest ng extension, tulad ng nakalarawan sa <ph name="LINK_TO_EXTENSION_DOC4" />. Idi-disable ang isang extension na may mas lumang bersyon kaysa sa tinukoy na minimum na bersyon. Nalalapat din ito sa mga puwersahang in-install na extension.
-
-          Magagamit lang ang mga sumusunod na setting para sa default na configuration na "*":
-
-          "install_sources": Ang bawat item sa listahang ito ay match pattern sa estilo ng extension (tingnan ang https://developer.chrome.com/extensions/match_patterns). Madaling makakapag-install ang mga user ng mga item mula sa anumang URL na tumutugma sa isang item sa listahan. Dapat na payagan ng mga pattern na ito ang parehong lokasyon ng *.crx file at ang page kung saan sinimulan ang download (ibig sabihin, ang nag-refer).
-
-          "allowed_types": Wina-whitelist ng setting na ito ang mga pinayagang uri ng mga extension/app na maaaring ma-install sa <ph name="PRODUCT_NAME" />.  Ang value ay isang listahan ng mga string, kung saan ang bawat isa dito ay dapat na isa sa sumusunod: "extension," "theme," "user_script," "hosted_app," "legacy_packaged_app," "platform_app." Tingnan ang dokumento ng mga extension na <ph name="PRODUCT_NAME" /> para sa higit pang impormasyon sa mga uring ito.
-
-          Hindi pa handang magamit ang patakarang ito, mangyaring huwag muna itong gamitin.
-          </translation>
 <translation id="3201273385265130876">Binibigyang-daan ka na matukoy ang proxy server na ginagamit ng <ph name="PRODUCT_NAME" /> at pinipigilan ang mga user na baguhin ang mga setting ng proxy.
 
           Kung pipiliin mong hindi gumamit ng proxy server at palaging kumonekta nang direkta, babalewalain ang lahat ng iba pang opsyon.

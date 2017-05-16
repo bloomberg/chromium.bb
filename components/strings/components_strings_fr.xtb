@@ -477,7 +477,7 @@
 <translation id="5094747076828555589">Impossible de vérifier sur le serveur qu'il s'agit bien du domaine <ph name="DOMAIN" />, car son certificat de sécurité n'est pas considéré comme fiable par Chromium. Cela peut être dû à une mauvaise configuration ou bien à l'interception de votre connexion par un pirate informatique.</translation>
 <translation id="5095208057601539847">Province</translation>
 <translation id="5115563688576182185">(64 bits)</translation>
-<translation id="5141240743006678641">Chiffrer les mots de passe synchronisés avec vos certificats Google</translation>
+<translation id="5141240743006678641">Chiffrer les mots de passe synchronisés avec vos informations de connexion Google</translation>
 <translation id="514421653919133810">Ouvrez la page en mode navigation privée (Ctrl+Maj+N)</translation>
 <translation id="5145883236150621069">Code d'erreur présent dans la réponse de la règle.</translation>
 <translation id="5171045022955879922">Rechercher ou saisir une URL</translation>
@@ -653,6 +653,7 @@
 <translation id="6895330447102777224">Carte validée</translation>
 <translation id="6897140037006041989">Agent utilisateur</translation>
 <translation id="6915804003454593391">Utilisateur :</translation>
+<translation id="6945221475159498467">Sélectionner</translation>
 <translation id="6948701128805548767">Sélectionnez une adresse pour consulter les modes et conditions d'enlèvement disponibles</translation>
 <translation id="6957887021205513506">Le certificat du serveur semble être contrefait.</translation>
 <translation id="6965382102122355670">OK</translation>

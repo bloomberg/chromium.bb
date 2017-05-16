@@ -45,7 +45,6 @@
 <translation id="7003844668372540529">Producte desconegut <ph name="PRODUCT_ID" /> de: <ph name="VENDOR_NAME" /></translation>
 <translation id="7217838517480956708">L'administrador d'aquest equip necessita que s'instal·li <ph name="EXTENSION_NAME" />. No es pot eliminar o modificar.</translation>
 <translation id="7581279002575751816">Els connectors NPAPI no són compatibles.</translation>
-<translation id="7809034755304591547">L'administrador ha bloquejat l'extensió <ph name="EXTENSION_NAME" /> (amb l'ID d'extensió <ph name="EXTENSION_ID" />).</translation>
 <translation id="7972881773422714442">Opcions: <ph name="EXTENSIONOPTIONS_TAG_NAME" /></translation>
 <translation id="8035920974645200807">Càmera frontal</translation>
 <translation id="8047248493720652249">Aquesta extensió no ha pogut posar nom a la baixada "<ph name="ATTEMPTED_FILENAME" />" perquè una altra extensió (<ph name="EXTENSION_NAME" />) ha indicat un nom de fitxer diferent "<ph name="ACTUAL_FILENAME" />".</translation>

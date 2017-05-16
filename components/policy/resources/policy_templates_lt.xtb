@@ -617,38 +617,6 @@
 <translation id="316778957754360075">Šis nustatymas nebenaudojamas 29 ir naujesnėse „<ph name="PRODUCT_NAME" />“ versijose. Rekomenduojamas būdas nustatyti organizacijos valdomą plėtinių / programų rinkinius yra įtraukti svetaines priglobiančius CRX paketus į politiką „ExtensionInstallSources“ ir nuorodas įdėti tiesiogiai į tinklalapio paketus. Tam tinklalapiui skirtą paleidimo priemonę galima sukurti naudojant politiką „ExtensionInstallForcelist“.</translation>
 <translation id="3185009703220253572">nuo <ph name="SINCE_VERSION" /> versijos</translation>
 <translation id="3187220842205194486">„Android“ negali pasiekti įmonės raktų. Ši politika jiems neturi įtakos.</translation>
-<translation id="318812033927804102">Konfigūruojami „<ph name="PRODUCT_NAME" />“ plėtinių valdymo nustatymai.
-
-          Ši politika valdo kelis nustatymus, įskaitant bet kokios esamos su plėtiniais susijusios politikos valdomus nustatymus. Ši politika pakeis bet kokią seną politiką, jei abi nustatytos.
-
-          Ši politika susieja plėtinio ID ar naujinio URL su konfigūracija. Naudojant plėtinio ID konfigūracija bus taikoma tik nurodytam plėtiniui. Specialiam ID „*“ galima nustatyti numatytąją konfigūraciją, kuri bus taikoma visiems plėtiniams, kurių tinkinta konfigūracija nenustatyta šioje politikoje. Naudojant naujinio URL konfigūracija bus taikoma visiems plėtiniams su tiksliu naujinio URL, nurodytu šio plėtinio apraše, kaip nurodyta adresu <ph name="LINK_TO_EXTENSION_DOC1" />.
-
-          Kiekvieno plėtinio (ar plėtinių su tuo pačiu naujinio URL) konfigūracija sudaro kitą žodyną, į kurį gali būti įtraukti toliau dokumentuojami laukai.
-
-          „installation_mode“ (diegimo režimas): susieja su eilute, nurodančia plėtinio diegimo režimą. Galiojančios eilutės yra šios:
-          * „allowed“ (leidžiama): leidžiama naudotojui įdiegti plėtinį. Tai numatytoji elgsena.
-          * „blocked“ (užblokuota): užblokuoja plėtinio diegimą.
-          * „force_installed“ (priverstinai įdiegta): plėtinys automatiškai įdiegiamas ir naudotojas negali jo pašalinti.
-          * „normal_installed“ (įprastai įdiegta): plėtinys automatiškai įdiegiamas, bet naudotojas gali jį išjungti.
-
-          Be to, „installation_mode“ taip pat galima konfigūruoti keliems plėtiniams, įskaitant plėtinį „*“ (kaip numatytieji nustatymai) ir plėtinius su tuo pačiu naujinio URL. Šiuo atveju galima naudoti tik vertes „allowed“ ir „blocked“.
-
-          Jei režimas nustatytas į „force_installed“ arba „normal_installed“, taip pat reikia sukonfigūruoti „update_url“. Atminkite, kad šioje politikoje nustatytas naujinio URL naudojamas tik diegiant pirmą kartą; vėlesniems plėtinio naujiniams bus naudojamas plėtinio apraše nurodytas naujinio URL. Naujinio URL turėtų nukreipti į naujinio aprašo XML dokumentą, kaip nurodyta anksčiau.
-
-          „blocked_permissions“ (užblokuoti leidimai): susieja su eilučių, nurodančių plėtinio užblokuotus API leidimus, sąrašu. Leidimų pavadinimai tokie pat kaip leidimų eilutės, pateiktos plėtinio apraše, kaip nurodyta adresu <ph name="LINK_TO_EXTENSION_DOC3" />. Be to, šį nustatymą galima sukonfigūruoti plėtiniui „*“. Jei plėtiniui reikalingas leidimas, kuris įtrauktas į užblokuotų leidimų sąrašą, jo neleidžiama įkelti. Jei užblokuotas leidimas nurodomas kaip pasirenkamas reikalavimas, jis apdorojamas įprastai, bet vykdant nesuderinamų leidimų užklausos bus automatiškai atmestos.
-
-          „allowed_permissions“ (leidžiami leidimai): panašu į „blocked_permissions“, bet aiškiai leidžiami keli leidimai, kurie gali būti užblokuoti bendrųjų užblokuotų leidimų sąraše, todėl negalima konfigūruoti plėtiniui „*“. Atminkite, kad nustačius šį nustatymą plėtiniams leidimai nėra automatiškai suteikiami.
-
-          „minimum_version_required“ (minimali reikalinga versija): susiejama su versijos eilute. Versijos eilutės formatas toks pat, kaip naudojamas plėtinio apraše, kaip nurodyta adresu <ph name="LINK_TO_EXTENSION_DOC4" />. Plėtinys, kurio versija senesnė nei nurodyta minimali versija, bus išjungtas. Tai taip pat taikoma priverstinai įdiegtiems plėtiniams.
-
-          Nurodytą nustatymą galima naudoti tik numatytajai „*“ konfigūracijai:
-
-          „install_sources“ (diegimo šaltiniai): kiekvienas elementas šiame sąraše yra plėtinio stiliaus atitikties šablonas (žr. https://developer.chrome.com/extensions/match_patterns). Naudotojai galės lengvai įdiegti elementus iš bet kurio URL, kuris atitinka elementą šiame sąraše. Failo *.crx vieta ir puslapis, iš kurio pradedamas atsisiuntimas (t. y. persiuntimo URL), turi būti leidžiami šiuose šablonuose.
-
-          „allowed_types“ (leidžiami tipai): nustačius šį nustatymą leidžiami plėtinio / programų, kuriuos galima įdiegti „<ph name="PRODUCT_NAME" />“, tipai įtraukiami į baltąjį sąrašą. Vertė – tai eilučių, kurių kiekviena turi būti vienos iš šių verčių: „extension“, „theme“, „user_script“, „hosted_app“, „legacy_packaged_app“, „platform_app“, sąrašas. Jei reikia daugiau informacijos apie šiuos tipus, žr. „<ph name="PRODUCT_NAME" />“ plėtinių dokumentus.
-
-          Ši politika dar neparuošta naudoti, todėl jos nenaudokite.
-          </translation>
 <translation id="3201273385265130876">Leidžiama nurodyti „<ph name="PRODUCT_NAME" />“ naudojamą tarpinį serverį ir naudotojams neleidžiama pakeisti tarpinio serverio nustatymų.
 
           Jei pasirinksite niekada nenaudoti tarpinio serverio ir visada prisijungti tiesiogiai, visų kitų parinkčių bus nepaisoma.

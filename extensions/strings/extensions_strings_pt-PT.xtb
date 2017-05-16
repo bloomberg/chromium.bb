@@ -45,7 +45,6 @@
 <translation id="7003844668372540529">Produto desconhecido <ph name="PRODUCT_ID" /> de <ph name="VENDOR_NAME" /></translation>
 <translation id="7217838517480956708">O administrador desta máquina exige que o <ph name="EXTENSION_NAME" /> seja instalado. Este não pode ser removido ou modificado.</translation>
 <translation id="7581279002575751816">Os plug-ins NPAPI não são suportados.</translation>
-<translation id="7809034755304591547"><ph name="EXTENSION_NAME" /> (ID da extensão "<ph name="EXTENSION_ID" />") foi bloqueado pelo administrador.</translation>
 <translation id="7972881773422714442">Opções: <ph name="EXTENSIONOPTIONS_TAG_NAME" /></translation>
 <translation id="8035920974645200807">Virada para o utilizador</translation>
 <translation id="8047248493720652249">Esta extensão não conseguiu atribuir o nome "<ph name="ATTEMPTED_FILENAME" />" à transferência, porque outra extensão (<ph name="EXTENSION_NAME" />) determinou um nome de ficheiro diferente: "<ph name="ACTUAL_FILENAME" />".</translation>

@@ -15,7 +15,6 @@
 <translation id="1023220960495960452">Transliteracja (vanakkam → வணக்கம்)</translation>
 <translation id="1026822031284433028">Wczytaj obraz</translation>
 <translation id="1029317248976101138">Powiększ</translation>
-<translation id="1030173864176315846">Wydrukowano <ph name="PAGE_NUMBER" /> str. na: <ph name="PRINTER_NAME" /></translation>
 <translation id="1031362278801463162">Wczytuję podgląd</translation>
 <translation id="103279545524624934">Aby uruchomić aplikacje na Androida, zwolnij miejsce na dysku.</translation>
 <translation id="1033780634303702874">Dostęp do urządzeń szeregowych</translation>
@@ -149,7 +148,6 @@
     <ph name="BR" />
     Na następnym ekranie wyślij opinię, by pomóc nam naprawić ten problem.</translation>
 <translation id="121783623783282548">Hasła nie są zgodne.</translation>
-<translation id="1218323606465324064">Trwa drukowanie <ph name="PAGE_NUMBER" /> str. na: <ph name="PRINTER_NAME" /></translation>
 <translation id="122082903575839559">Algorytm podpisu certyfikatu</translation>
 <translation id="1221024147024329929">PKCS #1, MD2 z szyfrowaniem RSA</translation>
 <translation id="1221825588892235038">Tylko zaznaczenie</translation>
@@ -509,6 +507,7 @@
 <translation id="1699395855685456105">Wersja sprzętu:</translation>
 <translation id="1700199471143028312">Twój administrator nie zezwala na tworzenie nadzorowanych użytkowników.</translation>
 <translation id="1701062906490865540">Usuń tę osobę</translation>
+<translation id="1701364987952948449">Przeglądaj jako gość</translation>
 <translation id="1706586824377653884">Dodane przez administratora</translation>
 <translation id="1706625117072057435">Poziomy powiększenia</translation>
 <translation id="1707463636381878959">Udostępnij tę sieć innym użytkownikom</translation>
@@ -754,7 +753,6 @@
 <translation id="2114224913786726438">Moduły (<ph name="TOTAL_COUNT" />) – nie wykryto konfliktów</translation>
 <translation id="2114326799768592691">Załaduj ponownie &amp;ramkę</translation>
 <translation id="2115103655317273167">Wyślij na telefon</translation>
-<translation id="2115291620696624944">Błąd podczas drukowania <ph name="PAGE_NUMBER" /> str. na: <ph name="PRINTER_NAME" /></translation>
 <translation id="2115926821277323019">Adres URL musi być prawidłowy</translation>
 <translation id="2115946962706216358">Nie udało się dołączyć komputera do domeny. Powodem może być przekroczenie dozwolonej liczby przyłączonych komputerów dla Twojego konta na serwerze.</translation>
 <translation id="2116673936380190819">ostatnia godzina</translation>
@@ -873,7 +871,6 @@ Po utworzeniu nadzorowanego użytkownika możesz w dowolnym czasie i z dowolnego
 <translation id="2255317897038918278">Dodawanie sygnatury czasowej firmy Microsoft</translation>
 <translation id="225614027745146050">Witamy</translation>
 <translation id="225692081236532131">Stan aktywacji</translation>
-<translation id="2260567344816042527">Google Chrome będzie korzystać z komórkowej transmisji danych, jeśli nie będzie dostępne połączenie z inną siecią.</translation>
 <translation id="2262477216570151239">Opóźnienie przed powtarzaniem</translation>
 <translation id="226269835214688456">Jeśli wyłączysz Smart Lock na Chromebooki, nie odblokujesz urządzenia z Chrome, używając telefonu. Trzeba będzie wpisać hasło.</translation>
 <translation id="2263189956353037928">Wyloguj się i zaloguj się ponownie</translation>
@@ -895,6 +892,7 @@ Po utworzeniu nadzorowanego użytkownika możesz w dowolnym czasie i z dowolnego
 <translation id="2282146716419988068">Proces GPU</translation>
 <translation id="2282155092769082568">URL automatycznej konfiguracji:</translation>
 <translation id="2283117145434822734">F6</translation>
+<translation id="2286841657746966508">Adres rozliczeniowy</translation>
 <translation id="2286950485307333924">Jesteś teraz zalogowany w Chrome</translation>
 <translation id="2287590536030307392">Wyłącz wszystkie połączenia bezprzewodowe.</translation>
 <translation id="2288735659267887385">Ustawienia ułatwień dostępu</translation>
@@ -1634,6 +1632,7 @@ Dalsze instrukcje znajdziesz w e-mailu przesłanym na adres <ph name="ACCOUNT_EM
 <translation id="3315158641124845231">Ukryj <ph name="PRODUCT_NAME" /></translation>
 <translation id="3317459757438853210">Druk dwustronny</translation>
 <translation id="3319048459796106952">Nowe okno &amp;incognito</translation>
+<translation id="3320021301628644560">Dodaj adres rozliczeniowy</translation>
 <translation id="3320859581025497771">Twój operator</translation>
 <translation id="3323447499041942178">Pole tekstowe</translation>
 <translation id="3324301154597925148">Czy to oczekiwana strona wyszukiwania?</translation>
@@ -1832,7 +1831,6 @@ Dalsze instrukcje znajdziesz w e-mailu przesłanym na adres <ph name="ACCOUNT_EM
 <translation id="3618849550573277856">Sprawdź słowo „<ph name="LOOKUP_STRING" />”</translation>
 <translation id="3620292326130836921">Wszystko ma już kopię zapasową.</translation>
 <translation id="3623574769078102674">Tym użytkownikiem nadzorowanym będzie zarządzać <ph name="MANAGER_EMAIL" />.</translation>
-<translation id="3624814222765772771">Poziom naładowania baterii (<ph name="PROGRESS_PERCENT" />%) jest za niski, by zainstalować aktualizację</translation>
 <translation id="3625870480639975468">Resetuj powiększenie</translation>
 <translation id="3626281679859535460">Jasność</translation>
 <translation id="3627052133907344175">Rozszerzenie wymaga „<ph name="IMPORT_NAME" />” – minimalnie wersji „<ph name="IMPORT_VERSION" />”, ale zainstalowana jest tylko wersja „<ph name="INSTALLED_VERSION" />”.</translation>
@@ -3027,7 +3025,6 @@ Naciśnij dowolny klawisz, by kontynuować przeglądanie.</translation>
 <translation id="5454166040603940656">za pomocą <ph name="PROVIDER" /></translation>
 <translation id="5457113250005438886">Nieprawidłowe</translation>
 <translation id="5457459357461771897">Odczyt i usuwanie zdjęć, muzyki oraz innych multimediów na komputerze</translation>
-<translation id="5457599981699367932">Przeglądaj jako gość</translation>
 <translation id="5463275305984126951">Indeks – <ph name="LOCATION" /></translation>
 <translation id="5463856536939868464">Menu zawierające ukryte zakładki</translation>
 <translation id="5464632865477611176">Uruchom tym razem</translation>
@@ -3484,7 +3481,6 @@ Naciśnij dowolny klawisz, by kontynuować przeglądanie.</translation>
 <translation id="6181431612547969857">Pobieranie zostało zablokowane</translation>
 <translation id="6185132558746749656">Lokalizacja urządzenia</translation>
 <translation id="6185696379715117369">Strona do góry</translation>
-<translation id="618807527697571179">Nie udało się wykryć modelu drukarki. Wybierz producenta i model z listy.</translation>
 <translation id="6188939051578398125">Wprowadź nazwy lub adresy.</translation>
 <translation id="6189412234224385711">Otwórz w rozszerzeniu <ph name="EXTENSION_NAME" /></translation>
 <translation id="6196640612572343990">Blokuj pliki cookie innych firm</translation>
@@ -3689,7 +3685,7 @@ Naciśnij dowolny klawisz, by kontynuować przeglądanie.</translation>
 <translation id="646727171725540434">Serwer proxy HTTP</translation>
 <translation id="6468485451923838994">Czcionki</translation>
 <translation id="6472893788822429178">Pokaż przycisk strony startowej</translation>
-<translation id="6473842110411557830">Ilustracja: Powerwash</translation>
+<translation id="6473842110411557830">Ilustracja: myjka ciśnieniowa</translation>
 <translation id="6474706907372204693">Poprzednia metoda wprowadzania</translation>
 <translation id="6474884162850599008">Odłącz konto na Dysku Google</translation>
 <translation id="6475697075626596525"><ph name="APP_NAME" /> chce udostępnić zawartość Twojego ekranu. Wybierz elementy, które chcesz udostępnić.</translation>
@@ -3722,6 +3718,7 @@ Naciśnij dowolny klawisz, by kontynuować przeglądanie.</translation>
 <translation id="6509136331261459454">Zarządzaj użytkownikami</translation>
 <translation id="6509207748479174212">Licencja na multimedia</translation>
 <translation id="6510568984200103950">Mniej ustawień</translation>
+<translation id="6513247462497316522">Google Chrome będzie używać komórkowej transmisji danych, jeśli nie jest dostępne połączenie z inną siecią.</translation>
 <translation id="6514565641373682518">Ta strona wyłączyła kursor myszy.</translation>
 <translation id="6518014396551869914">Kop&amp;iuj grafikę</translation>
 <translation id="651942933739530207">Czy chcesz, aby aplikacja <ph name="APP_NAME" /> miała dostęp do Twojego ekranu i wyjścia audio?</translation>

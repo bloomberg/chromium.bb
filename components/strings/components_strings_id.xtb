@@ -213,7 +213,7 @@
 <translation id="277499241957683684">Catatan perangkat hilang</translation>
 <translation id="2784949926578158345">Sambungan disetel ulang.</translation>
 <translation id="2794233252405721443">Situs diblokir</translation>
-<translation id="2803306138276472711">Google Penjelajahan Aman baru saja <ph name="BEGIN_LINK" />mendeteksi perangkat lunak perusak<ph name="END_LINK" /> di <ph name="SITE" />. Situs web yang umumnya aman terkadang terinfeksi perangkat lunak perusak.</translation>
+<translation id="2803306138276472711">Google Penjelajahan Aman baru saja <ph name="BEGIN_LINK" />mendeteksi software perusak<ph name="END_LINK" /> di <ph name="SITE" />. Situs web yang umumnya aman terkadang terinfeksi software perusak.</translation>
 <translation id="2824775600643448204">Bilah penelusuran dan alamat</translation>
 <translation id="2826760142808435982">Sambungan dienkripsi dan diautentikasi menggunakan <ph name="CIPHER" /> dan menggunakan <ph name="KX" /> sebagai mekanisme pertukaran kunci.</translation>
 <translation id="2835170189407361413">Hapus formulir</translation>
@@ -550,7 +550,7 @@
 <translation id="5814352347845180253">Anda dapat kehilangan akses ke konten premium dari <ph name="SITE" /> dan beberapa situs lain.</translation>
 <translation id="5838278095973806738">Jangan masukkan informasi sensitif apa pun di situs ini (misalnya, sandi atau kartu kredit), karena penyerang dapat mencurinya.</translation>
 <translation id="5869405914158311789">Situs ini tidak dapat dijangkau</translation>
-<translation id="5869522115854928033">Sandi yang disimpan</translation>
+<translation id="5869522115854928033">Sandi tersimpan</translation>
 <translation id="5872918882028971132">Saran Induk</translation>
 <translation id="5901630391730855834">Kuning</translation>
 <translation id="5920262536204764679">{NUM_COOKIES,plural, =1{1 terpakai}other{# terpakai}}</translation>
@@ -580,7 +580,7 @@
 <translation id="6184817833369986695">(kelompok: <ph name="UPDATE_COHORT_NAME" />)</translation>
 <translation id="6203231073485539293">Periksa sambungan internet Anda</translation>
 <translation id="6218753634732582820">Hapus alamat dari Chromium?</translation>
-<translation id="6221345481584921695">Google Penjelajahan Aman baru saja <ph name="BEGIN_LINK" />mendeteksi perangkat lunak perusak<ph name="END_LINK" /> di <ph name="SITE" />. Situs web yang biasanya aman terkadang terinfeksi perangkat lunak perusak. Konten berbahaya datang dari <ph name="SUBRESOURCE_HOST" />, yang dikenal luas sebagai distributor perangkat lunak perusak.</translation>
+<translation id="6221345481584921695">Google Penjelajahan Aman baru saja <ph name="BEGIN_LINK" />mendeteksi software perusak<ph name="END_LINK" /> di <ph name="SITE" />. Situs web yang biasanya aman terkadang terinfeksi software perusak. Konten berbahaya datang dari <ph name="SUBRESOURCE_HOST" />, yang dikenal luas sebagai distributor software perusak.</translation>
 <translation id="6251924700383757765">Kebijakan privasi</translation>
 <translation id="6254436959401408446">Tidak cukup memori untuk membuka halaman ini</translation>
 <translation id="625755898061068298">Anda telah memilih untuk menonaktifkan peringatan keamanan untuk situs ini.</translation>
@@ -653,6 +653,7 @@
 <translation id="6895330447102777224">Kartu telah dikonfirmasi</translation>
 <translation id="6897140037006041989">Agen Pengguna</translation>
 <translation id="6915804003454593391">Pengguna:</translation>
+<translation id="6945221475159498467">Pilih</translation>
 <translation id="6948701128805548767">Untuk melihat persyaratan dan metode pengambilan, pilih alamat</translation>
 <translation id="6957887021205513506">Sertifikat server tampaknya palsu.</translation>
 <translation id="6965382102122355670">Oke</translation>
@@ -685,7 +686,7 @@
 <translation id="721197778055552897"><ph name="BEGIN_LINK" />Selengkapnya<ph name="END_LINK" /> tentang masalah ini.</translation>
 <translation id="7219179957768738017">Koneksi menggunakan <ph name="SSL_VERSION" />.</translation>
 <translation id="7220786058474068424">Dalam proses</translation>
-<translation id="724691107663265825">Situs yang akan dibuka berisi perangkat lunak perusak</translation>
+<translation id="724691107663265825">Situs yang akan dibuka berisi software perusak</translation>
 <translation id="724975217298816891">Masukkan tanggal habis masa berlaku dan CVC untuk <ph name="CREDIT_CARD" /> guna memperbarui detail kartu. Setelah mengonfirmasi, detail kartu Anda akan dibagikan dengan situs ini.</translation>
 <translation id="7260504762447901703">Cabut akses</translation>
 <translation id="7275334191706090484">Bookmark yang Terkelola</translation>
@@ -747,7 +748,7 @@
 <translation id="7716424297397655342">Situs ini tidak dapat dimuat dari cache</translation>
 <translation id="7752995774971033316">Tidak terkelola</translation>
 <translation id="7755287808199759310">Orang tua dapat membuka blokirnya untukmu</translation>
-<translation id="7758069387465995638">Perangkat lunak antivirus atau firewall mungkin memblokir sambungan.</translation>
+<translation id="7758069387465995638">Software antivirus atau firewall mungkin memblokir sambungan.</translation>
 <translation id="7761701407923456692">Sertifikat server tidak cocok dengan URL.</translation>
 <translation id="7763386264682878361">Parser Manifes Pembayaran</translation>
 <translation id="7764225426217299476">Tambahkan alamat</translation>
@@ -770,7 +771,7 @@
 <translation id="7947285636476623132">Periksa tahun kedaluwarsa dan coba lagi</translation>
 <translation id="7951415247503192394">(32 bit)</translation>
 <translation id="7956713633345437162">Bookmark seluler</translation>
-<translation id="7961015016161918242">Tidak pernah</translation>
+<translation id="7961015016161918242">Jangan pernah</translation>
 <translation id="7962083544045318153">ID Kerusakan <ph name="CRASH_LOCAL_ID" /></translation>
 <translation id="7983301409776629893">Selalu terjemahkan <ph name="ORIGINAL_LANGUAGE" /> ke <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="7995512525968007366">Tidak Ditentukan</translation>

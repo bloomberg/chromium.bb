@@ -15,7 +15,6 @@
 <translation id="1023220960495960452">文字変換（vanakkam → வணக்கம்）</translation>
 <translation id="1026822031284433028">画像を読み込む</translation>
 <translation id="1029317248976101138">ズーム</translation>
-<translation id="1030173864176315846"><ph name="PRINTER_NAME" /> で <ph name="PAGE_NUMBER" /> ページの印刷が完了しました</translation>
 <translation id="1031362278801463162">プレビューを読み込んでいます</translation>
 <translation id="103279545524624934">Android アプリを起動できるようにディスク領域を解放します。</translation>
 <translation id="1033780634303702874">シリアル デバイスへのアクセス</translation>
@@ -149,7 +148,6 @@
     <ph name="BR" />
     次の画面でフィードバックをお送りください。この問題の解決に役立てさせていただきます。</translation>
 <translation id="121783623783282548">パスワードが一致しません。</translation>
-<translation id="1218323606465324064">現在 <ph name="PRINTER_NAME" /> で <ph name="PAGE_NUMBER" /> ページを印刷しています</translation>
 <translation id="122082903575839559">証明書の署名アルゴリズム</translation>
 <translation id="1221024147024329929">PKCS #1 MD2 with RSA 暗号化</translation>
 <translation id="1221825588892235038">選択したコンテンツのみ</translation>
@@ -510,6 +508,7 @@
 <translation id="1699395855685456105">ハードウェア リビジョン:</translation>
 <translation id="1700199471143028312">管理者が監視対象ユーザーの作成を許可していません。</translation>
 <translation id="1701062906490865540">このユーザーを削除</translation>
+<translation id="1701364987952948449">ゲストとしてブラウジング</translation>
 <translation id="1706586824377653884">管理者により追加</translation>
 <translation id="1706625117072057435">ズームレベル</translation>
 <translation id="1707463636381878959">他のユーザーとネットワークを共有</translation>
@@ -755,7 +754,6 @@
 <translation id="2114224913786726438">モジュール（<ph name="TOTAL_COUNT" />） - 競合は検出されませんでした</translation>
 <translation id="2114326799768592691">フレームを再読み込み(&amp;F)</translation>
 <translation id="2115103655317273167">モバイル端末に送信</translation>
-<translation id="2115291620696624944"><ph name="PRINTER_NAME" /> で <ph name="PAGE_NUMBER" /> ページを印刷中にエラーが発生しました</translation>
 <translation id="2115926821277323019">有効な URL を入力してください</translation>
 <translation id="2115946962706216358">マシンをドメインに追加できませんでした。お使いのアカウントでサーバーに追加できるマシンの上限数を超えている可能性があります。</translation>
 <translation id="2116673936380190819">1 時間以内</translation>
@@ -874,7 +872,6 @@
 <translation id="2255317897038918278">Microsoft タイム スタンプ</translation>
 <translation id="225614027745146050">ようこそ</translation>
 <translation id="225692081236532131">起動状態</translation>
-<translation id="2260567344816042527">ユーザーが別のネットワークに接続していない場合、Google Chrome ではモバイルデータが使用されます。</translation>
 <translation id="2262477216570151239">リピートまでの時間</translation>
 <translation id="226269835214688456">Smart Lock for Chromebook を無効にすると、スマートフォンを使って Chrome 搭載デバイスのロックを解除することはできなくなり、パスワードの入力が必要になります。</translation>
 <translation id="2263189956353037928">ログアウトして再度ログイン</translation>
@@ -896,6 +893,7 @@
 <translation id="2282146716419988068">GPU プロセス</translation>
 <translation id="2282155092769082568">自動設定 URL:</translation>
 <translation id="2283117145434822734">F6</translation>
+<translation id="2286841657746966508">請求先住所</translation>
 <translation id="2286950485307333924">Chrome にログイン済み</translation>
 <translation id="2287590536030307392">すべての無線接続をオフにします。</translation>
 <translation id="2288735659267887385">ユーザー補助機能の設定</translation>
@@ -1635,6 +1633,7 @@
 <translation id="3315158641124845231"><ph name="PRODUCT_NAME" /> を隠す</translation>
 <translation id="3317459757438853210">両面印刷</translation>
 <translation id="3319048459796106952">シークレット ウィンドウを開く(&amp;I)</translation>
+<translation id="3320021301628644560">請求先住所を追加</translation>
 <translation id="3320859581025497771">携帯通信会社</translation>
 <translation id="3323447499041942178">テキスト ボックス</translation>
 <translation id="3324301154597925148">この検索ページでよろしいですか？</translation>
@@ -1833,7 +1832,6 @@
 <translation id="3618849550573277856">「<ph name="LOOKUP_STRING" />」を検索</translation>
 <translation id="3620292326130836921">すべてバックアップ済みです。</translation>
 <translation id="3623574769078102674">この監視対象ユーザーは <ph name="MANAGER_EMAIL" /> によって管理されます。</translation>
-<translation id="3624814222765772771">更新に必要な電池残量が不足しています（<ph name="PROGRESS_PERCENT" />%）</translation>
 <translation id="3625870480639975468">ズームをリセットする</translation>
 <translation id="3626281679859535460">輝度</translation>
 <translation id="3627052133907344175">拡張機能には <ph name="IMPORT_NAME" /> バージョン <ph name="IMPORT_VERSION" /> 以上が必要ですが、インストールされているのはバージョン <ph name="INSTALLED_VERSION" /> のみです。</translation>
@@ -3030,7 +3028,6 @@
 <translation id="5454166040603940656">- <ph name="PROVIDER" /></translation>
 <translation id="5457113250005438886">無効</translation>
 <translation id="5457459357461771897">パソコンからの写真、音楽、その他のメディアの読み取りと削除</translation>
-<translation id="5457599981699367932">ゲストとしてブラウジング</translation>
 <translation id="5463275305984126951"><ph name="LOCATION" /> のインデックス</translation>
 <translation id="5463856536939868464">非表示のブックマークを含むメニュー</translation>
 <translation id="5464632865477611176">今回は実行する</translation>
@@ -3487,7 +3484,6 @@
 <translation id="6181431612547969857">ダウンロードがブロックされました</translation>
 <translation id="6185132558746749656">デバイスの位置情報</translation>
 <translation id="6185696379715117369">ページ内を上に移動</translation>
-<translation id="618807527697571179">プリンタの機種を検出できませんでした。リストからメーカーと機種を選択してください。</translation>
 <translation id="6188939051578398125">名前またはアドレスを入力します。</translation>
 <translation id="6189412234224385711"><ph name="EXTENSION_NAME" /> で開く</translation>
 <translation id="6196640612572343990">サードパーティの Cookie をブロックする</translation>
@@ -3725,6 +3721,7 @@
 <translation id="6509136331261459454">他のユーザーを管理...</translation>
 <translation id="6509207748479174212">メディア ライセンス</translation>
 <translation id="6510568984200103950">基本設定</translation>
+<translation id="6513247462497316522">他のネットワークに接続していない場合、Google Chrome はモバイル データを使用します。</translation>
 <translation id="6514565641373682518">このページではマウス カーソルが無効になります。</translation>
 <translation id="6518014396551869914">画像をコピー(&amp;Y)</translation>
 <translation id="651942933739530207">画面と音声出力を <ph name="APP_NAME" /> と共有しますか？</translation>

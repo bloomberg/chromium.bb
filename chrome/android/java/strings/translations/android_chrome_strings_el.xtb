@@ -27,7 +27,6 @@
 Για να χρησιμοποιήσετε το Φυσικό δίκτυο, θα πρέπει να ενεργοποιήσετε το Bluetooth και την Τοποθεσία.</translation>
 <translation id="124678866338384709">Κλείσιμο τρέχουσας καρτέλας</translation>
 <translation id="1258753120186372309">Google doodle: <ph name="DOODLE_DESCRIPTION" /></translation>
-<translation id="1265597927250775944">Διαγράφει το ιστορικό και τις προτάσεις της γραμμής διευθύνσεων.</translation>
 <translation id="1272079795634619415">Διακοπή</translation>
 <translation id="1283039547216852943">Πατήστε για ανάπτυξη</translation>
 <translation id="1285320974508926690">Να μην γίνεται ποτέ μετάφραση αυτού του ιστότοπου</translation>
@@ -263,7 +262,6 @@
 <translation id="3859306556332390985">Αναζήτηση προς τα εμπρός</translation>
 <translation id="3894427358181296146">Προσθήκη φακέλου…</translation>
 <translation id="3895926599014793903">Αναγκαστική ενεργοποίηση εστίασης</translation>
-<translation id="3915590178385207649">Διαγράφει το ιστορικό από όλες τις συνδεδεμένες συσκευές. Δείτε άλλη δραστηριότητα από τον Λογαριασμό σας Google στη διεύθυνση <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="3917783807003067648">Η τοποθεσία είναι αποκλεισμένη</translation>
 <translation id="3927692899758076493">Sans Serif</translation>
 <translation id="3928666092801078803">Συνδυασμός των δεδομένων μου</translation>
@@ -609,7 +607,6 @@
 <translation id="7423098979219808738">Να γίνεται ερώτηση πρώτα</translation>
 <translation id="7437998757836447326">Αποσύνδεση από το Chrome</translation>
 <translation id="7445411102860286510">Να επιτρέπεται στους ιστότοπους η αυτόματη αναπαραγωγή βίντεο σε σίγαση (συνιστάται)</translation>
-<translation id="7449574997654022410">Διαγράφει το ιστορικό και τις προτάσεις της γραμμής διευθύνσεων. Δείτε άλλη δραστηριότητα από τον Λογαριασμό σας Google στη διεύθυνση <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="7464701184726199289">Διαγράφει τα συγχρονισμένα δεδομένα από όλες τις συσκευές. Οι αποθηκευμένες ρυθμίσεις ιστότοπου δεν θα διαγραφούν και ενδέχεται να υποδεικνύουν τις συνήθειες περιήγησής σας. <ph name="BEGIN_LINK" />Μάθετε περισσότερα<ph name="END_LINK" /></translation>
 <translation id="7473891865547856676">Όχι, ευχαριστώ</translation>
 <translation id="7475192538862203634">Εάν αυτό το μήνυμα εμφανίζεται συχνά, δοκιμάστε αυτές τις <ph name="BEGIN_LINK" />προτάσεις<ph name="END_LINK" />.</translation>

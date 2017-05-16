@@ -582,38 +582,6 @@ Cada entrada de la llista especifica un identificador, que s'utilitza internamen
 <translation id="316778957754360075">Aquesta versió no està disponible des de la versió 29 de <ph name="PRODUCT_NAME" />. La manera recomanada de definir col·leccions d'aplicacions/extensions allotjades per una organització és incloure el lloc que allotja els paquets CRX a ExtensionInstallSources i col·locar enllaços de baixada directa als paquets en una pàgina web. Es pot crear un menú d'aplicacions per a la pàgina web mitjançant la política ExtensionInstallForcelist.</translation>
 <translation id="3185009703220253572">des de la versió <ph name="SINCE_VERSION" /></translation>
 <translation id="3187220842205194486">Les aplicacions per a Android no poden obtenir accés a les claus corporatives. Aquesta política no hi té cap efecte.</translation>
-<translation id="318812033927804102">Configura les opcions de gestió d'extensions per a <ph name="PRODUCT_NAME" />.
-
-          Aquesta política controla diverses opcions de configuració, com ara les opcions controlades per qualsevol política actual que estigui relacionada amb extensions. Aquesta política substituirà totes les polítiques anteriors, si totes dues s'han configurat.
-
-          Aquesta política assigna un identificador d'extensió o un URL d'actualització a la configuració corresponent. Amb un identificador d'extensió, la configuració s'aplicarà només a l'extensió especificada. Es pot establir una configuració predeterminada per a l'identificador especial *, que s'aplicarà a totes les extensions que no tinguin establerta una configuració predeterminada en aquesta política. Amb un URL d'actualització, la configuració s'aplicarà a totes les extensions que tinguin el mateix URL d'actualització indicat al manifest de l'extensió, tal com es descriu a <ph name="LINK_TO_EXTENSION_DOC1" />.
-
-          La configuració de cada extensió (o d'extensions amb el mateix URL d'actualització) és un altre diccionari que pot incloure els camps indicats a continuació.
-
-          installation_mode: assigna una cadena que indica el mode d'instal·lació de l'extensió. Les cadenes vàlides són:
-          * allowed: permet que l'usuari instal·li l'extensió. És el comportament predeterminat.
-          * blocked: bloqueja la instal·lació de l'extensió.
-          * force_installed: l'extensió s'instal·la automàticament i l'usuari no la pot suprimir.
-          * normal_installed: l'extensió s'instal·la automàticament, però l'usuari la pot desactivar.
-
-          El camp installation_mode també es pot configurar per a diverses extensions, com ara l'extensió * (com a configuració predeterminada) i les extensions amb el mateix URL d'actualització. En aquest cas, només es poden utilitzar els valors allowed i blocked.
-
-          Si el mode s'estableix en force_installed o normal_installed, cal configurar també un valor per a update_url. Tingueu en compte que l'URL d'actualització establert en aquesta política només s'utilitza a la instal·lació inicial; a les instal·lacions següents de l'extensió s'utilitzarà l'URL d'actualització indicat al manifest de l'extensió. L'URL d'actualització ha d'apuntar a un document XML de manifest d'actualització, tal com s'ha descrit abans.
-
-          blocked_permissions: assigna a una llista de cadenes que indiquen els permisos de les API bloquejades per a l'extensió. Els noms dels permisos són els mateixos que les cadenes de permís que es mostren al manifest de l'extensió, tal com es descriu a <ph name="LINK_TO_EXTENSION_DOC3" />. Aquesta opció també es pot configurar per a l'extensió *. Si l'extensió requereix un permís de la llista de bloquejats, no es podrà carregar. Si conté un permís bloquejat com a requisit opcional, es gestionarà com és habitual, però les sol·licituds de permisos en conflicte es rebutjaran automàticament en el temps d'execució.
-
-          allowed_permissions: s'assembla a blocked_permissions, però permet explícitament alguns permisos que potser estan inclosos a la llista de permisos bloquejats. Per això, no es pot configurar per a l'extensió *. Tingueu en compte que aquesta opció de configuració no ofereix automàticament els permisos concedits a les extensions.
-
-          minimum_version_required: assigna a una cadena de versió. El format de la cadena de versió és el mateix que l'utilitzat al manifest de l'extensió, tal com es descriu a <ph name="LINK_TO_EXTENSION_DOC4" />. Les extensions amb una versió anterior a la versió mínima especificada es desactivaran. Això s'aplica també a les extensions instal·lades de manera forçosa.
-
-          Les opcions següents només es poden utilitzar per a la configuració de * predeterminada:
-
-          install_sources: tots els elements d'aquesta llista són un patró que coincideix amb l'estil de l'extensió (consulteu https://developer.chrome.com/extensions/match_patterns). Els usuaris podran instal·lar fàcilment els elements de qualsevol URL que coincideixi amb un element d'aquesta llista. Aquests patrons han de permetre tant la ubicació del fitxer *.crx com de la pàgina on comença la baixada (és a dir, l'URL de referència).
-
-          allowed_types: aquesta opció afegeix a la llista blanca els tipus d'extensions i d'aplicacions admesos que es poden instal·lar a <ph name="PRODUCT_NAME" />. El valor és una llista de cadenes, cadascuna de les quals hauria de ser una de les següents: extension, theme, user_script, hosted_app, legacy_packaged_app, platform_app. Consulteu la documentació sobre les extensions de <ph name="PRODUCT_NAME" /> per obtenir-ne més informació.
-
-          No utilitzeu aquesta política, ja que encara no està preparada.
-          </translation>
 <translation id="3201273385265130876">Et permet especificar el servidor intermediari que <ph name="PRODUCT_NAME" /> utilitza i impedeix que els usuaris en canviïn la configuració.
 
           Si decideixes connectar-te sempre a la xarxa directament en comptes d'utilitzar un servidor intermediari, la resta d'opcions s'ignoren.
@@ -662,15 +630,15 @@ Si s'activa aquest paràmetre o si no es configura, els usuaris podran activar e
 
 Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor intermediari i l'ordinador no podrà compartir les seves impressores amb <ph name="CLOUD_PRINT_NAME" />.</translation>
 <translation id="3297010562646015826">Activa la finalització de processos al gestor de tasques</translation>
-<translation id="3307746730474515290">Controla quins tipus d'aplicacions i d'extensions es poden instal·lar i limita l'accés al temps d'execució.
+<translation id="3307746730474515290">Controla quins tipus d'aplicacions i d'extensions es poden instal·lar i limita l'accés en temps d'execució.
 
-          Aquesta configuració afegeix a la llista blanca els tipus d'extensions i d'aplicacions admesos que es poden instal·lar a <ph name="PRODUCT_NAME" /> i estableix amb quins amfitrions poden interaccionar. El valor és una llista de cadenes, cadascuna de les quals hauria de ser una de les següents: "extension", "theme", "user_script", "hosted_app", "legacy_packaged_app", "platform_app". Consulta la documentació de les extensions de <ph name="PRODUCT_NAME" /> per obtenir més informació sobre aquests tipus.
+          Aquesta configuració fa una llista dels tipus d'extensions i d'aplicacions admesos que es poden instal·lar a <ph name="PRODUCT_NAME" /> i dels amfitrions amb què poden interaccionar. El valor és una llista de cadenes, cadascuna de les quals hauria de ser una de les següents: "extension", "theme", "user_script", "hosted_app", "legacy_packaged_app", "platform_app". Consulta la documentació de les extensions de <ph name="PRODUCT_NAME" /> per obtenir-ne més informació.
 
-          Tingues en compte que aquesta política també afecta les extensions i les aplicacions que s'han d'instal·lar obligatòriament mitjançant ExtensionInstallForcelist.
+          Tingues en compte que aquesta política també força les extensions i les aplicacions perquè s'instal·lin obligatòriament mitjançant ExtensionInstallForcelist.
 
-          Si es configura aquest paràmetre, no s'instal·laran les extensions o les aplicacions d'un tipus que no aparegui a la llista.
+          Si es configura aquesta opció, no s'instal·laran les extensions o les aplicacions d'un tipus que no aparegui a la llista.
 
-          Si no es configura aquest paràmetre, no s'aplicarà cap restricció als tipus d'extensions i d'aplicacions acceptables.</translation>
+          Si no es configura aquesta opció, no s'aplicarà cap restricció als tipus d'extensions i d'aplicacions acceptables.</translation>
 <translation id="3322771899429619102">Us permet definir una llista de patrons d'URL que especifiquin els llocs que estan autoritzats a utilitzar la generació de claus. Si un patró d'URL està configurat com a "KeygenBlockedForUrls", la política substitueix aquestes excepcions.
 
 
@@ -942,7 +910,7 @@ Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor int
 <translation id="4474167089968829729">Permet que el gestor de contrasenyes desi contrasenyes</translation>
 <translation id="4476769083125004742">Si aquesta política s'estableix en <ph name="BLOCK_GEOLOCATION_SETTING" />, les aplicacions per a Android no poden accedir a la informació d'ubicació. Si s'estableix en un altre valor o la deixes sense establir, es demana a l'usuari que doni permís quan l'aplicació per a Android vulgui accedir a la informació d'ubicació.</translation>
 <translation id="4480694116501920047">Força SafeSearch</translation>
-<translation id="4482640907922304445">Mostra el botó d'inici a la barra d'eines de <ph name="PRODUCT_NAME" />. Si activeu aquest paràmetre, el botó d'inici es mostrarà sempre. Si el desactiveu, el botó d'inici no es mostrarà mai. Si l'activeu o el desactiveu, els usuaris no podran canviar ni substituir aquesta configuració a <ph name="PRODUCT_NAME" />. Si no definiu aquesta política, l'usuari podrà decidir si vol que es mostri el botó d'inici.</translation>
+<translation id="4482640907922304445">Mostra el botó Pàgina d'inici a la barra d'eines de <ph name="PRODUCT_NAME" />. Si activeu aquesta opció, el botó Pàgina d'inici es mostrarà sempre. Si la desactiveu, el botó Pàgina d'inici no es mostrarà mai. Independentment de si activeu o desactiveu aquesta opció, els usuaris no podran canviar-la ni anul·lar-la a <ph name="PRODUCT_NAME" />. Si no definiu aquesta política, l'usuari podrà decidir si vol que es mostri el botó Pàgina d'inici.</translation>
 <translation id="4485425108474077672">Configura l'URL de la pàgina Pestanya nova</translation>
 <translation id="4492287494009043413">Desactivació de les captures de pantalla</translation>
 <translation id="450537894712826981">Defineix la mida de memòria cau que <ph name="PRODUCT_NAME" /> utilitzarà per emmagatzemar fitxers multimèdia de la memòria cau al disc.

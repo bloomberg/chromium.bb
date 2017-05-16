@@ -620,38 +620,6 @@
 <translation id="316778957754360075">Šī iestatījuma darbība ir pārtraukta ar <ph name="PRODUCT_NAME" /> versiju 29. Uzņēmumu mitinātas paplašinājumu/lietotņu kolekcijas ieteicams iestatīt, ietverot vietnes mitināšanu CRX pakotnēs politikā ExtensionInstallSources un vietnē ievietojot tiešas saites uz pakotņu lejupielādēm. Lietojumprogrammu palaidēju attiecīgajai tīmekļa lapai var izveidot, izmantojot politiku ExtensionInstallForcelist.</translation>
 <translation id="3185009703220253572">, sākot no <ph name="SINCE_VERSION" /> versijas</translation>
 <translation id="3187220842205194486">Android lietotnes nevar iegūt piekļuvi korporatīvajām atslēgām. Šī politika neietekmē lietotnes.</translation>
-<translation id="318812033927804102">Šī politika tiek izmantota, lai konfigurētu <ph name="PRODUCT_NAME" /> paplašinājumu pārvaldības iestatījumus.
-
-          Ar šo politiku tiek regulēti vairāki iestatījumi, tostarp iestatījumi, kas tiek regulēti esošās ar paplašinājumiem saistītās politikās. Ja šī politika ir iestatīta, ar to tiek ignorētas jebkādas iestatītās mantotās politikas.
-
-          Izmantojot šo politiku, paplašinājuma ID vai atjauninājuma vietrādis URL tiek kartēts tā konfigurācijā. Izmantojot paplašinājuma ID, konfigurācija tiek lietota tikai konkrētajam paplašinājumam. Īpašajam ID “*” var iestatīt noklusējuma konfigurāciju, kas tiks lietota visiem paplašinājumiem, kuriem šajā politikā nav iestatīta pielāgota konfigurācija. Izmantojot atjauninājuma vietrādi URL, konfigurācija tiek lietota visiem paplašinājumiem, kuru manifestā ir norādīts konkrētais atjauninājuma vietrādis URL (kā aprakstīts šeit: <ph name="LINK_TO_EXTENSION_DOC1" />).
-
-          Katra paplašinājuma konfigurācija (vai paplašinājumi ar vienādu atjauninājuma vietrādi URL) ir atsevišķa vārdnīca, kurā var būt ietverti tālāk norādītie lauki.
-
-          “installation_mode”: veic kartēšanu uz virkni, kas norāda paplašinājuma instalēšanas režīmu. Derīgas ir šādas virknes:
-          * “allowed”: atļauj lietotājam instalēt paplašinājumus (noklusējuma darbība);
-          * “blocked”: bloķē paplašinājuma instalēšanu;
-          * “force_installed”: paplašinājums tiek instalēts automātiski, un lietotājs nevar to noņemt;
-          * “normal_installed”: paplašinājums tiek instalēts automātiski, taču lietotājs var to atspējot.
-
-          Lauku “installation_mode” var konfigurēt arī vairākiem paplašinājumiem, tostarp paplašinājumam ar apzīmējumu “*” (kā noklusējuma iestatījumiem) un paplašinājumiem ar vienādu atjauninājuma vietrādi URL. Šādā gadījumā var izmantot tikai vērtības “allowed” un “blocked”.
-
-          Ja režīms ir iestatīts uz “force_installed” vai “normal_installed”, ir jākongifurē arī lauks “update_url”. Ņemiet vērā, ka šajā politikā iestatītais atjauninājuma vietrādis URL tiek izmantots tikai sākotnējai instalēšanai; turpmākiem paplašinājuma atjauninājumiem tiek izmantots paplašinājuma manifestā norādītais atjauninājuma vietrādis URL. Atjauninājuma vietrādim URL ir jānorāda uz atjauninājuma manifesta XML dokumentu, kā aprakstīts iepriekš.
-
-          “blocked_permissions”: veic kartēšanu uz virkņu sarakstu, kas norāda bloķētās paplašinājuma API atļaujas. Atļauju nosaukumi ir tādi paši kā atļauju virknes, kas norādītas paplašinājuma manifestā (kā aprakstīts šeit: <ph name="LINK_TO_EXTENSION_DOC3" />). Šo iestatījumu var konfigurēt arī paplašinājumam ar atzīmi “*”. Ja paplašinājumam ir nepieciešama atļauja, kas norādīta bloķēšanas sarakstā, tā ielāde netiks atļauta. Ja bloķēta atļauja tajā ir norādīta kā neobligāta prasība, tā tiks apstrādāta kā parasti, taču izpildlaikā tiks automātiski noraidīta konfliktējošu atļauju pieprasīšana.
-
-          “allowed_permissions”: darbojas kā iestatījums “blocked_permissions”, taču skaidri piešķir dažas atļaujas, kas var būt bloķētas vispārējā bloķēto atļauju sarakstā, tādēļ to nevar konfigurēt paplašinājumam, kas atzīmēts ar “*”. Ņemiet vērā, ka ar šo iestatījumu netiek automātiski sniegtas paplašinājumiem piešķirtās atļaujas.
-
-          “minimum_version_required”: veic kartēšanu uz versijas virkni. Versijas virknes formāts ir tāds pats kā paplašinājuma manifestā izmantotais formāts (aprakstīts šeit: <ph name="LINK_TO_EXTENSION_DOC4" />). Paplašinājums, kura versija ir vecāka nekā norādītā minimālā versija, tiek atspējots. Tas attiecas arī uz piespiedu kārtā instalētiem paplašinājumiem.
-
-          Tālāk norādītos iestatījumus var izmantot tikai noklusējuma “*” konfigurācijai.
-
-          “install_sources”: katrs šī saraksta vienums ir paplašinājuma veida atbilstības modelis (skatiet vieni https://developer.chrome.com/extensions/match_patterns). Lietotāji var ērti instalēt vienumus no jebkura URL, kas atbilst kādam saraksta vienumam. Šiem modeļiem ir jāatļauj gan *.crx faila atrašanās vieta, gan lapa, no kuras tiek sākta lejupielāde (t.i., novirzītājs).
-
-          “allowed_types”: izmantojot šo iestatījumu, baltajā sarakstā tiek ievietoti atļauto paplašinājumu/lietotņu veidi, ko var instalēt pārlūkā <ph name="PRODUCT_NAME" />. Vērtība ir virkņu saraksts, un katrai virknei ir jābūt vienai no šīm: “extension”, “theme”, “user_script”, “hosted_app”, “legacy_packaged_app”, “platform_app”. Plašāku informāciju par šiem veidiem skatiet <ph name="PRODUCT_NAME" /> paplašinājumu dokumentācijā.
-
-          Šī politika vēl nav gatava lietošanai. Lūdzu, neizmantojiet to.
-          </translation>
 <translation id="3201273385265130876">Ļauj jums norādīt <ph name="PRODUCT_NAME" /> izmantoto starpniekserveri un neļauj lietotājiem mainīt starpniekserveru iestatījumus.
 
           Ja izvēlaties nekad neizmantot starpniekserveri un vienmēr izveidot tiešu savienojumu, visas pārējās opcijas tiek ignorētas.

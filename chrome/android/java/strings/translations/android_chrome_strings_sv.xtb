@@ -27,7 +27,6 @@
 Bluetooth och Plats måste vara aktiverade om du vill använda Physical Web-tjänster.</translation>
 <translation id="124678866338384709">Stäng den aktuella fliken</translation>
 <translation id="1258753120186372309">Googles doodle: <ph name="DOODLE_DESCRIPTION" /></translation>
-<translation id="1265597927250775944">Raderar historiken och förslag i adressfältet.</translation>
 <translation id="1272079795634619415">Stopp</translation>
 <translation id="1283039547216852943">Tryck och utöka</translation>
 <translation id="1285320974508926690">Översätt aldrig den här webbplatsen</translation>
@@ -263,7 +262,6 @@ Om du vill ändra söktermen trycker du länge för att välja. Om du vill förf
 <translation id="3859306556332390985">Sök framåt</translation>
 <translation id="3894427358181296146">Lägg till mapp</translation>
 <translation id="3895926599014793903">Tvinga aktivering av zoom</translation>
-<translation id="3915590178385207649">Historiken raderas från alla enheter där du är inloggad. Du ser annan aktivitet på Google-kontot på <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="3917783807003067648">Platsen är blockerad</translation>
 <translation id="3927692899758076493">Sans Serif</translation>
 <translation id="3928666092801078803">Slå ihop data</translation>
@@ -609,7 +607,6 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="7423098979219808738">Fråga först</translation>
 <translation id="7437998757836447326">Logga ut från Chrome</translation>
 <translation id="7445411102860286510">Tillåt att webbplatser automatiskt spelar upp videor utan ljud (rekommenderas)</translation>
-<translation id="7449574997654022410">Raderar historiken och förslag i adressfältet. Du ser annan aktivitet på Google-kontot på <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="7464701184726199289">Inställningarna rensar synkroniserad data från alla enheter. Sparade webbplatsinställningar raderas inte och kan visa dina surfvanor. <ph name="BEGIN_LINK" />Läs mer<ph name="END_LINK" /></translation>
 <translation id="7473891865547856676">Nej tack</translation>
 <translation id="7475192538862203634">Om du ser detta ofta provar du de här <ph name="BEGIN_LINK" />förslagen<ph name="END_LINK" />.</translation>

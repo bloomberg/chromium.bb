@@ -27,7 +27,6 @@
 Ak chcete používať Fyzický web, musíte mať zapnuté rozhranie Bluetooth a sledovanie polohy.</translation>
 <translation id="124678866338384709">Zavretie aktuálnej karty</translation>
 <translation id="1258753120186372309">Sviatočné logo Google: <ph name="DOODLE_DESCRIPTION" /></translation>
-<translation id="1265597927250775944">Vymaže históriu a návrhy v paneli s adresou.</translation>
 <translation id="1272079795634619415">Zastaviť</translation>
 <translation id="1283039547216852943">Klepnutím rozbaliť</translation>
 <translation id="1285320974508926690">Nikdy neprekladať tieto webové stránky</translation>
@@ -263,7 +262,6 @@ Ak chcete upraviť hľadaný výraz, vyberte ho dlhým stlačením. Ak chcete vy
 <translation id="3859306556332390985">Pretočiť dopredu</translation>
 <translation id="3894427358181296146">Pridanie priečinka</translation>
 <translation id="3895926599014793903">Vynútiť povolenie priblíženia</translation>
-<translation id="3915590178385207649">Vymaže históriu zo všetkých zariadení, na ktorých ste sa prihlásili. Ďalšiu aktivitu z účtu Google si môžete zobraziť na adrese <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="3917783807003067648">Poloha je zablokovaná</translation>
 <translation id="3927692899758076493">Bezpätkové</translation>
 <translation id="3928666092801078803">Spojiť moje dáta</translation>
@@ -609,7 +607,6 @@ Niektoré weby môžu napríklad na túto žiadosť reagovať tak, že vám zobr
 <translation id="7423098979219808738">Najprv sa spýtať</translation>
 <translation id="7437998757836447326">Odhlásenie z prehliadača Chrome</translation>
 <translation id="7445411102860286510">Povoliť webom automaticky prehrávať stlmené videá (odporúča sa)</translation>
-<translation id="7449574997654022410">Vymaže históriu a návrhy v paneli s adresou. Ďalšiu aktivitu z účtu Google si môžete zobraziť na adrese <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="7464701184726199289">Táto akcia vymaže synchronizované údaje zo všetkých zariadení. Uložené nastavenia webov sa neodstránia a môžu odrážať vaše návyky prehliadania. <ph name="BEGIN_LINK" />Ďalšie informácie<ph name="END_LINK" /></translation>
 <translation id="7473891865547856676">Nie, ďakujem</translation>
 <translation id="7475192538862203634">Ak sa vám táto stránka zobrazuje často, skúste použiť tieto <ph name="BEGIN_LINK" />návrhy<ph name="END_LINK" />.</translation>

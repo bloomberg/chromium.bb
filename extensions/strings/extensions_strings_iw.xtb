@@ -45,7 +45,6 @@
 <translation id="7003844668372540529">מוצר לא ידוע <ph name="PRODUCT_ID" /> מאת <ph name="VENDOR_NAME" /></translation>
 <translation id="7217838517480956708">מנהל המערכת של מחשב זה דורש התקנת <ph name="EXTENSION_NAME" />. לא ניתן להסיר או לשנות אותו.</translation>
 <translation id="7581279002575751816">‏יישומי פלאגין מסוג NPAPI אינם נתמכים.</translation>
-<translation id="7809034755304591547"><ph name="EXTENSION_NAME" /> (זיהוי תוסף '<ph name="EXTENSION_ID" />') נחסם על ידי מנהל המערכת.</translation>
 <translation id="7972881773422714442">אפשרויות: <ph name="EXTENSIONOPTIONS_TAG_NAME" /></translation>
 <translation id="8035920974645200807">מצלמה קדמית</translation>
 <translation id="8047248493720652249">תוסף זה לא הצליח לתת שם לקובץ "<ph name="ATTEMPTED_FILENAME" />" שהורד, משום שתוסף אחר (<ph name="EXTENSION_NAME" />) קבע שם קובץ אחר - "<ph name="ACTUAL_FILENAME" />".</translation>

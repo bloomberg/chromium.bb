@@ -574,38 +574,6 @@ Falls die Richtlinie auf "false" gesetzt wird, kann eine verzögerungsfreie auto
 <translation id="316778957754360075">Diese Einstellung wird ab <ph name="PRODUCT_NAME" />-Version 29 nicht mehr verwendet. Zur Einrichtung einer Sammlung mit Erweiterungen oder Apps, die von der Organisation gehostet wird, empfehlen wir, die Host-Website der CRX-Pakete in "ExtensionInstallSources" einzufügen und auf einer Webseite direkte Downloadlinks zu den Paketen bereitzustellen. Ein Launcher für diese Webseite kann mithilfe der Richtlinie "ExtensionInstallForcelist" erstellt werden.</translation>
 <translation id="3185009703220253572">Ab Version <ph name="SINCE_VERSION" /></translation>
 <translation id="3187220842205194486">Android-Apps können keinen Zugriff auf Schlüssel für die geschäftliche Nutzung erhalten. Sie sind von dieser Richtlinie nicht betroffen.</translation>
-<translation id="318812033927804102">Konfiguriert Einstellungen zur Erweiterungsverwaltung für <ph name="PRODUCT_NAME" />
-
-          Mit dieser Richtlinie werden verschiedene Einstellungen gesteuert, darunter Einstellungen, die von bestehenden auf Erweiterungen bezogenen Richtlinien geregelt werden. Diese Richtlinie überschreibt ältere Richtlinien, wenn beide konfiguriert sind.
-
-          Mit dieser Richtlinie wird eine Erweiterungs-ID oder eine Update-URL ihrer Konfiguration zugeordnet. Bei einer Erweiterungs-ID wird die Konfiguration nur auf die angegebene Erweiterung angewendet. Eine Standardkonfiguration kann für die Spezial-ID "*" festgelegt werden, die auf alle Erweiterungen angewendet wird, für die keine Standardkonfiguration in dieser Richtlinie konfiguriert ist. Bei einer Update-URL wird die Konfiguration auf alle Erweiterungen mit genau der im Manifest dieser Erweiterung angegebenen Update-URL angewendet, wie unter <ph name="LINK_TO_EXTENSION_DOC1" /> erläutert.
-
-          Bei der Konfiguration für jede Erweiterung (oder Erweiterungen mit der gleichen Update-URL) handelt es sich um ein weiteres Wörterbuch, das die im Folgenden genannten Felder enthalten kann:
-
-          "installation_mode": Verweist auf eine Zeichenfolge, die den Installationsmodus für die Erweiterung angibt. Folgende Zeichenfolgen sind gültig:
-          * "allowed": Lässt die Installation der Erweiterung durch den Nutzer zu. Dies ist das Standardverhalten.
-          * "blocked": Blockiert die Installation der Erweiterung.
-          * "force_installed": Die Erweiterung wird automatisch installiert und kann nicht vom Nutzer entfernt werden.
-          * "normal_installed": Die Erweiterung wird automatisch installiert, kann aber vom Nutzer deaktiviert werden.
-
-          Das Feld "installation_mode" kann auch für mehrere Erweiterungen konfiguriert werden, einschließlich der Erweiterung "*" (als Standardeinstellungen) und Erweiterungen mit der gleichen Update-URL. In diesem Fall können nur die Werte "allowed" und "blocked" verwendet werden
-
-          Wenn der Modus "force_installed" oder "normal_installed" festgelegt ist, muss auch "update_url" konfiguriert werden. Die in dieser Richtlinie festgelegte Update-URL wird nur für die Erstinstallation verwendet. Bei späteren Aktualisierungen der Erweiterungen wird die im Manifest der Erweiterung angegebene Update-URL verwendet. Die Update-URL muss wie oben erwähnt auf ein XML-Dokument zur Aktualisierung eines Manifests verweisen.
-
-          "blocked_permissions": Verweist auf eine Liste mit Zeichenfolgen, in denen die Berechtigungen für blockierte APIs für die Erweiterung angegeben sind. Die Namen der Berechtigungen sind identisch mit den im Manifest angegebenen Zeichenfolgen der Berechtigung, wie unter <ph name="LINK_TO_EXTENSION_DOC3" /> erläutert. Diese Einstellung kann auch für die Erweiterung "*" konfiguriert werden. Wenn die Erweiterung eine Berechtigung erfordert, die auf der Blockierungsliste steht, kann sie nicht geladen werden. Wenn sie eine blockierte Berechtigung als optionale Anforderung enthält, wird sie normal behandelt, allerdings werden Anforderungen in Konflikt stehender Berechtigungen automatisch zur Laufzeit abgelehnt.
-
-          "allowed_permissions": Ähnlich wie "blocked_permissions", nur werden einige Berechtigungen explizit zugelassen, die möglicherweise von der globalen Liste der blockierten Berechtigungen blockiert werden und daher nicht für die Erweiterung "*" konfiguriert werden können. Mit dieser Einstellung erhalten Erweiterungen jedoch nicht automatisch gewährte Berechtigungen.
-
-          "minimum_version_required": Verweist auf eine Versionszeichenfolge. Das Format der Versionszeichenfolge ist mit dem im Manifest der Erweiterung verwendeten Format identisch, wie unter <ph name="LINK_TO_EXTENSION_DOC4" /> erläutert. Eine Erweiterung mit einer älteren Version als der angegebenen Mindestversion wird deaktiviert. Dies gilt auch für Erweiterungen, deren Installation erzwungen wurde.
-
-          Die folgenden Einstellungen können nur für die "*"-Standardkonfiguration verwendet werden:
-
-          "install_sources": Bei den Einträgen in dieser Liste handelt es sich um auf die Erweiterung angepasste Übereinstimmungsmuster (siehe https://developer.chrome.com/extensions/match_patterns). Wenn eine URL mit einem Eintrag in dieser Liste übereinstimmt, können Nutzer ihn ganz einfach über diese URL installieren. Sowohl der Speicherort der CRX-Datei als auch die Seite, über die der Download gestartet wird (der Referrer), müssen durch diese Muster zugelassen sein.
-
-          "allowed_types": Mit dieser Einstellung werden die zulässigen Typen von Erweiterungen/Apps, die in <ph name="PRODUCT_NAME" /> installiert werden können, auf die weiße Liste gesetzt.  Der Wert besteht aus einer Liste mit folgenden Zeichenfolgen: "extension", "theme", "user_script", "hosted_app", "legacy_packaged_app", "platform_app". Weitere Informationen zu diesen Typen finden Sie in der Dokumentation zu den Erweiterungen in <ph name="PRODUCT_NAME" />.
-
-          Diese Richtlinie ist noch nicht einsatzbereit. Verwenden Sie sie daher bitte nicht.
-          </translation>
 <translation id="3201273385265130876">Ermöglicht Ihnen, den von <ph name="PRODUCT_NAME" /> verwendeten Proxyserver anzugeben, und verhindert, dass Nutzer die Proxy-Einstellungen ändern.
 
           Wenn Sie sich dafür entscheiden, nie einen Proxyserver, sondern immer eine direkte Verbindung zu nutzen, so werden alle anderen Optionen ignoriert.

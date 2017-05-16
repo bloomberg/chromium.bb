@@ -45,7 +45,6 @@
 <translation id="7003844668372540529"><ph name="VENDOR_NAME" /> എന്നതിൽ നിന്നുള്ള അജ്ഞാത ഉൽപ്പന്നം <ph name="PRODUCT_ID" /></translation>
 <translation id="7217838517480956708">ഈ മെഷീനിന്റെ അഡ്‌മിനിസ്‌ട്രേറ്റർ ഇൻസ്റ്റാളുചെയ്യുന്നതിനായി <ph name="EXTENSION_NAME" /> ആവശ്യപ്പെടുന്നു. ഇത് നീക്കംചെയ്യാനോ പരിഷ്‌ക്കരിക്കാനോ കഴിയില്ല.</translation>
 <translation id="7581279002575751816">NPAPI പ്ലഗിനുകൾ പിന്തുണയ്‌ക്കുന്നില്ല.</translation>
-<translation id="7809034755304591547"><ph name="EXTENSION_NAME" /> (വിപുലീകരണ ID "<ph name="EXTENSION_ID" />") അഡ്‌മിനിസ്‌ട്രേറ്റർ തടഞ്ഞു.</translation>
 <translation id="7972881773422714442">ഓപ്‌ഷനുകൾ: <ph name="EXTENSIONOPTIONS_TAG_NAME" /></translation>
 <translation id="8035920974645200807">മുൻവശത്തുള്ള ക്യാമറ</translation>
 <translation id="8047248493720652249">മറ്റൊരു വിപുലീകരണം (<ph name="EXTENSION_NAME" />) വ്യത്യസ്‌തമായ ഒരു ഫയൽനാമം "<ph name="ACTUAL_FILENAME" />" നിർണ്ണയിച്ചതിനാൽ ഈ വിപുലീകരണം ഡൗൺലോഡ് "<ph name="ATTEMPTED_FILENAME" />-ന് പേരുനൽകുന്നതിൽ പരാജയപ്പെട്ടു.</translation>

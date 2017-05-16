@@ -616,38 +616,6 @@ Contoh komponen seperti itu termasuk senarai pembatalan sijil dan data semakan i
 <translation id="316778957754360075">Penetapan ini telah dihentikan bermula pada <ph name="PRODUCT_NAME" /> versi 29. Cara yang disyorkan untuk menyediakan koleksi sambungan/apl yang dihoskan organisasi ialah dengan memasukkan tapak yang mengehoskan pakej CRX dalam ExtensionInstallSources dan meletakkan pautan muat turun terus kepada pakej tersebut di halaman web. Pelancar untuk halaman web tersebut boleh dihasilkan menggunakan dasar ExtensionInstallForcelist.</translation>
 <translation id="3185009703220253572">sejak versi <ph name="SINCE_VERSION" /></translation>
 <translation id="3187220842205194486">Apl Android tidak boleh mendapatkan akses kepada kunci korporat. Dasar ini tidak berkesan terhadapnya.</translation>
-<translation id="318812033927804102">Mengkonfigurasi tetapan pengurusan sambungan untuk <ph name="PRODUCT_NAME" />.
-
-          Dasar ini mengawal berbilang tetapan, termasuk tetapan yang dikawal oleh sebarang dasar berkaitan sambungan yang sedia ada. Dasar ini akan mengatasi sebarang dasar lama jika kedua-duanya ditetapkan.
-
-          Dasar ini memetakan ID sambungan atau URL kemas kini kepada konfigurasinya. Dengan ID sambungan, konfigurasi akan digunakan pada sambungan yang ditentukan sahaja. Konfigurasi lalai boleh ditetapkan untuk ID khas "*", yang akan digunakan pada semua sambungan yang konfigurasi tersuainya tidak ditetapkan dalam dasar ini. Dengan URL kemas kini, konfigurasi akan digunakan pada semua sambungan dengan URL kemas kini tepat yang dinyatakan dalam manifes sambungan ini, sebagaimana yang dihuraikan di <ph name="LINK_TO_EXTENSION_DOC1" />.
-
-          Konfigurasi bagi setiap sambungan (atau sambungan dengan URL kemas kini yang sama) ialah kamus lain yang boleh mengandungi medan yang didokumenkan di bawah.
-
-          "installation_mode": memetakan kepada rentetan yang menunjukkan mod pemasangan untuk sambungan tersebut. Rentetan yang sah ialah:
-          * "allowed": membenarkan sambungan dipasang oleh pengguna. Ini ialah gelagat lalai.
-          * "blocked": menyekat pemasangan sambungan.
-          * "force_installed": sambungan dipasang secara automatik dan tidak boleh dialih keluar oleh pengguna.
-          * "normal_installed": sambungan dipasang secara automatik tetapi boleh dilumpuhkan oleh pengguna.
-
-          "installation_mode" turut boleh dikonfigurasikan untuk berbilang sambungan, termasuk sambungan "*" (sebagai tetapan lalai) dan sambungan dengan URL kemas kini yang sama. Hanya nilai "allowed" dan "blocked" boleh digunakan dalam hal ini.
-
-          Jika mod ditetapkan kepada "force_installed" atau "normal_installed", maka "update_url" hendaklah dikonfigurasikan juga. Harap maklum bahawa URL kemas kini yang ditetapkan dalam dasar ini hanya digunakan untuk pemasangan permulaan; kemas kini sambungan yang berikutnya akan menggunakan URL kemas kini yang dinyatakan dalam manifes sambungan. URL kemas kini harus menghala kepada dokumen XML Manifes Kemas Kini seperti yang disebutkan di atas.
-
-          "blocked_permissions": memetakan kepada senarai rentetan yang menunjukkan kebenaran API yang disekat untuk sambungan tersebut. Nama kebenaran adalah sama seperti rentetan kebenaran yang diisytiharkan dalam manifes sambungan seperti yang dihuraikan di <ph name="LINK_TO_EXTENSION_DOC3" />. Tetapan ini turut boleh dikonfigurasikan untuk sambungan "*". Jika sambungan memerlukan kebenaran yang terdapat pada senarai sekat, sambungan tidak boleh dimuatkan. Jika sambungan mengandungi kebenaran disekat sebagai keperluan pilihan, sambungan itu akan dikendalikan secara biasa, tetapi permintaan kebenaran yang bercanggah akan ditolak secara automatik pada waktu jalan.
-
-          "allowed_permissions": sama dengan "blocked_permissions", tetapi sebaliknya membenarkan beberapa kebenaran secara jelas yang mungkin disekat oleh senarai kebenaran disekat global, dengan demikian tidak boleh dikonfigurasikan untuk sambungan "*". Harap maklum bahawa tetapan ini tidak memberikan kebenaran kepada sambungan secara automatik.
-
-          "minimum_version_required": memetakan kepada rentetan versi. Format rentetan versi adalah sama seperti rentetan yang digunakan dalam manifes sambungan, seperti yang dihuraikan di <ph name="LINK_TO_EXTENSION_DOC4" />. Sambungan versi yang lebih lama daripada versi minimum yang ditentukan akan dilumpuhkan. Keadaan ini dikenakan kepada sambungan yang dipasang secara paksa juga.
-
-          Tetapan berikut boleh digunakan hanya untuk konfigurasi "*" lalai:
-
-          "install_sources": Setiap item dalam senarai ini ialah corak yang sepadan dengan gaya sambungan (lihat https://developer.chrome.com/extensions/match_patterns). Para pengguna boleh memasang item dengan mudah daripada mana-mana URL yang sepadan dengan item dalam senarai ini. Lokasi fail *.crx dan juga halaman tempat muat turun bermula (iaitu perujuk) hendaklah dibenarkan oleh corak ini.
-
-          "allowed_types": Tetapan ini menyenaraiputihkan jenis sambungan/apl yang dibenarkan yang boleh dipasang dalam <ph name="PRODUCT_NAME" />.  Nilai ialah senarai rentetan, setiap satunya hendaklah merupakan salah satu antara yang berikut: "extension", "theme", "user_script", "hosted_app", "legacy_packaged_app", "platform_app". Lihat dokumentasi sambungan <ph name="PRODUCT_NAME" /> untuk mendapatkan maklumat lanjut tentang jenis-jenis ini.
-
-          Dasar ini belum sedia untuk digunakan lagi, oleh itu jangan gunakannya.
-          </translation>
 <translation id="3201273385265130876">Membenarkan anda menetapkan pelayan proksi yang digunakan oleh <ph name="PRODUCT_NAME" /> dan menghalang pengguna daripada menukar tetapan proksi.
 
           Jika anda memilih untuk tidak menggunakan pelayan proksi dan sentiasa bersambung secara terus, semua pilihan lain akan diabaikan.

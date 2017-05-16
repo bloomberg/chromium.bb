@@ -27,7 +27,6 @@
 คุณต้องเปิดใช้บลูทูธและตำแหน่งเพื่อที่จะใช้ Physical Web</translation>
 <translation id="124678866338384709">ปิดแท็บปัจจุบัน</translation>
 <translation id="1258753120186372309">Google doodle: <ph name="DOODLE_DESCRIPTION" /></translation>
-<translation id="1265597927250775944">ล้างประวัติการเข้าชมและคำแนะนำในแถบที่อยู่เว็บ</translation>
 <translation id="1272079795634619415">หยุด</translation>
 <translation id="1283039547216852943">แตะเพื่อขยาย</translation>
 <translation id="1285320974508926690">ไม่ต้องแปลไซต์นี้</translation>
@@ -263,7 +262,6 @@
 <translation id="3859306556332390985">ไปข้างหน้า</translation>
 <translation id="3894427358181296146">เพิ่มโฟลเดอร์</translation>
 <translation id="3895926599014793903">บังคับให้เปิดใช้การซูม</translation>
-<translation id="3915590178385207649">ล้างประวัติการเข้าชมจากอุปกรณ์ที่ลงชื่อเข้าใช้ทั้งหมด ดูกิจกรรมอื่นๆ จากบัญชี Google ของคุณที่ <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /></translation>
 <translation id="3917783807003067648">บล็อกตำแหน่งอยู่</translation>
 <translation id="3927692899758076493">Sans Serif</translation>
 <translation id="3928666092801078803">รวมข้อมูลของฉัน</translation>
@@ -609,7 +607,6 @@
 <translation id="7423098979219808738">ถามก่อน</translation>
 <translation id="7437998757836447326">ออกจากระบบ Chrome</translation>
 <translation id="7445411102860286510">อนุญาตให้เว็บไซต์เล่นวิดีโอที่ปิดเสียงโดยอัตโนมัติ (แนะนำ)</translation>
-<translation id="7449574997654022410">ล้างประวัติการเข้าชมและคำแนะนำในแถบที่อยู่เว็บ ดูกิจกรรมอื่นๆ จากบัญชี Google ของคุณที่ <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /></translation>
 <translation id="7464701184726199289">การดำเนินการนี้จะล้างข้อมูลที่ซิงค์จากอุปกรณ์ทั้งหมด การตั้งค่าเว็บไซต์ที่บันทึกไว้จะไม่ถูกลบและอาจส่งผลกับลักษณะการท่องเว็บของคุณ <ph name="BEGIN_LINK" />เรียนรู้เพิ่มเติม<ph name="END_LINK" /></translation>
 <translation id="7473891865547856676">ไม่ ขอบคุณ</translation>
 <translation id="7475192538862203634">หากคุณเห็นข้อความนี้บ่อยๆ โปรดลองทำตาม<ph name="BEGIN_LINK" />คำแนะนำ<ph name="END_LINK" />เหล่านี้</translation>

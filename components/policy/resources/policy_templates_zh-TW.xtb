@@ -585,38 +585,6 @@
 <translation id="316778957754360075">我們已於 <ph name="PRODUCT_NAME" /> 版本 29 移除這項設定。如要設定機構代管的擴充功能/應用程式系列，建議你將代管 CRX 封裝檔的網站加入 ExtensionInstallSources 中，並在網頁上提供該封裝檔的直接下載連結。你可以透過 ExtensionInstallForcelist 政策建立該網頁專用的啟動器。</translation>
 <translation id="3185009703220253572">自第 <ph name="SINCE_VERSION" /> 版起</translation>
 <translation id="3187220842205194486">Android 應用程式無法存取企業金鑰 (這項政策對企業金鑰沒有影響)。</translation>
-<translation id="318812033927804102">配置 <ph name="PRODUCT_NAME" /> 的擴充功能管理設定。
-
-          這項政策可控制多項設定 (包括由任何現有的擴充功能相關政策控制的設定)，效力優先於任何先前設定的既有政策。
-
-          這項政策可為擴充功能 ID 或更新網址與其設定建立對應關係。有了擴充功能 ID，系統就只會將設定套用到指定的擴充功能。您可以針對特殊的 ID「*」指定預設設定，讓沒有透過這項政策指定自訂設定的擴充功能全部套用預設設定。此外，系統會比對這個擴充功能的資訊清單提供的更新網址，將設定套用到所有更新網址相符的擴充功能 (如 <ph name="LINK_TO_EXTENSION_DOC1" /> 所述)。
-
-          每個擴充功能 (或更新網址相同的擴充功能) 的設定也會記錄以下列載的這些欄位。
-
-          「installation_mode」：對應到指示擴充功能安裝模式的字串。有效的字串如下：
-          *「allowed」：允許使用者安裝這個擴充功能 (這是預設的行為)。
-          *「blocked」：禁止這個安裝擴充功能。
-          *「force_installed」：自動安裝這個擴充功能，且使用者無法移除。
-          *「normal_installed」：自動安裝這個擴充功能，但使用者可以停用。
-
-          您也可以為多個擴充功能設定「installation_mode」，包括「*」擴充功能 (做為預設設定) 和更新網址相同的擴充功能。在這種情況下，只能使用「allowed」和「blocked」這兩個值。
-
-          如果將模式設為「force_installed」或「normal_installed」，則必須一併設定「update_url」。請注意，系統只會在初次安裝擴充功能時使用您在這項政策中設定的更新網址，後需更新擴充功能時則會使用擴充功能的資訊清單指示的更新網址。更新網址應指向前述更新資訊清單 XML 檔案。
-
-          「blocked_permissions」：對應到字串清單，指示擴充功能的封鎖的 API 權限。權限名稱與擴充功能資訊清單宣告的權限字串相同 (如 <ph name="LINK_TO_EXTENSION_DOC3" /> 所述)。您也可以針對「*」擴充功能配置這項設定。如果擴充功能要求封鎖清單中的權限，則無法載入。如果擴充功能含有封鎖的權限，但屬於選擇性要求，系統會以一般方式進行處理。不過，一旦要求的權限發生衝突，系統會自動在執行階段拒絕要求。
-
-          「allowed_permissions」：與「blocked_permissions」相似，但明確允許部分可能遭到全域封鎖權限清單封鎖的權限，因此可以針對「*」擴充功能進行設定。請注意，這項設定不會自動將權限授予擴充功能。
-
-          「minimum_version_required」：對應到版本字串。版本字串的格式與擴充功能資訊清單中使用的格式相同 (如 <ph name="LINK_TO_EXTENSION_DOC4" /> 所述)。如果擴充功能的版本比指定的最低版本更舊，便會遭到停用。這項設定也適用於強制安裝的擴充功能。
-
-          下列設定僅適用於預設的「*」設定：
-
-          「install_sources」：這份清單中的每個項目都是擴充功能樣式比對模式 (請參閱 https://developer.chrome.com/extensions/match_patterns)。使用者可以透過任何與這份清單中的項目相符的網址輕鬆安裝各種項目。*.crx 檔案的位置和下載來源網頁 (亦即參照網址) 都必須與這些模式相符。
-
-          「allowed_types」：這項設定會將可以在 <ph name="PRODUCT_NAME" /> 中安裝的擴充功能/應用程式類型加入許可清單。設定值為字串清單，系統接受的字串如下：「extension」、「theme」、「user_script」、「hosted_app」、「legacy_packaged_app」、「platform_app」。如要進一步瞭解這些類型，請參閱 <ph name="PRODUCT_NAME" /> 擴充功能說明文件。
-
-          這項政策目前尚未開放使用，請勿直接使用。
-          </translation>
 <translation id="3201273385265130876">允許你指定 <ph name="PRODUCT_NAME" /> 使用的 Proxy 伺服器，並禁止使用者變更 Proxy 設定。
 
           如果你決定完全不使用 Proxy 伺服器，一律採用直接連線，系統會忽略其他所有選項。

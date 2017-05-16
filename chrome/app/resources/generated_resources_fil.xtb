@@ -15,7 +15,6 @@
 <translation id="1023220960495960452">Transliteration (vanakkam → வணக்கம்)</translation>
 <translation id="1026822031284433028">I-load ang larawan</translation>
 <translation id="1029317248976101138">I-zoom</translation>
-<translation id="1030173864176315846">Matagumpay na na-print ang <ph name="PAGE_NUMBER" /> (na) pahina sa <ph name="PRINTER_NAME" /></translation>
 <translation id="1031362278801463162">Preview ng paglo-load</translation>
 <translation id="103279545524624934">Magbakante ng disk space upang mailunsad ang Android apps.</translation>
 <translation id="1033780634303702874">I-access ang iyong mga serial device</translation>
@@ -149,7 +148,6 @@
     <ph name="BR" />
     Sa susunod na screen, mangyaring magpadala ng feedback upang tulungan kaming ayusin ang isyu.</translation>
 <translation id="121783623783282548">Hindi magkatugma ang mga password.</translation>
-<translation id="1218323606465324064">Nagpi-print na ng <ph name="PAGE_NUMBER" /> (na) pahina sa <ph name="PRINTER_NAME" /></translation>
 <translation id="122082903575839559">Certificate Signature Algorithm</translation>
 <translation id="1221024147024329929">PKCS #1 MD2 na May RSA Encryption</translation>
 <translation id="1221825588892235038">Pinili lang</translation>
@@ -509,6 +507,7 @@
 <translation id="1699395855685456105">Pagbago ng hardware:</translation>
 <translation id="1700199471143028312">Hindi ka pinapayagan ng iyong administrator na gumawa ng mga pinangangasiwaang user.</translation>
 <translation id="1701062906490865540">Alisin ang taong ito</translation>
+<translation id="1701364987952948449">Mag-browse bilang bisita</translation>
 <translation id="1706586824377653884">Idinagdag ng iyong administrator</translation>
 <translation id="1706625117072057435">Mga antas ng pag-zoom</translation>
 <translation id="1707463636381878959">Ibahagi ang network na ito sa iba pang mga user</translation>
@@ -754,7 +753,6 @@
 <translation id="2114224913786726438">Mga module (<ph name="TOTAL_COUNT" />) - Walang natukoy na salungatan</translation>
 <translation id="2114326799768592691">I-reload ang &amp;Frame</translation>
 <translation id="2115103655317273167">Ipadala sa telepono</translation>
-<translation id="2115291620696624944">May naging error sa pag-print ng <ph name="PAGE_NUMBER" /> (na) pahina sa <ph name="PRINTER_NAME" /></translation>
 <translation id="2115926821277323019">Kailangan ng isang wastong URL</translation>
 <translation id="2115946962706216358">Hindi naisama ang machine sa domain. Maaaring dahil lumampas na sa maximum na bilang ng mga pinapayagang pagsama ng machine para sa iyong account sa server.</translation>
 <translation id="2116673936380190819">ang nakalipas na oras</translation>
@@ -875,7 +873,6 @@ Pagkatapos mong gumawa ng bagong pinangangasiwaang user, maaari mong pamahalaan 
 <translation id="2255317897038918278">Microsoft Time Stamping</translation>
 <translation id="225614027745146050">Maligayang pagdating</translation>
 <translation id="225692081236532131">Status ng pag-activate</translation>
-<translation id="2260567344816042527">Gagamit ang Google Chrome ng cellular data kung hindi ka nakakonekta sa ibang network.</translation>
 <translation id="2262477216570151239">Pagkaantala bago ang pag-uulit</translation>
 <translation id="226269835214688456">Kung io-off mo ang Smart Lock para sa Chromebook, hindi mo maa-unlock ang iyong mga Chrome device gamit ang iyong telepono. Kakailanganin mong i-type ang iyong password.</translation>
 <translation id="2263189956353037928">Mag-sign out at mag-sign in muli</translation>
@@ -897,6 +894,7 @@ Pagkatapos mong gumawa ng bagong pinangangasiwaang user, maaari mong pamahalaan 
 <translation id="2282146716419988068">Proseso ng GPU</translation>
 <translation id="2282155092769082568">Autoconfiguration URL:</translation>
 <translation id="2283117145434822734">F6</translation>
+<translation id="2286841657746966508">Billing address</translation>
 <translation id="2286950485307333924">Naka-sign in ka ngayon sa Chrome</translation>
 <translation id="2287590536030307392">I-off ang lahat ng wireless na koneksyon.</translation>
 <translation id="2288735659267887385">Mga setting ng pagiging naa-access</translation>
@@ -1636,6 +1634,7 @@ Mula Sa <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3315158641124845231">Itago ang <ph name="PRODUCT_NAME" /></translation>
 <translation id="3317459757438853210">Magkabilaan</translation>
 <translation id="3319048459796106952">Bagong &amp;incognito window</translation>
+<translation id="3320021301628644560">Magdagdag ng billing address</translation>
 <translation id="3320859581025497771">ang iyong carrier</translation>
 <translation id="3323447499041942178">Text box</translation>
 <translation id="3324301154597925148">Ito Ba ang Inaasahan Mong Pahina sa Paghahanap?</translation>
@@ -1834,7 +1833,6 @@ Mula Sa <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3618849550573277856">Hanapin ang “<ph name="LOOKUP_STRING" />”</translation>
 <translation id="3620292326130836921">Naka-back up na ang lahat!</translation>
 <translation id="3623574769078102674">Pamamahalaan ang pinangangasiwaang user na ito ng <ph name="MANAGER_EMAIL" />.</translation>
-<translation id="3624814222765772771">Masyadong kaunti ang baterya para sa pag-update (<ph name="PROGRESS_PERCENT" />%)</translation>
 <translation id="3625870480639975468">I-reset ang zoom</translation>
 <translation id="3626281679859535460">Tingkad</translation>
 <translation id="3627052133907344175">Kinakailangan ng extension ang "<ph name="IMPORT_NAME" />" na mayroong minimum na bersyon na "<ph name="IMPORT_VERSION" />", ngunit ang bersyon na "<ph name="INSTALLED_VERSION" />" lang ang naka-install.</translation>
@@ -3032,7 +3030,6 @@ Pumindot ng anumang key upang magpatuloy sa pagtuklas.</translation>
 <translation id="5454166040603940656">sa <ph name="PROVIDER" /></translation>
 <translation id="5457113250005438886">Di-wasto</translation>
 <translation id="5457459357461771897">Basahin at i-delete ang mga larawan, musika at iba pang media sa iyong computer</translation>
-<translation id="5457599981699367932">Mag-browse bilang Bisita</translation>
 <translation id="5463275305984126951">Index ng <ph name="LOCATION" /></translation>
 <translation id="5463856536939868464">Menu na naglalaman ng mga nakatagong bookmark</translation>
 <translation id="5464632865477611176">Patakbuhin ngayon</translation>
@@ -3489,7 +3486,6 @@ Pumindot ng anumang key upang magpatuloy sa pagtuklas.</translation>
 <translation id="6181431612547969857">Na-block ang pagda-download</translation>
 <translation id="6185132558746749656">Lokasyon ng Device</translation>
 <translation id="6185696379715117369">Pataas sa pahina</translation>
-<translation id="618807527697571179">Hindi matukoy ang modelo ng iyong printer. Pumili ng manufacturer at modelo mula sa listahan.</translation>
 <translation id="6188939051578398125">Ipasok ang mga pangalan o address.</translation>
 <translation id="6189412234224385711">Buksan gamit ang <ph name="EXTENSION_NAME" /></translation>
 <translation id="6196640612572343990">I-block ang mga third-party na cookie</translation>
@@ -3727,6 +3723,7 @@ Pumindot ng anumang key upang magpatuloy sa pagtuklas.</translation>
 <translation id="6509136331261459454">Pamahalaan ang iba pang mga user...</translation>
 <translation id="6509207748479174212">Lisensya ng media</translation>
 <translation id="6510568984200103950">Mas kaunting setting</translation>
+<translation id="6513247462497316522">Gagamit ang Google Chrome ng data ng mobile kung hindi ka nakakonekta sa isa pang network.</translation>
 <translation id="6514565641373682518">Hindi pinagana ng pahinang ito ang cursor ng iyong mouse.</translation>
 <translation id="6518014396551869914">Kop&amp;yahin ang imahe</translation>
 <translation id="651942933739530207">Gusto mo bang ibahagi ng <ph name="APP_NAME" /> ang iyong screen at audio output?</translation>
@@ -4933,7 +4930,7 @@ Kinakalkula ang oras hanggang sa mapuno</translation>
 <translation id="8373553483208508744">Mag-mute ng mga tab</translation>
 <translation id="8378285435971754261">Payagan ang serbisyo ng lokasyon ng Google na tumulong sa mga app na mabilis at tumpak na mahanap ang iyong lokasyon, na maaaring makabawas sa pagkonsumo ng baterya. Magpapadala ng anonymous na data ng lokasyon sa Google, kahit walang mga gumaganang app. <ph name="BEGIN_LINK1" />Matuto nang Higit Pa<ph name="END_LINK1" /></translation>
 <translation id="8381179624334829711">Pamahalaan ang mga setting ng camera...</translation>
-<translation id="8382913212082956454">Komopya &amp;email address</translation>
+<translation id="8382913212082956454">Kopyahin ang &amp;email address</translation>
 <translation id="8389849690213170419">Ipinapakita ang history mula sa iyong mga naka-sign in na device.</translation>
 <translation id="8390029840652165810">Pakitiyak na gumagana ang koneksyon ng iyong network at kung magpapatuloy ang problema, mangyaring mag-sign out at mag-sign in muli upang i-refresh ang iyong mga kredensyal.</translation>
 <translation id="8390449457866780408">Hindi available ang server.</translation>

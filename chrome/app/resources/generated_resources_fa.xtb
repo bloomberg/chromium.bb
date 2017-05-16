@@ -15,7 +15,6 @@
 <translation id="1023220960495960452">‏نویسه‌گردانی (vanakkam ← ‏வணக்கம்)</translation>
 <translation id="1026822031284433028">بارگیری تصویر</translation>
 <translation id="1029317248976101138">بزرگ‌نمایی</translation>
-<translation id="1030173864176315846">باموفقیت <ph name="PAGE_NUMBER" /> صفحه در <ph name="PRINTER_NAME" /> چاپ شد</translation>
 <translation id="1031362278801463162">بارگیری پیش‌نمایش</translation>
 <translation id="103279545524624934">‏برای راه‌اندازی برنامه‌های Android فضای دیسک را خالی کنید.</translation>
 <translation id="1033780634303702874">دسترسی به دستگاه‌های سریال خودتان</translation>
@@ -149,7 +148,6 @@
     <ph name="BR" />
     در صفحه بعدی، لطفاً برای کمک به ما جهت اصلاح مشکل، بازخوردی ارسال کنید.</translation>
 <translation id="121783623783282548">گذرواژه‌ها با هم مطابقت ندارند.</translation>
-<translation id="1218323606465324064">هیچ‌یک از <ph name="PAGE_NUMBER" /> صفحه در <ph name="PRINTER_NAME" /> چاپ نشد</translation>
 <translation id="122082903575839559">الگوریتم امضای گواهی</translation>
 <translation id="1221024147024329929">‏PKCS #1 MD2 با رمزگذاری RSA</translation>
 <translation id="1221825588892235038">فقط انتخاب</translation>
@@ -507,6 +505,7 @@
 <translation id="1699395855685456105">بازبینی سخت‌افزار:</translation>
 <translation id="1700199471143028312">سرپرست سیستم به شما اجازه ایجاد کاربران تحت نظارت را نمی‌دهد.</translation>
 <translation id="1701062906490865540">حذف این شخص</translation>
+<translation id="1701364987952948449">مرور کردن به‌عنوان یک مهمان</translation>
 <translation id="1706586824377653884">افزوده‌شده توسط سرپرست سیستم</translation>
 <translation id="1706625117072057435">سطوح بزرگ‌نمایی</translation>
 <translation id="1707463636381878959">به اشتراک گذاشتن این شبکه با سایر کاربران</translation>
@@ -752,7 +751,6 @@
 <translation id="2114224913786726438">مدول ها (<ph name="TOTAL_COUNT" />) - هیچ تداخلی شناسایی نشد</translation>
 <translation id="2114326799768592691">تازه‌سازی قاب</translation>
 <translation id="2115103655317273167">ارسال به تلفن</translation>
-<translation id="2115291620696624944">خطا در چاپ <ph name="PAGE_NUMBER" /> صفحه در <ph name="PRINTER_NAME" /></translation>
 <translation id="2115926821277323019">باید نشانی وب معتبر باشد</translation>
 <translation id="2115946962706216358">اتصال دستگاه به دامنه انجام نشد. شاید علت آن تعداد بیش‌ازحد مجاز اتصالات به دستگاه برای حساب شما در سرور باشد.</translation>
 <translation id="2116673936380190819">ساعت گذشته</translation>
@@ -871,7 +869,6 @@
 <translation id="2255317897038918278">‏مهر زمان Microsoft</translation>
 <translation id="225614027745146050">خوش آمدید</translation>
 <translation id="225692081236532131">وضعیت فعال‌سازی</translation>
-<translation id="2260567344816042527">‏اگر به شبکه دیگری متصل نباشید، Google Chrome از داده‌های شبکه تلفن همراه استفاده می‌کند.</translation>
 <translation id="2262477216570151239">تأخیر پیش از تکرار</translation>
 <translation id="226269835214688456">‏اگر «Smart Lock برای Chromebook» را خاموش کنید، نمی‌توانید قفل دستگاه‌های Chrome خودتان را با استفاده از تلفنتان باز کنید. باید گذرواژه‌تان را تایپ کنید.</translation>
 <translation id="2263189956353037928">خروج از سیستم و ورود دوباره به آن</translation>
@@ -893,6 +890,7 @@
 <translation id="2282146716419988068">‏پردازش GPU</translation>
 <translation id="2282155092769082568">نشانی وب پیکربندی خودکار</translation>
 <translation id="2283117145434822734">F6</translation>
+<translation id="2286841657746966508">آدرس ارسال صورتحساب</translation>
 <translation id="2286950485307333924">‏اکنون در سیستم Chrome هستید</translation>
 <translation id="2287590536030307392">همه اتصالات بی‌سیم را غیرفعال کنید.</translation>
 <translation id="2288735659267887385">تنظیمات دسترس‌پذیری</translation>
@@ -1631,6 +1629,7 @@
 <translation id="3315158641124845231">عدم نمایش <ph name="PRODUCT_NAME" /></translation>
 <translation id="3317459757438853210">دو طرفه</translation>
 <translation id="3319048459796106952">&amp;پنجره جدید حالت ناشناس</translation>
+<translation id="3320021301628644560">افزودن نشانی صورتحساب</translation>
 <translation id="3320859581025497771">شرکت مخابراتی شما</translation>
 <translation id="3323447499041942178">کادر متنی</translation>
 <translation id="3324301154597925148">آیا این همان صفحه جستجویی است که انتظار داشتید؟</translation>
@@ -1829,7 +1828,6 @@
 <translation id="3618849550573277856">جستجوی «<ph name="LOOKUP_STRING" />»</translation>
 <translation id="3620292326130836921">همه پشتیبان‌گیری شدند.</translation>
 <translation id="3623574769078102674"><ph name="MANAGER_EMAIL" />، این کاربر نظارت‌شده را مدیریت خواهد کرد.</translation>
-<translation id="3624814222765772771">شارژ باتری برای به‌روزرسانی خیلی کم است (<ph name="PROGRESS_PERCENT" />%)</translation>
 <translation id="3625870480639975468">بازنشانی بزرگ‌نمایی</translation>
 <translation id="3626281679859535460">روشنایی</translation>
 <translation id="3627052133907344175">برنامه افزودنی به «<ph name="IMPORT_NAME" />» نسخه حداقل «<ph name="IMPORT_VERSION" />» نیاز دارد، اما فقط نسخه «<ph name="INSTALLED_VERSION" />» نصب است.</translation>
@@ -3025,7 +3023,6 @@
 <translation id="5454166040603940656">با <ph name="PROVIDER" /></translation>
 <translation id="5457113250005438886">نامعتبر</translation>
 <translation id="5457459357461771897">خواندن و حذف عکس‌ها، موسیقی، و سایر رسانه‌ها از رایانه‌تان</translation>
-<translation id="5457599981699367932">مرور کردن به‌عنوان یک مهمان</translation>
 <translation id="5463275305984126951">شاخص <ph name="LOCATION" /></translation>
 <translation id="5463856536939868464">منوی دارای نشانک‌های مخفی</translation>
 <translation id="5464632865477611176">این بار اجرا شود</translation>
@@ -3482,7 +3479,6 @@
 <translation id="6181431612547969857">بارگیری مسدود شد</translation>
 <translation id="6185132558746749656">مکان دستگاه</translation>
 <translation id="6185696379715117369">صفحه بالا</translation>
-<translation id="618807527697571179">مدل چاپگرتان تشخیص داده نشد. سازنده و مدل را از فهرست انتخاب کنید.</translation>
 <translation id="6188939051578398125">نام‌ها و آدرس‌ها را وارد کنید.</translation>
 <translation id="6189412234224385711">بازکردن با <ph name="EXTENSION_NAME" /></translation>
 <translation id="6196640612572343990">مسدود کردن کوکی‌های شخص ثالث</translation>
@@ -3720,6 +3716,7 @@
 <translation id="6509136331261459454">مدیریت کاربران دیگر...</translation>
 <translation id="6509207748479174212">گواهینامه رسانه</translation>
 <translation id="6510568984200103950">تنظیمات کمتر</translation>
+<translation id="6513247462497316522">‏اگر به شبکه دیگری وصل نباشید Google Chrome از داده‌های تلفن همراه استفاده خواهد کرد.</translation>
 <translation id="6514565641373682518">این صفحه مکان‌نمای ماوس شما را غیرفعال کرد.</translation>
 <translation id="6518014396551869914">&amp;کپی تصویر</translation>
 <translation id="651942933739530207">آیا می‌خواهید <ph name="APP_NAME" /> صفحه شما و خروجی صوتی را به اشتراک بگذارد؟</translation>

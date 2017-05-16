@@ -27,7 +27,6 @@
 Kad galėtumėte naudoti Fizinį žiniatinklį, būtina įgalinti „Bluetooth“ ir Vietovę.</translation>
 <translation id="124678866338384709">Uždaryti dabartinį skirtuką</translation>
 <translation id="1258753120186372309">„Google“ papuoštas logotipas: <ph name="DOODLE_DESCRIPTION" /></translation>
-<translation id="1265597927250775944">Bus išvalyta istorija ir adresų juostos pasiūlymai.</translation>
 <translation id="1272079795634619415">Sustabdyti</translation>
 <translation id="1283039547216852943">Palieskite ir išskleiskite</translation>
 <translation id="1285320974508926690">Niekada neversti šios svetainės</translation>
@@ -263,7 +262,6 @@ Jei norite koreguoti paieškos terminą, paspauskite ir laikykite, kad jį pasir
 <translation id="3859306556332390985">Eiti pirmyn</translation>
 <translation id="3894427358181296146">Aplanko pridėjimas</translation>
 <translation id="3895926599014793903">Priverstinai įgalinti mastelio keitimą</translation>
-<translation id="3915590178385207649">Bus išvalyta visų įrenginių, kuriuose esate prisijungę, istorija. Peržiūrėkite kitą savo „Google“ paskyros veiklą adresu <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="3917783807003067648">Vietovės informacija blokuojama</translation>
 <translation id="3927692899758076493">Be užraitų</translation>
 <translation id="3928666092801078803">Sujungti duomenis</translation>
@@ -609,7 +607,6 @@ Pavyzdžiui, kai kurios svetainės gali atsakyti į šią užklausą rodydamos j
 <translation id="7423098979219808738">Pirmiausia paklausti</translation>
 <translation id="7437998757836447326">Atsijungimas nuo „Chrome“</translation>
 <translation id="7445411102860286510">Leisti svetainėms automatiškai leisti nutildytus vaizdo įrašus (rekomenduojama)</translation>
-<translation id="7449574997654022410">Bus išvalyta istorija ir adresų juostos pasiūlymai. Peržiūrėkite kitą savo „Google“ paskyros veiklą adresu <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="7464701184726199289">Taip sinchronizuoti duomenys bus išvalyti iš visų įrenginių. Išsaugoti svetainių nustatymai nebus ištrinti ir gali nurodyti naršymo įpročius. <ph name="BEGIN_LINK" />Sužinokite daugiau<ph name="END_LINK" /></translation>
 <translation id="7473891865547856676">Ne, ačiū</translation>
 <translation id="7475192538862203634">Jei tai rodoma dažnai, peržiūrėkite šiuos <ph name="BEGIN_LINK" />pasiūlymus<ph name="END_LINK" />.</translation>

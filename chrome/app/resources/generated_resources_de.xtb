@@ -15,7 +15,6 @@
 <translation id="1023220960495960452">Transliteration (vanakkam → வணக்கம்)</translation>
 <translation id="1026822031284433028">Bild laden</translation>
 <translation id="1029317248976101138">Zoom</translation>
-<translation id="1030173864176315846"><ph name="PAGE_NUMBER" /> Seiten wurden über <ph name="PRINTER_NAME" /> ausgedruckt</translation>
 <translation id="1031362278801463162">Vorschau wird geladen...</translation>
 <translation id="103279545524624934">Geben Sie Speicherplatz frei, um Android-Apps starten zu können.</translation>
 <translation id="1033780634303702874">Auf Ihre seriellen Geräte zugreifen</translation>
@@ -149,7 +148,6 @@
     <ph name="BR" />
     Auf dem nächsten Bildschirm können Sie uns Feedback geben und uns damit bei der Lösung des Problems helfen.</translation>
 <translation id="121783623783282548">Die Passwörter stimmen nicht überein.</translation>
-<translation id="1218323606465324064"><ph name="PAGE_NUMBER" /> Seiten werden aktuell über <ph name="PRINTER_NAME" /> ausgedruckt</translation>
 <translation id="122082903575839559">Algorithmus für Zertifikatsignatur</translation>
 <translation id="1221024147024329929">PKCS #1 MD2 mit RSA-Verschlüsselung</translation>
 <translation id="1221825588892235038">Nur Auswahl</translation>
@@ -506,6 +504,7 @@
 <translation id="1699395855685456105">Hardware-Version:</translation>
 <translation id="1700199471143028312">Ihr Administrator erlaubt Ihnen nicht, betreute Nutzer zu erstellen.</translation>
 <translation id="1701062906490865540">Diese Person entfernen</translation>
+<translation id="1701364987952948449">Als Gast surfen</translation>
 <translation id="1706586824377653884">Von Ihrem Administrator hinzugefügt</translation>
 <translation id="1706625117072057435">Zoomstufen</translation>
 <translation id="1707463636381878959">Dieses Netzwerk für andere freigeben</translation>
@@ -751,7 +750,6 @@
 <translation id="2114224913786726438">Module (<ph name="TOTAL_COUNT" />) - keine Konflikte erkannt</translation>
 <translation id="2114326799768592691">&amp;Frame neu laden</translation>
 <translation id="2115103655317273167">An Smartphone senden</translation>
-<translation id="2115291620696624944">Beim Drucken von <ph name="PAGE_NUMBER" /> Seiten über <ph name="PRINTER_NAME" /> ist ein Fehler aufgetreten</translation>
 <translation id="2115926821277323019">Muss eine gültige URL sein</translation>
 <translation id="2115946962706216358">Der Computer konnte der Domain nicht beitreten. Möglicherweise haben Sie bereits die Höchstzahl der verbundenen Computer für Ihr Serverkonto erreicht.</translation>
 <translation id="2116673936380190819">Letzte Stunde</translation>
@@ -870,7 +868,6 @@ Nach der Erstellung eines neuen betreuten Nutzers können Sie die Einstellungen 
 <translation id="2255317897038918278">Microsoft-Zeitstempeldienst</translation>
 <translation id="225614027745146050">Willkommen</translation>
 <translation id="225692081236532131">Aktivierungsstatus</translation>
-<translation id="2260567344816042527">Google Chrome greift auf die mobile Datennutzung zurück, wenn Sie nicht mit einem anderen Netzwerk verbunden sind.</translation>
 <translation id="2262477216570151239">Verzögerung vor Wiederholung</translation>
 <translation id="226269835214688456">Wenn Sie Smart Lock für Chromebooks deaktivieren, können Sie Ihre Chrome-Geräte nicht mit Ihrem Telefon entsperren, sondern müssen Ihr Passwort eingeben.</translation>
 <translation id="2263189956353037928">Abmelden und wieder anmelden</translation>
@@ -892,6 +889,7 @@ Nach der Erstellung eines neuen betreuten Nutzers können Sie die Einstellungen 
 <translation id="2282146716419988068">GPU-Verarbeitung</translation>
 <translation id="2282155092769082568">URL für Autokonfiguration:</translation>
 <translation id="2283117145434822734">F6</translation>
+<translation id="2286841657746966508">Rechnungsadresse</translation>
 <translation id="2286950485307333924">Sie sind jetzt in Chrome angemeldet.</translation>
 <translation id="2287590536030307392">Alle Drahtlosverbindungen werden deaktiviert.</translation>
 <translation id="2288735659267887385">Einstellungen für Bedienungshilfen</translation>
@@ -1630,6 +1628,7 @@ von <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3315158641124845231"><ph name="PRODUCT_NAME" /> ausblenden</translation>
 <translation id="3317459757438853210">Beidseitig</translation>
 <translation id="3319048459796106952">Neues &amp;Inkognito-Fenster</translation>
+<translation id="3320021301628644560">Rechnungsadresse hinzufügen</translation>
 <translation id="3320859581025497771">Ihr Mobilfunkanbieter</translation>
 <translation id="3323447499041942178">Textfeld</translation>
 <translation id="3324301154597925148">Ist das Ihre erwartete Seite für die Suche?</translation>
@@ -1828,7 +1827,6 @@ von <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3618849550573277856">"<ph name="LOOKUP_STRING" />" nachschlagen</translation>
 <translation id="3620292326130836921">Alle Daten gesichert</translation>
 <translation id="3623574769078102674">Dieser betreute Nutzer wird von <ph name="MANAGER_EMAIL" /> verwaltet.</translation>
-<translation id="3624814222765772771">Der Akku ist für ein Update zu schwach (<ph name="PROGRESS_PERCENT" /> %)</translation>
 <translation id="3625870480639975468">Zoom zurücksetzen</translation>
 <translation id="3626281679859535460">Helligkeit</translation>
 <translation id="3627052133907344175">Die Erweiterung erfordert "<ph name="IMPORT_NAME" />" mit der Mindestversion "<ph name="IMPORT_VERSION" />", es ist jedoch nur Version "<ph name="INSTALLED_VERSION" />" installiert.</translation>
@@ -3020,7 +3018,6 @@ Drücken Sie eine beliebige Taste, um fortzufahren.</translation>
 <translation id="5454166040603940656">mit <ph name="PROVIDER" /></translation>
 <translation id="5457113250005438886">Ungültig</translation>
 <translation id="5457459357461771897">Fotos, Musik und andere Medien auf Ihrem Computer lesen und löschen</translation>
-<translation id="5457599981699367932">Als Gast nutzen</translation>
 <translation id="5463275305984126951">Index von <ph name="LOCATION" /></translation>
 <translation id="5463856536939868464">Menü enthält ausgeblendete Lesezeichen</translation>
 <translation id="5464632865477611176">Dieses Mal ausführen</translation>
@@ -3477,7 +3474,6 @@ Drücken Sie eine beliebige Taste, um fortzufahren.</translation>
 <translation id="6181431612547969857">Download blockiert</translation>
 <translation id="6185132558746749656">Gerätestandort</translation>
 <translation id="6185696379715117369">Bildlauf nach oben</translation>
-<translation id="618807527697571179">Ihr Druckermodell wurde nicht erkannt. Wählen Sie einen Hersteller und ein Modell aus der Liste aus.</translation>
 <translation id="6188939051578398125">Namen oder Adressen eingeben</translation>
 <translation id="6189412234224385711">Öffnen mit <ph name="EXTENSION_NAME" /></translation>
 <translation id="6196640612572343990">Drittanbieter-Cookies blockieren</translation>
@@ -3715,6 +3711,7 @@ Drücken Sie eine beliebige Taste, um fortzufahren.</translation>
 <translation id="6509136331261459454">Andere Nutzer verwalten...</translation>
 <translation id="6509207748479174212">Medienlizenz</translation>
 <translation id="6510568984200103950">Weniger Einstellungen</translation>
+<translation id="6513247462497316522">Google Chrome verwendet Mobilfunk, wenn Sie nicht mit einem anderen Netzwerk verbunden sind.</translation>
 <translation id="6514565641373682518">Diese Seite hat den Mauszeiger deaktiviert.</translation>
 <translation id="6518014396551869914">Bild ko&amp;pieren</translation>
 <translation id="651942933739530207">Soll <ph name="APP_NAME" /> Ihren Bildschirm und Ihre Audioausgabe freigeben?</translation>

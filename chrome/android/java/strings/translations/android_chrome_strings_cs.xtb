@@ -27,7 +27,6 @@
 Chcete-li fyzický web používat, je třeba aktivovat Bluetooth a určování polohy.</translation>
 <translation id="124678866338384709">Zavřít aktuální kartu</translation>
 <translation id="1258753120186372309">Sváteční logo Google: <ph name="DOODLE_DESCRIPTION" /></translation>
-<translation id="1265597927250775944">Vymaže historii a návrhy v adresním řádku.</translation>
 <translation id="1272079795634619415">Zastavit</translation>
 <translation id="1283039547216852943">Klepnutím rozbalíte</translation>
 <translation id="1285320974508926690">Tento web nikdy nepřekládat</translation>
@@ -263,7 +262,6 @@ Chcete-li vyhledávací dotaz upravit, proveďte výběr dlouhým stisknutím. C
 <translation id="3859306556332390985">Přetočit dopředu</translation>
 <translation id="3894427358181296146">Přidat složku</translation>
 <translation id="3895926599014793903">Vynutit aktivaci přiblížení</translation>
-<translation id="3915590178385207649">Vymaže historii ze všech zařízení, na kterých jste přihlášeni. Další aktivitu provedenou z vašeho účtu Google si můžete prohlédnout na webu <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="3917783807003067648">Přístup k poloze je blokován</translation>
 <translation id="3927692899758076493">Bezpatková</translation>
 <translation id="3928666092801078803">Sloučit má data</translation>
@@ -609,7 +607,6 @@ Některé weby mohou například na tento požadavek reagovat tak, že vám zobr
 <translation id="7423098979219808738">Nejprve se dotázat</translation>
 <translation id="7437998757836447326">Odhlášení z Chromu</translation>
 <translation id="7445411102860286510">Povolit webům automaticky přehrávat ztlumená videa (doporučeno)</translation>
-<translation id="7449574997654022410">Vymaže historii a návrhy v adresním řádku. Další aktivitu provedenou z vašeho účtu Google si můžete prohlédnout na webu <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="7464701184726199289">Tímto vymažete synchronizovaná data ze všech zařízení. Uložená nastavení webů nebudou smazána a mohou vypovídat o vašich zvycích při prohlížení. <ph name="BEGIN_LINK" />Další informace<ph name="END_LINK" /></translation>
 <translation id="7473891865547856676">Ne, děkuji</translation>
 <translation id="7475192538862203634">Pokud se vám tato stránka zobrazuje často, vyzkoušejte tyto <ph name="BEGIN_LINK" />návrhy<ph name="END_LINK" />.</translation>

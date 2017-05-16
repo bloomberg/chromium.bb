@@ -580,38 +580,6 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
 <translation id="316778957754360075">Esta configuração foi descontinuada a partir da versão 29 do <ph name="PRODUCT_NAME" />. O modo recomendado de configurar as coleções de extensões/aplicativos hospedados pela organização é incluir na hospedagem do site os pacotes CRX em ExtensionInstallSources e colocar links de download direto para os pacotes em uma página da Web. É possível criar um iniciador da página da Web usando a política ExtensionInstallForcelist.</translation>
 <translation id="3185009703220253572">desde a versão <ph name="SINCE_VERSION" /></translation>
 <translation id="3187220842205194486">Os apps Android não podem acessar chaves corporativas. Esta política não tem nenhum efeito sobre eles.</translation>
-<translation id="318812033927804102">Define configurações de gerenciamento de extensão para <ph name="PRODUCT_NAME" />.
-
-          Esta política controla várias configurações, inclusive aquelas controladas por quaisquer políticas existentes relacionadas a extensões. Ela modifica todas as políticas herdadas, se ambas estiverem definidas.
-
-          Esta política mapeia um código de extensão ou um URL de atualização para a configuração dela. Com um código de extensão, a configuração é aplicada apenas à extensão especificada. Uma configuração padrão pode ser definida para o código especial "*", a qual é aplicada a todas as extensões que não tenham uma configuração personalizada nesta política. Com um URL de atualização, a configuração é aplicada a todas as extensões que tenham exatamente o mesmo URL de atualização mencionado no manifesto de tal extensão, conforme descrito em <ph name="LINK_TO_EXTENSION_DOC1" />.
-
-          A configuração de cada extensão (ou extensões com o mesmo URL de atualização) é outro dicionário que pode ter os campos documentados abaixo.
-
-          "installation_mode": mapeia para uma string que indica o modo de instalação da extensão. As strings válidas são:
-          * "allowed": permite que a extensão seja instalada pelo usuário. Este é o comportamento padrão.
-          * "blocked": bloqueia a instalação da extensão.
-          * "force_installed": a extensão é automaticamente instalada e não pode ser removida pelo usuário.
-          * "normal_installed": a extensão é automaticamente instalada, mas pode ser desativada pelo usuário.
-
-          O "installation_mode" também pode ser configurado para diversas extensões, inclusive para a extensão "*" (como configurações padrão) e para as extensões com o mesmo URL de atualização. Apenas os valores "allowed" e "blocked" podem ser usados nesse caso.
-
-          Se o modo é definido como "force_installed" ou "normal_installed", um "update_url" também deve ser configurado. Observe que o URL de atualização definido nesta política só é usado na instalação inicial. As atualizações subsequentes da extensão usarão o URL de atualização indicado no manifesto da extensão. O URL de atualização deve apontar para um documento de atualização do manifesto XML, conforme mencionado acima.
-
-          "blocked_permissions": mapeia para uma lista de strings que indicam as permissões bloqueadas de API para a extensão. Os nomes das permissões são os mesmos das strings de permissão mencionadas no manifesto da extensão, conforme descrito em <ph name="LINK_TO_EXTENSION_DOC3" />. Esta configuração também pode ser definida para a extensão "*". Se a extensão precisa de uma permissão da lista de bloqueio, ela não pode ser carregada. Se tem uma permissão bloqueada como exigência opcional, a extensão é tratada da maneira normal, mas a solicitação de permissões conflitantes é automaticamente recusada no tempo de execução.
-
-          "allowed_permissions": semelhante a "blocked_permissions", com a diferença de permitir, explicitamente, algumas permissões que podem estar bloqueadas pela lista global de permissões bloqueadas; portanto, ela não pode ser configurada para a extensão "*". Esta configuração não dá permissões concedidas às extensões de forma automática.
-
-          "minimum_version_required": mapeia para a string de uma versão. O formato da string da versão é o mesmo usado no manifesto da extensão, conforme descrito em <ph name="LINK_TO_EXTENSION_DOC4" />. Uma extensão com uma versão mais antiga que a versão mínima especificada é  desativada. Isso se aplica também a extensões forçadamente instaladas.
-
-          As configurações a seguir só podem ser usadas para a configuração "*" padrão:
-
-          "install_sources": cada item desta lista é um padrão de correspondência de estilo de extensão (consulte https://developer.chrome.com/extensions/match_patterns). Os usuários instalam facilmente os itens de qualquer URL correspondente a um item desta lista. Tanto o local do arquivo *.crx como a página na qual o download é iniciado (isto é, o referenciador) devem ser permitidos por esses padrões.
-
-          "allowed_types": esta configuração coloca na lista de permissões os tipos permitidos de extensão/apps que podem ser instalados em <ph name="PRODUCT_NAME" />. O valor é uma lista de strings, das quais cada uma deve ser uma das seguintes opções: "extension", "theme", "user_script", "hosted_app", "legacy_packaged_app", "platform_app". Consulte a documentação de extensões de <ph name="PRODUCT_NAME" /> para ver outras informações sobre esses tipos.
-
-          Esta política ainda não está pronta para ser usada. Não a utilize.
-          </translation>
 <translation id="3201273385265130876">Permite que você especifique o servidor proxy usado pelo <ph name="PRODUCT_NAME" /> e impede que os usuários alterem as configurações de proxy.
 
           Se você escolher nunca utilizar um servidor proxy e sempre se conectar diretamente, todas as outras opções serão ignoradas.

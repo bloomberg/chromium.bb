@@ -27,7 +27,6 @@
 Bạn phải bật Bluetooth và Vị trí để sử dụng Web trong cuộc sống.</translation>
 <translation id="124678866338384709">Đóng tab hiện tại</translation>
 <translation id="1258753120186372309">Hình tượng trưng của Google: <ph name="DOODLE_DESCRIPTION" /></translation>
-<translation id="1265597927250775944">Xóa lịch sử và đề xuất của thanh địa chỉ.</translation>
 <translation id="1272079795634619415">Dừng</translation>
 <translation id="1283039547216852943">Nhấn để mở rộng</translation>
 <translation id="1285320974508926690">Không bao giờ dịch trang web này</translation>
@@ -263,7 +262,6 @@ Bạn phải bật Bluetooth và Vị trí để sử dụng Web trong cuộc s�
 <translation id="3859306556332390985">Tìm kiếm tiến</translation>
 <translation id="3894427358181296146">Thêm thư mục</translation>
 <translation id="3895926599014793903">Buộc bật thu phóng</translation>
-<translation id="3915590178385207649">Xóa lịch sử khỏi mọi thiết bị đã đăng nhập. Xem hoạt động khác từ Tài khoản Google của bạn tại <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="3917783807003067648">Vị trí bị chặn</translation>
 <translation id="3927692899758076493">Sans Serif</translation>
 <translation id="3928666092801078803">Kết hợp dữ liệu của tôi</translation>
@@ -609,7 +607,6 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="7423098979219808738">Hỏi trước</translation>
 <translation id="7437998757836447326">Đăng xuất khỏi Chrome</translation>
 <translation id="7445411102860286510">Cho phép trang web tự động phát video tắt tiếng (được đề xuất)</translation>
-<translation id="7449574997654022410">Xóa lịch sử và đề xuất của thanh địa chỉ. Xem hoạt động khác từ Tài khoản Google của bạn tại <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="7464701184726199289">Thao tác này sẽ xóa dữ liệu được đồng bộ hóa khỏi tất cả thiết bị. Cài đặt trang web đã lưu sẽ không bị xóa và có thể phản ánh thói quen duyệt web của bạn. <ph name="BEGIN_LINK" />Tìm hiểu thêm<ph name="END_LINK" /></translation>
 <translation id="7473891865547856676">Không, cảm ơn</translation>
 <translation id="7475192538862203634">Nếu bạn thường xuyên thấy thông báo này, hãy thử các <ph name="BEGIN_LINK" />đề xuất<ph name="END_LINK" /> sau.</translation>

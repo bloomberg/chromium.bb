@@ -15,7 +15,6 @@
 <translation id="1023220960495960452">Μεταγραφή (vanakkam → வணக்கம்)</translation>
 <translation id="1026822031284433028">Φόρτωση εικόνας</translation>
 <translation id="1029317248976101138">Μεγέθυνση</translation>
-<translation id="1030173864176315846">Εκτυπώθηκαν με επιτυχία <ph name="PAGE_NUMBER" /> σελίδες στον εκτυπωτή <ph name="PRINTER_NAME" /></translation>
 <translation id="1031362278801463162">Φόρτωση προεπισκόπησης</translation>
 <translation id="103279545524624934">Ελευθερώστε χώρο στον δίσκο, για την εκκίνηση εφαρμογών Android.</translation>
 <translation id="1033780634303702874">Πρόσβαση στις σειριακές συσκευές</translation>
@@ -150,7 +149,6 @@
     <ph name="BR" />
     Στην επόμενη οθόνη, σας προτείνουμε να μας στείλετε περισσότερες πληροφορίες για να μπορέσουμε να διορθώσουμε το πρόβλημα.</translation>
 <translation id="121783623783282548">Δεν ταιριάζουν οι κωδικοί πρόσβασης.</translation>
-<translation id="1218323606465324064">Τώρα εκτυπώνονται <ph name="PAGE_NUMBER" /> σελίδες στον εκτυπωτή <ph name="PRINTER_NAME" /></translation>
 <translation id="122082903575839559">Αλγόριθμος υπογραφής πιστοποιητικού</translation>
 <translation id="1221024147024329929">PKCS #1 MD2 με κρυπτογράφηση RSA</translation>
 <translation id="1221825588892235038">Μόνο επιλογή</translation>
@@ -511,6 +509,7 @@
 <translation id="1699395855685456105">Έκδοση υλικού: </translation>
 <translation id="1700199471143028312">Ο διαχειριστής σας δεν σας επιτρέπει να δημιουργήσετε εποπτευόμενους χρήστες.</translation>
 <translation id="1701062906490865540">Κατάργηση αυτού του ατόμου</translation>
+<translation id="1701364987952948449">Περιήγηση ως επισκέπτης</translation>
 <translation id="1706586824377653884">Προστέθηκε από τον διαχειριστή σας</translation>
 <translation id="1706625117072057435">Επίπεδα εστίασης</translation>
 <translation id="1707463636381878959">Κοινή χρήση αυτού του δικτύου με άλλους χρήστες</translation>
@@ -757,7 +756,6 @@
 <translation id="2114224913786726438">Λειτουργικές μονάδες (<ph name="TOTAL_COUNT" />) - Δεν εντοπίστηκαν διενέξεις</translation>
 <translation id="2114326799768592691">Επαναφόρτωση &amp;πλαισίου</translation>
 <translation id="2115103655317273167">Αποστολή στο τηλέφωνο</translation>
-<translation id="2115291620696624944">Σφάλμα κατά την εκτύπωση <ph name="PAGE_NUMBER" /> σελίδων στον εκτυπωτή <ph name="PRINTER_NAME" /></translation>
 <translation id="2115926821277323019">Πρέπει να είναι έγκυρη διεύθυνση URL</translation>
 <translation id="2115946962706216358">Απέτυχε η σύνδεση του μηχανήματος στον τομέα. Αυτό μπορεί να οφείλεται στην υπέρβαση του μέγιστου αριθμού των επιτρεπόμενων συνδέσεων μηχανημάτων για τον λογαριασμό σας στον διακομιστή.</translation>
 <translation id="2116673936380190819">την προηγούμενη ώρα</translation>
@@ -877,7 +875,6 @@
 <translation id="2255317897038918278">Microsoft Time Stamping</translation>
 <translation id="225614027745146050">Καλώς ορίσατε</translation>
 <translation id="225692081236532131">Κατάσταση ενεργοποίησης</translation>
-<translation id="2260567344816042527">Το Google Chrome θα χρησιμοποιεί τα δεδομένα κινητής τηλεφωνίας, εάν δεν είστε συνδεδεμένοι σε άλλο δίκτυο.</translation>
 <translation id="2262477216570151239">Καθυστέρηση πριν από την επανάληψη</translation>
 <translation id="226269835214688456">Εάν απενεργοποιήσετε τη λειτουργία Smart Lock για Chromebook, δεν θα μπορείτε να ξεκλειδώσετε τις συσκευές σας Chrome χρησιμοποιώντας το τηλέφωνό σας. Θα πρέπει να πληκτρολογείτε τον κωδικό πρόσβασής σας.</translation>
 <translation id="2263189956353037928">Αποσύνδεση και εκ νέου σύνδεση</translation>
@@ -899,6 +896,7 @@
 <translation id="2282146716419988068">Διαδικασία GPU</translation>
 <translation id="2282155092769082568">Αυτόματη διαμόρφωση URL</translation>
 <translation id="2283117145434822734">F6</translation>
+<translation id="2286841657746966508">Διεύθυνση τιμολόγησης</translation>
 <translation id="2286950485307333924">Έχετε συνδεθεί στο Chrome</translation>
 <translation id="2287590536030307392">Απενεργοποίηση όλων των ασύρματων συνδέσεων.</translation>
 <translation id="2288735659267887385">Ρυθμίσεις προσβασιμότητας</translation>
@@ -1642,6 +1640,7 @@
 <translation id="3315158641124845231">Απόκρυψη του <ph name="PRODUCT_NAME" /></translation>
 <translation id="3317459757438853210">Διπλής όψης</translation>
 <translation id="3319048459796106952">Νέο &amp;παράθυρο ανώνυμης περιήγησης</translation>
+<translation id="3320021301628644560">Προσθήκη διεύθυνσης χρέωσης</translation>
 <translation id="3320859581025497771">ο πάροχος σας κινητής τηλεφωνίας</translation>
 <translation id="3323447499041942178">Πλαίσιο κειμένου </translation>
 <translation id="3324301154597925148">Είναι αυτή η σελίδα αναζήτησης που περιμένατε;</translation>
@@ -1841,7 +1840,6 @@
 <translation id="3618849550573277856">Αναζήτηση "<ph name="LOOKUP_STRING" />"</translation>
 <translation id="3620292326130836921">Δημιουργήθηκαν αντίγραφα ασφαλείας για όλα τα αρχεία!</translation>
 <translation id="3623574769078102674">Η διαχείριση αυτού του εποπτευόμενου χρήστη θα γίνεται από το χρήστη <ph name="MANAGER_EMAIL" />.</translation>
-<translation id="3624814222765772771">Η ισχύς της μπαταρίας είναι πολύ χαμηλή για ενημέρωση (<ph name="PROGRESS_PERCENT" />%)</translation>
 <translation id="3625870480639975468">Επαναφορά εστίασης</translation>
 <translation id="3626281679859535460">Φωτεινότητα</translation>
 <translation id="3627052133907344175">Η επέκταση απαιτεί "<ph name="IMPORT_NAME" />" με ελάχιστη έκδοση "<ph name="IMPORT_VERSION" />", αλλά είναι εγκατεστημένη μόνο η έκδοση "<ph name="INSTALLED_VERSION" />".</translation>
@@ -3044,7 +3042,6 @@
 <translation id="5454166040603940656">με <ph name="PROVIDER" /></translation>
 <translation id="5457113250005438886">Μη έγκυρο</translation>
 <translation id="5457459357461771897">Ανάγνωση και διαγραφή φωτογραφιών, μουσικής και άλλων μέσων από τον υπολογιστή σας</translation>
-<translation id="5457599981699367932">Περιήγηση ως επισκέπτης</translation>
 <translation id="5463275305984126951">Ευρετήριο του <ph name="LOCATION" /></translation>
 <translation id="5463856536939868464">Μενού που περιέχει κρυφούς σελιδοδείκτες</translation>
 <translation id="5464632865477611176">Εκτέλεση αυτή τη φορά</translation>
@@ -3502,7 +3499,6 @@
 <translation id="6181431612547969857">Η λήψη αποκλείστηκε</translation>
 <translation id="6185132558746749656">Τοποθεσία συσκευής</translation>
 <translation id="6185696379715117369">Page up</translation>
-<translation id="618807527697571179">Δεν ήταν δυνατός ο εντοπισμός του μοντέλου του εκτυπωτή σας. Επιλέξτε έναν κατασκευαστή και ένα μοντέλο από τη λίστα.</translation>
 <translation id="6188939051578398125">Εισαγάγετε ονόματα και διευθύνσεις.</translation>
 <translation id="6189412234224385711">Άνοιγμα με <ph name="EXTENSION_NAME" /></translation>
 <translation id="6196640612572343990">Αποκλεισμός cookie τρίτων</translation>
@@ -3740,6 +3736,7 @@
 <translation id="6509136331261459454">Διαχείριση άλλων χρηστών...</translation>
 <translation id="6509207748479174212">Άδεια μέσων</translation>
 <translation id="6510568984200103950">Λιγότερες ρυθμίσεις</translation>
+<translation id="6513247462497316522">Το Google Chrome θα χρησιμοποιεί δεδομένα κινητής τηλεφωνίας, αν δεν είστε συνδεδεμένοι σε άλλο δίκτυο.</translation>
 <translation id="6514565641373682518">Αυτή η σελίδα έχει απενεργοποιήσει τον δείκτη του ποντικιού σας.</translation>
 <translation id="6518014396551869914">Αντι&amp;γραφή εικόνας</translation>
 <translation id="651942933739530207">Θέλετε να γίνεται κοινή χρήση της οθόνης σας και της εξόδου ήχου με την εφαρμογή <ph name="APP_NAME" />;</translation>

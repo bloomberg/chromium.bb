@@ -588,38 +588,6 @@
 <translation id="316778957754360075">Această politică a fost retrasă începând cu <ph name="PRODUCT_NAME" /> versiunea 29. Pentru a crea colecții de extensii/aplicații găzduite la nivel de organizație, se recomandă să includeți site-ul care găzduiește pachetele CRX în ExtensionInstallSources și să afișați pe o pagină web linkuri de descărcare directă spre pachete. Puteți crea un lansator pentru respectiva pagină web utilizând politica ExtensionInstallForcelist.</translation>
 <translation id="3185009703220253572">de la versiunea <ph name="SINCE_VERSION" /></translation>
 <translation id="3187220842205194486">Aplicațiile Android nu pot obține accesul la certificatele companiei. Această politică nu are niciun efect asupra lor.</translation>
-<translation id="318812033927804102">Configurează setările de gestionare a extensiilor pentru <ph name="PRODUCT_NAME" />.
-
-          Această politică stabilește mai multe setări, inclusiv pe cele controlate de eventualele politici existente privind extensiile. Această politică va suprascrie eventualele politici vechi dacă ambele sunt setate.
-
-          Această politică asociază un ID de extensie sau o adresă URL de actualizare la configurația sa. În cazul unui ID de extensie, configurația va fi aplicată numai pentru extensia specificată. O configurație prestabilită poate fi setată pentru ID-ul special „*”, care se va aplica pentru toate extensiile care nu au o configurație personalizată setată în această politică. În cazul unei adrese URL de configurare, configurația se va aplica pentru toate extensiile cu adresa URL de actualizare exactă specificată în manifestul acestei extensii, conform descrierii de la <ph name="LINK_TO_EXTENSION_DOC1" />.
-
-          Configurația pentru fiecare extensie (sau pentru extensiile cu aceeași adresă URL) este alt dicționar care poate să conțină domeniile prezentate mai jos.
-
-          „installation_mode”: corespunde unui șir care indică modul de instalare pentru extensie. Șirurile valide sunt:
-          * „allowed”: permite instalarea extensiei de către utilizator. Acesta este comportamentul prestabilit;
-          * „blocked”: blochează instalarea extensiei;
-          * „force_installed”: extensia este instalată automat și nu poate fi dezactivată de utilizator;
-          * „normal_installed”: extensia este instalată automat, însă poate fi dezactivată de utilizator.
-
-          „installation_mode” poate fi configurat și pentru mai multe extensii, inclusiv pentru extensia „*” (ca setări prestabilite) și pentru extensiile cu aceeași adresă URL de actualizare. În acest caz, numai valorile „allowed” și „blocked” pot fi folosite.
-
-          Dacă modul este setat la „force_installed” sau la „normal_installed”, atunci trebuie să se configureze și o valoare „update_url”. Nu uita că adresa URL setată în această politică este folosită numai pentru instalarea inițială. Actualizările ulterioare ale extensiei vor folosi adresa URL de actualizare indicată în manifestul extensiei. Adresa URL de actualizare trebuie să trimită la un document XML cu manifestul de actualizare, după cum s-a menționat mai sus.
-
-          „blocked_permissions”: corespunde unei liste de șiruri care trimit la permisiunile API blocate pentru extensia respectivă. Numele permisiunilor sunt aceleași cu șirurile de permisiuni declarate în manifestul extensiei, conform descrierii de la <ph name="LINK_TO_EXTENSION_DOC3" />. Această setare poate fi configurată și pentru extensia „*”. Dacă extensia necesită o permisiune aflată pe lista de blocare, nu se va putea încărca. Dacă include o permisiune blocată ca cerință opțională, aceasta va fi gestionată ca de obicei, însă solicitarea de permisiuni contradictorii va fi blocată automat la executare.
-
-          „allowed_permissions”: similară cu „blocked_permissions”, însă permite în mod explicit anumite permisiuni care ar putea fi blocate de lista globală a permisiunilor blocate și, din acest motiv, nu poate fi configurată pentru extensia „*”. Nu uita că această setare nu atribuie automat extensiilor permisiunile acordate.
-
-          „minimum_version_required”: corespunde unui șir care indică versiunea. Formatul șirului pentru versiune este același cu cel folosit în manifestul extensiei, conform descrierii de la <ph name="LINK_TO_EXTENSION_DOC4" />. Eventualele extensii cu o versiune mai veche decât versiunea minimă specificată vor fi dezactivate. Acest lucru este valabil și în cazul extensiilor instalate forțat.
-
-          Următoarele setări pot fi folosite numai pentru configurația „*” prestabilită:
-
-          „install_sources”: fiecare element din această listă este un model de potrivire pentru stilul extensiei (consultă https://developer.chrome.com/extensions/match_patterns). Utilizatorii vor putea instala cu ușurință elemente de la orice adresă URL care se potrivește cu un element din această listă. Aceste modele trebuie să permită atât locația fișierului *.crx, cât și pagina de pe care începe instalarea (adică adresa URL sursă).
-
-          „allowed_types”: această setare trece pe lista albă tipurile permise de extensii/aplicații care pot fi instalate în <ph name="PRODUCT_NAME" />. Valoarea este o listă de șiruri, iar fiecare șir trebuie să fie unul dintre următoarele: „extension”, „theme”, „user_script”, „hosted_app”, „legacy_packaged_app”, „platform_app”. Pentru mai multe informații despre aceste tipuri, consultă documentația extensiilor <ph name="PRODUCT_NAME" />.
-
-         Nu folosi această politică, pentru că nu este încă definitivată.
-          </translation>
 <translation id="3201273385265130876">Îți permite să specifici serverul proxy folosit de <ph name="PRODUCT_NAME" /> și împiedică utilizatorii să modifice setările de proxy.
 
           Dacă alegi să nu folosești niciodată un server proxy și să te conectezi întotdeauna direct, toate celelalte opțiuni sunt ignorate.

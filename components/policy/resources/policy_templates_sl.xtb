@@ -617,38 +617,6 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
 <translation id="316778957754360075">Ta nastavitev se ne uporablja od uveljavitve različice brskalnika <ph name="PRODUCT_NAME" /> 29. Za nastavitev zbirk razširitev/aplikacij, ki gostujejo v organizaciji, se priporoča, da se spletno mesto, na katerem gostujejo paketi CRX, vključi na seznam ExtensionInstallSources in da se na spletno mesto dodajo povezave za neposreden prenos paketov. Zaganjalnik za to stran se lahko ustvari s pravilnikom ExtensionInstallForcelist.</translation>
 <translation id="3185009703220253572">od različice <ph name="SINCE_VERSION" /></translation>
 <translation id="3187220842205194486">Aplikacije za Android ne morejo dobiti dostopa do ključev podjetja. Ta pravilnik nanje ne vpliva.</translation>
-<translation id="318812033927804102">Konfigurira nastavitve upravljanja razširitev za <ph name="PRODUCT_NAME" />.
-
-          Ta pravilnik nadzira več nastavitev, vključno za nastavitvami, ki jih nadzirajo morebitni obstoječi pravilniki, povezani z razširitvami. Ta pravilnik preglasi morebitne starejše pravilnike, če so nastavljeni oboji.
-
-          Ta pravilnik preslika ID razširitve ali URL za posodobitev v svojo konfiguracijo. Konfiguracija z ID-jem razširitve bo uporabljena samo za določeno razširitev. Za posebni ID »*« je mogoče nastaviti privzeto konfiguracijo, ki se bo uporabila za vse razširitve, ki v tem pravilniku nimajo nastavljene konfiguracije po meri. Konfiguracija z URL-jem za posodobitev bo uporabljena za vse nastavitve s točno določenim URL-jem za posodobitev, navedenim v manifestu te razširitve, kot je opisano na <ph name="LINK_TO_EXTENSION_DOC1" />.
-
-          Konfiguracija za posamezno razširitev (ali razširitve z istim URL-jem za posodobitev) je drug slovar, ki lahko vsebuje spodaj dokumentirana polja.
-
-          »installation_mode« (način namestitve): preslika v niz, ki navaja način namestitve za razširitev. Veljavni nizi so:
-          * »allowed« (dovoljeno): uporabniku dovoli namestitev razširitve. To je privzeto delovanje.
-          * »blocked« (blokirano): blokira namestitev razširitve.
-          * »force_installed« (vsiljeno nameščeno): razširitev je samodejno nameščena in je uporabnik ne more odstraniti.
-          * »normal_installed« (običajno nameščeno): razširitev je samodejno nameščena, vendar jo lahko uporabnik onemogoči.
-
-          Vrednost »installation_mode« (način namestitve) je prav tako mogoče konfigurirati za več razširitev, vključno z razširitvijo »*« (kot privzeta nastavitev) in razširitvami z istim URL-jem za posodobitev. V tem primeru je mogoče uporabiti samo vrednosti »allowed« (dovoljeno) in »blocked« (blokirano).
-
-          Če je način nastavljen na vrednost »force_installed« (vsiljeno nameščeno) ali »normal_installed« (običajno nameščeno), mora biti konfigurirana tudi vrednost »update_url« (URL za posodobitev). URL za posodobitev, nastavljen v tem pravilniku, se uporabi samo pri začetni namestitvi; pri vseh nadaljnjih posodobitvah razširitve je uporabljen URL za posodobitev, naveden v manifestu razširitve. URL za posodobitev mora kazati na dokument XML manifesta za posodobitev, kot je opisano zgoraj.
-
-          Vrednost »blocked_permissions« (blokirana dovoljenja): preslika v seznam nizov, ki navajajo blokirana dovoljenja za API-je za razširitev. Imena dovoljenj so enaka kot nizi dovoljenj, navedeni v manifestu razširitve, kot je opisano na <ph name="LINK_TO_EXTENSION_DOC3" />. To nastavitev je prav tako mogoče konfigurirati za razširitev »*«. Če razširitev zahteva dovoljenje s seznama blokiranih, se ne bo smela naložiti. Če razširitev vsebuje blokirano dovoljenje kot izbirno zahtevo, se bo obravnavala običajno, vendar bo pri izvajanju zahtevanje dovoljenj, ki so v sporu, samodejno zavrnjeno.
-
-          Vrednost »allowed_permissions« (dovoljena dovoljenja): podobna vrednosti »blocked_permissions« (blokirana dovoljenja), razlikuje pa se po tem, da izrecno dovoljuje nekatera dovoljenja, ki jih globalni seznam blokiranih dovoljenj morda blokira, tako da je ni mogoče konfigurirati za razširitev »*«. Ta nastavitev razširitvam ne podeljuje dovoljenih dovoljenj samodejno.
-
-          Vrednost »minimum_version_required« (zahtevana najmanjša različica): preslika v niz z različico. Oblika niza z različico je enaka obliki niza v manifestu razširitve, kot je opisano na <ph name="LINK_TO_EXTENSION_DOC4" />. Razširitev z različico, starejšo od določene najmanjše različice, bo onemogočena. To velja tudi za vsiljeno nameščene razširitve.
-
-          Te nastavitve je mogoče uporabiti samo za privzeto konfiguracijo »*«:
-
-          Vrednost »install_sources« (viri za namestitev): vsak element na tem seznamu je vzorec ujemanja v slogu razširitve (glejte https://developer.chrome.com/extensions/match_patterns). Uporabniki bodo lahko preprosto namestili elemente s poljubnega URL-ja, ki se ujema z elementom na tem seznamu. Mesto datoteke *.crx in strani, na kateri se prenos začne (tj. napotitelj), morajo dovoljevati vzorci s tega seznama.
-
-          Vrednost »allowed_types« (dovoljene vrste): ta nastavitev uvršča na seznam dovoljenih dovoljene vrste razširitev/aplikacij, ki jih je mogoče namestiti v brskalniku <ph name="PRODUCT_NAME" />. Vrednost je seznam nizov, od katerih mora biti vsak nekaj od tega: »extension«, »theme«, »user_script«, »legacy_packaged_app«, »platform_app«. Če želite več informacij o teh vrstah, si oglejte dokumentacijo za razširitve za <ph name="PRODUCT_NAME" />.
-
-          Ta pravilnik še ni pripravljen za uporabo, zato ga ne uporabljajte.
-          </translation>
 <translation id="3201273385265130876">Omogoča izbiro strežnika proxy, ki ga uporablja <ph name="PRODUCT_NAME" />, in uporabnikom prepreči spreminjanje nastavitev strežnika proxy.
 
           Če izberete, da se strežnik proxy ne uporablja in se vedno vzpostavi neposredna povezava, so vse druge možnosti prezrte.

@@ -15,7 +15,6 @@
 <translation id="1023220960495960452">Translittération (vanakkam → வணக்கம்)</translation>
 <translation id="1026822031284433028">Charger l'image</translation>
 <translation id="1029317248976101138">Zoom</translation>
-<translation id="1030173864176315846"><ph name="PAGE_NUMBER" /> pages ont été imprimées sur <ph name="PRINTER_NAME" /></translation>
 <translation id="1031362278801463162">Chargement de l'aperçu...</translation>
 <translation id="103279545524624934">Libérez de l'espace disque pour lancer des applications Android.</translation>
 <translation id="1033780634303702874">Accéder à vos appareils reliés via le port série</translation>
@@ -149,7 +148,6 @@
     <ph name="BR" />
     Veuillez nous envoyer vos commentaires depuis l'écran suivant pour nous aider à résoudre le problème.</translation>
 <translation id="121783623783282548">Les mots de passe ne correspondent pas.</translation>
-<translation id="1218323606465324064">Impression en cours de <ph name="PAGE_NUMBER" /> pages sur <ph name="PRINTER_NAME" /></translation>
 <translation id="122082903575839559">Algorithme de signature du certificat</translation>
 <translation id="1221024147024329929">PKCS #1 MD2 avec chiffrement RSA</translation>
 <translation id="1221825588892235038">Sélection uniquement</translation>
@@ -509,6 +507,7 @@
 <translation id="1699395855685456105">Version du matériel :</translation>
 <translation id="1700199471143028312">Votre administrateur ne vous autorise pas à créer des utilisateurs supervisés.</translation>
 <translation id="1701062906490865540">Supprimer ce profil utilisateur</translation>
+<translation id="1701364987952948449">Naviguer en tant qu'invité</translation>
 <translation id="1706586824377653884">Ajouté par votre administrateur</translation>
 <translation id="1706625117072057435">Niveaux de zoom</translation>
 <translation id="1707463636381878959">Partager ce réseau avec d'autres utilisateurs</translation>
@@ -754,7 +753,6 @@
 <translation id="2114224913786726438">Modules (<ph name="TOTAL_COUNT" />) : aucun conflit détecté.</translation>
 <translation id="2114326799768592691">Actualiser le &amp;cadre</translation>
 <translation id="2115103655317273167">Envoyer sur le téléphone</translation>
-<translation id="2115291620696624944">Erreur lors de l'impression de <ph name="PAGE_NUMBER" /> pages sur <ph name="PRINTER_NAME" /></translation>
 <translation id="2115926821277323019">L'URL doit être valide.</translation>
 <translation id="2115946962706216358">Échec de l'association de la machine au domaine. Le nombre maximal d'associations de machines autorisées pour votre compte sur le serveur a peut-être été atteint.</translation>
 <translation id="2116673936380190819">de moins d'une heure</translation>
@@ -873,7 +871,6 @@ Une fois que vous avez créé un compte utilisateur supervisé, vous pouvez gér
 <translation id="2255317897038918278">Enregistrement des informations de date Microsoft</translation>
 <translation id="225614027745146050">Bienvenue</translation>
 <translation id="225692081236532131">État d'activation</translation>
-<translation id="2260567344816042527">Si vous n'êtes connecté à aucun autre réseau, Google Chrome va utiliser les données mobiles.</translation>
 <translation id="2262477216570151239">Délai avant répétition</translation>
 <translation id="226269835214688456">Si vous désactivez Smart Lock pour Chromebook, il vous sera impossible de déverrouiller vos appareils Chrome à l'aide de votre téléphone. Vous devrez alors saisir votre mot de passe.</translation>
 <translation id="2263189956353037928">Se déconnecter et se reconnecter</translation>
@@ -895,6 +892,7 @@ Une fois que vous avez créé un compte utilisateur supervisé, vous pouvez gér
 <translation id="2282146716419988068">GPU</translation>
 <translation id="2282155092769082568">URL de configuration automatique :</translation>
 <translation id="2283117145434822734">F6</translation>
+<translation id="2286841657746966508">Adresse de facturation</translation>
 <translation id="2286950485307333924">Vous êtes connecté à Chrome</translation>
 <translation id="2287590536030307392">Cette option désactive toutes les connexions sans fil.</translation>
 <translation id="2288735659267887385">Paramètres d'accessibilité</translation>
@@ -1634,6 +1632,7 @@ Domaine d'origine : <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3315158641124845231">Masquer <ph name="PRODUCT_NAME" /></translation>
 <translation id="3317459757438853210">Recto verso</translation>
 <translation id="3319048459796106952">Nouvelle fenêtre de nav&amp;igation privée</translation>
+<translation id="3320021301628644560">Ajouter une adresse de facturation</translation>
 <translation id="3320859581025497771">votre opérateur</translation>
 <translation id="3323447499041942178">Zone de saisie</translation>
 <translation id="3324301154597925148">Est-ce la page de recherche que vous attendiez ?</translation>
@@ -1832,7 +1831,6 @@ Domaine d'origine : <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3618849550573277856">Rechercher "<ph name="LOOKUP_STRING" />"</translation>
 <translation id="3620292326130836921">Tout le contenu a été sauvegardé</translation>
 <translation id="3623574769078102674">Cet utilisateur supervisé va être géré par <ph name="MANAGER_EMAIL" />.</translation>
-<translation id="3624814222765772771">Batterie trop faible pour la mise à jour (<ph name="PROGRESS_PERCENT" /> %)</translation>
 <translation id="3625870480639975468">Réinitialiser le zoom</translation>
 <translation id="3626281679859535460">Luminosité</translation>
 <translation id="3627052133907344175">L'extension nécessite au minimum "<ph name="IMPORT_NAME" />" version <ph name="IMPORT_VERSION" />, mais la version installée est la <ph name="INSTALLED_VERSION" />.</translation>
@@ -3028,7 +3026,6 @@ Pour poursuivre l'exploration, appuyez sur n'importe quelle touche.</translation
 <translation id="5454166040603940656">avec <ph name="PROVIDER" /></translation>
 <translation id="5457113250005438886">Non valide</translation>
 <translation id="5457459357461771897">Accéder aux photos, à la musique et aux autres fichiers multimédias stockés sur votre ordinateur et les supprimer</translation>
-<translation id="5457599981699367932">Naviguer en tant qu'invité</translation>
 <translation id="5463275305984126951">Index de <ph name="LOCATION" /></translation>
 <translation id="5463856536939868464">Menu contenant des favoris masqués</translation>
 <translation id="5464632865477611176">Exécuter cette fois</translation>
@@ -3486,7 +3483,6 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="6181431612547969857">Téléchargement bloqué</translation>
 <translation id="6185132558746749656">Position de l'appareil</translation>
 <translation id="6185696379715117369">Accéder à la page précédente</translation>
-<translation id="618807527697571179">Impossible de détecter votre modèle d'imprimante. Sélectionnez le fabricant et le modèle dans la liste.</translation>
 <translation id="6188939051578398125">Saisir un nom ou une adresse</translation>
 <translation id="6189412234224385711">Ouvrir avec <ph name="EXTENSION_NAME" /></translation>
 <translation id="6196640612572343990">Bloquer les cookies tiers</translation>
@@ -3529,7 +3525,7 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="6251870443722440887">Handles GDI</translation>
 <translation id="6251889282623539337">Conditions d'utilisation du domaine "<ph name="DOMAIN" />"</translation>
 <translation id="6254503684448816922">Clé compromise</translation>
-<translation id="6256079118265363670">Activez Google Play Store sur votre Chromebook.</translation>
+<translation id="6256079118265363670">Activer Google Play Store sur le Chromebook</translation>
 <translation id="6259104249628300056">Découvrir les appareils sur votre réseau local</translation>
 <translation id="6263082573641595914">Version de l'autorité de certification Microsoft</translation>
 <translation id="6263284346895336537">Non essentielle</translation>
@@ -3724,6 +3720,7 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="6509136331261459454">Gérer les autres utilisateurs…</translation>
 <translation id="6509207748479174212">Licence multimédia</translation>
 <translation id="6510568984200103950">Moins de paramètres</translation>
+<translation id="6513247462497316522">Si vous n'êtes connecté à aucun autre réseau, Google Chrome va utiliser un service Internet mobile.</translation>
 <translation id="6514565641373682518">Cette page a désactivé le curseur de votre souris.</translation>
 <translation id="6518014396551869914">Cop&amp;ier l'image</translation>
 <translation id="651942933739530207">Voulez-vous que votre écran et votre sortie audio soient partagés par le biais de l'application <ph name="APP_NAME" /> ?</translation>
@@ -4245,7 +4242,7 @@ N'utilisez cette fonctionnalité qu'avec des comptes fiables.</translation>
 <translation id="7348093485538360975">Clavier virtuel</translation>
 <translation id="7348749398828259943">Clavier Workman international américain</translation>
 <translation id="7352651011704765696">Un problème est survenu</translation>
-<translation id="73534262421337222">Installation d'une mise à jour critique</translation>
+<translation id="73534262421337222">Installation d'une mise à jour essentielle</translation>
 <translation id="735745346212279324">VPN déconnecté</translation>
 <translation id="7360183604634508679">Menu "Favoris"</translation>
 <translation id="7361039089383199231">$1 octets</translation>
@@ -4405,7 +4402,7 @@ N'utilisez cette fonctionnalité qu'avec des comptes fiables.</translation>
 <translation id="7566723889363720618">F12</translation>
 <translation id="756809126120519699">Données de Chrome effacées</translation>
 <translation id="7568790562536448087">Mise à jour en cours</translation>
-<translation id="7571643774869182231">Stockage insuffisant pour la mise à jour</translation>
+<translation id="7571643774869182231">Espace de stockage insuffisant pour la mise à jour</translation>
 <translation id="7573172247376861652">Charge de la batterie</translation>
 <translation id="7576032389798113292">6 x 4</translation>
 <translation id="7576690715254076113">Assembler</translation>

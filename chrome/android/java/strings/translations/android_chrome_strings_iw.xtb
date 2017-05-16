@@ -27,7 +27,6 @@
 כדי להשתמש באינטרנט הווירטופיזי, עליך להפעיל את Bluetooth ואת שירותי המיקום.</translation>
 <translation id="124678866338384709">סגור את הכרטיסייה הנוכחית</translation>
 <translation id="1258753120186372309">‏דודל של Google‏: <ph name="DOODLE_DESCRIPTION" /></translation>
-<translation id="1265597927250775944">ניקוי ההיסטוריה וההצעות בסרגל הכתובות</translation>
 <translation id="1272079795634619415">הפסק</translation>
 <translation id="1283039547216852943">הקש כדי להרחיב</translation>
 <translation id="1285320974508926690">לעולם אל תתרגם אתר זה</translation>
@@ -263,7 +262,6 @@
 <translation id="3859306556332390985">הרץ קדימה</translation>
 <translation id="3894427358181296146">הוספת תיקייה</translation>
 <translation id="3895926599014793903">אלץ הפעלת שינוי מרחק מתצוגה</translation>
-<translation id="3915590178385207649">‏ניקוי ההיסטוריה מכל המכשירים המחוברים. בכתובת <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> ניתן להציג פעילות אחרת מחשבון Google שלך.</translation>
 <translation id="3917783807003067648">המיקום חסום</translation>
 <translation id="3927692899758076493">Sans Serif</translation>
 <translation id="3928666092801078803">שילוב הנתונים שלי</translation>
@@ -609,7 +607,6 @@
 <translation id="7423098979219808738">בקש אישור</translation>
 <translation id="7437998757836447326">‏יציאה מ-Chrome</translation>
 <translation id="7445411102860286510">התר לאתרים להפעיל באופן אוטומטי סרטונים מושתקים (מומלץ)</translation>
-<translation id="7449574997654022410">‏ניקוי ההיסטוריה וההצעות בסרגל הכתובות. בכתובת <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> ניתן להציג פעילות אחרת מחשבון Google שלך.</translation>
 <translation id="7464701184726199289">פעולה זו מוחקת נתונים מסונכרנים מכל המכשירים. הגדרות אתרים שנשמרו לא יימחקו ועשויות לשקף את הרגלי הגלישה שלך. <ph name="BEGIN_LINK" />למידע נוסף<ph name="END_LINK" /></translation>
 <translation id="7473891865547856676">לא, תודה</translation>
 <translation id="7475192538862203634">אם אתה רואה זאת לעתים קרובות, נסה את <ph name="BEGIN_LINK" />ההצעות<ph name="END_LINK" /> האלה.</translation>

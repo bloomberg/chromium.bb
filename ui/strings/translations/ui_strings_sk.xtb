@@ -14,6 +14,7 @@
 <translation id="1752946267035950200">{MINUTES,plural, =1{1 minúta}few{# minúty}many{# minúty}other{# minút}}</translation>
 <translation id="1761785978543082658"><ph name="QUANTITY" /> B</translation>
 <translation id="1801827354178857021">Bodka</translation>
+<translation id="1803208670097017349">{MONTHS,plural, =1{1 mesiac}few{# mesiace}many{# mesiaca}other{# mesiacov}}</translation>
 <translation id="1809410197924942083"><ph name="QUANTITY" /> MB/s</translation>
 <translation id="1830179671306812954">{HOURS,plural, =1{Pred 1 hodinou a }few{Pred # hodinami a }many{Pred # hodinou a }other{Pred # hodinami a }}</translation>
 <translation id="1842960171412779397">vybrať</translation>
@@ -33,6 +34,7 @@
 <translation id="2666092431469916601">Vrch</translation>
 <translation id="2743387203779672305">Kopírovať do schránky</translation>
 <translation id="2803313416453193357">Otvoriť priečinok</translation>
+<translation id="2824719307700604149">{YEARS,plural, =1{pred rokom}few{pred # rokmi}many{pred # rokom}other{pred # rokmi}}</translation>
 <translation id="2931838996092594335">kliknutie</translation>
 <translation id="2983818520079887040">Nastavenia...</translation>
 <translation id="3036649622769666520">Otvoriť súbory</translation>
@@ -54,8 +56,10 @@
 <translation id="3990502903496589789">Pravý okraj</translation>
 <translation id="4202807286478387388">skok</translation>
 <translation id="4250229828105606438">Snímka obrazovky</translation>
+<translation id="4266252015790371705">{MONTHS,plural, =1{pred mesiacom}few{pred # mesiacmi}many{pred # mesiacom}other{pred # mesiacmi}}</translation>
 <translation id="4320177379694898372">Žiadne internetové pripojenie</translation>
 <translation id="4588090240171750605">Rolovať doprava</translation>
+<translation id="4788285488841504513">{MONTHS,plural, =1{zostáva 1 mesiac}few{zostávajú # mesiace}many{zostáva # mesiaca}other{zostáva # mesiacov}}</translation>
 <translation id="4820616160060340806">Command + <ph name="KEY_COMBO_NAME" /></translation>
 <translation id="4968171027979920686">{SECONDS,plural, =1{1 sekunda}few{# sekundy}many{# sekundy}other{# sekúnd}}</translation>
 <translation id="4971687151119236543">Média – predchádzajúca stopa</translation>
@@ -98,6 +102,7 @@
 <translation id="6863590663815976734">{HOURS,plural, =1{Zostáva 1 hodina}few{Zostávajú # hodiny}many{Zostáva # hodiny}other{Zostáva # hodín}}</translation>
 <translation id="688711909580084195">Nepomenovaná webová stránka</translation>
 <translation id="6907759265145635167"><ph name="QUANTITY" /> PB/s</translation>
+<translation id="6917971086528278418">{YEARS,plural, =1{zostáva 1 rok}few{zostávajú # roky}many{zostáva # roka}other{zostáva # rokov}}</translation>
 <translation id="6918245111648057970">Povoliť upozornenia na nasledujúce položky pre každého používateľa:</translation>
 <translation id="6945221475159498467">Vybrať</translation>
 <translation id="6965382102122355670">OK</translation>
@@ -124,6 +129,7 @@
 <translation id="8245914219290430011">Tab</translation>
 <translation id="8328145009876646418">Ľavý okraj</translation>
 <translation id="8331626408530291785">Rolovať nahor</translation>
+<translation id="8352146631962686268">{YEARS,plural, =1{1 rok}few{# roky}many{# roka}other{# rokov}}</translation>
 <translation id="8371695176452482769">Hovorte…</translation>
 <translation id="838869780401515933">označiť</translation>
 <translation id="8392688371657486010">Nemáte žiadne upozornenia</translation>

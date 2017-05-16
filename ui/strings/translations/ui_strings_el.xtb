@@ -14,6 +14,7 @@
 <translation id="1752946267035950200">{MINUTES,plural, =1{1 λεπτό}other{# λεπτά}}</translation>
 <translation id="1761785978543082658"><ph name="QUANTITY" /> Β</translation>
 <translation id="1801827354178857021">Περίοδος</translation>
+<translation id="1803208670097017349">{MONTHS,plural, =1{1 μήνας}other{# μήνες}}</translation>
 <translation id="1809410197924942083"><ph name="QUANTITY" /> MB/s</translation>
 <translation id="1830179671306812954">{HOURS,plural, =1{1 ώρα και }other{# ώρες και }}</translation>
 <translation id="1842960171412779397">επιλογή</translation>
@@ -33,6 +34,7 @@
 <translation id="2666092431469916601">Κορυφή</translation>
 <translation id="2743387203779672305">Αντιγραφή στο πρόχειρο</translation>
 <translation id="2803313416453193357">Άνοιγμα φακέλου</translation>
+<translation id="2824719307700604149">{YEARS,plural, =1{Πριν από 1 χρόνο}other{Πριν από # χρόνια}}</translation>
 <translation id="2931838996092594335">κάνω κλικ</translation>
 <translation id="2983818520079887040">Ρυθμίσεις...</translation>
 <translation id="3036649622769666520">Άνοιγμα Αρχείων</translation>
@@ -54,8 +56,10 @@
 <translation id="3990502903496589789">Δεξιά άκρη</translation>
 <translation id="4202807286478387388">μεταπήδηση</translation>
 <translation id="4250229828105606438">Στιγμιότυπο οθόνης</translation>
+<translation id="4266252015790371705">{MONTHS,plural, =1{Πριν από 1 μήνα}other{Πριν από # μήνες}}</translation>
 <translation id="4320177379694898372">Χωρίς σύνδεση στο διαδίκτυο</translation>
 <translation id="4588090240171750605">Κύλιση δεξιά</translation>
+<translation id="4788285488841504513">{MONTHS,plural, =1{Απομένει 1 μήνας}other{Απομένουν # μήνες}}</translation>
 <translation id="4820616160060340806">Εντολή+<ph name="KEY_COMBO_NAME" /></translation>
 <translation id="4968171027979920686">{SECONDS,plural, =1{1 δευτερόλεπτο}other{# δευτερόλεπτα}}</translation>
 <translation id="4971687151119236543">Προηγούμενο κομμάτι πολυμέσων</translation>
@@ -98,6 +102,7 @@
 <translation id="6863590663815976734">{HOURS,plural, =1{Απομένει 1 ώρα}other{Απομένουν # ώρες}}</translation>
 <translation id="688711909580084195">Ιστοσελίδα χωρίς τίτλο</translation>
 <translation id="6907759265145635167"><ph name="QUANTITY" /> PB/s</translation>
+<translation id="6917971086528278418">{YEARS,plural, =1{Απομένει 1 χρόνος}other{Απομένουν # χρόνια}}</translation>
 <translation id="6918245111648057970">Να επιτρέπονται οι ειδοποιήσεις από τις παρακάτω πηγές για κάθε χρήστη:</translation>
 <translation id="6945221475159498467">Επιλογή</translation>
 <translation id="6965382102122355670">ΕΝΤΑΞΕΙ</translation>
@@ -124,6 +129,7 @@
 <translation id="8245914219290430011">Πλήκτρο tab</translation>
 <translation id="8328145009876646418">Αριστερή άκρη</translation>
 <translation id="8331626408530291785">Κύλιση επάνω</translation>
+<translation id="8352146631962686268">{YEARS,plural, =1{1 χρόνος}other{# χρόνια}}</translation>
 <translation id="8371695176452482769">Μιλήστε τώρα</translation>
 <translation id="838869780401515933">ενεργοποίηση</translation>
 <translation id="8392688371657486010">Δεν υπάρχουν ειδοποιήσεις</translation>

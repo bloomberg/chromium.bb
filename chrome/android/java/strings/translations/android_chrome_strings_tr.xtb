@@ -27,7 +27,6 @@
 Fiziksel Web'i kullanabilmeniz için Bluetooth ve Konum özelliklerinin açık olması gerekir.</translation>
 <translation id="124678866338384709">Geçerli sekmeyi kapatır</translation>
 <translation id="1258753120186372309">Google doodle'ı: <ph name="DOODLE_DESCRIPTION" /></translation>
-<translation id="1265597927250775944">Geçmişi ve adres çubuğu önerilerini temizler.</translation>
 <translation id="1272079795634619415">Durdur</translation>
 <translation id="1283039547216852943">Genişletmek için dokunun</translation>
 <translation id="1285320974508926690">Bu siteyi hiçbir zaman çevirme</translation>
@@ -263,7 +262,6 @@ Arama teriminizi düzeltmek için uzun basarak terimi seçin. Aramanızı ayrın
 <translation id="3859306556332390985">İleriye doğru git</translation>
 <translation id="3894427358181296146">Klasör ekleyin</translation>
 <translation id="3895926599014793903">Yakınlaştırmayı etkinleştirmeye zorla</translation>
-<translation id="3915590178385207649">Oturum açmış tüm cihazlarda geçmişi temizler. Google Hesabınıza ait diğer etkinlikleri <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> adresinden görüntüleyebilirsiniz.</translation>
 <translation id="3917783807003067648">Konum engellendi</translation>
 <translation id="3927692899758076493">Sans Serif</translation>
 <translation id="3928666092801078803">Verilerimi birleştir</translation>
@@ -609,7 +607,6 @@ Yine de, görünmez olmazsınız. Gizli moda geçmeniz web'de yaptıklarınızı
 <translation id="7423098979219808738">Önce sor</translation>
 <translation id="7437998757836447326">Chrome oturumunu kapatma</translation>
 <translation id="7445411102860286510">Sitelerin, sesi kapatılmış videoları otomatik olarak oynatmasına izin ver (önerilen)</translation>
-<translation id="7449574997654022410">Geçmişi ve adres çubuğu önerilerini temizler. Google Hesabınıza ait diğer etkinlikleri <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> adresinden görüntüleyebilirsiniz.</translation>
 <translation id="7464701184726199289">Bu işlem, senkronize edilen verileri tüm cihazlardan siler. Kayıtlı site ayarları silinmez ve web'e göz atma alışkanlıklarınızı yansıtabilir. <ph name="BEGIN_LINK" />Daha fazla bilgi edinin<ph name="END_LINK" /></translation>
 <translation id="7473891865547856676">Hayır, Teşekkürler</translation>
 <translation id="7475192538862203634">Bunu çok sık görüyorsanız bu <ph name="BEGIN_LINK" />önerileri<ph name="END_LINK" /> deneyin.</translation>
