@@ -30,7 +30,6 @@ import logging
 import os
 import re
 
-import cluster_symbols
 import match_util
 
 
@@ -58,6 +57,7 @@ FLAG_UNLIKELY = 4
 FLAG_REL = 8
 FLAG_REL_LOCAL = 16
 FLAG_GENERATED_SOURCE = 32
+FLAG_CLONE = 64
 
 DIFF_STATUS_UNCHANGED = 0
 DIFF_STATUS_CHANGED = 1
@@ -70,34 +70,37 @@ class SizeInfo(object):
 
   Fields:
     section_sizes: A dict of section_name -> size.
-    raw_symbols: A list of all symbols, sorted by address.
-    symbols: A SymbolGroup containing all symbols. By default, these are the
-        same as raw_symbols, but may contain custom groupings when it is
-        desirable to convey the result of a query along with section_sizes and
-        metadata.
+    raw_symbols: A SymbolGroup containing all top-level symbols (no groups).
+    symbols: A SymbolGroup where symbols have been grouped by full_name (where
+        applicable). May be re-assigned when it is desirable to show custom
+        groupings while still printing metadata and section_sizes.
     metadata: A dict.
   """
   __slots__ = (
       'section_sizes',
       'raw_symbols',
-      'symbols',
+      '_symbols',
       'metadata',
   )
 
   """Root size information."""
   def __init__(self, section_sizes, raw_symbols, metadata=None, symbols=None):
+    if isinstance(raw_symbols, list):
+      raw_symbols = SymbolGroup(raw_symbols)
     self.section_sizes = section_sizes  # E.g. {'.text': 0}
     self.raw_symbols = raw_symbols
-    self.symbols = symbols or SymbolGroup(raw_symbols)
+    self._symbols = symbols
     self.metadata = metadata or {}
 
-  def Clustered(self):
-    """Returns a new SizeInfo with some symbols moved into subgroups.
+  @property
+  def symbols(self):
+    if self._symbols is None:
+      self._symbols = self.raw_symbols._Clustered()
+    return self._symbols
 
-    See SymbolGroup.Clustered() for more details.
-    """
-    return SizeInfo(self.section_sizes, self.raw_symbols, self.metadata,
-                    symbols=self.symbols.Clustered())
+  @symbols.setter
+  def symbols(self, value):
+    self._symbols = value
 
 
 class SizeInfoDiff(object):
@@ -105,22 +108,38 @@ class SizeInfoDiff(object):
 
   Fields:
     section_sizes: A dict of section_name -> size delta.
-    symbols: A SymbolDiff with all symbols in it.
+    raw_symbols: A SymbolDiff with all top-level symbols in it (no groups).
+    symbols: A SymbolDiff where symbols have been grouped by full_name (where
+        applicable). May be re-assigned when it is desirable to show custom
+        groupings while still printing metadata and section_sizes.
     before_metadata: metadata of the "before" SizeInfo.
     after_metadata: metadata of the "after" SizeInfo.
   """
   __slots__ = (
       'section_sizes',
-      'symbols',
+      'raw_symbols',
+      '_symbols',
       'before_metadata',
       'after_metadata',
   )
 
-  def __init__(self, section_sizes, symbols, before_metadata, after_metadata):
+  def __init__(self, section_sizes, raw_symbols, before_metadata,
+               after_metadata):
     self.section_sizes = section_sizes
-    self.symbols = symbols
+    self.raw_symbols = raw_symbols
     self.before_metadata = before_metadata
     self.after_metadata = after_metadata
+    self._symbols = None
+
+  @property
+  def symbols(self):
+    if self._symbols is None:
+      self._symbols = self.raw_symbols._Clustered()
+    return self._symbols
+
+  @symbols.setter
+  def symbols(self, value):
+    self._symbols = value
 
 
 class BaseSymbol(object):
@@ -183,6 +202,8 @@ class BaseSymbol(object):
       parts.append('rel.loc')
     if flags & FLAG_GENERATED_SOURCE:
       parts.append('gen')
+    if flags & FLAG_CLONE:
+      parts.append('clone')
     # Not actually a part of flags, but useful to show it here.
     if self.aliases:
       parts.append('{} aliases'.format(self.num_aliases))
@@ -415,18 +436,6 @@ class SymbolGroup(BaseSymbol):
                        name=name, section_name=section_name,
                        is_sorted=is_sorted)
 
-  def Clustered(self):
-    """Returns a new SymbolGroup with some symbols moved into subgroups.
-
-    Subgroups include:
-     * Symbols that have [clone] in their name (created during inlining).
-     * Star symbols (such as "** merge strings", and "** symbol gap")
-
-    To view created groups:
-      Print(clustered.Filter(lambda s: s.IsGroup()), recursive=True)
-    """
-    return self._CreateTransformed(cluster_symbols.ClusterSymbols(self))
-
   def Sorted(self, cmp_func=None, key=None, reverse=False):
     if cmp_func is None and key is None:
       cmp_func = lambda a, b: cmp((a.IsBss(), abs(b.pss), a.name),
@@ -461,6 +470,9 @@ class SymbolGroup(BaseSymbol):
     return self._CreateTransformed(filtered_and_kept[1],
                                    filtered_symbols=filtered_and_kept[0],
                                    section_name=self.section_name)
+
+  def WhereIsGroup(self):
+    return self.Filter(lambda s: s.IsGroup())
 
   def WhereSizeBiggerThan(self, min_size):
     return self.Filter(lambda s: s.size >= min_size)
@@ -552,45 +564,109 @@ class SymbolGroup(BaseSymbol):
     return self._CreateTransformed(
         self._filtered_symbols, filtered_symbols=self._symbols, is_sorted=False)
 
-  def GroupedBy(self, func, min_count=0):
+  def GroupedBy(self, func, min_count=0, group_factory=None):
     """Returns a SymbolGroup of SymbolGroups, indexed by |func|.
 
     Symbols within each subgroup maintain their relative ordering.
 
     Args:
       func: Grouping function. Passed a symbol and returns a string for the
-            name of the subgroup to put the symbol in. If None is returned, the
-            symbol is omitted.
+          name of the subgroup to put the symbol in. If None is returned, the
+          symbol is omitted.
       min_count: Miniumum number of symbols for a group. If fewer than this many
-                 symbols end up in a group, they will not be put within a group.
-                 Use a negative value to omit symbols entirely rather than
-                 include them outside of a group.
+          symbols end up in a group, they will not be put within a group.
+          Use a negative value to omit symbols entirely rather than
+          include them outside of a group.
+      group_factory: Function to create SymbolGroup from a list of Symbols.
     """
+    if group_factory is None:
+      group_factory = lambda token, symbols: self._CreateTransformed(
+            symbols, full_name=token, template_name=token, name=token,
+            section_name=self.section_name)
+
     after_syms = []
     filtered_symbols = []
-    symbols_by_token = collections.defaultdict(list)
+    symbols_by_token = collections.OrderedDict()
     # Index symbols by |func|.
     for symbol in self:
       token = func(symbol)
       if token is None:
         filtered_symbols.append(symbol)
-      symbols_by_token[token].append(symbol)
+      else:
+        # Optimization: Store a list only when >1 symbol.
+        # Saves 200-300ms for _Clustered().
+        prev = symbols_by_token.setdefault(token, symbol)
+        if prev is not symbol:
+          if prev.__class__ == list:
+            prev.append(symbol)
+          else:
+            symbols_by_token[token] = [prev, symbol]
     # Create the subgroups.
     include_singles = min_count >= 0
     min_count = abs(min_count)
-    for token, symbols in symbols_by_token.iteritems():
-      if len(symbols) >= min_count:
-        after_syms.append(self._CreateTransformed(
-            symbols, name=token, section_name=self.section_name,
-            is_sorted=False))
-      elif include_singles:
-        after_syms.extend(symbols)
+    for token, symbol_or_list in symbols_by_token.iteritems():
+      count = 1
+      if symbol_or_list.__class__ == list:
+        count = len(symbol_or_list)
+
+      if count >= min_count:
+        if count == 1:
+          symbol_or_list = [symbol_or_list]
+        after_syms.append(group_factory(token, symbol_or_list))
       else:
-        filtered_symbols.extend(symbols)
-    grouped = self._CreateTransformed(
+        target_list = after_syms if include_singles else filtered_symbols
+        if count == 1:
+          target_list.append(symbol_or_list)
+        else:
+          target_list.extend(symbol_or_list)
+
+    return self._CreateTransformed(
         after_syms, filtered_symbols=filtered_symbols,
-        section_name=self.section_name, is_sorted=False)
-    return grouped
+        section_name=self.section_name)
+
+  def _Clustered(self):
+    """Returns a new SymbolGroup with some symbols moved into subgroups.
+
+    Method is private since it only ever makes sense to call it from
+    SizeInfo.symbols.
+
+    The main function of clustering is to put symbols that were broken into
+    multiple parts under a group so that they once again look like a single
+    symbol. It also groups together symbols like "** merge strings".
+
+    To view created groups:
+      Print(size_info.symbols.WhereIsGroup())
+    """
+    def cluster_func(symbol):
+      name = symbol.full_name
+      if not name:
+        # min_count=2 will ensure order is maintained while not being grouped.
+        # "&" to distinguish from real symbol names, id() to ensure uniqueness.
+        return '&' + hex(id(symbol))
+      if name.startswith('*'):
+        # "symbol gap 3" -> "symbol gaps"
+        name = re.sub(r'\s+\d+( \(.*\))?$', 's', name)
+      return name
+
+    # Use a custom factory to fill in name & template_name.
+    def group_factory(full_name, symbols):
+      sym = symbols[0]
+      if full_name.startswith('*'):
+        return self._CreateTransformed(
+            symbols, full_name=full_name, template_name=full_name,
+            name=full_name, section_name=sym.section_name)
+      return self._CreateTransformed(
+          symbols, full_name=full_name, template_name=sym.template_name,
+          name=sym.name, section_name=sym.section_name)
+
+    # A full second faster to cluster per-section. Plus, don't need create
+    # (section_name, name) tuples in cluster_func.
+    ret = []
+    for section in self.GroupedBySectionName():
+      ret.extend(section.GroupedBy(
+          cluster_func, min_count=2, group_factory=group_factory))
+
+    return self._CreateTransformed(ret)
 
   def GroupedBySectionName(self):
     return self.GroupedBy(lambda s: s.section_name)

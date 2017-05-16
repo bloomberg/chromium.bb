@@ -276,9 +276,7 @@ def DescribeSizeInfoCoverage(size_info):
       expected_size = size_info.section_sizes[
           models.SECTION_TO_SECTION_NAME[section]]
 
-    # Use raw_symbols in case symbols contains groups.
-    in_section = models.SymbolGroup(size_info.raw_symbols).WhereInSection(
-        section)
+    in_section = size_info.raw_symbols.WhereInSection(section)
     actual_size = in_section.size
     size_percent = _Divide(actual_size, expected_size)
     yield ('Section {}: has {:.1%} of {} bytes accounted for from '
