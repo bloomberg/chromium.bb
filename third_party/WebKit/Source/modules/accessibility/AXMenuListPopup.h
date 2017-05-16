@@ -48,7 +48,7 @@ class AXMenuListPopup final : public AXMockObject {
   void DidUpdateActiveOption(int option_index);
   void DidShow();
   void DidHide();
-  AXObjectImpl* ActiveDescendant() final;
+  AXObject* ActiveDescendant() final;
 
  private:
   explicit AXMenuListPopup(AXObjectCacheImpl&);

@@ -80,7 +80,7 @@ class SparseAttributeSetter {
   USING_FAST_MALLOC(SparseAttributeSetter);
 
  public:
-  virtual void Run(const AXObjectImpl&,
+  virtual void Run(const AXObject&,
                    AXSparseAttributeClient&,
                    const AtomicString& value) = 0;
 };
@@ -92,7 +92,7 @@ class BoolAttributeSetter : public SparseAttributeSetter {
  private:
   AXBoolAttribute attribute_;
 
-  void Run(const AXObjectImpl& obj,
+  void Run(const AXObject& obj,
            AXSparseAttributeClient& attribute_map,
            const AtomicString& value) override {
     attribute_map.AddBoolAttribute(attribute_,
@@ -107,7 +107,7 @@ class StringAttributeSetter : public SparseAttributeSetter {
  private:
   AXStringAttribute attribute_;
 
-  void Run(const AXObjectImpl& obj,
+  void Run(const AXObject& obj,
            AXSparseAttributeClient& attribute_map,
            const AtomicString& value) override {
     attribute_map.AddStringAttribute(attribute_, value);
@@ -121,7 +121,7 @@ class ObjectAttributeSetter : public SparseAttributeSetter {
  private:
   AXObjectAttribute attribute_;
 
-  void Run(const AXObjectImpl& obj,
+  void Run(const AXObject& obj,
            AXSparseAttributeClient& attribute_map,
            const AtomicString& value) override {
     if (value.IsNull() || value.IsEmpty())
@@ -133,7 +133,7 @@ class ObjectAttributeSetter : public SparseAttributeSetter {
     Element* target = ToElement(node)->GetTreeScope().getElementById(value);
     if (!target)
       return;
-    AXObjectImpl* ax_target = obj.AxObjectCache().GetOrCreate(target);
+    AXObject* ax_target = obj.AxObjectCache().GetOrCreate(target);
     if (ax_target)
       attribute_map.AddObjectAttribute(attribute_, *ax_target);
   }
@@ -147,7 +147,7 @@ class ObjectVectorAttributeSetter : public SparseAttributeSetter {
  private:
   AXObjectVectorAttribute attribute_;
 
-  void Run(const AXObjectImpl& obj,
+  void Run(const AXObject& obj,
            AXSparseAttributeClient& attribute_map,
            const AtomicString& value) override {
     Node* node = obj.GetNode();
@@ -164,12 +164,11 @@ class ObjectVectorAttributeSetter : public SparseAttributeSetter {
     if (ids.IsEmpty())
       return;
 
-    HeapVector<Member<AXObjectImpl>> objects;
+    HeapVector<Member<AXObject>> objects;
     TreeScope& scope = node->GetTreeScope();
     for (const auto& id : ids) {
       if (Element* id_element = scope.getElementById(AtomicString(id))) {
-        AXObjectImpl* ax_id_element =
-            obj.AxObjectCache().GetOrCreate(id_element);
+        AXObject* ax_id_element = obj.AxObjectCache().GetOrCreate(id_element);
         if (ax_id_element && !ax_id_element->AccessibilityIsIgnored())
           objects.push_back(ax_id_element);
       }
@@ -216,7 +215,7 @@ static AXSparseAttributeSetterMap& GetSparseAttributeSetterMap() {
 }
 
 AXNodeObject::AXNodeObject(Node* node, AXObjectCacheImpl& ax_object_cache)
-    : AXObjectImpl(ax_object_cache),
+    : AXObject(ax_object_cache),
       aria_role_(kUnknownRole),
       children_dirty_(false),
       node_(node) {}
@@ -244,7 +243,7 @@ void AXNodeObject::AlterSliderValue(bool increase) {
                                    AXObjectCacheImpl::kAXValueChanged);
 }
 
-AXObjectImpl* AXNodeObject::ActiveDescendant() {
+AXObject* AXNodeObject::ActiveDescendant() {
   if (!node_ || !node_->IsElementNode())
     return nullptr;
 
@@ -259,14 +258,14 @@ AXObjectImpl* AXNodeObject::ActiveDescendant() {
   if (!descendant)
     return nullptr;
 
-  AXObjectImpl* ax_descendant = AxObjectCache().GetOrCreate(descendant);
+  AXObject* ax_descendant = AxObjectCache().GetOrCreate(descendant);
   return ax_descendant;
 }
 
 bool AXNodeObject::ComputeAccessibilityIsIgnored(
     IgnoredReasons* ignored_reasons) const {
 #if DCHECK_IS_ON()
-  // Double-check that an AXObjectImpl is never accessed before
+  // Double-check that an AXObject is never accessed before
   // it's been initialized.
   DCHECK(initialized_);
 #endif
@@ -281,13 +280,13 @@ bool AXNodeObject::ComputeAccessibilityIsIgnored(
   }
 
   // Ignore labels that are already referenced by a control.
-  AXObjectImpl* control_object = CorrespondingControlForLabelElement();
+  AXObject* control_object = CorrespondingControlForLabelElement();
   if (control_object && control_object->IsCheckboxOrRadio() &&
       control_object->NameFromLabelElement()) {
     if (ignored_reasons) {
       HTMLLabelElement* label = LabelElementContainer();
       if (label && label != GetNode()) {
-        AXObjectImpl* label_ax_object = AxObjectCache().GetOrCreate(label);
+        AXObject* label_ax_object = AxObjectCache().GetOrCreate(label);
         ignored_reasons->push_back(
             IgnoredReason(kAXLabelContainer, label_ax_object));
       }
@@ -319,7 +318,7 @@ static bool IsListElement(Node* node) {
          isHTMLDListElement(*node);
 }
 
-static bool IsPresentationalInTable(AXObjectImpl* parent,
+static bool IsPresentationalInTable(AXObject* parent,
                                     HTMLElement* current_element) {
   if (!current_element)
     return false;
@@ -346,7 +345,7 @@ static bool IsPresentationalInTable(AXObjectImpl* parent,
       IsHTMLTableSectionElement(ToHTMLElement(*parent_node))) {
     // Because TableSections have ignored role, presentation should be checked
     // with its parent node.
-    AXObjectImpl* table_object = parent->ParentObject();
+    AXObject* table_object = parent->ParentObject();
     Node* table_node = table_object ? table_object->GetNode() : 0;
     return isHTMLTableElement(table_node) &&
            table_object->HasInheritedPresentationalRole();
@@ -354,7 +353,7 @@ static bool IsPresentationalInTable(AXObjectImpl* parent,
   return false;
 }
 
-static bool IsRequiredOwnedElement(AXObjectImpl* parent,
+static bool IsRequiredOwnedElement(AXObject* parent,
                                    AccessibilityRole current_role,
                                    HTMLElement* current_element) {
   Node* parent_node = parent->GetNode();
@@ -384,7 +383,7 @@ static bool IsRequiredOwnedElement(AXObjectImpl* parent,
   return false;
 }
 
-const AXObjectImpl* AXNodeObject::InheritsPresentationalRoleFrom() const {
+const AXObject* AXNodeObject::InheritsPresentationalRoleFrom() const {
   // ARIA states if an item can get focus, it should not be presentational.
   if (CanSetFocusAttribute())
     return 0;
@@ -399,7 +398,7 @@ const AXObjectImpl* AXNodeObject::InheritsPresentationalRoleFrom() const {
   if (AriaRoleAttribute() != kUnknownRole)
     return 0;
 
-  AXObjectImpl* parent = ParentObject();
+  AXObject* parent = ParentObject();
   if (!parent)
     return 0;
 
@@ -724,13 +723,13 @@ AccessibilityRole AXNodeObject::DetermineAriaRoleAttribute() const {
 
 void AXNodeObject::AccessibilityChildrenFromAttribute(
     QualifiedName attr,
-    AXObjectImpl::AXObjectVector& children) const {
+    AXObject::AXObjectVector& children) const {
   HeapVector<Member<Element>> elements;
   ElementsFromAttribute(elements, attr);
 
   AXObjectCacheImpl& cache = AxObjectCache();
   for (const auto& element : elements) {
-    if (AXObjectImpl* child = cache.GetOrCreate(element)) {
+    if (AXObject* child = cache.GetOrCreate(element)) {
       // Only aria-labelledby and aria-describedby can target hidden elements.
       if (child->AccessibilityIsIgnored() && attr != aria_labelledbyAttr &&
           attr != aria_labeledbyAttr && attr != aria_describedbyAttr) {
@@ -804,13 +803,13 @@ bool AXNodeObject::IsGenericFocusableElement() const {
   return true;
 }
 
-AXObjectImpl* AXNodeObject::MenuButtonForMenu() const {
+AXObject* AXNodeObject::MenuButtonForMenu() const {
   Element* menu_item = MenuItemElementForMenu();
 
   if (menu_item) {
     // ARIA just has generic menu items. AppKit needs to know if this is a top
     // level items like MenuBarButton or MenuBarItem
-    AXObjectImpl* menu_item_ax = AxObjectCache().GetOrCreate(menu_item);
+    AXObject* menu_item_ax = AxObjectCache().GetOrCreate(menu_item);
     if (menu_item_ax && menu_item_ax->IsMenuButton())
       return menu_item_ax;
   }
@@ -880,7 +879,7 @@ AccessibilityRole AXNodeObject::RemapAriaRoleDueToParent(
   if (role != kListBoxOptionRole && role != kMenuItemRole)
     return role;
 
-  for (AXObjectImpl* parent = ParentObject();
+  for (AXObject* parent = ParentObject();
        parent && !parent->AccessibilityIsIgnored();
        parent = parent->ParentObject()) {
     AccessibilityRole parent_aria_role = parent->AriaRoleAttribute();
@@ -912,7 +911,7 @@ void AXNodeObject::Init() {
 }
 
 void AXNodeObject::Detach() {
-  AXObjectImpl::Detach();
+  AXObject::Detach();
   node_ = nullptr;
 }
 
@@ -960,7 +959,7 @@ bool AXNodeObject::IsControl() const {
     return false;
 
   return ((node->IsElementNode() && ToElement(node)->IsFormControlElement()) ||
-          AXObjectImpl::IsARIAControl(AriaRoleAttribute()));
+          AXObject::IsARIAControl(AriaRoleAttribute()));
 }
 
 bool AXNodeObject::IsControllingVideoElement() const {
@@ -1161,7 +1160,7 @@ bool AXNodeObject::IsClickable() const {
       return true;
   }
 
-  return AXObjectImpl::IsClickable();
+  return AXObject::IsClickable();
 }
 
 bool AXNodeObject::IsEnabled() const {
@@ -1304,7 +1303,7 @@ bool AXNodeObject::CanSetSelectedAttribute() const {
   if (AriaRoleAttribute() == kListBoxOptionRole &&
       AncestorExposesActiveDescendant())
     return true;
-  return AXObjectImpl::CanSetSelectedAttribute();
+  return AXObject::CanSetSelectedAttribute();
 }
 
 bool AXNodeObject::CanvasHasFallbackContent() const {
@@ -1380,7 +1379,7 @@ unsigned AXNodeObject::HierarchicalLevel() const {
   // Hierarchy leveling starts at 1, to match the aria-level spec.
   // We measure tree hierarchy by the number of groups that the item is within.
   unsigned level = 1;
-  for (AXObjectImpl* parent = ParentObject(); parent;
+  for (AXObject* parent = ParentObject(); parent;
        parent = parent->ParentObject()) {
     AccessibilityRole parent_role = parent->RoleValue();
     if (parent_role == kGroupRole)
@@ -1431,29 +1430,29 @@ void AXNodeObject::Markers(Vector<DocumentMarker::MarkerType>& marker_types,
   }
 }
 
-AXObjectImpl* AXNodeObject::InPageLinkTarget() const {
+AXObject* AXNodeObject::InPageLinkTarget() const {
   if (!node_ || !isHTMLAnchorElement(node_) || !GetDocument())
-    return AXObjectImpl::InPageLinkTarget();
+    return AXObject::InPageLinkTarget();
 
   HTMLAnchorElement* anchor = toHTMLAnchorElement(node_);
   DCHECK(anchor);
   KURL link_url = anchor->Href();
   if (!link_url.IsValid())
-    return AXObjectImpl::InPageLinkTarget();
+    return AXObject::InPageLinkTarget();
   String fragment = link_url.FragmentIdentifier();
   if (fragment.IsEmpty())
-    return AXObjectImpl::InPageLinkTarget();
+    return AXObject::InPageLinkTarget();
 
   KURL document_url = GetDocument()->Url();
   if (!document_url.IsValid() ||
       !EqualIgnoringFragmentIdentifier(document_url, link_url)) {
-    return AXObjectImpl::InPageLinkTarget();
+    return AXObject::InPageLinkTarget();
   }
 
   TreeScope& tree_scope = anchor->GetTreeScope();
   Element* target = tree_scope.FindAnchor(fragment);
   if (!target)
-    return AXObjectImpl::InPageLinkTarget();
+    return AXObject::InPageLinkTarget();
   // If the target is not in the accessibility tree, get the first unignored
   // sibling.
   return AxObjectCache().FirstAccessibleObjectFromNode(target);
@@ -1491,11 +1490,11 @@ AccessibilityOrientation AXNodeObject::Orientation() const {
     case kTreeGridRole:
       return orientation;
     default:
-      return AXObjectImpl::Orientation();
+      return AXObject::Orientation();
   }
 }
 
-AXObjectImpl::AXObjectVector AXNodeObject::RadioButtonsInGroup() const {
+AXObject::AXObjectVector AXNodeObject::RadioButtonsInGroup() const {
   AXObjectVector radio_buttons;
   if (!node_ || RoleValue() != kRadioButtonRole)
     return radio_buttons;
@@ -1505,7 +1504,7 @@ AXObjectImpl::AXObjectVector AXNodeObject::RadioButtonsInGroup() const {
     HeapVector<Member<HTMLInputElement>> html_radio_buttons =
         FindAllRadioButtonsWithSameName(radio_button);
     for (size_t i = 0; i < html_radio_buttons.size(); ++i) {
-      AXObjectImpl* ax_radio_button =
+      AXObject* ax_radio_button =
           AxObjectCache().GetOrCreate(html_radio_buttons[i]);
       if (ax_radio_button)
         radio_buttons.push_back(ax_radio_button);
@@ -1515,10 +1514,10 @@ AXObjectImpl::AXObjectVector AXNodeObject::RadioButtonsInGroup() const {
 
   // If the immediate parent is a radio group, return all its children that are
   // radio buttons.
-  AXObjectImpl* parent = ParentObject();
+  AXObject* parent = ParentObject();
   if (parent && parent->RoleValue() == kRadioGroupRole) {
     for (size_t i = 0; i < parent->Children().size(); ++i) {
-      AXObjectImpl* child = parent->Children()[i];
+      AXObject* child = parent->Children()[i];
       DCHECK(child);
       if (child->RoleValue() == kRadioButtonRole &&
           !child->AccessibilityIsIgnored()) {
@@ -1580,12 +1579,12 @@ String AXNodeObject::GetText() const {
 
 RGBA32 AXNodeObject::ColorValue() const {
   if (!isHTMLInputElement(GetNode()) || !IsColorWell())
-    return AXObjectImpl::ColorValue();
+    return AXObject::ColorValue();
 
   HTMLInputElement* input = toHTMLInputElement(GetNode());
   const AtomicString& type = input->getAttribute(typeAttr);
   if (!EqualIgnoringASCIICase(type, "color"))
-    return AXObjectImpl::ColorValue();
+    return AXObject::ColorValue();
 
   // HTMLInputElement::value always returns a string parseable by Color.
   Color color;
@@ -1618,7 +1617,7 @@ AriaCurrentState AXNodeObject::GetAriaCurrentState() const {
   if (!attribute_value.IsEmpty())
     return kAriaCurrentStateTrue;
 
-  return AXObjectImpl::GetAriaCurrentState();
+  return AXObject::GetAriaCurrentState();
 }
 
 InvalidState AXNodeObject::GetInvalidState() const {
@@ -1645,7 +1644,7 @@ InvalidState AXNodeObject::GetInvalidState() const {
     return is_invalid ? kInvalidStateTrue : kInvalidStateFalse;
   }
 
-  return AXObjectImpl::GetInvalidState();
+  return AXObject::GetInvalidState();
 }
 
 int AXNodeObject::PosInSet() const {
@@ -1658,7 +1657,7 @@ int AXNodeObject::PosInSet() const {
       return 1;
     }
 
-    return AXObjectImpl::IndexInParent() + 1;
+    return AXObject::IndexInParent() + 1;
   }
 
   return 0;
@@ -1937,20 +1936,20 @@ String AXNodeObject::TextFromDescendants(AXObjectSet& visited,
     return String();
 
   StringBuilder accumulated_text;
-  AXObjectImpl* previous = nullptr;
+  AXObject* previous = nullptr;
 
   AXObjectVector children;
 
-  HeapVector<Member<AXObjectImpl>> owned_children;
+  HeapVector<Member<AXObject>> owned_children;
   ComputeAriaOwnsChildren(owned_children);
-  for (AXObjectImpl* obj = RawFirstChild(); obj; obj = obj->RawNextSibling()) {
+  for (AXObject* obj = RawFirstChild(); obj; obj = obj->RawNextSibling()) {
     if (!AxObjectCache().IsAriaOwned(obj))
       children.push_back(obj);
   }
   for (const auto& owned_child : owned_children)
     children.push_back(owned_child);
 
-  for (AXObjectImpl* child : children) {
+  for (AXObject* child : children) {
     // Don't recurse into children that are explicitly marked as aria-hidden.
     // Note that we don't call isInertOrAriaHidden because that would return
     // true if any ancestor is hidden, but we need to be able to compute the
@@ -2027,23 +2026,23 @@ bool AXNodeObject::NameFromLabelElement() const {
 bool AXNodeObject::NameFromContents() const {
   Node* node = GetNode();
   if (!node || !node->IsElementNode())
-    return AXObjectImpl::NameFromContents();
-  // AXObjectImpl::nameFromContents determines whether an element should take
-  // its name from its descendant contents based on role. However, <select> is a
+    return AXObject::NameFromContents();
+  // AXObject::nameFromContents determines whether an element should take its
+  // name from its descendant contents based on role. However, <select> is a
   // special case, as unlike a typical pop-up button it contains its own pop-up
   // menu's contents, which should not be used as the name.
   if (isHTMLSelectElement(node))
     return false;
-  return AXObjectImpl::NameFromContents();
+  return AXObject::NameFromContents();
 }
 
 void AXNodeObject::GetRelativeBounds(
-    AXObjectImpl** out_container,
+    AXObject** out_container,
     FloatRect& out_bounds_in_container,
     SkMatrix44& out_container_transform) const {
   if (LayoutObjectForRelativeBounds()) {
-    AXObjectImpl::GetRelativeBounds(out_container, out_bounds_in_container,
-                                    out_container_transform);
+    AXObject::GetRelativeBounds(out_container, out_bounds_in_container,
+                                out_container_transform);
     return;
   }
 
@@ -2069,8 +2068,8 @@ void AXNodeObject::GetRelativeBounds(
     Vector<FloatRect> rects;
     for (Node& child : NodeTraversal::ChildrenOf(*GetNode())) {
       if (child.IsHTMLElement()) {
-        if (AXObjectImpl* obj = AxObjectCache().Get(&child)) {
-          AXObjectImpl* container;
+        if (AXObject* obj = AxObjectCache().Get(&child)) {
+          AXObject* container;
           FloatRect bounds;
           obj->GetRelativeBounds(&container, bounds, out_container_transform);
           if (container) {
@@ -2091,7 +2090,7 @@ void AXNodeObject::GetRelativeBounds(
   // children, for now, let's return the position of the ancestor that does have
   // a position, and make it the width of that parent, and about the height of a
   // line of text, so that it's clear the object is a child of the parent.
-  for (AXObjectImpl* position_provider = ParentObject(); position_provider;
+  for (AXObject* position_provider = ParentObject(); position_provider;
        position_provider = position_provider->ParentObject()) {
     if (position_provider->IsAXLayoutObject()) {
       position_provider->GetRelativeBounds(
@@ -2122,7 +2121,7 @@ static Node* GetParentNodeForComputeParent(Node* node) {
   return parent_node;
 }
 
-AXObjectImpl* AXNodeObject::ComputeParent() const {
+AXObject* AXNodeObject::ComputeParent() const {
   DCHECK(!IsDetached());
   if (Node* parent_node = GetParentNodeForComputeParent(GetNode()))
     return AxObjectCache().GetOrCreate(parent_node);
@@ -2130,14 +2129,14 @@ AXObjectImpl* AXNodeObject::ComputeParent() const {
   return nullptr;
 }
 
-AXObjectImpl* AXNodeObject::ComputeParentIfExists() const {
+AXObject* AXNodeObject::ComputeParentIfExists() const {
   if (Node* parent_node = GetParentNodeForComputeParent(GetNode()))
     return AxObjectCache().Get(parent_node);
 
   return nullptr;
 }
 
-AXObjectImpl* AXNodeObject::RawFirstChild() const {
+AXObject* AXNodeObject::RawFirstChild() const {
   if (!GetNode())
     return 0;
 
@@ -2149,7 +2148,7 @@ AXObjectImpl* AXNodeObject::RawFirstChild() const {
   return AxObjectCache().GetOrCreate(first_child);
 }
 
-AXObjectImpl* AXNodeObject::RawNextSibling() const {
+AXObject* AXNodeObject::RawNextSibling() const {
   if (!GetNode())
     return 0;
 
@@ -2177,11 +2176,11 @@ void AXNodeObject::AddChildren() {
   if (GetLayoutObject() && !isHTMLCanvasElement(*node_))
     return;
 
-  HeapVector<Member<AXObjectImpl>> owned_children;
+  HeapVector<Member<AXObject>> owned_children;
   ComputeAriaOwnsChildren(owned_children);
 
   for (Node& child : NodeTraversal::ChildrenOf(*node_)) {
-    AXObjectImpl* child_obj = AxObjectCache().GetOrCreate(&child);
+    AXObject* child_obj = AxObjectCache().GetOrCreate(&child);
     if (child_obj && !AxObjectCache().IsAriaOwned(child_obj))
       AddChild(child_obj);
   }
@@ -2193,11 +2192,11 @@ void AXNodeObject::AddChildren() {
     child->SetParent(this);
 }
 
-void AXNodeObject::AddChild(AXObjectImpl* child) {
+void AXNodeObject::AddChild(AXObject* child) {
   InsertChild(child, children_.size());
 }
 
-void AXNodeObject::InsertChild(AXObjectImpl* child, unsigned index) {
+void AXNodeObject::InsertChild(AXObject* child, unsigned index) {
   if (!child)
     return;
 
@@ -2273,7 +2272,7 @@ Element* AXNodeObject::ActionElement() const {
     return ToElement(node);
   }
 
-  if (AXObjectImpl::IsARIAInput(AriaRoleAttribute()))
+  if (AXObject::IsARIAInput(AriaRoleAttribute()))
     return ToElement(node);
 
   if (IsImageButton())
@@ -2332,7 +2331,7 @@ void AXNodeObject::SetNode(Node* node) {
   node_ = node;
 }
 
-AXObjectImpl* AXNodeObject::CorrespondingControlForLabelElement() const {
+AXObject* AXNodeObject::CorrespondingControlForLabelElement() const {
   HTMLLabelElement* label_element = LabelElementContainer();
   if (!label_element)
     return 0;
@@ -2431,7 +2430,7 @@ void AXNodeObject::ChildrenChanged() {
   // If AX elements are created now, they could interrogate the layout tree
   // while it's in a funky state.  At the same time, process ARIA live region
   // changes.
-  for (AXObjectImpl* parent = this; parent;
+  for (AXObject* parent = this; parent;
        parent = parent->ParentObjectIfExists()) {
     parent->SetNeedsToUpdateChildren();
 
@@ -2463,13 +2462,12 @@ void AXNodeObject::SelectionChanged() {
     AxObjectCache().PostNotification(this,
                                      AXObjectCacheImpl::kAXSelectedTextChanged);
     if (GetDocument()) {
-      AXObjectImpl* document_object =
-          AxObjectCache().GetOrCreate(GetDocument());
+      AXObject* document_object = AxObjectCache().GetOrCreate(GetDocument());
       AxObjectCache().PostNotification(
           document_object, AXObjectCacheImpl::kAXDocumentSelectionChanged);
     }
   } else {
-    AXObjectImpl::SelectionChanged();  // Calls selectionChanged on parent.
+    AXObject::SelectionChanged();  // Calls selectionChanged on parent.
   }
 }
 
@@ -2479,7 +2477,7 @@ void AXNodeObject::TextChanged() {
   AXObjectCacheImpl& cache = AxObjectCache();
   for (Node* parent_node = GetNode(); parent_node;
        parent_node = parent_node->parentNode()) {
-    AXObjectImpl* parent = cache.Get(parent_node);
+    AXObject* parent = cache.Get(parent_node);
     if (!parent)
       continue;
 
@@ -2506,7 +2504,7 @@ void AXNodeObject::UpdateAccessibilityRole() {
 }
 
 void AXNodeObject::ComputeAriaOwnsChildren(
-    HeapVector<Member<AXObjectImpl>>& owned_children) const {
+    HeapVector<Member<AXObject>>& owned_children) const {
   if (!HasAttribute(aria_ownsAttr))
     return;
 
@@ -2758,8 +2756,7 @@ String AXNodeObject::NativeTextAlternative(
       }
     }
     if (figcaption) {
-      AXObjectImpl* figcaption_ax_object =
-          AxObjectCache().GetOrCreate(figcaption);
+      AXObject* figcaption_ax_object = AxObjectCache().GetOrCreate(figcaption);
       if (figcaption_ax_object) {
         text_alternative =
             RecursiveTextAlternative(*figcaption_ax_object, false, visited);
@@ -2823,7 +2820,7 @@ String AXNodeObject::NativeTextAlternative(
     }
     HTMLTableCaptionElement* caption = table_element->caption();
     if (caption) {
-      AXObjectImpl* caption_ax_object = AxObjectCache().GetOrCreate(caption);
+      AXObject* caption_ax_object = AxObjectCache().GetOrCreate(caption);
       if (caption_ax_object) {
         text_alternative =
             RecursiveTextAlternative(*caption_ax_object, false, visited);
@@ -2880,7 +2877,7 @@ String AXNodeObject::NativeTextAlternative(
         ToContainerNode(*(GetNode())), HasTagName(SVGNames::titleTag));
 
     if (title) {
-      AXObjectImpl* title_ax_object = AxObjectCache().GetOrCreate(title);
+      AXObject* title_ax_object = AxObjectCache().GetOrCreate(title);
       if (title_ax_object && !visited.Contains(title_ax_object)) {
         text_alternative =
             RecursiveTextAlternative(*title_ax_object, false, visited);
@@ -2912,7 +2909,7 @@ String AXNodeObject::NativeTextAlternative(
     }
     HTMLElement* legend = toHTMLFieldSetElement(GetNode())->Legend();
     if (legend) {
-      AXObjectImpl* legend_ax_object = AxObjectCache().GetOrCreate(legend);
+      AXObject* legend_ax_object = AxObjectCache().GetOrCreate(legend);
       // Avoid an infinite loop
       if (legend_ax_object && !visited.Contains(legend_ax_object)) {
         text_alternative =
@@ -2974,8 +2971,7 @@ String AXNodeObject::NativeTextAlternative(
       text_alternative = document->title();
 
       Element* title_element = document->TitleElement();
-      AXObjectImpl* title_ax_object =
-          AxObjectCache().GetOrCreate(title_element);
+      AXObject* title_ax_object = AxObjectCache().GetOrCreate(title_element);
       if (title_ax_object) {
         if (related_objects) {
           local_related_objects.push_back(
@@ -3102,7 +3098,7 @@ String AXNodeObject::Description(AXNameFrom name_from,
     }
     HTMLTableCaptionElement* caption = table_element->caption();
     if (caption) {
-      AXObjectImpl* caption_ax_object = AxObjectCache().GetOrCreate(caption);
+      AXObject* caption_ax_object = AxObjectCache().GetOrCreate(caption);
       if (caption_ax_object) {
         AXObjectSet visited;
         description =
@@ -3233,7 +3229,7 @@ String AXNodeObject::PlaceholderFromNativeAttribute() const {
 
 DEFINE_TRACE(AXNodeObject) {
   visitor->Trace(node_);
-  AXObjectImpl::Trace(visitor);
+  AXObject::Trace(visitor);
 }
 
 }  // namespace blink

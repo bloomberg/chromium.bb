@@ -425,7 +425,7 @@ class CORE_EXPORT FrameView final
 
   bool IsActive() const override;
 
-  // Override scrollbar notifications to update the AXObjectImpl cache.
+  // Override scrollbar notifications to update the AXObject cache.
   void DidAddScrollbar(Scrollbar&, ScrollbarOrientation) override;
 
   // FIXME: This should probably be renamed as the 'inSubtreeLayout' parameter
