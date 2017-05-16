@@ -5,10 +5,8 @@
 #include "chrome/browser/ui/cocoa/first_run_dialog_controller.h"
 
 #include "base/mac/scoped_nsobject.h"
-#include "base/strings/sys_string_conversions.h"
 #include "chrome/browser/ui/cocoa/key_equivalent_constants.h"
 #include "chrome/browser/ui/cocoa/l10n_util.h"
-#include "chrome/common/url_constants.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/strings/grit/components_strings.h"
@@ -32,6 +30,16 @@ void MoveViewsDown(NSArray* views, CGFloat distance) {
     frame.origin.y -= distance;
     [view setFrame:frame];
   }
+}
+
+// Center |view| vertically within its own superview, so its horizontal
+// centerline is the same as its superview's horizontal centerline.
+void CenterVertically(NSView* view) {
+  NSView* superview = view.superview;
+  NSRect frame = view.frame;
+  NSRect superframe = superview.frame;
+  frame.origin.y = (NSHeight(superframe) - NSHeight(frame)) / 2.0;
+  [view setFrame:frame];
 }
 
 }  // namespace
@@ -61,7 +69,7 @@ void MoveViewsDown(NSArray* views, CGFloat distance) {
   // Frame constants in this method were taken directly from the now-deleted
   // chrome/app/nibs/FirstRunDialog.xib.
   NSBox* topBox =
-      [[[NSBox alloc] initWithFrame:NSMakeRect(0, 158, 480, 55)] autorelease];
+      [[[NSBox alloc] initWithFrame:NSMakeRect(0, 139, 480, 55)] autorelease];
   [topBox setFillColor:[NSColor whiteColor]];
   [topBox setBoxType:NSBoxCustom];
   [topBox setBorderType:NSNoBorder];
@@ -72,16 +80,10 @@ void MoveViewsDown(NSArray* views, CGFloat distance) {
                           IDS_FIRSTRUN_DLG_MAC_COMPLETE_INSTALLATION_LABEL)];
   [completionLabel setFrame:NSMakeRect(13, 25, 390, 17)];
 
-  NSImageView* logoImage = [[[NSImageView alloc]
-      initWithFrame:NSMakeRect(408, -25, 96, 96)] autorelease];
-  [logoImage setImage:[NSImage imageNamed:NSImageNameApplicationIcon]];
-  [logoImage setRefusesFirstResponder:YES];
-  [logoImage setEditable:NO];
-
   defaultBrowserCheckbox_ = [ButtonUtils
       checkboxWithTitle:l10n_util::GetNSString(
                             IDS_FIRSTRUN_DLG_MAC_SET_DEFAULT_BROWSER_LABEL)];
-  [defaultBrowserCheckbox_ setFrame:NSMakeRect(45, 126, 528, 18)];
+  [defaultBrowserCheckbox_ setFrame:NSMakeRect(45, 107, 528, 18)];
   if (!defaultBrowserCheckboxVisible_)
     [defaultBrowserCheckbox_ setHidden:YES];
 
@@ -89,7 +91,7 @@ void MoveViewsDown(NSArray* views, CGFloat distance) {
       checkboxWithTitle:
           NSStringWithProductName(
               IDS_FIRSTRUN_DLG_MAC_OPTIONS_SEND_USAGE_STATS_LABEL)];
-  [statsCheckbox_ setFrame:NSMakeRect(45, 101, 389, 19)];
+  [statsCheckbox_ setFrame:NSMakeRect(45, 82, 389, 19)];
   if (statsCheckboxInitiallyChecked_)
     [statsCheckbox_ setNextState];
 
@@ -101,14 +103,8 @@ void MoveViewsDown(NSArray* views, CGFloat distance) {
   [startChromeButton setFrame:NSMakeRect(161, 12, 306, 32)];
   [startChromeButton setKeyEquivalent:kKeyEquivalentReturn];
 
-  NSButton* learnMoreLink =
-      [ButtonUtils linkWithTitle:l10n_util::GetNSString(IDS_LEARN_MORE)
-                          action:@selector(learnMore:)
-                          target:self];
-  [learnMoreLink setFrame:NSMakeRect(60, 76, 359, 19)];
-
   NSBox* topSeparator =
-      [[[NSBox alloc] initWithFrame:NSMakeRect(0, 155, 480, 5)] autorelease];
+      [[[NSBox alloc] initWithFrame:NSMakeRect(0, 136, 480, 5)] autorelease];
   [topSeparator setBoxType:NSBoxSeparator];
 
   NSBox* bottomSeparator =
@@ -116,16 +112,15 @@ void MoveViewsDown(NSArray* views, CGFloat distance) {
   [bottomSeparator setBoxType:NSBoxSeparator];
 
   [topBox addSubview:completionLabel];
-  [topBox addSubview:logoImage];
+  CenterVertically(completionLabel);
 
   base::scoped_nsobject<NSView> content_view(
-      [[NSView alloc] initWithFrame:NSMakeRect(0, 0, 480, 209)]);
+      [[NSView alloc] initWithFrame:NSMakeRect(0, 0, 480, 190)]);
   self.view = content_view.get();
   [self.view addSubview:topBox];
   [self.view addSubview:topSeparator];
   [self.view addSubview:defaultBrowserCheckbox_];
   [self.view addSubview:statsCheckbox_];
-  [self.view addSubview:learnMoreLink];
   [self.view addSubview:bottomSeparator];
   [self.view addSubview:startChromeButton];
 
@@ -135,7 +130,7 @@ void MoveViewsDown(NSArray* views, CGFloat distance) {
   // which is done here by |VerticallyReflowGroup()|.
   CGFloat oldWidth = NSWidth([startChromeButton frame]);
   cocoa_l10n_util::VerticallyReflowGroup(
-      @[ defaultBrowserCheckbox_, statsCheckbox_, learnMoreLink ]);
+      @[ defaultBrowserCheckbox_, statsCheckbox_ ]);
 
   // The "Start Chrome" button needs to be sized to fit the localized string
   // inside it, but it should still be at the right-most edge of the dialog, so
@@ -175,12 +170,6 @@ void MoveViewsDown(NSArray* views, CGFloat distance) {
 - (void)ok:(id)sender {
   [[[self view] window] close];
   [NSApp stopModal];
-}
-
-- (void)learnMore:(id)sender {
-  NSString* urlStr = base::SysUTF8ToNSString(chrome::kLearnMoreReportingURL);
-  NSURL* learnMoreUrl = [NSURL URLWithString:urlStr];
-  [[NSWorkspace sharedWorkspace] openURL:learnMoreUrl];
 }
 
 @end
