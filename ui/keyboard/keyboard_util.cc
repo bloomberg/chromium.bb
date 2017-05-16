@@ -369,19 +369,15 @@ bool SendKeyEvent(const std::string type,
 }
 
 void MarkKeyboardLoadStarted() {
-  if (!g_keyboard_load_time_start.Get().ToInternalValue())
+  if (g_keyboard_load_time_start.Get().is_null())
     g_keyboard_load_time_start.Get() = base::Time::Now();
 }
 
 void MarkKeyboardLoadFinished() {
   // Possible to get a load finished without a start if navigating directly to
   // chrome://keyboard.
-  if (!g_keyboard_load_time_start.Get().ToInternalValue())
+  if (g_keyboard_load_time_start.Get().is_null())
     return;
-
-  // It should not be possible to finish loading the keyboard without starting
-  // to load it first.
-  DCHECK(g_keyboard_load_time_start.Get().ToInternalValue());
 
   static bool logged = false;
   if (!logged) {

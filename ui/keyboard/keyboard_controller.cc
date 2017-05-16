@@ -510,6 +510,8 @@ bool KeyboardController::WillHideKeyboard() const {
 }
 
 void KeyboardController::ShowAnimationFinished() {
+  MarkKeyboardLoadFinished();
+
   // Notify observers after animation finished to prevent reveal desktop
   // background during animation.
   NotifyKeyboardBoundsChanging(container_->bounds());
