@@ -1022,6 +1022,10 @@ static void fhalfright32(const tran_low_t *input, tran_low_t *output) {
 }
 
 #if CONFIG_EXT_TX
+// TODO(sarahparker) these functions will be removed once the highbitdepth
+// codepath works properly for rectangular transforms. They have almost
+// identical versions in av1_fwd_txfm1d.c, but those are currently only
+// being used for square transforms.
 static void fidtx4(const tran_low_t *input, tran_low_t *output) {
   int i;
   for (i = 0; i < 4; ++i)

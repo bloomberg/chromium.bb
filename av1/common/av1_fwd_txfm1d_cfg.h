@@ -13,6 +13,9 @@
 #define AV1_FWD_TXFM2D_CFG_H_
 #include "av1/common/enums.h"
 #include "av1/common/av1_fwd_txfm1d.h"
+// Identity will always use max bitdepth regardless of size
+static const int8_t fwd_stage_range_identity[1] = { 12 };
+
 //  ---------------- 4x4 1D constants -----------------------
 // shift
 static const int8_t fwd_shift_4[3] = { 2, 0, 0 };
@@ -311,4 +314,51 @@ static const TXFM_1D_CFG fwd_txfm_1d_col_cfg_adst_32 = {
   fwd_cos_bit_col_adst_32,      // .cos_bit
   TXFM_TYPE_ADST32,             // .txfm_type
 };
+
+#if CONFIG_EXT_TX
+// identity does not need to differentiate between row and col
+//  ---------------- row/col config fwd_identity_4 ----------
+static const TXFM_1D_CFG fwd_txfm_1d_cfg_identity_4 = {
+  4,  // .txfm_size
+  1,  // .stage_num
+  // 0,  // .log_scale
+  fwd_shift_4,               // .shift
+  fwd_stage_range_identity,  // .stage_range
+  NULL,                      // .cos_bit
+  TXFM_TYPE_IDENTITY4,       // .txfm_type
+};
+
+//  ---------------- row/col config fwd_identity_8 ----------------
+static const TXFM_1D_CFG fwd_txfm_1d_cfg_identity_8 = {
+  8,  // .txfm_size
+  1,  // .stage_num
+  // 0,  // .log_scale
+  fwd_shift_8,               // .shift
+  fwd_stage_range_identity,  // .stage_range
+  NULL,                      // .cos_bit
+  TXFM_TYPE_IDENTITY8,       // .txfm_type
+};
+
+//  ---------------- row/col config fwd_identity_16 ----------------
+static const TXFM_1D_CFG fwd_txfm_1d_cfg_identity_16 = {
+  16,  // .txfm_size
+  1,   // .stage_num
+  // 0,  // .log_scale
+  fwd_shift_16,              // .shift
+  fwd_stage_range_identity,  // .stage_range
+  NULL,                      // .cos_bit
+  TXFM_TYPE_IDENTITY16,      // .txfm_type
+};
+
+//  ---------------- row/col config fwd_identity_32 ----------------
+static const TXFM_1D_CFG fwd_txfm_1d_cfg_identity_32 = {
+  32,  // .txfm_size
+  1,   // .stage_num
+  // 1,  // .log_scale
+  fwd_shift_32,              // .shift
+  fwd_stage_range_identity,  // .stage_range
+  NULL,                      // .cos_bit
+  TXFM_TYPE_IDENTITY32,      // .txfm_type
+};
+#endif  // CONFIG_EXT_TX
 #endif  // AV1_FWD_TXFM2D_CFG_H_

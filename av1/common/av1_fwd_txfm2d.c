@@ -27,6 +27,12 @@ static INLINE TxfmFunc fwd_txfm_type_to_func(TXFM_TYPE txfm_type) {
     case TXFM_TYPE_ADST8: return av1_fadst8_new;
     case TXFM_TYPE_ADST16: return av1_fadst16_new;
     case TXFM_TYPE_ADST32: return av1_fadst32_new;
+#if CONFIG_EXT_TX
+    case TXFM_TYPE_IDENTITY4: return av1_fidentity4_c;
+    case TXFM_TYPE_IDENTITY8: return av1_fidentity8_c;
+    case TXFM_TYPE_IDENTITY16: return av1_fidentity16_c;
+    case TXFM_TYPE_IDENTITY32: return av1_fidentity32_c;
+#endif  // CONFIG_EXT_TX
     default: assert(0); return NULL;
   }
 }
@@ -141,13 +147,13 @@ static const TXFM_1D_CFG *fwd_txfm_col_cfg_ls[TX_TYPES_1D][TX_SIZES] = {
 #endif
       &fwd_txfm_1d_col_cfg_adst_4, &fwd_txfm_1d_col_cfg_adst_8,
       &fwd_txfm_1d_col_cfg_adst_16, &fwd_txfm_1d_col_cfg_adst_32 },
-  // IDENTITY PLACEHOLDER
+  // IDENTITY
   {
 #if CONFIG_CB4X4
       NULL,
 #endif
-      &fwd_txfm_1d_col_cfg_adst_4, &fwd_txfm_1d_col_cfg_adst_8,
-      &fwd_txfm_1d_col_cfg_adst_16, &fwd_txfm_1d_col_cfg_adst_32 },
+      &fwd_txfm_1d_cfg_identity_4, &fwd_txfm_1d_cfg_identity_8,
+      &fwd_txfm_1d_cfg_identity_16, &fwd_txfm_1d_cfg_identity_32 },
 #endif  // CONFIG_EXT_TX
 };
 
@@ -174,13 +180,13 @@ static const TXFM_1D_CFG *fwd_txfm_row_cfg_ls[TX_TYPES_1D][TX_SIZES] = {
 #endif
       &fwd_txfm_1d_row_cfg_adst_4, &fwd_txfm_1d_row_cfg_adst_8,
       &fwd_txfm_1d_row_cfg_adst_16, &fwd_txfm_1d_row_cfg_adst_32 },
-  // IDENTITY PLACEHOLDER
+  // IDENTITY
   {
 #if CONFIG_CB4X4
       NULL,
 #endif
-      &fwd_txfm_1d_row_cfg_adst_4, &fwd_txfm_1d_row_cfg_adst_8,
-      &fwd_txfm_1d_row_cfg_adst_16, &fwd_txfm_1d_row_cfg_adst_32 },
+      &fwd_txfm_1d_cfg_identity_4, &fwd_txfm_1d_cfg_identity_8,
+      &fwd_txfm_1d_cfg_identity_16, &fwd_txfm_1d_cfg_identity_32 },
 #endif  // CONFIG_EXT_TX
 };
 

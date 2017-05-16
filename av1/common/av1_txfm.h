@@ -143,6 +143,10 @@ typedef enum TXFM_TYPE {
   TXFM_TYPE_ADST8,
   TXFM_TYPE_ADST16,
   TXFM_TYPE_ADST32,
+  TXFM_TYPE_IDENTITY4,
+  TXFM_TYPE_IDENTITY8,
+  TXFM_TYPE_IDENTITY16,
+  TXFM_TYPE_IDENTITY32,
 } TXFM_TYPE;
 
 typedef struct TXFM_1D_CFG {
@@ -172,13 +176,23 @@ static INLINE void set_flip_cfg(int tx_type, TXFM_2D_FLIP_CFG *cfg) {
       cfg->lr_flip = 0;
       break;
 #if CONFIG_EXT_TX
+    case IDTX:
+    case V_DCT:
+    case H_DCT:
+    case V_ADST:
+    case H_ADST:
+      cfg->ud_flip = 0;
+      cfg->lr_flip = 0;
+      break;
     case FLIPADST_DCT:
     case FLIPADST_ADST:
+    case V_FLIPADST:
       cfg->ud_flip = 1;
       cfg->lr_flip = 0;
       break;
     case DCT_FLIPADST:
     case ADST_FLIPADST:
+    case H_FLIPADST:
       cfg->ud_flip = 0;
       cfg->lr_flip = 1;
       break;
