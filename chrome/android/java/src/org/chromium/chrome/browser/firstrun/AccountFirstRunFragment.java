@@ -55,8 +55,9 @@ public class AccountFirstRunFragment extends FirstRunPage implements AccountSign
                     }
 
                     @Override
-                    public void onAccountSelected(String accountName, boolean settingsClicked) {
-                        getPageDelegate().acceptSignIn(accountName);
+                    public void onAccountSelected(
+                            String accountName, boolean isDefaultAccount, boolean settingsClicked) {
+                        getPageDelegate().acceptSignIn(accountName, isDefaultAccount);
                         if (settingsClicked) {
                             getPageDelegate().askToOpenSignInSettings();
                         }

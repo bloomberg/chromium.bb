@@ -121,6 +121,7 @@ public class FirstRunActivity extends AsyncInitializationActivity implements Fir
     private boolean mShowWelcomePage = true;
 
     private String mResultSignInAccountName;
+    private boolean mResultIsDefaultAccount;
     private boolean mResultShowSignInSettings;
 
     private boolean mFlowIsKnown;
@@ -432,21 +433,13 @@ public class FirstRunActivity extends AsyncInitializationActivity implements Fir
             return;
         }
         if (!TextUtils.isEmpty(mResultSignInAccountName)) {
-            boolean defaultAccountName =
-                    sGlue.isDefaultAccountName(getApplicationContext(), mResultSignInAccountName);
-            int choice;
+            final int choice;
             if (mResultShowSignInSettings) {
-                if (defaultAccountName) {
-                    choice = SIGNIN_SETTINGS_DEFAULT_ACCOUNT;
-                } else {
-                    choice = SIGNIN_SETTINGS_ANOTHER_ACCOUNT;
-                }
+                choice = mResultIsDefaultAccount ? SIGNIN_SETTINGS_DEFAULT_ACCOUNT
+                                                 : SIGNIN_SETTINGS_ANOTHER_ACCOUNT;
             } else {
-                if (defaultAccountName) {
-                    choice = SIGNIN_ACCEPT_DEFAULT_ACCOUNT;
-                } else {
-                    choice = SIGNIN_ACCEPT_ANOTHER_ACCOUNT;
-                }
+                choice = mResultIsDefaultAccount ? SIGNIN_ACCEPT_DEFAULT_ACCOUNT
+                                                 : SIGNIN_ACCEPT_ANOTHER_ACCOUNT;
             }
             sSigninChoiceHistogram.record(choice);
             recordFreProgressHistogram(FRE_PROGRESS_COMPLETED_SIGNED_IN);
@@ -489,8 +482,9 @@ public class FirstRunActivity extends AsyncInitializationActivity implements Fir
     }
 
     @Override
-    public void acceptSignIn(String accountName) {
+    public void acceptSignIn(String accountName, boolean isDefaultAccount) {
         mResultSignInAccountName = accountName;
+        mResultIsDefaultAccount = isDefaultAccount;
     }
 
     @Override
