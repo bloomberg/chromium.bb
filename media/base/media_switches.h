@@ -86,6 +86,10 @@ MEDIA_EXPORT extern const char kMSEVideoBufferSizeLimit[];
 
 MEDIA_EXPORT extern const char kIgnoreAutoplayRestrictionsForTests[];
 
+#if !defined(OS_ANDROID)
+MEDIA_EXPORT extern const char kEnableInternalMediaSession[];
+#endif  // !defined(OS_ANDROID)
+
 namespace autoplay {
 
 MEDIA_EXPORT extern const char kNoUserGestureRequiredPolicy[];

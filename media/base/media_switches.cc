@@ -156,6 +156,12 @@ const char kMSEVideoBufferSizeLimit[] = "mse-video-buffer-size-limit";
 const char kIgnoreAutoplayRestrictionsForTests[] =
     "ignore-autoplay-restrictions";
 
+#if !defined(OS_ANDROID)
+// Turns on the internal media session backend. This should be used by embedders
+// that want to control the media playback with the media session interfaces.
+const char kEnableInternalMediaSession[] = "enable-internal-media-session";
+#endif  // !defined(OS_ANDROID)
+
 namespace autoplay {
 
 // Autoplay policy that does not require any user gesture.
