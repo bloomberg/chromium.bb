@@ -672,7 +672,8 @@ bool ComputedStyle::DiffNeedsFullLayoutAndPaintInvalidation(
   if (rare_inherited_data_.Get() != other.rare_inherited_data_.Get()) {
     if (rare_inherited_data_->highlight_ !=
             other.rare_inherited_data_->highlight_ ||
-        rare_inherited_data_->indent_ != other.rare_inherited_data_->indent_ ||
+        rare_inherited_data_->text_indent_ !=
+            other.rare_inherited_data_->text_indent_ ||
         rare_inherited_data_->text_align_last_ !=
             other.rare_inherited_data_->text_align_last_ ||
         rare_inherited_data_->text_indent_line_ !=

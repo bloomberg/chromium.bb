@@ -64,7 +64,7 @@ static_assert(sizeof(StyleRareInheritedData) <=
 StyleRareInheritedData::StyleRareInheritedData()
     : list_style_image_(ComputedStyle::InitialListStyleImage()),
       text_stroke_width_(ComputedStyle::InitialTextStrokeWidth()),
-      indent_(ComputedStyle::InitialTextIndent()),
+      text_indent_(ComputedStyle::InitialTextIndent()),
       effective_zoom_(ComputedStyle::InitialZoom()),
       widows_(ComputedStyle::InitialWidows()),
       orphans_(ComputedStyle::InitialOrphans()),
@@ -127,7 +127,7 @@ StyleRareInheritedData::StyleRareInheritedData(const StyleRareInheritedData& o)
       text_shadow_(o.text_shadow_),
       highlight_(o.highlight_),
       cursor_data_(o.cursor_data_),
-      indent_(o.indent_),
+      text_indent_(o.text_indent_),
       effective_zoom_(o.effective_zoom_),
       widows_(o.widows_),
       orphans_(o.orphans_),
@@ -200,7 +200,8 @@ bool StyleRareInheritedData::operator==(const StyleRareInheritedData& o) const {
          visited_link_caret_color_ == o.visited_link_caret_color_ &&
          tap_highlight_color_ == o.tap_highlight_color_ &&
          ShadowDataEquivalent(o) && highlight_ == o.highlight_ &&
-         DataEquivalent(cursor_data_, o.cursor_data_) && indent_ == o.indent_ &&
+         DataEquivalent(cursor_data_, o.cursor_data_) &&
+         text_indent_ == o.text_indent_ &&
          effective_zoom_ == o.effective_zoom_ && widows_ == o.widows_ &&
          orphans_ == o.orphans_ &&
          text_stroke_color_is_current_color_ ==

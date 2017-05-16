@@ -91,7 +91,7 @@ class CORE_EXPORT StyleRareInheritedData
 
   Persistent<CursorList> cursor_data_;
 
-  Length indent_;
+  Length text_indent_;
   float effective_zoom_;
 
   // Paged media properties.
