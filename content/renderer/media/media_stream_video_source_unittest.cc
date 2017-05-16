@@ -11,6 +11,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
+#include "build/build_config.h"
 #include "content/child/child_process.h"
 #include "content/public/common/content_features.h"
 #include "content/renderer/media/media_stream_video_source.h"
@@ -99,14 +100,19 @@ class MediaStreamVideoSourceTest : public ::testing::Test {
         enabled);
   }
 
-  blink::WebMediaStreamTrack CreateTrackAndStartSource(int width,
-                                                       int height,
-                                                       double frame_rate) {
+  blink::WebMediaStreamTrack CreateTrackAndStartSource(
+      int width,
+      int height,
+      double frame_rate,
+      bool detect_rotation = false) {
     DCHECK(!IsOldVideoConstraints());
-    blink::WebMediaStreamTrack track = CreateTrack(
-        "123",
-        VideoTrackAdapterSettings(width, height, 0.0, HUGE_VAL, frame_rate),
-        base::Optional<bool>(), false, 0.0);
+    blink::WebMediaStreamTrack track =
+        CreateTrack("123",
+                    VideoTrackAdapterSettings(
+                        width, height, 0.0, HUGE_VAL, frame_rate,
+                        detect_rotation ? gfx::Size(width, height)
+                                        : base::Optional<gfx::Size>()),
+                    base::Optional<bool>(), false, 0.0);
 
     EXPECT_EQ(0, NumberOfSuccessConstraintsCallbacks());
     mock_source_->StartMockedSource();
@@ -164,6 +170,13 @@ class MediaStreamVideoSourceTest : public ::testing::Test {
     run_loop.Run();
   }
 
+  void DeliverRotatedVideoFrameAndWaitForRenderer(
+      int width,
+      int height,
+      MockMediaStreamVideoSink* sink) {
+    DeliverVideoFrameAndWaitForRenderer(height, width, sink);
+  }
+
   void DeliverVideoFrameAndWaitForTwoRenderers(
       int width,
       int height,
@@ -193,7 +206,8 @@ class MediaStreamVideoSourceTest : public ::testing::Test {
         CreateTrack("dummy",
                     VideoTrackAdapterSettings(
                         expected_width2, expected_height2, 0.0, HUGE_VAL,
-                        MediaStreamVideoSource::kDefaultFrameRate),
+                        MediaStreamVideoSource::kDefaultFrameRate,
+                        base::Optional<gfx::Size>()),
                     base::Optional<bool>(), false, 0.0);
 
     MockMediaStreamVideoSink sink1;
@@ -305,10 +319,6 @@ TEST_F(MediaStreamVideoSourceTest, TwoTracksWith720AndWVGA) {
 }
 
 TEST_F(MediaStreamVideoSourceTest, SourceChangeFrameSize) {
-  MockConstraintFactory factory;
-  factory.AddAdvanced().width.SetMax(800);
-  factory.AddAdvanced().height.SetMax(700);
-
   // Expect the source to start capture with the supported resolution.
   // Disable frame-rate adjustment in spec-compliant mode to ensure no frames
   // are dropped.
@@ -339,6 +349,35 @@ TEST_F(MediaStreamVideoSourceTest, SourceChangeFrameSize) {
 
   sink.DisconnectFromTrack();
 }
+
+#if defined(OS_ANDROID)
+TEST_F(MediaStreamVideoSourceTest, RotatedSource) {
+  // Expect the source to start capture with the supported resolution.
+  // Disable frame-rate adjustment in spec-compliant mode to ensure no frames
+  // are dropped.
+  blink::WebMediaStreamTrack track =
+      CreateTrackAndStartSource(640, 480, 0.0, true);
+
+  MockMediaStreamVideoSink sink;
+  sink.ConnectToTrack(track);
+  EXPECT_EQ(0, sink.number_of_frames());
+  DeliverVideoFrameAndWaitForRenderer(640, 480, &sink);
+  EXPECT_EQ(1, sink.number_of_frames());
+  // Expect the delivered frame to be passed unchanged since its smaller than
+  // max requested.
+  EXPECT_EQ(640, sink.frame_size().width());
+  EXPECT_EQ(480, sink.frame_size().height());
+
+  DeliverRotatedVideoFrameAndWaitForRenderer(640, 480, &sink);
+  EXPECT_EQ(2, sink.number_of_frames());
+  // Expect the delivered frame to be passed unchanged since its detected as
+  // a valid frame on a rotated device.
+  EXPECT_EQ(480, sink.frame_size().width());
+  EXPECT_EQ(640, sink.frame_size().height());
+
+  sink.DisconnectFromTrack();
+}
+#endif
 
 // Test that a source producing no frames change the source ReadyState to muted.
 // that in a reasonable time frame the muted state turns to false.

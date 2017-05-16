@@ -644,13 +644,15 @@ void MediaStreamVideoSource::FinalizeAddTrackLegacy() {
       track_adapter_->AddTrack(
           track.track, track.frame_callback,
           VideoTrackAdapterSettings(max_width, max_height, min_aspect_ratio,
-                                    max_aspect_ratio, max_frame_rate));
+                                    max_aspect_ratio, max_frame_rate,
+                                    base::Optional<gfx::Size>()));
       // Calculate resulting frame size if the source delivers frames
       // according to the current format. Note: Format may change later.
       gfx::Size desired_size;
       VideoTrackAdapter::CalculateTargetSize(
-          current_format_.frame_size, gfx::Size(max_width, max_height),
-          min_aspect_ratio, max_aspect_ratio, &desired_size);
+          false /* is_rotated */, current_format_.frame_size,
+          gfx::Size(max_width, max_height), min_aspect_ratio, max_aspect_ratio,
+          &desired_size);
       track.track->SetTargetSizeAndFrameRate(
           desired_size.width(), desired_size.height(), max_frame_rate);
     }
@@ -681,6 +683,7 @@ void MediaStreamVideoSource::FinalizeAddTrack() {
       // according to the current format. Note: Format may change later.
       gfx::Size desired_size;
       VideoTrackAdapter::CalculateTargetSize(
+          false /* is_rotated */,
           GetCurrentFormat() ? GetCurrentFormat()->frame_size
                              : gfx::Size(track.adapter_settings->max_width,
                                          track.adapter_settings->max_height),
