@@ -60,7 +60,7 @@ std::string ReadData(MojoHandle consumer, size_t size) {
 
 class URLLoaderImplTest : public testing::Test {
  public:
-  URLLoaderImplTest() {}
+  URLLoaderImplTest() : context_(NetworkContext::CreateForTesting()) {}
   ~URLLoaderImplTest() override {}
 
   void SetUp() override {
@@ -104,12 +104,12 @@ class URLLoaderImplTest : public testing::Test {
   }
 
   net::EmbeddedTestServer* test_server() { return &test_server_; }
-  NetworkContext* context() { return &context_; }
+  NetworkContext* context() { return context_.get(); }
 
  private:
   base::MessageLoopForIO message_loop_;
   net::EmbeddedTestServer test_server_;
-  NetworkContext context_;
+  std::unique_ptr<NetworkContext> context_;
 };
 
 TEST_F(URLLoaderImplTest, Basic) {

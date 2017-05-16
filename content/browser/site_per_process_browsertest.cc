@@ -39,13 +39,14 @@
 #include "content/browser/frame_host/render_frame_proxy_host.h"
 #include "content/browser/frame_host/render_widget_host_view_child_frame.h"
 #include "content/browser/gpu/compositor_util.h"
-#include "content/browser/loader/navigation_url_loader_network_service.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/renderer_host/input/input_router_impl.h"
 #include "content/browser/renderer_host/input/synthetic_tap_gesture.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_input_event_router.h"
 #include "content/browser/renderer_host/render_widget_host_view_aura.h"
+#include "content/browser/storage_partition_impl.h"
+#include "content/browser/url_loader_factory_getter.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/child_process_messages.h"
 #include "content/common/frame_messages.h"
@@ -53,6 +54,7 @@
 #include "content/common/input_messages.h"
 #include "content/common/renderer.mojom.h"
 #include "content/common/view_messages.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/interstitial_page_delegate.h"
 #include "content/public/browser/navigation_handle.h"
@@ -2440,8 +2442,12 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, ProcessTransferAfterError) {
   mojom::URLLoaderFactoryPtr failing_factory;
   mojo::MakeStrongBinding(base::MakeUnique<FailingLoadFactory>(),
                           mojo::MakeRequest(&failing_factory));
+  StoragePartitionImpl* storage_partition = nullptr;
   if (network_service) {
-    NavigationURLLoaderNetworkService::OverrideURLLoaderFactoryForTesting(
+    storage_partition = static_cast<StoragePartitionImpl*>(
+        BrowserContext::GetDefaultStoragePartition(
+            shell()->web_contents()->GetBrowserContext()));
+    storage_partition->url_loader_factory_getter()->SetNetworkFactoryForTesting(
         std::move(failing_factory));
   } else {
     host_resolver()->ClearRules();
@@ -2480,7 +2486,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, ProcessTransferAfterError) {
 
   // Try again after re-enabling host resolution.
   if (network_service) {
-    NavigationURLLoaderNetworkService::OverrideURLLoaderFactoryForTesting(
+    storage_partition->url_loader_factory_getter()->SetNetworkFactoryForTesting(
         nullptr);
   } else {
     host_resolver()->AddRule("*", "127.0.0.1");

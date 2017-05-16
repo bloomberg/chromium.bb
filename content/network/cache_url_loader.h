@@ -14,7 +14,7 @@ class URLRequestContext;
 namespace content {
 
 // Creates a URLLoader that responds to developer requests to view the cache.
-void StartCacheURLLoader(const ResourceRequest& request,
+void StartCacheURLLoader(const GURL& url,
                          net::URLRequestContext* request_context,
                          mojom::URLLoaderClientPtr client);
 

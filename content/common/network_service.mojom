@@ -4,10 +4,36 @@
 
 module content.mojom;
 
+import "mojo/common/file_path.mojom";
 import "url_loader.mojom";
+import "url_loader_factory.mojom";
+import "url/mojo/url.mojom";
+
+// Parameters for constructing a network context.
+struct NetworkContextParams {
+  // Points to the cookie file. If null, an in-memory database is used.
+  mojo.common.mojom.FilePath? cookie_path;
+  // Points to the cache directory. If null, an in-memory database is used.
+  mojo.common.mojom.FilePath? cache_dir;
+};
+
+// Represents a distinct context for making network requests, with its own
+// storage (e.g. cookies and cache).
+interface NetworkContext {
+  // |process_id| is 0 for requests initiated in the browser process, otherwise
+  // it's the child process ID.
+  CreateURLLoaderFactory(URLLoaderFactory& url_loader_factory,
+                         uint32 process_id);
+
+  // Handle a request to display cache data to the user. |url| is parsed to
+  // display different parts of the cache.
+  HandleViewCacheRequest(url.mojom.Url url,
+                         URLLoaderClient client);
+};
 
 // Browser interface to the network service.
 interface NetworkService {
-  HandleViewCacheRequest(URLRequest request,
-                         URLLoaderClient client);
+  // Creates a new network context with the given parameters.
+  CreateNetworkContext(NetworkContext& context,
+                       NetworkContextParams params);
 };

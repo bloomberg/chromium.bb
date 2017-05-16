@@ -7,7 +7,6 @@
 
 #include "base/macros.h"
 #include "content/browser/loader/navigation_url_loader.h"
-#include "content/common/content_export.h"
 #include "content/common/url_loader.mojom.h"
 #include "content/common/url_loader_factory.mojom.h"
 #include "content/public/browser/ssl_status.h"
@@ -38,11 +37,6 @@ class NavigationURLLoaderNetworkService : public NavigationURLLoader,
       AppCacheNavigationHandle* appcache_handle,
       NavigationURLLoaderDelegate* delegate);
   ~NavigationURLLoaderNetworkService() override;
-
-  // Overrides the URLLoaderFactory for subsequent requests. Passing a null
-  // pointer will restore the default behavior.
-  static CONTENT_EXPORT void OverrideURLLoaderFactoryForTesting(
-      mojom::URLLoaderFactoryPtr url_loader_factory);
 
   // NavigationURLLoader implementation:
   void FollowRedirect() override;

@@ -32,6 +32,7 @@
 #include "content/common/indexed_db/indexed_db.mojom.h"
 #include "content/common/renderer.mojom.h"
 #include "content/common/storage_partition_service.mojom.h"
+#include "content/common/url_loader_factory.mojom.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/service_manager_connection.h"
 #include "ipc/ipc_channel_proxy.h"
@@ -370,6 +371,9 @@ class CONTENT_EXPORT RenderProcessHostImpl
   void CreateStoragePartitionService(
       const service_manager::BindSourceInfo& source_info,
       mojom::StoragePartitionServiceRequest request);
+  void CreateURLLoaderFactory(
+      const service_manager::BindSourceInfo& source_info,
+      mojom::URLLoaderFactoryRequest request);
 
   // Control message handlers.
   void OnShutdownRequest();
