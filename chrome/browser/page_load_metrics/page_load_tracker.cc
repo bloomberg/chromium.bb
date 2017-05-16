@@ -522,15 +522,6 @@ void PageLoadTracker::WebContentsShown() {
 
 void PageLoadTracker::WillProcessNavigationResponse(
     content::NavigationHandle* navigation_handle) {
-  // PlzNavigate: NavigationHandle::GetGlobalRequestID() sometimes returns an
-  // uninitialized GlobalRequestID. Bail early in this case. See
-  // crbug.com/680841 for details.
-  // TODO(jkarlin): NavigationSimulator is the first unittest framework to hit
-  // this function, and it doesn't provide a GlobalRequestID. Add an ID. See
-  // crbug.com/711352 for details.
-  if (navigation_handle->GetGlobalRequestID() == content::GlobalRequestID())
-    return;
-
   DCHECK(!navigation_request_id_.has_value());
   navigation_request_id_ = navigation_handle->GetGlobalRequestID();
   DCHECK(navigation_request_id_.value() != content::GlobalRequestID());
