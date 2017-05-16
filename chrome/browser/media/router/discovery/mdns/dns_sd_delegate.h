@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_API_MDNS_DNS_SD_DELEGATE_H_
-#define CHROME_BROWSER_EXTENSIONS_API_MDNS_DNS_SD_DELEGATE_H_
+#ifndef CHROME_BROWSER_MEDIA_ROUTER_DISCOVERY_MDNS_DNS_SD_DELEGATE_H_
+#define CHROME_BROWSER_MEDIA_ROUTER_DISCOVERY_MDNS_DNS_SD_DELEGATE_H_
 
 #include <string>
 #include <vector>
 
-namespace extensions {
+namespace media_router {
 
 struct DnsSdService {
   std::string service_name;
@@ -23,13 +23,10 @@ struct DnsSdService {
   bool operator==(const DnsSdService& other) const {
     return service_name == other.service_name &&
            service_host_port == other.service_host_port &&
-           ip_address == other.ip_address &&
-           service_data == other.service_data;
+           ip_address == other.ip_address && service_data == other.service_data;
   }
 
-  bool operator!=(const DnsSdService& other) const {
-    return !(*this == other);
-  }
+  bool operator!=(const DnsSdService& other) const { return !(*this == other); }
 };
 
 // Delegate that is notified when a watched service is added, updated or
@@ -44,6 +41,6 @@ class DnsSdDelegate {
   virtual void ServicesFlushed(const std::string& service_type) = 0;
 };
 
-}  // namespace extensions
+}  // namespace media_router
 
-#endif  // CHROME_BROWSER_EXTENSIONS_API_MDNS_DNS_SD_DELEGATE_H_
+#endif  // CHROME_BROWSER_MEDIA_ROUTER_DISCOVERY_MDNS_DNS_SD_DELEGATE_H_

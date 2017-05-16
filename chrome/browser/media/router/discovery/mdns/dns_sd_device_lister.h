@@ -2,20 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_API_MDNS_DNS_SD_DEVICE_LISTER_H_
-#define CHROME_BROWSER_EXTENSIONS_API_MDNS_DNS_SD_DEVICE_LISTER_H_
+#ifndef CHROME_BROWSER_MEDIA_ROUTER_DISCOVERY_MDNS_DNS_SD_DEVICE_LISTER_H_
+#define CHROME_BROWSER_MEDIA_ROUTER_DISCOVERY_MDNS_DNS_SD_DEVICE_LISTER_H_
 
 #include <string>
 
 #include "base/macros.h"
-#include "chrome/browser/extensions/api/mdns/dns_sd_delegate.h"
 #include "chrome/browser/local_discovery/service_discovery_device_lister.h"
+#include "chrome/browser/media/router/discovery/mdns/dns_sd_delegate.h"
 
 namespace local_discovery {
 class ServiceDiscoveryClient;
 }  // local_discovery
 
-namespace extensions {
+namespace media_router {
 
 // Manages a watcher for a specific MDNS/DNS-SD service type and notifies
 // a delegate of changes to watched services.
@@ -46,6 +46,6 @@ class DnsSdDeviceLister
   DISALLOW_COPY_AND_ASSIGN(DnsSdDeviceLister);
 };
 
-}  // namespace extensions
+}  // namespace media_router
 
-#endif  // CHROME_BROWSER_EXTENSIONS_API_MDNS_DNS_SD_DEVICE_LISTER_H_
+#endif  // CHROME_BROWSER_MEDIA_ROUTER_DISCOVERY_MDNS_DNS_SD_DEVICE_LISTER_H_

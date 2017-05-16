@@ -2,20 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/api/mdns/dns_sd_registry.h"
+#include "chrome/browser/media/router/discovery/mdns/dns_sd_registry.h"
 
 #include <utility>
 
 #include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
-#include "chrome/browser/extensions/api/mdns/dns_sd_device_lister.h"
 #include "chrome/browser/local_discovery/service_discovery_shared_client.h"
+#include "chrome/browser/media/router/discovery/mdns/dns_sd_device_lister.h"
 #include "chrome/common/features.h"
 
 using local_discovery::ServiceDiscoveryClient;
 using local_discovery::ServiceDiscoverySharedClient;
 
-namespace extensions {
+namespace media_router {
 
 namespace {
 // Predicate to test if two discovered services have the same service_name.
@@ -50,11 +50,10 @@ int DnsSdRegistry::ServiceTypeData::GetListenerCount() {
 }
 
 bool DnsSdRegistry::ServiceTypeData::UpdateService(
-      bool added, const DnsSdService& service) {
-  DnsSdRegistry::DnsSdServiceList::iterator it =
-      std::find_if(service_list_.begin(),
-                   service_list_.end(),
-                   IsSameServiceName(service));
+    bool added,
+    const DnsSdService& service) {
+  DnsSdRegistry::DnsSdServiceList::iterator it = std::find_if(
+      service_list_.begin(), service_list_.end(), IsSameServiceName(service));
   // Set to true when a service is updated in or added to the registry.
   bool updated_or_added = added;
   bool known = (it != service_list_.end());
@@ -70,10 +69,8 @@ bool DnsSdRegistry::ServiceTypeData::UpdateService(
     service_list_.push_back(service);
   }
 
-  VLOG(1) << "UpdateService: " << service.service_name
-          << ", added: " << added
-          << ", known: " << known
-          << ", updated or added: " << updated_or_added;
+  VLOG(1) << "UpdateService: " << service.service_name << ", added: " << added
+          << ", known: " << known << ", updated or added: " << updated_or_added;
   return updated_or_added;
 }
 
@@ -181,8 +178,7 @@ void DnsSdRegistry::ServiceChanged(const std::string& service_type,
                                    const DnsSdService& service) {
   VLOG(1) << "ServiceChanged: service_type: " << service_type
           << ", known: " << IsRegistered(service_type)
-          << ", service: " << service.service_name
-          << ", added: " << added;
+          << ", service: " << service.service_name << ", added: " << added;
   if (!IsRegistered(service_type)) {
     return;
   }
@@ -239,4 +235,4 @@ bool DnsSdRegistry::IsRegistered(const std::string& service_type) {
   return service_data_map_.find(service_type) != service_data_map_.end();
 }
 
-}  // namespace extensions
+}  // namespace media_router

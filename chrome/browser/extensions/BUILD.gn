@@ -1130,12 +1130,6 @@ static_library("extensions") {
 
   if (enable_service_discovery) {
     sources += [
-      "api/mdns/dns_sd_delegate.cc",
-      "api/mdns/dns_sd_delegate.h",
-      "api/mdns/dns_sd_device_lister.cc",
-      "api/mdns/dns_sd_device_lister.h",
-      "api/mdns/dns_sd_registry.cc",
-      "api/mdns/dns_sd_registry.h",
       "api/mdns/mdns_api.cc",
       "api/mdns/mdns_api.h",
     ]

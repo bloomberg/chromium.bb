@@ -32,5 +32,11 @@ static_library("discovery") {
     "dial/parsed_dial_device_description.h",
     "dial/safe_dial_device_description_parser.cc",
     "dial/safe_dial_device_description_parser.h",
+    "mdns/dns_sd_delegate.cc",
+    "mdns/dns_sd_delegate.h",
+    "mdns/dns_sd_device_lister.cc",
+    "mdns/dns_sd_device_lister.h",
+    "mdns/dns_sd_registry.cc",
+    "mdns/dns_sd_registry.h",
   ]
 }
