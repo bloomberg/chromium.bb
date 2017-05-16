@@ -4,6 +4,8 @@
 
 #include "content/browser/screen_orientation/screen_orientation_provider.h"
 
+#include <utility>
+
 #include "base/callback_helpers.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
@@ -28,12 +30,12 @@ ScreenOrientationProvider::~ScreenOrientationProvider() = default;
 
 void ScreenOrientationProvider::LockOrientation(
     blink::WebScreenOrientationLockType orientation,
-    const LockOrientationCallback& callback) {
+    LockOrientationCallback callback) {
   // Cancel any pending lock request.
   NotifyLockResult(ScreenOrientationLockResult::
                        SCREEN_ORIENTATION_LOCK_RESULT_ERROR_CANCELED);
   // Record new pending lock request.
-  pending_callback_ = callback;
+  pending_callback_ = std::move(callback);
 
   if (!delegate_ || !delegate_->ScreenOrientationProviderSupported()) {
     NotifyLockResult(ScreenOrientationLockResult::
