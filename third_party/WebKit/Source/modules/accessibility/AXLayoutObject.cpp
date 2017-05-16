@@ -449,7 +449,7 @@ bool AXLayoutObject::IsFocused() const {
   // focusable.  Check instead if the frame's selection controller is focused
   if (focused_object == this ||
       (RoleValue() == kWebAreaRole &&
-       GetDocument()->GetFrame()->Selection().IsFocusedAndActive()))
+       GetDocument()->GetFrame()->Selection().FrameIsFocusedAndActive()))
     return true;
 
   return false;
