@@ -104,7 +104,6 @@ void AppLauncherPageUI::HTMLSource::StartDataRequest(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   NTPResourceCache* resource = AppResourceCacheFactory::GetForProfile(profile_);
-  resource->set_should_show_other_devices_menu(false);
 
   content::WebContents* web_contents = wc_getter.Run();
   content::RenderProcessHost* render_host =
