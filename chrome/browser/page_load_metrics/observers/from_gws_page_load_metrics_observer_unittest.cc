@@ -712,21 +712,22 @@ TEST_F(FromGWSPageLoadMetricsLoggerTest, IsGoogleSearchHostname) {
     bool expected_result;
     const char* url;
   } test_cases[] = {
-      {true, "www.google.com"},
-      {true, "www.google.co.uk"},
-      {true, "www.google.co.in"},
-      {false, "other.google.com"},
-      {false, "other.www.google.com"},
-      {false, "www.other.google.com"},
-      {false, "www.www.google.com"},
-      {false, "www.google.appspot.com"},
-      {false, "www.google.example.com"},
+      {true, "https://www.google.com/"},
+      {true, "https://www.google.co.uk/"},
+      {true, "https://www.google.co.in/"},
+      {false, "https://other.google.com/"},
+      {false, "https://other.www.google.com/"},
+      {false, "https://www.other.google.com/"},
+      {false, "https://www.www.google.com/"},
+      {false, "https://www.google.appspot.com/"},
+      {false, "https://www.google.example.com/"},
       // Search results are not served from the bare google.com domain.
-      {false, "google.com"},
+      {false, "https://google.com/"},
   };
   for (const auto& test : test_cases) {
-    EXPECT_EQ(test.expected_result,
-              FromGWSPageLoadMetricsLogger::IsGoogleSearchHostname(test.url))
+    EXPECT_EQ(
+        test.expected_result,
+        FromGWSPageLoadMetricsLogger::IsGoogleSearchHostname(GURL(test.url)))
         << "for URL: " << test.url;
   }
 }

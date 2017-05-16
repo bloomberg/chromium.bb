@@ -9,7 +9,6 @@
 #include "base/strings/string_util.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_util.h"
 #include "chrome/common/page_load_metrics/page_load_timing.h"
-#include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 
 using page_load_metrics::PageAbortReason;
 
@@ -321,39 +320,17 @@ bool WasAbortedBeforeInteraction(
 // for additional details.
 
 // static
-bool FromGWSPageLoadMetricsLogger::IsGoogleSearchHostname(
-    base::StringPiece host) {
-  const char kGoogleSearchHostnamePrefix[] = "www.";
-
-  // Hostname must start with 'www.' Hostnames are not case sensitive.
-  if (!base::StartsWith(host, kGoogleSearchHostnamePrefix,
-                        base::CompareCase::INSENSITIVE_ASCII)) {
-    return false;
-  }
-  std::string domain = net::registry_controlled_domains::GetDomainAndRegistry(
-      host,
-      // Do not include private registries, such as appspot.com. We don't want
-      // to match URLs like www.google.appspot.com.
-      net::registry_controlled_domains::EXCLUDE_PRIVATE_REGISTRIES);
-
-  // Domain and registry must start with 'google.' e.g. 'google.com' or
-  // 'google.co.uk'.
-  if (!base::StartsWith(domain, "google.",
-                        base::CompareCase::INSENSITIVE_ASCII)) {
-    return false;
-  }
-
-  // Finally, the length of the URL before the domain and registry must be equal
-  // in length to the search hostname prefix.
-  const size_t url_hostname_prefix_length = host.length() - domain.length();
-  return url_hostname_prefix_length == strlen(kGoogleSearchHostnamePrefix);
+bool FromGWSPageLoadMetricsLogger::IsGoogleSearchHostname(const GURL& url) {
+  base::Optional<std::string> result =
+      page_load_metrics::GetGoogleHostnamePrefix(url);
+  return result && result.value() == "www";
 }
 
 // static
 bool FromGWSPageLoadMetricsLogger::IsGoogleSearchResultUrl(const GURL& url) {
   // NOTE: we do not require 'q=' in the query, as AJAXy search may instead
   // store the query in the URL fragment.
-  if (!IsGoogleSearchHostname(url.host_piece())) {
+  if (!IsGoogleSearchHostname(url)) {
     return false;
   }
 
@@ -370,7 +347,7 @@ bool FromGWSPageLoadMetricsLogger::IsGoogleSearchResultUrl(const GURL& url) {
 // static
 bool FromGWSPageLoadMetricsLogger::IsGoogleSearchRedirectorUrl(
     const GURL& url) {
-  if (!IsGoogleSearchHostname(url.host_piece()))
+  if (!IsGoogleSearchHostname(url))
     return false;
 
   // The primary search redirector.  Google search result redirects are
@@ -466,8 +443,7 @@ void FromGWSPageLoadMetricsLogger::SetPreviouslyCommittedUrl(const GURL& url) {
 }
 
 void FromGWSPageLoadMetricsLogger::SetProvisionalUrl(const GURL& url) {
-  provisional_url_has_search_hostname_ =
-      IsGoogleSearchHostname(url.host_piece());
+  provisional_url_has_search_hostname_ = IsGoogleSearchHostname(url);
 }
 
 FromGWSPageLoadMetricsObserver::FromGWSPageLoadMetricsObserver() {}
@@ -643,7 +619,7 @@ bool FromGWSPageLoadMetricsLogger::ShouldLogPostCommitMetrics(const GURL& url) {
   // these cases are relatively uncommon, and we run the risk of logging metrics
   // for some search redirector URLs. Thus we choose the more conservative
   // approach of ignoring all urls on known search hostnames.
-  if (IsGoogleSearchHostname(url.host_piece()))
+  if (IsGoogleSearchHostname(url))
     return false;
 
   // We're only interested in tracking navigations (e.g. clicks) initiated via

@@ -95,7 +95,7 @@ class FromGWSPageLoadMetricsLogger {
       const page_load_metrics::PageLoadExtraInfo& extra_info);
 
   // The methods below are public only for testing.
-  static bool IsGoogleSearchHostname(base::StringPiece host);
+  static bool IsGoogleSearchHostname(const GURL& url);
   static bool IsGoogleSearchResultUrl(const GURL& url);
   static bool IsGoogleSearchRedirectorUrl(const GURL& url);
   bool ShouldLogFailedProvisionalLoadMetrics();
