@@ -27,6 +27,8 @@ const int64_t kDelegateNotificationDelayInNanoSeconds = 0.2 * NSEC_PER_SEC;
 
 @interface ShippingAddressSelectionCoordinator ()
 
+@property(nonatomic, strong) AddressEditCoordinator* addressEditCoordinator;
+
 @property(nonatomic, strong)
     PaymentRequestSelectorViewController* viewController;
 
@@ -45,6 +47,7 @@ const int64_t kDelegateNotificationDelayInNanoSeconds = 0.2 * NSEC_PER_SEC;
 
 @synthesize paymentRequest = _paymentRequest;
 @synthesize delegate = _delegate;
+@synthesize addressEditCoordinator = _addressEditCoordinator;
 @synthesize viewController = _viewController;
 @synthesize mediator = _mediator;
 
@@ -72,6 +75,8 @@ const int64_t kDelegateNotificationDelayInNanoSeconds = 0.2 * NSEC_PER_SEC;
 
 - (void)stop {
   [self.baseViewController.navigationController popViewControllerAnimated:YES];
+  [self.addressEditCoordinator stop];
+  self.addressEditCoordinator = nil;
   self.viewController = nil;
   self.mediator = nil;
 }
@@ -109,7 +114,28 @@ const int64_t kDelegateNotificationDelayInNanoSeconds = 0.2 * NSEC_PER_SEC;
 
 - (void)paymentRequestSelectorViewControllerDidSelectAddItem:
     (PaymentRequestSelectorViewController*)controller {
-  // TODO(crbug.com/602666): Present a shipping address addition UI.
+  self.addressEditCoordinator = [[AddressEditCoordinator alloc]
+      initWithBaseViewController:self.viewController];
+  self.addressEditCoordinator.paymentRequest = self.paymentRequest;
+  self.addressEditCoordinator.delegate = self;
+  [self.addressEditCoordinator start];
+}
+
+#pragma mark - AddressEditCoordinatorDelegate
+
+- (void)addressEditCoordinator:(AddressEditCoordinator*)coordinator
+       didFinishEditingAddress:(autofill::AutofillProfile*)address {
+  [self.addressEditCoordinator stop];
+  self.addressEditCoordinator = nil;
+
+  // Inform |self.delegate| that |address| has been selected.
+  [self.delegate shippingAddressSelectionCoordinator:self
+                            didSelectShippingAddress:address];
+}
+
+- (void)addressEditCoordinatorDidCancel:(AddressEditCoordinator*)coordinator {
+  [self.addressEditCoordinator stop];
+  self.addressEditCoordinator = nil;
 }
 
 #pragma mark - Helper methods
