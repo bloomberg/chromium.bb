@@ -15099,7 +15099,7 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
-<action name="Signin_SigninNoDefault_FromBookmarkManager">
+<action name="Signin_SigninNotDefault_FromBookmarkManager">
   <owner>jlebel@chromium.org</owner>
   <description>
     Recorded on sign in start from access point
@@ -15108,7 +15108,7 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
-<action name="Signin_SigninNoDefault_FromRecentTabs">
+<action name="Signin_SigninNotDefault_FromRecentTabs">
   <owner>jlebel@chromium.org</owner>
   <description>
     Recorded on sign in start from access point
@@ -15117,7 +15117,7 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
-<action name="Signin_SigninNoDefault_FromSettings">
+<action name="Signin_SigninNotDefault_FromSettings">
   <owner>jlebel@chromium.org</owner>
   <description>
     Recorded on sign in start from access point
