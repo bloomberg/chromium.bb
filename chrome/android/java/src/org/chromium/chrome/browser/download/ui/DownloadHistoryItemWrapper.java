@@ -10,6 +10,7 @@ import android.text.TextUtils;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.metrics.RecordHistogram;
+import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.download.DownloadInfo;
 import org.chromium.chrome.browser.download.DownloadItem;
@@ -189,6 +190,7 @@ public abstract class DownloadHistoryItemWrapper extends TimedItem {
     abstract boolean remove();
 
     protected void recordOpenSuccess() {
+        RecordUserAction.record("Android.DownloadManager.Item.OpenSucceeded");
         RecordHistogram.recordEnumeratedHistogram("Android.DownloadManager.Item.OpenSucceeded",
                 getFilterType(), DownloadFilter.FILTER_BOUNDARY);
 

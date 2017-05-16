@@ -1283,6 +1283,11 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="Android.DownloadManager.Item.OpenSucceeded">
+  <owner>shaktisahu@chromium.org</owner>
+  <description>User opened a download from download home.</description>
+</action>
+
 <action name="Android.DownloadManager.OpenDrawer">
   <owner>dfalcantara@chromium.org</owner>
   <owner>twellington@chromium.org</owner>
