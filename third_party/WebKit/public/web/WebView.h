@@ -47,7 +47,6 @@ class ICCProfile;
 namespace blink {
 
 class WebAXObject;
-class WebCompositedDisplayList;
 class WebCredentialManagerClient;
 class WebFrame;
 class WebHitTestResult;
@@ -461,10 +460,6 @@ class WebView : protected WebWidget {
   // Sets the visibility of the WebView.
   virtual void SetVisibilityState(WebPageVisibilityState visibility_state,
                                   bool is_initial_state) {}
-
-  // Graphics -------------------------------------------------------------
-
-  virtual WebCompositedDisplayList* CompositedDisplayList() { return nullptr; }
 
   // PageOverlay ----------------------------------------------------------
 
