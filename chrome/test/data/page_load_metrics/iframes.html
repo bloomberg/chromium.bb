@@ -1,7 +1,8 @@
 <html>
   <link rel="stylesheet" href="seamless-iframe.css">
   <body>
-    <iframe src="/title1.html" class="seamless"></iframe>
-    <iframe src="/title1.html" class="seamless"></iframe>
+    <!-- TODO(crbug/705315): remove '/cross-site/?.com' when fixed. -->
+    <iframe src="/cross-site/b.com/title1.html" class="seamless"></iframe>
+    <iframe src="/cross-site/c.com/title1.html" class="seamless"></iframe>
   </body>
 </html>
