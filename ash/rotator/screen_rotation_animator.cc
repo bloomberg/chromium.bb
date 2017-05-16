@@ -150,8 +150,8 @@ std::unique_ptr<ui::LayerOwner> CreateBlackMaskLayerOwner(
 class ScreenRotationAnimationMetricsReporter
     : public ui::AnimationMetricsReporter {
  public:
-  ScreenRotationAnimationMetricsReporter() {}
-  ~ScreenRotationAnimationMetricsReporter() override {}
+  ScreenRotationAnimationMetricsReporter() = default;
+  ~ScreenRotationAnimationMetricsReporter() override = default;
 
   void Report(int value) override {
     UMA_HISTOGRAM_PERCENTAGE("Ash.Rotation.AnimationSmoothness", value);
