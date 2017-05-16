@@ -133,6 +133,12 @@ void BrowserDesktopWindowTreeHostWin::HandleFrameChanged() {
   DesktopWindowTreeHostWin::HandleFrameChanged();
 }
 
+void BrowserDesktopWindowTreeHostWin::HandleWindowScaleFactorChanged(
+    float window_scale_factor) {
+  DesktopWindowTreeHostWin::HandleWindowScaleFactorChanged(window_scale_factor);
+  minimize_button_metrics_.OnDpiChanged();
+}
+
 bool BrowserDesktopWindowTreeHostWin::PreHandleMSG(UINT message,
                                                    WPARAM w_param,
                                                    LPARAM l_param,
