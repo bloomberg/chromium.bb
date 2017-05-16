@@ -18,6 +18,7 @@
 #include "net/base/escape.h"
 #include "net/base/load_flags.h"
 #include "net/log/net_log_source_type.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -55,6 +56,42 @@ std::unique_ptr<base::Value> NetLogPingEndCallback(
   net_log.source().AddToEventParameters(event_params.get());
   return std::move(event_params);
 }
+
+net::NetworkTrafficAnnotationTag kTrafficAnnotation =
+    net::DefineNetworkTrafficAnnotation("safe_browsing_extended_reporting", R"(
+      semantics {
+        sender: "Safe Browsing Extended Reporting"
+        description:
+          "When a user is opted in to automatically reporting 'possible "
+          "security incidents to Google,' and they reach a bad page that's "
+          "flagged by Safe Browsing, Chrome will send a report to Google "
+          "with information about the threat. This helps Safe Browsing learn "
+          "where threats originate and thus protect more users."
+        trigger:
+          "When a red interstitial is shown, and the user is opted-in."
+        data:
+          "The report includes the URL and referrer chain of the page. If the "
+          "warning is triggered by a subresource on a partially loaded page, "
+          "the report will include the URL and referrer chain of sub frames "
+          "and resources loaded into the page.  It may also include a subset "
+          "of headers for resources loaded, and some Google ad identifiers to "
+          "help block malicious ads."
+        destination: GOOGLE_OWNED_SERVICE
+      }
+      policy {
+        cookies_allowed: true
+        cookies_store: "Safe Browsing Cookie Store"
+        setting:
+          "Users can control this feature via the 'Automatically report "
+          "details of possible security incidents to Google' setting under "
+          "'Privacy'. The feature is disabled by default."
+        chrome_policy {
+          SafeBrowsingExtendedReportingOptInAllowed {
+            policy_options {mode: MANDATORY}
+            SafeBrowsingExtendedReportingOptInAllowed: false
+          }
+        }
+      })");
 
 }  // namespace
 
@@ -113,7 +150,7 @@ void BasePingManager::ReportSafeBrowsingHit(
       report_url,
       hit_report.post_data.empty() ? net::URLFetcher::GET
                                    : net::URLFetcher::POST,
-      this);
+      this, kTrafficAnnotation);
   net::URLFetcher* report = report_ptr.get();
   data_use_measurement::DataUseUserData::AttachToFetcher(
       report, data_use_measurement::DataUseUserData::SAFE_BROWSING);
@@ -137,8 +174,8 @@ void BasePingManager::ReportSafeBrowsingHit(
 // Sends threat details for users who opt-in.
 void BasePingManager::ReportThreatDetails(const std::string& report) {
   GURL report_url = ThreatDetailsUrl();
-  std::unique_ptr<net::URLFetcher> fetcher =
-      net::URLFetcher::Create(report_url, net::URLFetcher::POST, this);
+  std::unique_ptr<net::URLFetcher> fetcher = net::URLFetcher::Create(
+      report_url, net::URLFetcher::POST, this, kTrafficAnnotation);
   data_use_measurement::DataUseUserData::AttachToFetcher(
       fetcher.get(), data_use_measurement::DataUseUserData::SAFE_BROWSING);
   fetcher->SetLoadFlags(net::LOAD_DISABLE_CACHE);
