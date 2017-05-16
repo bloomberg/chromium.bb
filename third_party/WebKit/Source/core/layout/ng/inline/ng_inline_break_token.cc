@@ -13,7 +13,10 @@ NGInlineBreakToken::NGInlineBreakToken(NGInlineNode* node,
                                        unsigned text_offset)
     : NGBreakToken(kInlineBreakToken, kUnfinished, node),
       item_index_(item_index),
-      text_offset_(text_offset) {}
+      text_offset_(text_offset) {
+  // Use nullptr for the initial layout, rather than (0, 0) break token.
+  DCHECK(item_index || text_offset);
+}
 
 NGInlineBreakToken::NGInlineBreakToken(NGLayoutInputNode* node)
     : NGBreakToken(kInlineBreakToken, kFinished, node),

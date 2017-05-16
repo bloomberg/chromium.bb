@@ -325,13 +325,11 @@ TEST_F(NGInlineNodeTest, CreateLineBidiIsolate) {
 TEST_F(NGInlineNodeTest, MinMaxContentSize) {
   UseLayoutObjectAndAhem();
   NGInlineNodeForTest* node = CreateInlineNode();
-  node->Append("AB CDE", style_.Get(), layout_object_);
+  node->Append("AB CDEF", style_.Get(), layout_object_);
   node->ShapeText();
   MinMaxContentSize sizes = node->ComputeMinMaxContentSize();
-  // TODO(kojii): min_content should be 20, but is 30 until
-  // NGInlineLayoutAlgorithm implements trailing spaces correctly.
-  EXPECT_EQ(30, sizes.min_content);
-  EXPECT_EQ(60, sizes.max_content);
+  EXPECT_EQ(40, sizes.min_content);
+  EXPECT_EQ(70, sizes.max_content);
 }
 
 TEST_F(NGInlineNodeTest, MinMaxContentSizeElementBoundary) {
@@ -343,9 +341,7 @@ TEST_F(NGInlineNodeTest, MinMaxContentSizeElementBoundary) {
   MinMaxContentSize sizes = node->ComputeMinMaxContentSize();
   // |min_content| should be the width of "BC" because there is an element
   // boundary between "B" and "C" but no break opportunities.
-  // TODO(kojii): min_content should be 20, but is 30 until
-  // NGInlineLayoutAlgorithm implements trailing spaces correctly.
-  EXPECT_EQ(30, sizes.min_content);
+  EXPECT_EQ(20, sizes.min_content);
   EXPECT_EQ(60, sizes.max_content);
 }
 

@@ -62,10 +62,6 @@ NGInlineLayoutAlgorithm::NGInlineLayoutAlgorithm(
           blink::IsHorizontalWritingMode(space->WritingMode())),
       disallow_first_line_rules_(false),
       space_builder_(space)
-#if DCHECK_IS_ON()
-      ,
-      is_bidi_reordered_(false)
-#endif
 {
   container_builder_.MutableUnpositionedFloats() = space->UnpositionedFloats();
 
@@ -83,10 +79,20 @@ NGInlineLayoutAlgorithm::NGInlineLayoutAlgorithm(
 
   if (!is_horizontal_writing_mode_)
     baseline_type_ = FontBaseline::kIdeographicBaseline;
-  if (break_token)
-    Initialize(break_token->ItemIndex(), break_token->TextOffset());
-  else
-    Initialize(0, 0);
+
+  if (break_token) {
+    // If a break_token is given, we're re-starting layout for 2nd or later
+    // lines, and that the first line we create should not use the first line
+    // rules.
+    DCHECK(!break_token->IsFinished());
+    DCHECK(break_token->TextOffset() || break_token->ItemIndex());
+    disallow_first_line_rules_ = true;
+  } else {
+    auto& engine = Node()->GetLayoutObject()->GetDocument().GetStyleEngine();
+    disallow_first_line_rules_ = !engine.UsesFirstLineRules();
+  }
+
+  FindNextLayoutOpportunity();
 }
 
 bool NGInlineLayoutAlgorithm::IsFirstLine() const {
@@ -101,200 +107,20 @@ const ComputedStyle& NGInlineLayoutAlgorithm::LineStyle() const {
   return IsFirstLine() ? FirstLineStyle() : Style();
 }
 
-bool NGInlineLayoutAlgorithm::CanFitOnLine() const {
-  LayoutUnit available_size = current_opportunity_.InlineSize();
-  if (available_size == NGSizeIndefinite)
-    return true;
-  return end_position_ <= available_size;
+LayoutUnit NGInlineLayoutAlgorithm::AvailableWidth() const {
+  return current_opportunity_.InlineSize();
 }
 
-bool NGInlineLayoutAlgorithm::HasItems() const {
-  return start_offset_ != end_offset_;
-}
-
-bool NGInlineLayoutAlgorithm::HasBreakOpportunity() const {
-  return start_offset_ != last_break_opportunity_offset_;
-}
-
-bool NGInlineLayoutAlgorithm::HasItemsAfterLastBreakOpportunity() const {
-  return last_break_opportunity_offset_ != end_offset_;
-}
-
-void NGInlineLayoutAlgorithm::Initialize(unsigned index, unsigned offset) {
-  if (index || offset)
-    Node()->AssertOffset(index, offset);
-
-  start_index_ = last_index_ = last_break_opportunity_index_ = index;
-  start_offset_ = end_offset_ = last_break_opportunity_offset_ = offset;
-  end_position_ = last_break_opportunity_position_ = LayoutUnit();
-
-  auto& engine = Node()->GetLayoutObject()->GetDocument().GetStyleEngine();
-  disallow_first_line_rules_ = index || offset || !engine.UsesFirstLineRules();
-
-  FindNextLayoutOpportunity();
-}
-
-void NGInlineLayoutAlgorithm::SetEnd(unsigned new_end_offset) {
-  DCHECK_GT(new_end_offset, end_offset_);
-  const Vector<NGInlineItem>& items = Node()->Items();
-  DCHECK_LE(new_end_offset, items.back().EndOffset());
-
-  // SetEnd() while |new_end_offset| is beyond the current last item.
-  unsigned index = last_index_;
-  const NGInlineItem* item = &items[index];
-  if (new_end_offset > item->EndOffset()) {
-    if (end_offset_ < item->EndOffset()) {
-      SetEnd(index, item->EndOffset(),
-             InlineSize(*item, end_offset_, item->EndOffset()));
-    }
-    item = &items[++index];
-
-    while (new_end_offset > item->EndOffset()) {
-      SetEnd(index, item->EndOffset(), InlineSize(*item));
-      item = &items[++index];
-    }
-  }
-
-  SetEnd(index, new_end_offset, InlineSize(*item, end_offset_, new_end_offset));
-
-  // Include closing elements.
-  while (new_end_offset == item->EndOffset() && index < items.size() - 1) {
-    item = &items[++index];
-    if (item->Type() != NGInlineItem::kCloseTag)
-      break;
-    SetEnd(index, new_end_offset, InlineSize(*item));
-  }
-}
-
-void NGInlineLayoutAlgorithm::SetEnd(unsigned index,
-                                     unsigned new_end_offset,
-                                     LayoutUnit inline_size_since_current_end) {
-  const Vector<NGInlineItem>& items = Node()->Items();
-  DCHECK_LE(new_end_offset, items.back().EndOffset());
-
-  // |new_end_offset| should be in the current item or next.
-  // TODO(kojii): Reconsider this restriction if needed.
-  DCHECK((index == last_index_ && new_end_offset > end_offset_) ||
-         (index == last_index_ + 1 && new_end_offset >= end_offset_ &&
-          end_offset_ == items[last_index_].EndOffset()));
-  const NGInlineItem& item = items[index];
-  item.AssertEndOffset(new_end_offset);
-
-  if (item.Type() == NGInlineItem::kFloating) {
-    LayoutAndPositionFloat(
-        LayoutUnit(end_position_) + inline_size_since_current_end,
-        item.GetLayoutObject());
-  }
-
-  last_index_ = index;
-  end_offset_ = new_end_offset;
-  end_position_ += inline_size_since_current_end;
-}
-
-void NGInlineLayoutAlgorithm::SetBreakOpportunity() {
-  last_break_opportunity_index_ = last_index_;
-  last_break_opportunity_offset_ = end_offset_;
-  last_break_opportunity_position_ = end_position_;
-}
-
-void NGInlineLayoutAlgorithm::SetStartOfHangables(unsigned offset) {
-  // TODO(kojii): Implement.
-}
-
-LayoutUnit NGInlineLayoutAlgorithm::InlineSize(const NGInlineItem& item) {
-  if (item.Type() == NGInlineItem::kAtomicInline)
-    return InlineSizeFromLayout(item);
-  return item.InlineSize();
-}
-
-LayoutUnit NGInlineLayoutAlgorithm::InlineSize(const NGInlineItem& item,
-                                               unsigned start_offset,
-                                               unsigned end_offset) {
-  if (item.StartOffset() == start_offset && item.EndOffset() == end_offset)
-    return InlineSize(item);
-  return item.InlineSize(start_offset, end_offset);
-}
-
-LayoutUnit NGInlineLayoutAlgorithm::InlineSizeFromLayout(
-    const NGInlineItem& item) {
-  return NGBoxFragment(ConstraintSpace().WritingMode(),
-                       ToNGPhysicalBoxFragment(
-                           LayoutItem(item)->PhysicalFragment().Get()))
-      .InlineSize();
-}
-
-const NGLayoutResult* NGInlineLayoutAlgorithm::LayoutItem(
-    const NGInlineItem& item) {
-  // Returns the cached NGLayoutResult if available.
-  const Vector<NGInlineItem>& items = Node()->Items();
-  if (layout_results_.IsEmpty())
-    layout_results_.resize(items.size());
-  unsigned index = std::distance(items.begin(), &item);
-  RefPtr<NGLayoutResult>* layout_result = &layout_results_[index];
-  if (*layout_result)
-    return layout_result->Get();
-
-  DCHECK_EQ(item.Type(), NGInlineItem::kAtomicInline);
-  NGBlockNode* node = new NGBlockNode(item.GetLayoutObject());
-  // TODO(kojii): Keep node in NGInlineItem.
-  const ComputedStyle& style = node->Style();
-  NGConstraintSpaceBuilder constraint_space_builder(&ConstraintSpace());
-  RefPtr<NGConstraintSpace> constraint_space =
-      constraint_space_builder.SetIsNewFormattingContext(true)
-          .SetIsShrinkToFit(true)
-          .SetTextDirection(style.Direction())
-          .ToConstraintSpace(FromPlatformWritingMode(style.GetWritingMode()));
-  *layout_result = node->Layout(constraint_space.Get());
-  return layout_result->Get();
-}
-
-bool NGInlineLayoutAlgorithm::CreateLine() {
-  if (HasItemsAfterLastBreakOpportunity())
-    SetBreakOpportunity();
-  return CreateLineUpToLastBreakOpportunity();
-}
-
-bool NGInlineLayoutAlgorithm::CreateLineUpToLastBreakOpportunity() {
-  const Vector<NGInlineItem>& items = Node()->Items();
-
-  // Create a list of LineItemChunk from |start| and |last_break_opportunity|.
-  // TODO(kojii): Consider refactoring LineItemChunk once NGLineBuilder's public
-  // API is more finalized. It does not fit well with the current API.
-  Vector<LineItemChunk, 32> line_item_chunks;
-  unsigned start_offset = start_offset_;
-  for (unsigned i = start_index_; i <= last_break_opportunity_index_; i++) {
-    const NGInlineItem& item = items[i];
-    unsigned end_offset =
-        std::min(item.EndOffset(), last_break_opportunity_offset_);
-    line_item_chunks.push_back(
-        LineItemChunk{i, start_offset, end_offset,
-                      InlineSize(item, start_offset, end_offset)});
-    start_offset = end_offset;
-  }
-
+bool NGInlineLayoutAlgorithm::CreateLine(
+    NGInlineItemResults* item_results,
+    RefPtr<NGInlineBreakToken> break_token) {
   if (Node()->IsBidiEnabled())
-    BidiReorder(&line_item_chunks);
+    BidiReorder(item_results);
 
-  if (!PlaceItems(line_item_chunks))
+  if (!PlaceItems(item_results, break_token))
     return false;
 
   // Prepare for the next line.
-  // Move |start| to |last_break_opportunity|, keeping items after
-  // |last_break_opportunity|.
-  start_index_ = last_break_opportunity_index_;
-  start_offset_ = last_break_opportunity_offset_;
-  // If the offset is at the end of the item, move to the next item.
-  if (start_offset_ == items[start_index_].EndOffset() &&
-      start_index_ < items.size() - 1) {
-    start_index_++;
-  }
-  DCHECK_GE(end_position_, last_break_opportunity_position_);
-  end_position_ -= last_break_opportunity_position_;
-  last_break_opportunity_position_ = LayoutUnit();
-#if DCHECK_IS_ON()
-  is_bidi_reordered_ = false;
-#endif
-
   NGLogicalOffset origin_point =
       GetOriginPointForFloats(ContainerBfcOffset(), content_size_);
   PositionPendingFloats(origin_point.block_offset, &container_builder_,
@@ -303,13 +129,7 @@ bool NGInlineLayoutAlgorithm::CreateLineUpToLastBreakOpportunity() {
   return true;
 }
 
-void NGInlineLayoutAlgorithm::BidiReorder(
-    Vector<LineItemChunk, 32>* line_item_chunks) {
-#if DCHECK_IS_ON()
-  DCHECK(!is_bidi_reordered_);
-  is_bidi_reordered_ = true;
-#endif
-
+void NGInlineLayoutAlgorithm::BidiReorder(NGInlineItemResults* line_items) {
   // TODO(kojii): UAX#9 L1 is not supported yet. Supporting L1 may change
   // embedding levels of parts of runs, which requires to split items.
   // http://unicode.org/reports/tr9/#L1
@@ -320,40 +140,39 @@ void NGInlineLayoutAlgorithm::BidiReorder(
   // handle the direction of each run, we use |ubidi_reorderVisual()| to reorder
   // runs instead of characters.
   Vector<UBiDiLevel, 32> levels;
-  levels.ReserveInitialCapacity(line_item_chunks->size());
+  levels.ReserveInitialCapacity(line_items->size());
   const Vector<NGInlineItem>& items = Node()->Items();
-  for (const auto& chunk : *line_item_chunks)
-    levels.push_back(items[chunk.index].BidiLevel());
-  Vector<int32_t, 32> indices_in_visual_order(line_item_chunks->size());
+  for (const auto& item_result : *line_items)
+    levels.push_back(items[item_result.item_index].BidiLevel());
+  Vector<int32_t, 32> indices_in_visual_order(line_items->size());
   NGBidiParagraph::IndicesInVisualOrder(levels, &indices_in_visual_order);
 
-  // Reorder |line_item_chunks| in visual order.
-  Vector<LineItemChunk, 32> line_item_chunks_in_visual_order(
-      line_item_chunks->size());
+  // Reorder to the visual order.
+  NGInlineItemResults line_items_in_visual_order(line_items->size());
   for (unsigned visual_index = 0; visual_index < indices_in_visual_order.size();
        visual_index++) {
     unsigned logical_index = indices_in_visual_order[visual_index];
-    line_item_chunks_in_visual_order[visual_index] =
-        (*line_item_chunks)[logical_index];
+    line_items_in_visual_order[visual_index] =
+        std::move((*line_items)[logical_index]);
   }
 
   // Keep Open before Close in the visual order.
   HashMap<LayoutObject*, unsigned> first_index;
-  for (unsigned i = 0; i < line_item_chunks_in_visual_order.size(); i++) {
-    LineItemChunk& chunk = line_item_chunks_in_visual_order[i];
-    const NGInlineItem& item = items[chunk.index];
+  for (unsigned i = 0; i < line_items_in_visual_order.size(); i++) {
+    NGInlineItemResult& item_result = line_items_in_visual_order[i];
+    const NGInlineItem& item = items[item_result.item_index];
     if (item.Type() != NGInlineItem::kOpenTag &&
         item.Type() != NGInlineItem::kCloseTag) {
       continue;
     }
     auto result = first_index.insert(item.GetLayoutObject(), i);
     if (!result.is_new_entry && item.Type() == NGInlineItem::kOpenTag) {
-      std::swap(line_item_chunks_in_visual_order[i],
-                line_item_chunks_in_visual_order[result.stored_value->value]);
+      std::swap(line_items_in_visual_order[i],
+                line_items_in_visual_order[result.stored_value->value]);
     }
   }
 
-  line_item_chunks->swap(line_item_chunks_in_visual_order);
+  line_items->swap(line_items_in_visual_order);
 }
 
 // TODO(glebl): Add the support of clearance for inline floats.
@@ -402,7 +221,8 @@ void NGInlineLayoutAlgorithm::LayoutAndPositionFloat(
 }
 
 bool NGInlineLayoutAlgorithm::PlaceItems(
-    const Vector<LineItemChunk, 32>& line_item_chunks) {
+    NGInlineItemResults* line_items,
+    RefPtr<NGInlineBreakToken> break_token) {
   const Vector<NGInlineItem>& items = Node()->Items();
 
   const ComputedStyle& line_style = LineStyle();
@@ -417,19 +237,19 @@ bool NGInlineLayoutAlgorithm::PlaceItems(
   NGInlineBoxState* box =
       box_states_.OnBeginPlaceItems(&LineStyle(), baseline_type_);
   LayoutUnit inline_size;
-  for (const auto& line_item_chunk : line_item_chunks) {
-    const NGInlineItem& item = items[line_item_chunk.index];
+  for (auto& item_result : *line_items) {
+    const NGInlineItem& item = items[item_result.item_index];
     LayoutUnit line_top;
     if (item.Type() == NGInlineItem::kText) {
       DCHECK(item.GetLayoutObject()->IsText());
       DCHECK(!box->text_metrics.IsEmpty());
       line_top = box->text_top;
       text_builder.SetSize(
-          {line_item_chunk.inline_size, box->text_metrics.LineHeight()});
+          {item_result.inline_size, box->text_metrics.LineHeight()});
       // Take all used fonts into account if 'line-height: normal'.
       if (box->include_used_fonts) {
-        box->AccumulateUsedFonts(item, line_item_chunk.start_offset,
-                                 line_item_chunk.end_offset, baseline_type_);
+        box->AccumulateUsedFonts(item, item_result.start_offset,
+                                 item_result.end_offset, baseline_type_);
       }
     } else if (item.Type() == NGInlineItem::kOpenTag) {
       box = box_states_.OnOpenTag(item, &line_box, &text_builder);
@@ -444,7 +264,8 @@ bool NGInlineLayoutAlgorithm::PlaceItems(
       box = box_states_.OnCloseTag(item, &line_box, box, baseline_type_);
       continue;
     } else if (item.Type() == NGInlineItem::kAtomicInline) {
-      line_top = PlaceAtomicInline(item, &line_box, box, &text_builder);
+      line_top =
+          PlaceAtomicInline(item, &item_result, &line_box, box, &text_builder);
     } else if (item.Type() == NGInlineItem::kOutOfFlowPositioned) {
       // TODO(layout-dev): Report the correct static position for the out of
       // flow descendant. We can't do this here yet as it doesn't know the
@@ -462,15 +283,15 @@ bool NGInlineLayoutAlgorithm::PlaceItems(
     }
 
     RefPtr<NGPhysicalTextFragment> text_fragment = text_builder.ToTextFragment(
-        line_item_chunk.index, line_item_chunk.start_offset,
-        line_item_chunk.end_offset);
+        item_result.item_index, item_result.start_offset,
+        item_result.end_offset);
 
     NGLogicalOffset logical_offset(
         inline_size + current_opportunity_.InlineStartOffset() -
             ConstraintSpace().BfcOffset().inline_offset,
         line_top);
     line_box.AddChild(std::move(text_fragment), logical_offset);
-    inline_size += line_item_chunk.inline_size;
+    inline_size += item_result.inline_size;
   }
 
   if (line_box.Children().IsEmpty()) {
@@ -493,12 +314,7 @@ bool NGInlineLayoutAlgorithm::PlaceItems(
     return false;
   }
 
-  // If there are more content to consume, create an unfinished break token.
-  if (last_break_opportunity_index_ != items.size() - 1 ||
-      last_break_opportunity_offset_ != Node()->Text().length()) {
-    line_box.SetBreakToken(NGInlineBreakToken::Create(
-        Node(), last_break_opportunity_index_, last_break_opportunity_offset_));
-  }
+  line_box.SetBreakToken(std::move(break_token));
 
   // TODO(kojii): Implement flipped line (vertical-lr). In this case, line_top
   // and block_start do not match.
@@ -517,17 +333,22 @@ bool NGInlineLayoutAlgorithm::PlaceItems(
   return true;
 }
 
+// TODO(kojii): Currently, this function does not change item_result, but
+// when NG paint is enabled, this will std::move() the LayoutResult.
 LayoutUnit NGInlineLayoutAlgorithm::PlaceAtomicInline(
     const NGInlineItem& item,
+    NGInlineItemResult* item_result,
     NGLineBoxFragmentBuilder* line_box,
     NGInlineBoxState* state,
     NGTextFragmentBuilder* text_builder) {
+  DCHECK(item_result->layout_result);
   // For replaced elements, inline-block elements, and inline-table elements,
   // the height is the height of their margin box.
   // https://drafts.csswg.org/css2/visudet.html#line-height
   NGBoxFragment fragment(
       ConstraintSpace().WritingMode(),
-      ToNGPhysicalBoxFragment(LayoutItem(item)->PhysicalFragment().Get()));
+      ToNGPhysicalBoxFragment(
+          item_result->layout_result->PhysicalFragment().Get()));
   DCHECK(item.Style());
   NGBoxStrut margins = ComputeMargins(ConstraintSpace(), *item.Style(),
                                       ConstraintSpace().WritingMode(),
@@ -568,13 +389,14 @@ void NGInlineLayoutAlgorithm::FindNextLayoutOpportunity() {
 }
 
 RefPtr<NGLayoutResult> NGInlineLayoutAlgorithm::Layout() {
-  // TODO(koji): The relationship of NGInlineLayoutAlgorithm and NGLineBreaker
-  // should be inverted.
-  if (!Node()->Text().IsEmpty()) {
-    // TODO(eae): Does this need the LayoutText::LocaleForLineBreakIterator
-    // logic to switch the locale based on breaking mode?
-    NGLineBreaker line_breaker(Node()->Style().Locale());
-    line_breaker.BreakLines(this, Node()->Text(), start_offset_);
+  NGLineBreaker line_breaker(Node(), constraint_space_, BreakToken());
+  NGInlineItemResults item_results;
+  while (true) {
+    line_breaker.NextLine(&item_results, this);
+    if (item_results.IsEmpty())
+      break;
+    CreateLine(&item_results, line_breaker.CreateBreakToken());
+    item_results.clear();
   }
 
   // TODO(kojii): Check if the line box width should be content or available.
@@ -589,24 +411,6 @@ RefPtr<NGLayoutResult> NGInlineLayoutAlgorithm::Layout() {
   }
 
   return container_builder_.ToBoxFragment();
-}
-
-MinMaxContentSize NGInlineLayoutAlgorithm::ComputeMinMaxContentSizeByLayout() {
-  DCHECK_EQ(ConstraintSpace().AvailableSize().inline_size, LayoutUnit());
-  DCHECK_EQ(ConstraintSpace().AvailableSize().block_size, NGSizeIndefinite);
-  if (!Node()->Text().IsEmpty()) {
-    NGLineBreaker line_breaker(Node()->Style().Locale());
-    line_breaker.BreakLines(this, Node()->Text(), start_offset_);
-  }
-  MinMaxContentSize sizes;
-  sizes.min_content = MaxInlineSize();
-
-  // max-content is the width without any line wrapping.
-  // TODO(kojii): Implement hard breaks (<br> etc.) to break.
-  for (const auto& item : Node()->Items())
-    sizes.max_content += InlineSize(item);
-
-  return sizes;
 }
 
 }  // namespace blink
