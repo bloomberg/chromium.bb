@@ -21,6 +21,7 @@
 #include "google_apis/google_api_keys.h"
 #include "net/base/escape.h"
 #include "net/base/load_flags.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/http_user_agent_settings.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_context.h"
@@ -337,8 +338,48 @@ SpeechRecognitionEngine::ConnectBothStreams(const FSMEventArgs&) {
                       std::string(kDownstreamUrl) +
                       base::JoinString(downstream_args, "&"));
 
-  downstream_fetcher_ = URLFetcher::Create(
-      kDownstreamUrlFetcherIdForTesting, downstream_url, URLFetcher::GET, this);
+  net::NetworkTrafficAnnotationTag downstream_traffic_annotation =
+      net::DefineNetworkTrafficAnnotation("speech_recognition_downstream", R"(
+        semantics {
+          sender: "Speech Recognition"
+          description:
+            "Chrome provides translation from speech audio recorded with a "
+            "microphone to text, by using the Google speech recognition web "
+            "service. Audio is sent to Google's servers (upstream) and text is "
+            "returned (downstream). This network request (downstream) sends an "
+            "id for getting the text response. Then the (upstream) request "
+            "sends the audio data along with the id. When the server has "
+            "finished processing the audio data and produced a text response, "
+            "it replies to this request."
+          trigger:
+            "The user chooses to start the recognition by clicking the "
+            "microphone icon in the Google search field."
+          data: "A unique random id for this speech recognition request."
+          destination: GOOGLE_OWNED_SERVICE
+        }
+        policy {
+          cookies_allowed: false
+          setting:
+            "The user must allow the browser to access the microphone in a "
+            "permission prompt. This is set per site (hostname pattern). In "
+            "the content settings menu, microphone access can be turned off "
+            "for all sites and site specific settings can be changed."
+          chrome_policy {
+            AudioCaptureAllowed {
+              policy_options {mode: MANDATORY}
+              AudioCaptureAllowed: false
+            }
+          }
+          chrome_policy {
+            AudioCaptureAllowedUrls {
+              policy_options {mode: MANDATORY}
+              AudioCaptureAllowedUrls: {}
+            }
+          }
+        })");
+  downstream_fetcher_ =
+      URLFetcher::Create(kDownstreamUrlFetcherIdForTesting, downstream_url,
+                         URLFetcher::GET, this, downstream_traffic_annotation);
   downstream_fetcher_->SetRequestContext(url_context_.get());
   downstream_fetcher_->SetLoadFlags(net::LOAD_DO_NOT_SAVE_COOKIES |
                                     net::LOAD_DO_NOT_SEND_COOKIES |
@@ -393,8 +434,46 @@ SpeechRecognitionEngine::ConnectBothStreams(const FSMEventArgs&) {
                     std::string(kUpstreamUrl) +
                     base::JoinString(upstream_args, "&"));
 
-  upstream_fetcher_ = URLFetcher::Create(kUpstreamUrlFetcherIdForTesting,
-                                         upstream_url, URLFetcher::POST, this);
+  net::NetworkTrafficAnnotationTag upstream_traffic_annotation =
+      net::DefineNetworkTrafficAnnotation("speech_recognition_upstream", R"(
+        semantics {
+          sender: "Speech Recognition"
+          description:
+            "Chrome provides translation from speech audio recorded with a "
+            "microphone to text, by using the Google speech recognition web "
+            "service. Audio is sent to Google's servers (upstream) and text is "
+            "returned (downstream)."
+          trigger:
+            "The user chooses to start the recognition by clicking the "
+            "microphone icon in the Google search field."
+          data:
+            "Audio recorded with the microphone, and the unique id of "
+            "downstream speech recognition request."
+          destination: GOOGLE_OWNED_SERVICE
+        }
+        policy {
+          cookies_allowed: false
+          setting:
+            "The user must allow the browser to access the microphone in a "
+            "permission prompt. This is set per site (hostname pattern). In "
+            "the content settings menu, microphone access can be turned off "
+            "for all sites and site specific settings can be changed."
+          chrome_policy {
+            AudioCaptureAllowed {
+              policy_options {mode: MANDATORY}
+              AudioCaptureAllowed: false
+            }
+          }
+          chrome_policy {
+            AudioCaptureAllowedUrls {
+              policy_options {mode: MANDATORY}
+              AudioCaptureAllowedUrls: {}
+            }
+          }
+        })");
+  upstream_fetcher_ =
+      URLFetcher::Create(kUpstreamUrlFetcherIdForTesting, upstream_url,
+                         URLFetcher::POST, this, upstream_traffic_annotation);
   if (use_framed_post_data_)
     upstream_fetcher_->SetChunkedUpload("application/octet-stream");
   else
