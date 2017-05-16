@@ -952,12 +952,6 @@ class MetaBuildWrapper(object):
     labels = []
     err = ''
 
-    def StripTestSuffixes(target):
-      for suffix in ('_apk_run', '_apk', '_run'):
-        if target.endswith(suffix):
-          return target[:-len(suffix)], suffix
-      return None, None
-
     for target in targets:
       if target == 'all':
         labels.append(target)
@@ -965,14 +959,10 @@ class MetaBuildWrapper(object):
         labels.append(target)
       else:
         if target in isolate_map:
-          stripped_target, suffix = target, ''
-        else:
-          stripped_target, suffix = StripTestSuffixes(target)
-        if stripped_target in isolate_map:
-          if isolate_map[stripped_target]['type'] == 'unknown':
+          if isolate_map[target]['type'] == 'unknown':
             err += ('test target "%s" type is unknown\n' % target)
           else:
-            labels.append(isolate_map[stripped_target]['label'] + suffix)
+            labels.append(isolate_map[target]['label'])
         else:
           err += ('target "%s" not found in '
                   '//testing/buildbot/gn_isolate_map.pyl\n' % target)
