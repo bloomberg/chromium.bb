@@ -17,7 +17,7 @@
 #import "remoting/ios/client_keyboard.h"
 #import "remoting/ios/session/remoting_client.h"
 
-#include "remoting/client/gesture_interpreter.h"
+#include "remoting/client/ui/gesture_interpreter.h"
 
 static const CGFloat kFabInset = 15.f;
 static const CGFloat kKeyboardAnimationTime = 0.3;

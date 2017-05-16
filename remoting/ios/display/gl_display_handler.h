@@ -11,7 +11,7 @@
 #import "remoting/client/display/sys_opengl.h"
 
 #include "base/memory/ptr_util.h"
-#include "remoting/client/view_matrix.h"
+#include "remoting/client/ui/view_matrix.h"
 
 namespace remoting {
 

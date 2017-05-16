@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "remoting/client/direct_input_strategy.h"
-#include "remoting/client/desktop_viewport.h"
+#include "remoting/client/ui/direct_input_strategy.h"
+#include "remoting/client/ui/desktop_viewport.h"
 
 namespace remoting {
 

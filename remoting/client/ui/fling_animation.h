@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef REMOTING_CLIENT_FLING_ANIMATION_H_
-#define REMOTING_CLIENT_FLING_ANIMATION_H_
+#ifndef REMOTING_CLIENT_UI_FLING_ANIMATION_H_
+#define REMOTING_CLIENT_UI_FLING_ANIMATION_H_
 
 #include <memory>
 
 #include "base/callback.h"
 #include "base/time/tick_clock.h"
-#include "remoting/client/fling_tracker.h"
+#include "remoting/client/ui/fling_tracker.h"
 
 namespace remoting {
 
@@ -53,4 +53,4 @@ class FlingAnimation {
 };
 
 }  // namespace remoting
-#endif  // REMOTING_CLIENT_FLING_ANIMATION_H_
+#endif  // REMOTING_CLIENT_UI_FLING_ANIMATION_H_

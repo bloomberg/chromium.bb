@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "remoting/client/fling_animation.h"
+#include "remoting/client/ui/fling_animation.h"
 
 #include "base/time/default_tick_clock.h"
 

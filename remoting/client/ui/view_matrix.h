@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef REMOTING_CLIENT_VIEW_MATRIX_H_
-#define REMOTING_CLIENT_VIEW_MATRIX_H_
+#ifndef REMOTING_CLIENT_UI_VIEW_MATRIX_H_
+#define REMOTING_CLIENT_UI_VIEW_MATRIX_H_
 
 #include <array>
 
@@ -71,4 +71,4 @@ class ViewMatrix {
 
 }  // namespace remoting
 
-#endif  // REMOTING_CLIENT_VIEW_MATRIX_H_
+#endif  // REMOTING_CLIENT_UI_VIEW_MATRIX_H_
