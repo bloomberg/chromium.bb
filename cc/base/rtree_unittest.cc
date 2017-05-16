@@ -35,22 +35,20 @@ TEST(RTreeTest, NoOverlap) {
   RTree rtree;
   rtree.Build(rects);
 
-  std::vector<size_t> results;
-  rtree.Search(gfx::Rect(0, 0, 50, 50), &results);
+  std::vector<size_t> results = rtree.Search(gfx::Rect(0, 0, 50, 50));
   ASSERT_EQ(2500u, results.size());
+  // Note that the results have to be sorted.
   for (size_t i = 0; i < 2500; ++i) {
     ASSERT_EQ(results[i], i);
   }
 
-  results.clear();
-  rtree.Search(gfx::Rect(0, 0, 50, 49), &results);
+  results = rtree.Search(gfx::Rect(0, 0, 50, 49));
   ASSERT_EQ(2450u, results.size());
   for (size_t i = 0; i < 2450; ++i) {
     ASSERT_EQ(results[i], i);
   }
 
-  results.clear();
-  rtree.Search(gfx::Rect(5, 6, 1, 1), &results);
+  results = rtree.Search(gfx::Rect(5, 6, 1, 1));
   ASSERT_EQ(1u, results.size());
   EXPECT_EQ(6u * 50 + 5u, results[0]);
 }
@@ -66,18 +64,46 @@ TEST(RTreeTest, Overlap) {
   RTree rtree;
   rtree.Build(rects);
 
-  std::vector<size_t> results;
-  rtree.Search(gfx::Rect(0, 0, 1, 1), &results);
+  std::vector<size_t> results = rtree.Search(gfx::Rect(0, 0, 1, 1));
   ASSERT_EQ(2500u, results.size());
+  // Both the checks for the elements assume elements are sorted.
   for (size_t i = 0; i < 2500; ++i) {
     ASSERT_EQ(results[i], i);
   }
 
-  results.clear();
-  rtree.Search(gfx::Rect(0, 49, 1, 1), &results);
+  results = rtree.Search(gfx::Rect(0, 49, 1, 1));
   ASSERT_EQ(50u, results.size());
   for (size_t i = 0; i < 50; ++i) {
     EXPECT_EQ(results[i], 2450u + i);
+  }
+}
+
+static void VerifySorted(const std::vector<size_t>& results) {
+  for (size_t i = 1; i < results.size(); ++i) {
+    ASSERT_LT(results[i - 1], results[i]);
+  }
+}
+
+TEST(RTreeTest, SortedResults) {
+  // This test verifies that all queries return sorted elements.
+  std::vector<gfx::Rect> rects;
+  for (int y = 0; y < 50; ++y) {
+    for (int x = 0; x < 50; ++x) {
+      rects.push_back(gfx::Rect(x, y, 1, 1));
+      rects.push_back(gfx::Rect(x, y, 2, 2));
+      rects.push_back(gfx::Rect(x, y, 3, 3));
+    }
+  }
+
+  RTree rtree;
+  rtree.Build(rects);
+
+  for (int y = 0; y < 50; ++y) {
+    for (int x = 0; x < 50; ++x) {
+      VerifySorted(rtree.Search(gfx::Rect(x, y, 1, 1)));
+      VerifySorted(rtree.Search(gfx::Rect(x, y, 50, 1)));
+      VerifySorted(rtree.Search(gfx::Rect(x, y, 1, 50)));
+    }
   }
 }
 

@@ -66,10 +66,8 @@ class DiscardableImageMapTest : public testing::Test {
     image_map.GetDiscardableImagesInRect(rect, 1.f, target_color_space,
                                          &draw_images);
 
-    std::vector<size_t> indices;
-    image_map.images_rtree_.Search(rect, &indices);
     std::vector<PositionScaleDrawImage> position_draw_images;
-    for (size_t index : indices) {
+    for (size_t index : image_map.images_rtree_.Search(rect)) {
       position_draw_images.push_back(
           PositionScaleDrawImage(image_map.all_images_[index].first.image(),
                                  image_map.all_images_[index].second,
