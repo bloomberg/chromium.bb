@@ -187,7 +187,7 @@ RefPtr<NGConstraintSpace> NGConstraintSpaceBuilder::ToConstraintSpace(
   NGLogicalOffset bfc_offset = is_new_fc_ ? NGLogicalOffset() : bfc_offset_;
   NGMarginStrut margin_strut = is_new_fc_ ? NGMarginStrut() : margin_strut_;
   WTF::Optional<LayoutUnit> clearance_offset =
-      is_new_fc_ ? WTF::kNullopt : clearance_offset_;
+      is_new_fc_ ? WTF::nullopt : clearance_offset_;
 
   if (is_in_parallel_flow) {
     return AdoptRef(new NGConstraintSpace(

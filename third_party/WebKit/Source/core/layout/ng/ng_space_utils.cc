@@ -80,7 +80,7 @@ WTF::Optional<LayoutUnit> GetClearanceOffset(
 
   switch (style.Clear()) {
     case EClear::kNone:
-      return WTF::kNullopt;  // nothing to do here.
+      return WTF::nullopt;  // nothing to do here.
     case EClear::kLeft:
       return left_offset;
     case EClear::kRight:
@@ -90,7 +90,7 @@ WTF::Optional<LayoutUnit> GetClearanceOffset(
     default:
       NOTREACHED();
   }
-  return WTF::kNullopt;
+  return WTF::nullopt;
 }
 
 bool ShouldShrinkToFit(const ComputedStyle& parent_style,

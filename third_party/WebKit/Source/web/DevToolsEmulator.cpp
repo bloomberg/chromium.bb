@@ -394,7 +394,7 @@ void DevToolsEmulator::ResetViewport() {
     return;
 
   bool original_masking = viewport_override_->original_visual_viewport_masking;
-  viewport_override_ = WTF::kNullopt;
+  viewport_override_ = WTF::nullopt;
 
   GraphicsLayer* container_layer =
       web_view_impl_->GetPage()->GetVisualViewport().ContainerLayer();
@@ -460,7 +460,7 @@ void DevToolsEmulator::UpdateRootLayerTransform() {
 
 WTF::Optional<IntRect> DevToolsEmulator::VisibleContentRectForPainting() const {
   if (!viewport_override_)
-    return WTF::kNullopt;
+    return WTF::nullopt;
   FloatSize viewport_size(web_view_impl_->LayerTreeView()->GetViewportSize());
   viewport_size.Scale(1. / CompositorDeviceScaleFactor());
   viewport_size.Scale(1. / viewport_override_->scale);

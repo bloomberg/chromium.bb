@@ -41,7 +41,7 @@ class NGLengthUtilsTest : public ::testing::Test {
   LayoutUnit ResolveInlineLength(
       const Length& length,
       LengthResolveType type = LengthResolveType::kContentSize,
-      const WTF::Optional<MinMaxContentSize>& sizes = WTF::kNullopt) {
+      const WTF::Optional<MinMaxContentSize>& sizes = WTF::nullopt) {
     RefPtr<NGConstraintSpace> constraint_space =
         ConstructConstraintSpace(200, 300);
     return ::blink::ResolveInlineLength(*constraint_space, *style_, sizes,

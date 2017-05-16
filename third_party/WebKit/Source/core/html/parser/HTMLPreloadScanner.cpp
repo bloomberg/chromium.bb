@@ -219,7 +219,7 @@ class TokenPreloadScanner::StartTagScanner {
       if (IsLinkRelPreload()) {
         request_type = PreloadRequest::kRequestTypeLinkRelPreload;
         type = ResourceTypeForLinkPreload();
-        if (type == WTF::kNullopt)
+        if (type == WTF::nullopt)
           return nullptr;
       }
       if (!ShouldPreload(type)) {
@@ -246,7 +246,7 @@ class TokenPreloadScanner::StartTagScanner {
       resource_width.is_set = true;
     }
 
-    if (type == WTF::kNullopt)
+    if (type == WTF::nullopt)
       type = ResourceType();
 
     // The element's 'referrerpolicy' attribute (if present) takes precedence

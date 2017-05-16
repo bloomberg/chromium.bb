@@ -195,7 +195,7 @@ static WTF::Optional<DocumentMarker::MarkerType> MarkerTypeFrom(
     return DocumentMarker::kGrammar;
   if (DeprecatedEqualIgnoringCase(marker_type, "TextMatch"))
     return DocumentMarker::kTextMatch;
-  return WTF::kNullopt;
+  return WTF::nullopt;
 }
 
 static WTF::Optional<DocumentMarker::MarkerTypes> MarkerTypesFrom(
@@ -204,7 +204,7 @@ static WTF::Optional<DocumentMarker::MarkerTypes> MarkerTypesFrom(
     return DocumentMarker::AllMarkers();
   WTF::Optional<DocumentMarker::MarkerType> type = MarkerTypeFrom(marker_type);
   if (!type)
-    return WTF::kNullopt;
+    return WTF::nullopt;
   return DocumentMarker::MarkerTypes(type.value());
 }
 
@@ -1011,7 +1011,7 @@ static WTF::Optional<DocumentMarker::MatchStatus> MatchStatusFrom(
     return DocumentMarker::MatchStatus::kActive;
   if (EqualIgnoringASCIICase(match_status, "kInactive"))
     return DocumentMarker::MatchStatus::kInactive;
-  return WTF::kNullopt;
+  return WTF::nullopt;
 }
 
 void Internals::addTextMatchMarker(const Range* range,

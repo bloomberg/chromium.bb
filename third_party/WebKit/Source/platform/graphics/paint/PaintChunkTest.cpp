@@ -78,7 +78,7 @@ TEST(PaintChunkTest, IdNotMatchesJustCreated) {
                   .Matches(PaintChunk(0, 1, &id, properties)));
 
   // Delete the current object and create a new object at the same address.
-  client = WTF::kNullopt;
+  client = WTF::nullopt;
   client.emplace();
   EXPECT_TRUE(client->IsJustCreated());
   EXPECT_FALSE(PaintChunk(0, 1, &id, properties)

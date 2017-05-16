@@ -199,7 +199,7 @@ class CORE_EXPORT ChromeClient : public PlatformChromeClient {
 
   // Returns a custom visible content rect if a viewport override is active.
   virtual WTF::Optional<IntRect> VisibleContentRectForPainting() const {
-    return WTF::kNullopt;
+    return WTF::nullopt;
   }
 
   virtual void DispatchViewportPropertiesDidChange(

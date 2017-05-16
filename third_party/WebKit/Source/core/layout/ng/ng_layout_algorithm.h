@@ -45,7 +45,7 @@ class CORE_EXPORT NGLayoutAlgorithm {
   // this value from the overflow rect returned from Layout called with an
   // available width of 0 and LayoutUnit::max(), respectively.
   virtual Optional<MinMaxContentSize> ComputeMinMaxContentSize() const {
-    return WTF::kNullopt;
+    return WTF::nullopt;
   }
 
  protected:
