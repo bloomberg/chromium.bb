@@ -49,9 +49,7 @@ TestAXTreeDelegate g_ax_tree_delegate;
 
 // static
 TestAXNodeWrapper* TestAXNodeWrapper::GetOrCreate(AXTree* tree, AXNode* node) {
-  // Just return NULL if |node| is NULL; this makes test code simpler because
-  // now we don't have to null-check AXNode* every time we call GetOrCreate.
-  if (!node)
+  if (!tree || !node)
     return nullptr;
 
   tree->SetDelegate(&g_ax_tree_delegate);

@@ -499,10 +499,17 @@ STDMETHODIMP BrowserAccessibilityComWin::accNavigate(LONG nav_dir,
   if (!owner())
     return E_FAIL;
 
-  // Forward all directions but NAVDIR_ to the platform node implementation.
+  // Forward all non-spatial directions (e.g. NAVDIR_NEXT) to the platform node
+  // implementation.
   if (nav_dir != NAVDIR_DOWN && nav_dir != NAVDIR_UP &&
       nav_dir != NAVDIR_LEFT && nav_dir != NAVDIR_RIGHT) {
     return AXPlatformNodeWin::accNavigate(nav_dir, start, end);
+  }
+
+  if (end) {
+    end->vt = VT_EMPTY;
+  } else {
+    return E_INVALIDARG;
   }
 
   BrowserAccessibilityComWin* target = GetTargetFromChildID(start);
@@ -510,6 +517,7 @@ STDMETHODIMP BrowserAccessibilityComWin::accNavigate(LONG nav_dir,
     return E_INVALIDARG;
 
   BrowserAccessibility* result = nullptr;
+  // Only handle spatial directions for tables here.
   switch (nav_dir) {
     case NAVDIR_DOWN:
       result = target->owner()->GetTableCell(
@@ -531,10 +539,8 @@ STDMETHODIMP BrowserAccessibilityComWin::accNavigate(LONG nav_dir,
       break;
   }
 
-  if (!result) {
-    end->vt = VT_EMPTY;
+  if (!result)
     return S_FALSE;
-  }
 
   end->vt = VT_DISPATCH;
   end->pdispVal = ToBrowserAccessibilityComWin(result)->NewReference();
