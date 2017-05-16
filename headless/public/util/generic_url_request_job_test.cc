@@ -370,7 +370,7 @@ TEST_F(GenericURLRequestJobTest, RequestWithCookies) {
   net::CookieList* cookies = cookie_store_.cookies();
 
   // Basic matching cookie.
-  cookies->push_back(*net::CanonicalCookie::Create(
+  cookies->push_back(net::CanonicalCookie(
       "basic_cookie", "1", ".example.com", "/", base::Time(), base::Time(),
       base::Time(),
       /* secure */ false,
@@ -378,7 +378,7 @@ TEST_F(GenericURLRequestJobTest, RequestWithCookies) {
       net::COOKIE_PRIORITY_DEFAULT));
 
   // Matching secure cookie.
-  cookies->push_back(*net::CanonicalCookie::Create(
+  cookies->push_back(net::CanonicalCookie(
       "secure_cookie", "2", ".example.com", "/", base::Time(), base::Time(),
       base::Time(),
       /* secure */ true,
@@ -386,7 +386,7 @@ TEST_F(GenericURLRequestJobTest, RequestWithCookies) {
       net::COOKIE_PRIORITY_DEFAULT));
 
   // Matching http-only cookie.
-  cookies->push_back(*net::CanonicalCookie::Create(
+  cookies->push_back(net::CanonicalCookie(
       "http_only_cookie", "3", ".example.com", "/", base::Time(), base::Time(),
       base::Time(),
       /* secure */ false,
@@ -394,7 +394,7 @@ TEST_F(GenericURLRequestJobTest, RequestWithCookies) {
       net::COOKIE_PRIORITY_DEFAULT));
 
   // Matching cookie with path.
-  cookies->push_back(*net::CanonicalCookie::Create(
+  cookies->push_back(net::CanonicalCookie(
       "cookie_with_path", "4", ".example.com", "/widgets", base::Time(),
       base::Time(), base::Time(),
       /* secure */ false,
@@ -402,7 +402,7 @@ TEST_F(GenericURLRequestJobTest, RequestWithCookies) {
       net::COOKIE_PRIORITY_DEFAULT));
 
   // Matching cookie with subdomain.
-  cookies->push_back(*net::CanonicalCookie::Create(
+  cookies->push_back(net::CanonicalCookie(
       "bad_subdomain_cookie", "5", ".cdn.example.com", "/", base::Time(),
       base::Time(), base::Time(),
       /* secure */ false,
@@ -410,7 +410,7 @@ TEST_F(GenericURLRequestJobTest, RequestWithCookies) {
       net::COOKIE_PRIORITY_DEFAULT));
 
   // Non-matching cookie (different site).
-  cookies->push_back(*net::CanonicalCookie::Create(
+  cookies->push_back(net::CanonicalCookie(
       "bad_site_cookie", "6", ".zombo.com", "/", base::Time(), base::Time(),
       base::Time(),
       /* secure */ false,
@@ -418,7 +418,7 @@ TEST_F(GenericURLRequestJobTest, RequestWithCookies) {
       net::COOKIE_PRIORITY_DEFAULT));
 
   // Non-matching cookie (different path).
-  cookies->push_back(*net::CanonicalCookie::Create(
+  cookies->push_back(net::CanonicalCookie(
       "bad_path_cookie", "7", ".example.com", "/gadgets", base::Time(),
       base::Time(), base::Time(),
       /* secure */ false,

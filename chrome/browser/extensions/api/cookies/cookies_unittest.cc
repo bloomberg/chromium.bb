@@ -86,7 +86,7 @@ TEST_F(ExtensionCookiesTest, StoreIdProfileConversion) {
 
 TEST_F(ExtensionCookiesTest, ExtensionTypeCreation) {
   std::unique_ptr<net::CanonicalCookie> canonical_cookie1(
-      net::CanonicalCookie::Create(
+      base::MakeUnique<net::CanonicalCookie>(
           "ABC", "DEF", "www.example.com", "/", base::Time(), base::Time(),
           base::Time(), false, false, net::CookieSameSite::DEFAULT_MODE,
           net::COOKIE_PRIORITY_DEFAULT));
@@ -106,7 +106,7 @@ TEST_F(ExtensionCookiesTest, ExtensionTypeCreation) {
   EXPECT_EQ("some cookie store", cookie1.store_id);
 
   std::unique_ptr<net::CanonicalCookie> canonical_cookie2(
-      net::CanonicalCookie::Create(
+      base::MakeUnique<net::CanonicalCookie>(
           "ABC", "DEF", ".example.com", "/", base::Time(),
           base::Time::FromDoubleT(10000), base::Time(), false, false,
           net::CookieSameSite::STRICT_MODE, net::COOKIE_PRIORITY_DEFAULT));
@@ -129,18 +129,20 @@ TEST_F(ExtensionCookiesTest, ExtensionTypeCreation) {
 }
 
 TEST_F(ExtensionCookiesTest, GetURLFromCanonicalCookie) {
-  std::unique_ptr<net::CanonicalCookie> cookie1(net::CanonicalCookie::Create(
-      "ABC", "DEF", ".example.com", "/", base::Time(), base::Time(),
-      base::Time(), false, false, net::CookieSameSite::DEFAULT_MODE,
-      net::COOKIE_PRIORITY_DEFAULT));
+  std::unique_ptr<net::CanonicalCookie> cookie1(
+      base::MakeUnique<net::CanonicalCookie>(
+          "ABC", "DEF", ".example.com", "/", base::Time(), base::Time(),
+          base::Time(), false, false, net::CookieSameSite::DEFAULT_MODE,
+          net::COOKIE_PRIORITY_DEFAULT));
   ASSERT_NE(nullptr, cookie1.get());
   EXPECT_EQ("http://example.com/",
             cookies_helpers::GetURLFromCanonicalCookie(*cookie1).spec());
 
-  std::unique_ptr<net::CanonicalCookie> cookie2(net::CanonicalCookie::Create(
-      "ABC", "DEF", ".helloworld.com", "/", base::Time(), base::Time(),
-      base::Time(), true, false, net::CookieSameSite::DEFAULT_MODE,
-      net::COOKIE_PRIORITY_DEFAULT));
+  std::unique_ptr<net::CanonicalCookie> cookie2(
+      base::MakeUnique<net::CanonicalCookie>(
+          "ABC", "DEF", ".helloworld.com", "/", base::Time(), base::Time(),
+          base::Time(), true, false, net::CookieSameSite::DEFAULT_MODE,
+          net::COOKIE_PRIORITY_DEFAULT));
   ASSERT_NE(nullptr, cookie2.get());
   EXPECT_EQ("https://helloworld.com/",
             cookies_helpers::GetURLFromCanonicalCookie(*cookie2).spec());
@@ -172,10 +174,11 @@ TEST_F(ExtensionCookiesTest, DomainMatching) {
     std::unique_ptr<GetAll::Params> params(GetAll::Params::Create(args));
 
     cookies_helpers::MatchFilter filter(&params->details);
-    std::unique_ptr<net::CanonicalCookie> cookie(net::CanonicalCookie::Create(
-        "name", std::string(), tests[i].domain, "/", base::Time(), base::Time(),
-        base::Time(), false, false, net::CookieSameSite::DEFAULT_MODE,
-        net::COOKIE_PRIORITY_DEFAULT));
+    std::unique_ptr<net::CanonicalCookie> cookie(
+        base::MakeUnique<net::CanonicalCookie>(
+            "name", std::string(), tests[i].domain, "/", base::Time(),
+            base::Time(), base::Time(), false, false,
+            net::CookieSameSite::DEFAULT_MODE, net::COOKIE_PRIORITY_DEFAULT));
     ASSERT_NE(nullptr, cookie.get());
     EXPECT_EQ(tests[i].matches, filter.MatchesCookie(*cookie)) << " test " << i;
   }

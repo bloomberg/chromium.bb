@@ -26,7 +26,7 @@ const char kCookieValueInvalidUtf8[] = "\x81r\xe4\xbd\xa0\xe5\xa5\xbd";
 
 void CheckSystemCookie(const base::Time& expires, bool secure, bool httponly) {
   // Generate a canonical cookie.
-  net::CanonicalCookie canonical_cookie = *net::CanonicalCookie::Create(
+  net::CanonicalCookie canonical_cookie(
       kCookieName, kCookieValue, kCookieDomain, kCookiePath,
       base::Time(),  // creation
       expires,
@@ -116,7 +116,7 @@ TEST(CookieUtil, SystemCookieFromCanonicalCookie) {
 
 TEST(CookieUtil, SystemCookieFromBadCanonicalCookie) {
   // Generate a bad canonical cookie (value is invalid utf8).
-  net::CanonicalCookie bad_canonical_cookie = *net::CanonicalCookie::Create(
+  net::CanonicalCookie bad_canonical_cookie(
       kCookieName, kCookieValueInvalidUtf8, kCookieDomain, kCookiePath,
       base::Time(),  // creation
       base::Time(),  // expires

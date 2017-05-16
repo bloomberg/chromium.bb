@@ -1087,13 +1087,10 @@ bool CookieMonster::SetCookieWithDetails(const GURL& url,
   cookie_path = std::string(canon_path.data() + canon_path_component.begin,
                             canon_path_component.len);
 
-  std::unique_ptr<CanonicalCookie> cc(CanonicalCookie::Create(
+  std::unique_ptr<CanonicalCookie> cc(base::MakeUnique<CanonicalCookie>(
       name, value, cookie_domain, cookie_path, actual_creation_time,
       expiration_time, last_access_time, secure, http_only, same_site,
       priority));
-
-  if (!cc.get())
-    return false;
 
   CookieOptions options;
   options.set_include_httponly();

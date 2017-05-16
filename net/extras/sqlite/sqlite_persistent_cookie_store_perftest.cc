@@ -79,7 +79,7 @@ class SQLitePersistentCookieStorePerfTest : public testing::Test {
       std::string domain_name(base::StringPrintf(".domain_%d.com", domain_num));
       for (int cookie_num = 0; cookie_num < 50; ++cookie_num) {
         t += base::TimeDelta::FromInternalValue(10);
-        store_->AddCookie(*CanonicalCookie::Create(
+        store_->AddCookie(CanonicalCookie(
             base::StringPrintf("Cookie_%d", cookie_num), "1", domain_name, "/",
             t, t, t, false, false, CookieSameSite::DEFAULT_MODE,
             COOKIE_PRIORITY_DEFAULT));
