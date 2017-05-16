@@ -26,6 +26,7 @@
 
 #include "core/css/resolver/StyleBuilderConverter.h"
 
+#include <algorithm>
 #include "core/css/BasicShapeFunctions.h"
 #include "core/css/CSSBasicShapeValues.h"
 #include "core/css/CSSColorValue.h"
@@ -57,7 +58,6 @@
 #include "platform/transforms/RotateTransformOperation.h"
 #include "platform/transforms/ScaleTransformOperation.h"
 #include "platform/transforms/TranslateTransformOperation.h"
-#include <algorithm>
 
 namespace blink {
 
@@ -1378,6 +1378,14 @@ PassRefPtr<StylePath> StyleBuilderConverter::ConvertPathOrNone(
     return ToCSSPathValue(value).GetStylePath();
   DCHECK_EQ(ToCSSIdentifierValue(value).GetValueID(), CSSValueNone);
   return nullptr;
+}
+
+PassRefPtr<BasicShape> StyleBuilderConverter::ConvertOffsetPath(
+    StyleResolverState& state,
+    const CSSValue& value) {
+  if (value.IsRayValue())
+    return BasicShapeForValue(state, value);
+  return ConvertPathOrNone(state, value);
 }
 
 static const CSSValue& ComputeRegisteredPropertyValue(

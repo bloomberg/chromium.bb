@@ -19,7 +19,7 @@ class StyleMotionData {
  public:
   StyleMotionData(const LengthPoint& anchor,
                   const LengthPoint& position,
-                  StylePath* path,
+                  BasicShape* path,
                   const Length& distance,
                   StyleOffsetRotation rotation)
       : anchor_(anchor),
@@ -35,7 +35,7 @@ class StyleMotionData {
   // Must be public for SET_VAR in ComputedStyle.h
   LengthPoint anchor_;
   LengthPoint position_;
-  RefPtr<StylePath> path_;  // nullptr indicates path is 'none'
+  RefPtr<BasicShape> path_;  // nullptr indicates path is 'none'
   Length distance_;
   StyleOffsetRotation rotation_;
 };

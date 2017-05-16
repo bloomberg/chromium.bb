@@ -6,6 +6,7 @@
 #define StylePath_h
 
 #include <memory>
+#include "core/style/BasicShapes.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/PassRefPtr.h"
 #include "platform/wtf/RefCounted.h"
@@ -17,7 +18,7 @@ class CSSValue;
 class Path;
 class SVGPathByteStream;
 
-class StylePath : public RefCounted<StylePath> {
+class StylePath final : public BasicShape {
  public:
   static PassRefPtr<StylePath> Create(std::unique_ptr<SVGPathByteStream>);
   ~StylePath();
@@ -32,7 +33,11 @@ class StylePath : public RefCounted<StylePath> {
 
   CSSValue* ComputedCSSValue() const;
 
-  bool operator==(const StylePath&) const;
+  void GetPath(Path&, const FloatRect&) override;
+  PassRefPtr<BasicShape> Blend(const BasicShape*, double) const override;
+  bool operator==(const BasicShape&) const override;
+
+  ShapeType GetType() const override { return kStylePathType; }
 
  private:
   explicit StylePath(std::unique_ptr<SVGPathByteStream>);
@@ -41,6 +46,8 @@ class StylePath : public RefCounted<StylePath> {
   mutable std::unique_ptr<Path> path_;
   mutable float path_length_;
 };
+
+DEFINE_BASICSHAPE_TYPE_CASTS(StylePath);
 
 }  // namespace blink
 

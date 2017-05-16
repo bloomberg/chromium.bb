@@ -54,7 +54,9 @@ class CORE_EXPORT BasicShape : public RefCounted<BasicShape> {
     kBasicShapeEllipseType,
     kBasicShapePolygonType,
     kBasicShapeCircleType,
-    kBasicShapeInsetType
+    kBasicShapeInsetType,
+    kStyleRayType,
+    kStylePathType
   };
 
   bool CanBlend(const BasicShape*) const;

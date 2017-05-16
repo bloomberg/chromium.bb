@@ -4,7 +4,10 @@
 
 #include "core/css/properties/CSSPropertyOffsetPathUtils.h"
 
+#include "core/css/CSSIdentifierValue.h"
 #include "core/css/CSSPathValue.h"
+#include "core/css/CSSPrimitiveValue.h"
+#include "core/css/CSSRayValue.h"
 #include "core/css/parser/CSSParserContext.h"
 #include "core/css/parser/CSSPropertyParserHelpers.h"
 #include "core/svg/SVGPathByteStream.h"
@@ -41,12 +44,53 @@ CSSValue* ConsumePath(CSSParserTokenRange& range) {
   return CSSPathValue::Create(std::move(byte_stream));
 }
 
+CSSValue* ConsumeRay(CSSParserTokenRange& range) {
+  DCHECK_EQ(range.Peek().FunctionId(), CSSValueRay);
+  CSSParserTokenRange function_range = range;
+  CSSParserTokenRange function_args =
+      CSSPropertyParserHelpers::ConsumeFunction(function_range);
+
+  CSSPrimitiveValue* angle = nullptr;
+  CSSIdentifierValue* size = nullptr;
+  CSSIdentifierValue* contain = nullptr;
+  while (!function_args.AtEnd()) {
+    if (!angle) {
+      angle = CSSPropertyParserHelpers::ConsumeAngle(function_args);
+      if (angle)
+        continue;
+    }
+    if (!size) {
+      size = CSSPropertyParserHelpers::ConsumeIdent<
+          CSSValueClosestSide, CSSValueClosestCorner, CSSValueFarthestSide,
+          CSSValueFarthestCorner, CSSValueSides>(function_args);
+      if (size)
+        continue;
+    }
+    if (RuntimeEnabledFeatures::cssOffsetPathRayContainEnabled() && !contain) {
+      contain = CSSPropertyParserHelpers::ConsumeIdent<CSSValueContain>(
+          function_args);
+      if (contain)
+        continue;
+    }
+    return nullptr;
+  }
+  if (!angle || !size)
+    return nullptr;
+  range = function_range;
+  return CSSRayValue::Create(*angle, *size, contain);
+}
+
 }  // namespace
 
 CSSValue* CSSPropertyOffsetPathUtils::ConsumeOffsetPath(
     CSSParserTokenRange& range,
     const CSSParserContext* context) {
-  CSSValue* value = ConsumePathOrNone(range);
+  CSSValue* value = nullptr;
+  if (RuntimeEnabledFeatures::cssOffsetPathRayEnabled() &&
+      range.Peek().FunctionId() == CSSValueRay)
+    value = ConsumeRay(range);
+  else
+    value = ConsumePathOrNone(range);
 
   // Count when we receive a valid path other than 'none'.
   if (value && !value->IsIdentifierValue())

@@ -253,6 +253,14 @@
       status: "experimental",
     },
     {
+      name: "CSSOffsetPathRay",
+      status: "experimental",
+    },
+    {
+      name: "CSSOffsetPathRayContain",
+      status: "experimental",
+    },
+    {
       name: "CSSOffsetPositionAnchor",
       status: "experimental",
     },

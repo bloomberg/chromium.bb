@@ -1094,11 +1094,11 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase<ComputedStyle>,
   }
 
   // offset-path
-  static StylePath* InitialOffsetPath() { return nullptr; }
-  StylePath* OffsetPath() const {
+  static BasicShape* InitialOffsetPath() { return nullptr; }
+  BasicShape* OffsetPath() const {
     return rare_non_inherited_data_->transform_->motion_.path_.Get();
   }
-  void SetOffsetPath(PassRefPtr<StylePath>);
+  void SetOffsetPath(PassRefPtr<BasicShape>);
 
   // offset-position
   static LengthPoint InitialOffsetPosition() {
