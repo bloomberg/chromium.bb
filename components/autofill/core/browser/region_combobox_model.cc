@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/strings/utf_string_conversions.h"
+#include "components/autofill/core/browser/region_data_loader.h"
 #include "components/strings/grit/components_strings.h"
 #include "third_party/libaddressinput/src/cpp/include/libaddressinput/region_data.h"
 #include "ui/base/l10n/l10n_util.h"

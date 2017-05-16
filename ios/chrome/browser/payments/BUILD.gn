@@ -18,6 +18,7 @@ source_set("payments") {
     "//components/payments/core",
     "//components/strings:components_strings_grit",
     "//ios/chrome/browser",
+    "//ios/chrome/browser/autofill",
     "//ios/web",
     "//ui/base",
   ]

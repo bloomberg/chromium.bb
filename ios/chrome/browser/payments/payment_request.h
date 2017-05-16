@@ -19,6 +19,7 @@ namespace autofill {
 class AutofillProfile;
 class CreditCard;
 class PersonalDataManager;
+class RegionDataLoader;
 }  // namespace autofill
 
 namespace payments {
@@ -67,6 +68,9 @@ class PaymentRequest : payments::PaymentOptionsProvider {
   // Note: Having multiple currencies per PaymentRequest flow is not supported;
   // hence the CurrencyFormatter is cached here.
   payments::CurrencyFormatter* GetOrCreateCurrencyFormatter();
+
+  // Returns the autofill::RegionDataLoader instance for this PaymentRequest.
+  autofill::RegionDataLoader* GetRegionDataLoader();
 
   // Returns the available autofill profiles for this user to be used as
   // shipping profiles.

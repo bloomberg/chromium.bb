@@ -10,15 +10,35 @@
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
+#include "components/autofill/core/browser/region_data_loader_impl.h"
 #include "components/payments/core/currency_formatter.h"
 #include "components/payments/core/payment_request_data_util.h"
 #include "components/payments/core/payments_profile_comparator.h"
 #include "ios/chrome/browser/application_context.h"
+#include "ios/chrome/browser/autofill/validation_rules_storage_factory.h"
 #include "ios/web/public/payments/payment_request.h"
+#include "third_party/libaddressinput/chromium/chrome_metadata_source.h"
+#include "third_party/libaddressinput/src/cpp/include/libaddressinput/source.h"
+#include "third_party/libaddressinput/src/cpp/include/libaddressinput/storage.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
+
+namespace {
+
+std::unique_ptr<::i18n::addressinput::Source> GetAddressInputSource(
+    net::URLRequestContextGetter* url_context_getter) {
+  return std::unique_ptr<::i18n::addressinput::Source>(
+      new autofill::ChromeMetadataSource(I18N_ADDRESS_VALIDATION_DATA_URL,
+                                         url_context_getter));
+}
+
+std::unique_ptr<::i18n::addressinput::Storage> GetAddressInputStorage() {
+  return autofill::ValidationRulesStorageFactory::CreateStorage();
+}
+
+}  // namespace
 
 PaymentRequest::PaymentRequest(
     const web::PaymentRequest& web_payment_request,
@@ -72,6 +92,15 @@ payments::CurrencyFormatter* PaymentRequest::GetOrCreateCurrencyFormatter() {
         GetApplicationContext()->GetApplicationLocale()));
   }
   return currency_formatter_.get();
+}
+
+autofill::RegionDataLoader* PaymentRequest::GetRegionDataLoader() {
+  return new autofill::RegionDataLoaderImpl(
+      GetAddressInputSource(
+          personal_data_manager_->GetURLRequestContextGetter())
+          .release(),
+      GetAddressInputStorage().release(),
+      GetApplicationContext()->GetApplicationLocale());
 }
 
 autofill::CreditCard* PaymentRequest::AddCreditCard(
