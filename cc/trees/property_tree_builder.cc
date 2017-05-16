@@ -55,7 +55,7 @@ struct DataForRecursion {
   bool scroll_tree_parent_created_by_uninheritable_criteria;
   const gfx::Transform* device_transform;
   gfx::Transform compound_transform_since_render_target;
-  bool axis_align_since_render_target;
+  bool animation_axis_aligned_since_render_target;
   SkColor safe_opaque_background_color;
 };
 
@@ -727,10 +727,9 @@ static inline bool PropertyChanged(LayerImpl* layer) {
 template <typename LayerType>
 bool ShouldCreateRenderSurface(LayerType* layer,
                                gfx::Transform current_transform,
-                               bool axis_aligned) {
+                               bool animation_axis_aligned) {
   const bool preserves_2d_axis_alignment =
-      (current_transform * Transform(layer)).Preserves2dAxisAlignment() &&
-      axis_aligned && AnimationsPreserveAxisAlignment(layer);
+      current_transform.Preserves2dAxisAlignment() && animation_axis_aligned;
   const bool is_root = !Parent(layer);
   if (is_root)
     return true;
@@ -885,11 +884,13 @@ bool AddEffectNodeIfNeeded(
       HasPotentiallyRunningFilterAnimation(layer);
   const bool has_proxied_opacity =
       !!(layer->mutable_properties() & MutableProperty::kOpacity);
-  const bool should_create_render_surface = ShouldCreateRenderSurface(
-      layer, data_from_ancestor.compound_transform_since_render_target,
-      data_from_ancestor.axis_align_since_render_target);
-  data_for_children->axis_align_since_render_target &=
+
+  data_for_children->animation_axis_aligned_since_render_target &=
       AnimationsPreserveAxisAlignment(layer);
+  data_for_children->compound_transform_since_render_target *= Transform(layer);
+  const bool should_create_render_surface = ShouldCreateRenderSurface(
+      layer, data_for_children->compound_transform_since_render_target,
+      data_for_children->animation_axis_aligned_since_render_target);
 
   bool requires_node = is_root || has_transparency ||
                        has_potential_opacity_animation || has_proxied_opacity ||
@@ -900,8 +901,6 @@ bool AddEffectNodeIfNeeded(
   if (!requires_node) {
     layer->SetEffectTreeIndex(parent_id);
     data_for_children->effect_tree_parent = parent_id;
-    data_for_children->compound_transform_since_render_target *=
-        Transform(layer);
     return false;
   }
 
@@ -981,7 +980,7 @@ bool AddEffectNodeIfNeeded(
   if (should_create_render_surface) {
     data_for_children->compound_transform_since_render_target =
         gfx::Transform();
-    data_for_children->axis_align_since_render_target = true;
+    data_for_children->animation_axis_aligned_since_render_target = true;
   }
   return should_create_render_surface;
 }
@@ -1272,7 +1271,7 @@ void BuildPropertyTreesTopLevelInternal(
 
   data_for_recursion.property_trees->clear();
   data_for_recursion.compound_transform_since_render_target = gfx::Transform();
-  data_for_recursion.axis_align_since_render_target = true;
+  data_for_recursion.animation_axis_aligned_since_render_target = true;
   data_for_recursion.property_trees->transform_tree.set_device_scale_factor(
       device_scale_factor);
   data_for_recursion.safe_opaque_background_color = color;
