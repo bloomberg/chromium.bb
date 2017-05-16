@@ -661,7 +661,7 @@ def apply_gerrit_ref(gerrit_repo, gerrit_ref, root, gerrit_reset,
   # command will do so. See http://crbug.com/692067.
   git('reset', '--hard', cwd=root)
   try:
-    git('retry', 'fetch', gerrit_repo, gerrit_ref, cwd=root, tries=1)
+    git('fetch', gerrit_repo, gerrit_ref, cwd=root, tries=1)
     git('checkout', 'FETCH_HEAD', cwd=root)
 
     if gerrit_rebase_patch_ref:
