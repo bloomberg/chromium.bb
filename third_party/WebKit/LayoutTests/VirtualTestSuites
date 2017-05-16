@@ -120,12 +120,47 @@
   },
   {
     "prefix": "off-main-thread-fetch",
+    "base": "external/wpt/service-workers",
+    "args": ["--enable-features=OffMainThreadFetch"]
+  },
+  {
+    "prefix": "off-main-thread-fetch",
+    "base": "http/tests/fetch/chromium",
+    "args": ["--enable-features=OffMainThreadFetch"]
+  },
+  {
+    "prefix": "off-main-thread-fetch",
     "base": "http/tests/fetch/workers",
     "args": ["--enable-features=OffMainThreadFetch"]
   },
   {
     "prefix": "off-main-thread-fetch",
+    "base": "http/tests/inspector/service-workers",
+    "args": ["--enable-features=OffMainThreadFetch"]
+  },
+  {
+    "prefix": "off-main-thread-fetch",
+    "base": "http/tests/misc",
+    "args": ["--enable-features=OffMainThreadFetch"]
+  },
+  {
+    "prefix": "off-main-thread-fetch",
+    "base": "http/tests/security/cookies",
+    "args": ["--enable-features=OffMainThreadFetch"]
+  },
+  {
+    "prefix": "off-main-thread-fetch",
+    "base": "http/tests/serviceworker",
+    "args": ["--enable-features=OffMainThreadFetch"]
+  },
+  {
+    "prefix": "off-main-thread-fetch",
     "base": "http/tests/xmlhttprequest/workers",
+    "args": ["--enable-features=OffMainThreadFetch"]
+  },
+  {
+    "prefix": "off-main-thread-fetch",
+    "base": "http/tests/workers",
     "args": ["--enable-features=OffMainThreadFetch"]
   },
   {
