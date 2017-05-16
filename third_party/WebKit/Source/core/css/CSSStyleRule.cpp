@@ -52,17 +52,6 @@ CSSStyleDeclaration* CSSStyleRule::style() const {
   return properties_cssom_wrapper_.Get();
 }
 
-String CSSStyleRule::GenerateSelectorText() const {
-  StringBuilder builder;
-  for (const CSSSelector* selector = style_rule_->SelectorList().First();
-       selector; selector = CSSSelectorList::Next(*selector)) {
-    if (selector != style_rule_->SelectorList().First())
-      builder.Append(", ");
-    builder.Append(selector->SelectorText());
-  }
-  return builder.ToString();
-}
-
 String CSSStyleRule::selectorText() const {
   if (HasCachedSelectorText()) {
     DCHECK(GetSelectorTextCache().Contains(this));
@@ -70,7 +59,7 @@ String CSSStyleRule::selectorText() const {
   }
 
   DCHECK(!GetSelectorTextCache().Contains(this));
-  String text = GenerateSelectorText();
+  String text = style_rule_->SelectorList().SelectorsText();
   GetSelectorTextCache().Set(this, text);
   SetHasCachedSelectorText(true);
   return text;
