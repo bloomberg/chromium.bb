@@ -74,7 +74,10 @@ declare_args() {
                           (is_chromecast && !is_cast_desktop_build && !is_debug)
 
   # If true, optimize for size. Does not affect windows builds.
-  optimize_for_size = true
+  # Linux & Mac favor speed over size.
+  # TODO(brettw) it's weird that Mac and desktop Linux are different. We should
+  # explore favoring size over speed in this case as well.
+  optimize_for_size = is_android || is_ios
 
   # Enable fatal linker warnings. Building Chromium with certain versions
   # of binutils can cause linker warning.
