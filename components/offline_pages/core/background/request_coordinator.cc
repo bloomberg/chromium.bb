@@ -516,8 +516,10 @@ void RequestCoordinator::UpdateMultipleRequestsCallback(
 
 void RequestCoordinator::ReconcileCallback(
     std::unique_ptr<UpdateRequestsResult> result) {
-  for (const auto& request : result->updated_items)
+  for (const auto& request : result->updated_items) {
+    RecordOfflinerResult(request, Offliner::RequestStatus::BROWSER_KILLED);
     NotifyChanged(request);
+  }
 }
 
 void RequestCoordinator::HandleRemovedRequestsAndCallback(

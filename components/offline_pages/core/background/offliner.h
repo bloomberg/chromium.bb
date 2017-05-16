@@ -57,6 +57,15 @@ class Offliner {
     BACKGROUND_SCHEDULER_CANCELED = 14,
     // We saved a snapshot on the last retry, after timeout.
     SAVED_ON_LAST_RETRY = 15,
+    // Indicates that attempt failed due to browser being killed.
+    // There are 3 ways that might happen:
+    // * System was running out of memory, while browser was running in the
+    //   background.
+    // * User swiped away the browser as it was offlining content.
+    // * Offliner crashed.
+    // We detect the situation in ReconcileTask after starting
+    // RequestCoordinator.
+    BROWSER_KILLED = 16,
     // NOTE: insert new values above this line and update histogram enum too.
     STATUS_COUNT
   };

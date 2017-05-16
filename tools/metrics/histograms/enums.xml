@@ -25629,6 +25629,7 @@ from previous Chrome versions.
   <int value="13" label="Queue update failed"/>
   <int value="14" label="Background scheduler canceled processing"/>
   <int value="15" label="Saved after timeout on last retry"/>
+  <int value="16" label="Browser killed (OOM, swiped, crashed)"/>
 </enum>
 
 <enum name="OfflinePagesBackgroundSavePageResult" type="int">
