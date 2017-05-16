@@ -406,6 +406,15 @@ void ImageResourceContent::NotifyStartLoad() {
   content_status_ = ResourceStatus::kPending;
 }
 
+void ImageResourceContent::AsyncLoadCompleted(const blink::Image* image) {
+  if (image_ != image)
+    return;
+  CHECK_EQ(size_available_, Image::kSizeAvailableAndLoadingAsynchronously);
+  size_available_ = Image::kSizeAvailable;
+  UpdateToLoadedContentStatus(ResourceStatus::kCached);
+  NotifyObservers(kShouldNotifyFinish);
+}
+
 ImageResourceContent::UpdateImageResult ImageResourceContent::UpdateImage(
     PassRefPtr<SharedBuffer> data,
     ResourceStatus status,
@@ -446,6 +455,9 @@ ImageResourceContent::UpdateImageResult ImageResourceContent::UpdateImage(
           image_ = CreateImage();
         DCHECK(image_);
         size_available_ = image_->SetData(std::move(data), all_data_received);
+        DCHECK(all_data_received ||
+               size_available_ !=
+                   Image::kSizeAvailableAndLoadingAsynchronously);
       }
 
       // Go ahead and tell our observers to try to draw if we have either
@@ -469,11 +481,18 @@ ImageResourceContent::UpdateImageResult ImageResourceContent::UpdateImage(
       break;
   }
 
+  DCHECK(all_data_received ||
+         size_available_ != Image::kSizeAvailableAndLoadingAsynchronously);
+
   // Notifies the observers.
   // It would be nice to only redraw the decoded band of the image, but with the
   // current design (decoding delayed until painting) that seems hard.
-
-  if (all_data_received) {
+  //
+  // In the case of kSizeAvailableAndLoadingAsynchronously, we are waiting for
+  // SVG image completion, and thus we notify observers of kDoNotNotifyFinish
+  // here, and will notify observers of finish later in AsyncLoadCompleted().
+  if (all_data_received &&
+      size_available_ != Image::kSizeAvailableAndLoadingAsynchronously) {
     UpdateToLoadedContentStatus(status);
     NotifyObservers(kShouldNotifyFinish);
   } else {

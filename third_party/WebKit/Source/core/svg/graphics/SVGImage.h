@@ -183,6 +183,10 @@ class CORE_EXPORT SVGImage final : public Image {
   void ScheduleTimelineRewind();
   void FlushPendingTimelineRewind();
 
+  void LoadCompleted();
+
+  class SVGImageLocalFrameClient;
+
   Persistent<SVGImageChromeClient> chrome_client_;
   Persistent<Page> page_;
   std::unique_ptr<PaintController> paint_controller_;
@@ -194,6 +198,17 @@ class CORE_EXPORT SVGImage final : public Image {
   // the "concrete object size". For more, see: SVGImageForContainer.h
   IntSize intrinsic_size_;
   bool has_pending_timeline_rewind_;
+
+  enum LoadState {
+    kDataChangedNotStarted,
+    kInDataChanged,
+    kWaitingForAsyncLoadCompletion,
+    kLoadCompleted,
+  };
+
+  LoadState load_state_ = kDataChangedNotStarted;
+
+  Persistent<SVGImageLocalFrameClient> frame_client_;
 };
 
 DEFINE_IMAGE_TYPE_CASTS(SVGImage);

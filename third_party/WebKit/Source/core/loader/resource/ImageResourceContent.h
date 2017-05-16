@@ -93,7 +93,7 @@ class CORE_EXPORT ImageResourceContent final
   void RemoveObserver(ImageResourceObserver*);
 
   bool IsSizeAvailable() const {
-    return size_available_ == Image::kSizeAvailable;
+    return size_available_ != Image::kSizeUnavailable;
   }
 
   DECLARE_TRACE();
@@ -189,6 +189,7 @@ class CORE_EXPORT ImageResourceContent final
   bool ShouldPauseAnimation(const blink::Image*) override;
   void AnimationAdvanced(const blink::Image*) override;
   void ChangedInRect(const blink::Image*, const IntRect&) override;
+  void AsyncLoadCompleted(const blink::Image*) override;
 
   PassRefPtr<Image> CreateImage();
   void ClearImage();

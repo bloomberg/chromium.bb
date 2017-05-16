@@ -182,6 +182,16 @@ bool ImageResource::CanReuse(const FetchParameters& params) const {
   return true;
 }
 
+bool ImageResource::CanUseCacheValidator() const {
+  // Disable revalidation while ImageResourceContent is still waiting for
+  // SVG load completion.
+  // TODO(hiroshige): Clean up revalidation-related dependencies.
+  if (!GetContent()->IsLoaded())
+    return false;
+
+  return Resource::CanUseCacheValidator();
+}
+
 ImageResource* ImageResource::Create(const ResourceRequest& request) {
   return new ImageResource(request, ResourceLoaderOptions(),
                            ImageResourceContent::CreateNotStarted(), false);

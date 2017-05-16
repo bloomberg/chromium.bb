@@ -102,10 +102,22 @@ class PLATFORM_EXPORT Image : public ThreadSafeRefCounted<Image> {
   int height() const { return Size().Height(); }
   virtual bool GetHotSpot(IntPoint&) const { return false; }
 
-  enum SizeAvailability { kSizeAvailable, kSizeUnavailable };
+  enum SizeAvailability {
+    kSizeUnavailable,
+    kSizeAvailableAndLoadingAsynchronously,
+    kSizeAvailable,
+  };
+
+  // If SetData() returns |kSizeAvailableAndLoadingAsynchronously|:
+  //   Image loading is continuing asynchronously
+  //   (only when |this| is SVGImage and |all_data_received| is true), and
+  //   ImageResourceObserver::AsyncLoadCompleted() is called when finished.
+  // Otherwise:
+  //   Image loading is completed synchronously.
+  //   ImageResourceObserver::AsyncLoadCompleted() is not called.
   virtual SizeAvailability SetData(PassRefPtr<SharedBuffer> data,
                                    bool all_data_received);
-  virtual SizeAvailability DataChanged(bool /*allDataReceived*/) {
+  virtual SizeAvailability DataChanged(bool /*all_data_received*/) {
     return kSizeUnavailable;
   }
 
