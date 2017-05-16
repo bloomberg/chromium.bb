@@ -112,16 +112,6 @@ void MemoryCoordinatorHandleImpl::AddChild(
   coordinator_->OnChildAdded(render_process_id_);
 }
 
-// SingletonTraits for MemoryCoordinator. Returns MemoryCoordinatorImpl
-// as an actual instance.
-struct MemoryCoordinatorImplSingletonTraits
-    : public base::LeakySingletonTraits<MemoryCoordinatorImpl> {
-  static MemoryCoordinatorImpl* New() {
-    return new MemoryCoordinatorImpl(base::ThreadTaskRunnerHandle::Get(),
-                                     CreateMemoryMonitor());
-  }
-};
-
 // static
 MemoryCoordinator* MemoryCoordinator::GetInstance() {
   return MemoryCoordinatorImpl::GetInstance();
@@ -131,8 +121,9 @@ MemoryCoordinator* MemoryCoordinator::GetInstance() {
 MemoryCoordinatorImpl* MemoryCoordinatorImpl::GetInstance() {
   if (!base::FeatureList::IsEnabled(features::kMemoryCoordinator))
     return nullptr;
-  return base::Singleton<MemoryCoordinatorImpl,
-                         MemoryCoordinatorImplSingletonTraits>::get();
+  static MemoryCoordinatorImpl* instance = new MemoryCoordinatorImpl(
+      base::ThreadTaskRunnerHandle::Get(), CreateMemoryMonitor());
+  return instance;
 }
 
 MemoryCoordinatorImpl::MemoryCoordinatorImpl(
