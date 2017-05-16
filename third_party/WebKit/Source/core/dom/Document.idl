@@ -219,3 +219,4 @@ Document implements GlobalEventHandlers;
 Document implements ParentNode;
 Document implements NonElementParentNode;
 Document implements DocumentOrShadowRoot;
+Document implements FontFaceSource;

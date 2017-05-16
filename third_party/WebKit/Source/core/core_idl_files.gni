@@ -460,7 +460,7 @@ core_dependency_idl_files =
     get_path_info([
                     "animation/DocumentAnimation.idl",
                     "animation/ElementAnimation.idl",
-                    "css/DocumentFontFaceSet.idl",
+                    "css/FontFaceSource.idl",
                     "css/PropertyRegistration.idl",
                     "css/cssom/WindowGetComputedStyle.idl",
                     "dom/ChildNode.idl",
