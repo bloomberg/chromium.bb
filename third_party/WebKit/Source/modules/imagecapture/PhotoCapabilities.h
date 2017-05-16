@@ -38,6 +38,7 @@ class PhotoCapabilities final
       media::mojom::blink::RedEyeReduction red_eye_reduction) {
     red_eye_reduction_ = red_eye_reduction;
   }
+  bool IsRedEyeReductionControllable() const;
 
   DECLARE_VIRTUAL_TRACE();
 
