@@ -27,11 +27,11 @@ TestMojoMediaClient::TestMojoMediaClient() {}
 
 TestMojoMediaClient::~TestMojoMediaClient() {
   DVLOG(1) << __func__;
-  // AudioManager destructor requires MessageLoop.
-  // Destroy it before the message loop goes away.
-  audio_manager_.reset();
-  // Flush the message loop to ensure that the audio manager is destroyed.
-  base::RunLoop().RunUntilIdle();
+
+  if (audio_manager_) {
+    audio_manager_->Shutdown();
+    audio_manager_.reset();
+  }
 }
 
 void TestMojoMediaClient::Initialize(
@@ -44,7 +44,6 @@ void TestMojoMediaClient::Initialize(
   if (!audio_manager) {
     audio_manager_ = media::AudioManager::CreateForTesting(
         base::MakeUnique<AudioThreadImpl>());
-    audio_manager = audio_manager_.get();
     // Flush the message loop to ensure that the audio manager is initialized.
     base::RunLoop().RunUntilIdle();
   }
