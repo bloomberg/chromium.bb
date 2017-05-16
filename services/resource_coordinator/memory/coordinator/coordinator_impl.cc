@@ -4,6 +4,8 @@
 
 #include "services/resource_coordinator/memory/coordinator/coordinator_impl.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/location.h"
@@ -16,6 +18,8 @@
 #include "services/resource_coordinator/public/cpp/memory/process_local_dump_manager_impl.h"
 #include "services/resource_coordinator/public/interfaces/memory/constants.mojom.h"
 #include "services/resource_coordinator/public/interfaces/memory/memory_instrumentation.mojom.h"
+#include "services/service_manager/public/cpp/identity.h"
+#include "services/service_manager/public/interfaces/service_manager.mojom.h"
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)
 #include "base/mac/mac_util.h"
@@ -58,7 +62,8 @@ CoordinatorImpl* CoordinatorImpl::GetInstance() {
   return g_coordinator_impl;
 }
 
-CoordinatorImpl::CoordinatorImpl(bool initialize_memory_dump_manager)
+CoordinatorImpl::CoordinatorImpl(bool initialize_memory_dump_manager,
+                                 service_manager::Connector* connector)
     : failed_memory_dump_count_(0),
       initialize_memory_dump_manager_(initialize_memory_dump_manager) {
   if (initialize_memory_dump_manager) {
@@ -70,7 +75,12 @@ CoordinatorImpl::CoordinatorImpl(bool initialize_memory_dump_manager)
     base::trace_event::MemoryDumpManager::GetInstance()->set_tracing_process_id(
         mojom::kServiceTracingProcessId);
   }
+  process_map_.reset(new ProcessMap(connector));
   g_coordinator_impl = this;
+}
+
+service_manager::Identity CoordinatorImpl::GetDispatchContext() const {
+  return bindings_.dispatch_context();
 }
 
 CoordinatorImpl::~CoordinatorImpl() {
@@ -81,7 +91,7 @@ void CoordinatorImpl::BindCoordinatorRequest(
     const service_manager::BindSourceInfo& source_info,
     mojom::CoordinatorRequest request) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  bindings_.AddBinding(this, std::move(request));
+  bindings_.AddBinding(this, std::move(request), source_info.identity);
 }
 
 CoordinatorImpl::QueuedMemoryDumpRequest::QueuedMemoryDumpRequest(
@@ -102,7 +112,8 @@ void CoordinatorImpl::RequestGlobalMemoryDump(
   // point in enqueuing this request.
   if (another_dump_already_in_progress &&
       args.dump_type !=
-          base::trace_event::MemoryDumpType::EXPLICITLY_TRIGGERED) {
+          base::trace_event::MemoryDumpType::EXPLICITLY_TRIGGERED &&
+      args.dump_type != base::trace_event::MemoryDumpType::SUMMARY_ONLY) {
     for (const auto& request : queued_memory_dump_requests_) {
       if (request.args.level_of_detail == args.level_of_detail) {
         VLOG(1) << base::trace_event::MemoryDumpManager::kLogPrefix << " ("
@@ -135,10 +146,9 @@ void CoordinatorImpl::RegisterProcessLocalDumpManager(
   process_manager.set_connection_error_handler(
       base::Bind(&CoordinatorImpl::UnregisterProcessLocalDumpManager,
                  base::Unretained(this), process_manager.get()));
-  auto result = process_managers_.insert(
-      std::make_pair<mojom::ProcessLocalDumpManager*,
-                     mojom::ProcessLocalDumpManagerPtr>(
-          process_manager.get(), std::move(process_manager)));
+  mojom::ProcessLocalDumpManager* key = process_manager.get();
+  auto result = process_managers_.emplace(
+      key, std::make_pair(std::move(process_manager), GetDispatchContext()));
   DCHECK(result.second);
 }
 
@@ -163,15 +173,15 @@ void CoordinatorImpl::PerformNextQueuedGlobalMemoryDump() {
       queued_memory_dump_requests_.front().args;
 
   // No need to treat the service process different than other processes. The
-  // service process will register itself as a ProcessLocalDumpManager and will
-  // be treated like other process-local managers.
+  // service process will register itself as a ProcessLocalDumpManager and
+  // will be treated like other process-local managers.
   pending_process_managers_.clear();
   failed_memory_dump_count_ = 0;
   for (const auto& key_value : process_managers_) {
     pending_process_managers_.insert(key_value.first);
     auto callback = base::Bind(&CoordinatorImpl::OnProcessMemoryDumpResponse,
                                base::Unretained(this), key_value.first);
-    key_value.second->RequestProcessMemoryDump(args, callback);
+    key_value.second.first->RequestProcessMemoryDump(args, callback);
   }
   // Run the callback in case there are no process-local managers.
   FinalizeGlobalMemoryDumpIfAllManagersReplied();
@@ -191,8 +201,14 @@ void CoordinatorImpl::OnProcessMemoryDumpResponse(
     return;
   }
   if (process_memory_dump) {
+    base::ProcessId pid = base::kNullProcessId;
+    auto it = process_managers_.find(process_manager);
+    if (it != process_managers_.end()) {
+      pid = process_map_->GetProcessId(it->second.second);
+    }
+
     queued_memory_dump_requests_.front().process_memory_dumps.push_back(
-        std::move(process_memory_dump));
+        std::make_pair(pid, std::move(process_memory_dump)));
   }
 
   pending_process_managers_.erase(it);
@@ -218,38 +234,38 @@ void CoordinatorImpl::FinalizeGlobalMemoryDumpIfAllManagersReplied() {
   std::map<base::ProcessId, mojom::ProcessMemoryDumpPtr> finalized_pmds;
   for (auto& result :
        queued_memory_dump_requests_.front().process_memory_dumps) {
-    // TODO(fmeawad): Write into correct map entry instead of always
-    // to pid = 0.
-    mojom::ProcessMemoryDumpPtr& pmd = finalized_pmds[0];
+    mojom::ProcessMemoryDumpPtr& pmd = finalized_pmds[result.first];
     if (!pmd)
       pmd = mojom::ProcessMemoryDump::New();
-    pmd->chrome_dump = std::move(result->chrome_dump);
+    pmd->chrome_dump = std::move(result.second->chrome_dump);
 
     // TODO(hjd): We should have a better way to tell if os_dump is filled.
-    if (result->os_dump.resident_set_kb > 0) {
-      pmd->os_dump = std::move(result->os_dump);
+    if (result.second->os_dump.resident_set_kb > 0) {
+      pmd->os_dump = std::move(result.second->os_dump);
     }
 
-    for (auto& pair : result->extra_processes_dump) {
+    for (auto& pair : result.second->extra_processes_dump) {
       base::ProcessId pid = pair.first;
       mojom::ProcessMemoryDumpPtr& pmd = finalized_pmds[pid];
       if (!pmd)
         pmd = mojom::ProcessMemoryDump::New();
-      pmd->os_dump = std::move(result->extra_processes_dump[pid]);
+      pmd->os_dump = std::move(result.second->extra_processes_dump[pid]);
     }
+
+    pmd->process_type = result.second->process_type;
   }
 
   mojom::GlobalMemoryDumpPtr global_dump(mojom::GlobalMemoryDump::New());
   for (auto& pair : finalized_pmds) {
     // It's possible that the renderer has died but we still have an os_dump,
-    // because those were comptued from the browser proces before the renderer
+    // because those were computed from the browser proces before the renderer
     // died. We should skip these.
     // TODO(hjd): We should have a better way to tell if a chrome_dump is
     // filled.
     if (!pair.second->chrome_dump.malloc_total_kb)
       continue;
     base::ProcessId pid = pair.first;
-    mojom::ProcessMemoryDumpPtr pmd = std::move(finalized_pmds[pid]);
+    mojom::ProcessMemoryDumpPtr& pmd = finalized_pmds[pid];
     pmd->private_footprint = CalculatePrivateFootprintKb(pmd->os_dump);
     global_dump->process_dumps.push_back(std::move(pmd));
   }

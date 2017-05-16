@@ -17,36 +17,39 @@ namespace {
 
 void EmitBrowserMemoryMetrics(const ProcessMemoryDumpPtr& pmd) {
   UMA_HISTOGRAM_MEMORY_LARGE_MB("Memory.Experimental.Browser2.Resident",
-                                pmd->os_dump.resident_set_kb * 1024);
+                                pmd->os_dump.resident_set_kb / 1024);
   UMA_HISTOGRAM_MEMORY_LARGE_MB("Memory.Experimental.Browser2.Malloc",
-                                pmd->chrome_dump.malloc_total_kb * 1024);
-
-  // TODO(erikchen): Emit private memory footprint. https://crbug.com/721434.
+                                pmd->chrome_dump.malloc_total_kb / 1024);
+  UMA_HISTOGRAM_MEMORY_LARGE_MB(
+      "Memory.Experimental.Browser2.PrivateMemoryFootprint",
+      pmd->private_footprint / 1024);
 }
 
 void EmitRendererMemoryMetrics(const ProcessMemoryDumpPtr& pmd) {
   UMA_HISTOGRAM_MEMORY_LARGE_MB("Memory.Experimental.Renderer2.Resident",
-                                pmd->os_dump.resident_set_kb * 1024);
+                                pmd->os_dump.resident_set_kb / 1024);
+  UMA_HISTOGRAM_MEMORY_LARGE_MB(
+      "Memory.Experimental.Renderer2.PrivateMemoryFootprint",
+      pmd->private_footprint / 1024);
   UMA_HISTOGRAM_MEMORY_LARGE_MB("Memory.Experimental.Renderer2.Malloc",
-                                pmd->chrome_dump.malloc_total_kb * 1024);
+                                pmd->chrome_dump.malloc_total_kb / 1024);
   UMA_HISTOGRAM_MEMORY_LARGE_MB(
       "Memory.Experimental.Renderer2.PartitionAlloc",
-      pmd->chrome_dump.partition_alloc_total_kb * 1024);
+      pmd->chrome_dump.partition_alloc_total_kb / 1024);
   UMA_HISTOGRAM_MEMORY_LARGE_MB("Memory.Experimental.Renderer2.BlinkGC",
-                                pmd->chrome_dump.blink_gc_total_kb * 1024);
+                                pmd->chrome_dump.blink_gc_total_kb / 1024);
   UMA_HISTOGRAM_MEMORY_LARGE_MB("Memory.Experimental.Renderer2.V8",
-                                pmd->chrome_dump.v8_total_kb * 1024);
-
-  // TODO(erikchen): Emit private memory footprint. https://crbug.com/721434.
+                                pmd->chrome_dump.v8_total_kb / 1024);
 }
 
 void EmitGpuMemoryMetrics(const ProcessMemoryDumpPtr& pmd) {
   UMA_HISTOGRAM_MEMORY_LARGE_MB("Memory.Experimental.Gpu2.Resident",
-                                pmd->os_dump.resident_set_kb * 1024);
+                                pmd->os_dump.resident_set_kb / 1024);
   UMA_HISTOGRAM_MEMORY_LARGE_MB("Memory.Experimental.Gpu2.Malloc",
-                                pmd->chrome_dump.malloc_total_kb * 1024);
-
-  // TODO(erikchen): Emit private memory footprint. https://crbug.com/721434.
+                                pmd->chrome_dump.malloc_total_kb / 1024);
+  UMA_HISTOGRAM_MEMORY_LARGE_MB(
+      "Memory.Experimental.Gpu2.PrivateMemoryFootprint",
+      pmd->private_footprint / 1024);
 }
 
 }  // namespace
