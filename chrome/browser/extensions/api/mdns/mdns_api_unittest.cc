@@ -15,6 +15,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_service_test_base.h"
 #include "chrome/browser/extensions/test_extension_system.h"
+#include "chrome/browser/media/router/discovery/mdns/mock_dns_sd_registry.h"
 #include "chrome/common/extensions/api/mdns.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/test/mock_render_process_host.h"
@@ -26,6 +27,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using media_router::MockDnsSdRegistry;
 using testing::_;
 using testing::Return;
 using testing::ReturnRef;
@@ -90,27 +92,6 @@ base::FilePath bogus_file_pathname(const std::string& name) {
   return base::FilePath(FILE_PATH_LITERAL("//foobar_nonexistent"))
       .AppendASCII(name);
 }
-
-class MockDnsSdRegistry : public media_router::DnsSdRegistry {
- public:
-  explicit MockDnsSdRegistry(extensions::MDnsAPI* api) : api_(api) {}
-  virtual ~MockDnsSdRegistry() {}
-
-  MOCK_METHOD1(AddObserver, void(DnsSdObserver* observer));
-  MOCK_METHOD1(RemoveObserver, void(DnsSdObserver* observer));
-  MOCK_METHOD1(RegisterDnsSdListener, void(const std::string& service_type));
-  MOCK_METHOD1(UnregisterDnsSdListener, void(const std::string& service_type));
-  MOCK_METHOD1(Publish, void(const std::string&));
-  MOCK_METHOD0(ForceDiscovery, void(void));
-
-  void DispatchMDnsEvent(const std::string& service_type,
-                         const DnsSdServiceList& services) {
-    api_->OnDnsSdEvent(service_type, services);
-  }
-
- private:
-  media_router::DnsSdRegistry::DnsSdObserver* api_;
-};
 
 class MockEventRouter : public EventRouter {
  public:
@@ -204,13 +185,13 @@ class MDnsAPITest : public extensions::ExtensionServiceTestBase {
     ASSERT_TRUE(MDnsAPI::Get(browser_context()));      // constructs MDnsAPI
     ASSERT_TRUE(EventRouter::Get(browser_context()));  // constructs EventRouter
 
-    registry_ = new MockDnsSdRegistry(MDnsAPI::Get(browser_context()));
+    registry_ =
+        base::MakeUnique<MockDnsSdRegistry>(MDnsAPI::Get(browser_context()));
     EXPECT_CALL(*dns_sd_registry(),
                 AddObserver(MDnsAPI::Get(browser_context())))
         .Times(1);
     MDnsAPI::Get(browser_context())
-        ->SetDnsSdRegistryForTesting(
-            std::unique_ptr<media_router::DnsSdRegistry>(registry_));
+        ->SetDnsSdRegistryForTesting(registry_.get());
 
     render_process_host_.reset(
         new content::MockRenderProcessHost(browser_context()));
@@ -223,16 +204,12 @@ class MDnsAPITest : public extensions::ExtensionServiceTestBase {
   }
 
   void TearDown() override {
-    EXPECT_CALL(*dns_sd_registry(),
-                RemoveObserver(MDnsAPI::Get(browser_context())))
-        .Times(1);
+    MDnsAPI::Get(browser_context())->SetDnsSdRegistryForTesting(nullptr);
     render_process_host_.reset();
     extensions::ExtensionServiceTestBase::TearDown();
   }
 
-  virtual MockDnsSdRegistry* dns_sd_registry() {
-    return registry_;
-  }
+  virtual MockDnsSdRegistry* dns_sd_registry() { return registry_.get(); }
 
   // Constructs an extension according to the parameters that matter most to
   // MDnsAPI the local unit tests.
@@ -265,9 +242,7 @@ class MDnsAPITest : public extensions::ExtensionServiceTestBase {
   }
 
  private:
-  // The registry is owned by MDnsAPI, but MDnsAPI does not have an accessor
-  // for it, so use a private member.
-  MockDnsSdRegistry* registry_;
+  std::unique_ptr<MockDnsSdRegistry> registry_;
 
   std::unique_ptr<content::RenderProcessHost> render_process_host_;
 };

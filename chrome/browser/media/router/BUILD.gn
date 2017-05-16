@@ -109,6 +109,8 @@ static_library("test_support") {
       "//extensions/common",
     ]
     sources += [
+      "discovery/mdns/mock_dns_sd_registry.cc",
+      "discovery/mdns/mock_dns_sd_registry.h",
       "mojo/media_router_mojo_test.cc",
       "mojo/media_router_mojo_test.h",
     ]

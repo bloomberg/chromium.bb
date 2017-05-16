@@ -12,7 +12,9 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/memory/singleton.h"
 #include "base/observer_list.h"
+#include "base/threading/thread_checker.h"
 #include "chrome/browser/media/router/discovery/mdns/dns_sd_delegate.h"
 
 namespace local_discovery {
@@ -38,9 +40,7 @@ class DnsSdRegistry : public DnsSdDelegate {
     virtual ~DnsSdObserver() {}
   };
 
-  DnsSdRegistry();
-  explicit DnsSdRegistry(local_discovery::ServiceDiscoverySharedClient* client);
-  virtual ~DnsSdRegistry();
+  static DnsSdRegistry* GetInstance();
 
   // Publishes the current device list for |service_type| to event listeners
   // whose event filter matches the service type.
@@ -108,12 +108,21 @@ class DnsSdRegistry : public DnsSdDelegate {
   std::map<std::string, std::unique_ptr<ServiceTypeData>> service_data_map_;
 
  private:
+  friend struct base::DefaultSingletonTraits<DnsSdRegistry>;
+  friend class MockDnsSdRegistry;
+  friend class TestDnsSdRegistry;
+
+  DnsSdRegistry();
+  explicit DnsSdRegistry(local_discovery::ServiceDiscoverySharedClient* client);
+  virtual ~DnsSdRegistry();
+
   void DispatchApiEvent(const std::string& service_type);
   bool IsRegistered(const std::string& service_type);
 
   scoped_refptr<local_discovery::ServiceDiscoverySharedClient>
       service_discovery_client_;
   base::ObserverList<DnsSdObserver> observers_;
+  base::ThreadChecker thread_checker_;
 
   DISALLOW_COPY_AND_ASSIGN(DnsSdRegistry);
 };

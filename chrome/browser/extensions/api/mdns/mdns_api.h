@@ -24,10 +24,6 @@ namespace content {
 class BrowserContext;
 }
 
-namespace media_router {
-class DnsSdRegistry;
-}
-
 namespace extensions {
 // MDnsAPI is instantiated with the profile and will listen for extensions that
 // register listeners for the chrome.mdns extension API. It will use a registry
@@ -45,9 +41,9 @@ class MDnsAPI : public BrowserContextKeyedAPI,
   // BrowserContextKeyedAPI implementation.
   static BrowserContextKeyedAPIFactory<MDnsAPI>* GetFactoryInstance();
 
-  // Used to mock out the DnsSdRegistry for testing.
-  void SetDnsSdRegistryForTesting(
-      std::unique_ptr<media_router::DnsSdRegistry> registry);
+  // Used to mock out the DnsSdRegistry for testing. Does not take ownership of
+  // |registry|.
+  void SetDnsSdRegistryForTesting(media_router::DnsSdRegistry* registry);
 
   // Immediately issues a multicast DNS query for all service types.
   // NOTE: Discovery queries are sent to all event handlers associated with
@@ -112,8 +108,9 @@ class MDnsAPI : public BrowserContextKeyedAPI,
   // Ensure methods are only called on UI thread.
   base::ThreadChecker thread_checker_;
   content::BrowserContext* const browser_context_;
-  // Lazily created on first access and destroyed with this API class.
-  std::unique_ptr<media_router::DnsSdRegistry> dns_sd_registry_;
+  // Raw pointer to a leaky singleton. Lazily created on first access. Must
+  // outlive this object.
+  media_router::DnsSdRegistry* dns_sd_registry_;
   // Count of active listeners per service type, saved from the previous
   // invocation of UpdateMDnsListeners().
   ServiceTypeCounts prev_service_counts_;
