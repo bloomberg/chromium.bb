@@ -43,13 +43,13 @@ public final class TranslateMenu {
     public static final int ITEM_CHECKBOX_OPTION = 2;
     public static final int MENU_ITEM_TYPE_COUNT = 3;
 
-    // Menu Item ID config for MENU_OVERFLOW .
-    public static final int ID_UNDEFINED = 0;
-    public static final int ID_OVERFLOW_MORE_LANGUAGE = 1;
-    public static final int ID_OVERFLOW_ALWAYS_TRANSLATE = 2;
-    public static final int ID_OVERFLOW_NEVER_SITE = 3;
-    public static final int ID_OVERFLOW_NEVER_LANGUAGE = 4;
-    public static final int ID_OVERFLOW_NOT_THIS_LANGUAGE = 5;
+    // Menu Item ID config for MENU_OVERFLOW.
+    public static final int ID_UNDEFINED = -1;
+    public static final int ID_OVERFLOW_MORE_LANGUAGE = 0;
+    public static final int ID_OVERFLOW_ALWAYS_TRANSLATE = 1;
+    public static final int ID_OVERFLOW_NEVER_SITE = 2;
+    public static final int ID_OVERFLOW_NEVER_LANGUAGE = 3;
+    public static final int ID_OVERFLOW_NOT_THIS_LANGUAGE = 4;
 
     private static final List<MenuItem> OVERFLOW_MENU = new ArrayList<MenuItem>();
 
