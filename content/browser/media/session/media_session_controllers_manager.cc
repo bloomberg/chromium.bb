@@ -12,12 +12,13 @@ namespace content {
 
 namespace {
 
-bool IsDefaultMediaSessionEnabled() {
+bool IsMediaSessionEnabled() {
 #if defined(OS_ANDROID)
   return true;
 #else
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableAudioFocus);
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  return command_line->HasSwitch(switches::kEnableInternalMediaSession) ||
+         command_line->HasSwitch(switches::kEnableAudioFocus);
 #endif
 }
 
@@ -32,7 +33,7 @@ MediaSessionControllersManager::~MediaSessionControllersManager() = default;
 
 void MediaSessionControllersManager::RenderFrameDeleted(
     RenderFrameHost* render_frame_host) {
-  if (!IsDefaultMediaSessionEnabled())
+  if (!IsMediaSessionEnabled())
     return;
 
   for (auto it = controllers_map_.begin(); it != controllers_map_.end();) {
@@ -48,7 +49,7 @@ bool MediaSessionControllersManager::RequestPlay(
     bool has_audio,
     bool is_remote,
     media::MediaContentType media_content_type) {
-  if (!IsDefaultMediaSessionEnabled())
+  if (!IsMediaSessionEnabled())
     return true;
 
   // Since we don't remove session instances on pause, there may be an existing
@@ -76,7 +77,7 @@ bool MediaSessionControllersManager::RequestPlay(
 }
 
 void MediaSessionControllersManager::OnPause(const MediaPlayerId& id) {
-  if (!IsDefaultMediaSessionEnabled())
+  if (!IsMediaSessionEnabled())
     return;
 
   auto it = controllers_map_.find(id);
@@ -87,7 +88,7 @@ void MediaSessionControllersManager::OnPause(const MediaPlayerId& id) {
 }
 
 void MediaSessionControllersManager::OnEnd(const MediaPlayerId& id) {
-  if (!IsDefaultMediaSessionEnabled())
+  if (!IsMediaSessionEnabled())
     return;
   controllers_map_.erase(id);
 }
