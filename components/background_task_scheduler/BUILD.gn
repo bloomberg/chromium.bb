@@ -67,6 +67,7 @@ if (is_android) {
       "android/junit/src/org/chromium/components/background_task_scheduler/BackgroundTaskSchedulerGcmNetworkManagerTest.java",
       "android/junit/src/org/chromium/components/background_task_scheduler/BackgroundTaskGcmTaskServiceTest.java",
       "android/junit/src/org/chromium/components/background_task_scheduler/BackgroundTaskSchedulerPrefsTest.java",
+      "android/junit/src/org/chromium/components/background_task_scheduler/BackgroundTaskSchedulerTest.java",
       "android/junit/src/org/chromium/components/background_task_scheduler/ShadowGcmNetworkManager.java",
       "android/junit/src/org/chromium/components/background_task_scheduler/TestBackgroundTask.java",
     ]

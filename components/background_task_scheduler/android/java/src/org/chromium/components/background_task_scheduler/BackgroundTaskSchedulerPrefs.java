@@ -74,6 +74,11 @@ public class BackgroundTaskSchedulerPrefs {
         return scheduledTasksClassNames;
     }
 
+    /** Removes all scheduled tasks from shared preferences store. */
+    public static void removeAllTasks() {
+        ContextUtils.getAppSharedPreferences().edit().remove(KEY_SCHEDULED_TASKS).apply();
+    }
+
     private static void updateScheduledTasks(SharedPreferences prefs, Set<String> tasks) {
         SharedPreferences.Editor editor = prefs.edit();
         editor.putStringSet(KEY_SCHEDULED_TASKS, tasks);

@@ -124,5 +124,8 @@ public class BackgroundTaskGcmTaskService extends GcmTaskService {
     }
 
     @Override
-    public void onInitializeTasks() {}
+    public void onInitializeTasks() {
+        BackgroundTaskSchedulerFactory.getScheduler().reschedule(
+                ContextUtils.getApplicationContext());
+    }
 }

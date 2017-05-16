@@ -8,6 +8,7 @@ import android.annotation.TargetApi;
 import android.os.Build;
 
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.VisibleForTesting;
 
 /**
  * A factory for {@link BackgroundTaskScheduler} that ensures there is only ever a single instance.
@@ -32,6 +33,11 @@ public final class BackgroundTaskSchedulerFactory {
         ThreadUtils.assertOnUiThread();
         if (sInstance == null) sInstance = new BackgroundTaskScheduler(getSchedulerDelegate());
         return sInstance;
+    }
+
+    @VisibleForTesting
+    static void setSchedulerForTesting(BackgroundTaskScheduler scheduler) {
+        sInstance = scheduler;
     }
 
     // Do not instantiate.

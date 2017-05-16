@@ -34,6 +34,9 @@ public class BackgroundTaskSchedulerJobServiceTest extends InstrumentationTestCa
         public boolean onStopTask(Context context, TaskParameters taskParameters) {
             return false;
         }
+
+        @Override
+        public void reschedule(Context context) {}
     }
 
     @SmallTest

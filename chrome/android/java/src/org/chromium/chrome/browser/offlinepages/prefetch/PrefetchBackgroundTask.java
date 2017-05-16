@@ -115,6 +115,9 @@ public class PrefetchBackgroundTask implements BackgroundTask {
         return nativeOnStopTask(mNativeTask);
     }
 
+    @Override
+    public void reschedule(Context context) {}
+
     /**
      * Called during construction of the native task.
      *

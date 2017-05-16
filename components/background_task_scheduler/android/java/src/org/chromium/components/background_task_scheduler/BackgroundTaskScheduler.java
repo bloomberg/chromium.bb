@@ -13,6 +13,7 @@ import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
 
 import java.lang.reflect.Constructor;
+import java.util.Set;
 
 /**
  * A BackgroundTaskScheduler which is used to schedule jobs that run in the background.
@@ -75,8 +76,11 @@ public class BackgroundTaskScheduler {
      */
     public boolean schedule(Context context, TaskInfo taskInfo) {
         ThreadUtils.assertOnUiThread();
-        BackgroundTaskSchedulerPrefs.addScheduledTask(taskInfo);
-        return mSchedulerDelegate.schedule(context, taskInfo);
+        boolean success = mSchedulerDelegate.schedule(context, taskInfo);
+        if (success) {
+            BackgroundTaskSchedulerPrefs.addScheduledTask(taskInfo);
+        }
+        return success;
     }
 
     /**
@@ -89,5 +93,19 @@ public class BackgroundTaskScheduler {
         ThreadUtils.assertOnUiThread();
         BackgroundTaskSchedulerPrefs.removeScheduledTask(taskId);
         mSchedulerDelegate.cancel(context, taskId);
+    }
+
+    public void reschedule(Context context) {
+        Set<String> scheduledTasksClassNames = BackgroundTaskSchedulerPrefs.getScheduledTasks();
+        BackgroundTaskSchedulerPrefs.removeAllTasks();
+        for (String className : scheduledTasksClassNames) {
+            BackgroundTask task = getBackgroundTaskFromClassName(className);
+            if (task == null) {
+                Log.w(TAG, "Cannot reschedule task for: " + className);
+                continue;
+            }
+
+            task.reschedule(context);
+        }
     }
 }
