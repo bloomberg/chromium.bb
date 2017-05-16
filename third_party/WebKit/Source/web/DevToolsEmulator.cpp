@@ -518,43 +518,39 @@ bool DevToolsEmulator::HandleInputEvent(const WebInputEvent& input_event) {
   if (!page)
     return false;
 
-  // FIXME: This workaround is required for touch emulation on Mac, where
-  // compositor-side pinch handling is not enabled. See http://crbug.com/138003.
-  bool is_pinch = input_event.GetType() == WebInputEvent::kGesturePinchBegin ||
-                  input_event.GetType() == WebInputEvent::kGesturePinchUpdate ||
-                  input_event.GetType() == WebInputEvent::kGesturePinchEnd;
-  if (is_pinch && touch_event_emulation_enabled_) {
-    FrameView* frame_view = page->DeprecatedLocalMainFrame()->View();
-    WebGestureEvent scaled_event = TransformWebGestureEvent(
-        frame_view, static_cast<const WebGestureEvent&>(input_event));
-    float page_scale_factor = page->PageScaleFactor();
-    if (scaled_event.GetType() == WebInputEvent::kGesturePinchBegin) {
-      WebFloatPoint gesture_position = scaled_event.PositionInRootFrame();
-      last_pinch_anchor_css_ = WTF::WrapUnique(new IntPoint(
-          RoundedIntPoint(gesture_position + frame_view->GetScrollOffset())));
-      last_pinch_anchor_dip_ =
-          WTF::WrapUnique(new IntPoint(FlooredIntPoint(gesture_position)));
-      last_pinch_anchor_dip_->Scale(page_scale_factor, page_scale_factor);
-    }
-    if (scaled_event.GetType() == WebInputEvent::kGesturePinchUpdate &&
-        last_pinch_anchor_css_) {
-      float new_page_scale_factor =
-          page_scale_factor * scaled_event.PinchScale();
-      IntPoint anchor_css(*last_pinch_anchor_dip_.get());
-      anchor_css.Scale(1.f / new_page_scale_factor,
-                       1.f / new_page_scale_factor);
-      web_view_impl_->SetPageScaleFactor(new_page_scale_factor);
-      web_view_impl_->MainFrame()->SetScrollOffset(
-          ToIntSize(*last_pinch_anchor_css_.get() - ToIntSize(anchor_css)));
-    }
-    if (scaled_event.GetType() == WebInputEvent::kGesturePinchEnd) {
-      last_pinch_anchor_css_.reset();
-      last_pinch_anchor_dip_.reset();
-    }
-    return true;
+  if (!touch_event_emulation_enabled_ ||
+      !WebInputEvent::IsPinchGestureEventType(input_event.GetType())) {
+    return false;
   }
 
-  return false;
+  // FIXME: This workaround is required for touch emulation on Mac, where
+  // compositor-side pinch handling is not enabled. See http://crbug.com/138003.
+  FrameView* frame_view = page->DeprecatedLocalMainFrame()->View();
+  WebGestureEvent scaled_event = TransformWebGestureEvent(
+      frame_view, static_cast<const WebGestureEvent&>(input_event));
+  float page_scale_factor = page->PageScaleFactor();
+  if (scaled_event.GetType() == WebInputEvent::kGesturePinchBegin) {
+    WebFloatPoint gesture_position = scaled_event.PositionInRootFrame();
+    last_pinch_anchor_css_ = WTF::WrapUnique(new IntPoint(
+        RoundedIntPoint(gesture_position + frame_view->GetScrollOffset())));
+    last_pinch_anchor_dip_ =
+        WTF::WrapUnique(new IntPoint(FlooredIntPoint(gesture_position)));
+    last_pinch_anchor_dip_->Scale(page_scale_factor, page_scale_factor);
+  }
+  if (scaled_event.GetType() == WebInputEvent::kGesturePinchUpdate &&
+      last_pinch_anchor_css_) {
+    float new_page_scale_factor = page_scale_factor * scaled_event.PinchScale();
+    IntPoint anchor_css(*last_pinch_anchor_dip_.get());
+    anchor_css.Scale(1.f / new_page_scale_factor, 1.f / new_page_scale_factor);
+    web_view_impl_->SetPageScaleFactor(new_page_scale_factor);
+    web_view_impl_->MainFrame()->SetScrollOffset(
+        ToIntSize(*last_pinch_anchor_css_.get() - ToIntSize(anchor_css)));
+  }
+  if (scaled_event.GetType() == WebInputEvent::kGesturePinchEnd) {
+    last_pinch_anchor_css_.reset();
+    last_pinch_anchor_dip_.reset();
+  }
+  return true;
 }
 
 }  // namespace blink

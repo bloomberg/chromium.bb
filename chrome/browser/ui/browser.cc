@@ -564,7 +564,6 @@ Browser::~Browser() {
   // away so they don't try and call back to us.
   if (select_file_dialog_.get())
     select_file_dialog_->ListenerDestroyed();
-
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1312,10 +1311,7 @@ bool Browser::PreHandleGestureEvent(content::WebContents* source,
                                     const blink::WebGestureEvent& event) {
   // Disable pinch zooming in undocked dev tools window due to poor UX.
   if (app_name() == DevToolsWindow::kDevToolsApp)
-    return event.GetType() == blink::WebGestureEvent::kGesturePinchBegin ||
-           event.GetType() == blink::WebGestureEvent::kGesturePinchUpdate ||
-           event.GetType() == blink::WebGestureEvent::kGesturePinchEnd;
-
+    return blink::WebInputEvent::IsPinchGestureEventType(event.GetType());
   return false;
 }
 
