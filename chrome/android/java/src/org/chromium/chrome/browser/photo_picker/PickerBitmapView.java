@@ -146,6 +146,13 @@ public class PickerBitmapView extends SelectableItemView<PickerBitmap> {
 
         boolean selected = selectedItems.contains(mBitmapDetails);
         boolean checked = super.isChecked();
+
+        // In single-selection mode, the list needs to be updated to account for items that were
+        // checked before but no longer are (because something else was selected).
+        if (!mCategoryView.isMultiSelectAllowed() && !selected && checked) {
+            super.toggle();
+        }
+
         boolean needsResize = selected != checked;
         int size = selected && !checked ? mCategoryView.getImageSize() - 2 * mBorder
                                         : mCategoryView.getImageSize();
