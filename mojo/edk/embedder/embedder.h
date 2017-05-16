@@ -7,20 +7,17 @@
 
 #include <stddef.h>
 
-#include <memory>
 #include <string>
 
 #include "base/callback.h"
-#include "base/command_line.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/shared_memory_handle.h"
 #include "base/process/process_handle.h"
 #include "base/task_runner.h"
 #include "mojo/edk/embedder/configuration.h"
-#include "mojo/edk/embedder/connection_params.h"
 #include "mojo/edk/embedder/scoped_platform_handle.h"
 #include "mojo/edk/system/system_impl_export.h"
-#include "mojo/public/cpp/system/message_pipe.h"
+#include "mojo/public/c/system/types.h"
 
 namespace base {
 class PortProvider;
@@ -108,32 +105,14 @@ MOJO_SYSTEM_IMPL_EXPORT MojoResult SetProperty(MojoPropertyType type,
 
 // Initialialization/shutdown for interprocess communication (IPC) -------------
 
-// |InitIPCSupport()| sets up the subsystem for interprocess communication,
-// making the IPC functions (in the following section) available and functional.
-// This may only be done after |Init()|.
-//
-// This subsystem may be shut down using |ShutdownIPCSupport()|. None of the IPC
-// functions may be called after this is called.
-//
-// |io_thread_task_runner| should live at least until |ShutdownIPCSupport()|'s
-// callback has been run.
-MOJO_SYSTEM_IMPL_EXPORT void InitIPCSupport(
-    scoped_refptr<base::TaskRunner> io_thread_task_runner);
-
-// Retrieves the TaskRunner used for IPC I/O, as set by InitIPCSupport.
+// Retrieves the TaskRunner used for IPC I/O, as set by ScopedIPCSupport.
 MOJO_SYSTEM_IMPL_EXPORT scoped_refptr<base::TaskRunner> GetIOTaskRunner();
-
-// Shuts down the subsystem initialized by |InitIPCSupport()|. It be called from
-// any thread and will attempt to complete shutdown on the I/O thread with which
-// the system was initialized. Upon completion, |callback| is invoked on an
-// arbitrary thread.
-MOJO_SYSTEM_IMPL_EXPORT void ShutdownIPCSupport(const base::Closure& callback);
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)
 // Set the |base::PortProvider| for this process. Can be called on any thread,
 // but must be set in the root process before any Mach ports can be transferred.
 //
-// If called at all, this must be called after |InitIPCSupport()|.
+// If called at all, this must be called while a ScopedIPCSupport exists.
 MOJO_SYSTEM_IMPL_EXPORT void SetMachPortProvider(
     base::PortProvider* port_provider);
 #endif
