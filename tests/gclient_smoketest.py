@@ -165,8 +165,7 @@ class GClientSmoke(GClientSmokeBase):
     self.assertTrue(1000 < len(result[0]) and len(result[0]) < 2300,
                     'Too much written to stdout: %d bytes' % len(result[0]))
     self.assertEquals(0, len(result[1]))
-    # An unknown command should result in non-zero exit code.
-    self.assertEquals(2, result[2])
+    self.assertEquals(0, result[2])
 
   def testNotConfigured(self):
     res = ('', 'Error: client not configured; see \'gclient config\'\n', 1)

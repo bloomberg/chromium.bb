@@ -66,8 +66,13 @@ def epilog(text):
 
 def CMDhelp(parser, args):
   """Prints list of commands or help for a specific command."""
-  parser.print_help()
-  return 0
+  # This is the default help implementation. It can be disabled or overriden if
+  # wanted.
+  if not any(i in ('-h', '--help') for i in args):
+    args = args + ['--help']
+  _, args = parser.parse_args(args)
+  # Never gets there.
+  assert False
 
 
 def _get_color_module():
@@ -250,9 +255,7 @@ class CommandDispatcher(object):
     if cmdhelp:
       # Not a known command. Default to help.
       self._add_command_usage(parser, cmdhelp)
-      # Make sure we return a non-zero exit code for unknown commands.
-      rc = cmdhelp(parser, args)
-      return rc if rc != 0 else 2
+      return cmdhelp(parser, args)
 
     # Nothing can be done.
     return 2
