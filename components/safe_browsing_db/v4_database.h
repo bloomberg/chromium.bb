@@ -131,7 +131,13 @@ class V4Database {
   // A store may be unavailble if either it hasn't yet gotten a proper
   // full-update (just after install, or corrupted/missing file), or if it's
   // not supported in this build (i.e. Chromium).
-  virtual bool AreStoresAvailable(const StoresToCheck& stores_to_check) const;
+  virtual bool AreAllStoresAvailable(
+      const StoresToCheck& stores_to_check) const;
+
+  // Check if any of the stores are available and populated.
+  // Returns false if all of |stores_to_check| don't have valid data.
+  virtual bool AreAnyStoresAvailable(
+      const StoresToCheck& stores_to_check) const;
 
   // Searches for a hash prefix matching the |full_hash| in stores in the
   // database, filtered by |stores_to_check|, and returns the identifier of the
@@ -208,6 +214,8 @@ class V4Database {
   void VerifyChecksumOnTaskRunner(
       const scoped_refptr<base::SingleThreadTaskRunner>& callback_task_runner,
       DatabaseReadyForUpdatesCallback db_ready_for_updates_callback);
+
+  bool IsStoreAvailable(const ListIdentifier& identifier) const;
 
   const scoped_refptr<base::SequencedTaskRunner> db_task_runner_;
 

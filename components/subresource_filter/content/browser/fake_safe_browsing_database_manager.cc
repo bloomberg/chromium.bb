@@ -15,8 +15,9 @@ FakeSafeBrowsingDatabaseManager::FakeSafeBrowsingDatabaseManager()
 
 void FakeSafeBrowsingDatabaseManager::AddBlacklistedUrl(
     const GURL& url,
-    safe_browsing::SBThreatType threat_type) {
-  url_to_threat_type_[url] = threat_type;
+    safe_browsing::SBThreatType threat_type,
+    safe_browsing::ThreatPatternType pattern_type) {
+  url_to_threat_type_[url] = std::make_pair(threat_type, pattern_type);
 }
 
 void FakeSafeBrowsingDatabaseManager::RemoveBlacklistedUrl(const GURL& url) {
@@ -55,8 +56,10 @@ void FakeSafeBrowsingDatabaseManager::OnCheckUrlForSubresourceFilterComplete(
   // Check to see if the request was cancelled to avoid use-after-free.
   if (checks_.find(client) == checks_.end())
     return;
-  client->OnCheckBrowseUrlResult(url, url_to_threat_type_[url],
-                                 safe_browsing::ThreatMetadata());
+  safe_browsing::ThreatMetadata metadata;
+  metadata.threat_pattern_type = url_to_threat_type_[url].second;
+
+  client->OnCheckBrowseUrlResult(url, url_to_threat_type_[url].first, metadata);
   // Erase the client when a check is complete. Otherwise, it's possible
   // subsequent clients that share an address with this one will DCHECK in
   // CheckUrlForSubresourceFilter.

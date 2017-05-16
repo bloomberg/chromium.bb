@@ -72003,6 +72003,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="SubresourceFilter.PageLoad.FinalURLMatch" units="matches">
+  <owner>melandory@chromium.org</owner>
+  <summary>
+    Records, for each main frame navigation, whether the last URL in the
+    redirect chain matched the Safe Browsing blacklist specified by the
+    histogram suffix.
+  </summary>
+</histogram>
+
 <histogram name="SubresourceFilter.PageLoad.NumSubresourceLoads.Disallowed"
     units="resource loads">
   <owner>pkalinnikov@chromium.org</owner>
@@ -72056,6 +72065,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="SubresourceFilter.PageLoad.RedirectChainMatchPattern"
     enum="SubresourceFilterMatchPattern">
+  <obsolete>
+    Obsolete as of April 2017, since the don't have correct data to record
+    anymore.
+  </obsolete>
   <owner>melandory@chromium.org</owner>
   <summary>
     For each main frame navigation, records a pattern that indicates which URLs
@@ -92278,10 +92291,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <suffix name="SocialEngineeringAdsInterstitial"
       label="social eng ad blacklist pattern"/>
   <suffix name="PhishingInterstitial" label="phishing blacklist pattern"/>
-  <suffix name="SubresourceFilterOnly" label="subresource filter only patern"/>
+  <suffix name="SubresourceFilterOnly" label="subresource filter only pattern"/>
+  <affected-histogram name="SubresourceFilter.PageLoad.FinalURLMatch"/>
   <affected-histogram name="SubresourceFilter.PageLoad.RedirectChainLength"/>
   <affected-histogram
-      name="SubresourceFilter.PageLoad.RedirectChainMatchPattern"/>
+      name="SubresourceFilter.PageLoad.RedirectChainMatchPattern">
+    <obsolete>
+      Obsolete as of April 2017
+    </obsolete>
+  </affected-histogram>
 </histogram_suffixes>
 
 <histogram_suffixes name="SyncModelType" separator=".">

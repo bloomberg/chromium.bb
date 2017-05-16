@@ -272,7 +272,11 @@ class V4LocalDatabaseManager : public SafeBrowsingDatabaseManager {
 
   // Return true if we're enabled and have loaded real data for all of
   // these stores.
-  bool AreStoresAvailableNow(const StoresToCheck& stores_to_check) const;
+  bool AreAllStoresAvailableNow(const StoresToCheck& stores_to_check) const;
+
+  // Return true if we're enabled and have loaded real data for any of
+  // these stores.
+  bool AreAnyStoresAvailableNow(const StoresToCheck& stores_to_check) const;
 
   // The base directory under which to create the files that contain hashes.
   const base::FilePath base_path_;

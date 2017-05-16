@@ -204,17 +204,22 @@ std::unique_ptr<StoreStateMap> V4Database::GetStoreStateMap() {
   return store_state_map;
 }
 
-bool V4Database::AreStoresAvailable(
+bool V4Database::AreAnyStoresAvailable(
     const StoresToCheck& stores_to_check) const {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   for (const ListIdentifier& identifier : stores_to_check) {
-    const auto& store_pair = store_map_->find(identifier);
-    if (store_pair == store_map_->end()) {
-      return false;  // Store not in our list
-    }
-    if (!store_pair->second->HasValidData()) {
-      return false;  // Store never properly populated.
-    }
+    if (IsStoreAvailable(identifier))
+      return true;
+  }
+  return false;
+}
+
+bool V4Database::AreAllStoresAvailable(
+    const StoresToCheck& stores_to_check) const {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  for (const ListIdentifier& identifier : stores_to_check) {
+    if (!IsStoreAvailable(identifier))
+      return false;
   }
   return true;
 }
@@ -226,6 +231,8 @@ void V4Database::GetStoresMatchingFullHash(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   matched_store_and_hash_prefixes->clear();
   for (const ListIdentifier& identifier : stores_to_check) {
+    if (!IsStoreAvailable(identifier))
+      continue;
     const auto& store_pair = store_map_->find(identifier);
     DCHECK(store_pair != store_map_->end());
     const std::unique_ptr<V4Store>& store = store_pair->second;
@@ -269,6 +276,19 @@ void V4Database::VerifyChecksumOnTaskRunner(
 
   callback_task_runner->PostTask(
       FROM_HERE, base::Bind(db_ready_for_updates_callback, stores_to_reset));
+}
+
+bool V4Database::IsStoreAvailable(const ListIdentifier& identifier) const {
+  const auto& store_pair = store_map_->find(identifier);
+  if (store_pair == store_map_->end()) {
+    // Store not in our list
+    return false;
+  }
+  if (!store_pair->second->HasValidData()) {
+    // Store never properly populated
+    return false;
+  }
+  return true;
 }
 
 void V4Database::RecordFileSizeHistograms() {

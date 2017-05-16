@@ -122,31 +122,17 @@ constexpr const char kEvaluationCPUDuration[] =
 #if defined(GOOGLE_CHROME_BUILD)
 // Names of navigation chain patterns histogram.
 const char kMatchesPatternHistogramName[] =
-    "SubresourceFilter.PageLoad.RedirectChainMatchPattern";
+    "SubresourceFilter.PageLoad.FinalURLMatch";
 const char kNavigationChainSize[] =
     "SubresourceFilter.PageLoad.RedirectChainLength";
 const char kSubresourceFilterOnlySuffix[] = ".SubresourceFilterOnly";
+const char kSocialEngineeringAdsInterstitialSuffix[] =
+    ".SocialEngineeringAdsInterstitial";
+const char kPhishingInterstitalSuffix[] = ".PhishingInterstital";
 #endif
 
 // Other histograms.
 const char kSubresourceFilterActionsHistogram[] = "SubresourceFilter.Actions";
-
-// Human readable representation of expected redirect chain match patterns.
-// The explanations for the buckets given for the following redirect chain:
-// A->B->C->D, where A is initial URL and D is a final URL.
-enum RedirectChainMatchPattern {
-  EMPTY,             // No histograms were recorded.
-  F0M0L1,            // D is a Safe Browsing match.
-  F0M1L0,            // B or C, or both are Safe Browsing matches.
-  F0M1L1,            // B or C, or both and D are Safe Browsing matches.
-  F1M0L0,            // A is Safe Browsing match
-  F1M0L1,            // A and D are Safe Browsing matches.
-  F1M1L0,            // B and/or C and A are Safe Browsing matches.
-  F1M1L1,            // B and/or C and A and D are Safe Browsing matches.
-  NO_REDIRECTS_HIT,  // Redirect chain consists of single URL, aka no redirects
-                     // has happened, and this URL was a Safe Browsing hit.
-  NUM_HIT_PATTERNS,
-};
 
 // UI manager that never actually shows any interstitials, but emulates as if
 // the user chose to proceed through them.
@@ -444,7 +430,6 @@ class SubresourceFilterWebSocketBrowserTest
  private:
   std::unique_ptr<net::SpawnedTestServer> websocket_test_server_;
 };
-
 
 // Tests -----------------------------------------------------------------------
 
@@ -1430,9 +1415,17 @@ IN_PROC_BROWSER_TEST_F(
   base::HistogramTester tester;
   ui_test_utils::NavigateToURL(browser(), url);
 
-  EXPECT_THAT(tester.GetAllSamples(std::string(kMatchesPatternHistogramName) +
-                                   std::string(kSubresourceFilterOnlySuffix)),
-              ::testing::ElementsAre(base::Bucket(NO_REDIRECTS_HIT, 1)));
+  tester.ExpectUniqueSample(
+      std::string(kMatchesPatternHistogramName) +
+          std::string(kSocialEngineeringAdsInterstitialSuffix),
+      false, 1);
+  tester.ExpectUniqueSample(std::string(kMatchesPatternHistogramName) +
+                                std::string(kSubresourceFilterOnlySuffix),
+                            true, 1);
+
+  tester.ExpectUniqueSample(std::string(kMatchesPatternHistogramName) +
+                                std::string(kPhishingInterstitalSuffix),
+                            false, 1);
   EXPECT_THAT(tester.GetAllSamples(std::string(kNavigationChainSize) +
                                    std::string(kSubresourceFilterOnlySuffix)),
               ::testing::ElementsAre(base::Bucket(1, 1)));
@@ -1454,13 +1447,17 @@ IN_PROC_BROWSER_TEST_F(
   ConfigureAsSubresourceFilterOnlyURL(url.GetOrigin());
   base::HistogramTester tester;
   ui_test_utils::NavigateToURL(browser(), url);
-  EXPECT_THAT(tester.GetAllSamples(std::string(kMatchesPatternHistogramName) +
-                                   std::string(kSubresourceFilterOnlySuffix)),
-              ::testing::IsEmpty());
+  tester.ExpectUniqueSample(
+      std::string(kMatchesPatternHistogramName) +
+          std::string(kSocialEngineeringAdsInterstitialSuffix),
+      false, 1);
+  tester.ExpectUniqueSample(std::string(kMatchesPatternHistogramName) +
+                                std::string(kSubresourceFilterOnlySuffix),
+                            false, 1);
 
-  EXPECT_THAT(tester.GetAllSamples(std::string(kNavigationChainSize) +
-                                   std::string(kSubresourceFilterOnlySuffix)),
-              ::testing::IsEmpty());
+  tester.ExpectUniqueSample(std::string(kMatchesPatternHistogramName) +
+                                std::string(kPhishingInterstitalSuffix),
+                            false, 1);
 }
 #endif
 
