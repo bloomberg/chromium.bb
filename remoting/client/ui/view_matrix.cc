@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "remoting/client/view_matrix.h"
+#include "remoting/client/ui/view_matrix.h"
 
 namespace remoting {
 

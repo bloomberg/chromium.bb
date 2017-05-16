@@ -17,6 +17,7 @@ source_set("session") {
   deps = [
     "//base",
     "//remoting/client",
+    "//remoting/client/ui",
     "//remoting/ios/display",
     "//remoting/ios/domain",
     "//remoting/protocol",

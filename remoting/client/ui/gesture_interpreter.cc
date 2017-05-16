@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "remoting/client/gesture_interpreter.h"
+#include "remoting/client/ui/gesture_interpreter.h"
 
 #include "base/bind.h"
 #include "base/time/time.h"
-#include "remoting/client/direct_input_strategy.h"
+#include "remoting/client/ui/direct_input_strategy.h"
 
 namespace {
 

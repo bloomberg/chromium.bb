@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef REMOTING_CLIENT_FLING_TRACKER_H_
-#define REMOTING_CLIENT_FLING_TRACKER_H_
+#ifndef REMOTING_CLIENT_UI_FLING_TRACKER_H_
+#define REMOTING_CLIENT_UI_FLING_TRACKER_H_
 
 #include "base/time/time.h"
 
@@ -49,4 +49,4 @@ class FlingTracker {
 };
 
 }  // namespace remoting
-#endif  // REMOTING_CLIENT_FLING_TRACKER_H_
+#endif  // REMOTING_CLIENT_UI_FLING_TRACKER_H_

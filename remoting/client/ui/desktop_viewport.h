@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef REMOTING_CLIENT_DESKTOP_VIEWPORT_H_
-#define REMOTING_CLIENT_DESKTOP_VIEWPORT_H_
+#ifndef REMOTING_CLIENT_UI_DESKTOP_VIEWPORT_H_
+#define REMOTING_CLIENT_UI_DESKTOP_VIEWPORT_H_
 
 #include "base/callback.h"
-#include "remoting/client/view_matrix.h"
+#include "remoting/client/ui/view_matrix.h"
 
 namespace remoting {
 
@@ -114,4 +114,4 @@ class DesktopViewport {
 };
 
 }  // namespace remoting
-#endif  // REMOTING_CLIENT_DESKTOP_VIEWPORT_H_
+#endif  // REMOTING_CLIENT_UI_DESKTOP_VIEWPORT_H_

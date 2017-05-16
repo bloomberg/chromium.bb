@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef REMOTING_CLIENT_GESTURE_INTERPRETER_H_
-#define REMOTING_CLIENT_GESTURE_INTERPRETER_H_
+#ifndef REMOTING_CLIENT_UI_GESTURE_INTERPRETER_H_
+#define REMOTING_CLIENT_UI_GESTURE_INTERPRETER_H_
 
 #include <memory>
 
 #include "remoting/client/chromoting_session.h"
-#include "remoting/client/desktop_viewport.h"
-#include "remoting/client/fling_animation.h"
+#include "remoting/client/ui/desktop_viewport.h"
+#include "remoting/client/ui/fling_animation.h"
 #include "remoting/proto/event.pb.h"
 
 namespace remoting {
@@ -78,4 +78,4 @@ class GestureInterpreter {
 };
 
 }  // namespace remoting
-#endif  // REMOTING_CLIENT_GESTURE_INTERPRETER_H_
+#endif  // REMOTING_CLIENT_UI_GESTURE_INTERPRETER_H_
