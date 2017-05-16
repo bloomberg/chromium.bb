@@ -33,7 +33,7 @@ class CONTENT_EXPORT ScreenOrientationProvider
 
   // device::mojom::ScreenOrientation:
   void LockOrientation(blink::WebScreenOrientationLockType orientation,
-                       const LockOrientationCallback& callback) override;
+                       LockOrientationCallback callback) override;
   void UnlockOrientation() override;
 
   // Inform about a screen orientation update. It is called to let the provider
