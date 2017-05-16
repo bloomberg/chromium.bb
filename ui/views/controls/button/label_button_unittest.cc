@@ -44,8 +44,9 @@ namespace views {
 // Testing button that exposes protected methods.
 class TestLabelButton : public LabelButton {
  public:
-  explicit TestLabelButton(const base::string16& text = base::string16())
-      : LabelButton(nullptr, text) {}
+  explicit TestLabelButton(const base::string16& text = base::string16(),
+                           int button_context = style::CONTEXT_BUTTON)
+      : LabelButton(nullptr, text, button_context) {}
 
   using LabelButton::label;
   using LabelButton::image;
@@ -148,7 +149,7 @@ TEST_F(LabelButtonTest, Init) {
 TEST_F(LabelButtonTest, Label) {
   EXPECT_TRUE(button_->GetText().empty());
 
-  const gfx::FontList font_list;
+  const gfx::FontList font_list = button_->label()->font_list();
   const base::string16 short_text(ASCIIToUTF16("abcdefghijklm"));
   const base::string16 long_text(ASCIIToUTF16("abcdefghijklmnopqrstuvwxyz"));
   const int short_text_width = gfx::GetStringWidth(short_text, font_list);
@@ -238,7 +239,7 @@ TEST_F(LabelButtonTest, Image) {
 }
 
 TEST_F(LabelButtonTest, LabelAndImage) {
-  const gfx::FontList font_list;
+  const gfx::FontList font_list = button_->label()->font_list();
   const base::string16 text(ASCIIToUTF16("abcdefghijklm"));
   const int text_width = gfx::GetStringWidth(text, font_list);
 
@@ -296,23 +297,43 @@ TEST_F(LabelButtonTest, LabelAndImage) {
   EXPECT_LT(button_->GetPreferredSize().height(), image_size);
 }
 
-TEST_F(LabelButtonTest, AdjustFontSize) {
-  button_->SetText(base::ASCIIToUTF16("abc"));
+// Ensure that the text used for button labels correctly adjusts in response
+// to provided style::TextContext values.
+TEST_F(LabelButtonTest, TextSizeFromContext) {
+  constexpr style::TextContext kDefaultContext = style::CONTEXT_BUTTON;
 
-  const int original_width = button_->GetPreferredSize().width();
-  const int original_height = button_->GetPreferredSize().height();
+  // Although CONTEXT_DIALOG_TITLE isn't used for buttons, picking a style with
+  // a small delta risks finding a font with a different point-size but with the
+  // same maximum glyph height.
+  constexpr style::TextContext kAlternateContext = style::CONTEXT_DIALOG_TITLE;
+
+  // First sanity that the TextConstants used in the test give different sizes.
+  int default_delta, alternate_delta;
+  gfx::Font::Weight default_weight, alternate_weight;
+  DefaultTypographyProvider::GetDefaultFont(
+      kDefaultContext, style::STYLE_PRIMARY, &default_delta, &default_weight);
+  DefaultTypographyProvider::GetDefaultFont(
+      kAlternateContext, style::STYLE_PRIMARY, &alternate_delta,
+      &alternate_weight);
+  EXPECT_LT(default_delta, alternate_delta);
+
+  const base::string16 text(ASCIIToUTF16("abcdefghijklm"));
+  button_->SetText(text);
+  EXPECT_EQ(default_delta, button_->label()->font_list().GetFontSize() -
+                               gfx::FontList().GetFontSize());
+
+  TestLabelButton* alternate_button =
+      new TestLabelButton(text, kAlternateContext);
+  button_->parent()->AddChildView(alternate_button);
+  EXPECT_EQ(alternate_delta,
+            alternate_button->label()->font_list().GetFontSize() -
+                gfx::FontList().GetFontSize());
 
   // The button size increases when the font size is increased.
-  button_->AdjustFontSize(100);
-  EXPECT_GT(button_->GetPreferredSize().width(), original_width);
-  EXPECT_GT(button_->GetPreferredSize().height(), original_height);
-
-  // The button returns to its original size when the minimal size is cleared
-  // and the original font size is restored.
-  button_->SetMinSize(gfx::Size());
-  button_->AdjustFontSize(-100);
-  EXPECT_EQ(original_width, button_->GetPreferredSize().width());
-  EXPECT_EQ(original_height, button_->GetPreferredSize().height());
+  EXPECT_LT(button_->GetPreferredSize().width(),
+            alternate_button->GetPreferredSize().width());
+  EXPECT_LT(button_->GetPreferredSize().height(),
+            alternate_button->GetPreferredSize().height());
 }
 
 TEST_F(LabelButtonTest, ChangeTextSize) {

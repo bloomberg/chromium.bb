@@ -4,6 +4,7 @@
 
 #include "ash/system/toast/toast_overlay.h"
 
+#include "ash/public/cpp/ash_typography.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
 #include "ash/shelf/wm_shelf.h"
@@ -15,7 +16,6 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/font_list.h"
 #include "ui/views/border.h"
@@ -33,10 +33,6 @@ namespace {
 
 // Offset of the overlay from the edge of the work area.
 const int kOffset = 5;
-
-// Font style used for modifier key labels.
-const ui::ResourceBundle::FontStyle kTextFontStyle =
-    ui::ResourceBundle::MediumFont;
 
 // Duration of slide animation when overlay is shown or hidden.
 const int kSlideAnimationDurationMs = 100;
@@ -71,12 +67,9 @@ class ToastOverlayLabel : public views::Label {
   DISALLOW_COPY_AND_ASSIGN(ToastOverlayLabel);
 };
 
-ToastOverlayLabel::ToastOverlayLabel(const base::string16& label) {
-  ui::ResourceBundle* rb = &ui::ResourceBundle::GetSharedInstance();
-
-  SetText(label);
+ToastOverlayLabel::ToastOverlayLabel(const base::string16& label)
+    : Label(label, CONTEXT_TOAST_OVERLAY) {
   SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  SetFontList(rb->GetFontList(kTextFontStyle));
   SetAutoColorReadabilityEnabled(false);
   SetMultiLine(true);
   SetEnabledColor(SK_ColorWHITE);
@@ -107,15 +100,12 @@ class ToastOverlayButton : public views::LabelButton {
 
 ToastOverlayButton::ToastOverlayButton(views::ButtonListener* listener,
                                        const base::string16& text)
-    : views::LabelButton(listener, text) {
+    : views::LabelButton(listener, text, CONTEXT_TOAST_OVERLAY) {
   SetInkDropMode(InkDropMode::ON);
   set_has_ink_drop_action_on_click(true);
   set_ink_drop_base_color(SK_ColorWHITE);
 
-  ui::ResourceBundle* rb = &ui::ResourceBundle::GetSharedInstance();
-
   SetEnabledTextColors(kButtonTextColor);
-  SetFontList(rb->GetFontList(kTextFontStyle));
 
   // Treat the space below the baseline as a margin.
   int verticalSpacing = kToastVerticalSpacing -

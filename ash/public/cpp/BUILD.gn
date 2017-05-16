@@ -6,6 +6,8 @@
 component("ash_public_cpp") {
   sources = [
     "ash_public_export.h",
+    "ash_typography.cc",
+    "ash_typography.h",
     "config.h",
     "mus_property_mirror_ash.cc",
     "mus_property_mirror_ash.h",
@@ -32,6 +34,7 @@ component("ash_public_cpp") {
     "//mojo/common:common_custom_types",
     "//skia/public/interfaces",
     "//ui/aura",
+    "//ui/views",
     "//ui/views/mus",
   ]
 
