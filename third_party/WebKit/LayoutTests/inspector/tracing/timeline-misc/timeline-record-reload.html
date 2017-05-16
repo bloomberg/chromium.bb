@@ -1,0 +1,31 @@
+<html>
+<head>
+<script src="../../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../../http/tests/inspector/console-test.js"></script>
+<script src="../../../http/tests/inspector/timeline-test.js"></script>
+<script>
+
+function test()
+{
+    var panel = UI.panels.timeline;
+
+    InspectorTest.runWhenTimelineIsReady(recordingStopped);
+
+    panel._millisecondsToRecordAfterLoadEvent = 1;
+    panel._recordReload();
+
+    function recordingStopped()
+    {
+        InspectorTest.addResult("Recording stopped");
+        InspectorTest.completeTest();
+    }
+}
+
+</script>
+</head>
+
+<body onload="runTest()">
+<p>Test recording page reload works in Timeline.</p>
+
+</body>
+</html>
