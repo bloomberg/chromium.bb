@@ -43,15 +43,17 @@ bool ShouldMeasurePerformanceForPageLoad(double performance_measurement_rate) {
           base::RandDouble() < performance_measurement_rate);
 }
 
-// Records histograms about the length of redirect chains, and about the pattern
-// of whether each URL in the chain matched the activation list.
-#define REPORT_REDIRECT_PATTERN_FOR_SUFFIX(suffix, hits_pattern, chain_size)   \
-  do {                                                                         \
-    UMA_HISTOGRAM_ENUMERATION(                                                 \
-        "SubresourceFilter.PageLoad.RedirectChainMatchPattern." suffix,        \
-        hits_pattern, 0x10);                                                   \
-    UMA_HISTOGRAM_COUNTS(                                                      \
-        "SubresourceFilter.PageLoad.RedirectChainLength." suffix, chain_size); \
+// Records histograms about the pattern of redirect chains, and about the
+// pattern of whether the last URL in the chain matched the activation list.
+#define REPORT_REDIRECT_PATTERN_FOR_SUFFIX(suffix, is_matched, chain_size)    \
+  do {                                                                        \
+    UMA_HISTOGRAM_BOOLEAN("SubresourceFilter.PageLoad.FinalURLMatch." suffix, \
+                          is_matched);                                        \
+    if (is_matched) {                                                         \
+      UMA_HISTOGRAM_COUNTS(                                                   \
+          "SubresourceFilter.PageLoad.RedirectChainLength." suffix,           \
+          chain_size);                                                        \
+    };                                                                        \
   } while (0)
 
 }  // namespace
@@ -290,35 +292,6 @@ void ContentSubresourceFilterDriverFactory::AddActivationListMatch(
     activation_list_matches_[DistillURLToHostAndPath(url)].insert(match_type);
 }
 
-int ContentSubresourceFilterDriverFactory::CalculateHitPatternForActivationList(
-    ActivationList activation_list) const {
-  int hits_pattern = 0;
-  const int kInitialURLHitMask = 0x4;
-  const int kRedirectURLHitMask = 0x2;
-  const int kFinalURLHitMask = 0x1;
-
-  if (navigation_chain_.size() > 1) {
-    if (DidURLMatchActivationList(navigation_chain_.back(), activation_list))
-      hits_pattern |= kFinalURLHitMask;
-    if (DidURLMatchActivationList(navigation_chain_.front(), activation_list))
-      hits_pattern |= kInitialURLHitMask;
-
-    // Examine redirects.
-    for (size_t i = 1; i < navigation_chain_.size() - 1; ++i) {
-      if (DidURLMatchActivationList(navigation_chain_[i], activation_list)) {
-        hits_pattern |= kRedirectURLHitMask;
-        break;
-      }
-    }
-  } else {
-    if (navigation_chain_.size() &&
-        DidURLMatchActivationList(navigation_chain_.front(), activation_list)) {
-      hits_pattern = 0x8;  // One url hit.
-    }
-  }
-  return hits_pattern;
-}
-
 void ContentSubresourceFilterDriverFactory::RecordRedirectChainMatchPattern()
     const {
   RecordRedirectChainMatchPatternForList(
@@ -330,21 +303,25 @@ void ContentSubresourceFilterDriverFactory::RecordRedirectChainMatchPattern()
 void ContentSubresourceFilterDriverFactory::
     RecordRedirectChainMatchPatternForList(
         ActivationList activation_list) const {
-  int hits_pattern = CalculateHitPatternForActivationList(activation_list);
-  if (!hits_pattern)
+  DCHECK(!navigation_chain_.empty());
+  if (!navigation_chain_.back().has_host() ||
+      !navigation_chain_.back().SchemeIsHTTPOrHTTPS()) {
     return;
+  }
+  bool is_matched =
+      DidURLMatchActivationList(navigation_chain_.back(), activation_list);
   size_t chain_size = navigation_chain_.size();
   switch (activation_list) {
     case ActivationList::SOCIAL_ENG_ADS_INTERSTITIAL:
       REPORT_REDIRECT_PATTERN_FOR_SUFFIX("SocialEngineeringAdsInterstitial",
-                                         hits_pattern, chain_size);
+                                         is_matched, chain_size);
       break;
     case ActivationList::PHISHING_INTERSTITIAL:
-      REPORT_REDIRECT_PATTERN_FOR_SUFFIX("PhishingInterstital", hits_pattern,
+      REPORT_REDIRECT_PATTERN_FOR_SUFFIX("PhishingInterstital", is_matched,
                                          chain_size);
       break;
     case ActivationList::SUBRESOURCE_FILTER:
-      REPORT_REDIRECT_PATTERN_FOR_SUFFIX("SubresourceFilterOnly", hits_pattern,
+      REPORT_REDIRECT_PATTERN_FOR_SUFFIX("SubresourceFilterOnly", is_matched,
                                          chain_size);
       break;
     default:

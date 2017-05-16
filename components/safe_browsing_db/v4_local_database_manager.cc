@@ -256,7 +256,7 @@ bool V4LocalDatabaseManager::CheckResourceUrl(const GURL& url, Client* client) {
 
   StoresToCheck stores_to_check({GetChromeUrlClientIncidentId()});
 
-  if (!CanCheckUrl(url) || !AreStoresAvailableNow(stores_to_check)) {
+  if (!CanCheckUrl(url) || !AreAllStoresAvailableNow(stores_to_check)) {
     // Fail open: Mark resource as safe immediately.
     // TODO(nparker): This should queue the request if the DB isn't yet
     // loaded, and later decide if this store is available.
@@ -276,8 +276,9 @@ bool V4LocalDatabaseManager::CheckUrlForSubresourceFilter(const GURL& url,
                                                           Client* client) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  StoresToCheck stores_to_check({GetUrlSubresourceFilterId()});
-  if (!AreStoresAvailableNow(stores_to_check) || !CanCheckUrl(url)) {
+  StoresToCheck stores_to_check(
+      {GetUrlSocEngId(), GetUrlSubresourceFilterId()});
+  if (!AreAnyStoresAvailableNow(stores_to_check) || !CanCheckUrl(url)) {
     return true;
   }
 
@@ -292,7 +293,7 @@ bool V4LocalDatabaseManager::MatchCsdWhitelistUrl(const GURL& url) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   StoresToCheck stores_to_check({GetUrlCsdWhitelistId()});
-  if (!AreStoresAvailableNow(stores_to_check)) {
+  if (!AreAllStoresAvailableNow(stores_to_check)) {
     // Fail open: Whitelist everything. Otherwise we may run the
     // CSD phishing/malware detector on popular domains and generate
     // undue load on the client and server. This has the effect of disabling
@@ -308,7 +309,7 @@ bool V4LocalDatabaseManager::MatchDownloadWhitelistString(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   StoresToCheck stores_to_check({GetCertCsdDownloadWhitelistId()});
-  if (!AreStoresAvailableNow(stores_to_check)) {
+  if (!AreAllStoresAvailableNow(stores_to_check)) {
     // Fail close: Whitelist nothing. This may generate download-protection
     // pings for whitelisted binaries, but that's fine.
     return false;
@@ -321,7 +322,7 @@ bool V4LocalDatabaseManager::MatchDownloadWhitelistUrl(const GURL& url) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   StoresToCheck stores_to_check({GetUrlCsdDownloadWhitelistId()});
-  if (!AreStoresAvailableNow(stores_to_check)) {
+  if (!AreAllStoresAvailableNow(stores_to_check)) {
     // Fail close: Whitelist nothing. This may generate download-protection
     // pings for whitelisted domains, but that's fine.
     return false;
@@ -351,7 +352,7 @@ bool V4LocalDatabaseManager::MatchModuleWhitelistString(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   StoresToCheck stores_to_check({GetChromeFilenameClientIncidentId()});
-  if (!AreStoresAvailableNow(stores_to_check)) {
+  if (!AreAllStoresAvailableNow(stores_to_check)) {
     // Fail open: Whitelist everything.  This has the effect of marking
     // all DLLs as safe until the DB is synced and loaded.
     return true;
@@ -757,10 +758,16 @@ void V4LocalDatabaseManager::UpdateRequestCompleted(
                             db_updated_callback_);
 }
 
-bool V4LocalDatabaseManager::AreStoresAvailableNow(
+bool V4LocalDatabaseManager::AreAllStoresAvailableNow(
     const StoresToCheck& stores_to_check) const {
   return enabled_ && v4_database_ &&
-         v4_database_->AreStoresAvailable(stores_to_check);
+         v4_database_->AreAllStoresAvailable(stores_to_check);
+}
+
+bool V4LocalDatabaseManager::AreAnyStoresAvailableNow(
+    const StoresToCheck& stores_to_check) const {
+  return enabled_ && v4_database_ &&
+         v4_database_->AreAnyStoresAvailable(stores_to_check);
 }
 
 }  // namespace safe_browsing

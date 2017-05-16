@@ -92,7 +92,6 @@ void SafeBrowsingResourceThrottle::StartDisplayingBlockingPage(
     const security_interstitials::UnsafeResource& resource) {
   content::WebContents* web_contents = resource.web_contents_getter.Run();
   if (web_contents) {
-    BaseResourceThrottle::NotifySubresourceFilterOfBlockedResource(resource);
     prerender::PrerenderContents* prerender_contents =
         prerender::PrerenderContents::FromWebContents(web_contents);
     if (prerender_contents) {

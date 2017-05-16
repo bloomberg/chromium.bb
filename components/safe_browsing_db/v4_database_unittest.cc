@@ -468,13 +468,22 @@ TEST_F(V4DatabaseTest, TestStoresAvailable) {
   const ListIdentifier bogus_id(LINUX_PLATFORM, CHROME_EXTENSION,
                                 CSD_WHITELIST);
 
-  EXPECT_TRUE(v4_database_->AreStoresAvailable(
+  EXPECT_TRUE(v4_database_->AreAllStoresAvailable(
+      StoresToCheck({linux_malware_id_, win_malware_id_})));
+  EXPECT_TRUE(v4_database_->AreAnyStoresAvailable(
       StoresToCheck({linux_malware_id_, win_malware_id_})));
 
-  EXPECT_FALSE(v4_database_->AreStoresAvailable(
+  EXPECT_TRUE(
+      v4_database_->AreAllStoresAvailable(StoresToCheck({linux_malware_id_})));
+  EXPECT_TRUE(
+      v4_database_->AreAnyStoresAvailable(StoresToCheck({linux_malware_id_})));
+
+  EXPECT_FALSE(v4_database_->AreAllStoresAvailable(
+      StoresToCheck({linux_malware_id_, bogus_id})));
+  EXPECT_TRUE(v4_database_->AreAnyStoresAvailable(
       StoresToCheck({linux_malware_id_, bogus_id})));
 
-  EXPECT_FALSE(v4_database_->AreStoresAvailable(StoresToCheck({bogus_id})));
+  EXPECT_FALSE(v4_database_->AreAllStoresAvailable(StoresToCheck({bogus_id})));
 }
 
 // Test to ensure that the callback to the database is dropped when the database

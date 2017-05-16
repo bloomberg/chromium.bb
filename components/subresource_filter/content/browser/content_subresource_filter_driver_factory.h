@@ -147,8 +147,6 @@ class ContentSubresourceFilterDriverFactory
                                  ActivationList activation_list) const;
 
   void AddActivationListMatch(const GURL& url, ActivationList match_type);
-  int CalculateHitPatternForActivationList(
-      ActivationList activation_list) const;
   void RecordRedirectChainMatchPattern() const;
 
   void RecordRedirectChainMatchPatternForList(

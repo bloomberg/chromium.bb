@@ -120,7 +120,13 @@ class FakeV4Database : public V4Database {
     }
   }
 
-  bool AreStoresAvailable(const StoresToCheck& stores_to_check) const override {
+  bool AreAllStoresAvailable(
+      const StoresToCheck& stores_to_check) const override {
+    return stores_available_;
+  }
+
+  bool AreAnyStoresAvailable(
+      const StoresToCheck& stores_to_check) const override {
     return stores_available_;
   }
 

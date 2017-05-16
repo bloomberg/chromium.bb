@@ -52,26 +52,17 @@ const char kUrlD[] = "https://example_d.com";
 const char kSubframeName[] = "Child";
 const char kDisallowedUrl[] = "https://example.com/disallowed.html";
 
-const char kMatchesPatternHistogramName[] =
-    "SubresourceFilter.PageLoad.RedirectChainMatchPattern.";
+const char kMatchesHistogramName[] =
+    "SubresourceFilter.PageLoad.FinalURLMatch.";
 const char kNavigationChainSize[] =
     "SubresourceFilter.PageLoad.RedirectChainLength.";
 
-// Human readable representation of expected redirect chain match patterns.
-// The explanations for the buckets given for the following redirect chain:
-// A->B->C->D, where A is initial URL and D is a final URL.
-enum RedirectChainMatchPattern {
-  EMPTY,             // No histograms were recorded.
-  F0M0L1,            // D is a Safe Browsing match.
-  F0M1L0,            // B or C, or both are Safe Browsing matches.
-  F0M1L1,            // B or C, or both and D are Safe Browsing matches.
-  F1M0L0,            // A is Safe Browsing match
-  F1M0L1,            // A and D are Safe Browsing matches.
-  F1M1L0,            // B and/or C and A are Safe Browsing matches.
-  F1M1L1,            // B and/or C and A and D are Safe Browsing matches.
-  NO_REDIRECTS_HIT,  // Redirect chain consists of single URL, aka no redirects
-                     // has happened, and this URL was a Safe Browsing hit.
-  NUM_HIT_PATTERNS,
+// Enum helps to setup test cases. In future, when checking first URL in the
+// redirect chain is implemented, the enum will be expanded.
+enum RecordedHistograms {
+  NO_HISTOGRAMS,
+  FINAL_URL_MATCHES,
+  REDIRECT_CHAIN_LENGTH,
 };
 
 std::string GetSuffixForList(const ActivationList& type) {
@@ -151,6 +142,13 @@ const ActivationListTestData kActivationListTestData[] = {
     {ActivationDecision::ACTIVATED, ActivationList::PHISHING_INTERSTITIAL,
      safe_browsing::SB_THREAT_TYPE_URL_PHISHING,
      safe_browsing::ThreatPatternType::SOCIAL_ENGINEERING_ADS},
+    {ActivationDecision::ACTIVATED, ActivationList::SUBRESOURCE_FILTER,
+     safe_browsing::SB_THREAT_TYPE_SUBRESOURCE_FILTER,
+     safe_browsing::ThreatPatternType::NONE},
+    {ActivationDecision::ACTIVATION_CONDITIONS_NOT_MET,
+     ActivationList::PHISHING_INTERSTITIAL,
+     safe_browsing::SB_THREAT_TYPE_SUBRESOURCE_FILTER,
+     safe_browsing::ThreatPatternType::NONE},
 };
 
 struct ActivationScopeTestData {
@@ -198,8 +196,8 @@ class MockSubresourceFilterClient : public SubresourceFilterClient {
 
   void WhitelistByContentSettings(const GURL& url) override {}
   void WhitelistInCurrentWebContents(const GURL& url) override {
-    if (url.SchemeIsHTTPOrHTTPS())
-      whitelisted_hosts_.insert(url.host());
+    ASSERT_TRUE(url.SchemeIsHTTPOrHTTPS());
+    whitelisted_hosts_.insert(url.host());
   }
 
   VerifiedRulesetDealer::Handle* GetRulesetDealer() override {
@@ -210,11 +208,19 @@ class MockSubresourceFilterClient : public SubresourceFilterClient {
 
  private:
   std::set<std::string> whitelisted_hosts_;
+
   // Owned by the test harness.
   VerifiedRulesetDealer::Handle* ruleset_dealer_;
 
   DISALLOW_COPY_AND_ASSIGN(MockSubresourceFilterClient);
 };
+
+void ExpectSampleForSuffix(const std::string& suffix_to_check,
+                           const std::string& suffix,
+                           const base::HistogramTester& tester) {
+  tester.ExpectUniqueSample(kMatchesHistogramName + suffix_to_check,
+                            (suffix_to_check == suffix), 1);
+}
 
 }  // namespace
 
@@ -315,7 +321,7 @@ class ContentSubresourceFilterDriverFactoryTest
       safe_browsing::ThreatPatternType threat_type_metadata,
       const content::Referrer& referrer,
       ui::PageTransition transition,
-      RedirectChainMatchPattern expected_pattern,
+      RecordedHistograms expected_histograms,
       ActivationDecision expected_activation_decision) {
     const bool expected_activation =
         expected_activation_decision == ActivationDecision::ACTIVATED;
@@ -344,6 +350,11 @@ class ContentSubresourceFilterDriverFactoryTest
       }
       navigation_simulator->Redirect(url);
     }
+    std::string suffix;
+    ActivationList activation_list =
+        GetListForThreatTypeAndMetadata(threat_type, threat_type_metadata);
+    suffix = blacklisted_urls.back() ? GetSuffixForList(activation_list)
+                                     : std::string();
 
     navigation_simulator->Commit();
     ExpectActivationSignalForFrame(main_rfh(), expected_activation);
@@ -354,26 +365,27 @@ class ContentSubresourceFilterDriverFactoryTest
     content::RenderFrameHostTester* rfh_tester =
         content::RenderFrameHostTester::For(main_rfh());
     rfh_tester->AppendChild(kSubframeName);
-    ActivationList activation_list =
-        GetListForThreatTypeAndMetadata(threat_type, threat_type_metadata);
-
-    const std::string suffix(GetSuffixForList(activation_list));
-    size_t all_pattern =
-        tester.GetTotalCountsForPrefix(kMatchesPatternHistogramName).size();
+    size_t all_matches =
+        tester.GetTotalCountsForPrefix(kMatchesHistogramName).size();
     size_t all_chain_size =
         tester.GetTotalCountsForPrefix(kNavigationChainSize).size();
-    if (expected_pattern != EMPTY) {
-      EXPECT_THAT(tester.GetAllSamples(kMatchesPatternHistogramName + suffix),
-                  ::testing::ElementsAre(base::Bucket(expected_pattern, 1)));
-      EXPECT_THAT(
-          tester.GetAllSamples(kNavigationChainSize + suffix),
-          ::testing::ElementsAre(base::Bucket(navigation_chain.size(), 1)));
-      // Check that we recorded only what is needed.
-      EXPECT_EQ(1u, all_pattern);
+    // Check that we recorded only what is needed.
+    if (expected_histograms == NO_HISTOGRAMS) {
+      EXPECT_EQ(0u, all_matches);
+      EXPECT_EQ(0U, all_chain_size);
+    } else {
+      EXPECT_EQ(3u, all_matches);
+      ExpectSampleForSuffix("SocialEngineeringAdsInterstitial", suffix, tester);
+      ExpectSampleForSuffix("PhishingInterstital", suffix, tester);
+      ExpectSampleForSuffix("SubresourceFilterOnly", suffix, tester);
+    }
+
+    if (expected_histograms == REDIRECT_CHAIN_LENGTH) {
+      tester.ExpectUniqueSample(kNavigationChainSize + suffix,
+                                navigation_chain.size(), 1);
       EXPECT_EQ(1u, all_chain_size);
     } else {
-      EXPECT_EQ(0u, all_pattern);
-      EXPECT_EQ(0u, all_chain_size);
+      EXPECT_EQ(0U, all_chain_size);
     }
   }
 
@@ -409,13 +421,14 @@ class ContentSubresourceFilterDriverFactoryTest
       safe_browsing::ThreatPatternType threat_type_metadata,
       const content::Referrer& referrer,
       ui::PageTransition transition,
-      RedirectChainMatchPattern expected_pattern,
+      RecordedHistograms expected_histograms,
       ActivationDecision expected_activation_decision) {
     const bool expected_activation =
         expected_activation_decision == ActivationDecision::ACTIVATED;
     BlacklistURLWithRedirectsNavigateAndCommit(
         blacklisted_urls, navigation_chain, threat_type, threat_type_metadata,
-        referrer, transition, expected_pattern, expected_activation_decision);
+        referrer, transition, expected_histograms,
+        expected_activation_decision);
 
     NavigateAndCommitSubframe(GURL(kExampleLoginUrl), expected_activation);
   }
@@ -423,13 +436,13 @@ class ContentSubresourceFilterDriverFactoryTest
   void NavigateAndExpectActivation(
       const std::vector<bool>& blacklisted_urls,
       const std::vector<GURL>& navigation_chain,
-      RedirectChainMatchPattern expected_pattern,
+      RecordedHistograms expected_histograms,
       ActivationDecision expected_activation_decision) {
     NavigateAndExpectActivation(
         blacklisted_urls, navigation_chain,
         safe_browsing::SB_THREAT_TYPE_URL_PHISHING,
         safe_browsing::ThreatPatternType::SOCIAL_ENGINEERING_ADS,
-        content::Referrer(), ui::PAGE_TRANSITION_LINK, expected_pattern,
+        content::Referrer(), ui::PAGE_TRANSITION_LINK, expected_histograms,
         expected_activation_decision);
   }
 
@@ -448,7 +461,7 @@ class ContentSubresourceFilterDriverFactoryTest
 
   void EmulateInPageNavigation(
       const std::vector<bool>& blacklisted_urls,
-      RedirectChainMatchPattern expected_pattern,
+      RecordedHistograms expected_histograms,
       ActivationDecision expected_activation_decision) {
     // This test examines the navigation with the following sequence of events:
     //   DidStartProvisional(main, "example.com")
@@ -459,7 +472,8 @@ class ContentSubresourceFilterDriverFactoryTest
     //   DidCommitProvisional(main, "example.com#ref")
 
     NavigateAndExpectActivation(blacklisted_urls, {GURL(kExampleUrl)},
-                                expected_pattern, expected_activation_decision);
+                                expected_histograms,
+                                expected_activation_decision);
     EXPECT_CALL(*client(), ToggleNotificationVisibility(::testing::_)).Times(0);
     std::unique_ptr<content::NavigationSimulator> navigation_simulator =
         content::NavigationSimulator::CreateRendererInitiated(GURL(kExampleUrl),
@@ -538,22 +552,22 @@ TEST_F(ContentSubresourceFilterDriverFactoryTest,
   ResetConfiguration(std::move(config));
 
   NavigateAndExpectActivation(
-      {false}, {GURL(kExampleLoginUrl)}, EMPTY,
+      {false}, {GURL(kExampleLoginUrl)}, FINAL_URL_MATCHES,
       ActivationDecision::ACTIVATION_CONDITIONS_NOT_MET);
 
   const GURL url(kExampleUrlWithParams);
-  NavigateAndExpectActivation({true}, {url}, NO_REDIRECTS_HIT,
+  NavigateAndExpectActivation({true}, {url}, REDIRECT_CHAIN_LENGTH,
                               ActivationDecision::ACTIVATION_DISABLED);
 
   // Whitelisting occurs last, so the decision should still be DISABLED.
   factory()->client()->WhitelistInCurrentWebContents(url);
-  NavigateAndExpectActivation({true}, {url}, NO_REDIRECTS_HIT,
+  NavigateAndExpectActivation({true}, {url}, REDIRECT_CHAIN_LENGTH,
                               ActivationDecision::ACTIVATION_DISABLED);
 }
 
 TEST_F(ContentSubresourceFilterDriverFactoryTest, NoActivationWhenNoMatch) {
   NavigateAndExpectActivation(
-      {false}, {GURL(kExampleUrl)}, EMPTY,
+      {false}, {GURL(kExampleUrl)}, FINAL_URL_MATCHES,
       ActivationDecision::ACTIVATION_CONDITIONS_NOT_MET);
 }
 
@@ -562,12 +576,13 @@ TEST_F(ContentSubresourceFilterDriverFactoryTest,
   // Check that when the experiment is enabled for all site, the activation
   // signal is always sent.
   ResetConfigurationToEnableFilteringOnAllSites();
-  EmulateInPageNavigation({false}, EMPTY, ActivationDecision::ACTIVATED);
+  EmulateInPageNavigation({false}, FINAL_URL_MATCHES,
+                          ActivationDecision::ACTIVATED);
 }
 
 TEST_F(ContentSubresourceFilterDriverFactoryTest,
        SpecialCaseNavigationActivationListEnabled) {
-  EmulateInPageNavigation({true}, NO_REDIRECTS_HIT,
+  EmulateInPageNavigation({true}, REDIRECT_CHAIN_LENGTH,
                           ActivationDecision::ACTIVATED);
 }
 
@@ -579,14 +594,14 @@ TEST_F(ContentSubresourceFilterDriverFactoryTest,
   config.activation_options.performance_measurement_rate = 1.0;
   ResetConfiguration(std::move(config));
 
-  EmulateInPageNavigation({true}, NO_REDIRECTS_HIT,
+  EmulateInPageNavigation({true}, REDIRECT_CHAIN_LENGTH,
                           ActivationDecision::ACTIVATED);
 }
 
 TEST_F(ContentSubresourceFilterDriverFactoryTest, FailedNavigation) {
   const GURL url(kExampleUrl);
   ResetConfigurationToEnableFilteringOnAllSites();
-  NavigateAndExpectActivation({false}, {url}, EMPTY,
+  NavigateAndExpectActivation({false}, {url}, FINAL_URL_MATCHES,
                               ActivationDecision::ACTIVATED);
   EmulateFailedNavigationAndExpectNoActivation(url);
 }
@@ -597,86 +612,88 @@ TEST_F(ContentSubresourceFilterDriverFactoryTest, RedirectPatternTest) {
   struct RedirectRedirectChainMatchPatternTestData {
     std::vector<bool> blacklisted_urls;
     std::vector<GURL> navigation_chain;
-    RedirectChainMatchPattern hit_expected_pattern;
+    RecordedHistograms hit_expected_histograms;
     ActivationDecision expected_activation_decision;
-  } kRedirectRedirectChainMatchPatternTestData[] = {
+  } kRedirectRecordedHistogramsTestData[] = {
       {{false},
        {GURL(kUrlA)},
-       EMPTY,
+       FINAL_URL_MATCHES,
        ActivationDecision::ACTIVATION_CONDITIONS_NOT_MET},
-      {{true}, {GURL(kUrlA)}, NO_REDIRECTS_HIT, ActivationDecision::ACTIVATED},
+      {{true},
+       {GURL(kUrlA)},
+       REDIRECT_CHAIN_LENGTH,
+       ActivationDecision::ACTIVATED},
       {{false, false},
        {GURL(kUrlA), GURL(kUrlB)},
-       EMPTY,
+       FINAL_URL_MATCHES,
        ActivationDecision::ACTIVATION_CONDITIONS_NOT_MET},
       {{false, true},
        {GURL(kUrlA), GURL(kUrlB)},
-       F0M0L1,
+       REDIRECT_CHAIN_LENGTH,
        ActivationDecision::ACTIVATED},
       {{true, false},
        {GURL(kUrlA), GURL(kUrlB)},
-       F1M0L0,
+       FINAL_URL_MATCHES,
        ActivationDecision::ACTIVATION_CONDITIONS_NOT_MET},
       {{true, true},
        {GURL(kUrlA), GURL(kUrlB)},
-       F1M0L1,
+       REDIRECT_CHAIN_LENGTH,
        ActivationDecision::ACTIVATED},
       {{false, false, false},
        {GURL(kUrlA), GURL(kUrlB), GURL(kUrlC)},
-       EMPTY,
+       FINAL_URL_MATCHES,
        ActivationDecision::ACTIVATION_CONDITIONS_NOT_MET},
       {{false, false, true},
        {GURL(kUrlA), GURL(kUrlB), GURL(kUrlC)},
-       F0M0L1,
+       REDIRECT_CHAIN_LENGTH,
        ActivationDecision::ACTIVATED},
       {{false, true, false},
        {GURL(kUrlA), GURL(kUrlB), GURL(kUrlC)},
-       F0M1L0,
+       FINAL_URL_MATCHES,
        ActivationDecision::ACTIVATION_CONDITIONS_NOT_MET},
       {{false, true, true},
        {GURL(kUrlA), GURL(kUrlB), GURL(kUrlC)},
-       F0M1L1,
+       REDIRECT_CHAIN_LENGTH,
        ActivationDecision::ACTIVATED},
       {{true, false, false},
        {GURL(kUrlA), GURL(kUrlB), GURL(kUrlC)},
-       F1M0L0,
+       FINAL_URL_MATCHES,
        ActivationDecision::ACTIVATION_CONDITIONS_NOT_MET},
       {{true, false, true},
        {GURL(kUrlA), GURL(kUrlB), GURL(kUrlC)},
-       F1M0L1,
+       REDIRECT_CHAIN_LENGTH,
        ActivationDecision::ACTIVATED},
       {{true, true, false},
        {GURL(kUrlA), GURL(kUrlB), GURL(kUrlC)},
-       F1M1L0,
+       FINAL_URL_MATCHES,
        ActivationDecision::ACTIVATION_CONDITIONS_NOT_MET},
       {{true, true, true},
        {GURL(kUrlA), GURL(kUrlB), GURL(kUrlC)},
-       F1M1L1,
+       REDIRECT_CHAIN_LENGTH,
        ActivationDecision::ACTIVATED},
       {{false, true, false, false},
        {GURL(kUrlA), GURL(kUrlB), GURL(kUrlC), GURL(kUrlD)},
-       F0M1L0,
+       FINAL_URL_MATCHES,
        ActivationDecision::ACTIVATION_CONDITIONS_NOT_MET},
   };
 
-  for (size_t i = 0U; i < arraysize(kRedirectRedirectChainMatchPatternTestData);
-       ++i) {
-    auto test_data = kRedirectRedirectChainMatchPatternTestData[i];
+  for (const auto& test_data : kRedirectRecordedHistogramsTestData) {
     NavigateAndExpectActivation(
         test_data.blacklisted_urls, test_data.navigation_chain,
         safe_browsing::SB_THREAT_TYPE_URL_PHISHING,
         safe_browsing::ThreatPatternType::SOCIAL_ENGINEERING_ADS,
         content::Referrer(), ui::PAGE_TRANSITION_LINK,
-        test_data.hit_expected_pattern, test_data.expected_activation_decision);
+        test_data.hit_expected_histograms,
+        test_data.expected_activation_decision);
     NavigateAndExpectActivation(
-        {false}, {GURL("https://dummy.com")}, EMPTY,
+        {false}, {GURL("https://dummy.com")}, FINAL_URL_MATCHES,
         ActivationDecision::ACTIVATION_CONDITIONS_NOT_MET);
 #if defined(GOOGLE_CHROME_BUILD)
     NavigateAndExpectActivation(
         test_data.blacklisted_urls, test_data.navigation_chain,
         safe_browsing::SB_THREAT_TYPE_SUBRESOURCE_FILTER,
         safe_browsing::ThreatPatternType::NONE, content::Referrer(),
-        ui::PAGE_TRANSITION_LINK, test_data.hit_expected_pattern,
+        ui::PAGE_TRANSITION_LINK, test_data.hit_expected_histograms,
         ActivationDecision::ACTIVATION_CONDITIONS_NOT_MET);
 #endif
   }
@@ -684,7 +701,7 @@ TEST_F(ContentSubresourceFilterDriverFactoryTest, RedirectPatternTest) {
 
 TEST_F(ContentSubresourceFilterDriverFactoryTest, NotificationVisibility) {
   ResetConfigurationToEnableFilteringOnAllSites();
-  NavigateAndExpectActivation({false}, {GURL(kExampleUrl)}, EMPTY,
+  NavigateAndExpectActivation({false}, {GURL(kExampleUrl)}, FINAL_URL_MATCHES,
                               ActivationDecision::ACTIVATED);
   EXPECT_CALL(*client(), ToggleNotificationVisibility(true)).Times(1);
   NavigateSubframeAndExpectCheckResult(GURL(kDisallowedUrl),
@@ -696,7 +713,7 @@ TEST_F(ContentSubresourceFilterDriverFactoryTest,
   Configuration config(ActivationLevel::ENABLED, ActivationScope::ALL_SITES);
   config.activation_options.should_suppress_notifications = true;
   ResetConfiguration(std::move(config));
-  NavigateAndExpectActivation({false}, {GURL(kExampleUrl)}, EMPTY,
+  NavigateAndExpectActivation({false}, {GURL(kExampleUrl)}, FINAL_URL_MATCHES,
                               ActivationDecision::ACTIVATED);
   EXPECT_CALL(*client(), ToggleNotificationVisibility(::testing::_)).Times(0);
   NavigateSubframeAndExpectCheckResult(GURL(kDisallowedUrl),
@@ -708,7 +725,7 @@ TEST_F(ContentSubresourceFilterDriverFactoryTest,
   GURL url(kExampleUrl);
   Configuration config(ActivationLevel::DISABLED, ActivationScope::ALL_SITES);
   ResetConfiguration(std::move(config));
-  NavigateAndExpectActivation({false}, {url}, EMPTY,
+  NavigateAndExpectActivation({false}, {url}, FINAL_URL_MATCHES,
                               ActivationDecision::ACTIVATION_DISABLED);
   NavigateSubframeAndExpectCheckResult(url, false /* expect_cancelled */);
 }
@@ -741,11 +758,12 @@ TEST_F(ContentSubresourceFilterDriverFactoryTest, WhitelistSiteOnReload) {
         {false}, {GURL(kExampleUrl)},
         safe_browsing::SB_THREAT_TYPE_URL_PHISHING,
         safe_browsing::ThreatPatternType::SOCIAL_ENGINEERING_ADS,
-        test_case.referrer, test_case.transition, EMPTY,
+        test_case.referrer, test_case.transition, FINAL_URL_MATCHES,
         test_case.expected_activation_decision);
     // Verify that if the first URL failed to activate, subsequent same-origin
     // navigations also fail to activate.
-    NavigateAndExpectActivation({false}, {GURL(kExampleUrlWithParams)}, EMPTY,
+    NavigateAndExpectActivation({false}, {GURL(kExampleUrlWithParams)},
+                                FINAL_URL_MATCHES,
                                 test_case.expected_activation_decision);
   }
 }
@@ -753,7 +771,7 @@ TEST_F(ContentSubresourceFilterDriverFactoryTest, WhitelistSiteOnReload) {
 TEST_F(ContentSubresourceFilterDriverFactoryTest, NoConfigs) {
   ResetConfiguration(std::vector<Configuration>());
   NavigateAndExpectActivation(
-      {true}, {GURL(kExampleUrl)}, NO_REDIRECTS_HIT,
+      {true}, {GURL(kExampleUrl)}, REDIRECT_CHAIN_LENGTH,
       ActivationDecision::ACTIVATION_CONDITIONS_NOT_MET);
 }
 
@@ -773,18 +791,19 @@ TEST_F(ContentSubresourceFilterDriverFactoryTest, MultipleSimultaneousConfigs) {
   ResetConfiguration({config1, config2, config3});
 
   // Should match |config2| and |config3|, the former with the higher priority.
-  NavigateAndExpectActivation({true}, {GURL(kExampleUrl)}, NO_REDIRECTS_HIT,
+  NavigateAndExpectActivation({true}, {GURL(kExampleUrl)},
+                              REDIRECT_CHAIN_LENGTH,
                               ActivationDecision::ACTIVATION_DISABLED);
 
   // Should match |config3|.
-  NavigateAndExpectActivation({false}, {GURL(kExampleUrl)}, EMPTY,
+  NavigateAndExpectActivation({false}, {GURL(kExampleUrl)}, FINAL_URL_MATCHES,
                               ActivationDecision::ACTIVATED);
 
   // Should match |config3|, but a reload, so this should get whitelisted.
   NavigateAndExpectActivation(
       {false}, {GURL(kExampleUrl)}, safe_browsing::SB_THREAT_TYPE_URL_PHISHING,
       safe_browsing::ThreatPatternType::SOCIAL_ENGINEERING_ADS,
-      content::Referrer(), ui::PAGE_TRANSITION_RELOAD, EMPTY,
+      content::Referrer(), ui::PAGE_TRANSITION_RELOAD, FINAL_URL_MATCHES,
       ActivationDecision::URL_WHITELISTED);
 }
 
@@ -796,7 +815,7 @@ TEST_P(ContentSubresourceFilterDriverFactoryActivationLevelTest,
       ActivationList::SOCIAL_ENG_ADS_INTERSTITIAL));
 
   const GURL url(kExampleUrlWithParams);
-  NavigateAndExpectActivation({true}, {url}, NO_REDIRECTS_HIT,
+  NavigateAndExpectActivation({true}, {url}, REDIRECT_CHAIN_LENGTH,
                               test_data.expected_activation_decision);
   factory()->client()->WhitelistInCurrentWebContents(url);
 
@@ -805,7 +824,7 @@ TEST_P(ContentSubresourceFilterDriverFactoryActivationLevelTest,
       test_data.activation_level == ActivationLevel::DISABLED
           ? test_data.expected_activation_decision
           : ActivationDecision::URL_WHITELISTED;
-  NavigateAndExpectActivation({true}, {url}, NO_REDIRECTS_HIT, decision);
+  NavigateAndExpectActivation({true}, {url}, REDIRECT_CHAIN_LENGTH, decision);
 }
 
 TEST_P(ContentSubresourceFilterDriverFactoryThreatTypeTest,
@@ -827,7 +846,8 @@ TEST_P(ContentSubresourceFilterDriverFactoryThreatTypeTest,
       {GURL(kUrlA), GURL(kUrlB), GURL(kUrlC), test_url}, test_data.threat_type,
       test_data.threat_type_metadata, content::Referrer(),
       ui::PAGE_TRANSITION_LINK,
-      effective_list != ActivationList::NONE ? F0M0L1 : EMPTY,
+      effective_list != ActivationList::NONE ? REDIRECT_CHAIN_LENGTH
+                                             : FINAL_URL_MATCHES,
       test_data.expected_activation_decision);
 };
 
@@ -840,10 +860,11 @@ TEST_P(ContentSubresourceFilterDriverFactoryActivationScopeTest,
 
   const GURL test_url(kExampleUrlWithParams);
 
-  RedirectChainMatchPattern expected_pattern =
-      test_data.url_matches_activation_list ? NO_REDIRECTS_HIT : EMPTY;
+  RecordedHistograms expected_histograms = test_data.url_matches_activation_list
+                                               ? REDIRECT_CHAIN_LENGTH
+                                               : FINAL_URL_MATCHES;
   NavigateAndExpectActivation({test_data.url_matches_activation_list},
-                              {test_url}, expected_pattern,
+                              {test_url}, expected_histograms,
                               test_data.expected_activation_decision);
   if (test_data.url_matches_activation_list) {
     factory()->client()->WhitelistInCurrentWebContents(test_url);
@@ -852,8 +873,8 @@ TEST_P(ContentSubresourceFilterDriverFactoryActivationScopeTest,
     if (expected_decision == ActivationDecision::ACTIVATED)
       expected_decision = ActivationDecision::URL_WHITELISTED;
     NavigateAndExpectActivation({test_data.url_matches_activation_list},
-                                {GURL(kExampleUrlWithParams)}, expected_pattern,
-                                expected_decision);
+                                {GURL(kExampleUrlWithParams)},
+                                expected_histograms, expected_decision);
   }
 };
 
@@ -874,17 +895,17 @@ TEST_P(ContentSubresourceFilterDriverFactoryActivationScopeTest,
                                   "https://example.test"};
   for (auto* url : unsupported_urls) {
     SCOPED_TRACE(url);
-    RedirectChainMatchPattern expected_pattern = EMPTY;
     NavigateAndExpectActivation({test_data.url_matches_activation_list},
-                                {GURL(url)}, expected_pattern,
+                                {GURL(url)}, NO_HISTOGRAMS,
                                 ActivationDecision::UNSUPPORTED_SCHEME);
   }
   for (auto* url : supported_urls) {
     SCOPED_TRACE(url);
-    RedirectChainMatchPattern expected_pattern =
-        test_data.url_matches_activation_list ? NO_REDIRECTS_HIT : EMPTY;
+    RecordedHistograms expected_histograms =
+        test_data.url_matches_activation_list ? REDIRECT_CHAIN_LENGTH
+                                              : FINAL_URL_MATCHES;
     NavigateAndExpectActivation({test_data.url_matches_activation_list},
-                                {GURL(url)}, expected_pattern,
+                                {GURL(url)}, expected_histograms,
                                 test_data.expected_activation_decision);
   }
 };
