@@ -338,20 +338,20 @@ STDMETHODIMP AXPlatformNodeWin::accNavigate(
     LONG nav_dir, VARIANT start, VARIANT* end) {
   AXPlatformNodeWin* target;
   COM_OBJECT_VALIDATE_VAR_ID_1_ARG_AND_GET_TARGET(start, end, target);
-  IAccessible* result = nullptr;
-
-  if ((nav_dir == NAVDIR_LASTCHILD || nav_dir == NAVDIR_FIRSTCHILD) &&
-      start.lVal != CHILDID_SELF) {
+  end->vt = VT_EMPTY;
+  if ((nav_dir == NAVDIR_FIRSTCHILD || nav_dir == NAVDIR_LASTCHILD) &&
+      V_VT(&start) == VT_I4 && V_I4(&start) != CHILDID_SELF) {
     // MSAA states that navigating to first/last child can only be from self.
     return E_INVALIDARG;
   }
 
+  IAccessible* result = nullptr;
   switch (nav_dir) {
     case NAVDIR_DOWN:
     case NAVDIR_UP:
     case NAVDIR_LEFT:
     case NAVDIR_RIGHT:
-      // These directions are not implemented, matching Mozilla and IE.
+      // These directions are not implemented except in tables.
       return E_NOTIMPL;
 
     case NAVDIR_FIRSTCHILD:
@@ -365,27 +365,22 @@ STDMETHODIMP AXPlatformNodeWin::accNavigate(
       break;
 
     case NAVDIR_NEXT: {
-      AXPlatformNodeBase* next = GetNextSibling();
+      AXPlatformNodeBase* next = target->GetNextSibling();
       if (next)
         result = next->GetNativeViewAccessible();
       break;
     }
 
     case NAVDIR_PREVIOUS: {
-      AXPlatformNodeBase* previous = GetPreviousSibling();
+      AXPlatformNodeBase* previous = target->GetPreviousSibling();
       if (previous)
         result = previous->GetNativeViewAccessible();
       break;
     }
-
-    default:
-      return E_INVALIDARG;
   }
 
-  if (!result) {
-    end->vt = VT_EMPTY;
+  if (!result)
     return S_FALSE;
-  }
 
   end->vt = VT_DISPATCH;
   end->pdispVal = result;
@@ -1269,10 +1264,12 @@ LONG AXPlatformNodeWin::FindBoundary(
 
 AXPlatformNodeWin* AXPlatformNodeWin::GetTargetFromChildID(
     const VARIANT& var_id) {
+  if (V_VT(&var_id) != VT_I4)
+    return nullptr;
+
   LONG child_id = V_I4(&var_id);
-  if (child_id == CHILDID_SELF) {
+  if (child_id == CHILDID_SELF)
     return this;
-  }
 
   if (child_id >= 1 && child_id <= delegate_->GetChildCount()) {
     // Positive child ids are a 1-based child index, used by clients

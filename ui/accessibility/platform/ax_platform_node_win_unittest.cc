@@ -47,7 +47,7 @@ class AXPlatformNodeWinTest : public testing::Test {
     tree_.reset(new AXTree(initial_state));
   }
 
-  // Convenience functions to initialize directly from a few AXNodeDatas.
+  // Convenience functions to initialize directly from a few AXNodeData objects.
   void Init(const AXNodeData& node1) {
     AXTreeUpdate update;
     update.root_id = node1.id;
@@ -83,9 +83,10 @@ class AXPlatformNodeWinTest : public testing::Test {
   ScopedComPtr<IAccessible> IAccessibleFromNode(AXNode* node) {
     TestAXNodeWrapper* wrapper =
         TestAXNodeWrapper::GetOrCreate(tree_.get(), node);
+    if (!wrapper)
+      return ScopedComPtr<IAccessible>();
     AXPlatformNode* ax_platform_node = wrapper->ax_platform_node();
     IAccessible* iaccessible = ax_platform_node->GetNativeViewAccessible();
-    iaccessible->AddRef();
     return ScopedComPtr<IAccessible>(iaccessible);
   }
 
@@ -95,7 +96,7 @@ class AXPlatformNodeWinTest : public testing::Test {
 
   ScopedComPtr<IAccessible2> ToIAccessible2(
       ScopedComPtr<IAccessible> accessible) {
-    CHECK(accessible.Get());
+    CHECK(accessible);
     ScopedComPtr<IServiceProvider> service_provider;
     service_provider.QueryFrom(accessible.Get());
     ScopedComPtr<IAccessible2> result;
@@ -399,6 +400,99 @@ TEST_F(AXPlatformNodeWinTest, TestIAccessible2IndexInParent) {
 
   EXPECT_EQ(S_OK, right_iaccessible2->get_indexInParent(&index));
   EXPECT_EQ(1, index);
+}
+
+TEST_F(AXPlatformNodeWinTest, TestAccNavigate) {
+  AXNodeData root;
+  root.id = 1;
+  root.role = AX_ROLE_ROOT_WEB_AREA;
+
+  AXNodeData child1;
+  child1.id = 2;
+  child1.role = AX_ROLE_STATIC_TEXT;
+  root.child_ids.push_back(2);
+
+  AXNodeData child2;
+  child2.id = 3;
+  child2.role = AX_ROLE_STATIC_TEXT;
+  root.child_ids.push_back(3);
+
+  Init(root, child1, child2);
+  ScopedComPtr<IAccessible> ia_root(GetRootIAccessible());
+  ScopedComPtr<IDispatch> disp_root;
+  ASSERT_HRESULT_SUCCEEDED(ia_root.CopyTo(disp_root.GetAddressOf()));
+  ScopedVariant var_root(disp_root.Get());
+  ScopedComPtr<IAccessible> ia_child1(
+      IAccessibleFromNode(GetRootNode()->children()[0]));
+  ScopedComPtr<IDispatch> disp_child1;
+  ASSERT_HRESULT_SUCCEEDED(ia_child1.CopyTo(disp_child1.GetAddressOf()));
+  ScopedVariant var_child1(disp_child1.Get());
+  ScopedComPtr<IAccessible> ia_child2(
+      IAccessibleFromNode(GetRootNode()->children()[1]));
+  ScopedComPtr<IDispatch> disp_child2;
+  ASSERT_HRESULT_SUCCEEDED(ia_child2.CopyTo(disp_child2.GetAddressOf()));
+  ScopedVariant var_child2(disp_child2.Get());
+  ScopedVariant end;
+
+  // Invalid arguments.
+  EXPECT_EQ(
+      E_INVALIDARG,
+      ia_root->accNavigate(NAVDIR_NEXT, ScopedVariant::kEmptyVariant, nullptr));
+  EXPECT_EQ(E_INVALIDARG,
+            ia_child1->accNavigate(NAVDIR_NEXT, ScopedVariant::kEmptyVariant,
+                                   end.AsInput()));
+  EXPECT_EQ(VT_EMPTY, end.type());
+
+  // Navigating to first/last child should only be from self.
+  EXPECT_EQ(E_INVALIDARG,
+            ia_root->accNavigate(NAVDIR_FIRSTCHILD, var_root, end.AsInput()));
+  EXPECT_EQ(VT_EMPTY, end.type());
+  EXPECT_EQ(E_INVALIDARG,
+            ia_root->accNavigate(NAVDIR_LASTCHILD, var_root, end.AsInput()));
+  EXPECT_EQ(VT_EMPTY, end.type());
+
+  // Spatial directions are not supported.
+  EXPECT_EQ(E_NOTIMPL, ia_child1->accNavigate(NAVDIR_UP, SELF, end.AsInput()));
+  EXPECT_EQ(E_NOTIMPL, ia_root->accNavigate(NAVDIR_DOWN, SELF, end.AsInput()));
+  EXPECT_EQ(E_NOTIMPL,
+            ia_child1->accNavigate(NAVDIR_RIGHT, SELF, end.AsInput()));
+  EXPECT_EQ(E_NOTIMPL,
+            ia_child2->accNavigate(NAVDIR_LEFT, SELF, end.AsInput()));
+  EXPECT_EQ(VT_EMPTY, end.type());
+
+  // Logical directions should be supported.
+  EXPECT_EQ(S_OK, ia_root->accNavigate(NAVDIR_FIRSTCHILD, SELF, end.AsInput()));
+  EXPECT_EQ(0, var_child1.Compare(end));
+  EXPECT_EQ(S_OK, ia_root->accNavigate(NAVDIR_LASTCHILD, SELF, end.AsInput()));
+  EXPECT_EQ(0, var_child2.Compare(end));
+
+  EXPECT_EQ(S_OK, ia_child1->accNavigate(NAVDIR_NEXT, SELF, end.AsInput()));
+  EXPECT_EQ(0, var_child2.Compare(end));
+  EXPECT_EQ(S_OK, ia_child2->accNavigate(NAVDIR_PREVIOUS, SELF, end.AsInput()));
+  EXPECT_EQ(0, var_child1.Compare(end));
+
+  // Child indices can also be passed by variant.
+  // Indices are one-based.
+  EXPECT_EQ(S_OK,
+            ia_root->accNavigate(NAVDIR_NEXT, ScopedVariant(1), end.AsInput()));
+  EXPECT_EQ(0, var_child2.Compare(end));
+  EXPECT_EQ(S_OK, ia_root->accNavigate(NAVDIR_PREVIOUS, ScopedVariant(2),
+                                       end.AsInput()));
+  EXPECT_EQ(0, var_child1.Compare(end));
+
+  // Test out-of-bounds.
+  EXPECT_EQ(S_FALSE,
+            ia_child1->accNavigate(NAVDIR_PREVIOUS, SELF, end.AsInput()));
+  EXPECT_EQ(VT_EMPTY, end.type());
+  EXPECT_EQ(S_FALSE, ia_child2->accNavigate(NAVDIR_NEXT, SELF, end.AsInput()));
+  EXPECT_EQ(VT_EMPTY, end.type());
+
+  EXPECT_EQ(S_FALSE, ia_root->accNavigate(NAVDIR_PREVIOUS, ScopedVariant(1),
+                                          end.AsInput()));
+  EXPECT_EQ(VT_EMPTY, end.type());
+  EXPECT_EQ(S_FALSE,
+            ia_root->accNavigate(NAVDIR_NEXT, ScopedVariant(2), end.AsInput()));
+  EXPECT_EQ(VT_EMPTY, end.type());
 }
 
 TEST_F(AXPlatformNodeWinTest, TestIAccessible2SetSelection) {
