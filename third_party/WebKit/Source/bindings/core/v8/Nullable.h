@@ -52,11 +52,11 @@ class Nullable {
   }
 
   const T& Get() const {
-    ASSERT(!is_null_);
+    DCHECK(!is_null_);
     return value_;
   }
   T& Get() {
-    ASSERT(!is_null_);
+    DCHECK(!is_null_);
     return value_;
   }
   bool IsNull() const { return is_null_; }
