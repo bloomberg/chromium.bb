@@ -479,6 +479,13 @@ static void UpdateElasticOverscrollInternal(
 
   TransformNode* node = property_trees->transform_tree.Node(
       overscroll_elasticity_layer->transform_tree_index());
+  DCHECK(node);
+
+  // TODO(pdr): This is a workaround for https://crbug.com/721772 to avoid
+  // crashing when there's no transform node. This workaround should be removed.
+  if (!node)
+    return;
+
   if (node->scroll_offset == gfx::ScrollOffset(elastic_overscroll))
     return;
 
