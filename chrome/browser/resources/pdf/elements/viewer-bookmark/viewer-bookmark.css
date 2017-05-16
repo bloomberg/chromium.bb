@@ -5,16 +5,13 @@
 #item {
   @apply(--layout-center);
   @apply(--layout-horizontal);
-  color: rgb(80, 80, 80);
   cursor: pointer;
-  font-size: 77.8%;
   height: 30px;
   position: relative;
 }
 
 #item:hover {
   background-color: rgb(237, 237, 237);
-  color: rgb(20, 20, 20);
 }
 
 paper-ripple {

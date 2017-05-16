@@ -11,13 +11,13 @@
 #aligner {
   @apply(--layout-horizontal);
   @apply(--layout-center);
-  padding: 0 16px;
+  padding: 0 8px;
   width: 100%;
 }
 
 #title {
   @apply(--layout-flex-5);
-  font-size: 77.8%;
+  font-size: 107%;
   font-weight: 500;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -60,7 +60,6 @@ paper-toolbar {
   --paper-toolbar-height: 48px;
   @apply(--shadow-elevation-2dp);
   color: rgb(241, 241, 241);
-  font-size: 1.5em;
 }
 
 .invisible {
