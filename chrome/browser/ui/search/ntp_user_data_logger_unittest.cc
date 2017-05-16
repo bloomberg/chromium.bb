@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/webui/ntp/ntp_user_data_logger.h"
+#include "chrome/browser/ui/search/ntp_user_data_logger.h"
 
 #include <memory>
 #include <string>
@@ -203,15 +203,12 @@ TEST(NTPUserDataLoggerTest, TestLogMostVisitedNavigation) {
 
   logger.LogMostVisitedNavigation(0, TileSource::SUGGESTIONS_SERVICE,
                                   TileVisualType::THUMBNAIL);
-  EXPECT_THAT(
-      histogram_tester.GetAllSamples("NewTabPage.MostVisited"),
-      ElementsAre(Bucket(0, 1)));
-  EXPECT_THAT(
-      histogram_tester.GetAllSamples("NewTabPage.MostVisited.server"),
-      ElementsAre(Bucket(0, 1)));
-  EXPECT_THAT(
-      histogram_tester.GetAllSamples("NewTabPage.MostVisited.client"),
-      IsEmpty());
+  EXPECT_THAT(histogram_tester.GetAllSamples("NewTabPage.MostVisited"),
+              ElementsAre(Bucket(0, 1)));
+  EXPECT_THAT(histogram_tester.GetAllSamples("NewTabPage.MostVisited.server"),
+              ElementsAre(Bucket(0, 1)));
+  EXPECT_THAT(histogram_tester.GetAllSamples("NewTabPage.MostVisited.client"),
+              IsEmpty());
   EXPECT_THAT(histogram_tester.GetAllSamples("NewTabPage.TileTypeClicked"),
               ElementsAre(Bucket(ntp_tiles::TileVisualType::THUMBNAIL, 1)));
   EXPECT_THAT(
@@ -223,15 +220,12 @@ TEST(NTPUserDataLoggerTest, TestLogMostVisitedNavigation) {
 
   logger.LogMostVisitedNavigation(1, TileSource::SUGGESTIONS_SERVICE,
                                   TileVisualType::THUMBNAIL_FAILED);
-  EXPECT_THAT(
-      histogram_tester.GetAllSamples("NewTabPage.MostVisited"),
-      ElementsAre(Bucket(0, 1), Bucket(1, 1)));
-  EXPECT_THAT(
-      histogram_tester.GetAllSamples("NewTabPage.MostVisited.server"),
-      ElementsAre(Bucket(0, 1), Bucket(1, 1)));
-  EXPECT_THAT(
-      histogram_tester.GetAllSamples("NewTabPage.MostVisited.client"),
-      IsEmpty());
+  EXPECT_THAT(histogram_tester.GetAllSamples("NewTabPage.MostVisited"),
+              ElementsAre(Bucket(0, 1), Bucket(1, 1)));
+  EXPECT_THAT(histogram_tester.GetAllSamples("NewTabPage.MostVisited.server"),
+              ElementsAre(Bucket(0, 1), Bucket(1, 1)));
+  EXPECT_THAT(histogram_tester.GetAllSamples("NewTabPage.MostVisited.client"),
+              IsEmpty());
   EXPECT_THAT(
       histogram_tester.GetAllSamples("NewTabPage.TileTypeClicked"),
       ElementsAre(Bucket(ntp_tiles::TileVisualType::THUMBNAIL, 1),
@@ -246,15 +240,12 @@ TEST(NTPUserDataLoggerTest, TestLogMostVisitedNavigation) {
 
   logger.LogMostVisitedNavigation(2, TileSource::TOP_SITES,
                                   TileVisualType::THUMBNAIL);
-  EXPECT_THAT(
-      histogram_tester.GetAllSamples("NewTabPage.MostVisited"),
-      ElementsAre(Bucket(0, 1), Bucket(1, 1), Bucket(2, 1)));
-  EXPECT_THAT(
-      histogram_tester.GetAllSamples("NewTabPage.MostVisited.server"),
-      ElementsAre(Bucket(0, 1), Bucket(1, 1)));
-  EXPECT_THAT(
-      histogram_tester.GetAllSamples("NewTabPage.MostVisited.client"),
-      ElementsAre(Bucket(2, 1)));
+  EXPECT_THAT(histogram_tester.GetAllSamples("NewTabPage.MostVisited"),
+              ElementsAre(Bucket(0, 1), Bucket(1, 1), Bucket(2, 1)));
+  EXPECT_THAT(histogram_tester.GetAllSamples("NewTabPage.MostVisited.server"),
+              ElementsAre(Bucket(0, 1), Bucket(1, 1)));
+  EXPECT_THAT(histogram_tester.GetAllSamples("NewTabPage.MostVisited.client"),
+              ElementsAre(Bucket(2, 1)));
   EXPECT_THAT(
       histogram_tester.GetAllSamples("NewTabPage.TileTypeClicked"),
       ElementsAre(Bucket(ntp_tiles::TileVisualType::THUMBNAIL, 2),
@@ -272,12 +263,10 @@ TEST(NTPUserDataLoggerTest, TestLogMostVisitedNavigation) {
   EXPECT_THAT(
       histogram_tester.GetAllSamples("NewTabPage.MostVisited"),
       ElementsAre(Bucket(0, 1), Bucket(1, 1), Bucket(2, 1), Bucket(3, 1)));
-  EXPECT_THAT(
-      histogram_tester.GetAllSamples("NewTabPage.MostVisited.server"),
-      ElementsAre(Bucket(0, 1), Bucket(1, 1)));
-  EXPECT_THAT(
-      histogram_tester.GetAllSamples("NewTabPage.MostVisited.client"),
-      ElementsAre(Bucket(2, 1), Bucket(3, 1)));
+  EXPECT_THAT(histogram_tester.GetAllSamples("NewTabPage.MostVisited.server"),
+              ElementsAre(Bucket(0, 1), Bucket(1, 1)));
+  EXPECT_THAT(histogram_tester.GetAllSamples("NewTabPage.MostVisited.client"),
+              ElementsAre(Bucket(2, 1), Bucket(3, 1)));
   EXPECT_THAT(
       histogram_tester.GetAllSamples("NewTabPage.TileTypeClicked"),
       ElementsAre(Bucket(ntp_tiles::TileVisualType::THUMBNAIL, 2),
@@ -303,12 +292,10 @@ TEST(NTPUserDataLoggerTest, TestLogMostVisitedNavigation) {
   EXPECT_THAT(
       histogram_tester.GetAllSamples("NewTabPage.MostVisited"),
       ElementsAre(Bucket(0, 2), Bucket(1, 2), Bucket(2, 2), Bucket(3, 2)));
-  EXPECT_THAT(
-      histogram_tester.GetAllSamples("NewTabPage.MostVisited.server"),
-      ElementsAre(Bucket(0, 2), Bucket(1, 1), Bucket(2, 1)));
-  EXPECT_THAT(
-      histogram_tester.GetAllSamples("NewTabPage.MostVisited.client"),
-      ElementsAre(Bucket(1, 1), Bucket(2, 1), Bucket(3, 2)));
+  EXPECT_THAT(histogram_tester.GetAllSamples("NewTabPage.MostVisited.server"),
+              ElementsAre(Bucket(0, 2), Bucket(1, 1), Bucket(2, 1)));
+  EXPECT_THAT(histogram_tester.GetAllSamples("NewTabPage.MostVisited.client"),
+              ElementsAre(Bucket(1, 1), Bucket(2, 1), Bucket(3, 2)));
   EXPECT_THAT(
       histogram_tester.GetAllSamples("NewTabPage.TileTypeClicked"),
       ElementsAre(Bucket(ntp_tiles::TileVisualType::THUMBNAIL, 6),
