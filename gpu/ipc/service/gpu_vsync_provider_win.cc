@@ -75,7 +75,7 @@ class GpuVSyncWorker : public base::Thread,
   ~GpuVSyncWorker() override;
 
   void Reschedule();
-  void OpenAdapter(const wchar_t* device_name);
+  bool OpenAdapter(const wchar_t* device_name);
   void CloseAdapter();
   NTSTATUS WaitForVBlankEvent();
 
@@ -203,7 +203,10 @@ void GpuVSyncWorker::WaitForVSyncOnThread() {
   if (current_device_name_.compare(monitor_info.szDevice) != 0) {
     // Monitor changed. Close the current adapter handle and open a new one.
     CloseAdapter();
-    OpenAdapter(monitor_info.szDevice);
+    if (!OpenAdapter(monitor_info.szDevice)) {
+      UseDelayBasedVSyncOnError();
+      return;
+    }
   }
 
   NTSTATUS wait_result = WaitForVBlankEvent();
@@ -288,7 +291,7 @@ void GpuVSyncWorker::ScheduleDelayBasedVSync(base::TimeTicks timebase,
       next_vsync - now);
 }
 
-void GpuVSyncWorker::OpenAdapter(const wchar_t* device_name) {
+bool GpuVSyncWorker::OpenAdapter(const wchar_t* device_name) {
   DCHECK_EQ(0u, current_adapter_handle_);
 
   HDC hdc = CreateDC(NULL, device_name, NULL, NULL);
@@ -299,11 +302,19 @@ void GpuVSyncWorker::OpenAdapter(const wchar_t* device_name) {
   NTSTATUS result = open_adapter_from_hdc_ptr_(&open_adapter_data);
   DeleteDC(hdc);
 
+  if (result == (NTSTATUS)STATUS_INVALID_PARAMETER) {
+    // The most likely reason for this is invalid |open_adapter_data.hDc| field
+    // as a result of race condition between this code and the monitor going to
+    // sleep or being locked out.
+    return false;
+  }
+
   CHECK(result == STATUS_SUCCESS);
 
   current_device_name_ = device_name;
   current_adapter_handle_ = open_adapter_data.hAdapter;
   current_source_id_ = open_adapter_data.VidPnSourceId;
+  return true;
 }
 
 void GpuVSyncWorker::CloseAdapter() {
