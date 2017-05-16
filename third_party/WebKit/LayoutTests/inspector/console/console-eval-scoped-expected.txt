@@ -73,5 +73,5 @@ Running: testConsoleEvalObject
 
 Running: testGetEventListenersDoesNotThrow
 getEventListeners(document.body.firstChild)
-Object {}
+{}
 

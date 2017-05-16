@@ -9,7 +9,7 @@ Tests that evaluating an expression with an exception in the console provide cor
             foo();
         }
         boo();
-VM:3 Uncaught Object {a: 239}
+VM:3 Uncaught {a: 239}
 foo @ VM:3
 boo @ VM:7
 (anonymous) @ VM:9

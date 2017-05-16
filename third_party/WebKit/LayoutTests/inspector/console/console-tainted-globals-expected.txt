@@ -9,15 +9,15 @@ Running: dumpConsoleMessages
 testOverriddenArrayPushAndMathMax()
 (3) [1, 2, 3]
 testOverriddenConstructorName()
-Object {constructor: {…}}
+{constructor: {…}}
 testThrowConstructorName()
-Object {}
+{}
 testOverriddenIsFinite()
 (2) ["arg1", "arg2", callee: ƒ, Symbol(Symbol.iterator): ƒ]
 testOverriddenError()
-Object {result: "PASS"}
+{result: "PASS"}
 restoreError()
-Object {result: "PASS"}
+{result: "PASS"}
 testOverriddenToString(function func() {}, true)
 ƒ #<Function>
 testOverriddenToString(function func() {}, false)
@@ -35,9 +35,9 @@ testOverriddenToString(new Date, true)
 testOverriddenToString(new Date, false)
 #<Date>
 testOverriddenToString({}, true)
-Object {toString: ƒ, valueOf: ƒ}
+{toString: ƒ, valueOf: ƒ}
 testOverriddenToString({}, false)
-Object {toString: ƒ, valueOf: ƒ}
+{toString: ƒ, valueOf: ƒ}
 testOverriddenToString(new Number(1), true)
 Number {[[PrimitiveValue]]: 1, toString: ƒ, valueOf: ƒ}
 testOverriddenToString(new Number(1), false)

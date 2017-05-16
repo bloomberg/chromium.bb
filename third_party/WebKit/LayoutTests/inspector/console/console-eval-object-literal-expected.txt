@@ -1,9 +1,9 @@
 Tests that evaluating object literal in the console correctly reported.
 
 {a:1, b:2}
-Object {a: 1, b: 2}
+{a: 1, b: 2}
 {a:1}
-Object {a: 1}
+{a: 1}
 {var a = 1; eval("{ a:1, b:2 }");}
 VM:1 Uncaught SyntaxError: Unexpected token :
 (anonymous) @ VM:1
@@ -18,11 +18,11 @@ undefined
 { a: 4 } + { a: 5 }
 "[object Object][object Object]"
 { a: 4 }, { a: 5 }
-Object {a: 5}
+{a: 5}
 var foo = 4;
 undefined
 { a: foo++ }
-Object {a: 4}
+{a: 4}
 foo;
 5
 
