@@ -13,6 +13,9 @@
 # We may want to move towards importing but not running directories without
 # owners, in order to make it easier to enable or run them in the future --
 # directories that are imported but not run are listed in NeverFixTests.
+#
+# Further documentation:
+# https://chromium.googlesource.com/chromium/src/+/master/docs/testing/layout_test_expectations.md
 
 external/wpt/2dcontext [ Skip ]
 ## Owners: jsbell@chromium.org

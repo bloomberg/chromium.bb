@@ -1,3 +1,7 @@
+# This is the main failure suppression file for Blink LayoutTests.
+# Further documentation:
+# https://chromium.googlesource.com/chromium/src/+/master/docs/testing/layout_test_expectations.md
+
 # Intentional failures to test the layout test system.
 Bug(intentional) harness-tests/crash.html [ Crash ]
 Bug(intentional) harness-tests/timeout.html [ Timeout ]
