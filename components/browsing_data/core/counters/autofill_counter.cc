@@ -200,10 +200,9 @@ AutofillCounter::AutofillResult::AutofillResult(const AutofillCounter* source,
                                                 ResultInt num_credit_cards,
                                                 ResultInt num_addresses,
                                                 bool autofill_sync_enabled_)
-    : FinishedResult(source, num_suggestions),
+    : SyncResult(source, num_suggestions, autofill_sync_enabled_),
       num_credit_cards_(num_credit_cards),
-      num_addresses_(num_addresses),
-      autofill_sync_enabled_(autofill_sync_enabled_) {}
+      num_addresses_(num_addresses) {}
 
 AutofillCounter::AutofillResult::~AutofillResult() {}
 

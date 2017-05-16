@@ -10,12 +10,10 @@
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/test/integration/passwords_helper.h"
-#include "chrome/browser/sync/test/integration/sync_test.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/browser_sync/profile_sync_service.h"
-#include "components/browser_sync/profile_sync_service_mock.h"
 #include "components/browsing_data/core/browsing_data_utils.h"
 #include "components/browsing_data/core/pref_names.h"
 #include "components/prefs/pref_service.h"
@@ -24,12 +22,11 @@
 namespace {
 
 using autofill::PasswordForm;
+using browsing_data::BrowsingDataCounter;
 
-// TODO(crbug.com/553421): Only RestartOnSyncChange is a SyncTest.
-// Extract it together with HistoryCounterTest.RestartOnSyncChange.
-class PasswordsCounterTest : public SyncTest {
+class PasswordsCounterTest : public InProcessBrowserTest {
  public:
-  PasswordsCounterTest() : SyncTest(SINGLE_CLIENT) {}
+  PasswordsCounterTest() {}
 
   void SetUpOnMainThread() override {
     finished_ = false;
@@ -88,39 +85,19 @@ class PasswordsCounterTest : public SyncTest {
     run_loop_->Run();
   }
 
-  bool CountingFinishedSinceLastAsked() {
-    bool result = finished_;
-    finished_ = false;
-    return result;
-  }
-
-  void WaitForCountingOrConfirmFinished() {
-    if (CountingFinishedSinceLastAsked())
-      return;
-
-    WaitForCounting();
-    CountingFinishedSinceLastAsked();
-  }
-
-  browsing_data::BrowsingDataCounter::ResultInt GetResult() {
+  BrowsingDataCounter::ResultInt GetResult() {
     DCHECK(finished_);
     return result_;
   }
 
-  bool PasswordSyncEnabled() { return password_sync_enabled_; }
-
-  void Callback(
-      std::unique_ptr<browsing_data::BrowsingDataCounter::Result> result) {
+  void Callback(std::unique_ptr<BrowsingDataCounter::Result> result) {
     DCHECK(result);
     finished_ = result->Finished();
 
     if (finished_) {
       auto* password_result =
-          static_cast<browsing_data::PasswordsCounter::PasswordResult*>(
-              result.get());
+          static_cast<BrowsingDataCounter::SyncResult*>(result.get());
       result_ = password_result->Value();
-
-      password_sync_enabled_ = password_result->password_sync_enabled();
     }
     if (run_loop_ && finished_)
       run_loop_->Quit();
@@ -151,8 +128,7 @@ class PasswordsCounterTest : public SyncTest {
   base::Time time_;
 
   bool finished_;
-  browsing_data::BrowsingDataCounter::ResultInt result_;
-  bool password_sync_enabled_;
+  BrowsingDataCounter::ResultInt result_;
 };
 
 // Tests that the counter correctly counts each individual credential on
@@ -177,7 +153,6 @@ IN_PROC_BROWSER_TEST_F(PasswordsCounterTest, SameDomain) {
 
   WaitForCounting();
   EXPECT_EQ(5u, GetResult());
-  EXPECT_FALSE(PasswordSyncEnabled());
 }
 
 // Tests that the counter doesn't count blacklisted entries.
@@ -200,7 +175,6 @@ IN_PROC_BROWSER_TEST_F(PasswordsCounterTest, Blacklisted) {
 
   WaitForCounting();
   EXPECT_EQ(1u, GetResult());
-  EXPECT_FALSE(PasswordSyncEnabled());
 }
 
 // Tests that the counter starts counting automatically when the deletion
@@ -223,7 +197,6 @@ IN_PROC_BROWSER_TEST_F(PasswordsCounterTest, PrefChanged) {
 
   WaitForCounting();
   EXPECT_EQ(2u, GetResult());
-  EXPECT_FALSE(PasswordSyncEnabled());
 }
 
 // Tests that the counter starts counting automatically when
@@ -294,74 +267,6 @@ IN_PROC_BROWSER_TEST_F(PasswordsCounterTest, PeriodChanged) {
   SetDeletionPeriodPref(browsing_data::TimePeriod::ALL_TIME);
   WaitForCounting();
   EXPECT_EQ(4u, GetResult());
-}
-
-// Test that the counting restarts when password sync state changes.
-// TODO(crbug.com/553421): Move this to the sync/test/integration directory?
-IN_PROC_BROWSER_TEST_F(PasswordsCounterTest, RestartOnSyncChange) {
-  // Set up the Sync client.
-  ASSERT_TRUE(SetupClients());
-  static const int kFirstProfileIndex = 0;
-  browser_sync::ProfileSyncService* sync_service =
-      GetSyncService(kFirstProfileIndex);
-  Profile* profile = GetProfile(kFirstProfileIndex);
-  // Set up the counter.
-  browsing_data::PasswordsCounter counter(
-      PasswordStoreFactory::GetForProfile(profile,
-                                          ServiceAccessType::EXPLICIT_ACCESS),
-      sync_service);
-
-  counter.Init(
-      profile->GetPrefs(), browsing_data::ClearBrowsingDataTab::ADVANCED,
-      base::Bind(&PasswordsCounterTest::Callback, base::Unretained(this)));
-
-  // Note that some Sync operations notify observers immediately (and thus there
-  // is no need to call |WaitForCounting()|; in fact, it would block the test),
-  // while other operations only post the task on UI thread's message loop
-  // (which requires calling |WaitForCounting()| for them to run). Therefore,
-  // this test always checks if the callback has already run and only waits
-  // if it has not.
-
-  // We sync all datatypes by default, so starting Sync means that we start
-  // syncing passwords, and this should restart the counter.
-  ASSERT_TRUE(SetupSync());
-  ASSERT_TRUE(sync_service->IsSyncActive());
-  ASSERT_TRUE(sync_service->GetPreferredDataTypes().Has(syncer::PASSWORDS));
-  WaitForCountingOrConfirmFinished();
-  EXPECT_TRUE(PasswordSyncEnabled());
-
-  // We stop syncing passwords in particular. This restarts the counter.
-  syncer::ModelTypeSet everything_except_passwords =
-      syncer::UserSelectableTypes();
-  everything_except_passwords.Remove(syncer::PASSWORDS);
-  auto sync_blocker = sync_service->GetSetupInProgressHandle();
-  sync_service->OnUserChoseDatatypes(/*sync_everything=*/false,
-                                     everything_except_passwords);
-  ASSERT_FALSE(sync_service->GetPreferredDataTypes().Has(syncer::PASSWORDS));
-  sync_blocker.reset();
-  WaitForCountingOrConfirmFinished();
-  ASSERT_FALSE(sync_service->GetPreferredDataTypes().Has(syncer::PASSWORDS));
-  EXPECT_FALSE(PasswordSyncEnabled());
-
-  // If password sync is not affected, the counter is not restarted.
-  syncer::ModelTypeSet only_history(syncer::HISTORY_DELETE_DIRECTIVES);
-  sync_service->ChangePreferredDataTypes(only_history);
-  sync_blocker = sync_service->GetSetupInProgressHandle();
-  sync_service->ChangePreferredDataTypes(only_history);
-  sync_blocker.reset();
-  EXPECT_FALSE(CountingFinishedSinceLastAsked());
-
-  // We start syncing passwords again. This restarts the counter.
-  sync_blocker = sync_service->GetSetupInProgressHandle();
-  sync_service->ChangePreferredDataTypes(syncer::ModelTypeSet::All());
-  sync_blocker.reset();
-  WaitForCountingOrConfirmFinished();
-  EXPECT_TRUE(PasswordSyncEnabled());
-
-  // Stopping the Sync service triggers a restart.
-  sync_service->RequestStop(syncer::SyncService::CLEAR_DATA);
-  WaitForCountingOrConfirmFinished();
-  EXPECT_FALSE(PasswordSyncEnabled());
 }
 
 }  // namespace

@@ -11,7 +11,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/platform_thread.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/sync/test/integration/sync_test.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/web_data_service_factory.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -20,7 +19,6 @@
 #include "components/autofill/core/browser/autofill_type.h"
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
-#include "components/browser_sync/profile_sync_service.h"
 #include "components/browsing_data/core/browsing_data_utils.h"
 #include "components/browsing_data/core/pref_names.h"
 #include "components/prefs/pref_service.h"
@@ -28,11 +26,9 @@
 
 namespace {
 
-// TODO(crbug.com/553421): Only RestartOnSyncChange is a SyncTest.
-// Extract it together with HistoryCounterTest.RestartOnSyncChange.
-class AutofillCounterTest : public SyncTest {
+class AutofillCounterTest : public InProcessBrowserTest {
  public:
-  AutofillCounterTest() : SyncTest(SINGLE_CLIENT) {}
+  AutofillCounterTest() {}
   ~AutofillCounterTest() override {}
 
   void SetUpOnMainThread() override {
@@ -157,20 +153,6 @@ class AutofillCounterTest : public SyncTest {
     run_loop_->Run();
   }
 
-  bool CountingFinishedSinceLastAsked() {
-    bool result = finished_;
-    finished_ = false;
-    return result;
-  }
-
-  void WaitForCountingOrConfirmFinished() {
-    if (CountingFinishedSinceLastAsked())
-      return;
-
-    WaitForCounting();
-    CountingFinishedSinceLastAsked();
-  }
-
   browsing_data::BrowsingDataCounter::ResultInt GetNumSuggestions() {
     DCHECK(finished_);
     return num_suggestions_;
@@ -186,8 +168,6 @@ class AutofillCounterTest : public SyncTest {
     return num_addresses_;
   }
 
-  bool AutofillSyncEnabled() { return autofill_sync_enabled_; }
-
   void Callback(
       std::unique_ptr<browsing_data::BrowsingDataCounter::Result> result) {
     finished_ = result->Finished();
@@ -200,7 +180,6 @@ class AutofillCounterTest : public SyncTest {
       num_suggestions_ = autofill_result->Value();
       num_credit_cards_ = autofill_result->num_credit_cards();
       num_addresses_ = autofill_result->num_addresses();
-      autofill_sync_enabled_ = autofill_result->autofill_sync_enabled();
     }
 
     if (run_loop_ && finished_)
@@ -219,7 +198,6 @@ class AutofillCounterTest : public SyncTest {
   browsing_data::BrowsingDataCounter::ResultInt num_suggestions_;
   browsing_data::BrowsingDataCounter::ResultInt num_credit_cards_;
   browsing_data::BrowsingDataCounter::ResultInt num_addresses_;
-  bool autofill_sync_enabled_;
 
   DISALLOW_COPY_AND_ASSIGN(AutofillCounterTest);
 };
@@ -421,73 +399,6 @@ IN_PROC_BROWSER_TEST_F(AutofillCounterTest, TimeRanges) {
     EXPECT_EQ(test_case.expected_num_credit_cards, GetNumCreditCards());
     EXPECT_EQ(test_case.expected_num_addresses, GetNumAddresses());
   }
-}
-
-// Test that the counting restarts when autofill sync state changes.
-// TODO(crbug.com/553421): Move this to the sync/test/integration directory?
-IN_PROC_BROWSER_TEST_F(AutofillCounterTest, RestartOnSyncChange) {
-  // Set up the Sync client.
-  ASSERT_TRUE(SetupClients());
-  static const int kFirstProfileIndex = 0;
-  browser_sync::ProfileSyncService* sync_service =
-      GetSyncService(kFirstProfileIndex);
-  Profile* profile = GetProfile(kFirstProfileIndex);
-  // Set up the counter.
-  browsing_data::AutofillCounter counter(
-      WebDataServiceFactory::GetAutofillWebDataForProfile(
-          profile, ServiceAccessType::IMPLICIT_ACCESS),
-      sync_service);
-
-  counter.Init(
-      profile->GetPrefs(), browsing_data::ClearBrowsingDataTab::ADVANCED,
-      base::Bind(&AutofillCounterTest::Callback, base::Unretained(this)));
-
-  // Note that some Sync operations notify observers immediately (and thus there
-  // is no need to call |WaitForCounting()|; in fact, it would block the test),
-  // while other operations only post the task on UI thread's message loop
-  // (which requires calling |WaitForCounting()| for them to run). Therefore,
-  // this test always checks if the callback has already run and only waits
-  // if it has not.
-
-  // We sync all datatypes by default, so starting Sync means that we start
-  // syncing autofill, and this should restart the counter.
-  ASSERT_TRUE(SetupSync());
-  ASSERT_TRUE(sync_service->IsSyncActive());
-  ASSERT_TRUE(sync_service->GetActiveDataTypes().Has(syncer::AUTOFILL));
-  WaitForCountingOrConfirmFinished();
-  EXPECT_TRUE(AutofillSyncEnabled());
-
-  // We stop syncing autofill in particular. This restarts the counter.
-  syncer::ModelTypeSet everything_except_autofill =
-      syncer::UserSelectableTypes();
-  everything_except_autofill.Remove(syncer::AUTOFILL);
-  auto sync_blocker = sync_service->GetSetupInProgressHandle();
-  sync_service->OnUserChoseDatatypes(/*sync_everything=*/false,
-                                     everything_except_autofill);
-  ASSERT_FALSE(sync_service->GetPreferredDataTypes().Has(syncer::AUTOFILL));
-  sync_blocker.reset();
-  WaitForCountingOrConfirmFinished();
-  ASSERT_FALSE(sync_service->GetActiveDataTypes().Has(syncer::AUTOFILL));
-  EXPECT_FALSE(AutofillSyncEnabled());
-
-  // If autofill sync is not affected, the counter is not restarted.
-  syncer::ModelTypeSet only_history(syncer::HISTORY_DELETE_DIRECTIVES);
-  sync_blocker = sync_service->GetSetupInProgressHandle();
-  sync_service->ChangePreferredDataTypes(only_history);
-  sync_blocker.reset();
-  EXPECT_FALSE(CountingFinishedSinceLastAsked());
-
-  // We start syncing autofill again. This restarts the counter.
-  sync_blocker = sync_service->GetSetupInProgressHandle();
-  sync_service->ChangePreferredDataTypes(syncer::ModelTypeSet::All());
-  sync_blocker.reset();
-  WaitForCountingOrConfirmFinished();
-  EXPECT_TRUE(AutofillSyncEnabled());
-
-  // Stopping the Sync service triggers a restart.
-  sync_service->RequestStop(syncer::SyncService::CLEAR_DATA);
-  WaitForCountingOrConfirmFinished();
-  EXPECT_FALSE(AutofillSyncEnabled());
 }
 
 }  // namespace

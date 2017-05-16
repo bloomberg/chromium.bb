@@ -63,8 +63,8 @@ void PasswordsCounter::OnGetPasswordStoreResults(
       [start](const std::unique_ptr<autofill::PasswordForm>& form) {
         return form->date_created >= start;
       });
-  ReportResult(base::MakeUnique<PasswordResult>(this, num_passwords,
-                                                password_sync_enabled_));
+  ReportResult(base::MakeUnique<SyncResult>(this, num_passwords,
+                                            password_sync_enabled_));
 }
 
 void PasswordsCounter::OnLoginsChanged(
@@ -80,15 +80,5 @@ void PasswordsCounter::OnStateChanged(syncer::SyncService* sync) {
     Restart();
   }
 }
-
-// PasswordsCounter::PasswordResult
-
-PasswordsCounter::PasswordResult::PasswordResult(const PasswordsCounter* source,
-                                                 ResultInt value,
-                                                 bool password_sync_enabled)
-    : FinishedResult(source, value),
-      password_sync_enabled_(password_sync_enabled) {}
-
-PasswordsCounter::PasswordResult::~PasswordResult() {}
 
 }  // namespace browsing_data

@@ -113,7 +113,7 @@ TEST_F(BrowsingDataUtilsTest, PasswordsCounterResult) {
   };
 
   for (const TestCase& test_case : kTestCases) {
-    browsing_data::PasswordsCounter::PasswordResult result(
+    browsing_data::BrowsingDataCounter::SyncResult result(
         &counter, test_case.num_passwords, test_case.is_synced);
     SCOPED_TRACE(base::StringPrintf("Test params: %d password(s), %d is_synced",
                                     test_case.num_passwords,

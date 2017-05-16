@@ -23,7 +23,7 @@ class AutofillCounter : public browsing_data::BrowsingDataCounter,
                         public WebDataServiceConsumer,
                         public syncer::SyncServiceObserver {
  public:
-  class AutofillResult : public FinishedResult {
+  class AutofillResult : public SyncResult {
    public:
     AutofillResult(const AutofillCounter* source,
                    ResultInt num_suggestions,
@@ -34,12 +34,10 @@ class AutofillCounter : public browsing_data::BrowsingDataCounter,
 
     ResultInt num_credit_cards() const { return num_credit_cards_; }
     ResultInt num_addresses() const { return num_addresses_; }
-    bool autofill_sync_enabled() const { return autofill_sync_enabled_; }
 
    private:
     ResultInt num_credit_cards_;
     ResultInt num_addresses_;
-    bool autofill_sync_enabled_;
 
     DISALLOW_COPY_AND_ASSIGN(AutofillResult);
   };

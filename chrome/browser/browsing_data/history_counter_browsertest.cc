@@ -12,8 +12,8 @@
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
-#include "chrome/browser/sync/test/integration/sync_test.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/test/base/in_process_browser_test.h"
 #include "components/browser_sync/profile_sync_service.h"
 #include "components/browsing_data/core/browsing_data_utils.h"
 #include "components/browsing_data/core/pref_names.h"
@@ -28,15 +28,12 @@
 
 namespace {
 
-class HistoryCounterTest : public SyncTest {
- public:
-  HistoryCounterTest() : SyncTest(SINGLE_CLIENT) {
-    // TODO(msramek): Only one of the test cases, RestartOnSyncChange, is a Sync
-    // integration test. Extract it and move it to the rest of integration tests
-    // in chrome/browser/sync/test/integration/. Change this class back to
-    // InProcessBrowserTest.
-  }
+using browsing_data::BrowsingDataCounter;
+using browsing_data::HistoryCounter;
 
+class HistoryCounterTest : public InProcessBrowserTest {
+ public:
+  HistoryCounterTest() {}
   ~HistoryCounterTest() override {};
 
   void SetUpOnMainThread() override {
@@ -79,7 +76,7 @@ class HistoryCounterTest : public SyncTest {
     run_loop_->Run();
   }
 
-  browsing_data::BrowsingDataCounter::ResultInt GetLocalResult() {
+  BrowsingDataCounter::ResultInt GetLocalResult() {
     DCHECK(finished_);
     return local_result_;
   }
@@ -89,14 +86,12 @@ class HistoryCounterTest : public SyncTest {
     return has_synced_visits_;
   }
 
-  void Callback(
-      std::unique_ptr<browsing_data::BrowsingDataCounter::Result> result) {
+  void Callback(std::unique_ptr<BrowsingDataCounter::Result> result) {
     finished_ = result->Finished();
 
     if (finished_) {
-      browsing_data::HistoryCounter::HistoryResult* history_result =
-          static_cast<browsing_data::HistoryCounter::HistoryResult*>(
-              result.get());
+      auto* history_result =
+          static_cast<HistoryCounter::HistoryResult*>(result.get());
 
       local_result_ = history_result->Value();
       has_synced_visits_ = history_result->has_synced_visits();
@@ -104,20 +99,6 @@ class HistoryCounterTest : public SyncTest {
 
     if (run_loop_ && finished_)
       run_loop_->Quit();
-  }
-
-  bool CountingFinishedSinceLastAsked() {
-    bool result = finished_;
-    finished_ = false;
-    return result;
-  }
-
-  void WaitForCountingOrConfirmFinished() {
-    if (CountingFinishedSinceLastAsked())
-      return;
-
-    WaitForCounting();
-    CountingFinishedSinceLastAsked();
   }
 
   history::WebHistoryService* GetFakeWebHistoryService(Profile* profile,
@@ -144,7 +125,7 @@ class HistoryCounterTest : public SyncTest {
   base::Time time_;
 
   bool finished_;
-  browsing_data::BrowsingDataCounter::ResultInt local_result_;
+  BrowsingDataCounter::ResultInt local_result_;
   bool has_synced_visits_;
 };
 
@@ -174,11 +155,10 @@ IN_PROC_BROWSER_TEST_F(HistoryCounterTest, DuplicateVisits) {
 
   Profile* profile = browser()->profile();
 
-  browsing_data::HistoryCounter counter(
+  HistoryCounter counter(
       GetHistoryService(),
       base::Bind(&HistoryCounterTest::GetRealWebHistoryService,
-                 base::Unretained(this),
-                 base::Unretained(profile)),
+                 base::Unretained(this), base::Unretained(profile)),
       ProfileSyncServiceFactory::GetForProfile(profile));
 
   counter.Init(
@@ -199,11 +179,10 @@ IN_PROC_BROWSER_TEST_F(HistoryCounterTest, PrefChanged) {
 
   Profile* profile = browser()->profile();
 
-  browsing_data::HistoryCounter counter(
+  HistoryCounter counter(
       GetHistoryService(),
       base::Bind(&HistoryCounterTest::GetRealWebHistoryService,
-                 base::Unretained(this),
-                 base::Unretained(profile)),
+                 base::Unretained(this), base::Unretained(profile)),
       ProfileSyncServiceFactory::GetForProfile(profile));
 
   counter.Init(
@@ -241,11 +220,10 @@ IN_PROC_BROWSER_TEST_F(HistoryCounterTest, PeriodChanged) {
 
   Profile* profile = browser()->profile();
 
-  browsing_data::HistoryCounter counter(
+  HistoryCounter counter(
       GetHistoryService(),
       base::Bind(&HistoryCounterTest::GetRealWebHistoryService,
-                 base::Unretained(this),
-                 base::Unretained(profile)),
+                 base::Unretained(this), base::Unretained(profile)),
       ProfileSyncServiceFactory::GetForProfile(profile));
 
   counter.Init(
@@ -279,12 +257,10 @@ IN_PROC_BROWSER_TEST_F(HistoryCounterTest, Synced) {
   // for testing.
   Profile* profile = browser()->profile();
 
-  browsing_data::HistoryCounter counter(
+  HistoryCounter counter(
       GetHistoryService(),
       base::Bind(&HistoryCounterTest::GetFakeWebHistoryService,
-                 base::Unretained(this),
-                 base::Unretained(profile),
-                 false),
+                 base::Unretained(this), base::Unretained(profile), false),
       ProfileSyncServiceFactory::GetForProfile(profile));
 
   counter.Init(
@@ -356,90 +332,6 @@ IN_PROC_BROWSER_TEST_F(HistoryCounterTest, Synced) {
   WaitForCounting();
   EXPECT_EQ(2u, GetLocalResult());
   EXPECT_FALSE(HasSyncedVisits());
-}
-
-// Test that the counting restarts when history sync state changes.
-// TODO(crbug.com/553421): Move this to the sync/test/integration directory?
-IN_PROC_BROWSER_TEST_F(HistoryCounterTest, RestartOnSyncChange) {
-  // Set up the Sync client.
-  ASSERT_TRUE(SetupClients());
-  static const int kFirstProfileIndex = 0;
-  browser_sync::ProfileSyncService* sync_service =
-      GetSyncService(kFirstProfileIndex);
-  Profile* profile = GetProfile(kFirstProfileIndex);
-
-  // Set up the fake web history service and the counter.
-
-  browsing_data::HistoryCounter counter(
-      GetHistoryService(),
-      base::Bind(&HistoryCounterTest::GetFakeWebHistoryService,
-                 base::Unretained(this),
-                 base::Unretained(profile),
-                 true),
-      sync_service);
-
-  counter.Init(
-      profile->GetPrefs(), browsing_data::ClearBrowsingDataTab::ADVANCED,
-      base::Bind(&HistoryCounterTest::Callback, base::Unretained(this)));
-
-  // Note that some Sync operations notify observers immediately (and thus there
-  // is no need to call |WaitForCounting()|; in fact, it would block the test),
-  // while other operations only post the task on UI thread's message loop
-  // (which requires calling |WaitForCounting()| for them to run). Therefore,
-  // this test always checks if the callback has already run and only waits
-  // if it has not.
-
-  // We sync all datatypes by default, so starting Sync means that we start
-  // syncing history deletion, and this should restart the counter.
-  ASSERT_TRUE(SetupSync());
-  ASSERT_TRUE(sync_service->IsSyncActive());
-  ASSERT_TRUE(sync_service->GetPreferredDataTypes().Has(
-      syncer::HISTORY_DELETE_DIRECTIVES));
-  WaitForCountingOrConfirmFinished();
-
-  // We stop syncing history deletion in particular. This restarts the counter.
-  syncer::ModelTypeSet everything_except_history =
-      syncer::UserSelectableTypes();
-  everything_except_history.Remove(syncer::HISTORY_DELETE_DIRECTIVES);
-  auto sync_blocker = sync_service->GetSetupInProgressHandle();
-  sync_service->OnUserChoseDatatypes(/*sync_everything=*/false,
-                                     everything_except_history);
-  sync_blocker.reset();
-  WaitForCountingOrConfirmFinished();
-
-  // If the history deletion sync is not affected, the counter is not restarted.
-  syncer::ModelTypeSet only_passwords(syncer::PASSWORDS);
-  sync_service->ChangePreferredDataTypes(only_passwords);
-  sync_blocker = sync_service->GetSetupInProgressHandle();
-  sync_service->ChangePreferredDataTypes(only_passwords);
-  sync_blocker.reset();
-  EXPECT_FALSE(counter.HasTrackedTasks());
-  EXPECT_FALSE(CountingFinishedSinceLastAsked());
-
-  // Same in this case.
-  syncer::ModelTypeSet autofill_and_passwords(
-      syncer::AUTOFILL, syncer::PASSWORDS);
-  sync_blocker = sync_service->GetSetupInProgressHandle();
-  sync_service->ChangePreferredDataTypes(autofill_and_passwords);
-  sync_blocker.reset();
-  EXPECT_FALSE(counter.HasTrackedTasks());
-  EXPECT_FALSE(CountingFinishedSinceLastAsked());
-
-  // We start syncing history deletion again. This restarts the counter.
-  sync_blocker = sync_service->GetSetupInProgressHandle();
-  sync_service->ChangePreferredDataTypes(syncer::ModelTypeSet::All());
-  sync_blocker.reset();
-  WaitForCountingOrConfirmFinished();
-
-  // Changing the syncing datatypes to another set that still includes history
-  // deletion should technically not trigger a restart, because the state of
-  // history deletion did not change. However, in reality we can get two
-  // notifications, one that history sync has stopped and another that it is
-  // active again.
-
-  // Stopping the Sync service triggers a restart.
-  sync_service->RequestStop(syncer::SyncService::CLEAR_DATA);
-  WaitForCountingOrConfirmFinished();
 }
 
 }  // namespace

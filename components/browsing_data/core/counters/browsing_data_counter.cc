@@ -167,4 +167,13 @@ BrowsingDataCounter::ResultInt BrowsingDataCounter::FinishedResult::Value()
   return value_;
 }
 
+// BrowsingDataCounter::SyncResult -----------------------------------------
+
+BrowsingDataCounter::SyncResult::SyncResult(const BrowsingDataCounter* source,
+                                            ResultInt value,
+                                            bool sync_enabled)
+    : FinishedResult(source, value), sync_enabled_(sync_enabled) {}
+
+BrowsingDataCounter::SyncResult::~SyncResult() {}
+
 }  // namespace browsing_data

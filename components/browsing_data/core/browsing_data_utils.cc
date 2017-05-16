@@ -75,15 +75,14 @@ base::string16 GetCounterTextFromResult(
     text = l10n_util::GetStringUTF16(IDS_CLEAR_BROWSING_DATA_CALCULATING);
 
   } else if (pref_name == prefs::kDeletePasswords) {
-    const PasswordsCounter::PasswordResult* password_result =
-        static_cast<const PasswordsCounter::PasswordResult*>(result);
+    const BrowsingDataCounter::SyncResult* password_result =
+        static_cast<const BrowsingDataCounter::SyncResult*>(result);
 
     BrowsingDataCounter::ResultInt count = password_result->Value();
 
     text = l10n_util::GetPluralStringFUTF16(
-        password_result->password_sync_enabled()
-            ? IDS_DEL_PASSWORDS_COUNTER_SYNCED
-            : IDS_DEL_PASSWORDS_COUNTER,
+        password_result->is_sync_enabled() ? IDS_DEL_PASSWORDS_COUNTER_SYNCED
+                                           : IDS_DEL_PASSWORDS_COUNTER,
         count);
   } else if (pref_name == prefs::kDeleteDownloadHistory) {
     BrowsingDataCounter::ResultInt count =
@@ -151,7 +150,7 @@ base::string16 GetCounterTextFromResult(
       }
     }
 
-    bool synced = autofill_result->autofill_sync_enabled();
+    bool synced = autofill_result->is_sync_enabled();
 
     // Construct the resulting string from the sections in |displayed_strings|.
     switch (displayed_strings.size()) {
