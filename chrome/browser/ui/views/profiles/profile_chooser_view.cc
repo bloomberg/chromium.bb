@@ -1291,13 +1291,13 @@ views::View* ProfileChooserView::CreateCurrentProfileView(
   views::GridLayout* grid_layout = new views::GridLayout(current_profile_card);
   current_profile_card->SetLayoutManager(grid_layout);
   views::ColumnSet* columns = grid_layout->AddColumnSet(0);
-  columns->AddPaddingColumn(0, kMenuEdgeMargin);
+  // BackgroundColorHoverButton has already accounted for the left and right
+  // margins.
   columns->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL, 0,
                      views::GridLayout::USE_PREF, 0, 0);
   columns->AddPaddingColumn(0, kMenuEdgeMargin - kBadgeSpacing);
   columns->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL, 1,
                      views::GridLayout::USE_PREF, 0, 0);
-  columns->AddPaddingColumn(0, kMenuEdgeMargin);
   grid_layout->AddPaddingRow(0, 0);
   const int num_labels =
       (avatar_item.signed_in && !switches::IsEnableAccountConsistency()) ? 2
