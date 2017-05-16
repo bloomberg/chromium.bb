@@ -79,10 +79,6 @@ void ArcAppContextMenu::ExecuteCommand(int command_id, int event_flags) {
     case LAUNCH_NEW:
       delegate()->ExecuteLaunchCommand(event_flags);
       break;
-    case TOGGLE_PIN:
-      TogglePin(
-          ArcAppWindowLauncherController::GetShelfAppIdFromArcAppId(app_id()));
-      break;
     case UNINSTALL:
       arc::ShowArcAppUninstallDialog(profile(), controller(), app_id());
       break;

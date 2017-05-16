@@ -17,7 +17,6 @@
 #include "ash/wm_window.h"
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
-#include "chrome/browser/chromeos/arc/arc_support_host.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
@@ -263,20 +262,6 @@ ArcAppWindowLauncherController::~ArcAppWindowLauncherController() {
     ash::Shell::Get()->RemoveShellObserver(this);
 }
 
-// static
-std::string ArcAppWindowLauncherController::GetShelfAppIdFromArcAppId(
-    const std::string& arc_app_id) {
-  return arc_app_id == arc::kPlayStoreAppId ? ArcSupportHost::kHostAppId
-                                            : arc_app_id;
-}
-
-// static
-std::string ArcAppWindowLauncherController::GetArcAppIdFromShelfAppId(
-    const std::string& shelf_app_id) {
-  return shelf_app_id == ArcSupportHost::kHostAppId ? arc::kPlayStoreAppId
-                                                    : shelf_app_id;
-}
-
 void ArcAppWindowLauncherController::ActiveUserChanged(
     const std::string& user_email) {
   const std::string& primary_user_email = user_manager::UserManager::Get()
@@ -436,15 +421,13 @@ void ArcAppWindowLauncherController::OnAppReadyChanged(
 
 std::vector<int> ArcAppWindowLauncherController::GetTaskIdsForApp(
     const std::string& arc_app_id) const {
-  const std::string app_id = GetShelfAppIdFromArcAppId(arc_app_id);
-
   // Note, AppWindow is optional part for a task and it may be not created if
   // another full screen Android app is currently active. Use
   // |task_id_to_app_window_info_| that keeps currently running tasks info.
   std::vector<int> task_ids;
   for (const auto& it : task_id_to_app_window_info_) {
     const AppWindowInfo* app_window_info = it.second.get();
-    if (app_window_info->app_shelf_id().app_id() == app_id)
+    if (app_window_info->app_shelf_id().app_id() == arc_app_id)
       task_ids.push_back(it.first);
   }
 
@@ -468,8 +451,7 @@ void ArcAppWindowLauncherController::OnTaskCreated(
   const std::string arc_app_id =
       ArcAppListPrefs::GetAppId(package_name, activity_name);
   const arc::ArcAppShelfId arc_app_shelf_id =
-      arc::ArcAppShelfId::FromIntentAndAppId(
-          intent, GetShelfAppIdFromArcAppId(arc_app_id));
+      arc::ArcAppShelfId::FromIntentAndAppId(intent, arc_app_id);
   task_id_to_app_window_info_[task_id] =
       base::MakeUnique<AppWindowInfo>(arc_app_shelf_id);
   // Don't create shelf icon for non-primary user.

@@ -12,6 +12,7 @@
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/signin/signin_ui_util.h"
+#include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_manager_base.h"
 #include "content/public/browser/browser_context.h"
@@ -31,9 +32,9 @@ constexpr base::TimeDelta kRefreshTokenTimeout =
 
 ArcAuthContext::ArcAuthContext(Profile* profile) {
   // Reuse storage used in ARC OptIn platform app.
-  const std::string site_url = base::StringPrintf(
-      "%s://%s/persist?%s", content::kGuestScheme, ArcSupportHost::kHostAppId,
-      ArcSupportHost::kStorageId);
+  const std::string site_url =
+      base::StringPrintf("%s://%s/persist?%s", content::kGuestScheme,
+                         kPlayStoreAppId, ArcSupportHost::kStorageId);
   storage_partition_ = content::BrowserContext::GetStoragePartitionForSite(
       profile, GURL(site_url));
   CHECK(storage_partition_);

@@ -507,10 +507,8 @@ class ArcPlayStoreAppTest : public ArcDefaulAppTest {
 
     std::string error;
     arc_support_host_ = extensions::Extension::Create(
-        base::FilePath(),
-        extensions::Manifest::UNPACKED,
-        manifest, extensions::Extension::NO_FLAGS,
-        ArcSupportHost::kHostAppId, &error);
+        base::FilePath(), extensions::Manifest::UNPACKED, manifest,
+        extensions::Extension::NO_FLAGS, arc::kPlayStoreAppId, &error);
 
     ExtensionService* extension_service =
         extensions::ExtensionSystem::Get(profile_.get())->extension_service();

@@ -41,7 +41,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "build/build_config.h"
-#include "chrome/browser/chromeos/arc/arc_support_host.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
@@ -515,9 +514,9 @@ class ChromeLauncherControllerTest : public BrowserWithTestWindowTest {
     extension_platform_app_ = Extension::Create(
         base::FilePath(), Manifest::UNPACKED, manifest_platform_app,
         Extension::NO_FLAGS, "gggggggggggggggggggggggggggggggg", &error);
-    arc_support_host_ = Extension::Create(base::FilePath(), Manifest::UNPACKED,
-                                          manifest, Extension::NO_FLAGS,
-                                          ArcSupportHost::kHostAppId, &error);
+    arc_support_host_ =
+        Extension::Create(base::FilePath(), Manifest::UNPACKED, manifest,
+                          Extension::NO_FLAGS, arc::kPlayStoreAppId, &error);
     extension_service_->AddExtension(extension_chrome_.get());
   }
 

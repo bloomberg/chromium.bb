@@ -23,6 +23,7 @@
 #include "chrome/browser/ui/app_list/arc/arc_app_item.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_model_builder.h"
+#include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ui/app_list/extension_app_item.h"
 #include "chrome/browser/ui/app_list/extension_app_model_builder.h"
 #include "chrome/common/chrome_switches.h"
@@ -197,6 +198,13 @@ void UpdateSyncItemInLocalStorage(
   dict_item->SetString(kPinPositionKey, sync_item->item_pin_ordinal.IsValid() ?
       sync_item->item_pin_ordinal.ToInternalValue() : std::string());
   dict_item->SetInteger(kTypeKey, static_cast<int>(sync_item->item_type));
+}
+
+bool IsDefaultSyncItem(const AppListSyncableService::SyncItem* sync_item) {
+  DCHECK(sync_item->item_ordinal.IsValid());
+  return sync_item->parent_id.empty() &&
+         sync_item->item_ordinal.Equals(
+             syncer::StringOrdinal::CreateInitialOrdinal());
 }
 
 }  // namespace
@@ -859,6 +867,8 @@ syncer::SyncMergeResult AppListSyncableService::MergeDataAndStartSyncing(
                                      GetSyncDataFromSyncItem(sync_item)));
   }
 
+  MaybeImportLegacyPlayStorePosition(&change_list);
+
   sync_processor_->ProcessSyncChanges(FROM_HERE, change_list);
 
   HandleUpdateFinished();
@@ -1007,7 +1017,6 @@ void AppListSyncableService::ProcessExistingSyncItem(SyncItem* sync_item) {
   }
   VLOG(2) << "ProcessExistingSyncItem: " << sync_item->ToString();
   AppListItem* app_item = model_->FindItem(sync_item->item_id);
-  DVLOG(2) << " AppItem: " << app_item->ToDebugString();
   if (!app_item) {
     // This is expected in case the user uses devices with different app set,
     // for example, ARC enabled and ARC disabled devices. Another scenario is
@@ -1016,6 +1025,7 @@ void AppListSyncableService::ProcessExistingSyncItem(SyncItem* sync_item) {
     DVLOG(2) << "Skip updating missing item : " << sync_item->ToString();
     return;
   }
+  DVLOG(2) << " AppItem: " << app_item->ToDebugString();
   // This is the only place where sync can cause an item to change folders.
   if (app_list::switches::IsFolderUIEnabled() &&
       app_item->folder_id() != sync_item->parent_id &&
@@ -1236,6 +1246,31 @@ std::string AppListSyncableService::SyncItem::ToString() const {
     res += " [" + item_pin_ordinal.ToDebugString() + "]";
   }
   return res;
+}
+
+void AppListSyncableService::MaybeImportLegacyPlayStorePosition(
+    syncer::SyncChangeList* change_list) {
+  SyncItem* play_store_sync_item = FindSyncItem(arc::kPlayStoreAppId);
+  if (!play_store_sync_item || !IsDefaultSyncItem(play_store_sync_item))
+    return;
+
+  const SyncItem* legacy_play_store_sync_item =
+      FindSyncItem(arc::kLegacyPlayStoreAppId);
+  if (!legacy_play_store_sync_item ||
+      IsDefaultSyncItem(legacy_play_store_sync_item)) {
+    return;
+  }
+
+  play_store_sync_item->parent_id = legacy_play_store_sync_item->parent_id;
+  play_store_sync_item->item_ordinal =
+      legacy_play_store_sync_item->item_ordinal;
+  DCHECK(!IsDefaultSyncItem(play_store_sync_item));
+  ProcessExistingSyncItem(play_store_sync_item);
+  UpdateSyncItemInLocalStorage(profile_, play_store_sync_item);
+  change_list->push_back(
+      SyncChange(FROM_HERE, SyncChange::ACTION_UPDATE,
+                 GetSyncDataFromSyncItem(play_store_sync_item)));
+  DVLOG(2) << "Play Store app list item was updated from the legacy entry";
 }
 
 }  // namespace app_list

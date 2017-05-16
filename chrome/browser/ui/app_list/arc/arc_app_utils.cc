@@ -176,7 +176,8 @@ class LaunchAppWithoutSize {
 
 }  // namespace
 
-const char kPlayStoreAppId[] = "gpkmicpkkebkmabiaedjognfppcchdfa";
+const char kPlayStoreAppId[] = "cnbgggchhmkkdmeppjobngjoejnihlei";
+const char kLegacyPlayStoreAppId[] = "gpkmicpkkebkmabiaedjognfppcchdfa";
 const char kPlayStorePackage[] = "com.android.vending";
 const char kPlayStoreActivity[] = "com.android.vending.AssetBrowserActivity";
 const char kFilesAppId[] = "clippbnfpgifdekheldlleoeiiababjg";

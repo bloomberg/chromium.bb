@@ -19,6 +19,7 @@
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
 #include "chrome/browser/ui/extensions/app_launch_params.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
@@ -93,10 +94,9 @@ constexpr char kEventOnSendFeedbackClicked[] = "onSendFeedbackClicked";
 void RequestOpenApp(Profile* profile) {
   const extensions::Extension* extension =
       extensions::ExtensionRegistry::Get(profile)->GetInstalledExtension(
-          ArcSupportHost::kHostAppId);
+          arc::kPlayStoreAppId);
   DCHECK(extension);
-  DCHECK(
-      extensions::util::IsAppLaunchable(ArcSupportHost::kHostAppId, profile));
+  DCHECK(extensions::util::IsAppLaunchable(arc::kPlayStoreAppId, profile));
   OpenApplication(CreateAppLaunchParamsUserContainer(
       profile, extension, WindowOpenDisposition::NEW_WINDOW,
       extensions::SOURCE_CHROME_INTERNAL));
@@ -151,9 +151,6 @@ std::ostream& operator<<(std::ostream& os, ArcSupportHost::Error error) {
 }
 
 }  // namespace
-
-// static
-const char ArcSupportHost::kHostAppId[] = "cnbgggchhmkkdmeppjobngjoejnihlei";
 
 // static
 const char ArcSupportHost::kStorageId[] = "arc_support";
