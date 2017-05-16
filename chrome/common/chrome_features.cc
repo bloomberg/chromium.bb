@@ -117,7 +117,7 @@ const base::Feature kCleanupToolUI{"CleanupToolUI",
 // Experiment to make Geolocation permissions in the omnibox and the default
 // search engine's search page consistent.
 const base::Feature kConsistentOmniboxGeolocation{
-    "ConsistentOmniboxGeolocation", base::FEATURE_DISABLED_BY_DEFAULT};
+    "ConsistentOmniboxGeolocation", base::FEATURE_ENABLED_BY_DEFAULT};
 #endif
 
 #if defined(OS_ANDROID)
