@@ -138,6 +138,7 @@ template("chrome_extra_paks") {
         "$root_gen_dir/chrome/settings_resources.pak",
         "$root_gen_dir/chrome/sync_file_system_internals_resources.pak",
         "$root_gen_dir/content/browser/devtools/devtools_resources.pak",
+        "$root_gen_dir/headless/headless_lib_resources.pak",
       ]
       deps += [
         "//chrome/browser/resources:component_extension_resources",
@@ -145,6 +146,7 @@ template("chrome_extra_paks") {
         "//chrome/browser/resources:settings_resources",
         "//chrome/browser/resources:sync_file_system_internals_resources",
         "//content/browser/devtools:devtools_resources",
+        "//headless:resources",
       ]
     }
     if (is_chromeos) {
@@ -156,10 +158,6 @@ template("chrome_extra_paks") {
         "//components/chrome_apps:resources",
         "//ui/file_manager:resources",
       ]
-    }
-    if (is_linux || is_mac) {
-      sources += [ "$root_gen_dir/headless/headless_lib_resources.pak" ]
-      deps += [ "//headless:resources" ]
     }
     if (enable_extensions) {
       sources += [
