@@ -38,7 +38,8 @@ bool IsServiceTypeWhitelisted(const std::string& service_type) {
 
 using DnsSdRegistry = media_router::DnsSdRegistry;
 
-MDnsAPI::MDnsAPI(content::BrowserContext* context) : browser_context_(context) {
+MDnsAPI::MDnsAPI(content::BrowserContext* context)
+    : browser_context_(context), dns_sd_registry_(nullptr) {
   DCHECK(browser_context_);
   extensions::EventRouter* event_router = EventRouter::Get(context);
   DCHECK(event_router);
@@ -46,7 +47,7 @@ MDnsAPI::MDnsAPI(content::BrowserContext* context) : browser_context_(context) {
 }
 
 MDnsAPI::~MDnsAPI() {
-  if (dns_sd_registry_.get()) {
+  if (dns_sd_registry_) {
     dns_sd_registry_->RemoveObserver(this);
   }
 }
@@ -65,10 +66,9 @@ BrowserContextKeyedAPIFactory<MDnsAPI>* MDnsAPI::GetFactoryInstance() {
   return g_factory.Pointer();
 }
 
-void MDnsAPI::SetDnsSdRegistryForTesting(
-    std::unique_ptr<DnsSdRegistry> dns_sd_registry) {
-  dns_sd_registry_ = std::move(dns_sd_registry);
-  if (dns_sd_registry_.get())
+void MDnsAPI::SetDnsSdRegistryForTesting(DnsSdRegistry* dns_sd_registry) {
+  dns_sd_registry_ = dns_sd_registry;
+  if (dns_sd_registry_)
     dns_sd_registry_->AddObserver(this);
 }
 
@@ -80,11 +80,11 @@ void MDnsAPI::ForceDiscovery() {
 
 DnsSdRegistry* MDnsAPI::dns_sd_registry() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  if (!dns_sd_registry_.get()) {
-    dns_sd_registry_.reset(new media_router::DnsSdRegistry());
+  if (!dns_sd_registry_) {
+    dns_sd_registry_ = media_router::DnsSdRegistry::GetInstance();
     dns_sd_registry_->AddObserver(this);
   }
-  return dns_sd_registry_.get();
+  return dns_sd_registry_;
 }
 
 void MDnsAPI::OnListenerAdded(const EventListenerInfo& details) {

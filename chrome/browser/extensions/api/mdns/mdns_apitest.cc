@@ -8,6 +8,7 @@
 #include "chrome/browser/extensions/api/mdns/mdns_api.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/media/router/discovery/mdns/mock_dns_sd_registry.h"
 #include "chrome/common/extensions/api/mdns.h"
 #include "extensions/common/switches.h"
 #include "extensions/test/result_catcher.h"
@@ -15,31 +16,11 @@
 
 using ::testing::_;
 using ::testing::A;
-using DnsSdRegistry = media_router::DnsSdRegistry;
+using media_router::DnsSdRegistry;
 
 namespace api = extensions::api;
 
 namespace {
-
-class MockDnsSdRegistry : public DnsSdRegistry {
- public:
-  explicit MockDnsSdRegistry(extensions::MDnsAPI* api) : api_(api) {}
-  virtual ~MockDnsSdRegistry() {}
-
-  MOCK_METHOD1(AddObserver, void(DnsSdObserver* observer));
-  MOCK_METHOD1(RemoveObserver, void(DnsSdObserver* observer));
-  MOCK_METHOD1(RegisterDnsSdListener, void(const std::string& service_type));
-  MOCK_METHOD1(UnregisterDnsSdListener, void(const std::string& service_type));
-  MOCK_METHOD0(ForceDiscovery, void(void));
-
-  void DispatchMDnsEvent(const std::string& service_type,
-                         const DnsSdServiceList& services) {
-    api_->OnDnsSdEvent(service_type, services);
-  }
-
- private:
-  DnsSdRegistry::DnsSdObserver* api_;
-};
 
 class MDnsAPITest : public ExtensionApiTest {
  public:
@@ -54,16 +35,14 @@ class MDnsAPITest : public ExtensionApiTest {
 
   void SetUpTestDnsSdRegistry() {
     extensions::MDnsAPI* api = extensions::MDnsAPI::Get(profile());
-    dns_sd_registry_ = new MockDnsSdRegistry(api);
+    dns_sd_registry_ = base::MakeUnique<media_router::MockDnsSdRegistry>(api);
     EXPECT_CALL(*dns_sd_registry_, AddObserver(api))
         .Times(1);
-    // Transfers ownership of the registry instance.
-    api->SetDnsSdRegistryForTesting(
-        base::WrapUnique<DnsSdRegistry>(dns_sd_registry_));
+    api->SetDnsSdRegistryForTesting(dns_sd_registry_.get());
   }
 
  protected:
-  MockDnsSdRegistry* dns_sd_registry_;
+  std::unique_ptr<media_router::MockDnsSdRegistry> dns_sd_registry_;
 };
 
 }  // namespace
