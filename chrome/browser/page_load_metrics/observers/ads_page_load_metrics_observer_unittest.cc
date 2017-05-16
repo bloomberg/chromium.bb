@@ -241,6 +241,10 @@ TEST_F(AdsPageLoadMetricsObserverTest, PageWithAdFrames) {
       1);
 
   // Counts
+  histogram_tester().ExpectBucketCount(
+      "PageLoad.Clients.Ads.Google.ParentExistsForSubFrame", 0, 0);
+  histogram_tester().ExpectTotalCount(
+      "PageLoad.Clients.Ads.Google.ResourceTypeWhenNoFrameFound", 0);
   histogram_tester().ExpectUniqueSample(
       "PageLoad.Clients.Ads.Google.FrameCounts.AnyParentFrame.AdFrames", 4, 1);
 
@@ -331,6 +335,10 @@ TEST_F(AdsPageLoadMetricsObserverTest, PageWithAdFrameThatRenavigates) {
       1);
 
   // Counts
+  histogram_tester().ExpectBucketCount(
+      "PageLoad.Clients.Ads.Google.ParentExistsForSubFrame", 0, 0);
+  histogram_tester().ExpectTotalCount(
+      "PageLoad.Clients.Ads.Google.ResourceTypeWhenNoFrameFound", 0);
   histogram_tester().ExpectUniqueSample(
       "PageLoad.Clients.Ads.Google.FrameCounts.AnyParentFrame.AdFrames", 1, 1);
 
@@ -393,6 +401,10 @@ TEST_F(AdsPageLoadMetricsObserverTest, PageWithNonAdFrameThatRenavigatesToAd) {
       2);
 
   // Counts
+  histogram_tester().ExpectBucketCount(
+      "PageLoad.Clients.Ads.Google.ParentExistsForSubFrame", 0, 0);
+  histogram_tester().ExpectTotalCount(
+      "PageLoad.Clients.Ads.Google.ResourceTypeWhenNoFrameFound", 0);
   histogram_tester().ExpectUniqueSample(
       "PageLoad.Clients.Ads.Google.FrameCounts.AnyParentFrame.AdFrames", 2, 1);
 
@@ -526,6 +538,11 @@ TEST_F(AdsPageLoadMetricsObserverTest, TwoResourceLoadsBeforeCommit) {
       1);
 
   // Counts
+  histogram_tester().ExpectBucketCount(
+      "PageLoad.Clients.Ads.Google.ParentExistsForSubFrame", 0, 0);
+  histogram_tester().ExpectUniqueSample(
+      "PageLoad.Clients.Ads.Google.ResourceTypeWhenNoFrameFound",
+      content::RESOURCE_TYPE_SUB_FRAME, 1);
   histogram_tester().ExpectUniqueSample(
       "PageLoad.Clients.Ads.Google.FrameCounts.AnyParentFrame.AdFrames", 1, 1);
 
@@ -549,4 +566,42 @@ TEST_F(AdsPageLoadMetricsObserverTest, TwoResourceLoadsBeforeCommit) {
       "PageLoad.Clients.Ads.Google.Bytes.FullPage.Network", 30, 1);
   histogram_tester().ExpectUniqueSample(
       "PageLoad.Clients.Ads.Google.Bytes.NonAdFrames.Aggregate.Total", 10, 1);
+}
+
+// This tests an issue that is believed to be the cause of
+// https://crbug.com/721369. The issue is that a frame from a previous
+// navigation might commit during a new navigation, and the ads metrics won't
+// know about the frame's parent (because it doesn't exist in the page).
+TEST_F(AdsPageLoadMetricsObserverTest, FrameWithNoParent) {
+  RenderFrameHost* main_frame = NavigateMainFrame(kNonAdUrl);
+  RenderFrameHost* sub_frame =
+      CreateAndNavigateSubFrame(kNonAdUrl, kNonAdName, main_frame);
+
+  histogram_tester().ExpectBucketCount(
+      "PageLoad.Clients.Ads.Google.ParentExistsForSubFrame", 0, 0);
+
+  // Renavigate the child, but, while navigating, the main frame renavigates.
+  RenderFrameHost* child_of_subframe =
+      RenderFrameHostTester::For(sub_frame)->AppendChild(kAdName);
+  auto navigation_simulator = NavigationSimulator::CreateRendererInitiated(
+      GURL(kNonAdUrl2), child_of_subframe);
+  navigation_simulator->Start();
+
+  // Main frame renavigates.
+  NavigateMainFrame(kNonAdUrl);
+
+  // Child frame commits.
+  navigation_simulator->Commit();
+  child_of_subframe = navigation_simulator->GetFinalRenderFrameHost();
+  histogram_tester().ExpectBucketCount(
+      "PageLoad.Clients.Ads.Google.ParentExistsForSubFrame", 0, 1);
+
+  // Test that a resource loaded into an unknown frame doesn't cause any
+  // issues.
+  histogram_tester().ExpectTotalCount(
+      "PageLoad.Clients.Ads.Google.ResourceTypeWhenNoFrameFound", 0);
+  LoadResource(child_of_subframe, ResourceCached::NOT_CACHED, 10);
+  histogram_tester().ExpectBucketCount(
+      "PageLoad.Clients.Ads.Google.ResourceTypeWhenNoFrameFound",
+      content::RESOURCE_TYPE_SUB_FRAME, 1);
 }

@@ -26588,6 +26588,11 @@ from previous Chrome versions.
       label="Remaining download time does not meet the requirement."/>
 </enum>
 
+<enum name="ParentFrameKnown" type="int">
+  <int value="0" label="Parent Frame Not Known"/>
+  <int value="1" label="Parent Frame Known"/>
+</enum>
+
 <enum name="ParsedCookieStatus" type="int">
   <obsolete>
     Deprecated as of 9/2013. Experiment to measure control characters in cookies
