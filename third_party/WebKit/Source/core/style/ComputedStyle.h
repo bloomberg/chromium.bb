@@ -1517,12 +1517,12 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase<ComputedStyle>,
   }
   EVerticalAlign VerticalAlign() const { return VerticalAlignInternal(); }
   const Length& GetVerticalAlignLength() const {
-    return box_data_->vertical_align_length_;
+    return VerticalAlignLengthInternal();
   }
   void SetVerticalAlign(EVerticalAlign v) { SetVerticalAlignInternal(v); }
   void SetVerticalAlignLength(const Length& length) {
     SetVerticalAlignInternal(EVerticalAlign::kLength);
-    SET_VAR(box_data_, vertical_align_length_, length);
+    SetVerticalAlignLengthInternal(length);
   }
 
   // will-change
@@ -1553,15 +1553,15 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase<ComputedStyle>,
   }
 
   // z-index
-  int ZIndex() const { return box_data_->z_index_; }
-  bool HasAutoZIndex() const { return box_data_->has_auto_z_index_; }
+  int ZIndex() const { return ZIndexInternal(); }
+  bool HasAutoZIndex() const { return HasAutoZIndexInternal(); }
   void SetZIndex(int v) {
-    SET_VAR(box_data_, has_auto_z_index_, false);
-    SET_VAR(box_data_, z_index_, v);
+    SetHasAutoZIndexInternal(false);
+    SetZIndexInternal(v);
   }
   void SetHasAutoZIndex() {
-    SET_VAR(box_data_, has_auto_z_index_, true);
-    SET_VAR(box_data_, z_index_, 0);
+    SetHasAutoZIndexInternal(true);
+    SetZIndexInternal(0);
   }
 
   // zoom
@@ -2694,17 +2694,17 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase<ComputedStyle>,
   }
   void SetLogicalWidth(const Length& v) {
     if (IsHorizontalWritingMode()) {
-      SET_VAR(box_data_, width_, v);
+      SetWidth(v);
     } else {
-      SET_VAR(box_data_, height_, v);
+      SetHeight(v);
     }
   }
 
   void SetLogicalHeight(const Length& v) {
     if (IsHorizontalWritingMode()) {
-      SET_VAR(box_data_, height_, v);
+      SetHeight(v);
     } else {
-      SET_VAR(box_data_, width_, v);
+      SetWidth(v);
     }
   }
   const Length& LogicalMaxWidth() const {
