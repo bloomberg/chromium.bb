@@ -1070,9 +1070,13 @@ class AutofillManagerTest : public testing::Test {
         security_state::kHttpFormWarningFeature);
   }
 
-  void EnableAutofillUpstreamRequestCvcIfMissingExperiment() {
+  void EnableUkmLogging() {
+    scoped_feature_list_.InitAndEnableFeature(kAutofillUkmLogging);
+  }
+
+  void EnableAutofillUpstreamRequestCvcIfMissingExperimentAndUkmLogging() {
     scoped_feature_list_.InitWithFeatures(
-        {kAutofillUpstreamRequestCvcIfMissing}, {});
+        {kAutofillUpstreamRequestCvcIfMissing, kAutofillUkmLogging}, {});
   }
 
   void DisableAutofillUpstreamUseAutofillProfileComparatorForName() {
@@ -3675,7 +3679,6 @@ TEST_F(AutofillManagerTest, FormSubmittedServerTypes) {
   // Set up our form data.
   FormData form;
   test::CreateTestAddressFormData(&form);
-  FormsSeen(std::vector<FormData>(1, form));
 
   // Simulate having seen this form on page load.
   // |form_structure| will be owned by |autofill_manager_|.
@@ -3715,7 +3718,6 @@ TEST_F(AutofillManagerTest, FormSubmittedPossibleTypesTwoSubmissions) {
   FormData form;
   std::vector<ServerFieldTypeSet> expected_types;
   test::CreateTestAddressFormData(&form, &expected_types);
-  FormsSeen(std::vector<FormData>(1, form));
 
   // Fill the form.
   const char guid[] = "00000000-0000-0000-0000-000000000001";
@@ -4636,6 +4638,7 @@ TEST_F(AutofillManagerTest, FillInUpdatedExpirationDate) {
 }
 
 TEST_F(AutofillManagerTest, UploadCreditCard) {
+  EnableUkmLogging();
   personal_data_.ClearCreditCards();
   personal_data_.ClearAutofillProfiles();
   autofill_manager_->set_credit_card_upload_enabled(true);
@@ -4767,6 +4770,7 @@ TEST_F(AutofillManagerTest, UploadCreditCard_FeatureNotEnabled) {
 }
 
 TEST_F(AutofillManagerTest, UploadCreditCard_CvcUnavailable) {
+  EnableUkmLogging();
   personal_data_.ClearAutofillProfiles();
   autofill_manager_->set_credit_card_upload_enabled(true);
 
@@ -4818,6 +4822,7 @@ TEST_F(AutofillManagerTest, UploadCreditCard_CvcUnavailable) {
 }
 
 TEST_F(AutofillManagerTest, UploadCreditCard_CvcInvalidLength) {
+  EnableUkmLogging();
   personal_data_.ClearAutofillProfiles();
   autofill_manager_->set_credit_card_upload_enabled(true);
 
@@ -4866,6 +4871,7 @@ TEST_F(AutofillManagerTest, UploadCreditCard_CvcInvalidLength) {
 }
 
 TEST_F(AutofillManagerTest, UploadCreditCard_MultipleCvcFields) {
+  EnableUkmLogging();
   autofill_manager_->set_credit_card_upload_enabled(true);
 
   // Remove the profiles that were created in the TestPersonalDataManager
@@ -4926,6 +4932,7 @@ TEST_F(AutofillManagerTest, UploadCreditCard_MultipleCvcFields) {
 }
 
 TEST_F(AutofillManagerTest, UploadCreditCard_NoCvcFieldOnForm) {
+  EnableUkmLogging();
   autofill_manager_->set_credit_card_upload_enabled(true);
 
   // Remove the profiles that were created in the TestPersonalDataManager
@@ -4981,6 +4988,7 @@ TEST_F(AutofillManagerTest, UploadCreditCard_NoCvcFieldOnForm) {
 
 TEST_F(AutofillManagerTest,
        UploadCreditCard_NoCvcFieldOnForm_InvalidCvcInNonCvcField) {
+  EnableUkmLogging();
   autofill_manager_->set_credit_card_upload_enabled(true);
 
   // Remove the profiles that were created in the TestPersonalDataManager
@@ -5039,6 +5047,7 @@ TEST_F(AutofillManagerTest,
 
 TEST_F(AutofillManagerTest,
        UploadCreditCard_NoCvcFieldOnForm_CvcInNonCvcField) {
+  EnableUkmLogging();
   autofill_manager_->set_credit_card_upload_enabled(true);
 
   // Remove the profiles that were created in the TestPersonalDataManager
@@ -5099,6 +5108,7 @@ TEST_F(AutofillManagerTest,
 
 TEST_F(AutofillManagerTest,
        UploadCreditCard_NoCvcFieldOnForm_CvcInAddressField) {
+  EnableUkmLogging();
   autofill_manager_->set_credit_card_upload_enabled(true);
 
   // Remove the profiles that were created in the TestPersonalDataManager
@@ -5165,7 +5175,7 @@ TEST_F(AutofillManagerTest,
 #endif
 TEST_F(AutofillManagerTest,
        MAYBE_UploadCreditCard_NoCvcFieldOnForm_UserEntersCvc) {
-  EnableAutofillUpstreamRequestCvcIfMissingExperiment();
+  EnableAutofillUpstreamRequestCvcIfMissingExperimentAndUkmLogging();
   autofill_manager_->set_credit_card_upload_enabled(true);
 
   // Remove the profiles that were created in the TestPersonalDataManager
@@ -5225,6 +5235,7 @@ TEST_F(AutofillManagerTest,
 }
 
 TEST_F(AutofillManagerTest, UploadCreditCard_NoCvcFieldOnFormExperimentOff) {
+  EnableUkmLogging();
   autofill_manager_->set_credit_card_upload_enabled(true);
 
   // Remove the profiles that were created in the TestPersonalDataManager
@@ -5289,6 +5300,7 @@ TEST_F(AutofillManagerTest, UploadCreditCard_NoCvcFieldOnFormExperimentOff) {
 }
 
 TEST_F(AutofillManagerTest, UploadCreditCard_NoProfileAvailable) {
+  EnableUkmLogging();
   personal_data_.ClearAutofillProfiles();
   autofill_manager_->set_credit_card_upload_enabled(true);
 
@@ -5336,6 +5348,7 @@ TEST_F(AutofillManagerTest, UploadCreditCard_NoRecentlyUsedProfile) {
   TestAutofillClock test_clock;
   test_clock.SetNow(kArbitraryTime);
 
+  EnableUkmLogging();
   personal_data_.ClearAutofillProfiles();
   autofill_manager_->set_credit_card_upload_enabled(true);
 
@@ -5436,6 +5449,7 @@ TEST_F(AutofillManagerTest,
 
 TEST_F(AutofillManagerTest,
        UploadCreditCard_CvcUnavailableAndNoProfileAvailable) {
+  EnableUkmLogging();
   personal_data_.ClearAutofillProfiles();
   autofill_manager_->set_credit_card_upload_enabled(true);
 
@@ -5486,6 +5500,7 @@ TEST_F(AutofillManagerTest,
 }
 
 TEST_F(AutofillManagerTest, UploadCreditCard_NoNameAvailable) {
+  EnableUkmLogging();
   personal_data_.ClearAutofillProfiles();
   autofill_manager_->set_credit_card_upload_enabled(true);
 
@@ -5534,6 +5549,7 @@ TEST_F(AutofillManagerTest, UploadCreditCard_NoNameAvailable) {
 }
 
 TEST_F(AutofillManagerTest, UploadCreditCard_ZipCodesConflict) {
+  EnableUkmLogging();
   personal_data_.ClearAutofillProfiles();
   autofill_manager_->set_credit_card_upload_enabled(true);
 
@@ -5583,6 +5599,7 @@ TEST_F(AutofillManagerTest, UploadCreditCard_ZipCodesConflict) {
 }
 
 TEST_F(AutofillManagerTest, UploadCreditCard_ZipCodesHavePrefixMatch) {
+  EnableUkmLogging();
   personal_data_.ClearAutofillProfiles();
   autofill_manager_->set_credit_card_upload_enabled(true);
 
@@ -5629,6 +5646,7 @@ TEST_F(AutofillManagerTest, UploadCreditCard_ZipCodesHavePrefixMatch) {
 }
 
 TEST_F(AutofillManagerTest, UploadCreditCard_NoZipCodeAvailable) {
+  EnableUkmLogging();
   personal_data_.ClearAutofillProfiles();
   autofill_manager_->set_credit_card_upload_enabled(true);
 
@@ -5674,6 +5692,7 @@ TEST_F(AutofillManagerTest, UploadCreditCard_NoZipCodeAvailable) {
 }
 
 TEST_F(AutofillManagerTest, UploadCreditCard_CCFormHasMiddleInitial) {
+  EnableUkmLogging();
   personal_data_.ClearAutofillProfiles();
   autofill_manager_->set_credit_card_upload_enabled(true);
 
@@ -5764,6 +5783,7 @@ TEST_F(AutofillManagerTest,
 }
 
 TEST_F(AutofillManagerTest, UploadCreditCard_NoMiddleInitialInCCForm) {
+  EnableUkmLogging();
   personal_data_.ClearAutofillProfiles();
   autofill_manager_->set_credit_card_upload_enabled(true);
 
@@ -5848,6 +5868,7 @@ TEST_F(AutofillManagerTest,
 }
 
 TEST_F(AutofillManagerTest, UploadCreditCard_CCFormHasMiddleName) {
+  EnableUkmLogging();
   personal_data_.ClearAutofillProfiles();
   autofill_manager_->set_credit_card_upload_enabled(true);
 
@@ -5923,6 +5944,7 @@ TEST_F(AutofillManagerTest,
 }
 
 TEST_F(AutofillManagerTest, UploadCreditCard_CCFormRemovesMiddleName) {
+  EnableUkmLogging();
   personal_data_.ClearAutofillProfiles();
   autofill_manager_->set_credit_card_upload_enabled(true);
 
@@ -5960,6 +5982,7 @@ TEST_F(AutofillManagerTest, UploadCreditCard_CCFormRemovesMiddleName) {
 }
 
 TEST_F(AutofillManagerTest, UploadCreditCard_NamesHaveToMatch) {
+  EnableUkmLogging();
   personal_data_.ClearAutofillProfiles();
   autofill_manager_->set_credit_card_upload_enabled(true);
 
@@ -6219,6 +6242,7 @@ TEST_F(AutofillManagerTest, UploadCreditCard_LogPreviousUseDate) {
 }
 
 TEST_F(AutofillManagerTest, UploadCreditCard_UploadDetailsFails) {
+  EnableUkmLogging();
   personal_data_.ClearAutofillProfiles();
   autofill_manager_->set_credit_card_upload_enabled(true);
 
@@ -6867,6 +6891,7 @@ TEST_F(AutofillManagerTest, FormWithLongOptionValuesIsAcceptable) {
 // Test that a sign-in form submission sends an upload with types matching the
 // fields.
 TEST_F(AutofillManagerTest, SignInFormSubmission_Upload) {
+  EnableUkmLogging();
   // Set up our form data (it's already filled out with user data).
   FormData form;
   form.origin = GURL("http://myform.com/form.html");
@@ -6884,7 +6909,6 @@ TEST_F(AutofillManagerTest, SignInFormSubmission_Upload) {
 
   test::CreateTestFormField("Password", "pw", "secret", "password", &field);
   form.fields.push_back(field);
-  FormsSeen(std::vector<FormData>(1, form));
   types.clear();
   types.insert(PASSWORD);
   expected_types.push_back(types);
