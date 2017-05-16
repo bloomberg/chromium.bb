@@ -66,6 +66,11 @@ ScopedTaskEnvironment::~ScopedTaskEnvironment() {
   TaskScheduler::SetInstance(nullptr);
 }
 
+scoped_refptr<base::SingleThreadTaskRunner>
+ScopedTaskEnvironment::GetMainThreadTaskRunner() {
+  return message_loop_.task_runner();
+}
+
 void ScopedTaskEnvironment::RunUntilIdle() {
   for (;;) {
     TaskScheduler::GetInstance()->FlushForTesting();
