@@ -434,14 +434,16 @@ TEST(PaintOpBufferTest, DiscardableImagesTracking_NoImageOp) {
 
 TEST(PaintOpBufferTest, DiscardableImagesTracking_DrawImage) {
   PaintOpBuffer buffer;
-  PaintImage image = PaintImage(CreateDiscardableImage(gfx::Size(100, 100)));
+  PaintImage image = PaintImage(PaintImage::GetNextId(),
+                                CreateDiscardableImage(gfx::Size(100, 100)));
   buffer.push<DrawImageOp>(image, SkIntToScalar(0), SkIntToScalar(0), nullptr);
   EXPECT_TRUE(buffer.HasDiscardableImages());
 }
 
 TEST(PaintOpBufferTest, DiscardableImagesTracking_DrawImageRect) {
   PaintOpBuffer buffer;
-  PaintImage image = PaintImage(CreateDiscardableImage(gfx::Size(100, 100)));
+  PaintImage image = PaintImage(PaintImage::GetNextId(),
+                                CreateDiscardableImage(gfx::Size(100, 100)));
   buffer.push<DrawImageRectOp>(
       image, SkRect::MakeWH(100, 100), SkRect::MakeWH(100, 100), nullptr,
       PaintCanvas::SrcRectConstraint::kFast_SrcRectConstraint);
@@ -450,7 +452,8 @@ TEST(PaintOpBufferTest, DiscardableImagesTracking_DrawImageRect) {
 
 TEST(PaintOpBufferTest, DiscardableImagesTracking_NestedDrawOp) {
   sk_sp<PaintRecord> record = sk_make_sp<PaintRecord>();
-  PaintImage image = PaintImage(CreateDiscardableImage(gfx::Size(100, 100)));
+  PaintImage image = PaintImage(PaintImage::GetNextId(),
+                                CreateDiscardableImage(gfx::Size(100, 100)));
   record->push<DrawImageOp>(image, SkIntToScalar(0), SkIntToScalar(0), nullptr);
 
   PaintOpBuffer buffer;

@@ -44,6 +44,13 @@ class CC_PAINT_EXPORT DiscardableImageStore {
   std::unique_ptr<PaintTrackingCanvas> canvas_;
   std::vector<std::pair<DrawImage, gfx::Rect>>* image_set_;
   base::flat_map<ImageId, gfx::Rect>* image_id_to_rect_;
+  // This is currently used for images that come from shaders. We don't know
+  // what the stable id is, but since the completion and animation states are
+  // both unknown, this value doesn't matter as it won't be used in checker
+  // imaging anyway. Keep this value the same to avoid id churn.
+  // TODO(vmpstr): Remove this when we can add paint images into shaders
+  // directly.
+  PaintImage::Id unknown_stable_id_;
 };
 
 }  // namespace cc
