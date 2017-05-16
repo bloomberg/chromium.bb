@@ -13,7 +13,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/threading/thread_checker.h"
-#include "chrome/browser/extensions/api/mdns/dns_sd_registry.h"
+#include "chrome/browser/media/router/discovery/mdns/dns_sd_registry.h"
 #include "chrome/common/extensions/api/mdns.h"
 #include "extensions/browser/api/async_api_function.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
@@ -24,17 +24,18 @@ namespace content {
 class BrowserContext;
 }
 
-namespace extensions {
-
+namespace media_router {
 class DnsSdRegistry;
+}
 
+namespace extensions {
 // MDnsAPI is instantiated with the profile and will listen for extensions that
 // register listeners for the chrome.mdns extension API. It will use a registry
 // class to start the mDNS listener process (if necessary) and observe new
 // service events to dispatch them to registered extensions.
 class MDnsAPI : public BrowserContextKeyedAPI,
                 public EventRouter::Observer,
-                public DnsSdRegistry::DnsSdObserver {
+                public media_router::DnsSdRegistry::DnsSdObserver {
  public:
   explicit MDnsAPI(content::BrowserContext* context);
   ~MDnsAPI() override;
@@ -45,7 +46,8 @@ class MDnsAPI : public BrowserContextKeyedAPI,
   static BrowserContextKeyedAPIFactory<MDnsAPI>* GetFactoryInstance();
 
   // Used to mock out the DnsSdRegistry for testing.
-  void SetDnsSdRegistryForTesting(std::unique_ptr<DnsSdRegistry> registry);
+  void SetDnsSdRegistryForTesting(
+      std::unique_ptr<media_router::DnsSdRegistry> registry);
 
   // Immediately issues a multicast DNS query for all service types.
   // NOTE: Discovery queries are sent to all event handlers associated with
@@ -54,7 +56,7 @@ class MDnsAPI : public BrowserContextKeyedAPI,
 
  protected:
   // Retrieve an instance of the registry. Lazily created when needed.
-  virtual DnsSdRegistry* dns_sd_registry();
+  virtual media_router::DnsSdRegistry* dns_sd_registry();
 
   // Gets the list of mDNS event listeners.
   virtual const extensions::EventListenerMap::ListenerList& GetEventListeners();
@@ -71,8 +73,9 @@ class MDnsAPI : public BrowserContextKeyedAPI,
   void OnListenerRemoved(const EventListenerInfo& details) override;
 
   // DnsSdRegistry::Observer
-  void OnDnsSdEvent(const std::string& service_type,
-                    const DnsSdRegistry::DnsSdServiceList& services) override;
+  void OnDnsSdEvent(
+      const std::string& service_type,
+      const media_router::DnsSdRegistry::DnsSdServiceList& services) override;
 
   // BrowserContextKeyedAPI implementation.
   static const char* service_name() {
@@ -110,7 +113,7 @@ class MDnsAPI : public BrowserContextKeyedAPI,
   base::ThreadChecker thread_checker_;
   content::BrowserContext* const browser_context_;
   // Lazily created on first access and destroyed with this API class.
-  std::unique_ptr<DnsSdRegistry> dns_sd_registry_;
+  std::unique_ptr<media_router::DnsSdRegistry> dns_sd_registry_;
   // Count of active listeners per service type, saved from the previous
   // invocation of UpdateMDnsListeners().
   ServiceTypeCounts prev_service_counts_;

@@ -3643,6 +3643,7 @@ test("unit_tests") {
       "../browser/media/router/discovery/dial/dial_media_sink_service_unittest.cc",
       "../browser/media/router/discovery/dial/dial_registry_unittest.cc",
       "../browser/media/router/discovery/dial/dial_service_unittest.cc",
+      "../browser/media/router/discovery/mdns/dns_sd_registry_unittest.cc",
 
       # TODO(crbug.com/646627):
       # Move media_router_ui_service_factory_unittest.cc to chrome/browser/ui.
@@ -4034,10 +4035,7 @@ test("unit_tests") {
       "//tools/json_schema_compiler/test:unit_tests",
     ]
     if (enable_service_discovery) {
-      sources += [
-        "../browser/extensions/api/mdns/dns_sd_registry_unittest.cc",
-        "../browser/extensions/api/mdns/mdns_api_unittest.cc",
-      ]
+      sources += [ "../browser/extensions/api/mdns/mdns_api_unittest.cc" ]
     }
     if (is_win) {
       sources +=

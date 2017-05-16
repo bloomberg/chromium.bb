@@ -13,9 +13,9 @@
 #include "extensions/test/result_catcher.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
-using extensions::DnsSdRegistry;
 using ::testing::_;
 using ::testing::A;
+using DnsSdRegistry = media_router::DnsSdRegistry;
 
 namespace api = extensions::api;
 
@@ -38,7 +38,7 @@ class MockDnsSdRegistry : public DnsSdRegistry {
   }
 
  private:
-  extensions::DnsSdRegistry::DnsSdObserver* api_;
+  DnsSdRegistry::DnsSdObserver* api_;
 };
 
 class MDnsAPITest : public ExtensionApiTest {
@@ -85,7 +85,7 @@ IN_PROC_BROWSER_TEST_F(MDnsAPITest, MAYBE_RegisterListener) {
   EXPECT_CALL(*dns_sd_registry_, UnregisterDnsSdListener(service_type))
       .Times(1);
   EXPECT_CALL(*dns_sd_registry_,
-              RemoveObserver(A<extensions::DnsSdRegistry::DnsSdObserver*>()))
+              RemoveObserver(A<DnsSdRegistry::DnsSdObserver*>()))
       .Times(1);
 
   EXPECT_TRUE(RunExtensionSubtest("mdns/api", "register_listener.html"))
@@ -95,7 +95,7 @@ IN_PROC_BROWSER_TEST_F(MDnsAPITest, MAYBE_RegisterListener) {
   // Dispatch 3 events, one of which should not be sent to the test extension.
   DnsSdRegistry::DnsSdServiceList services;
 
-  extensions::DnsSdService service;
+  media_router::DnsSdService service;
   service.service_name = service_type;
   services.push_back(service);
 
@@ -122,7 +122,7 @@ IN_PROC_BROWSER_TEST_F(MDnsAPITest, MAYBE_ForceDiscovery) {
       .Times(1);
   EXPECT_CALL(*dns_sd_registry_, ForceDiscovery()).Times(1);
   EXPECT_CALL(*dns_sd_registry_,
-              RemoveObserver(A<extensions::DnsSdRegistry::DnsSdObserver*>()))
+              RemoveObserver(A<DnsSdRegistry::DnsSdObserver*>()))
       .Times(1);
 
   EXPECT_TRUE(RunExtensionSubtest("mdns/api", "force_discovery.html"))
@@ -131,7 +131,7 @@ IN_PROC_BROWSER_TEST_F(MDnsAPITest, MAYBE_ForceDiscovery) {
   extensions::ResultCatcher catcher;
   DnsSdRegistry::DnsSdServiceList services;
 
-  extensions::DnsSdService service;
+  media_router::DnsSdService service;
   service.service_name = service_type;
   services.push_back(service);
 
@@ -161,7 +161,7 @@ IN_PROC_BROWSER_TEST_F(MDnsAPITest, MAYBE_RegisterMultipleListeners) {
   EXPECT_CALL(*dns_sd_registry_, UnregisterDnsSdListener(test_service_type))
       .Times(1);
   EXPECT_CALL(*dns_sd_registry_,
-              RemoveObserver(A<extensions::DnsSdRegistry::DnsSdObserver*>()))
+              RemoveObserver(A<DnsSdRegistry::DnsSdObserver*>()))
       .Times(1);
 
   EXPECT_TRUE(RunExtensionSubtest("mdns/api",
@@ -171,7 +171,7 @@ IN_PROC_BROWSER_TEST_F(MDnsAPITest, MAYBE_RegisterMultipleListeners) {
   extensions::ResultCatcher catcher;
   DnsSdRegistry::DnsSdServiceList services;
 
-  extensions::DnsSdService service;
+  media_router::DnsSdService service;
   service.service_name = service_type;
   services.push_back(service);
 
@@ -194,7 +194,7 @@ IN_PROC_BROWSER_TEST_F(MDnsAPITest, MAYBE_RegisterTooManyListeners) {
   EXPECT_CALL(*dns_sd_registry_, RegisterDnsSdListener(_)).Times(10);
   EXPECT_CALL(*dns_sd_registry_, UnregisterDnsSdListener(_)).Times(10);
   EXPECT_CALL(*dns_sd_registry_,
-              RemoveObserver(A<extensions::DnsSdRegistry::DnsSdObserver*>()))
+              RemoveObserver(A<DnsSdRegistry::DnsSdObserver*>()))
       .Times(1);
 
   EXPECT_TRUE(RunPlatformAppTest("mdns/api-packaged-apps"))

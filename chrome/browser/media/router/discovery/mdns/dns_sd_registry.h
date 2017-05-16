@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_API_MDNS_DNS_SD_REGISTRY_H_
-#define CHROME_BROWSER_EXTENSIONS_API_MDNS_DNS_SD_REGISTRY_H_
+#ifndef CHROME_BROWSER_MEDIA_ROUTER_DISCOVERY_MDNS_DNS_SD_REGISTRY_H_
+#define CHROME_BROWSER_MEDIA_ROUTER_DISCOVERY_MDNS_DNS_SD_REGISTRY_H_
 
 #include <map>
 #include <memory>
@@ -13,13 +13,13 @@
 
 #include "base/macros.h"
 #include "base/observer_list.h"
-#include "chrome/browser/extensions/api/mdns/dns_sd_delegate.h"
+#include "chrome/browser/media/router/discovery/mdns/dns_sd_delegate.h"
 
 namespace local_discovery {
 class ServiceDiscoverySharedClient;
 }
 
-namespace extensions {
+namespace media_router {
 
 class DnsSdDeviceLister;
 class ServiceTypeData;
@@ -118,6 +118,6 @@ class DnsSdRegistry : public DnsSdDelegate {
   DISALLOW_COPY_AND_ASSIGN(DnsSdRegistry);
 };
 
-}  // namespace extensions
+}  // namespace media_router
 
-#endif  // CHROME_BROWSER_EXTENSIONS_API_MDNS_DNS_SD_REGISTRY_H_
+#endif  // CHROME_BROWSER_MEDIA_ROUTER_DISCOVERY_MDNS_DNS_SD_REGISTRY_H_

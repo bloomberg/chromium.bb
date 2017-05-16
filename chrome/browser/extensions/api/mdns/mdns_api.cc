@@ -36,6 +36,8 @@ bool IsServiceTypeWhitelisted(const std::string& service_type) {
 
 }  // namespace
 
+using DnsSdRegistry = media_router::DnsSdRegistry;
+
 MDnsAPI::MDnsAPI(content::BrowserContext* context) : browser_context_(context) {
   DCHECK(browser_context_);
   extensions::EventRouter* event_router = EventRouter::Get(context);
@@ -79,7 +81,7 @@ void MDnsAPI::ForceDiscovery() {
 DnsSdRegistry* MDnsAPI::dns_sd_registry() {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (!dns_sd_registry_.get()) {
-    dns_sd_registry_.reset(new extensions::DnsSdRegistry());
+    dns_sd_registry_.reset(new media_router::DnsSdRegistry());
     dns_sd_registry_->AddObserver(this);
   }
   return dns_sd_registry_.get();
@@ -146,7 +148,7 @@ void MDnsAPI::OnDnsSdEvent(const std::string& service_type,
   DCHECK(thread_checker_.CalledOnValidThread());
 
   std::vector<mdns::MDnsService> args;
-  for (const DnsSdService& service : services) {
+  for (const auto& service : services) {
     if (static_cast<int>(args.size()) ==
         api::mdns::MAX_SERVICE_INSTANCES_PER_EVENT) {
       // TODO(reddaly): This is not the most meaningful way of notifying the

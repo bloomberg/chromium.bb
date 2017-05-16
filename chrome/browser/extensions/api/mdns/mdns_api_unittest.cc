@@ -91,7 +91,7 @@ base::FilePath bogus_file_pathname(const std::string& name) {
       .AppendASCII(name);
 }
 
-class MockDnsSdRegistry : public DnsSdRegistry {
+class MockDnsSdRegistry : public media_router::DnsSdRegistry {
  public:
   explicit MockDnsSdRegistry(extensions::MDnsAPI* api) : api_(api) {}
   virtual ~MockDnsSdRegistry() {}
@@ -109,7 +109,7 @@ class MockDnsSdRegistry : public DnsSdRegistry {
   }
 
  private:
-  extensions::DnsSdRegistry::DnsSdObserver* api_;
+  media_router::DnsSdRegistry::DnsSdObserver* api_;
 };
 
 class MockEventRouter : public EventRouter {
@@ -209,7 +209,8 @@ class MDnsAPITest : public extensions::ExtensionServiceTestBase {
                 AddObserver(MDnsAPI::Get(browser_context())))
         .Times(1);
     MDnsAPI::Get(browser_context())
-        ->SetDnsSdRegistryForTesting(std::unique_ptr<DnsSdRegistry>(registry_));
+        ->SetDnsSdRegistryForTesting(
+            std::unique_ptr<media_router::DnsSdRegistry>(registry_));
 
     render_process_host_.reset(
         new content::MockRenderProcessHost(browser_context()));
@@ -358,9 +359,9 @@ TEST_F(MDnsAPIMaxServicesTest, OnServiceListDoesNotExceedLimit) {
   // Dispatch an mDNS event with more service instances than the max, and ensure
   // that the list is truncated by inspecting the argument to MockEventRouter's
   // BroadcastEvent method.
-  DnsSdRegistry::DnsSdServiceList services;
+  media_router::DnsSdRegistry::DnsSdServiceList services;
   for (int i = 0; i < api::mdns::MAX_SERVICE_INSTANCES_PER_EVENT + 10; ++i) {
-    services.push_back(DnsSdService());
+    services.push_back(media_router::DnsSdService());
   }
   EXPECT_CALL(
       *event_router(),

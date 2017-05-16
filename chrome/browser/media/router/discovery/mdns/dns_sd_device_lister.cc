@@ -2,13 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/api/mdns/dns_sd_device_lister.h"
-
-#include "chrome/common/extensions/api/mdns.h"
+#include "chrome/browser/media/router/discovery/mdns/dns_sd_device_lister.h"
 
 using local_discovery::ServiceDescription;
 
-namespace extensions {
+namespace media_router {
 
 namespace {
 
@@ -22,8 +20,7 @@ void FillServiceInfo(const ServiceDescription& service_description,
   service->service_data = service_description.metadata;
 
   VLOG(1) << "Found " << service->service_name << ", "
-           << service->service_host_port << ", "
-           << service->ip_address;
+          << service->service_host_port << ", " << service->ip_address;
 }
 
 }  // namespace
@@ -34,22 +31,20 @@ DnsSdDeviceLister::DnsSdDeviceLister(
     const std::string& service_type)
     : delegate_(delegate),
       device_lister_(this, service_discovery_client, service_type),
-      started_(false) {
-}
+      started_(false) {}
 
-DnsSdDeviceLister::~DnsSdDeviceLister() {
-}
+DnsSdDeviceLister::~DnsSdDeviceLister() {}
 
 void DnsSdDeviceLister::Discover(bool force_update) {
   if (!started_) {
     device_lister_.Start();
     started_ = true;
     VLOG(1) << "Started device lister for service type "
-             << device_lister_.service_type();
+            << device_lister_.service_type();
   }
   device_lister_.DiscoverNewDevices(force_update);
   VLOG(1) << "Discovery new devices for service type "
-           << device_lister_.service_type();
+          << device_lister_.service_type();
 }
 
 void DnsSdDeviceLister::OnDeviceChanged(
@@ -78,4 +73,4 @@ void DnsSdDeviceLister::OnDeviceCacheFlushed() {
   device_lister_.DiscoverNewDevices(false);
 }
 
-}  // namespace extensions
+}  // namespace media_router

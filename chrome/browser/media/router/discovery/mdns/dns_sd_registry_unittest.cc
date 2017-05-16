@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/api/mdns/dns_sd_registry.h"
-#include "chrome/browser/extensions/api/mdns/dns_sd_delegate.h"
-#include "chrome/browser/extensions/api/mdns/dns_sd_device_lister.h"
+#include "chrome/browser/media/router/discovery/mdns/dns_sd_registry.h"
+#include "chrome/browser/media/router/discovery/mdns/dns_sd_delegate.h"
+#include "chrome/browser/media/router/discovery/mdns/dns_sd_device_lister.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace extensions {
+namespace media_router {
 
 class MockDnsSdDeviceLister : public DnsSdDeviceLister {
  public:
@@ -40,9 +40,7 @@ class TestDnsSdRegistry : public DnsSdRegistry {
                : nullptr;
   }
 
-  DnsSdDelegate* GetDelegate() {
-    return delegate_;
-  }
+  DnsSdDelegate* GetDelegate() { return delegate_; }
 
  protected:
   DnsSdDeviceLister* CreateDnsSdDeviceLister(
@@ -64,8 +62,9 @@ class TestDnsSdRegistry : public DnsSdRegistry {
 
 class MockDnsSdObserver : public DnsSdRegistry::DnsSdObserver {
  public:
-  MOCK_METHOD2(OnDnsSdEvent, void(const std::string&,
-                                  const DnsSdRegistry::DnsSdServiceList&));
+  MOCK_METHOD2(OnDnsSdEvent,
+               void(const std::string&,
+                    const DnsSdRegistry::DnsSdServiceList&));
 };
 
 class DnsSdRegistryTest : public testing::Test {
@@ -88,8 +87,9 @@ class DnsSdRegistryTest : public testing::Test {
 TEST_F(DnsSdRegistryTest, RegisterUnregisterListeners) {
   const std::string service_type = "_testing._tcp.local";
 
-  EXPECT_CALL(observer_, OnDnsSdEvent(service_type,
-      DnsSdRegistry::DnsSdServiceList())).Times(2);
+  EXPECT_CALL(observer_,
+              OnDnsSdEvent(service_type, DnsSdRegistry::DnsSdServiceList()))
+      .Times(2);
 
   registry_->RegisterDnsSdListener(service_type);
   registry_->RegisterDnsSdListener(service_type);
@@ -261,4 +261,4 @@ TEST_F(DnsSdRegistryTest, UpdateOnlyIfChanged) {
   registry_->GetDelegate()->ServiceChanged(service_type, false, service);
 }
 
-}  // namespace extensions
+}  // namespace media_router
