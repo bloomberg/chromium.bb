@@ -58,24 +58,19 @@ class CORE_EXPORT NGPhysicalFragment : public RefCounted<NGPhysicalFragment> {
 
   // Returns the border-box size.
   NGPhysicalSize Size() const { return size_; }
-  LayoutUnit Width() const { return size_.width; }
-  LayoutUnit Height() const { return size_.height; }
 
   // Returns the offset relative to the parent fragment's content-box.
-  LayoutUnit LeftOffset() const {
-    DCHECK(is_placed_);
-    return offset_.left;
-  }
-
-  LayoutUnit TopOffset() const {
-    DCHECK(is_placed_);
-    return offset_.top;
-  }
-
   NGPhysicalOffset Offset() const {
     DCHECK(is_placed_);
     return offset_;
   }
+
+  NGBreakToken* BreakToken() const { return break_token_.Get(); }
+  const ComputedStyle& Style() const;
+
+  // GetLayoutObject should only be used when necessary for compatibility
+  // with LegacyLayout.
+  LayoutObject* GetLayoutObject() const { return layout_object_; }
 
   // Should only be used by the parent fragment's layout.
   void SetOffset(NGPhysicalOffset offset) {
@@ -83,14 +78,6 @@ class CORE_EXPORT NGPhysicalFragment : public RefCounted<NGPhysicalFragment> {
     offset_ = offset;
     is_placed_ = true;
   }
-
-  NGBreakToken* BreakToken() const { return break_token_.Get(); }
-
-  const ComputedStyle& Style() const;
-
-  // GetLayoutObject should only be used when necessary for compatibility
-  // with LegacyLayout.
-  LayoutObject* GetLayoutObject() const { return layout_object_; }
 
   bool IsPlaced() const { return is_placed_; }
 

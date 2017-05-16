@@ -99,9 +99,9 @@ TEST_F(NGInlineLayoutAlgorithmTest, VerticalAlignBottomReplaced) {
       ToNGPhysicalBoxFragment(layout_result->PhysicalFragment().Get());
   EXPECT_EQ(1u, wrapper->Children().size());
   auto* line = ToNGPhysicalLineBoxFragment(wrapper->Children()[0].Get());
-  EXPECT_EQ(LayoutUnit(96), line->Height());
+  EXPECT_EQ(LayoutUnit(96), line->Size().height);
   auto* img = line->Children()[0].Get();
-  EXPECT_EQ(LayoutUnit(0), img->TopOffset());
+  EXPECT_EQ(LayoutUnit(0), img->Offset().top);
 }
 
 // Verifies that text can flow correctly around floats that were positioned
@@ -167,18 +167,18 @@ TEST_F(NGInlineLayoutAlgorithmTest, TextFloatsAroundFloatsBefore) {
 
   auto* text_fragment1 = text_fragments[0];
   // 40 = #left-float1' width 30 + #left-float2 10
-  EXPECT_EQ(LayoutUnit(40), text_fragment1->LeftOffset());
+  EXPECT_EQ(LayoutUnit(40), text_fragment1->Offset().left);
   InlineTextBox* inline_text_box1 = layout_text->FirstTextBox();
   EXPECT_EQ(LayoutUnit(40), inline_text_box1->X());
 
   auto* text_fragment2 = text_fragments[1];
   // 40 = #left-float1' width 30
-  EXPECT_EQ(LayoutUnit(30), text_fragment2->LeftOffset());
+  EXPECT_EQ(LayoutUnit(30), text_fragment2->Offset().left);
   InlineTextBox* inline_text_box2 = inline_text_box1->NextTextBox();
   EXPECT_EQ(LayoutUnit(30), inline_text_box2->X());
 
   auto* text_fragment3 = text_fragments[2];
-  EXPECT_EQ(LayoutUnit(), text_fragment3->LeftOffset());
+  EXPECT_EQ(LayoutUnit(), text_fragment3->Offset().left);
   InlineTextBox* inline_text_box3 = inline_text_box2->NextTextBox();
   EXPECT_EQ(LayoutUnit(), inline_text_box3->X());
 }

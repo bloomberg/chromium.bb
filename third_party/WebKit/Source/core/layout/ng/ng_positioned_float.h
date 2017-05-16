@@ -24,7 +24,7 @@ struct CORE_EXPORT NGPositionedFloat {
 
   // In the case where a legacy FloatingObject is attached to not its own
   // parent, e.g. a float surrounded by a bunch of nested empty divs,
-  // NG float fragment's LeftOffset() cannot be used as legacy FloatingObject's
+  // NG float fragment's left offset cannot be used as legacy FloatingObject's
   // left offset because that offset should be relative to the original float
   // parent.
   // {@code paint_offset} is calculated when we know to which parent this float

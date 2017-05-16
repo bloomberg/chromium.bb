@@ -54,12 +54,12 @@ void FragmentPositionUpdated(const NGPhysicalFragment& fragment) {
   LayoutBlock* containing_block = layout_box->ContainingBlock();
   if (containing_block->StyleRef().IsFlippedBlocksWritingMode()) {
     LayoutUnit container_width = containing_block->Size().Width();
-    layout_box->SetX(container_width - fragment.LeftOffset() -
-                     fragment.Width());
+    layout_box->SetX(container_width - fragment.Offset().left -
+                     fragment.Size().width);
   } else {
-    layout_box->SetX(fragment.LeftOffset());
+    layout_box->SetX(fragment.Offset().left);
   }
-  layout_box->SetY(fragment.TopOffset());
+  layout_box->SetY(fragment.Offset().top);
 }
 
 // Similar to FragmentPositionUpdated but for floats.
@@ -92,20 +92,20 @@ void UpdateLegacyMultiColumnFlowThread(LayoutBox* layout_box,
   if (!flow_thread)
     return;
   if (LayoutMultiColumnSet* column_set = flow_thread->FirstMultiColumnSet()) {
-    column_set->SetWidth(fragment->Width());
-    column_set->SetHeight(fragment->Height());
+    column_set->SetWidth(fragment->Size().width);
+    column_set->SetHeight(fragment->Size().height);
 
     // TODO(mstensho): This value has next to nothing to do with the flow thread
     // portion size, but at least it's usually better than zero.
-    column_set->EndFlow(fragment->Height());
+    column_set->EndFlow(fragment->Size().height);
 
     column_set->ClearNeedsLayout();
   }
   // TODO(mstensho): Fix the relatively nonsensical values here (the content box
   // size of the multicol container has very little to do with the price of
   // eggs).
-  flow_thread->SetWidth(fragment->Width());
-  flow_thread->SetHeight(fragment->Height());
+  flow_thread->SetWidth(fragment->Size().width);
+  flow_thread->SetHeight(fragment->Size().height);
 
   flow_thread->ValidateColumnSets();
   flow_thread->ClearNeedsLayout();
@@ -268,8 +268,8 @@ void NGBlockNode::CopyFragmentDataToLayoutBox(
 
   if (layout_box_->Style()->SpecifiesColumns())
     UpdateLegacyMultiColumnFlowThread(layout_box_, fragment);
-  layout_box_->SetWidth(fragment->Width());
-  layout_box_->SetHeight(fragment->Height());
+  layout_box_->SetWidth(fragment->Size().width);
+  layout_box_->SetHeight(fragment->Size().height);
   NGBoxStrut border_and_padding = ComputeBorders(constraint_space, Style()) +
                                   ComputePadding(constraint_space, Style());
   LayoutUnit intrinsic_logical_height =
