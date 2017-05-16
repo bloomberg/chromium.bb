@@ -54,24 +54,45 @@ base::TimeDelta GetAnimationDuration(OverviewAnimationType animation_type) {
 }
 
 class OverviewEnterMetricsReporter : public ui::AnimationMetricsReporter {
+ public:
+  OverviewEnterMetricsReporter() = default;
+  ~OverviewEnterMetricsReporter() override = default;
+
   void Report(int value) override {
     UMA_HISTOGRAM_PERCENTAGE("Ash.WindowSelector.AnimationSmoothness.Enter",
                              value);
   }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(OverviewEnterMetricsReporter);
 };
 
 class OverviewExitMetricsReporter : public ui::AnimationMetricsReporter {
+ public:
+  OverviewExitMetricsReporter() = default;
+  ~OverviewExitMetricsReporter() override = default;
+
   void Report(int value) override {
     UMA_HISTOGRAM_PERCENTAGE("Ash.WindowSelector.AnimationSmoothness.Exit",
                              value);
   }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(OverviewExitMetricsReporter);
 };
 
 class OverviewCloseMetricsReporter : public ui::AnimationMetricsReporter {
+ public:
+  OverviewCloseMetricsReporter() = default;
+  ~OverviewCloseMetricsReporter() override = default;
+
   void Report(int value) override {
     UMA_HISTOGRAM_PERCENTAGE("Ash.WindowSelector.AnimationSmoothness.Close",
                              value);
   }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(OverviewCloseMetricsReporter);
 };
 
 base::LazyInstance<OverviewEnterMetricsReporter>::Leaky g_reporter_enter =

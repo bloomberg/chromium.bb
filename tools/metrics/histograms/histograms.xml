@@ -2379,6 +2379,17 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>The wallpaper type. Recorded at user login.</summary>
 </histogram>
 
+<histogram name="Ash.Window.AnimationSmoothness.CrossFade" units="%">
+  <owner>wutao@chromium.org</owner>
+  <summary>
+    Relative smoothness of cross fade animation when setting window bounds. 100%
+    represents ideally smooth 60 frames per second. 50% represents when only 30
+    frames per second is achieved during the animations. 0% should not happen.
+    This metric is recorded exactly once when SetBoundsDirectCrossFade is
+    called, such as when window is maximized.
+  </summary>
+</histogram>
+
 <histogram name="Ash.WindowCycleController.CycleTime" units="ms">
   <owner>varkha@chromium.org</owner>
   <owner>tbuckley@google.com</owner>

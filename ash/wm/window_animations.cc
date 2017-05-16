@@ -15,8 +15,10 @@
 #include "ash/wm/workspace_controller.h"
 #include "ash/wm_window.h"
 #include "base/i18n/rtl.h"
+#include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
 #include "base/time/time.h"
 #include "ui/aura/client/aura_constants.h"
@@ -83,6 +85,22 @@ base::TimeDelta GetCrossFadeDuration(aura::Window* window,
   return base::TimeDelta::FromMilliseconds(
       Round64(kCrossFadeDurationMinMs + (factor * kRange)));
 }
+
+class CrossFadeMetricsReporter : public ui::AnimationMetricsReporter {
+ public:
+  CrossFadeMetricsReporter() = default;
+  ~CrossFadeMetricsReporter() override = default;
+
+  void Report(int value) override {
+    UMA_HISTOGRAM_PERCENTAGE("Ash.Window.AnimationSmoothness.CrossFade", value);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(CrossFadeMetricsReporter);
+};
+
+base::LazyInstance<CrossFadeMetricsReporter>::Leaky g_reporter_cross_fade =
+    LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace
 
@@ -319,6 +337,8 @@ base::TimeDelta CrossFadeAnimation(
         new CrossFadeObserver(window, std::move(old_layer_owner)));
     settings.SetTransitionDuration(duration);
     settings.SetTweenType(tween_type);
+    // Only add reporter to |old_layer|.
+    settings.SetAnimationMetricsReporter(g_reporter_cross_fade.Pointer());
     gfx::Transform out_transform;
     float scale_x = static_cast<float>(new_bounds.width()) /
                     static_cast<float>(old_bounds.width());
