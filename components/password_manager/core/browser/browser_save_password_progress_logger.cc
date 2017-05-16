@@ -164,6 +164,16 @@ void BrowserSavePasswordProgressLogger::LogString(StringID label,
   LogValue(label, base::Value(s));
 }
 
+void BrowserSavePasswordProgressLogger::LogSuccessfulSubmissionIndicatorEvent(
+    autofill::PasswordForm::SubmissionIndicatorEvent event) {
+  std::ostringstream submission_event_string_stream;
+  submission_event_string_stream << event;
+  std::string message =
+      GetStringFromID(STRING_SUCCESSFUL_SUBMISSION_INDICATOR_EVENT) + ": " +
+      submission_event_string_stream.str();
+  SendLog(message);
+}
+
 void BrowserSavePasswordProgressLogger::SendLog(const std::string& log) {
   log_manager_->LogSavePasswordProgress(log);
 }
