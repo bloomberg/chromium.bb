@@ -380,8 +380,9 @@ class MediaStreamManager::DeviceRequest {
 // static
 void MediaStreamManager::SendMessageToNativeLog(const std::string& message) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
-    BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-        base::Bind(&MediaStreamManager::SendMessageToNativeLog, message));
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE,
+        base::BindOnce(&MediaStreamManager::SendMessageToNativeLog, message));
     return;
   }
 
@@ -508,10 +509,9 @@ std::string MediaStreamManager::MakeMediaAccessRequest(
   // and thus can not handle a response. Using base::Unretained is safe since
   // MediaStreamManager is deleted on the UI thread, after the IO thread has
   // been stopped.
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      base::Bind(&MediaStreamManager::SetupRequest,
-                 base::Unretained(this), label));
+  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
+                          base::BindOnce(&MediaStreamManager::SetupRequest,
+                                         base::Unretained(this), label));
   return label;
 }
 
@@ -549,10 +549,9 @@ void MediaStreamManager::GenerateStream(MediaStreamRequester* requester,
   // and thus can not handle a response. Using base::Unretained is safe since
   // MediaStreamManager is deleted on the UI thread, after the IO thread has
   // been stopped.
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      base::Bind(&MediaStreamManager::SetupRequest,
-                 base::Unretained(this), label));
+  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
+                          base::BindOnce(&MediaStreamManager::SetupRequest,
+                                         base::Unretained(this), label));
 }
 
 void MediaStreamManager::CancelRequest(int render_process_id,
@@ -745,10 +744,9 @@ void MediaStreamManager::OpenDevice(MediaStreamRequester* requester,
   // and thus can not handle a response. Using base::Unretained is safe since
   // MediaStreamManager is deleted on the UI thread, after the IO thread has
   // been stopped.
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      base::Bind(&MediaStreamManager::SetupRequest,
-                 base::Unretained(this), label));
+  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
+                          base::BindOnce(&MediaStreamManager::SetupRequest,
+                                         base::Unretained(this), label));
 }
 
 bool MediaStreamManager::TranslateSourceIdToDeviceId(
@@ -932,8 +930,8 @@ void MediaStreamManager::ReadOutputParamsAndPostRequestToUI(
     // UI thread, after the IO thread has been stopped.
     audio_system_->GetOutputStreamParameters(
         media::AudioDeviceDescription::kDefaultDeviceId,
-        base::Bind(&MediaStreamManager::PostRequestToUI, base::Unretained(this),
-                   label, request, enumeration));
+        base::BindOnce(&MediaStreamManager::PostRequestToUI,
+                       base::Unretained(this), label, request, enumeration));
   } else {
     PostRequestToUI(label, request, enumeration, media::AudioParameters());
   }
@@ -980,8 +978,8 @@ void MediaStreamManager::PostRequestToUI(
 
   request->ui_proxy->RequestAccess(
       request->DetachUIRequest(),
-      base::Bind(&MediaStreamManager::HandleAccessRequestResponse,
-                 base::Unretained(this), label, output_parameters));
+      base::BindOnce(&MediaStreamManager::HandleAccessRequestResponse,
+                     base::Unretained(this), label, output_parameters));
 }
 
 void MediaStreamManager::SetupRequest(const std::string& label) {
@@ -1241,9 +1239,9 @@ void MediaStreamManager::InitializeMaybeAsync(
   if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        base::Bind(&MediaStreamManager::InitializeMaybeAsync,
-                   base::Unretained(this),
-                   base::Passed(&video_capture_provider)));
+        base::BindOnce(&MediaStreamManager::InitializeMaybeAsync,
+                       base::Unretained(this),
+                       std::move(video_capture_provider)));
     return;
   }
 
@@ -1423,15 +1421,17 @@ void MediaStreamManager::UseFakeUIForTests(
 void MediaStreamManager::RegisterNativeLogCallback(
     int renderer_host_id,
     const base::Callback<void(const std::string&)>& callback) {
-  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-      base::Bind(&MediaStreamManager::DoNativeLogCallbackRegistration,
-                 base::Unretained(this), renderer_host_id, callback));
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::BindOnce(&MediaStreamManager::DoNativeLogCallbackRegistration,
+                     base::Unretained(this), renderer_host_id, callback));
 }
 
 void MediaStreamManager::UnregisterNativeLogCallback(int renderer_host_id) {
-  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-      base::Bind(&MediaStreamManager::DoNativeLogCallbackUnregistration,
-                 base::Unretained(this), renderer_host_id));
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::BindOnce(&MediaStreamManager::DoNativeLogCallbackUnregistration,
+                     base::Unretained(this), renderer_host_id));
 }
 
 void MediaStreamManager::AddLogMessageOnIOThread(const std::string& message) {
@@ -1776,11 +1776,11 @@ void MediaStreamManager::OnStreamStarted(const std::string& label) {
 
   if (request->ui_proxy) {
     request->ui_proxy->OnStarted(
-        base::Bind(&MediaStreamManager::StopMediaStreamFromBrowser,
-                   base::Unretained(this), label),
-        base::Bind(&MediaStreamManager::OnMediaStreamUIWindowId,
-                   base::Unretained(this), request->video_type(),
-                   request->devices));
+        base::BindOnce(&MediaStreamManager::StopMediaStreamFromBrowser,
+                       base::Unretained(this), label),
+        base::BindOnce(&MediaStreamManager::OnMediaStreamUIWindowId,
+                       base::Unretained(this), request->video_type(),
+                       request->devices));
   }
 }
 

@@ -5,6 +5,8 @@
 #ifndef MEDIA_AUDIO_AUDIO_SYSTEM_H_
 #define MEDIA_AUDIO_AUDIO_SYSTEM_H_
 
+#include <string>
+
 #include "base/callback.h"
 #include "media/audio/audio_device_description.h"
 #include "media/base/audio_parameters.h"
@@ -25,12 +27,13 @@ class MEDIA_EXPORT AudioSystem {
   // Replies are asynchronously sent from audio system thread to the thread the
   // call is issued on. Attention! Audio system thread may outlive the client
   // objects; bind callbacks with care.
-  using OnAudioParamsCallback = base::Callback<void(const AudioParameters&)>;
-  using OnBoolCallback = base::Callback<void(bool)>;
+  using OnAudioParamsCallback =
+      base::OnceCallback<void(const AudioParameters&)>;
+  using OnBoolCallback = base::OnceCallback<void(bool)>;
   using OnDeviceDescriptionsCallback =
-      base::Callback<void(AudioDeviceDescriptions)>;
-  using OnDeviceIdCallback = base::Callback<void(const std::string&)>;
-  using OnInputDeviceInfoCallback = base::Callback<
+      base::OnceCallback<void(AudioDeviceDescriptions)>;
+  using OnDeviceIdCallback = base::OnceCallback<void(const std::string&)>;
+  using OnInputDeviceInfoCallback = base::OnceCallback<
       void(const AudioParameters&, const AudioParameters&, const std::string&)>;
 
   // Must not be called on audio system thread if it differs from the one

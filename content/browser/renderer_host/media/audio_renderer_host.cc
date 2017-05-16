@@ -46,12 +46,12 @@ void UMALogDeviceAuthorizationTime(base::TimeTicks auth_start_time) {
 // |callback| on the IO thread with true if the ID is valid.
 void ValidateRenderFrameId(int render_process_id,
                            int render_frame_id,
-                           const base::Callback<void(bool)>& callback) {
+                           base::OnceCallback<void(bool)> callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   const bool frame_exists =
       !!RenderFrameHost::FromID(render_process_id, render_frame_id);
   BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                          base::Bind(callback, frame_exists));
+                          base::BindOnce(std::move(callback), frame_exists));
 }
 
 }  // namespace
@@ -191,9 +191,9 @@ void AudioRendererHost::OnRequestDeviceAuthorization(
   // |authorization_handler_| owns the callback.
   authorization_handler_.RequestDeviceAuthorization(
       render_frame_id, session_id, device_id, security_origin,
-      base::Bind(&AudioRendererHost::AuthorizationCompleted,
-                 base::Unretained(this), stream_id, security_origin,
-                 auth_start_time));
+      base::BindOnce(&AudioRendererHost::AuthorizationCompleted,
+                     base::Unretained(this), stream_id, security_origin,
+                     auth_start_time));
 }
 
 void AudioRendererHost::AuthorizationCompleted(
@@ -279,10 +279,10 @@ void AudioRendererHost::OnCreateStream(int stream_id,
   // force-close the stream later if validation fails.
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(validate_render_frame_id_function_, render_process_id_,
-                 render_frame_id,
-                 base::Bind(&AudioRendererHost::DidValidateRenderFrame, this,
-                            stream_id)));
+      base::BindOnce(validate_render_frame_id_function_, render_process_id_,
+                     render_frame_id,
+                     base::BindOnce(&AudioRendererHost::DidValidateRenderFrame,
+                                    this, stream_id)));
 
   MediaObserver* const media_observer =
       GetContentClient()->browser()->GetMediaObserver();

@@ -103,10 +103,6 @@ class CONTENT_EXPORT AudioRendererHost
   FRIEND_TEST_ALL_PREFIXES(AudioRendererHostTest, CreateMockStream);
   FRIEND_TEST_ALL_PREFIXES(AudioRendererHostTest, MockStreamDataConversation);
 
-  // Internal callback type for access requests to output devices.
-  // |have_access| is true only if there is permission to access the device.
-  typedef base::Callback<void(bool have_access)> OutputDeviceAccessCB;
-
   using AudioOutputDelegateVector =
       std::vector<std::unique_ptr<media::AudioOutputDelegate>>;
 
@@ -116,7 +112,7 @@ class CONTENT_EXPORT AudioRendererHost
   using ValidateRenderFrameIdFunction =
       void (*)(int render_process_id,
                int render_frame_id,
-               const base::Callback<void(bool)>& callback);
+               base::OnceCallback<void(bool)> callback);
 
   ~AudioRendererHost() override;
 

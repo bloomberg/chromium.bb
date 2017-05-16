@@ -58,11 +58,11 @@ const char kInvalidDeviceId[] = "invalid-device-id";
 
 void ValidateRenderFrameId(int render_process_id,
                            int render_frame_id,
-                           const base::Callback<void(bool)>& callback) {
+                           base::OnceCallback<void(bool)> callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   const bool frame_exists = (render_frame_id == kRenderFrameId);
   BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                          base::Bind(callback, frame_exists));
+                          base::BindOnce(std::move(callback), frame_exists));
 }
 
 
@@ -98,7 +98,7 @@ class MockRenderProcessHostWithSignaling : public MockRenderProcessHost {
 
 class FakeAudioManagerWithAssociations : public media::FakeAudioManager {
  public:
-  FakeAudioManagerWithAssociations(media::AudioLogFactory* factory)
+  explicit FakeAudioManagerWithAssociations(media::AudioLogFactory* factory)
       : FakeAudioManager(base::MakeUnique<media::TestAudioThread>(), factory) {}
 
   void CreateDeviceAssociation(const std::string& input_device_id,

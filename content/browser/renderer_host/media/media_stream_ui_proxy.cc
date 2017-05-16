@@ -119,8 +119,8 @@ void MediaStreamUIProxy::Core::ProcessAccessRequestResponse(
   ui_ = std::move(stream_ui);
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&MediaStreamUIProxy::ProcessAccessRequestResponse,
-                 proxy_, devices, result));
+      base::BindOnce(&MediaStreamUIProxy::ProcessAccessRequestResponse, proxy_,
+                     devices, result));
 }
 
 void MediaStreamUIProxy::Core::ProcessStopRequestFromUI() {
@@ -128,7 +128,7 @@ void MediaStreamUIProxy::Core::ProcessStopRequestFromUI() {
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&MediaStreamUIProxy::ProcessStopRequestFromUI, proxy_));
+      base::BindOnce(&MediaStreamUIProxy::ProcessStopRequestFromUI, proxy_));
 }
 
 RenderFrameHostDelegate* MediaStreamUIProxy::Core::GetRenderFrameHostDelegate(
@@ -166,33 +166,32 @@ MediaStreamUIProxy::~MediaStreamUIProxy() {
 
 void MediaStreamUIProxy::RequestAccess(
     std::unique_ptr<MediaStreamRequest> request,
-    const ResponseCallback& response_callback) {
+    ResponseCallback response_callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  response_callback_ = response_callback;
+  response_callback_ = std::move(response_callback);
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(&Core::RequestAccess, base::Unretained(core_.get()),
-                 base::Passed(&request)));
+      base::BindOnce(&Core::RequestAccess, base::Unretained(core_.get()),
+                     std::move(request)));
 }
 
-void MediaStreamUIProxy::OnStarted(const base::Closure& stop_callback,
-                                   const WindowIdCallback& window_id_callback) {
+void MediaStreamUIProxy::OnStarted(base::OnceClosure stop_callback,
+                                   WindowIdCallback window_id_callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  stop_callback_ = stop_callback;
+  stop_callback_ = std::move(stop_callback);
 
   // Owned by the PostTaskAndReply callback.
   gfx::NativeViewId* window_id = new gfx::NativeViewId(0);
 
   BrowserThread::PostTaskAndReply(
-      BrowserThread::UI,
-      FROM_HERE,
-      base::Bind(&Core::OnStarted, base::Unretained(core_.get()), window_id),
-      base::Bind(&MediaStreamUIProxy::OnWindowId,
-                 weak_factory_.GetWeakPtr(),
-                 window_id_callback,
-                 base::Owned(window_id)));
+      BrowserThread::UI, FROM_HERE,
+      base::BindOnce(&Core::OnStarted, base::Unretained(core_.get()),
+                     window_id),
+      base::BindOnce(&MediaStreamUIProxy::OnWindowId,
+                     weak_factory_.GetWeakPtr(), std::move(window_id_callback),
+                     base::Owned(window_id)));
 }
 
 void MediaStreamUIProxy::ProcessAccessRequestResponse(
@@ -201,25 +200,21 @@ void MediaStreamUIProxy::ProcessAccessRequestResponse(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(!response_callback_.is_null());
 
-  ResponseCallback cb = response_callback_;
-  response_callback_.Reset();
-  cb.Run(devices, result);
+  base::ResetAndReturn(&response_callback_).Run(devices, result);
 }
 
 void MediaStreamUIProxy::ProcessStopRequestFromUI() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(!stop_callback_.is_null());
 
-  base::Closure cb = stop_callback_;
-  stop_callback_.Reset();
-  cb.Run();
+  base::ResetAndReturn(&stop_callback_).Run();
 }
 
-void MediaStreamUIProxy::OnWindowId(const WindowIdCallback& window_id_callback,
+void MediaStreamUIProxy::OnWindowId(WindowIdCallback window_id_callback,
                                     gfx::NativeViewId* window_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (!window_id_callback.is_null())
-    window_id_callback.Run(*window_id);
+    std::move(window_id_callback).Run(*window_id);
 }
 
 FakeMediaStreamUIProxy::FakeMediaStreamUIProxy()
@@ -245,20 +240,19 @@ void FakeMediaStreamUIProxy::SetCameraAccess(bool access) {
 
 void FakeMediaStreamUIProxy::RequestAccess(
     std::unique_ptr<MediaStreamRequest> request,
-    const ResponseCallback& response_callback) {
+    ResponseCallback response_callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  response_callback_ = response_callback;
+  response_callback_ = std::move(response_callback);
 
   if (base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
           switches::kUseFakeUIForMediaStream) == "deny") {
     // Immediately deny the request.
     BrowserThread::PostTask(
-          BrowserThread::IO, FROM_HERE,
-          base::Bind(&MediaStreamUIProxy::ProcessAccessRequestResponse,
-                     weak_factory_.GetWeakPtr(),
-                     MediaStreamDevices(),
-                     MEDIA_DEVICE_PERMISSION_DENIED));
+        BrowserThread::IO, FROM_HERE,
+        base::BindOnce(&MediaStreamUIProxy::ProcessAccessRequestResponse,
+                       weak_factory_.GetWeakPtr(), MediaStreamDevices(),
+                       MEDIA_DEVICE_PERMISSION_DENIED));
     return;
   }
 
@@ -295,16 +289,13 @@ void FakeMediaStreamUIProxy::RequestAccess(
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&MediaStreamUIProxy::ProcessAccessRequestResponse,
-                 weak_factory_.GetWeakPtr(),
-                 devices_to_use,
-                 devices_to_use.empty() ?
-                     MEDIA_DEVICE_NO_HARDWARE :
-                     MEDIA_DEVICE_OK));
+      base::BindOnce(
+          &MediaStreamUIProxy::ProcessAccessRequestResponse,
+          weak_factory_.GetWeakPtr(), devices_to_use,
+          devices_to_use.empty() ? MEDIA_DEVICE_NO_HARDWARE : MEDIA_DEVICE_OK));
 }
 
-void FakeMediaStreamUIProxy::OnStarted(
-    const base::Closure& stop_callback,
-    const WindowIdCallback& window_id_callback) {}
+void FakeMediaStreamUIProxy::OnStarted(base::OnceClosure stop_callback,
+                                       WindowIdCallback window_id_callback) {}
 
 }  // namespace content

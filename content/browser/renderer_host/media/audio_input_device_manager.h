@@ -14,6 +14,7 @@
 #define CONTENT_BROWSER_RENDERER_HOST_MEDIA_AUDIO_INPUT_DEVICE_MANAGER_H_
 
 #include <map>
+#include <string>
 #include <vector>
 
 #include "base/macros.h"

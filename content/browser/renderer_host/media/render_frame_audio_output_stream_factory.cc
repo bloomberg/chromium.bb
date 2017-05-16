@@ -69,15 +69,16 @@ void RenderFrameAudioOutputStreamFactory::RequestDeviceAuthorization(
     return;
   }
 
-  base::PostTaskAndReplyWithResult(
-      BrowserThread::GetTaskRunnerForThread(BrowserThread::UI).get(), FROM_HERE,
-      base::Bind(GetOrigin, context_->GetRenderProcessId(), render_frame_id_),
-      base::Bind(&RenderFrameAudioOutputStreamFactory::
-                     RequestDeviceAuthorizationForOrigin,
-                 weak_ptr_factory_.GetWeakPtr(), auth_start_time,
-                 base::Passed(&stream_provider_request),
-                 static_cast<int>(session_id), device_id,
-                 base::Passed(&callback)));
+  BrowserThread::PostTaskAndReplyWithResult(
+      BrowserThread::UI, FROM_HERE,
+      base::BindOnce(GetOrigin, context_->GetRenderProcessId(),
+                     render_frame_id_),
+      base::BindOnce(&RenderFrameAudioOutputStreamFactory::
+                         RequestDeviceAuthorizationForOrigin,
+                     weak_ptr_factory_.GetWeakPtr(), auth_start_time,
+                     std::move(stream_provider_request),
+                     static_cast<int>(session_id), device_id,
+                     std::move(callback)));
 }
 
 void RenderFrameAudioOutputStreamFactory::RequestDeviceAuthorizationForOrigin(
@@ -90,10 +91,10 @@ void RenderFrameAudioOutputStreamFactory::RequestDeviceAuthorizationForOrigin(
   DCHECK(thread_checker_.CalledOnValidThread());
   context_->RequestDeviceAuthorization(
       render_frame_id_, session_id, device_id, origin,
-      base::Bind(&RenderFrameAudioOutputStreamFactory::AuthorizationCompleted,
-                 weak_ptr_factory_.GetWeakPtr(), auth_start_time,
-                 base::Passed(&stream_provider_request),
-                 base::Passed(&callback), origin));
+      base::BindOnce(
+          &RenderFrameAudioOutputStreamFactory::AuthorizationCompleted,
+          weak_ptr_factory_.GetWeakPtr(), auth_start_time,
+          std::move(stream_provider_request), std::move(callback), origin));
 }
 
 void RenderFrameAudioOutputStreamFactory::AuthorizationCompleted(
@@ -123,8 +124,8 @@ void RenderFrameAudioOutputStreamFactory::AuthorizationCompleted(
           base::BindOnce(
               &RendererAudioOutputStreamFactoryContext::CreateDelegate,
               base::Unretained(context_), raw_device_id, render_frame_id_),
-          base::Bind(&RenderFrameAudioOutputStreamFactory::RemoveStream,
-                     base::Unretained(this))));
+          base::BindOnce(&RenderFrameAudioOutputStreamFactory::RemoveStream,
+                         base::Unretained(this))));
 
   std::move(callback).Run(
       media::OutputDeviceStatus(status), params,

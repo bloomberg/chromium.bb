@@ -71,34 +71,37 @@ scoped_refptr<AudioOutputController> AudioOutputController::Create(
 
   scoped_refptr<AudioOutputController> controller(new AudioOutputController(
       audio_manager, event_handler, params, output_device_id, sync_reader));
-  controller->message_loop_->PostTask(FROM_HERE, base::Bind(
-      &AudioOutputController::DoCreate, controller, false));
+  controller->message_loop_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&AudioOutputController::DoCreate, controller, false));
   return controller;
 }
 
 void AudioOutputController::Play() {
   CHECK_EQ(AudioManager::Get(), audio_manager_);
-  message_loop_->PostTask(FROM_HERE, base::Bind(
-      &AudioOutputController::DoPlay, this));
+  message_loop_->PostTask(FROM_HERE,
+                          base::BindOnce(&AudioOutputController::DoPlay, this));
 }
 
 void AudioOutputController::Pause() {
   CHECK_EQ(AudioManager::Get(), audio_manager_);
-  message_loop_->PostTask(FROM_HERE, base::Bind(
-      &AudioOutputController::DoPause, this));
+  message_loop_->PostTask(
+      FROM_HERE, base::BindOnce(&AudioOutputController::DoPause, this));
 }
 
-void AudioOutputController::Close(const base::Closure& closed_task) {
+void AudioOutputController::Close(base::OnceClosure closed_task) {
   CHECK_EQ(AudioManager::Get(), audio_manager_);
   DCHECK(!closed_task.is_null());
-  message_loop_->PostTaskAndReply(FROM_HERE, base::Bind(
-      &AudioOutputController::DoClose, this), closed_task);
+  message_loop_->PostTaskAndReply(
+      FROM_HERE, base::BindOnce(&AudioOutputController::DoClose, this),
+      std::move(closed_task));
 }
 
 void AudioOutputController::SetVolume(double volume) {
   CHECK_EQ(AudioManager::Get(), audio_manager_);
-  message_loop_->PostTask(FROM_HERE, base::Bind(
-      &AudioOutputController::DoSetVolume, this, volume));
+  message_loop_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&AudioOutputController::DoSetVolume, this, volume));
 }
 
 void AudioOutputController::DoCreate(bool is_for_device_change) {
@@ -280,8 +283,9 @@ int AudioOutputController::OnMoreData(base::TimeDelta delay,
     dest->CopyTo(copy.get());
     message_loop_->PostTask(
         FROM_HERE,
-        base::Bind(&AudioOutputController::BroadcastDataToDuplicationTargets,
-                   this, base::Passed(&copy), reference_time));
+        base::BindOnce(
+            &AudioOutputController::BroadcastDataToDuplicationTargets, this,
+            std::move(copy), reference_time));
   }
 
   if (will_monitor_audio_levels())
@@ -317,8 +321,8 @@ void AudioOutputController::OnError(AudioOutputStream* stream) {
   }
 
   // Handle error on the audio controller thread.
-  message_loop_->PostTask(FROM_HERE, base::Bind(
-      &AudioOutputController::DoReportError, this));
+  message_loop_->PostTask(
+      FROM_HERE, base::BindOnce(&AudioOutputController::DoReportError, this));
 }
 
 void AudioOutputController::DoStopCloseAndClearStream() {
@@ -386,25 +390,25 @@ const AudioParameters& AudioOutputController::GetAudioParameters() {
 
 void AudioOutputController::StartDiverting(AudioOutputStream* to_stream) {
   message_loop_->PostTask(
-      FROM_HERE,
-      base::Bind(&AudioOutputController::DoStartDiverting, this, to_stream));
+      FROM_HERE, base::BindOnce(&AudioOutputController::DoStartDiverting, this,
+                                to_stream));
 }
 
 void AudioOutputController::StopDiverting() {
   message_loop_->PostTask(
-      FROM_HERE, base::Bind(&AudioOutputController::DoStopDiverting, this));
+      FROM_HERE, base::BindOnce(&AudioOutputController::DoStopDiverting, this));
 }
 
 void AudioOutputController::StartDuplicating(AudioPushSink* sink) {
   message_loop_->PostTask(
       FROM_HERE,
-      base::Bind(&AudioOutputController::DoStartDuplicating, this, sink));
+      base::BindOnce(&AudioOutputController::DoStartDuplicating, this, sink));
 }
 
 void AudioOutputController::StopDuplicating(AudioPushSink* sink) {
   message_loop_->PostTask(
       FROM_HERE,
-      base::Bind(&AudioOutputController::DoStopDuplicating, this, sink));
+      base::BindOnce(&AudioOutputController::DoStopDuplicating, this, sink));
 }
 
 void AudioOutputController::DoStartDiverting(AudioOutputStream* to_stream) {

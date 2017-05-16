@@ -96,37 +96,37 @@ void MediaDevicesPermissionChecker::CheckPermission(
     MediaDeviceType device_type,
     int render_process_id,
     int render_frame_id,
-    const base::Callback<void(bool)>& callback) const {
+    base::OnceCallback<void(bool)> callback) const {
   if (use_override_) {
-    callback.Run(override_value_);
+    std::move(callback).Run(override_value_);
     return;
   }
 
   BrowserThread::PostTaskAndReplyWithResult(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(&CheckSinglePermissionOnUIThread, device_type,
-                 render_process_id, render_frame_id),
-      callback);
+      base::BindOnce(&CheckSinglePermissionOnUIThread, device_type,
+                     render_process_id, render_frame_id),
+      std::move(callback));
 }
 
 void MediaDevicesPermissionChecker::CheckPermissions(
     MediaDevicesManager::BoolDeviceTypes requested,
     int render_process_id,
     int render_frame_id,
-    const base::Callback<void(const MediaDevicesManager::BoolDeviceTypes&)>&
+    base::OnceCallback<void(const MediaDevicesManager::BoolDeviceTypes&)>
         callback) const {
   if (use_override_) {
     MediaDevicesManager::BoolDeviceTypes result;
     result.fill(override_value_);
-    callback.Run(result);
+    std::move(callback).Run(result);
     return;
   }
 
   BrowserThread::PostTaskAndReplyWithResult(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(&DoCheckPermissionsOnUIThread, requested, render_process_id,
-                 render_frame_id),
-      callback);
+      base::BindOnce(&DoCheckPermissionsOnUIThread, requested,
+                     render_process_id, render_frame_id),
+      std::move(callback));
 }
 
 }  // namespace content

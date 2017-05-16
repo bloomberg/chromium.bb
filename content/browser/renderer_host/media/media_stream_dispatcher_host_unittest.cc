@@ -233,10 +233,14 @@ class MockMediaStreamDispatcherHost : public MediaStreamDispatcherHost,
 
 class MockMediaStreamUIProxy : public FakeMediaStreamUIProxy {
  public:
-  MOCK_METHOD2(
-      OnStarted,
-      void(const base::Closure& stop,
-           const MediaStreamUIProxy::WindowIdCallback& window_id_callback));
+  void OnStarted(
+      base::OnceClosure stop,
+      MediaStreamUIProxy::WindowIdCallback window_id_callback) override {
+    // gmock cannot handle move-only types:
+    MockOnStarted(base::AdaptCallbackForRepeating(std::move(stop)));
+  }
+
+  MOCK_METHOD1(MockOnStarted, void(base::Closure stop));
 };
 
 class MediaStreamDispatcherHostTest : public testing::Test {
@@ -325,7 +329,7 @@ class MediaStreamDispatcherHostTest : public testing::Test {
   virtual void SetupFakeUI(bool expect_started) {
     stream_ui_ = new MockMediaStreamUIProxy();
     if (expect_started) {
-      EXPECT_CALL(*stream_ui_, OnStarted(_, _));
+      EXPECT_CALL(*stream_ui_, MockOnStarted(_));
     }
     media_stream_manager_->UseFakeUIForTests(
         std::unique_ptr<FakeMediaStreamUIProxy>(stream_ui_));
@@ -831,7 +835,7 @@ TEST_F(MediaStreamDispatcherHostTest, CloseFromUI) {
   base::Closure close_callback;
   std::unique_ptr<MockMediaStreamUIProxy> stream_ui(
       new MockMediaStreamUIProxy());
-  EXPECT_CALL(*stream_ui, OnStarted(_, _))
+  EXPECT_CALL(*stream_ui, MockOnStarted(_))
       .WillOnce(SaveArg<0>(&close_callback));
   media_stream_manager_->UseFakeUIForTests(std::move(stream_ui));
 

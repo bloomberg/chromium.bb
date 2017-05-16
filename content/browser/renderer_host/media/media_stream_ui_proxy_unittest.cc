@@ -4,6 +4,7 @@
 
 #include "content/browser/renderer_host/media/media_stream_ui_proxy.h"
 
+#include <string>
 #include <utility>
 
 #include "base/message_loop/message_loop.h"
@@ -98,8 +99,8 @@ TEST_F(MediaStreamUIProxyTest, Deny) {
   MediaStreamRequest* request_ptr = request.get();
   proxy_->RequestAccess(
       std::move(request),
-      base::Bind(&MockResponseCallback::OnAccessRequestResponse,
-                 base::Unretained(&response_callback_)));
+      base::BindOnce(&MockResponseCallback::OnAccessRequestResponse,
+                     base::Unretained(&response_callback_)));
   MediaResponseCallback callback;
   EXPECT_CALL(delegate_, RequestMediaAccessPermission(SameRequest(request_ptr),
                                                       _))
@@ -126,8 +127,8 @@ TEST_F(MediaStreamUIProxyTest, AcceptAndStart) {
   MediaStreamRequest* request_ptr = request.get();
   proxy_->RequestAccess(
       std::move(request),
-      base::Bind(&MockResponseCallback::OnAccessRequestResponse,
-                 base::Unretained(&response_callback_)));
+      base::BindOnce(&MockResponseCallback::OnAccessRequestResponse,
+                     base::Unretained(&response_callback_)));
   MediaResponseCallback callback;
   EXPECT_CALL(delegate_, RequestMediaAccessPermission(SameRequest(request_ptr),
                                                       _))
@@ -162,8 +163,8 @@ TEST_F(MediaStreamUIProxyTest, DeleteBeforeAccepted) {
   MediaStreamRequest* request_ptr = request.get();
   proxy_->RequestAccess(
       std::move(request),
-      base::Bind(&MockResponseCallback::OnAccessRequestResponse,
-                 base::Unretained(&response_callback_)));
+      base::BindOnce(&MockResponseCallback::OnAccessRequestResponse,
+                     base::Unretained(&response_callback_)));
   MediaResponseCallback callback;
   EXPECT_CALL(delegate_, RequestMediaAccessPermission(SameRequest(request_ptr)
                                                       , _))
@@ -186,8 +187,8 @@ TEST_F(MediaStreamUIProxyTest, StopFromUI) {
   MediaStreamRequest* request_ptr = request.get();
   proxy_->RequestAccess(
       std::move(request),
-      base::Bind(&MockResponseCallback::OnAccessRequestResponse,
-                 base::Unretained(&response_callback_)));
+      base::BindOnce(&MockResponseCallback::OnAccessRequestResponse,
+                     base::Unretained(&response_callback_)));
   MediaResponseCallback callback;
   EXPECT_CALL(delegate_, RequestMediaAccessPermission(SameRequest(request_ptr)
                                                       , _))
@@ -213,8 +214,8 @@ TEST_F(MediaStreamUIProxyTest, StopFromUI) {
   EXPECT_FALSE(response.empty());
 
   MockStopStreamHandler stop_handler;
-  proxy_->OnStarted(base::Bind(&MockStopStreamHandler::OnStop,
-                               base::Unretained(&stop_handler)),
+  proxy_->OnStarted(base::BindOnce(&MockStopStreamHandler::OnStop,
+                                   base::Unretained(&stop_handler)),
                     MediaStreamUIProxy::WindowIdCallback());
   base::RunLoop().RunUntilIdle();
 
@@ -233,8 +234,8 @@ TEST_F(MediaStreamUIProxyTest, WindowIdCallbackCalled) {
 
   proxy_->RequestAccess(
       std::move(request),
-      base::Bind(&MockResponseCallback::OnAccessRequestResponse,
-                 base::Unretained(&response_callback_)));
+      base::BindOnce(&MockResponseCallback::OnAccessRequestResponse,
+                     base::Unretained(&response_callback_)));
   MediaResponseCallback callback;
   EXPECT_CALL(delegate_, RequestMediaAccessPermission(SameRequest(request_ptr),
                                                       _))
@@ -251,10 +252,10 @@ TEST_F(MediaStreamUIProxyTest, WindowIdCallbackCalled) {
   MockStopStreamHandler handler;
   EXPECT_CALL(handler, OnWindowId(kWindowId));
 
-  proxy_->OnStarted(
-      base::Bind(&MockStopStreamHandler::OnStop, base::Unretained(&handler)),
-      base::Bind(&MockStopStreamHandler::OnWindowId,
-                 base::Unretained(&handler)));
+  proxy_->OnStarted(base::BindOnce(&MockStopStreamHandler::OnStop,
+                                   base::Unretained(&handler)),
+                    base::BindOnce(&MockStopStreamHandler::OnWindowId,
+                                   base::Unretained(&handler)));
   base::RunLoop().RunUntilIdle();
 }
 

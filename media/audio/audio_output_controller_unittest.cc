@@ -169,7 +169,7 @@ class AudioOutputControllerTest : public testing::Test {
     // AudioManager.
     audio_manager_->GetTaskRunner()->PostTask(
         FROM_HERE,
-        base::Bind(&AudioOutputController::OnDeviceChange, controller_));
+        base::BindOnce(&AudioOutputController::OnDeviceChange, controller_));
   }
 
   void Divert(bool was_playing, int num_times_to_be_started) {
@@ -250,8 +250,8 @@ class AudioOutputControllerTest : public testing::Test {
 
     base::RunLoop run_loop;
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(&AudioOutputController::Close, controller_,
-                              run_loop.QuitClosure()));
+        FROM_HERE, base::BindOnce(&AudioOutputController::Close, controller_,
+                                  run_loop.QuitClosure()));
     run_loop.Run();
   }
 

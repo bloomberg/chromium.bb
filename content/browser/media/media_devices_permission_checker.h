@@ -40,7 +40,7 @@ class CONTENT_EXPORT MediaDevicesPermissionChecker {
   void CheckPermission(MediaDeviceType device_type,
                        int render_process_id,
                        int render_frame_id,
-                       const base::Callback<void(bool)>& callback) const;
+                       base::OnceCallback<void(bool)> callback) const;
 
   // Checks if the origin associated to a render frame identified by
   // |render_process_id| and |render_frame_id| is allowed to access the media
@@ -55,7 +55,7 @@ class CONTENT_EXPORT MediaDevicesPermissionChecker {
       MediaDevicesManager::BoolDeviceTypes requested_device_types,
       int render_process_id,
       int render_frame_id,
-      const base::Callback<void(const MediaDevicesManager::BoolDeviceTypes&)>&
+      base::OnceCallback<void(const MediaDevicesManager::BoolDeviceTypes&)>
           callback) const;
 
  private:

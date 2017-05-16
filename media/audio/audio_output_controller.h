@@ -143,7 +143,7 @@ class MEDIA_EXPORT AudioOutputController
   //
   // It is safe to call this method more than once. Calls after the first one
   // will have no effect.
-  void Close(const base::Closure& closed_task);
+  void Close(base::OnceClosure closed_task);
 
   // Sets the volume of the audio output stream.
   void SetVolume(double volume);
