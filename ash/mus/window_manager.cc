@@ -82,25 +82,25 @@ WindowManager::WindowManager(service_manager::Connector* connector,
       show_primary_host_on_connect_(show_primary_host_on_connect),
       wm_state_(base::MakeUnique<::wm::WMState>()),
       property_converter_(base::MakeUnique<aura::PropertyConverter>()) {
-  property_converter_->RegisterProperty(
+  property_converter_->RegisterPrimitiveProperty(
       kPanelAttachedKey, ui::mojom::WindowManager::kPanelAttached_Property,
       aura::PropertyConverter::CreateAcceptAnyValueCallback());
-  property_converter_->RegisterProperty(
+  property_converter_->RegisterPrimitiveProperty(
       kRenderTitleAreaProperty,
       ui::mojom::WindowManager::kRenderParentTitleArea_Property,
       aura::PropertyConverter::CreateAcceptAnyValueCallback());
-  property_converter_->RegisterProperty(
-      kShelfIDKey, ui::mojom::WindowManager::kShelfID_Property);
-  property_converter_->RegisterProperty(
+  property_converter_->RegisterPrimitiveProperty(
       kShelfItemTypeKey, ui::mojom::WindowManager::kShelfItemType_Property,
       base::Bind(&IsValidShelfItemType));
-  property_converter_->RegisterProperty(
+  property_converter_->RegisterPrimitiveProperty(
       ::wm::kShadowElevationKey,
       ui::mojom::WindowManager::kShadowElevation_Property,
       base::Bind(&::wm::IsValidShadowElevation));
-  property_converter_->RegisterProperty(kWindowPinTypeKey,
-                                        ash::mojom::kWindowPinType_Property,
-                                        base::Bind(&ash::IsValidWindowPinType));
+  property_converter_->RegisterPrimitiveProperty(
+      kWindowPinTypeKey, ash::mojom::kWindowPinType_Property,
+      base::Bind(&ash::IsValidWindowPinType));
+  property_converter_->RegisterStringProperty(
+      kShelfIDKey, ui::mojom::WindowManager::kShelfID_Property);
 }
 
 WindowManager::~WindowManager() {

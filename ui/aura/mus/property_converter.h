@@ -78,9 +78,8 @@ class AURA_EXPORT PropertyConverter {
   // Register a property to support conversion between mus and aura.
   // |validator| is a callback used to validate incoming values from
   // transport_data; if it returns false, the value is rejected.
-  // TODO(msw): Include type names in RegisterProperty function names.
   template <typename T>
-  void RegisterProperty(
+  void RegisterPrimitiveProperty(
       const WindowProperty<T>* property,
       const char* transport_name,
       const base::RepeatingCallback<bool(int64_t)>& validator) {
@@ -95,17 +94,17 @@ class AURA_EXPORT PropertyConverter {
   }
 
   // Register owned properties to support conversion between mus and aura.
-  // TODO(msw): Include type names in RegisterProperty function names.
-  void RegisterProperty(const WindowProperty<gfx::ImageSkia*>* property,
-                        const char* transport_name);
-  void RegisterProperty(const WindowProperty<gfx::Rect*>* property,
-                        const char* transport_name);
-  void RegisterProperty(const WindowProperty<gfx::Size*>* property,
-                        const char* transport_name);
-  void RegisterProperty(const WindowProperty<std::string*>* property,
-                        const char* transport_name);
-  void RegisterProperty(const WindowProperty<base::string16*>* property,
-                        const char* transport_name);
+  void RegisterImageSkiaProperty(
+      const WindowProperty<gfx::ImageSkia*>* property,
+      const char* transport_name);
+  void RegisterRectProperty(const WindowProperty<gfx::Rect*>* property,
+                            const char* transport_name);
+  void RegisterSizeProperty(const WindowProperty<gfx::Size*>* property,
+                            const char* transport_name);
+  void RegisterStringProperty(const WindowProperty<std::string*>* property,
+                              const char* transport_name);
+  void RegisterString16Property(const WindowProperty<base::string16*>* property,
+                                const char* transport_name);
 
  private:
   // Contains data needed to store and convert primitive-type properties.

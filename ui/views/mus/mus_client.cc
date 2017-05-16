@@ -94,7 +94,7 @@ MusClient::MusClient(service_manager::Connector* connector,
 
   // TODO(msw): Avoid this... use some default value? Allow clients to extend?
   property_converter_ = base::MakeUnique<aura::PropertyConverter>();
-  property_converter_->RegisterProperty(
+  property_converter_->RegisterPrimitiveProperty(
       wm::kShadowElevationKey,
       ui::mojom::WindowManager::kShadowElevation_Property,
       base::Bind(&wm::IsValidShadowElevation));

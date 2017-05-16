@@ -43,8 +43,9 @@ DEFINE_UI_CLASS_PROPERTY_KEY(int16_t, kTestPropertyKey7, 1);
 DEFINE_UI_CLASS_PROPERTY_KEY(int32_t, kTestPropertyKey8, -1);
 DEFINE_UI_CLASS_PROPERTY_KEY(int64_t, kTestPropertyKey9, 777);
 
-DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(gfx::ImageSkia, kTestImagePropertyKey,
-                                 nullptr);
+DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(gfx::ImageSkia,
+                                   kTestImageSkiaPropertyKey,
+                                   nullptr);
 DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(gfx::Rect, kTestRectPropertyKey, nullptr);
 DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(gfx::Size, kTestSizePropertyKey, nullptr);
 DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(
@@ -63,7 +64,7 @@ const char kTestPropertyServerKey7[] = "test-property-server7";
 const char kTestPropertyServerKey8[] = "test-property-server8";
 const char kTestPropertyServerKey9[] = "test-property-server9";
 
-const char kTestImagePropertyServerKey[] = "test-image-property-server";
+const char kTestImageSkiaPropertyServerKey[] = "test-imageskia-property-server";
 const char kTestRectPropertyServerKey[] = "test-rect-property-server";
 const char kTestSizePropertyServerKey[] = "test-size-property-server";
 const char kTestStringPropertyServerKey[] = "test-string-property-server";
@@ -77,7 +78,7 @@ void TestPrimitiveProperty(PropertyConverter* property_converter,
                            const char* transport_name,
                            T value_1,
                            T value_2) {
-  property_converter->RegisterProperty(
+  property_converter->RegisterPrimitiveProperty(
       key, transport_name, PropertyConverter::CreateAcceptAnyValueCallback());
   EXPECT_EQ(transport_name,
             property_converter->GetTransportNameForPropertyKey(key));
@@ -174,9 +175,9 @@ TEST_F(PropertyConverterTest, TestPrimitiveVerifier) {
   std::unique_ptr<Window> window(CreateNormalWindow(1, root_window(), nullptr));
 
   PropertyConverter property_converter;
-  property_converter.RegisterProperty(kTestPropertyKey8,
-                                      kTestPropertyServerKey8,
-                                      base::Bind(&OnlyAllowNegativeNumbers));
+  property_converter.RegisterPrimitiveProperty(
+      kTestPropertyKey8, kTestPropertyServerKey8,
+      base::Bind(&OnlyAllowNegativeNumbers));
 
   // Test that we reject invalid TransportValues during
   // GetPropertyValueFromTransportValue().
@@ -197,29 +198,29 @@ TEST_F(PropertyConverterTest, TestPrimitiveVerifier) {
 // Verifies property setting behavior for a gfx::ImageSkia* property.
 TEST_F(PropertyConverterTest, ImageSkiaProperty) {
   PropertyConverter property_converter;
-  property_converter.RegisterProperty(kTestImagePropertyKey,
-                                      kTestImagePropertyServerKey);
-  EXPECT_EQ(
-      kTestImagePropertyServerKey,
-      property_converter.GetTransportNameForPropertyKey(kTestImagePropertyKey));
+  property_converter.RegisterImageSkiaProperty(kTestImageSkiaPropertyKey,
+                                               kTestImageSkiaPropertyServerKey);
+  EXPECT_EQ(kTestImageSkiaPropertyServerKey,
+            property_converter.GetTransportNameForPropertyKey(
+                kTestImageSkiaPropertyKey));
   EXPECT_TRUE(property_converter.IsTransportNameRegistered(
-      kTestImagePropertyServerKey));
+      kTestImageSkiaPropertyServerKey));
 
   SkBitmap bitmap_1;
   bitmap_1.allocN32Pixels(16, 32);
   bitmap_1.eraseARGB(255, 11, 22, 33);
   gfx::ImageSkia value_1 = gfx::ImageSkia::CreateFrom1xBitmap(bitmap_1);
   std::unique_ptr<Window> window(CreateNormalWindow(1, root_window(), nullptr));
-  window->SetProperty(kTestImagePropertyKey, new gfx::ImageSkia(value_1));
-  gfx::ImageSkia* image_out_1 = window->GetProperty(kTestImagePropertyKey);
+  window->SetProperty(kTestImageSkiaPropertyKey, new gfx::ImageSkia(value_1));
+  gfx::ImageSkia* image_out_1 = window->GetProperty(kTestImageSkiaPropertyKey);
   EXPECT_TRUE(gfx::BitmapsAreEqual(bitmap_1, *image_out_1->bitmap()));
 
   std::string transport_name_out;
   std::unique_ptr<std::vector<uint8_t>> transport_value_out;
   EXPECT_TRUE(property_converter.ConvertPropertyForTransport(
-      window.get(), kTestImagePropertyKey, &transport_name_out,
+      window.get(), kTestImageSkiaPropertyKey, &transport_name_out,
       &transport_value_out));
-  EXPECT_EQ(kTestImagePropertyServerKey, transport_name_out);
+  EXPECT_EQ(kTestImageSkiaPropertyServerKey, transport_name_out);
   EXPECT_EQ(mojo::ConvertTo<std::vector<uint8_t>>(bitmap_1),
             *transport_value_out.get());
 
@@ -231,16 +232,16 @@ TEST_F(PropertyConverterTest, ImageSkiaProperty) {
   std::vector<uint8_t> transport_value =
       mojo::ConvertTo<std::vector<uint8_t>>(bitmap_2);
   property_converter.SetPropertyFromTransportValue(
-      window.get(), kTestImagePropertyServerKey, &transport_value);
-  gfx::ImageSkia* image_out_2 = window->GetProperty(kTestImagePropertyKey);
+      window.get(), kTestImageSkiaPropertyServerKey, &transport_value);
+  gfx::ImageSkia* image_out_2 = window->GetProperty(kTestImageSkiaPropertyKey);
   EXPECT_TRUE(gfx::BitmapsAreEqual(bitmap_2, *image_out_2->bitmap()));
 }
 
 // Verifies property setting behavior for a gfx::Rect* property.
 TEST_F(PropertyConverterTest, RectProperty) {
   PropertyConverter property_converter;
-  property_converter.RegisterProperty(kTestRectPropertyKey,
-                                      kTestRectPropertyServerKey);
+  property_converter.RegisterRectProperty(kTestRectPropertyKey,
+                                          kTestRectPropertyServerKey);
   EXPECT_EQ(
       kTestRectPropertyServerKey,
       property_converter.GetTransportNameForPropertyKey(kTestRectPropertyKey));
@@ -272,8 +273,8 @@ TEST_F(PropertyConverterTest, RectProperty) {
 // Verifies property setting behavior for a gfx::Size* property.
 TEST_F(PropertyConverterTest, SizeProperty) {
   PropertyConverter property_converter;
-  property_converter.RegisterProperty(kTestSizePropertyKey,
-                                      kTestSizePropertyServerKey);
+  property_converter.RegisterSizeProperty(kTestSizePropertyKey,
+                                          kTestSizePropertyServerKey);
   EXPECT_EQ(
       kTestSizePropertyServerKey,
       property_converter.GetTransportNameForPropertyKey(kTestSizePropertyKey));
@@ -305,8 +306,8 @@ TEST_F(PropertyConverterTest, SizeProperty) {
 // Verifies property setting behavior for a std::string* property.
 TEST_F(PropertyConverterTest, StringProperty) {
   PropertyConverter property_converter;
-  property_converter.RegisterProperty(kTestStringPropertyKey,
-                                      kTestStringPropertyServerKey);
+  property_converter.RegisterStringProperty(kTestStringPropertyKey,
+                                            kTestStringPropertyServerKey);
   EXPECT_EQ(kTestStringPropertyServerKey,
             property_converter.GetTransportNameForPropertyKey(
                 kTestStringPropertyKey));
@@ -338,8 +339,8 @@ TEST_F(PropertyConverterTest, StringProperty) {
 // Verifies property setting behavior for a base::string16* property.
 TEST_F(PropertyConverterTest, String16Property) {
   PropertyConverter property_converter;
-  property_converter.RegisterProperty(kTestString16PropertyKey,
-                                      kTestString16PropertyServerKey);
+  property_converter.RegisterString16Property(kTestString16PropertyKey,
+                                              kTestString16PropertyServerKey);
   EXPECT_EQ(kTestString16PropertyServerKey,
             property_converter.GetTransportNameForPropertyKey(
                 kTestString16PropertyKey));
