@@ -7,6 +7,7 @@
 
 @class ContentSuggestionIdentifier;
 @class ContentSuggestionsSectionInformation;
+class GURL;
 
 // Data sink for the ContentSuggestions. It will be notified when new data needs
 // to be pulled.

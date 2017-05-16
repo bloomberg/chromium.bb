@@ -4,14 +4,11 @@
 
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_view_controller.h"
 
-#include "base/mac/foundation_util.h"
 #import "ios/chrome/browser/ui/collection_view/cells/MDCCollectionViewCell+Chrome.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_item.h"
 #import "ios/chrome/browser/ui/collection_view/collection_view_model.h"
-#import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_item.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_collection_updater.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_commands.h"
-#include "url/gurl.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -135,7 +132,7 @@ using CSCollectionViewItem = CollectionViewItem<SuggestedContent>;
   switch ([self.collectionUpdater contentSuggestionTypeForItem:item]) {
     case ContentSuggestionTypeReadingList:
     case ContentSuggestionTypeArticle:
-      [self openSuggestion:item];
+      [self.suggestionCommandHandler openPageForItem:item];
       break;
     case ContentSuggestionTypeMostVisited:
       // TODO(crbug.com/707754): Open the most visited site.
@@ -186,14 +183,6 @@ using CSCollectionViewItem = CollectionViewItem<SuggestedContent>;
 
 #pragma mark - Private
 
-// Opens the article associated with |item|. |item| must be a
-// ContentSuggestionsItem.
-- (void)openSuggestion:(CollectionViewItem*)item {
-  ContentSuggestionsItem* suggestion =
-      base::mac::ObjCCastStrict<ContentSuggestionsItem>(item);
-  [self.suggestionCommandHandler openURL:suggestion.URL];
-}
-
 - (void)handleLongPress:(UILongPressGestureRecognizer*)gestureRecognizer {
   if (self.editor.editing ||
       gestureRecognizer.state != UIGestureRecognizerStateBegan) {
@@ -218,11 +207,8 @@ using CSCollectionViewItem = CollectionViewItem<SuggestedContent>;
     return;
   }
 
-  ContentSuggestionsItem* suggestionItem =
-      base::mac::ObjCCastStrict<ContentSuggestionsItem>(touchedItem);
-
   [self.suggestionCommandHandler
-      displayContextMenuForArticle:suggestionItem
+      displayContextMenuForArticle:touchedItem
                            atPoint:touchLocation
                        atIndexPath:touchedItemIndexPath];
 }

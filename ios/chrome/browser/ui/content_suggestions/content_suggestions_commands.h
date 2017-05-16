@@ -5,20 +5,19 @@
 #ifndef IOS_CHROME_BROWSER_UI_CONTENT_SUGGESTIONS_CONTENT_SUGGESTIONS_COMMANDS_H_
 #define IOS_CHROME_BROWSER_UI_CONTENT_SUGGESTIONS_CONTENT_SUGGESTIONS_COMMANDS_H_
 
-@class ContentSuggestionsItem;
-class GURL;
+@class CollectionViewItem;
 
 // Commands protocol for the ContentSuggestionsViewController.
 @protocol ContentSuggestionsCommands
 
 // Opens the Reading List.
 - (void)openReadingList;
-// Opens the |URL|.
-- (void)openURL:(const GURL&)URL;
+// Opens the page associated with this |item|.
+- (void)openPageForItem:(nonnull CollectionViewItem*)item;
 // Displays a context menu for opening the |articleItem|.
-- (void)displayContextMenuForArticle:(ContentSuggestionsItem*)articleItem
+- (void)displayContextMenuForArticle:(nonnull CollectionViewItem*)item
                              atPoint:(CGPoint)touchLocation
-                         atIndexPath:(NSIndexPath*)indexPath;
+                         atIndexPath:(nonnull NSIndexPath*)indexPath;
 // Dismisses the context menu if it is displayed.
 - (void)dismissContextMenu;
 

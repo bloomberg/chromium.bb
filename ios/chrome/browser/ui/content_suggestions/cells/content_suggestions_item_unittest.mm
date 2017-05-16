@@ -5,6 +5,7 @@
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_item.h"
 
 #include "base/time/time.h"
+#import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_cell.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
 #import "third_party/ocmock/gtest_support.h"
@@ -25,6 +26,7 @@ TEST(ContentSuggestionsItemTest, CellIsConfiguredWithoutImage) {
   GURL url = GURL("http://chromium.org");
   NSString* publisher = @"publisherName";
   base::Time publishTime = base::Time::Now();
+  NSDate* date = [NSDate dateWithTimeIntervalSince1970:publishTime.ToDoubleT()];
   id delegateMock = OCMProtocolMock(@protocol(SuggestedContentDelegate));
   ContentSuggestionsItem* item =
       [[ContentSuggestionsItem alloc] initWithType:0
@@ -45,7 +47,7 @@ TEST(ContentSuggestionsItemTest, CellIsConfiguredWithoutImage) {
   OCMExpect([cellMock setContentImage:item.image]);
   OCMExpect([cellMock setSubtitleText:subtitle]);
   OCMExpect([cellMock setAdditionalInformationWithPublisherName:publisher
-                                                           date:publishTime
+                                                           date:date
                                             offlineAvailability:YES]);
 
   // Action.
