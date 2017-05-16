@@ -294,18 +294,32 @@ TEST_F(MetricsWebContentsObserverTest, SuccessfulMainFrameNavigation) {
 TEST_F(MetricsWebContentsObserverTest, SubFrame) {
   PageLoadTiming timing;
   timing.navigation_start = base::Time::FromDoubleT(1);
+  timing.response_start = base::TimeDelta::FromMilliseconds(10);
+  timing.parse_timing.parse_start = base::TimeDelta::FromMilliseconds(20);
+  timing.document_timing.first_layout = base::TimeDelta::FromMilliseconds(30);
 
   content::WebContentsTester* web_contents_tester =
       content::WebContentsTester::For(web_contents());
   web_contents_tester->NavigateAndCommit(GURL(kDefaultTestUrl));
   SimulateTimingUpdate(timing);
 
+  ASSERT_EQ(1, CountUpdatedTimingReported());
+  EXPECT_EQ(timing, updated_timings().back());
+
   content::RenderFrameHostTester* rfh_tester =
       content::RenderFrameHostTester::For(main_rfh());
   content::RenderFrameHost* subframe = rfh_tester->AppendChild("subframe");
 
+  // Dispatch a timing update for the child frame that includes a first paint.
   PageLoadTiming subframe_timing;
   subframe_timing.navigation_start = base::Time::FromDoubleT(2);
+  subframe_timing.response_start = base::TimeDelta::FromMilliseconds(10);
+  subframe_timing.parse_timing.parse_start =
+      base::TimeDelta::FromMilliseconds(20);
+  subframe_timing.document_timing.first_layout =
+      base::TimeDelta::FromMilliseconds(30);
+  subframe_timing.paint_timing.first_paint =
+      base::TimeDelta::FromMilliseconds(40);
   content::RenderFrameHostTester* subframe_tester =
       content::RenderFrameHostTester::For(subframe);
   subframe_tester->SimulateNavigationStart(GURL(kDefaultTestUrl2));
@@ -313,16 +327,24 @@ TEST_F(MetricsWebContentsObserverTest, SubFrame) {
   SimulateTimingUpdate(subframe_timing, subframe);
   subframe_tester->SimulateNavigationStop();
 
+  ASSERT_EQ(1, CountUpdatedSubFrameTimingReported());
+  EXPECT_EQ(subframe_timing, updated_subframe_timings().back());
+
+  // The subframe update which included a paint should have also triggered
+  // a main frame update, which includes a first paint.
+  ASSERT_EQ(2, CountUpdatedTimingReported());
+  EXPECT_NE(timing, updated_timings().back());
+  EXPECT_TRUE(updated_timings().back().paint_timing.first_paint);
+
   // Navigate again to see if the timing updated for a subframe message.
   web_contents_tester->NavigateAndCommit(GURL(kDefaultTestUrl2));
 
   ASSERT_EQ(1, CountCompleteTimingReported());
-  ASSERT_EQ(1, CountUpdatedTimingReported());
+  ASSERT_EQ(2, CountUpdatedTimingReported());
   ASSERT_EQ(0, CountEmptyCompleteTimingReported());
-  EXPECT_EQ(timing, updated_timings().at(0));
 
   ASSERT_EQ(1, CountUpdatedSubFrameTimingReported());
-  EXPECT_EQ(subframe_timing, updated_subframe_timings().at(0));
+  EXPECT_EQ(subframe_timing, updated_subframe_timings().back());
 
   CheckNoErrorEvents();
 }
@@ -684,6 +706,85 @@ TEST_F(MetricsWebContentsObserverTest, StopObservingOnStart) {
   web_contents_tester->NavigateAndCommit(GURL(kDefaultTestUrl));
   ASSERT_EQ(std::vector<GURL>({GURL(kDefaultTestUrl), GURL(kDefaultTestUrl2)}),
             completed_filtered_urls());
+}
+
+// We buffer cross frame timings in order to provide a consistent view of
+// timing data to observers. See crbug.com/722860 for more.
+TEST_F(MetricsWebContentsObserverTest, OutOfOrderCrossFrameTiming) {
+  PageLoadTiming timing;
+  timing.navigation_start = base::Time::FromDoubleT(1);
+  timing.response_start = base::TimeDelta::FromMilliseconds(10);
+
+  content::WebContentsTester* web_contents_tester =
+      content::WebContentsTester::For(web_contents());
+  web_contents_tester->NavigateAndCommit(GURL(kDefaultTestUrl));
+  SimulateTimingUpdate(timing);
+
+  ASSERT_EQ(1, CountUpdatedTimingReported());
+  EXPECT_EQ(timing, updated_timings().back());
+
+  content::RenderFrameHostTester* rfh_tester =
+      content::RenderFrameHostTester::For(main_rfh());
+  content::RenderFrameHost* subframe = rfh_tester->AppendChild("subframe");
+
+  // Dispatch a timing update for the child frame that includes a first paint.
+  PageLoadTiming subframe_timing;
+  subframe_timing.navigation_start = base::Time::FromDoubleT(2);
+  subframe_timing.response_start = base::TimeDelta::FromMilliseconds(10);
+  subframe_timing.parse_timing.parse_start =
+      base::TimeDelta::FromMilliseconds(20);
+  subframe_timing.document_timing.first_layout =
+      base::TimeDelta::FromMilliseconds(30);
+  subframe_timing.paint_timing.first_paint =
+      base::TimeDelta::FromMilliseconds(40);
+  content::RenderFrameHostTester* subframe_tester =
+      content::RenderFrameHostTester::For(subframe);
+  subframe_tester->SimulateNavigationStart(GURL(kDefaultTestUrl2));
+  subframe_tester->SimulateNavigationCommit(GURL(kDefaultTestUrl2));
+  SimulateTimingUpdate(subframe_timing, subframe);
+  subframe_tester->SimulateNavigationStop();
+
+  // Though a first paint was dispatched in the child, it should not yet be
+  // reflected as an updated timing in the main frame, since the main frame
+  // hasn't received updates for required earlier events such as parse_start and
+  // first_layout.
+  ASSERT_EQ(1, CountUpdatedSubFrameTimingReported());
+  EXPECT_EQ(subframe_timing, updated_subframe_timings().back());
+  ASSERT_EQ(1, CountUpdatedTimingReported());
+  EXPECT_EQ(timing, updated_timings().back());
+
+  // Dispatch the parse_start event in the parent. We should still not observe
+  // a first paint main frame update, since we don't yet have a first_layout.
+  timing.parse_timing.parse_start = base::TimeDelta::FromMilliseconds(20);
+  SimulateTimingUpdate(timing);
+  ASSERT_EQ(1, CountUpdatedTimingReported());
+  EXPECT_NE(timing, updated_timings().back());
+  EXPECT_FALSE(updated_timings().back().parse_timing.parse_start);
+  EXPECT_FALSE(updated_timings().back().paint_timing.first_paint);
+
+  // Dispatch a first_layout in the parent. We should now unbuffer the first
+  // paint main frame update and receive a main frame update with a first paint
+  // value.
+  timing.document_timing.first_layout = base::TimeDelta::FromMilliseconds(30);
+  SimulateTimingUpdate(timing);
+  ASSERT_EQ(2, CountUpdatedTimingReported());
+  EXPECT_NE(timing, updated_timings().back());
+  EXPECT_EQ(updated_timings().back().parse_timing, timing.parse_timing);
+  EXPECT_EQ(updated_timings().back().document_timing, timing.document_timing);
+  EXPECT_NE(updated_timings().back().paint_timing, timing.paint_timing);
+  EXPECT_TRUE(updated_timings().back().paint_timing.first_paint);
+
+  // Navigate again to see if the timing updated for a subframe message.
+  web_contents_tester->NavigateAndCommit(GURL(kDefaultTestUrl2));
+
+  ASSERT_EQ(1, CountCompleteTimingReported());
+  ASSERT_EQ(2, CountUpdatedTimingReported());
+  ASSERT_EQ(0, CountEmptyCompleteTimingReported());
+
+  ASSERT_EQ(1, CountUpdatedSubFrameTimingReported());
+  EXPECT_EQ(subframe_timing, updated_subframe_timings().back());
+
+  CheckNoErrorEvents();
 }
 
 }  // namespace page_load_metrics

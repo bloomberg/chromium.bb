@@ -63,6 +63,8 @@ const char kPageLoadStartedInForeground[] =
     "PageLoad.Internal.NavigationStartedInForeground";
 const char kPageLoadPrerender[] = "PageLoad.Internal.Prerender";
 const char kPageLoadTimingStatus[] = "PageLoad.Internal.PageLoadTimingStatus";
+const char kPageLoadTimingDispatchStatus[] =
+    "PageLoad.Internal.PageLoadTimingStatus.AtTimingCallbackDispatch";
 
 }  // namespace internal
 
@@ -633,19 +635,10 @@ void PageLoadTracker::UpdateSubFrameTiming(
   }
 
   base::TimeDelta navigation_start_offset = it->second;
-  const PageLoadTiming last_timing = merged_page_timing_;
   MergePaintTiming(navigation_start_offset, new_timing.paint_timing,
                    false /* is_main_frame */);
 
-  if (last_timing == merged_page_timing_)
-    return;
-
-  const PageLoadExtraInfo info = ComputePageLoadExtraInfo();
-  for (const auto& observer : observers_) {
-    DispatchObserverTimingCallbacks(observer.get(), last_timing,
-                                    merged_page_timing_, main_frame_metadata_,
-                                    info);
-  }
+  DispatchTimingUpdates();
 }
 
 void PageLoadTracker::MergePaintTiming(
@@ -724,22 +717,56 @@ void PageLoadTracker::UpdateTiming(const PageLoadTiming& new_timing,
   // Thus, we make a copy of timing here, update timing_ and
   // main_frame_metadata_, and then proceed to dispatch the observer timing
   // callbacks.
-  const PageLoadTiming last_timing = merged_page_timing_;
+  const PaintTiming last_paint_timing = merged_page_timing_.paint_timing;
 
   // Update the merged_page_timing_, making sure to merge the previously
   // observed |paint_timing|, which is tracked across all frames in the page.
   merged_page_timing_ = new_timing;
-  merged_page_timing_.paint_timing = last_timing.paint_timing;
+  merged_page_timing_.paint_timing = last_paint_timing;
   MergePaintTiming(base::TimeDelta(), new_timing.paint_timing,
                    true /* is_main_frame */);
 
-  const PageLoadMetadata last_metadata = main_frame_metadata_;
   main_frame_metadata_ = new_metadata;
+
+  DispatchTimingUpdates();
+}
+
+void PageLoadTracker::DispatchTimingUpdates() {
+  if (last_dispatched_merged_page_timing_ == merged_page_timing_ &&
+      last_dispatched_main_frame_metadata_ == main_frame_metadata_) {
+    return;
+  }
+
+  if (merged_page_timing_.paint_timing.first_paint) {
+    if (!merged_page_timing_.parse_timing.parse_start ||
+        !merged_page_timing_.document_timing.first_layout) {
+      // When merging paint events across frames, we can sometimes encounter
+      // cases where we've received a first paint event for a child frame before
+      // receiving required earlier events in the main frame, due to buffering
+      // in the render process which results in out of order delivery. For
+      // example, we may receive a notification for a first paint in a child
+      // frame before we've received a notification for parse start or first
+      // layout in the main frame. In these cases, we delay sending timing
+      // updates until we've received all expected events (e.g. wait to receive
+      // a parse or layout event before dispatching a paint event), so observers
+      // can make assumptions about ordering of these events in their callbacks.
+      return;
+    }
+  }
+
+  internal::PageLoadTimingStatus status =
+      IsValidPageLoadTiming(merged_page_timing_);
+  UMA_HISTOGRAM_ENUMERATION(internal::kPageLoadTimingDispatchStatus, status,
+                            internal::LAST_PAGE_LOAD_TIMING_STATUS);
+
   const PageLoadExtraInfo info = ComputePageLoadExtraInfo();
   for (const auto& observer : observers_) {
-    DispatchObserverTimingCallbacks(observer.get(), last_timing,
-                                    merged_page_timing_, last_metadata, info);
+    DispatchObserverTimingCallbacks(
+        observer.get(), last_dispatched_merged_page_timing_,
+        merged_page_timing_, last_dispatched_main_frame_metadata_, info);
   }
+  last_dispatched_merged_page_timing_ = merged_page_timing_;
+  last_dispatched_main_frame_metadata_ = main_frame_metadata_;
 }
 
 void PageLoadTracker::OnStartedResource(
