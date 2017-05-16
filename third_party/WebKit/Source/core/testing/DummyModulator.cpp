@@ -91,6 +91,10 @@ void DummyModulator::FetchNewSingleModule(const ModuleScriptFetchRequest&,
   NOTREACHED();
 }
 
+bool DummyModulator::HasValidContext() {
+  return true;
+}
+
 ScriptModule DummyModulator::CompileModule(const String& script,
                                            const String& url_str,
                                            AccessControlStatus) {

@@ -376,6 +376,13 @@ void ModuleTreeLinker::Instantiate() {
 
   // https://html.spec.whatwg.org/multipage/webappapis.html#internal-module-script-graph-fetching-procedure
 
+  // [nospec] Abort the steps if the browsing context is discarded.
+  if (!modulator_->HasValidContext()) {
+    descendants_module_script_ = nullptr;
+    AdvanceState(State::kFinished);
+    return;
+  }
+
   // Step 5. Let instantiationStatus be null.
   // Note: The |error| variable corresponds to spec variable
   // "instantiationStatus". If |error| is empty, it indicates successful

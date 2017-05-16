@@ -111,6 +111,10 @@ ModuleScript* ModulatorImpl::GetFetchedModuleScript(const KURL& url) {
   return map_->GetFetchedModuleScript(url);
 }
 
+bool ModulatorImpl::HasValidContext() {
+  return script_state_->ContextIsValid();
+}
+
 ScriptModule ModulatorImpl::CompileModule(
     const String& provided_source,
     const String& url_str,

@@ -55,6 +55,7 @@ class ModulatorImpl final : public Modulator {
                    ModuleGraphLevel,
                    SingleModuleClient*) override;
   ModuleScript* GetFetchedModuleScript(const KURL&) override;
+  bool HasValidContext() override;
   void FetchNewSingleModule(const ModuleScriptFetchRequest&,
                             ModuleGraphLevel,
                             ModuleScriptLoaderClient*) override;
