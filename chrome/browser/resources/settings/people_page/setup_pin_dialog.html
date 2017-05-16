@@ -11,14 +11,6 @@
 <dom-module id="settings-setup-pin-dialog">
   <template>
     <style include="settings-shared">
-      .warning {
-        color: var(--paper-grey-700);
-      }
-
-      .warning > iron-icon {
-        --iron-icon-fill-color: var(--paper-grey-700);
-      }
-
       .error {
         color: var(--paper-red-500);
       }
@@ -27,8 +19,20 @@
         --iron-icon-fill-color: var(--paper-red-500);
       }
 
+      .warning {
+        color: var(--paper-grey-700);
+      }
+
+      .warning > iron-icon {
+        --iron-icon-fill-color: var(--paper-grey-700);
+      }
+
       #pinKeyboardDiv {
         justify-content: center;
+      }
+
+      #problemMessage {
+        font-size: 10px;
       }
     </style>
 
@@ -36,18 +40,17 @@
         close-text="$i18n{close}">
       <div class="title">[[getTitleMessage_(isConfirmStep_)]]</div>
       <div class="body">
-        <!-- Warning/error; only shown if title is hidden. Id is needed for
-             tests. -->
-        <div id="problemDiv" class$="[[problemClass_]] settings-box first"
-             hidden$="[[!hasProblem_(problemMessage_)]]">
-          <iron-icon icon="settings:warning"></iron-icon>
-          <span class="middle">[[problemMessage_]]</span>
-        </div>
-
         <!-- Pin keyboard -->
         <div id="pinKeyboardDiv" class="settings-box continuation">
           <pin-keyboard id="pinKeyboard" on-pin-change="onPinChange_"
-              on-submit="onPinSubmit_" value="{{pinKeyboardValue_}}">
+              on-submit="onPinSubmit_" value="{{pinKeyboardValue_}}"
+              has-error$="[[hasError_(problemMessage_, problemClass_)]]">
+            <!-- Warning/error; only shown if title is hidden. -->
+            <div id="problemDiv" class$="[[problemClass_]]"
+                hidden$="[[!problemMessage_]]" problem>
+              <iron-icon icon="settings:error-outline"></iron-icon>
+              <span id="problemMessage">[[problemMessage_]]</span>
+            </div>
           </pin-keyboard>
         </div>
 

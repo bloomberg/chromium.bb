@@ -290,10 +290,11 @@ Polymer({
   /**
    * @private
    * @param {string} problemMessage
+   * @param {string} problemClass
    * @return {boolean}
    */
-  hasProblem_: function(problemMessage) {
-    return !!problemMessage;
+  hasError_: function(problemMessage, problemClass) {
+    return !!problemMessage && problemClass == ProblemType.ERROR;
   },
 
   /**
