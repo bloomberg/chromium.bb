@@ -14,6 +14,7 @@
 #include "net/cert/x509_cert_types.h"
 #include "net/cert/x509_certificate.h"
 #include "net/cert/x509_util.h"
+#include "net/cert/x509_util_ios.h"
 #include "net/ssl/ssl_info.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #import "testing/gtest_mac.h"
@@ -37,8 +38,10 @@ NSArray* MakeTestCertChain(const std::string& subject) {
       &der_cert);
 
   base::ScopedCFTypeRef<SecCertificateRef> cert(
-      net::X509Certificate::CreateOSCertHandleFromBytes(der_cert.data(),
-                                                        der_cert.size()));
+      net::x509_util::CreateSecCertificateFromBytes(
+          reinterpret_cast<const uint8_t*>(der_cert.data()), der_cert.size()));
+  if (!cert)
+    return nullptr;
   NSArray* result = @[ reinterpret_cast<id>(cert.get()) ];
   return result;
 }
@@ -68,6 +71,7 @@ typedef PlatformTest WKWebViewSecurityUtilTest;
 TEST_F(WKWebViewSecurityUtilTest, CreationCertFromChain) {
   scoped_refptr<net::X509Certificate> cert =
       CreateCertFromChain(MakeTestCertChain(kTestSubject));
+  ASSERT_TRUE(cert);
   EXPECT_TRUE(cert->subject().GetDisplayName() == kTestSubject);
 }
 
@@ -103,6 +107,7 @@ TEST_F(WKWebViewSecurityUtilTest, CreationCertFromTrust) {
   base::ScopedCFTypeRef<SecTrustRef> trust =
       CreateTestTrust(MakeTestCertChain(kTestSubject));
   scoped_refptr<net::X509Certificate> cert = CreateCertFromTrust(trust);
+  ASSERT_TRUE(cert);
   EXPECT_TRUE(cert->subject().GetDisplayName() == kTestSubject);
 }
 

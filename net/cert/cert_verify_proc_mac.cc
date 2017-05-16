@@ -35,6 +35,7 @@
 #include "net/cert/test_root_certs.h"
 #include "net/cert/x509_certificate.h"
 #include "net/cert/x509_util.h"
+#include "net/cert/x509_util_ios_and_mac.h"
 #include "net/cert/x509_util_mac.h"
 
 // CSSM functions are deprecated as of OSX 10.7, but have no replacement.
