@@ -86,7 +86,7 @@ class PassRefPtr {
 
   T* Get() const { return ptr_; }
 
-  WARN_UNUSED_RESULT T* LeakRef() const;
+  WARN_UNUSED_RESULT T* LeakRef();
 
   T& operator*() const { return *ptr_; }
   T* operator->() const { return ptr_; }
@@ -105,7 +105,7 @@ class PassRefPtr {
     return *this;
   }
 
-  mutable T* ptr_;
+  T* ptr_;
 };
 
 template <typename T>
@@ -129,7 +129,7 @@ inline PassRefPtr<T>::PassRefPtr(RefPtr<U>&& o,
     : ptr_(o.LeakRef()) {}
 
 template <typename T>
-inline T* PassRefPtr<T>::LeakRef() const {
+inline T* PassRefPtr<T>::LeakRef() {
   T* ptr = ptr_;
   ptr_ = nullptr;
   return ptr;
