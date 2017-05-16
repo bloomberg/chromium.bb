@@ -38,7 +38,14 @@ public class TraceEvent {
         }
 
         void beginHandling(final String line) {
-            if (sEnabled) nativeBeginToplevel();
+            if (sEnabled) {
+                // Android Looper formats |line| as ">>>>> Dispatching to (TARGET) [...]" since at
+                // least 2009 (Donut). Extracts the TARGET part of the message.
+                int start = line.indexOf('(', 21); // strlen(">>>>> Dispatching to ")
+                int end = start == -1 ? -1 : line.indexOf(')', start);
+                String target = end != -1 ? line.substring(start + 1, end) : "";
+                nativeBeginToplevel(target);
+            }
         }
 
         void endHandling(final String line) {
@@ -307,7 +314,7 @@ public class TraceEvent {
     private static native void nativeInstant(String name, String arg);
     private static native void nativeBegin(String name, String arg);
     private static native void nativeEnd(String name, String arg);
-    private static native void nativeBeginToplevel();
+    private static native void nativeBeginToplevel(String target);
     private static native void nativeEndToplevel();
     private static native void nativeStartAsync(String name, long id);
     private static native void nativeFinishAsync(String name, long id);
