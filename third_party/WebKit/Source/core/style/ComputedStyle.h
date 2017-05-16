@@ -1747,7 +1747,9 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase<ComputedStyle>,
   static Length InitialTextIndent() { return Length(kFixed); }
   static TextIndentLine InitialTextIndentLine() { return kTextIndentFirstLine; }
   static TextIndentType InitialTextIndentType() { return kTextIndentNormal; }
-  const Length& TextIndent() const { return rare_inherited_data_->indent_; }
+  const Length& TextIndent() const {
+    return rare_inherited_data_->text_indent_;
+  }
   TextIndentLine GetTextIndentLine() const {
     return static_cast<TextIndentLine>(rare_inherited_data_->text_indent_line_);
   }
@@ -1755,7 +1757,7 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase<ComputedStyle>,
     return static_cast<TextIndentType>(rare_inherited_data_->text_indent_type_);
   }
   void SetTextIndent(const Length& v) {
-    SET_VAR(rare_inherited_data_, indent_, v);
+    SET_VAR(rare_inherited_data_, text_indent_, v);
   }
   void SetTextIndentLine(TextIndentLine v) {
     SET_VAR(rare_inherited_data_, text_indent_line_, v);
