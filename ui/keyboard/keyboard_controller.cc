@@ -46,8 +46,7 @@ namespace {
 const int kHideKeyboardDelayMs = 100;
 
 // The virtual keyboard show/hide animation duration.
-const int kShowAnimationDurationMs = 350;
-const int kHideAnimationDurationMs = 100;
+const int kAnimationDurationMs = 100;
 
 // The opacity of virtual keyboard container when show animation starts or
 // hide animation finishes. This cannot be zero because we call Show() on the
@@ -269,7 +268,7 @@ void KeyboardController::HideKeyboard(HideReason reason) {
   ui::ScopedLayerAnimationSettings settings(container_animator);
   settings.SetTweenType(gfx::Tween::FAST_OUT_LINEAR_IN);
   settings.SetTransitionDuration(
-      base::TimeDelta::FromMilliseconds(kHideAnimationDurationMs));
+      base::TimeDelta::FromMilliseconds(kAnimationDurationMs));
   gfx::Transform transform;
   transform.Translate(0, kAnimationDistance);
   container_->SetTransform(transform);
@@ -499,7 +498,7 @@ void KeyboardController::ShowKeyboardInternal(int64_t display_id) {
     ui::ScopedLayerAnimationSettings settings(container_animator);
     settings.SetTweenType(gfx::Tween::LINEAR_OUT_SLOW_IN);
     settings.SetTransitionDuration(
-        base::TimeDelta::FromMilliseconds(kShowAnimationDurationMs));
+        base::TimeDelta::FromMilliseconds(kAnimationDurationMs));
     container_->SetTransform(gfx::Transform());
     container_->layer()->SetOpacity(1.0);
   }
