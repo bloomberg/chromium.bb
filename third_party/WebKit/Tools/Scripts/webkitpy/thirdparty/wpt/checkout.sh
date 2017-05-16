@@ -9,6 +9,7 @@ cd $DIR
 
 TARGET_DIR=$DIR/wpt
 REMOTE_REPO="https://chromium.googlesource.com/external/w3c/web-platform-tests.git"
+WPT_HEAD=32aa301b33136f71b1e15594f07ea5345a6305db
 
 function clone {
   # First line is the main repo HEAD.
@@ -21,22 +22,13 @@ function clone {
   git clone $REMOTE_REPO $TARGET_DIR
   cd $TARGET_DIR && git checkout $WPT_HEAD
   echo "WPTHead: " `git rev-parse HEAD`
-
-  # Starting from the 2nd line of WPTHeads, we read and checkout submodules.
-  tail -n+2 $DIR/WPTHeads | while read dir submodule commit; do
-    cd $TARGET_DIR/$dir && \
-      git submodule update --init $submodule && \
-      cd $TARGET_DIR/$dir/$submodule && \
-      git checkout $commit
-    echo "WPTHead: $dir $submodule" `git rev-parse HEAD`
-  done
 }
 
 function reduce {
   cd $TARGET_DIR
-  # web-platform-tests/html/ contains a filename with ', and it confuses
-  # xargs on macOS.
-  rm -fr html
+  # Some directories contain filenames with ' (single quote), and it confuses
+  # xargs on some platforms, so we remove those directories first.
+  rm -fr html css
   # Remove all except white-listed.
   find . -type f | grep -Fxvf ../WPTWhiteList | xargs -n 1 rm
   find . -empty -type d -delete

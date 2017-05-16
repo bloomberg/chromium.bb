@@ -13,3 +13,5 @@ testharness_runner.html
 webdriver/.idea
 .vscode/
 .DS_Store
+*.rej
+_venv
