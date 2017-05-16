@@ -1084,12 +1084,12 @@ void PasswordAutofillAgent::OnSameDocumentNavigationCompleted(
     if (!form_element_observer_) {
       std::unique_ptr<FormElementObserverCallback> callback(
           new FormElementObserverCallback(this));
-      if (provisionally_saved_form_.form_element().IsNull()) {
-        form_element_observer_ = blink::WebFormElementObserver::Create(
-            provisionally_saved_form_.input_element(), std::move(callback));
-      } else {
+      if (!provisionally_saved_form_.form_element().IsNull()) {
         form_element_observer_ = blink::WebFormElementObserver::Create(
             provisionally_saved_form_.form_element(), std::move(callback));
+      } else if (!provisionally_saved_form_.input_element().IsNull()) {
+        form_element_observer_ = blink::WebFormElementObserver::Create(
+            provisionally_saved_form_.input_element(), std::move(callback));
       }
     }
     return;

@@ -56,7 +56,7 @@ WebFormElementObserverImpl::ObserverCallback::ObserverCallback(
     init.setAttributeFilter(filter);
     mutation_observer_->observe(element_, init, ASSERT_NO_EXCEPTION);
   }
-  {
+  if (element_->parentElement()) {
     MutationObserverInit init;
     init.setChildList(true);
     mutation_observer_->observe(element_->parentElement(), init,
