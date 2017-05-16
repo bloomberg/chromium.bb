@@ -407,10 +407,10 @@ void CookieStoreIOS::SetCookieWithDetailsAsync(
   // First create a CanonicalCookie, to normalize the arguments,
   // particularly domain and path, and perform validation.
   std::unique_ptr<net::CanonicalCookie> canonical_cookie =
-      net::CanonicalCookie::Create(name, value, cookie_domain, cookie_path,
-                                   creation_time, expiration_time,
-                                   creation_time, secure, http_only, same_site,
-                                   priority);
+      base::MakeUnique<net::CanonicalCookie>(
+          name, value, cookie_domain, cookie_path, creation_time,
+          expiration_time, creation_time, secure, http_only, same_site,
+          priority);
 
   if (canonical_cookie) {
     NSHTTPCookie* cookie = SystemCookieFromCanonicalCookie(*canonical_cookie);
