@@ -38,8 +38,6 @@ public class OverlayPanelContent {
     /** The ContentViewCore that this panel will display. */
     private ContentViewCore mContentViewCore;
 
-    private WebContents mWebContents;
-
     /** The pointer to the native version of this class. */
     private long mNativeOverlayPanelContentPtr;
 
@@ -267,7 +265,7 @@ public class OverlayPanelContent {
         }
 
         // Creates an initially hidden WebContents which gets shown when the panel is opened.
-        WebContents mWebContents = WebContentsFactory.createWebContents(false, true);
+        WebContents panelWebContents = WebContentsFactory.createWebContents(false, true);
 
         // Dummny ViewAndroidDelegate since the container view for overlay panel is
         // never added to the view hierarchy.
@@ -297,13 +295,13 @@ public class OverlayPanelContent {
                         return mContainerView;
                     }
                 }.init(cv);
-        mContentViewCore.initialize(delegate, cv, mWebContents, mActivity.getWindowAndroid());
+        mContentViewCore.initialize(delegate, cv, panelWebContents, mActivity.getWindowAndroid());
 
         // Transfers the ownership of the WebContents to the native OverlayPanelContent.
-        nativeSetWebContents(mNativeOverlayPanelContentPtr, mWebContents, mWebContentsDelegate);
+        nativeSetWebContents(mNativeOverlayPanelContentPtr, panelWebContents, mWebContentsDelegate);
 
         mWebContentsObserver =
-                new WebContentsObserver(mWebContents) {
+                new WebContentsObserver(panelWebContents) {
                     @Override
                     public void didStartLoading(String url) {
                         mContentDelegate.onContentLoadStarted(url);
@@ -339,7 +337,7 @@ public class OverlayPanelContent {
 
         mInterceptNavigationDelegate = new InterceptNavigationDelegateImpl();
         nativeSetInterceptNavigationDelegate(
-                mNativeOverlayPanelContentPtr, mInterceptNavigationDelegate, mWebContents);
+                mNativeOverlayPanelContentPtr, mInterceptNavigationDelegate, panelWebContents);
 
         mContentDelegate.onContentViewCreated(mContentViewCore);
     }
@@ -487,8 +485,10 @@ public class OverlayPanelContent {
     }
 
     void onPhysicalBackingSizeChanged(int width, int height) {
-        nativeOnPhysicalBackingSizeChanged(
-                mNativeOverlayPanelContentPtr, mWebContents, width, height);
+        if (mContentViewCore != null && mContentViewCore.getWebContents() != null) {
+            nativeOnPhysicalBackingSizeChanged(mNativeOverlayPanelContentPtr,
+                    mContentViewCore.getWebContents(), width, height);
+        }
     }
 
     /**
