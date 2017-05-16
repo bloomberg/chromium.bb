@@ -261,12 +261,12 @@ const av1_extra_bit av1_extra_bits[ENTROPY_TOKENS] = {
 };
 #endif
 
-#if !CONFIG_EC_MULTISYMBOL
+#if !(CONFIG_DAALA_EC || CONFIG_ANS)
 const struct av1_token av1_coef_encodings[ENTROPY_TOKENS] = {
   { 2, 2 },  { 6, 3 },   { 28, 5 },  { 58, 6 },  { 59, 6 },  { 60, 6 },
   { 61, 6 }, { 124, 7 }, { 125, 7 }, { 126, 7 }, { 127, 7 }, { 0, 1 }
 };
-#endif  // !CONFIG_EC_MULTISYMBOL
+#endif  // !(CONFIG_DAALA_EC || CONFIG_ANS)
 
 #if !CONFIG_PVQ || CONFIG_VAR_TX
 static void cost_coeffs_b(int plane, int block, int blk_row, int blk_col,
@@ -307,7 +307,7 @@ static void set_entropy_context_b(int plane, int block, int blk_row,
                    blk_row);
 }
 
-#if CONFIG_EC_MULTISYMBOL
+#if CONFIG_DAALA_EC || CONFIG_ANS
 static INLINE void add_token(TOKENEXTRA **t,
                              aom_cdf_prob (*tail_cdf)[CDF_SIZE(ENTROPY_TOKENS)],
                              aom_cdf_prob (*head_cdf)[CDF_SIZE(ENTROPY_TOKENS)],
@@ -322,7 +322,7 @@ static INLINE void add_token(TOKENEXTRA **t,
   (*t)++;
 }
 
-#else   // CONFIG_EC_MULTISYMBOL
+#else
 static INLINE void add_token(TOKENEXTRA **t, const aom_prob *context_tree,
                              int32_t extra, uint8_t token,
                              uint8_t skip_eob_node, unsigned int *counts) {
@@ -333,7 +333,7 @@ static INLINE void add_token(TOKENEXTRA **t, const aom_prob *context_tree,
   (*t)++;
   ++counts[token];
 }
-#endif  // CONFIG_EC_MULTISYMBOL
+#endif  // CONFIG_DAALA_EC || CONFIG_ANS
 #endif  // !CONFIG_PVQ || CONFIG_VAR_TX
 
 #if CONFIG_PALETTE
@@ -458,16 +458,16 @@ static void tokenize_b(int plane, int block, int blk_row, int blk_col,
   const int ref = is_inter_block(mbmi);
   unsigned int(*const counts)[COEFF_CONTEXTS][ENTROPY_TOKENS] =
       td->rd_counts.coef_counts[txsize_sqr_map[tx_size]][type][ref];
-#if !CONFIG_EC_MULTISYMBOL
+#if !(CONFIG_DAALA_EC || CONFIG_ANS)
   aom_prob(*const coef_probs)[COEFF_CONTEXTS][UNCONSTRAINED_NODES] =
       cpi->common.fc->coef_probs[txsize_sqr_map[tx_size]][type][ref];
-#endif  // !CONFIG_EC_MULTISYMBOL
+#endif  // !(CONFIG_DAALA_EC || CONFIG_ANS)
 #if CONFIG_EC_ADAPT
   FRAME_CONTEXT *ec_ctx = xd->tile_ctx;
-#elif CONFIG_EC_MULTISYMBOL
+#elif CONFIG_DAALA_EC || CONFIG_ANS
   FRAME_CONTEXT *ec_ctx = cpi->common.fc;
 #endif
-#if CONFIG_EC_MULTISYMBOL
+#if CONFIG_DAALA_EC || CONFIG_ANS
   aom_cdf_prob(
       *const coef_head_cdfs)[COEFF_CONTEXTS][CDF_SIZE(ENTROPY_TOKENS)] =
       ec_ctx->coef_head_cdfs[txsize_sqr_map[tx_size]][type][ref];
@@ -480,7 +480,7 @@ static void tokenize_b(int plane, int block, int blk_row, int blk_col,
   int first_val = 1;
 #else
   int skip_eob = 0;
-#endif  // CONFIG_EC_MULTISYMBOL
+#endif  // CONFIG_DAALA_EC || CONFIG_ANS
   const int seg_eob = get_tx_eob(&cpi->common.seg, segment_id, tx_size);
   unsigned int(*const eob_branch)[COEFF_CONTEXTS] =
       td->counts->eob_branch[txsize_sqr_map[tx_size]][type][ref];
@@ -494,7 +494,7 @@ static void tokenize_b(int plane, int block, int blk_row, int blk_col,
   nb = scan_order->neighbors;
   c = 0;
 
-#if CONFIG_EC_MULTISYMBOL
+#if CONFIG_DAALA_EC || CONFIG_ANS
   if (eob == 0)
     add_token(&t, &coef_tail_cdfs[band[c]][pt], &coef_head_cdfs[band[c]][pt], 1,
               1, 0, BLOCK_Z_TOKEN);
@@ -550,7 +550,7 @@ static void tokenize_b(int plane, int block, int blk_row, int blk_col,
               counts[band[c]][pt]);
     ++eob_branch[band[c]][pt];
   }
-#endif  // CONFIG_EC_MULTISYMBOL
+#endif  // CONFIG_DAALA_EC || CONFIG_ANS
 
 #if CONFIG_COEF_INTERLEAVE
   t->token = EOSB_TOKEN;

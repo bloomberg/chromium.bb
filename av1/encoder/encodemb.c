@@ -128,12 +128,12 @@ static const int plane_rd_mult[REF_TYPES][PLANE_TYPES] = {
 static INLINE unsigned int get_token_bit_costs(
     unsigned int token_costs[2][COEFF_CONTEXTS][ENTROPY_TOKENS], int skip_eob,
     int ctx, int token) {
-#if CONFIG_EC_MULTISYMBOL
+#if CONFIG_DAALA_EC || CONFIG_ANS
   (void)skip_eob;
   return token_costs[token == ZERO_TOKEN || token == EOB_TOKEN][ctx][token];
 #else
   return token_costs[skip_eob][ctx][token];
-#endif  // CONFIG_EC_MULTISYMBOL
+#endif  // CONFIG_DAALA_EC || CONFIG_ANS
 }
 
 #define USE_GREEDY_OPTIMIZE_B 0

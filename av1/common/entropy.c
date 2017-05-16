@@ -627,7 +627,7 @@ const aom_prob av1_pareto8_full[COEFF_PROB_MODELS][MODEL_NODES] = {
 // The full source code of the generating program is available in:
 // tools/gen_constrained_tokenset.py
 //
-#if CONFIG_EC_MULTISYMBOL
+#if CONFIG_DAALA_EC || CONFIG_ANS
 // Values for tokens TWO_TOKEN through CATEGORY6_TOKEN included
 // in the table here : the ONE_TOKEN probability is
 // removed and the probabilities rescaled.
@@ -891,7 +891,7 @@ const aom_cdf_prob av1_pareto8_tail_probs[COEFF_PROB_MODELS][TAIL_NODES] = {
   { 31131, 1448, 152, 31, 2, 1, 1, 1, 1 },
   { 31486, 1150, 107, 20, 1, 1, 1, 1, 1 },
 };
-#endif  // CONFIG_EC_MULTISYMBOL
+#endif  // CONFIG_DAALA_EC || CONFIG_ANS
 
 /* clang-format off */
 #if CONFIG_Q_ADAPT_PROBS
@@ -3563,7 +3563,7 @@ default_qctx_coef_probs[QCTX_BINS][TX_SIZES][PLANE_TYPES] = {
     },
 };
 #else
-#if CONFIG_EC_MULTISYMBOL
+#if CONFIG_DAALA_EC || CONFIG_ANS
 static const av1_coeff_probs_model default_coef_probs_4x4[PLANE_TYPES] = {
   { // Y plane
     { // Intra
@@ -3988,7 +3988,7 @@ static const av1_coeff_probs_model default_coef_probs_32x32[PLANE_TYPES] = {
     }
   }
 };
-#else  // CONFIG_EC_MULTISYMBOL
+#else  // CONFIG_DAALA_EC || CONFIG_ANS
 static const av1_coeff_probs_model default_coef_probs_4x4[PLANE_TYPES] = {
   {  // Y plane
     {  // Intra
@@ -4324,7 +4324,7 @@ static const av1_coeff_probs_model default_coef_probs_32x32[PLANE_TYPES] = {
     }
   }
 };
-#endif  // CONFIG_EC_MULTISYMBOL
+#endif  // CONFIG_DAALA_EC || CONFIG_ANS
 
 #if CONFIG_TX64X64
 // FIXME. Optimize for EC_MULTISYMBOL
@@ -4413,7 +4413,7 @@ static const av1_coeff_probs_model default_coef_probs_64x64[PLANE_TYPES] = {
 };
 #endif  // CONFIG_TX64X64
 #endif  // CONFIG_Q_ADAPT_PROBS
-#if CONFIG_EC_MULTISYMBOL
+#if CONFIG_DAALA_EC || CONFIG_ANS
 static const aom_prob av1_default_blockzero_probs[TX_SIZES][PLANE_TYPES]
                                            [REF_TYPES][BLOCKZ_CONTEXTS] = {
   { // TX_4x4
@@ -5654,7 +5654,7 @@ static const coeff_cdf_model default_coef_head_cdf_32x32[PLANE_TYPES] = {
         {AOM_ICDF(3009), AOM_ICDF(3246), AOM_ICDF(10158), AOM_ICDF(10533),
          AOM_ICDF(32768) } } } }
 };
-#endif  // CONFIG_EC_MULTISYMBOL
+#endif  // CONFIG_DAALA_EC || CONFIG_ANS
 
 /* clang-format on */
 
@@ -5669,7 +5669,7 @@ void av1_model_to_full_probs(const aom_prob *model, aom_prob *full) {
   extend_to_full_distribution(&full[UNCONSTRAINED_NODES], model[PIVOT_NODE]);
 }
 
-#if CONFIG_EC_MULTISYMBOL
+#if CONFIG_DAALA_EC || CONFIG_ANS
 
 static void build_tail_cdfs(aom_cdf_prob cdf_tail[CDF_SIZE(ENTROPY_TOKENS)],
                             aom_cdf_prob cdf_head[CDF_SIZE(ENTROPY_TOKENS)],
@@ -5825,7 +5825,7 @@ void av1_coef_pareto_cdfs(FRAME_CONTEXT *fc) {
             build_tail_cdfs(fc->coef_tail_cdfs[t][i][j][k][l],
                             fc->coef_head_cdfs[t][i][j][k][l], k == 0);
 }
-#endif  // CONFIG_EC_MULTISYMBOL
+#endif  // CONFIG_DAALA_EC || CONFIG_ANS
 
 void av1_default_coef_probs(AV1_COMMON *cm) {
 #if CONFIG_Q_ADAPT_PROBS
@@ -5844,12 +5844,12 @@ void av1_default_coef_probs(AV1_COMMON *cm) {
   av1_copy(cm->fc->coef_probs[TX_64X64], default_coef_probs_64x64);
 #endif  // CONFIG_TX64X64
 #endif  // CONFIG_Q_ADAPT_PROBS
-#if CONFIG_EC_MULTISYMBOL
+#if CONFIG_DAALA_EC || CONFIG_ANS
   av1_copy(cm->fc->blockzero_probs, av1_default_blockzero_probs);
   /* Load the head tokens */
   av1_default_coef_cdfs(cm->fc);
   av1_coef_pareto_cdfs(cm->fc);
-#endif  // CONFIG_EC_MULTISYMBOL
+#endif  // CONFIG_DAALA_EC || CONFIG_ANS
 }
 
 #if !CONFIG_LV_MAP
@@ -5864,13 +5864,13 @@ static void adapt_coef_probs(AV1_COMMON *cm, TX_SIZE tx_size,
   const unsigned int(*eob_counts)[REF_TYPES][COEF_BANDS][COEFF_CONTEXTS] =
       (const unsigned int(*)[REF_TYPES][COEF_BANDS][COEFF_CONTEXTS])
           cm->counts.eob_branch[tx_size];
-#if CONFIG_EC_MULTISYMBOL
+#if CONFIG_DAALA_EC || CONFIG_ANS
   const av1_blockz_probs_model *const pre_blockz_probs =
       pre_fc->blockzero_probs[tx_size];
   av1_blockz_probs_model *const blockz_probs = cm->fc->blockzero_probs[tx_size];
   const av1_blockz_count_model *const blockz_counts =
       (const av1_blockz_count_model *)&cm->counts.blockz_count[tx_size][0];
-#endif  // CONFIG_EC_MULTISYMBOL
+#endif  // CONFIG_DAALA_EC || CONFIG_ANS
   int i, j, k, l, m;
 #if CONFIG_RECT_TX
   assert(!is_rect_tx(tx_size));
@@ -5893,7 +5893,7 @@ static void adapt_coef_probs(AV1_COMMON *cm, TX_SIZE tx_size,
                                 count_sat, update_factor);
         }
 
-#if CONFIG_EC_MULTISYMBOL
+#if CONFIG_DAALA_EC || CONFIG_ANS
   for (i = 0; i < PLANE_TYPES; ++i) {
     for (j = 0; j < REF_TYPES; ++j) {
       for (k = 0; k < BLOCKZ_CONTEXTS; ++k) {
@@ -5905,7 +5905,7 @@ static void adapt_coef_probs(AV1_COMMON *cm, TX_SIZE tx_size,
       }
     }
   }
-#endif  // CONFIG_EC_MULTISYMBOL
+#endif  // CONFIG_DAALA_EC || CONFIG_ANS
 }
 #endif  // !CONFIG_LV_MAP
 
@@ -5963,10 +5963,10 @@ void av1_average_tile_coef_cdfs(FRAME_CONTEXT *fc, FRAME_CONTEXT *ec_ctxs[],
 
   aom_cdf_prob *fc_cdf_ptr;
 
-#if CONFIG_EC_MULTISYMBOL
+#if CONFIG_DAALA_EC || CONFIG_ANS
   AVERAGE_TILE_CDFS(coef_head_cdfs)
   AVERAGE_TILE_CDFS(coef_tail_cdfs)
-#endif  // CONFIG_EC_MULTISYMBOL
+#endif  // CONFIG_DAALA_EC || CONFIG_ANS
 }
 
 void av1_average_tile_mv_cdfs(FRAME_CONTEXT *fc, FRAME_CONTEXT *ec_ctxs[],

@@ -1950,38 +1950,38 @@ static PARTITION_TYPE read_partition(AV1_COMMON *cm, MACROBLOCKD *xd,
 #if CONFIG_EC_ADAPT
   FRAME_CONTEXT *ec_ctx = xd->tile_ctx;
   (void)cm;
-#elif CONFIG_EC_MULTISYMBOL
+#elif CONFIG_DAALA_EC || CONFIG_ANS
   FRAME_CONTEXT *ec_ctx = cm->fc;
 #endif
 
-#if CONFIG_EC_MULTISYMBOL
+#if CONFIG_DAALA_EC || CONFIG_ANS
   aom_cdf_prob *partition_cdf = (ctx >= 0) ? ec_ctx->partition_cdf[ctx] : NULL;
-#endif
+#endif  // CONFIG_DAALA_EC || CONFIG_ANS
 
   if (has_rows && has_cols)
 #if CONFIG_EXT_PARTITION_TYPES
     if (bsize <= BLOCK_8X8)
-#if CONFIG_EC_MULTISYMBOL
+#if CONFIG_DAALA_EC || CONFIG_ANS
       p = (PARTITION_TYPE)aom_read_symbol(r, partition_cdf, PARTITION_TYPES,
                                           ACCT_STR);
 #else
       p = (PARTITION_TYPE)aom_read_tree(r, av1_partition_tree, probs, ACCT_STR);
-#endif
+#endif  // CONFIG_DAALA_EC || CONFIG_ANS
     else
-#if CONFIG_EC_MULTISYMBOL
+#if CONFIG_DAALA_EC || CONFIG_ANS
       p = (PARTITION_TYPE)aom_read_symbol(r, partition_cdf, EXT_PARTITION_TYPES,
                                           ACCT_STR);
 #else
       p = (PARTITION_TYPE)aom_read_tree(r, av1_ext_partition_tree, probs,
                                         ACCT_STR);
-#endif
+#endif  // CONFIG_DAALA_EC || CONFIG_ANS
 #else
-#if CONFIG_EC_MULTISYMBOL
+#if CONFIG_DAALA_EC || CONFIG_ANS
     p = (PARTITION_TYPE)aom_read_symbol(r, partition_cdf, PARTITION_TYPES,
                                         ACCT_STR);
 #else
     p = (PARTITION_TYPE)aom_read_tree(r, av1_partition_tree, probs, ACCT_STR);
-#endif
+#endif  // CONFIG_DAALA_EC || CONFIG_ANS
 #endif  // CONFIG_EXT_PARTITION_TYPES
   else if (!has_rows && has_cols)
     p = aom_read(r, probs[1], ACCT_STR) ? PARTITION_SPLIT : PARTITION_HORZ;
@@ -4620,9 +4620,9 @@ static int read_compressed_header(AV1Decoder *pbi, const uint8_t *data,
 
   if (frame_is_intra_only(cm)) {
     av1_copy(cm->kf_y_prob, av1_kf_y_mode_prob);
-#if CONFIG_EC_MULTISYMBOL
+#if CONFIG_DAALA_EC || CONFIG_ANS
     av1_copy(cm->fc->kf_y_cdf, av1_kf_y_mode_cdf);
-#endif
+#endif  // CONFIG_DAALA_EC || CONFIG_ANS
 #if !CONFIG_EC_ADAPT
     for (k = 0; k < INTRA_MODES; k++)
       for (j = 0; j < INTRA_MODES; j++)
@@ -4704,13 +4704,13 @@ static int read_compressed_header(AV1Decoder *pbi, const uint8_t *data,
     read_global_motion(cm, &r);
 #endif  // EC_ADAPT, DAALA_EC
   }
-#if CONFIG_EC_MULTISYMBOL && !CONFIG_EC_ADAPT
+#if (CONFIG_DAALA_EC || CONFIG_ANS) && !CONFIG_EC_ADAPT
   av1_coef_head_cdfs(fc);
   /* Make tail distribution from head */
   av1_coef_pareto_cdfs(fc);
   for (i = 0; i < NMV_CONTEXTS; ++i) av1_set_mv_cdfs(&fc->nmvc[i]);
   av1_set_mode_cdfs(cm);
-#endif  // CONFIG_EC_MULTISYMBOL && !CONFIG_EC_ADAPT
+#endif  // (CONFIG_DAALA_EC || CONFIG_ANS) && !CONFIG_EC_ADAPT
 
   return aom_reader_has_error(&r);
 }
@@ -4734,10 +4734,10 @@ static void debug_check_frame_counts(const AV1_COMMON *const cm) {
   assert(!memcmp(cm->counts.coef, zero_counts.coef, sizeof(cm->counts.coef)));
   assert(!memcmp(cm->counts.eob_branch, zero_counts.eob_branch,
                  sizeof(cm->counts.eob_branch)));
-#if CONFIG_EC_MULTISYMBOL
+#if CONFIG_DAALA_EC || CONFIG_ANS
   assert(!memcmp(cm->counts.blockz_count, zero_counts.blockz_count,
                  sizeof(cm->counts.blockz_count)));
-#endif
+#endif  // CONFIG_DAALA_EC || CONFIG_ANS
   assert(!memcmp(cm->counts.switchable_interp, zero_counts.switchable_interp,
                  sizeof(cm->counts.switchable_interp)));
   assert(!memcmp(cm->counts.inter_mode, zero_counts.inter_mode,

@@ -265,7 +265,6 @@ EXPERIMENT_LIST="
     new_quant
     supertx
     ans
-    ec_multisymbol
     loop_restoration
     ext_partition
     ext_partition_types
@@ -498,7 +497,6 @@ post_process_cmdline() {
     soft_enable lowbitdepth
 
     ! enabled ans && soft_enable daala_ec
-    soft_enable ec_multisymbol
     soft_enable palette
     soft_enable alt_intra
     soft_enable palette_throughput
@@ -511,11 +509,6 @@ post_process_cmdline() {
 
     # Fix up experiment dependencies
     enabled pvq && enable_feature ec_adapt
-    enabled cfl && enable_feature ec_multisymbol
-    enabled ec_adapt && enable_feature ec_multisymbol
-    enabled new_multisymbol && enable_feature ec_multisymbol
-    enabled ec_multisymbol && ! enabled ans && soft_enable daala_ec
-    enabled ec_multisymbol && ! enabled daala_ec && soft_enable ans
     enabled palette_throughput && soft_enable palette
     enabled ext_delta_q && soft_enable delta_q
     enabled txk_sel && soft_enable lv_map
@@ -524,6 +517,18 @@ post_process_cmdline() {
     enabled intra_edge && enable_feature ext_intra
     enabled chroma_2x2 && disable_feature chroma_sub8x8
 
+    if ! enabled daala_ec && ! enabled ans && enabled cfl; then
+      log_echo "cfl requires daala_ec or ans, so disabling cfl"
+      disable_feature cfl
+    fi
+    if ! enabled daala_ec && ! enabled ans && enabled ec_adapt; then
+      log_echo "ec_adapt requires daala_ec or ans, so disabling ec_adapt"
+      disable_feature ec_adapt
+    fi
+    if ! enabled daala_ec && ! enabled ans && enabled new_multisymbol; then
+      log_echo "new_multisymbol requires daala_ec or ans, so disabling new_multisymbol"
+      disable_feature new_multisymbol
+    fi
     if ! enabled delta_q && enabled ext_delta_q; then
       log_echo "ext_delta_q requires delta_q, so disabling ext_delta_q"
       disable_feature ext_delta_q

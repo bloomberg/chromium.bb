@@ -99,11 +99,11 @@ typedef struct frame_contexts {
   aom_prob partition_prob[PARTITION_CONTEXTS][PARTITION_TYPES - 1];
 #endif
   av1_coeff_probs_model coef_probs[TX_SIZES][PLANE_TYPES];
-#if CONFIG_EC_MULTISYMBOL
+#if CONFIG_DAALA_EC || CONFIG_ANS
   coeff_cdf_model coef_tail_cdfs[TX_SIZES][PLANE_TYPES];
   coeff_cdf_model coef_head_cdfs[TX_SIZES][PLANE_TYPES];
   aom_prob blockzero_probs[TX_SIZES][PLANE_TYPES][REF_TYPES][BLOCKZ_CONTEXTS];
-#endif  // CONFIG_EC_MULTISYMBOL
+#endif  // CONFIG_DAALA_EC || CONFIG_ANS
   aom_prob switchable_interp_prob[SWITCHABLE_FILTER_CONTEXTS]
                                  [SWITCHABLE_FILTERS - 1];
 #if CONFIG_ADAPT_SCAN
@@ -260,7 +260,7 @@ typedef struct frame_contexts {
 #if CONFIG_LOOP_RESTORATION
   aom_prob switchable_restore_prob[RESTORE_SWITCHABLE_TYPES - 1];
 #endif  // CONFIG_LOOP_RESTORATION
-#if CONFIG_EC_MULTISYMBOL
+#if CONFIG_DAALA_EC || CONFIG_ANS
   aom_cdf_prob y_mode_cdf[BLOCK_SIZE_GROUPS][CDF_SIZE(INTRA_MODES)];
   aom_cdf_prob uv_mode_cdf[INTRA_MODES][CDF_SIZE(INTRA_MODES)];
 #if CONFIG_EXT_PARTITION_TYPES
@@ -294,7 +294,7 @@ typedef struct frame_contexts {
 #if CONFIG_EXT_INTRA && CONFIG_INTRA_INTERP
   aom_cdf_prob intra_filter_cdf[INTRA_FILTERS + 1][CDF_SIZE(INTRA_FILTERS)];
 #endif  // CONFIG_EXT_INTRA && CONFIG_INTRA_INTERP
-#endif  // CONFIG_EC_MULTISYMBOL
+#endif  // CONFIG_DAALA_EC || CONFIG_ANS
 #if CONFIG_DELTA_Q
   aom_prob delta_q_prob[DELTA_Q_PROBS];
 #if CONFIG_EXT_DELTA_Q
@@ -356,9 +356,9 @@ typedef struct FRAME_COUNTS {
   unsigned int coeff_lps[TX_SIZES][PLANE_TYPES][LEVEL_CONTEXTS][2];
 #endif  // CONFIG_LV_MAP
 
-#if CONFIG_EC_MULTISYMBOL
+#if CONFIG_DAALA_EC || CONFIG_ANS
   av1_blockz_count_model blockz_count[TX_SIZES][PLANE_TYPES];
-#endif
+#endif  // CONFIG_DAALA_EC || CONFIG_ANS
 
   unsigned int newmv_mode[NEWMV_MODE_CONTEXTS][2];
   unsigned int zeromv_mode[ZEROMV_MODE_CONTEXTS][2];
@@ -450,11 +450,11 @@ typedef struct FRAME_COUNTS {
 // Contexts used: Intra mode (Y plane) of 'above' and 'left' blocks.
 extern const aom_prob av1_kf_y_mode_prob[INTRA_MODES][INTRA_MODES]
                                         [INTRA_MODES - 1];
-#if CONFIG_EC_MULTISYMBOL
+#if CONFIG_DAALA_EC || CONFIG_ANS
 // CDF version of 'av1_kf_y_mode_prob'.
 extern const aom_cdf_prob av1_kf_y_mode_cdf[INTRA_MODES][INTRA_MODES]
                                            [CDF_SIZE(INTRA_MODES)];
-#endif
+#endif  // CONFIG_DAALA_EC || CONFIG_ANS
 
 #if CONFIG_PALETTE
 extern const aom_prob av1_default_palette_y_mode_prob[PALETTE_BLOCK_SIZES]
@@ -473,7 +473,7 @@ extern const aom_prob av1_default_palette_uv_color_index_prob
 
 extern const aom_tree_index av1_intra_mode_tree[TREE_SIZE(INTRA_MODES)];
 extern const aom_tree_index av1_inter_mode_tree[TREE_SIZE(INTER_MODES)];
-#if CONFIG_EC_MULTISYMBOL
+#if CONFIG_DAALA_EC || CONFIG_ANS
 extern int av1_intra_mode_ind[INTRA_MODES];
 extern int av1_intra_mode_inv[INTRA_MODES];
 extern int av1_inter_mode_ind[INTER_MODES];
@@ -484,7 +484,7 @@ extern int av1_ext_tx_intra_inv[EXT_TX_SETS_INTRA][TX_TYPES];
 extern int av1_ext_tx_inter_ind[EXT_TX_SETS_INTER][TX_TYPES];
 extern int av1_ext_tx_inter_inv[EXT_TX_SETS_INTER][TX_TYPES];
 #endif
-#endif
+#endif  // CONFIG_DAALA_EC || CONFIG_ANS
 
 #if CONFIG_EXT_INTER
 #if CONFIG_INTERINTRA
@@ -535,20 +535,20 @@ extern const aom_tree_index av1_motion_mode_tree[TREE_SIZE(MOTION_MODES)];
 extern const aom_tree_index
     av1_switchable_restore_tree[TREE_SIZE(RESTORE_SWITCHABLE_TYPES)];
 #endif  // CONFIG_LOOP_RESTORATION
-#if CONFIG_EC_MULTISYMBOL
+#if CONFIG_DAALA_EC || CONFIG_ANS
 extern int av1_switchable_interp_ind[SWITCHABLE_FILTERS];
 extern int av1_switchable_interp_inv[SWITCHABLE_FILTERS];
 
 #if !CONFIG_EC_ADAPT
 void av1_set_mode_cdfs(struct AV1Common *cm);
 #endif
-#endif
+#endif  // CONFIG_DAALA_EC || CONFIG_ANS
 
 void av1_setup_past_independence(struct AV1Common *cm);
 
 void av1_adapt_intra_frame_probs(struct AV1Common *cm);
 void av1_adapt_inter_frame_probs(struct AV1Common *cm);
-#if CONFIG_EC_MULTISYMBOL && !CONFIG_EXT_TX
+#if (CONFIG_DAALA_EC || CONFIG_ANS) && !CONFIG_EXT_TX
 extern int av1_ext_tx_ind[TX_TYPES];
 extern int av1_ext_tx_inv[TX_TYPES];
 #endif

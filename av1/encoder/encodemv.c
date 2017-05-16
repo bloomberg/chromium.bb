@@ -46,7 +46,7 @@ static void encode_mv_component(aom_writer *w, int comp, nmv_component *mvcomp,
   aom_write(w, sign, mvcomp->sign);
 
 // Class
-#if CONFIG_EC_MULTISYMBOL
+#if CONFIG_DAALA_EC || CONFIG_ANS
   aom_write_symbol(w, mv_class, mvcomp->class_cdf, MV_CLASSES);
 #else
   av1_write_token(w, av1_mv_class_tree, mvcomp->classes,
@@ -63,7 +63,7 @@ static void encode_mv_component(aom_writer *w, int comp, nmv_component *mvcomp,
   }
 
 // Fractional bits
-#if CONFIG_EC_MULTISYMBOL
+#if CONFIG_DAALA_EC || CONFIG_ANS
   aom_write_symbol(
       w, fr, mv_class == MV_CLASS_0 ? mvcomp->class0_fp_cdf[d] : mvcomp->fp_cdf,
       MV_FP_SIZE);
@@ -218,11 +218,11 @@ void av1_encode_mv(AV1_COMP *cpi, aom_writer *w, const MV *mv, const MV *ref,
                    nmv_context *mvctx, int usehp) {
   const MV diff = { mv->row - ref->row, mv->col - ref->col };
   const MV_JOINT_TYPE j = av1_get_mv_joint(&diff);
-#if CONFIG_EC_MULTISYMBOL
+#if CONFIG_DAALA_EC || CONFIG_ANS
   aom_write_symbol(w, j, mvctx->joint_cdf, MV_JOINTS);
 #else
   av1_write_token(w, av1_mv_joint_tree, mvctx->joints, &mv_joint_encodings[j]);
-#endif
+#endif  // CONFIG_DAALA_EC || CONFIG_ANS
   if (mv_joint_vertical(j))
     encode_mv_component(w, diff.row, &mvctx->comps[0], usehp);
 
@@ -243,11 +243,11 @@ void av1_encode_dv(aom_writer *w, const MV *mv, const MV *ref,
   const MV diff = { mv->row - ref->row, mv->col - ref->col };
   const MV_JOINT_TYPE j = av1_get_mv_joint(&diff);
 
-#if CONFIG_EC_MULTISYMBOL
+#if CONFIG_DAALA_EC || CONFIG_ANS
   aom_write_symbol(w, j, mvctx->joint_cdf, MV_JOINTS);
 #else
   av1_write_token(w, av1_mv_joint_tree, mvctx->joints, &mv_joint_encodings[j]);
-#endif
+#endif  // CONFIG_DAALA_EC || CONFIG_ANS
   if (mv_joint_vertical(j))
     encode_mv_component(w, diff.row, &mvctx->comps[0], 0);
 

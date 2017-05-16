@@ -671,7 +671,7 @@ static INLINE const aom_prob *get_y_mode_probs(const AV1_COMMON *cm,
   return cm->kf_y_prob[above][left];
 }
 
-#if CONFIG_EC_MULTISYMBOL
+#if CONFIG_DAALA_EC || CONFIG_ANS
 static INLINE aom_cdf_prob *get_y_mode_cdf(FRAME_CONTEXT *tile_ctx,
                                            const MODE_INFO *mi,
                                            const MODE_INFO *above_mi,
@@ -681,7 +681,7 @@ static INLINE aom_cdf_prob *get_y_mode_cdf(FRAME_CONTEXT *tile_ctx,
   const PREDICTION_MODE left = av1_left_block_mode(mi, left_mi, block);
   return tile_ctx->kf_y_cdf[above][left];
 }
-#endif
+#endif  // CONFIG_DAALA_EC || CONFIG_ANS
 
 static INLINE void update_partition_context(MACROBLOCKD *xd, int mi_row,
                                             int mi_col, BLOCK_SIZE subsize,

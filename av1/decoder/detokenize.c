@@ -123,7 +123,7 @@ static int decode_coefs(MACROBLOCKD *xd, PLANE_TYPE type, tran_low_t *dqcoeff,
 #endif  // CONFIG_AOM_QM
   int band, c = 0;
   const int tx_size_ctx = txsize_sqr_map[tx_size];
-#if CONFIG_EC_MULTISYMBOL
+#if CONFIG_DAALA_EC || CONFIG_ANS
   aom_cdf_prob(*coef_head_cdfs)[COEFF_CONTEXTS][CDF_SIZE(ENTROPY_TOKENS)] =
       ec_ctx->coef_head_cdfs[tx_size_ctx][type][ref];
   aom_cdf_prob(*coef_tail_cdfs)[COEFF_CONTEXTS][CDF_SIZE(ENTROPY_TOKENS)] =
@@ -141,7 +141,7 @@ static int decode_coefs(MACROBLOCKD *xd, PLANE_TYPE type, tran_low_t *dqcoeff,
   const aom_prob *prob;
   unsigned int(*coef_counts)[COEFF_CONTEXTS][UNCONSTRAINED_NODES + 1] = NULL;
   unsigned int(*eob_branch_count)[COEFF_CONTEXTS] = NULL;
-#endif  // CONFIG_EC_MULTISYMBOL
+#endif  // CONFIG_DAALA_EC || CONFIG_ANS
   uint8_t token_cache[MAX_TX_SQUARE];
   const uint8_t *band_translate = get_band_translate(tx_size);
   int dq_shift;
@@ -156,7 +156,7 @@ static int decode_coefs(MACROBLOCKD *xd, PLANE_TYPE type, tran_low_t *dqcoeff,
 #endif  // CONFIG_AOM_QM
 
   if (counts) {
-#if !CONFIG_EC_MULTISYMBOL
+#if !(CONFIG_DAALA_EC || CONFIG_ANS)
     coef_counts = counts->coef[tx_size_ctx][type][ref];
     eob_branch_count = counts->eob_branch[tx_size_ctx][type][ref];
 #elif !CONFIG_EC_ADAPT
@@ -166,7 +166,7 @@ static int decode_coefs(MACROBLOCKD *xd, PLANE_TYPE type, tran_low_t *dqcoeff,
 
   dq_shift = av1_get_tx_scale(tx_size);
 
-#if CONFIG_EC_MULTISYMBOL
+#if CONFIG_DAALA_EC || CONFIG_ANS
   band = *band_translate++;
 
   int more_data = 1;
@@ -259,7 +259,7 @@ static int decode_coefs(MACROBLOCKD *xd, PLANE_TYPE type, tran_low_t *dqcoeff,
     ctx = get_coef_context(nb, token_cache, c);
     band = *band_translate++;
 
-#else  // CONFIG_EC_MULTISYMBOL
+#else  // CONFIG_DAALA_EC || CONFIG_ANS
   while (c < max_eob) {
     int val = -1;
     band = *band_translate++;
@@ -322,7 +322,7 @@ static int decode_coefs(MACROBLOCKD *xd, PLANE_TYPE type, tran_low_t *dqcoeff,
     ++c;
     ctx = get_coef_context(nb, token_cache, c);
     dqv = dq[1];
-#endif  // CONFIG_EC_MULTISYMBOL
+#endif  // CONFIG_DAALA_EC || CONFIG_ANS
   }
 
   return c;
