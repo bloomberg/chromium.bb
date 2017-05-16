@@ -26,7 +26,7 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "modules/accessibility/AXObjectImpl.h"
+#include "modules/accessibility/AXObject.h"
 
 #include "SkMatrix44.h"
 #include "core/InputTypeNames.h"
@@ -291,15 +291,13 @@ static Vector<AtomicString>* CreateRoleNameVector() {
   for (int i = 0; i < kNumRoles; i++)
     (*role_name_vector)[i] = g_null_atom;
 
-  for (size_t i = 0; i < WTF_ARRAY_LENGTH(kRoles); ++i) {
+  for (size_t i = 0; i < WTF_ARRAY_LENGTH(kRoles); ++i)
     (*role_name_vector)[kRoles[i].webcore_role] =
         AtomicString(kRoles[i].aria_role);
-  }
 
-  for (size_t i = 0; i < WTF_ARRAY_LENGTH(kReverseRoles); ++i) {
+  for (size_t i = 0; i < WTF_ARRAY_LENGTH(kReverseRoles); ++i)
     (*role_name_vector)[kReverseRoles[i].webcore_role] =
         AtomicString(kReverseRoles[i].aria_role);
-  }
 
   return role_name_vector;
 }
@@ -307,10 +305,9 @@ static Vector<AtomicString>* CreateRoleNameVector() {
 static Vector<AtomicString>* CreateInternalRoleNameVector() {
   Vector<AtomicString>* internal_role_name_vector =
       new Vector<AtomicString>(kNumRoles);
-  for (size_t i = 0; i < WTF_ARRAY_LENGTH(kInternalRoles); i++) {
+  for (size_t i = 0; i < WTF_ARRAY_LENGTH(kInternalRoles); i++)
     (*internal_role_name_vector)[kInternalRoles[i].webcore_role] =
         AtomicString(kInternalRoles[i].internal_role_name);
-  }
 
   return internal_role_name_vector;
 }
@@ -347,9 +344,9 @@ HTMLDialogElement* GetActiveDialogElement(Node* node) {
 
 }  // namespace
 
-unsigned AXObjectImpl::number_of_live_ax_objects_ = 0;
+unsigned AXObject::number_of_live_ax_objects_ = 0;
 
-AXObjectImpl::AXObjectImpl(AXObjectCacheImpl& ax_object_cache)
+AXObject::AXObject(AXObjectCacheImpl& ax_object_cache)
     : id_(0),
       have_children_(false),
       role_(kUnknownRole),
@@ -369,12 +366,12 @@ AXObjectImpl::AXObjectImpl(AXObjectCacheImpl& ax_object_cache)
   ++number_of_live_ax_objects_;
 }
 
-AXObjectImpl::~AXObjectImpl() {
+AXObject::~AXObject() {
   DCHECK(IsDetached());
   --number_of_live_ax_objects_;
 }
 
-void AXObjectImpl::Detach() {
+void AXObject::Detach() {
   // Clear any children and call detachFromParent on them so that
   // no children are left with dangling pointers to their parent.
   ClearChildren();
@@ -382,11 +379,11 @@ void AXObjectImpl::Detach() {
   ax_object_cache_ = nullptr;
 }
 
-bool AXObjectImpl::IsDetached() const {
+bool AXObject::IsDetached() const {
   return !ax_object_cache_;
 }
 
-const AtomicString& AXObjectImpl::GetAOMPropertyOrARIAAttribute(
+const AtomicString& AXObject::GetAOMPropertyOrARIAAttribute(
     AOMStringProperty property) const {
   Node* node = this->GetNode();
   if (!node || !node->IsElementNode())
@@ -395,20 +392,20 @@ const AtomicString& AXObjectImpl::GetAOMPropertyOrARIAAttribute(
   return AccessibleNode::GetPropertyOrARIAAttribute(ToElement(node), property);
 }
 
-bool AXObjectImpl::IsARIATextControl() const {
+bool AXObject::IsARIATextControl() const {
   return AriaRoleAttribute() == kTextFieldRole ||
          AriaRoleAttribute() == kSearchBoxRole ||
          AriaRoleAttribute() == kComboBoxRole;
 }
 
-bool AXObjectImpl::IsButton() const {
+bool AXObject::IsButton() const {
   AccessibilityRole role = RoleValue();
 
   return role == kButtonRole || role == kPopUpButtonRole ||
          role == kToggleButtonRole;
 }
 
-bool AXObjectImpl::IsCheckable() const {
+bool AXObject::IsCheckable() const {
   switch (RoleValue()) {
     case kCheckBoxRole:
     case kMenuItemCheckBoxRole:
@@ -425,7 +422,7 @@ bool AXObjectImpl::IsCheckable() const {
 // Because an AXMenuListOption (<option>) can
 // have an ARIA role of menuitemcheckbox/menuitemradio
 // yet does not inherit from AXNodeObject
-AccessibilityButtonState AXObjectImpl::CheckedState() const {
+AccessibilityButtonState AXObject::CheckedState() const {
   if (!IsCheckable())
     return kButtonStateOff;
 
@@ -461,7 +458,7 @@ AccessibilityButtonState AXObjectImpl::CheckedState() const {
   return kButtonStateOff;
 }
 
-bool AXObjectImpl::IsNativeInputInMixedState(const Node* node) {
+bool AXObject::IsNativeInputInMixedState(const Node* node) {
   if (!isHTMLInputElement(node))
     return false;
 
@@ -473,7 +470,7 @@ bool AXObjectImpl::IsNativeInputInMixedState(const Node* node) {
   return input->ShouldAppearIndeterminate();
 }
 
-bool AXObjectImpl::IsLandmarkRelated() const {
+bool AXObject::IsLandmarkRelated() const {
   switch (RoleValue()) {
     case kApplicationRole:
     case kArticleRole:
@@ -492,7 +489,7 @@ bool AXObjectImpl::IsLandmarkRelated() const {
   }
 }
 
-bool AXObjectImpl::IsMenuRelated() const {
+bool AXObject::IsMenuRelated() const {
   switch (RoleValue()) {
     case kMenuRole:
     case kMenuBarRole:
@@ -506,7 +503,7 @@ bool AXObjectImpl::IsMenuRelated() const {
   }
 }
 
-bool AXObjectImpl::IsPasswordFieldAndShouldHideValue() const {
+bool AXObject::IsPasswordFieldAndShouldHideValue() const {
   Settings* settings = GetDocument()->GetSettings();
   if (!settings || settings->GetAccessibilityPasswordValuesEnabled())
     return false;
@@ -514,7 +511,7 @@ bool AXObjectImpl::IsPasswordFieldAndShouldHideValue() const {
   return IsPasswordField();
 }
 
-bool AXObjectImpl::IsClickable() const {
+bool AXObject::IsClickable() const {
   switch (RoleValue()) {
     case kButtonRole:
     case kCheckBoxRole:
@@ -536,12 +533,12 @@ bool AXObjectImpl::IsClickable() const {
   }
 }
 
-bool AXObjectImpl::AccessibilityIsIgnored() const {
+bool AXObject::AccessibilityIsIgnored() const {
   UpdateCachedAttributeValuesIfNeeded();
   return cached_is_ignored_;
 }
 
-void AXObjectImpl::UpdateCachedAttributeValuesIfNeeded() const {
+void AXObject::UpdateCachedAttributeValuesIfNeeded() const {
   if (IsDetached())
     return;
 
@@ -562,26 +559,26 @@ void AXObjectImpl::UpdateCachedAttributeValuesIfNeeded() const {
   cached_is_ignored_ = ComputeAccessibilityIsIgnored();
   cached_live_region_root_ =
       IsLiveRegion()
-          ? const_cast<AXObjectImpl*>(this)
+          ? const_cast<AXObject*>(this)
           : (ParentObjectIfExists() ? ParentObjectIfExists()->LiveRegionRoot()
                                     : 0);
   cached_ancestor_exposes_active_descendant_ =
       ComputeAncestorExposesActiveDescendant();
 }
 
-bool AXObjectImpl::AccessibilityIsIgnoredByDefault(
+bool AXObject::AccessibilityIsIgnoredByDefault(
     IgnoredReasons* ignored_reasons) const {
   return DefaultObjectInclusion(ignored_reasons) == kIgnoreObject;
 }
 
-AXObjectInclusion AXObjectImpl::AccessibilityPlatformIncludesObject() const {
+AXObjectInclusion AXObject::AccessibilityPlatformIncludesObject() const {
   if (IsMenuListPopup() || IsMenuListOption())
     return kIncludeObject;
 
   return kDefaultBehavior;
 }
 
-AXObjectInclusion AXObjectImpl::DefaultObjectInclusion(
+AXObjectInclusion AXObject::DefaultObjectInclusion(
     IgnoredReasons* ignored_reasons) const {
   if (IsInertOrAriaHidden()) {
     if (ignored_reasons)
@@ -591,7 +588,7 @@ AXObjectInclusion AXObjectImpl::DefaultObjectInclusion(
 
   if (IsPresentationalChild()) {
     if (ignored_reasons) {
-      AXObjectImpl* ancestor = AncestorForWhichThisIsAPresentationalChild();
+      AXObject* ancestor = AncestorForWhichThisIsAPresentationalChild();
       ignored_reasons->push_back(
           IgnoredReason(kAXAncestorDisallowsChild, ancestor));
     }
@@ -601,25 +598,24 @@ AXObjectInclusion AXObjectImpl::DefaultObjectInclusion(
   return AccessibilityPlatformIncludesObject();
 }
 
-bool AXObjectImpl::IsInertOrAriaHidden() const {
+bool AXObject::IsInertOrAriaHidden() const {
   UpdateCachedAttributeValuesIfNeeded();
   return cached_is_inert_or_aria_hidden_;
 }
 
-bool AXObjectImpl::ComputeIsInertOrAriaHidden(
+bool AXObject::ComputeIsInertOrAriaHidden(
     IgnoredReasons* ignored_reasons) const {
   if (GetNode()) {
     if (GetNode()->IsInert()) {
       if (ignored_reasons) {
         HTMLDialogElement* dialog = GetActiveDialogElement(GetNode());
         if (dialog) {
-          AXObjectImpl* dialog_object = AxObjectCache().GetOrCreate(dialog);
-          if (dialog_object) {
+          AXObject* dialog_object = AxObjectCache().GetOrCreate(dialog);
+          if (dialog_object)
             ignored_reasons->push_back(
                 IgnoredReason(kAXActiveModalDialog, dialog_object));
-          } else {
+          else
             ignored_reasons->push_back(IgnoredReason(kAXInert));
-          }
         } else {
           // TODO(aboxhall): handle inert attribute if it eventuates
           ignored_reasons->push_back(IgnoredReason(kAXInert));
@@ -628,7 +624,7 @@ bool AXObjectImpl::ComputeIsInertOrAriaHidden(
       return true;
     }
   } else {
-    AXObjectImpl* parent = ParentObject();
+    AXObject* parent = ParentObject();
     if (parent && parent->IsInertOrAriaHidden()) {
       if (ignored_reasons)
         parent->ComputeIsInertOrAriaHidden(ignored_reasons);
@@ -636,15 +632,14 @@ bool AXObjectImpl::ComputeIsInertOrAriaHidden(
     }
   }
 
-  const AXObjectImpl* hidden_root = AriaHiddenRoot();
+  const AXObject* hidden_root = AriaHiddenRoot();
   if (hidden_root) {
     if (ignored_reasons) {
-      if (hidden_root == this) {
+      if (hidden_root == this)
         ignored_reasons->push_back(IgnoredReason(kAXAriaHidden));
-      } else {
+      else
         ignored_reasons->push_back(
             IgnoredReason(kAXAriaHiddenRoot, hidden_root));
-      }
     }
     return true;
   }
@@ -652,13 +647,13 @@ bool AXObjectImpl::ComputeIsInertOrAriaHidden(
   return false;
 }
 
-bool AXObjectImpl::IsDescendantOfLeafNode() const {
+bool AXObject::IsDescendantOfLeafNode() const {
   UpdateCachedAttributeValuesIfNeeded();
   return cached_is_descendant_of_leaf_node_;
 }
 
-AXObjectImpl* AXObjectImpl::LeafNodeAncestor() const {
-  if (AXObjectImpl* parent = ParentObject()) {
+AXObject* AXObject::LeafNodeAncestor() const {
+  if (AXObject* parent = ParentObject()) {
     if (!parent->CanHaveChildren())
       return parent;
 
@@ -668,9 +663,8 @@ AXObjectImpl* AXObjectImpl::LeafNodeAncestor() const {
   return 0;
 }
 
-const AXObjectImpl* AXObjectImpl::AriaHiddenRoot() const {
-  for (const AXObjectImpl* object = this; object;
-       object = object->ParentObject()) {
+const AXObject* AXObject::AriaHiddenRoot() const {
+  for (const AXObject* object = this; object; object = object->ParentObject()) {
     if (EqualIgnoringASCIICase(object->GetAttribute(aria_hiddenAttr), "true"))
       return object;
   }
@@ -678,54 +672,53 @@ const AXObjectImpl* AXObjectImpl::AriaHiddenRoot() const {
   return 0;
 }
 
-bool AXObjectImpl::IsDescendantOfDisabledNode() const {
+bool AXObject::IsDescendantOfDisabledNode() const {
   UpdateCachedAttributeValuesIfNeeded();
   return cached_is_descendant_of_disabled_node_;
 }
 
-const AXObjectImpl* AXObjectImpl::DisabledAncestor() const {
+const AXObject* AXObject::DisabledAncestor() const {
   const AtomicString& disabled = GetAttribute(aria_disabledAttr);
   if (EqualIgnoringASCIICase(disabled, "true"))
     return this;
   if (EqualIgnoringASCIICase(disabled, "false"))
     return 0;
 
-  if (AXObjectImpl* parent = ParentObject())
+  if (AXObject* parent = ParentObject())
     return parent->DisabledAncestor();
 
   return 0;
 }
 
-bool AXObjectImpl::LastKnownIsIgnoredValue() {
-  if (last_known_is_ignored_value_ == kDefaultBehavior) {
+bool AXObject::LastKnownIsIgnoredValue() {
+  if (last_known_is_ignored_value_ == kDefaultBehavior)
     last_known_is_ignored_value_ =
         AccessibilityIsIgnored() ? kIgnoreObject : kIncludeObject;
-  }
 
   return last_known_is_ignored_value_ == kIgnoreObject;
 }
 
-void AXObjectImpl::SetLastKnownIsIgnoredValue(bool is_ignored) {
+void AXObject::SetLastKnownIsIgnoredValue(bool is_ignored) {
   last_known_is_ignored_value_ = is_ignored ? kIgnoreObject : kIncludeObject;
 }
 
-bool AXObjectImpl::HasInheritedPresentationalRole() const {
+bool AXObject::HasInheritedPresentationalRole() const {
   UpdateCachedAttributeValuesIfNeeded();
   return cached_has_inherited_presentational_role_;
 }
 
-bool AXObjectImpl::IsPresentationalChild() const {
+bool AXObject::IsPresentationalChild() const {
   UpdateCachedAttributeValuesIfNeeded();
   return cached_is_presentational_child_;
 }
 
-bool AXObjectImpl::AncestorExposesActiveDescendant() const {
+bool AXObject::AncestorExposesActiveDescendant() const {
   UpdateCachedAttributeValuesIfNeeded();
   return cached_ancestor_exposes_active_descendant_;
 }
 
-bool AXObjectImpl::ComputeAncestorExposesActiveDescendant() const {
-  const AXObjectImpl* parent = ParentObjectUnignored();
+bool AXObject::ComputeAncestorExposesActiveDescendant() const {
+  const AXObject* parent = ParentObjectUnignored();
   if (!parent)
     return false;
 
@@ -740,7 +733,7 @@ bool AXObjectImpl::ComputeAncestorExposesActiveDescendant() const {
 // Simplify whitespace, but preserve a single leading and trailing whitespace
 // character if it's present.
 // static
-String AXObjectImpl::CollapseWhitespace(const String& str) {
+String AXObject::CollapseWhitespace(const String& str) {
   StringBuilder result;
   if (!str.IsEmpty() && IsHTMLSpace<UChar>(str[0]))
     result.Append(' ');
@@ -750,15 +743,15 @@ String AXObjectImpl::CollapseWhitespace(const String& str) {
   return result.ToString();
 }
 
-String AXObjectImpl::ComputedName() const {
+String AXObject::ComputedName() const {
   AXNameFrom name_from;
-  AXObjectImpl::AXObjectVector name_objects;
+  AXObject::AXObjectVector name_objects;
   return GetName(name_from, &name_objects);
 }
 
-String AXObjectImpl::GetName(AXNameFrom& name_from,
-                             AXObjectImpl::AXObjectVector* name_objects) const {
-  HeapHashSet<Member<const AXObjectImpl>> visited;
+String AXObject::GetName(AXNameFrom& name_from,
+                         AXObject::AXObjectVector* name_objects) const {
+  HeapHashSet<Member<const AXObject>> visited;
   AXRelatedObjectVector related_objects;
   String text = TextAlternative(false, false, visited, name_from,
                                 &related_objects, nullptr);
@@ -777,7 +770,7 @@ String AXObjectImpl::GetName(AXNameFrom& name_from,
   return text;
 }
 
-String AXObjectImpl::GetName(NameSources* name_sources) const {
+String AXObject::GetName(NameSources* name_sources) const {
   AXObjectSet visited;
   AXNameFrom tmp_name_from;
   AXRelatedObjectVector tmp_related_objects;
@@ -787,10 +780,9 @@ String AXObjectImpl::GetName(NameSources* name_sources) const {
   return text;
 }
 
-String AXObjectImpl::RecursiveTextAlternative(
-    const AXObjectImpl& ax_obj,
-    bool in_aria_labelled_by_traversal,
-    AXObjectSet& visited) {
+String AXObject::RecursiveTextAlternative(const AXObject& ax_obj,
+                                          bool in_aria_labelled_by_traversal,
+                                          AXObjectSet& visited) {
   if (visited.Contains(&ax_obj) && !in_aria_labelled_by_traversal)
     return String();
 
@@ -799,7 +791,7 @@ String AXObjectImpl::RecursiveTextAlternative(
                                 tmp_name_from, nullptr, nullptr);
 }
 
-bool AXObjectImpl::IsHiddenForTextAlternativeCalculation() const {
+bool AXObject::IsHiddenForTextAlternativeCalculation() const {
   if (EqualIgnoringASCIICase(GetAttribute(aria_hiddenAttr), "false"))
     return false;
 
@@ -826,13 +818,13 @@ bool AXObjectImpl::IsHiddenForTextAlternativeCalculation() const {
   return false;
 }
 
-String AXObjectImpl::AriaTextAlternative(bool recursive,
-                                         bool in_aria_labelled_by_traversal,
-                                         AXObjectSet& visited,
-                                         AXNameFrom& name_from,
-                                         AXRelatedObjectVector* related_objects,
-                                         NameSources* name_sources,
-                                         bool* found_text_alternative) const {
+String AXObject::AriaTextAlternative(bool recursive,
+                                     bool in_aria_labelled_by_traversal,
+                                     AXObjectSet& visited,
+                                     AXNameFrom& name_from,
+                                     AXRelatedObjectVector* related_objects,
+                                     NameSources* name_sources,
+                                     bool* found_text_alternative) const {
   String text_alternative;
   bool already_visited = visited.Contains(this);
   visited.insert(this);
@@ -912,7 +904,7 @@ String AXObjectImpl::AriaTextAlternative(bool recursive,
   return text_alternative;
 }
 
-String AXObjectImpl::TextFromElements(
+String AXObject::TextFromElements(
     bool in_aria_labelledby_traversal,
     AXObjectSet& visited,
     HeapVector<Member<Element>>& elements,
@@ -922,7 +914,7 @@ String AXObjectImpl::TextFromElements(
   AXRelatedObjectVector local_related_objects;
 
   for (const auto& element : elements) {
-    AXObjectImpl* ax_element = AxObjectCache().GetOrCreate(element);
+    AXObject* ax_element = AxObjectCache().GetOrCreate(element);
     if (ax_element) {
       found_valid_element = true;
 
@@ -944,9 +936,8 @@ String AXObjectImpl::TextFromElements(
   return accumulated_text.ToString();
 }
 
-void AXObjectImpl::TokenVectorFromAttribute(
-    Vector<String>& tokens,
-    const QualifiedName& attribute) const {
+void AXObject::TokenVectorFromAttribute(Vector<String>& tokens,
+                                        const QualifiedName& attribute) const {
   Node* node = this->GetNode();
   if (!node || !node->IsElementNode())
     return;
@@ -959,8 +950,8 @@ void AXObjectImpl::TokenVectorFromAttribute(
   attribute_value.Split(' ', tokens);
 }
 
-void AXObjectImpl::ElementsFromAttribute(HeapVector<Member<Element>>& elements,
-                                         const QualifiedName& attribute) const {
+void AXObject::ElementsFromAttribute(HeapVector<Member<Element>>& elements,
+                                     const QualifiedName& attribute) const {
   Vector<String> ids;
   TokenVectorFromAttribute(ids, attribute);
   if (ids.IsEmpty())
@@ -973,7 +964,7 @@ void AXObjectImpl::ElementsFromAttribute(HeapVector<Member<Element>>& elements,
   }
 }
 
-void AXObjectImpl::AriaLabelledbyElementVector(
+void AXObject::AriaLabelledbyElementVector(
     HeapVector<Member<Element>>& elements) const {
   // Try both spellings, but prefer aria-labelledby, which is the official spec.
   ElementsFromAttribute(elements, aria_labelledbyAttr);
@@ -981,7 +972,7 @@ void AXObjectImpl::AriaLabelledbyElementVector(
     ElementsFromAttribute(elements, aria_labeledbyAttr);
 }
 
-String AXObjectImpl::TextFromAriaLabelledby(
+String AXObject::TextFromAriaLabelledby(
     AXObjectSet& visited,
     AXRelatedObjectVector* related_objects) const {
   HeapVector<Member<Element>> elements;
@@ -989,7 +980,7 @@ String AXObjectImpl::TextFromAriaLabelledby(
   return TextFromElements(true, visited, elements, related_objects);
 }
 
-String AXObjectImpl::TextFromAriaDescribedby(
+String AXObject::TextFromAriaDescribedby(
     AXRelatedObjectVector* related_objects) const {
   AXObjectSet visited;
   HeapVector<Member<Element>> elements;
@@ -997,18 +988,18 @@ String AXObjectImpl::TextFromAriaDescribedby(
   return TextFromElements(true, visited, elements, related_objects);
 }
 
-RGBA32 AXObjectImpl::BackgroundColor() const {
+RGBA32 AXObject::BackgroundColor() const {
   UpdateCachedAttributeValuesIfNeeded();
   return cached_background_color_;
 }
 
-AccessibilityOrientation AXObjectImpl::Orientation() const {
+AccessibilityOrientation AXObject::Orientation() const {
   // In ARIA 1.1, the default value for aria-orientation changed from
   // horizontal to undefined.
   return kAccessibilityOrientationUndefined;
 }
 
-AXSupportedAction AXObjectImpl::Action() const {
+AXSupportedAction AXObject::Action() const {
   if (!ActionElement())
     return AXSupportedAction::kNone;
 
@@ -1033,7 +1024,7 @@ AXSupportedAction AXObjectImpl::Action() const {
   }
 }
 
-bool AXObjectImpl::IsMultiline() const {
+bool AXObject::IsMultiline() const {
   Node* node = this->GetNode();
   if (!node)
     return false;
@@ -1050,11 +1041,11 @@ bool AXObjectImpl::IsMultiline() const {
   return EqualIgnoringASCIICase(GetAttribute(aria_multilineAttr), "true");
 }
 
-bool AXObjectImpl::AriaPressedIsPresent() const {
+bool AXObject::AriaPressedIsPresent() const {
   return !GetAttribute(aria_pressedAttr).IsEmpty();
 }
 
-bool AXObjectImpl::SupportsActiveDescendant() const {
+bool AXObject::SupportsActiveDescendant() const {
   // According to the ARIA Spec, all ARIA composite widgets, ARIA text boxes
   // and ARIA groups should be able to expose an active descendant.
   // Implicitly, <input> and <textarea> elements should also have this ability.
@@ -1079,19 +1070,19 @@ bool AXObjectImpl::SupportsActiveDescendant() const {
   }
 }
 
-bool AXObjectImpl::SupportsARIAAttributes() const {
+bool AXObject::SupportsARIAAttributes() const {
   return IsLiveRegion() || SupportsARIADragging() || SupportsARIADropping() ||
          SupportsARIAFlowTo() || SupportsARIAOwns() ||
          HasAttribute(aria_labelAttr);
 }
 
-bool AXObjectImpl::SupportsRangeValue() const {
+bool AXObject::SupportsRangeValue() const {
   return IsProgressIndicator() || IsMeter() || IsSlider() || IsScrollbar() ||
          IsSpinButton();
 }
 
-bool AXObjectImpl::SupportsSetSizeAndPosInSet() const {
-  AXObjectImpl* parent = ParentObject();
+bool AXObject::SupportsSetSizeAndPosInSet() const {
+  AXObject* parent = ParentObject();
   if (!parent)
     return false;
 
@@ -1111,7 +1102,7 @@ bool AXObjectImpl::SupportsSetSizeAndPosInSet() const {
   return false;
 }
 
-int AXObjectImpl::IndexInParent() const {
+int AXObject::IndexInParent() const {
   if (!ParentObject())
     return 0;
 
@@ -1126,43 +1117,42 @@ int AXObjectImpl::IndexInParent() const {
   return 0;
 }
 
-bool AXObjectImpl::IsLiveRegion() const {
+bool AXObject::IsLiveRegion() const {
   const AtomicString& live_region = LiveRegionStatus();
   return EqualIgnoringASCIICase(live_region, "polite") ||
          EqualIgnoringASCIICase(live_region, "assertive");
 }
 
-AXObjectImpl* AXObjectImpl::LiveRegionRoot() const {
+AXObject* AXObject::LiveRegionRoot() const {
   UpdateCachedAttributeValuesIfNeeded();
   return cached_live_region_root_;
 }
 
-const AtomicString& AXObjectImpl::ContainerLiveRegionStatus() const {
+const AtomicString& AXObject::ContainerLiveRegionStatus() const {
   UpdateCachedAttributeValuesIfNeeded();
   return cached_live_region_root_ ? cached_live_region_root_->LiveRegionStatus()
                                   : g_null_atom;
 }
 
-const AtomicString& AXObjectImpl::ContainerLiveRegionRelevant() const {
+const AtomicString& AXObject::ContainerLiveRegionRelevant() const {
   UpdateCachedAttributeValuesIfNeeded();
   return cached_live_region_root_
              ? cached_live_region_root_->LiveRegionRelevant()
              : g_null_atom;
 }
 
-bool AXObjectImpl::ContainerLiveRegionAtomic() const {
+bool AXObject::ContainerLiveRegionAtomic() const {
   UpdateCachedAttributeValuesIfNeeded();
   return cached_live_region_root_ &&
          cached_live_region_root_->LiveRegionAtomic();
 }
 
-bool AXObjectImpl::ContainerLiveRegionBusy() const {
+bool AXObject::ContainerLiveRegionBusy() const {
   UpdateCachedAttributeValuesIfNeeded();
   return cached_live_region_root_ && cached_live_region_root_->LiveRegionBusy();
 }
 
-AXObjectImpl* AXObjectImpl::ElementAccessibilityHitTest(
-    const IntPoint& point) const {
+AXObject* AXObject::ElementAccessibilityHitTest(const IntPoint& point) const {
   // Check if there are any mock elements that need to be handled.
   for (const auto& child : children_) {
     if (child->IsMockObject() &&
@@ -1170,16 +1160,16 @@ AXObjectImpl* AXObjectImpl::ElementAccessibilityHitTest(
       return child->ElementAccessibilityHitTest(point);
   }
 
-  return const_cast<AXObjectImpl*>(this);
+  return const_cast<AXObject*>(this);
 }
 
-const AXObjectImpl::AXObjectVector& AXObjectImpl::Children() {
+const AXObject::AXObjectVector& AXObject::Children() {
   UpdateChildrenIfNecessary();
 
   return children_;
 }
 
-AXObjectImpl* AXObjectImpl::ParentObject() const {
+AXObject* AXObject::ParentObject() const {
   if (IsDetached())
     return 0;
 
@@ -1192,7 +1182,7 @@ AXObjectImpl* AXObjectImpl::ParentObject() const {
   return ComputeParent();
 }
 
-AXObjectImpl* AXObjectImpl::ParentObjectIfExists() const {
+AXObject* AXObject::ParentObjectIfExists() const {
   if (IsDetached())
     return 0;
 
@@ -1202,8 +1192,8 @@ AXObjectImpl* AXObjectImpl::ParentObjectIfExists() const {
   return ComputeParentIfExists();
 }
 
-AXObjectImpl* AXObjectImpl::ParentObjectUnignored() const {
-  AXObjectImpl* parent;
+AXObject* AXObject::ParentObjectUnignored() const {
+  AXObject* parent;
   for (parent = ParentObject(); parent && parent->AccessibilityIsIgnored();
        parent = parent->ParentObject()) {
   }
@@ -1211,12 +1201,12 @@ AXObjectImpl* AXObjectImpl::ParentObjectUnignored() const {
   return parent;
 }
 
-void AXObjectImpl::UpdateChildrenIfNecessary() {
+void AXObject::UpdateChildrenIfNecessary() {
   if (!HasChildren())
     AddChildren();
 }
 
-void AXObjectImpl::ClearChildren() {
+void AXObject::ClearChildren() {
   // Detach all weak pointers from objects to their parents.
   for (const auto& child : children_)
     child->DetachFromParent();
@@ -1225,7 +1215,7 @@ void AXObjectImpl::ClearChildren() {
   have_children_ = false;
 }
 
-Document* AXObjectImpl::GetDocument() const {
+Document* AXObject::GetDocument() const {
   FrameView* frame_view = DocumentFrameView();
   if (!frame_view)
     return 0;
@@ -1233,8 +1223,8 @@ Document* AXObjectImpl::GetDocument() const {
   return frame_view->GetFrame().GetDocument();
 }
 
-FrameView* AXObjectImpl::DocumentFrameView() const {
-  const AXObjectImpl* object = this;
+FrameView* AXObject::DocumentFrameView() const {
+  const AXObject* object = this;
   while (object && !object->IsAXLayoutObject())
     object = object->ParentObject();
 
@@ -1244,12 +1234,12 @@ FrameView* AXObjectImpl::DocumentFrameView() const {
   return object->DocumentFrameView();
 }
 
-String AXObjectImpl::Language() const {
+String AXObject::Language() const {
   const AtomicString& lang = GetAttribute(langAttr);
   if (!lang.IsEmpty())
     return lang;
 
-  AXObjectImpl* parent = ParentObject();
+  AXObject* parent = ParentObject();
 
   // As a last resort, fall back to the content language specified in the meta
   // tag.
@@ -1263,7 +1253,7 @@ String AXObjectImpl::Language() const {
   return parent->Language();
 }
 
-bool AXObjectImpl::HasAttribute(const QualifiedName& attribute) const {
+bool AXObject::HasAttribute(const QualifiedName& attribute) const {
   Node* element_node = GetNode();
   if (!element_node)
     return false;
@@ -1275,7 +1265,7 @@ bool AXObjectImpl::HasAttribute(const QualifiedName& attribute) const {
   return element->FastHasAttribute(attribute);
 }
 
-const AtomicString& AXObjectImpl::GetAttribute(
+const AtomicString& AXObject::GetAttribute(
     const QualifiedName& attribute) const {
   Node* element_node = GetNode();
   if (!element_node)
@@ -1292,11 +1282,11 @@ const AtomicString& AXObjectImpl::GetAttribute(
 // Scrollable containers.
 //
 
-bool AXObjectImpl::IsScrollableContainer() const {
+bool AXObject::IsScrollableContainer() const {
   return !!GetScrollableAreaIfScrollable();
 }
 
-IntPoint AXObjectImpl::GetScrollOffset() const {
+IntPoint AXObject::GetScrollOffset() const {
   ScrollableArea* area = GetScrollableAreaIfScrollable();
   if (!area)
     return IntPoint();
@@ -1305,7 +1295,7 @@ IntPoint AXObjectImpl::GetScrollOffset() const {
                   area->ScrollOffsetInt().Height());
 }
 
-IntPoint AXObjectImpl::MinimumScrollOffset() const {
+IntPoint AXObject::MinimumScrollOffset() const {
   ScrollableArea* area = GetScrollableAreaIfScrollable();
   if (!area)
     return IntPoint();
@@ -1314,7 +1304,7 @@ IntPoint AXObjectImpl::MinimumScrollOffset() const {
                   area->MinimumScrollOffsetInt().Height());
 }
 
-IntPoint AXObjectImpl::MaximumScrollOffset() const {
+IntPoint AXObject::MaximumScrollOffset() const {
   ScrollableArea* area = GetScrollableAreaIfScrollable();
   if (!area)
     return IntPoint();
@@ -1323,7 +1313,7 @@ IntPoint AXObjectImpl::MaximumScrollOffset() const {
                   area->MaximumScrollOffsetInt().Height());
 }
 
-void AXObjectImpl::SetScrollOffset(const IntPoint& offset) const {
+void AXObject::SetScrollOffset(const IntPoint& offset) const {
   ScrollableArea* area = GetScrollableAreaIfScrollable();
   if (!area)
     return;
@@ -1333,10 +1323,9 @@ void AXObjectImpl::SetScrollOffset(const IntPoint& offset) const {
                         kProgrammaticScroll);
 }
 
-void AXObjectImpl::GetRelativeBounds(
-    AXObjectImpl** out_container,
-    FloatRect& out_bounds_in_container,
-    SkMatrix44& out_container_transform) const {
+void AXObject::GetRelativeBounds(AXObject** out_container,
+                                 FloatRect& out_bounds_in_container,
+                                 SkMatrix44& out_container_transform) const {
   *out_container = nullptr;
   out_bounds_in_container = FloatRect();
   out_container_transform.setIdentity();
@@ -1358,10 +1347,9 @@ void AXObjectImpl::GetRelativeBounds(
     return;
 
   if (IsWebArea()) {
-    if (layout_object->GetFrame()->View()) {
+    if (layout_object->GetFrame()->View())
       out_bounds_in_container.SetSize(
           FloatSize(layout_object->GetFrame()->View()->ContentsSize()));
-    }
     return;
   }
 
@@ -1369,7 +1357,7 @@ void AXObjectImpl::GetRelativeBounds(
   // accessibility tree, and its LayoutObject must be an ancestor in the layout
   // tree. Get the first such ancestor that's either scrollable or has a paint
   // layer.
-  AXObjectImpl* container = ParentObjectUnignored();
+  AXObject* container = ParentObjectUnignored();
   LayoutObject* container_layout_object = nullptr;
   while (container) {
     container_layout_object = container->GetLayoutObject();
@@ -1411,8 +1399,8 @@ void AXObjectImpl::GetRelativeBounds(
   }
 }
 
-LayoutRect AXObjectImpl::GetBoundsInFrameCoordinates() const {
-  AXObjectImpl* container = nullptr;
+LayoutRect AXObject::GetBoundsInFrameCoordinates() const {
+  AXObject* container = nullptr;
   FloatRect bounds;
   SkMatrix44 transform;
   GetRelativeBounds(&container, bounds, transform);
@@ -1436,7 +1424,7 @@ LayoutRect AXObjectImpl::GetBoundsInFrameCoordinates() const {
 // Modify or take an action on an object.
 //
 
-bool AXObjectImpl::Press() {
+bool AXObject::Press() {
   Document* document = GetDocument();
   if (!document)
     return false;
@@ -1457,7 +1445,7 @@ bool AXObjectImpl::Press() {
   return false;
 }
 
-void AXObjectImpl::ScrollToMakeVisible() const {
+void AXObject::ScrollToMakeVisible() const {
   IntRect object_rect = PixelSnappedIntRect(GetBoundsInFrameCoordinates());
   object_rect.SetLocation(IntPoint());
   ScrollToMakeVisibleWithSubFocus(object_rect);
@@ -1560,10 +1548,9 @@ static int ComputeBestScrollOffset(int current_scroll_offset,
   return (object_min + object_max - viewport_min - viewport_max) / 2;
 }
 
-void AXObjectImpl::ScrollToMakeVisibleWithSubFocus(
-    const IntRect& subfocus) const {
+void AXObject::ScrollToMakeVisibleWithSubFocus(const IntRect& subfocus) const {
   // Search up the parent chain until we find the first one that's scrollable.
-  const AXObjectImpl* scroll_parent = ParentObject() ? ParentObject() : this;
+  const AXObject* scroll_parent = ParentObject() ? ParentObject() : this;
   ScrollableArea* scrollable_area = 0;
   while (scroll_parent) {
     scrollable_area = scroll_parent->GetScrollableAreaIfScrollable();
@@ -1611,16 +1598,16 @@ void AXObjectImpl::ScrollToMakeVisibleWithSubFocus(
   } else {
     // To minimize the number of notifications, only fire one on the topmost
     // object that has been scrolled.
-    AxObjectCache().PostNotification(const_cast<AXObjectImpl*>(this),
+    AxObjectCache().PostNotification(const_cast<AXObject*>(this),
                                      AXObjectCacheImpl::kAXLocationChanged);
   }
 }
 
-void AXObjectImpl::ScrollToGlobalPoint(const IntPoint& global_point) const {
+void AXObject::ScrollToGlobalPoint(const IntPoint& global_point) const {
   // Search up the parent chain and create a vector of all scrollable parent
   // objects and ending with this object itself.
-  HeapVector<Member<const AXObjectImpl>> objects;
-  AXObjectImpl* parent_object;
+  HeapVector<Member<const AXObject>> objects;
+  AXObject* parent_object;
   for (parent_object = this->ParentObject(); parent_object;
        parent_object = parent_object->ParentObject()) {
     if (parent_object->GetScrollableAreaIfScrollable())
@@ -1634,8 +1621,8 @@ void AXObjectImpl::ScrollToGlobalPoint(const IntPoint& global_point) const {
   IntPoint point = global_point;
   size_t levels = objects.size() - 1;
   for (size_t i = 0; i < levels; i++) {
-    const AXObjectImpl* outer = objects[i];
-    const AXObjectImpl* inner = objects[i + 1];
+    const AXObject* outer = objects[i];
+    const AXObject* inner = objects[i + 1];
     ScrollableArea* scrollable_area = outer->GetScrollableAreaIfScrollable();
 
     IntRect inner_rect =
@@ -1684,14 +1671,14 @@ void AXObjectImpl::ScrollToGlobalPoint(const IntPoint& global_point) const {
                                    AXObjectCacheImpl::kAXLocationChanged);
 }
 
-void AXObjectImpl::SetSequentialFocusNavigationStartingPoint() {
+void AXObject::SetSequentialFocusNavigationStartingPoint() {
   // Call it on the nearest ancestor that overrides this with a specific
   // implementation.
   if (ParentObject())
     ParentObject()->SetSequentialFocusNavigationStartingPoint();
 }
 
-void AXObjectImpl::NotifyIfIgnoredValueChanged() {
+void AXObject::NotifyIfIgnoredValueChanged() {
   bool is_ignored = AccessibilityIsIgnored();
   if (LastKnownIsIgnoredValue() != is_ignored) {
     AxObjectCache().ChildrenChanged(ParentObject());
@@ -1699,12 +1686,12 @@ void AXObjectImpl::NotifyIfIgnoredValueChanged() {
   }
 }
 
-void AXObjectImpl::SelectionChanged() {
-  if (AXObjectImpl* parent = ParentObjectIfExists())
+void AXObject::SelectionChanged() {
+  if (AXObject* parent = ParentObjectIfExists())
     parent->SelectionChanged();
 }
 
-int AXObjectImpl::LineForPosition(const VisiblePosition& position) const {
+int AXObject::LineForPosition(const VisiblePosition& position) const {
   if (position.IsNull() || !GetNode())
     return -1;
 
@@ -1733,18 +1720,18 @@ int AXObjectImpl::LineForPosition(const VisiblePosition& position) const {
   return line_count;
 }
 
-bool AXObjectImpl::IsARIAControl(AccessibilityRole aria_role) {
+bool AXObject::IsARIAControl(AccessibilityRole aria_role) {
   return IsARIAInput(aria_role) || aria_role == kButtonRole ||
          aria_role == kComboBoxRole || aria_role == kSliderRole;
 }
 
-bool AXObjectImpl::IsARIAInput(AccessibilityRole aria_role) {
+bool AXObject::IsARIAInput(AccessibilityRole aria_role) {
   return aria_role == kRadioButtonRole || aria_role == kCheckBoxRole ||
          aria_role == kTextFieldRole || aria_role == kSwitchRole ||
          aria_role == kSearchBoxRole;
 }
 
-AccessibilityRole AXObjectImpl::AriaRoleToWebCoreRole(const String& value) {
+AccessibilityRole AXObject::AriaRoleToWebCoreRole(const String& value) {
   DCHECK(!value.IsEmpty());
 
   static const ARIARoleMap* role_map = CreateARIARoleMap();
@@ -1761,7 +1748,7 @@ AccessibilityRole AXObjectImpl::AriaRoleToWebCoreRole(const String& value) {
   return role;
 }
 
-bool AXObjectImpl::IsInsideFocusableElementOrARIAWidget(const Node& node) {
+bool AXObject::IsInsideFocusableElementOrARIAWidget(const Node& node) {
   const Node* cur_node = &node;
   do {
     if (cur_node->IsElementNode()) {
@@ -1769,7 +1756,7 @@ bool AXObjectImpl::IsInsideFocusableElementOrARIAWidget(const Node& node) {
       if (element->IsFocusable())
         return true;
       String role = element->getAttribute("role");
-      if (!role.IsEmpty() && AXObjectImpl::IncludesARIAWidgetRole(role))
+      if (!role.IsEmpty() && AXObject::IncludesARIAWidgetRole(role))
         return true;
       if (HasInteractiveARIAAttribute(*element))
         return true;
@@ -1779,7 +1766,7 @@ bool AXObjectImpl::IsInsideFocusableElementOrARIAWidget(const Node& node) {
   return false;
 }
 
-bool AXObjectImpl::HasInteractiveARIAAttribute(const Element& element) {
+bool AXObject::HasInteractiveARIAAttribute(const Element& element) {
   for (size_t i = 0; i < WTF_ARRAY_LENGTH(g_aria_interactive_widget_attributes);
        ++i) {
     const char* attribute = g_aria_interactive_widget_attributes[i];
@@ -1790,7 +1777,7 @@ bool AXObjectImpl::HasInteractiveARIAAttribute(const Element& element) {
   return false;
 }
 
-bool AXObjectImpl::IncludesARIAWidgetRole(const String& role) {
+bool AXObject::IncludesARIAWidgetRole(const String& role) {
   static const HashSet<String, CaseFoldingHash>* role_set =
       CreateARIARoleWidgetSet();
 
@@ -1803,7 +1790,7 @@ bool AXObjectImpl::IncludesARIAWidgetRole(const String& role) {
   return false;
 }
 
-bool AXObjectImpl::NameFromContents() const {
+bool AXObject::NameFromContents() const {
   // ARIA 1.1, section 5.2.7.5.
   switch (RoleValue()) {
     case kAnchorRole:
@@ -1848,7 +1835,7 @@ bool AXObjectImpl::NameFromContents() const {
   }
 }
 
-AccessibilityRole AXObjectImpl::ButtonRoleType() const {
+AccessibilityRole AXObject::ButtonRoleType() const {
   // If aria-pressed is present, then it should be exposed as a toggle button.
   // http://www.w3.org/TR/wai-aria/states_and_properties#aria-pressed
   if (AriaPressedIsPresent())
@@ -1861,20 +1848,20 @@ AccessibilityRole AXObjectImpl::ButtonRoleType() const {
   return kButtonRole;
 }
 
-const AtomicString& AXObjectImpl::RoleName(AccessibilityRole role) {
+const AtomicString& AXObject::RoleName(AccessibilityRole role) {
   static const Vector<AtomicString>* role_name_vector = CreateRoleNameVector();
 
   return role_name_vector->at(role);
 }
 
-const AtomicString& AXObjectImpl::InternalRoleName(AccessibilityRole role) {
+const AtomicString& AXObject::InternalRoleName(AccessibilityRole role) {
   static const Vector<AtomicString>* internal_role_name_vector =
       CreateInternalRoleNameVector();
 
   return internal_role_name_vector->at(role);
 }
 
-DEFINE_TRACE(AXObjectImpl) {
+DEFINE_TRACE(AXObject) {
   visitor->Trace(children_);
   visitor->Trace(parent_);
   visitor->Trace(cached_live_region_root_);

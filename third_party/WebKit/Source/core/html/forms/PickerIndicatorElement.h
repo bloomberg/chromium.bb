@@ -65,7 +65,7 @@ class PickerIndicatorElement final : public HTMLDivElement,
   void ClosePopup();
   bool WillRespondToMouseClickEvents() override;
   void RemovePickerIndicatorOwner() { picker_indicator_owner_ = nullptr; }
-  AXObjectImpl* PopupRootAXObject() const;
+  AXObject* PopupRootAXObject() const;
 
   // DateTimeChooserClient implementation.
   Element& OwnerElement() const override;

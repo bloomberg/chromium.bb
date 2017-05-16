@@ -1884,7 +1884,7 @@ void HTMLInputElement::DidNotifySubtreeInsertionsToDocument() {
   ListAttributeTargetChanged();
 }
 
-AXObjectImpl* HTMLInputElement::PopupRootAXObject() {
+AXObject* HTMLInputElement::PopupRootAXObject() {
   return input_type_view_->PopupRootAXObject();
 }
 

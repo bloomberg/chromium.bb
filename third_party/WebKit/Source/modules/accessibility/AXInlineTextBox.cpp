@@ -41,8 +41,7 @@ using namespace HTMLNames;
 AXInlineTextBox::AXInlineTextBox(
     PassRefPtr<AbstractInlineTextBox> inline_text_box,
     AXObjectCacheImpl& ax_object_cache)
-    : AXObjectImpl(ax_object_cache),
-      inline_text_box_(std::move(inline_text_box)) {}
+    : AXObject(ax_object_cache), inline_text_box_(std::move(inline_text_box)) {}
 
 AXInlineTextBox* AXInlineTextBox::Create(
     PassRefPtr<AbstractInlineTextBox> inline_text_box,
@@ -53,12 +52,12 @@ AXInlineTextBox* AXInlineTextBox::Create(
 void AXInlineTextBox::Init() {}
 
 void AXInlineTextBox::Detach() {
-  AXObjectImpl::Detach();
+  AXObject::Detach();
   inline_text_box_ = nullptr;
 }
 
 void AXInlineTextBox::GetRelativeBounds(
-    AXObjectImpl** out_container,
+    AXObject** out_container,
     FloatRect& out_bounds_in_container,
     SkMatrix44& out_container_transform) const {
   *out_container = nullptr;
@@ -82,7 +81,7 @@ void AXInlineTextBox::GetRelativeBounds(
 
 bool AXInlineTextBox::ComputeAccessibilityIsIgnored(
     IgnoredReasons* ignored_reasons) const {
-  AXObjectImpl* parent = ParentObject();
+  AXObject* parent = ParentObject();
   if (!parent)
     return false;
 
@@ -124,9 +123,8 @@ void AXInlineTextBox::GetWordBoundaries(Vector<AXRange>& words) const {
         AXRange(word_boundaries[i].start_index, word_boundaries[i].end_index);
 }
 
-String AXInlineTextBox::GetName(
-    AXNameFrom& name_from,
-    AXObjectImpl::AXObjectVector* name_objects) const {
+String AXInlineTextBox::GetName(AXNameFrom& name_from,
+                                AXObject::AXObjectVector* name_objects) const {
   if (!inline_text_box_)
     return String();
 
@@ -134,7 +132,7 @@ String AXInlineTextBox::GetName(
   return inline_text_box_->GetText();
 }
 
-AXObjectImpl* AXInlineTextBox::ComputeParent() const {
+AXObject* AXInlineTextBox::ComputeParent() const {
   DCHECK(!IsDetached());
   if (!inline_text_box_ || !ax_object_cache_)
     return 0;
@@ -148,7 +146,7 @@ AXObjectImpl* AXInlineTextBox::ComputeParent() const {
 // top to bottom and bottom to top via the CSS writing-mode property.
 AccessibilityTextDirection AXInlineTextBox::GetTextDirection() const {
   if (!inline_text_box_)
-    return AXObjectImpl::GetTextDirection();
+    return AXObject::GetTextDirection();
 
   switch (inline_text_box_->GetDirection()) {
     case AbstractInlineTextBox::kLeftToRight:
@@ -161,10 +159,10 @@ AccessibilityTextDirection AXInlineTextBox::GetTextDirection() const {
       return kAccessibilityTextDirectionBTT;
   }
 
-  return AXObjectImpl::GetTextDirection();
+  return AXObject::GetTextDirection();
 }
 
-AXObjectImpl* AXInlineTextBox::NextOnLine() const {
+AXObject* AXInlineTextBox::NextOnLine() const {
   RefPtr<AbstractInlineTextBox> next_on_line = inline_text_box_->NextOnLine();
   if (next_on_line)
     return ax_object_cache_->GetOrCreate(next_on_line.Get());
@@ -175,7 +173,7 @@ AXObjectImpl* AXInlineTextBox::NextOnLine() const {
   return ParentObject()->NextOnLine();
 }
 
-AXObjectImpl* AXInlineTextBox::PreviousOnLine() const {
+AXObject* AXInlineTextBox::PreviousOnLine() const {
   RefPtr<AbstractInlineTextBox> previous_on_line =
       inline_text_box_->PreviousOnLine();
   if (previous_on_line)

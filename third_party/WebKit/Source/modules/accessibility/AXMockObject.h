@@ -27,13 +27,13 @@
 #define AXMockObject_h
 
 #include "modules/ModulesExport.h"
-#include "modules/accessibility/AXObjectImpl.h"
+#include "modules/accessibility/AXObject.h"
 
 namespace blink {
 
 class AXObjectCacheImpl;
 
-class MODULES_EXPORT AXMockObject : public AXObjectImpl {
+class MODULES_EXPORT AXMockObject : public AXObject {
   WTF_MAKE_NONCOPYABLE(AXMockObject);
 
  protected:
@@ -42,8 +42,8 @@ class MODULES_EXPORT AXMockObject : public AXObjectImpl {
  public:
   ~AXMockObject() override;
 
-  // AXObjectImpl overrides.
-  AXObjectImpl* ComputeParent() const override { return parent_; }
+  // AXObject overrides.
+  AXObject* ComputeParent() const override { return parent_; }
   bool IsEnabled() const override { return true; }
 
  private:

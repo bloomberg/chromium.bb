@@ -4291,8 +4291,8 @@ bool Document::SetFocusedElement(Element* new_focused_element,
   }
 
   if (!focus_change_blocked && focused_element_) {
-    // Create the AXObjectImpl cache in a focus change because Chromium relies
-    // on it.
+    // Create the AXObject cache in a focus change because Chromium relies on
+    // it.
     if (AXObjectCache* cache = AxObjectCache())
       cache->HandleFocusedUIElementChanged(old_focused_element,
                                            new_focused_element);

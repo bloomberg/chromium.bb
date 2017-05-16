@@ -45,7 +45,7 @@ AXARIAGridRow* AXARIAGridRow::Create(LayoutObject* layout_object,
 }
 
 bool AXARIAGridRow::IsARIATreeGridRow() const {
-  AXObjectImpl* parent = ParentTable();
+  AXObject* parent = ParentTable();
   if (!parent)
     return false;
 
