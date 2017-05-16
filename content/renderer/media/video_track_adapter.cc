@@ -18,6 +18,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
+#include "build/build_config.h"
 #include "content/public/common/content_switches.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/video_util.h"
@@ -102,6 +103,7 @@ class VideoTrackAdapter::VideoFrameResolutionAdapter
   const scoped_refptr<base::SingleThreadTaskRunner> renderer_task_runner_;
 
   const gfx::Size max_frame_size_;
+  base::Optional<gfx::Size> expected_native_size_;
   const double min_aspect_ratio_;
   const double max_aspect_ratio_;
 
@@ -122,6 +124,7 @@ VideoTrackAdapter::VideoFrameResolutionAdapter::VideoFrameResolutionAdapter(
     const VideoTrackAdapterSettings& settings)
     : renderer_task_runner_(render_message_loop),
       max_frame_size_(settings.max_width, settings.max_height),
+      expected_native_size_(settings.expected_native_size),
       min_aspect_ratio_(settings.min_aspect_ratio),
       max_aspect_ratio_(settings.max_aspect_ratio),
       frame_rate_(MediaStreamVideoSource::kDefaultFrameRate),
@@ -216,9 +219,19 @@ void VideoTrackAdapter::VideoFrameResolutionAdapter::DeliverFrame(
   }
   scoped_refptr<media::VideoFrame> video_frame(frame);
 
+  bool is_rotated = false;
+#if defined(OS_ANDROID)
+  // TODO(guidou): Use actual device information instead of this heuristic to
+  // detect frames from rotated devices. http://crbug.com/722748
+  if (expected_native_size_ &&
+      frame->natural_size().width() == expected_native_size_->height() &&
+      frame->natural_size().height() == expected_native_size_->width()) {
+    is_rotated = true;
+  }
+#endif
   gfx::Size desired_size;
-  CalculateTargetSize(frame->natural_size(), max_frame_size_, min_aspect_ratio_,
-                      max_aspect_ratio_, &desired_size);
+  CalculateTargetSize(is_rotated, frame->natural_size(), max_frame_size_,
+                      min_aspect_ratio_, max_aspect_ratio_, &desired_size);
   if (desired_size != frame->natural_size()) {
     // Get the largest centered rectangle with the same aspect ratio of
     // |desired_size| that fits entirely inside of |frame->visible_rect()|.
@@ -250,7 +263,8 @@ bool VideoTrackAdapter::VideoFrameResolutionAdapter::SettingsMatch(
          max_frame_size_.height() == settings.max_height &&
          min_aspect_ratio_ == settings.min_aspect_ratio &&
          max_aspect_ratio_ == settings.max_aspect_ratio &&
-         max_frame_rate_ == settings.max_frame_rate;
+         max_frame_rate_ == settings.max_frame_rate &&
+         expected_native_size_ == settings.expected_native_size;
 }
 
 bool VideoTrackAdapter::VideoFrameResolutionAdapter::IsEmpty() const {
@@ -329,24 +343,33 @@ VideoTrackAdapterSettings::VideoTrackAdapterSettings()
                                 std::numeric_limits<int>::max(),
                                 0.0,
                                 std::numeric_limits<double>::max(),
-                                0.0) {}
+                                0.0,
+                                base::Optional<gfx::Size>()) {}
 
-VideoTrackAdapterSettings::VideoTrackAdapterSettings(int max_width,
-                                                     int max_height,
-                                                     double min_aspect_ratio,
-                                                     double max_aspect_ratio,
-                                                     double max_frame_rate)
+VideoTrackAdapterSettings::VideoTrackAdapterSettings(
+    int max_width,
+    int max_height,
+    double min_aspect_ratio,
+    double max_aspect_ratio,
+    double max_frame_rate,
+    const base::Optional<gfx::Size>& expected_native_size)
     : max_width(max_width),
       max_height(max_height),
       min_aspect_ratio(min_aspect_ratio),
       max_aspect_ratio(max_aspect_ratio),
-      max_frame_rate(max_frame_rate) {
+      max_frame_rate(max_frame_rate),
+      expected_native_size(expected_native_size) {
   DCHECK_GE(max_width, 1);
   DCHECK_GE(max_height, 1);
   DCHECK_GE(min_aspect_ratio, 0.0);
   DCHECK_GE(max_aspect_ratio, min_aspect_ratio);
   DCHECK_GE(max_frame_rate, 0.0);
 }
+
+VideoTrackAdapterSettings::VideoTrackAdapterSettings(
+    const VideoTrackAdapterSettings& other) = default;
+VideoTrackAdapterSettings& VideoTrackAdapterSettings::operator=(
+    const VideoTrackAdapterSettings& other) = default;
 
 VideoTrackAdapter::VideoTrackAdapter(
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner)
@@ -419,11 +442,18 @@ void VideoTrackAdapter::StopFrameMonitoring() {
 }
 
 // static
-void VideoTrackAdapter::CalculateTargetSize(const gfx::Size& input_size,
-                                            const gfx::Size& max_frame_size,
-                                            double min_aspect_ratio,
-                                            double max_aspect_ratio,
-                                            gfx::Size* desired_size) {
+void VideoTrackAdapter::CalculateTargetSize(
+    bool is_rotated,
+    const gfx::Size& original_input_size,
+    const gfx::Size& max_frame_size,
+    double min_aspect_ratio,
+    double max_aspect_ratio,
+    gfx::Size* desired_size) {
+  const gfx::Size& input_size =
+      is_rotated
+          ? gfx::Size(original_input_size.height(), original_input_size.width())
+          : original_input_size;
+
   // If |frame| has larger width or height than requested, or the aspect ratio
   // does not match the requested, we want to create a wrapped version of this
   // frame with a size that fulfills the constraints.
@@ -454,9 +484,10 @@ void VideoTrackAdapter::CalculateTargetSize(const gfx::Size& input_size,
       desired_width = (desired_width + 1) & ~1;
     }
 
-    *desired_size = gfx::Size(desired_width, desired_height);
+    *desired_size = is_rotated ? gfx::Size(desired_height, desired_width)
+                               : gfx::Size(desired_width, desired_height);
   } else {
-    *desired_size = input_size;
+    *desired_size = original_input_size;
   }
 }
 

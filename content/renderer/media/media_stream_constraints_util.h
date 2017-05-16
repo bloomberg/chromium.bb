@@ -239,7 +239,8 @@ VideoTrackAdapterSettings CONTENT_EXPORT SelectVideoTrackAdapterSettings(
     const blink::WebMediaTrackConstraintSet& basic_constraint_set,
     const ResolutionSet& resolution_set,
     const NumericRangeSet<double>& frame_rate_set,
-    const media::VideoCaptureFormat& source_format);
+    const media::VideoCaptureFormat& source_format,
+    bool expect_source_native_size);
 
 }  // namespace content
 
