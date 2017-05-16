@@ -589,7 +589,7 @@ if (aom_config("CONFIG_AV1") eq "yes") {
   }
 }  # CONFIG_AV1
 
-if (aom_config("CONFIG_ENCODERS") eq "yes") {
+if (aom_config("CONFIG_AV1_ENCODER") eq "yes") {
 #
 # Block subtraction
 #
@@ -890,9 +890,9 @@ if (aom_config("CONFIG_INTERNAL_STATS") eq "yes") {
     add_proto qw/void aom_highbd_ssim_parms_8x8/, "const uint16_t *s, int sp, const uint16_t *r, int rp, uint32_t *sum_s, uint32_t *sum_r, uint32_t *sum_sq_s, uint32_t *sum_sq_r, uint32_t *sum_sxr";
   }
 }
-}  # CONFIG_ENCODERS
+}  # CONFIG_AV1_ENCODER
 
-if (aom_config("CONFIG_ENCODERS") eq "yes") {
+if (aom_config("CONFIG_AV1_ENCODER") eq "yes") {
 
 #
 # Specialty Variance
@@ -1519,6 +1519,6 @@ if (aom_config("CONFIG_EXT_INTER") eq "yes") {
   }
 }
 
-}  # CONFIG_ENCODERS
+}  # CONFIG_AV1_ENCODER
 
 1;

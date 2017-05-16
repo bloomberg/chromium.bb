@@ -138,6 +138,10 @@ if (ENABLE_DISTCC)
   endif ()
 endif ()
 
+if (NOT CONFIG_AV1_DECODER AND NOT CONFIG_AV1_ENCODER)
+  message(FATAL_ERROR "Decoder and encoder disabled, nothing to build.")
+endif ()
+
 # Test compiler flags.
 if (MSVC)
   add_compiler_flag_if_supported("/W3")

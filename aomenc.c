@@ -25,7 +25,7 @@
 #endif
 
 #include "aom/aom_encoder.h"
-#if CONFIG_DECODERS
+#if CONFIG_AV1_DECODER
 #include "aom/aom_decoder.h"
 #endif
 
@@ -1337,13 +1337,13 @@ static void initialize_encoder(struct stream_state *stream,
     ctx_exit_on_error(&stream->encoder, "Failed to control codec");
   }
 
-#if CONFIG_DECODERS
+#if CONFIG_AV1_DECODER
   if (global->test_decode != TEST_DECODE_OFF) {
     const AvxInterface *decoder = get_aom_decoder_by_name(global->codec->name);
     aom_codec_dec_cfg_t cfg = { 0, 0, 0 };
     aom_codec_dec_init(&stream->decoder, decoder->codec_interface(), &cfg, 0);
 
-#if CONFIG_AV1_DECODER && CONFIG_EXT_TILE
+#if CONFIG_EXT_TILE
     if (strcmp(global->codec->name, "av1") == 0) {
       aom_codec_control(&stream->decoder, AV1_SET_DECODE_TILE_ROW, -1);
       ctx_exit_on_error(&stream->decoder, "Failed to set decode_tile_row");
@@ -1503,7 +1503,7 @@ static void get_cx_data(struct stream_state *stream,
         stream->nbytes += pkt->data.raw.sz;
 
         *got_data = 1;
-#if CONFIG_DECODERS
+#if CONFIG_AV1_DECODER
         if (global->test_decode != TEST_DECODE_OFF && !stream->mismatch_seen) {
           aom_codec_decode(&stream->decoder, pkt->data.frame.buf,
                            (unsigned int)pkt->data.frame.sz, NULL, 0);

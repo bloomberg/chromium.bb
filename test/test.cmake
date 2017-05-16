@@ -23,6 +23,8 @@ set(AOM_UNIT_TEST_COMMON_SOURCES
     "${AOM_ROOT}/test/clear_system_state.h"
     "${AOM_ROOT}/test/codec_factory.h"
     "${AOM_ROOT}/test/convolve_test.cc"
+    "${AOM_ROOT}/test/decode_test_driver.cc"
+    "${AOM_ROOT}/test/decode_test_driver.h"
     "${AOM_ROOT}/test/function_equivalence_test.h"
     "${AOM_ROOT}/test/md5_helper.h"
     "${AOM_ROOT}/test/register_state_check.h"
@@ -54,8 +56,6 @@ endif ()
 
 set(AOM_UNIT_TEST_DECODER_SOURCES
     "${AOM_ROOT}/test/decode_api_test.cc"
-    "${AOM_ROOT}/test/decode_test_driver.cc"
-    "${AOM_ROOT}/test/decode_test_driver.h"
     "${AOM_ROOT}/test/ivf_video_source.h")
 
 set(AOM_UNIT_TEST_ENCODER_SOURCES
@@ -87,10 +87,6 @@ if (CONFIG_AV1)
       ${AOM_UNIT_TEST_COMMON_SOURCES}
       "${AOM_ROOT}/test/av1_convolve_optimz_test.cc"
       "${AOM_ROOT}/test/av1_convolve_test.cc"
-      "${AOM_ROOT}/test/av1_fwd_txfm1d_test.cc"
-      "${AOM_ROOT}/test/av1_fwd_txfm2d_test.cc"
-      "${AOM_ROOT}/test/av1_inv_txfm1d_test.cc"
-      "${AOM_ROOT}/test/av1_inv_txfm2d_test.cc"
       "${AOM_ROOT}/test/av1_txfm_test.cc"
       "${AOM_ROOT}/test/av1_txfm_test.h"
       "${AOM_ROOT}/test/intrapred_test.cc"
@@ -136,6 +132,10 @@ if (CONFIG_AV1_ENCODER)
       "${AOM_ROOT}/test/av1_fht32x32_test.cc"
       "${AOM_ROOT}/test/av1_fht8x8_test.cc"
       "${AOM_ROOT}/test/av1_inv_txfm_test.cc"
+      "${AOM_ROOT}/test/av1_fwd_txfm1d_test.cc"
+      "${AOM_ROOT}/test/av1_fwd_txfm2d_test.cc"
+      "${AOM_ROOT}/test/av1_inv_txfm1d_test.cc"
+      "${AOM_ROOT}/test/av1_inv_txfm2d_test.cc"
       "${AOM_ROOT}/test/avg_test.cc"
       "${AOM_ROOT}/test/blend_a64_mask_1d_test.cc"
       "${AOM_ROOT}/test/blend_a64_mask_test.cc"
@@ -224,7 +224,7 @@ if (CONFIG_AV1_DECODER AND CONFIG_AV1_ENCODER)
 endif ()
 
 if (CONFIG_HIGHBITDEPTH)
-  if (CONFIG_AV1)
+  if (CONFIG_AV1_ENCODER)
     set(AOM_UNIT_TEST_COMMON_INTRIN_SSE4_1
         ${AOM_UNIT_TEST_COMMON_INTRIN_SSE4_1}
         "${AOM_ROOT}/test/av1_highbd_iht_test.cc"
@@ -260,8 +260,14 @@ endif ()
 # exist before this function is called.
 function (setup_aom_test_targets)
   add_library(test_aom_common OBJECT ${AOM_UNIT_TEST_COMMON_SOURCES})
-  add_library(test_aom_decoder OBJECT ${AOM_UNIT_TEST_DECODER_SOURCES})
-  add_library(test_aom_encoder OBJECT ${AOM_UNIT_TEST_ENCODER_SOURCES})
+
+  if (CONFIG_AV1_DECODER)
+    add_library(test_aom_decoder OBJECT ${AOM_UNIT_TEST_DECODER_SOURCES})
+  endif ()
+
+  if (CONFIG_AV1_ENCODER)
+    add_library(test_aom_encoder OBJECT ${AOM_UNIT_TEST_ENCODER_SOURCES})
+  endif ()
 
   set(AOM_LIB_TARGETS ${AOM_LIB_TARGETS} test_aom_common test_aom_decoder
       test_aom_encoder PARENT_SCOPE)
@@ -270,7 +276,7 @@ function (setup_aom_test_targets)
                  $<TARGET_OBJECTS:aom_common_app_util>
                  $<TARGET_OBJECTS:test_aom_common>)
 
-  if (CONFIG_DECODERS)
+  if (CONFIG_AV1_DECODER)
     target_sources(test_libaom PUBLIC
                    $<TARGET_OBJECTS:aom_decoder_app_util>
                    $<TARGET_OBJECTS:test_aom_decoder>)
@@ -280,7 +286,7 @@ function (setup_aom_test_targets)
     endif ()
   endif ()
 
-  if (CONFIG_ENCODERS)
+  if (CONFIG_AV1_ENCODER)
     target_sources(test_libaom PUBLIC
                    $<TARGET_OBJECTS:test_aom_encoder>
                    $<TARGET_OBJECTS:aom_encoder_app_util>)
@@ -288,14 +294,14 @@ function (setup_aom_test_targets)
     if (CONFIG_ENCODE_PERF_TESTS)
       target_sources(test_libaom PUBLIC ${AOM_ENCODE_PERF_TEST_SOURCES})
     endif ()
+
+    add_executable(test_intra_pred_speed
+                   ${AOM_TEST_INTRA_PRED_SPEED_SOURCES}
+                   $<TARGET_OBJECTS:aom_common_app_util>)
+    target_link_libraries(test_intra_pred_speed ${AOM_LIB_LINK_TYPE} aom gtest)
   endif ()
 
   target_link_libraries(test_libaom ${AOM_LIB_LINK_TYPE} aom gtest)
-
-  add_executable(test_intra_pred_speed
-                 ${AOM_TEST_INTRA_PRED_SPEED_SOURCES}
-                 $<TARGET_OBJECTS:aom_common_app_util>)
-  target_link_libraries(test_intra_pred_speed ${AOM_LIB_LINK_TYPE} aom gtest)
 
   if (CONFIG_LIBYUV)
     target_sources(test_libaom PUBLIC $<TARGET_OBJECTS:yuv>)
@@ -315,7 +321,7 @@ function (setup_aom_test_targets)
   if (HAVE_SSE4_1)
     add_intrinsics_source_to_target("-msse4.1" "test_libaom"
                                     "AOM_UNIT_TEST_COMMON_INTRIN_SSE4_1")
-    if (CONFIG_ENCODERS)
+    if (CONFIG_AV1_ENCODER)
       if (AOM_UNIT_TEST_ENCODER_INTRIN_SSE4_1)
         add_intrinsics_source_to_target("-msse4.1" "test_libaom"
                                         "AOM_UNIT_TEST_ENCODER_INTRIN_SSE4_1")
