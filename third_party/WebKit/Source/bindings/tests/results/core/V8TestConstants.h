@@ -25,6 +25,7 @@
 
 namespace blink {
 
+class ScriptState;
 class V8TestConstants {
   STATIC_ONLY(V8TestConstants);
  public:

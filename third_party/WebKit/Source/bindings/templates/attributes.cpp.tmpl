@@ -572,7 +572,7 @@ const v8::FunctionCallbackInfo<v8::Value>& info
 
 {##############################################################################}
 {% macro install_conditionally_enabled_attributes_on_prototype() %}
-{% for attribute in attributes if (attribute.exposed_test or attribute.secure_context_test) and attribute.on_prototype %}
+{% for attribute in conditionally_enabled_attributes if attribute.on_prototype %}
 {% filter exposed(attribute.exposed_test) %}
 {% filter secure_context(attribute.secure_context_test) %}
 {% filter runtime_enabled(attribute.runtime_enabled_feature_name) %}

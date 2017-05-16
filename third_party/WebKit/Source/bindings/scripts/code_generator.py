@@ -58,9 +58,11 @@ def exposed_if(code, exposed_test):
 
 
 # [SecureContext]
-def secure_context_if(code, secure_context_test):
+def secure_context_if(code, secure_context_test, test_result=None):
     if not secure_context_test:
         return code
+    if test_result:
+        return generate_indented_conditional(code, test_result)
     return generate_indented_conditional(code, 'executionContext && (%s)' % secure_context_test)
 
 
@@ -71,7 +73,6 @@ def runtime_enabled_if(code, name):
 
     function = v8_utilities.runtime_enabled_function(name)
     return generate_indented_conditional(code, function)
-
 
 def initialize_jinja_env(cache_dir):
     jinja_env = jinja2.Environment(

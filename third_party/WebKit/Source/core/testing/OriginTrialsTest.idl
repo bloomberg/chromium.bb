@@ -22,20 +22,17 @@ interface OriginTrialsTest {
 
     // These are available whether or not the trial is enabled, but only in a
     // secure context
-    // TODO(crbug.com/695123): Add [SecureContext] extended attribute when fixed
-    //   to work with [OriginTrialEnabled]
-    readonly attribute boolean secureUnconditionalAttribute;
+    [SecureContext] readonly attribute boolean secureUnconditionalAttribute;
+    // TODO(chasej): Add [SecureContext] when that attribute is fixed to work on
+    //   static attributes. That problem is not related to [OriginTrialEnabled].
     static readonly attribute boolean secureStaticUnconditionalAttribute;
-    boolean secureUnconditionalMethod();
-    static boolean secureStaticUnconditionalMethod();
+    [SecureContext] boolean secureUnconditionalMethod();
+    [SecureContext] static boolean secureStaticUnconditionalMethod();
 
     // These are only available if the trial is enabled, as well as in secure
     // context.
-    // TODO(crbug.com/695123): Add [SecureContext] extended attribute when fixed
-    //   to work with [OriginTrialEnabled]
-    //   e.g. [SecureContext, OriginTrialEnabled=OriginTrialsSampleAPI]
-    [OriginTrialEnabled=OriginTrialsSampleAPI] readonly attribute boolean secureAttribute;
-    [OriginTrialEnabled=OriginTrialsSampleAPI] static readonly attribute boolean secureStaticAttribute;
-    [OriginTrialEnabled=OriginTrialsSampleAPI] boolean secureMethod();
-    [OriginTrialEnabled=OriginTrialsSampleAPI] static boolean secureStaticMethod();
+    [SecureContext, OriginTrialEnabled=OriginTrialsSampleAPI] readonly attribute boolean secureAttribute;
+    [SecureContext, OriginTrialEnabled=OriginTrialsSampleAPI] static readonly attribute boolean secureStaticAttribute;
+    [SecureContext, OriginTrialEnabled=OriginTrialsSampleAPI] boolean secureMethod();
+    [SecureContext, OriginTrialEnabled=OriginTrialsSampleAPI] static boolean secureStaticMethod();
 };

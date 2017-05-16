@@ -241,17 +241,18 @@ def filter_lazy_data_attributes(attributes):
     return [attribute for attribute in attributes if is_data_attribute(attribute) and is_lazy_data_attribute(attribute)]
 
 
-def filter_origin_trial_enabled(attributes):
-    return [attribute for attribute in attributes if
-            attribute['origin_trial_feature_name'] and
-            not attribute['exposed_test']]
-
-
 def filter_runtime_enabled(attributes):
     return [attribute for attribute in attributes if
             not (attribute['exposed_test'] or
                  attribute['secure_context_test']) and
             attribute['runtime_enabled_feature_name']]
+
+
+def filter_conditionally_enabled(attributes):
+    return [attribute for attribute in attributes if
+            attribute['exposed_test'] or
+            (attribute['secure_context_test'] and
+             not attribute['origin_trial_feature_name'])]
 
 
 ################################################################################

@@ -50,10 +50,7 @@ void InstallConditionalFeaturesForModules(
   v8::Isolate* isolate = script_state->GetIsolate();
   const DOMWrapperWorld& world = script_state->World();
   if (wrapper_type_info == &V8Navigator::wrapperTypeInfo) {
-    // Mimics the [SecureContext] extended attribute. Work-around for
-    // https://crbug.com/695123.
-    if (OriginTrials::installedAppEnabled(execution_context) &&
-        execution_context->IsSecureContext()) {
+    if (OriginTrials::installedAppEnabled(execution_context)) {
       V8NavigatorPartial::installInstalledApp(
           isolate, world, v8::Local<v8::Object>(), prototype_object,
           interface_object);
@@ -63,10 +60,7 @@ void InstallConditionalFeaturesForModules(
                                           v8::Local<v8::Object>(),
                                           prototype_object, interface_object);
     }
-    // Mimics the [SecureContext] extended attribute. Work-around for
-    // https://crbug.com/695123.
-    if (OriginTrials::webUSBEnabled(execution_context) &&
-        execution_context->IsSecureContext()) {
+    if (OriginTrials::webUSBEnabled(execution_context)) {
       V8NavigatorPartial::installWebUSB(isolate, world, v8::Local<v8::Object>(),
                                         prototype_object, interface_object);
     }
