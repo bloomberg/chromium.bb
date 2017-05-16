@@ -30,14 +30,14 @@
 
       :host(:not([end-justified])) cr-policy-pref-indicator {
         -webkit-margin-end: calc(
-            var(--cr-control-spacing) - var(--justify-margin));
-        -webkit-margin-start: var(--cr-control-spacing);
+            var(--cr-controlled-by-spacing) - var(--justify-margin));
+        -webkit-margin-start: var(--cr-controlled-by-spacing);
       }
 
       :host([end-justified]) cr-policy-pref-indicator {
-        -webkit-margin-end: var(--cr-control-spacing);
+        -webkit-margin-end: var(--cr-controlled-by-spacing);
         -webkit-margin-start: calc(
-            var(--cr-control-spacing) - var(--justify-margin));
+            var(--cr-controlled-by-spacing) - var(--justify-margin));
         order: -1;
       }
     </style>

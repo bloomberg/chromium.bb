@@ -30,9 +30,12 @@
       }
 
       #labelWrapper,
-      ::content .more-actions,
+      ::content .more-actions {
+        -webkit-margin-end: var(--settings-control-label-spacing);
+      }
+
       cr-policy-pref-indicator {
-        -webkit-margin-end: var(--settings-control-spacing);
+        -webkit-margin-end: var(--settings-controlled-by-spacing);
       }
     </style>
     <div id="outerRow" noSubLabel$="[[!subLabel]]">
