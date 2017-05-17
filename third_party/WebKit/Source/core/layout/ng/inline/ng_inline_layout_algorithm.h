@@ -88,6 +88,7 @@ class CORE_EXPORT NGInlineLayoutAlgorithm final
   unsigned disallow_first_line_rules_ : 1;
 
   NGConstraintSpaceBuilder space_builder_;
+  NGBoxStrut border_and_padding_;
 };
 
 }  // namespace blink
