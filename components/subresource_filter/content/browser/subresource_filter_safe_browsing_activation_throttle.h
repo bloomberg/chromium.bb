@@ -17,6 +17,7 @@
 #include "base/time/time.h"
 #include "components/safe_browsing_db/database_manager.h"
 #include "components/subresource_filter/content/browser/subresource_filter_safe_browsing_client.h"
+#include "components/subresource_filter/core/common/activation_list.h"
 #include "content/public/browser/navigation_throttle.h"
 
 namespace subresource_filter {
@@ -50,6 +51,9 @@ class SubresourceFilterSafeBrowsingActivationThrottle
  private:
   void CheckCurrentUrl();
   void NotifyResult();
+
+  void RecordRedirectChainMatchPatternForList(ActivationList activation_list);
+
   std::vector<SubresourceFilterSafeBrowsingClient::CheckResult> check_results_;
 
   scoped_refptr<safe_browsing::SafeBrowsingDatabaseManager> database_manager_;

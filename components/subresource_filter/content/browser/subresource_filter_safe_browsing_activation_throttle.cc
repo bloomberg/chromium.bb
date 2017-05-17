@@ -9,6 +9,7 @@
 
 #include "base/metrics/histogram_macros.h"
 #include "base/timer/timer.h"
+#include "components/subresource_filter/content/browser/content_activation_list_utils.h"
 #include "components/subresource_filter/content/browser/content_subresource_filter_driver_factory.h"
 #include "components/subresource_filter/content/browser/subresource_filter_safe_browsing_client.h"
 #include "content/public/browser/browser_thread.h"
@@ -16,6 +17,23 @@
 #include "content/public/browser/web_contents.h"
 
 namespace subresource_filter {
+
+namespace {
+
+// Records histograms about the pattern of redirect chains, and about the
+// pattern of whether the last URL in the chain matched the activation list.
+#define REPORT_REDIRECT_PATTERN_FOR_SUFFIX(suffix, is_matched, chain_size)    \
+  do {                                                                        \
+    UMA_HISTOGRAM_BOOLEAN("SubresourceFilter.PageLoad.FinalURLMatch." suffix, \
+                          is_matched);                                        \
+    if (is_matched) {                                                         \
+      UMA_HISTOGRAM_COUNTS(                                                   \
+          "SubresourceFilter.PageLoad.RedirectChainLength." suffix,           \
+          chain_size);                                                        \
+    };                                                                        \
+  } while (0)
+
+}  // namespace
 
 SubresourceFilterSafeBrowsingActivationThrottle::
     SubresourceFilterSafeBrowsingActivationThrottle(
@@ -34,11 +52,20 @@ SubresourceFilterSafeBrowsingActivationThrottle::
                                  io_task_runner_,
                                  base::ThreadTaskRunnerHandle::Get())
                            : nullptr,
-                       base::OnTaskRunnerDeleter(io_task_runner_)) {}
+                       base::OnTaskRunnerDeleter(io_task_runner_)) {
+  DCHECK(handle->IsInMainFrame());
+}
 
 SubresourceFilterSafeBrowsingActivationThrottle::
     ~SubresourceFilterSafeBrowsingActivationThrottle() {
-  // TODO(csharrison): Log metrics based on check_results_.
+  // The last check could be ongoing when the navigation is cancelled.
+  if (check_results_.empty() || !check_results_.back().finished)
+    return;
+  // TODO(csharrison): Log more metrics based on check_results_.
+  RecordRedirectChainMatchPatternForList(
+      ActivationList::SOCIAL_ENG_ADS_INTERSTITIAL);
+  RecordRedirectChainMatchPatternForList(ActivationList::PHISHING_INTERSTITIAL);
+  RecordRedirectChainMatchPatternForList(ActivationList::SUBRESOURCE_FILTER);
 }
 
 content::NavigationThrottle::ThrottleCheckResult
@@ -112,8 +139,7 @@ void SubresourceFilterSafeBrowsingActivationThrottle::NotifyResult() {
   DCHECK(driver_factory);
 
   driver_factory->OnMainResourceMatchedSafeBrowsingBlacklist(
-      navigation_handle()->GetURL(), std::vector<GURL>(), result.threat_type,
-      result.pattern_type);
+      navigation_handle()->GetURL(), result.threat_type, result.pattern_type);
 
   base::TimeDelta delay = defer_time_.is_null()
                               ? base::TimeDelta::FromMilliseconds(0)
@@ -128,6 +154,32 @@ void SubresourceFilterSafeBrowsingActivationThrottle::NotifyResult() {
   UMA_HISTOGRAM_TIMES(
       "SubresourceFilter.PageLoad.SafeBrowsingDelay.NoRedirectSpeculation",
       no_redirect_speculation_delay);
+}
+
+void SubresourceFilterSafeBrowsingActivationThrottle::
+    RecordRedirectChainMatchPatternForList(ActivationList activation_list) {
+  DCHECK(check_results_.back().finished);
+  ActivationList matched_list = GetListForThreatTypeAndMetadata(
+      check_results_.back().threat_type, check_results_.back().pattern_type);
+  bool is_matched = matched_list == activation_list;
+  size_t chain_size = check_results_.size();
+  switch (activation_list) {
+    case ActivationList::SOCIAL_ENG_ADS_INTERSTITIAL:
+      REPORT_REDIRECT_PATTERN_FOR_SUFFIX("SocialEngineeringAdsInterstitial",
+                                         is_matched, chain_size);
+      break;
+    case ActivationList::PHISHING_INTERSTITIAL:
+      REPORT_REDIRECT_PATTERN_FOR_SUFFIX("PhishingInterstitial", is_matched,
+                                         chain_size);
+      break;
+    case ActivationList::SUBRESOURCE_FILTER:
+      REPORT_REDIRECT_PATTERN_FOR_SUFFIX("SubresourceFilterOnly", is_matched,
+                                         chain_size);
+      break;
+    default:
+      NOTREACHED();
+      break;
+  }
 }
 
 }  //  namespace subresource_filter

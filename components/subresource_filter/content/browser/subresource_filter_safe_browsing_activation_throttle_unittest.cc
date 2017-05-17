@@ -39,6 +39,11 @@ namespace subresource_filter {
 
 namespace {
 
+const char kUrlA[] = "https://example_a.com";
+const char kUrlB[] = "https://example_b.com";
+const char kUrlC[] = "https://example_c.com";
+const char kUrlD[] = "https://example_d.com";
+
 char kURL[] = "http://example.test/";
 char kRedirectURL[] = "http://redirect.test/";
 
@@ -107,7 +112,7 @@ std::string GetSuffixForList(const ActivationList& type) {
     case ActivationList::SOCIAL_ENG_ADS_INTERSTITIAL:
       return "SocialEngineeringAdsInterstitial";
     case ActivationList::PHISHING_INTERSTITIAL:
-      return "PhishingInterstital";
+      return "PhishingInterstitial";
     case ActivationList::SUBRESOURCE_FILTER:
       return "SubresourceFilterOnly";
     case ActivationList::NONE:
@@ -259,6 +264,10 @@ class SubresourceFilterSafeBrowsingActivationThrottleTest
 
   void SimulateTimeout() { fake_safe_browsing_database_->SimulateTimeout(); }
 
+  void ClearAllBlacklistedUrls() {
+    fake_safe_browsing_database_->RemoveAllBlacklistedUrls();
+  }
+
   void RunUntilIdle() {
     test_io_task_runner_->RunUntilIdle();
     base::RunLoop().RunUntilIdle();
@@ -359,7 +368,7 @@ TEST_P(SubresourceFilterSafeBrowsingActivationThrottleParamTest,
             factory()->GetActivationDecisionForLastCommittedPageLoad());
   ExpectSampleForSuffix("SocialEngineeringAdsInterstitial", std::string(),
                         tester());
-  ExpectSampleForSuffix("PhishingInterstital", std::string(), tester());
+  ExpectSampleForSuffix("PhishingInterstitial", std::string(), tester());
   ExpectSampleForSuffix("SubresourceFilterOnly", std::string(), tester());
 
   tester().ExpectTotalCount(kSafeBrowsingNavigationDelay, 1);
@@ -380,7 +389,7 @@ TEST_P(SubresourceFilterSafeBrowsingActivationThrottleParamTest,
             factory()->GetActivationDecisionForLastCommittedPageLoad());
   const std::string suffix(GetSuffixForList(test_data.activation_list_type));
   ExpectSampleForSuffix("SocialEngineeringAdsInterstitial", suffix, tester());
-  ExpectSampleForSuffix("PhishingInterstital", suffix, tester());
+  ExpectSampleForSuffix("PhishingInterstitial", suffix, tester());
   ExpectSampleForSuffix("SubresourceFilterOnly", suffix, tester());
   tester().ExpectUniqueSample(kNavigationChainSize + suffix, 1, 1);
 }
@@ -398,7 +407,7 @@ TEST_P(SubresourceFilterSafeBrowsingActivationThrottleParamTest,
             factory()->GetActivationDecisionForLastCommittedPageLoad());
   ExpectSampleForSuffix("SocialEngineeringAdsInterstitial", std::string(),
                         tester());
-  ExpectSampleForSuffix("PhishingInterstital", std::string(), tester());
+  ExpectSampleForSuffix("PhishingInterstitial", std::string(), tester());
   ExpectSampleForSuffix("SubresourceFilterOnly", std::string(), tester());
   tester().ExpectTotalCount(kNavigationChainSize + suffix, 0);
 }
@@ -417,7 +426,7 @@ TEST_P(SubresourceFilterSafeBrowsingActivationThrottleParamTest,
             factory()->GetActivationDecisionForLastCommittedPageLoad());
   tester().ExpectUniqueSample(kNavigationChainSize + suffix, 2, 1);
   ExpectSampleForSuffix("SocialEngineeringAdsInterstitial", suffix, tester());
-  ExpectSampleForSuffix("PhishingInterstital", suffix, tester());
+  ExpectSampleForSuffix("PhishingInterstitial", suffix, tester());
   ExpectSampleForSuffix("SubresourceFilterOnly", suffix, tester());
 }
 
@@ -466,7 +475,7 @@ TEST_P(SubresourceFilterSafeBrowsingActivationThrottleParamTest,
             factory()->GetActivationDecisionForLastCommittedPageLoad());
   const std::string suffix(GetSuffixForList(test_data.activation_list_type));
   ExpectSampleForSuffix("SocialEngineeringAdsInterstitial", suffix, tester());
-  ExpectSampleForSuffix("PhishingInterstital", suffix, tester());
+  ExpectSampleForSuffix("PhishingInterstitial", suffix, tester());
   ExpectSampleForSuffix("SubresourceFilterOnly", suffix, tester());
   tester().ExpectUniqueSample(kNavigationChainSize + suffix, 1, 1);
 
@@ -494,7 +503,7 @@ TEST_P(SubresourceFilterSafeBrowsingActivationThrottleParamTest,
             factory()->GetActivationDecisionForLastCommittedPageLoad());
   const std::string suffix(GetSuffixForList(test_data.activation_list_type));
   ExpectSampleForSuffix("SocialEngineeringAdsInterstitial", suffix, tester());
-  ExpectSampleForSuffix("PhishingInterstital", suffix, tester());
+  ExpectSampleForSuffix("PhishingInterstitial", suffix, tester());
   ExpectSampleForSuffix("SubresourceFilterOnly", suffix, tester());
   tester().ExpectUniqueSample(kNavigationChainSize + suffix, 2, 1);
 
@@ -528,6 +537,68 @@ TEST_P(SubresourceFilterSafeBrowsingActivationThrottleParamTest,
   tester().ExpectTimeBucketCount(kSafeBrowsingNavigationDelay,
                                  base::TimeDelta::FromMilliseconds(0), 1);
   tester().ExpectTotalCount(kSafeBrowsingNavigationDelayNoSpeculation, 1);
+}
+
+TEST_P(SubresourceFilterSafeBrowsingActivationThrottleParamTest,
+       RedirectPatternTest) {
+  struct RedirectRedirectChainMatchPatternTestData {
+    std::vector<bool> blacklisted_urls;
+    std::vector<GURL> navigation_chain;
+  } kRedirectRecordedHistogramsTestData[] = {
+      {{false}, {GURL(kUrlA)}},
+      {{true}, {GURL(kUrlA)}},
+      {{false, false}, {GURL(kUrlA), GURL(kUrlB)}},
+      {{false, true}, {GURL(kUrlA), GURL(kUrlB)}},
+      {{true, false}, {GURL(kUrlA), GURL(kUrlB)}},
+      {{true, true}, {GURL(kUrlA), GURL(kUrlB)}},
+      {{false, false, false}, {GURL(kUrlA), GURL(kUrlB), GURL(kUrlC)}},
+      {{false, false, true}, {GURL(kUrlA), GURL(kUrlB), GURL(kUrlC)}},
+      {{false, true, false}, {GURL(kUrlA), GURL(kUrlB), GURL(kUrlC)}},
+      {{false, true, true}, {GURL(kUrlA), GURL(kUrlB), GURL(kUrlC)}},
+      {{true, false, false}, {GURL(kUrlA), GURL(kUrlB), GURL(kUrlC)}},
+      {{true, false, true}, {GURL(kUrlA), GURL(kUrlB), GURL(kUrlC)}},
+      {{true, true, false}, {GURL(kUrlA), GURL(kUrlB), GURL(kUrlC)}},
+      {{true, true, true}, {GURL(kUrlA), GURL(kUrlB), GURL(kUrlC)}},
+      {{false, true, false, false},
+       {GURL(kUrlA), GURL(kUrlB), GURL(kUrlC), GURL(kUrlD)}},
+  };
+
+  for (const auto& test_data : kRedirectRecordedHistogramsTestData) {
+    base::HistogramTester histogram_tester;
+    ClearAllBlacklistedUrls();
+    auto it = test_data.navigation_chain.begin();
+    for (size_t i = 0u; i < test_data.blacklisted_urls.size(); ++i) {
+      if (test_data.blacklisted_urls[i])
+        ConfigureForMatchParam(test_data.navigation_chain[i]);
+    }
+    CreateTestNavigationForMainFrame(*it);
+    SimulateStartAndExpectProceed();
+    for (++it; it != test_data.navigation_chain.end(); ++it)
+      SimulateRedirectAndExpectProceed(*it);
+    SimulateCommitAndExpectProceed();
+
+    // Verify histograms
+    const std::string suffix_param(
+        GetSuffixForList(GetParam().activation_list_type));
+    auto check_histogram = [&](std::string suffix) {
+      bool matches =
+          suffix == suffix_param && test_data.blacklisted_urls.back();
+      histogram_tester.ExpectBucketCount(kMatchesPatternHistogramName + suffix,
+                                         matches, 1);
+
+      if (matches) {
+        histogram_tester.ExpectBucketCount(kNavigationChainSize + suffix,
+                                           test_data.navigation_chain.size(),
+                                           1);
+      } else {
+        histogram_tester.ExpectTotalCount(kNavigationChainSize + suffix, 0);
+      }
+    };
+
+    check_histogram("SocialEngineeringAdsInterstitial");
+    check_histogram("PhishingInterstitial");
+    check_histogram("SubresourceFilterOnly");
+  }
 }
 
 TEST_P(SubresourceFilterSafeBrowsingActivationThrottleTestWithCancelling,

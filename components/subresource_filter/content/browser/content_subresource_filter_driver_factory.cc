@@ -43,19 +43,6 @@ bool ShouldMeasurePerformanceForPageLoad(double performance_measurement_rate) {
           base::RandDouble() < performance_measurement_rate);
 }
 
-// Records histograms about the pattern of redirect chains, and about the
-// pattern of whether the last URL in the chain matched the activation list.
-#define REPORT_REDIRECT_PATTERN_FOR_SUFFIX(suffix, is_matched, chain_size)    \
-  do {                                                                        \
-    UMA_HISTOGRAM_BOOLEAN("SubresourceFilter.PageLoad.FinalURLMatch." suffix, \
-                          is_matched);                                        \
-    if (is_matched) {                                                         \
-      UMA_HISTOGRAM_COUNTS(                                                   \
-          "SubresourceFilter.PageLoad.RedirectChainLength." suffix,           \
-          chain_size);                                                        \
-    };                                                                        \
-  } while (0)
-
 }  // namespace
 
 // static
@@ -96,7 +83,6 @@ ContentSubresourceFilterDriverFactory::
 void ContentSubresourceFilterDriverFactory::
     OnMainResourceMatchedSafeBrowsingBlacklist(
         const GURL& url,
-        const std::vector<GURL>& redirect_urls,
         safe_browsing::SBThreatType threat_type,
         safe_browsing::ThreatPatternType threat_type_metadata) {
   AddActivationListMatch(
@@ -199,8 +185,6 @@ void ContentSubresourceFilterDriverFactory::WillProcessResponse(
   const content::Referrer& referrer = navigation_handle->GetReferrer();
   ui::PageTransition transition = navigation_handle->GetPageTransition();
 
-  RecordRedirectChainMatchPattern();
-
   if (activation_options_.should_whitelist_site_on_reload &&
       NavigationIsPageReload(url, referrer, transition)) {
     // Whitelist this host for the current as well as subsequent navigations.
@@ -251,16 +235,8 @@ void ContentSubresourceFilterDriverFactory::DidStartNavigation(
       !navigation_handle->IsSameDocument()) {
     activation_decision_ = ActivationDecision::UNKNOWN;
     activation_list_matches_.clear();
-    navigation_chain_ = {navigation_handle->GetURL()};
     client_->ToggleNotificationVisibility(false);
   }
-}
-
-void ContentSubresourceFilterDriverFactory::DidRedirectNavigation(
-    content::NavigationHandle* navigation_handle) {
-  DCHECK(!navigation_handle->IsSameDocument());
-  if (navigation_handle->IsInMainFrame())
-    navigation_chain_.push_back(navigation_handle->GetURL());
 }
 
 void ContentSubresourceFilterDriverFactory::DidFinishNavigation(
@@ -290,44 +266,6 @@ void ContentSubresourceFilterDriverFactory::AddActivationListMatch(
     return;
   if (url.has_host() && url.SchemeIsHTTPOrHTTPS())
     activation_list_matches_[DistillURLToHostAndPath(url)].insert(match_type);
-}
-
-void ContentSubresourceFilterDriverFactory::RecordRedirectChainMatchPattern()
-    const {
-  RecordRedirectChainMatchPatternForList(
-      ActivationList::SOCIAL_ENG_ADS_INTERSTITIAL);
-  RecordRedirectChainMatchPatternForList(ActivationList::PHISHING_INTERSTITIAL);
-  RecordRedirectChainMatchPatternForList(ActivationList::SUBRESOURCE_FILTER);
-}
-
-void ContentSubresourceFilterDriverFactory::
-    RecordRedirectChainMatchPatternForList(
-        ActivationList activation_list) const {
-  DCHECK(!navigation_chain_.empty());
-  if (!navigation_chain_.back().has_host() ||
-      !navigation_chain_.back().SchemeIsHTTPOrHTTPS()) {
-    return;
-  }
-  bool is_matched =
-      DidURLMatchActivationList(navigation_chain_.back(), activation_list);
-  size_t chain_size = navigation_chain_.size();
-  switch (activation_list) {
-    case ActivationList::SOCIAL_ENG_ADS_INTERSTITIAL:
-      REPORT_REDIRECT_PATTERN_FOR_SUFFIX("SocialEngineeringAdsInterstitial",
-                                         is_matched, chain_size);
-      break;
-    case ActivationList::PHISHING_INTERSTITIAL:
-      REPORT_REDIRECT_PATTERN_FOR_SUFFIX("PhishingInterstital", is_matched,
-                                         chain_size);
-      break;
-    case ActivationList::SUBRESOURCE_FILTER:
-      REPORT_REDIRECT_PATTERN_FOR_SUFFIX("SubresourceFilterOnly", is_matched,
-                                         chain_size);
-      break;
-    default:
-      NOTREACHED();
-      break;
-  }
 }
 
 }  // namespace subresource_filter

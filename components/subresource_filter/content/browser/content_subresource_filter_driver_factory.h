@@ -69,7 +69,6 @@ class ContentSubresourceFilterDriverFactory
   // and |redirects| are saved.
   void OnMainResourceMatchedSafeBrowsingBlacklist(
       const GURL& url,
-      const std::vector<GURL>& redirect_urls,
       safe_browsing::SBThreatType threat_type,
       safe_browsing::ThreatPatternType threat_type_metadata);
 
@@ -100,8 +99,6 @@ class ContentSubresourceFilterDriverFactory
   // content::WebContentsObserver:
   void DidStartNavigation(
       content::NavigationHandle* navigation_handle) override;
-  void DidRedirectNavigation(
-      content::NavigationHandle* navigation_handle) override;
   void DidFinishNavigation(
       content::NavigationHandle* navigation_handle) override;
 
@@ -120,10 +117,6 @@ class ContentSubresourceFilterDriverFactory
                                  ActivationList activation_list) const;
 
   void AddActivationListMatch(const GURL& url, ActivationList match_type);
-  void RecordRedirectChainMatchPattern() const;
-
-  void RecordRedirectChainMatchPatternForList(
-      ActivationList activation_list) const;
 
   // Must outlive this class.
   SubresourceFilterClient* client_;
@@ -149,9 +142,6 @@ class ContentSubresourceFilterDriverFactory
   // reaches the WillProcessResponse stage (or successfully finishes if
   // throttles are not invoked).
   Configuration::ActivationOptions activation_options_;
-
-  // The URLs in the navigation chain.
-  std::vector<GURL> navigation_chain_;
 
   URLToActivationListsMap activation_list_matches_;
 
