@@ -65,13 +65,6 @@ bool SpellCheckMarkerListImpl::RemoveMarkers(unsigned start_offset,
                                                  length);
 }
 
-bool SpellCheckMarkerListImpl::RemoveMarkersUnderWords(
-    const String& node_text,
-    const Vector<String>& words) {
-  return DocumentMarkerListEditor::RemoveMarkersUnderWords(&markers_, node_text,
-                                                           words);
-}
-
 bool SpellCheckMarkerListImpl::ShiftMarkers(unsigned offset,
                                             unsigned old_length,
                                             unsigned new_length) {

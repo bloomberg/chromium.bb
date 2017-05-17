@@ -30,8 +30,6 @@ class GenericDocumentMarkerListImpl final : public DocumentMarkerList {
 
   bool MoveMarkers(int length, DocumentMarkerList* dst_list) final;
   bool RemoveMarkers(unsigned start_offset, int length) final;
-  bool RemoveMarkersUnderWords(const String& node_text,
-                               const Vector<String>& words) final;
   bool ShiftMarkers(unsigned offset,
                     unsigned old_length,
                     unsigned new_length) final;

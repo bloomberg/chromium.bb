@@ -58,13 +58,6 @@ bool GenericDocumentMarkerListImpl::RemoveMarkers(unsigned start_offset,
                                                  length);
 }
 
-bool GenericDocumentMarkerListImpl::RemoveMarkersUnderWords(
-    const String& node_text,
-    const Vector<String>& words) {
-  return DocumentMarkerListEditor::RemoveMarkersUnderWords(&markers_, node_text,
-                                                           words);
-}
-
 bool GenericDocumentMarkerListImpl::ShiftMarkers(unsigned offset,
                                                  unsigned old_length,
                                                  unsigned new_length) {
