@@ -16,7 +16,6 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/task_runner_util.h"
-#include "base/threading/sequenced_worker_pool.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/arc/arc_support_host.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
@@ -175,13 +174,6 @@ class ArcAppModelBuilderTest : public extensions::ExtensionServiceTestBase,
     extensions::ExtensionServiceTestBase::SetUp();
     InitializeExtensionService(ExtensionServiceInitParams());
     service_->Init();
-    // ExtensionService needs a real I/O thread.
-    service_->SetFileTaskRunnerForTesting(
-        content::BrowserThread::GetBlockingPool()
-            ->GetSequencedTaskRunnerWithShutdownBehavior(
-                content::BrowserThread::GetBlockingPool()
-                    ->GetNamedSequenceToken("ext_install-"),
-                base::SequencedWorkerPool::SKIP_ON_SHUTDOWN));
 
     OnBeforeArcTestSetup();
     arc_test_.SetUp(profile_.get());
