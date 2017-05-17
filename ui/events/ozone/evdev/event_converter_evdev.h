@@ -53,6 +53,8 @@ class EVENTS_OZONE_EVDEV_EXPORT EventConverterEvdev
   // input and can update state but must not dispatch any events to UI.
   void SetEnabled(bool enabled);
 
+  bool IsEnabled() const;
+
   // Cleanup after we stop reading events (release buttons, etc).
   virtual void OnStopped();
 
@@ -128,9 +130,6 @@ class EVENTS_OZONE_EVDEV_EXPORT EventConverterEvdev
 
   // Whether we're polling for input on the device.
   bool watching_ = false;
-
-  // Whether events should be dispatched to UI.
-  bool enabled_ = false;
 
   // Controller for watching the input fd.
   base::MessagePumpLibevent::FileDescriptorWatcher controller_;

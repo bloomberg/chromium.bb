@@ -320,6 +320,10 @@ void InputDeviceFactoryEvdev::ApplyInputDeviceSettings() {
 
   for (const auto& it : converters_) {
     EventConverterEvdev* converter = it.second.get();
+    // The device was activated/deactivated we need to notify so
+    // Interactions MQs can be updated.
+    if (converter->IsEnabled() != IsDeviceEnabled(converter))
+      UpdateDirtyFlags(converter);
     converter->SetEnabled(IsDeviceEnabled(converter));
 
     if (converter->type() == InputDeviceType::INPUT_DEVICE_INTERNAL &&
@@ -332,6 +336,7 @@ void InputDeviceFactoryEvdev::ApplyInputDeviceSettings() {
     converter->SetTouchEventLoggingEnabled(
         input_device_settings_.touch_event_logging_enabled);
   }
+  NotifyDevicesUpdated();
 }
 
 void InputDeviceFactoryEvdev::ApplyCapsLockLed() {

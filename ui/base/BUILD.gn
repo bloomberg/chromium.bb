@@ -255,6 +255,7 @@ component("base") {
     "theme_provider.cc",
     "theme_provider.h",
     "touch/touch_device.h",
+    "touch/touch_device_util.cc",
     "touch/touch_editing_controller.cc",
     "touch/touch_editing_controller.h",
     "ui_base_export.h",
@@ -361,6 +362,7 @@ component("base") {
     sources += [ "touch/touch_device_win.cc" ]
   } else if (is_android) {
     sources += [ "touch/touch_device_android.cc" ]
+    sources -= [ "touch/touch_device_util.cc" ]
   } else if (is_ios) {
     sources += [ "touch/touch_device_ios.cc" ]
   } else if (is_linux) {
@@ -368,6 +370,7 @@ component("base") {
   } else {
     # Empty implementation for all other cases.
     sources += [ "touch/touch_device.cc" ]
+    sources -= [ "touch/touch_device_util.cc" ]
   }
 
   # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.

@@ -570,7 +570,7 @@ void TouchEventConverterEvdev::UpdateTrackingId(int slot, int tracking_id) {
 
   if (tracking_id >= 0) {
     event->was_cancelled = false;
-    event->cancelled = !enabled_;
+    event->cancelled = !IsEnabled();
   }
 }
 

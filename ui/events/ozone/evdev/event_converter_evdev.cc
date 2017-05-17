@@ -51,7 +51,7 @@ void EventConverterEvdev::Stop() {
 }
 
 void EventConverterEvdev::SetEnabled(bool enabled) {
-  if (enabled == enabled_)
+  if (enabled == input_device_.enabled)
     return;
   if (enabled) {
     TRACE_EVENT1("evdev", "EventConverterEvdev::OnEnabled", "path",
@@ -62,7 +62,11 @@ void EventConverterEvdev::SetEnabled(bool enabled) {
                  path_.value());
     OnDisabled();
   }
-  enabled_ = enabled;
+  input_device_.enabled = enabled;
+}
+
+bool EventConverterEvdev::IsEnabled() const {
+  return input_device_.enabled;
 }
 
 void EventConverterEvdev::OnStopped() {

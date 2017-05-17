@@ -708,6 +708,10 @@ class IsolateIcelandFrameTreeBrowserTest : public ContentBrowserTest {
   IsolateIcelandFrameTreeBrowserTest() {}
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
+    // blink suppresses navigations to blob URLs of origins different from the
+    // frame initiating the navigation. We disable those checks for this test,
+    // to test what happens in a compromise scenario.
+    command_line->AppendSwitch(switches::kDisableWebSecurity);
     command_line->AppendSwitchASCII(switches::kIsolateSitesForTesting, "*.is");
   }
 
@@ -724,12 +728,6 @@ class IsolateIcelandFrameTreeBrowserTest : public ContentBrowserTest {
 // Regression test for https://crbug.com/644966
 IN_PROC_BROWSER_TEST_F(IsolateIcelandFrameTreeBrowserTest,
                        ProcessSwitchForIsolatedBlob) {
-  // blink suppresses navigations to blob URLs of origins different from the
-  // frame initiating the navigation. We disable those checks for this test, to
-  // test what happens in a compromise scenario.
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kDisableWebSecurity);
-
   // Set up an iframe.
   WebContents* contents = shell()->web_contents();
   FrameTreeNode* root =

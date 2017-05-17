@@ -18,6 +18,7 @@ struct InputDevice {
   int32 id;
   InputDeviceType type;
   string name;
+  bool enabled;
   string sys_path;
   uint16 vendor_id;
   uint16 product_id;

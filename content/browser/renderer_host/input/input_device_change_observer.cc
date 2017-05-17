@@ -8,6 +8,8 @@
 
 #if defined(OS_WIN)
 #include "ui/events/devices/input_device_observer_win.h"
+#elif defined(OS_LINUX)
+#include "ui/events/devices/device_data_manager.h"
 #endif
 
 namespace content {
@@ -16,12 +18,16 @@ InputDeviceChangeObserver::InputDeviceChangeObserver(RenderViewHost* rvh) {
   render_view_host_ = rvh;
 #if defined(OS_WIN)
   ui::InputDeviceObserverWin::GetInstance()->AddObserver(this);
+#elif defined(OS_LINUX)
+  ui::DeviceDataManager::GetInstance()->AddObserver(this);
 #endif
 }
 
 InputDeviceChangeObserver::~InputDeviceChangeObserver() {
 #if defined(OS_WIN)
   ui::InputDeviceObserverWin::GetInstance()->RemoveObserver(this);
+#elif defined(OS_LINUX)
+  ui::DeviceDataManager::GetInstance()->RemoveObserver(this);
 #endif
   render_view_host_ = nullptr;
 }
