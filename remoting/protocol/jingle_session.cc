@@ -182,6 +182,7 @@ JingleSession::JingleSession(JingleSessionManager* session_manager)
       weak_factory_(this) {}
 
 JingleSession::~JingleSession() {
+  DCHECK(thread_checker_.CalledOnValidThread());
   session_manager_->SessionDestroyed(this);
 }
 

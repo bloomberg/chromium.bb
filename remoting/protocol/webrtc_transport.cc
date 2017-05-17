@@ -299,6 +299,7 @@ WebrtcTransport::WebrtcTransport(
 }
 
 WebrtcTransport::~WebrtcTransport() {
+  DCHECK(thread_checker_.CalledOnValidThread());
   Close(OK);
 }
 

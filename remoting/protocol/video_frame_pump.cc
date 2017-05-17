@@ -66,6 +66,7 @@ VideoFramePump::VideoFramePump(
 }
 
 VideoFramePump::~VideoFramePump() {
+  DCHECK(thread_checker_.CalledOnValidThread());
   encode_task_runner_->DeleteSoon(FROM_HERE, encoder_.release());
 }
 

@@ -27,6 +27,7 @@ MonitoredVideoStub::MonitoredVideoStub(VideoStub* video_stub,
 }
 
 MonitoredVideoStub::~MonitoredVideoStub() {
+  DCHECK(thread_checker_.CalledOnValidThread());
 }
 
 void MonitoredVideoStub::ProcessVideoPacket(std::unique_ptr<VideoPacket> packet,

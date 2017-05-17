@@ -25,6 +25,7 @@ AudioDecodeScheduler::AudioDecodeScheduler(
       weak_factory_(this) {}
 
 AudioDecodeScheduler::~AudioDecodeScheduler() {
+  DCHECK(thread_checker_.CalledOnValidThread());
   audio_decode_task_runner_->DeleteSoon(FROM_HERE, decoder_.release());
 }
 

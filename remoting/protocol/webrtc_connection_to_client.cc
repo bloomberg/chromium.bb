@@ -54,7 +54,9 @@ WebrtcConnectionToClient::WebrtcConnectionToClient(
   session_->SetTransport(transport_.get());
 }
 
-WebrtcConnectionToClient::~WebrtcConnectionToClient() {}
+WebrtcConnectionToClient::~WebrtcConnectionToClient() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+}
 
 void WebrtcConnectionToClient::SetEventHandler(
     ConnectionToClient::EventHandler* event_handler) {
