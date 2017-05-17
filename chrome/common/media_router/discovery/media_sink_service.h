@@ -18,7 +18,7 @@ namespace media_router {
 // MediaSinks. Often these are remote devices, like Chromecast. In addition, the
 // service is capable of answering MediaSink queries using the sinks that it
 // generated.
-// This class is not thread safe. All methods must be called from the IO thread.
+// This class is not thread safe. All methods must be called from the UI thread.
 class MediaSinkService {
  public:
   // Callback to be invoked when this class finishes sink discovering.
@@ -35,6 +35,9 @@ class MediaSinkService {
   // Sinks discovered and resolved are continuously passed to
   // |callback|.
   virtual void Start() = 0;
+
+  // Stops sink discovery. No-ops if already stopped.
+  virtual void Stop() = 0;
 
  protected:
   OnSinksDiscoveredCallback sink_discovery_callback_;

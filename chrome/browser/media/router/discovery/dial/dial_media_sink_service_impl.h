@@ -2,16 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_MEDIA_ROUTER_DISCOVERY_DIAL_DIAL_MEDIA_SINK_SERVICE_H_
-#define CHROME_BROWSER_MEDIA_ROUTER_DISCOVERY_DIAL_DIAL_MEDIA_SINK_SERVICE_H_
+#ifndef CHROME_BROWSER_MEDIA_ROUTER_DISCOVERY_DIAL_DIAL_MEDIA_SINK_SERVICE_IMPL_H_
+#define CHROME_BROWSER_MEDIA_ROUTER_DISCOVERY_DIAL_DIAL_MEDIA_SINK_SERVICE_IMPL_H_
 
 #include <memory>
 #include <set>
 
 #include "chrome/browser/media/router/discovery/dial/device_description_service.h"
 #include "chrome/browser/media/router/discovery/dial/dial_registry.h"
-#include "chrome/common/media_router/discovery/media_sink_internal.h"
-#include "chrome/common/media_router/discovery/media_sink_service.h"
+#include "chrome/browser/media/router/discovery/media_sink_service_base.h"
 
 namespace media_router {
 
@@ -21,21 +20,18 @@ class DialRegistry;
 // A service which can be used to start background discovery and resolution of
 // DIAL devices (Smart TVs, Game Consoles, etc.).
 // This class is not thread safe. All methods must be called from the IO thread.
-class DialMediaSinkService : public MediaSinkService,
-                             public DialRegistry::Observer {
+class DialMediaSinkServiceImpl : public MediaSinkServiceBase,
+                                 public DialRegistry::Observer {
  public:
-  DialMediaSinkService(const OnSinksDiscoveredCallback& callback,
-                       net::URLRequestContextGetter* request_context);
-  ~DialMediaSinkService() override;
-
-  // Stops listening for DIAL device events.
-  virtual void Stop();
+  DialMediaSinkServiceImpl(const OnSinksDiscoveredCallback& callback,
+                           net::URLRequestContextGetter* request_context);
+  ~DialMediaSinkServiceImpl() override;
 
   // MediaSinkService implementation
   void Start() override;
+  void Stop() override;
 
  protected:
-
   // Returns instance of device description service. Create a new one if none
   // exists.
   DeviceDescriptionService* GetDescriptionService();
@@ -44,16 +40,12 @@ class DialMediaSinkService : public MediaSinkService,
   void SetDialRegistryForTest(DialRegistry* dial_registry);
   void SetDescriptionServiceForTest(
       std::unique_ptr<DeviceDescriptionService> description_service);
-  void SetTimerForTest(std::unique_ptr<base::Timer> timer);
 
  private:
-  friend class DialMediaSinkServiceTest;
-  FRIEND_TEST_ALL_PREFIXES(DialMediaSinkServiceTest, TestStart);
-  FRIEND_TEST_ALL_PREFIXES(DialMediaSinkServiceTest, TestTimer);
-  FRIEND_TEST_ALL_PREFIXES(DialMediaSinkServiceTest,
-                           TestFetchCompleted_SameSink);
-  FRIEND_TEST_ALL_PREFIXES(DialMediaSinkServiceTest, TestIsDifferent);
-  FRIEND_TEST_ALL_PREFIXES(DialMediaSinkServiceTest,
+  friend class DialMediaSinkServiceImplTest;
+  FRIEND_TEST_ALL_PREFIXES(DialMediaSinkServiceImplTest, TestStart);
+  FRIEND_TEST_ALL_PREFIXES(DialMediaSinkServiceImplTest, TestTimer);
+  FRIEND_TEST_ALL_PREFIXES(DialMediaSinkServiceImplTest,
                            TestOnDeviceDescriptionAvailable);
 
   // api::dial::DialRegistry::Observer implementation
@@ -70,27 +62,10 @@ class DialMediaSinkService : public MediaSinkService,
   void OnDeviceDescriptionError(const DialDeviceData& device,
                                 const std::string& error_message);
 
-  // Called when |finish_timer_| expires.
-  void OnFetchCompleted();
-
-  // Helper function to start |finish_timer_|.
-  void StartTimer();
-
-  // Timer for finishing fetching. Starts in |OnDialDeviceEvent()|, and expires
-  // 3 seconds later. If |OnDeviceDescriptionAvailable()| is called after
-  // |finish_timer_| expires, |finish_timer_| is restarted.
-  std::unique_ptr<base::Timer> finish_timer_;
-
   std::unique_ptr<DeviceDescriptionService> description_service_;
 
   // Raw pointer to DialRegistry singleton.
   DialRegistry* dial_registry_ = nullptr;
-
-  // Sorted sinks from current round of discovery.
-  std::set<MediaSinkInternal> current_sinks_;
-
-  // Sorted sinks sent to Media Router Provider in last FetchCompleted().
-  std::set<MediaSinkInternal> mrp_sinks_;
 
   // Device data list from current round of discovery.
   DialRegistry::DeviceList current_devices_;
@@ -100,4 +75,4 @@ class DialMediaSinkService : public MediaSinkService,
 
 }  // namespace media_router
 
-#endif  // CHROME_BROWSER_MEDIA_ROUTER_DISCOVERY_DIAL_DIAL_MEDIA_SINK_SERVICE_H_
+#endif  // CHROME_BROWSER_MEDIA_ROUTER_DISCOVERY_DIAL_DIAL_MEDIA_SINK_SERVICE_IMPL_H_
