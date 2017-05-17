@@ -5,11 +5,15 @@
 #ifndef ASH_SYSTEM_NIGHT_LIGHT_NIGHT_LIGHT_CONTROLLER_H_
 #define ASH_SYSTEM_NIGHT_LIGHT_NIGHT_LIGHT_CONTROLLER_H_
 
+#include <memory>
+
 #include "ash/ash_export.h"
 #include "ash/session/session_observer.h"
 #include "base/observer_list.h"
+#include "components/prefs/pref_change_registrar.h"
 
 class PrefRegistrySimple;
+class PrefService;
 
 namespace ash {
 
@@ -33,19 +37,18 @@ class ASH_EXPORT NightLightController : public SessionObserver {
 
   static void RegisterPrefs(PrefRegistrySimple* registry);
 
-  float color_temperature() const { return color_temperature_; }
-  bool enabled() const { return enabled_; }
-
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
 
-  void Toggle();
+  // Get the NightLight settings stored in the current active user prefs.
+  bool GetEnabled() const;
+  float GetColorTemperature() const;
 
+  // Set the desired NightLight settings in the current active user prefs.
   void SetEnabled(bool enabled);
-
-  // Set the screen color temperature. |temperature| should be a value from
-  // 0.0f (least warm) to 1.0f (most warm).
   void SetColorTemperature(float temperature);
+
+  void Toggle();
 
   // ash::SessionObserver:
   void OnActiveUserSessionChanged(const AccountId& account_id) override;
@@ -53,21 +56,31 @@ class ASH_EXPORT NightLightController : public SessionObserver {
  private:
   void Refresh();
 
+  void StartWatchingPrefsChanges();
+
   void InitFromUserPrefs();
 
-  void PersistUserPrefs();
-
   void NotifyStatusChanged();
+
+  // Called when the user pref for the enabled status of NightLight is changed.
+  void OnEnabledPrefChanged();
+
+  // Called when the user pref for the color temperature is changed.
+  void OnColorTemperaturePrefChanged();
 
   // The observed session controller instance from which we know when to
   // initialize the NightLight settings from the user preferences.
   SessionController* const session_controller_;
 
-  // The applied color temperature value when NightLight is turned ON. It's a
-  // value from 0.0f (least warm, default display color) to 1.0f (most warm).
-  float color_temperature_ = 0.5f;
+  // The pref service of the currently active user. Can be null in
+  // ash_unittests.
+  PrefService* active_user_pref_service_ = nullptr;
 
-  bool enabled_ = false;
+  // The registrar used to watch NightLight prefs changes in the above
+  // |active_user_pref_service_| from outside ash.
+  // NOTE: Prefs are how Chrome communicates changes to the NightLight settings
+  // controlled by this class from the WebUI settings.
+  std::unique_ptr<PrefChangeRegistrar> pref_change_registrar_;
 
   base::ObserverList<Observer> observers_;
 

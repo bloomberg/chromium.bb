@@ -20,6 +20,7 @@ Polymer({
 
   behaviors: [
     I18nBehavior,
+    PrefsBehavior,
   ],
 
   properties: {
@@ -98,18 +99,19 @@ Polymer({
 
   /** @override */
   attached: function() {
-    this.displayChangedListener_ = this.getDisplayInfo_.bind(this);
+    this.displayChangedListener_ =
+        this.displayChangedListener_ || this.getDisplayInfo_.bind(this);
     settings.display.systemDisplayApi.onDisplayChanged.addListener(
         this.displayChangedListener_);
+
     this.getDisplayInfo_();
   },
 
   /** @override */
   detached: function() {
-    if (this.displayChangedListener_) {
-      settings.display.systemDisplayApi.onDisplayChanged.removeListener(
-          this.displayChangedListener_);
-    }
+    settings.display.systemDisplayApi.onDisplayChanged.removeListener(
+        assert(this.displayChangedListener_));
+
     this.currentSelectedModeIndex_ = -1;
   },
 

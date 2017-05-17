@@ -25,7 +25,7 @@ void TrayNightLight::OnNightLightEnabledChanged(bool enabled) {
 }
 
 bool TrayNightLight::GetInitialVisibility() {
-  return Shell::Get()->night_light_controller()->enabled();
+  return Shell::Get()->night_light_controller()->GetEnabled();
 }
 
 }  // namespace ash
