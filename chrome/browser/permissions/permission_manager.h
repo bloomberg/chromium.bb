@@ -112,6 +112,9 @@ class PermissionManager : public KeyedService,
   struct Subscription;
   using SubscriptionsMap = IDMap<std::unique_ptr<Subscription>>;
 
+  // KeyedService implementation
+  void Shutdown() override;
+
   PermissionContextBase* GetPermissionContext(ContentSettingsType type);
 
   // Called when a permission was decided for a given PendingRequest. The

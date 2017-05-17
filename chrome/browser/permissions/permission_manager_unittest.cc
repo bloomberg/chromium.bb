@@ -181,6 +181,15 @@ TEST_F(PermissionManagerTest, CheckPermissionResultAfterSet) {
 #endif
 }
 
+TEST_F(PermissionManagerTest, SubscriptionDestroyedCleanlyWithoutUnsubscribe) {
+  // Test that the PermissionManager shuts down cleanly with subscriptions that
+  // haven't been removed, crbug.com/720071.
+  GetPermissionManager()->SubscribePermissionStatusChange(
+      PermissionType::GEOLOCATION, url(), url(),
+      base::Bind(&PermissionManagerTest::OnPermissionChange,
+                 base::Unretained(this)));
+}
+
 TEST_F(PermissionManagerTest, SameTypeChangeNotifies) {
   int subscription_id = GetPermissionManager()->SubscribePermissionStatusChange(
       PermissionType::GEOLOCATION, url(), url(),

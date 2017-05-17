@@ -266,9 +266,15 @@ PermissionManager::PermissionManager(Profile* profile)
 }
 
 PermissionManager::~PermissionManager() {
-  if (!subscriptions_.IsEmpty())
+  DCHECK(subscriptions_.IsEmpty());
+}
+
+void PermissionManager::Shutdown() {
+  if (!subscriptions_.IsEmpty()) {
     HostContentSettingsMapFactory::GetForProfile(profile_)
         ->RemoveObserver(this);
+    subscriptions_.Clear();
+  }
 }
 
 int PermissionManager::RequestPermission(
