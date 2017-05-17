@@ -7,19 +7,24 @@
 
 namespace remoting {
 
+namespace {
+
+const float kTapFeedbackRadius = 25.f;
+const float kLongPressFeedbackRadius = 55.f;
+
+}  // namespace
+
 DirectInputStrategy::DirectInputStrategy() {}
 
 DirectInputStrategy::~DirectInputStrategy() {}
 
-void DirectInputStrategy::HandlePinch(float pivot_x,
-                                      float pivot_y,
+void DirectInputStrategy::HandlePinch(const ViewMatrix::Point& pivot,
                                       float scale,
                                       DesktopViewport* viewport) {
-  viewport->ScaleDesktop(pivot_x, pivot_y, scale);
+  viewport->ScaleDesktop(pivot.x, pivot.y, scale);
 }
 
-void DirectInputStrategy::HandlePan(float translation_x,
-                                    float translation_y,
+void DirectInputStrategy::HandlePan(const ViewMatrix::Vector2D& translation,
                                     bool is_dragging_mode,
                                     DesktopViewport* viewport) {
   if (is_dragging_mode) {
@@ -27,24 +32,33 @@ void DirectInputStrategy::HandlePan(float translation_x,
     // with the object that the user is trying to move on the desktop, rather
     // than moving the desktop around.
     ViewMatrix::Vector2D viewport_movement =
-        viewport->GetTransformation().Invert().MapVector(
-            {translation_x, translation_y});
+        viewport->GetTransformation().Invert().MapVector(translation);
     viewport->MoveViewport(viewport_movement.x, viewport_movement.y);
     return;
   }
 
-  viewport->MoveDesktop(translation_x, translation_y);
+  viewport->MoveDesktop(translation.x, translation.y);
 }
 
-void DirectInputStrategy::FindCursorPositions(float touch_x,
-                                              float touch_y,
-                                              const DesktopViewport& viewport,
-                                              float* cursor_x,
-                                              float* cursor_y) {
-  ViewMatrix::Point cursor_position =
-      viewport.GetTransformation().Invert().MapPoint({touch_x, touch_y});
-  *cursor_x = cursor_position.x;
-  *cursor_y = cursor_position.y;
+void DirectInputStrategy::TrackTouchInput(const ViewMatrix::Point& touch_point,
+                                          const DesktopViewport& viewport) {
+  cursor_position_ =
+      viewport.GetTransformation().Invert().MapPoint(touch_point);
+}
+
+ViewMatrix::Point DirectInputStrategy::GetCursorPosition() const {
+  return cursor_position_;
+}
+
+float DirectInputStrategy::GetFeedbackRadius(InputFeedbackType type) const {
+  switch (type) {
+    case InputFeedbackType::TAP_FEEDBACK:
+      return kTapFeedbackRadius;
+    case InputFeedbackType::LONG_PRESS_FEEDBACK:
+      return kLongPressFeedbackRadius;
+  }
+  NOTREACHED();
+  return 0.f;
 }
 
 bool DirectInputStrategy::IsCursorVisible() const {

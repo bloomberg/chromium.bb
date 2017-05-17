@@ -21,6 +21,7 @@
 #include "remoting/client/chromoting_session.h"
 #include "remoting/client/connect_to_host_info.h"
 #include "remoting/client/ui/gesture_interpreter.h"
+#include "remoting/client/ui/renderer_proxy.h"
 #include "remoting/ios/session/remoting_client_session_delegate.h"
 #include "remoting/protocol/session.h"
 #include "remoting/protocol/video_renderer.h"
@@ -39,6 +40,7 @@ NSString* const kHostSessionPin = @"kHostSessionPin";
   ClientSessionDetails* _sessionDetails;
   // Call _secretFetchedCallback on the network thread.
   remoting::protocol::SecretFetchedCallback _secretFetchedCallback;
+  std::unique_ptr<remoting::RendererProxy> _renderer;
   std::unique_ptr<remoting::GestureInterpreter> _gestureInterpreter;
   //  std::unique_ptr<remoting::KeyboardInterpreter> _keyboardInterpreter;
 }
@@ -121,12 +123,10 @@ NSString* const kHostSessionPin = @"kHostSessionPin";
       [_displayHandler CreateVideoRenderer], audioPlayer, info,
       client_auth_config));
 
-  __weak GlDisplayHandler* weakDisplayHandler = _displayHandler;
-  _gestureInterpreter.reset(new remoting::GestureInterpreter(
-      base::BindBlockArc(^(const remoting::ViewMatrix& matrix) {
-        [weakDisplayHandler onPixelTransformationChanged:matrix];
-      }),
-      _session.get()));
+  _renderer = [_displayHandler CreateRendererProxy];
+
+  _gestureInterpreter.reset(
+      new remoting::GestureInterpreter(_renderer.get(), _session.get()));
 
   _session->Connect();
 }

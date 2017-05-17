@@ -19,25 +19,26 @@ class DirectInputStrategy : public InputStrategy {
 
   // InputStrategy overrides.
 
-  void HandlePinch(float pivot_x,
-                   float pivot_y,
+  void HandlePinch(const ViewMatrix::Point& pivot,
                    float scale,
                    DesktopViewport* viewport) override;
 
-  void HandlePan(float translation_x,
-                 float translation_y,
+  void HandlePan(const ViewMatrix::Vector2D& translation,
                  bool is_dragging_mode,
                  DesktopViewport* viewport) override;
 
-  void FindCursorPositions(float touch_x,
-                           float touch_y,
-                           const DesktopViewport& viewport,
-                           float* cursor_x,
-                           float* cursor_y) override;
+  void TrackTouchInput(const ViewMatrix::Point& touch_point,
+                       const DesktopViewport& viewport) override;
+
+  ViewMatrix::Point GetCursorPosition() const override;
+
+  float GetFeedbackRadius(InputFeedbackType type) const override;
 
   bool IsCursorVisible() const override;
 
  private:
+  ViewMatrix::Point cursor_position_{0.f, 0.f};
+
   // TouchInputStrategy is neither copyable nor movable.
   DirectInputStrategy(const DirectInputStrategy&) = delete;
   DirectInputStrategy& operator=(const DirectInputStrategy&) = delete;
