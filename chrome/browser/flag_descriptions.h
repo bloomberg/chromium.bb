@@ -822,6 +822,9 @@ extern const char kChromeHomeExpandButtonDescription[];
 extern const char kChromeHomeName[];
 extern const char kChromeHomeDescription[];
 
+extern const char kChromeHomeNtpRedesignName[];
+extern const char kChromeHomeNtpRedesignDescription[];
+
 extern const char kContentSuggestionsCategoryOrderName[];
 extern const char kContentSuggestionsCategoryOrderDescription[];
 

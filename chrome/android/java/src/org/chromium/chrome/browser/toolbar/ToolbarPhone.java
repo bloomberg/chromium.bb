@@ -514,7 +514,7 @@ public class ToolbarPhone extends ToolbarLayout
             super.onMeasure(widthMeasureSpec, heightMeasureSpec);
 
             boolean changed = layoutLocationBar(MeasureSpec.getSize(widthMeasureSpec));
-            if (mTabSwitcherState == STATIC_TAB) updateUrlExpansionAnimation();
+            if (!isInTabSwitcherMode()) updateUrlExpansionAnimation();
             if (!changed) return;
         } else {
             updateUnfocusedLocationBarLayoutParams();
@@ -738,6 +738,13 @@ public class ToolbarPhone extends ToolbarLayout
     }
 
     /**
+     * @return True if the toolbar is showing tab switcher assets, including during transitions.
+     */
+    public boolean isInTabSwitcherMode() {
+        return mTabSwitcherState != STATIC_TAB;
+    }
+
+    /**
      * Calculate the bounds for the location bar background and set them to {@code out}.
      */
     protected void updateLocationBarBackgroundBounds(Rect out, VisualState visualState) {
@@ -787,7 +794,7 @@ public class ToolbarPhone extends ToolbarLayout
      * focus change or scrolling the New Tab Page.
      */
     protected void updateUrlExpansionAnimation() {
-        if (mTabSwitcherState != STATIC_TAB) {
+        if (isInTabSwitcherMode()) {
             mToolbarButtonsContainer.setVisibility(VISIBLE);
             return;
         }
@@ -1491,6 +1498,14 @@ public class ToolbarPhone extends ToolbarLayout
     @Override
     protected void setTabSwitcherMode(
             boolean inTabSwitcherMode, boolean showToolbar, boolean delayAnimation) {
+        setTabSwitcherMode(inTabSwitcherMode, showToolbar, delayAnimation, true);
+    }
+
+    /**
+     * See {@link #setTabSwitcherMode(boolean, boolean, boolean)}.
+     */
+    protected void setTabSwitcherMode(boolean inTabSwitcherMode, boolean showToolbar,
+            boolean delayAnimation, boolean animate) {
         // If setting tab switcher mode to true and the browser is already animating or in the tab
         // switcher skip.
         if (inTabSwitcherMode && (mTabSwitcherState == TAB_SWITCHER
@@ -1534,7 +1549,7 @@ public class ToolbarPhone extends ToolbarLayout
         mAnimateNormalToolbar = showToolbar;
         if (mTabSwitcherModeAnimation != null) mTabSwitcherModeAnimation.start();
 
-        if (DeviceClassManager.enableAccessibilityLayout()) finishAnimations();
+        if (DeviceClassManager.enableAccessibilityLayout() || !animate) finishAnimations();
 
         postInvalidateOnAnimation();
     }
@@ -2019,12 +2034,19 @@ public class ToolbarPhone extends ToolbarLayout
     }
 
     private void updateShadowVisibility() {
-        boolean shouldDrawShadow = mTabSwitcherState == STATIC_TAB;
+        boolean shouldDrawShadow = shouldDrawShadow();
         int shadowVisibility = shouldDrawShadow ? View.VISIBLE : View.INVISIBLE;
 
         if (mToolbarShadow.getVisibility() != shadowVisibility) {
             mToolbarShadow.setVisibility(shadowVisibility);
         }
+    }
+
+    /**
+     * @return Whether the toolbar shadow should be drawn.
+     */
+    protected boolean shouldDrawShadow() {
+        return mTabSwitcherState == STATIC_TAB;
     }
 
     private VisualState computeVisualState(boolean isInTabSwitcherMode) {

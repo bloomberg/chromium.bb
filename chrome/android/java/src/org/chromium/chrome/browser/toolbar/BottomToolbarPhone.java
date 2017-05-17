@@ -146,11 +146,25 @@ public class BottomToolbarPhone extends ToolbarPhone {
         return !ColorUtils.shouldUseLightForegroundOnBackground(getTabThemeColor());
     }
 
-    /**
-     * @return True if the toolbar is showing tab switcher assets, including during transitions.
-     */
+    @Override
     public boolean isInTabSwitcherMode() {
-        return mTabSwitcherState != STATIC_TAB;
+        return !mBottomSheet.isSheetOpen() && super.isInTabSwitcherMode();
+    }
+
+    @Override
+    protected boolean shouldDrawShadow() {
+        return mBottomSheet.isSheetOpen() || super.shouldDrawShadow();
+    }
+
+    /** Shows the tab switcher toolbar. */
+    public void showTabSwitcherToolbar() {
+        setTabSwitcherMode(true, true, false);
+    }
+
+    /** Shows the normal toolbar. */
+    public void showNormalToolbar() {
+        // TODO(twellington): Add animation.
+        setTabSwitcherMode(false, true, false, false);
     }
 
     @Override

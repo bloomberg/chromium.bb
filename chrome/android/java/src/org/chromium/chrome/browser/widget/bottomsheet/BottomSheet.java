@@ -30,8 +30,10 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.ObserverList;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.NativePageHost;
 import org.chromium.chrome.browser.TabLoadStatus;
+import org.chromium.chrome.browser.compositor.layouts.LayoutManagerChrome;
 import org.chromium.chrome.browser.firstrun.FirstRunStatus;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.ntp.NativePageFactory;
@@ -131,8 +133,14 @@ public class BottomSheet
     /** The minimum distance between half and full states to allow the half state. */
     private final float mMinHalfFullDistance;
 
-    /** The  {@link BottomSheetMetrics} used to record user actions and histograms. */
+    /** The {@link BottomSheetMetrics} used to record user actions and histograms. */
     private final BottomSheetMetrics mMetrics;
+
+    /**
+     * The {@link BottomSheetNewTabController} used to present the new tab UI when
+     * {@link ChromeFeatureList#CHROME_HOME_NTP_REDESIGN} is enabled.
+     */
+    private BottomSheetNewTabController mNtpController;
 
     /** For detecting scroll and fling events on the bottom sheet. */
     private GestureDetector mGestureDetector;
@@ -479,6 +487,15 @@ public class BottomSheet
                 }
             });
         }
+
+        mNtpController.setTabModelSelector(tabModelSelector);
+    }
+
+    /**
+     * @param layoutManager The {@link LayoutManagerChrome} used to show and hide overview mode.
+     */
+    public void setLayoutManagerChrome(LayoutManagerChrome layoutManager) {
+        mNtpController.setLayoutManagerChrome(layoutManager);
     }
 
     /**
@@ -562,6 +579,8 @@ public class BottomSheet
 
         mToolbarHolder = (FrameLayout) mControlContainer.findViewById(R.id.toolbar_holder);
         mDefaultToolbarView = (BottomToolbarPhone) mControlContainer.findViewById(R.id.toolbar);
+
+        mNtpController = new BottomSheetNewTabController(this, mDefaultToolbarView);
     }
 
     /**
@@ -581,6 +600,7 @@ public class BottomSheet
 
     @Override
     public int loadUrl(LoadUrlParams params, boolean incognito) {
+        boolean isShowingNtp = isShowingNewTab();
         for (BottomSheetObserver o : mObservers) o.onLoadUrl(params.getUrl());
 
         // Native page URLs in this context do not need to communicate with the tab.
@@ -595,7 +615,7 @@ public class BottomSheet
         assert mTabModelSelector != null;
 
         // First try to get the tab behind the sheet.
-        if (getActiveTab() != null && getActiveTab().isIncognito() == incognito) {
+        if (!isShowingNtp && getActiveTab() != null && getActiveTab().isIncognito() == incognito) {
             return getActiveTab().loadUrl(params);
         }
 
@@ -603,6 +623,24 @@ public class BottomSheet
         mTabModelSelector.openNewTab(
                 params, TabModel.TabLaunchType.FROM_CHROME_UI, getActiveTab(), incognito);
         return TabLoadStatus.DEFAULT_PAGE_LOAD;
+    }
+
+    /**
+     * Load a non-native URL in a new tab. This should be used when the new tab UI controlled by
+     * {@link BottomSheetContentController} is showing.
+     * @param params The params describing the URL to be loaded.
+     */
+    public void loadUrlInNewTab(LoadUrlParams params) {
+        assert isShowingNewTab();
+
+        loadUrl(params, mTabModelSelector.isIncognitoSelected());
+    }
+
+    /**
+     * Called when the activity containing the {@link BottomSheet} processes a url view intent.
+     */
+    public void onProcessUrlViewIntent() {
+        mNtpController.onProcessUrlViewIntent();
     }
 
     @Override
@@ -618,7 +656,9 @@ public class BottomSheet
 
     @Override
     public Tab getActiveTab() {
-        return mTabModelSelector == null ? null : mTabModelSelector.getCurrentTab();
+        return mTabModelSelector == null || mNtpController.isShowingNewTab()
+                ? null
+                : mTabModelSelector.getCurrentTab();
     }
 
     @Override
@@ -1131,6 +1171,22 @@ public class BottomSheet
     public void onFadingViewVisibilityChanged(boolean visible) {}
 
     /**
+     * @return Whether the {@link BottomSheetNewTabController} is showing the new tab UI. This
+     *         returns true if a normal or incognito new tab is showing.
+     */
+    public boolean isShowingNewTab() {
+        return mNtpController.isShowingNewTab();
+    }
+
+    /**
+     * Tells {@link BottomSheetNewTabController} to display the new tab UI.
+     * @param isIncognito Whether to display the incognito new tab UI.
+     */
+    public void displayNewTabUi(boolean isIncognito) {
+        mNtpController.displayNewTabUi(isIncognito);
+    }
+
+    /**
      * Checks whether the sheet can be moved. It cannot be moved when the activity is in overview
      * mode, when "find in page" is visible, or when the toolbar is hidden.
      */
@@ -1147,7 +1203,9 @@ public class BottomSheet
         if (mFindInPageView == null) mFindInPageView = findViewById(R.id.find_toolbar);
         boolean isFindInPageVisible =
                 mFindInPageView != null && mFindInPageView.getVisibility() == View.VISIBLE;
-        return !isToolbarAndroidViewHidden() && !isInOverviewMode && !isFindInPageVisible
+
+        return !isToolbarAndroidViewHidden()
+                && (!isInOverviewMode || mNtpController.isShowingNewTab()) && !isFindInPageVisible
                 && !blockPeekingSwipes;
     }
 

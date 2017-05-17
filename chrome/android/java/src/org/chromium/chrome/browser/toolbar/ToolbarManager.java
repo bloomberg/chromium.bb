@@ -325,7 +325,8 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
         mTabObserver = new EmptyTabObserver() {
             @Override
             public void onSSLStateUpdated(Tab tab) {
-                super.onSSLStateUpdated(tab);
+                if (mToolbarModel.getTab() == null) return;
+
                 assert tab == mToolbarModel.getTab();
                 mLocationBar.updateSecurityIcon(tab.getSecurityLevel());
             }
@@ -1247,7 +1248,9 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
         }
 
         Profile profile = mTabModelSelector.getModel(isIncognito).getProfile();
-        if (mCurrentProfile != profile) {
+
+        // The profile may be null if the model is not yet initialized.
+        if (profile != null && mCurrentProfile != profile) {
             if (mBookmarkBridge != null) mBookmarkBridge.destroy();
             mBookmarkBridge = new BookmarkBridge(profile);
             mBookmarkBridge.addObserver(mBookmarksObserver);
@@ -1295,7 +1298,9 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
         // TODO(kkimlabs): Investigate back/forward navigation with native page & web content and
         //                 figure out the correct progress bar presentation.
         Tab tab = mToolbarModel.getTab();
-        if (NativePageFactory.isNativePageUrl(tab.getUrl(), tab.isIncognito())) return;
+        if (tab == null || NativePageFactory.isNativePageUrl(tab.getUrl(), tab.isIncognito())) {
+            return;
+        }
 
         progress = Math.max(progress, MINIMUM_LOAD_PROGRESS);
         mToolbar.setLoadProgress(progress / 100f);

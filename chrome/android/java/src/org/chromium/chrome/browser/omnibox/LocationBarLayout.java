@@ -2093,10 +2093,11 @@ public class LocationBarLayout extends FrameLayout
         // If the URL is currently focused, do not replace the text they have entered with the URL.
         // Once they stop editing the URL, the current tab's URL will automatically be filled in.
         if (mUrlBar.hasFocus()) {
-            if (mUrlFocusedWithoutAnimations && !NewTabPage.isNTPUrl(url)) {
+            if ((mUrlFocusedWithoutAnimations && !NewTabPage.isNTPUrl(url))
+                    || (mBottomSheet != null && mBottomSheet.isShowingNewTab())) {
                 // If we did not run the focus animations, then the user has not typed any text.
                 // So, clear the focus and accept whatever URL the page is currently attempting to
-                // display.
+                // display. If the NTP is showing, the current page's URL should not be displayed.
                 setUrlBarFocus(false);
             } else {
                 return;
@@ -2188,8 +2189,16 @@ public class LocationBarLayout extends FrameLayout
             if (url.isEmpty()) url = currentTab.getUrl();
         }
 
-        // Loads the |url| in the current ContentView and gives focus to the ContentView.
-        if (currentTab != null && !url.isEmpty()) {
+        // Loads the |url| in a new tab or the current ContentView and gives focus to the
+        // ContentView.
+        if (mBottomSheet != null && mBottomSheet.isShowingNewTab()) {
+            LoadUrlParams loadUrlParams = new LoadUrlParams(url);
+            loadUrlParams.setTransitionType(transition | PageTransition.FROM_ADDRESS_BAR);
+            mBottomSheet.loadUrlInNewTab(loadUrlParams);
+
+            currentTab = getCurrentTab();
+            RecordUserAction.record("MobileOmniboxUse");
+        } else if (currentTab != null && !url.isEmpty()) {
             LoadUrlParams loadUrlParams = new LoadUrlParams(url);
             loadUrlParams.setVerbatimHeaders(GeolocationHeader.getGeoHeader(url, currentTab));
             loadUrlParams.setTransitionType(transition | PageTransition.FROM_ADDRESS_BAR);
@@ -2408,7 +2417,9 @@ public class LocationBarLayout extends FrameLayout
                     ColorUtils.shouldUseLightForegroundOnBackground(currentPrimaryColor);
         }
 
-        boolean useDarkColors = tab == null || !(tab.isIncognito() || brandColorNeedsLightText);
+        boolean useDarkColors =
+                (mToolbarDataProvider == null || !mToolbarDataProvider.isIncognito())
+                && (tab == null || !(tab.isIncognito() || brandColorNeedsLightText));
         boolean hasChanged = useDarkColors != mUseDarkColors;
         mUseDarkColors = useDarkColors;
 
