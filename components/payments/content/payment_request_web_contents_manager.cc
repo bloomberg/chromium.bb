@@ -10,6 +10,7 @@
 #include "base/memory/ptr_util.h"
 #include "components/payments/content/payment_request.h"
 #include "components/payments/core/payment_request_delegate.h"
+#include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
 
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(payments::PaymentRequestWebContentsManager);
@@ -40,6 +41,16 @@ void PaymentRequestWebContentsManager::CreatePaymentRequest(
   payment_requests_.insert(std::make_pair(request_ptr, std::move(new_request)));
 }
 
+void PaymentRequestWebContentsManager::DidStartNavigation(
+    content::NavigationHandle* navigation_handle) {
+  for (auto& it : payment_requests_) {
+    // Since the PaymentRequest dialog blocks the content of the page, the user
+    // cannot click on a link to navigate away. Therefore, if the navigation
+    // is initiated in the renderer, it does not come from the user.
+    it.second->DidStartNavigation(!navigation_handle->IsRendererInitiated());
+  }
+}
+
 void PaymentRequestWebContentsManager::DestroyRequest(PaymentRequest* request) {
   if (request == showing_)
     showing_ = nullptr;
@@ -59,6 +70,6 @@ bool PaymentRequestWebContentsManager::CanShow(PaymentRequest* request) {
 
 PaymentRequestWebContentsManager::PaymentRequestWebContentsManager(
     content::WebContents* web_contents)
-    : showing_(nullptr) {}
+    : content::WebContentsObserver(web_contents), showing_(nullptr) {}
 
 }  // namespace payments

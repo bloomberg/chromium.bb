@@ -72,7 +72,10 @@ JourneyLogger::JourneyLogger(bool is_incognito,
       url_(url),
       ukm_service_(ukm_service) {}
 
-JourneyLogger::~JourneyLogger() {}
+JourneyLogger::~JourneyLogger() {
+  if (was_show_called_)
+    DCHECK(has_recorded_);
+}
 
 void JourneyLogger::IncrementSelectionAdds(Section section) {
   DCHECK_LT(section, SECTION_MAX);

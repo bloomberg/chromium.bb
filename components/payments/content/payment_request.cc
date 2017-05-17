@@ -152,8 +152,7 @@ void PaymentRequest::Abort() {
   // the renderer, which closes the Mojo message pipe, which triggers
   // PaymentRequest::OnConnectionTerminated, which destroys this object.
   // TODO(crbug.com/716546): Add a merchant abort metric,
-  journey_logger_.RecordJourneyStatsHistograms(
-      JourneyLogger::COMPLETION_STATUS_OTHER_ABORTED);
+  RecordFirstCompletionStatus(JourneyLogger::COMPLETION_STATUS_OTHER_ABORTED);
   if (client_.is_bound())
     client_->OnAbort(true /* aborted_successfully */);
 }
@@ -226,8 +225,7 @@ void PaymentRequest::UserCancelled() {
   if (!client_.is_bound())
     return;
 
-  journey_logger_.RecordJourneyStatsHistograms(
-      JourneyLogger::COMPLETION_STATUS_USER_ABORTED);
+  RecordFirstCompletionStatus(JourneyLogger::COMPLETION_STATUS_USER_ABORTED);
 
   // This sends an error to the renderer, which informs the API user.
   client_->OnError(mojom::PaymentErrorReason::USER_CANCEL);
@@ -238,6 +236,12 @@ void PaymentRequest::UserCancelled() {
   if (observer_for_testing_)
     observer_for_testing_->OnConnectionTerminated();
   manager_->DestroyRequest(this);
+}
+
+void PaymentRequest::DidStartNavigation(bool is_user_initiated) {
+  RecordFirstCompletionStatus(
+      is_user_initiated ? JourneyLogger::COMPLETION_STATUS_USER_ABORTED
+                        : JourneyLogger::COMPLETION_STATUS_OTHER_ABORTED);
 }
 
 void PaymentRequest::OnConnectionTerminated() {
@@ -256,6 +260,14 @@ void PaymentRequest::OnConnectionTerminated() {
 
 void PaymentRequest::Pay() {
   state_->GeneratePaymentResponse();
+}
+
+void PaymentRequest::RecordFirstCompletionStatus(
+    JourneyLogger::CompletionStatus completion_status) {
+  if (!has_recorded_abort_reason_) {
+    has_recorded_abort_reason_ = true;
+    journey_logger_.RecordJourneyStatsHistograms(completion_status);
+  }
 }
 
 }  // namespace payments
