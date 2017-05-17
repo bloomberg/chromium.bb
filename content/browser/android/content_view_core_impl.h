@@ -308,6 +308,9 @@ class ContentViewCoreImpl : public ContentViewCore,
                                 const gfx::PointF& extent);
 
   void OnShowUnhandledTapUIIfNeeded(int x_dip, int y_dip);
+  void OnSelectWordAroundCaretAck(bool did_select,
+                                  int start_adjust,
+                                  int end_adjust);
   void OnTouchDown(const base::android::ScopedJavaLocalRef<jobject>& event);
 
   ui::ViewAndroid* GetViewAndroid() const;

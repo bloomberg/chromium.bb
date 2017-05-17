@@ -869,6 +869,13 @@ IPC_MESSAGE_ROUTED0(ViewHostMsg_DidFirstVisuallyNonEmptyPaint)
 // Sent in reply to ViewMsg_WaitForNextFrameForTests.
 IPC_MESSAGE_ROUTED0(ViewHostMsg_WaitForNextFrameForTests_ACK)
 
+// Acknowledges that a SelectWordAroundCaret completed with the specified
+// result and adjustments to the selection offsets.
+IPC_MESSAGE_ROUTED3(ViewHostMsg_SelectWordAroundCaretAck,
+                    bool /* did_select */,
+                    int /* start_adjust */,
+                    int /* end_adjust */)
+
 #if defined(OS_ANDROID)
 // Notifies that an unhandled tap has occurred at the specified x,y position
 // and that the UI may need to be triggered.

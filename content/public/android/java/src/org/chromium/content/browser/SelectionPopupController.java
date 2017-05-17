@@ -1064,6 +1064,12 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
         }
     }
 
+    void onSelectWordAroundCaretAck(boolean didSelect, int startAdjust, int endAdjust) {
+        if (mSelectionClient != null) {
+            mSelectionClient.selectWordAroundCaretAck(didSelect, startAdjust, endAdjust);
+        }
+    }
+
     void destroyActionModeAndUnselect() {
         mUnselectAllOnDismiss = true;
         finishActionMode();

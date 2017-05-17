@@ -526,6 +526,8 @@ bool RenderWidgetHostViewAndroid::OnMessageReceived(
   IPC_BEGIN_MESSAGE_MAP(RenderWidgetHostViewAndroid, message)
     IPC_MESSAGE_HANDLER(ViewHostMsg_ShowUnhandledTapUIIfNeeded,
                         OnShowUnhandledTapUIIfNeeded)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_SelectWordAroundCaretAck,
+                        OnSelectWordAroundCaretAck)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -649,6 +651,15 @@ void RenderWidgetHostViewAndroid::OnShowUnhandledTapUIIfNeeded(int x_dip,
       y_dip < 0 || y_dip > viewport_size.height())
     return;
   content_view_core_->OnShowUnhandledTapUIIfNeeded(x_dip, y_dip);
+}
+
+void RenderWidgetHostViewAndroid::OnSelectWordAroundCaretAck(bool did_select,
+                                                             int start_adjust,
+                                                             int end_adjust) {
+  if (!content_view_core_)
+    return;
+  content_view_core_->OnSelectWordAroundCaretAck(did_select, start_adjust,
+                                                 end_adjust);
 }
 
 gfx::Rect RenderWidgetHostViewAndroid::GetViewBounds() const {

@@ -1209,6 +1209,17 @@ void ContentViewCoreImpl::OnShowUnhandledTapUIIfNeeded(int x_dip, int y_dip) {
       static_cast<jint>(y_dip * dpi_scale()));
 }
 
+void ContentViewCoreImpl::OnSelectWordAroundCaretAck(bool did_select,
+                                                     int start_adjust,
+                                                     int end_adjust) {
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
+  if (obj.is_null())
+    return;
+  Java_ContentViewCore_onSelectWordAroundCaretAck(env, obj, did_select,
+                                                  start_adjust, end_adjust);
+}
+
 void ContentViewCoreImpl::HidePopupsAndPreserveSelection() {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
