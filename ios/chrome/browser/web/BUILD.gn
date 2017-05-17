@@ -343,6 +343,7 @@ source_set("eg_tests") {
 }
 
 source_set("perf_tests") {
+  configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
   sources = [
     "early_page_script_perftest.mm",
