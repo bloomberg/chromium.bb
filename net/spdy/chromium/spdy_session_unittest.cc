@@ -11,6 +11,7 @@
 #include "base/base64.h"
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/test/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
@@ -154,8 +155,7 @@ class SpdySessionTest : public PlatformTest {
     DCHECK(!spdy_session_pool_);
     http_session_ =
         SpdySessionDependencies::SpdyCreateSession(&session_deps_);
-    std::unique_ptr<TestServerPushDelegate> test_push_delegate(
-        new TestServerPushDelegate());
+    auto test_push_delegate = base::MakeUnique<TestServerPushDelegate>();
     test_push_delegate_ = test_push_delegate.get();
     http_session_->SetServerPushDelegate(std::move(test_push_delegate));
     spdy_session_pool_ = http_session_->spdy_session_pool();
@@ -294,7 +294,7 @@ TEST_F(SpdySessionTest, PendingStreamCancellingAnother) {
   }
 
   SpdyStreamRequest request1;
-  std::unique_ptr<SpdyStreamRequest> request2(new SpdyStreamRequest);
+  auto request2 = base::MakeUnique<SpdyStreamRequest>();
 
   StreamRequestDestroyingCallback callback1;
   ASSERT_EQ(ERR_IO_PENDING,
@@ -652,7 +652,7 @@ TEST_F(SpdySessionTest, GoAwayWhileDraining) {
   size_t joint_size = goaway.size() * 2 + body.size();
 
   // Compose interleaved |goaway| and |body| frames into a single read.
-  std::unique_ptr<char[]> buffer(new char[joint_size]);
+  auto buffer = base::MakeUnique<char[]>(joint_size);
   {
     size_t out = 0;
     memcpy(&buffer[out], goaway.data(), goaway.size());
@@ -1906,7 +1906,7 @@ TEST_F(SpdySessionTest, CancelPendingCreateStream) {
 
   // Use unique_ptr to let us invalidate the memory when we want to, to trigger
   // a valgrind error if the callback is invoked when it's not supposed to be.
-  std::unique_ptr<TestCompletionCallback> callback(new TestCompletionCallback);
+  auto callback = base::MakeUnique<TestCompletionCallback>();
 
   SpdyStreamRequest request;
   ASSERT_THAT(
@@ -3364,7 +3364,7 @@ TEST_F(SpdySessionTest, CloseOneIdleConnection) {
   scoped_refptr<TransportSocketParams> params2(new TransportSocketParams(
       host_port2, false, OnHostResolutionCallback(),
       TransportSocketParams::COMBINE_CONNECT_AND_WRITE_DEFAULT));
-  std::unique_ptr<ClientSocketHandle> connection2(new ClientSocketHandle);
+  auto connection2 = base::MakeUnique<ClientSocketHandle>();
   EXPECT_EQ(ERR_IO_PENDING,
             connection2->Init(host_port2.ToString(), params2, DEFAULT_PRIORITY,
                               ClientSocketPool::RespectLimits::ENABLED,
@@ -3444,7 +3444,7 @@ TEST_F(SpdySessionTest, CloseOneIdleConnectionWithAlias) {
   scoped_refptr<TransportSocketParams> params3(new TransportSocketParams(
       host_port3, false, OnHostResolutionCallback(),
       TransportSocketParams::COMBINE_CONNECT_AND_WRITE_DEFAULT));
-  std::unique_ptr<ClientSocketHandle> connection3(new ClientSocketHandle);
+  auto connection3 = base::MakeUnique<ClientSocketHandle>();
   EXPECT_EQ(ERR_IO_PENDING,
             connection3->Init(host_port3.ToString(), params3, DEFAULT_PRIORITY,
                               ClientSocketPool::RespectLimits::ENABLED,
@@ -3523,7 +3523,7 @@ TEST_F(SpdySessionTest, CloseSessionOnIdleWhenPoolStalled) {
   scoped_refptr<TransportSocketParams> params2(new TransportSocketParams(
       host_port2, false, OnHostResolutionCallback(),
       TransportSocketParams::COMBINE_CONNECT_AND_WRITE_DEFAULT));
-  std::unique_ptr<ClientSocketHandle> connection2(new ClientSocketHandle);
+  auto connection2 = base::MakeUnique<ClientSocketHandle>();
   EXPECT_EQ(ERR_IO_PENDING,
             connection2->Init(host_port2.ToString(), params2, DEFAULT_PRIORITY,
                               ClientSocketPool::RespectLimits::ENABLED,
@@ -5097,7 +5097,7 @@ TEST_F(SpdySessionTest, TrustedSpdyProxy) {
   SequencedSocketData data(reads, arraysize(reads), writes, arraysize(writes));
   session_deps_.socket_factory->AddSocketDataProvider(&data);
 
-  std::unique_ptr<TestProxyDelegate> proxy_delegate(new TestProxyDelegate());
+  auto proxy_delegate = base::MakeUnique<TestProxyDelegate>();
   proxy_delegate->set_trusted_spdy_proxy(
       net::ProxyServer(net::ProxyServer::SCHEME_HTTPS,
                        HostPortPair(GURL(kDefaultUrl).host(), 443)));
@@ -5604,8 +5604,8 @@ class AltSvcFrameTest : public SpdySessionTest {
     reads_.push_back(CreateMockRead(altsvc_frame_, 0));
     reads_.push_back(MockRead(ASYNC, 0, 1));
 
-    data_.reset(
-        new SequencedSocketData(reads_.data(), reads_.size(), nullptr, 0));
+    data_ = base::MakeUnique<SequencedSocketData>(reads_.data(), reads_.size(),
+                                                  nullptr, 0);
     session_deps_.socket_factory->AddSocketDataProvider(data_.get());
   }
 
