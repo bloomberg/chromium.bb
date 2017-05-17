@@ -167,6 +167,24 @@ void VrGLThread::SetWebVrSecureOrigin(bool secure) {
                                      weak_scene_manager_, secure));
 }
 
+void VrGLThread::SetAudioCapturingIndicator(bool enabled) {
+  task_runner()->PostTask(
+      FROM_HERE, base::Bind(&UiSceneManager::SetAudioCapturingIndicator,
+                            weak_scene_manager_, enabled));
+}
+
+void VrGLThread::SetVideoCapturingIndicator(bool enabled) {
+  task_runner()->PostTask(
+      FROM_HERE, base::Bind(&UiSceneManager::SetVideoCapturingIndicator,
+                            weak_scene_manager_, enabled));
+}
+
+void VrGLThread::SetScreenCapturingIndicator(bool enabled) {
+  task_runner()->PostTask(
+      FROM_HERE, base::Bind(&UiSceneManager::SetScreenCapturingIndicator,
+                            weak_scene_manager_, enabled));
+}
+
 void VrGLThread::CleanUp() {
   scene_manager_.reset();
   vr_shell_gl_.reset();

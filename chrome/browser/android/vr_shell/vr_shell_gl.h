@@ -108,10 +108,6 @@ class VrShellGl : public device::mojom::VRVSyncProvider {
   void SetSubmitClient(
       device::mojom::VRSubmitFrameClientPtrInfo submit_client_info);
 
-  void SetAudioCapturingWarning(bool is_capturing);
-  void SetVideoCapturingWarning(bool is_capturing);
-  void SetScreenCapturingWarning(bool is_capturing);
-
  private:
   void GvrInit(gvr_context* gvr_api);
   void InitializeRenderer();

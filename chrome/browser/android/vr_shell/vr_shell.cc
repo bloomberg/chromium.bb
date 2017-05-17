@@ -574,30 +574,18 @@ void VrShell::PollMediaAccessFlag() {
       MediaCaptureDevicesDispatcher::GetInstance()
           ->GetMediaStreamCaptureIndicator();
   bool is_capturing_audio = indicator->IsCapturingAudio(web_contents_);
-  if (is_capturing_audio != is_capturing_audio_) {
-    WaitForGlThread();
-    PostToGlThread(FROM_HERE,
-                   base::Bind(&VrShellGl::SetAudioCapturingWarning,
-                              gl_thread_->GetVrShellGl(), is_capturing_audio));
-  }
+  if (is_capturing_audio != is_capturing_audio_)
+    ui_->SetAudioCapturingIndicator(is_capturing_audio);
   is_capturing_audio_ = is_capturing_audio;
 
   bool is_capturing_video = indicator->IsCapturingVideo(web_contents_);
-  if (is_capturing_video != is_capturing_video_) {
-    WaitForGlThread();
-    PostToGlThread(FROM_HERE,
-                   base::Bind(&VrShellGl::SetVideoCapturingWarning,
-                              gl_thread_->GetVrShellGl(), is_capturing_video));
-  }
+  if (is_capturing_video != is_capturing_video_)
+    ui_->SetVideoCapturingIndicator(is_capturing_video);
   is_capturing_video_ = is_capturing_video;
 
   bool is_capturing_screen = indicator->IsBeingMirrored(web_contents_);
-  if (is_capturing_screen != is_capturing_screen_) {
-    WaitForGlThread();
-    PostToGlThread(FROM_HERE,
-                   base::Bind(&VrShellGl::SetScreenCapturingWarning,
-                              gl_thread_->GetVrShellGl(), is_capturing_screen));
-  }
+  if (is_capturing_screen != is_capturing_screen_)
+    ui_->SetScreenCapturingIndicator(is_capturing_screen);
   is_capturing_screen_ = is_capturing_screen;
 }
 

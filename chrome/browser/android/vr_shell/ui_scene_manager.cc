@@ -131,7 +131,7 @@ void UiSceneManager::CreateSystemIndicators() {
   element->set_translation({-0.3, 0.8, -1.9});
   element->set_size({0.4, 0, 1});
   element->set_visible(false);
-  audio_input_indicator_ = element.get();
+  audio_capture_indicator_ = element.get();
   scene_->AddUiElement(std::move(element));
 
   element = base::MakeUnique<VideoCaptureIndicator>(256);
@@ -139,7 +139,7 @@ void UiSceneManager::CreateSystemIndicators() {
   element->set_translation({0.3, 0.8, -1.9});
   element->set_size({0.4, 0, 1});
   element->set_visible(false);
-  video_input_indicator_ = element.get();
+  video_capture_indicator_ = element.get();
   scene_->AddUiElement(std::move(element));
 }
 
@@ -299,6 +299,18 @@ void UiSceneManager::ConfigureScene() {
 
   scene_->SetBackgroundDistance(main_content_->translation().z() *
                                 -kBackgroundDistanceMultiplier);
+}
+
+void UiSceneManager::SetAudioCapturingIndicator(bool enabled) {
+  audio_capture_indicator_->set_visible(enabled);
+}
+
+void UiSceneManager::SetVideoCapturingIndicator(bool enabled) {
+  video_capture_indicator_->set_visible(enabled);
+}
+
+void UiSceneManager::SetScreenCapturingIndicator(bool enabled) {
+  // TODO(asimjour) add the indicator and change the visibility here.
 }
 
 void UiSceneManager::SetWebVrSecureOrigin(bool secure) {
