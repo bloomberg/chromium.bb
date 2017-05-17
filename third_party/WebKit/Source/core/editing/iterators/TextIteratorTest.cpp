@@ -777,11 +777,145 @@ TEST_F(TextIteratorTest, StartInMultiCharFirstLetterWithCollapsedSpace) {
   EXPECT_EQ("A) xyz", String(buffer.Data()));
 }
 
+TEST_F(TextIteratorTest, StartAndEndInMultiCharFirstLetterWithCollapsedSpace) {
+  SetBodyContent(
+      "<style>div:first-letter {color:red;}</style><div>  (A)  xyz</div>");
+
+  Element* div = GetDocument().QuerySelector("div");
+  Node* text = div->firstChild();
+  Position start(text, 3);
+  Position end(text, 4);
+  TextIterator iter(start, end);
+  ForwardsTextBuffer buffer;
+
+  EXPECT_FALSE(iter.AtEnd());
+  EXPECT_EQ(1, iter.length());
+  EXPECT_EQ(1, iter.CopyTextTo(&buffer, 0)) << "Should emit 'A'.";
+  EXPECT_EQ(text, iter.CurrentContainer());
+  EXPECT_EQ(Position(text, 3), iter.StartPositionInCurrentContainer());
+  EXPECT_EQ(Position(text, 4), iter.EndPositionInCurrentContainer());
+
+  iter.Advance();
+  EXPECT_TRUE(iter.AtEnd());
+
+  EXPECT_EQ("A", String(buffer.Data()));
+}
+
 TEST_F(TextIteratorTest, StartAtRemainingText) {
   SetBodyContent("<style>div:first-letter {color:red;}</style><div>Axyz</div>");
 
   Element* div = GetDocument().QuerySelector("div");
   Node* text = div->firstChild();
+  Position start(text, 1);
+  Position end(text, 4);
+  TextIterator iter(start, end);
+  ForwardsTextBuffer buffer;
+
+  EXPECT_FALSE(iter.AtEnd());
+  EXPECT_EQ(3, iter.length());
+  EXPECT_EQ(3, iter.CopyTextTo(&buffer, 0)) << "Should emit 'xyz'.";
+  EXPECT_EQ(text, iter.CurrentContainer());
+  EXPECT_EQ(Position(text, 1), iter.StartPositionInCurrentContainer());
+  EXPECT_EQ(Position(text, 4), iter.EndPositionInCurrentContainer());
+
+  iter.Advance();
+  EXPECT_TRUE(iter.AtEnd());
+
+  EXPECT_EQ("xyz", String(buffer.Data()));
+}
+
+TEST_F(TextIteratorTest, StartAtFirstLetterInPre) {
+  SetBodyContent("<style>pre:first-letter {color:red;}</style><pre>Axyz</pre>");
+
+  Element* pre = GetDocument().QuerySelector("pre");
+  Node* text = pre->firstChild();
+  Position start(text, 0);
+  Position end(text, 4);
+  TextIterator iter(start, end);
+  ForwardsTextBuffer buffer;
+
+  EXPECT_FALSE(iter.AtEnd());
+  EXPECT_EQ(1, iter.length());
+  EXPECT_EQ(1, iter.CopyTextTo(&buffer, 0)) << "Should emit 'A'.";
+  EXPECT_EQ(text, iter.CurrentContainer());
+  EXPECT_EQ(Position(text, 0), iter.StartPositionInCurrentContainer());
+  EXPECT_EQ(Position(text, 1), iter.EndPositionInCurrentContainer());
+
+  iter.Advance();
+  EXPECT_FALSE(iter.AtEnd());
+  EXPECT_EQ(3, iter.length());
+  EXPECT_EQ(3, iter.CopyTextTo(&buffer, 0)) << "Should emit 'xyz'.";
+  EXPECT_EQ(text, iter.CurrentContainer());
+  EXPECT_EQ(Position(text, 1), iter.StartPositionInCurrentContainer());
+  EXPECT_EQ(Position(text, 4), iter.EndPositionInCurrentContainer());
+
+  iter.Advance();
+  EXPECT_TRUE(iter.AtEnd());
+
+  EXPECT_EQ("Axyz", String(buffer.Data()));
+}
+
+TEST_F(TextIteratorTest, StartInMultiCharFirstLetterInPre) {
+  SetBodyContent(
+      "<style>pre:first-letter {color:red;}</style><pre>(A)xyz</pre>");
+
+  Element* pre = GetDocument().QuerySelector("pre");
+  Node* text = pre->firstChild();
+  Position start(text, 1);
+  Position end(text, 6);
+  TextIterator iter(start, end);
+  ForwardsTextBuffer buffer;
+
+  EXPECT_FALSE(iter.AtEnd());
+  EXPECT_EQ(2, iter.length());
+  EXPECT_EQ(2, iter.CopyTextTo(&buffer, 0)) << "Should emit 'A)'.";
+  EXPECT_EQ(text, iter.CurrentContainer());
+  EXPECT_EQ(Position(text, 1), iter.StartPositionInCurrentContainer());
+  EXPECT_EQ(Position(text, 3), iter.EndPositionInCurrentContainer());
+
+  iter.Advance();
+  EXPECT_FALSE(iter.AtEnd());
+  EXPECT_EQ(3, iter.length());
+  EXPECT_EQ(3, iter.CopyTextTo(&buffer, 0)) << "Should emit 'xyz'.";
+  EXPECT_EQ(text, iter.CurrentContainer());
+  EXPECT_EQ(Position(text, 3), iter.StartPositionInCurrentContainer());
+  EXPECT_EQ(Position(text, 6), iter.EndPositionInCurrentContainer());
+
+  iter.Advance();
+  EXPECT_TRUE(iter.AtEnd());
+
+  EXPECT_EQ("A)xyz", String(buffer.Data()));
+}
+
+TEST_F(TextIteratorTest, StartAndEndInMultiCharFirstLetterInPre) {
+  SetBodyContent(
+      "<style>pre:first-letter {color:red;}</style><pre>(A)xyz</pre>");
+
+  Element* pre = GetDocument().QuerySelector("pre");
+  Node* text = pre->firstChild();
+  Position start(text, 1);
+  Position end(text, 2);
+  TextIterator iter(start, end);
+  ForwardsTextBuffer buffer;
+
+  EXPECT_FALSE(iter.AtEnd());
+  EXPECT_EQ(1, iter.length());
+  EXPECT_EQ(1, iter.CopyTextTo(&buffer, 0)) << "Should emit 'A'.";
+  EXPECT_EQ(text, iter.CurrentContainer());
+  EXPECT_EQ(Position(text, 1), iter.StartPositionInCurrentContainer());
+  EXPECT_EQ(Position(text, 2), iter.EndPositionInCurrentContainer());
+
+  iter.Advance();
+  EXPECT_TRUE(iter.AtEnd());
+
+  EXPECT_EQ("A", String(buffer.Data()));
+}
+
+TEST_F(TextIteratorTest, StartAtRemainingTextInPre) {
+  SetBodyContent("<style>pre:first-letter {color:red;}</style><pre>Axyz</pre>");
+
+  Element* pre = GetDocument().QuerySelector("pre");
+  Node* text = pre->firstChild();
   Position start(text, 1);
   Position end(text, 4);
   TextIterator iter(start, end);
