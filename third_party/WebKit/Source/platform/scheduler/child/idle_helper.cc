@@ -394,7 +394,7 @@ void IdleHelper::State::UpdateState(IdlePeriodState new_state,
                             ? helper_->scheduler_tqm_delegate()->NowTicks()
                             : optional_now);
     TraceEventIdlePeriodStateChange(new_state, running_idle_task_for_tracing_,
-                                    idle_period_deadline_, now);
+                                    new_deadline, now);
   }
 
   idle_period_state_ = new_state;
@@ -459,7 +459,7 @@ void IdleHelper::State::TraceEventIdlePeriodStateChange(
       idle_period_trace_event_started_ = true;
       TRACE_EVENT_ASYNC_BEGIN1("renderer.scheduler", idle_period_tracing_name_,
                                this, "idle_period_length_ms",
-                               (new_deadline - now).ToInternalValue());
+                               (new_deadline - now).InMillisecondsF());
     }
 
     if (new_running_idle_task) {
