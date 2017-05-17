@@ -43,6 +43,14 @@ class CORE_EXPORT SpellCheckMarkerListImpl : public DocumentMarkerList {
   DISALLOW_COPY_AND_ASSIGN(SpellCheckMarkerListImpl);
 };
 
+DEFINE_TYPE_CASTS(SpellCheckMarkerListImpl,
+                  DocumentMarkerList,
+                  list,
+                  list->MarkerType() == DocumentMarker::kSpelling ||
+                      list->MarkerType() == DocumentMarker::kGrammar,
+                  list.MarkerType() == DocumentMarker::kSpelling ||
+                      list.MarkerType() == DocumentMarker::kGrammar);
+
 }  // namespace blink
 
 #endif  // SpellCheckMarkerListImpl_h
