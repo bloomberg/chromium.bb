@@ -4,6 +4,7 @@
 
 #include "cc/paint/paint_op_buffer.h"
 
+#include "base/containers/stack_container.h"
 #include "cc/paint/display_item_list.h"
 #include "cc/paint/paint_record.h"
 #include "third_party/skia/include/core/SkAnnotation.h"
@@ -602,6 +603,22 @@ void PaintOpBuffer::Reset() {
   num_slow_paths_ = 0;
 }
 
+static const PaintOp* NextOp(base::StackVector<const PaintOp*, 3>* stack_ptr,
+                             PaintOpBuffer::Iterator* iter) {
+  auto& stack = *stack_ptr;
+  if (stack->size()) {
+    const PaintOp* op = stack->front();
+    // Shift paintops forward
+    stack->erase(stack->begin());
+    return op;
+  }
+  if (!*iter)
+    return nullptr;
+  const PaintOp* op = **iter;
+  ++*iter;
+  return op;
+}
+
 void PaintOpBuffer::playback(SkCanvas* canvas) const {
   // TODO(enne): a PaintRecord that contains a SetMatrix assumes that the
   // SetMatrix is local to that PaintRecord itself.  Said differently, if you
@@ -610,29 +627,35 @@ void PaintOpBuffer::playback(SkCanvas* canvas) const {
   // transform.  This could probably be done more efficiently.
   SkMatrix original = canvas->getTotalMatrix();
 
-  for (Iterator iter(this); iter; ++iter) {
+  // FIFO queue of paint ops that have been peeked at.
+  base::StackVector<const PaintOp*, 3> stack;
+
+  Iterator iter(this);
+  while (const PaintOp* op = NextOp(&stack, &iter)) {
     // Optimize out save/restores or save/draw/restore that can be a single
     // draw.  See also: similar code in SkRecordOpts and cc's DisplayItemList.
     // TODO(enne): consider making this recursive?
-    const PaintOp* op = *iter;
     if (op->GetType() == PaintOpType::SaveLayerAlpha) {
-      const PaintOp* second = iter.peek1();
+      const PaintOp* second = NextOp(&stack, &iter);
+      const PaintOp* third = nullptr;
       if (second) {
         if (second->GetType() == PaintOpType::Restore) {
-          ++iter;
           continue;
         }
         if (second->IsDrawOp()) {
-          const PaintOp* third = iter.peek2();
+          third = NextOp(&stack, &iter);
           if (third && third->GetType() == PaintOpType::Restore) {
             const SaveLayerAlphaOp* save_op =
                 static_cast<const SaveLayerAlphaOp*>(op);
             second->RasterWithAlpha(canvas, save_op->alpha);
-            ++iter;
-            ++iter;
             continue;
           }
         }
+
+        // Store deferred ops for later.
+        stack->push_back(second);
+        if (third)
+          stack->push_back(third);
       }
     }
     // TODO(enne): skip SaveLayer followed by restore with nothing in

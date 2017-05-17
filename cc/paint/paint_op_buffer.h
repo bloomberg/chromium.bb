@@ -895,27 +895,6 @@ class CC_PAINT_EXPORT PaintOpBuffer : public SkRefCnt {
 
     size_t op_idx() const { return op_idx_; }
 
-    // Return the next op without advancing the iterator, or nullptr if none.
-    PaintOp* peek1() const {
-      if (op_idx_ + 1 >= buffer_->size())
-        return nullptr;
-      if (!op_idx_)
-        return reinterpret_cast<PaintOp*>(ptr_);
-      return reinterpret_cast<PaintOp*>(ptr_ + (*this)->skip);
-    }
-
-    // Return the op two ops ahead without advancing the iterator, or nullptr if
-    // none.
-    PaintOp* peek2() const {
-      if (op_idx_ + 2 >= buffer_->size())
-        return nullptr;
-      char* next = ptr_ + reinterpret_cast<PaintOp*>(ptr_)->skip;
-      PaintOp* next_op = reinterpret_cast<PaintOp*>(next);
-      if (!op_idx_)
-        return next_op;
-      return reinterpret_cast<PaintOp*>(next + next_op->skip);
-    }
-
    private:
     Iterator(const PaintOpBuffer* buffer, char* ptr, size_t op_idx)
         : buffer_(buffer), ptr_(ptr), op_idx_(op_idx) {}
