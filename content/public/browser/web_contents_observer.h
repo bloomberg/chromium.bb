@@ -423,6 +423,9 @@ class CONTENT_EXPORT WebContentsObserver : public IPC::Listener,
   // Notification that |contents| has gained focus.
   virtual void OnWebContentsFocused() {}
 
+  // Notification that |contents| has lost focus.
+  virtual void OnWebContentsLostFocus() {}
+
   // Notifes that a CompositorFrame was received from the renderer.
   virtual void DidReceiveCompositorFrame() {}
 

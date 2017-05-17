@@ -684,6 +684,12 @@ void RenderViewHostImpl::RenderWidgetGotFocus() {
     view->GotFocus();
 }
 
+void RenderViewHostImpl::RenderWidgetLostFocus() {
+  RenderViewHostDelegateView* view = delegate_->GetDelegateView();
+  if (view)
+    view->LostFocus();
+}
+
 void RenderViewHostImpl::SetInitialFocus(bool reverse) {
   Send(new ViewMsg_SetInitialFocus(GetRoutingID(), reverse));
 }

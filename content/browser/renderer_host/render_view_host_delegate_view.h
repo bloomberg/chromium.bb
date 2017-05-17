@@ -61,6 +61,9 @@ class CONTENT_EXPORT RenderViewHostDelegateView {
   // Notification that view for this delegate got the focus.
   virtual void GotFocus() {}
 
+  // Notification that view for this delegate lost the focus.
+  virtual void LostFocus() {}
+
   // Callback to inform the browser that the page is returning the focus to
   // the browser's chrome. If reverse is true, it means the focus was
   // retrieved by doing a Shift-Tab.

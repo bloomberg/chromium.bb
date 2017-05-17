@@ -41,6 +41,9 @@ class CONTENT_EXPORT RenderWidgetHostOwnerDelegate {
   // The RenderWidgetHost got the focus.
   virtual void RenderWidgetGotFocus() = 0;
 
+  // The RenderWidgetHost lost the focus.
+  virtual void RenderWidgetLostFocus() = 0;
+
   // The RenderWidgetHost forwarded a mouse event.
   virtual void RenderWidgetDidForwardMouseEvent(
       const blink::WebMouseEvent& mouse_event) = 0;

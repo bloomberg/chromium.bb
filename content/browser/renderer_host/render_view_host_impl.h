@@ -214,6 +214,7 @@ class CONTENT_EXPORT RenderViewHostImpl : public RenderViewHost,
   void RenderWidgetDidInit() override;
   void RenderWidgetWillSetIsLoading(bool is_loading) override;
   void RenderWidgetGotFocus() override;
+  void RenderWidgetLostFocus() override;
   void RenderWidgetDidForwardMouseEvent(
       const blink::WebMouseEvent& mouse_event) override;
   bool MayRenderWidgetForwardKeyboardEvent(
