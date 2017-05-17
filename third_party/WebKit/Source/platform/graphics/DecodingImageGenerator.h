@@ -70,8 +70,7 @@ class PLATFORM_EXPORT DecodingImageGenerator final : public SkImageGenerator {
   bool onGetPixels(const SkImageInfo&,
                    void* pixels,
                    size_t row_bytes,
-                   SkPMColor table[],
-                   int* table_count) override;
+                   const Options&) override;
 
   bool onQueryYUV8(SkYUVSizeInfo*, SkYUVColorSpace*) const override;
 

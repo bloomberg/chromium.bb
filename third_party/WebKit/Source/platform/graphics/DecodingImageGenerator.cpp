@@ -65,10 +65,15 @@ SkData* DecodingImageGenerator::onRefEncodedData() {
 static void doColorSpaceXform(const SkImageInfo& dst_info,
                               void* pixels,
                               size_t row_bytes,
-                              SkColorSpace* src_color_space) {
+                              SkColorSpace* src_color_space,
+                              SkTransferFunctionBehavior behavior) {
   TRACE_EVENT0("blink", "DecodingImageGenerator::getPixels - apply xform");
   std::unique_ptr<SkColorSpaceXform> xform =
       SkColorSpaceXform::New(src_color_space, dst_info.colorSpace());
+
+  const bool post_xform_premul =
+      (dst_info.alphaType() == kPremul_SkAlphaType) &&
+      (behavior == SkTransferFunctionBehavior::kIgnore);
 
   uint32_t* row = reinterpret_cast<uint32_t*>(pixels);
   for (int y = 0; y < dst_info.height(); y++) {
@@ -78,13 +83,13 @@ static void doColorSpaceXform(const SkImageInfo& dst_info,
       format = SkColorSpaceXform::kBGRA_8888_ColorFormat;
     }
     SkAlphaType alpha_type =
-        dst_info.isOpaque() ? kOpaque_SkAlphaType : kUnpremul_SkAlphaType;
+        post_xform_premul ? kUnpremul_SkAlphaType : dst_info.alphaType();
     bool xformed =
         xform->apply(format, row, format, row, dst_info.width(), alpha_type);
     DCHECK(xformed);
 
     // To be compatible with dst space blending, premultiply in the dst space.
-    if (kPremul_SkAlphaType == dst_info.alphaType()) {
+    if (post_xform_premul) {
       for (int x = 0; x < dst_info.width(); x++) {
         row[x] =
             SkPreMultiplyARGB(SkGetPackedA32(row[x]), SkGetPackedR32(row[x]),
@@ -100,8 +105,7 @@ static void doColorSpaceXform(const SkImageInfo& dst_info,
 bool DecodingImageGenerator::onGetPixels(const SkImageInfo& dst_info,
                                          void* pixels,
                                          size_t row_bytes,
-                                         SkPMColor*,
-                                         int*) {
+                                         const Options& options) {
   TRACE_EVENT1("blink", "DecodingImageGenerator::getPixels", "frame index",
                static_cast<int>(frame_index_));
 
@@ -142,7 +146,8 @@ bool DecodingImageGenerator::onGetPixels(const SkImageInfo& dst_info,
   PlatformInstrumentation::DidDecodeLazyPixelRef();
 
   if (decoded && needs_color_xform) {
-    doColorSpaceXform(dst_info, pixels, row_bytes, decode_color_space);
+    doColorSpaceXform(dst_info, pixels, row_bytes, decode_color_space,
+                      options.fBehavior);
   }
 
   return decoded;
