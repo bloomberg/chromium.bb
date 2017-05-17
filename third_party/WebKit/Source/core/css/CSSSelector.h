@@ -32,7 +32,7 @@
 namespace blink {
 class CSSSelectorList;
 
-// This class represents a selector for a StyleRule.
+// This class represents a simple selector for a StyleRule.
 
 // CSS selector representation is somewhat complicated and subtle. A
 // representative list of selectors is in CSSSelectorTest; run it in a debug
@@ -40,7 +40,7 @@ class CSSSelectorList;
 //
 // ** TagHistory() and Relation():
 //
-// Selectors are represented as a linked list of simple selectors (defined more
+// Selectors are represented as an array of simple selectors (defined more
 // or less according to
 // http://www.w3.org/TR/css3-selectors/#simple-selectors-dfn). The tagHistory()
 // method returns the next simple selector in the list. The relation() method

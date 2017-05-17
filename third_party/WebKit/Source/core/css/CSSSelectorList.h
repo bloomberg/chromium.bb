@@ -34,6 +34,33 @@ namespace blink {
 
 class CSSParserSelector;
 
+// This class represents a CSS selector, i.e. a pattern of one or more
+// simple selectors. https://www.w3.org/TR/css3-selectors/
+
+// More specifically, a CSS selector is a chain of one or more sequences
+// of simple selectors separated by combinators.
+//
+// For example, "div.c1 > span.c2 + .c3#ident" is represented as a
+// CSSSelectorList that owns six CSSSelector instances.
+//
+// The simple selectors are stored in memory in the following order:
+// .c3, #ident, span, .c2, div, .c1
+// (See CSSSelector.h for more information.)
+//
+// First() and Next() can be used to traverse from right to left through
+// the chain of sequences: .c3#ident then span.c2 then div.c1
+//
+// SelectorAt and IndexOfNextSelectorAfter provide an equivalent API:
+// size_t index = 0;
+// do {
+//   const CSSSelector& sequence = selectorList.SelectorAt(index);
+//   ...
+//   index = IndexOfNextSelectorAfter(index);
+// } while (index != kNotFound);
+//
+// Use CSSSelector::TagHistory() and CSSSelector::IsLastInTagHistory()
+// to traverse through each sequence of simple selectors,
+// from .c3 to #ident; from span to .c2; from div to .c1
 class CORE_EXPORT CSSSelectorList {
   USING_FAST_MALLOC(CSSSelectorList);
 
@@ -60,6 +87,8 @@ class CORE_EXPORT CSSSelectorList {
   bool IsValid() const { return !!selector_array_; }
   const CSSSelector* First() const { return selector_array_; }
   static const CSSSelector* Next(const CSSSelector&);
+
+  // The CSS selector represents a single sequence of simple selectors.
   bool HasOneSelector() const {
     return selector_array_ && !Next(*selector_array_);
   }
