@@ -337,6 +337,63 @@ if (!is_android) {
     ]
   }
 
+  if (is_chromeos) {
+    # These tests are only meant to run on an FYI bot because they
+    # test against live sites, as a way to catch potential regressions.
+    test("accessibility_live_site_tests") {
+      sources = [
+        "../browser/chromeos/accessibility/select_to_speak_live_site_browsertest.cc",
+        "base/interactive_test_utils.cc",
+        "base/interactive_test_utils.h",
+        "base/interactive_test_utils_aura.cc",
+        "base/interactive_test_utils_aura.h",
+        "base/interactive_test_utils_common_views.cc",
+        "base/interactive_ui_tests_main.cc",
+      ]
+      configs += [ "//build/config:precompiled_headers" ]
+
+      data_deps = [
+        "//testing/buildbot/filters:interactive_ui_tests_filters",
+      ]
+
+      defines = [ "HAS_OUT_OF_PROC_TEST_RUNNER" ]
+      ldflags = []
+
+      deps = [
+        ":test_support",
+        ":test_support_ui",
+        "//chrome:packed_resources",
+        "//chrome:resources",
+        "//chrome:strings",
+        "//chrome/browser",
+        "//chrome/browser/devtools",
+        "//chrome/renderer",
+        "//components/resources",
+        "//components/sync",
+        "//components/sync:test_support_model",
+        "//content/app/resources",
+        "//content/test:test_support",
+        "//crypto:platform",
+        "//crypto:test_support",
+        "//extensions/features",
+        "//google_apis:test_support",
+        "//net",
+        "//net:net_resources",
+        "//net:test_support",
+        "//skia",
+        "//testing/gmock",
+        "//testing/gtest",
+        "//third_party/hunspell",
+        "//third_party/icu",
+        "//third_party/libpng",
+        "//third_party/zlib",
+        "//ui/base:test_support",
+        "//ui/resources:ui_test_pak",
+        "//ui/web_dialogs:test_support",
+      ]
+    }
+  }
+
   test("interactive_ui_tests") {
     sources = [
       "../browser/apps/app_browsertest_util.cc",

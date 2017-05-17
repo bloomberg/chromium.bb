@@ -30,6 +30,7 @@ run_jsbundler("select_to_speak_copied_files") {
     "options.css",
     "options.html",
     "select_to_speak.js",
+    "select_to_speak_gdocs_script.js",
     "select_to_speak_main.js",
     "select_to_speak_options.js",
     "unchecked.png",
