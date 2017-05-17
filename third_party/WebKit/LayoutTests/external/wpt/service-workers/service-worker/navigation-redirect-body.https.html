@@ -1,34 +1,32 @@
 <!DOCTYPE html>
 <title>Service Worker: Navigation redirection must clear body</title>
-<script src="../resources/testharness.js"></script>
-<script src="../resources/testharnessreport.js"></script>
-<script src="../resources/get-host-info.js?pipe=sub"></script>
-<script src="resources/test-helpers.js"></script>
+<script src="/resources/testharness.js"></script>
+<script src="/resources/testharnessreport.js"></script>
+<script src="/common/get-host-info.sub.js"></script>
+<script src="resources/test-helpers.sub.js"></script>
+<meta charset="utf-8">
 <body>
+<form id="test-form" method="POST" style="display: none;">
+  <input type="submit" id="submit-button" />
+</form>
 <script>
 promise_test(function(t) {
-    var scope = 'resources/navigation-redirect-body.php';
+    var scope = 'resources/navigation-redirect-body.py';
     var script = 'resources/navigation-redirect-body-worker.js';
     var registration;
     var frame = document.createElement('frame');
+    var form = document.getElementById('test-form');
+    var submit_button = document.getElementById('submit-button');
+
     frame.src = 'about:blank';
     frame.name = 'target_frame';
     frame.id = 'frame';
     document.body.appendChild(frame);
-    var form = document.createElement('form');
-    form.method = 'POST';
+    t.add_cleanup(function() { document.body.removeChild(frame); });
+
     form.action = scope;
     form.target = 'target_frame';
-    var hidden_input = document.createElement('input');
-    hidden_input.type = 'hidden';
-    hidden_input.name = 'data';
-    hidden_input.value = 'test data';
-    var submit_button = document.createElement('input');
-    submit_button.type = 'submit';
-    submit_button.value = 'submit';
-    form.appendChild(hidden_input);
-    form.appendChild(submit_button);
-    document.body.appendChild(form);
+
     return service_worker_unregister_and_register(t, script, scope)
       .then(function(r) {
           registration = r;
@@ -44,12 +42,10 @@ promise_test(function(t) {
           return frame_load_promise;
         })
       .then(function(text) {
-          document.body.removeChild(form);
-          document.body.removeChild(frame);
           var request_uri = decodeURIComponent(text);
           assert_equals(
               request_uri,
-              '/serviceworker/resources/navigation-redirect-body.php?redirect');
+              '/service-workers/service-worker/resources/navigation-redirect-body.py?redirect');
           return registration.unregister();
         });
   }, 'Navigation redirection must clear body');
