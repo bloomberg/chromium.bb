@@ -3,11 +3,14 @@
 // found in the LICENSE file.
 
 #include "base/mac/foundation_util.h"
-#import "base/mac/scoped_nsobject.h"
 #include "ios/chrome/test/base/scoped_block_swizzler.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #import "testing/gtest_mac.h"
 #include "testing/platform_test.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 // Class containing two methods that will be swizzled by the unittests.
 @interface ScopedBlockSwizzlerTestClass : NSObject
@@ -45,9 +48,9 @@ TEST(ScopedBlockSwizzlerTest, SwizzlingClassMethods) {
 
 // Tests that swizzling an instance method works properly.
 TEST(ScopedBlockSwizzlerTest, SwizzlingInstanceMethod) {
-  base::scoped_nsobject<ScopedBlockSwizzlerTestClass> target(
-      [[ScopedBlockSwizzlerTestClass alloc] init]);
-  target.get().value = kSwizzledInstanceValue;
+  ScopedBlockSwizzlerTestClass* target =
+      [[ScopedBlockSwizzlerTestClass alloc] init];
+  target.value = kSwizzledInstanceValue;
 
   EXPECT_NSEQ(kOriginalInstanceValue, [target instanceMethodToSwizzle]);
   EXPECT_FALSE([[target instanceMethodToSwizzle]
