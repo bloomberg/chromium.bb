@@ -265,7 +265,7 @@ void RasterSource::GetDiscardableImagesInRect(
                                             target_color_space, images);
 }
 
-gfx::Rect RasterSource::GetRectForImage(ImageId image_id) const {
+gfx::Rect RasterSource::GetRectForImage(PaintImage::Id image_id) const {
   if (!display_list_)
     return gfx::Rect();
   return display_list_->GetRectForImage(image_id);

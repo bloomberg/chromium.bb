@@ -102,6 +102,9 @@ class FakeRecordingSource : public RecordingSource {
   void add_draw_image(sk_sp<SkImage> image, const gfx::Point& point) {
     client_.add_draw_image(std::move(image), point, default_flags_);
   }
+  void add_draw_image(PaintImage image, const gfx::Point& point) {
+    client_.add_draw_image(std::move(image), point, default_flags_);
+  }
 
   void add_draw_image_with_transform(sk_sp<SkImage> image,
                                      const gfx::Transform& transform) {

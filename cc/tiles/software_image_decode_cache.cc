@@ -445,11 +445,11 @@ SoftwareImageDecodeCache::DecodeImageInternal(const ImageKey& key,
     case kNone_SkFilterQuality:
     case kLow_SkFilterQuality:
       if (key.should_use_subrect())
-        return GetSubrectImageDecode(key, std::move(image));
+        return GetSubrectImageDecode(key, draw_image.paint_image());
       return GetOriginalSizeImageDecode(key, std::move(image));
     case kMedium_SkFilterQuality:
     case kHigh_SkFilterQuality:
-      return GetScaledImageDecode(key, std::move(image));
+      return GetScaledImageDecode(key, draw_image.paint_image());
     default:
       NOTREACHED();
       return nullptr;
@@ -611,13 +611,14 @@ SoftwareImageDecodeCache::GetOriginalSizeImageDecode(
 
 std::unique_ptr<SoftwareImageDecodeCache::DecodedImage>
 SoftwareImageDecodeCache::GetSubrectImageDecode(const ImageKey& key,
-                                                sk_sp<const SkImage> image) {
+                                                const PaintImage& image) {
   // Construct a key to use in GetDecodedImageForDrawInternal().
   // This allows us to reuse an image in any cache if available.
-  gfx::Rect full_image_rect(image->width(), image->height());
-  DrawImage original_size_draw_image(
-      std::move(image), gfx::RectToSkIRect(full_image_rect),
-      kNone_SkFilterQuality, SkMatrix::I(), key.target_color_space());
+  gfx::Rect full_image_rect(image.sk_image()->width(),
+                            image.sk_image()->height());
+  DrawImage original_size_draw_image(image, gfx::RectToSkIRect(full_image_rect),
+                                     kNone_SkFilterQuality, SkMatrix::I(),
+                                     key.target_color_space());
   ImageKey original_size_key =
       ImageKey::FromDrawImage(original_size_draw_image);
   sk_sp<SkColorSpace> target_color_space =
@@ -674,13 +675,14 @@ SoftwareImageDecodeCache::GetSubrectImageDecode(const ImageKey& key,
 
 std::unique_ptr<SoftwareImageDecodeCache::DecodedImage>
 SoftwareImageDecodeCache::GetScaledImageDecode(const ImageKey& key,
-                                               sk_sp<const SkImage> image) {
+                                               const PaintImage& image) {
   // Construct a key to use in GetDecodedImageForDrawInternal().
   // This allows us to reuse an image in any cache if available.
-  gfx::Rect full_image_rect(image->width(), image->height());
-  DrawImage original_size_draw_image(
-      std::move(image), gfx::RectToSkIRect(full_image_rect),
-      kNone_SkFilterQuality, SkMatrix::I(), key.target_color_space());
+  gfx::Rect full_image_rect(image.sk_image()->width(),
+                            image.sk_image()->height());
+  DrawImage original_size_draw_image(image, gfx::RectToSkIRect(full_image_rect),
+                                     kNone_SkFilterQuality, SkMatrix::I(),
+                                     key.target_color_space());
   ImageKey original_size_key =
       ImageKey::FromDrawImage(original_size_draw_image);
   sk_sp<SkColorSpace> target_color_space =

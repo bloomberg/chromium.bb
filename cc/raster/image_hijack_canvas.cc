@@ -22,13 +22,15 @@ SkIRect RoundOutRect(const SkRect& rect) {
 class ScopedDecodedImageLock {
  public:
   ScopedDecodedImageLock(ImageDecodeCache* image_decode_cache,
-                         sk_sp<const SkImage> image,
+                         sk_sp<SkImage> image,
                          const SkRect& src_rect,
                          const SkMatrix& matrix,
                          const SkPaint* paint,
                          const gfx::ColorSpace& target_color_space)
       : image_decode_cache_(image_decode_cache),
-        draw_image_(std::move(image),
+        // TODO(khushalsagar): Using the wrong id should not be necessary once
+        // the hijack canvas is eliminated.
+        draw_image_(PaintImage(PaintImage::kUnknownStableId, std::move(image)),
                     RoundOutRect(src_rect),
                     paint ? paint->getFilterQuality() : kNone_SkFilterQuality,
                     matrix,
@@ -133,7 +135,7 @@ const SkImage* GetImageInPaint(const SkPaint& paint) {
 ImageHijackCanvas::ImageHijackCanvas(int width,
                                      int height,
                                      ImageDecodeCache* image_decode_cache,
-                                     const ImageIdFlatSet* images_to_skip,
+                                     const SkImageIdFlatSet* images_to_skip,
                                      const gfx::ColorSpace& target_color_space)
     : SkNWayCanvas(width, height),
       image_decode_cache_(image_decode_cache),
@@ -173,7 +175,7 @@ void ImageHijackCanvas::onDrawImage(const SkImage* image,
   SkMatrix ctm = getTotalMatrix();
 
   ScopedDecodedImageLock scoped_lock(
-      image_decode_cache_, sk_ref_sp(image),
+      image_decode_cache_, sk_ref_sp(const_cast<SkImage*>(image)),
       SkRect::MakeIWH(image->width(), image->height()), ctm, paint,
       target_color_space_);
   const DecodedDrawImage& decoded_image = scoped_lock.decoded_image();
@@ -223,7 +225,8 @@ void ImageHijackCanvas::onDrawImageRect(const SkImage* image,
   matrix.setRectToRect(*src, dst, SkMatrix::kFill_ScaleToFit);
   matrix.postConcat(getTotalMatrix());
 
-  ScopedDecodedImageLock scoped_lock(image_decode_cache_, sk_ref_sp(image),
+  ScopedDecodedImageLock scoped_lock(image_decode_cache_,
+                                     sk_ref_sp(const_cast<SkImage*>(image)),
                                      *src, matrix, paint, target_color_space_);
   const DecodedDrawImage& decoded_image = scoped_lock.decoded_image();
   if (!decoded_image.image())

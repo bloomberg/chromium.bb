@@ -51,7 +51,7 @@ class CC_EXPORT RasterSource : public base::RefCountedThreadSafe<RasterSource> {
     // during raster.
     // TODO(khushalsagar): Consolidate more settings for playback here? See
     // crbug.com/691076.
-    ImageIdFlatSet images_to_skip;
+    SkImageIdFlatSet images_to_skip;
   };
 
   static scoped_refptr<RasterSource> CreateFromRecordingSource(
@@ -121,7 +121,7 @@ class CC_EXPORT RasterSource : public base::RefCountedThreadSafe<RasterSource> {
   // Valid rectangle in which everything is recorded and can be rastered from.
   virtual gfx::Rect RecordedViewport() const;
 
-  gfx::Rect GetRectForImage(ImageId image_id) const;
+  gfx::Rect GetRectForImage(PaintImage::Id image_id) const;
 
   // Tracing functionality.
   virtual void DidBeginTracing();

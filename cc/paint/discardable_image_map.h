@@ -49,7 +49,7 @@ class CC_PAINT_EXPORT DiscardableImageMap {
                                   float contents_scale,
                                   const gfx::ColorSpace& target_color_space,
                                   std::vector<DrawImage>* images) const;
-  gfx::Rect GetRectForImage(ImageId image_id) const;
+  gfx::Rect GetRectForImage(PaintImage::Id image_id) const;
 
  private:
   friend class ScopedMetadataGenerator;
@@ -60,7 +60,7 @@ class CC_PAINT_EXPORT DiscardableImageMap {
   void EndGeneratingMetadata();
 
   std::vector<std::pair<DrawImage, gfx::Rect>> all_images_;
-  base::flat_map<ImageId, gfx::Rect> image_id_to_rect_;
+  base::flat_map<PaintImage::Id, gfx::Rect> image_id_to_rect_;
 
   RTree images_rtree_;
 };

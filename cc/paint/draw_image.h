@@ -6,6 +6,7 @@
 #define CC_PAINT_DRAW_IMAGE_H_
 
 #include "cc/paint/paint_export.h"
+#include "cc/paint/paint_image.h"
 #include "third_party/skia/include/core/SkFilterQuality.h"
 #include "third_party/skia/include/core/SkImage.h"
 #include "third_party/skia/include/core/SkMatrix.h"
@@ -21,7 +22,7 @@ namespace cc {
 class CC_PAINT_EXPORT DrawImage {
  public:
   DrawImage();
-  DrawImage(sk_sp<const SkImage> image,
+  DrawImage(PaintImage image,
             const SkIRect& src_rect,
             SkFilterQuality filter_quality,
             const SkMatrix& matrix,
@@ -29,7 +30,8 @@ class CC_PAINT_EXPORT DrawImage {
   DrawImage(const DrawImage& other);
   ~DrawImage();
 
-  const sk_sp<const SkImage>& image() const { return image_; }
+  const PaintImage& paint_image() const { return paint_image_; }
+  const sk_sp<SkImage>& image() const { return paint_image_.sk_image(); }
   const SkSize& scale() const { return scale_; }
   const SkIRect& src_rect() const { return src_rect_; }
   SkFilterQuality filter_quality() const { return filter_quality_; }
@@ -42,16 +44,16 @@ class CC_PAINT_EXPORT DrawImage {
   DrawImage ApplyScale(float scale) const {
     SkMatrix scaled_matrix = matrix_;
     scaled_matrix.preScale(scale, scale);
-    return DrawImage(image_, src_rect_, filter_quality_, scaled_matrix,
+    return DrawImage(paint_image_, src_rect_, filter_quality_, scaled_matrix,
                      target_color_space_);
   }
   DrawImage ApplyTargetColorSpace(const gfx::ColorSpace& target_color_space) {
-    return DrawImage(image_, src_rect_, filter_quality_, matrix_,
+    return DrawImage(paint_image_, src_rect_, filter_quality_, matrix_,
                      target_color_space);
   }
 
  private:
-  sk_sp<const SkImage> image_;
+  PaintImage paint_image_;
   SkIRect src_rect_;
   SkFilterQuality filter_quality_;
   SkMatrix matrix_;

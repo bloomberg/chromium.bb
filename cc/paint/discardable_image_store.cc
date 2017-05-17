@@ -72,11 +72,10 @@ DiscardableImageStore::DiscardableImageStore(
     int width,
     int height,
     std::vector<std::pair<DrawImage, gfx::Rect>>* image_set,
-    base::flat_map<ImageId, gfx::Rect>* image_id_to_rect)
+    base::flat_map<PaintImage::Id, gfx::Rect>* image_id_to_rect)
     : canvas_(base::MakeUnique<PaintTrackingCanvas>(width, height)),
       image_set_(image_set),
-      image_id_to_rect_(image_id_to_rect),
-      unknown_stable_id_(PaintImage::GetNextId()) {}
+      image_id_to_rect_(image_id_to_rect) {}
 
 DiscardableImageStore::~DiscardableImageStore() = default;
 
@@ -183,24 +182,30 @@ void DiscardableImageStore::AddImageFromFlags(const SkRect& rect,
     SkShader::TileMode xy[2];
     SkImage* image = shader->isAImage(&matrix, xy);
     if (image) {
-      PaintImage paint_image(unknown_stable_id_, sk_ref_sp(image),
+      // We currently use the wrong id for images that come from shaders. We
+      // don't know what the stable id is, but since the completion and
+      // animation states are both unknown, this value doesn't matter as it
+      // won't be used in checker imaging anyway. Keep this value the same to
+      // avoid id churn.
+      // TODO(vmpstr): Remove this when we can add paint images into shaders
+      // directly.
+      PaintImage paint_image(PaintImage::kUnknownStableId, sk_ref_sp(image),
                              PaintImage::AnimationType::UNKNOWN,
                              PaintImage::CompletionState::UNKNOWN);
       // TODO(ericrk): Handle cases where we only need a sub-rect from the
       // image. crbug.com/671821
-      AddImage(paint_image, SkRect::MakeFromIRect(image->bounds()), rect,
-               &matrix, flags);
+      AddImage(std::move(paint_image), SkRect::MakeFromIRect(image->bounds()),
+               rect, &matrix, flags);
     }
   }
 }
 
-void DiscardableImageStore::AddImage(const PaintImage& paint_image,
+void DiscardableImageStore::AddImage(PaintImage paint_image,
                                      const SkRect& src_rect,
                                      const SkRect& rect,
                                      const SkMatrix* local_matrix,
                                      const PaintFlags& flags) {
-  sk_sp<const SkImage> sk_image = paint_image.sk_image();
-  if (!sk_image->isLazyGenerated())
+  if (!paint_image.sk_image()->isLazyGenerated())
     return;
 
   const SkRect& clip_rect = SkRect::Make(canvas_->getDeviceClipBounds());
@@ -244,11 +249,10 @@ void DiscardableImageStore::AddImage(const PaintImage& paint_image,
   if (local_matrix)
     matrix.postConcat(*local_matrix);
 
-  // TODO(khushalsagar): Keep PaintImage in DrawImage.
-  (*image_id_to_rect_)[sk_image->uniqueID()].Union(image_rect);
+  (*image_id_to_rect_)[paint_image.stable_id()].Union(image_rect);
   image_set_->push_back(
-      std::make_pair(DrawImage(std::move(sk_image), src_irect, filter_quality,
-                               matrix, target_color_space),
+      std::make_pair(DrawImage(std::move(paint_image), src_irect,
+                               filter_quality, matrix, target_color_space),
                      image_rect));
 }
 

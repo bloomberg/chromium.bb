@@ -141,7 +141,7 @@ class CC_PAINT_EXPORT DisplayItemList
                                   float contents_scale,
                                   const gfx::ColorSpace& target_color_space,
                                   std::vector<DrawImage>* images);
-  gfx::Rect GetRectForImage(ImageId image_id) const;
+  gfx::Rect GetRectForImage(PaintImage::Id image_id) const;
 
   void SetRetainVisualRectsForTesting(bool retain) {
     retain_visual_rects_ = retain;
