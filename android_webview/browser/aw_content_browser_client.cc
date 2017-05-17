@@ -8,14 +8,14 @@
 
 #include "android_webview/browser/aw_browser_context.h"
 #include "android_webview/browser/aw_browser_main_parts.h"
+#include "android_webview/browser/aw_contents.h"
 #include "android_webview/browser/aw_contents_client_bridge.h"
 #include "android_webview/browser/aw_contents_io_thread_client.h"
 #include "android_webview/browser/aw_cookie_access_policy.h"
 #include "android_webview/browser/aw_devtools_manager_delegate.h"
-#include "android_webview/browser/aw_locale_manager.h"
 #include "android_webview/browser/aw_printing_message_filter.h"
 #include "android_webview/browser/aw_quota_permission_context.h"
-#include "android_webview/browser/aw_web_preferences_populater.h"
+#include "android_webview/browser/aw_settings.h"
 #include "android_webview/browser/jni_dependency_factory.h"
 #include "android_webview/browser/net/aw_url_request_context_getter.h"
 #include "android_webview/browser/net_disk_cache_remover.h"
@@ -164,8 +164,6 @@ void AwContentsMessageFilter::OnSubFrameCreated(int parent_render_frame_id,
       process_id_, parent_render_frame_id, child_render_frame_id);
 }
 
-AwLocaleManager* g_locale_manager = NULL;
-
 // A dummy binder for mojo interface autofill::mojom::PasswordManagerDriver.
 void DummyBindPasswordManagerDriver(
     const service_manager::BindSourceInfo& source_info,
@@ -178,7 +176,7 @@ void DummyBindPasswordManagerDriver(
 // static
 std::string AwContentBrowserClient::GetAcceptLangsImpl() {
   // Start with the current locale(s) in BCP47 format.
-  std::string locales_string = g_locale_manager->GetLocaleList();
+  std::string locales_string = AwContents::GetLocaleList();
 
   // If accept languages do not contain en-US, add in en-US which will be
   // used with a lower q-value.
@@ -195,13 +193,9 @@ AwBrowserContext* AwContentBrowserClient::GetAwBrowserContext() {
 AwContentBrowserClient::AwContentBrowserClient(
     JniDependencyFactory* native_factory)
     : native_factory_(native_factory) {
-  g_locale_manager = native_factory->CreateAwLocaleManager();
 }
 
-AwContentBrowserClient::~AwContentBrowserClient() {
-  delete g_locale_manager;
-  g_locale_manager = NULL;
-}
+AwContentBrowserClient::~AwContentBrowserClient() {}
 
 AwBrowserContext* AwContentBrowserClient::InitBrowserContext() {
   base::FilePath user_data_dir;
@@ -513,12 +507,11 @@ void AwContentBrowserClient::GetAdditionalMappedFilesForChildProcess(
 void AwContentBrowserClient::OverrideWebkitPrefs(
     content::RenderViewHost* rvh,
     content::WebPreferences* web_prefs) {
-  if (!preferences_populater_.get()) {
-    preferences_populater_ =
-        base::WrapUnique(native_factory_->CreateWebPreferencesPopulater());
+  AwSettings* aw_settings = AwSettings::FromWebContents(
+      content::WebContents::FromRenderViewHost(rvh));
+  if (aw_settings) {
+    aw_settings->PopulateWebPreferences(web_prefs);
   }
-  preferences_populater_->PopulateFor(
-      content::WebContents::FromRenderViewHost(rvh), web_prefs);
 }
 
 std::vector<std::unique_ptr<content::NavigationThrottle>>
