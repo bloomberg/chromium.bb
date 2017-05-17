@@ -85,8 +85,15 @@ class CORE_EXPORT EventTargetData final
   std::unique_ptr<FiringEventIteratorVector> firing_event_iterators;
 };
 
-// This is the base class for all DOM event targets. To make your class an
-// EventTarget, follow these steps:
+// All DOM event targets extend EventTarget. The spec is defined here:
+// https://dom.spec.whatwg.org/#interface-eventtarget
+// EventTarget objects allow us to add and remove an event
+// listeners of a specific event type. Each EventTarget object also represents
+// the target to which an event is dispatched when something has occurred.
+// All nodes are EventTargets, some other event targets include: XMLHttpRequest,
+// AudioNode and AudioContext.
+
+// To make your class an EventTarget, follow these steps:
 // - Make your IDL interface inherit from EventTarget.
 // - Inherit from EventTargetWithInlineData (only in rare cases should you
 //   use EventTarget directly).
