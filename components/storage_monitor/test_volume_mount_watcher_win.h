@@ -40,8 +40,6 @@ class TestVolumeMountWatcherWin : public VolumeMountWatcherWin {
 
   void SetAttachedDevicesFake();
 
-  void FlushWorkerPoolForTesting();
-
   const std::vector<base::FilePath>& devices_checked() const {
       return devices_checked_;
   }

@@ -23,7 +23,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/sys_info.h"
 #include "base/task_runner_util.h"
-#include "base/threading/sequenced_worker_pool.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/time/time.h"
 #include "base/win/scoped_handle.h"
 #include "components/storage_monitor/media_storage_util.h"
@@ -37,8 +37,6 @@ namespace storage_monitor {
 namespace {
 
 const DWORD kMaxPathBufLen = MAX_PATH + 1;
-
-const char kDeviceInfoTaskRunnerName[] = "device-info-task-runner";
 
 enum DeviceType {
   FLOPPY,
@@ -317,12 +315,11 @@ void EjectDeviceInThreadPool(
 }  // namespace
 
 VolumeMountWatcherWin::VolumeMountWatcherWin()
-    : notifications_(NULL), weak_factory_(this) {
-  base::SequencedWorkerPool* pool = content::BrowserThread::GetBlockingPool();
-  device_info_task_runner_ = pool->GetSequencedTaskRunnerWithShutdownBehavior(
-      pool->GetNamedSequenceToken(kDeviceInfoTaskRunnerName),
-      base::SequencedWorkerPool::CONTINUE_ON_SHUTDOWN);
-}
+    : device_info_task_runner_(base::CreateSequencedTaskRunnerWithTraits(
+          {base::MayBlock(), base::TaskPriority::BACKGROUND,
+           base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN})),
+      notifications_(nullptr),
+      weak_factory_(this) {}
 
 // static
 base::FilePath VolumeMountWatcherWin::DriveNumberToFilePath(int drive_number) {
