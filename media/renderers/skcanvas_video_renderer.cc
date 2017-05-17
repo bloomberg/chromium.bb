@@ -244,8 +244,7 @@ class VideoImageGenerator : public SkImageGenerator {
   bool onGetPixels(const SkImageInfo& info,
                    void* pixels,
                    size_t row_bytes,
-                   SkPMColor ctable[],
-                   int* ctable_count) override {
+                   const Options&) override {
     // If skia couldn't do the YUV conversion on GPU, we will on CPU.
     SkCanvasVideoRenderer::ConvertVideoFrameToRGBPixels(frame_.get(), pixels,
                                                         row_bytes);

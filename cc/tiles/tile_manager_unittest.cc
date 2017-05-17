@@ -2321,8 +2321,8 @@ class CheckerImagingTileManagerTest : public TestLayerTreeHostBase {
               SkImageInfo::MakeN32Premul(size.width(), size.height())) {}
 
    protected:
-    MOCK_METHOD5(onGetPixels,
-                 bool(const SkImageInfo&, void*, size_t, SkPMColor[], int*));
+    MOCK_METHOD4(onGetPixels,
+                 bool(const SkImageInfo&, void*, size_t, const Options&));
   };
 
   void TearDown() override {
