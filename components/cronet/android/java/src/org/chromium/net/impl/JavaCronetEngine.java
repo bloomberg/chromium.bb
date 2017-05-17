@@ -35,31 +35,31 @@ import java.util.concurrent.ThreadFactory;
  */
 public final class JavaCronetEngine extends CronetEngineBase {
     private final String mUserAgent;
+    private final ExecutorService mExecutorService;
 
-    private final ExecutorService mExecutorService =
-            Executors.newCachedThreadPool(new ThreadFactory() {
-                @Override
-                public Thread newThread(final Runnable r) {
-                    return Executors.defaultThreadFactory().newThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            Thread.currentThread().setName("JavaCronetEngine");
-                            // On android, all background threads (and all threads that are part
-                            // of background processes) are put in a cgroup that is allowed to
-                            // consume up to 5% of CPU - these worker threads spend the vast
-                            // majority of their time waiting on I/O, so making them contend with
-                            // background applications for a slice of CPU doesn't make much sense.
-                            // We want to hurry up and get idle.
-                            android.os.Process.setThreadPriority(
-                                    THREAD_PRIORITY_BACKGROUND + THREAD_PRIORITY_MORE_FAVORABLE);
-                            r.run();
-                        }
-                    });
-                }
-            });
-
-    public JavaCronetEngine(String userAgent) {
-        this.mUserAgent = userAgent;
+    public JavaCronetEngine(CronetEngineBuilderImpl builder) {
+        // On android, all background threads (and all threads that are part
+        // of background processes) are put in a cgroup that is allowed to
+        // consume up to 5% of CPU - these worker threads spend the vast
+        // majority of their time waiting on I/O, so making them contend with
+        // background applications for a slice of CPU doesn't make much sense.
+        // We want to hurry up and get idle.
+        final int threadPriority =
+                builder.threadPriority(THREAD_PRIORITY_BACKGROUND + THREAD_PRIORITY_MORE_FAVORABLE);
+        this.mUserAgent = builder.getUserAgent();
+        this.mExecutorService = Executors.newCachedThreadPool(new ThreadFactory() {
+            @Override
+            public Thread newThread(final Runnable r) {
+                return Executors.defaultThreadFactory().newThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        Thread.currentThread().setName("JavaCronetEngine");
+                        android.os.Process.setThreadPriority(threadPriority);
+                        r.run();
+                    }
+                });
+            }
+        });
     }
 
     @Override

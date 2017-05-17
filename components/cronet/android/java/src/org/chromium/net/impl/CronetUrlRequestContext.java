@@ -70,7 +70,8 @@ public class CronetUrlRequestContext extends CronetEngineBase {
      */
     private Thread mNetworkThread;
 
-    private boolean mNetworkQualityEstimatorEnabled;
+    private final boolean mNetworkQualityEstimatorEnabled;
+    private final int mNetworkThreadPriority;
 
     /**
      * Locks operations on network quality listeners, because listener
@@ -148,6 +149,8 @@ public class CronetUrlRequestContext extends CronetEngineBase {
 
     @UsedByReflection("CronetEngine.java")
     public CronetUrlRequestContext(final CronetEngineBuilderImpl builder) {
+        mNetworkQualityEstimatorEnabled = builder.networkQualityEstimatorEnabled();
+        mNetworkThreadPriority = builder.threadPriority(Process.THREAD_PRIORITY_BACKGROUND);
         CronetLibraryLoader.ensureInitialized(builder.getContext(), builder);
         nativeSetMinLogLevel(getLoggingLevel());
         synchronized (mLock) {
@@ -156,7 +159,6 @@ public class CronetUrlRequestContext extends CronetEngineBase {
             if (mUrlRequestContextAdapter == 0) {
                 throw new NullPointerException("Context Adapter creation failed.");
             }
-            mNetworkQualityEstimatorEnabled = builder.networkQualityEstimatorEnabled();
         }
 
         // Init native Chromium URLRequestContext on init thread.
@@ -574,7 +576,7 @@ public class CronetUrlRequestContext extends CronetEngineBase {
         mNetworkThread = Thread.currentThread();
         mInitCompleted.open();
         Thread.currentThread().setName("ChromiumNet");
-        Process.setThreadPriority(Process.THREAD_PRIORITY_BACKGROUND);
+        Process.setThreadPriority(mNetworkThreadPriority);
     }
 
     @SuppressWarnings("unused")
