@@ -9,7 +9,7 @@
 #include "ui/gfx/platform_font.h"
 
 #if defined(USE_ASH)
-#include "ash/public/cpp/ash_typography.h"
+#include "ash/public/cpp/ash_typography.h"  // nogncheck
 #endif
 
 const gfx::FontList& HarmonyTypographyProvider::GetFont(int text_context,

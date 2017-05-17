@@ -10,7 +10,7 @@
 #include "ui/views/style/typography_provider.h"
 
 #if defined(USE_ASH)
-#include "ash/public/cpp/ash_typography.h"
+#include "ash/public/cpp/ash_typography.h"  // nogncheck
 #endif
 
 enum ChromeTextContext {
