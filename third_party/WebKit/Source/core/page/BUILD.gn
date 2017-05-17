@@ -64,6 +64,8 @@ blink_core_sources("page") {
     "TouchDisambiguation.cpp",
     "TouchDisambiguation.h",
     "ValidationMessageClient.h",
+    "ValidationMessageClientImpl.cpp",
+    "ValidationMessageClientImpl.h",
     "WindowFeatures.cpp",
     "WindowFeatures.h",
     "scrolling/OverscrollController.cpp",

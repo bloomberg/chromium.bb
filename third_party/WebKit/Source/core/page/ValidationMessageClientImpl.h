@@ -26,6 +26,7 @@
 #ifndef ValidationMessageClientImpl_h
 #define ValidationMessageClientImpl_h
 
+#include "core/CoreExport.h"
 #include "core/page/PopupOpeningObserver.h"
 #include "core/page/ValidationMessageClient.h"
 #include "platform/Timer.h"
@@ -38,9 +39,9 @@ namespace blink {
 class FrameView;
 class WebViewBase;
 
-class ValidationMessageClientImpl final
+class CORE_EXPORT ValidationMessageClientImpl final
     : public GarbageCollectedFinalized<ValidationMessageClientImpl>,
-      public ValidationMessageClient,
+      public NON_EXPORTED_BASE(ValidationMessageClient),
       private PopupOpeningObserver {
   USING_GARBAGE_COLLECTED_MIXIN(ValidationMessageClientImpl);
 
