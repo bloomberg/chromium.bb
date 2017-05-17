@@ -149,8 +149,9 @@ class PixelIntegrationTest(
     dpr = tab.EvaluateJavaScript('window.devicePixelRatio')
     if page.test_rect:
       screenshot = image_util.Crop(
-          screenshot, page.test_rect[0] * dpr, page.test_rect[1] * dpr,
-          page.test_rect[2] * dpr, page.test_rect[3] * dpr)
+          screenshot, int(page.test_rect[0] * dpr),
+          int(page.test_rect[1] * dpr), int(page.test_rect[2] * dpr),
+          int(page.test_rect[3] * dpr))
     if page.expected_colors:
       # Use expected colors instead of ref images for validation.
       self._ValidateScreenshotSamples(
