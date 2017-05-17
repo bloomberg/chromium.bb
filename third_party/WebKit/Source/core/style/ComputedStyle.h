@@ -1740,6 +1740,8 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase<ComputedStyle>,
   QuotesData* Quotes() const { return rare_inherited_data_->quotes_.Get(); }
   void SetQuotes(PassRefPtr<QuotesData>);
 
+  bool QuotesDataEquivalent(const ComputedStyle&) const;
+
   // line-height-step
   static uint8_t InitialLineHeightStep() { return 0; }
   uint8_t LineHeightStep() const {
@@ -1831,6 +1833,8 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase<ComputedStyle>,
     return rare_inherited_data_->text_shadow_.Get();
   }
   void SetTextShadow(PassRefPtr<ShadowList>);
+
+  bool TextShadowDataEquivalent(const ComputedStyle&) const;
 
   // text-size-adjust (aka -webkit-text-size-adjust)
   static TextSizeAdjust InitialTextSizeAdjust() {

@@ -124,7 +124,8 @@ bool StyleRareInheritedData::operator==(const StyleRareInheritedData& o) const {
              o.visited_link_text_emphasis_color_ &&
          visited_link_caret_color_ == o.visited_link_caret_color_ &&
          tap_highlight_color_ == o.tap_highlight_color_ &&
-         ShadowDataEquivalent(o) && highlight_ == o.highlight_ &&
+         DataEquivalent(text_shadow_, o.text_shadow_) &&
+         highlight_ == o.highlight_ &&
          DataEquivalent(cursor_data_, o.cursor_data_) &&
          text_indent_ == o.text_indent_ &&
          effective_zoom_ == o.effective_zoom_ && widows_ == o.widows_ &&
@@ -171,7 +172,7 @@ bool StyleRareInheritedData::operator==(const StyleRareInheritedData& o) const {
          hyphenation_string_ == o.hyphenation_string_ &&
          line_height_step_ == o.line_height_step_ &&
          text_emphasis_custom_mark_ == o.text_emphasis_custom_mark_ &&
-         QuotesDataEquivalent(o) && tab_size_ == o.tab_size_ &&
+         DataEquivalent(quotes_, o.quotes_) && tab_size_ == o.tab_size_ &&
          image_rendering_ == o.image_rendering_ &&
          text_underline_position_ == o.text_underline_position_ &&
          text_decoration_skip_ == o.text_decoration_skip_ &&
@@ -181,16 +182,6 @@ bool StyleRareInheritedData::operator==(const StyleRareInheritedData& o) const {
                         o.applied_text_decorations_) &&
          DataEquivalent(variables_, o.variables_) &&
          text_size_adjust_ == o.text_size_adjust_;
-}
-
-bool StyleRareInheritedData::ShadowDataEquivalent(
-    const StyleRareInheritedData& o) const {
-  return DataEquivalent(text_shadow_, o.text_shadow_);
-}
-
-bool StyleRareInheritedData::QuotesDataEquivalent(
-    const StyleRareInheritedData& o) const {
-  return DataEquivalent(quotes_, o.quotes_);
 }
 
 }  // namespace blink

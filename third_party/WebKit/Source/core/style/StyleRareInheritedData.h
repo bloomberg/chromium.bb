@@ -74,8 +74,6 @@ class CORE_EXPORT StyleRareInheritedData
   bool operator!=(const StyleRareInheritedData& o) const {
     return !(*this == o);
   }
-  bool ShadowDataEquivalent(const StyleRareInheritedData&) const;
-  bool QuotesDataEquivalent(const StyleRareInheritedData&) const;
 
   Persistent<StyleImage> list_style_image_;
 
