@@ -800,6 +800,10 @@ void RenderWidgetHostImpl::Blur() {
   if (!focused_widget)
     focused_widget = this;
   focused_widget->SetPageFocus(false);
+  if (owner_delegate_)
+    owner_delegate_->RenderWidgetLostFocus();
+  if (delegate_)
+    delegate_->RenderWidgetLostFocus(this);
 }
 
 void RenderWidgetHostImpl::SetPageFocus(bool focused) {

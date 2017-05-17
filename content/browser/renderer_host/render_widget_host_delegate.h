@@ -60,6 +60,10 @@ class CONTENT_EXPORT RenderWidgetHostDelegate {
   // The RenderWidgetHost got the focus.
   virtual void RenderWidgetGotFocus(RenderWidgetHostImpl* render_widget_host) {}
 
+  // The RenderWidgetHost lost the focus.
+  virtual void RenderWidgetLostFocus(
+      RenderWidgetHostImpl* render_widget_host) {}
+
   // The RenderWidget was resized.
   virtual void RenderWidgetWasResized(RenderWidgetHostImpl* render_widget_host,
                                       bool width_changed) {}

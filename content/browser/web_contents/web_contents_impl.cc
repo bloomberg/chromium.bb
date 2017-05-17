@@ -1862,6 +1862,11 @@ void WebContentsImpl::RenderWidgetGotFocus(
   }
 }
 
+void WebContentsImpl::RenderWidgetLostFocus(
+    RenderWidgetHostImpl* render_widget_host) {
+  NotifyWebContentsLostFocus();
+}
+
 void WebContentsImpl::RenderWidgetWasResized(
     RenderWidgetHostImpl* render_widget_host,
     bool width_changed) {
@@ -3290,6 +3295,11 @@ void WebContentsImpl::DidGetRedirectForResourceRequest(
 void WebContentsImpl::NotifyWebContentsFocused() {
   for (auto& observer : observers_)
     observer.OnWebContentsFocused();
+}
+
+void WebContentsImpl::NotifyWebContentsLostFocus() {
+  for (auto& observer : observers_)
+    observer.OnWebContentsLostFocus();
 }
 
 void WebContentsImpl::SystemDragEnded(RenderWidgetHost* source_rwh) {

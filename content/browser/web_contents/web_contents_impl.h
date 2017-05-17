@@ -216,6 +216,9 @@ class CONTENT_EXPORT WebContentsImpl
   // Notify observers that the web contents has been focused.
   void NotifyWebContentsFocused();
 
+  // Notify observers that the web contents has lost focus.
+  void NotifyWebContentsLostFocus();
+
   WebContentsView* GetView() const;
 
   void OnScreenOrientationChange();
@@ -654,6 +657,7 @@ class CONTENT_EXPORT WebContentsImpl
   void RenderWidgetCreated(RenderWidgetHostImpl* render_widget_host) override;
   void RenderWidgetDeleted(RenderWidgetHostImpl* render_widget_host) override;
   void RenderWidgetGotFocus(RenderWidgetHostImpl* render_widget_host) override;
+  void RenderWidgetLostFocus(RenderWidgetHostImpl* render_widget_host) override;
   void RenderWidgetWasResized(RenderWidgetHostImpl* render_widget_host,
                               bool width_changed) override;
   void ResizeDueToAutoResize(RenderWidgetHostImpl* render_widget_host,
