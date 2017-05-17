@@ -355,6 +355,18 @@ class TestDriver:
     self._logger.debug('Loaded page %s', url)
     self._has_logs = True
 
+  def FindElement(self, by, value):
+    """Finds an element on the page.
+
+    Uses the By selector and value given.
+    Args:
+      by: the selenium.webdriver.common.By selector
+      value: the value
+    Returns:
+      a WebElement object
+    """
+    return self._driver.find_element(by=by, value=value)
+
   def ExecuteJavascript(self, script, timeout=30):
     """Executes the given javascript in the browser's current page in an
     anonymous function.
