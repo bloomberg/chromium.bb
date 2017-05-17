@@ -8,12 +8,15 @@
 #define CONTENT_BROWSER_RENDERER_HOST_SANDBOX_IPC_LINUX_H_
 
 #include <memory>
+#include <string>
 #include <vector>
 
 #include "base/files/scoped_file.h"
 #include "base/macros.h"
 #include "base/pickle.h"
 #include "base/threading/simple_thread.h"
+#include "content/common/content_export.h"
+#include "third_party/icu/source/common/unicode/uchar.h"
 
 class SkString;
 
@@ -28,6 +31,15 @@ class SandboxIPCHandler : public base::DelegateSimpleThread::Delegate {
   ~SandboxIPCHandler() override;
 
   void Run() override;
+
+  class TestObserver {
+   public:
+    virtual void OnGetFallbackFontForChar(UChar32 c,
+                                          std::string name,
+                                          int id) = 0;
+    virtual void OnFontOpen(int id) = 0;
+  };
+  CONTENT_EXPORT static void SetObserverForTests(TestObserver* observer);
 
  private:
   int FindOrAddPath(const SkString& path);

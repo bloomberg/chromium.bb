@@ -35,6 +35,8 @@ namespace content {
 
 namespace {
 
+SandboxIPCHandler::TestObserver* g_test_observer = nullptr;
+
 // Converts gfx::FontRenderParams::Hinting to WebFontRenderStyle::hintStyle.
 // Returns an int for serialization, but the underlying Blink type is a char.
 int ConvertHinting(gfx::FontRenderParams::Hinting hinting) {
@@ -65,6 +67,12 @@ int ConvertSubpixelRendering(
 }
 
 }  // namespace
+
+// static
+void SandboxIPCHandler::SetObserverForTests(
+    SandboxIPCHandler::TestObserver* observer) {
+  g_test_observer = observer;
+}
 
 SandboxIPCHandler::SandboxIPCHandler(int lifeline_fd, int browser_socket)
     : lifeline_fd_(lifeline_fd),
@@ -216,6 +224,9 @@ void SandboxIPCHandler::HandleFontOpenRequest(
     return;
   if (index >= static_cast<uint32_t>(paths_.size()))
     return;
+  if (g_test_observer) {
+    g_test_observer->OnFontOpen(index);
+  }
   const int result_fd = open(paths_[index].c_str(), O_RDONLY);
 
   base::Pickle reply;
@@ -250,6 +261,10 @@ void SandboxIPCHandler::HandleGetFallbackFontForChar(
   int fontconfig_interface_id =
       FindOrAddPath(SkString(fallback_font.filename.data()));
 
+  if (g_test_observer) {
+    g_test_observer->OnGetFallbackFontForChar(c, fallback_font.name,
+                                              fontconfig_interface_id);
+  }
   base::Pickle reply;
   reply.WriteString(fallback_font.name);
   reply.WriteString(fallback_font.filename);
