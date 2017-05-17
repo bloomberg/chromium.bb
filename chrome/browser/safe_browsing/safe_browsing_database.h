@@ -523,43 +523,43 @@ class SafeBrowsingDatabaseNew : public SafeBrowsingDatabase {
     ~DatabaseStateManager();
 
     void init_filename_base(const base::FilePath& filename_base) {
-      DCHECK(db_task_runner_->RunsTasksOnCurrentThread());
+      DCHECK(db_task_runner_->RunsTasksInCurrentSequence());
       DCHECK(filename_base_.empty()) << "filename already initialized";
       filename_base_ = filename_base;
     }
 
     const base::FilePath& filename_base() {
-      DCHECK(db_task_runner_->RunsTasksOnCurrentThread());
+      DCHECK(db_task_runner_->RunsTasksInCurrentSequence());
       return filename_base_;
     }
 
     void set_corruption_detected() {
-      DCHECK(db_task_runner_->RunsTasksOnCurrentThread());
+      DCHECK(db_task_runner_->RunsTasksInCurrentSequence());
       corruption_detected_ = true;
     }
 
     void reset_corruption_detected() {
-      DCHECK(db_task_runner_->RunsTasksOnCurrentThread());
+      DCHECK(db_task_runner_->RunsTasksInCurrentSequence());
       corruption_detected_ = false;
     }
 
     bool corruption_detected() {
-      DCHECK(db_task_runner_->RunsTasksOnCurrentThread());
+      DCHECK(db_task_runner_->RunsTasksInCurrentSequence());
       return corruption_detected_;
     }
 
     void set_change_detected() {
-      DCHECK(db_task_runner_->RunsTasksOnCurrentThread());
+      DCHECK(db_task_runner_->RunsTasksInCurrentSequence());
       change_detected_ = true;
     }
 
     void reset_change_detected() {
-      DCHECK(db_task_runner_->RunsTasksOnCurrentThread());
+      DCHECK(db_task_runner_->RunsTasksInCurrentSequence());
       change_detected_ = false;
     }
 
     bool change_detected() {
-      DCHECK(db_task_runner_->RunsTasksOnCurrentThread());
+      DCHECK(db_task_runner_->RunsTasksInCurrentSequence());
       return change_detected_;
     }
 

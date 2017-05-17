@@ -59,7 +59,7 @@ bool IsBrowserStartupComplete() {
 
 void RunTask(std::unique_ptr<AfterStartupTask> queued_task) {
   // We're careful to delete the caller's |task| on the target runner's thread.
-  DCHECK(queued_task->task_runner->RunsTasksOnCurrentThread());
+  DCHECK(queued_task->task_runner->RunsTasksInCurrentSequence());
   std::move(queued_task->task).Run();
 }
 

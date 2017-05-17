@@ -48,7 +48,7 @@ void LoadOnBlockingPool(
     const base::FilePath& icon_path,
     scoped_refptr<base::SequencedTaskRunner> callback_task_runner,
     KioskAppIconLoader::ResultCallback result_callback) {
-  DCHECK(callback_task_runner->RunsTasksOnCurrentThread());
+  DCHECK(callback_task_runner->RunsTasksInCurrentSequence());
 
   std::string data;
   if (!base::ReadFileToString(base::FilePath(icon_path), &data)) {

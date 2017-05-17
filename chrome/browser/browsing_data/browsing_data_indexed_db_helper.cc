@@ -48,7 +48,7 @@ void BrowsingDataIndexedDBHelper::DeleteIndexedDB(const GURL& origin) {
 
 void BrowsingDataIndexedDBHelper::FetchIndexedDBInfoInIndexedDBThread(
     const FetchCallback& callback) {
-  DCHECK(indexed_db_context_->TaskRunner()->RunsTasksOnCurrentThread());
+  DCHECK(indexed_db_context_->TaskRunner()->RunsTasksInCurrentSequence());
   DCHECK(!callback.is_null());
   std::vector<IndexedDBInfo> origins = indexed_db_context_->GetAllOriginsInfo();
   std::list<content::IndexedDBInfo> result;
@@ -63,7 +63,7 @@ void BrowsingDataIndexedDBHelper::FetchIndexedDBInfoInIndexedDBThread(
 
 void BrowsingDataIndexedDBHelper::DeleteIndexedDBInIndexedDBThread(
     const GURL& origin) {
-  DCHECK(indexed_db_context_->TaskRunner()->RunsTasksOnCurrentThread());
+  DCHECK(indexed_db_context_->TaskRunner()->RunsTasksInCurrentSequence());
   indexed_db_context_->DeleteForOrigin(origin);
 }
 

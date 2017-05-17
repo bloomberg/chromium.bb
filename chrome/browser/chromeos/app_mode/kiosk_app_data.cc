@@ -109,7 +109,7 @@ class KioskAppData::CrxLoader : public extensions::SandboxedUnpackerClient {
                        std::unique_ptr<base::DictionaryValue> original_manifest,
                        const extensions::Extension* extension,
                        const SkBitmap& install_icon) override {
-    DCHECK(task_runner_->RunsTasksOnCurrentThread());
+    DCHECK(task_runner_->RunsTasksInCurrentSequence());
 
     const extensions::KioskModeInfo* info =
         extensions::KioskModeInfo::Get(extension);
@@ -125,14 +125,14 @@ class KioskAppData::CrxLoader : public extensions::SandboxedUnpackerClient {
     NotifyFinishedOnBlockingPool();
   }
   void OnUnpackFailure(const extensions::CrxInstallError& error) override {
-    DCHECK(task_runner_->RunsTasksOnCurrentThread());
+    DCHECK(task_runner_->RunsTasksInCurrentSequence());
 
     success_ = false;
     NotifyFinishedOnBlockingPool();
   }
 
   void StartOnBlockingPool() {
-    DCHECK(task_runner_->RunsTasksOnCurrentThread());
+    DCHECK(task_runner_->RunsTasksInCurrentSequence());
 
     if (!temp_dir_.CreateUniqueTempDir()) {
       success_ = false;
@@ -148,7 +148,7 @@ class KioskAppData::CrxLoader : public extensions::SandboxedUnpackerClient {
   }
 
   void NotifyFinishedOnBlockingPool() {
-    DCHECK(task_runner_->RunsTasksOnCurrentThread());
+    DCHECK(task_runner_->RunsTasksInCurrentSequence());
 
     if (!temp_dir_.Delete()) {
       LOG(WARNING) << "Can not delete temp directory at "

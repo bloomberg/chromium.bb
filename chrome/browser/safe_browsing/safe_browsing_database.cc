@@ -324,7 +324,7 @@ std::unique_ptr<SafeBrowsingDatabase> SafeBrowsingDatabase::Create(
     bool enable_ip_blacklist,
     bool enable_unwanted_software_list,
     bool enable_module_whitelist) {
-  DCHECK(current_task_runner->RunsTasksOnCurrentThread());
+  DCHECK(current_task_runner->RunsTasksInCurrentSequence());
   if (!factory_)
     factory_ = new SafeBrowsingDatabaseFactoryImpl();
   return factory_->CreateSafeBrowsingDatabase(
@@ -428,7 +428,7 @@ void SafeBrowsingDatabase::GetDownloadUrlPrefixes(
 
 SafeBrowsingStore* SafeBrowsingDatabaseNew::GetStore(const int list_id) {
   // Stores are not thread safe.
-  DCHECK(db_task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(db_task_runner_->RunsTasksInCurrentSequence());
 
   if (list_id == PHISH || list_id == MALWARE) {
     return browse_store_.get();
@@ -514,7 +514,7 @@ class SafeBrowsingDatabaseNew::ThreadSafeStateManager::ReadTransaction {
     if (auto_lock_requirement == AutoLockRequirement::LOCK)
       transaction_lock_.reset(new base::AutoLock(outer_->lock_));
     else
-      DCHECK(outer_->db_task_runner_->RunsTasksOnCurrentThread());
+      DCHECK(outer_->db_task_runner_->RunsTasksInCurrentSequence());
   }
 
   const ThreadSafeStateManager* outer_;
@@ -567,7 +567,7 @@ class SafeBrowsingDatabaseNew::ThreadSafeStateManager::WriteTransaction {
   explicit WriteTransaction(ThreadSafeStateManager* outer)
       : outer_(outer), transaction_lock_(outer_->lock_) {
     DCHECK(outer_);
-    DCHECK(outer_->db_task_runner_->RunsTasksOnCurrentThread());
+    DCHECK(outer_->db_task_runner_->RunsTasksInCurrentSequence());
   }
 
   SBWhitelist* SBWhitelistForId(SBWhitelistId id) {
@@ -651,11 +651,11 @@ SafeBrowsingDatabaseNew::SafeBrowsingDatabaseNew(
 
 SafeBrowsingDatabaseNew::~SafeBrowsingDatabaseNew() {
   // The DCHECK is disabled due to crbug.com/338486 .
-  // DCHECK(db_task_runner_->RunsTasksOnCurrentThread());
+  // DCHECK(db_task_runner_->RunsTasksInCurrentSequence());
 }
 
 void SafeBrowsingDatabaseNew::Init(const base::FilePath& filename_base) {
-  DCHECK(db_task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(db_task_runner_->RunsTasksInCurrentSequence());
 
   db_state_manager_.init_filename_base(filename_base);
 
@@ -812,7 +812,7 @@ void SafeBrowsingDatabaseNew::Init(const base::FilePath& filename_base) {
 }
 
 bool SafeBrowsingDatabaseNew::ResetDatabase() {
-  DCHECK(db_task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(db_task_runner_->RunsTasksInCurrentSequence());
 
   // Delete files on disk.
   // TODO(shess): Hard to see where one might want to delete without a
@@ -922,7 +922,7 @@ bool SafeBrowsingDatabaseNew::PrefixSetContainsUrlHashes(
 bool SafeBrowsingDatabaseNew::ContainsDownloadUrlPrefixes(
     const std::vector<SBPrefix>& prefixes,
     std::vector<SBPrefix>* prefix_hits) {
-  DCHECK(db_task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(db_task_runner_->RunsTasksInCurrentSequence());
 
   // Ignore this check when download checking is not enabled.
   if (!download_store_.get())
@@ -947,7 +947,7 @@ bool SafeBrowsingDatabaseNew::ContainsDownloadWhitelistedUrl(const GURL& url) {
 bool SafeBrowsingDatabaseNew::ContainsExtensionPrefixes(
     const std::vector<SBPrefix>& prefixes,
     std::vector<SBPrefix>* prefix_hits) {
-  DCHECK(db_task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(db_task_runner_->RunsTasksInCurrentSequence());
 
   if (!extension_blacklist_store_)
     return false;
@@ -988,7 +988,7 @@ bool SafeBrowsingDatabaseNew::ContainsMalwareIP(const std::string& ip_address) {
 bool SafeBrowsingDatabaseNew::ContainsResourceUrlPrefixes(
     const std::vector<SBPrefix>& prefixes,
     std::vector<SBPrefix>* prefix_hits) {
-  DCHECK(db_task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(db_task_runner_->RunsTasksInCurrentSequence());
 
   if (!resource_blacklist_store_)
     return false;
@@ -1032,7 +1032,7 @@ bool SafeBrowsingDatabaseNew::ContainsWhitelistedHashes(
 void SafeBrowsingDatabaseNew::InsertAddChunk(SafeBrowsingStore* store,
                                              const ListType list_id,
                                              const SBChunkData& chunk_data) {
-  DCHECK(db_task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(db_task_runner_->RunsTasksInCurrentSequence());
   DCHECK(store);
 
   // The server can give us a chunk that we already have because
@@ -1060,7 +1060,7 @@ void SafeBrowsingDatabaseNew::InsertAddChunk(SafeBrowsingStore* store,
 void SafeBrowsingDatabaseNew::InsertSubChunk(SafeBrowsingStore* store,
                                              const ListType list_id,
                                              const SBChunkData& chunk_data) {
-  DCHECK(db_task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(db_task_runner_->RunsTasksInCurrentSequence());
   DCHECK(store);
 
   // The server can give us a chunk that we already have because
@@ -1093,7 +1093,7 @@ void SafeBrowsingDatabaseNew::InsertSubChunk(SafeBrowsingStore* store,
 void SafeBrowsingDatabaseNew::InsertChunks(
     const std::string& list_name,
     const std::vector<std::unique_ptr<SBChunkData>>& chunks) {
-  DCHECK(db_task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(db_task_runner_->RunsTasksInCurrentSequence());
 
   if (db_state_manager_.corruption_detected() || chunks.empty())
     return;
@@ -1128,7 +1128,7 @@ void SafeBrowsingDatabaseNew::InsertChunks(
 
 void SafeBrowsingDatabaseNew::DeleteChunks(
     const std::vector<SBChunkDelete>& chunk_deletes) {
-  DCHECK(db_task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(db_task_runner_->RunsTasksInCurrentSequence());
 
   if (db_state_manager_.corruption_detected() || chunk_deletes.empty())
     return;
@@ -1179,7 +1179,7 @@ void SafeBrowsingDatabaseNew::CacheHashResults(
 
 bool SafeBrowsingDatabaseNew::UpdateStarted(
     std::vector<SBListChunkRanges>* lists) {
-  DCHECK(db_task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(db_task_runner_->RunsTasksInCurrentSequence());
   DCHECK(lists);
 
   // If |BeginUpdate()| fails, reset the database.
@@ -1278,7 +1278,7 @@ bool SafeBrowsingDatabaseNew::UpdateStarted(
 }
 
 void SafeBrowsingDatabaseNew::UpdateFinished(bool update_succeeded) {
-  DCHECK(db_task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(db_task_runner_->RunsTasksInCurrentSequence());
 
   // The update may have failed due to corrupt storage (for instance,
   // an excessive number of invalid add_chunks and sub_chunks).
@@ -1409,7 +1409,7 @@ void SafeBrowsingDatabaseNew::UpdateWhitelistStore(
     const base::FilePath& store_filename,
     SafeBrowsingStore* store,
     SBWhitelistId whitelist_id) {
-  DCHECK(db_task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(db_task_runner_->RunsTasksInCurrentSequence());
 
   if (!store)
     return;
@@ -1437,7 +1437,7 @@ void SafeBrowsingDatabaseNew::UpdateHashPrefixStore(
     const base::FilePath& store_filename,
     SafeBrowsingStore* store,
     FailureType failure_type) {
-  DCHECK(db_task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(db_task_runner_->RunsTasksInCurrentSequence());
 
   // These results are not used after this call. Simply ignore the
   // returned value after FinishUpdate(...).
@@ -1461,7 +1461,7 @@ void SafeBrowsingDatabaseNew::UpdatePrefixSetUrlStore(
     FailureType finish_failure_type,
     FailureType write_failure_type,
     bool store_full_hashes_in_prefix_set) {
-  DCHECK(db_task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(db_task_runner_->RunsTasksInCurrentSequence());
   DCHECK(url_store);
 
   // Measure the amount of IO during the filter build.
@@ -1536,7 +1536,7 @@ void SafeBrowsingDatabaseNew::UpdatePrefixSetUrlStore(
 }
 
 void SafeBrowsingDatabaseNew::UpdateIpBlacklistStore() {
-  DCHECK(db_task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(db_task_runner_->RunsTasksInCurrentSequence());
 
   // Note: prefixes will not be empty.  The current data store implementation
   // stores all full-length hashes as both full and prefix hashes.
@@ -1561,7 +1561,7 @@ void SafeBrowsingDatabaseNew::UpdateIpBlacklistStore() {
 }
 
 void SafeBrowsingDatabaseNew::HandleCorruptDatabase() {
-  DCHECK(db_task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(db_task_runner_->RunsTasksInCurrentSequence());
 
   // Reset the database after the current task has unwound (but only
   // reset once within the scope of a given task).
@@ -1575,7 +1575,7 @@ void SafeBrowsingDatabaseNew::HandleCorruptDatabase() {
 }
 
 void SafeBrowsingDatabaseNew::OnHandleCorruptDatabase() {
-  DCHECK(db_task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(db_task_runner_->RunsTasksInCurrentSequence());
 
   RecordFailure(FAILURE_DATABASE_CORRUPT_HANDLER);
   db_state_manager_.set_corruption_detected();  // Stop updating the database.
@@ -1594,7 +1594,7 @@ void SafeBrowsingDatabaseNew::LoadPrefixSet(const base::FilePath& db_filename,
                                             WriteTransaction* txn,
                                             PrefixSetId prefix_set_id,
                                             FailureType read_failure_type) {
-  DCHECK(db_task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(db_task_runner_->RunsTasksInCurrentSequence());
   DCHECK(txn);
   DCHECK(!db_state_manager_.filename_base().empty());
 
@@ -1618,7 +1618,7 @@ void SafeBrowsingDatabaseNew::LoadPrefixSet(const base::FilePath& db_filename,
 }
 
 bool SafeBrowsingDatabaseNew::Delete() {
-  DCHECK(db_task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(db_task_runner_->RunsTasksInCurrentSequence());
   DCHECK(!db_state_manager_.filename_base().empty());
 
   // TODO(shess): This is a mess.  SafeBrowsingFileStore::Delete() closes the
@@ -1697,7 +1697,7 @@ bool SafeBrowsingDatabaseNew::Delete() {
 void SafeBrowsingDatabaseNew::WritePrefixSet(const base::FilePath& db_filename,
                                              PrefixSetId prefix_set_id,
                                              FailureType write_failure_type) {
-  DCHECK(db_task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(db_task_runner_->RunsTasksInCurrentSequence());
 
   // Do not grab the lock to avoid contention while writing to disk. This is
   // safe as only this task runner can ever modify |state_manager_|'s prefix
@@ -1728,7 +1728,7 @@ void SafeBrowsingDatabaseNew::WritePrefixSet(const base::FilePath& db_filename,
 void SafeBrowsingDatabaseNew::LoadWhitelist(
     const std::vector<SBAddFullHash>& full_hashes,
     SBWhitelistId whitelist_id) {
-  DCHECK(db_task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(db_task_runner_->RunsTasksInCurrentSequence());
 
   if (full_hashes.size() > kMaxWhitelistSize &&
       whitelist_id != SBWhitelistId::MODULE) {
@@ -1763,7 +1763,7 @@ void SafeBrowsingDatabaseNew::LoadWhitelist(
 
 void SafeBrowsingDatabaseNew::LoadIpBlacklist(
     const std::vector<SBAddFullHash>& full_hashes) {
-  DCHECK(db_task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(db_task_runner_->RunsTasksInCurrentSequence());
 
   IPBlacklist new_blacklist;
   for (std::vector<SBAddFullHash>::const_iterator it = full_hashes.begin();

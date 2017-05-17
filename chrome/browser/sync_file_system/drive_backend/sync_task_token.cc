@@ -65,7 +65,7 @@ SyncTaskToken::~SyncTaskToken() {
   // it must return the token to TaskManager.
   // Destroying a token with valid |client| indicates the token was
   // dropped by a task without returning.
-  if (task_runner_.get() && task_runner_->RunsTasksOnCurrentThread() &&
+  if (task_runner_.get() && task_runner_->RunsTasksInCurrentSequence() &&
       manager_ && manager_->IsRunningTask(token_id_)) {
     if (!manager_->ShouldTrackTaskToken())
       return;

@@ -22,6 +22,7 @@
 #include "base/sys_info.h"
 #include "base/task_runner.h"
 #include "base/threading/sequenced_worker_pool.h"
+#include "base/threading/thread_restrictions.h"
 #include "chrome/browser/chromeos/system/fake_input_device_settings.h"
 #include "content/public/browser/browser_thread.h"
 #include "ui/events/base_event_utils.h"
@@ -47,13 +48,13 @@ const char kInternalTouchpadName[] = "Elan Touchpad";
 typedef base::RefCountedData<bool> RefCountedBool;
 
 bool ScriptExists(const std::string& script) {
-  DCHECK(content::BrowserThread::GetBlockingPool()->RunsTasksOnCurrentThread());
+  base::ThreadRestrictions::AssertIOAllowed();
   return base::PathExists(base::FilePath(script));
 }
 
 // Executes the input control script asynchronously, if it exists.
 void ExecuteScriptOnFileThread(const std::vector<std::string>& argv) {
-  DCHECK(content::BrowserThread::GetBlockingPool()->RunsTasksOnCurrentThread());
+  base::ThreadRestrictions::AssertIOAllowed();
   DCHECK(!argv.empty());
   const std::string& script(argv[0]);
 
@@ -105,7 +106,7 @@ void AddTPControlArguments(const char* control,
 
 void DeviceExistsBlockingPool(const char* device_type,
                               scoped_refptr<RefCountedBool> exists) {
-  DCHECK(content::BrowserThread::GetBlockingPool()->RunsTasksOnCurrentThread());
+  base::ThreadRestrictions::AssertIOAllowed();
   exists->data = false;
   if (!ScriptExists(kInputControl))
     return;

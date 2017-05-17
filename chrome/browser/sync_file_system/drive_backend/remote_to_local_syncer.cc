@@ -410,7 +410,7 @@ void RemoteToLocalSyncer::DidGetRemoteMetadata(
     std::unique_ptr<SyncTaskToken> token,
     google_apis::DriveApiErrorCode error,
     std::unique_ptr<google_apis::FileResource> entry) {
-  DCHECK(sync_context_->GetWorkerTaskRunner()->RunsTasksOnCurrentThread());
+  DCHECK(sync_context_->GetWorkerTaskRunner()->RunsTasksInCurrentSequence());
 
   SyncStatusCode status = DriveApiErrorCodeToSyncStatusCode(error);
   if (status != SYNC_STATUS_OK &&
@@ -784,7 +784,7 @@ void RemoteToLocalSyncer::DeleteLocalFile(
 }
 
 void RemoteToLocalSyncer::DownloadFile(std::unique_ptr<SyncTaskToken> token) {
-  DCHECK(sync_context_->GetWorkerTaskRunner()->RunsTasksOnCurrentThread());
+  DCHECK(sync_context_->GetWorkerTaskRunner()->RunsTasksInCurrentSequence());
 
   storage::ScopedFile file = CreateTemporaryFile(
       make_scoped_refptr(sync_context_->GetWorkerTaskRunner()));
@@ -803,7 +803,7 @@ void RemoteToLocalSyncer::DidDownloadFile(std::unique_ptr<SyncTaskToken> token,
                                           storage::ScopedFile file,
                                           google_apis::DriveApiErrorCode error,
                                           const base::FilePath&) {
-  DCHECK(sync_context_->GetWorkerTaskRunner()->RunsTasksOnCurrentThread());
+  DCHECK(sync_context_->GetWorkerTaskRunner()->RunsTasksInCurrentSequence());
 
   SyncStatusCode status = DriveApiErrorCodeToSyncStatusCode(error);
   if (status != SYNC_STATUS_OK) {

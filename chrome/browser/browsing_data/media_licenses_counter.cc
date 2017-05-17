@@ -21,7 +21,7 @@ namespace {
 std::set<GURL> CountOriginsOnFileTaskRunner(
     storage::FileSystemContext* filesystem_context) {
   DCHECK(filesystem_context->default_file_task_runner()
-             ->RunsTasksOnCurrentThread());
+             ->RunsTasksInCurrentSequence());
 
   storage::FileSystemBackend* backend =
       filesystem_context->GetFileSystemBackend(

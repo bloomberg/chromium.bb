@@ -808,7 +808,7 @@ bool LocalSafeBrowsingDatabaseManager::MakeDatabaseAvailable() {
 }
 
 SafeBrowsingDatabase* LocalSafeBrowsingDatabaseManager::GetDatabase() {
-  DCHECK(safe_browsing_task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(safe_browsing_task_runner_->RunsTasksInCurrentSequence());
 
   if (database_)
     return database_;
@@ -930,7 +930,7 @@ void LocalSafeBrowsingDatabaseManager::RequestFullHash(
 
 void LocalSafeBrowsingDatabaseManager::GetAllChunksFromDatabase(
     GetChunksCallback callback) {
-  DCHECK(safe_browsing_task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(safe_browsing_task_runner_->RunsTasksInCurrentSequence());
 
   bool database_error = true;
   std::vector<SBListChunkRanges> lists;
@@ -1016,7 +1016,7 @@ void LocalSafeBrowsingDatabaseManager::AddDatabaseChunks(
     const std::string& list_name,
     std::unique_ptr<std::vector<std::unique_ptr<SBChunkData>>> chunks,
     AddChunksCallback callback) {
-  DCHECK(safe_browsing_task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(safe_browsing_task_runner_->RunsTasksInCurrentSequence());
   if (chunks)
     GetDatabase()->InsertChunks(list_name, *chunks);
   BrowserThread::PostTask(
@@ -1027,14 +1027,14 @@ void LocalSafeBrowsingDatabaseManager::AddDatabaseChunks(
 
 void LocalSafeBrowsingDatabaseManager::DeleteDatabaseChunks(
     std::unique_ptr<std::vector<SBChunkDelete>> chunk_deletes) {
-  DCHECK(safe_browsing_task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(safe_browsing_task_runner_->RunsTasksInCurrentSequence());
   if (chunk_deletes)
     GetDatabase()->DeleteChunks(*chunk_deletes);
 }
 
 void LocalSafeBrowsingDatabaseManager::DatabaseUpdateFinished(
     bool update_succeeded) {
-  DCHECK(safe_browsing_task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(safe_browsing_task_runner_->RunsTasksInCurrentSequence());
   GetDatabase()->UpdateFinished(update_succeeded);
   DCHECK(database_update_in_progress_);
   database_update_in_progress_ = false;
@@ -1046,7 +1046,7 @@ void LocalSafeBrowsingDatabaseManager::DatabaseUpdateFinished(
 }
 
 void LocalSafeBrowsingDatabaseManager::OnCloseDatabase() {
-  DCHECK(safe_browsing_task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(safe_browsing_task_runner_->RunsTasksInCurrentSequence());
   DCHECK(closing_database_);
 
   // Because |closing_database_| is true, nothing on the IO thread will be
@@ -1063,7 +1063,7 @@ void LocalSafeBrowsingDatabaseManager::OnCloseDatabase() {
 }
 
 void LocalSafeBrowsingDatabaseManager::OnResetDatabase() {
-  DCHECK(safe_browsing_task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(safe_browsing_task_runner_->RunsTasksInCurrentSequence());
 
   GetDatabase()->ResetDatabase();
 }
@@ -1173,7 +1173,7 @@ void LocalSafeBrowsingDatabaseManager::OnAsyncCheckDone(
 std::vector<SBPrefix>
 LocalSafeBrowsingDatabaseManager::CheckDownloadUrlOnSBThread(
     const std::vector<SBPrefix>& prefixes) {
-  DCHECK(safe_browsing_task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(safe_browsing_task_runner_->RunsTasksInCurrentSequence());
   DCHECK(enable_download_protection_);
 
   std::vector<SBPrefix> prefix_hits;
@@ -1186,7 +1186,7 @@ LocalSafeBrowsingDatabaseManager::CheckDownloadUrlOnSBThread(
 std::vector<SBPrefix>
 LocalSafeBrowsingDatabaseManager::CheckExtensionIDsOnSBThread(
     const std::vector<SBPrefix>& prefixes) {
-  DCHECK(safe_browsing_task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(safe_browsing_task_runner_->RunsTasksInCurrentSequence());
 
   std::vector<SBPrefix> prefix_hits;
   const bool result =
@@ -1198,7 +1198,7 @@ LocalSafeBrowsingDatabaseManager::CheckExtensionIDsOnSBThread(
 std::vector<SBPrefix>
 LocalSafeBrowsingDatabaseManager::CheckResourceUrlOnSBThread(
     const std::vector<SBPrefix>& prefixes) {
-  DCHECK(safe_browsing_task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(safe_browsing_task_runner_->RunsTasksInCurrentSequence());
 
   std::vector<SBPrefix> prefix_hits;
   const bool result =

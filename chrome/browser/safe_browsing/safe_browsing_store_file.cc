@@ -575,7 +575,7 @@ SafeBrowsingStoreFile::~SafeBrowsingStoreFile() {
 }
 
 bool SafeBrowsingStoreFile::CalledOnValidThread() {
-  return !task_runner_ || task_runner_->RunsTasksOnCurrentThread();
+  return !task_runner_ || task_runner_->RunsTasksInCurrentSequence();
 }
 
 bool SafeBrowsingStoreFile::Delete() {

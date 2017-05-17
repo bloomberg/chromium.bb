@@ -117,7 +117,7 @@ void DoInvokeGetOpenFileName(
     OPENFILENAME* ofn,
     scoped_refptr<GetOpenFileNameClient> client,
     const scoped_refptr<base::SequencedTaskRunner>& current_task_runner) {
-  DCHECK(current_task_runner->RunsTasksOnCurrentThread());
+  DCHECK(current_task_runner->RunsTasksInCurrentSequence());
 
   base::WeakPtr<content::UtilityProcessHost> utility_process_host(
       content::UtilityProcessHost::Create(client, current_task_runner)
@@ -247,7 +247,7 @@ void DoInvokeGetSaveFileName(
     OPENFILENAME* ofn,
     scoped_refptr<GetSaveFileNameClient> client,
     const scoped_refptr<base::SequencedTaskRunner>& current_task_runner) {
-  DCHECK(current_task_runner->RunsTasksOnCurrentThread());
+  DCHECK(current_task_runner->RunsTasksInCurrentSequence());
 
   base::WeakPtr<content::UtilityProcessHost> utility_process_host(
       content::UtilityProcessHost::Create(client, current_task_runner)

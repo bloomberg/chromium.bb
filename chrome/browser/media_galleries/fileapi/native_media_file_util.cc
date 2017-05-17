@@ -28,7 +28,7 @@ namespace {
 
 // Returns true if the current thread is capable of doing IO.
 bool IsOnTaskRunnerThread(storage::FileSystemOperationContext* context) {
-  return context->task_runner()->RunsTasksOnCurrentThread();
+  return context->task_runner()->RunsTasksInCurrentSequence();
 }
 
 base::File::Error IsMediaHeader(const char* buf, size_t length) {

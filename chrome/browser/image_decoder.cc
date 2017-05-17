@@ -209,7 +209,7 @@ void ImageDecoder::OnDecodeImageSucceeded(
     image_request_id_map_.erase(it);
   }
 
-  DCHECK(image_request->task_runner()->RunsTasksOnCurrentThread());
+  DCHECK(image_request->task_runner()->RunsTasksInCurrentSequence());
   image_request->OnImageDecoded(decoded_image);
 }
 
@@ -224,6 +224,6 @@ void ImageDecoder::OnDecodeImageFailed(int request_id) {
     image_request_id_map_.erase(it);
   }
 
-  DCHECK(image_request->task_runner()->RunsTasksOnCurrentThread());
+  DCHECK(image_request->task_runner()->RunsTasksInCurrentSequence());
   image_request->OnDecodeImageFailed();
 }

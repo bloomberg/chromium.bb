@@ -351,7 +351,8 @@ void ResolveLanguageListOnBlockingPool(
         language_switch_result,
     const scoped_refptr<base::TaskRunner> task_runner,
     const UILanguageListResolvedCallback& resolved_callback) {
-  DCHECK(content::BrowserThread::GetBlockingPool()->RunsTasksOnCurrentThread());
+  // DCHECK(task_runner->RunsTasksInCurrentSequence());
+  base::ThreadRestrictions::AssertIOAllowed();
 
   std::string selected_language;
   if (!language_switch_result) {

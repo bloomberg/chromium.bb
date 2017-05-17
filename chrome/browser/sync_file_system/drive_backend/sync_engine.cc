@@ -119,7 +119,7 @@ class SyncEngine::WorkerObserver : public SyncWorkerInterface::Observer {
   }
 
   void OnPendingFileListUpdated(int item_count) override {
-    if (ui_task_runner_->RunsTasksOnCurrentThread()) {
+    if (ui_task_runner_->RunsTasksInCurrentSequence()) {
       if (sync_engine_)
         sync_engine_->OnPendingFileListUpdated(item_count);
       return;
@@ -136,7 +136,7 @@ class SyncEngine::WorkerObserver : public SyncWorkerInterface::Observer {
                            SyncFileStatus file_status,
                            SyncAction sync_action,
                            SyncDirection direction) override {
-    if (ui_task_runner_->RunsTasksOnCurrentThread()) {
+    if (ui_task_runner_->RunsTasksInCurrentSequence()) {
       if (sync_engine_)
         sync_engine_->OnFileStatusChanged(
             url, file_type, file_status, sync_action, direction);
@@ -152,7 +152,7 @@ class SyncEngine::WorkerObserver : public SyncWorkerInterface::Observer {
 
   void UpdateServiceState(RemoteServiceState state,
                           const std::string& description) override {
-    if (ui_task_runner_->RunsTasksOnCurrentThread()) {
+    if (ui_task_runner_->RunsTasksInCurrentSequence()) {
       if (sync_engine_)
         sync_engine_->UpdateServiceState(state, description);
       return;

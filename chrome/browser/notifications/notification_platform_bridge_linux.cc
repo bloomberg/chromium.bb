@@ -380,7 +380,7 @@ class NotificationPlatformBridgeLinuxImpl
   }
 
   void PostTaskToUiThread(base::OnceClosure closure) const {
-    DCHECK(task_runner_->RunsTasksOnCurrentThread());
+    DCHECK(task_runner_->RunsTasksInCurrentSequence());
     bool success = content::BrowserThread::PostTask(
         content::BrowserThread::UI, FROM_HERE, std::move(closure));
     DCHECK(success);
@@ -395,7 +395,7 @@ class NotificationPlatformBridgeLinuxImpl
 
   // Sets up the D-Bus connection.
   void InitOnTaskRunner() {
-    DCHECK(task_runner_->RunsTasksOnCurrentThread());
+    DCHECK(task_runner_->RunsTasksInCurrentSequence());
     // |bus_| may be non-null in unit testing where a fake bus is used.
     if (!bus_) {
       dbus::Bus::Options bus_options;
@@ -474,7 +474,7 @@ class NotificationPlatformBridgeLinuxImpl
   }
 
   void CleanUpOnTaskRunner() {
-    DCHECK(task_runner_->RunsTasksOnCurrentThread());
+    DCHECK(task_runner_->RunsTasksInCurrentSequence());
     if (bus_)
       bus_->ShutdownAndBlock();
     bus_ = nullptr;
@@ -488,7 +488,7 @@ class NotificationPlatformBridgeLinuxImpl
                            const std::string& profile_id,
                            bool is_incognito,
                            std::unique_ptr<Notification> notification) {
-    DCHECK(task_runner_->RunsTasksOnCurrentThread());
+    DCHECK(task_runner_->RunsTasksInCurrentSequence());
     NotificationData* data =
         FindNotificationData(notification_id, profile_id, is_incognito);
     if (data) {
@@ -665,7 +665,7 @@ class NotificationPlatformBridgeLinuxImpl
   // Makes the "CloseNotification" call to D-Bus.
   void CloseOnTaskRunner(const std::string& profile_id,
                          const std::string& notification_id) {
-    DCHECK(task_runner_->RunsTasksOnCurrentThread());
+    DCHECK(task_runner_->RunsTasksInCurrentSequence());
     std::vector<NotificationData*> to_erase;
     for (const auto& pair : notifications_) {
       NotificationData* data = pair.first;
@@ -688,7 +688,7 @@ class NotificationPlatformBridgeLinuxImpl
       const std::string& profile_id,
       bool incognito,
       const GetDisplayedNotificationsCallback& callback) const {
-    DCHECK(task_runner_->RunsTasksOnCurrentThread());
+    DCHECK(task_runner_->RunsTasksInCurrentSequence());
     auto displayed = base::MakeUnique<std::set<std::string>>();
     for (const auto& pair : notifications_) {
       NotificationData* data = pair.first;
@@ -701,7 +701,7 @@ class NotificationPlatformBridgeLinuxImpl
   NotificationData* FindNotificationData(const std::string& notification_id,
                                          const std::string& profile_id,
                                          bool is_incognito) {
-    DCHECK(task_runner_->RunsTasksOnCurrentThread());
+    DCHECK(task_runner_->RunsTasksInCurrentSequence());
     for (const auto& pair : notifications_) {
       NotificationData* data = pair.first;
       if (data->notification_id == notification_id &&
@@ -715,7 +715,7 @@ class NotificationPlatformBridgeLinuxImpl
   }
 
   NotificationData* FindNotificationDataWithDBusId(uint32_t dbus_id) {
-    DCHECK(task_runner_->RunsTasksOnCurrentThread());
+    DCHECK(task_runner_->RunsTasksInCurrentSequence());
     DCHECK(dbus_id);
     for (const auto& pair : notifications_) {
       NotificationData* data = pair.first;
@@ -729,7 +729,7 @@ class NotificationPlatformBridgeLinuxImpl
   void ForwardNotificationOperation(NotificationData* data,
                                     NotificationCommon::Operation operation,
                                     int action_index) {
-    DCHECK(task_runner_->RunsTasksOnCurrentThread());
+    DCHECK(task_runner_->RunsTasksInCurrentSequence());
     PostTaskToUiThread(base::BindOnce(
         ForwardNotificationOperationOnUiThread, operation,
         data->notification_type, data->origin_url.spec(), data->notification_id,
@@ -737,7 +737,7 @@ class NotificationPlatformBridgeLinuxImpl
   }
 
   void OnActionInvoked(dbus::Signal* signal) {
-    DCHECK(task_runner_->RunsTasksOnCurrentThread());
+    DCHECK(task_runner_->RunsTasksInCurrentSequence());
     dbus::MessageReader reader(signal);
     uint32_t dbus_id;
     if (!reader.PopUint32(&dbus_id) || !dbus_id)
@@ -768,7 +768,7 @@ class NotificationPlatformBridgeLinuxImpl
   }
 
   void OnNotificationClosed(dbus::Signal* signal) {
-    DCHECK(task_runner_->RunsTasksOnCurrentThread());
+    DCHECK(task_runner_->RunsTasksInCurrentSequence());
     dbus::MessageReader reader(signal);
     uint32_t dbus_id;
     if (!reader.PopUint32(&dbus_id) || !dbus_id)
@@ -796,7 +796,7 @@ class NotificationPlatformBridgeLinuxImpl
 
   void OnConnectionInitializationFinishedOnTaskRunner(
       ConnectionInitializationStatusCode status) {
-    DCHECK(task_runner_->RunsTasksOnCurrentThread());
+    DCHECK(task_runner_->RunsTasksInCurrentSequence());
     UMA_HISTOGRAM_ENUMERATION(
         "Notifications.Linux.BridgeInitializationStatus",
         static_cast<int>(status),
@@ -810,7 +810,7 @@ class NotificationPlatformBridgeLinuxImpl
   void OnSignalConnected(const std::string& interface_name,
                          const std::string& signal_name,
                          bool success) {
-    DCHECK(task_runner_->RunsTasksOnCurrentThread());
+    DCHECK(task_runner_->RunsTasksInCurrentSequence());
     if (!success) {
       OnConnectionInitializationFinishedOnTaskRunner(
           ConnectionInitializationStatusCode::COULD_NOT_CONNECT_TO_SIGNALS);
