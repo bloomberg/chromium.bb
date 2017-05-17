@@ -20,6 +20,10 @@
 #import "ios/web/public/test/http_server.h"
 #include "ios/web/public/test/http_server_util.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 namespace {
 
 const char kFormElementId1[] = "username";
@@ -31,7 +35,7 @@ NSString* GetFocusedElementId() {
   NSString* js = @"(function() {"
                   "  return document.activeElement.id;"
                   "})();";
-  NSError* error = nil;
+  __unsafe_unretained NSError* error = nil;
   NSString* result = chrome_test_util::ExecuteJavaScript(js, &error);
   GREYAssertTrue(!error, @"Unexpected error when executing JavaScript.");
   return result;
