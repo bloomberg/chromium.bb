@@ -365,7 +365,7 @@ TEST_F(WebStateImplTest, ObserverTest) {
 
   // Test that OnNavigationFinished() is called.
   ASSERT_FALSE(observer->start_provisional_navigation_info());
-  web_state_->OnProvisionalNavigationStarted(url);
+  web_state_->OnNavigationStarted(context.get());
   ASSERT_TRUE(observer->start_provisional_navigation_info());
   EXPECT_EQ(web_state_.get(),
             observer->start_provisional_navigation_info()->web_state);
