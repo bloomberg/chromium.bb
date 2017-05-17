@@ -452,10 +452,8 @@ bool ChromeNetworkDelegate::OnCanAccessFile(const net::URLRequest& request,
 #if defined(OS_CHROMEOS)
   // If we're running Chrome for ChromeOS on Linux, we want to allow file
   // access. This is checked here to make IsAccessAllowed() unit-testable.
-  if (!base::SysInfo::IsRunningOnChromeOS() ||
-      base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kTestType)) {
+  if (!base::SysInfo::IsRunningOnChromeOS())
     return true;
-  }
 #endif
 
   return IsAccessAllowed(path, profile_path_);
