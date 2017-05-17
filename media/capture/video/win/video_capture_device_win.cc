@@ -41,7 +41,7 @@ bool PinMatchesCategory(IPin* pin, REFGUID category) {
   DCHECK(pin);
   bool found = false;
   ScopedComPtr<IKsPropertySet> ks_property;
-  HRESULT hr = ks_property.QueryFrom(pin);
+  HRESULT hr = pin->QueryInterface(IID_PPV_ARGS(&ks_property));
   if (SUCCEEDED(hr)) {
     GUID pin_category;
     DWORD return_value;
@@ -824,7 +824,7 @@ void VideoCaptureDeviceWin::SetAntiFlickerInCaptureFilter(
   ScopedComPtr<IKsPropertySet> ks_propset;
   DWORD type_support = 0;
   HRESULT hr;
-  if (SUCCEEDED(hr = ks_propset.QueryFrom(capture_filter_.Get())) &&
+  if (SUCCEEDED(hr = capture_filter_.CopyTo(ks_propset.GetAddressOf())) &&
       SUCCEEDED(hr = ks_propset->QuerySupported(
                     PROPSETID_VIDCAP_VIDEOPROCAMP,
                     KSPROPERTY_VIDEOPROCAMP_POWERLINE_FREQUENCY,

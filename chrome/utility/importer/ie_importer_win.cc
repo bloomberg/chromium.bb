@@ -4,6 +4,7 @@
 
 #include "chrome/utility/importer/ie_importer_win.h"
 
+#include <objbase.h>
 #include <ole2.h>
 #include <intshcut.h>
 #include <shlobj.h>
@@ -296,7 +297,7 @@ bool LoadInternetShortcut(
     return false;
 
   base::win::ScopedComPtr<IPersistFile> persist_file;
-  if (FAILED(persist_file.QueryFrom(url_locator.Get())))
+  if (FAILED(url_locator.CopyTo(persist_file.GetAddressOf())))
     return false;
 
   // Loads the Internet Shortcut from persistent storage.
@@ -318,7 +319,7 @@ GURL ReadURLFromInternetShortcut(IUniformResourceLocator* url_locator) {
 // Reads the URL of the favicon of the internet shortcut.
 GURL ReadFaviconURLFromInternetShortcut(IUniformResourceLocator* url_locator) {
   base::win::ScopedComPtr<IPropertySetStorage> property_set_storage;
-  if (FAILED(property_set_storage.QueryFrom(url_locator)))
+  if (FAILED(url_locator->QueryInterface(IID_PPV_ARGS(&property_set_storage))))
     return GURL();
 
   base::win::ScopedComPtr<IPropertyStorage> property_storage;
