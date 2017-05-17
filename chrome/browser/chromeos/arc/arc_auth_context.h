@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/timer/timer.h"
 #include "google_apis/gaia/ubertoken_fetcher.h"
+#include "net/base/backoff_entry.h"
 
 class Profile;
 class ProfileOAuth2TokenService;
@@ -65,6 +66,7 @@ class ArcAuthContext : public UbertokenConsumer,
 
   void StartFetchers();
   void ResetFetchers();
+  void OnFetcherError(const GoogleServiceAuthError& error);
 
   // Unowned pointer.
   ProfileOAuth2TokenService* token_service_;
@@ -78,7 +80,11 @@ class ArcAuthContext : public UbertokenConsumer,
   PrepareCallback callback_;
   bool context_prepared_ = false;
 
+  // Defines retry logic in case of transient error.
+  net::BackoffEntry retry_backoff_;
+
   base::OneShotTimer refresh_token_timeout_;
+  base::OneShotTimer retry_timeout_;
   std::unique_ptr<GaiaAuthFetcher> merger_fetcher_;
   std::unique_ptr<UbertokenFetcher> ubertoken_fetcher_;
 
