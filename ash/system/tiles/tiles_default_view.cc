@@ -87,7 +87,7 @@ void TilesDefaultView::Init() {
 
   night_light_button_ =
       new SystemMenuButton(this, TrayPopupInkDropStyle::HOST_CENTERED,
-                           Shell::Get()->night_light_controller()->enabled()
+                           Shell::Get()->night_light_controller()->GetEnabled()
                                ? kSystemMenuNightLightOnIcon
                                : kSystemMenuNightLightOffIcon,
                            IDS_ASH_STATUS_TRAY_NIGHT_LIGHT);

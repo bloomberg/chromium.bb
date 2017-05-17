@@ -4,12 +4,12 @@
 
 #include "ash/system/night_light/night_light_controller.h"
 
+#include "ash/public/cpp/ash_pref_names.h"
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
 #include "base/time/time.h"
-#include "base/values.h"
 #include "components/prefs/pref_registry_simple.h"
-#include "components/prefs/scoped_user_pref_update.h"
+#include "components/prefs/pref_service.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 
@@ -17,13 +17,7 @@ namespace ash {
 
 namespace {
 
-// The key of the dictionary value in the user's pref service that contains all
-// the NightLight settings.
-constexpr char kNightLightPrefsKey[] = "prefs.night_light_prefs";
-
-// Keys to the various NightLight settings inside its dictionary value.
-constexpr char kStatusKey[] = "night_light_status";
-constexpr char kColorTemperatureKey[] = "night_light_color_temperature";
+constexpr float kDefaultColorTemperature = 0.5f;
 
 // The duration of the temperature change animation when the change is a result
 // of a manual user setting.
@@ -31,6 +25,24 @@ constexpr char kColorTemperatureKey[] = "night_light_color_temperature";
 // that part. It should be large enough (20 seconds as agreed) to give the user
 // a nice smooth transition.
 constexpr int kManualToggleAnimationDurationSec = 2;
+
+// Applies the given |layer_temperature| to all the layers of the root windows
+// with the given |animation_duration|.
+// |layer_temperature| is the ui::Layer floating-point value in the range of
+// 0.0f (least warm) to 1.0f (most warm).
+void ApplyColorTemperatureToLayers(float layer_temperature,
+                                   base::TimeDelta animation_duration) {
+  for (aura::Window* root_window : Shell::GetAllRootWindows()) {
+    ui::Layer* layer = root_window->layer();
+
+    ui::ScopedLayerAnimationSettings settings(layer->GetAnimator());
+    settings.SetTransitionDuration(animation_duration);
+    settings.SetPreemptionStrategy(
+        ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
+
+    layer->SetLayerTemperature(layer_temperature);
+  }
+}
 
 }  // namespace
 
@@ -46,7 +58,9 @@ NightLightController::~NightLightController() {
 
 // static
 void NightLightController::RegisterPrefs(PrefRegistrySimple* registry) {
-  registry->RegisterDictionaryPref(kNightLightPrefsKey);
+  registry->RegisterBooleanPref(prefs::kNightLightEnabled, false);
+  registry->RegisterDoublePref(prefs::kNightLightTemperature,
+                               kDefaultColorTemperature);
 }
 
 void NightLightController::AddObserver(Observer* observer) {
@@ -57,86 +71,92 @@ void NightLightController::RemoveObserver(Observer* observer) {
   observers_.RemoveObserver(observer);
 }
 
-void NightLightController::Toggle() {
-  SetEnabled(!enabled_);
+bool NightLightController::GetEnabled() const {
+  return active_user_pref_service_ &&
+         active_user_pref_service_->GetBoolean(prefs::kNightLightEnabled);
+}
+
+float NightLightController::GetColorTemperature() const {
+  if (active_user_pref_service_)
+    return active_user_pref_service_->GetDouble(prefs::kNightLightTemperature);
+
+  return kDefaultColorTemperature;
 }
 
 void NightLightController::SetEnabled(bool enabled) {
-  if (enabled_ == enabled)
-    return;
-
-  enabled_ = enabled;
-  Refresh();
-  NotifyStatusChanged();
-  PersistUserPrefs();
+  if (active_user_pref_service_)
+    active_user_pref_service_->SetBoolean(prefs::kNightLightEnabled, enabled);
 }
 
 void NightLightController::SetColorTemperature(float temperature) {
-  // TODO(afakhry): Spport changing the temperature when you implement the
-  // settings part of this feature. Right now we'll keep it fixed at the value
-  // |color_temperature_| whenever NightLight is turned on.
-
-  for (aura::Window* root_window : Shell::GetAllRootWindows()) {
-    ui::Layer* layer = root_window->layer();
-
-    ui::ScopedLayerAnimationSettings settings(layer->GetAnimator());
-    settings.SetTransitionDuration(
-        base::TimeDelta::FromSeconds(kManualToggleAnimationDurationSec));
-    settings.SetPreemptionStrategy(
-        ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
-
-    layer->SetLayerTemperature(temperature);
+  DCHECK_GE(temperature, 0.0f);
+  DCHECK_LE(temperature, 1.0f);
+  if (active_user_pref_service_) {
+    active_user_pref_service_->SetDouble(prefs::kNightLightTemperature,
+                                         temperature);
   }
+}
+
+void NightLightController::Toggle() {
+  SetEnabled(!GetEnabled());
 }
 
 void NightLightController::OnActiveUserSessionChanged(
     const AccountId& account_id) {
   // Initial login and user switching in multi profiles.
+  pref_change_registrar_.reset();
+  active_user_pref_service_ = Shell::Get()->GetActiveUserPrefService();
   InitFromUserPrefs();
 }
 
 void NightLightController::Refresh() {
-  SetColorTemperature(enabled_ ? color_temperature_ : 0.0f);
+  // TODO(afakhry): Add here refreshing of start and end times, when you
+  // implement the automatic schedule settings.
+  ApplyColorTemperatureToLayers(
+      GetEnabled() ? GetColorTemperature() : 0.0f,
+      base::TimeDelta::FromSeconds(kManualToggleAnimationDurationSec));
+}
+
+void NightLightController::StartWatchingPrefsChanges() {
+  DCHECK(active_user_pref_service_);
+
+  pref_change_registrar_ = base::MakeUnique<PrefChangeRegistrar>();
+  pref_change_registrar_->Init(active_user_pref_service_);
+  pref_change_registrar_->Add(
+      prefs::kNightLightEnabled,
+      base::Bind(&NightLightController::OnEnabledPrefChanged,
+                 base::Unretained(this)));
+  pref_change_registrar_->Add(
+      prefs::kNightLightTemperature,
+      base::Bind(&NightLightController::OnColorTemperaturePrefChanged,
+                 base::Unretained(this)));
 }
 
 void NightLightController::InitFromUserPrefs() {
-  auto* pref_service = Shell::Get()->GetActiveUserPrefService();
-  if (!pref_service) {
-    // The pref_service can be NULL in ash_unittests.
+  if (!active_user_pref_service_) {
+    // The pref_service can be null in ash_unittests.
     return;
   }
 
-  const base::DictionaryValue* night_light_prefs =
-      pref_service->GetDictionary(kNightLightPrefsKey);
-  bool enabled = false;
-  night_light_prefs->GetBoolean(kStatusKey, &enabled);
-  enabled_ = enabled;
-
-  double color_temperature = 0.5;
-  night_light_prefs->GetDouble(kColorTemperatureKey, &color_temperature);
-  color_temperature_ = static_cast<float>(color_temperature);
-
+  StartWatchingPrefsChanges();
   Refresh();
   NotifyStatusChanged();
 }
 
-void NightLightController::PersistUserPrefs() {
-  auto* pref_service = ash::Shell::Get()->GetActiveUserPrefService();
-  if (!pref_service) {
-    // The pref_service can be NULL in ash_unittests.
-    return;
-  }
-  DictionaryPrefUpdate pref_updater(pref_service, kNightLightPrefsKey);
-
-  base::DictionaryValue* dictionary = pref_updater.Get();
-  dictionary->SetBoolean(kStatusKey, enabled_);
-  dictionary->SetDouble(kColorTemperatureKey,
-                        static_cast<double>(color_temperature_));
-}
-
 void NightLightController::NotifyStatusChanged() {
   for (auto& observer : observers_)
-    observer.OnNightLightEnabledChanged(enabled_);
+    observer.OnNightLightEnabledChanged(GetEnabled());
+}
+
+void NightLightController::OnEnabledPrefChanged() {
+  DCHECK(active_user_pref_service_);
+  Refresh();
+  NotifyStatusChanged();
+}
+
+void NightLightController::OnColorTemperaturePrefChanged() {
+  DCHECK(active_user_pref_service_);
+  Refresh();
 }
 
 }  // namespace ash

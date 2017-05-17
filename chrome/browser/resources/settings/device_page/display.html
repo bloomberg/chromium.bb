@@ -11,6 +11,7 @@
 <link rel="import" href="display_layout.html">
 <link rel="import" href="display_overscan_dialog.html">
 <link rel="import" href="../controls/settings_slider.html">
+<link rel="import" href="../prefs/prefs_behavior.html">
 <link rel="import" href="../settings_shared_css.html">
 <link rel="import" href="../settings_vars_css.html">
 
@@ -198,6 +199,35 @@
             aria-describedby="touchCalibrationSecondary"></button>
       </div>
     </div>
+
+    <!-- Night Light Settings -->
+    <div class="settings-box">
+      <div class="start">
+        <h2 id="nightLightLabel">$i18n{displayNightLightLabel}</h2>
+        <div class="secondary">$i18n{displayNightLightText}</div>
+      </div>
+      <settings-toggle-button
+          id="nightLightToggleButton"
+          pref="{{prefs.ash.night_light.enabled}}"
+          aria-labelledby="nightLightLabel">
+      </settings-toggle-button>
+    </div>
+    <div id="nightLightSettingsDiv"
+        class="settings-box continuation start layout vertical">
+      <!-- Color temperature slider -->
+      <div class="settings-box embedded continuation">
+        <div class="start textarea" id="colorTemperatureLabel">
+          $i18n{displayNightLightTemperatureLabel}
+        </div>
+        <settings-slider id="colorTemperatureSlider"
+          aria-labelledby="colorTemperatureLabel" min="0" max="100" scale="100"
+          label-min="$i18n{displayNightLightTempSliderMinLabel}"
+          label-max="$i18n{displayNightLightTempSliderMaxLabel}"
+          pref="{{prefs.ash.night_light.color_temperature}}">
+        </settings-slider>
+      </div>
+    </div>
+
   </template>
   <script src="display.js"></script>
 </dom-module>

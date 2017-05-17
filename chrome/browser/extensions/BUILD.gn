@@ -1155,7 +1155,10 @@ static_library("extensions") {
       "api/tabs/ash_panel_contents.cc",
       "api/tabs/ash_panel_contents.h",
     ]
-    deps += [ "//ash" ]
+    deps += [
+      "//ash",
+      "//ash/public/cpp:ash_public_cpp",
+    ]
   }
 
   if (use_aura) {

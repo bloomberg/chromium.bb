@@ -10,6 +10,7 @@
 #include "ash/system/tray/system_tray_item.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ui/compositor/layer.h"
+#include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/gfx/animation/slide_animation.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
@@ -54,7 +55,9 @@ void TrayItemView::CreateImageView() {
 }
 
 void TrayItemView::SetVisible(bool set_visible) {
-  if (!GetWidget() || !animations_enabled) {
+  if (!GetWidget() || !animations_enabled ||
+      (ui::ScopedAnimationDurationScaleMode::duration_scale_mode() ==
+       ui::ScopedAnimationDurationScaleMode::ZERO_DURATION)) {
     views::View::SetVisible(set_visible);
     return;
   }
