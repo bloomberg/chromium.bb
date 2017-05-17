@@ -242,7 +242,13 @@ IN_PROC_BROWSER_TEST_F(ComponentCloudPolicyTest, FetchExtensionPolicy) {
   EXPECT_TRUE(policy_listener.WaitUntilSatisfied());
 }
 
-IN_PROC_BROWSER_TEST_F(ComponentCloudPolicyTest, UpdateExtensionPolicy) {
+// http://crbug.com/723548
+#if defined(OS_WIN)
+#define MAYBE_UpdateExtensionPolicy DISABLED_UpdateExtensionPolicy
+#else
+#define MAYBE_UpdateExtensionPolicy UpdateExtensionPolicy
+#endif
+IN_PROC_BROWSER_TEST_F(ComponentCloudPolicyTest, MAYBE_UpdateExtensionPolicy) {
   // Read the initial policy.
   ExtensionTestMessageListener policy_listener(kTestPolicyJSON, true);
   event_listener_->Reply("get-policy-Name");
