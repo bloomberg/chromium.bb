@@ -32,8 +32,6 @@ using ::AutofillUITypeFromAutofillType;
 using ::autofill::data_util::GetIssuerNetworkForBasicCardIssuerNetwork;
 using ::autofill::data_util::GetPaymentRequestData;
 using ::payment_request_util::GetBillingAddressLabelFromAutofillProfile;
-
-const CGFloat kCardIssuerNetworkIconDimension = 20.0;
 }  // namespace
 
 @interface CreditCardEditViewControllerMediator ()
@@ -101,11 +99,7 @@ const CGFloat kCardIssuerNetworkIconDimension = 20.0;
         GetIssuerNetworkForBasicCardIssuerNetwork(supportedNetwork);
     const autofill::data_util::PaymentRequestData& cardData =
         GetPaymentRequestData(issuerNetwork);
-    UIImage* issuerNetworkIcon =
-        ResizeImage(NativeImage(cardData.icon_resource_id),
-                    CGSizeMake(kCardIssuerNetworkIconDimension,
-                               kCardIssuerNetworkIconDimension),
-                    ProjectionMode::kAspectFillNoClipping);
+    UIImage* issuerNetworkIcon = NativeImage(cardData.icon_resource_id);
     issuerNetworkIcon.accessibilityLabel =
         l10n_util::GetNSString(cardData.a11y_label_resource_id);
     [issuerNetworkIcons addObject:issuerNetworkIcon];
@@ -131,12 +125,10 @@ const CGFloat kCardIssuerNetworkIconDimension = 20.0;
   if (issuerNetwork == autofill::kGenericCard)
     return nil;
 
-  // Resize and return the card issuer network icon.
+  // Return the card issuer network icon.
   int resourceID = autofill::data_util::GetPaymentRequestData(issuerNetwork)
                        .icon_resource_id;
-  CGFloat dimension = kCardIssuerNetworkIconDimension;
-  return ResizeImage(NativeImage(resourceID), CGSizeMake(dimension, dimension),
-                     ProjectionMode::kAspectFillNoClipping);
+  return NativeImage(resourceID);
 }
 
 #pragma mark - Helper methods

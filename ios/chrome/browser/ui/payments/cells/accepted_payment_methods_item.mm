@@ -45,9 +45,6 @@ const CGFloat kHorizontalSpacingBetweenIcons = 5;
         [[UIImageView alloc] initWithFrame:CGRectZero];
     methodTypeIconView.image = methodTypeIcon;
     methodTypeIconView.accessibilityLabel = methodTypeIcon.accessibilityLabel;
-    methodTypeIconView.layer.borderColor =
-        [UIColor colorWithWhite:0.9 alpha:1.0].CGColor;
-    methodTypeIconView.layer.borderWidth = 1.0;
     [methodTypeIconViews addObject:methodTypeIconView];
   }
   cell.methodTypeIconViews = methodTypeIconViews;
