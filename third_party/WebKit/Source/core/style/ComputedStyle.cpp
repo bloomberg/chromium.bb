@@ -476,8 +476,7 @@ bool ComputedStyle::NonInheritedEqual(const ComputedStyle& other) const {
 
 bool ComputedStyle::InheritedDataShared(const ComputedStyle& other) const {
   // This is a fast check that only looks if the data structures are shared.
-  // TODO(sashab): Should ComputedStyleBase have an inheritedDataShared method?
-  return ComputedStyleBase::InheritedEqual(other) &&
+  return ComputedStyleBase::InheritedDataShared(other) &&
          inherited_data_.Get() == other.inherited_data_.Get() &&
          svg_style_.Get() == other.svg_style_.Get() &&
          rare_inherited_data_.Get() == other.rare_inherited_data_.Get();
