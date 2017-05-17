@@ -8,8 +8,8 @@
 
 namespace data_use_measurement {
 
-DataUseRecorder::DataUseRecorder()
-    : main_url_request_(nullptr), is_visible_(false) {}
+DataUseRecorder::DataUseRecorder(DataUse::TrafficType traffic_type)
+    : main_url_request_(nullptr), data_use_(traffic_type), is_visible_(false) {}
 
 DataUseRecorder::~DataUseRecorder() {}
 

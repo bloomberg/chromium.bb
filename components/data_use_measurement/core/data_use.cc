@@ -6,15 +6,18 @@
 
 namespace data_use_measurement {
 
-DataUse::DataUse() : total_bytes_sent_(0), total_bytes_received_(0) {}
-
-DataUse::DataUse(const DataUse& other) :
-    total_bytes_sent_(other.total_bytes_sent_),
-    total_bytes_received_(other.total_bytes_received_) {}
+DataUse::DataUse(TrafficType traffic_type)
+    : traffic_type_(traffic_type),
+      total_bytes_sent_(0),
+      total_bytes_received_(0) {}
 
 DataUse::~DataUse() {}
 
 void DataUse::MergeFrom(const DataUse& other) {
+  // Traffic type need not be same while merging. One of the data use created
+  // when mainframe is created could have UNKNOWN traffic type, and later merged
+  // with the data use created for its mainframe request which could be
+  // USER_TRAFFIC.
   total_bytes_sent_ += other.total_bytes_sent_;
   total_bytes_received_ += other.total_bytes_received_;
 }

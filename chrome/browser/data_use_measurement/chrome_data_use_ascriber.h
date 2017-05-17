@@ -142,7 +142,9 @@ class ChromeDataUseAscriber : public DataUseAscriber {
 
   void OnDataUseCompleted(DataUseRecorderEntry entry);
 
-  DataUseRecorderEntry CreateNewDataUseRecorder(net::URLRequest* request);
+  DataUseRecorderEntry CreateNewDataUseRecorder(
+      net::URLRequest* request,
+      DataUse::TrafficType traffic_type);
 
   bool IsRecorderInPendingNavigationMap(net::URLRequest* request);
 

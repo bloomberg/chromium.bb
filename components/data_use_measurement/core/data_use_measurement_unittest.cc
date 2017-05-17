@@ -70,7 +70,7 @@ class TestURLRequestClassifier : public base::SupportsUserData::Data,
 
 class TestDataUseAscriber : public DataUseAscriber {
  public:
-  TestDataUseAscriber() {}
+  TestDataUseAscriber() : recorder_(DataUse::TrafficType::USER_TRAFFIC) {}
 
   DataUseRecorder* GetOrCreateDataUseRecorder(
       net::URLRequest* request) override {
