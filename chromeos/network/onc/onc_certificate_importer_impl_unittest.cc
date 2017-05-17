@@ -5,9 +5,6 @@
 #include "chromeos/network/onc/onc_certificate_importer_impl.h"
 
 #include <cert.h>
-#include <certdb.h>
-#include <keyhi.h>
-#include <pk11pub.h>
 #include <string>
 
 #include "base/bind.h"
@@ -16,6 +13,7 @@
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
+#include "chromeos/network/certificate_helper.h"
 #include "chromeos/network/onc/onc_test_utils.h"
 #include "components/onc/onc_constants.h"
 #include "crypto/scoped_test_nss_db.h"
@@ -27,40 +25,6 @@
 
 namespace chromeos {
 namespace onc {
-
-namespace {
-
-#if defined(USE_NSS_CERTS)
-// In NSS 3.13, CERTDB_VALID_PEER was renamed CERTDB_TERMINAL_RECORD. So we use
-// the new name of the macro.
-#if !defined(CERTDB_TERMINAL_RECORD)
-#define CERTDB_TERMINAL_RECORD CERTDB_VALID_PEER
-#endif
-
-net::CertType GetCertType(net::X509Certificate::OSCertHandle cert) {
-  CERTCertTrust trust = {0};
-  CERT_GetCertTrust(cert, &trust);
-
-  unsigned all_flags = trust.sslFlags | trust.emailFlags |
-      trust.objectSigningFlags;
-
-  if (cert->nickname && (all_flags & CERTDB_USER))
-    return net::USER_CERT;
-  if ((all_flags & CERTDB_VALID_CA) || CERT_IsCACert(cert, NULL))
-    return net::CA_CERT;
-  // TODO(mattm): http://crbug.com/128633.
-  if (trust.sslFlags & CERTDB_TERMINAL_RECORD)
-    return net::SERVER_CERT;
-  return net::OTHER_CERT;
-}
-#else
-net::CertType GetCertType(net::X509Certificate::OSCertHandle cert) {
-  NOTIMPLEMENTED();
-  return net::OTHER_CERT;
-}
-#endif  // USE_NSS_CERTS
-
-}  // namespace
 
 class ONCCertificateImporterImplTest : public testing::Test {
  public:
@@ -134,12 +98,14 @@ class ONCCertificateImporterImplTest : public testing::Test {
 
     if (expected_type == net::SERVER_CERT || expected_type == net::CA_CERT) {
       ASSERT_EQ(1u, public_list_.size());
-      EXPECT_EQ(expected_type, GetCertType(public_list_[0]->os_cert_handle()));
+      EXPECT_EQ(expected_type,
+                certificate::GetCertType(public_list_[0]->os_cert_handle()));
       EXPECT_TRUE(private_list_.empty());
     } else {  // net::USER_CERT
       EXPECT_TRUE(public_list_.empty());
       ASSERT_EQ(1u, private_list_.size());
-      EXPECT_EQ(expected_type, GetCertType(private_list_[0]->os_cert_handle()));
+      EXPECT_EQ(expected_type,
+                certificate::GetCertType(private_list_[0]->os_cert_handle()));
     }
 
     base::DictionaryValue* certificate = NULL;
