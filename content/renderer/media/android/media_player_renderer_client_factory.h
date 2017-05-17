@@ -35,7 +35,7 @@ class CONTENT_EXPORT MediaPlayerRendererClientFactory
       const scoped_refptr<base::TaskRunner>& worker_task_runner,
       media::AudioRendererSink* audio_renderer_sink,
       media::VideoRendererSink* video_renderer_sink,
-      const media::RequestSurfaceCB& request_surface_cb) override;
+      const media::RequestOverlayInfoCB& request_surface_cb) override;
 
   // The MediaPlayerRenderer uses a Type::URL.
   media::MediaResource::Type GetRequiredMediaResourceType() override;

@@ -1146,7 +1146,7 @@ class CONTENT_EXPORT RenderFrameImpl
 
   // Send |callback| our AndroidOverlay routing token when it arrives.  We may
   // call |callback| before returning.
-  void RequestOverlayRoutingToken(const media::RoutingTokenCallback& callback);
+  void RequestOverlayRoutingToken(media::RoutingTokenCallback callback);
 
   // Ask the host to send our AndroidOverlay routing token to us.
   void RequestOverlayRoutingTokenFromHost();

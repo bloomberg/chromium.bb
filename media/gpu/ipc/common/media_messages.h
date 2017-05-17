@@ -93,8 +93,10 @@ IPC_MESSAGE_ROUTED0(AcceleratedVideoDecoderMsg_Flush)
 IPC_MESSAGE_ROUTED0(AcceleratedVideoDecoderMsg_Reset)
 
 // Send a surface id to the decoder.
-IPC_MESSAGE_ROUTED1(AcceleratedVideoDecoderMsg_SetSurface,
-                    int32_t) /* Surface ID */
+IPC_MESSAGE_ROUTED2(
+    AcceleratedVideoDecoderMsg_SetSurface,
+    int32_t,                                 /* Surface ID */
+    base::Optional<base::UnguessableToken>); /* AndroidOverlay routing token */
 
 // Send destroy request to the decoder.
 IPC_MESSAGE_ROUTED0(AcceleratedVideoDecoderMsg_Destroy)

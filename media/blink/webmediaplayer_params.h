@@ -14,6 +14,7 @@
 #include "base/time/time.h"
 #include "media/base/media_log.h"
 #include "media/base/media_observer.h"
+#include "media/base/routing_token_callback.h"
 #include "media/blink/media_blink_export.h"
 #include "media/filters/context_3d.h"
 
@@ -58,6 +59,7 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerParams {
       const AdjustAllocatedMemoryCB& adjust_allocated_memory_cb,
       blink::WebContentDecryptionModule* initial_cdm,
       SurfaceManager* surface_manager,
+      RequestRoutingTokenCallback request_routing_token_cb,
       base::WeakPtr<MediaObserver> media_observer,
       base::TimeDelta max_keyframe_distance_to_disable_background_video,
       base::TimeDelta max_keyframe_distance_to_disable_background_video_mse,
@@ -124,6 +126,10 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerParams {
     return embedded_media_experience_enabled_;
   }
 
+  RequestRoutingTokenCallback request_routing_token_cb() {
+    return request_routing_token_cb_;
+  }
+
  private:
   DeferLoadCB defer_load_cb_;
   scoped_refptr<SwitchableAudioRendererSink> audio_renderer_sink_;
@@ -136,6 +142,7 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerParams {
 
   blink::WebContentDecryptionModule* initial_cdm_;
   SurfaceManager* surface_manager_;
+  RequestRoutingTokenCallback request_routing_token_cb_;
   base::WeakPtr<MediaObserver> media_observer_;
   base::TimeDelta max_keyframe_distance_to_disable_background_video_;
   base::TimeDelta max_keyframe_distance_to_disable_background_video_mse_;

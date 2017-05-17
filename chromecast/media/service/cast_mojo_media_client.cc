@@ -11,6 +11,7 @@
 #include "media/base/audio_renderer_sink.h"
 #include "media/base/cdm_factory.h"
 #include "media/base/media_log.h"
+#include "media/base/overlay_info.h"
 #include "media/base/renderer_factory.h"
 
 namespace chromecast {
@@ -71,7 +72,7 @@ class CastRendererFactory : public ::media::RendererFactory {
       const scoped_refptr<base::TaskRunner>& worker_task_runner,
       ::media::AudioRendererSink* audio_renderer_sink,
       ::media::VideoRendererSink* video_renderer_sink,
-      const ::media::RequestSurfaceCB& request_surface_cb) final {
+      const ::media::RequestOverlayInfoCB& request_overlay_info_cb) final {
     DCHECK(audio_renderer_sink);
     DCHECK(!video_renderer_sink);
     return base::MakeUnique<CastRenderer>(

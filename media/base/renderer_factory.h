@@ -11,8 +11,8 @@
 #include "base/memory/ref_counted.h"
 #include "media/base/media_export.h"
 #include "media/base/media_resource.h"
+#include "media/base/overlay_info.h"
 #include "media/base/renderer.h"
-#include "media/base/surface_manager.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -40,7 +40,7 @@ class MEDIA_EXPORT RendererFactory {
       const scoped_refptr<base::TaskRunner>& worker_task_runner,
       AudioRendererSink* audio_renderer_sink,
       VideoRendererSink* video_renderer_sink,
-      const RequestSurfaceCB& request_surface_cb) = 0;
+      const RequestOverlayInfoCB& request_overlay_info_cb) = 0;
 
   // Returns the MediaResource::Type that should be used with the renderers
   // created by this factory.

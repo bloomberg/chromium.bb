@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "media/base/overlay_info.h"
 #include "media/base/renderer_factory_selector.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -25,7 +26,7 @@ class RendererFactorySelectorTest : public testing::Test {
         const scoped_refptr<base::TaskRunner>& worker_task_runner,
         AudioRendererSink* audio_renderer_sink,
         VideoRendererSink* video_renderer_sink,
-        const RequestSurfaceCB& request_surface_cb) override {
+        const RequestOverlayInfoCB& request_overlay_info_cb) override {
       return std::unique_ptr<Renderer>();
     }
 

@@ -45,7 +45,9 @@ void VideoDecodeAccelerator::ImportBufferForPicture(
   NOTREACHED() << "Buffer import not supported.";
 }
 
-void VideoDecodeAccelerator::SetSurface(int32_t surface_id) {
+void VideoDecodeAccelerator::SetSurface(
+    int32_t surface_id,
+    const base::Optional<base::UnguessableToken>& routing_token) {
   NOTREACHED() << "Surfaces are not supported.";
 }
 

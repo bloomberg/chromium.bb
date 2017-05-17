@@ -2974,8 +2974,10 @@ blink::WebMediaPlayer* RenderFrameImpl::CreateMediaPlayer(
           render_thread->compositor_task_runner(), context_3d_cb,
           base::Bind(&v8::Isolate::AdjustAmountOfExternalAllocatedMemory,
                      base::Unretained(blink::MainThreadIsolate())),
-          initial_cdm, media_surface_manager_, media_observer,
-          max_keyframe_distance_to_disable_background_video,
+          initial_cdm, media_surface_manager_,
+          base::Bind(&RenderFrameImpl::RequestOverlayRoutingToken,
+                     base::Unretained(this)),
+          media_observer, max_keyframe_distance_to_disable_background_video,
           max_keyframe_distance_to_disable_background_video_mse,
           GetWebkitPreferences().enable_instant_source_buffer_gc,
           GetContentClient()->renderer()->AllowMediaSuspend(),
@@ -5919,7 +5921,7 @@ void RenderFrameImpl::OnSetOverlayRoutingToken(
 }
 
 void RenderFrameImpl::RequestOverlayRoutingToken(
-    const media::RoutingTokenCallback& callback) {
+    media::RoutingTokenCallback callback) {
   if (overlay_routing_token_.has_value()) {
     callback.Run(overlay_routing_token_.value());
     return;

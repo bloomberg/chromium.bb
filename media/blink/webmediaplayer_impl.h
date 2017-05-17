@@ -27,6 +27,7 @@
 #include "build/build_config.h"
 #include "media/base/media_observer.h"
 #include "media/base/media_tracks.h"
+#include "media/base/overlay_info.h"
 #include "media/base/pipeline_impl.h"
 #include "media/base/renderer_factory_selector.h"
 #include "media/base/surface_manager.h"
@@ -254,6 +255,14 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   void EnableOverlay();
   void DisableOverlay();
 
+  // Do we have overlay information?  For CVV, this is a surface id.  For
+  // AndroidOverlay, this is the routing token.
+  bool HaveOverlayInfo();
+
+  // Send the overlay surface ID / routing token to the decoder if we have it
+  // and if it has been requested.
+  void MaybeSendOverlayInfoToDecoder();
+
   void OnPipelineSuspended();
   void OnBeforePipelineResume();
   void OnPipelineResumed();
@@ -291,10 +300,14 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   // Called by SurfaceManager when a surface is created.
   void OnSurfaceCreated(int surface_id);
 
+  // Called by RenderFrameImpl with the overlay routing token, if we request it.
+  void OnOverlayRoutingToken(const base::UnguessableToken& token);
+
   // Called by GpuVideoDecoder on Android to request a surface to render to (if
   // necessary).
-  void OnSurfaceRequested(bool decoder_requires_restart_for_overlay,
-                          const SurfaceCreatedCB& surface_created_cb);
+  void OnOverlayInfoRequested(
+      bool decoder_requires_restart_for_overlay,
+      const ProvideOverlayInfoCB& provide_overlay_info_cb);
 
   // Creates a Renderer via the |renderer_factory_selector_|.
   std::unique_ptr<Renderer> CreateRenderer();
@@ -646,21 +659,21 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   // request to the SurfaceManager.
   base::Optional<int> overlay_surface_id_;
 
-  // If a surface is requested before it's finished being created, the request
-  // is saved and satisfied once the surface is available. If the decoder does
-  // not require restart to change surfaces, this is callback is kept until
-  // cleared by the decoder.
-  SurfaceCreatedCB set_surface_cb_;
+  // For canceling AndroidOverlay routing token requests.
+  base::CancelableCallback<void(const base::UnguessableToken&)>
+      token_available_cb_;
+
+  // If overlay info is requested before we have it, then the request is saved
+  // and satisfied once the overlay info is available. If the decoder does not
+  // require restart to change surfaces, this is callback is kept until cleared
+  // by the decoder.
+  ProvideOverlayInfoCB provide_overlay_info_cb_;
 
   // On Android an overlay surface means using
   // SurfaceView instead of SurfaceTexture.
 
   // Use overlays for all video.
   bool force_video_overlays_;
-
-  // Use overlays for fullscreen video.
-  // (Implied if |force_video_overlays_| is true.)
-  bool enable_fullscreen_video_overlays_;
 
   // Suppresses calls to OnPipelineError() after destruction / shutdown has been
   // started; prevents us from spuriously logging errors that are transient or
@@ -745,6 +758,28 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   base::CancelableCallback<void(base::TimeTicks)> frame_time_report_cb_;
 
   bool initial_video_height_recorded_ = false;
+
+  enum class OverlayMode {
+    // All overlays are turned off.
+    kNoOverlays,
+
+    // Use ContentVideoView for overlays.
+    kUseContentVideoView,
+
+    // Use AndroidOverlay for overlays.
+    kUseAndroidOverlay,
+  };
+
+  OverlayMode overlay_mode_ = OverlayMode::kNoOverlays;
+
+  // Optional callback to request the routing token for AndroidOverlay.
+  RequestRoutingTokenCallback request_routing_token_cb_;
+
+  // Routing token, if we have one.  No value if we have a request pending to
+  // get it via |request_routing_token_cb_|.  A has_value() is_empty() token
+  // indicates that we requested and received an empty token.  Note that we
+  // can't send an empty token via IPC, so we handle that specially.
+  base::Optional<base::UnguessableToken> overlay_routing_token_;
 
   DISALLOW_COPY_AND_ASSIGN(WebMediaPlayerImpl);
 };
