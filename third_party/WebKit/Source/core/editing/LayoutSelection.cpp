@@ -186,6 +186,27 @@ static SelectedMap CollectSelectedMap(
   return selected_map;
 }
 
+// Update the selection status of all LayoutObjects between |start| and |end|.
+static void SetSelectionState(LayoutObject* start,
+                              LayoutObject* end,
+                              int end_pos) {
+  if (start && start == end) {
+    start->SetSelectionStateIfNeeded(SelectionBoth);
+  } else {
+    if (start)
+      start->SetSelectionStateIfNeeded(SelectionStart);
+    if (end)
+      end->SetSelectionStateIfNeeded(SelectionEnd);
+  }
+
+  LayoutObject* const stop = LayoutObjectAfterPosition(end, end_pos);
+  for (LayoutObject* runner = start; runner && runner != stop;
+       runner = runner->NextInPreOrder()) {
+    if (runner != start && runner != end && runner->CanBeSelectionLeaf())
+      runner->SetSelectionStateIfNeeded(SelectionInside);
+  }
+}
+
 void LayoutSelection::SetSelection(
     LayoutObject* start,
     int start_pos,
@@ -218,25 +239,7 @@ void LayoutSelection::SetSelection(
   for (auto layout_object : old_selected_map.object_map.Keys())
     layout_object->SetSelectionStateIfNeeded(SelectionNone);
 
-  // Update the selection status of all objects between m_selectionStart and
-  // m_selectionEnd
-  if (start && start == end) {
-    start->SetSelectionStateIfNeeded(SelectionBoth);
-  } else {
-    if (start)
-      start->SetSelectionStateIfNeeded(SelectionStart);
-    if (end)
-      end->SetSelectionStateIfNeeded(SelectionEnd);
-  }
-
-  LayoutObject* o = start;
-  LayoutObject* const stop = LayoutObjectAfterPosition(end, end_pos);
-
-  while (o && o != stop) {
-    if (o != start && o != end && o->CanBeSelectionLeaf())
-      o->SetSelectionStateIfNeeded(SelectionInside);
-    o = o->NextInPreOrder();
-  }
+  SetSelectionState(start, end, end_pos);
 
   // Now that the selection state has been updated for the new objects, walk
   // them again and put them in the new objects list.
