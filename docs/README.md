@@ -99,6 +99,8 @@ git cl patch <CL number or URL>
     compiler
 *   [Threading and Tasks in Chrome](threading_and_tasks.md) - How to run tasks
     and handle thread safety in Chrome.
+*   [Subtle Threading Bugs and Patterns to Avoid Them](subtle_threading_bugs.md) -
+    Threading pitfalls to avoid.
 *   [Callback<> and Bind()](callback.md) - All about Callbacks, Closures, and
     Bind().
 *   [Views Platform Styling](ui/views/platform_style.md) - How views are styled
