@@ -418,21 +418,19 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase<ComputedStyle>,
   // background-color
   static Color InitialBackgroundColor() { return Color::kTransparent; }
   void SetBackgroundColor(const StyleColor& v) {
-    SET_VAR(background_data_, background_color_, v);
+    SetBackgroundColorInternal(v);
   }
 
   // background-image
-  bool HasBackgroundImage() const {
-    return background_data_->background_.HasImage();
-  }
+  bool HasBackgroundImage() const { return BackgroundInternal().HasImage(); }
   bool HasFixedBackgroundImage() const {
-    return background_data_->background_.HasFixedImage();
+    return BackgroundInternal().HasFixedImage();
   }
   bool HasEntirelyFixedBackground() const;
 
   // background-clip
   EFillBox BackgroundClip() const {
-    return static_cast<EFillBox>(background_data_->background_.Clip());
+    return static_cast<EFillBox>(BackgroundInternal().Clip());
   }
 
   // Border properties.
@@ -3393,12 +3391,8 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase<ComputedStyle>,
   }
 
   // Background utility functions.
-  FillLayer& AccessBackgroundLayers() {
-    return background_data_.Access()->background_;
-  }
-  const FillLayer& BackgroundLayers() const {
-    return background_data_->background_;
-  }
+  FillLayer& AccessBackgroundLayers() { return MutableBackgroundInternal(); }
+  const FillLayer& BackgroundLayers() const { return BackgroundInternal(); }
   void AdjustBackgroundLayers() {
     if (BackgroundLayers().Next()) {
       AccessBackgroundLayers().CullEmptyLayers();
@@ -3554,9 +3548,7 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase<ComputedStyle>,
                : StyleColor(BorderBottomColorInternal());
   }
 
-  StyleColor BackgroundColor() const {
-    return background_data_->background_color_;
-  }
+  StyleColor BackgroundColor() const { return BackgroundColorInternal(); }
   StyleAutoColor CaretColor() const {
     if (rare_inherited_data_->caret_color_is_current_color_)
       return StyleAutoColor::CurrentColor();
