@@ -2,10 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "extensions/browser/process_manager_factory.h"
+
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "extensions/browser/extension_registry_factory.h"
+#include "extensions/browser/lazy_background_task_queue_factory.h"
 #include "extensions/browser/process_manager.h"
-#include "extensions/browser/process_manager_factory.h"
 
 using content::BrowserContext;
 
@@ -35,6 +37,7 @@ ProcessManagerFactory::ProcessManagerFactory()
           "ProcessManager",
           BrowserContextDependencyManager::GetInstance()) {
   DependsOn(extensions::ExtensionRegistryFactory::GetInstance());
+  DependsOn(extensions::LazyBackgroundTaskQueueFactory::GetInstance());
 }
 
 ProcessManagerFactory::~ProcessManagerFactory() {

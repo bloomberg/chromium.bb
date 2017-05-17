@@ -66,6 +66,35 @@ class BrowserContextKeyedAPI : public KeyedService {
   //   }
 };
 
+// Declare dependencies on other factories.
+// By default, ExtensionSystemFactory is the only dependency; however,
+// specializations can override this. Declare your specialization in
+// your header file after the BrowserContextKeyedAPI class definition.
+// Declare this struct in the header file. The implementation may optionally
+// be placed in your .cc file.
+// This method should be used instead of
+// BrowserContextKeyedAPIFactory<T>::DeclareFactoryDependencies() because it
+// permits partial specialization, as in the case of ApiResourceManager<T>.
+//
+//   template <>
+//   struct BrowserContextFactoryDependencies<MyService> {
+//     static void DeclareFactoryDependencies(
+//         BrowserContextKeyedAPIFactory<ApiResourceManager<T>>* factory) {
+//       factory->DependsOn(
+//           ExtensionsBrowserClient::Get()->GetExtensionSystemFactory());
+//       factory->DependsOn(ProfileSyncServiceFactory::GetInstance());
+//       ...
+//     }
+//   };
+template <typename T>
+struct BrowserContextFactoryDependencies {
+  static void DeclareFactoryDependencies(
+      BrowserContextKeyedAPIFactory<T>* factory) {
+    factory->DependsOn(
+        ExtensionsBrowserClient::Get()->GetExtensionSystemFactory());
+  }
+};
+
 // A template for factories for KeyedServices that manage extension APIs. T is
 // a KeyedService that uses this factory template instead of its own separate
 // factory definition to manage its per-profile instances.
@@ -82,19 +111,12 @@ class BrowserContextKeyedAPIFactory : public BrowserContextKeyedServiceFactory {
         T::GetFactoryInstance()->GetServiceForBrowserContext(context, false));
   }
 
-  // Declare dependencies on other factories.
-  // By default, ExtensionSystemFactory is the only dependency; however,
-  // specializations can override this. Declare your specialization in
-  // your header file after the BrowserContextKeyedAPI class definition.
-  // Then in the cc file (or inline in the header), define it, e.g.:
-  //   template <>
-  //   void BrowserContextKeyedAPIFactory<
-  //       PushMessagingAPI>::DeclareFactoryDependencies() {
-  //     DependsOn(ExtensionsBrowserClient::Get()->GetExtensionSystemFactory());
-  //     DependsOn(ProfileSyncServiceFactory::GetInstance());
-  //   }
+  // Declares dependencies on other factories.
+  // Deprecated. Use BrowserContextFactoryDependencies<> to declare
+  // dependencies instead, as that form allows for partial specializations like
+  // in the case of ApiResourceManager<T>.
   void DeclareFactoryDependencies() {
-    DependsOn(ExtensionsBrowserClient::Get()->GetExtensionSystemFactory());
+    BrowserContextFactoryDependencies<T>::DeclareFactoryDependencies(this);
   }
 
   BrowserContextKeyedAPIFactory()
@@ -107,6 +129,8 @@ class BrowserContextKeyedAPIFactory : public BrowserContextKeyedServiceFactory {
   ~BrowserContextKeyedAPIFactory() override {}
 
  private:
+  friend struct BrowserContextFactoryDependencies<T>;
+
   // BrowserContextKeyedServiceFactory implementation.
   KeyedService* BuildServiceInstanceFor(
       content::BrowserContext* context) const override {
