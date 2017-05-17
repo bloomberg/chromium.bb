@@ -284,8 +284,6 @@ RenderWidgetHostImpl::RenderWidgetHostImpl(RenderWidgetHostDelegate* delegate,
       pending_mouse_lock_request_(false),
       allow_privileged_mouse_lock_(false),
       has_touch_handler_(false),
-      is_in_touchpad_gesture_scroll_(false),
-      is_in_touchscreen_gesture_scroll_(false),
       is_in_touchpad_gesture_fling_(false),
       latency_tracker_(),
       next_browser_snapshot_id_(1),
@@ -1032,7 +1030,8 @@ void RenderWidgetHostImpl::ForwardMouseEvent(const WebMouseEvent& mouse_event) {
   // that scroll performance is not affected we drop mouse events during
   // scroll/fling.
   if (GetView()->IsInVR() &&
-      (is_in_touchpad_gesture_scroll_ || is_in_touchpad_gesture_fling_)) {
+      (is_in_gesture_scroll_[blink::kWebGestureDeviceTouchpad] ||
+       is_in_touchpad_gesture_fling_)) {
     return;
   }
 
@@ -1109,37 +1108,32 @@ void RenderWidgetHostImpl::ForwardGestureEventWithLatencyInfo(
   if (ShouldDropInputEvents())
     return;
 
-  // TODO(wjmaclean) Remove the code for supporting resending gesture events
-  // when WebView transitions to OOPIF and BrowserPlugin is removed.
-  // http://crbug.com/533069
-  bool* is_in_gesture_scroll =
-      gesture_event.source_device ==
-              blink::WebGestureDevice::kWebGestureDeviceTouchpad
-          ? &is_in_touchpad_gesture_scroll_
-          : &is_in_touchscreen_gesture_scroll_;
+  bool scroll_update_needs_wrapping = false;
   if (gesture_event.GetType() == blink::WebInputEvent::kGestureScrollBegin) {
-    DCHECK(!(*is_in_gesture_scroll));
-    *is_in_gesture_scroll = true;
+    DCHECK(!is_in_gesture_scroll_[gesture_event.source_device]);
+    is_in_gesture_scroll_[gesture_event.source_device] = true;
   } else if (gesture_event.GetType() ==
                  blink::WebInputEvent::kGestureScrollEnd ||
              gesture_event.GetType() ==
                  blink::WebInputEvent::kGestureFlingStart) {
-    DCHECK(
-        *is_in_gesture_scroll ||
-        (gesture_event.GetType() == blink::WebInputEvent::kGestureFlingStart &&
-         gesture_event.source_device ==
-             blink::WebGestureDevice::kWebGestureDeviceTouchpad));
-    *is_in_gesture_scroll = false;
-    if (gesture_event.GetType() == blink::WebInputEvent::kGestureFlingStart &&
-        gesture_event.source_device ==
-            blink::WebGestureDevice::kWebGestureDeviceTouchpad) {
-      is_in_touchpad_gesture_fling_ = true;
-    }
+    DCHECK(is_in_gesture_scroll_[gesture_event.source_device] ||
+           gesture_event.GetType() == blink::WebInputEvent::kGestureFlingStart);
+    is_in_gesture_scroll_[gesture_event.source_device] = false;
   }
 
-  bool scroll_update_needs_wrapping =
+  if (gesture_event.GetType() == blink::WebInputEvent::kGestureFlingStart &&
+      gesture_event.source_device ==
+          blink::WebGestureDevice::kWebGestureDeviceTouchpad) {
+    is_in_touchpad_gesture_fling_ = true;
+  }
+
+  // TODO(wjmaclean) Remove the code for supporting resending gesture events
+  // when WebView transitions to OOPIF and BrowserPlugin is removed.
+  // http://crbug.com/533069
+  scroll_update_needs_wrapping =
       gesture_event.GetType() == blink::WebInputEvent::kGestureScrollUpdate &&
-      gesture_event.resending_plugin_id != -1 && !(*is_in_gesture_scroll);
+      gesture_event.resending_plugin_id != -1 &&
+      !is_in_gesture_scroll_[gesture_event.source_device];
 
   // TODO(crbug.com/544782): Fix WebViewGuestScrollTest.TestGuestWheelScrolls-
   // Bubble to test the resending logic of gesture events.

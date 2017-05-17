@@ -301,9 +301,19 @@ void RenderWidgetHostInputEventRouter::RouteGestureEvent(
     RenderWidgetHostViewBase* root_view,
     blink::WebGestureEvent* event,
     const ui::LatencyInfo& latency) {
+  if (event->IsTargetViewport()) {
+    root_view->ProcessGestureEvent(*event, latency);
+    return;
+  }
+
   switch (event->source_device) {
     case blink::kWebGestureDeviceUninitialized:
+    case blink::kWebGestureDeviceCount:
       NOTREACHED() << "Uninitialized device type is not allowed";
+      break;
+    case blink::kWebGestureDeviceSyntheticAutoscroll:
+      NOTREACHED() << "Only target_viewport synthetic autoscrolls are "
+                      "currently supported";
       break;
     case blink::kWebGestureDeviceTouchpad:
       RouteTouchpadGestureEvent(root_view, event, latency);

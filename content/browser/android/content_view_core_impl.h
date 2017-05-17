@@ -106,7 +106,8 @@ class ContentViewCoreImpl : public ContentViewCore,
                    jfloat y,
                    jfloat hintx,
                    jfloat hinty,
-                   jboolean target_viewport);
+                   jboolean target_viewport,
+                   jboolean from_gamepad);
   void ScrollEnd(JNIEnv* env,
                  const base::android::JavaParamRef<jobject>& obj,
                  jlong time_ms);
@@ -124,10 +125,12 @@ class ContentViewCoreImpl : public ContentViewCore,
                   jfloat y,
                   jfloat vx,
                   jfloat vy,
-                  jboolean target_viewport);
+                  jboolean target_viewport,
+                  jboolean from_gamepad);
   void FlingCancel(JNIEnv* env,
                    const base::android::JavaParamRef<jobject>& obj,
-                   jlong time_ms);
+                   jlong time_ms,
+                   jboolean from_gamepad);
   void DoubleTap(JNIEnv* env,
                  const base::android::JavaParamRef<jobject>& obj,
                  jlong time_ms,

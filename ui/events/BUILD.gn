@@ -55,6 +55,8 @@ component("events_base") {
     "gesture_curve.h",
     "gesture_event_details.cc",
     "gesture_event_details.h",
+    "gestures/fixed_velocity_curve.cc",
+    "gestures/fixed_velocity_curve.h",
     "gestures/fling_curve.cc",
     "gestures/fling_curve.h",
     "keycodes/dom_us_layout_data.h",
