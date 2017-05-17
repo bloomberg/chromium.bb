@@ -27,7 +27,6 @@
 #include "base/cancelable_callback.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/synchronization/lock.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
 #include "media/audio/audio_io.h"
@@ -150,10 +149,6 @@ class AUHALStream : public AudioOutputStream {
 
   // Pointer to the object that will provide the audio samples.
   AudioSourceCallback* source_;
-
-  // Protects |source_|.  Necessary since Render() calls seem to be in flight
-  // when |audio_unit_| is supposedly stopped.  See http://crbug.com/178765.
-  base::Lock source_lock_;
 
   // Holds the stream format details such as bitrate.
   AudioStreamBasicDescription output_format_;
