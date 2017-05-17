@@ -670,6 +670,7 @@ TEST_F(OfflinePageModelImplTest, SavePageOnBackground) {
   save_page_params.url = kTestUrl;
   save_page_params.client_id = kTestClientId1;
   save_page_params.is_background = true;
+  save_page_params.use_page_problem_detectors = false;
   SavePageWithParamsAsync(save_page_params, std::move(archiver));
   EXPECT_TRUE(archiver_ptr->create_archive_called());
   // |remove_popup_overlay| should be turned on on background mode.
