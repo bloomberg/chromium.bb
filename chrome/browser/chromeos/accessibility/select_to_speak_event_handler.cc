@@ -6,37 +6,18 @@
 
 #include "ash/shell.h"
 #include "base/logging.h"
-#include "chrome/browser/chromeos/accessibility/event_handler_common.h"
-#include "chrome/common/extensions/extension_constants.h"
+#include "chrome/browser/speech/tts_controller.h"
+#include "chrome/browser/ui/aura/accessibility/automation_manager_aura.h"
+#include "chrome/common/extensions/api/automation_api_constants.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/render_view_host.h"
-#include "content/public/browser/render_widget_host.h"
-#include "third_party/WebKit/public/platform/WebMouseEvent.h"
-#include "ui/aura/client/screen_position_client.h"
+#include "ui/accessibility/ax_tree_id_registry.h"
 #include "ui/aura/window.h"
 #include "ui/display/display.h"
-#include "ui/events/blink/web_input_event.h"
 #include "ui/events/event.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 
 namespace chromeos {
-
-namespace {
-
-gfx::Point GetScreenLocationFromEvent(const ui::LocatedEvent& event) {
-  aura::Window* root =
-      static_cast<aura::Window*>(event.target())->GetRootWindow();
-  aura::client::ScreenPositionClient* spc =
-      aura::client::GetScreenPositionClient(root);
-  if (!spc)
-    return event.root_location();
-
-  gfx::Point screen_location(event.root_location());
-  spc->ConvertPointToScreen(root, &screen_location);
-  return screen_location;
-}
-}  // namespace
 
 SelectToSpeakEventHandler::SelectToSpeakEventHandler() {
   if (ash::Shell::HasInstance())
@@ -48,11 +29,6 @@ SelectToSpeakEventHandler::~SelectToSpeakEventHandler() {
     ash::Shell::Get()->GetPrimaryRootWindow()->RemovePreTargetHandler(this);
 }
 
-void SelectToSpeakEventHandler::CaptureForwardedEventsForTesting(
-    SelectToSpeakForwardedEventDelegateForTesting* delegate) {
-  event_delegate_for_testing_ = delegate;
-}
-
 void SelectToSpeakEventHandler::OnKeyEvent(ui::KeyEvent* event) {
   DCHECK(event);
 
@@ -61,7 +37,25 @@ void SelectToSpeakEventHandler::OnKeyEvent(ui::KeyEvent* event) {
   CHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
   ui::KeyboardCode key_code = event->key_code();
-  bool cancel_event = false;
+
+  // Stop speech when the user taps and releases Control or Search
+  // without pressing any other keys along the way.
+  if (state_ != MOUSE_RELEASED && event->type() == ui::ET_KEY_RELEASED &&
+      (key_code == ui::VKEY_CONTROL || key_code == ui::VKEY_LWIN) &&
+      keys_pressed_together_.find(key_code) != keys_pressed_together_.end() &&
+      keys_pressed_together_.size() == 1) {
+    TtsController::GetInstance()->Stop();
+  }
+
+  // Update keys_currently_down_ and keys_pressed_together_.
+  if (event->type() == ui::ET_KEY_PRESSED) {
+    keys_currently_down_.insert(key_code);
+    keys_pressed_together_.insert(key_code);
+  } else if (event->type() == ui::ET_KEY_RELEASED) {
+    keys_currently_down_.erase(key_code);
+    if (keys_currently_down_.empty())
+      keys_pressed_together_.clear();
+  }
 
   // Update the state when pressing and releasing the Search key (VKEY_LWIN).
   if (key_code == ui::VKEY_LWIN) {
@@ -69,25 +63,17 @@ void SelectToSpeakEventHandler::OnKeyEvent(ui::KeyEvent* event) {
       state_ = SEARCH_DOWN;
     } else if (event->type() == ui::ET_KEY_RELEASED) {
       if (state_ == CAPTURING) {
-        cancel_event = true;
+        SendCancelAXEvent();
+        CancelEvent(event);
         state_ = WAIT_FOR_MOUSE_RELEASE;
       } else if (state_ == MOUSE_RELEASED) {
-        cancel_event = true;
+        CancelEvent(event);
         state_ = INACTIVE;
       }
     }
   } else if (state_ == SEARCH_DOWN) {
     state_ = INACTIVE;
   }
-
-  // Forward the key to the extension.
-  extensions::ExtensionHost* host =
-      GetAccessibilityExtensionHost(extension_misc::kSelectToSpeakExtensionId);
-  if (host)
-    ForwardKeyToExtension(*event, host);
-
-  if (cancel_event)
-    CancelEvent(event);
 }
 
 void SelectToSpeakEventHandler::OnMouseEvent(ui::MouseEvent* event) {
@@ -110,29 +96,42 @@ void SelectToSpeakEventHandler::OnMouseEvent(ui::MouseEvent* event) {
   if (state_ != CAPTURING)
     return;
 
-  if (event->type() == ui::ET_MOUSE_RELEASED)
-    state_ = MOUSE_RELEASED;
-
-  // If we're in the capturing state, forward the mouse event to
-  // select-to-speak.
-  if (event_delegate_for_testing_) {
-    event_delegate_for_testing_->OnForwardEventToSelectToSpeakExtension(*event);
-  } else {
-    extensions::ExtensionHost* host = GetAccessibilityExtensionHost(
-        extension_misc::kSelectToSpeakExtensionId);
-    if (!host)
+  // If we're in the capturing state, send accessibility events to
+  // the Select-to-speak extension based on the mouse event.
+  // First, figure out what event to send.
+  ui::AXEvent ax_event = ui::AX_EVENT_NONE;
+  switch (event->type()) {
+    case ui::ET_MOUSE_PRESSED:
+      ax_event = ui::AX_EVENT_MOUSE_PRESSED;
+      break;
+    case ui::ET_MOUSE_DRAGGED:
+      ax_event = ui::AX_EVENT_MOUSE_DRAGGED;
+      break;
+    case ui::ET_MOUSE_RELEASED:
+      state_ = MOUSE_RELEASED;
+      ax_event = ui::AX_EVENT_MOUSE_RELEASED;
+      break;
+    case ui::ET_MOUSE_MOVED:
+    case ui::ET_MOUSE_ENTERED:
+    case ui::ET_MOUSE_EXITED:
+      ax_event = ui::AX_EVENT_MOUSE_MOVED;
+      break;
+    default:
       return;
-
-    content::RenderViewHost* rvh = host->render_view_host();
-    if (!rvh)
-      return;
-
-    const blink::WebMouseEvent web_event =
-        ui::MakeWebMouseEvent(*event, base::Bind(&GetScreenLocationFromEvent));
-    rvh->GetWidget()->ForwardMouseEvent(web_event);
   }
 
   CancelEvent(event);
+
+  ui::AXTreeIDRegistry* registry = ui::AXTreeIDRegistry::GetInstance();
+  ui::AXHostDelegate* delegate =
+      registry->GetHostDelegate(extensions::api::automation::kDesktopTreeID);
+  if (delegate) {
+    ui::AXActionData action;
+    action.action = ui::AX_ACTION_HIT_TEST;
+    action.target_point = event->root_location();
+    action.hit_test_event_to_fire = ax_event;
+    delegate->PerformAction(action);
+  }
 }
 
 void SelectToSpeakEventHandler::CancelEvent(ui::Event* event) {
@@ -141,6 +140,11 @@ void SelectToSpeakEventHandler::CancelEvent(ui::Event* event) {
     event->SetHandled();
     event->StopPropagation();
   }
+}
+
+void SelectToSpeakEventHandler::SendCancelAXEvent() {
+  AutomationManagerAura::GetInstance()->HandleEvent(
+      nullptr, nullptr, ui::AX_EVENT_MOUSE_CANCELED);
 }
 
 }  // namespace chromeos
