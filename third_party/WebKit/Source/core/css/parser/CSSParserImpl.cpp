@@ -254,7 +254,6 @@ void CSSParserImpl::ParseStyleSheet(const String& string,
 }
 
 CSSSelectorList CSSParserImpl::ParsePageSelector(
-    const CSSParserContext& context,
     CSSParserTokenRange range,
     StyleSheetContents* style_sheet) {
   // We only support a small subset of the css-page spec.
@@ -283,7 +282,7 @@ CSSSelectorList CSSParserImpl::ParsePageSelector(
     selector = CSSParserSelector::Create();
     if (!pseudo.IsNull()) {
       selector->SetMatch(CSSSelector::kPagePseudoClass);
-      selector->UpdatePseudoType(pseudo.DeprecatedLower(), context);
+      selector->UpdatePseudoType(pseudo.DeprecatedLower());
       if (selector->GetPseudoType() == CSSSelector::kPseudoUnknown)
         return CSSSelectorList();
     }
@@ -734,8 +733,7 @@ StyleRuleKeyframes* CSSParserImpl::ConsumeKeyframesRule(
 
 StyleRulePage* CSSParserImpl::ConsumePageRule(CSSParserTokenRange prelude,
                                               CSSParserTokenRange block) {
-  CSSSelectorList selector_list =
-      ParsePageSelector(*context_, prelude, style_sheet_);
+  CSSSelectorList selector_list = ParsePageSelector(prelude, style_sheet_);
   if (!selector_list.IsValid())
     return nullptr;  // Parse error, invalid @page selector
 
