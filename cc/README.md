@@ -93,6 +93,9 @@ DrawQuads will be in front and occluding them.
 
 ### Property Trees
 
+See also presentations on [Compositor Property Trees](https://docs.google.com/presentation/d/1V7gCqKR-edNdRDv0bDnJa_uEs6iARAU2h5WhgxHyejQ/preview)
+and [Blink Property Trees](https://docs.google.com/presentation/u/1/d/1ak7YVrJITGXxqQ7tyRbwOuXB1dsLJlfpgC4wP7lykeo/preview).
+
 ### Display
 A controller class that takes CompositorFrames for each surface and draws them
 to a physical output.

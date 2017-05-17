@@ -69,14 +69,27 @@ struct CC_EXPORT TransformNode {
   // TODO(vollick): will be moved when accelerated effects are implemented.
   bool needs_local_transform_update : 1;
 
+  // Whether this node or any ancestor has a potentially running
+  // (i.e., irrespective of exact timeline) transform animation or an
+  // invertible transform.
   bool node_and_ancestors_are_animated_or_invertible : 1;
 
   bool is_invertible : 1;
+  // Whether the transform from this node to the screen is
+  // invertible.
   bool ancestors_are_invertible : 1;
 
+  // Whether this node has a potentially running (i.e., irrespective
+  // of exact timeline) transform animation.
   bool has_potential_animation : 1;
+  // Whether this node has a currently running transform animation.
   bool is_currently_animating : 1;
+  // Whether this node *or an ancestor* has a potentially running
+  // (i.e., irrespective of exact timeline) transform
+  // animation.
   bool to_screen_is_potentially_animated : 1;
+  // Whether all animations on this transform node are simple
+  // translations.
   bool has_only_translation_animations : 1;
 
   // Flattening, when needed, is only applied to a node's inherited transform,
