@@ -304,7 +304,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
     EXPECT_EQ(data_url, entry->GetURL());
   }
 
-  // TODO(boliu): Add test for in-page fragment navigation. See
+  // TODO(boliu): Add test for same document fragment navigation. See
   // crbug.com/561034.
 
   // Navigate with Javascript.
@@ -330,7 +330,9 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   const GURL history_url("http://historyurl");
   const std::string data =
       "<html><body>"
-      "  <p id=\"frag\"><a id=\"fraglink\" href=\"#frag\">in-page nav</a></p>"
+      "  <p id=\"frag\">"
+      "    <a id=\"fraglink\" href=\"#frag\">same document nav</a>"
+      "  </p>"
       "</body></html>";
 
   const NavigationControllerImpl& controller =
@@ -623,9 +625,9 @@ class FrameNavigateParamsCapturer : public WebContentsObserver {
     return navigation_types_[0];
   }
 
-  bool is_in_page() {
-    EXPECT_EQ(1U, is_in_pages_.size());
-    return is_in_pages_[0];
+  bool is_same_document() {
+    EXPECT_EQ(1U, is_same_documents_.size());
+    return is_same_documents_[0];
   }
 
   const std::vector<ui::PageTransition>& transitions() { return transitions_; }
@@ -633,7 +635,7 @@ class FrameNavigateParamsCapturer : public WebContentsObserver {
   const std::vector<NavigationType>& navigation_types() {
     return navigation_types_;
   }
-  const std::vector<bool>& is_in_pages() { return is_in_pages_; }
+  const std::vector<bool>& is_same_documents() { return is_same_documents_; }
 
  private:
   void DidFinishNavigation(NavigationHandle* navigation_handle) override {
@@ -649,7 +651,7 @@ class FrameNavigateParamsCapturer : public WebContentsObserver {
     navigation_types_.push_back(
         static_cast<NavigationHandleImpl*>(navigation_handle)
             ->navigation_type());
-    is_in_pages_.push_back(navigation_handle->IsSameDocument());
+    is_same_documents_.push_back(navigation_handle->IsSameDocument());
     if (!navigations_remaining_ &&
         (!web_contents()->IsLoading() || !wait_for_load_))
       message_loop_runner_->Quit();
@@ -672,7 +674,7 @@ class FrameNavigateParamsCapturer : public WebContentsObserver {
   std::vector<ui::PageTransition> transitions_;
   std::vector<GURL> urls_;
   std::vector<NavigationType> navigation_types_;
-  std::vector<bool> is_in_pages_;
+  std::vector<bool> is_same_documents_;
 
   // The MessageLoopRunner used to spin the message loop.
   scoped_refptr<MessageLoopRunner> message_loop_runner_;
@@ -1010,7 +1012,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
     EXPECT_TRUE(ui::PageTransitionTypeIncludingQualifiersIs(
         capturer.transition(), ui::PAGE_TRANSITION_LINK));
     EXPECT_EQ(NAVIGATION_TYPE_NEW_PAGE, capturer.navigation_type());
-    EXPECT_FALSE(capturer.is_in_page());
+    EXPECT_FALSE(capturer.is_same_document());
   }
 
   {
@@ -1022,7 +1024,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
     EXPECT_TRUE(ui::PageTransitionTypeIncludingQualifiersIs(
         capturer.transition(), ui::PAGE_TRANSITION_LINK));
     EXPECT_EQ(NAVIGATION_TYPE_NEW_PAGE, capturer.navigation_type());
-    EXPECT_TRUE(capturer.is_in_page());
+    EXPECT_TRUE(capturer.is_same_document());
   }
 
   {
@@ -1034,7 +1036,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
     EXPECT_TRUE(ui::PageTransitionTypeIncludingQualifiersIs(
         capturer.transition(), ui::PAGE_TRANSITION_LINK));
     EXPECT_EQ(NAVIGATION_TYPE_NEW_PAGE, capturer.navigation_type());
-    EXPECT_FALSE(capturer.is_in_page());
+    EXPECT_FALSE(capturer.is_same_document());
   }
 
   {
@@ -1050,7 +1052,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
         ui::PageTransitionFromInt(ui::PAGE_TRANSITION_LINK |
                                   ui::PAGE_TRANSITION_CLIENT_REDIRECT)));
     EXPECT_EQ(NAVIGATION_TYPE_NEW_PAGE, capturer.navigation_type());
-    EXPECT_FALSE(capturer.is_in_page());
+    EXPECT_FALSE(capturer.is_same_document());
   }
 
   {
@@ -1065,7 +1067,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
         ui::PageTransitionFromInt(ui::PAGE_TRANSITION_LINK |
                                   ui::PAGE_TRANSITION_CLIENT_REDIRECT)));
     EXPECT_EQ(NAVIGATION_TYPE_NEW_PAGE, capturer.navigation_type());
-    EXPECT_TRUE(capturer.is_in_page());
+    EXPECT_TRUE(capturer.is_same_document());
   }
 
   if (AreAllSitesIsolatedForTesting()) {
@@ -1081,7 +1083,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
         ui::PageTransitionFromInt(ui::PAGE_TRANSITION_LINK |
                                   ui::PAGE_TRANSITION_CLIENT_REDIRECT)));
     EXPECT_EQ(NAVIGATION_TYPE_NEW_PAGE, capturer.navigation_type());
-    EXPECT_FALSE(capturer.is_in_page());
+    EXPECT_FALSE(capturer.is_same_document());
   }
 }
 
@@ -1111,7 +1113,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
                                   ui::PAGE_TRANSITION_FORWARD_BACK |
                                   ui::PAGE_TRANSITION_FROM_ADDRESS_BAR)));
     EXPECT_EQ(NAVIGATION_TYPE_EXISTING_PAGE, capturer.navigation_type());
-    EXPECT_FALSE(capturer.is_in_page());
+    EXPECT_FALSE(capturer.is_same_document());
   }
 
   {
@@ -1125,7 +1127,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
                                   ui::PAGE_TRANSITION_FORWARD_BACK |
                                   ui::PAGE_TRANSITION_FROM_ADDRESS_BAR)));
     EXPECT_EQ(NAVIGATION_TYPE_EXISTING_PAGE, capturer.navigation_type());
-    EXPECT_FALSE(capturer.is_in_page());
+    EXPECT_FALSE(capturer.is_same_document());
   }
 
   {
@@ -1139,7 +1141,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
                                   ui::PAGE_TRANSITION_FORWARD_BACK |
                                   ui::PAGE_TRANSITION_FROM_ADDRESS_BAR)));
     EXPECT_EQ(NAVIGATION_TYPE_EXISTING_PAGE, capturer.navigation_type());
-    EXPECT_FALSE(capturer.is_in_page());
+    EXPECT_FALSE(capturer.is_same_document());
   }
 
   {
@@ -1153,7 +1155,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
                                   ui::PAGE_TRANSITION_FORWARD_BACK |
                                   ui::PAGE_TRANSITION_FROM_ADDRESS_BAR)));
     EXPECT_EQ(NAVIGATION_TYPE_EXISTING_PAGE, capturer.navigation_type());
-    EXPECT_FALSE(capturer.is_in_page());
+    EXPECT_FALSE(capturer.is_same_document());
   }
 
   {
@@ -1167,7 +1169,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
                                   ui::PAGE_TRANSITION_FORWARD_BACK |
                                   ui::PAGE_TRANSITION_FROM_ADDRESS_BAR)));
     EXPECT_EQ(NAVIGATION_TYPE_EXISTING_PAGE, capturer.navigation_type());
-    EXPECT_FALSE(capturer.is_in_page());
+    EXPECT_FALSE(capturer.is_same_document());
   }
 
   {
@@ -1181,7 +1183,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
                                   ui::PAGE_TRANSITION_FORWARD_BACK |
                                   ui::PAGE_TRANSITION_FROM_ADDRESS_BAR)));
     EXPECT_EQ(NAVIGATION_TYPE_EXISTING_PAGE, capturer.navigation_type());
-    EXPECT_FALSE(capturer.is_in_page());
+    EXPECT_FALSE(capturer.is_same_document());
   }
 
   {
@@ -1192,7 +1194,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
     EXPECT_TRUE(ui::PageTransitionTypeIncludingQualifiersIs(
         capturer.transition(), ui::PAGE_TRANSITION_RELOAD));
     EXPECT_EQ(NAVIGATION_TYPE_EXISTING_PAGE, capturer.navigation_type());
-    EXPECT_FALSE(capturer.is_in_page());
+    EXPECT_FALSE(capturer.is_same_document());
   }
 
   {
@@ -1205,7 +1207,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
         ui::PageTransitionFromInt(ui::PAGE_TRANSITION_LINK |
                                   ui::PAGE_TRANSITION_CLIENT_REDIRECT)));
     EXPECT_EQ(NAVIGATION_TYPE_EXISTING_PAGE, capturer.navigation_type());
-    EXPECT_FALSE(capturer.is_in_page());
+    EXPECT_FALSE(capturer.is_same_document());
   }
 
   {
@@ -1223,10 +1225,10 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
         ui::PageTransitionFromInt(ui::PAGE_TRANSITION_LINK |
                                   ui::PAGE_TRANSITION_CLIENT_REDIRECT)));
     EXPECT_EQ(NAVIGATION_TYPE_EXISTING_PAGE, capturer.navigation_type());
-    EXPECT_FALSE(capturer.is_in_page());
+    EXPECT_FALSE(capturer.is_same_document());
   }
 
-  // Now, various in-page navigations.
+  // Now, various same document navigations.
 
   {
     // history.replaceState().
@@ -1240,7 +1242,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
         ui::PageTransitionFromInt(ui::PAGE_TRANSITION_LINK |
                                   ui::PAGE_TRANSITION_CLIENT_REDIRECT)));
     EXPECT_EQ(NAVIGATION_TYPE_EXISTING_PAGE, capturer.navigation_type());
-    EXPECT_TRUE(capturer.is_in_page());
+    EXPECT_TRUE(capturer.is_same_document());
   }
 
   // Back and forward across a fragment navigation.
@@ -1263,7 +1265,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
                                   ui::PAGE_TRANSITION_FORWARD_BACK |
                                   ui::PAGE_TRANSITION_FROM_ADDRESS_BAR)));
     EXPECT_EQ(NAVIGATION_TYPE_EXISTING_PAGE, capturer.navigation_type());
-    EXPECT_TRUE(capturer.is_in_page());
+    EXPECT_TRUE(capturer.is_same_document());
   }
 
   {
@@ -1276,7 +1278,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
         ui::PageTransitionFromInt(ui::PAGE_TRANSITION_LINK |
                                   ui::PAGE_TRANSITION_FORWARD_BACK)));
     EXPECT_EQ(NAVIGATION_TYPE_EXISTING_PAGE, capturer.navigation_type());
-    EXPECT_TRUE(capturer.is_in_page());
+    EXPECT_TRUE(capturer.is_same_document());
   }
 
   // Back and forward across a pushState-created navigation.
@@ -1297,7 +1299,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
                                   ui::PAGE_TRANSITION_FORWARD_BACK |
                                   ui::PAGE_TRANSITION_FROM_ADDRESS_BAR)));
     EXPECT_EQ(NAVIGATION_TYPE_EXISTING_PAGE, capturer.navigation_type());
-    EXPECT_TRUE(capturer.is_in_page());
+    EXPECT_TRUE(capturer.is_same_document());
   }
 
   {
@@ -1310,7 +1312,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
         ui::PageTransitionFromInt(ui::PAGE_TRANSITION_LINK |
                                   ui::PAGE_TRANSITION_FORWARD_BACK)));
     EXPECT_EQ(NAVIGATION_TYPE_EXISTING_PAGE, capturer.navigation_type());
-    EXPECT_TRUE(capturer.is_in_page());
+    EXPECT_TRUE(capturer.is_same_document());
   }
 }
 
@@ -1604,11 +1606,10 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   }
 }
 
-// Verify that the LoadCommittedDetails::is_in_page value is properly set for
-// non-IN_PAGE navigations. (It's tested for IN_PAGE navigations with the
-// NavigationTypeClassification_InPage test.)
+// Verify that the LoadCommittedDetails::is_same_document value is properly set
+// for non same document navigations.
 IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
-                       LoadCommittedDetails_IsInPage) {
+                       LoadCommittedDetails_IsSameDocument) {
   GURL links_url(embedded_test_server()->GetURL(
       "/navigation_controller/page_with_links.html"));
   EXPECT_TRUE(NavigateToURL(shell(), links_url));
@@ -1627,7 +1628,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
     EXPECT_TRUE(ui::PageTransitionTypeIncludingQualifiersIs(
         capturer.transition(), ui::PAGE_TRANSITION_LINK));
     EXPECT_EQ(NAVIGATION_TYPE_NEW_PAGE, capturer.navigation_type());
-    EXPECT_TRUE(capturer.is_in_page());
+    EXPECT_TRUE(capturer.is_same_document());
   }
 
   {
@@ -1639,7 +1640,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
     EXPECT_TRUE(ui::PageTransitionTypeIncludingQualifiersIs(
         capturer.transition(), ui::PAGE_TRANSITION_LINK));
     EXPECT_EQ(NAVIGATION_TYPE_NEW_PAGE, capturer.navigation_type());
-    EXPECT_FALSE(capturer.is_in_page());
+    EXPECT_FALSE(capturer.is_same_document());
   }
 
   // Second verse, same as the first. (But in a subframe.)
@@ -1666,7 +1667,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
     EXPECT_TRUE(ui::PageTransitionTypeIncludingQualifiersIs(
         capturer.transition(), ui::PAGE_TRANSITION_MANUAL_SUBFRAME));
     EXPECT_EQ(NAVIGATION_TYPE_NEW_SUBFRAME, capturer.navigation_type());
-    EXPECT_TRUE(capturer.is_in_page());
+    EXPECT_TRUE(capturer.is_same_document());
   }
 
   {
@@ -1678,7 +1679,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
     EXPECT_TRUE(ui::PageTransitionTypeIncludingQualifiersIs(
         capturer.transition(), ui::PAGE_TRANSITION_MANUAL_SUBFRAME));
     EXPECT_EQ(NAVIGATION_TYPE_NEW_SUBFRAME, capturer.navigation_type());
-    EXPECT_FALSE(capturer.is_in_page());
+    EXPECT_FALSE(capturer.is_same_document());
   }
 }
 
@@ -1944,8 +1945,9 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
 }
 
 // Verify the tree of FrameNavigationEntries when a nested iframe commits after
-// going back in-page, in which case its parent might not have been in the
-// NavigationEntry.  Prevents regression of https://crbug.com/600743.
+// doing same document back navigation, in which case its parent might not have
+// been in the NavigationEntry.  Prevents regression of
+// https://crbug.com/600743.
 IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
                        FrameNavigationEntry_BackNestedAutoSubframe) {
   GURL main_url(embedded_test_server()->GetURL(
@@ -1955,14 +1957,14 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
                             ->GetFrameTree()
                             ->root();
 
-  // 1. Navigate in-page.
+  // 1. Perform same document navigation.
   {
     FrameNavigateParamsCapturer capturer(root);
     std::string script = "history.pushState({}, 'foo', 'foo')";
     EXPECT_TRUE(ExecuteScript(root, script));
     capturer.Wait();
     EXPECT_EQ(NAVIGATION_TYPE_NEW_PAGE, capturer.navigation_type());
-    EXPECT_TRUE(capturer.is_in_page());
+    EXPECT_TRUE(capturer.is_same_document());
   }
 
   // 2. Create an iframe.
@@ -1979,7 +1981,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
         capturer.transition_type(), ui::PAGE_TRANSITION_AUTO_SUBFRAME));
   }
 
-  // 3. Go back in-page.
+  // 3. Perform back same document navigation.
   {
     TestNavigationObserver back_load_observer(shell()->web_contents());
     shell()->web_contents()->GetController().GoBack();
@@ -2372,10 +2374,10 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   }
 }
 
-// Ensure that we don't crash when navigating subframes after in-page
+// Ensure that we don't crash when navigating subframes after same document
 // navigations.  See https://crbug.com/522193.
 IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
-                       FrameNavigationEntry_SubframeAfterInPage) {
+                       FrameNavigationEntry_SubframeAfterSameDocument) {
   // 1. Start on a page with a subframe.
   GURL main_url(embedded_test_server()->GetURL(
       "/navigation_controller/page_with_iframe.html"));
@@ -2402,7 +2404,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
         capturer.transition_type(), ui::PAGE_TRANSITION_AUTO_SUBFRAME));
   }
 
-  // 2. In-page navigation in the main frame.
+  // 2. Same document navigation in the main frame.
   std::string push_script = "history.pushState({}, 'page 2', 'page_2.html')";
   EXPECT_TRUE(ExecuteScript(root, push_script));
   EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
@@ -3995,17 +3997,18 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   }
 }
 
-// Ensure that going back/forward to an apparently in-page NavigationEntry works
-// when the renderer process hasn't committed anything yet.  This can happen
-// when using Ctrl+Back or after a crash.  See https://crbug.com/635403.
+// Ensure that going back/forward to an apparently same document
+// NavigationEntry works when the renderer process hasn't committed anything
+// yet.  This can happen when using Ctrl+Back or after a crash.  See
+// https://crbug.com/635403.
 IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
-                       BackInPageInNewWindow) {
+                       BackSameDocumentInNewWindow) {
   // Start on an initial page.
   GURL url_1(embedded_test_server()->GetURL(
       "/navigation_controller/simple_page_1.html"));
   EXPECT_TRUE(NavigateToURL(shell(), url_1));
 
-  // Navigate it in-page.
+  // Perform same document navigation.
   GURL url_2(embedded_test_server()->GetURL(
       "/navigation_controller/simple_page_1.html#foo"));
   EXPECT_TRUE(NavigateToURL(shell(), url_2));
@@ -4100,7 +4103,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
     EXPECT_TRUE(ui::PageTransitionTypeIncludingQualifiersIs(
         capturer.transition(), ui::PAGE_TRANSITION_RELOAD));
     EXPECT_EQ(NAVIGATION_TYPE_EXISTING_PAGE, capturer.navigation_type());
-    EXPECT_FALSE(capturer.is_in_page());
+    EXPECT_FALSE(capturer.is_same_document());
   }
 
   // 4. Add the iframe again.
@@ -4140,7 +4143,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   EXPECT_NE(-1, isn_1);
   EXPECT_NE(-1, dsn_1);
 
-  // 2. Do an in-page fragment navigation.
+  // 2. Do a same document fragment navigation.
   std::string script = "document.getElementById('fraglink').click()";
   EXPECT_TRUE(ExecuteScript(root, script));
   EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
@@ -4178,7 +4181,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   EXPECT_NE(isn_2, isn_3);
   EXPECT_NE(dsn_2, dsn_3);
 
-  // 4. Do an in-page fragment navigation in the subframe.
+  // 4. Do a same document fragment navigation in the subframe.
   EXPECT_TRUE(ExecuteScript(subframe, script));
   EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
 
@@ -4385,8 +4388,8 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerOopifBrowserTest,
 namespace {
 
 // Loads |start_url|, then loads |stalled_url| which stalls. While the page is
-// stalled, an in-page navigation happens. Make sure that all the navigations
-// are properly classified.
+// stalled, a same document navigation happens. Make sure that all the
+// navigations are properly classified.
 void DoReplaceStateWhilePending(Shell* shell,
                                 const GURL& start_url,
                                 const GURL& stalled_url,
@@ -4425,7 +4428,7 @@ void DoReplaceStateWhilePending(Shell* shell,
     // The fact that there was a pending entry shouldn't interfere with the
     // classification.
     EXPECT_EQ(NAVIGATION_TYPE_EXISTING_PAGE, capturer.navigation_type());
-    EXPECT_TRUE(capturer.is_in_page());
+    EXPECT_TRUE(capturer.is_same_document());
   }
 
   ResourceDispatcherHost::Get()->SetDelegate(nullptr);
@@ -4435,7 +4438,7 @@ void DoReplaceStateWhilePending(Shell* shell,
 
 IN_PROC_BROWSER_TEST_F(
     NavigationControllerBrowserTest,
-    NavigationTypeClassification_On1InPageToXWhile2Pending) {
+    NavigationTypeClassification_On1SameDocumentToXWhile2Pending) {
   GURL url1(embedded_test_server()->GetURL(
       "/navigation_controller/simple_page_1.html"));
   GURL url2(embedded_test_server()->GetURL(
@@ -4445,7 +4448,7 @@ IN_PROC_BROWSER_TEST_F(
 
 IN_PROC_BROWSER_TEST_F(
     NavigationControllerBrowserTest,
-    NavigationTypeClassification_On1InPageTo2While2Pending) {
+    NavigationTypeClassification_On1SameDocumentTo2While2Pending) {
   GURL url1(embedded_test_server()->GetURL(
       "/navigation_controller/simple_page_1.html"));
   GURL url2(embedded_test_server()->GetURL(
@@ -4453,15 +4456,17 @@ IN_PROC_BROWSER_TEST_F(
   DoReplaceStateWhilePending(shell(), url1, url2, "simple_page_2.html");
 }
 
-IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
-                       NavigationTypeClassification_On1InPageToXWhile1Pending) {
+IN_PROC_BROWSER_TEST_F(
+    NavigationControllerBrowserTest,
+    NavigationTypeClassification_On1SameDocumentToXWhile1Pending) {
   GURL url(embedded_test_server()->GetURL(
       "/navigation_controller/simple_page_1.html"));
   DoReplaceStateWhilePending(shell(), url, url, "x");
 }
 
-IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
-                       NavigationTypeClassification_On1InPageTo1While1Pending) {
+IN_PROC_BROWSER_TEST_F(
+    NavigationControllerBrowserTest,
+    NavigationTypeClassification_On1SameDocumentTo1While1Pending) {
   GURL url(embedded_test_server()->GetURL(
       "/navigation_controller/simple_page_1.html"));
   DoReplaceStateWhilePending(shell(), url, url, "simple_page_1.html");
@@ -4511,10 +4516,10 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
     EXPECT_TRUE(ExecuteScript(root, script));
     capturer.Wait();
     EXPECT_EQ(NAVIGATION_TYPE_NEW_PAGE, capturer.navigation_type());
-    EXPECT_TRUE(capturer.is_in_page());
+    EXPECT_TRUE(capturer.is_same_document());
   }
 
-  // The in-page navigation should not have replaced the previous entry.
+  // The same document navigation should not have replaced the previous entry.
   GURL push_state_url(
       embedded_test_server()->GetURL("/navigation_controller/pushed"));
   EXPECT_EQ(entry_count + 1, controller.GetEntryCount());
@@ -4822,9 +4827,9 @@ class RenderProcessKilledObserver : public WebContentsObserver {
 
 // This tests a race in Reload with ReloadType::ORIGINAL_REQUEST_URL, where a
 // cross-origin reload was causing an in-flight replaceState to look like a
-// cross-origin navigation, even though it's in-page.  (The reload should not
-// modify the underlying last committed entry.)  Not crashing means that the
-// test is successful.
+// cross-origin navigation, even though it's same document.  (The reload should
+// not modify the underlying last committed entry.)  Not crashing means that
+// the test is successful.
 IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest, ReloadOriginalRequest) {
   GURL original_url(embedded_test_server()->GetURL(
       "/navigation_controller/simple_page_1.html"));
@@ -4887,9 +4892,9 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest, ReloadOriginalRequest) {
 // This test shows that the initial "about:blank" URL is elided from the
 // navigation history of a subframe when it is loaded.
 //
-// It also prevents regression for an in-page navigation renderer kill when
-// going back after an in-page navigation in the main frame is followed by an
-// auto subframe navigation, due to a bug in HistoryEntry::CloneAndReplace.
+// It also prevents regression for an same document navigation renderer kill
+// when going back after an in-page navigation in the main frame is followed by
+// an auto subframe navigation, due to a bug in HistoryEntry::CloneAndReplace.
 // See https://crbug.com/612713.
 IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
                        BackToAboutBlankIframe) {
@@ -4976,7 +4981,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   // Now test for https://crbug.com/612713 to prevent an NC_IN_PAGE_NAVIGATION
   // renderer kill.
 
-  // Do an in-page navigation in the subframe.
+  // Do a same document navigation in the subframe.
   std::string fragment_script = "location.href = \"#foo\";";
   EXPECT_TRUE(ExecuteScript(frame->current_frame_host(), fragment_script));
   EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
@@ -5010,9 +5015,9 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
 }
 
 // This test is similar to "BackToAboutBlankIframe" above, except that a
-// fragment navigation is used rather than pushState (both create an in-page
-// navigation, so we need to test both), and an initial 'src' is given to the
-// iframe to test proper restoration in that case.
+// fragment navigation is used rather than pushState (both create a same
+// document navigation, so we need to test both), and an initial 'src' is given
+// to the iframe to test proper restoration in that case.
 IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
                        BackToIframeWithContent) {
   GURL links_url(embedded_test_server()->GetURL(
@@ -5102,7 +5107,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   // Now test for https://crbug.com/612713 to prevent an NC_IN_PAGE_NAVIGATION
   // renderer kill.
 
-  // Do an in-page navigation in the subframe.
+  // Do a same document navigation in the subframe.
   std::string fragment_script = "location.href = \"#foo\";";
   EXPECT_TRUE(ExecuteScript(frame->current_frame_host(), fragment_script));
   EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
@@ -5130,9 +5135,10 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   EXPECT_EQ(frame_url_1, frame->current_url());
 }
 
-// Test for in-page navigation kills due to using the wrong history item in
-// HistoryController::RecursiveGoToEntry and NavigationControllerImpl::
-// FindFramesToNavigate.  See https://crbug.com/612713.
+// Test for same document navigation kills due to using the wrong history item
+// in HistoryController::RecursiveGoToEntry and
+// NavigationControllerImpl::FindFramesToNavigate.
+// See https://crbug.com/612713.
 //
 // TODO(creis): Enable this test when https://crbug.com/618100 is fixed.
 // Disabled for now while we switch to the new navigation path, since this kill
@@ -5174,7 +5180,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
 
   EXPECT_EQ(frame_url_1, frame->current_url());
 
-  // Do an in-page navigation in the subframe.
+  // Do a same document navigation in the subframe.
   GURL frame_url_2 = embedded_test_server()->GetURL(
       "/navigation_controller/simple_page_1.html#foo");
   std::string fragment_script = "location.href = \"#foo\";";
@@ -5248,8 +5254,8 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   EXPECT_EQ(frame_url_1, frame->current_url());
 }
 
-// Test for in-page navigation kills when going back to about:blank after a
-// document.write.  See https://crbug.com/446959.
+// Test for same document navigation kills when going back to about:blank after
+// a document.write.  See https://crbug.com/446959.
 IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
                        BackAfterIframeDocumentWrite) {
   GURL links_url(embedded_test_server()->GetURL(
@@ -5289,8 +5295,8 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
       "iframe.contentWindow.document.close();";
   EXPECT_TRUE(ExecuteScript(root->current_frame_host(), document_write_script));
 
-  // Click the link to do an in-page navigation.  Due to the document.write, the
-  // new URL matches the parent frame's URL.
+  // Click the link to do a same document navigation.  Due to the
+  // document.write, the new URL matches the parent frame's URL.
   GURL frame_url_2(embedded_test_server()->GetURL(
       "/navigation_controller/page_with_links.html#frag"));
   std::string link_script = "document.getElementById('fraglink').click()";
@@ -5317,8 +5323,8 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   EXPECT_EQ(blank_url, frame->current_url());
 }
 
-// Test for in-page navigation kills when going back to about:blank in an iframe
-// of a data URL, after a document.write.  This differs from
+// Test for same document navigation kills when going back to about:blank in an
+// iframe of a data URL, after a document.write.  This differs from
 // BackAfterIframeDocumentWrite because both about:blank and the data URL are
 // considered unique origins.  See https://crbug.com/446959.
 IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
@@ -5359,8 +5365,8 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
       "iframe.contentWindow.document.close();";
   EXPECT_TRUE(ExecuteScript(root->current_frame_host(), document_write_script));
 
-  // Click the link to do an in-page navigation.  Due to the document.write, the
-  // new URL matches the parent frame's URL.
+  // Click the link to do a same document navigation.  Due to the
+  // document.write, the new URL matches the parent frame's URL.
   GURL frame_url_2("data:text/html,Top level page#frag");
   std::string link_script = "document.getElementById('fraglink').click()";
   EXPECT_TRUE(ExecuteScript(frame->current_frame_host(), link_script));
@@ -6278,9 +6284,9 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
                   "Referer: http://a.com:.*/form_that_posts_cross_site.html"));
 }
 
-// Check that the favicon is not cleared for navigating in-page.
+// Check that the favicon is not cleared for same document navigations.
 IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
-                       InPageNavigationDoesNotClearFavicon) {
+                       SameDocumentNavigationDoesNotClearFavicon) {
   // Load a page and fake a favicon for it.
   NavigationController& controller = shell()->web_contents()->GetController();
   ASSERT_TRUE(NavigateToURL(
