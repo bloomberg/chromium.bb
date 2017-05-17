@@ -105,10 +105,10 @@ namespace media {
 // All features in alphabetical order. The features should be documented
 // alongside the definition of their values in the .cc file.
 
-MEDIA_EXPORT extern const base::Feature kAutoplayPolicy;
 MEDIA_EXPORT extern const base::Feature kBackgroundVideoPauseOptimization;
 MEDIA_EXPORT extern const base::Feature kBackgroundVideoTrackOptimization;
 MEDIA_EXPORT extern const base::Feature kExternalClearKeyForTesting;
+MEDIA_EXPORT extern const base::Feature kLowDelayVideoRenderingOnLiveStream;
 MEDIA_EXPORT extern const base::Feature kMemoryPressureBasedSourceBufferGC;
 MEDIA_EXPORT extern const base::Feature kNewAudioRenderingMixingStrategy;
 MEDIA_EXPORT extern const base::Feature kNewRemotePlaybackPipeline;

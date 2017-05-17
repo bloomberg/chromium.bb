@@ -244,6 +244,11 @@ const base::Feature kVideoBlitColorAccuracy{"video-blit-color-accuracy",
 const base::Feature kExternalClearKeyForTesting{
     "external-clear-key-for-testing", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables low-delay video rendering in media pipeline on "live" stream.
+const base::Feature kLowDelayVideoRenderingOnLiveStream{
+    "low-delay-video-rendering-on-live-stream",
+    base::FEATURE_ENABLED_BY_DEFAULT};
+
 // Enables Media Engagement Index recording in order to bypass autoplay
 // policies.
 const base::Feature kMediaEngagement{"media-engagement",
@@ -282,11 +287,11 @@ std::string GetEffectiveAutoplayPolicy(const base::CommandLine& command_line) {
   if (command_line.HasSwitch(switches::kIgnoreAutoplayRestrictionsForTests))
     return switches::autoplay::kNoUserGestureRequiredPolicy;
 
-  // Return the autoplay policy set in teh command line, if any.
+  // Return the autoplay policy set in the command line, if any.
   if (command_line.HasSwitch(switches::kAutoplayPolicy))
     return command_line.GetSwitchValueASCII(switches::kAutoplayPolicy);
 
-  // The default value is platform dependant.
+// The default value is platform dependent.
 #if defined(OS_ANDROID)
   return switches::autoplay::kUserGestureRequiredPolicy;
 #else
