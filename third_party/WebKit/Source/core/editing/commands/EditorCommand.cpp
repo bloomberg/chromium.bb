@@ -2004,8 +2004,12 @@ static bool Enabled(LocalFrame&, Event*, EditorCommandSource) {
 
 static bool EnabledVisibleSelection(LocalFrame& frame,
                                     Event* event,
-                                    EditorCommandSource) {
+                                    EditorCommandSource source) {
   frame.GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
+
+  if (source == kCommandFromMenuOrKeyBinding &&
+      !frame.Selection().SelectionHasFocus())
+    return false;
 
   // The term "visible" here includes a caret in editable text or a range in any
   // text.
