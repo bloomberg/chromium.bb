@@ -229,6 +229,13 @@ public class ChildProcessConnection {
     protected ChildProcessConnection(Context context, DeathCallback deathCallback,
             String serviceClassName, Bundle childProcessCommonParameters,
             ChildProcessCreationParams creationParams) {
+        this(context, deathCallback, serviceClassName, childProcessCommonParameters, creationParams,
+                true /* doBind */);
+    }
+
+    private ChildProcessConnection(Context context, DeathCallback deathCallback,
+            String serviceClassName, Bundle childProcessCommonParameters,
+            ChildProcessCreationParams creationParams, boolean doBind) {
         assert LauncherThread.runningOnLauncherThread();
         mContext = context;
         mDeathCallback = deathCallback;
@@ -238,12 +245,19 @@ public class ChildProcessConnection {
         mChildProcessCommonParameters = childProcessCommonParameters;
         mCreationParams = creationParams;
 
-        int defaultFlags = Context.BIND_AUTO_CREATE
-                | (shouldBindAsExportedService() ? Context.BIND_EXTERNAL_SERVICE : 0);
-        mInitialBinding = createServiceConnection(defaultFlags);
-        mModerateBinding = createServiceConnection(defaultFlags);
-        mStrongBinding = createServiceConnection(defaultFlags | Context.BIND_IMPORTANT);
-        mWaivedBinding = createServiceConnection(defaultFlags | Context.BIND_WAIVE_PRIORITY);
+        if (doBind) {
+            int defaultFlags = Context.BIND_AUTO_CREATE
+                    | (shouldBindAsExportedService() ? Context.BIND_EXTERNAL_SERVICE : 0);
+            mInitialBinding = createServiceConnection(defaultFlags);
+            mModerateBinding = createServiceConnection(defaultFlags);
+            mStrongBinding = createServiceConnection(defaultFlags | Context.BIND_IMPORTANT);
+            mWaivedBinding = createServiceConnection(defaultFlags | Context.BIND_WAIVE_PRIORITY);
+        } else {
+            mInitialBinding = null;
+            mModerateBinding = null;
+            mStrongBinding = null;
+            mWaivedBinding = null;
+        }
     }
 
     public final Context getContext() {
@@ -627,5 +641,14 @@ public class ChildProcessConnection {
     @VisibleForTesting
     public void crashServiceForTesting() throws RemoteException {
         mService.crashIntentionallyForTesting();
+    }
+
+    /** Creates a connection with no service bindings. */
+    @VisibleForTesting
+    static ChildProcessConnection createUnboundConnectionForTesting(Context context,
+            DeathCallback deathCallback, String serviceClassName,
+            Bundle childProcessCommonParameters, ChildProcessCreationParams creationParams) {
+        return new ChildProcessConnection(context, deathCallback, serviceClassName,
+                childProcessCommonParameters, creationParams, false /* doBind */);
     }
 }

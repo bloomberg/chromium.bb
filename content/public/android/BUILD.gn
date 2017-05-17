@@ -153,6 +153,7 @@ android_library("content_java") {
     "java/src/org/chromium/content/browser/SmartClipProvider.java",
     "java/src/org/chromium/content/browser/SmartSelectionClient.java",
     "java/src/org/chromium/content/browser/SmartSelectionProvider.java",
+    "java/src/org/chromium/content/browser/SpareChildConnection.java",
     "java/src/org/chromium/content/browser/SpeechRecognition.java",
     "java/src/org/chromium/content/browser/TracingControllerAndroid.java",
     "java/src/org/chromium/content/browser/ViewPositionObserver.java",
@@ -472,6 +473,7 @@ junit_binary("content_junit_tests") {
   java_files = [
     "junit/src/org/chromium/content/browser/BindingManagerImplTest.java",
     "junit/src/org/chromium/content/browser/MenuDescriptorTest.java",
+    "junit/src/org/chromium/content/browser/SpareChildConnectionTest.java",
     "junit/src/org/chromium/content/browser/androidoverlay/DialogOverlayCoreTest.java",
     "junit/src/org/chromium/content/browser/input/RangeTest.java",
     "junit/src/org/chromium/content/browser/input/TextInputStateTest.java",
