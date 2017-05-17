@@ -14,7 +14,7 @@ namespace gpu {
 class GpuMemoryBufferManager;
 }
 
-namespace display_compositor {
+namespace viz {
 class BufferQueue;
 class GLHelper;
 }
@@ -28,7 +28,7 @@ class GpuSurfacelessBrowserCompositorOutputSurface
       scoped_refptr<ui::ContextProviderCommandBuffer> context,
       gpu::SurfaceHandle surface_handle,
       const UpdateVSyncParametersCallback& update_vsync_parameters_callback,
-      std::unique_ptr<display_compositor::CompositorOverlayCandidateValidator>
+      std::unique_ptr<viz::CompositorOverlayCandidateValidator>
           overlay_candidate_validator,
       unsigned int target,
       unsigned int internalformat,
@@ -58,8 +58,8 @@ class GpuSurfacelessBrowserCompositorOutputSurface
   gfx::Size reshape_size_;
   gfx::Size swap_size_;
 
-  std::unique_ptr<display_compositor::GLHelper> gl_helper_;
-  std::unique_ptr<display_compositor::BufferQueue> buffer_queue_;
+  std::unique_ptr<viz::GLHelper> gl_helper_;
+  std::unique_ptr<viz::BufferQueue> buffer_queue_;
   gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager_;
 };
 

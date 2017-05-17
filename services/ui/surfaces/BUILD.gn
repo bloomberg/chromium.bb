@@ -17,7 +17,7 @@ source_set("surfaces") {
     "//cc",
     "//cc/ipc:interfaces",
     "//cc/surfaces",
-    "//components/display_compositor",
+    "//components/viz/display_compositor",
     "//components/viz/frame_sinks",
     "//gpu/command_buffer/client",
     "//gpu/command_buffer/client:gles2_interface",

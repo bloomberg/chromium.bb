@@ -34,7 +34,7 @@
 #include "cc/surfaces/surface_hittest.h"
 #include "cc/surfaces/surface_manager.h"
 #include "cc/trees/layer_tree_host.h"
-#include "components/display_compositor/gl_helper.h"
+#include "components/viz/display_compositor/gl_helper.h"
 #include "content/browser/accessibility/browser_accessibility_manager_android.h"
 #include "content/browser/android/composited_touch_handle_drawable.h"
 #include "content/browser/android/content_view_core_impl.h"
@@ -128,7 +128,7 @@ class GLHelperHolder {
  public:
   static GLHelperHolder* Create();
 
-  display_compositor::GLHelper* gl_helper() { return gl_helper_.get(); }
+  viz::GLHelper* gl_helper() { return gl_helper_.get(); }
   bool IsLost() {
     if (!gl_helper_)
       return true;
@@ -144,7 +144,7 @@ class GLHelperHolder {
   void OnApplicationStatusChanged(ApplicationState new_state);
 
   scoped_refptr<ui::ContextProviderCommandBuffer> provider_;
-  std::unique_ptr<display_compositor::GLHelper> gl_helper_;
+  std::unique_ptr<viz::GLHelper> gl_helper_;
 
   // Set to |false| if there are only stopped activities (or none).
   bool has_running_or_paused_activities_;
@@ -218,8 +218,8 @@ void GLHelperHolder::Initialize() {
           .c_str());
   provider_->SetLostContextCallback(
       base::Bind(&GLHelperHolder::OnContextLost, base::Unretained(this)));
-  gl_helper_.reset(new display_compositor::GLHelper(
-      provider_->ContextGL(), provider_->ContextSupport()));
+  gl_helper_.reset(
+      new viz::GLHelper(provider_->ContextGL(), provider_->ContextSupport()));
 
   // Unretained() is safe because |this| owns the following two callbacks.
   app_status_listener_.reset(new ApplicationStatusListener(base::Bind(
@@ -268,7 +268,7 @@ GLHelperHolder* GetPostReadbackGLHelperHolder(bool create_if_necessary) {
   return g_readback_helper_holder;
 }
 
-display_compositor::GLHelper* GetPostReadbackGLHelper() {
+viz::GLHelper* GetPostReadbackGLHelper() {
   bool create_if_necessary = true;
   return GetPostReadbackGLHelperHolder(create_if_necessary)->gl_helper();
 }
@@ -293,7 +293,7 @@ void CopyFromCompositingSurfaceFinished(
       "cc", "RenderWidgetHostViewAndroid::CopyFromCompositingSurfaceFinished");
   gpu::SyncToken sync_token;
   if (result) {
-    display_compositor::GLHelper* gl_helper = GetPostReadbackGLHelper();
+    viz::GLHelper* gl_helper = GetPostReadbackGLHelper();
     if (gl_helper)
       gl_helper->GenerateSyncToken(&sync_token);
   }
@@ -362,7 +362,7 @@ void PrepareTextureCopyOutputResult(
   DCHECK(texture_mailbox.IsTexture());
   if (!texture_mailbox.IsTexture())
     return;
-  display_compositor::GLHelper* gl_helper = GetPostReadbackGLHelper();
+  viz::GLHelper* gl_helper = GetPostReadbackGLHelper();
   if (!gl_helper)
     return;
   if (!gl_helper->IsReadbackConfigSupported(color_type))
@@ -394,7 +394,7 @@ void PrepareTextureCopyOutputResult(
       base::Bind(&CopyFromCompositingSurfaceFinished, callback,
                  base::Passed(&release_callback), base::Passed(&bitmap),
                  start_time, readback_lock),
-      display_compositor::GLHelper::SCALER_QUALITY_GOOD);
+      viz::GLHelper::SCALER_QUALITY_GOOD);
 }
 
 void RecordToolTypeForActionDown(const ui::MotionEventAndroid& event) {

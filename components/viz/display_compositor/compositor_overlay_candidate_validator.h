@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_DISPLAY_COMPOSITOR_COMPOSITOR_OVERLAY_CANDIDATE_VALIDATOR_H_
-#define COMPONENTS_DISPLAY_COMPOSITOR_COMPOSITOR_OVERLAY_CANDIDATE_VALIDATOR_H_
+#ifndef COMPONENTS_VIZ_DISPLAY_COMPOSITOR_COMPOSITOR_OVERLAY_CANDIDATE_VALIDATOR_H_
+#define COMPONENTS_VIZ_DISPLAY_COMPOSITOR_COMPOSITOR_OVERLAY_CANDIDATE_VALIDATOR_H_
 
 #include "base/macros.h"
 #include "cc/output/overlay_candidate_validator.h"
-#include "components/display_compositor/display_compositor_export.h"
+#include "components/viz/viz_export.h"
 
-namespace display_compositor {
+namespace viz {
 
-class DISPLAY_COMPOSITOR_EXPORT CompositorOverlayCandidateValidator
+class VIZ_EXPORT CompositorOverlayCandidateValidator
     : public cc::OverlayCandidateValidator {
  public:
   CompositorOverlayCandidateValidator() {}
@@ -23,6 +23,6 @@ class DISPLAY_COMPOSITOR_EXPORT CompositorOverlayCandidateValidator
   DISALLOW_COPY_AND_ASSIGN(CompositorOverlayCandidateValidator);
 };
 
-}  // namespace display_compositor
+}  // namespace viz
 
-#endif  // COMPONENTS_DISPLAY_COMPOSITOR_COMPOSITOR_OVERLAY_CANDIDATE_VALIDATOR_H_
+#endif  // COMPONENTS_VIZ_DISPLAY_COMPOSITOR_COMPOSITOR_OVERLAY_CANDIDATE_VALIDATOR_H_

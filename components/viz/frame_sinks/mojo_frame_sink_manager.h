@@ -17,7 +17,7 @@
 #include "cc/surfaces/surface_manager.h"
 #include "cc/surfaces/surface_observer.h"
 #include "components/viz/frame_sinks/gpu_compositor_frame_sink_delegate.h"
-#include "components/viz/frame_sinks/viz_export.h"
+#include "components/viz/viz_export.h"
 #include "gpu/ipc/common/surface_handle.h"
 #include "mojo/public/cpp/bindings/binding.h"
 

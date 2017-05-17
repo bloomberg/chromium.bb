@@ -12,12 +12,12 @@
 #include "cc/output/output_surface_client.h"
 #include "cc/output/output_surface_frame.h"
 #include "cc/scheduler/begin_frame_source.h"
-#include "components/display_compositor/buffer_queue.h"
+#include "components/viz/display_compositor/buffer_queue.h"
 #include "gpu/command_buffer/client/context_support.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "ui/display/types/display_snapshot.h"
 
-using display_compositor::BufferQueue;
+using viz::BufferQueue;
 
 namespace ui {
 

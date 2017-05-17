@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_DISPLAY_COMPOSITOR_BUFFER_QUEUE_H_
-#define COMPONENTS_DISPLAY_COMPOSITOR_BUFFER_QUEUE_H_
+#ifndef COMPONENTS_VIZ_DISPLAY_COMPOSITOR_BUFFER_QUEUE_H_
+#define COMPONENTS_VIZ_DISPLAY_COMPOSITOR_BUFFER_QUEUE_H_
 
 #include <stddef.h>
 
@@ -13,7 +13,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "components/display_compositor/display_compositor_export.h"
+#include "components/viz/viz_export.h"
 #include "gpu/ipc/common/surface_handle.h"
 #include "ui/gfx/buffer_types.h"
 #include "ui/gfx/color_space.h"
@@ -32,7 +32,7 @@ class GLES2Interface;
 }
 }
 
-namespace display_compositor {
+namespace viz {
 
 class GLHelper;
 
@@ -40,7 +40,7 @@ class GLHelper;
 // created using CHROMIUM_image. Double/triple buffering is implemented
 // internally. Doublebuffering occurs if PageFlipComplete is called before the
 // next BindFramebuffer call, otherwise it creates extra buffers.
-class DISPLAY_COMPOSITOR_EXPORT BufferQueue {
+class VIZ_EXPORT BufferQueue {
  public:
   BufferQueue(gpu::gles2::GLES2Interface* gl,
               uint32_t texture_target,
@@ -70,7 +70,7 @@ class DISPLAY_COMPOSITOR_EXPORT BufferQueue {
   friend class BufferQueueTest;
   friend class AllocatedSurface;
 
-  struct DISPLAY_COMPOSITOR_EXPORT AllocatedSurface {
+  struct VIZ_EXPORT AllocatedSurface {
     AllocatedSurface(BufferQueue* buffer_queue,
                      std::unique_ptr<gfx::GpuMemoryBuffer> buffer,
                      uint32_t texture,
@@ -131,6 +131,6 @@ class DISPLAY_COMPOSITOR_EXPORT BufferQueue {
   DISALLOW_COPY_AND_ASSIGN(BufferQueue);
 };
 
-}  // namespace display_compositor
+}  // namespace viz
 
-#endif  // COMPONENTS_DISPLAY_COMPOSITOR_BUFFER_QUEUE_H_
+#endif  // COMPONENTS_VIZ_DISPLAY_COMPOSITOR_BUFFER_QUEUE_H_

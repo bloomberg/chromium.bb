@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_DISPLAY_COMPOSITOR_DISPLAY_COMPOSITOR_TEST_SUITE_H_
-#define COMPONENTS_DISPLAY_COMPOSITOR_DISPLAY_COMPOSITOR_TEST_SUITE_H_
+#ifndef COMPONENTS_VIZ_DISPLAY_COMPOSITOR_DISPLAY_COMPOSITOR_TEST_SUITE_H_
+#define COMPONENTS_VIZ_DISPLAY_COMPOSITOR_DISPLAY_COMPOSITOR_TEST_SUITE_H_
 
 #include <memory>
 
@@ -15,7 +15,7 @@ namespace base {
 class MessageLoop;
 }
 
-namespace display_compositor {
+namespace viz {
 
 class DisplayCompositorTestSuite : public base::TestSuite {
  public:
@@ -34,6 +34,6 @@ class DisplayCompositorTestSuite : public base::TestSuite {
   DISALLOW_COPY_AND_ASSIGN(DisplayCompositorTestSuite);
 };
 
-}  // namespace display_compositor
+}  // namespace viz
 
-#endif  // COMPONENTS_DISPLAY_COMPOSITOR_DISPLAY_COMPOSITOR_TEST_SUITE_H_
+#endif  // COMPONENTS_VIZ_DISPLAY_COMPOSITOR_DISPLAY_COMPOSITOR_TEST_SUITE_H_

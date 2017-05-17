@@ -11,7 +11,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "cc/output/copy_output_request.h"
 #include "cc/output/copy_output_result.h"
-#include "components/display_compositor/gl_helper.h"
+#include "components/viz/display_compositor/gl_helper.h"
 #include "content/browser/compositor/image_transport_factory.h"
 #include "content/browser/media/capture/desktop_capture_device_uma_types.h"
 #include "content/public/browser/browser_thread.h"
@@ -305,7 +305,7 @@ bool AuraWindowCaptureMachine::ProcessCopyOutputResponse(
   }
 
   ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
-  display_compositor::GLHelper* gl_helper = factory->GetGLHelper();
+  viz::GLHelper* gl_helper = factory->GetGLHelper();
   if (!gl_helper) {
     VLOG(1) << "Aborting capture: No GLHelper available for YUV readback.";
     return false;
@@ -326,8 +326,8 @@ bool AuraWindowCaptureMachine::ProcessCopyOutputResponse(
       yuv_readback_pipeline_->scaler()->SrcSubrect() != result_rect ||
       yuv_readback_pipeline_->scaler()->DstSize() != region_in_frame.size()) {
     yuv_readback_pipeline_.reset(gl_helper->CreateReadbackPipelineYUV(
-        display_compositor::GLHelper::SCALER_QUALITY_FAST, result_rect.size(),
-        result_rect, region_in_frame.size(), true, true));
+        viz::GLHelper::SCALER_QUALITY_FAST, result_rect.size(), result_rect,
+        region_in_frame.size(), true, true));
   }
 
   cursor_renderer_->SnapshotCursorState(region_in_frame);

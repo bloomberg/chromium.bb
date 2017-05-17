@@ -6,7 +6,7 @@
 
 #include "cc/output/output_surface_client.h"
 #include "cc/output/output_surface_frame.h"
-#include "components/display_compositor/compositor_overlay_candidate_validator.h"
+#include "components/viz/display_compositor/compositor_overlay_candidate_validator.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/ipc/client/gpu_process_hosted_ca_layer_tree_params.h"
 #include "services/ui/public/cpp/gpu/context_provider_command_buffer.h"
@@ -53,7 +53,7 @@ GpuOutputSurfaceMac::GpuOutputSurfaceMac(
     scoped_refptr<ui::ContextProviderCommandBuffer> context,
     gpu::SurfaceHandle surface_handle,
     const UpdateVSyncParametersCallback& update_vsync_parameters_callback,
-    std::unique_ptr<display_compositor::CompositorOverlayCandidateValidator>
+    std::unique_ptr<viz::CompositorOverlayCandidateValidator>
         overlay_candidate_validator,
     gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager)
     : GpuSurfacelessBrowserCompositorOutputSurface(

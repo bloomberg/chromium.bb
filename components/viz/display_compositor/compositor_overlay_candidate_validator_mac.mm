@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/display_compositor/compositor_overlay_candidate_validator_mac.h"
+#include "components/viz/display_compositor/compositor_overlay_candidate_validator_mac.h"
 
 #include <stddef.h>
 
-namespace display_compositor {
+namespace viz {
 
 CompositorOverlayCandidateValidatorMac::CompositorOverlayCandidateValidatorMac(
     bool ca_layer_disabled)
@@ -34,4 +34,4 @@ void CompositorOverlayCandidateValidatorMac::SetSoftwareMirrorMode(
   software_mirror_active_ = enabled;
 }
 
-}  // namespace display_compositor
+}  // namespace viz

@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/display_compositor/compositor_overlay_candidate_validator_win.h"
+#include "components/viz/display_compositor/compositor_overlay_candidate_validator_win.h"
 
 #include "cc/output/overlay_processor.h"
 
-namespace display_compositor {
+namespace viz {
 
 CompositorOverlayCandidateValidatorWin::
     CompositorOverlayCandidateValidatorWin() {}
@@ -15,8 +15,7 @@ CompositorOverlayCandidateValidatorWin::
     ~CompositorOverlayCandidateValidatorWin() {}
 
 void CompositorOverlayCandidateValidatorWin::GetStrategies(
-    cc::OverlayProcessor::StrategyList* strategies) {
-}
+    cc::OverlayProcessor::StrategyList* strategies) {}
 
 void CompositorOverlayCandidateValidatorWin::CheckOverlaySupport(
     cc::OverlayCandidateList* candidates) {
@@ -37,4 +36,4 @@ void CompositorOverlayCandidateValidatorWin::SetSoftwareMirrorMode(
   NOTIMPLEMENTED();
 }
 
-}  // namespace display_compositor
+}  // namespace viz

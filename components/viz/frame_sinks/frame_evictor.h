@@ -7,7 +7,7 @@
 
 #include "base/macros.h"
 #include "components/viz/frame_sinks/frame_eviction_manager.h"
-#include "components/viz/frame_sinks/viz_export.h"
+#include "components/viz/viz_export.h"
 
 namespace viz {
 

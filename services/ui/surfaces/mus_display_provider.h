@@ -31,7 +31,7 @@ class MusDisplayProvider : public NON_EXPORTED_BASE(viz::DisplayProvider) {
       gpu::ImageFactory* image_factory);
   ~MusDisplayProvider() override;
 
-  // display_compositor::DisplayProvider:
+  // viz::DisplayProvider:
   std::unique_ptr<cc::Display> CreateDisplay(
       const cc::FrameSinkId& frame_sink_id,
       gpu::SurfaceHandle surface_handle,

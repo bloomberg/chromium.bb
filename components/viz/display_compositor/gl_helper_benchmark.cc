@@ -25,8 +25,8 @@
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
-#include "components/display_compositor/gl_helper.h"
-#include "components/display_compositor/gl_helper_scaling.h"
+#include "components/viz/display_compositor/gl_helper.h"
+#include "components/viz/display_compositor/gl_helper_scaling.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
 #include "gpu/command_buffer/client/shared_memory_limits.h"
 #include "gpu/ipc/gl_in_process_context.h"
@@ -36,14 +36,13 @@
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/gl/gl_surface.h"
 
-namespace display_compositor {
+namespace viz {
 
 namespace {
 
-display_compositor::GLHelper::ScalerQuality kQualities[] = {
-    display_compositor::GLHelper::SCALER_QUALITY_BEST,
-    display_compositor::GLHelper::SCALER_QUALITY_GOOD,
-    display_compositor::GLHelper::SCALER_QUALITY_FAST,
+GLHelper::ScalerQuality kQualities[] = {
+    GLHelper::SCALER_QUALITY_BEST, GLHelper::SCALER_QUALITY_GOOD,
+    GLHelper::SCALER_QUALITY_FAST,
 };
 
 const char* const kQualityNames[] = {
@@ -80,9 +79,8 @@ class GLHelperBenchmark : public testing::Test {
     gl_ = context_->GetImplementation();
     gpu::ContextSupport* support = context_->GetImplementation();
 
-    helper_.reset(new display_compositor::GLHelper(gl_, support));
-    helper_scaling_.reset(
-        new display_compositor::GLHelperScaling(gl_, helper_.get()));
+    helper_.reset(new GLHelper(gl_, support));
+    helper_scaling_.reset(new GLHelperScaling(gl_, helper_.get()));
   }
 
   void TearDown() override {
@@ -119,8 +117,8 @@ class GLHelperBenchmark : public testing::Test {
 
   std::unique_ptr<gpu::GLInProcessContext> context_;
   gpu::gles2::GLES2Interface* gl_;
-  std::unique_ptr<display_compositor::GLHelper> helper_;
-  std::unique_ptr<display_compositor::GLHelperScaling> helper_scaling_;
+  std::unique_ptr<GLHelper> helper_;
+  std::unique_ptr<GLHelperScaling> helper_scaling_;
   std::deque<GLHelperScaling::ScaleOp> x_ops_, y_ops_;
 };
 
@@ -158,9 +156,8 @@ TEST_F(GLHelperBenchmark, ScaleBenchmark) {
                         input.getPixels());
 
         gfx::Rect src_subrect(0, 0, src_size.width(), src_size.height());
-        std::unique_ptr<display_compositor::GLHelper::ScalerInterface> scaler(
-            helper_->CreateScaler(kQualities[q], src_size, src_subrect,
-                                  dst_size, false, false));
+        std::unique_ptr<GLHelper::ScalerInterface> scaler(helper_->CreateScaler(
+            kQualities[q], src_size, src_subrect, dst_size, false, false));
         // Scale once beforehand before we start measuring.
         scaler->Scale(src_texture, dst_texture);
         gl_->Finish();
@@ -251,4 +248,4 @@ TEST_F(GLHelperBenchmark, DISABLED_ScaleTestImage) {
   gl_->DeleteFramebuffers(1, &framebuffer);
 }
 
-}  // namespace display_compositor
+}  // namespace viz

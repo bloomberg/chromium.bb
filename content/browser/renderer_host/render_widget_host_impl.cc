@@ -31,7 +31,7 @@
 #include "build/build_config.h"
 #include "cc/base/switches.h"
 #include "cc/output/compositor_frame.h"
-#include "components/display_compositor/host_shared_bitmap_manager.h"
+#include "components/viz/display_compositor/host_shared_bitmap_manager.h"
 #include "content/browser/accessibility/browser_accessibility_state_impl.h"
 #include "content/browser/bad_message.h"
 #include "content/browser/browser_plugin/browser_plugin_guest.h"
@@ -2114,8 +2114,7 @@ void RenderWidgetHostImpl::OnShowDisambiguationPopup(
   DCHECK(!size.IsEmpty());
 
   std::unique_ptr<cc::SharedBitmap> bitmap =
-      display_compositor::HostSharedBitmapManager::current()
-          ->GetSharedBitmapFromId(size, id);
+      viz::HostSharedBitmapManager::current()->GetSharedBitmapFromId(size, id);
   if (!bitmap) {
     bad_message::ReceivedBadMessage(GetProcess(),
                                     bad_message::RWH_SHARED_BITMAP);

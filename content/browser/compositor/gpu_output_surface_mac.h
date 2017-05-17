@@ -19,7 +19,7 @@ class GpuOutputSurfaceMac
       scoped_refptr<ui::ContextProviderCommandBuffer> context,
       gpu::SurfaceHandle surface_handle,
       const UpdateVSyncParametersCallback& update_vsync_parameters_callback,
-      std::unique_ptr<display_compositor::CompositorOverlayCandidateValidator>
+      std::unique_ptr<viz::CompositorOverlayCandidateValidator>
           overlay_candidate_validator,
       gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager);
   ~GpuOutputSurfaceMac() override;

@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/display_compositor/display_compositor_test_suite.h"
+#include "components/viz/display_compositor/display_compositor_test_suite.h"
 
 #include "base/message_loop/message_loop.h"
 #include "base/threading/thread_id_name_manager.h"
 #include "cc/test/paths.h"
 #include "ui/gl/test/gl_surface_test_support.h"
 
-namespace display_compositor {
+namespace viz {
 
 DisplayCompositorTestSuite::DisplayCompositorTestSuite(int argc, char** argv)
     : base::TestSuite(argc, argv) {}
@@ -35,4 +35,4 @@ void DisplayCompositorTestSuite::Shutdown() {
   base::TestSuite::Shutdown();
 }
 
-}  // namespace display_compositor
+}  // namespace viz

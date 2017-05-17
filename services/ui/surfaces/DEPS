@@ -1,6 +1,6 @@
 include_rules = [
   "+cc",
-  "+components/display_compositor",
+  "+components/viz/display_compositor",
   "+components/viz/frame_sinks",
   "+gpu",
   "+services/service_manager",

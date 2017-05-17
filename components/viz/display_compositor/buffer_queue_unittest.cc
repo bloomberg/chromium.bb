@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/display_compositor/buffer_queue.h"
+#include "components/viz/display_compositor/buffer_queue.h"
 
 #include <stddef.h>
 #include <stdint.h>
@@ -14,7 +14,7 @@
 #include "cc/test/test_context_provider.h"
 #include "cc/test/test_gpu_memory_buffer_manager.h"
 #include "cc/test/test_web_graphics_context_3d.h"
-#include "components/display_compositor/gl_helper.h"
+#include "components/viz/display_compositor/gl_helper.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -26,11 +26,11 @@ using ::testing::Expectation;
 using ::testing::Ne;
 using ::testing::Return;
 
-namespace display_compositor {
+namespace viz {
 
 class StubGpuMemoryBufferImpl : public gfx::GpuMemoryBuffer {
  public:
-  StubGpuMemoryBufferImpl(size_t* set_color_space_count)
+  explicit StubGpuMemoryBufferImpl(size_t* set_color_space_count)
       : set_color_space_count_(set_color_space_count) {}
 
   // Overridden from gfx::GpuMemoryBuffer:
@@ -677,4 +677,4 @@ TEST_F(BufferQueueTest, AllocateFails) {
 }
 
 }  // namespace
-}  // namespace display_compositor
+}  // namespace viz

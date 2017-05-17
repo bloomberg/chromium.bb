@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_DISPLAY_COMPOSITOR_COMPOSITOR_OVERLAY_CANDIDATE_VALIDATOR_ANDROID_H_
-#define COMPONENTS_DISPLAY_COMPOSITOR_COMPOSITOR_OVERLAY_CANDIDATE_VALIDATOR_ANDROID_H_
+#ifndef COMPONENTS_VIZ_DISPLAY_COMPOSITOR_COMPOSITOR_OVERLAY_CANDIDATE_VALIDATOR_ANDROID_H_
+#define COMPONENTS_VIZ_DISPLAY_COMPOSITOR_COMPOSITOR_OVERLAY_CANDIDATE_VALIDATOR_ANDROID_H_
 
 #include "base/macros.h"
-#include "components/display_compositor/compositor_overlay_candidate_validator.h"
-#include "components/display_compositor/display_compositor_export.h"
+#include "components/viz/display_compositor/compositor_overlay_candidate_validator.h"
+#include "components/viz/viz_export.h"
 
-namespace display_compositor {
+namespace viz {
 
 // An overlay validator for supporting fullscreen video underlays on Android.
 // Things are a bit different on Android compared with other platforms. By the
@@ -19,7 +19,7 @@ namespace display_compositor {
 // the reasons that only fullscreen is supported: we have to be sure that
 // nothing will cause the overlay to be rejected, because there's no fallback to
 // gl compositing.
-class DISPLAY_COMPOSITOR_EXPORT CompositorOverlayCandidateValidatorAndroid
+class VIZ_EXPORT CompositorOverlayCandidateValidatorAndroid
     : public CompositorOverlayCandidateValidator {
  public:
   CompositorOverlayCandidateValidatorAndroid();
@@ -36,6 +36,6 @@ class DISPLAY_COMPOSITOR_EXPORT CompositorOverlayCandidateValidatorAndroid
   DISALLOW_COPY_AND_ASSIGN(CompositorOverlayCandidateValidatorAndroid);
 };
 
-}  // namespace display_compositor
+}  // namespace viz
 
-#endif  // COMPONENTS_DISPLAY_COMPOSITOR_COMPOSITOR_OVERLAY_CANDIDATE_VALIDATOR_ANDROID_H_
+#endif  // COMPONENTS_VIZ_DISPLAY_COMPOSITOR_COMPOSITOR_OVERLAY_CANDIDATE_VALIDATOR_ANDROID_H_

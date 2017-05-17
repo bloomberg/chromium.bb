@@ -2,24 +2,24 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_DISPLAY_COMPOSITOR_COMPOSITOR_OVERLAY_CANDIDATE_VALIDATOR_OZONE_H_
-#define COMPONENTS_DISPLAY_COMPOSITOR_COMPOSITOR_OVERLAY_CANDIDATE_VALIDATOR_OZONE_H_
+#ifndef COMPONENTS_VIZ_DISPLAY_COMPOSITOR_COMPOSITOR_OVERLAY_CANDIDATE_VALIDATOR_OZONE_H_
+#define COMPONENTS_VIZ_DISPLAY_COMPOSITOR_COMPOSITOR_OVERLAY_CANDIDATE_VALIDATOR_OZONE_H_
 
 #include <memory>
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "components/display_compositor/compositor_overlay_candidate_validator.h"
-#include "components/display_compositor/display_compositor_export.h"
+#include "components/viz/display_compositor/compositor_overlay_candidate_validator.h"
+#include "components/viz/viz_export.h"
 #include "ui/gfx/native_widget_types.h"
 
 namespace ui {
 class OverlayCandidatesOzone;
 }
 
-namespace display_compositor {
+namespace viz {
 
-class DISPLAY_COMPOSITOR_EXPORT CompositorOverlayCandidateValidatorOzone
+class VIZ_EXPORT CompositorOverlayCandidateValidatorOzone
     : public CompositorOverlayCandidateValidator {
  public:
   CompositorOverlayCandidateValidatorOzone(
@@ -50,6 +50,6 @@ class DISPLAY_COMPOSITOR_EXPORT CompositorOverlayCandidateValidatorOzone
   DISALLOW_COPY_AND_ASSIGN(CompositorOverlayCandidateValidatorOzone);
 };
 
-}  // namespace display_compositor
+}  // namespace viz
 
-#endif  // COMPONENTS_DISPLAY_COMPOSITOR_COMPOSITOR_OVERLAY_CANDIDATE_VALIDATOR_OZONE_H_
+#endif  // COMPONENTS_VIZ_DISPLAY_COMPOSITOR_COMPOSITOR_OVERLAY_CANDIDATE_VALIDATOR_OZONE_H_

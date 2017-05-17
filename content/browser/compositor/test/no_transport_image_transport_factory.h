@@ -32,7 +32,7 @@ class NoTransportImageTransportFactory : public ImageTransportFactory {
   // ImageTransportFactory implementation.
   ui::ContextFactory* GetContextFactory() override;
   ui::ContextFactoryPrivate* GetContextFactoryPrivate() override;
-  display_compositor::GLHelper* GetGLHelper() override;
+  viz::GLHelper* GetGLHelper() override;
   FrameSinkManagerHost* GetFrameSinkManagerHost() override;
   void SetGpuChannelEstablishFactory(
       gpu::GpuChannelEstablishFactory* factory) override;
@@ -45,7 +45,7 @@ class NoTransportImageTransportFactory : public ImageTransportFactory {
   std::unique_ptr<FrameSinkManagerHost> frame_sink_manager_host_;
   std::unique_ptr<ui::InProcessContextFactory> context_factory_;
   scoped_refptr<cc::ContextProvider> context_provider_;
-  std::unique_ptr<display_compositor::GLHelper> gl_helper_;
+  std::unique_ptr<viz::GLHelper> gl_helper_;
 
   DISALLOW_COPY_AND_ASSIGN(NoTransportImageTransportFactory);
 };

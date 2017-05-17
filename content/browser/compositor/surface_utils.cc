@@ -10,7 +10,7 @@
 #include "build/build_config.h"
 #include "cc/output/copy_output_result.h"
 #include "cc/resources/single_release_callback.h"
-#include "components/display_compositor/gl_helper.h"
+#include "components/viz/display_compositor/gl_helper.h"
 #include "content/browser/compositor/frame_sink_manager_host.h"
 #include "skia/ext/image_operations.h"
 #include "third_party/skia/include/core/SkCanvas.h"
@@ -36,7 +36,7 @@ void CopyFromCompositingSurfaceFinished(
     bool result) {
   gpu::SyncToken sync_token;
   if (result) {
-    display_compositor::GLHelper* gl_helper =
+    viz::GLHelper* gl_helper =
         content::ImageTransportFactory::GetInstance()->GetGLHelper();
     if (gl_helper)
       gl_helper->GenerateSyncToken(&sync_token);
@@ -81,7 +81,7 @@ void PrepareTextureCopyOutputResult(
 
   content::ImageTransportFactory* factory =
       content::ImageTransportFactory::GetInstance();
-  display_compositor::GLHelper* gl_helper = factory->GetGLHelper();
+  viz::GLHelper* gl_helper = factory->GetGLHelper();
   if (!gl_helper)
     return;
 
@@ -99,7 +99,7 @@ void PrepareTextureCopyOutputResult(
       gfx::Rect(result->size()), dst_size_in_pixel, pixels, color_type,
       base::Bind(&CopyFromCompositingSurfaceFinished, callback,
                  base::Passed(&release_callback), base::Passed(&bitmap)),
-      display_compositor::GLHelper::SCALER_QUALITY_GOOD);
+      viz::GLHelper::SCALER_QUALITY_GOOD);
 #endif
 }
 

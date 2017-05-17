@@ -2,20 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_DISPLAY_COMPOSITOR_GL_HELPER_SCALING_H_
-#define COMPONENTS_DISPLAY_COMPOSITOR_GL_HELPER_SCALING_H_
+#ifndef COMPONENTS_VIZ_DISPLAY_COMPOSITOR_GL_HELPER_SCALING_H_
+#define COMPONENTS_VIZ_DISPLAY_COMPOSITOR_GL_HELPER_SCALING_H_
 
 #include <deque>
 #include <map>
 #include <vector>
 
 #include "base/macros.h"
-#include "components/display_compositor/display_compositor_export.h"
-#include "components/display_compositor/gl_helper.h"
+#include "components/viz/display_compositor/gl_helper.h"
+#include "components/viz/viz_export.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 
-namespace display_compositor {
+namespace viz {
 
 class ShaderProgram;
 class ScalerImpl;
@@ -24,7 +24,7 @@ class GLHelperTest;
 // Implements GPU texture scaling methods.
 // Note that you should probably not use this class directly.
 // See gl_helper.cc::CreateScaler instead.
-class DISPLAY_COMPOSITOR_EXPORT GLHelperScaling {
+class VIZ_EXPORT GLHelperScaling {
  public:
   enum ShaderType {
     SHADER_BILINEAR,
@@ -41,7 +41,7 @@ class DISPLAY_COMPOSITOR_EXPORT GLHelperScaling {
 
   // Similar to ScalerInterface, but can generate multiple outputs.
   // Used for YUV conversion in gl_helper.c
-  class DISPLAY_COMPOSITOR_EXPORT ShaderInterface {
+  class VIZ_EXPORT ShaderInterface {
    public:
     ShaderInterface() {}
     virtual ~ShaderInterface() {}
@@ -203,6 +203,6 @@ class DISPLAY_COMPOSITOR_EXPORT GLHelperScaling {
   DISALLOW_COPY_AND_ASSIGN(GLHelperScaling);
 };
 
-}  // namespace display_compositor
+}  // namespace viz
 
-#endif  // COMPONENTS_DISPLAY_COMPOSITOR_GL_HELPER_SCALING_H_
+#endif  // COMPONENTS_VIZ_DISPLAY_COMPOSITOR_GL_HELPER_SCALING_H_
