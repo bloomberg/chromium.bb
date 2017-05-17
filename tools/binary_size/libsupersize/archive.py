@@ -199,8 +199,8 @@ def _ExtractSourcePaths(raw_symbols, source_mapper):
           _SourcePathForObjectPath(object_path, source_mapper))
 
 
-def _ComputeAnscestorPath(path_list):
-  """Returns the common anscestor of the given paths."""
+def _ComputeAncestorPath(path_list):
+  """Returns the common ancestor of the given paths."""
   # Ignore missing paths.
   path_list = [p for p in path_list if p]
   prefix = os.path.commonprefix(path_list)
@@ -218,7 +218,7 @@ def _ComputeAnscestorPath(path_list):
 
 # This must normalize object paths at the same time because normalization
 # needs to occur before finding common ancestor.
-def _ComputeAnscestorPathsAndNormalizeObjectPaths(
+def _ComputeAncestorPathsAndNormalizeObjectPaths(
     raw_symbols, object_paths_by_name, source_mapper):
   num_found_paths = 0
   num_unknown_names = 0
@@ -262,11 +262,11 @@ def _ComputeAnscestorPathsAndNormalizeObjectPaths(
     if source_mapper:
       tups = [
           _SourcePathForObjectPath(p, source_mapper) for p in object_paths]
-      symbol.source_path = _ComputeAnscestorPath(t[1] for t in tups)
+      symbol.source_path = _ComputeAncestorPath(t[1] for t in tups)
       symbol.generated_source = all(t[0] for t in tups)
 
     object_paths = [_NormalizeObjectPath(p) for p in object_paths]
-    symbol.object_path = _ComputeAnscestorPath(object_paths)
+    symbol.object_path = _ComputeAncestorPath(object_paths)
 
   logging.debug('Cross-referenced %d symbols with nm output. '
                 'num_unknown_names=%d num_path_mismatches=%d '
@@ -523,7 +523,7 @@ def CreateSizeInfo(map_path, elf_path, tool_prefix, output_directory,
       logging.debug('Fetched path information for %d symbols from %d files',
                     len(object_paths_by_name),
                     len(elf_object_paths) + len(missed_object_paths))
-      _ComputeAnscestorPathsAndNormalizeObjectPaths(
+      _ComputeAncestorPathsAndNormalizeObjectPaths(
           raw_symbols, object_paths_by_name, source_mapper)
 
   if not elf_path or not output_directory:
