@@ -30,10 +30,6 @@
 #include "sql/transaction.h"
 #include "url/gurl.h"
 
-#if defined(OS_ANDROID)
-#include "base/android/application_status_listener.h"
-#endif
-
 namespace {
 
 // Version number of the database.
@@ -158,13 +154,6 @@ class SQLiteChannelIDStore::Backend
   void DatabaseErrorCallback(int error, sql::Statement* stmt);
   void KillDatabase();
 
-#if defined(OS_ANDROID)
-  void OnApplicationStateChange(base::android::ApplicationState state);
-
-  std::unique_ptr<base::android::ApplicationStatusListener>
-      app_status_listener_;
-#endif
-
   const base::FilePath path_;
   std::unique_ptr<sql::Connection> db_;
   sql::MetaTable meta_table_;
@@ -206,11 +195,6 @@ void SQLiteChannelIDStore::Backend::LoadInBackground(
     std::vector<std::unique_ptr<DefaultChannelIDStore::ChannelID>>*
         channel_ids) {
   DCHECK(background_task_runner_->RunsTasksOnCurrentThread());
-
-#if defined(OS_ANDROID)
-  app_status_listener_.reset(new base::android::ApplicationStatusListener(
-      base::Bind(&Backend::OnApplicationStateChange, base::Unretained(this))));
-#endif
 
   // This method should be called only once per instance.
   DCHECK(!db_.get());
@@ -553,15 +537,6 @@ void SQLiteChannelIDStore::Backend::PrunePendingOperationsForDeletes(
     }
   }
 }
-
-#if defined(OS_ANDROID)
-void SQLiteChannelIDStore::Backend::OnApplicationStateChange(
-    base::android::ApplicationState state) {
-  if (state != base::android::APPLICATION_STATE_HAS_STOPPED_ACTIVITIES)
-    return;
-  Commit();
-}
-#endif
 
 void SQLiteChannelIDStore::Backend::Commit() {
   DCHECK(background_task_runner_->RunsTasksOnCurrentThread());
