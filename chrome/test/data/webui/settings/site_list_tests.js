@@ -127,6 +127,29 @@ var prefsMixedProvider = {
 };
 
 /**
+ * An example pref with with and without embeddingOrigin.
+ * @type {SiteSettingsPref}
+ */
+var prefsMixedEmbeddingOrigin = {
+  exceptions: {
+    images: [
+      {
+        origin: 'https://foo.com',
+        embeddingOrigin: 'https://example.com',
+        setting: 'allow',
+        source: 'preference',
+      },
+      {
+        origin: 'https://bar.com',
+        embeddingOrigin: '',
+        setting: 'allow',
+        source: 'preference',
+      },
+    ],
+  }
+};
+
+/**
  * An example pref with mixed origin and pattern.
  * @type {SiteSettingsPref}
  */
@@ -139,7 +162,7 @@ var prefsMixedOriginAndPattern = {
     geolocation: [
       {
         origin: 'https://foo.com',
-        embeddingOrigin: '*',
+        embeddingOrigin: 'https://example.com',
         setting: 'allow',
         source: 'preference',
       },
@@ -148,7 +171,7 @@ var prefsMixedOriginAndPattern = {
     javascript: [
       {
         origin: 'https://[*.]foo.com',
-        embeddingOrigin: '*',
+        embeddingOrigin: '',
         setting: 'allow',
         source: 'preference',
       },
@@ -177,14 +200,14 @@ var prefsVarious = {
     cookies: [],
     geolocation: [
       {
-        embeddingOrigin: 'https://foo.com',
+        embeddingOrigin: '',
         incognito: false,
         origin: 'https://foo.com',
         setting: 'allow',
         source: 'preference',
       },
       {
-        embeddingOrigin: 'https://bar.com',
+        embeddingOrigin: '',
         incognito: false,
         origin: 'https://bar.com',
         setting: 'block',
@@ -197,21 +220,21 @@ var prefsVarious = {
     midiDevices: [],
     notifications: [
       {
-        embeddingOrigin: 'https://google.com',
+        embeddingOrigin: '',
         incognito: false,
         origin: 'https://google.com',
         setting: 'block',
         source: 'preference',
       },
       {
-        embeddingOrigin: 'https://bar.com',
+        embeddingOrigin: '',
         incognito: false,
         origin: 'https://bar.com',
         setting: 'block',
         source: 'preference',
       },
       {
-        embeddingOrigin: 'https://foo.com',
+        embeddingOrigin: '',
         incognito: false,
         origin: 'https://foo.com',
         setting: 'block',
@@ -234,7 +257,7 @@ var prefsOneEnabled = {
   exceptions: {
     geolocation: [
       {
-        embeddingOrigin: 'https://foo-allow.com:443',
+        embeddingOrigin: '',
         incognito: false,
         origin: 'https://foo-allow.com:443',
         setting: 'allow',
@@ -252,7 +275,7 @@ var prefsOneDisabled = {
   exceptions: {
     geolocation: [
       {
-        embeddingOrigin: 'https://foo-block.com:443',
+        embeddingOrigin: '',
         incognito: false,
         origin: 'https://foo-block.com:443',
         setting: 'block',
@@ -270,21 +293,21 @@ var prefsSessionOnly = {
   exceptions: {
     cookies: [
       {
-        embeddingOrigin: 'http://foo-block.com',
+        embeddingOrigin: '',
         incognito: false,
         origin: 'http://foo-block.com',
         setting: 'block',
         source: 'preference',
       },
       {
-        embeddingOrigin: 'http://foo-allow.com',
+        embeddingOrigin: '',
         incognito: false,
         origin: 'http://foo-allow.com',
         setting: 'allow',
         source: 'preference',
       },
       {
-        embeddingOrigin: 'http://foo-session.com',
+        embeddingOrigin: '',
         incognito: false,
         origin: 'http://foo-session.com',
         setting: 'session_only',
@@ -303,13 +326,13 @@ var prefsIncognito = {
     cookies: [
       // foo.com is blocked for regular sessions.
       {
-        embeddingOrigin: 'http://foo.com',
+        embeddingOrigin: '',
         incognito: false,
         origin: 'http://foo.com',
         setting: 'block',
         source: 'preference',
       },
-      // bar.com is an allowed incognito item without an embedder.
+      // bar.com is an allowed incognito item.
       {
         embeddingOrigin: '',
         incognito: true,
@@ -319,7 +342,7 @@ var prefsIncognito = {
       },
       // foo.com is allowed in incognito (overridden).
       {
-        embeddingOrigin: 'http://foo.com',
+        embeddingOrigin: '',
         incognito: true,
         origin: 'http://foo.com',
         setting: 'allow',
@@ -683,7 +706,7 @@ suite('SiteList', function() {
         })
         .then(function(args) {
           assertEquals('http://foo.com', args[0]);
-          assertEquals('http://foo.com', args[1]);
+          assertEquals('', args[1]);
           assertEquals(contentType, args[2]);
           assertFalse(args[3]);  // Incognito.
         });
@@ -721,7 +744,7 @@ suite('SiteList', function() {
         })
         .then(function(args) {
           assertEquals('http://foo.com', args[0]);
-          assertEquals('http://foo.com', args[1]);
+          assertEquals('', args[1]);
           assertEquals(contentType, args[2]);
           assertTrue(args[3]);  // Incognito.
         });
@@ -763,7 +786,7 @@ suite('SiteList', function() {
         })
         .then(function(args) {
           assertEquals('https://foo-allow.com:443', args[0]);
-          assertEquals('https://foo-allow.com:443', args[1]);
+          assertEquals('', args[1]);
           assertEquals(contentType, args[2]);
         });
   });
@@ -1009,6 +1032,25 @@ suite('SiteList', function() {
                   testElement.sites[0].displayName);
             }
           });
+        });
+  });
+
+  test('Mixed embeddingOrigin', function() {
+    setUpCategory(
+        settings.ContentSettingsTypes.IMAGES, settings.PermissionValues.ALLOW,
+        prefsMixedEmbeddingOrigin);
+    return browserProxy.whenCalled('getExceptionList')
+        .then(function(contentType) {
+          // Required for firstItem to be found below.
+          Polymer.dom.flush();
+          // Validate that embeddingOrigin sites cannot be edited.
+          var firstItem = testElement.$.listContainer.children[0];
+          assertTrue(firstItem.querySelector('#actionMenuButton').hidden);
+          assertFalse(firstItem.querySelector('#resetSite').hidden);
+          // Validate that non-embeddingOrigin sites can be edited.
+          var secondItem = testElement.$.listContainer.children[1];
+          assertFalse(secondItem.querySelector('#actionMenuButton').hidden);
+          assertTrue(secondItem.querySelector('#resetSite').hidden);
         });
   });
 

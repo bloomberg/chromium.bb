@@ -92,14 +92,12 @@
             </template>
 
             <paper-icon-button id="resetSite" icon="cr:delete"
-                hidden="[[isResetButtonHidden_(
-                    item.enforcement, readOnlyList)]]"
+                hidden="[[shouldHideResetButton_(item, readOnlyList)]]"
                 on-tap="onResetButtonTap_"
                 alt="$i18n{siteSettingsActionReset}">
             </paper-icon-button>
             <paper-icon-button id="actionMenuButton" icon="cr:more-vert"
-                hidden=
-                    "[[isActionMenuHidden_(item.enforcement, readOnlyList)]]"
+                hidden="[[shouldHideActionMenu_(item, readOnlyList)]]"
                 on-tap="onShowActionMenuTap_" title="$i18n{moreActions}">
             </paper-icon-button>
           </div>

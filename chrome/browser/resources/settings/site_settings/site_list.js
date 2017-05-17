@@ -184,26 +184,27 @@ Polymer({
   },
 
   /**
-   * @param {chrome.settingsPrivate.Enforcement} enforcement The level of
-   *     enforcement.
+   * @param {!SiteException} exception The content setting exception.
    * @param {boolean} readOnlyList Whether the site exception list is read-only.
    * @return {boolean}
    * @private
    */
-  isResetButtonHidden_: function(enforcement, readOnlyList) {
-    return enforcement == chrome.settingsPrivate.Enforcement.ENFORCED ||
-        this.allSites || !readOnlyList;
+  shouldHideResetButton_: function(exception, readOnlyList) {
+    return exception.enforcement ==
+        chrome.settingsPrivate.Enforcement.ENFORCED ||
+        this.allSites || !(readOnlyList || !!exception.embeddingOrigin);
   },
 
   /**
-   * @param {string} enforcement Whether the exception is controlled.
+   * @param {!SiteException} exception The content setting exception.
    * @param {boolean} readOnlyList Whether the site exception list is read-only.
    * @return {boolean}
    * @private
    */
-  isActionMenuHidden_: function(enforcement, readOnlyList) {
-    return enforcement == chrome.settingsPrivate.Enforcement.ENFORCED ||
-        this.allSites || readOnlyList;
+  shouldHideActionMenu_: function(exception, readOnlyList) {
+    return exception.enforcement ==
+        chrome.settingsPrivate.Enforcement.ENFORCED ||
+        this.allSites || readOnlyList || !!exception.embeddingOrigin;
   },
 
   /**
