@@ -8,7 +8,6 @@
 
 #include "base/auto_reset.h"
 #include "base/mac/foundation_util.h"
-#import "base/mac/scoped_nsobject.h"
 #include "components/browser_sync/profile_sync_service.h"
 #include "components/google/core/browser/google_util.h"
 #include "components/signin/core/browser/account_tracker_service.h"
@@ -51,6 +50,10 @@
 #import "ios/public/provider/chrome/browser/signin/chrome_identity_service.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 #include "url/gurl.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 // The a11y identifier of the view controller's view.
 NSString* const kSettingsSyncId = @"kSettingsSyncId";
@@ -95,7 +98,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   SyncSetupService* _syncSetupService;     // Weak.
   std::unique_ptr<SyncObserverBridge> _syncObserver;
   std::unique_ptr<OAuth2TokenServiceObserverBridge> _tokenServiceObserver;
-  base::scoped_nsobject<AuthenticationFlow> _authenticationFlow;
+  AuthenticationFlow* _authenticationFlow;
   // Whether switching sync account is allowed on the screen.
   BOOL _allowSwitchSyncAccount;
   // Whether an authentication operation is in progress (e.g switch accounts).
@@ -104,11 +107,10 @@ typedef NS_ENUM(NSInteger, ItemType) {
   BOOL _ignoreSyncStateChanges;
 
   // Cache for Identity items avatar images.
-  base::scoped_nsobject<ResizedAvatarCache> _avatarCache;
+  ResizedAvatarCache* _avatarCache;
   std::unique_ptr<ChromeIdentityServiceObserverBridge> _identityServiceObserver;
   // Enable lookup of item corresponding to a given identity GAIA ID string.
-  base::scoped_nsobject<NSDictionary<NSString*, CollectionViewItem*>>
-      _identityMap;
+  NSDictionary<NSString*, CollectionViewItem*>* _identityMap;
 }
 
 // Stops observing browser state services.
@@ -205,7 +207,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
     _tokenServiceObserver.reset(new OAuth2TokenServiceObserverBridge(
         OAuth2TokenServiceFactory::GetForBrowserState(_browserState), self));
     self.collectionViewAccessibilityIdentifier = kSettingsSyncId;
-    _avatarCache.reset([[ResizedAvatarCache alloc] init]);
+    _avatarCache = [[ResizedAvatarCache alloc] init];
     _identityServiceObserver.reset(
         new ChromeIdentityServiceObserverBridge(self));
     [self loadModel];
@@ -264,11 +266,11 @@ typedef NS_ENUM(NSInteger, ItemType) {
   // Sync to Section.
   if ([self hasAccountsSection]) {
     NSMutableDictionary<NSString*, CollectionViewItem*>* mutableIdentityMap =
-        [[[NSMutableDictionary alloc] init] autorelease];
+        [[NSMutableDictionary alloc] init];
     // Accounts section. Cells enabled if sync is on.
     [model addSectionWithIdentifier:SectionIdentifierSyncAccounts];
-    CollectionViewTextItem* syncToHeader = [[[CollectionViewTextItem alloc]
-        initWithType:ItemTypeHeader] autorelease];
+    CollectionViewTextItem* syncToHeader =
+        [[CollectionViewTextItem alloc] initWithType:ItemTypeHeader];
     syncToHeader.text = l10n_util::GetNSString(IDS_IOS_SYNC_TO_TITLE);
     syncToHeader.textColor = [[MDCPalette greyPalette] tint500];
     [model setHeader:syncToHeader
@@ -288,13 +290,13 @@ typedef NS_ENUM(NSInteger, ItemType) {
           toSectionWithIdentifier:SectionIdentifierSyncAccounts];
       [mutableIdentityMap setObject:accountItem forKey:identity.gaiaID];
     }
-    _identityMap.reset([mutableIdentityMap retain]);
+    _identityMap = mutableIdentityMap;
   }
 
   // Data Types to sync. Enabled if sync is on.
   [model addSectionWithIdentifier:SectionIdentifierSyncServices];
-  CollectionViewTextItem* syncServicesHeader = [
-      [[CollectionViewTextItem alloc] initWithType:ItemTypeHeader] autorelease];
+  CollectionViewTextItem* syncServicesHeader =
+      [[CollectionViewTextItem alloc] initWithType:ItemTypeHeader];
   syncServicesHeader.text =
       l10n_util::GetNSString(IDS_IOS_SYNC_DATA_TYPES_TITLE);
   syncServicesHeader.textColor = [[MDCPalette greyPalette] tint500];
@@ -333,8 +335,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 - (CollectionViewItem*)syncErrorItem {
   DCHECK([self shouldDisplaySyncError]);
-  CollectionViewAccountItem* syncErrorItem = [[[CollectionViewAccountItem alloc]
-      initWithType:ItemTypeSyncError] autorelease];
+  CollectionViewAccountItem* syncErrorItem =
+      [[CollectionViewAccountItem alloc] initWithType:ItemTypeSyncError];
   syncErrorItem.text = l10n_util::GetNSString(IDS_IOS_SYNC_ERROR_TITLE);
   syncErrorItem.image = [UIImage imageNamed:@"settings_error"];
   syncErrorItem.detailText =
@@ -344,8 +346,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 - (CollectionViewItem*)accountItem:(ChromeIdentity*)identity {
   CollectionViewAccountItem* identityAccountItem =
-      [[[CollectionViewAccountItem alloc] initWithType:ItemTypeAccount]
-          autorelease];
+      [[CollectionViewAccountItem alloc] initWithType:ItemTypeAccount];
   [self updateAccountItem:identityAccountItem withIdentity:identity];
 
   identityAccountItem.enabled = _syncSetupService->IsSyncEnabled();
@@ -386,7 +387,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 - (CollectionViewItem*)encryptionCellItem {
   TextAndErrorItem* encryptionCellItem =
-      [[[TextAndErrorItem alloc] initWithType:ItemTypeEncryption] autorelease];
+      [[TextAndErrorItem alloc] initWithType:ItemTypeEncryption];
   encryptionCellItem.text =
       l10n_util::GetNSString(IDS_IOS_SYNC_ENCRYPTION_TITLE);
   encryptionCellItem.accessoryType =
@@ -398,8 +399,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 - (CollectionViewItem*)manageSyncedDataItem {
   CollectionViewTextItem* manageSyncedDataItem =
-      [[[CollectionViewTextItem alloc] initWithType:ItemTypeManageSyncedData]
-          autorelease];
+      [[CollectionViewTextItem alloc] initWithType:ItemTypeManageSyncedData];
   manageSyncedDataItem.text =
       l10n_util::GetNSString(IDS_IOS_SYNC_RESET_GOOGLE_DASHBOARD_NO_LINK);
   manageSyncedDataItem.accessibilityTraits |= UIAccessibilityTraitButton;
@@ -411,8 +411,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 - (SyncSwitchItem*)switchItemWithType:(NSInteger)type
                                 title:(NSString*)title
                              subTitle:(NSString*)detailText {
-  SyncSwitchItem* switchItem =
-      [[[SyncSwitchItem alloc] initWithType:type] autorelease];
+  SyncSwitchItem* switchItem = [[SyncSwitchItem alloc] initWithType:type];
   switchItem.text = title;
   switchItem.detailText = detailText;
   return switchItem;
@@ -496,8 +495,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
       GURL learnMoreUrl = google_util::AppendGoogleLocaleParam(
           GURL(kSyncGoogleDashboardURL),
           GetApplicationContext()->GetApplicationLocale());
-      base::scoped_nsobject<OpenUrlCommand> command(
-          [[OpenUrlCommand alloc] initWithURLFromChrome:learnMoreUrl]);
+      OpenUrlCommand* command =
+          [[OpenUrlCommand alloc] initWithURLFromChrome:learnMoreUrl];
       [command setTag:IDC_CLOSE_SETTINGS_AND_OPEN_URL];
       [self chromeExecuteCommand:command];
       break;
@@ -591,9 +590,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
     return;
   }
 
-  base::scoped_nsobject<GenericChromeCommand> command(
-      [ios_internal::sync::GetSyncCommandForBrowserState(_browserState)
-          retain]);
+  GenericChromeCommand* command =
+      ios_internal::sync::GetSyncCommandForBrowserState(_browserState);
   [self chromeExecuteCommand:command];
 }
 
@@ -608,21 +606,21 @@ typedef NS_ENUM(NSInteger, ItemType) {
                     object:self];
   [self preventUserInteraction];
   DCHECK(!_authenticationFlow);
-  _authenticationFlow.reset([[AuthenticationFlow alloc]
+  _authenticationFlow = [[AuthenticationFlow alloc]
           initWithBrowserState:_browserState
                       identity:identity
                shouldClearData:SHOULD_CLEAR_DATA_USER_CHOICE
               postSignInAction:postSignInAction
-      presentingViewController:self]);
+      presentingViewController:self];
 
-  base::WeakNSObject<SyncSettingsCollectionViewController> weakSelf(self);
+  __weak SyncSettingsCollectionViewController* weakSelf = self;
   [_authenticationFlow startSignInWithCompletion:^(BOOL success) {
     [weakSelf didSwitchAccountWithSuccess:success];
   }];
 }
 
 - (void)didSwitchAccountWithSuccess:(BOOL)success {
-  _authenticationFlow.reset();
+  _authenticationFlow = nil;
   [self allowUserInteraction];
   [[NSNotificationCenter defaultCenter]
       postNotificationName:kSwitchAccountDidFinishNotification
@@ -691,16 +689,15 @@ typedef NS_ENUM(NSInteger, ItemType) {
       [self shouldDisableSettingsOnSyncError])
     return;
 
-  base::scoped_nsobject<UIViewController> controllerToPush;
+  UIViewController* controllerToPush;
   // If there was a sync error, prompt the user to enter the passphrase.
   // Otherwise, show the full encryption options.
   if (syncService->IsPassphraseRequired()) {
-    controllerToPush.reset(
-        [[SyncEncryptionPassphraseCollectionViewController alloc]
-            initWithBrowserState:_browserState]);
+    controllerToPush = [[SyncEncryptionPassphraseCollectionViewController alloc]
+        initWithBrowserState:_browserState];
   } else {
-    controllerToPush.reset([[SyncEncryptionCollectionViewController alloc]
-        initWithBrowserState:_browserState]);
+    controllerToPush = [[SyncEncryptionCollectionViewController alloc]
+        initWithBrowserState:_browserState];
   }
   [self.navigationController pushViewController:controllerToPush animated:YES];
 }
@@ -708,7 +705,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 #pragma mark Updates
 
 - (void)updateCollectionView {
-  base::WeakNSObject<SyncSettingsCollectionViewController> weakSelf(self);
+  __weak SyncSettingsCollectionViewController* weakSelf = self;
   [self.collectionView performBatchUpdates:^{
     [weakSelf updateCollectionViewInternal];
   }
@@ -731,8 +728,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
         sectionForSectionIdentifier:SectionIdentifierSyncAccounts];
     NSInteger itemsCount =
         [self.collectionViewModel numberOfItemsInSection:section];
-    NSMutableArray* accountsToReconfigure =
-        [[[NSMutableArray alloc] init] autorelease];
+    NSMutableArray* accountsToReconfigure = [[NSMutableArray alloc] init];
     for (NSInteger item = 0; item < itemsCount; ++item) {
       NSIndexPath* indexPath = [self.collectionViewModel
           indexPathForItemType:ItemTypeAccount
@@ -763,8 +759,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   NSInteger itemsCount =
       [self.collectionViewModel numberOfItemsInSection:section];
   // Syncable data types cells are offset by the Sync Everything cell.
-  NSMutableArray* switchsToReconfigure =
-      [[[NSMutableArray alloc] init] autorelease];
+  NSMutableArray* switchsToReconfigure = [[NSMutableArray alloc] init];
   for (NSInteger item = 1; item < itemsCount; ++item) {
     NSUInteger index = item - 1;
     NSIndexPath* indexPath = [self.collectionViewModel

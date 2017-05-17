@@ -8,7 +8,6 @@
 #include <memory>
 
 #include "base/mac/foundation_util.h"
-#include "base/mac/scoped_nsobject.h"
 #include "components/google/core/browser/google_util.h"
 #include "components/prefs/pref_member.h"
 #include "components/prefs/pref_service.h"
@@ -32,6 +31,10 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 namespace {
 
 typedef NS_ENUM(NSInteger, SectionIdentifier) {
@@ -54,9 +57,9 @@ NSString* const kTranslateSettingsCategory = @"ChromeTranslateSettings";
 @interface TranslateCollectionViewController ()<BooleanObserver> {
   // Profile preferences.
   PrefService* _prefs;  // weak
-  base::scoped_nsobject<PrefBackedBoolean> _translationEnabled;
+  PrefBackedBoolean* _translationEnabled;
   // The item related to the switch for the translation setting.
-  base::scoped_nsobject<CollectionViewSwitchItem> _translationItem;
+  CollectionViewSwitchItem* _translationItem;
 }
 
 @end
@@ -73,9 +76,9 @@ NSString* const kTranslateSettingsCategory = @"ChromeTranslateSettings";
     self.collectionViewAccessibilityIdentifier =
         @"translate_settings_view_controller";
     _prefs = prefs;
-    _translationEnabled.reset([[PrefBackedBoolean alloc]
-        initWithPrefService:_prefs
-                   prefName:prefs::kEnableTranslate]);
+    _translationEnabled =
+        [[PrefBackedBoolean alloc] initWithPrefService:_prefs
+                                              prefName:prefs::kEnableTranslate];
     [_translationEnabled setObserver:self];
     [self loadModel];
   }
@@ -84,7 +87,6 @@ NSString* const kTranslateSettingsCategory = @"ChromeTranslateSettings";
 
 - (void)dealloc {
   [_translationEnabled setObserver:nil];
-  [super dealloc];
 }
 
 #pragma mark - SettingsRootCollectionViewController
@@ -95,16 +97,15 @@ NSString* const kTranslateSettingsCategory = @"ChromeTranslateSettings";
 
   // Translate Section
   [model addSectionWithIdentifier:SectionIdentifierTranslate];
-  _translationItem.reset(
-      [[CollectionViewSwitchItem alloc] initWithType:ItemTypeTranslate]);
-  _translationItem.get().text =
-      l10n_util::GetNSString(IDS_IOS_TRANSLATE_SETTING);
-  _translationItem.get().on = [_translationEnabled value];
+  _translationItem =
+      [[CollectionViewSwitchItem alloc] initWithType:ItemTypeTranslate];
+  _translationItem.text = l10n_util::GetNSString(IDS_IOS_TRANSLATE_SETTING);
+  _translationItem.on = [_translationEnabled value];
   [model addItem:_translationItem
       toSectionWithIdentifier:SectionIdentifierTranslate];
 
-  CollectionViewTextItem* resetTranslate = [[[CollectionViewTextItem alloc]
-      initWithType:ItemTypeResetTranslate] autorelease];
+  CollectionViewTextItem* resetTranslate =
+      [[CollectionViewTextItem alloc] initWithType:ItemTypeResetTranslate];
   resetTranslate.text = l10n_util::GetNSString(IDS_IOS_TRANSLATE_SETTING_RESET);
   resetTranslate.accessibilityTraits |= UIAccessibilityTraitButton;
   resetTranslate.textFont = [MDCTypography body2Font];
@@ -113,8 +114,8 @@ NSString* const kTranslateSettingsCategory = @"ChromeTranslateSettings";
 
   // Footer Section
   [model addSectionWithIdentifier:SectionIdentifierFooter];
-  CollectionViewFooterItem* footer = [[[CollectionViewFooterItem alloc]
-      initWithType:ItemTypeFooter] autorelease];
+  CollectionViewFooterItem* footer =
+      [[CollectionViewFooterItem alloc] initWithType:ItemTypeFooter];
   footer.text = l10n_util::GetNSString(IDS_IOS_TRANSLATE_SETTING_DESCRIPTION);
   footer.linkURL = google_util::AppendGoogleLocaleParam(
       GURL(kTranslateLearnMoreUrl),
@@ -223,10 +224,10 @@ NSString* const kTranslateSettingsCategory = @"ChromeTranslateSettings";
 #pragma mark - BooleanObserver
 
 - (void)booleanDidChange:(id<ObservableBoolean>)observableBoolean {
-  DCHECK_EQ(observableBoolean, _translationEnabled.get());
+  DCHECK_EQ(observableBoolean, _translationEnabled);
 
   // Update the item.
-  _translationItem.get().on = [_translationEnabled value];
+  _translationItem.on = [_translationEnabled value];
 
   // Update the cell.
   [self reconfigureCellsForItems:@[ _translationItem ]];

@@ -5,10 +5,8 @@
 #import "ios/chrome/browser/ui/settings/privacy_collection_view_controller.h"
 
 #include "base/ios/ios_util.h"
-#import "base/ios/weak_nsobject.h"
 #include "base/logging.h"
 #import "base/mac/foundation_util.h"
-#import "base/mac/scoped_nsobject.h"
 #include "components/google/core/browser/google_util.h"
 #include "components/handoff/pref_names_ios.h"
 #include "components/metrics/metrics_pref_names.h"
@@ -50,6 +48,10 @@
 #include "ui/base/l10n/l10n_util_mac.h"
 #include "url/gurl.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 NSString* const kPrivacyCollectionViewId = @"kPrivacyCollectionViewId";
 
 namespace {
@@ -79,11 +81,10 @@ typedef NS_ENUM(NSInteger, ItemType) {
 @interface PrivacyCollectionViewController ()<BooleanObserver,
                                               PrefObserverDelegate> {
   ios::ChromeBrowserState* _browserState;  // weak
-  base::scoped_nsobject<PrefBackedBoolean> _suggestionsEnabled;
+  PrefBackedBoolean* _suggestionsEnabled;
   // The item related to the switch for the show suggestions setting.
-  base::scoped_nsobject<CollectionViewSwitchItem> _showSuggestionsItem;
-  base::scoped_nsobject<TouchToSearchPermissionsMediator>
-      _touchToSearchPermissions;
+  CollectionViewSwitchItem* _showSuggestionsItem;
+  TouchToSearchPermissionsMediator* _touchToSearchPermissions;
 
   // Pref observer to track changes to prefs.
   std::unique_ptr<PrefObserverBridge> _prefObserverBridge;
@@ -92,8 +93,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
   PrefChangeRegistrar _prefChangeRegistrarApplicationContext;
 
   // Updatable Items
-  base::scoped_nsobject<CollectionViewDetailItem> _handoffDetailItem;
-  base::scoped_nsobject<CollectionViewDetailItem> _sendUsageDetailItem;
+  CollectionViewDetailItem* _handoffDetailItem;
+  CollectionViewDetailItem* _sendUsageDetailItem;
 }
 
 // Initialization methods for various model items.
@@ -120,9 +121,9 @@ typedef NS_ENUM(NSInteger, ItemType) {
     self.title =
         l10n_util::GetNSString(IDS_OPTIONS_ADVANCED_SECTION_TITLE_PRIVACY);
     self.collectionViewAccessibilityIdentifier = kPrivacyCollectionViewId;
-    _suggestionsEnabled.reset([[PrefBackedBoolean alloc]
+    _suggestionsEnabled = [[PrefBackedBoolean alloc]
         initWithPrefService:_browserState->GetPrefs()
-                   prefName:prefs::kSearchSuggestEnabled]);
+                   prefName:prefs::kSearchSuggestEnabled];
     [_suggestionsEnabled setObserver:self];
 
     PrefService* prefService = _browserState->GetPrefs();
@@ -149,7 +150,6 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 - (void)dealloc {
   [_suggestionsEnabled setObserver:nil];
-  [super dealloc];
 }
 
 #pragma mark - SettingsRootCollectionViewController
@@ -161,8 +161,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
   // Other Devices Section
   [model addSectionWithIdentifier:SectionIdentifierOtherDevices];
-  CollectionViewTextItem* otherDevicesHeader = [[[CollectionViewTextItem alloc]
-      initWithType:ItemTypeOtherDevicesHeader] autorelease];
+  CollectionViewTextItem* otherDevicesHeader =
+      [[CollectionViewTextItem alloc] initWithType:ItemTypeOtherDevicesHeader];
   otherDevicesHeader.text =
       l10n_util::GetNSString(IDS_IOS_OPTIONS_CONTINUITY_LABEL);
   otherDevicesHeader.textColor = [[MDCPalette greyPalette] tint500];
@@ -173,14 +173,14 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
   // Web Services Section
   [model addSectionWithIdentifier:SectionIdentifierWebServices];
-  CollectionViewTextItem* webServicesHeader = [[[CollectionViewTextItem alloc]
-      initWithType:ItemTypeWebServicesHeader] autorelease];
+  CollectionViewTextItem* webServicesHeader =
+      [[CollectionViewTextItem alloc] initWithType:ItemTypeWebServicesHeader];
   webServicesHeader.text =
       l10n_util::GetNSString(IDS_IOS_OPTIONS_WEB_SERVICES_LABEL);
   webServicesHeader.textColor = [[MDCPalette greyPalette] tint500];
   [model setHeader:webServicesHeader
       forSectionWithIdentifier:SectionIdentifierWebServices];
-  _showSuggestionsItem.reset([[self showSuggestionsSwitchItem] retain]);
+  _showSuggestionsItem = [self showSuggestionsSwitchItem];
   [model addItem:_showSuggestionsItem
       toSectionWithIdentifier:SectionIdentifierWebServices];
 
@@ -220,18 +220,18 @@ typedef NS_ENUM(NSInteger, ItemType) {
       _browserState->GetPrefs()->GetBoolean(prefs::kIosHandoffToOtherDevices)
           ? l10n_util::GetNSString(IDS_IOS_SETTING_ON)
           : l10n_util::GetNSString(IDS_IOS_SETTING_OFF);
-  _handoffDetailItem.reset(
-      [[self detailItemWithType:ItemTypeOtherDevicesHandoff
-                        titleId:IDS_IOS_OPTIONS_ENABLE_HANDOFF_TO_OTHER_DEVICES
-                     detailText:detailText] retain]);
+  _handoffDetailItem =
+      [self detailItemWithType:ItemTypeOtherDevicesHandoff
+                       titleId:IDS_IOS_OPTIONS_ENABLE_HANDOFF_TO_OTHER_DEVICES
+                    detailText:detailText];
 
   return _handoffDetailItem;
 }
 
 - (CollectionViewSwitchItem*)showSuggestionsSwitchItem {
   CollectionViewSwitchItem* showSuggestionsSwitchItem =
-      [[[CollectionViewSwitchItem alloc]
-          initWithType:ItemTypeWebServicesShowSuggestions] autorelease];
+      [[CollectionViewSwitchItem alloc]
+          initWithType:ItemTypeWebServicesShowSuggestions];
   showSuggestionsSwitchItem.text =
       l10n_util::GetNSString(IDS_IOS_OPTIONS_SEARCH_URL_SUGGESTIONS);
   showSuggestionsSwitchItem.on = [_suggestionsEnabled value];
@@ -241,8 +241,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 - (CollectionViewItem*)showSuggestionsFooterItem {
   CollectionViewFooterItem* showSuggestionsFooterItem =
-      [[[CollectionViewFooterItem alloc] initWithType:ItemTypeWebServicesFooter]
-          autorelease];
+      [[CollectionViewFooterItem alloc] initWithType:ItemTypeWebServicesFooter];
   showSuggestionsFooterItem.text =
       l10n_util::GetNSString(IDS_IOS_OPTIONS_PRIVACY_FOOTER);
   showSuggestionsFooterItem.linkURL = google_util::AppendGoogleLocaleParam(
@@ -264,10 +263,10 @@ typedef NS_ENUM(NSInteger, ItemType) {
       currentLabelForPreference:GetApplicationContext()->GetLocalState()
                        basePref:metrics::prefs::kMetricsReportingEnabled
                        wifiPref:prefs::kMetricsReportingWifiOnly];
-  _sendUsageDetailItem.reset(
-      [[self detailItemWithType:ItemTypeWebServicesSendUsageData
-                        titleId:IDS_IOS_OPTIONS_SEND_USAGE_DATA
-                     detailText:detailText] retain]);
+  _sendUsageDetailItem =
+      [self detailItemWithType:ItemTypeWebServicesSendUsageData
+                       titleId:IDS_IOS_OPTIONS_SEND_USAGE_DATA
+                    detailText:detailText];
 
   return _sendUsageDetailItem;
 }
@@ -285,8 +284,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
 }
 
 - (CollectionViewItem*)contextualSearchDetailItem {
-  _touchToSearchPermissions.reset([[TouchToSearchPermissionsMediator alloc]
-      initWithBrowserState:_browserState]);
+  _touchToSearchPermissions = [[TouchToSearchPermissionsMediator alloc]
+      initWithBrowserState:_browserState];
   NSString* detailText =
       [_touchToSearchPermissions preferenceState] == TouchToSearch::DISABLED
           ? l10n_util::GetNSString(IDS_IOS_SETTING_OFF)
@@ -310,7 +309,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
                                         titleId:(NSInteger)titleId
                                      detailText:(NSString*)detailText {
   CollectionViewDetailItem* detailItem =
-      [[[CollectionViewDetailItem alloc] initWithType:type] autorelease];
+      [[CollectionViewDetailItem alloc] initWithType:type];
   detailItem.text = l10n_util::GetNSString(titleId);
   detailItem.detailText = detailText;
   detailItem.accessoryType = MDCCollectionViewCellAccessoryDisclosureIndicator;
@@ -348,43 +347,43 @@ typedef NS_ENUM(NSInteger, ItemType) {
       [self.collectionViewModel itemTypeForIndexPath:indexPath];
 
   // Items that push a new view controller.
-  base::scoped_nsobject<UIViewController> controller;
+  UIViewController* controller;
 
   switch (itemType) {
     case ItemTypeOtherDevicesHandoff:
-      controller.reset([[HandoffCollectionViewController alloc]
-          initWithBrowserState:_browserState]);
+      controller = [[HandoffCollectionViewController alloc]
+          initWithBrowserState:_browserState];
       break;
     case ItemTypeWebServicesTouchToSearch:
-      controller.reset([[ContextualSearchCollectionViewController alloc]
-          initWithPermissions:_touchToSearchPermissions]);
+      controller = [[ContextualSearchCollectionViewController alloc]
+          initWithPermissions:_touchToSearchPermissions];
       break;
     case ItemTypeWebServicesSendUsageData:
-      controller.reset([[DataplanUsageCollectionViewController alloc]
+      controller = [[DataplanUsageCollectionViewController alloc]
           initWithPrefs:GetApplicationContext()->GetLocalState()
                basePref:metrics::prefs::kMetricsReportingEnabled
                wifiPref:prefs::kMetricsReportingWifiOnly
                   title:l10n_util::GetNSString(
-                            IDS_IOS_OPTIONS_SEND_USAGE_DATA)]);
+                            IDS_IOS_OPTIONS_SEND_USAGE_DATA)];
       break;
     case ItemTypeWebServicesDoNotTrack:
-      controller.reset([[DoNotTrackCollectionViewController alloc]
-          initWithPrefs:_browserState->GetPrefs()]);
+      controller = [[DoNotTrackCollectionViewController alloc]
+          initWithPrefs:_browserState->GetPrefs()];
       break;
     case ItemTypeWebServicesPhysicalWeb:
-      controller.reset([[PhysicalWebCollectionViewController alloc]
-          initWithPrefs:GetApplicationContext()->GetLocalState()]);
+      controller = [[PhysicalWebCollectionViewController alloc]
+          initWithPrefs:GetApplicationContext()->GetLocalState()];
       break;
     case ItemTypeClearBrowsingDataClear:
-      controller.reset([[ClearBrowsingDataCollectionViewController alloc]
-          initWithBrowserState:_browserState]);
+      controller = [[ClearBrowsingDataCollectionViewController alloc]
+          initWithBrowserState:_browserState];
       break;
     case ItemTypeWebServicesShowSuggestions:
     default:
       break;
   }
 
-  if (controller.get()) {
+  if (controller) {
     [self.navigationController pushViewController:controller animated:YES];
   }
 }
@@ -441,10 +440,10 @@ typedef NS_ENUM(NSInteger, ItemType) {
 #pragma mark - BooleanObserver
 
 - (void)booleanDidChange:(id<ObservableBoolean>)observableBoolean {
-  DCHECK_EQ(observableBoolean, _suggestionsEnabled.get());
+  DCHECK_EQ(observableBoolean, _suggestionsEnabled);
 
   // Update the item.
-  _showSuggestionsItem.get().on = [_suggestionsEnabled value];
+  _showSuggestionsItem.on = [_suggestionsEnabled value];
 
   // Update the cell.
   [self reconfigureCellsForItems:@[ _showSuggestionsItem ]];
@@ -478,7 +477,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
         _browserState->GetPrefs()->GetBoolean(prefs::kIosHandoffToOtherDevices)
             ? l10n_util::GetNSString(IDS_IOS_SETTING_ON)
             : l10n_util::GetNSString(IDS_IOS_SETTING_OFF);
-    _handoffDetailItem.get().detailText = detailText;
+    _handoffDetailItem.detailText = detailText;
     [self reconfigureCellsForItems:@[ _handoffDetailItem ]];
     return;
   }
@@ -490,7 +489,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
                          basePref:metrics::prefs::kMetricsReportingEnabled
                          wifiPref:prefs::kMetricsReportingWifiOnly];
 
-    _sendUsageDetailItem.get().detailText = detailText;
+    _sendUsageDetailItem.detailText = detailText;
 
     [self reconfigureCellsForItems:@[ _sendUsageDetailItem ]];
     return;

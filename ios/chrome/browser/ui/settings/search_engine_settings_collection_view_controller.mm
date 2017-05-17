@@ -6,9 +6,7 @@
 
 #include <memory>
 
-#import "base/ios/weak_nsobject.h"
 #include "base/mac/foundation_util.h"
-#import "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/search_engines/template_url_service_observer.h"
@@ -19,6 +17,10 @@
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/third_party/material_components_ios/src/components/CollectionCells/src/MaterialCollectionCells.h"
 #include "ui/base/l10n/l10n_util_mac.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 @interface SearchEngineSettingsCollectionViewController ()
 - (void)onChange;
@@ -45,7 +47,7 @@ class SearchEngineObserver : public TemplateURLServiceObserver {
   void OnTemplateURLServiceChanged() override;
 
  private:
-  base::WeakNSObject<SearchEngineSettingsCollectionViewController> owner_;
+  __weak SearchEngineSettingsCollectionViewController* owner_;
   TemplateURLService* templateURLService_;  // weak
 };
 
@@ -61,8 +63,7 @@ SearchEngineObserver::~SearchEngineObserver() {
 }
 
 void SearchEngineObserver::OnTemplateURLServiceChanged() {
-  base::scoped_nsobject<SearchEngineSettingsCollectionViewController>
-      strongOwner([owner_.get() retain]);
+  SearchEngineSettingsCollectionViewController* strongOwner = owner_;
   [strongOwner onChange];
 }
 
@@ -107,9 +108,8 @@ void SearchEngineObserver::OnTemplateURLServiceChanged() {
     NSString* value = values[i];
     BOOL checked = [value isEqualToString:[self currentValue]];
 
-    base::scoped_nsobject<CollectionViewTextItem> engine(
-        [[CollectionViewTextItem alloc]
-            initWithType:ItemTypeSearchEnginesEngine]);
+    CollectionViewTextItem* engine = [[CollectionViewTextItem alloc]
+        initWithType:ItemTypeSearchEnginesEngine];
     [engine setText:value];
     if (checked) {
       [engine setAccessoryType:MDCCollectionViewCellAccessoryCheckmark];

@@ -34,7 +34,7 @@ extern NSString* const kSettingsVoiceSearchCellId;
 
 // The controller used to signin on this screen. Returns nil unless a signin is
 // currently occuring.
-@property(nonatomic, readonly)
+@property(weak, nonatomic, readonly)
     SigninInteractionController* signinInteractionController;
 
 // Initializes a new SettingsCollectionViewController. |mainBrowserState|,

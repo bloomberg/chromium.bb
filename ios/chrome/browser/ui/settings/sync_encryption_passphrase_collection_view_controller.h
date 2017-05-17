@@ -35,7 +35,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 @interface SyncEncryptionPassphraseCollectionViewController
     : SettingsRootCollectionViewController<SyncObserverModelBridge>
 
-@property(nonatomic, readonly) UITextField* passphrase;
+@property(weak, nonatomic, readonly) UITextField* passphrase;
 @property(nonatomic, copy) NSString* headerMessage;
 @property(nonatomic, copy) NSString* footerMessage;
 @property(nonatomic, copy) NSString* processingMessage;

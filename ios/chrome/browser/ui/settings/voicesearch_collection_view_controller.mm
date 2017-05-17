@@ -4,10 +4,8 @@
 
 #import "ios/chrome/browser/ui/settings/voicesearch_collection_view_controller.h"
 
-#import "base/ios/weak_nsobject.h"
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"
-#import "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/prefs/pref_member.h"
 #include "components/prefs/pref_service.h"
@@ -20,6 +18,10 @@
 #import "ios/third_party/material_components_ios/src/components/CollectionCells/src/MaterialCollectionCells.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_mac.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 namespace {
 
@@ -69,8 +71,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
   // TTS section.
   [model addSectionWithIdentifier:SectionIdentifierTTS];
-  CollectionViewSwitchItem* tts = [[[CollectionViewSwitchItem alloc]
-      initWithType:ItemTypeTTSEnabled] autorelease];
+  CollectionViewSwitchItem* tts =
+      [[CollectionViewSwitchItem alloc] initWithType:ItemTypeTTSEnabled];
   tts.text = l10n_util::GetNSString(IDS_IOS_VOICE_SEARCH_SETTING_TTS);
   tts.on = _ttsEnabled.GetValue();
   tts.enabled = [self currentLanguageSupportsTTS];
@@ -87,8 +89,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
   [model addSectionWithIdentifier:SectionIdentifierLanguages];
   // Add default locale option.  Using an empty string for the voice search
   // locale pref indicates using the default locale.
-  CollectionViewTextItem* defaultItem = [[[CollectionViewTextItem alloc]
-      initWithType:ItemTypeLanguagesLanguageOption] autorelease];
+  CollectionViewTextItem* defaultItem = [[CollectionViewTextItem alloc]
+      initWithType:ItemTypeLanguagesLanguageOption];
   defaultItem.text =
       l10n_util::GetNSStringF(IDS_IOS_VOICE_SEARCH_SETTINGS_DEFAULT_LOCALE,
                               localeConfig->GetDefaultLocale().display_name);
@@ -103,8 +105,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
     NSString* languageName = base::SysUTF16ToNSString(locale.display_name);
     BOOL checked = (locale.code == selectedLocaleCode);
 
-    CollectionViewTextItem* languageItem = [[[CollectionViewTextItem alloc]
-        initWithType:ItemTypeLanguagesLanguageOption] autorelease];
+    CollectionViewTextItem* languageItem = [[CollectionViewTextItem alloc]
+        initWithType:ItemTypeLanguagesLanguageOption];
     languageItem.text = languageName;
     languageItem.accessoryType = checked
                                      ? MDCCollectionViewCellAccessoryCheckmark

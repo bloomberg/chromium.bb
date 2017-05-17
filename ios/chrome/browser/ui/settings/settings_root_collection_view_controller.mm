@@ -7,8 +7,7 @@
 #include "base/ios/ios_util.h"
 #include "base/logging.h"
 #import "base/mac/foundation_util.h"
-#import "base/mac/objc_property_releaser.h"
-#import "base/mac/scoped_nsobject.h"
+
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/ui/commands/UIKit+ChromeExecuteCommand.h"
 #include "ios/chrome/browser/ui/commands/ios_command_ids.h"
@@ -21,6 +20,10 @@
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/third_party/material_components_ios/src/components/Collections/src/MaterialCollections.h"
 #include "ui/base/l10n/l10n_util.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 namespace {
 enum SavedBarButtomItemPositionEnum {
@@ -37,25 +40,13 @@ const CGFloat kActivityIndicatorDimensionIPhone = 56;
 
 @implementation SettingsRootCollectionViewController {
   SavedBarButtomItemPositionEnum savedBarButtonItemPosition_;
-  base::scoped_nsobject<UIBarButtonItem> savedBarButtonItem_;
-  base::scoped_nsobject<UIView> veil_;
-
-  base::mac::ObjCPropertyReleaser
-      propertyReleaser_SettingsRootCollectionViewController_;
+  UIBarButtonItem* savedBarButtonItem_;
+  UIView* veil_;
 }
 
 @synthesize shouldHideDoneButton = shouldHideDoneButton_;
 @synthesize collectionViewAccessibilityIdentifier =
     collectionViewAccessibilityIdentifier_;
-
-- (instancetype)initWithStyle:(CollectionViewControllerStyle)style {
-  self = [super initWithStyle:style];
-  if (self) {
-    propertyReleaser_SettingsRootCollectionViewController_.Init(
-        self, [SettingsRootCollectionViewController class]);
-  }
-  return self;
-}
 
 - (void)viewDidLoad {
   [super viewDidLoad];
@@ -88,11 +79,11 @@ const CGFloat kActivityIndicatorDimensionIPhone = 56;
 - (UIBarButtonItem*)createEditButton {
   // Create a custom Edit bar button item, as Material Navigation Bar does not
   // handle a system UIBarButtonSystemItemEdit item.
-  UIBarButtonItem* button = [[[UIBarButtonItem alloc]
+  UIBarButtonItem* button = [[UIBarButtonItem alloc]
       initWithTitle:l10n_util::GetNSString(IDS_IOS_NAVIGATION_BAR_EDIT_BUTTON)
               style:UIBarButtonItemStyleDone
              target:self
-             action:@selector(editButtonPressed)] autorelease];
+             action:@selector(editButtonPressed)];
   [button setEnabled:[self editButtonEnabled]];
   return button;
 }
@@ -100,11 +91,11 @@ const CGFloat kActivityIndicatorDimensionIPhone = 56;
 - (UIBarButtonItem*)createEditDoneButton {
   // Create a custom Done bar button item, as Material Navigation Bar does not
   // handle a system UIBarButtonSystemItemDone item.
-  return [[[UIBarButtonItem alloc]
+  return [[UIBarButtonItem alloc]
       initWithTitle:l10n_util::GetNSString(IDS_IOS_NAVIGATION_BAR_DONE_BUTTON)
               style:UIBarButtonItemStyleDone
              target:self
-             action:@selector(editButtonPressed)] autorelease];
+             action:@selector(editButtonPressed)];
 }
 
 - (void)updateEditButton {
@@ -130,8 +121,7 @@ const CGFloat kActivityIndicatorDimensionIPhone = 56;
 #pragma mark - CollectionViewFooterLinkDelegate
 
 - (void)cell:(CollectionViewFooterCell*)cell didTapLinkURL:(GURL)URL {
-  base::scoped_nsobject<OpenUrlCommand> command(
-      [[OpenUrlCommand alloc] initWithURLFromChrome:URL]);
+  OpenUrlCommand* command = [[OpenUrlCommand alloc] initWithURLFromChrome:URL];
   [command setTag:IDC_CLOSE_SETTINGS_AND_OPEN_URL];
   [self chromeExecuteCommand:command];
 }
@@ -202,21 +192,20 @@ const CGFloat kActivityIndicatorDimensionIPhone = 56;
   CGFloat activityIndicatorDimension = IsIPadIdiom()
                                            ? kActivityIndicatorDimensionIPad
                                            : kActivityIndicatorDimensionIPhone;
-  base::scoped_nsobject<BarButtonActivityIndicator> indicator(
-      [[BarButtonActivityIndicator alloc]
-          initWithFrame:CGRectMake(0.0, 0.0, activityIndicatorDimension,
-                                   activityIndicatorDimension)]);
-  base::scoped_nsobject<UIBarButtonItem> waitButton(
-      [[UIBarButtonItem alloc] initWithCustomView:indicator]);
+  BarButtonActivityIndicator* indicator = [[BarButtonActivityIndicator alloc]
+      initWithFrame:CGRectMake(0.0, 0.0, activityIndicatorDimension,
+                               activityIndicatorDimension)];
+  UIBarButtonItem* waitButton =
+      [[UIBarButtonItem alloc] initWithCustomView:indicator];
 
   if (displayActivityIndicatorOnTheRight) {
     // If there is a right bar button item, then it is the "Done" button.
-    savedBarButtonItem_.reset([self.navigationItem.rightBarButtonItem retain]);
+    savedBarButtonItem_ = self.navigationItem.rightBarButtonItem;
     savedBarButtonItemPosition_ = kRightBarButtonItemPosition;
     self.navigationItem.rightBarButtonItem = waitButton;
     [self.navigationItem.leftBarButtonItem setEnabled:NO];
   } else {
-    savedBarButtonItem_.reset([self.navigationItem.leftBarButtonItem retain]);
+    savedBarButtonItem_ = self.navigationItem.leftBarButtonItem;
     savedBarButtonItemPosition_ = kLeftBarButtonItemPosition;
     self.navigationItem.leftBarButtonItem = waitButton;
   }
@@ -224,7 +213,7 @@ const CGFloat kActivityIndicatorDimensionIPhone = 56;
   // Adds a veil that covers the collection view and prevents user interaction.
   DCHECK(self.view);
   DCHECK(!veil_);
-  veil_.reset([[UIView alloc] initWithFrame:self.view.bounds]);
+  veil_ = [[UIView alloc] initWithFrame:self.view.bounds];
   [veil_ setAutoresizingMask:(UIViewAutoresizingFlexibleWidth |
                               UIViewAutoresizingFlexibleHeight)];
   [veil_ setBackgroundColor:[UIColor colorWithWhite:1.0 alpha:0.5]];
@@ -249,7 +238,7 @@ const CGFloat kActivityIndicatorDimensionIPhone = 56;
         [veil_ removeFromSuperview];
       }
       completion:^(BOOL finished) {
-        veil_.reset();
+        veil_ = nil;
       }];
 
   DCHECK(savedBarButtonItem_);
@@ -265,7 +254,7 @@ const CGFloat kActivityIndicatorDimensionIPhone = 56;
       NOTREACHED();
       break;
   }
-  savedBarButtonItem_.reset();
+  savedBarButtonItem_ = nil;
   savedBarButtonItemPosition_ = kUndefinedBarButtonItemPosition;
 }
 
