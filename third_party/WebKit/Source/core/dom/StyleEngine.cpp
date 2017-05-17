@@ -291,7 +291,7 @@ void StyleEngine::MediaQueryAffectingValueChanged() {
     resolver_->UpdateMediaType();
 }
 
-void StyleEngine::UpdateStyleSheetsInImport(
+void StyleEngine::UpdateActiveStyleSheetsInImport(
     StyleEngine& master_engine,
     DocumentStyleSheetCollector& parent_collector) {
   DCHECK(!IsMaster());
@@ -301,6 +301,18 @@ void StyleEngine::UpdateStyleSheetsInImport(
   GetDocumentStyleSheetCollection().CollectStyleSheets(master_engine,
                                                        subcollector);
   GetDocumentStyleSheetCollection().SwapSheetsForSheetList(sheets_for_list);
+
+  // all_tree_scopes_dirty_ should only be set on main documents, never html
+  // imports.
+  DCHECK(!all_tree_scopes_dirty_);
+  // Make sure we don't re-collect sheets for style sheet list.
+  document_scope_dirty_ = false;
+  // Dirty tree scopes shadow trees do not affect the main document. Just leave
+  // them dirty here and re-collect when styleSheets is queried on shadow roots
+  // inside html import documents.
+  // tree_scopes_removed_ is irrelevant for html imports as the sheets do not
+  // affect style and removing a shadow tree is reflected directly in
+  // StyleSheetList accessing length or items.
 }
 
 void StyleEngine::UpdateActiveStyleSheetsInShadow(
