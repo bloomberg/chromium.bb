@@ -24,7 +24,8 @@
         -webkit-margin-start: var(--settings-indent-width);
       }
 
-      h2 ~ .settings-box {
+      h2 ~ .settings-box,
+      iron-collapse .settings-box {
         -webkit-margin-end: var(--settings-box-row-padding);
         -webkit-margin-start: var(--settings-box-row-indent);
         -webkit-padding-end: 0;
@@ -41,32 +42,35 @@
     </div>
 
     <h2>$i18n{textToSpeechHeading}</h2>
-    <div class="settings-box first" actionable>
+    <div class="settings-box first">
       <settings-toggle-button class="start"
           pref="{{prefs.settings.accessibility}}"
           label="$i18n{chromeVoxLabel}">
-        <paper-icon-button icon="cr:settings_icon"
-            class="more-actions"
-            on-tap="onChromeVoxSettingsTap_"
-            hidden="[[!prefs.settings.accessibility.value]]"
-            aria-label="$i18n{chromeVoxOptionsLabel}"></paper-icon-button>
       </settings-toggle-button>
     </div>
-    <template is="dom-if" if="[[showExperimentalFeatures_]]">
-      <div class="settings-box block" actionable>
-        <settings-toggle-button
-            pref="{{prefs.settings.a11y.select_to_speak}}"
-            label="$i18n{selectToSpeakTitle}"
-            sub-label="$i18n{selectToSpeakDescription}">
-          <paper-icon-button icon="cr:settings_icon"
-              class="more-actions"
-              on-tap="onSelectToSpeakSettingsTap_"
-              hidden="[[!prefs.settings.a11y.select_to_speak.value]]"
-              aria-label="$i18n{selectToSpeakOptionsLabel}">
-          </paper-icon-button>
-        </settings-toggle-button>
+    <iron-collapse opened="[[prefs.settings.accessibility.value]]">
+      <div class="settings-box"
+          on-tap="onChromeVoxSettingsTap_" actionable>
+        <div class="start">$i18n{chromeVoxOptionsLabel}</div>
+        <button class="icon-external" is="paper-icon-button-light"
+            aria-label="$i18n{chromeVoxOptionsLabel}"></button>
       </div>
-    </template>
+    </iron-collapse>
+    <div class="settings-box block">
+      <settings-toggle-button
+          pref="{{prefs.settings.a11y.select_to_speak}}"
+          label="$i18n{selectToSpeakTitle}"
+          sub-label="$i18n{selectToSpeakDescription}">
+      </settings-toggle-button>
+    </div>
+    <iron-collapse opened="[[prefs.settings.a11y.select_to_speak.value]]">
+      <div class="settings-box"
+          on-tap="onSelectToSpeakSettingsTap_" actionable>
+        <div class="start">$i18n{selectToSpeakOptionsLabel}</div>
+        <button class="icon-external" is="paper-icon-button-light"
+            aria-label="$i18n{selectToSpeakOptionsLabel}"></button>
+      </div>
+    </iron-collapse>
 
     <h2>$i18n{displayHeading}</h2>
     <div class="settings-box block first">

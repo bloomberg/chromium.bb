@@ -180,7 +180,7 @@
       Enable ChromeVox (spoken feedback)
     </message>
     <message name="IDS_SETTINGS_CHROMEVOX_OPTIONS_LABEL" desc="Label for button to open ChromeVox options.">
-      ChromeVox Options
+      Open ChromeVox settings
     </message>
     <message name="IDS_SETTINGS_SCREEN_MAGNIFIER_LABEL" desc="Label for checkbox which enables the screen magnifier">
       Enable screen magnifier
