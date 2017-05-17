@@ -151,6 +151,9 @@ class AVDACodecImage : public gpu::gles2::GLStreamTextureImage {
   // The texture that we're attached to.
   gpu::gles2::Texture* texture_;
 
+  // Bounds that we last sent to our overlay.
+  gfx::Rect most_recent_bounds_;
+
   DISALLOW_COPY_AND_ASSIGN(AVDACodecImage);
 };
 

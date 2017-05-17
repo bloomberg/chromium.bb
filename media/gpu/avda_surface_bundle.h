@@ -9,8 +9,8 @@
 #include "media/base/android/android_overlay.h"
 #include "media/base/surface_manager.h"
 #include "media/gpu/media_gpu_export.h"
+#include "media/gpu/surface_texture_gl_owner.h"
 #include "ui/gl/android/scoped_java_surface.h"
-#include "ui/gl/android/surface_texture.h"
 
 namespace media {
 
@@ -47,7 +47,7 @@ struct MEDIA_GPU_EXPORT AVDASurfaceBundle
 
   // The SurfaceTexture attached to |surface()|, or nullptr if j_surface() is
   // SurfaceView backed.
-  scoped_refptr<gl::SurfaceTexture> surface_texture;
+  scoped_refptr<SurfaceTextureGLOwner> surface_texture;
 
   // If |surface_texture| is not null, then this is the surface for it.
   gl::ScopedJavaSurface surface_texture_surface;
