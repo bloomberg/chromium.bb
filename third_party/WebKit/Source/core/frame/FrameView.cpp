@@ -2069,7 +2069,7 @@ bool FrameView::ComputeCompositedSelection(LocalFrame& frame,
 
   const VisibleSelection& visible_selection =
       frame.Selection().ComputeVisibleSelectionInDOMTree();
-  if (visible_selection.IsNone() || !frame.Selection().IsHandleVisible())
+  if (!frame.Selection().IsHandleVisible() || frame.Selection().IsHidden())
     return false;
 
   // Non-editable caret selections lack any kind of UI affordance, and
