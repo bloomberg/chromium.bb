@@ -39,7 +39,7 @@ TEST(ImageHijackCanvasTest, NonLazyImagesSkipped) {
   // Use a strict mock so that if *any* ImageDecodeCache methods are called, we
   // will hit an error.
   testing::StrictMock<MockImageDecodeCache> image_decode_cache;
-  ImageIdFlatSet images_to_skip;
+  SkImageIdFlatSet images_to_skip;
   gfx::ColorSpace target_color_space = gfx::ColorSpace::CreateSRGB();
   ImageHijackCanvas canvas(100, 100, &image_decode_cache, &images_to_skip,
                            target_color_space);
@@ -72,7 +72,7 @@ TEST(ImageHijackCanvasTest, ImagesToSkipAreSkipped) {
   // Use a strict mock so that if *any* ImageDecodeCache methods are called, we
   // will hit an error.
   testing::StrictMock<MockImageDecodeCache> image_decode_cache;
-  ImageIdFlatSet images_to_skip;
+  SkImageIdFlatSet images_to_skip;
   sk_sp<SkImage> image = CreateDiscardableImage(gfx::Size(10, 10));
   images_to_skip.insert(image->uniqueID());
   gfx::ColorSpace target_color_space = gfx::ColorSpace::CreateSRGB();
@@ -90,7 +90,7 @@ TEST(ImageHijackCanvasTest, ImagesToSkipAreSkipped) {
 
 TEST(ImageHijackCanvasTest, ClippedOpsAreSkipped) {
   testing::StrictMock<MockImageDecodeCache> image_decode_cache;
-  ImageIdFlatSet images_to_skip;
+  SkImageIdFlatSet images_to_skip;
   gfx::ColorSpace target_color_space = gfx::ColorSpace::CreateSRGB();
   ImageHijackCanvas canvas(100, 100, &image_decode_cache, &images_to_skip,
                            target_color_space);

@@ -44,7 +44,7 @@ void DiscardableImageMap::GetDiscardableImagesInRect(
   }
 }
 
-gfx::Rect DiscardableImageMap::GetRectForImage(ImageId image_id) const {
+gfx::Rect DiscardableImageMap::GetRectForImage(PaintImage::Id image_id) const {
   const auto& it = image_id_to_rect_.find(image_id);
   return it == image_id_to_rect_.end() ? gfx::Rect() : it->second;
 }

@@ -26,7 +26,7 @@ PaintImage::~PaintImage() = default;
 PaintImage& PaintImage::operator=(const PaintImage& other) = default;
 PaintImage& PaintImage::operator=(PaintImage&& other) = default;
 
-bool PaintImage::operator==(const PaintImage& other) {
+bool PaintImage::operator==(const PaintImage& other) const {
   return id_ == other.id_ && sk_image_ == other.sk_image_ &&
          animation_type_ == other.animation_type_ &&
          completion_state_ == other.completion_state_;

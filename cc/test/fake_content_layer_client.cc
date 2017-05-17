@@ -16,12 +16,12 @@
 
 namespace cc {
 
-FakeContentLayerClient::ImageData::ImageData(sk_sp<SkImage> img,
+FakeContentLayerClient::ImageData::ImageData(PaintImage img,
                                              const gfx::Point& point,
                                              const PaintFlags& flags)
     : image(std::move(img)), point(point), flags(flags) {}
 
-FakeContentLayerClient::ImageData::ImageData(sk_sp<SkImage> img,
+FakeContentLayerClient::ImageData::ImageData(PaintImage img,
                                              const gfx::Transform& transform,
                                              const PaintFlags& flags)
     : image(std::move(img)), transform(transform), flags(flags) {}
@@ -69,10 +69,9 @@ FakeContentLayerClient::PaintContentsToDisplayList(
       display_list->CreateAndAppendPairedBeginItem<TransformDisplayItem>(
           it->transform);
     }
-    PaintCanvas* canvas =
-        recorder.beginRecording(it->image->width(), it->image->height());
-    canvas->drawImage(PaintImage(PaintImage::GetNextId(), it->image),
-                      it->point.x(), it->point.y(), &it->flags);
+    PaintCanvas* canvas = recorder.beginRecording(
+        it->image.sk_image()->width(), it->image.sk_image()->height());
+    canvas->drawImage(it->image, it->point.x(), it->point.y(), &it->flags);
     display_list->CreateAndAppendDrawingItem<DrawingDisplayItem>(
         PaintableRegion(), recorder.finishRecordingAsPicture());
     if (!it->transform.IsIdentity()) {

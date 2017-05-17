@@ -151,7 +151,7 @@ class CC_EXPORT TileManager : CheckerImageTrackerClient {
   bool IsReadyToActivate() const;
   bool IsReadyToDraw() const;
 
-  const ImageIdFlatSet& TakeImagesToInvalidateOnSyncTree();
+  const PaintImageIdFlatSet& TakeImagesToInvalidateOnSyncTree();
   void DidActivateSyncTree();
   void ClearCheckerImageTracking(bool can_clear_decode_policy_tracking);
 
@@ -330,11 +330,10 @@ class CC_EXPORT TileManager : CheckerImageTrackerClient {
   PrioritizedWorkToSchedule AssignGpuMemoryToTiles();
   void ScheduleTasks(const PrioritizedWorkToSchedule& work_to_schedule);
 
-  void PartitionImagesForCheckering(
-      const PrioritizedTile& prioritized_tile,
-      const gfx::ColorSpace& raster_color_space,
-      std::vector<DrawImage>* sync_decoded_images,
-      std::vector<sk_sp<const SkImage>>* checkered_images);
+  void PartitionImagesForCheckering(const PrioritizedTile& prioritized_tile,
+                                    const gfx::ColorSpace& raster_color_space,
+                                    std::vector<DrawImage>* sync_decoded_images,
+                                    std::vector<PaintImage>* checkered_images);
   void AddCheckeredImagesToDecodeQueue(
       const PrioritizedTile& prioritized_tile,
       const gfx::ColorSpace& raster_color_space,

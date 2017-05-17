@@ -22,7 +22,7 @@ class CC_EXPORT ImageHijackCanvas : public SkNWayCanvas {
   ImageHijackCanvas(int width,
                     int height,
                     ImageDecodeCache* image_decode_cache,
-                    const ImageIdFlatSet* images_to_skip,
+                    const SkImageIdFlatSet* images_to_skip,
                     const gfx::ColorSpace& target_color_space);
 
  private:
@@ -59,7 +59,7 @@ class CC_EXPORT ImageHijackCanvas : public SkNWayCanvas {
   bool QuickRejectDraw(const SkRect& rect, const SkPaint* paint) const;
 
   ImageDecodeCache* image_decode_cache_;
-  const ImageIdFlatSet* images_to_skip_;
+  const SkImageIdFlatSet* images_to_skip_;
   const gfx::ColorSpace target_color_space_;
 
   DISALLOW_COPY_AND_ASSIGN(ImageHijackCanvas);

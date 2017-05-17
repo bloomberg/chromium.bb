@@ -12330,8 +12330,8 @@ TEST_F(LayerTreeHostImplTest, CheckerImagingTileInvalidation) {
 
   std::unique_ptr<FakeRecordingSource> recording_source =
       FakeRecordingSource::CreateFilledRecordingSource(layer_size);
-  sk_sp<SkImage> checkerable_image =
-      CreateDiscardableImage(gfx::Size(500, 500));
+  PaintImage checkerable_image = PaintImage(
+      PaintImage::GetNextId(), CreateDiscardableImage(gfx::Size(500, 500)));
   recording_source->add_draw_image(checkerable_image, gfx::Point(0, 0));
 
   SkColor non_solid_color = SkColorSetARGB(128, 45, 56, 67);
@@ -12391,7 +12391,7 @@ TEST_F(LayerTreeHostImplTest, CheckerImagingTileInvalidation) {
       EXPECT_FALSE(tile->HasRasterTask());
   }
   Region expected_invalidation(
-      raster_source->GetRectForImage(checkerable_image->uniqueID()));
+      raster_source->GetRectForImage(checkerable_image.stable_id()));
   EXPECT_EQ(expected_invalidation, *(root->GetPendingInvalidation()));
 }
 

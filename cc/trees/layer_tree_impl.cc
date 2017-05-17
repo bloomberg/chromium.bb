@@ -331,7 +331,7 @@ void LayerTreeImpl::BuildLayerListForTesting() {
 }
 
 void LayerTreeImpl::InvalidateRegionForImages(
-    const ImageIdFlatSet& images_to_invalidate) {
+    const PaintImageIdFlatSet& images_to_invalidate) {
   DCHECK(IsSyncTree());
 
   if (images_to_invalidate.empty())

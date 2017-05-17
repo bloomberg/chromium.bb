@@ -264,17 +264,15 @@ class CC_EXPORT SoftwareImageDecodeCache
   // data, which ensures that we cache an unlocked version of the original image
   // in case we need to extract multiple subrects (as would be the case in an
   // atlas).
-  std::unique_ptr<DecodedImage> GetSubrectImageDecode(
-      const ImageKey& key,
-      sk_sp<const SkImage> image);
+  std::unique_ptr<DecodedImage> GetSubrectImageDecode(const ImageKey& key,
+                                                      const PaintImage& image);
 
   // GetScaledImageDecode is called by DecodeImageInternal when the quality
   // requires the image be scaled. Like DecodeImageInternal, it should be
   // called with no lock acquired and it returns nullptr if the decoding or
   // scaling failed.
-  std::unique_ptr<DecodedImage> GetScaledImageDecode(
-      const ImageKey& key,
-      sk_sp<const SkImage> image);
+  std::unique_ptr<DecodedImage> GetScaledImageDecode(const ImageKey& key,
+                                                     const PaintImage& image);
 
   void RefImage(const ImageKey& key);
   void RefAtRasterImage(const ImageKey& key);

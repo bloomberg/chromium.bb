@@ -195,8 +195,12 @@ ImageController::ImageDecodeRequestId ImageController::QueueImageDecode(
   DCHECK(image);
   bool is_image_lazy = image->isLazyGenerated();
   auto image_bounds = image->bounds();
-  DrawImage draw_image(std::move(image), image_bounds, kNone_SkFilterQuality,
-                       SkMatrix::I(), target_color_space);
+  // TODO(khushalsagar): Eliminate the use of an incorrect id here and have all
+  // call-sites provide PaintImage to the ImageController.
+  DrawImage draw_image(
+      PaintImage(PaintImage::kUnknownStableId,
+                 sk_sp<SkImage>(const_cast<SkImage*>(image.release()))),
+      image_bounds, kNone_SkFilterQuality, SkMatrix::I(), target_color_space);
 
   // Get the tasks for this decode.
   scoped_refptr<TileTask> task;

@@ -541,7 +541,7 @@ void DisplayItemList::GetDiscardableImagesInRect(
                                         target_color_space, images);
 }
 
-gfx::Rect DisplayItemList::GetRectForImage(ImageId image_id) const {
+gfx::Rect DisplayItemList::GetRectForImage(PaintImage::Id image_id) const {
   return image_map_.GetRectForImage(image_id);
 }
 

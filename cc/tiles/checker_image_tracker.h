@@ -8,6 +8,7 @@
 #include <unordered_map>
 #include <vector>
 
+#include "base/optional.h"
 #include "cc/cc_export.h"
 #include "cc/paint/image_id.h"
 #include "cc/tiles/image_controller.h"
@@ -39,13 +40,13 @@ class CC_EXPORT CheckerImageTracker {
 
   // Returns true if the decode for |image| will be deferred to the image decode
   // service and it should be be skipped during raster.
-  bool ShouldCheckerImage(const sk_sp<const SkImage>& image, WhichTree tree);
+  bool ShouldCheckerImage(const PaintImage& image, WhichTree tree);
 
-  using ImageDecodeQueue = std::vector<sk_sp<const SkImage>>;
+  using ImageDecodeQueue = std::vector<PaintImage>;
   void ScheduleImageDecodeQueue(ImageDecodeQueue image_decode_queue);
 
   // Returns the set of images to invalidate on the sync tree.
-  const ImageIdFlatSet& TakeImagesToInvalidateOnSyncTree();
+  const PaintImageIdFlatSet& TakeImagesToInvalidateOnSyncTree();
 
   // Called when the sync tree is activated. Each call to
   // TakeImagesToInvalidateOnSyncTree() must be followed by this when the
@@ -86,7 +87,7 @@ class CC_EXPORT CheckerImageTracker {
     DISALLOW_COPY_AND_ASSIGN(ScopedDecodeHolder);
   };
 
-  void DidFinishImageDecode(ImageId image_id,
+  void DidFinishImageDecode(PaintImage::Id image_id,
                             ImageController::ImageDecodeRequestId request_id,
                             ImageController::ImageDecodeResult result);
 
@@ -100,10 +101,10 @@ class CC_EXPORT CheckerImageTracker {
 
   // A set of images which have been decoded and are pending invalidation for
   // raster on the checkered tiles.
-  ImageIdFlatSet images_pending_invalidation_;
+  PaintImageIdFlatSet images_pending_invalidation_;
 
   // A set of images which were invalidated on the current sync tree.
-  ImageIdFlatSet invalidated_images_on_current_sync_tree_;
+  PaintImageIdFlatSet invalidated_images_on_current_sync_tree_;
 
   // The queue of images pending decode. We maintain a queue to ensure that the
   // order in which images are decoded is aligned with the priority of the tiles
@@ -112,13 +113,13 @@ class CC_EXPORT CheckerImageTracker {
 
   // The currently outstanding image decode that has been scheduled with the
   // decode service. There can be only one outstanding decode at a time.
-  sk_sp<const SkImage> outstanding_image_decode_;
+  base::Optional<PaintImage> outstanding_image_decode_;
 
   // A map of ImageId to its DecodePolicy.
-  std::unordered_map<ImageId, DecodePolicy> image_async_decode_state_;
+  std::unordered_map<PaintImage::Id, DecodePolicy> image_async_decode_state_;
 
   // A map of image id to image decode request id for images to be unlocked.
-  std::unordered_map<ImageId, std::unique_ptr<ScopedDecodeHolder>>
+  std::unordered_map<PaintImage::Id, std::unique_ptr<ScopedDecodeHolder>>
       image_id_to_decode_;
 
   base::WeakPtrFactory<CheckerImageTracker> weak_factory_;

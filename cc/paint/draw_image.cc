@@ -23,19 +23,18 @@ bool ExtractScale(const SkMatrix& matrix, SkSize* scale) {
 }  // namespace
 
 DrawImage::DrawImage()
-    : image_(nullptr),
-      src_rect_(SkIRect::MakeXYWH(0, 0, 0, 0)),
+    : src_rect_(SkIRect::MakeXYWH(0, 0, 0, 0)),
       filter_quality_(kNone_SkFilterQuality),
       matrix_(SkMatrix::I()),
       scale_(SkSize::Make(1.f, 1.f)),
       matrix_is_decomposable_(true) {}
 
-DrawImage::DrawImage(sk_sp<const SkImage> image,
+DrawImage::DrawImage(PaintImage image,
                      const SkIRect& src_rect,
                      SkFilterQuality filter_quality,
                      const SkMatrix& matrix,
                      const gfx::ColorSpace& target_color_space)
-    : image_(std::move(image)),
+    : paint_image_(std::move(image)),
       src_rect_(src_rect),
       filter_quality_(filter_quality),
       matrix_(matrix),

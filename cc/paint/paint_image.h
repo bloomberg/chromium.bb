@@ -21,6 +21,11 @@ class CC_PAINT_EXPORT PaintImage {
   // GetNextId to generate a stable id for such images.
   static const Id kNonLazyStableId = -1;
 
+  // This is the id used in places where we are currently not plumbing the
+  // correct image id from blink.
+  // TODO(khushalsagar): Eliminate these cases. See crbug.com/722559.
+  static const Id kUnknownStableId = -2;
+
   // TODO(vmpstr): Work towards removing "UNKNOWN" value.
   enum class AnimationType { UNKNOWN, ANIMATED, VIDEO, STATIC };
 
@@ -41,7 +46,7 @@ class CC_PAINT_EXPORT PaintImage {
   PaintImage& operator=(const PaintImage& other);
   PaintImage& operator=(PaintImage&& other);
 
-  bool operator==(const PaintImage& other);
+  bool operator==(const PaintImage& other) const;
   explicit operator bool() const { return sk_image_; }
 
   Id stable_id() const { return id_; }
@@ -50,7 +55,7 @@ class CC_PAINT_EXPORT PaintImage {
   CompletionState completion_state() const { return completion_state_; }
 
  private:
-  Id id_ = kNonLazyStableId;
+  Id id_ = kUnknownStableId;
   sk_sp<SkImage> sk_image_;
   AnimationType animation_type_ = AnimationType::UNKNOWN;
   CompletionState completion_state_ = CompletionState::UNKNOWN;

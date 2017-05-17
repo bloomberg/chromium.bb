@@ -855,7 +855,7 @@ void TileManager::PartitionImagesForCheckering(
     const PrioritizedTile& prioritized_tile,
     const gfx::ColorSpace& raster_color_space,
     std::vector<DrawImage>* sync_decoded_images,
-    std::vector<sk_sp<const SkImage>>* checkered_images) {
+    std::vector<PaintImage>* checkered_images) {
   Tile* tile = prioritized_tile.tile();
   std::vector<DrawImage> images_in_tile;
   prioritized_tile.raster_source()->GetDiscardableImagesInRect(
@@ -864,8 +864,9 @@ void TileManager::PartitionImagesForCheckering(
   WhichTree tree = tile->tiling()->tree();
 
   for (auto& draw_image : images_in_tile) {
-    if (checker_image_tracker_.ShouldCheckerImage(draw_image.image(), tree))
-      checkered_images->push_back(draw_image.image());
+    if (checker_image_tracker_.ShouldCheckerImage(draw_image.paint_image(),
+                                                  tree))
+      checkered_images->push_back(draw_image.paint_image());
     else
       sync_decoded_images->push_back(draw_image);
   }
@@ -883,8 +884,9 @@ void TileManager::AddCheckeredImagesToDecodeQueue(
   WhichTree tree = tile->tiling()->tree();
 
   for (auto& draw_image : images_in_tile) {
-    if (checker_image_tracker_.ShouldCheckerImage(draw_image.image(), tree))
-      image_decode_queue->push_back(draw_image.image());
+    if (checker_image_tracker_.ShouldCheckerImage(draw_image.paint_image(),
+                                                  tree))
+      image_decode_queue->push_back(draw_image.paint_image());
   }
 }
 
@@ -1092,12 +1094,11 @@ scoped_refptr<TileTask> TileManager::CreateRasterTask(
       scheduled_draw_images_[tile->id()];
   sync_decoded_images.clear();
   if (!playback_settings.skip_images) {
-    std::vector<sk_sp<const SkImage>> checkered_images;
+    std::vector<PaintImage> checkered_images;
     PartitionImagesForCheckering(prioritized_tile, color_space,
                                  &sync_decoded_images, &checkered_images);
     for (const auto& image : checkered_images) {
-      ImageId image_id = image->uniqueID();
-      playback_settings.images_to_skip.insert(image_id);
+      playback_settings.images_to_skip.insert(image.sk_image()->uniqueID());
 
       // This can be the case for tiles on the active tree that will be replaced
       // or are occluded on the pending tree. While we still need to continue
@@ -1391,7 +1392,7 @@ void TileManager::MarkTilesOutOfMemory(
   }
 }
 
-const ImageIdFlatSet& TileManager::TakeImagesToInvalidateOnSyncTree() {
+const PaintImageIdFlatSet& TileManager::TakeImagesToInvalidateOnSyncTree() {
   return checker_image_tracker_.TakeImagesToInvalidateOnSyncTree();
 }
 

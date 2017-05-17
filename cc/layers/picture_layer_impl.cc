@@ -1463,7 +1463,7 @@ bool PictureLayerImpl::HasValidTilePriorities() const {
 }
 
 void PictureLayerImpl::InvalidateRegionForImages(
-    const ImageIdFlatSet& images_to_invalidate) {
+    const PaintImageIdFlatSet& images_to_invalidate) {
   TRACE_EVENT_BEGIN0("cc", "PictureLayerImpl::InvalidateRegionForImages");
 
   InvalidationRegion image_invalidation;
