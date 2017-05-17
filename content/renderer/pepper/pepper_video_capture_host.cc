@@ -261,7 +261,6 @@ int32_t PepperVideoCaptureHost::OnOpen(
       renderer_ppapi_host_->GetRenderFrameForInstance(pp_instance())->
           GetRoutingID(),
       device_id,
-      document_url,
       this));
 
   open_reply_context_ = context->MakeReplyMessageContext();

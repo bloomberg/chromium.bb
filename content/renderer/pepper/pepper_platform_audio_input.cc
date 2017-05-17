@@ -19,7 +19,6 @@
 #include "content/renderer/render_view_impl.h"
 #include "media/audio/audio_device_description.h"
 #include "ppapi/shared_impl/ppb_audio_config_shared.h"
-#include "url/gurl.h"
 
 namespace content {
 
@@ -27,7 +26,6 @@ namespace content {
 PepperPlatformAudioInput* PepperPlatformAudioInput::Create(
     int render_frame_id,
     const std::string& device_id,
-    const GURL& document_url,
     int sample_rate,
     int frames_per_buffer,
     PepperAudioInputHost* client) {
@@ -35,7 +33,6 @@ PepperPlatformAudioInput* PepperPlatformAudioInput::Create(
       new PepperPlatformAudioInput());
   if (audio_input->Initialize(render_frame_id,
                               device_id,
-                              document_url,
                               sample_rate,
                               frames_per_buffer,
                               client)) {
@@ -142,7 +139,6 @@ PepperPlatformAudioInput::PepperPlatformAudioInput()
 bool PepperPlatformAudioInput::Initialize(
     int render_frame_id,
     const std::string& device_id,
-    const GURL& document_url,
     int sample_rate,
     int frames_per_buffer,
     PepperAudioInputHost* client) {
@@ -175,7 +171,7 @@ bool PepperPlatformAudioInput::Initialize(
       PP_DEVICETYPE_DEV_AUDIOCAPTURE,
       device_id.empty() ? media::AudioDeviceDescription::kDefaultDeviceId
                         : device_id,
-      document_url,
+      client->pp_instance(),
       base::Bind(&PepperPlatformAudioInput::OnDeviceOpened, this));
   pending_open_device_ = true;
 

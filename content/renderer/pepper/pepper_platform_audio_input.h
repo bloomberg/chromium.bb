@@ -15,8 +15,6 @@
 #include "media/audio/audio_input_ipc.h"
 #include "media/base/audio_parameters.h"
 
-class GURL;
-
 namespace base {
 class SingleThreadTaskRunner;
 }
@@ -46,7 +44,6 @@ class PepperPlatformAudioInput
   static PepperPlatformAudioInput* Create(
       int render_frame_id,
       const std::string& device_id,
-      const GURL& document_url,
       int sample_rate,
       int frames_per_buffer,
       PepperAudioInputHost* client);
@@ -75,7 +72,6 @@ class PepperPlatformAudioInput
 
   bool Initialize(int render_frame_id,
                   const std::string& device_id,
-                  const GURL& document_url,
                   int sample_rate,
                   int frames_per_buffer,
                   PepperAudioInputHost* client);

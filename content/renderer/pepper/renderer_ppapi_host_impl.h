@@ -100,6 +100,9 @@ class RendererPpapiHostImpl : public RendererPpapiHost {
       const override;
   GURL GetDocumentURL(PP_Instance pp_instance) const override;
 
+  // Returns whether the plugin is running in a secure context.
+  bool IsSecureContext(PP_Instance pp_instance) const;
+
   void set_viewport_to_dip_scale(float viewport_to_dip_scale) {
     DCHECK_LT(0, viewport_to_dip_scale_);
     viewport_to_dip_scale_ = viewport_to_dip_scale;

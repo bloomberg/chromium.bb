@@ -204,6 +204,12 @@ const base::Feature kPepper3DImageChromium {
 const base::Feature kRenderingPipelineThrottling{
     "RenderingPipelineThrottling", base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Require camera/mic requests from pepper plugins to be made from secure
+// origins.
+const base::Feature kRequireSecureOriginsForPepperMediaRequests{
+    "RequireSecureOriginsForPepperMediaRequests",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Scrolls to compensate for layout movements (bit.ly/scroll-anchoring).
 const base::Feature kScrollAnchoring{"ScrollAnchoring",
                                      base::FEATURE_ENABLED_BY_DEFAULT};

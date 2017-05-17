@@ -4,12 +4,16 @@
 
 #include "content/renderer/pepper/pepper_media_device_manager.h"
 
+#include "base/feature_list.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "content/public/common/console_message_level.h"
+#include "content/public/common/content_features.h"
 #include "content/renderer/media/media_devices_event_dispatcher.h"
 #include "content/renderer/media/media_stream_dispatcher.h"
+#include "content/renderer/pepper/renderer_ppapi_host_impl.h"
 #include "content/renderer/render_frame_impl.h"
 #include "media/media_features.h"
 #include "ppapi/shared_impl/ppb_device_ref_shared.h"
@@ -18,6 +22,12 @@
 namespace content {
 
 namespace {
+
+const char kPepperInsecureOriginMessage[] =
+    "Microphone and Camera access no longer works on insecure origins. To use "
+    "this feature, you should consider switching your application to a "
+    "secure origin, such as HTTPS. See https://goo.gl/rStTGz for more "
+    "details.";
 
 PP_DeviceType_Dev FromMediaDeviceType(MediaDeviceType type) {
   switch (type) {
@@ -126,16 +136,32 @@ void PepperMediaDeviceManager::StopMonitoringDevices(PP_DeviceType_Dev type,
 
 int PepperMediaDeviceManager::OpenDevice(PP_DeviceType_Dev type,
                                          const std::string& device_id,
-                                         const GURL& document_url,
+                                         PP_Instance pp_instance,
                                          const OpenDeviceCallback& callback) {
   open_callbacks_[next_id_] = callback;
   int request_id = next_id_++;
+
+  RendererPpapiHostImpl* host =
+      RendererPpapiHostImpl::GetForPPInstance(pp_instance);
+  if (base::FeatureList::IsEnabled(
+          features::kRequireSecureOriginsForPepperMediaRequests) &&
+      !host->IsSecureContext(pp_instance)) {
+    RenderFrame* render_frame = host->GetRenderFrameForInstance(pp_instance);
+    if (render_frame) {
+      render_frame->AddMessageToConsole(CONSOLE_MESSAGE_LEVEL_WARNING,
+                                        kPepperInsecureOriginMessage);
+    }
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::Bind(&PepperMediaDeviceManager::OnDeviceOpenFailed,
+                              AsWeakPtr(), request_id));
+    return request_id;
+  }
 
 #if BUILDFLAG(ENABLE_WEBRTC)
   GetMediaStreamDispatcher()->OpenDevice(
       request_id, AsWeakPtr(), device_id,
       PepperMediaDeviceManager::FromPepperDeviceType(type),
-      url::Origin(document_url.GetOrigin()));
+      url::Origin(host->GetDocumentURL(pp_instance).GetOrigin()));
 #else
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::Bind(&PepperMediaDeviceManager::OnDeviceOpenFailed,
