@@ -38,9 +38,9 @@ ErrorInfo ErrorInfo::CreateError(ErrorType error_type,
       size_t i = 0;
       if (dns_names.empty()) {
         // The certificate had no DNS names, display an explanatory string.
-        // TODO(elawrence): Change the error messsage instead of just the
-        // placeholder string; see https://crbug.com/708268
-        dns_names.push_back("[missing_subjectAltName]");
+        details = l10n_util::GetStringFUTF16(
+            IDS_CERT_ERROR_NO_SUBJECT_ALTERNATIVE_NAMES_DETAILS,
+            UTF8ToUTF16(request_url.host()));
       } else {
         // If the certificate contains multiple DNS names, we choose the most
         // representative one -- either the DNS name that's also in the subject
@@ -54,12 +54,13 @@ ErrorInfo ErrorInfo::CreateError(ErrorType error_type,
         }
         if (i == dns_names.size())
           i = 0;
+
+        details = l10n_util::GetStringFUTF16(
+            IDS_CERT_ERROR_COMMON_NAME_INVALID_DETAILS,
+            UTF8ToUTF16(request_url.host()),
+            net::EscapeForHTML(UTF8ToUTF16(dns_names[i])));
       }
 
-      details = l10n_util::GetStringFUTF16(
-          IDS_CERT_ERROR_COMMON_NAME_INVALID_DETAILS,
-          UTF8ToUTF16(request_url.host()),
-          net::EscapeForHTML(UTF8ToUTF16(dns_names[i])));
       short_description = l10n_util::GetStringUTF16(
           IDS_CERT_ERROR_COMMON_NAME_INVALID_DESCRIPTION);
       break;
