@@ -143,9 +143,7 @@ def call(*args, **kwargs):  # pragma: no cover
   kwargs['stderr'] = subprocess.STDOUT
   kwargs.setdefault('bufsize', BUF_SIZE)
   cwd = kwargs.get('cwd', os.getcwd())
-  result_fn = kwargs.pop('result_fn', lambda code, out: RETRY if code else OK)
   stdin_data = kwargs.pop('stdin_data', None)
-  tries = kwargs.pop('tries', ATTEMPTS)
   if stdin_data:
     kwargs['stdin'] = subprocess.PIPE
   out = cStringIO.StringIO()
@@ -153,64 +151,53 @@ def call(*args, **kwargs):  # pragma: no cover
   env = copy.copy(os.environ)
   env.update(new_env)
   kwargs['env'] = env
-  attempt = 0
-  for attempt in range(1, tries + 1):
-    attempt_msg = ' (attempt #%d)' % attempt if attempt else ''
-    if new_env:
-      print '===Injecting Environment Variables==='
-      for k, v in sorted(new_env.items()):
-        print '%s: %s' % (k, v)
-    print '===Running %s%s===' % (' '.join(args), attempt_msg)
-    print 'In directory: %s' % cwd
-    start_time = time.time()
-    proc = subprocess.Popen(args, **kwargs)
-    if stdin_data:
-      proc.stdin.write(stdin_data)
-      proc.stdin.close()
-    psprinter = PsPrinter()
-    # This is here because passing 'sys.stdout' into stdout for proc will
-    # produce out of order output.
-    hanging_cr = False
-    while True:
-      psprinter.poke()
-      buf = proc.stdout.read(BUF_SIZE)
-      if not buf:
-        break
-      if hanging_cr:
-        buf = '\r' + buf
-      hanging_cr = buf.endswith('\r')
-      if hanging_cr:
-        buf = buf[:-1]
-      buf = buf.replace('\r\n', '\n').replace('\r', '\n')
-      sys.stdout.write(buf)
-      out.write(buf)
-    if hanging_cr:
-      sys.stdout.write('\n')
-      out.write('\n')
-    psprinter.cancel()
 
-    code = proc.wait()
-    elapsed_time = ((time.time() - start_time) / 60.0)
-    outval = out.getvalue()
-    result = result_fn(code, outval)
-    if result in (FAIL, RETRY):
-      print '===Failed in %.1f mins===' % elapsed_time
-      print
-    else:
-      print '===Succeeded in %.1f mins===' % elapsed_time
-      print
-      return outval
-    if result is FAIL:
+  if new_env:
+    print '===Injecting Environment Variables==='
+    for k, v in sorted(new_env.items()):
+      print '%s: %s' % (k, v)
+  print '===Running %s===' % (' '.join(args),)
+  print 'In directory: %s' % cwd
+  start_time = time.time()
+  proc = subprocess.Popen(args, **kwargs)
+  if stdin_data:
+    proc.stdin.write(stdin_data)
+    proc.stdin.close()
+  psprinter = PsPrinter()
+  # This is here because passing 'sys.stdout' into stdout for proc will
+  # produce out of order output.
+  hanging_cr = False
+  while True:
+    psprinter.poke()
+    buf = proc.stdout.read(BUF_SIZE)
+    if not buf:
       break
-    if result is RETRY and attempt < tries:
-      sleep_backoff = 4 ** attempt
-      sleep_time = random.randint(sleep_backoff, int(sleep_backoff * 1.2))
-      print '===backing off, sleeping for %d secs===' % sleep_time
-      time.sleep(sleep_time)
+    if hanging_cr:
+      buf = '\r' + buf
+    hanging_cr = buf.endswith('\r')
+    if hanging_cr:
+      buf = buf[:-1]
+    buf = buf.replace('\r\n', '\n').replace('\r', '\n')
+    sys.stdout.write(buf)
+    out.write(buf)
+  if hanging_cr:
+    sys.stdout.write('\n')
+    out.write('\n')
+  psprinter.cancel()
 
-  raise SubprocessFailed('%s failed with code %d in %s after %d attempts.' %
-                         (' '.join(args), code, cwd, attempt),
-                         code, outval)
+  code = proc.wait()
+  elapsed_time = ((time.time() - start_time) / 60.0)
+  outval = out.getvalue()
+  if code:
+    print '===Failed in %.1f mins===' % elapsed_time
+    print
+    raise SubprocessFailed('%s failed with code %d in %s.' %
+                           (' '.join(args), code, cwd),
+                           code, outval)
+
+  print '===Succeeded in %.1f mins===' % elapsed_time
+  print
+  return outval
 
 
 def git(*args, **kwargs):  # pragma: no cover
@@ -363,7 +350,7 @@ def gclient_sync(
     args.extend(['--revision', '%s@%s' % (name, revision)])
 
   try:
-    call_gclient(*args, tries=1)
+    call_gclient(*args)
   except SubprocessFailed as e:
     # Throw a GclientSyncFailed exception so we can catch this independently.
     raise GclientSyncFailed(e.message, e.code, e.output)
@@ -467,10 +454,10 @@ def force_revision(folder_name, revision):
     branch, revision = split_revision
 
   if revision and revision.upper() != 'HEAD':
-    git('checkout', '--force', revision, cwd=folder_name, tries=1)
+    git('checkout', '--force', revision, cwd=folder_name)
   else:
     ref = branch if branch.startswith('refs/') else 'origin/%s' % branch
-    git('checkout', '--force', ref, cwd=folder_name, tries=1)
+    git('checkout', '--force', ref, cwd=folder_name)
 
 
 def is_broken_repo_dir(repo_dir):
@@ -543,13 +530,13 @@ def git_checkout(solutions, revisions, shallow, refs, git_cache_dir):
 
         # Use "tries=1", since we retry manually in this loop.
         if not path.isdir(sln_dir):
-          git(*clone_cmd, tries=1)
+          git(*clone_cmd)
         else:
-          git('remote', 'set-url', 'origin', mirror_dir, cwd=sln_dir, tries=1)
-          git('fetch', 'origin', cwd=sln_dir, tries=1)
+          git('remote', 'set-url', 'origin', mirror_dir, cwd=sln_dir)
+          git('fetch', 'origin', cwd=sln_dir)
         for ref in refs:
           refspec = '%s:%s' % (ref, ref.lstrip('+'))
-          git('fetch', 'origin', refspec, cwd=sln_dir, tries=1)
+          git('fetch', 'origin', refspec, cwd=sln_dir)
 
         # Windows sometimes has trouble deleting files.
         # This can make git commands that rely on locks fail.
@@ -641,7 +628,7 @@ def apply_rietveld_issue(issue, patchset, root, server, _rev_map, _revision,
 
   # Only try once, since subsequent failures hide the real failure.
   try:
-    call(*cmd, tries=1)
+    call(*cmd)
   except SubprocessFailed as e:
     raise PatchFailed(e.message, e.code, e.output)
 
@@ -661,7 +648,7 @@ def apply_gerrit_ref(gerrit_repo, gerrit_ref, root, gerrit_reset,
   # command will do so. See http://crbug.com/692067.
   git('reset', '--hard', cwd=root)
   try:
-    git('fetch', gerrit_repo, gerrit_ref, cwd=root, tries=1)
+    git('fetch', gerrit_repo, gerrit_ref, cwd=root)
     git('checkout', 'FETCH_HEAD', cwd=root)
 
     if gerrit_rebase_patch_ref:
@@ -674,7 +661,7 @@ def apply_gerrit_ref(gerrit_repo, gerrit_ref, root, gerrit_reset,
         try:
           git('-c', 'user.name=chrome-bot',
               '-c', 'user.email=chrome-bot@chromium.org',
-              'rebase', base_rev, cwd=root, tries=1)
+              'rebase', base_rev, cwd=root)
         except SubprocessFailed:
           # Abort the rebase since there were failures.
           git('rebase', '--abort', cwd=root)
