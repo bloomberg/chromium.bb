@@ -128,7 +128,9 @@ WebrtcFrameSchedulerSimple::WebrtcFrameSchedulerSimple()
       updated_region_area_(kStatsWindow),
       weak_factory_(this) {}
 
-WebrtcFrameSchedulerSimple::~WebrtcFrameSchedulerSimple() {}
+WebrtcFrameSchedulerSimple::~WebrtcFrameSchedulerSimple() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+}
 
 void WebrtcFrameSchedulerSimple::OnKeyFrameRequested() {
   DCHECK(thread_checker_.CalledOnValidThread());

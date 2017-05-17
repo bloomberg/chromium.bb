@@ -67,7 +67,9 @@ IceConnectionToClient::IceConnectionToClient(
   session_->SetTransport(&transport_);
 }
 
-IceConnectionToClient::~IceConnectionToClient() {}
+IceConnectionToClient::~IceConnectionToClient() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+}
 
 void IceConnectionToClient::SetEventHandler(
     ConnectionToClient::EventHandler* event_handler) {

@@ -28,6 +28,7 @@ TransportChannelSocketAdapter::TransportChannelSocketAdapter(
 }
 
 TransportChannelSocketAdapter::~TransportChannelSocketAdapter() {
+  DCHECK(thread_checker_.CalledOnValidThread());
   if (!destruction_callback_.is_null())
     destruction_callback_.Run();
 }

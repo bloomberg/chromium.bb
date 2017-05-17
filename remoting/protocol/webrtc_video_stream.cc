@@ -51,6 +51,7 @@ WebrtcVideoStream::WebrtcVideoStream()
     : video_stats_dispatcher_(kStreamLabel), weak_factory_(this) {}
 
 WebrtcVideoStream::~WebrtcVideoStream() {
+  DCHECK(thread_checker_.CalledOnValidThread());
   if (stream_) {
     for (const auto& track : stream_->GetVideoTracks()) {
       stream_->RemoveTrack(track.get());

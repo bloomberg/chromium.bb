@@ -59,7 +59,9 @@ WebrtcAudioSourceAdapter::Core::Core() {
   thread_checker_.DetachFromThread();
 }
 
-WebrtcAudioSourceAdapter::Core::~Core() {}
+WebrtcAudioSourceAdapter::Core::~Core() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+}
 
 void WebrtcAudioSourceAdapter::Core::Start(
     std::unique_ptr<AudioSource> audio_source) {

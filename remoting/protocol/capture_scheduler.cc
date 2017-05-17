@@ -61,6 +61,7 @@ CaptureScheduler::CaptureScheduler(const base::Closure& capture_closure)
 }
 
 CaptureScheduler::~CaptureScheduler() {
+  DCHECK(thread_checker_.CalledOnValidThread());
 }
 
 void CaptureScheduler::Start() {

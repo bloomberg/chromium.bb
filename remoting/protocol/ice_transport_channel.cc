@@ -60,6 +60,7 @@ IceTransportChannel::IceTransportChannel(
 
 IceTransportChannel::~IceTransportChannel() {
   DCHECK(delegate_);
+  DCHECK(thread_checker_.CalledOnValidThread());
 
   delegate_->OnChannelDeleted(this);
 
