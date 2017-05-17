@@ -73,7 +73,7 @@ void MojoAndroidOverlay::OnDestroyed() {
   if (!received_surface_)
     config_.is_failed(this);
   else
-    config_.is_destroyed(this);
+    RunSurfaceDestroyedCallbacks();
 
   // Note: we do not delete |overlay_ptr_| here.  Our client must delete us to
   // signal that we should do that, since it still might be in use.

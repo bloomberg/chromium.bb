@@ -26,11 +26,6 @@ class MEDIA_GPU_EXPORT AndroidVideoSurfaceChooser {
   // using it soon, in favor of a SurfaceTexture.
   using UseSurfaceTextureCB = base::RepeatingCallback<void(void)>;
 
-  // Callback that mirrors AndroidOverlay::DestroyedCB .  The surface
-  // that was provided with |overlay| is being destroyed.
-  using StopUsingOverlayImmediatelyCB =
-      base::RepeatingCallback<void(AndroidOverlay*)>;
-
   AndroidVideoSurfaceChooser() {}
   virtual ~AndroidVideoSurfaceChooser() {}
 
@@ -40,7 +35,6 @@ class MEDIA_GPU_EXPORT AndroidVideoSurfaceChooser {
   // an empty callback to indicate "no factory".
   virtual void Initialize(UseOverlayCB use_overlay_cb,
                           UseSurfaceTextureCB use_surface_texture_cb,
-                          StopUsingOverlayImmediatelyCB stop_immediately_cb,
                           AndroidOverlayFactoryCB initial_factory) = 0;
 
   // Notify us that a new factory has arrived.  May be is_null() to indicate

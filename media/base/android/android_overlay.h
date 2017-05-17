@@ -5,9 +5,12 @@
 #ifndef MEDIA_BASE_ANDROID_ANDROID_OVERLAY_H_
 #define MEDIA_BASE_ANDROID_ANDROID_OVERLAY_H_
 
+#include <list>
+
 #include "base/android/scoped_java_ref.h"
 #include "base/callback.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "media/base/android_overlay_config.h"
 #include "media/base/media_export.h"
 #include "ui/gfx/geometry/rect.h"
@@ -37,7 +40,7 @@ namespace media {
 // AndroidOverlay isn't technically supposed to do that.
 class MEDIA_EXPORT AndroidOverlay {
  public:
-  virtual ~AndroidOverlay() {}
+  virtual ~AndroidOverlay();
 
   // Schedules a relayout of this overlay.  If called before the client is
   // notified that the surface is created, then the call will be ignored.
@@ -46,8 +49,25 @@ class MEDIA_EXPORT AndroidOverlay {
   // May be called during / after ReadyCB and before DestroyedCB.
   virtual const base::android::JavaRef<jobject>& GetJavaSurface() const = 0;
 
+  // Add a destruction callback that will be called if the surface is destroyed.
+  // Note that this refers to the destruction of the Android Surface, caused by
+  // Android.  It is not reporting the destruction of |this|.
+  //
+  // Destroying |this| prevents any further destroyed callbacks.  This includes
+  // cases in which an earlier callback out of multiple registred ones deletes
+  // |this|.  None of the later callbacks will be called.
+  //
+  // These will be called in the same order that they're added.
+  void AddSurfaceDestroyedCallback(AndroidOverlayConfig::DestroyedCB cb);
+
  protected:
-  AndroidOverlay() {}
+  AndroidOverlay();
+
+  void RunSurfaceDestroyedCallbacks();
+
+  std::list<AndroidOverlayConfig::DestroyedCB> destruction_cbs_;
+
+  base::WeakPtrFactory<AndroidOverlay> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(AndroidOverlay);
 };

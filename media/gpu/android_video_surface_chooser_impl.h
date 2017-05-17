@@ -24,7 +24,6 @@ class MEDIA_GPU_EXPORT AndroidVideoSurfaceChooserImpl
   // AndroidVideoSurfaceChooser
   void Initialize(UseOverlayCB use_overlay_cb,
                   UseSurfaceTextureCB use_surface_texture_cb,
-                  StopUsingOverlayImmediatelyCB stop_immediately_cb,
                   AndroidOverlayFactoryCB initial_factory) override;
   void ReplaceOverlayFactory(AndroidOverlayFactoryCB factory) override;
 
@@ -32,12 +31,10 @@ class MEDIA_GPU_EXPORT AndroidVideoSurfaceChooserImpl
   // AndroidOverlay callbacks.
   void OnOverlayReady(AndroidOverlay*);
   void OnOverlayFailed(AndroidOverlay*);
-  void OnSurfaceDestroyed(AndroidOverlay*);
 
   // Client callbacks.
   UseOverlayCB use_overlay_cb_;
   UseSurfaceTextureCB use_surface_texture_cb_;
-  StopUsingOverlayImmediatelyCB stop_immediately_cb_;
 
   // Current overlay that we've constructed but haven't received ready / failed
   // callbacks yet.  Will be nullptr if we haven't constructed one, or if we
