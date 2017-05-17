@@ -13,9 +13,6 @@ function insertExpectedResult(path, expected)
     if (path.length < 2)
         return;
     var propertyDir = path.slice(0, -1).join('.');
-    // Cached Location properties become undefined.
-    if (propertyDir == "location")
-        expected = "undefined";
     var cachedPropertyDir = "cached_" + propertyDir.replace('.', '_');
     window[cachedPropertyDir] = eval("childWindow." + propertyDir);
     propertiesToVerify.push({

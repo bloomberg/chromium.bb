@@ -273,7 +273,8 @@ void {{v8_class_or_partial}}::crossOriginNamedGetter(v8::Local<v8::Name> name, c
   {% else %}
   BindingSecurity::FailedAccessCheckFor(
       info.GetIsolate(),
-      {{v8_class}}::toImpl(info.Holder())->GetFrame());
+      &{{v8_class}}::wrapperTypeInfo,
+      info.Holder());
   {% endif %}
 }
 {% endif %}
@@ -297,7 +298,8 @@ void {{v8_class_or_partial}}::crossOriginNamedSetter(v8::Local<v8::Name> name, v
 
   BindingSecurity::FailedAccessCheckFor(
       info.GetIsolate(),
-      {{v8_class}}::toImpl(info.Holder())->GetFrame());
+      &{{v8_class}}::wrapperTypeInfo,
+      info.Holder());
 }
 {% endif %}
 

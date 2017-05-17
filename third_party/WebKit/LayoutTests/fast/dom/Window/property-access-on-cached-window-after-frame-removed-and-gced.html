@@ -10,7 +10,10 @@ var propertiesToVerify = [];
 
 function insertExpectedResult(path, expected)
 {
-    propertiesToVerify.push({"path": path.slice(0), "property": path.join("."), "expected": expected});
+    var property = path.join(".");
+    if (property == "location.ancestorOrigins.length")
+        expected = '0';
+    propertiesToVerify.push({"path": path.slice(0), "property": property, "expected": expected});
 }
 
 function runTest()
