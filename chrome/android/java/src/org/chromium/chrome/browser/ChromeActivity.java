@@ -1919,7 +1919,7 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
             Context context = ContextUtils.getApplicationContext();
             String packageName = WebApkValidator.queryWebApkPackage(context, currentTab.getUrl());
             Intent launchIntent = WebApkNavigationClient.createLaunchWebApkIntent(
-                    packageName, currentTab.getUrl());
+                    packageName, currentTab.getUrl(), false);
             boolean launchFailed = false;
             if (launchIntent != null) {
                 try {
