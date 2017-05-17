@@ -651,15 +651,9 @@ void LocationBarViewMac::ShowFirstRunBubbleInternal() {
   if (!field_ || ![field_ window])
     return;
 
-  // The first run bubble's left edge should line up with the left edge of the
-  // omnibox. This is different from other bubbles, which line up at a point
-  // set by their top arrow. Because the BaseBubbleController adjusts the
-  // window origin left to account for the arrow spacing, the first run bubble
-  // moves the window origin right by this spacing, so that the
-  // BaseBubbleController will move it back to the correct position.
-  const NSPoint kOffset = NSMakePoint(
-      info_bubble::kBubbleArrowXOffset + info_bubble::kBubbleArrowWidth/2.0,
-      kFirstRunBubbleYOffset);
+  // Point the bubble's arrow at the middle of the bottom of the page info icon.
+  const NSPoint kOffset =
+      NSMakePoint(info_bubble::kBubbleArrowXOffset, kFirstRunBubbleYOffset);
   [FirstRunBubbleController showForView:field_
                                  offset:kOffset
                                 browser:browser_
