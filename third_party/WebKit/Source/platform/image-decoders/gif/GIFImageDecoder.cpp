@@ -42,7 +42,7 @@ GIFImageDecoder::~GIFImageDecoder() {}
 
 void GIFImageDecoder::OnSetData(SegmentReader* data) {
   if (reader_)
-    reader_->setData(data);
+    reader_->SetData(data);
 }
 
 int GIFImageDecoder::RepetitionCount() const {
@@ -70,24 +70,24 @@ int GIFImageDecoder::RepetitionCount() const {
   // see the loop count and then encounter a decoding error which happens
   // later in the stream. It is also possible that no frames are in the
   // stream. In these cases we should just loop once.
-  if (IsAllDataReceived() && ParseCompleted() && reader_->imagesCount() == 1)
+  if (IsAllDataReceived() && ParseCompleted() && reader_->ImagesCount() == 1)
     repetition_count_ = kAnimationNone;
-  else if (Failed() || (reader_ && (!reader_->imagesCount())))
+  else if (Failed() || (reader_ && (!reader_->ImagesCount())))
     repetition_count_ = kAnimationLoopOnce;
-  else if (reader_ && reader_->loopCount() != cLoopCountNotSeen)
-    repetition_count_ = reader_->loopCount();
+  else if (reader_ && reader_->LoopCount() != kCLoopCountNotSeen)
+    repetition_count_ = reader_->LoopCount();
   return repetition_count_;
 }
 
 bool GIFImageDecoder::FrameIsCompleteAtIndex(size_t index) const {
-  return reader_ && (index < reader_->imagesCount()) &&
-         reader_->frameContext(index)->isComplete();
+  return reader_ && (index < reader_->ImagesCount()) &&
+         reader_->FrameContext(index)->IsComplete();
 }
 
 float GIFImageDecoder::FrameDurationAtIndex(size_t index) const {
-  return (reader_ && (index < reader_->imagesCount()) &&
-          reader_->frameContext(index)->isHeaderDefined())
-             ? reader_->frameContext(index)->delayTime()
+  return (reader_ && (index < reader_->ImagesCount()) &&
+          reader_->FrameContext(index)->IsHeaderDefined())
+             ? reader_->FrameContext(index)->DelayTime()
              : 0;
 }
 
@@ -102,28 +102,28 @@ bool GIFImageDecoder::HaveDecodedRow(size_t frame_index,
                                      size_t row_number,
                                      unsigned repeat_count,
                                      bool write_transparent_pixels) {
-  const GIFFrameContext* frame_context = reader_->frameContext(frame_index);
+  const GIFFrameContext* frame_context = reader_->FrameContext(frame_index);
   // The pixel data and coordinates supplied to us are relative to the frame's
   // origin within the entire image size, i.e.
   // (frameC_context->xOffset, frame_context->yOffset). There is no guarantee
   // that width == (size().width() - frame_context->xOffset), so
   // we must ensure we don't run off the end of either the source data or the
   // row's X-coordinates.
-  const int x_begin = frame_context->xOffset();
-  const int y_begin = frame_context->yOffset() + row_number;
-  const int x_end = std::min(static_cast<int>(frame_context->xOffset() + width),
+  const int x_begin = frame_context->XOffset();
+  const int y_begin = frame_context->YOffset() + row_number;
+  const int x_end = std::min(static_cast<int>(frame_context->XOffset() + width),
                              Size().Width());
   const int y_end = std::min(
-      static_cast<int>(frame_context->yOffset() + row_number + repeat_count),
+      static_cast<int>(frame_context->YOffset() + row_number + repeat_count),
       Size().Height());
   if (!width || (x_begin < 0) || (y_begin < 0) || (x_end <= x_begin) ||
       (y_end <= y_begin))
     return true;
 
   const GIFColorMap::Table& color_table =
-      frame_context->localColorMap().isDefined()
-          ? frame_context->localColorMap().getTable()
-          : reader_->globalColorMap().getTable();
+      frame_context->LocalColorMap().IsDefined()
+          ? frame_context->LocalColorMap().GetTable()
+          : reader_->GlobalColorMap().GetTable();
 
   if (color_table.IsEmpty())
     return true;
@@ -135,7 +135,7 @@ bool GIFImageDecoder::HaveDecodedRow(size_t frame_index,
   if (!InitFrameBuffer(frame_index))
     return false;
 
-  const size_t transparent_pixel = frame_context->transparentPixel();
+  const size_t transparent_pixel = frame_context->TransparentPixel();
   GIFRow::const_iterator row_end = row_begin + (x_end - x_begin);
   ImageFrame::PixelData* current_address = buffer.GetAddr(x_begin, y_begin);
 
@@ -182,7 +182,7 @@ bool GIFImageDecoder::HaveDecodedRow(size_t frame_index,
 }
 
 bool GIFImageDecoder::ParseCompleted() const {
-  return reader_ && reader_->parseCompleted();
+  return reader_ && reader_->ParseCompleted();
 }
 
 bool GIFImageDecoder::FrameComplete(size_t frame_index) {
@@ -204,7 +204,7 @@ void GIFImageDecoder::ClearFrameBuffer(size_t frame_index) {
                      ImageFrame::kFramePartial) {
     // Reset the state of the partial frame in the reader so that the frame
     // can be decoded again when requested.
-    reader_->clearDecodeState(frame_index);
+    reader_->ClearDecodeState(frame_index);
   }
   ImageDecoder::ClearFrameBuffer(frame_index);
 }
@@ -215,16 +215,16 @@ size_t GIFImageDecoder::DecodeFrameCount() {
   // returning 0 in this case, return the existing number of frames.  This way
   // if we get halfway through the image before decoding fails, we won't
   // suddenly start reporting that the image has zero frames.
-  return Failed() ? frame_buffer_cache_.size() : reader_->imagesCount();
+  return Failed() ? frame_buffer_cache_.size() : reader_->ImagesCount();
 }
 
 void GIFImageDecoder::InitializeNewFrame(size_t index) {
   ImageFrame* buffer = &frame_buffer_cache_[index];
-  const GIFFrameContext* frame_context = reader_->frameContext(index);
+  const GIFFrameContext* frame_context = reader_->FrameContext(index);
   buffer->SetOriginalFrameRect(
-      Intersection(frame_context->frameRect(), IntRect(IntPoint(), Size())));
-  buffer->SetDuration(frame_context->delayTime());
-  buffer->SetDisposalMethod(frame_context->getDisposalMethod());
+      Intersection(frame_context->FrameRect(), IntRect(IntPoint(), Size())));
+  buffer->SetDuration(frame_context->DelayTime());
+  buffer->SetDisposalMethod(frame_context->GetDisposalMethod());
   buffer->SetRequiredPreviousFrameIndex(
       FindRequiredPreviousFrame(index, false));
 }
@@ -239,7 +239,7 @@ void GIFImageDecoder::Decode(size_t index) {
 
   Vector<size_t> frames_to_decode = FindFramesToDecode(index);
   for (auto i = frames_to_decode.rbegin(); i != frames_to_decode.rend(); ++i) {
-    if (!reader_->decode(*i)) {
+    if (!reader_->Decode(*i)) {
       SetFailed();
       return;
     }
@@ -252,7 +252,7 @@ void GIFImageDecoder::Decode(size_t index) {
   // It is also a fatal error if all data is received and we have decoded all
   // frames available but the file is truncated.
   if (index >= frame_buffer_cache_.size() - 1 && IsAllDataReceived() &&
-      reader_ && !reader_->parseCompleted())
+      reader_ && !reader_->ParseCompleted())
     SetFailed();
 }
 
@@ -262,10 +262,10 @@ void GIFImageDecoder::Parse(GIFParseQuery query) {
 
   if (!reader_) {
     reader_ = WTF::MakeUnique<GIFImageReader>(this);
-    reader_->setData(data_);
+    reader_->SetData(data_);
   }
 
-  if (!reader_->parse(query))
+  if (!reader_->Parse(query))
     SetFailed();
 }
 

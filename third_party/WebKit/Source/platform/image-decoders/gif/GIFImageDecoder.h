@@ -30,11 +30,11 @@
 #include "platform/image-decoders/ImageDecoder.h"
 #include "platform/wtf/Noncopyable.h"
 
+namespace blink {
+
 class GIFImageReader;
 
-typedef Vector<unsigned char> GIFRow;
-
-namespace blink {
+using GIFRow = Vector<unsigned char>;
 
 // This class decodes the GIF image format.
 class PLATFORM_EXPORT GIFImageDecoder final : public ImageDecoder {
