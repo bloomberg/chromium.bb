@@ -213,6 +213,9 @@ math \x00f7 2568 DIVISION SIGN
 # Resides in the "private use area", and shouldn't conflict with anything.
 sign \xf8ff f
 
+# Used as dash where dash should act as space.
+space \xf8fe ef
+
 #Unicode Braille patterns
 include braille-patterns.cti
 
@@ -289,6 +292,11 @@ capsletter f
 multind f-6 capsletter letsign
 multind 6-f letsign capsletter
 capsnocont
+
+### Correct - Forward translation
+
+# Ensure that capsnocont does not stretch across dashes
+noback correct $U["-"] "\xf8fe"
 
 # Special characters that always need letsigns because they represent contractions
 always \x00a1 6-256 # inverted exclamationmark
@@ -1046,6 +1054,8 @@ noback context _$d["nd"]!$l @1345-145
 # The following lines are to ensure that we get a letsign between a digit and a single letter.
 noback context $d[]$l!$l @6
 noback context $d[]$l~ @6
+
+noback pass2 @ef @368
 
 noback pass2 @f-235 @2357
 noback pass2 @f-6-235 @6-2357
