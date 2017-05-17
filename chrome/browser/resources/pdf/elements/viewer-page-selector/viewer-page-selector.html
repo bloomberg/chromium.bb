@@ -3,8 +3,55 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-input/paper-input-container.html">
 
 <dom-module id="viewer-page-selector">
-  <link rel="import" type="css" href="viewer-page-selector.css">
   <template>
+    <style>
+      :host {
+        color: #fff;
+        font-size: 123%;
+      }
+
+      :host ::selection {
+        background: rgba(255, 255, 255, 0.3);
+      }
+
+      #pageselector {
+        --container: { visibility: hidden; };
+        --paper-input-container-underline: var(--container);
+        --paper-input-container-underline-focus: var(--container);
+        display: inline-block;
+        padding: 0;
+        width: 1ch;
+      }
+
+      #input {
+        -webkit-margin-start: -3px;
+        color: #fff;
+        line-height: 18px;
+        padding: 3px;
+        text-align: end;
+        vertical-align: baseline;
+      }
+
+      #input:focus,
+      #input:hover {
+        background-color: rgba(0, 0, 0, 0.5);
+        border-radius: 2px;
+      }
+
+      #slash {
+        padding: 0 3px;
+      }
+
+      #pagelength-spacer {
+        display: inline-block;
+        text-align: start;
+      }
+
+      #slash,
+      #pagelength {
+        font-size: 81%;
+      }
+    </style>
     <paper-input-container id="pageselector" no-label-float>
       <input id="input" is="iron-input" value="{{pageNo}}"
           prevent-invalid-input allowed-pattern="\d" on-mouseup="select"
@@ -15,5 +62,5 @@
       <span id="pagelength">{{docLength}}</span>
     </span>
   </template>
+  <script src="viewer-page-selector.js"></script>
 </dom-module>
-<script src="viewer-page-selector.js"></script>
