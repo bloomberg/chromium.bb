@@ -138,10 +138,6 @@ void EditorViewController::FillContentView(views::View* content_view) {
   content_view->AddChildView(CreateEditorView().release());
 }
 
-base::string16 EditorViewController::GetSecondaryButtonLabel() {
-  return l10n_util::GetStringUTF16(IDS_PAYMENTS_CANCEL_PAYMENT);
-}
-
 void EditorViewController::UpdateEditorView() {
   UpdateContentView();
   // TODO(crbug.com/704254): Find how to update the parent view bounds so that

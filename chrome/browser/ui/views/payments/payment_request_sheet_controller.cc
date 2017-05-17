@@ -203,7 +203,7 @@ PaymentRequestSheetController::CreatePrimaryButton() {
 }
 
 base::string16 PaymentRequestSheetController::GetSecondaryButtonLabel() {
-  return l10n_util::GetStringUTF16(IDS_CANCEL);
+  return l10n_util::GetStringUTF16(IDS_PAYMENTS_CANCEL_PAYMENT);
 }
 
 bool PaymentRequestSheetController::ShouldShowHeaderBackArrow() {

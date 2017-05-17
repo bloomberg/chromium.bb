@@ -44,6 +44,7 @@ class PaymentSheetViewController : public PaymentRequestSheetController,
  private:
   // PaymentRequestSheetController:
   std::unique_ptr<views::Button> CreatePrimaryButton() override;
+  base::string16 GetSecondaryButtonLabel() override;
   bool ShouldShowHeaderBackArrow() override;
   base::string16 GetSheetTitle() override;
   void FillContentView(views::View* content_view) override;
