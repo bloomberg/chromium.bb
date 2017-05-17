@@ -1391,16 +1391,18 @@ TEST_F(WidgetTest, TestViewWidthAfterMinimizingWidget) {
 // Desktop native widget Aura tests are for non Chrome OS platforms.
 #if !defined(OS_CHROMEOS)
 // This class validates whether paints are received for a visible Widget.
-// To achieve this it overrides the Show and Close methods on the Widget class
-// and sets state whether subsequent paints are expected.
-class DesktopAuraTestValidPaintWidget : public views::Widget {
+// It observes Widget visibility and Close() and tracks whether subsequent
+// paints are expected.
+class DesktopAuraTestValidPaintWidget : public Widget, public WidgetObserver {
  public:
   DesktopAuraTestValidPaintWidget()
-    : received_paint_(false),
-      expect_paint_(true),
-      received_paint_while_hidden_(false) {}
+      : received_paint_(false),
+        expect_paint_(true),
+        received_paint_while_hidden_(false) {
+    AddObserver(this);
+  }
 
-  ~DesktopAuraTestValidPaintWidget() override {}
+  ~DesktopAuraTestValidPaintWidget() override { RemoveObserver(this); }
 
   void InitForTest(Widget::InitParams create_params);
 
@@ -1423,20 +1425,10 @@ class DesktopAuraTestValidPaintWidget : public views::Widget {
     quit_closure_ = base::Closure();
   }
 
-  // views::Widget:
-  void Show() override {
-    expect_paint_ = true;
-    views::Widget::Show();
-  }
-
+  // Widget:
   void Close() override {
     expect_paint_ = false;
     views::Widget::Close();
-  }
-
-  void Hide() {
-    expect_paint_ = false;
-    views::Widget::Hide();
   }
 
   void OnNativeWidgetPaint(const ui::PaintContext& context) override {
@@ -1447,6 +1439,11 @@ class DesktopAuraTestValidPaintWidget : public views::Widget {
     views::Widget::OnNativeWidgetPaint(context);
     if (!quit_closure_.is_null())
       quit_closure_.Run();
+  }
+
+  // WidgetObserver:
+  void OnWidgetVisibilityChanged(Widget* widget, bool visible) override {
+    expect_paint_ = visible;
   }
 
  private:
