@@ -28788,6 +28788,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Media.UnderflowDuration.EME" units="ms">
+  <owner>media-dev@chromium.org</owner>
+  <summary>
+    The amount of time taken to leave the underflow state (i.e. resume playback)
+    for Encrypted Media Extensions (EME) based playbacks.
+  </summary>
+</histogram>
+
 <histogram name="Media.UnderflowDuration.MSE" units="ms">
   <owner>dalecurtis@chromium.org</owner>
   <summary>
