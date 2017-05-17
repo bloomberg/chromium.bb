@@ -253,11 +253,6 @@ class BlinkPerfBindings(_BlinkPerfBenchmark):
   tag = 'bindings'
   subdir = 'Bindings'
 
-  @classmethod
-  def ShouldDisable(cls, possible_browser):
-    # http://crbug.com/563979
-    return cls.IsSvelte(possible_browser)
-
 
 @benchmark.Enabled('content-shell')
 class BlinkPerfBlinkGC(_BlinkPerfBenchmark):
