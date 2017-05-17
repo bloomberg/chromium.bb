@@ -77,9 +77,6 @@ per-file site_details*=nick@chromium.org
 per-file site_per_process_interactive_browsertest.cc=alexmos@chromium.org
 per-file site_per_process_interactive_browsertest.cc=file://content/OWNERS
 
-per-file PRESUBMIT.py=dbeam@chromium.org
-per-file test_presubmit.py=dbeam@chromium.org
-
 per-file unload_browsertest.cc=file://content/OWNERS
 
 per-file vr_shell_resources.grdp=file://chrome/browser/android/vr_shell/OWNERS

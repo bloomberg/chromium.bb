@@ -102,6 +102,22 @@ def RunVulcanizeTests(input_api, output_api):
   return input_api.canned_checks.RunUnitTests(input_api, output_api, tests)
 
 
+def _CheckWebDevStyle(input_api, output_api):
+  results = []
+
+  try:
+    import sys
+    old_sys_path = sys.path
+    cwd = input_api.PresubmitLocalPath()
+    sys.path += [input_api.os_path.join(cwd, '..', '..', '..', 'tools')]
+    import web_dev_style.presubmit_support
+    results += web_dev_style.presubmit_support.CheckStyle(input_api, output_api)
+  finally:
+    sys.path = old_sys_path
+
+  return results
+
+
 def _CheckChangeOnUploadOrCommit(input_api, output_api):
   results = CheckUserActionUpdate(input_api, output_api, ACTION_XML_PATH)
   affected = input_api.AffectedFiles()
@@ -109,6 +125,7 @@ def _CheckChangeOnUploadOrCommit(input_api, output_api):
     results += CheckHtml(input_api, output_api)
   if any(f for f in affected if f.LocalPath().endswith('vulcanize_gn.py')):
     results += RunVulcanizeTests(input_api, output_api)
+  results += _CheckWebDevStyle(input_api, output_api)
   return results
 
 
