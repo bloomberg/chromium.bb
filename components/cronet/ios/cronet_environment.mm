@@ -112,8 +112,8 @@ net::URLRequestContextGetter* CronetEnvironment::GetURLRequestContextGetter()
 
 // static
 void CronetEnvironment::Initialize() {
-  // DCHECK_EQ([NSThread currentThread], [NSThread mainThread]);
   // This method must be called once from the main thread.
+  DCHECK_EQ([NSThread currentThread], [NSThread mainThread]);
   if (!g_at_exit_)
     g_at_exit_ = new base::AtExitManager;
 
@@ -350,7 +350,7 @@ std::string CronetEnvironment::user_agent() {
 }
 
 std::vector<uint8_t> CronetEnvironment::GetHistogramDeltas() {
-  base::StatisticsRecorder::Initialize();
+  DCHECK(base::StatisticsRecorder::IsActive());
   std::vector<uint8_t> data;
   if (!HistogramManager::GetInstance()->GetDeltas(&data))
     return std::vector<uint8_t>();
