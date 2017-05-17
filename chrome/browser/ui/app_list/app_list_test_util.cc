@@ -5,7 +5,6 @@
 #include "chrome/browser/ui/app_list/app_list_test_util.h"
 
 #include "base/files/file_path.h"
-#include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/common/chrome_constants.h"
 #include "extensions/browser/extension_registry.h"
@@ -37,14 +36,6 @@ void AppListTestBase::SetUp() {
       .Append(chrome::kPreferencesFilename);
   InitializeInstalledExtensionService(pref_path, source_install_dir);
   service_->Init();
-
-  // ExtensionService needs a real I/O thread.
-  service_->SetFileTaskRunnerForTesting(
-      content::BrowserThread::GetBlockingPool()
-          ->GetSequencedTaskRunnerWithShutdownBehavior(
-              content::BrowserThread::GetBlockingPool()->GetNamedSequenceToken(
-                  "ext_install-"),
-              base::SequencedWorkerPool::SKIP_ON_SHUTDOWN));
 
   // There should be 4 extensions in the test profile.
   ASSERT_EQ(4U, registry()->enabled_extensions().size());

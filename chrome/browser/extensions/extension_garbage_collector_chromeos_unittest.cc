@@ -12,7 +12,6 @@
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
-#include "base/threading/sequenced_worker_pool.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
@@ -29,7 +28,6 @@
 #include "components/signin/core/account_id/account_id.h"
 #include "components/user_manager/user_manager.h"
 #include "components/user_manager/user_names.h"
-#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/plugin_service.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/extension_prefs.h"
@@ -54,14 +52,6 @@ class ExtensionGarbageCollectorChromeOSUnitTest
     content::PluginService::GetInstance()->Init();
 #endif
     InitializeGoodInstalledExtensionService();
-
-    // Need real IO thread.
-    service_->SetFileTaskRunnerForTesting(
-        content::BrowserThread::GetBlockingPool()
-            ->GetSequencedTaskRunnerWithShutdownBehavior(
-                content::BrowserThread::GetBlockingPool()
-                    ->GetNamedSequenceToken("ext_install-"),
-                base::SequencedWorkerPool::SKIP_ON_SHUTDOWN));
 
     CHECK(cache_dir_.CreateUniqueTempDir());
     ExtensionAssetsManagerChromeOS::SetSharedInstallDirForTesting(cache_dir());

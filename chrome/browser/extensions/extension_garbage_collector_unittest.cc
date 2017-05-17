@@ -7,7 +7,6 @@
 #include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
-#include "base/threading/sequenced_worker_pool.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/extension_garbage_collector.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -17,9 +16,9 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/prefs/scoped_user_pref_update.h"
-#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/plugin_service.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/test_utils.h"
 #include "extensions/browser/extension_prefs.h"
 #include "ppapi/features/features.h"
 
@@ -33,22 +32,6 @@ class ExtensionGarbageCollectorUnitTest : public ExtensionServiceTestBase {
 #endif
   }
 
-  // Garbage collection, in production, runs on multiple threads. This is
-  // important to test to make sure we don't violate thread safety. Use a real
-  // task runner for these tests.
-  // TODO (rdevlin.cronin): It's kind of hacky that we have to do these things
-  // since we're using ExtensionServiceTestBase. Instead, we should probably do
-  // something like use an options flag, and handle it all in the base class.
-  void InitFileTaskRunner() {
-    service_->SetFileTaskRunnerForTesting(
-        content::BrowserThread::GetBlockingPool()
-            ->GetSequencedTaskRunnerWithShutdownBehavior(
-                content::BrowserThread::GetBlockingPool()
-                    ->GetNamedSequenceToken("ext_install-"),
-                base::SequencedWorkerPool::SKIP_ON_SHUTDOWN));
-
-  }
-
   // A delayed task to call GarbageCollectExtensions is posted by
   // ExtensionGarbageCollector's constructor. But, as the test won't wait for
   // the delayed task to be called, we have to call it manually instead.
@@ -56,7 +39,7 @@ class ExtensionGarbageCollectorUnitTest : public ExtensionServiceTestBase {
     ExtensionGarbageCollector::Get(profile_.get())
         ->GarbageCollectExtensionsForTest();
     // Wait for GarbageCollectExtensions task to complete.
-    content::BrowserThread::GetBlockingPool()->FlushForTesting();
+    content::RunAllBlockingPoolTasksUntilIdle();
   }
 };
 
@@ -66,7 +49,6 @@ TEST_F(ExtensionGarbageCollectorUnitTest, CleanupOnStartup) {
 
   InitPluginService();
   InitializeGoodInstalledExtensionService();
-  InitFileTaskRunner();
 
   // Simulate that one of them got partially deleted by clearing its pref.
   {
@@ -102,7 +84,6 @@ TEST_F(ExtensionGarbageCollectorUnitTest, NoCleanupDuringInstall) {
 
   InitPluginService();
   InitializeGoodInstalledExtensionService();
-  InitFileTaskRunner();
 
   // Simulate that one of them got partially deleted by clearing its pref.
   {
@@ -143,7 +124,6 @@ TEST_F(ExtensionGarbageCollectorUnitTest, GarbageCollectWithPendingUpdates) {
       source_install_dir.DirName().Append(chrome::kPreferencesFilename);
 
   InitializeInstalledExtensionService(pref_path, source_install_dir);
-  InitFileTaskRunner();
 
   // This is the directory that is going to be deleted, so make sure it actually
   // is there before the garbage collection.
@@ -174,7 +154,6 @@ TEST_F(ExtensionGarbageCollectorUnitTest, UpdateOnStartup) {
       source_install_dir.DirName().Append(chrome::kPreferencesFilename);
 
   InitializeInstalledExtensionService(pref_path, source_install_dir);
-  InitFileTaskRunner();
 
   // This is the directory that is going to be deleted, so make sure it actually
   // is there before the garbage collection.

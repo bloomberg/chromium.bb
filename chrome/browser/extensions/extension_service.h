@@ -342,10 +342,6 @@ class ExtensionService
   // view has been created.
   void DidCreateRenderViewForBackgroundPage(extensions::ExtensionHost* host);
 
-  // Changes sequenced task runner for crx installation tasks to |task_runner|.
-  void SetFileTaskRunnerForTesting(
-      const scoped_refptr<base::SequencedTaskRunner>& task_runner);
-
   // Record a histogram using the PermissionMessage enum values for each
   // permission in |e|.
   // NOTE: If this is ever called with high frequency, the implementation may
@@ -707,7 +703,7 @@ class ExtensionService
   std::unique_ptr<extensions::ExternalInstallManager> external_install_manager_;
 
   // Sequenced task runner for extension related file operations.
-  scoped_refptr<base::SequencedTaskRunner> file_task_runner_;
+  const scoped_refptr<base::SequencedTaskRunner> file_task_runner_;
 
   std::unique_ptr<extensions::ExtensionActionStorageManager>
       extension_action_storage_manager_;

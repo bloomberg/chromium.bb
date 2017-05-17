@@ -22,7 +22,7 @@
 #include "base/strings/string_tokenizer.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/threading/sequenced_worker_pool.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
@@ -175,11 +175,6 @@ void ExtensionService::CheckExternalUninstall(const std::string& id) {
                      base::Bind(&base::DoNothing), nullptr);
 }
 
-void ExtensionService::SetFileTaskRunnerForTesting(
-    const scoped_refptr<base::SequencedTaskRunner>& task_runner) {
-  file_task_runner_ = task_runner;
-}
-
 void ExtensionService::ClearProvidersForTesting() {
   external_extension_providers_.clear();
 }
@@ -325,6 +320,13 @@ ExtensionService::ExtensionService(Profile* profile,
       install_directory_(install_directory),
       extensions_enabled_(extensions_enabled),
       ready_(ready),
+      // We should be able to interrupt any part of extension install process
+      // during shutdown. SKIP_ON_SHUTDOWN ensures that not extension install
+      // task will be stopped while it is running but that tasks that have not
+      // started running will be skipped on shutdown.
+      file_task_runner_(base::CreateSequencedTaskRunnerWithTraits(
+          {base::MayBlock(), base::TaskPriority::BACKGROUND,
+           base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})),
       shared_module_service_(new extensions::SharedModuleService(profile_)),
       renderer_helper_(
           extensions::RendererStartupHelperFactory::GetForBrowserContext(
@@ -1213,18 +1215,6 @@ bool ExtensionService::is_ready() {
 }
 
 base::SequencedTaskRunner* ExtensionService::GetFileTaskRunner() {
-  if (file_task_runner_.get())
-    return file_task_runner_.get();
-
-  // We should be able to interrupt any part of extension install process during
-  // shutdown. SKIP_ON_SHUTDOWN ensures that not started extension install tasks
-  // will be ignored/deleted while we will block on started tasks.
-  std::string token("ext_install-");
-  token.append(profile_->GetPath().AsUTF8Unsafe());
-  file_task_runner_ = BrowserThread::GetBlockingPool()->
-      GetSequencedTaskRunnerWithShutdownBehavior(
-        BrowserThread::GetBlockingPool()->GetNamedSequenceToken(token),
-        base::SequencedWorkerPool::SKIP_ON_SHUTDOWN);
   return file_task_runner_.get();
 }
 
