@@ -146,6 +146,7 @@ class WebGestureEvent : public WebInputEvent {
     } fling_start;
 
     struct {
+      bool target_viewport;
       // If set to true, don't treat flingCancel
       // as a part of fling boost events sequence.
       bool prevent_boosting;
@@ -225,8 +226,20 @@ class WebGestureEvent : public WebInputEvent {
         return false;
     }
   }
-
 #endif
+
+  bool IsTargetViewport() const {
+    switch (type_) {
+      case kGestureScrollBegin:
+        return data.scroll_begin.target_viewport;
+      case kGestureFlingStart:
+        return data.fling_start.target_viewport;
+      case kGestureFlingCancel:
+        return data.fling_cancel.target_viewport;
+      default:
+        return false;
+    }
+  }
 };
 
 #pragma pack(pop)

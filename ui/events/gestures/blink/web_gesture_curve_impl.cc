@@ -14,9 +14,11 @@
 #include "build/build_config.h"
 #include "third_party/WebKit/public/platform/WebFloatSize.h"
 #include "third_party/WebKit/public/platform/WebGestureCurveTarget.h"
+#include "ui/events/gestures/fixed_velocity_curve.h"
 #include "ui/events/gestures/fling_curve.h"
 #include "ui/gfx/geometry/safe_integer_conversions.h"
 #include "ui/gfx/geometry/vector2d.h"
+#include "ui/gfx/geometry/vector2d_f.h"
 
 #if defined(OS_ANDROID)
 #include "ui/events/android/scroller.h"
@@ -28,8 +30,14 @@ namespace ui {
 namespace {
 
 std::unique_ptr<GestureCurve> CreateDefaultPlatformCurve(
+    blink::WebGestureDevice device_source,
     const gfx::Vector2dF& initial_velocity) {
   DCHECK(!initial_velocity.IsZero());
+  if (device_source == blink::kWebGestureDeviceSyntheticAutoscroll) {
+    return base::MakeUnique<FixedVelocityCurve>(initial_velocity,
+                                                base::TimeTicks());
+  }
+
 #if defined(OS_ANDROID)
   auto scroller = base::MakeUnique<Scroller>(Scroller::Config());
   scroller->Fling(0,
@@ -52,12 +60,13 @@ std::unique_ptr<GestureCurve> CreateDefaultPlatformCurve(
 // static
 std::unique_ptr<WebGestureCurve>
 WebGestureCurveImpl::CreateFromDefaultPlatformCurve(
+    blink::WebGestureDevice device_source,
     const gfx::Vector2dF& initial_velocity,
     const gfx::Vector2dF& initial_offset,
     bool on_main_thread) {
   return std::unique_ptr<WebGestureCurve>(new WebGestureCurveImpl(
-      CreateDefaultPlatformCurve(initial_velocity), initial_offset,
-      on_main_thread ? ThreadType::MAIN : ThreadType::IMPL));
+      CreateDefaultPlatformCurve(device_source, initial_velocity),
+      initial_offset, on_main_thread ? ThreadType::MAIN : ThreadType::IMPL));
 }
 
 // static

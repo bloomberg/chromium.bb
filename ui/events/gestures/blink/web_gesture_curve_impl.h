@@ -12,6 +12,7 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "third_party/WebKit/public/platform/WebGestureCurve.h"
+#include "third_party/WebKit/public/platform/WebGestureDevice.h"
 #include "ui/gfx/geometry/vector2d_f.h"
 
 namespace blink {
@@ -24,6 +25,7 @@ class GestureCurve;
 class WebGestureCurveImpl : public NON_EXPORTED_BASE(blink::WebGestureCurve) {
  public:
   static std::unique_ptr<blink::WebGestureCurve> CreateFromDefaultPlatformCurve(
+      blink::WebGestureDevice device_source,
       const gfx::Vector2dF& initial_velocity,
       const gfx::Vector2dF& initial_offset,
       bool on_main_thread);
