@@ -1977,6 +1977,9 @@ crbug.com/553838 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftest
 crbug.com/370604 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-paint-ordering-002.xhtml [ Failure ]
 
 crbug.com/582836 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/variables/variable-declaration-15.html [ Failure Pass ]
+crbug.com/582836 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/variables/variable-declaration-16.html [ Failure Pass ]
+crbug.com/582836 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/variables/variable-declaration-17.html [ Failure Pass ]
+crbug.com/582836 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/variables/variable-declaration-18.html [ Failure Pass ]
 crbug.com/582836 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/variables/variable-external-font-face-01.html [ Pass Failure ]
 crbug.com/582836 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/variables/variable-font-face-01.html [ Failure ]
 crbug.com/582836 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/variables/variable-font-face-02.html [ Failure ]
