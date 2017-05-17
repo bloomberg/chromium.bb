@@ -120,7 +120,8 @@ WebMouseEvent WebMouseEventBuilder::Build(WebInputEvent::Type type,
                                           int pointer_id,
                                           float pressure,
                                           float orientation_rad,
-                                          float tilt_rad,
+                                          float tilt_x,
+                                          float tilt_y,
                                           int action_button,
                                           int tool_type) {
   DCHECK(WebInputEvent::IsMouseEventType(type));
@@ -145,8 +146,8 @@ WebMouseEvent WebMouseEventBuilder::Build(WebInputEvent::Type type,
   }
 
   ui::SetWebPointerPropertiesFromMotionEventData(result, pointer_id, pressure,
-                                                 orientation_rad, tilt_rad,
-                                                 button, tool_type);
+                                                 orientation_rad, tilt_x,
+                                                 tilt_y, button, tool_type);
 
   return result;
 }

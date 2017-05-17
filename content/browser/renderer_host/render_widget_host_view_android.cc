@@ -1772,16 +1772,11 @@ void RenderWidgetHostViewAndroid::SendMouseEvent(
   blink::WebMouseEvent mouse_event = WebMouseEventBuilder::Build(
       webMouseEventType,
       ui::EventTimeStampToSeconds(motion_event.GetEventTime()),
-      motion_event.GetX(0),
-      motion_event.GetY(0),
-      motion_event.GetFlags(),
+      motion_event.GetX(0), motion_event.GetY(0), motion_event.GetFlags(),
       motion_event.GetButtonState() ? 1 : 0 /* click count */,
-      motion_event.GetPointerId(0),
-      motion_event.GetPressure(0),
-      motion_event.GetOrientation(0),
-      motion_event.GetTilt(0),
-      action_button,
-      motion_event.GetToolType(0));
+      motion_event.GetPointerId(0), motion_event.GetPressure(0),
+      motion_event.GetOrientation(0), motion_event.GetTiltX(0),
+      motion_event.GetTiltY(0), action_button, motion_event.GetToolType(0));
 
   if (!host_ || !host_->delegate())
     return;

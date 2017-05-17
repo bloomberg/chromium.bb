@@ -76,7 +76,8 @@ class GESTURE_DETECTION_EXPORT MotionEvent {
   virtual float GetTouchMinor(size_t pointer_index) const = 0;
   virtual float GetOrientation(size_t pointer_index) const = 0;
   virtual float GetPressure(size_t pointer_index) const = 0;
-  virtual float GetTilt(size_t pointer_index) const = 0;
+  virtual float GetTiltX(size_t pointer_index) const = 0;
+  virtual float GetTiltY(size_t pointer_index) const = 0;
   virtual ToolType GetToolType(size_t pointer_index) const = 0;
   virtual int GetButtonState() const = 0;
   virtual int GetFlags() const = 0;
@@ -112,10 +113,19 @@ class GESTURE_DETECTION_EXPORT MotionEvent {
   //   clockwise from vertical. The return value lies in [-PI/2, PI/2].
   // * For a stylus, it indicates the direction in which the stylus is pointing.
   //   The return value lies in [-PI, PI].
+  //   Stylus 3D orientation is returned in GetTiltX/Y. TODO(jkwang):
+  //   Cleanup the stylus comment & usage here.
   float GetOrientation() const { return GetOrientation(0); }
 
   float GetPressure() const { return GetPressure(0); }
-  float GetTilt() const { return GetTilt(0); }
+  // We have GetTiltX/Y here instead of GetTilt because MotionEvent spec is not
+  // expressive enough for both 2D touch-surface geometry and 3D pen-orientation
+  // geometry, as needed for PointerEvents:
+  // https://w3c.github.io/pointerevents
+  // Both GetTiltX and GetTiltY return angles in **degrees**, in the range
+  // [-90,90]. See the PointerEvent spec link above for details
+  float GetTiltX() const { return GetTiltX(0); }
+  float GetTiltY() const { return GetTiltY(0); }
   ToolType GetToolType() const { return GetToolType(0); }
 
   // O(N) search of pointers (use sparingly!). Returns -1 if |id| nonexistent.

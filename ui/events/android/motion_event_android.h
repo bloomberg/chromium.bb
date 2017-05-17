@@ -40,6 +40,8 @@ class EVENTS_EXPORT MotionEventAndroid : public MotionEvent {
     jfloat touch_major_pixels;
     jfloat touch_minor_pixels;
     jfloat orientation_rad;
+    // Unlike the tilt angles in motion_event.h, this field matches the
+    // MotionEvent spec because we get this values from Java.
     jfloat tilt_rad;
     jint tool_type;
   };
@@ -82,7 +84,8 @@ class EVENTS_EXPORT MotionEventAndroid : public MotionEvent {
   float GetTouchMinor(size_t pointer_index) const override;
   float GetOrientation(size_t pointer_index) const override;
   float GetPressure(size_t pointer_index) const override;
-  float GetTilt(size_t pointer_index) const override;
+  float GetTiltX(size_t pointer_index) const override;
+  float GetTiltY(size_t pointer_index) const override;
   base::TimeTicks GetEventTime() const override;
   size_t GetHistorySize() const override;
   base::TimeTicks GetHistoricalEventTime(
@@ -148,7 +151,8 @@ class EVENTS_EXPORT MotionEventAndroid : public MotionEvent {
     float touch_major;
     float touch_minor;
     float orientation;
-    float tilt;
+    float tilt_x;
+    float tilt_y;
     ToolType tool_type;
   } cached_pointers_[MAX_POINTERS_TO_CACHE];
 

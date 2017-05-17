@@ -27,7 +27,8 @@ class WebMouseEventBuilder {
                                     int pointer_id,
                                     float pressure,
                                     float orientation_rad,
-                                    float tilt_rad,
+                                    float tilt_x,
+                                    float tilt_y,
                                     int action_button,
                                     int tool_type);
 };

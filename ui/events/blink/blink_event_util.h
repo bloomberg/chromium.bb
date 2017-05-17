@@ -77,7 +77,8 @@ void SetWebPointerPropertiesFromMotionEventData(
     int pointer_id,
     float pressure,
     float orientation_rad,
-    float tilt_rad,
+    float tilt_x,
+    float tilt_y,
     int android_buttons_changed,
     int tool_type);
 

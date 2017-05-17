@@ -168,24 +168,22 @@ float MotionEventWeb::GetPressure(size_t pointer_index) const {
   return 0.f;
 }
 
-float MotionEventWeb::GetTilt(size_t pointer_index) const {
+float MotionEventWeb::GetTiltX(size_t pointer_index) const {
   DCHECK_LT(pointer_index, GetPointerCount());
 
   if (GetToolType(pointer_index) != TOOL_TYPE_STYLUS)
     return 0.f;
 
-  const WebPointerProperties& pointer = event_.touches[pointer_index];
+  return event_.touches[pointer_index].tilt_x;
+}
 
-  float tilt_x_r = sin(pointer.tilt_x * M_PI / 180.f);
-  float tilt_x_z = cos(pointer.tilt_x * M_PI / 180.f);
-  float tilt_y_r = sin(pointer.tilt_y * M_PI / 180.f);
-  float tilt_y_z = cos(pointer.tilt_y * M_PI / 180.f);
-  float r_x = tilt_x_r * tilt_y_z;
-  float r_y = tilt_y_r * tilt_x_z;
-  float r = sqrt(r_x * r_x + r_y * r_y);
-  float z = tilt_x_z * tilt_y_z;
+float MotionEventWeb::GetTiltY(size_t pointer_index) const {
+  DCHECK_LT(pointer_index, GetPointerCount());
 
-  return atan2(r, z);
+  if (GetToolType(pointer_index) != TOOL_TYPE_STYLUS)
+    return 0.f;
+
+  return event_.touches[pointer_index].tilt_y;
 }
 
 base::TimeTicks MotionEventWeb::GetEventTime() const {
