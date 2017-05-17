@@ -112,7 +112,7 @@ def main():
   if options.release:
     out_dir = 'out/Release' + out_dir_suffix
     release_arg = ' --release'
-    gn_args += ' is_debug=false '
+    gn_args += ' is_debug=false is_official_build=true '
   else:
     out_dir = 'out/Debug' + out_dir_suffix
     release_arg = ''

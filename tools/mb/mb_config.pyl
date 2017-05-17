@@ -735,27 +735,27 @@
     ],
 
     'android_cronet_release_bot_minimal_symbols_arm64': [
-      'android', 'cronet', 'release_bot', 'minimal_symbols', 'arm64',
+      'android', 'cronet', 'official_optimize', 'release_bot', 'minimal_symbols', 'arm64',
     ],
 
     'android_cronet_release_bot_minimal_symbols_armv6': [
-      'android', 'cronet', 'release_bot', 'minimal_symbols', 'armv6',
+      'android', 'cronet', 'official_optimize', 'release_bot', 'minimal_symbols', 'armv6',
     ],
 
     'android_cronet_release_bot_minimal_symbols_arm_no_neon': [
-      'android', 'cronet', 'release_bot', 'minimal_symbols', 'arm_no_neon',
+      'android', 'cronet', 'official_optimize', 'release_bot', 'minimal_symbols', 'arm_no_neon',
     ],
 
     'android_cronet_release_bot_minimal_symbols_arm_no_neon_clang_asan': [
-      'android', 'cronet', 'release_bot', 'minimal_symbols', 'arm_no_neon', 'clang', 'asan',
+      'android', 'cronet', 'official_optimize', 'release_bot', 'minimal_symbols', 'arm_no_neon', 'clang', 'asan',
     ],
 
     'android_cronet_release_bot_minimal_symbols_mipsel': [
-      'android', 'cronet', 'release_bot', 'minimal_symbols', 'mipsel',
+      'android', 'cronet', 'official_optimize', 'release_bot', 'minimal_symbols', 'mipsel',
     ],
 
     'android_cronet_release_bot_minimal_symbols_x86': [
-      'android', 'cronet', 'release_bot', 'minimal_symbols', 'x86',
+      'android', 'cronet', 'official_optimize', 'release_bot', 'minimal_symbols', 'x86',
     ],
 
     'android_cronet_release_trybot_arm_no_neon': [
