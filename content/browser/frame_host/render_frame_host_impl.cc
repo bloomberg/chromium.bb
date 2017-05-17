@@ -120,6 +120,7 @@
 #include "ui/accessibility/ax_tree_update.h"
 #include "ui/gfx/geometry/quad_f.h"
 #include "url/gurl.h"
+#include "url/origin.h"
 
 #if defined(OS_ANDROID)
 #include "content/browser/android/java_interfaces_impl.h"
@@ -970,6 +971,41 @@ void RenderFrameHostImpl::ReportContentSecurityPolicyViolation(
     const CSPViolationParams& violation_params) {
   Send(new FrameMsg_ReportContentSecurityPolicyViolation(routing_id_,
                                                          violation_params));
+}
+
+void RenderFrameHostImpl::SanitizeDataForUseInCspViolation(
+    bool is_redirect,
+    CSPDirective::Name directive,
+    GURL* blocked_url,
+    SourceLocation* source_location) const {
+  DCHECK(blocked_url);
+  DCHECK(source_location);
+  GURL source_location_url(source_location->url);
+
+  // The main goal of this is to avoid leaking information between potentially
+  // separate renderers, in the event of one of them being compromised.
+  // See https://crbug.com/633306.
+  bool sanitize_blocked_url = true;
+  bool sanitize_source_location = true;
+
+  // There is no need to sanitize data when it is same-origin with the current
+  // url of the renderer.
+  if (url::Origin(*blocked_url).IsSameOriginWith(last_committed_origin_))
+    sanitize_blocked_url = false;
+  if (url::Origin(source_location_url).IsSameOriginWith(last_committed_origin_))
+    sanitize_source_location = false;
+
+  // When a renderer tries to do a form submission, it already knows the url of
+  // the blocked url, except when it is redirected.
+  if (!is_redirect && directive == CSPDirective::FormAction)
+    sanitize_blocked_url = false;
+
+  if (sanitize_blocked_url)
+    *blocked_url = blocked_url->GetOrigin();
+  if (sanitize_source_location) {
+    *source_location =
+        SourceLocation(source_location_url.GetOrigin().spec(), 0u, 0u);
+  }
 }
 
 bool RenderFrameHostImpl::SchemeShouldBypassCSP(

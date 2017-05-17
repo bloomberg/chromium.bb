@@ -14,7 +14,27 @@ crbug.com/690946 virtual/mojo-loading/http/tests/security/contentSecurityPolicy/
 Bug(none) http/tests/security/popup-allowed-by-sandbox-can-navigate.html [ Failure ]
 Bug(none) virtual/mojo-loading/http/tests/security/popup-allowed-by-sandbox-can-navigate.html [ Failure ]
 
-# These tests are correct with PlzNavigate.
-# Without PlzNavigate, the line number of the console message is missing.
+# Not disclosing |source_location| and/or |blocked url| between cross-origin
+# renderers when a CSP policy is violated regresses the quality of console
+# error messages.
+Bug(718942) http/tests/misc/onload-detach-during-csp-frame-src-none.html [ Failure ]
+Bug(718942) http/tests/security/contentSecurityPolicy/1.1/form-action-src-get-blocked-with-redirect.html [ Failure ]
+Bug(718942) http/tests/security/contentSecurityPolicy/1.1/form-action-src-redirect-blocked.html [ Failure ]
+Bug(718942) virtual/mojo-loading/http/tests/misc/onload-detach-during-csp-frame-src-none.html [ Failure ]
+Bug(718942) virtual/mojo-loading/http/tests/security/contentSecurityPolicy/1.1/form-action-src-get-blocked-with-redirect.html [ Failure ]
+Bug(718942) virtual/mojo-loading/http/tests/security/contentSecurityPolicy/1.1/form-action-src-redirect-blocked.html [ Failure ]
+Bug(718942) virtual/off-main-thread-fetch/http/tests/misc/onload-detach-during-csp-frame-src-none.html [ Failure ]
+
+
+# ------------------------------------------------------------
+# These tests are correct with PlzNavigate but not without it
+# ------------------------------------------------------------
+# Without PlzNavigate, the line number of the console message is missing when
+# there is a redirect.
 Bug(none) http/tests/security/contentSecurityPolicy/frame-src-redirect-blocked.html [ Failure ]
 Bug(none) virtual/mojo-loading/http/tests/security/contentSecurityPolicy/frame-src-redirect-blocked.html [ Failure ]
+# The line number in CSP violation event should be hidden when it comes from a
+# cross-origin iframe.
+Bug(none) http/tests/security/contentSecurityPolicy/frame-src-child-frame-navigates-to-blocked-origin.html [ Failure ]
+Bug(none) virtual/mojo-loading/http/tests/security/contentSecurityPolicy/frame-src-child-frame-navigates-to-blocked-origin.html [ Failure ]
+

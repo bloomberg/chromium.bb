@@ -55,6 +55,20 @@ class CONTENT_EXPORT CSPContext {
 
   virtual bool SchemeShouldBypassCSP(const base::StringPiece& scheme);
 
+  // For security reasons, some urls must not be disclosed cross-origin in
+  // violation reports. This includes the blocked url and the url of the
+  // initiator of the navigation. This information is potentially transmitted
+  // between different renderer processes.
+  // TODO(arthursonzogni): Stop hiding sensitive parts of URLs in console error
+  // messages as soon as there is a way to send them to the devtools process
+  // without the round trip in the renderer process.
+  // See https://crbug.com/721329
+  virtual void SanitizeDataForUseInCspViolation(
+      bool is_redirect,
+      CSPDirective::Name directive,
+      GURL* blocked_url,
+      SourceLocation* source_location) const;
+
  private:
   bool has_self_ = false;
   std::string self_scheme_;
