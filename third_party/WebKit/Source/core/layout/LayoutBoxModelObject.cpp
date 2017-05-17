@@ -331,6 +331,7 @@ void LayoutBoxModelObject::StyleDidChange(StyleDifference diff,
         SetChildNeedsLayout();
       CreateLayerAfterStyleChange();
       if (Parent() && !NeedsLayout()) {
+        Layer()->UpdateSize();
         // FIXME: We should call a specialized versions of this function.
         Layer()->UpdateLayerPositionsAfterLayout();
       }

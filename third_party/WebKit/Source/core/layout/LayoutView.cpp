@@ -279,6 +279,7 @@ void LayoutView::UpdateLayout() {
       !ShouldUsePrintingLayout() &&
       (!frame_view_ || LogicalWidth() != ViewLogicalWidthForBoxSizing() ||
        LogicalHeight() != ViewLogicalHeightForBoxSizing());
+
   if (relayout_children) {
     layout_scope.SetChildNeedsLayout(this);
     for (LayoutObject* child = FirstChild(); child;
