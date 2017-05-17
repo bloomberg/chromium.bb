@@ -162,7 +162,7 @@ class WebStateImpl;
 - (void)loadCurrentURL;
 
 // Loads HTML in the page and presents it as if it was originating from an
-// application specific URL.
+// application specific URL. |HTML| must not be empty.
 - (void)loadHTML:(NSString*)HTML forAppSpecificURL:(const GURL&)URL;
 
 // Loads HTML in the page and presents it as if it was originating from the
