@@ -19,8 +19,6 @@ namespace device {
 TestDeviceClient::TestDeviceClient() = default;
 
 TestDeviceClient::~TestDeviceClient() {
-  if (hid_service_)
-    hid_service_->Shutdown();
   if (usb_service_)
     usb_service_->Shutdown();
 }
