@@ -3236,14 +3236,6 @@ void FrameView::PrePaint() {
   });
 }
 
-void FrameView::NotifyPaint(const PaintController& paint_controller) const {
-  DCHECK(frame_->GetDocument());
-  PaintTiming::From(*frame_->GetDocument())
-      .NotifyPaint(paint_controller.FirstPainted(),
-                   paint_controller.TextPainted(),
-                   paint_controller.ImagePainted());
-}
-
 void FrameView::PaintTree() {
   TRACE_EVENT0("blink", "FrameView::paintTree");
   SCOPED_BLINK_UMA_HISTOGRAM_TIMER("Blink.Paint.UpdateTime");
@@ -3264,7 +3256,6 @@ void FrameView::PaintTree() {
         graphics_context.SetPrinting(true);
       Paint(graphics_context, CullRect(LayoutRect::InfiniteIntRect()));
       paint_controller_->CommitNewDisplayItems(LayoutSize());
-      NotifyPaint(*paint_controller_);
     }
   } else {
     // A null graphics layer can occur for painting of SVG images that are not
@@ -3306,7 +3297,6 @@ void FrameView::PaintGraphicsLayerRecursively(GraphicsLayer* graphics_layer) {
   DCHECK(!RuntimeEnabledFeatures::slimmingPaintV2Enabled());
   if (graphics_layer->DrawsContent()) {
     graphics_layer->Paint(nullptr);
-    NotifyPaint(graphics_layer->GetPaintController());
   }
 
   if (GraphicsLayer* mask_layer = graphics_layer->MaskLayer())
