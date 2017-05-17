@@ -132,6 +132,9 @@ void AutomationManagerAura::Reset(bool reset_serializer) {
 void AutomationManagerAura::SendEvent(BrowserContext* context,
                                       views::AXAuraObjWrapper* aura_obj,
                                       ui::AXEvent event_type) {
+  if (!current_tree_serializer_)
+    return;
+
   if (!context && g_browser_process->profile_manager()) {
     context = g_browser_process->profile_manager()->GetLastUsedProfile();
   }
