@@ -216,5 +216,5 @@
     <color name="selectable_list_item_highlight_color">#804281f4</color>
     <color name="media_viewer_bg">#000000</color>
     <color name="image_viewer_bg">#0e0e0e</color>
-
+    <color name="cast_media_controller_text">#bebebe</color>
 </resources>
