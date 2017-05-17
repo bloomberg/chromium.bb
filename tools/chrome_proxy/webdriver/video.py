@@ -7,9 +7,11 @@ import time
 import common
 from common import TestDriver
 from common import IntegrationTest
+from common import ParseFlags
 from decorators import NotAndroid
 from decorators import Slow
 
+from selenium.webdriver.common.by import By
 
 class Video(IntegrationTest):
 
@@ -49,7 +51,6 @@ class Video(IntegrationTest):
   # Check the compressed video has the same frame count, width, height, and
   # duration as uncompressed.
   @Slow
-  @NotAndroid
   def testVideoMetrics(self):
     expected = {
       'duration': 3.124,
@@ -67,8 +68,11 @@ class Video(IntegrationTest):
             and 'video' in response.response_headers['content-type']):
           self.assertEqual('video/webm',
             response.response_headers['content-type'])
-      t.ExecuteJavascriptStatement(
-        'document.querySelectorAll("video")[0].play()')
+      if ParseFlags().android:
+        t.FindElement(By.TAG_NAME, "video").click()
+      else:
+        t.ExecuteJavascriptStatement(
+          'document.querySelectorAll("video")[0].play()')
       # Wait for the video to finish playing, plus some headroom.
       time.sleep(5)
       # Check each metric against its expected value.
@@ -128,11 +132,13 @@ class Video(IntegrationTest):
         raise Exception('Test failed!')
 
   # Make sure YouTube autoplays.
-  @NotAndroid
   def testYoutube(self):
     with TestDriver() as t:
       t.AddChromeArg('--enable-spdy-proxy-auth')
       t.LoadURL('http://data-saver-test.appspot.com/youtube')
+      if ParseFlags().android:
+        # Video won't auto play on Android, so give it a click.
+        t.FindElement(By.ID, 'player').click()
       t.WaitForJavascriptExpression(
         'window.playerState == YT.PlayerState.PLAYING', 30)
       for response in t.GetHTTPResponses():
