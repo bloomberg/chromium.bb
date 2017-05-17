@@ -373,8 +373,8 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   // Note that those functions have their origin at this box's CSS border box.
   // As such their location doesn't account for 'top'/'left'.
   LayoutRect BorderBoxRect() const { return LayoutRect(LayoutPoint(), Size()); }
-  LayoutRect PaddingBoxRect() const {
-    return LayoutRect(BorderLeft(), BorderTop(), ClientWidth(), ClientHeight());
+  DISABLE_CFI_PERF LayoutRect PaddingBoxRect() const {
+    return LayoutRect(ClientLeft(), ClientTop(), ClientWidth(), ClientHeight());
   }
   IntRect PixelSnappedBorderBoxRect() const {
     return IntRect(IntPoint(), frame_rect_.PixelSnappedSize());
@@ -560,9 +560,6 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   }
   DISABLE_CFI_PERF LayoutUnit ClientLogicalBottom() const {
     return BorderBefore() + ClientLogicalHeight();
-  }
-  DISABLE_CFI_PERF LayoutRect ClientBoxRect() const {
-    return LayoutRect(ClientLeft(), ClientTop(), ClientWidth(), ClientHeight());
   }
 
   int PixelSnappedClientWidth() const;
