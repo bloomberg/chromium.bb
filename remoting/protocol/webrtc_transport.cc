@@ -30,6 +30,7 @@
 #include "remoting/protocol/webrtc_dummy_video_encoder.h"
 #include "third_party/libjingle_xmpp/xmllite/xmlelement.h"
 #include "third_party/webrtc/api/audio_codecs/builtin_audio_decoder_factory.h"
+#include "third_party/webrtc/api/audio_codecs/builtin_audio_encoder_factory.h"
 #include "third_party/webrtc/api/test/fakeconstraints.h"
 
 using buzz::QName;
