@@ -264,22 +264,34 @@ void DownloadController::StartAndroidDownloadInternal(
   if (!allowed)
     return;
 
-  WebContents* web_contents = wc_getter.Run();
-  if (!web_contents) {
-    // The view went away. Can't proceed.
-    LOG(ERROR) << "Tab closed, download failed on URL:" << info.url.spec();
-    return;
-  }
-
-  base::string16 filename =
+  JNIEnv* env = base::android::AttachCurrentThread();
+  base::string16 file_name =
       net::GetSuggestedFilename(info.url, info.content_disposition,
                                 std::string(),  // referrer_charset
                                 std::string(),  // suggested_name
                                 info.original_mime_type, default_file_name_);
-  ChromeDownloadDelegate::FromWebContents(web_contents)
-      ->EnqueueDownloadManagerRequest(info.url.spec(), info.user_agent,
-                                      filename, info.original_mime_type,
-                                      info.cookie, info.referer);
+  ScopedJavaLocalRef<jstring> jurl =
+      ConvertUTF8ToJavaString(env, info.url.spec());
+  ScopedJavaLocalRef<jstring> juser_agent =
+      ConvertUTF8ToJavaString(env, info.user_agent);
+  ScopedJavaLocalRef<jstring> jmime_type =
+      ConvertUTF8ToJavaString(env, info.original_mime_type);
+  ScopedJavaLocalRef<jstring> jcookie =
+      ConvertUTF8ToJavaString(env, info.cookie);
+  ScopedJavaLocalRef<jstring> jreferer =
+      ConvertUTF8ToJavaString(env, info.referer);
+  ScopedJavaLocalRef<jstring> jfile_name =
+      base::android::ConvertUTF16ToJavaString(env, file_name);
+  Java_DownloadController_enqueueAndroidDownloadManagerRequest(
+      env, jurl, juser_agent, jfile_name, jmime_type, jcookie, jreferer);
+
+  WebContents* web_contents = wc_getter.Run();
+  if (web_contents) {
+    TabAndroid* tab = TabAndroid::FromWebContents(web_contents);
+    if (tab && !tab->GetJavaObject().is_null()) {
+      Java_DownloadController_closeTabIfBlank(env, tab->GetJavaObject());
+    }
+  }
 }
 
 bool DownloadController::HasFileAccessPermission() {
