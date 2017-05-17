@@ -92,6 +92,30 @@ def GetRelativePath(module, base_module):
   return os.path.relpath(module.path, os.path.dirname(base_module.path))
 
 
+class JavaScriptStylizer(generator.Stylizer):
+  def __init__(self, use_new_js_bindings):
+    self.use_new_js_bindings = use_new_js_bindings
+
+  def StylizeField(self, mojom_name):
+    if not self.use_new_js_bindings:
+      return mojom_name
+    return generator.ToCamel(mojom_name, lower_initial=True)
+
+  def StylizeParameter(self, mojom_name):
+    if not self.use_new_js_bindings:
+      return mojom_name
+    return generator.ToCamel(mojom_name, lower_initial=True)
+
+  def StylizeMethod(self, mojom_name):
+    return generator.ToCamel(mojom_name, lower_initial=True)
+
+  def StylizeModule(self, mojom_namespace):
+    if not self.use_new_js_bindings:
+      return mojom_namespace
+    return '.'.join(generator.ToCamel(word, lower_initial=True)
+                        for word in mojom_namespace.split('.'))
+
+
 class Generator(generator.Generator):
   def _GetParameters(self):
     return {
@@ -136,7 +160,6 @@ class Generator(generator.Generator):
       "js_type": self._JavaScriptType,
       "method_passes_associated_kinds": mojom.MethodPassesAssociatedKinds,
       "payload_size": JavaScriptPayloadSize,
-      "stylize_method": lambda x: generator.ToCamel(x, lower_initial=True),
       "to_camel": generator.ToCamel,
       "union_decode_snippet": self._JavaScriptUnionDecodeSnippet,
       "union_encode_snippet": self._JavaScriptUnionEncodeSnippet,
@@ -157,8 +180,7 @@ class Generator(generator.Generator):
     if self.variant:
       raise Exception("Variants not supported in JavaScript bindings.")
 
-    # TODO(yzshen): Add a JavaScriptStylizer.
-    self.module.Stylize(generator.Stylizer())
+    self.module.Stylize(JavaScriptStylizer(self.use_new_js_bindings))
 
     # TODO(yzshen): Remove this method once the old JS bindings go away.
     self._SetUniqueNameForImports()
