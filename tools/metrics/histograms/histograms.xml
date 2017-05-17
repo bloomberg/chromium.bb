@@ -76098,6 +76098,26 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Translate.CompactInfobar.TranslationsPerPage"
+    units="translations">
+  <owner>ramyasharma@google.com</owner>
+  <summary>
+    Records the number of times a page is translated, every time the page is
+    translated. For instance on a page a) translation from A to B, we record
+    &quot;1&quot; b) from A to B - we record &quot;1&quot; and revert from B to
+    A - we record &quot;2&quot; c) from A to B - we record &quot;1&quot;, then
+    translation to C - we record &quot;2&quot;. d) from A to B - we record
+    &quot;1&quot;, then translation to C - we record &quot;2&quot; and then
+    revert to A - we record &quot;3&quot;. We increment the translation count:
+    a) every time the target language is changed. b) every time we revert to the
+    original language (user can only revert to original language and not
+    intermediate target languages). This essentially means 1 denotes &gt;= 1
+    translations, 2 is &gt;=2 translations per page and so on. This will give us
+    a sense of how often people try out several translates on a page, or flip
+    back and forth.
+  </summary>
+</histogram>
+
 <histogram name="Translate.ContentLanguage" enum="TranslateLanguage">
   <owner>kenjibaheux@google.com</owner>
   <summary>

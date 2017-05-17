@@ -34839,7 +34839,7 @@ from previous Chrome versions.
 <enum name="TranslateCompactUIEvent" type="int">
   <int value="0" label="Infobar impression"/>
   <int value="1" label="Tab language clicked"/>
-  <int value="2" label="Infobar closed"/>
+  <int value="2" label="Translate services declined"/>
   <int value="3" label="Options menu clicked"/>
   <int value="4" label="More languages clicked"/>
   <int value="5" label="Language picked from more languages"/>
@@ -34856,6 +34856,8 @@ from previous Chrome versions.
   <int value="16" label="Cancel clicked on always translate snackbar"/>
   <int value="17" label="Cancel clicked on never translate this site snackbar"/>
   <int value="18" label="Cancel clicked on never translate snackbar"/>
+  <int value="19" label="Undo always translate"/>
+  <int value="20" label="Infobar closed"/>
 </enum>
 
 <enum name="TranslateError" type="int">
