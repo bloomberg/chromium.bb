@@ -15,6 +15,7 @@
 #include "crypto/aead.h"
 #include "crypto/hkdf.h"
 #include "crypto/random.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/report_sender.h"
 #include "third_party/boringssl/src/include/openssl/curve25519.h"
 
@@ -98,6 +99,41 @@ bool EncryptSerializedReport(const uint8_t* server_public_key,
   return true;
 }
 
+constexpr net::NetworkTrafficAnnotationTag kTrafficAnnotation =
+    net::DefineNetworkTrafficAnnotation("safe_browsing_extended_reporting", R"(
+        semantics {
+          sender: "Safe Browsing Extended Reporting"
+          description:
+            "When a user has opted in to Safe Browsing Extended Reporting, "
+            "Chrome will send information about HTTPS certificate errors that "
+            "the user encounters to Google. This information includes the "
+            "certificate chain and the type of error encountered. The "
+            "information is used to understand and mitigate common causes of "
+            "spurious certificate errors."
+          trigger:
+            "When the user encounters an HTTPS certificate error and has opted "
+            "in to Safe Browsing Extended Reporting."
+          data:
+            "The hostname that was requested, the certificate chain, the time "
+            "of the request, information about the type of certificate error "
+            "that was encountered, and whether the user was opted in to a "
+            "limited set of field trials that affect certificate validation."
+          destination: GOOGLE_OWNED_SERVICE
+        }
+        policy {
+          cookies_allowed: false
+          setting:
+            "Users can control this feature via the 'Automatically report "
+            "details of possible security incidents to Google' setting under "
+            "'Privacy'. The feature is disabled by default."
+          chrome_policy {
+            SafeBrowsingExtendedReportingOptInAllowed {
+              policy_options {mode: MANDATORY}
+              SafeBrowsingExtendedReportingOptInAllowed: false
+            }
+          }
+        })");
+
 }  // namespace
 
 ErrorReporter::ErrorReporter(net::URLRequestContext* request_context,
@@ -105,7 +141,8 @@ ErrorReporter::ErrorReporter(net::URLRequestContext* request_context,
     : ErrorReporter(upload_url,
                     kServerPublicKey,
                     kServerPublicKeyVersion,
-                    base::MakeUnique<net::ReportSender>(request_context)) {}
+                    base::MakeUnique<net::ReportSender>(request_context,
+                                                        kTrafficAnnotation)) {}
 
 ErrorReporter::ErrorReporter(
     const GURL& upload_url,

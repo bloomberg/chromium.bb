@@ -20,6 +20,7 @@
 #include "net/http/http_status_code.h"
 #include "net/test/url_request/url_request_failed_job.h"
 #include "net/test/url_request/url_request_mock_data_job.h"
+#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/report_sender.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -51,7 +52,8 @@ void SuccessCallback(bool* called) {
 // sent.
 class MockCertificateReportSender : public net::ReportSender {
  public:
-  MockCertificateReportSender() : net::ReportSender(nullptr) {}
+  MockCertificateReportSender()
+      : net::ReportSender(nullptr, TRAFFIC_ANNOTATION_FOR_TESTS) {}
   ~MockCertificateReportSender() override {}
 
   void Send(const GURL& report_uri,

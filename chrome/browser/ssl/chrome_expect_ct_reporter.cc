@@ -17,6 +17,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "chrome/common/chrome_features.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/report_sender.h"
 
 namespace {
@@ -112,11 +113,37 @@ void RecordUMAOnFailure(const GURL& report_uri,
   UMA_HISTOGRAM_SPARSE_SLOWLY("SSL.ExpectCTReportFailure2", -net_error);
 }
 
+constexpr net::NetworkTrafficAnnotationTag kTrafficAnnotation =
+    net::DefineNetworkTrafficAnnotation("chrome_expect_ct_reporter", R"(
+        semantics {
+          sender: "Expect-CT reporting for Certificate Transparency reporting"
+          description:
+            "Websites can opt in to have Chrome send reports to them when "
+            "Chrome observes connections to that website that do not meet "
+            "Chrome's Certificate Transparency policy. Websites can use this "
+            "feature to discover misconfigurations that prevent them from "
+            "complying with Chrome's Certificate Transparency policy."
+          trigger: "Website request."
+          data:
+            "The time of the request, the hostname and port being requested, "
+            "the certificate chain, and the Signed Certificate Timestamps "
+            "observed on the connection."
+          destination: OTHER
+        }
+        policy {
+          cookies_allowed: false
+          setting: "This feature cannot be disabled by settings."
+          policy_exception_justification:
+            "Not implemented, this is a feature that websites can opt into and "
+            "thus there is no Chrome-wide policy to disable it."
+        })");
+
 }  // namespace
 
 ChromeExpectCTReporter::ChromeExpectCTReporter(
     net::URLRequestContext* request_context)
-    : report_sender_(new net::ReportSender(request_context)) {}
+    : report_sender_(
+          new net::ReportSender(request_context, kTrafficAnnotation)) {}
 
 ChromeExpectCTReporter::~ChromeExpectCTReporter() {}
 

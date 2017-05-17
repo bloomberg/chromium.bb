@@ -20,6 +20,7 @@
 #include "net/test/cert_test_util.h"
 #include "net/test/test_data_directory.h"
 #include "net/test/url_request/url_request_failed_job.h"
+#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/report_sender.h"
 #include "net/url_request/url_request_filter.h"
 #include "net/url_request/url_request_test_util.h"
@@ -35,7 +36,8 @@ const char kFailureHistogramName[] = "SSL.ExpectCTReportFailure2";
 // serialized report to be sent.
 class TestCertificateReportSender : public net::ReportSender {
  public:
-  TestCertificateReportSender() : ReportSender(nullptr) {}
+  TestCertificateReportSender()
+      : ReportSender(nullptr, TRAFFIC_ANNOTATION_FOR_TESTS) {}
   ~TestCertificateReportSender() override {}
 
   void Send(const GURL& report_uri,
