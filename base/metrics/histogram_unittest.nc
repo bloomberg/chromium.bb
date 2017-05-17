@@ -18,6 +18,22 @@ void WontCompile() {
   UMA_HISTOGRAM_ENUMERATION("", A, B);
 }
 
+#elif defined(NCTEST_DIFFERENT_ENUM_CLASS)  // [r"\|sample\| and \|boundary\| shouldn't be of different enums"]
+
+void WontCompile() {
+  enum class TypeA { A };
+  enum class TypeB { B };
+  UMA_HISTOGRAM_ENUMERATION("", TypeA::A, TypeB::B);
+}
+
+#elif defined(NCTEST_DIFFERENT_ENUM_MIXED)  // [r"\|sample\| and \|boundary\| shouldn't be of different enums"]
+
+void WontCompile() {
+  enum class TypeA { A };
+  enum TypeB { B };
+  UMA_HISTOGRAM_ENUMERATION("", TypeA::A, B);
+}
+
 #elif defined(NCTEST_NEGATIVE_ENUM_MAX)  // [r'static_assert failed "\|boundary\| is out of range of HistogramBase::Sample"']
 
 void WontCompile() {
