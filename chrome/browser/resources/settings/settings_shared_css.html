@@ -35,7 +35,20 @@
        --iron-icon-fill-color: var(--google-green-500);
       }
 
+      /* See notes in .primary-button.
+       * TODO(dschuyler): Remove unnecessary .secondary-button references. */
       paper-button {
+        --paper-button: {
+          -webkit-padding-end: var(--settings-button-edge-spacing);
+          -webkit-padding-start: var(--settings-button-edge-spacing);
+          color: var(--paper-grey-600);
+          font-weight: 500;
+          min-width: 1em;  /* A tighter fit than 5.14em for short buttons. */
+          text-decoration: none;
+        };
+        --paper-button-flat-keyboard-focus: {
+          background: rgba(0, 0, 0, .12);
+        };
         flex-shrink: 0;
         height: 36px;
         margin: 0;
@@ -43,6 +56,27 @@
 
       paper-button[toggles][active] {
         background-color: var(--paper-grey-300);
+      }
+
+      .settings-box paper-button {
+        -webkit-margin-end: calc(var(--settings-button-edge-spacing) * -1);
+        -webkit-margin-start: calc(var(--settings-button-edge-spacing) * -1);
+      }
+
+      /* There are two settings button styles, .primary-button and normal
+       * buttons. The primary is the action button (e.g. "edit", "delete")
+       * while the normal (secondary-button) is often a "Cancel" button. */
+      .primary-button {
+        --paper-button: {
+          -webkit-padding-end: var(--settings-button-edge-spacing);
+          -webkit-padding-start: var(--settings-button-edge-spacing);
+          font-weight: 500;
+          text-align: start;
+        };
+        --paper-button-flat-keyboard-focus: {
+          background: rgba(51, 103, 214, .12);  /* --google-blue-700 */
+        };
+        color: var(--google-blue-500);
       }
 
       paper-toggle-button {
@@ -55,18 +89,8 @@
         -webkit-margin-start: 4px;
       }
 
-      .primary-button {
-        color: var(--google-blue-500);
-      }
-
       a[href] {
         color: var(--google-blue-700);
-      }
-
-      .primary-button {
-        --paper-button-flat-keyboard-focus: {
-          background: rgba(51, 103, 214, .12);  /* --google-blue-700 */
-        };
       }
 
       a[href] {
@@ -78,20 +102,6 @@
         color: inherit !important;
       }
 
-      /* There are three main button styles, .primary-button, .secondary-button,
-       * and .tertiary-button. The primary is the action button (e.g. "edit",
-       * "delete") while the secondary is often a "Cancel" button. A tertiary
-       * button may be used to get more information or similar, that we expect
-       * most users will not need. */
-      .primary-button {
-        --paper-button: {
-          -webkit-padding-end: var(--settings-button-edge-spacing);
-          -webkit-padding-start: var(--settings-button-edge-spacing);
-          font-weight: 500;
-          text-align: start;
-        };
-      }
-
       .primary-toggle {
         color: var(--paper-grey-600);
         font-weight: 500;
@@ -99,27 +109,6 @@
 
       .primary-toggle[checked] {
         color: var(--google-blue-500);
-      }
-
-      /* See notes in .primary-button. */
-      .secondary-button {
-        --paper-button: {
-          -webkit-padding-end: var(--settings-button-edge-spacing);
-          -webkit-padding-start: var(--settings-button-edge-spacing);
-          color: var(--paper-grey-600);
-          font-weight: 500;
-          min-width: 1em;  /* A tighter fit than 5.14em for short buttons. */
-          text-decoration: none;
-        };
-        --paper-button-flat-keyboard-focus: {
-          background: rgba(0, 0, 0, .12);
-        };
-      }
-
-      .settings-box .primary-button,
-      .settings-box .secondary-button {
-        -webkit-margin-end: calc(var(--settings-button-edge-spacing) * -1);
-        -webkit-margin-start: calc(var(--settings-button-edge-spacing) * -1);
       }
 
       paper-checkbox {
