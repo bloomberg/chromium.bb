@@ -191,6 +191,40 @@ public class DownloadController {
     }
 
     /**
+     * Enqueue a request to download a file using Android DownloadManager.
+     * @param url Url to download.
+     * @param userAgent User agent to use.
+     * @param contentDisposition Content disposition of the request.
+     * @param mimeType MIME type.
+     * @param cookie Cookie to use.
+     * @param referrer Referrer to use.
+     */
+    @CalledByNative
+    private static void enqueueAndroidDownloadManagerRequest(String url, String userAgent,
+            String fileName, String mimeType, String cookie, String referrer) {
+        DownloadInfo downloadInfo = new DownloadInfo.Builder()
+                .setUrl(url)
+                .setUserAgent(userAgent)
+                .setFileName(fileName)
+                .setMimeType(mimeType)
+                .setCookie(cookie)
+                .setReferrer(referrer)
+                .setIsGETRequest(true)
+                .build();
+        enqueueDownloadManagerRequest(downloadInfo);
+    }
+
+    /**
+     * Enqueue a request to download a file using Android DownloadManager.
+     *
+     * @param info Download information about the download.
+     */
+    static void enqueueDownloadManagerRequest(final DownloadInfo info) {
+        DownloadManagerService.getDownloadManagerService().enqueueDownloadManagerRequest(
+                new DownloadItem(true, info), true);
+    }
+
+    /**
      * Called when a download is started.
      */
     @CalledByNative

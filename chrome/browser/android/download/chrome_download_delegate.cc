@@ -83,31 +83,6 @@ void ChromeDownloadDelegate::SetJavaRef(JNIEnv* env, jobject jobj) {
   java_ref_ = env->NewGlobalRef(jobj);
 }
 
-void ChromeDownloadDelegate::EnqueueDownloadManagerRequest(
-    const std::string& url,
-    const std::string& user_agent,
-    const base::string16& file_name,
-    const std::string& mime_type,
-    const std::string& cookie,
-    const std::string& referer) {
-  JNIEnv* env = base::android::AttachCurrentThread();
-  ScopedJavaLocalRef<jstring> jurl =
-      ConvertUTF8ToJavaString(env, url);
-  ScopedJavaLocalRef<jstring> juser_agent =
-      ConvertUTF8ToJavaString(env, user_agent);
-  ScopedJavaLocalRef<jstring> jmime_type =
-      ConvertUTF8ToJavaString(env, mime_type);
-  ScopedJavaLocalRef<jstring> jcookie =
-      ConvertUTF8ToJavaString(env, cookie);
-  ScopedJavaLocalRef<jstring> jreferer =
-      ConvertUTF8ToJavaString(env, referer);
-  ScopedJavaLocalRef<jstring> jfile_name =
-      base::android::ConvertUTF16ToJavaString(env, file_name);
-  Java_ChromeDownloadDelegate_enqueueAndroidDownloadManagerRequest(
-      env, java_ref_, jurl, juser_agent, jfile_name, jmime_type, jcookie,
-      jreferer);
-}
-
 void Init(JNIEnv* env,
           const JavaParamRef<jobject>& obj,
           const JavaParamRef<jobject>& jweb_contents) {

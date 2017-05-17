@@ -111,7 +111,8 @@ public class ChromeDownloadDelegate {
                 if (fileExists) {
                     launchDownloadInfoBar(newInfo, fullDirPath);
                 } else {
-                    enqueueDownloadManagerRequest(newInfo);
+                    DownloadController.enqueueDownloadManagerRequest(newInfo);
+                    DownloadController.closeTabIfBlank(mTab);
                 }
             }
         }.execute();
@@ -177,11 +178,11 @@ public class ChromeDownloadDelegate {
 
                 @Override
                 public void onPostExecute(Void args) {
-                    enqueueDownloadManagerRequest(downloadInfo);
+                    DownloadController.enqueueDownloadManagerRequest(downloadInfo);
                 }
             }.execute();
         } else {
-            enqueueDownloadManagerRequest(downloadInfo);
+            DownloadController.enqueueDownloadManagerRequest(downloadInfo);
         }
         return DownloadController.closeTabIfBlank(mTab);
     }
@@ -190,17 +191,6 @@ public class ChromeDownloadDelegate {
         if (mTab == null) return;
         nativeLaunchDuplicateDownloadInfoBar(ChromeDownloadDelegate.this, mTab, info,
                 new File(fullDirPath, info.getFileName()).toString(), mTab.isIncognito());
-    }
-
-    /**
-     * Enqueue a request to download a file using Android DownloadManager.
-     *
-     * @param info Download information about the download.
-     */
-    private void enqueueDownloadManagerRequest(final DownloadInfo info) {
-        DownloadManagerService.getDownloadManagerService().enqueueDownloadManagerRequest(
-                new DownloadItem(true, info), true);
-        DownloadController.closeTabIfBlank(mTab);
     }
 
     /**
@@ -241,30 +231,6 @@ public class ChromeDownloadDelegate {
      */
     private void alertDownloadFailure(String fileName, int reason) {
         DownloadManagerService.getDownloadManagerService().onDownloadFailed(fileName, reason);
-    }
-
-    /**
-     * Enqueue a request to download a file using Android DownloadManager.
-     * @param url Url to download.
-     * @param userAgent User agent to use.
-     * @param contentDisposition Content disposition of the request.
-     * @param mimeType MIME type.
-     * @param cookie Cookie to use.
-     * @param referrer Referrer to use.
-     */
-    @CalledByNative
-    private void enqueueAndroidDownloadManagerRequest(String url, String userAgent,
-            String fileName, String mimeType, String cookie, String referrer) {
-        DownloadInfo downloadInfo = new DownloadInfo.Builder()
-                .setUrl(url)
-                .setUserAgent(userAgent)
-                .setFileName(fileName)
-                .setMimeType(mimeType)
-                .setCookie(cookie)
-                .setReferrer(referrer)
-                .setIsGETRequest(true)
-                .build();
-        enqueueDownloadManagerRequest(downloadInfo);
     }
 
     /**
@@ -318,25 +284,6 @@ public class ChromeDownloadDelegate {
             if (index > 0) return filename.substring(index + 1);
         }
         return MimeTypeMap.getFileExtensionFromUrl(url);
-    }
-
-    /**
-     * Discards a downloaded file.
-     *
-     * @param filepath File to be discarded.
-     */
-    private static void discardFile(final String filepath) {
-        new AsyncTask<Void, Void, Void>() {
-            @Override
-            public Void doInBackground(Void... params) {
-                Log.d(TAG, "Discarding download: " + filepath);
-                File file = new File(filepath);
-                if (file.exists() && !file.delete()) {
-                    Log.e(TAG, "Error discarding file: " + filepath);
-                }
-                return null;
-            }
-        }.execute();
     }
 
     /**
