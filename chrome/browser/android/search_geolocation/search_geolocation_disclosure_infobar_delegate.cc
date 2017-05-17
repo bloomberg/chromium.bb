@@ -10,25 +10,11 @@
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/android/infobars/search_geolocation_disclosure_infobar.h"
-#include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/prefs/pref_service.h"
-#include "components/variations/variations_associated_data.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/base/l10n/l10n_util.h"
-
-namespace {
-
-const char kUseControlTextVariation[] = "UseControlText";
-
-int ShouldUseControlText() {
-  std::string variation = variations::GetVariationParamValueByFeature(
-      features::kConsistentOmniboxGeolocation, kUseControlTextVariation);
-  return !variation.empty();
-}
-
-}  // namespace
 
 // This enum is used in histograms, and is thus append only. Do not remove or
 // re-order items.
@@ -99,10 +85,7 @@ SearchGeolocationDisclosureInfoBarDelegate::
       IDS_SEARCH_GEOLOCATION_DISCLOSURE_INFOBAR_SETTINGS_LINK_TEXT);
   size_t offset;
   message_text_ = l10n_util::GetStringFUTF16(
-      ShouldUseControlText()
-          ? IDS_SEARCH_GEOLOCATION_DISCLOSURE_INFOBAR_CONTROL_TEXT
-          : IDS_SEARCH_GEOLOCATION_DISCLOSURE_INFOBAR_TEXT,
-      link, &offset);
+      IDS_SEARCH_GEOLOCATION_DISCLOSURE_INFOBAR_TEXT, link, &offset);
   inline_link_range_ = gfx::Range(offset, offset + link.length());
 }
 
