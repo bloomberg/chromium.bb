@@ -129,7 +129,7 @@ bool ChromeSubresourceFilterClient::OnPageActivationComputed(
 
   // Return whether the activation should be whitelisted.
   return whitelisted_hosts_.count(url.host()) ||
-         settings_manager_->GetSitePermission(url) == CONTENT_SETTING_BLOCK;
+         settings_manager_->GetSitePermission(url) == CONTENT_SETTING_ALLOW;
   // TODO(csharrison): Consider setting the metadata to an empty dict here if
   // the site is activated and not whitelisted. Need to be careful about various
   // edge cases like |should_suppress_notification| and DRYRUN activation.

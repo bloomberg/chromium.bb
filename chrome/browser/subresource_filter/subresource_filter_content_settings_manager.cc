@@ -81,8 +81,8 @@ void SubresourceFilterContentSettingsManager::WhitelistSite(const GURL& url) {
   settings_map_->SetContentSettingDefaultScope(
       url, GURL(),
       ContentSettingsType::CONTENT_SETTINGS_TYPE_SUBRESOURCE_FILTER,
-      std::string(), CONTENT_SETTING_BLOCK);
-  ChromeSubresourceFilterClient::LogAction(kActionContentSettingsBlockedFromUI);
+      std::string(), CONTENT_SETTING_ALLOW);
+  ChromeSubresourceFilterClient::LogAction(kActionContentSettingsAllowedFromUI);
 }
 
 void SubresourceFilterContentSettingsManager::OnDidShowUI(const GURL& url) {
@@ -154,12 +154,12 @@ void SubresourceFilterContentSettingsManager::OnContentSettingChanged(
     if (global_setting == cached_global_setting_for_metrics_)
       return;
     cached_global_setting_for_metrics_ = global_setting;
-    if (global_setting == CONTENT_SETTING_BLOCK) {
-      ChromeSubresourceFilterClient::LogAction(
-          kActionContentSettingsBlockedGlobal);
-    } else if (global_setting == CONTENT_SETTING_ALLOW) {
+    if (global_setting == CONTENT_SETTING_ALLOW) {
       ChromeSubresourceFilterClient::LogAction(
           kActionContentSettingsAllowedGlobal);
+    } else if (global_setting == CONTENT_SETTING_BLOCK) {
+      ChromeSubresourceFilterClient::LogAction(
+          kActionContentSettingsBlockedGlobal);
     } else {
       NOTREACHED();
     }
@@ -183,17 +183,17 @@ void SubresourceFilterContentSettingsManager::OnContentSettingChanged(
   ContentSetting setting = settings_map_->GetContentSetting(
       url, url, ContentSettingsType::CONTENT_SETTINGS_TYPE_SUBRESOURCE_FILTER,
       std::string());
-  if (setting == CONTENT_SETTING_BLOCK) {
-    ChromeSubresourceFilterClient::LogAction(kActionContentSettingsBlocked);
-  } else if (setting == CONTENT_SETTING_ALLOW) {
+  if (setting == CONTENT_SETTING_ALLOW) {
     ChromeSubresourceFilterClient::LogAction(kActionContentSettingsAllowed);
+  } else if (setting == CONTENT_SETTING_BLOCK) {
+    ChromeSubresourceFilterClient::LogAction(kActionContentSettingsBlocked);
   } else {
     NOTREACHED();
   }
 
   if (!ShouldShowUIForSite(url)) {
     ChromeSubresourceFilterClient::LogAction(
-        kActionContentSettingsBlockedWhileUISuppressed);
+        kActionContentSettingsAllowedWhileUISuppressed);
   }
   // Note: could potentially reset the smart UI here to enable the user to
   // easily change their decision. If that code is added we should make sure not

@@ -33600,14 +33600,14 @@ from previous Chrome versions.
   <int value="1" label="UI Shown"/>
   <int value="2" label="Details shown"/>
   <int value="3" label="Learn more clicked"/>
-  <int value="4" label="Content setting blocked from UI"/>
-  <int value="5" label="Content setting allowed"/>
-  <int value="6" label="Content setting blocked"/>
-  <int value="7" label="Content setting allowed (global)"/>
-  <int value="8" label="Content setting blocked (global)"/>
-  <int value="9" label="(Deprecated) Content setting wildcard update"/>
+  <int value="4" label="Content setting: allowed from UI"/>
+  <int value="5" label="Content setting: blocked"/>
+  <int value="6" label="Content setting: allowed"/>
+  <int value="7" label="Content setting: blocked (global)"/>
+  <int value="8" label="Content setting: allowed (global)"/>
+  <int value="9" label="Content setting: wildcard update (Deprecated)"/>
   <int value="10" label="UI Suppressed (Smart Logic)"/>
-  <int value="11" label="Content setting blocked while UI suppressed"/>
+  <int value="11" label="Content setting: allowed while UI suppressed"/>
 </enum>
 
 <enum name="SubresourceFilterActivationDecision" type="int">

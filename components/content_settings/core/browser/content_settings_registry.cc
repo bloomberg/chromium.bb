@@ -275,8 +275,8 @@ void ContentSettingsRegistry::Init() {
            ContentSettingsInfo::INHERIT_IF_LESS_PERMISSIVE);
 
   Register(CONTENT_SETTINGS_TYPE_SUBRESOURCE_FILTER, "subresource-filter",
-           CONTENT_SETTING_ALLOW,
-           WebsiteSettingsInfo::UNSYNCABLE, WhitelistedSchemes(),
+           CONTENT_SETTING_BLOCK, WebsiteSettingsInfo::UNSYNCABLE,
+           WhitelistedSchemes(),
            ValidSettings(CONTENT_SETTING_ALLOW, CONTENT_SETTING_BLOCK),
            WebsiteSettingsInfo::REQUESTING_ORIGIN_ONLY_SCOPE,
            WebsiteSettingsRegistry::DESKTOP |

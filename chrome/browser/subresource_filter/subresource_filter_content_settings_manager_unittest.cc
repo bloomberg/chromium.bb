@@ -111,26 +111,26 @@ TEST_F(SubresourceFilterContentSettingsManagerTest, LogDefaultSetting) {
 
 TEST_F(SubresourceFilterContentSettingsManagerTest, IrrelevantSetting) {
   GetSettingsMap()->SetDefaultContentSetting(CONTENT_SETTINGS_TYPE_POPUPS,
-                                             CONTENT_SETTING_ALLOW);
+                                             CONTENT_SETTING_BLOCK);
   histogram_tester().ExpectTotalCount(kActionsHistogram, 0);
 }
 
 TEST_F(SubresourceFilterContentSettingsManagerTest, DefaultSetting) {
   // Setting to an existing value should not log any metrics.
   GetSettingsMap()->SetDefaultContentSetting(
-      CONTENT_SETTINGS_TYPE_SUBRESOURCE_FILTER, CONTENT_SETTING_ALLOW);
+      CONTENT_SETTINGS_TYPE_SUBRESOURCE_FILTER, CONTENT_SETTING_BLOCK);
   histogram_tester().ExpectTotalCount(kActionsHistogram, 0);
 
   GetSettingsMap()->SetDefaultContentSetting(
-      CONTENT_SETTINGS_TYPE_SUBRESOURCE_FILTER, CONTENT_SETTING_BLOCK);
-  histogram_tester().ExpectBucketCount(kActionsHistogram,
-                                       kActionContentSettingsBlockedGlobal, 1);
-
-  GetSettingsMap()->SetDefaultContentSetting(
       CONTENT_SETTINGS_TYPE_SUBRESOURCE_FILTER, CONTENT_SETTING_ALLOW);
-  histogram_tester().ExpectTotalCount(kActionsHistogram, 2);
   histogram_tester().ExpectBucketCount(kActionsHistogram,
                                        kActionContentSettingsAllowedGlobal, 1);
+
+  GetSettingsMap()->SetDefaultContentSetting(
+      CONTENT_SETTINGS_TYPE_SUBRESOURCE_FILTER, CONTENT_SETTING_BLOCK);
+  histogram_tester().ExpectTotalCount(kActionsHistogram, 2);
+  histogram_tester().ExpectBucketCount(kActionsHistogram,
+                                       kActionContentSettingsBlockedGlobal, 1);
 }
 
 TEST_F(SubresourceFilterContentSettingsManagerTest, UrlSetting) {
@@ -138,16 +138,16 @@ TEST_F(SubresourceFilterContentSettingsManagerTest, UrlSetting) {
 
   GetSettingsMap()->SetContentSettingDefaultScope(
       url, url, CONTENT_SETTINGS_TYPE_SUBRESOURCE_FILTER, std::string(),
-      CONTENT_SETTING_BLOCK);
+      CONTENT_SETTING_ALLOW);
   histogram_tester().ExpectBucketCount(kActionsHistogram,
-                                       kActionContentSettingsBlocked, 1);
+                                       kActionContentSettingsAllowed, 1);
 
   GetSettingsMap()->SetContentSettingDefaultScope(
       url, url, CONTENT_SETTINGS_TYPE_SUBRESOURCE_FILTER, std::string(),
-      CONTENT_SETTING_ALLOW);
+      CONTENT_SETTING_BLOCK);
   histogram_tester().ExpectTotalCount(kActionsHistogram, 2);
   histogram_tester().ExpectBucketCount(kActionsHistogram,
-                                       kActionContentSettingsAllowed, 1);
+                                       kActionContentSettingsBlocked, 1);
 }
 
 TEST_F(SubresourceFilterContentSettingsManagerTest, WildcardUpdate) {
@@ -158,14 +158,14 @@ TEST_F(SubresourceFilterContentSettingsManagerTest, WildcardUpdate) {
   GetSettingsMap()->SetContentSettingCustomScope(
       primary_pattern, secondary_pattern,
       CONTENT_SETTINGS_TYPE_SUBRESOURCE_FILTER, std::string(),
-      CONTENT_SETTING_BLOCK);
+      CONTENT_SETTING_ALLOW);
   histogram_tester().ExpectBucketCount(kActionsHistogram,
                                        kActionContentSettingsWildcardUpdate, 1);
 
   GetSettingsMap()->SetContentSettingCustomScope(
       primary_pattern, secondary_pattern,
       CONTENT_SETTINGS_TYPE_SUBRESOURCE_FILTER, std::string(),
-      CONTENT_SETTING_ALLOW);
+      CONTENT_SETTING_BLOCK);
   histogram_tester().ExpectTotalCount(kActionsHistogram, 2);
   histogram_tester().ExpectBucketCount(kActionsHistogram,
                                        kActionContentSettingsWildcardUpdate, 2);
@@ -191,7 +191,7 @@ TEST_F(SubresourceFilterContentSettingsManagerTest, SmartUI) {
   // Showing the UI should trigger a forced content setting update, but no
   // metrics should be recorded.
   histogram_tester().ExpectBucketCount(kActionsHistogram,
-                                       kActionContentSettingsAllowed, 0);
+                                       kActionContentSettingsBlocked, 0);
 
   // Fast forward the clock.
   test_clock()->Advance(
@@ -217,17 +217,17 @@ TEST_F(SubresourceFilterContentSettingsManagerTest,
 
   // The user changed their mind, make sure the feature is showing up in the
   // settings UI. i.e. the setting should be non-default.
-  EXPECT_EQ(CONTENT_SETTING_ALLOW, settings_manager()->GetSitePermission(url));
+  EXPECT_EQ(CONTENT_SETTING_BLOCK, settings_manager()->GetSitePermission(url));
   GetSettingsMap()->SetContentSettingDefaultScope(
       url, GURL(), CONTENT_SETTINGS_TYPE_SUBRESOURCE_FILTER, std::string(),
-      CONTENT_SETTING_BLOCK);
+      CONTENT_SETTING_ALLOW);
 
   histogram_tester().ExpectBucketCount(kActionsHistogram,
-                                       kActionContentSettingsBlocked, 1);
+                                       kActionContentSettingsAllowed, 1);
   histogram_tester().ExpectBucketCount(kActionsHistogram,
-                                       kActionContentSettingsBlockedFromUI, 0);
+                                       kActionContentSettingsAllowedFromUI, 0);
   histogram_tester().ExpectBucketCount(
-      kActionsHistogram, kActionContentSettingsBlockedWhileUISuppressed, 1);
+      kActionsHistogram, kActionContentSettingsAllowedWhileUISuppressed, 1);
 
   // Smart UI should be reset.
   EXPECT_TRUE(settings_manager()->ShouldShowUIForSite(url));
@@ -244,23 +244,23 @@ TEST_F(SubresourceFilterContentSettingsManagerTest,
   // Simulate changing the setting via the infobar UI.
   settings_manager()->WhitelistSite(url);
   histogram_tester().ExpectBucketCount(kActionsHistogram,
-                                       kActionContentSettingsBlockedFromUI, 1);
+                                       kActionContentSettingsAllowedFromUI, 1);
 
   // The standard "Block" histograms are only triggered when blocking from the
   // settings UI, not our standard UI.
   histogram_tester().ExpectBucketCount(kActionsHistogram,
-                                       kActionContentSettingsBlocked, 0);
+                                       kActionContentSettingsAllowed, 0);
   histogram_tester().ExpectBucketCount(
-      kActionsHistogram, kActionContentSettingsBlockedWhileUISuppressed, 0);
+      kActionsHistogram, kActionContentSettingsAllowedWhileUISuppressed, 0);
 
   GURL url2("https://example.test2/");
   GetSettingsMap()->SetContentSettingDefaultScope(
       url2, GURL(), CONTENT_SETTINGS_TYPE_SUBRESOURCE_FILTER, std::string(),
-      CONTENT_SETTING_BLOCK);
+      CONTENT_SETTING_ALLOW);
   histogram_tester().ExpectBucketCount(kActionsHistogram,
-                                       kActionContentSettingsBlocked, 1);
+                                       kActionContentSettingsAllowed, 1);
   histogram_tester().ExpectBucketCount(kActionsHistogram,
-                                       kActionContentSettingsBlockedFromUI, 1);
+                                       kActionContentSettingsAllowedFromUI, 1);
 }
 
 TEST_F(SubresourceFilterContentSettingsManagerTest,
@@ -268,9 +268,9 @@ TEST_F(SubresourceFilterContentSettingsManagerTest,
   histogram_tester().ExpectTotalCount(kActionsHistogram, 0);
 
   GetSettingsMap()->SetDefaultContentSetting(
-      CONTENT_SETTINGS_TYPE_SUBRESOURCE_FILTER, CONTENT_SETTING_BLOCK);
+      CONTENT_SETTINGS_TYPE_SUBRESOURCE_FILTER, CONTENT_SETTING_ALLOW);
   histogram_tester().ExpectBucketCount(kActionsHistogram,
-                                       kActionContentSettingsBlockedGlobal, 1);
+                                       kActionContentSettingsAllowedGlobal, 1);
 
   GetSettingsMap()->SetDefaultContentSetting(
       CONTENT_SETTINGS_TYPE_SUBRESOURCE_FILTER, CONTENT_SETTING_BLOCK);
