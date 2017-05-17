@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/callback_helpers.h"
+#include "base/feature_list.h"
 #include "base/location.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/single_thread_task_runner.h"
@@ -24,6 +25,8 @@
 #include "media/base/video_frame.h"
 #include "media/renderers/gpu_video_accelerator_factories.h"
 #include "media/video/gpu_memory_buffer_video_frame_pool.h"
+
+namespace media {
 
 namespace {
 
@@ -93,9 +96,13 @@ VideoFrameColorSpaceUMA ColorSpaceUMAHelper(
 
   return VideoFrameColorSpaceUMA::UnknownHDR;
 }
-};
 
-namespace media {
+bool ShouldUseLowDelayMode(DemuxerStream* stream) {
+  return base::FeatureList::IsEnabled(kLowDelayVideoRenderingOnLiveStream) &&
+         stream->liveness() == DemuxerStream::LIVENESS_LIVE;
+}
+
+}  // namespace
 
 VideoRendererImpl::VideoRendererImpl(
     const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner,
@@ -235,7 +242,8 @@ void VideoRendererImpl::Initialize(
     gpu_memory_buffer_pool_.reset();
   }
 
-  low_delay_ = (stream->liveness() == DemuxerStream::LIVENESS_LIVE);
+  low_delay_ = ShouldUseLowDelayMode(stream);
+
   UMA_HISTOGRAM_BOOLEAN("Media.VideoRenderer.LowDelay", low_delay_);
   if (low_delay_)
     MEDIA_LOG(DEBUG, media_log_) << "Video rendering in low delay mode.";
