@@ -64,7 +64,7 @@ bool AudioDecoderSoftwareWrapper::SetConfig(const AudioConfig& config) {
   }
 
   if (!CreateSoftwareDecoder(config)) {
-    LOG(INFO) << "Failed to create software decoder";
+    LOG(INFO) << "Failed to create software decoder for " << config.codec;
     return false;
   }
 
@@ -90,6 +90,10 @@ AudioDecoderSoftwareWrapper::GetRenderingDelay() {
 
 bool AudioDecoderSoftwareWrapper::CreateSoftwareDecoder(
     const AudioConfig& config) {
+  if (config.channel_number > 2) {
+    LOG(ERROR) << "Multi-channel software audio decoding is not supported";
+    return false;
+  }
   // TODO(kmackay) Consider using planar float instead.
   software_decoder_ = media::CastAudioDecoder::Create(
       base::ThreadTaskRunnerHandle::Get(), config,
