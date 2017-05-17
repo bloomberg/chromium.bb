@@ -170,6 +170,19 @@
   return result.state;
 }
 
+- (NSSet*)pendingNavigations {
+  NSMutableSet* result = [NSMutableSet set];
+  for (id navigation in _records) {
+    CRWWKNavigationsStateRecord* record = [_records objectForKey:navigation];
+    if (record.state == web::WKNavigationState::REQUESTED ||
+        record.state == web::WKNavigationState::STARTED ||
+        record.state == web::WKNavigationState::REDIRECTED) {
+      [result addObject:navigation];
+    }
+  }
+  return [result copy];
+}
+
 - (id)keyForNavigation:(WKNavigation*)navigation {
   return navigation ? navigation : _nullNavigation;
 }
