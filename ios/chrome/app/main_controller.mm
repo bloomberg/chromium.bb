@@ -954,6 +954,8 @@ enum class StackViewDismissalMode { NONE, NORMAL, INCOGNITO };
 }
 
 - (void)stopChromeMain {
+  _spotlightManager.reset();
+  _browserViewWrangler.reset();
   _chromeMain.reset();
 }
 
