@@ -131,7 +131,7 @@ ChildProcessLauncherHelper::LaunchProcessOnLauncherThread(
   }
 
   constexpr int param_key = 0;  // TODO(boliu): Use this.
-  java_peer_.Reset(Java_ChildProcessLauncherHelper_create(
+  java_peer_.Reset(Java_ChildProcessLauncherHelper_createAndStart(
       env, reinterpret_cast<intptr_t>(this), param_key, j_argv, j_file_infos));
   AddRef();  // Balanced by OnChildProcessStarted.
 

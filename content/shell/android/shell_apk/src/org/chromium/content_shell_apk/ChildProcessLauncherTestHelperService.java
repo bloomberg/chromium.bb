@@ -21,6 +21,7 @@ import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.base.process_launcher.ChildProcessCreationParams;
 import org.chromium.base.process_launcher.FileDescriptorInfo;
 import org.chromium.content.browser.ChildProcessConnection;
+import org.chromium.content.browser.ChildProcessLauncherHelper;
 
 /**
  * A Service that assists the ChildProcessLauncherTest that responds to one message, which
@@ -70,20 +71,23 @@ public class ChildProcessLauncherTestHelperService extends Service {
         final boolean bindToCaller = true;
         ChildProcessCreationParams params = new ChildProcessCreationParams(
                 getPackageName(), false, LibraryProcessType.PROCESS_CHILD, bindToCaller);
-        final ChildProcessConnection conn = ChildProcessLauncherTestUtils.startInternalForTesting(
-                this, commandLine, new FileDescriptorInfo[0], params);
+        final ChildProcessLauncherHelper processLauncher =
+                ChildProcessLauncherTestUtils.startForTesting(
+                        this, commandLine, new FileDescriptorInfo[0], params);
 
-        // Poll the connection until it is set up. The main test in ChildProcessLauncherTest, which
-        // has bound the connection to this service, manages the timeout via the lifetime of this
-        // service.
+        // Poll the launcher until the connection is set up. The main test in
+        // ChildProcessLauncherTest, which has bound the connection to this service, manages the
+        // timeout via the lifetime of this service.
         final Handler handler = new Handler();
         final Runnable task = new Runnable() {
             final Messenger mReplyTo = msg.replyTo;
 
             @Override
             public void run() {
-                int pid = ChildProcessLauncherTestUtils.getConnectionPid(conn);
-                if (pid != 0) {
+                ChildProcessConnection conn = processLauncher.getChildProcessConnection();
+                if (conn != null) {
+                    int pid = ChildProcessLauncherTestUtils.getConnectionPid(conn);
+                    assert pid != 0;
                     try {
                         mReplyTo.send(Message.obtain(null, MSG_BIND_SERVICE_REPLY, pid,
                                 ChildProcessLauncherTestUtils.getConnectionServiceNumber(conn)));

@@ -8,6 +8,7 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
@@ -56,6 +57,12 @@ public class ChildProcessLauncherTest {
     @Before
     public void setUp() throws Exception {
         LibraryLoader.get(LibraryProcessType.PROCESS_CHILD).ensureInitialized();
+        ChildProcessLauncherTestUtils.runOnLauncherThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                ChildProcessLauncherHelper.initLinker();
+            }
+        });
     }
 
     /**
@@ -404,41 +411,20 @@ public class ChildProcessLauncherTest {
         Assert.assertTrue(helperConnPid > 0);
 
         // Launch a service from this process. Since slot 0 is already bound by the Helper, it
-        // will fail to start and the ChildProcessLauncher will retry.
+        // will fail to start and the ChildProcessLauncher will retry and use the slot 1.
         final ChildProcessCreationParams creationParams = new ChildProcessCreationParams(
                 context.getPackageName(), false /* isExternalService */,
                 LibraryProcessType.PROCESS_CHILD, true /* bindToCallerCheck */);
-        final ChildProcessConnection conn = ChildProcessLauncherTestUtils.startInternalForTesting(
-                context, sProcessWaitArguments, new FileDescriptorInfo[0], creationParams);
+        final ChildProcessLauncherHelper launcherHelper =
+                ChildProcessLauncherTestUtils.startForTesting(
+                        context, sProcessWaitArguments, new FileDescriptorInfo[0], creationParams);
 
-        CriteriaHelper.pollInstrumentationThread(
-                new Criteria("Failed waiting for instrumentation-bound service") {
-                    @Override
-                    public boolean isSatisfied() {
-                        return ChildProcessLauncherTestUtils.getConnectionService(conn) != null;
-                    }
-                });
-
-        Assert.assertEquals(0, ChildProcessLauncherTestUtils.getConnectionServiceNumber(conn));
+        // Retrieve the connection (this waits for the service to connect).
+        final ChildProcessConnection retryConn = retrieveConnection(launcherHelper);
+        Assert.assertEquals(1, ChildProcessLauncherTestUtils.getConnectionServiceNumber(retryConn));
 
         final ChildProcessConnection[] sandboxedConnections =
                 getSandboxedConnectionArrayForTesting(context, context.getPackageName());
-
-        // Wait for the retry to succeed.
-        CriteriaHelper.pollInstrumentationThread(
-                new Criteria("Failed waiting for both child process services") {
-                    @Override
-                    public boolean isSatisfied() {
-                        boolean allChildrenConnected = true;
-                        for (int i = 0; i <= 1; ++i) {
-                            ChildProcessConnection conn = sandboxedConnections[i];
-                            allChildrenConnected &= conn != null
-                                    && ChildProcessLauncherTestUtils.getConnectionService(conn)
-                                            != null;
-                        }
-                        return allChildrenConnected;
-                    }
-                });
 
         // Check that only two connections are created.
         for (int i = 0; i < sandboxedConnections.length; ++i) {
@@ -452,11 +438,9 @@ public class ChildProcessLauncherTest {
             }
         }
 
-        Assert.assertTrue(conn == sandboxedConnections[0]);
-        final ChildProcessConnection retryConn = sandboxedConnections[1];
+        Assert.assertTrue(retryConn == sandboxedConnections[1]);
 
-        Assert.assertFalse(conn == retryConn);
-
+        ChildProcessConnection conn = sandboxedConnections[0];
         Assert.assertEquals(0, ChildProcessLauncherTestUtils.getConnectionServiceNumber(conn));
         Assert.assertEquals(0, ChildProcessLauncherTestUtils.getConnectionPid(conn));
         Assert.assertFalse(ChildProcessLauncherTestUtils.getConnectionService(conn).bindToCaller());
@@ -488,19 +472,22 @@ public class ChildProcessLauncherTest {
     @MediumTest
     @Feature({"ProcessManagement"})
     public void testWarmUp() {
-        final Context context = InstrumentationRegistry.getInstrumentation().getTargetContext();
+        Context context = InstrumentationRegistry.getInstrumentation().getTargetContext();
         warmUpOnUiThreadBlocking(context);
+
+        Assert.assertEquals(1, allocatedChromeSandboxedConnectionsCount());
+
+        ChildProcessLauncherHelper launcherHelper = ChildProcessLauncherTestUtils.startForTesting(
+                context, new String[0], new FileDescriptorInfo[0], null);
+
+        final ChildProcessConnection conn = retrieveConnection(launcherHelper);
+
+        Assert.assertEquals(
+                1, allocatedChromeSandboxedConnectionsCount()); // Used warmup connection.
+
         ChildProcessLauncherTestUtils.runOnLauncherThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                Assert.assertEquals(1, allocatedChromeSandboxedConnectionsCount());
-
-                final ChildProcessConnection conn =
-                        ChildProcessLauncherTestUtils.startInternalForTesting(
-                                context, new String[0], new FileDescriptorInfo[0], null);
-                Assert.assertEquals(
-                        1, allocatedChromeSandboxedConnectionsCount()); // Used warmup connection.
-
                 ChildProcessLauncher.stop(ChildProcessLauncherTestUtils.getConnectionPid(conn));
             }
         });
@@ -557,10 +544,10 @@ public class ChildProcessLauncherTest {
     private static void startRendererProcess(
             Context context, int paramId, FileDescriptorInfo[] filesToMap) {
         assert LauncherThread.runningOnLauncherThread();
-        ChildProcessLauncher.start(context, paramId,
+        ChildProcessLauncherHelper.createAndStart(0L /* nativePointer */, paramId,
                 new String[] {"--" + ContentSwitches.SWITCH_PROCESS_TYPE + "="
                         + ContentSwitches.SWITCH_RENDERER_PROCESS},
-                filesToMap, null /* launchCallback */);
+                filesToMap);
     }
 
     private static ChildProcessConnection allocateBoundConnectionForTesting(
@@ -594,11 +581,10 @@ public class ChildProcessLauncherTest {
                         ChildProcessCreationParams creationParams =
                                 getDefaultChildProcessCreationParams(packageName);
                         return ChildProcessLauncher.allocateConnection(
-                                new ChildSpawnData(context, null /* commandLine */,
-                                        null /* filesToBeMapped */, null /* launchCallback */,
+                                new ChildSpawnData(context, null /* serviceBundle */,
+                                        null /* connectionBundle */, null /* launchCallback */,
                                         null /* childProcessCallback */, true /* inSandbox */,
                                         false /* alwaysInForeground */, creationParams),
-                                ChildProcessLauncher.createCommonParamsBundle(creationParams),
                                 false /* forWarmUp */);
                     }
                 });
@@ -614,10 +600,11 @@ public class ChildProcessLauncherTest {
                                                             : context.getPackageName();
                 ChildConnectionAllocator allocator = ChildProcessLauncher.getConnectionAllocator(
                         context, packageName, inSandbox);
-                allocator.enqueuePendingQueueForTesting(new ChildSpawnData(context, commandLine,
-                        new FileDescriptorInfo[0], null /* launchCallback */,
-                        null /* childProcessCallback */, true /* inSandbox */,
-                        false /* alwaysInForeground */, creationParams));
+
+                allocator.enqueuePendingQueueForTesting(new ChildSpawnData(context,
+                        null /* serviceBundle */, null /* connectionBundle */,
+                        null /* launchCallback */, null /* childProcessCallback */,
+                        true /* inSandbox */, false /* alwaysInForeground */, creationParams));
             }
         });
     }
@@ -678,10 +665,25 @@ public class ChildProcessLauncherTest {
         ChildProcessLauncherTestUtils.runOnLauncherThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                ChildProcessLauncher.triggerConnectionSetup(connection, sProcessWaitArguments,
-                        new FileDescriptorInfo[0], null /* launchCallback */,
-                        null /* childProcessCallback */, true /* addToBindingManager */);
+                Bundle connectionBundle = ChildProcessLauncherHelper.createConnectionBundle(
+                        sProcessWaitArguments, new FileDescriptorInfo[0]);
+                ChildProcessLauncher.triggerConnectionSetup(connection, connectionBundle,
+                        null /* launchCallback */, null /* childProcessCallback */,
+                        true /* addToBindingmanager */);
             }
         });
+    }
+
+    private static ChildProcessConnection retrieveConnection(
+            final ChildProcessLauncherHelper launcherHelper) {
+        CriteriaHelper.pollInstrumentationThread(
+                new Criteria("Failed waiting for child process to connect") {
+                    @Override
+                    public boolean isSatisfied() {
+                        return ChildProcessLauncherTestUtils.getConnection(launcherHelper) != null;
+                    }
+                });
+
+        return ChildProcessLauncherTestUtils.getConnection(launcherHelper);
     }
 }

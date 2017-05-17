@@ -43,11 +43,10 @@ public class ChildProcessLauncherIntegrationTest {
 
         @Override
         public ChildProcessConnection createConnection(ChildSpawnData spawnData,
-                ChildProcessConnection.DeathCallback deathCallback,
-                Bundle childProcessCommonParameters, String serviceClassName) {
+                ChildProcessConnection.DeathCallback deathCallback, String serviceClassName) {
             TestChildProcessConnection connection = new TestChildProcessConnection(
                     spawnData.getContext(), deathCallback, serviceClassName,
-                    childProcessCommonParameters, spawnData.getCreationParams());
+                    spawnData.getServiceBundle(), spawnData.getCreationParams());
             mConnections.add(connection);
             return connection;
         }

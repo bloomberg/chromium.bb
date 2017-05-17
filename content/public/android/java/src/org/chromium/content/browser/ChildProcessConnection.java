@@ -19,11 +19,9 @@ import org.chromium.base.Log;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.process_launcher.ChildProcessCreationParams;
-import org.chromium.base.process_launcher.FileDescriptorInfo;
 import org.chromium.base.process_launcher.ICallbackInt;
 import org.chromium.base.process_launcher.IChildProcessService;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -166,14 +164,11 @@ public class ChildProcessConnection {
     private final ChildProcessCreationParams mCreationParams;
 
     private static class ConnectionParams {
-        final String[] mCommandLine;
-        final FileDescriptorInfo[] mFilesToBeMapped;
+        final Bundle mConnectionBundle;
         final IBinder mCallback;
 
-        ConnectionParams(
-                String[] commandLine, FileDescriptorInfo[] filesToBeMapped, IBinder callback) {
-            mCommandLine = commandLine;
-            mFilesToBeMapped = filesToBeMapped;
+        ConnectionParams(Bundle connectionBundle, IBinder callback) {
+            mConnectionBundle = connectionBundle;
             mCallback = callback;
         }
     }
@@ -181,8 +176,8 @@ public class ChildProcessConnection {
     // This is set in start() and is used in onServiceConnected().
     private StartCallback mStartCallback;
 
-    // This is set in setupConnection() and is later used in doConnectionSetupLocked(), after which
-    // the variable is cleared. Therefore this is only valid while the connection is being set up.
+    // This is set in setupConnection() and is later used in doConnectionSetup(), after which the
+    // variable is cleared. Therefore this is only valid while the connection is being set up.
     private ConnectionParams mConnectionParams;
 
     // Callback provided in setupConnection() that will communicate the result to the caller. This
@@ -315,16 +310,16 @@ public class ChildProcessConnection {
     }
 
     /**
-     * Setups the connection after it was started with start().
-     * @param commandLine (optional) will be ignored if the command line was already sent in start()
-     * @param filesToBeMapped a list of file descriptors that should be registered
+     * Sets-up the connection after it was started with start().
+     * @param connectionBundle a bundle passed to the service that can be used to pass various
+     *         parameters to the service
      * @param callback optional client specified callbacks that the child can use to communicate
      *                 with the parent process
      * @param connectionCallback will be called exactly once after the connection is set up or the
      *                           setup fails
      */
-    public void setupConnection(String[] commandLine, FileDescriptorInfo[] filesToBeMapped,
-            @Nullable IBinder callback, ConnectionCallback connectionCallback) {
+    public void setupConnection(Bundle connectionBundle, @Nullable IBinder callback,
+            ConnectionCallback connectionCallback) {
         assert LauncherThread.runningOnLauncherThread();
         assert mConnectionParams == null;
         if (mServiceDisconnected) {
@@ -335,11 +330,11 @@ public class ChildProcessConnection {
         try {
             TraceEvent.begin("ChildProcessConnection.setupConnection");
             mConnectionCallback = connectionCallback;
-            mConnectionParams = new ConnectionParams(commandLine, filesToBeMapped, callback);
-            // Run the setup if the service is already connected. If not,
-            // doConnectionSetupLocked() will be called from onServiceConnected().
+            mConnectionParams = new ConnectionParams(connectionBundle, callback);
+            // Run the setup if the service is already connected. If not, doConnectionSetup() will
+            // be called from onServiceConnected().
             if (mServiceConnectComplete) {
-                doConnectionSetupLocked();
+                doConnectionSetup();
             }
         } finally {
             TraceEvent.end("ChildProcessConnection.setupConnection");
@@ -399,9 +394,9 @@ public class ChildProcessConnection {
             mServiceConnectComplete = true;
 
             // Run the setup if the connection parameters have already been provided. If
-            // not, doConnectionSetupLocked() will be called from setupConnection().
+            // not, doConnectionSetup() will be called from setupConnection().
             if (mConnectionParams != null) {
-                doConnectionSetupLocked();
+                doConnectionSetup();
             }
         } finally {
             TraceEvent.end("ChildProcessConnection.ChildServiceConnection.onServiceConnected");
@@ -440,16 +435,14 @@ public class ChildProcessConnection {
     /**
      * Called after the connection parameters have been set (in setupConnection()) *and* a
      * connection has been established (as signaled by onServiceConnected()). These two events can
-     * happen in any order. Has to be called with mLock.
+     * happen in any order.
      */
-    private void doConnectionSetupLocked() {
+    private void doConnectionSetup() {
         try {
-            TraceEvent.begin("ChildProcessConnection.doConnectionSetupLocked");
+            TraceEvent.begin("ChildProcessConnection.doConnectionSetup");
             assert mServiceConnectComplete && mService != null;
             assert mConnectionParams != null;
 
-            Bundle bundle = ChildProcessLauncher.createsServiceBundle(
-                    mConnectionParams.mCommandLine, mConnectionParams.mFilesToBeMapped);
             ICallbackInt pidCallback = new ICallbackInt.Stub() {
                 @Override
                 public void call(final int pid) {
@@ -462,21 +455,14 @@ public class ChildProcessConnection {
                 }
             };
             try {
-                mService.setupConnection(bundle, pidCallback, mConnectionParams.mCallback);
+                mService.setupConnection(mConnectionParams.mConnectionBundle, pidCallback,
+                        mConnectionParams.mCallback);
             } catch (RemoteException re) {
                 Log.e(TAG, "Failed to setup connection.", re);
             }
-            // We proactively close the FDs rather than wait for GC & finalizer.
-            try {
-                for (FileDescriptorInfo fileInfo : mConnectionParams.mFilesToBeMapped) {
-                    fileInfo.fd.close();
-                }
-            } catch (IOException ioe) {
-                Log.w(TAG, "Failed to close FD.", ioe);
-            }
             mConnectionParams = null;
         } finally {
-            TraceEvent.end("ChildProcessConnection.doConnectionSetupLocked");
+            TraceEvent.end("ChildProcessConnection.doConnectionSetup");
         }
     }
 
