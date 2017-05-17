@@ -12,6 +12,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
+#include "base/synchronization/lock.h"
 #include "build/build_config.h"
 #include "chrome/common/origin_trials/chrome_origin_trial_policy.h"
 #include "content/public/common/content_client.h"
@@ -105,6 +106,8 @@ class ChromeContentClient : public content::ContentClient {
 #endif  // OS_ANDROID
 
  private:
+  // Used to lock when |origin_trial_policy_| is initialized.
+  base::Lock origin_trial_policy_lock_;
   std::unique_ptr<ChromeOriginTrialPolicy> origin_trial_policy_;
 };
 
