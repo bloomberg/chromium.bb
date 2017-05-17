@@ -5,7 +5,7 @@
 #include "android_webview/browser/net/aw_network_delegate.h"
 
 #include "android_webview/browser/aw_browser_context.h"
-#include "android_webview/browser/aw_contents_client_bridge_base.h"
+#include "android_webview/browser/aw_contents_client_bridge.h"
 #include "android_webview/browser/aw_contents_io_thread_client.h"
 #include "android_webview/browser/aw_cookie_access_policy.h"
 #include "android_webview/browser/net/aw_web_resource_request.h"
@@ -30,8 +30,8 @@ void OnReceivedHttpErrorOnUiThread(
     const content::ResourceRequestInfo::WebContentsGetter& web_contents_getter,
     const AwWebResourceRequest& request,
     scoped_refptr<const net::HttpResponseHeaders> original_response_headers) {
-  AwContentsClientBridgeBase* client =
-      AwContentsClientBridgeBase::FromWebContentsGetter(web_contents_getter);
+  AwContentsClientBridge* client =
+      AwContentsClientBridge::FromWebContentsGetter(web_contents_getter);
   if (!client) {
     DLOG(WARNING) << "client is null, onReceivedHttpError dropped for "
                   << request.url;

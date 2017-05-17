@@ -6,15 +6,28 @@
 #define ANDROID_WEBVIEW_BROWSER_AW_CONTENTS_CLIENT_BRIDGE_H_
 
 #include <jni.h>
+#include <memory>
 
-#include "android_webview/browser/aw_contents_client_bridge_base.h"
+#include "android_webview/browser/net/aw_web_resource_request.h"
 #include "base/android/jni_weak_ref.h"
 #include "base/android/scoped_java_ref.h"
 #include "base/callback.h"
 #include "base/id_map.h"
+#include "base/supports_user_data.h"
+#include "content/public/browser/certificate_request_result_type.h"
 #include "content/public/browser/javascript_dialog_manager.h"
+#include "content/public/browser/resource_request_info.h"
+#include "net/http/http_response_headers.h"
+
+class GURL;
+
+namespace content {
+class ClientCertificateDelegate;
+class WebContents;
+}
 
 namespace net {
+class SSLCertRequestInfo;
 class X509Certificate;
 }
 
@@ -27,56 +40,67 @@ namespace android_webview {
 // indirect refs from the Application (via callbacks) and so can outlive
 // webview, this class notifies it before being destroyed and to nullify
 // any references.
-class AwContentsClientBridge : public AwContentsClientBridgeBase {
+class AwContentsClientBridge {
  public:
+  // Adds the handler to the UserData registry.
+  static void Associate(content::WebContents* web_contents,
+                        AwContentsClientBridge* handler);
+  static AwContentsClientBridge* FromWebContents(
+      content::WebContents* web_contents);
+  static AwContentsClientBridge* FromWebContentsGetter(
+      const content::ResourceRequestInfo::WebContentsGetter&
+          web_contents_getter);
+  static AwContentsClientBridge* FromID(int render_process_id,
+                                        int render_frame_id);
   AwContentsClientBridge(JNIEnv* env,
                          const base::android::JavaRef<jobject>& obj);
-  ~AwContentsClientBridge() override;
+  ~AwContentsClientBridge();
 
-  // AwContentsClientBridgeBase implementation
+  // AwContentsClientBridge implementation
   void AllowCertificateError(
       int cert_error,
       net::X509Certificate* cert,
       const GURL& request_url,
       const base::Callback<void(content::CertificateRequestResultType)>&
           callback,
-      bool* cancel_request) override;
+      bool* cancel_request);
   void SelectClientCertificate(
       net::SSLCertRequestInfo* cert_request_info,
-      std::unique_ptr<content::ClientCertificateDelegate> delegate) override;
-
+      std::unique_ptr<content::ClientCertificateDelegate> delegate);
   void RunJavaScriptDialog(
       content::JavaScriptDialogType dialog_type,
       const GURL& origin_url,
       const base::string16& message_text,
       const base::string16& default_prompt_text,
-      const content::JavaScriptDialogManager::DialogClosedCallback& callback)
-      override;
+      const content::JavaScriptDialogManager::DialogClosedCallback& callback);
   void RunBeforeUnloadDialog(
       const GURL& origin_url,
-      const content::JavaScriptDialogManager::DialogClosedCallback& callback)
-      override;
+      const content::JavaScriptDialogManager::DialogClosedCallback& callback);
   bool ShouldOverrideUrlLoading(const base::string16& url,
                                 bool has_user_gesture,
                                 bool is_redirect,
-                                bool is_main_frame) override;
-
+                                bool is_main_frame);
   void NewDownload(const GURL& url,
                    const std::string& user_agent,
                    const std::string& content_disposition,
                    const std::string& mime_type,
-                   int64_t content_length) override;
+                   int64_t content_length);
 
+  // Called when a new login request is detected. See the documentation for
+  // WebViewClient.onReceivedLoginRequest for arguments. Note that |account|
+  // may be empty.
   void NewLoginRequest(const std::string& realm,
                        const std::string& account,
-                       const std::string& args) override;
+                       const std::string& args);
 
-  void OnReceivedError(const AwWebResourceRequest& request,
-                       int error_code) override;
+  // Called when a resource loading error has occured (e.g. an I/O error,
+  // host name lookup failure etc.)
+  void OnReceivedError(const AwWebResourceRequest& request, int error_code);
 
-  void OnReceivedHttpError(const AwWebResourceRequest& request,
-                           const scoped_refptr<const net::HttpResponseHeaders>&
-                               response_headers) override;
+  // Called when a response from the server is received with status code >= 400.
+  void OnReceivedHttpError(
+      const AwWebResourceRequest& request,
+      const scoped_refptr<const net::HttpResponseHeaders>& response_headers);
 
   // Methods called from Java.
   void ProceedSslError(JNIEnv* env,

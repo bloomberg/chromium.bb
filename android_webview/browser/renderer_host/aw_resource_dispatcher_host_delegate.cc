@@ -8,7 +8,7 @@
 #include <string>
 
 #include "android_webview/browser/aw_browser_context.h"
-#include "android_webview/browser/aw_contents_client_bridge_base.h"
+#include "android_webview/browser/aw_contents_client_bridge.h"
 #include "android_webview/browser/aw_contents_io_thread_client.h"
 #include "android_webview/browser/aw_login_delegate.h"
 #include "android_webview/browser/aw_resource_context.h"
@@ -34,7 +34,7 @@
 #include "url/url_constants.h"
 
 using android_webview::AwContentsIoThreadClient;
-using android_webview::AwContentsClientBridgeBase;
+using android_webview::AwContentsClientBridge;
 using android_webview::AwWebResourceRequest;
 using content::BrowserThread;
 using content::ResourceType;
@@ -69,8 +69,8 @@ void DownloadStartingOnUIThread(
     const std::string& content_disposition,
     const std::string& mime_type,
     int64_t content_length) {
-  AwContentsClientBridgeBase* client =
-      AwContentsClientBridgeBase::FromWebContentsGetter(web_contents_getter);
+  AwContentsClientBridge* client =
+      AwContentsClientBridge::FromWebContentsGetter(web_contents_getter);
   if (!client)
     return;
   client->NewDownload(url, user_agent, content_disposition, mime_type,
@@ -82,8 +82,8 @@ void NewLoginRequestOnUIThread(
     const std::string& realm,
     const std::string& account,
     const std::string& args) {
-  AwContentsClientBridgeBase* client =
-      AwContentsClientBridgeBase::FromWebContentsGetter(web_contents_getter);
+  AwContentsClientBridge* client =
+      AwContentsClientBridge::FromWebContentsGetter(web_contents_getter);
   if (!client)
     return;
   client->NewLoginRequest(realm, account, args);
@@ -93,8 +93,8 @@ void OnReceivedErrorOnUiThread(
     const content::ResourceRequestInfo::WebContentsGetter& web_contents_getter,
     const AwWebResourceRequest& request,
     int error_code) {
-  AwContentsClientBridgeBase* client =
-      AwContentsClientBridgeBase::FromWebContentsGetter(web_contents_getter);
+  AwContentsClientBridge* client =
+      AwContentsClientBridge::FromWebContentsGetter(web_contents_getter);
   if (!client) {
     DLOG(WARNING) << "client is null, onReceivedError dropped for "
                   << request.url;

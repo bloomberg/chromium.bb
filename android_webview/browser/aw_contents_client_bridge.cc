@@ -20,6 +20,7 @@
 #include "base/message_loop/message_loop.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/client_certificate_delegate.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
@@ -43,6 +44,7 @@ using base::android::JavaRef;
 using base::android::ScopedJavaLocalRef;
 using base::android::ToJavaArrayOfStrings;
 using content::BrowserThread;
+using content::WebContents;
 using std::vector;
 
 namespace android_webview {
@@ -58,7 +60,63 @@ void RecordClientCertificateKey(net::X509Certificate* client_cert,
       client_cert, std::move(private_key));
 }
 
+const void* const kAwContentsClientBridge = &kAwContentsClientBridge;
+
+// This class is invented so that the UserData registry that we inject the
+// AwContentsClientBridge object does not own and destroy it.
+class UserData : public base::SupportsUserData::Data {
+ public:
+  static AwContentsClientBridge* GetContents(
+      content::WebContents* web_contents) {
+    if (!web_contents)
+      return NULL;
+    UserData* data = static_cast<UserData*>(
+        web_contents->GetUserData(kAwContentsClientBridge));
+    return data ? data->contents_ : NULL;
+  }
+
+  explicit UserData(AwContentsClientBridge* ptr) : contents_(ptr) {}
+
+ private:
+  AwContentsClientBridge* contents_;
+
+  DISALLOW_COPY_AND_ASSIGN(UserData);
+};
+
 }  // namespace
+
+// static
+void AwContentsClientBridge::Associate(WebContents* web_contents,
+                                       AwContentsClientBridge* handler) {
+  web_contents->SetUserData(kAwContentsClientBridge,
+                            base::MakeUnique<UserData>(handler));
+}
+
+// static
+AwContentsClientBridge* AwContentsClientBridge::FromWebContents(
+    WebContents* web_contents) {
+  return UserData::GetContents(web_contents);
+}
+
+// static
+AwContentsClientBridge* AwContentsClientBridge::FromWebContentsGetter(
+    const content::ResourceRequestInfo::WebContentsGetter&
+        web_contents_getter) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  WebContents* web_contents = web_contents_getter.Run();
+  return UserData::GetContents(web_contents);
+}
+
+// static
+AwContentsClientBridge* AwContentsClientBridge::FromID(int render_process_id,
+                                                       int render_frame_id) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  content::RenderFrameHost* rfh =
+      content::RenderFrameHost::FromID(render_process_id, render_frame_id);
+  content::WebContents* web_contents =
+      content::WebContents::FromRenderFrameHost(rfh);
+  return UserData::GetContents(web_contents);
+}
 
 AwContentsClientBridge::AwContentsClientBridge(JNIEnv* env,
                                                const JavaRef<jobject>& obj)

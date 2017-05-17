@@ -261,8 +261,8 @@ void AwContents::SetJavaPeers(
 
   contents_client_bridge_.reset(
       new AwContentsClientBridge(env, contents_client_bridge));
-  AwContentsClientBridgeBase::Associate(web_contents_.get(),
-                                        contents_client_bridge_.get());
+  AwContentsClientBridge::Associate(web_contents_.get(),
+                                    contents_client_bridge_.get());
 
   AwContentsIoThreadClientImpl::Associate(web_contents_.get(),
                                           io_thread_client);
