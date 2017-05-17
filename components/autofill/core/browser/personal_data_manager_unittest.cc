@@ -6421,4 +6421,91 @@ TEST_F(
             personal_data_->GetCreditCards()[1]->billing_address_id());
 }
 
+TEST_F(PersonalDataManagerTest, RemoveByGUID_ResetsBillingAddress) {
+  ///////////////////////////////////////////////////////////////////////
+  // Setup.
+  ///////////////////////////////////////////////////////////////////////
+  EnableWalletCardImport();
+  std::vector<CreditCard> server_cards;
+
+  // Add two different profiles
+  AutofillProfile profile0(base::GenerateGUID(), "https://www.example.com");
+  test::SetProfileInfo(&profile0, "Bob", "", "Doe", "", "Fox", "1212 Center.",
+                       "Bld. 5", "Orlando", "FL", "32801", "US", "19482937549");
+  AutofillProfile profile1(base::GenerateGUID(), "https://www.example.com");
+  test::SetProfileInfo(&profile1, "Seb", "", "Doe", "", "ACME",
+                       "1234 Evergreen Terrace", "Bld. 5", "Springfield", "IL",
+                       "32801", "US", "15151231234");
+
+  // Add a local and a server card that have profile0 as their billing address.
+  CreditCard local_card0(base::GenerateGUID(), "https://www.example.com");
+  test::SetCreditCardInfo(&local_card0, "John Dillinger",
+                          "4111111111111111" /* Visa */, "01", "2999",
+                          profile0.guid());
+  CreditCard server_card0(CreditCard::FULL_SERVER_CARD, "c789");
+  test::SetCreditCardInfo(&server_card0, "John Barrow",
+                          "347666888555" /* American Express */, "04", "2999",
+                          profile0.guid());
+  server_cards.push_back(server_card0);
+
+  // Do the same but for profile1.
+  CreditCard local_card1(base::GenerateGUID(), "https://www.example.com");
+  test::SetCreditCardInfo(&local_card1, "Seb Dillinger",
+                          "4111111111111111" /* Visa */, "01", "2999",
+                          profile1.guid());
+  CreditCard server_card1(CreditCard::FULL_SERVER_CARD, "c789");
+  test::SetCreditCardInfo(&server_card1, "John Barrow",
+                          "347666888555" /* American Express */, "04", "2999",
+                          profile1.guid());
+  server_cards.push_back(server_card1);
+
+  // Add the data to the database.
+  personal_data_->AddProfile(profile0);
+  personal_data_->AddProfile(profile1);
+  personal_data_->AddCreditCard(local_card0);
+  personal_data_->AddCreditCard(local_card1);
+  test::SetServerCreditCards(autofill_table_, server_cards);
+
+  personal_data_->Refresh();
+  EXPECT_CALL(personal_data_observer_, OnPersonalDataChanged())
+      .WillOnce(QuitMainMessageLoop());
+  base::RunLoop().Run();
+
+  // Make sure everything was saved properly.
+  EXPECT_EQ(2U, personal_data_->GetProfiles().size());
+  EXPECT_EQ(4U, personal_data_->GetCreditCards().size());
+
+  ///////////////////////////////////////////////////////////////////////
+  // Tested method.
+  ///////////////////////////////////////////////////////////////////////
+  personal_data_->RemoveByGUID(profile0.guid());
+
+  ///////////////////////////////////////////////////////////////////////
+  // Validation.
+  ///////////////////////////////////////////////////////////////////////
+
+  // Wait for the data to be refreshed.
+  EXPECT_CALL(personal_data_observer_, OnPersonalDataChanged())
+      .WillOnce(QuitMainMessageLoop());
+  base::RunLoop().Run();
+
+  // Make sure only profile0 was deleted.
+  ASSERT_EQ(1U, personal_data_->GetProfiles().size());
+  EXPECT_EQ(profile1.guid(), personal_data_->GetProfiles()[0]->guid());
+  EXPECT_EQ(4U, personal_data_->GetCreditCards().size());
+
+  for (CreditCard* card : personal_data_->GetCreditCards()) {
+    if (card->guid() == local_card0.guid() ||
+        card->guid() == server_card0.guid()) {
+      // The billing address id of local_card0 and server_card0 should have been
+      // reset.
+      EXPECT_EQ("", card->billing_address_id());
+    } else {
+      // The billing address of local_card1 and server_card1 should still refer
+      // to profile1.
+      EXPECT_EQ(profile1.guid(), card->billing_address_id());
+    }
+  }
+}
+
 }  // namespace autofill
