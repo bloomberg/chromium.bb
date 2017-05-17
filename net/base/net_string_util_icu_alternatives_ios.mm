@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "base/mac/scoped_cftyperef.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/sys_string_conversions.h"
