@@ -43,7 +43,6 @@
 #include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/RefPtr.h"
 #include "public/platform/Platform.h"
-#include "public/platform/WebExternalBitmap.h"
 #include "public/platform/WebThread.h"
 #include "public/platform/WebTraceLocation.h"
 #include "skia/ext/texture_handle.h"

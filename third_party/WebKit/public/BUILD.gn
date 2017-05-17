@@ -183,7 +183,6 @@ source_set("blink_headers") {
     "platform/WebEncryptedMediaRequest.h",
     "platform/WebEncryptedMediaTypes.h",
     "platform/WebEventListenerProperties.h",
-    "platform/WebExternalBitmap.h",
     "platform/WebExternalTextureLayer.h",
     "platform/WebFallbackThemeEngine.h",
     "platform/WebFeaturePolicy.h",
