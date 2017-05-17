@@ -18,7 +18,8 @@ namespace sync_sessions {
 class BrowserListRouterHelper : public chrome::BrowserListObserver,
                                 public TabStripModelObserver {
  public:
-  explicit BrowserListRouterHelper(SyncSessionsWebContentsRouter* router);
+  explicit BrowserListRouterHelper(SyncSessionsWebContentsRouter* router,
+                                   Profile* profile);
   ~BrowserListRouterHelper() override;
 
  private:
@@ -33,6 +34,10 @@ class BrowserListRouterHelper : public chrome::BrowserListObserver,
 
   // |router_| owns |this|.
   SyncSessionsWebContentsRouter* router_;
+
+  Profile* profile_;
+
+  std::set<Browser*> attached_browsers_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserListRouterHelper);
 };
