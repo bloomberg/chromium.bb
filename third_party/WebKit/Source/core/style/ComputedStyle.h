@@ -44,7 +44,6 @@
 #include "core/style/StyleFlexibleBoxData.h"
 #include "core/style/StyleGridData.h"
 #include "core/style/StyleGridItemData.h"
-#include "core/style/StyleInheritedData.h"
 #include "core/style/StyleMultiColData.h"
 #include "core/style/StyleOffsetRotation.h"
 #include "core/style/StyleRareInheritedData.h"
@@ -60,6 +59,7 @@
 #include "platform/LengthSize.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/ThemeTypes.h"
+#include "platform/fonts/Font.h"
 #include "platform/fonts/FontDescription.h"
 #include "platform/geometry/FloatRoundedRect.h"
 #include "platform/geometry/LayoutRectOutsets.h"
@@ -179,6 +179,50 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase<ComputedStyle>,
   friend class StyleBuilderConverter;
   friend class StyleResolverState;
   friend class StyleResolver;
+
+ private:
+  class StyleInheritedData : public RefCountedCopyable<StyleInheritedData> {
+   public:
+    static PassRefPtr<StyleInheritedData> Create() {
+      return AdoptRef(new StyleInheritedData);
+    }
+    PassRefPtr<StyleInheritedData> Copy() const {
+      return AdoptRef(new StyleInheritedData(*this));
+    }
+
+    bool operator==(const StyleInheritedData& other) const {
+      return line_height_ == other.line_height_ && font_ == other.font_ &&
+             color_ == other.color_ &&
+             visited_link_color_ == other.visited_link_color_ &&
+             horizontal_border_spacing_ == other.horizontal_border_spacing_ &&
+             text_autosizing_multiplier_ == other.text_autosizing_multiplier_ &&
+             vertical_border_spacing_ == other.vertical_border_spacing_;
+    }
+    bool operator!=(const StyleInheritedData& o) const { return !(*this == o); }
+
+    short horizontal_border_spacing_;
+    short vertical_border_spacing_;
+
+    // could be packed in a short but doesn't
+    // make a difference currently because of padding
+    Length line_height_;
+
+    Font font_;
+    Color color_;
+    Color visited_link_color_;
+    float text_autosizing_multiplier_;
+
+   private:
+    StyleInheritedData()
+        : horizontal_border_spacing_(0),
+          vertical_border_spacing_(0),
+          line_height_(Length(-100.0, kPercent)),
+          color_(Color::kBlack),
+          visited_link_color_(Color::kBlack),
+          text_autosizing_multiplier_(1) {}
+
+    StyleInheritedData(const StyleInheritedData&) = default;
+  };
 
  protected:
   // non-inherited attributes
