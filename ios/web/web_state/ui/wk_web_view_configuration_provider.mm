@@ -87,18 +87,20 @@ WKWebViewConfigurationProvider::GetScriptMessageRouter() {
 
 void WKWebViewConfigurationProvider::Purge() {
   DCHECK([NSThread isMainThread]);
-#if !defined(NDEBUG) || !defined(DCHECK_ALWAYS_ON)  // Matches DCHECK_IS_ON.
+#if DCHECK_IS_ON()
   base::WeakNSObject<id> weak_configuration(configuration_);
   base::WeakNSObject<id> weak_router(router_);
   base::WeakNSObject<id> weak_process_pool([configuration_ processPool]);
-#endif  // !defined(NDEBUG) || defined(DCHECK_ALWAYS_ON)
+#endif  // DCHECK_IS_ON()
   configuration_.reset();
   router_.reset();
   // Make sure that no one retains configuration, router, processPool.
+#if DCHECK_IS_ON()
   DCHECK(!weak_configuration);
   DCHECK(!weak_router);
   // TODO(crbug.com/522672): Enable this DCHECK.
   // DCHECK(!weak_process_pool);
+#endif  // DCHECK_IS_ON()
 }
 
 }  // namespace web
