@@ -63,15 +63,37 @@ struct CORE_EXPORT NGBoxStrut {
 
 CORE_EXPORT std::ostream& operator<<(std::ostream&, const NGBoxStrut&);
 
+struct NGPixelSnappedPhysicalBoxStrut;
+
 // Struct to store physical dimensions, independent of writing mode and
 // direction.
 // See https://drafts.csswg.org/css-writing-modes-3/#abstract-box
 struct CORE_EXPORT NGPhysicalBoxStrut {
-  LayoutUnit left;
-  LayoutUnit right;
-  LayoutUnit top;
-  LayoutUnit bottom;
+  NGPhysicalBoxStrut() {}
+  NGPhysicalBoxStrut(LayoutUnit top,
+                     LayoutUnit right,
+                     LayoutUnit bottom,
+                     LayoutUnit left)
+      : top(top), right(right), bottom(bottom), left(left) {}
+
   NGBoxStrut ConvertToLogical(NGWritingMode, TextDirection) const;
+  NGPixelSnappedPhysicalBoxStrut SnapToDevicePixels() const;
+
+  LayoutUnit top;
+  LayoutUnit right;
+  LayoutUnit bottom;
+  LayoutUnit left;
+};
+
+// Struct to store pixel snapped physical dimensions.
+struct CORE_EXPORT NGPixelSnappedPhysicalBoxStrut {
+  NGPixelSnappedPhysicalBoxStrut() {}
+  NGPixelSnappedPhysicalBoxStrut(int top, int right, int bottom, int left)
+      : top(top), right(right), bottom(bottom), left(left) {}
+  int top;
+  int right;
+  int bottom;
+  int left;
 };
 
 }  // namespace blink
