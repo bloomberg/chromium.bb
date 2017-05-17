@@ -745,12 +745,12 @@ interface CSSTransformComponent
     method toString
 interface CSSTransformValue : CSSStyleValue
     attribute @@toStringTag
+    getter is2D
     getter length
     method @@iterator
     method constructor
     method entries
     method forEach
-    method is2D
     method keys
     method values
 interface CSSTranslation : CSSTransformComponent
