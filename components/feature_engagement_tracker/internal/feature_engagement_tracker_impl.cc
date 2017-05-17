@@ -39,6 +39,7 @@ CreateDemoModeFeatureEngagementTracker() {
   for (auto* feature : features) {
     FeatureConfig feature_config;
     feature_config.valid = true;
+    feature_config.trigger.name = feature->name + std::string("_trigger");
     configuration->SetConfiguration(feature, feature_config);
   }
 
