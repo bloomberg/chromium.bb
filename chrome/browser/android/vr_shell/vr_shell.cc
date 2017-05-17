@@ -219,11 +219,20 @@ VrShell::~VrShell() {
   g_instance = nullptr;
 }
 
-void VrShell::PostToGlThreadWhenReady(const base::Closure& task) {
-  // TODO(mthiesse): Remove this blocking wait. Queue up events if thread isn't
-  // finished starting?
+void VrShell::WaitForGlThread() {
+  if (thread_started_)
+    return;
+  // TODO(mthiesse): Remove this blocking wait. Queue up events on the thread
+  // object, rather than on the weak ptr initialized after the thread is
+  // started.
   gl_thread_->WaitUntilThreadStarted();
-  gl_thread_->task_runner()->PostTask(FROM_HERE, task);
+  thread_started_ = true;
+}
+
+void VrShell::PostToGlThread(const tracked_objects::Location& from_here,
+                             const base::Closure& task) {
+  DCHECK(thread_started_);
+  gl_thread_->task_runner()->PostTask(from_here, task);
 }
 
 void VrShell::OnContentPaused(bool paused) {
@@ -247,14 +256,15 @@ void VrShell::NavigateBack() {
 }
 
 void VrShell::OnTriggerEvent(JNIEnv* env, const JavaParamRef<jobject>& obj) {
-  gl_thread_->task_runner()->PostTask(
-      FROM_HERE,
-      base::Bind(&VrShellGl::OnTriggerEvent, gl_thread_->GetVrShellGl()));
+  WaitForGlThread();
+  PostToGlThread(FROM_HERE, base::Bind(&VrShellGl::OnTriggerEvent,
+                                       gl_thread_->GetVrShellGl()));
 }
 
 void VrShell::OnPause(JNIEnv* env, const JavaParamRef<jobject>& obj) {
-  gl_thread_->task_runner()->PostTask(
-      FROM_HERE, base::Bind(&VrShellGl::OnPause, gl_thread_->GetVrShellGl()));
+  WaitForGlThread();
+  PostToGlThread(FROM_HERE,
+                 base::Bind(&VrShellGl::OnPause, gl_thread_->GetVrShellGl()));
 
   // exit vr session
   if (metrics_helper_)
@@ -263,8 +273,9 @@ void VrShell::OnPause(JNIEnv* env, const JavaParamRef<jobject>& obj) {
 }
 
 void VrShell::OnResume(JNIEnv* env, const JavaParamRef<jobject>& obj) {
-  gl_thread_->task_runner()->PostTask(
-      FROM_HERE, base::Bind(&VrShellGl::OnResume, gl_thread_->GetVrShellGl()));
+  WaitForGlThread();
+  PostToGlThread(FROM_HERE,
+                 base::Bind(&VrShellGl::OnResume, gl_thread_->GetVrShellGl()));
 
   if (metrics_helper_)
     metrics_helper_->SetVRActive(true);
@@ -277,9 +288,10 @@ void VrShell::SetSurface(JNIEnv* env,
   CHECK(!reprojected_rendering_);
   gfx::AcceleratedWidget window =
       ANativeWindow_fromSurface(base::android::AttachCurrentThread(), surface);
-  PostToGlThreadWhenReady(base::Bind(&VrShellGl::InitializeGl,
-                                     gl_thread_->GetVrShellGl(),
-                                     base::Unretained(window)));
+  WaitForGlThread();
+  PostToGlThread(FROM_HERE, base::Bind(&VrShellGl::InitializeGl,
+                                       gl_thread_->GetVrShellGl(),
+                                       base::Unretained(window)));
 }
 
 void VrShell::SetWebVrMode(JNIEnv* env,
@@ -288,8 +300,9 @@ void VrShell::SetWebVrMode(JNIEnv* env,
   webvr_mode_ = enabled;
   if (metrics_helper_)
     metrics_helper_->SetWebVREnabled(enabled);
-  PostToGlThreadWhenReady(base::Bind(&VrShellGl::SetWebVrMode,
-                                     gl_thread_->GetVrShellGl(), enabled));
+  WaitForGlThread();
+  PostToGlThread(FROM_HERE, base::Bind(&VrShellGl::SetWebVrMode,
+                                       gl_thread_->GetVrShellGl(), enabled));
   ui_->SetWebVrMode(enabled);
 }
 
@@ -352,38 +365,43 @@ void VrShell::SetWebVRSecureOrigin(bool secure_origin) {
 void VrShell::SubmitWebVRFrame(int16_t frame_index,
                                const gpu::MailboxHolder& mailbox) {
   TRACE_EVENT1("gpu", "SubmitWebVRFrame", "frame", frame_index);
-
-  PostToGlThreadWhenReady(base::Bind(&VrShellGl::SubmitWebVRFrame,
-                                     gl_thread_->GetVrShellGl(), frame_index,
-                                     mailbox));
+  WaitForGlThread();
+  PostToGlThread(FROM_HERE,
+                 base::Bind(&VrShellGl::SubmitWebVRFrame,
+                            gl_thread_->GetVrShellGl(), frame_index, mailbox));
 }
 
 void VrShell::SubmitControllerModel(std::unique_ptr<VrControllerModel> model) {
-  PostToGlThreadWhenReady(base::Bind(&VrShellGl::SetControllerModel,
-                                     gl_thread_->GetVrShellGl(),
-                                     base::Passed(&model)));
+  WaitForGlThread();
+  PostToGlThread(FROM_HERE,
+                 base::Bind(&VrShellGl::SetControllerModel,
+                            gl_thread_->GetVrShellGl(), base::Passed(&model)));
 }
 
 void VrShell::UpdateWebVRTextureBounds(int16_t frame_index,
                                        const gfx::RectF& left_bounds,
                                        const gfx::RectF& right_bounds,
                                        const gfx::Size& source_size) {
-  PostToGlThreadWhenReady(base::Bind(&VrShellGl::UpdateWebVRTextureBounds,
-                                     gl_thread_->GetVrShellGl(), frame_index,
-                                     left_bounds, right_bounds, source_size));
+  WaitForGlThread();
+  PostToGlThread(FROM_HERE, base::Bind(&VrShellGl::UpdateWebVRTextureBounds,
+                                       gl_thread_->GetVrShellGl(), frame_index,
+                                       left_bounds, right_bounds, source_size));
 }
 
 void VrShell::CreateVRDisplayInfo(
     const base::Callback<void(device::mojom::VRDisplayInfoPtr)>& callback,
     uint32_t device_id) {
-  PostToGlThreadWhenReady(base::Bind(&VrShellGl::CreateVRDisplayInfo,
-                                     gl_thread_->GetVrShellGl(), callback,
-                                     device_id));
+  WaitForGlThread();
+  PostToGlThread(FROM_HERE,
+                 base::Bind(&VrShellGl::CreateVRDisplayInfo,
+                            gl_thread_->GetVrShellGl(), callback, device_id));
 }
 
 void VrShell::SetSubmitClient(
     device::mojom::VRSubmitFrameClientPtr submit_client) {
-  PostToGlThreadWhenReady(
+  WaitForGlThread();
+  PostToGlThread(
+      FROM_HERE,
       base::Bind(&VrShellGl::SetSubmitClient, gl_thread_->GetVrShellGl(),
                  base::Passed(submit_client.PassInterface())));
 }
@@ -399,8 +417,9 @@ base::android::ScopedJavaGlobalRef<jobject> VrShell::TakeContentSurface(
 
 void VrShell::RestoreContentSurface(JNIEnv* env,
                                     const JavaParamRef<jobject>& obj) {
-  PostToGlThreadWhenReady(
-      base::Bind(&VrShellGl::CreateContentSurface, gl_thread_->GetVrShellGl()));
+  WaitForGlThread();
+  PostToGlThread(FROM_HERE, base::Bind(&VrShellGl::CreateContentSurface,
+                                       gl_thread_->GetVrShellGl()));
 }
 
 void VrShell::SetHistoryButtonsEnabled(JNIEnv* env,
@@ -439,11 +458,12 @@ void VrShell::ContentPhysicalBoundsChanged(JNIEnv* env,
                                            jint height,
                                            jfloat dpr) {
   TRACE_EVENT0("gpu", "VrShell::ContentPhysicalBoundsChanged");
+  WaitForGlThread();
   // TODO(acondor): Set the device scale factor for font rendering on the
   // VR Shell textures.
-  PostToGlThreadWhenReady(base::Bind(&VrShellGl::ContentPhysicalBoundsChanged,
-                                     gl_thread_->GetVrShellGl(), width,
-                                     height));
+  PostToGlThread(FROM_HERE,
+                 base::Bind(&VrShellGl::ContentPhysicalBoundsChanged,
+                            gl_thread_->GetVrShellGl(), width, height));
   compositor_->SetWindowBounds(gfx::Size(width, height));
 }
 
@@ -485,7 +505,9 @@ void VrShell::DoUiAction(const UiAction action,
 void VrShell::ContentFrameWasResized(bool width_changed) {
   display::Display display =
       display::Screen::GetScreen()->GetDisplayNearestWindow(window_);
-  PostToGlThreadWhenReady(
+  WaitForGlThread();
+  PostToGlThread(
+      FROM_HERE,
       base::Bind(&VrShellGl::ContentBoundsChanged, gl_thread_->GetVrShellGl(),
                  display.size().width(), display.size().height()));
 }
@@ -524,17 +546,19 @@ void VrShell::ExitFullscreen() {
 
 void VrShell::OnVRVsyncProviderRequest(
     device::mojom::VRVSyncProviderRequest request) {
-  PostToGlThreadWhenReady(base::Bind(&VrShellGl::OnRequest,
-                                     gl_thread_->GetVrShellGl(),
-                                     base::Passed(&request)));
+  WaitForGlThread();
+  PostToGlThread(FROM_HERE,
+                 base::Bind(&VrShellGl::OnRequest, gl_thread_->GetVrShellGl(),
+                            base::Passed(&request)));
 }
 
 void VrShell::UpdateVSyncInterval(int64_t timebase_nanos,
                                   double interval_seconds) {
   PollMediaAccessFlag();
-  PostToGlThreadWhenReady(base::Bind(&VrShellGl::UpdateVSyncInterval,
-                                     gl_thread_->GetVrShellGl(), timebase_nanos,
-                                     interval_seconds));
+  WaitForGlThread();
+  PostToGlThread(FROM_HERE, base::Bind(&VrShellGl::UpdateVSyncInterval,
+                                       gl_thread_->GetVrShellGl(),
+                                       timebase_nanos, interval_seconds));
 }
 
 void VrShell::PollMediaAccessFlag() {
@@ -550,24 +574,30 @@ void VrShell::PollMediaAccessFlag() {
       MediaCaptureDevicesDispatcher::GetInstance()
           ->GetMediaStreamCaptureIndicator();
   bool is_capturing_audio = indicator->IsCapturingAudio(web_contents_);
-  if (is_capturing_audio != is_capturing_audio_)
-    PostToGlThreadWhenReady(base::Bind(&VrShellGl::SetAudioCapturingWarning,
-                                       gl_thread_->GetVrShellGl(),
-                                       is_capturing_audio));
+  if (is_capturing_audio != is_capturing_audio_) {
+    WaitForGlThread();
+    PostToGlThread(FROM_HERE,
+                   base::Bind(&VrShellGl::SetAudioCapturingWarning,
+                              gl_thread_->GetVrShellGl(), is_capturing_audio));
+  }
   is_capturing_audio_ = is_capturing_audio;
 
   bool is_capturing_video = indicator->IsCapturingVideo(web_contents_);
-  if (is_capturing_video != is_capturing_video_)
-    PostToGlThreadWhenReady(base::Bind(&VrShellGl::SetVideoCapturingWarning,
-                                       gl_thread_->GetVrShellGl(),
-                                       is_capturing_video));
+  if (is_capturing_video != is_capturing_video_) {
+    WaitForGlThread();
+    PostToGlThread(FROM_HERE,
+                   base::Bind(&VrShellGl::SetVideoCapturingWarning,
+                              gl_thread_->GetVrShellGl(), is_capturing_video));
+  }
   is_capturing_video_ = is_capturing_video;
 
   bool is_capturing_screen = indicator->IsBeingMirrored(web_contents_);
-  if (is_capturing_screen != is_capturing_screen_)
-    PostToGlThreadWhenReady(base::Bind(&VrShellGl::SetScreenCapturingWarning,
-                                       gl_thread_->GetVrShellGl(),
-                                       is_capturing_screen));
+  if (is_capturing_screen != is_capturing_screen_) {
+    WaitForGlThread();
+    PostToGlThread(FROM_HERE,
+                   base::Bind(&VrShellGl::SetScreenCapturingWarning,
+                              gl_thread_->GetVrShellGl(), is_capturing_screen));
+  }
   is_capturing_screen_ = is_capturing_screen;
 }
 
