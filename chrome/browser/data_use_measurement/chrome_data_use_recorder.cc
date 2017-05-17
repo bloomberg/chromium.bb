@@ -7,7 +7,8 @@
 
 namespace data_use_measurement {
 
-ChromeDataUseRecorder::ChromeDataUseRecorder() : main_frame_id_(-1, -1) {
+ChromeDataUseRecorder::ChromeDataUseRecorder(DataUse::TrafficType traffic_type)
+    : DataUseRecorder(traffic_type), main_frame_id_(-1, -1) {
   set_page_transition(ui::PAGE_TRANSITION_LAST_CORE + 1);
 }
 

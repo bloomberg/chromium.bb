@@ -85,8 +85,8 @@ ChromeDataUseAscriber::GetOrCreateDataUseRecorderEntry(
   DataUseUserData* service = static_cast<DataUseUserData*>(
       request->GetUserData(DataUseUserData::kUserDataKey));
   if (service) {
-    DataUseRecorderEntry entry = CreateNewDataUseRecorder(request);
-
+    DataUseRecorderEntry entry =
+        CreateNewDataUseRecorder(request, DataUse::TrafficType::SERVICES);
     entry->data_use().set_description(
         DataUseUserData::GetServiceNameAsString(service->service_name()));
     return entry;
@@ -127,7 +127,8 @@ ChromeDataUseAscriber::GetOrCreateDataUseRecorderEntry(
       content::GlobalRequestID navigation_key =
           request_info->GetGlobalRequestID();
 
-      DataUseRecorderEntry new_entry = CreateNewDataUseRecorder(request);
+      DataUseRecorderEntry new_entry =
+          CreateNewDataUseRecorder(request, DataUse::TrafficType::USER_TRAFFIC);
       new_entry->set_main_frame_request_id(navigation_key);
       pending_navigation_data_use_map_.insert(
           std::make_pair(navigation_key, new_entry));
@@ -145,7 +146,11 @@ ChromeDataUseAscriber::GetOrCreateDataUseRecorderEntry(
   }
 
   // Create a new DataUseRecorder for all other requests.
-  DataUseRecorderEntry entry = CreateNewDataUseRecorder(request);
+  DataUseRecorderEntry entry = CreateNewDataUseRecorder(
+      request,
+      content::ResourceRequestInfo::OriginatedFromServiceWorker(request)
+          ? DataUse::TrafficType::SERVICE_WORKER
+          : DataUse::TrafficType::UNKNOWN);
   DataUse& data_use = entry->data_use();
   data_use.set_url(request->url());
   return entry;
@@ -221,7 +226,8 @@ void ChromeDataUseAscriber::RenderFrameCreated(int render_process_id,
     auto frame_iter = main_render_frame_data_use_map_.find(
         RenderFrameHostID(render_process_id, render_frame_id));
     DCHECK(frame_iter == main_render_frame_data_use_map_.end());
-    DataUseRecorderEntry entry = CreateNewDataUseRecorder(nullptr);
+    DataUseRecorderEntry entry =
+        CreateNewDataUseRecorder(nullptr, DataUse::TrafficType::UNKNOWN);
     entry->set_main_frame_id(
         RenderFrameHostID(render_process_id, render_frame_id));
     main_render_frame_data_use_map_.insert(std::make_pair(
@@ -284,6 +290,8 @@ void ChromeDataUseAscriber::ReadyToCommitMainFrameNavigation(
     // must be removed from frame map, and possibly marked complete and deleted.
     if (frame_it != main_render_frame_data_use_map_.end()) {
       DataUseRecorderEntry old_frame_entry = frame_it->second;
+      DataUse::TrafficType old_traffic_type =
+          old_frame_entry->data_use().traffic_type();
       main_render_frame_data_use_map_.erase(frame_it);
       if (old_frame_entry->IsDataUseComplete()) {
         OnDataUseCompleted(old_frame_entry);
@@ -292,7 +300,7 @@ void ChromeDataUseAscriber::ReadyToCommitMainFrameNavigation(
 
       // Add a new recorder to the render frame map to replace the deleted one.
       DataUseRecorderEntry entry = data_use_recorders_.emplace(
-          data_use_recorders_.end());
+          data_use_recorders_.end(), old_traffic_type);
       std::pair<int, int> frame_key =
           RenderFrameHostID(render_process_id, render_frame_id);
       entry->set_main_frame_id(frame_key);
@@ -380,9 +388,11 @@ ChromeDataUseAscriber::CreateURLRequestClassifier() const {
 }
 
 ChromeDataUseAscriber::DataUseRecorderEntry
-ChromeDataUseAscriber::CreateNewDataUseRecorder(net::URLRequest* request) {
-  DataUseRecorderEntry entry = data_use_recorders_.emplace(
-      data_use_recorders_.end());
+ChromeDataUseAscriber::CreateNewDataUseRecorder(
+    net::URLRequest* request,
+    DataUse::TrafficType traffic_type) {
+  DataUseRecorderEntry entry =
+      data_use_recorders_.emplace(data_use_recorders_.end(), traffic_type);
   if (request) {
     entry->AddPendingURLRequest(request);
     request->SetUserData(

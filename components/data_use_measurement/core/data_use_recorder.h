@@ -25,7 +25,7 @@ namespace data_use_measurement {
 // tracked by exactly one DataUseRecorder.
 class DataUseRecorder {
  public:
-  DataUseRecorder();
+  explicit DataUseRecorder(DataUse::TrafficType traffic_type);
   virtual ~DataUseRecorder();
 
   // Returns the actual data used by the entity being tracked.
