@@ -29,7 +29,6 @@ source_set("content_suggestions") {
     "//ios/chrome/browser/ui/toolbar",
     "//mojo/common:common_custom_types",
     "//ui/base",
-    "//url",
   ]
   public_deps = [
     "//ios/third_party/material_components_ios",

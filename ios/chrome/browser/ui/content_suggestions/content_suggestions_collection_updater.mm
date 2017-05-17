@@ -24,7 +24,6 @@
 #import "ios/chrome/browser/ui/content_suggestions/identifier/content_suggestions_section_information.h"
 #import "ios/chrome/browser/ui/favicon/favicon_attributes.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "url/gurl.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -217,8 +216,10 @@ SectionIdentifier SectionIdentifierForInfo(
   // TODO(crbug.com/707754): implement this method.
 }
 
-- (void)faviconAvailableForURL:(const GURL&)URL {
-  // TODO(crbug.com/707754): implement this method.
+- (void)faviconAvailableForItem:(CollectionViewItem<SuggestedContent>*)item {
+  if ([self.collectionViewController.collectionViewModel hasItem:item]) {
+    [self fetchFaviconForItem:item];
+  }
 }
 
 #pragma mark - Public methods
@@ -423,13 +424,11 @@ addSuggestionsToModel:(NSArray<CSCollectionViewItem*>*)suggestions
                            ContentSuggestionsCollectionUpdater* strongSelf =
                                weakSelf;
                            CSCollectionViewItem* strongItem = weakItem;
-                           if (!strongSelf || !strongItem) {
+                           if (!strongSelf || !strongItem)
                              return;
-                           }
 
-                           strongItem.attributes = attributes;
-                           [strongSelf.collectionViewController
-                               reconfigureCellsForItems:@[ strongItem ]];
+                           [strongSelf reconfigure:strongItem
+                                    withAttributes:attributes];
 
                            [strongSelf fetchFaviconImageForItem:strongItem];
                          }];
@@ -443,18 +442,22 @@ addSuggestionsToModel:(NSArray<CSCollectionViewItem*>*)suggestions
   [self.dataSource
       fetchFaviconImageForItem:item
                     completion:^(UIImage* image) {
-                      ContentSuggestionsCollectionUpdater* strongSelf =
-                          weakSelf;
-                      CSCollectionViewItem* strongItem = weakItem;
-                      if (!strongSelf || !strongItem || !image) {
-                        return;
-                      }
-
-                      strongItem.attributes =
-                          [FaviconAttributes attributesWithImage:image];
-                      [strongSelf.collectionViewController
-                          reconfigureCellsForItems:@[ strongItem ]];
+                      [weakSelf reconfigure:weakItem
+                             withAttributes:[FaviconAttributes
+                                                attributesWithImage:image]];
                     }];
+}
+
+// Sets the attributes of |item| to |attributes| and reconfigures it.
+- (void)reconfigure:(CSCollectionViewItem*)item
+     withAttributes:(FaviconAttributes*)attributes {
+  if (!item || !attributes ||
+      ![self.collectionViewController.collectionViewModel hasItem:item]) {
+    return;
+  }
+
+  item.attributes = attributes;
+  [self.collectionViewController reconfigureCellsForItems:@[ item ]];
 }
 
 // Runs the additional action for the section identified by |sectionInfo|.

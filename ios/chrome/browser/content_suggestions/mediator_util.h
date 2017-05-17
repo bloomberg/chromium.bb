@@ -20,6 +20,7 @@ class Category;
 
 @class CollectionViewItem;
 @class ContentSuggestionsCategoryWrapper;
+@class ContentSuggestionsMostVisitedItem;
 
 // TODO(crbug.com/701275): Once base::BindBlock supports the move semantics,
 // remove this wrapper.
@@ -59,9 +60,9 @@ ContentSuggestionsSectionInformation* MostVisitedSectionInformation();
 // Records the page impression of the ntp tiles.
 void RecordPageImpression(const std::vector<ntp_tiles::NTPTile>& mostVisited);
 
-// Converts a ntp_snippets::ContentSuggestion to an adapted CollectionViewItem
+// Converts a ntp_tiles::NTPTile |tile| to a ContentSuggestionsMostVisitedItem
 // with a |sectionInfo|.
-CollectionViewItem<SuggestedContent>* ConvertNTPTile(
+ContentSuggestionsMostVisitedItem* ConvertNTPTile(
     const ntp_tiles::NTPTile& tile,
     ContentSuggestionsSectionInformation* sectionInfo);
 

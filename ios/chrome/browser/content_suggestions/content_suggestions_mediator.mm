@@ -53,9 +53,10 @@ const NSInteger kMaxNumMostVisitedTiles = 8;
   std::unique_ptr<ntp_tiles::MostVisitedSitesObserverBridge> _mostVisitedBridge;
 }
 
-// Most visited data from the MostVisitedSites service (copied upon receiving
+// Most visited items from the MostVisitedSites service (copied upon receiving
 // the callback).
-@property(nonatomic, assign) std::vector<ntp_tiles::NTPTile> mostVisitedData;
+@property(nonatomic, strong)
+    NSMutableArray<ContentSuggestionsMostVisitedItem*>* mostVisitedItems;
 // Section Info for the Most Visited section.
 @property(nonatomic, strong)
     ContentSuggestionsSectionInformation* mostVisitedSectionInfo;
@@ -77,7 +78,7 @@ const NSInteger kMaxNumMostVisitedTiles = 8;
 
 @implementation ContentSuggestionsMediator
 
-@synthesize mostVisitedData = _mostVisitedData;
+@synthesize mostVisitedItems = _mostVisitedItems;
 @synthesize mostVisitedSectionInfo = _mostVisitedSectionInfo;
 @synthesize recordedPageImpression = _recordedPageImpression;
 @synthesize contentService = _contentService;
@@ -130,7 +131,7 @@ initWithContentService:(ntp_snippets::ContentSuggestionsService*)contentService
   NSMutableArray<ContentSuggestionsSectionInformation*>* sectionsInfo =
       [NSMutableArray array];
 
-  if (!self.mostVisitedData.empty()) {
+  if (self.mostVisitedItems.count > 0) {
     [sectionsInfo addObject:self.mostVisitedSectionInfo];
   }
 
@@ -155,10 +156,7 @@ initWithContentService:(ntp_snippets::ContentSuggestionsService*)contentService
       [NSMutableArray array];
 
   if (sectionInfo == self.mostVisitedSectionInfo) {
-    for (const ntp_tiles::NTPTile& tile : self.mostVisitedData) {
-      [convertedSuggestions
-          addObject:ConvertNTPTile(tile, self.mostVisitedSectionInfo)];
-    }
+    [convertedSuggestions addObjectsFromArray:self.mostVisitedItems];
   } else {
     ntp_snippets::Category category =
         [[self categoryWrapperForSectionInfo:sectionInfo] category];
@@ -363,7 +361,12 @@ initWithContentService:(ntp_snippets::ContentSuggestionsService*)contentService
 
 - (void)onMostVisitedURLsAvailable:
     (const ntp_tiles::NTPTilesVector&)mostVisited {
-  self.mostVisitedData = mostVisited;
+  self.mostVisitedItems = [NSMutableArray array];
+  for (const ntp_tiles::NTPTile& tile : mostVisited) {
+    [self.mostVisitedItems
+        addObject:ConvertNTPTile(tile, self.mostVisitedSectionInfo)];
+  }
+
   [self.dataSink reloadSection:self.mostVisitedSectionInfo];
 
   if (mostVisited.size() && !self.recordedPageImpression) {
@@ -373,7 +376,12 @@ initWithContentService:(ntp_snippets::ContentSuggestionsService*)contentService
 }
 
 - (void)onIconMadeAvailable:(const GURL&)siteURL {
-  [self.dataSink faviconAvailableForURL:siteURL];
+  for (ContentSuggestionsMostVisitedItem* item in self.mostVisitedItems) {
+    if (item.URL == siteURL) {
+      [self.dataSink faviconAvailableForItem:item];
+      return;
+    }
+  }
 }
 
 #pragma mark - Private
