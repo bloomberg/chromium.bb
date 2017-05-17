@@ -210,11 +210,6 @@ void LayoutSelection::SetSelection(
 
   DCHECK(frame_selection_->GetDocument().GetLayoutView()->GetFrameView());
 
-  // Record the old selected objects. These will be used later when we compare
-  // against the new selected objects.
-  int old_start_pos = selection_start_pos_;
-  int old_end_pos = selection_end_pos_;
-
   SelectedMap old_selected_map =
       CollectSelectedMap(selection_start_, selection_end_, selection_end_pos_,
                          block_paint_invalidation_mode);
@@ -222,12 +217,6 @@ void LayoutSelection::SetSelection(
   // Now clear the selection.
   for (auto layout_object : old_selected_map.object_map.Keys())
     layout_object->SetSelectionStateIfNeeded(SelectionNone);
-
-  // set selection start and end
-  selection_start_ = start;
-  selection_start_pos_ = start_pos;
-  selection_end_ = end;
-  selection_end_pos_ = end_pos;
 
   // Update the selection status of all objects between m_selectionStart and
   // m_selectionEnd
@@ -263,8 +252,8 @@ void LayoutSelection::SetSelection(
     SelectionState new_selection_state = obj->GetSelectionState();
     SelectionState old_selection_state = pair.value;
     if (new_selection_state != old_selection_state ||
-        (selection_start_ == obj && old_start_pos != selection_start_pos_) ||
-        (selection_end_ == obj && old_end_pos != selection_end_pos_)) {
+        (start == obj && start_pos != selection_start_pos_) ||
+        (end == obj && end_pos != selection_end_pos_)) {
       obj->SetShouldInvalidateSelection();
       new_selected_map.object_map.erase(obj);
     }
@@ -290,6 +279,12 @@ void LayoutSelection::SetSelection(
   // they need to be updated.
   for (auto layout_object : new_selected_map.block_map.Keys())
     layout_object->SetShouldInvalidateSelection();
+
+  // set selection start and end
+  selection_start_ = start;
+  selection_start_pos_ = start_pos;
+  selection_end_ = end;
+  selection_end_pos_ = end_pos;
 }
 
 std::pair<int, int> LayoutSelection::SelectionStartEnd() {
