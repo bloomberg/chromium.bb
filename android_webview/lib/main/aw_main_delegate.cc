@@ -7,12 +7,10 @@
 #include <memory>
 
 #include "android_webview/browser/aw_content_browser_client.h"
-#include "android_webview/browser/aw_locale_manager_impl.h"
 #include "android_webview/browser/aw_media_url_interceptor.h"
 #include "android_webview/browser/aw_quota_manager_bridge_impl.h"
 #include "android_webview/browser/aw_safe_browsing_config_helper.h"
 #include "android_webview/browser/aw_web_contents_view_delegate.h"
-#include "android_webview/browser/aw_web_preferences_populater_impl.h"
 #include "android_webview/browser/browser_view_renderer.h"
 #include "android_webview/browser/command_line_helper.h"
 #include "android_webview/browser/deferred_gpu_command_service.h"
@@ -276,14 +274,6 @@ scoped_refptr<AwQuotaManagerBridge> AwMainDelegate::CreateAwQuotaManagerBridge(
 content::WebContentsViewDelegate* AwMainDelegate::CreateViewDelegate(
     content::WebContents* web_contents) {
   return AwWebContentsViewDelegate::Create(web_contents);
-}
-
-AwWebPreferencesPopulater* AwMainDelegate::CreateWebPreferencesPopulater() {
-  return new AwWebPreferencesPopulaterImpl();
-}
-
-AwLocaleManager* AwMainDelegate::CreateAwLocaleManager() {
-  return new AwLocaleManagerImpl();
 }
 
 }  // namespace android_webview

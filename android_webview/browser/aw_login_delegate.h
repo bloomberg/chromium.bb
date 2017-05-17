@@ -7,7 +7,7 @@
 
 #include <memory>
 
-#include "android_webview/browser/aw_http_auth_handler_base.h"
+#include "android_webview/browser/aw_http_auth_handler.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/string16.h"
 #include "content/public/browser/resource_dispatcher_host_login_delegate.h"
@@ -40,7 +40,7 @@ class AwLoginDelegate :
                          const base::string16& password);
   void DeleteAuthHandlerSoon();
 
-  std::unique_ptr<AwHttpAuthHandlerBase> aw_http_auth_handler_;
+  std::unique_ptr<AwHttpAuthHandler> aw_http_auth_handler_;
   scoped_refptr<net::AuthChallengeInfo> auth_info_;
   net::URLRequest* request_;
   int render_process_id_;

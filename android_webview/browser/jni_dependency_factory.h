@@ -16,8 +16,6 @@ namespace android_webview {
 
 class AwBrowserContext;
 class AwQuotaManagerBridge;
-class AwWebPreferencesPopulater;
-class AwLocaleManager;
 
 // Used to create instances of objects under native that are used in browser.
 class JniDependencyFactory {
@@ -28,8 +26,6 @@ class JniDependencyFactory {
       AwBrowserContext* browser_context) = 0;
   virtual content::WebContentsViewDelegate* CreateViewDelegate(
       content::WebContents* web_contents) = 0;
-  virtual AwWebPreferencesPopulater* CreateWebPreferencesPopulater() = 0;
-  virtual AwLocaleManager* CreateAwLocaleManager() = 0;
 };
 
 }  // namespace android_webview

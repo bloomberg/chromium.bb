@@ -8,8 +8,6 @@
 #include <jni.h>
 #include <string>
 
-#include "android_webview/browser/aw_http_auth_handler_base.h"
-#include "android_webview/browser/aw_login_delegate.h"
 #include "base/android/jni_android.h"
 #include "base/android/scoped_java_ref.h"
 #include "base/memory/ref_counted.h"
@@ -24,18 +22,23 @@ class AuthChallengeInfo;
 
 namespace android_webview {
 
+class AwLoginDelegate;
+
 // Native class for Java class of same name and owns an instance
 // of that Java object.
 // One instance of this class is created per underlying AwLoginDelegate.
-class AwHttpAuthHandler : public AwHttpAuthHandlerBase {
+class AwHttpAuthHandler {
  public:
+  static AwHttpAuthHandler* Create(AwLoginDelegate* login_delegate,
+                                   net::AuthChallengeInfo* auth_info,
+                                   bool first_auth_attempt);
   AwHttpAuthHandler(AwLoginDelegate* login_delegate,
                     net::AuthChallengeInfo* auth_info,
                     bool first_auth_attempt);
-  ~AwHttpAuthHandler() override;
+  ~AwHttpAuthHandler();
 
   // from AwHttpAuthHandler
-  bool HandleOnUIThread(content::WebContents* web_contents) override;
+  bool HandleOnUIThread(content::WebContents* web_contents);
 
   void Proceed(JNIEnv* env,
                const base::android::JavaParamRef<jobject>& obj,

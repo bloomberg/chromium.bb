@@ -67,10 +67,9 @@ bool AwHttpAuthHandler::HandleOnUIThread(content::WebContents* web_contents) {
 }
 
 // static
-AwHttpAuthHandlerBase* AwHttpAuthHandlerBase::Create(
-    AwLoginDelegate* login_delegate,
-    net::AuthChallengeInfo* auth_info,
-    bool first_auth_attempt) {
+AwHttpAuthHandler* AwHttpAuthHandler::Create(AwLoginDelegate* login_delegate,
+                                             net::AuthChallengeInfo* auth_info,
+                                             bool first_auth_attempt) {
   return new AwHttpAuthHandler(login_delegate, auth_info, first_auth_attempt);
 }
 

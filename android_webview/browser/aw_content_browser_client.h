@@ -9,7 +9,6 @@
 
 #include <memory>
 
-#include "android_webview/browser/aw_web_preferences_populater.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "content/public/browser/content_browser_client.h"
@@ -140,7 +139,6 @@ class AwContentBrowserClient : public content::ContentBrowserClient {
   // Android WebView currently has a single global (non-off-the-record) browser
   // context.
   std::unique_ptr<AwBrowserContext> browser_context_;
-  std::unique_ptr<AwWebPreferencesPopulater> preferences_populater_;
 
   JniDependencyFactory* native_factory_;
 
