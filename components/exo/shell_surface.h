@@ -49,6 +49,7 @@ class ShellSurface : public SurfaceDelegate,
                      public ash::wm::WindowStateObserver,
                      public aura::WindowObserver,
                      public WMHelper::ActivationObserver,
+                     public WMHelper::AccessibilityObserver,
                      public WMHelper::DisplayConfigurationObserver {
  public:
   enum class BoundsMode { SHELL, CLIENT, FIXED };
@@ -262,6 +263,9 @@ class ShellSurface : public SurfaceDelegate,
       aura::Window* gained_active,
       aura::Window* lost_active) override;
 
+  // Overridden from WMHelper::AccessibilityObserver:
+  void OnAccessibilityModeChanged() override;
+
   // Overridden from WMHelper::DisplayConfigurationObserver:
   void OnDisplayConfigurationChanged() override;
 
@@ -363,6 +367,7 @@ class ShellSurface : public SurfaceDelegate,
   int pending_resize_component_ = HTCAPTION;
   std::unique_ptr<aura::Window> shadow_overlay_;
   std::unique_ptr<aura::Window> shadow_underlay_;
+  std::unique_ptr<ui::EventHandler> shadow_underlay_event_handler_;
   gfx::Rect shadow_content_bounds_;
   float shadow_background_opacity_ = 1.0;
   std::deque<Config> pending_configs_;

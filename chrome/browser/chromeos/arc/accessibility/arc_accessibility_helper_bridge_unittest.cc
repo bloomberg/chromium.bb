@@ -40,6 +40,8 @@ class ArcAccessibilityHelperBridgeTest : public testing::Test {
     void AddPostTargetHandler(ui::EventHandler* handler) override {}
     void RemovePostTargetHandler(ui::EventHandler* handler) override {}
     bool IsMaximizeModeWindowManagerEnabled() const override { return false; }
+    bool IsSpokenFeedbackEnabled() const override { return false; }
+    void PlayEarcon(int sound_key) const override {}
 
     DISALLOW_COPY_AND_ASSIGN(FakeWMHelper);
   };

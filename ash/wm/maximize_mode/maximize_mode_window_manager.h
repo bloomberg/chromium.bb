@@ -131,6 +131,9 @@ class ASH_EXPORT MaximizeModeWindowManager : public aura::WindowObserver,
   // Windows added to the container, but not yet shown.
   std::unordered_set<aura::Window*> added_windows_;
 
+  // True if all backdrops are hidden.
+  bool backdrops_hidden_;
+
   std::unique_ptr<wm::MaximizeModeEventHandler> event_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(MaximizeModeWindowManager);

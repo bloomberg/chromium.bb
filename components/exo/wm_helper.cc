@@ -62,6 +62,14 @@ void WMHelper::RemoveMaximizeModeObserver(MaximizeModeObserver* observer) {
   maximize_mode_observers_.RemoveObserver(observer);
 }
 
+void WMHelper::AddAccessibilityObserver(AccessibilityObserver* observer) {
+  accessibility_observers_.AddObserver(observer);
+}
+
+void WMHelper::RemoveAccessibilityObserver(AccessibilityObserver* observer) {
+  accessibility_observers_.RemoveObserver(observer);
+}
+
 void WMHelper::AddInputDeviceEventObserver(InputDeviceEventObserver* observer) {
   input_device_event_observers_.AddObserver(observer);
 }
@@ -116,6 +124,11 @@ void WMHelper::NotifyMaximizeModeEnding() {
 void WMHelper::NotifyMaximizeModeEnded() {
   for (MaximizeModeObserver& observer : maximize_mode_observers_)
     observer.OnMaximizeModeEnded();
+}
+
+void WMHelper::NotifyAccessibilityModeChanged() {
+  for (AccessibilityObserver& observer : accessibility_observers_)
+    observer.OnAccessibilityModeChanged();
 }
 
 void WMHelper::NotifyKeyboardDeviceConfigurationChanged() {

@@ -14,10 +14,9 @@
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_state_aura.h"
 #include "ash/wm/wm_window_animations.h"
-#include "ash/wm/workspace/backdrop_controller.h"
-#include "ash/wm/workspace/backdrop_delegate.h"
 #include "ash/wm/workspace/workspace_event_handler.h"
 #include "ash/wm/workspace/workspace_layout_manager.h"
+#include "ash/wm/workspace/workspace_layout_manager_backdrop_delegate.h"
 #include "ash/wm_window.h"
 #include "ui/aura/window.h"
 #include "ui/compositor/layer.h"
@@ -112,9 +111,9 @@ void WorkspaceController::DoInitialAnimation() {
   }
 }
 
-void WorkspaceController::SetBackdropDelegate(
-    std::unique_ptr<BackdropDelegate> delegate) {
-  layout_manager_->SetBackdropDelegate(std::move(delegate));
+void WorkspaceController::SetMaximizeBackdropDelegate(
+    std::unique_ptr<WorkspaceLayoutManagerBackdropDelegate> delegate) {
+  layout_manager_->SetMaximizeBackdropDelegate(std::move(delegate));
 }
 
 void WorkspaceController::OnWindowDestroying(aura::Window* window) {

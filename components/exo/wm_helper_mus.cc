@@ -86,6 +86,15 @@ bool WMHelperMus::IsMaximizeModeWindowManagerEnabled() const {
   return false;
 }
 
+bool WMHelperMus::IsSpokenFeedbackEnabled() const {
+  NOTIMPLEMENTED();
+  return false;
+}
+
+void WMHelperMus::PlayEarcon(int sound_key) const {
+  NOTIMPLEMENTED();
+}
+
 void WMHelperMus::OnActiveFocusClientChanged(
     aura::client::FocusClient* focus_client,
     aura::Window* focus_client_root) {

@@ -42,6 +42,8 @@ class WMHelperMus : public WMHelper,
   void AddPostTargetHandler(ui::EventHandler* handler) override;
   void RemovePostTargetHandler(ui::EventHandler* handler) override;
   bool IsMaximizeModeWindowManagerEnabled() const override;
+  bool IsSpokenFeedbackEnabled() const override;
+  void PlayEarcon(int sound_key) const override;
 
   // Overridden from aura::FocusSynchronizerObserver:
   void OnActiveFocusClientChanged(aura::client::FocusClient* focus_client,

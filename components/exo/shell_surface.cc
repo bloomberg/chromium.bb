@@ -44,6 +44,10 @@
 #include "ui/wm/core/window_animations.h"
 #include "ui/wm/core/window_util.h"
 
+#if defined(OS_CHROMEOS)
+#include "chromeos/audio/chromeos_sounds.h"
+#endif
+
 namespace exo {
 namespace {
 
@@ -184,6 +188,41 @@ class ShellSurfaceWidget : public views::Widget {
   ShellSurface* const shell_surface_;
 
   DISALLOW_COPY_AND_ASSIGN(ShellSurfaceWidget);
+};
+
+class ShadowUnderlayEventHandler : public ui::EventHandler {
+ public:
+  ShadowUnderlayEventHandler() {}
+  ~ShadowUnderlayEventHandler() override {}
+
+  // Overridden from ui::EventHandler:
+  void OnEvent(ui::Event* event) override {
+    // If the event is targeted at the underlay, it means the user has made an
+    // interaction that is outside the surface's bounds and we want to capture
+    // it (usually when in spoken feedback mode). Handle the event (to prevent
+    // behind-windows from receiving it) and play an earcon to notify the user.
+    if (event->IsLocatedEvent()) {
+#if defined(OS_CHROMEOS)
+      const ui::EventType kEarconEventTypes[] = {ui::ET_MOUSE_PRESSED,
+                                                 ui::ET_MOUSEWHEEL,
+                                                 ui::ET_TOUCH_PRESSED,
+                                                 ui::ET_POINTER_DOWN,
+                                                 ui::ET_POINTER_WHEEL_CHANGED,
+                                                 ui::ET_GESTURE_BEGIN,
+                                                 ui::ET_SCROLL,
+                                                 ui::ET_SCROLL_FLING_START};
+      bool is_earcon_event_type =
+          std::find(std::begin(kEarconEventTypes), std::end(kEarconEventTypes),
+                    event->type()) != std::end(kEarconEventTypes);
+      if (is_earcon_event_type)
+        WMHelper::GetInstance()->PlayEarcon(chromeos::SOUND_VOLUME_ADJUST);
+#endif
+      event->SetHandled();
+    }
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ShadowUnderlayEventHandler);
 };
 
 }  // namespace
@@ -334,6 +373,7 @@ ShellSurface::~ShellSurface() {
     surface_->SetSurfaceDelegate(nullptr);
     surface_->RemoveSurfaceObserver(this);
   }
+  WMHelper::GetInstance()->RemoveAccessibilityObserver(this);
 }
 
 void ShellSurface::AcknowledgeConfigure(uint32_t serial) {
@@ -999,6 +1039,13 @@ void ShellSurface::OnWindowActivated(
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+// WMHelper::AccessibilityObserver overrides:
+
+void ShellSurface::OnAccessibilityModeChanged() {
+  UpdateShadow();
+}
+
+////////////////////////////////////////////////////////////////////////////////
 // WMHelper::DisplayConfigurationObserver overrides:
 
 void ShellSurface::OnDisplayConfigurationChanged() {
@@ -1192,6 +1239,9 @@ void ShellSurface::CreateShellSurfaceWidget(ui::WindowShowState show_state) {
         ui::Accelerator(entry.keycode, entry.modifiers),
         ui::AcceleratorManager::kNormalPriority, this);
   }
+
+  // Receive accessibility changes to update shadow underlay.
+  WMHelper::GetInstance()->AddAccessibilityObserver(this);
 
   // Show widget next time Commit() is called.
   pending_show_widget_ = true;
@@ -1531,17 +1581,15 @@ void ShellSurface::UpdateShadow() {
 
   aura::Window* window = widget_->GetNativeWindow();
 
-  // Enable the black backdrop layer behind the window if the window
-  // is in immersive fullscreen, maximized, yet the window can control
-  // the bounds of the window in fullscreen/maximize mode (thus the
-  // background can be visible).
-  bool enable_backdrop =
-      (widget_->IsFullscreen() || widget_->IsMaximized()) &&
-      ash::wm::GetWindowState(window)->allow_set_bounds_direct();
-  if (window->GetProperty(aura::client::kHasBackdrop) != enable_backdrop)
-    window->SetProperty(aura::client::kHasBackdrop, enable_backdrop);
+  bool underlay_capture_events =
+      WMHelper::GetInstance()->IsSpokenFeedbackEnabled() && widget_->IsActive();
+  bool black_background_enabled =
+      ((widget_->IsFullscreen() || widget_->IsMaximized()) ||
+       underlay_capture_events) &&
+      ash::wm::GetWindowState(window)->allow_set_bounds_direct() &&
+      window->layer()->GetTargetTransform().IsIdentity();
 
-  if (!shadow_enabled_) {
+  if (!shadow_enabled_ && !black_background_enabled) {
     wm::SetShadowElevation(window, wm::ShadowElevation::NONE);
     if (shadow_underlay_)
       shadow_underlay_->Hide();
@@ -1590,6 +1638,9 @@ void ShellSurface::UpdateShadow() {
     if (!shadow_underlay_) {
       shadow_underlay_ = base::MakeUnique<aura::Window>(nullptr);
       shadow_underlay_->set_owned_by_parent(false);
+      shadow_underlay_event_handler_ =
+          base::MakeUnique<ShadowUnderlayEventHandler>();
+      shadow_underlay_->SetTargetHandler(shadow_underlay_event_handler_.get());
       DCHECK(!shadow_underlay_->owned_by_parent());
       // Ensure the background area inside the shadow is solid black.
       // Clients that provide translucent contents should not be using
@@ -1608,6 +1659,25 @@ void ShellSurface::UpdateShadow() {
     }
 
     float shadow_underlay_opacity = shadow_background_opacity_;
+
+    // Put the black background layer behind the window if
+    // 1) the window is in immersive fullscreen, maximized or is active with
+    //    spoken feedback enabled.
+    // 2) the window can control the bounds of the window in fullscreen (
+    //    thus the background can be visible).
+    // 3) the window has no transform (the transformed background may
+    //    not cover the entire background, e.g. overview mode).
+    if (black_background_enabled) {
+      if (shadow_underlay_in_surface_) {
+        shadow_underlay_bounds = gfx::Rect(surface_->window()->bounds().size());
+      } else {
+        gfx::Point origin;
+        origin -= window->bounds().origin().OffsetFromOrigin();
+        shadow_bounds.set_origin(origin);
+        shadow_bounds.set_size(window->parent()->bounds().size());
+      }
+      shadow_underlay_opacity = 1.0f;
+    }
 
     if (!shadow_underlay_in_surface_)
       shadow_underlay_bounds = shadow_bounds;
