@@ -43,6 +43,7 @@ class VIEWS_EXPORT DialogClientView : public ClientView,
 
   // Update the dialog buttons to match the dialog's delegate.
   void UpdateDialogButtons();
+  void SetButtonRowInsets(const gfx::Insets& insets);
 
   // ClientView implementation:
   bool CanClose() override;
@@ -62,10 +63,6 @@ class VIEWS_EXPORT DialogClientView : public ClientView,
 
   // ButtonListener implementation:
   void ButtonPressed(Button* sender, const ui::Event& event) override;
-
-  void set_button_row_insets(const gfx::Insets& insets) {
-    button_row_insets_ = insets;
-  }
 
   void set_minimum_size(const gfx::Size& size) { minimum_size_ = size; }
 

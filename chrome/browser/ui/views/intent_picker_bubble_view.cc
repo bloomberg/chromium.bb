@@ -108,7 +108,7 @@ void IntentPickerBubbleView::ShowBubble(
   delegate->set_parent_window(browser_view->GetNativeWindow());
   views::Widget* widget =
       views::BubbleDialogDelegateView::CreateBubble(delegate);
-  delegate->GetDialogClientView()->set_button_row_insets(
+  delegate->GetDialogClientView()->SetButtonRowInsets(
       gfx::Insets(kDialogDelegateInsets));
 
   delegate->SetArrowPaintType(views::BubbleBorder::PAINT_NONE);
