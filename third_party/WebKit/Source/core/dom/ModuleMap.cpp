@@ -96,6 +96,7 @@ void ModuleMap::Entry::NotifyNewSingleModuleFinished(
 }
 
 ModuleScript* ModuleMap::Entry::GetModuleScript() const {
+  DCHECK(!is_fetching_);
   return module_script_.Get();
 }
 
@@ -145,8 +146,7 @@ void ModuleMap::FetchSingleModuleScript(const ModuleScriptFetchRequest& request,
 
 ModuleScript* ModuleMap::GetFetchedModuleScript(const KURL& url) const {
   MapImpl::const_iterator it = map_.find(url);
-  if (it == map_.end())
-    return nullptr;
+  CHECK_NE(it, map_.end());
   return it->value->GetModuleScript();
 }
 
