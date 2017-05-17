@@ -222,7 +222,10 @@ void BluetoothDeviceAndroid::OnConnectionStateChange(
   } else {
     // Otherwise an existing connection was terminated.
     RecordConnectionTerminatedResult(status);
-    DidDisconnectGatt(true /* notifyDeviceChanged */);
+    gatt_services_.clear();
+    device_uuids_.ClearServiceUUIDs();
+    SetGattServicesDiscoveryComplete(false);
+    DidDisconnectGatt();
   }
 }
 
