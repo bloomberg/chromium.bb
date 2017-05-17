@@ -23,6 +23,7 @@ function runTest()
     oldChildWindow = frame.contentWindow;
     // Have expected results assume that the frame hasn't been closed (=> window.closed = false.)
     collectProperties(document.getElementById("src_frame").contentWindow, false);
+    frame.onload = testFrameLoaded;
     frame.src = 'about:blank';
 }
 
@@ -39,6 +40,6 @@ function testFrameLoaded()
 </head>
 <body onload="runTest()">
 <iframe id="src_frame"></iframe>
-<iframe id="test_frame" src="resources/blank.html" onload="testFrameLoaded()"></iframe>
+<iframe id="test_frame" src="data:text/plain,"></iframe>
 </body>
 </html>

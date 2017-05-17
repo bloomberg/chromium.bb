@@ -159,14 +159,8 @@ void V8Window::openerAttributeSetterCustom(
     const v8::PropertyCallbackInfo<void>& info) {
   v8::Isolate* isolate = info.GetIsolate();
   DOMWindow* impl = V8Window::toImpl(info.Holder());
-  // TODO(dcheng): Investigate removing this, since opener is not really a
-  // cross-origin property (so it shouldn't be accessible to begin with)
-  ExceptionState exception_state(isolate, ExceptionState::kSetterContext,
-                                 "Window", "opener");
-  if (!BindingSecurity::ShouldAllowAccessTo(CurrentDOMWindow(info.GetIsolate()),
-                                            impl, exception_state)) {
+  if (!impl->GetFrame())
     return;
-  }
 
   // Opener can be shadowed if it is in the same domain.
   // Have a special handling of null value to behave
@@ -349,7 +343,8 @@ void V8Window::namedPropertyGetterCustom(
   if (!BindingSecurity::ShouldAllowAccessTo(
           CurrentDOMWindow(info.GetIsolate()), window,
           BindingSecurity::ErrorReportOption::kDoNotReport)) {
-    BindingSecurity::FailedAccessCheckFor(info.GetIsolate(), frame);
+    BindingSecurity::FailedAccessCheckFor(
+        info.GetIsolate(), window->GetWrapperTypeInfo(), info.Holder());
     return;
   }
 

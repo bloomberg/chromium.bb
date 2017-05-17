@@ -38,7 +38,6 @@
 namespace blink {
 
 class DOMWindow;
-class EventTarget;
 class ExceptionState;
 class Frame;
 class LocalDOMWindow;
@@ -59,10 +58,8 @@ class CORE_EXPORT BindingSecurity {
   // receiver object (|target|), where the receiver object is the JS object
   // for which the DOM attribute or DOM operation is being invoked (in the
   // form of receiver.domAttr or receiver.domOp()).
-  // Note that only Window and Location objects are cross-origin accessible
-  // and that EventTarget interface is the parent interface of Window
-  // interface.  So the receiver object must be of type DOMWindow,
-  // EventTarget, or Location.
+  // Note that only Window and Location objects are cross-origin accessible, so
+  // the receiver object must be of type DOMWindow or Location.
   //
   // DOMWindow
   static bool ShouldAllowAccessTo(const LocalDOMWindow* accessing_window,
@@ -71,11 +68,7 @@ class CORE_EXPORT BindingSecurity {
   static bool ShouldAllowAccessTo(const LocalDOMWindow* accessing_window,
                                   const DOMWindow* target,
                                   ErrorReportOption);
-  // EventTarget (as the parent of DOMWindow)
-  static bool ShouldAllowAccessTo(
-      const LocalDOMWindow* accessing_window,
-      const EventTarget* target,
-      ExceptionState&);  // NOLINT(readability/parameter_name)
+
   // Location
   static bool ShouldAllowAccessTo(const LocalDOMWindow* accessing_window,
                                   const Location* target,
@@ -111,13 +104,10 @@ class CORE_EXPORT BindingSecurity {
   static bool ShouldAllowAccessToFrame(const LocalDOMWindow* accessing_window,
                                        const Frame* target,
                                        ErrorReportOption);
-  // This overload must be used only for detached windows.
-  static bool ShouldAllowAccessToDetachedWindow(
-      const LocalDOMWindow* accessing_window,
-      const DOMWindow* target,
-      ExceptionState&);
 
-  static void FailedAccessCheckFor(v8::Isolate*, const Frame* target);
+  static void FailedAccessCheckFor(v8::Isolate*,
+                                   const WrapperTypeInfo*,
+                                   v8::Local<v8::Object> holder);
 
   // The following two functions were written to be called by
   // V8WrapperInstantiationScope before entering and after exiting an object's

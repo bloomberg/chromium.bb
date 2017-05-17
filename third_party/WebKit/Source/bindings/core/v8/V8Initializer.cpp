@@ -40,13 +40,10 @@
 #include "bindings/core/v8/V8ErrorHandler.h"
 #include "bindings/core/v8/V8GCController.h"
 #include "bindings/core/v8/V8IdleTaskRunner.h"
-#include "bindings/core/v8/V8Location.h"
-#include "bindings/core/v8/V8Window.h"
 #include "bindings/core/v8/WorkerOrWorkletScriptController.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/frame/LocalDOMWindow.h"
-#include "core/frame/LocalFrame.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "core/inspector/MainThreadDebugger.h"
@@ -73,27 +70,6 @@
 #include "v8/include/v8-profiler.h"
 
 namespace blink {
-
-static Frame* FindFrame(v8::Isolate* isolate,
-                        v8::Local<v8::Object> host,
-                        v8::Local<v8::Value> data) {
-  const WrapperTypeInfo* type = WrapperTypeInfo::Unwrap(data);
-
-  if (V8Window::wrapperTypeInfo.Equals(type)) {
-    v8::Local<v8::Object> window_wrapper =
-        V8Window::findInstanceInPrototypeChain(host, isolate);
-    if (window_wrapper.IsEmpty())
-      return 0;
-    return V8Window::toImpl(window_wrapper)->GetFrame();
-  }
-
-  if (V8Location::wrapperTypeInfo.Equals(type))
-    return V8Location::toImpl(host)->GetFrame();
-
-  // This function can handle only those types listed above.
-  NOTREACHED();
-  return 0;
-}
 
 static void ReportFatalErrorInMainThread(const char* location,
                                          const char* message) {
@@ -309,14 +285,13 @@ static void PromiseRejectHandlerInWorker(v8::PromiseRejectMessage data) {
                        script_state);
 }
 
-static void FailedAccessCheckCallbackInMainThread(v8::Local<v8::Object> host,
+static void FailedAccessCheckCallbackInMainThread(v8::Local<v8::Object> holder,
                                                   v8::AccessType type,
                                                   v8::Local<v8::Value> data) {
-  v8::Isolate* isolate = v8::Isolate::GetCurrent();
-  Frame* target = FindFrame(isolate, host, data);
   // FIXME: We should modify V8 to pass in more contextual information (context,
   // property, and object).
-  BindingSecurity::FailedAccessCheckFor(isolate, target);
+  BindingSecurity::FailedAccessCheckFor(v8::Isolate::GetCurrent(),
+                                        WrapperTypeInfo::Unwrap(data), holder);
 }
 
 static bool CodeGenerationCheckCallbackInMainThread(

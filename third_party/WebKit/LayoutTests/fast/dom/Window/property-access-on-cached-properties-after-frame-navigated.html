@@ -14,9 +14,6 @@ function insertExpectedResult(path, expected)
     if (path.length < 2)
         return;
     var propertyDir = path.slice(0, -1).join('.');
-    // Cached Location properties become undefined.
-    if (propertyDir == "location")
-        expected = "undefined";
     var cachedPropertyDir = "cached_" + propertyDir.replace('.', '_');
     window[cachedPropertyDir] = eval("childWindow." + propertyDir);
     propertiesToVerify.push({
@@ -32,7 +29,8 @@ function runTest()
     childWindow = frame.contentWindow;
     // Have expected results assume that the frame hasn't been closed (=> window.closed = false.)
     collectProperties(document.getElementById("src_frame").contentWindow, false);
-    frame.src = 'about:blank';
+    frame.onload = testFrameLoaded;
+    frame.src = 'data:text/plain,';
 }
 
 function testFrameLoaded()
@@ -47,6 +45,6 @@ function testFrameLoaded()
 </head>
 <body onload="runTest()">
 <iframe id="src_frame"></iframe>
-<iframe id="test_frame" src="resources/blank.html" onload="testFrameLoaded()"></iframe>
+<iframe id="test_frame"></iframe>
 </body>
 </html>

@@ -58,8 +58,6 @@ class CORE_EXPORT Location final : public GarbageCollected<Location>,
   }
 
   DOMWindow* DomWindow() const { return dom_window_.Get(); }
-  // TODO(dcheng): Deprecated and will be removed. Do not use in new code!
-  Frame* GetFrame() const { return dom_window_->GetFrame(); }
 
   void setHref(LocalDOMWindow* current_window,
                LocalDOMWindow* entered_window,

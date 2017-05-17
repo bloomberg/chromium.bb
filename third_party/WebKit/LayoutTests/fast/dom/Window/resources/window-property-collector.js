@@ -25,7 +25,10 @@ function emitExpectedResult(path, expected)
 
     // Skip the properties which are hard to expect a stable result.
     if (path[0] == 'accessibilityController' // we can hardly estimate the states of the cached WebAXObjects.
-        || path[0] == 'localStorage') { // local storage is not reliably cleared between tests.
+        // TODO(https://crbug.com/698610): Web storage APIs are not being
+        // cleared between tests.
+        || path[0] == 'localStorage'
+        || path[0] == 'sessionStorage') {
         return;
     }
 
