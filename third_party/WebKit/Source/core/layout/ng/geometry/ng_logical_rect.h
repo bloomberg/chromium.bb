@@ -38,6 +38,10 @@ struct CORE_EXPORT NGLogicalRect {
     return offset.block_offset + size.block_size;
   }
 
+  NGLogicalOffset InlineStartBlockStartOffset() const {
+    return {InlineStartOffset(), BlockStartOffset()};
+  }
+
   NGLogicalOffset InlineEndBlockStartOffset() const {
     return {InlineEndOffset(), BlockStartOffset()};
   }

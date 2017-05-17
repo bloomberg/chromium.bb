@@ -80,6 +80,9 @@ NGInlineLayoutAlgorithm::NGInlineLayoutAlgorithm(
   if (!is_horizontal_writing_mode_)
     baseline_type_ = FontBaseline::kIdeographicBaseline;
 
+  border_and_padding_ = ComputeBorders(ConstraintSpace(), Style()) +
+                        ComputePadding(ConstraintSpace(), Style());
+
   if (break_token) {
     // If a break_token is given, we're re-starting layout for 2nd or later
     // lines, and that the first line we create should not use the first line
@@ -286,12 +289,14 @@ bool NGInlineLayoutAlgorithm::PlaceItems(
         item_result.item_index, item_result.start_offset,
         item_result.end_offset);
 
-    NGLogicalOffset logical_offset(
-        inline_size + current_opportunity_.InlineStartOffset() -
-            ConstraintSpace().BfcOffset().inline_offset,
-        line_top);
-    line_box.AddChild(std::move(text_fragment), logical_offset);
+    NGLogicalOffset opportunity_offset =
+        current_opportunity_.InlineStartBlockStartOffset() -
+        ContainerBfcOffset();
+    NGLogicalOffset line_offset = {
+        opportunity_offset.inline_offset + inline_size, line_top};
+
     inline_size += item_result.inline_size;
+    line_box.AddChild(std::move(text_fragment), line_offset);
   }
 
   if (line_box.Children().IsEmpty()) {
@@ -302,7 +307,8 @@ bool NGInlineLayoutAlgorithm::PlaceItems(
 
   // The baselines are always placed at pixel boundaries. Not doing so results
   // in incorrect layout of text decorations, most notably underlines.
-  LayoutUnit baseline = content_size_ + line_box.Metrics().ascent;
+  LayoutUnit baseline = content_size_ + line_box.Metrics().ascent +
+                        border_and_padding_.block_start;
   baseline = LayoutUnit(baseline.Round());
 
   // Check if the line fits into the constraint space in block direction.
@@ -379,8 +385,11 @@ LayoutUnit NGInlineLayoutAlgorithm::PlaceAtomicInline(
 
 void NGInlineLayoutAlgorithm::FindNextLayoutOpportunity() {
   NGLogicalOffset iter_offset = ConstraintSpace().BfcOffset();
-  if (container_builder_.BfcOffset())
+  if (container_builder_.BfcOffset()) {
     iter_offset = ContainerBfcOffset();
+    iter_offset +=
+        {border_and_padding_.inline_start, border_and_padding_.block_start};
+  }
   iter_offset.block_offset += content_size_;
   auto* iter = MutableConstraintSpace()->LayoutOpportunityIterator(iter_offset);
   NGLayoutOpportunity opportunity = iter->Next();
@@ -398,6 +407,10 @@ RefPtr<NGLayoutResult> NGInlineLayoutAlgorithm::Layout() {
     CreateLine(&item_results, line_breaker.CreateBreakToken());
     item_results.clear();
   }
+
+  // TODO(crbug.com/716930): Avoid calculating border/padding twice.
+  if (!Node()->Items().IsEmpty())
+    content_size_ -= border_and_padding_.block_start;
 
   // TODO(kojii): Check if the line box width should be content or available.
   NGLogicalSize size(max_inline_size_, content_size_);
