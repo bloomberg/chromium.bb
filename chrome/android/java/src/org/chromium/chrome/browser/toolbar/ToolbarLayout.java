@@ -235,6 +235,13 @@ public abstract class ToolbarLayout extends FrameLayout implements Toolbar {
     }
 
     /**
+     * @return The view containing the menu button.
+     */
+    protected View getMenuButton() {
+        return mMenuButton;
+    }
+
+    /**
      * @return The {@link ProgressBar} this layout uses.
      */
     @VisibleForTesting

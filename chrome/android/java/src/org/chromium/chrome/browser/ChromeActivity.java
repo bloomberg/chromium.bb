@@ -1359,7 +1359,7 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
 
         boolean hasPermanentMenuKey = ViewConfiguration.get(this).hasPermanentMenuKey();
         getAppMenuHandler().showAppMenu(
-                hasPermanentMenuKey ? null : getToolbarManager().getMenuAnchor(), false);
+                hasPermanentMenuKey ? null : getToolbarManager().getMenuButton(), false);
     }
 
     /**

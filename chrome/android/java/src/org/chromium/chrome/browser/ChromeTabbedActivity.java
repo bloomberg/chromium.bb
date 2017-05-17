@@ -747,7 +747,7 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
         if (!tracker.shouldTriggerHelpUI(FeatureConstants.DOWNLOAD_HOME_FEATURE)) return;
 
         ViewAnchoredTextBubble textBubble = new ViewAnchoredTextBubble(this,
-                getToolbarManager().getMenuAnchor(), R.string.iph_download_home_text,
+                getToolbarManager().getMenuButton(), R.string.iph_download_home_text,
                 R.string.iph_download_home_accessibility_text);
         textBubble.setDismissOnTouchInteraction(true);
         textBubble.addOnDismissListener(new OnDismissListener() {
