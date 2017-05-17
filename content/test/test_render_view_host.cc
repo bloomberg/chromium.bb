@@ -30,12 +30,7 @@
 #include "media/base/video_frame.h"
 #include "ui/aura/env.h"
 #include "ui/compositor/compositor.h"
-#include "ui/compositor/layer_type.h"
 #include "ui/gfx/geometry/rect.h"
-
-#if defined(USE_AURA)
-#include "ui/aura/test/test_window_delegate.h"
-#endif
 
 namespace content {
 
@@ -78,13 +73,6 @@ TestRenderWidgetHostView::TestRenderWidgetHostView(RenderWidgetHost* rwh)
 #endif
 
   rwh_->SetView(this);
-
-#if defined(USE_AURA)
-  window_.reset(new aura::Window(
-      aura::test::TestWindowDelegate::CreateSelfDestroyingDelegate()));
-  window_->set_owned_by_parent(false);
-  window_->Init(ui::LayerType::LAYER_NOT_DRAWN);
-#endif
 }
 
 TestRenderWidgetHostView::~TestRenderWidgetHostView() {
@@ -103,11 +91,7 @@ gfx::Vector2dF TestRenderWidgetHostView::GetLastScrollOffset() const {
 }
 
 gfx::NativeView TestRenderWidgetHostView::GetNativeView() const {
-#if defined(USE_AURA)
-  return window_.get();
-#else
   return nullptr;
-#endif
 }
 
 gfx::NativeViewAccessible TestRenderWidgetHostView::GetNativeViewAccessible() {
