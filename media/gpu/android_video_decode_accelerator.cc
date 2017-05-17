@@ -113,12 +113,19 @@ constexpr base::TimeDelta IdleTimerTimeOut = base::TimeDelta::FromSeconds(1);
 bool ShouldDeferSurfaceCreation(
     AVDACodecAllocator* codec_allocator,
     int surface_id,
+    base::Optional<base::UnguessableToken> overlay_routing_token,
     VideoCodec codec,
     const AndroidVideoDecodeAccelerator::PlatformConfig& platform_config) {
-  return platform_config.force_deferred_surface_creation ||
-         (surface_id == SurfaceManager::kNoSurfaceID && codec == kCodecH264 &&
-          codec_allocator->IsAnyRegisteredAVDA() &&
-          platform_config.sdk_int <= 18);
+  if (platform_config.force_deferred_surface_creation)
+    return true;
+
+  // TODO(liberato): We might still want to defer if we've got a routing
+  // token.  It depends on whether we want to use it right away or not.
+  if (surface_id != SurfaceManager::kNoSurfaceID || overlay_routing_token)
+    return false;
+
+  return codec == kCodecH264 && codec_allocator->IsAnyRegisteredAVDA() &&
+         platform_config.sdk_int <= 18;
 }
 
 std::unique_ptr<AndroidOverlay> CreateContentVideoViewOverlay(
@@ -352,6 +359,7 @@ bool AndroidVideoDecodeAccelerator::Initialize(const Config& config,
   // If we're low on resources, we may decide to defer creation of the surface
   // until the codec is actually used.
   if (ShouldDeferSurfaceCreation(codec_allocator_, config_.surface_id,
+                                 config_.overlay_routing_token,
                                  codec_config_->codec, platform_config_)) {
     // We should never be here if a SurfaceView is required.
     // TODO(liberato): This really isn't true with AndroidOverlay.
@@ -408,6 +416,7 @@ void AndroidVideoDecodeAccelerator::StartSurfaceChooser() {
   // signal success optimistically.
   if (during_initialize_ && !deferred_initialization_pending_) {
     DCHECK_EQ(config_.surface_id, SurfaceManager::kNoSurfaceID);
+    DCHECK(!config_.overlay_routing_token);
     OnSurfaceTransition(nullptr);
     return;
   }
@@ -416,6 +425,8 @@ void AndroidVideoDecodeAccelerator::StartSurfaceChooser() {
   AndroidOverlayFactoryCB factory;
   if (config_.surface_id != SurfaceManager::kNoSurfaceID)
     factory = base::Bind(&CreateContentVideoViewOverlay, config_.surface_id);
+  else if (config_.overlay_routing_token && overlay_factory_cb_)
+    factory = base::Bind(overlay_factory_cb_, *config_.overlay_routing_token);
 
   // Notify |surface_chooser_| that we've started.  This guarantees that we'll
   // get a callback.  It might not be a synchronous callback, but we're not in
@@ -1259,12 +1270,13 @@ void AndroidVideoDecodeAccelerator::SetSurface(
   // surface.  In this case, just pretend that |surface_id| is the initial one.
   if (state_ == BEFORE_OVERLAY_INIT) {
     config_.surface_id = surface_id;
+    config_.overlay_routing_token = routing_token;
     return;
   }
 
   AndroidOverlayFactoryCB factory;
-  if (routing_token) {
-    // TODO(liberato): do something
+  if (routing_token && overlay_factory_cb_) {
+    factory = base::Bind(overlay_factory_cb_, *routing_token);
   } else if (surface_id != SurfaceManager::kNoSurfaceID) {
     factory = base::Bind(&CreateContentVideoViewOverlay, surface_id);
   }
