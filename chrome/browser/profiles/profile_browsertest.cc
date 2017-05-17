@@ -769,12 +769,6 @@ IN_PROC_BROWSER_TEST_F(ProfileBrowserTest,
           browser()->profile())->GetMediaURLRequestContext());
 }
 
-IN_PROC_BROWSER_TEST_F(ProfileBrowserTest,
-                       URLFetcherUsingExtensionContextDuringShutdown) {
-  StartActiveFetcherDuringProfileShutdownTest(
-      browser()->profile()->GetRequestContextForExtensions());
-}
-
 // The following tests make sure that it's safe to destroy an incognito profile
 // while one of the its URLRequestContextGetters is in use by a URLFetcher.
 
@@ -784,16 +778,6 @@ IN_PROC_BROWSER_TEST_F(ProfileBrowserTest,
       OpenURLOffTheRecord(browser()->profile(), GURL("about:blank"));
   RunURLFetcherActiveDuringIncognitoTeardownTest(
       incognito_browser, incognito_browser->profile()->GetRequestContext());
-}
-
-IN_PROC_BROWSER_TEST_F(ProfileBrowserTest,
-                       URLFetcherUsingExtensionContextDuringIncognitoTeardown) {
-  Browser* incognito_browser =
-      OpenURLOffTheRecord(browser()->profile(), GURL("about:blank"));
-
-  RunURLFetcherActiveDuringIncognitoTeardownTest(
-      incognito_browser,
-      incognito_browser->profile()->GetRequestContextForExtensions());
 }
 
 // Verifies the cache directory supports multiple profiles when it's overriden

@@ -397,9 +397,6 @@ NetExportMessageHandler::GetURLRequestContexts() const {
   context_getters.push_back(
       content::BrowserContext::GetDefaultStoragePartition(profile)
           ->GetMediaURLRequestContext());
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-  context_getters.push_back(profile->GetRequestContextForExtensions());
-#endif
   context_getters.push_back(
       g_browser_process->io_thread()->system_url_request_context_getter());
   context_getters.push_back(
