@@ -938,14 +938,7 @@ IN_PROC_BROWSER_TEST_P(WebViewNewWindowInteractiveTest,
              NEEDS_TEST_SERVER);
 }
 
-// Causes problems on windows: http://crbug.com/544037
-#if defined(OS_WIN)
-#define MAYBE_NewWindow_WebRequest DISABLED_NewWindow_WebRequest
-#else
-#define MAYBE_NewWindow_WebRequest NewWindow_WebRequest
-#endif
-IN_PROC_BROWSER_TEST_P(WebViewNewWindowInteractiveTest,
-                       MAYBE_NewWindow_WebRequest) {
+IN_PROC_BROWSER_TEST_P(WebViewNewWindowInteractiveTest, NewWindow_WebRequest) {
   TestHelper("testNewWindowWebRequest",
              "web_view/newwindow",
              NEEDS_TEST_SERVER);
