@@ -54,7 +54,7 @@ class AXARIAGridCell final : public AXTableCell {
  protected:
   bool IsAriaColumnHeader() const;
   bool IsAriaRowHeader() const;
-  AXObjectImpl* ParentTable() const override;
+  AXObject* ParentTable() const override;
 };
 
 }  // namespace blink

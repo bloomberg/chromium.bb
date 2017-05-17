@@ -173,7 +173,7 @@ class WEB_EXPORT ChromeClientImpl final : public ChromeClient {
                                  const CompositedSelection&) override;
 
   // ChromeClient methods:
-  void PostAccessibilityNotification(AXObjectImpl*,
+  void PostAccessibilityNotification(AXObject*,
                                      AXObjectCache::AXNotification) override;
   String AcceptLanguages() override;
 

@@ -45,13 +45,13 @@ class AXSVGRoot final : public AXLayoutObject {
   static AXSVGRoot* Create(LayoutObject*, AXObjectCacheImpl&);
   ~AXSVGRoot() override;
 
-  void SetParent(AXObjectImpl*) override;
+  void SetParent(AXObject*) override;
 
   AccessibilityRole DetermineAccessibilityRole() override;
   bool ComputeAccessibilityIsIgnored(IgnoredReasons*) const override;
 
  private:
-  AXObjectImpl* ComputeParent() const override;
+  AXObject* ComputeParent() const override;
   bool IsAXSVGRoot() const override { return true; }
 };
 

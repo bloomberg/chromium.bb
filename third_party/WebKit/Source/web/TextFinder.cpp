@@ -45,8 +45,8 @@
 #include "core/layout/LayoutObject.h"
 #include "core/layout/TextAutosizer.h"
 #include "core/page/Page.h"
+#include "modules/accessibility/AXObject.h"
 #include "modules/accessibility/AXObjectCacheImpl.h"
-#include "modules/accessibility/AXObjectImpl.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/Timer.h"
 #include "platform/wtf/CurrentTime.h"
@@ -252,10 +252,9 @@ void TextFinder::ReportFindInPageResultToAccessibility(int identifier) {
   if (!ax_object_cache)
     return;
 
-  AXObjectImpl* start_object =
+  AXObject* start_object =
       ax_object_cache->Get(active_match_->startContainer());
-  AXObjectImpl* end_object =
-      ax_object_cache->Get(active_match_->endContainer());
+  AXObject* end_object = ax_object_cache->Get(active_match_->endContainer());
   if (!start_object || !end_object)
     return;
 

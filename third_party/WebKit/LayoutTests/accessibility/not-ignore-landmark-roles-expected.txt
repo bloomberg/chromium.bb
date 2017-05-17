@@ -12,14 +12,14 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 
 
 PASS containerNode.childrenCount is 8
-PASS AXObjectImpl.role is 'AXRole: AXArticle'
-PASS AXObjectImpl.role is 'AXRole: AXRegion'
-PASS AXObjectImpl.role is 'AXRole: AXBanner'
-PASS AXObjectImpl.role is 'AXRole: AXComplementary'
-PASS AXObjectImpl.role is 'AXRole: AXContentInfo'
-PASS AXObjectImpl.role is 'AXRole: AXFooter'
-PASS AXObjectImpl.role is 'AXRole: AXMain'
-PASS AXObjectImpl.role is 'AXRole: AXNavigation'
+PASS AXObject.role is 'AXRole: AXArticle'
+PASS AXObject.role is 'AXRole: AXRegion'
+PASS AXObject.role is 'AXRole: AXBanner'
+PASS AXObject.role is 'AXRole: AXComplementary'
+PASS AXObject.role is 'AXRole: AXContentInfo'
+PASS AXObject.role is 'AXRole: AXFooter'
+PASS AXObject.role is 'AXRole: AXMain'
+PASS AXObject.role is 'AXRole: AXNavigation'
 PASS successfullyParsed is true
 
 TEST COMPLETE

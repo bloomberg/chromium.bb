@@ -54,12 +54,12 @@ LayoutObject* AXSpinButton::LayoutObjectForRelativeBounds() const {
 }
 
 void AXSpinButton::Detach() {
-  AXObjectImpl::Detach();
+  AXObject::Detach();
   spin_button_element_ = nullptr;
 }
 
 void AXSpinButton::DetachFromParent() {
-  AXObjectImpl::DetachFromParent();
+  AXObject::DetachFromParent();
   spin_button_element_ = nullptr;
 }
 
@@ -102,7 +102,7 @@ AXSpinButtonPart* AXSpinButtonPart::Create(AXObjectCacheImpl& ax_object_cache) {
 }
 
 void AXSpinButtonPart::GetRelativeBounds(
-    AXObjectImpl** out_container,
+    AXObject** out_container,
     FloatRect& out_bounds_in_container,
     SkMatrix44& out_container_transform) const {
   *out_container = nullptr;

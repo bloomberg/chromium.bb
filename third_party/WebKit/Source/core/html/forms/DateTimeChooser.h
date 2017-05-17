@@ -39,7 +39,7 @@
 
 namespace blink {
 
-class AXObjectImpl;
+class AXObject;
 
 struct DateTimeSuggestion {
   DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
@@ -73,8 +73,8 @@ class CORE_EXPORT DateTimeChooser
   virtual ~DateTimeChooser();
 
   virtual void EndChooser() = 0;
-  // Returns a root AXObjectImpl in the DateTimeChooser if it's available.
-  virtual AXObjectImpl* RootAXObject() = 0;
+  // Returns a root AXObject in the DateTimeChooser if it's available.
+  virtual AXObject* RootAXObject() = 0;
 
   DEFINE_INLINE_VIRTUAL_TRACE() {}
 };

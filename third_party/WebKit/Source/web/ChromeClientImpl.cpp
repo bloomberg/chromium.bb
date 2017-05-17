@@ -57,7 +57,7 @@
 #include "core/page/ChromeClient.h"
 #include "core/page/Page.h"
 #include "core/page/PopupOpeningObserver.h"
-#include "modules/accessibility/AXObjectImpl.h"
+#include "modules/accessibility/AXObject.h"
 #include "modules/audio_output_devices/AudioOutputDeviceClient.h"
 #include "modules/installedapp/InstalledAppController.h"
 #include "modules/mediastream/UserMediaController.h"
@@ -803,7 +803,7 @@ void ChromeClientImpl::SetCursorOverridden(bool overridden) {
 }
 
 void ChromeClientImpl::PostAccessibilityNotification(
-    AXObjectImpl* obj,
+    AXObject* obj,
     AXObjectCache::AXNotification notification) {
   // Alert assistive technology about the accessibility object notification.
   if (!obj || !obj->GetDocument())

@@ -165,7 +165,7 @@ void InputTypeView::UpdateClearButtonVisibility() {}
 
 void InputTypeView::UpdatePlaceholderText() {}
 
-AXObjectImpl* InputTypeView::PopupRootAXObject() {
+AXObject* InputTypeView::PopupRootAXObject() {
   return nullptr;
 }
 

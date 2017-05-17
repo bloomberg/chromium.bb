@@ -43,8 +43,8 @@ if (window.testRunner && window.accessibilityController) {
     shouldBe("containerNode.childrenCount", "" + roles.length);
 
     for (var i = 0; i < roles.length; i++) {
-        var AXObjectImpl = containerNode.childAtIndex(i);
-        shouldBe("AXObjectImpl.role", "'AXRole: " + roles[i] + "'");
+        var AXObject = containerNode.childAtIndex(i);
+        shouldBe("AXObject.role", "'AXRole: " + roles[i] + "'");
     }
 }
 </script>

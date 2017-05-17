@@ -157,7 +157,7 @@ void ExternalDateTimeChooser::EndChooser() {
   client->DidEndChooser();
 }
 
-AXObjectImpl* ExternalDateTimeChooser::RootAXObject() {
+AXObject* ExternalDateTimeChooser::RootAXObject() {
   return nullptr;
 }
 

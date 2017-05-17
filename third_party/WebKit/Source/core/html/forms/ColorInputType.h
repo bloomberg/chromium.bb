@@ -77,7 +77,7 @@ class ColorInputType final : public InputType,
   bool TypeMismatchFor(const String&) const override;
   void WarnIfValueIsInvalid(const String&) const override;
   void UpdateView() override;
-  AXObjectImpl* PopupRootAXObject() override;
+  AXObject* PopupRootAXObject() override;
 
   Color ValueAsColor() const;
   void EndColorChooser();

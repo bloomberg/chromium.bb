@@ -79,7 +79,7 @@ void DateTimeChooserImpl::EndChooser() {
   chrome_client_->ClosePagePopup(popup_);
 }
 
-AXObjectImpl* DateTimeChooserImpl::RootAXObject() {
+AXObject* DateTimeChooserImpl::RootAXObject() {
   return popup_ ? popup_->RootAXObject() : 0;
 }
 

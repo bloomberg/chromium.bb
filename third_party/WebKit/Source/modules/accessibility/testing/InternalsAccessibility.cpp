@@ -5,12 +5,12 @@
 #include "InternalsAccessibility.h"
 
 #include "core/testing/Internals.h"
-#include "modules/accessibility/AXObjectImpl.h"
+#include "modules/accessibility/AXObject.h"
 
 namespace blink {
 
 unsigned InternalsAccessibility::numberOfLiveAXObjects(Internals&) {
-  return AXObjectImpl::NumberOfLiveAXObjects();
+  return AXObject::NumberOfLiveAXObjects();
 }
 
 }  // namespace blink

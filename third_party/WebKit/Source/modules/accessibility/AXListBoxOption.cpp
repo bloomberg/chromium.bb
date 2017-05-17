@@ -64,7 +64,7 @@ AccessibilityRole AXListBoxOption::DetermineAccessibilityRole() {
 }
 
 bool AXListBoxOption::IsParentPresentationalRole() const {
-  AXObjectImpl* parent = ParentObject();
+  AXObject* parent = ParentObject();
   if (!parent)
     return false;
 

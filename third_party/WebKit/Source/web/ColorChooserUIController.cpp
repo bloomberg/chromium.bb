@@ -66,7 +66,7 @@ void ColorChooserUIController::EndChooser() {
     chooser_->EndChooser();
 }
 
-AXObjectImpl* ColorChooserUIController::RootAXObject() {
+AXObject* ColorChooserUIController::RootAXObject() {
   return 0;
 }
 
