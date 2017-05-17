@@ -14,6 +14,7 @@
 #include "ash/test/ash_test_base.h"
 #include "ash/test/status_area_widget_test_helper.h"
 #include "ash/test/test_system_tray_delegate.h"
+#include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/ime/chromeos/input_method_manager.h"
@@ -297,7 +298,8 @@ TEST_F(ImeMenuTrayTest, ForceToShowEmojiKeyset) {
 
   // Hides the keyboard.
   GetTray()->OnKeyboardHidden();
-  // The keyboard should still be disabled.
+  // The keyboard should still be disabled, which is a posted task.
+  base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(accessibility_delegate->IsVirtualKeyboardEnabled());
 }
 
