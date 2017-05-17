@@ -114,6 +114,15 @@ LayoutUnit NGInlineLayoutAlgorithm::AvailableWidth() const {
   return current_opportunity_.InlineSize();
 }
 
+// The offset of 'line-left' side.
+// https://drafts.csswg.org/css-writing-modes/#line-left
+LayoutUnit NGInlineLayoutAlgorithm::LogicalLeftOffset() const {
+  // TODO(kojii): We need to convert 'line start' to 'line left'. They're
+  // different in RTL. Maybe there are more where start and left are misused.
+  return current_opportunity_.InlineStartOffset() -
+         ConstraintSpace().BfcOffset().inline_offset;
+}
+
 bool NGInlineLayoutAlgorithm::CreateLine(
     NGInlineItemResults* item_results,
     RefPtr<NGInlineBreakToken> break_token) {
@@ -239,14 +248,17 @@ bool NGInlineLayoutAlgorithm::PlaceItems(
   NGTextFragmentBuilder text_builder(Node());
   NGInlineBoxState* box =
       box_states_.OnBeginPlaceItems(&LineStyle(), baseline_type_);
-  LayoutUnit inline_size;
+
+  // Place items from line-left to line-right along with the baseline.
+  // Items are already bidi-reordered to the visual order.
+  LayoutUnit line_left_position = LogicalLeftOffset();
+  LayoutUnit position = line_left_position;
+
   for (auto& item_result : *line_items) {
     const NGInlineItem& item = items[item_result.item_index];
-    LayoutUnit line_top;
     if (item.Type() == NGInlineItem::kText) {
       DCHECK(item.GetLayoutObject()->IsText());
       DCHECK(!box->text_metrics.IsEmpty());
-      line_top = box->text_top;
       text_builder.SetSize(
           {item_result.inline_size, box->text_metrics.LineHeight()});
       // Take all used fonts into account if 'line-height: normal'.
@@ -254,21 +266,22 @@ bool NGInlineLayoutAlgorithm::PlaceItems(
         box->AccumulateUsedFonts(item, item_result.start_offset,
                                  item_result.end_offset, baseline_type_);
       }
+      RefPtr<NGPhysicalTextFragment> text_fragment =
+          text_builder.ToTextFragment(item_result.item_index,
+                                      item_result.start_offset,
+                                      item_result.end_offset);
+      line_box.AddChild(std::move(text_fragment), {position, box->text_top});
     } else if (item.Type() == NGInlineItem::kOpenTag) {
       box = box_states_.OnOpenTag(item, &line_box, &text_builder);
       // Compute text metrics for all inline boxes since even empty inlines
       // influence the line height.
       // https://drafts.csswg.org/css2/visudet.html#line-height
-      // TODO(kojii): Review if atomic inline level should have open/close.
-      if (!item.GetLayoutObject()->IsAtomicInlineLevel())
-        box->ComputeTextMetrics(*item.Style(), baseline_type_);
-      continue;
+      box->ComputeTextMetrics(*item.Style(), baseline_type_);
     } else if (item.Type() == NGInlineItem::kCloseTag) {
       box = box_states_.OnCloseTag(item, &line_box, box, baseline_type_);
-      continue;
     } else if (item.Type() == NGInlineItem::kAtomicInline) {
-      line_top =
-          PlaceAtomicInline(item, &item_result, &line_box, box, &text_builder);
+      box = PlaceAtomicInline(item, &item_result, position, &line_box,
+                              &text_builder);
     } else if (item.Type() == NGInlineItem::kOutOfFlowPositioned) {
       // TODO(layout-dev): Report the correct static position for the out of
       // flow descendant. We can't do this here yet as it doesn't know the
@@ -285,18 +298,7 @@ bool NGInlineLayoutAlgorithm::PlaceItems(
       continue;
     }
 
-    RefPtr<NGPhysicalTextFragment> text_fragment = text_builder.ToTextFragment(
-        item_result.item_index, item_result.start_offset,
-        item_result.end_offset);
-
-    NGLogicalOffset opportunity_offset =
-        current_opportunity_.InlineStartBlockStartOffset() -
-        ContainerBfcOffset();
-    NGLogicalOffset line_offset = {
-        opportunity_offset.inline_offset + inline_size, line_top};
-
-    inline_size += item_result.inline_size;
-    line_box.AddChild(std::move(text_fragment), line_offset);
+    position += item_result.inline_size;
   }
 
   if (line_box.Children().IsEmpty()) {
@@ -329,6 +331,9 @@ bool NGInlineLayoutAlgorithm::PlaceItems(
   // at 0. Move them to the final baseline position, and set the logical top of
   // the line box to the line top.
   line_box.MoveChildrenInBlockDirection(baseline);
+
+  DCHECK_EQ(line_left_position, LogicalLeftOffset());
+  LayoutUnit inline_size = position - line_left_position;
   line_box.SetInlineSize(inline_size);
   container_builder_.AddChild(
       line_box.ToLineBoxFragment(),
@@ -341,13 +346,16 @@ bool NGInlineLayoutAlgorithm::PlaceItems(
 
 // TODO(kojii): Currently, this function does not change item_result, but
 // when NG paint is enabled, this will std::move() the LayoutResult.
-LayoutUnit NGInlineLayoutAlgorithm::PlaceAtomicInline(
+NGInlineBoxState* NGInlineLayoutAlgorithm::PlaceAtomicInline(
     const NGInlineItem& item,
     NGInlineItemResult* item_result,
+    LayoutUnit position,
     NGLineBoxFragmentBuilder* line_box,
-    NGInlineBoxState* state,
     NGTextFragmentBuilder* text_builder) {
   DCHECK(item_result->layout_result);
+
+  NGInlineBoxState* box = box_states_.OnOpenTag(item, line_box, text_builder);
+
   // For replaced elements, inline-block elements, and inline-table elements,
   // the height is the height of their margin box.
   // https://drafts.csswg.org/css2/visudet.html#line-height
@@ -355,16 +363,8 @@ LayoutUnit NGInlineLayoutAlgorithm::PlaceAtomicInline(
       ConstraintSpace().WritingMode(),
       ToNGPhysicalBoxFragment(
           item_result->layout_result->PhysicalFragment().Get()));
-  DCHECK(item.Style());
-  NGBoxStrut margins = ComputeMargins(ConstraintSpace(), *item.Style(),
-                                      ConstraintSpace().WritingMode(),
-                                      item.Style()->Direction());
-  LayoutUnit block_size = fragment.BlockSize() + margins.BlockSum();
-
-  // TODO(kojii): Try to eliminate the wrapping text fragment and use the
-  // |fragment| directly. Currently |CopyFragmentDataToLayoutBlockFlow|
-  // requires a text fragment.
-  text_builder->SetSize({fragment.InlineSize(), block_size});
+  LayoutUnit block_size =
+      fragment.BlockSize() + item_result->margins.BlockSum();
 
   // TODO(kojii): Add baseline position to NGPhysicalFragment.
   LayoutBox* layout_box = ToLayoutBox(item.GetLayoutObject());
@@ -375,12 +375,22 @@ LayoutUnit NGInlineLayoutAlgorithm::PlaceAtomicInline(
       baseline_type_, IsFirstLine(), line_direction_mode));
 
   NGLineHeightMetrics metrics(baseline_offset, block_size - baseline_offset);
-  state->metrics.Unite(metrics);
+  box->metrics.Unite(metrics);
 
   // TODO(kojii): Figure out what to do with OOF in NGLayoutResult.
   // Floats are ok because atomic inlines are BFC?
 
-  return -(metrics.ascent - margins.block_start);
+  // TODO(kojii): Try to eliminate the wrapping text fragment and use the
+  // |fragment| directly. Currently |CopyFragmentDataToLayoutBlockFlow|
+  // requires a text fragment.
+  text_builder->SetSize({fragment.InlineSize(), block_size});
+  LayoutUnit line_top = item_result->margins.block_start - metrics.ascent;
+  RefPtr<NGPhysicalTextFragment> text_fragment = text_builder->ToTextFragment(
+      item_result->item_index, item_result->start_offset,
+      item_result->end_offset);
+  line_box->AddChild(std::move(text_fragment), {position, line_top});
+
+  return box_states_.OnCloseTag(item, line_box, box, baseline_type_);
 }
 
 void NGInlineLayoutAlgorithm::FindNextLayoutOpportunity() {
