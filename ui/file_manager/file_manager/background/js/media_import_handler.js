@@ -6,24 +6,6 @@
 var importer = importer || {};
 
 /**
- * Interface providing access to information about active import processes.
- *
- * @interface
- */
-importer.ImportRunner = function() {};
-
-/**
- * Imports all media identified by scanResult.
- *
- * @param {!importer.ScanResult} scanResult
- * @param {!importer.Destination} destination
- * @param {!Promise<!DirectoryEntry>} directoryPromise
- *
- * @return {!importer.MediaImportHandler.ImportTask} The resulting import task.
- */
-importer.ImportRunner.prototype.importFromScanResult;
-
-/**
  * Handler for importing media from removable devices into the user's Drive.
  *
  * @constructor

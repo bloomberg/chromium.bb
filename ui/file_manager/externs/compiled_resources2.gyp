@@ -21,10 +21,6 @@
       'includes': ['../../../third_party/closure_compiler/include_js.gypi'],
     },
     {
-      'target_name': 'background_window_common',
-      'includes': ['../../../third_party/closure_compiler/include_js.gypi'],
-    },
-    {
       'target_name': 'chrome_cast',
       'includes': ['../../../third_party/closure_compiler/include_js.gypi'],
     },

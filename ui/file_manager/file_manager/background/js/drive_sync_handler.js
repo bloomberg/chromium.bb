@@ -106,7 +106,6 @@ DriveSyncHandler.prototype = /** @struct */ {
 
 /**
  * Returns whether the drive sync is currently suppressed or not.
- * @private
  * @return {boolean}
  */
 DriveSyncHandler.prototype.isSyncSuppressed = function() {
