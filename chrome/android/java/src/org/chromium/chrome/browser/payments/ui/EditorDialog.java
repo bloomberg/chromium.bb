@@ -79,6 +79,7 @@ public class EditorDialog
     private final Handler mHandler;
     private final TextView.OnEditorActionListener mEditorActionListener;
     private final int mHalfRowMargin;
+    private final int mDropdownTopPadding;
     private final List<EditorFieldView> mFieldViews;
     private final List<EditText> mEditableTextFields;
     private final List<Spinner> mDropdownFields;
@@ -131,6 +132,8 @@ public class EditorDialog
 
         mHalfRowMargin = activity.getResources().getDimensionPixelSize(
                 R.dimen.payments_section_large_spacing);
+        mDropdownTopPadding = activity.getResources().getDimensionPixelSize(
+                R.dimen.payments_section_dropdown_top_padding);
         mFieldViews = new ArrayList<>();
         mEditableTextFields = new ArrayList<>();
         mDropdownFields = new ArrayList<>();
@@ -360,6 +363,16 @@ public class EditorDialog
                 ApiCompatibilityUtils.setMarginEnd(firstParams, mHalfRowMargin);
                 lastParams.width = 0;
                 lastParams.weight = 1;
+
+                // Align the text field and the dropdown field.
+                if ((fieldModel.isTextField() && nextFieldModel.isDropdownField())
+                        || (nextFieldModel.isTextField() && fieldModel.isDropdownField())) {
+                    LinearLayout.LayoutParams dropdownParams =
+                            fieldModel.isDropdownField() ? firstParams : lastParams;
+                    dropdownParams.topMargin = mDropdownTopPadding;
+                    dropdownParams.bottomMargin = 0;
+                }
+
                 i = i + 1;
             }
         }
