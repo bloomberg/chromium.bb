@@ -1632,26 +1632,29 @@ void ShelfView::AfterItemSelected(
 void ShelfView::ShowContextMenuForView(views::View* source,
                                        const gfx::Point& point,
                                        ui::MenuSourceType source_type) {
-  // Align the context menu to the edge of the shelf.
-  aura::Window* shelf_window = shelf_widget_->GetNativeWindow();
-  gfx::Rect shelf_bounds =
-      is_overflow_mode()
-          ? owner_overflow_bubble_->bubble_view()->GetBubbleBounds()
-          : ScreenUtil::GetDisplayBoundsWithShelf(shelf_window);
+  gfx::Point context_menu_point = point;
+  // Align the context menu to the edge of the shelf for touch events.
+  if (source_type == ui::MenuSourceType::MENU_SOURCE_TOUCH) {
+    aura::Window* shelf_window = shelf_widget_->GetNativeWindow();
+    gfx::Rect shelf_bounds =
+        is_overflow_mode()
+            ? owner_overflow_bubble_->bubble_view()->GetBubbleBounds()
+            : ScreenUtil::GetDisplayBoundsWithShelf(shelf_window);
 
-  gfx::Point context_menu_point;
-  switch (wm_shelf_->GetAlignment()) {
-    case SHELF_ALIGNMENT_BOTTOM:
-    case SHELF_ALIGNMENT_BOTTOM_LOCKED:
-      context_menu_point.SetPoint(point.x(),
-                                  shelf_bounds.bottom() - kShelfSize);
-      break;
-    case SHELF_ALIGNMENT_LEFT:
-      context_menu_point.SetPoint(shelf_bounds.x() + kShelfSize, point.y());
-      break;
-    case SHELF_ALIGNMENT_RIGHT:
-      context_menu_point.SetPoint(shelf_bounds.right() - kShelfSize, point.y());
-      break;
+    switch (wm_shelf_->GetAlignment()) {
+      case SHELF_ALIGNMENT_BOTTOM:
+      case SHELF_ALIGNMENT_BOTTOM_LOCKED:
+        context_menu_point.SetPoint(point.x(),
+                                    shelf_bounds.bottom() - kShelfSize);
+        break;
+      case SHELF_ALIGNMENT_LEFT:
+        context_menu_point.SetPoint(shelf_bounds.x() + kShelfSize, point.y());
+        break;
+      case SHELF_ALIGNMENT_RIGHT:
+        context_menu_point.SetPoint(shelf_bounds.right() - kShelfSize,
+                                    point.y());
+        break;
+    }
   }
   last_pressed_index_ = -1;
 
