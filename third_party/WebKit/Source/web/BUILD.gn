@@ -118,8 +118,6 @@ component("web") {
     "TextFinder.h",
     "UserMediaClientImpl.cpp",
     "UserMediaClientImpl.h",
-    "ValidationMessageClientImpl.cpp",
-    "ValidationMessageClientImpl.h",
     "WebAXObject.cpp",
     "WebDOMMessageEvent.cpp",
     "WebDevToolsAgentImpl.cpp",
