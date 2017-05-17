@@ -12,12 +12,12 @@
       throw error;
     }
 
-    if (message.getName() != mojo.interface_control2.kRunMessageId) {
+    if (message.getName() != mojo.interfaceControl2.kRunMessageId) {
       throw new Error("Control message name is not kRunMessageId");
     }
 
     // Validate payload.
-    error = mojo.interface_control2.RunMessageParams.validate(messageValidator,
+    error = mojo.interfaceControl2.RunMessageParams.validate(messageValidator,
         message.getHeaderNumBytes());
     if (error != internal.validationError.NONE) {
       throw error;
@@ -31,74 +31,74 @@
       throw error;
     }
 
-    if (message.getName() != mojo.interface_control2.kRunOrClosePipeMessageId) {
+    if (message.getName() != mojo.interfaceControl2.kRunOrClosePipeMessageId) {
       throw new Error("Control message name is not kRunOrClosePipeMessageId");
     }
 
     // Validate payload.
-    error = mojo.interface_control2.RunOrClosePipeMessageParams.validate(
+    error = mojo.interfaceControl2.RunOrClosePipeMessageParams.validate(
         messageValidator, message.getHeaderNumBytes());
     if (error != internal.validationError.NONE) {
       throw error;
     }
   }
 
-  function runOrClosePipe(message, interface_version) {
+  function runOrClosePipe(message, interfaceVersion) {
     var reader = new internal.MessageReader(message);
     var runOrClosePipeMessageParams = reader.decodeStruct(
-        mojo.interface_control2.RunOrClosePipeMessageParams);
-    return interface_version >=
-        runOrClosePipeMessageParams.input.require_version.version;
+        mojo.interfaceControl2.RunOrClosePipeMessageParams);
+    return interfaceVersion >=
+        runOrClosePipeMessageParams.input.requireVersion.version;
   }
 
-  function run(message, responder, interface_version) {
+  function run(message, responder, interfaceVersion) {
     var reader = new internal.MessageReader(message);
     var runMessageParams =
-        reader.decodeStruct(mojo.interface_control2.RunMessageParams);
+        reader.decodeStruct(mojo.interfaceControl2.RunMessageParams);
     var runOutput = null;
 
-    if (runMessageParams.input.query_version) {
-      runOutput = new mojo.interface_control2.RunOutput();
-      runOutput.query_version_result = new
-          mojo.interface_control2.QueryVersionResult(
-              {'version': interface_version});
+    if (runMessageParams.input.queryVersion) {
+      runOutput = new mojo.interfaceControl2.RunOutput();
+      runOutput.queryVersionResult = new
+          mojo.interfaceControl2.QueryVersionResult(
+              {'version': interfaceVersion});
     }
 
     var runResponseMessageParams = new
-        mojo.interface_control2.RunResponseMessageParams();
+        mojo.interfaceControl2.RunResponseMessageParams();
     runResponseMessageParams.output = runOutput;
 
-    var messageName = mojo.interface_control2.kRunMessageId;
+    var messageName = mojo.interfaceControl2.kRunMessageId;
     var payloadSize =
-        mojo.interface_control2.RunResponseMessageParams.encodedSize;
+        mojo.interfaceControl2.RunResponseMessageParams.encodedSize;
     var requestID = reader.requestID;
     var builder = new internal.MessageV1Builder(messageName,
         payloadSize, internal.kMessageIsResponse, requestID);
-    builder.encodeStruct(mojo.interface_control2.RunResponseMessageParams,
+    builder.encodeStruct(mojo.interfaceControl2.RunResponseMessageParams,
                          runResponseMessageParams);
     responder.accept(builder.finish());
     return true;
   }
 
   function isInterfaceControlMessage(message) {
-    return message.getName() == mojo.interface_control2.kRunMessageId ||
+    return message.getName() == mojo.interfaceControl2.kRunMessageId ||
            message.getName() ==
-               mojo.interface_control2.kRunOrClosePipeMessageId;
+               mojo.interfaceControl2.kRunOrClosePipeMessageId;
   }
 
-  function ControlMessageHandler(interface_version) {
-    this.interface_version = interface_version;
+  function ControlMessageHandler(interfaceVersion) {
+    this.interfaceVersion = interfaceVersion;
   }
 
   ControlMessageHandler.prototype.accept = function(message) {
     validateControlRequestWithoutResponse(message);
-    return runOrClosePipe(message, this.interface_version);
+    return runOrClosePipe(message, this.interfaceVersion);
   };
 
   ControlMessageHandler.prototype.acceptWithResponder = function(message,
       responder) {
     validateControlRequestWithResponse(message);
-    return run(message, responder, this.interface_version);
+    return run(message, responder, this.interfaceVersion);
   };
 
   internal.ControlMessageHandler = ControlMessageHandler;
