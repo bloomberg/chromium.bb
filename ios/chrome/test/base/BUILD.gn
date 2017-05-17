@@ -14,6 +14,7 @@ source_set("base") {
 }
 
 source_set("unit_tests") {
+  configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
   sources = [
     "scoped_block_swizzler_unittest.mm",
