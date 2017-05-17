@@ -569,6 +569,17 @@ class RendererSchedulerImplTest : public testing::Test {
     scheduler_->seqlock_queueing_time_estimator_.seqlock.WriteEnd();
   }
 
+  void RunSlowCompositorTask() {
+    // Run a long compositor task so that compositor tasks appear to be running
+    // slow and thus compositor tasks will not be prioritized.
+    compositor_task_runner_->PostTask(
+        FROM_HERE,
+        base::Bind(&RendererSchedulerImplTest::SimulateMainThreadCompositorTask,
+                   base::Unretained(this),
+                   base::TimeDelta::FromMilliseconds(1000)));
+    RunUntilIdle();
+  }
+
   // Helper for posting several tasks of specific types. |task_descriptor| is a
   // string with space delimited task identifiers. The first letter of each
   // task identifier specifies the task type:
@@ -831,6 +842,21 @@ TEST_F(RendererSchedulerImplTest, TestDelayedEndIdlePeriodCanceled) {
 }
 
 TEST_F(RendererSchedulerImplTest, TestDefaultPolicy) {
+  std::vector<std::string> run_order;
+  PostTestTasks(&run_order, "L1 I1 D1 C1 D2 C2");
+
+  EnableIdleTasks();
+  RunUntilIdle();
+  EXPECT_THAT(run_order,
+              testing::ElementsAre(std::string("C1"), std::string("C2"),
+                                   std::string("L1"), std::string("D1"),
+                                   std::string("D2"), std::string("I1")));
+  EXPECT_EQ(RendererSchedulerImpl::UseCase::NONE, CurrentUseCase());
+}
+
+TEST_F(RendererSchedulerImplTest, TestDefaultPolicyWithSlowCompositor) {
+  RunSlowCompositorTask();
+
   std::vector<std::string> run_order;
   PostTestTasks(&run_order, "L1 I1 D1 C1 D2 C2");
 
@@ -1258,6 +1284,8 @@ TEST_F(RendererSchedulerImplTest, DISABLED_LoadingUseCase) {
 
 TEST_F(RendererSchedulerImplTest,
        EventConsumedOnCompositorThread_IgnoresMouseMove_WhenMouseUp) {
+  RunSlowCompositorTask();
+
   std::vector<std::string> run_order;
   PostTestTasks(&run_order, "I1 D1 C1 D2 C2");
 
@@ -1276,6 +1304,8 @@ TEST_F(RendererSchedulerImplTest,
 
 TEST_F(RendererSchedulerImplTest,
        EventForwardedToMainThread_IgnoresMouseMove_WhenMouseUp) {
+  RunSlowCompositorTask();
+
   std::vector<std::string> run_order;
   PostTestTasks(&run_order, "I1 D1 C1 D2 C2");
 
@@ -1496,6 +1526,8 @@ TEST_F(
 
 TEST_F(RendererSchedulerImplTest,
        EventConsumedOnCompositorThread_IgnoresKeyboardEvents) {
+  RunSlowCompositorTask();
+
   std::vector<std::string> run_order;
   PostTestTasks(&run_order, "I1 D1 C1 D2 C2");
 
@@ -1514,6 +1546,8 @@ TEST_F(RendererSchedulerImplTest,
 
 TEST_F(RendererSchedulerImplTest,
        EventForwardedToMainThread_IgnoresKeyboardEvents) {
+  RunSlowCompositorTask();
+
   std::vector<std::string> run_order;
   PostTestTasks(&run_order, "I1 D1 C1 D2 C2");
 
@@ -2383,7 +2417,7 @@ TEST_F(RendererSchedulerImplTest, SuspendRenderer) {
   EnableIdleTasks();
   RunUntilIdle();
   EXPECT_THAT(run_order,
-              testing::ElementsAre(std::string("D1"), std::string("C1"),
+              testing::ElementsAre(std::string("C1"), std::string("D1"),
                                    std::string("I1")));
 
   // The rest queued tasks fire when the tab goes foregrounded.
@@ -2415,7 +2449,7 @@ TEST_F(RendererSchedulerImplTest, ResumeRenderer) {
   EnableIdleTasks();
   RunUntilIdle();
   EXPECT_THAT(run_order,
-              testing::ElementsAre(std::string("D1"), std::string("C1"),
+              testing::ElementsAre(std::string("C1"), std::string("D1"),
                                    std::string("I1")));
 
   // The rest queued tasks fire when the renderer is resumed.
@@ -2433,7 +2467,7 @@ TEST_F(RendererSchedulerImplTest, ResumeRenderer) {
   EnableIdleTasks();
   RunUntilIdle();
   EXPECT_THAT(run_order,
-              testing::ElementsAre(std::string("D2"), std::string("C2"),
+              testing::ElementsAre(std::string("C2"), std::string("D2"),
                                    std::string("I2")));
 
   // The rest queued tasks fire when the renderer is resumed.
