@@ -65,8 +65,8 @@ void DocumentStyleSheetCollection::CollectStyleSheetsFromCandidates(
         continue;
       collector.WillVisit(document);
 
-      document->GetStyleEngine().UpdateStyleSheetsInImport(master_engine,
-                                                           collector);
+      document->GetStyleEngine().UpdateActiveStyleSheetsInImport(master_engine,
+                                                                 collector);
       continue;
     }
 
