@@ -46,6 +46,10 @@ class TranslateCompactInfoBar extends InfoBar
     private long mNativeTranslateInfoBarPtr;
     private TranslateTabLayout mTabLayout;
 
+    // Metric to track the total number of translations in a page, including reverts to original.
+    private int mTotalTranslationCount = 0;
+
+    // Histogram names for logging metrics.
     private static final String INFOBAR_HISTOGRAM_TRANSLATE_LANGUAGE =
             "Translate.CompactInfobar.Language.Translate";
     private static final String INFOBAR_HISTOGRAM_MORE_LANGUAGES_LANGUAGE =
@@ -57,6 +61,8 @@ class TranslateCompactInfoBar extends InfoBar
     private static final String INFOBAR_HISTOGRAM_NEVER_TRANSLATE_LANGUAGE =
             "Translate.CompactInfobar.Language.NeverTranslate";
     private static final String INFOBAR_HISTOGRAM = "Translate.CompactInfobar.Event";
+    private static final String INFOBAR_HISTOGRAM_TRANSLATION_COUNT =
+            "Translate.CompactInfobar.TranslationsPerPage";
 
     /**
      * This is used to back a UMA histogram, so it should be treated as
@@ -82,7 +88,9 @@ class TranslateCompactInfoBar extends InfoBar
     private static final int INFOBAR_SNACKBAR_CANCEL_ALWAYS = 16;
     private static final int INFOBAR_SNACKBAR_CANCEL_NEVER_SITE = 17;
     private static final int INFOBAR_SNACKBAR_CANCEL_NEVER = 18;
-    private static final int INFOBAR_HISTOGRAM_BOUNDARY = 19;
+    private static final int INFOBAR_ALWAYS_TRANSLATE_UNDO = 19;
+    private static final int INFOBAR_CLOSE = 20;
+    private static final int INFOBAR_HISTOGRAM_BOUNDARY = 21;
     // TODO(martiw): create the values for the impressions/cancels of auto-always and auto-never.
 
     // Need 2 instances of TranslateMenuHelper to prevent a race condition bug which happens when
@@ -219,6 +227,7 @@ class TranslateCompactInfoBar extends InfoBar
 
     @CalledByNative
     private void onPageTranslated(int errorType) {
+        incrementAndRecordTranslationsPerPageCount();
         if (mTabLayout != null) {
             mTabLayout.hideProgressBar();
             if (errorType != 0) {
@@ -261,6 +270,7 @@ class TranslateCompactInfoBar extends InfoBar
     public void onCloseButtonClicked() {
         // If mUserInteracted is false, it is regarded as a translation denied.
         if (!mUserInteracted) {
+            recordInfobarAction(INFOBAR_DECLINE);
             // This will increment the denied count.
             onButtonClicked(ActionType.CANCEL);
 
@@ -274,6 +284,7 @@ class TranslateCompactInfoBar extends InfoBar
                 return;
             }
         }
+        recordInfobarAction(INFOBAR_CLOSE);
         // This line will dismiss this infobar.
         performCloseButtonActionWithoutDeniedCheck();
     }
@@ -286,6 +297,7 @@ class TranslateCompactInfoBar extends InfoBar
     public void onTabSelected(TabLayout.Tab tab) {
         switch (tab.getPosition()) {
             case SOURCE_TAB_INDEX:
+                incrementAndRecordTranslationsPerPageCount();
                 recordInfobarAction(INFOBAR_REVERT);
                 onButtonClicked(ActionType.TRANSLATE_SHOW_ORIGINAL);
                 return;
@@ -316,16 +328,17 @@ class TranslateCompactInfoBar extends InfoBar
                 mLanguageMenuHelper.show(TranslateMenu.MENU_TARGET_LANGUAGE);
                 return;
             case TranslateMenu.ID_OVERFLOW_ALWAYS_TRANSLATE:
-                recordInfobarAction(INFOBAR_ALWAYS_TRANSLATE);
-                recordInfobarLanguageData(
-                        INFOBAR_HISTOGRAM_ALWAYS_TRANSLATE_LANGUAGE, mOptions.sourceLanguageCode());
                 // Only show snackbar when "Always Translate" is enabled.
                 if (!mOptions.alwaysTranslateLanguageState()) {
+                    recordInfobarAction(INFOBAR_ALWAYS_TRANSLATE);
+                    recordInfobarLanguageData(INFOBAR_HISTOGRAM_ALWAYS_TRANSLATE_LANGUAGE,
+                            mOptions.sourceLanguageCode());
                     createAndShowSnackbar(
                             getContext().getString(R.string.translate_snackbar_always_translate,
                                     mOptions.sourceLanguageName(), mOptions.targetLanguageName()),
                             Snackbar.UMA_TRANSLATE_ALWAYS, ACTION_OVERFLOW_ALWAYS_TRANSLATE);
                 } else {
+                    recordInfobarAction(INFOBAR_ALWAYS_TRANSLATE_UNDO);
                     handleTranslateOptionPostSnackbar(ACTION_OVERFLOW_ALWAYS_TRANSLATE);
                 }
                 return;
@@ -455,6 +468,11 @@ class TranslateCompactInfoBar extends InfoBar
         if (hashCode != null) {
             RecordHistogram.recordSparseSlowlyHistogram(histogram, hashCode);
         }
+    }
+
+    private void incrementAndRecordTranslationsPerPageCount() {
+        RecordHistogram.recordCountHistogram(
+                INFOBAR_HISTOGRAM_TRANSLATION_COUNT, ++mTotalTranslationCount);
     }
 
     private native void nativeApplyStringTranslateOption(
