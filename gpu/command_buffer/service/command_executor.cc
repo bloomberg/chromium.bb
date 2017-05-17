@@ -34,26 +34,27 @@ void CommandExecutor::PutChanged() {
 
   CommandBuffer::State state = command_buffer_->GetLastState();
 
-  // If there is no parser, exit.
-  if (!parser_.get()) {
-    DCHECK_EQ(state.get_offset, command_buffer_->GetPutOffset());
+  put_ = command_buffer_->GetPutOffset();
+
+  // If there is no buffer, exit.
+  if (!buffer_) {
+    DCHECK_EQ(state.get_offset, put_);
     return;
   }
 
-  parser_->set_put(command_buffer_->GetPutOffset());
   if (state.error != error::kNoError)
     return;
 
   error::Error error = error::kNoError;
   if (decoder_)
     decoder_->BeginDecoding();
-  while (!parser_->IsEmpty()) {
+  while (put_ != get_) {
     if (PauseExecution())
       break;
 
     DCHECK(scheduled());
 
-    error = parser_->ProcessCommands(CommandParser::kParseCommandsSlice);
+    error = ProcessCommands(kParseCommandsSlice);
 
     if (error == error::kDeferCommandUntilLater) {
       DCHECK(!scheduled());
@@ -63,10 +64,11 @@ void CommandExecutor::PutChanged() {
     // TODO(piman): various classes duplicate various pieces of state, leading
     // to needlessly complex update logic. It should be possible to simply
     // share the state across all of them.
-    command_buffer_->SetGetOffset(static_cast<int32_t>(parser_->get()));
+    command_buffer_->SetGetOffset(get_);
 
     if (error::IsError(error)) {
-      command_buffer_->SetContextLostReason(decoder_->GetContextLostReason());
+      if (decoder_)
+        command_buffer_->SetContextLostReason(decoder_->GetContextLostReason());
       command_buffer_->SetParseError(error);
       break;
     }
@@ -114,20 +116,20 @@ void CommandExecutor::set_token(int32_t token) {
 bool CommandExecutor::SetGetBuffer(int32_t transfer_buffer_id) {
   scoped_refptr<Buffer> ring_buffer =
       command_buffer_->GetTransferBuffer(transfer_buffer_id);
-  if (!ring_buffer.get()) {
+  if (!ring_buffer)
     return false;
-  }
 
-  if (!parser_.get()) {
-    parser_.reset(new CommandParser(handler_));
-  }
+  volatile void* memory = ring_buffer->memory();
+  size_t size = ring_buffer->size();
+  // check proper alignments.
+  DCHECK_EQ(0, (reinterpret_cast<intptr_t>(memory)) % 4);
+  DCHECK_EQ(0u, size % 4);
+  get_ = 0;
+  put_ = 0;
+  buffer_ = reinterpret_cast<volatile CommandBufferEntry*>(memory);
+  entry_count_ = size / 4;
 
-  parser_->SetBuffer(ring_buffer->memory(), ring_buffer->size(), 0,
-                     ring_buffer->size());
-
-  if (!parser_->set_get(0))
-    return false;
-  command_buffer_->SetGetOffset(static_cast<int32_t>(parser_->get()));
+  command_buffer_->SetGetOffset(get_);
   return true;
 }
 
@@ -171,6 +173,20 @@ void CommandExecutor::PerformPollingWork() {
   if (!decoder_)
     return;
   decoder_->PerformPollingWork();
+}
+
+error::Error CommandExecutor::ProcessCommands(int num_commands) {
+  int num_entries = put_ < get_ ? entry_count_ - get_ : put_ - get_;
+  int entries_processed = 0;
+
+  error::Error result = handler_->DoCommands(num_commands, buffer_ + get_,
+                                             num_entries, &entries_processed);
+
+  get_ += entries_processed;
+  if (get_ == entry_count_)
+    get_ = 0;
+
+  return result;
 }
 
 }  // namespace gpu

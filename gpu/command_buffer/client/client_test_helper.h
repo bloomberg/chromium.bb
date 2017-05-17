@@ -60,8 +60,6 @@ class MockCommandBufferBase : public CommandBufferServiceBase {
 
  private:
   scoped_refptr<Buffer> transfer_buffer_buffers_[kMaxTransferBuffers];
-  CommandBufferEntry* ring_buffer_;
-  scoped_refptr<Buffer> ring_buffer_buffer_;
   State state_;
   int32_t put_offset_;
 };

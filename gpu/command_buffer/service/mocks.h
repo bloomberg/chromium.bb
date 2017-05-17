@@ -17,8 +17,8 @@
 #include <vector>
 
 #include "base/logging.h"
+#include "gpu/command_buffer/service/async_api_interface.h"
 #include "gpu/command_buffer/service/cmd_buffer_engine.h"
-#include "gpu/command_buffer/service/cmd_parser.h"
 #include "gpu/command_buffer/service/memory_tracking.h"
 #include "gpu/command_buffer/service/program_cache.h"
 #include "gpu/command_buffer/service/shader_translator.h"

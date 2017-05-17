@@ -14,7 +14,8 @@
 
 #include "base/macros.h"
 #include "gpu/command_buffer/common/buffer.h"
-#include "gpu/command_buffer/service/cmd_parser.h"
+#include "gpu/command_buffer/common/cmd_buffer_common.h"
+#include "gpu/command_buffer/service/async_api_interface.h"
 #include "gpu/gpu_export.h"
 
 // Forwardly declare a few GL types to avoid including GL header files.
