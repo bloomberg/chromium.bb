@@ -35,7 +35,7 @@ using base::android::JavaParamRef;
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(ContextMenuHelper);
 
 const char kDataReductionProxyPassthroughHeader[] =
-    "Chrome-Proxy: pass-through\r\n";
+    "Chrome-Proxy-Accept-Transform: identity\r\n";
 
 namespace {
 
