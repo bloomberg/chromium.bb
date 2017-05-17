@@ -23,7 +23,7 @@ class CC_PAINT_EXPORT ClipPathDisplayItem : public DisplayItem {
     // may well be shared anyway).
     return 0;
   }
-  int ApproximateOpCount() const { return 1; }
+  int OpCount() const { return 1; }
 
   const SkPath clip_path;
   const bool antialias;
@@ -34,7 +34,7 @@ class CC_PAINT_EXPORT EndClipPathDisplayItem : public DisplayItem {
   EndClipPathDisplayItem();
   ~EndClipPathDisplayItem() override;
 
-  int ApproximateOpCount() const { return 0; }
+  int OpCount() const { return 0; }
 };
 
 }  // namespace cc

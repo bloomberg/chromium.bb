@@ -25,13 +25,13 @@ namespace cc {
 
 TEST(PaintOpBufferTest, Empty) {
   PaintOpBuffer buffer;
-  EXPECT_EQ(buffer.approximateOpCount(), 0);
-  EXPECT_EQ(buffer.approximateBytesUsed(), sizeof(PaintOpBuffer));
+  EXPECT_EQ(buffer.size(), 0u);
+  EXPECT_EQ(buffer.bytes_used(), sizeof(PaintOpBuffer));
   EXPECT_EQ(PaintOpBuffer::Iterator(&buffer), false);
 
   buffer.Reset();
-  EXPECT_EQ(buffer.approximateOpCount(), 0);
-  EXPECT_EQ(buffer.approximateBytesUsed(), sizeof(PaintOpBuffer));
+  EXPECT_EQ(buffer.size(), 0u);
+  EXPECT_EQ(buffer.bytes_used(), sizeof(PaintOpBuffer));
   EXPECT_EQ(PaintOpBuffer::Iterator(&buffer), false);
 }
 
@@ -49,7 +49,7 @@ TEST(PaintOpBufferTest, SimpleAppend) {
   buffer.push<DrawColorOp>(draw_color, blend);
   buffer.push<RestoreOp>();
 
-  EXPECT_EQ(buffer.approximateOpCount(), 4);
+  EXPECT_EQ(buffer.size(), 4u);
 
   PaintOpBuffer::Iterator iter(&buffer);
   ASSERT_EQ(iter->GetType(), PaintOpType::SaveLayer);
@@ -94,7 +94,7 @@ TEST(PaintOpBufferTest, FirstOpWithAndWithoutData) {
   // Verify that when the first op has data, which may not fit in the
   // PaintRecord internal buffer, that it adds a noop as the first op
   // and then appends the "op with data" into the heap buffer.
-  ASSERT_EQ(buffer.approximateOpCount(), 2);
+  ASSERT_EQ(buffer.size(), 2u);
   EXPECT_EQ(buffer.GetFirstOp()->GetType(), PaintOpType::Noop);
 
   // Verify iteration behavior and brief smoke test of op state.
@@ -120,14 +120,14 @@ TEST(PaintOpBufferTest, FirstOpWithAndWithoutData) {
   buffer.Reset();
   CheckRefCnt(filter, 2);
 
-  ASSERT_EQ(buffer.approximateOpCount(), 0);
+  ASSERT_EQ(buffer.size(), 0u);
   EXPECT_EQ(PaintOpBuffer::Iterator(&buffer), false);
 
   SkRect rect = SkRect::MakeXYWH(1, 2, 3, 4);
   buffer.push<DrawRectOp>(rect, flags);
   CheckRefCnt(filter, 3);
 
-  ASSERT_EQ(buffer.approximateOpCount(), 1);
+  ASSERT_EQ(buffer.size(), 1u);
   EXPECT_EQ(buffer.GetFirstOp()->GetType(), PaintOpType::DrawRect);
 
   PaintOpBuffer::Iterator iter(&buffer);
@@ -139,7 +139,7 @@ TEST(PaintOpBufferTest, FirstOpWithAndWithoutData) {
   EXPECT_FALSE(iter);
 
   buffer.Reset();
-  ASSERT_EQ(buffer.approximateOpCount(), 0);
+  ASSERT_EQ(buffer.size(), 0u);
   CheckRefCnt(filter, 2);
 }
 
@@ -181,7 +181,7 @@ TEST(PaintOpBufferTest, PaintOpData) {
   char text2[] = "qwerty";
   buffer.push_with_data<DrawTextOp>(text2, arraysize(text2), 0.f, 0.f, flags);
 
-  ASSERT_EQ(buffer.approximateOpCount(), 3);
+  ASSERT_EQ(buffer.size(), 3u);
 
   // Verify iteration behavior and brief smoke test of op state.
   PaintOpBuffer::Iterator iter(&buffer);
@@ -376,7 +376,7 @@ TEST(PaintOpBufferTest, SaveDrawRestore_SingleOpRecordWithSingleOp) {
   EXPECT_TRUE(draw_flags.SupportsFoldingAlpha());
   SkRect rect = SkRect::MakeXYWH(1, 2, 3, 4);
   record->push<DrawRectOp>(rect, draw_flags);
-  EXPECT_EQ(record->approximateOpCount(), 1);
+  EXPECT_EQ(record->size(), 1u);
 
   PaintOpBuffer buffer;
 
@@ -403,7 +403,7 @@ TEST(PaintOpBufferTest, SaveDrawRestore_SingleOpRecordWithSingleOp) {
 TEST(PaintOpBufferTest, SaveDrawRestore_SingleOpRecordWithSingleNonDrawOp) {
   sk_sp<PaintRecord> record = sk_make_sp<PaintRecord>();
   record->push<NoopOp>();
-  EXPECT_EQ(record->approximateOpCount(), 1);
+  EXPECT_EQ(record->size(), 1u);
   EXPECT_FALSE(record->GetFirstOp()->IsDrawOp());
 
   PaintOpBuffer buffer;

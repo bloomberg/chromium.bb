@@ -19,7 +19,7 @@ class CC_PAINT_EXPORT FloatClipDisplayItem : public DisplayItem {
   ~FloatClipDisplayItem() override;
 
   size_t ExternalMemoryUsage() const { return 0; }
-  int ApproximateOpCount() const { return 1; }
+  int OpCount() const { return 1; }
 
   const gfx::RectF clip_rect;
 };
@@ -29,7 +29,7 @@ class CC_PAINT_EXPORT EndFloatClipDisplayItem : public DisplayItem {
   EndFloatClipDisplayItem();
   ~EndFloatClipDisplayItem() override;
 
-  int ApproximateOpCount() const { return 0; }
+  int OpCount() const { return 0; }
 };
 
 }  // namespace cc

@@ -19,12 +19,12 @@ DrawingDisplayItem::DrawingDisplayItem(const DrawingDisplayItem& item)
 DrawingDisplayItem::~DrawingDisplayItem() = default;
 
 size_t DrawingDisplayItem::ExternalMemoryUsage() const {
-  return picture->approximateBytesUsed();
+  return picture->bytes_used();
 }
 
 DISABLE_CFI_PERF
-int DrawingDisplayItem::ApproximateOpCount() const {
-  return picture->approximateOpCount();
+size_t DrawingDisplayItem::OpCount() const {
+  return picture->size();
 }
 
 }  // namespace cc

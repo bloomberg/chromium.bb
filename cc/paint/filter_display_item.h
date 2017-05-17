@@ -25,7 +25,7 @@ class CC_PAINT_EXPORT FilterDisplayItem : public DisplayItem {
     // enough.
     return filters.size() * sizeof(filters.at(0));
   }
-  int ApproximateOpCount() const { return 1; }
+  int OpCount() const { return 1; }
 
   const FilterOperations filters;
   const gfx::RectF bounds;
@@ -37,7 +37,7 @@ class CC_PAINT_EXPORT EndFilterDisplayItem : public DisplayItem {
   EndFilterDisplayItem();
   ~EndFilterDisplayItem() override;
 
-  int ApproximateOpCount() const { return 0; }
+  int OpCount() const { return 0; }
 };
 
 }  // namespace cc
