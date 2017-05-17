@@ -1676,6 +1676,7 @@ chrome_junit_test_java_sources = [
   "junit/src/org/chromium/chrome/browser/compositor/CompositorSurfaceManagerTest.java",
   "junit/src/org/chromium/chrome/browser/contextualsearch/ContextualSearchInternalStateTest.java",
   "junit/src/org/chromium/chrome/browser/contextualsearch/ContextualSearchSelectionControllerTest.java",
+  "junit/src/org/chromium/chrome/browser/contextmenu/ChromeContextMenuPopulatorTest.java",
   "junit/src/org/chromium/chrome/browser/cookies/CanonicalCookieTest.java",
   "junit/src/org/chromium/chrome/browser/crash/LogcatExtractionRunnableUnitTest.java",
   "junit/src/org/chromium/chrome/browser/download/DownloadSharedPreferenceEntryTest.java",
