@@ -959,11 +959,9 @@ std::unique_ptr<views::View> PaymentSheetViewController::CreateDataSourceRow() {
     std::string user_email = state()->GetAuthenticatedEmail();
     if (!user_email.empty()) {
       // Insert the user's email into the format string.
-      data_source = base::UTF8ToUTF16(base::StringPrintf(
-          l10n_util::GetStringUTF8(
-              IDS_PAYMENTS_CARD_AND_ADDRESS_SETTINGS_SIGNED_IN)
-              .c_str(),
-          user_email.c_str()));
+      data_source = l10n_util::GetStringFUTF16(
+          IDS_PAYMENTS_CARD_AND_ADDRESS_SETTINGS_SIGNED_IN,
+          base::UTF8ToUTF16(user_email));
     } else {
       data_source = l10n_util::GetStringUTF16(
           IDS_PAYMENTS_CARD_AND_ADDRESS_SETTINGS_SIGNED_OUT);
