@@ -9,6 +9,10 @@
 // outside of ARC, e.g. CommandLine flag, attribute of global data/state,
 // users' preferences, and FeatureList.
 
+namespace aura {
+class Window;
+}  // namespace aura
+
 namespace base {
 class CommandLine;
 }  // namespace base
@@ -65,6 +69,10 @@ bool IsArcAllowedForActiveDirectoryUsers();
 // Checks if opt-in verification was disabled by switch in command line.
 // In most cases, it is disabled for testing purpose.
 bool IsArcOptInVerificationDisabled();
+
+// Returns true if the |window|'s aura::client::kAppType is ARC_APP. When
+// |window| is nullptr, returns false.
+bool IsArcAppWindow(aura::Window* window);
 
 }  // namespace arc
 

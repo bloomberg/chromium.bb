@@ -4,28 +4,14 @@
 
 #include "chrome/browser/memory/tab_manager_delegate_chromeos.h"
 
-#include <algorithm>
 #include <map>
 #include <string>
 #include <vector>
 
-#include "ash/shell.h"
-#include "ash/test/ash_test_base.h"
-#include "base/logging.h"
-#include "base/memory/weak_ptr.h"
 #include "base/process/process_handle.h"
-#include "chrome/browser/chromeos/arc/process/arc_process.h"
-#include "chrome/browser/memory/tab_manager.h"
-#include "chrome/browser/memory/tab_stats.h"
-#include "chrome/common/url_constants.h"
 #include "chromeos/dbus/fake_debug_daemon_client.h"
-#include "components/arc/common/process.mojom.h"
-#include "components/exo/shell_surface.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/aura/window.h"
-#include "ui/wm/public/activation_client.h"
-#include "url/gurl.h"
 
 namespace memory {
 

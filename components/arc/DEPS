@@ -12,3 +12,14 @@ include_rules = [
   "+third_party/skia",
   "+ui/gfx/geometry/rect.h",
 ]
+
+specific_include_rules = {
+  "arc_util.cc": [
+    "+ash/shared",
+    "+ui/aura",
+  ],
+  "arc_util_unittest.cc": [
+    "+ash/shared",
+    "+ui/aura",
+  ],
+}

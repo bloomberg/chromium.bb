@@ -6,10 +6,13 @@
 
 #include <string>
 
+#include "ash/shared/app_types.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "chromeos/chromeos_switches.h"
 #include "components/user_manager/user_manager.h"
+#include "ui/aura/client/aura_constants.h"
+#include "ui/aura/window.h"
 
 namespace arc {
 
@@ -109,6 +112,13 @@ bool IsArcOptInVerificationDisabled() {
   const auto* command_line = base::CommandLine::ForCurrentProcess();
   return command_line->HasSwitch(
       chromeos::switches::kDisableArcOptInVerification);
+}
+
+bool IsArcAppWindow(aura::Window* window) {
+  if (!window)
+    return false;
+  return window->GetProperty(aura::client::kAppType) ==
+         static_cast<int>(ash::AppType::ARC_APP);
 }
 
 }  // namespace arc
