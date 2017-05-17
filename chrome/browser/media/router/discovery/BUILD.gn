@@ -22,8 +22,8 @@ static_library("discovery") {
     "dial/device_description_service.h",
     "dial/dial_device_data.cc",
     "dial/dial_device_data.h",
-    "dial/dial_media_sink_service.cc",
-    "dial/dial_media_sink_service.h",
+    "dial/dial_media_sink_service_impl.cc",
+    "dial/dial_media_sink_service_impl.h",
     "dial/dial_registry.cc",
     "dial/dial_registry.h",
     "dial/dial_service.cc",
@@ -38,5 +38,7 @@ static_library("discovery") {
     "mdns/dns_sd_device_lister.h",
     "mdns/dns_sd_registry.cc",
     "mdns/dns_sd_registry.h",
+    "media_sink_service_base.cc",
+    "media_sink_service_base.h",
   ]
 }
