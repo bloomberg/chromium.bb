@@ -225,6 +225,11 @@ class BASE_EXPORT ProcessMetrics {
   int GetOpenFdSoftLimit() const;
 #endif  // defined(OS_LINUX) || defined(OS_AIX)
 
+#if defined(OS_LINUX) || defined(OS_ANDROID)
+  // Bytes of swap as reported by /proc/[pid]/status.
+  uint64_t GetVmSwapBytes() const;
+#endif  // defined(OS_LINUX) || defined(OS_ANDROID)
+
  private:
 #if !defined(OS_MACOSX) || defined(OS_IOS)
   explicit ProcessMetrics(ProcessHandle process);

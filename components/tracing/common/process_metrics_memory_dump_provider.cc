@@ -655,8 +655,8 @@ bool ProcessMetricsMemoryDumpProvider::DumpProcessTotals(
   if (!success)
     return false;
 
-  // TODO(hjd): Implement swap in the next CL.
   footprint.rss_anon_bytes = (resident_pages - shared_pages) * page_size;
+  footprint.vm_swap_bytes = process_metrics_->GetVmSwapBytes();
 #endif  // defined(OS_LINUX) || defined(OS_ANDROID)
 
 #if !defined(OS_IOS)
