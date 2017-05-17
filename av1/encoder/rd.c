@@ -742,24 +742,19 @@ void av1_mv_pred(const AV1_COMP *cpi, MACROBLOCK *x, uint8_t *ref_y_buffer,
   int max_mv = 0;
   uint8_t *src_y_ptr = x->plane[0].src.buf;
   uint8_t *ref_y_ptr;
-  int num_mv_refs = 0;
   MV pred_mv[MAX_MV_REF_CANDIDATES + 1];
-  if (cpi->sf.adaptive_motion_search && block_size < x->max_partition_size) {
-    pred_mv[num_mv_refs] = x->pred_mv[ref_frame];
-    num_mv_refs++;
+  int num_mv_refs = 0;
+
+  pred_mv[num_mv_refs++] = x->mbmi_ext->ref_mvs[ref_frame][0].as_mv;
+  if (x->mbmi_ext->ref_mvs[ref_frame][0].as_int !=
+      x->mbmi_ext->ref_mvs[ref_frame][1].as_int) {
+    pred_mv[num_mv_refs++] = x->mbmi_ext->ref_mvs[ref_frame][1].as_mv;
   }
-  if (x->mbmi_ext->ref_mv_count[ref_frame] > 0) {
-    pred_mv[num_mv_refs] = x->mbmi_ext->ref_mvs[ref_frame][0].as_mv;
-    num_mv_refs++;
-  }
-  if (x->mbmi_ext->ref_mv_count[ref_frame] > 1) {
-    if (x->mbmi_ext->ref_mvs[ref_frame][0].as_int !=
-        x->mbmi_ext->ref_mvs[ref_frame][1].as_int) {
-      pred_mv[num_mv_refs] = x->mbmi_ext->ref_mvs[ref_frame][1].as_mv;
-      num_mv_refs++;
-    }
-  }
+  if (cpi->sf.adaptive_motion_search && block_size < x->max_partition_size)
+    pred_mv[num_mv_refs++] = x->pred_mv[ref_frame];
+
   assert(num_mv_refs <= (int)(sizeof(pred_mv) / sizeof(pred_mv[0])));
+
   // Get the sad for each candidate reference mv.
   for (i = 0; i < num_mv_refs; ++i) {
     const MV *this_mv = &pred_mv[i];
