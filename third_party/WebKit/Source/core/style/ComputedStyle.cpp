@@ -724,12 +724,10 @@ bool ComputedStyle::DiffNeedsFullLayoutAndPaintInvalidation(
             other.rare_inherited_data_->text_stroke_width_)
       return true;
 
-    if (!rare_inherited_data_->ShadowDataEquivalent(
-            *other.rare_inherited_data_.Get()))
+    if (!TextShadowDataEquivalent(other))
       return true;
 
-    if (!rare_inherited_data_->QuotesDataEquivalent(
-            *other.rare_inherited_data_.Get()))
+    if (!QuotesDataEquivalent(other))
       return true;
   }
 
@@ -1113,6 +1111,10 @@ void ComputedStyle::SetQuotes(PassRefPtr<QuotesData> q) {
   rare_inherited_data_.Access()->quotes_ = std::move(q);
 }
 
+bool ComputedStyle::QuotesDataEquivalent(const ComputedStyle& other) const {
+  return DataEquivalent(Quotes(), other.Quotes());
+}
+
 void ComputedStyle::ClearCursorList() {
   if (rare_inherited_data_->cursor_data_)
     rare_inherited_data_.Access()->cursor_data_ = nullptr;
@@ -1387,6 +1389,10 @@ void ComputedStyle::ApplyMotionPathTransform(
 
 void ComputedStyle::SetTextShadow(PassRefPtr<ShadowList> s) {
   rare_inherited_data_.Access()->text_shadow_ = std::move(s);
+}
+
+bool ComputedStyle::TextShadowDataEquivalent(const ComputedStyle& other) const {
+  return DataEquivalent(TextShadow(), other.TextShadow());
 }
 
 void ComputedStyle::SetBoxShadow(PassRefPtr<ShadowList> s) {
