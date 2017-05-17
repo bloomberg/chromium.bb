@@ -599,15 +599,15 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase<ComputedStyle>,
 
   // clip
   static LengthBox InitialClip() { return LengthBox(); }
-  const LengthBox& Clip() const { return visual_data_->clip_; }
+  const LengthBox& Clip() const { return ClipInternal(); }
   void SetClip(const LengthBox& box) {
-    SET_VAR(visual_data_, has_auto_clip_, false);
-    SET_VAR(visual_data_, clip_, box);
+    SetHasAutoClipInternal(false);
+    SetClipInternal(box);
   }
-  bool HasAutoClip() const { return visual_data_->has_auto_clip_; }
+  bool HasAutoClip() const { return HasAutoClipInternal(); }
   void SetHasAutoClip() {
-    SET_VAR(visual_data_, has_auto_clip_, true);
-    SET_VAR(visual_data_, clip_, ComputedStyle::InitialClip());
+    SetHasAutoClipInternal(true);
+    SetClipInternal(ComputedStyle::InitialClip());
   }
 
   // Column properties.
@@ -1444,11 +1444,9 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase<ComputedStyle>,
     return TextDecoration::kNone;
   }
   TextDecoration GetTextDecoration() const {
-    return static_cast<TextDecoration>(visual_data_->text_decoration_);
+    return static_cast<TextDecoration>(GetTextDecorationInternal());
   }
-  void SetTextDecoration(TextDecoration v) {
-    SET_VAR(visual_data_, text_decoration_, static_cast<unsigned>(v));
-  }
+  void SetTextDecoration(TextDecoration v) { SetTextDecorationInternal(v); }
 
   // text-decoration-color
   void SetTextDecorationColor(const StyleColor& c) {
@@ -1566,7 +1564,7 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase<ComputedStyle>,
 
   // zoom
   static float InitialZoom() { return 1.0f; }
-  float Zoom() const { return visual_data_->zoom_; }
+  float Zoom() const { return ZoomInternal(); }
   float EffectiveZoom() const { return rare_inherited_data_->effective_zoom_; }
   bool SetZoom(float);
   bool SetEffectiveZoom(float);
@@ -3043,10 +3041,10 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase<ComputedStyle>,
   }
 
   // Clip utility functions.
-  const Length& ClipLeft() const { return visual_data_->clip_.Left(); }
-  const Length& ClipRight() const { return visual_data_->clip_.Right(); }
-  const Length& ClipTop() const { return visual_data_->clip_.Top(); }
-  const Length& ClipBottom() const { return visual_data_->clip_.Bottom(); }
+  const Length& ClipLeft() const { return ClipInternal().Left(); }
+  const Length& ClipRight() const { return ClipInternal().Right(); }
+  const Length& ClipTop() const { return ClipInternal().Top(); }
+  const Length& ClipBottom() const { return ClipInternal().Bottom(); }
 
   // Offset utility functions.
   // Accessors for positioned object edges that take into account writing mode.
@@ -3720,9 +3718,9 @@ inline float AdjustScrollForAbsoluteZoom(float scroll_offset,
 }
 
 inline bool ComputedStyle::SetZoom(float f) {
-  if (compareEqual(visual_data_->zoom_, f))
+  if (compareEqual(ZoomInternal(), f))
     return false;
-  visual_data_.Access()->zoom_ = f;
+  SetZoomInternal(f);
   SetEffectiveZoom(EffectiveZoom() * Zoom());
   return true;
 }
