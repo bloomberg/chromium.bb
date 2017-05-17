@@ -17,7 +17,7 @@ class PaintLayer;
 // Manages the root scroller associated with a given document. The root
 // scroller causes browser controls movement, overscroll effects and prevents
 // chaining scrolls up further in the DOM. It can be set from script using
-// document.setRootScroller.
+// document.setRootScroller. High-level details are available in README.md.
 //
 // There are two notions of a root scroller in this class: m_rootScroller and
 // m_effectiveRootScroller. The former is the Element that was set as the root
@@ -58,6 +58,9 @@ class CORE_EXPORT RootScrollerController
   // This returns the Element that's actually being used to control viewport
   // actions right now. This is different from get() if a root scroller hasn't
   // been set, or if the set root scroller isn't currently a valid scroller.
+  // See README.md for the difference between the root scroller from Get(), the
+  // effective rootScroller, and the global RootScroller in
+  // TopDocumentRootScrollerController.
   Node& EffectiveRootScroller() const;
 
   // This class needs to be informed of changes in layout so that it can
