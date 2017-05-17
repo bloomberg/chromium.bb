@@ -64,14 +64,16 @@ class CORE_EXPORT NGInlineLayoutAlgorithm final
   const ComputedStyle& FirstLineStyle() const;
   const ComputedStyle& LineStyle() const;
 
+  LayoutUnit LogicalLeftOffset() const;
+
   void BidiReorder(NGInlineItemResults*);
 
   bool PlaceItems(NGInlineItemResults*, RefPtr<NGInlineBreakToken>);
-  LayoutUnit PlaceAtomicInline(const NGInlineItem&,
-                               NGInlineItemResult*,
-                               NGLineBoxFragmentBuilder*,
-                               NGInlineBoxState*,
-                               NGTextFragmentBuilder*);
+  NGInlineBoxState* PlaceAtomicInline(const NGInlineItem&,
+                                      NGInlineItemResult*,
+                                      LayoutUnit position,
+                                      NGLineBoxFragmentBuilder*,
+                                      NGTextFragmentBuilder*);
 
   // Finds the next layout opportunity for the next text fragment.
   void FindNextLayoutOpportunity();

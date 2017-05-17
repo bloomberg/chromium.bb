@@ -5,6 +5,7 @@
 #ifndef NGInlineItemResult_h
 #define NGInlineItemResult_h
 
+#include "core/layout/ng/geometry/ng_box_strut.h"
 #include "core/layout/ng/ng_layout_result.h"
 #include "platform/LayoutUnit.h"
 #include "platform/fonts/shaping/ShapeResult.h"
@@ -37,6 +38,9 @@ struct CORE_EXPORT NGInlineItemResult {
 
   // NGLayoutResult for atomic inline items.
   RefPtr<NGLayoutResult> layout_result;
+
+  // NGBoxStrut for atomic inline items.
+  NGBoxStrut margins;
 
   NGInlineItemResult();
   NGInlineItemResult(unsigned index, unsigned start, unsigned end);

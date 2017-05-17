@@ -13,6 +13,7 @@
 #include "core/layout/ng/ng_constraint_space.h"
 #include "core/layout/ng/ng_fragment_builder.h"
 #include "core/layout/ng/ng_layout_opportunity_iterator.h"
+#include "core/layout/ng/ng_length_utils.h"
 #include "core/style/ComputedStyle.h"
 #include "platform/fonts/shaping/HarfBuzzShaper.h"
 #include "platform/fonts/shaping/ShapingLineBreaker.h"
@@ -225,6 +226,11 @@ void NGLineBreaker::LayoutAtomicInline(const NGInlineItem& item,
                     ToNGPhysicalBoxFragment(
                         item_result->layout_result->PhysicalFragment().Get()))
           .InlineSize();
+
+  item_result->margins =
+      ComputeMargins(*constraint_space_, style,
+                     constraint_space_->WritingMode(), style.Direction());
+  item_result->inline_size += item_result->margins.InlineSum();
 }
 
 // Handles when the last item overflows.

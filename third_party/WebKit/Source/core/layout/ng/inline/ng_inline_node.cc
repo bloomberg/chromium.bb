@@ -100,9 +100,16 @@ LayoutObject* NGInlineNode::CollectInlines(LayoutObject* start,
       // NGInlineLayoutAlgorithm.
       builder->Append(NGInlineItem::kFloating, kObjectReplacementCharacter,
                       nullptr, node);
+
     } else if (node->IsOutOfFlowPositioned()) {
       builder->Append(NGInlineItem::kOutOfFlowPositioned,
                       kObjectReplacementCharacter, nullptr, node);
+
+    } else if (node->IsAtomicInlineLevel()) {
+      // For atomic inlines add a unicode "object replacement character" to
+      // signal the presence of a non-text object to the unicode bidi algorithm.
+      builder->Append(NGInlineItem::kAtomicInline, kObjectReplacementCharacter,
+                      node->Style(), node);
 
     } else if (!node->IsInline()) {
       // A block box found. End inline and transit to block layout.
@@ -111,15 +118,8 @@ LayoutObject* NGInlineNode::CollectInlines(LayoutObject* start,
     } else {
       builder->EnterInline(node);
 
-      // For atomic inlines add a unicode "object replacement character" to
-      // signal the presence of a non-text object to the unicode bidi algorithm.
-      if (node->IsAtomicInlineLevel()) {
-        builder->Append(NGInlineItem::kAtomicInline,
-                        kObjectReplacementCharacter, node->Style(), node);
-      }
-
-      // Otherwise traverse to children if they exist.
-      else if (LayoutObject* child = node->SlowFirstChild()) {
+      // Traverse to children if they exist.
+      if (LayoutObject* child = node->SlowFirstChild()) {
         node = child;
         continue;
 
