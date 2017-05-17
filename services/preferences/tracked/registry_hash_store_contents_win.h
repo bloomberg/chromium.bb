@@ -13,9 +13,14 @@
 class RegistryHashStoreContentsWin : public HashStoreContents {
  public:
   // Constructs a RegistryHashStoreContents which acts on a registry entry
-  // defined by |registry_path| and |store_key|.
+  // defined by |registry_path| and |store_key|. If |store_key| begins with
+  // base::ScopedTempDir::GetTempDirPrefix(), this RegistryHashStoreContentsWin
+  // will self Reset() on destruction to avoid proliferating keys in tests that
+  // create a profile in a ScopedTempDir (https://crbug.com/721245).
   explicit RegistryHashStoreContentsWin(const base::string16& registry_path,
                                         const base::string16& store_key);
+
+  ~RegistryHashStoreContentsWin() override;
 
   // HashStoreContents overrides:
   bool IsCopyable() const override;
@@ -44,6 +49,7 @@ class RegistryHashStoreContentsWin : public HashStoreContents {
       const RegistryHashStoreContentsWin& other);
 
   const base::string16 preference_key_name_;
+  const bool reset_on_delete_;
 };
 
 #endif  // SERVICES_PREFERENCES_TRACKED_REGISTRY_HASH_STORE_CONTENTS_WIN_H_

@@ -52,7 +52,9 @@
 #endif
 
 #if defined(OS_WIN)
+#include "base/win/registry.h"
 #include "chrome/app/chrome_crash_reporter_client_win.h"
+#include "chrome/install_static/install_util.h"
 #endif
 
 ChromeTestSuiteRunner::ChromeTestSuiteRunner() {}
@@ -94,6 +96,20 @@ bool ChromeTestLauncherDelegate::AdjustChildProcessCommandLine(
 content::ContentMainDelegate*
 ChromeTestLauncherDelegate::CreateContentMainDelegate() {
   return new ChromeMainDelegate();
+}
+
+void ChromeTestLauncherDelegate::PreSharding() {
+#if defined(OS_WIN)
+  // Pre-test cleanup for registry state keyed off the profile dir (which can
+  // proliferate with the use of uniquely named scoped_dirs):
+  // https://crbug.com/721245. This needs to be here in order not to be racy
+  // with any tests that will access that state.
+  base::win::RegKey key(HKEY_CURRENT_USER,
+                        install_static::GetRegistryPath().c_str(),
+                        KEY_SET_VALUE | KEY_QUERY_VALUE);
+  if (key.Valid())
+    key.DeleteKey(L"PreferenceMACs");
+#endif
 }
 
 int LaunchChromeTests(int default_jobs,

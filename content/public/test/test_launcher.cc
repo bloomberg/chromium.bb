@@ -544,6 +544,8 @@ int LaunchTests(TestLauncherDelegate* launcher_delegate,
   base::FileDescriptorWatcher file_descriptor_watcher(&message_loop);
 #endif
 
+  launcher_delegate->PreSharding();
+
   // Allow the |launcher_delegate| to modify |default_jobs|.
   launcher_delegate->AdjustDefaultParallelJobs(&default_jobs);
 

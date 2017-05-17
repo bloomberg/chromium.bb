@@ -58,6 +58,10 @@ class TestLauncherDelegate {
       base::CommandLine* command_line,
       base::TestLauncher::LaunchOptions* test_launch_options);
 
+  // Allows a TestLauncherDelegate to do work before the launcher shards test
+  // jobs.
+  virtual void PreSharding() {}
+
   // Allows a TestLauncherDelegate to adjust the number of |default_jobs| used
   // when --test-launcher-jobs isn't specified on the command-line.
   virtual void AdjustDefaultParallelJobs(int* default_jobs) {}
