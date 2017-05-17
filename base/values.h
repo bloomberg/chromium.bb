@@ -214,6 +214,9 @@ class BASE_EXPORT Value {
 // are |std::string|s and should be UTF-8 encoded.
 class BASE_EXPORT DictionaryValue : public Value {
  public:
+  using const_iterator = DictStorage::const_iterator;
+  using iterator = DictStorage::iterator;
+
   // Returns |value| if it is a dictionary, nullptr otherwise.
   static std::unique_ptr<DictionaryValue> From(std::unique_ptr<Value> value);
 
@@ -374,6 +377,13 @@ class BASE_EXPORT DictionaryValue : public Value {
     const DictionaryValue& target_;
     DictStorage::const_iterator it_;
   };
+
+  // Iteration.
+  iterator begin() { return dict_->begin(); }
+  iterator end() { return dict_->end(); }
+
+  const_iterator begin() const { return dict_->begin(); }
+  const_iterator end() const { return dict_->end(); }
 
   // DEPRECATED, use DictionaryValue's copy constructor instead.
   // TODO(crbug.com/646113): Delete this and migrate callsites.
