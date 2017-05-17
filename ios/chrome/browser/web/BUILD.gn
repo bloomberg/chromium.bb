@@ -243,6 +243,7 @@ source_set("web_internal") {
 }
 
 source_set("test_support") {
+  configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
   sources = [
     "chrome_web_test.h",
