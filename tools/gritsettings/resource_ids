@@ -235,6 +235,12 @@
   "ios/chrome/search_widget_extension/strings/ios_search_widget_extension_strings.grd": {
     "messages": [3050],
   },
+  "ios/chrome/search_widget_extension/strings/ios_search_widget_extension_chromium_strings.grd": {
+    "messages": [3070],
+  },
+  "ios/chrome/search_widget_extension/strings/ios_search_widget_extension_google_chrome_strings.grd": {
+    "messages": [3070],
+  },
 
   # content/ and ios/web/ must start at the same id.
   # App only use one file depending on whether it is iOS or other platform.
