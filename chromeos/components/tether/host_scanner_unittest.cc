@@ -11,6 +11,8 @@
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
+#include "base/test/simple_test_clock.h"
+#include "base/time/time.h"
 #include "chromeos/components/tether/device_id_tether_network_guid_map.h"
 #include "chromeos/components/tether/fake_ble_connection_manager.h"
 #include "chromeos/components/tether/fake_host_scan_cache.h"
@@ -28,6 +30,16 @@ namespace chromeos {
 namespace tether {
 
 namespace {
+
+class TestObserver : public HostScanner::Observer {
+ public:
+  void ScanFinished() override { scan_finished_count_++; }
+
+  int scan_finished_count() { return scan_finished_count_; }
+
+ private:
+  int scan_finished_count_ = 0;
+};
 
 class FakeHostScanDevicePrioritizer : public HostScanDevicePrioritizer {
  public:
@@ -223,15 +235,22 @@ class HostScannerTest : public testing::Test {
     HostScannerOperation::Factory::SetInstanceForTesting(
         fake_host_scanner_operation_factory_.get());
 
+    test_clock_ = base::MakeUnique<base::SimpleTestClock>();
+
     host_scanner_ = base::WrapUnique(new HostScanner(
         fake_tether_host_fetcher_.get(), fake_ble_connection_manager_.get(),
         fake_host_scan_device_prioritizer_.get(),
         mock_tether_host_response_recorder_.get(),
         fake_notification_presenter_.get(),
-        device_id_tether_network_guid_map_.get(), fake_host_scan_cache_.get()));
+        device_id_tether_network_guid_map_.get(), fake_host_scan_cache_.get(),
+        test_clock_.get()));
+
+    test_observer_ = base::MakeUnique<TestObserver>();
+    host_scanner_->AddObserver(test_observer_.get());
   }
 
   void TearDown() override {
+    host_scanner_->RemoveObserver(test_observer_.get());
     HostScannerOperation::Factory::SetInstanceForTesting(nullptr);
   }
 
@@ -256,9 +275,12 @@ class HostScannerTest : public testing::Test {
           test_scanned_device_infos[test_device_index]);
     }
 
+    int previous_scan_finished_count = test_observer_->scan_finished_count();
     fake_operation.SendScannedDeviceListUpdate(scanned_device_infos_so_far_,
                                                is_final_scan_result);
     VerifyScanResultsMatchCache();
+    EXPECT_EQ(previous_scan_finished_count + (is_final_scan_result ? 1 : 0),
+              test_observer_->scan_finished_count());
 
     if (scanned_device_infos_so_far_.size() == 1) {
       EXPECT_EQ(FakeNotificationPresenter::PotentialHotspotNotificationState::
@@ -326,6 +348,9 @@ class HostScannerTest : public testing::Test {
   std::unique_ptr<DeviceIdTetherNetworkGuidMap>
       device_id_tether_network_guid_map_;
   std::unique_ptr<FakeHostScanCache> fake_host_scan_cache_;
+
+  std::unique_ptr<base::SimpleTestClock> test_clock_;
+  std::unique_ptr<TestObserver> test_observer_;
 
   std::unique_ptr<FakeHostScannerOperationFactory>
       fake_host_scanner_operation_factory_;
@@ -536,6 +561,42 @@ TEST_F(HostScannerTest, TestScan_MultipleCompleteScanSessions) {
                                     true /* is_final_scan_result */);
   EXPECT_EQ(scanned_device_infos_so_far_.size(), fake_host_scan_cache_->size());
   EXPECT_FALSE(host_scanner_->IsScanActive());
+}
+
+TEST_F(HostScannerTest, HasRecentlyScanned) {
+  test_clock_->SetNow(base::Time::Now());
+
+  host_scanner_->StartScan();
+  fake_tether_host_fetcher_->InvokePendingCallbacks();
+
+  ReceiveScanResultAndVerifySuccess(
+      *fake_host_scanner_operation_factory_->created_operations()[0],
+      0u /* test_device_index */, false /* is_final_scan_result */);
+  ReceiveScanResultAndVerifySuccess(
+      *fake_host_scanner_operation_factory_->created_operations()[0],
+      1u /* test_device_index */, true /* is_final_scan_result */);
+
+  // We have just scanned.
+  EXPECT_TRUE(host_scanner_->HasRecentlyScanned());
+
+  int time_limit_minutes = HostScanCache::kNumMinutesBeforeCacheEntryExpires;
+  int time_limit_seconds = time_limit_minutes * 60;
+  int time_limit_half_seconds = time_limit_seconds / 2;
+  int time_limit_threshold_seconds =
+      time_limit_seconds - time_limit_half_seconds - 1;
+
+  // Move up some amount of time, but not the full limit.
+  test_clock_->Advance(base::TimeDelta::FromSeconds(time_limit_half_seconds));
+  EXPECT_TRUE(host_scanner_->HasRecentlyScanned());
+
+  // Move right up to the limit.
+  test_clock_->Advance(
+      base::TimeDelta::FromSeconds(time_limit_threshold_seconds));
+  EXPECT_TRUE(host_scanner_->HasRecentlyScanned());
+
+  // Move past the limit.
+  test_clock_->Advance(base::TimeDelta::FromSeconds(1));
+  EXPECT_FALSE(host_scanner_->HasRecentlyScanned());
 }
 
 }  // namespace tether

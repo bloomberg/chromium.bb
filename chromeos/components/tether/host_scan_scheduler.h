@@ -5,101 +5,47 @@
 #ifndef CHROMEOS_COMPONENTS_TETHER_HOST_SCAN_SCHEDULER_H
 #define CHROMEOS_COMPONENTS_TETHER_HOST_SCAN_SCHEDULER_H
 
-#include "chromeos/dbus/power_manager_client.h"
-#include "chromeos/login/login_state.h"
+#include "chromeos/components/tether/host_scanner.h"
 #include "chromeos/network/network_state_handler_observer.h"
-#include "components/cryptauth/cryptauth_device_manager.h"
-
-namespace content {
-class BrowserContext;
-}
-
-namespace cryptauth {
-class CryptAuthDeviceManager;
-}
 
 namespace chromeos {
 
-class LoginState;
-class PowerManagerClient;
+class NetworkStateHandler;
 
 namespace tether {
 
-class HostScanner;
-
-// Schedules scans for tether hosts. To start a scan attempt, three conditions
-// must be true:
+// Schedules scans for Tether hosts. One of three events begin a scan attempt:
 //
-//   (1) The user has just logged in or has just resumed using the device after
-//       it had been sleeping/suspended.
-//   (2) The device does not have an Internet connection.
-//   (3) The device has synced data about other devices belonging to the user's
-//       account, and at least one of those devices is capable of being a tether
-//       host (i.e., it has a mobile data connection).
-//
-// When one of those conditions changes, this class checks the conditions and
-// starts a scan automatically. Alternatively, a scan can be explicitly
-// triggered via ScheduleScanNowIfPossible().
-class HostScanScheduler : public LoginState::Observer,
-                          public PowerManagerClient::Observer,
-                          public NetworkStateHandlerObserver,
-                          public cryptauth::CryptAuthDeviceManager::Observer {
+//   (1) NetworkStateHandler requests a Tether network scan.
+//   (2) The device loses its Internet connection.
+//   (3) The user has just logged in or has just resumed using the device after
+//       it had been sleeping/suspended, and the device does not have an
+//       Internet connection. Note: It is the responsibility of the owner of
+//       HostScanScheduler to inform it of user login via UserLoggedIn().
+class HostScanScheduler : public NetworkStateHandlerObserver,
+                          public HostScanner::Observer {
  public:
-  HostScanScheduler(const content::BrowserContext* browser_context,
-                    std::unique_ptr<HostScanner> host_scanner);
+  HostScanScheduler(NetworkStateHandler* network_state_handler,
+                    HostScanner* host_scanner);
   ~HostScanScheduler() override;
 
-  // Sets up listeners so that scans can be automatically triggered when
-  // needed.
-  void InitializeAutomaticScans();
+  void UserLoggedIn();
 
-  // Schedules a scan now if the three conditions described above are met and
-  // returns whether the scan was started.
-  bool ScheduleScanNowIfPossible();
+  // NetworkStateHandlerObserver:
+  void DefaultNetworkChanged(const NetworkState* network) override;
+  void ScanRequested() override;
 
-  // LoginState::Observer
-  void LoggedInStateChanged() override;
-
-  // PowerManagerClient::Observer
-  void SuspendDone(const base::TimeDelta& sleep_duration) override;
-
-  // NetworkStateHandlerObserver
-  void NetworkConnectionStateChanged(const NetworkState* network) override;
-
-  // cryptauth::CryptAuthDeviceManager::Observer
-  void OnSyncFinished(cryptauth::CryptAuthDeviceManager::SyncResult sync_result,
-                      cryptauth::CryptAuthDeviceManager::DeviceChangeResult
-                          device_change_result) override;
+  // HostScanner::Observer:
+  void ScanFinished() override;
 
  private:
   friend class HostScanSchedulerTest;
 
-  class Delegate {
-   public:
-    virtual void AddObserver(HostScanScheduler* host_scan_scheduler) = 0;
-    virtual void RemoveObserver(HostScanScheduler* host_scan_scheduler) = 0;
-    virtual bool IsAuthenticatedUserLoggedIn() const = 0;
-    virtual bool IsNetworkConnectedOrConnecting() const = 0;
-    virtual bool AreTetherHostsSynced() const = 0;
-  };
+  void EnsureScan();
+  bool IsNetworkConnectingOrConnected(const NetworkState* network);
 
-  class DelegateImpl : public Delegate {
-   public:
-    DelegateImpl(const content::BrowserContext* browser_context);
-
-    void AddObserver(HostScanScheduler* host_scan_scheduler) override;
-    void RemoveObserver(HostScanScheduler* host_scan_scheduler) override;
-    bool IsAuthenticatedUserLoggedIn() const override;
-    bool IsNetworkConnectedOrConnecting() const override;
-    bool AreTetherHostsSynced() const override;
-  };
-
-  HostScanScheduler(std::unique_ptr<Delegate> delegate,
-                    std::unique_ptr<HostScanner> host_scanner);
-
-  std::unique_ptr<Delegate> delegate_;
-  std::unique_ptr<HostScanner> host_scanner_;
-  bool initialized_;
+  NetworkStateHandler* network_state_handler_;
+  HostScanner* host_scanner_;
 
   DISALLOW_COPY_AND_ASSIGN(HostScanScheduler);
 };

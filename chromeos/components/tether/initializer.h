@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/time/default_clock.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "device/bluetooth/bluetooth_adapter.h"
@@ -39,6 +40,7 @@ class NetworkConnectionHandlerTetherDelegate;
 class DeviceIdTetherNetworkGuidMap;
 class HostScanCache;
 class HostScanner;
+class HostScanScheduler;
 class HostScanDevicePrioritizer;
 class LocalDeviceDataProvider;
 class NetworkConfigurationRemover;
@@ -130,7 +132,9 @@ class Initializer : public OAuth2TokenService::Observer {
   std::unique_ptr<TetherNetworkDisconnectionHandler>
       tether_network_disconnection_handler_;
   std::unique_ptr<HostScanCache> host_scan_cache_;
+  std::unique_ptr<base::DefaultClock> clock_;
   std::unique_ptr<HostScanner> host_scanner_;
+  std::unique_ptr<HostScanScheduler> host_scan_scheduler_;
 
   base::WeakPtrFactory<Initializer> weak_ptr_factory_;
 

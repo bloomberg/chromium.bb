@@ -125,6 +125,9 @@ class InitializerTest : public NetworkStateTest {
     NetworkHandler::Initialize();
     NetworkStateTest::SetUp();
 
+    network_state_handler()->SetTetherTechnologyState(
+        NetworkStateHandler::TECHNOLOGY_ENABLED);
+
     test_pref_service_ = base::MakeUnique<TestingPrefServiceSimple>();
     Initializer::RegisterProfilePrefs(test_pref_service_->registry());
   }
