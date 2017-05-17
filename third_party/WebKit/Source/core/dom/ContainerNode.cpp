@@ -412,48 +412,80 @@ Node* ContainerNode::ReplaceChild(Node* new_child,
     return nullptr;
   }
 
-  // Make sure replacing the old child with the new is OK.
+  // 1. If parent is not a Document, DocumentFragment, or Element node, throw a
+  // HierarchyRequestError.
+  // 2. If node is a host-including inclusive ancestor of parent, throw a
+  // HierarchyRequestError.
+  // 4. If node is not a DocumentFragment, DocumentType, Element, Text,
+  // ProcessingInstruction, or Comment node, throw a HierarchyRequestError.
+  // 5. If either node is a Text node and parent is a document, or node is a
+  // doctype and parent is not a document, throw a HierarchyRequestError.
+  // 6. If parent is a document, and any of the statements below, switched on
+  // node, are true, throw a HierarchyRequestError.
   if (!CheckAcceptChild(new_child, old_child, exception_state))
     return old_child;
 
-  // NotFoundError: Raised if oldChild is not a child of this node.
+  // 3. If child’s parent is not parent, then throw a NotFoundError.
   if (old_child->parentNode() != this) {
     exception_state.ThrowDOMException(
         kNotFoundError, "The node to be replaced is not a child of this node.");
     return nullptr;
   }
 
-  ChildListMutationScope mutation(*this);
   // 7. Let reference child be child’s next sibling.
   Node* next = old_child->nextSibling();
   // 8. If reference child is node, set it to node’s next sibling.
   if (next == new_child)
     next = new_child->nextSibling();
 
-  // TODO(tkent): According to the specification, we should remove |newChild|
-  // from its parent here, and create a separated mutation record for it.
-  // Refer to external/wpt/dom/nodes/MutationObserver-childList.html.
+  // 10. Adopt node into parent’s node document.
+  // TODO(tkent): Actually we do only RemoveChild() as a part of 'adopt'
+  // operation.
+  // Though the following CollectChildrenAndRemoveFromOldParentWithCheck() also
+  // calls RemoveChild(), we'd like to call RemoveChild() here to make a
+  // separated MutationRecord.
+  if (ContainerNode* new_child_parent = new_child->parentNode()) {
+    new_child_parent->RemoveChild(new_child, exception_state);
+    if (exception_state.HadException())
+      return nullptr;
+  }
+
+  // 9. Let previousSibling be child’s previous sibling.
+  // 11. Let removedNodes be the empty list.
+  // 15. Queue a mutation record of "childList" for target parent with
+  // addedNodes nodes, removedNodes removedNodes, nextSibling reference child,
+  // and previousSibling previousSibling.
+  ChildListMutationScope mutation(*this);
 
   // 12. If child’s parent is not null, run these substeps:
   //    1. Set removedNodes to a list solely containing child.
   //    2. Remove child from its parent with the suppress observers flag set.
-  RemoveChild(old_child, exception_state);
-  if (exception_state.HadException())
-    return nullptr;
+  if (ContainerNode* old_child_parent = old_child->parentNode()) {
+    old_child_parent->RemoveChild(old_child, exception_state);
+    if (exception_state.HadException())
+      return nullptr;
+  }
 
   // Does this one more time because removeChild() fires a MutationEvent.
   if (!CheckAcceptChild(new_child, old_child, exception_state))
     return old_child;
 
+  // 13. Let nodes be node’s children if node is a DocumentFragment node, and a
+  // list containing solely node otherwise.
   NodeVector targets;
   if (!CollectChildrenAndRemoveFromOldParentWithCheck(
           next, old_child, *new_child, targets, exception_state))
     return old_child;
 
+  // 10. Adopt node into parent’s node document.
+  // 14. Insert node into parent before reference child with the suppress
+  // observers flag set.
   if (next)
     InsertNodeVector(targets, next, AdoptAndInsertBefore());
   else
     InsertNodeVector(targets, nullptr, AdoptAndAppendChild());
+
+  // 16. Return child.
   return old_child;
 }
 
