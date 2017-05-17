@@ -67,6 +67,6 @@ IndexedDBDatabaseMetadata::IndexedDBDatabaseMetadata(
 IndexedDBDatabaseMetadata::~IndexedDBDatabaseMetadata() = default;
 
 IndexedDBDatabaseMetadata& IndexedDBDatabaseMetadata::operator=(
-    IndexedDBDatabaseMetadata& other) = default;
+    const IndexedDBDatabaseMetadata& other) = default;
 
 }  // namespace content
