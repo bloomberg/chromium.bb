@@ -25,12 +25,41 @@ namespace arc {
 
 namespace {
 
+constexpr int kMaxRetryAttempts = 3;
+
 constexpr base::TimeDelta kRefreshTokenTimeout =
     base::TimeDelta::FromSeconds(10);
 
+constexpr net::BackoffEntry::Policy kRetryBackoffPolicy = {
+    // Number of initial errors (in sequence) to ignore before applying
+    // exponential back-off rules.
+    0,
+
+    // Initial delay for exponential back-off in ms.
+    5000,
+
+    // Factor by which the waiting time will be multiplied.
+    2.0,
+
+    // Fuzzing percentage. ex: 10% will spread requests randomly
+    // between 90%-100% of the calculated time.
+    0.0,  // 0%
+
+    // Maximum amount of time we are willing to delay our request in ms.
+    1000 * 15,  // 15 seconds.
+
+    // Time to keep an entry from being discarded even when it
+    // has no significant state, -1 to never discard.
+    -1,
+
+    // Don't use initial delay unless the last request was an error.
+    false,
+};
+
 }  // namespace
 
-ArcAuthContext::ArcAuthContext(Profile* profile) {
+ArcAuthContext::ArcAuthContext(Profile* profile)
+    : retry_backoff_(&kRetryBackoffPolicy) {
   // Reuse storage used in ARC OptIn platform app.
   const std::string site_url =
       base::StringPrintf("%s://%s/persist?%s", content::kGuestScheme,
@@ -63,6 +92,8 @@ void ArcAuthContext::Prepare(const PrepareCallback& callback) {
   callback_ = callback;
   token_service_->RemoveObserver(this);
   refresh_token_timeout_.Stop();
+  ResetFetchers();
+  retry_backoff_.Reset();
 
   if (!token_service_->RefreshTokenIsAvailable(account_id_)) {
     token_service_->AddObserver(this);
@@ -101,6 +132,30 @@ void ArcAuthContext::StartFetchers() {
   ubertoken_fetcher_->StartFetchingToken(account_id_);
 }
 
+void ArcAuthContext::ResetFetchers() {
+  merger_fetcher_.reset();
+  ubertoken_fetcher_.reset();
+  retry_timeout_.Stop();
+}
+
+void ArcAuthContext::OnFetcherError(const GoogleServiceAuthError& error) {
+  ResetFetchers();
+  DCHECK(error.state() != GoogleServiceAuthError::NONE);
+  if (error.IsTransientError()) {
+    retry_backoff_.InformOfRequest(false);
+    if (retry_backoff_.failure_count() <= kMaxRetryAttempts) {
+      LOG(WARNING) << "Found transient error. Retry attempt "
+                   << retry_backoff_.failure_count() << ".";
+      refresh_token_timeout_.Start(FROM_HERE,
+                                   retry_backoff_.GetTimeUntilRelease(), this,
+                                   &ArcAuthContext::StartFetchers);
+      return;
+    }
+    LOG(WARNING) << "Too many transient errors. Stop retrying.";
+  }
+  base::ResetAndReturn(&callback_).Run(nullptr);
+}
+
 void ArcAuthContext::OnUbertokenSuccess(const std::string& token) {
   ResetFetchers();
   merger_fetcher_.reset(
@@ -111,11 +166,12 @@ void ArcAuthContext::OnUbertokenSuccess(const std::string& token) {
 
 void ArcAuthContext::OnUbertokenFailure(const GoogleServiceAuthError& error) {
   LOG(WARNING) << "Failed to get ubertoken " << error.ToString() << ".";
-  ResetFetchers();
-  base::ResetAndReturn(&callback_).Run(nullptr);
+  OnFetcherError(error);
 }
 
 void ArcAuthContext::OnMergeSessionSuccess(const std::string& data) {
+  VLOG_IF(1, retry_backoff_.failure_count())
+      << "Auth context was successfully prepared after retry.";
   context_prepared_ = true;
   ResetFetchers();
   base::ResetAndReturn(&callback_)
@@ -125,13 +181,7 @@ void ArcAuthContext::OnMergeSessionSuccess(const std::string& data) {
 void ArcAuthContext::OnMergeSessionFailure(
     const GoogleServiceAuthError& error) {
   LOG(WARNING) << "Failed to merge gaia session " << error.ToString() << ".";
-  ResetFetchers();
-  base::ResetAndReturn(&callback_).Run(nullptr);
-}
-
-void ArcAuthContext::ResetFetchers() {
-  merger_fetcher_.reset();
-  ubertoken_fetcher_.reset();
+  OnFetcherError(error);
 }
 
 }  // namespace arc
