@@ -1,8 +1,8 @@
 <!DOCTYPE html>
-<script src="../../resources/get-host-info.js?pipe=sub"></script>
-<script src="test-helpers.js"></script>
+<script src="/common/get-host-info.sub.js"></script>
+<script src="test-helpers.sub.js"></script>
 <script>
-var SCOPE = './navigation-redirect-to-http.php';
+var SCOPE = './redirect.py?Redirect=' + encodeURI('http://example.com');
 var SCRIPT = 'navigation-redirect-to-http-worker.js';
 var host_info = get_host_info();
 
@@ -26,7 +26,7 @@ navigator.serviceWorker.getRegistration(SCOPE)
     })
   .catch(function(reason) {
       window.parent.postMessage({results: 'FAILURE: ' + reason.message},
-                                host_info['HTTP_ORIGIN']);
+                                host_info['HTTPS_ORIGIN']);
      });
 
 function on_state_change(event) {
@@ -36,8 +36,7 @@ function on_state_change(event) {
     .then(function(frame) {
         window.parent.postMessage(
             {results: frame.contentDocument.body.textContent},
-            host_info['HTTP_ORIGIN']);
+            host_info['HTTPS_ORIGIN']);
       });
 }
-
 </script>
