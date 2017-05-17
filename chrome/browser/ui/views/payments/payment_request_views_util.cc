@@ -246,9 +246,6 @@ std::unique_ptr<views::ImageView> CreateInstrumentIconView(
                                .GetImageNamed(icon_resource_id)
                                .AsImageSkia());
   card_icon_view->SetTooltipText(tooltip_text);
-  card_icon_view->SetBorder(views::CreateRoundedRectBorder(
-      1, 3, card_icon_view->GetNativeTheme()->GetSystemColor(
-                ui::NativeTheme::kColorId_UnfocusedBorderColor)));
   return card_icon_view;
 }
 
