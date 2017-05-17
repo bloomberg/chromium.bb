@@ -143,32 +143,6 @@ TEST(PaintOpBufferTest, FirstOpWithAndWithoutData) {
   CheckRefCnt(filter, 2);
 }
 
-TEST(PaintOpBufferTest, Peek) {
-  PaintOpBuffer buffer;
-
-  uint8_t alpha = 100;
-  buffer.push<SaveLayerAlphaOp>(nullptr, alpha);
-  PaintFlags draw_flags;
-  buffer.push<DrawRectOp>(SkRect::MakeXYWH(1, 2, 3, 4), draw_flags);
-  buffer.push<RestoreOp>();
-  buffer.push<SaveOp>();
-  buffer.push<NoopOp>();
-  buffer.push<RestoreOp>();
-
-  PaintOpBuffer::Iterator init_iter(&buffer);
-  PaintOp* peek[2] = {*init_iter, init_iter.peek1()};
-
-  // Expect that while iterating that next = current.peek1() and that
-  // next.peek1() == current.peek2().
-  for (PaintOpBuffer::Iterator iter(&buffer); iter; ++iter) {
-    EXPECT_EQ(*iter, peek[0]) << iter.op_idx();
-    EXPECT_EQ(iter.peek1(), peek[1]) << iter.op_idx();
-
-    peek[0] = iter.peek1();
-    peek[1] = iter.peek2();
-  }
-}
-
 // Verify that PaintOps with data are stored properly.
 TEST(PaintOpBufferTest, PaintOpData) {
   PaintOpBuffer buffer;
@@ -255,13 +229,6 @@ TEST(PaintOpBufferTest, PaintOpArray) {
   }
 
   EXPECT_FALSE(iter);
-}
-
-TEST(PaintOpBufferTest, PeekEmpty) {
-  PaintOpBuffer empty;
-  PaintOpBuffer::Iterator empty_iter(&empty);
-  EXPECT_EQ(nullptr, empty_iter.peek1());
-  EXPECT_EQ(nullptr, empty_iter.peek2());
 }
 
 // Verify that a SaveLayerAlpha / Draw / Restore can be optimized to just
