@@ -56,10 +56,14 @@ class OfflinePageArchiver {
 
   // Describes the parameters to control how to create an archive.
   struct CreateArchiveParams {
-    CreateArchiveParams() : remove_popup_overlay(false) {}
+    CreateArchiveParams()
+        : remove_popup_overlay(false), use_page_problem_detectors(false) {}
 
     // Whether to remove popup overlay that obstructs viewing normal content.
     bool remove_popup_overlay;
+
+    // Run page problem detectors while generating MTHML if true.
+    bool use_page_problem_detectors;
   };
 
   typedef base::Callback<void(OfflinePageArchiver* /* archiver */,

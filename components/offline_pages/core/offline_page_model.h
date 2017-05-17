@@ -73,6 +73,9 @@ class OfflinePageModel : public base::SupportsUserData {
 
     // Whether the page is being saved in the background.
     bool is_background;
+
+    // Run page problem detectors while generating MTHML if true.
+    bool use_page_problem_detectors;
   };
 
   // Observer of the OfflinePageModel.
