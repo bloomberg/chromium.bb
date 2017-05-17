@@ -69,18 +69,17 @@
           <iron-icon icon="settings:warning"></iron-icon>
           <span class="middle">[[problemMessage_]]</span>
         </div>
+      </div>
+      <div class="button-container">
+        <paper-button id="addAnotherButton" on-tap="onAddAnotherFingerprint_"
+            hidden$="[[hideAddAnother_(step_)]]">
+          $i18n{configureFingerprintAddAnotherButton}
+        </paper-button>
 
-        <div class="button-strip">
-          <paper-button id="addAnotherButton" on-tap="onAddAnotherFingerprint_"
-              hidden$="[[hideAddAnother_(step_)]]">
-            $i18n{configureFingerprintAddAnotherButton}
-          </paper-button>
-
-          <paper-button id="closeButton"
-              class$="[[getCloseButtonClass_(step_)]]" on-tap="onClose_">
-            [[getCloseButtonText_(step_)]]
-          </paper-button>
-        </div>
+        <paper-button id="closeButton"
+            class$="[[getCloseButtonClass_(step_)]]" on-tap="onClose_">
+          [[getCloseButtonText_(step_)]]
+        </paper-button>
       </div>
     </dialog>
   </template>

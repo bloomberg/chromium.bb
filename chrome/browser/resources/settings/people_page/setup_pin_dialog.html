@@ -53,17 +53,16 @@
             </div>
           </pin-keyboard>
         </div>
+      </div>
+      <div class="button-container">
+        <paper-button class="cancel-button" on-tap="onCancelTap_">
+          $i18n{cancel}
+        </paper-button>
 
-        <div class="button-strip">
-          <paper-button class="cancel-button" on-tap="onCancelTap_">
-            $i18n{cancel}
-          </paper-button>
-
-          <paper-button class="action-button" on-tap="onPinSubmit_"
-              disabled$="[[!enableSubmit_]]">
-            <span>[[getContinueMessage_(isConfirmStep_)]]</span>
-          </paper-button>
-        </div>
+        <paper-button class="action-button" on-tap="onPinSubmit_"
+            disabled$="[[!enableSubmit_]]">
+          <span>[[getContinueMessage_(isConfirmStep_)]]</span>
+        </paper-button>
       </div>
     </dialog>
   </template>
