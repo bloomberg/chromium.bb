@@ -63,14 +63,6 @@ class WMHelper {
     virtual ~MaximizeModeObserver() {}
   };
 
-  class AccessibilityObserver {
-   public:
-    virtual void OnAccessibilityModeChanged() = 0;
-
-   protected:
-    virtual ~AccessibilityObserver() {}
-  };
-
   class InputDeviceEventObserver {
    public:
     virtual void OnKeyboardDeviceConfigurationChanged() = 0;
@@ -100,8 +92,6 @@ class WMHelper {
   void RemoveCursorObserver(CursorObserver* observer);
   void AddMaximizeModeObserver(MaximizeModeObserver* observer);
   void RemoveMaximizeModeObserver(MaximizeModeObserver* observer);
-  void AddAccessibilityObserver(AccessibilityObserver* observer);
-  void RemoveAccessibilityObserver(AccessibilityObserver* observer);
   void AddInputDeviceEventObserver(InputDeviceEventObserver* observer);
   void RemoveInputDeviceEventObserver(InputDeviceEventObserver* observer);
   void AddDisplayConfigurationObserver(DisplayConfigurationObserver* observer);
@@ -120,8 +110,6 @@ class WMHelper {
   virtual void AddPostTargetHandler(ui::EventHandler* handler) = 0;
   virtual void RemovePostTargetHandler(ui::EventHandler* handler) = 0;
   virtual bool IsMaximizeModeWindowManagerEnabled() const = 0;
-  virtual bool IsSpokenFeedbackEnabled() const = 0;
-  virtual void PlayEarcon(int sound_key) const = 0;
 
  protected:
   WMHelper();
@@ -135,7 +123,6 @@ class WMHelper {
   void NotifyMaximizeModeStarted();
   void NotifyMaximizeModeEnding();
   void NotifyMaximizeModeEnded();
-  void NotifyAccessibilityModeChanged();
   void NotifyKeyboardDeviceConfigurationChanged();
   void NotifyDisplayConfigurationChanged();
 
@@ -144,7 +131,6 @@ class WMHelper {
   base::ObserverList<FocusObserver> focus_observers_;
   base::ObserverList<CursorObserver> cursor_observers_;
   base::ObserverList<MaximizeModeObserver> maximize_mode_observers_;
-  base::ObserverList<AccessibilityObserver> accessibility_observers_;
   base::ObserverList<InputDeviceEventObserver> input_device_event_observers_;
   base::ObserverList<DisplayConfigurationObserver> display_config_observers_;
 
