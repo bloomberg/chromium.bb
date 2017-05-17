@@ -36,7 +36,8 @@ void ScrollOffsetAnimationsImpl::ScrollAnimationCreate(
     ElementId element_id,
     const gfx::ScrollOffset& target_offset,
     const gfx::ScrollOffset& current_offset,
-    base::TimeDelta delayed_by) {
+    base::TimeDelta delayed_by,
+    base::TimeDelta animation_start_offset) {
   std::unique_ptr<ScrollOffsetAnimationCurve> curve =
       ScrollOffsetAnimationCurve::Create(
           target_offset, CubicBezierTimingFunction::CreatePreset(
@@ -47,6 +48,7 @@ void ScrollOffsetAnimationsImpl::ScrollAnimationCreate(
   std::unique_ptr<Animation> animation = Animation::Create(
       std::move(curve), AnimationIdProvider::NextAnimationId(),
       AnimationIdProvider::NextGroupId(), TargetProperty::SCROLL_OFFSET);
+  animation->set_time_offset(animation_start_offset);
   animation->set_is_impl_only(true);
 
   DCHECK(scroll_offset_animation_player_);

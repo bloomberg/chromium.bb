@@ -5654,7 +5654,8 @@ TEST_F(LayerTreeHostImplTimelinesTest, ScrollAnimatedLatchToChild) {
   host_impl_->Animate();
   host_impl_->UpdateAnimationState(true);
 
-  EXPECT_EQ(gfx::ScrollOffset(0, 30), grand_child_layer->CurrentScrollOffset());
+  // Should have started scrolling.
+  EXPECT_NE(gfx::ScrollOffset(0, 30), grand_child_layer->CurrentScrollOffset());
   host_impl_->DidFinishImplFrame();
 
   begin_frame_args.frame_time =
@@ -10772,7 +10773,7 @@ TEST_F(LayerTreeHostImplTest, ScrollAnimated) {
   host_impl_->Animate();
   host_impl_->UpdateAnimationState(true);
 
-  EXPECT_EQ(gfx::ScrollOffset(), scrolling_layer->CurrentScrollOffset());
+  EXPECT_NE(gfx::ScrollOffset(), scrolling_layer->CurrentScrollOffset());
   host_impl_->DidFinishImplFrame();
 
   begin_frame_args.frame_time =
@@ -10913,13 +10914,15 @@ TEST_F(LayerTreeHostImplTest, ScrollAnimatedWithDelay) {
   begin_frame_args.sequence_number++;
   host_impl_->WillBeginImplFrame(begin_frame_args);
   host_impl_->UpdateAnimationState(true);
-  EXPECT_EQ(gfx::ScrollOffset(), scrolling_layer->CurrentScrollOffset());
+  EXPECT_NE(gfx::ScrollOffset(), scrolling_layer->CurrentScrollOffset());
   host_impl_->DidFinishImplFrame();
 
-  // Second tick after 50ms, animation should be half way done since
-  // the duration due to delay is 100ms.
-  begin_frame_args.frame_time =
-      start_time + base::TimeDelta::FromMilliseconds(50);
+  // Second tick after 50ms, animation should be half way done since the
+  // duration due to delay is 100ms. Subtract off the frame interval since we
+  // progress a full frame on the first tick.
+  base::TimeTicks half_way_time = start_time - begin_frame_args.interval +
+                                  base::TimeDelta::FromMilliseconds(50);
+  begin_frame_args.frame_time = half_way_time;
   begin_frame_args.sequence_number++;
   host_impl_->WillBeginImplFrame(begin_frame_args);
   host_impl_->UpdateAnimationState(true);
@@ -10976,7 +10979,7 @@ TEST_F(LayerTreeHostImplTimelinesTest, ScrollAnimatedAborted) {
   EXPECT_TRUE(GetImplAnimationHost()->HasAnyAnimationTargetingProperty(
       scrolling_layer->element_id(), TargetProperty::SCROLL_OFFSET));
 
-  EXPECT_EQ(gfx::ScrollOffset(), scrolling_layer->CurrentScrollOffset());
+  EXPECT_NE(gfx::ScrollOffset(), scrolling_layer->CurrentScrollOffset());
   host_impl_->DidFinishImplFrame();
 
   begin_frame_args.frame_time =
@@ -11045,7 +11048,7 @@ TEST_F(LayerTreeHostImplTimelinesTest, ScrollAnimated) {
   host_impl_->Animate();
   host_impl_->UpdateAnimationState(true);
 
-  EXPECT_EQ(gfx::ScrollOffset(), scrolling_layer->CurrentScrollOffset());
+  EXPECT_NE(gfx::ScrollOffset(), scrolling_layer->CurrentScrollOffset());
   host_impl_->DidFinishImplFrame();
 
   begin_frame_args.frame_time =
@@ -11281,7 +11284,7 @@ TEST_F(LayerTreeHostImplTimelinesTest, ScrollAnimatedNotUserScrollable) {
   host_impl_->Animate();
   host_impl_->UpdateAnimationState(true);
 
-  EXPECT_EQ(gfx::ScrollOffset(), scrolling_layer->CurrentScrollOffset());
+  EXPECT_NE(gfx::ScrollOffset(), scrolling_layer->CurrentScrollOffset());
   host_impl_->DidFinishImplFrame();
 
   begin_frame_args.frame_time =

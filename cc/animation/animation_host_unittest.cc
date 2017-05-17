@@ -87,7 +87,8 @@ TEST_F(AnimationHostTest, ImplOnlyScrollAnimationUpdateTargetIfDetached) {
   gfx::ScrollOffset target_offset(0., 2.);
   gfx::ScrollOffset current_offset(0., 1.);
   host_impl_->ImplOnlyScrollAnimationCreate(element_id_, target_offset,
-                                            current_offset, base::TimeDelta());
+                                            current_offset, base::TimeDelta(),
+                                            base::TimeDelta());
 
   gfx::Vector2dF scroll_delta(0, 0.5);
   gfx::ScrollOffset max_scroll_offset(0., 3.);
