@@ -35,7 +35,7 @@
 
 namespace blink {
 
-class AXObjectImpl;
+class AXObject;
 class Color;
 
 class CORE_EXPORT ColorChooser : public GarbageCollectedMixin {
@@ -46,8 +46,8 @@ class CORE_EXPORT ColorChooser : public GarbageCollectedMixin {
 
   virtual void SetSelectedColor(const Color&) {}
   virtual void EndChooser() {}
-  // Returns a root AXObjectImpl in the ColorChooser if it's available.
-  virtual AXObjectImpl* RootAXObject() = 0;
+  // Returns a root AXObject in the ColorChooser if it's available.
+  virtual AXObject* RootAXObject() = 0;
 };
 
 }  // namespace blink

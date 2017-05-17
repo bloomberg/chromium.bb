@@ -38,14 +38,14 @@
 
 namespace blink {
 
-class AXObjectImpl;
+class AXObject;
 class IntRect;
 
 // A PagePopup object is created by ChromeClient::openPagePopup(), and deleted
 // by ChromeClient::closePagePopup().
 class PagePopup {
  public:
-  virtual AXObjectImpl* RootAXObject() = 0;
+  virtual AXObject* RootAXObject() = 0;
   virtual void SetWindowRect(const IntRect&) = 0;
   virtual void PostMessage(const String& message) = 0;
 

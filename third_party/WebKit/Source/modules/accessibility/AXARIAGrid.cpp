@@ -45,10 +45,9 @@ AXARIAGrid* AXARIAGrid::Create(LayoutObject* layout_object,
   return new AXARIAGrid(layout_object, ax_object_cache);
 }
 
-bool AXARIAGrid::AddTableRowChild(
-    AXObjectImpl* child,
-    HeapHashSet<Member<AXObjectImpl>>& appended_rows,
-    unsigned& column_count) {
+bool AXARIAGrid::AddTableRowChild(AXObject* child,
+                                  HeapHashSet<Member<AXObject>>& appended_rows,
+                                  unsigned& column_count) {
   if (!child || child->RoleValue() != kRowRole)
     return false;
 
@@ -90,8 +89,8 @@ void AXARIAGrid::AddChildren() {
   if (!layout_object_)
     return;
 
-  HeapVector<Member<AXObjectImpl>> children;
-  for (AXObjectImpl* child = RawFirstChild(); child;
+  HeapVector<Member<AXObject>> children;
+  for (AXObject* child = RawFirstChild(); child;
        child = child->RawNextSibling())
     children.push_back(child);
   ComputeAriaOwnsChildren(children);
@@ -99,7 +98,7 @@ void AXARIAGrid::AddChildren() {
   AXObjectCacheImpl& ax_cache = AxObjectCache();
 
   // Only add children that are actually rows.
-  HeapHashSet<Member<AXObjectImpl>> appended_rows;
+  HeapHashSet<Member<AXObject>> appended_rows;
   unsigned column_count = 0;
   for (const auto& child : children) {
     if (!AddTableRowChild(child, appended_rows, column_count)) {
@@ -126,7 +125,7 @@ void AXARIAGrid::AddChildren() {
       children_.push_back(column);
   }
 
-  AXObjectImpl* header_container_object = HeaderContainer();
+  AXObject* header_container_object = HeaderContainer();
   if (header_container_object &&
       !header_container_object->AccessibilityIsIgnored())
     children_.push_back(header_container_object);

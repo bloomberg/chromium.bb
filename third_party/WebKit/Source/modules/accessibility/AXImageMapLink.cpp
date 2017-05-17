@@ -57,7 +57,7 @@ HTMLMapElement* AXImageMapLink::MapElement() const {
   return Traversal<HTMLMapElement>::FirstAncestor(*area);
 }
 
-AXObjectImpl* AXImageMapLink::ComputeParent() const {
+AXObject* AXImageMapLink::ComputeParent() const {
   DCHECK(!IsDetached());
   if (parent_)
     return parent_;
@@ -72,7 +72,7 @@ AccessibilityRole AXImageMapLink::RoleValue() const {
   const AtomicString& aria_role =
       GetAOMPropertyOrARIAAttribute(AOMStringProperty::kRole);
   if (!aria_role.IsEmpty())
-    return AXObjectImpl::AriaRoleToWebCoreRole(aria_role);
+    return AXObject::AriaRoleToWebCoreRole(aria_role);
 
   return kLinkRole;
 }
@@ -98,7 +98,7 @@ KURL AXImageMapLink::Url() const {
 }
 
 void AXImageMapLink::GetRelativeBounds(
-    AXObjectImpl** out_container,
+    AXObject** out_container,
     FloatRect& out_bounds_in_container,
     SkMatrix44& out_container_transform) const {
   *out_container = nullptr;

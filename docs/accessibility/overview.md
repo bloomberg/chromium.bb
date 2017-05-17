@@ -411,15 +411,15 @@ means an ID that's globally unique.
 ## Blink
 
 Blink constructs an accessibility tree (a hierarchy of [WebAXObject]s) from the
-page it is rendering. WebAXObject is the public API wrapper around [AXObjectImpl],
-which is the core class of Blink's accessibility tree. AXObjectImpl is an abstract
+page it is rendering. WebAXObject is the public API wrapper around [AXObject],
+which is the core class of Blink's accessibility tree. AXObject is an abstract
 class; the most commonly used concrete subclass of it is [AXNodeObject], which
 wraps a [Node]. In turn, most AXNodeObjects are actually [AXLayoutObject]s,
 which wrap both a [Node] and a [LayoutObject]. Access to the LayoutObject is
-important because some elements are only in the AXObjectImpl tree depending on their
+important because some elements are only in the AXObject tree depending on their
 visibility, geometry, linewrapping, and so on. There are some subclasses of
 AXLayoutObject that implement special-case logic for specific types of Node.
-There are also other subclasses of AXObjectImpl, which are mostly used for testing.
+There are also other subclasses of AXObject, which are mostly used for testing.
 
 Note that not all AXLayoutObjects correspond to actual Nodes; some are synthetic
 layout objects which group related inline elements or similar.
@@ -493,7 +493,7 @@ is defined by [automation.idl], which must be kept synchronized with
 [AXContentNodeData]: https://cs.chromium.org/chromium/src/content/common/ax_content_node_data.h
 [AXLayoutObject]: https://cs.chromium.org/chromium/src/third_party/WebKit/Source/modules/accessibility/AXLayoutObject.h
 [AXNodeObject]: https://cs.chromium.org/chromium/src/third_party/WebKit/Source/modules/accessibility/AXNodeObject.h
-[AXObjectImpl]: https://cs.chromium.org/chromium/src/third_party/WebKit/Source/modules/accessibility/AXObjectImpl.h
+[AXObject]: https://cs.chromium.org/chromium/src/third_party/WebKit/Source/modules/accessibility/AXObject.h
 [AXObjectCacheImpl]: https://cs.chromium.org/chromium/src/third_party/WebKit/Source/modules/accessibility/AXObjectCacheImpl.h
 [AXPlatformNode]: https://cs.chromium.org/chromium/src/ui/accessibility/platform/ax_platform_node.h
 [AXTreeSerializer]: https://cs.chromium.org/chromium/src/ui/accessibility/ax_tree_serializer.h

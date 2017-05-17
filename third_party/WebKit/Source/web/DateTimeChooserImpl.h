@@ -51,7 +51,7 @@ class DateTimeChooserImpl final : public DateTimeChooser,
 
   // DateTimeChooser functions:
   void EndChooser() override;
-  AXObjectImpl* RootAXObject() override;
+  AXObject* RootAXObject() override;
 
   DECLARE_VIRTUAL_TRACE();
 

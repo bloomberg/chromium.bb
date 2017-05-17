@@ -9,7 +9,7 @@
 test(function(t){
     var axButton = accessibilityController.accessibleElementById("button");
 
-    // Get the AXObjectImpl for the label indirectly, even though it's display:none.
+    // Get the AXObject for the label indirectly, even though it's display:none.
     // Ensure that it's valid.
     var axLabel = axButton.nameElementAtIndex(0);
     assert_equals(axLabel.isValid, true);
@@ -19,8 +19,8 @@ test(function(t){
     var label = document.getElementById('label');
     label.style.display = "block";
 
-    // Ensure that the previous AXObjectImpl we had for the label is now invalid, but if
-    // we fetch an AXObjectImpl for it, we get a new valid object.
+    // Ensure that the previous AXObject we had for the label is now invalid, but if
+    // we fetch an AXObject for it, we get a new valid object.
     var axLabel2 = axButton.nameElementAtIndex(0);
     assert_equals(axLabel.isValid, false);
     assert_equals(axLabel2.isValid, true);
@@ -30,8 +30,8 @@ test(function(t){
     // Now hide the label again.
     label.style.display = "none";
 
-    // Check once more: the second AXObjectImpl is now invalid, but if we fetch
-    // an AXObjectImpl for the label a third time, we get a valid object again.
+    // Check once more: the second AXObject is now invalid, but if we fetch
+    // an AXObject for the label a third time, we get a valid object again.
     var axLabel3 = axButton.nameElementAtIndex(0);
     assert_equals(axLabel.isValid, false);
     assert_equals(axLabel2.isValid, false);

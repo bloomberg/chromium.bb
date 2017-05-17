@@ -77,13 +77,13 @@ class MODULES_EXPORT AXTable : public AXLayoutObject {
   void RowHeaders(AXObjectVector&);
 
   // an object that contains, as children, all the objects that act as headers
-  AXObjectImpl* HeaderContainer();
+  AXObject* HeaderContainer();
 
  protected:
   AXObjectVector rows_;
   AXObjectVector columns_;
 
-  Member<AXObjectImpl> header_container_;
+  Member<AXObject> header_container_;
   bool is_ax_table_;
 
   bool HasARIARole() const;

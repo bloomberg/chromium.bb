@@ -54,7 +54,7 @@ class MODULES_EXPORT AXLayoutObject : public AXNodeObject {
   static AXLayoutObject* Create(LayoutObject*, AXObjectCacheImpl&);
   ~AXLayoutObject() override;
 
-  // Public, overridden from AXObjectImpl.
+  // Public, overridden from AXObject.
   LayoutObject* GetLayoutObject() const final { return layout_object_; }
   LayoutBoxModelObject* GetLayoutBoxModelObject() const;
   ScrollableArea* GetScrollableAreaIfScrollable() const final;
@@ -69,7 +69,7 @@ class MODULES_EXPORT AXLayoutObject : public AXNodeObject {
   }
 
   //
-  // Overridden from AXObjectImpl.
+  // Overridden from AXObject.
   //
 
   void Init() override;
@@ -111,8 +111,8 @@ class MODULES_EXPORT AXLayoutObject : public AXNodeObject {
 
   // Inline text boxes.
   void LoadInlineTextBoxes() override;
-  AXObjectImpl* NextOnLine() const override;
-  AXObjectImpl* PreviousOnLine() const override;
+  AXObject* NextOnLine() const override;
+  AXObject* PreviousOnLine() const override;
 
   // Properties of interactive elements.
   String StringValue() const override;
@@ -124,7 +124,7 @@ class MODULES_EXPORT AXLayoutObject : public AXNodeObject {
 
   bool AriaHasPopup() const override;
   bool AriaRoleHasPresentationalChildren() const override;
-  AXObjectImpl* AncestorForWhichThisIsAPresentationalChild() const override;
+  AXObject* AncestorForWhichThisIsAPresentationalChild() const override;
   bool SupportsARIADragging() const override;
   bool SupportsARIADropping() const override;
   bool SupportsARIAFlowTo() const override;
@@ -151,18 +151,18 @@ class MODULES_EXPORT AXLayoutObject : public AXNodeObject {
   void SetSelection(const AXRange&) override;
 
   // Hit testing.
-  AXObjectImpl* AccessibilityHitTest(const IntPoint&) const override;
-  AXObjectImpl* ElementAccessibilityHitTest(const IntPoint&) const override;
+  AXObject* AccessibilityHitTest(const IntPoint&) const override;
+  AXObject* ElementAccessibilityHitTest(const IntPoint&) const override;
 
   // High-level accessibility tree access. Other modules should only use these
   // functions.
-  AXObjectImpl* ComputeParent() const override;
-  AXObjectImpl* ComputeParentIfExists() const override;
+  AXObject* ComputeParent() const override;
+  AXObject* ComputeParentIfExists() const override;
 
   // Low-level accessibility tree exploration, only for use within the
   // accessibility module.
-  AXObjectImpl* RawFirstChild() const override;
-  AXObjectImpl* RawNextSibling() const override;
+  AXObject* RawFirstChild() const override;
+  AXObject* RawNextSibling() const override;
   void AddChildren() override;
   bool CanHaveChildren() const override;
   void UpdateChildrenIfNecessary() override;
@@ -192,16 +192,16 @@ class MODULES_EXPORT AXLayoutObject : public AXNodeObject {
   void LineBreaks(Vector<int>&) const final;
 
  private:
-  AXObjectImpl* TreeAncestorDisallowingChild() const;
+  AXObject* TreeAncestorDisallowingChild() const;
   bool IsTabItemSelected() const;
-  bool IsValidSelectionBound(const AXObjectImpl*) const;
-  AXObjectImpl* AccessibilityImageMapHitTest(HTMLAreaElement*,
-                                             const IntPoint&) const;
+  bool IsValidSelectionBound(const AXObject*) const;
+  AXObject* AccessibilityImageMapHitTest(HTMLAreaElement*,
+                                         const IntPoint&) const;
   LayoutObject* LayoutParentObject() const;
   bool IsSVGImage() const;
   void DetachRemoteSVGRoot();
   AXSVGRoot* RemoteSVGRootElement() const;
-  AXObjectImpl* RemoteSVGElementHitTest(const IntPoint&) const;
+  AXObject* RemoteSVGElementHitTest(const IntPoint&) const;
   void OffsetBoundingBoxForRemoteSVGElement(LayoutRect&) const;
   void AddHiddenChildren();
   void AddTextFieldChildren();

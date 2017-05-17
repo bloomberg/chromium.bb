@@ -54,7 +54,7 @@ class ColorChooserPopupUIController final : public ColorChooserUIController,
 
   // ColorChooser functions
   void EndChooser() override;
-  AXObjectImpl* RootAXObject() override;
+  AXObject* RootAXObject() override;
 
   // PagePopupClient functions:
   void WriteDocument(SharedBuffer*) override;

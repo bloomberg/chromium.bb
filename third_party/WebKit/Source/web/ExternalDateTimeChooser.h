@@ -57,7 +57,7 @@ class ExternalDateTimeChooser final : public DateTimeChooser {
 
   // DateTimeChooser function:
   void EndChooser() override;
-  AXObjectImpl* RootAXObject() override;
+  AXObject* RootAXObject() override;
 
   Member<DateTimeChooserClient> client_;
 };

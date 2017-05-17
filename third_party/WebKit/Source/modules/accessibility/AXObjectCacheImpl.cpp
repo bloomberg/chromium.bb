@@ -109,7 +109,7 @@ void AXObjectCacheImpl::Dispose() {
   notification_post_timer_.Stop();
 
   for (auto& entry : objects_) {
-    AXObjectImpl* obj = entry.value;
+    AXObject* obj = entry.value;
     obj->Detach();
     RemoveAXID(obj);
   }
@@ -119,11 +119,11 @@ void AXObjectCacheImpl::Dispose() {
 #endif
 }
 
-AXObjectImpl* AXObjectCacheImpl::Root() {
+AXObject* AXObjectCacheImpl::Root() {
   return GetOrCreate(document_);
 }
 
-AXObjectImpl* AXObjectCacheImpl::FocusedImageMapUIElement(
+AXObject* AXObjectCacheImpl::FocusedImageMapUIElement(
     HTMLAreaElement* area_element) {
   // Find the corresponding accessibility object for the HTMLAreaElement. This
   // should be in the list of children for its corresponding image.
@@ -134,15 +134,14 @@ AXObjectImpl* AXObjectCacheImpl::FocusedImageMapUIElement(
   if (!image_element)
     return 0;
 
-  AXObjectImpl* ax_layout_image = GetOrCreate(image_element);
+  AXObject* ax_layout_image = GetOrCreate(image_element);
   if (!ax_layout_image)
     return 0;
 
-  const AXObjectImpl::AXObjectVector& image_children =
-      ax_layout_image->Children();
+  const AXObject::AXObjectVector& image_children = ax_layout_image->Children();
   unsigned count = image_children.size();
   for (unsigned k = 0; k < count; ++k) {
-    AXObjectImpl* child = image_children[k];
+    AXObject* child = image_children[k];
     if (!child->IsImageMapLink())
       continue;
 
@@ -153,7 +152,7 @@ AXObjectImpl* AXObjectCacheImpl::FocusedImageMapUIElement(
   return 0;
 }
 
-AXObjectImpl* AXObjectCacheImpl::FocusedObject() {
+AXObject* AXObjectCacheImpl::FocusedObject() {
   if (!AccessibilityEnabled())
     return nullptr;
 
@@ -168,7 +167,7 @@ AXObjectImpl* AXObjectCacheImpl::FocusedObject() {
   // See if there's a page popup, for example a calendar picker.
   Element* adjusted_focused_element = document_->AdjustedFocusedElement();
   if (isHTMLInputElement(adjusted_focused_element)) {
-    if (AXObjectImpl* ax_popup =
+    if (AXObject* ax_popup =
             toHTMLInputElement(adjusted_focused_element)->PopupRootAXObject()) {
       if (Element* focused_element_in_popup =
               ax_popup->GetDocument()->FocusedElement())
@@ -176,7 +175,7 @@ AXObjectImpl* AXObjectCacheImpl::FocusedObject() {
     }
   }
 
-  AXObjectImpl* obj = GetOrCreate(focused_node);
+  AXObject* obj = GetOrCreate(focused_node);
   if (!obj)
     return nullptr;
 
@@ -188,7 +187,7 @@ AXObjectImpl* AXObjectCacheImpl::FocusedObject() {
   return obj;
 }
 
-AXObjectImpl* AXObjectCacheImpl::Get(LayoutObject* layout_object) {
+AXObject* AXObjectCacheImpl::Get(LayoutObject* layout_object) {
   if (!layout_object)
     return 0;
 
@@ -212,7 +211,7 @@ static bool IsMenuListOption(Node* node) {
   return layout_object && layout_object->IsMenuList();
 }
 
-AXObjectImpl* AXObjectCacheImpl::Get(Node* node) {
+AXObject* AXObjectCacheImpl::Get(Node* node) {
   if (!node)
     return 0;
 
@@ -245,7 +244,7 @@ AXObjectImpl* AXObjectCacheImpl::Get(Node* node) {
   return objects_.at(node_id);
 }
 
-AXObjectImpl* AXObjectCacheImpl::Get(AbstractInlineTextBox* inline_text_box) {
+AXObject* AXObjectCacheImpl::Get(AbstractInlineTextBox* inline_text_box) {
   if (!inline_text_box)
     return 0;
 
@@ -266,8 +265,7 @@ bool NodeHasRole(Node* node, const String& role) {
   return EqualIgnoringASCIICase(ToElement(node)->getAttribute(roleAttr), role);
 }
 
-AXObjectImpl* AXObjectCacheImpl::CreateFromRenderer(
-    LayoutObject* layout_object) {
+AXObject* AXObjectCacheImpl::CreateFromRenderer(LayoutObject* layout_object) {
   // FIXME: How could layoutObject->node() ever not be an Element?
   Node* node = layout_object->GetNode();
 
@@ -329,7 +327,7 @@ AXObjectImpl* AXObjectCacheImpl::CreateFromRenderer(
   return AXLayoutObject::Create(layout_object, *this);
 }
 
-AXObjectImpl* AXObjectCacheImpl::CreateFromNode(Node* node) {
+AXObject* AXObjectCacheImpl::CreateFromNode(Node* node) {
   if (IsMenuListOption(node))
     return AXMenuListOption::Create(toHTMLOptionElement(node), *this);
 
@@ -339,21 +337,21 @@ AXObjectImpl* AXObjectCacheImpl::CreateFromNode(Node* node) {
   return AXNodeObject::Create(node, *this);
 }
 
-AXObjectImpl* AXObjectCacheImpl::CreateFromInlineTextBox(
+AXObject* AXObjectCacheImpl::CreateFromInlineTextBox(
     AbstractInlineTextBox* inline_text_box) {
   return AXInlineTextBox::Create(inline_text_box, *this);
 }
 
-AXObjectImpl* AXObjectCacheImpl::GetOrCreate(Node* node) {
+AXObject* AXObjectCacheImpl::GetOrCreate(Node* node) {
   if (!node)
     return 0;
 
-  if (AXObjectImpl* obj = Get(node))
+  if (AXObject* obj = Get(node))
     return obj;
 
   // If the node has a layout object, prefer using that as the primary key for
-  // the AXObjectImpl, with the exception of an HTMLAreaElement, which is
-  // created based on its node.
+  // the AXObject, with the exception of an HTMLAreaElement, which is created
+  // based on its node.
   if (node->GetLayoutObject() && !isHTMLAreaElement(node))
     return GetOrCreate(node->GetLayoutObject());
 
@@ -363,7 +361,7 @@ AXObjectImpl* AXObjectCacheImpl::GetOrCreate(Node* node) {
   if (isHTMLHeadElement(node))
     return 0;
 
-  AXObjectImpl* new_obj = CreateFromNode(node);
+  AXObject* new_obj = CreateFromNode(node);
 
   // Will crash later if we have two objects for the same node.
   DCHECK(!Get(node));
@@ -380,14 +378,14 @@ AXObjectImpl* AXObjectCacheImpl::GetOrCreate(Node* node) {
   return new_obj;
 }
 
-AXObjectImpl* AXObjectCacheImpl::GetOrCreate(LayoutObject* layout_object) {
+AXObject* AXObjectCacheImpl::GetOrCreate(LayoutObject* layout_object) {
   if (!layout_object)
     return 0;
 
-  if (AXObjectImpl* obj = Get(layout_object))
+  if (AXObject* obj = Get(layout_object))
     return obj;
 
-  AXObjectImpl* new_obj = CreateFromRenderer(layout_object);
+  AXObject* new_obj = CreateFromRenderer(layout_object);
 
   // Will crash later if we have two objects for the same layoutObject.
   DCHECK(!Get(layout_object));
@@ -401,15 +399,15 @@ AXObjectImpl* AXObjectCacheImpl::GetOrCreate(LayoutObject* layout_object) {
   return new_obj;
 }
 
-AXObjectImpl* AXObjectCacheImpl::GetOrCreate(
+AXObject* AXObjectCacheImpl::GetOrCreate(
     AbstractInlineTextBox* inline_text_box) {
   if (!inline_text_box)
     return 0;
 
-  if (AXObjectImpl* obj = Get(inline_text_box))
+  if (AXObject* obj = Get(inline_text_box))
     return obj;
 
-  AXObjectImpl* new_obj = CreateFromInlineTextBox(inline_text_box);
+  AXObject* new_obj = CreateFromInlineTextBox(inline_text_box);
 
   // Will crash later if we have two objects for the same inlineTextBox.
   DCHECK(!Get(inline_text_box));
@@ -423,8 +421,8 @@ AXObjectImpl* AXObjectCacheImpl::GetOrCreate(
   return new_obj;
 }
 
-AXObjectImpl* AXObjectCacheImpl::GetOrCreate(AccessibilityRole role) {
-  AXObjectImpl* obj = nullptr;
+AXObject* AXObjectCacheImpl::GetOrCreate(AccessibilityRole role) {
+  AXObject* obj = nullptr;
 
   // will be filled in...
   switch (role) {
@@ -464,7 +462,7 @@ void AXObjectCacheImpl::Remove(AXID ax_id) {
     return;
 
   // first fetch object to operate some cleanup functions on it
-  AXObjectImpl* obj = objects_.at(ax_id);
+  AXObject* obj = objects_.at(ax_id);
   if (!obj)
     return;
 
@@ -526,7 +524,7 @@ AXID AXObjectCacheImpl::GenerateAXID() const {
   return obj_id;
 }
 
-AXID AXObjectCacheImpl::GetOrCreateAXID(AXObjectImpl* obj) {
+AXID AXObjectCacheImpl::GetOrCreateAXID(AXObject* obj) {
   // check for already-assigned ID
   const AXID existing_axid = obj->AxObjectID();
   if (existing_axid) {
@@ -543,7 +541,7 @@ AXID AXObjectCacheImpl::GetOrCreateAXID(AXObjectImpl* obj) {
   return new_axid;
 }
 
-void AXObjectCacheImpl::RemoveAXID(AXObjectImpl* object) {
+void AXObjectCacheImpl::RemoveAXID(AXObject* object) {
   if (!object)
     return;
 
@@ -570,7 +568,7 @@ void AXObjectCacheImpl::SelectionChanged(Node* node) {
   // Find the nearest ancestor that already has an accessibility object, since
   // we might be in the middle of a layout.
   while (node) {
-    if (AXObjectImpl* obj = Get(node)) {
+    if (AXObject* obj = Get(node)) {
       obj->SelectionChanged();
       return;
     }
@@ -586,7 +584,7 @@ void AXObjectCacheImpl::TextChanged(LayoutObject* layout_object) {
   TextChanged(GetOrCreate(layout_object));
 }
 
-void AXObjectCacheImpl::TextChanged(AXObjectImpl* obj) {
+void AXObjectCacheImpl::TextChanged(AXObject* obj) {
   if (!obj)
     return;
 
@@ -614,7 +612,7 @@ void AXObjectCacheImpl::ChildrenChanged(LayoutObject* layout_object) {
   ChildrenChanged(Get(layout_object));
 }
 
-void AXObjectCacheImpl::ChildrenChanged(AXObjectImpl* obj) {
+void AXObjectCacheImpl::ChildrenChanged(AXObject* obj) {
   if (!obj)
     return;
 
@@ -626,7 +624,7 @@ void AXObjectCacheImpl::NotificationPostTimerFired(TimerBase*) {
 
   unsigned i = 0, count = notifications_to_post_.size();
   for (i = 0; i < count; ++i) {
-    AXObjectImpl* obj = notifications_to_post_[i].first;
+    AXObject* obj = notifications_to_post_[i].first;
 
     if (!obj->AxObjectID())
       continue;
@@ -670,7 +668,7 @@ void AXObjectCacheImpl::PostNotification(Node* node,
   PostNotification(Get(node), notification);
 }
 
-void AXObjectCacheImpl::PostNotification(AXObjectImpl* object,
+void AXObjectCacheImpl::PostNotification(AXObject* object,
                                          AXNotification notification) {
   if (!object)
     return;
@@ -681,20 +679,19 @@ void AXObjectCacheImpl::PostNotification(AXObjectImpl* object,
     notification_post_timer_.StartOneShot(0, BLINK_FROM_HERE);
 }
 
-bool AXObjectCacheImpl::IsAriaOwned(const AXObjectImpl* child) const {
+bool AXObjectCacheImpl::IsAriaOwned(const AXObject* child) const {
   return aria_owned_child_to_owner_mapping_.Contains(child->AxObjectID());
 }
 
-AXObjectImpl* AXObjectCacheImpl::GetAriaOwnedParent(
-    const AXObjectImpl* child) const {
+AXObject* AXObjectCacheImpl::GetAriaOwnedParent(const AXObject* child) const {
   return ObjectFromAXID(
       aria_owned_child_to_owner_mapping_.at(child->AxObjectID()));
 }
 
 void AXObjectCacheImpl::UpdateAriaOwns(
-    const AXObjectImpl* owner,
+    const AXObject* owner,
     const Vector<String>& id_vector,
-    HeapVector<Member<AXObjectImpl>>& owned_children) {
+    HeapVector<Member<AXObject>>& owned_children) {
   //
   // Update the map from the AXID of this element to the ids of the owned
   // children, and the reverse map from ids to possible AXID owners.
@@ -744,7 +741,7 @@ void AXObjectCacheImpl::UpdateAriaOwns(
     if (!element)
       continue;
 
-    AXObjectImpl* child = GetOrCreate(element);
+    AXObject* child = GetOrCreate(element);
     if (!child)
       continue;
 
@@ -762,7 +759,7 @@ void AXObjectCacheImpl::UpdateAriaOwns(
     // Walk up the parents of the owner object, make sure that this child
     // doesn't appear there, as that would create a cycle.
     bool found_cycle = false;
-    for (AXObjectImpl* parent = owner->ParentObject(); parent && !found_cycle;
+    for (AXObject* parent = owner->ParentObject(); parent && !found_cycle;
          parent = parent->ParentObject()) {
       if (parent == child)
         found_cycle = true;
@@ -794,9 +791,9 @@ void AXObjectCacheImpl::UpdateAriaOwns(
   // to be safe and handle all cases we remove all of the current owned children
   // and add the new list of owned children.
   for (size_t i = 0; i < current_child_axi_ds.size(); ++i) {
-    // Find the AXObjectImpl for the child that this owner no longer owns.
+    // Find the AXObject for the child that this owner no longer owns.
     AXID removed_child_id = current_child_axi_ds[i];
-    AXObjectImpl* removed_child = ObjectFromAXID(removed_child_id);
+    AXObject* removed_child = ObjectFromAXID(removed_child_id);
 
     // It's possible that this child has already been owned by some other owner,
     // in which case we don't need to do anything.
@@ -814,7 +811,7 @@ void AXObjectCacheImpl::UpdateAriaOwns(
       removed_child->DetachFromParent();
       AXID real_parent_id =
           aria_owned_child_to_real_parent_mapping_.at(removed_child_id);
-      AXObjectImpl* real_parent = ObjectFromAXID(real_parent_id);
+      AXObject* real_parent = ObjectFromAXID(real_parent_id);
       ChildrenChanged(real_parent);
     }
 
@@ -824,10 +821,9 @@ void AXObjectCacheImpl::UpdateAriaOwns(
   }
 
   for (size_t i = 0; i < new_child_axi_ds.size(); ++i) {
-    // Find the AXObjectImpl for the child that will now be a child of this
-    // owner.
+    // Find the AXObject for the child that will now be a child of this owner.
     AXID added_child_id = new_child_axi_ds[i];
-    AXObjectImpl* added_child = ObjectFromAXID(added_child_id);
+    AXObject* added_child = ObjectFromAXID(added_child_id);
 
     // Add this child to the mapping from child to owner.
     aria_owned_child_to_owner_mapping_.Set(added_child_id, owner->AxObjectID());
@@ -835,7 +831,7 @@ void AXObjectCacheImpl::UpdateAriaOwns(
     // Add its parent object to a mapping from child to real parent. If later
     // this owner doesn't own this child anymore, we need to return it to its
     // original parent.
-    AXObjectImpl* original_parent = added_child->ParentObject();
+    AXObject* original_parent = added_child->ParentObject();
     aria_owned_child_to_real_parent_mapping_.Set(added_child_id,
                                                  original_parent->AxObjectID());
 
@@ -858,14 +854,14 @@ void AXObjectCacheImpl::UpdateTreeIfElementIdIsAriaOwned(Element* element) {
   if (!owners)
     return;
 
-  AXObjectImpl* ax_element = GetOrCreate(element);
+  AXObject* ax_element = GetOrCreate(element);
   if (!ax_element)
     return;
 
   // If it's already owned, call childrenChanged on the owner to make sure it's
   // still an owner.
   if (IsAriaOwned(ax_element)) {
-    AXObjectImpl* owned_parent = GetAriaOwnedParent(ax_element);
+    AXObject* owned_parent = GetAriaOwnedParent(ax_element);
     DCHECK(owned_parent);
     ChildrenChanged(owned_parent);
     return;
@@ -874,7 +870,7 @@ void AXObjectCacheImpl::UpdateTreeIfElementIdIsAriaOwned(Element* element) {
   // If it's not already owned, check the possible owners based on our mapping
   // from ids to elements that have that id listed in their aria-owns attribute.
   for (const auto& ax_id : *owners) {
-    AXObjectImpl* owner = ObjectFromAXID(ax_id);
+    AXObject* owner = ObjectFromAXID(ax_id);
     if (owner)
       ChildrenChanged(owner);
   }
@@ -894,7 +890,7 @@ void AXObjectCacheImpl::ListboxSelectedChildrenChanged(
 }
 
 void AXObjectCacheImpl::ListboxActiveIndexChanged(HTMLSelectElement* select) {
-  AXObjectImpl* obj = Get(select);
+  AXObject* obj = Get(select);
   if (!obj || !obj->IsAXListBox())
     return;
 
@@ -903,7 +899,7 @@ void AXObjectCacheImpl::ListboxActiveIndexChanged(HTMLSelectElement* select) {
 
 void AXObjectCacheImpl::RadiobuttonRemovedFromGroup(
     HTMLInputElement* group_member) {
-  AXObjectImpl* obj = Get(group_member);
+  AXObject* obj = Get(group_member);
   if (!obj || !obj->IsAXRadioInput())
     return;
 
@@ -911,7 +907,7 @@ void AXObjectCacheImpl::RadiobuttonRemovedFromGroup(
   // node, as the removed node is already detached from tree.
   HTMLInputElement* first_radio =
       ToAXRadioInput(obj)->FindFirstRadioButtonInGroup(group_member);
-  AXObjectImpl* first_obj = Get(first_radio);
+  AXObject* first_obj = Get(first_radio);
   if (!first_obj || !first_obj->IsAXRadioInput())
     return;
 
@@ -926,31 +922,31 @@ void AXObjectCacheImpl::HandleLayoutComplete(LayoutObject* layout_object) {
 
   modification_count_++;
 
-  // Create the AXObjectImpl if it didn't yet exist - that's always safe at the
-  // end of a layout, and it allows an AX notification to be sent when a page
-  // has its first layout, rather than when the document first loads.
-  if (AXObjectImpl* obj = GetOrCreate(layout_object))
+  // Create the AXObject if it didn't yet exist - that's always safe at the end
+  // of a layout, and it allows an AX notification to be sent when a page has
+  // its first layout, rather than when the document first loads.
+  if (AXObject* obj = GetOrCreate(layout_object))
     PostNotification(obj, kAXLayoutComplete);
 }
 
 void AXObjectCacheImpl::HandleClicked(Node* node) {
-  if (AXObjectImpl* obj = GetOrCreate(node))
+  if (AXObject* obj = GetOrCreate(node))
     PostNotification(obj, kAXClicked);
 }
 
 void AXObjectCacheImpl::HandleAriaExpandedChange(Node* node) {
-  if (AXObjectImpl* obj = GetOrCreate(node))
+  if (AXObject* obj = GetOrCreate(node))
     obj->HandleAriaExpandedChanged();
 }
 
 void AXObjectCacheImpl::HandleAriaSelectedChanged(Node* node) {
-  AXObjectImpl* obj = Get(node);
+  AXObject* obj = Get(node);
   if (!obj)
     return;
 
   PostNotification(obj, kAXCheckedStateChanged);
 
-  AXObjectImpl* listbox = obj->ParentObjectUnignored();
+  AXObject* listbox = obj->ParentObjectUnignored();
   if (listbox && listbox->RoleValue() == kListBoxRole)
     PostNotification(listbox, kAXSelectedChildrenChanged);
 }
@@ -961,12 +957,12 @@ void AXObjectCacheImpl::HandleActiveDescendantChanged(Node* node) {
   // it can affect what's focusable or not.
   modification_count_++;
 
-  if (AXObjectImpl* obj = GetOrCreate(node))
+  if (AXObject* obj = GetOrCreate(node))
     obj->HandleActiveDescendantChanged();
 }
 
 void AXObjectCacheImpl::HandleAriaRoleChanged(Node* node) {
-  if (AXObjectImpl* obj = GetOrCreate(node)) {
+  if (AXObject* obj = GetOrCreate(node)) {
     obj->UpdateAccessibilityRole();
     modification_count_++;
     obj->NotifyIfIgnoredValueChanged();
@@ -1024,7 +1020,7 @@ void AXObjectCacheImpl::InlineTextBoxesUpdated(
 
   // Only update if the accessibility object already exists and it's
   // not already marked as dirty.
-  if (AXObjectImpl* obj = Get(layout_object)) {
+  if (AXObject* obj = Get(layout_object)) {
     if (!obj->NeedsToUpdateChildren()) {
       obj->SetNeedsToUpdateChildren();
       PostNotification(layout_object, kAXChildrenChanged);
@@ -1063,12 +1059,11 @@ const Element* AXObjectCacheImpl::RootAXEditableElement(const Node* node) {
   return result;
 }
 
-AXObjectImpl* AXObjectCacheImpl::FirstAccessibleObjectFromNode(
-    const Node* node) {
+AXObject* AXObjectCacheImpl::FirstAccessibleObjectFromNode(const Node* node) {
   if (!node)
     return 0;
 
-  AXObjectImpl* accessible_object = GetOrCreate(node->GetLayoutObject());
+  AXObject* accessible_object = GetOrCreate(node->GetLayoutObject());
   while (accessible_object && accessible_object->AccessibilityIsIgnored()) {
     node = NodeTraversal::Next(*node);
 
@@ -1088,7 +1083,7 @@ bool AXObjectCacheImpl::NodeIsTextControl(const Node* node) {
   if (!node)
     return false;
 
-  const AXObjectImpl* ax_object = GetOrCreate(const_cast<Node*>(node));
+  const AXObject* ax_object = GetOrCreate(const_cast<Node*>(node));
   return ax_object && ax_object->IsTextControl();
 }
 
@@ -1103,7 +1098,7 @@ bool IsNodeAriaVisible(Node* node) {
                                 "false");
 }
 
-void AXObjectCacheImpl::PostPlatformNotification(AXObjectImpl* obj,
+void AXObjectCacheImpl::PostPlatformNotification(AXObject* obj,
                                                  AXNotification notification) {
   if (!obj || !obj->GetDocument() || !obj->DocumentFrameView() ||
       !obj->DocumentFrameView()->GetFrame().GetPage())
@@ -1123,11 +1118,11 @@ void AXObjectCacheImpl::HandleFocusedUIElementChanged(Node* old_focused_node,
   if (!page)
     return;
 
-  AXObjectImpl* focused_object = this->FocusedObject();
+  AXObject* focused_object = this->FocusedObject();
   if (!focused_object)
     return;
 
-  AXObjectImpl* old_focused_object = Get(old_focused_node);
+  AXObject* old_focused_object = Get(old_focused_node);
 
   PostPlatformNotification(old_focused_object, kAXBlur);
   PostPlatformNotification(focused_object, kAXFocusedUIElementChanged);
@@ -1138,7 +1133,7 @@ void AXObjectCacheImpl::HandleInitialFocus() {
 }
 
 void AXObjectCacheImpl::HandleEditableTextContentChanged(Node* node) {
-  AXObjectImpl* obj = Get(node);
+  AXObject* obj = Get(node);
   while (obj && !obj->IsNativeTextControl() && !obj->IsNonNativeTextControl())
     obj = obj->ParentObject();
   PostNotification(obj, AXObjectCache::kAXValueChanged);
@@ -1154,7 +1149,7 @@ void AXObjectCacheImpl::HandleValueChanged(Node* node) {
 
 void AXObjectCacheImpl::HandleUpdateActiveMenuOption(LayoutMenuList* menu_list,
                                                      int option_index) {
-  AXObjectImpl* obj = Get(menu_list);
+  AXObject* obj = Get(menu_list);
   if (!obj || !obj->IsMenuList())
     return;
 
@@ -1162,7 +1157,7 @@ void AXObjectCacheImpl::HandleUpdateActiveMenuOption(LayoutMenuList* menu_list,
 }
 
 void AXObjectCacheImpl::DidShowMenuListPopup(LayoutMenuList* menu_list) {
-  AXObjectImpl* obj = Get(menu_list);
+  AXObject* obj = Get(menu_list);
   if (!obj || !obj->IsMenuList())
     return;
 
@@ -1170,7 +1165,7 @@ void AXObjectCacheImpl::DidShowMenuListPopup(LayoutMenuList* menu_list) {
 }
 
 void AXObjectCacheImpl::DidHideMenuListPopup(LayoutMenuList* menu_list) {
-  AXObjectImpl* obj = Get(menu_list);
+  AXObject* obj = Get(menu_list);
   if (!obj || !obj->IsMenuList())
     return;
 
@@ -1188,7 +1183,7 @@ void AXObjectCacheImpl::HandleLayoutComplete(Document* document) {
 void AXObjectCacheImpl::HandleScrolledToAnchor(const Node* anchor_node) {
   if (!anchor_node)
     return;
-  AXObjectImpl* obj = GetOrCreate(anchor_node->GetLayoutObject());
+  AXObject* obj = GetOrCreate(anchor_node->GetLayoutObject());
   if (!obj)
     return;
   if (obj->AccessibilityIsIgnored())
@@ -1197,7 +1192,7 @@ void AXObjectCacheImpl::HandleScrolledToAnchor(const Node* anchor_node) {
 }
 
 void AXObjectCacheImpl::HandleScrollPositionChanged(FrameView* frame_view) {
-  AXObjectImpl* target_ax_object =
+  AXObject* target_ax_object =
       GetOrCreate(frame_view->GetFrame().GetDocument());
   PostPlatformNotification(target_ax_object, kAXScrollPositionChanged);
 }
@@ -1209,14 +1204,14 @@ void AXObjectCacheImpl::HandleScrollPositionChanged(
 }
 
 const AtomicString& AXObjectCacheImpl::ComputedRoleForNode(Node* node) {
-  AXObjectImpl* obj = GetOrCreate(node);
+  AXObject* obj = GetOrCreate(node);
   if (!obj)
-    return AXObjectImpl::RoleName(kUnknownRole);
-  return AXObjectImpl::RoleName(obj->RoleValue());
+    return AXObject::RoleName(kUnknownRole);
+  return AXObject::RoleName(obj->RoleValue());
 }
 
 String AXObjectCacheImpl::ComputedNameForNode(Node* node) {
-  AXObjectImpl* obj = GetOrCreate(node);
+  AXObject* obj = GetOrCreate(node);
   if (!obj)
     return "";
 
@@ -1224,7 +1219,7 @@ String AXObjectCacheImpl::ComputedNameForNode(Node* node) {
 }
 
 void AXObjectCacheImpl::OnTouchAccessibilityHover(const IntPoint& location) {
-  AXObjectImpl* hit = Root()->AccessibilityHitTest(location);
+  AXObject* hit = Root()->AccessibilityHitTest(location);
   if (hit) {
     // Ignore events on a frame or plug-in, because the touch events
     // will be re-targeted there and we don't want to fire duplicate
@@ -1239,11 +1234,11 @@ void AXObjectCacheImpl::OnTouchAccessibilityHover(const IntPoint& location) {
 void AXObjectCacheImpl::SetCanvasObjectBounds(HTMLCanvasElement* canvas,
                                               Element* element,
                                               const LayoutRect& rect) {
-  AXObjectImpl* obj = GetOrCreate(element);
+  AXObject* obj = GetOrCreate(element);
   if (!obj)
     return;
 
-  AXObjectImpl* ax_canvas = GetOrCreate(canvas);
+  AXObject* ax_canvas = GetOrCreate(canvas);
   if (!ax_canvas)
     return;
 

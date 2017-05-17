@@ -79,7 +79,7 @@ void ColorChooserPopupUIController::EndChooser() {
   ClosePopup();
 }
 
-AXObjectImpl* ColorChooserPopupUIController::RootAXObject() {
+AXObject* ColorChooserPopupUIController::RootAXObject() {
   return popup_ ? popup_->RootAXObject() : nullptr;
 }
 

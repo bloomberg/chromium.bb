@@ -43,7 +43,7 @@ class SkMatrix44;
 
 namespace blink {
 
-class AXObjectImpl;
+class AXObject;
 class ScopedAXObjectCache;
 class WebAXObject;
 class WebNode;
@@ -81,7 +81,7 @@ class WebScopedAXContext {
   std::unique_ptr<ScopedAXObjectCache> private_;
 };
 
-// A container for passing around a reference to AXObjectImpl.
+// A container for passing around a reference to AXObject.
 class WebAXObject {
  public:
   ~WebAXObject() { Reset(); }
@@ -353,13 +353,13 @@ class WebAXObject {
   BLINK_EXPORT void ScrollToGlobalPoint(const WebPoint&) const;
 
 #if BLINK_IMPLEMENTATION
-  WebAXObject(AXObjectImpl*);
-  WebAXObject& operator=(AXObjectImpl*);
-  operator AXObjectImpl*() const;
+  WebAXObject(AXObject*);
+  WebAXObject& operator=(AXObject*);
+  operator AXObject*() const;
 #endif
 
  private:
-  WebPrivatePtr<AXObjectImpl> private_;
+  WebPrivatePtr<AXObject> private_;
 };
 
 }  // namespace blink

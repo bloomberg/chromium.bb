@@ -40,7 +40,7 @@ class AccessibilityMediaControl : public AXLayoutObject {
   WTF_MAKE_NONCOPYABLE(AccessibilityMediaControl);
 
  public:
-  static AXObjectImpl* Create(LayoutObject*, AXObjectCacheImpl&);
+  static AXObject* Create(LayoutObject*, AXObjectCacheImpl&);
   ~AccessibilityMediaControl() override {}
 
   AccessibilityRole RoleValue() const override;
@@ -65,7 +65,7 @@ class AccessibilityMediaTimeline final : public AXSlider {
   WTF_MAKE_NONCOPYABLE(AccessibilityMediaTimeline);
 
  public:
-  static AXObjectImpl* Create(LayoutObject*, AXObjectCacheImpl&);
+  static AXObject* Create(LayoutObject*, AXObjectCacheImpl&);
   ~AccessibilityMediaTimeline() override {}
 
   String Description(AXNameFrom,
@@ -81,7 +81,7 @@ class AXMediaControlsContainer final : public AccessibilityMediaControl {
   WTF_MAKE_NONCOPYABLE(AXMediaControlsContainer);
 
  public:
-  static AXObjectImpl* Create(LayoutObject*, AXObjectCacheImpl&);
+  static AXObject* Create(LayoutObject*, AXObjectCacheImpl&);
   ~AXMediaControlsContainer() override {}
 
   AccessibilityRole RoleValue() const override { return kToolbarRole; }
@@ -105,7 +105,7 @@ class AccessibilityMediaTimeDisplay final : public AccessibilityMediaControl {
   WTF_MAKE_NONCOPYABLE(AccessibilityMediaTimeDisplay);
 
  public:
-  static AXObjectImpl* Create(LayoutObject*, AXObjectCacheImpl&);
+  static AXObject* Create(LayoutObject*, AXObjectCacheImpl&);
   ~AccessibilityMediaTimeDisplay() override {}
 
   AccessibilityRole RoleValue() const override { return kStaticTextRole; }

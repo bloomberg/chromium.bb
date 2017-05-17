@@ -60,8 +60,8 @@ class AXARIAGrid final : public AXTable {
   bool IsMultiSelectable() const override { return true; }
   bool IsTableExposableThroughAccessibility() const override { return true; }
 
-  bool AddTableRowChild(AXObjectImpl*,
-                        HeapHashSet<Member<AXObjectImpl>>& appended_rows,
+  bool AddTableRowChild(AXObject*,
+                        HeapHashSet<Member<AXObject>>& appended_rows,
                         unsigned& column_count);
 };
 

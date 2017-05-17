@@ -143,7 +143,7 @@ void PickerIndicatorElement::DetachLayoutTree(const AttachContext& context) {
   HTMLDivElement::DetachLayoutTree(context);
 }
 
-AXObjectImpl* PickerIndicatorElement::PopupRootAXObject() const {
+AXObject* PickerIndicatorElement::PopupRootAXObject() const {
   return chooser_ ? chooser_->RootAXObject() : 0;
 }
 

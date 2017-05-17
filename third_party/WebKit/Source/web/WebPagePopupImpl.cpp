@@ -48,8 +48,8 @@
 #include "core/page/Page.h"
 #include "core/page/PagePopupClient.h"
 #include "core/page/PagePopupSupplement.h"
+#include "modules/accessibility/AXObject.h"
 #include "modules/accessibility/AXObjectCacheImpl.h"
-#include "modules/accessibility/AXObjectImpl.h"
 #include "platform/EventDispatchForbiddenScope.h"
 #include "platform/LayoutTestSupport.h"
 #include "platform/ScriptForbiddenScope.h"
@@ -220,7 +220,7 @@ class PagePopupChromeClient final : public EmptyChromeClient {
   }
 
   void PostAccessibilityNotification(
-      AXObjectImpl* obj,
+      AXObject* obj,
       AXObjectCache::AXNotification notification) override {
     WebLocalFrameImpl* frame = WebLocalFrameImpl::FromFrame(
         popup_->popup_client_->OwnerElement().GetDocument().GetFrame());
@@ -354,7 +354,7 @@ void WebPagePopupImpl::DestroyPage() {
   page_.Clear();
 }
 
-AXObjectImpl* WebPagePopupImpl::RootAXObject() {
+AXObject* WebPagePopupImpl::RootAXObject() {
   if (!page_ || !page_->MainFrame())
     return 0;
   Document* document = ToLocalFrame(page_->MainFrame())->GetDocument();
