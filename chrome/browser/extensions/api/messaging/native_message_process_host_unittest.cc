@@ -303,13 +303,7 @@ TEST_F(NativeMessagingTest, EchoConnect) {
   EXPECT_EQ(expected_url, url);
 }
 
-// http://crbug.com/723291
-#if defined(OS_WIN)
-#define MAYBE_UserLevel DISABLED_UserLevel
-#else
-#define MAYBE_UserLevel UserLevel
-#endif
-TEST_F(NativeMessagingTest, MAYBE_UserLevel) {
+TEST_F(NativeMessagingTest, UserLevel) {
   ScopedTestNativeMessagingHost test_host;
   ASSERT_NO_FATAL_FAILURE(test_host.RegisterTestHost(true));
 
