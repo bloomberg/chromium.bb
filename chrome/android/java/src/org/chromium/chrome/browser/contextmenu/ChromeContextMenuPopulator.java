@@ -249,13 +249,19 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
             ContextMenu menu, Context context, ContextMenuParams params) {
         // Add all items in a group
         Set<ContextMenuItem> supportedOptions = new HashSet<>();
-        supportedOptions.addAll(BASE_WHITELIST);
-        if (mMode == FULLSCREEN_TAB_MODE) {
-            supportedOptions.addAll(FULLSCREEN_TAB_MODE_WHITELIST);
-        } else if (mMode == CUSTOM_TAB_MODE) {
-            supportedOptions.addAll(CUSTOM_TAB_MODE_WHITELIST);
+        if (FirstRunStatus.getFirstRunFlowComplete()) {
+            supportedOptions.addAll(BASE_WHITELIST);
+            if (mMode == FULLSCREEN_TAB_MODE) {
+                supportedOptions.addAll(FULLSCREEN_TAB_MODE_WHITELIST);
+            } else if (mMode == CUSTOM_TAB_MODE) {
+                supportedOptions.addAll(CUSTOM_TAB_MODE_WHITELIST);
+            } else {
+                supportedOptions.addAll(NORMAL_MODE_WHITELIST);
+            }
         } else {
-            supportedOptions.addAll(NORMAL_MODE_WHITELIST);
+            supportedOptions.add(ContextMenuItem.COPY_LINK_ADDRESS);
+            supportedOptions.add(ContextMenuItem.COPY_LINK_TEXT);
+            supportedOptions.add(ContextMenuItem.COPY);
         }
 
         Set<ContextMenuItem> disabledOptions = getDisabledOptions(params);
@@ -400,7 +406,7 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
             disabledOptions.add(ContextMenuItem.COPY_LINK_TEXT);
         }
 
-        if (params.isAnchor() && !UrlUtilities.isAcceptedScheme(params.getLinkUrl())) {
+        if (params.isAnchor() && !isAcceptedScheme(params.getLinkUrl())) {
             disabledOptions.add(ContextMenuItem.OPEN_IN_OTHER_WINDOW);
             disabledOptions.add(ContextMenuItem.OPEN_IN_NEW_TAB);
             disabledOptions.add(ContextMenuItem.OPEN_IN_INCOGNITO_TAB);
@@ -437,11 +443,11 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
             }
         }
 
-        if (!UrlUtilities.isDownloadableScheme(params.getLinkUrl())) {
+        if (!isDownloadableScheme(params.getLinkUrl())) {
             disabledOptions.add(ContextMenuItem.SAVE_LINK_AS);
         }
 
-        boolean isSrcDownloadableScheme = UrlUtilities.isDownloadableScheme(params.getSrcUrl());
+        boolean isSrcDownloadableScheme = isDownloadableScheme(params.getSrcUrl());
         if (params.isVideo()) {
             boolean saveableAndDownloadable = params.canSaveMedia() && isSrcDownloadableScheme;
             if (!saveableAndDownloadable) {
@@ -467,7 +473,7 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
             if (mDelegate.getPageUrl().equals(params.getSrcUrl())) {
                 disabledOptions.add(ContextMenuItem.OPEN_IMAGE);
             }
-            final TemplateUrlService templateUrlServiceInstance = TemplateUrlService.getInstance();
+            final TemplateUrlService templateUrlServiceInstance = getTemplateUrlService();
             final boolean isSearchByImageAvailable = isSrcDownloadableScheme
                     && templateUrlServiceInstance.isLoaded()
                     && templateUrlServiceInstance.isSearchByImageAvailable()
@@ -476,16 +482,6 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
             if (!isSearchByImageAvailable) {
                 disabledOptions.add(ContextMenuItem.SEARCH_BY_IMAGE);
             }
-        }
-
-        // Hide all items that could spawn additional tabs until FRE has been completed.
-        if (!FirstRunStatus.getFirstRunFlowComplete()) {
-            disabledOptions.add(ContextMenuItem.OPEN_IMAGE_IN_NEW_TAB);
-            disabledOptions.add(ContextMenuItem.OPEN_IN_OTHER_WINDOW);
-            disabledOptions.add(ContextMenuItem.OPEN_IN_NEW_TAB);
-            disabledOptions.add(ContextMenuItem.OPEN_IN_INCOGNITO_TAB);
-            disabledOptions.add(ContextMenuItem.SEARCH_BY_IMAGE);
-            disabledOptions.add(ContextMenuItem.OPEN_IN_CHROME);
         }
 
         if (mMode == CUSTOM_TAB_MODE) {
@@ -611,6 +607,27 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
         }
 
         return true;
+    }
+
+    /**
+     * @return Whether the scheme of the URL is valid .
+     */
+    protected boolean isAcceptedScheme(String url) {
+        return UrlUtilities.isAcceptedScheme(url);
+    }
+
+    /**
+     * @return Whether the scheme of the URL is valid for downloading.
+     */
+    protected boolean isDownloadableScheme(String url) {
+        return UrlUtilities.isDownloadableScheme(url);
+    }
+
+    /**
+     * @return The service that handles TemplateUrls.
+     */
+    protected TemplateUrlService getTemplateUrlService() {
+        return TemplateUrlService.getInstance();
     }
 
     /**

@@ -20,7 +20,7 @@ import org.chromium.content_public.common.Referrer;
 public class ContextMenuParams {
     /** Must correspond to the MediaType enum in WebKit/chromium/public/WebContextMenuData.h */
     @SuppressWarnings("unused")
-    private static interface MediaType {
+    static interface MediaType {
         public static final int MEDIA_TYPE_NONE = 0;
         public static final int MEDIA_TYPE_IMAGE = 1;
         public static final int MEDIA_TYPE_VIDEO = 2;
