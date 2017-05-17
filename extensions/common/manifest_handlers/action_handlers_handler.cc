@@ -5,6 +5,7 @@
 #include "extensions/common/manifest_handlers/action_handlers_handler.h"
 
 #include <memory>
+#include <utility>
 
 #include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -26,6 +27,14 @@ bool ActionHandlersInfo::HasActionHandler(
   return info && info->action_handlers.count(action_type) > 0;
 }
 
+bool ActionHandlersInfo::HasLockScreenActionHandler(
+    const Extension* extension,
+    api::app_runtime::ActionType action_type) {
+  ActionHandlersInfo* info = static_cast<ActionHandlersInfo*>(
+      extension->GetManifestData(keys::kActionHandlers));
+  return info && info->lock_screen_action_handlers.count(action_type) > 0;
+}
+
 ActionHandlersInfo::ActionHandlersInfo() = default;
 
 ActionHandlersInfo::~ActionHandlersInfo() = default;
@@ -44,7 +53,16 @@ bool ActionHandlersHandler::Parse(Extension* extension, base::string16* error) {
   auto info = base::MakeUnique<ActionHandlersInfo>();
   for (const base::Value& wrapped_value : *entries) {
     std::string value;
-    if (!wrapped_value.GetAsString(&value)) {
+    bool enabled_on_lock_screen = false;
+    const base::DictionaryValue* dictionary_value = nullptr;
+    if (wrapped_value.GetAsDictionary(&dictionary_value)) {
+      if (!dictionary_value->GetString(keys::kActionHandlerActionKey, &value)) {
+        *error = base::ASCIIToUTF16(errors::kInvalidActionHandlerDictionary);
+        return false;
+      }
+      dictionary_value->GetBoolean(keys::kActionHandlerEnabledOnLockScreenKey,
+                                   &enabled_on_lock_screen);
+    } else if (!wrapped_value.GetAsString(&value)) {
       *error = base::ASCIIToUTF16(errors::kInvalidActionHandlersType);
       return false;
     }
@@ -56,7 +74,14 @@ bool ActionHandlersHandler::Parse(Extension* extension, base::string16* error) {
       return false;
     }
 
+    if (info->action_handlers.count(action_type) > 0) {
+      *error = ErrorUtils::FormatErrorMessageUTF16(
+          errors::kDuplicateActionHandlerFound, value);
+      return false;
+    }
     info->action_handlers.insert(action_type);
+    if (enabled_on_lock_screen)
+      info->lock_screen_action_handlers.insert(action_type);
   }
 
   extension->SetManifestData(keys::kActionHandlers, std::move(info));
