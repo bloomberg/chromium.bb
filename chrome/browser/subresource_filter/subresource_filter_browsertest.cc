@@ -52,6 +52,7 @@
 #include "components/subresource_filter/content/browser/content_subresource_filter_driver_factory.h"
 #include "components/subresource_filter/core/browser/subresource_filter_features.h"
 #include "components/subresource_filter/core/browser/subresource_filter_features_test_support.h"
+#include "components/subresource_filter/core/common/activation_decision.h"
 #include "components/subresource_filter/core/common/activation_level.h"
 #include "components/subresource_filter/core/common/activation_state.h"
 #include "components/subresource_filter/core/common/scoped_timers.h"
@@ -167,8 +168,6 @@ using subresource_filter::testing::ScopedSubresourceFilterConfigurator;
 using subresource_filter::testing::TestRulesetPublisher;
 using subresource_filter::testing::TestRulesetCreator;
 using subresource_filter::testing::TestRulesetPair;
-using ActivationDecision =
-    ContentSubresourceFilterDriverFactory::ActivationDecision;
 
 // SubresourceFilterDisabledBrowserTest ---------------------------------------
 

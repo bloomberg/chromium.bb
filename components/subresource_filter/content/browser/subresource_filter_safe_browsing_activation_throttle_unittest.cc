@@ -21,6 +21,7 @@
 #include "components/subresource_filter/content/browser/subresource_filter_safe_browsing_client_request.h"
 #include "components/subresource_filter/core/browser/subresource_filter_features.h"
 #include "components/subresource_filter/core/browser/subresource_filter_features_test_support.h"
+#include "components/subresource_filter/core/common/activation_decision.h"
 #include "components/subresource_filter/core/common/activation_level.h"
 #include "components/subresource_filter/core/common/activation_list.h"
 #include "components/subresource_filter/core/common/activation_state.h"
@@ -354,8 +355,7 @@ TEST_P(SubresourceFilterSafeBrowsingActivationThrottleParamTest,
   CreateTestNavigationForMainFrame(url);
   SimulateStartAndExpectProceed();
   SimulateCommitAndExpectProceed();
-  EXPECT_EQ(ContentSubresourceFilterDriverFactory::ActivationDecision::
-                ACTIVATION_CONDITIONS_NOT_MET,
+  EXPECT_EQ(ActivationDecision::ACTIVATION_CONDITIONS_NOT_MET,
             factory()->GetActivationDecisionForLastCommittedPageLoad());
   ExpectSampleForSuffix("SocialEngineeringAdsInterstitial", std::string(),
                         tester());
@@ -376,9 +376,8 @@ TEST_P(SubresourceFilterSafeBrowsingActivationThrottleParamTest,
   CreateTestNavigationForMainFrame(url);
   SimulateStartAndExpectProceed();
   SimulateCommitAndExpectProceed();
-  EXPECT_EQ(
-      ContentSubresourceFilterDriverFactory::ActivationDecision::ACTIVATED,
-      factory()->GetActivationDecisionForLastCommittedPageLoad());
+  EXPECT_EQ(ActivationDecision::ACTIVATED,
+            factory()->GetActivationDecisionForLastCommittedPageLoad());
   const std::string suffix(GetSuffixForList(test_data.activation_list_type));
   ExpectSampleForSuffix("SocialEngineeringAdsInterstitial", suffix, tester());
   ExpectSampleForSuffix("PhishingInterstital", suffix, tester());
@@ -395,8 +394,7 @@ TEST_P(SubresourceFilterSafeBrowsingActivationThrottleParamTest,
   SimulateStartAndExpectProceed();
   SimulateRedirectAndExpectProceed(GURL(kRedirectURL));
   SimulateCommitAndExpectProceed();
-  EXPECT_EQ(ContentSubresourceFilterDriverFactory::ActivationDecision::
-                ACTIVATION_CONDITIONS_NOT_MET,
+  EXPECT_EQ(ActivationDecision::ACTIVATION_CONDITIONS_NOT_MET,
             factory()->GetActivationDecisionForLastCommittedPageLoad());
   ExpectSampleForSuffix("SocialEngineeringAdsInterstitial", std::string(),
                         tester());
@@ -415,9 +413,8 @@ TEST_P(SubresourceFilterSafeBrowsingActivationThrottleParamTest,
   SimulateStartAndExpectProceed();
   SimulateRedirectAndExpectProceed(GURL(kRedirectURL));
   SimulateCommitAndExpectProceed();
-  EXPECT_EQ(
-      ContentSubresourceFilterDriverFactory::ActivationDecision::ACTIVATED,
-      factory()->GetActivationDecisionForLastCommittedPageLoad());
+  EXPECT_EQ(ActivationDecision::ACTIVATED,
+            factory()->GetActivationDecisionForLastCommittedPageLoad());
   tester().ExpectUniqueSample(kNavigationChainSize + suffix, 2, 1);
   ExpectSampleForSuffix("SocialEngineeringAdsInterstitial", suffix, tester());
   ExpectSampleForSuffix("PhishingInterstital", suffix, tester());
@@ -443,8 +440,7 @@ TEST_P(SubresourceFilterSafeBrowsingActivationThrottleParamTest,
   EXPECT_EQ(expected_delay, test_io_task_runner()->NextPendingTaskDelay());
   test_io_task_runner()->FastForwardBy(expected_delay);
   SimulateCommitAndExpectProceed();
-  EXPECT_EQ(ContentSubresourceFilterDriverFactory::ActivationDecision::
-                ACTIVATION_CONDITIONS_NOT_MET,
+  EXPECT_EQ(ActivationDecision::ACTIVATION_CONDITIONS_NOT_MET,
             factory()->GetActivationDecisionForLastCommittedPageLoad());
   tester().ExpectTotalCount(kMatchesPatternHistogramNameSubresourceFilterSuffix,
                             0);
@@ -466,9 +462,8 @@ TEST_P(SubresourceFilterSafeBrowsingActivationThrottleParamTest,
   RunUntilIdle();
 
   SimulateCommitAndExpectProceed();
-  EXPECT_EQ(
-      ContentSubresourceFilterDriverFactory::ActivationDecision::ACTIVATED,
-      factory()->GetActivationDecisionForLastCommittedPageLoad());
+  EXPECT_EQ(ActivationDecision::ACTIVATED,
+            factory()->GetActivationDecisionForLastCommittedPageLoad());
   const std::string suffix(GetSuffixForList(test_data.activation_list_type));
   ExpectSampleForSuffix("SocialEngineeringAdsInterstitial", suffix, tester());
   ExpectSampleForSuffix("PhishingInterstital", suffix, tester());
@@ -495,9 +490,8 @@ TEST_P(SubresourceFilterSafeBrowsingActivationThrottleParamTest,
   RunUntilIdle();
 
   SimulateCommitAndExpectProceed();
-  EXPECT_EQ(
-      ContentSubresourceFilterDriverFactory::ActivationDecision::ACTIVATED,
-      factory()->GetActivationDecisionForLastCommittedPageLoad());
+  EXPECT_EQ(ActivationDecision::ACTIVATED,
+            factory()->GetActivationDecisionForLastCommittedPageLoad());
   const std::string suffix(GetSuffixForList(test_data.activation_list_type));
   ExpectSampleForSuffix("SocialEngineeringAdsInterstitial", suffix, tester());
   ExpectSampleForSuffix("PhishingInterstital", suffix, tester());
@@ -526,8 +520,7 @@ TEST_P(SubresourceFilterSafeBrowsingActivationThrottleParamTest,
   RunUntilIdle();
 
   SimulateCommitAndExpectProceed();
-  EXPECT_EQ(ContentSubresourceFilterDriverFactory::ActivationDecision::
-                ACTIVATION_CONDITIONS_NOT_MET,
+  EXPECT_EQ(ActivationDecision::ACTIVATION_CONDITIONS_NOT_MET,
             factory()->GetActivationDecisionForLastCommittedPageLoad());
   tester().ExpectTotalCount(kMatchesPatternHistogramNameSubresourceFilterSuffix,
                             0);

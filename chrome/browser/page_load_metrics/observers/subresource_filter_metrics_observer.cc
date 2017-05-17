@@ -6,12 +6,12 @@
 
 #include "chrome/browser/page_load_metrics/page_load_metrics_util.h"
 #include "components/subresource_filter/content/browser/content_subresource_filter_driver_factory.h"
+#include "components/subresource_filter/core/common/activation_decision.h"
 #include "third_party/WebKit/public/platform/WebLoadingBehaviorFlag.h"
 
 using subresource_filter::ContentSubresourceFilterDriverFactory;
 
-using ActivationDecision = subresource_filter::
-    ContentSubresourceFilterDriverFactory::ActivationDecision;
+using ActivationDecision = subresource_filter::ActivationDecision;
 
 namespace internal {
 
