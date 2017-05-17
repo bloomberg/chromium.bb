@@ -10,9 +10,7 @@
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/threading/sequenced_worker_pool.h"
 #include "components/storage_monitor/storage_info.h"
-#include "content/public/browser/browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace storage_monitor {
@@ -108,10 +106,6 @@ void TestVolumeMountWatcherWin::AddDeviceForTesting(
 
 void TestVolumeMountWatcherWin::SetAttachedDevicesFake() {
   attached_devices_fake_ = true;
-}
-
-void TestVolumeMountWatcherWin::FlushWorkerPoolForTesting() {
-  content::BrowserThread::GetBlockingPool()->FlushForTesting();
 }
 
 void TestVolumeMountWatcherWin::DeviceCheckComplete(

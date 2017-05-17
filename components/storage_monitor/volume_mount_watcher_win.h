@@ -90,7 +90,7 @@ class VolumeMountWatcherWin {
   virtual GetDeviceDetailsCallbackType GetDeviceDetailsCallback() const;
 
   // Used for device info calls that may take a long time.
-  scoped_refptr<base::SequencedTaskRunner> device_info_task_runner_;
+  const scoped_refptr<base::SequencedTaskRunner> device_info_task_runner_;
 
  private:
   friend class TestVolumeMountWatcherWin;
