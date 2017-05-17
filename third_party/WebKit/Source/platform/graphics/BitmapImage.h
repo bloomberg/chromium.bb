@@ -192,7 +192,7 @@ class PLATFORM_EXPORT BitmapImage final : public Image {
       cached_frame_;  // A cached copy of the most recently-accessed frame.
   size_t cached_frame_index_;  // Index of the frame that is cached.
 
-  std::unique_ptr<Timer<BitmapImage>> frame_timer_;
+  std::unique_ptr<TaskRunnerTimer<BitmapImage>> frame_timer_;
 
   ImageAnimationPolicy
       animation_policy_;  // Whether or not we can play animation.
@@ -217,6 +217,8 @@ class PLATFORM_EXPORT BitmapImage final : public Image {
                                      // the next call to startAnimation().
 
   size_t frame_count_;
+
+  RefPtr<WebTaskRunner> task_runner_;
 };
 
 DEFINE_IMAGE_TYPE_CASTS(BitmapImage);

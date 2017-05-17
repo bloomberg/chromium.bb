@@ -39,6 +39,7 @@
 #include "platform/graphics/skia/SkiaUtils.h"
 #include "platform/instrumentation/PlatformInstrumentation.h"
 #include "platform/instrumentation/tracing/TraceEvent.h"
+#include "platform/scheduler/child/web_scheduler.h"
 #include "platform/wtf/PassRefPtr.h"
 #include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/text/WTFString.h"
@@ -83,7 +84,11 @@ BitmapImage::BitmapImage(ImageObserver* observer)
       repetition_count_(kAnimationNone),
       repetitions_complete_(0),
       desired_frame_start_time_(0),
-      frame_count_(0) {}
+      frame_count_(0),
+      task_runner_(Platform::Current()
+                       ->CurrentThread()
+                       ->Scheduler()
+                       ->CompositorTaskRunner()) {}
 
 BitmapImage::BitmapImage(const SkBitmap& bitmap, ImageObserver* observer)
     : Image(observer),
@@ -100,7 +105,11 @@ BitmapImage::BitmapImage(const SkBitmap& bitmap, ImageObserver* observer)
       repetition_count_status_(kUnknown),
       repetition_count_(kAnimationNone),
       repetitions_complete_(0),
-      frame_count_(1) {
+      frame_count_(1),
+      task_runner_(Platform::Current()
+                       ->CurrentThread()
+                       ->Scheduler()
+                       ->CompositorTaskRunner()) {
   // Since we don't have a decoder, we can't figure out the image orientation.
   // Set m_sizeRespectingOrientation to be the same as m_size so it's not 0x0.
   size_respecting_orientation_ = size_;
@@ -510,8 +519,8 @@ void BitmapImage::StartAnimation(CatchUpAnimation catch_up_if_necessary) {
   if (catch_up_if_necessary == kDoNotCatchUp ||
       time < desired_frame_start_time_) {
     // Haven't yet reached time for next frame to start; delay until then.
-    frame_timer_ = WTF::WrapUnique(
-        new Timer<BitmapImage>(this, &BitmapImage::AdvanceAnimation));
+    frame_timer_ = WTF::WrapUnique(new TaskRunnerTimer<BitmapImage>(
+        task_runner_, this, &BitmapImage::AdvanceAnimation));
     frame_timer_->StartOneShot(std::max(desired_frame_start_time_ - time, 0.),
                                BLINK_FROM_HERE);
   } else {
@@ -541,8 +550,8 @@ void BitmapImage::StartAnimation(CatchUpAnimation catch_up_if_necessary) {
     // may be in the past, meaning the next time through this function we'll
     // kick off the next advancement sooner than this frame's duration would
     // suggest.
-    frame_timer_ = WTF::WrapUnique(new Timer<BitmapImage>(
-        this, &BitmapImage::AdvanceAnimationWithoutCatchUp));
+    frame_timer_ = WTF::WrapUnique(new TaskRunnerTimer<BitmapImage>(
+        task_runner_, this, &BitmapImage::AdvanceAnimationWithoutCatchUp));
     frame_timer_->StartOneShot(0, BLINK_FROM_HERE);
   }
 }
@@ -624,8 +633,9 @@ bool BitmapImage::InternalAdvanceAnimation(AnimationAdvancement advancement) {
       // last frame. Skipping frames occurs while painting so we do not
       // synchronously notify the observer which could cause a layout.
       if (advancement == kSkipFramesToCatchUp) {
-        frame_timer_ = WTF::WrapUnique(new Timer<BitmapImage>(
-            this, &BitmapImage::NotifyObserversOfAnimationAdvance));
+        frame_timer_ = WTF::WrapUnique(new TaskRunnerTimer<BitmapImage>(
+            task_runner_, this,
+            &BitmapImage::NotifyObserversOfAnimationAdvance));
         frame_timer_->StartOneShot(0, BLINK_FROM_HERE);
       }
 

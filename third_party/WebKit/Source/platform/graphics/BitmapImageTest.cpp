@@ -35,6 +35,7 @@
 #include "platform/graphics/DeferredImageDecoder.h"
 #include "platform/graphics/ImageObserver.h"
 #include "platform/testing/HistogramTester.h"
+#include "platform/testing/TestingPlatformSupport.h"
 #include "platform/testing/UnitTestHelpers.h"
 #include "platform/wtf/StdLibExtras.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -140,6 +141,8 @@ class BitmapImageTest : public ::testing::Test {
 
   Persistent<FakeImageObserver> image_observer_;
   RefPtr<BitmapImage> image_;
+  ScopedTestingPlatformSupport<TestingPlatformSupportWithMockScheduler>
+      platform_;
 };
 
 TEST_F(BitmapImageTest, destroyDecodedData) {

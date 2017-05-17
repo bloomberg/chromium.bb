@@ -40,6 +40,7 @@ class PLATFORM_EXPORT WebSchedulerImpl : public WebScheduler {
                                WebThread::IdleTask* task) override;
   WebTaskRunner* LoadingTaskRunner() override;
   WebTaskRunner* TimerTaskRunner() override;
+  WebTaskRunner* CompositorTaskRunner() override;
   std::unique_ptr<WebViewScheduler> CreateWebViewScheduler(
       InterventionReporter*,
       WebViewScheduler::WebViewSchedulerSettings*) override;

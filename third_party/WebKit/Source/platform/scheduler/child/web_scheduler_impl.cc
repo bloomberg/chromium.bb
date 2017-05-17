@@ -70,6 +70,11 @@ blink::WebTaskRunner* WebSchedulerImpl::TimerTaskRunner() {
   return timer_web_task_runner_.Get();
 }
 
+blink::WebTaskRunner* WebSchedulerImpl::CompositorTaskRunner() {
+  NOTREACHED();
+  return nullptr;
+}
+
 std::unique_ptr<blink::WebViewScheduler>
 WebSchedulerImpl::CreateWebViewScheduler(
     InterventionReporter*,

@@ -31,6 +31,7 @@ class MockScheduler final : public WebScheduler {
       WebViewScheduler::WebViewSchedulerSettings*) override {
     return nullptr;
   }
+  WebTaskRunner* CompositorTaskRunner() override { return nullptr; }
   void SuspendTimerQueue() override {}
   void ResumeTimerQueue() override {}
   void AddPendingNavigation(
