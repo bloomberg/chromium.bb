@@ -1062,7 +1062,7 @@ hooks = [
                 "--no_auth",
                 "-u",
                 "--bucket", "v8-wasm-fuzzer",
-                "-s", "src/v8/test/fuzzer/wasm.tar.gz.sha1",
+                "-s", "src/v8/test/fuzzer/wasm_corpus.tar.gz.sha1",
     ],
   },
   {
@@ -1073,7 +1073,7 @@ hooks = [
                 "--no_auth",
                 "-u",
                 "--bucket", "v8-wasm-asmjs-fuzzer",
-                "-s", "src/v8/test/fuzzer/wasm_asmjs.tar.gz.sha1",
+                "-s", "src/v8/test/fuzzer/wasm_asmjs_corpus.tar.gz.sha1",
     ],
   },
   {
