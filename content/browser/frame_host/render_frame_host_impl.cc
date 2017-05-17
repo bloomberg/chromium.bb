@@ -936,10 +936,8 @@ gfx::AcceleratedWidget
   // Only the main frame's current frame host is connected to the native
   // widget tree for accessibility, so return null if this is queried on
   // any other frame.
-  if (frame_tree_node()->parent() ||
-      frame_tree_node()->current_frame_host() != this) {
+  if (frame_tree_node()->parent() || !IsCurrent())
     return gfx::kNullAcceleratedWidget;
-  }
 
   RenderWidgetHostViewBase* view = static_cast<RenderWidgetHostViewBase*>(
       render_view_host_->GetWidget()->GetView());
@@ -1159,8 +1157,7 @@ void RenderFrameHostImpl::OnCreateChildFrame(
   // child, but by the time we get here, it's possible for the host to have been
   // swapped out, or for its process to have disconnected (maybe due to browser
   // shutdown). Ignore such messages.
-  if (!is_active() || frame_tree_node_->current_frame_host() != this ||
-      !render_frame_created_)
+  if (!is_active() || !IsCurrent() || !render_frame_created_)
     return;
 
   frame_tree_->AddFrame(frame_tree_node_, GetProcess()->GetID(), new_routing_id,
@@ -2553,7 +2550,7 @@ void RenderFrameHostImpl::CreateNewWindow(
 
   // Ignore creation when sent from a frame that's not current or created.
   bool can_create_window =
-      frame_tree_node_->current_frame_host() == this && render_frame_created_ &&
+      IsCurrent() && render_frame_created_ &&
       GetContentClient()->browser()->CanCreateWindow(
           this, last_committed_url(),
           frame_tree_node_->frame_tree()->GetMainFrame()->last_committed_url(),
@@ -3052,8 +3049,7 @@ void RenderFrameHostImpl::CommitNavigation(
 
   // The renderer can exit view source mode when any error or cancellation
   // happen. When reusing the same renderer, overwrite to recover the mode.
-  if (is_view_source &&
-      this == frame_tree_node_->render_manager()->current_frame_host()) {
+  if (is_view_source && IsCurrent()) {
     DCHECK(!GetParent());
     render_view_host()->Send(new FrameMsg_EnableViewSourceMode(routing_id_));
   }
@@ -3397,8 +3393,12 @@ bool RenderFrameHostImpl::IsRenderFrameLive() {
   return is_live;
 }
 
+bool RenderFrameHostImpl::IsCurrent() {
+  return this == frame_tree_node_->current_frame_host();
+}
+
 int RenderFrameHostImpl::GetProxyCount() {
-  if (this != frame_tree_node_->current_frame_host())
+  if (!IsCurrent())
     return 0;
   return frame_tree_node_->render_manager()->GetProxyCount();
 }

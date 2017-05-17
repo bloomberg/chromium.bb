@@ -356,6 +356,13 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   // any RenderViewHosts that are swapped out.
   size_t GetActiveViewCount();
 
+  // Posts |task|, if this RenderProcessHost is ready or when it becomes ready
+  // (see RenderProcessHost::IsReady method).  The |task| might not run at all
+  // (e.g. if |render_process_host| is destroyed before becoming ready).  This
+  // function can only be called on the browser's UI thread (and the |task| will
+  // be posted back on the UI thread).
+  void PostTaskWhenProcessIsReady(base::OnceClosure task);
+
   // Static management functions -----------------------------------------------
 
   // Flag to run the renderer in process.  This is primarily

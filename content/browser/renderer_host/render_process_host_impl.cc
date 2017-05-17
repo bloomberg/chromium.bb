@@ -584,6 +584,51 @@ class WorkerURLLoaderFactoryProviderImpl
   scoped_refptr<ServiceWorkerContextWrapper> service_worker_context_;
 };
 
+class RenderProcessHostIsReadyObserver : public RenderProcessHostObserver {
+ public:
+  RenderProcessHostIsReadyObserver(RenderProcessHost* render_process_host,
+                                   base::OnceClosure task)
+      : render_process_host_(render_process_host),
+        task_(std::move(task)),
+        weak_factory_(this) {
+    render_process_host_->AddObserver(this);
+    if (render_process_host_->IsReady())
+      PostTask();
+  }
+
+  ~RenderProcessHostIsReadyObserver() override {
+    render_process_host_->RemoveObserver(this);
+  }
+
+  void RenderProcessReady(RenderProcessHost* host) override { PostTask(); }
+
+  void RenderProcessHostDestroyed(RenderProcessHost* host) override {
+    delete this;
+  }
+
+ private:
+  void PostTask() {
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
+        base::Bind(&RenderProcessHostIsReadyObserver::CallTask,
+                   weak_factory_.GetWeakPtr()));
+  }
+
+  void CallTask() {
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
+    if (render_process_host_->IsReady())
+      std::move(task_).Run();
+
+    delete this;
+  }
+
+  RenderProcessHost* render_process_host_;
+  base::OnceClosure task_;
+  base::WeakPtrFactory<RenderProcessHostIsReadyObserver> weak_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(RenderProcessHostIsReadyObserver);
+};
+
 }  // namespace
 
 RendererMainThreadFactoryFunction g_renderer_main_thread_factory = NULL;
@@ -2973,6 +3018,12 @@ size_t RenderProcessHost::GetActiveViewCount() {
       num_active_views++;
   }
   return num_active_views;
+}
+
+void RenderProcessHost::PostTaskWhenProcessIsReady(base::OnceClosure task) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(!task.is_null());
+  new RenderProcessHostIsReadyObserver(this, std::move(task));
 }
 
 void RenderProcessHostImpl::ReleaseOnCloseACK(

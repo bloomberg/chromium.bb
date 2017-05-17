@@ -176,6 +176,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   AssociatedInterfaceProvider* GetRemoteAssociatedInterfaces() override;
   blink::WebPageVisibilityState GetVisibilityState() override;
   bool IsRenderFrameLive() override;
+  bool IsCurrent() override;
   int GetProxyCount() override;
   void FilesSelectedInChooser(const std::vector<FileChooserFileInfo>& files,
                               FileChooserParams::Mode permissions) override;
