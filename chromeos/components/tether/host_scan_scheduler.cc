@@ -4,11 +4,8 @@
 
 #include "chromeos/components/tether/host_scan_scheduler.h"
 
-#include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
-#include "chromeos/components/tether/host_scanner.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
@@ -18,119 +15,55 @@ namespace chromeos {
 
 namespace tether {
 
-HostScanScheduler::DelegateImpl::DelegateImpl(
-    const content::BrowserContext* browser_context) {
-  // TODO(khorimoto): Use browser_context to get a CryptAuthDeviceManager.
+HostScanScheduler::HostScanScheduler(NetworkStateHandler* network_state_handler,
+                                     HostScanner* host_scanner)
+    : network_state_handler_(network_state_handler),
+      host_scanner_(host_scanner) {
+  network_state_handler_->AddObserver(this, FROM_HERE);
+  host_scanner_->AddObserver(this);
 }
-
-void HostScanScheduler::DelegateImpl::AddObserver(
-    HostScanScheduler* host_scan_scheduler) {
-  LoginState::Get()->AddObserver(host_scan_scheduler);
-  DBusThreadManager::Get()->GetPowerManagerClient()->AddObserver(
-      host_scan_scheduler);
-  NetworkHandler::Get()->network_state_handler()->AddObserver(
-      host_scan_scheduler, FROM_HERE);
-  // TODO(khorimoto): Add listener for CryptAuthDeviceManager.
-}
-
-void HostScanScheduler::DelegateImpl::RemoveObserver(
-    HostScanScheduler* host_scan_scheduler) {
-  LoginState::Get()->RemoveObserver(host_scan_scheduler);
-  DBusThreadManager::Get()->GetPowerManagerClient()->RemoveObserver(
-      host_scan_scheduler);
-  NetworkHandler::Get()->network_state_handler()->RemoveObserver(
-      host_scan_scheduler, FROM_HERE);
-  // TODO(khorimoto): Add observer of CryptAuthDeviceManager.
-}
-
-bool HostScanScheduler::DelegateImpl::IsAuthenticatedUserLoggedIn() const {
-  LoginState* login_state = LoginState::Get();
-  return login_state && login_state->IsUserLoggedIn() &&
-         login_state->IsUserAuthenticated();
-}
-
-bool HostScanScheduler::DelegateImpl::IsNetworkConnectedOrConnecting() const {
-  const NetworkState* network_state =
-      NetworkHandler::Get()->network_state_handler()->DefaultNetwork();
-  return network_state && (network_state->IsConnectedState() ||
-                           network_state->IsConnectingState());
-}
-
-bool HostScanScheduler::DelegateImpl::AreTetherHostsSynced() const {
-  // TODO(khorimoto): Return CryptAuthDeviceManager->GetTetherHosts().empty().
-  return true;
-}
-
-HostScanScheduler::HostScanScheduler(
-    const content::BrowserContext* browser_context,
-    std::unique_ptr<HostScanner> host_scanner)
-    : HostScanScheduler(base::MakeUnique<DelegateImpl>(browser_context),
-                        std::move(host_scanner)) {}
 
 HostScanScheduler::~HostScanScheduler() {
-  if (initialized_) {
-    delegate_->RemoveObserver(this);
-  }
+  // Note: We not call NetworkStateHandler::SetTetherScanState(false) here
+  // because at the point in time when HostScanScheduler is being destroyed, the
+  // Tether DeviceState will already have been destroyed. Calling
+  // SetTetherScanState() is unnecessary and would cause a crash.
+
+  network_state_handler_->RemoveObserver(this, FROM_HERE);
+  host_scanner_->RemoveObserver(this);
 }
 
-HostScanScheduler::HostScanScheduler(std::unique_ptr<Delegate> delegate,
-                                     std::unique_ptr<HostScanner> host_scanner)
-    : delegate_(std::move(delegate)),
-      host_scanner_(std::move(host_scanner)),
-      initialized_(false) {}
+void HostScanScheduler::UserLoggedIn() {
+  if (!IsNetworkConnectingOrConnected(network_state_handler_->DefaultNetwork()))
+    EnsureScan();
+}
 
-void HostScanScheduler::InitializeAutomaticScans() {
-  if (initialized_) {
+void HostScanScheduler::DefaultNetworkChanged(const NetworkState* network) {
+  if (!IsNetworkConnectingOrConnected(network))
+    EnsureScan();
+}
+
+void HostScanScheduler::ScanRequested() {
+  if (!host_scanner_->HasRecentlyScanned())
+    EnsureScan();
+}
+
+void HostScanScheduler::ScanFinished() {
+  network_state_handler_->SetTetherScanState(false);
+}
+
+void HostScanScheduler::EnsureScan() {
+  if (host_scanner_->IsScanActive())
     return;
-  }
-
-  initialized_ = true;
-  delegate_->AddObserver(this);
-}
-
-bool HostScanScheduler::ScheduleScanNowIfPossible() {
-  if (!delegate_->IsAuthenticatedUserLoggedIn()) {
-    PA_LOG(INFO) << "Authenticated user not logged in; not starting scan.";
-    return false;
-  }
-
-  if (delegate_->IsNetworkConnectedOrConnecting()) {
-    PA_LOG(INFO)
-        << "Network is already connected/connecting; not starting scan.";
-    return false;
-  }
-
-  if (!delegate_->AreTetherHostsSynced()) {
-    PA_LOG(INFO) << "No tether hosts available on account; not starting scan.";
-    return false;
-  }
 
   host_scanner_->StartScan();
-  return true;
+  network_state_handler_->SetTetherScanState(true);
 }
 
-void HostScanScheduler::LoggedInStateChanged() {
-  PA_LOG(INFO) << "Received login state change.";
-  ScheduleScanNowIfPossible();
-}
-
-void HostScanScheduler::SuspendDone(const base::TimeDelta& sleep_duration) {
-  PA_LOG(INFO) << "Device has resumed from sleeping.";
-  ScheduleScanNowIfPossible();
-}
-
-void HostScanScheduler::NetworkConnectionStateChanged(
+bool HostScanScheduler::IsNetworkConnectingOrConnected(
     const NetworkState* network) {
-  PA_LOG(INFO) << "Received network connection state change.";
-  ScheduleScanNowIfPossible();
-}
-
-void HostScanScheduler::OnSyncFinished(
-    cryptauth::CryptAuthDeviceManager::SyncResult sync_result,
-    cryptauth::CryptAuthDeviceManager::DeviceChangeResult
-        device_change_result) {
-  PA_LOG(INFO) << "CryptAuth device sync finished.";
-  ScheduleScanNowIfPossible();
+  return network &&
+         (network->IsConnectingState() || network->IsConnectedState());
 }
 
 }  // namespace tether

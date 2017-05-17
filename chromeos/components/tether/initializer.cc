@@ -218,15 +218,18 @@ void Initializer::OnBluetoothAdapterAdvertisingIntervalSet(
       network_state_handler_, active_host_.get(),
       tether_host_response_recorder_.get(),
       device_id_tether_network_guid_map_.get());
+  clock_ = base::MakeUnique<base::DefaultClock>();
   host_scanner_ = base::MakeUnique<HostScanner>(
       tether_host_fetcher_.get(), ble_connection_manager_.get(),
       host_scan_device_prioritizer_.get(), tether_host_response_recorder_.get(),
       notification_presenter_.get(), device_id_tether_network_guid_map_.get(),
-      host_scan_cache_.get());
+      host_scan_cache_.get(), clock_.get());
+  host_scan_scheduler_ = base::MakeUnique<HostScanScheduler>(
+      network_state_handler_, host_scanner_.get());
 
-  // TODO(khorimoto): Hook up HostScanScheduler. Currently, we simply start a
-  // new scan once the user logs in.
-  host_scanner_->StartScan();
+  // Because Initializer is created on each user log in, it's appropriate to
+  // call this method now.
+  host_scan_scheduler_->UserLoggedIn();
 }
 
 void Initializer::OnBluetoothAdapterAdvertisingIntervalError(

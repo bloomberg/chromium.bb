@@ -40,7 +40,8 @@ HostScanner::HostScanner(
     TetherHostResponseRecorder* tether_host_response_recorder,
     NotificationPresenter* notification_presenter,
     DeviceIdTetherNetworkGuidMap* device_id_tether_network_guid_map,
-    HostScanCache* host_scan_cache)
+    HostScanCache* host_scan_cache,
+    base::Clock* clock)
     : tether_host_fetcher_(tether_host_fetcher),
       connection_manager_(connection_manager),
       host_scan_device_prioritizer_(host_scan_device_prioritizer),
@@ -48,29 +49,33 @@ HostScanner::HostScanner(
       notification_presenter_(notification_presenter),
       device_id_tether_network_guid_map_(device_id_tether_network_guid_map),
       host_scan_cache_(host_scan_cache),
+      clock_(clock),
       is_fetching_hosts_(false),
       weak_ptr_factory_(this) {}
 
 HostScanner::~HostScanner() {}
 
-void HostScanner::StartScan() {
-  if (host_scanner_operation_) {
-    // If a scan is already active, do not continue.
-    return;
-  }
-
-  if (is_fetching_hosts_) {
-    // If fetching tether hosts is active, stop and wait for them to load.
-    return;
-  }
-  is_fetching_hosts_ = true;
-
-  tether_host_fetcher_->FetchAllTetherHosts(base::Bind(
-      &HostScanner::OnTetherHostsFetched, weak_ptr_factory_.GetWeakPtr()));
-}
-
 bool HostScanner::IsScanActive() {
   return is_fetching_hosts_ || host_scanner_operation_;
+}
+
+bool HostScanner::HasRecentlyScanned() {
+  if (previous_scan_time_.is_null())
+    return false;
+
+  base::TimeDelta difference = clock_->Now() - previous_scan_time_;
+  return difference.InMinutes() <
+         HostScanCache::kNumMinutesBeforeCacheEntryExpires;
+}
+
+void HostScanner::StartScan() {
+  if (IsScanActive()) {
+    return;
+  }
+
+  is_fetching_hosts_ = true;
+  tether_host_fetcher_->FetchAllTetherHosts(base::Bind(
+      &HostScanner::OnTetherHostsFetched, weak_ptr_factory_.GetWeakPtr()));
 }
 
 void HostScanner::OnTetherHostsFetched(
@@ -112,6 +117,22 @@ void HostScanner::OnTetherAvailabilityResponse(
     // Delete it.
     host_scanner_operation_->RemoveObserver(this);
     host_scanner_operation_.reset();
+    NotifyScanFinished();
+    previous_scan_time_ = clock_->Now();
+  }
+}
+
+void HostScanner::AddObserver(Observer* observer) {
+  observer_list_.AddObserver(observer);
+}
+
+void HostScanner::RemoveObserver(Observer* observer) {
+  observer_list_.RemoveObserver(observer);
+}
+
+void HostScanner::NotifyScanFinished() {
+  for (auto& observer : observer_list_) {
+    observer.ScanFinished();
   }
 }
 
