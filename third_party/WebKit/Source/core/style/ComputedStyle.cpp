@@ -42,7 +42,6 @@
 #include "core/style/QuotesData.h"
 #include "core/style/ShadowList.h"
 #include "core/style/StyleImage.h"
-#include "core/style/StyleInheritedData.h"
 #include "core/style/StyleInheritedVariables.h"
 #include "core/style/StyleNonInheritedVariables.h"
 #include "platform/LengthFunctions.h"
