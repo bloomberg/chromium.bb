@@ -150,6 +150,23 @@ public abstract class ExperimentalCronetEngine extends CronetEngine {
         }
 
         /**
+         * Sets the thread priority of Cronet's internal thread.
+         *
+         * @param priority the thread priority of Cronet's internal thread.
+         *        A Linux priority level, from -20 for highest scheduling
+         *        priority to 19 for lowest scheduling priority. For more
+         *        information on values, see
+         *        {@link android.os.Process#setThreadPriority(int, int)} and
+         *        {@link android.os.Process#THREAD_PRIORITY_DEFAULT
+         *        THREAD_PRIORITY_*} values.
+         * @return the builder to facilitate chaining.
+         */
+        public Builder setThreadPriority(int priority) {
+            mBuilderDelegate.setThreadPriority(priority);
+            return this;
+        }
+
+        /**
          * Returns delegate, only for testing.
          * @hide
          */

@@ -27,6 +27,6 @@ public class JavaCronetEngineBuilderImpl extends CronetEngineBuilderImpl {
         if (getUserAgent() == null) {
             setUserAgent(getDefaultUserAgent());
         }
-        return new JavaCronetEngine(getUserAgent());
+        return new JavaCronetEngine(this);
     }
 }

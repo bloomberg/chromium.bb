@@ -9,6 +9,7 @@ import android.content.ContextWrapper;
 import android.os.ConditionVariable;
 import android.os.Handler;
 import android.os.Looper;
+import android.os.Process;
 import android.support.test.filters.SmallTest;
 
 import org.json.JSONObject;
@@ -30,6 +31,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.net.URL;
+import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Executor;
@@ -1275,5 +1277,78 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
         urlRequestBuilder.build().start();
         callback.blockForDone();
         assertEquals(200, callback.mResponseInfo.getHttpStatusCode());
+    }
+
+    /**
+     * Runs {@code r} on {@code engine}'s network thread.
+     */
+    private static void postToNetworkThread(final CronetEngine engine, final Runnable r) {
+        // Works by requesting an invalid URL which results in onFailed() being called, which is
+        // done through a direct executor which causes onFailed to be run on the network thread.
+        Executor directExecutor = new Executor() {
+            @Override
+            public void execute(Runnable runable) {
+                runable.run();
+            }
+        };
+        UrlRequest.Callback callback = new UrlRequest.Callback() {
+            @Override
+            public void onRedirectReceived(
+                    UrlRequest request, UrlResponseInfo responseInfo, String newLocationUrl) {}
+            @Override
+            public void onResponseStarted(UrlRequest request, UrlResponseInfo responseInfo) {}
+            @Override
+            public void onReadCompleted(
+                    UrlRequest request, UrlResponseInfo responseInfo, ByteBuffer byteBuffer) {}
+            @Override
+            public void onSucceeded(UrlRequest request, UrlResponseInfo responseInfo) {}
+
+            @Override
+            public void onFailed(
+                    UrlRequest request, UrlResponseInfo responseInfo, CronetException error) {
+                r.run();
+            }
+        };
+        engine.newUrlRequestBuilder("", callback, directExecutor).build().start();
+    }
+
+    /**
+     * @returns the thread priority of {@code engine}'s network thread.
+     */
+    private int getThreadPriority(CronetEngine engine) throws Exception {
+        FutureTask<Integer> task = new FutureTask<Integer>(new Callable<Integer>() {
+            public Integer call() {
+                return Process.getThreadPriority(Process.myTid());
+            }
+        });
+        postToNetworkThread(engine, task);
+        return task.get();
+    }
+
+    @SmallTest
+    @Feature({"Cronet"})
+    public void testCronetEngineThreadPriority() throws Exception {
+        ExperimentalCronetEngine.Builder builder =
+                new ExperimentalCronetEngine.Builder(getContext());
+        // Try out of bounds thread priorities.
+        try {
+            builder.setThreadPriority(-21);
+            fail();
+        } catch (IllegalArgumentException e) {
+            assertEquals("Thread priority invalid", e.getMessage());
+        }
+        try {
+            builder.setThreadPriority(20);
+            fail();
+        } catch (IllegalArgumentException e) {
+            assertEquals("Thread priority invalid", e.getMessage());
+        }
+        // Test that valid thread priority range (-20..19) is working.
+        for (int threadPriority = -20; threadPriority < 20; threadPriority++) {
+            builder.setThreadPriority(threadPriority);
+            CronetEngine engine = builder.build();
+            assertEquals(threadPriority, getThreadPriority(engine));
+            engine.shutdown();
+        }
     }
 }
