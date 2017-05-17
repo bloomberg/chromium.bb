@@ -4039,17 +4039,9 @@ static void set_restoration_tilesize(int width, int height,
 }
 #endif  // CONFIG_LOOP_RESTORATION
 
-static void set_frame_size(AV1_COMP *cpi) {
-  int ref_frame;
+static void set_scaled_size(AV1_COMP *cpi) {
   AV1_COMMON *const cm = &cpi->common;
   AV1EncoderConfig *const oxcf = &cpi->oxcf;
-  MACROBLOCKD *const xd = &cpi->td.mb.e_mbd;
-
-  int scaled_size_set = 0;
-
-  const int one_pass_cbr_dynamic = oxcf->pass == 0 &&
-                                   oxcf->rc_mode == AOM_CBR &&
-                                   oxcf->resize_mode == RESIZE_DYNAMIC;
 
   // TODO(afergs): Replace with call to av1_resize_pending? Could replace
   //               scaled_size_set as well.
@@ -4067,35 +4059,31 @@ static void set_frame_size(AV1_COMP *cpi) {
   if ((oxcf->pass == 2 && oxcf->rc_mode == AOM_VBR &&
        ((oxcf->resize_mode == RESIZE_FIXED && cm->current_video_frame == 0) ||
         (oxcf->resize_mode == RESIZE_DYNAMIC && av1_resize_pending(cpi)))) ||
-      (one_pass_cbr_dynamic && av1_resize_pending(cpi))) {
+      (oxcf->pass == 0 && oxcf->rc_mode == AOM_CBR &&
+       oxcf->resize_mode == RESIZE_DYNAMIC && av1_resize_pending(cpi))) {
+    // TODO(afergs): This feels hacky... Should it just set? Should
+    //               av1_set_next_scaled_size be a library function?
     av1_calculate_next_scaled_size(cpi, &oxcf->scaled_frame_width,
                                    &oxcf->scaled_frame_height);
-    scaled_size_set = 1;
   }
+}
 
-#if CONFIG_FRAME_SUPERRES
-  // TODO(afergs): Make superres_pending a function like av1_resize_pending.
-  // TODO(afergs): Use av1_resize_pending? It's not a guarantee that a resize
-  //               occurred yet, so wait for the above logic to be simplified.
-  if (scaled_size_set || cpi->superres_pending) {
-    // Recalculate superres resolution if resize or superres scales changed.
-    int encode_width, encode_height;
-    av1_calculate_superres_size(cpi, &encode_width, &encode_height);
+static void set_frame_size(AV1_COMP *cpi, int width, int height) {
+  int ref_frame;
+  AV1_COMMON *const cm = &cpi->common;
+  AV1EncoderConfig *const oxcf = &cpi->oxcf;
+  MACROBLOCKD *const xd = &cpi->td.mb.e_mbd;
 
+  if (width != cm->width || height != cm->height) {
     // There has been a change in the encoded frame size
-    av1_set_size_literal(cpi, encode_width, encode_height);
-#else
-  if (scaled_size_set) {
-    // There has been a change in frame size.
-    av1_set_size_literal(cpi, oxcf->scaled_frame_width,
-                         oxcf->scaled_frame_height);
-#endif  // CONFIG_FRAME_SUPERRES
+    av1_set_size_literal(cpi, width, height);
 
     // TODO(agrange) Scale cpi->max_mv_magnitude if frame-size has changed.
     // TODO(afergs): Make condition just (pass == 0) or (rc_mode == CBR) -
     //               UNLESS CBR starts allowing FIXED resizing. Then the resize
     //               mode will need to get checked too.
-    if (one_pass_cbr_dynamic)
+    if (oxcf->pass == 0 && oxcf->rc_mode == AOM_CBR &&
+        oxcf->resize_mode == RESIZE_DYNAMIC)
       set_mv_search_params(cpi);  // TODO(afergs): Needed? Caller calls after...
   }
 
@@ -4170,6 +4158,19 @@ static void set_frame_size(AV1_COMP *cpi) {
   set_ref_ptrs(cm, xd, LAST_FRAME, LAST_FRAME);
 }
 
+static void setup_frame_size(AV1_COMP *cpi) {
+  set_scaled_size(cpi);
+#if CONFIG_FRAME_SUPERRES
+  int encode_width;
+  int encode_height;
+  av1_calculate_superres_size(cpi, &encode_width, &encode_height);
+  set_frame_size(cpi, encode_width, encode_height);
+#else
+  set_frame_size(cpi, cpi->oxcf.scaled_frame_width,
+                 cpi->oxcf.scaled_frame_height);
+#endif  // CONFIG_FRAME_SUPERRES
+}
+
 static void reset_use_upsampled_references(AV1_COMP *cpi) {
   MV_REFERENCE_FRAME ref_frame;
 
@@ -4200,8 +4201,7 @@ static void encode_without_recode_loop(AV1_COMP *cpi) {
   cpi->superres_pending = cpi->oxcf.superres_enabled && 0;
 #endif  // CONFIG_FRAME_SUPERRES
 
-  set_frame_size(cpi);
-
+  setup_frame_size(cpi);
   av1_resize_step(cpi);
 
   // For 1 pass CBR under dynamic resize mode: use faster scaling for source.
@@ -4295,7 +4295,7 @@ static void encode_with_recode_loop(AV1_COMP *cpi, size_t *size,
   do {
     aom_clear_system_state();
 
-    set_frame_size(cpi);
+    setup_frame_size(cpi);
 
 #if CONFIG_FRAME_SUPERRES
     if (loop_count == 0 || av1_resize_pending(cpi) || cpi->superres_pending) {
@@ -5863,7 +5863,8 @@ int av1_get_compressed_data(AV1_COMP *cpi, unsigned int *frame_flags,
 #else
     av1_rc_get_second_pass_params(cpi);
   } else if (oxcf->pass == 1) {
-    set_frame_size(cpi);
+    setup_frame_size(cpi);
+    av1_resize_step(cpi);
   }
 #endif
 

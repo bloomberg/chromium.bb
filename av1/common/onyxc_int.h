@@ -161,12 +161,6 @@ typedef struct AV1Common {
   int last_width;
   int last_height;
 
-#if CONFIG_FRAME_SUPERRES
-  // The numerator of the superres scale, the denominator is fixed
-  uint8_t superres_scale_numerator;
-  int superres_width, superres_height;
-#endif  // CONFIG_FRAME_SUPERRES
-
   // TODO(jkoleszar): this implies chroma ss right now, but could vary per
   // plane. Revisit as part of the future change to YV12_BUFFER_CONFIG to
   // support additional planes.
@@ -297,6 +291,10 @@ typedef struct AV1Common {
   InterpFilter interp_filter;
 
   loop_filter_info_n lf_info;
+#if CONFIG_FRAME_SUPERRES
+  // The numerator of the superres scale; the denominator is fixed.
+  uint8_t superres_scale_numerator;
+#endif  // CONFIG_FRAME_SUPERRES
 #if CONFIG_LOOP_RESTORATION
   RestorationInfo rst_info[MAX_MB_PLANE];
   RestorationInternal rst_internal;
