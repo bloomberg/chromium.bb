@@ -24,6 +24,11 @@ void FakeSafeBrowsingDatabaseManager::RemoveBlacklistedUrl(const GURL& url) {
   url_to_threat_type_.erase(url);
 }
 
+void FakeSafeBrowsingDatabaseManager::RemoveAllBlacklistedUrls() {
+  DCHECK(checks_.empty());
+  url_to_threat_type_.clear();
+}
+
 void FakeSafeBrowsingDatabaseManager::SimulateTimeout() {
   simulate_timeout_ = true;
 }

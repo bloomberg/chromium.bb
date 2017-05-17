@@ -26,6 +26,7 @@ class FakeSafeBrowsingDatabaseManager
                          safe_browsing::ThreatPatternType pattern_type =
                              safe_browsing::ThreatPatternType::NONE);
   void RemoveBlacklistedUrl(const GURL& url);
+  void RemoveAllBlacklistedUrls();
 
   void SimulateTimeout();
 
