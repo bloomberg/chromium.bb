@@ -4,16 +4,12 @@ EXTRA_DIST =					\
 	begcaps_endcaps.yaml			\
 	capsnocont.yaml				\
 	chr-us-g1_harness.yaml			\
-	da-dk-g08-back.yaml			\
 	da-dk-g08.yaml				\
 	da-dk-g16-dictionary_harness.yaml	\
-	da-dk-g18-back.yaml			\
 	da-dk-g18-dictionary_harness.yaml	\
 	da-dk-g18.yaml				\
 	da-dk-g26-dictionary_harness.yaml	\
-	da-dk-g28-back.yaml			\
 	da-dk-g28-dictionary_harness.yaml	\
-	da-dk-g28l-back.yaml			\
 	da-dk-g28l.yaml				\
 	da-dk-g28.yaml				\
 	el-backward.yaml			\

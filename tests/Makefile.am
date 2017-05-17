@@ -131,16 +131,12 @@ dist_yaml_TESTS =				\
 	yaml/begcaps_endcaps.yaml		\
 	yaml/capsnocont.yaml			\
 	yaml/chr-us-g1_harness.yaml		\
-	yaml/da-dk-g08-back.yaml		\
 	yaml/da-dk-g08.yaml			\
 	yaml/da-dk-g16-dictionary_harness.yaml	\
-	yaml/da-dk-g18-back.yaml		\
 	yaml/da-dk-g18-dictionary_harness.yaml	\
 	yaml/da-dk-g18.yaml			\
 	yaml/da-dk-g26-dictionary_harness.yaml	\
-	yaml/da-dk-g28-back.yaml		\
 	yaml/da-dk-g28-dictionary_harness.yaml	\
-	yaml/da-dk-g28l-back.yaml		\
 	yaml/da-dk-g28l.yaml			\
 	yaml/da-dk-g28.yaml			\
 	yaml/el-backward.yaml			\

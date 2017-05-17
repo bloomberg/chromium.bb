@@ -86,55 +86,33 @@ math = 23568 EQUALS SIGN
 math > 267 GREATER-THAN SIGN
 punctuation ? 26 QUESTION MARK
 sign @ 478 COMMERCIAL AT
-uppercase A 17 LATIN CAPITAL LETTER A
-uppercase B 127 LATIN CAPITAL LETTER B
-uppercase C 147 LATIN CAPITAL LETTER C
-uppercase D 1457 LATIN CAPITAL LETTER D
-uppercase E 157 LATIN CAPITAL LETTER E
-uppercase F 1247 LATIN CAPITAL LETTER F
-uppercase G 12457 LATIN CAPITAL LETTER G
-uppercase H 1257 LATIN CAPITAL LETTER H
-uppercase I 247 LATIN CAPITAL LETTER I
-uppercase J 2457 LATIN CAPITAL LETTER J
-uppercase K 137 LATIN CAPITAL LETTER K
-uppercase L 1237 LATIN CAPITAL LETTER L
-uppercase M 1347 LATIN CAPITAL LETTER M
-uppercase N 13457 LATIN CAPITAL LETTER N
-uppercase O 1357 LATIN CAPITAL LETTER O
-uppercase P 12347 LATIN CAPITAL LETTER P
-uppercase R 12357 LATIN CAPITAL LETTER R
-uppercase S 2347 LATIN CAPITAL LETTER S
-uppercase T 23457 LATIN CAPITAL LETTER T
-uppercase U 1367 LATIN CAPITAL LETTER U
-uppercase V 12367 LATIN CAPITAL LETTER V
-uppercase Y 134567 LATIN CAPITAL LETTER Y
+uplow Aa 17,1 LATIN LETTER A
+uplow Bb 127,12 LATIN LETTER B
+uplow Cc 147,14 LATIN LETTER C
+uplow Dd 1457,145 LATIN LETTER D
+uplow Ee 157,15 LATIN LETTER E
+uplow Ff 1247,124 LATIN LETTER F
+uplow Gg 12457,1245 LATIN LETTER G
+uplow Hh 1257,125 LATIN LETTER H
+uplow Ii 247,24 LATIN LETTER I
+uplow Jj 2457,245 LATIN LETTER J
+uplow Kk 137,13 LATIN LETTER K
+uplow Ll 1237,123 LATIN LETTER L
+uplow Mm 1347,134 LATIN LETTER M
+uplow Nn 13457,1345 LATIN LETTER N
+uplow Oo 1357,135 LATIN LETTER O
+uplow Pp 12347,1234 LATIN CAPITAL LETTER P
+uplow Rr 12357,1235 LATIN LETTER R
+uplow Ss 2347,234 LATIN LETTER S
+uplow Tt 23457,2345 LATIN LETTER T
+uplow Uu 1367,136 LATIN LETTER U
+uplow Vv 12367,1236 LATIN LETTER V
+uplow Yy 134567,13456 LATIN LETTER Y
 punctuation [ 23678 LEFT SQUARE BRACKET
 punctuation ] 35678 RIGHT SQUARE BRACKET
 punctuation ^ 12348 CIRCUMFLEX ACCENT
 punctuation _ 3678 LOW LINE
 punctuation ` 5 GRAVE ACCENT
-lowercase a 1 LATIN SMALL LETTER A
-lowercase b 12 LATIN SMALL LETTER B
-lowercase c 14 LATIN SMALL LETTER C
-lowercase d 145 LATIN SMALL LETTER D
-lowercase e 15 LATIN SMALL LETTER E
-lowercase f 124 LATIN SMALL LETTER F
-lowercase g 1245 LATIN SMALL LETTER G
-lowercase h 125 LATIN SMALL LETTER H
-lowercase i 24 LATIN SMALL LETTER I
-lowercase j 245 LATIN SMALL LETTER J
-lowercase k 13 LATIN SMALL LETTER K
-lowercase l 123 LATIN SMALL LETTER L
-lowercase m 134 LATIN SMALL LETTER M
-lowercase n 1345 LATIN SMALL LETTER N
-lowercase o 135 LATIN SMALL LETTER O
-lowercase p 1234 LATIN SMALL LETTER P
-lowercase r 1235 LATIN SMALL LETTER R
-lowercase s 234 LATIN SMALL LETTER S
-lowercase t 2345 LATIN SMALL LETTER T
-lowercase u 136 LATIN SMALL LETTER U
-lowercase v 1236 LATIN SMALL LETTER V
-lowercase y 13456 LATIN SMALL LETTER Y
 punctuation { 123678 LEFT CURLY BRACKET
 punctuation | 4568 VERTICAL LINE
 punctuation } 345678 RIGHT CURLY BRACKET
@@ -183,10 +161,9 @@ noback sign \x0099 234578 #TRADE MARK SIGN (0x99)
 punctuation \x203A 4567 #SINGLE RIGHT-POINTING ANGLE QUOTATION MARK (0x9b)
 noback punctuation \x009b 4567 #SINGLE RIGHT-POINTING ANGLE QUOTATION MARK (0x9b)
 letter \x009d 2567 OPERATING SYSTEM COMMAND
-uppercase \x0178 2345678 #LATIN CAPITAL LETTER Y WITH DIAERESIS (0x9f)
-noback uppercase \x009f 2345678 #LATIN CAPITAL LETTER Y WITH DIAERESIS (0x9f)
+uplow \x0178\x00ff 2345678,234568 #LATIN LETTER Y WITH DIAERESIS (0x9f)
+noback uppercase \x009f 2345678 #LATIN LETTER Y WITH DIAERESIS (0x9f)
 punctuation \x00a0 23458 NO-BREAK SPACE (0xa0)
-punctuation \x00a1 256 INVERTED EXCLAMATION MARK )0xa1)
 punctuation \x00a2 2578 CENT SIGN (0xa2)
 punctuation \x00a3 1238 POUND SIGN (0xa3)
 punctuation \x00a5 67 YEN SIGN (0xa5)
@@ -214,8 +191,8 @@ uplow \x00c1\x00e1 1235678,123568 LATIN  LETTER A WITH ACUTE
 uplow \x00c2\x00e2 1678,168 LATIN  LETTER A WITH CIRCUMFLEX
 uplow \x00c3\x00e3 14678,1468 LATIN  LETTER A WITH TILDE
 uplow \x00c4\x00e4 34578,3458 LATIN  LETTER A WITH DIAERESIS
-uppercase \x00c5 167 LATIN  capital LETTER A WITH RING ABOVE
-uppercase \x00c6 3457 LATIN  capitalLETTER AE
+uplow \x00c5\x00e5 167,16 LATIN LETTER A WITH RING ABOVE
+uplow \x00c6\x00e6 3457,345 LATIN LETTER AE
 uplow \x00cc\x00ec 15678,1568 LATIN  LETTER I WITH GRAVE
 uplow \x00cd\x00ed 12678,1268 LATIN  LETTER I WITH ACUTE
 uplow \x00d0\x00f0 1345678,134568 LATIN  LETTER ETH
@@ -225,17 +202,16 @@ uplow \x00d3\x00f3 34678,3468 LATIN  LETTER O WITH ACUTE
 uplow \x00d5\x00f5 145678,14568 LATIN  LETTER O WITH TILDE
 uplow \x00d6\x00f6 24678,2468 LATIN  LETTER O WITH DIAERESIS
 math \x00d7 13468 MULTIPLICATION SIGN
-uppercase \x00d8 2467 LATIN CAPITAL LETTER O WITH STROKE
+uplow \x00d8\x00f8 2467,246 LATIN LETTER O WITH STROKE
 uplow \x00da\x00fa 125678,12568 LATIN  LETTER U WITH ACUTE
 uplow \x00dd\x00fd 13478,1348 LATIN  LETTER Y WITH ACUTE (infinite?)
 uplow \x00de\x00fe 1378,138 LATIN  LETTER THORN
 lowercase \x00df 23468 LATIN SMALL LETTER SHARP S
-lowercase \x00e5 16 LATIN SMALL LETTER A WITH RING ABOVE
-lowercase \x00e6 345 LATIN SMALL LETTER AE
 math \x00f7 2568 DIVISION SIGN
-lowercase \x00f8 246 LATIN SMALL LETTER O WITH STROKE
-lowercase \x00ff 234568 LATIN SMALL LETTER Y WITH DIAERESIS
 
+# Character used for capslettersign
+# Resides in the "private use area", and shouldn't conflict with anything.
+sign \xf8ff f
 
 #Unicode Braille patterns
 include braille-patterns.cti
@@ -243,15 +219,11 @@ include braille-patterns.cti
 # characters that have letsign as part of their definition
 # (to be removed when the alwaysletsign opcode has been implemented).
 punctuation * 6-35 ASTERISK
-uppercase Q 6-123457 LATIN CAPITAL LETTER Q
-uppercase W 6-24567 LATIN CAPITAL LETTER W
-uppercase X 6-13467 LATIN CAPITAL LETTER X
-uppercase Z 6-13567 LATIN CAPITAL LETTER Z
+uplow Qq 6-123457,6-12345 LATIN LETTER Q
+uplow Ww 6-24567,6-2456 LATIN LETTER W
+uplow Xx 6-13467,6-1346 LATIN LETTER X
+uplow Zz 6-13567,6-1356 LATIN LETTER Z
 punctuation \\ 6-347 REVERSE SLASH
-lowercase q 6-12345 LATIN SMALL LETTER Q
-lowercase w 6-2456 LATIN SMALL LETTER W
-lowercase x 6-1346 LATIN SMALL LETTER X
-lowercase z 6-1356 LATIN SMALL LETTER Z
 punctuation \x2026 6-3-3-3 #Elipsis (0x85)
 noback punctuation \x0085 6-3-3-3 #Elipsis (0x85)
 uplow \x017d\x017e 6-3467,6-346 #LATIN  LETTER Z WITH CARON (0x8e)
@@ -312,28 +284,15 @@ letsign 6
 noletsign Ii
 noletsignbefore 1234567890
 
-# Special characters that always need letsigns because they represent contractions
-always * 6-35
-always ° 6-356
-always µ 6-236
-always \\ 6-347
-always \x2013 6-36 # en dash
-noback always \x0096 6-36 # en dash
-always \x2014 6-367 # em dash
-noback always \x0097 6-367 # em dash
-always \x00a1 6-256 # inverted exclamationmark
-always \x00bf 6-34 # inverted questionmark
-
-always \x2026 6-3-3-3
-noback always \x0085 6-3-3-3
-
-always ¾ 6-3456 # 3/4 or ve
-always \x00ac 6-34567 # not sign or Ve
+capsletter f
+multind f-6 capsletter letsign
+multind 6-f letsign capsletter
+capsnocont
 
 #Special sequences, urls emails and file names.
 
 nocont $
-nocont \\
+nocont \\ # line cannot end with a backslash
 nocont @
 nocont ://
 nocont www
@@ -402,51 +361,6 @@ word under 12345
 word ved 1236
 word ve 3456
 word være 345
-
-# Word contractions with only 1 cell (capital version)
-word At 17
-word Bliver 127
-word Den 123467
-word Der 234567
-word Det 23467
-word De 14567
-word Du 1457
-word Efter 13567
-word Eller 157
-word En 1267
-word Er 1567
-word Et 3467
-word For 1247
-word Før 2467
-word Gennem 124567
-word Gør 12457
-word Han 134567
-word Har 1257
-word Hun 1367
-word Hvad 24567
-word Hvor 347
-word Jeg 2457
-word Kan 137
-word Lige 1237
-word Med 1347
-word Men 1467
-word Ned 12467
-word Når 13457
-word Og 147
-word Op 1357
-word Over 13467
-word På 12347
-word Ret 123567
-word Rigtig 12357
-word Skal 1234567
-word Som 2347
-word Så 167
-word Te 12567
-word Til 23457
-word Under 123457
-word Ved 12367
-word Ve 34567
-word Være 3457
 
 ### Exceptions ###
 
@@ -527,46 +441,6 @@ word -ve 368-1236-15
 word ve- 1236-15-368
 word -være 368-1236-345-1235-15
 word Være- 1236-345-1235-15-368
-
-# - Capital version
-word At- 17-2345-368
-word Bliver- 127-123-24-1236-15-1235-368
-word Den- 1457-15-1345-368
-word Der- 1457-15-1235-368
-word Det- 1457-15-2345-368
-word De- 1457-15-368
-word Du- 1457-136-368
-word Efter- 157-124-2345-15-1235-368
-word Er- 157-1235-368
-word Et- 157-2345-368
-word For- 1247-135-1235-368
-word Før- 1247-246-1235-368
-word Gennem- 12457-15-1345-1345-15-134-368
-word Gør- 12457-246-1235-368
-word Han- 1257-1-1345-368
-word Har- 1257-1-1235-368
-word Hun- 1257-136-1345-368
-word Kan- 137-1-1345-368
-word Lige- 1237-24-12456-368
-word Med- 1467-145-368
-word Men- 1347-126-368
-word Ned- 13457-15-145-368
-word Når- 13457-16-1235-368
-word Og- 1357-1245-368
-word Op- 1357-1234-368
-word Over- 1357-1236-15-1235-368
-word På- 12347-16-368
-word Ret- 12357-15-2345-368
-word Rigtig- 12357-24-1245-2345-24-1245-368
-word Skal- 2347-13-1-123-368
-word Som- 2347-135-134-368
-word Så- 2347-16-368
-word Te- 23457-15-368
-word Til- 23457-24-123-368
-word Under- 1367-1345-145-15-1235-368
-word Ved- 12367-15-145-368
-word Ve- 12367-15-368
-word Være- 12367-345-1235-15-368
 
 ### Patches ###
 # the following sections are to compensate for various behaviours and problems in liblouis.
@@ -679,50 +553,6 @@ nofor before wordlimit sufword under 12345
 nofor before wordlimit sufword ved 1236
 nofor before wordlimit sufword være 345
 
-# Capital version (to be removed when dot 7 can be used as capsign).
-nofor before wordlimit sufword At 17
-nofor before wordlimit sufword Bliver 127
-nofor before wordlimit sufword Den 123467
-nofor before wordlimit sufword Der 234567
-nofor before wordlimit sufword Det 23467
-nofor before wordlimit sufword De 14567
-nofor before wordlimit sufword Du 1457
-nofor before wordlimit sufword Efter 13567
-nofor before wordlimit sufword Eller 157
-nofor before wordlimit sufword En 1267
-nofor before wordlimit sufword Er 1567
-nofor before wordlimit sufword Et 3467
-nofor before wordlimit sufword For 1247
-nofor before wordlimit sufword Før 2467
-nofor before wordlimit sufword Gennem 124567
-nofor before wordlimit sufword Gør 12457
-nofor before wordlimit sufword Han 134567
-nofor before wordlimit sufword Har 1257
-nofor before wordlimit sufword Hun 1367
-nofor before wordlimit sufword Hvad 24567
-nofor before wordlimit sufword Hvor 347
-nofor before wordlimit sufword Jeg 2457
-nofor before wordlimit sufword Kan 137
-nofor before wordlimit sufword Lige 1237
-nofor before wordlimit sufword Med 1347
-nofor before wordlimit sufword Men 1467
-nofor before wordlimit sufword Ned 12467
-nofor before wordlimit sufword Når 13457
-nofor before wordlimit sufword Og 147
-nofor before wordlimit sufword Op 1357
-nofor before wordlimit sufword Over 13467
-nofor before wordlimit sufword På 12347
-nofor before wordlimit sufword Ret 123567
-nofor before wordlimit sufword Rigtig 12357
-nofor before wordlimit sufword Skal 1234567
-nofor before wordlimit sufword Som 2347
-nofor before wordlimit sufword Så 167
-nofor before wordlimit sufword Te 12567
-nofor before wordlimit sufword Til 23457
-nofor before wordlimit sufword Under 123457
-nofor before wordlimit sufword Ved 12367
-nofor before wordlimit sufword Være 3457
-
 ### Problems solved with pass 2 ###
 
 
@@ -737,6 +567,455 @@ noback context _$d["nd"]!$l @1345-145
 noback context $d[]$l!$l @6
 noback context $d[]$l~ @6
 
+# Most of these lines are temporary.
+# They will be written with a few swap sets when the swapdd opcode has been fixed.
 
-# the next line is to remove any superfluous letsigns and only keep one.
-noback pass2 @6-6 @6
+
+# Generic forward convert of @f-... to @...7
+noback pass2 @f-235 @2357
+# Conversion with letsign.
+noback pass2 @f-6-235 @6-2357
+# Conversion with dot 5, which is used for accent marker in higher unicode pages.
+noback pass2 @f-5-235 @5-2357
+# Generic backward conversion.
+nofor pass2 @2357 @f-235
+# Conversion with dot 5 (letsign is handled below).
+nofor pass2 @5-2357 @f-5-235
+
+# Same for the following characters.
+
+noback pass2 @f-35 @357
+noback pass2 @f-6-35 @6-357
+noback pass2 @f-5-35 @5-357
+nofor pass2 @357 @f-35
+nofor pass2 @5-357 @f-5-35
+
+noback pass2 @f-1 @17
+noback pass2 @f-6-1 @6-17
+noback pass2 @f-5-1 @5-17
+nofor pass2 @17 @f-1
+nofor pass2 @5-17 @f-5-1
+
+noback pass2 @f-12 @127
+noback pass2 @f-6-12 @6-127
+noback pass2 @f-5-12 @5-127
+nofor pass2 @127 @f-12
+nofor pass2 @5-127 @f-5-12
+
+noback pass2 @f-14 @147
+noback pass2 @f-6-14 @6-147
+noback pass2 @f-5-14 @5-147
+nofor pass2 @147 @f-14
+nofor pass2 @5-147 @f-5-14
+
+noback pass2 @f-145 @1457
+noback pass2 @f-6-145 @6-1457
+noback pass2 @f-5-145 @5-1457
+nofor pass2 @1457 @f-145
+nofor pass2 @5-1457 @f-5-145
+
+noback pass2 @f-15 @157
+noback pass2 @f-6-15 @6-157
+noback pass2 @f-5-15 @5-157
+nofor pass2 @157 @f-15
+nofor pass2 @5-157 @f-5-15
+
+noback pass2 @f-124 @1247
+noback pass2 @f-6-124 @6-1247
+noback pass2 @f-5-124 @5-1247
+nofor pass2 @1247 @f-124
+nofor pass2 @5-1247 @f-5-124
+
+noback pass2 @f-1245 @12457
+noback pass2 @f-6-1245 @6-12457
+noback pass2 @f-5-1245 @5-12457
+nofor pass2 @12457 @f-1245
+nofor pass2 @5-12457 @f-5-1245
+
+noback pass2 @f-125 @1257
+noback pass2 @f-6-125 @6-1257
+noback pass2 @f-5-125 @5-1257
+nofor pass2 @1257 @f-125
+nofor pass2 @5-1257 @f-5-125
+
+noback pass2 @f-24 @247
+noback pass2 @f-6-24 @6-247
+noback pass2 @f-5-24 @5-247
+nofor pass2 @247 @f-24
+nofor pass2 @5-247 @f-5-24
+
+noback pass2 @f-245 @2457
+noback pass2 @f-6-245 @6-2457
+noback pass2 @f-5-245 @5-2457
+nofor pass2 @2457 @f-245
+nofor pass2 @5-2457 @f-5-245
+
+noback pass2 @f-13 @137
+noback pass2 @f-6-13 @6-137
+noback pass2 @f-5-13 @5-137
+nofor pass2 @137 @f-13
+nofor pass2 @5-137 @f-5-13
+
+noback pass2 @f-123 @1237
+noback pass2 @f-6-123 @6-1237
+noback pass2 @f-5-123 @5-1237
+nofor pass2 @1237 @f-123
+nofor pass2 @5-1237 @f-5-123
+
+noback pass2 @f-134 @1347
+noback pass2 @f-6-134 @6-1347
+noback pass2 @f-5-134 @5-1347
+nofor pass2 @1347 @f-134
+nofor pass2 @5-1347 @f-5-134
+
+noback pass2 @f-1345 @13457
+noback pass2 @f-6-1345 @6-13457
+noback pass2 @f-5-1345 @5-13457
+nofor pass2 @13457 @f-1345
+nofor pass2 @5-13457 @f-5-1345
+
+noback pass2 @f-135 @1357
+noback pass2 @f-6-135 @6-1357
+noback pass2 @f-5-135 @5-1357
+nofor pass2 @1357 @f-135
+nofor pass2 @5-1357 @f-5-135
+
+noback pass2 @f-1234 @12347
+noback pass2 @f-6-1234 @6-12347
+noback pass2 @f-5-1234 @5-12347
+nofor pass2 @12347 @f-1234
+nofor pass2 @5-12347 @f-5-1234
+
+noback pass2 @f-12345 @123457
+noback pass2 @f-6-12345 @6-123457
+noback pass2 @f-5-12345 @5-123457
+nofor pass2 @123457 @f-12345
+nofor pass2 @5-123457 @f-5-12345
+
+noback pass2 @f-1235 @12357
+noback pass2 @f-6-1235 @6-12357
+noback pass2 @f-5-1235 @5-12357
+nofor pass2 @12357 @f-1235
+nofor pass2 @5-12357 @f-5-1235
+
+noback pass2 @f-234 @2347
+noback pass2 @f-6-234 @6-2347
+noback pass2 @f-5-234 @5-2347
+nofor pass2 @2347 @f-234
+nofor pass2 @5-2347 @f-5-234
+
+noback pass2 @f-2345 @23457
+noback pass2 @f-6-2345 @6-23457
+noback pass2 @f-5-2345 @5-23457
+nofor pass2 @23457 @f-2345
+nofor pass2 @5-23457 @f-5-2345
+
+noback pass2 @f-136 @1367
+noback pass2 @f-6-136 @6-1367
+noback pass2 @f-5-136 @5-1367
+nofor pass2 @1367 @f-136
+nofor pass2 @5-1367 @f-5-136
+
+noback pass2 @f-1236 @12367
+noback pass2 @f-6-1236 @6-12367
+noback pass2 @f-5-1236 @5-12367
+nofor pass2 @12367 @f-1236
+nofor pass2 @5-12367 @f-5-1236
+
+noback pass2 @f-2456 @24567
+noback pass2 @f-6-2456 @6-24567
+noback pass2 @f-5-2456 @5-24567
+nofor pass2 @24567 @f-2456
+nofor pass2 @5-24567 @f-5-2456
+
+noback pass2 @f-1346 @13467
+noback pass2 @f-6-1346 @6-13467
+noback pass2 @f-5-1346 @5-13467
+nofor pass2 @13467 @f-1346
+nofor pass2 @5-13467 @f-5-1346
+
+noback pass2 @f-13456 @134567
+noback pass2 @f-6-13456 @6-134567
+noback pass2 @f-5-13456 @5-134567
+nofor pass2 @134567 @f-13456
+nofor pass2 @5-134567 @f-5-13456
+
+noback pass2 @f-1356 @13567
+noback pass2 @f-6-1356 @6-13567
+noback pass2 @f-5-1356 @5-13567
+nofor pass2 @13567 @f-1356
+nofor pass2 @5-13567 @f-5-1356
+
+noback pass2 @f-34 @347
+noback pass2 @f-6-34 @6-347
+noback pass2 @f-5-34 @5-347
+nofor pass2 @347 @f-34
+nofor pass2 @5-347 @f-5-34
+
+noback pass2 @f-346 @3467
+noback pass2 @f-6-346 @6-3467
+noback pass2 @f-5-346 @5-3467
+nofor pass2 @3467 @f-346
+nofor pass2 @5-3467 @f-5-346
+
+noback pass2 @f-2348 @23478
+noback pass2 @f-6-2348 @6-23478
+noback pass2 @f-5-2348 @5-23478
+nofor pass2 @23478 @f-2348
+nofor pass2 @5-23478 @f-5-2348
+
+noback pass2 @f-1358 @13578
+noback pass2 @f-6-1358 @6-13578
+noback pass2 @f-5-1358 @5-13578
+nofor pass2 @13578 @f-1358
+nofor pass2 @5-13578 @f-5-1358
+
+noback pass2 @f-234568 @2345678
+noback pass2 @f-6-234568 @6-2345678
+noback pass2 @f-5-234568 @5-2345678
+nofor pass2 @2345678 @f-234568
+nofor pass2 @5-2345678 @f-5-234568
+
+noback pass2 @f-236 @2367
+noback pass2 @f-6-236 @6-2367
+noback pass2 @f-5-236 @5-2367
+nofor pass2 @2367 @f-236
+nofor pass2 @5-2367 @f-5-236
+
+noback pass2 @f-256 @2567
+noback pass2 @f-6-256 @6-2567
+noback pass2 @f-5-256 @5-2567
+nofor pass2 @2567 @f-256
+nofor pass2 @5-2567 @f-5-256
+
+noback pass2 @f-356 @3567
+noback pass2 @f-6-356 @6-3567
+noback pass2 @f-5-356 @5-3567
+nofor pass2 @3567 @f-356
+nofor pass2 @5-3567 @f-5-356
+
+noback pass2 @f-3456 @34567
+noback pass2 @f-6-3456 @6-34567
+noback pass2 @f-5-3456 @5-34567
+nofor pass2 @34567 @f-3456
+nofor pass2 @5-34567 @f-5-3456
+
+noback pass2 @f-12356 @123567
+noback pass2 @f-6-12356 @6-123567
+noback pass2 @f-5-12356 @5-123567
+nofor pass2 @123567 @f-12356
+nofor pass2 @5-123567 @f-5-12356
+
+noback pass2 @f-123568 @1235678
+noback pass2 @f-6-123568 @6-1235678
+noback pass2 @f-5-123568 @5-1235678
+nofor pass2 @1235678 @f-123568
+nofor pass2 @5-1235678 @f-5-123568
+
+noback pass2 @f-168 @1678
+noback pass2 @f-6-168 @6-1678
+noback pass2 @f-5-168 @5-1678
+nofor pass2 @1678 @f-168
+nofor pass2 @5-1678 @f-5-168
+
+noback pass2 @f-1468 @14678
+noback pass2 @f-6-1468 @6-14678
+noback pass2 @f-5-1468 @5-14678
+nofor pass2 @14678 @f-1468
+nofor pass2 @5-14678 @f-5-1468
+
+noback pass2 @f-3458 @34578
+noback pass2 @f-6-3458 @6-34578
+noback pass2 @f-5-3458 @5-34578
+nofor pass2 @34578 @f-3458
+nofor pass2 @5-34578 @f-5-3458
+
+noback pass2 @f-16 @167
+noback pass2 @f-6-16 @6-167
+noback pass2 @f-5-16 @5-167
+nofor pass2 @167 @f-16
+nofor pass2 @5-167 @f-5-16
+
+noback pass2 @f-345 @3457
+noback pass2 @f-6-345 @6-3457
+noback pass2 @f-5-345 @5-3457
+nofor pass2 @3457 @f-345
+nofor pass2 @5-3457 @f-5-345
+
+noback pass2 @f-12346 @123467
+noback pass2 @f-6-12346 @6-123467
+noback pass2 @f-5-12346 @5-123467
+nofor pass2 @123467 @f-12346
+nofor pass2 @5-123467 @f-5-12346
+
+noback pass2 @f-2346 @23467
+noback pass2 @f-6-2346 @6-23467
+noback pass2 @f-5-2346 @5-23467
+nofor pass2 @23467 @f-2346
+nofor pass2 @5-23467 @f-5-2346
+
+noback pass2 @f-123456 @1234567
+noback pass2 @f-6-123456 @6-1234567
+noback pass2 @f-5-123456 @5-1234567
+nofor pass2 @1234567 @f-123456
+nofor pass2 @5-1234567 @f-5-123456
+
+noback pass2 @f-126 @1267
+noback pass2 @f-6-126 @6-1267
+noback pass2 @f-5-126 @5-1267
+nofor pass2 @1267 @f-126
+nofor pass2 @5-1267 @f-5-126
+
+noback pass2 @f-1246 @12467
+noback pass2 @f-6-1246 @6-12467
+noback pass2 @f-5-1246 @5-12467
+nofor pass2 @12467 @f-1246
+nofor pass2 @5-12467 @f-5-1246
+
+noback pass2 @f-1568 @15678
+noback pass2 @f-6-1568 @6-15678
+noback pass2 @f-5-1568 @5-15678
+nofor pass2 @15678 @f-1568
+nofor pass2 @5-15678 @f-5-1568
+
+noback pass2 @f-1268 @12678
+noback pass2 @f-6-1268 @6-12678
+noback pass2 @f-5-1268 @5-12678
+nofor pass2 @12678 @f-1268
+nofor pass2 @5-12678 @f-5-1268
+
+noback pass2 @f-146 @1467
+noback pass2 @f-6-146 @6-1467
+noback pass2 @f-5-146 @5-1467
+nofor pass2 @1467 @f-146
+nofor pass2 @5-1467 @f-5-146
+
+noback pass2 @f-12456 @124567
+noback pass2 @f-6-12456 @6-124567
+noback pass2 @f-5-12456 @5-124567
+nofor pass2 @124567 @f-12456
+nofor pass2 @5-124567 @f-5-12456
+
+noback pass2 @f-134568 @1345678
+noback pass2 @f-6-134568 @6-1345678
+noback pass2 @f-5-134568 @5-1345678
+nofor pass2 @1345678 @f-134568
+nofor pass2 @5-1345678 @f-5-134568
+
+noback pass2 @f-124568 @1245678
+noback pass2 @f-6-124568 @6-1245678
+noback pass2 @f-5-124568 @5-1245678
+nofor pass2 @1245678 @f-124568
+nofor pass2 @5-1245678 @f-5-124568
+
+noback pass2 @f-12468 @124678
+noback pass2 @f-6-12468 @6-124678
+noback pass2 @f-5-12468 @5-124678
+nofor pass2 @124678 @f-12468
+nofor pass2 @5-124678 @f-5-12468
+
+noback pass2 @f-3468 @34678
+noback pass2 @f-6-3468 @6-34678
+noback pass2 @f-5-3468 @5-34678
+nofor pass2 @34678 @f-3468
+nofor pass2 @5-34678 @f-5-3468
+
+noback pass2 @f-1456 @14567
+noback pass2 @f-6-1456 @6-14567
+noback pass2 @f-5-1456 @5-14567
+nofor pass2 @14567 @f-1456
+nofor pass2 @5-14567 @f-5-1456
+
+noback pass2 @f-14568 @145678
+noback pass2 @f-6-14568 @6-145678
+noback pass2 @f-5-14568 @5-145678
+nofor pass2 @145678 @f-14568
+nofor pass2 @5-145678 @f-5-14568
+
+noback pass2 @f-2468 @24678
+noback pass2 @f-6-2468 @6-24678
+noback pass2 @f-5-2468 @5-24678
+nofor pass2 @24678 @f-2468
+nofor pass2 @5-24678 @f-5-2468
+
+noback pass2 @f-246 @2467
+noback pass2 @f-6-246 @6-2467
+noback pass2 @f-5-246 @5-2467
+nofor pass2 @2467 @f-246
+nofor pass2 @5-2467 @f-5-246
+
+noback pass2 @f-23456 @234567
+noback pass2 @f-6-23456 @6-234567
+noback pass2 @f-5-23456 @5-234567
+nofor pass2 @234567 @f-23456
+nofor pass2 @5-234567 @f-5-23456
+
+noback pass2 @f-12568 @125678
+noback pass2 @f-6-12568 @6-125678
+noback pass2 @f-5-12568 @5-125678
+nofor pass2 @125678 @f-12568
+nofor pass2 @5-125678 @f-5-12568
+
+noback pass2 @f-156 @1567
+noback pass2 @f-6-156 @6-1567
+noback pass2 @f-5-156 @5-1567
+nofor pass2 @1567 @f-156
+nofor pass2 @5-1567 @f-5-156
+
+noback pass2 @f-1256 @12567
+noback pass2 @f-6-1256 @6-12567
+noback pass2 @f-5-1256 @5-12567
+nofor pass2 @12567 @f-1256
+nofor pass2 @5-12567 @f-5-1256
+
+noback pass2 @f-1348 @13478
+noback pass2 @f-6-1348 @6-13478
+noback pass2 @f-5-1348 @5-13478
+nofor pass2 @13478 @f-1348
+nofor pass2 @5-13478 @f-5-1348
+
+noback pass2 @f-138 @1378
+noback pass2 @f-6-138 @6-1378
+noback pass2 @f-5-138 @5-1378
+nofor pass2 @1378 @f-138
+nofor pass2 @5-1378 @f-5-138
+
+noback pass2 @f-234568 @2345678
+noback pass2 @f-6-234568 @6-2345678
+noback pass2 @f-5-234568 @5-2345678
+nofor pass2 @2345678 @f-234568
+nofor pass2 @5-2345678 @f-5-234568
+
+# Tweak to keep letsign for letters that should always have letsign.
+# Letsign will be removed by the multind opcode. So we insert an extra one.
+nofor pass2 @6-123457 @f-6-6-12345
+nofor pass2 @6-24567 @f-6-6-2456
+nofor pass2 @6-13467 @f-6-6-1346
+nofor pass2 @6-134567 @f-6-6-13456
+nofor pass2 @6-13567 @f-6-6-1356
+nofor pass2 @6-123567 @f-6-6-12356
+nofor pass2 @6-123467 @f-6-6-12346
+nofor pass2 @6-23467 @f-6-6-2346
+nofor pass2 @6-1234567 @f-6-6-123456
+nofor pass2 @6-1267 @f-6-6-126
+nofor pass2 @6-12467 @f-6-6-1246
+nofor pass2 @6-1467 @f-6-6-146
+nofor pass2 @6-124567 @f-6-6-12456
+nofor pass2 @6-14567 @f-6-6-1456
+nofor pass2 @6-234567 @f-6-6-23456
+nofor pass2 @6-1567 @f-6-6-156
+nofor pass2 @6-12567 @f-6-6-1256
+
+# Ensure that punctuation signs etc. are not "tolowered" when they have a letsign, but only when they act as a partword contraction.
+nofor pass2 @6-347 *
+nofor pass2 @6-2357 *
+nofor pass2 @6-3467 *
+nofor pass2 @6-2567 *
+nofor pass2 @6-2367 *
+nofor pass2 @6-34567 *
+
+# remove any superfluous capsletter marks.
+noback pass2 @f ?
+
+# Remove any superfluous letsigns and only keep one.
+noback pass3 @6-6 @6
