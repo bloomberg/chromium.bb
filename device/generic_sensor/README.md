@@ -18,12 +18,13 @@ platform.
 | -------------------- | ------------------------- | -------------- | ------------------ | ----------------------------------------- |
 | AMBIENT_LIGHT        | TYPE_LIGHT                | in_illuminance | AppleLMUController | SENSOR_TYPE_AMBIENT_LIGHT                 |
 | PROXIMITY            |                           |                |                    |                                           |
-| ACCELEROMETER        | TYPE_ACCELEROMETER        | in_accel       |                    | SENSOR_TYPE_ACCELEROMETER_3D              |
+| ACCELEROMETER        | TYPE_ACCELEROMETER        | in_accel       | SMCMotionSensor    | SENSOR_TYPE_ACCELEROMETER_3D              |
 | LINEAR_ACCELEROMETER | TYPE_LINEAR_ACCELEROMETER |                |                    |                                           |
 | GYROSCOPE            | TYPE_GYROSCOPE            | in_anglvel     |                    | SENSOR_TYPE_GYROMETER_3D                  |
 | MAGNETOMETER         | TYPE_MAGNETIC_FIELD       | in_magn        |                    | SENSOR_TYPE_COMPASS_3D                    |
 | PRESSURE             |                           |                |                    |                                           |
 | ABSOLUTE_ORIENTATION | TYPE_ROTATION_VECTOR      |                |                    | SENSOR_TYPE_AGGREGATED_DEVICE_ORIENTATION |
+| RELATIVE_ORIENTATION | TYPE_GAME_ROTATION_VECTOR |                |                    |                                           |
 
 ### Android
 
@@ -42,7 +43,9 @@ searches for to provide data for a SensorType.
 ### macOS
 
 On this platform there is limited support for sensors. The AMBIENT_LIGHT sensor
-type is provided by interpreting the value that can be read from the LMU.
+type is provided by interpreting the value that can be read from the LMU. The
+ACCELEROMETER sensor type is provided by interpreting the value that can be read
+from the SMCMotionSensor.
 
 ### Windows
 
