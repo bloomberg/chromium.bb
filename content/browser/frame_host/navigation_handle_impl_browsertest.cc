@@ -1174,16 +1174,70 @@ IN_PROC_BROWSER_TEST_F(PlzNavigateNavigationHandleImplBrowserTest,
   scoped_refptr<SiteInstance> site_instance =
       shell()->web_contents()->GetMainFrame()->GetSiteInstance();
 
-  TestNavigationThrottleInstaller installer(
+  auto installer = base::MakeUnique<TestNavigationThrottleInstaller>(
       shell()->web_contents(), NavigationThrottle::BLOCK_REQUEST,
       NavigationThrottle::PROCEED, NavigationThrottle::PROCEED);
 
   {
+    // A blocked, renderer-initiated navigation should commit an error page
+    // in the process that originated the navigation.
     NavigationHandleObserver observer(shell()->web_contents(), blocked_url);
-    EXPECT_FALSE(NavigateToURL(shell(), blocked_url));
+    TestNavigationObserver navigation_observer(shell()->web_contents(), 1);
+    EXPECT_TRUE(
+        ExecuteScript(shell(), base::StringPrintf("location.href = '%s'",
+                                                  blocked_url.spec().c_str())));
+    navigation_observer.Wait();
     EXPECT_TRUE(observer.has_committed());
     EXPECT_TRUE(observer.is_error());
     EXPECT_EQ(site_instance,
+              shell()->web_contents()->GetMainFrame()->GetSiteInstance());
+  }
+
+  {
+    // Reloading the page should not transfer processes.
+    NavigationHandleObserver observer(shell()->web_contents(), blocked_url);
+    TestNavigationObserver navigation_observer(shell()->web_contents(), 1);
+
+    shell()->Reload();
+    navigation_observer.Wait();
+    EXPECT_TRUE(observer.has_committed());
+    EXPECT_TRUE(observer.is_error());
+    EXPECT_EQ(site_instance,
+              shell()->web_contents()->GetMainFrame()->GetSiteInstance());
+  }
+
+  installer.reset();
+
+  {
+    // With the throttle uninstalled, going back should return to |start_url| in
+    // the same process, and clear the error page.
+    NavigationHandleObserver observer(shell()->web_contents(), start_url);
+    TestNavigationObserver navigation_observer(shell()->web_contents(), 1);
+
+    shell()->GoBackOrForward(-1);
+    navigation_observer.Wait();
+    EXPECT_TRUE(observer.has_committed());
+    EXPECT_FALSE(observer.is_error());
+    EXPECT_EQ(site_instance,
+              shell()->web_contents()->GetMainFrame()->GetSiteInstance());
+  }
+
+  installer = base::MakeUnique<TestNavigationThrottleInstaller>(
+      shell()->web_contents(), NavigationThrottle::BLOCK_REQUEST,
+      NavigationThrottle::PROCEED, NavigationThrottle::PROCEED);
+
+  {
+    // A blocked, browser-initiated navigation should commit an error page in a
+    // different process.
+    NavigationHandleObserver observer(shell()->web_contents(), blocked_url);
+    TestNavigationObserver navigation_observer(shell()->web_contents(), 1);
+
+    EXPECT_FALSE(NavigateToURL(shell(), blocked_url));
+
+    navigation_observer.Wait();
+    EXPECT_TRUE(observer.has_committed());
+    EXPECT_TRUE(observer.is_error());
+    EXPECT_NE(site_instance,
               shell()->web_contents()->GetMainFrame()->GetSiteInstance());
   }
 }
