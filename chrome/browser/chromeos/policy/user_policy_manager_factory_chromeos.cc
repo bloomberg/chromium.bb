@@ -185,11 +185,9 @@ UserPolicyManagerFactoryChromeOS::CreateManagerForProfile(
       is_active_directory = false;
       break;
     case AccountType::ACTIVE_DIRECTORY:
-      // Ensure install attributes are locked into Active Directory mode before
-      // allowing Active Directory policy which is not signed.
-      if (!connector->GetInstallAttributes()->IsActiveDirectoryManaged()) {
-        return {};
-      }
+      // Active Directory users only exist on devices whose install attributes
+      // are locked into Active Directory mode.
+      CHECK(connector->GetInstallAttributes()->IsActiveDirectoryManaged());
       is_active_directory = true;
       break;
   }
