@@ -2710,13 +2710,6 @@ const char kMediaRemotingDescription[] =
     "optimization that forwards the content bitstream directly to the "
     "remote device when a video is fullscreened.";
 
-//  Chrome OS component updates chrome://flags strings
-
-const char kCrosCompUpdatesName[] = "Chrome OS Flash Component Updates";
-
-const char kCrosCompUpdatesDescription[] =
-    "Enable Flash component updates for Chrome OS.";
-
 //  Play Services LSD permission prompt chrome://flags strings
 
 #if defined(OS_ANDROID)

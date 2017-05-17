@@ -88,9 +88,6 @@ extern const char kContextualSuggestionsCarouselDescription[];
 extern const char kCreditCardAssistName[];
 extern const char kCreditCardAssistDescription[];
 
-extern const char kCrosCompUpdatesName[];
-extern const char kCrosCompUpdatesDescription[];
-
 extern const char kCrossProcessGuestViewIsolationName[];
 extern const char kCrossProcessGuestViewIsolationDescription[];
 
