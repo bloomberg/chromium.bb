@@ -41,7 +41,6 @@ void MediaService::OnBindInterface(
 }
 
 bool MediaService::OnServiceManagerConnectionLost() {
-  interface_factory_bindings_.CloseAllBindings();
   mojo_media_client_.reset();
   return true;
 }
@@ -58,7 +57,7 @@ void MediaService::CreateInterfaceFactory(
   if (!mojo_media_client_)
     return;
 
-  interface_factory_bindings_.AddBinding(
+  mojo::MakeStrongBinding(
       base::MakeUnique<InterfaceFactoryImpl>(
           std::move(host_interfaces), &media_log_, ref_factory_->CreateRef(),
           mojo_media_client_.get()),

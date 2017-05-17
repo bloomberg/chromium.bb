@@ -17,7 +17,6 @@
 #include "media/mojo/interfaces/media_service.mojom.h"
 #include "media/mojo/services/media_mojo_export.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
-#include "mojo/public/cpp/bindings/strong_binding_set.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/service.h"
 #include "services/service_manager/public/cpp/service_context.h"
@@ -55,8 +54,6 @@ class MEDIA_MOJO_EXPORT MediaService
   // MojoMediaClient with other instances to avoid threading issues. Hence using
   // a unique_ptr here.
   std::unique_ptr<MojoMediaClient> mojo_media_client_;
-
-  mojo::StrongBindingSet<mojom::InterfaceFactory> interface_factory_bindings_;
 
   MediaLog media_log_;
   std::unique_ptr<service_manager::ServiceContextRefFactory> ref_factory_;
