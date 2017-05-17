@@ -22,7 +22,7 @@ class CC_PAINT_EXPORT DrawingDisplayItem : public DisplayItem {
   ~DrawingDisplayItem() override;
 
   size_t ExternalMemoryUsage() const;
-  int ApproximateOpCount() const;
+  size_t OpCount() const;
 
   const sk_sp<const PaintRecord> picture;
 };

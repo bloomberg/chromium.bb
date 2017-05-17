@@ -112,7 +112,7 @@ struct Rasterizer<DrawRecordOp, false> {
     // This "looking into records" optimization is done here instead of
     // in the PaintOpBuffer::Raster function as DisplayItemList calls
     // into RasterWithAlpha directly.
-    if (op->record->approximateOpCount() == 1) {
+    if (op->record->size() == 1u) {
       PaintOp* single_op = op->record->GetFirstOp();
       // RasterWithAlpha only supported for draw ops.
       if (single_op->IsDrawOp()) {
@@ -566,7 +566,7 @@ DrawRecordOp::DrawRecordOp(sk_sp<const PaintRecord> record)
 DrawRecordOp::~DrawRecordOp() = default;
 
 size_t DrawRecordOp::AdditionalBytesUsed() const {
-  return record->approximateBytesUsed();
+  return record->bytes_used();
 }
 
 bool DrawRecordOp::HasDiscardableImages() const {

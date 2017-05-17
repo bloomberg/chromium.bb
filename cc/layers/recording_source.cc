@@ -146,7 +146,7 @@ void RecordingSource::DetermineIfSolidColor() {
     return;
 
   TRACE_EVENT1("cc", "RecordingSource::DetermineIfSolidColor", "opcount",
-               display_list_->ApproximateOpCount());
+               display_list_->OpCount());
   gfx::Size layer_size = GetSize();
   skia::AnalysisCanvas canvas(layer_size.width(), layer_size.height());
   display_list_->Raster(&canvas);

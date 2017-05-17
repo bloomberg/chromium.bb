@@ -48,7 +48,7 @@ void DrawingDisplayItem::DumpPropertiesAsDebugString(
 
 static bool RecordsEqual(sk_sp<const PaintRecord> record1,
                          sk_sp<const PaintRecord> record2) {
-  if (record1->approximateOpCount() != record2->approximateOpCount())
+  if (record1->size() != record2->size())
     return false;
 
   // TODO(enne): PaintRecord should have an operator==

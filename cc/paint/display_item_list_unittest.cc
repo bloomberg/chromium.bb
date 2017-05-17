@@ -344,7 +344,7 @@ TEST(DisplayItemListTest, ApproximateMemoryUsage) {
   for (int i = 0; i < kNumCommandsInTestSkPicture; i++)
     canvas->drawRect(SkRect(), blue_flags);
   sk_sp<PaintRecord> record = recorder.finishRecordingAsPicture();
-  size_t record_size = record->approximateBytesUsed();
+  size_t record_size = record->bytes_used();
   ASSERT_GE(record_size, kNumCommandsInTestSkPicture * sizeof(SkRect));
 
   auto list = make_scoped_refptr(new DisplayItemList);
@@ -804,7 +804,7 @@ TEST(DisplayItemListTest, SaveDrawRestoreFail_TooManyOps) {
     canvas->drawRect(gfx::RectToSkRect(kVisualRect), flags);
     record = recorder.finishRecordingAsPicture();
   }
-  EXPECT_GT(record->approximateOpCount(), 1);
+  EXPECT_GT(record->size(), 1u);
 
   auto list = make_scoped_refptr(new DisplayItemList);
 

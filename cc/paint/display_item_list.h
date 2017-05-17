@@ -130,7 +130,7 @@ class CC_PAINT_EXPORT DisplayItemList
   }
   bool IsSuitableForGpuRasterization() const;
 
-  int ApproximateOpCount() const;
+  size_t OpCount() const;
   size_t ApproximateMemoryUsage() const;
   bool ShouldBeAnalyzedForSolidColor() const;
 
@@ -183,7 +183,7 @@ class CC_PAINT_EXPORT DisplayItemList
   const DisplayItemType& AllocateAndConstruct(Args&&... args) {
     auto* item = &items_.AllocateAndConstruct<DisplayItemType>(
         std::forward<Args>(args)...);
-    approximate_op_count_ += item->ApproximateOpCount();
+    op_count_ += item->OpCount();
     return *item;
   }
 
@@ -199,7 +199,7 @@ class CC_PAINT_EXPORT DisplayItemList
   std::vector<gfx::Rect> visual_rects_;
   std::vector<size_t> begin_item_indices_;
 
-  int approximate_op_count_ = 0;
+  size_t op_count_ = 0u;
   bool all_items_are_suitable_for_gpu_rasterization_ = true;
   // For testing purposes only. Whether to keep visual rects across calls to
   // Finalize().

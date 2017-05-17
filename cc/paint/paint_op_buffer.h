@@ -780,9 +780,11 @@ class CC_PAINT_EXPORT PaintOpBuffer : public SkRefCnt {
   void playback(SkCanvas* canvas) const;
   void playback(SkCanvas* canvas, SkPicture::AbortCallback* callback) const;
 
-  // TODO(enne): These are no longer approximate.  Rename these.
-  int approximateOpCount() const { return op_count_; }
-  size_t approximateBytesUsed() const {
+  // Returns the size of the paint op buffer. That is, the number of ops
+  // contained in it.
+  size_t size() const { return op_count_; }
+  // Returns the number of bytes used by the paint op buffer.
+  size_t bytes_used() const {
     return sizeof(*this) + reserved_ + subrecord_bytes_used_;
   }
   int numSlowPaths() const { return num_slow_paths_; }
@@ -873,7 +875,7 @@ class CC_PAINT_EXPORT PaintOpBuffer : public SkRefCnt {
     Iterator begin() { return Iterator(buffer_, buffer_->data_.get(), 0); }
     Iterator end() {
       return Iterator(buffer_, buffer_->data_.get() + buffer_->used_,
-                      buffer_->approximateOpCount());
+                      buffer_->size());
     }
     bool operator!=(const Iterator& other) {
       // Not valid to compare iterators on different buffers.
@@ -889,13 +891,13 @@ class CC_PAINT_EXPORT PaintOpBuffer : public SkRefCnt {
       ptr_ += op->skip;
       return *this;
     }
-    operator bool() const { return op_idx_ < buffer_->approximateOpCount(); }
+    operator bool() const { return op_idx_ < buffer_->size(); }
 
-    int op_idx() const { return op_idx_; }
+    size_t op_idx() const { return op_idx_; }
 
     // Return the next op without advancing the iterator, or nullptr if none.
     PaintOp* peek1() const {
-      if (op_idx_ + 1 >= buffer_->approximateOpCount())
+      if (op_idx_ + 1 >= buffer_->size())
         return nullptr;
       if (!op_idx_)
         return reinterpret_cast<PaintOp*>(ptr_);
@@ -905,7 +907,7 @@ class CC_PAINT_EXPORT PaintOpBuffer : public SkRefCnt {
     // Return the op two ops ahead without advancing the iterator, or nullptr if
     // none.
     PaintOp* peek2() const {
-      if (op_idx_ + 2 >= buffer_->approximateOpCount())
+      if (op_idx_ + 2 >= buffer_->size())
         return nullptr;
       char* next = ptr_ + reinterpret_cast<PaintOp*>(ptr_)->skip;
       PaintOp* next_op = reinterpret_cast<PaintOp*>(next);
@@ -915,12 +917,12 @@ class CC_PAINT_EXPORT PaintOpBuffer : public SkRefCnt {
     }
 
    private:
-    Iterator(const PaintOpBuffer* buffer, char* ptr, int op_idx)
+    Iterator(const PaintOpBuffer* buffer, char* ptr, size_t op_idx)
         : buffer_(buffer), ptr_(ptr), op_idx_(op_idx) {}
 
     const PaintOpBuffer* buffer_ = nullptr;
     char* ptr_ = nullptr;
-    int op_idx_ = 0;
+    size_t op_idx_ = 0;
   };
 
  private:
@@ -961,7 +963,7 @@ class CC_PAINT_EXPORT PaintOpBuffer : public SkRefCnt {
   std::unique_ptr<char, base::AlignedFreeDeleter> data_;
   size_t used_ = 0;
   size_t reserved_ = 0;
-  int op_count_ = 0;
+  size_t op_count_ = 0;
 
   // Record paths for veto-to-msaa for gpu raster.
   int num_slow_paths_ = 0;

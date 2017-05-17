@@ -23,8 +23,7 @@ class PLATFORM_EXPORT DrawingDisplayItem final : public DisplayItem {
                      sk_sp<const PaintRecord> record,
                      bool known_to_be_opaque = false)
       : DisplayItem(client, type, sizeof(*this)),
-        record_(record && record->approximateOpCount() ? std::move(record)
-                                                       : nullptr),
+        record_(record && record->size() ? std::move(record) : nullptr),
         known_to_be_opaque_(known_to_be_opaque) {
     DCHECK(IsDrawingType(type));
   }

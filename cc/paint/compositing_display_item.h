@@ -29,7 +29,7 @@ class CC_PAINT_EXPORT CompositingDisplayItem : public DisplayItem {
     // TODO(pdr): Include color_filter's memory here.
     return 0;
   }
-  int ApproximateOpCount() const { return 1; }
+  int OpCount() const { return 1; }
 
   const uint8_t alpha;
   const SkBlendMode xfermode;
@@ -44,7 +44,7 @@ class CC_PAINT_EXPORT EndCompositingDisplayItem : public DisplayItem {
   EndCompositingDisplayItem();
   ~EndCompositingDisplayItem() override;
 
-  int ApproximateOpCount() const { return 0; }
+  int OpCount() const { return 0; }
 };
 
 }  // namespace cc

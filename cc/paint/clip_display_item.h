@@ -26,7 +26,7 @@ class CC_PAINT_EXPORT ClipDisplayItem : public DisplayItem {
   size_t ExternalMemoryUsage() const {
     return rounded_clip_rects.capacity() * sizeof(rounded_clip_rects[0]);
   }
-  int ApproximateOpCount() const { return 1; }
+  int OpCount() const { return 1; }
 
   const gfx::Rect clip_rect;
   const std::vector<SkRRect> rounded_clip_rects;
@@ -38,7 +38,7 @@ class CC_PAINT_EXPORT EndClipDisplayItem : public DisplayItem {
   EndClipDisplayItem();
   ~EndClipDisplayItem() override;
 
-  int ApproximateOpCount() const { return 0; }
+  int OpCount() const { return 0; }
 };
 
 }  // namespace cc

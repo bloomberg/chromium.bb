@@ -179,7 +179,7 @@ static bool MergeAndDrawIfPossible(const CompositingDisplayItem& save_item,
   // relevant here and that lcd text is preserved post merge, but I haven't
   // tested that.
   const PaintRecord* record = draw_item.picture.get();
-  if (record->approximateOpCount() != 1)
+  if (record->size() != 1u)
     return false;
 
   const PaintOp* op = record->GetFirstOp();
@@ -254,8 +254,8 @@ bool DisplayItemList::IsSuitableForGpuRasterization() const {
   return all_items_are_suitable_for_gpu_rasterization_;
 }
 
-int DisplayItemList::ApproximateOpCount() const {
-  return approximate_op_count_;
+size_t DisplayItemList::OpCount() const {
+  return op_count_;
 }
 
 size_t DisplayItemList::ApproximateMemoryUsage() const {
@@ -314,7 +314,7 @@ size_t DisplayItemList::ApproximateMemoryUsage() const {
 }
 
 bool DisplayItemList::ShouldBeAnalyzedForSolidColor() const {
-  return ApproximateOpCount() <= kOpCountThatIsOkToAnalyze;
+  return OpCount() <= kOpCountThatIsOkToAnalyze;
 }
 
 void DisplayItemList::EmitTraceSnapshot() const {

@@ -19,7 +19,7 @@ class CC_PAINT_EXPORT TransformDisplayItem : public DisplayItem {
   ~TransformDisplayItem() override;
 
   size_t ExternalMemoryUsage() const { return 0; }
-  int ApproximateOpCount() const { return 1; }
+  int OpCount() const { return 1; }
 
   const gfx::Transform transform;
 };
@@ -29,7 +29,7 @@ class CC_PAINT_EXPORT EndTransformDisplayItem : public DisplayItem {
   EndTransformDisplayItem();
   ~EndTransformDisplayItem() override;
 
-  int ApproximateOpCount() const { return 0; }
+  int OpCount() const { return 0; }
 };
 
 }  // namespace cc
