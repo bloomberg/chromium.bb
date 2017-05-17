@@ -558,6 +558,9 @@ static intra_high_pred_fn dc_pred_high[2][2][TX_SIZES];
 #endif  // CONFIG_HIGHBITDEPTH
 
 static void av1_init_intra_predictors_internal(void) {
+#if CONFIG_EXT_INTRA
+  assert(NELEMENTS(mode_to_angle_map) == INTRA_MODES);
+#endif  // CONFIG_EXT_INTRA
 #if CONFIG_TX64X64
 #define INIT_NO_4X4(p, type)                  \
   p[TX_8X8] = aom_##type##_predictor_8x8;     \
@@ -1204,7 +1207,7 @@ static void highbd_dr_predictor(uint16_t *dst, ptrdiff_t stride, int bs,
 
 #if CONFIG_FILTER_INTRA
 #if USE_3TAP_INTRA_FILTER
-int av1_filter_intra_taps_3[TX_SIZES][INTRA_MODES][3] = {
+int av1_filter_intra_taps_3[TX_SIZES][FILTER_INTRA_MODES][3] = {
 #if CONFIG_CB4X4
   {
       { 697, 836, -509 },
@@ -1283,7 +1286,7 @@ int av1_filter_intra_taps_3[TX_SIZES][INTRA_MODES][3] = {
 #endif  // CONFIG_TX64X64
 };
 #else
-int av1_filter_intra_taps_4[TX_SIZES][INTRA_MODES][4] = {
+int av1_filter_intra_taps_4[TX_SIZES][FILTER_INTRA_MODES][4] = {
 #if CONFIG_CB4X4
   {
       { 735, 881, -537, -54 },

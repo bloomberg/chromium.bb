@@ -81,7 +81,7 @@ static const INTERINTRA_MODE intra_to_interintra_mode[INTRA_MODES] = {
 
 #if CONFIG_FILTER_INTRA
 #define FILTER_INTRA_PREC_BITS 10
-extern int av1_filter_intra_taps_4[TX_SIZES][INTRA_MODES][4];
+extern int av1_filter_intra_taps_4[TX_SIZES][FILTER_INTRA_MODES][4];
 #endif  // CONFIG_FILTER_INTRA
 
 #if CONFIG_EXT_INTRA
