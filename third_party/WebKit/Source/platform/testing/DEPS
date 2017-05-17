@@ -3,8 +3,10 @@ include_rules = [
     # directories and files instead of writing 'base/'.
     "+base/at_exit.h",
     "+base/command_line.h",
+    "+base/debug",
     "+base/i18n/icu_util.h",
     "+base/path_service.h",
+    "+base/process",
     "+base/run_loop.h",
     "+base/message_loop",
     "+base/metrics/statistics_recorder.h",

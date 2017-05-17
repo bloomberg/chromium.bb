@@ -2035,6 +2035,9 @@ test("blink_platform_perftests") {
     "scheduler/base/task_queue_manager_delegate_for_test.cc",
     "scheduler/base/task_queue_manager_delegate_for_test.h",
     "scheduler/base/task_queue_manager_perftest.cc",
+    "testing/BlinkPerfTestSuite.cpp",
+    "testing/BlinkPerfTestSuite.h",
+    "testing/RunAllPerfTests.cpp",
   ]
 
   configs += [
@@ -2048,7 +2051,6 @@ test("blink_platform_perftests") {
     ":platform",
     "//base",
     "//base/test:test_support",
-    "//base/test:test_support_perf",
     "//testing/gtest",
     "//testing/perf",
   ]
