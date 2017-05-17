@@ -567,11 +567,22 @@ noback context _$d["nd"]!$l @1345-145
 noback context $d[]$l!$l @6
 noback context $d[]$l~ @6
 
+# Most of these lines are temporary.
+# They will be written with a few swap sets when the swapdd opcode has been fixed.
+
+
+# Generic forward convert of @f-... to @...7
 noback pass2 @f-235 @2357
+# Conversion with letsign.
 noback pass2 @f-6-235 @6-2357
+# Conversion with dot 5, which is used for accent marker in higher unicode pages.
 noback pass2 @f-5-235 @5-2357
+# Generic backward conversion.
 nofor pass2 @2357 @f-235
+# Conversion with dot 5 (letsign is handled below).
 nofor pass2 @5-2357 @f-5-235
+
+# Same for the following characters.
 
 noback pass2 @f-35 @357
 noback pass2 @f-6-35 @6-357
@@ -975,6 +986,8 @@ noback pass2 @f-5-234568 @5-2345678
 nofor pass2 @2345678 @f-234568
 nofor pass2 @5-2345678 @f-5-234568
 
+# Tweak to keep letsign for letters that should always have letsign.
+# Letsign will be removed by the multind opcode. So we insert an extra one.
 nofor pass2 @6-123457 @f-6-6-12345
 nofor pass2 @6-24567 @f-6-6-2456
 nofor pass2 @6-13467 @f-6-6-1346
@@ -993,6 +1006,7 @@ nofor pass2 @6-234567 @f-6-6-23456
 nofor pass2 @6-1567 @f-6-6-156
 nofor pass2 @6-12567 @f-6-6-1256
 
+# Ensure that punctuation signs etc. are not "tolowered" when they have a letsign, but only when they act as a partword contraction.
 nofor pass2 @6-347 *
 nofor pass2 @6-2357 *
 nofor pass2 @6-3467 *
@@ -1000,7 +1014,8 @@ nofor pass2 @6-2567 *
 nofor pass2 @6-2367 *
 nofor pass2 @6-34567 *
 
+# remove any superfluous capsletter marks.
 noback pass2 @f ?
 
-# the next line is to remove any superfluous letsigns and only keep one.
+# Remove any superfluous letsigns and only keep one.
 noback pass3 @6-6 @6
