@@ -3,6 +3,8 @@
 # found in the LICENSE file.
 
 import("//build/config/chromecast_build.gni")
+import("//build/config/freetype/freetype.gni")
+import("//third_party/harfbuzz-ng/harfbuzz.gni")
 
 config("freetype_config") {
   include_dirs = [
@@ -28,6 +30,55 @@ config("freetype-warnings") {
   }
 }
 
+# This component is used to resolve a cyclic dependency between HarfBuzz and
+# FreeType. HarfBuzz needs basic FreeType glyph information symbols for its
+# hb-ft.* functions, FreeType needs HarfBuzz' OpenType parsing functionality in
+# the autohinting code. We start by building a minimum FreeType here - enough to
+# satisfy harfbuzz-ng-ft symbol requirements. Then we can build harfbuzz-ng-ft
+# based on the minimal FreeType and harfbuzz-ng which does not depend on
+# FreeType itself. Then we build FreeType depending on harfbuzz-ng-ft and
+# harfbuzz-ng.
+static_library("bootstrap_freetype_for_harfbuzz") {
+  visibility = [ "//third_party/harfbuzz-ng:harfbuzz-ng-ft", ":freetype" ]
+
+  defines = []
+
+  sources = [
+    "include/freetype-custom-config/ftmodule.h",
+    "include/freetype-custom-config/ftoption.h",
+    "src/src/base/ftbase.c",
+    "src/src/base/ftbitmap.c",
+    "src/src/base/ftsystem.c",
+  ]
+
+  if (is_mac && !is_component_build) {
+    defines += [ "MAC_RESTRICT_VISIBILITY" ]
+  }
+
+  defines += [
+    "FT2_BUILD_LIBRARY",
+    "DARWIN_NO_CARBON",
+
+    # Long directory name to avoid accidentally using wrong headers.
+    # GN currently does not escape '<' and '>' when generating xml based Visual
+    # Studio project files. As a result, use quotes instead of pointy brackets
+    # in these defines.
+    "FT_CONFIG_MODULES_H=\"freetype-custom-config/ftmodule.h\"",
+    "FT_CONFIG_OPTIONS_H=\"freetype-custom-config/ftoption.h\"",
+  ]
+
+  if (is_win && is_component_build) {
+    # Used for managing declspec(dllimport/export) visibility.
+    defines += [ "FT2_BUILD_DLL" ]
+  }
+
+  public_configs = [ ":freetype_config" ]
+  configs -= [ "//build/config/compiler:chromium_code" ]
+  configs += [ "//build/config/compiler:no_chromium_code" ]
+
+  configs += [ ":freetype-warnings" ]
+}
+
 component("freetype") {
   if (is_linux) {
     output_name = "freetype"
@@ -40,9 +91,7 @@ component("freetype") {
     "include/freetype-custom-config/ftmodule.h",
     "include/freetype-custom-config/ftoption.h",
     "src/src/autofit/autofit.c",
-    "src/src/base/ftbase.c",
     "src/src/base/ftbbox.c",
-    "src/src/base/ftbitmap.c",
     "src/src/base/ftfntfmt.c",
     "src/src/base/ftfstype.c",
     "src/src/base/ftgasp.c",
@@ -51,7 +100,6 @@ component("freetype") {
     "src/src/base/ftlcdfil.c",
     "src/src/base/ftmm.c",
     "src/src/base/ftstroke.c",
-    "src/src/base/ftsystem.c",
     "src/src/base/fttype1.c",
     "src/src/cff/cff.c",
     "src/src/gzip/ftgzip.c",
@@ -118,4 +166,19 @@ component("freetype") {
     "//third_party/libpng",
     "//third_party/zlib",
   ]
+
+  if (!use_system_freetype) {
+    deps += [
+    ":bootstrap_freetype_for_harfbuzz"
+    ]
+  }
+
+  if (!use_system_harfbuzz) {
+    deps += [
+      "//third_party/harfbuzz-ng:harfbuzz-ng-ft",
+      "//third_party/harfbuzz-ng:harfbuzz-ng-without-freetype",
+    ]
+  } else {
+    deps += [ "//third_party/harfbuzz-ng:harfbuzz-ng" ]
+  }
 }

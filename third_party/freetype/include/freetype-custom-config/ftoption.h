@@ -268,7 +268,7 @@ FT_BEGIN_HEADER
   /*                                                                       */
   /*   Define this macro if you want to enable this `feature'.             */
   /*                                                                       */
-/* #define FT_CONFIG_OPTION_USE_HARFBUZZ */
+#define FT_CONFIG_OPTION_USE_HARFBUZZ
 
 
   /*************************************************************************/
