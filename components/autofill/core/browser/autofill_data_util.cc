@@ -25,6 +25,8 @@ namespace {
 // Mappings from Chrome card types to Payment Request API basic card payment
 // spec types and icons. Note that "generic" is not in the spec.
 // https://w3c.github.io/webpayments-methods-card/#method-id
+#if defined(OS_ANDROID)
+// On Android, use the PR-specific resource IDs.
 const PaymentRequestData kPaymentRequestData[]{
     {"americanExpressCC", "amex", IDR_AUTOFILL_PR_AMEX, IDS_AUTOFILL_CC_AMEX},
     {"dinersCC", "diners", IDR_AUTOFILL_PR_DINERS, IDS_AUTOFILL_CC_DINERS},
@@ -40,6 +42,24 @@ const PaymentRequestData kPaymentRequestData[]{
 };
 const PaymentRequestData kGenericPaymentRequestData = {
     "genericCC", "generic", IDR_AUTOFILL_PR_GENERIC, IDS_AUTOFILL_CC_GENERIC};
+#else  // !defined(OS_ANDROID)
+// On other platforms, use the Autofill resource IDs.
+const PaymentRequestData kPaymentRequestData[]{
+    {"americanExpressCC", "amex", IDR_AUTOFILL_CC_AMEX, IDS_AUTOFILL_CC_AMEX},
+    {"dinersCC", "diners", IDR_AUTOFILL_CC_DINERS, IDS_AUTOFILL_CC_DINERS},
+    {"discoverCC", "discover", IDR_AUTOFILL_CC_DISCOVER,
+     IDS_AUTOFILL_CC_DISCOVER},
+    {"jcbCC", "jcb", IDR_AUTOFILL_CC_JCB, IDS_AUTOFILL_CC_JCB},
+    {"masterCardCC", "mastercard", IDR_AUTOFILL_CC_MASTERCARD,
+     IDS_AUTOFILL_CC_MASTERCARD},
+    {"mirCC", "mir", IDR_AUTOFILL_CC_MIR, IDS_AUTOFILL_CC_MIR},
+    {"unionPayCC", "unionpay", IDR_AUTOFILL_CC_UNIONPAY,
+     IDS_AUTOFILL_CC_UNION_PAY},
+    {"visaCC", "visa", IDR_AUTOFILL_CC_VISA, IDS_AUTOFILL_CC_VISA},
+};
+const PaymentRequestData kGenericPaymentRequestData = {
+    "genericCC", "generic", IDR_AUTOFILL_CC_GENERIC, IDS_AUTOFILL_CC_GENERIC};
+#endif
 
 const char* const name_prefixes[] = {
     "1lt",     "1st", "2lt", "2nd",    "3rd",  "admiral", "capt",
