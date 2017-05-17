@@ -47,6 +47,13 @@ class InputStrategy {
   // Returns the current cursor position.
   virtual ViewMatrix::Point GetCursorPosition() const = 0;
 
+  // Maps a vector (or movement) in the surface coordinate to the vector to be
+  // used on the desktop. For example it can be used to map a scroll gesture
+  // on the screen to change in mouse wheel position.
+  virtual ViewMatrix::Vector2D MapScreenVectorToDesktop(
+      const ViewMatrix::Vector2D& delta,
+      const DesktopViewport& viewport) const = 0;
+
   // Returns the maximum radius of the feedback animation on the surface's
   // coordinate for the given input type. The feedback will then be shown on the
   // cursor positions returned by GetCursorPosition(). Return 0 if no feedback

@@ -26,6 +26,10 @@ bool FlingAnimation::IsAnimationInProgress() const {
 }
 
 void FlingAnimation::Tick() {
+  if (!IsAnimationInProgress()) {
+    return;
+  }
+
   float dx, dy;
   bool in_progress = fling_tracker_.TrackMovement(
       clock_->NowTicks() - fling_start_time_, &dx, &dy);

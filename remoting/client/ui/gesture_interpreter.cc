@@ -13,6 +13,7 @@
 namespace {
 
 const float kOneFingerFlingTimeConstant = 325.f;
+const float kScrollFlingTimeConstant = 120.f;
 
 }  // namespace
 
@@ -23,7 +24,11 @@ GestureInterpreter::GestureInterpreter(RendererProxy* renderer,
       input_stub_(input_stub),
       pan_animation_(kOneFingerFlingTimeConstant,
                      base::Bind(&GestureInterpreter::PanWithoutAbortAnimations,
-                                base::Unretained(this))) {
+                                base::Unretained(this))),
+      scroll_animation_(
+          kScrollFlingTimeConstant,
+          base::Bind(&GestureInterpreter::ScrollWithoutAbortAnimations,
+                     base::Unretained(this))) {
   viewport_.RegisterOnTransformationChangedCallback(
       base::Bind(&RendererProxy::SetTransformation,
                  base::Unretained(renderer_)),
@@ -87,10 +92,31 @@ void GestureInterpreter::OneFingerFling(float velocity_x, float velocity_y) {
   pan_animation_.Tick();
 }
 
+void GestureInterpreter::Scroll(float x, float y, float dx, float dy) {
+  AbortAnimations();
+
+  ViewMatrix::Point cursor_position = TrackAndGetPosition(x, y);
+
+  // Inject the cursor position to the host so that scrolling can happen on the
+  // right place.
+  input_stub_->SendMouseEvent(cursor_position.x, cursor_position.y,
+                              protocol::MouseEvent_MouseButton_BUTTON_UNDEFINED,
+                              false);
+
+  ScrollWithoutAbortAnimations(dx, dy);
+}
+
+void GestureInterpreter::ScrollWithVelocity(float velocity_x,
+                                            float velocity_y) {
+  AbortAnimations();
+
+  scroll_animation_.SetVelocity(velocity_x, velocity_y);
+  scroll_animation_.Tick();
+}
+
 void GestureInterpreter::ProcessAnimations() {
-  if (pan_animation_.IsAnimationInProgress()) {
-    pan_animation_.Tick();
-  }
+  pan_animation_.Tick();
+  scroll_animation_.Tick();
 }
 
 void GestureInterpreter::OnSurfaceSizeChanged(int width, int height) {
@@ -106,6 +132,12 @@ void GestureInterpreter::PanWithoutAbortAnimations(float translation_x,
   input_strategy_->HandlePan({translation_x, translation_y}, is_dragging_mode_,
                              &viewport_);
   SetCursorPositionOnRenderer();
+}
+
+void GestureInterpreter::ScrollWithoutAbortAnimations(float dx, float dy) {
+  ViewMatrix::Point desktopDelta =
+      input_strategy_->MapScreenVectorToDesktop({dx, dy}, viewport_);
+  input_stub_->SendMouseWheelEvent(desktopDelta.x, desktopDelta.y);
 }
 
 void GestureInterpreter::AbortAnimations() {

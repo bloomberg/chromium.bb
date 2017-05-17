@@ -44,6 +44,14 @@
   _flingRecognizer.delegate = self;
   [view addGestureRecognizer:_flingRecognizer];
 
+  _scrollRecognizer = [[UIPanGestureRecognizer alloc]
+      initWithTarget:self
+              action:@selector(scrollGestureTriggered:)];
+  _scrollRecognizer.minimumNumberOfTouches = 2;
+  _scrollRecognizer.maximumNumberOfTouches = 2;
+  _scrollRecognizer.delegate = self;
+  [view addGestureRecognizer:_scrollRecognizer];
+
   _threeFingerPanRecognizer = [[UIPanGestureRecognizer alloc]
       initWithTarget:self
               action:@selector(threeFingerPanGestureTriggered:)];
@@ -87,6 +95,7 @@
   [_panRecognizer requireGestureRecognizerToFail:_singleTapRecognizer];
   [_threeFingerPanRecognizer
       requireGestureRecognizerToFail:_threeFingerTapRecognizer];
+  [_panRecognizer requireGestureRecognizerToFail:_scrollRecognizer];
 
   _edgeGesture = [[UIScreenEdgePanGestureRecognizer alloc]
       initWithTarget:self
@@ -244,6 +253,22 @@
       _client.gestureInterpreter->OneFingerFling(velocity.x, velocity.y);
     }
   }
+}
+
+- (IBAction)scrollGestureTriggered:(UIPanGestureRecognizer*)sender {
+  if ([sender state] == UIGestureRecognizerStateEnded) {
+    CGPoint velocity = [sender velocityInView:_view];
+    _client.gestureInterpreter->ScrollWithVelocity(velocity.x, velocity.y);
+    return;
+  }
+
+  CGPoint scrollPoint = [sender locationInView:_view];
+  CGPoint translation = [sender translationInView:_view];
+  _client.gestureInterpreter->Scroll(scrollPoint.x, scrollPoint.y,
+                                     translation.x, translation.y);
+
+  // Reset translation so next iteration is relative
+  [sender setTranslation:CGPointZero inView:_view];
 }
 
 // Click-Drag mouse operation.  This can occur during a Pan.
