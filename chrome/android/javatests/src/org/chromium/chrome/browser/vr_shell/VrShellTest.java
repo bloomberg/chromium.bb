@@ -81,7 +81,7 @@ public class VrShellTest {
 
     private void enterVrModeNfc(boolean supported) {
         InstrumentationRegistry.getInstrumentation().waitForIdleSync();
-        VrUtils.simNfc(mActivityTestRule.getActivity());
+        VrUtils.simNfcScan(mActivityTestRule.getActivity());
         if (supported) {
             VrUtils.waitForVrSupported(POLL_TIMEOUT_LONG_MS);
             Assert.assertTrue(VrShellDelegate.isInVr());

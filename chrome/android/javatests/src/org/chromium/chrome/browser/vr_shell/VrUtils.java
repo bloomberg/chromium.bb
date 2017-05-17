@@ -119,7 +119,7 @@ public class VrUtils {
      * Simulates the NFC tag of the Daydream headset being scanned.
      * @param context The Context that the activity will be started from.
      */
-    public static void simNfc(Context context) {
+    public static void simNfcScan(Context context) {
         Intent nfcIntent = makeNfcIntent();
         try {
             context.startActivity(nfcIntent);
