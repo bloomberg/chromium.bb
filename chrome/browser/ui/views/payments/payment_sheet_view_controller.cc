@@ -428,6 +428,10 @@ PaymentSheetViewController::CreatePrimaryButton() {
   return button;
 }
 
+base::string16 PaymentSheetViewController::GetSecondaryButtonLabel() {
+  return l10n_util::GetStringUTF16(IDS_CANCEL);
+}
+
 bool PaymentSheetViewController::ShouldShowHeaderBackArrow() {
   return false;
 }
