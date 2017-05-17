@@ -24,7 +24,6 @@ function test()
             function addBreakpoint(sourceFrame)
             {
                 javaScriptSourceFrame = sourceFrame;              
-                InspectorTest.prepareSourceFrameForBreakpointTest(sourceFrame);
                 InspectorTest.addResult("Setting breakpoint");
                 InspectorTest.createNewBreakpoint(javaScriptSourceFrame, 2, "", true)
                     .then(() => waitAndDumpDecorations(javaScriptSourceFrame))
@@ -47,7 +46,6 @@ function test()
             function addBreakpoint(sourceFrame)
             {
                 javaScriptSourceFrame = sourceFrame;              
-                InspectorTest.prepareSourceFrameForBreakpointTest(sourceFrame);
                 InspectorTest.addResult("Setting breakpoint");
                 InspectorTest.createNewBreakpoint(javaScriptSourceFrame, 2, "", true)
                     .then(() => InspectorTest.createNewBreakpoint(javaScriptSourceFrame, 0, "true", true))
@@ -70,7 +68,6 @@ function test()
 
             function addRegularDisabled(sourceFrame)
             {
-                InspectorTest.prepareSourceFrameForBreakpointTest(sourceFrame);
                 javaScriptSourceFrame = sourceFrame;              
                 InspectorTest.addResult("Adding regular disabled breakpoint");
                 waitAndDumpDecorations(javaScriptSourceFrame).then(addConditionalDisabled);
