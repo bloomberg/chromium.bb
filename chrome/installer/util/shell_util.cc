@@ -710,6 +710,7 @@ bool ElevateAndRegisterChrome(BrowserDistribution* dist,
 
   if (base::PathExists(exe_path)) {
     base::CommandLine cmd(exe_path);
+    InstallUtil::AppendModeSwitch(&cmd);
     if (!is_per_user)
       cmd.AppendSwitch(installer::switches::kSystemLevel);
     cmd.AppendSwitchPath(installer::switches::kRegisterChromeBrowser,
