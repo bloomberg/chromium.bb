@@ -526,7 +526,7 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
 
                 if (!tracker.shouldTriggerHelpUI(FeatureConstants.DOWNLOAD_PAGE_FEATURE)) return;
 
-                mTextBubble = new ViewAnchoredTextBubble(mToolbar.getContext(), getMenuAnchor(),
+                mTextBubble = new ViewAnchoredTextBubble(mToolbar.getContext(), getMenuButton(),
                         R.string.iph_download_page_for_offline_usage_text,
                         R.string.iph_download_page_for_offline_usage_accessibility_text);
                 mTextBubble.setDismissOnTouchInteraction(true);
@@ -798,10 +798,10 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
     }
 
     /**
-     * @return The view that the pop up menu should be anchored to on the UI.
+     * @return The view containing the pop up menu button.
      */
-    public View getMenuAnchor() {
-        return mToolbar.getMenuButtonWrapper();
+    public View getMenuButton() {
+        return mToolbar.getMenuButton();
     }
 
     /**
