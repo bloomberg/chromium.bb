@@ -6,6 +6,7 @@
 
 #include "base/ios/ios_util.h"
 #include "base/logging.h"
+#include "base/mac/foundation_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/strings/grit/components_strings.h"
@@ -31,12 +32,12 @@ NSSet<NSString*>* ITMSSchemes() {
   static NSSet<NSString*>* schemes;
   static dispatch_once_t once;
   dispatch_once(&once, ^{
-    schemes =
-        [NSSet setWithObjects:@"itms", @"itmss", @"itms-apps", @"itms-appss",
-                              // There's no evidence that itms-bookss is
-                              // actually supported, but over-inclusion
-                              // costs less than under-inclusion.
-                              @"itms-books", @"itms-bookss", nil];
+    schemes = [NSSet<NSString*>
+        setWithObjects:@"itms", @"itmss", @"itms-apps", @"itms-appss",
+                       // There's no evidence that itms-bookss is actually
+                       // supported, but over-inclusion costs less than
+                       // under-inclusion.
+                       @"itms-books", @"itms-bookss", nil];
   });
   return schemes;
 }
@@ -70,15 +71,21 @@ NSString* PromptActionString(NSString* scheme) {
   return @"";
 }
 
+// Keys for dictionary parameters passed into
+// -openExternalAppWithPromptWithParams:.
+NSString* const kAlertPrompt = @"prompt";
+NSString* const kAlertAction = @"action";
+NSString* const kAlertURL = @"url";
+
 }  // namespace
 
 @interface ExternalAppLauncher ()
 // Returns the Phone/FaceTime call argument from |URL|.
 + (NSString*)formatCallArgument:(NSURL*)URL;
-// Ask user for confirmation before dialing Phone or FaceTime destinations.
-- (void)openPromptForURL:(NSURL*)URL;
-// Ask user for confirmation before moving to external app.
-- (void)openExternalAppWithPromptForURL:(NSURL*)URL;
+// Asks user for confirmation before moving to external app. |params| is a
+// dictionary keyed with values of kAlert* above.
+- (void)openExternalAppWithPromptWithParams:
+    (NSDictionary<NSString*, id>*)params;
 // Presents a configured alert controller on the root view controller.
 - (void)presentAlertControllerWithMessage:(NSString*)message
                                 openTitle:(NSString*)openTitle
@@ -104,12 +111,14 @@ NSString* PromptActionString(NSString* scheme) {
   return prompt;
 }
 
-- (void)openExternalAppWithPromptForURL:(NSURL*)URL {
-  NSString* message = l10n_util::GetNSString(IDS_IOS_OPEN_IN_ANOTHER_APP);
-  NSString* openTitle =
-      l10n_util::GetNSString(IDS_IOS_APP_LAUNCHER_OPEN_APP_BUTTON_LABEL);
-  [self presentAlertControllerWithMessage:message
-      openTitle:openTitle
+- (void)openExternalAppWithPromptWithParams:
+    (NSDictionary<NSString*, id>*)params {
+  NSURL* URL = base::mac::ObjCCastStrict<NSURL>(params[kAlertURL]);
+  NSString* prompt = base::mac::ObjCCastStrict<NSString>(params[kAlertPrompt]);
+  NSString* actionTitle =
+      base::mac::ObjCCastStrict<NSString>(params[kAlertAction]);
+  [self presentAlertControllerWithMessage:prompt
+      openTitle:actionTitle
       openHandler:^(UIAlertAction* action) {
         RecordExternalApplicationOpened(true);
         OpenUrlWithCompletionHandler(URL, nil);
@@ -117,15 +126,6 @@ NSString* PromptActionString(NSString* scheme) {
       cancelHandler:^(UIAlertAction* action) {
         RecordExternalApplicationOpened(false);
       }];
-}
-
-- (void)openPromptForURL:(NSURL*)URL {
-  [self presentAlertControllerWithMessage:[[self class] formatCallArgument:URL]
-                                openTitle:PromptActionString(URL.scheme)
-                              openHandler:^(UIAlertAction* action) {
-                                OpenUrlWithCompletionHandler(URL, nil);
-                              }
-                            cancelHandler:nil];
 }
 
 - (void)presentAlertControllerWithMessage:(NSString*)message
@@ -156,32 +156,47 @@ NSString* PromptActionString(NSString* scheme) {
 - (BOOL)openURL:(const GURL&)gURL linkClicked:(BOOL)linkClicked {
   if (!gURL.is_valid() || !gURL.has_scheme())
     return NO;
-  NSURL* URL = net::NSURLWithGURL(gURL);
-
-  // iOS 10.3 introduced new prompts when facetime: and facetime-audio:
-  // URL schemes are opened. It is no longer necessary for Chrome to present
-  // another prompt before the system-provided prompt.
-  if (!base::ios::IsRunningOnOrLater(10, 3, 0) && UrlHasPhoneCallScheme(gURL)) {
-    // Showing an alert view immediately has a side-effect where focus is
-    // taken from the UIWebView so quickly that mouseup events are lost and
-    // buttons get 'stuck' in the on position. The solution is to defer
-    // showing the view.
-    [self performSelector:@selector(openPromptForURL:)
-               withObject:URL
-               afterDelay:0.0];
-    return YES;
-  }
 
   // Don't open external application if chrome is not active.
   if ([[UIApplication sharedApplication] applicationState] !=
       UIApplicationStateActive)
     return NO;
 
-  // Prompt user to open itunes when opening it is not a result of a link
-  // click.
-  if (!linkClicked && UrlHasAppStoreScheme(gURL)) {
-    [self performSelector:@selector(openExternalAppWithPromptForURL:)
-               withObject:URL
+  NSURL* URL = net::NSURLWithGURL(gURL);
+  NSMutableDictionary<NSString*, id>* params = [NSMutableDictionary dictionary];
+  if (base::ios::IsRunningOnOrLater(10, 3, 0)) {
+    if (UrlHasAppStoreScheme(gURL)) {
+      params[kAlertPrompt] =
+          l10n_util::GetNSString(IDS_IOS_OPEN_IN_ANOTHER_APP);
+      params[kAlertAction] =
+          l10n_util::GetNSString(IDS_IOS_APP_LAUNCHER_OPEN_APP_BUTTON_LABEL);
+    }
+  } else {
+    // Prior to iOS 10.3, iOS does not prompt user when facetime: and
+    // facetime-audio: URL schemes are opened, so Chrome needs to present an
+    // alert before placing a phone call.
+    if (UrlHasPhoneCallScheme(gURL)) {
+      params[kAlertPrompt] = [[self class] formatCallArgument:URL];
+      params[kAlertAction] = PromptActionString([URL scheme]);
+    }
+    // Prior to iOS 10.3, Chrome prompts user with an alert before opening
+    // App Store when user did not tap on any links and an iTunes app URL is
+    // opened. This maintains parity with Safari in pre-10.3 environment.
+    if (!linkClicked && UrlHasAppStoreScheme(gURL)) {
+      params[kAlertPrompt] =
+          l10n_util::GetNSString(IDS_IOS_OPEN_IN_ANOTHER_APP);
+      params[kAlertAction] =
+          l10n_util::GetNSString(IDS_IOS_APP_LAUNCHER_OPEN_APP_BUTTON_LABEL);
+    }
+  }
+  if ([params count] > 0) {
+    params[kAlertURL] = URL;
+    // Note: Showing an alert view immediately has a side-effect where focus is
+    // taken from the UIWebView so quickly that mouseup events are lost and
+    // buttons get 'stuck' in the on position. The solution is to defer
+    // showing the view using -performSelector:withObject:afterDelay:.
+    [self performSelector:@selector(openExternalAppWithPromptWithParams:)
+               withObject:params
                afterDelay:0.0];
     return YES;
   }
