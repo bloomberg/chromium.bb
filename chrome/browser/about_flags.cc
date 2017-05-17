@@ -2626,9 +2626,6 @@ const FeatureEntry kFeatureEntries[] = {
                                     kNoStatePrefetchFeatureVariations,
                                     "NoStatePrefetchValidation")},
 #if defined(OS_CHROMEOS)
-    {"cros-comp-updates", flag_descriptions::kCrosCompUpdatesName,
-     flag_descriptions::kCrosCompUpdatesDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(features::kCrosCompUpdates)},
     {"enable-android-wallpapers-app",
      flag_descriptions::kEnableAndroidWallpapersAppName,
      flag_descriptions::kEnableAndroidWallpapersAppDescription, kOsCrOS,
