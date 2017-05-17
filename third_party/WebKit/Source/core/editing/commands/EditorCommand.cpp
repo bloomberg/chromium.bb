@@ -2076,8 +2076,11 @@ static bool EnabledDelete(LocalFrame& frame,
 
 static bool EnabledInRichlyEditableText(LocalFrame& frame,
                                         Event*,
-                                        EditorCommandSource) {
+                                        EditorCommandSource source) {
   frame.GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
+  if (source == kCommandFromMenuOrKeyBinding &&
+      !frame.Selection().SelectionHasFocus())
+    return false;
   return !frame.Selection()
               .ComputeVisibleSelectionInDOMTreeDeprecated()
               .IsNone() &&
