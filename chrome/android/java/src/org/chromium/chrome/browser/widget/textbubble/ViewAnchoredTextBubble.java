@@ -112,10 +112,15 @@ public class ViewAnchoredTextBubble extends TextBubble
 
     private void refreshAnchorBounds() {
         mAnchorView.getLocationOnScreen(mCachedScreenCoordinates);
-        mAnchorRect.left = mCachedScreenCoordinates[0] + mInsetRect.left;
-        mAnchorRect.top = mCachedScreenCoordinates[1] + mInsetRect.top;
-        mAnchorRect.right = mAnchorRect.left + mAnchorView.getWidth() - mInsetRect.right;
-        mAnchorRect.bottom = mAnchorRect.top + mAnchorView.getHeight() - mInsetRect.bottom;
+        mAnchorRect.left = mCachedScreenCoordinates[0];
+        mAnchorRect.top = mCachedScreenCoordinates[1];
+        mAnchorRect.right = mAnchorRect.left + mAnchorView.getWidth();
+        mAnchorRect.bottom = mAnchorRect.top + mAnchorView.getHeight();
+
+        mAnchorRect.left += mInsetRect.left;
+        mAnchorRect.top += mInsetRect.top;
+        mAnchorRect.right -= mInsetRect.right;
+        mAnchorRect.bottom -= mInsetRect.bottom;
 
         // Account for the padding.
         boolean isRtl = ApiCompatibilityUtils.isLayoutRtl(mAnchorView);

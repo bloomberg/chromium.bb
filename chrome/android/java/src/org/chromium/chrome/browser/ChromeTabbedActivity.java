@@ -115,7 +115,6 @@ import org.chromium.chrome.browser.tabmodel.TabWindowManager;
 import org.chromium.chrome.browser.toolbar.ToolbarControlContainer;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.util.IntentUtils;
-import org.chromium.chrome.browser.util.MathUtils;
 import org.chromium.chrome.browser.vr_shell.VrShellDelegate;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetMetrics;
@@ -766,8 +765,8 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
         getAppMenuHandler().setMenuHighlight(R.id.downloads_menu_id);
         int yInsetPx =
                 getResources().getDimensionPixelOffset(R.dimen.text_bubble_menu_anchor_y_inset);
-        yInsetPx = MathUtils.flipSignIf(yInsetPx, FeatureUtilities.isChromeHomeEnabled());
-        textBubble.setInsetPx(0, yInsetPx, 0, 0);
+        textBubble.setInsetPx(0, FeatureUtilities.isChromeHomeEnabled() ? yInsetPx : 0, 0,
+                FeatureUtilities.isChromeHomeEnabled() ? 0 : yInsetPx);
         textBubble.show();
     }
 
