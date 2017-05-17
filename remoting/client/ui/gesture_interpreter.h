@@ -7,14 +7,15 @@
 
 #include <memory>
 
-#include "remoting/client/chromoting_session.h"
 #include "remoting/client/ui/desktop_viewport.h"
 #include "remoting/client/ui/fling_animation.h"
+#include "remoting/client/ui/input_strategy.h"
 #include "remoting/proto/event.pb.h"
 
 namespace remoting {
 
-class InputStrategy;
+class ChromotingSession;
+class RendererProxy;
 
 // This is a class for interpreting a raw touch input into actions like moving
 // the viewport and injecting mouse clicks.
@@ -22,9 +23,7 @@ class GestureInterpreter {
  public:
   enum GestureState { GESTURE_BEGAN, GESTURE_CHANGED, GESTURE_ENDED };
 
-  GestureInterpreter(
-      const DesktopViewport::TransformationCallback& on_transformation_changed,
-      ChromotingSession* input_stub);
+  GestureInterpreter(RendererProxy* renderer, ChromotingSession* input_stub);
   ~GestureInterpreter();
 
   // Coordinates of the OpenGL view surface will be used.
@@ -33,8 +32,8 @@ class GestureInterpreter {
   void Pinch(float pivot_x, float pivot_y, float scale);
 
   // Called whenever the user did a pan gesture. It can be one-finger pan, no
-  // matter long-press in on or not, or two-finger pan in conjunction with the
-  // pinch gesture. Two-finger pan without pinch is consider a scroll gesture.
+  // matter long-press in on or not, or two-finger pan in conjunction with pinch
+  // and long-press. Two-finger pan without pinch is consider a scroll gesture.
   void Pan(float translation_x, float translation_y);
 
   // Called when the user did a one-finger tap.
@@ -65,8 +64,23 @@ class GestureInterpreter {
                         float y,
                         protocol::MouseEvent_MouseButton button);
 
+  // Tracks the touch point and gets back the cursor position from the input
+  // strategy.
+  ViewMatrix::Point TrackAndGetPosition(float touch_x, float touch_y);
+
+  // If the cursor is visible, send the cursor position from the input strategy
+  // to the renderer.
+  void SetCursorPositionOnRenderer();
+
+  // Starts the given feedback at (cursor_x, cursor_y) if the feedback radius
+  // is non-zero.
+  void StartInputFeedback(float cursor_x,
+                          float cursor_y,
+                          InputStrategy::InputFeedbackType feedback_type);
+
   std::unique_ptr<InputStrategy> input_strategy_;
   DesktopViewport viewport_;
+  RendererProxy* renderer_;
   ChromotingSession* input_stub_;
   bool is_dragging_mode_ = false;
 

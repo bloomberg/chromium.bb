@@ -11,11 +11,11 @@
 #import "remoting/client/display/sys_opengl.h"
 
 #include "base/memory/ptr_util.h"
-#include "remoting/client/ui/view_matrix.h"
 
 namespace remoting {
 
 class ChromotingClientRuntime;
+class RendererProxy;
 
 namespace protocol {
 
@@ -48,8 +48,8 @@ class CursorShapeStub;
 // Called every time the GLKView dimension is initialized or changed.
 - (void)onSurfaceChanged:(const CGRect&)frame;
 
-- (void)onPixelTransformationChanged:(const remoting::ViewMatrix&)matrix;
-
+// Must be called immediately after the object is constructed.
+- (std::unique_ptr<remoting::RendererProxy>)CreateRendererProxy;
 - (std::unique_ptr<remoting::protocol::VideoRenderer>)CreateVideoRenderer;
 - (std::unique_ptr<remoting::protocol::CursorShapeStub>)CreateCursorShapeStub;
 

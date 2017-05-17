@@ -5,6 +5,8 @@
 #ifndef REMOTING_CLIENT_UI_INPUT_STRATEGY_H_
 #define REMOTING_CLIENT_UI_INPUT_STRATEGY_H_
 
+#include "remoting/client/ui/view_matrix.h"
+
 namespace remoting {
 
 class DesktopViewport;
@@ -13,13 +15,17 @@ class DesktopViewport;
 // are handled.
 class InputStrategy {
  public:
+  enum InputFeedbackType {
+    TAP_FEEDBACK,
+    LONG_PRESS_FEEDBACK,
+  };
+
   virtual ~InputStrategy() {}
 
   // Called when the GestureInterpreter receives a pinch gesture. The
   // implementation is responsible for modifying the viewport and observing the
   // change.
-  virtual void HandlePinch(float pivot_x,
-                           float pivot_y,
+  virtual void HandlePinch(const ViewMatrix::Point& pivot,
                            float scale,
                            DesktopViewport* viewport) = 0;
 
@@ -28,19 +34,24 @@ class InputStrategy {
   // change.
   // is_dragging_mode: true if the user is trying to drag something while
   //     panning on the screen.
-  virtual void HandlePan(float translation_x,
-                         float translation_y,
+  virtual void HandlePan(const ViewMatrix::Vector2D& translation,
                          bool is_dragging_mode,
                          DesktopViewport* viewport) = 0;
 
-  // Called when a gesture is done at location (touch_x, touch_y) and the
-  // GestureInterpreter needs to get back the cursor position to inject mouse
-  // the mouse event.
-  virtual void FindCursorPositions(float touch_x,
-                                   float touch_y,
-                                   const DesktopViewport& viewport,
-                                   float* cursor_x,
-                                   float* cursor_y) = 0;
+  // Called when a touch input (which will end up injecting a mouse event at
+  // certain position in the host) is done at |touch_point|.
+  // The implementation should move the cursor to proper position.
+  virtual void TrackTouchInput(const ViewMatrix::Point& touch_point,
+                               const DesktopViewport& viewport) = 0;
+
+  // Returns the current cursor position.
+  virtual ViewMatrix::Point GetCursorPosition() const = 0;
+
+  // Returns the maximum radius of the feedback animation on the surface's
+  // coordinate for the given input type. The feedback will then be shown on the
+  // cursor positions returned by GetCursorPosition(). Return 0 if no feedback
+  // should be shown.
+  virtual float GetFeedbackRadius(InputFeedbackType type) const = 0;
 
   // Returns true if the input strategy maintains a visible cursor on the
   // desktop.

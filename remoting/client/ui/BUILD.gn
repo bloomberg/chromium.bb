@@ -15,8 +15,14 @@ source_set("ui") {
     "gesture_interpreter.cc",
     "gesture_interpreter.h",
     "input_strategy.h",
+    "renderer_proxy.cc",
+    "renderer_proxy.h",
     "view_matrix.cc",
     "view_matrix.h",
+  ]
+
+  deps = [
+    "//remoting/client/display",
   ]
 
   public_deps = [

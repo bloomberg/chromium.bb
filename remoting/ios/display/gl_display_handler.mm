@@ -24,10 +24,13 @@
 #include "remoting/client/display/gl_renderer.h"
 #include "remoting/client/display/gl_renderer_delegate.h"
 #include "remoting/client/dual_buffer_frame_consumer.h"
-#include "remoting/client/queued_task_poster.h"
 #include "remoting/client/software_video_renderer.h"
+#include "remoting/client/ui/renderer_proxy.h"
 
 namespace remoting {
+
+class ViewMatrix;
+
 namespace GlDisplayHandler {
 
 // The core that lives on the display thread.
@@ -39,6 +42,8 @@ class Core : public protocol::CursorShapeStub, public GlRendererDelegate {
   void Initialize();
 
   void SetHandlerDelegate(id<GlDisplayHandlerDelegate> delegate);
+
+  std::unique_ptr<RendererProxy> GrabRendererProxy();
 
   // CursorShapeStub interface.
   void SetCursorShape(const protocol::CursorShapeInfo& cursor_shape) override;
@@ -53,13 +58,17 @@ class Core : public protocol::CursorShapeStub, public GlRendererDelegate {
   void Stop();
   void SurfaceCreated(GLKView* view);
   void SurfaceChanged(int width, int height);
-  void SetTransformation(const remoting::ViewMatrix& matrix);
+
   std::unique_ptr<protocol::FrameConsumer> GrabFrameConsumer();
   EAGLContext* GetEAGLContext();
   base::WeakPtr<Core> GetWeakPtr();
 
  private:
   remoting::ChromotingClientRuntime* runtime_;
+
+  // Will be std::move'd when GrabRendererProxy() is called.
+  std::unique_ptr<RendererProxy> owned_renderer_proxy_;
+  base::WeakPtr<RendererProxy> renderer_proxy_;
 
   // Will be std::move'd when GrabFrameConsumer() is called.
   std::unique_ptr<DualBufferFrameConsumer> owned_frame_consumer_;
@@ -93,6 +102,10 @@ Core::Core() : weak_factory_(this) {
       runtime_->display_task_runner(),
       protocol::FrameConsumer::PixelFormat::FORMAT_RGBA));
   frame_consumer_ = owned_frame_consumer_->GetWeakPtr();
+
+  owned_renderer_proxy_.reset(
+      new RendererProxy(runtime_->display_task_runner()));
+  renderer_proxy_ = owned_renderer_proxy_->GetWeakPtr();
 }
 
 Core::~Core() {
@@ -113,6 +126,8 @@ void Core::Initialize() {
 
   renderer_ = remoting::GlRenderer::CreateGlRendererWithDesktop();
 
+  renderer_proxy_->Initialize(renderer_->GetWeakPtr());
+
   //  renderer_.RequestCanvasSize();
 
   // demo_screen_ = new GlDemoScreen();
@@ -123,6 +138,11 @@ void Core::Initialize() {
 void Core::SetHandlerDelegate(id<GlDisplayHandlerDelegate> delegate) {
   DCHECK(runtime_->display_task_runner()->BelongsToCurrentThread());
   handler_delegate_ = delegate;
+}
+
+std::unique_ptr<RendererProxy> Core::GrabRendererProxy() {
+  DCHECK(owned_renderer_proxy_);
+  return std::move(owned_renderer_proxy_);
 }
 
 void Core::SetCursorShape(const protocol::CursorShapeInfo& cursor_shape) {
@@ -190,11 +210,6 @@ void Core::SurfaceChanged(int width, int height) {
   renderer_->OnSurfaceChanged(width, height);
 }
 
-void Core::SetTransformation(const remoting::ViewMatrix& matrix) {
-  DCHECK(runtime_->display_task_runner()->BelongsToCurrentThread());
-  renderer_->OnPixelTransformationChanged(matrix.ToMatrixArray());
-}
-
 EAGLContext* Core::GetEAGLContext() {
   return eagl_context_;
 }
@@ -209,7 +224,6 @@ base::WeakPtr<remoting::GlDisplayHandler::Core> Core::GetWeakPtr() {
 @interface GlDisplayHandler () {
   std::unique_ptr<remoting::GlDisplayHandler::Core> _core;
   remoting::ChromotingClientRuntime* _runtime;
-  std::unique_ptr<remoting::QueuedTaskPoster> _uiTaskPoster;
 }
 @end
 
@@ -220,8 +234,6 @@ base::WeakPtr<remoting::GlDisplayHandler::Core> Core::GetWeakPtr() {
   if (self) {
     _runtime = remoting::ChromotingClientRuntime::GetInstance();
     _core.reset(new remoting::GlDisplayHandler::Core());
-    _uiTaskPoster.reset(
-        new remoting::QueuedTaskPoster(_runtime->display_task_runner()));
   }
   return self;
 }
@@ -236,6 +248,10 @@ base::WeakPtr<remoting::GlDisplayHandler::Core> Core::GetWeakPtr() {
   _runtime->display_task_runner()->PostTask(
       FROM_HERE,
       base::Bind(&remoting::GlDisplayHandler::Core::Stop, _core->GetWeakPtr()));
+}
+
+- (std::unique_ptr<remoting::RendererProxy>)CreateRendererProxy {
+  return _core->GrabRendererProxy();
 }
 
 - (std::unique_ptr<remoting::protocol::VideoRenderer>)CreateVideoRenderer {
@@ -263,12 +279,6 @@ base::WeakPtr<remoting::GlDisplayHandler::Core> Core::GetWeakPtr() {
       FROM_HERE,
       base::Bind(&remoting::GlDisplayHandler::Core::SurfaceChanged,
                  _core->GetWeakPtr(), frame.size.width, frame.size.height));
-}
-
-- (void)onPixelTransformationChanged:(const remoting::ViewMatrix&)matrix {
-  _uiTaskPoster->AddTask(
-      base::Bind(&remoting::GlDisplayHandler::Core::SetTransformation,
-                 _core->GetWeakPtr(), matrix));
 }
 
 #pragma mark - Properties
