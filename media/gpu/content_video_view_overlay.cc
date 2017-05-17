@@ -28,9 +28,7 @@ ContentVideoViewOverlay::~ContentVideoViewOverlay() {
   ContentVideoViewOverlayAllocator::GetInstance()->DeallocateSurface(this);
 }
 
-void ContentVideoViewOverlay::ScheduleLayout(const gfx::Rect& rect) {
-  NOTIMPLEMENTED();
-}
+void ContentVideoViewOverlay::ScheduleLayout(const gfx::Rect& rect) {}
 
 const base::android::JavaRef<jobject>& ContentVideoViewOverlay::GetJavaSurface()
     const {

@@ -10,6 +10,7 @@
 
 #include "base/macros.h"
 #include "media/gpu/avda_state_provider.h"
+#include "media/gpu/avda_surface_bundle.h"
 #include "media/gpu/media_gpu_export.h"
 #include "media/gpu/surface_texture_gl_owner.h"
 
@@ -17,11 +18,6 @@ namespace gpu {
 namespace gles2 {
 class GLStreamTextureImage;
 }
-}
-
-namespace gl {
-class ScopedJavaSurface;
-class SurfaceTexture;
 }
 
 namespace media {
@@ -43,21 +39,24 @@ class MEDIA_GPU_EXPORT AVDAPictureBufferManager {
   explicit AVDAPictureBufferManager(AVDAStateProvider* state_provider);
   virtual ~AVDAPictureBufferManager();
 
-  // Call either InitializeForOverlay or InitializeForSurfaceTexture before
-  // anything else.  InitializeForOverlay will set us up to render codec buffers
-  // at the approrpriate time for display, but will assume that consuming the
-  // resulting buffers is handled elsewhere (e.g., SurfaceFlinger).
+  // Call Initialize, providing the surface bundle that holds the surface that
+  // will back the frames.  If an overlay is present in the bundle, then this
+  // will set us up to render codec buffers at the appropriate time for display,
+  // but will assume that consuming the resulting buffers is handled elsewhere
+  // (e.g., SurfaceFlinger).  We will ensure that any reference to the bundle
+  // is dropped if the overlay sends OnSurfaceDestroyed.
   //
-  // InitializeForSurfaceTexture will create a SurfaceTexture and return the
-  // surface for it.  We will arrange to consume the buffers at the right time,
-  // in addition to releasing codec buffers for rendering.
+  // Without an overlay, we will create a SurfaceTexture and add it (and its
+  // surface) to |surface_bundle|.  We will arrange to consume the buffers at
+  // the right time, in addition to releasing the codec buffers for rendering.
   //
   // One may call these multiple times to change between overlay and ST.
   //
   // Picture buffers will be updated to reflect the new surface during the call
   // to UseCodecBufferForPicture().
-  void InitializeForOverlay();
-  gl::ScopedJavaSurface InitializeForSurfaceTexture();
+  //
+  // Returns true on success.
+  bool Initialize(scoped_refptr<AVDASurfaceBundle> surface_bundle);
 
   void Destroy(const PictureBufferMap& buffers);
 
@@ -89,10 +88,6 @@ class MEDIA_GPU_EXPORT AVDAPictureBufferManager {
 
   // Are there any unrendered picture buffers oustanding?
   bool HasUnrenderedPictures() const;
-
-  scoped_refptr<gl::SurfaceTexture> surface_texture() {
-    return surface_texture_;
-  }
 
   // Returns the GL texture target that the PictureBuffer textures use.
   // Always use OES textures even though this will cause flickering in dev tools

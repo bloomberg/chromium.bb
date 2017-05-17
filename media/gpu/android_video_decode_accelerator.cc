@@ -497,19 +497,10 @@ void AndroidVideoDecodeAccelerator::InitializePictureBufferManager() {
   // TODO(liberato): it doesn't make sense anymore for the PictureBufferManager
   // to create the surface texture.  We can probably make an overlay impl out
   // of it, and provide the surface texture to |picture_buffer_manager_|.
-  if (incoming_bundle_->overlay) {
-    picture_buffer_manager_.InitializeForOverlay();
-  } else {
-    incoming_bundle_->surface_texture_surface =
-        picture_buffer_manager_.InitializeForSurfaceTexture();
-    incoming_bundle_->surface_texture =
-        picture_buffer_manager_.surface_texture();
-
-    if (!incoming_bundle_->surface_texture) {
-      NOTIFY_ERROR(PLATFORM_FAILURE, "Could not allocate surface texture");
-      incoming_bundle_ = nullptr;
-      return;
-    }
+  if (!picture_buffer_manager_.Initialize(incoming_bundle_)) {
+    NOTIFY_ERROR(PLATFORM_FAILURE, "Could not allocate surface texture");
+    incoming_bundle_ = nullptr;
+    return;
   }
 
   // If we have a media codec, then SetSurface.  If that doesn't work, then we

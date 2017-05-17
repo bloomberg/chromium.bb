@@ -91,6 +91,12 @@ bool AVDACodecImage::ScheduleOverlayPlane(gfx::AcceleratedWidget widget,
     return false;
   }
 
+  // Move the overlay if needed.
+  if (shared_state_->overlay() && most_recent_bounds_ != bounds_rect) {
+    most_recent_bounds_ = bounds_rect;
+    shared_state_->overlay()->ScheduleLayout(bounds_rect);
+  }
+
   UpdateSurface(UpdateMode::RENDER_TO_FRONT_BUFFER);
   return true;
 }
