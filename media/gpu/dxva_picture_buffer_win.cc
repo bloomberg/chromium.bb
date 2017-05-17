@@ -240,12 +240,12 @@ bool PbufferPictureBuffer::InitializeTexture(
         &desc, nullptr, dx11_decoding_texture_.GetAddressOf());
     RETURN_ON_HR_FAILURE(hr, "Failed to create texture", false);
     if (decoder.use_keyed_mutex_) {
-      hr = dx11_keyed_mutex_.QueryFrom(dx11_decoding_texture_.Get());
+      hr = dx11_decoding_texture_.CopyTo(dx11_keyed_mutex_.GetAddressOf());
       RETURN_ON_HR_FAILURE(hr, "Failed to get keyed mutex", false);
     }
 
     base::win::ScopedComPtr<IDXGIResource> resource;
-    hr = resource.QueryFrom(dx11_decoding_texture_.Get());
+    hr = dx11_decoding_texture_.CopyTo(resource.GetAddressOf());
     DCHECK(SUCCEEDED(hr));
     hr = resource->GetSharedHandle(&texture_share_handle_);
     RETURN_ON_FAILURE(SUCCEEDED(hr) && texture_share_handle_,
@@ -487,7 +487,7 @@ bool EGLStreamPictureBuffer::BindSampleToTexture(
   RETURN_ON_HR_FAILURE(hr, "Failed to get buffer from output sample", false);
 
   base::win::ScopedComPtr<IMFDXGIBuffer> dxgi_buffer;
-  hr = dxgi_buffer.QueryFrom(output_buffer.Get());
+  hr = output_buffer.CopyTo(dxgi_buffer.GetAddressOf());
   RETURN_ON_HR_FAILURE(hr, "Failed to get DXGIBuffer from output sample",
                        false);
   hr = dxgi_buffer->GetResource(
@@ -590,11 +590,11 @@ bool EGLStreamCopyPictureBuffer::Initialize(
       &desc, nullptr, decoder_copy_texture_.GetAddressOf());
   RETURN_ON_HR_FAILURE(hr, "Failed to create texture", false);
   DCHECK(decoder.use_keyed_mutex_);
-  hr = dx11_keyed_mutex_.QueryFrom(decoder_copy_texture_.Get());
+  hr = decoder_copy_texture_.CopyTo(dx11_keyed_mutex_.GetAddressOf());
   RETURN_ON_HR_FAILURE(hr, "Failed to get keyed mutex", false);
 
   base::win::ScopedComPtr<IDXGIResource> resource;
-  hr = resource.QueryFrom(decoder_copy_texture_.Get());
+  hr = decoder_copy_texture_.CopyTo(resource.GetAddressOf());
   DCHECK(SUCCEEDED(hr));
   hr = resource->GetSharedHandle(&texture_share_handle_);
   RETURN_ON_FAILURE(SUCCEEDED(hr) && texture_share_handle_,
@@ -603,7 +603,7 @@ bool EGLStreamCopyPictureBuffer::Initialize(
   hr = decoder.angle_device_->OpenSharedResource(
       texture_share_handle_, IID_PPV_ARGS(angle_copy_texture_.GetAddressOf()));
   RETURN_ON_HR_FAILURE(hr, "Failed to open shared resource", false);
-  hr = egl_keyed_mutex_.QueryFrom(angle_copy_texture_.Get());
+  hr = angle_copy_texture_.CopyTo(egl_keyed_mutex_.GetAddressOf());
   RETURN_ON_HR_FAILURE(hr, "Failed to get ANGLE mutex", false);
   return true;
 }

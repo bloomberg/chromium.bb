@@ -98,7 +98,7 @@ class AXPlatformNodeWinTest : public testing::Test {
       ScopedComPtr<IAccessible> accessible) {
     CHECK(accessible);
     ScopedComPtr<IServiceProvider> service_provider;
-    service_provider.QueryFrom(accessible.Get());
+    accessible.CopyTo(service_provider.GetAddressOf());
     ScopedComPtr<IAccessible2> result;
     CHECK(SUCCEEDED(service_provider->QueryService(IID_IAccessible2,
                                                    result.GetAddressOf())));
@@ -506,7 +506,7 @@ TEST_F(AXPlatformNodeWinTest, TestIAccessible2SetSelection) {
   ScopedComPtr<IAccessible2> ia2_text_field =
       ToIAccessible2(GetRootIAccessible());
   ScopedComPtr<IAccessibleText> text_field;
-  text_field.QueryFrom(ia2_text_field.Get());
+  ia2_text_field.CopyTo(text_field.GetAddressOf());
   ASSERT_NE(nullptr, text_field);
 
   EXPECT_HRESULT_SUCCEEDED(text_field->setSelection(0, 0, 1));

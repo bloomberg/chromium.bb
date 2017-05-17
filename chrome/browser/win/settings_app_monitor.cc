@@ -734,7 +734,7 @@ base::win::ScopedComPtr<IUIAutomationEventHandler>
 SettingsAppMonitor::Context::GetAutomationEventHandler() {
   DCHECK(task_runner_->BelongsToCurrentThread());
   base::win::ScopedComPtr<IUIAutomationEventHandler> handler;
-  handler.QueryFrom(GetEventHandler().Get());
+  GetEventHandler().CopyTo(handler.GetAddressOf());
   return handler;
 }
 
@@ -742,7 +742,7 @@ base::win::ScopedComPtr<IUIAutomationFocusChangedEventHandler>
 SettingsAppMonitor::Context::GetFocusChangedEventHandler() {
   DCHECK(task_runner_->BelongsToCurrentThread());
   base::win::ScopedComPtr<IUIAutomationFocusChangedEventHandler> handler;
-  handler.QueryFrom(GetEventHandler().Get());
+  GetEventHandler().CopyTo(handler.GetAddressOf());
   return handler;
 }
 

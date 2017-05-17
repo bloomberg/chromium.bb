@@ -231,7 +231,7 @@ std::string GetNameString(IDeviceInformation* info) {
 HRESULT GetPointerToBufferData(IBuffer* buffer, uint8_t** out) {
   ScopedComPtr<Windows::Storage::Streams::IBufferByteAccess> buffer_byte_access;
 
-  HRESULT hr = buffer_byte_access.QueryFrom(buffer);
+  HRESULT hr = buffer->QueryInterface(IID_PPV_ARGS(&buffer_byte_access));
   if (FAILED(hr)) {
     VLOG(1) << "QueryInterface failed: " << PrintHr(hr);
     return hr;

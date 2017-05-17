@@ -671,7 +671,7 @@ bool DXVAVideoDecodeAccelerator::CreateD3DDevManager() {
     using_angle_device_ = true;
 
   if (using_angle_device_) {
-    hr = d3d9_device_ex_.QueryFrom(angle_device.Get());
+    hr = angle_device.CopyTo(d3d9_device_ex_.GetAddressOf());
     RETURN_ON_HR_FAILURE(
         hr, "QueryInterface for IDirect3DDevice9Ex from angle device failed",
         false);
@@ -887,7 +887,7 @@ bool DXVAVideoDecodeAccelerator::CreateDX11DevManager() {
   // context are synchronized across threads. We have multiple threads
   // accessing the context, the media foundation decoder threads and the
   // decoder thread via the video format conversion transform.
-  hr = multi_threaded_.QueryFrom(D3D11Device());
+  hr = D3D11Device()->QueryInterface(IID_PPV_ARGS(&multi_threaded_));
   RETURN_ON_HR_FAILURE(hr, "Failed to query ID3D10Multithread", false);
   multi_threaded_->SetMultithreadProtected(TRUE);
 
@@ -1404,7 +1404,7 @@ bool DXVAVideoDecodeAccelerator::IsLegacyGPU(ID3D11Device* device) {
   legacy_gpu_determined = true;
 
   base::win::ScopedComPtr<IDXGIDevice> dxgi_device;
-  HRESULT hr = dxgi_device.QueryFrom(device);
+  HRESULT hr = device->QueryInterface(IID_PPV_ARGS(&dxgi_device));
   if (FAILED(hr))
     return legacy_gpu;
 
@@ -1959,7 +1959,7 @@ void DXVAVideoDecodeAccelerator::ProcessPendingSamples() {
 
       if (use_dx11_) {
         base::win::ScopedComPtr<IMFDXGIBuffer> dxgi_buffer;
-        hr = dxgi_buffer.QueryFrom(output_buffer.Get());
+        hr = output_buffer.CopyTo(dxgi_buffer.GetAddressOf());
         RETURN_AND_NOTIFY_ON_HR_FAILURE(
             hr, "Failed to get DXGIBuffer from output sample",
             PLATFORM_FAILURE, );
@@ -2694,7 +2694,7 @@ void DXVAVideoDecodeAccelerator::CopyTextureOnDecoderThread(
                                   PLATFORM_FAILURE, );
 
   base::win::ScopedComPtr<IMFDXGIBuffer> dxgi_buffer;
-  hr = dxgi_buffer.QueryFrom(output_buffer.Get());
+  hr = output_buffer.CopyTo(dxgi_buffer.GetAddressOf());
   RETURN_AND_NOTIFY_ON_HR_FAILURE(
       hr, "Failed to get DXGIBuffer from output sample", PLATFORM_FAILURE, );
   UINT index = 0;
@@ -2932,7 +2932,7 @@ bool DXVAVideoDecodeAccelerator::GetVideoFrameDimensions(IMFSample* sample,
   if (use_dx11_) {
     base::win::ScopedComPtr<IMFDXGIBuffer> dxgi_buffer;
     base::win::ScopedComPtr<ID3D11Texture2D> d3d11_texture;
-    hr = dxgi_buffer.QueryFrom(output_buffer.Get());
+    hr = output_buffer.CopyTo(dxgi_buffer.GetAddressOf());
     RETURN_ON_HR_FAILURE(hr, "Failed to get DXGIBuffer from output sample",
                          false);
     hr = dxgi_buffer->GetResource(

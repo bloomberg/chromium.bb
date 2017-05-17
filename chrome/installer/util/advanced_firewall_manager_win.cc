@@ -4,6 +4,7 @@
 
 #include "chrome/installer/util/advanced_firewall_manager_win.h"
 
+#include <objbase.h>
 #include <stddef.h>
 
 #include "base/guid.h"
@@ -158,7 +159,7 @@ void AdvancedFirewallManager::GetAllRules(
   }
 
   base::win::ScopedComPtr<IEnumVARIANT> rules_enum;
-  hr = rules_enum.QueryFrom(rules_enum_unknown.Get());
+  hr = rules_enum_unknown.CopyTo(rules_enum.GetAddressOf());
   if (FAILED(hr)) {
     DLOG(ERROR) << logging::SystemErrorCodeToString(hr);
     return;
@@ -176,7 +177,7 @@ void AdvancedFirewallManager::GetAllRules(
       continue;
     }
     base::win::ScopedComPtr<INetFwRule> rule;
-    hr = rule.QueryFrom(V_DISPATCH(rule_var.ptr()));
+    hr = V_DISPATCH(rule_var.ptr())->QueryInterface(IID_PPV_ARGS(&rule));
     if (FAILED(hr)) {
       DLOG(ERROR) << logging::SystemErrorCodeToString(hr);
       continue;

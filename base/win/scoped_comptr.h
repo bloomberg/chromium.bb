@@ -116,13 +116,6 @@ class ScopedComPtr {
     return ptr_->QueryInterface(iid, obj);
   }
 
-  // Queries |other| for the interface this object wraps and returns the
-  // error code from the other->QueryInterface operation.
-  HRESULT QueryFrom(IUnknown* object) {
-    DCHECK(object);
-    return object->QueryInterface(IID_PPV_ARGS(GetAddressOf()));
-  }
-
   // Convenience wrapper around CoCreateInstance
   HRESULT CreateInstance(const CLSID& clsid,
                          IUnknown* outer = nullptr,
