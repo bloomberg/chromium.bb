@@ -17,6 +17,7 @@
 #include "content/public/renderer/render_frame_observer_tracker.h"
 #include "content/renderer/media/media_stream_dispatcher_eventhandler.h"
 #include "content/renderer/pepper/pepper_device_enumeration_host_helper.h"
+#include "ppapi/c/pp_instance.h"
 
 namespace content {
 class MediaStreamDispatcher;
@@ -51,7 +52,7 @@ class PepperMediaDeviceManager
   // CloseDevice() and GetSesssionID().
   int OpenDevice(PP_DeviceType_Dev type,
                  const std::string& device_id,
-                 const GURL& document_url,
+                 PP_Instance pp_instance,
                  const OpenDeviceCallback& callback);
   // Cancels an request to open device, using the request ID returned by
   // OpenDevice(). It is guaranteed that the callback passed into OpenDevice()

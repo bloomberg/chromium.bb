@@ -90,7 +90,6 @@ int32_t PepperAudioInputHost::OnOpen(ppapi::host::HostMessageContext* context,
       renderer_ppapi_host_->GetRenderFrameForInstance(pp_instance())->
           GetRoutingID(),
       device_id,
-      document_url,
       static_cast<int>(sample_rate),
       static_cast<int>(sample_frame_count),
       this);

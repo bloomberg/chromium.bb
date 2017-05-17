@@ -90,7 +90,7 @@ int32_t PepperCameraDeviceHost::OnOpen(ppapi::host::HostMessageContext* context,
   platform_camera_device_.reset(new PepperPlatformCameraDevice(
       renderer_ppapi_host_->GetRenderFrameForInstance(pp_instance())
           ->GetRoutingID(),
-      device_id, document_url, this));
+      device_id, this));
 
   open_reply_context_ = context->MakeReplyMessageContext();
 

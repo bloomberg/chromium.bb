@@ -16,8 +16,6 @@
 #include "content/common/media/video_capture.h"
 #include "media/capture/video_capture_types.h"
 
-class GURL;
-
 namespace content {
 class PepperMediaDeviceManager;
 class PepperCameraDeviceHost;
@@ -27,7 +25,6 @@ class PepperPlatformCameraDevice {
  public:
   PepperPlatformCameraDevice(int render_frame_id,
                              const std::string& device_id,
-                             const GURL& document_url,
                              PepperCameraDeviceHost* handler);
   ~PepperPlatformCameraDevice();
 

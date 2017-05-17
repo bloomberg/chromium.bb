@@ -17,8 +17,6 @@
 #include "content/common/media/video_capture.h"
 #include "media/capture/video_capture_types.h"
 
-class GURL;
-
 namespace media {
 class VideoFrame;
 }  // namespace media
@@ -32,7 +30,6 @@ class PepperPlatformVideoCapture {
  public:
   PepperPlatformVideoCapture(int render_frame_id,
                              const std::string& device_id,
-                             const GURL& document_url,
                              PepperVideoCaptureHost* handler);
   virtual ~PepperPlatformVideoCapture();
 

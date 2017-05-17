@@ -11,6 +11,7 @@
 #include "base/process/process_handle.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "content/public/common/origin_util.h"
 #include "content/renderer/pepper/fullscreen_container.h"
 #include "content/renderer/pepper/host_globals.h"
 #include "content/renderer/pepper/pepper_browser_connection.h"
@@ -276,6 +277,14 @@ GURL RendererPpapiHostImpl::GetDocumentURL(PP_Instance pp_instance) const {
   if (!instance)
     return GURL();
   return instance->document_url();
+}
+
+bool RendererPpapiHostImpl::IsSecureContext(PP_Instance pp_instance) const {
+  PepperPluginInstanceImpl* instance = GetAndValidateInstance(pp_instance);
+  if (!instance)
+    return false;
+  return instance->GetContainer()->GetDocument().IsSecureContext() &&
+         content::IsOriginSecure(instance->GetPluginURL());
 }
 
 PepperPluginInstanceImpl* RendererPpapiHostImpl::GetAndValidateInstance(
