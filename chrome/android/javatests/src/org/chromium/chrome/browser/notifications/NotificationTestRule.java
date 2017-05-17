@@ -8,10 +8,15 @@ import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
 
 import android.app.Notification;
 
+import org.junit.Assert;
+import org.junit.runner.Description;
+import org.junit.runners.model.Statement;
+
 import org.chromium.base.ThreadUtils;
+import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.preferences.website.ContentSetting;
 import org.chromium.chrome.browser.preferences.website.NotificationInfo;
-import org.chromium.chrome.test.ChromeTabbedActivityTestBase;
+import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.util.browser.notifications.MockNotificationManagerProxy;
 import org.chromium.chrome.test.util.browser.notifications.MockNotificationManagerProxy.NotificationEntry;
 import org.chromium.content.browser.test.util.Criteria;
@@ -26,7 +31,7 @@ import java.util.concurrent.TimeoutException;
  *
  * Web Notifications are only supported on Android JellyBean and beyond.
  */
-public class NotificationTestBase extends ChromeTabbedActivityTestBase {
+public class NotificationTestRule extends ChromeActivityTestRule<ChromeTabbedActivity> {
     /** The maximum time to wait for a criteria to become valid. */
     private static final long MAX_TIME_TO_POLL_MS = scaleTimeout(6000);
 
@@ -36,28 +41,39 @@ public class NotificationTestBase extends ChromeTabbedActivityTestBase {
     private MockNotificationManagerProxy mMockNotificationManager;
     private EmbeddedTestServer mTestServer;
 
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
+    public NotificationTestRule() {
+        super(ChromeTabbedActivity.class);
+    }
+
+    private void setUp() throws Exception {
+        // The NotificationPlatformBridge must be overriden prior to the browser process starting.
+        mMockNotificationManager = new MockNotificationManagerProxy();
+        NotificationPlatformBridge.overrideNotificationManagerForTesting(mMockNotificationManager);
+        startMainActivityFromLauncher();
         mTestServer = EmbeddedTestServer.createAndStartServer(getInstrumentation().getContext());
     }
 
+    private void tearDown() throws Exception {
+        NotificationPlatformBridge.overrideNotificationManagerForTesting(null);
+        mTestServer.stopAndDestroyServer();
+    }
+
     /** Returns the test server. */
-    protected EmbeddedTestServer getTestServer() {
+    public EmbeddedTestServer getTestServer() {
         return mTestServer;
     }
 
     /**
      * Returns the origin of the HTTP server the test is being ran on.
      */
-    protected String getOrigin() {
+    public String getOrigin() {
         return mTestServer.getURL("/");
     }
 
     /**
      * Sets the permission to use Web Notifications for the test HTTP server's origin to |setting|.
      */
-    protected void setNotificationContentSettingForCurrentOrigin(final ContentSetting setting)
+    public void setNotificationContentSettingForCurrentOrigin(final ContentSetting setting)
             throws InterruptedException, TimeoutException {
         final String origin = getOrigin();
 
@@ -72,11 +88,11 @@ public class NotificationTestBase extends ChromeTabbedActivityTestBase {
 
         String permission = runJavaScriptCodeInCurrentTab("Notification.permission");
         if (setting == ContentSetting.ALLOW) {
-            assertEquals("\"granted\"", permission);
+            Assert.assertEquals("\"granted\"", permission);
         } else if (setting == ContentSetting.BLOCK) {
-            assertEquals("\"denied\"", permission);
+            Assert.assertEquals("\"denied\"", permission);
         } else {
-            assertEquals("\"default\"", permission);
+            Assert.assertEquals("\"default\"", permission);
         }
     }
 
@@ -89,7 +105,7 @@ public class NotificationTestBase extends ChromeTabbedActivityTestBase {
      * @param options Optional map of options to include when showing the notification.
      * @return The Android Notification object, as shown in the framework.
      */
-    protected Notification showAndGetNotification(String title, String options)
+    public Notification showAndGetNotification(String title, String options)
             throws InterruptedException, TimeoutException {
         runJavaScriptCodeInCurrentTab("showNotification(\"" + title + "\", " + options + ");");
         return waitForNotification().notification;
@@ -101,14 +117,14 @@ public class NotificationTestBase extends ChromeTabbedActivityTestBase {
      *
      * @return The NotificationEntry object tracked by the MockNotificationManagerProxy.
      */
-    protected NotificationEntry waitForNotification() throws InterruptedException {
+    public NotificationEntry waitForNotification() {
         waitForNotificationManagerMutation();
         List<NotificationEntry> notifications = getNotificationEntries();
-        assertEquals(1, notifications.size());
+        Assert.assertEquals(1, notifications.size());
         return notifications.get(0);
     }
 
-    protected List<NotificationEntry> getNotificationEntries() {
+    public List<NotificationEntry> getNotificationEntries() {
         return mMockNotificationManager.getNotifications();
     }
 
@@ -116,7 +132,7 @@ public class NotificationTestBase extends ChromeTabbedActivityTestBase {
      * Waits for a mutation to occur in the mocked notification manager. This indicates that Chrome
      * called into Android to notify or cancel a notification.
      */
-    protected void waitForNotificationManagerMutation() {
+    public void waitForNotificationManagerMutation() {
         CriteriaHelper.pollUiThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
@@ -126,18 +142,14 @@ public class NotificationTestBase extends ChromeTabbedActivityTestBase {
     }
 
     @Override
-    public void startMainActivity() throws InterruptedException {
-        // The NotificationPlatformBridge must be overriden prior to the browser process starting.
-        mMockNotificationManager = new MockNotificationManagerProxy();
-        NotificationPlatformBridge.overrideNotificationManagerForTesting(mMockNotificationManager);
-
-        startMainActivityFromLauncher();
-    }
-
-    @Override
-    protected void tearDown() throws Exception {
-        NotificationPlatformBridge.overrideNotificationManagerForTesting(null);
-        mTestServer.stopAndDestroyServer();
-        super.tearDown();
+    public Statement apply(final Statement base, Description description) {
+        return super.apply(new Statement() {
+            @Override
+            public void evaluate() throws Throwable {
+                setUp();
+                base.evaluate();
+                tearDown();
+            }
+        }, description);
     }
 }
