@@ -2200,12 +2200,6 @@ def generate_gtest(tester_name, tester_config, test, test_config):
       'dimension_sets': tester_config['swarming_dimensions']
     })
     if is_android(tester_config):
-      # Override the isolate target to get rid of any "_apk" suffix
-      # that would be added by the recipes.
-      if 'test' in result:
-        result['override_isolate_target'] = result['test']
-      else:
-        result['override_isolate_target'] = result['name']
       # Integrate with the unified logcat system.
       result['swarming'].update({
         'cipd_packages': [
