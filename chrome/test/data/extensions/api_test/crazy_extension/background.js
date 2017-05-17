@@ -25,9 +25,15 @@ chrome.test.runTests([
           // Second test is that it does if accessed before removal.
           var iframeChrome = iframe.contentWindow.chrome;
           var iframeChromeApp = iframeChrome.app;
-          chrome.test.assertTrue(typeof(iframeChromeApp) == 'object');
+          chrome.test.assertEq('object', typeof iframeChromeApp);
           document.body.removeChild(iframe);
-          chrome.test.assertTrue(typeof(iframeChrome.app) == 'object');
+          // Once the iframe is removed, the API may or may not be present on
+          // the chrome object. In practice, this depends on whether native
+          // bindings are enabled (with native bindings, it will be undefined).
+          // Conceptually, all we really care about is that it's something sane
+          // and nothing crashes.
+          chrome.test.assertTrue(typeof iframeChrome.app == 'object' ||
+                                 typeof iframeChrome.app == 'undefined');
           document.body.appendChild(iframe);
           break;
         }
