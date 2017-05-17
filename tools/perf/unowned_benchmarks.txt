@@ -22,5 +22,3 @@ system_health.webview_startup_multiprocess
 thread_times.key_hit_test_cases
 thread_times.key_mobile_sites_smooth
 thread_times.key_noop_cases
-webrtc.getusermedia
-webrtc.peerconnection
