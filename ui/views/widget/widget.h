@@ -501,7 +501,8 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
 
   // Shows the widget. The widget is activated if during initialization the
   // can_activate flag in the InitParams structure is set to true.
-  virtual void Show();
+  void Show();
+
   // Hides the widget.
   void Hide();
 
