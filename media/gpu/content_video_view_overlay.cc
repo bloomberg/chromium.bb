@@ -60,7 +60,7 @@ void ContentVideoViewOverlay::OnSurfaceAvailable(bool success) {
 }
 
 void ContentVideoViewOverlay::OnSurfaceDestroyed() {
-  config_.is_destroyed(this);
+  RunSurfaceDestroyedCallbacks();
   // |this| may be deleted, or deletion might be posted elsewhere.
 }
 

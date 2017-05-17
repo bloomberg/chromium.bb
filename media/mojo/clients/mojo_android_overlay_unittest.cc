@@ -80,8 +80,6 @@ class MojoAndroidOverlayTest : public ::testing::Test {
                                   base::Unretained(&callbacks_));
     config_.failed_cb = base::Bind(&MockClientCallbacks::OnFailed,
                                    base::Unretained(&callbacks_));
-    config_.destroyed_cb = base::Bind(&MockClientCallbacks::OnDestroyed,
-                                      base::Unretained(&callbacks_));
 
     // Make sure that we have an implementation of GpuSurfaceLookup.
     gpu::GpuSurfaceTracker::Get();
@@ -111,6 +109,8 @@ class MojoAndroidOverlayTest : public ::testing::Test {
 
     overlay_client_.reset(new MojoAndroidOverlay(
         std::move(provider_ptr), std::move(config_), routing_token));
+    overlay_client_->AddSurfaceDestroyedCallback(base::Bind(
+        &MockClientCallbacks::OnDestroyed, base::Unretained(&callbacks_)));
     base::RunLoop().RunUntilIdle();
   }
 

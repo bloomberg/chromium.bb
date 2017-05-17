@@ -251,14 +251,12 @@ class FakeOverlayChooser : public NiceMock<AndroidVideoSurfaceChooser> {
 
   void Initialize(UseOverlayCB use_overlay_cb,
                   UseSurfaceTextureCB use_surface_texture_cb,
-                  StopUsingOverlayImmediatelyCB stop_immediately_cb,
                   AndroidOverlayFactoryCB initial_factory) override {
     MockInitialize();
 
     factory_ = std::move(initial_factory);
     use_overlay_cb_ = std::move(use_overlay_cb);
     use_surface_texture_cb_ = std::move(use_surface_texture_cb);
-    stop_immediately_cb_ = std::move(stop_immediately_cb);
   }
 
   void ReplaceOverlayFactory(AndroidOverlayFactoryCB factory) override {
@@ -277,14 +275,8 @@ class FakeOverlayChooser : public NiceMock<AndroidVideoSurfaceChooser> {
     base::RunLoop().RunUntilIdle();
   }
 
-  void StopImmediately(AndroidOverlay* overlay) {
-    stop_immediately_cb_.Run(overlay);
-    base::RunLoop().RunUntilIdle();
-  }
-
   UseOverlayCB use_overlay_cb_;
   UseSurfaceTextureCB use_surface_texture_cb_;
-  StopUsingOverlayImmediatelyCB stop_immediately_cb_;
 
   AndroidOverlayFactoryCB factory_;
 
@@ -354,6 +346,8 @@ class AndroidVideoDecodeAcceleratorTest : public testing::Test {
     // provided with that overlay.
     std::unique_ptr<MockAndroidOverlay> overlay =
         base::MakeUnique<MockAndroidOverlay>();
+    overlay_callbacks_ = overlay->GetCallbacks();
+
     // Set the expectations first, since ProvideOverlay might cause callbacks.
     EXPECT_CALL(codec_allocator_,
                 MockCreateMediaCodecAsync(overlay.get(), nullptr));
@@ -409,6 +403,9 @@ class AndroidVideoDecodeAcceleratorTest : public testing::Test {
   VideoDecodeAccelerator::Config config_;
 
   AndroidVideoDecodeAccelerator::PlatformConfig platform_config_;
+
+  // Set by InitializeAVDAWithOverlay()
+  MockAndroidOverlay::Callbacks overlay_callbacks_;
 
   // We maintain a weak ref to this since AVDA owns it.
   base::WeakPtr<FakeOverlayChooser> chooser_;
@@ -554,7 +551,8 @@ TEST_F(AndroidVideoDecodeAcceleratorTest,
   EXPECT_CALL(*codec_allocator_.most_recent_codec(), SetSurface(_))
       .WillOnce(Return(true));
   codec_allocator_.codec_destruction_observer()->DestructionIsOptional();
-  chooser_->StopImmediately(codec_allocator_.most_recent_overlay());
+  overlay_callbacks_.SurfaceDestroyed.Run();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_CALL(codec_allocator_,
               MockReleaseMediaCodec(codec_allocator_.most_recent_codec(),
@@ -671,7 +669,7 @@ TEST_F(AndroidVideoDecodeAcceleratorTest,
       MockReleaseMediaCodec(codec_allocator_.most_recent_codec(),
                             codec_allocator_.most_recent_overlay(), nullptr));
   codec_allocator_.codec_destruction_observer()->ExpectDestruction();
-  chooser_->StopImmediately(codec_allocator_.most_recent_overlay());
+  overlay_callbacks_.SurfaceDestroyed.Run();
   base::RunLoop().RunUntilIdle();
 
   // Verify that the codec has been released, since |vda_| will be destroyed

@@ -427,13 +427,17 @@ void AndroidVideoDecodeAccelerator::StartSurfaceChooser() {
                  weak_this_factory_.GetWeakPtr()),
       base::Bind(&AndroidVideoDecodeAccelerator::OnSurfaceTransition,
                  weak_this_factory_.GetWeakPtr(), nullptr),
-      base::Bind(&AndroidVideoDecodeAccelerator::OnStopUsingOverlayImmediately,
-                 weak_this_factory_.GetWeakPtr()),
       std::move(factory));
 }
 
 void AndroidVideoDecodeAccelerator::OnSurfaceTransition(
     std::unique_ptr<AndroidOverlay> overlay) {
+  if (overlay) {
+    overlay->AddSurfaceDestroyedCallback(base::Bind(
+        &AndroidVideoDecodeAccelerator::OnStopUsingOverlayImmediately,
+        weak_this_factory_.GetWeakPtr()));
+  }
+
   // If we're waiting for a surface (e.g., during startup), then proceed
   // immediately.  Otherwise, wait for Dequeue to handle it.  This can probably
   // be merged with UpdateSurface.

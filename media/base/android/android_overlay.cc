@@ -6,4 +6,31 @@
 
 namespace media {
 
+AndroidOverlay::AndroidOverlay() : weak_factory_(this) {}
+AndroidOverlay::~AndroidOverlay() {}
+
+void AndroidOverlay::AddSurfaceDestroyedCallback(
+    AndroidOverlayConfig::DestroyedCB cb) {
+  destruction_cbs_.push_back(std::move(cb));
+}
+
+void AndroidOverlay::RunSurfaceDestroyedCallbacks() {
+  if (destruction_cbs_.empty())
+    return;
+
+  // Move the list, in case it's modified during traversal.
+  std::list<AndroidOverlayConfig::DestroyedCB> cbs =
+      std::move(destruction_cbs_);
+
+  // Get a wp for |this|, in case it's destroyed during a callback.
+  base::WeakPtr<AndroidOverlay> wp = weak_factory_.GetWeakPtr();
+
+  for (auto& cb : cbs) {
+    std::move(cb).Run(this);
+    // If |this| has been deleted, then stop here.
+    if (!wp)
+      return;
+  }
+}
+
 }  // namespace media

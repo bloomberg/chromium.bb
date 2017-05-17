@@ -43,7 +43,7 @@ void MockAndroidOverlay::OnOverlayFailed() {
 }
 
 void MockAndroidOverlay::OnSurfaceDestroyed() {
-  config_->is_destroyed(this);
+  RunSurfaceDestroyedCallbacks();
 }
 
 }  // namespace media

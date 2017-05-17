@@ -14,11 +14,9 @@ AndroidVideoSurfaceChooserImpl::~AndroidVideoSurfaceChooserImpl() {}
 void AndroidVideoSurfaceChooserImpl::Initialize(
     UseOverlayCB use_overlay_cb,
     UseSurfaceTextureCB use_surface_texture_cb,
-    StopUsingOverlayImmediatelyCB stop_immediately_cb,
     AndroidOverlayFactoryCB initial_factory) {
   use_overlay_cb_ = std::move(use_overlay_cb);
   use_surface_texture_cb_ = std::move(use_surface_texture_cb);
-  stop_immediately_cb_ = std::move(stop_immediately_cb);
 
   if (initial_factory) {
     // We requested an overlay.  Wait to see if it succeeds or fails, since
@@ -78,14 +76,15 @@ void AndroidVideoSurfaceChooserImpl::ReplaceOverlayFactory(
   config.failed_cb =
       base::Bind(&AndroidVideoSurfaceChooserImpl::OnOverlayFailed,
                  weak_factory_.GetWeakPtr());
-  config.destroyed_cb =
-      base::Bind(&AndroidVideoSurfaceChooserImpl::OnSurfaceDestroyed,
-                 weak_factory_.GetWeakPtr());
   // TODO(liberato): where do we get the initial size from?  For CVV, it's
   // set via the natural size, and this is ignored anyway.  The client should
   // provide this.
   config.rect = gfx::Rect(0, 0, 1, 1);
   overlay_ = overlay_factory_.Run(std::move(config));
+  // We could add a destruction callback here, if we need to find out when the
+  // surface has been destroyed.  It might also be good to have a 'overlay has
+  // been destroyed' callback from ~AndroidOverlay, since we don't really know
+  // how long that will take after SurfaceDestroyed.
 }
 
 void AndroidVideoSurfaceChooserImpl::OnOverlayReady(AndroidOverlay* overlay) {
@@ -112,30 +111,6 @@ void AndroidVideoSurfaceChooserImpl::OnOverlayFailed(AndroidOverlay* overlay) {
   }
 
   overlay_ = nullptr;
-}
-
-void AndroidVideoSurfaceChooserImpl::OnSurfaceDestroyed(
-    AndroidOverlay* overlay) {
-  // We shouldn't get OnSurfaceDestroyed unless we previously got Ready.  In
-  // that case, we should have notified the client then.
-  DCHECK(!client_notification_pending_);
-
-  // We should not get OnSurfaceDestroyed for the incoming overlay, since we
-  // should't get OnSurfaceDestroyed before OnSurfaceReady.  OnSurfaceReady
-  // should imply that this isn't the incoming overlay.
-  DCHECK_NE(overlay_.get(), overlay);
-
-  // We unconditionally send 'stop immediately', since we don't know what
-  // overlay this is.  Even if we revoked the overlay before, we may have done
-  // so with the slow transition, which isn't good enough now.  The client has
-  // to be smart enoug to understand if it's currently using |overlay| or not.
-
-  // Also remember that we don't know when the client drops the overlay, after
-  // we revoke it.  We can get callbacks until that happens, even if (for
-  // example), the overlay is waiting for MediaCodec destruction.  So, it's
-  // likely that we'll send callbacks for overlays that the client is already
-  // not using.
-  stop_immediately_cb_.Run(overlay);
 }
 
 }  // namespace media

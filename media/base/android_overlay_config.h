@@ -42,13 +42,9 @@ struct MEDIA_EXPORT AndroidOverlayConfig {
   // Convenient helpers since the syntax is weird.
   void is_ready(AndroidOverlay* overlay) { std::move(ready_cb).Run(overlay); }
   void is_failed(AndroidOverlay* overlay) { std::move(failed_cb).Run(overlay); }
-  void is_destroyed(AndroidOverlay* overlay) {
-    std::move(destroyed_cb).Run(overlay);
-  }
 
   ReadyCB ready_cb;
   FailedCB failed_cb;
-  DestroyedCB destroyed_cb;
 
   DISALLOW_COPY(AndroidOverlayConfig);
 };

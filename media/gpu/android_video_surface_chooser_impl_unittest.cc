@@ -39,7 +39,6 @@ class MockClient {
 
   // Note that this won't clear |overlay_|, which is helpful.
   MOCK_METHOD0(UseSurfaceTexture, void(void));
-  MOCK_METHOD1(StopUsingOverlayImmediately, void(AndroidOverlay*));
 
  private:
   std::unique_ptr<AndroidOverlay> overlay_;
@@ -80,8 +79,6 @@ class AndroidVideoSurfaceChooserImplTest : public testing::Test {
     chooser_->Initialize(
         base::Bind(&MockClient::UseOverlayImpl, base::Unretained(&client_)),
         base::Bind(&MockClient::UseSurfaceTexture, base::Unretained(&client_)),
-        base::Bind(&MockClient::StopUsingOverlayImmediately,
-                   base::Unretained(&client_)),
         std::move(factory));
   }
 
@@ -198,63 +195,6 @@ TEST_F(AndroidVideoSurfaceChooserImplTest,
   destruction_observer_ = nullptr;
   EXPECT_CALL(client_, UseSurfaceTexture());
   overlay_callbacks_.OverlayFailed.Run();
-}
-
-TEST_F(AndroidVideoSurfaceChooserImplTest,
-       OnSurfaceDestroyedSendsNotification) {
-  // If |chooser_| is notified about OnSurfaceDestroyed, then |client_| should
-  // also be notified.
-
-  EXPECT_CALL(*this, MockOnOverlayCreated());
-  StartChooser(FactoryFor(std::move(overlay_)));
-  EXPECT_CALL(client_, UseOverlay(NotNull()));
-  overlay_callbacks_.OverlayReady.Run();
-
-  testing::Mock::VerifyAndClearExpectations(&client_);
-  testing::Mock::VerifyAndClearExpectations(this);
-
-  // Switch to a surface texture.  OnSurfaceDestroyed should still be sent.
-  EXPECT_CALL(client_, UseSurfaceTexture());
-  chooser_->ReplaceOverlayFactory(AndroidOverlayFactoryCB());
-  testing::Mock::VerifyAndClearExpectations(&client_);
-
-  EXPECT_CALL(client_, StopUsingOverlayImmediately(NotNull()));
-  overlay_callbacks_.SurfaceDestroyed.Run();
-}
-
-TEST_F(AndroidVideoSurfaceChooserImplTest,
-       OnSurfaceDestroyedSendsNotificationAfterSwitch) {
-  // This tests two things.  First:
-  // If |chooser_| is notified about OnSurfaceDestroyed, then |client_| should
-  // also be notified even if |chooser_| has already told |client_| to
-  // transition to SurfaceTexture.  It has no idea if |client_| has actually
-  // transitioned, so it has to notify it to stop immediately, in case it
-  // hasn't. Second: |chooser_| should notify |client_| to switch to surface
-  // texture if it provided an overlay, and the factory is changed.  This
-  // indicates that whoever provided the factory is revoking it, so we shouldn't
-  // be using overlays from that factory anymore. We specifically test overlay
-  // => no factory, since |chooser_| could elide multiple calls to switch to
-  // surface texture.
-  //
-  // We test these together, since switching the factory is the only way we have
-  // to make |chooser_| transition to SurfaceTexture without sending destroyed.
-
-  EXPECT_CALL(*this, MockOnOverlayCreated());
-  StartChooser(FactoryFor(std::move(overlay_)));
-  EXPECT_CALL(client_, UseOverlay(NotNull()));
-  overlay_callbacks_.OverlayReady.Run();
-
-  testing::Mock::VerifyAndClearExpectations(&client_);
-  testing::Mock::VerifyAndClearExpectations(this);
-
-  // Switch factories, to notify the client back to switch to SurfaceTexture.
-  EXPECT_CALL(client_, UseSurfaceTexture());
-  chooser_->ReplaceOverlayFactory(AndroidOverlayFactoryCB());
-  testing::Mock::VerifyAndClearExpectations(&client_);
-
-  // Destroy the original surface.
-  EXPECT_CALL(client_, StopUsingOverlayImmediately(NotNull()));
-  overlay_callbacks_.SurfaceDestroyed.Run();
 }
 
 TEST_F(AndroidVideoSurfaceChooserImplTest, NullLaterOverlayUsesSurfaceTexture) {
