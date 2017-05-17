@@ -5,25 +5,51 @@
   parameters: {
     // The name parameter represents the name of the function to be created.
 
-    // The fields that need to be diffed.
-    fields: {
+    fields_to_diff: {
+    },
+
+    // A list of methods to diff (these can be public getters of fields or 
+    // functions that use fields to determine a value).
+    // Each entry is expressed as a dict of two fields.
+    // The fields are method - the method to be diffed and field_dependencies
+    // which lists the properties this method depends on.
+    methods_to_diff: {
+      default: [],
     },
   },
   data: [
     {
         name: "ScrollAnchorDisablingPropertyChanged",
-        fields: ["width", "min-width", "max-width", "height", "min-height", "max-height", "margin-top", "margin-left", "margin-right", "margin-bottom", 
+        fields_to_diff: ["width", "min-width", "max-width", "height", "min-height", "max-height", "margin-top", "margin-left", "margin-right", "margin-bottom", 
                   "left", "right", "top", "bottom", "padding-top", 
                   "padding-left", "padding-right", "padding-bottom"]
     },
     {
         name: "DiffNeedsFullLayoutAndPaintInvalidation",
-        fields: ["padding-top", "padding-left", "padding-right", 
-                "padding-bottom"]
+        fields_to_diff: ["padding-top", "padding-left", "padding-right", 
+                "padding-bottom"],
+        methods_to_diff: [
+          {
+            method: "BorderLeftWidth()", 
+            field_dependencies: ["border-left-width"]
+          },
+          {
+            method: "BorderTopWidth()",
+            field_dependencies: ["border-top-width"]
+          },
+          {
+            method: "BorderBottomWidth()",
+            field_dependencies: ["border-bottom-width"]
+          },
+          {
+            method: "BorderRightWidth()",
+            field_dependencies: ["border-right-width"]
+          }
+        ]
     },
     {
         name: "DiffNeedsFullLayout",
-        fields: ["width", "min-width", "max-width", "height", "min-height", "max-height", "box-sizing"]
+        fields_to_diff: ["width", "min-width", "max-width", "height", "min-height", "max-height", "box-sizing"]
     }
   ],
 }
