@@ -3175,6 +3175,8 @@ crbug.com/722849 [ Win ] inspector/animation/animation-transition-setTiming-cras
 crbug.com/722212 fast/events/pointerevents/mouse-pointer-event-properties.html [ Failure Timeout Pass ]
 # Crashes on win
 crbug.com/722943 media/audio-repaint.html [ Skip ]
+# Flaky timeout
+crbug.com/723297 virtual/off-main-thread-fetch/http/tests/inspector/service-workers/service-workers-redundant.html [ Timeout ]
 
 # Tests to be run only under virtual/experimental-canvas-features/
 crbug.com/682753 fast/canvas-experimental [ Skip ]
