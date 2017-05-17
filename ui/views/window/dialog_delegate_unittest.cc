@@ -289,19 +289,6 @@ TEST_F(DialogTest, HitTest_WithTitle) {
   }
 }
 
-TEST_F(DialogTest, HitTest_CloseButton) {
-  const NonClientView* view = dialog()->GetWidget()->non_client_view();
-  dialog()->set_show_close_button(true);
-  BubbleFrameView* frame = static_cast<BubbleFrameView*>(view->frame_view());
-  frame->ResetWindowControls();
-
-  const gfx::Rect close_button_bounds =
-      frame->GetCloseButtonForTest()->bounds();
-  EXPECT_EQ(HTCLOSE,
-            frame->NonClientHitTest(gfx::Point(close_button_bounds.x() + 4,
-                                               close_button_bounds.y() + 4)));
-}
-
 TEST_F(DialogTest, BoundsAccommodateTitle) {
   TestDialog* dialog2(new TestDialog());
   dialog2->set_title(base::ASCIIToUTF16("Title"));

@@ -24,10 +24,6 @@
 #include "ui/base/page_transition_types.h"
 #include "ui/gfx/geometry/vector2d_f.h"
 
-#if defined(USE_AURA)
-#include "ui/aura/window.h"
-#endif
-
 // This file provides a testing framework for mocking out the RenderProcessHost
 // layer. It allows you to test RenderViewHost, WebContentsImpl,
 // NavigationController, and other layers above that without running an actual
@@ -65,7 +61,7 @@ class TestRenderWidgetHostView : public RenderWidgetHostViewBase {
   explicit TestRenderWidgetHostView(RenderWidgetHost* rwh);
   ~TestRenderWidgetHostView() override;
 
-  // RenderWidgetHostView:
+  // RenderWidgetHostView implementation.
   void InitAsChild(gfx::NativeView parent_view) override {}
   RenderWidgetHost* GetRenderWidgetHost() const override;
   void SetSize(const gfx::Size& size) override {}
@@ -100,7 +96,7 @@ class TestRenderWidgetHostView : public RenderWidgetHostViewBase {
   void ClearCompositorFrame() override {}
   void SetNeedsBeginFrames(bool needs_begin_frames) override {}
 
-  // RenderWidgetHostViewBase:
+  // RenderWidgetHostViewBase implementation.
   void InitAsPopup(RenderWidgetHostView* parent_host_view,
                    const gfx::Rect& bounds) override {}
   void InitAsFullscreen(RenderWidgetHostView* reference_host_view) override {}
@@ -139,10 +135,6 @@ class TestRenderWidgetHostView : public RenderWidgetHostViewBase {
   bool did_change_compositor_frame_sink_ = false;
   SkColor background_color_;
   ui::DummyTextInputClient text_input_client_;
-
-#if defined(USE_AURA)
-  std::unique_ptr<aura::Window> window_;
-#endif
 };
 
 #if defined(COMPILER_MSVC)
