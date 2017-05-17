@@ -6,10 +6,12 @@
 
 #include <windows.h>
 
+#include "base/files/scoped_temp_dir.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/string_split.h"
+#include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
@@ -71,7 +73,16 @@ bool ClearSplitMac(const base::string16& reg_key_name,
 RegistryHashStoreContentsWin::RegistryHashStoreContentsWin(
     const base::string16& registry_path,
     const base::string16& store_key)
-    : preference_key_name_(registry_path + L"\\PreferenceMACs\\" + store_key) {}
+    : preference_key_name_(registry_path + L"\\PreferenceMACs\\" + store_key),
+      reset_on_delete_(base::StartsWith(store_key,
+                                        base::ScopedTempDir::GetTempDirPrefix(),
+                                        base::CompareCase::INSENSITIVE_ASCII)) {
+}
+
+RegistryHashStoreContentsWin::~RegistryHashStoreContentsWin() {
+  if (reset_on_delete_)
+    Reset();
+}
 
 RegistryHashStoreContentsWin::RegistryHashStoreContentsWin(
     const RegistryHashStoreContentsWin& other) = default;

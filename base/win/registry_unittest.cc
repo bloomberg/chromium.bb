@@ -334,8 +334,7 @@ TEST_F(RegistryTest, DISABLED_Wow64NativeFromRedirected) {
   ASSERT_EQ(ERROR_SUCCESS, key.DeleteKey(kRootKey));
 }
 
-// Test is flaky. crbug.com/721245
-TEST_F(RegistryTest, DISABLED_OpenSubKey) {
+TEST_F(RegistryTest, OpenSubKey) {
   RegKey key;
   ASSERT_EQ(ERROR_SUCCESS,
             key.Open(HKEY_CURRENT_USER,

@@ -36,6 +36,7 @@ class ChromeTestLauncherDelegate : public content::TestLauncherDelegate {
       base::CommandLine* command_line,
       const base::FilePath& temp_data_dir) override;
   content::ContentMainDelegate* CreateContentMainDelegate() override;
+  void PreSharding() override;
 
  private:
   ChromeTestSuiteRunner* runner_;
