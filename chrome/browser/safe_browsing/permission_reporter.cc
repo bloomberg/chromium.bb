@@ -12,6 +12,7 @@
 #include "chrome/browser/permissions/permission_request.h"
 #include "chrome/common/safe_browsing/permission_report.pb.h"
 #include "components/variations/active_field_trials.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/report_sender.h"
 
 namespace safe_browsing {
@@ -128,6 +129,52 @@ PermissionReport::PersistDecision PersistDecisionForReport(
   return PermissionReport::PERSIST_DECISION_UNSPECIFIED;
 }
 
+constexpr net::NetworkTrafficAnnotationTag kTrafficAnnotation =
+    net::DefineNetworkTrafficAnnotation("permission_reporting", R"(
+        semantics {
+          sender: "Safe Browsing"
+          description:
+            "When a website prompts for a permission request, the origin and "
+            "the action taken are reported to Google Safe Browsing for a "
+            "subset of users. This is to find sites that are abusing "
+            "permissions or asking much too often."
+          trigger:
+            "When a permission prompt closes for any reason, and the user is "
+            "opted into safe browsing, metrics reporting, and history sync. "
+            "These are throttled to less than five (permission, origin) pairs "
+            "per minute."
+          data:
+            "The type of permission, the action taken on it, and the origin."
+          destination: GOOGLE_OWNED_SERVICE
+        }
+        policy {
+          cookies_allowed: false
+          setting:
+            "Users can control this feature via either of the 'Protect you and "
+            "your device from dangerous sites' setting under 'Privacy', or "
+            "'Automatically send usage statistics and crash reports to Google' "
+            "setting under 'Privacy' or 'History sync' setting under 'Sign in, "
+            "Advanced sync settings'."
+          chrome_policy {
+            MetricsReportingEnabled {
+              policy_options {mode: MANDATORY}
+              MetricsReportingEnabled: false
+            }
+          }
+          chrome_policy {
+            SyncDisabled {
+              policy_options {mode: MANDATORY}
+              SyncDisabled: true
+            }
+          }
+          chrome_policy {
+            SafeBrowsingEnabled {
+              policy_options {mode: MANDATORY}
+              SafeBrowsingEnabled: false
+            }
+          }
+        })");
+
 }  // namespace
 
 bool PermissionAndOrigin::operator==(const PermissionAndOrigin& other) const {
@@ -144,8 +191,10 @@ std::size_t PermissionAndOriginHash::operator()(
 }
 
 PermissionReporter::PermissionReporter(net::URLRequestContext* request_context)
-    : PermissionReporter(base::MakeUnique<net::ReportSender>(request_context),
-                         base::WrapUnique(new base::DefaultClock)) {}
+    : PermissionReporter(
+          base::MakeUnique<net::ReportSender>(request_context,
+                                              kTrafficAnnotation),
+          base::WrapUnique(new base::DefaultClock)) {}
 
 PermissionReporter::PermissionReporter(
     std::unique_ptr<net::ReportSender> report_sender,

@@ -25,6 +25,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_status_code.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/report_sender.h"
 #include "skia/ext/image_operations.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -51,6 +52,37 @@ void LogReportResult(const GURL& url, int net_error, int http_response_code) {
                               net_error);
 }
 
+constexpr net::NetworkTrafficAnnotationTag kTrafficAnnotation =
+    net::DefineNetworkTrafficAnnotation("notification_image_reporter", R"(
+        semantics {
+          sender: "Safe Browsing"
+          description:
+            "When an Image Notification is show on Android, and the user has "
+            "opted into Safe Browsing Extended Reporting, a small fraction of "
+            "images from non-whitelisted domains will be uploaded to Google to "
+            "look for malicious images."
+          trigger:
+            "An image notification is triggered, the user is opted-in to "
+            "extended reporting, and a random dice-roll picks this image to "
+            "report."
+          data:
+            "The actual image and the origin that triggered the notificaton."
+          destination: GOOGLE_OWNED_SERVICE
+        }
+        policy {
+          cookies_allowed: false
+          setting:
+            "Users can control this feature via the 'Automatically report "
+            "details of possible security incidents to Google' setting under "
+            "'Privacy'. The feature is disabled by default."
+          chrome_policy {
+            SafeBrowsingExtendedReportingOptInAllowed {
+              policy_options {mode: MANDATORY}
+              SafeBrowsingExtendedReportingOptInAllowed: false
+            }
+          }
+        })");
+
 }  // namespace
 
 const char NotificationImageReporter::kReportingUploadUrl[] =
@@ -60,7 +92,8 @@ const char NotificationImageReporter::kReportingUploadUrl[] =
 NotificationImageReporter::NotificationImageReporter(
     net::URLRequestContext* request_context)
     : NotificationImageReporter(
-          base::MakeUnique<net::ReportSender>(request_context)) {}
+          base::MakeUnique<net::ReportSender>(request_context,
+                                              kTrafficAnnotation)) {}
 
 NotificationImageReporter::NotificationImageReporter(
     std::unique_ptr<net::ReportSender> report_sender)

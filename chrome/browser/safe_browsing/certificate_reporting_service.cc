@@ -14,6 +14,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/common/safe_browsing_prefs.h"
 #include "content/public/browser/browser_thread.h"
+#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 
 namespace {
 
@@ -305,8 +306,8 @@ void CertificateReportingService::ResetOnIOThread(
   std::unique_ptr<certificate_reporting::ErrorReporter> error_reporter;
   if (server_public_key) {
     // Only used in tests.
-    std::unique_ptr<net::ReportSender> report_sender(
-        new net::ReportSender(url_request_context));
+    std::unique_ptr<net::ReportSender> report_sender(new net::ReportSender(
+        url_request_context, TRAFFIC_ANNOTATION_FOR_TESTS));
     error_reporter.reset(new certificate_reporting::ErrorReporter(
         GURL(kExtendedReportingUploadUrl), server_public_key,
         server_public_key_version, std::move(report_sender)));

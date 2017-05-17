@@ -97,6 +97,7 @@
 #include "net/reporting/reporting_service.h"
 #include "net/ssl/channel_id_service.h"
 #include "net/ssl/client_cert_store.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/data_protocol_handler.h"
 #include "net/url_request/file_protocol_handler.h"
 #include "net/url_request/ftp_protocol_handler.h"
@@ -1051,8 +1052,36 @@ void ProfileIOData::Init(
            base::TaskShutdownBehavior::BLOCK_SHUTDOWN}),
       IsOffTheRecord()));
 
+  net::NetworkTrafficAnnotationTag traffic_annotation =
+      net::DefineNetworkTrafficAnnotation("domain_security_policy", R"(
+        semantics {
+          sender: "Domain Security Policy"
+          description:
+            "Websites can opt in to have Chrome send reports to them when "
+            "Chrome observes connections to that website that do not meet "
+            "stricter security policies, such as with HTTP Public Key Pinning. "
+            "Websites can use this feature to discover misconfigurations that "
+            "prevent them from complying with stricter security policies that "
+            "they've opted in to."
+          trigger:
+            "Chrome observes that a user is loading a resource from a website "
+            "that has opted in for security policy reports, and the connection "
+            "does not meet the required security policies."
+          data:
+            "The time of the request, the hostname and port being requested, "
+            "the certificate chain, and sometimes certificate revocation "
+            "information included on the connection."
+          destination: OTHER
+        }
+        policy {
+          cookies_allowed: false
+          setting: "This feature cannot be disabled by settings."
+          policy_exception_justification:
+            "Not implemented, this is a feature that websites can opt into and "
+            "thus there is no Chrome-wide policy to disable it."
+        })");
   certificate_report_sender_.reset(
-      new net::ReportSender(main_request_context_.get()));
+      new net::ReportSender(main_request_context_.get(), traffic_annotation));
   transport_security_state_->SetReportSender(certificate_report_sender_.get());
 
   expect_ct_reporter_.reset(
