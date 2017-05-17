@@ -99,6 +99,7 @@ chrome_ios_eg_test("ios_chrome_multitasking_egtests") {
 }
 
 chrome_ios_eg_test("ios_chrome_device_check_egtests") {
+  configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
     "device_check_egtest.mm",
   ]
