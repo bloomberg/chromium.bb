@@ -159,8 +159,7 @@ public class ChildProcessLauncher {
         boolean queueIfNoneAvailable = !forWarmUp;
         ChildProcessConnection connection = allocateConnection(spawnData, queueIfNoneAvailable);
         if (connection != null) {
-            // Non sandboxed processes are privileged processes that should be strongly bound.
-            boolean useStrongBinding = !inSandbox;
+            boolean useStrongBinding = spawnData.isAlwaysInForeground();
             connection.start(useStrongBinding, startCallback);
 
             String packageName = creationParams != null ? creationParams.getPackageName()

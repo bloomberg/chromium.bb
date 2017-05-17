@@ -416,8 +416,9 @@ public class ChildProcessLauncherTest {
                 context.getPackageName(), false /* isExternalService */,
                 LibraryProcessType.PROCESS_CHILD, true /* bindToCallerCheck */);
         final ChildProcessLauncherHelper launcherHelper =
-                ChildProcessLauncherTestUtils.startForTesting(
-                        context, sProcessWaitArguments, new FileDescriptorInfo[0], creationParams);
+                ChildProcessLauncherTestUtils.startForTesting(context, true /* sandboxed */,
+                        false /* alwaysInForeground */, sProcessWaitArguments,
+                        new FileDescriptorInfo[0], creationParams);
 
         // Retrieve the connection (this waits for the service to connect).
         final ChildProcessConnection retryConn = retrieveConnection(launcherHelper);
@@ -478,7 +479,8 @@ public class ChildProcessLauncherTest {
         Assert.assertEquals(1, allocatedChromeSandboxedConnectionsCount());
 
         ChildProcessLauncherHelper launcherHelper = ChildProcessLauncherTestUtils.startForTesting(
-                context, new String[0], new FileDescriptorInfo[0], null);
+                context, true /* sandboxed */, false /* alwaysInForeground */, new String[0],
+                new FileDescriptorInfo[0], null);
 
         final ChildProcessConnection conn = retrieveConnection(launcherHelper);
 
@@ -522,6 +524,32 @@ public class ChildProcessLauncherTest {
                 ChildProcessCreationParams.unregister(paramId);
             }
         });
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"ProcessManagement"})
+    public void testAlwaysInForegroundConnection() {
+        // Since warmUp only uses default params.
+        Context context = InstrumentationRegistry.getInstrumentation().getTargetContext();
+        ChildProcessCreationParams creationParams = new ChildProcessCreationParams(
+                context.getPackageName(), false /* isExternalService */,
+                LibraryProcessType.PROCESS_CHILD, true /* bindToCallerCheck */);
+
+        for (final boolean alwaysInForeground : new boolean[] {true, false}) {
+            ChildProcessLauncherHelper launcherHelper =
+                    ChildProcessLauncherTestUtils.startForTesting(context, false /* sandboxed */,
+                            alwaysInForeground, sProcessWaitArguments, new FileDescriptorInfo[0],
+                            creationParams);
+            final ChildProcessConnection connection = retrieveConnection(launcherHelper);
+            Assert.assertNotNull(connection);
+            ChildProcessLauncherTestUtils.runOnLauncherThreadBlocking(new Runnable() {
+                @Override
+                public void run() {
+                    Assert.assertEquals(alwaysInForeground, connection.isStrongBindingBound());
+                }
+            });
+        }
     }
 
     private ChildProcessConnection startConnection() {

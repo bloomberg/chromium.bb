@@ -56,14 +56,13 @@ public final class ChildProcessLauncherTestUtils {
     }
 
     public static ChildProcessLauncherHelper startForTesting(final Context context,
-            final String[] commandLine, final FileDescriptorInfo[] filesToBeMapped,
-            final ChildProcessCreationParams params) {
+            final boolean sandboxed, final boolean alwaysInForeground, final String[] commandLine,
+            final FileDescriptorInfo[] filesToBeMapped, final ChildProcessCreationParams params) {
         return runOnLauncherAndGetResult(new Callable<ChildProcessLauncherHelper>() {
             @Override
             public ChildProcessLauncherHelper call() {
                 return ChildProcessLauncherHelper.createAndStartForTesting(0L /* nativePointer */,
-                        commandLine, filesToBeMapped, params, true /* inSandbox */,
-                        false /* alwaysInForeground */);
+                        commandLine, filesToBeMapped, params, sandboxed, alwaysInForeground);
             }
         });
     }
