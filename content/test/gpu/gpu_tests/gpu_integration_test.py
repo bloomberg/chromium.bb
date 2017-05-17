@@ -23,15 +23,18 @@ class GpuIntegrationTest(
 
   @classmethod
   def StartBrowser(cls):
+    # We still need to retry the browser's launch even though
+    # desktop_browser_finder does so too, because it wasn't possible
+    # to push the fetch of the first tab into the lower retry loop
+    # without breaking Telemetry's unit tests, and that hook is used
+    # to implement the gpu_integration_test_unittests.
     for x in range(0, 3):
       try:
-        restart = 'Starting browser, attempt %d of 3' % (x + 1)
-        logging.warning(restart)
         super(GpuIntegrationTest, cls).StartBrowser()
         cls.tab = cls.browser.tabs[0]
-        logging.warning('Started browser successfully.')
         return
       except Exception:
+        logging.warning('Browser start failed (attempt %d of 3)', (x + 1))
         # If we are on the last try and there is an exception take a screenshot
         # to try and capture more about the browser failure and raise
         if x == 2:
