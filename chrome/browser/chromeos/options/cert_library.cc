@@ -6,18 +6,22 @@
 
 #include <algorithm>
 
+#include "base/command_line.h"
 #include "base/i18n/string_compare.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list_threadsafe.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"  // g_browser_process
+#include "chrome/common/chrome_switches.h"
+#include "chrome/common/net/x509_certificate_model.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/dbus/cryptohome_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/login/login_state.h"
-#include "chromeos/network/certificate_helper.h"
 #include "chromeos/network/onc/onc_utils.h"
+#include "content/public/browser/browser_thread.h"
 #include "crypto/nss_util.h"
 #include "net/cert/cert_database.h"
 #include "net/cert/nss_cert_database.h"
@@ -34,23 +38,16 @@ const char kRootCertificateTokenName[] = "Builtin Object Token";
 
 base::string16 GetDisplayString(net::X509Certificate* cert,
                                 bool hardware_backed) {
-  std::string alt_text;
+  std::string org;
   if (!cert->subject().organization_names.empty())
-    alt_text = cert->subject().organization_names[0];
-  if (alt_text.empty())
-    alt_text = cert->subject().GetDisplayName();
+    org = cert->subject().organization_names[0];
+  if (org.empty())
+    org = cert->subject().GetDisplayName();
   base::string16 issued_by = base::UTF8ToUTF16(
-      certificate::GetIssuerCommonName(cert->os_cert_handle(), alt_text));
-
+      x509_certificate_model::GetIssuerCommonName(cert->os_cert_handle(),
+                                                  org));  // alternative text
   base::string16 issued_to = base::UTF8ToUTF16(
-      certificate::GetCertNameOrNickname(cert->os_cert_handle()));
-  base::string16 issued_to_ascii = base::UTF8ToUTF16(
-      certificate::GetCertAsciiNameOrNickname(cert->os_cert_handle()));
-  if (issued_to_ascii != issued_to) {
-    // Input contained encoded data, show original and decoded forms.
-    issued_to = l10n_util::GetStringFUTF16(IDS_CERT_INFO_IDN_VALUE_FORMAT,
-                                           issued_to_ascii, issued_to);
-  }
+      x509_certificate_model::GetCertNameOrNickname(cert->os_cert_handle()));
 
   if (hardware_backed) {
     return l10n_util::GetStringFUTF16(
@@ -201,7 +198,7 @@ int CertLibrary::GetUserCertIndexByPkcs11Id(
 
 void CertLibrary::OnCertificatesLoaded(const net::CertificateList& cert_list,
                                        bool initial_load) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  CHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   VLOG(1) << "CertLibrary::OnCertificatesLoaded: " << cert_list.size();
   certs_.clear();
   user_certs_.clear();
@@ -214,7 +211,7 @@ void CertLibrary::OnCertificatesLoaded(const net::CertificateList& cert_list,
     certs_.push_back(iter->get());
     net::X509Certificate::OSCertHandle cert_handle =
         iter->get()->os_cert_handle();
-    net::CertType type = certificate::GetCertType(cert_handle);
+    net::CertType type = x509_certificate_model::GetType(cert_handle);
     switch (type) {
       case net::USER_CERT:
         user_certs_.push_back(iter->get());
@@ -224,7 +221,8 @@ void CertLibrary::OnCertificatesLoaded(const net::CertificateList& cert_list,
         break;
       case net::CA_CERT: {
         // Exclude root CA certificates that are built into Chrome.
-        std::string token_name = certificate::GetCertTokenName(cert_handle);
+        std::string token_name =
+            x509_certificate_model::GetTokenName(cert_handle);
         if (token_name != kRootCertificateTokenName)
           server_ca_certs_.push_back(iter->get());
         break;
