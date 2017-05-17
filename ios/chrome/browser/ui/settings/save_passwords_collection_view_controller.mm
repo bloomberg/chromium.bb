@@ -8,11 +8,9 @@
 #include <vector>
 
 #include "base/ios/ios_util.h"
-#import "base/ios/weak_nsobject.h"
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"
-#import "base/mac/objc_property_releaser.h"
-#import "base/mac/scoped_nsobject.h"
+
 #include "base/memory/ptr_util.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/sys_string_conversions.h"
@@ -47,6 +45,10 @@
 #import "ios/third_party/material_components_ios/src/components/Palettes/src/MaterialPalettes.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 #include "url/gurl.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 namespace {
 
@@ -131,9 +133,9 @@ void SavePasswordsConsumer::OnGetPasswordStoreResults(
     SuccessfulReauthTimeAccessor> {
   // The observable boolean that binds to the password manager setting state.
   // Saved passwords are only on if the password manager is enabled.
-  base::scoped_nsobject<PrefBackedBoolean> passwordManagerEnabled_;
+  PrefBackedBoolean* passwordManagerEnabled_;
   // The item related to the switch for the password manager setting.
-  base::scoped_nsobject<CollectionViewSwitchItem> savePasswordsItem_;
+  CollectionViewSwitchItem* savePasswordsItem_;
   // The interface for getting and manipulating a user's saved passwords.
   scoped_refptr<password_manager::PasswordStore> passwordStore_;
   // A helper object for passing data about saved passwords from a finished
@@ -158,13 +160,10 @@ void SavePasswordsConsumer::OnGetPasswordStoreResults(
   // This is meant to be used by the |ReauthenticationModule| for keeping
   // re-authentications valid for a certain time interval within the scope
   // of the Save Passwords Settings.
-  base::scoped_nsobject<NSDate> successfulReauthTime_;
+  NSDate* successfulReauthTime_;
   // Module containing the reauthentication mechanism for viewing and copying
   // passwords.
-  base::scoped_nsobject<ReauthenticationModule> reauthenticationModule_;
-
-  base::mac::ObjCPropertyReleaser
-      propertyReleaser_SavePasswordsCollectionViewController_;
+  ReauthenticationModule* reauthenticationModule_;
 }
 // Kick off async request to get logins from password store.
 - (void)getLoginsFromPasswordStore;
@@ -179,31 +178,27 @@ void SavePasswordsConsumer::OnGetPasswordStoreResults(
   self = [super initWithStyle:CollectionViewControllerStyleAppBar];
   if (self) {
     browserState_ = browserState;
-    reauthenticationModule_.reset([[ReauthenticationModule alloc]
-        initWithSuccessfulReauthTimeAccessor:self]);
+    reauthenticationModule_ = [[ReauthenticationModule alloc]
+        initWithSuccessfulReauthTimeAccessor:self];
     self.title = l10n_util::GetNSString(IDS_IOS_SAVE_PASSWORDS);
     self.shouldHideDoneButton = YES;
     passwordStore_ = IOSChromePasswordStoreFactory::GetForBrowserState(
         browserState_, ServiceAccessType::EXPLICIT_ACCESS);
     DCHECK(passwordStore_);
-    passwordManagerEnabled_.reset([[PrefBackedBoolean alloc]
+    passwordManagerEnabled_ = [[PrefBackedBoolean alloc]
         initWithPrefService:browserState_->GetPrefs()
                    prefName:password_manager::prefs::
-                                kPasswordManagerSavingEnabled]);
+                                kPasswordManagerSavingEnabled];
     [passwordManagerEnabled_ setObserver:self];
     [self getLoginsFromPasswordStore];
     [self updateEditButton];
     [self loadModel];
-
-    propertyReleaser_SavePasswordsCollectionViewController_.Init(
-        self, [SavePasswordsCollectionViewController class]);
   }
   return self;
 }
 
 - (void)dealloc {
   [passwordManagerEnabled_ setObserver:nil];
-  [super dealloc];
 }
 
 #pragma mark - SettingsRootCollectionViewController
@@ -222,7 +217,7 @@ void SavePasswordsConsumer::OnGetPasswordStoreResults(
 
   // Save passwords switch.
   [model addSectionWithIdentifier:SectionIdentifierSavePasswordsSwitch];
-  savePasswordsItem_.reset([[self savePasswordsItem] retain]);
+  savePasswordsItem_ = [self savePasswordsItem];
   [model addItem:savePasswordsItem_
       toSectionWithIdentifier:SectionIdentifierSavePasswordsSwitch];
 
@@ -230,8 +225,8 @@ void SavePasswordsConsumer::OnGetPasswordStoreResults(
   if ([passwordManagerEnabled_ value]) {
     if (!savedForms_.empty()) {
       [model addSectionWithIdentifier:SectionIdentifierSavedPasswords];
-      CollectionViewTextItem* headerItem = [[[CollectionViewTextItem alloc]
-          initWithType:ItemTypeHeader] autorelease];
+      CollectionViewTextItem* headerItem =
+          [[CollectionViewTextItem alloc] initWithType:ItemTypeHeader];
       headerItem.text =
           l10n_util::GetNSString(IDS_PASSWORD_MANAGER_SHOW_PASSWORDS_TAB_TITLE);
       headerItem.textColor = [[MDCPalette greyPalette] tint500];
@@ -244,8 +239,8 @@ void SavePasswordsConsumer::OnGetPasswordStoreResults(
     }
     if (!blacklistedForms_.empty()) {
       [model addSectionWithIdentifier:SectionIdentifierBlacklist];
-      CollectionViewTextItem* headerItem = [[[CollectionViewTextItem alloc]
-          initWithType:ItemTypeHeader] autorelease];
+      CollectionViewTextItem* headerItem =
+          [[CollectionViewTextItem alloc] initWithType:ItemTypeHeader];
       headerItem.text =
           l10n_util::GetNSString(IDS_PASSWORD_MANAGER_EXCEPTIONS_TAB_TITLE);
       headerItem.textColor = [[MDCPalette greyPalette] tint500];
@@ -262,8 +257,8 @@ void SavePasswordsConsumer::OnGetPasswordStoreResults(
 #pragma mark - Items
 
 - (CollectionViewItem*)manageAccountLinkItem {
-  CollectionViewFooterItem* footerItem = [[[CollectionViewFooterItem alloc]
-      initWithType:ItemTypeManageAccount] autorelease];
+  CollectionViewFooterItem* footerItem =
+      [[CollectionViewFooterItem alloc] initWithType:ItemTypeManageAccount];
   footerItem.text =
       l10n_util::GetNSString(IDS_IOS_SAVE_PASSWORDS_MANAGE_ACCOUNT);
   footerItem.linkURL = google_util::AppendGoogleLocaleParam(
@@ -275,16 +270,16 @@ void SavePasswordsConsumer::OnGetPasswordStoreResults(
 
 - (CollectionViewSwitchItem*)savePasswordsItem {
   CollectionViewSwitchItem* savePasswordsItem =
-      [[[CollectionViewSwitchItem alloc]
-          initWithType:ItemTypeSavePasswordsSwitch] autorelease];
+      [[CollectionViewSwitchItem alloc]
+          initWithType:ItemTypeSavePasswordsSwitch];
   savePasswordsItem.text = l10n_util::GetNSString(IDS_IOS_SAVE_PASSWORDS);
   savePasswordsItem.on = [passwordManagerEnabled_ value];
   return savePasswordsItem;
 }
 
 - (SavedFormContentItem*)savedFormItemWithForm:(autofill::PasswordForm*)form {
-  SavedFormContentItem* passwordItem = [[[SavedFormContentItem alloc]
-      initWithType:ItemTypeSavedPassword] autorelease];
+  SavedFormContentItem* passwordItem =
+      [[SavedFormContentItem alloc] initWithType:ItemTypeSavedPassword];
   passwordItem.text =
       base::SysUTF8ToNSString(GetHumanReadableOriginCopy(*form));
   passwordItem.detailText = base::SysUTF16ToNSString(form->username_value);
@@ -299,8 +294,7 @@ void SavePasswordsConsumer::OnGetPasswordStoreResults(
 - (BlacklistedFormContentItem*)blacklistedFormItemWithForm:
     (autofill::PasswordForm*)form {
   BlacklistedFormContentItem* passwordItem =
-      [[[BlacklistedFormContentItem alloc] initWithType:ItemTypeBlacklisted]
-          autorelease];
+      [[BlacklistedFormContentItem alloc] initWithType:ItemTypeBlacklisted];
   passwordItem.text =
       base::SysUTF8ToNSString(GetHumanReadableOriginCopy(*form));
   return passwordItem;
@@ -389,10 +383,10 @@ void SavePasswordsConsumer::OnGetPasswordStoreResults(
 #pragma mark - BooleanObserver
 
 - (void)booleanDidChange:(id<ObservableBoolean>)observableBoolean {
-  DCHECK_EQ(observableBoolean, passwordManagerEnabled_.get());
+  DCHECK_EQ(observableBoolean, passwordManagerEnabled_);
 
   // Update the item.
-  savePasswordsItem_.get().on = [passwordManagerEnabled_ value];
+  savePasswordsItem_.on = [passwordManagerEnabled_ value];
 
   // Update the cell.
   [self reconfigureCellsForItems:@[ savePasswordsItem_ ]];
@@ -410,7 +404,7 @@ void SavePasswordsConsumer::OnGetPasswordStoreResults(
   [passwordManagerEnabled_ setValue:switchView.on];
 
   // Update the item.
-  savePasswordsItem_.get().on = [passwordManagerEnabled_ value];
+  savePasswordsItem_.on = [passwordManagerEnabled_ value];
 
   // Update the rest of the UI.
   [self.editor setEditing:NO];
@@ -475,14 +469,14 @@ void SavePasswordsConsumer::OnGetPasswordStoreResults(
       NSString* password = base::SysUTF16ToNSString(form->password_value);
       NSString* origin =
           base::SysUTF8ToNSString(GetHumanReadableOriginCopy(*form));
-      base::scoped_nsobject<UIViewController> controller(
+      UIViewController* controller =
           [[PasswordDetailsCollectionViewController alloc]
                 initWithPasswordForm:*form
                             delegate:self
               reauthenticationModule:reauthenticationModule_
                             username:username
                             password:password
-                              origin:origin]);
+                              origin:origin];
       [self.navigationController pushViewController:controller animated:YES];
     }
   }
@@ -549,10 +543,9 @@ void SavePasswordsConsumer::OnGetPasswordStoreResults(
       [sectionsToRemove addObject:@(indexPath.section)];
     }
   }
-  base::WeakNSObject<SavePasswordsCollectionViewController> weakSelf(self);
+  __weak SavePasswordsCollectionViewController* weakSelf = self;
   [self.collectionView performBatchUpdates:^{
-    base::scoped_nsobject<SavePasswordsCollectionViewController> strongSelf(
-        [weakSelf retain]);
+    SavePasswordsCollectionViewController* strongSelf = weakSelf;
     if (!strongSelf)
       return;
     for (NSNumber* sectionNumber in sectionsToRemove) {
@@ -566,8 +559,7 @@ void SavePasswordsConsumer::OnGetPasswordStoreResults(
     }
   }
       completion:^(BOOL finished) {
-        base::scoped_nsobject<SavePasswordsCollectionViewController> strongSelf(
-            [weakSelf retain]);
+        SavePasswordsCollectionViewController* strongSelf = weakSelf;
         if (!strongSelf)
           return;
         if (![strongSelf editButtonEnabled]) {
@@ -593,11 +585,11 @@ void SavePasswordsConsumer::OnGetPasswordStoreResults(
 #pragma mark SuccessfulReauthTimeAccessor
 
 - (void)updateSuccessfulReauthTime {
-  successfulReauthTime_.reset([[NSDate alloc] init]);
+  successfulReauthTime_ = [[NSDate alloc] init];
 }
 
 - (NSDate*)lastSuccessfulReauthTime {
-  return successfulReauthTime_.get();
+  return successfulReauthTime_;
 }
 
 @end

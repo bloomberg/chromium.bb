@@ -8,7 +8,6 @@
 
 #include "base/logging.h"
 #import "base/mac/foundation_util.h"
-#import "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_item.h"
@@ -18,10 +17,14 @@
 #import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 using namespace ios_internal::sync_encryption_passphrase;
 
 @interface SyncCreatePassphraseCollectionViewController () {
-  base::scoped_nsobject<UITextField> confirmPassphrase_;
+  UITextField* confirmPassphrase_;
 }
 // Returns a confirm passphrase item.
 - (CollectionViewItem*)confirmPassphraseItem;
@@ -50,7 +53,7 @@ using namespace ios_internal::sync_encryption_passphrase;
 - (void)didReceiveMemoryWarning {
   [super didReceiveMemoryWarning];
   if (![self isViewLoaded]) {
-    confirmPassphrase_.reset();
+    confirmPassphrase_ = nil;
   }
 }
 
@@ -80,7 +83,7 @@ using namespace ios_internal::sync_encryption_passphrase;
 
 - (CollectionViewItem*)confirmPassphraseItem {
   if (!confirmPassphrase_) {
-    confirmPassphrase_.reset([[UITextField alloc] init]);
+    confirmPassphrase_ = [[UITextField alloc] init];
     [confirmPassphrase_ setFont:[MDCTypography body1Font]];
     [confirmPassphrase_ setSecureTextEntry:YES];
     [confirmPassphrase_ setBackgroundColor:[UIColor clearColor]];
@@ -92,8 +95,8 @@ using namespace ios_internal::sync_encryption_passphrase;
     [self registerTextField:confirmPassphrase_];
   }
 
-  BYOTextFieldItem* item = [[[BYOTextFieldItem alloc]
-      initWithType:ItemTypeConfirmPassphrase] autorelease];
+  BYOTextFieldItem* item =
+      [[BYOTextFieldItem alloc] initWithType:ItemTypeConfirmPassphrase];
   item.textField = confirmPassphrase_;
   return item;
 }
