@@ -5,10 +5,12 @@
 #ifndef COMPONENTS_OFFLINE_PAGES_CORE_BACKGROUND_CLEANUP_TASK_H_
 #define COMPONENTS_OFFLINE_PAGES_CORE_BACKGROUND_CLEANUP_TASK_H_
 
+#include <map>
 #include <memory>
 #include <vector>
 
 #include "base/memory/weak_ptr.h"
+#include "components/offline_pages/core/background/offliner_policy_utils.h"
 #include "components/offline_pages/core/background/request_queue_results.h"
 #include "components/offline_pages/core/background/save_page_request.h"
 #include "components/offline_pages/core/task.h"
@@ -43,15 +45,19 @@ class CleanupTask : public Task {
   void OnRequestsExpired(std::unique_ptr<UpdateRequestsResult> result);
 
   // Build a list of IDs whose request has expired.
-  void GetExpiredRequestIds(
-      std::vector<std::unique_ptr<SavePageRequest>> requests,
-      std::vector<int64_t>* expired_request_ids);
+  void PopulateExpiredRequestIdsAndReasons(
+      std::vector<std::unique_ptr<SavePageRequest>> requests);
 
   // Member variables, all pointers are not owned here.
   RequestQueueStore* store_;
   OfflinerPolicy* policy_;
   RequestNotifier* notifier_;
   RequestCoordinatorEventLogger* event_logger_;
+
+  // Holds a map of expired request IDs and respective expiration reasons.
+  std::map<int64_t, OfflinerPolicyUtils::RequestExpirationStatus>
+      expired_request_ids_and_reasons_;
+
   // Allows us to pass a weak pointer to callbacks.
   base::WeakPtrFactory<CleanupTask> weak_ptr_factory_;
 };

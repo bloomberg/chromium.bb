@@ -14,6 +14,24 @@
 #include "components/offline_pages/core/background/save_page_request.h"
 
 namespace offline_pages {
+namespace {
+RequestNotifier::BackgroundSavePageResult ToBackgroundSavePageResult(
+    OfflinerPolicyUtils::RequestExpirationStatus expiration_status) {
+  switch (expiration_status) {
+    case OfflinerPolicyUtils::RequestExpirationStatus::EXPIRED:
+      return RequestNotifier::BackgroundSavePageResult::EXPIRED;
+    case OfflinerPolicyUtils::RequestExpirationStatus::START_COUNT_EXCEEDED:
+      return RequestNotifier::BackgroundSavePageResult::START_COUNT_EXCEEDED;
+    case OfflinerPolicyUtils::RequestExpirationStatus::
+        COMPLETION_COUNT_EXCEEDED:
+      return RequestNotifier::BackgroundSavePageResult::RETRY_COUNT_EXCEEDED;
+    case OfflinerPolicyUtils::RequestExpirationStatus::VALID:
+    default:
+      NOTREACHED();
+      return RequestNotifier::BackgroundSavePageResult::EXPIRED;
+  }
+}
+}  // namespace
 
 CleanupTask::CleanupTask(RequestQueueStore* store,
                          OfflinerPolicy* policy,
@@ -46,18 +64,18 @@ void CleanupTask::Prune(
     return;
   }
 
-  // Get the expired requests to be removed from the queue.
-  std::vector<int64_t> expired_request_ids;
-  GetExpiredRequestIds(std::move(requests), &expired_request_ids);
+  PopulateExpiredRequestIdsAndReasons(std::move(requests));
 
-  // Continue processing by handling expired requests, if any.
-  if (expired_request_ids.size() == 0) {
+  // If there are no expired requests processing is done.
+  if (expired_request_ids_and_reasons_.size() == 0) {
     TaskComplete();
     return;
   }
 
-  // TODO(petewil): Add UMA saying why we remove them.  Round trip the reason
-  // for deleting through the RQ callbacks.  crbug.com/705115.
+  std::vector<int64_t> expired_request_ids;
+  for (auto const& id_reason_pair : expired_request_ids_and_reasons_)
+    expired_request_ids.push_back(id_reason_pair.first);
+
   store_->RemoveRequests(expired_request_ids,
                          base::Bind(&CleanupTask::OnRequestsExpired,
                                     weak_ptr_factory_.GetWeakPtr()));
@@ -65,9 +83,17 @@ void CleanupTask::Prune(
 
 void CleanupTask::OnRequestsExpired(
     std::unique_ptr<UpdateRequestsResult> result) {
-  RequestNotifier::BackgroundSavePageResult save_page_result(
-      RequestNotifier::BackgroundSavePageResult::EXPIRED);
   for (const auto& request : result->updated_items) {
+    // Ensure we have an expiration reason for this request.
+    auto iter = expired_request_ids_and_reasons_.find(request.request_id());
+    if (iter == expired_request_ids_and_reasons_.end()) {
+      NOTREACHED() << "Expired request not found in deleted results.";
+      continue;
+    }
+
+    // Establish save page result based on the expiration reason.
+    RequestNotifier::BackgroundSavePageResult save_page_result(
+        ToBackgroundSavePageResult(iter->second));
     event_logger_->RecordDroppedSavePageRequest(
         request.client_id().name_space, save_page_result, request.request_id());
     notifier_->NotifyCompleted(request, save_page_result);
@@ -77,9 +103,8 @@ void CleanupTask::OnRequestsExpired(
   TaskComplete();
 }
 
-void CleanupTask::GetExpiredRequestIds(
-    std::vector<std::unique_ptr<SavePageRequest>> requests,
-    std::vector<int64_t>* expired_request_ids) {
+void CleanupTask::PopulateExpiredRequestIdsAndReasons(
+    std::vector<std::unique_ptr<SavePageRequest>> requests) {
   for (auto& request : requests) {
     // Check for requests past their expiration time or with too many tries.  If
     // it is not still valid, push the request and the reason onto the deletion
@@ -94,9 +119,7 @@ void CleanupTask::GetExpiredRequestIds(
     // we call cleanup, and we shouldn't delete the request while offlining it.
     if (status != OfflinerPolicyUtils::RequestExpirationStatus::VALID &&
         request->request_state() != SavePageRequest::RequestState::OFFLINING) {
-      // TODO(petewil): Push both request and reason, will need to change type
-      // of list to pairs.
-      expired_request_ids->push_back(request->request_id());
+      expired_request_ids_and_reasons_.emplace(request->request_id(), status);
     }
   }
 }
