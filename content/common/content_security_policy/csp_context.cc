@@ -66,6 +66,14 @@ bool CSPContext::SchemeShouldBypassCSP(const base::StringPiece& scheme) {
   return false;
 }
 
+void CSPContext::SanitizeDataForUseInCspViolation(
+    bool is_redirect,
+    CSPDirective::Name directive,
+    GURL* blocked_url,
+    SourceLocation* source_location) const {
+  return;
+}
+
 bool CSPContext::SelfSchemeShouldBypassCsp() {
   if (!has_self_)
     return false;

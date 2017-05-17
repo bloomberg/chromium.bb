@@ -223,6 +223,11 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void ReportContentSecurityPolicyViolation(
       const CSPViolationParams& violation_params) override;
   bool SchemeShouldBypassCSP(const base::StringPiece& scheme) override;
+  void SanitizeDataForUseInCspViolation(
+      bool is_redirect,
+      CSPDirective::Name directive,
+      GURL* blocked_url,
+      SourceLocation* source_location) const override;
 
   // Creates a RenderFrame in the renderer process.
   bool CreateRenderFrame(int proxy_routing_id,
