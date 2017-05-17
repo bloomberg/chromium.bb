@@ -13,10 +13,10 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
-#include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
-#include "base/test/sequenced_worker_pool_owner.h"
+#include "base/task_scheduler/post_task.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "base/version.h"
@@ -157,11 +157,9 @@ class UpdateClientTest : public testing::Test {
  private:
   static constexpr int kNumWorkerThreads_ = 2;
 
-  base::MessageLoopForUI message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   base::RunLoop runloop_;
   base::Closure quit_closure_;
-
-  std::unique_ptr<base::SequencedWorkerPoolOwner> worker_pool_;
 
   scoped_refptr<update_client::TestConfigurator> config_;
   std::unique_ptr<TestingPrefServiceSimple> pref_;
@@ -173,16 +171,14 @@ class UpdateClientTest : public testing::Test {
 constexpr int UpdateClientTest::kNumWorkerThreads_;
 
 UpdateClientTest::UpdateClientTest()
-    : worker_pool_(
-          base::MakeUnique<base::SequencedWorkerPoolOwner>(kNumWorkerThreads_,
-                                                           "test")),
+    : scoped_task_environment_(
+          base::test::ScopedTaskEnvironment::MainThreadType::UI),
       pref_(base::MakeUnique<TestingPrefServiceSimple>()) {
   quit_closure_ = runloop_.QuitClosure();
 
-  auto pool = worker_pool_->pool();
   config_ = base::MakeShared<TestConfigurator>(
-      pool->GetSequencedTaskRunner(pool->GetSequenceToken()),
-      message_loop_.task_runner());
+      base::CreateSequencedTaskRunnerWithTraits({base::MayBlock()}),
+      base::ThreadTaskRunnerHandle::Get());
   PersistedData::RegisterPrefs(pref_->registry());
   metadata_ = base::MakeUnique<PersistedData>(pref_.get());
 }
