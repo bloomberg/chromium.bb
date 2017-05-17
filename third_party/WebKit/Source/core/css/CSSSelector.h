@@ -25,7 +25,6 @@
 
 #include <memory>
 #include "core/CoreExport.h"
-#include "core/css/parser/CSSParserContext.h"
 #include "core/dom/QualifiedName.h"
 #include "core/style/ComputedStyleConstants.h"
 #include "platform/wtf/RefCounted.h"
@@ -133,7 +132,6 @@ class CORE_EXPORT CSSSelector {
     // Special cases for shadow DOM related selectors.
     kShadowPiercingDescendant,  // >>> combinator
     kShadowDeep,                // /deep/ combinator
-    kShadowDeepAsDescendant,    // /deep/ as an alias for descendant
     kShadowPseudo,              // ::shadow pseudo element
     kShadowSlot                 // ::slotted() pseudo element
   };
@@ -240,9 +238,7 @@ class CORE_EXPORT CSSSelector {
   PseudoType GetPseudoType() const {
     return static_cast<PseudoType>(pseudo_type_);
   }
-  void UpdatePseudoType(const AtomicString&,
-                        const CSSParserContext&,
-                        bool has_arguments);
+  void UpdatePseudoType(const AtomicString&, bool has_arguments);
 
   static PseudoType ParsePseudoType(const AtomicString&, bool has_arguments);
   static PseudoId ParsePseudoId(const String&);

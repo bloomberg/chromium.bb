@@ -339,10 +339,6 @@ SelectorChecker::MatchStatus SelectorChecker::MatchForRelation(
   next_context.pseudo_id = kPseudoIdNone;
 
   switch (relation) {
-    case CSSSelector::kShadowDeepAsDescendant:
-      Deprecation::CountDeprecation(context.element->GetDocument(),
-                                    UseCounter::kCSSDeepCombinator);
-    // fall through
     case CSSSelector::kDescendant:
       if (context.selector->RelationIsAffectedByPseudoContent()) {
         for (Element* element = context.element; element;
@@ -420,6 +416,10 @@ SelectorChecker::MatchStatus SelectorChecker::MatchForRelation(
       return kSelectorFailsAllSiblings;
 
     case CSSSelector::kShadowPseudo: {
+      if (!is_ua_rule_ && mode_ != kQueryingRules &&
+          context.selector->GetPseudoType() == CSSSelector::kPseudoShadow)
+        Deprecation::CountDeprecation(context.element->GetDocument(),
+                                      UseCounter::kCSSSelectorPseudoShadow);
       // If we're in the same tree-scope as the scoping element, then following
       // a shadow descendant combinator would escape that and thus the scope.
       if (context.scope && context.scope->OwnerShadowHost() &&
