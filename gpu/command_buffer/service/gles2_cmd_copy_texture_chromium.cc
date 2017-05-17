@@ -366,42 +366,22 @@ std::string GetFragmentShaderSource(const gl::GLVersionInfo& gl_version_info,
   // Preamble for texture precision.
   source += kShaderPrecisionPreamble;
 
-  if (gpu::gles2::GLES2Util::IsSignedIntegerFormat(dest_format)) {
-    source += "#define TextureType ivec4\n";
-    source += "#define ZERO 0\n";
-    source += "#define MAX_COLOR 255\n";
-    if (gpu::gles2::GLES2Util::IsSignedIntegerFormat(source_format))
-      source += "#define InnerScaleValue 1\n";
-    else if (gpu::gles2::GLES2Util::IsUnsignedIntegerFormat(source_format))
-      source += "#define InnerScaleValue 1u\n";
-    else
-      source += "#define InnerScaleValue 255.0\n";
-    source += "#define OuterScaleValue 1\n";
-  } else if (gpu::gles2::GLES2Util::IsUnsignedIntegerFormat(dest_format)) {
+  // According to the spec, |dest_format| can be unsigend interger format, float
+  // format or unsigned normalized fixed-point format. |source_format| can only
+  // be unsigned normalized fixed-point format.
+  if (gpu::gles2::GLES2Util::IsUnsignedIntegerFormat(dest_format)) {
     source += "#define TextureType uvec4\n";
     source += "#define ZERO 0u\n";
     source += "#define MAX_COLOR 255u\n";
-    if (gpu::gles2::GLES2Util::IsSignedIntegerFormat(source_format))
-      source += "#define InnerScaleValue 1\n";
-    else if (gpu::gles2::GLES2Util::IsUnsignedIntegerFormat(source_format))
-      source += "#define InnerScaleValue 1u\n";
-    else
-      source += "#define InnerScaleValue 255.0\n";
+    source += "#define InnerScaleValue 255.0\n";
     source += "#define OuterScaleValue 1u\n";
   } else {
+    DCHECK(!gpu::gles2::GLES2Util::IsIntegerFormat(dest_format));
     source += "#define TextureType vec4\n";
     source += "#define ZERO 0.0\n";
     source += "#define MAX_COLOR 1.0\n";
-    if (gpu::gles2::GLES2Util::IsSignedIntegerFormat(source_format)) {
-      source += "#define InnerScaleValue 1\n";
-      source += "#define OuterScaleValue (1.0 / 255.0)\n";
-    } else if (gpu::gles2::GLES2Util::IsUnsignedIntegerFormat(source_format)) {
-      source += "#define InnerScaleValue 1u\n";
-      source += "#define OuterScaleValue (1.0 / 255.0)\n";
-    } else {
-      source += "#define InnerScaleValue 1.0\n";
-      source += "#define OuterScaleValue 1.0\n";
-    }
+    source += "#define InnerScaleValue 1.0\n";
+    source += "#define OuterScaleValue 1.0\n";
   }
   if (gl_version_info.is_es2 || gl_version_info.IsLowerThanGL(3, 2) ||
       target == GL_TEXTURE_EXTERNAL_OES) {
