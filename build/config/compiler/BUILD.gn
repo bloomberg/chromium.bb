@@ -485,16 +485,8 @@ config("compiler") {
             rebase_path("$root_out_dir/thinlto-cache", root_build_dir),
       ]
     } else {
-      # Note: ThinLTO does not currently have this feature implemented
-      # For Full LTO, it provides a measurable runtime speedup of Chrome.
-      cflags += [
-        "-flto",
-        "-fwhole-program-vtables",
-      ]
-      ldflags += [
-        "-flto",
-        "-fwhole-program-vtables",
-      ]
+      cflags += [ "-flto" ]
+      ldflags += [ "-flto" ]
 
       # Apply a lower LTO optimization level as the default is too slow.
       if (is_linux) {
@@ -503,6 +495,9 @@ config("compiler") {
         ldflags += [ "-Wl,-mllvm,-O1" ]
       }
     }
+
+    cflags += [ "-fwhole-program-vtables" ]
+    ldflags += [ "-fwhole-program-vtables" ]
 
     # Work-around for http://openradar.appspot.com/20356002
     if (is_mac) {
