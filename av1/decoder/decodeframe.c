@@ -95,7 +95,7 @@ static size_t read_uncompressed_header(AV1Decoder *pbi,
                                        struct aom_read_bit_buffer *rb);
 
 static int is_compound_reference_allowed(const AV1_COMMON *cm) {
-#if CONFIG_ONE_SIDED_COMPOUND  // Normative in decoder
+#if CONFIG_ONE_SIDED_COMPOUND || CONFIG_EXT_COMP_REFS  // Normative in decoder
   return !frame_is_intra_only(cm);
 #else
   int i;
@@ -104,7 +104,7 @@ static int is_compound_reference_allowed(const AV1_COMMON *cm) {
     if (cm->ref_frame_sign_bias[i + 1] != cm->ref_frame_sign_bias[1]) return 1;
 
   return 0;
-#endif
+#endif  // CONFIG_ONE_SIDED_COMPOUND || CONFIG_EXT_COMP_REFS
 }
 
 static void setup_compound_reference_mode(AV1_COMMON *cm) {
@@ -290,6 +290,15 @@ static void read_frame_reference_mode_probs(AV1_COMMON *cm, aom_reader *r) {
 #endif
 
   if (cm->reference_mode != SINGLE_REFERENCE) {
+#if CONFIG_EXT_COMP_REFS
+    for (i = 0; i < COMP_REF_TYPE_CONTEXTS; ++i)
+      av1_diff_update_prob(r, &fc->comp_ref_type_prob[i], ACCT_STR);
+
+    for (i = 0; i < UNI_COMP_REF_CONTEXTS; ++i)
+      for (j = 0; j < (UNIDIR_COMP_REFS - 1); ++j)
+        av1_diff_update_prob(r, &fc->uni_comp_ref_prob[i][j], ACCT_STR);
+#endif  // CONFIG_EXT_COMP_REFS
+
     for (i = 0; i < REF_CONTEXTS; ++i) {
 #if CONFIG_EXT_REFS
       for (j = 0; j < (FWD_REFS - 1); ++j)
@@ -5213,6 +5222,12 @@ static void debug_check_frame_counts(const AV1_COMMON *const cm) {
 #endif  // CONFIG_EXT_INTER && CONFIG_COMPOUND_SINGLEREF
   assert(!memcmp(cm->counts.comp_inter, zero_counts.comp_inter,
                  sizeof(cm->counts.comp_inter)));
+#if CONFIG_EXT_COMP_REFS
+  assert(!memcmp(cm->counts.comp_ref_type, zero_counts.comp_ref_type,
+                 sizeof(cm->counts.comp_ref_type)));
+  assert(!memcmp(cm->counts.uni_comp_ref, zero_counts.uni_comp_ref,
+                 sizeof(cm->counts.uni_comp_ref)));
+#endif  // CONFIG_EXT_COMP_REFS
   assert(!memcmp(cm->counts.single_ref, zero_counts.single_ref,
                  sizeof(cm->counts.single_ref)));
   assert(!memcmp(cm->counts.comp_ref, zero_counts.comp_ref,

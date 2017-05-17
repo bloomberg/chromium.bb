@@ -1589,24 +1589,49 @@ static void update_stats(const AV1_COMMON *const cm, ThreadData *td, int mi_row,
         }
 
         if (has_second_ref(mbmi)) {
-#if CONFIG_EXT_REFS
-          const int bit = (ref0 == GOLDEN_FRAME || ref0 == LAST3_FRAME);
+#if CONFIG_EXT_COMP_REFS
+          const COMP_REFERENCE_TYPE comp_ref_type = has_uni_comp_refs(mbmi)
+                                                        ? UNIDIR_COMP_REFERENCE
+                                                        : BIDIR_COMP_REFERENCE;
+#if !USE_UNI_COMP_REFS
+          // TODO(zoeliu): Temporarily turn off uni-directional comp refs
+          assert(comp_ref_type == BIDIR_COMP_REFERENCE);
+#endif  // !USE_UNI_COMP_REFS
+          counts->comp_ref_type[av1_get_comp_reference_type_context(cm, xd)]
+                               [comp_ref_type]++;
 
-          counts->comp_ref[av1_get_pred_context_comp_ref_p(cm, xd)][0][bit]++;
-          if (!bit) {
-            counts->comp_ref[av1_get_pred_context_comp_ref_p1(cm, xd)][1]
-                            [ref0 == LAST_FRAME]++;
+          if (comp_ref_type == UNIDIR_COMP_REFERENCE) {
+            const int bit = (ref0 == BWDREF_FRAME);
+            counts->uni_comp_ref[av1_get_pred_context_uni_comp_ref_p(cm, xd)][0]
+                                [bit]++;
+            if (!bit) {
+              const int bit1 = (ref1 == GOLDEN_FRAME);
+              counts->uni_comp_ref[av1_get_pred_context_uni_comp_ref_p1(cm, xd)]
+                                  [1][bit1]++;
+            }
           } else {
-            counts->comp_ref[av1_get_pred_context_comp_ref_p2(cm, xd)][2]
-                            [ref0 == GOLDEN_FRAME]++;
-          }
+#endif  // CONFIG_EXT_COMP_REFS
+#if CONFIG_EXT_REFS
+            const int bit = (ref0 == GOLDEN_FRAME || ref0 == LAST3_FRAME);
 
-          counts->comp_bwdref[av1_get_pred_context_comp_bwdref_p(cm, xd)][0]
-                             [ref1 == ALTREF_FRAME]++;
+            counts->comp_ref[av1_get_pred_context_comp_ref_p(cm, xd)][0][bit]++;
+            if (!bit) {
+              counts->comp_ref[av1_get_pred_context_comp_ref_p1(cm, xd)][1]
+                              [ref0 == LAST_FRAME]++;
+            } else {
+              counts->comp_ref[av1_get_pred_context_comp_ref_p2(cm, xd)][2]
+                              [ref0 == GOLDEN_FRAME]++;
+            }
+
+            counts->comp_bwdref[av1_get_pred_context_comp_bwdref_p(cm, xd)][0]
+                               [ref1 == ALTREF_FRAME]++;
 #else   // !CONFIG_EXT_REFS
           counts->comp_ref[av1_get_pred_context_comp_ref_p(cm, xd)][0]
                           [ref0 == GOLDEN_FRAME]++;
 #endif  // CONFIG_EXT_REFS
+#if CONFIG_EXT_COMP_REFS
+          }
+#endif  // CONFIG_EXT_COMP_REFS
         } else {
 #if CONFIG_EXT_REFS
           const int bit = (ref0 == ALTREF_FRAME || ref0 == BWDREF_FRAME);
@@ -5062,14 +5087,14 @@ void av1_encode_frame(AV1_COMP *cpi) {
   // side behavior is where the ALT ref buffer has opposite sign bias to
   // the other two.
   if (!frame_is_intra_only(cm)) {
-#if !CONFIG_ONE_SIDED_COMPOUND
+#if !(CONFIG_ONE_SIDED_COMPOUND || CONFIG_EXT_COMP_REFS)
     if ((cm->ref_frame_sign_bias[ALTREF_FRAME] ==
          cm->ref_frame_sign_bias[GOLDEN_FRAME]) ||
         (cm->ref_frame_sign_bias[ALTREF_FRAME] ==
          cm->ref_frame_sign_bias[LAST_FRAME])) {
       cpi->allow_comp_inter_inter = 0;
     } else {
-#endif
+#endif  // !(CONFIG_ONE_SIDED_COMPOUND || CONFIG_EXT_COMP_REFS)
       cpi->allow_comp_inter_inter = 1;
 #if CONFIG_EXT_REFS
       cm->comp_fwd_ref[0] = LAST_FRAME;
@@ -5082,10 +5107,11 @@ void av1_encode_frame(AV1_COMP *cpi) {
     cm->comp_fixed_ref = ALTREF_FRAME;
     cm->comp_var_ref[0] = LAST_FRAME;
     cm->comp_var_ref[1] = GOLDEN_FRAME;
-#endif                          // CONFIG_EXT_REFS
-#if !CONFIG_ONE_SIDED_COMPOUND  // Normative in encoder
+#endif  // CONFIG_EXT_REFS
+#if !(CONFIG_ONE_SIDED_COMPOUND || \
+      CONFIG_EXT_COMP_REFS)  // Normative in encoder
     }
-#endif
+#endif  // !(CONFIG_ONE_SIDED_COMPOUND || CONFIG_EXT_COMP_REFS)
   } else {
     cpi->allow_comp_inter_inter = 0;
   }

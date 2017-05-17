@@ -282,6 +282,53 @@ static BLOCK_SIZE select_sb_size(const AV1_COMP *const cpi) {
 #endif  //  CONFIG_EXT_PARTITION
 }
 
+#ifdef CONFIG_COLLECT_REF_FRAME_STATS
+static void collect_ref_frame_stats() {
+  AV1_COMMON *const cm = &cpi->common;
+  ThreadData *td = &cpi->td;
+  FRAME_COUNTS *const counts = td->counts;
+  int i, j;
+
+  printf(" %d,", cm->frame_context_idx);
+
+  for (i = 0; i < COMP_INTER_CONTEXTS; ++i) {
+    // 0: single ref i.e. !has_second_ref(mbmi)
+    // 1: comp ref i.e. has_second_ref(mbmi)
+    printf(" %u,", counts->comp_inter[i][0]);
+  }
+
+  for (i = 0; i < COMP_REF_TYPE_CONTEXTS; ++i) {
+    // 0: UNIDIR_COMP_REFERENCE
+    // 1: BIDIR_COMP_REFERENCE
+    printf(" %u,", counts->comp_ref_type[i][0]);
+  }
+
+  // {LAST, LAST2}, {LAST, GOLDEN}, and {BWDREF, ALTREF}
+  for (i = 0; i < UNI_COMP_REF_CONTEXTS; ++i) {
+    for (j = 0; j < (UNIDIR_COMP_REFS - 1); ++j)
+      printf(" %u,", counts->uni_comp_ref[i][j][0]);
+  }
+
+  // Single ref stats
+  for (i = 0; i < REF_CONTEXTS; ++i) {
+    for (j = 0; j < (SINGLE_REFS - 1); ++j)
+      printf(" %u,", counts->single_ref[i][j][0]);
+  }
+
+  // Comp ref stats
+  for (i = 0; i < REF_CONTEXTS; ++i) {
+    for (j = 0; j < (FWD_REFS - 1); ++j)
+      printf(" %u,", counts->comp_ref[i][j][0]);
+  }
+  for (i = 0; i < REF_CONTEXTS; ++i) {
+    for (j = 0; j < (BWD_REFS - 1); ++j)
+      printf(" %u,", counts->comp_bwdref[i][j][0]);
+  }
+
+  printf("\n");
+}
+#endif  // CONFIG_COLLECT_REF_FRAME_STATS
+
 static void setup_frame(AV1_COMP *cpi) {
   AV1_COMMON *const cm = &cpi->common;
   // Set up entropy context depending on frame type. The decoder mandates
@@ -4395,7 +4442,12 @@ static int get_ref_frame_flags(const AV1_COMP *cpi) {
 
   if (last3_is_last || last3_is_last2 || last3_is_alt) flags &= ~AOM_LAST3_FLAG;
 
+#if CONFIG_EXT_COMP_REFS
+  if (gld_is_last2) flags &= ~AOM_GOLD_FLAG;
+  if (gld_is_last3) flags &= ~AOM_LAST3_FLAG;
+#else
   if (gld_is_last2 || gld_is_last3) flags &= ~AOM_GOLD_FLAG;
+#endif  // CONFIG_EXT_COMP_REFS
 
 #if CONFIG_ONE_SIDED_COMPOUND  // Changes LL & HL bitstream
   /* Allow biprediction between two identical frames (e.g. bwd_is_last = 1) */

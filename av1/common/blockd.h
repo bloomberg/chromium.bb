@@ -502,6 +502,33 @@ static INLINE int has_second_ref(const MB_MODE_INFO *mbmi) {
   return mbmi->ref_frame[1] > INTRA_FRAME;
 }
 
+#if CONFIG_EXT_COMP_REFS
+static INLINE int has_uni_comp_refs(const MB_MODE_INFO *mbmi) {
+  return has_second_ref(mbmi) && (!((mbmi->ref_frame[0] >= BWDREF_FRAME) ^
+                                    (mbmi->ref_frame[1] >= BWDREF_FRAME)));
+}
+
+static INLINE MV_REFERENCE_FRAME comp_ref0(int ref_idx) {
+  static const MV_REFERENCE_FRAME lut[] = {
+    LAST_FRAME,    // LAST_LAST2_FRAMES,
+    LAST_FRAME,    // LAST_GOLDEN_FRAMES,
+    BWDREF_FRAME,  // BWDREF_ALTREF_FRAMES,
+  };
+  assert(NELEMENTS(lut) == UNIDIR_COMP_REFS);
+  return lut[ref_idx];
+}
+
+static INLINE MV_REFERENCE_FRAME comp_ref1(int ref_idx) {
+  static const MV_REFERENCE_FRAME lut[] = {
+    LAST2_FRAME,   // LAST_LAST2_FRAMES,
+    GOLDEN_FRAME,  // LAST_GOLDEN_FRAMES,
+    ALTREF_FRAME,  // BWDREF_ALTREF_FRAMES,
+  };
+  assert(NELEMENTS(lut) == UNIDIR_COMP_REFS);
+  return lut[ref_idx];
+}
+#endif  // CONFIG_EXT_COMP_REFS
+
 PREDICTION_MODE av1_left_block_mode(const MODE_INFO *cur_mi,
                                     const MODE_INFO *left_mi, int b);
 

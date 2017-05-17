@@ -113,8 +113,14 @@ static const int filter_sets[DUAL_FILTER_SET_SIZE][2] = {
 #endif  // CONFIG_EXT_REFS
 
 #if CONFIG_EXT_REFS
+#if CONFIG_EXT_COMP_REFS
+#define SECOND_REF_FRAME_MASK                                        \
+  ((1 << ALTREF_FRAME) | (1 << BWDREF_FRAME) | (1 << GOLDEN_FRAME) | \
+   (1 << LAST2_FRAME) | 0x01)  // NOLINT
+#else                          // !CONFIG_EXT_COMP_REFS
 #define SECOND_REF_FRAME_MASK ((1 << ALTREF_FRAME) | (1 << BWDREF_FRAME) | 0x01)
-#else
+#endif  // CONFIG_EXT_COMP_REFS
+#else   // !CONFIG_EXT_REFS
 #define SECOND_REF_FRAME_MASK ((1 << ALTREF_FRAME) | 0x01)
 #endif  // CONFIG_EXT_REFS
 
@@ -257,6 +263,12 @@ static const MODE_DEFINITION av1_mode_order[MAX_MODES] = {
   { NEAREST_NEARESTMV, { LAST2_FRAME, BWDREF_FRAME } },
   { NEAREST_NEARESTMV, { LAST3_FRAME, BWDREF_FRAME } },
   { NEAREST_NEARESTMV, { GOLDEN_FRAME, BWDREF_FRAME } },
+
+#if CONFIG_EXT_COMP_REFS
+  { NEAREST_NEARESTMV, { LAST_FRAME, LAST2_FRAME } },
+  { NEAREST_NEARESTMV, { LAST_FRAME, GOLDEN_FRAME } },
+  { NEAREST_NEARESTMV, { BWDREF_FRAME, ALTREF_FRAME } },
+#endif  // CONFIG_EXT_COMP_REFS
 #endif  // CONFIG_EXT_REFS
 
 #else  // CONFIG_EXT_INTER
@@ -272,6 +284,12 @@ static const MODE_DEFINITION av1_mode_order[MAX_MODES] = {
   { NEARESTMV, { LAST2_FRAME, BWDREF_FRAME } },
   { NEARESTMV, { LAST3_FRAME, BWDREF_FRAME } },
   { NEARESTMV, { GOLDEN_FRAME, BWDREF_FRAME } },
+
+#if CONFIG_EXT_COMP_REFS
+  { NEARESTMV, { LAST_FRAME, LAST2_FRAME } },
+  { NEARESTMV, { LAST_FRAME, GOLDEN_FRAME } },
+  { NEARESTMV, { BWDREF_FRAME, ALTREF_FRAME } },
+#endif  // CONFIG_EXT_COMP_REFS
 #endif  // CONFIG_EXT_REFS
 #endif  // CONFIG_EXT_INTER
 
@@ -352,9 +370,35 @@ static const MODE_DEFINITION av1_mode_order[MAX_MODES] = {
   { NEAR_NEWMV, { GOLDEN_FRAME, BWDREF_FRAME } },
   { NEW_NEWMV, { GOLDEN_FRAME, BWDREF_FRAME } },
   { ZERO_ZEROMV, { GOLDEN_FRAME, BWDREF_FRAME } },
+
+#if CONFIG_EXT_COMP_REFS
+  { NEAR_NEARMV, { LAST_FRAME, LAST2_FRAME } },
+  { NEW_NEARESTMV, { LAST_FRAME, LAST2_FRAME } },
+  { NEAREST_NEWMV, { LAST_FRAME, LAST2_FRAME } },
+  { NEW_NEARMV, { LAST_FRAME, LAST2_FRAME } },
+  { NEAR_NEWMV, { LAST_FRAME, LAST2_FRAME } },
+  { NEW_NEWMV, { LAST_FRAME, LAST2_FRAME } },
+  { ZERO_ZEROMV, { LAST_FRAME, LAST2_FRAME } },
+
+  { NEAR_NEARMV, { LAST_FRAME, GOLDEN_FRAME } },
+  { NEW_NEARESTMV, { LAST_FRAME, GOLDEN_FRAME } },
+  { NEAREST_NEWMV, { LAST_FRAME, GOLDEN_FRAME } },
+  { NEW_NEARMV, { LAST_FRAME, GOLDEN_FRAME } },
+  { NEAR_NEWMV, { LAST_FRAME, GOLDEN_FRAME } },
+  { NEW_NEWMV, { LAST_FRAME, GOLDEN_FRAME } },
+  { ZERO_ZEROMV, { LAST_FRAME, GOLDEN_FRAME } },
+
+  { NEAR_NEARMV, { BWDREF_FRAME, ALTREF_FRAME } },
+  { NEW_NEARESTMV, { BWDREF_FRAME, ALTREF_FRAME } },
+  { NEAREST_NEWMV, { BWDREF_FRAME, ALTREF_FRAME } },
+  { NEW_NEARMV, { BWDREF_FRAME, ALTREF_FRAME } },
+  { NEAR_NEWMV, { BWDREF_FRAME, ALTREF_FRAME } },
+  { NEW_NEWMV, { BWDREF_FRAME, ALTREF_FRAME } },
+  { ZERO_ZEROMV, { BWDREF_FRAME, ALTREF_FRAME } },
+#endif  // CONFIG_EXT_COMP_REFS
 #endif  // CONFIG_EXT_REFS
 
-#else  // CONFIG_EXT_INTER
+#else  // !CONFIG_EXT_INTER
 
   { NEARMV, { LAST_FRAME, ALTREF_FRAME } },
   { NEWMV, { LAST_FRAME, ALTREF_FRAME } },
@@ -376,6 +420,15 @@ static const MODE_DEFINITION av1_mode_order[MAX_MODES] = {
   { NEWMV, { LAST3_FRAME, BWDREF_FRAME } },
   { NEARMV, { GOLDEN_FRAME, BWDREF_FRAME } },
   { NEWMV, { GOLDEN_FRAME, BWDREF_FRAME } },
+
+#if CONFIG_EXT_COMP_REFS
+  { NEARMV, { LAST_FRAME, LAST2_FRAME } },
+  { NEWMV, { LAST_FRAME, LAST2_FRAME } },
+  { NEARMV, { LAST_FRAME, GOLDEN_FRAME } },
+  { NEWMV, { LAST_FRAME, GOLDEN_FRAME } },
+  { NEARMV, { BWDREF_FRAME, ALTREF_FRAME } },
+  { NEWMV, { BWDREF_FRAME, ALTREF_FRAME } },
+#endif  // CONFIG_EXT_COMP_REFS
 #endif  // CONFIG_EXT_REFS
 
   { ZEROMV, { LAST_FRAME, ALTREF_FRAME } },
@@ -390,6 +443,12 @@ static const MODE_DEFINITION av1_mode_order[MAX_MODES] = {
   { ZEROMV, { LAST2_FRAME, BWDREF_FRAME } },
   { ZEROMV, { LAST3_FRAME, BWDREF_FRAME } },
   { ZEROMV, { GOLDEN_FRAME, BWDREF_FRAME } },
+
+#if CONFIG_EXT_COMP_REFS
+  { ZEROMV, { LAST_FRAME, LAST2_FRAME } },
+  { ZEROMV, { LAST_FRAME, GOLDEN_FRAME } },
+  { ZEROMV, { BWDREF_FRAME, ALTREF_FRAME } },
+#endif  // CONFIG_EXT_COMP_REFS
 #endif  // CONFIG_EXT_REFS
 
 #endif  // CONFIG_EXT_INTER
@@ -5566,17 +5625,29 @@ static void joint_motion_search(const AV1_COMP *cpi, MACROBLOCK *x,
 #endif  // CONFIG_EXT_INTER && CONFIG_COMPOUND_SINGLEREF
 }
 
-static void estimate_ref_frame_costs(const AV1_COMMON *cm,
-                                     const MACROBLOCKD *xd, int segment_id,
-                                     unsigned int *ref_costs_single,
-                                     unsigned int *ref_costs_comp,
-                                     aom_prob *comp_mode_p) {
+static void estimate_ref_frame_costs(
+    const AV1_COMMON *cm, const MACROBLOCKD *xd, int segment_id,
+    unsigned int *ref_costs_single,
+#if CONFIG_EXT_COMP_REFS
+    unsigned int (*ref_costs_comp)[TOTAL_REFS_PER_FRAME],
+#else
+    unsigned int *ref_costs_comp,
+#endif  // CONFIG_EXT_COMP_REFS
+    aom_prob *comp_mode_p) {
   int seg_ref_active =
       segfeature_active(&cm->seg, segment_id, SEG_LVL_REF_FRAME);
   if (seg_ref_active) {
     memset(ref_costs_single, 0,
            TOTAL_REFS_PER_FRAME * sizeof(*ref_costs_single));
+#if CONFIG_EXT_COMP_REFS
+    int ref_frame;
+    for (ref_frame = 0; ref_frame < TOTAL_REFS_PER_FRAME; ++ref_frame)
+      memset(ref_costs_comp[ref_frame], 0,
+             TOTAL_REFS_PER_FRAME * sizeof((*ref_costs_comp)[0]));
+#else
     memset(ref_costs_comp, 0, TOTAL_REFS_PER_FRAME * sizeof(*ref_costs_comp));
+#endif  // CONFIG_EXT_COMP_REFS
+
     *comp_mode_p = 128;
   } else {
     aom_prob intra_inter_p = av1_get_intra_inter_prob(cm, xd);
@@ -5696,6 +5767,57 @@ static void estimate_ref_frame_costs(const AV1_COMMON *cm,
 
       unsigned int base_cost = av1_cost_bit(intra_inter_p, 1);
 
+#if CONFIG_EXT_COMP_REFS
+      aom_prob comp_ref_type_p = av1_get_comp_reference_type_prob(cm, xd);
+      unsigned int ref_bicomp_costs[TOTAL_REFS_PER_FRAME] = { 0 };
+
+      ref_bicomp_costs[LAST_FRAME] = ref_bicomp_costs[LAST2_FRAME] =
+          ref_bicomp_costs[LAST3_FRAME] = ref_bicomp_costs[GOLDEN_FRAME] =
+#if USE_UNI_COMP_REFS
+              base_cost + av1_cost_bit(comp_ref_type_p, 1);
+#else
+              base_cost;
+#endif  // USE_UNI_COMP_REFS
+      ref_bicomp_costs[BWDREF_FRAME] = ref_bicomp_costs[ALTREF_FRAME] = 0;
+
+      ref_bicomp_costs[LAST_FRAME] += av1_cost_bit(ref_comp_p, 0);
+      ref_bicomp_costs[LAST2_FRAME] += av1_cost_bit(ref_comp_p, 0);
+      ref_bicomp_costs[LAST3_FRAME] += av1_cost_bit(ref_comp_p, 1);
+      ref_bicomp_costs[GOLDEN_FRAME] += av1_cost_bit(ref_comp_p, 1);
+
+      ref_bicomp_costs[LAST_FRAME] += av1_cost_bit(ref_comp_p1, 1);
+      ref_bicomp_costs[LAST2_FRAME] += av1_cost_bit(ref_comp_p1, 0);
+
+      ref_bicomp_costs[LAST3_FRAME] += av1_cost_bit(ref_comp_p2, 0);
+      ref_bicomp_costs[GOLDEN_FRAME] += av1_cost_bit(ref_comp_p2, 1);
+
+      ref_bicomp_costs[BWDREF_FRAME] += av1_cost_bit(bwdref_comp_p, 0);
+      ref_bicomp_costs[ALTREF_FRAME] += av1_cost_bit(bwdref_comp_p, 1);
+
+      int ref0;
+      for (ref0 = LAST_FRAME; ref0 <= GOLDEN_FRAME; ++ref0) {
+        ref_costs_comp[ref0][BWDREF_FRAME] =
+            ref_bicomp_costs[ref0] + ref_bicomp_costs[BWDREF_FRAME];
+        ref_costs_comp[ref0][ALTREF_FRAME] =
+            ref_bicomp_costs[ref0] + ref_bicomp_costs[ALTREF_FRAME];
+      }
+
+      aom_prob uni_comp_ref_p = av1_get_pred_prob_uni_comp_ref_p(cm, xd);
+      aom_prob uni_comp_ref_p1 = av1_get_pred_prob_uni_comp_ref_p1(cm, xd);
+
+      ref_costs_comp[LAST_FRAME][LAST2_FRAME] =
+          base_cost + av1_cost_bit(comp_ref_type_p, 0) +
+          av1_cost_bit(uni_comp_ref_p, 0) + av1_cost_bit(uni_comp_ref_p1, 0);
+      ref_costs_comp[LAST_FRAME][GOLDEN_FRAME] =
+          base_cost + av1_cost_bit(comp_ref_type_p, 0) +
+          av1_cost_bit(uni_comp_ref_p, 0) + av1_cost_bit(uni_comp_ref_p1, 1);
+
+      ref_costs_comp[BWDREF_FRAME][ALTREF_FRAME] =
+          base_cost + av1_cost_bit(comp_ref_type_p, 0) +
+          av1_cost_bit(uni_comp_ref_p, 1);
+
+#else  // !CONFIG_EXT_COMP_REFS
+
       ref_costs_comp[LAST_FRAME] =
 #if CONFIG_EXT_REFS
           ref_costs_comp[LAST2_FRAME] = ref_costs_comp[LAST3_FRAME] =
@@ -5754,7 +5876,18 @@ static void estimate_ref_frame_costs(const AV1_COMMON *cm,
       ref_costs_comp[LAST_FRAME] += av1_cost_bit(ref_comp_p, 0);
       ref_costs_comp[GOLDEN_FRAME] += av1_cost_bit(ref_comp_p, 1);
 #endif  // CONFIG_EXT_REFS
+#endif  // CONFIG_EXT_COMP_REFS
     } else {
+#if CONFIG_EXT_COMP_REFS
+      int ref0;
+      for (ref0 = LAST_FRAME; ref0 <= GOLDEN_FRAME; ++ref0) {
+        ref_costs_comp[ref0][BWDREF_FRAME] = 512;
+        ref_costs_comp[ref0][ALTREF_FRAME] = 512;
+      }
+      ref_costs_comp[LAST_FRAME][LAST2_FRAME] = 512;
+      ref_costs_comp[LAST_FRAME][GOLDEN_FRAME] = 512;
+      ref_costs_comp[BWDREF_FRAME][ALTREF_FRAME] = 512;
+#else  // !CONFIG_EXT_COMP_REFS
       ref_costs_comp[LAST_FRAME] = 512;
 #if CONFIG_EXT_REFS
       ref_costs_comp[LAST2_FRAME] = 512;
@@ -5763,6 +5896,7 @@ static void estimate_ref_frame_costs(const AV1_COMMON *cm,
       ref_costs_comp[ALTREF_FRAME] = 512;
 #endif  // CONFIG_EXT_REFS
       ref_costs_comp[GOLDEN_FRAME] = 512;
+#endif  // CONFIG_EXT_COMP_REFS
     }
   }
 }
@@ -9084,7 +9218,11 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
   int best_mode_skippable = 0;
   int midx, best_mode_index = -1;
   unsigned int ref_costs_single[TOTAL_REFS_PER_FRAME];
+#if CONFIG_EXT_COMP_REFS
+  unsigned int ref_costs_comp[TOTAL_REFS_PER_FRAME][TOTAL_REFS_PER_FRAME];
+#else
   unsigned int ref_costs_comp[TOTAL_REFS_PER_FRAME];
+#endif  // CONFIG_EXT_COMP_REFS
   aom_prob comp_mode_p;
   int64_t best_intra_rd = INT64_MAX;
   unsigned int best_pred_sse = UINT_MAX;
@@ -9304,6 +9442,10 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
 // Skip checking missing references in both single and compound reference
 // modes. Note that a mode will be skipped iff both reference frames
 // are masked out.
+#if CONFIG_EXT_COMP_REFS
+      ref_frame_skip_mask[0] |= (1 << ref_frame);
+      ref_frame_skip_mask[1] |= SECOND_REF_FRAME_MASK;
+#else  // !CONFIG_EXT_COMP_REFS
 #if CONFIG_EXT_REFS
       if (ref_frame == BWDREF_FRAME || ref_frame == ALTREF_FRAME) {
         ref_frame_skip_mask[0] |= (1 << ref_frame);
@@ -9315,6 +9457,7 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
 #if CONFIG_EXT_REFS
       }
 #endif  // CONFIG_EXT_REFS
+#endif  // CONFIG_EXT_COMP_REFS
     } else {
       for (i = LAST_FRAME; i <= ALTREF_FRAME; ++i) {
         // Skip fixed mv modes for poor references
@@ -9536,6 +9679,34 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
     if ((ref_frame_skip_mask[0] & (1 << ref_frame)) &&
         (ref_frame_skip_mask[1] & (1 << AOMMAX(0, second_ref_frame))))
       continue;
+
+#if CONFIG_EXT_COMP_REFS
+// TODO(zoeliu): Following toggle between #if 0/1 and the bug will manifest
+// itself.
+#if 0
+    if (!(cpi->ref_frame_flags & flag_list[ref_frame]) ||
+        (second_ref_frame > INTRA_FRAME &&
+         (!(cpi->ref_frame_flags & flag_list[second_ref_frame]))))
+      printf("Frame=%d, bsize=%d, (mi_row,mi_col)=(%d,%d), ref_frame=%d, "
+             "second_ref_frame=%d\n", cm->current_video_frame, bsize, mi_row,
+             mi_col, ref_frame, second_ref_frame);
+
+    if (!(cpi->ref_frame_flags & flag_list[ref_frame])) continue;
+    if (second_ref_frame > INTRA_FRAME &&
+        (!(cpi->ref_frame_flags & flag_list[second_ref_frame])))
+      continue;
+#endif  // 0
+
+#if !USE_UNI_COMP_REFS
+    // NOTE(zoeliu): Temporarily disable uni-directional comp refs
+    if (second_ref_frame > INTRA_FRAME) {
+      if (!((ref_frame < BWDREF_FRAME) ^ (second_ref_frame < BWDREF_FRAME)))
+        continue;
+    }
+    assert(second_ref_frame <= INTRA_FRAME ||
+           ((ref_frame < BWDREF_FRAME) ^ (second_ref_frame < BWDREF_FRAME)));
+#endif  // !USE_UNI_COMP_REFS
+#endif  // CONFIG_EXT_COMP_REFS
 
     if (mode_skip_mask[ref_frame] & (1 << this_mode)) continue;
 
@@ -10258,10 +10429,14 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
     // Estimate the reference frame signaling cost and add it
     // to the rolling cost variable.
     if (comp_pred) {
+#if CONFIG_EXT_COMP_REFS
+      rate2 += ref_costs_comp[ref_frame][second_ref_frame];
+#else  // !CONFIG_EXT_COMP_REFS
       rate2 += ref_costs_comp[ref_frame];
 #if CONFIG_EXT_REFS
       rate2 += ref_costs_comp[second_ref_frame];
 #endif  // CONFIG_EXT_REFS
+#endif  // CONFIG_EXT_COMP_REFS
     } else {
       rate2 += ref_costs_single[ref_frame];
     }
@@ -10981,7 +11156,11 @@ void av1_rd_pick_inter_mode_sb_seg_skip(const AV1_COMP *cpi,
   int i;
   int64_t best_pred_diff[REFERENCE_MODES];
   unsigned int ref_costs_single[TOTAL_REFS_PER_FRAME];
+#if CONFIG_EXT_COMP_REFS
+  unsigned int ref_costs_comp[TOTAL_REFS_PER_FRAME][TOTAL_REFS_PER_FRAME];
+#else
   unsigned int ref_costs_comp[TOTAL_REFS_PER_FRAME];
+#endif  // CONFIG_EXT_COMP_REFS
   aom_prob comp_mode_p;
   InterpFilter best_filter = SWITCHABLE;
   int64_t this_rd = INT64_MAX;

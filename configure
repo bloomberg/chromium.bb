@@ -317,6 +317,7 @@ EXPERIMENT_LIST="
     compound_singleref
     aom_qm
     one_sided_compound
+    ext_comp_refs
     smooth_hv
     var_refs
     rect_intra_pred

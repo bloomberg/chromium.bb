@@ -1392,6 +1392,17 @@ static const aom_cdf_prob default_comp_inter_cdf[COMP_INTER_CONTEXTS][CDF_SIZE(
             { AOM_ICDF(41 * 128), AOM_ICDF(32768), 0 } };
 #endif
 
+#if CONFIG_EXT_COMP_REFS
+static const aom_prob default_comp_ref_type_p[COMP_REF_TYPE_CONTEXTS] = {
+  30, 75, 120, 170, 230
+};
+
+static const aom_prob
+    default_uni_comp_ref_p[UNI_COMP_REF_CONTEXTS][UNIDIR_COMP_REFS - 1] = {
+      { 30, 20 }, { 75, 70 }, { 130, 130 }, { 165, 165 }, { 215, 220 }
+    };
+#endif  // CONFIG_EXT_COMP_REFS
+
 #if CONFIG_EXT_REFS
 static const aom_prob default_comp_ref_p[REF_CONTEXTS][FWD_REFS - 1] = {
   // TODO(zoeliu): To adjust the initial prob values.
@@ -4577,6 +4588,10 @@ static void init_mode_probs(FRAME_CONTEXT *fc) {
 #if CONFIG_NEW_MULTISYMBOL
   av1_copy(fc->comp_inter_cdf, default_comp_inter_cdf);
 #endif
+#if CONFIG_EXT_COMP_REFS
+  av1_copy(fc->comp_ref_type_prob, default_comp_ref_type_p);
+  av1_copy(fc->uni_comp_ref_prob, default_uni_comp_ref_p);
+#endif  // CONFIG_EXT_COMP_REFS
   av1_copy(fc->comp_ref_prob, default_comp_ref_p);
 #if CONFIG_LV_MAP
   av1_copy(fc->txb_skip, default_txb_skip);
@@ -4803,6 +4818,17 @@ void av1_adapt_inter_frame_probs(AV1_COMMON *cm) {
   for (i = 0; i < COMP_INTER_CONTEXTS; i++)
     fc->comp_inter_prob[i] = av1_mode_mv_merge_probs(pre_fc->comp_inter_prob[i],
                                                      counts->comp_inter[i]);
+
+#if CONFIG_EXT_COMP_REFS
+  for (i = 0; i < COMP_REF_TYPE_CONTEXTS; i++)
+    fc->comp_ref_type_prob[i] = av1_mode_mv_merge_probs(
+        pre_fc->comp_ref_type_prob[i], counts->comp_ref_type[i]);
+
+  for (i = 0; i < UNI_COMP_REF_CONTEXTS; i++)
+    for (j = 0; j < (UNIDIR_COMP_REFS - 1); j++)
+      fc->uni_comp_ref_prob[i][j] = av1_mode_mv_merge_probs(
+          pre_fc->uni_comp_ref_prob[i][j], counts->uni_comp_ref[i][j]);
+#endif  // CONFIG_EXT_COMP_REFS
 
 #if CONFIG_EXT_REFS
   for (i = 0; i < REF_CONTEXTS; i++)
