@@ -1207,7 +1207,7 @@ static void highbd_dr_predictor(uint16_t *dst, ptrdiff_t stride, int bs,
 
 #if CONFIG_FILTER_INTRA
 #if USE_3TAP_INTRA_FILTER
-int av1_filter_intra_taps_3[TX_SIZES][FILTER_INTRA_MODES][3] = {
+static int filter_intra_taps_3[TX_SIZES][FILTER_INTRA_MODES][3] = {
 #if CONFIG_CB4X4
   {
       { 697, 836, -509 },
@@ -1286,7 +1286,7 @@ int av1_filter_intra_taps_3[TX_SIZES][FILTER_INTRA_MODES][3] = {
 #endif  // CONFIG_TX64X64
 };
 #else
-int av1_filter_intra_taps_4[TX_SIZES][FILTER_INTRA_MODES][4] = {
+static int filter_intra_taps_4[TX_SIZES][FILTER_INTRA_MODES][4] = {
 #if CONFIG_CB4X4
   {
       { 735, 881, -537, -54 },
@@ -1391,9 +1391,9 @@ static void filter_intra_predictors_3tap(uint8_t *dst, ptrdiff_t stride, int bs,
   int buffer[33][33];
 #endif  // CONFIG_TX64X64
   const TX_SIZE tx_size = get_txsize_from_blocklen(bs);
-  const int c0 = av1_filter_intra_taps_3[tx_size][mode][0];
-  const int c1 = av1_filter_intra_taps_3[tx_size][mode][1];
-  const int c2 = av1_filter_intra_taps_3[tx_size][mode][2];
+  const int c0 = filter_intra_taps_3[tx_size][mode][0];
+  const int c1 = filter_intra_taps_3[tx_size][mode][1];
+  const int c2 = filter_intra_taps_3[tx_size][mode][2];
 
   k = 0;
   mean = 0;
@@ -1433,10 +1433,10 @@ static void filter_intra_predictors_4tap(uint8_t *dst, ptrdiff_t stride, int bs,
   int buffer[33][65];
 #endif  // CONFIG_TX64X64
   const TX_SIZE tx_size = get_txsize_from_blocklen(bs);
-  const int c0 = av1_filter_intra_taps_4[tx_size][mode][0];
-  const int c1 = av1_filter_intra_taps_4[tx_size][mode][1];
-  const int c2 = av1_filter_intra_taps_4[tx_size][mode][2];
-  const int c3 = av1_filter_intra_taps_4[tx_size][mode][3];
+  const int c0 = filter_intra_taps_4[tx_size][mode][0];
+  const int c1 = filter_intra_taps_4[tx_size][mode][1];
+  const int c2 = filter_intra_taps_4[tx_size][mode][2];
+  const int c3 = filter_intra_taps_4[tx_size][mode][3];
 
   k = 0;
   mean = 0;
@@ -1607,9 +1607,9 @@ static void highbd_filter_intra_predictors_3tap(uint16_t *dst, ptrdiff_t stride,
   int preds[33][33];
 #endif  // CONFIG_TX64X64
   const TX_SIZE tx_size = get_txsize_from_blocklen(bs);
-  const int c0 = av1_filter_intra_taps_3[tx_size][mode][0];
-  const int c1 = av1_filter_intra_taps_3[tx_size][mode][1];
-  const int c2 = av1_filter_intra_taps_3[tx_size][mode][2];
+  const int c0 = filter_intra_taps_3[tx_size][mode][0];
+  const int c1 = filter_intra_taps_3[tx_size][mode][1];
+  const int c2 = filter_intra_taps_3[tx_size][mode][2];
 
   k = 0;
   mean = 0;
@@ -1651,10 +1651,10 @@ static void highbd_filter_intra_predictors_4tap(uint16_t *dst, ptrdiff_t stride,
   int preds[33][65];
 #endif  // CONFIG_TX64X64
   const TX_SIZE tx_size = get_txsize_from_blocklen(bs);
-  const int c0 = av1_filter_intra_taps_4[tx_size][mode][0];
-  const int c1 = av1_filter_intra_taps_4[tx_size][mode][1];
-  const int c2 = av1_filter_intra_taps_4[tx_size][mode][2];
-  const int c3 = av1_filter_intra_taps_4[tx_size][mode][3];
+  const int c0 = filter_intra_taps_4[tx_size][mode][0];
+  const int c1 = filter_intra_taps_4[tx_size][mode][1];
+  const int c2 = filter_intra_taps_4[tx_size][mode][2];
+  const int c3 = filter_intra_taps_4[tx_size][mode][3];
 
   k = 0;
   mean = 0;
