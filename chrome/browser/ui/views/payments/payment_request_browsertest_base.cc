@@ -79,6 +79,7 @@ void PaymentRequestBrowserTestBase::SetUpOnMainThread() {
   https_server_ = base::MakeUnique<net::EmbeddedTestServer>(
       net::EmbeddedTestServer::TYPE_HTTPS);
   host_resolver()->AddRule("a.com", "127.0.0.1");
+  host_resolver()->AddRule("b.com", "127.0.0.1");
   ASSERT_TRUE(https_server_->InitializeAndListen());
   https_server_->ServeFilesFromSourceDirectory("chrome/test/data/payments");
   https_server_->StartAcceptingConnections();

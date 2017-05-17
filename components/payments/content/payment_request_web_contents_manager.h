@@ -11,13 +11,15 @@
 #include "base/macros.h"
 #include "components/payments/content/payment_request.h"
 #include "components/payments/mojom/payment_request.mojom.h"
+#include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
 namespace content {
 class RenderFrameHost;
+class NavigationHandle;
 class WebContents;
-}
+}  // namespace content
 
 namespace payments {
 
@@ -31,7 +33,8 @@ class PaymentRequestDelegate;
 // it is ready to die. Otherwise it gets destroyed when the WebContents (thus
 // this class) goes away.
 class PaymentRequestWebContentsManager
-    : public content::WebContentsUserData<PaymentRequestWebContentsManager> {
+    : public content::WebContentsObserver,
+      public content::WebContentsUserData<PaymentRequestWebContentsManager> {
  public:
   ~PaymentRequestWebContentsManager() override;
 
@@ -58,6 +61,10 @@ class PaymentRequestWebContentsManager
   // DestroyRequest(|request|) is called with the same pointer. (Only one
   // request at a time can be shown per tab.)
   bool CanShow(PaymentRequest* request);
+
+  // WebContentsObserver::
+  void DidStartNavigation(
+      content::NavigationHandle* navigation_handle) override;
 
  private:
   explicit PaymentRequestWebContentsManager(content::WebContents* web_contents);

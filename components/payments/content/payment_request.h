@@ -79,6 +79,10 @@ class PaymentRequest : public mojom::PaymentRequest,
   // OnConnectionTerminated).
   void UserCancelled();
 
+  // Called when the frame attached to this PaymentRequest is navigating away,
+  // but before the PaymentRequest is destroyed.
+  void DidStartNavigation(bool is_user_initiated);
+
   // As a result of a browser-side error or renderer-initiated mojo channel
   // closure (e.g. there was an error on the renderer side, or payment was
   // successful), this method is called. It is responsible for cleaning up,
@@ -94,6 +98,9 @@ class PaymentRequest : public mojom::PaymentRequest,
   PaymentRequestState* state() { return state_.get(); }
 
  private:
+  void RecordFirstCompletionStatus(
+      JourneyLogger::CompletionStatus completion_status);
+
   content::WebContents* web_contents_;
   std::unique_ptr<PaymentRequestDelegate> delegate_;
   // |manager_| owns this PaymentRequest.
@@ -112,6 +119,8 @@ class PaymentRequest : public mojom::PaymentRequest,
   ObserverForTest* observer_for_testing_;
 
   JourneyLogger journey_logger_;
+
+  bool has_recorded_abort_reason_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(PaymentRequest);
 };
