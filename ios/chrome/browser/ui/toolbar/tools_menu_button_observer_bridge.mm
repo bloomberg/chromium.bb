@@ -63,6 +63,7 @@
 
 - (void)readingListModelBeingDeleted:(const ReadingListModel*)model {
   DCHECK(model == _model);
+  _modelBridge.reset();
   _model = nullptr;
 }
 

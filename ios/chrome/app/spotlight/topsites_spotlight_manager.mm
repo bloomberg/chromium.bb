@@ -93,7 +93,7 @@ class SpotlightTopSitesCallbackBridge
   explicit SpotlightTopSitesCallbackBridge(TopSitesSpotlightManager* owner)
       : owner_(owner) {}
 
-  SpotlightTopSitesCallbackBridge() {}
+  ~SpotlightTopSitesCallbackBridge() {}
 
   void OnMostVisitedURLsAvailable(const history::MostVisitedURLList& data) {
     [owner_ onMostVisitedURLsAvailable:data];
@@ -105,13 +105,15 @@ class SpotlightTopSitesCallbackBridge
 
 class SpotlightTopSitesBridge : public history::TopSitesObserver {
  public:
-  explicit SpotlightTopSitesBridge(TopSitesSpotlightManager* owner)
-      : owner_(owner) {
-    owner.topSites->AddObserver(this);
+  SpotlightTopSitesBridge(TopSitesSpotlightManager* owner,
+                          history::TopSites* top_sites)
+      : owner_(owner), top_sites_(top_sites) {
+    top_sites->AddObserver(this);
   };
 
   ~SpotlightTopSitesBridge() override {
-    owner_.topSites->RemoveObserver(this);
+    top_sites_->RemoveObserver(this);
+    top_sites_ = nullptr;
   };
 
   void TopSitesLoaded(history::TopSites* top_sites) override {}
@@ -123,6 +125,7 @@ class SpotlightTopSitesBridge : public history::TopSitesObserver {
 
  private:
   __weak TopSitesSpotlightManager* owner_;
+  history::TopSites* top_sites_;
 };
 
 class SpotlightSuggestionsBridge
@@ -131,7 +134,7 @@ class SpotlightSuggestionsBridge
   explicit SpotlightSuggestionsBridge(TopSitesSpotlightManager* owner)
       : owner_(owner) {}
 
-  SpotlightSuggestionsBridge() {}
+  ~SpotlightSuggestionsBridge() {}
 
   void OnSuggestionsProfileAvailable(
       const suggestions::SuggestionsProfile& suggestions_profile) {
@@ -170,7 +173,7 @@ initWithLargeIconService:(favicon::LargeIconService*)largeIconService
                                   domain:spotlight::DOMAIN_TOPSITES];
   if (self) {
     _topSites = topSites;
-    _topSitesBridge.reset(new SpotlightTopSitesBridge(self));
+    _topSitesBridge.reset(new SpotlightTopSitesBridge(self, _topSites.get()));
     _topSitesCallbackBridge.reset(new SpotlightTopSitesCallbackBridge(self));
     _bookmarkModel = bookmarkModel;
     _isReindexPending = false;
