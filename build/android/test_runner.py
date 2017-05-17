@@ -381,10 +381,6 @@ def AddInstrumentationTestOptions(parser):
       dest='runtime_deps_path', type=os.path.realpath,
       help='Runtime data dependency file from GN.')
   parser.add_argument(
-      '--save-perf-json',
-      action='store_true',
-      help='Saves the JSON file for each UI Perf test.')
-  parser.add_argument(
       '--screenshot-directory',
       dest='screenshot_dir', type=os.path.realpath,
       help='Capture screenshots of test failures')
