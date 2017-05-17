@@ -7,15 +7,7 @@ import("//build/config/features.gni")
 import("//build/config/linux/pkg_config.gni")
 import("//build/config/ui.gni")
 import("//testing/libfuzzer/fuzzer_test.gni")
-
-declare_args() {
-  # Blink uses a cutting-edge version of Harfbuzz; most Linux distros do not
-  # contain a new enough version of the code to work correctly. However,
-  # ChromeOS chroots (i.e, real ChromeOS builds for devices) do contain a
-  # new enough version of the library, and so this variable exists so that
-  # ChromeOS can build against the system lib and keep binary sizes smaller.
-  use_system_harfbuzz = false
-}
+import("//third_party/harfbuzz-ng/harfbuzz.gni")
 
 if (use_system_harfbuzz) {
   import("//build/config/linux/pkg_config.gni")
@@ -26,6 +18,16 @@ if (use_system_harfbuzz) {
     public_configs = [ ":harfbuzz_pkgconfig" ]
   }
 } else {
+  # The :harfbuzz-ng target combines the staged build steps required to resolve
+  # the cyclic dependency between parts of FreeType and HarfBuzz.
+  group("harfbuzz-ng") {
+    public_deps = [
+      ":harfbuzz-ng-ft",
+      ":harfbuzz-ng-without-freetype",
+      "//build/config/freetype",
+    ]
+  }
+
   config("harfbuzz-ng_config") {
     include_dirs = [ "src" ]
   }
@@ -48,17 +50,7 @@ if (use_system_harfbuzz) {
     }
   }
 
-  # See also chrome/browser/ui/libgtkui/BUILD.gn which pulls this.
-  config("pangoft2_link_hack") {
-    if (is_linux && use_pango && !is_chromeos && !is_official_build &&
-        current_cpu != "arm" && current_cpu != "mipsel" && !is_component_build) {
-      # These symbols are referenced from libpangoft2, which will be
-      # dynamically linked later.
-      ldflags = [ "-Wl,-uhb_ft_face_create_cached,-uhb_glib_get_unicode_funcs" ]
-    }
-  }
-
-  static_library("harfbuzz-ng") {
+  static_library("harfbuzz-ng-without-freetype") {
     sources = [
       "src/hb-atomic-private.hh",
       "src/hb-blob.cc",
@@ -164,6 +156,11 @@ if (use_system_harfbuzz) {
       "src/hb.h",
     ]
 
+    if (is_component_build && !is_win) {
+      configs -= [ "//build/config/gcc:symbol_visibility_hidden" ]
+      configs += [ "//build/config/gcc:symbol_visibility_default" ]
+    }
+
     defines = [
       "HAVE_OT",
       "HAVE_ICU",
@@ -198,20 +195,6 @@ if (use_system_harfbuzz) {
       ]
     }
 
-    # When without -fvisibility=hidden for pango to use the harfbuzz
-    # in the tree, all symbols pango needs must be included, or
-    # pango uses mixed versions of harfbuzz and leads to crash.
-    # See crbug.com/462689.
-    if (is_linux && use_pango && !is_chromeos && !is_official_build &&
-        current_cpu != "arm" && current_cpu != "mipsel") {
-      deps += [ "//build/config/freetype" ]
-      configs -= [ "//build/config/gcc:symbol_visibility_hidden" ]
-      configs += [ "//build/config/gcc:symbol_visibility_default" ]
-      sources += [
-        "src/hb-ft.cc",
-        "src/hb-ft.h",
-      ]
-    }
     if (use_glib) {
       configs += [ "//build/config/linux:glib" ]
       sources += [
@@ -219,6 +202,39 @@ if (use_system_harfbuzz) {
         "src/hb-glib.h",
       ]
     }
+  }
+
+  static_library("harfbuzz-ng-ft") {
+    sources = [
+      "src/hb-ft.cc",
+      "src/hb-ft.h",
+    ]
+
+    if (is_component_build && !is_win) {
+      configs -= [ "//build/config/gcc:symbol_visibility_hidden" ]
+      configs += [ "//build/config/gcc:symbol_visibility_default" ]
+    }
+
+    configs -= [ "//build/config/compiler:chromium_code" ]
+    configs += [
+      "//build/config/compiler:no_chromium_code",
+
+      # Must be after no_chromium_code for warning flags to be ordered
+      # correctly.
+      ":harfbuzz_warnings",
+    ]
+    public_configs = [ ":harfbuzz-ng_config" ]
+
+    defines = [
+      "HAVE_OT",
+      "HAVE_ICU",
+      "HAVE_ICU_BUILTIN",
+      "HB_NO_MT",
+    ]
+
+    deps = [
+      "//third_party/freetype:bootstrap_freetype_for_harfbuzz",
+    ]
   }
 }
 

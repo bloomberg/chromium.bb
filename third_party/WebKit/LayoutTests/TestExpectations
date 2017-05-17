@@ -267,6 +267,8 @@ crbug.com/711807 external/wpt/css/CSS2/normal-flow/width-inherit-001.xht [ Skip 
 
 # ====== Layout team owned tests to here ======
 
+crbug.com/617168 [ Linux ] fast/text/shaping/same-script-different-lang.html [ NeedsRebaseline ]
+
 # ====== LayoutNG-only failures from here ======
 # LayoutNG - is a new layout system for Blink.
 
