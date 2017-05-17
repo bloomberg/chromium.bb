@@ -114,7 +114,6 @@ class CONTENT_EXPORT RenderViewHostImpl : public RenderViewHost,
   void SelectWordAroundCaret() override;
 
   // RenderProcessHostObserver implementation
-  void RenderProcessReady(RenderProcessHost* host) override;
   void RenderProcessExited(RenderProcessHost* host,
                            base::TerminationStatus status,
                            int exit_code) override;
@@ -325,8 +324,6 @@ class CONTENT_EXPORT RenderViewHostImpl : public RenderViewHost,
   std::unique_ptr<InputDeviceChangeObserver> input_device_change_observer_;
 
   bool updating_web_preferences_;
-
-  bool render_view_ready_on_process_launch_;
 
   base::WeakPtrFactory<RenderViewHostImpl> weak_factory_;
 

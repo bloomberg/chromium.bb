@@ -43,6 +43,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test_utils.h"
+#include "content/public/test/test_navigation_observer.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/extension.h"
 #include "net/dns/mock_host_resolver.h"
@@ -51,6 +52,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/page_transition_types.h"
+#include "url/gurl.h"
 
 using content::WebContents;
 using task_manager::browsertest_util::ColumnSpecifier;
@@ -214,7 +216,12 @@ class TaskManagerOOPIFBrowserTest : public TaskManagerBrowserTest,
   DISALLOW_COPY_AND_ASSIGN(TaskManagerOOPIFBrowserTest);
 };
 
-INSTANTIATE_TEST_CASE_P(, TaskManagerOOPIFBrowserTest, ::testing::Bool());
+INSTANTIATE_TEST_CASE_P(DefaultIsolation,
+                        TaskManagerOOPIFBrowserTest,
+                        ::testing::Values(false));
+INSTANTIATE_TEST_CASE_P(SitePerProcess,
+                        TaskManagerOOPIFBrowserTest,
+                        ::testing::Values(true));
 
 #if defined(OS_MACOSX) || defined(OS_LINUX)
 #define MAYBE_ShutdownWhileOpen DISABLED_ShutdownWhileOpen
@@ -789,6 +796,8 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, DevToolsOldUndockedWindow) {
 IN_PROC_BROWSER_TEST_P(TaskManagerOOPIFBrowserTest, KillSubframe) {
   ShowTaskManager();
 
+  content::TestNavigationObserver navigation_observer(
+      browser()->tab_strip_model()->GetActiveWebContents());
   GURL main_url(embedded_test_server()->GetURL(
       "/cross-site/a.com/iframe_cross_site.html"));
   browser()->OpenURL(content::OpenURLParams(main_url, content::Referrer(),
@@ -799,6 +808,7 @@ IN_PROC_BROWSER_TEST_P(TaskManagerOOPIFBrowserTest, KillSubframe) {
       WaitForTaskManagerRows(1, MatchTab("cross-site iframe test")));
   ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, MatchAnyTab()));
 
+  GURL b_url;
   if (!ShouldExpectSubframes()) {
     ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(0, MatchAnySubframe()));
   } else {
@@ -807,10 +817,22 @@ IN_PROC_BROWSER_TEST_P(TaskManagerOOPIFBrowserTest, KillSubframe) {
     ASSERT_NO_FATAL_FAILURE(
         WaitForTaskManagerRows(1, MatchSubframe("http://c.com/")));
     ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(2, MatchAnySubframe()));
+
+    // Remember |b_url| to be able to later renavigate to the same URL without
+    // doing any process swaps (we want to avoid redirects that would happen
+    // when going through /cross-site/foo.com/..., because
+    // https://crbug.com/642958 wouldn't repro in presence of process swaps).
+    navigation_observer.Wait();
+    b_url = browser()
+                ->tab_strip_model()
+                ->GetActiveWebContents()
+                ->GetAllFrames()[1]
+                ->GetLastCommittedURL();
+    ASSERT_EQ(b_url.host(), "b.com");  // Sanity check of test code / setup.
+
     int subframe_b = FindResourceIndex(MatchSubframe("http://b.com/"));
     ASSERT_NE(-1, subframe_b);
     ASSERT_NE(-1, model()->GetTabId(subframe_b));
-
     model()->Kill(subframe_b);
 
     ASSERT_NO_FATAL_FAILURE(
@@ -833,6 +855,19 @@ IN_PROC_BROWSER_TEST_P(TaskManagerOOPIFBrowserTest, KillSubframe) {
     ASSERT_NO_FATAL_FAILURE(
         WaitForTaskManagerRows(1, MatchSubframe("http://c.com/")));
     ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, MatchAnySubframe()));
+    ASSERT_NO_FATAL_FAILURE(
+        WaitForTaskManagerRows(1, MatchTab("cross-site iframe test")));
+
+    // Reload the subframe and verify it has re-appeared in the task manager.
+    // This is a regression test for https://crbug.com/642958.
+    ASSERT_TRUE(content::ExecuteScript(
+        browser()->tab_strip_model()->GetActiveWebContents()->GetMainFrame(),
+        "document.getElementById('frame1').src = '" + b_url.spec() + "';"));
+    ASSERT_NO_FATAL_FAILURE(
+        WaitForTaskManagerRows(1, MatchSubframe("http://b.com/")));
+    ASSERT_NO_FATAL_FAILURE(
+        WaitForTaskManagerRows(1, MatchSubframe("http://c.com/")));
+    ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(2, MatchAnySubframe()));
     ASSERT_NO_FATAL_FAILURE(
         WaitForTaskManagerRows(1, MatchTab("cross-site iframe test")));
   }
@@ -945,6 +980,8 @@ IN_PROC_BROWSER_TEST_P(TaskManagerOOPIFBrowserTest,
 
   // Navigate the tab to a page on a.com with cross-process subframes to
   // b.com and c.com.
+  content::TestNavigationObserver navigation_observer(
+      browser()->tab_strip_model()->GetActiveWebContents());
   GURL a_dotcom(embedded_test_server()->GetURL(
       "/cross-site/a.com/iframe_cross_site.html"));
   browser()->OpenURL(content::OpenURLParams(a_dotcom, content::Referrer(),
@@ -966,10 +1003,11 @@ IN_PROC_BROWSER_TEST_P(TaskManagerOOPIFBrowserTest,
   }
 
   // Navigate the b.com frame back to a.com. It is no longer a cross-site iframe
+  navigation_observer.Wait();
   ASSERT_TRUE(content::ExecuteScript(
       browser()->tab_strip_model()->GetActiveWebContents()->GetMainFrame(),
-      "document.getElementById('frame1').src='/title1.html';"
-      "document.title='aac';"));
+      R"( document.getElementById('frame1').src='/title1.html';
+          document.title='aac'; )"));
   ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, MatchTab("aac")));
   ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, MatchAnyTab()));
   if (!ShouldExpectSubframes()) {

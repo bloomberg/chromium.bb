@@ -6,6 +6,8 @@
 
 #include "base/bind.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
+#include "base/stl_util.h"
 #include "chrome/browser/task_manager/providers/web_contents/subframe_task.h"
 #include "chrome/browser/task_manager/providers/web_contents/web_contents_tags_manager.h"
 #include "content/public/browser/navigation_handle.h"
@@ -51,13 +53,15 @@ class WebContentsEntry : public content::WebContentsObserver {
   void RenderFrameDeleted(RenderFrameHost* render_frame_host) override;
   void RenderFrameHostChanged(RenderFrameHost* old_host,
                               RenderFrameHost* new_host) override;
-  void RenderViewReady() override;
+  void RenderFrameCreated(RenderFrameHost*) override;
   void WebContentsDestroyed() override;
   void RenderProcessGone(base::TerminationStatus status) override;
   void OnRendererUnresponsive(RenderWidgetHost* render_widget_host) override;
   void DidFinishNavigation(
       content::NavigationHandle* navigation_handle) override;
   void TitleWasSet(content::NavigationEntry* entry, bool explicit_set) override;
+
+  void RenderFrameReady(int process_routing_id, int frame_routing_id);
 
  private:
   // Defines a callback for WebContents::ForEachFrame() to create a
@@ -87,6 +91,8 @@ class WebContentsEntry : public content::WebContentsObserver {
   // States whether we did record a main frame for this entry.
   SiteInstance* main_frame_site_instance_;
 
+  base::WeakPtrFactory<WebContentsEntry> weak_factory_;
+
   DISALLOW_COPY_AND_ASSIGN(WebContentsEntry);
 };
 
@@ -96,8 +102,8 @@ WebContentsEntry::WebContentsEntry(content::WebContents* web_contents,
                                    WebContentsTaskProvider* provider)
     : WebContentsObserver(web_contents),
       provider_(provider),
-      main_frame_site_instance_(nullptr) {
-}
+      main_frame_site_instance_(nullptr),
+      weak_factory_(this) {}
 
 WebContentsEntry::~WebContentsEntry() {
   ClearAllTasks(false);
@@ -146,9 +152,32 @@ void WebContentsEntry::RenderFrameHostChanged(RenderFrameHost* old_host,
   CreateTaskForFrame(new_host);
 }
 
-void WebContentsEntry::RenderViewReady() {
-  ClearAllTasks(true);
-  CreateAllTasks();
+void WebContentsEntry::RenderFrameCreated(RenderFrameHost* render_frame_host) {
+  // Skip pending/speculative hosts. We'll create tasks for these if the
+  // navigation commits, at which point RenderFrameHostChanged() will fire.
+  if (!render_frame_host->IsCurrent())
+    return;
+
+  // Task manager will have no separate entry for |render_frame_host| if it has
+  // the same site instance as its parent - quit early in this case.
+  if (render_frame_host->GetParent() &&
+      render_frame_host->GetParent()->GetSiteInstance() ==
+          render_frame_host->GetSiteInstance())
+    return;
+
+  // Postpone processing |render_frame_host| until its process has a PID.
+  render_frame_host->GetProcess()->PostTaskWhenProcessIsReady(base::Bind(
+      &WebContentsEntry::RenderFrameReady, weak_factory_.GetWeakPtr(),
+      render_frame_host->GetProcess()->GetID(),
+      render_frame_host->GetRoutingID()));
+}
+
+void WebContentsEntry::RenderFrameReady(int render_process_id,
+                                        int render_frame_id) {
+  content::RenderFrameHost* render_frame_host =
+      content::RenderFrameHost::FromID(render_process_id, render_frame_id);
+  if (render_frame_host)
+    CreateTaskForFrame(render_frame_host);
 }
 
 void WebContentsEntry::WebContentsDestroyed() {
@@ -213,10 +242,13 @@ void WebContentsEntry::TitleWasSet(content::NavigationEntry* entry,
 }
 
 void WebContentsEntry::CreateTaskForFrame(RenderFrameHost* render_frame_host) {
+  DCHECK(render_frame_host);
   DCHECK(!tasks_by_frames_.count(render_frame_host));
 
   content::SiteInstance* site_instance = render_frame_host->GetSiteInstance();
   if (!site_instance->GetProcess()->HasConnection())
+    return;
+  if (!render_frame_host->IsRenderFrameLive())
     return;
 
   bool site_instance_exists =

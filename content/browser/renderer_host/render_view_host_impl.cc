@@ -210,7 +210,6 @@ RenderViewHostImpl::RenderViewHostImpl(
       sudden_termination_allowed_(false),
       render_view_termination_status_(base::TERMINATION_STATUS_STILL_RUNNING),
       updating_web_preferences_(false),
-      render_view_ready_on_process_launch_(false),
       weak_factory_(this) {
   DCHECK(instance_.get());
   CHECK(delegate_);  // http://crbug.com/82827
@@ -626,13 +625,6 @@ void RenderViewHostImpl::ClosePageIgnoringUnloadEvents() {
   delegate_->Close(this);
 }
 
-void RenderViewHostImpl::RenderProcessReady(RenderProcessHost* host) {
-  if (render_view_ready_on_process_launch_) {
-    render_view_ready_on_process_launch_ = false;
-    RenderViewReady();
-  }
-}
-
 void RenderViewHostImpl::RenderProcessExited(RenderProcessHost* host,
                                              base::TerminationStatus status,
                                              int exit_code) {
@@ -961,18 +953,12 @@ void RenderViewHostImpl::SelectWordAroundCaret() {
 }
 
 void RenderViewHostImpl::PostRenderViewReady() {
-  if (GetProcess()->IsReady()) {
-    BrowserThread::PostTask(
-        BrowserThread::UI,
-        FROM_HERE,
-        base::Bind(&RenderViewHostImpl::RenderViewReady,
-                   weak_factory_.GetWeakPtr()));
-  } else {
-    render_view_ready_on_process_launch_ = true;
-  }
+  GetProcess()->PostTaskWhenProcessIsReady(base::Bind(
+      &RenderViewHostImpl::RenderViewReady, weak_factory_.GetWeakPtr()));
 }
 
 void RenderViewHostImpl::RenderViewReady() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   delegate_->RenderViewReady(this);
 }
 
