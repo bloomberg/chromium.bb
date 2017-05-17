@@ -15,6 +15,10 @@
 #include "ios/web/public/test/response_providers/data_response_provider.h"
 #include "ui/base/l10n/l10n_util.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 using chrome_test_util::BackButton;
 using chrome_test_util::ForwardButton;
 using chrome_test_util::TapWebViewElementWithId;
@@ -641,7 +645,7 @@ class RedirectResponseProvider : public web::DataResponseProvider {
                      "});",
                     kNoHashChangeText, content.c_str()];
 
-  NSError* error = nil;
+  __unsafe_unretained NSError* error = nil;
   chrome_test_util::ExecuteJavaScript(script, &error);
 }
 

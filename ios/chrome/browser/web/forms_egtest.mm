@@ -22,6 +22,10 @@
 #include "ios/web/public/test/response_providers/data_response_provider.h"
 #include "ios/web/public/test/url_test_util.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 using chrome_test_util::ButtonWithAccessibilityLabelId;
 using chrome_test_util::OmniboxText;
 using chrome_test_util::WebViewContainingText;
@@ -275,14 +279,13 @@ void TestFormRedirectResponseProvider::GetResponseHeadersAndBody(
   // to cancel form repost.
   if (IsIPadIdiom()) {
     // On tablet, dismiss the popover.
-    base::scoped_nsobject<GREYElementMatcherBlock> matcher([
-        [GREYElementMatcherBlock alloc]
+    GREYElementMatcherBlock* matcher = [[GREYElementMatcherBlock alloc]
         initWithMatchesBlock:^BOOL(UIView* view) {
           return [NSStringFromClass([view class]) hasPrefix:@"UIDimmingView"];
         }
         descriptionBlock:^(id<GREYDescription> description) {
           [description appendText:@"class prefixed with UIDimmingView"];
-        }]);
+        }];
     [[EarlGrey selectElementWithMatcher:matcher]
         performAction:grey_tapAtPoint(CGPointMake(50.0f, 50.0f))];
   } else {

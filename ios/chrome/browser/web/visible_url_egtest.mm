@@ -24,6 +24,10 @@
 #include "ios/web/public/test/url_test_util.h"
 #include "url/gurl.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 using chrome_test_util::WebViewContainingText;
 using chrome_test_util::OmniboxText;
 
@@ -520,8 +524,8 @@ class PausableResponseProvider : public HtmlResponseProvider {
 
   // Quickly (using chrome command) navigate forward twice and wait for
   // kChromeUIVersionURL to load.
-  base::scoped_nsobject<GenericChromeCommand> forwardCommand(
-      [[GenericChromeCommand alloc] initWithTag:IDC_FORWARD]);
+  GenericChromeCommand* forwardCommand =
+      [[GenericChromeCommand alloc] initWithTag:IDC_FORWARD];
   chrome_test_util::RunCommandWithActiveViewController(forwardCommand);
   chrome_test_util::RunCommandWithActiveViewController(forwardCommand);
 

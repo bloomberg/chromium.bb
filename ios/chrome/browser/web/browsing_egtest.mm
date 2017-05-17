@@ -35,6 +35,10 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 using chrome_test_util::OmniboxText;
 using chrome_test_util::WebViewContainingText;
 
@@ -383,8 +387,8 @@ id<GREYMatcher> GoButtonMatcher() {
 // TODO(crbug.com/638674): Evaluate if this can move to shared code
 // Navigates back to the previous webpage.
 - (void)goBack {
-  base::scoped_nsobject<GenericChromeCommand> backCommand(
-      [[GenericChromeCommand alloc] initWithTag:IDC_BACK]);
+  GenericChromeCommand* backCommand =
+      [[GenericChromeCommand alloc] initWithTag:IDC_BACK];
   chrome_test_util::RunCommandWithActiveViewController(backCommand);
 
   [ChromeEarlGrey waitForPageToFinishLoading];
@@ -393,8 +397,8 @@ id<GREYMatcher> GoButtonMatcher() {
 // Navigates forward to a previous webpage.
 // TODO(crbug.com/638674): Evaluate if this can move to shared code
 - (void)goForward {
-  base::scoped_nsobject<GenericChromeCommand> forwardCommand(
-      [[GenericChromeCommand alloc] initWithTag:IDC_FORWARD]);
+  GenericChromeCommand* forwardCommand =
+      [[GenericChromeCommand alloc] initWithTag:IDC_FORWARD];
   chrome_test_util::RunCommandWithActiveViewController(forwardCommand);
 
   [ChromeEarlGrey waitForPageToFinishLoading];
