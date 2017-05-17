@@ -130,7 +130,14 @@ class EncryptedMediaSupportedTypesTest : public InProcessBrowserTest {
 #endif
 
     // Codecs allowed by both MP4 and WebM (with given command line flags).
+    // For vp9 codec string format, see https://www.webmproject.org/vp9/mp4/
     video_common_codecs_.push_back("vp09.00.10.08");
+
+    // Non-zero VP9 profiles are not yet supported, even with the given command
+    // line flags. See http://crbug.com/707128
+    invalid_codecs_.push_back("vp09.01.10.08");
+    invalid_codecs_.push_back("vp09.02.10.10");
+    invalid_codecs_.push_back("vp09.03.10.10");
 
     // Extended codecs are used, so make sure generic ones fail. These will be
     // tested against all initDataTypes as they should always fail to be
