@@ -19,6 +19,17 @@ concepts and general git usage. Knowing what git means by branches, commits,
 reverts, and resets (as opposed to what SVN means by them) will help make the
 following much more understandable.
 
+## Chromium-specific Git Extensions
+
+Chromium ships a large number of git extensions in depot_tools. Some (like
+`git cl`) are required for the Chromium development workflow, while others
+(like `git map-branches`) are simple utilities to make your life easier.
+Please take a look at the full
+[depot_tools tutorial](https://commondatastorage.googleapis.com/chrome-infra-docs/flat/depot_tools/docs/html/depot_tools_tutorial.html),
+and at the extensive
+[man pages](https://commondatastorage.googleapis.com/chrome-infra-docs/flat/depot_tools/docs/html/depot_tools.html)
+for all the extensions.
+
 ## Excluding file(s) from git-cl, while preserving them for later use
 
 Since git-cl assumes that the diff between your current branch and its tracking
