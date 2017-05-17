@@ -166,7 +166,9 @@ class VrShell : public device::PresentingGvrDelegate,
 
  private:
   ~VrShell() override;
-  void PostToGlThreadWhenReady(const base::Closure& task);
+  void WaitForGlThread();
+  void PostToGlThread(const tracked_objects::Location& from_here,
+                      const base::Closure& task);
   void SetUiState();
 
   // device::GvrDelegate implementation.
@@ -214,6 +216,7 @@ class VrShell : public device::PresentingGvrDelegate,
 
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
   std::unique_ptr<VrGLThread> gl_thread_;
+  bool thread_started_ = false;
   UiInterface* ui_;
   bool reprojected_rendering_;
 
