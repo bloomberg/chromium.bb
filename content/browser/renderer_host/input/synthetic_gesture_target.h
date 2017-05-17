@@ -27,10 +27,6 @@ class CONTENT_EXPORT SyntheticGestureTarget {
   virtual void DispatchInputEventToPlatform(
       const blink::WebInputEvent& event) = 0;
 
-  // Called by SyntheticGestureController to request a flush at a time
-  // appropriate for the platform, e.g. aligned with vsync.
-  virtual void SetNeedsFlush() = 0;
-
   // Returns the default gesture source type for the target.
   virtual SyntheticGestureParams::GestureSourceType
       GetDefaultSyntheticGestureSourceType() const = 0;

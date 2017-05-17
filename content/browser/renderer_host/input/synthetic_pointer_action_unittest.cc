@@ -65,9 +65,6 @@ class MockSyntheticPointerActionTarget : public SyntheticGestureTarget {
   MockSyntheticPointerActionTarget() {}
   ~MockSyntheticPointerActionTarget() override {}
 
-  // SyntheticGestureTarget:
-  void SetNeedsFlush() override { NOTIMPLEMENTED(); }
-
   base::TimeDelta PointerAssumedStoppedTime() const override {
     NOTIMPLEMENTED();
     return base::TimeDelta();

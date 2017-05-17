@@ -135,8 +135,6 @@ class MockSyntheticGestureTarget : public SyntheticGestureTarget {
   // SyntheticGestureTarget:
   void DispatchInputEventToPlatform(const WebInputEvent& event) override {}
 
-  void SetNeedsFlush() override { flush_requested_ = true; }
-
   SyntheticGestureParams::GestureSourceType
   GetDefaultSyntheticGestureSourceType() const override {
     return SyntheticGestureParams::TOUCH_INPUT;
@@ -671,8 +669,9 @@ class SyntheticGestureControllerTestBase {
   template<typename MockGestureTarget>
   void CreateControllerAndTarget() {
     target_ = new MockGestureTarget();
-    controller_.reset(new SyntheticGestureController(
-        std::unique_ptr<SyntheticGestureTarget>(target_)));
+    controller_ = base::MakeUnique<SyntheticGestureController>(
+        std::unique_ptr<SyntheticGestureTarget>(target_),
+        base::Bind([](base::OnceClosure callback) {}));
   }
 
   void QueueSyntheticGesture(std::unique_ptr<SyntheticGesture> gesture) {
@@ -684,14 +683,9 @@ class SyntheticGestureControllerTestBase {
   }
 
   void FlushInputUntilComplete() {
-    while (target_->flush_requested()) {
-      while (target_->flush_requested()) {
-        target_->ClearFlushRequest();
-        time_ += base::TimeDelta::FromMilliseconds(kFlushInputRateInMs);
-        controller_->Flush(time_);
-      }
-      controller_->OnDidFlushInput();
-    }
+    do
+      time_ += base::TimeDelta::FromMilliseconds(kFlushInputRateInMs);
+    while (controller_->DispatchNextEvent(time_));
   }
 
   void OnSyntheticGestureCompleted(SyntheticGesture::Result result) {
@@ -836,22 +830,9 @@ TEST_F(SyntheticGestureControllerTest, GestureCompletedOnDidFlushInput) {
   QueueSyntheticGesture(std::move(gesture_1));
   QueueSyntheticGesture(std::move(gesture_2));
 
-  while (target_->flush_requested()) {
-    target_->ClearFlushRequest();
+  do {
     time_ += base::TimeDelta::FromMilliseconds(kFlushInputRateInMs);
-    controller_->Flush(time_);
-  }
-  EXPECT_EQ(0, num_success_);
-  controller_->OnDidFlushInput();
-  EXPECT_EQ(1, num_success_);
-
-  while (target_->flush_requested()) {
-    target_->ClearFlushRequest();
-    time_ += base::TimeDelta::FromMilliseconds(kFlushInputRateInMs);
-    controller_->Flush(time_);
-  }
-  EXPECT_EQ(1, num_success_);
-  controller_->OnDidFlushInput();
+  } while (controller_->DispatchNextEvent(time_));
   EXPECT_EQ(2, num_success_);
 }
 

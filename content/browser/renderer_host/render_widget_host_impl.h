@@ -478,11 +478,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // Update the renderer's cache of the screen rect of the view and window.
   void SendScreenRects();
 
-  // Called by the view in response to a flush request.
-  void FlushInput();
-
-  // Request a flush signal from the view.
-  void SetNeedsFlush();
+  void OnBeginFrame();
 
   // Indicates whether the renderer drives the RenderWidgetHosts's size or the
   // other way around.
@@ -641,6 +637,9 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   void RendererIsResponsive();
 
   void OnGpuSwapBuffersCompletedInternal(const ui::LatencyInfo& latency_info);
+
+  void RequestBeginFrameForSynthesizedInput(
+      base::OnceClosure begin_frame_callback);
 
   // IPC message handlers
   void OnRenderProcessGone(int status, int error_code);
@@ -982,6 +981,8 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // List of all swap messages that their corresponding frames have not arrived.
   // Sorted by frame token.
   std::queue<std::pair<uint32_t, std::vector<IPC::Message>>> queued_messages_;
+
+  base::OnceClosure begin_frame_callback_;
 
   base::WeakPtrFactory<RenderWidgetHostImpl> weak_factory_;
 

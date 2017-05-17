@@ -12,6 +12,7 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "content/browser/renderer_host/input/synthetic_gesture.h"
 #include "content/common/content_export.h"
@@ -26,8 +27,12 @@ class SyntheticGestureTarget;
 // input events to the platform until the gesture has finished.
 class CONTENT_EXPORT SyntheticGestureController {
  public:
-  explicit SyntheticGestureController(
-      std::unique_ptr<SyntheticGestureTarget> gesture_target);
+  using BeginFrameCallback = base::OnceClosure;
+  using BeginFrameRequestCallback =
+      base::RepeatingCallback<void(BeginFrameCallback)>;
+  SyntheticGestureController(
+      std::unique_ptr<SyntheticGestureTarget> gesture_target,
+      BeginFrameRequestCallback begin_frame_callback);
   virtual ~SyntheticGestureController();
 
   typedef base::Callback<void(SyntheticGesture::Result)>
@@ -36,21 +41,17 @@ class CONTENT_EXPORT SyntheticGestureController {
       std::unique_ptr<SyntheticGesture> synthetic_gesture,
       const OnGestureCompleteCallback& completion_callback);
 
-  // Forward input events of the currently processed gesture.
-  void Flush(base::TimeTicks timestamp);
-
-  // To be called when all events generated from the current gesture have been
-  // fully flushed from the input pipeline (i.e., sent, processed and ack'ed).
-  void OnDidFlushInput();
+  bool DispatchNextEvent(base::TimeTicks = base::TimeTicks::Now());
 
  private:
+  void OnBeginFrame();
+
   void StartGesture(const SyntheticGesture& gesture);
   void StopGesture(const SyntheticGesture& gesture,
                    const OnGestureCompleteCallback& completion_callback,
                    SyntheticGesture::Result result);
 
   std::unique_ptr<SyntheticGestureTarget> gesture_target_;
-  std::unique_ptr<SyntheticGesture::Result> pending_gesture_result_;
 
   // A queue of gesture/callback pairs.  Implemented as two queues to
   // simplify the ownership of SyntheticGesture pointers.
@@ -81,6 +82,10 @@ class CONTENT_EXPORT SyntheticGestureController {
 
     DISALLOW_COPY_AND_ASSIGN(GestureAndCallbackQueue);
   } pending_gesture_queue_;
+
+  BeginFrameRequestCallback begin_frame_callback_;
+
+  base::WeakPtrFactory<SyntheticGestureController> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(SyntheticGestureController);
 };

@@ -43,8 +43,6 @@ class SyntheticGestureTargetBase : public SyntheticGestureTarget {
   // SyntheticGestureTarget:
   void DispatchInputEventToPlatform(const blink::WebInputEvent& event) override;
 
-  void SetNeedsFlush() override;
-
   SyntheticGestureParams::GestureSourceType
   GetDefaultSyntheticGestureSourceType() const override;
 

@@ -27,9 +27,6 @@ namespace content {
 
 namespace {
 
-// How many microseconds apart input events should be flushed.
-const int kFlushInputRateInUs = 16666;
-
 }
 
 RenderWidgetHostViewBase::RenderWidgetHostViewBase()
@@ -187,17 +184,6 @@ InputEventAckState RenderWidgetHostViewBase::FilterInputEvent(
   return INPUT_EVENT_ACK_STATE_NOT_CONSUMED;
 }
 
-void RenderWidgetHostViewBase::OnSetNeedsFlushInput() {
-  if (flush_input_timer_.IsRunning())
-    return;
-
-  flush_input_timer_.Start(
-      FROM_HERE,
-      base::TimeDelta::FromMicroseconds(kFlushInputRateInUs),
-      this,
-      &RenderWidgetHostViewBase::FlushInput);
-}
-
 void RenderWidgetHostViewBase::WheelEventAck(
     const blink::WebMouseWheelEvent& event,
     InputEventAckState ack_result) {
@@ -315,15 +301,6 @@ uint32_t RenderWidgetHostViewBase::RendererFrameNumber() {
 
 void RenderWidgetHostViewBase::DidReceiveRendererFrame() {
   ++renderer_frame_number_;
-}
-
-void RenderWidgetHostViewBase::FlushInput() {
-  RenderWidgetHostImpl* impl = NULL;
-  if (GetRenderWidgetHost())
-    impl = RenderWidgetHostImpl::From(GetRenderWidgetHost());
-  if (!impl)
-    return;
-  impl->FlushInput();
 }
 
 void RenderWidgetHostViewBase::ShowDisambiguationPopup(
