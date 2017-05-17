@@ -397,8 +397,8 @@ public class OfflinePageSavePageLaterEvaluationTest {
                 return "RETRY_COUNT_EXCEEDED";
             case BackgroundSavePageResult.START_COUNT_EXCEEDED:
                 return "START_COUNT_EXCEEDED";
-            case BackgroundSavePageResult.REMOVED:
-                return "REMOVED";
+            case BackgroundSavePageResult.USER_CANCELED:
+                return "USER_CANCELED";
             case -1:
                 return "NOT_COMPLETED";
             default:

@@ -412,7 +412,7 @@ void RequestCoordinator::RemoveRequests(
       request_ids,
       base::Bind(&RequestCoordinator::HandleRemovedRequestsAndCallback,
                  weak_ptr_factory_.GetWeakPtr(), callback,
-                 RequestNotifier::BackgroundSavePageResult::REMOVED));
+                 RequestNotifier::BackgroundSavePageResult::USER_CANCELED));
 
   // Record the network quality when this request is removed.
   if (network_quality_estimator_) {

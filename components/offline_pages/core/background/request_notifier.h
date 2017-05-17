@@ -26,7 +26,7 @@ class RequestNotifier {
     EXPIRED = 5,
     RETRY_COUNT_EXCEEDED = 6,
     START_COUNT_EXCEEDED = 7,
-    REMOVED = 8,
+    USER_CANCELED = 8,
     // NOTE: insert new values above this line and update histogram enum too.
     STATUS_COUNT
   };

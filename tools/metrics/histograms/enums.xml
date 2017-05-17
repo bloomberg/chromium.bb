@@ -25619,35 +25619,96 @@ from previous Chrome versions.
 
   <int value="0" label="Unknown (not expected to be recorded)"/>
   <int value="1" label="Loaded (not expected to be recorded)"/>
-  <int value="2" label="Saved"/>
-  <int value="3" label="RequestCoordinator canceled"/>
-  <int value="4" label="Loading canceled"/>
-  <int value="5" label="Loading failed (retryable)"/>
-  <int value="6" label="Save failed"/>
-  <int value="7" label="Foreground transition canceled"/>
-  <int value="8" label="RequestCoordinator timed-out"/>
+  <int value="2" label="Saved">The attempt finished successfully.</int>
+  <int value="3" label="RequestCoordinator canceled">
+    The attempt was canceled by the request coordinator. This is triggered when
+    the user cancels an in-flight offlining attempt, and will always result in
+    BackgroundSavePageResult::USER_CANCELED.
+  </int>
+  <int value="4" label="Loading canceled">
+    Loading was canceled by various pre-render monitoring. These include when
+    window.open was called, when audio is detected, etc.
+  </int>
+  <int value="5" label="Loading failed (retriable)">
+    The attempt resulted in a retriable loading failure. This may be because we
+    found a network error or a page error (i.e. 404 pages will also result in an
+    Loading Failed). Because fickle networks make network errors unreliable, an
+    incorrectly typed URL will also result in retriable loading failure.
+  </int>
+  <int value="6" label="Save failed">
+    The attempt failed because save did not succeed.
+  </int>
+  <int value="7" label="Foreground transition canceled">
+    The attempt failed because chrome is now operating in the foreground on a
+    svelte device.
+  </int>
+  <int value="8" label="RequestCoordinator timed-out">
+    The attempt failed because the particular attempt ran out of time.
+  </int>
   <int value="9" label="Loading not started (deprecated 1/2017)"/>
-  <int value="10" label="Loading failed (non-retryable)"/>
-  <int value="11" label="Loading failed (don't start next request)"/>
-  <int value="12" label="Loading not accepted"/>
-  <int value="13" label="Queue update failed"/>
-  <int value="14" label="Background scheduler canceled processing"/>
-  <int value="15" label="Saved after timeout on last retry"/>
-  <int value="16" label="Browser killed (OOM, swiped, crashed)"/>
+  <int value="10" label="Loading failed (non-retriable)">
+    The attempt resulted in a non-retriable loading error. This is mostly
+    deprecated as of 4/2017 because a fickle network and a good page might
+    result in the same errors as a bad page with invalid URL.
+  </int>
+  <int value="11" label="Loading failed (don't start next request)">
+    The attempt resulted in a loading failure but we've reason to believe we
+    shouldn't try something else for a little while: i.e. we failed because a
+    renderer crashed or we got INTERNET_DISCONNECTED as the network error.
+  </int>
+  <int value="12" label="Loading not accepted">
+    The offliner was asked to attempt something when it's not ready.
+  </int>
+  <int value="13" label="Queue update failed">
+    The request coordinator failed updating the status of the request in the
+    queue. The attempt is aborted.
+  </int>
+  <int value="14" label="Background scheduler canceled processing">
+    Called when the background scheduler stops the processing.
+  </int>
+  <int value="15" label="Saved after timeout on last retry">
+    The attempt succeeded, but only as a result of snapshotting on the last
+    retry and we have already received DocumentAvailableInMainFrame. Note that
+    if we're already in the middle of snapshotting, we will record SAVED. The
+    quality of the page is presumed to be lower.
+  </int>
+  <int value="16" label="Browser killed">
+    The browser was killed for reasons such as OOM, swiped out, or crashed.
+  </int>
 </enum>
 
 <enum name="OfflinePagesBackgroundSavePageResult" type="int">
 <!-- Generated from components/offline_pages/core/background/request_notifier.h -->
 
-  <int value="0" label="Success"/>
-  <int value="1" label="Loading failure"/>
-  <int value="2" label="Loading canceled"/>
-  <int value="3" label="Foreground canceled"/>
-  <int value="4" label="Save failed"/>
-  <int value="5" label="Expired"/>
-  <int value="6" label="Retry count exceeded"/>
-  <int value="7" label="Start count exceeded"/>
-  <int value="8" label="Removed"/>
+  <int value="0" label="Success">Request was completed successfully.</int>
+  <int value="1" label="Loading failure">
+    Request failed because a non-recoverable loading failure occurred.
+  </int>
+  <int value="2" label="Loading canceled">
+    Loading was canceled by various pre-renderer monitoring. This is not used
+    anywhere.
+  </int>
+  <int value="3" label="Foreground canceled">
+    Loading was canceled by chrome moving to the foreground on a svelte device.
+  </int>
+  <int value="4" label="Save failed">
+    Loading failed because we failed saving the page.
+  </int>
+  <int value="5" label="Expired">
+    Request failed because it expired before we were able to get to it.
+  </int>
+  <int value="6" label="Retry count exceeded">
+    Request failed because we exceeded the maximum number of retries.
+  </int>
+  <int value="7" label="Start count exceeded">
+    Request failed because we exceeded the maximum number of starts. Each start
+    may have completed (resulting in a load error or one of the other
+    per-attempt statuses) or chrome may have died before the attempt's result
+    was recorded.
+  </int>
+  <int value="8" label="User canceled">
+    The request was removed by the user.
+  </int>
 </enum>
 
 <enum name="OfflinePagesCctApiPrerenderAllowedStatus" type="int">
@@ -25703,17 +25764,40 @@ from previous Chrome versions.
 </enum>
 
 <enum name="OfflinePagesSavePageResult" type="int">
-  <int value="0" label="Success"/>
-  <int value="1" label="Cancelled"/>
-  <int value="2" label="Device full"/>
-  <int value="3" label="Content unavailable"/>
-  <int value="4" label="Archive creation failed"/>
-  <int value="5" label="Store failure"/>
-  <int value="6" label="Already exists"/>
-  <int value="7" label="Skipped"/>
-  <int value="8" label="Security certificate error"/>
-  <int value="9" label="Error page detected"/>
-  <int value="10" label="Interstitial page detected"/>
+  <int value="0" label="Success">Page was saved successfully.</int>
+  <int value="1" label="Cancelled">Page save was cancelled in the interim.</int>
+  <int value="2" label="Device full">
+    Save operation failed because device storage was full.
+  </int>
+  <int value="3" label="Content unavailable">
+    A save operation was called with an invalid archiver.
+  </int>
+  <int value="4" label="Archive creation failed">
+    Either something went wrong with the save operation, or the url we saved was
+    different from the one we passed in.
+  </int>
+  <int value="5" label="Store failure">
+    The SQL operation to add the page to the offline store failed.
+  </int>
+  <int value="6" label="Already exists">
+    A page with this ID already exists.
+  </int>
+  <int value="7" label="Skipped">
+    Certain pages like file URL or NTP will not be saved because they're already
+    available offline.
+  </int>
+  <int value="8" label="Security certificate error">
+    Save operation failed because the page resulted in a security certificate
+    error.
+  </int>
+  <int value="9" label="Error page detected">
+    Save operation failed because an error page (i.e. offline dino page) was
+    detected.
+  </int>
+  <int value="10" label="Interstitial page detected">
+    Save operation failed because an interstitial page (i.e. page warning of
+    expired certificates or improper dev signatures) was detected.
+  </int>
 </enum>
 
 <enum name="OfflinePagesSharedPageWasOffline" type="int">

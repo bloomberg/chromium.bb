@@ -80,7 +80,8 @@ void DownloadNotifyingObserver::OnCompleted(
     return;
   if (status == RequestCoordinator::BackgroundSavePageResult::SUCCESS)
     notifier_->NotifyDownloadSuccessful(DownloadUIItem(request));
-  else if (status == RequestCoordinator::BackgroundSavePageResult::REMOVED)
+  else if (status ==
+           RequestCoordinator::BackgroundSavePageResult::USER_CANCELED)
     notifier_->NotifyDownloadCanceled(DownloadUIItem(request));
   else
     notifier_->NotifyDownloadFailed(DownloadUIItem(request));
