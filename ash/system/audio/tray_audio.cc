@@ -6,12 +6,12 @@
 
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/root_window_controller.h"
+#include "ash/shell.h"
 #include "ash/shell_port.h"
 #include "ash/system/audio/audio_detailed_view.h"
 #include "ash/system/audio/volume_view.h"
 #include "ash/system/tray/system_tray.h"
 #include "ash/system/tray/tray_constants.h"
-#include "ash/wm_window.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "ui/display/display.h"
 #include "ui/display/manager/managed_display_info.h"
@@ -44,8 +44,8 @@ TrayAudio::~TrayAudio() {
 // static
 void TrayAudio::ShowPopUpVolumeView() {
   // Show the popup on all monitors with a system tray.
-  for (WmWindow* root : ShellPort::Get()->GetAllRootWindows()) {
-    SystemTray* system_tray = root->GetRootWindowController()->GetSystemTray();
+  for (RootWindowController* root : Shell::GetAllRootWindowControllers()) {
+    SystemTray* system_tray = root->GetSystemTray();
     if (!system_tray)
       continue;
     // Show the popup by simulating a volume change. The provided node id and
