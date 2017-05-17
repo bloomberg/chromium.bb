@@ -388,7 +388,8 @@ public class AddressEditor
             // Labels depend on country, e.g., state is called province in some countries. These are
             // already localized.
             field.setLabel(component.label);
-            field.setIsFullLine(component.isFullLine);
+            field.setIsFullLine(component.isFullLine || component.id == AddressField.LOCALITY
+                    || component.id == AddressField.DEPENDENT_LOCALITY);
 
             if (component.id == AddressField.ADMIN_AREA && field.isDropdownField()) {
                 field.setDropdownKeyValues(
