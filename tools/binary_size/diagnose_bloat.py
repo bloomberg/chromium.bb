@@ -373,7 +373,7 @@ class _DiffArchiveManager(object):
       with open(diff_path, 'a') as diff_file:
         for d in self.diffs:
           d.RunDiff(diff_file, before.dir, after.dir)
-        logging.info('See detailed diff results here: %s.', diff_path)
+        logging.info('See detailed diff results here: %s', diff_path)
       metadata.Write()
       self._AddDiffSummaryStat(before, after)
 
