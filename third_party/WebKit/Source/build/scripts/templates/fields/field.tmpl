@@ -96,6 +96,23 @@ unsigned {{field.name}} : {{field.size}}; // {{field.type_name}}
 {% endfor %}
 {% endmacro %}
 
+{% macro fieldwise_pointer_compare_inherited(group) %}
+{% for subgroup in group.subgroups %}
+  {# If every field in this subgroup is inherited, we directly compare the
+     group pointer instead. #}
+  {% if subgroup.all_fields|rejectattr("is_inherited")|list|length == 0 -%}
+    {{subgroup.member_name}}.Get() == o.{{subgroup.member_name}}.Get() &&
+  {# Otherwise, we would have to recursively generate comparison operations
+     on fields in the subgroup. #}
+  {% elif subgroup.fields|selectattr("is_inherited")|list|length > 0 -%}
+    {{fieldwise_pointer_compare_inherited(fields_to_compare)}}
+  {% endif %}
+{% endfor %}
+{% for field in group.fields if field.is_inherited -%}
+  {{getter_expression(field)}} == o.{{getter_expression(field)}} &&
+{% endfor %}
+{% endmacro %}
+
 {% macro fieldwise_diff(group_to_diff) %}
 {% for group in group_to_diff.subgroups %}
 if ({{group.group_name}}.Get() != other.{{group.group_name}}.Get()) {

@@ -1,5 +1,5 @@
 {% from 'macros.tmpl' import license, print_if %}
-{% from 'fields/field.tmpl' import encode, getter_expression, setter_expression, declare_storage, fieldwise_compare, fieldwise_copy, fieldwise_diff %}
+{% from 'fields/field.tmpl' import encode, getter_expression, setter_expression, declare_storage, fieldwise_compare, fieldwise_copy, fieldwise_diff, fieldwise_pointer_compare_inherited %}
 {% from 'fields/group.tmpl' import define_field_group_class %}
 {{license()}}
 
@@ -91,6 +91,13 @@ class CORE_EXPORT ComputedStyleBase {
             |rejectattr("is_inherited")
             |list
           )|indent(8)}}
+        true
+    );
+  }
+
+  inline bool InheritedDataShared(const ComputedStyleBase& o) const {
+    return (
+        {{fieldwise_pointer_compare_inherited(computed_style)|indent(8)}}
         true
     );
   }
