@@ -98,8 +98,7 @@ public class AccountManagementFragment extends PreferenceFragment
      */
     private static final String SIGN_OUT_ALLOWED = "auto_signed_in_school_account";
 
-    private static final HashMap<String, Pair<String, Bitmap>> sToNamePicture =
-            new HashMap<String, Pair<String, Bitmap>>();
+    private static final HashMap<String, Pair<String, Bitmap>> sToNamePicture = new HashMap<>();
 
     private static String sChildAccountId;
     private static Bitmap sCachedBadgedPicture;
@@ -114,7 +113,7 @@ public class AccountManagementFragment extends PreferenceFragment
 
     private int mGaiaServiceType;
 
-    private ArrayList<Preference> mAccountsListPreferences = new ArrayList<Preference>();
+    private ArrayList<Preference> mAccountsListPreferences = new ArrayList<>();
 
     private Profile mProfile;
     private String mSignedInAccountName;
@@ -142,7 +141,7 @@ public class AccountManagementFragment extends PreferenceFragment
                 ProfileAccountManagementMetrics.VIEW,
                 mGaiaServiceType);
 
-        startFetchingAccountsInformation(getActivity(), Profile.getLastUsedProfile());
+        startFetchingAccountsInformation(getActivity(), mProfile);
     }
 
     @Override
@@ -188,8 +187,8 @@ public class AccountManagementFragment extends PreferenceFragment
      */
     private static void startFetchingAccountsInformation(Context context, Profile profile) {
         Account[] accounts = AccountManagerHelper.get().getGoogleAccounts();
-        for (int i = 0; i < accounts.length; i++) {
-            startFetchingAccountInformation(context, profile, accounts[i].name);
+        for (Account account : accounts) {
+            startFetchingAccountInformation(context, profile, account.name);
         }
     }
 
@@ -211,7 +210,7 @@ public class AccountManagementFragment extends PreferenceFragment
 
         String fullName = getCachedUserName(mSignedInAccountName);
         if (TextUtils.isEmpty(fullName)) {
-            fullName = ProfileDownloader.getCachedFullName(Profile.getLastUsedProfile());
+            fullName = ProfileDownloader.getCachedFullName(mProfile);
         }
         if (TextUtils.isEmpty(fullName)) fullName = mSignedInAccountName;
 
@@ -240,14 +239,13 @@ public class AccountManagementFragment extends PreferenceFragment
         if (mProfile.isChild()) {
             getPreferenceScreen().removePreference(signOutSwitch);
         } else {
-            signOutSwitch.setEnabled(getSignOutAllowedPreferenceValue(getActivity()));
+            signOutSwitch.setEnabled(getSignOutAllowedPreferenceValue());
             signOutSwitch.setOnPreferenceClickListener(new OnPreferenceClickListener() {
                 @Override
                 public boolean onPreferenceClick(Preference preference) {
                     if (!isVisible() || !isResumed()) return false;
 
-                    if (mSignedInAccountName != null
-                            && getSignOutAllowedPreferenceValue(getActivity())) {
+                    if (mSignedInAccountName != null && getSignOutAllowedPreferenceValue()) {
                         AccountManagementScreenHelper.logEvent(
                                 ProfileAccountManagementMetrics.TOGGLE_SIGNOUT,
                                 mGaiaServiceType);
@@ -275,7 +273,6 @@ public class AccountManagementFragment extends PreferenceFragment
 
                     return false;
                 }
-
             });
         }
     }
@@ -625,8 +622,7 @@ public class AccountManagementFragment extends PreferenceFragment
             String accountId, String fullName, Bitmap bitmap) {
         sChildAccountId = null;
         sCachedBadgedPicture = null;
-        sToNamePicture.put(accountId,
-                new Pair<String, Bitmap>(fullName, makeRoundUserPicture(bitmap)));
+        sToNamePicture.put(accountId, new Pair<>(fullName, makeRoundUserPicture(bitmap)));
     }
 
     /**
@@ -691,34 +687,9 @@ public class AccountManagementFragment extends PreferenceFragment
     }
 
     /**
-     * Prefetch the primary account image and name.
-     *
-     * @param context A context to use.
-     * @param profile A profile to use.
-     */
-    public static void prefetchUserNamePicture(Context context, Profile profile) {
-        final String accountName = ChromeSigninController.get().getSignedInAccountName();
-        if (TextUtils.isEmpty(accountName)) return;
-        if (sToNamePicture.get(accountName) != null) return;
-
-        ProfileDownloader.addObserver(new ProfileDownloader.Observer() {
-            @Override
-            public void onProfileDownloaded(String accountId, String fullName, String givenName,
-                    Bitmap bitmap) {
-                if (TextUtils.equals(accountName, accountId)) {
-                    updateUserNamePictureCache(accountId, fullName, bitmap);
-                    ProfileDownloader.removeObserver(this);
-                }
-            }
-        });
-        startFetchingAccountInformation(context, profile, accountName);
-    }
-
-    /**
-     * @param context A context
      * @return Whether the sign out is not disabled due to a child/EDU account.
      */
-    private static boolean getSignOutAllowedPreferenceValue(Context context) {
+    private static boolean getSignOutAllowedPreferenceValue() {
         return ContextUtils.getAppSharedPreferences()
                 .getBoolean(SIGN_OUT_ALLOWED, true);
     }
@@ -726,10 +697,9 @@ public class AccountManagementFragment extends PreferenceFragment
     /**
      * Sets the sign out allowed preference value.
      *
-     * @param context A context
      * @param isAllowed True if the sign out is not disabled due to a child/EDU account
      */
-    public static void setSignOutAllowedPreferenceValue(Context context, boolean isAllowed) {
+    public static void setSignOutAllowedPreferenceValue(boolean isAllowed) {
         ContextUtils.getAppSharedPreferences()
                 .edit()
                 .putBoolean(SIGN_OUT_ALLOWED, isAllowed)
