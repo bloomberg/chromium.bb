@@ -92,10 +92,9 @@ AvatarButton::AvatarButton(views::ButtonListener* listener,
 #if defined(OS_WIN)
   // TODO(estade): Use MD button in other cases, too [http://crbug.com/591586]
   if ((base::win::GetVersion() >= base::win::VERSION_WIN10) &&
-      ThemeServiceFactory::GetForProfile(profile)->UsingSystemTheme()) {
-    DCHECK_EQ(AvatarButtonStyle::NATIVE, button_style);
+      ThemeServiceFactory::GetForProfile(profile)->UsingSystemTheme() &&
+      button_style == AvatarButtonStyle::NATIVE)
     use_win10_native_button_ = true;
-  }
 #endif  // defined(OS_WIN)
 
   if (use_win10_native_button_) {
