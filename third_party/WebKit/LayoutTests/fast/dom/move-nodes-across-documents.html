@@ -131,7 +131,8 @@ function run()
     runTest(function() {
         iframeDoc.body.appendChild(document.createElement('div'));
         var element = elementInCurrentDocument('replaceChild');
-        // Make sure we don't crash if the element is moved back to the original document during the insertBefore call.
+        // Make sure we don't crash if the element is moved back to the original
+        // document during the replaceChild call.
         var mutationHandler = function() {
             document.body.removeEventListener('DOMSubtreeModified', mutationHandler, true);
             document.body.appendChild(element);

@@ -23,7 +23,6 @@
 
 insertBefore
 appendChild
-replaceChild
 comparePoint
 setStart
 setEnd
