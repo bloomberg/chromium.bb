@@ -65,7 +65,7 @@ bool ChromeWebViewGuestDelegate::HandleContextMenu(
   std::unique_ptr<base::DictionaryValue> args(new base::DictionaryValue());
   std::unique_ptr<base::ListValue> items =
       MenuModelToValue(pending_menu_->menu_model());
-  args->Set(webview::kContextMenuItems, items.release());
+  args->Set(webview::kContextMenuItems, std::move(items));
   args->SetInteger(webview::kRequestId, request_id);
   web_view_guest()->DispatchEventToView(base::MakeUnique<GuestViewEvent>(
       webview::kEventContextMenuShow, std::move(args)));

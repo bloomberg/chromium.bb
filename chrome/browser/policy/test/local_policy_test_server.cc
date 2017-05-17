@@ -144,8 +144,8 @@ void LocalPolicyTestServer::RegisterClient(const std::string& dm_token,
   types->AppendString(dm_protocol::kChromeExtensionPolicyType);
   types->AppendString(dm_protocol::kChromeSigninExtensionPolicyType);
 
-  client_dict->Set(kClientStateKeyAllowedPolicyTypes, types.release());
-  clients_.Set(dm_token, client_dict.release());
+  client_dict->Set(kClientStateKeyAllowedPolicyTypes, std::move(types));
+  clients_.Set(dm_token, std::move(client_dict));
 }
 
 bool LocalPolicyTestServer::UpdatePolicy(const std::string& type,

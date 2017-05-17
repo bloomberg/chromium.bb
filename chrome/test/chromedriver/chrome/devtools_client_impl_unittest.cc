@@ -72,7 +72,7 @@ class MockSyncWebSocket : public SyncWebSocket {
     response.SetInteger("id", id_);
     base::DictionaryValue result;
     result.SetInteger("param", 1);
-    response.Set("result", result.DeepCopy());
+    response.Set("result", base::MakeUnique<base::Value>(result));
     base::JSONWriter::Write(response, message);
     --queued_messages_;
     return SyncWebSocket::kOk;
@@ -726,7 +726,7 @@ class OnConnectedSyncWebSocket : public SyncWebSocket {
 
     base::DictionaryValue response;
     response.SetInteger("id", id);
-    response.Set("result", new base::DictionaryValue());
+    response.Set("result", base::MakeUnique<base::DictionaryValue>());
     std::string json_response;
     base::JSONWriter::Write(response, &json_response);
     queued_response_.push_back(json_response);
@@ -734,7 +734,7 @@ class OnConnectedSyncWebSocket : public SyncWebSocket {
     // Push one event.
     base::DictionaryValue event;
     event.SetString("method", "updateEvent");
-    event.Set("params", new base::DictionaryValue());
+    event.Set("params", base::MakeUnique<base::DictionaryValue>());
     std::string json_event;
     base::JSONWriter::Write(event, &json_event);
     queued_response_.push_back(json_event);
@@ -1148,7 +1148,7 @@ class MockSyncWebSocket7 : public SyncWebSocket {
       response.SetInteger("id", 2);
     base::DictionaryValue result;
     result.SetInteger("param", 1);
-    response.Set("result", result.DeepCopy());
+    response.Set("result", base::MakeUnique<base::Value>(result));
     base::JSONWriter::Write(response, message);
     sent_responses_++;
     return SyncWebSocket::kOk;

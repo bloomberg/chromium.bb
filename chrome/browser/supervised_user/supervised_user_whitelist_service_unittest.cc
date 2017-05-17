@@ -8,6 +8,7 @@
 #include <memory>
 #include <set>
 #include <string>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/callback.h"
@@ -110,11 +111,11 @@ class SupervisedUserWhitelistServiceTest : public testing::Test {
     std::unique_ptr<base::DictionaryValue> whitelist_dict(
         new base::DictionaryValue);
     whitelist_dict->SetString("name", "Whitelist A");
-    dict->Set("aaaa", whitelist_dict.release());
+    dict->Set("aaaa", std::move(whitelist_dict));
 
     whitelist_dict.reset(new base::DictionaryValue);
     whitelist_dict->SetString("name", "Whitelist B");
-    dict->Set("bbbb", whitelist_dict.release());
+    dict->Set("bbbb", std::move(whitelist_dict));
 
     installer_->RegisterWhitelist(kClientId, "aaaa", "Whitelist A");
     installer_->RegisterWhitelist(kClientId, "bbbb", "Whitelist B");

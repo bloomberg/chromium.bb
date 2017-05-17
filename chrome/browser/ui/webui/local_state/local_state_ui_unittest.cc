@@ -19,7 +19,7 @@ TEST(LocalStateUiTest, FilterPrefs) {
 
   base::DictionaryValue prefs;
   for (const std::string& key : all_pref_keys) {
-    prefs.Set(key, new base::Value(key + "_value"));
+    prefs.SetString(key, key + "_value");
   }
 
   internal::FilterPrefs(prefixes, &prefs);

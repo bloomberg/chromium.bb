@@ -12,6 +12,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/time/time.h"
+#include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/test_extension_system.h"
@@ -140,7 +141,8 @@ scoped_refptr<extensions::Extension> MakeThemeExtension(
     const string& update_url) {
   base::DictionaryValue source;
   source.SetString(extensions::manifest_keys::kName, name);
-  source.Set(extensions::manifest_keys::kTheme, new base::DictionaryValue());
+  source.Set(extensions::manifest_keys::kTheme,
+             base::MakeUnique<base::DictionaryValue>());
   source.SetString(extensions::manifest_keys::kUpdateURL, update_url);
   source.SetString(extensions::manifest_keys::kVersion, "0.0.0.0");
   string error;

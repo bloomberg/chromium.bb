@@ -7,8 +7,10 @@
 #include <stddef.h>
 
 #include <memory>
+#include <utility>
 
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -72,12 +74,12 @@ void CheckParse(const ConstCommandsTestData& data,
     }
 
     input.reset(new base::DictionaryValue);
-    base::DictionaryValue* key_dict = new base::DictionaryValue();
+    auto key_dict = base::MakeUnique<base::DictionaryValue>();
 
     for (size_t j = 0; j < platforms.size(); ++j)
       key_dict->SetString(platforms[j], data.key);
 
-    input->Set("suggested_key", key_dict);
+    input->Set("suggested_key", std::move(key_dict));
     input->SetString("description", data.description);
 
     bool result = command.Parse(input.get(), data.command_name, i, &error);
@@ -207,14 +209,14 @@ TEST(CommandTest, ExtensionCommandParsingFallback) {
   // Test that platform specific keys are honored on each platform, despite
   // fallback being given.
   std::unique_ptr<base::DictionaryValue> input(new base::DictionaryValue);
-  base::DictionaryValue* key_dict = new base::DictionaryValue();
-  key_dict->SetString("default",  "Ctrl+Shift+D");
-  key_dict->SetString("windows",  "Ctrl+Shift+W");
-  key_dict->SetString("mac",      "Ctrl+Shift+M");
-  key_dict->SetString("linux",    "Ctrl+Shift+L");
-  key_dict->SetString("chromeos", "Ctrl+Shift+C");
-  input->Set("suggested_key", key_dict);
   input->SetString("description", description);
+  base::DictionaryValue* key_dict = input->SetDictionary(
+      "suggested_key", base::MakeUnique<base::DictionaryValue>());
+  key_dict->SetString("default", "Ctrl+Shift+D");
+  key_dict->SetString("windows", "Ctrl+Shift+W");
+  key_dict->SetString("mac", "Ctrl+Shift+M");
+  key_dict->SetString("linux", "Ctrl+Shift+L");
+  key_dict->SetString("chromeos", "Ctrl+Shift+C");
 
   extensions::Command command;
   base::string16 error;

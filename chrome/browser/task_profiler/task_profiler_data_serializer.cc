@@ -12,6 +12,7 @@
 #include "base/json/json_string_value_serializer.h"
 #include "base/time/time.h"
 #include "base/tracked_objects.h"
+#include "base/values.h"
 #include "chrome/common/chrome_content_client.h"
 #include "components/nacl/common/nacl_process_type.h"
 #include "content/public/common/process_type.h"
@@ -49,10 +50,9 @@ void BirthOnThreadSnapshotToValue(const BirthOnThreadSnapshot& birth,
   std::unique_ptr<base::DictionaryValue> location_value(
       new base::DictionaryValue);
   LocationSnapshotToValue(birth.location, location_value.get());
-  dictionary->Set(prefix + "_location", location_value.release());
+  dictionary->Set(prefix + "_location", std::move(location_value));
 
-  dictionary->Set(prefix + "_thread",
-                  new base::Value(birth.sanitized_thread_name));
+  dictionary->SetString(prefix + "_thread", birth.sanitized_thread_name);
 }
 
 // Re-serializes the |death_data| into |dictionary|.
@@ -84,7 +84,7 @@ void TaskSnapshotToValue(const TaskSnapshot& snapshot,
 
   std::unique_ptr<base::DictionaryValue> death_data(new base::DictionaryValue);
   DeathDataSnapshotToValue(snapshot.death_data, death_data.get());
-  dictionary->Set("death_data", death_data.release());
+  dictionary->Set("death_data", std::move(death_data));
 
   dictionary->SetString("death_thread", snapshot.death_sanitized_thread_name);
 }
@@ -140,7 +140,7 @@ void TaskProfilerDataSerializer::ToValue(
     TaskSnapshotToValue(task, snapshot.get());
     tasks_list->Append(std::move(snapshot));
   }
-  dictionary->Set("list", tasks_list.release());
+  dictionary->Set("list", std::move(tasks_list));
 
   dictionary->SetInteger("process_id", process_id);
   dictionary->SetString("process_type", content::GetProcessTypeNameInEnglish(

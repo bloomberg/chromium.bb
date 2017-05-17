@@ -387,7 +387,7 @@ scoped_refptr<Extension> CreateExtension(const base::string16& name,
   switch (type) {
     case extensions::Manifest::TYPE_THEME:
       manifest.Set(extensions::manifest_keys::kTheme,
-                   new base::DictionaryValue);
+                   base::MakeUnique<base::DictionaryValue>());
       break;
     case extensions::Manifest::TYPE_HOSTED_APP:
       manifest.SetString(extensions::manifest_keys::kLaunchWebURL,

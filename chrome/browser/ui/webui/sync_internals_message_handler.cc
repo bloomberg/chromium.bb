@@ -144,7 +144,7 @@ void SyncInternalsMessageHandler::HandleRequestListOfTypes(
        it.Good(); it.Inc()) {
     type_list->AppendString(ModelTypeToString(it.Get()));
   }
-  event_details.Set(syncer::sync_ui_util::kTypes, type_list.release());
+  event_details.Set(syncer::sync_ui_util::kTypes, std::move(type_list));
   web_ui()->CallJavascriptFunctionUnsafe(
       syncer::sync_ui_util::kDispatchEvent,
       base::Value(syncer::sync_ui_util::kOnReceivedListOfTypes), event_details);
@@ -211,7 +211,7 @@ void SyncInternalsMessageHandler::EmitCounterUpdate(
   std::unique_ptr<base::DictionaryValue> details(new base::DictionaryValue());
   details->SetString(syncer::sync_ui_util::kModelType, ModelTypeToString(type));
   details->SetString(syncer::sync_ui_util::kCounterType, counter_type);
-  details->Set(syncer::sync_ui_util::kCounters, value.release());
+  details->Set(syncer::sync_ui_util::kCounters, std::move(value));
   web_ui()->CallJavascriptFunctionUnsafe(
       syncer::sync_ui_util::kDispatchEvent,
       base::Value(syncer::sync_ui_util::kOnCountersUpdated), *details);

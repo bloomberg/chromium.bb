@@ -8,11 +8,14 @@
 
 #include <map>
 #include <string>
+#include <utility>
 #include <vector>
 
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_samples.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/histogram_tester.h"
+#include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/renderer/searchbox/search_bouncer.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_headers.h"
@@ -114,9 +117,9 @@ scoped_refptr<const extensions::Extension> CreateTestExtension(
   manifest.SetString("version", "1");
   manifest.SetInteger("manifest_version", 2);
   if (is_hosted_app) {
-    base::ListValue* url_list = new base::ListValue();
+    auto url_list = base::MakeUnique<base::ListValue>();
     url_list->AppendString(app_url);
-    manifest.Set(extensions::manifest_keys::kWebURLs, url_list);
+    manifest.Set(extensions::manifest_keys::kWebURLs, std::move(url_list));
     manifest.SetString(extensions::manifest_keys::kLaunchWebURL, app_url);
   }
   std::string error;
