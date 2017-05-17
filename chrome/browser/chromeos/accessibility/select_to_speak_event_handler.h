@@ -13,12 +13,6 @@
 
 namespace chromeos {
 
-class SelectToSpeakForwardedEventDelegateForTesting {
- public:
-  virtual void OnForwardEventToSelectToSpeakExtension(
-      const ui::MouseEvent& event) = 0;
-};
-
 // Intercepts mouse events while the Search key is held down, and sends
 // accessibility events to the Select-to-speak extension instead.
 class SelectToSpeakEventHandler : public ui::EventHandler {
@@ -26,17 +20,13 @@ class SelectToSpeakEventHandler : public ui::EventHandler {
   SelectToSpeakEventHandler();
   ~SelectToSpeakEventHandler() override;
 
-  // For testing, call the provided callback with any events that would have
-  // been forwarded to the Select-to-speak extension instead.
-  void CaptureForwardedEventsForTesting(
-      SelectToSpeakForwardedEventDelegateForTesting* delegate);
-
  private:
   // EventHandler:
   void OnKeyEvent(ui::KeyEvent* event) override;
   void OnMouseEvent(ui::MouseEvent* event) override;
 
   void CancelEvent(ui::Event* event);
+  void SendCancelAXEvent();
 
   enum State {
     // Neither the Search key nor the mouse button are down.
@@ -65,7 +55,12 @@ class SelectToSpeakEventHandler : public ui::EventHandler {
 
   State state_ = INACTIVE;
 
-  SelectToSpeakForwardedEventDelegateForTesting* event_delegate_for_testing_;
+  // The set of keys that are currently down. Updated whenever a key is
+  // pressed or released.
+  std::set<ui::KeyboardCode> keys_currently_down_;
+  // The set of keys that have been pressed together. Updated whenever a key
+  // is pressed, and only cleared when all keys are released.
+  std::set<ui::KeyboardCode> keys_pressed_together_;
 
   DISALLOW_COPY_AND_ASSIGN(SelectToSpeakEventHandler);
 };

@@ -53,36 +53,20 @@ var SelectToSpeak = function() {
   this.node_ = null;
 
   /** @private { boolean } */
-  this.trackingMouse_ = false;
-
-  /** @private { boolean } */
-  this.didTrackMouse_ = false;
-
-  /** @private { boolean } */
-  this.isSearchKeyDown_ = false;
-
-  /** @private { !Set<number> } */
-  this.keysCurrentlyDown_ = new Set();
-
-  /** @private { !Set<number> } */
-  this.keysPressedTogether_ = new Set();
+  this.down_ = false;
 
   /** @private {{x: number, y: number}} */
   this.mouseStart_ = {x: 0, y: 0};
 
-  /** @private {{x: number, y: number}} */
-  this.mouseEnd_ = {x: 0, y: 0};
-
-  /** @private {AutomationRootNode} */
   chrome.automation.getDesktop(function(desktop) {
-    this.desktop_ = desktop;
-
-    // After the user selects a region of the screen, we do a hit test at
-    // the center of that box using the automation API. The result of the
-    // hit test is a MOUSE_RELEASED accessibility event.
     desktop.addEventListener(
-        EventType.MOUSE_RELEASED, this.onAutomationHitTest_.bind(this),
-        true);
+        EventType.MOUSE_PRESSED, this.onMousePressed_.bind(this), true);
+    desktop.addEventListener(
+        EventType.MOUSE_DRAGGED, this.onMouseDragged_.bind(this), true);
+    desktop.addEventListener(
+        EventType.MOUSE_RELEASED, this.onMouseReleased_.bind(this), true);
+    desktop.addEventListener(
+        EventType.MOUSE_CANCELED, this.onMouseCanceled_.bind(this), true);
   }.bind(this));
 
   /** @private { ?string } */
@@ -101,15 +85,7 @@ var SelectToSpeak = function() {
   this.color_ = "#f73a98";
 
   this.initPreferences_();
-
-  this.setUpEventListeners_();
 };
-
-/** @const {number} */
-SelectToSpeak.SEARCH_KEY_CODE = 91;
-
-/** @const {number} */
-SelectToSpeak.CONTROL_KEY_CODE = 17;
 
 SelectToSpeak.prototype = {
   /**
@@ -117,25 +93,14 @@ SelectToSpeak.prototype = {
    * select-to-speak is capturing mouse events (for example holding down
    * Search).
    *
-   * @param {!Event} evt The DOM event
-   * @return {boolean} True if the default action should be performed;
-   *    we always return false because we don't want any other event
-   *    handlers to run.
+   * @param {!AutomationEvent} evt
    */
-  onMouseDown_: function(evt) {
-    if (!this.isSearchKeyDown_)
-      return false;
-
-    this.trackingMouse_ = true;
-    this.didTrackMouse_ = true;
-    this.mouseStart_ = {x: evt.screenX, y: evt.screenY};
+  onMousePressed_: function(evt) {
+    this.down_ = true;
+    this.mouseStart_ = {x: evt.mouseX, y: evt.mouseY};
+    this.startNode_ = evt.target;
     chrome.tts.stop();
-
-    // Fire a hit test event on click to warm up the cache.
-    this.desktop_.hitTest(evt.screenX, evt.screenY, EventType.MOUSE_PRESSED);
-
-    this.onMouseMove_(evt);
-    return false;
+    this.onMouseDragged_(evt);
   },
 
   /**
@@ -143,18 +108,16 @@ SelectToSpeak.prototype = {
    * mode where select-to-speak is capturing mouse events (for example
    * holding down Search).
    *
-   * @param {!Event} evt The DOM event
-   * @return {boolean} True if the default action should be performed.
+   * @param {!AutomationEvent} evt
    */
-  onMouseMove_: function(evt) {
-    if (!this.trackingMouse_)
-      return false;
+  onMouseDragged_: function(evt) {
+    if (!this.down_)
+      return;
 
     var rect = rectFromPoints(
         this.mouseStart_.x, this.mouseStart_.y,
-        evt.screenX, evt.screenY);
+        evt.mouseX, evt.mouseY);
     chrome.accessibilityPrivate.setFocusRing([rect], this.color_);
-    return false;
   },
 
   /**
@@ -162,120 +125,45 @@ SelectToSpeak.prototype = {
    * mode where select-to-speak is capturing mouse events (for example
    * holding down Search).
    *
-   * @param {!Event} evt
-   * @return {boolean} True if the default action should be performed.
+   * @param {!AutomationEvent} evt
    */
-  onMouseUp_: function(evt) {
-    this.onMouseMove_(evt);
-    this.trackingMouse_ = false;
+  onMouseReleased_: function(evt) {
+    this.onMouseDragged_(evt);
+    this.down_ = false;
 
     chrome.accessibilityPrivate.setFocusRing([]);
 
-    this.mouseEnd_ = {x: evt.screenX, y: evt.screenY};
-    var ctrX = Math.floor((this.mouseStart_.x + this.mouseEnd_.x) / 2);
-    var ctrY = Math.floor((this.mouseStart_.y + this.mouseEnd_.y) / 2);
-
-    // Do a hit test at the center of the area the user dragged over.
-    // This will give us some context when searching the accessibility tree.
-    // The hit test will result in a EventType.MOUSE_RELEASED event being
-    // fired on the result of that hit test, which will trigger
-    // onAutomationHitTest_.
-    this.desktop_.hitTest(ctrX, ctrY, EventType.MOUSE_RELEASED);
-    return false;
-  },
-
-  /**
-   * Called in response to our hit test after the mouse is released,
-   * when the user is in a mode where select-to-speak is capturing
-   * mouse events (for example holding down Search).
-   *
-   * @param {!AutomationEvent} evt The automation event.
-   */
-  onAutomationHitTest_: function(evt) {
-    // Walk up to the nearest window, web area, toolbar, or dialog that the
+    // Walk up to the nearest window, web area, or dialog that the
     // hit node is contained inside. Only speak objects within that
     // container. In the future we might include other container-like
     // roles here.
-    var root = evt.target;
+    var root = this.startNode_;
     while (root.parent &&
         root.role != RoleType.WINDOW &&
         root.role != RoleType.ROOT_WEB_AREA &&
         root.role != RoleType.DESKTOP &&
-        root.role != RoleType.DIALOG &&
-        root.role != RoleType.ALERT_DIALOG &&
-        root.role != RoleType.TOOLBAR) {
+        root.role != RoleType.DIALOG) {
       root = root.parent;
     }
 
     var rect = rectFromPoints(
         this.mouseStart_.x, this.mouseStart_.y,
-        this.mouseEnd_.x, this.mouseEnd_.y);
+        evt.mouseX, evt.mouseY);
     var nodes = [];
     this.findAllMatching_(root, rect, nodes);
     this.startSpeechQueue_(nodes);
   },
 
   /**
-   * @param {!Event} evt
+   * Called when the user cancels select-to-speak's capturing of mouse
+   * events (for example by releasing Search while the mouse is still down).
+   *
+   * @param {!AutomationEvent} evt
    */
-  onKeyDown_: function(evt) {
-    if (this.keysPressedTogether_.size == 0 &&
-        evt.keyCode == SelectToSpeak.SEARCH_KEY_CODE) {
-      this.isSearchKeyDown_ = true;
-    } else if (!this.trackingMouse_) {
-      this.isSearchKeyDown_ = false;
-    }
-
-    this.keysCurrentlyDown_.add(evt.keyCode);
-    this.keysPressedTogether_.add(evt.keyCode);
-  },
-
-  /**
-   * @param {!Event} evt
-   */
-  onKeyUp_: function(evt) {
-    if (evt.keyCode == SelectToSpeak.SEARCH_KEY_CODE) {
-      this.isSearchKeyDown_ = false;
-
-      // If we were in the middle of tracking the mouse, cancel it.
-      if (this.trackingMouse_) {
-        this.trackingMouse_ = false;
-        chrome.accessibilityPrivate.setFocusRing([]);
-        chrome.tts.stop();
-      }
-    }
-
-    // Stop speech when the user taps and releases Control or Search
-    // without using the mouse or pressing any other keys along the way.
-    if (!this.didTrackMouse_ &&
-        (evt.keyCode == SelectToSpeak.SEARCH_KEY_CODE ||
-         evt.keyCode == SelectToSpeak.CONTROL_KEY_CODE) &&
-        this.keysPressedTogether_.has(evt.keyCode) &&
-        this.keysPressedTogether_.size == 1) {
-      this.trackingMouse_ = false;
-      chrome.accessibilityPrivate.setFocusRing([]);
-      chrome.tts.stop();
-    }
-
-    this.keysCurrentlyDown_.delete(evt.keyCode);
-    if (this.keysCurrentlyDown_.size == 0) {
-      this.keysPressedTogether_.clear();
-      this.didTrackMouse_ = false;
-    }
-  },
-
-  /**
-   * Set up event listeners for mouse and keyboard events. These are
-   * forwarded to us from the SelectToSpeakEventHandler so they should
-   * be interpreted as global events on the whole screen, not local to
-   * any particular window.
-   */
-  setUpEventListeners_: function() {
-    document.addEventListener('keydown', this.onKeyDown_.bind(this));
-    document.addEventListener('keyup', this.onKeyUp_.bind(this));
-    document.addEventListener('mousedown', this.onMouseDown_.bind(this));
-    document.addEventListener('mousemove', this.onMouseMove_.bind(this));
-    document.addEventListener('mouseup', this.onMouseUp_.bind(this));
+  onMouseCanceled_: function(evt) {
+    this.down_ = false;
+    chrome.accessibilityPrivate.setFocusRing([]);
+    chrome.tts.stop();
   },
 
   /**
@@ -395,6 +283,7 @@ SelectToSpeak.prototype = {
    * Get the list of TTS voices, and set the default voice if not already set.
    */
   updateDefaultVoice_: function() {
+    console.log('updateDefaultVoice_ ' + this.down_);
     var uiLocale = chrome.i18n.getMessage('@@ui_locale');
     uiLocale = uiLocale.replace('_', '-').toLowerCase();
 
