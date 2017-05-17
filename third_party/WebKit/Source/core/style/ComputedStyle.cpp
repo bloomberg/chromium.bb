@@ -575,16 +575,6 @@ bool ComputedStyle::DiffNeedsFullLayoutAndPaintInvalidation(
   // - or the layoutObject knows how to exactly invalidate paints caused by the
   //   layout change instead of forced full paint invalidation.
 
-  if (surround_data_.Get() != other.surround_data_.Get()) {
-    // If our border widths change, then we need to layout. Other changes to
-    // borders only necessitate a paint invalidation.
-    if (!(BorderWidthEquals(BorderLeftWidth(), other.BorderLeftWidth())) ||
-        !(BorderWidthEquals(BorderTopWidth(), other.BorderTopWidth())) ||
-        !(BorderWidthEquals(BorderBottomWidth(), other.BorderBottomWidth())) ||
-        !(BorderWidthEquals(BorderRightWidth(), other.BorderRightWidth())))
-      return true;
-  }
-
   if (ComputedStyleBase::DiffNeedsFullLayoutAndPaintInvalidation(other))
     return true;
 

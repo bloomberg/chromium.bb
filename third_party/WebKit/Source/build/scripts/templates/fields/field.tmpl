@@ -120,7 +120,7 @@ if ({{group.group_name}}.Get() != other.{{group.group_name}}.Get()) {
 }
 {% endfor %}
 {% for expression in group_to_diff.expressions %}
-if ({{expression}} != other.{{expression}})
+if (self.{{expression}} != other.{{expression}})
   return true;
 {% endfor %}
 {% endmacro %}
