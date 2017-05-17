@@ -504,7 +504,8 @@ void DocumentMarkerController::RemoveSpellingMarkersUnderWords(
       DocumentMarkerList* const list = ListForType(markers, type);
       if (!list)
         continue;
-      list->RemoveMarkersUnderWords(ToText(node).data(), words);
+      ToSpellCheckMarkerListImpl(list)->RemoveMarkersUnderWords(
+          ToText(node).data(), words);
     }
   }
 }

@@ -42,16 +42,6 @@ bool CompositionMarkerListImpl::RemoveMarkers(unsigned start_offset,
                                                  length);
 }
 
-bool CompositionMarkerListImpl::RemoveMarkersUnderWords(
-    const String& node_text,
-    const Vector<String>& words) {
-  // This method will be removed from the DocumentMarkerList interface in a
-  // later CL. SpellCheckMatchMarkerListImpl is added. DocumentMarkerController
-  // shouldn't try to call it on a list storing Composition markers.
-  NOTREACHED();
-  return false;
-}
-
 bool CompositionMarkerListImpl::ShiftMarkers(unsigned offset,
                                              unsigned old_length,
                                              unsigned new_length) {

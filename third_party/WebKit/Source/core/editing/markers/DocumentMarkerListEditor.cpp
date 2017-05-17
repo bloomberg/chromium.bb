@@ -5,6 +5,7 @@
 #include "core/editing/markers/DocumentMarkerListEditor.h"
 
 #include "core/editing/markers/RenderedDocumentMarker.h"
+#include "core/editing/markers/SpellCheckMarkerListImpl.h"
 
 namespace blink {
 
@@ -82,18 +83,18 @@ bool DocumentMarkerListEditor::RemoveMarkers(MarkerList* list,
   return doc_dirty;
 }
 
-bool DocumentMarkerListEditor::RemoveMarkersUnderWords(
-    MarkerList* list,
+// TODO(rlanday): move to SpellCheckMarkerListImpl.cpp
+bool SpellCheckMarkerListImpl::RemoveMarkersUnderWords(
     const String& node_text,
     const Vector<String>& words) {
   bool removed_markers = false;
-  for (size_t j = list->size(); j > 0; --j) {
-    const DocumentMarker& marker = *(*list)[j - 1];
+  for (size_t j = markers_.size(); j > 0; --j) {
+    const DocumentMarker& marker = *markers_[j - 1];
     const unsigned start = marker.StartOffset();
     const unsigned length = marker.EndOffset() - marker.StartOffset();
     const String& marker_text = node_text.Substring(start, length);
     if (words.Contains(marker_text)) {
-      list->erase(j - 1);
+      markers_.erase(j - 1);
       removed_markers = true;
     }
   }

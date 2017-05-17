@@ -40,12 +40,6 @@ class CORE_EXPORT DocumentMarkerList
   // Returns true if at least one marker is removed, false otherwise
   virtual bool RemoveMarkers(unsigned start_offset, int length) = 0;
 
-  // Returns true if a marker was removed, false otherwise.
-  // TODO(rlanday): remove this method from this interface once we have a
-  // Spelling/Grammar-specific marker list impl to put this on
-  virtual bool RemoveMarkersUnderWords(const String& node_text,
-                                       const Vector<String>& words) = 0;
-
   // Returns true if at least one marker is shifted or removed, false otherwise
   virtual bool ShiftMarkers(unsigned offset,
                             unsigned old_length,

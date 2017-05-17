@@ -26,13 +26,16 @@ class CORE_EXPORT SpellCheckMarkerListImpl : public DocumentMarkerList {
 
   bool MoveMarkers(int length, DocumentMarkerList* dst_list) final;
   bool RemoveMarkers(unsigned start_offset, int length) final;
-  bool RemoveMarkersUnderWords(const String& node_text,
-                               const Vector<String>& words);
   bool ShiftMarkers(unsigned offset,
                     unsigned old_length,
                     unsigned new_length) final;
 
   DECLARE_VIRTUAL_TRACE();
+
+  // SpellCheckMarkerListImpl-specific
+  // Returns true if a marker was removed, false otherwise.
+  bool RemoveMarkersUnderWords(const String& node_text,
+                               const Vector<String>& words);
 
  protected:
   SpellCheckMarkerListImpl() = default;
