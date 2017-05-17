@@ -207,13 +207,13 @@ class IntegrationTest(unittest.TestCase):
     self.assertEquals(d.raw_symbols.size, 0)
     self.assertEquals((0, 0, 1), _DiffCounts(d.raw_symbols))
     # shrinkToFit is in a cluster, so removed turns to a changed when clustered.
-    self.assertEquals((1, 0, 0), _DiffCounts(d.symbols))
+    self.assertEquals((1, 0, 0), _DiffCounts(d.symbols.GroupedByFullName()))
 
     # Adding one alias should not change size.
     d = diff.Diff(size_info2, size_info1)
     self.assertEquals(d.raw_symbols.size, 0)
     self.assertEquals((0, 1, 0), _DiffCounts(d.raw_symbols))
-    self.assertEquals((1, 0, 0), _DiffCounts(d.symbols))
+    self.assertEquals((1, 0, 0), _DiffCounts(d.symbols.GroupedByFullName()))
 
   def test_Diff_Aliases2(self):
     size_info1 = self._CloneSizeInfo()
@@ -228,13 +228,13 @@ class IntegrationTest(unittest.TestCase):
     d = diff.Diff(size_info1, size_info2)
     self.assertEquals(d.raw_symbols.size, 0)
     self.assertEquals((0, 0, 2), _DiffCounts(d.raw_symbols))
-    self.assertEquals((1, 0, 1), _DiffCounts(d.symbols))
+    self.assertEquals((1, 0, 1), _DiffCounts(d.symbols.GroupedByFullName()))
 
     # Adding 2 aliases should not change size.
     d = diff.Diff(size_info2, size_info1)
     self.assertEquals(d.raw_symbols.size, 0)
     self.assertEquals((0, 2, 0), _DiffCounts(d.raw_symbols))
-    self.assertEquals((1, 1, 0), _DiffCounts(d.symbols))
+    self.assertEquals((1, 1, 0), _DiffCounts(d.symbols.GroupedByFullName()))
 
   def test_Diff_Aliases3(self):
     size_info1 = self._CloneSizeInfo()
@@ -246,13 +246,13 @@ class IntegrationTest(unittest.TestCase):
     size_info2.raw_symbols -= [a1, a2, a3]
     d = diff.Diff(size_info1, size_info2)
     self.assertEquals((0, 0, 3), _DiffCounts(d.raw_symbols))
-    self.assertEquals((1, 0, 2), _DiffCounts(d.symbols))
+    self.assertEquals((1, 0, 2), _DiffCounts(d.symbols.GroupedByFullName()))
 
     # Adding all 3 aliases should change size.
     d = diff.Diff(size_info2, size_info1)
     self.assertEquals(d.raw_symbols.size, a1.size)
     self.assertEquals((0, 3, 0), _DiffCounts(d.raw_symbols))
-    self.assertEquals((1, 2, 0), _DiffCounts(d.symbols))
+    self.assertEquals((1, 2, 0), _DiffCounts(d.symbols.GroupedByFullName()))
 
   def test_Diff_Clustering(self):
     size_info1 = self._CloneSizeInfo()

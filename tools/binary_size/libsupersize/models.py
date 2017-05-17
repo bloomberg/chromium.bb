@@ -647,16 +647,19 @@ class SymbolGroup(BaseSymbol):
       if not name:
         # min_count=2 will ensure order is maintained while not being grouped.
         # "&" to distinguish from real symbol names, id() to ensure uniqueness.
-        return '&' + hex(id(symbol))
-      if name.startswith('*'):
+        name = '&' + hex(id(symbol))
+      elif name.startswith('*'):
         # "symbol gap 3" -> "symbol gaps"
         name = re.sub(r'\s+\d+( \(.*\))?$', 's', name)
-      return name
+      # Never cluster symbols that span multiple paths so that all groups return
+      # non-None path information.
+      return (symbol.object_path, name)
 
     # Use a custom factory to fill in name & template_name.
-    def group_factory(full_name, symbols):
+    def group_factory(token, symbols):
+      full_name = token[1]
       sym = symbols[0]
-      if full_name.startswith('*'):
+      if token[1].startswith('*'):
         return self._CreateTransformed(
             symbols, full_name=full_name, template_name=full_name,
             name=full_name, section_name=sym.section_name)
@@ -676,8 +679,21 @@ class SymbolGroup(BaseSymbol):
   def GroupedBySectionName(self):
     return self.GroupedBy(lambda s: s.section_name)
 
+  def GroupedByFullName(self, min_count=2):
+    """Groups by symbol.full_name.
+
+    Does not differentiate between namespaces/classes/functions.
+
+    Args:
+      min_count: Miniumum number of symbols for a group. If fewer than this many
+                 symbols end up in a group, they will not be put within a group.
+                 Use a negative value to omit symbols entirely rather than
+                 include them outside of a group.
+    """
+    return self.GroupedBy(lambda s: s.full_name, min_count=min_count)
+
   def GroupedByName(self, depth=0, min_count=0):
-    """Groups by symbol name, where |depth| controls how many ::s to include.
+    """Groups by symbol.name, where |depth| controls how many ::s to include.
 
     Does not differentiate between namespaces/classes/functions.
 

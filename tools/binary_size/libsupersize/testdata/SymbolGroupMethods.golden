@@ -13,7 +13,7 @@ Index, Running Total, Section@Address, PSS
 5)   39117493 (89.3%) *@Group      448     ucnv_extMatchFromU (count=1)
 6)   39117521 (89.3%) *@Group      28      _GLOBAL__sub_I_SkDeviceProfile.cpp (count=1)
 7)   39186645 (89.5%) *@Group      69124   foo_bar (count=1)
-8)   39186673 (89.5%) *@Group      28      blink::ContiguousContainerBase::shrinkToFit (count=1)
+8)   39186673 (89.5%) *@Group      28      blink::ContiguousContainerBase::shrinkToFit (count=2)
 9)   39186697 (89.5%) *@Group      24      BazAlias (count=1)
 10)  39186701 (89.5%) *@Group      4       FooAlias (count=1)
 11)  39186705 (89.5%) *@Group      4       BarAlias (count=1)
@@ -61,7 +61,7 @@ Index, Running Total, Section@Address, PSS
 5)   39117493 (89.3%) *@Group      448     ucnv_extMatchFromU (count=1)
 6)   39117521 (89.3%) *@Group      28      _GLOBAL__sub_I_SkDeviceProfile.cpp (count=1)
 7)   39186645 (89.5%) *@Group      69124   foo_bar (count=1)
-8)   39186799 (89.5%) *@Group      154     blink (count=4)
+8)   39186799 (89.5%) *@Group      154     blink (count=5)
 9)   39186823 (89.5%) *@Group      24      BazAlias (count=1)
 10)  39186827 (89.5%) *@Group      4       FooAlias (count=1)
 11)  39186831 (89.5%) *@Group      4       BarAlias (count=1)
@@ -101,7 +101,7 @@ Index, Running Total, Section@Address, PSS
 5)   39117493 (89.3%) *@Group      448     ucnv_extMatchFromU (count=1)
 6)   39117521 (89.3%) *@Group      28      _GLOBAL__sub_I_SkDeviceProfile.cpp (count=1)
 7)   39186645 (89.5%) *@Group      69124   foo_bar (count=1)
-8)   39186701 (89.5%) *@Group      56      blink::ContiguousContainerBase (count=2)
+8)   39186701 (89.5%) *@Group      56      blink::ContiguousContainerBase (count=3)
 9)   39186725 (89.5%) *@Group      24      BazAlias (count=1)
 10)  39186729 (89.5%) *@Group      4       FooAlias (count=1)
 11)  39186733 (89.5%) *@Group      4       BarAlias (count=1)
@@ -153,7 +153,7 @@ Index, Running Total, Section@Address, PSS
 7)   39186645 (89.5%) t@0x28f1e0   69124   third_party/icu/ucnv_ext.c
              foo_bar
 8)   39186799 (89.5%) *@Group      154     {no path}
-             blink (count=4)
+             blink (count=5)
 9)   39186823 (89.5%) t@0x2a0000   24      third_party/icu/ucnv_ext.c
              BazAlias
 10)  39186827 (89.5%) t@0x2a0010   4       third_party/fft_float.cc
