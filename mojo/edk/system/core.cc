@@ -727,7 +727,7 @@ MojoResult Core::CreateDataPipe(
   scoped_refptr<Dispatcher> consumer = DataPipeConsumerDispatcher::Create(
       GetNodeController(), port1, ring_buffer, create_options, pipe_id);
   if (!consumer) {
-    consumer->Close();
+    producer->Close();
     return MOJO_RESULT_RESOURCE_EXHAUSTED;
   }
 
