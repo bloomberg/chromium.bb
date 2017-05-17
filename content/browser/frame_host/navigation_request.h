@@ -82,6 +82,7 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate {
       PreviewsState previews_state,
       bool is_same_document_history_load,
       bool is_history_navigation_in_new_child,
+      const scoped_refptr<ResourceRequestBodyImpl>& post_body,
       const base::TimeTicks& navigation_start,
       NavigationControllerImpl* controller);
 

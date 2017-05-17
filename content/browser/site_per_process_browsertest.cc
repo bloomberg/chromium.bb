@@ -10090,4 +10090,62 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   EXPECT_THAT(names, SizeIs(1)) << "Mismatched names for subframe!";
 }
 
+// Tests that POST body is not lost when it targets a OOPIF.
+// See https://crbug.com/710937.
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, PostTargetSubFrame) {
+  // Navigate to a page with an OOPIF.
+  GURL main_url(
+      embedded_test_server()->GetURL("/frame_tree/page_with_one_frame.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+
+  // The main frame and the subframe live on different processes.
+  EXPECT_EQ(1u, root->child_count());
+  EXPECT_NE(root->current_frame_host()->GetSiteInstance(),
+            root->child_at(0)->current_frame_host()->GetSiteInstance());
+
+  // Make a form submission from the main frame and target the OOPIF.
+  GURL form_url(embedded_test_server()->GetURL("/echoall"));
+  TestNavigationObserver form_post_observer(shell()->web_contents(), 1);
+  EXPECT_TRUE(ExecuteScript(shell()->web_contents(), R"(
+    var form = document.createElement('form');
+
+    // POST form submission to /echoall.
+    form.setAttribute("method", "POST");
+    form.setAttribute("action", ")" + form_url.spec() + R"(");
+
+    // Target the OOPIF.
+    form.setAttribute("target", "child-name-0");
+
+    // Add some POST data: "my_token=my_value";
+    var input = document.createElement("input");
+    input.setAttribute("type", "hidden");
+    input.setAttribute("name", "my_token");
+    input.setAttribute("value", "my_value");
+    form.appendChild(input);
+
+    // Submit the form.
+    document.body.appendChild(form);
+    form.submit();
+  )"));
+  form_post_observer.Wait();
+
+  NavigationEntryImpl* entry = static_cast<NavigationEntryImpl*>(
+      shell()->web_contents()->GetController().GetLastCommittedEntry());
+  // TODO(arthursonzogni): This is wrong. The last committed entry was
+  // renderer-initiated. See https://crbug.com/722251.
+  EXPECT_FALSE(entry->is_renderer_initiated());
+
+  // Verify that POST body was correctly passed to the server and ended up in
+  // the body of the page.
+  std::string body;
+  EXPECT_TRUE(ExecuteScriptAndExtractString(root->child_at(0), R"(
+    var body = document.getElementsByTagName('pre')[0].innerText;
+    window.domAutomationController.send(body);)",
+                                            &body));
+  EXPECT_EQ("my_token=my_value\n", body);
+}
+
 }  // namespace content
