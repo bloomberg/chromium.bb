@@ -7,33 +7,44 @@
 #include <string>
 #include <utility>
 
+#include "ash/accessibility_delegate.h"
 #include "ash/public/cpp/config.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
 #include "ash/screen_util.h"
 #include "ash/session/session_controller.h"
+#include "ash/shared/app_types.h"
 #include "ash/shelf/shelf_constants.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shelf/wm_shelf.h"
 #include "ash/shell.h"
 #include "ash/shell_observer.h"
 #include "ash/shell_port.h"
+#include "ash/system/tray/system_tray_notifier.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/test/shell_test_api.h"
+#include "ash/test/test_accessibility_delegate.h"
 #include "ash/test/test_session_controller_client.h"
 #include "ash/test/wm_window_test_api.h"
+#include "ash/test/workspace_controller_test_api.h"
 #include "ash/wm/fullscreen_window_finder.h"
-#include "ash/wm/maximize_mode/workspace_backdrop_delegate.h"
+#include "ash/wm/maximize_mode/maximize_mode_backdrop_delegate_impl.h"
+#include "ash/wm/overview/window_selector_controller.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_state_aura.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/wm_event.h"
+#include "ash/wm/workspace/backdrop_delegate.h"
 #include "ash/wm/workspace/workspace_window_resizer.h"
 #include "ash/wm_window.h"
 #include "base/command_line.h"
 #include "base/run_loop.h"
+#include "chromeos/audio/chromeos_sounds.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/focus_client.h"
+#include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/window.h"
+#include "ui/aura/window_targeter.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/compositor/layer_type.h"
@@ -42,6 +53,8 @@
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/screen.h"
 #include "ui/display/test/display_manager_test_api.h"
+#include "ui/events/base_event_utils.h"
+#include "ui/events/test/event_generator.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
@@ -948,13 +961,12 @@ class WorkspaceLayoutManagerBackdropTest : public test::AshTestBase {
 
   // Turn the top window back drop on / off.
   void ShowTopWindowBackdrop(bool show) {
-    std::unique_ptr<WorkspaceLayoutManagerBackdropDelegate> backdrop;
+    std::unique_ptr<BackdropDelegate> backdrop;
     if (show) {
-      backdrop.reset(
-          new WorkspaceBackdropDelegate(WmWindow::Get(default_container_)));
+      backdrop = base::MakeUnique<MaximizeModeBackdropDelegateImpl>();
     }
     GetWorkspaceLayoutManager(default_container_)
-        ->SetMaximizeBackdropDelegate(std::move(backdrop));
+        ->SetBackdropDelegate(std::move(backdrop));
     // Closing and / or opening can be a delayed operation.
     base::RunLoop().RunUntilIdle();
   }
@@ -996,6 +1008,8 @@ class WorkspaceLayoutManagerBackdropTest : public test::AshTestBase {
   DISALLOW_COPY_AND_ASSIGN(WorkspaceLayoutManagerBackdropTest);
 };
 
+constexpr int kNoSoundKey = -1;
+
 }  // namespace
 
 // Check that creating the BackDrop without destroying it does not lead into
@@ -1006,12 +1020,9 @@ TEST_F(WorkspaceLayoutManagerBackdropTest, BackdropCrashTest) {
 
 // Verify basic assumptions about the backdrop.
 TEST_F(WorkspaceLayoutManagerBackdropTest, BasicBackdropTests) {
-  // Create a backdrop and see that there is one window (the backdrop) and
-  // that the size is the same as the default container as well as that it is
-  // not visible.
+  // The background widget will be created when there is a window.
   ShowTopWindowBackdrop(true);
-  ASSERT_EQ(1U, default_container()->children().size());
-  EXPECT_FALSE(default_container()->children()[0]->IsVisible());
+  ASSERT_EQ(0u, default_container()->children().size());
 
   {
     // Add a window and make sure that the backdrop is the second child.
@@ -1098,7 +1109,11 @@ TEST_F(WorkspaceLayoutManagerBackdropTest,
   const gfx::Size fullscreen_size =
       display::Screen::GetScreen()->GetPrimaryDisplay().size();
 
+  std::unique_ptr<aura::Window> window(CreateTestWindow(gfx::Rect(1, 2, 3, 4)));
+  window->Show();
+
   ASSERT_EQ(SHELF_VISIBLE, shelf_layout_manager->visibility_state());
+
   EXPECT_EQ(fullscreen_size,
             default_container()->children()[0]->bounds().size());
   shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_ALWAYS_HIDDEN);
@@ -1115,6 +1130,239 @@ TEST_F(WorkspaceLayoutManagerBackdropTest,
   shelf_layout_manager->UpdateVisibilityState();
   EXPECT_EQ(fullscreen_size,
             default_container()->children()[0]->bounds().size());
+}
+
+TEST_F(WorkspaceLayoutManagerBackdropTest, BackdropTest) {
+  WorkspaceController* wc =
+      test::ShellTestApi(Shell::Get()).workspace_controller();
+  test::WorkspaceControllerTestApi test_helper(wc);
+
+  std::unique_ptr<aura::Window> window1(
+      CreateTestWindow(gfx::Rect(0, 0, 100, 100)));
+  window1->SetName("1");
+  window1->Show();
+  std::unique_ptr<aura::Window> window2(
+      CreateTestWindow(gfx::Rect(0, 0, 100, 100)));
+  window2->SetName("2");
+  window2->Show();
+  std::unique_ptr<aura::Window> window3(
+      CreateTestWindow(gfx::Rect(0, 0, 100, 100)));
+  window3->SetName("3");
+  window3->Show();
+  EXPECT_FALSE(test_helper.GetBackdropWindow());
+
+  window2->SetProperty(aura::client::kHasBackdrop, true);
+  aura::Window* backdrop = test_helper.GetBackdropWindow();
+  EXPECT_TRUE(backdrop);
+  {
+    aura::Window::Windows children = window1->parent()->children();
+    EXPECT_EQ(children[0], window1.get());
+    EXPECT_EQ(children[1], backdrop);
+    EXPECT_EQ(children[2], window2.get());
+    EXPECT_EQ(children[3], window3.get());
+  }
+
+  // Setting the property to the one below the backdrop window shouldn't change
+  // the state.
+  window1->SetProperty(aura::client::kHasBackdrop, true);
+  {
+    aura::Window::Windows children = window1->parent()->children();
+    EXPECT_EQ(children[0], window1.get());
+    EXPECT_EQ(children[1], backdrop);
+    EXPECT_EQ(children[2], window2.get());
+    EXPECT_EQ(children[3], window3.get());
+  }
+
+  // Setting the property to the top will move the backdrop up.
+  window3->SetProperty(aura::client::kHasBackdrop, true);
+  {
+    aura::Window::Windows children = window1->parent()->children();
+    EXPECT_EQ(children[0], window1.get());
+    EXPECT_EQ(children[1], window2.get());
+    EXPECT_EQ(children[2], backdrop);
+    EXPECT_EQ(children[3], window3.get());
+  }
+
+  // Clearing the property in the middle will not change the backdrop position.
+  window2->ClearProperty(aura::client::kHasBackdrop);
+  {
+    aura::Window::Windows children = window1->parent()->children();
+    EXPECT_EQ(children[0], window1.get());
+    EXPECT_EQ(children[1], window2.get());
+    EXPECT_EQ(children[2], backdrop);
+    EXPECT_EQ(children[3], window3.get());
+  }
+
+  // Clearing the property on top will move the backdrop to bottom.
+  window3->ClearProperty(aura::client::kHasBackdrop);
+  {
+    aura::Window::Windows children = window1->parent()->children();
+    EXPECT_EQ(children[0], backdrop);
+    EXPECT_EQ(children[1], window1.get());
+    EXPECT_EQ(children[2], window2.get());
+    EXPECT_EQ(children[3], window3.get());
+  }
+
+  // Toggle overview.
+  Shell::Get()->window_selector_controller()->ToggleOverview();
+  RunAllPendingInMessageLoop();
+  EXPECT_FALSE(test_helper.GetBackdropWindow());
+
+  Shell::Get()->window_selector_controller()->ToggleOverview();
+  RunAllPendingInMessageLoop();
+  backdrop = test_helper.GetBackdropWindow();
+  EXPECT_TRUE(backdrop);
+  {
+    aura::Window::Windows children = window1->parent()->children();
+    EXPECT_EQ(children[0], backdrop);
+    EXPECT_EQ(children[1], window1.get());
+    EXPECT_EQ(children[2], window2.get());
+    EXPECT_EQ(children[3], window3.get());
+  }
+
+  // Enabling the backdrop delegate for maximized mode will put the
+  // backdrop on the top most window.
+  ShowTopWindowBackdrop(true);
+  {
+    aura::Window::Windows children = window1->parent()->children();
+    EXPECT_EQ(children[0], window1.get());
+    EXPECT_EQ(children[1], window2.get());
+    EXPECT_EQ(children[2], backdrop);
+    EXPECT_EQ(children[3], window3.get());
+  }
+
+  // Toggle overview with the delegate.
+  Shell::Get()->window_selector_controller()->ToggleOverview();
+  RunAllPendingInMessageLoop();
+  EXPECT_FALSE(test_helper.GetBackdropWindow());
+  Shell::Get()->window_selector_controller()->ToggleOverview();
+  RunAllPendingInMessageLoop();
+  backdrop = test_helper.GetBackdropWindow();
+  {
+    aura::Window::Windows children = window1->parent()->children();
+    EXPECT_EQ(children[0], window1.get());
+    EXPECT_EQ(children[1], window2.get());
+    EXPECT_EQ(children[2], backdrop);
+    EXPECT_EQ(children[3], window3.get());
+  }
+
+  // Removing the delegate will move the backdrop back to window1.
+  ShowTopWindowBackdrop(false);
+  {
+    aura::Window::Windows children = window1->parent()->children();
+    EXPECT_EQ(children[0], backdrop);
+    EXPECT_EQ(children[1], window1.get());
+    EXPECT_EQ(children[2], window2.get());
+    EXPECT_EQ(children[3], window3.get());
+  }
+}
+
+TEST_F(WorkspaceLayoutManagerBackdropTest, SpokenFeedbackFullscreenBackground) {
+  WorkspaceController* wc =
+      test::ShellTestApi(Shell::Get()).workspace_controller();
+  test::WorkspaceControllerTestApi test_helper(wc);
+  test::TestAccessibilityDelegate* accessibility_delegate =
+      static_cast<test::TestAccessibilityDelegate*>(
+          Shell::Get()->accessibility_delegate());
+
+  aura::test::TestWindowDelegate delegate;
+  std::unique_ptr<aura::Window> window(CreateTestWindowInShellWithDelegate(
+      &delegate, 0, gfx::Rect(0, 0, 100, 100)));
+  window->Show();
+
+  window->SetProperty(aura::client::kHasBackdrop, true);
+  EXPECT_TRUE(test_helper.GetBackdropWindow());
+
+  ui::test::EventGenerator& generator = GetEventGenerator();
+
+  generator.MoveMouseTo(300, 300);
+  generator.ClickLeftButton();
+  EXPECT_EQ(kNoSoundKey, accessibility_delegate->GetPlayedEarconAndReset());
+
+  generator.MoveMouseRelativeTo(window.get(), 10, 10);
+  generator.ClickLeftButton();
+  EXPECT_EQ(kNoSoundKey, accessibility_delegate->GetPlayedEarconAndReset());
+
+  // Enable spoken feedback.
+  Shell::Get()->accessibility_delegate()->ToggleSpokenFeedback(
+      ash::A11Y_NOTIFICATION_NONE);
+  Shell::Get()->system_tray_notifier()->NotifyAccessibilityModeChanged(
+      ash::A11Y_NOTIFICATION_NONE);
+  EXPECT_TRUE(
+      Shell::Get()->accessibility_delegate()->IsSpokenFeedbackEnabled());
+
+  generator.MoveMouseTo(300, 300);
+  generator.ClickLeftButton();
+  EXPECT_EQ(chromeos::SOUND_VOLUME_ADJUST,
+            accessibility_delegate->GetPlayedEarconAndReset());
+
+  generator.MoveMouseRelativeTo(window.get(), 10, 10);
+  generator.ClickLeftButton();
+  EXPECT_EQ(kNoSoundKey, accessibility_delegate->GetPlayedEarconAndReset());
+
+  // Disable spoken feedback. Shadow underlay is restored.
+  Shell::Get()->accessibility_delegate()->ToggleSpokenFeedback(
+      A11Y_NOTIFICATION_NONE);
+  Shell::Get()->system_tray_notifier()->NotifyAccessibilityModeChanged(
+      A11Y_NOTIFICATION_NONE);
+  EXPECT_FALSE(
+      Shell::Get()->accessibility_delegate()->IsSpokenFeedbackEnabled());
+
+  generator.MoveMouseTo(300, 300);
+  generator.ClickLeftButton();
+  EXPECT_EQ(kNoSoundKey, accessibility_delegate->GetPlayedEarconAndReset());
+
+  generator.MoveMouseTo(70, 70);
+  generator.ClickLeftButton();
+  EXPECT_EQ(kNoSoundKey, accessibility_delegate->GetPlayedEarconAndReset());
+}
+
+TEST_F(WorkspaceLayoutManagerBackdropTest, SpokenFeedbackForArc) {
+  WorkspaceController* wc =
+      test::ShellTestApi(Shell::Get()).workspace_controller();
+  test::WorkspaceControllerTestApi test_helper(wc);
+  test::TestAccessibilityDelegate* accessibility_delegate =
+      static_cast<test::TestAccessibilityDelegate*>(
+          Shell::Get()->accessibility_delegate());
+
+  accessibility_delegate->ToggleSpokenFeedback(A11Y_NOTIFICATION_NONE);
+  Shell::Get()->system_tray_notifier()->NotifyAccessibilityModeChanged(
+      A11Y_NOTIFICATION_NONE);
+  EXPECT_TRUE(accessibility_delegate->IsSpokenFeedbackEnabled());
+
+  aura::test::TestWindowDelegate delegate;
+  std::unique_ptr<aura::Window> window_arc(CreateTestWindowInShellWithDelegate(
+      &delegate, 0, gfx::Rect(0, 0, 100, 100)));
+  window_arc->Show();
+  std::unique_ptr<aura::Window> window_nonarc(
+      CreateTestWindowInShellWithDelegate(&delegate, 0,
+                                          gfx::Rect(0, 0, 100, 100)));
+  window_nonarc->Show();
+
+  window_arc->SetProperty(aura::client::kAppType,
+                          static_cast<int>(ash::AppType::ARC_APP));
+  EXPECT_FALSE(test_helper.GetBackdropWindow());
+
+  // ARC window will have a backdrop only when it's active.
+  wm::ActivateWindow(window_arc.get());
+  EXPECT_TRUE(test_helper.GetBackdropWindow());
+
+  wm::ActivateWindow(window_nonarc.get());
+  EXPECT_FALSE(test_helper.GetBackdropWindow());
+
+  wm::ActivateWindow(window_arc.get());
+  EXPECT_TRUE(test_helper.GetBackdropWindow());
+
+  // Make sure that clicking the backdrop window will play sound.
+  ui::test::EventGenerator& generator = GetEventGenerator();
+  generator.MoveMouseTo(300, 300);
+  generator.ClickLeftButton();
+  EXPECT_EQ(chromeos::SOUND_VOLUME_ADJUST,
+            accessibility_delegate->GetPlayedEarconAndReset());
+
+  generator.MoveMouseTo(70, 70);
+  generator.ClickLeftButton();
+  EXPECT_EQ(kNoSoundKey, accessibility_delegate->GetPlayedEarconAndReset());
 }
 
 class WorkspaceLayoutManagerKeyboardTest : public test::AshTestBase {

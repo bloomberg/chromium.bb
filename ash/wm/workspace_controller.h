@@ -15,7 +15,7 @@
 namespace ash {
 class WorkspaceEventHandler;
 class WorkspaceLayoutManager;
-class WorkspaceLayoutManagerBackdropDelegate;
+class BackdropDelegate;
 
 namespace test {
 class WorkspaceControllerTestApi;
@@ -37,8 +37,7 @@ class ASH_EXPORT WorkspaceController : public aura::WindowObserver {
 
   // Add a delegate which adds a backdrop behind the top window of the default
   // workspace.
-  void SetMaximizeBackdropDelegate(
-      std::unique_ptr<WorkspaceLayoutManagerBackdropDelegate> delegate);
+  void SetBackdropDelegate(std::unique_ptr<BackdropDelegate> delegate);
 
   WorkspaceLayoutManager* layout_manager() { return layout_manager_; }
 
