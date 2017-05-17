@@ -129,8 +129,6 @@ class CommandBufferHelperTest : public testing::Test {
     test_command_args_.clear();
   }
 
-  const CommandParser* GetParser() const { return executor_->parser(); }
-
   int32_t ImmediateEntryCount() const {
     return helper_->immediate_entry_count_;
   }
@@ -193,9 +191,9 @@ class CommandBufferHelperTest : public testing::Test {
     }
     helper_->Finish();
 
-    EXPECT_EQ(GetParser()->put(),
+    EXPECT_EQ(GetPutOffset(),
               (start_commands * cmd_size) % kTotalNumCommandEntries);
-    EXPECT_EQ(GetParser()->get(),
+    EXPECT_EQ(GetGetOffset(),
               (start_commands * cmd_size) % kTotalNumCommandEntries);
 
     // Lock flushing to force the buffer to get full.
@@ -222,8 +220,8 @@ class CommandBufferHelperTest : public testing::Test {
 
   // Checks that the buffer from put to put+size is free in the parser.
   void CheckFreeSpace(CommandBufferOffset put, unsigned int size) {
-    CommandBufferOffset parser_put = GetParser()->put();
-    CommandBufferOffset parser_get = GetParser()->get();
+    CommandBufferOffset parser_put = GetPutOffset();
+    CommandBufferOffset parser_get = GetGetOffset();
     CommandBufferOffset limit = put + size;
     if (parser_get > parser_put) {
       // "busy" buffer wraps, so "free" buffer is between put (inclusive) and
@@ -437,7 +435,6 @@ TEST_F(CommandBufferHelperTest, TestCalcImmediateEntriesOverFlushLimit) {
 TEST_F(CommandBufferHelperTest, TestCommandProcessing) {
   // Check initial state of the engine - it should have been configured by the
   // helper.
-  EXPECT_TRUE(GetParser() != NULL);
   EXPECT_EQ(error::kNoError, GetError());
   EXPECT_EQ(0, GetGetOffset());
 
@@ -457,7 +454,7 @@ TEST_F(CommandBufferHelperTest, TestCommandProcessing) {
   // Wait until it's done.
   helper_->Finish();
   // Check that the engine has no more work to do.
-  EXPECT_TRUE(GetParser()->IsEmpty());
+  EXPECT_EQ(GetGetOffset(), GetPutOffset());
 
   // Check that the commands did happen.
   Mock::VerifyAndClearExpectations(api_mock_.get());

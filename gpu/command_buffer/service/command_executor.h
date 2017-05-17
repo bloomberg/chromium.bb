@@ -14,8 +14,8 @@
 #include "base/macros.h"
 #include "base/memory/shared_memory.h"
 #include "base/memory/weak_ptr.h"
+#include "gpu/command_buffer/service/async_api_interface.h"
 #include "gpu/command_buffer/service/cmd_buffer_engine.h"
-#include "gpu/command_buffer/service/cmd_parser.h"
 #include "gpu/command_buffer/service/command_buffer_service.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
 #include "gpu/gpu_export.h"
@@ -23,13 +23,15 @@
 namespace gpu {
 
 // This class schedules commands that have been flushed. They are received via
-// a command buffer and forwarded to a command parser. TODO(apatrick): This
+// a command buffer and forwarded to a command handler. TODO(apatrick): This
 // class should not know about the decoder. Do not add additional dependencies
 // on it.
 class GPU_EXPORT CommandExecutor
     : NON_EXPORTED_BASE(public CommandBufferEngine),
       public base::SupportsWeakPtr<CommandExecutor> {
  public:
+  static const int kParseCommandsSlice = 20;
+
   CommandExecutor(CommandBufferServiceBase* command_buffer,
                   AsyncAPIInterface* handler,
                   gles2::GLES2Decoder* decoder);
@@ -74,28 +76,26 @@ class GPU_EXPORT CommandExecutor
   bool HasPollingWork() const;
   void PerformPollingWork();
 
-  CommandParser* parser() const { return parser_.get(); }
-
  private:
   bool PauseExecution();
+  error::Error ProcessCommands(int num_commands);
 
   // The CommandExecutor holds a weak reference to the CommandBuffer. The
   // CommandBuffer owns the CommandExecutor and holds a strong reference to it
   // through the ProcessCommands callback.
   CommandBufferServiceBase* command_buffer_;
 
-  // The parser uses this to execute commands.
+  // This is used to execute commands.
   AsyncAPIInterface* handler_;
 
   // Does not own decoder. TODO(apatrick): The CommandExecutor shouldn't need a
-  // pointer to the decoder, it is only used to initialize the CommandParser,
-  // which could be an argument to the constructor, and to determine the
-  // reason for context lost.
+  // pointer to the decoder.
   gles2::GLES2Decoder* decoder_;
 
-  // TODO(apatrick): The CommandExecutor currently creates and owns the parser.
-  // This should be an argument to the constructor.
-  std::unique_ptr<CommandParser> parser_;
+  CommandBufferOffset get_;
+  CommandBufferOffset put_;
+  volatile CommandBufferEntry* buffer_;
+  int32_t entry_count_;
 
   // Whether the scheduler is currently able to process more commands.
   bool scheduled_ = true;
