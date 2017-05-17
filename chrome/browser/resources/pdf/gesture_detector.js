@@ -26,6 +26,7 @@ class GestureDetector {
         'touchcancel', this.onTouch_.bind(this), { passive: true });
 
     this.pinchStartEvent_ = null;
+    this.lastTouchTouchesCount_ = 0;
     this.lastEvent_ = null;
 
     this.listeners_ = new Map([
@@ -47,6 +48,14 @@ class GestureDetector {
   }
 
   /**
+   * Returns true if the last touch start was a two finger touch.
+   * @return {boolean} True if the last touch start was a two finger touch.
+   */
+  wasTwoFingerTouch() {
+    return this.lastTouchTouchesCount_ == 2;
+  }
+
+  /**
    * Call the relevant listeners with the given |pinchEvent|.
    * @private
    * @param {!Object} pinchEvent The event to notify the listeners of.
@@ -64,14 +73,16 @@ class GestureDetector {
    * @param {!TouchEvent} event Touch event on the element.
    */
   onTouchStart_(event) {
-    if (event.touches.length == 2) {
-      this.pinchStartEvent_ = event;
-      this.lastEvent_ = event;
-      this.notify_({
-        type: 'pinchstart',
-        center: GestureDetector.center_(event)
-      });
-    }
+    this.lastTouchTouchesCount_ = event.touches.length;
+    if (!this.wasTwoFingerTouch())
+      return;
+
+    this.pinchStartEvent_ = event;
+    this.lastEvent_ = event;
+    this.notify_({
+      type: 'pinchstart',
+      center: GestureDetector.center_(event)
+    });
   }
 
   /**

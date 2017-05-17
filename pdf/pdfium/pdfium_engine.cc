@@ -88,6 +88,8 @@ const int32_t kFormHighlightAlpha = 100;
 
 const int32_t kMaxPasswordTries = 3;
 
+const int32_t kTouchLongPressTimeoutMs = 300;
+
 // See Table 3.20 in
 // http://www.adobe.com/devnet/acrobat/pdfs/pdf_reference_1-7.pdf
 const uint32_t kPDFPermissionPrintLowQualityMask = 1 << 2;
@@ -686,7 +688,8 @@ PDFiumEngine::PDFiumEngine(PDFEngine::Client* client)
       permissions_(0),
       permissions_handler_revision_(-1),
       fpdf_availability_(nullptr),
-      next_timer_id_(0),
+      next_formfill_timer_id_(0),
+      next_touch_timer_id_(0),
       last_page_mouse_down_(-1),
       most_visible_page_(-1),
       called_do_document_action_(false),
@@ -1325,6 +1328,21 @@ bool PDFiumEngine::HandleEvent(const pp::InputEvent& event) {
     case PP_INPUTEVENT_TYPE_CHAR:
       rv = OnChar(pp::KeyboardInputEvent(event));
       break;
+    case PP_INPUTEVENT_TYPE_TOUCHSTART: {
+      KillTouchTimer(next_touch_timer_id_);
+
+      pp::TouchInputEvent touch_event(event);
+      if (touch_event.GetTouchCount(PP_TOUCHLIST_TYPE_TARGETTOUCHES) == 1)
+        ScheduleTouchTimer(touch_event);
+      break;
+    }
+    case PP_INPUTEVENT_TYPE_TOUCHEND:
+      KillTouchTimer(next_touch_timer_id_);
+      break;
+    case PP_INPUTEVENT_TYPE_TOUCHMOVE:
+      // TODO(dsinclair): This should allow a little bit of movement (up to the
+      // touch radii) to account for finger jiggle.
+      KillTouchTimer(next_touch_timer_id_);
     default:
       break;
   }
@@ -2444,12 +2462,36 @@ void PDFiumEngine::SetGrayscale(bool grayscale) {
 }
 
 void PDFiumEngine::OnCallback(int id) {
-  if (!timers_.count(id))
+  if (!formfill_timers_.count(id))
     return;
 
-  timers_[id].second(id);
-  if (timers_.count(id))  // The callback might delete the timer.
-    client_->ScheduleCallback(id, timers_[id].first);
+  formfill_timers_[id].second(id);
+  if (formfill_timers_.count(id))  // The callback might delete the timer.
+    client_->ScheduleCallback(id, formfill_timers_[id].first);
+}
+
+void PDFiumEngine::OnTouchTimerCallback(int id) {
+  if (!touch_timers_.count(id))
+    return;
+
+  HandleLongPress(touch_timers_[id]);
+  KillTouchTimer(id);
+}
+
+void PDFiumEngine::HandleLongPress(const pp::TouchInputEvent& event) {
+  pp::FloatPoint fp =
+      event.GetTouchByIndex(PP_TOUCHLIST_TYPE_TARGETTOUCHES, 0).position();
+  pp::Point point;
+  point.set_x(fp.x());
+  point.set_y(fp.y());
+
+  // Send a fake mouse down to trigger the multi-click selection code.
+  pp::MouseInputEvent mouse_event(
+      client_->GetPluginInstance(), PP_INPUTEVENT_TYPE_MOUSEDOWN,
+      event.GetTimeStamp(), event.GetModifiers(),
+      PP_INPUTEVENT_MOUSEBUTTON_LEFT, point, 2, point);
+
+  OnMouseDown(mouse_event);
 }
 
 int PDFiumEngine::GetCharCount(int page_index) {
@@ -3518,6 +3560,16 @@ void PDFiumEngine::SetSelecting(bool selecting) {
     client_->IsSelectingChanged(selecting);
 }
 
+void PDFiumEngine::ScheduleTouchTimer(const pp::TouchInputEvent& evt) {
+  touch_timers_[++next_touch_timer_id_] = evt;
+  client_->ScheduleTouchTimerCallback(next_touch_timer_id_,
+                                      kTouchLongPressTimeoutMs);
+}
+
+void PDFiumEngine::KillTouchTimer(int timer_id) {
+  touch_timers_.erase(timer_id);
+}
+
 bool PDFiumEngine::PageIndexInBounds(int index) const {
   return index >= 0 && index < static_cast<int>(pages_.size());
 }
@@ -3569,15 +3621,15 @@ int PDFiumEngine::Form_SetTimer(FPDF_FORMFILLINFO* param,
                                 int elapse,
                                 TimerCallback timer_func) {
   PDFiumEngine* engine = static_cast<PDFiumEngine*>(param);
-  engine->timers_[++engine->next_timer_id_] =
+  engine->formfill_timers_[++engine->next_formfill_timer_id_] =
       std::pair<int, TimerCallback>(elapse, timer_func);
-  engine->client_->ScheduleCallback(engine->next_timer_id_, elapse);
-  return engine->next_timer_id_;
+  engine->client_->ScheduleCallback(engine->next_formfill_timer_id_, elapse);
+  return engine->next_formfill_timer_id_;
 }
 
 void PDFiumEngine::Form_KillTimer(FPDF_FORMFILLINFO* param, int timer_id) {
   PDFiumEngine* engine = static_cast<PDFiumEngine*>(param);
-  engine->timers_.erase(timer_id);
+  engine->formfill_timers_.erase(timer_id);
 }
 
 FPDF_SYSTEMTIME PDFiumEngine::Form_GetLocalTime(FPDF_FORMFILLINFO* param) {
