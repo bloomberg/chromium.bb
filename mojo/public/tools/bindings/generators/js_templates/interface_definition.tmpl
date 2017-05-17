@@ -1,7 +1,5 @@
 {%- for method in interface.methods %}
-{%-   set interface_method_id =
-          interface.mojom_name ~ "_" ~ method.mojom_name %}
-  var k{{interface_method_id}}_Name = {{method.ordinal}};
+  var k{{interface.name}}_{{method.name}}_Name = {{method.ordinal}};
 {%- endfor %}
 
   function {{interface.name}}Ptr(handleOrPtrInfo) {
@@ -24,19 +22,17 @@
   }
 
 {%- for method in interface.methods %}
-{%-   set interface_method_id =
-          interface.mojom_name ~ "_" ~ method.mojom_name %}
-  {{interface.name}}Ptr.prototype.{{method.name}} = function() {
-    return {{interface.name}}Proxy.prototype.{{method.name}}
+  {{interface.name}}Ptr.prototype.{{method.name|stylize_method}} = function() {
+    return {{interface.name}}Proxy.prototype.{{method.name|stylize_method}}
         .apply(this.ptr.getProxy(), arguments);
   };
 
-  {{interface.name}}Proxy.prototype.{{method.name}} = function(
+  {{interface.name}}Proxy.prototype.{{method.name|stylize_method}} = function(
 {%- for parameter in method.parameters -%}
 {{parameter.name}}{% if not loop.last %}, {% endif %}
 {%- endfor -%}
 ) {
-    var params = new {{interface_method_id}}_Params();
+    var params = new {{interface.name}}_{{method.name}}_Params();
 {%- for parameter in method.parameters %}
     params.{{parameter.name}} = {{parameter.name}};
 {%- endfor %}
@@ -44,14 +40,14 @@
 {%- if method.response_parameters == None %}
 {%-   if method|method_passes_associated_kinds and not use_new_js_bindings %}
     var builder = new codec.MessageV2Builder(
-        k{{interface_method_id}}_Name,
-        codec.align({{interface_method_id}}_Params.encodedSize));
-    builder.setPayload({{interface_method_id}}_Params, params);
+        k{{interface.name}}_{{method.name}}_Name,
+        codec.align({{interface.name}}_{{method.name}}_Params.encodedSize));
+    builder.setPayload({{interface.name}}_{{method.name}}_Params, params);
 {%-   else %}
     var builder = new codec.MessageV0Builder(
-        k{{interface_method_id}}_Name,
-        codec.align({{interface_method_id}}_Params.encodedSize));
-    builder.encodeStruct({{interface_method_id}}_Params, params);
+        k{{interface.name}}_{{method.name}}_Name,
+        codec.align({{interface.name}}_{{method.name}}_Params.encodedSize));
+    builder.encodeStruct({{interface.name}}_{{method.name}}_Params, params);
 {%-   endif %}
     var message = builder.finish();
     this.receiver_.accept(message);
@@ -59,22 +55,22 @@
     return new Promise(function(resolve, reject) {
 {%-   if method|method_passes_associated_kinds and not use_new_js_bindings %}
       var builder = new codec.MessageV2Builder(
-          k{{interface_method_id}}_Name,
-          codec.align({{interface_method_id}}_Params.encodedSize),
+          k{{interface.name}}_{{method.name}}_Name,
+          codec.align({{interface.name}}_{{method.name}}_Params.encodedSize),
           codec.kMessageExpectsResponse, 0);
-      builder.setPayload({{interface_method_id}}_Params, params);
+      builder.setPayload({{interface.name}}_{{method.name}}_Params, params);
 {%-   else %}
       var builder = new codec.MessageV1Builder(
-          k{{interface_method_id}}_Name,
-          codec.align({{interface_method_id}}_Params.encodedSize),
+          k{{interface.name}}_{{method.name}}_Name,
+          codec.align({{interface.name}}_{{method.name}}_Params.encodedSize),
           codec.kMessageExpectsResponse, 0);
-      builder.encodeStruct({{interface_method_id}}_Params, params);
+      builder.encodeStruct({{interface.name}}_{{method.name}}_Params, params);
 {%-   endif %}
       var message = builder.finish();
       this.receiver_.acceptAndExpectResponse(message).then(function(message) {
         var reader = new codec.MessageReader(message);
         var responseParams =
-            reader.decodeStruct({{interface_method_id}}_ResponseParams);
+            reader.decodeStruct({{interface.name}}_{{method.name}}_ResponseParams);
         resolve(responseParams);
       }).catch(function(result) {
         reject(Error("Connection error: " + result));
@@ -89,8 +85,9 @@
   }
 
 {%- for method in interface.methods %}
-  {{interface.name}}Stub.prototype.{{method.name}} = function({{method.parameters|map(attribute='name')|join(', ')}}) {
-    return this.delegate_ && this.delegate_.{{method.name}} && this.delegate_.{{method.name}}({{method.parameters|map(attribute='name')|join(', ')}});
+{%-   set js_method_name = method.name|stylize_method %}
+  {{interface.name}}Stub.prototype.{{js_method_name}} = function({{method.parameters|map(attribute='name')|join(', ')}}) {
+    return this.delegate_ && this.delegate_.{{js_method_name}} && this.delegate_.{{js_method_name}}({{method.parameters|map(attribute='name')|join(', ')}});
   }
 {%- endfor %}
 
@@ -98,12 +95,10 @@
     var reader = new codec.MessageReader(message);
     switch (reader.messageName) {
 {%- for method in interface.methods %}
-{%-   set interface_method_id =
-          interface.mojom_name ~ "_" ~ method.mojom_name %}
 {%- if method.response_parameters == None %}
-    case k{{interface_method_id}}_Name:
-      var params = reader.decodeStruct({{interface_method_id}}_Params);
-      this.{{method.name}}(
+    case k{{interface.name}}_{{method.name}}_Name:
+      var params = reader.decodeStruct({{interface.name}}_{{method.name}}_Params);
+      this.{{method.name|stylize_method}}(
 {%- for parameter in method.parameters -%}
   params.{{parameter.name}}{% if not loop.last %}, {% endif %}
 {%- endfor %});
@@ -120,34 +115,32 @@
     var reader = new codec.MessageReader(message);
     switch (reader.messageName) {
 {%- for method in interface.methods %}
-{%-   set interface_method_id =
-          interface.mojom_name ~ "_" ~ method.mojom_name %}
 {%- if method.response_parameters != None %}
-    case k{{interface_method_id}}_Name:
-      var params = reader.decodeStruct({{interface_method_id}}_Params);
-      this.{{method.name}}(
+    case k{{interface.name}}_{{method.name}}_Name:
+      var params = reader.decodeStruct({{interface.name}}_{{method.name}}_Params);
+      this.{{method.name|stylize_method}}(
 {%- for parameter in method.parameters -%}
 params.{{parameter.name}}{% if not loop.last %}, {% endif -%}
 {%- endfor %}).then(function(response) {
         var responseParams =
-            new {{interface_method_id}}_ResponseParams();
+            new {{interface.name}}_{{method.name}}_ResponseParams();
 {%-     for parameter in method.response_parameters %}
         responseParams.{{parameter.name}} = response.{{parameter.name}};
 {%-     endfor %}
 {%- if method|method_passes_associated_kinds and not use_new_js_bindings %}
         var builder = new codec.MessageV2Builder(
-            k{{interface_method_id}}_Name,
-            codec.align({{interface_method_id}}_ResponseParams
+            k{{interface.name}}_{{method.name}}_Name,
+            codec.align({{interface.name}}_{{method.name}}_ResponseParams
                 .encodedSize),
             codec.kMessageIsResponse, reader.requestID);
-        builder.setPayload({{interface_method_id}}_ResponseParams,
+        builder.setPayload({{interface.name}}_{{method.name}}_ResponseParams,
                              responseParams);
 {%- else %}
         var builder = new codec.MessageV1Builder(
-            k{{interface_method_id}}_Name,
-            codec.align({{interface_method_id}}_ResponseParams.encodedSize),
+            k{{interface.name}}_{{method.name}}_Name,
+            codec.align({{interface.name}}_{{method.name}}_ResponseParams.encodedSize),
             codec.kMessageIsResponse, reader.requestID);
-        builder.encodeStruct({{interface_method_id}}_ResponseParams,
+        builder.encodeStruct({{interface.name}}_{{method.name}}_ResponseParams,
                              responseParams);
 {%- endif %}
         var message = builder.finish();
@@ -171,15 +164,13 @@ params.{{parameter.name}}{% if not loop.last %}, {% endif -%}
     var paramsClass = null;
     switch (message.getName()) {
 {%-   for method in interface.methods %}
-{%-     set interface_method_id =
-            interface.mojom_name ~ "_" ~ method.mojom_name %}
-      case k{{interface_method_id}}_Name:
+      case k{{interface.name}}_{{method.name}}_Name:
 {%-     if method.response_parameters == None %}
         if (!message.expectsResponse() && !message.isResponse())
-          paramsClass = {{interface_method_id}}_Params;
+          paramsClass = {{interface.name}}_{{method.name}}_Params;
 {%-     else %}
         if (message.expectsResponse())
-          paramsClass = {{interface_method_id}}_Params;
+          paramsClass = {{interface.name}}_{{method.name}}_Params;
 {%-     endif %}
       break;
 {%-   endfor %}
@@ -198,12 +189,10 @@ params.{{parameter.name}}{% if not loop.last %}, {% endif -%}
    var paramsClass = null;
    switch (message.getName()) {
 {%-   for method in interface.methods %}
-{%-     set interface_method_id =
-            interface.mojom_name ~ "_" ~ method.mojom_name %}
 {%-     if method.response_parameters != None %}
-      case k{{interface_method_id}}_Name:
+      case k{{interface.name}}_{{method.name}}_Name:
         if (message.isResponse())
-          paramsClass = {{interface_method_id}}_ResponseParams;
+          paramsClass = {{interface.name}}_{{method.name}}_ResponseParams;
         break;
 {%-     endif %}
 {%-   endfor %}
@@ -215,7 +204,7 @@ params.{{parameter.name}}{% if not loop.last %}, {% endif -%}
   }
 
   var {{interface.name}} = {
-    name: '{{module.mojom_namespace|replace(".","::")}}::{{interface.mojom_name}}',
+    name: '{{module.namespace|replace(".","::")}}::{{interface.name}}',
     kVersion: {{interface.version}},
     ptrClass: {{interface.name}}Ptr,
     proxyClass: {{interface.name}}Proxy,
