@@ -1337,13 +1337,13 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 - (void)pushStateWithPageURL:(const GURL&)pageURL
                  stateObject:(NSString*)stateObject
                   transition:(ui::PageTransition)transition {
-  _webStateImpl->OnProvisionalNavigationStarted(pageURL);
-  [[self sessionController] pushNewItemWithURL:pageURL
-                                   stateObject:stateObject
-                                    transition:transition];
   std::unique_ptr<web::NavigationContextImpl> context =
       web::NavigationContextImpl::CreateNavigationContext(_webStateImpl,
                                                           pageURL);
+  _webStateImpl->OnNavigationStarted(context.get());
+  [[self sessionController] pushNewItemWithURL:pageURL
+                                   stateObject:stateObject
+                                    transition:transition];
   context->SetIsSameDocument(true);
   _webStateImpl->OnNavigationFinished(context.get());
   self.userInteractionRegistered = NO;
@@ -1351,12 +1351,12 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 
 - (void)replaceStateWithPageURL:(const GURL&)pageURL
                     stateObject:(NSString*)stateObject {
-  _webStateImpl->OnProvisionalNavigationStarted(pageURL);
-  [[self sessionController] updateCurrentItemWithURL:pageURL
-                                         stateObject:stateObject];
   std::unique_ptr<web::NavigationContextImpl> context =
       web::NavigationContextImpl::CreateNavigationContext(_webStateImpl,
                                                           pageURL);
+  _webStateImpl->OnNavigationStarted(context.get());
+  [[self sessionController] updateCurrentItemWithURL:pageURL
+                                         stateObject:stateObject];
   context->SetIsSameDocument(true);
   _webStateImpl->OnNavigationFinished(context.get());
 }
@@ -1539,8 +1539,7 @@ registerLoadRequestForURL:(const GURL&)requestURL
   }
   context->SetNavigationItemUniqueID(item->GetUniqueID());
   _webStateImpl->SetIsLoading(true);
-  // TODO(crbug.com/713836): pass context to |OnProvisionalNavigationStarted|.
-  _webStateImpl->OnProvisionalNavigationStarted(requestURL);
+  _webStateImpl->OnNavigationStarted(context.get());
   return context;
 }
 

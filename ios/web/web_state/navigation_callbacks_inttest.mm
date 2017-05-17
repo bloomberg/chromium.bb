@@ -109,7 +109,7 @@ TEST_F(StartAndFinishNavigationTest, NewPageNavigation) {
   web::test::SetUpSimpleHttpServer(responses);
 
   // Perform new page navigation.
-  EXPECT_CALL(*observer_, ProvisionalNavigationStarted(_));
+  EXPECT_CALL(*observer_, ProvisionalNavigationStarted(url));
   EXPECT_CALL(*observer_, DidFinishNavigation(_))
       .WillOnce(VerifyNewPageContext(web_state(), url));
   LoadUrl(url);
@@ -123,20 +123,20 @@ TEST_F(StartAndFinishNavigationTest, UserInitiatedHashChangeNavigation) {
   web::test::SetUpSimpleHttpServer(responses);
 
   // Perform new page navigation.
-  EXPECT_CALL(*observer_, ProvisionalNavigationStarted(_));
+  EXPECT_CALL(*observer_, ProvisionalNavigationStarted(url));
   EXPECT_CALL(*observer_, DidFinishNavigation(_))
       .WillOnce(VerifyNewPageContext(web_state(), url));
   LoadUrl(url);
 
   // Perform same-page navigation.
   const GURL hash_url = HttpServer::MakeUrl("http://chromium.test#1");
-  EXPECT_CALL(*observer_, ProvisionalNavigationStarted(_));
+  EXPECT_CALL(*observer_, ProvisionalNavigationStarted(hash_url));
   EXPECT_CALL(*observer_, DidFinishNavigation(_))
       .WillOnce(VerifySameDocumentContext(web_state(), hash_url));
   LoadUrl(hash_url);
 
   // Perform same-page navigation by going back.
-  EXPECT_CALL(*observer_, ProvisionalNavigationStarted(_));
+  EXPECT_CALL(*observer_, ProvisionalNavigationStarted(url));
   EXPECT_CALL(*observer_, DidFinishNavigation(_))
       .WillOnce(VerifySameDocumentContext(web_state(), url));
   ExecuteBlockAndWaitForLoad(url, ^{
@@ -152,14 +152,14 @@ TEST_F(StartAndFinishNavigationTest, RendererInitiatedHashChangeNavigation) {
   web::test::SetUpSimpleHttpServer(responses);
 
   // Perform new page navigation.
-  EXPECT_CALL(*observer_, ProvisionalNavigationStarted(_));
+  EXPECT_CALL(*observer_, ProvisionalNavigationStarted(url));
   EXPECT_CALL(*observer_, DidFinishNavigation(_))
       .WillOnce(VerifyNewPageContext(web_state(), url));
   LoadUrl(url);
 
   // Perform same-page navigation using JavaScript.
   const GURL hash_url = HttpServer::MakeUrl("http://chromium.test#1");
-  EXPECT_CALL(*observer_, ProvisionalNavigationStarted(_));
+  EXPECT_CALL(*observer_, ProvisionalNavigationStarted(hash_url));
   EXPECT_CALL(*observer_, DidFinishNavigation(_))
       .WillOnce(VerifySameDocumentContext(web_state(), hash_url));
   ExecuteJavaScript(@"window.location.hash = '#1'");
@@ -173,21 +173,21 @@ TEST_F(StartAndFinishNavigationTest, StateNavigation) {
   web::test::SetUpSimpleHttpServer(responses);
 
   // Perform new page navigation.
-  EXPECT_CALL(*observer_, ProvisionalNavigationStarted(_));
+  EXPECT_CALL(*observer_, ProvisionalNavigationStarted(url));
   EXPECT_CALL(*observer_, DidFinishNavigation(_))
       .WillOnce(VerifyNewPageContext(web_state(), url));
   LoadUrl(url);
 
   // Perform push state using JavaScript.
   const GURL push_url = HttpServer::MakeUrl("http://chromium.test/test.html");
-  EXPECT_CALL(*observer_, ProvisionalNavigationStarted(_));
+  EXPECT_CALL(*observer_, ProvisionalNavigationStarted(push_url));
   EXPECT_CALL(*observer_, DidFinishNavigation(_))
       .WillOnce(VerifySameDocumentContext(web_state(), push_url));
   ExecuteJavaScript(@"window.history.pushState('', 'Test', 'test.html')");
 
   // Perform replace state using JavaScript.
   const GURL replace_url = HttpServer::MakeUrl("http://chromium.test/1.html");
-  EXPECT_CALL(*observer_, ProvisionalNavigationStarted(_));
+  EXPECT_CALL(*observer_, ProvisionalNavigationStarted(replace_url));
   EXPECT_CALL(*observer_, DidFinishNavigation(_))
       .WillOnce(VerifySameDocumentContext(web_state(), replace_url));
   ExecuteJavaScript(@"window.history.replaceState('', 'Test', '1.html')");
@@ -196,7 +196,7 @@ TEST_F(StartAndFinishNavigationTest, StateNavigation) {
 // Tests native content navigation.
 TEST_F(StartAndFinishNavigationTest, NativeContentNavigation) {
   GURL url(url::SchemeHostPort(kTestNativeContentScheme, "ui", 0).Serialize());
-  EXPECT_CALL(*observer_, ProvisionalNavigationStarted(_));
+  EXPECT_CALL(*observer_, ProvisionalNavigationStarted(url));
   EXPECT_CALL(*observer_, DidFinishNavigation(_))
       .WillOnce(VerifyNewNativePageContext(web_state(), url));
   LoadUrl(url);

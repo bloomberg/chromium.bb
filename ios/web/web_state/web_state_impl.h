@@ -73,10 +73,10 @@ class WebStateImpl : public WebState, public NavigationManagerDelegate {
   CRWWebController* GetWebController();
   void SetWebController(CRWWebController* web_controller);
 
-  // Notifies the observers that a provisional navigation has started.
-  void OnProvisionalNavigationStarted(const GURL& url);
+  // Notifies the observers that a navigation has started.
+  void OnNavigationStarted(web::NavigationContext* context);
 
-  // Called when a navigation is finished.
+  // Notifies the observers that a navigation has finished.
   void OnNavigationFinished(web::NavigationContext* context);
 
   // Called when page title was changed.

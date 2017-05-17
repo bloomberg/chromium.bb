@@ -670,9 +670,10 @@ bool WebStateImpl::HasOpener() const {
   return created_with_opener_;
 }
 
-void WebStateImpl::OnProvisionalNavigationStarted(const GURL& url) {
+void WebStateImpl::OnNavigationStarted(web::NavigationContext* context) {
+  // TODO(crbug.com/713836): pass context to WebStateObserver callback.
   for (auto& observer : observers_)
-    observer.ProvisionalNavigationStarted(url);
+    observer.ProvisionalNavigationStarted(context->GetUrl());
 }
 
 void WebStateImpl::OnNavigationFinished(web::NavigationContext* context) {
