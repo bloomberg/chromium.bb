@@ -130,6 +130,11 @@ void PaymentRequestBrowserTestBase::OnConnectionTerminated() {
     event_observer_->Observe(DialogEvent::DIALOG_CLOSED);
 }
 
+void PaymentRequestBrowserTestBase::OnAbortCalled() {
+  if (event_observer_)
+    event_observer_->Observe(DialogEvent::ABORT_CALLED);
+}
+
 void PaymentRequestBrowserTestBase::OnDialogOpened() {
   if (event_observer_)
     event_observer_->Observe(DialogEvent::DIALOG_OPENED);
@@ -754,6 +759,9 @@ std::ostream& operator<<(
       break;
     case DialogEvent::NOT_SUPPORTED_ERROR:
       out << "NOT_SUPPORTED_ERROR";
+      break;
+    case DialogEvent::ABORT_CALLED:
+      out << "ABORT_CALLED";
       break;
   }
   return out;

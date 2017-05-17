@@ -82,6 +82,7 @@ class PaymentRequestBrowserTestBase
     SPEC_DONE_UPDATING,
     CVC_PROMPT_SHOWN,
     NOT_SUPPORTED_ERROR,
+    ABORT_CALLED,
   };
 
  protected:
@@ -102,6 +103,7 @@ class PaymentRequestBrowserTestBase
   void OnCanMakePaymentCalled() override;
   void OnNotSupportedError() override;
   void OnConnectionTerminated() override;
+  void OnAbortCalled() override;
 
   // PaymentRequestDialogView::ObserverForTest:
   void OnDialogOpened() override;
