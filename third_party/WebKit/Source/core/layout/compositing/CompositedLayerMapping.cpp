@@ -1529,12 +1529,12 @@ void CompositedLayerMapping::UpdateChildClippingMaskLayerGeometry() {
       !GetLayoutObject().IsBox())
     return;
   LayoutBox& layout_box = ToLayoutBox(GetLayoutObject());
-  IntRect client_box = EnclosingIntRect(layout_box.ClientBoxRect());
+  IntRect padding_box = EnclosingIntRect(layout_box.PaddingBoxRect());
 
   child_clipping_mask_layer_->SetPosition(graphics_layer_->GetPosition());
   child_clipping_mask_layer_->SetSize(graphics_layer_->Size());
   child_clipping_mask_layer_->SetOffsetFromLayoutObject(
-      ToIntSize(client_box.Location()));
+      ToIntSize(padding_box.Location()));
 
   // NOTE: also some stuff happening in updateChildContainmentLayerGeometry().
 }
