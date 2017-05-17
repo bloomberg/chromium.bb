@@ -18,6 +18,8 @@ function enabled(command, element, selectionStart, selectionEnd)
 {
     var selection = document.getSelection();
     selection.removeAllRanges();
+    if (document.activeElement)
+        document.activeElement.blur();
     if (element) {
         var range = document.createRange();
         range.setStart(element.firstChild, selectionStart);
