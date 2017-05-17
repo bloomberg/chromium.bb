@@ -326,8 +326,10 @@ external/wpt/old-tests [ Skip ]
 # external/wpt/orientation-event [ Pass ]
 ## Owners: rouslan@chromium.org,mathp@chromium.org
 # external/wpt/payment-request [ Pass ]
-external/wpt/page-visibility [ Skip ]
-external/wpt/performance-timeline [ Skip ]
+## Owners: panicker@chromium.org
+# external/wpt/page-visibility [ Pass ]
+## Owners: igrigorik@chromium.org,panicker@chromium.org
+# external/wpt/performance-timeline [ Pass ]
 ## Owners: nzolghadr@chromium.org,mustaq@chromium.org
 # external/wpt/pointerevents [ Pass ]
 ## Owners: chongz@chromium.org
@@ -343,7 +345,8 @@ external/wpt/proximity [ Skip ]
 # external/wpt/remote-playback [ Pass ]
 ## Owners: jochen@chromium.org,estark@chromium.org
 # external/wpt/referrer-policy [ Pass ]
-external/wpt/resource-timing [ Skip ]
+## Owners: ksakamoto@chromium.org
+# external/wpt/resource-timing [ Pass ]
 ## Owners: jsbell@chromium.org
 # external/wpt/resources [ Pass ]
 external/wpt/resources/docs [ Skip ]
