@@ -287,7 +287,8 @@ ImeMenuTray::ImeMenuTray(WmShelf* wm_shelf)
       show_keyboard_(false),
       force_show_keyboard_(false),
       keyboard_suppressed_(false),
-      show_bubble_after_keyboard_hidden_(false) {
+      show_bubble_after_keyboard_hidden_(false),
+      weak_ptr_factory_(this) {
   SetInkDropMode(InkDropMode::ON);
   SetupLabelForTray(label_);
   label_->SetElideBehavior(gfx::TRUNCATE);
@@ -531,8 +532,10 @@ void ImeMenuTray::OnKeyboardHidden() {
   if (!force_show_keyboard_)
     return;
 
-  Shell::Get()->accessibility_delegate()->SetVirtualKeyboardEnabled(false);
-  force_show_keyboard_ = false;
+  // Posts a task to disable the virtual keyboard.
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(&ImeMenuTray::DisableVirtualKeyboard,
+                            weak_ptr_factory_.GetWeakPtr()));
 }
 
 void ImeMenuTray::OnKeyboardSuppressionChanged(bool suppressed) {
@@ -549,6 +552,11 @@ void ImeMenuTray::UpdateTrayLabel() {
     label_->SetText(current_ime_.short_name + base::UTF8ToUTF16("*"));
   else
     label_->SetText(current_ime_.short_name);
+}
+
+void ImeMenuTray::DisableVirtualKeyboard() {
+  Shell::Get()->accessibility_delegate()->SetVirtualKeyboardEnabled(false);
+  force_show_keyboard_ = false;
 }
 
 }  // namespace ash

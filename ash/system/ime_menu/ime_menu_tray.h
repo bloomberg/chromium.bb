@@ -96,6 +96,9 @@ class ASH_EXPORT ImeMenuTray : public TrayBackgroundView,
   // Updates the text of the label on the tray.
   void UpdateTrayLabel();
 
+  // Disables the virtual keyboard.
+  void DisableVirtualKeyboard();
+
   // Bubble for default and detailed views.
   std::unique_ptr<TrayBubbleWrapper> bubble_;
   ImeListView* ime_list_view_;
@@ -106,6 +109,8 @@ class ASH_EXPORT ImeMenuTray : public TrayBackgroundView,
   bool force_show_keyboard_;
   bool keyboard_suppressed_;
   bool show_bubble_after_keyboard_hidden_;
+
+  base::WeakPtrFactory<ImeMenuTray> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ImeMenuTray);
 };
