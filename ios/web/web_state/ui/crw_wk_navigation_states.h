@@ -82,6 +82,10 @@ enum class WKNavigationState : int {
 // is empty.
 - (web::WKNavigationState)lastAddedNavigationState;
 
+// Returns navigations that are not yet committed, finished or failed.
+// This array may contain NSNull to represent null WKNavigation.
+- (NSSet*)pendingNavigations;
+
 @end
 
 #endif  // IOS_WEB_WEB_STATE_UI_CRW_WK_NAVIGATION_STATES_H_

@@ -129,4 +129,63 @@ TEST_F(CRWWKNavigationStatesTest, NullNavigation) {
   EXPECT_EQ(WKNavigationState::REQUESTED, [states_ lastAddedNavigationState]);
 }
 
+// Tests -[CRWWKNavigationStates pendingNavigations].
+TEST_F(CRWWKNavigationStatesTest, PendingNavigations) {
+  ASSERT_EQ(0U, [states_ pendingNavigations].count);
+
+  // Add pending navigation_1.
+  [states_ setState:WKNavigationState::REQUESTED forNavigation:navigation1_];
+  ASSERT_EQ(1U, [states_ pendingNavigations].count);
+  EXPECT_TRUE([[states_ pendingNavigations] containsObject:navigation1_]);
+
+  // Add pending navigation_2.
+  [states_ setState:WKNavigationState::STARTED forNavigation:navigation2_];
+  ASSERT_EQ(2U, [states_ pendingNavigations].count);
+  EXPECT_TRUE([[states_ pendingNavigations] containsObject:navigation1_]);
+  EXPECT_TRUE([[states_ pendingNavigations] containsObject:navigation2_]);
+
+  // Add pending navigation_3.
+  [states_ setState:WKNavigationState::STARTED forNavigation:navigation3_];
+  ASSERT_EQ(3U, [states_ pendingNavigations].count);
+  EXPECT_TRUE([[states_ pendingNavigations] containsObject:navigation1_]);
+  EXPECT_TRUE([[states_ pendingNavigations] containsObject:navigation2_]);
+  EXPECT_TRUE([[states_ pendingNavigations] containsObject:navigation3_]);
+
+  // Add pending null navigation.
+  [states_ setState:WKNavigationState::STARTED forNavigation:nil];
+  ASSERT_EQ(4U, [states_ pendingNavigations].count);
+  EXPECT_TRUE([[states_ pendingNavigations] containsObject:navigation1_]);
+  EXPECT_TRUE([[states_ pendingNavigations] containsObject:navigation2_]);
+  EXPECT_TRUE([[states_ pendingNavigations] containsObject:navigation3_]);
+  EXPECT_TRUE([[states_ pendingNavigations] containsObject:[NSNull null]]);
+
+  // Provisionally fail null navigation.
+  [states_ setState:WKNavigationState::PROVISIONALY_FAILED forNavigation:nil];
+  ASSERT_EQ(3U, [states_ pendingNavigations].count);
+  EXPECT_TRUE([[states_ pendingNavigations] containsObject:navigation2_]);
+  EXPECT_TRUE([[states_ pendingNavigations] containsObject:navigation3_]);
+  EXPECT_TRUE([[states_ pendingNavigations] containsObject:navigation3_]);
+
+  // Commit navigation_1.
+  [states_ setState:WKNavigationState::COMMITTED forNavigation:navigation1_];
+  ASSERT_EQ(2U, [states_ pendingNavigations].count);
+  EXPECT_TRUE([[states_ pendingNavigations] containsObject:navigation2_]);
+  EXPECT_TRUE([[states_ pendingNavigations] containsObject:navigation3_]);
+
+  // Finish navigation_1.
+  [states_ setState:WKNavigationState::FINISHED forNavigation:navigation1_];
+  ASSERT_EQ(2U, [states_ pendingNavigations].count);
+  EXPECT_TRUE([[states_ pendingNavigations] containsObject:navigation2_]);
+  EXPECT_TRUE([[states_ pendingNavigations] containsObject:navigation3_]);
+
+  // Remove navigation_2.
+  [states_ removeNavigation:navigation2_];
+  ASSERT_EQ(1U, [states_ pendingNavigations].count);
+  EXPECT_TRUE([[states_ pendingNavigations] containsObject:navigation3_]);
+
+  // Fail navigation_3.
+  [states_ setState:WKNavigationState::FAILED forNavigation:navigation3_];
+  ASSERT_EQ(0U, [states_ pendingNavigations].count);
+}
+
 }  // namespace web
