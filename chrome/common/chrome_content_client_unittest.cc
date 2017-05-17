@@ -10,6 +10,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/test/scoped_command_line.h"
+#include "base/threading/platform_thread.h"
 #include "build/build_config.h"
 #include "content/public/common/content_switches.h"
 #include "extensions/common/constants.h"
@@ -177,6 +178,73 @@ TEST(ChromeContentClientTest, AdditionalSchemes) {
   url::Origin origin(extension_url);
   EXPECT_EQ("chrome-extension://abcdefghijklmnopqrstuvwxyzabcdef",
             origin.Serialize());
+}
+
+class OriginTrialInitializationTestThread
+    : public base::PlatformThread::Delegate {
+ public:
+  explicit OriginTrialInitializationTestThread(
+      ChromeContentClient* chrome_client)
+      : chrome_client_(chrome_client) {}
+
+  void ThreadMain() override { AccessPolicy(chrome_client_, &policy_objects_); }
+
+  // Static helper which can also be called from the main thread.
+  static void AccessPolicy(
+      ChromeContentClient* content_client,
+      std::vector<content::OriginTrialPolicy*>* policy_objects) {
+    // Repeatedly access the lazily-created origin trial policy
+    for (int i = 0; i < 20; i++) {
+      content::OriginTrialPolicy* policy =
+          content_client->GetOriginTrialPolicy();
+      policy_objects->push_back(policy);
+      base::PlatformThread::YieldCurrentThread();
+    }
+  }
+
+  const std::vector<content::OriginTrialPolicy*>* policy_objects() const {
+    return &policy_objects_;
+  }
+
+ private:
+  ChromeContentClient* chrome_client_;
+  std::vector<content::OriginTrialPolicy*> policy_objects_;
+
+  DISALLOW_COPY_AND_ASSIGN(OriginTrialInitializationTestThread);
+};
+
+// Test that the lazy initialization of Origin Trial policy is resistant to
+// races with concurrent access. Failures (especially flaky) indicate that the
+// race prevention is no longer sufficient.
+TEST(ChromeContentClientTest, OriginTrialPolicyConcurrentInitialization) {
+  ChromeContentClient content_client;
+  std::vector<content::OriginTrialPolicy*> policy_objects;
+  OriginTrialInitializationTestThread thread(&content_client);
+  base::PlatformThreadHandle handle;
+
+  ASSERT_TRUE(base::PlatformThread::Create(0, &thread, &handle));
+
+  // Repeatedly access the lazily-created origin trial policy
+  OriginTrialInitializationTestThread::AccessPolicy(&content_client,
+                                                    &policy_objects);
+
+  base::PlatformThread::Join(handle);
+
+  ASSERT_EQ(20UL, policy_objects.size());
+
+  content::OriginTrialPolicy* first_policy = policy_objects[0];
+
+  const std::vector<content::OriginTrialPolicy*>* all_policy_objects[] = {
+      &policy_objects, thread.policy_objects(),
+  };
+
+  for (const std::vector<content::OriginTrialPolicy*>* thread_policy_objects :
+       all_policy_objects) {
+    EXPECT_GE(20UL, thread_policy_objects->size());
+    for (content::OriginTrialPolicy* policy : *(thread_policy_objects)) {
+      EXPECT_EQ(first_policy, policy);
+    }
+  }
 }
 
 }  // namespace chrome_common
