@@ -56,23 +56,6 @@ class ResponseCallback : public payments::mojom::PaymentAppResponseCallback {
   mojo::Binding<payments::mojom::PaymentAppResponseCallback> binding_;
 };
 
-void DidGetAllManifestsOnIO(
-    const PaymentAppProvider::GetAllManifestsCallback& callback,
-    PaymentAppProvider::Manifests manifests) {
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::Bind(callback, base::Passed(std::move(manifests))));
-}
-
-void GetAllManifestsOnIO(
-    scoped_refptr<PaymentAppContextImpl> payment_app_context,
-    const PaymentAppProvider::GetAllManifestsCallback& callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-
-  payment_app_context->payment_app_database()->ReadAllManifests(
-      base::Bind(&DidGetAllManifestsOnIO, callback));
-}
-
 void DidGetAllPaymentAppsOnIO(
     PaymentAppProvider::GetAllPaymentAppsCallback callback,
     PaymentAppProvider::PaymentApps apps) {
@@ -163,21 +146,6 @@ PaymentAppProvider* PaymentAppProvider::GetInstance() {
 PaymentAppProviderImpl* PaymentAppProviderImpl::GetInstance() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   return base::Singleton<PaymentAppProviderImpl>::get();
-}
-
-void PaymentAppProviderImpl::GetAllManifests(
-    BrowserContext* browser_context,
-    const GetAllManifestsCallback& callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-  StoragePartitionImpl* partition = static_cast<StoragePartitionImpl*>(
-      BrowserContext::GetDefaultStoragePartition(browser_context));
-  scoped_refptr<PaymentAppContextImpl> payment_app_context =
-      partition->GetPaymentAppContext();
-
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      base::Bind(&GetAllManifestsOnIO, payment_app_context, callback));
 }
 
 void PaymentAppProviderImpl::GetAllPaymentApps(

@@ -39,25 +39,6 @@ void PaymentManager::Init(const std::string& scope) {
   scope_ = GURL(scope);
 }
 
-void PaymentManager::SetManifest(
-    payments::mojom::PaymentAppManifestPtr manifest,
-    SetManifestCallback callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-
-  // TODO(zino): Should implement requesting a permission for users to allow
-  // the payment app to be registered. Please see http://crbug.com/665949.
-
-  payment_app_context_->payment_app_database()->WriteManifest(
-      scope_, std::move(manifest), std::move(callback));
-}
-
-void PaymentManager::GetManifest(GetManifestCallback callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-
-  payment_app_context_->payment_app_database()->ReadManifest(
-      scope_, std::move(callback));
-}
-
 void PaymentManager::DeletePaymentInstrument(
     const std::string& instrument_key,
     PaymentManager::DeletePaymentInstrumentCallback callback) {

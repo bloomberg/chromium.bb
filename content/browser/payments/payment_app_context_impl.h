@@ -39,7 +39,7 @@ class ServiceWorkerContextWrapper;
 //   2) Init()
 //   3) Can now call other public methods in this class in any order.
 //     - Can call CreatePaymentManager() on UI thread.
-//     - Can call GetAllManifests() on UI thread.
+//     - Can call GetAllPaymentApps() on UI thread.
 //     - Can call PaymentManagerHadConnectionError() on IO thread.
 //     - Can call payment_app_database() on IO thread.
 //   4) Shutdown()

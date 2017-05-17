@@ -4703,8 +4703,6 @@ interface PaymentManager
     attribute @@toStringTag
     getter instruments
     method constructor
-    method getManifest
-    method setManifest
 interface PaymentRequest : EventTarget
     attribute @@toStringTag
     getter id

@@ -8,19 +8,6 @@ option optimize_for = LITE_RUNTIME;
 
 package content;
 
-message PaymentAppManifestProto {
-  optional string name = 1;
-  optional string icon = 2;
-  repeated PaymentAppOptionProto options = 3;
-}
-
-message PaymentAppOptionProto {
-  optional string name = 1;
-  optional string icon = 2;
-  optional string id = 3;
-  repeated string enabled_methods = 4;
-}
-
 message StoredPaymentInstrumentKeyInfoProto {
   optional uint64 insertion_order = 1;
   optional string key = 2;

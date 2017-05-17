@@ -32,25 +32,14 @@ class CONTENT_EXPORT PaymentAppProvider {
   // Please see: content/browser/payments/payment_app_provider_impl.cc
   static PaymentAppProvider* GetInstance();
 
-  // The ManifestWithID is a pair of the service worker registration id and
-  // the payment app manifest data associated with it.
-  using ManifestWithID =
-      std::pair<int64_t, payments::mojom::PaymentAppManifestPtr>;
-  using Manifests = std::vector<ManifestWithID>;
-
   using Instruments = std::vector<std::unique_ptr<StoredPaymentInstrument>>;
   using PaymentApps = std::map<GURL, Instruments>;
 
-  // TODO(zino): Consider to use base::OnceCallback instead of base::Callback.
-  // Please see: http://crbug.com/704193
-  using GetAllManifestsCallback = base::Callback<void(Manifests)>;
   using GetAllPaymentAppsCallback = base::OnceCallback<void(PaymentApps)>;
   using InvokePaymentAppCallback =
       base::Callback<void(payments::mojom::PaymentAppResponsePtr)>;
 
   // Should be accessed only on the UI thread.
-  virtual void GetAllManifests(BrowserContext* browser_context,
-                               const GetAllManifestsCallback& callback) = 0;
   virtual void GetAllPaymentApps(BrowserContext* browser_context,
                                  GetAllPaymentAppsCallback callback) = 0;
   virtual void InvokePaymentApp(

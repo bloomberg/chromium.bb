@@ -11,8 +11,5 @@
 
   test(function() {
       assert_own_property(self, 'PaymentManager', 'PaymentManager needs to be exposed as a global.');
-
-      assert_own_property(PaymentManager.prototype, 'setManifest');
-      assert_own_property(PaymentManager.prototype, 'getManifest');
   }, 'PaymentManager should be exposed and have the expected interface in a Document.');
 </script>
