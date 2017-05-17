@@ -10,9 +10,9 @@
 #include "ash/session/session_state_delegate.h"
 #include "ash/shell.h"
 #include "ash/shell_port.h"
-#include "ash/wm/maximize_mode/maximize_mode_backdrop_delegate_impl.h"
 #include "ash/wm/maximize_mode/maximize_mode_event_handler.h"
 #include "ash/wm/maximize_mode/maximize_mode_window_state.h"
+#include "ash/wm/maximize_mode/workspace_backdrop_delegate.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/overview/window_selector_controller.h"
 #include "ash/wm/window_state.h"
@@ -82,10 +82,20 @@ void MaximizeModeWindowManager::WindowStateDestroyed(WmWindow* window) {
 }
 
 void MaximizeModeWindowManager::OnOverviewModeStarting() {
+  if (backdrops_hidden_)
+    return;
+
+  EnableBackdropBehindTopWindowOnEachDisplay(false);
   SetDeferBoundsUpdates(true);
+  backdrops_hidden_ = true;
 }
 
 void MaximizeModeWindowManager::OnOverviewModeEnded() {
+  if (!backdrops_hidden_)
+    return;
+
+  backdrops_hidden_ = false;
+  EnableBackdropBehindTopWindowOnEachDisplay(true);
   SetDeferBoundsUpdates(false);
 }
 
@@ -192,7 +202,8 @@ void MaximizeModeWindowManager::SetIgnoreWmEventsForExit() {
   }
 }
 
-MaximizeModeWindowManager::MaximizeModeWindowManager() {
+MaximizeModeWindowManager::MaximizeModeWindowManager()
+    : backdrops_hidden_(false) {
   // The overview mode needs to be ended before the maximize mode is started. To
   // guarantee the proper order, it will be turned off from here.
   CancelOverview();
@@ -299,12 +310,17 @@ bool MaximizeModeWindowManager::IsContainerWindow(aura::Window* window) {
 
 void MaximizeModeWindowManager::EnableBackdropBehindTopWindowOnEachDisplay(
     bool enable) {
+  if (backdrops_hidden_)
+    return;
+
   // Inform the WorkspaceLayoutManager that we want to show a backdrop behind
   // the topmost window of its container.
   for (WmWindow* root : ShellPort::Get()->GetAllRootWindows()) {
     RootWindowController* controller = root->GetRootWindowController();
-    controller->workspace_controller()->SetBackdropDelegate(
-        enable ? base::MakeUnique<MaximizeModeBackdropDelegateImpl>()
+    WmWindow* default_container =
+        root->GetChildByShellWindowId(kShellWindowId_DefaultContainer);
+    controller->workspace_controller()->SetMaximizeBackdropDelegate(
+        enable ? base::MakeUnique<WorkspaceBackdropDelegate>(default_container)
                : nullptr);
   }
 }

@@ -22,7 +22,6 @@ class ASH_EXPORT WorkspaceControllerTestApi {
 
   WorkspaceEventHandler* GetEventHandler();
   MultiWindowResizeController* GetMultiWindowResizeController();
-  aura::Window* GetBackdropWindow();
 
  private:
   WorkspaceController* controller_;
