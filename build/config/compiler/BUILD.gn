@@ -470,6 +470,8 @@ config("compiler") {
   # TODO(pcc): Make this conditional on is_official_build rather than on gn
   # flags for specific features.
   if (!is_debug && (allow_posix_link_time_opt || is_cfi) && !is_nacl) {
+    assert(use_lld, "POSIX LTO requires LLD")
+
     if (use_thin_lto) {
       cflags += [ "-flto=thin" ]
       ldflags += [ "-flto=thin" ]
@@ -477,15 +479,11 @@ config("compiler") {
       # Limit the parallelism to avoid too agressive competition between
       # linker jobs. This is still suboptimal to a potential dynamic
       # resource allocation scheme, but should be good enough.
-      if (use_lld) {
-        ldflags += [
-          "-Wl,--thinlto-jobs=8",
-          "-Wl,--thinlto-cache-dir=" +
-              rebase_path("$root_out_dir/thinlto-cache", root_build_dir),
-        ]
-      } else {
-        ldflags += [ "-Wl,-plugin-opt,jobs=8" ]
-      }
+      ldflags += [
+        "-Wl,--thinlto-jobs=8",
+        "-Wl,--thinlto-cache-dir=" +
+            rebase_path("$root_out_dir/thinlto-cache", root_build_dir),
+      ]
     } else {
       # Note: ThinLTO does not currently have this feature implemented
       # For Full LTO, it provides a measurable runtime speedup of Chrome.
@@ -500,11 +498,7 @@ config("compiler") {
 
       # Apply a lower LTO optimization level as the default is too slow.
       if (is_linux) {
-        if (use_lld) {
-          ldflags += [ "-Wl,--lto-O1" ]
-        } else {
-          ldflags += [ "-Wl,-plugin-opt,O1" ]
-        }
+        ldflags += [ "-Wl,--lto-O1" ]
       } else if (is_mac) {
         ldflags += [ "-Wl,-mllvm,-O1" ]
       }
@@ -520,17 +514,10 @@ config("compiler") {
     # that is larger than the maximum call displacement, preventing the linker
     # from relocating calls (http://llvm.org/PR22999).
     if (is_linux) {
-      if (use_lld) {
-        ldflags += [
-          "-Wl,-mllvm,-function-sections",
-          "-Wl,-mllvm,-data-sections",
-        ]
-      } else {
-        ldflags += [
-          "-Wl,-plugin-opt,-function-sections",
-          "-Wl,-plugin-opt,-data-sections",
-        ]
-      }
+      ldflags += [
+        "-Wl,-mllvm,-function-sections",
+        "-Wl,-mllvm,-data-sections",
+      ]
     }
   }
 
