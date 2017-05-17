@@ -134,6 +134,21 @@ cursors.Cursor.prototype = {
   },
 
   /**
+   * Compares this cursor with |rhs|.
+   * @param {cursors.Cursor} rhs
+   * @return Dir.BACKWARD if |rhs| comes before this cursor in
+   * document order. Forward otherwise.
+   */
+  compare: function(rhs) {
+    if (!this.node || !rhs.node)
+      return Dir.FORWARD;
+
+    if (rhs.node == this.node)
+      return rhs.index < this.index ? Dir.BACKWARD : Dir.FORWARD;
+    return AutomationUtil.getDirection(this.node, rhs.node);
+  },
+
+  /**
    * Returns the node. If the node is invalid since the last time it
    * was accessed, moves the cursor to the nearest valid ancestor first.
    * @return {AutomationNode}
@@ -364,7 +379,10 @@ cursors.Cursor.prototype = {
         }
         break;
       case Unit.LINE:
-        newIndex = 0;
+        var deepEquivalent = this.deepEquivalent;
+        newNode = deepEquivalent.node || newNode;
+        newIndex = deepEquivalent.index || 0;
+
         switch (movement) {
           case Movement.BOUND:
             newNode = AutomationUtil.findNodeUntil(newNode, dir,
@@ -384,6 +402,44 @@ cursors.Cursor.prototype = {
     }
     newNode = newNode || originalNode;
     newIndex = goog.isDef(newIndex) ? newIndex : this.index_;
+    return new cursors.Cursor(newNode, newIndex);
+  },
+
+  /**
+   * Returns the deepest equivalent cursor.
+   * @return {cursors.Cursor}
+   */
+  get deepEquivalent() {
+    var newNode = this.node;
+    var newIndex = this.index_;
+    while (newNode.firstChild) {
+      if (newNode.role == RoleType.STATIC_TEXT) {
+        // Text offset.
+        // Re-interpret the index as an offset into an inlineTextBox.
+        var target = newNode.firstChild;
+        var length = 0;
+        while (target && length < newIndex) {
+          if (length <= newIndex && newIndex < (length + target.name.length))
+            break;
+          length += target.name.length;
+          target = target.nextSibling;
+        }
+        if (target) {
+          newNode = target;
+          newIndex = newIndex - length;
+        }
+        break;
+      } else if (newNode.role != RoleType.INLINE_TEXT_BOX &&
+          newNode.children[newIndex]) {
+        // Valid node offset.
+        newNode = newNode.children[newIndex];
+        newIndex = 0;
+      } else {
+        // Invalid offset.
+        break;
+      }
+    }
+
     return new cursors.Cursor(newNode, newIndex);
   },
 

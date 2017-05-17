@@ -22,7 +22,7 @@ goog.scope(function() {
 var AutomationEvent = chrome.automation.AutomationEvent;
 var AutomationNode = chrome.automation.AutomationNode;
 var Cursor = cursors.Cursor;
-var Dir = AutomationUtil.Dir;
+var Dir = constants.Dir;
 var EventType = chrome.automation.EventType;
 var Range = cursors.Range;
 var RoleType = chrome.automation.RoleType;
@@ -40,6 +40,12 @@ editing.TextEditHandler = function(node) {
   /** @const {!AutomationNode} @private */
   this.node_ = node;
 };
+
+/**
+ * Flag set to indicate whether ChromeVox uses experimental rich text support.
+ * @type {boolean}
+ */
+editing.useRichText = false;
 
 editing.TextEditHandler.prototype = {
   /** @return {!AutomationNode} */
@@ -66,8 +72,15 @@ editing.TextEditHandler.prototype = {
  */
 function TextFieldTextEditHandler(node) {
   editing.TextEditHandler.call(this, node);
-  /** @type {AutomationEditableText} @private */
-  this.editableText_ = new AutomationEditableText(node);
+
+  chrome.automation.getDesktop(function(desktop) {
+    var useRichText = editing.useRichText &&
+        node.state.richlyEditable;
+
+    /** @private {!AutomationEditableText} */
+    this.editableText_ = useRichText ?
+        new AutomationRichEditableText(node) : new AutomationEditableText(node);
+  }.bind(this));
 }
 
 TextFieldTextEditHandler.prototype = {
@@ -196,6 +209,138 @@ AutomationEditableText.prototype = {
     if (isFirstLine)
       output.formatForBraille('@tag_textarea');
     output.go();
+  }
+};
+
+
+/**
+ * A |ChromeVoxEditableTextBase| that implements text editing feedback
+ * for automation tree text fields using anchor and focus selection.
+ * @constructor
+ * @param {!AutomationNode} node
+ * @extends {AutomationEditableText}
+ */
+function AutomationRichEditableText(node) {
+  AutomationEditableText.call(this, node);
+
+  var root = this.node_.root;
+  if (!root || !root.anchorObject || !root.focusObject)
+    return;
+
+  this.range = new cursors.Range(
+      new cursors.Cursor(root.anchorObject, root.anchorOffset || 0),
+      new cursors.Cursor(root.focusObject, root.focusOffset || 0));
+}
+
+AutomationRichEditableText.prototype = {
+  __proto__: AutomationEditableText.prototype,
+
+  /** @override */
+  onUpdate: function() {
+    var root = this.node_.root;
+    if (!root.anchorObject || !root.focusObject)
+      return;
+
+    var cur = new cursors.Range(
+        new cursors.Cursor(root.anchorObject, root.anchorOffset || 0),
+        new cursors.Cursor(root.focusObject, root.focusOffset || 0));
+    var prev = this.range;
+
+    this.range = cur;
+
+    if (prev.start.node == cur.start.node &&
+        prev.end.node == cur.end.node &&
+        cur.start.node == cur.end.node) {
+      // Plain text: diff the two positions.
+      this.changed(new cvox.TextChangeEvent(
+          root.anchorObject.name || '',
+          root.anchorOffset || 0,
+          root.focusOffset || 0,
+          true));
+
+      var lineIndex = this.getLineIndex(this.start);
+      var brailleLineStart = this.getLineStart(lineIndex);
+      var brailleLineEnd = this.getLineEnd(lineIndex);
+      var buff = new Spannable(this.value);
+      buff.setSpan(new cvox.ValueSpan(0), brailleLineStart, brailleLineEnd);
+
+      var selStart = this.start - brailleLineStart;
+      var selEnd = this.end - brailleLineStart;
+      buff.setSpan(new cvox.ValueSelectionSpan(), selStart, selEnd);
+      cvox.ChromeVox.braille.write(new cvox.NavBraille({text: buff,
+          startIndex: selStart,
+          endIndex: selEnd}));
+      return;
+    } else {
+      // Rich text:
+      // If the position is collapsed, expand to the current line.
+      var start = cur.start;
+      var end = cur.end;
+      if (start.equals(end)) {
+        start = start.move(Unit.LINE, Movement.BOUND, Dir.BACKWARD);
+        end = end.move(Unit.LINE, Movement.BOUND, Dir.FORWARD);
+      }
+      var range = new cursors.Range(start, end);
+      var output = new Output().withRichSpeechAndBraille(
+          range, prev, Output.EventType.NAVIGATE);
+
+      // This position is not describable.
+      if (!output.hasSpeech) {
+        cvox.ChromeVox.tts.speak('blank', cvox.QueueMode.CATEGORY_FLUSH);
+        cvox.ChromeVox.braille.write(
+            new cvox.NavBraille({text: '', startIndex: 0, endIndex: 0}));
+      } else {
+        output.go();
+      }
+    }
+
+    // Keep the other members in sync for any future editable text base state
+    // machine changes.
+    this.value = cur.start.node.name || '';
+    this.start = cur.start.index;
+    this.end = cur.start.index;
+  },
+
+  /** @override */
+  describeSelectionChanged: function(evt) {
+    // Ignore end of text announcements.
+    if ((this.start + 1) == evt.start && evt.start == this.value.length)
+      return;
+
+    cvox.ChromeVoxEditableTextBase.prototype.describeSelectionChanged.call(
+        this, evt);
+  },
+
+  /** @override */
+  getLineIndex: function(charIndex) {
+    var breaks = this.getLineBreaks_();
+    var index = 0;
+    while (index < breaks.length && breaks[index] <= charIndex)
+      ++index;
+    return index;
+  },
+
+  /** @override */
+  getLineStart: function(lineIndex) {
+    if (lineIndex == 0)
+      return 0;
+    var breaks = this.getLineBreaks_();
+    return breaks[lineIndex - 1] ||
+        this.node_.root.focusObject.value.length;
+  },
+
+  /** @override */
+  getLineEnd: function(lineIndex) {
+    var breaks = this.getLineBreaks_();
+    var value = this.node_.root.focusObject.name;
+    if (lineIndex >= breaks.length)
+      return value.length;
+    return breaks[lineIndex];
+  },
+
+  /** @override */
+  getLineBreaks_: function() {
+    return this.node_.root.focusObject.lineStartOffsets || [];
   }
 };
 

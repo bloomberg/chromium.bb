@@ -211,3 +211,49 @@ TEST_F('EditingTest', 'SingleCharacterLine', function() {
       {start: 9, end: 17, text: 'can test'},
     ]);
 });
+
+TEST_F('EditingTest', 'RichTextMoveByLine', function() {
+  editing.useRichText = true;
+  var mockFeedback = this.createMockFeedback();
+  this.runWithLoadedTree(function() {/*!
+    <div id="go" role="textbox" contenteditable>
+      <h2>hello</h2>
+      <div><br></div>
+      <p>This is a <a href="#test">test</a> of rich text</p>
+    </div>
+    <script>
+      var dir = 'forward';
+      var line = 0;
+      document.getElementById('go').addEventListener('click', function() {
+        var sel = getSelection();
+        sel.modify('move', dir, 'line');
+        if (dir == 'forward')
+          line++;
+        else
+          line--;
+
+        if (line == 0)
+          dir = 'forward';
+        if (line == 2)
+          dir = 'backward';
+      }, true);
+    </script>
+  */}, function(root) {
+    var input = root.find({role: RoleType.TEXT_FIELD});
+    var moveByLine = input.doDefault.bind(input);
+    mockFeedback.call(input.focus.bind(input))
+        .call(moveByLine)
+        .expectSpeech('blank')
+        .expectBraille('')
+        .call(moveByLine)
+        .expectSpeech('This is a ', 'test', 'Link', ' of rich text')
+        .expectBraille('This is a test lnk of rich text')
+        .call(moveByLine)
+        .expectSpeech('blank')
+        .expectBraille('')
+        .call(moveByLine)
+        .expectSpeech('hello', 'Heading 2')
+        .expectBraille('hello h2')
+        .replay();
+  });
+});
