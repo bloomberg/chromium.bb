@@ -15,6 +15,14 @@ static const int kTimeLimitMillis = 2000;
 static const int kWarmupRuns = 5;
 static const int kTimeCheckInterval = 10;
 
+template <typename Container>
+size_t Accumulate(const Container& container) {
+  size_t result = 0;
+  for (size_t index : container)
+    result += index;
+  return result;
+}
+
 class RTreePerfTest : public testing::Test {
  public:
   RTreePerfTest()
@@ -50,7 +58,7 @@ class RTreePerfTest : public testing::Test {
 
     timer_.Reset();
     do {
-      rtree.Search(queries[query_index]);
+      Accumulate(rtree.Search(queries[query_index]));
       query_index = (query_index + 1) % queries.size();
       timer_.NextLap();
     } while (!timer_.HasTimeLimitExpired());
