@@ -4522,7 +4522,12 @@ registerLoadRequestForURL:(const GURL&)requestURL
          (!_lastRegisteredRequestURL.is_valid() &&     // invalid URL load
           _documentURL.spec() == url::kAboutBlankURL));
 
-  self.webStateImpl->UpdateHttpResponseHeaders(_documentURL);
+  // Update HTTP response headers.
+  _webStateImpl->UpdateHttpResponseHeaders(_documentURL);
+  web::NavigationContextImpl* context =
+      [_navigationStates contextForNavigation:navigation];
+  context->SetResponseHeaders(_webStateImpl->GetHttpResponseHeaders());
+
   [self commitPendingNavigationInfo];
   if ([self currentBackForwardListItemHolder]->navigation_type() ==
       WKNavigationTypeBackForward) {
@@ -4565,9 +4570,6 @@ registerLoadRequestForURL:(const GURL&)requestURL
     }
   }
 
-  web::NavigationContextImpl* context =
-      [_navigationStates contextForNavigation:navigation];
-  context->SetResponseHeaders(_webStateImpl->GetHttpResponseHeaders());
   self.webStateImpl->OnNavigationFinished(context);
 
   [self updateSSLStatusForCurrentNavigationItem];
