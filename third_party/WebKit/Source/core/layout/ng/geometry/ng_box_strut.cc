@@ -53,4 +53,9 @@ std::ostream& operator<<(std::ostream& stream, const NGBoxStrut& value) {
   return stream << value.ToString();
 }
 
+NGPixelSnappedPhysicalBoxStrut NGPhysicalBoxStrut::SnapToDevicePixels() const {
+  return NGPixelSnappedPhysicalBoxStrut(top.Round(), right.Round(),
+                                        bottom.Round(), left.Round());
+}
+
 }  // namespace blink

@@ -14,7 +14,7 @@ namespace {
 // this has not been implemented yet.
 TEST(NGGeometryUnitsTest, ConvertPhysicalStrutToLogical) {
   LayoutUnit left{5}, right{10}, top{15}, bottom{20};
-  NGPhysicalBoxStrut physical{left, right, top, bottom};
+  NGPhysicalBoxStrut physical{top, right, bottom, left};
 
   NGBoxStrut logical =
       physical.ConvertToLogical(kHorizontalTopBottom, TextDirection::kLtr);
