@@ -368,4 +368,16 @@ function (setup_aom_test_targets)
   endforeach ()
   add_custom_target(runtests)
   add_dependencies(runtests ${test_targets})
+
+  if (MSVC)
+    set_target_properties(${testdata_targets} PROPERTIES
+                          EXCLUDE_FROM_ALL TRUE
+                          EXCLUDE_FROM_DEFAULT_BUILD TRUE)
+    set_target_properties(${test_targets} PROPERTIES
+                          EXCLUDE_FROM_ALL TRUE
+                          EXCLUDE_FROM_DEFAULT_BUILD TRUE)
+    set_target_properties(testdata runtests PROPERTIES
+                          EXCLUDE_FROM_ALL TRUE
+                          EXCLUDE_FROM_DEFAULT_BUILD TRUE)
+  endif ()
 endfunction ()
