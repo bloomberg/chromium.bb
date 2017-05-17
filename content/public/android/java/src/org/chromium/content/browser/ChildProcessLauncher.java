@@ -11,18 +11,13 @@ import android.os.IBinder;
 import android.os.RemoteException;
 import android.text.TextUtils;
 
-import org.chromium.base.CpuFeatures;
 import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.SuppressFBWarnings;
-import org.chromium.base.library_loader.Linker;
 import org.chromium.base.process_launcher.ChildProcessCreationParams;
-import org.chromium.base.process_launcher.FileDescriptorInfo;
-import org.chromium.content.app.ChromiumLinkerParams;
 import org.chromium.content.app.SandboxedProcessService;
-import org.chromium.content.common.ContentSwitches;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -113,8 +108,7 @@ public class ChildProcessLauncher {
     }
 
     @VisibleForTesting
-    static ChildProcessConnection allocateConnection(
-            ChildSpawnData spawnData, Bundle childProcessCommonParams, boolean forWarmUp) {
+    static ChildProcessConnection allocateConnection(ChildSpawnData spawnData, boolean forWarmUp) {
         assert LauncherThread.runningOnLauncherThread();
         ChildProcessConnection.DeathCallback deathCallback =
                 new ChildProcessConnection.DeathCallback() {
@@ -136,49 +130,9 @@ public class ChildProcessLauncher {
         ChildConnectionAllocator allocator =
                 getConnectionAllocator(context, packageName, inSandbox);
         ChildProcessConnection connection =
-                allocator.allocate(spawnData, deathCallback, childProcessCommonParams, !forWarmUp);
+                allocator.allocate(spawnData, deathCallback, !forWarmUp);
         sConnectionsToAllocatorMap.put(connection, allocator);
         return connection;
-    }
-
-    private static boolean sLinkerInitialized;
-    private static long sLinkerLoadAddress;
-
-    private static ChromiumLinkerParams getLinkerParamsForNewConnection() {
-        if (!sLinkerInitialized) {
-            if (Linker.isUsed()) {
-                sLinkerLoadAddress = Linker.getInstance().getBaseLoadAddress();
-                if (sLinkerLoadAddress == 0) {
-                    Log.i(TAG, "Shared RELRO support disabled!");
-                }
-            }
-            sLinkerInitialized = true;
-        }
-
-        if (sLinkerLoadAddress == 0) return null;
-
-        // Always wait for the shared RELROs in service processes.
-        final boolean waitForSharedRelros = true;
-        if (Linker.areTestsEnabled()) {
-            Linker linker = Linker.getInstance();
-            return new ChromiumLinkerParams(sLinkerLoadAddress,
-                                            waitForSharedRelros,
-                                            linker.getTestRunnerClassNameForTesting(),
-                                            linker.getImplementationForTesting());
-        } else {
-            return new ChromiumLinkerParams(sLinkerLoadAddress,
-                                            waitForSharedRelros);
-        }
-    }
-
-    @VisibleForTesting
-    static Bundle createCommonParamsBundle(ChildProcessCreationParams params) {
-        Bundle commonParams = new Bundle();
-        commonParams.putParcelable(
-                ChildProcessConstants.EXTRA_LINKER_PARAMS, getLinkerParamsForNewConnection());
-        final boolean bindToCallerCheck = params == null ? false : params.getBindToCallerCheck();
-        commonParams.putBoolean(ChildProcessConstants.EXTRA_BIND_TO_CALLER, bindToCallerCheck);
-        return commonParams;
     }
 
     @VisibleForTesting
@@ -189,8 +143,7 @@ public class ChildProcessLauncher {
         final boolean inSandbox = spawnData.isInSandbox();
         final ChildProcessCreationParams creationParams = spawnData.getCreationParams();
 
-        ChildProcessConnection connection = allocateConnection(
-                spawnData, createCommonParamsBundle(spawnData.getCreationParams()), forWarmUp);
+        ChildProcessConnection connection = allocateConnection(spawnData, forWarmUp);
         if (connection != null) {
             // Non sandboxed processes are privileged processes that should be strongly bound.
             boolean useStrongBinding = !inSandbox;
@@ -232,8 +185,8 @@ public class ChildProcessLauncher {
                     LauncherThread.post(new Runnable() {
                         @Override
                         public void run() {
-                            startInternal(pendingSpawn.getContext(), pendingSpawn.getCommandLine(),
-                                    pendingSpawn.getFilesToBeMapped(),
+                            start(pendingSpawn.getContext(), pendingSpawn.getServiceBundle(),
+                                    pendingSpawn.getConnectionBundle(),
                                     pendingSpawn.getLaunchCallback(),
                                     pendingSpawn.getChildProcessCallback(),
                                     pendingSpawn.isInSandbox(), pendingSpawn.isAlwaysInForeground(),
@@ -378,8 +331,10 @@ public class ChildProcessLauncher {
                                 clearSpareConnection();
                             }
                         };
-                ChildSpawnData spawnData = new ChildSpawnData(context, null /* commandLine */,
-                        null /* filesToBeMapped */, null /* launchCallback */,
+                boolean bindToCallerCheck = params == null ? false : params.getBindToCallerCheck();
+                ChildSpawnData spawnData = new ChildSpawnData(context,
+                        ChildProcessLauncherHelper.createServiceBundle(bindToCallerCheck),
+                        null /* connectionBundle */, null /* launchCallback */,
                         null /* child process callback */, true /* inSandbox */,
                         SPARE_CONNECTION_ALWAYS_IN_FOREGROUND, params);
                 sSpareSandboxedConnection =
@@ -402,61 +357,19 @@ public class ChildProcessLauncher {
      *
      * @param context Context used to obtain the application context.
      * @param paramId Key used to retrieve ChildProcessCreationParams.
-     * @param commandLine The child process command line argv.
-     * @param filesToBeMapped File IDs, FDs, offsets, and lengths to pass through.
+     * @param serviceBundle The Bundle passed in the intent used to bind to the service.
+     * @param connectionBundle The Bundle passed in setupConnection call.
      * @param launchCallback Callback invoked when the connection is established.
+     * @param childProcessCallback IBinder callback passed to the service.
      */
-    static void start(Context context, int paramId, final String[] commandLine,
-            FileDescriptorInfo[] filesToBeMapped, LaunchCallback launchCallback) {
-        assert LauncherThread.runningOnLauncherThread();
-        IBinder childProcessCallback = null;
-        boolean inSandbox = true;
-        boolean alwaysInForeground = false;
-        String processType =
-                ContentSwitches.getSwitchValue(commandLine, ContentSwitches.SWITCH_PROCESS_TYPE);
-        ChildProcessCreationParams params = ChildProcessCreationParams.get(paramId);
-        if (paramId != ChildProcessCreationParams.DEFAULT_ID && params == null) {
-            throw new RuntimeException("CreationParams id " + paramId + " not found");
-        }
-        if (!ContentSwitches.SWITCH_RENDERER_PROCESS.equals(processType)) {
-            if (params != null && !params.getPackageName().equals(context.getPackageName())) {
-                // WebViews and WebAPKs have renderer processes running in their applications.
-                // When launching these renderer processes, {@link ChildProcessConnection}
-                // requires the package name of the application which holds the renderer process.
-                // Therefore, the package name in ChildProcessCreationParams could be the package
-                // name of WebViews, WebAPKs, or Chrome, depending on the host application.
-                // Except renderer process, all other child processes should use Chrome's package
-                // name. In WebAPK, ChildProcessCreationParams are initialized with WebAPK's
-                // package name. Make a copy of the WebAPK's params, but replace the package with
-                // Chrome's package to use when initializing a non-renderer processes.
-                // TODO(boliu): Should fold into |paramId|. Investigate why this is needed.
-                params = new ChildProcessCreationParams(context.getPackageName(),
-                        params.getIsExternalService(), params.getLibraryProcessType(),
-                        params.getBindToCallerCheck());
-            }
-            if (ContentSwitches.SWITCH_GPU_PROCESS.equals(processType)) {
-                childProcessCallback = new GpuProcessCallback();
-                inSandbox = false;
-                alwaysInForeground = true;
-            } else {
-                // We only support sandboxed utility processes now.
-                assert ContentSwitches.SWITCH_UTILITY_PROCESS.equals(processType);
-            }
-        }
-
-        startInternal(context, commandLine, filesToBeMapped, launchCallback, childProcessCallback,
-                inSandbox, alwaysInForeground, params);
-    }
-
     @VisibleForTesting
-    public static ChildProcessConnection startInternal(final Context context,
-            final String[] commandLine, final FileDescriptorInfo[] filesToBeMapped,
-            final LaunchCallback launchCallback, final IBinder childProcessCallback,
-            final boolean inSandbox, final boolean alwaysInForeground,
-            final ChildProcessCreationParams creationParams) {
+    public static boolean start(final Context context, final Bundle serviceBundle,
+            final Bundle connectionBundle, final LaunchCallback launchCallback,
+            final IBinder childProcessCallback, final boolean inSandbox,
+            final boolean alwaysInForeground, final ChildProcessCreationParams creationParams) {
         assert LauncherThread.runningOnLauncherThread();
         try {
-            TraceEvent.begin("ChildProcessLauncher.startInternal");
+            TraceEvent.begin("ChildProcessLauncher.start");
 
             ChildProcessConnection allocatedConnection = null;
             String packageName = creationParams != null ? creationParams.getPackageName()
@@ -478,9 +391,9 @@ public class ChildProcessLauncher {
                                     // than one process), so try starting the process again.
                                     // This connection that failed to start has not been freed,
                                     // so a new bound connection will be allocated.
-                                    startInternal(context, commandLine, filesToBeMapped,
-                                            launchCallback, childProcessCallback, inSandbox,
-                                            alwaysInForeground, creationParams);
+                                    start(context, serviceBundle, connectionBundle, launchCallback,
+                                            childProcessCallback, inSandbox, alwaysInForeground,
+                                            creationParams);
                                 }
                             });
                         }
@@ -501,47 +414,28 @@ public class ChildProcessLauncher {
                 }
             }
             if (allocatedConnection == null) {
-                ChildSpawnData spawnData = new ChildSpawnData(context, commandLine, filesToBeMapped,
-                        launchCallback, childProcessCallback, inSandbox, alwaysInForeground,
-                        creationParams);
+                ChildSpawnData spawnData = new ChildSpawnData(context, serviceBundle,
+                        connectionBundle, launchCallback, childProcessCallback, inSandbox,
+                        alwaysInForeground, creationParams);
                 allocatedConnection =
                         allocateBoundConnection(spawnData, startCallback, false /* forWarmUp */);
                 if (allocatedConnection == null) {
-                    return null;
+                    return false;
                 }
             }
-
             boolean addToBindingmanager = inSandbox;
-            triggerConnectionSetup(allocatedConnection, commandLine, filesToBeMapped,
-                    childProcessCallback, launchCallback, addToBindingmanager);
-            return allocatedConnection;
+            triggerConnectionSetup(allocatedConnection, connectionBundle, childProcessCallback,
+                    launchCallback, addToBindingmanager);
+            return true;
         } finally {
-            TraceEvent.end("ChildProcessLauncher.startInternal");
+            TraceEvent.end("ChildProcessLauncher.start");
         }
-    }
-
-    /**
-     * Create the common bundle to be passed to child processes.
-     * @param context Application context.
-     * @param commandLine Command line params to be passed to the service.
-     * @param linkerParams Linker params to start the service.
-     */
-    protected static Bundle createsServiceBundle(
-            String[] commandLine, FileDescriptorInfo[] filesToBeMapped) {
-        Bundle bundle = new Bundle();
-        bundle.putStringArray(ChildProcessConstants.EXTRA_COMMAND_LINE, commandLine);
-        bundle.putParcelableArray(ChildProcessConstants.EXTRA_FILES, filesToBeMapped);
-        bundle.putInt(ChildProcessConstants.EXTRA_CPU_COUNT, CpuFeatures.getCount());
-        bundle.putLong(ChildProcessConstants.EXTRA_CPU_FEATURES, CpuFeatures.getMask());
-        bundle.putBundle(Linker.EXTRA_LINKER_SHARED_RELROS, Linker.getInstance().getSharedRelros());
-        return bundle;
     }
 
     @VisibleForTesting
     static void triggerConnectionSetup(final ChildProcessConnection connection,
-            String[] commandLine, FileDescriptorInfo[] filesToBeMapped,
-            final IBinder childProcessCallback, final LaunchCallback launchCallback,
-            final boolean addToBindingmanager) {
+            Bundle connectionBundle, final IBinder childProcessCallback,
+            final LaunchCallback launchCallback, final boolean addToBindingmanager) {
         assert LauncherThread.runningOnLauncherThread();
         Log.d(TAG, "Setting up connection to process, connection name=%s",
                 connection.getServiceName());
@@ -567,8 +461,7 @@ public class ChildProcessLauncher {
                     }
                 };
 
-        connection.setupConnection(
-                commandLine, filesToBeMapped, childProcessCallback, connectionCallback);
+        connection.setupConnection(connectionBundle, childProcessCallback, connectionCallback);
     }
 
     /**

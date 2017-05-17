@@ -10,7 +10,7 @@ import org.chromium.base.process_launcher.ChildProcessCreationParams;
 import org.chromium.base.process_launcher.FileDescriptorInfo;
 import org.chromium.base.process_launcher.IChildProcessService;
 import org.chromium.content.browser.ChildProcessConnection;
-import org.chromium.content.browser.ChildProcessLauncher;
+import org.chromium.content.browser.ChildProcessLauncherHelper;
 import org.chromium.content.browser.LauncherThread;
 
 import java.util.concurrent.Callable;
@@ -55,15 +55,25 @@ public final class ChildProcessLauncherTestUtils {
         }
     }
 
-    public static ChildProcessConnection startInternalForTesting(final Context context,
-            final String[] commandLine, final FileDescriptorInfo[] filesToMap,
+    public static ChildProcessLauncherHelper startForTesting(final Context context,
+            final String[] commandLine, final FileDescriptorInfo[] filesToBeMapped,
             final ChildProcessCreationParams params) {
+        return runOnLauncherAndGetResult(new Callable<ChildProcessLauncherHelper>() {
+            @Override
+            public ChildProcessLauncherHelper call() {
+                return ChildProcessLauncherHelper.createAndStartForTesting(0L /* nativePointer */,
+                        commandLine, filesToBeMapped, params, true /* inSandbox */,
+                        false /* alwaysInForeground */);
+            }
+        });
+    }
+
+    public static ChildProcessConnection getConnection(
+            final ChildProcessLauncherHelper childProcessLauncher) {
         return runOnLauncherAndGetResult(new Callable<ChildProcessConnection>() {
             @Override
             public ChildProcessConnection call() {
-                return ChildProcessLauncher.startInternal(context, commandLine, filesToMap,
-                        null /* launchCallback */, null /* childProcessCallback */,
-                        true /* inSandbox */, false /* alwaysInForeground */, params);
+                return childProcessLauncher.getChildProcessConnection();
             }
         });
     }
