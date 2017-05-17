@@ -410,7 +410,8 @@ TEST_F(DedicatedWorkerTest, PendingActivity_SetIntervalOnMessageEvent) {
   EXPECT_FALSE(WorkerMessagingProxy()->HasPendingActivity());
 }
 
-TEST_F(DedicatedWorkerTest, UseCounter) {
+// Test is flaky. crbug.com/699712
+TEST_F(DedicatedWorkerTest, DISABLED_UseCounter) {
   const String source_code = "// Do nothing";
   WorkerMessagingProxy()->StartWithSourceCode(source_code);
 
