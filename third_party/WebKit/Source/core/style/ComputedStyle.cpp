@@ -1435,19 +1435,6 @@ void ComputedStyle::SetVisitedLinkColor(const Color& v) {
   SET_VAR(inherited_data_, visited_link_color_, v);
 }
 
-short ComputedStyle::HorizontalBorderSpacing() const {
-  return inherited_data_->horizontal_border_spacing_;
-}
-short ComputedStyle::VerticalBorderSpacing() const {
-  return inherited_data_->vertical_border_spacing_;
-}
-void ComputedStyle::SetHorizontalBorderSpacing(short v) {
-  SET_VAR(inherited_data_, horizontal_border_spacing_, v);
-}
-void ComputedStyle::SetVerticalBorderSpacing(short v) {
-  SET_VAR(inherited_data_, vertical_border_spacing_, v);
-}
-
 FloatRoundedRect ComputedStyle::GetRoundedBorderFor(
     const LayoutRect& border_rect,
     bool include_logical_left_edge,

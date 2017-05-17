@@ -1672,17 +1672,6 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase<ComputedStyle>,
 
   // Inherited properties.
 
-  // Border-spacing properties.
-  // -webkit-border-horizontal-spacing
-  static short InitialHorizontalBorderSpacing() { return 0; }
-  short HorizontalBorderSpacing() const;
-  void SetHorizontalBorderSpacing(short);
-
-  // -webkit-border-vertical-spacing
-  static short InitialVerticalBorderSpacing() { return 0; }
-  short VerticalBorderSpacing() const;
-  void SetVerticalBorderSpacing(short);
-
   // color
   static Color InitialColor() { return Color::kBlack; }
   void SetColor(const Color&);
