@@ -483,7 +483,7 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase<ComputedStyle>,
            kBorderWidthDenominator;
   }
   void SetBorderTopWidth(float v) {
-    surround_data_.Access()->border_top_width_ = WidthToFixedPoint(v);
+    SetBorderTopWidthInternal(WidthToFixedPoint(v));
   }
 
   // border-bottom-width
@@ -495,7 +495,7 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase<ComputedStyle>,
            kBorderWidthDenominator;
   }
   void SetBorderBottomWidth(float v) {
-    surround_data_.Access()->border_bottom_width_ = WidthToFixedPoint(v);
+    SetBorderBottomWidthInternal(WidthToFixedPoint(v));
   }
 
   // border-left-width
@@ -507,7 +507,7 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase<ComputedStyle>,
            kBorderWidthDenominator;
   }
   void SetBorderLeftWidth(float v) {
-    surround_data_.Access()->border_left_width_ = WidthToFixedPoint(v);
+    SetBorderLeftWidthInternal(WidthToFixedPoint(v));
   }
 
   // border-right-width
@@ -519,7 +519,7 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase<ComputedStyle>,
            kBorderWidthDenominator;
   }
   void SetBorderRightWidth(float v) {
-    surround_data_.Access()->border_right_width_ = WidthToFixedPoint(v);
+    SetBorderRightWidthInternal(WidthToFixedPoint(v));
   }
 
   // Border style properties.
@@ -2790,16 +2790,16 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase<ComputedStyle>,
            !PaddingTop().IsZero() || !PaddingBottom().IsZero();
   }
   void ResetPadding() {
-    SET_VAR(surround_data_, padding_top_, kFixed);
-    SET_VAR(surround_data_, padding_bottom_, kFixed);
-    SET_VAR(surround_data_, padding_left_, kFixed);
-    SET_VAR(surround_data_, padding_right_, kFixed);
+    SetPaddingTop(kFixed);
+    SetPaddingBottom(kFixed);
+    SetPaddingLeft(kFixed);
+    SetPaddingRight(kFixed);
   }
   void SetPadding(const LengthBox& b) {
-    SET_VAR(surround_data_, padding_top_, b.top_);
-    SET_VAR(surround_data_, padding_bottom_, b.bottom_);
-    SET_VAR(surround_data_, padding_left_, b.left_);
-    SET_VAR(surround_data_, padding_right_, b.right_);
+    SetPaddingTop(b.top_);
+    SetPaddingBottom(b.bottom_);
+    SetPaddingLeft(b.left_);
+    SetPaddingRight(b.right_);
   }
   bool PaddingEqual(const ComputedStyle& other) const {
     return PaddingTop() == other.PaddingTop() &&
