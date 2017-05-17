@@ -3162,9 +3162,14 @@ registerLoadRequestForURL:(const GURL&)requestURL
 #pragma mark WebUI
 
 - (void)createWebUIForURL:(const GURL&)URL {
+  // |CreateWebUI| will do nothing if |URL| is not a WebUI URL and then
+  // |HasWebUI| will return false.
   _webStateImpl->CreateWebUI(URL);
-  _webUIManager.reset(
-      [[CRWWebUIManager alloc] initWithWebState:self.webStateImpl]);
+  bool isWebUIURL = _webStateImpl->HasWebUI();
+  if (isWebUIURL) {
+    _webUIManager.reset(
+        [[CRWWebUIManager alloc] initWithWebState:_webStateImpl]);
+  }
 }
 
 - (void)clearWebUI {
@@ -4118,6 +4123,7 @@ registerLoadRequestForURL:(const GURL&)requestURL
 }
 
 - (void)loadHTML:(NSString*)HTML forURL:(const GURL&)URL {
+  DCHECK(HTML.length);
   // Remove the transient content view.
   [self clearTransientContentView];
 

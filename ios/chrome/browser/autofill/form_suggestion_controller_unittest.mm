@@ -157,7 +157,9 @@ class FormSuggestionControllerTest : public ChromeWebTest {
   }
 
   // Sets |url| to be current for WebState.
-  void SetCurrentUrl(const std::string& url) { LoadHtml(@"", GURL(url)); }
+  void SetCurrentUrl(const std::string& url) {
+    LoadHtml(@"<html></html>", GURL(url));
+  }
 
   // Swizzles the current web controller to set whether the content is HTML.
   void SetContentIsHtml(BOOL content_is_html) {
