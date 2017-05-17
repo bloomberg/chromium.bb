@@ -249,7 +249,9 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
       enable_instant_source_buffer_gc_(
           params->enable_instant_source_buffer_gc()),
       embedded_media_experience_enabled_(
-          params->embedded_media_experience_enabled()) {
+          params->embedded_media_experience_enabled()),
+      request_routing_token_cb_(params->request_routing_token_cb()),
+      overlay_routing_token_(base::UnguessableToken()) {
   DVLOG(1) << __func__;
   DCHECK(!adjust_allocated_memory_cb_.is_null());
   DCHECK(renderer_factory_selector_);
@@ -259,8 +261,14 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
   force_video_overlays_ = base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kForceVideoOverlays);
 
-  enable_fullscreen_video_overlays_ =
-      base::FeatureList::IsEnabled(media::kOverlayFullscreenVideo);
+  if (base::FeatureList::IsEnabled(media::kOverlayFullscreenVideo)) {
+    bool use_android_overlay =
+        base::FeatureList::IsEnabled(media::kUseAndroidOverlay);
+    overlay_mode_ = use_android_overlay ? OverlayMode::kUseAndroidOverlay
+                                        : OverlayMode::kUseContentVideoView;
+  } else {
+    overlay_mode_ = OverlayMode::kNoOverlays;
+  }
 
   delegate_id_ = delegate_->AddObserver(this);
   delegate_->SetIdle(delegate_id_, true);
@@ -341,39 +349,57 @@ bool WebMediaPlayerImpl::SupportsOverlayFullscreenVideo() {
 
 void WebMediaPlayerImpl::EnableOverlay() {
   overlay_enabled_ = true;
-  if (surface_manager_) {
+  if (surface_manager_ && overlay_mode_ == OverlayMode::kUseContentVideoView) {
     overlay_surface_id_.reset();
     surface_created_cb_.Reset(
         base::Bind(&WebMediaPlayerImpl::OnSurfaceCreated, AsWeakPtr()));
     surface_manager_->CreateFullscreenSurface(pipeline_metadata_.natural_size,
                                               surface_created_cb_.callback());
+  } else if (request_routing_token_cb_ &&
+             overlay_mode_ == OverlayMode::kUseAndroidOverlay) {
+    overlay_routing_token_.reset();
+    token_available_cb_.Reset(
+        base::Bind(&WebMediaPlayerImpl::OnOverlayRoutingToken, AsWeakPtr()));
+    request_routing_token_cb_.Run(token_available_cb_.callback());
   }
 
+  // We have requested (and maybe already have) overlay information.  If the
+  // restarted decoder requests overlay information, then we'll defer providing
+  // it if it hasn't arrived yet.  Otherwise, this would be a race, since we
+  // don't know if the request for overlay info or restart will complete first.
   if (decoder_requires_restart_for_overlay_)
     ScheduleRestart();
 }
 
 void WebMediaPlayerImpl::DisableOverlay() {
   overlay_enabled_ = false;
-  surface_created_cb_.Cancel();
-  overlay_surface_id_ = SurfaceManager::kNoSurfaceID;
+  if (overlay_mode_ == OverlayMode::kUseContentVideoView) {
+    surface_created_cb_.Cancel();
+    overlay_surface_id_ = SurfaceManager::kNoSurfaceID;
+  } else if (overlay_mode_ == OverlayMode::kUseAndroidOverlay) {
+    token_available_cb_.Cancel();
+    overlay_routing_token_ = base::UnguessableToken();
+  }
 
   if (decoder_requires_restart_for_overlay_)
     ScheduleRestart();
-  else if (!set_surface_cb_.is_null())
-    set_surface_cb_.Run(*overlay_surface_id_);
+  else
+    MaybeSendOverlayInfoToDecoder();
 }
 
 void WebMediaPlayerImpl::EnteredFullscreen() {
   // |force_video_overlays_| implies that we're already in overlay mode, so take
   // no action here.  Otherwise, switch to an overlay if it's allowed and if
   // it will display properly.
-  if (!force_video_overlays_ && enable_fullscreen_video_overlays_ &&
+  if (!force_video_overlays_ && overlay_mode_ != OverlayMode::kNoOverlays &&
       DoesOverlaySupportMetadata()) {
     EnableOverlay();
   }
   if (observer_)
     observer_->OnEnteredFullscreen();
+
+  // TODO(liberato): if the decoder provided a callback for fullscreen state,
+  // then notify it now.
 }
 
 void WebMediaPlayerImpl::ExitedFullscreen() {
@@ -383,6 +409,9 @@ void WebMediaPlayerImpl::ExitedFullscreen() {
     DisableOverlay();
   if (observer_)
     observer_->OnExitedFullscreen();
+
+  // TODO(liberato): if the decoder provided a callback for fullscreen state,
+  // then notify it now.
 }
 
 void WebMediaPlayerImpl::BecameDominantVisibleContent(bool isDominant) {
@@ -1444,8 +1473,10 @@ void WebMediaPlayerImpl::OnVideoNaturalSizeChange(const gfx::Size& size) {
   if (!watch_time_reporter_->IsSizeLargeEnoughToReportWatchTime())
     CreateWatchTimeReporter();
 
-  if (overlay_enabled_ && surface_manager_)
+  if (overlay_enabled_ && surface_manager_ &&
+      overlay_mode_ == OverlayMode::kUseContentVideoView) {
     surface_manager_->NaturalSizeChanged(rotated_size);
+  }
 
   client_->SizeChanged();
 
@@ -1685,26 +1716,28 @@ void WebMediaPlayerImpl::NotifyDownloading(bool is_downloading) {
 }
 
 void WebMediaPlayerImpl::OnSurfaceCreated(int surface_id) {
+  DCHECK(overlay_mode_ == OverlayMode::kUseContentVideoView);
   overlay_surface_id_ = surface_id;
-  if (!set_surface_cb_.is_null()) {
-    // If restart is required, the callback is one-shot only.
-    if (decoder_requires_restart_for_overlay_)
-      base::ResetAndReturn(&set_surface_cb_).Run(surface_id);
-    else
-      set_surface_cb_.Run(surface_id);
-  }
+  MaybeSendOverlayInfoToDecoder();
 }
 
-void WebMediaPlayerImpl::OnSurfaceRequested(
+void WebMediaPlayerImpl::OnOverlayRoutingToken(
+    const base::UnguessableToken& token) {
+  DCHECK(overlay_mode_ == OverlayMode::kUseAndroidOverlay);
+  overlay_routing_token_ = token;
+  MaybeSendOverlayInfoToDecoder();
+}
+
+void WebMediaPlayerImpl::OnOverlayInfoRequested(
     bool decoder_requires_restart_for_overlay,
-    const SurfaceCreatedCB& set_surface_cb) {
+    const ProvideOverlayInfoCB& provide_overlay_info_cb) {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
   DCHECK(surface_manager_);
 
   // A null callback indicates that the decoder is going away.
-  if (set_surface_cb.is_null()) {
+  if (provide_overlay_info_cb.is_null()) {
     decoder_requires_restart_for_overlay_ = false;
-    set_surface_cb_.Reset();
+    provide_overlay_info_cb_.Reset();
     return;
   }
 
@@ -1716,30 +1749,81 @@ void WebMediaPlayerImpl::OnSurfaceRequested(
   // surfaces otherwise. If false, we simply need to tell the decoder about the
   // new surface and it will handle things seamlessly.
   decoder_requires_restart_for_overlay_ = decoder_requires_restart_for_overlay;
-  set_surface_cb_ = set_surface_cb;
+  provide_overlay_info_cb_ = provide_overlay_info_cb;
 
   // If we're waiting for the surface to arrive, OnSurfaceCreated() will be
-  // called later when it arrives; so do nothing for now.
-  if (!overlay_surface_id_)
+  // called later when it arrives; so do nothing for now.  For AndroidOverlay,
+  // if we're waiting for the token then... OnOverlayRoutingToken()...
+  // We do this so that a request for a surface will block if we're in the
+  // process of getting one.  Otherwise, on pre-M, the decoder would be stuck
+  // without an overlay if the restart that happens on entering fullscreen
+  // succeeds before we have the overlay info.  Post-M, we could send what we
+  // have unconditionally.  When the info arrives, it will be sent.
+  MaybeSendOverlayInfoToDecoder();
+}
+
+void WebMediaPlayerImpl::MaybeSendOverlayInfoToDecoder() {
+  // If the decoder didn't request overlay info, then don't send it.
+  if (!provide_overlay_info_cb_)
     return;
 
-  OnSurfaceCreated(*overlay_surface_id_);
+  // We should send the overlay info as long as we know it.  This includes the
+  // case where |!overlay_enabled_|, since we want to tell the decoder to avoid
+  // using overlays.  Assuming that the decoder has requested info, the only
+  // case in which we don't want to send something is if we've requested the
+  // info but not received it yet.  Then, we should wait until we do.
+  if (overlay_mode_ == OverlayMode::kUseContentVideoView) {
+    if (!overlay_surface_id_.has_value())
+      return;
+  } else if (overlay_mode_ == OverlayMode::kUseAndroidOverlay) {
+    if (!overlay_routing_token_.has_value())
+      return;
+  }
+
+  // Note that we're guaranteed that both |overlay_surface_id_| and
+  // |overlay_routing_token_| have values, since both have values unless there
+  // is a request pending.  Nobody calls us if a request is pending.
+
+  int surface_id = SurfaceManager::kNoSurfaceID;
+  if (overlay_surface_id_)
+    surface_id = *overlay_surface_id_;
+
+  // Since we represent "no token" as a null UnguessableToken, we translate it
+  // into an optional here.  Alternatively, we could represent it as a
+  // base::Optional in |overlay_routing_token_|, but then we'd have a
+  // base::Optional<base::Optional<base::UnguessableToken> >.  We don't do that
+  // because... just because.
+  base::Optional<base::UnguessableToken> routing_token;
+  if (overlay_routing_token_.has_value() && !overlay_routing_token_->is_empty())
+    routing_token = *overlay_routing_token_;
+
+  // If restart is required, the callback is one-shot only.
+  if (decoder_requires_restart_for_overlay_) {
+    base::ResetAndReturn(&provide_overlay_info_cb_)
+        .Run(surface_id, routing_token);
+  } else {
+    provide_overlay_info_cb_.Run(surface_id, routing_token);
+  }
 }
 
 std::unique_ptr<Renderer> WebMediaPlayerImpl::CreateRenderer() {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
 
+  // TODO(liberato): Re-evaluate this as AndroidVideoSurfaceChooser gets smarter
+  // about turning off overlays.  Either we should verify that it is not
+  // breaking this use-case if it does so, or we should notify it that using
+  // the overlay is required.
   if (force_video_overlays_)
     EnableOverlay();
 
-  RequestSurfaceCB request_surface_cb;
+  RequestOverlayInfoCB request_overlay_info_cb;
 #if defined(OS_ANDROID)
-  request_surface_cb = BindToCurrentLoop(
-      base::Bind(&WebMediaPlayerImpl::OnSurfaceRequested, AsWeakPtr()));
+  request_overlay_info_cb = BindToCurrentLoop(
+      base::Bind(&WebMediaPlayerImpl::OnOverlayInfoRequested, AsWeakPtr()));
 #endif
   return renderer_factory_selector_->GetCurrentFactory()->CreateRenderer(
       media_task_runner_, worker_task_runner_, audio_source_provider_.get(),
-      compositor_, request_surface_cb);
+      compositor_, request_overlay_info_cb);
 }
 
 void WebMediaPlayerImpl::StartPipeline() {

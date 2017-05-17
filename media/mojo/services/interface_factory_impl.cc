@@ -104,7 +104,7 @@ void InterfaceFactoryImpl::CreateRenderer(
   auto video_sink = mojo_media_client_->CreateVideoRendererSink(task_runner);
   auto renderer = renderer_factory->CreateRenderer(
       task_runner, task_runner, audio_sink.get(), video_sink.get(),
-      RequestSurfaceCB());
+      RequestOverlayInfoCB());
   if (!renderer) {
     LOG(ERROR) << "Renderer creation failed.";
     return;

@@ -12,6 +12,8 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
+#include "base/unguessable_token.h"
 #include "media/base/bitstream_buffer.h"
 #include "media/base/cdm_context.h"
 #include "media/base/encryption_scheme.h"
@@ -153,7 +155,11 @@ class MEDIA_EXPORT VideoDecodeAccelerator {
     // An optional graphics surface that the VDA should render to. For setting
     // an output SurfaceView on Android. It's only valid when not equal to
     // |kNoSurfaceID|.
+    // TODO(liberato): should this be Optional<> instead?
     int surface_id = SurfaceManager::kNoSurfaceID;
+
+    // An optional routing token for AndroidOverlay.
+    base::Optional<base::UnguessableToken> overlay_routing_token;
 
     // Coded size of the video frame hint, subject to change.
     gfx::Size initial_expected_coded_size = gfx::Size(320, 240);
@@ -307,7 +313,11 @@ class MEDIA_EXPORT VideoDecodeAccelerator {
   // An optional graphics surface that the VDA should render to. For setting
   // an output SurfaceView on Android. Passing |kNoSurfaceID| will clear any
   // previously set surface in favor of an internally generated texture.
-  virtual void SetSurface(int32_t surface_id);
+  // |routing_token| is an optional AndroidOverlay routing token.  At most one
+  // should be non-empty.
+  virtual void SetSurface(
+      int32_t surface_id,
+      const base::Optional<base::UnguessableToken>& routing_token);
 
   // Destroys the decoder: all pending inputs are dropped immediately and the
   // component is freed.  This call may asynchornously free system resources,

@@ -111,12 +111,13 @@ GpuVideoDecoder::BufferData::BufferData(int32_t bbid,
 
 GpuVideoDecoder::BufferData::~BufferData() {}
 
-GpuVideoDecoder::GpuVideoDecoder(GpuVideoAcceleratorFactories* factories,
-                                 const RequestSurfaceCB& request_surface_cb,
-                                 MediaLog* media_log)
+GpuVideoDecoder::GpuVideoDecoder(
+    GpuVideoAcceleratorFactories* factories,
+    const RequestOverlayInfoCB& request_overlay_info_cb,
+    MediaLog* media_log)
     : needs_bitstream_conversion_(false),
       factories_(factories),
-      request_surface_cb_(request_surface_cb),
+      request_overlay_info_cb_(request_overlay_info_cb),
       media_log_(media_log),
       vda_initialized_(false),
       state_(kNormal),
@@ -293,28 +294,33 @@ void GpuVideoDecoder::Initialize(const VideoDecoderConfig& config,
   const bool supports_external_output_surface = !!(
       capabilities.flags &
       VideoDecodeAccelerator::Capabilities::SUPPORTS_EXTERNAL_OUTPUT_SURFACE);
-  if (supports_external_output_surface && !request_surface_cb_.is_null()) {
+  if (supports_external_output_surface && !request_overlay_info_cb_.is_null()) {
     const bool requires_restart_for_external_output_surface =
         !(capabilities.flags & VideoDecodeAccelerator::Capabilities::
                                    SUPPORTS_SET_EXTERNAL_OUTPUT_SURFACE);
 
     // If we have a surface request callback we should call it and complete
     // initialization with the returned surface.
-    request_surface_cb_.Run(
+    request_overlay_info_cb_.Run(
         requires_restart_for_external_output_surface,
-        BindToCurrentLoop(base::Bind(&GpuVideoDecoder::OnSurfaceAvailable,
+        BindToCurrentLoop(base::Bind(&GpuVideoDecoder::OnOverlayInfoAvailable,
                                      weak_factory_.GetWeakPtr())));
     return;
   }
 
   // If external surfaces are not supported we can complete initialization now.
-  CompleteInitialization(SurfaceManager::kNoSurfaceID);
+  CompleteInitialization(SurfaceManager::kNoSurfaceID,
+                         base::UnguessableToken());
 }
 
-// OnSurfaceAvailable() might be called at any time between Initialize() and
+// OnOverlayInfoAvailable() might be called at any time between Initialize() and
 // ~GpuVideoDecoder() so we have to be careful to not make assumptions about
 // the current state.
-void GpuVideoDecoder::OnSurfaceAvailable(int surface_id) {
+// At most one of |surface_id| and |token| should be provided.  The other will
+// be kNoSurfaceID or an empty token, respectively.
+void GpuVideoDecoder::OnOverlayInfoAvailable(
+    int surface_id,
+    const base::Optional<base::UnguessableToken>& token) {
   DCheckGpuVideoAcceleratorFactoriesTaskRunnerIsCurrent();
 
   if (!vda_)
@@ -325,16 +331,18 @@ void GpuVideoDecoder::OnSurfaceAvailable(int surface_id) {
   // SetSurface() before initializing because there is no remote VDA to handle
   // the call yet.
   if (!vda_initialized_) {
-    CompleteInitialization(surface_id);
+    CompleteInitialization(surface_id, token);
     return;
   }
 
   // The VDA must be already initialized (or async initialization is in
   // progress) so we can call SetSurface().
-  vda_->SetSurface(surface_id);
+  vda_->SetSurface(surface_id, token);
 }
 
-void GpuVideoDecoder::CompleteInitialization(int surface_id) {
+void GpuVideoDecoder::CompleteInitialization(
+    int surface_id,
+    const base::Optional<base::UnguessableToken>& token) {
   DCheckGpuVideoAcceleratorFactoriesTaskRunnerIsCurrent();
   DCHECK(vda_);
   DCHECK(!init_cb_.is_null());
@@ -344,6 +352,7 @@ void GpuVideoDecoder::CompleteInitialization(int surface_id) {
   vda_config.profile = config_.profile();
   vda_config.cdm_id = cdm_id_;
   vda_config.surface_id = surface_id;
+  vda_config.overlay_routing_token = token;
   vda_config.encryption_scheme = config_.encryption_scheme();
   vda_config.is_deferred_initialization_allowed = true;
   vda_config.initial_expected_coded_size = config_.coded_size();
@@ -803,8 +812,9 @@ GpuVideoDecoder::~GpuVideoDecoder() {
 
   if (!init_cb_.is_null())
     base::ResetAndReturn(&init_cb_).Run(false);
-  if (!request_surface_cb_.is_null())
-    base::ResetAndReturn(&request_surface_cb_).Run(false, SurfaceCreatedCB());
+  if (!request_overlay_info_cb_.is_null())
+    base::ResetAndReturn(&request_overlay_info_cb_)
+        .Run(false, ProvideOverlayInfoCB());
 
   for (size_t i = 0; i < available_shm_segments_.size(); ++i) {
     delete available_shm_segments_[i];

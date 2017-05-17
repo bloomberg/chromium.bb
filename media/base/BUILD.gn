@@ -197,6 +197,7 @@ target(link_target_type, "base") {
     "null_video_sink.h",
     "output_device_info.cc",
     "output_device_info.h",
+    "overlay_info.h",
     "pipeline.h",
     "pipeline_impl.cc",
     "pipeline_impl.h",

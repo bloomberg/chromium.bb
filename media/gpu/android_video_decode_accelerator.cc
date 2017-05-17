@@ -1243,7 +1243,9 @@ void AndroidVideoDecodeAccelerator::Reset() {
   StartCodecDrain(DRAIN_FOR_RESET);
 }
 
-void AndroidVideoDecodeAccelerator::SetSurface(int32_t surface_id) {
+void AndroidVideoDecodeAccelerator::SetSurface(
+    int32_t surface_id,
+    const base::Optional<base::UnguessableToken>& routing_token) {
   DVLOG(1) << __func__;
   DCHECK(thread_checker_.CalledOnValidThread());
 
@@ -1257,8 +1259,11 @@ void AndroidVideoDecodeAccelerator::SetSurface(int32_t surface_id) {
   }
 
   AndroidOverlayFactoryCB factory;
-  if (surface_id != SurfaceManager::kNoSurfaceID)
+  if (routing_token) {
+    // TODO(liberato): do something
+  } else if (surface_id != SurfaceManager::kNoSurfaceID) {
     factory = base::Bind(&CreateContentVideoViewOverlay, surface_id);
+  }
 
   surface_chooser_->ReplaceOverlayFactory(std::move(factory));
 }

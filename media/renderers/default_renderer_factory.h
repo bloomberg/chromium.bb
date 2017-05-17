@@ -43,14 +43,14 @@ class MEDIA_EXPORT DefaultRendererFactory : public RendererFactory {
       const scoped_refptr<base::TaskRunner>& worker_task_runner,
       AudioRendererSink* audio_renderer_sink,
       VideoRendererSink* video_renderer_sink,
-      const RequestSurfaceCB& request_surface_cb) final;
+      const RequestOverlayInfoCB& request_overlay_info_cb) final;
 
  private:
   std::vector<std::unique_ptr<AudioDecoder>> CreateAudioDecoders(
       const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner);
   std::vector<std::unique_ptr<VideoDecoder>> CreateVideoDecoders(
       const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner,
-      const RequestSurfaceCB& request_surface_cb,
+      const RequestOverlayInfoCB& request_overlay_info_cb,
       GpuVideoAcceleratorFactories* gpu_factories);
 
   MediaLog* media_log_;

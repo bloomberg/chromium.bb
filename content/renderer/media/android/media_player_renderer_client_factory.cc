@@ -26,11 +26,11 @@ MediaPlayerRendererClientFactory::CreateRenderer(
     const scoped_refptr<base::TaskRunner>& worker_task_runner,
     media::AudioRendererSink* audio_renderer_sink,
     media::VideoRendererSink* video_renderer_sink,
-    const media::RequestSurfaceCB& request_surface_cb) {
+    const media::RequestOverlayInfoCB& request_overlay_info_cb) {
   std::unique_ptr<media::Renderer> renderer =
       mojo_renderer_factory_->CreateRenderer(
           media_task_runner, worker_task_runner, audio_renderer_sink,
-          video_renderer_sink, request_surface_cb);
+          video_renderer_sink, request_overlay_info_cb);
 
   media::MojoRenderer* mojo_renderer =
       static_cast<media::MojoRenderer*>(renderer.release());

@@ -169,12 +169,14 @@ void GpuVideoDecodeAcceleratorHost::Reset() {
   Send(new AcceleratedVideoDecoderMsg_Reset(decoder_route_id_));
 }
 
-void GpuVideoDecodeAcceleratorHost::SetSurface(int32_t surface_id) {
+void GpuVideoDecodeAcceleratorHost::SetSurface(
+    int32_t surface_id,
+    const base::Optional<base::UnguessableToken>& routing_token) {
   DCHECK(CalledOnValidThread());
   if (!channel_)
     return;
-  Send(
-      new AcceleratedVideoDecoderMsg_SetSurface(decoder_route_id_, surface_id));
+  Send(new AcceleratedVideoDecoderMsg_SetSurface(decoder_route_id_, surface_id,
+                                                 routing_token));
 }
 
 void GpuVideoDecodeAcceleratorHost::Destroy() {

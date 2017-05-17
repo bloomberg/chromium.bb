@@ -79,7 +79,9 @@ class MEDIA_GPU_EXPORT AndroidVideoDecodeAccelerator
   void ReusePictureBuffer(int32_t picture_buffer_id) override;
   void Flush() override;
   void Reset() override;
-  void SetSurface(int32_t surface_id) override;
+  void SetSurface(
+      int32_t surface_id,
+      const base::Optional<base::UnguessableToken>& routing_token) override;
   void Destroy() override;
   bool TryToSetupDecodeOnSeparateThread(
       const base::WeakPtr<Client>& decode_client,

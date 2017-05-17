@@ -507,9 +507,11 @@ void GpuVideoDecodeAccelerator::OnReset() {
   video_decode_accelerator_->Reset();
 }
 
-void GpuVideoDecodeAccelerator::OnSetSurface(int32_t surface_id) {
+void GpuVideoDecodeAccelerator::OnSetSurface(
+    int32_t surface_id,
+    const base::Optional<base::UnguessableToken>& routing_token) {
   DCHECK(video_decode_accelerator_);
-  video_decode_accelerator_->SetSurface(surface_id);
+  video_decode_accelerator_->SetSurface(surface_id, routing_token);
 }
 
 void GpuVideoDecodeAccelerator::OnDestroy() {

@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "media/base/overlay_info.h"
 #include "media/remoting/courier_renderer.h"
 
 namespace media {
@@ -22,7 +23,7 @@ std::unique_ptr<Renderer> CourierRendererFactory::CreateRenderer(
     const scoped_refptr<base::TaskRunner>& worker_task_runner,
     AudioRendererSink* audio_renderer_sink,
     VideoRendererSink* video_renderer_sink,
-    const RequestSurfaceCB& request_surface_cb) {
+    const RequestOverlayInfoCB& request_overlay_info_cb) {
   DCHECK(IsRemotingActive());
   return base::MakeUnique<CourierRenderer>(
       media_task_runner, controller_->GetWeakPtr(), video_renderer_sink);
