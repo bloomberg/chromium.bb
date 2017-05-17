@@ -1753,12 +1753,6 @@ const char kDisableShowSavedCopy[] = "Disable";
 
 #if defined(OS_CHROMEOS)
 
-const char kSmartVirtualKeyboardName[] =
-    "Smart Deployment of the Virtual Keyboard";
-
-const char kSmartVirtualKeyboardDescription[] =
-    "Enable/Disable smart deployment of the virtual keyboard.";
-
 const char kVirtualKeyboardName[] = "Virtual Keyboard";
 
 const char kVirtualKeyboardDescription[] = "Enable virtual keyboard support.";

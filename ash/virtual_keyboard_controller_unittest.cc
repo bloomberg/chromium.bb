@@ -51,8 +51,6 @@ class VirtualKeyboardControllerTest : public AshTestBase {
   }
 
   void SetUp() override {
-    base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        keyboard::switches::kDisableSmartVirtualKeyboard);
     AshTestBase::SetUp();
     UpdateKeyboardDevices(std::vector<ui::InputDevice>());
     UpdateTouchscreenDevices(std::vector<ui::TouchscreenDevice>());
@@ -61,18 +59,6 @@ class VirtualKeyboardControllerTest : public AshTestBase {
  private:
   DISALLOW_COPY_AND_ASSIGN(VirtualKeyboardControllerTest);
 };
-
-TEST_F(VirtualKeyboardControllerTest, EnabledDuringMaximizeMode) {
-  ASSERT_FALSE(keyboard::IsKeyboardEnabled());
-  // Toggle maximized mode on.
-  Shell::Get()->maximize_mode_controller()->EnableMaximizeModeWindowManager(
-      true);
-  EXPECT_TRUE(keyboard::IsKeyboardEnabled());
-  // Toggle maximized mode off.
-  Shell::Get()->maximize_mode_controller()->EnableMaximizeModeWindowManager(
-      false);
-  EXPECT_FALSE(keyboard::IsKeyboardEnabled());
-}
 
 // Mock event blocker that enables the internal keyboard when it's destructor
 // is called.
