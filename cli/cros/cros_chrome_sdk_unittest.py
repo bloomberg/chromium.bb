@@ -297,6 +297,47 @@ class RunThroughTest(cros_test_lib.MockTempDirTestCase,
       self.SetupCommandMock(extra_args=['--clang'])
       self.cmd_mock.inst.Run()
 
+  def testGnArgsStalenessCheckNoMatch(self):
+    """Verifies the GN args are checked for staleness with a mismatch."""
+    with cros_test_lib.LoggingCapturer() as logs:
+      out_dir = 'out_%s' % SDKFetcherMock.BOARD
+      build_label = 'Release'
+      gn_args_file_dir = os.path.join(self.chrome_src_dir, out_dir, build_label)
+      gn_args_file_path = os.path.join(gn_args_file_dir, 'args.gn')
+      osutils.SafeMakedirs(gn_args_file_dir)
+      osutils.WriteFile(gn_args_file_path, 'no match')
+
+      self.SetupCommandMock()
+      self.cmd_mock.inst.Run()
+
+      self.AssertLogsContain(logs, 'Stale args.gn file')
+
+  def testGnArgsStalenessCheckMatch(self):
+    """Verifies the GN args are checked for staleness with a match."""
+    with cros_test_lib.LoggingCapturer() as logs:
+      self.SetupCommandMock()
+      self.cmd_mock.inst.Run()
+
+      out_dir = 'out_%s' % SDKFetcherMock.BOARD
+      build_label = 'Release'
+      gn_args_file_dir = os.path.join(self.chrome_src_dir, out_dir, build_label)
+      gn_args_file_path = os.path.join(gn_args_file_dir, 'args.gn')
+
+      osutils.SafeMakedirs(gn_args_file_dir)
+      osutils.WriteFile(gn_args_file_path, self.cmd_mock.env['GN_ARGS'])
+
+      self.cmd_mock.inst.Run()
+
+      self.AssertLogsContain(logs, 'Stale args.gn file', inverted=True)
+
+  def testChromiumOutDirSet(self):
+    """Verify that CHROMIUM_OUT_DIR is set."""
+    self.SetupCommandMock()
+    self.cmd_mock.inst.Run()
+
+    out_dir = os.path.join(self.chrome_src_dir, 'out_%s' % SDKFetcherMock.BOARD)
+
+    self.assertEquals(out_dir, self.cmd_mock.env['CHROMIUM_OUT_DIR'])
 
 class GomaTest(cros_test_lib.MockTempDirTestCase,
                cros_test_lib.LoggingTestCase):

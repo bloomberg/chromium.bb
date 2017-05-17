@@ -753,7 +753,8 @@ class ChromeSDKCommand(command.CliCommand):
 
     gn_args.pop('internal_khronos_glcts_tests', None)  # crbug.com/588080
 
-    env['GN_ARGS'] = gn_helpers.ToGNString(gn_args)
+    gn_args_env = gn_helpers.ToGNString(gn_args)
+    env['GN_ARGS'] = gn_args_env
 
     # PS1 sets the command line prompt and xterm window caption.
     full_version = sdk_ctx.version
@@ -764,6 +765,25 @@ class ChromeSDKCommand(command.CliCommand):
 
     out_dir = 'out_%s' % self.board
     env['builddir_name'] = out_dir
+
+    build_label = 'Release'
+
+    checkout_dir = (self.options.chrome_src
+                    if self.options.chrome_src else os.getcwd())
+    gn_args_file_path = os.path.join(
+        checkout_dir, out_dir, build_label, 'args.gn')
+
+    if os.path.exists(gn_args_file_path):
+      gn_args_file_contents = osutils.ReadFile(gn_args_file_path)
+      if gn_args_file_contents != gn_args_env:
+        logging.warning('Stale args.gn file (%s)', gn_args_file_path)
+        logging.warning('Please run:')
+        logging.warning('gn gen out_$SDK_BOARD/Release --args="$GN_ARGS"')
+
+    # This is used by landmines.py to prevent collisions when building both
+    # chromeos and android from shared source.
+    # For context, see crbug.com/407417
+    env['CHROMIUM_OUT_DIR'] = os.path.join(checkout_dir, out_dir)
 
     return env
 
