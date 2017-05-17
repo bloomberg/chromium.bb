@@ -565,16 +565,9 @@ void ProfileImplIOData::InitializeInternal(
 
 void ProfileImplIOData::
     InitializeExtensionsRequestContext(ProfileParams* profile_params) const {
+  // The extensions context only serves to hold onto the extensions cookie
+  // store.
   net::URLRequestContext* extensions_context = extensions_request_context();
-  IOThread* const io_thread = profile_params->io_thread;
-  IOThread::Globals* const io_thread_globals = io_thread->globals();
-  ApplyProfileParamsToContext(extensions_context);
-
-  extensions_context->set_transport_security_state(transport_security_state());
-  extensions_context->set_ct_policy_enforcer(
-      io_thread_globals->ct_policy_enforcer.get());
-
-  extensions_context->set_net_log(io_thread->net_log());
 
   content::CookieStoreConfig cookie_config(
       lazy_params_->extensions_cookie_path,
@@ -585,25 +578,6 @@ void ProfileImplIOData::
   cookie_config.cookieable_schemes.push_back(extensions::kExtensionScheme);
   extensions_cookie_store_ = content::CreateCookieStore(cookie_config);
   extensions_context->set_cookie_store(extensions_cookie_store_.get());
-  if (extensions_context->channel_id_service()) {
-    extensions_cookie_store_->SetChannelIDServiceID(
-        extensions_context->channel_id_service()->GetUniqueID());
-  }
-
-  std::unique_ptr<net::URLRequestJobFactoryImpl> extensions_job_factory(
-      new net::URLRequestJobFactoryImpl());
-  // TODO(shalev): The extensions_job_factory has a NULL NetworkDelegate.
-  // Without a network_delegate, this protocol handler will never
-  // handle file: requests, but as a side effect it makes
-  // job_factory::IsHandledProtocol return true, which prevents attempts to
-  // handle the protocol externally. We pass NULL in to
-  // SetUpJobFactory() to get this effect.
-  extensions_job_factory_ = SetUpJobFactoryDefaults(
-      std::move(extensions_job_factory),
-      content::URLRequestInterceptorScopedVector(),
-      std::unique_ptr<ProtocolHandlerRegistry::JobInterceptorFactory>(), NULL,
-      io_thread_globals->host_resolver.get());
-  extensions_context->set_job_factory(extensions_job_factory_.get());
 }
 
 net::URLRequestContext* ProfileImplIOData::InitializeAppRequestContext(

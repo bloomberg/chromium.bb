@@ -141,8 +141,6 @@ class OffTheRecordProfileIOData : public ProfileIOData {
 
   mutable std::unique_ptr<net::CookieStore> extensions_cookie_store_;
 
-  mutable std::unique_ptr<net::URLRequestJobFactory> extensions_job_factory_;
-
   DISALLOW_COPY_AND_ASSIGN(OffTheRecordProfileIOData);
 };
 

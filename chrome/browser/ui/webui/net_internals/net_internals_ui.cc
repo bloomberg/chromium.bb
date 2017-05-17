@@ -387,9 +387,6 @@ void NetInternalsMessageHandler::RegisterMessages() {
   proxy_->AddRequestContextGetter(
       content::BrowserContext::GetDefaultStoragePartition(profile)->
           GetMediaURLRequestContext());
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-  proxy_->AddRequestContextGetter(profile->GetRequestContextForExtensions());
-#endif
 
   web_ui()->RegisterMessageCallback(
       "notifyReady",

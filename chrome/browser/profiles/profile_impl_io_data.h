@@ -217,8 +217,6 @@ class ProfileImplIOData : public ProfileIOData {
 
   mutable std::unique_ptr<net::URLRequestContext> media_request_context_;
 
-  mutable std::unique_ptr<net::URLRequestJobFactory> extensions_job_factory_;
-
   // Owned by ChromeNetworkDelegate (which is owned by |network_delegate_|).
   mutable domain_reliability::DomainReliabilityMonitor*
       domain_reliability_monitor_;
