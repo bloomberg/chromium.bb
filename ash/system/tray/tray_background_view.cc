@@ -15,7 +15,6 @@
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_container.h"
 #include "ash/system/tray/tray_event_filter.h"
-#include "ash/wm_window.h"
 #include "base/memory/ptr_util.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/compositor/layer.h"
@@ -31,6 +30,7 @@
 #include "ui/views/animation/ink_drop_mask.h"
 #include "ui/views/background.h"
 #include "ui/views/layout/fill_layout.h"
+#include "ui/wm/core/window_animations.h"
 
 namespace {
 
@@ -171,12 +171,12 @@ void TrayBackgroundView::Initialize() {
 // static
 void TrayBackgroundView::InitializeBubbleAnimations(
     views::Widget* bubble_widget) {
-  WmWindow* window = WmWindow::Get(bubble_widget->GetNativeWindow());
-  window->SetVisibilityAnimationType(
-      ::wm::WINDOW_VISIBILITY_ANIMATION_TYPE_FADE);
-  window->SetVisibilityAnimationTransition(::wm::ANIMATE_HIDE);
-  window->SetVisibilityAnimationDuration(
-      base::TimeDelta::FromMilliseconds(kAnimationDurationForPopupMs));
+  aura::Window* window = bubble_widget->GetNativeWindow();
+  ::wm::SetWindowVisibilityAnimationType(
+      window, ::wm::WINDOW_VISIBILITY_ANIMATION_TYPE_FADE);
+  ::wm::SetWindowVisibilityAnimationTransition(window, ::wm::ANIMATE_HIDE);
+  ::wm::SetWindowVisibilityAnimationDuration(
+      window, base::TimeDelta::FromMilliseconds(kAnimationDurationForPopupMs));
 }
 
 void TrayBackgroundView::SetVisible(bool visible) {

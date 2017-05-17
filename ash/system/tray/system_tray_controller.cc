@@ -200,8 +200,8 @@ void SystemTrayController::ShowUpdateIcon(mojom::UpdateSeverity severity,
                                           bool factory_reset_required,
                                           mojom::UpdateType update_type) {
   // Show the icon on all displays.
-  for (WmWindow* root : ShellPort::Get()->GetAllRootWindows()) {
-    ash::SystemTray* tray = root->GetRootWindowController()->GetSystemTray();
+  for (RootWindowController* root : Shell::GetAllRootWindowControllers()) {
+    ash::SystemTray* tray = root->GetSystemTray();
     // External monitors might not have a tray yet.
     if (!tray)
       continue;
