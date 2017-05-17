@@ -4,10 +4,10 @@
 
 package org.chromium.chrome.browser.vr_shell;
 
+import static org.chromium.chrome.browser.vr_shell.VrTestRule.PAGE_LOAD_TIMEOUT_S;
 import static org.chromium.chrome.browser.vr_shell.VrUtils.POLL_TIMEOUT_SHORT_MS;
 import static org.chromium.chrome.test.util.ChromeRestriction.RESTRICTION_TYPE_VIEWER_DAYDREAM;
 import static org.chromium.chrome.test.util.ChromeRestriction.RESTRICTION_TYPE_VIEWER_NON_DAYDREAM;
-import static org.chromium.chrome.test.util.ChromeRestriction.RESTRICTION_TYPE_WEBVR_SUPPORTED;
 
 import android.os.Build;
 import android.support.test.filters.LargeTest;
@@ -23,35 +23,39 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisableIf;
+import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
+import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content_public.browser.WebContents;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 /**
- * End-to-end tests for WebVR using the WebVR test framework from VrTestBase.
+ * End-to-end tests for WebVR using the WebVR test framework from VrTestRule.
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
         ChromeActivityTestRule.DISABLE_NETWORK_PREDICTION_FLAG, "enable-webvr"})
-@Restriction(RESTRICTION_TYPE_WEBVR_SUPPORTED)
+@MinAndroidSdkLevel(Build.VERSION_CODES.KITKAT) // WebVR is only supported on K+
 public class WebVrTest {
     @Rule
     public ChromeTabbedActivityTestRule mActivityTestRule = new ChromeTabbedActivityTestRule();
     @Rule
     public VrTestRule mVrTestRule = new VrTestRule();
 
+    private ContentViewCore mFirstTabCvc;
     private WebContents mFirstTabWebContents;
 
     @Before
     public void setUp() throws InterruptedException {
         mActivityTestRule.startMainActivityOnBlankPage();
+        mFirstTabCvc = mActivityTestRule.getActivity().getActivityTab().getContentViewCore();
         mFirstTabWebContents = mActivityTestRule.getActivity().getActivityTab().getWebContents();
     }
 
@@ -61,11 +65,10 @@ public class WebVrTest {
     @Test
     @SmallTest
     public void testRequestPresentEntersVr() throws InterruptedException {
-        String testName = "test_requestPresent_enters_vr";
         mActivityTestRule.loadUrl(
-                VrTestRule.getHtmlTestFile(testName), VrTestRule.PAGE_LOAD_TIMEOUT_S);
+                VrTestRule.getHtmlTestFile("test_requestPresent_enters_vr"), PAGE_LOAD_TIMEOUT_S);
         Assert.assertTrue("VRDisplay found", mVrTestRule.vrDisplayFound(mFirstTabWebContents));
-        mVrTestRule.enterVrTapAndWait(mActivityTestRule.getActivity(), mFirstTabWebContents);
+        mVrTestRule.enterPresentationAndWait(mFirstTabCvc, mFirstTabWebContents);
         Assert.assertTrue("VrShellDelegate is in VR", VrShellDelegate.isInVr());
         mVrTestRule.endTest(mFirstTabWebContents);
     }
@@ -78,9 +81,8 @@ public class WebVrTest {
     @SmallTest
     @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM)
     public void testNfcFiresVrdisplayactivate() throws InterruptedException {
-        String testName = "test_nfc_fires_vrdisplayactivate";
-        mActivityTestRule.loadUrl(
-                VrTestRule.getHtmlTestFile(testName), VrTestRule.PAGE_LOAD_TIMEOUT_S);
+        mActivityTestRule.loadUrl(VrTestRule.getHtmlTestFile("test_nfc_fires_vrdisplayactivate"),
+                PAGE_LOAD_TIMEOUT_S);
         mVrTestRule.simNfcScanAndWait(mActivityTestRule.getActivity(), mFirstTabWebContents);
         mVrTestRule.endTest(mFirstTabWebContents);
     }
@@ -92,12 +94,12 @@ public class WebVrTest {
     @LargeTest
     @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM)
     public void testScreenTapsNotRegisteredOnDaydream() throws InterruptedException {
-        String testName = "test_screen_taps_not_registered_on_daydream";
         mActivityTestRule.loadUrl(
-                VrTestRule.getHtmlTestFile(testName), VrTestRule.PAGE_LOAD_TIMEOUT_S);
+                VrTestRule.getHtmlTestFile("test_screen_taps_not_registered_on_daydream"),
+                PAGE_LOAD_TIMEOUT_S);
         Assert.assertTrue("VRDisplay found", mVrTestRule.vrDisplayFound(mFirstTabWebContents));
         mVrTestRule.executeStepAndWait("stepVerifyNoInitialTaps()", mFirstTabWebContents);
-        mVrTestRule.enterVrTapAndWait(mActivityTestRule.getActivity(), mFirstTabWebContents);
+        mVrTestRule.enterPresentationAndWait(mFirstTabCvc, mFirstTabWebContents);
         // Wait on VrShellImpl to say that its parent consumed the touch event
         // Set to 2 because there's an ACTION_DOWN followed by ACTION_UP
         final CountDownLatch touchRegisteredLatch = new CountDownLatch(2);
@@ -111,7 +113,7 @@ public class WebVrTest {
                         touchRegisteredLatch.countDown();
                     }
                 });
-        mVrTestRule.enterVrTap(mActivityTestRule.getActivity());
+        mVrTestRule.sendCardboardClick(mActivityTestRule.getActivity());
         Assert.assertTrue("VrShellImpl dispatched touches",
                 touchRegisteredLatch.await(POLL_TIMEOUT_SHORT_MS, TimeUnit.MILLISECONDS));
         mVrTestRule.executeStepAndWait("stepVerifyNoAdditionalTaps()", mFirstTabWebContents);
@@ -127,13 +129,12 @@ public class WebVrTest {
     @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM)
     public void testControllerClicksRegisteredAsTapsOnDaydream() throws InterruptedException {
         EmulatedVrController controller = new EmulatedVrController(mActivityTestRule.getActivity());
-        String testName = "test_screen_taps_registered";
         mActivityTestRule.loadUrl(
-                VrTestRule.getHtmlTestFile(testName), VrTestRule.PAGE_LOAD_TIMEOUT_S);
+                VrTestRule.getHtmlTestFile("test_screen_taps_registered"), PAGE_LOAD_TIMEOUT_S);
         Assert.assertTrue("VRDisplay found", mVrTestRule.vrDisplayFound(mFirstTabWebContents));
         mVrTestRule.executeStepAndWait("stepVerifyNoInitialTaps()", mFirstTabWebContents);
-        // Tap and wait to enter VR
-        mVrTestRule.enterVrTapAndWait(mActivityTestRule.getActivity(), mFirstTabWebContents);
+        // Wait to enter VR
+        mVrTestRule.enterPresentationAndWait(mFirstTabCvc, mFirstTabWebContents);
         // Send a controller click and wait for JavaScript to receive it
         controller.pressReleaseTouchpadButton();
         mVrTestRule.waitOnJavaScriptStep(mFirstTabWebContents);
@@ -150,15 +151,15 @@ public class WebVrTest {
             sdk_is_greater_than = Build.VERSION_CODES.KITKAT,
             sdk_is_less_than = Build.VERSION_CODES.M)
     public void testScreenTapsRegisteredOnCardboard() throws InterruptedException {
-        String testName = "test_screen_taps_registered";
         mActivityTestRule.loadUrl(
-                VrTestRule.getHtmlTestFile(testName), VrTestRule.PAGE_LOAD_TIMEOUT_S);
+                VrTestRule.getHtmlTestFile("test_screen_taps_registered"), PAGE_LOAD_TIMEOUT_S);
         Assert.assertTrue("VRDisplay found", mVrTestRule.vrDisplayFound(mFirstTabWebContents));
         mVrTestRule.executeStepAndWait("stepVerifyNoInitialTaps()", mFirstTabWebContents);
-        // Tap and wait to enter VR
-        mVrTestRule.enterVrTapAndWait(mActivityTestRule.getActivity(), mFirstTabWebContents);
+        // Wait to enter VR
+        mVrTestRule.enterPresentationAndWait(mFirstTabCvc, mFirstTabWebContents);
         // Tap and wait for JavaScript to receive it
-        mVrTestRule.enterVrTapAndWait(mActivityTestRule.getActivity(), mFirstTabWebContents);
+        mVrTestRule.sendCardboardClickAndWait(
+                mActivityTestRule.getActivity(), mFirstTabWebContents);
         mVrTestRule.endTest(mFirstTabWebContents);
     }
 
@@ -168,9 +169,8 @@ public class WebVrTest {
     @Test
     @SmallTest
     public void testPoseDataUnfocusedTab() throws InterruptedException {
-        String testName = "test_pose_data_unfocused_tab";
         mActivityTestRule.loadUrl(
-                VrTestRule.getHtmlTestFile(testName), VrTestRule.PAGE_LOAD_TIMEOUT_S);
+                VrTestRule.getHtmlTestFile("test_pose_data_unfocused_tab"), PAGE_LOAD_TIMEOUT_S);
         Assert.assertTrue("VRDisplay found", mVrTestRule.vrDisplayFound(mFirstTabWebContents));
         mVrTestRule.executeStepAndWait("stepCheckFrameDataWhileFocusedTab()", mFirstTabWebContents);
 
@@ -191,9 +191,8 @@ public class WebVrTest {
         MockVrCoreVersionCheckerImpl mockChecker = new MockVrCoreVersionCheckerImpl();
         mockChecker.setMockReturnValue(checkerReturnValue);
         VrUtils.getVrShellDelegateInstance().overrideVrCoreVersionCheckerForTesting(mockChecker);
-        String testName = "generic_webvr_page";
         mActivityTestRule.loadUrl(
-                VrTestRule.getHtmlTestFile(testName), VrTestRule.PAGE_LOAD_TIMEOUT_S);
+                VrTestRule.getHtmlTestFile("generic_webvr_page"), PAGE_LOAD_TIMEOUT_S);
         String displayFound = "VRDisplay Found";
         String barPresent = "InfoBar present";
         if (checkerReturnValue == VrCoreVersionChecker.VR_READY) {
@@ -287,9 +286,9 @@ public class WebVrTest {
     @Test
     @MediumTest
     public void testDeviceCapabilitiesMatchExpectations() throws InterruptedException {
-        String testName = "test_device_capabilities_match_expectations";
         mActivityTestRule.loadUrl(
-                VrTestRule.getHtmlTestFile(testName), VrTestRule.PAGE_LOAD_TIMEOUT_S);
+                VrTestRule.getHtmlTestFile("test_device_capabilities_match_expectations"),
+                PAGE_LOAD_TIMEOUT_S);
         Assert.assertTrue("VRDisplayFound", mVrTestRule.vrDisplayFound(mFirstTabWebContents));
         mVrTestRule.executeStepAndWait(
                 "stepCheckDeviceCapabilities('" + Build.DEVICE + "')", mFirstTabWebContents);
@@ -305,11 +304,9 @@ public class WebVrTest {
             sdk_is_greater_than = Build.VERSION_CODES.KITKAT,
             sdk_is_less_than = Build.VERSION_CODES.M)
     public void testPresentationLocksFocus() throws InterruptedException {
-        String testName = "test_presentation_locks_focus";
         mActivityTestRule.loadUrl(
-                VrTestRule.getHtmlTestFile(testName), VrTestRule.PAGE_LOAD_TIMEOUT_S);
-        mVrTestRule.enterVrTapAndWait(mActivityTestRule.getActivity(), mFirstTabWebContents);
-        mVrTestRule.waitOnJavaScriptStep(mFirstTabWebContents);
+                VrTestRule.getHtmlTestFile("test_presentation_locks_focus"), PAGE_LOAD_TIMEOUT_S);
+        mVrTestRule.enterPresentationAndWait(mFirstTabCvc, mFirstTabWebContents);
         mVrTestRule.endTest(mFirstTabWebContents);
     }
 }
