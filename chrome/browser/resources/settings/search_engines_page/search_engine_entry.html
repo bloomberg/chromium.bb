@@ -30,6 +30,7 @@
         word-break: break-word;
       }
 
+      #keyword-column > div,
       .favicon-image + div {
         -webkit-margin-end: 8px;
       }
@@ -54,7 +55,7 @@
             style="background-image: [[getIconSet_(engine.iconURL)]]"></div>
         <div>[[engine.displayName]]</div>
       </div>
-      <div id="keyword-column">[[engine.keyword]]</div>
+      <div id="keyword-column"><div>[[engine.keyword]]</div></div>
       <div id="url-column" class="text-elide">[[engine.url]]</div>
       <paper-icon-button icon="cr:more-vert" on-tap="onDotsTap_"
           title="$i18n{moreActions}" focus-row-control
