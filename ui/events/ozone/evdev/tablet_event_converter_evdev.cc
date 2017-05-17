@@ -81,7 +81,7 @@ void TabletEventConverterEvdev::OnFileCanReadWithoutBlocking(int fd) {
     return;
   }
 
-  if (!enabled_)
+  if (!IsEnabled())
     return;
 
   DCHECK_EQ(read_size % sizeof(*inputs), 0u);

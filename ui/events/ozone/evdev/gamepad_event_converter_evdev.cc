@@ -132,7 +132,7 @@ GamepadEventConverterEvdev::GamepadEventConverterEvdev(
 }
 
 GamepadEventConverterEvdev::~GamepadEventConverterEvdev() {
-  DCHECK(!enabled_);
+  DCHECK(!IsEnabled());
 }
 
 bool GamepadEventConverterEvdev::HasGamepad() const {
@@ -155,7 +155,7 @@ void GamepadEventConverterEvdev::OnFileCanReadWithoutBlocking(int fd) {
       return;
     }
 
-    if (!enabled_)
+    if (!IsEnabled())
       return;
 
     ProcessEvent(input);

@@ -17,6 +17,8 @@ bool IsTouchDevicePresent() {
       ((value & NID_INTEGRATED_TOUCH) || (value & NID_EXTERNAL_TOUCH));
 }
 
+}  // namespace
+
 // The following method logic is as follow :
 // - On versions prior to Windows 8 it will always return POINTER_TYPE_FINE
 // and/or POINTER_TYPE_COARSE (if the device has a touch screen).
@@ -65,8 +67,6 @@ int GetAvailableHoverTypes() {
   return available_hover_types;
 }
 
-}  // namespace
-
 TouchScreensAvailability GetTouchScreensAvailability() {
   if (!IsTouchDevicePresent())
     return TouchScreensAvailability::NONE;
@@ -95,24 +95,6 @@ HoverType GetPrimaryHoverType(int available_hover_types) {
     return HOVER_TYPE_HOVER;
   DCHECK_EQ(available_hover_types, HOVER_TYPE_NONE);
   return HOVER_TYPE_NONE;
-}
-
-bool return_available_pointer_and_hover_types_for_testing = false;
-int available_pointer_types_for_testing = POINTER_TYPE_NONE;
-int available_hover_types_for_testing = HOVER_TYPE_NONE;
-
-void SetAvailablePointerAndHoverTypesForTesting(int available_pointer_types,
-                                                int available_hover_types) {
-  return_available_pointer_and_hover_types_for_testing = true;
-  available_pointer_types_for_testing = available_pointer_types;
-  available_hover_types_for_testing = available_hover_types;
-}
-
-std::pair<int, int> GetAvailablePointerAndHoverTypes() {
-  if (return_available_pointer_and_hover_types_for_testing)
-    return std::make_pair(available_pointer_types_for_testing,
-                          available_hover_types_for_testing);
-  return std::make_pair(GetAvailablePointerTypes(), GetAvailableHoverTypes());
 }
 
 }  // namespace ui

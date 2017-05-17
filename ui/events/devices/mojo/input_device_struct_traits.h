@@ -34,6 +34,8 @@ struct StructTraits<ui::mojom::InputDeviceDataView, ui::InputDevice> {
     return device.name;
   }
 
+  static bool enabled(const ui::InputDevice& device) { return device.enabled; }
+
   static std::string sys_path(const ui::InputDevice& device) {
     return device.sys_path.AsUTF8Unsafe();
   }

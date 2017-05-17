@@ -61,6 +61,8 @@ enum HoverType {
   HOVER_TYPE_LAST = HOVER_TYPE_HOVER
 };
 
+int GetAvailablePointerTypes();
+int GetAvailableHoverTypes();
 UI_BASE_EXPORT std::pair<int, int> GetAvailablePointerAndHoverTypes();
 UI_BASE_EXPORT void SetAvailablePointerAndHoverTypesForTesting(
     int available_pointer_types,

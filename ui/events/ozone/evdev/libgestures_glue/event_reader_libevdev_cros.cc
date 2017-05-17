@@ -110,7 +110,7 @@ void EventReaderLibevdevCros::OnSynReport(void* data,
                                           EventStateRec* evstate,
                                           struct timeval* tv) {
   EventReaderLibevdevCros* reader = static_cast<EventReaderLibevdevCros*>(data);
-  if (!reader->enabled_)
+  if (!reader->IsEnabled())
     return;
 
   reader->delegate_->OnLibEvdevCrosEvent(&reader->evdev_, evstate, *tv);
