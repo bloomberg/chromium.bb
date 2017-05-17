@@ -74,6 +74,7 @@
     {
       'target_name': 'gallery_item',
       'dependencies': [
+        '../../file_manager/common/js/compiled_resources2.gyp:metrics',
         '../../file_manager/common/js/compiled_resources2.gyp:util',
         '../../file_manager/foreground/js/compiled_resources2.gyp:volume_manager_wrapper',
         '../../file_manager/foreground/js/metadata/compiled_resources2.gyp:metadata_model',

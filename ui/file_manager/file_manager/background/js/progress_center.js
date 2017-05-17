@@ -222,6 +222,7 @@ ProgressCenter.prototype.requestCancel = function(id) {
 /**
  * Called when notification is dismissed.
  * @param {string} id Item id.
+ * @private
  */
 ProgressCenter.prototype.onNotificationDismissed_ = function(id) {
   var item = this.getItemById(id);

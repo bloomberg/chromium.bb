@@ -19,8 +19,7 @@
     {
       'target_name': 'actions_model',
       'dependencies': [
-        # TODO(oka): Depend on externs/ instead of background/.
-        '../../background/js/compiled_resources2.gyp:drive_sync_handler',
+        '../../../externs/background/compiled_resources2.gyp:drive_sync_handler',
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:cr',
         '<(EXTERNS_GYP):file_manager_private',
         'folder_shortcuts_data_model',
@@ -93,10 +92,10 @@
     {
       'target_name': 'directory_model',
       'dependencies': [
-        # TODO(oka): Depend on externs/ instead of background/.
-        '../../background/js/compiled_resources2.gyp:file_operation_manager',
+        '../../../externs/background/compiled_resources2.gyp:file_operation_manager',
+        '../../../externs/compiled_resources2.gyp:entries_changed_event',
         '../../common/js/compiled_resources2.gyp:importer_common',
-        '../../common/js/compiled_resources2.gyp:metrics',
+        '../../common/js/compiled_resources2.gyp:metrics_events',
         'directory_contents',
         'file_watcher',
         'ui/compiled_resources2.gyp:file_list_selection_model',
@@ -107,6 +106,7 @@
     {
       'target_name': 'navigation_uma',
       'dependencies': [
+        '../../common/js/compiled_resources2.gyp:metrics',
         'dialog_type',
         'volume_manager_wrapper',
       ],
@@ -161,7 +161,7 @@
       'dependencies': [
         '../../../externs/compiled_resources2.gyp:background_window',
         '../../../externs/compiled_resources2.gyp:command_handler_deps',
-        '../../background/js/compiled_resources2.gyp:file_operation_manager',
+        '../../../externs/background/compiled_resources2.gyp:file_operation_manager',
         'actions_controller',
         'dialog_type',
         'directory_contents',
@@ -182,8 +182,7 @@
     {
       'target_name': 'file_selection',
       'dependencies': [
-        # TODO(oka): Depend on externs/ instead of background/.
-        '../../background/js/compiled_resources2.gyp:file_operation_manager',
+        '../../../externs/background/compiled_resources2.gyp:file_operation_manager',
         '../../common/js/compiled_resources2.gyp:file_type',
         '../../common/js/compiled_resources2.gyp:util',
         '../../common/js/compiled_resources2.gyp:volume_manager_common',
@@ -210,9 +209,9 @@
     {
       'target_name': 'file_transfer_controller',
       'dependencies': [
-        # TODO(oka): Depend on externs/ instead of background/.
-        '../../background/js/compiled_resources2.gyp:file_operation_manager',
-        '../../background/js/compiled_resources2.gyp:progress_center',
+        '../../../externs/background/compiled_resources2.gyp:file_operation_manager',
+        '../../../externs/background/compiled_resources2.gyp:progress_center',
+        '../../common/js/compiled_resources2.gyp:progress_center_common',
         'directory_model',
         'drop_effect_and_label',
         'file_selection',
@@ -221,6 +220,7 @@
         'ui/compiled_resources2.gyp:directory_tree',
         'ui/compiled_resources2.gyp:list_container',
         'ui/compiled_resources2.gyp:multi_profile_share_dialog',
+        'ui/compiled_resources2.gyp:progress_center_panel',
         'volume_manager_wrapper',
         'webui_command_extender',
       ],
@@ -264,10 +264,11 @@
     {
       'target_name': 'import_controller',
       'dependencies': [
+        '../../../externs/background/compiled_resources2.gyp:import_runner',
+        '../../../externs/background/compiled_resources2.gyp:media_import_handler',
+        '../../../externs/background/compiled_resources2.gyp:media_scanner',
         '../../../externs/compiled_resources2.gyp:command_handler_deps',
         '../../../externs/compiled_resources2.gyp:es6_workaround',
-        '../../background/js/compiled_resources2.gyp:media_import_handler',
-        '../../background/js/compiled_resources2.gyp:media_scanner',
         '../../common/js/compiled_resources2.gyp:importer_common',
         'actions_controller',
         'dialog_type',
@@ -525,8 +526,17 @@
     {
       'target_name': 'volume_manager_wrapper',
       'dependencies': [
-        # TODO(oka): Depend on extern/ instead of background/.
-        '../../background/js/compiled_resources2.gyp:volume_manager_factory',
+        '../../../externs/background/compiled_resources2.gyp:volume_manager_factory',
+        '../../../externs/compiled_resources2.gyp:entry_location',
+        '../../../externs/compiled_resources2.gyp:volume_info',
+        '../../../externs/compiled_resources2.gyp:volume_info_list',
+        '../../../externs/compiled_resources2.gyp:volume_manager',
+        '../../common/js/compiled_resources2.gyp:async_util',
+        '../../common/js/compiled_resources2.gyp:volume_manager_common',
+        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:cr',
+        '<(DEPTH)/ui/webui/resources/js/cr/compiled_resources2.gyp:event_target',
+        '<(DEPTH)/ui/webui/resources/js/cr/ui/compiled_resources2.gyp:array_data_model',
+        '<(EXTERNS_GYP):chrome_extensions',
       ],
       'includes': ['../../../compile_js2.gypi'],
     },

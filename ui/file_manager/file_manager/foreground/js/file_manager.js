@@ -50,7 +50,7 @@ function FileManager() {
   /** @private {importer.ImportController} */
   this.importController_ = null;
 
-  /** @private {importer.MediaImportHandler} */
+  /** @private {importer.ImportRunner} */
   this.mediaImportHandler_ = null;
 
   /**
@@ -458,7 +458,7 @@ FileManager.prototype = /** @struct */ {
     return this.historyLoader_;
   },
   /**
-   * @return {importer.MediaImportHandler}
+   * @return {importer.ImportRunner}
    */
   get mediaImportHandler() {
     return this.mediaImportHandler_;

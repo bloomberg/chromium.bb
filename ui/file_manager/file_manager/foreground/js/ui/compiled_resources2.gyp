@@ -69,8 +69,8 @@
     {
       'target_name': 'directory_tree',
       'dependencies': [
+        '../../../../externs/background/compiled_resources2.gyp:file_operation_manager',
         '../../../../externs/compiled_resources2.gyp:menu_item_update_event',
-        '../../../background/js/compiled_resources2.gyp:file_operation_manager',
         '../../../common/js/compiled_resources2.gyp:util',
         '../../../common/js/compiled_resources2.gyp:volume_manager_common',
         '../compiled_resources2.gyp:directory_model',

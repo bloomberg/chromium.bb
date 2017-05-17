@@ -160,6 +160,7 @@
     {
       'target_name': 'media_import_handler',
       'dependencies': [
+        '../../../externs/background/compiled_resources2.gyp:import_runner',
         '../../common/js/compiled_resources2.gyp:importer_common',
         '../../common/js/compiled_resources2.gyp:metrics',
         'import_history',
@@ -173,6 +174,7 @@
       'target_name': 'media_scanner',
       'dependencies': [
         '../../../externs/compiled_resources2.gyp:platform',
+        '../../../externs/background/compiled_resources2.gyp:media_scanner',
         '../../common/js/compiled_resources2.gyp:importer_common',
         '<(EXTERNS_GYP):file_manager_private',
         'file_operation_util',
