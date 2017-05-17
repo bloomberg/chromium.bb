@@ -18,10 +18,10 @@ namespace component_updater {
 #if defined(OS_CHROMEOS)
 struct ComponentConfig {
   std::string name;
-  std::string dir;
+  std::string env_version;
   std::string sha2hashstr;
   ComponentConfig(const std::string& name,
-                  const std::string& dir,
+                  const std::string& env_version,
                   const std::string& sha2hashstr);
   ~ComponentConfig();
 };
@@ -50,8 +50,8 @@ class CrOSComponentInstallerTraits : public ComponentInstallerTraits {
   std::string GetName() const override;
   update_client::InstallerAttributes GetInstallerAttributes() const override;
   std::vector<std::string> GetMimeTypes() const override;
-  std::string dir_name;
   std::string name;
+  std::string env_version;
   uint8_t kSha2Hash_[crypto::kSHA256Length] = {};
 
   DISALLOW_COPY_AND_ASSIGN(CrOSComponentInstallerTraits);
