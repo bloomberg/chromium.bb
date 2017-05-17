@@ -230,6 +230,10 @@ autofill::RegionDataLoader* PaymentRequestState::GetRegionDataLoader() {
   return payment_request_delegate_->GetRegionDataLoader();
 }
 
+bool PaymentRequestState::IsPaymentAppInvoked() const {
+  return !!response_helper_;
+}
+
 void PaymentRequestState::PopulateProfileCache() {
   std::vector<autofill::AutofillProfile*> profiles =
       personal_data_manager_->GetProfilesToSuggest();

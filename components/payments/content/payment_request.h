@@ -42,6 +42,7 @@ class PaymentRequest : public mojom::PaymentRequest,
     virtual void OnCanMakePaymentCalled() = 0;
     virtual void OnNotSupportedError() = 0;
     virtual void OnConnectionTerminated() = 0;
+    virtual void OnAbortCalled() = 0;
 
    protected:
     virtual ~ObserverForTest() {}

@@ -163,7 +163,8 @@ class PaymentRequestAbortTest : public PaymentRequestBrowserTestBase {
 IN_PROC_BROWSER_TEST_F(PaymentRequestAbortTest, OpenThenAbort) {
   InvokePaymentRequestUI();
 
-  ResetEventObserver(DialogEvent::DIALOG_CLOSED);
+  ResetEventObserverForSequence(
+      {DialogEvent::ABORT_CALLED, DialogEvent::DIALOG_CLOSED});
 
   content::WebContents* web_contents = GetActiveWebContents();
   const std::string click_buy_button_js =
@@ -172,10 +173,35 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestAbortTest, OpenThenAbort) {
 
   WaitForObservedEvent();
 
+  ExpectBodyContains({"Aborted"});
+
   // The web-modal dialog should now be closed.
   web_modal::WebContentsModalDialogManager* web_contents_modal_dialog_manager =
       web_modal::WebContentsModalDialogManager::FromWebContents(web_contents);
   EXPECT_FALSE(web_contents_modal_dialog_manager->IsDialogActive());
+}
+
+IN_PROC_BROWSER_TEST_F(PaymentRequestAbortTest,
+                       AbortUnsuccessfulAfterCVCPromptShown) {
+  autofill::AutofillProfile billing_address = autofill::test::GetFullProfile();
+  AddAutofillProfile(billing_address);
+  autofill::CreditCard card = autofill::test::GetCreditCard();
+  card.set_billing_address_id(billing_address.guid());
+  AddCreditCard(card);  // Visa.
+
+  InvokePaymentRequestUI();
+  OpenCVCPromptWithCVC(base::UTF8ToUTF16("123"));
+
+  ResetEventObserver(DialogEvent::ABORT_CALLED);
+
+  content::WebContents* web_contents = GetActiveWebContents();
+  const std::string click_buy_button_js =
+      "(function() { document.getElementById('abort').click(); })();";
+  ASSERT_TRUE(content::ExecuteScript(web_contents, click_buy_button_js));
+
+  WaitForObservedEvent();
+
+  ExpectBodyContains({"Cannot abort"});
 }
 
 class PaymentRequestBasicCardTest : public PaymentRequestBrowserTestBase {

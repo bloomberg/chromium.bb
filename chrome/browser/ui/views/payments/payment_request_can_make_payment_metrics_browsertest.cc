@@ -87,7 +87,8 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCanMakePaymentMetricsTest,
   WaitForObservedEvent();
 
   // Simulate that an unexpected error occurs.
-  ResetEventObserver(DialogEvent::DIALOG_CLOSED);
+  ResetEventObserverForSequence(
+      {DialogEvent::ABORT_CALLED, DialogEvent::DIALOG_CLOSED});
   const std::string click_buy_button_js =
       "(function() { document.getElementById('abort').click(); })();";
   ASSERT_TRUE(
@@ -194,7 +195,8 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCanMakePaymentMetricsTest,
   WaitForObservedEvent();
 
   // Simulate that an unexpected error occurs.
-  ResetEventObserver(DialogEvent::DIALOG_CLOSED);
+  ResetEventObserverForSequence(
+      {DialogEvent::ABORT_CALLED, DialogEvent::DIALOG_CLOSED});
   const std::string click_buy_button_js =
       "(function() { document.getElementById('abort').click(); })();";
   ASSERT_TRUE(
@@ -324,7 +326,8 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCanMakePaymentMetricsTest,
   WaitForObservedEvent();
 
   // Simulate that an unexpected error occurs.
-  ResetEventObserver(DialogEvent::DIALOG_CLOSED);
+  ResetEventObserverForSequence(
+      {DialogEvent::ABORT_CALLED, DialogEvent::DIALOG_CLOSED});
   const std::string click_buy_button_js =
       "(function() { document.getElementById('abort').click(); })();";
   ASSERT_TRUE(

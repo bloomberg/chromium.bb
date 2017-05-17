@@ -174,6 +174,10 @@ class PaymentRequestState : public PaymentResponseHelper::Delegate,
     return &profile_comparator_;
   }
 
+  // Returns true if the payment app has been invoked and the payment response
+  // generation has begun. False otherwise.
+  bool IsPaymentAppInvoked() const;
+
  private:
   // Fetches the Autofill Profiles for this user from the PersonalDataManager,
   // and stores copies of them, owned by this PaymentRequestState, in
