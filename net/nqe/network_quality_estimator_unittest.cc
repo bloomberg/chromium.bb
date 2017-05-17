@@ -2813,69 +2813,12 @@ TEST(NetworkQualityEstimatorTest, TypicalNetworkQualities) {
   };
 
   for (const auto& test : tests) {
-    TestNetworkQualitiesCacheObserver observer;
     std::map<std::string, std::string> variation_params;
     if (test.use_transport_rtt) {
       variation_params["effective_connection_type_algorithm"] =
           "TransportRTTOrDownstreamThroughput";
     }
     TestNetworkQualityEstimator estimator(variation_params);
-
-    // Typical network quality should not be set for Unknown and Offline.
-    for (size_t i = EFFECTIVE_CONNECTION_TYPE_UNKNOWN;
-         i <= EFFECTIVE_CONNECTION_TYPE_OFFLINE; ++i) {
-      EXPECT_EQ(nqe::internal::InvalidRTT(),
-                estimator.typical_network_quality_[i].http_rtt());
-
-      EXPECT_EQ(nqe::internal::InvalidRTT(),
-                estimator.typical_network_quality_[i].transport_rtt());
-    }
-
-    // Typical network quality should be set for other effective connection
-    // types.
-    for (size_t i = EFFECTIVE_CONNECTION_TYPE_SLOW_2G;
-         i <= EFFECTIVE_CONNECTION_TYPE_3G; ++i) {
-      // The typical RTT for an effective connection type should be at least as
-      // much as the threshold RTT.
-      EXPECT_NE(nqe::internal::InvalidRTT(),
-                estimator.typical_network_quality_[i].http_rtt());
-      EXPECT_GT(estimator.typical_network_quality_[i].http_rtt(),
-                estimator.connection_thresholds_[i].http_rtt());
-
-      EXPECT_NE(nqe::internal::InvalidRTT(),
-                estimator.typical_network_quality_[i].transport_rtt());
-      EXPECT_GT(estimator.typical_network_quality_[i].transport_rtt(),
-                estimator.connection_thresholds_[i].transport_rtt());
-
-      // The typical throughput for an effective connection type should not be
-      // more than the threshold throughput.
-      if (estimator.connection_thresholds_[i].downstream_throughput_kbps() !=
-          nqe::internal::kInvalidThroughput) {
-        EXPECT_LT(
-            estimator.typical_network_quality_[i].downstream_throughput_kbps(),
-            estimator.connection_thresholds_[i].downstream_throughput_kbps());
-      }
-    }
-
-    // The typical network quality of 4G connection should be at least as fast
-    // as the threshold for 3G connection.
-    EXPECT_LT(estimator.typical_network_quality_[EFFECTIVE_CONNECTION_TYPE_4G]
-                  .http_rtt(),
-              estimator.connection_thresholds_[EFFECTIVE_CONNECTION_TYPE_3G]
-                  .http_rtt());
-    EXPECT_LT(estimator.typical_network_quality_[EFFECTIVE_CONNECTION_TYPE_4G]
-                  .transport_rtt(),
-              estimator.connection_thresholds_[EFFECTIVE_CONNECTION_TYPE_3G]
-                  .transport_rtt());
-    if (estimator.connection_thresholds_[EFFECTIVE_CONNECTION_TYPE_3G]
-            .downstream_throughput_kbps() !=
-        nqe::internal::kInvalidThroughput) {
-      EXPECT_GT(estimator.typical_network_quality_[EFFECTIVE_CONNECTION_TYPE_4G]
-                    .downstream_throughput_kbps(),
-                estimator.connection_thresholds_[EFFECTIVE_CONNECTION_TYPE_3G]
-                    .downstream_throughput_kbps());
-    }
-
     TestDelegate test_delegate;
     TestURLRequestContext context(true);
     context.set_network_quality_estimator(&estimator);
@@ -2888,10 +2831,14 @@ TEST(NetworkQualityEstimatorTest, TypicalNetworkQualities) {
       // |effective_connection_type|. The effective connection type should be
       // computed as |effective_connection_type|.
       estimator.set_start_time_null_http_rtt(
-          estimator.typical_network_quality_[effective_connection_type]
+          estimator.params_
+              .TypicalNetworkQuality(static_cast<EffectiveConnectionType>(
+                  effective_connection_type))
               .http_rtt());
       estimator.set_start_time_null_transport_rtt(
-          estimator.typical_network_quality_[effective_connection_type]
+          estimator.params_
+              .TypicalNetworkQuality(static_cast<EffectiveConnectionType>(
+                  effective_connection_type))
               .transport_rtt());
       estimator.set_start_time_null_downlink_throughput_kbps(INT32_MAX);
 
