@@ -29,9 +29,6 @@
 
 // This file uses some GCC extensions, but it should be compatible with C++ and
 // Objective C++.
-//
-// For non-debug builds, everything is disabled by default, except for the
-// RELEASE_ASSERT family of macros.
 
 #include <stdarg.h>
 #include "base/allocator/partition_allocator/oom.h"
@@ -167,17 +164,6 @@ class WTF_EXPORT ScopedLogger {
 #else
 #define SECURITY_DCHECK(condition) ((void)0)
 #define SECURITY_CHECK(condition) CHECK(condition)
-#endif
-
-// RELEASE_ASSERT
-// Use in places where failure of an assertion indicates a definite security
-// vulnerability from which execution must not continue even in a release build.
-// Please sure to file bugs for these failures using the security template:
-//    http://code.google.com/p/chromium/issues/entry?template=Security%20Bug
-#if defined(ADDRESS_SANITIZER)
-#define RELEASE_ASSERT(condition) SECURITY_CHECK(condition)
-#else
-#define RELEASE_ASSERT(condition) CHECK(condition)
 #endif
 
 // DEFINE_COMPARISON_OPERATORS_WITH_REFERENCES
