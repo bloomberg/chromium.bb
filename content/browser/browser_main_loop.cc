@@ -47,11 +47,11 @@
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "components/discardable_memory/service/discardable_shared_memory_manager.h"
-#include "components/display_compositor/host_shared_bitmap_manager.h"
 #include "components/tracing/common/process_metrics_memory_dump_provider.h"
 #include "components/tracing/common/trace_config_file.h"
 #include "components/tracing/common/trace_to_console.h"
 #include "components/tracing/common/tracing_switches.h"
+#include "components/viz/display_compositor/host_shared_bitmap_manager.h"
 #include "content/browser/browser_thread_impl.h"
 #include "content/browser/dom_storage/dom_storage_area.h"
 #include "content/browser/download/download_resource_handler.h"
@@ -810,8 +810,8 @@ void BrowserMainLoop::PostMainMessageLoopStart() {
   tracing::ProcessMetricsMemoryDumpProvider::RegisterForProcess(
       base::kNullProcessId);
   base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
-      display_compositor::HostSharedBitmapManager::current(),
-      "display_compositor::HostSharedBitmapManager", nullptr);
+      viz::HostSharedBitmapManager::current(), "viz::HostSharedBitmapManager",
+      nullptr);
   base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
       skia::SkiaMemoryDumpProvider::GetInstance(), "Skia", nullptr);
   base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(

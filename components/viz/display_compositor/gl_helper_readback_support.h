@@ -2,23 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_DISPLAY_COMPOSITOR_GL_HELPER_READBACK_SUPPORT_H_
-#define COMPONENTS_DISPLAY_COMPOSITOR_GL_HELPER_READBACK_SUPPORT_H_
+#ifndef COMPONENTS_VIZ_DISPLAY_COMPOSITOR_GL_HELPER_READBACK_SUPPORT_H_
+#define COMPONENTS_VIZ_DISPLAY_COMPOSITOR_GL_HELPER_READBACK_SUPPORT_H_
 
 #include <stddef.h>
 
 #include <vector>
 
-#include "components/display_compositor/display_compositor_export.h"
-#include "components/display_compositor/gl_helper.h"
+#include "components/viz/display_compositor/gl_helper.h"
+#include "components/viz/viz_export.h"
 
-namespace display_compositor {
+namespace viz {
 
-class DISPLAY_COMPOSITOR_EXPORT GLHelperReadbackSupport {
+class VIZ_EXPORT GLHelperReadbackSupport {
  public:
   enum FormatSupport { SUPPORTED, SWIZZLE, NOT_SUPPORTED };
 
-  GLHelperReadbackSupport(gpu::gles2::GLES2Interface* gl);
+  explicit GLHelperReadbackSupport(gpu::gles2::GLES2Interface* gl);
 
   ~GLHelperReadbackSupport();
 
@@ -71,6 +71,6 @@ class DISPLAY_COMPOSITOR_EXPORT GLHelperReadbackSupport {
   std::vector<struct FormatCacheEntry> format_cache_;
 };
 
-}  // namespace display_compositor
+}  // namespace viz
 
-#endif  // COMPONENTS_DISPLAY_COMPOSITOR_GL_HELPER_READBACK_SUPPORT_H_
+#endif  // COMPONENTS_VIZ_DISPLAY_COMPOSITOR_GL_HELPER_READBACK_SUPPORT_H_

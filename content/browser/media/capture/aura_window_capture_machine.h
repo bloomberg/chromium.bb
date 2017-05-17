@@ -25,7 +25,7 @@ namespace device {
 class PowerSaveBlocker;
 }  // namespace device
 
-namespace display_compositor {
+namespace viz {
 class ReadbackYUVInterface;
 }
 
@@ -120,8 +120,7 @@ class AuraWindowCaptureMachine
   media::VideoCaptureParams capture_params_;
 
   // YUV readback pipeline.
-  std::unique_ptr<display_compositor::ReadbackYUVInterface>
-      yuv_readback_pipeline_;
+  std::unique_ptr<viz::ReadbackYUVInterface> yuv_readback_pipeline_;
 
   // Renders mouse cursor on frame.
   std::unique_ptr<content::CursorRendererAura> cursor_renderer_;

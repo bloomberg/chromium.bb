@@ -11,7 +11,7 @@
 #include "base/test/test_suite.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
-#include "components/display_compositor/gl_helper.h"
+#include "components/viz/display_compositor/gl_helper.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
 #include "gpu/command_buffer/client/shared_memory_limits.h"
 #include "gpu/ipc/common/surface_handle.h"
@@ -22,7 +22,7 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gl/gl_implementation.h"
 
-namespace display_compositor {
+namespace viz {
 
 namespace {
 int kYUVReadbackSizes[] = {2, 4, 14};
@@ -55,7 +55,7 @@ class YUVReadbackTest : public testing::Test {
     gl_ = context_->GetImplementation();
     gpu::ContextSupport* support = context_->GetImplementation();
 
-    helper_.reset(new display_compositor::GLHelper(gl_, support));
+    helper_.reset(new GLHelper(gl_, support));
   }
 
   void TearDown() override {
@@ -284,8 +284,8 @@ class YUVReadbackTest : public testing::Test {
       for (int y = 0; y < ysize; y++) {
         int a = other[y * other_stride + x];
         int b = truth[y * truth_stride + x];
-        EXPECT_NEAR(a, b, maxdiff) << " x=" << x << " y=" << y << " "
-                                   << message;
+        EXPECT_NEAR(a, b, maxdiff)
+            << " x=" << x << " y=" << y << " " << message;
         if (std::abs(a - b) > maxdiff) {
           LOG(ERROR) << "-------expected--------";
           PrintPlane(truth, xsize, truth_stride, ysize);
@@ -317,7 +317,7 @@ class YUVReadbackTest : public testing::Test {
                        int test_pattern,
                        bool flip,
                        bool use_mrt,
-                       display_compositor::GLHelper::ScalerQuality quality) {
+                       GLHelper::ScalerQuality quality) {
     GLuint src_texture;
     gl_->GenTextures(1, &src_texture);
     SkBitmap input_pixels;
@@ -475,7 +475,7 @@ class YUVReadbackTest : public testing::Test {
 
   std::unique_ptr<gpu::GLInProcessContext> context_;
   gpu::gles2::GLES2Interface* gl_;
-  std::unique_ptr<display_compositor::GLHelper> helper_;
+  std::unique_ptr<GLHelper> helper_;
   gl::DisableNullDrawGLBindings enable_pixel_output_;
   base::test::ScopedTaskEnvironment scoped_task_environment_;
 };
@@ -487,7 +487,7 @@ TEST_F(YUVReadbackTest, YUVReadbackOptTest) {
       "gpu.service") "," TRACE_DISABLED_BY_DEFAULT("gpu_decoder"));
 
   TestYUVReadback(800, 400, 800, 400, 0, 0, 1, false, true,
-                  display_compositor::GLHelper::SCALER_QUALITY_FAST);
+                  GLHelper::SCALER_QUALITY_FAST);
 
   std::map<std::string, int> event_counts;
   EndTracing(&event_counts);
@@ -534,8 +534,7 @@ TEST_P(YUVReadbackPixelTest, Test) {
                 kYUVReadbackSizes[ox], kYUVReadbackSizes[oy],
                 compute_margin(kYUVReadbackSizes[x], kYUVReadbackSizes[ox], xm),
                 compute_margin(kYUVReadbackSizes[y], kYUVReadbackSizes[oy], ym),
-                pattern, flip, use_mrt,
-                display_compositor::GLHelper::SCALER_QUALITY_GOOD);
+                pattern, flip, use_mrt, GLHelper::SCALER_QUALITY_GOOD);
             if (HasFailure()) {
               return;
             }
@@ -556,4 +555,4 @@ INSTANTIATE_TEST_CASE_P(
         ::testing::Range<unsigned int>(0, arraysize(kYUVReadbackSizes)),
         ::testing::Range<unsigned int>(0, arraysize(kYUVReadbackSizes))));
 
-}  // namespace display_compositor
+}  // namespace viz

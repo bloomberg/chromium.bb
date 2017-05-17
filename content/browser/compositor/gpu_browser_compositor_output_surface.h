@@ -14,7 +14,7 @@
 #include "content/browser/compositor/gpu_vsync_begin_frame_source.h"
 #include "ui/gfx/swap_result.h"
 
-namespace display_compositor {
+namespace viz {
 class CompositorOverlayCandidateValidator;
 }
 
@@ -40,7 +40,7 @@ class GpuBrowserCompositorOutputSurface : public BrowserCompositorOutputSurface,
   GpuBrowserCompositorOutputSurface(
       scoped_refptr<ui::ContextProviderCommandBuffer> context,
       const UpdateVSyncParametersCallback& update_vsync_parameters_callback,
-      std::unique_ptr<display_compositor::CompositorOverlayCandidateValidator>
+      std::unique_ptr<viz::CompositorOverlayCandidateValidator>
           overlay_candidate_validator);
 
   ~GpuBrowserCompositorOutputSurface() override;

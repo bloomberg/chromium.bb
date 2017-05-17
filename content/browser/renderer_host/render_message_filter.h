@@ -20,7 +20,7 @@
 #include "base/strings/string16.h"
 #include "build/build_config.h"
 #include "cc/resources/shared_bitmap_manager.h"
-#include "components/display_compositor/host_shared_bitmap_manager.h"
+#include "components/viz/display_compositor/host_shared_bitmap_manager.h"
 #include "content/common/cache_storage/cache_storage_types.h"
 #include "content/common/render_message_filter.mojom.h"
 #include "content/public/browser/browser_associated_interface.h"
@@ -159,7 +159,7 @@ class CONTENT_EXPORT RenderMessageFilter
   // than we do.
   ResourceDispatcherHostImpl* resource_dispatcher_host_;
 
-  display_compositor::HostSharedBitmapManagerClient bitmap_manager_client_;
+  viz::HostSharedBitmapManagerClient bitmap_manager_client_;
 
   // Contextual information to be used for requests created here.
   scoped_refptr<net::URLRequestContextGetter> request_context_;

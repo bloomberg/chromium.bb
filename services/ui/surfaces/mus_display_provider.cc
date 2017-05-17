@@ -15,7 +15,7 @@
 #include "cc/scheduler/begin_frame_source.h"
 #include "cc/surfaces/display.h"
 #include "cc/surfaces/display_scheduler.h"
-#include "components/display_compositor/host_shared_bitmap_manager.h"
+#include "components/viz/display_compositor/host_shared_bitmap_manager.h"
 #include "gpu/command_buffer/client/shared_memory_limits.h"
 #include "gpu/command_buffer/service/image_factory.h"
 #include "services/ui/surfaces/display_output_surface.h"
@@ -86,10 +86,9 @@ std::unique_ptr<cc::Display> MusDisplayProvider::CreateDisplay(
   *begin_frame_source = std::move(synthetic_begin_frame_source);
 
   return base::MakeUnique<cc::Display>(
-      display_compositor::HostSharedBitmapManager::current(),
-      gpu_memory_buffer_manager_.get(), settings, frame_sink_id,
-      begin_frame_source->get(), std::move(display_output_surface),
-      std::move(scheduler),
+      viz::HostSharedBitmapManager::current(), gpu_memory_buffer_manager_.get(),
+      settings, frame_sink_id, begin_frame_source->get(),
+      std::move(display_output_surface), std::move(scheduler),
       base::MakeUnique<cc::TextureMailboxDeleter>(task_runner_.get()));
 }
 

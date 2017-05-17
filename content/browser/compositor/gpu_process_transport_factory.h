@@ -80,7 +80,7 @@ class GpuProcessTransportFactory : public ui::ContextFactory,
   ui::ContextFactoryPrivate* GetContextFactoryPrivate() override;
   cc::SurfaceManager* GetSurfaceManager() override;
   FrameSinkManagerHost* GetFrameSinkManagerHost() override;
-  display_compositor::GLHelper* GetGLHelper() override;
+  viz::GLHelper* GetGLHelper() override;
   void SetGpuChannelEstablishFactory(
       gpu::GpuChannelEstablishFactory* factory) override;
 #if defined(OS_MACOSX)
@@ -123,7 +123,7 @@ class GpuProcessTransportFactory : public ui::ContextFactory,
 
   const cc::RendererSettings renderer_settings_;
   scoped_refptr<ui::ContextProviderCommandBuffer> shared_main_thread_contexts_;
-  std::unique_ptr<display_compositor::GLHelper> gl_helper_;
+  std::unique_ptr<viz::GLHelper> gl_helper_;
   base::ObserverList<ui::ContextFactoryObserver> observer_list_;
   std::unique_ptr<cc::SingleThreadTaskGraphRunner> task_graph_runner_;
   scoped_refptr<ui::ContextProviderCommandBuffer>

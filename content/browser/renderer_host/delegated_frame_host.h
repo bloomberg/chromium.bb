@@ -41,7 +41,7 @@ namespace media {
 class VideoFrame;
 }
 
-namespace display_compositor {
+namespace viz {
 class ReadbackYUVInterface;
 }
 
@@ -312,8 +312,7 @@ class CONTENT_EXPORT DelegatedFrameHost
       request_copy_of_output_callback_for_testing_;
 
   // YUV readback pipeline.
-  std::unique_ptr<display_compositor::ReadbackYUVInterface>
-      yuv_readback_pipeline_;
+  std::unique_ptr<viz::ReadbackYUVInterface> yuv_readback_pipeline_;
 
   bool needs_begin_frame_ = false;
   uint32_t latest_confirmed_begin_frame_source_id_ = 0;

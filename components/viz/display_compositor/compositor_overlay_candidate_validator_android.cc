@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/display_compositor/compositor_overlay_candidate_validator_android.h"
+#include "components/viz/display_compositor/compositor_overlay_candidate_validator_android.h"
 
 #include <memory>
 
@@ -11,7 +11,7 @@
 #include "cc/output/overlay_strategy_underlay.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 
-namespace display_compositor {
+namespace viz {
 
 CompositorOverlayCandidateValidatorAndroid::
     CompositorOverlayCandidateValidatorAndroid() {}
@@ -65,4 +65,4 @@ bool CompositorOverlayCandidateValidatorAndroid::AllowDCLayerOverlays() {
 void CompositorOverlayCandidateValidatorAndroid::SetSoftwareMirrorMode(
     bool enabled) {}
 
-}  // namespace display_compositor
+}  // namespace viz

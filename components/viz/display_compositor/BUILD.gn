@@ -10,7 +10,6 @@ component("display_compositor") {
     "buffer_queue.cc",
     "buffer_queue.h",
     "compositor_overlay_candidate_validator.h",
-    "display_compositor_export.h",
     "gl_helper.cc",
     "gl_helper.h",
     "gl_helper_readback_support.cc",
@@ -23,7 +22,7 @@ component("display_compositor") {
 
   configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
 
-  defines = [ "DISPLAY_COMPOSITOR_IMPLEMENTATION" ]
+  defines = [ "VIZ_IMPLEMENTATION" ]
 
   deps = [
     "//base",

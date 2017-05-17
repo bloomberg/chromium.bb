@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/display_compositor/buffer_queue.h"
+#include "components/viz/display_compositor/buffer_queue.h"
 
 #include "base/containers/adapters.h"
 #include "base/memory/ptr_util.h"
 #include "build/build_config.h"
-#include "components/display_compositor/gl_helper.h"
+#include "components/viz/display_compositor/gl_helper.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/command_buffer/client/gpu_memory_buffer_manager.h"
@@ -18,7 +18,7 @@
 #include "ui/gfx/gpu_memory_buffer.h"
 #include "ui/gfx/skia_util.h"
 
-namespace display_compositor {
+namespace viz {
 
 BufferQueue::BufferQueue(gpu::gles2::GLES2Interface* gl,
                          uint32_t texture_target,
@@ -300,4 +300,4 @@ BufferQueue::AllocatedSurface::~AllocatedSurface() {
   buffer_queue->FreeSurfaceResources(this);
 }
 
-}  // namespace display_compositor
+}  // namespace viz

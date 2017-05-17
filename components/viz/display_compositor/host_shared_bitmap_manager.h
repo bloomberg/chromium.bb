@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_DISPLAY_COMPOSITOR_HOST_SHARED_BITMAP_MANAGER_H_
-#define COMPONENTS_DISPLAY_COMPOSITOR_HOST_SHARED_BITMAP_MANAGER_H_
+#ifndef COMPONENTS_VIZ_DISPLAY_COMPOSITOR_HOST_SHARED_BITMAP_MANAGER_H_
+#define COMPONENTS_VIZ_DISPLAY_COMPOSITOR_HOST_SHARED_BITMAP_MANAGER_H_
 
 #include <stddef.h>
 
@@ -20,7 +20,7 @@
 #include "base/trace_event/memory_dump_provider.h"
 #include "cc/ipc/shared_bitmap_manager.mojom.h"
 #include "cc/resources/shared_bitmap_manager.h"
-#include "components/display_compositor/display_compositor_export.h"
+#include "components/viz/viz_export.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
 
 namespace BASE_HASH_NAMESPACE {
@@ -32,11 +32,11 @@ struct hash<cc::SharedBitmapId> {
 };
 }  // namespace BASE_HASH_NAMESPACE
 
-namespace display_compositor {
+namespace viz {
 class BitmapData;
 class HostSharedBitmapManager;
 
-class DISPLAY_COMPOSITOR_EXPORT HostSharedBitmapManagerClient
+class VIZ_EXPORT HostSharedBitmapManagerClient
     : NON_EXPORTED_BASE(public cc::mojom::SharedBitmapManager) {
  public:
   explicit HostSharedBitmapManagerClient(HostSharedBitmapManager* manager);
@@ -65,7 +65,7 @@ class DISPLAY_COMPOSITOR_EXPORT HostSharedBitmapManagerClient
   DISALLOW_COPY_AND_ASSIGN(HostSharedBitmapManagerClient);
 };
 
-class DISPLAY_COMPOSITOR_EXPORT HostSharedBitmapManager
+class VIZ_EXPORT HostSharedBitmapManager
     : public cc::SharedBitmapManager,
       public base::trace_event::MemoryDumpProvider {
  public:
@@ -106,6 +106,6 @@ class DISPLAY_COMPOSITOR_EXPORT HostSharedBitmapManager
   DISALLOW_COPY_AND_ASSIGN(HostSharedBitmapManager);
 };
 
-}  // namespace display_compositor
+}  // namespace viz
 
-#endif  // COMPONENTS_DISPLAY_COMPOSITOR_HOST_SHARED_BITMAP_MANAGER_H_
+#endif  // COMPONENTS_VIZ_DISPLAY_COMPOSITOR_HOST_SHARED_BITMAP_MANAGER_H_

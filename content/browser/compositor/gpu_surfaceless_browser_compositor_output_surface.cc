@@ -8,9 +8,9 @@
 
 #include "cc/output/output_surface_client.h"
 #include "cc/output/output_surface_frame.h"
-#include "components/display_compositor/buffer_queue.h"
-#include "components/display_compositor/compositor_overlay_candidate_validator.h"
-#include "components/display_compositor/gl_helper.h"
+#include "components/viz/display_compositor/buffer_queue.h"
+#include "components/viz/display_compositor/compositor_overlay_candidate_validator.h"
+#include "components/viz/display_compositor/gl_helper.h"
 #include "content/browser/compositor/reflector_impl.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
@@ -23,7 +23,7 @@ GpuSurfacelessBrowserCompositorOutputSurface::
         scoped_refptr<ui::ContextProviderCommandBuffer> context,
         gpu::SurfaceHandle surface_handle,
         const UpdateVSyncParametersCallback& update_vsync_parameters_callback,
-        std::unique_ptr<display_compositor::CompositorOverlayCandidateValidator>
+        std::unique_ptr<viz::CompositorOverlayCandidateValidator>
             overlay_candidate_validator,
         unsigned int target,
         unsigned int internalformat,
@@ -44,9 +44,9 @@ GpuSurfacelessBrowserCompositorOutputSurface::
   // implementation.
   capabilities_.max_frames_pending = 2;
 
-  gl_helper_.reset(new display_compositor::GLHelper(
-      context_provider_->ContextGL(), context_provider_->ContextSupport()));
-  buffer_queue_.reset(new display_compositor::BufferQueue(
+  gl_helper_.reset(new viz::GLHelper(context_provider_->ContextGL(),
+                                     context_provider_->ContextSupport()));
+  buffer_queue_.reset(new viz::BufferQueue(
       context_provider_->ContextGL(), target, internalformat, format,
       gl_helper_.get(), gpu_memory_buffer_manager_, surface_handle));
   buffer_queue_->Initialize();

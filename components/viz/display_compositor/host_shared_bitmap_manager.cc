@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/display_compositor/host_shared_bitmap_manager.h"
+#include "components/viz/display_compositor/host_shared_bitmap_manager.h"
 
 #include <stdint.h>
 
@@ -19,7 +19,7 @@
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "ui/gfx/geometry/size.h"
 
-namespace display_compositor {
+namespace viz {
 
 class BitmapData : public base::RefCountedThreadSafe<BitmapData> {
  public:
@@ -119,7 +119,7 @@ std::unique_ptr<cc::SharedBitmap> HostSharedBitmapManager::AllocateSharedBitmap(
   base::AutoLock lock(lock_);
   size_t bitmap_size;
   if (!cc::SharedBitmap::SizeInBytes(size, &bitmap_size))
-    return std::unique_ptr<cc::SharedBitmap>();
+    return nullptr;
 
   scoped_refptr<BitmapData> data(new BitmapData(bitmap_size));
   // Bitmaps allocated in host don't need to be shared to other processes, so
@@ -137,21 +137,21 @@ HostSharedBitmapManager::GetSharedBitmapFromId(const gfx::Size& size,
   base::AutoLock lock(lock_);
   BitmapMap::iterator it = handle_map_.find(id);
   if (it == handle_map_.end())
-    return std::unique_ptr<cc::SharedBitmap>();
+    return nullptr;
 
   BitmapData* data = it->second.get();
 
   size_t bitmap_size;
   if (!cc::SharedBitmap::SizeInBytes(size, &bitmap_size) ||
       bitmap_size > data->buffer_size)
-    return std::unique_ptr<cc::SharedBitmap>();
+    return nullptr;
 
   if (data->pixels) {
     return base::MakeUnique<HostSharedBitmap>(data->pixels.get(), data, id,
                                               nullptr);
   }
   if (!data->memory->memory()) {
-    return std::unique_ptr<cc::SharedBitmap>();
+    return nullptr;
   }
 
   return base::MakeUnique<HostSharedBitmap>(
@@ -219,4 +219,4 @@ void HostSharedBitmapManager::FreeSharedMemoryFromMap(
   handle_map_.erase(id);
 }
 
-}  // namespace display_compositor
+}  // namespace viz

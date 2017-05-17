@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/display_compositor/compositor_overlay_candidate_validator_ozone.h"
+#include "components/viz/display_compositor/compositor_overlay_candidate_validator_ozone.h"
 
 #include <stddef.h>
 
@@ -17,7 +17,7 @@
 #include "cc/output/overlay_strategy_underlay_cast.h"
 #include "ui/ozone/public/overlay_candidates_ozone.h"
 
-namespace display_compositor {
+namespace viz {
 namespace {
 // Templated function used to create an OverlayProcessor::Strategy
 // of type |S|.
@@ -125,4 +125,4 @@ void CompositorOverlayCandidateValidatorOzone::SetSoftwareMirrorMode(
   software_mirror_active_ = enabled;
 }
 
-}  // namespace display_compositor
+}  // namespace viz

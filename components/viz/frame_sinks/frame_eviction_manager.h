@@ -14,7 +14,7 @@
 #include "base/memory/memory_coordinator_client.h"
 #include "base/memory/memory_pressure_listener.h"
 #include "base/memory/singleton.h"
-#include "components/viz/frame_sinks/viz_export.h"
+#include "components/viz/viz_export.h"
 
 namespace viz {
 

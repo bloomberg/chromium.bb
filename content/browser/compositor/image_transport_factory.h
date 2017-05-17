@@ -25,7 +25,7 @@ class ContextFactory;
 class ContextFactoryPrivate;
 }
 
-namespace display_compositor {
+namespace viz {
 class GLHelper;
 }
 
@@ -70,7 +70,7 @@ class CONTENT_EXPORT ImageTransportFactory {
   // Gets a GLHelper instance, associated with the shared context. This
   // GLHelper will get destroyed whenever the shared context is lost
   // (ImageTransportFactoryObserver::OnLostResources is called).
-  virtual display_compositor::GLHelper* GetGLHelper() = 0;
+  virtual viz::GLHelper* GetGLHelper() = 0;
 
   // Gets the frame sink manager host instance.
   virtual FrameSinkManagerHost* GetFrameSinkManagerHost() = 0;

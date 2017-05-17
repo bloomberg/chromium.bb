@@ -11,7 +11,7 @@
 #include "cc/output/context_provider.h"
 #include "cc/output/in_process_context_provider.h"
 #include "cc/output/output_surface.h"
-#include "components/display_compositor/gl_helper.h"
+#include "components/viz/display_compositor/gl_helper.h"
 #include "services/ui/surfaces/display_output_surface.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/native_widget_types.h"
@@ -22,7 +22,7 @@ namespace cc {
 class SyntheticBeginFrameSource;
 }
 
-namespace display_compositor {
+namespace viz {
 class BufferQueue;
 }
 
@@ -66,8 +66,8 @@ class DisplayOutputSurfaceOzone : public DisplayOutputSurface {
   // DisplayOutputSurface:
   void DidReceiveSwapBuffersAck(gfx::SwapResult result) override;
 
-  display_compositor::GLHelper gl_helper_;
-  std::unique_ptr<display_compositor::BufferQueue> buffer_queue_;
+  viz::GLHelper gl_helper_;
+  std::unique_ptr<viz::BufferQueue> buffer_queue_;
 
   gfx::Size reshape_size_;
   gfx::Size swap_size_;

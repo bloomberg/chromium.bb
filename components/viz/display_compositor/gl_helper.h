@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_DISPLAY_COMPOSITOR_GL_HELPER_H_
-#define COMPONENTS_DISPLAY_COMPOSITOR_GL_HELPER_H_
+#ifndef COMPONENTS_VIZ_DISPLAY_COMPOSITOR_GL_HELPER_H_
+#define COMPONENTS_VIZ_DISPLAY_COMPOSITOR_GL_HELPER_H_
 
 #include <memory>
 
 #include "base/atomicops.h"
 #include "base/callback.h"
 #include "base/macros.h"
-#include "components/display_compositor/display_compositor_export.h"
+#include "components/viz/viz_export.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/command_buffer/common/mailbox_holder.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -28,11 +28,11 @@ struct Mailbox;
 
 class SkRegion;
 
-namespace display_compositor {
+namespace viz {
 
 class GLHelperScaling;
 
-class DISPLAY_COMPOSITOR_EXPORT ScopedGLuint {
+class VIZ_EXPORT ScopedGLuint {
  public:
   typedef void (gpu::gles2::GLES2Interface::*GenFunc)(GLsizei n, GLuint* ids);
   typedef void (gpu::gles2::GLES2Interface::*DeleteFunc)(GLsizei n,
@@ -134,7 +134,7 @@ class GLHelperReadbackSupport;
 
 // Provides higher level operations on top of the gpu::gles2::GLES2Interface
 // interfaces.
-class DISPLAY_COMPOSITOR_EXPORT GLHelper {
+class VIZ_EXPORT GLHelper {
  public:
   GLHelper(gpu::gles2::GLES2Interface* gl,
            gpu::ContextSupport* context_support);
@@ -280,7 +280,7 @@ class DISPLAY_COMPOSITOR_EXPORT GLHelper {
   // needed to scale from a specified size to a destination size.
   // If the source or destination sizes changes, you must create
   // a new scaler.
-  class DISPLAY_COMPOSITOR_EXPORT ScalerInterface {
+  class VIZ_EXPORT ScalerInterface {
    public:
     ScalerInterface() {}
     virtual ~ScalerInterface() {}
@@ -343,6 +343,7 @@ class DISPLAY_COMPOSITOR_EXPORT GLHelper {
   std::unique_ptr<GLHelperScaling> scaler_impl_;
   std::unique_ptr<GLHelperReadbackSupport> readback_support_;
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(GLHelper);
 };
 
@@ -353,7 +354,7 @@ class DISPLAY_COMPOSITOR_EXPORT GLHelper {
 // can handle multiple outstanding readbacks at the same time, but
 // if the source or destination sizes change, you'll need to create
 // a new readback pipeline.
-class DISPLAY_COMPOSITOR_EXPORT ReadbackYUVInterface {
+class VIZ_EXPORT ReadbackYUVInterface {
  public:
   ReadbackYUVInterface() {}
   virtual ~ReadbackYUVInterface() {}
@@ -377,6 +378,6 @@ class DISPLAY_COMPOSITOR_EXPORT ReadbackYUVInterface {
   virtual GLHelper::ScalerInterface* scaler() = 0;
 };
 
-}  // namespace display_compositor
+}  // namespace viz
 
-#endif  // COMPONENTS_DISPLAY_COMPOSITOR_GL_HELPER_H_
+#endif  // COMPONENTS_VIZ_DISPLAY_COMPOSITOR_GL_HELPER_H_

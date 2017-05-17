@@ -46,9 +46,9 @@
 #include "cc/surfaces/frame_sink_id_allocator.h"
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/layer_tree_settings.h"
-#include "components/display_compositor/compositor_overlay_candidate_validator_android.h"
-#include "components/display_compositor/gl_helper.h"
-#include "components/display_compositor/host_shared_bitmap_manager.h"
+#include "components/viz/display_compositor/compositor_overlay_candidate_validator_android.h"
+#include "components/viz/display_compositor/gl_helper.h"
+#include "components/viz/display_compositor/host_shared_bitmap_manager.h"
 #include "content/browser/compositor/frame_sink_manager_host.h"
 #include "content/browser/gpu/browser_gpu_channel_host_factory.h"
 #include "content/browser/gpu/browser_gpu_memory_buffer_manager.h"
@@ -228,8 +228,7 @@ class AndroidOutputSurface : public cc::OutputSurface {
       : cc::OutputSurface(std::move(context_provider)),
         swap_buffers_callback_(std::move(swap_buffers_callback)),
         overlay_candidate_validator_(
-            new display_compositor::
-                CompositorOverlayCandidateValidatorAndroid()),
+            new viz::CompositorOverlayCandidateValidatorAndroid()),
         weak_ptr_factory_(this) {
     capabilities_.max_frames_pending = kMaxDisplaySwapBuffers;
   }
@@ -779,7 +778,7 @@ void CompositorImpl::InitializeDisplay(
       task_runner, display_output_surface->capabilities().max_frames_pending));
 
   display_.reset(new cc::Display(
-      display_compositor::HostSharedBitmapManager::current(),
+      viz::HostSharedBitmapManager::current(),
       BrowserGpuMemoryBufferManager::current(),
       host_->GetSettings().renderer_settings, frame_sink_id_,
       root_window_->GetBeginFrameSource(), std::move(display_output_surface),
@@ -794,7 +793,7 @@ void CompositorImpl::InitializeDisplay(
           : base::MakeUnique<cc::DirectCompositorFrameSink>(
                 frame_sink_id_, manager, display_.get(), context_provider,
                 nullptr, BrowserGpuMemoryBufferManager::current(),
-                display_compositor::HostSharedBitmapManager::current());
+                viz::HostSharedBitmapManager::current());
 
   display_->SetVisible(true);
   display_->Resize(size_);

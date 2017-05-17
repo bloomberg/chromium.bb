@@ -30,9 +30,9 @@
 #include "cc/surfaces/display.h"
 #include "cc/surfaces/display_scheduler.h"
 #include "cc/surfaces/surface_manager.h"
-#include "components/display_compositor/compositor_overlay_candidate_validator.h"
-#include "components/display_compositor/gl_helper.h"
-#include "components/display_compositor/host_shared_bitmap_manager.h"
+#include "components/viz/display_compositor/compositor_overlay_candidate_validator.h"
+#include "components/viz/display_compositor/gl_helper.h"
+#include "components/viz/display_compositor/host_shared_bitmap_manager.h"
 #include "content/browser/compositor/browser_compositor_output_surface.h"
 #include "content/browser/compositor/frame_sink_manager_host.h"
 #include "content/browser/compositor/gpu_browser_compositor_output_surface.h"
@@ -73,11 +73,11 @@
 
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"
-#include "components/display_compositor/compositor_overlay_candidate_validator_win.h"
+#include "components/viz/display_compositor/compositor_overlay_candidate_validator_win.h"
 #include "content/browser/compositor/software_output_device_win.h"
 #include "ui/gfx/win/rendering_window_manager.h"
 #elif defined(USE_OZONE)
-#include "components/display_compositor/compositor_overlay_candidate_validator_ozone.h"
+#include "components/viz/display_compositor/compositor_overlay_candidate_validator_ozone.h"
 #include "content/browser/compositor/software_output_device_ozone.h"
 #include "ui/ozone/public/overlay_candidates_ozone.h"
 #include "ui/ozone/public/overlay_manager_ozone.h"
@@ -86,7 +86,7 @@
 #elif defined(USE_X11)
 #include "content/browser/compositor/software_output_device_x11.h"
 #elif defined(OS_MACOSX)
-#include "components/display_compositor/compositor_overlay_candidate_validator_mac.h"
+#include "components/viz/display_compositor/compositor_overlay_candidate_validator_mac.h"
 #include "content/browser/compositor/gpu_output_surface_mac.h"
 #include "content/browser/compositor/software_output_device_mac.h"
 #include "gpu/config/gpu_driver_bug_workaround_type.h"
@@ -94,7 +94,7 @@
 #include "ui/base/cocoa/remote_layer_api.h"
 #include "ui/base/ui_base_switches.h"
 #elif defined(OS_ANDROID)
-#include "components/display_compositor/compositor_overlay_candidate_validator_android.h"
+#include "components/viz/display_compositor/compositor_overlay_candidate_validator_android.h"
 #endif
 #if !defined(GPU_SURFACE_HANDLE_IS_ACCELERATED_WINDOW)
 #include "gpu/ipc/common/gpu_surface_tracker.h"
@@ -268,10 +268,9 @@ GpuProcessTransportFactory::CreateSoftwareOutputDevice(
 #endif
 }
 
-std::unique_ptr<display_compositor::CompositorOverlayCandidateValidator>
+std::unique_ptr<viz::CompositorOverlayCandidateValidator>
 CreateOverlayCandidateValidator(gfx::AcceleratedWidget widget) {
-  std::unique_ptr<display_compositor::CompositorOverlayCandidateValidator>
-      validator;
+  std::unique_ptr<viz::CompositorOverlayCandidateValidator> validator;
 #if defined(USE_OZONE)
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kEnableHardwareOverlays)) {
@@ -281,9 +280,8 @@ CreateOverlayCandidateValidator(gfx::AcceleratedWidget widget) {
         ui::OzonePlatform::GetInstance()
             ->GetOverlayManager()
             ->CreateOverlayCandidates(widget);
-    validator.reset(
-        new display_compositor::CompositorOverlayCandidateValidatorOzone(
-            std::move(overlay_candidates), enable_overlay_flag));
+    validator.reset(new viz::CompositorOverlayCandidateValidatorOzone(
+        std::move(overlay_candidates), enable_overlay_flag));
   }
 #elif defined(OS_MACOSX)
   // Overlays are only supported through the remote layer API.
@@ -295,15 +293,12 @@ CreateOverlayCandidateValidator(gfx::AcceleratedWidget widget) {
         GpuDataManagerImpl::GetInstance()->IsDriverBugWorkaroundActive(
             gpu::DISABLE_OVERLAY_CA_LAYERS);
     validator.reset(
-        new display_compositor::CompositorOverlayCandidateValidatorMac(
-            ca_layers_disabled));
+        new viz::CompositorOverlayCandidateValidatorMac(ca_layers_disabled));
   }
 #elif defined(OS_ANDROID)
-  validator.reset(
-      new display_compositor::CompositorOverlayCandidateValidatorAndroid());
+  validator.reset(new viz::CompositorOverlayCandidateValidatorAndroid());
 #elif defined(OS_WIN)
-  validator = base::MakeUnique<
-      display_compositor::CompositorOverlayCandidateValidatorWin>();
+  validator = base::MakeUnique<viz::CompositorOverlayCandidateValidatorWin>();
 #endif
 
   return validator;
@@ -526,8 +521,7 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
         display_output_surface =
             base::MakeUnique<OffscreenBrowserCompositorOutputSurface>(
                 context_provider, vsync_callback,
-                std::unique_ptr<
-                    display_compositor::CompositorOverlayCandidateValidator>());
+                std::unique_ptr<viz::CompositorOverlayCandidateValidator>());
       } else if (capabilities.surfaceless) {
 #if defined(OS_MACOSX)
         display_output_surface = base::MakeUnique<GpuOutputSurfaceMac>(
@@ -547,8 +541,7 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
         display_output_surface = std::move(gpu_output_surface);
 #endif
       } else {
-        std::unique_ptr<display_compositor::CompositorOverlayCandidateValidator>
-            validator;
+        std::unique_ptr<viz::CompositorOverlayCandidateValidator> validator;
 #if defined(OS_WIN)
         if (capabilities.dc_layers)
           validator = CreateOverlayCandidateValidator(compositor->widget());
@@ -605,9 +598,8 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
 
   // The Display owns and uses the |display_output_surface| created above.
   data->display = base::MakeUnique<cc::Display>(
-      display_compositor::HostSharedBitmapManager::current(),
-      GetGpuMemoryBufferManager(), renderer_settings_,
-      compositor->frame_sink_id(), begin_frame_source,
+      viz::HostSharedBitmapManager::current(), GetGpuMemoryBufferManager(),
+      renderer_settings_, compositor->frame_sink_id(), begin_frame_source,
       std::move(display_output_surface), std::move(scheduler),
       base::MakeUnique<cc::TextureMailboxDeleter>(
           compositor->task_runner().get()));
@@ -630,7 +622,7 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
                 compositor->frame_sink_id(), GetSurfaceManager(),
                 data->display.get(), context_provider,
                 shared_worker_context_provider_, GetGpuMemoryBufferManager(),
-                display_compositor::HostSharedBitmapManager::current());
+                viz::HostSharedBitmapManager::current());
   data->display->Resize(compositor->size());
   data->display->SetOutputIsSecure(data->output_is_secure);
   compositor->SetCompositorFrameSink(std::move(compositor_frame_sink));
@@ -678,8 +670,7 @@ void GpuProcessTransportFactory::RemoveCompositor(ui::Compositor* compositor) {
     // GLHelper created in this case would be lost/leaked if we just reset()
     // on the |gl_helper_| variable directly. So instead we call reset() on a
     // local std::unique_ptr.
-    std::unique_ptr<display_compositor::GLHelper> helper =
-        std::move(gl_helper_);
+    std::unique_ptr<viz::GLHelper> helper = std::move(gl_helper_);
 
     // If there are any observer left at this point, make sure they clean up
     // before we destroy the GLHelper.
@@ -825,13 +816,13 @@ FrameSinkManagerHost* GpuProcessTransportFactory::GetFrameSinkManagerHost() {
   return frame_sink_manager_host_.get();
 }
 
-display_compositor::GLHelper* GpuProcessTransportFactory::GetGLHelper() {
+viz::GLHelper* GpuProcessTransportFactory::GetGLHelper() {
   if (!gl_helper_ && !per_compositor_data_.empty()) {
     scoped_refptr<cc::ContextProvider> provider =
         SharedMainThreadContextProvider();
     if (provider.get())
-      gl_helper_.reset(new display_compositor::GLHelper(
-          provider->ContextGL(), provider->ContextSupport()));
+      gl_helper_.reset(
+          new viz::GLHelper(provider->ContextGL(), provider->ContextSupport()));
   }
   return gl_helper_.get();
 }
@@ -935,8 +926,7 @@ void GpuProcessTransportFactory::OnLostMainThreadSharedContext() {
       shared_main_thread_contexts_;
   shared_main_thread_contexts_  = NULL;
 
-  std::unique_ptr<display_compositor::GLHelper> lost_gl_helper =
-      std::move(gl_helper_);
+  std::unique_ptr<viz::GLHelper> lost_gl_helper = std::move(gl_helper_);
 
   for (auto& observer : observer_list_)
     observer.OnLostResources();

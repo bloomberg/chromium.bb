@@ -5,10 +5,10 @@
 #include <stddef.h>
 #include <string.h>
 
-#include "components/display_compositor/host_shared_bitmap_manager.h"
+#include "components/viz/display_compositor/host_shared_bitmap_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace display_compositor {
+namespace viz {
 namespace {
 
 class HostSharedBitmapManagerTest : public testing::Test {
@@ -134,4 +134,4 @@ TEST_F(HostSharedBitmapManagerTest, AddDuplicate) {
 }
 
 }  // namespace
-}  // namespace display_compositor
+}  // namespace viz

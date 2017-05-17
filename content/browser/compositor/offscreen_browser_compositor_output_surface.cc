@@ -11,7 +11,7 @@
 #include "cc/output/output_surface_client.h"
 #include "cc/output/output_surface_frame.h"
 #include "cc/resources/resource_provider.h"
-#include "components/display_compositor/compositor_overlay_candidate_validator.h"
+#include "components/viz/display_compositor/compositor_overlay_candidate_validator.h"
 #include "content/browser/compositor/reflector_impl.h"
 #include "content/browser/compositor/reflector_texture.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
@@ -32,7 +32,7 @@ OffscreenBrowserCompositorOutputSurface::
     OffscreenBrowserCompositorOutputSurface(
         scoped_refptr<ui::ContextProviderCommandBuffer> context,
         const UpdateVSyncParametersCallback& update_vsync_parameters_callback,
-        std::unique_ptr<display_compositor::CompositorOverlayCandidateValidator>
+        std::unique_ptr<viz::CompositorOverlayCandidateValidator>
             overlay_candidate_validator)
     : BrowserCompositorOutputSurface(std::move(context),
                                      update_vsync_parameters_callback,
