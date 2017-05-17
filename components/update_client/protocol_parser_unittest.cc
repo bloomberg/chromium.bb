@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/update_client/update_response.h"
+#include "components/update_client/protocol_parser.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace update_client {
@@ -289,8 +289,8 @@ const char* kUpdateCheckStatusErrorWithRunAction =
     " </app>"
     "</response>";
 
-TEST(ComponentUpdaterUpdateResponseTest, TestParser) {
-  UpdateResponse parser;
+TEST(ComponentUpdaterProtocolParserTest, Parse) {
+  ProtocolParser parser;
 
   // Test parsing of a number of invalid xml cases
   EXPECT_FALSE(parser.Parse(std::string()));
@@ -324,7 +324,7 @@ TEST(ComponentUpdaterUpdateResponseTest, TestParser) {
   EXPECT_TRUE(parser.Parse(kValidXml));
   EXPECT_TRUE(parser.errors().empty());
   EXPECT_EQ(1u, parser.results().list.size());
-  const UpdateResponse::Result* firstResult = &parser.results().list[0];
+  const ProtocolParser::Result* firstResult = &parser.results().list[0];
   EXPECT_STREQ("ok", firstResult->status.c_str());
   EXPECT_EQ(1u, firstResult->crx_urls.size());
   EXPECT_EQ(GURL("http://example.com/"), firstResult->crx_urls[0]);
@@ -399,7 +399,7 @@ TEST(ComponentUpdaterUpdateResponseTest, TestParser) {
             firstResult->cohort_attrs.end());
   EXPECT_EQ(firstResult->cohort_attrs.find("cohorthint"),
             firstResult->cohort_attrs.end());
-  const UpdateResponse::Result* secondResult = &parser.results().list[1];
+  const ProtocolParser::Result* secondResult = &parser.results().list[1];
   EXPECT_EQ(secondResult->extension_id, "bbbbbbbb");
   EXPECT_NE(secondResult->cohort_attrs.find("cohort"),
             secondResult->cohort_attrs.end());

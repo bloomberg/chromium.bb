@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/update_client/update_response.h"
+#include "components/update_client/protocol_parser.h"
 
 #include <stddef.h>
 
@@ -20,31 +20,31 @@
 
 namespace update_client {
 
-const char UpdateResponse::Result::kCohort[] = "cohort";
-const char UpdateResponse::Result::kCohortHint[] = "cohorthint";
-const char UpdateResponse::Result::kCohortName[] = "cohortname";
+const char ProtocolParser::Result::kCohort[] = "cohort";
+const char ProtocolParser::Result::kCohortHint[] = "cohorthint";
+const char ProtocolParser::Result::kCohortName[] = "cohortname";
 
-UpdateResponse::UpdateResponse() = default;
-UpdateResponse::~UpdateResponse() = default;
+ProtocolParser::ProtocolParser() = default;
+ProtocolParser::~ProtocolParser() = default;
 
-UpdateResponse::Results::Results() = default;
-UpdateResponse::Results::Results(const Results& other) = default;
-UpdateResponse::Results::~Results() = default;
+ProtocolParser::Results::Results() = default;
+ProtocolParser::Results::Results(const Results& other) = default;
+ProtocolParser::Results::~Results() = default;
 
-UpdateResponse::Result::Result() = default;
-UpdateResponse::Result::Result(const Result& other) = default;
-UpdateResponse::Result::~Result() = default;
+ProtocolParser::Result::Result() = default;
+ProtocolParser::Result::Result(const Result& other) = default;
+ProtocolParser::Result::~Result() = default;
 
-UpdateResponse::Result::Manifest::Manifest() = default;
-UpdateResponse::Result::Manifest::Manifest(const Manifest& other) = default;
-UpdateResponse::Result::Manifest::~Manifest() = default;
+ProtocolParser::Result::Manifest::Manifest() = default;
+ProtocolParser::Result::Manifest::Manifest(const Manifest& other) = default;
+ProtocolParser::Result::Manifest::~Manifest() = default;
 
-UpdateResponse::Result::Manifest::Package::Package() = default;
-UpdateResponse::Result::Manifest::Package::Package(const Package& other) =
+ProtocolParser::Result::Manifest::Package::Package() = default;
+ProtocolParser::Result::Manifest::Package::Package(const Package& other) =
     default;
-UpdateResponse::Result::Manifest::Package::~Package() = default;
+ProtocolParser::Result::Manifest::Package::~Package() = default;
 
-void UpdateResponse::ParseError(const char* details, ...) {
+void ProtocolParser::ParseError(const char* details, ...) {
   va_list args;
   va_start(args, details);
 
@@ -128,9 +128,9 @@ class ScopedXmlDocument {
 
 // Parses the <package> tag.
 bool ParsePackageTag(xmlNode* package,
-                     UpdateResponse::Result* result,
+                     ProtocolParser::Result* result,
                      std::string* error) {
-  UpdateResponse::Result::Manifest::Package p;
+  ProtocolParser::Result::Manifest::Package p;
   p.name = GetAttribute(package, "name");
   if (p.name.empty()) {
     *error = "Missing name for package.";
@@ -162,7 +162,7 @@ bool ParsePackageTag(xmlNode* package,
 
 // Parses the <manifest> tag.
 bool ParseManifestTag(xmlNode* manifest,
-                      UpdateResponse::Result* result,
+                      ProtocolParser::Result* result,
                       std::string* error) {
   // Get the version.
   result->manifest.version = GetAttribute(manifest, "version");
@@ -210,7 +210,7 @@ bool ParseManifestTag(xmlNode* manifest,
 
 // Parses the <urls> tag and its children in the <updatecheck>.
 bool ParseUrlsTag(xmlNode* urls,
-                  UpdateResponse::Result* result,
+                  ProtocolParser::Result* result,
                   std::string* error) {
   // Get the url nodes.
   std::vector<xmlNode*> url = GetChildren(urls, "url");
@@ -246,7 +246,7 @@ bool ParseUrlsTag(xmlNode* urls,
 
 // Parses the <actions> tag. It picks up the "run" attribute of the first
 // "action" element in "actions".
-void ParseActionsTag(xmlNode* updatecheck, UpdateResponse::Result* result) {
+void ParseActionsTag(xmlNode* updatecheck, ProtocolParser::Result* result) {
   std::vector<xmlNode*> actions = GetChildren(updatecheck, "actions");
   if (actions.empty())
     return;
@@ -260,7 +260,7 @@ void ParseActionsTag(xmlNode* updatecheck, UpdateResponse::Result* result) {
 
 // Parses the <updatecheck> tag.
 bool ParseUpdateCheckTag(xmlNode* updatecheck,
-                         UpdateResponse::Result* result,
+                         ProtocolParser::Result* result,
                          std::string* error) {
   // Read the |status| attribute.
   result->status = GetAttribute(updatecheck, "status");
@@ -302,13 +302,13 @@ bool ParseUpdateCheckTag(xmlNode* updatecheck,
 
 // Parses a single <app> tag.
 bool ParseAppTag(xmlNode* app,
-                 UpdateResponse::Result* result,
+                 ProtocolParser::Result* result,
                  std::string* error) {
   // Read cohort information.
   auto cohort = GetAttributePtr(app, "cohort");
-  static const char* attrs[] = {UpdateResponse::Result::kCohort,
-                                UpdateResponse::Result::kCohortHint,
-                                UpdateResponse::Result::kCohortName};
+  static const char* attrs[] = {ProtocolParser::Result::kCohort,
+                                ProtocolParser::Result::kCohortHint,
+                                ProtocolParser::Result::kCohortName};
   for (auto* attr : attrs) {
     auto value = GetAttributePtr(app, attr);
     if (value)
@@ -332,7 +332,7 @@ bool ParseAppTag(xmlNode* app,
   return ParseUpdateCheckTag(updates[0], result, error);
 }
 
-bool UpdateResponse::Parse(const std::string& response_xml) {
+bool ProtocolParser::Parse(const std::string& response_xml) {
   results_.daystart_elapsed_seconds = kNoDaystart;
   results_.daystart_elapsed_days = kNoDaystart;
   results_.list.clear();

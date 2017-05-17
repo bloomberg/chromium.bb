@@ -32,7 +32,6 @@
 #include "components/update_client/update_client.h"
 #include "components/update_client/update_client_errors.h"
 #include "components/update_client/update_query_params.h"
-#include "components/update_client/update_response.h"
 #include "components/update_client/updater_state.h"
 #include "crypto/secure_hash.h"
 #include "crypto/sha2.h"

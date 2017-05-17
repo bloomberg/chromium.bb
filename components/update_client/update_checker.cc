@@ -22,6 +22,7 @@
 #include "components/update_client/component.h"
 #include "components/update_client/configurator.h"
 #include "components/update_client/persisted_data.h"
+#include "components/update_client/protocol_parser.h"
 #include "components/update_client/request_sender.h"
 #include "components/update_client/update_client.h"
 #include "components/update_client/updater_state.h"
@@ -167,7 +168,7 @@ class UpdateCheckerImpl : public UpdateChecker {
                                const std::string& response,
                                int retry_after_sec);
   void UpdateCheckSucceeded(const IdToComponentPtrMap& components,
-                            const UpdateResponse::Results& results,
+                            const ProtocolParser::Results& results,
                             int retry_after_sec);
   void UpdateCheckFailed(const IdToComponentPtrMap& components,
                          int error,
@@ -253,7 +254,7 @@ void UpdateCheckerImpl::OnRequestSenderComplete(
     return;
   }
 
-  UpdateResponse update_response;
+  ProtocolParser update_response;
   if (!update_response.Parse(response)) {
     VLOG(1) << "Parse failed " << update_response.errors();
     UpdateCheckFailed(components, -1, retry_after_sec);
@@ -266,21 +267,21 @@ void UpdateCheckerImpl::OnRequestSenderComplete(
 
 void UpdateCheckerImpl::UpdateCheckSucceeded(
     const IdToComponentPtrMap& components,
-    const UpdateResponse::Results& results,
+    const ProtocolParser::Results& results,
     int retry_after_sec) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   const int daynum = results.daystart_elapsed_days;
-  if (daynum != UpdateResponse::kNoDaystart)
+  if (daynum != ProtocolParser::kNoDaystart)
     metadata_->SetDateLastRollCall(ids_checked_, daynum);
   for (const auto& result : results.list) {
-    auto entry = result.cohort_attrs.find(UpdateResponse::Result::kCohort);
+    auto entry = result.cohort_attrs.find(ProtocolParser::Result::kCohort);
     if (entry != result.cohort_attrs.end())
       metadata_->SetCohort(result.extension_id, entry->second);
-    entry = result.cohort_attrs.find(UpdateResponse::Result::kCohortName);
+    entry = result.cohort_attrs.find(ProtocolParser::Result::kCohortName);
     if (entry != result.cohort_attrs.end())
       metadata_->SetCohortName(result.extension_id, entry->second);
-    entry = result.cohort_attrs.find(UpdateResponse::Result::kCohortHint);
+    entry = result.cohort_attrs.find(ProtocolParser::Result::kCohortHint);
     if (entry != result.cohort_attrs.end())
       metadata_->SetCohortHint(result.extension_id, entry->second);
   }

@@ -13,7 +13,6 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "components/update_client/component.h"
-#include "components/update_client/update_response.h"
 #include "url/gurl.h"
 
 namespace update_client {
