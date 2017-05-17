@@ -155,10 +155,12 @@ class CC_ANIMATION_EXPORT AnimationHost
   bool HasAnyAnimation(ElementId element_id) const override;
   bool HasTickingAnimationForTesting(ElementId element_id) const override;
 
-  void ImplOnlyScrollAnimationCreate(ElementId element_id,
-                                     const gfx::ScrollOffset& target_offset,
-                                     const gfx::ScrollOffset& current_offset,
-                                     base::TimeDelta delayed_by) override;
+  void ImplOnlyScrollAnimationCreate(
+      ElementId element_id,
+      const gfx::ScrollOffset& target_offset,
+      const gfx::ScrollOffset& current_offset,
+      base::TimeDelta delayed_by,
+      base::TimeDelta animation_start_offset) override;
   bool ImplOnlyScrollAnimationUpdateTarget(
       ElementId element_id,
       const gfx::Vector2dF& scroll_delta,

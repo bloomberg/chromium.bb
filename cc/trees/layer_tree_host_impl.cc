@@ -2975,8 +2975,14 @@ bool LayerTreeHostImpl::ScrollAnimationCreate(ScrollNode* scroll_node,
           active_tree()->LayerById(scroll_node->owning_layer_id)->element_id()),
       scroll_node->element_id);
 
+  // Start the animation one full frame in. Without any offset, the animation
+  // doesn't start until next frame, increasing latency, and preventing our
+  // input latency tracking architecture from working.
+  base::TimeDelta animation_start_offset = CurrentBeginFrameArgs().interval;
+
   mutator_host_->ImplOnlyScrollAnimationCreate(
-      scroll_node->element_id, target_offset, current_offset, delayed_by);
+      scroll_node->element_id, target_offset, current_offset, delayed_by,
+      animation_start_offset);
 
   SetNeedsOneBeginImplFrame();
 

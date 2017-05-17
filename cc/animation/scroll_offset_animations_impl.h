@@ -31,10 +31,14 @@ class CC_ANIMATION_EXPORT ScrollOffsetAnimationsImpl
 
   ~ScrollOffsetAnimationsImpl() override;
 
+  // |delayed_by| shrinks the duration of the
+  // animation. |animation_start_offset| causes us to start the animation
+  // partway through.
   void ScrollAnimationCreate(ElementId element_id,
                              const gfx::ScrollOffset& target_offset,
                              const gfx::ScrollOffset& current_offset,
-                             base::TimeDelta delayed_by);
+                             base::TimeDelta delayed_by,
+                             base::TimeDelta animation_start_offset);
 
   bool ScrollAnimationUpdateTarget(ElementId element_id,
                                    const gfx::Vector2dF& scroll_delta,
