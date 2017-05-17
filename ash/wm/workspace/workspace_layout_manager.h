@@ -28,7 +28,12 @@ class KeyboardController;
 namespace ash {
 
 class RootWindowController;
-class WorkspaceLayoutManagerBackdropDelegate;
+class BackdropDelegate;
+class BackdropController;
+
+namespace test {
+class WorkspaceControllerTestApi;
+}
 
 namespace wm {
 class WMEvent;
@@ -51,8 +56,7 @@ class ASH_EXPORT WorkspaceLayoutManager
   // A delegate which can be set to add a backdrop behind the top most visible
   // window. With the call the ownership of the delegate will be transferred to
   // the WorkspaceLayoutManager.
-  void SetMaximizeBackdropDelegate(
-      std::unique_ptr<WorkspaceLayoutManagerBackdropDelegate> delegate);
+  void SetBackdropDelegate(std::unique_ptr<BackdropDelegate> delegate);
 
   // Overridden from aura::LayoutManager:
   void OnWindowResized() override;
@@ -100,6 +104,7 @@ class ASH_EXPORT WorkspaceLayoutManager
                                      aura::Window* root_window) override;
 
  private:
+  friend class test::WorkspaceControllerTestApi;
   typedef std::set<aura::Window*> WindowSet;
 
   // Adjusts the bounds of all managed windows when the display area changes.
@@ -137,7 +142,7 @@ class ASH_EXPORT WorkspaceLayoutManager
 
   // A window which covers the full container and which gets inserted behind the
   // topmost visible window.
-  std::unique_ptr<WorkspaceLayoutManagerBackdropDelegate> backdrop_delegate_;
+  std::unique_ptr<BackdropController> backdrop_controller_;
 
   ScopedObserver<keyboard::KeyboardController,
                  keyboard::KeyboardControllerObserver>

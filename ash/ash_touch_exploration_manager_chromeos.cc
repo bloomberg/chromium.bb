@@ -167,9 +167,9 @@ void AshTouchExplorationManager::UpdateTouchExplorationState() {
               touch_accessibility_enabler_.get());
     }
     if (pass_through_surface) {
-      const gfx::Rect& work_area = root_window_controller_->GetWindow()
-                                       ->GetDisplayNearestWindow()
-                                       .work_area();
+      const gfx::Rect work_area = root_window_controller_->GetWindow()
+                                      ->GetDisplayNearestWindow()
+                                      .work_area();
       touch_exploration_controller_->SetExcludeBounds(work_area);
       SilenceSpokenFeedback();
       Shell::Get()->accessibility_delegate()->ClearFocusHighlight();
