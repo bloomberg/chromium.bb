@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef REMOTING_CLIENT_UI_SIMULATED_TOUCH_INPUT_STRATEGY_H_
-#define REMOTING_CLIENT_UI_SIMULATED_TOUCH_INPUT_STRATEGY_H_
+#ifndef REMOTING_CLIENT_UI_DIRECT_INPUT_STRATEGY_H_
+#define REMOTING_CLIENT_UI_DIRECT_INPUT_STRATEGY_H_
 
 #include "remoting/client/ui/input_strategy.h"
 
@@ -32,6 +32,10 @@ class DirectInputStrategy : public InputStrategy {
 
   ViewMatrix::Point GetCursorPosition() const override;
 
+  ViewMatrix::Vector2D MapScreenVectorToDesktop(
+      const ViewMatrix::Vector2D& delta,
+      const DesktopViewport& viewport) const override;
+
   float GetFeedbackRadius(InputFeedbackType type) const override;
 
   bool IsCursorVisible() const override;
@@ -45,4 +49,4 @@ class DirectInputStrategy : public InputStrategy {
 };
 
 }  // namespace remoting
-#endif  // REMOTING_CLIENT_UI_SIMULATED_TOUCH_INPUT_STRATEGY_H_
+#endif  // REMOTING_CLIENT_UI_DIRECT_INPUT_STRATEGY_H_

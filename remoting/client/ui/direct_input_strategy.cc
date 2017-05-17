@@ -50,6 +50,12 @@ ViewMatrix::Point DirectInputStrategy::GetCursorPosition() const {
   return cursor_position_;
 }
 
+ViewMatrix::Vector2D DirectInputStrategy::MapScreenVectorToDesktop(
+    const ViewMatrix::Vector2D& delta,
+    const DesktopViewport& viewport) const {
+  return viewport.GetTransformation().Invert().MapVector(delta);
+}
+
 float DirectInputStrategy::GetFeedbackRadius(InputFeedbackType type) const {
   switch (type) {
     case InputFeedbackType::TAP_FEEDBACK:

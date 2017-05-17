@@ -49,6 +49,13 @@ class GestureInterpreter {
   // pinching) and the pan gesture still has some final velocity.
   void OneFingerFling(float velocity_x, float velocity_y);
 
+  // Called during a two-finger scroll (panning without pinching) gesture.
+  void Scroll(float x, float y, float dx, float dy);
+
+  // Called when the user has just done a scroll gesture and the scroll gesture
+  // still has some final velocity.
+  void ScrollWithVelocity(float velocity_x, float velocity_y);
+
   // Called to process one animation frame.
   void ProcessAnimations();
 
@@ -57,6 +64,8 @@ class GestureInterpreter {
 
  private:
   void PanWithoutAbortAnimations(float translation_x, float translation_y);
+
+  void ScrollWithoutAbortAnimations(float dx, float dy);
 
   void AbortAnimations();
 
@@ -85,6 +94,7 @@ class GestureInterpreter {
   bool is_dragging_mode_ = false;
 
   FlingAnimation pan_animation_;
+  FlingAnimation scroll_animation_;
 
   // GestureInterpreter is neither copyable nor movable.
   GestureInterpreter(const GestureInterpreter&) = delete;
