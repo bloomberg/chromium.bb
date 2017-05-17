@@ -24,6 +24,7 @@
 #include "cc/scheduler/begin_frame_source.h"
 #include "cc/surfaces/local_surface_id.h"
 #include "cc/surfaces/local_surface_id_allocator.h"
+#include "content/common/render_widget_surface_properties.h"
 #include "content/renderer/gpu/compositor_forwarding_message_filter.h"
 #include "ipc/ipc_sync_message_filter.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -95,9 +96,6 @@ class RendererCompositorFrameSink
   void OnMessageReceived(const IPC::Message& message);
   void OnBeginFrameIPC(const cc::BeginFrameArgs& args);
 
-  bool ShouldAllocateNewLocalSurfaceId(const cc::CompositorFrame& frame);
-  void UpdateFrameData(const cc::CompositorFrame& frame);
-
   // cc::mojom::MojoCompositorFrameSinkClient implementation.
   void DidReceiveCompositorFrameAck(
       const cc::ReturnedResourceArray& resources) override;
@@ -123,18 +121,7 @@ class RendererCompositorFrameSink
 
   cc::LocalSurfaceId local_surface_id_;
   cc::LocalSurfaceIdAllocator id_allocator_;
-  struct {
-    gfx::Size frame_size;
-    float device_scale_factor;
-#ifdef OS_ANDROID
-    float top_controls_height;
-    float top_controls_shown_ratio;
-    float bottom_controls_height;
-    float bottom_controls_shown_ratio;
-    cc::Selection<gfx::SelectionBound> viewport_selection;
-    bool has_transparent_background;
-#endif
-  } current_frame_data_;
+  RenderWidgetSurfaceProperties current_surface_properties_;
 
   base::ThreadChecker thread_checker_;
 

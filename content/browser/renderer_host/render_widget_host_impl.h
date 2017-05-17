@@ -39,6 +39,7 @@
 #include "content/common/drag_event_source_info.h"
 #include "content/common/input/input_event_ack_state.h"
 #include "content/common/input/synthetic_gesture_packet.h"
+#include "content/common/render_widget_surface_properties.h"
 #include "content/common/view_message_enums.h"
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/common/page_zoom.h"
@@ -963,11 +964,10 @@ class CONTENT_EXPORT RenderWidgetHostImpl
 #endif
 
   // These information are used to verify that the renderer does not misbehave
-  // when it comes to allocating LocalSurfaceIds. If frame size or device scale
-  // factor change, a new LocalSurfaceId must be created.
+  // when it comes to allocating LocalSurfaceIds. If surface properties change,
+  // a new LocalSurfaceId must be created.
   cc::LocalSurfaceId last_local_surface_id_;
-  gfx::Size last_frame_size_;
-  float last_device_scale_factor_;
+  RenderWidgetSurfaceProperties last_surface_properties_;
 
   mojo::Binding<cc::mojom::MojoCompositorFrameSink>
       compositor_frame_sink_binding_;

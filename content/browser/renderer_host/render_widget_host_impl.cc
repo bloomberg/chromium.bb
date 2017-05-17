@@ -2562,29 +2562,21 @@ void RenderWidgetHostImpl::SetNeedsBeginFrame(bool needs_begin_frame) {
 void RenderWidgetHostImpl::SubmitCompositorFrame(
     const cc::LocalSurfaceId& local_surface_id,
     cc::CompositorFrame frame) {
-  // The renderer must allocate a new LocalSurfaceId if frame size or device
-  // scale factor changes.
-  float device_scale_factor = frame.metadata.device_scale_factor;
-  const gfx::Size& frame_size =
-      frame.render_pass_list.back()->output_rect.size();
+  auto new_surface_properties =
+      RenderWidgetSurfaceProperties::FromCompositorFrame(frame);
+
   if (local_surface_id == last_local_surface_id_ &&
-      (frame_size != last_frame_size_ ||
-       device_scale_factor != last_device_scale_factor_)) {
-    DLOG(ERROR) << "Renderer submitted frame of wrong size to its surface."
-                << " Expected: size=" << last_frame_size_.ToString()
-                << ",scale=" << last_device_scale_factor_
-                << " Received: size=" << frame_size.ToString()
-                << ",scale=" << device_scale_factor;
+      new_surface_properties != last_surface_properties_) {
+    bad_message::ReceivedBadMessage(
+        GetProcess(), bad_message::RWH_SURFACE_INVARIANTS_VIOLATION);
     return;
   }
 
-  uint32_t frame_token = frame.metadata.frame_token;
-
   last_local_surface_id_ = local_surface_id;
-  last_frame_size_ = frame_size;
-  last_device_scale_factor_ = device_scale_factor;
+  last_surface_properties_ = new_surface_properties;
 
   last_received_content_source_id_ = frame.metadata.content_source_id;
+  uint32_t frame_token = frame.metadata.frame_token;
 
   // |has_damage| is not transmitted.
   frame.metadata.begin_frame_ack.has_damage = true;
