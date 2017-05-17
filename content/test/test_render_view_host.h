@@ -103,6 +103,7 @@ class TestRenderWidgetHostView : public RenderWidgetHostViewBase {
   void Focus() override {}
   void SetIsLoading(bool is_loading) override {}
   void UpdateCursor(const WebCursor& cursor) override {}
+  void OnSetNeedsFlushInput() override {}
   void RenderProcessGone(base::TerminationStatus status,
                          int error_code) override;
   void Destroy() override;

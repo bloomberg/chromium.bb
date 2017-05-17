@@ -403,7 +403,7 @@ SkColor RenderWidgetHostViewMac::BrowserCompositorMacGetGutterColor(
 void RenderWidgetHostViewMac::BrowserCompositorMacSendBeginFrame(
     const cc::BeginFrameArgs& args) {
   needs_flush_input_ = false;
-  render_widget_host_->FlushInput();
+  render_widget_host_->OnBeginFrame();
   UpdateNeedsBeginFramesInternal();
   render_widget_host_->Send(
       new ViewMsg_BeginFrame(render_widget_host_->GetRoutingID(), args));

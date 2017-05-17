@@ -157,6 +157,7 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
 
   InputEventAckState FilterInputEvent(
       const blink::WebInputEvent& input_event) override;
+  void OnSetNeedsFlushInput() override;
   BrowserAccessibilityManager* CreateBrowserAccessibilityManager(
       BrowserAccessibilityDelegate* delegate, bool for_root_frame) override;
 

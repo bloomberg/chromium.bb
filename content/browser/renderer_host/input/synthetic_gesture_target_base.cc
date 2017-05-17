@@ -103,10 +103,6 @@ void SyntheticGestureTargetBase::DispatchWebMouseEventToPlatform(
   host_->ForwardMouseEventWithLatencyInfo(web_mouse, latency_info);
 }
 
-void SyntheticGestureTargetBase::SetNeedsFlush() {
-  host_->SetNeedsFlush();
-}
-
 SyntheticGestureParams::GestureSourceType
 SyntheticGestureTargetBase::GetDefaultSyntheticGestureSourceType() const {
   return SyntheticGestureParams::MOUSE_INPUT;

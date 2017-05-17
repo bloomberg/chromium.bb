@@ -17,7 +17,6 @@
 #include "base/observer_list.h"
 #include "base/process/kill.h"
 #include "base/strings/string16.h"
-#include "base/timer/timer.h"
 #include "build/build_config.h"
 #include "cc/ipc/mojo_compositor_frame_sink.mojom.h"
 #include "cc/output/compositor_frame.h"
@@ -190,7 +189,7 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
 
   // Called by the host when it requires an input flush; the flush call should
   // by synchronized with BeginFrame.
-  virtual void OnSetNeedsFlushInput();
+  virtual void OnSetNeedsFlushInput() = 0;
 
   virtual void WheelEventAck(const blink::WebMouseWheelEvent& event,
                              InputEventAckState ack_result);
@@ -457,13 +456,9 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
   TextInputManager* text_input_manager_;
 
  private:
-  void FlushInput();
-
   gfx::Rect current_display_area_;
 
   uint32_t renderer_frame_number_;
-
-  base::OneShotTimer flush_input_timer_;
 
   base::ObserverList<RenderWidgetHostViewBaseObserver> observers_;
 

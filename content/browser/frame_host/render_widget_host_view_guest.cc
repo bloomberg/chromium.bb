@@ -534,6 +534,10 @@ void RenderWidgetHostViewGuest::MaybeSendSyntheticTapGesture(
   }
 }
 
+void RenderWidgetHostViewGuest::OnSetNeedsFlushInput() {
+  NOTIMPLEMENTED();
+}
+
 void RenderWidgetHostViewGuest::WheelEventAck(
     const blink::WebMouseWheelEvent& event,
     InputEventAckState ack_result) {

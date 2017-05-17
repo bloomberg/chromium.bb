@@ -489,15 +489,9 @@ void RenderWidgetHostImpl::SendScreenRects() {
   waiting_for_screen_rects_ack_ = true;
 }
 
-void RenderWidgetHostImpl::FlushInput() {
-  input_router_->RequestNotificationWhenFlushed();
-  if (synthetic_gesture_controller_)
-    synthetic_gesture_controller_->Flush(base::TimeTicks::Now());
-}
-
-void RenderWidgetHostImpl::SetNeedsFlush() {
-  if (view_)
-    view_->OnSetNeedsFlushInput();
+void RenderWidgetHostImpl::OnBeginFrame() {
+  if (begin_frame_callback_)
+    std::move(begin_frame_callback_).Run();
 }
 
 void RenderWidgetHostImpl::Init() {
@@ -1320,8 +1314,12 @@ void RenderWidgetHostImpl::QueueSyntheticGesture(
     std::unique_ptr<SyntheticGesture> synthetic_gesture,
     const base::Callback<void(SyntheticGesture::Result)>& on_complete) {
   if (!synthetic_gesture_controller_ && view_) {
-    synthetic_gesture_controller_.reset(
-        new SyntheticGestureController(view_->CreateSyntheticGestureTarget()));
+    synthetic_gesture_controller_ =
+        base::MakeUnique<SyntheticGestureController>(
+            view_->CreateSyntheticGestureTarget(),
+            base::Bind(
+                &RenderWidgetHostImpl::RequestBeginFrameForSynthesizedInput,
+                base::Unretained(this)));
   }
   if (synthetic_gesture_controller_) {
     synthetic_gesture_controller_->QueueSyntheticGesture(
@@ -1866,6 +1864,13 @@ void RenderWidgetHostImpl::OnGpuSwapBuffersCompletedInternal(
   latency_tracker_.OnGpuSwapBuffersCompleted(latency_info);
 }
 
+void RenderWidgetHostImpl::RequestBeginFrameForSynthesizedInput(
+    base::OnceClosure begin_frame_callback) {
+  DCHECK(view_);
+  begin_frame_callback_ = std::move(begin_frame_callback);
+  view_->OnSetNeedsFlushInput();
+}
+
 void RenderWidgetHostImpl::OnRenderProcessGone(int status, int exit_code) {
   // RenderFrameHost owns a RenderWidgetHost when it needs one, in which case
   // it handles destruction.
@@ -2218,8 +2223,6 @@ void RenderWidgetHostImpl::OnHasTouchEventHandlers(bool has_handlers) {
 }
 
 void RenderWidgetHostImpl::DidFlush() {
-  if (synthetic_gesture_controller_)
-    synthetic_gesture_controller_->OnDidFlushInput();
 }
 
 void RenderWidgetHostImpl::DidOverscroll(
