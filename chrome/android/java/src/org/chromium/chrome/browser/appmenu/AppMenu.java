@@ -440,9 +440,15 @@ public class AppMenu implements OnItemClickListener, OnKeyListener {
         View anchorView = mPopup.getAnchorView();
         anchorView.getLocationInWindow(mTempLocation);
         int anchorViewY = mTempLocation[1] - appDimensions.top;
-        if (isAnchorAtBottom(anchorView, appDimensions)) {
+
+        // The framework's PopupWindow positioning changed between N and M. Pre-N, increasing the
+        // height here causes the menu to be cut-off in landscape mode. See crbug.com/722105.
+        // TODO(twellington): stop using ListPopupWindow for the app menu.
+        if (isAnchorAtBottom(anchorView, appDimensions)
+                && Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             anchorViewY += mPopup.getAnchorView().getHeight();
         }
+
         int anchorViewImpactHeight = mIsByPermanentButton ? anchorView.getHeight() : 0;
 
         // Set appDimensions.height() for abnormal anchorViewLocation.
