@@ -1,0 +1,82 @@
+This is a testharness.js-based test.
+Found 78 tests; 8 PASS, 70 FAIL, 0 TIMEOUT, 0 NOTRUN.
+PASS DOMMatrix stringifier: identity (2d) 
+PASS DOMMatrix stringifier: identity (3d) 
+FAIL DOMMatrix stringifier: NaN (2d) assert_throws: function "() => String(matrix)" did not throw
+FAIL DOMMatrix stringifier: NaN (3d) assert_throws: function "() => String(matrix)" did not throw
+FAIL DOMMatrix stringifier: Infinity (2d) assert_throws: function "() => String(matrix)" did not throw
+FAIL DOMMatrix stringifier: Infinity (3d) assert_throws: function "() => String(matrix)" did not throw
+FAIL DOMMatrix stringifier: -Infinity (2d) assert_throws: function "() => String(matrix)" did not throw
+FAIL DOMMatrix stringifier: -Infinity (3d) assert_throws: function "() => String(matrix)" did not throw
+FAIL DOMMatrix stringifier: 1/3 (2d) assert_equals: expected "matrix(1, 0, 0, 1, 0, 0.3333333333333333)" but got "matrix(1, 0, 0, 1, 0, 0.333333)"
+FAIL DOMMatrix stringifier: 1/3 (3d) assert_equals: expected "matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0.3333333333333333, 0, 1)" but got "matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0.333333, 0, 1)"
+FAIL DOMMatrix stringifier: 1/300000 (2d) assert_equals: expected "matrix(1, 0, 0, 1, 0, 0.0000033333333333333333)" but got "matrix(1, 0, 0, 1, 0, 3.33333e-06)"
+FAIL DOMMatrix stringifier: 1/300000 (3d) assert_equals: expected "matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0.0000033333333333333333, 0, 1)" but got "matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 3.33333e-06, 0, 1)"
+FAIL DOMMatrix stringifier: 1/300000000 (2d) assert_equals: expected "matrix(1, 0, 0, 1, 0, 3.3333333333333334e-9)" but got "matrix(1, 0, 0, 1, 0, 3.33333e-09)"
+FAIL DOMMatrix stringifier: 1/300000000 (3d) assert_equals: expected "matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 3.3333333333333334e-9, 0, 1)" but got "matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 3.33333e-09, 0, 1)"
+FAIL DOMMatrix stringifier: 100000 + (1/3) (2d) assert_equals: expected "matrix(1, 0, 0, 1, 0, 100000.33333333333)" but got "matrix(1, 0, 0, 1, 0, 100000)"
+FAIL DOMMatrix stringifier: 100000 + (1/3) (3d) assert_equals: expected "matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 100000.33333333333, 0, 1)" but got "matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 100000, 0, 1)"
+FAIL DOMMatrix stringifier: Math.pow(2, 53) + 1 (2d) assert_equals: expected "matrix(1, 0, 0, 1, 0, 9007199254740992)" but got "matrix(1, 0, 0, 1, 0, 9.0072e+15)"
+FAIL DOMMatrix stringifier: Math.pow(2, 53) + 1 (3d) assert_equals: expected "matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 9007199254740992, 0, 1)" but got "matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 9.0072e+15, 0, 1)"
+FAIL DOMMatrix stringifier: Math.pow(2, 53) + 2 (2d) assert_equals: expected "matrix(1, 0, 0, 1, 0, 9007199254740994)" but got "matrix(1, 0, 0, 1, 0, 9.0072e+15)"
+FAIL DOMMatrix stringifier: Math.pow(2, 53) + 2 (3d) assert_equals: expected "matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 9007199254740994, 0, 1)" but got "matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 9.0072e+15, 0, 1)"
+FAIL DOMMatrix stringifier: Number.MAX_VALUE (2d) assert_equals: expected "matrix(1, 0, 0, 1, 0, 1.7976931348623157e+308)" but got "matrix(1, 0, 0, 1, 0, 1.79769e+308)"
+FAIL DOMMatrix stringifier: Number.MAX_VALUE (3d) assert_equals: expected "matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 1.7976931348623157e+308, 0, 1)" but got "matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 1.79769e+308, 0, 1)"
+FAIL DOMMatrix stringifier: Number.MIN_VALUE (2d) assert_equals: expected "matrix(1, 0, 0, 1, 0, 5e-324)" but got "matrix(1, 0, 0, 1, 0, 4.94066e-324)"
+FAIL DOMMatrix stringifier: Number.MIN_VALUE (3d) assert_equals: expected "matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 5e-324, 0, 1)" but got "matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 4.94066e-324, 0, 1)"
+PASS DOMMatrix stringifier: throwing getters (2d) 
+PASS DOMMatrix stringifier: throwing getters (3d) 
+PASS DOMMatrixReadOnly stringifier: identity (2d) 
+PASS DOMMatrixReadOnly stringifier: identity (3d) 
+FAIL DOMMatrixReadOnly stringifier: NaN (2d) assert_throws: function "() => String(matrix)" did not throw
+FAIL DOMMatrixReadOnly stringifier: NaN (3d) assert_throws: function "() => String(matrix)" did not throw
+FAIL DOMMatrixReadOnly stringifier: Infinity (2d) assert_throws: function "() => String(matrix)" did not throw
+FAIL DOMMatrixReadOnly stringifier: Infinity (3d) assert_throws: function "() => String(matrix)" did not throw
+FAIL DOMMatrixReadOnly stringifier: -Infinity (2d) assert_throws: function "() => String(matrix)" did not throw
+FAIL DOMMatrixReadOnly stringifier: -Infinity (3d) assert_throws: function "() => String(matrix)" did not throw
+FAIL DOMMatrixReadOnly stringifier: 1/3 (2d) assert_equals: expected "matrix(1, 0, 0, 1, 0, 0.3333333333333333)" but got "matrix(1, 0, 0, 1, 0, 0.333333)"
+FAIL DOMMatrixReadOnly stringifier: 1/3 (3d) assert_equals: expected "matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0.3333333333333333, 0, 1)" but got "matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0.333333, 0, 1)"
+FAIL DOMMatrixReadOnly stringifier: 1/300000 (2d) assert_equals: expected "matrix(1, 0, 0, 1, 0, 0.0000033333333333333333)" but got "matrix(1, 0, 0, 1, 0, 3.33333e-06)"
+FAIL DOMMatrixReadOnly stringifier: 1/300000 (3d) assert_equals: expected "matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0.0000033333333333333333, 0, 1)" but got "matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 3.33333e-06, 0, 1)"
+FAIL DOMMatrixReadOnly stringifier: 1/300000000 (2d) assert_equals: expected "matrix(1, 0, 0, 1, 0, 3.3333333333333334e-9)" but got "matrix(1, 0, 0, 1, 0, 3.33333e-09)"
+FAIL DOMMatrixReadOnly stringifier: 1/300000000 (3d) assert_equals: expected "matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 3.3333333333333334e-9, 0, 1)" but got "matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 3.33333e-09, 0, 1)"
+FAIL DOMMatrixReadOnly stringifier: 100000 + (1/3) (2d) assert_equals: expected "matrix(1, 0, 0, 1, 0, 100000.33333333333)" but got "matrix(1, 0, 0, 1, 0, 100000)"
+FAIL DOMMatrixReadOnly stringifier: 100000 + (1/3) (3d) assert_equals: expected "matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 100000.33333333333, 0, 1)" but got "matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 100000, 0, 1)"
+FAIL DOMMatrixReadOnly stringifier: Math.pow(2, 53) + 1 (2d) assert_equals: expected "matrix(1, 0, 0, 1, 0, 9007199254740992)" but got "matrix(1, 0, 0, 1, 0, 9.0072e+15)"
+FAIL DOMMatrixReadOnly stringifier: Math.pow(2, 53) + 1 (3d) assert_equals: expected "matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 9007199254740992, 0, 1)" but got "matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 9.0072e+15, 0, 1)"
+FAIL DOMMatrixReadOnly stringifier: Math.pow(2, 53) + 2 (2d) assert_equals: expected "matrix(1, 0, 0, 1, 0, 9007199254740994)" but got "matrix(1, 0, 0, 1, 0, 9.0072e+15)"
+FAIL DOMMatrixReadOnly stringifier: Math.pow(2, 53) + 2 (3d) assert_equals: expected "matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 9007199254740994, 0, 1)" but got "matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 9.0072e+15, 0, 1)"
+FAIL DOMMatrixReadOnly stringifier: Number.MAX_VALUE (2d) assert_equals: expected "matrix(1, 0, 0, 1, 0, 1.7976931348623157e+308)" but got "matrix(1, 0, 0, 1, 0, 1.79769e+308)"
+FAIL DOMMatrixReadOnly stringifier: Number.MAX_VALUE (3d) assert_equals: expected "matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 1.7976931348623157e+308, 0, 1)" but got "matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 1.79769e+308, 0, 1)"
+FAIL DOMMatrixReadOnly stringifier: Number.MIN_VALUE (2d) assert_equals: expected "matrix(1, 0, 0, 1, 0, 5e-324)" but got "matrix(1, 0, 0, 1, 0, 4.94066e-324)"
+FAIL DOMMatrixReadOnly stringifier: Number.MIN_VALUE (3d) assert_equals: expected "matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 5e-324, 0, 1)" but got "matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 4.94066e-324, 0, 1)"
+PASS DOMMatrixReadOnly stringifier: throwing getters (2d) 
+PASS DOMMatrixReadOnly stringifier: throwing getters (3d) 
+FAIL WebKitCSSMatrix stringifier: identity (2d) assert_equals: expected "matrix(1, 0, 0, 1, 0, 0)" but got "matrix(1.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000)"
+FAIL WebKitCSSMatrix stringifier: identity (3d) self[constr].fromMatrix is not a function
+FAIL WebKitCSSMatrix stringifier: NaN (2d) Failed to construct 'WebKitCSSMatrix': Failed to parse '1,0,0,1,0,NaN'.
+FAIL WebKitCSSMatrix stringifier: NaN (3d) Failed to construct 'WebKitCSSMatrix': Failed to parse '1,0,0,0,0,1,0,0,0,0,1,0,0,NaN,0,1'.
+FAIL WebKitCSSMatrix stringifier: Infinity (2d) Failed to construct 'WebKitCSSMatrix': Failed to parse '1,0,0,1,0,Infinity'.
+FAIL WebKitCSSMatrix stringifier: Infinity (3d) Failed to construct 'WebKitCSSMatrix': Failed to parse '1,0,0,0,0,1,0,0,0,0,1,0,0,Infinity,0,1'.
+FAIL WebKitCSSMatrix stringifier: -Infinity (2d) Failed to construct 'WebKitCSSMatrix': Failed to parse '1,0,0,1,0,-Infinity'.
+FAIL WebKitCSSMatrix stringifier: -Infinity (3d) Failed to construct 'WebKitCSSMatrix': Failed to parse '1,0,0,0,0,1,0,0,0,0,1,0,0,-Infinity,0,1'.
+FAIL WebKitCSSMatrix stringifier: 1/3 (2d) Failed to construct 'WebKitCSSMatrix': Failed to parse '1,0,0,1,0,0.3333333333333333'.
+FAIL WebKitCSSMatrix stringifier: 1/3 (3d) Failed to construct 'WebKitCSSMatrix': Failed to parse '1,0,0,0,0,1,0,0,0,0,1,0,0,0.3333333333333333,0,1'.
+FAIL WebKitCSSMatrix stringifier: 1/300000 (2d) Failed to construct 'WebKitCSSMatrix': Failed to parse '1,0,0,1,0,0.0000033333333333333333'.
+FAIL WebKitCSSMatrix stringifier: 1/300000 (3d) Failed to construct 'WebKitCSSMatrix': Failed to parse '1,0,0,0,0,1,0,0,0,0,1,0,0,0.0000033333333333333333,0,1'.
+FAIL WebKitCSSMatrix stringifier: 1/300000000 (2d) Failed to construct 'WebKitCSSMatrix': Failed to parse '1,0,0,1,0,3.3333333333333334e-9'.
+FAIL WebKitCSSMatrix stringifier: 1/300000000 (3d) Failed to construct 'WebKitCSSMatrix': Failed to parse '1,0,0,0,0,1,0,0,0,0,1,0,0,3.3333333333333334e-9,0,1'.
+FAIL WebKitCSSMatrix stringifier: 100000 + (1/3) (2d) Failed to construct 'WebKitCSSMatrix': Failed to parse '1,0,0,1,0,100000.33333333333'.
+FAIL WebKitCSSMatrix stringifier: 100000 + (1/3) (3d) Failed to construct 'WebKitCSSMatrix': Failed to parse '1,0,0,0,0,1,0,0,0,0,1,0,0,100000.33333333333,0,1'.
+FAIL WebKitCSSMatrix stringifier: Math.pow(2, 53) + 1 (2d) Failed to construct 'WebKitCSSMatrix': Failed to parse '1,0,0,1,0,9007199254740992'.
+FAIL WebKitCSSMatrix stringifier: Math.pow(2, 53) + 1 (3d) Failed to construct 'WebKitCSSMatrix': Failed to parse '1,0,0,0,0,1,0,0,0,0,1,0,0,9007199254740992,0,1'.
+FAIL WebKitCSSMatrix stringifier: Math.pow(2, 53) + 2 (2d) Failed to construct 'WebKitCSSMatrix': Failed to parse '1,0,0,1,0,9007199254740994'.
+FAIL WebKitCSSMatrix stringifier: Math.pow(2, 53) + 2 (3d) Failed to construct 'WebKitCSSMatrix': Failed to parse '1,0,0,0,0,1,0,0,0,0,1,0,0,9007199254740994,0,1'.
+FAIL WebKitCSSMatrix stringifier: Number.MAX_VALUE (2d) Failed to construct 'WebKitCSSMatrix': Failed to parse '1,0,0,1,0,1.7976931348623157e+308'.
+FAIL WebKitCSSMatrix stringifier: Number.MAX_VALUE (3d) Failed to construct 'WebKitCSSMatrix': Failed to parse '1,0,0,0,0,1,0,0,0,0,1,0,0,1.7976931348623157e+308,0,1'.
+FAIL WebKitCSSMatrix stringifier: Number.MIN_VALUE (2d) Failed to construct 'WebKitCSSMatrix': Failed to parse '1,0,0,1,0,5e-324'.
+FAIL WebKitCSSMatrix stringifier: Number.MIN_VALUE (3d) Failed to construct 'WebKitCSSMatrix': Failed to parse '1,0,0,0,0,1,0,0,0,0,1,0,0,5e-324,0,1'.
+FAIL WebKitCSSMatrix stringifier: throwing getters (2d) assert_equals: expected "matrix(1, 0, 0, 1, 0, 0)" but got "matrix(1.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000)"
+FAIL WebKitCSSMatrix stringifier: throwing getters (3d) self[constr].fromMatrix is not a function
+Harness: the test ran to completion.
+
