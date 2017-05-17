@@ -348,8 +348,6 @@ static uint8_t get_filter_level(const loop_filter_info_n *lfi_n,
 }
 #endif
 
-#define NELEMENTS(x) (sizeof((x)) / sizeof((x)[0]))
-
 void av1_loop_filter_init(AV1_COMMON *cm) {
   assert(MB_MODE_COUNT == NELEMENTS(mode_lf_lut));
   loop_filter_info_n *lfi = &cm->lf_info;

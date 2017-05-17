@@ -45,6 +45,7 @@
 #include "./rate_hist.h"
 #include "./warnings.h"
 #include "aom/aom_integer.h"
+#include "aom_dsp/aom_dsp_common.h"
 #include "aom_ports/aom_timer.h"
 #include "aom_ports/mem_ops.h"
 #if CONFIG_WEBM_IO
@@ -627,7 +628,6 @@ void usage_exit(void) {
   exit(EXIT_FAILURE);
 }
 
-#define NELEMENTS(x) (sizeof(x) / sizeof(x[0]))
 #if CONFIG_AV1_ENCODER
 #define ARG_CTRL_CNT_MAX NELEMENTS(av1_arg_ctrl_map)
 #endif
