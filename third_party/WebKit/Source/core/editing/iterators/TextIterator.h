@@ -142,13 +142,6 @@ class CORE_TEMPLATE_CLASS_EXPORT TextIteratorAlgorithm {
   bool ShouldHandleFirstLetter(const LayoutText&) const;
   bool ShouldProceedToRemainingText() const;
   void ProceedToRemainingText();
-  // Helper function during initialization. Returns true if the start position
-  // is in a text node with first-letter, in which case it also sets up related
-  // parameters. Returns false otherwise.
-  bool PrepareForFirstLetterInitialization();
-  bool HasNotAdvancedToStartPosition();
-  int AdjustedStartForFirstLetter(const Node&, const LayoutText&, int, int);
-  int AdjustedStartForRemainingText(const Node&, const LayoutText&, int, int);
   void SpliceBuffer(UChar,
                     Node* text_node,
                     Node* offset_base_node,
@@ -258,11 +251,6 @@ class CORE_TEMPLATE_CLASS_EXPORT TextIteratorAlgorithm {
   // Used for use counter |InnerTextWithShadowTree| and
   // |SelectionToStringWithShadowTree|, we should not use other purpose.
   bool handle_shadow_root_;
-
-  // Used for adjusting the initialization and the output when the start
-  // container is a text node with :first-letter.
-  int first_letter_start_offset_;
-  int remaining_text_start_offset_;
 
   // Contains state of emitted text.
   TextIteratorTextState text_state_;
