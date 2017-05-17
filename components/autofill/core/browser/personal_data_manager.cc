@@ -733,10 +733,23 @@ void PersonalDataManager::RemoveByGUID(const std::string& guid) {
   if (!database_.get())
     return;
 
-  if (is_credit_card)
+  if (is_credit_card) {
     database_->RemoveCreditCard(guid);
-  else
+  } else {
     database_->RemoveAutofillProfile(guid);
+
+    // Reset the billing_address_id of any card that refered to this profile.
+    for (CreditCard* credit_card : GetCreditCards()) {
+      if (credit_card->billing_address_id() == guid) {
+        credit_card->set_billing_address_id("");
+
+        if (credit_card->record_type() == CreditCard::LOCAL_CARD)
+          database_->UpdateCreditCard(*credit_card);
+        else
+          database_->UpdateServerCardMetadata(*credit_card);
+      }
+    }
+  }
 
   // Refresh our local cache and send notifications to observers.
   Refresh();
