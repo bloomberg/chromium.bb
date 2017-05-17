@@ -533,7 +533,9 @@ public class VrShellDelegate implements ApplicationStatus.ActivityStateListener,
     private boolean isWindowModeCorrectForVr() {
         int flags = mActivity.getWindow().getDecorView().getSystemUiVisibility();
         int orientation = mActivity.getResources().getConfiguration().orientation;
-        return flags == VR_SYSTEM_UI_FLAGS && orientation == Configuration.ORIENTATION_LANDSCAPE;
+        // Mask the flags to only those that we care about.
+        return (flags & VR_SYSTEM_UI_FLAGS) == VR_SYSTEM_UI_FLAGS
+                && orientation == Configuration.ORIENTATION_LANDSCAPE;
     }
 
     private void setWindowModeForVr(int requestedOrientation) {
