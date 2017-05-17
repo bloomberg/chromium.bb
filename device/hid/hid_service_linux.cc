@@ -197,12 +197,7 @@ HidServiceLinux::HidServiceLinux()
 }
 
 HidServiceLinux::~HidServiceLinux() {
-  DCHECK(!helper_);
-}
-
-void HidServiceLinux::Shutdown() {
   blocking_task_runner_->DeleteSoon(FROM_HERE, helper_.release());
-  HidService::Shutdown();
 }
 
 void HidServiceLinux::Connect(const HidDeviceId& device_id,

@@ -23,8 +23,6 @@ ShellDeviceClient::~ShellDeviceClient() {
 void ShellDeviceClient::Shutdown() {
   if (usb_service_)
     usb_service_->Shutdown();
-  if (hid_service_)
-    hid_service_->Shutdown();
 #if DCHECK_IS_ON()
   did_shutdown_ = true;
 #endif

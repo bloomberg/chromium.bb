@@ -38,6 +38,9 @@ class UsbServiceTest : public ::testing::Test {
 
 void OnGetDevices(const base::Closure& quit_closure,
                   const std::vector<scoped_refptr<UsbDevice>>& devices) {
+  // Since there's no guarantee that any devices are connected at the moment
+  // this test doesn't assume anything about the result but it at least verifies
+  // that devices can be enumerated without the application crashing.
   quit_closure.Run();
 }
 
@@ -49,9 +52,7 @@ void OnOpen(scoped_refptr<UsbDeviceHandle>* output,
 }
 
 TEST_F(UsbServiceTest, GetDevices) {
-  // Since there's no guarantee that any devices are connected at the moment
-  // this test doesn't assume anything about the result but it at least verifies
-  // that devices can be enumerated without the application crashing.
+  // The USB service is not available on all platforms.
   UsbService* service = device_client_->GetUsbService();
   if (service) {
     base::RunLoop loop;
