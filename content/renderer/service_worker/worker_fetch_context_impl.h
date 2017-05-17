@@ -30,6 +30,8 @@ class WorkerFetchContextImpl : public blink::WebWorkerFetchContext,
   std::unique_ptr<blink::WebURLLoader> CreateURLLoader() override;
   void WillSendRequest(blink::WebURLRequest&) override;
   bool IsControlledByServiceWorker() const override;
+  void SetDataSaverEnabled(bool) override;
+  bool IsDataSaverEnabled() const override;
 
   // mojom::ServiceWorkerWorkerClient implementation:
   void SetControllerServiceWorker(int64_t controller_version_id) override;
@@ -53,6 +55,8 @@ class WorkerFetchContextImpl : public blink::WebWorkerFetchContext,
   // Updated when mojom::ServiceWorkerWorkerClient::SetControllerServiceWorker()
   // is called from the browser process via mojo IPC.
   int controller_version_id_ = kInvalidServiceWorkerVersionId;
+
+  bool is_data_saver_enabled_ = false;
 };
 
 }  // namespace content

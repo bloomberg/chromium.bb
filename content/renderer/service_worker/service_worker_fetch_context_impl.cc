@@ -46,4 +46,12 @@ bool ServiceWorkerFetchContextImpl::IsControlledByServiceWorker() const {
   return false;
 }
 
+void ServiceWorkerFetchContextImpl::SetDataSaverEnabled(bool enabled) {
+  is_data_saver_enabled_ = enabled;
+}
+
+bool ServiceWorkerFetchContextImpl::IsDataSaverEnabled() const {
+  return is_data_saver_enabled_;
+}
+
 }  // namespace content

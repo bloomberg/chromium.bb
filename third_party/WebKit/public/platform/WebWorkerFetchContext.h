@@ -36,6 +36,10 @@ class WebWorkerFetchContext {
 
   // Whether the fetch context is controlled by a service worker.
   virtual bool IsControlledByServiceWorker() const = 0;
+
+  // The flag for Data Saver.
+  virtual void SetDataSaverEnabled(bool) = 0;
+  virtual bool IsDataSaverEnabled() const = 0;
 };
 
 }  // namespace blink

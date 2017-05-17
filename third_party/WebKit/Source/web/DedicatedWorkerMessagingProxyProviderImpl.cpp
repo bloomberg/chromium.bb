@@ -31,6 +31,7 @@
 #include "web/DedicatedWorkerMessagingProxyProviderImpl.h"
 
 #include "core/dom/Document.h"
+#include "core/frame/Settings.h"
 #include "core/frame/WebLocalFrameBase.h"
 #include "core/loader/WorkerFetchContext.h"
 #include "core/workers/DedicatedWorkerMessagingProxy.h"
@@ -75,7 +76,9 @@ DedicatedWorkerMessagingProxyProviderImpl::CreateWorkerMessagingProxy(
           web_frame->Client()->CreateWorkerFetchContext();
       DCHECK(web_worker_fetch_context);
       // TODO(horo): Set more information about the context (ex:
-      // DataSaverEnabled) to |web_worker_fetch_context|.
+      // AppCacheHostID) to |web_worker_fetch_context|.
+      web_worker_fetch_context->SetDataSaverEnabled(
+          document->GetFrame()->GetSettings()->GetDataSaverEnabled());
       ProvideWorkerFetchContextToWorker(worker_clients,
                                         std::move(web_worker_fetch_context));
     }
