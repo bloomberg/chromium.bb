@@ -7206,7 +7206,7 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="11" label="Update Recommended"/>
   <int value="12" label="Crypto Password"/>
   <int value="13" label="Safe Browsing Download Feedback"/>
-  <int value="14" label="First Run"/>
+  <int value="14" label="First Run Bubble"/>
   <int value="15" label="Network Share Profile Warning"/>
   <int value="16" label="Conflicting Module"/>
   <int value="17" label="Critical Notification (Upgrade Installed)"/>
@@ -7224,6 +7224,54 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="29" label="Sign In Error"/>
   <int value="30" label="Sign In Email Confirmation"/>
   <int value="31" label="Profile Chooser"/>
+  <int value="32" label="Account Chooser"/>
+  <int value="33" label="Arc App"/>
+  <int value="34" label="Auto Signin First Run"/>
+  <int value="35" label="Bookmark App Confirmation"/>
+  <int value="36" label="Chooser Ui"/>
+  <int value="37" label="Chooser"/>
+  <int value="38" label="Collected Cookies"/>
+  <int value="39" label="Constrained Web"/>
+  <int value="40" label="Content Setting Contents"/>
+  <int value="41" label="Create Chrome Application Shortcut"/>
+  <int value="42" label="Download Danger Prompt"/>
+  <int value="43" label="Download In Progress"/>
+  <int value="44" label="Echo"/>
+  <int value="45" label="Enrollment"/>
+  <int value="46" label="Extension"/>
+  <int value="47" label="Extension Popup Aura"/>
+  <int value="48" label="External Protocol"/>
+  <int value="49" label="External Protocol ChromeOS"/>
+  <int value="50" label="First Run Dialog"/>
+  <int value="51" label="Home Page Undo"/>
+  <int value="52" label="Idle Action Warning"/>
+  <int value="53" label="Import Lock"/>
+  <int value="54" label="Intent Picker"/>
+  <int value="55" label="Invert"/>
+  <int value="56" label="Java Script"/>
+  <int value="57" label="Java Script App Modal X11"/>
+  <int value="58" label="Login Handler"/>
+  <int value="59" label="Manage Passwords"/>
+  <int value="60" label="Media Galleries"/>
+  <int value="61" label="Multiprofiles Intro"/>
+  <int value="62" label="Multiprofiles Session Aborted"/>
+  <int value="63" label="Native Container"/>
+  <int value="64" label="Network Config"/>
+  <int value="65" label="Permissions"/>
+  <int value="66" label="Platform Keys Certificate Selector"/>
+  <int value="67" label="Platform Verification"/>
+  <int value="68" label="Proximity Auth Error"/>
+  <int value="69" label="Request Pin"/>
+  <int value="70" label="SSL Client Certificate Selector"/>
+  <int value="71" label="Simple Message Box"/>
+  <int value="72" label="Tab Modal Confirm"/>
+  <int value="73" label="Task Manager"/>
+  <int value="74" label="Teleport Warning"/>
+  <int value="75" label="User Manager"/>
+  <int value="76" label="User Manager Profile"/>
+  <int value="77" label="Validation Message"/>
+  <int value="78" label="Web Share Target Picker"/>
+  <int value="79" label="Zoom"/>
 </enum>
 
 <enum name="DidNavigateToAd" type="int">

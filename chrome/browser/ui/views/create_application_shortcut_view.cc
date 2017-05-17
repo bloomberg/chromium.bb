@@ -8,6 +8,7 @@
 #include "base/bind_helpers.h"
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
@@ -58,6 +59,8 @@ CreateChromeApplicationShortcutView::CreateChromeApplicationShortcutView(
       app, profile,
       base::Bind(&CreateChromeApplicationShortcutView::OnAppInfoLoaded,
                  weak_ptr_factory_.GetWeakPtr()));
+  chrome::RecordDialogCreation(
+      chrome::DialogIdentifier::CREATE_CHROME_APPLICATION_SHORTCUT);
 }
 
 CreateChromeApplicationShortcutView::~CreateChromeApplicationShortcutView() {}

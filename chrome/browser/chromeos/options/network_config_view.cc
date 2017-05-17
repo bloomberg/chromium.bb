@@ -17,6 +17,7 @@
 #include "chrome/browser/ui/ash/ash_util.h"
 #include "chrome/browser/ui/ash/system_tray_client.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/grit/generated_resources.h"
@@ -78,6 +79,7 @@ NetworkConfigView::NetworkConfigView()
       advanced_button_(nullptr) {
   DCHECK(!g_instance);
   g_instance = this;
+  chrome::RecordDialogCreation(chrome::DialogIdentifier::NETWORK_CONFIG);
 }
 
 bool NetworkConfigView::InitWithNetworkState(const NetworkState* network) {

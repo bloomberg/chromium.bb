@@ -13,6 +13,7 @@
 #include "chrome/browser/ui/app_list/arc/arc_app_icon_loader.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
+#include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/native_window_tracker.h"
 #include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
 #include "chrome/grit/generated_resources.h"
@@ -168,6 +169,7 @@ ArcAppDialogView::ArcAppDialogView(Profile* profile,
   icon_loader_.reset(new ArcAppIconLoader(profile_, kIconSourceSize, this));
   // The dialog will show once the icon is loaded.
   icon_loader_->FetchImage(app_id_);
+  chrome::RecordDialogCreation(chrome::DialogIdentifier::ARC_APP);
 }
 
 ArcAppDialogView::~ArcAppDialogView() {

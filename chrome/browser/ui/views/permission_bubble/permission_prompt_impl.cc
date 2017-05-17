@@ -13,6 +13,7 @@
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/views/exclusive_access_bubble_views.h"
@@ -262,6 +263,7 @@ PermissionsBubbleDialogDelegateView::PermissionsBubbleDialogDelegateView(
     persist_checkbox_->SetChecked(true);
     AddChildView(persist_checkbox_);
   }
+  chrome::RecordDialogCreation(chrome::DialogIdentifier::PERMISSIONS);
 }
 
 PermissionsBubbleDialogDelegateView::~PermissionsBubbleDialogDelegateView() {

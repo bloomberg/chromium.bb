@@ -67,6 +67,7 @@ UserManagerProfileDialogDelegate::UserManagerProfileDialogDelegate(
 
   web_view_->GetWebContents()->SetDelegate(this);
   web_view_->LoadInitialURL(url);
+  chrome::RecordDialogCreation(chrome::DialogIdentifier::USER_MANAGER_PROFILE);
 }
 
 UserManagerProfileDialogDelegate::~UserManagerProfileDialogDelegate() {}
@@ -269,6 +270,7 @@ UserManagerView::UserManagerView()
       user_manager_started_showing_(base::Time()) {
   keep_alive_.reset(new ScopedKeepAlive(KeepAliveOrigin::USER_MANAGER_VIEW,
                                         KeepAliveRestartOption::DISABLED));
+  chrome::RecordDialogCreation(chrome::DialogIdentifier::USER_MANAGER);
 }
 
 UserManagerView::~UserManagerView() {

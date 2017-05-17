@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include "chrome/browser/chromeos/ui/echo_dialog_listener.h"
+#include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/font.h"
@@ -34,6 +35,7 @@ EchoDialogView::EchoDialogView(EchoDialogListener* listener)
       listener_(listener),
       ok_button_label_id_(0),
       cancel_button_label_id_(0) {
+  chrome::RecordDialogCreation(chrome::DialogIdentifier::ECHO);
 }
 
 EchoDialogView::~EchoDialogView() {}

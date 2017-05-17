@@ -13,6 +13,7 @@
 #include "chrome/browser/metrics/metrics_reporting_state.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/shell_integration.h"
+#include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/chromium_strings.h"
@@ -100,6 +101,7 @@ FirstRunDialog::FirstRunDialog(Profile* profile)
   // Having this box checked means the user has to opt-out of metrics recording.
   report_crashes_->SetChecked(!first_run::IsMetricsReportingOptIn());
   layout->AddView(report_crashes_);
+  chrome::RecordDialogCreation(chrome::DialogIdentifier::FIRST_RUN_DIALOG);
 }
 
 FirstRunDialog::~FirstRunDialog() {

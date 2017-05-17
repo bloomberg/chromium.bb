@@ -11,6 +11,7 @@
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/exclusive_access/fullscreen_controller.h"
@@ -790,6 +791,7 @@ ManagePasswordsBubbleView::ManagePasswordsBubbleView(
       initially_focused_view_(nullptr) {
   mouse_handler_.reset(new WebContentMouseHandler(this, this->web_contents()));
   manage_passwords_bubble_ = this;
+  chrome::RecordDialogCreation(chrome::DialogIdentifier::MANAGE_PASSWORDS);
 }
 
 ManagePasswordsBubbleView::~ManagePasswordsBubbleView() {

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/passwords/auto_signin_first_run_dialog_view.h"
 
+#include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/passwords/password_dialog_controller.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/constrained_window/constrained_window_views.h"
@@ -69,6 +70,7 @@ AutoSigninFirstRunDialogView::AutoSigninFirstRunDialogView(
       turn_off_button_(nullptr),
       controller_(controller),
       web_contents_(web_contents) {
+  chrome::RecordDialogCreation(chrome::DialogIdentifier::AUTO_SIGNIN_FIRST_RUN);
 }
 
 AutoSigninFirstRunDialogView::~AutoSigninFirstRunDialogView() {

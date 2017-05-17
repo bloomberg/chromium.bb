@@ -6,6 +6,7 @@
 
 #include "ash/shell.h"
 #include "base/macros.h"
+#include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -59,6 +60,7 @@ class TeleportWarningView : public views::DialogDelegateView {
 TeleportWarningView::TeleportWarningView(
     const base::Callback<void(bool)>& on_accept)
     : on_accept_(on_accept) {
+  chrome::RecordDialogCreation(chrome::DialogIdentifier::TELEPORT_WARNING);
 }
 
 TeleportWarningView::~TeleportWarningView() {

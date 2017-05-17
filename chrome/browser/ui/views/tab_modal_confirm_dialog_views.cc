@@ -42,6 +42,7 @@ TabModalConfirmDialogViews::TabModalConfirmDialogViews(
 
   constrained_window::ShowWebModalDialogViews(this, web_contents);
   delegate_->set_close_delegate(this);
+  chrome::RecordDialogCreation(chrome::DialogIdentifier::TAB_MODAL_CONFIRM);
 }
 
 TabModalConfirmDialogViews::~TabModalConfirmDialogViews() {

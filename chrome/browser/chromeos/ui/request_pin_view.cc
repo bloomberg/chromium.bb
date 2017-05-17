@@ -11,6 +11,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chromeos/options/passphrase_textfield.h"
+#include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -38,6 +39,7 @@ RequestPinView::RequestPinView(const std::string& extension_name,
   const bool accept_input = (attempts_left != 0);
   SetDialogParameters(code_type, RequestPinErrorType::NONE, attempts_left,
                       accept_input);
+  chrome::RecordDialogCreation(chrome::DialogIdentifier::REQUEST_PIN);
 }
 
 // When the parent window is closed while the dialog is active, this object is

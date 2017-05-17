@@ -7,6 +7,7 @@
 #include "base/compiler_specific.h"
 #include "chrome/browser/download/download_stats.h"
 #include "chrome/browser/extensions/api/experience_sampling_private/experience_sampling.h"
+#include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/constrained_window/constrained_window_views.h"
@@ -117,6 +118,8 @@ DownloadDangerPromptViews::DownloadDangerPromptViews(
       item->GetURL(),
       item->GetReferrerUrl(),
       item->GetBrowserContext()));
+  chrome::RecordDialogCreation(
+      chrome::DialogIdentifier::DOWNLOAD_DANGER_PROMPT);
 }
 
 // DownloadDangerPrompt methods:

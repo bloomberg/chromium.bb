@@ -7,6 +7,7 @@
 #include "base/macros.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/toolbar/app_menu_button.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
@@ -68,7 +69,9 @@ InvertBubbleView::InvertBubbleView(Browser* browser, views::View* anchor_view)
       high_contrast_(NULL),
       dark_theme_(NULL),
       learn_more_(NULL),
-      close_(NULL) {}
+      close_(NULL) {
+  chrome::RecordDialogCreation(chrome::DialogIdentifier::INVERT);
+}
 
 InvertBubbleView::~InvertBubbleView() {
 }

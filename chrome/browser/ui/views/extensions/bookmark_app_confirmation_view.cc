@@ -8,6 +8,7 @@
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
+#include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/constrained_window/constrained_window_views.h"
@@ -116,6 +117,8 @@ BookmarkAppConfirmationView::BookmarkAppConfirmationView(
   layout->AddView(open_as_window_checkbox_);
 
   title_tf_->SelectAll(true);
+  chrome::RecordDialogCreation(
+      chrome::DialogIdentifier::BOOKMARK_APP_CONFIRMATION);
 }
 
 views::View* BookmarkAppConfirmationView::GetInitiallyFocusedView() {

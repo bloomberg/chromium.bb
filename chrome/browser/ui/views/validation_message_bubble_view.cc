@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/validation_message_bubble_view.h"
 
+#include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/grit/theme_resources.h"
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/web_contents.h"
@@ -78,6 +79,7 @@ ValidationMessageBubbleView::ValidationMessageBubbleView(
   size_ = gfx::Size(text_start_x + label_width, content_bottom);
 
   views::BubbleDialogDelegateView::CreateBubble(this)->ShowInactive();
+  chrome::RecordDialogCreation(chrome::DialogIdentifier::VALIDATION_MESSAGE);
 }
 
 ValidationMessageBubbleView::~ValidationMessageBubbleView() {

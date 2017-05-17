@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/views/webshare/webshare_target_picker_view.h"
 
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/constrained_window/constrained_window_views.h"
@@ -106,6 +107,8 @@ WebShareTargetPickerView::WebShareTargetPickerView(
   AddChildView(table_parent);
   // Make the table expand to fill the space.
   layout->SetFlexForView(table_parent, 1);
+  chrome::RecordDialogCreation(
+      chrome::DialogIdentifier::WEB_SHARE_TARGET_PICKER);
 }
 
 WebShareTargetPickerView::~WebShareTargetPickerView() {

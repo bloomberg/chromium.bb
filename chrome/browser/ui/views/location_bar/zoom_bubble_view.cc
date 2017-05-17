@@ -10,6 +10,7 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -154,6 +155,7 @@ ZoomBubbleView::ZoomBubbleView(
   if (immersive_mode_controller_)
     immersive_mode_controller_->AddObserver(this);
   UseCompactMargins();
+  chrome::RecordDialogCreation(chrome::DialogIdentifier::ZOOM);
 }
 
 ZoomBubbleView::~ZoomBubbleView() {

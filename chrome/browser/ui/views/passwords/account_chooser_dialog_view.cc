@@ -6,6 +6,7 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/passwords/manage_passwords_view_utils.h"
 #include "chrome/browser/ui/passwords/password_dialog_controller.h"
 #include "chrome/browser/ui/views/passwords/credentials_item_view.h"
@@ -103,6 +104,7 @@ AccountChooserDialogView::AccountChooserDialogView(
       show_signin_button_(false) {
   DCHECK(controller);
   DCHECK(web_contents);
+  chrome::RecordDialogCreation(chrome::DialogIdentifier::ACCOUNT_CHOOSER);
 }
 
 AccountChooserDialogView::~AccountChooserDialogView() = default;

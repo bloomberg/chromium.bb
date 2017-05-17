@@ -12,6 +12,7 @@
 #include "chrome/browser/profiles/profile_window.h"
 #include "chrome/browser/task_manager/task_manager_interface.h"
 #include "chrome/browser/task_manager/task_manager_observer.h"
+#include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -302,6 +303,7 @@ TaskManagerView::TaskManagerView()
       tab_table_parent_(nullptr),
       is_always_on_top_(false) {
   Init();
+  chrome::RecordDialogCreation(chrome::DialogIdentifier::TASK_MANAGER);
 }
 
 // static
