@@ -912,4 +912,116 @@ std::unique_ptr<ServerTimingHeaderVector> ParseServerTimingHeader(
   return headers;
 }
 
+bool IsTokenCharacter(Mode mode, UChar c) {
+  if (c >= 128)
+    return false;
+  if (c < 0x20)
+    return false;
+
+  switch (c) {
+    case ' ':
+    case ';':
+    case '"':
+      return false;
+    case '(':
+    case ')':
+    case '<':
+    case '>':
+    case '@':
+    case ',':
+    case ':':
+    case '\\':
+    case '/':
+    case '[':
+    case ']':
+    case '?':
+    case '=':
+      return mode == Mode::kRelaxed;
+    default:
+      return true;
+  }
+}
+
+bool Consume(char c, const String& input, unsigned& index) {
+  DCHECK_NE(c, ' ');
+  while (index < input.length() && input[index] == ' ')
+    ++index;
+
+  if (index < input.length() && input[index] == c) {
+    ++index;
+    return true;
+  }
+  return false;
+}
+
+bool ConsumeToken(Mode mode,
+                  const String& input,
+                  unsigned& index,
+                  StringView& output) {
+  DCHECK(output.IsNull());
+
+  while (index < input.length() && input[index] == ' ')
+    ++index;
+
+  auto start = index;
+  while (index < input.length() && IsTokenCharacter(mode, input[index]))
+    ++index;
+
+  if (start == index)
+    return false;
+
+  output = StringView(input, start, index - start);
+  return true;
+}
+
+bool ConsumeQuotedString(const String& input, unsigned& index, String& output) {
+  StringBuilder builder;
+  DCHECK_EQ('"', input[index]);
+  ++index;
+  while (index < input.length()) {
+    if (input[index] == '\\') {
+      ++index;
+      if (index == input.length())
+        return false;
+      builder.Append(input[index]);
+      ++index;
+      continue;
+    }
+    if (input[index] == '"') {
+      output = builder.ToString();
+      ++index;
+      return true;
+    }
+    builder.Append(input[index]);
+    ++index;
+  }
+  return false;
+}
+
+bool ConsumeTokenOrQuotedString(Mode mode,
+                                const String& input,
+                                unsigned& index,
+                                String& output) {
+  while (index < input.length() && input[index] == ' ')
+    ++index;
+  if (input.length() == index)
+    return false;
+  if (input[index] == '"') {
+    return ConsumeQuotedString(input, index, output);
+  }
+  StringView view;
+  auto result = ConsumeToken(mode, input, index, view);
+  output = view.ToString();
+  return result;
+}
+
+bool IsEnd(const String& input, unsigned index) {
+  while (index < input.length()) {
+    if (input[index] != ' ')
+      return false;
+    ++index;
+  }
+  return true;
+}
+
 }  // namespace blink
