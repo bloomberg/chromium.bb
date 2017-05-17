@@ -1831,6 +1831,13 @@ void RenderProcessHostImpl::AppendRendererCommandLine(
       GetContentClient()->browser()->GetApplicationLocale();
   command_line->AppendSwitchASCII(switches::kLang, locale);
 
+  // A non-empty RendererCmdPrefix implies that Zygote is disabled.
+  if (!base::CommandLine::ForCurrentProcess()
+           ->GetSwitchValueNative(switches::kRendererCmdPrefix)
+           .empty()) {
+    command_line->AppendSwitch(switches::kNoZygote);
+  }
+
   GetContentClient()->browser()->AppendExtraCommandLineSwitches(command_line,
                                                                 GetID());
 
@@ -1976,6 +1983,7 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kMSEVideoBufferSizeLimit,
     switches::kNoReferrers,
     switches::kNoSandbox,
+    switches::kNoZygote,
     switches::kOverridePluginPowerSaverForTesting,
     switches::kPassiveListenersDefault,
     switches::kPpapiInProcess,
