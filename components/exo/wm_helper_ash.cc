@@ -4,7 +4,6 @@
 
 #include "components/exo/wm_helper_ash.h"
 
-#include "ash/accessibility_delegate.h"
 #include "ash/public/cpp/config.h"
 #include "ash/shell.h"
 #include "ash/shell_port.h"
@@ -32,7 +31,6 @@ WMHelperAsh::WMHelperAsh() {
       aura::client::GetFocusClient(ash::Shell::GetPrimaryRootWindow());
   focus_client->AddObserver(this);
   ui::InputDeviceManager::GetInstance()->AddObserver(this);
-  ash::Shell::Get()->system_tray_notifier()->AddAccessibilityObserver(this);
 }
 
 WMHelperAsh::~WMHelperAsh() {
@@ -48,7 +46,6 @@ WMHelperAsh::~WMHelperAsh() {
   ash::Shell::Get()->activation_client()->RemoveObserver(this);
   ash::Shell::Get()->RemoveShellObserver(this);
   ui::InputDeviceManager::GetInstance()->RemoveObserver(this);
-  ash::Shell::Get()->system_tray_notifier()->RemoveAccessibilityObserver(this);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -109,14 +106,6 @@ bool WMHelperAsh::IsMaximizeModeWindowManagerEnabled() const {
       ->IsMaximizeModeWindowManagerEnabled();
 }
 
-bool WMHelperAsh::IsSpokenFeedbackEnabled() const {
-  return ash::Shell::Get()->accessibility_delegate()->IsSpokenFeedbackEnabled();
-}
-
-void WMHelperAsh::PlayEarcon(int sound_key) const {
-  return ash::Shell::Get()->accessibility_delegate()->PlayEarcon(sound_key);
-}
-
 void WMHelperAsh::OnWindowActivated(
     aura::client::ActivationChangeObserver::ActivationReason reason,
     aura::Window* gained_active,
@@ -135,11 +124,6 @@ void WMHelperAsh::OnCursorVisibilityChanged(bool is_visible) {
 
 void WMHelperAsh::OnCursorSetChanged(ui::CursorSetType cursor_set) {
   NotifyCursorSetChanged(cursor_set);
-}
-
-void WMHelperAsh::OnAccessibilityModeChanged(
-    ash::AccessibilityNotificationVisibility notify) {
-  NotifyAccessibilityModeChanged();
 }
 
 void WMHelperAsh::OnMaximizeModeStarted() {

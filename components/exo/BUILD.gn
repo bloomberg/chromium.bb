@@ -126,6 +126,7 @@ source_set("unit_tests") {
     ":test_support",
     "//ash",
     "//ash/public/cpp:ash_public_cpp",
+    "//ash/test:test_support_without_content",
     "//base",
     "//base/test:test_support",
     "//cc",
