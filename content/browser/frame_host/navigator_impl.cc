@@ -370,10 +370,10 @@ bool NavigatorImpl::NavigateToEntry(
   if (IsBrowserSideNavigationEnabled()) {
     navigation_data_.reset(new NavigationMetricsData(navigation_start, dest_url,
                                                      entry.restore_type()));
-    RequestNavigation(frame_tree_node, dest_url, dest_referrer, frame_entry,
-                      entry, reload_type, previews_state,
-                      is_same_document_history_load,
-                      is_history_navigation_in_new_child, navigation_start);
+    RequestNavigation(
+        frame_tree_node, dest_url, dest_referrer, frame_entry, entry,
+        reload_type, previews_state, is_same_document_history_load,
+        is_history_navigation_in_new_child, post_body, navigation_start);
     if (frame_tree_node->IsMainFrame() &&
         frame_tree_node->navigation_request()) {
       // TODO(carlosk): extend these traces to support subframes and
@@ -889,6 +889,10 @@ void NavigatorImpl::RequestTransferURL(
     if (controller_->GetLastCommittedEntry()) {
       entry = controller_->GetLastCommittedEntry()->Clone();
       entry->set_extra_headers(extra_headers);
+      // TODO(arthursonzogni): What about |is_renderer_initiated|?
+      // Renderer-initiated navigation that target a remote frame are currently
+      // classified as browser-initiated when this one has already navigated.
+      // See https://crbug.com/722251.
     } else {
       // If there's no last committed entry, create an entry for about:blank
       // with a subframe entry for our destination.
@@ -1119,16 +1123,18 @@ void NavigatorImpl::DiscardPendingEntryIfNeeded(NavigationHandleImpl* handle) {
 }
 
 // PlzNavigate
-void NavigatorImpl::RequestNavigation(FrameTreeNode* frame_tree_node,
-                                      const GURL& dest_url,
-                                      const Referrer& dest_referrer,
-                                      const FrameNavigationEntry& frame_entry,
-                                      const NavigationEntryImpl& entry,
-                                      ReloadType reload_type,
-                                      PreviewsState previews_state,
-                                      bool is_same_document_history_load,
-                                      bool is_history_navigation_in_new_child,
-                                      base::TimeTicks navigation_start) {
+void NavigatorImpl::RequestNavigation(
+    FrameTreeNode* frame_tree_node,
+    const GURL& dest_url,
+    const Referrer& dest_referrer,
+    const FrameNavigationEntry& frame_entry,
+    const NavigationEntryImpl& entry,
+    ReloadType reload_type,
+    PreviewsState previews_state,
+    bool is_same_document_history_load,
+    bool is_history_navigation_in_new_child,
+    const scoped_refptr<ResourceRequestBodyImpl>& post_body,
+    base::TimeTicks navigation_start) {
   CHECK(IsBrowserSideNavigationEnabled());
   DCHECK(frame_tree_node);
 
@@ -1152,7 +1158,8 @@ void NavigatorImpl::RequestNavigation(FrameTreeNode* frame_tree_node,
       NavigationRequest::CreateBrowserInitiated(
           frame_tree_node, dest_url, dest_referrer, frame_entry, entry,
           navigation_type, previews_state, is_same_document_history_load,
-          is_history_navigation_in_new_child, navigation_start, controller_);
+          is_history_navigation_in_new_child, post_body, navigation_start,
+          controller_);
 
   // Navigation to a javascript URL is not a "real" navigation so there is no
   // need to create a NavigationHandle. The navigation commits immediately and

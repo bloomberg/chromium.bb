@@ -123,16 +123,18 @@ class CONTENT_EXPORT NavigatorImpl : public Navigator {
   // PlzNavigate: if needed, sends a BeforeUnload IPC to the renderer to ask it
   // to execute the beforeUnload event. Otherwise, the navigation request will
   // be started.
-  void RequestNavigation(FrameTreeNode* frame_tree_node,
-                         const GURL& dest_url,
-                         const Referrer& dest_referrer,
-                         const FrameNavigationEntry& frame_entry,
-                         const NavigationEntryImpl& entry,
-                         ReloadType reload_type,
-                         PreviewsState previews_state,
-                         bool is_same_document_history_load,
-                         bool is_history_navigation_in_new_child,
-                         base::TimeTicks navigation_start);
+  void RequestNavigation(
+      FrameTreeNode* frame_tree_node,
+      const GURL& dest_url,
+      const Referrer& dest_referrer,
+      const FrameNavigationEntry& frame_entry,
+      const NavigationEntryImpl& entry,
+      ReloadType reload_type,
+      PreviewsState previews_state,
+      bool is_same_document_history_load,
+      bool is_history_navigation_in_new_child,
+      const scoped_refptr<ResourceRequestBodyImpl>& post_body,
+      base::TimeTicks navigation_start);
 
   void RecordNavigationMetrics(
       const LoadCommittedDetails& details,

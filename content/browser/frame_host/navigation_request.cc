@@ -199,12 +199,23 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateBrowserInitiated(
     PreviewsState previews_state,
     bool is_same_document_history_load,
     bool is_history_navigation_in_new_child,
+    const scoped_refptr<ResourceRequestBodyImpl>& post_body,
     const base::TimeTicks& navigation_start,
     NavigationControllerImpl* controller) {
-  // Fill POST data in the request body.
+  // A form submission happens either because the navigation is a
+  // renderer-initiated form submission that took the OpenURL path or a
+  // back/forward/reload navigation the does a form resubmission.
   scoped_refptr<ResourceRequestBodyImpl> request_body;
-  if (frame_entry.method() == "POST")
+  if (post_body) {
+    // Standard form submission from the renderer.
+    request_body = post_body;
+  } else if (frame_entry.method() == "POST") {
+    // Form resubmission during a back/forward/reload navigation.
     request_body = frame_entry.GetPostData();
+  }
+  // TODO(arthursonzogni): Form submission with the "GET" method is possible.
+  // This is not currently handled here.
+  bool is_form_submission = !!request_body;
 
   base::Optional<url::Origin> initiator =
       frame_tree_node->IsMainFrame()
@@ -227,11 +238,7 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateBrowserInitiated(
                             false,  // skip_service_worker
                             REQUEST_CONTEXT_TYPE_LOCATION,
                             blink::WebMixedContentContextType::kBlockable,
-                            // TODO(arthursonzogni): It can be true for form
-                            // resubmission when the user reloads the page. This
-                            // needs to be fixed.
-                            false,  // is_form_submission
-                            initiator),
+                            is_form_submission, initiator),
       entry.ConstructRequestNavigationParams(
           frame_entry, common_params.url, common_params.method,
           is_history_navigation_in_new_child,
