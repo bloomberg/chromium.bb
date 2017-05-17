@@ -16,6 +16,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"
+#include "content/common/content_export.h"
 #include "content/common/indexed_db/indexed_db.mojom.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host_observer.h"
@@ -84,6 +85,7 @@ class CONTENT_EXPORT IndexedDBDispatcherHost
   class IDBThreadHelper;
   // Friends to enable OnDestruct() delegation.
   friend class BrowserThread;
+  friend class IndexedDBDispatcherHostTest;
   friend class base::DeleteHelper<IndexedDBDispatcherHost>;
 
   ~IndexedDBDispatcherHost() override;

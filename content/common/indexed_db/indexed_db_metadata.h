@@ -68,7 +68,7 @@ struct CONTENT_EXPORT IndexedDBDatabaseMetadata {
                             int64_t max_object_store_id);
   IndexedDBDatabaseMetadata(const IndexedDBDatabaseMetadata& other);
   ~IndexedDBDatabaseMetadata();
-  IndexedDBDatabaseMetadata& operator=(IndexedDBDatabaseMetadata& other);
+  IndexedDBDatabaseMetadata& operator=(const IndexedDBDatabaseMetadata& other);
 
   base::string16 name;
   int64_t id;
