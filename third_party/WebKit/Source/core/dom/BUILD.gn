@@ -8,6 +8,7 @@ blink_core_sources("dom") {
   split_count = 5
 
   sources = [
+    "AXObject.h",
     "AXObjectCache.cpp",
     "AXObjectCache.h",
     "AccessibleNode.cpp",

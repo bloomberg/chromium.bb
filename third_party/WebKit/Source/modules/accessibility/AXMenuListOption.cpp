@@ -107,19 +107,19 @@ bool AXMenuListOption::ComputeAccessibilityIsIgnored(
 }
 
 void AXMenuListOption::GetRelativeBounds(
-    AXObject** out_container,
+    AXObjectImpl** out_container,
     FloatRect& out_bounds_in_container,
     SkMatrix44& out_container_transform) const {
   *out_container = nullptr;
   out_bounds_in_container = FloatRect();
   out_container_transform.setIdentity();
 
-  AXObject* parent = ParentObject();
+  AXObjectImpl* parent = ParentObject();
   if (!parent)
     return;
   DCHECK(parent->IsMenuListPopup());
 
-  AXObject* grandparent = parent->ParentObject();
+  AXObjectImpl* grandparent = parent->ParentObject();
   if (!grandparent)
     return;
   DCHECK(grandparent->IsMenuList());

@@ -27,9 +27,10 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef AXObject_h
-#define AXObject_h
+#ifndef AXObjectImpl_h
+#define AXObjectImpl_h
 
+#include "core/dom/AXObject.h"
 #include "core/editing/VisiblePosition.h"
 #include "core/editing/markers/DocumentMarker.h"
 #include "core/inspector/protocol/Accessibility.h"
@@ -44,7 +45,7 @@ class SkMatrix44;
 
 namespace blink {
 
-class AXObject;
+class AXObjectImpl;
 class AXObjectCacheImpl;
 class Element;
 class FrameView;
@@ -231,11 +232,11 @@ class AccessibilityText final
  private:
   AccessibilityText(const String& text,
                     const AccessibilityTextSource& source,
-                    AXObject* element)
+                    AXObjectImpl* element)
       : text_(text), text_element_(element) {}
 
   String text_;
-  Member<AXObject> text_element_;
+  Member<AXObjectImpl> text_element_;
 };
 
 enum AccessibilityOrientation {
@@ -351,9 +352,9 @@ class AXSparseAttributeClient {
  public:
   virtual void AddBoolAttribute(AXBoolAttribute, bool) = 0;
   virtual void AddStringAttribute(AXStringAttribute, const String&) = 0;
-  virtual void AddObjectAttribute(AXObjectAttribute, AXObject&) = 0;
+  virtual void AddObjectAttribute(AXObjectAttribute, AXObjectImpl&) = 0;
   virtual void AddObjectVectorAttribute(AXObjectVectorAttribute,
-                                        HeapVector<Member<AXObject>>&) = 0;
+                                        HeapVector<Member<AXObjectImpl>>&) = 0;
 };
 
 // The source of the accessible name of an element. This is needed
@@ -420,12 +421,12 @@ class IgnoredReason {
 
  public:
   AXIgnoredReason reason;
-  Member<const AXObject> related_object;
+  Member<const AXObjectImpl> related_object;
 
   explicit IgnoredReason(AXIgnoredReason reason)
       : reason(reason), related_object(nullptr) {}
 
-  IgnoredReason(AXIgnoredReason r, const AXObject* obj)
+  IgnoredReason(AXIgnoredReason r, const AXObjectImpl* obj)
       : reason(r), related_object(obj) {}
 
   DEFINE_INLINE_TRACE() { visitor->Trace(related_object); }
@@ -436,10 +437,10 @@ class NameSourceRelatedObject
   WTF_MAKE_NONCOPYABLE(NameSourceRelatedObject);
 
  public:
-  WeakMember<AXObject> object;
+  WeakMember<AXObjectImpl> object;
   String text;
 
-  NameSourceRelatedObject(AXObject* object, String text)
+  NameSourceRelatedObject(AXObjectImpl* object, String text)
       : object(object), text(text) {}
 
   DEFINE_INLINE_TRACE() { visitor->Trace(object); }
@@ -498,17 +499,19 @@ WTF_ALLOW_INIT_WITH_MEM_FUNCTIONS(blink::DescriptionSource);
 
 namespace blink {
 
-class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
-  WTF_MAKE_NONCOPYABLE(AXObject);
+class MODULES_EXPORT AXObjectImpl
+    : public GarbageCollectedFinalized<AXObjectImpl>,
+      public AXObject {
+  WTF_MAKE_NONCOPYABLE(AXObjectImpl);
 
  public:
-  typedef HeapVector<Member<AXObject>> AXObjectVector;
+  typedef HeapVector<Member<AXObjectImpl>> AXObjectVector;
 
   struct AXRange {
     DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
     // The deepest descendant in which the range starts.
     // (nullptr means the current object.)
-    Persistent<AXObject> anchor_object;
+    Persistent<AXObjectImpl> anchor_object;
     // The number of characters and child objects in the anchor object
     // before the range starts.
     int anchor_offset;
@@ -519,7 +522,7 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
 
     // The deepest descendant in which the range ends.
     // (nullptr means the current object.)
-    Persistent<AXObject> focus_object;
+    Persistent<AXObjectImpl> focus_object;
     // The number of characters and child objects in the focus object
     // before the range ends.
     int focus_offset;
@@ -544,10 +547,10 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
           focus_offset(end_offset),
           focus_affinity(TextAffinity::kDownstream) {}
 
-    AXRange(AXObject* anchor_object,
+    AXRange(AXObjectImpl* anchor_object,
             int anchor_offset,
             TextAffinity anchor_affinity,
-            AXObject* focus_object,
+            AXObjectImpl* focus_object,
             int focus_offset,
             TextAffinity focus_affinity)
         : anchor_object(anchor_object),
@@ -571,28 +574,28 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
   };
 
  protected:
-  AXObject(AXObjectCacheImpl&);
+  AXObjectImpl(AXObjectCacheImpl&);
 
  public:
-  virtual ~AXObject();
+  virtual ~AXObjectImpl();
   DECLARE_VIRTUAL_TRACE();
 
   static unsigned NumberOfLiveAXObjects() { return number_of_live_ax_objects_; }
 
-  // After constructing an AXObject, it must be given a
+  // After constructing an AXObjectImpl, it must be given a
   // unique ID, then added to AXObjectCacheImpl, and finally init() must
   // be called last.
   void SetAXObjectID(AXID ax_object_id) { id_ = ax_object_id; }
   virtual void Init() {}
 
-  // When the corresponding WebCore object that this AXObject
+  // When the corresponding WebCore object that this AXObjectImpl
   // wraps is deleted, it must be detached.
   virtual void Detach();
   virtual bool IsDetached() const;
 
   // If the parent of this object is known, this can be faster than using
   // computeParent().
-  virtual void SetParent(AXObject* parent) { parent_ = parent; }
+  virtual void SetParent(AXObjectImpl* parent) { parent_ = parent; }
 
   // The AXObjectCacheImpl that owns this object, and its unique ID within this
   // cache.
@@ -723,12 +726,12 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
   virtual AXObjectInclusion DefaultObjectInclusion(
       IgnoredReasons* = nullptr) const;
   bool IsInertOrAriaHidden() const;
-  const AXObject* AriaHiddenRoot() const;
+  const AXObjectImpl* AriaHiddenRoot() const;
   bool ComputeIsInertOrAriaHidden(IgnoredReasons* = nullptr) const;
   bool IsDescendantOfLeafNode() const;
-  AXObject* LeafNodeAncestor() const;
+  AXObjectImpl* LeafNodeAncestor() const;
   bool IsDescendantOfDisabledNode() const;
-  const AXObject* DisabledAncestor() const;
+  const AXObjectImpl* DisabledAncestor() const;
   bool LastKnownIsIgnoredValue();
   void SetLastKnownIsIgnoredValue(bool);
   bool HasInheritedPresentationalRole() const;
@@ -776,7 +779,7 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
   virtual String Placeholder(AXNameFrom) const { return String(); }
 
   // Internal functions used by name and description, above.
-  typedef HeapHashSet<Member<const AXObject>> AXObjectSet;
+  typedef HeapHashSet<Member<const AXObjectImpl>> AXObjectSet;
   virtual String TextAlternative(bool recursive,
                                  bool in_aria_labelled_by_traversal,
                                  AXObjectSet& visited,
@@ -825,7 +828,7 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
   virtual String ImageDataUrl(const IntSize& max_size) const {
     return g_null_atom;
   }
-  virtual AXObject* InPageLinkTarget() const { return nullptr; }
+  virtual AXObjectImpl* InPageLinkTarget() const { return nullptr; }
   virtual AccessibilityOrientation Orientation() const;
   virtual String GetText() const { return String(); }
   virtual AccessibilityTextDirection GetTextDirection() const {
@@ -844,8 +847,8 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
 
   // Walk the AXObjects on the same line. This is supported on any
   // object type but primarily intended to be used for inline text boxes.
-  virtual AXObject* NextOnLine() const { return nullptr; }
-  virtual AXObject* PreviousOnLine() const { return nullptr; }
+  virtual AXObjectImpl* NextOnLine() const { return nullptr; }
+  virtual AXObjectImpl* PreviousOnLine() const { return nullptr; }
 
   // For all node objects. The start and end character offset of each
   // marker, such as spelling or grammar error.
@@ -876,7 +879,7 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
   virtual String StringValue() const { return String(); }
 
   // ARIA attributes.
-  virtual AXObject* ActiveDescendant() { return nullptr; }
+  virtual AXObjectImpl* ActiveDescendant() { return nullptr; }
   virtual String AriaAutoComplete() const { return String(); }
   virtual void AriaOwnsElements(AXObjectVector& owns) const {}
   virtual void AriaDescribedbyElements(AXObjectVector&) const {}
@@ -888,7 +891,7 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
   bool AriaPressedIsPresent() const;
   virtual AccessibilityRole AriaRoleAttribute() const { return kUnknownRole; }
   virtual bool AriaRoleHasPresentationalChildren() const { return false; }
-  virtual AXObject* AncestorForWhichThisIsAPresentationalChild() const {
+  virtual AXObjectImpl* AncestorForWhichThisIsAPresentationalChild() const {
     return 0;
   }
   bool SupportsActiveDescendant() const;
@@ -912,7 +915,7 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
 
   // ARIA live-region features.
   bool IsLiveRegion() const;
-  AXObject* LiveRegionRoot() const;
+  AXObjectImpl* LiveRegionRoot() const;
   virtual const AtomicString& LiveRegionStatus() const { return g_null_atom; }
   virtual const AtomicString& LiveRegionRelevant() const { return g_null_atom; }
   virtual bool LiveRegionAtomic() const { return false; }
@@ -931,7 +934,7 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
   // not null, walk up to its container and offset by the container's offset
   // from origin, the container's scroll position if any, and apply the
   // container's transform.  Do this until you reach the root of the tree.
-  virtual void GetRelativeBounds(AXObject** out_container,
+  virtual void GetRelativeBounds(AXObjectImpl** out_container,
                                  FloatRect& out_bounds_in_container,
                                  SkMatrix44& out_container_transform) const;
 
@@ -939,32 +942,34 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
   LayoutRect GetBoundsInFrameCoordinates() const;
 
   // Explicitly set an object's bounding rect and offset container.
-  void SetElementRect(LayoutRect r, AXObject* container) {
+  void SetElementRect(LayoutRect r, AXObjectImpl* container) {
     explicit_element_rect_ = r;
     explicit_container_id_ = container->AxObjectID();
   }
 
   // Hit testing.
   // Called on the root AX object to return the deepest available element.
-  virtual AXObject* AccessibilityHitTest(const IntPoint&) const { return 0; }
+  virtual AXObjectImpl* AccessibilityHitTest(const IntPoint&) const {
+    return 0;
+  }
   // Called on the AX object after the layout tree determines which is the right
   // AXLayoutObject.
-  virtual AXObject* ElementAccessibilityHitTest(const IntPoint&) const;
+  virtual AXObjectImpl* ElementAccessibilityHitTest(const IntPoint&) const;
 
   // High-level accessibility tree access. Other modules should only use these
   // functions.
   const AXObjectVector& Children();
-  AXObject* ParentObject() const;
-  AXObject* ParentObjectIfExists() const;
-  virtual AXObject* ComputeParent() const = 0;
-  virtual AXObject* ComputeParentIfExists() const { return 0; }
-  AXObject* CachedParentObject() const { return parent_; }
-  AXObject* ParentObjectUnignored() const;
+  AXObjectImpl* ParentObject() const;
+  AXObjectImpl* ParentObjectIfExists() const;
+  virtual AXObjectImpl* ComputeParent() const = 0;
+  virtual AXObjectImpl* ComputeParentIfExists() const { return 0; }
+  AXObjectImpl* CachedParentObject() const { return parent_; }
+  AXObjectImpl* ParentObjectUnignored() const;
 
   // Low-level accessibility tree exploration, only for use within the
   // accessibility module.
-  virtual AXObject* RawFirstChild() const { return 0; }
-  virtual AXObject* RawNextSibling() const { return 0; }
+  virtual AXObjectImpl* RawFirstChild() const { return 0; }
+  virtual AXObjectImpl* RawNextSibling() const { return 0; }
   virtual void AddChildren() {}
   virtual bool CanHaveChildren() const { return true; }
   bool HasChildren() const { return have_children_; }
@@ -973,7 +978,7 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
   virtual void SetNeedsToUpdateChildren() {}
   virtual void ClearChildren();
   virtual void DetachFromParent() { parent_ = 0; }
-  virtual AXObject* ScrollBar(AccessibilityOrientation) { return 0; }
+  virtual AXObjectImpl* ScrollBar(AccessibilityOrientation) { return 0; }
 
   // Properties of the object's owning document or page.
   virtual double EstimatedLoadingProgress() const { return 0; }
@@ -1065,7 +1070,7 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
 
   // Used only inside textAlternative():
   static String CollapseWhitespace(const String&);
-  static String RecursiveTextAlternative(const AXObject&,
+  static String RecursiveTextAlternative(const AXObjectImpl&,
                                          bool in_aria_labelled_by_traversal,
                                          AXObjectSet& visited);
   bool IsHiddenForTextAlternativeCalculation() const;
@@ -1088,7 +1093,9 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
                                 AXRelatedObjectVector* related_objects) const;
   String TextFromAriaDescribedby(AXRelatedObjectVector* related_objects) const;
 
-  virtual const AXObject* InheritsPresentationalRoleFrom() const { return 0; }
+  virtual const AXObjectImpl* InheritsPresentationalRoleFrom() const {
+    return 0;
+  }
 
   virtual bool NameFromContents() const;
 
@@ -1098,7 +1105,7 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
     return nullptr;
   }
 
-  mutable Member<AXObject> parent_;
+  mutable Member<AXObjectImpl> parent_;
 
   // The following cached attribute values (the ones starting with m_cached*)
   // are only valid if m_lastModificationCount matches
@@ -1112,7 +1119,7 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
   mutable bool cached_has_inherited_presentational_role_ : 1;
   mutable bool cached_is_presentational_child_ : 1;
   mutable bool cached_ancestor_exposes_active_descendant_ : 1;
-  mutable Member<AXObject> cached_live_region_root_;
+  mutable Member<AXObjectImpl> cached_live_region_root_;
 
   Member<AXObjectCacheImpl> ax_object_cache_;
 
@@ -1129,10 +1136,12 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
   static unsigned number_of_live_ax_objects_;
 };
 
-#define DEFINE_AX_OBJECT_TYPE_CASTS(thisType, predicate)           \
-  DEFINE_TYPE_CASTS(thisType, AXObject, object, object->predicate, \
+DEFINE_TYPE_CASTS(AXObjectImpl, AXObject, obj, true, true);
+
+#define DEFINE_AX_OBJECT_TYPE_CASTS(thisType, predicate)               \
+  DEFINE_TYPE_CASTS(thisType, AXObjectImpl, object, object->predicate, \
                     object.predicate)
 
 }  // namespace blink
 
-#endif  // AXObject_h
+#endif  // AXObjectImpl_h

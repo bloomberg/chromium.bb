@@ -57,7 +57,7 @@ AccessibilityRole AXListBox::DetermineAccessibilityRole() {
   return kListBoxRole;
 }
 
-AXObject* AXListBox::ActiveDescendant() {
+AXObjectImpl* AXListBox::ActiveDescendant() {
   if (!isHTMLSelectElement(GetNode()))
     return nullptr;
 

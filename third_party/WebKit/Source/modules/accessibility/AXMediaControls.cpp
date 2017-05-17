@@ -46,7 +46,7 @@ AccessibilityMediaControl::AccessibilityMediaControl(
     AXObjectCacheImpl& ax_object_cache)
     : AXLayoutObject(layout_object, ax_object_cache) {}
 
-AXObject* AccessibilityMediaControl::Create(
+AXObjectImpl* AccessibilityMediaControl::Create(
     LayoutObject* layout_object,
     AXObjectCacheImpl& ax_object_cache) {
   DCHECK(layout_object->GetNode());
@@ -276,8 +276,9 @@ AXMediaControlsContainer::AXMediaControlsContainer(
     AXObjectCacheImpl& ax_object_cache)
     : AccessibilityMediaControl(layout_object, ax_object_cache) {}
 
-AXObject* AXMediaControlsContainer::Create(LayoutObject* layout_object,
-                                           AXObjectCacheImpl& ax_object_cache) {
+AXObjectImpl* AXMediaControlsContainer::Create(
+    LayoutObject* layout_object,
+    AXObjectCacheImpl& ax_object_cache) {
   return new AXMediaControlsContainer(layout_object, ax_object_cache);
 }
 
@@ -321,7 +322,7 @@ AccessibilityMediaTimeline::AccessibilityMediaTimeline(
     AXObjectCacheImpl& ax_object_cache)
     : AXSlider(layout_object, ax_object_cache) {}
 
-AXObject* AccessibilityMediaTimeline::Create(
+AXObjectImpl* AccessibilityMediaTimeline::Create(
     LayoutObject* layout_object,
     AXObjectCacheImpl& ax_object_cache) {
   return new AccessibilityMediaTimeline(layout_object, ax_object_cache);
@@ -353,7 +354,7 @@ AccessibilityMediaTimeDisplay::AccessibilityMediaTimeDisplay(
     AXObjectCacheImpl& ax_object_cache)
     : AccessibilityMediaControl(layout_object, ax_object_cache) {}
 
-AXObject* AccessibilityMediaTimeDisplay::Create(
+AXObjectImpl* AccessibilityMediaTimeDisplay::Create(
     LayoutObject* layout_object,
     AXObjectCacheImpl& ax_object_cache) {
   return new AccessibilityMediaTimeDisplay(layout_object, ax_object_cache);

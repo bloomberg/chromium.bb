@@ -4,6 +4,7 @@
 
 #include "modules/canvas2d/CanvasRenderingContext2D.h"
 
+#include <memory>
 #include "core/dom/Document.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/Settings.h"
@@ -11,8 +12,8 @@
 #include "core/html/ImageData.h"
 #include "core/loader/EmptyClients.h"
 #include "core/testing/DummyPageHolder.h"
-#include "modules/accessibility/AXObject.h"
 #include "modules/accessibility/AXObjectCacheImpl.h"
+#include "modules/accessibility/AXObjectImpl.h"
 #include "modules/canvas2d/CanvasGradient.h"
 #include "modules/canvas2d/CanvasPattern.h"
 #include "modules/canvas2d/HitRegionOptions.h"
@@ -20,7 +21,6 @@
 #include "platform/graphics/UnacceleratedImageBufferSurface.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include <memory>
 
 using ::testing::Mock;
 
@@ -331,7 +331,7 @@ TEST_F(CanvasRenderingContext2DAPITest, AccessibilityRectTestForAddHitRegion) {
 
   AXObjectCacheImpl* ax_object_cache =
       ToAXObjectCacheImpl(GetDocument().ExistingAXObjectCache());
-  AXObject* ax_object = ax_object_cache->GetOrCreate(button_element);
+  AXObjectImpl* ax_object = ax_object_cache->GetOrCreate(button_element);
 
   LayoutRect ax_bounds = ax_object->GetBoundsInFrameCoordinates();
   EXPECT_EQ(25, ax_bounds.X().ToInt());
@@ -358,7 +358,7 @@ TEST_F(CanvasRenderingContext2DAPITest,
 
   AXObjectCacheImpl* ax_object_cache =
       ToAXObjectCacheImpl(GetDocument().ExistingAXObjectCache());
-  AXObject* ax_object = ax_object_cache->GetOrCreate(button_element);
+  AXObjectImpl* ax_object = ax_object_cache->GetOrCreate(button_element);
 
   LayoutRect ax_bounds = ax_object->GetBoundsInFrameCoordinates();
   EXPECT_EQ(25, ax_bounds.X().ToInt());

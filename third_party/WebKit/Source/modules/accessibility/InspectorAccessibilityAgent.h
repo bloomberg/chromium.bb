@@ -11,7 +11,7 @@
 
 namespace blink {
 
-class AXObject;
+class AXObjectImpl;
 class AXObjectCacheImpl;
 class InspectorDOMAgent;
 class Page;
@@ -39,7 +39,7 @@ class MODULES_EXPORT InspectorAccessibilityAgent
  private:
   std::unique_ptr<AXNode> BuildObjectForIgnoredNode(
       Node* dom_node,
-      AXObject*,
+      AXObjectImpl*,
       bool fetch_relatives,
       std::unique_ptr<protocol::Array<AXNode>>& nodes,
       AXObjectCacheImpl&) const;
@@ -48,34 +48,34 @@ class MODULES_EXPORT InspectorAccessibilityAgent
                                 std::unique_ptr<protocol::Array<AXNode>>& nodes,
                                 AXObjectCacheImpl&) const;
   std::unique_ptr<AXNode> BuildProtocolAXObject(
-      AXObject&,
-      AXObject* inspected_ax_object,
+      AXObjectImpl&,
+      AXObjectImpl* inspected_ax_object,
       bool fetch_relatives,
       std::unique_ptr<protocol::Array<AXNode>>& nodes,
       AXObjectCacheImpl&) const;
-  void FillCoreProperties(AXObject&,
-                          AXObject* inspected_ax_object,
+  void FillCoreProperties(AXObjectImpl&,
+                          AXObjectImpl* inspected_ax_object,
                           bool fetch_relatives,
                           AXNode&,
                           std::unique_ptr<protocol::Array<AXNode>>& nodes,
                           AXObjectCacheImpl&) const;
-  void AddAncestors(AXObject& first_ancestor,
-                    AXObject* inspected_ax_object,
+  void AddAncestors(AXObjectImpl& first_ancestor,
+                    AXObjectImpl* inspected_ax_object,
                     std::unique_ptr<protocol::Array<AXNode>>& nodes,
                     AXObjectCacheImpl&) const;
-  void PopulateRelatives(AXObject&,
-                         AXObject* inspected_ax_object,
+  void PopulateRelatives(AXObjectImpl&,
+                         AXObjectImpl* inspected_ax_object,
                          AXNode&,
                          std::unique_ptr<protocol::Array<AXNode>>& nodes,
                          AXObjectCacheImpl&) const;
   void AddSiblingsOfIgnored(
       std::unique_ptr<protocol::Array<AXNodeId>>& child_ids,
-      AXObject& parent_ax_object,
-      AXObject* inspected_ax_object,
+      AXObjectImpl& parent_ax_object,
+      AXObjectImpl* inspected_ax_object,
       std::unique_ptr<protocol::Array<AXNode>>& nodes,
       AXObjectCacheImpl&) const;
-  void AddChildren(AXObject&,
-                   AXObject* inspected_ax_object,
+  void AddChildren(AXObjectImpl&,
+                   AXObjectImpl* inspected_ax_object,
                    std::unique_ptr<protocol::Array<AXNodeId>>& child_ids,
                    std::unique_ptr<protocol::Array<AXNode>>& nodes,
                    AXObjectCacheImpl&) const;
