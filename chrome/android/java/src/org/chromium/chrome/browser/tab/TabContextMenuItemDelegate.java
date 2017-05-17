@@ -38,7 +38,7 @@ import java.util.Locale;
  */
 public class TabContextMenuItemDelegate implements ContextMenuItemDelegate {
     public static final String PAGESPEED_PASSTHROUGH_HEADERS =
-            "Chrome-Proxy: pass-through\nCache-Control: no-cache";
+            "Chrome-Proxy-Accept-Transform: identity\nCache-Control: no-cache";
 
     private final Tab mTab;
     private boolean mLoadOriginalImageRequestedForPageLoad;
