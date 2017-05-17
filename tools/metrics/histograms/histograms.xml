@@ -26612,6 +26612,23 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>Records the autoplay source of audios.</summary>
 </histogram>
 
+<histogram name="Media.Audio.Autoplay.Attribute.WaitTime" units="ms">
+  <owner>hubbe@chromium.org</owner>
+  <owner>media-dev@chromium.org</owner>
+  <summary>
+    Records time from load starts until audio starts based on autoplay
+    attribute.
+  </summary>
+</histogram>
+
+<histogram name="Media.Audio.Autoplay.PlayMethod.WaitTime" units="ms">
+  <owner>hubbe@chromium.org</owner>
+  <owner>media-dev@chromium.org</owner>
+  <summary>
+    Records time from load starts until audio starts based on play method.
+  </summary>
+</histogram>
+
 <histogram name="Media.Audio.Capture.CallbackError" enum="BooleanError">
   <obsolete>
     Deprecated as of 02/2017.
@@ -28827,6 +28844,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Media.Video.Autoplay.Attribute.WaitTime" units="ms">
+  <owner>hubbe@chromium.org</owner>
+  <owner>media-dev@chromium.org</owner>
+  <summary>
+    Records time from load starts until video starts based on autoplay
+    attribute.
+  </summary>
+</histogram>
+
 <histogram name="Media.Video.Autoplay.Muted" enum="AutoplaySource">
   <owner>avayvod@chromium.org</owner>
   <owner>mlamouri@chromium.org</owner>
@@ -28890,6 +28916,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>zqzhang@chromium.org</owner>
   <summary>
     Status of the unmute action on a video that autoplayed because it was muted.
+  </summary>
+</histogram>
+
+<histogram name="Media.Video.Autoplay.PlayMethod.WaitTime" units="ms">
+  <owner>hubbe@chromium.org</owner>
+  <owner>media-dev@chromium.org</owner>
+  <summary>
+    Records time from load starts until video starts based on play method.
   </summary>
 </histogram>
 

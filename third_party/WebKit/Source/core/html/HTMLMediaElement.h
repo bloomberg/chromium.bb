@@ -331,6 +331,8 @@ class CORE_EXPORT HTMLMediaElement
 
   const AutoplayPolicy& GetAutoplayPolicy() const { return *autoplay_policy_; }
 
+  WebMediaPlayer::LoadType GetLoadType() const;
+
  protected:
   HTMLMediaElement(const QualifiedName&, Document&);
   ~HTMLMediaElement() override;
@@ -443,7 +445,6 @@ class CORE_EXPORT HTMLMediaElement
   void LoadResource(const WebMediaPlayerSource&, const String& content_type);
   void StartPlayerLoad();
   void SetPlayerPreload();
-  WebMediaPlayer::LoadType GetLoadType() const;
   void ScheduleNextSourceChild();
   void LoadSourceFromObject();
   void LoadSourceFromAttribute();
