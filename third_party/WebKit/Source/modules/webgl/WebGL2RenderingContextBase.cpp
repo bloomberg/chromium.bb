@@ -4883,10 +4883,6 @@ ScriptValue WebGL2RenderingContextBase::getParameter(ScriptState* script_state,
     }
     case GL_READ_FRAMEBUFFER_BINDING:
       return WebGLAny(script_state, read_framebuffer_binding_.Get());
-    case GL_SAMPLE_ALPHA_TO_COVERAGE:
-      return GetBooleanParameter(script_state, pname);
-    case GL_SAMPLE_COVERAGE:
-      return GetBooleanParameter(script_state, pname);
     case GL_SAMPLER_BINDING:
       return WebGLAny(script_state, sampler_units_[active_texture_unit_].Get());
     case GL_TEXTURE_BINDING_2D_ARRAY:

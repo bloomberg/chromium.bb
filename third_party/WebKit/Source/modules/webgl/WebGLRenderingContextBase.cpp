@@ -3050,8 +3050,12 @@ ScriptValue WebGLRenderingContextBase::getParameter(ScriptState* script_state,
       return WebGLAny(script_state, renderbuffer_binding_.Get());
     case GL_RENDERER:
       return WebGLAny(script_state, String("WebKit WebGL"));
+    case GL_SAMPLE_ALPHA_TO_COVERAGE:
+      return GetBooleanParameter(script_state, pname);
     case GL_SAMPLE_BUFFERS:
       return GetIntParameter(script_state, pname);
+    case GL_SAMPLE_COVERAGE:
+      return GetBooleanParameter(script_state, pname);
     case GL_SAMPLE_COVERAGE_INVERT:
       return GetBooleanParameter(script_state, pname);
     case GL_SAMPLE_COVERAGE_VALUE:
@@ -3099,7 +3103,7 @@ ScriptValue WebGLRenderingContextBase::getParameter(ScriptState* script_state,
     case GL_STENCIL_REF:
       return GetIntParameter(script_state, pname);
     case GL_STENCIL_TEST:
-      return GetBooleanParameter(script_state, pname);
+      return WebGLAny(script_state, stencil_enabled_);
     case GL_STENCIL_VALUE_MASK:
       return GetUnsignedIntParameter(script_state, pname);
     case GL_STENCIL_WRITEMASK:
