@@ -127,9 +127,8 @@ void TabWebContentsDelegateAndroid::RunFileChooser(
     const FileChooserParams& params) {
 #if BUILDFLAG(ENABLE_VR)
   if (vr_shell::VrTabHelper::IsInVr(
-          WebContents::FromRenderFrameHost(render_frame_host))) {
+          WebContents::FromRenderFrameHost(render_frame_host)))
     return;
-  }
 #endif
   FileSelectHelper::RunFileChooser(render_frame_host, params);
 }
@@ -138,6 +137,10 @@ std::unique_ptr<BluetoothChooser>
 TabWebContentsDelegateAndroid::RunBluetoothChooser(
     content::RenderFrameHost* frame,
     const BluetoothChooser::EventHandler& event_handler) {
+#if BUILDFLAG(ENABLE_VR)
+  if (vr_shell::VrTabHelper::IsInVr(WebContents::FromRenderFrameHost(frame)))
+    return nullptr;
+#endif
   return base::MakeUnique<BluetoothChooserAndroid>(frame, event_handler);
 }
 
@@ -279,6 +282,10 @@ void TabWebContentsDelegateAndroid::RequestMediaAccessPermission(
     content::WebContents* web_contents,
     const content::MediaStreamRequest& request,
     const content::MediaResponseCallback& callback) {
+#if BUILDFLAG(ENABLE_VR)
+  if (vr_shell::VrTabHelper::IsInVr(web_contents))
+    return;
+#endif
   MediaCaptureDevicesDispatcher::GetInstance()->ProcessMediaAccessRequest(
       web_contents, request, callback, nullptr);
 }
