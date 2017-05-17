@@ -483,13 +483,16 @@ std::unique_ptr<settings_private::PrefObject> PrefsUtil::GetPref(
     return pref_object;
   }
 
-  if (pref && pref->IsRecommended()) {
+  // A pref is recommended if it has a recommended value, regardless of whether
+  // the current value is set by policy. The UI will test to see whether the
+  // current value matches the recommended value and inform the user.
+  const base::Value* recommended = pref ? pref->GetRecommendedValue() : nullptr;
+  if (recommended) {
     pref_object->controlled_by =
         settings_private::ControlledBy::CONTROLLED_BY_USER_POLICY;
     pref_object->enforcement =
         settings_private::Enforcement::ENFORCEMENT_RECOMMENDED;
-    pref_object->recommended_value.reset(
-        pref->GetRecommendedValue()->DeepCopy());
+    pref_object->recommended_value.reset(recommended->DeepCopy());
     return pref_object;
   }
 
