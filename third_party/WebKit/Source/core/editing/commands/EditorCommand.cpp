@@ -2129,6 +2129,19 @@ static bool EnabledUndo(LocalFrame& frame, Event*, EditorCommandSource) {
   return frame.GetEditor().CanUndo();
 }
 
+static bool EnabledUnselect(LocalFrame& frame,
+                            Event* event,
+                            EditorCommandSource) {
+  frame.GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
+
+  // The term "visible" here includes a caret in editable text or a range in any
+  // text.
+  const VisibleSelection& selection =
+      frame.GetEditor().SelectionForCommand(event);
+  return (selection.IsCaret() && selection.IsContentEditable()) ||
+         selection.IsRange();
+}
+
 static bool EnabledSelectAll(LocalFrame& frame, Event*, EditorCommandSource) {
   // TODO(editing-dev): The use of updateStyleAndLayoutIgnorePendingStylesheets
   // needs to be audited.  See http://crbug.com/590369 for more details.
@@ -2758,7 +2771,7 @@ static const EditorInternalCommand* InternalCommand(
        SupportedFromMenuOrKeyBinding, EnabledInRichlyEditableText, StateNone,
        ValueStateOrNull, kNotTextInsertion, kDoNotAllowExecutionWhenDisabled},
       {WebEditingCommandType::kUnselect, ExecuteUnselect, Supported,
-       EnabledVisibleSelection, StateNone, ValueStateOrNull, kNotTextInsertion,
+       EnabledUnselect, StateNone, ValueStateOrNull, kNotTextInsertion,
        kDoNotAllowExecutionWhenDisabled},
       {WebEditingCommandType::kUseCSS, ExecuteUseCSS, Supported, Enabled,
        StateNone, ValueStateOrNull, kNotTextInsertion,
