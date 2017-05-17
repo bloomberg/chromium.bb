@@ -43,17 +43,20 @@ enum SubresourceFilterAction {
 
   // Content settings:
   //
+  // Blocked => The subresource filter will block resources.
+  // Allowed => The subresource filter will not block resources.
+  //
   // Content setting updated automatically via the standard UI.
-  kActionContentSettingsBlockedFromUI,
+  kActionContentSettingsAllowedFromUI,
 
   // Content settings which target specific origins (e.g. no wildcards). These
   // updates do not include updates from the main UI.
-  kActionContentSettingsAllowed,
   kActionContentSettingsBlocked,
+  kActionContentSettingsAllowed,
 
   // Global settings.
-  kActionContentSettingsAllowedGlobal,
   kActionContentSettingsBlockedGlobal,
+  kActionContentSettingsAllowedGlobal,
 
   // A wildcard update. The current content settings API makes this a bit
   // difficult to see whether it is Block or Allow. This should not be a huge
@@ -68,11 +71,12 @@ enum SubresourceFilterAction {
   // on navigations on the same origin within a certain time.
   kActionUISuppressed,
 
-  // The feature was blocked via content setting manually while smart UI was
-  // suppressing the UI. Potentially indicates that the smart UI is too
-  // aggressive if this happens frequently. This is a reported alongside
-  // kActionContentSettingsBlocked if the UI is currently in suppressed mode.
-  kActionContentSettingsBlockedWhileUISuppressed,
+  // Subresources were explicitly allowed via manual content setting changes
+  // while smart UI was suppressing the UI. Potentially indicates that the smart
+  // UI is too aggressive if this happens frequently. This is reported
+  // alongside kActionContentSettingsAllowed if the UI is currently in
+  // suppressed mode.
+  kActionContentSettingsAllowedWhileUISuppressed,
 
   kActionLastEntry
 };
