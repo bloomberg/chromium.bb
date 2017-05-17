@@ -486,6 +486,14 @@ gfx::Point BrowserPluginGuest::GetCoordinatesInEmbedderWebContents(
   point +=
       owner_rwhv->TransformPointToRootCoordSpace(guest_window_rect_.origin())
           .OffsetFromOrigin();
+  if (embedder_web_contents()->GetBrowserPluginGuest()) {
+    // |point| is currently with respect to the top-most view (outermost
+    // WebContents). We should subtract a displacement to find the point with
+    // resepct to embedder's WebContents.
+    point -= owner_rwhv->TransformPointToRootCoordSpace(gfx::Point())
+                 .OffsetFromOrigin();
+  }
+
   return point;
 }
 
