@@ -2057,6 +2057,49 @@ TEST_F(PaintControllerTestBase,
   }
 }
 
+TEST_F(PaintControllerTestBase, BeginAndEndFrame) {
+  class FakeFrame {};
+
+  // PaintController should have one null frame in the stack since beginning.
+  GetPaintController().SetFirstPainted();
+  FrameFirstPaint result = GetPaintController().EndFrame(nullptr);
+  EXPECT_TRUE(result.first_painted);
+  EXPECT_FALSE(result.text_painted);
+  EXPECT_FALSE(result.image_painted);
+  // Readd the null frame.
+  GetPaintController().BeginFrame(nullptr);
+
+  std::unique_ptr<FakeFrame> frame1(new FakeFrame);
+  GetPaintController().BeginFrame(frame1.get());
+  GetPaintController().SetFirstPainted();
+  GetPaintController().SetTextPainted();
+  GetPaintController().SetImagePainted();
+
+  result = GetPaintController().EndFrame(frame1.get());
+  EXPECT_TRUE(result.first_painted);
+  EXPECT_TRUE(result.text_painted);
+  EXPECT_TRUE(result.image_painted);
+
+  std::unique_ptr<FakeFrame> frame2(new FakeFrame);
+  GetPaintController().BeginFrame(frame2.get());
+  GetPaintController().SetFirstPainted();
+
+  std::unique_ptr<FakeFrame> frame3(new FakeFrame);
+  GetPaintController().BeginFrame(frame3.get());
+  GetPaintController().SetTextPainted();
+  GetPaintController().SetImagePainted();
+
+  result = GetPaintController().EndFrame(frame3.get());
+  EXPECT_FALSE(result.first_painted);
+  EXPECT_TRUE(result.text_painted);
+  EXPECT_TRUE(result.image_painted);
+
+  result = GetPaintController().EndFrame(frame2.get());
+  EXPECT_TRUE(result.first_painted);
+  EXPECT_FALSE(result.text_painted);
+  EXPECT_FALSE(result.image_painted);
+}
+
 // Death tests don't work properly on Android.
 #if defined(GTEST_HAS_DEATH_TEST) && !OS(ANDROID)
 
