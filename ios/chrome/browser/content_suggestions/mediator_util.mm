@@ -122,7 +122,7 @@ void RecordPageImpression(const ntp_tiles::NTPTilesVector& mostVisited) {
       tiles, GetApplicationContext()->GetRapporServiceImpl());
 }
 
-CollectionViewItem<SuggestedContent>* ConvertNTPTile(
+ContentSuggestionsMostVisitedItem* ConvertNTPTile(
     const ntp_tiles::NTPTile& tile,
     ContentSuggestionsSectionInformation* sectionInfo) {
   ContentSuggestionsMostVisitedItem* suggestion =

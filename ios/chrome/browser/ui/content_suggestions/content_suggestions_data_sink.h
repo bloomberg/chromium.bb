@@ -5,9 +5,9 @@
 #ifndef IOS_CHROME_BROWSER_UI_CONTENT_SUGGESTIONS_CONTENT_SUGGESTIONS_DATA_SINK_H_
 #define IOS_CHROME_BROWSER_UI_CONTENT_SUGGESTIONS_CONTENT_SUGGESTIONS_DATA_SINK_H_
 
+@class CollectionViewItem;
 @class ContentSuggestionIdentifier;
 @class ContentSuggestionsSectionInformation;
-class GURL;
 
 // Data sink for the ContentSuggestions. It will be notified when new data needs
 // to be pulled.
@@ -36,8 +36,8 @@ class GURL;
 // now, removing the current content.
 - (void)reloadSection:(ContentSuggestionsSectionInformation*)sectionInfo;
 
-// Notifies the Data Sink that a new favicon is available for the |URL|.
-- (void)faviconAvailableForURL:(const GURL&)URL;
+// Notifies the Data Sink that a new favicon is available for the |item|.
+- (void)faviconAvailableForItem:(CollectionViewItem<SuggestedContent>*)item;
 
 @end
 
