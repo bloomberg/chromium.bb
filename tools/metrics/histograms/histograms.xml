@@ -82356,6 +82356,35 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="WebRTC.Video.BadCall.Any" units="%">
+  <owner>sprang@chromium.org</owner>
+  <summary>
+    Fraction of time the call was classified as bad because of any reason.
+  </summary>
+</histogram>
+
+<histogram name="WebRTC.Video.BadCall.FrameRate" units="%">
+  <owner>sprang@chromium.org</owner>
+  <summary>
+    Fraction of time the call was classified as bad because of low framerate.
+  </summary>
+</histogram>
+
+<histogram name="WebRTC.Video.BadCall.FrameRateVariance" units="%">
+  <owner>sprang@chromium.org</owner>
+  <summary>
+    Fraction of time the call was classified as bad because of high framerate
+    variance.
+  </summary>
+</histogram>
+
+<histogram name="WebRTC.Video.BadCall.Qp" units="%">
+  <owner>sprang@chromium.org</owner>
+  <summary>
+    Fraction of time the call was classified as bad because of high qp.
+  </summary>
+</histogram>
+
 <histogram name="WebRTC.Video.BandwidthLimitedResolutionInPercent" units="%">
   <owner>asapersson@chromium.org</owner>
   <summary>
