@@ -11,8 +11,6 @@ import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.app.FragmentActivity;
-import android.support.v4.media.TransportMediator;
-import android.support.v4.media.TransportPerformer;
 import android.text.TextUtils;
 import android.view.KeyEvent;
 import android.view.View;
@@ -20,6 +18,8 @@ import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.ImageView;
+import android.widget.MediaController;
+import android.widget.MediaController.MediaPlayerControl;
 import android.widget.TextView;
 
 import com.google.android.gms.cast.CastMediaControlIntent;
@@ -27,7 +27,6 @@ import com.google.android.gms.cast.CastMediaControlIntent;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.media.remote.RemoteVideoInfo.PlayerState;
 import org.chromium.chrome.browser.metrics.MediaNotificationUma;
-import org.chromium.third_party.android.media.MediaController;
 
 /**
  * The activity that's opened by clicking the video flinging (casting) notification.
@@ -40,38 +39,105 @@ public class ExpandedControllerActivity
     // The alpha value for the poster/placeholder image, an integer between 0 and 256 (opaque).
     private static final int POSTER_IMAGE_ALPHA = 200;
 
+    // Subclass of {@link android.widget.MediaController} that never hides itself.
+    class AlwaysShownMediaController extends MediaController {
+        public AlwaysShownMediaController(Context context) {
+            super(context);
+        }
+
+        @Override
+        public void show(int timeout) {
+            // Never auto-hide the controls.
+            super.show(0);
+        }
+
+        @Override
+        public boolean dispatchKeyEvent(KeyEvent event) {
+            int keyCode = event.getKeyCode();
+            // MediaController hides the controls when back or menu are pressed.
+            // Close the activity on back and ignore menu.
+            if (keyCode == KeyEvent.KEYCODE_BACK) {
+                finish();
+                return true;
+            } else if (keyCode == KeyEvent.KEYCODE_MENU) {
+                return true;
+            }
+            return super.dispatchKeyEvent(event);
+        }
+
+        @Override
+        public void hide() {
+            // Don't allow the controls to hide until explicitly asked to do so from the host
+            // activity.
+        }
+
+        /**
+         * Actually hides the controls which prevents some window leaks.
+         */
+        public void cleanup() {
+            super.hide();
+        }
+    };
+
     private Handler mHandler;
-    // We don't use the standard android.media.MediaController, but a custom one.
-    // See the class itself for details.
-    private MediaController mMediaController;
+    private AlwaysShownMediaController mMediaController;
     private FullscreenMediaRouteButton mMediaRouteButton;
     private MediaRouteController mMediaRouteController;
     private RemoteVideoInfo mVideoInfo;
     private String mScreenName;
-    private TransportMediator mTransportMediator;
 
     /**
      * Handle actions from on-screen media controls.
      */
-    private TransportPerformer mTransportPerformer = new TransportPerformer() {
+    private MediaPlayerControl mMediaPlayerControl = new MediaPlayerControl() {
         @Override
-        public void onStart() {
-            if (mMediaRouteController == null) return;
-            mMediaRouteController.resume();
-            RecordCastAction.recordFullscreenControlsAction(
-                    RecordCastAction.FULLSCREEN_CONTROLS_RESUME,
-                    mMediaRouteController.getMediaStateListener() != null);
+        public boolean canPause() {
+            return true;
         }
 
         @Override
-        public void onStop() {
-            if (mMediaRouteController == null) return;
-            onPause();
-            mMediaRouteController.release();
+        public boolean canSeekBackward() {
+            return getDuration() > 0 && getCurrentPosition() > 0;
         }
 
         @Override
-        public void onPause() {
+        public boolean canSeekForward() {
+            return getDuration() > 0 && getCurrentPosition() < getDuration();
+        }
+
+        @Override
+        public int getAudioSessionId() {
+            // TODO(avayvod): not sure 0 is a valid value to return.
+            return 0;
+        }
+
+        @Override
+        public int getBufferPercentage() {
+            int duration = getDuration();
+            if (duration == 0) return 0;
+            return (getCurrentPosition() * 100) / duration;
+        }
+
+        @Override
+        public int getCurrentPosition() {
+            if (mMediaRouteController == null) return 0;
+            return (int) mMediaRouteController.getPosition();
+        }
+
+        @Override
+        public int getDuration() {
+            if (mMediaRouteController == null) return 0;
+            return (int) mMediaRouteController.getDuration();
+        }
+
+        @Override
+        public boolean isPlaying() {
+            if (mMediaRouteController == null) return false;
+            return mMediaRouteController.isPlaying();
+        }
+
+        @Override
+        public void pause() {
             if (mMediaRouteController == null) return;
             mMediaRouteController.pause();
             RecordCastAction.recordFullscreenControlsAction(
@@ -80,54 +146,28 @@ public class ExpandedControllerActivity
         }
 
         @Override
-        public long onGetDuration() {
-            if (mMediaRouteController == null) return 0;
-            return mMediaRouteController.getDuration();
+        public void start() {
+            if (mMediaRouteController == null) return;
+            mMediaRouteController.resume();
+            RecordCastAction.recordFullscreenControlsAction(
+                    RecordCastAction.FULLSCREEN_CONTROLS_RESUME,
+                    mMediaRouteController.getMediaStateListener() != null);
         }
 
         @Override
-        public long onGetCurrentPosition() {
-            if (mMediaRouteController == null) return 0;
-            return mMediaRouteController.getPosition();
-        }
-
-        @Override
-        public void onSeekTo(long pos) {
+        public void seekTo(int pos) {
             if (mMediaRouteController == null) return;
             mMediaRouteController.seekTo(pos);
             RecordCastAction.recordFullscreenControlsAction(
                     RecordCastAction.FULLSCREEN_CONTROLS_SEEK,
                     mMediaRouteController.getMediaStateListener() != null);
         }
-
-        @Override
-        public boolean onIsPlaying() {
-            if (mMediaRouteController == null) return false;
-            return mMediaRouteController.isPlaying();
-        }
-
-        @Override
-        public int onGetTransportControlFlags() {
-            int flags = TransportMediator.FLAG_KEY_MEDIA_REWIND
-                    | TransportMediator.FLAG_KEY_MEDIA_FAST_FORWARD;
-            if (mMediaRouteController != null && mMediaRouteController.isPlaying()) {
-                flags |= TransportMediator.FLAG_KEY_MEDIA_PAUSE;
-            } else {
-                flags |= TransportMediator.FLAG_KEY_MEDIA_PLAY;
-            }
-            return flags;
-        }
     };
 
-    private Runnable mProgressUpdater = new Runnable() {
+    private Runnable mControlsUpdater = new Runnable() {
         @Override
         public void run() {
-            if (mMediaRouteController.isPlaying()) {
-                mMediaController.updateProgress();
-                mHandler.postDelayed(this, PROGRESS_UPDATE_PERIOD_IN_MS);
-            } else {
-                mHandler.removeCallbacks(this);
-            }
+            mMediaController.show();
         }
     };
 
@@ -160,13 +200,11 @@ public class ExpandedControllerActivity
 
         mMediaRouteController.addUiListener(this);
 
-        // Create transport controller to control video, giving the callback
-        // interface to receive actions from.
-        mTransportMediator = new TransportMediator(this, mTransportPerformer);
-
         // Create and initialize the media control UI.
-        mMediaController = (MediaController) findViewById(R.id.cast_media_controller);
-        mMediaController.setMediaPlayer(mTransportMediator);
+        mMediaController = new AlwaysShownMediaController(this);
+        mMediaController.setEnabled(true);
+        mMediaController.setMediaPlayer(mMediaPlayerControl);
+        mMediaController.setAnchorView(rootView);
 
         View button = getLayoutInflater().inflate(R.layout.cast_controller_media_route_button,
                 rootView, false);
@@ -181,16 +219,13 @@ public class ExpandedControllerActivity
         }
 
         // Initialize the video info.
-        setVideoInfo(new RemoteVideoInfo(null, 0, RemoteVideoInfo.PlayerState.STOPPED, 0, null));
-
-        mMediaController.refresh();
-
-        scheduleProgressUpdate();
+        mVideoInfo = new RemoteVideoInfo(null, 0, RemoteVideoInfo.PlayerState.STOPPED, 0, null);
     }
 
     @Override
     protected void onResume() {
         super.onResume();
+
         if (mVideoInfo.state == PlayerState.FINISHED) finish();
         if (mMediaRouteController == null) return;
 
@@ -206,6 +241,9 @@ public class ExpandedControllerActivity
         Bitmap posterBitmap = mMediaRouteController.getPoster();
         if (posterBitmap != null) iv.setImageBitmap(posterBitmap);
         iv.setImageAlpha(POSTER_IMAGE_ALPHA);
+
+        // Can't show the media controller until attached to window.
+        scheduleControlsUpdate();
     }
 
     @Override
@@ -226,10 +264,12 @@ public class ExpandedControllerActivity
     }
 
     private void cleanup() {
-        if (mHandler != null) mHandler.removeCallbacks(mProgressUpdater);
+        if (mHandler != null) mHandler.removeCallbacks(mControlsUpdater);
         if (mMediaRouteController != null) mMediaRouteController.removeUiListener(this);
         mMediaRouteController = null;
-        mProgressUpdater = null;
+        mControlsUpdater = null;
+        mMediaController.cleanup();
+        mMediaController = null;
     }
 
     /**
@@ -239,14 +279,12 @@ public class ExpandedControllerActivity
         if ((mVideoInfo == null) ? (videoInfo == null) : mVideoInfo.equals(videoInfo)) return;
 
         mVideoInfo = videoInfo;
-        onVideoInfoChanged();
+        updateUi();
     }
 
-    private void scheduleProgressUpdate() {
-        mHandler.removeCallbacks(mProgressUpdater);
-        if (mMediaRouteController.isPlaying()) {
-            mHandler.post(mProgressUpdater);
-        }
+    private void scheduleControlsUpdate() {
+        mHandler.removeCallbacks(mControlsUpdater);
+        mHandler.post(mControlsUpdater);
     }
 
     /**
@@ -256,14 +294,6 @@ public class ExpandedControllerActivity
         if (TextUtils.equals(mScreenName, screenName)) return;
 
         mScreenName = screenName;
-        onScreenNameChanged();
-    }
-
-    private void onVideoInfoChanged() {
-        updateUi();
-    }
-
-    private void onScreenNameChanged() {
         updateUi();
     }
 
@@ -278,7 +308,7 @@ public class ExpandedControllerActivity
         TextView castTextView = (TextView) findViewById(R.id.cast_screen_title);
         castTextView.setText(castText);
 
-        mMediaController.refresh();
+        scheduleControlsUpdate();
     }
 
     @Override
@@ -307,7 +337,7 @@ public class ExpandedControllerActivity
         videoInfo.state = newState;
         setVideoInfo(videoInfo);
 
-        scheduleProgressUpdate();
+        scheduleControlsUpdate();
 
         if (newState == PlayerState.FINISHED || newState == PlayerState.INVALIDATED) {
             // If we are switching to a finished state, stop the notifications.
