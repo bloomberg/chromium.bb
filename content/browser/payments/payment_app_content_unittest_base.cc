@@ -151,42 +151,6 @@ PaymentManager* PaymentAppContentUnitTestBase::CreatePaymentManager(
   return nullptr;
 }
 
-void PaymentAppContentUnitTestBase::SetManifest(
-    PaymentManager* manager,
-    payments::mojom::PaymentAppManifestPtr manifest,
-    PaymentManager::SetManifestCallback callback) {
-  ASSERT_NE(nullptr, manager);
-  manager->SetManifest(std::move(manifest), std::move(callback));
-  base::RunLoop().RunUntilIdle();
-}
-
-void PaymentAppContentUnitTestBase::GetManifest(
-    PaymentManager* manager,
-    PaymentManager::GetManifestCallback callback) {
-  ASSERT_NE(nullptr, manager);
-  manager->GetManifest(std::move(callback));
-  base::RunLoop().RunUntilIdle();
-}
-
-payments::mojom::PaymentAppManifestPtr
-PaymentAppContentUnitTestBase::CreatePaymentAppManifestForTest(
-    const std::string& name) {
-  payments::mojom::PaymentAppOptionPtr option =
-      payments::mojom::PaymentAppOption::New();
-  option->name = "Visa ****";
-  option->id = "payment-app-id";
-  option->icon = std::string("payment-app-icon");
-  option->enabled_methods.push_back("visa");
-
-  payments::mojom::PaymentAppManifestPtr manifest =
-      payments::mojom::PaymentAppManifest::New();
-  manifest->icon = std::string("payment-app-icon");
-  manifest->name = name;
-  manifest->options.push_back(std::move(option));
-
-  return manifest;
-}
-
 void PaymentAppContentUnitTestBase::UnregisterServiceWorker(
     const GURL& scope_url) {
   // Unregister service worker.

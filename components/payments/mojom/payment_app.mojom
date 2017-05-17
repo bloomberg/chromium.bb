@@ -8,26 +8,6 @@ import "components/payments/mojom/payment_request.mojom";
 import "mojo/common/time.mojom";
 import "url/mojo/url.mojom";
 
-enum PaymentAppManifestError {
-  NONE,
-  NOT_IMPLEMENTED,
-  NO_ACTIVE_WORKER,
-  MANIFEST_STORAGE_OPERATION_FAILED,
-};
-
-struct PaymentAppOption {
-  string name;
-  string? icon;
-  string id;
-  array<string> enabled_methods;
-};
-
-struct PaymentAppManifest {
-  string name;
-  string? icon;
-  array<PaymentAppOption> options;
-};
-
 enum PaymentHandlerStatus {
   SUCCESS,
   NOT_IMPLEMENTED,
@@ -44,10 +24,6 @@ struct PaymentInstrument {
 
 interface PaymentManager {
   Init(string service_worker_scope);
-  SetManifest(PaymentAppManifest payment_app_manifest)
-      => (PaymentAppManifestError error);
-  GetManifest()
-      => (PaymentAppManifest payment_app_manifest, PaymentAppManifestError error);
   DeletePaymentInstrument(string instrument_key)
       => (PaymentHandlerStatus status);
   GetPaymentInstrument(string instrument_key)

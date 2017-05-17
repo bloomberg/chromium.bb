@@ -34,9 +34,6 @@ class CONTENT_EXPORT PaymentManager
 
   // payments::mojom::PaymentManager methods:
   void Init(const std::string& scope) override;
-  void SetManifest(payments::mojom::PaymentAppManifestPtr manifest,
-                   SetManifestCallback callback) override;
-  void GetManifest(GetManifestCallback callback) override;
   void DeletePaymentInstrument(
       const std::string& instrument_key,
       DeletePaymentInstrumentCallback callback) override;
