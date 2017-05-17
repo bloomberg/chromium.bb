@@ -12,7 +12,7 @@
 #endif
 
 namespace {
-CGFloat kToolbarHeight = 44.0f;
+CGFloat kToolbarHeight = 56.0f;
 CGFloat kTabStripHeight = 120.0f;
 }
 
