@@ -15,7 +15,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/threading/sequenced_worker_pool.h"
+#include "base/task_scheduler/post_task.h"
 #include "chrome/browser/install_verification/win/module_info.h"
 #include "chrome/browser/install_verification/win/module_verification_common.h"
 #include "chrome/browser/safe_browsing/incident_reporting/incident_receiver.h"
@@ -111,12 +111,13 @@ void CheckModuleWhitelistOnIOThread(
                        suspicious_paths->size());
 
   if (!suspicious_paths->empty()) {
-    content::BrowserThread::GetBlockingPool()
-        ->PostWorkerTaskWithShutdownBehavior(
-            FROM_HERE, base::Bind(&ReportIncidentsForSuspiciousModules,
-                                  base::Passed(std::move(suspicious_paths)),
-                                  base::Passed(std::move(incident_receiver))),
-            base::SequencedWorkerPool::CONTINUE_ON_SHUTDOWN);
+    base::PostTaskWithTraits(
+        FROM_HERE,
+        {base::MayBlock(), base::TaskPriority::BACKGROUND,
+         base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
+        base::BindOnce(&ReportIncidentsForSuspiciousModules,
+                       base::Passed(std::move(suspicious_paths)),
+                       base::Passed(std::move(incident_receiver))));
   }
 }
 
