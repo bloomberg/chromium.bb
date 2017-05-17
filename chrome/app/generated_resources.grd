@@ -12252,9 +12252,6 @@ read aloud to screenreader users to announce that a completion is available.">
 
     <!-- Consistent omnibox geolocation -->
     <if expr="is_android">
-        <message name="IDS_SEARCH_GEOLOCATION_DISCLOSURE_INFOBAR_CONTROL_TEXT" desc="Text to put in the infobar disclosing Google Search's usage of location. The message contains a link to a settings page. The link text is a separate string in the translation console and appears here as a placeholder text. This version of the text is old but is being kept to allow us to compare performance of the new text.">
-          Google uses your location to provide a better local experience. You can change this in <ph name="SETTINGS_LINK">$1<ex>Link to Settings page</ex></ph>.
-        </message>
         <message name="IDS_SEARCH_GEOLOCATION_DISCLOSURE_INFOBAR_TEXT" desc="Text to put in the infobar disclosing Google Search's usage of location. The message contains a link to a settings page. The link text is a separate string in the translation console and appears here as a placeholder text.">
           Google uses your location to give you local content. You can change this in <ph name="SETTINGS_LINK">$1<ex>Link to Settings page</ex></ph>.
         </message>
