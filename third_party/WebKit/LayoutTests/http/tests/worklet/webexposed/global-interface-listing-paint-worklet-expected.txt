@@ -115,11 +115,11 @@ CONSOLE MESSAGE: line 138:     method constructor
 CONSOLE MESSAGE: line 138:     method is2D
 CONSOLE MESSAGE: line 138:     method toString
 CONSOLE MESSAGE: line 138: interface CSSTransformValue : CSSStyleValue
+CONSOLE MESSAGE: line 138:     getter is2D
 CONSOLE MESSAGE: line 138:     getter length
 CONSOLE MESSAGE: line 138:     method constructor
 CONSOLE MESSAGE: line 138:     method entries
 CONSOLE MESSAGE: line 138:     method forEach
-CONSOLE MESSAGE: line 138:     method is2D
 CONSOLE MESSAGE: line 138:     method keys
 CONSOLE MESSAGE: line 138:     method values
 CONSOLE MESSAGE: line 138: interface CSSTranslation : CSSTransformComponent

@@ -14,5 +14,5 @@
 
     iterable<CSSTransformComponent>;
 
-    boolean is2D();
+    readonly attribute boolean is2D;
 };
