@@ -8,7 +8,7 @@
 
 #include "android_webview/browser/aw_browser_context.h"
 #include "android_webview/browser/aw_browser_main_parts.h"
-#include "android_webview/browser/aw_contents_client_bridge_base.h"
+#include "android_webview/browser/aw_contents_client_bridge.h"
 #include "android_webview/browser/aw_contents_io_thread_client.h"
 #include "android_webview/browser/aw_cookie_access_policy.h"
 #include "android_webview/browser/aw_devtools_manager_delegate.h"
@@ -145,8 +145,8 @@ void AwContentsMessageFilter::OnShouldOverrideUrlLoading(
     bool* ignore_navigation) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   *ignore_navigation = false;
-  AwContentsClientBridgeBase* client =
-      AwContentsClientBridgeBase::FromID(process_id_, render_frame_id);
+  AwContentsClientBridge* client =
+      AwContentsClientBridge::FromID(process_id_, render_frame_id);
   if (client) {
     *ignore_navigation = client->ShouldOverrideUrlLoading(
         url, has_user_gesture, is_redirect, is_main_frame);
@@ -385,8 +385,8 @@ void AwContentBrowserClient::AllowCertificateError(
     bool expired_previous_decision,
     const base::Callback<void(content::CertificateRequestResultType)>&
         callback) {
-  AwContentsClientBridgeBase* client =
-      AwContentsClientBridgeBase::FromWebContents(web_contents);
+  AwContentsClientBridge* client =
+      AwContentsClientBridge::FromWebContents(web_contents);
   bool cancel_request = true;
   if (client)
     client->AllowCertificateError(cert_error,
@@ -403,8 +403,8 @@ void AwContentBrowserClient::SelectClientCertificate(
     net::SSLCertRequestInfo* cert_request_info,
     net::CertificateList client_certs,
     std::unique_ptr<content::ClientCertificateDelegate> delegate) {
-  AwContentsClientBridgeBase* client =
-      AwContentsClientBridgeBase::FromWebContents(web_contents);
+  AwContentsClientBridge* client =
+      AwContentsClientBridge::FromWebContents(web_contents);
   if (client)
     client->SelectClientCertificate(cert_request_info, std::move(delegate));
 }

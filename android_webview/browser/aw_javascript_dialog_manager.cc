@@ -4,7 +4,7 @@
 
 #include "android_webview/browser/aw_javascript_dialog_manager.h"
 
-#include "android_webview/browser/aw_contents_client_bridge_base.h"
+#include "android_webview/browser/aw_contents_client_bridge.h"
 #include "content/public/browser/javascript_dialog_manager.h"
 #include "content/public/browser/web_contents.h"
 
@@ -22,8 +22,8 @@ void AwJavaScriptDialogManager::RunJavaScriptDialog(
     const base::string16& default_prompt_text,
     const DialogClosedCallback& callback,
     bool* did_suppress_message) {
-  AwContentsClientBridgeBase* bridge =
-      AwContentsClientBridgeBase::FromWebContents(web_contents);
+  AwContentsClientBridge* bridge =
+      AwContentsClientBridge::FromWebContents(web_contents);
   if (!bridge) {
     callback.Run(false, base::string16());
     return;
@@ -37,8 +37,8 @@ void AwJavaScriptDialogManager::RunBeforeUnloadDialog(
     content::WebContents* web_contents,
     bool is_reload,
     const DialogClosedCallback& callback) {
-  AwContentsClientBridgeBase* bridge =
-      AwContentsClientBridgeBase::FromWebContents(web_contents);
+  AwContentsClientBridge* bridge =
+      AwContentsClientBridge::FromWebContents(web_contents);
   if (!bridge) {
     callback.Run(false, base::string16());
     return;
