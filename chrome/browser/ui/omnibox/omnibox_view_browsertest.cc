@@ -866,8 +866,8 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest, BasicTextOperations) {
   EXPECT_FALSE(omnibox_view->IsSelectAll());
   EXPECT_EQ(old_text, omnibox_view->GetText());
   omnibox_view->GetSelectionBounds(&start, &end);
-  EXPECT_EQ(old_text.size(), start);
-  EXPECT_EQ(old_text.size(), end);
+  EXPECT_EQ(0U, start);
+  EXPECT_EQ(0U, end);
 }
 
 // Make sure the cursor position doesn't get set past the last character of

@@ -370,9 +370,11 @@ void OmniboxEditModel::Revert() {
   keyword_.clear();
   is_keyword_hint_ = false;
   has_temporary_text_ = false;
-  view_->SetWindowTextAndCaretPos(permanent_text_,
-                                  has_focus() ? permanent_text_.length() : 0,
-                                  false, true);
+  size_t start, end;
+  view_->GetSelectionBounds(&start, &end);
+  view_->SetWindowTextAndCaretPos(permanent_text_, 0, false, false);
+  view_->SetWindowTextAndCaretPos(
+      permanent_text_, std::min(permanent_text_.length(), start), false, true);
   client_->OnRevert();
 }
 
